@@ -10,27 +10,25 @@
  ********************************************************************************************************/
 package gama.extension.serialize.binary;
 
+import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.IShape;
-import gama.api.types.graph.IPath;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
-import gama.api.gaml.types.Types;
 import gama.core.topology.graph.GamaSpatialGraph;
 import gama.core.util.path.GamaSpatialPath;
-import gama.extension.serialize.fst.FSTObjectInput;
-import gama.extension.serialize.fst.FSTObjectOutput;
+import gama.extension.serialize.IGamaObjectInput;
+import gama.extension.serialize.IGamaObjectOutput;
 
 /**
  * FST serialiser for {@link GamaSpatialPath} instances.
  *
  * <p>
- * A {@link GamaSpatialPath} stores several computed fields ({@code segments}, {@code threeD},
- * {@code realObjects}, {@code shape}) that are fully derived from the structural data. This
- * serialiser therefore persists only the minimal structural state required to reconstruct the path:
- * the underlying spatial graph (which may be {@code null}), the source and target vertices, the
- * ordered list of graph edges, and the stored weight. All derived fields are recomputed by the
- * appropriate {@link GamaSpatialPath} constructor during deserialisation.
+ * A {@link GamaSpatialPath} stores several computed fields ({@code segments}, {@code threeD}, {@code realObjects},
+ * {@code shape}) that are fully derived from the structural data. This serialiser therefore persists only the minimal
+ * structural state required to reconstruct the path: the underlying spatial graph (which may be {@code null}), the
+ * source and target vertices, the ordered list of graph edges, and the stored weight. All derived fields are recomputed
+ * by the appropriate {@link GamaSpatialPath} constructor during deserialisation.
  * </p>
  *
  * <p>
@@ -47,11 +45,10 @@ import gama.extension.serialize.fst.FSTObjectOutput;
  *
  * <p>
  * When the graph is non-{@code null} the path is reconstructed via
- * {@link GamaSpatialPath#GamaSpatialPath(GamaSpatialGraph, IShape, IShape, IList)} (which applies
- * edge-geometry trimming at source/target, matching the original construction). When the graph is
- * {@code null} the constructor
- * {@link GamaSpatialPath#GamaSpatialPath(IShape, IShape, IList)} is used instead (no trimming).
- * In both cases {@link IPath#setWeight(double)} is called afterwards to restore the stored weight.
+ * {@link GamaSpatialPath#GamaSpatialPath(GamaSpatialGraph, IShape, IShape, IList)} (which applies edge-geometry
+ * trimming at source/target, matching the original construction). When the graph is {@code null} the constructor
+ * {@link GamaSpatialPath#GamaSpatialPath(IShape, IShape, IList)} is used instead (no trimming). In both cases
+ * {@link IPath#setWeight(double)} is called afterwards to restore the stored weight.
  * </p>
  *
  * <p>
@@ -64,16 +61,6 @@ import gama.extension.serialize.fst.FSTObjectOutput;
 class GamaSpatialPathSerialiser extends FSTIndividualSerialiser<GamaSpatialPath> {
 
 	/**
-	 * Constructs a new {@code GamaSpatialPathSerialiser} bound to the given {@link BinarySerialiser}.
-	 *
-	 * @param serialiser
-	 *            the owning binary serialiser
-	 */
-	GamaSpatialPathSerialiser(final BinarySerialiser serialiser) {
-		super(serialiser);
-	}
-
-	/**
 	 * Returns {@code false}: spatial paths are not registered for FST back-reference tracking.
 	 *
 	 * @return {@code false}
@@ -84,9 +71,8 @@ class GamaSpatialPathSerialiser extends FSTIndividualSerialiser<GamaSpatialPath>
 	}
 
 	/**
-	 * Serialises the spatial path's underlying graph, source, target, edge list, and weight.
-	 * Derived fields (segments, threeD, realObjects, shape) are not written; they are recomputed on
-	 * deserialisation.
+	 * Serialises the spatial path's underlying graph, source, target, edge list, and weight. Derived fields (segments,
+	 * threeD, realObjects, shape) are not written; they are recomputed on deserialisation.
 	 *
 	 * @param out
 	 *            the FST output stream
@@ -97,22 +83,20 @@ class GamaSpatialPathSerialiser extends FSTIndividualSerialiser<GamaSpatialPath>
 	 */
 	@SuppressWarnings ("unchecked")
 	@Override
-	public void serialise(final FSTObjectOutput out, final GamaSpatialPath p) throws Exception {
-		out.writeObject(p.getGraph());          // GamaSpatialGraph or null
-		out.writeObject(p.getStartVertex());    // source IShape
-		out.writeObject(p.getEndVertex());      // target IShape
+	public void serialise(final IGamaObjectOutput out, final GamaSpatialPath p) throws Exception {
+		out.writeObject(p.getGraph()); // GamaSpatialGraph or null
+		out.writeObject(p.getStartVertex()); // source IShape
+		out.writeObject(p.getEndVertex()); // target IShape
 		// Write the edge list inline to avoid a dependency on IListSerialiser ordering
 		final IList<IShape> edges = p.getEdgeList();
 		out.writeInt(edges == null ? 0 : edges.size());
-		if (edges != null) {
-			for (final IShape e : edges) { out.writeObject(e); }
-		}
+		if (edges != null) { for (final IShape e : edges) { out.writeObject(e); } }
 		out.writeDouble(p.getWeight());
 	}
 
 	/**
-	 * Deserialises a spatial path by reading the graph, source, target, edges, and weight, then
-	 * constructing a new {@link GamaSpatialPath} that recomputes all derived geometric fields.
+	 * Deserialises a spatial path by reading the graph, source, target, edges, and weight, then constructing a new
+	 * {@link GamaSpatialPath} that recomputes all derived geometric fields.
 	 *
 	 * @param scope
 	 *            the current GAMA simulation scope (unused — path construction does not require a scope)
@@ -124,7 +108,7 @@ class GamaSpatialPathSerialiser extends FSTIndividualSerialiser<GamaSpatialPath>
 	 */
 	@SuppressWarnings ("unchecked")
 	@Override
-	public GamaSpatialPath deserialise(final IScope scope, final FSTObjectInput in) throws Exception {
+	public GamaSpatialPath deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		final GamaSpatialGraph graph = (GamaSpatialGraph) in.readObject();
 		final IShape source = (IShape) in.readObject();
 		final IShape target = (IShape) in.readObject();
@@ -134,8 +118,7 @@ class GamaSpatialPathSerialiser extends FSTIndividualSerialiser<GamaSpatialPath>
 		final double weight = in.readDouble();
 		// Reconstruct using the appropriate constructor so that segments, threeD and
 		// realObjects are recomputed consistently with how the path was originally built.
-		final GamaSpatialPath result = graph != null
-				? new GamaSpatialPath(graph, source, target, edges)
+		final GamaSpatialPath result = graph != null ? new GamaSpatialPath(graph, source, target, edges)
 				: new GamaSpatialPath(source, target, edges);
 		result.setWeight(weight);
 		return result;

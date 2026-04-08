@@ -15,27 +15,17 @@ import java.util.Map;
 import gama.api.kernel.serialization.ISerialisedPopulation;
 import gama.api.kernel.serialization.SerialisedAgent;
 import gama.api.runtime.scope.IScope;
-import gama.extension.serialize.fst.FSTObjectInput;
-import gama.extension.serialize.fst.FSTObjectOutput;
+import gama.extension.serialize.IGamaObjectInput;
+import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link SerialisedAgent} instances.
- * Persists the agent's integer index, species name, attribute map, and inner population map.
+ * FST serialiser for {@link SerialisedAgent} instances. Persists the agent's integer index, species name, attribute
+ * map, and inner population map.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
 class SerialisedAgentSerialiser extends FSTIndividualSerialiser<SerialisedAgent> {
-
-	/**
-	 * Constructs a new {@code SerialisedAgentSerialiser} bound to the given {@link BinarySerialiser}.
-	 *
-	 * @param serialiser
-	 *            the owning binary serialiser
-	 */
-	SerialisedAgentSerialiser(final BinarySerialiser serialiser) {
-		super(serialiser);
-	}
 
 	/**
 	 * Serialises the agent's index, species name, attribute map, and inner population map.
@@ -48,7 +38,7 @@ class SerialisedAgentSerialiser extends FSTIndividualSerialiser<SerialisedAgent>
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final FSTObjectOutput out, final SerialisedAgent o) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final SerialisedAgent o) throws Exception {
 		out.writeInt(o.index());
 		out.writeStringUTF(o.species());
 		out.writeObject(o.attributes());
@@ -56,8 +46,7 @@ class SerialisedAgentSerialiser extends FSTIndividualSerialiser<SerialisedAgent>
 	}
 
 	/**
-	 * Deserialises a serialised agent by reading its index, species name, attribute map,
-	 * and inner population map.
+	 * Deserialises a serialised agent by reading its index, species name, attribute map, and inner population map.
 	 *
 	 * @param scope
 	 *            the current GAMA simulation scope (unused)
@@ -69,7 +58,7 @@ class SerialisedAgentSerialiser extends FSTIndividualSerialiser<SerialisedAgent>
 	 */
 	@SuppressWarnings ("unchecked")
 	@Override
-	public SerialisedAgent deserialise(final IScope scope, final FSTObjectInput in) throws Exception {
+	public SerialisedAgent deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		return new SerialisedAgent(in.readInt(), in.readStringUTF(), (Map<String, Object>) in.readObject(),
 				(Map<String, ISerialisedPopulation>) in.readObject());
 	}

@@ -13,28 +13,17 @@ package gama.extension.serialize.binary;
 import gama.api.gaml.types.GamaType;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
-import gama.extension.serialize.fst.FSTObjectInput;
-import gama.extension.serialize.fst.FSTObjectOutput;
+import gama.extension.serialize.IGamaObjectInput;
+import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link IType} instances.
- * Serialises the GAML type name. For compound types (e.g. {@code map<string, int>}),
- * also serialises the key and content types recursively.
+ * FST serialiser for {@link IType} instances. Serialises the GAML type name. For compound types (e.g.
+ * {@code map<string, int>}), also serialises the key and content types recursively.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
 class ITypeSerialiser extends FSTIndividualSerialiser<IType> {
-
-	/**
-	 * Constructs a new {@code ITypeSerialiser} bound to the given {@link BinarySerialiser}.
-	 *
-	 * @param serialiser
-	 *            the owning binary serialiser
-	 */
-	ITypeSerialiser(final BinarySerialiser serialiser) {
-		super(serialiser);
-	}
 
 	/**
 	 * Serialises the GAML type name. For compound types, also writes the key and content types.
@@ -47,7 +36,7 @@ class ITypeSerialiser extends FSTIndividualSerialiser<IType> {
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final FSTObjectOutput out, final IType toWrite) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final IType toWrite) throws Exception {
 		out.writeStringUTF(toWrite.getGamlType().getName());
 		if (toWrite.isCompoundType()) {
 			out.writeObject(toWrite.getKeyType());
@@ -56,8 +45,8 @@ class ITypeSerialiser extends FSTIndividualSerialiser<IType> {
 	}
 
 	/**
-	 * Deserialises a type by looking it up in the scope by name. For compound types,
-	 * also reads the key and content types and combines them via {@link GamaType#from}.
+	 * Deserialises a type by looking it up in the scope by name. For compound types, also reads the key and content
+	 * types and combines them via {@link GamaType#from}.
 	 *
 	 * @param scope
 	 *            the current GAMA simulation scope
@@ -69,7 +58,7 @@ class ITypeSerialiser extends FSTIndividualSerialiser<IType> {
 	 */
 	@SuppressWarnings ("rawtypes")
 	@Override
-	public IType deserialise(final IScope scope, final FSTObjectInput in) throws Exception {
+	public IType deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		String name = in.readStringUTF();
 		IType type = scope.getType(name);
 		if (type.isCompoundType()) {

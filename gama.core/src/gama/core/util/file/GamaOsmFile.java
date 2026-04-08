@@ -1478,38 +1478,51 @@ public class GamaOsmFile extends GamaGisFile {
 	 * @param intersectionNodes
 	 *            the intersection nodes
 	 */
+
 	private void manageNormalRelation(final IScope scope, final Relation relation, final IList<IShape> geometries,
 			final Map<Long, Entity> geomMap, final Map<String, Object> values, final Map<Long, IShape> nodesPt,
 			final Set<Long> intersectionNodes) {
 		int order = 0;
 		for (final RelationMember member : relation.getMembers()) {
 			final Entity entity = geomMap.get(member.getMemberId());
+			
 			if (entity instanceof Way) {
 				final List<WayNode> relationWays = ((Way) entity).getWayNodes();
 				final Map<String, Object> wayValues = GamaMapFactory.create();
+				
+				// 1. Add structural metadata
 				wayValues.put("entity_order", order++);
-				// TODO FIXME AD: What's that ??
-				wayValues.put("gama_bus_line", values.get(IKeyword.NAME));
 				wayValues.put("osm_way_id", entity.getId());
+				wayValues.put("osm_relation_id", relation.getId());
+				
+				// 2. Dynamically inject all the relation's tags (attributes)
+				if (values != null) {
+					wayValues.putAll(values);
+				}
+
 				if (relationWays.size() > 0) {
 					final List<IShape> geoms = createSplitRoad(relationWays, wayValues, intersectionNodes, nodesPt);
 					geometries.addAll(geoms);
 				}
+				
 			} else if (entity instanceof Node) {
 				final IShape pt = nodesPt.get(entity.getId());
 				final IShape pt2 = pt.copy(scope);
 
-				final List<IShape> objs = GamaListFactory.create(Types.GEOMETRY);
-				objs.add(pt2);
-
-				pt2.setAttribute("gama_bus_line", values.get(IKeyword.NAME));
+				// 1. Add structural metadata
+				pt2.setAttribute("osm_relation_id", relation.getId());
+				
+				// 2. Dynamically inject all the relation's tags (attributes)
+				if (values != null) {
+					for (Map.Entry<String, Object> entry : values.entrySet()) {
+						pt2.setAttribute(entry.getKey(), entry.getValue());
+					}
+				}
 
 				geometries.add(pt2);
-
 			}
 		}
 	}
-
 	/**
 	 * Creates the split road.
 	 *

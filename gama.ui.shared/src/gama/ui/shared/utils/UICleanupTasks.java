@@ -490,10 +490,6 @@ public class UICleanupTasks {
 			replace(Dialog.DLG_IMG_MESSAGE_ERROR, IGamaIcons.MARKER_ERROR);
 			replace(Dialog.DLG_IMG_MESSAGE_WARNING, IGamaIcons.MARKER_WARNING);
 			replace(Dialog.DLG_IMG_MESSAGE_INFO, IGamaIcons.MARKER_INFO);
-			replace("org.eclipse.jface.fieldassist.IMG_DEC_FIELD_INFO", IGamaIcons.MARKER_INFO);
-			replace("org.eclipse.jface.fieldassist.IMG_DEC_FIELD_ERROR", IGamaIcons.MARKER_ERROR);
-			replace("org.eclipse.jface.fieldassist.IMG_DEC_FIELD_ERROR_QUICKFIX", IGamaIcons.MARKER_ERROR);
-			replace("org.eclipse.jface.fieldassist.IMG_DEC_FIELD_WARNING", IGamaIcons.MARKER_WARNING);
 			replace(FieldDecorationRegistry.DEC_ERROR, IGamaIcons.MARKER_ERROR);
 			replace(FieldDecorationRegistry.DEC_WARNING, IGamaIcons.MARKER_WARNING);
 			replace(FieldDecorationRegistry.DEC_INFORMATION, IGamaIcons.MARKER_INFO);

@@ -36,6 +36,7 @@ import org.eclipse.ui.PartInitException;
 import com.google.common.primitives.Longs;
 
 import gama.api.GAMA;
+import gama.api.runtime.scope.IScope;
 import gama.api.types.color.IColor;
 import gama.api.ui.IGamaView;
 import gama.api.ui.IGui;
@@ -65,6 +66,9 @@ import gama.ui.shared.views.toolbar.GamaToolbarSimple;
  * The Class TestView.
  */
 public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements IGamaView.Test {
+
+	/** The scope. */
+	IScope scope = GAMA.getRuntimeScope();
 
 	/** The Constant BY_ORDER. */
 	static final Comparator<AbstractSummary<?>> BY_ORDER = (o1, o2) -> Longs.compare(o1.getIndex(), o2.getIndex());
@@ -225,7 +229,7 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 			final TestState state = subTest.getState();
 			if (state != TestState.FAILED && state != TestState.ABORTED) return;
 		}
-		final AssertEditor ed = new AssertEditor(GAMA.getRuntimeScope(), subTest);
+		final AssertEditor ed = new AssertEditor(scope, subTest);
 		ed.createControls(compo);
 	}
 
@@ -280,7 +284,7 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 		String file = path + File.separator + "tests_" + new SimpleDateFormat("yyyy-MM-dd HH.mm.ss").format(timestamp)
 				+ ".txt";
-		file = FileUtils.constructAbsoluteFilePath(GAMA.getRuntimeScope(), file, false);
+		file = FileUtils.constructAbsoluteFilePath(scope, file, false);
 		try (PrintWriter out = new PrintWriter(file)) {
 			for (AbstractSummary summary : experiments) {
 				out.println(summary.toString());
@@ -314,7 +318,8 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 
 	@Override
 	protected boolean shouldBeClosedWhenNoExperiments() {
-		return !runningAllTests;
+		return false;
+		// return !runningAllTests;
 	}
 
 	@Override

@@ -3,13 +3,14 @@
 
 <product name="gama.headless" uid="gama.headless.product" id="gama.headless.product" application="gama.headless.product" version="0.0.0.qualifier" type="features" includeLaunchers="false" autoIncludeRequirements="true">
 
+
    <configIni use="default">
    </configIni>
 
    <launcherArgs>
       <vmArgs>-server 
--Xms1G
--Xmx8G
+-Xms4G
+-Xmx16G
 -XX:+UseG1GC 
 -XX:+ParallelRefProcEnabled 
 -XX:MaxGCPauseMillis=200 
@@ -33,7 +34,7 @@
 -XX:+UseAdaptiveSizePolicy
 -XX:+OptimizeStringConcat
 -Dosgi.locking=none
--Dosgi.checkConfiguration=false
+-Dosgi.checkConfiguration=false -Dosgi.requiredJavaVersion=25
 -Declipse.log.level=ERROR
 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.retryAttempts=10
 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.closeTimeout=6000
@@ -109,9 +110,10 @@
    </features>
 
    <configurations>
-      <plugin id="org.apache.felix.scr" autoStart="true" startLevel="2" />
-      <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="0" />
-      <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
+      <plugin id="gaml.compiler" autoStart="true" startLevel="0" />
+      <plugin id="org.apache.felix.scr" autoStart="true" startLevel="1" />
+      <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="1" />
       <plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.equinox.p2.reconciler.dropins" autoStart="true" startLevel="5" />
       <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />

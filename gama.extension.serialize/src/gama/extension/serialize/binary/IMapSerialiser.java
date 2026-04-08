@@ -16,13 +16,12 @@ import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
-import gama.extension.serialize.fst.FSTObjectInput;
-import gama.extension.serialize.fst.FSTObjectOutput;
+import gama.extension.serialize.IGamaObjectInput;
+import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link IMap} instances.
- * Persists the key type, content type, ordering flag, entry count, and all key-value pairs.
- * The map is reconstructed via {@link GamaMapFactory#create(IType, IType, boolean)}.
+ * FST serialiser for {@link IMap} instances. Persists the key type, content type, ordering flag, entry count, and all
+ * key-value pairs. The map is reconstructed via {@link GamaMapFactory#create(IType, IType, boolean)}.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
@@ -30,18 +29,8 @@ import gama.extension.serialize.fst.FSTObjectOutput;
 class IMapSerialiser extends FSTIndividualSerialiser<IMap> {
 
 	/**
-	 * Constructs a new {@code IMapSerialiser} bound to the given {@link BinarySerialiser}.
-	 *
-	 * @param serialiser
-	 *            the owning binary serialiser
-	 */
-	IMapSerialiser(final BinarySerialiser serialiser) {
-		super(serialiser);
-	}
-
-	/**
-	 * Serialises the map's key type, content type, ordering flag, size, and all key-value pairs.
-	 * Each key and value is written as an object via {@link gama.extension.serialize.fst.FSTObjectOutput#writeObject}.
+	 * Serialises the map's key type, content type, ordering flag, size, and all key-value pairs. Each key and value is
+	 * written as an object via {@link gama.extension.serialize.fst.FSTObjectOutput#writeObject}.
 	 *
 	 * @param out
 	 *            the FST output stream
@@ -52,7 +41,7 @@ class IMapSerialiser extends FSTIndividualSerialiser<IMap> {
 	 */
 	@SuppressWarnings ("unchecked")
 	@Override
-	public void serialise(final FSTObjectOutput out, final IMap o) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final IMap o) throws Exception {
 		out.writeObject(o.getGamlType().getKeyType());
 		out.writeObject(o.getGamlType().getContentType());
 		out.writeBoolean(o.isOrdered());
@@ -80,7 +69,7 @@ class IMapSerialiser extends FSTIndividualSerialiser<IMap> {
 	 */
 	@SuppressWarnings ({ "unchecked", "rawtypes" })
 	@Override
-	public IMap deserialise(final IScope scope, final FSTObjectInput in) throws Exception {
+	public IMap deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		IType k = (IType) in.readObject();
 		IType c = (IType) in.readObject();
 		boolean ordered = in.readBoolean();

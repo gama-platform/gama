@@ -13,8 +13,8 @@ package gama.extension.serialize.binary;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.color.GamaColorFactory;
 import gama.api.types.color.IColor;
-import gama.extension.serialize.fst.FSTObjectInput;
-import gama.extension.serialize.fst.FSTObjectOutput;
+import gama.extension.serialize.IGamaObjectInput;
+import gama.extension.serialize.IGamaObjectOutput;
 
 /**
  * FST serialiser for {@link IObject} instances. Serialises the species name and the full attribute map of the object.
@@ -25,16 +25,6 @@ import gama.extension.serialize.fst.FSTObjectOutput;
  * @date 5 août 2023
  */
 class IColorSerialiser extends FSTIndividualSerialiser<IColor> {
-
-	/**
-	 * Constructs a new {@code IObjectSerialiser} bound to the given {@link BinarySerialiser}.
-	 *
-	 * @param serialiser
-	 *            the owning binary serialiser
-	 */
-	IColorSerialiser(final BinarySerialiser serialiser) {
-		super(serialiser);
-	}
 
 	/**
 	 * Returns {@code false}: objects are not registered for FST back-reference tracking.
@@ -57,7 +47,7 @@ class IColorSerialiser extends FSTIndividualSerialiser<IColor> {
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final FSTObjectOutput out, final IColor o) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final IColor o) throws Exception {
 		out.write(o.red());
 		out.write(o.green());
 		out.write(o.blue());
@@ -78,7 +68,7 @@ class IColorSerialiser extends FSTIndividualSerialiser<IColor> {
 	 */
 	@SuppressWarnings ("unchecked")
 	@Override
-	public IColor deserialise(final IScope scope, final FSTObjectInput in) throws Exception {
+	public IColor deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		// Use in.read() (readIntByte) instead of in.readInt() (readFInt): writeFByte writes a raw single byte,
 		// so readIntByte correctly returns the unsigned value 0-255, whereas readFInt interprets byte 0xFF (-1)
 		// as integer -1, which normalize() then clamps to 0, corrupting the alpha channel.

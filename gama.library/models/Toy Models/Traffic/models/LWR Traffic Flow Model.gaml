@@ -21,8 +21,8 @@ global {
 	
 	geometry shape <- rectangle (road_size, 200 #m) ; 	// The world is a rectangle with a length equals to the size of the road and a height of 200m
 		
-	float time_step <- 1.0 ; 							// Time step 
-	int nb_sections <- 10 ; 							// Number of sections of the road
+	float time_step <- 1.0 min: 0.1; 							// Time step 
+	int nb_sections <- 10 min: 3; 							// Number of sections of the road
 	float section_size <- road_size / nb_sections ; 	// Size of a section
 	
 	float car_size <- 4 #m ;									// Size of a car
@@ -149,10 +149,12 @@ species section {
 	section previous ;
 	section next ;
 	
+	rgb color <- #gray;
+	
 	// The width of a section depends on its concentration.
 	
 	aspect shape_section {
-		draw shape + (10 + 15 * ln (current_concentration + 1)) color: #gray + 128*current_concentration;		
+		draw shape + (20 + 15 * ln (current_concentration + 1)) color: color;		
 	} 
 
 }
@@ -183,31 +185,19 @@ experiment TraficGroup type: gui {
 				
 		display Concentrations  type: 2d {
 			chart "Concentrations" type: series  {
-				data 'Section 0' value: section[0].current_concentration color: #gray marker: false ;				
-				data 'Section 1' value: section[1].current_concentration color: #gray marker: false;
-				data 'Section 2' value: section[2].current_concentration color: #gray marker: false;
-				data 'Section 3' value: section[3].current_concentration color: #gray marker: false;				
-				data 'Section 4' value: section[int(nb_sections/2 - 1 ) ].current_concentration color: #red marker: false;
-				data 'Section 5' value: section[int(nb_sections/2)].current_concentration color: #green marker: false;
-				data 'Section 6' value: section[6].current_concentration color: #gray marker: false;				
-				data 'Section 7' value: section[7].current_concentration color: #gray marker: false;
-				data 'Section 8' value: section[8].current_concentration color: #gray marker: false;
-				data 'Section 9' value: section[9].current_concentration color: #gray marker: false;
+				loop i from: 0 to: length(section) -1 {
+					data 'Section '+i value: section[i].current_concentration color: section[i].color marker: false ;		
 				}
+						
 			}
+		}
 			
 			display Flows  type: 2d {
 			    chart "Flows" type: series  {
-				data 'Section 0' value: section[0].current_flow color: #gray marker: false;				
-				data 'Section 1' value: section[1].current_flow color: #gray marker: false;
-				data 'Section 2' value: section[2].current_flow color: #gray marker: false;
-				data 'Section 3' value: section[3].current_flow color: #gray marker: false;				
-				data 'Section 4' value: section[int(nb_sections/2 - 1)].current_flow color: #red marker: false;
-				data 'Section 5' value: section[int(nb_sections/2)].current_flow color: #green marker: false;
-				data 'Section 6' value: section[6].current_flow color: #gray marker: false;				
-				data 'Section 7' value: section[7].current_flow color: #gray marker: false;
-				data 'Section 8' value: section[8].current_flow color: #gray marker: false;
-				data 'Section 9' value: section[9].current_flow color: #gray marker: false;
+			    	loop i from: 0 to: length(section) -1 {
+						data 'Section '+i value: section[i].current_flow color: section[i].color marker: false ;		
+			   		}
+			
 				}
 			}
 	}
