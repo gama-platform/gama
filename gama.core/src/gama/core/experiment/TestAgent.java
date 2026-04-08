@@ -19,10 +19,7 @@ import gama.annotations.doc;
 import gama.annotations.experiment;
 import gama.annotations.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
-import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.statements.IStatement;
-import gama.api.gaml.types.IType;
-import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.tests.ITestAgent;
@@ -53,26 +50,6 @@ public class TestAgent extends ExperimentAgent implements ITestAgent {
 	 */
 	public TestAgent(final IPopulation p, final int index) throws GamaRuntimeException {
 		super(p, index);
-	}
-
-	@Override
-	protected IExpression defaultStopCondition() {
-		return new IExpression() {
-
-			@Override
-			public String serializeToGaml(final boolean includingBuiltIn) {
-				return "cycle = 1";
-			}
-
-			@Override
-			public Boolean value(final IScope scope) throws GamaRuntimeException {
-				return scope.getClock().getCycle() == 1;
-			}
-
-			@Override
-			public IType<?> getGamlType() { return Types.BOOL; }
-
-		};
 	}
 
 	@Override
