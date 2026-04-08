@@ -26,6 +26,7 @@ import gama.api.gaml.expressions.IExpressionCompiler;
 import gama.api.gaml.expressions.IExpressionDescription;
 import gama.api.gaml.symbols.Arguments;
 import gama.api.runtime.scope.IExecutionContext;
+import gama.api.runtime.scope.IScope;
 import gaml.compiler.descriptions.StringBasedExpressionDescription;
 import gaml.compiler.gaml.Expression;
 import gaml.compiler.gaml.Facet;
@@ -136,15 +137,15 @@ public class GamlExpressionCompiler implements IExpressionCompiler<Expression> {
 			// ctx.setCurrentExpressionDescription(s);
 			// It is an expression entered by the user at runtime (in a monitor, for instance)
 			if (expression == null && s instanceof StringBasedExpressionDescription) {
+				IScope scope = GAMA.getRuntimeScope();
 				final IExecutionContext context =
-						GAMA.getExperiment() == null ? null : GAMA.getRuntimeScope().getExecutionContext();
-				return compile(s.toString(), ctx.getContext(), context);
+						GAMA.getExperiment() == null ? null : scope == null ? null : scope.getExecutionContext();
+				if (context != null) return compile(s.toString(), ctx.getContext(), context);
 			}
 			return compile(expression, ctx);
 		} catch (final Exception e) {
 			if (parsingContext != null) {
-				parsingContext.error(
-						"An internal error occurred during expression compilation: " + e.getMessage());
+				parsingContext.error("An internal error occurred during expression compilation: " + e.getMessage());
 			}
 			return null;
 		}
@@ -179,8 +180,8 @@ public class GamlExpressionCompiler implements IExpressionCompiler<Expression> {
 			return result;
 		} catch (final Exception e) {
 			if (parsingContext != null) {
-				parsingContext.error(
-						"An internal error occurred during string expression compilation: " + e.getMessage());
+				parsingContext
+						.error("An internal error occurred during string expression compilation: " + e.getMessage());
 			}
 			return null;
 		}
@@ -235,19 +236,18 @@ public class GamlExpressionCompiler implements IExpressionCompiler<Expression> {
 				return new ExpressionCompilationSwitch(ctx).compileFieldAccess(ownerExpr, fieldExpr, null);
 			} catch (final Exception e) {
 				if (parsingContext != null) {
-					parsingContext.error(
-							"An internal error occurred during action call compilation: " + e.getMessage());
+					parsingContext
+							.error("An internal error occurred during action call compilation: " + e.getMessage());
 				}
-				return null;
 			}
 		}
 		return null;
 	}
 
 	/**
-	 * Compiles an action call where the receiver has already been compiled to an {@link IExpression} — i.e. when
-	 * there is no backing {@link EObject} for the target (e.g. a synthesised {@code self} or {@code super}
-	 * represented by a {@link gaml.compiler.expressions.SelfOrSuperExpressionDescription}).
+	 * Compiles an action call where the receiver has already been compiled to an {@link IExpression} — i.e. when there
+	 * is no backing {@link EObject} for the target (e.g. a synthesised {@code self} or {@code super} represented by a
+	 * {@link gaml.compiler.expressions.SelfOrSuperExpressionDescription}).
 	 *
 	 * @param owner
 	 *            the pre-compiled receiver expression; must not be {@code null}
@@ -264,10 +264,9 @@ public class GamlExpressionCompiler implements IExpressionCompiler<Expression> {
 				return new ExpressionCompilationSwitch(ctx).compileFieldAccess(owner, fieldExpr, null);
 			} catch (final Exception e) {
 				if (parsingContext != null) {
-					parsingContext.error(
-							"An internal error occurred during action call compilation: " + e.getMessage());
+					parsingContext
+							.error("An internal error occurred during action call compilation: " + e.getMessage());
 				}
-				return null;
 			}
 		}
 		return null;
@@ -279,13 +278,13 @@ public class GamlExpressionCompiler implements IExpressionCompiler<Expression> {
 	 * <p>
 	 * Unlike {@link #compileActionCall} which requires a {@code Function} EMF node (whose construction involves
 	 * reparenting the facet value expressions into synthetic {@link gaml.compiler.gaml.Parameter} nodes, mutating the
-	 * EMF AST), this method accepts the raw {@link Facet} list directly and never touches containment references.
-	 * Each facet's value expression is compiled by reference only.
+	 * EMF AST), this method accepts the raw {@link Facet} list directly and never touches containment references. Each
+	 * facet's value expression is compiled by reference only.
 	 * </p>
 	 *
 	 * <p>
-	 * The target is always the implicit {@code self} or {@code super} receiver resolved from
-	 * {@code parsingContext}'s type context — this method is only intended for the deprecated implicit-self form.
+	 * The target is always the implicit {@code self} or {@code super} receiver resolved from {@code parsingContext}'s
+	 * type context — this method is only intended for the deprecated implicit-self form.
 	 * </p>
 	 *
 	 * @param nameExpr
@@ -301,13 +300,12 @@ public class GamlExpressionCompiler implements IExpressionCompiler<Expression> {
 		if (nameExpr == null) return null;
 		try (final ExpressionCompilationContext ctx = new ExpressionCompilationContext(parsingContext)) {
 			final ExpressionCompilationSwitch sw = new ExpressionCompilationSwitch(ctx);
-			final boolean isSuper = parsingContext instanceof gaml.compiler.descriptions.DoDescription dd
-					&& dd.isSuperInvocation();
+			final boolean isSuper =
+					parsingContext instanceof gaml.compiler.descriptions.DoDescription dd && dd.isSuperInvocation();
 			// Compile the implicit self/super target using the action-name node as the EMF anchor.
 			final IExpression target = sw.caseVar(isSuper ? "super" : "self", nameExpr);
 			if (target == null) return null;
-			final gama.api.compilation.descriptions.ITypeDescription species =
-					parsingContext.getTypeContext();
+			final gama.api.compilation.descriptions.ITypeDescription species = parsingContext.getTypeContext();
 			if (species == null) return null;
 			return sw.compileActionCallFromFacets(nameExpr, target, facets, species);
 		} catch (final Exception e) {

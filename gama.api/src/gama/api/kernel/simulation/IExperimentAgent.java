@@ -33,6 +33,8 @@ import gama.api.types.map.IMap;
 import gama.api.ui.IExperimentDisplayable;
 import gama.api.ui.IOutputManager;
 import gama.api.utils.random.IRandom;
+import gama.api.utils.tests.TestExperimentSummary;
+import gama.api.utils.tests.WithTestSummary;
 
 /**
  * The Interface IExperimentAgent.
@@ -113,10 +115,9 @@ public interface IExperimentAgent extends ITopLevelAgent {
 
 	/** The Constant MAXIMUM_CYCLE_DURATION. */
 	String MAXIMUM_CYCLE_DURATION = "maximum_cycle_duration";
-	
+
 	/** The Constant IS_GUI. */
 	String IS_GUI = "is_gui";
-	
 
 	/**
 	 * The Interface Batch.
@@ -133,6 +134,18 @@ public interface IExperimentAgent extends ITopLevelAgent {
 		 * @return
 		 */
 		Double[] getSeeds();
+
+	}
+
+	/**
+	 * The Interface Test.
+	 */
+	interface Test extends IExperimentAgent, WithTestSummary<TestExperimentSummary> {
+
+		/**
+		 *
+		 */
+		void displayTestResults();
 
 	}
 
@@ -239,9 +252,10 @@ public interface IExperimentAgent extends ITopLevelAgent {
 	 *
 	 * @return true, if is gui
 	 */
-	@getter (value = IS_GUI)	
-	boolean isGUI();	
-	
+	@getter (
+			value = IS_GUI)
+	boolean isGUI();
+
 	/**
 	 * Returns the population factory of this type of experiment -- default is a DefaultPopulationFactory
 	 *

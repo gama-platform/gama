@@ -380,9 +380,7 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 		setName(description.getName());
 		experimentType = description.getLitteral(IKeyword.TYPE);
 		// final String type = description.getFacets().getLabel(IKeyword.TYPE);
-		if (IKeyword.BATCH.equals(experimentType) || IKeyword.TEST.equals(experimentType)) {
-			exploration = new Exploration(null);
-		}
+		if (IKeyword.BATCH.equals(experimentType)) { exploration = new Exploration(null); }
 
 		// else if (IKeyword.HEADLESS_UI.equals(experimentType)) {
 		// setHeadless(true); }
@@ -691,7 +689,7 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 
 	// @Override
 	@Override
-	public boolean isBatch() { return exploration != null; }
+	public boolean isBatch() { return IKeyword.BATCH.equals(getExperimentType()); }
 
 	@Override
 	public boolean isTest() { return IKeyword.TEST.equals(getExperimentType()); }

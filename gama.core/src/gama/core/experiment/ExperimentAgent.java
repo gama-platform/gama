@@ -134,7 +134,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 
 	/** The scheduled. */
 	// protected SimulationPopulation populationOfSimulations;
-	private Boolean scheduled = false;
+	protected Boolean scheduled = false;
 
 	/** The is on user hold. */
 	private volatile boolean isOnUserHold = false;
@@ -309,10 +309,21 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	@Override
 	public void _init_(final IScope scope) {
 		if (scope.interrupted()) return;
-		if (automaticallyCreateFirstSimulation()) { createSimulation(ParametersSet.EMPTY, scheduled); }
+		if (automaticallyCreateFirstSimulation()) {
+			createSimulation(ParametersSet.EMPTY, shouldScheduleSimulations());
+		}
 		// We execute any behavior defined in GAML.
 		super._init_(scope);
 		tryToRecordSimulations();
+	}
+
+	/**
+	 * Should schedule first simulation.
+	 *
+	 * @return true, if successful
+	 */
+	public boolean shouldScheduleSimulations() {
+		return scheduled;
 	}
 
 	/**
@@ -1305,8 +1316,6 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	public IExpression getStopCondition() { return stopCondition; }
 
 	@Override
-	public boolean isGUI() {
-		return true;
-	}
+	public boolean isGUI() { return true; }
 
 }
