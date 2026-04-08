@@ -65,6 +65,7 @@ import gama.headless.server.GamaServerGUIHandler;
 import gama.headless.xml.ConsoleReader;
 import gama.headless.xml.Reader;
 import gama.headless.xml.XMLWriter;
+import gama.core.CoreActivator;
 import gama.workspace.WorkspaceActivator;
 import gaml.compiler.GamlStandaloneSetup;
 import gaml.compiler.validation.GamlModelBuilder;
@@ -100,11 +101,15 @@ public class HeadlessApplication implements IApplication {
 		// Trigger gama.workspace lazy activation so WorkspaceActivator registers the workspace
 		WorkspaceActivator.load();
 		try {
-			// We initialize XText and Gaml.
+			// Activate gaml.compiler (registers ArtefactFactory and other GAML factories).
 			INJECTOR = GamlStandaloneSetup.doSetup();
 		} catch (final Exception e1) {
 			throw GamaRuntimeException.create(e1, GAMA.getRuntimeScope());
 		}
+		// Activate gama.core AFTER gaml.compiler so that GamaBundleLoader.buildContributions()
+		// finds the ArtefactFactory already registered when it loads GamlAdditions.
+		// This synchronously initialises all GAML types (Types.MAP, Types.AGENT, …).
+		CoreActivator.load();
 		// SEED HACK // WARNING AD : Why ?
 		GamaPreferences.External.CORE_SEED_DEFINED.set(true);
 		GamaPreferences.External.CORE_SEED.set(1.0);
