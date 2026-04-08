@@ -31,11 +31,12 @@ import gama.api.types.geometry.IShape;
 import gama.api.types.graph.IGraph;
 import gama.api.types.list.IList;
 import gama.api.types.map.IMap;
-import gama.core.topology.graph.GamaSpatialGraph;
-import gama.core.util.path.GamaSpatialPath;
 import gama.api.utils.geometry.GamaCoordinateSequence;
 import gama.api.utils.geometry.GamaGeometryFactory;
 import gama.api.utils.geometry.UniqueCoordinateSequence;
+import gama.core.topology.graph.GamaSpatialGraph;
+import gama.core.util.messaging.GamaMessage;
+import gama.core.util.path.GamaSpatialPath;
 import gama.extension.serialize.fst.FSTConfiguration;
 
 /**
@@ -77,7 +78,8 @@ public class BinarySerialiser implements ISerialisationConstants {
 	 * @date 5 août 2023
 	 */
 	public BinarySerialiser() {
-		fst = initConfiguration(FSTConfiguration.createDefaultConfiguration());
+		fst = FSTConfiguration.createDefaultConfiguration();
+		initConfiguration();
 	}
 
 	/**
@@ -151,30 +153,31 @@ public class BinarySerialiser implements ISerialisationConstants {
 	 * @date 5 août 2023
 	 */
 	@SuppressWarnings ("rawtypes")
-	protected void registerSerialisers(final FSTConfiguration conf) {
-		register(conf, IPoint.class, new IPointSerialiser(this));
-		register(conf, IShape.class, new IShapeSerialiser(this));
-		register(conf, IObject.class, new IObjectSerialiser(this));
-		register(conf, IAgent.class, new IAgentSerialiser(this));
-		register(conf, IType.class, new ITypeSerialiser(this));
-		register(conf, IScope.class, new IScopeSerialiser(this));
-		register(conf, ISpecies.class, new ISpeciesSerialiser(this));
-		register(conf, IClass.class, new IClassSerialiser(this));
-		register(conf, AgentReference.class, new AgentReferenceSerialiser(this));
-		register(conf, SerialisedAgent.class, new SerialisedAgentSerialiser(this));
-		register(conf, SerialisedPopulation.class, new SerialisedPopulationSerialiser(this));
-		register(conf, SerialisedGrid.class, new SerialisedGridSerialiser(this));
-		register(conf, GamaGeometryFactory.class, new GamaGeometryFactorySerialiser(this));
-		register(conf, IFont.class, new IFontSerialiser(this));
-		register(conf, IMap.class, new IMapSerialiser(this));
-		register(conf, IList.class, new IListSerialiser(this));
-		register(conf, GamaSpatialGraph.class, new GamaSpatialGraphSerialiser(this));
-		register(conf, GamaSpatialPath.class, new GamaSpatialPathSerialiser(this));
-		register(conf, IGraph.class, new IGraphSerialiser(this));
-		register(conf, CoordinateSequenceFactory.class, new CoordinateSequenceFactorySerialiser(this));
-		register(conf, UniqueCoordinateSequence.class, new UniqueCoordinateSequenceSerialiser(this));
-		register(conf, GamaCoordinateSequence.class, new GamaCoordinateSequenceSerialiser(this));
-		register(conf, IColor.class, new IColorSerialiser(this));
+	protected void registerSerialisers() {
+		register(IPoint.class, new IPointSerialiser());
+		register(IShape.class, new IShapeSerialiser());
+		register(IObject.class, new IObjectSerialiser());
+		register(IAgent.class, new IAgentSerialiser());
+		register(IType.class, new ITypeSerialiser());
+		register(IScope.class, new IScopeSerialiser());
+		register(GamaMessage.class, new GamaMessageSerialiser());
+		register(ISpecies.class, new ISpeciesSerialiser());
+		register(IClass.class, new IClassSerialiser());
+		register(AgentReference.class, new AgentReferenceSerialiser());
+		register(SerialisedAgent.class, new SerialisedAgentSerialiser());
+		register(SerialisedPopulation.class, new SerialisedPopulationSerialiser());
+		register(SerialisedGrid.class, new SerialisedGridSerialiser());
+		register(GamaGeometryFactory.class, new GamaGeometryFactorySerialiser());
+		register(IFont.class, new IFontSerialiser());
+		register(IMap.class, new IMapSerialiser());
+		register(IList.class, new IListSerialiser());
+		register(GamaSpatialGraph.class, new GamaSpatialGraphSerialiser());
+		register(GamaSpatialPath.class, new GamaSpatialPathSerialiser());
+		register(IGraph.class, new IGraphSerialiser());
+		register(CoordinateSequenceFactory.class, new CoordinateSequenceFactorySerialiser());
+		register(UniqueCoordinateSequence.class, new UniqueCoordinateSequenceSerialiser());
+		register(GamaCoordinateSequence.class, new GamaCoordinateSequenceSerialiser());
+		register(IColor.class, new IColorSerialiser());
 	}
 
 	/**
@@ -191,8 +194,9 @@ public class BinarySerialiser implements ISerialisationConstants {
 	 *            the serialiser to use for instances of {@code clazz}
 	 * @date 5 août 2023
 	 */
-	public <T> void register(final FSTConfiguration conf, final Class<T> clazz, final FSTIndividualSerialiser<T> ser) {
-		conf.registerSerializer(clazz, ser, true);
+	public <T> void register(final Class<T> clazz, final FSTIndividualSerialiser<T> ser) {
+		fst.registerSerializer(clazz, ser, true);
+		ser.setBinarySerialiser(this);
 	}
 
 	/**
@@ -204,9 +208,9 @@ public class BinarySerialiser implements ISerialisationConstants {
 	 * @return the initialised configuration (same instance as {@code conf})
 	 * @date 2 août 2023
 	 */
-	public FSTConfiguration initConfiguration(final FSTConfiguration conf) {
-		registerSerialisers(conf);
-		return conf;
+	public FSTConfiguration initConfiguration() {
+		registerSerialisers();
+		return fst;
 	}
 
 }

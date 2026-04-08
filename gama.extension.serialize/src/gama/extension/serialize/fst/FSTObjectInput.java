@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InvalidObjectException;
 import java.io.NotActiveException;
-import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectInputValidation;
 import java.io.ObjectStreamClass;
@@ -36,6 +35,8 @@ import java.util.Stack;
 
 import gama.api.kernel.agent.IAgent;
 import gama.dev.DEBUG;
+import gama.extension.serialize.IGamaObjectInput;
+import gama.extension.serialize.IGamaObjectOutput;
 import gama.extension.serialize.fst.FSTClazzInfo.FSTFieldInfo;
 import gama.extension.serialize.fst.coders.Unknown;
 import gama.extension.serialize.fst.util.FSTUtil;
@@ -46,7 +47,7 @@ import gama.extension.serialize.fst.util.FSTUtil;
 /**
  * replacement of ObjectInputStream
  */
-public class FSTObjectInput implements ObjectInput {
+public class FSTObjectInput implements IGamaObjectInput {
 
 	/** The register enums read. */
 	public static boolean REGISTER_ENUMS_READ = false; // do not register enums on read. Flag is saver in case things
@@ -433,6 +434,7 @@ public class FSTObjectInput implements ObjectInput {
 	 *             the exception
 	 * @date 29 sept. 2023
 	 */
+	@Override
 	public Object readObject(final Class<?>... possibles) throws Exception {
 		curDepth++;
 		if (isCrossPlatform) return readObjectInternal(); // not supported cross platform
@@ -505,13 +507,13 @@ public class FSTObjectInput implements ObjectInput {
 		Class<?> c;
 		final int readPos = getCodec().getInputPos();
 		byte code = getCodec().readObjectHeaderTag(); // NOTICE: THIS ADVANCES THE INPUT STREAM...
-		if (code == FSTObjectOutput.OBJECT) {
+		if (code == IGamaObjectOutput.OBJECT) {
 			// class name
 			clzSerInfo = readClass();
 			c = clzSerInfo.getClazz();
 			if (c.isArray()) return readArrayNoHeader(referencee, readPos, c);
 			// fall through
-		} else if (code == FSTObjectOutput.TYPED) {
+		} else if (code == IGamaObjectOutput.TYPED) {
 			c = referencee.getType();
 			clzSerInfo = getClazzInfo(c, referencee);
 		} else if (code >= 1) {
@@ -560,37 +562,37 @@ public class FSTObjectInput implements ObjectInput {
 	protected Object instantiateSpecialTag(final FSTClazzInfo.FSTFieldInfo referencee, final int readPos,
 			final byte code) throws Exception {
 		switch (code) {
-			case FSTObjectOutput.STRING: {
+			case IGamaObjectOutput.STRING: {
 				String res = getCodec().readStringUTF();
 				objects.registerObjectForRead(res, readPos);
 				return res;
 			}
-			case FSTObjectOutput.BIG_INT:
+			case IGamaObjectOutput.BIG_INT:
 				return instantiateBigInt();
-			case FSTObjectOutput.NULL:
+			case IGamaObjectOutput.NULL:
 				return null;
 			default:
 				switch (code) {
 					// case FSTObjectOutput.BIG_INT: { return instantiateBigInt(); }
-					case FSTObjectOutput.BIG_LONG: {
+					case IGamaObjectOutput.BIG_LONG: {
 						return Long.valueOf(getCodec().readFLong());
 					}
-					case FSTObjectOutput.BIG_BOOLEAN_FALSE: {
+					case IGamaObjectOutput.BIG_BOOLEAN_FALSE: {
 						return Boolean.FALSE;
 					}
-					case FSTObjectOutput.BIG_BOOLEAN_TRUE: {
+					case IGamaObjectOutput.BIG_BOOLEAN_TRUE: {
 						return Boolean.TRUE;
 					}
-					case FSTObjectOutput.ONE_OF: {
+					case IGamaObjectOutput.ONE_OF: {
 						return referencee.getOneOf()[getCodec().readFByte()];
 					}
 					// case FSTObjectOutput.NULL: { return null; }
-					case FSTObjectOutput.DIRECT_ARRAY_OBJECT: {
+					case IGamaObjectOutput.DIRECT_ARRAY_OBJECT: {
 						Object directObject = getCodec().getDirectObject();
 						objects.registerObjectForRead(directObject, readPos);
 						return directObject;
 					}
-					case FSTObjectOutput.DIRECT_OBJECT: {
+					case IGamaObjectOutput.DIRECT_OBJECT: {
 						Object directObject = getCodec().getDirectObject();
 						if (directObject.getClass() == byte[].class && referencee != null
 								&& referencee.getType() == boolean[].class) {
@@ -603,16 +605,16 @@ public class FSTObjectInput implements ObjectInput {
 						return directObject;
 					}
 					// case FSTObjectOutput.STRING: return getCodec().readStringUTF();
-					case FSTObjectOutput.HANDLE: {
+					case IGamaObjectOutput.HANDLE: {
 						Object res = instantiateHandle(referencee);
 						getCodec().readObjectEnd();
 						return res;
 					}
-					case FSTObjectOutput.ARRAY: {
+					case IGamaObjectOutput.ARRAY: {
 						Object res = instantiateArray(referencee, readPos);
 						return res;
 					}
-					case FSTObjectOutput.ENUM: {
+					case IGamaObjectOutput.ENUM: {
 						return instantiateEnum(referencee, readPos);
 					}
 				}
@@ -1251,6 +1253,7 @@ public class FSTObjectInput implements ObjectInput {
 	 *             Signals that an I/O exception has occurred.
 	 * @date 29 sept. 2023
 	 */
+	@Override
 	public String readStringUTF() throws IOException {
 		return getCodec().readStringUTF();
 	}
@@ -1261,6 +1264,7 @@ public class FSTObjectInput implements ObjectInput {
 	 * @return
 	 * @throws IOException
 	 */
+	@Override
 	public String readStringAsc() throws IOException {
 		return getCodec().readStringAsc();
 	}
@@ -1368,6 +1372,7 @@ public class FSTObjectInput implements ObjectInput {
 	 *             the class not found exception
 	 * @date 29 sept. 2023
 	 */
+	@Override
 	public FSTClazzInfo readClass() throws IOException, ClassNotFoundException {
 		return getCodec().readClass();
 	}
@@ -1477,6 +1482,7 @@ public class FSTObjectInput implements ObjectInput {
 	 *             Signals that an I/O exception has occurred.
 	 * @date 29 sept. 2023
 	 */
+	@Override
 	public final int readFInt() throws IOException {
 		return getCodec().readFInt();
 	}
@@ -1492,8 +1498,7 @@ public class FSTObjectInput implements ObjectInput {
 		getCodec().close();
 	}
 
-	////////////////////////////////////////////////////// epic compatibility
-	/// hack /////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////// epic compatibility hack
 
 	/** The fake wrapper. */
 	protected MyObjectStream fakeWrapper; // some jdk classes hash for ObjectStream, so provide the same instance always
@@ -1522,7 +1527,7 @@ public class FSTObjectInput implements ObjectInput {
 			public Object readObjectOverride() throws IOException, ClassNotFoundException {
 				try {
 					byte b = FSTObjectInput.this.readByte();
-					if (b != FSTObjectOutput.SPECIAL_COMPATIBILITY_OBJECT_TAG) {
+					if (b != IGamaObjectOutput.SPECIAL_COMPATIBILITY_OBJECT_TAG) {
 						Constructor<?>[] constructors = OptionalDataException.class.getDeclaredConstructors();
 						FSTObjectInput.this.pushBack(1);
 						for (Constructor<?> constructor : constructors) {

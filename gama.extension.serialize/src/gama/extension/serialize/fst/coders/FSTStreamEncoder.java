@@ -18,6 +18,7 @@ package gama.extension.serialize.fst.coders;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import gama.extension.serialize.IGamaObjectOutput;
 import gama.extension.serialize.fst.*;
 import gama.extension.serialize.fst.util.FSTOutputStream;
 import gama.extension.serialize.fst.util.FSTUtil;
@@ -353,7 +354,7 @@ public class FSTStreamEncoder implements FSTEncoder {
         return false;
     }
     
-    public boolean writeTag(byte tag, Object info, long somValue, Object toWrite, FSTObjectOutput oout) throws IOException {
+    public boolean writeTag(byte tag, Object info, long somValue, Object toWrite, IGamaObjectOutput oout) throws IOException {
         writeFByte(tag);
         return false;
     }

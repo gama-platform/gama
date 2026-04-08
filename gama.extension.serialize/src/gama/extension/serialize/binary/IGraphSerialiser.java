@@ -14,17 +14,16 @@ import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.graph.IGraph;
 import gama.core.util.graph.GamaGraph;
-import gama.extension.serialize.fst.FSTObjectInput;
-import gama.extension.serialize.fst.FSTObjectOutput;
+import gama.extension.serialize.IGamaObjectInput;
+import gama.extension.serialize.IGamaObjectOutput;
 
 /**
  * FST serialiser for {@link IGraph} instances.
  *
  * <p>
- * Persists the graph's structural metadata (vertex type, edge type, directed flag) followed by all
- * vertices with their weights and all edges with their source vertex, target vertex, and weight. On
- * deserialisation the graph is reconstructed as a {@link GamaGraph} using the same scope that was active
- * during serialisation.
+ * Persists the graph's structural metadata (vertex type, edge type, directed flag) followed by all vertices with their
+ * weights and all edges with their source vertex, target vertex, and weight. On deserialisation the graph is
+ * reconstructed as a {@link GamaGraph} using the same scope that was active during serialisation.
  * </p>
  *
  * <p>
@@ -50,16 +49,6 @@ import gama.extension.serialize.fst.FSTObjectOutput;
 public class IGraphSerialiser extends FSTIndividualSerialiser<IGraph> {
 
 	/**
-	 * Constructs a new {@code IGraphSerialiser} bound to the given {@link BinarySerialiser}.
-	 *
-	 * @param serialiser
-	 *            the owning binary serialiser
-	 */
-	public IGraphSerialiser(final BinarySerialiser serialiser) {
-		super(serialiser);
-	}
-
-	/**
 	 * Returns {@code false}: graphs are not registered for FST back-reference tracking.
 	 *
 	 * @return {@code false}
@@ -82,7 +71,7 @@ public class IGraphSerialiser extends FSTIndividualSerialiser<IGraph> {
 	 */
 	@SuppressWarnings ("unchecked")
 	@Override
-	public void serialise(final FSTObjectOutput out, final IGraph g) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final IGraph g) throws Exception {
 		// --- metadata ---
 		out.writeObject(g.getGamlType().getKeyType());
 		out.writeObject(g.getGamlType().getContentType());
@@ -117,7 +106,7 @@ public class IGraphSerialiser extends FSTIndividualSerialiser<IGraph> {
 	 */
 	@SuppressWarnings ({ "unchecked", "rawtypes" })
 	@Override
-	public IGraph deserialise(final IScope scope, final FSTObjectInput in) throws Exception {
+	public IGraph deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		// --- metadata ---
 		IType nodeType = (IType) in.readObject();
 		IType edgeType = (IType) in.readObject();

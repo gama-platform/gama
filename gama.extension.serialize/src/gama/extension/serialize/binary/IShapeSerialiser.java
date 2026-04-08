@@ -16,28 +16,18 @@ import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.GamaShapeFactory;
 import gama.api.types.geometry.IShape;
 import gama.api.types.geometry.IShape.Type;
-import gama.extension.serialize.fst.FSTObjectInput;
-import gama.extension.serialize.fst.FSTObjectOutput;
+import gama.extension.serialize.IGamaObjectInput;
+import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link IShape} instances.
- * Serialises the depth value, the geometrical type ordinal, and the underlying JTS {@link Geometry}.
- * Objects deserialised by this serialiser are not registered for back-reference tracking.
+ * FST serialiser for {@link IShape} instances. Serialises the depth value, the geometrical type ordinal, and the
+ * underlying JTS {@link Geometry}. Objects deserialised by this serialiser are not registered for back-reference
+ * tracking.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
 class IShapeSerialiser extends FSTIndividualSerialiser<IShape> {
-
-	/**
-	 * Constructs a new {@code IShapeSerialiser} bound to the given {@link BinarySerialiser}.
-	 *
-	 * @param serialiser
-	 *            the owning binary serialiser
-	 */
-	IShapeSerialiser(final BinarySerialiser serialiser) {
-		super(serialiser);
-	}
 
 	/**
 	 * Returns {@code false}: shapes are not registered for FST back-reference tracking.
@@ -50,8 +40,8 @@ class IShapeSerialiser extends FSTIndividualSerialiser<IShape> {
 	}
 
 	/**
-	 * Serialises the shape's depth (as {@code 0.0} if null), its geometrical type ordinal,
-	 * and its inner JTS {@link Geometry}.
+	 * Serialises the shape's depth (as {@code 0.0} if null), its geometrical type ordinal, and its inner JTS
+	 * {@link Geometry}.
 	 *
 	 * @param out
 	 *            the FST output stream
@@ -61,7 +51,7 @@ class IShapeSerialiser extends FSTIndividualSerialiser<IShape> {
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final FSTObjectOutput out, final IShape toWrite) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final IShape toWrite) throws Exception {
 		Double d = toWrite.getDepth();
 		IShape.Type t = toWrite.getGeometricalType();
 		out.writeDouble(d == null ? 0d : d);
@@ -70,8 +60,8 @@ class IShapeSerialiser extends FSTIndividualSerialiser<IShape> {
 	}
 
 	/**
-	 * Deserialises a shape by reading its depth, geometrical type, and inner JTS geometry.
-	 * Depth and type are only applied if they carry meaningful (non-default) values.
+	 * Deserialises a shape by reading its depth, geometrical type, and inner JTS geometry. Depth and type are only
+	 * applied if they carry meaningful (non-default) values.
 	 *
 	 * @param scope
 	 *            the current GAMA simulation scope (unused)
@@ -82,7 +72,7 @@ class IShapeSerialiser extends FSTIndividualSerialiser<IShape> {
 	 *             if deserialisation fails
 	 */
 	@Override
-	public IShape deserialise(final IScope scope, final FSTObjectInput in) throws Exception {
+	public IShape deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		double d = in.readDouble();
 		IShape.Type t = IShape.Type.values()[in.readInt()];
 		IShape result = GamaShapeFactory.createFrom((Geometry) in.readObject());
