@@ -104,12 +104,6 @@
       </implementation>
    </extension>
    <extension
-         point="gama.constants">
-      <implementation
-            class="gama.api.gaml.constants.CoreConstantsSupplier">
-      </implementation>
-   </extension>
-   <extension
          point="gama.metadata">
       <implementation
             class="gama.core.util.json.JSONInfo"

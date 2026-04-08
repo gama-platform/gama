@@ -3,7 +3,6 @@
 
 <product name="gama.headless" uid="gama.headless.product" id="gama.headless.product" application="gama.headless.product" version="0.0.0.qualifier" type="features" includeLaunchers="false" autoIncludeRequirements="true">
 
-
    <configIni use="default">
    </configIni>
 
