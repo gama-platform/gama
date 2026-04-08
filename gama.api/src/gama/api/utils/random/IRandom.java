@@ -302,13 +302,13 @@ public interface IRandom {
 	 * @param distribution
 	 * @return
 	 */
-	int choiceIn(List<Double> distribution);
+	int choiceIn(List<? extends Number> distribution);
 
 	/**
 	 * @param <T>
 	 * @param distribution
 	 * @return
 	 */
-	<T> T choiceIn(Map<T, Double> distribution);
+	<T> T choiceIn(Map<T, ? extends Number> distribution);
 
 }
