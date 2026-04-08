@@ -12,7 +12,6 @@ package gama.ui.display.java2d.swing;
 
 import java.awt.EventQueue;
 import java.awt.GridBagLayout;
-import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.JPanel;
 
@@ -147,26 +146,17 @@ public class SwingControlWin extends SwingControl {
 			Rectangle r = this.getBounds();
 			int w = r.width;
 			int h = r.height;
-			// DEBUG.OUT(
-			// "" + System.currentTimeMillis() + " -- In WorkbenchHelper.asyncRun, Set size sent by SwingControl "
-			// + width + " x " + height + " / SWT Bounds = " + w + " x " + h);
 			// Solves a problem where the last view on HiDPI screens on Windows
 			// would be outscaled
 			if (!this.isDisposed() && surface.getWidth() != w && surface.getHeight() != h) { this.requestLayout(); }
-			try {
-				EventQueue.invokeAndWait(() -> {
-					// DEBUG.OUT("" + System.currentTimeMillis()
-					// + " -- In EventQueue.invokeAndWait, Set size sent by SwingControl " + width + " x "
-					// + height + " / SWT Bounds = " + w + " x " + h);
-					// frame.setBounds(x, y, width, height);
-					// frame.setVisible(false);
-					surface.setBounds(0, 0, w, h);
-					// frame.setVisible(true);
-				});
-			} catch (InvocationTargetException | InterruptedException e) {
-				e.printStackTrace();
-			}
-
+			// Use invokeLater rather than invokeAndWait: the latter blocked the SWT
+			// display thread until the AWT surface was resized, but with N displays each
+			// componentResized → resizeImage → repaint chain queued a full layer-draw on
+			// the AWT EDT that had to drain before the next invokeAndWait could run,
+			// making relaunch O(N) times slower (see issue #3719).
+			EventQueue.invokeLater(() -> {
+				surface.setBounds(0, 0, w, h);
+			});
 		});
 
 	}

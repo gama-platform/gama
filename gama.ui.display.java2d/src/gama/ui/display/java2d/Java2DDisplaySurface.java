@@ -266,6 +266,12 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 
 	@Override
 	public void outputReloaded() {
+		// Reset early so that: (1) any AWT repaints queued from the previous run are
+		// no-ops in paintComponent(), and (2) the updateDisplay calls inside
+		// resizeImage/zoomFit below use invokeLater rather than invokeAndWait, avoiding
+		// a block on the calling thread when GAMA is in synchronized mode.
+		renderedOnce = false;
+		iGraphics = null;
 		// We first copy the scope
 		setDisplayScope(output.getScope().copyForGraphics("in java2D display "));
 		// We disable error reporting
@@ -273,15 +279,11 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 		layerManager.outputChanged();
 		resizeImage(getWidth(), getHeight(), true);
 		if (zoomFit) { zoomFit(); }
-		// Reset the graphics context so that any AWT repaint requests already queued
-		// (from resizeImage / zoomFit above and from the partVisible UIJobs) are treated
-		// as no-ops by paintComponent(). Without this, EventQueue.invokeAndWait() in
-		// SwingControlWin.privateSetDimensions() blocks while N full layer-draws drain the
-		// AWT queue, making a relaunch with N displays N times slower than a first launch.
-		// iGraphics will be recreated by componentResized → zoomFit() → resizeImage()
-		// once the new layout has been applied and the surface gets its correct bounds.
+		// Re-null iGraphics in case resizeImage/zoomFit recreated it. Any AWT repaint
+		// requests queued above will be no-ops. iGraphics will be properly recreated by
+		// the componentResized → zoomFit() → resizeImage() chain once the new layout is
+		// applied and the surface receives its correct bounds.
 		iGraphics = null;
-		renderedOnce = false;
 		updateDisplay(true);
 	}
 
