@@ -1,6 +1,6 @@
 /**
-* Name: Plant Growth and Weather Comodel 2
-* Author: Benoit Gaudou, Damien Philippon
+* Name: Plant Growth and Weather Comodel
+* Author: Benoit Gaudou, Damien Philippon, Lucas Grosjean
 * Description: Second comodel in the Plant Growth and Weather series, adding bidirectional coupling between
 *   the Weather and Plant Growth sub-models. Rain water from the Weather model now fills the water reserve
 *   of plants in the Plant Growth model, creating an ecological feedback loop: weather affects plant growth,
@@ -11,8 +11,8 @@
 
 model coModel
 
-import "weather_comodel.experiment" as weather
-import "plant_comodel.experiment" as plantGrow
+import "Experiment_comodel/weather_comodel.experiment" as weather
+import "Experiment_comodel/plant_comodel.experiment" as plantGrow
 
 
 global {

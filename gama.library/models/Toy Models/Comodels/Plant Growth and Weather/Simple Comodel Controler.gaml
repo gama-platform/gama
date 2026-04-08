@@ -1,6 +1,6 @@
 /**
-* Name: Plant Growth and Weather Comodel 1
-* Author: Benoit Gaudou, Damien Philippon
+* Name: Simple Comodel Controler.gaml
+* Author: Benoit Gaudou, Damien Philippon, Lucas Grosjean
 * Description: First comodel in the Plant Growth and Weather series. Demonstrates the core comodeling mechanism:
 *   instantiating a sub-model (Weather) inside a parent model, stepping it at each cycle, displaying its agents,
 *   and computing indicators on them. The Weather model runs autonomously inside the parent, and the parent
@@ -11,7 +11,7 @@
 
 model coModel
 
-import "weather_comodel.experiment" as weather
+import "Experiment_comodel/weather_comodel.experiment" as weather
 
 
 global {
