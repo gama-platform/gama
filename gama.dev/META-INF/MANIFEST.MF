@@ -7,7 +7,7 @@ Export-Package: gama.dev,
  gama.dev.logging
 Bundle-Activator: gama.dev.Activator
 Bundle-Vendor: UMMISCO
-Require-Bundle: slf4j.api
+Require-Bundle: slf4j.api;visibility:=reexport
 Bundle-RequiredExecutionEnvironment: JavaSE-25
 Automatic-Module-Name: gama.dev
 Bundle-ActivationPolicy: lazy
