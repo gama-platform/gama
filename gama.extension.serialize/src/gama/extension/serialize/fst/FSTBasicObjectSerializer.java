@@ -10,6 +10,8 @@
  ********************************************************************************************************/
 package gama.extension.serialize.fst;
 
+import gama.extension.serialize.IGamaObjectInput;
+
 /**
  * Created with IntelliJ IDEA. User: ruedi Date: 11.11.12 Time: 12:09 To change this template use File | Settings | File
  * Templates.
@@ -27,7 +29,7 @@ public abstract class FSTBasicObjectSerializer implements FSTObjectSerializer {
 	}
 
 	@Override
-	public void readObject(final FSTObjectInput in, final Object toRead, final FSTClazzInfo clzInfo,
+	public void readObject(final IGamaObjectInput in, final Object toRead, final FSTClazzInfo clzInfo,
 			final FSTClazzInfo.FSTFieldInfo referencedBy) throws Exception {}
 
 	/**

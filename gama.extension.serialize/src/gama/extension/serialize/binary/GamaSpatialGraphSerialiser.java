@@ -14,25 +14,24 @@ import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.IShape;
 import gama.core.topology.graph.GamaSpatialGraph;
-import gama.extension.serialize.fst.FSTObjectInput;
-import gama.extension.serialize.fst.FSTObjectOutput;
+import gama.extension.serialize.IGamaObjectInput;
+import gama.extension.serialize.IGamaObjectOutput;
 
 /**
  * FST serialiser for {@link GamaSpatialGraph} instances.
  *
  * <p>
- * Extends the generic graph serialisation with the two fields that are specific to
- * {@link GamaSpatialGraph}: the snap {@code tolerance} used when locating vertices by coordinate,
- * and the {@code verticesBuilt} lookup table that maps location hash-codes to vertex shapes. The
- * table is rebuilt transparently during deserialisation by calling
- * {@link GamaSpatialGraph#addBuiltVertex(IShape)} for every restored vertex, so it does not need to
- * be written to the stream explicitly.
+ * Extends the generic graph serialisation with the two fields that are specific to {@link GamaSpatialGraph}: the snap
+ * {@code tolerance} used when locating vertices by coordinate, and the {@code verticesBuilt} lookup table that maps
+ * location hash-codes to vertex shapes. The table is rebuilt transparently during deserialisation by calling
+ * {@link GamaSpatialGraph#addBuiltVertex(IShape)} for every restored vertex, so it does not need to be written to the
+ * stream explicitly.
  * </p>
  *
  * <p>
- * This serialiser is registered for the concrete class {@link GamaSpatialGraph} and therefore takes
- * priority over the more generic {@link IGraphSerialiser} (which is registered for {@link
- * gama.api.types.graph.IGraph}) when FST walks the class lineage.
+ * This serialiser is registered for the concrete class {@link GamaSpatialGraph} and therefore takes priority over the
+ * more generic {@link IGraphSerialiser} (which is registered for {@link gama.api.types.graph.IGraph}) when FST walks
+ * the class lineage.
  * </p>
  *
  * <p>
@@ -45,8 +44,8 @@ import gama.extension.serialize.fst.FSTObjectOutput;
  * <li>vertex count (int)</li>
  * <li>for each vertex: vertex {@link IShape} (object) + vertex weight (double)</li>
  * <li>edge count (int)</li>
- * <li>for each edge: edge {@link IShape} (object) + source {@link IShape} (object) + target
- * {@link IShape} (object) + edge weight (double)</li>
+ * <li>for each edge: edge {@link IShape} (object) + source {@link IShape} (object) + target {@link IShape} (object) +
+ * edge weight (double)</li>
  * </ol>
  * </p>
  *
@@ -58,16 +57,6 @@ import gama.extension.serialize.fst.FSTObjectOutput;
  * @date 8 avril 2026
  */
 class GamaSpatialGraphSerialiser extends FSTIndividualSerialiser<GamaSpatialGraph> {
-
-	/**
-	 * Constructs a new {@code GamaSpatialGraphSerialiser} bound to the given {@link BinarySerialiser}.
-	 *
-	 * @param serialiser
-	 *            the owning binary serialiser
-	 */
-	GamaSpatialGraphSerialiser(final BinarySerialiser serialiser) {
-		super(serialiser);
-	}
 
 	/**
 	 * Returns {@code false}: spatial graphs are not registered for FST back-reference tracking.
@@ -91,7 +80,7 @@ class GamaSpatialGraphSerialiser extends FSTIndividualSerialiser<GamaSpatialGrap
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final FSTObjectOutput out, final GamaSpatialGraph g) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final GamaSpatialGraph g) throws Exception {
 		// --- metadata ---
 		out.writeObject(g.getGamlType().getKeyType());
 		out.writeObject(g.getGamlType().getContentType());
@@ -133,7 +122,7 @@ class GamaSpatialGraphSerialiser extends FSTIndividualSerialiser<GamaSpatialGrap
 	 */
 	@SuppressWarnings ("unchecked")
 	@Override
-	public GamaSpatialGraph deserialise(final IScope scope, final FSTObjectInput in) throws Exception {
+	public GamaSpatialGraph deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		// --- metadata ---
 		IType nodeType = (IType) in.readObject();
 		IType edgeType = (IType) in.readObject();

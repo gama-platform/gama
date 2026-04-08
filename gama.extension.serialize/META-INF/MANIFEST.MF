@@ -8,6 +8,11 @@ Require-Bundle: gama.core,
 Bundle-ClassPath: .
 Export-Package: gama.extension.serialize,
  gama.extension.serialize.binary,
+ gama.extension.serialize.fst,
+ gama.extension.serialize.fst.annotations,
+ gama.extension.serialize.fst.coders,
+ gama.extension.serialize.fst.serializers,
+ gama.extension.serialize.fst.util,
  gama.extension.serialize.gaml
 Import-Package: org.osgi.framework;version="1.10.0"
 Bundle-ActivationPolicy: lazy

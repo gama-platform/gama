@@ -86,6 +86,20 @@ public class BinarySerialisation implements ISerialisationConstants {
 	}
 
 	/**
+	 * Register serialiser.
+	 *
+	 * @param <T>
+	 *            the generic type
+	 * @param clazz
+	 *            the clazz
+	 * @param ser
+	 *            the ser
+	 */
+	public static <T> void registerSerialiser(final Class<T> clazz, final FSTIndividualSerialiser<T> ser) {
+		PROCESSOR.register(clazz, ser);
+	}
+
+	/**
 	 * Creates the from bytes.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
