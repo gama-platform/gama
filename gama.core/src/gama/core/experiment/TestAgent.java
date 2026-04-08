@@ -68,6 +68,13 @@ public class TestAgent extends ExperimentAgent implements ITestAgent {
 	@Override
 	public boolean step(final IScope scope) {
 		super.step(scope);
+		// Once the algorithm has finished exploring the solutions, the agent is
+		// killed.
+		// scope.getGui().getStatus().informStatus(endStatus(), IStatusMessage.SIMULATION_ICON);
+		// // Issue #2426: the agent is killed too soon
+		// getScope().setDisposeStatus();
+		// // dispose();
+		// GAMA.updateExperimentState(getSpecies(), IExperimentStateListener.State.FINISHED);
 		dispose();
 		return true;
 	}
@@ -122,6 +129,16 @@ public class TestAgent extends ExperimentAgent implements ITestAgent {
 		final Consumer<IStatement> filter = t -> { if (t instanceof WithTestSummary ts) { tests.add(ts); } };
 		getSpecies().getBehaviors().forEach(filter);
 		return tests;
+	}
+
+	@Override
+	public boolean isGUI() { return false; }
+
+	@Override
+	public void closeSimulations(final boolean andLeaveExperimentPerspective) {
+		// We interrupt the simulation scope directly (as it cannot be
+		// interrupted by the global scheduler)
+		if (getSimulation() != null) { getSimulation().getScope().setDisposeStatus(); }
 	}
 
 }
