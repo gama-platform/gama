@@ -14,7 +14,7 @@ model PalettesandGradients
 
 global {
 	
-	grid_file volcano <- grid_file("includes/vulcano_50.asc");
+	grid_file volcano <- grid_file("./../includes/vulcano_50.asc");
 	field cells <- field(volcano);
 	geometry shape <- square(200);
 	init {

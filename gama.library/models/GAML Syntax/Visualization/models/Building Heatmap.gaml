@@ -10,7 +10,7 @@
 */
 model BuildingHeatmap
 
-import "3D Visualization/models/Building Elevation.gaml"
+import "./Building Elevation.gaml"
 
 global {
 	int size <- 300;

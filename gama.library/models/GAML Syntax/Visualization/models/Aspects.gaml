@@ -12,7 +12,7 @@
 model Aspects
 
 global {
-	image_file wood0_image_file <- image_file("3D Visualization/includes/wood.jpg");
+	image_file wood0_image_file <- image_file("./../includes/wood.jpg");
 
 	init {
 	//

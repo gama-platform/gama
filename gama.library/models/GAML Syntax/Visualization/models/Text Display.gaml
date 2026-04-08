@@ -20,7 +20,7 @@ experiment Strings {
 	rgb current_color <- rnd_color(255) update: rnd_color(255);
 	float current_depth <- rnd(16) - 8.0 update: rnd(16) - 8.0;
 	int y_step <- 4;
-	image_file g <- image_file("3D Visualization/images/building_texture/texture3.jpg");
+	image_file g <- image_file("./../images/building_texture/texture3.jpg");
 
 
 	output synchronized: true{
