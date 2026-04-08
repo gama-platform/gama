@@ -26,7 +26,7 @@ experiment tests type: test {
 	}
 	
 	test tt2 {
-		loop times:1 { assert true; }
+		assert true; 
 	}
 	
 	test tt22 {
