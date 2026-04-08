@@ -344,7 +344,7 @@ public class Stochanalysis {
 	 * @param scope
 	 * @return return the mean for each number of replicates
 	 */
-	private static List<Double> computeMean(final List<Object> val, final IScope scope) {
+	private static List<Double> computeMean(final List<?> val, final IScope scope) {
 		List<Double> mean = new ArrayList<>();
 		double tmp_mean = 0;
 		for (int i = 0; i < val.size(); i++) {
@@ -365,7 +365,7 @@ public class Stochanalysis {
 	 * @param scope
 	 * @return return the standard deviation for each number of replicates (Always 0 for 1).
 	 */
-	private static List<Double> computeSTD(final List<Double> mean, final List<Object> val, final IScope scope) {
+	private static List<Double> computeSTD(final List<Double> mean, final List<?> val, final IScope scope) {
 		List<Double> STD = new ArrayList<>();
 		for (int i = 0; i < mean.size(); i++) {
 			double sum = 0;
