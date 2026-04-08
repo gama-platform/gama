@@ -286,14 +286,5 @@ experiment "3 Simulations" type: gui  parent:base{
 	}
 }
 
-experiment comodel_exp_ant
-{
-	parameter 'Number:' var: ants_number <- 100 unit: 'ants' category: 'Environment and Population';
-	parameter 'Grid dimension:' var: gridsize <- 100 unit: '(number of rows and columns)' category: 'Environment and Population';
-	parameter 'Number of food depots:' var: number_of_food_places <- 5 min: 1 category: 'Environment and Population';
-}
-
-
-
 
 

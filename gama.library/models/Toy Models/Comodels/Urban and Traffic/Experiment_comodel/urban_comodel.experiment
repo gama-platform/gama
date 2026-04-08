@@ -1,0 +1,19 @@
+/**
+* Name: weathercomodel
+* Experiment file for urban model. Used by "Urbanization And Traffic Comodel.gaml"
+* Author: Lucas Grosjean, HUYNH Quang Nghi
+* Tags: comodel, experiment
+*/
+
+experiment urbancomodel model:'../../../../Toy Models/Urban Growth/models/Raster Urban Growth.gaml' type:gui {
+	action transform() {
+		ask plot{
+			location<-{location.x*0.037 , location.y*0.053};
+		}
+	}
+	
+	list<plot> get_plot()
+	{
+		return list(plot);
+	}
+}

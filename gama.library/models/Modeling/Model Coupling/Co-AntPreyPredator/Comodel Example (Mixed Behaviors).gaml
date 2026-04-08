@@ -8,8 +8,9 @@
 model modelCouplerAntPP
 
 // Import the sub-models as namespaces
-import "../Co-PreyPredator/Prey Predator.gaml" as PP
-import "../../../Toy Models/Ants (Foraging and Sorting)/models/Ant Foraging.gaml" as ANT
+import "pp_comodel.experiment" as PP
+import "ant_comodel.experiment" as ANT
+
 
 global
 {
@@ -24,7 +25,7 @@ global
 	init
 	{
 		// 1. Initialize the Ant Model
-		create ANT.comodel_exp_ant
+		create ANT.antcomodel
 		{
 			gridsize <- 100;
 			ants_number <- number_of_ants;
@@ -32,7 +33,7 @@ global
 		} 	
 		
 		// 2. Initialize the Prey-Predator Model
-		create PP.comodel_exp_pp
+		create PP.ppcomodel
 		{
 			shape <- square(100);
 			preyinit <- number_of_ants; // Ensure 1:1 ratio with ants
@@ -47,14 +48,14 @@ global
 		list<prey> prey_before;  // Snapshot of prey before predation occurs
 		
 		// --- PHASE 1: Update Ant Movement ---
-		ask ANT.comodel_exp_ant[0].simulation
+		ask ANT.antcomodel[0].simulation
 		{
 			do _step_(); // Advance the Ant simulation one tick
 			theAnts <- list(ant); // Refresh the local list
 		}
 		
 		// --- PHASE 2: Handle Predation and Mortality ---
-		ask PP.comodel_exp_pp[0].simulation
+		ask PP.ppcomodel[0].simulation
 		{
 			prey_before <- list(prey); // Store state before stepping
 			
@@ -78,7 +79,7 @@ global
 		}
 		
 		// --- PHASE 3: Clean up "Dead" Ants ---
-		ask ANT.comodel_exp_ant[0].simulation
+		ask ANT.antcomodel[0].simulation
 		{
 			loop index_to_delete over: ant_to_delete
 			{
@@ -89,7 +90,7 @@ global
 		
 		// --- PHASE 4: Sync Positions ---
 		// Forces the 'Prey' agents to be at the exact coordinates of the 'Ants'
-		ask PP.comodel_exp_pp[0].simulation
+		ask PP.ppcomodel[0].simulation
 		{
 			loop tmp over: theAnts
 			{
@@ -114,14 +115,14 @@ experiment coupling_ant_pp
 		display "Comodel display"
 		{
 			// Render the grid and pheromones from the Ant Model
-			agents "ant_grid" value: ANT.comodel_exp_ant[0].simulation.ant_grid transparency: 0.7;	
+			agents "ant_grid" value: ANT.antcomodel[0].simulation.ant_grid transparency: 0.7;	
 			
 			// Render the Ant agents using their specific icons
-			agents "ants" value: ANT.comodel_exp_ant[0].simulation.ant aspect:icon;		
+			agents "ants" value: ANT.antcomodel[0].simulation.ant aspect:icon;		
 				
 			// Overlay the Prey and Predators from the PP Model
-			agents "agentprey" value: PP.comodel_exp_pp[0].simulation.prey;
-			agents "agentpredator" value: PP.comodel_exp_pp[0].simulation.predator;
+			agents "agentprey" value: PP.ppcomodel[0].simulation.prey;
+			agents "agentpredator" value: PP.ppcomodel[0].simulation.predator;
 		}
 	}
 }

@@ -1,6 +1,6 @@
 /**
-* Name: Plant Growth and Weather Comodel 2
-* Author: Benoit Gaudou, Damien Philippon
+* Name: Plant Growth and Weather Comodel
+* Author: Benoit Gaudou, Damien Philippon, Lucas Grosjean
 * Description: Second comodel in the Plant Growth and Weather series, adding bidirectional coupling between
 *   the Weather and Plant Growth sub-models. Rain water from the Weather model now fills the water reserve
 *   of plants in the Plant Growth model, creating an ecological feedback loop: weather affects plant growth,
@@ -11,8 +11,8 @@
 
 model coModel
 
-import "Weather.gaml" as weather
-import "Plant Growth.gaml" as plantGrow
+import "Experiment_comodel/weather_comodel.experiment" as weather
+import "Experiment_comodel/plant_comodel.experiment" as plantGrow
 
 
 global {
@@ -21,17 +21,17 @@ global {
 	plantGrow plantGrow_simu;
 		
 	init {
-		create weather."Weather Co-Modeling" with: (grid_size:20,write_in_console_step:false);
-		weather_simu <- first(weather."Weather Co-Modeling").simulation; 
+		create weather.weathercomodel(grid_size:20,write_in_console_step:false);
+		weather_simu <- first(weather.weathercomodel).simulation; 
 		
-		create plantGrow."Plant Growth Co-Modeling" with: (grid_size:40);
-		plantGrow_simu <- first(plantGrow."Plant Growth Co-Modeling").simulation; 		
+		create plantGrow.plantcomodel(grid_size:40);
+		plantGrow_simu <- first(plantGrow.plantcomodel).simulation; 		
 	}
 
 	reflex simulate_micro_models_weather {
 		ask weather_simu
 		{
-			do _step_;
+			self._step_();
 		}	
 	}
 	
@@ -49,7 +49,7 @@ global {
 	reflex simulate_micro_models_plantGrow {
 		ask plantGrow_simu
 		{
-			do _step_;
+			self._step_();
 		}		
 	}
 }

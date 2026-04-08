@@ -85,7 +85,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	private static final long serialVersionUID = 1L;
 
 	static {
-		DEBUG.OFF();
+		DEBUG.ON();
 		GamaPreferences.Displays.DISPLAY_NO_ACCELERATION.onChange(newValue -> {
 			System.setProperty("sun.java2d.noddraw", newValue ? "true" : "false");
 			System.setProperty("sun.awt.noerasebackground", "true");
@@ -167,6 +167,10 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 
 			@Override
 			public void componentResized(final ComponentEvent e) {
+				DEBUG.OUT("[componentResized] " + output.getName() + " → new size=" + getWidth() + "x" + getHeight()
+						+ " iGraphics=" + (iGraphics != null ? "non-null" : "null")
+						+ " renderedOnce=" + renderedOnce
+						+ " thread=" + Thread.currentThread().getName());
 				if (zoomFit) {
 					zoomFit();
 				} else {
@@ -266,6 +270,8 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 
 	@Override
 	public void outputReloaded() {
+		final long t0 = System.currentTimeMillis();
+		DEBUG.OUT("[outputReloaded] START for " + output.getName() + " on thread " + Thread.currentThread().getName());
 		// Reset early so that: (1) any AWT repaints queued from the previous run are
 		// no-ops in paintComponent(), and (2) the updateDisplay calls inside
 		// resizeImage/zoomFit below use invokeLater rather than invokeAndWait, avoiding
@@ -277,14 +283,18 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 		// We disable error reporting
 		if (!GamaPreferences.Runtime.ERRORS_IN_DISPLAYS.getValue()) { getScope().disableErrorReporting(); }
 		layerManager.outputChanged();
+		DEBUG.OUT("[outputReloaded] after outputChanged in " + (System.currentTimeMillis() - t0) + "ms");
 		resizeImage(getWidth(), getHeight(), true);
+		DEBUG.OUT("[outputReloaded] after resizeImage in " + (System.currentTimeMillis() - t0) + "ms");
 		if (zoomFit) { zoomFit(); }
+		DEBUG.OUT("[outputReloaded] after zoomFit in " + (System.currentTimeMillis() - t0) + "ms");
 		// Re-null iGraphics in case resizeImage/zoomFit recreated it. Any AWT repaint
 		// requests queued above will be no-ops. iGraphics will be properly recreated by
 		// the componentResized → zoomFit() → resizeImage() chain once the new layout is
 		// applied and the surface receives its correct bounds.
 		iGraphics = null;
 		updateDisplay(true);
+		DEBUG.OUT("[outputReloaded] END for " + output.getName() + " total=" + (System.currentTimeMillis() - t0) + "ms");
 	}
 
 	@Override
@@ -387,20 +397,28 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	public void updateDisplay(final boolean force, final GeneralSynchronizer synchronizer) {
 		if (disposed) return;
 		rendered = false;
+		final boolean syncMode = GAMA.isSynchronized() && renderedOnce;
+		final boolean onEDTorSWT = EventQueue.isDispatchThread() || WorkbenchHelper.isDisplayThread();
+		DEBUG.OUT("[updateDisplay] " + output.getName() + " force=" + force + " syncMode=" + syncMode
+				+ " onEDTorSWT=" + onEDTorSWT + " renderedOnce=" + renderedOnce
+				+ " thread=" + Thread.currentThread().getName()
+				+ " → " + (syncMode && !onEDTorSWT ? "invokeAndWait" : "invokeLater/direct"));
 		Runnable toRun = () -> {
 			repaint();
 			if (synchronizer != null) { synchronizer.release(); }
 		};
-		if (GAMA.isSynchronized() && renderedOnce) {
-
-			if (EventQueue.isDispatchThread() || WorkbenchHelper.isDisplayThread()) {
+		if (syncMode) {
+			if (onEDTorSWT) {
 				toRun.run();
 			} else {
+				final long t0 = System.currentTimeMillis();
 				try {
 					EventQueue.invokeAndWait(toRun);
 				} catch (InvocationTargetException | InterruptedException e) {
 					e.printStackTrace();
 				}
+				DEBUG.OUT("[updateDisplay] invokeAndWait for " + output.getName() + " took "
+						+ (System.currentTimeMillis() - t0) + "ms");
 			}
 		} else {
 			EventQueue.invokeLater(toRun);
@@ -536,7 +554,13 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	@Override
 	public void paintComponent(final Graphics g) {
 		final AWTDisplayGraphics gg = getIGraphics();
-		if (gg == null) return;
+		if (gg == null) {
+			DEBUG.OUT("[paintComponent] SKIPPED (iGraphics=null) for " + output.getName()
+					+ " thread=" + Thread.currentThread().getName());
+			return;
+		}
+		final long t0 = System.currentTimeMillis();
+		DEBUG.OUT("[paintComponent] START for " + output.getName() + " thread=" + Thread.currentThread().getName());
 		// DEBUG.OUT("-- Surface effectively painting on Java2D context");
 		super.paintComponent(g);
 		final Graphics2D g2d = (Graphics2D) g.create(getOrigin().x, getOrigin().y, (int) Math.round(getDisplayWidth()),
@@ -548,6 +572,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 		frames++;
 		rendered = true;
 		renderedOnce = true;
+		DEBUG.OUT("[paintComponent] END for " + output.getName() + " took " + (System.currentTimeMillis() - t0) + "ms");
 		// getOutput().setRendered(true);
 	}
 
