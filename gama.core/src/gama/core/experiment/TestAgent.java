@@ -21,10 +21,11 @@ import gama.annotations.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.statements.IStatement;
 import gama.api.kernel.agent.IPopulation;
+import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.tests.ITestAgent;
 import gama.api.utils.tests.TestExperimentSummary;
 import gama.api.utils.tests.WithTestSummary;
+import gama.dev.DEBUG;
 
 /**
  * The Class TestAgent.
@@ -32,7 +33,7 @@ import gama.api.utils.tests.WithTestSummary;
 @experiment (IKeyword.TEST)
 @doc ("Experiments supporting the collection of success or failure of tests. Can be used in GUI or headless")
 @SuppressWarnings ({ "unchecked", "rawtypes" })
-public class TestAgent extends ExperimentAgent implements ITestAgent {
+public class TestAgent extends ExperimentAgent implements IExperimentAgent.Test {
 
 	/** The summary. */
 	// int failedModels = 0;
@@ -57,34 +58,23 @@ public class TestAgent extends ExperimentAgent implements ITestAgent {
 		super.init(scope);
 		final TestExperimentSummary summary = getSummary();
 		summary.reset();
-		if (!summary.isEmpty()) {
-			scope.getGui().openTestView(scope, false);
-			// if (!getSpecies().isHeadless())
-			// scope.getGui().displayTestsResults(getScope(), summary);
-		}
+		if (!summary.isEmpty()) { scope.getGui().openTestView(scope, false); }
 		return true;
 	}
 
 	@Override
 	public boolean step(final IScope scope) {
+		DEBUG.LOG("Agent " + this + " doing step " + getClock().getCycle());
 		super.step(scope);
-		// Once the algorithm has finished exploring the solutions, the agent is
-		// killed.
-		// scope.getGui().getStatus().informStatus(endStatus(), IStatusMessage.SIMULATION_ICON);
-		// // Issue #2426: the agent is killed too soon
-		// getScope().setDisposeStatus();
-		// // dispose();
-		// GAMA.updateExperimentState(getSpecies(), IExperimentStateListener.State.FINISHED);
-		dispose();
 		return true;
 	}
 
 	@Override
-	public void dispose() {
-		if (dead) return;
-		getScope().getGui().displayTestsResults(getScope(), summary);
-		getScope().getGui().endTestDisplay();
-		super.dispose();
+	public void schedule(final IScope scope) {
+		scheduled = true;
+		// scheduled = true;
+		// The experiment agent is scheduled in the global scheduler
+		// getSpecies().getController().schedule(this);
 	}
 
 	/**
@@ -139,6 +129,13 @@ public class TestAgent extends ExperimentAgent implements ITestAgent {
 		// We interrupt the simulation scope directly (as it cannot be
 		// interrupted by the global scheduler)
 		if (getSimulation() != null) { getSimulation().getScope().setDisposeStatus(); }
+	}
+
+	@Override
+	public void displayTestResults() {
+		getScope().getGui().openTestView(getScope(), false);
+		getScope().getGui().displayTestsResults(getScope(), getSummary());
+		getScope().getGui().endTestDisplay();
 	}
 
 }
