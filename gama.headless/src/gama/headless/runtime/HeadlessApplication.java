@@ -65,6 +65,7 @@ import gama.headless.server.GamaServerGUIHandler;
 import gama.headless.xml.ConsoleReader;
 import gama.headless.xml.Reader;
 import gama.headless.xml.XMLWriter;
+import gama.workspace.WorkspaceActivator;
 import gaml.compiler.GamlStandaloneSetup;
 import gaml.compiler.validation.GamlModelBuilder;
 
@@ -96,6 +97,8 @@ public class HeadlessApplication implements IApplication {
 		System.setProperty("java.awt.headless", "true");
 		GAMA.setHeadLessMode(isServer);
 		GAMA.setHeadlessGui(isServer ? new GamaServerGUIHandler() : new NullGuiHandler());
+		// Trigger gama.workspace lazy activation so WorkspaceActivator registers the workspace
+		WorkspaceActivator.load();
 		try {
 			// We initialize XText and Gaml.
 			INJECTOR = GamlStandaloneSetup.doSetup();
