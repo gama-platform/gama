@@ -61,3 +61,18 @@ jobs:
             -H "Authorization: token ${{ secrets.BOT_TOKEN }}" \
             --data '{"event_type": "automated-generation"}' \
             https://api.github.com/repos/gama-platform/gama-platform.github.io/dispatches
+
+      - name: Push prism-gaml.js to prism-gaml repository
+        run: |
+          git clone --depth 1 https://gama-bot:$BOT_TOKEN@github.com/gama-platform/prism-gaml.git $GITHUB_WORKSPACE/../prism-gaml
+          cp $GITHUB_WORKSPACE/gama.documentation/files/gen/prism/prism-gaml.js $GITHUB_WORKSPACE/../prism-gaml/components/prism-gaml.js
+          cd $GITHUB_WORKSPACE/../prism-gaml
+          if [ -n "$(git status --porcelain)" ]; then
+            git add components/prism-gaml.js
+            git commit -m "Update prism-gaml.js - $(date)"
+            git push
+          else
+            echo "No changes to commit"
+          fi
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
