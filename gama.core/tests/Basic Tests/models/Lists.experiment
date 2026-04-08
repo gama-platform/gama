@@ -33,8 +33,10 @@ experiment Lists  type:test {
 		assert mean(l1) = 5.5;
 		assert max(l1) = 10;
 		assert min(l1) = 1;
+		
 		assert any(l1) = 2; // tested with this seed, just for reference
 		assert 3 among l2 = ['this','of','list']; // same as above
+		
 		assert l1 contains 1 = true;
 		assert l1 contains_all [1,4,6] = true;
 		assert l1 contains_all [1,4,6, 14] = false;

@@ -33,11 +33,11 @@ experiment loop_over type:test{
 	
 	test loop_over_species {
 		int i <- 1;
-		create dummy number:4{
+		create dummy number:4 {
 			value <- i;
 			i <- i + 1;
 		}
-		
+		write dummy collect each.value;
 		int sum <- 0;
 		loop d over:dummy{
 			sum <- sum + d.value;

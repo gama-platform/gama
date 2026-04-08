@@ -25,6 +25,7 @@ import gama.api.gaml.symbols.IParameter;
 import gama.api.gaml.symbols.ISymbol;
 import gama.api.kernel.PlatformAgent;
 import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.kernel.simulation.IExperimentAgent.Test;
 import gama.api.kernel.simulation.IExperimentController;
 import gama.api.kernel.simulation.IExperimentRecorder;
 import gama.api.kernel.simulation.IExperimentStateListener;
@@ -229,8 +230,8 @@ public class GAMA {
 	}
 
 	/**
-	 * Gets the platform agent instance. Uses double-checked locking on the volatile {@code __AGENT__}
-	 * field so that the {@link PlatformAgent} constructor is called at most once.
+	 * Gets the platform agent instance. Uses double-checked locking on the volatile {@code __AGENT__} field so that the
+	 * {@link PlatformAgent} constructor is called at most once.
 	 *
 	 * @return the platform agent
 	 */
@@ -402,10 +403,12 @@ public class GAMA {
 		if (!controllers.isEmpty()) { closeAllExperiments(false, false); }
 
 		if (newExperiment.isTest()) {
-			controllers.add(controller);
+			// controllers.add(controller);
 			newExperiment.open();
-			final IExperimentAgent agent = newExperiment.getAgent();
+			final IExperimentAgent.Test agent = (Test) newExperiment.getAgent();
+			agent.init(agent.getScope());
 			agent.step(agent.getScope());
+			agent.displayTestResults();
 			GAMA.closeExperiment(newExperiment);
 		} else if (getGui().openSimulationPerspective(model, id)) {
 			controllers.add(controller);
@@ -784,9 +787,9 @@ public class GAMA {
 	 * @return the current runtime scope, or null if platform is not loaded
 	 */
 	public static IScope getRuntimeScope() {
-		// If GAMA has not yet been loaded, we return null
-		if (__AGENT__ == null) return null;
-		// return getCurrentTopLevelAgent().getScope().copy("(copy)");
+		// // If GAMA has not yet been loaded, we return null
+		// if (__AGENT__ == null) return null;
+		// // return getCurrentTopLevelAgent().getScope().copy("(copy)");
 		final IExperimentController controller = getFrontmostController();
 		if (controller == null || controller.getExperiment() == null) return getPlatformAgent().getScope();
 		final IExperimentAgent a = controller.getExperiment().getAgent();
