@@ -155,7 +155,7 @@ public class DisplayOverlay {
 	}
 
 	static {
-		DEBUG.OFF();
+		DEBUG.ON();
 	}
 
 	/** The right. */
@@ -450,10 +450,19 @@ public class DisplayOverlay {
 	public void display() {
 		// We first verify that the popup is still ok
 		if (!isVisible() || popup.isDisposed()) return;
+		final long t0 = System.currentTimeMillis();
+		DEBUG.OUT("[DisplayOverlay.display] START thread=" + Thread.currentThread().getName());
 		update();
+		final long t1 = System.currentTimeMillis();
 		relocate();
+		final long t2 = System.currentTimeMillis();
 		resize();
-		if (!popup.isVisible()) { popup.setVisible(true); }
+		final long t3 = System.currentTimeMillis();
+		final boolean wasVisible = popup.isVisible();
+		if (!wasVisible) { popup.setVisible(true); }
+		DEBUG.OUT("[DisplayOverlay.display] update=" + (t1 - t0) + "ms relocate=" + (t2 - t1) + "ms resize="
+				+ (t3 - t2) + "ms setVisible=" + (System.currentTimeMillis() - t3) + "ms (wasVisible=" + wasVisible
+				+ ") total=" + (System.currentTimeMillis() - t0) + "ms");
 	}
 
 	/**

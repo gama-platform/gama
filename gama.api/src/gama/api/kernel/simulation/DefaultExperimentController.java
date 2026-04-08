@@ -16,7 +16,6 @@ import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.runtime.GamaExecutorService;
 import gama.api.runtime.scope.IScope;
 import gama.api.ui.IStatusMessage;
-import gama.api.utils.tests.ITestAgent;
 import gama.dev.DEBUG;
 
 /**
@@ -181,7 +180,10 @@ public class DefaultExperimentController extends AbstractExperimentController {
 
 	/** The execution thread. */
 
-	/** The agent. Volatile so writes from schedule() on the calling thread are immediately visible to the execution thread. */
+	/**
+	 * The agent. Volatile so writes from schedule() on the calling thread are immediately visible to the execution
+	 * thread.
+	 */
 	private volatile IExperimentAgent agent;
 
 	/** The r. */
@@ -285,7 +287,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 			case _STEP:
 				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.PAUSED);
 				paused = true;
-				lock.release();          // let the execution thread run one step
+				lock.release(); // let the execution thread run one step
 				// Wait for that step to complete; abort command if interrupted.
 				if (!previouslock.acquire()) return false;
 				return true;
@@ -442,8 +444,8 @@ public class DefaultExperimentController extends AbstractExperimentController {
 	}
 
 	/**
-	 * Cleans up any partially-created simulation, then reports the runtime exception to the Errors view, the status
-	 * bar and opens the Errors view — all while keeping the experiment perspective open so the user can re-run.
+	 * Cleans up any partially-created simulation, then reports the runtime exception to the Errors view, the status bar
+	 * and opens the Errors view — all while keeping the experiment perspective open so the user can re-run.
 	 *
 	 * <p>
 	 * This is used for initialisation-time errors (thrown from {@link #schedule}) where the simulation has not been
@@ -454,17 +456,17 @@ public class DefaultExperimentController extends AbstractExperimentController {
 	 * The sequence is:
 	 * </p>
 	 * <ol>
-	 * <li><b>Hide the launching overlay</b> — calls {@code gui.hideLaunchingOverlay()} to dismiss the Shell that
-	 * covers the workbench during experiment launch. Without this call the overlay stays visible forever because
-	 * it is normally hidden by {@code cleanAfterExperiment()}, which is only called on the success path.</li>
-	 * <li><b>Dispose the partial simulation</b> — {@code agent.closeSimulations(false)} disposes any partial
-	 * simulation while keeping the experiment perspective. Disposing before reporting ensures the subsequent error
-	 * message overwrites the "disposing simulation N" status text.</li>
-	 * <li><b>Report the error</b> — {@code runtimeError} queues it for the Errors view, {@code errorStatus} sets
-	 * the status bar label, and {@code displayErrors} opens/activates the Errors view immediately.</li>
-	 * <li><b>Set state to {@code NOTREADY}</b> — disables the Run/Step buttons while leaving Reload active.
-	 * Calling {@code experiment.reload()} here would create an infinite loop (reload → open → schedule → init
-	 * fails → reload → …), so we do not.</li>
+	 * <li><b>Hide the launching overlay</b> — calls {@code gui.hideLaunchingOverlay()} to dismiss the Shell that covers
+	 * the workbench during experiment launch. Without this call the overlay stays visible forever because it is
+	 * normally hidden by {@code cleanAfterExperiment()}, which is only called on the success path.</li>
+	 * <li><b>Dispose the partial simulation</b> — {@code agent.closeSimulations(false)} disposes any partial simulation
+	 * while keeping the experiment perspective. Disposing before reporting ensures the subsequent error message
+	 * overwrites the "disposing simulation N" status text.</li>
+	 * <li><b>Report the error</b> — {@code runtimeError} queues it for the Errors view, {@code errorStatus} sets the
+	 * status bar label, and {@code displayErrors} opens/activates the Errors view immediately.</li>
+	 * <li><b>Set state to {@code NOTREADY}</b> — disables the Run/Step buttons while leaving Reload active. Calling
+	 * {@code experiment.reload()} here would create an infinite loop (reload → open → schedule → init fails → reload →
+	 * …), so we do not.</li>
 	 * </ol>
 	 *
 	 * @param e
@@ -472,8 +474,8 @@ public class DefaultExperimentController extends AbstractExperimentController {
 	 */
 	protected void notifyExceptionAndReloadExperiment(final Throwable e) {
 		final IScope localScope = scope;
-		final GamaRuntimeException gre = (e != null && localScope != null) ? GamaRuntimeException.create(e, localScope)
-				: null;
+		final GamaRuntimeException gre =
+				e != null && localScope != null ? GamaRuntimeException.create(e, localScope) : null;
 
 		// Step 1: dismiss the launching overlay.
 		// It is normally closed by cleanAfterExperiment(), which is only reached on the
@@ -545,7 +547,9 @@ public class DefaultExperimentController extends AbstractExperimentController {
 		try {
 			if (!scope.init(agent).passed()) {
 				scope.setDisposeStatus();
-			} else if (agent instanceof ITestAgent || agent.getSpecies().isAutorun()) { asynchronousStart(); }
+			} else if (agent instanceof IExperimentAgent.Test || agent.getSpecies().isAutorun()) {
+				asynchronousStart();
+			}
 		} catch (final Throwable e) {
 			// Any throwable during initialization (GamaRuntimeException, Error, etc.) is
 			// reported to the errors view and the experiment is reloaded so the user remains
@@ -575,10 +579,9 @@ public class DefaultExperimentController extends AbstractExperimentController {
 		// If the execution thread is interrupted while waiting, return immediately
 		// so it can exit the while(experimentAlive) loop cleanly.
 		if (paused) {
-			if (!lock.acquire()) return;
 			// dispose() sets experimentAlive = false BEFORE releasing the lock so that
 			// the execution thread can exit cleanly without executing one extra step.
-			if (!experimentAlive) return;
+			if (!lock.acquire() || !experimentAlive) return;
 		}
 
 		// Cache scope reference to avoid repeated volatile reads

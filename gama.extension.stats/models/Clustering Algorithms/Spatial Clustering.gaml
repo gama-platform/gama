@@ -32,6 +32,7 @@ global {
     	//returns a list of lists (i.e. a list of groups, a group is a list of people agents)
     	list<list<people>> clusters <- list<list<people>>(simple_clustering_by_distance(people, max_dist_people));
         
+        
         //We give a random color to each group (i.e. to each people agents of the group)
         loop cluster over: clusters {
         	rgb rnd_color <- rnd_color(255);
@@ -40,6 +41,7 @@ global {
         	}
         }
         
+        ask group_people {do die();}
         //build the hierchical clustering (https://en.wikipedia.org/wiki/Hierarchical_clustering)
         list clustering_tree <- hierarchical_clustering (people, max_dist_people);
         
@@ -47,38 +49,56 @@ global {
         do create_groups(clustering_tree, nil);
     }
     
-    //recursive action that create group_people agents from the list of group.
-    action create_groups (list group, group_people parent_gp) {
-    	bool compute_shape <- false;
-    	loop el over: group {
-    		if (el is people) {
-    			parent_gp.shape <- people(el).shape;
-    		}
-    		else {
-    			create group_people returns: created_g{
-    				if (parent_gp != nil) {
-    					add self to: parent_gp.sub_groups;
-    				}
-    				parent <- parent_gp;
-    			}
-    			do create_groups(el, first(created_g));
-    			compute_shape <- true;
-    		}
-    	}
-    	if (compute_shape and parent_gp != nil) {
-    		ask parent_gp {
-    			shape <- polyline (sub_groups collect each.location);
-    		}
-    		
-    	}
-    }
+   // The action now returns the created group_people, making recursion easier
+	action create_groups(list group_list, group_people parent_gp) type: group_people {
+	    
+	    // 1. Create the current node
+	    create group_people returns: created_nodes {
+	        parent <- parent_gp;
+	        if (parent_gp != nil) {
+	            add self to: parent_gp.sub_groups;
+	        }
+	    }
+	    group_people current_gp <- first(created_nodes);
+	
+	    list<point> children_locations <- [];
+	
+	    // 2. Iterate over the group elements (there are exactly 2 thanks to your binary tree Java code)
+	    loop el over: group_list {
+	        if (el is people) {
+	            // It's a tree leaf (an individual)
+	            add people(el).location to: children_locations;
+	            
+	        } else if (el is list) {
+	            // It's a branch (a sub-list), make the recursive call!
+	            group_people child_gp <- create_groups(el as list, current_gp);
+	            add child_gp.location to: children_locations;
+	        }
+	    }
+	
+	    // 3. Compute the geometry and location of this group
+	    if (length(children_locations) = 2) {
+	        // The group is placed exactly in the middle of its two children
+	        current_gp.location <- mean(children_locations);
+	        // Its shape is a line connecting its two children
+	        current_gp.shape <- polyline(children_locations);
+	        
+	    } else if (length(children_locations) = 1) {
+	        // Fallback just in case a group has only one child
+	        current_gp.location <- first(children_locations);
+	    }
+	
+	    // Return the created group so its own parent can connect to it
+	    return current_gp;
+	}
+    
     //reflex that builds the cell clusters
     reflex forest_clustering {
     	list<list<vegetation_cell>> clusters <- list<list<vegetation_cell>>(simple_clustering_by_distance(vegetation_cell where (each.color = #green), max_dist_cell));
         loop cluster over: clusters {
         	create forest {
         		cells <- cluster;
-        		shape <- union (cells);
+        		shape <- union (cells); 
         	}
         }
         list clustering_tree <- hierarchical_clustering (people, max_dist_people);

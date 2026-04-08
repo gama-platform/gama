@@ -106,6 +106,7 @@ species people skills: [moving] parallel: true {
 }
 
 experiment "Road Traffic" type: gui {
+	float minimum_cycle_duration<-0.01;
 	parameter 'Shapefile for the buildings:' var: shape_file_buildings category: 'GIS';
 	parameter 'Shapefile for the roads:' var: shape_file_roads category: 'GIS';
 	parameter 'Shapefile for the bounds:' var: shape_file_bounds category: 'GIS';
@@ -132,7 +133,7 @@ experiment "Road Traffic" type: gui {
 
 	output {
 		display city_display type: 3d {
-			camera 'default' location: {1318.6512,3.5713,945.6612} target: {431.7016,495.2155,0.0};
+			//camera 'default' location: {1318.6512,3.5713,945.6612} target: {431.7016,495.2155,0.0};
 			light #ambient intensity: 180;
 			light #default intensity: 180 direction: {0.5, 0.5, -1};
 			event #mouse_down {
@@ -145,39 +146,3 @@ experiment "Road Traffic" type: gui {
 		}
 	}
 }
-
-experiment "Multiple Layers" type: gui {
-	parameter 'Shapefile for the buildings:' var: shape_file_buildings category: 'GIS';
-	parameter 'Shapefile for the roads:' var: shape_file_roads category: 'GIS';
-	parameter 'Shapefile for the bounds:' var: shape_file_bounds category: 'GIS';
-	parameter 'Earliest hour to start work' var: min_work_start category: 'People';
-	parameter 'Latest hour to start work' var: max_work_start category: 'People';
-	parameter 'Earliest hour to end work' var: min_work_end category: 'People';
-	parameter 'Latest hour to end work' var: max_work_end category: 'People';
-	parameter 'minimal speed' var: min_speed category: 'People';
-	parameter 'maximal speed' var: max_speed category: 'People';
-	parameter 'Number of people agents' var: nb_people category: 'People' min: 0 max: 1000 {
-		int nb <- length(people);
-		ask simulation {
-			if (nb_people > nb) {
-				create people number: nb_people - nb;
-			}
-
-			else {
-				ask (nb - nb_people) among people {
-					do die();
-				}
-			}
-		}
-	}
-
-	output {
-		display city_display type: 3d {
-			camera 'default' location: {-714.7717,73.4541,1495.3716} target: {572.8473,542.1091,0.0};
-			species road aspect: base;
-			species building aspect: base position: {0, 0, 0.25};
-			species people position: {0, 0, 0.5};
-		}
-	}
-}
-

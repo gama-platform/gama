@@ -64,7 +64,6 @@ import gama.api.ui.IConsoleListener;
 import gama.api.ui.IDialogFactory;
 import gama.api.ui.IGamaView;
 import gama.api.ui.IGamaView.Console;
-import gama.api.ui.IGamaView.Error;
 import gama.api.ui.IGamaView.Parameters;
 import gama.api.ui.IGamaView.Test;
 import gama.api.ui.IGamaView.User;
@@ -217,7 +216,7 @@ public class SwtGui implements IGui {
 
 	@Override
 	public void displayTestsResults(final IScope scope, final CompoundSummary<?, ?> summary) {
-		final IGamaView.Test v = (Test) WorkbenchHelper.getPage().findView(TEST_VIEW_ID);
+		IGamaView.Test v = (Test) WorkbenchHelper.getPage().findView(TEST_VIEW_ID);
 		if (v != null) { v.addTestResult(summary); }
 	}
 
@@ -750,7 +749,8 @@ public class SwtGui implements IGui {
 		// cleanExceptions via handler.displayLatestErrors() → updateUI() → displayErrors(),
 		// which will also refresh the view contents on the UI thread.
 		WorkbenchHelper.run(() -> {
-			final IGamaView.Error v = (IGamaView.Error) showView(null, ERROR_VIEW_ID, null, IWorkbenchPage.VIEW_ACTIVATE);
+			final IGamaView.Error v =
+					(IGamaView.Error) showView(null, ERROR_VIEW_ID, null, IWorkbenchPage.VIEW_ACTIVATE);
 			if (v != null) { v.displayErrors(true); }
 		});
 		handler.displayLatestErrors();
@@ -775,9 +775,7 @@ public class SwtGui implements IGui {
 		// cleanAfterExperiment → WorkbenchHelper.asyncRun(this::hideLaunchingOverlay)).
 		final Shell overlay = launchingOverlay;
 		launchingOverlay = null;
-		if (overlay != null) {
-			WorkbenchHelper.asyncRun(() -> { if (!overlay.isDisposed()) { overlay.close(); } });
-		}
+		if (overlay != null) { WorkbenchHelper.asyncRun(() -> { if (!overlay.isDisposed()) { overlay.close(); } }); }
 	}
 
 	/**

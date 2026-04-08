@@ -12,7 +12,6 @@ package gama.ui.display.java2d.swing;
 
 import java.awt.EventQueue;
 import java.awt.GridBagLayout;
-import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.JPanel;
 
@@ -33,7 +32,7 @@ import gama.ui.shared.utils.WorkbenchHelper;
 public class SwingControlWin extends SwingControl {
 
 	static {
-		DEBUG.OFF();
+		DEBUG.ON();
 	}
 
 	/**
@@ -142,31 +141,32 @@ public class SwingControlWin extends SwingControl {
 	@Override
 	protected void privateSetDimensions(final int width, final int height) {
 		// Assignment necessary for #3313 and #3239
+		DEBUG.OUT("[privateSetDimensions] " + (surface != null ? surface.getName() : "null")
+				+ " w=" + width + " h=" + height + " thread=" + Thread.currentThread().getName());
 		WorkbenchHelper.asyncRun(() -> {
 			if (isDisposed()) { return; }
 			Rectangle r = this.getBounds();
 			int w = r.width;
 			int h = r.height;
-			// DEBUG.OUT(
-			// "" + System.currentTimeMillis() + " -- In WorkbenchHelper.asyncRun, Set size sent by SwingControl "
-			// + width + " x " + height + " / SWT Bounds = " + w + " x " + h);
 			// Solves a problem where the last view on HiDPI screens on Windows
 			// would be outscaled
-			if (!this.isDisposed() && surface.getWidth() != w && surface.getHeight() != h) { this.requestLayout(); }
-			try {
-				EventQueue.invokeAndWait(() -> {
-					// DEBUG.OUT("" + System.currentTimeMillis()
-					// + " -- In EventQueue.invokeAndWait, Set size sent by SwingControl " + width + " x "
-					// + height + " / SWT Bounds = " + w + " x " + h);
-					// frame.setBounds(x, y, width, height);
-					// frame.setVisible(false);
-					surface.setBounds(0, 0, w, h);
-					// frame.setVisible(true);
-				});
-			} catch (InvocationTargetException | InterruptedException e) {
-				e.printStackTrace();
+			if (!this.isDisposed() && surface.getWidth() != w && surface.getHeight() != h) {
+				DEBUG.OUT("[privateSetDimensions asyncRun] requestLayout for "
+						+ (surface != null ? surface.getName() : "null")
+						+ " surface=" + surface.getWidth() + "x" + surface.getHeight()
+						+ " swtBounds=" + w + "x" + h);
+				this.requestLayout();
 			}
-
+			// Use invokeLater rather than invokeAndWait: the latter blocked the SWT
+			// display thread until the AWT surface was resized, but with N displays each
+			// componentResized → resizeImage → repaint chain queued a full layer-draw on
+			// the AWT EDT that had to drain before the next invokeAndWait could run,
+			// making relaunch O(N) times slower (see issue #3719).
+			DEBUG.OUT("[privateSetDimensions asyncRun] invokeLater surface.setBounds for "
+					+ (surface != null ? surface.getName() : "null") + " " + w + "x" + h);
+			EventQueue.invokeLater(() -> {
+				surface.setBounds(0, 0, w, h);
+			});
 		});
 
 	}

@@ -113,6 +113,7 @@ public class ModelsManager extends AbstractServiceFactory implements IModelsMana
 				exp.setHeadless(true);
 				final TestAgent agent = (TestAgent) exp.getAgent();
 				// exp.getController().getScheduler().resume();
+				agent.init(agent.getScope());
 				agent.step(agent.getScope());
 				result.add(agent.getSummary());
 				GAMA.closeExperiment(exp);

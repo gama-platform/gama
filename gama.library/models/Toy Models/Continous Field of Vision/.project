@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>K Nearest Neighbours</name>
+	<name>Economy</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -13,6 +13,7 @@
 	</buildSpec>
 	<natures>
 		<nature>org.eclipse.xtext.ui.shared.xtextNature</nature>
-		<nature>msi.gama.application.gamaNature</nature>
+		<nature>gama.workspace.gamaNature</nature>
+		<nature>gama.workspace.builtinNature</nature>
 	</natures>
 </projectDescription>
