@@ -49,25 +49,26 @@ public class FloatEditor extends NumberEditor<Double> {
 	 */
 	FloatEditor(final IAgent agent, final IParameter param, final boolean canBeNull, final EditorListener<Double> l) {
 		super(agent, param, l, canBeNull);
-		computeFormatterParameters();
+		computeFormatterParameters(0d);
 	}
 
 	/**
 	 * Compute formatter parameters.
 	 */
-	protected void computeFormatterParameters() {
+	protected void computeFormatterParameters(final Double value) {
+		final int valueChars = String.valueOf(value).length();
 		final int minChars = String.valueOf(Cast.asInt(getScope(), getMinValue())).length();
 		final int maxChars = String.valueOf(Cast.asInt(getScope(), getMaxValue())).length();
-		nbInts = Math.max(minChars, maxChars);
+		nbInts = Math.max(valueChars, Math.max(minChars, maxChars));
 		formatter.setMaximumIntegerDigits(nbInts);
 		formatter.setMinimumIntegerDigits(nbInts);
 		String s = String.valueOf(getStepValue());
 		s = s.contains(".") ? s.replaceAll("0*$", "").replaceAll("\\.$", "") : s;
 		final String[] segments = s.split("\\.");
 		if (segments.length > 1) {
-			nbFracs = segments[1].length();
+			nbFracs = segments[1].length() + 1;
 		} else {
-			nbFracs = 1;
+			nbFracs = 2;
 		}
 		formatter.setMaximumFractionDigits(nbFracs);
 		formatter.setMinimumFractionDigits(nbFracs);
@@ -130,7 +131,7 @@ public class FloatEditor extends NumberEditor<Double> {
 
 	@Override
 	public boolean formatsValue() {
-		return true;
+		return false;
 	}
 
 	/**
@@ -141,7 +142,8 @@ public class FloatEditor extends NumberEditor<Double> {
 	 * @return the string
 	 */
 	@Override
-	public String valueFormatted(final Object value) {
+	public String valueFormatted(final Double value) {
+		computeFormatterParameters(value);
 		return formatter.format(value == null ? 0 : value);
 	}
 }
