@@ -1,14 +1,11 @@
 /**
-* Name: evacuation_adapter
-* Author: HUYNH Quang Nghi
-* Description: It is NOT supposed to launch. This is the coupling of Evacuation model. It is used in the "Flood and Evacuation" as an interface. 
-* Tags: comodel
+* Name: movecomodel
+* Experiment file for evacuation model. Used by "Flood Evacuation Comodel.gaml"
+* Author: Lucas Grosjean
+* Tags: comodel, experiment
 */
-model evacuation_adapter
 
-import "../../../../Toy Models/Evacuation/models/Continuous Move.gaml"
-experiment "Adapter of Evacuation" type: gui
-{
+experiment movecomodel model:'../../../Evacuation/models/Continuous Move.gaml' type:gui {
 	point centroid <- { 200, 580 };
 	list<building> get_building()
 	{
@@ -39,9 +36,4 @@ experiment "Adapter of Evacuation" type: gui
 	{
 		return list(people);
 	}
-
-	output
-	{
-	}
-
 }
