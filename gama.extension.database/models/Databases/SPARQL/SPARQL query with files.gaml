@@ -31,6 +31,11 @@ global {
 			return;
 		}
 		
+		// we check for results
+		if empty(first(result)){
+			write "No result found, check the query again" color:#red;
+		}
+		
 		// we save the result as a csv that we manage "manually"
 		loop i from:0 to:length(first(result))-1 {
 			list<string> values <- [];

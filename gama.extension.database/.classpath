@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry exported="true" kind="lib" path="libs/jena 5.5.0/jena-arq-5.5.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/jena 5.5.0/jena-base-5.5.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/jena 5.5.0/jena-core-5.5.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/jena 5.5.0/jena-iri-5.5.0.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-25">
 		<attributes>
 			<attribute name="module" value="true"/>
@@ -16,5 +12,12 @@
 			<attribute name="optional" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="libs/SPARQL/jena 5.5.0/jena-arq-5.5.0.jar"/>
+	<classpathentry kind="lib" path="libs/SPARQL/jena 5.5.0/jena-base-5.5.0.jar"/>
+	<classpathentry kind="lib" path="libs/SPARQL/jena 5.5.0/jena-core-5.5.0.jar"/>
+	<classpathentry kind="lib" path="libs/SPARQL/jena 5.5.0/jena-iri-5.5.0.jar"/>
+	<classpathentry kind="lib" path="libs/SPARQL/libthrift-0.22.0.jar"/>
+	<classpathentry kind="lib" path="libs/SPARQL/caffeine-3.2.3.jar"/>
+	<classpathentry kind="lib" path="libs/SPARQL/com.google.gson-2.9.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

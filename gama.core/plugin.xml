@@ -28,10 +28,6 @@
             class="gama.core.experiment.ExperimentAgent"
             keyword="gui">
       </implementation>
-      <implementation
-            class="gama.core.experiment.batch.BatchAgent"
-            keyword="batch">
-      </implementation>
    </extension>
    <extension
          point="gama.event_layer">
