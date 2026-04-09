@@ -3,12 +3,16 @@ name: "[./.github/workflows/travis-packaging.yaml]"
 on:
   workflow_call:
     inputs:
-      RELEASE_VERSION: 
+      RELEASE_VERSION:
         required: true
         type: string
       jdk_embedded_version:
         type: string
         required: true
+      SKIP_TESTS:
+        type: boolean
+        required: false
+        default: false
     secrets:
       # === MacOS needs ===
       MACOS_CERTIFICATE:
@@ -62,6 +66,7 @@ jobs:
   
   packaging-linux-test:
     needs: packaging-linux
+    if: ${{ !inputs.SKIP_TESTS }}
     name: Testing Linux package
     uses: ./.github/workflows/travis-packaging-linux-test.yaml
     with:
@@ -105,5 +110,6 @@ jobs:
   
   packaging-macos-test:
     needs: packaging-macos
+    if: ${{ !inputs.SKIP_TESTS }}
     name: Testing MacOS package
     uses: ./.github/workflows/travis-packaging-macos-test.yaml
