@@ -212,6 +212,12 @@ public interface IGamaIcons {
 	/** The folder user. */
 	String FOLDER_USER = "navigator/folder.user";
 
+	/** The folder tutorials – used for the "Tutorials" virtual folder in the GAMA Navigator. */
+	String FOLDER_TUTORIALS = "navigator/folder.tutorial";
+
+	/** The folder recipes – used for the "Recipes" virtual folder in the GAMA Navigator. */
+	String FOLDER_RECIPES = "navigator/folder.recipe";
+
 	/** The font decrease. */
 	String FONT_DECREASE = "toolbar/font.decrease";
 
@@ -370,9 +376,6 @@ public interface IGamaIcons {
 	/** The overlay ok. */
 	String OVERLAY_OK = "navigator/overlays/overlay.ok";
 
-	/** The overlay toggle. */
-	// String OVERLAY_TOGGLE = "mini/overlay.toggle";
-
 	/** The overlay warning. */
 	String OVERLAY_WARNING = "navigator/overlays/overlay.warning";
 
@@ -516,12 +519,6 @@ public interface IGamaIcons {
 
 	/** The toggle warnings. */
 	String TOGGLE_WARNINGS = "validation/toggle.warnings";
-
-	// /** The toolbar hide. */
-	// String TOOLBAR_HIDE = "mini/toolbar.hide";
-	//
-	// /** The toolbar show. */
-	// String TOOLBAR_SHOW = "mini/toolbar.show";
 
 	/** The tree collapse. */
 	String TREE_COLLAPSE = "toolbar/bar.collapse";
