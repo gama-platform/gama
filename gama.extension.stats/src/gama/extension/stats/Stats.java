@@ -2420,7 +2420,7 @@ public class Stats {
 					value = "multi_anova([1.0, 2.0, 5.0, 6.0], ['a', 'a', 'b', 'b'], ['x', 'y', 'x', 'y'])",
 					isExecutable = false) })
 	@test ("(multi_anova([10.0, 11.0, 20.0, 21.0, 30.0, 31.0, 40.0, 41.0, 100.0, 101.0, 200.0, 201.0], ['a', 'a', 'a', 'a', 'b', 'b', 'b', 'b', 'c', 'c', 'c', 'c'], ['x', 'x', 'y', 'y', 'x', 'x', 'y', 'y', 'x', 'x', 'y', 'y']).p_values['A'] < 0.05)")
-	public static GamaMultiAnova multiAnova(final IScope scope, final IList<Double> y, final IList<?> factorA,
+	public static GamaAnova multiAnova(final IScope scope, final IList<Double> y, final IList<?> factorA,
 			final IList<?> factorB) {
 		if (y.size() != factorA.size() || y.size() != factorB.size())
 			throw GamaRuntimeException.error("All input lists must have the same size", scope);
@@ -2486,7 +2486,7 @@ public class Stats {
 
 			double msError = dfError > 0 ? rssFull / dfError : 0.0;
 
-			GamaMultiAnova result = new GamaMultiAnova();
+			GamaAnova result = new GamaAnova();
 			if (dfError > 0 && msError > 0) {
 				result.addEffect("A", computeP(ssA / dfA, msError, dfA, dfError), ssA / dfA / msError);
 				result.addEffect("B", computeP(ssB / dfB, msError, dfB, dfError), ssB / dfB / msError);

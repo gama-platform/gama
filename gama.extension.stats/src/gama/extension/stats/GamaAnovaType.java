@@ -19,7 +19,6 @@ import gama.api.gaml.types.GamaType;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.ITypesManager;
 import gama.api.runtime.scope.IScope;
-import gama.api.types.misc.IValue;
 
 /**
  * The Class GamaAnovaType.
@@ -27,12 +26,12 @@ import gama.api.types.misc.IValue;
 @type (
 		name = "anova",
 		id = IType.ANOVA,
-		wraps = { GamaAnova.class, GamaMultiAnova.class },
+		wraps = { GamaAnova.class },
 		kind = ISymbolKind.REGULAR,
 		concept = { IConcept.TYPE },
 		doc = { @doc (
 				value = "Type of variables that enables to perform an ANOVA test") })
-public class GamaAnovaType extends GamaType<IValue> {
+public class GamaAnovaType extends GamaType<GamaAnova> {
 
 	/**
 	 * @param typesManager
@@ -48,13 +47,13 @@ public class GamaAnovaType extends GamaType<IValue> {
 
 	@Override
 	@doc ("Returns the argument if it is an anova, otherwise nil")
-	public IValue cast(final IScope scope, final Object obj, final Object param, final boolean copy)
+	public GamaAnova cast(final IScope scope, final Object obj, final Object param, final boolean copy)
 			throws GamaRuntimeException {
-		if (obj instanceof GamaAnova || obj instanceof GamaMultiAnova) return (IValue) obj;
+		if (obj instanceof GamaAnova) return (GamaAnova) obj;
 		return null;
 	}
 
 	@Override
-	public IValue getDefault() { return null; }
+	public GamaAnova getDefault() { return null; }
 
 }

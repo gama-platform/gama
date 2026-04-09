@@ -12,7 +12,6 @@ package gama.extension.stats;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import org.apache.commons.math3.stat.inference.OneWayAnova;
 
@@ -27,6 +26,8 @@ import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
 import gama.api.types.misc.IValue;
 import gama.api.utils.json.IJson;
 import gama.api.utils.json.IJsonValue;
@@ -37,19 +38,27 @@ import gama.api.utils.json.IJsonValue;
 @vars ({ @variable (
 		name = "p_value",
 		type = IType.FLOAT,
-		doc = { @doc ("The p-value of the ANOVA test") }),
+		doc = { @doc ("The p-value of the ANOVA test (for one-way ANOVA)") }),
 		@variable (
 				name = "f_stat",
 				type = IType.FLOAT,
-				doc = { @doc ("The F-statistic of the ANOVA test") }),
+				doc = { @doc ("The F-statistic of the ANOVA test (for one-way ANOVA)") }),
 		@variable (
 				name = "df_num",
 				type = IType.INT,
-				doc = { @doc ("Numerator degrees of freedom") }),
+				doc = { @doc ("Numerator degrees of freedom (for one-way ANOVA)") }),
 		@variable (
 				name = "df_den",
 				type = IType.INT,
-				doc = { @doc ("Denominator degrees of freedom") }) })
+				doc = { @doc ("Denominator degrees of freedom (for one-way ANOVA)") }),
+		@variable (
+				name = "p_values",
+				type = IType.MAP,
+				doc = { @doc ("The p-values for each effect (for multi-way ANOVA)") }),
+		@variable (
+				name = "f_stats",
+				type = IType.MAP,
+				doc = { @doc ("The F-statistics for each effect (for multi-way ANOVA)") }) })
 public class GamaAnova implements IValue {
 
 	/** The p value. */
@@ -61,8 +70,19 @@ public class GamaAnova implements IValue {
 	/** The degrees of freedom. */
 	int dfNum, dfDen;
 
+	/** The p values. */
+	IMap<String, Double> pValues = GamaMapFactory.create(Types.STRING, Types.FLOAT);
+
+	/** The f stats. */
+	IMap<String, Double> fStats = GamaMapFactory.create(Types.STRING, Types.FLOAT);
+
 	/**
 	 * Instantiates a new gama anova.
+	 */
+	public GamaAnova() {}
+
+	/**
+	 * Instantiates a new gama anova for one-way.
 	 *
 	 * @param scope
 	 *            the scope
@@ -85,6 +105,25 @@ public class GamaAnova implements IValue {
 		this.fStat = categoryData.isEmpty() ? 0.0 : anova.anovaFValue(categoryData);
 		this.dfNum = categoryData.isEmpty() ? 0 : categoryData.size() - 1;
 		this.dfDen = categoryData.isEmpty() ? 0 : totalN - categoryData.size();
+	}
+
+	/**
+	 * Adds an effect (for multi-way).
+	 *
+	 * @param name
+	 *            the effect name
+	 * @param p
+	 *            the p-value
+	 * @param f
+	 *            the f-stat
+	 */
+	public void addEffect(final String name, final double p, final double f) {
+		pValues.put(name, p);
+		fStats.put(name, f);
+		if (pValues.size() == 1) { // Set the primary values to the first effect for compatibility
+			this.pValue = p;
+			this.fStat = f;
+		}
 	}
 
 	/**
@@ -119,6 +158,22 @@ public class GamaAnova implements IValue {
 	@getter ("df_den")
 	public int getDfDen() { return dfDen; }
 
+	/**
+	 * Gets the p values.
+	 *
+	 * @return the p values
+	 */
+	@getter ("p_values")
+	public IMap<String, Double> getPValues() { return pValues; }
+
+	/**
+	 * Gets the f stats.
+	 *
+	 * @return the f stats
+	 */
+	@getter ("f_stats")
+	public IMap<String, Double> getFStats() { return fStats; }
+
 	@Override
 	public String serializeToGaml(final boolean includingBuiltIn) {
 		return stringValue(null);
@@ -129,14 +184,19 @@ public class GamaAnova implements IValue {
 
 	@Override
 	public String stringValue(final IScope scope) throws GamaRuntimeException {
+		if (!pValues.isEmpty()) return "ANOVA(" + pValues.toString() + ")";
 		return "ANOVA(p=" + pValue + ", F=" + fStat + ")";
 	}
 
 	@Override
 	public IValue copy(final IScope scope) throws GamaRuntimeException {
-		GamaAnova copy = new GamaAnova(null, GamaListFactory.create());
+		GamaAnova copy = new GamaAnova();
 		copy.pValue = this.pValue;
 		copy.fStat = this.fStat;
+		copy.dfNum = this.dfNum;
+		copy.dfDen = this.dfDen;
+		copy.pValues.putAll(this.pValues);
+		copy.fStats.putAll(this.fStats);
 		return copy;
 	}
 
@@ -153,7 +213,7 @@ public class GamaAnova implements IValue {
 	@Override
 	public IJsonValue serializeToJson(final IJson json) {
 		return json.typedObject(getGamlType()).add("p_value", pValue).add("f_stat", fStat).add("df_num", dfNum)
-				.add("df_den", dfDen);
+				.add("df_den", dfDen).add("p_values", json.valueOf(pValues)).add("f_stats", json.valueOf(fStats));
 	}
 
 }
