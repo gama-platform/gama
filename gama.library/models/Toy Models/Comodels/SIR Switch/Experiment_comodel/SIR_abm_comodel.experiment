@@ -1,8 +1,11 @@
-model SIR_ABM_coupling
+/**
+* Name: ABMcomodel
+* Experiment file for SIR_ABM. Used by "SIR Comodel.gaml"
+* Author: Lucas Grosjean
+* Tags: comodel, experiment
+*/
 
-import "SIR_ABM.gaml"
-experiment "AdapterAbm" type: gui
-{
+experiment ABMcomodel model:'../Legacy_models/SIR_ABM.gaml' type:gui {
 	int get_num_S()
 	{
 		return length(Host where (each.state = 0));
@@ -20,10 +23,9 @@ experiment "AdapterAbm" type: gui
 
 	action set_num_S_I_R (int numS, int numI, int numR)
 	{
-		unknown call;
-		call <- set_num_S(numS);
-		call <- set_num_I(numI);
-		call <- set_num_R(numR);
+		self.set_num_S(numS);
+		self.set_num_I(numI);
+		self.set_num_R(numR);
 	}
 
 	action set_num_S (int num)
@@ -66,5 +68,4 @@ experiment "AdapterAbm" type: gui
 			state <- 2;
 		}
 	}
-
 }
