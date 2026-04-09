@@ -22,10 +22,13 @@ global {
 	//map of colors (key: land_use, value: color)  just uses to visualize the different land_use
 	map<int,rgb> colors;
 	
+		
 	init {
-		//we set the value of the land_use variable by the second (index = 1) value stored in the bands attribute 
+		// In GAMA, when a grid is built from multiple files, the 'bands' list only contains the values from the subsequent files.
+		// Therefore, the value from the second file (land_cover_file) is located at index 0 of the 'bands' attribute.ask cell {
+	
 		ask cell {
-			land_use <- int(bands[1]);
+			land_use <- int(bands[0]);
 		}
 		
 		//we define a color per land_use and use it to define the color of the cell
@@ -36,10 +39,9 @@ global {
 		}
 	}
 }
-
-//we define the cell grid from the two grid files: the first file (dem_file) will be used as reference for the definition of the grid number of rows and columns and location
-//the value of the files are stored in the bands built-in list attribute: each value of the list corresponds to the value in the file
-//the value of the first file is also stored in thr grid_value built-in variable
+// We define the cell grid from the two grid files: the first file (dem_file) will be used as a reference for the definition of the grid's number of rows, columns, and location.
+// In GAMA, the value of the FIRST file is exclusively stored in the 'grid_value' built-in variable.
+// The values from the FOLLOWING files are stored in the 'bands' built-in list attribute (e.g., the second file is in bands[0], the third in bands[1], etc.).
 grid cell files: [dem_file,land_cover_file] {
 	int land_use;
 }
