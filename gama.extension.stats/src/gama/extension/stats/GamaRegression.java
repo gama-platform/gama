@@ -260,8 +260,8 @@ public class GamaRegression implements IValue {
 
 	@Override
 	public IJsonValue serializeToJson(final IJson json) {
-		return json.typedObject(getGamlType(), "nb_features", nbFeatures, "parameters", json.array(param), "RSquare",
-				rsquare, "residuals", json.array(error), "std_errors", json.array(stdErrors), "p_values",
+		return json.object("type", getGamlType().getName(), "nb_features", nbFeatures, "parameters", json.array(param),
+				"RSquare", rsquare, "residuals", json.array(error), "std_errors", json.array(stdErrors), "p_values",
 				json.array(pValues));
 	}
 

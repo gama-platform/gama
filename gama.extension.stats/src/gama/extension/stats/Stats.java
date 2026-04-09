@@ -2393,7 +2393,7 @@ public class Stats {
 					isExecutable = false) })
 	@test ("(anova([[6.0, 8.0, 4.0, 5.0, 3.0, 4.0], [8.0, 12.0, 9.0, 11.0, 6.0, 8.0], [13.0, 9.0, 11.0, 8.0, 7.0, 12.0]]).f_stat with_precision 2) = 6.22")
 	public static GamaAnova anova(final IScope scope, final IList<IList<?>> data) {
-		return new GamaAnova(scope, (List) data);
+		return new GamaAnova(scope, data);
 	}
 
 	/**

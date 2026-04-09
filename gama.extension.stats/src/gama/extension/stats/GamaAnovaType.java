@@ -19,6 +19,7 @@ import gama.api.gaml.types.GamaType;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.ITypesManager;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.misc.IValue;
 
 /**
  * The Class GamaAnovaType.
