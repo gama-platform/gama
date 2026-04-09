@@ -16,7 +16,7 @@ species Person skills:[network]
 	}
 }
 
-experiment "Tests for gam.extension.network" type: test skills:[network] {
+experiment "Tests for gam.extension.network" type: test {
 	bool already_build <- false;
 	string group_spice <- "spice girls";
 	list<string> girls <- ["Victoria","Mel","Melanie","Geri","Emma"];
@@ -51,7 +51,6 @@ experiment "Tests for gam.extension.network" type: test skills:[network] {
 		} catch {
 			 test<-false;
 		} 
-		write "Message sending -- done!";
 		assert test;
 	}
 	
@@ -69,7 +68,6 @@ experiment "Tests for gam.extension.network" type: test skills:[network] {
 			if(length(mailbox)>0) {test<-true;}
 				else {test<-false;}
 		}
-		write "Message receiving -- done!";
 		assert test;	 
 	}
 
@@ -90,7 +88,6 @@ experiment "Tests for gam.extension.network" type: test skills:[network] {
 			}
 				else {test<-false;}
 		}
-		write "Message contents -- done!";
 		assert test;	 
 	}
 	
@@ -113,7 +110,6 @@ experiment "Tests for gam.extension.network" type: test skills:[network] {
 			a4 <- nil = fetch_message();
 		}
 		
-		write "has_more_element and fetch_message action -- done!";
 		assert (a1 and a2 and a3 and a4);
 	}
 	
@@ -166,7 +162,6 @@ experiment "Tests for gam.extension.network" type: test skills:[network] {
 			a4 <- nil = fetch_message();
 		}
 		p4 <- (a1 and a2 and a3 and a4);
-		write "network group -- done!";
 		assert (p1 and p2 and p3 and p4);
 	}
 
@@ -243,7 +238,6 @@ experiment "Tests for gam.extension.network" type: test skills:[network] {
 	
 		}
 		
-		write "network group Spice Girls -- done!";
 		assert (p1);
 	}
 	
