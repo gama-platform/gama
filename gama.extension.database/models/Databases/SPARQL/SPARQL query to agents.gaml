@@ -37,7 +37,11 @@ global {
 		}
 		
 		// Now we create agents based on the data we collected
-		int nbPhilosophers <- length(first(result));		
+		int nbPhilosophers <- length(first(result));	
+		if nbPhilosophers = 0 {
+			write "No philosopher found, check the query again" color:#red;
+			return;
+		}	
 		loop i from:0 to:nbPhilosophers-1 {
 			create philosopher {
 				// we place those in the center of the y and z axis, the influences will be anywhere

@@ -1,32 +1,39 @@
 PREFIX dbo: <http://dbpedia.org/ontology/>
-PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 PREFIX dbc: <http://dbpedia.org/resource/Category:>
 PREFIX dct: <http://purl.org/dc/terms/>
 
-SELECT 
+SELECT
   (REPLACE(REPLACE(STRAFTER(STR(?philosopher), "http://dbpedia.org/resource/"), "_", " "), ", .*", "") AS ?name)
-  (STR(?birthDate) AS ?birthDateStr)
+  (STR(MIN(?birthDate)) AS ?birthDateStr)
   (GROUP_CONCAT(DISTINCT REPLACE(STRAFTER(STR(?birthPlace), "http://dbpedia.org/resource/"), "_", " "); SEPARATOR="; ") AS ?birthPlaces)
   (GROUP_CONCAT(DISTINCT REPLACE(STRAFTER(STR(?nationality), "http://dbpedia.org/resource/"), "_", " "); SEPARATOR="; ") AS ?nationalities)
   (GROUP_CONCAT(
      DISTINCT CONCAT(
        REPLACE(REPLACE(STRAFTER(STR(?influence), "http://dbpedia.org/resource/"), "_", " "), ", .*", ""),
        IF(BOUND(?influenceBirth), CONCAT(" (", STR(?influenceBirth), ")"), "")
-     ); 
+     );
      SEPARATOR=";"
    ) AS ?influencedByList)
 WHERE {
-  ?philosopher dct:subject dbc:French_philosophers ;
-               dbo:birthDate ?birthDate .
-  FILTER(datatype(?birthDate) = xsd:date || datatype(?birthDate) = xsd:dateTime)
-
-  OPTIONAL { ?philosopher dbo:birthPlace ?birthPlace }
-  OPTIONAL { ?philosopher dbo:nationality ?nationality }
-  OPTIONAL { 
-    ?philosopher dbo:influencedBy ?influence .
-    ?influence dbo:birthDate ?influenceBirth
+  GRAPH <urn:dbpedia:live> {
+    ?philosopher dbo:birthDate ?birthDate .
+    {
+      { ?philosopher dct:subject dbc:15th-century_French_philosophers }
+      UNION { ?philosopher dct:subject dbc:16th-century_French_philosophers }
+      UNION { ?philosopher dct:subject dbc:17th-century_French_philosophers }
+      UNION { ?philosopher dct:subject dbc:18th-century_French_philosophers }
+      UNION { ?philosopher dct:subject dbc:19th-century_French_philosophers }
+      UNION { ?philosopher dct:subject dbc:20th-century_French_philosophers }
+      UNION { ?philosopher dct:subject dbc:21st-century_French_philosophers }
+    }
+    OPTIONAL { ?philosopher dbo:birthPlace ?birthPlace }
+    OPTIONAL { ?philosopher dbo:nationality ?nationality }
+    OPTIONAL {
+      ?philosopher dbo:influencedBy ?influence .
+      OPTIONAL { ?influence dbo:birthDate ?influenceBirth }
+    }
   }
 }
-GROUP BY ?philosopher ?birthDate
-ORDER BY ASC(?birthDate)
+GROUP BY ?philosopher
+ORDER BY ASC(MIN(?birthDate))
 LIMIT 200
