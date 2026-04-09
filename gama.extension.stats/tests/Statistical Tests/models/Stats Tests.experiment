@@ -42,7 +42,7 @@ experiment "Tests for gama.extension.stats" type: test {
 	}
 
 	test "Operator spearman_correlation" {
-		assert (spearman_correlation([1, 2, 3, 4, 5], [1, 2, 3, 4, 5]) with_precision 1) = 1.0;
+		assert (spearman_correlation([1, 2, 3, 4, 5], [1, 2, 3, 4, 5]) ) = 1.0;
 	}
 
 	test "Operator build" {

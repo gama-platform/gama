@@ -659,23 +659,57 @@ public class Stats {
 			examples = { @example (
 					value = "spearman_correlation([1,2,3,4,5], [5,4,3,2,1])",
 					equals = "-1.0") })
-	@test ("(spearman_correlation([1, 2, 3, 4, 5], [1, 2, 3, 4, 5]) with_precision 1) = 1.0")
+	@test ("(spearman_correlation([1, 2, 3, 4, 5], [1, 2, 3, 4, 5]) ) = 1.0")
 	public static Double opSpearmanCorrelation(final IScope scope, final IContainer data1, final IContainer data2) {
 		if (data1.length(scope) != data2.length(scope)) return 0.0;
 		int n = data1.length(scope);
-		if (n == 0) return 0.0;
+		if (n <= 1) return 1.0;
 
 		double[] r1 = computeRanks(scope, data1);
 		double[] r2 = computeRanks(scope, data2);
 
-		DoubleArrayList l1 = new DoubleArrayList(r1);
-		DoubleArrayList l2 = new DoubleArrayList(r2);
+		double sumD2 = 0;
+		for (int i = 0; i < n; i++) {
+			double d = r1[i] - r2[i];
+			sumD2 += d * d;
+		}
 
-		double sd1 = Descriptive.standardDeviation(Descriptive.variance(n, Descriptive.sum(l1), Descriptive.sumOfSquares(l1)));
-		double sd2 = Descriptive.standardDeviation(Descriptive.variance(n, Descriptive.sum(l2), Descriptive.sumOfSquares(l2)));
+		// If no ties, we can use the simplified formula for better precision
+		boolean hasTies = false;
+		for (int i = 0; i < n - 1; i++) {
+			if (r1[i] % 1 != 0 || r2[i] % 1 != 0) {
+				hasTies = true;
+				break;
+			}
+		}
+		// Actually checking for duplicate ranks is more reliable
+		if (!hasTies) {
+			double[] s1 = r1.clone();
+			double[] s2 = r2.clone();
+			Arrays.sort(s1);
+			Arrays.sort(s2);
+			for (int i = 0; i < n - 1; i++) {
+				if (s1[i] == s1[i + 1] || s2[i] == s2[i + 1]) {
+					hasTies = true;
+					break;
+				}
+			}
+		}
 
-		if (sd1 == 0 || sd2 == 0) return 0.0;
-		return Descriptive.correlation(l1, sd1, l2, sd2);
+		if (!hasTies) return 1.0 - 6.0 * sumD2 / (n * (Math.pow(n, 2) - 1));
+
+		// General formula (Pearson correlation of ranks)
+		double avgR = (n + 1) / 2.0;
+		double num = 0;
+		double den1 = 0;
+		double den2 = 0;
+		for (int i = 0; i < n; i++) {
+			num += (r1[i] - avgR) * (r2[i] - avgR);
+			den1 += Math.pow(r1[i] - avgR, 2);
+			den2 += Math.pow(r2[i] - avgR, 2);
+		}
+		if (den1 == 0 || den2 == 0) return 0.0;
+		return num / Math.sqrt(den1 * den2);
 	}
 
 	private static double[] computeRanks(IScope scope, IContainer data) {
