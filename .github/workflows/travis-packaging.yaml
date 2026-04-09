@@ -37,9 +37,14 @@ on:
       # === 
 
 jobs:
-  
+
+  testing-gama:
+    if: ${{ !inputs.SKIP_TESTS }}
+    name: Testing built GAMA
+    uses: ./.github/workflows/travis-build-test.yaml
+
   packaging-jdk:
-    name: Embedding JDK in GAMA 
+    name: Embedding JDK in GAMA
     uses: ./.github/workflows/travis-packaging-jdk.yaml
     with:
       RELEASE_VERSION: ${{ inputs.RELEASE_VERSION }}
