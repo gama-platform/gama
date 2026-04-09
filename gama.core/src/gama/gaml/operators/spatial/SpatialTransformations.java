@@ -2117,6 +2117,7 @@ public class SpatialTransformations {
 		}
 		return false;
 	}
+	
 
 	/**
 	 * Modify point.
@@ -2130,18 +2131,21 @@ public class SpatialTransformations {
 	 * @param first
 	 *            the first
 	 */
-	/*
-	 * if (first) {g <- line([pt] + (g.points - first(g.points)));} else {g <- line((g.points - last(g.points)) +
-	 * [pt]);} return g;
-	 */
+	
 	private static void modifyPoint(final IScope scope, final IShape shape, final IPoint pt, final boolean first) {
-		if (first) {
-			shape.getInnerGeometry().getCoordinates()[0] = pt.toCoordinate();
-		} else {
-			shape.getInnerGeometry().getCoordinates()[shape.getInnerGeometry().getCoordinates().length - 1] =
-					pt.toCoordinate();
-		}
-		shape.getInnerGeometry().geometryChanged();
+	    // 1. Get the array of coordinates from the geometry
+	    final org.locationtech.jts.geom.Coordinate[] coords = shape.getInnerGeometry().getCoordinates();
+	    
+	    // 2. Target the correct index (either the first or the last point)
+	    final int index = first ? 0 : coords.length - 1;
+	    
+	    // 3. Directly modify the attributes of the existing Coordinate object in memory!
+	    coords[index].x = pt.getX();
+	    coords[index].y = pt.getY();
+	    coords[index].z = pt.getZ(); // Useful if your graph has elevation/3D coordinates
+	    
+	    // 4. Notify JTS that the internal coordinates have changed so it can update its bounding box
+	    shape.getInnerGeometry().geometryChanged();
 	}
 
 	/**

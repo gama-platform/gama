@@ -1,19 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
 	<name>Tutorials</name>
-	<comment></comment>
+	<comment>DEPRECATED - content moved to gama.library/tutorials/</comment>
 	<projects>
 	</projects>
 	<buildSpec>
-		<buildCommand>
-			<name>org.eclipse.xtext.ui.shared.xtextBuilder</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
 	</buildSpec>
 	<natures>
-		<nature>org.eclipse.xtext.ui.shared.xtextNature</nature>
-		<nature>gama.workspace.gamaNature</nature>
-		<nature>gama.workspace.builtinNature</nature>
 	</natures>
 </projectDescription>
