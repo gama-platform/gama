@@ -539,14 +539,14 @@ public class RandomUtils implements IRandom {
 	 * @return the integer
 	 */
 	@Override
-	public int choiceIn(final List<Double> distribution) {
+	public int choiceIn(final List<? extends Number> distribution) {
 		if (distribution == null || distribution.isEmpty()) return -1;
-		double total = distribution.stream().mapToDouble(Double::doubleValue).sum();
+		double total = distribution.stream().mapToDouble(Number::doubleValue).sum();
 		if (total == 0) return -1;
 		double rand = next();
 		double cumulative = 0;
 		for (int i = 0; i < distribution.size(); i++) {
-			cumulative += distribution.get(i) / total;
+			cumulative += distribution.get(i).doubleValue() / total;
 			if (rand < cumulative) return i;
 		}
 		return -1;
@@ -562,14 +562,14 @@ public class RandomUtils implements IRandom {
 	 * @return the v
 	 */
 	@Override
-	public <V> V choiceIn(final Map<V, Double> distribution) {
+	public <V> V choiceIn(final Map<V, ? extends Number> distribution) {
 		if (distribution == null || distribution.isEmpty()) return null;
-		double total = distribution.values().stream().mapToDouble(Double::doubleValue).sum();
+		double total = distribution.values().stream().mapToDouble(Number::doubleValue).sum();
 		if (total == 0) return null;
 		double rand = next();
 		double cumulative = 0;
-		for (Map.Entry<V, Double> entry : distribution.entrySet()) {
-			cumulative += entry.getValue() / total;
+		for (Map.Entry<V, ? extends Number> entry : distribution.entrySet()) {
+			cumulative += entry.getValue().doubleValue() / total;
 			if (rand < cumulative) return entry.getKey();
 		}
 		return null;

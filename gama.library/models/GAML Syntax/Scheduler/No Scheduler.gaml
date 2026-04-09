@@ -11,7 +11,7 @@
 
 model schedullingagents
 
-global
+global 
 {
 	init
 	{
@@ -24,7 +24,14 @@ global
 		write "With an empty list given inside the schedules facet of the species, it will not be executed \n"
 			+ "so, nothing will be written inside the console";
 	}
+	
+	reflex {
+		write "I'm the world";
+	}
 }
+
+
+
 species no_scheduler schedules:[]
 {
 	int nb_generated;

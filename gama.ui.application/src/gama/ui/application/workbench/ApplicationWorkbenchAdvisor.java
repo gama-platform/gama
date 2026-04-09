@@ -34,6 +34,7 @@ import gama.api.utils.files.FileUtils;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
 import gama.ui.application.Application;
+import gama.ui.application.server.GamaGuiWebSocketServer;
 import gama.workspace.manager.WorkspaceModelsManager;
 
 /**
@@ -91,6 +92,10 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 		FileUtils.cleanCache();
 		final String[] args = Platform.getApplicationArgs();
 		// DEBUG.LOG("Arguments received by GAMA : " + DEBUG.TO_STRING(args));
+		
+		// Start Server after the GUI is loaded
+		GamaGuiWebSocketServer.startGuiServer();
+
 		if (args.length > 0) {
 			int i = 0;
 			if (args[0].contains("--launcher.defaultAction")) { i += 2; }

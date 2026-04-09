@@ -37,7 +37,6 @@ import gama.api.runtime.SystemInfo;
 import gama.api.utils.files.BufferingUtils;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
-import gama.ui.application.server.GamaGuiWebSocketServer;
 import gama.ui.application.workbench.ApplicationWorkbenchAdvisor;
 import gama.workspace.manager.WorkspaceModelsManager;
 
@@ -119,9 +118,7 @@ public class Application implements IApplication {
 					setProperty(CLEAR_PERSISTED_STATE, "true");
 					GAMA.getWorkspaceManager().clearWorkspace(false);
 				}
-				try {
-
-					GamaGuiWebSocketServer.startGuiServer();
+				try {					
 					final int returnCode = Workbench.createAndRunWorkbench(display, new ApplicationWorkbenchAdvisor());
 					if (returnCode == RETURN_RESTART) return EXIT_RESTART;
 				} catch (Exception t) {

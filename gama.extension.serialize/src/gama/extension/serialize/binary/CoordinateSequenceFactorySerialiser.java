@@ -14,14 +14,13 @@ import org.locationtech.jts.geom.CoordinateSequenceFactory;
 
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.geometry.GeometryUtils;
-import gama.extension.serialize.fst.FSTObjectInput;
-import gama.extension.serialize.fst.FSTObjectOutput;
+import gama.extension.serialize.IGamaObjectInput;
+import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link CoordinateSequenceFactory} instances.
- * The factory is a singleton obtained from the global geometry factory.
- * Serialisation writes a fixed marker string ({@value #MARKER}); deserialisation always
- * returns the singleton via {@link GeometryUtils#getGeometryFactory()}.
+ * FST serialiser for {@link CoordinateSequenceFactory} instances. The factory is a singleton obtained from the global
+ * geometry factory. Serialisation writes a fixed marker string ({@value #MARKER}); deserialisation always returns the
+ * singleton via {@link GeometryUtils#getGeometryFactory()}.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
@@ -34,16 +33,6 @@ class CoordinateSequenceFactorySerialiser extends FSTIndividualSerialiser<Coordi
 	private static final String MARKER = "*GCSF*";
 
 	/**
-	 * Constructs a new {@code CoordinateSequenceFactorySerialiser} bound to the given {@link BinarySerialiser}.
-	 *
-	 * @param serialiser
-	 *            the owning binary serialiser
-	 */
-	CoordinateSequenceFactorySerialiser(final BinarySerialiser serialiser) {
-		super(serialiser);
-	}
-
-	/**
 	 * Serialises the coordinate sequence factory by writing the marker string {@value #MARKER}.
 	 *
 	 * @param out
@@ -54,13 +43,13 @@ class CoordinateSequenceFactorySerialiser extends FSTIndividualSerialiser<Coordi
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final FSTObjectOutput out, final CoordinateSequenceFactory o) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final CoordinateSequenceFactory o) throws Exception {
 		out.writeStringUTF(MARKER);
 	}
 
 	/**
-	 * Deserialises the coordinate sequence factory by consuming the marker and returning the singleton
-	 * from the global geometry factory.
+	 * Deserialises the coordinate sequence factory by consuming the marker and returning the singleton from the global
+	 * geometry factory.
 	 *
 	 * @param scope
 	 *            the current GAMA simulation scope (unused)
@@ -71,7 +60,7 @@ class CoordinateSequenceFactorySerialiser extends FSTIndividualSerialiser<Coordi
 	 *             if deserialisation fails
 	 */
 	@Override
-	public CoordinateSequenceFactory deserialise(final IScope scope, final FSTObjectInput in) throws Exception {
+	public CoordinateSequenceFactory deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		in.readStringUTF();
 		return GeometryUtils.getGeometryFactory().getCoordinateSequenceFactory();
 	}

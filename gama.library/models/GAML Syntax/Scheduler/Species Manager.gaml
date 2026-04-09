@@ -11,25 +11,14 @@
 
 model managerscheduler
 
-/* Insert your model definition here */
 
 global
 {
 	init
 	{
-		create manager;
-		int cpt <- 0;
-		create A number:10
-		{
-			cpt <- cpt+1;
-			nb_generated<-cpt;
-		}
-		cpt<-0;
-		create B number:10
-		{
-			cpt <- cpt+1;
-			nb_generated<-cpt;
-		}
+		create manager; // if this line is ommitted, only A and B agents are scheduled
+		create A number:10;
+		create B number:10;
 		
 		write "This model shows how a species can manage other species execution process. In the facet schedules of the\n"
 			+ "manager species, a shuffled list of the agents of the species B and A has been given. The agents of species B and A will be randomly executed once per step.\n"
@@ -48,18 +37,16 @@ species manager schedules:manager+shuffle(B+A)
 
 species A schedules:[]
 {
-	int nb_generated;
 	reflex present_itself
 	{
-		write "I'm A "+nb_generated;
+		write "I'm A " + int(self);
 	}
 }
 species B schedules:[]
 {
-	int nb_generated;
 	reflex present_itself
 	{
-		write "I'm B "+nb_generated;
+		write "I'm B "+ int(self);
 	}
 	
 }

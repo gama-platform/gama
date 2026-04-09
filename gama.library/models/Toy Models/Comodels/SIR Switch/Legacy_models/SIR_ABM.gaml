@@ -15,7 +15,7 @@ global{
 species Host skills:[moving]{
 	int state<-0;
 	reflex moving{
-		do wander;
+		do wander();
 	}
 
 

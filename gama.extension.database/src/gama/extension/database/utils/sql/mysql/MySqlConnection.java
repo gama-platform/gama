@@ -54,7 +54,7 @@ public class MySqlConnection extends SqlConnection {
 	public static final String MYSQL = "mysql";
 
 	/** The Constant WKT2GEO. */
-	private static final String WKT2GEO = "GeomFromText";
+	private static final String WKT2GEO = "ST_GeomFromText";
 
 	/** The Constant PREFIX_TIMESTAMP. */
 	private static final String PREFIX_TIMESTAMP = "cast('";

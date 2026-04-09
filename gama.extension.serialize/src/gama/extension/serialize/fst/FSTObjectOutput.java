@@ -29,6 +29,7 @@ import gama.api.types.list.IList;
 import gama.api.utils.geometry.GamaGeometryFactory;
 import gama.api.utils.geometry.UniqueCoordinateSequence;
 import gama.dev.DEBUG;
+import gama.extension.serialize.IGamaObjectOutput;
 import gama.extension.serialize.fst.FSTClazzInfo.FSTFieldInfo;
 import gama.extension.serialize.fst.util.FSTUtil;
 
@@ -40,7 +41,7 @@ import gama.extension.serialize.fst.util.FSTUtil;
 /**
  * replacement of ObjectOutputStream
  */
-public class FSTObjectOutput implements ObjectOutput {
+public class FSTObjectOutput implements IGamaObjectOutput {
 
 	/** The null placeholder. */
 	public static Object NULL_PLACEHOLDER = new Object() {
@@ -49,51 +50,6 @@ public class FSTObjectOutput implements ObjectOutput {
 			return "NULL_PLACEHOLDER";
 		}
 	};
-
-	/** The Constant SPECIAL_COMPATIBILITY_OBJECT_TAG. */
-	public static final byte SPECIAL_COMPATIBILITY_OBJECT_TAG = -19; // see issue 52
-
-	/** The Constant ONE_OF. */
-	public static final byte ONE_OF = -18;
-
-	/** The Constant BIG_BOOLEAN_FALSE. */
-	public static final byte BIG_BOOLEAN_FALSE = -17;
-
-	/** The Constant BIG_BOOLEAN_TRUE. */
-	public static final byte BIG_BOOLEAN_TRUE = -16;
-
-	/** The Constant BIG_LONG. */
-	public static final byte BIG_LONG = -10;
-
-	/** The Constant BIG_INT. */
-	public static final byte BIG_INT = -9;
-
-	/** The Constant DIRECT_ARRAY_OBJECT. */
-	public static final byte DIRECT_ARRAY_OBJECT = -8;
-
-	/** The Constant HANDLE. */
-	public static final byte HANDLE = -7;
-
-	/** The Constant ENUM. */
-	public static final byte ENUM = -6;
-
-	/** The Constant ARRAY. */
-	public static final byte ARRAY = -5;
-
-	/** The Constant STRING. */
-	public static final byte STRING = -4;
-
-	/** The Constant TYPED. */
-	public static final byte TYPED = -3; // var class == object written class
-
-	/** The Constant DIRECT_OBJECT. */
-	public static final byte DIRECT_OBJECT = -2;
-
-	/** The Constant NULL. */
-	public static final byte NULL = -1;
-
-	/** The Constant OBJECT. */
-	public static final byte OBJECT = 0;
 
 	/** The codec. */
 	protected FSTEncoder codec;
@@ -238,7 +194,7 @@ public class FSTObjectOutput implements ObjectOutput {
 		getCodec().ensureFree(bytes);
 	}
 
-	//////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////
 	//
 	// ObjectOutput interface impl
 	//
@@ -321,7 +277,7 @@ public class FSTObjectOutput implements ObjectOutput {
 
 	//
 	// .. end interface impl
-	/////////////////////////////////////////////////////
+	////////////////////////////////////////////////////
 
 	/**
 	 * Write object.
@@ -335,6 +291,7 @@ public class FSTObjectOutput implements ObjectOutput {
 	 *             Signals that an I/O exception has occurred.
 	 * @date 29 sept. 2023
 	 */
+	@Override
 	public void writeObject(final Object obj, final Class... possibles) throws IOException {
 		if (isCrossPlatform) {
 			writeObjectInternal(obj, null, (Class[]) null); // not supported cross platform
@@ -1016,6 +973,7 @@ public class FSTObjectOutput implements ObjectOutput {
 	 *             Signals that an I/O exception has occurred.
 	 * @date 29 sept. 2023
 	 */
+	@Override
 	public void writeStringUTF(final String str) throws IOException {
 		getCodec().writeStringUTF(str);
 	}
@@ -1074,7 +1032,7 @@ public class FSTObjectOutput implements ObjectOutput {
 	public FSTClazzInfoRegistry getClassInfoRegistry() { return conf.getCLInfoRegistry(); }
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////// java
-	/// serialization compatibility ////////////////////////////////////////////
+	/// serialization compatibility
 
 	/**
 	 *
@@ -1338,6 +1296,7 @@ public class FSTObjectOutput implements ObjectOutput {
 	 *            the a class
 	 * @date 29 sept. 2023
 	 */
+	@Override
 	public void writeClassTag(final Class aClass) {
 		getCodec().writeClass(aClass);
 	}

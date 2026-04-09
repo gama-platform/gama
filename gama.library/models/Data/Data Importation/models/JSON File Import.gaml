@@ -20,7 +20,7 @@ global {
 		list<map<string, int>> cells <- c["grid"];
         loop mm over: cells {                 
             cityMatrix cell <- cityMatrix grid_at {mm["x"],mm["y"]};
-            cell.type <-int(mm["type"]);
+            cell.type <-int(mm["type"])+1;
         }
 	}  
 } 
@@ -29,13 +29,13 @@ grid cityMatrix width:16  height:16{
 	rgb color <- #black;
 	int type;
    	aspect base{	
-    		draw shape color:rgb(type*30) border:#black ;
+      draw shape color:rgb(type*30, type*30,type*30) border:#black ;
     }
 }
 
 experiment Display  type: gui {
 	output {
-		display cityMatrixView   type: 3d axes:false{	
+		display cityMatrixView type: 3d{	
 			species cityMatrix aspect:base;			
 		}
 	}

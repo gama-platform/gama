@@ -14,7 +14,15 @@ Export-Package:
  gama.extension.network.websocket,
  org.eclipse.paho.client.mqttv3,
  org.eclipse.paho.client.mqttv3.persist
-Import-Package: org.java_websocket.handshake
+Import-Package: gama.extension.serialize,
+ gama.extension.serialize.binary,
+ gama.extension.serialize.fst,
+ gama.extension.serialize.fst.annotations,
+ gama.extension.serialize.fst.coders,
+ gama.extension.serialize.fst.serializers,
+ gama.extension.serialize.fst.util,
+ gama.extension.serialize.gaml,
+ org.java_websocket.handshake
 Require-Bundle: gama.core,
  gama.extension.serialize,
  gama.dependencies

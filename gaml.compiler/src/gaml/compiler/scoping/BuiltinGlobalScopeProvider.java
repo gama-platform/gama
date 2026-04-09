@@ -183,12 +183,30 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 	/** The rs. */
 	private final XtextResourceSet rs = new XtextResourceSet();
 
+	/**
+	 * Guards {@link #initialize()} so it is executed at most once, regardless of which code path triggers it first
+	 * (explicit call from {@link gaml.compiler.GamlStandaloneSetup#initializeAfterPlatformReady} in headless mode, or
+	 * lazy call from {@link #getScope} / {@link #contains} in the GUI).
+	 */
+	private volatile boolean initialized = false;
+
 	static {
 		DEBUG.OFF();
 	}
 
 	/**
 	 * Creates the descriptions.
+	 * <p>
+	 * The constructor only sets up the {@link EClass} references and allocates the empty per-EClass scopes. All
+	 * GAMA-platform-dependent work (populating types, constants, units, fields, variables, skills, actions and
+	 * operators) is intentionally deferred to {@link #initialize()}, which must be called once
+	 * {@code GamaBundleLoader.buildContributions()} has completed (i.e. after {@code CoreActivator} has run).
+	 * </p>
+	 * <p>
+	 * The split is necessary because Xtext creates this singleton <em>eagerly</em> — via the {@code GamlValidator}
+	 * eager-singleton chain — during {@code GamlStandaloneSetup.doSetup()}, well before the GAMA metamodel, type
+	 * hierarchy and skill registry are ready.
+	 * </p>
 	 */
 	public BuiltinGlobalScopeProvider() {
 		eType = GamlPackage.eINSTANCE.getTypeDefinition();
@@ -197,13 +215,39 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 		eAction = GamlPackage.eINSTANCE.getActionDefinition();
 		eUnit = GamlPackage.eINSTANCE.getUnitFakeDefinition();
 		eEquation = GamlPackage.eINSTANCE.getEquationDefinition();
+		scopes.put(eType, new EClassBasedScope("types.xmi"));
+		scopes.put(eVar, new EClassBasedScope("vars.xmi"));
+		scopes.put(eSkill, new EClassBasedScope("skills.xmi"));
+		scopes.put(eAction, new EClassBasedScope("units.xmi"));
+		scopes.put(eUnit, new EClassBasedScope("actions.xmi"));
+		scopes.put(eEquation, new EClassBasedScope("equations.xmi"));
+	}
+
+	/**
+	 * Populates the built-in scope with all GAMA platform contributions.
+	 *
+	 * <p>
+	 * This method is <em>idempotent</em>: the first call performs the full initialisation; subsequent calls return
+	 * immediately. It is safe to call from any thread.
+	 * </p>
+	 *
+	 * <p>
+	 * Two code paths call this method:
+	 * </p>
+	 * <ol>
+	 * <li><strong>Headless</strong> — called explicitly by
+	 * {@link gaml.compiler.GamlStandaloneSetup#initializeAfterPlatformReady(com.google.inject.Injector)} once
+	 * {@code CoreActivator.load()} has triggered {@code GamaBundleLoader.buildContributions()}. This is the preferred
+	 * path: it ensures the scope is fully populated before any model validation begins.</li>
+	 * <li><strong>GUI</strong> — called lazily on the first invocation of {@link #getScope} or {@link #contains}, via
+	 * the internal {@link #ensureInitialized()} guard. By the time any GAML editor opens, the GAMA core bundle is
+	 * already fully active, so the platform is always ready at this point.</li>
+	 * </ol>
+	 */
+	public synchronized void initialize() {
+		if (initialized) return;
+		initialized = true;
 		DEBUG.TIMER(BANNER_CATEGORY.GAML, "Language artifacts", "built in", () -> {
-			scopes.put(eType, new EClassBasedScope("types.xmi"));
-			scopes.put(eVar, new EClassBasedScope("vars.xmi"));
-			scopes.put(eSkill, new EClassBasedScope("skills.xmi"));
-			scopes.put(eAction, new EClassBasedScope("units.xmi"));
-			scopes.put(eUnit, new EClassBasedScope("actions.xmi"));
-			scopes.put(eEquation, new EClassBasedScope("equations.xmi"));
 			add(IExpressionFactory.TEMPORARY_ACTION_NAME, eAction);
 			Types.getTypeNames().forEach(t -> add(t, eType, eVar, eAction));
 
@@ -216,6 +260,7 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 			});
 			GAML.getUnits().forEach((t, u) -> {
 				try {
+					DEBUG.LOG("Adding unit artefact: " + t);
 					add(t, eUnit);
 				} catch (Exception ex) {
 					GamaBundleLoader.ERROR("Error when building unit artefact " + t, ex);
@@ -257,6 +302,14 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 				}
 			});
 		});
+	}
+
+	/**
+	 * Ensures {@link #initialize()} has been called. Used as a lazy safety net inside {@link #getScope} and
+	 * {@link #contains} for the GUI code path, where no explicit initialisation call is made.
+	 */
+	private void ensureInitialized() {
+		if (!initialized) { initialize(); }
 	}
 
 	/**
@@ -320,6 +373,7 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 	 * @return true, if successful
 	 */
 	public boolean contains(final QualifiedName name) {
+		ensureInitialized();
 		return allQualifiedNames.contains(name);
 	}
 
@@ -342,6 +396,7 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 	@Override
 	protected IScope getScope(final Resource resource, final boolean ignoreCase, final EClass type,
 			final Predicate<IEObjectDescription> filter) {
+		ensureInitialized();
 		IScope scope = scopes.get(type);
 		Collection<URI> imports = GamlResourceIndexer.allImportsOf((GamlResource) resource).keySet();
 		int size = imports.size();

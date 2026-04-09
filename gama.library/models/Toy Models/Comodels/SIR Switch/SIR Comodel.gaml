@@ -13,7 +13,6 @@ model Comodel_SIR_Switch
 import "Legacy_models/EBM Adapter.gaml" as SIR_1
 import "Legacy_models/ABM Adapter.gaml" as SIR_2
 
-
 global
 {
 	geometry shape <- envelope(square(100));
@@ -23,7 +22,7 @@ global
 	init
 	{
 		create SIR_1."Adapter";
-		create SIR_2."Adapter";
+		create SIR_2."AdapterAbm";
 		create Switch;
 	} 
 
@@ -46,7 +45,7 @@ species Switch
 					{
 						loop times: 1
 						{
-							do _step_;
+							do _step_();
 						}
 	
 					}
@@ -61,19 +60,19 @@ species Switch
 		if (I < threshold_to_IBM or S < threshold_to_IBM)
 		{
 				unknown call;
-				call <- first(SIR_2."Adapter").set_num_S_I_R(S, I, R);
-				ask first(SIR_2."Adapter").simulation
+				call <- first(SIR_2."AdapterAbm").set_num_S_I_R(S, I, R);
+				ask first(SIR_2."AdapterAbm").simulation
 				{
 					loop times: 10
 					{
-						do _step_;
+						do _step_();
 					}
 
 				}
 
-				S <- first(SIR_2."Adapter").get_num_S();
-				I <- first(SIR_2."Adapter").get_num_I();
-				R <- first(SIR_2."Adapter").get_num_R();
+				S <- first(SIR_2."AdapterAbm").get_num_S();
+				I <- first(SIR_2."AdapterAbm").get_num_I();
+				R <- first(SIR_2."AdapterAbm").get_num_R();
 		}
 
 	}
@@ -108,7 +107,7 @@ experiment Simple_exp type: gui
 			}
 		}
 		display "ABM Disp" type:2d{			
-			agents "Host" value:first(SIR_2."Adapter").simulation.Host aspect:base;
+			agents "Host" value:first(SIR_2."AdapterAbm").simulation.Host aspect:base;
 		}
 
 	}

@@ -16,29 +16,18 @@ import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
-import gama.extension.serialize.fst.FSTObjectInput;
-import gama.extension.serialize.fst.FSTObjectOutput;
+import gama.extension.serialize.IGamaObjectInput;
+import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link IList} instances.
- * Persists the content type, element count, and all elements in order.
- * The list is reconstructed via {@link GamaListFactory#create(IType)}.
- * Objects deserialised by this serialiser are not registered for back-reference tracking.
+ * FST serialiser for {@link IList} instances. Persists the content type, element count, and all elements in order. The
+ * list is reconstructed via {@link GamaListFactory#create(IType)}. Objects deserialised by this serialiser are not
+ * registered for back-reference tracking.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
 class IListSerialiser extends FSTIndividualSerialiser<IList> {
-
-	/**
-	 * Constructs a new {@code IListSerialiser} bound to the given {@link BinarySerialiser}.
-	 *
-	 * @param serialiser
-	 *            the owning binary serialiser
-	 */
-	IListSerialiser(final BinarySerialiser serialiser) {
-		super(serialiser);
-	}
 
 	/**
 	 * Returns {@code false}: lists are not registered for FST back-reference tracking.
@@ -51,8 +40,8 @@ class IListSerialiser extends FSTIndividualSerialiser<IList> {
 	}
 
 	/**
-	 * Serialises the list's content type, size, and all elements.
-	 * Each element is written as an object via {@link gama.extension.serialize.fst.FSTObjectOutput#writeObject}.
+	 * Serialises the list's content type, size, and all elements. Each element is written as an object via
+	 * {@link gama.extension.serialize.fst.FSTObjectOutput#writeObject}.
 	 *
 	 * @param out
 	 *            the FST output stream
@@ -63,7 +52,7 @@ class IListSerialiser extends FSTIndividualSerialiser<IList> {
 	 */
 	@SuppressWarnings ("unchecked")
 	@Override
-	public void serialise(final FSTObjectOutput out, final IList o) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final IList o) throws Exception {
 		out.writeObject(o.getGamlType().getContentType());
 		out.writeInt(o.size());
 		o.forEach(v -> {
@@ -88,7 +77,7 @@ class IListSerialiser extends FSTIndividualSerialiser<IList> {
 	 */
 	@SuppressWarnings ({ "unchecked", "rawtypes" })
 	@Override
-	public IList deserialise(final IScope scope, final FSTObjectInput in) throws Exception {
+	public IList deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		IType c = (IType) in.readObject();
 		IList<Object> result = GamaListFactory.create(c);
 		int size = in.readInt();
