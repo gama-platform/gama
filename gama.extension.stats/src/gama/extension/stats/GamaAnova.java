@@ -25,6 +25,8 @@ import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
 import gama.api.types.misc.IValue;
 import gama.api.utils.json.IJson;
 import gama.api.utils.json.IJsonValue;
@@ -39,7 +41,15 @@ import gama.api.utils.json.IJsonValue;
 		@variable (
 				name = "f_stat",
 				type = IType.FLOAT,
-				doc = { @doc ("The F-statistic of the ANOVA test") }) })
+				doc = { @doc ("The F-statistic of the ANOVA test") }),
+		@variable (
+				name = "df_num",
+				type = IType.INT,
+				doc = { @doc ("Numerator degrees of freedom") }),
+		@variable (
+				name = "df_den",
+				type = IType.INT,
+				doc = { @doc ("Denominator degrees of freedom") }) })
 public class GamaAnova implements IValue {
 
 	/** The p value. */
@@ -47,6 +57,9 @@ public class GamaAnova implements IValue {
 
 	/** The f stat. */
 	double fStat;
+
+	/** The degrees of freedom. */
+	int dfNum, dfDen;
 
 	/**
 	 * Instantiates a new gama anova.
@@ -56,16 +69,22 @@ public class GamaAnova implements IValue {
 	 * @param data
 	 *            the data (list of lists of numbers)
 	 */
-	public GamaAnova(final IScope scope, final List<List<?>> data) {
+	public GamaAnova(final IScope scope, final IList<IList<?>> data) {
 		OneWayAnova anova = new OneWayAnova();
 		Collection<double[]> categoryData = new ArrayList<>();
-		for (List<?> list : data) {
-			double[] d = new double[list.size()];
-			for (int i = 0; i < list.size(); i++) { d[i] = Cast.asFloat(scope, list.get(i)); }
-			categoryData.add(d);
+		int totalN = 0;
+		if (data != null) {
+			for (final IList<?> list : data) {
+				double[] d = new double[list.size()];
+				for (int i = 0; i < list.size(); i++) { d[i] = Cast.asFloat(scope, list.get(i)); }
+				categoryData.add(d);
+				totalN += d.length;
+			}
 		}
-		this.pValue = anova.anovaPValue(categoryData);
-		this.fStat = anova.anovaFValue(categoryData);
+		this.pValue = categoryData.isEmpty() ? 1.0 : anova.anovaPValue(categoryData);
+		this.fStat = categoryData.isEmpty() ? 0.0 : anova.anovaFValue(categoryData);
+		this.dfNum = categoryData.isEmpty() ? 0 : categoryData.size() - 1;
+		this.dfDen = categoryData.isEmpty() ? 0 : totalN - categoryData.size();
 	}
 
 	/**
@@ -84,6 +103,22 @@ public class GamaAnova implements IValue {
 	@getter ("f_stat")
 	public double getFStat() { return fStat; }
 
+	/**
+	 * Gets the numerator degrees of freedom.
+	 *
+	 * @return the df num
+	 */
+	@getter ("df_num")
+	public int getDfNum() { return dfNum; }
+
+	/**
+	 * Gets the denominator degrees of freedom.
+	 *
+	 * @return the df den
+	 */
+	@getter ("df_den")
+	public int getDfDen() { return dfDen; }
+
 	@Override
 	public String serializeToGaml(final boolean includingBuiltIn) {
 		return stringValue(null);
@@ -99,7 +134,7 @@ public class GamaAnova implements IValue {
 
 	@Override
 	public IValue copy(final IScope scope) throws GamaRuntimeException {
-		GamaAnova copy = new GamaAnova(null, new ArrayList<>());
+		GamaAnova copy = new GamaAnova(null, GamaListFactory.create());
 		copy.pValue = this.pValue;
 		copy.fStat = this.fStat;
 		return copy;

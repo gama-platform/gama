@@ -10,8 +10,6 @@
  ********************************************************************************************************/
 package gama.extension.stats;
 
-import java.util.Map;
-
 import gama.annotations.doc;
 import gama.annotations.getter;
 import gama.annotations.variable;
@@ -43,7 +41,7 @@ public class GamaMultiAnova implements IValue {
 	IMap<String, Double> pValues = GamaMapFactory.create(Types.STRING, Types.FLOAT);
 
 	/** The f stats. */
-	Map<String, Double> fStats = GamaMapFactory.create(Types.STRING, Types.FLOAT);
+	IMap<String, Double> fStats = GamaMapFactory.create(Types.STRING, Types.FLOAT);
 
 	/**
 	 * Instantiates a new gama multi anova.
@@ -71,7 +69,7 @@ public class GamaMultiAnova implements IValue {
 	 * @return the p values
 	 */
 	@getter ("p_values")
-	public Map<String, Double> getPValues() { return pValues; }
+	public IMap<String, Double> getPValues() { return pValues; }
 
 	/**
 	 * Gets the f stats.
@@ -79,7 +77,7 @@ public class GamaMultiAnova implements IValue {
 	 * @return the f stats
 	 */
 	@getter ("f_stats")
-	public Map<String, Double> getFStats() { return fStats; }
+	public IMap<String, Double> getFStats() { return fStats; }
 
 	@Override
 	public String serializeToGaml(final boolean includingBuiltIn) {

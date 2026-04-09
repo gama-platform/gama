@@ -57,6 +57,35 @@ public class HSIC {
 		return trace / Math.pow(n - 1, 2);
 	}
 
+	/**
+	 * Computes the p-value for the HSIC test using a permutation test.
+	 * 
+	 * @param x observations of the first variable
+	 * @param y observations of the second variable
+	 * @param permutations number of permutations
+	 * @return the p-value
+	 */
+	public static double computePValue(double[] x, double[] y, int permutations) {
+		double observedHSIC = computeHSIC(x, y);
+		int count = 0;
+		double[] yPerm = y.clone();
+		java.util.Random rnd = new java.util.Random();
+
+		for (int p = 0; p < permutations; p++) {
+			// Shuffle yPerm
+			for (int i = yPerm.length - 1; i > 0; i--) {
+				int index = rnd.nextInt(i + 1);
+				double temp = yPerm[index];
+				yPerm[index] = yPerm[i];
+				yPerm[i] = temp;
+			}
+			if (computeHSIC(x, yPerm) >= observedHSIC) {
+				count++;
+			}
+		}
+		return (double) (count + 1) / (permutations + 1);
+	}
+
 	private static double[][] computeGramMatrix(double[] data, double sigma) {
 		int n = data.length;
 		double[][] gram = new double[n][n];

@@ -609,9 +609,7 @@ public class Stats {
 	 *
 	 * @param scope
 	 * @param data1
-	 * @param standardDev1
 	 * @param data2
-	 * @param stanardDev2
 	 * @return
 	 */
 	@operator (
@@ -622,23 +620,85 @@ public class Stats {
 			category = { IOperatorCategory.STATISTICAL },
 			concept = { IConcept.STATISTIC })
 	@doc (
-			value = "Returns the correlation of two data sequences (having the same size)",
+			value = "Returns the Pearson correlation of two data sequences (having the same size)",
 			comment = "",
 			examples = { @example (
-					value = "correlation([1,2,1,3,1,2], [1,2,1,3,1,2]) with_precision(4)",
-					equals = "1.2"),
+					value = "correlation([1,2,1,3,1,2], [1,2,1,3,1,2])",
+					equals = "1.0"),
 					@example (
 							value = "correlation([13,2,1,4,1,2], [1,2,1,3,1,2]) with_precision(2)",
 							equals = "-0.21") })
 	public static Double opCorrelation(final IScope scope, final IContainer data1, final IContainer data2) {
-
-		// TODO input parameters validation
-
+		if (data1.length(scope) != data2.length(scope)) return 0.0;
+		if (data1.length(scope) == 0) return 0.0;
 		final double standardDev1 = Stats.opStandardDeviation(scope, data1);
 		final double standardDev2 = Stats.opStandardDeviation(scope, data2);
-
+		if (standardDev1 == 0 || standardDev2 == 0) return 0.0;
 		return Descriptive.correlation(toDoubleArrayList(scope, data1), standardDev1, toDoubleArrayList(scope, data2),
 				standardDev2);
+	}
+
+	/**
+	 * Returns the Spearman's rank correlation of two data sequences.
+	 *
+	 * @param scope
+	 * @param data1
+	 * @param data2
+	 * @return
+	 */
+	@operator (
+			value = "spearman_correlation",
+			can_be_const = true,
+			type = IType.FLOAT,
+			expected_content_type = { IType.INT, IType.FLOAT },
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = "Returns the Spearman's rank correlation of two data sequences (having the same size)",
+			comment = "Computes Pearson correlation on the ranks of the data.",
+			examples = { @example (
+					value = "spearman_correlation([1,2,3,4,5], [5,4,3,2,1])",
+					equals = "-1.0") })
+	@test ("spearman_correlation([1, 2, 3, 4, 5], [1, 2, 3, 4, 5]) = 1.0")
+	public static Double opSpearmanCorrelation(final IScope scope, final IContainer data1, final IContainer data2) {
+		if (data1.length(scope) != data2.length(scope)) return 0.0;
+		int n = data1.length(scope);
+		if (n == 0) return 0.0;
+
+		double[] r1 = computeRanks(scope, data1);
+		double[] r2 = computeRanks(scope, data2);
+
+		DoubleArrayList l1 = new DoubleArrayList(r1);
+		DoubleArrayList l2 = new DoubleArrayList(r2);
+
+		double sd1 = Descriptive.standardDeviation(Descriptive.variance(n, Descriptive.sum(l1), Descriptive.sumOfSquares(l1)));
+		double sd2 = Descriptive.standardDeviation(Descriptive.variance(n, Descriptive.sum(l2), Descriptive.sumOfSquares(l2)));
+
+		if (sd1 == 0 || sd2 == 0) return 0.0;
+		return Descriptive.correlation(l1, sd1, l2, sd2);
+	}
+
+	private static double[] computeRanks(IScope scope, IContainer data) {
+		int n = data.length(scope);
+		double[] vals = new double[n];
+		Integer[] idx = new Integer[n];
+		int count = 0;
+		for (Object o : data.iterable(scope)) {
+			vals[count] = Cast.asFloat(scope, o);
+			idx[count] = count;
+			count++;
+		}
+		Arrays.sort(idx, (a, b) -> Double.compare(vals[a], vals[b]));
+
+		double[] ranks = new double[n];
+		for (int i = 0; i < n; i++) {
+			int j = i;
+			while (j < n - 1 && vals[idx[j]] == vals[idx[j + 1]]) { j++; }
+			double rank = (i + j + 2) / 2.0;
+			for (int k = i; k <= j; k++) { ranks[idx[k]] = rank; }
+			i = j;
+		}
+		return ranks;
 	}
 
 	/**
@@ -2382,55 +2442,59 @@ public class Stats {
 		meanY /= yData.length;
 		for (double d : yData) ssTotal += (d - meanY) * (d - meanY);
 
-		// Helper to fit and get RSS
-		org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression regression =
-				new org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression();
+		try {
+			// Helper to fit and get RSS
+			org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression regression =
+					new org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression();
 
-		// Model A: y ~ A
-		double[][] xA = new double[y.size()][levelsA.size() - 1];
-		for (int i = 0; i < y.size(); i++) {
-			int idx = levelsA.indexOf(factorA.get(i));
-			if (idx > 0) xA[i][idx - 1] = 1.0;
+			// Model A: y ~ A
+			double[][] xA = new double[y.size()][levelsA.size() - 1];
+			for (int i = 0; i < y.size(); i++) {
+				int idx = levelsA.indexOf(factorA.get(i));
+				if (idx > 0) xA[i][idx - 1] = 1.0;
+			}
+			regression.newSampleData(yData, xA);
+			double ssA = ssTotal - regression.calculateResidualSumOfSquares();
+			int dfA = levelsA.size() - 1;
+
+			// Model A+B: y ~ A + B
+			double[][] xAB = new double[y.size()][levelsA.size() - 1 + levelsB.size() - 1];
+			for (int i = 0; i < y.size(); i++) {
+				int idxA = levelsA.indexOf(factorA.get(i));
+				if (idxA > 0) xAB[i][idxA - 1] = 1.0;
+				int idxB = levelsB.indexOf(factorB.get(i));
+				if (idxB > 0) xAB[i][levelsA.size() - 1 + idxB - 1] = 1.0;
+			}
+			regression.newSampleData(yData, xAB);
+			double ssB = ssTotal - regression.calculateResidualSumOfSquares() - ssA;
+			int dfB = levelsB.size() - 1;
+
+			// Model A+B+A:B: y ~ A + B + A:B
+			int nbInter = (levelsA.size() - 1) * (levelsB.size() - 1);
+			double[][] xFull = new double[y.size()][xAB[0].length + nbInter];
+			for (int i = 0; i < y.size(); i++) {
+				System.arraycopy(xAB[i], 0, xFull[i], 0, xAB[i].length);
+				int idxA = levelsA.indexOf(factorA.get(i));
+				int idxB = levelsB.indexOf(factorB.get(i));
+				if (idxA > 0 && idxB > 0) { xFull[i][xAB[i].length + (idxA - 1) * (levelsB.size() - 1) + (idxB - 1)] = 1.0; }
+			}
+			regression.newSampleData(yData, xFull);
+			double rssFull = regression.calculateResidualSumOfSquares();
+			double ssInter = ssTotal - rssFull - ssA - ssB;
+			int dfInter = nbInter;
+			int dfError = y.size() - (1 + dfA + dfB + dfInter);
+
+			double msError = rssFull / dfError;
+
+			GamaMultiAnova result = new GamaMultiAnova();
+			result.addEffect("A", computeP(ssA / dfA, msError, dfA, dfError), ssA / dfA / msError);
+			result.addEffect("B", computeP(ssB / dfB, msError, dfB, dfError), ssB / dfB / msError);
+			result.addEffect("A:B", computeP(ssInter / dfInter, msError, dfInter, dfError), ssInter / dfInter / msError);
+
+			return result;
+		} catch (Exception e) {
+			throw GamaRuntimeException.error("Failed to perform multi_anova, possibly due to a singular design matrix (e.g., missing factor combinations).", scope);
 		}
-		regression.newSampleData(yData, xA);
-		double ssA = ssTotal - regression.calculateResidualSumOfSquares();
-		int dfA = levelsA.size() - 1;
-
-		// Model A+B: y ~ A + B
-		double[][] xAB = new double[y.size()][levelsA.size() - 1 + levelsB.size() - 1];
-		for (int i = 0; i < y.size(); i++) {
-			int idxA = levelsA.indexOf(factorA.get(i));
-			if (idxA > 0) xAB[i][idxA - 1] = 1.0;
-			int idxB = levelsB.indexOf(factorB.get(i));
-			if (idxB > 0) xAB[i][levelsA.size() - 1 + idxB - 1] = 1.0;
-		}
-		regression.newSampleData(yData, xAB);
-		double ssB = ssTotal - regression.calculateResidualSumOfSquares() - ssA;
-		int dfB = levelsB.size() - 1;
-
-		// Model A+B+A:B: y ~ A + B + A:B
-		int nbInter = (levelsA.size() - 1) * (levelsB.size() - 1);
-		double[][] xFull = new double[y.size()][xAB[0].length + nbInter];
-		for (int i = 0; i < y.size(); i++) {
-			System.arraycopy(xAB[i], 0, xFull[i], 0, xAB[i].length);
-			int idxA = levelsA.indexOf(factorA.get(i));
-			int idxB = levelsB.indexOf(factorB.get(i));
-			if (idxA > 0 && idxB > 0) { xFull[i][xAB[i].length + (idxA - 1) * (levelsB.size() - 1) + (idxB - 1)] = 1.0; }
-		}
-		regression.newSampleData(yData, xFull);
-		double rssFull = regression.calculateResidualSumOfSquares();
-		double ssInter = ssTotal - rssFull - ssA - ssB;
-		int dfInter = nbInter;
-		int dfError = y.size() - (1 + dfA + dfB + dfInter);
-
-		double msError = rssFull / dfError;
-
-		GamaMultiAnova result = new GamaMultiAnova();
-		result.addEffect("A", computeP(ssA / dfA, msError, dfA, dfError), ssA / dfA / msError);
-		result.addEffect("B", computeP(ssB / dfB, msError, dfB, dfError), ssB / dfB / msError);
-		result.addEffect("A:B", computeP(ssInter / dfInter, msError, dfInter, dfError), ssInter / dfInter / msError);
-
-		return result;
 	}
 
 	/**
@@ -2464,6 +2528,42 @@ public class Stats {
 			yData[i] = y.get(i);
 		}
 		return HSIC.computeHSIC(xData, yData);
+	}
+
+	/**
+	 * Computes the p-value for the HSIC independence test between two variables using permutations.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param x
+	 *            the first variable
+	 * @param y
+	 *            the second variable
+	 * @param permutations
+	 *            the number of permutations
+	 * @return the p-value
+	 */
+	@operator (
+			value = "hsic",
+			type = IType.FLOAT,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = "Computes the p-value for the HSIC independence test between two variables using a permutation test. A small p-value (< 0.05) indicates strong evidence of dependence.",
+			examples = { @example (
+					value = "hsic([1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0, 4.0, 5.0], 100)",
+					isExecutable = false) })
+	@test ("hsic([1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0, 4.0, 5.0], 100) < 0.05")
+	public static Double opHSIC(final IScope scope, final IList<Double> x, final IList<Double> y,
+			final Integer permutations) {
+		if (x.size() != y.size()) throw GamaRuntimeException.error("Input lists must have the same size", scope);
+		double[] xData = new double[x.size()];
+		double[] yData = new double[y.size()];
+		for (int i = 0; i < x.size(); i++) {
+			xData[i] = x.get(i);
+			yData[i] = y.get(i);
+		}
+		return HSIC.computePValue(xData, yData, permutations);
 	}
 
 	private static double computeP(double msEffect, double msError, int dfEffect, int dfError) {
