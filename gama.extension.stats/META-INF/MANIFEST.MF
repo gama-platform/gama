@@ -4,6 +4,7 @@ Bundle-Name: Stats
 Bundle-SymbolicName: gama.extension.stats;singleton:=true
 Bundle-Version: 0.0.0.qualifier
 Require-Bundle: gama.core,
+ gama.extension.batch,
  gama.extension.maths,
  gama.dependencies
 Bundle-ActivationPolicy: lazy

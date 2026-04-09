@@ -68,7 +68,6 @@ import gama.api.ui.IOutputManager;
 import gama.api.ui.IStatusMessage;
 import gama.api.utils.interfaces.ICategory;
 import gama.api.utils.prefs.GamaPreferences;
-import gama.core.experiment.batch.exploration.Exploration;
 import gama.core.experiment.parameters.ExperimentParameter;
 import gama.core.experiment.parameters.TextStatement;
 import gama.core.outputs.ExperimentOutputManager;
@@ -380,7 +379,7 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 		setName(description.getName());
 		experimentType = description.getLitteral(IKeyword.TYPE);
 		// final String type = description.getFacets().getLabel(IKeyword.TYPE);
-		if (IKeyword.BATCH.equals(experimentType)) { exploration = new Exploration(null); }
+		//if (IKeyword.BATCH.equals(experimentType)) { exploration = new Exploration(null); }
 
 		// else if (IKeyword.HEADLESS_UI.equals(experimentType)) {
 		// setHeadless(true); }

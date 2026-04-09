@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="gaml.extension">
+   </extension>
+   <extension
+         point="gama.experiment">
+      <implementation
+            class="gama.extension.batch.BatchAgent"
+            keyword="batch">
+      </implementation>
+   </extension>
+
+</plugin>

@@ -69,10 +69,10 @@ import gama.api.types.misc.IContainer;
 import gama.api.utils.StringUtils;
 import gama.api.utils.collections.Collector;
 import gama.api.utils.files.FileUtils;
-import gama.core.experiment.batch.exploration.Morris;
-import gama.core.experiment.batch.exploration.Sobol;
-import gama.core.experiment.batch.exploration.Stochanalysis;
 import gama.core.util.matrix.GamaField;
+import gama.extension.batch.exploration.Morris;
+import gama.extension.batch.exploration.Sobol;
+import gama.extension.batch.exploration.Stochanalysis;
 import gama.gaml.operators.Containers;
 import gama.gaml.operators.Containers.ComparableValidator;
 
