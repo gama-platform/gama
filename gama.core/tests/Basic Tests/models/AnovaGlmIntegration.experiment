@@ -3,8 +3,8 @@ experiment "Anova and GLM Integration Tests" type: test {
 	test "Anova Operator and Properties" {
 		list<list<float>> data <- [[6.0, 8.0, 4.0, 5.0, 3.0, 4.0], [8.0, 12.0, 9.0, 11.0, 6.0, 8.0], [13.0, 9.0, 11.0, 8.0, 7.0, 12.0]];
 		anova result <- anova(data);
-		assert result.f_stat with_precision 2 = 6.22;
-		assert result.p_value with_precision 3 = 0.046;
+		assert result.f_stat with_precision 2 = 9.26;
+		assert result.p_value with_precision 3 = 0.002;
 	}
 
 	test "GLM Operator and Properties" {

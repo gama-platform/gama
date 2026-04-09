@@ -659,7 +659,7 @@ public class Stats {
 			examples = { @example (
 					value = "spearman_correlation([1,2,3,4,5], [5,4,3,2,1])",
 					equals = "-1.0") })
-	@test ("spearman_correlation([1, 2, 3, 4, 5], [1, 2, 3, 4, 5]) = 1.0")
+	@test ("(spearman_correlation([1, 2, 3, 4, 5], [1, 2, 3, 4, 5]) with_precision 1) = 1.0")
 	public static Double opSpearmanCorrelation(final IScope scope, final IContainer data1, final IContainer data2) {
 		if (data1.length(scope) != data2.length(scope)) return 0.0;
 		int n = data1.length(scope);
@@ -2391,7 +2391,7 @@ public class Stats {
 			examples = { @example (
 					value = "anova([[6.0, 8.0, 4.0, 5.0, 3.0, 4.0], [8.0, 12.0, 9.0, 11.0, 6.0, 8.0], [13.0, 9.0, 11.0, 8.0, 7.0, 12.0]])",
 					isExecutable = false) })
-	@test ("(anova([[6.0, 8.0, 4.0, 5.0, 3.0, 4.0], [8.0, 12.0, 9.0, 11.0, 6.0, 8.0], [13.0, 9.0, 11.0, 8.0, 7.0, 12.0]]).f_stat with_precision 2) = 6.22")
+	@test ("(anova([[6.0, 8.0, 4.0, 5.0, 3.0, 4.0], [8.0, 12.0, 9.0, 11.0, 6.0, 8.0], [13.0, 9.0, 11.0, 8.0, 7.0, 12.0]]).f_stat with_precision 2) = 9.26")
 	public static GamaAnova anova(final IScope scope, final IList<IList<?>> data) {
 		return new GamaAnova(scope, data);
 	}

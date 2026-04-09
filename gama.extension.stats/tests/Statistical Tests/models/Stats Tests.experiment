@@ -34,6 +34,17 @@ experiment "Tests for gama.extension.stats" type: test {
 		assert [1,2,4,3,5,7,6,8] max_of (each * 100 ) = 800;
 	}
 
+	test "Operator anova" {
+		list<list<float>> data <- [[6.0, 8.0, 4.0, 5.0, 3.0, 4.0], [8.0, 12.0, 9.0, 11.0, 6.0, 8.0], [13.0, 9.0, 11.0, 8.0, 7.0, 12.0]];
+		anova result <- anova(data);
+		assert result.f_stat with_precision 2 = 9.26;
+		assert result.p_value with_precision 3 = 0.002;
+	}
+
+	test "Operator spearman_correlation" {
+		assert (spearman_correlation([1, 2, 3, 4, 5], [1, 2, 3, 4, 5]) with_precision 1) = 1.0;
+	}
+
 	test "Operator build" {
 		assert build(matrix([[1.0,2.0,3.0,4.0],[2.0,3.0,4.0,2.0],[5.0,1.0,3.0,5.0],[3.0,4.0,5.0,1.0]])).parameters collect (each with_precision 5) = [0.5,2.5,0.0,-1.5];
 	}
