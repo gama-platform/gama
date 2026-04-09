@@ -41,7 +41,37 @@ import gama.core.topology.filter.Different;
 import gama.core.topology.filter.In;
 
 /**
- * The Class Queries.
+ * Provides GAML spatial query operators for finding agents by proximity, containment, and overlap.
+ * All queries are resolved through the current simulation {@link gama.api.types.topology.ITopology},
+ * enabling efficient spatial indexing on both continuous and grid/graph topologies.
+ * <p>
+ * Operator families provided:
+ * <ul>
+ *   <li><b>Neighborhood</b>: {@code neighbors_of}, {@code neighbors_at}, {@code agents_at_distance},
+ *       {@code at_distance} — find agents within a given distance.</li>
+ *   <li><b>Closest / Farthest</b>: {@code closest_to}, {@code farthest_to},
+ *       {@code agent_closest_to}, {@code agent_farthest_to} — find the nearest or most distant
+ *       agent or geometry.</li>
+ *   <li><b>Containment</b>: {@code inside}, {@code agents_inside} — find agents covered by a
+ *       reference geometry.</li>
+ *   <li><b>Overlap</b>: {@code overlapping}, {@code agents_overlapping},
+ *       {@code agents_partially_overlapping} — find agents that intersect or partially intersect
+ *       a reference geometry.</li>
+ *   <li><b>Other spatial relations</b>: {@code covering}, {@code agents_covering},
+ *       {@code crossing}, {@code agents_crossing}, {@code touching}, {@code agents_touching} —
+ *       find agents satisfying specific DE-9IM predicates.</li>
+ * </ul>
+ * <p>
+ * Because all queries depend on an active simulation topology, they are annotated with
+ * {@code @no_test} (topology-dependent operations require an active simulation and are already
+ * covered in the GAMA Spatial test models).
+ * <p>
+ * Uses JTS (Java Topology Suite) {@code PreparedGeometry} optimisations internally for batch
+ * containment and overlap queries.
+ *
+ * @author Alexis Drogoul, Patrick Taillandier, Arnaud Grignard
+ * @see gama.api.types.geometry.IShape
+ * @see gama.api.types.topology.ITopology
  */
 public class SpatialQueries {
 
@@ -65,6 +95,8 @@ public class SpatialQueries {
 	@doc (
 			value = "a list, containing all the agents of the same species than the argument (if it is an agent) located at a distance inferior or equal to 1 to the right-hand operand agent considering the left-hand operand topology.",
 			masterDoc = true,
+			usages = { @usage ("Returns an empty list if no neighbors are found within the default distance of 1."),
+					@usage ("The calling agent itself is excluded from the results.") },
 			examples = { @example (
 					value = "topology(self) neighbors_of self",
 					equals = "returns all the agents located at a distance lower or equal to 1 to the agent applying the operator considering its topology.",
@@ -98,12 +130,14 @@ public class SpatialQueries {
 			concept = {})
 	/* TODO, expected_content_type = { IType.FLOAT, IType.INT } */
 	@doc (
-			usages = @usage (
+			usages = { @usage (
 					value = "a list, containing all the agents of the same species than the left argument (if it is an agent) located at a distance inferior or equal to the third argument to the second argument (agent, geometry or point) considering the first operand topology.",
 					examples = { @example (
 							value = "neighbors_of (topology(self), self,10)",
 							equals = "all the agents located at a distance lower or equal to 10 to the agent applying the operator considering its topology.",
-							test = false) }))
+							test = false) }),
+					@usage ("Returns an empty list if no neighbors are found within the specified distance."),
+					@usage ("The calling agent itself is excluded from the results when the second argument is an agent.") })
 	@no_test // already done in Spatial tests Models
 	public static IList neighbors_of(final IScope scope, final ITopology t, final IShape agent, final Double distance) {
 		return _neighbors(scope, agent instanceof IAgent i ? In.list(scope, i.getPopulation()) : Different.with(),
@@ -490,6 +524,8 @@ public class SpatialQueries {
 	@doc (
 			value = "An agent or a geometry among the left-operand list of agents, species or meta-population (addition of species), the closest to the operand (casted as a geometry).",
 			comment = "the distance is computed in the topology of the calling agent (the agent in which this operator is used), with the distance algorithm specific to the topology.",
+			usages = { @usage ("Returns nil if the container is empty or if the container itself is nil."),
+					@usage ("If multiple agents are equidistant from the source, one is returned non-deterministically.") },
 			examples = { @example (
 					value = "[ag1, ag2, ag3] closest_to(self)",
 					equals = "return the closest agent among ag1, ag2 and ag3 to the agent applying the operator.",
@@ -877,6 +913,8 @@ public class SpatialQueries {
 					IConcept.AGENT_LOCATION })
 	@doc (
 			value = "A list of agents overlapping the operand (casted as a geometry).",
+			usages = { @usage ("Returns an empty list if no agents overlap the given shape."),
+					@usage ("The agent itself may be included in the results depending on the topology configuration.") },
 			examples = { @example (
 					value = "agents_overlapping(self)",
 					equals = "the agents that overlap the shape of the agent applying the operator.",

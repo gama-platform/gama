@@ -37,7 +37,32 @@ import gama.api.types.geometry.IShape;
 import gama.core.util.file.GamaGisFile;
 
 /**
- * The Class Projections.
+ * Provides GAML CRS (Coordinate Reference System) and projection operators for coordinate
+ * transformation between spatial reference systems. All transformations are backed by the
+ * GeoTools library and JTS (Java Topology Suite).
+ * <p>
+ * Operator families provided:
+ * <ul>
+ *   <li><b>CRS inspection</b>: {@code crs} — retrieve the CRS identifier string of a GIS file.</li>
+ *   <li><b>World-CRS transforms</b>: {@code CRS_transform} (no code), {@code to_GAMA_CRS} (no
+ *       code) — transform a geometry to/from the world simulation CRS using the projection stored
+ *       in the simulation's projection factory.</li>
+ *   <li><b>Named-CRS transforms</b>: {@code CRS_transform} (with EPSG code),
+ *       {@code to_GAMA_CRS} (with EPSG code) — transform a geometry using an explicit EPSG
+ *       identifier.</li>
+ *   <li><b>Two-CRS transforms</b>: {@code CRS_transform} (source + target EPSG codes) — transform
+ *       a geometry directly from one named CRS to another.</li>
+ * </ul>
+ * <p>
+ * Because all operators require a running GAMA simulation with a valid projection factory (and
+ * typically an associated GIS file), they are annotated with {@code @no_test}. Decoded
+ * {@code CoordinateReferenceSystem} objects and {@code MathTransform} instances are cached in
+ * thread-safe maps to avoid repeated GeoTools registry lookups.
+ *
+ * @author Alexis Drogoul, Patrick Taillandier, Arnaud Grignard
+ * @see gama.api.types.geometry.IShape
+ * @see gama.api.types.geometry.IPoint
+ * @see gama.api.kernel.topology.IProjection
  */
 public class SpatialProjections {
 
@@ -94,6 +119,8 @@ public class SpatialProjections {
 			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.FILE, IConcept.GIS })
 	@doc (
 			value = "the Coordinate Reference System (CRS) of the GIS file",
+			usages = { @usage ("Raises a runtime error if the file is not a GIS file (i.e. not a shapefile or similar spatial format)."),
+					@usage ("Returns nil if the CRS cannot be determined from the file or if no projection information is embedded.") },
 			examples = { @example (
 					value = "crs(my_shapefile)",
 					equals = "the crs of the shapefile",
@@ -132,7 +159,9 @@ public class SpatialProjections {
 					examples = { @example (
 							value = "CRS_transform(shape)",
 							equals = "a geometry corresponding to the agent geometry transformed into the current CRS",
-							test = false) }) })
+							test = false) }),
+					@usage ("Returns a copy of the geometry unchanged if no world projection is defined."),
+					@usage ("If the geometry is nil, a NullPointerException may be raised; always ensure the geometry is non-nil before applying this operator.") })
 	@no_test
 	public static IShape transform_CRS(final IScope scope, final IShape g) {
 		final IProjection gis = scope.getSimulation().getProjectionFactory().getWorld();
@@ -162,7 +191,9 @@ public class SpatialProjections {
 					examples = { @example (
 							value = "to_GAMA_CRS({121,14})",
 							equals = "a geometry corresponding to the agent geometry transformed into the GAMA CRS",
-							test = false) }) })
+							test = false) }),
+					@usage ("Returns a copy of the geometry unchanged if no world projection is defined."),
+					@usage ("If the geometry is nil, a NullPointerException may be raised; always ensure the geometry is non-nil before applying this operator.") })
 	@no_test
 	public static IShape to_GAMA_CRS(final IScope scope, final IShape g) {
 		final IProjection gis = scope.getSimulation().getProjectionFactory().getWorld();
@@ -193,7 +224,9 @@ public class SpatialProjections {
 					examples = { @example (
 							value = "to_GAMA_CRS({121,14}, \"EPSG:4326\")",
 							equals = "a geometry corresponding to the agent geometry transformed into the GAMA CRS",
-							test = false) }) })
+							test = false) }),
+					@usage ("Raises a runtime error if the CRS code is not recognized as a valid EPSG identifier."),
+					@usage ("If the geometry is nil, returns nil.") })
 	@no_test
 	public static IShape to_GAMA_CRS(final IScope scope, final IShape g, final String code) {
 		IProjection gis;
@@ -230,7 +263,9 @@ public class SpatialProjections {
 					examples = { @example (
 							value = "shape CRS_transform(\"EPSG:4326\")",
 							equals = "a geometry corresponding to the agent geometry transformed into the EPSG:4326 CRS",
-							test = false) }) })
+							test = false) }),
+					@usage ("Raises a runtime error if the CRS code is not recognized as a valid EPSG identifier."),
+					@usage ("If the geometry is nil, returns nil.") })
 	@no_test
 	public static IShape transform_CRS(final IScope scope, final IShape g, final String code) {
 		IProjection gis;
@@ -269,7 +304,9 @@ public class SpatialProjections {
 					examples = { @example (
 							value = "{8.35,47.22} CRS_transform(\"EPSG:4326\",\"EPSG:4326\")",
 							equals = "{929517.7481238344,5978057.894895313,0.0}",
-							test = false) }) })
+							test = false) }),
+					@usage ("Raises a runtime error if either CRS code is not recognized as a valid EPSG identifier."),
+					@usage ("If the geometry is nil, returns nil without attempting the transformation.") })
 	@no_test
 	public static IShape transform_CRS(final IScope scope, final IShape g, final String sourceCode,
 			final String targetcode) {

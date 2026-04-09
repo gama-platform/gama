@@ -52,7 +52,68 @@ import gama.api.types.date.IDate;
 import gama.api.types.list.IList;
 
 /**
- * The Class Dates.
+ * Provides all date/time/duration operators for the GAML language. Dates in GAMA are
+ * <em>timezone-free</em> values represented as ISO-8601 local date-times
+ * ({@link java.time.LocalDateTime} internally).
+ *
+ * <h3>Operator families</h3>
+ * <ul>
+ *   <li><b>Arithmetic:</b>
+ *     <ul>
+ *       <li>{@code +} &mdash; {@code date + float/int} (seconds) returns a new {@link IDate}</li>
+ *       <li>{@code -} &mdash; {@code date - date} returns elapsed seconds as a {@code float};
+ *           {@code date - float/int} (seconds) returns a new {@link IDate}</li>
+ *     </ul>
+ *   </li>
+ *   <li><b>Comparison:</b> {@code <}, {@code >}, {@code <=}, {@code >=}, {@code =}, {@code !=},
+ *       {@code between}</li>
+ *   <li><b>Period queries</b> (signed &mdash; negative when date1 &gt; date2):
+ *       {@code years_between}, {@code months_between}, {@code weeks_between},
+ *       {@code days_between}, {@code hours_between}, {@code minutes_between},
+ *       {@code milliseconds_between}</li>
+ *   <li><b>Duration field access:</b> {@code milliseconds_of}, {@code seconds_of},
+ *       {@code minutes_of}, {@code hours_of}, {@code days_of}, {@code months_of},
+ *       {@code years_of}</li>
+ *   <li><b>Date component access:</b> {@code day_of_week}, {@code day_of_year}</li>
+ *   <li><b>Construction:</b> {@code date} (from {@code string} or from {@link IList}),
+ *       {@code current_date}, {@code starting_date}</li>
+ *   <li><b>Temporal predicates / scheduling:</b> {@code every}, {@code since},
+ *       {@code after}, {@code before}, {@code until}, {@code between}, {@code to}</li>
+ * </ul>
+ *
+ * <h3>Notes</h3>
+ * <ul>
+ *   <li>GAMA dates are <em>timezone-free</em> (ISO-8601 local time); no DST or UTC offset is
+ *       applied.</li>
+ *   <li>Duration constants: {@code #second = 1.0}, {@code #minute = 60.0},
+ *       {@code #hour = 3600.0}, {@code #day = 86400.0}, {@code #week = 604800.0}.
+ *       {@code #month} and {@code #year} are pseudo-constants whose exact second-value depends
+ *       on the current simulation date.</li>
+ *   <li>Date subtraction ({@code date - date}) returns a {@code float} representing the
+ *       duration in <em>seconds</em>. A negative result means the left operand is earlier
+ *       than the right one.</li>
+ *   <li>Leap-year handling (e.g. Feb 29 arithmetic) is fully delegated to
+ *       {@link java.time}.</li>
+ * </ul>
+ *
+ * <h3>Usage examples</h3>
+ * <pre>{@code
+ * // Arithmetic
+ * date d1 <- date('2000-01-01') + 86400;         // => date('2000-01-02')
+ * float secs <- date('2000-01-02') - date('2000-01-01'); // => 86400.0
+ *
+ * // Period queries
+ * int yrs  <- years_between(date('2000-01-01'), date('2010-01-01'));  // => 10
+ * float ms <- milliseconds_between(date('2000-01-01'), date('2000-01-02')); // => 86400000.0
+ *
+ * // Scheduling
+ * reflex every_day when: every(#day) { write "one day passed"; }
+ * }</pre>
+ *
+ * @author GAMA development team
+ * @see IDate
+ * @see IClock
+ * @see GamaDateFactory
  */
 public class Dates {
 
@@ -94,13 +155,20 @@ public class Dates {
 			category = { IOperatorCategory.DATE },
 			concept = { IConcept.DATE })
 	@doc (
+			value = "Returns the duration in seconds between date1 and date2. A positive value means date1 is after date2.",
+			returns = "a {@code float} representing the number of seconds elapsed from date2 to date1. Negative if date1 < date2.",
+			special_cases = { "If both dates are equal, returns 0.0.",
+					"If date1 < date2, returns a negative value.",
+					"Leap year boundaries are handled correctly by java.time." },
 			see = "milliseconds_between",
 			usages = @usage (
 					value = "if both operands are dates, returns the duration in seconds between date2 and date1. To obtain a more precise duration, in milliseconds, use milliseconds_between(date1, date2)",
 					examples = { @example (
 							value = "date('2000-01-02') - date('2000-01-01')",
 							equals = "86400") }))
-	@test ("date('2000-01-02') - date('2000-01-01') = 86400")
+	@test ("date('2000-01-02') - date('2000-01-01') = 86400.0")
+	@test ("date('2000-01-01') - date('2000-01-01') = 0.0")
+	@test ("date('2000-01-01') - date('2000-01-02') = -86400.0")
 
 	public static double minusDate(final IScope scope, final IDate date1, final IDate date2)
 			throws GamaRuntimeException {
@@ -124,6 +192,8 @@ public class Dates {
 	@doc (
 			value = "true every operand * cycle, false otherwise",
 			comment = "the value of the every operator depends on the cycle. It can be used to do something every x cycle.",
+			special_cases = { "Returns true only on simulation cycles that are multiples of the given step.",
+					"The first call at step 0 returns true." },
 			examples = { @example (
 					value = "if every(2#cycle) {write \"the cycle number is even\";}",
 					test = false),
@@ -864,6 +934,8 @@ public class Dates {
 			category = { IOperatorCategory.DATE },
 			concept = { IConcept.DATE })
 	@doc (
+			special_cases = { "Adding 0 seconds returns a date equal to the original.",
+					"Day boundaries (midnight) are handled correctly." },
 			usages = @usage (
 					value = "if one of the operands is a date and the other a number, returns a date corresponding to the date plus the given number as duration (in seconds)",
 					examples = { @example (
@@ -910,6 +982,8 @@ public class Dates {
 	@doc (
 			value = "Add a duration to a date. The duration is supposed to be in seconds (so that adding 0.5, "
 					+ "for instance, will add 500ms)",
+			special_cases = { "Adding 0 seconds returns a date equal to the original.",
+					"Day boundaries (midnight) are handled correctly." },
 			examples = { @example (
 					value = "date('2016-01-01 00:00:01') + 86400",
 					equals = "date('2016-01-02 00:00:01')"), })
@@ -952,6 +1026,8 @@ public class Dates {
 			category = { IOperatorCategory.DATE },
 			concept = {})
 	@doc (
+			special_cases = { "Subtracting 0 returns the original date.",
+					"Year boundaries are handled correctly." },
 			usages = @usage (
 					value = "if one of the operands is a date and the other a number, returns a date corresponding to the "
 							+ "date minus the given number as duration (in seconds)",
@@ -959,6 +1035,7 @@ public class Dates {
 							value = "date('2000-01-01') - 86400",
 							equals = "date('1999-12-31')") }))
 	@test ("date('2000-01-01') - 86400 = date('1999-12-31')")
+	@test ("date('2000-01-02') - 86400 = date('2000-01-01')")
 	public static IDate minusDuration(final IScope scope, final IDate date1, final int duration)
 			throws GamaRuntimeException {
 		return date1.plus(-duration, SECONDS);
@@ -999,10 +1076,13 @@ public class Dates {
 	@doc (
 			value = "Removes a duration from a date. The duration is expected to be in seconds (so that removing 0.5, "
 					+ "for instance, will add 500ms) ",
+			special_cases = { "Subtracting 0 returns the original date.",
+					"Year boundaries are handled correctly." },
 			examples = { @example (
 					value = "date('2000-01-01') - 86400",
 					equals = "date('1999-12-31')") })
 	@test ("date('2000-01-01') - 86400 = date('1999-12-31')")
+	@test ("date('2000-01-02') - 86400 = date('2000-01-01')")
 	public static IDate minusDuration(final IScope scope, final IDate date1, final double duration)
 			throws GamaRuntimeException {
 		return date1.plus(-duration * 1000, ChronoUnit.MILLIS);
@@ -1699,10 +1779,13 @@ public class Dates {
 			concept = { IConcept.DATE })
 	@doc (
 			value = "Provide the exact number of years between two dates. This number can be positive or negative (if the second operand is smaller than the first one)",
+			special_cases = { "If both dates are equal, returns 0.",
+					"If date1 is after date2, returns a negative value." },
 			examples = { @example (
 					value = "years_between(date('2000-01-01'), date('2010-01-01'))",
 					equals = "10") })
 	@test ("years_between(date('2000-01-01'), date('2010-01-01')) = 10")
+	@test ("years_between(date('2000-01-01'), date('2001-01-01')) = 1")
 	public static int years_between(final IScope scope, final IDate date1, final IDate date2)
 			throws GamaRuntimeException {
 		return (int) ChronoUnit.YEARS.between(date1, date2);
@@ -1742,10 +1825,13 @@ public class Dates {
 			concept = { IConcept.DATE })
 	@doc (
 			value = "Provide the exact number of milliseconds between two dates. This number can be positive or negative (if the second operand is smaller than the first one)",
+			special_cases = { "If both dates are equal, returns 0.",
+					"If date1 is after date2, returns a negative value." },
 			examples = { @example (
 					value = "milliseconds_between(date('2000-01-01'), date('2000-02-01'))",
 					equals = "2.6784E9") })
 	@test ("milliseconds_between(date('2000-01-01'), date('2000-02-01')) = 2.6784E9")
+	@test ("milliseconds_between(date('2000-01-01'), date('2000-01-01')) = 0")
 	public static double milliseconds_between(final IScope scope, final IDate date1, final IDate date2)
 			throws GamaRuntimeException {
 		return ChronoUnit.MILLIS.between(date1, date2);
@@ -1785,6 +1871,8 @@ public class Dates {
 			concept = { IConcept.DATE })
 	@doc (
 			value = "Provide the exact number of months between two dates. This number can be positive or negative (if the second operand is smaller than the first one)",
+			special_cases = { "If both dates are equal, returns 0.",
+					"If date1 is after date2, returns a negative value." },
 			examples = { @example (
 					value = "months_between(date('2000-01-01'), date('2000-02-01'))",
 					equals = "1") })

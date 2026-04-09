@@ -15,6 +15,7 @@ import gama.annotations.example;
 import gama.annotations.no_test;
 import gama.annotations.operator;
 import gama.annotations.test;
+import gama.annotations.usage;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.annotations.support.ITypeProvider;
@@ -35,7 +36,31 @@ import gama.api.types.topology.ITopology;
 import gama.core.topology.grid.GridTopology;
 
 /**
- * The Class Relations.
+ * Provides GAML distance, direction, and path operators between geometries. All computation is
+ * delegated to the current simulation {@link gama.api.types.topology.ITopology}, making these
+ * operators context-sensitive: results may differ between a continuous topology and a graph or
+ * grid topology.
+ * <p>
+ * Operator families provided:
+ * <ul>
+ *   <li><b>Direction</b>: {@code towards} / {@code direction_to}, {@code direction_between} —
+ *       compute the bearing in degrees between two locations.</li>
+ *   <li><b>Distance</b>: {@code distance_to}, {@code distance_between} — compute scalar distances
+ *       between geometries or accumulated along a list of waypoints.</li>
+ *   <li><b>Path</b>: {@code path_to}, {@code path_between} — compute shortest-path objects through
+ *       the current topology or through a filtered grid of cells.</li>
+ * </ul>
+ * <p>
+ * Because all operators depend on an active simulation topology, most are annotated with
+ * {@code @no_test} (topology-dependent operations require an active simulation and are already
+ * covered in the GAMA Spatial test models).
+ * <p>
+ * Uses JTS (Java Topology Suite) geometry objects internally for coordinate calculations.
+ *
+ * @author Alexis Drogoul, Patrick Taillandier, Arnaud Grignard
+ * @see gama.api.types.geometry.IShape
+ * @see gama.api.types.geometry.IPoint
+ * @see gama.api.types.topology.ITopology
  */
 public class SpatialRelations {
 
@@ -57,6 +82,8 @@ public class SpatialRelations {
 					IConcept.TOPOLOGY })
 	@doc (
 			value = "The direction (in degree) between the two geometries (geometries, agents, points) considering the topology of the agent applying the operator.",
+			usages = { @usage ("If both geometries are at the same location, the direction is undefined and may return 0."),
+					@usage ("The direction is computed in the context of the calling agent's topology; on a continuous topology this is the Euclidean angle in degrees measured clockwise from North.") },
 			examples = { @example (
 					value = "ag1 towards ag2",
 					equals = "the direction between ag1 and ag2 and ag3 considering the topology of the agent applying the operator",
@@ -85,6 +112,8 @@ public class SpatialRelations {
 					IConcept.TOPOLOGY })
 	@doc (
 			value = "A distance between a list of geometries (geometries, agents, points) considering a topology.",
+			usages = { @usage ("Returns 0.0 if the list is empty or contains only one geometry."),
+					@usage ("Returns 0.0 if two consecutive geometries in the list are at the same location or one contains the other.") },
 			examples = { @example (
 					value = "my_topology distance_between [ag1, ag2, ag3]",
 					equals = "the distance between ag1, ag2 and ag3 considering the topology my_topology",
@@ -416,6 +445,8 @@ public class SpatialRelations {
 	@doc (
 			value = "A distance between two geometries (geometries, agents or points) considering the topology of the agent applying the operator.",
 			masterDoc = true,
+			usages = { @usage ("Returns 0.0 if the two geometries are equal or at the same location."),
+					@usage ("Returns 0.0 if one geometry contains the other (i.e. the topological distance between overlapping geometries is 0).") },
 			examples = { @example (
 					value = "ag1 distance_to ag2",
 					equals = "the distance between ag1 and ag2 considering the topology of the agent applying the operator",

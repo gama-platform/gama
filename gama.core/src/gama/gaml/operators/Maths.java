@@ -26,7 +26,34 @@ import gama.api.types.matrix.IMatrix;
 import gama.api.utils.MathUtils;
 
 /**
- * The Class GamaMath.
+ * Provides all mathematical and arithmetic operators for the GAML language.
+ *
+ * <p>This class covers the following operator families:</p>
+ * <ul>
+ *   <li><b>Arithmetic:</b> {@code +}, {@code -}, {@code *}, {@code /}, {@code ^}, {@code mod}, {@code div}</li>
+ *   <li><b>Absolute/Sign:</b> {@code abs}, unary {@code -}</li>
+ *   <li><b>Rounding:</b> {@code round}, {@code floor}, {@code ceil}, {@code truncated}, {@code with_precision}</li>
+ *   <li><b>Trigonometry (degrees):</b> {@code sin}, {@code cos}, {@code tan}, {@code asin}, {@code acos}, {@code atan}, {@code atan2}</li>
+ *   <li><b>Trigonometry (radians):</b> {@code sin_rad}, {@code cos_rad}, {@code tan_rad}</li>
+ *   <li><b>Hyperbolic:</b> {@code tanh}</li>
+ *   <li><b>Exponential/Logarithm:</b> {@code exp}, {@code ln}, {@code log}, {@code sqrt}, {@code ^}</li>
+ *   <li><b>Combinatorics:</b> {@code fact}, {@code even}</li>
+ *   <li><b>Extrema:</b> {@code min}, {@code max}</li>
+ *   <li><b>Predicates:</b> {@code is_number}, {@code is_finite}, {@code is_infinite}</li>
+ *   <li><b>Matrix arithmetic:</b> scalar–matrix multiplication and addition</li>
+ * </ul>
+ *
+ * <p><b>Angle convention:</b> unless the operator name ends in {@code _rad}, all
+ * trigonometric arguments and results are in <em>decimal degrees</em>.</p>
+ *
+ * <p><b>Domain errors:</b> operators like {@code sqrt}, {@code ln}, and {@code log}
+ * report a runtime warning (via {@link gama.api.GAMA#reportAndThrowIfNeeded}) when
+ * called with out-of-domain values and return {@code NaN} or throw an exception
+ * depending on the error-handling policy of the current scope.</p>
+ *
+ * @author Alexis Drogoul
+ * @see Comparison
+ * @see Random
  */
 @SuppressWarnings ({ "rawtypes" })
 public class Maths {
@@ -48,6 +75,12 @@ public class Maths {
 	@doc (
 			value = "Returns the value (always a float) of the left operand raised to the power of the right operand.",
 			masterDoc = true,
+			returns = "a {@code float}.",
+			special_cases = {
+					"If the right-hand operand is 0, returns 1.0 regardless of the left operand (including 0^0 = 1.0).",
+					"If the right-hand operand is 1, returns the left-hand operand cast to float.",
+					"If the left operand is negative and the right operand is a non-integer float (e.g. -4^0.5), returns NaN."
+			},
 			usages = { @usage ("if the right-hand operand is equal to 0, returns 1"),
 					@usage ("if it is equal to 1, returns the left-hand operand."), @usage (
 							value = "Various examples of power",
@@ -57,6 +90,9 @@ public class Maths {
 			see = { "*", "sqrt" })
 	@test ("8^0 = 1.0")
 	@test ("2^2 = 4.0")
+	@test ("0^0 = 1.0")
+	@test ("(-2)^2 = 4.0")
+	@test ("2^1 = 2.0")
 	public static Double pow(final Integer a, final Integer b) {
 		return pow(a.doubleValue(), b.doubleValue());
 	}
@@ -238,7 +274,8 @@ public class Maths {
 			category = { IOperatorCategory.ARITHMETIC },
 			concept = {})
 	@doc (
-			value = "the arccos of the operand ")
+			value = "the arccos of the operand (result in decimal degrees in [0, 180])",
+			special_cases = { "if the operand is outside of [-1,1], returns NaN." })
 	@test ("acos(0) = 90.0")
 	@test ("acos(-1) = 180.0")
 	@test ("acos(1) = 0.0")
@@ -345,7 +382,8 @@ public class Maths {
 			category = { IOperatorCategory.ARITHMETIC },
 			concept = {})
 	@doc (
-			value = "the arctan of the operand")
+			value = "the arctan of the operand (result in decimal degrees in [-90, 90]).",
+			returns = "a {@code float} in [-90, 90].")
 	@test ("atan(0) = 0.0")
 	@test ("atan(-1) = -45.0")
 	@test ("atan(1) = 45.0")
@@ -367,12 +405,20 @@ public class Maths {
 	@doc (
 			value = "Returns the value (in the interval [-1,1]) of the hyperbolic tangent of the operand (which can be any real number, expressed in decimal degrees).",
 			masterDoc = true,
+			returns = "a {@code float} in [-1.0, 1.0].",
+			special_cases = {
+					"tanh(0) = 0.0",
+					"As the operand tends to +∞, tanh approaches 1.0; as it tends to -∞, it approaches -1.0."
+			},
 			examples = { @example (
 					value = "tanh(0)",
 					equals = "0.0"),
 					@example (
 							value = "tanh(100)",
 							equals = "1.0") })
+	@test ("tanh(0.0) = 0.0")
+	@test ("tanh(100.0) = 1.0")
+	@test ("tanh(-100.0) = -1.0")
 	public static Double tanh(final Double rv) {
 		return Math.tanh(rv);
 	}
@@ -390,9 +436,11 @@ public class Maths {
 			category = { IOperatorCategory.ARITHMETIC },
 			concept = {})
 	@doc (
-			value = "the hyperbolic tangent of the operand (which has to be expressed in decimal degrees).")
+			value = "the hyperbolic tangent of the operand (which has to be expressed in decimal degrees).",
+			returns = "a {@code float} in [-1.0, 1.0].")
 	@test ("tanh(100) = 1.0")
 	@test ("tanh(0) = 0.0")
+	@test ("tanh(-100) = -1.0")
 	public static Double tanh(final Integer rv) {
 		return Math.tanh(rv);
 	}
@@ -491,6 +539,7 @@ public class Maths {
 	@doc (
 			value = "Returns the value (in [-1,1]) of the cosinus of the operand (in decimal degrees).  The argument is casted to an int before being evaluated.",
 			masterDoc = true,
+			returns = "a {@code float} in [-1.0, 1.0].",
 			special_cases = "Operand values out of the range [0-359] are normalized.",
 			examples = { @example (
 					value = "cos (0.0)",
@@ -502,6 +551,11 @@ public class Maths {
 							value = "cos(-720.0)",
 							equals = "1.0") },
 			see = { "sin", "tan" })
+	@test ("cos(0.0) = 1.0")
+	@test ("cos(90.0) with_precision 10 = 0.0")
+	@test ("cos(180.0) = -1.0")
+	@test ("cos(360.0) = 1.0")
+	@test ("cos(-180.0) = -1.0")
 	public static Double cos(final Double rv) {
 		return Math.cos(rv * toRad);
 	}
@@ -550,11 +604,17 @@ public class Maths {
 	@doc (
 			value = "Returns the value (in [-1,1]) of the sinus of the operand (in decimal degrees). The argument is casted to an int before being evaluated.",
 			masterDoc = true,
+			returns = "a {@code float} in [-1.0, 1.0].",
 			usages = @usage ("Operand values out of the range [0-359] are normalized."),
 			examples = { @example (
 					value = "sin(360) with_precision 10 with_precision 10",
 					equals = "0.0") },
 			see = { "cos", "tan" })
+	@test ("sin(0.0) = 0.0")
+	@test ("sin(90.0) = 1.0")
+	@test ("sin(-90.0) = -1.0")
+	@test ("sin(180.0) with_precision 10 = 0.0")
+	@test ("sin(270.0) = -1.0")
 	public static Double sin(final Double rv) {
 		return Math.sin(rv * toRad);
 	}
@@ -648,6 +708,7 @@ public class Maths {
 			concept = { IConcept.MATH, IConcept.ARITHMETIC })
 	@doc (
 			value = "Returns true if the operand is even and false if it is odd.",
+			returns = "a {@code bool}.",
 			usages = { @usage (
 					value = "if the operand is equal to 0, it returns true."),
 					@usage (
@@ -658,6 +719,11 @@ public class Maths {
 					@example (
 							value = "even(-12)",
 							equals = "true") })
+	@test ("even(0)")
+	@test ("even(2)")
+	@test ("even(-4)")
+	@test ("!even(1)")
+	@test ("!even(-3)")
 	public static Boolean even(final Integer rv) {
 		return (rv.intValue() & 1) == 0;
 	}
@@ -677,12 +743,22 @@ public class Maths {
 	@doc (
 			value = "Returns Euler's number e raised to the power of the operand.",
 			masterDoc = true,
+			returns = "a positive {@code float}. The result is always > 0.",
+			special_cases = {
+					"exp(0) = 1.0",
+					"exp(1) = e ≈ 2.718281828459045",
+					"For negative operands, returns a small positive value approaching 0."
+			},
 			usages = @usage (
 					value = "the operand is casted to a float before being evaluated."),
 			examples = @example (
 					value = "exp (0.0)",
 					equals = "1.0"),
 			see = "ln")
+	@test ("exp(0.0) = 1.0")
+	@test ("exp(1.0) with_precision 5 = 2.71828")
+	@test ("exp(-1.0) = 1.0 / exp(1.0)")
+	@test ("ln(exp(1.0)) with_precision 10 = 1.0")
 	public static Double exp(final Double rv) {
 		return Math.exp(rv);
 	}
@@ -720,10 +796,23 @@ public class Maths {
 			concept = { IConcept.MATH, IConcept.ARITHMETIC })
 	@doc (
 			value = "Returns the factorial of the operand.",
+			returns = "a non-negative {@code float}. fact(0) = 1.0.",
+			special_cases = {
+					"If the operand is 0, returns 1.0 (by convention: 0! = 1).",
+					"If the operand is negative, returns 0.0.",
+					"For large values (e.g. n > 170), the result overflows to Infinity."
+			},
 			usages = @usage ("if the operand is less than 0, fact returns 0."),
-			examples = @example (
-					value = "fact(4)",
-					equals = "24"))
+			examples = {
+					@example (value = "fact(4)",  equals = "24"),
+					@example (value = "fact(0)",  equals = "1.0"),
+					@example (value = "fact(-1)", equals = "0.0")
+			})
+	@test ("fact(0) = 1.0")
+	@test ("fact(1) = 1.0")
+	@test ("fact(4) = 24.0")
+	@test ("fact(-1) = 0.0")
+	@test ("fact(10) = 3628800.0")
 	public static Double fact(final Integer n) {
 		if (n < 0) return 0.0;
 		double product = 1;
@@ -748,12 +837,22 @@ public class Maths {
 	@doc (
 			value = "Returns the natural logarithm (base e) of the operand.",
 			masterDoc = true,
+			returns = "a {@code float}. Returns -∞ if the operand equals 0 in strict Java math; "
+					+ "in GAMA a warning is issued and -∞ may be returned depending on the error policy.",
+			special_cases = {
+					"ln(1) = 0.0",
+					"ln(e) = 1.0",
+					"If the operand is 0 or negative, a runtime warning is raised."
+			},
 			usages = @usage (
 					value = "an exception is raised if the operand is less than zero."),
 			examples = @example (
 					value = "ln(exp(1))",
 					equals = "1.0"),
 			see = "exp")
+	@test ("ln(1.0) = 0.0")
+	@test ("ln(exp(1.0)) with_precision 10 = 1.0")
+	@test ("ln(exp(3.0)) with_precision 5 = 3.0")
 	public static Double ln(final IScope scope, final Double x) {
 		if (x <= 0) {
 			GAMA.reportAndThrowIfNeeded(scope,
@@ -778,10 +877,15 @@ public class Maths {
 			category = { IOperatorCategory.ARITHMETIC },
 			concept = {})
 	@doc (
-			value = "returns the natural logarithm (base e) of the operand.",
-			examples = @example (
-					value = "ln(1)",
-					equals = "0.0"))
+			value = "Returns the natural logarithm (base e) of the integer operand.",
+			returns = "a {@code float}.",
+			special_cases = { "If the operand is 0 or negative, a runtime warning is raised." },
+			examples = {
+					@example (value = "ln(1)",   equals = "0.0"),
+					@example (value = "ln(10)",  equals = "2.302585092994046", test = false)
+			})
+	@test ("ln(1) = 0.0")
+	@test ("ln(10) with_precision 5 = 2.30259")
 	public static Double ln(final IScope scope, final Integer x) {
 		if (x <= 0) {
 			GAMA.reportAndThrowIfNeeded(scope,
@@ -808,11 +912,21 @@ public class Maths {
 	@doc (
 			value = "Returns the logarithm (base 10) of the operand.",
 			masterDoc = true,
+			returns = "a {@code float}. log(1) = 0.0, log(10) = 1.0, log(100) = 2.0.",
+			special_cases = {
+					"log(1) = 0.0",
+					"If the operand is 0 or negative, a runtime warning is raised."
+			},
 			usages = @usage ("an exception is raised if the operand is equals or less than zero."),
-			examples = @example (
-					value = "log(10)",
-					equals = "1.0"),
+			examples = {
+					@example (value = "log(10)",  equals = "1.0"),
+					@example (value = "log(1)",   equals = "0.0"),
+					@example (value = "log(100)", equals = "2.0")
+			},
 			see = "ln")
+	@test ("log(10.0) = 1.0")
+	@test ("log(1.0) = 0.0")
+	@test ("log(100.0) = 2.0")
 	public static Double log(final IScope scope, final Double x) {
 		if (x <= 0) {
 			GAMA.reportAndThrowIfNeeded(scope,
@@ -837,10 +951,16 @@ public class Maths {
 			category = { IOperatorCategory.ARITHMETIC },
 			concept = {})
 	@doc (
-			value = "returns the logarithm (base 10) of the operand.",
-			examples = @example (
-					value = "log(1)",
-					equals = "0.0"))
+			value = "Returns the logarithm (base 10) of the integer operand.",
+			returns = "a {@code float}.",
+			special_cases = { "If the operand is 0 or negative, a runtime warning is raised." },
+			examples = {
+					@example (value = "log(1)",   equals = "0.0"),
+					@example (value = "log(10)",  equals = "1.0")
+			})
+	@test ("log(1) = 0.0")
+	@test ("log(10) = 1.0")
+	@test ("log(100) = 2.0")
 	public static Double log(final IScope scope, final Integer x) {
 		if (x <= 0) {
 			GAMA.reportAndThrowIfNeeded(scope,
@@ -867,10 +987,20 @@ public class Maths {
 			category = { IOperatorCategory.ARITHMETIC },
 			concept = {})
 	@doc (
-			value = "returns the logarithm in base b of the operand.",
-			examples = @example (
-					value = "log(100, 100)",
-					equals = "1.0"))
+			value = "Returns the logarithm in base {@code b} of the integer operand {@code x}.",
+			returns = "a {@code float}.",
+			special_cases = {
+					"If x is 0 or negative, a runtime warning is raised.",
+					"If b equals 1, the result is ±Infinity (undefined)."
+			},
+			examples = {
+					@example (value = "log(100, 100)",  equals = "1.0"),
+					@example (value = "log(8, 2)",      equals = "3.0"),
+					@example (value = "log(1, 10)",     equals = "0.0")
+			})
+	@test ("log(100, 100) = 1.0")
+	@test ("log(8, 2) with_precision 10 = 3.0")
+	@test ("log(1, 10) = 0.0")
 	public static Double log(final IScope scope, final Integer x, final Integer b) {
 		if (x <= 0) {
 			GAMA.reportAndThrowIfNeeded(scope,
@@ -983,9 +1113,18 @@ public class Maths {
 			category = { IOperatorCategory.ARITHMETIC },
 			concept = { IConcept.MATH, IConcept.ARITHMETIC })
 	@doc (
-			value = "If it is used as a unary operator, it returns the opposite of the operand.",
-			masterDoc = true)
+			value = "If it is used as a unary operator, it returns the arithmetic negation (opposite) of the operand.",
+			masterDoc = true,
+			returns = "a {@code float} whose value is {@code -operand}.",
+			special_cases = { "-0.0 = 0.0 (IEEE 754 negative zero is equal to zero)." },
+			examples = {
+					@example (value = "-(3.5)",  equals = "-3.5"),
+					@example (value = "-(-3.5)", equals = "3.5"),
+					@example (value = "-(0.0)",  equals = "0.0")
+			})
 	@test ("-(-90.0) = 90.0")
+	@test ("-(3.5) = -3.5")
+	@test ("-(0.0) = 0.0")
 	public static Double negate(final Double x) {
 		return -x;
 	}
@@ -1003,10 +1142,16 @@ public class Maths {
 			category = { IOperatorCategory.ARITHMETIC },
 			concept = {})
 	@doc (
-			value = "Returns the opposite of the operand.",
-			examples = @example (
-					value = "- (-56)",
-					equals = "56"))
+			value = "Returns the opposite of the integer operand.",
+			returns = "an {@code int} equal to {@code -operand}.",
+			special_cases = { "Negating Integer.MIN_VALUE overflows to Integer.MIN_VALUE." },
+			examples = {
+					@example (value = "- (-56)", equals = "56"),
+					@example (value = "-(0)",    equals = "0")
+			})
+	@test ("-(-56) = 56")
+	@test ("-(0) = 0")
+	@test ("-(5) = -5")
 	public static Integer negate(final Integer x) {
 		return -x;
 	}
@@ -1024,8 +1169,14 @@ public class Maths {
 			category = { IOperatorCategory.ARITHMETIC },
 			concept = { IConcept.MATH, IConcept.ARITHMETIC })
 	@doc (
-			value = "Returns the rounded value of the operand.",
+			value = "Returns the nearest integer value of the operand, rounding half-up (away from zero for negative values).",
 			masterDoc = true,
+			returns = "an {@code int}.",
+			special_cases = {
+					"round(0.5) = 1 (half-up convention).",
+					"round(-0.5) = -1 (half-away-from-zero: -0.5 rounds down to -1).",
+					"round(0.0) = 0."
+			},
 			examples = { @example (
 					value = "round (0.51)",
 					equals = "1"),
@@ -1036,6 +1187,13 @@ public class Maths {
 							value = "round(-0.51)",
 							equals = "-1") },
 			see = { "int", "with_precision" })
+	@test ("round(0.51) = 1")
+	@test ("round(0.5) = 1")
+	@test ("round(-0.5) = -1")
+	@test ("round(-0.51) = -1")
+	@test ("round(0.0) = 0")
+	@test ("round(-2.3) = -2")
+	@test ("round(2.7) = 3")
 	public static Integer round(final Double v) {
 		int i;
 		if (v >= 0) {
@@ -1059,8 +1217,12 @@ public class Maths {
 			category = { IOperatorCategory.ARITHMETIC },
 			concept = {})
 	@doc (
-			special_cases = "if the operand is an int, round returns it")
-	@test ("round (100) = 100")
+			value = "Returns the operand unchanged (integers are already rounded by definition).",
+			returns = "an {@code int} equal to the operand.",
+			special_cases = "if the operand is an int, round returns it unchanged.")
+	@test ("round(100) = 100")
+	@test ("round(0) = 0")
+	@test ("round(-5) = -5")
 
 	public static Integer round(final Integer v) {
 		return v;
@@ -1085,11 +1247,24 @@ public class Maths {
 	@doc (
 			value = "Returns the square root of the operand.",
 			masterDoc = true,
+			returns = "a non-negative {@code float}.",
+			special_cases = {
+					"sqrt(0) = 0.0",
+					"sqrt(1) = 1.0",
+					"If the operand is negative, a runtime exception is raised."
+			},
 			usages = @usage (
 					value = "if the operand is negative, an exception is raised"),
-			examples = @example (
-					value = "sqrt(4)",
-					equals = "2.0"))
+			examples = {
+					@example (value = "sqrt(4)",  equals = "2.0"),
+					@example (value = "sqrt(0)",  equals = "0.0"),
+					@example (value = "sqrt(2)",  equals = "1.4142135623730951")
+			})
+	@test ("sqrt(4) = 2.0")
+	@test ("sqrt(0) = 0.0")
+	@test ("sqrt(1) = 1.0")
+	@test ("sqrt(9) = 3.0")
+	@test ("is_error(sqrt(-1))")
 	public static Double sqrt(final IScope scope, final Integer v) throws GamaRuntimeException {
 		if (v < 0) throw GamaRuntimeException.warning("The sqrt operator cannot accept negative inputs", scope);
 		return Math.sqrt(v);
@@ -1112,10 +1287,20 @@ public class Maths {
 			category = { IOperatorCategory.ARITHMETIC },
 			concept = {})
 	@doc (
-			value = "Returns the square root of the operand.",
-			examples = @example (
-					value = "sqrt(4)",
-					equals = "2.0"))
+			value = "Returns the square root of the float operand.",
+			returns = "a non-negative {@code float}.",
+			special_cases = {
+					"sqrt(0.0) = 0.0",
+					"If the operand is negative, a runtime exception is raised."
+			},
+			examples = {
+					@example (value = "sqrt(4.0)",  equals = "2.0"),
+					@example (value = "sqrt(0.0)",  equals = "0.0")
+			})
+	@test ("sqrt(4.0) = 2.0")
+	@test ("sqrt(0.0) = 0.0")
+	@test ("sqrt(1.0) = 1.0")
+	@test ("is_error(sqrt(-1.0))")
 	public static Double sqrt(final IScope scope, final Double v) throws GamaRuntimeException {
 		if (v < 0) throw GamaRuntimeException.warning("The sqrt operator cannot accept negative inputs", scope);
 		return Math.sqrt(v);
@@ -1801,6 +1986,11 @@ public class Maths {
 			concept = { IConcept.MATH, IConcept.ARITHMETIC })
 	@doc (
 			value = "Maps the operand to the largest previous following integer, i.e. the largest integer not greater than x.",
+			returns = "an {@code int} (the floor value of the operand).",
+			special_cases = {
+					"For negative non-integer values, floor rounds towards negative infinity: floor(-4.7) = -5.",
+					"For exact integers, floor returns the integer itself: floor(3.0) = 3."
+			},
 			examples = { @example (
 					value = "floor(3)",
 					equals = "3"),
@@ -1811,6 +2001,11 @@ public class Maths {
 							value = "floor(-4.7)",
 							equals = "-5") },
 			see = { "ceil", "round" })
+	@test ("floor(3.5) = 3")
+	@test ("floor(-4.7) = -5")
+	@test ("floor(3.0) = 3")
+	@test ("floor(-2.0) = -2")
+	@test ("floor(0.0) = 0")
 	public static final int floor(final double x) {
 		// This method is a *lot* faster than using (int)Math.floor(x)
 		int xi = (int) x;
@@ -1830,6 +2025,11 @@ public class Maths {
 			concept = { IConcept.MATH, IConcept.ARITHMETIC })
 	@doc (
 			value = "Maps the operand to the smallest following integer, i.e. the smallest integer not less than x.",
+			returns = "an {@code int} (the ceiling value of the operand).",
+			special_cases = {
+					"For negative non-integer values, ceil rounds towards zero: ceil(-4.7) = -4.",
+					"For exact integers, ceil returns the integer itself: ceil(3.0) = 3."
+			},
 			examples = { @example (
 					value = "ceil(3)",
 					equals = "3.0"),
@@ -1840,6 +2040,11 @@ public class Maths {
 							value = "ceil(-4.7)",
 							equals = "-4.0") },
 			see = { "floor", "round" })
+	@test ("ceil(3.5) = 4")
+	@test ("ceil(-4.7) = -4")
+	@test ("ceil(3.0) = 3")
+	@test ("ceil(-2.0) = -2")
+	@test ("ceil(0.0) = 0")
 	public static final int ceil(final double d) {
 		return (int) Math.ceil(d);
 	}
@@ -1862,14 +2067,27 @@ public class Maths {
 			concept = { IConcept.MATH, IConcept.ARITHMETIC })
 	@doc (
 			value = "Returns the remainder of the integer division of the left-hand operand by the right-hand operand.",
+			returns = "an {@code int}. The sign of the result matches the sign of the dividend (Java semantics).",
+			special_cases = {
+					"For a negative dividend, the result is negative: (-7) mod 3 = -1.",
+					"If the right-hand operand is equal to zero, a runtime exception is raised."
+			},
 			usages = { @usage (
 					value = "if operands are float, they are truncated"),
 					@usage (
 							value = "if the right-hand operand is equal to zero, raises an exception.") },
 			examples = { @example (
 					value = "40 mod 3",
-					equals = "1") },
+					equals = "1"),
+					@example (value = "(-7) mod 3", equals = "-1"),
+					@example (value = "7 mod 3",    equals = "1")
+			},
 			see = "div")
+	@test ("40 mod 3 = 1")
+	@test ("7 mod 3 = 1")
+	@test ("6 mod 3 = 0")
+	@test ("(-7) mod 3 = -1")
+	@test ("is_error(5 mod 0)")
 	public static Integer opMod(final IScope scope, final Integer a, final Integer b) {
 		return a % b;
 	}
@@ -1893,14 +2111,26 @@ public class Maths {
 			category = { IOperatorCategory.ARITHMETIC },
 			concept = { IConcept.MATH, IConcept.ARITHMETIC })
 	@doc (
-			value = "Returns the truncation of the division of the left-hand operand by the right-hand operand.",
+			value = "Returns the truncated integer division of the left-hand operand by the right-hand operand.",
 			masterDoc = true,
+			returns = "an {@code int}. The result is truncated towards zero (Java semantics).",
+			special_cases = {
+					"For a negative dividend or divisor, truncation is towards zero: (-7) div 2 = -3.",
+					"If the right-hand operand is equal to zero, a runtime exception is raised."
+			},
 			usages = @usage (
 					value = "if the right-hand operand is equal to zero, raises an exception."),
-			examples = @example (
-					value = "40 div 3",
-					equals = "13"),
+			examples = {
+					@example (value = "40 div 3",   equals = "13"),
+					@example (value = "(-7) div 2", equals = "-3"),
+					@example (value = "7 div 2",    equals = "3")
+			},
 			see = "mod")
+	@test ("40 div 3 = 13")
+	@test ("7 div 2 = 3")
+	@test ("(-7) div 2 = -3")
+	@test ("6 div 3 = 2")
+	@test ("is_error(5 div 0)")
 	public static Integer div(final IScope scope, final Integer a, final Integer b) throws GamaRuntimeException {
 		if (b == 0) throw GamaRuntimeException.error("Division by zero", scope);
 		return a / b;
