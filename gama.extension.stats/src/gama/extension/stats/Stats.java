@@ -2419,7 +2419,7 @@ public class Stats {
 			examples = { @example (
 					value = "multi_anova([1.0, 2.0, 5.0, 6.0], ['a', 'a', 'b', 'b'], ['x', 'y', 'x', 'y'])",
 					isExecutable = false) })
-	@test ("(multi_anova([10.0, 11.0, 20.0, 21.0, 30.0, 31.0, 40.0, 41.0, 100.0, 101.0, 200.0, 201.0], ['a', 'a', 'a', 'a', 'b', 'b', 'b', 'b', 'c', 'c', 'c', 'c'], ['x', 'x', 'y', 'y', 'x', 'x', 'y', 'y', 'x', 'x', 'y', 'y']).p_values['A'] < 0.05)")
+	@test ("(float(multi_anova([10.0, 11.0, 20.0, 21.0, 30.0, 31.0, 40.0, 41.0, 100.0, 101.0, 200.0, 201.0], ['a', 'a', 'a', 'a', 'b', 'b', 'b', 'b', 'c', 'c', 'c', 'c'], ['x', 'x', 'y', 'y', 'x', 'x', 'y', 'y', 'x', 'x', 'y', 'y']).p_values['A']) < 0.05)")
 	public static GamaAnova multiAnova(final IScope scope, final IList<Double> y, final IList<?> factorA,
 			final IList<?> factorB) {
 		if (y.size() != factorA.size() || y.size() != factorB.size())

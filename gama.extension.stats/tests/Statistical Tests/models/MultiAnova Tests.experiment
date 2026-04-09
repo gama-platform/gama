@@ -7,7 +7,7 @@ experiment "MultiAnova Tests" type: test {
 		
 		anova result <- multi_anova(y, fA, fB);
 		
-		map pvals <- result.p_values;
+		map<string, float> pvals <- result.p_values;
 		assert pvals['A'] < 0.05;
 		assert pvals['B'] < 0.05;
 		assert pvals['A:B'] < 0.05;

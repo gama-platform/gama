@@ -54,10 +54,14 @@ import gama.api.utils.json.IJsonValue;
 		@variable (
 				name = "p_values",
 				type = IType.MAP,
+				index = IType.STRING,
+				of = IType.FLOAT,
 				doc = { @doc ("The p-values for each effect (for multi-way ANOVA)") }),
 		@variable (
 				name = "f_stats",
 				type = IType.MAP,
+				index = IType.STRING,
+				of = IType.FLOAT,
 				doc = { @doc ("The F-statistics for each effect (for multi-way ANOVA)") }) })
 public class GamaAnova implements IValue {
 
