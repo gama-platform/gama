@@ -141,11 +141,9 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 				if (!hasFacet(IExploration.SAMPLING)) {
 					if (methodName == IExploration.MORRIS) return IExploration.MORRIS;
 					if (methodName == SOBOL) return IKeyword.SALTELLI;
-					return IExploration.DEFAULT_SAMPLING;
+					return hasFacet(IExploration.SAMPLE_SIZE) ? IKeyword.UNIFORM : IExploration.DEFAULT_SAMPLING;
 				}
-				return hasFacet(IExploration.SAMPLING)
-						? Cast.asString(agent.getScope(), getFacet(IExploration.SAMPLING).value(agent.getScope()))
-						: IExploration.DEFAULT_SAMPLING;
+				return Cast.asString(agent.getScope(), getFacet(IExploration.SAMPLING).value(agent.getScope()));
 			}
 		});
 
@@ -167,7 +165,9 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 			@Override
 			public Object value() {
 				if (estimatedSamples < 0) {
-					estimatedSamples = estimateSamples(agent);
+					String xpm = IExploration.METHODS[CLASSES.indexOf(AExplorationAlgorithm.this.getClass())];
+					int repeat = (xpm != SOBOL && xpm != MORRIS) ? agent.getSeeds().length : 1;
+					estimatedSamples = estimateSamples(agent) * repeat;
 				}
 				return estimatedSamples;
 			}
@@ -270,7 +270,9 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 			case IExploration.FROM_FILE:
 				yield buildParametersFromCSV(scope, Cast.asString(scope, getFacet(IKeyword.FROM).value(scope)));
 			default:
-				yield buildParameterSets(scope, new ArrayList<>(), 0);
+				yield hasFacet(IExploration.SAMPLE_SIZE) ? 
+						RandomSampling.uniformSampling(scope, sample_size, parameters) : 
+							buildParameterSets(scope, new ArrayList<>(), 0);
 		};
 
 	}
@@ -553,9 +555,9 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 				
 
 			default:
-				yield hasFacet(IExploration.SAMPLE_FACTORIAL) ? IntStreamEx
+				yield hasFacet(IExploration.SAMPLE_SIZE) ? N : 
+					hasFacet(IExploration.SAMPLE_FACTORIAL) ? IntStreamEx
 						.of(getFactorial(agent.getScope(), agent.getParametersToExplore())).reduce(1, (a, b) -> a * b)
-						: hasFacet(IExploration.SAMPLE_SIZE) ? N
 						: IntStreamEx
 								.of(agent.getParametersToExplore().stream()
 										.mapToInt(b -> getParameterSwip(agent.getScope(), b).size()))
