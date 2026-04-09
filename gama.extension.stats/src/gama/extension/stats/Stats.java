@@ -2484,12 +2484,19 @@ public class Stats {
 			int dfInter = nbInter;
 			int dfError = y.size() - (1 + dfA + dfB + dfInter);
 
-			double msError = rssFull / dfError;
+			double msError = dfError > 0 ? rssFull / dfError : 0.0;
 
 			GamaMultiAnova result = new GamaMultiAnova();
-			result.addEffect("A", computeP(ssA / dfA, msError, dfA, dfError), ssA / dfA / msError);
-			result.addEffect("B", computeP(ssB / dfB, msError, dfB, dfError), ssB / dfB / msError);
-			result.addEffect("A:B", computeP(ssInter / dfInter, msError, dfInter, dfError), ssInter / dfInter / msError);
+			if (dfError > 0 && msError > 0) {
+				result.addEffect("A", computeP(ssA / dfA, msError, dfA, dfError), ssA / dfA / msError);
+				result.addEffect("B", computeP(ssB / dfB, msError, dfB, dfError), ssB / dfB / msError);
+				result.addEffect("A:B", computeP(ssInter / dfInter, msError, dfInter, dfError),
+						ssInter / dfInter / msError);
+			} else {
+				result.addEffect("A", 1.0, 0.0);
+				result.addEffect("B", 1.0, 0.0);
+				result.addEffect("A:B", 1.0, 0.0);
+			}
 
 			return result;
 		} catch (Exception e) {

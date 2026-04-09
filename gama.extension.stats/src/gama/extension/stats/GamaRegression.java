@@ -139,11 +139,24 @@ public class GamaRegression implements IValue {
 	 *            the nb features
 	 * @param regressionResults
 	 *            the regression results
+	 * @param stdErrors
+	 *            the std errors
+	 * @param pValues
+	 *            the p values
+	 * @param rsquare
+	 *            the rsquare
+	 * @param error
+	 *            the residuals
 	 */
-	public GamaRegression(final double[] param, final int nbFeatures, final RegressionResults regressionResults) {
+	public GamaRegression(final double[] param, final int nbFeatures, final RegressionResults regressionResults,
+			final double[] stdErrors, final double[] pValues, final double rsquare, final double[] error) {
 		this.regressionResults = regressionResults;
 		this.nbFeatures = nbFeatures;
 		this.param = param;
+		this.stdErrors = stdErrors;
+		this.pValues = pValues;
+		this.rsquare = rsquare;
+		this.error = error;
 	}
 
 	/**
@@ -245,7 +258,9 @@ public class GamaRegression implements IValue {
 
 	@Override
 	public IValue copy(final IScope scope) throws GamaRuntimeException {
-		return new GamaRegression(param.clone(), nbFeatures, regressionResults);
+		return new GamaRegression(param == null ? null : param.clone(), nbFeatures, regressionResults,
+				stdErrors == null ? null : stdErrors.clone(), pValues == null ? null : pValues.clone(), rsquare,
+				error == null ? null : error.clone());
 	}
 
 	@Override
@@ -260,9 +275,9 @@ public class GamaRegression implements IValue {
 
 	@Override
 	public IJsonValue serializeToJson(final IJson json) {
-		return json.object("type", getGamlType().getName(), "nb_features", nbFeatures, "parameters", json.array(param),
-				"RSquare", rsquare, "residuals", json.array(error), "std_errors", json.array(stdErrors), "p_values",
-				json.array(pValues));
+		return json.typedObject(getGamlType()).add("nb_features", nbFeatures).add("parameters", json.array(param))
+				.add("RSquare", rsquare).add("residuals", json.array(error)).add("std_errors", json.array(stdErrors))
+				.add("p_values", json.array(pValues));
 	}
 
 }

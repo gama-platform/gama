@@ -110,7 +110,8 @@ public class GamaMultiAnova implements IValue {
 
 	@Override
 	public IJsonValue serializeToJson(final IJson json) {
-		return json.typedObject(getGamlType(), "p_values", json.valueOf(pValues), "f_stats", json.valueOf(fStats));
+		return json.typedObject(getGamlType()).add("p_values", json.valueOf(pValues)).add("f_stats",
+				json.valueOf(fStats));
 	}
 
 }

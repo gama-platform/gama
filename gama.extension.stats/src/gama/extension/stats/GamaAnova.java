@@ -152,7 +152,8 @@ public class GamaAnova implements IValue {
 
 	@Override
 	public IJsonValue serializeToJson(final IJson json) {
-		return json.typedObject(getGamlType(), "p_value", pValue, "f_stat", fStat);
+		return json.typedObject(getGamlType()).add("p_value", pValue).add("f_stat", fStat).add("df_num", dfNum)
+				.add("df_den", dfDen);
 	}
 
 }
