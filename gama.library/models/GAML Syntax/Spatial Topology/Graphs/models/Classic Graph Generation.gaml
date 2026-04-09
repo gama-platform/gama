@@ -57,7 +57,7 @@ species node_agent {
 
 experiment loadgraph type: gui {
 	parameter "Graph type" var: graph_type;
-	parameter "Number of nodes" var: nb_nodes min: 5 ;
+	parameter "Number of nodes" var: nb_nodes min: 10 ;
 	parameter "Probability to rewire an edge (beta)" var: p min: 0.0 max: 1.0 category: "small-world";
 	parameter "Base degree of each node. k must be even" var: k min: 2 max: 10 category: "small-world";
 	parameter "Number of edges added per novel node" var: m min: 1 max: 10 category: "scale-free";
