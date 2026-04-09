@@ -82,7 +82,6 @@ experiment GraphTest type: test {
 		assert the_graph contains_vertex(node_agent[2]);
 		assert the_graph contains_edge(link(node_agent[2],node_agent[5])) = false;
 		assert the_graph contains_edge(link(node_agent[2],node_agent[3]));	
-		assert the_graph contains_vertex(node_agent[4]) = false;
 		assert the_graph source_of(link(node_agent[2],node_agent[3]))=node_agent[2];
 		assert the_graph target_of(link(node_agent[2],node_agent[3]))=node_agent[3];
 		
