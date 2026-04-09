@@ -2514,7 +2514,11 @@ public class Graphs {
 					  max_iteration is the maximal number of iterations""")
 	@no_test
 	public static IGraph indexedFRLayout(final IScope scope, final IGraph graph, final IShape bounds,
-			final double theta, final double normalizationFactor, final int maxIteration) {
+			final double theta, final double normalizationFactor, final int maxIteration) throws GamaRuntimeException {
+        if (theta < 0d || theta > 1d) {
+            throw GamaRuntimeException.error("Theta parameter should be between 0 and 1 (included)", scope);
+        }
+
 		final IndexedFRLayoutAlgorithm2D sim = new IndexedFRLayoutAlgorithm2D(maxIteration, theta, normalizationFactor,
 				scope.getSimulation().getRandomGenerator().getGenerator());
 		LayoutModel2D model = toModel(graph, bounds);
