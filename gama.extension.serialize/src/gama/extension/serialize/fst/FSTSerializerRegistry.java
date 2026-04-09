@@ -12,6 +12,8 @@ package gama.extension.serialize.fst;
 
 import java.util.HashMap;
 
+import gama.extension.serialize.IGamaObjectInput;
+
 /**
  * Created with IntelliJ IDEA. User: ruedi Date: 10.11.12 Time: 15:04
  *
@@ -37,7 +39,7 @@ public class FSTSerializerRegistry {
 				final FSTClazzInfo.FSTFieldInfo referencedBy, final int streamPosition) {}
 
 		@Override
-		public void readObject(final FSTObjectInput out, final Object toWrite, final FSTClazzInfo clzInfo,
+		public void readObject(final IGamaObjectInput out, final Object toWrite, final FSTClazzInfo clzInfo,
 				final FSTClazzInfo.FSTFieldInfo referencedBy) throws Exception {}
 
 		@Override

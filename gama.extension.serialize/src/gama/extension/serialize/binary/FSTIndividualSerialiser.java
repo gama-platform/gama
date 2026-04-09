@@ -13,6 +13,8 @@ package gama.extension.serialize.binary;
 import java.io.IOException;
 
 import gama.api.runtime.scope.IScope;
+import gama.extension.serialize.IGamaObjectInput;
+import gama.extension.serialize.IGamaObjectOutput;
 import gama.extension.serialize.fst.FSTBasicObjectSerializer;
 import gama.extension.serialize.fst.FSTClazzInfo;
 import gama.extension.serialize.fst.FSTClazzInfo.FSTFieldInfo;
@@ -20,26 +22,28 @@ import gama.extension.serialize.fst.FSTObjectInput;
 import gama.extension.serialize.fst.FSTObjectOutput;
 
 /**
- * Abstract base class for FST-based individual serialisers used within {@link BinarySerialiser}.
- * Each subclass is responsible for serialising and deserialising a single specific GAMA type.
- * Instances hold a reference to their owning {@link BinarySerialiser} to access the current
- * simulation scope and shared serialisation state (such as the {@code inAgent} flag).
+ * Abstract base class for FST-based individual serialisers used within {@link BinarySerialiser}. Each subclass is
+ * responsible for serialising and deserialising a single specific GAMA type. Instances hold a reference to their owning
+ * {@link BinarySerialiser} to access the current simulation scope and shared serialisation state (such as the
+ * {@code inAgent} flag).
  *
- * <p>Subclasses must implement {@link #deserialise(IScope, FSTObjectInput)} and may optionally
- * override {@link #serialise(FSTObjectOutput, Object)} and {@link #shouldRegister()}.</p>
+ * <p>
+ * Subclasses must implement {@link #deserialise(IScope, FSTObjectInput)} and may optionally override
+ * {@link #serialise(FSTObjectOutput, Object)} and {@link #shouldRegister()}.
+ * </p>
  *
  * @param <T>
  *            the GAMA type being serialised and deserialised
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-abstract class FSTIndividualSerialiser<T> extends FSTBasicObjectSerializer {
+public abstract class FSTIndividualSerialiser<T> extends FSTBasicObjectSerializer {
 
 	/**
-	 * The owning {@link BinarySerialiser}, providing access to the current simulation scope
-	 * and shared serialisation state.
+	 * The owning {@link BinarySerialiser}, providing access to the current simulation scope and shared serialisation
+	 * state.
 	 */
-	protected final BinarySerialiser serialiser;
+	protected BinarySerialiser serialiser;
 
 	/**
 	 * Constructs a new {@code FSTIndividualSerialiser} bound to the given {@link BinarySerialiser}.
@@ -47,14 +51,12 @@ abstract class FSTIndividualSerialiser<T> extends FSTBasicObjectSerializer {
 	 * @param serialiser
 	 *            the owning binary serialiser; must not be {@code null}
 	 */
-	protected FSTIndividualSerialiser(final BinarySerialiser serialiser) {
-		this.serialiser = serialiser;
-	}
+	public void setBinarySerialiser(final BinarySerialiser serialiser) { this.serialiser = serialiser; }
 
 	/**
-	 * Returns whether the deserialised object should be registered with the FST input stream
-	 * for back-reference tracking. Returns {@code true} by default.
-	 * Subclasses may override this to return {@code false} when reference tracking is not needed.
+	 * Returns whether the deserialised object should be registered with the FST input stream for back-reference
+	 * tracking. Returns {@code true} by default. Subclasses may override this to return {@code false} when reference
+	 * tracking is not needed.
 	 *
 	 * @return {@code true} if the object should be registered after deserialisation
 	 */
@@ -63,9 +65,9 @@ abstract class FSTIndividualSerialiser<T> extends FSTBasicObjectSerializer {
 	}
 
 	/**
-	 * Instantiates an object by reading it from the FST input stream.
-	 * Delegates to {@link #deserialise(IScope, FSTObjectInput)} using the scope
-	 * from the owning {@link BinarySerialiser}, then optionally registers the result.
+	 * Instantiates an object by reading it from the FST input stream. Delegates to
+	 * {@link #deserialise(IScope, FSTObjectInput)} using the scope from the owning {@link BinarySerialiser}, then
+	 * optionally registers the result.
 	 *
 	 * @param objectClass
 	 *            the class of the object to instantiate
@@ -83,17 +85,16 @@ abstract class FSTIndividualSerialiser<T> extends FSTBasicObjectSerializer {
 	 */
 	@SuppressWarnings ("rawtypes")
 	@Override
-	public final T instantiate(final Class objectClass, final FSTObjectInput in,
-			final FSTClazzInfo serializationInfo, final FSTFieldInfo referencee, final int streamPosition)
-			throws Exception {
+	public final T instantiate(final Class objectClass, final FSTObjectInput in, final FSTClazzInfo serializationInfo,
+			final FSTFieldInfo referencee, final int streamPosition) throws Exception {
 		T result = deserialise(serialiser.scope, in);
 		if (shouldRegister()) { in.registerObject(result, streamPosition, serializationInfo, referencee); }
 		return result;
 	}
 
 	/**
-	 * Writes the object to the FST output stream by delegating to {@link #serialise(FSTObjectOutput, Object)}.
-	 * Any exception thrown during serialisation is printed to stderr.
+	 * Writes the object to the FST output stream by delegating to {@link #serialise(FSTObjectOutput, Object)}. Any
+	 * exception thrown during serialisation is printed to stderr.
 	 *
 	 * @param out
 	 *            the FST output stream
@@ -120,8 +121,8 @@ abstract class FSTIndividualSerialiser<T> extends FSTBasicObjectSerializer {
 	}
 
 	/**
-	 * Serialises the given object to the FST output stream.
-	 * The default implementation does nothing; subclasses should override this method.
+	 * Serialises the given object to the FST output stream. The default implementation does nothing; subclasses should
+	 * override this method.
 	 *
 	 * @param out
 	 *            the FST output stream
@@ -130,7 +131,7 @@ abstract class FSTIndividualSerialiser<T> extends FSTBasicObjectSerializer {
 	 * @throws Exception
 	 *             if serialisation fails
 	 */
-	public void serialise(final FSTObjectOutput out, final T toWrite) throws Exception {}
+	public void serialise(final IGamaObjectOutput out, final T toWrite) throws Exception {}
 
 	/**
 	 * Deserialises an object from the FST input stream using the given simulation scope.
@@ -143,6 +144,6 @@ abstract class FSTIndividualSerialiser<T> extends FSTBasicObjectSerializer {
 	 * @throws Exception
 	 *             if deserialisation fails
 	 */
-	public abstract T deserialise(IScope scope, FSTObjectInput in) throws Exception;
+	public abstract T deserialise(IScope scope, IGamaObjectInput in) throws Exception;
 
 }

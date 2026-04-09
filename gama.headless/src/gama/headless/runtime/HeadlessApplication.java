@@ -110,6 +110,13 @@ public class HeadlessApplication implements IApplication {
 		// finds the ArtefactFactory already registered when it loads GamlAdditions.
 		// This synchronously initialises all GAML types (Types.MAP, Types.AGENT, …).
 		CoreActivator.load();
+		// Eagerly instantiate BuiltinGlobalScopeProvider and any other Xtext singletons whose
+		// constructors read from the fully-loaded GAMA metamodel (Types, GamaMetaModel, …).
+		// This mirrors what EditorActivator does for the GUI: the injector is only asked for
+		// those singletons after all bundle activators have run and the platform is complete.
+		// Without this call they would be created lazily by Guice during the first model
+		// validation, which could race against a future async buildContributions() executor.
+		GamlStandaloneSetup.initializeAfterPlatformReady(INJECTOR);
 		// SEED HACK // WARNING AD : Why ?
 		GamaPreferences.External.CORE_SEED_DEFINED.set(true);
 		GamaPreferences.External.CORE_SEED.set(1.0);

@@ -26,7 +26,7 @@
       <programArgsLin>--launcher.GTK_version 3
       </programArgsLin>
       <vmArgs>-server 
--Xms2G -Xmx16G -Xss128m
+-Xms4G -Xmx16G -Xss128m
 -XX:+UnlockExperimentalVMOptions 
 -XX:+UseG1GC -XX:+UseAdaptiveSizePolicy -XX:+OptimizeStringConcat
 -Dorg.eclipse.swt.graphics.Resource.reportNonDisposed=false
@@ -112,7 +112,6 @@
       <feature id="gama.feature.ui.experiment" installMode="root"/>
       <feature id="gama.feature.ui.dependencies" installMode="root"/>
       <feature id="gama.feature.extension.image" installMode="root"/>
-      <feature id="gama.feature.copilot" installMode="root"/>
    </features>
 
    <configurations>

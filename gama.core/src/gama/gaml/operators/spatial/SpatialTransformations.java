@@ -517,7 +517,7 @@ public class SpatialTransformations {
 	// }
 	// return new IPair(180 / Math.PI * rotation.getAngle(), rotation.getAxis(), Types.FLOAT, Types.POINT);
 	// }
-	@test ("normalized_rotation(rotation_composition(38.0::{1,1,1},90.0::{1,0,0}))=normalized_rotation(115.22128507898108::{0.9491582126366207,0.31479943993669307,-0.0})")
+	@test ("normalized_rotation(rotation_composition(38.0::{1,1,1},90.0::{1,0,0}))=normalized_rotation(115.22128507898108::{-0.9491582126366207,-0.0,-0.31479943993669307})")
 	public static IPair<Double, IPoint> rotation_composition(final IScope scope, final IList<IPair> rotation_list) {
 		// Precompute the degree-to-radians factor to avoid recomputing it per iteration
 		final double DEG_TO_RAD = Math.PI / 180.0;
@@ -2117,6 +2117,7 @@ public class SpatialTransformations {
 		}
 		return false;
 	}
+	
 
 	/**
 	 * Modify point.
@@ -2130,18 +2131,21 @@ public class SpatialTransformations {
 	 * @param first
 	 *            the first
 	 */
-	/*
-	 * if (first) {g <- line([pt] + (g.points - first(g.points)));} else {g <- line((g.points - last(g.points)) +
-	 * [pt]);} return g;
-	 */
+	
 	private static void modifyPoint(final IScope scope, final IShape shape, final IPoint pt, final boolean first) {
-		if (first) {
-			shape.getInnerGeometry().getCoordinates()[0] = pt.toCoordinate();
-		} else {
-			shape.getInnerGeometry().getCoordinates()[shape.getInnerGeometry().getCoordinates().length - 1] =
-					pt.toCoordinate();
-		}
-		shape.getInnerGeometry().geometryChanged();
+	    // 1. Get the array of coordinates from the geometry
+	    final org.locationtech.jts.geom.Coordinate[] coords = shape.getInnerGeometry().getCoordinates();
+	    
+	    // 2. Target the correct index (either the first or the last point)
+	    final int index = first ? 0 : coords.length - 1;
+	    
+	    // 3. Directly modify the attributes of the existing Coordinate object in memory!
+	    coords[index].x = pt.getX();
+	    coords[index].y = pt.getY();
+	    coords[index].z = pt.getZ(); // Useful if your graph has elevation/3D coordinates
+	    
+	    // 4. Notify JTS that the internal coordinates have changed so it can update its bounding box
+	    shape.getInnerGeometry().geometryChanged();
 	}
 
 	/**

@@ -14,8 +14,8 @@ import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.IPoint;
 import gama.api.utils.geometry.GamaCoordinateSequence;
 import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
-import gama.extension.serialize.fst.FSTObjectInput;
-import gama.extension.serialize.fst.FSTObjectOutput;
+import gama.extension.serialize.IGamaObjectInput;
+import gama.extension.serialize.IGamaObjectOutput;
 
 /**
  * FST serialiser for {@link UniqueCoordinateSequence} instances. A {@code UniqueCoordinateSequence} holds exactly one
@@ -25,16 +25,6 @@ import gama.extension.serialize.fst.FSTObjectOutput;
  * @date 5 août 2023
  */
 class GamaCoordinateSequenceSerialiser extends FSTIndividualSerialiser<GamaCoordinateSequence> {
-
-	/**
-	 * Constructs a new {@code GamaCoordinateSequenceSerialiser} bound to the given {@link BinarySerialiser}.
-	 *
-	 * @param serialiser
-	 *            the owning binary serialiser
-	 */
-	GamaCoordinateSequenceSerialiser(final BinarySerialiser serialiser) {
-		super(serialiser);
-	}
 
 	/**
 	 * Serialises the x, y, and z values of the single coordinate at index 0.
@@ -47,7 +37,7 @@ class GamaCoordinateSequenceSerialiser extends FSTIndividualSerialiser<GamaCoord
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final FSTObjectOutput out, final GamaCoordinateSequence o) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final GamaCoordinateSequence o) throws Exception {
 		out.writeObject(o.toPointsArray());
 	}
 
@@ -63,7 +53,7 @@ class GamaCoordinateSequenceSerialiser extends FSTIndividualSerialiser<GamaCoord
 	 *             if deserialisation fails
 	 */
 	@Override
-	public GamaCoordinateSequence deserialise(final IScope scope, final FSTObjectInput in) throws Exception {
+	public GamaCoordinateSequence deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		IPoint[] points = (IPoint[]) in.readObject();
 		return (GamaCoordinateSequence) GamaCoordinateSequenceFactory.create(points);
 	}

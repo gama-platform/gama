@@ -439,10 +439,6 @@ public class WorkspaceModelsManager {
 	 * Load models library.
 	 */
 	public void loadModelsLibrary() {
-		// while (!GAMA.__LOADED__ && !GamaBundleLoader.ERRORED) {
-		// THREADS.WAIT(100, (String) null, "Impossible to load the Built-in Models Library");
-		// }
-		// DEBUG.OUT("Synchronous link of models library...");
 		final Multimap<Bundle, String> pluginsWithModels = GamaBundleLoader.getPluginsWithModels();
 		for (final Bundle plugin : pluginsWithModels.keySet()) {
 			for (final String entry : pluginsWithModels.get(plugin)) { linkModelsToWorkspace(plugin, entry, false); }
@@ -451,8 +447,19 @@ public class WorkspaceModelsManager {
 		for (final Bundle plugin : pluginsWithTests.keySet()) {
 			for (final String entry : pluginsWithTests.get(plugin)) { linkModelsToWorkspace(plugin, entry, true); }
 		}
+		final Multimap<Bundle, String> pluginsWithTutorials = GamaBundleLoader.getPluginsWithTutorials();
+		for (final Bundle plugin : pluginsWithTutorials.keySet()) {
+			for (final String entry : pluginsWithTutorials.get(plugin)) {
+				linkModelsToWorkspace(plugin, entry, false);
+			}
+		}
+		final Multimap<Bundle, String> pluginsWithRecipes = GamaBundleLoader.getPluginsWithRecipes();
+		for (final Bundle plugin : pluginsWithRecipes.keySet()) {
+			for (final String entry : pluginsWithRecipes.get(plugin)) {
+				linkModelsToWorkspace(plugin, entry, false);
+			}
+		}
 		// If the directory is not empty, we should maybe try to recreate the projects (if they do not exist...)
-
 		try (DirectoryStream<java.nio.file.Path> paths = Files.newDirectoryStream(
 				java.nio.file.Path.of(GAMA.getWorkspaceManager().getWorkspaceLocation()), Files::isDirectory)) {
 			for (java.nio.file.Path r : paths) {
@@ -527,6 +534,23 @@ public class WorkspaceModelsManager {
 		for (final Map.Entry<File, IPath> entry : projects.entrySet()) {
 			final File project = entry.getKey();
 			final IPath location = entry.getValue();
+
+			// Skip projects whose .project file declares no natures: they are
+			// deprecated container directories that have been emptied of GAMA content
+			// (e.g. the old "Tutorials" container after its sub-projects were moved
+			// to the tutorials/ layout).
+			try {
+				final IProjectDescription peekDesc =
+						GAMA.getWorkspaceManager().getWorkspace().loadProjectDescription(location);
+				if (peekDesc != null && peekDesc.getNatureIds().length == 0) {
+					DEBUG.OUT("Skipping empty/deprecated container project: " + project.getName());
+					continue;
+				}
+			} catch (final CoreException e) {
+				// If we cannot load the description, try importing normally
+				DEBUG.ERR("Could not peek at project description for: " + project.getName(), e);
+			}
+
 			final WorkspaceModifyOperation operation = new WorkspaceModifyOperation() {
 
 				@Override
@@ -599,29 +623,48 @@ public class WorkspaceModelsManager {
 
 	/**
 	 * Configures project description with appropriate GAMA natures and properties. Sets up the project based on its
-	 * type (builtin, plugin, test, or regular model).
+	 * type (tutorial, recipe, builtin, plugin, test, or regular model).
+	 *
+	 * <p>
+	 * If the project's existing {@code .project} file already declares {@link GamaNatures#TUTORIAL_NATURE} or
+	 * {@link GamaNatures#RECIPE_NATURE}, those natures are preserved and take precedence over the generic
+	 * {@code builtin}/{@code plugin} classification. This allows individual projects inside a plugin's {@code models/}
+	 * directory to opt-in to the "Tutorials" or "Recipes" virtual folders simply by declaring the appropriate nature in
+	 * their {@code .project} file.
+	 * </p>
 	 *
 	 * @param proj
 	 *            the project to configure
 	 * @param builtin
-	 *            true if this is a built-in GAMA project
+	 *            true if this is a built-in GAMA project (part of the core library or a plugin's {@code models/}
+	 *            directory)
 	 * @param inPlugin
-	 *            true if this project is part of a plugin
+	 *            true if this project is part of a non-core plugin's {@code models/} directory
 	 * @param inTests
-	 *            true if this is a test project
+	 *            true if this is a test project (part of a plugin's {@code tests/} directory)
 	 * @param bundle
 	 *            the OSGi bundle associated with this project (can be null)
 	 */
 	public void setValuesProjectDescription(final IProject proj, final boolean builtin, final boolean inPlugin,
 			final boolean inTests, final Bundle bundle) {
 		try {
+			// Check whether the project file already declares a tutorial or recipe nature.
+			// If so, preserve it instead of overwriting with the generic builtin/plugin nature.
+			final IProjectDescription existingDesc = proj.getDescription();
+			final boolean isTutorial = existingDesc.hasNature(GamaNatures.TUTORIAL_NATURE);
+			final boolean isRecipe = existingDesc.hasNature(GamaNatures.RECIPE_NATURE);
+
 			// Build nature IDs list based on project type
 			final List<String> natures = new ArrayList<>();
 			natures.add(GamaNatures.XTEXT_NATURE);
 			natures.add(GamaNatures.GAMA_NATURE);
 
-			// Add specific nature based on project type
-			if (inTests) {
+			// Add specific nature based on project type; tutorial/recipe take precedence
+			if (isTutorial) {
+				natures.add(GamaNatures.TUTORIAL_NATURE);
+			} else if (isRecipe) {
+				natures.add(GamaNatures.RECIPE_NATURE);
+			} else if (inTests) {
 				natures.add(GamaNatures.TEST_NATURE);
 			} else if (inPlugin) {
 				natures.add(GamaNatures.PLUGIN_NATURE);
@@ -629,7 +672,7 @@ public class WorkspaceModelsManager {
 
 			// Update project description
 			final IProjectDescription desc = proj.getDescription();
-			desc.setNatureIds(natures.toArray(new String[0])); // Java 8+ array creation
+			desc.setNatureIds(natures.toArray(new String[0]));
 
 			// Set project comment based on type
 			setProjectComment(desc, inTests, inPlugin, bundle);
@@ -637,13 +680,13 @@ public class WorkspaceModelsManager {
 			proj.setDescription(desc, IResource.FORCE, null);
 
 			// Set builtin property if applicable
-			if (builtin) {
+			if (builtin && !isTutorial && !isRecipe) {
 				final String version = Platform.getProduct().getDefiningBundle().getVersion().toString();
 				proj.setPersistentProperty(BUILTIN_PROPERTY, version);
 			}
 
 			DEBUG.OUT("Successfully configured project: " + proj.getName() + " (builtin=" + builtin + ", plugin="
-					+ inPlugin + ", tests=" + inTests + ")");
+					+ inPlugin + ", tests=" + inTests + ", tutorial=" + isTutorial + ", recipe=" + isRecipe + ")");
 
 		} catch (final CoreException e) {
 			DEBUG.ERR("Failed to set project description for: " + proj.getName(), e);

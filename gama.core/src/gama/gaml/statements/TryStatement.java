@@ -110,11 +110,12 @@ public class TryStatement extends AbstractStatementSequence {
 	/**
 	 * The {@code catch} branch, if any.
 	 *
-	 * <p><b>Thread-safety:</b> declared {@code volatile} so that the single write performed by
-	 * {@link #setChildren(Iterable)} during construction (or the {@code null} written by
-	 * {@link #dispose()}) is guaranteed to be visible to all threads that subsequently call
-	 * {@link #privateExecuteIn(IScope)}, even when those threads belong to different parallel
-	 * simulations sharing this statement instance.</p>
+	 * <p>
+	 * <b>Thread-safety:</b> declared {@code volatile} so that the single write performed by
+	 * {@link #setChildren(Iterable)} during construction (or the {@code null} written by {@link #dispose()}) is
+	 * guaranteed to be visible to all threads that subsequently call {@link #privateExecuteIn(IScope)}, even when those
+	 * threads belong to different parallel simulations sharing this statement instance.
+	 * </p>
 	 */
 	public volatile IStatement catchStatement;
 
@@ -142,8 +143,8 @@ public class TryStatement extends AbstractStatementSequence {
 		try {
 			scope.enableTryMode();
 			result = super.privateExecuteIn(scope);
-		} catch (final Exception e) {
-			if (!(e instanceof GamaRuntimeException)) { scope.setCurrentError(GamaRuntimeException.create(e, scope)); }
+		} catch (final Throwable e) {
+			scope.setCurrentError(GamaRuntimeException.create(e, scope));
 			scope.disableTryMode();
 			if (catchStatement != null) return scope.execute(catchStatement).getValue();
 		} finally {

@@ -122,7 +122,7 @@ public class NetworkMessage implements ConnectorMessage {
 	public IMessage getCompositeContent(final IScope scope) {
 		final Object messageContent = BinarySerialisation.createFromString(scope, content);
 		IMessage message = null;
-		if (messageContent instanceof CompositeGamaMessage cgm) {
+		if (messageContent instanceof IMessage cgm) {
 			message = cgm;
 		} else {
 			message = GamaMessageFactory.create(scope, from, to, messageContent);

@@ -62,7 +62,35 @@
                    id="gama.workspace.gamaNature">
             </requires-nature>
          </extension>
-         
+
+         <extension
+               id="tutorialNature"
+               name="GAMA tutorial project"
+               point="org.eclipse.core.resources.natures">
+            <runtime>
+               <run
+                     class="gama.workspace.nature.TutorialNature">
+               </run>
+            </runtime>
+            <requires-nature
+                  id="gama.workspace.gamaNature">
+            </requires-nature>
+         </extension>
+
+         <extension
+               id="recipeNature"
+               name="GAMA recipe project"
+               point="org.eclipse.core.resources.natures">
+            <runtime>
+               <run
+                     class="gama.workspace.nature.RecipeNature">
+               </run>
+            </runtime>
+            <requires-nature
+                  id="gama.workspace.gamaNature">
+            </requires-nature>
+         </extension>
+
             <extension
          point="org.eclipse.core.contenttype.contentTypes">
       <content-type

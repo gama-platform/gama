@@ -17,6 +17,8 @@ package gama.extension.serialize.fst;
 
 import java.io.IOException;
 
+import gama.extension.serialize.IGamaObjectInput;
+
 /**
  * Created with IntelliJ IDEA.
  * User: ruedi
@@ -40,7 +42,7 @@ public interface FSTObjectSerializer {
     /**
      * read the content to an already instantiated object
      */
-    public void readObject(FSTObjectInput in, Object toRead, FSTClazzInfo clzInfo, FSTClazzInfo.FSTFieldInfo referencedBy)
+    public void readObject(IGamaObjectInput in, Object toRead, FSTClazzInfo clzInfo, FSTClazzInfo.FSTFieldInfo referencedBy)
         throws Exception;
 
     /**

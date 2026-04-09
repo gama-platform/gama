@@ -275,4 +275,11 @@ public class GamaMessage implements IMessage {
 				emissionTimeStamp, EMISSION_TIMESTAMP, emissionTimeStamp).add(RECEIVERS, receivers);
 	}
 
+	/**
+	 * @return
+	 */
+	public Object rawContents() {
+		return contents;
+	}
+
 }

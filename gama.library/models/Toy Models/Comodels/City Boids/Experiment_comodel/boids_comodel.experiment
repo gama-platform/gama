@@ -1,0 +1,16 @@
+/**
+* Name: boidscomodel
+* Experiment file for boids model. Used by "Urbanization And Traffic Comodel.gaml"
+* Author: Lucas Grosjean, HUYNH Quang Nghi
+* Tags: comodel, experiment
+*/
+
+experiment boidscomodel model:'../../../../Toy Models/Boids/models/Boids 3D Motion.gaml'type:gui {
+	list<boids_goal> get_boids_goal(){
+		return list(boids_goal);
+	}
+	
+	list<boids> get_boids(){
+		return list(boids);
+	}
+}

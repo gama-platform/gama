@@ -192,6 +192,20 @@ public class GamaBundleLoader {
 	/** The generated tests layout. */
 	public static final String GENERATED_TESTS_LAYOUT = "gaml/tests";
 
+	/**
+	 * The standard sub-directory name that a plugin bundle can use to contribute tutorial projects. Any sub-project
+	 * found inside this directory will be imported with {@code gama.workspace.tutorialNature} and placed in the
+	 * "Tutorials" virtual folder of the GAMA Navigator.
+	 */
+	public static final String REGULAR_TUTORIALS_LAYOUT = "tutorials";
+
+	/**
+	 * The standard sub-directory name that a plugin bundle can use to contribute recipe projects. Any sub-project found
+	 * inside this directory will be imported with {@code gama.workspace.recipeNature} and placed in the "Recipes"
+	 * virtual folder of the GAMA Navigator.
+	 */
+	public static final String REGULAR_RECIPES_LAYOUT = "recipes";
+
 	/** The gama plugins. */
 	private static final List<Bundle> GAMA_PLUGINS = new ArrayList<>(50);
 
@@ -213,6 +227,20 @@ public class GamaBundleLoader {
 
 	/** The test plugins. */
 	private static final Multimap<Bundle, String> TEST_PLUGINS = ArrayListMultimap.create();
+
+	/**
+	 * Plugins contributing tutorial projects, mapped to the relative path of their {@code tutorials/} directory. Used
+	 * by {@link gama.workspace.manager.WorkspaceModelsManager} to import tutorial projects and assign them
+	 * {@code gama.workspace.tutorialNature}.
+	 */
+	private static final Multimap<Bundle, String> TUTORIAL_PLUGINS = ArrayListMultimap.create();
+
+	/**
+	 * Plugins contributing recipe projects, mapped to the relative path of their {@code recipes/} directory. Used by
+	 * {@link gama.workspace.manager.WorkspaceModelsManager} to import recipe projects and assign them
+	 * {@code gama.workspace.recipeNature}.
+	 */
+	private static final Multimap<Bundle, String> RECIPE_PLUGINS = ArrayListMultimap.create();
 
 	/** The handled file extensions. */
 	public static final Set<String> HANDLED_FILE_EXTENSIONS = new LinkedHashSet<>();
@@ -535,20 +563,29 @@ public class GamaBundleLoader {
 	}
 
 	/**
-	 * Discovers and indexes model libraries and test suites from all registered plugins. This method scans plugins for
-	 * standard directory layouts containing GAML models and tests.
+	 * Discovers and indexes model libraries, test suites, tutorial projects and recipe projects from all registered
+	 * plugins. This method scans plugins for standard directory layouts containing GAML models.
 	 *
 	 * <p>
-	 * The method recognizes three standard layouts:
+	 * The method recognizes five standard layouts:
+	 * </p>
 	 * <ul>
-	 * <li><b>models/</b>: Standard location for model library projects</li>
-	 * <li><b>tests/</b>: Standard location for test files</li>
-	 * <li><b>gaml/tests/</b>: Alternative location for generated test files</li>
+	 * <li><b>models/</b>: Standard location for model library projects (Library virtual folder)</li>
+	 * <li><b>tests/</b>: Standard location for test files (Tests virtual folder)</li>
+	 * <li><b>gaml/tests/</b>: Alternative location for generated test files (Tests virtual folder)</li>
+	 * <li><b>tutorials/</b>: Step-by-step tutorial projects (Tutorials virtual folder)</li>
+	 * <li><b>recipes/</b>: Focused single-feature demonstrations (Recipes virtual folder)</li>
 	 * </ul>
 	 *
 	 * <p>
-	 * Plugins can also explicitly declare non-standard model locations using the "gama.models" extension point. The
-	 * core library bundle (gama.library) is always included as a model provider.
+	 * The core library bundle ({@code gama.library}) is always included as a model, tutorial, and recipe provider and
+	 * is handled specially because it is not a GAML-language plugin and therefore does not appear in
+	 * {@code GAMA_PLUGINS}. All other bundles in {@code GAMA_PLUGINS} are scanned for any of the five layouts above.
+	 * </p>
+	 *
+	 * <p>
+	 * Plugins can also explicitly declare non-standard model locations using the {@code gama.models} extension point.
+	 * </p>
 	 *
 	 * @param registry
 	 *            the Eclipse extension registry containing plugin contributions
@@ -556,12 +593,27 @@ public class GamaBundleLoader {
 	 *             if the extension registry contains invalid objects
 	 */
 	private static void loadModels(final IExtensionRegistry registry) throws InvalidRegistryObjectException {
+		// Always register the core library bundle for its models/ layout.
 		MODEL_PLUGINS.put(CORE_MODELS, REGULAR_MODELS_LAYOUT);
+		// CORE_MODELS is NOT part of GAMA_PLUGINS, so scan it explicitly for the
+		// tutorials/ and recipes/ layouts introduced by the new navigator structure.
+		if (CORE_MODELS.getEntry(REGULAR_TUTORIALS_LAYOUT) != null) {
+			TUTORIAL_PLUGINS.put(CORE_MODELS, REGULAR_TUTORIALS_LAYOUT);
+		}
+		if (CORE_MODELS.getEntry(REGULAR_RECIPES_LAYOUT) != null) {
+			RECIPE_PLUGINS.put(CORE_MODELS, REGULAR_RECIPES_LAYOUT);
+		}
 		GAMA_PLUGINS.add(CORE_PLUGIN); // We add it back to gather tests
 		GAMA_PLUGINS.forEach(bundle -> {
 			if (bundle.getEntry(REGULAR_MODELS_LAYOUT) != null) { MODEL_PLUGINS.put(bundle, REGULAR_MODELS_LAYOUT); }
 			if (bundle.getEntry(REGULAR_TESTS_LAYOUT) != null) { TEST_PLUGINS.put(bundle, REGULAR_TESTS_LAYOUT); }
 			if (bundle.getEntry(GENERATED_TESTS_LAYOUT) != null) { TEST_PLUGINS.put(bundle, GENERATED_TESTS_LAYOUT); }
+			if (bundle.getEntry(REGULAR_TUTORIALS_LAYOUT) != null) {
+				TUTORIAL_PLUGINS.put(bundle, REGULAR_TUTORIALS_LAYOUT);
+			}
+			if (bundle.getEntry(REGULAR_RECIPES_LAYOUT) != null) {
+				RECIPE_PLUGINS.put(bundle, REGULAR_RECIPES_LAYOUT);
+			}
 		});
 		// We gather all the GAMA_PLUGINS that explicitly declare models using
 		// the non-default scheme (plugin > models ...).
@@ -732,6 +784,25 @@ public class GamaBundleLoader {
 	 *         within those bundles
 	 */
 	public static Multimap<Bundle, String> getPluginsWithTests() { return TEST_PLUGINS; }
+
+	/**
+	 * Returns a multimap of all GAMA plugins that contain tutorial projects, along with the inner path to the folder
+	 * containing those projects (always {@value #REGULAR_TUTORIALS_LAYOUT}). A single bundle may have at most one
+	 * entry.
+	 *
+	 * @return a multimap where keys are bundles contributing tutorials and values are the relative paths to their
+	 *         {@code tutorials/} directories
+	 */
+	public static Multimap<Bundle, String> getPluginsWithTutorials() { return TUTORIAL_PLUGINS; }
+
+	/**
+	 * Returns a multimap of all GAMA plugins that contain recipe projects, along with the inner path to the folder
+	 * containing those projects (always {@value #REGULAR_RECIPES_LAYOUT}). A single bundle may have at most one entry.
+	 *
+	 * @return a multimap where keys are bundles contributing recipes and values are the relative paths to their
+	 *         {@code recipes/} directories
+	 */
+	public static Multimap<Bundle, String> getPluginsWithRecipes() { return RECIPE_PLUGINS; }
 
 	/**
 	 * Checks whether a GAML plugin with the specified symbolic name has been successfully loaded during platform

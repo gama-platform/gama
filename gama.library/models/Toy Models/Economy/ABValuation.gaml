@@ -607,24 +607,24 @@ experiment ABValuationDemo type: gui autorun:true{
                 
                 y <- y + 75#px;
                 draw string("Commuting Cost") at: { 0#px, y + 4#px } color: #white font: font("Helvetica", 18);
-                y <- y + 25#px;
-                draw rectangle(200#px,2#px) at: { 50#px, y } color: #white;
-                draw rectangle(2#px,10#px) at: { 5#px+commutingCost*90#px, y } color: #white;
-
-                y <- y + 25#px;
-                draw string("Share of low income") at: { 0#px, y + 4#px } color: #white font: font("Helvetica", 18);
-                y <- y + 25#px;
-                draw rectangle(200#px,2#px) at: { 50#px, y } color: #white;
-                draw rectangle(2#px,10#px) at: { shareLowIncome*90#px, y } color: #white;
-                
-                y <- y + 25#px;
-                float x<-0#px;
-                draw string("Housing Supply") at: { 0#px + x , y + 4#px } color: #white font: font("Helvetica", 18);
-                y <- y + 25#px;
-                draw rectangle(200#px,2#px) at: { 50#px, y } color: #white;
-                draw rectangle(2#px,10#px) at: { (updateUnitSize ? 0.25 :0.75)*100#px, y } color: #white;
-                y<-y+15#px; 
-                draw string("     Market Driven        Fixed") at: { 10#px + x , y + 4#px } color: #white font: font("Helvetica", 12);       	          	 
+				y <- y + 25#px;
+				draw rectangle(200#px,2#px) at: { 80#px, y } color: #white;
+				draw rectangle(2#px,10#px) at: { commutingCost*150#px, y } color: #white;
+				
+				y <- y + 25#px;
+				draw string("Share of low income") at: { 0#px, y + 4#px } color: #white font: font("Helvetica", 18);
+				y <- y + 25#px;
+				draw rectangle(200#px,2#px) at: { 80#px, y } color: #white;
+				draw rectangle(2#px,10#px) at: { shareLowIncome*150#px, y } color: #white;
+				
+				y <- y + 25#px;
+				float x<-0#px;
+				draw string("Housing Supply") at: { 0#px + x , y + 4#px } color: #white font: font("Helvetica", 18);
+				y <- y + 25#px;
+				draw rectangle(200#px,2#px) at: { 80#px, y } color: #white;
+				draw rectangle(2#px,10#px) at: { (updateUnitSize ? 0.25 :1.0)*150#px, y } color: #white;
+				y<-y+15#px;
+				draw string("Market Driven Fixed") at: { 0#px, y + 4#px } color: #white font: font("Helvetica", 12);      	          	 
             }
 		}
 	}

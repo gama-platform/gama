@@ -141,6 +141,7 @@
 			GAML language extensions modules
 		-->
 		<module>../gama.extension.bdi</module>
+		<module>../gama.extension.batch</module>
 		<module>../gama.extension.fipa</module>
 		<module>../gama.extension.sound</module>
 		<module>../gama.extension.stats</module>

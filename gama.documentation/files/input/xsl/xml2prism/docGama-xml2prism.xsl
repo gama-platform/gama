@@ -4,7 +4,7 @@
 
 	<xsl:template match="/">
 		<xsl:text>
-Prism.languages.gaml = {
+const gamlDefinition = {
 	'comment': [
 		{ pattern: /(^|[^\\])\/\*[\s\S]*?(?:\*\/|$)/, lookbehind: !0, greedy: !0 }, 
 		{ pattern: /(^|[^\\:])\/\/.*/, lookbehind: !0, greedy: !0 }],
@@ -66,6 +66,14 @@ Prism.languages.gaml = {
 <xsl:text>	
 	'variable': /\b[a-z](?:\w)*\b/i
 };
+
+if (typeof Prism !== 'undefined') {
+	Prism.languages.gaml = gamlDefinition;
+}
+
+if (typeof module !== 'undefined' &amp;&amp; module.exports) {
+	module.exports = gamlDefinition;
+}
 </xsl:text>
 
 	</xsl:template>

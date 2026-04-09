@@ -15,29 +15,18 @@ import java.util.Map;
 import gama.api.kernel.object.IClass;
 import gama.api.kernel.object.IObject;
 import gama.api.runtime.scope.IScope;
-import gama.extension.serialize.fst.FSTObjectInput;
-import gama.extension.serialize.fst.FSTObjectOutput;
+import gama.extension.serialize.IGamaObjectInput;
+import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link IObject} instances.
- * Serialises the species name and the full attribute map of the object.
- * On deserialisation, the species class is looked up in the model and a new instance is created.
- * Objects deserialised by this serialiser are not registered for back-reference tracking.
+ * FST serialiser for {@link IObject} instances. Serialises the species name and the full attribute map of the object.
+ * On deserialisation, the species class is looked up in the model and a new instance is created. Objects deserialised
+ * by this serialiser are not registered for back-reference tracking.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
 class IObjectSerialiser extends FSTIndividualSerialiser<IObject> {
-
-	/**
-	 * Constructs a new {@code IObjectSerialiser} bound to the given {@link BinarySerialiser}.
-	 *
-	 * @param serialiser
-	 *            the owning binary serialiser
-	 */
-	IObjectSerialiser(final BinarySerialiser serialiser) {
-		super(serialiser);
-	}
 
 	/**
 	 * Returns {@code false}: objects are not registered for FST back-reference tracking.
@@ -60,14 +49,14 @@ class IObjectSerialiser extends FSTIndividualSerialiser<IObject> {
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final FSTObjectOutput out, final IObject o) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final IObject o) throws Exception {
 		out.writeStringUTF(o.getSpeciesName());
 		out.writeObject(o.getAttributes(true));
 	}
 
 	/**
-	 * Deserialises an object by reading its species name and attributes, then creating a new instance
-	 * via the model's class registry. Returns {@code null} if the class cannot be found.
+	 * Deserialises an object by reading its species name and attributes, then creating a new instance via the model's
+	 * class registry. Returns {@code null} if the class cannot be found.
 	 *
 	 * @param scope
 	 *            the current GAMA simulation scope
@@ -79,7 +68,7 @@ class IObjectSerialiser extends FSTIndividualSerialiser<IObject> {
 	 */
 	@SuppressWarnings ("unchecked")
 	@Override
-	public IObject deserialise(final IScope scope, final FSTObjectInput in) throws Exception {
+	public IObject deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		String speciesName = in.readStringUTF();
 		Map<String, Object> attributes = (Map<String, Object>) in.readObject();
 		IClass clazz = scope.getModel().getClass(speciesName);

@@ -160,6 +160,29 @@ jobs:
             --data '{"ref": "main", "inputs": {"tag": "${{ inputs.tag }}"}}' \
             https://api.github.com/repos/gama-platform/gama.ppa/actions/workflows/69865833/dispatches
 
+
+  prism-gaml:
+    needs: get-tag-info
+    runs-on: ubuntu-latest
+    name: Publish to npm 📦
+
+    steps:
+      - name: Push prism-gaml.js to prism-gaml repository
+        run: |
+          NPM_TAG="${{ inputs.tag }}${{ inputs.IS_STABLE_RELEASE && '' || '-alpha' }}"
+          git clone --depth 1 https://gama-bot:$BOT_TOKEN@github.com/gama-platform/prism-gaml.git $GITHUB_WORKSPACE/../prism-gaml
+          cd $GITHUB_WORKSPACE/../prism-gaml
+          git config user.email "my.gama.bot@gmail.com"
+          git config user.name "GAMA Bot"
+          npm run tagVersion "$NPM_TAG"
+          git add -A
+          git commit -m "Push new npm release - $NPM_TAG"
+          git push
+          git tag "$NPM_TAG"
+          git push --tags
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+
   # linux-arch:
   #   needs: get-tag-info
   #   runs-on: ubuntu-latest

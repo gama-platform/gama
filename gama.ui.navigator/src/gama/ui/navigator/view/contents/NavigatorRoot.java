@@ -33,11 +33,14 @@ public class NavigatorRoot extends VirtualContent implements IAdaptable {
 	/** The test folder. */
 	private TopLevelFolder testFolder;
 
-	/** The plugin folder. */
-	private TopLevelFolder pluginFolder;
-
-	/** The library folder. */
+	/** The library folder (contains both built-in core models and plugin models). */
 	private TopLevelFolder libraryFolder;
+
+	/** The tutorials folder. */
+	private TopLevelFolder tutorialsFolder;
+
+	/** The recipes folder. */
+	private TopLevelFolder recipesFolder;
 
 	/** The Constant instance. */
 	private final static NavigatorRoot instance = new NavigatorRoot();
@@ -58,7 +61,7 @@ public class NavigatorRoot extends VirtualContent implements IAdaptable {
 	 * @return the user folder
 	 */
 	public TopLevelFolder getUserFolder() {
-		if (userFolder == null) { userFolder = new UserProjectsFolder(this, "User models"); }
+		if (userFolder == null) { userFolder = new UserProjectsFolder(this, "User"); }
 		return userFolder;
 	}
 
@@ -68,28 +71,38 @@ public class NavigatorRoot extends VirtualContent implements IAdaptable {
 	 * @return the test folder
 	 */
 	public TopLevelFolder getTestFolder() {
-		if (testFolder == null) { testFolder = new TestModelsFolder(this, "Test models"); }
+		if (testFolder == null) { testFolder = new TestModelsFolder(this, "Tests"); }
 		return testFolder;
 	}
 
 	/**
-	 * Gets the plugin folder.
-	 *
-	 * @return the plugin folder
-	 */
-	public TopLevelFolder getPluginFolder() {
-		if (pluginFolder == null) { pluginFolder = new PluginsModelsFolder(this, "Plugin models"); }
-		return pluginFolder;
-	}
-
-	/**
-	 * Gets the library folder.
+	 * Gets the library folder. This folder aggregates both built-in core models and plugin models.
 	 *
 	 * @return the library folder
 	 */
 	public TopLevelFolder getLibraryFolder() {
-		if (libraryFolder == null) { libraryFolder = new ModelsLibraryFolder(this, "Library models"); }
+		if (libraryFolder == null) { libraryFolder = new ModelsLibraryFolder(this, "Library"); }
 		return libraryFolder;
+	}
+
+	/**
+	 * Gets the tutorials folder.
+	 *
+	 * @return the tutorials folder
+	 */
+	public TopLevelFolder getTutorialsFolder() {
+		if (tutorialsFolder == null) { tutorialsFolder = new TutorialsFolder(this, "Tutorials"); }
+		return tutorialsFolder;
+	}
+
+	/**
+	 * Gets the recipes folder.
+	 *
+	 * @return the recipes folder
+	 */
+	public TopLevelFolder getRecipesFolder() {
+		if (recipesFolder == null) { recipesFolder = new RecipesFolder(this, "Recipes"); }
+		return recipesFolder;
 	}
 
 	/**
@@ -101,9 +114,10 @@ public class NavigatorRoot extends VirtualContent implements IAdaptable {
 	public void resetVirtualFolders(final ResourceManager manager) {
 		if (manager != null) { this.setManager(manager); }
 		setUserFolder(null);
-		setPluginFolder(null);
 		setTestFolder(null);
 		setLibraryFolder(null);
+		setTutorialsFolder(null);
+		setRecipesFolder(null);
 	}
 
 	/**
@@ -133,7 +147,8 @@ public class NavigatorRoot extends VirtualContent implements IAdaptable {
 	 * @return the folders
 	 */
 	public TopLevelFolder[] getFolders() {
-		return new TopLevelFolder[] { getLibraryFolder(), getPluginFolder(), getTestFolder(), getUserFolder() };
+		return new TopLevelFolder[] { getLibraryFolder(), getTutorialsFolder(), getRecipesFolder(), getTestFolder(),
+				getUserFolder() };
 	}
 
 	@Override
@@ -194,14 +209,6 @@ public class NavigatorRoot extends VirtualContent implements IAdaptable {
 	public void setLibraryFolder(final TopLevelFolder libraryFolder) { this.libraryFolder = libraryFolder; }
 
 	/**
-	 * Sets the plugin folder.
-	 *
-	 * @param pluginFolder
-	 *            the new plugin folder
-	 */
-	public void setPluginFolder(final TopLevelFolder pluginFolder) { this.pluginFolder = pluginFolder; }
-
-	/**
 	 * Sets the user folder.
 	 *
 	 * @param userFolder
@@ -216,6 +223,22 @@ public class NavigatorRoot extends VirtualContent implements IAdaptable {
 	 *            the new test folder
 	 */
 	public void setTestFolder(final TopLevelFolder testFolder) { this.testFolder = testFolder; }
+
+	/**
+	 * Sets the tutorials folder.
+	 *
+	 * @param tutorialsFolder
+	 *            the new tutorials folder
+	 */
+	public void setTutorialsFolder(final TopLevelFolder tutorialsFolder) { this.tutorialsFolder = tutorialsFolder; }
+
+	/**
+	 * Sets the recipes folder.
+	 *
+	 * @param recipesFolder
+	 *            the new recipes folder
+	 */
+	public void setRecipesFolder(final TopLevelFolder recipesFolder) { this.recipesFolder = recipesFolder; }
 
 	@Override
 	public ResourceManager getManager() { return mapper; }

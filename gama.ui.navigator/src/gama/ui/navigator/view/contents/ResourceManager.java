@@ -442,9 +442,24 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 			final String nature = root.getNature();
 			final WrappedProject p = (WrappedProject) wrap(root, project);
 			post(() -> {
-				WorkspaceModelsManager.instance.setValuesProjectDescription(project,
-						GamaNatures.BUILTIN_NATURE.equals(nature), GamaNatures.PLUGIN_NATURE.equals(nature),
-						GamaNatures.TEST_NATURE.equals(nature), null);
+				// For tutorial/recipe folders, inject the correct nature into the project description first
+				if (GamaNatures.TUTORIAL_NATURE.equals(nature) || GamaNatures.RECIPE_NATURE.equals(nature)) {
+					try {
+						final var desc = project.getDescription();
+						final java.util.List<String> natures = new java.util.ArrayList<>();
+						natures.add(GamaNatures.XTEXT_NATURE);
+						natures.add(GamaNatures.GAMA_NATURE);
+						natures.add(nature);
+						desc.setNatureIds(natures.toArray(new String[0]));
+						project.setDescription(desc, org.eclipse.core.resources.IResource.FORCE, null);
+					} catch (final org.eclipse.core.runtime.CoreException e) {
+						e.printStackTrace();
+					}
+				} else {
+					WorkspaceModelsManager.instance.setValuesProjectDescription(project,
+							GamaNatures.BUILTIN_NATURE.equals(nature), GamaNatures.PLUGIN_NATURE.equals(nature),
+							GamaNatures.TEST_NATURE.equals(nature), null);
+				}
 				root.initializeChildren();
 				refreshResource(root);
 				reveal(p);

@@ -12,28 +12,17 @@ package gama.extension.serialize.binary;
 
 import gama.api.kernel.object.IClass;
 import gama.api.runtime.scope.IScope;
-import gama.extension.serialize.fst.FSTObjectInput;
-import gama.extension.serialize.fst.FSTObjectOutput;
+import gama.extension.serialize.IGamaObjectInput;
+import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link IClass} instances.
- * Only the class name is persisted. On deserialisation, the class is looked up
- * in the current simulation model by name.
+ * FST serialiser for {@link IClass} instances. Only the class name is persisted. On deserialisation, the class is
+ * looked up in the current simulation model by name.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
 class IClassSerialiser extends FSTIndividualSerialiser<IClass> {
-
-	/**
-	 * Constructs a new {@code IClassSerialiser} bound to the given {@link BinarySerialiser}.
-	 *
-	 * @param serialiser
-	 *            the owning binary serialiser
-	 */
-	IClassSerialiser(final BinarySerialiser serialiser) {
-		super(serialiser);
-	}
 
 	/**
 	 * Serialises the class name.
@@ -46,7 +35,7 @@ class IClassSerialiser extends FSTIndividualSerialiser<IClass> {
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final FSTObjectOutput out, final IClass o) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final IClass o) throws Exception {
 		out.writeStringUTF(o.getName());
 	}
 
@@ -62,7 +51,7 @@ class IClassSerialiser extends FSTIndividualSerialiser<IClass> {
 	 *             if deserialisation fails
 	 */
 	@Override
-	public IClass deserialise(final IScope scope, final FSTObjectInput in) throws Exception {
+	public IClass deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		String name = in.readStringUTF();
 		return scope.getModel().getClass(name);
 	}

@@ -85,7 +85,7 @@ public class ExpressionBasedEditor<T> extends AbstractEditor<T> {
 	 * @param currentValue
 	 * @return
 	 */
-	public String valueFormatted(final Object currentValue) {
+	public String valueFormatted(final T currentValue) {
 		return String.valueOf(currentValue);
 	}
 

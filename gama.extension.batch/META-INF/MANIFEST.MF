@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Batch experiments extension
+Bundle-SymbolicName: gama.extension.batch;singleton:=true
+Bundle-Version: 0.0.0.qualifier
+Require-Bundle: gama.core,
+ gama.dependencies,
+ gama.annotations,
+ gama.dev
+Export-Package: gama.extension.batch,
+ gama.extension.batch.exploration,
+ gama.extension.batch.optimization
+Bundle-ClassPath: .
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-25
+Automatic-Module-Name: gama.extension.batch

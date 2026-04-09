@@ -23,6 +23,11 @@ on:
         type: boolean
         required: true
         default: false
+      skipTests:
+        description: "Skip all test workflows ?"
+        type: boolean
+        required: true
+        default: false
 
 run-name: Building GAMA release
 
@@ -97,6 +102,7 @@ jobs:
     with:
       RELEASE_VERSION: ${{ inputs.tag }}
       jdk_embedded_version: ${{ inputs.jdk }}
+      SKIP_TESTS: ${{ inputs.skipTests }}
     secrets:
       # === MacOS needs ===
       MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
