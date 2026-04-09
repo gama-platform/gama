@@ -25,6 +25,7 @@ import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.tests.TestExperimentSummary;
 import gama.api.utils.tests.WithTestSummary;
+import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 
 /**
@@ -59,12 +60,13 @@ public class TestAgent extends ExperimentAgent implements IExperimentAgent.Test 
 		final TestExperimentSummary summary = getSummary();
 		summary.reset();
 		if (!summary.isEmpty()) { scope.getGui().openTestView(scope, false); }
+		DEBUG.BANNER(BANNER_CATEGORY.TESTS, getTitleForSummary(), "starting", this.ownModelPath);
 		return true;
 	}
 
 	@Override
 	public boolean step(final IScope scope) {
-		DEBUG.LOG("Agent " + this + " doing step " + getClock().getCycle());
+		// DEBUG.LOG("Agent " + this + " doing step " + getClock().getCycle());
 		super.step(scope);
 		return true;
 	}
