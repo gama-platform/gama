@@ -34,6 +34,7 @@ import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.IExperimentStateListener;
+import gama.api.kernel.simulation.IExploration;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.runtime.GamaExecutorService;
@@ -49,6 +50,7 @@ import gama.core.experiment.parameters.ParametersSet;
 import gama.core.simulation.SimulationPopulation;
 import gama.dev.THREADS;
 import gama.extension.batch.exploration.AExplorationAlgorithm;
+import gama.extension.batch.exploration.Exploration;
 import gama.extension.batch.optimization.AOptimizationAlgorithm;
 
 /**
@@ -100,6 +102,9 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 	/** Keep simulations between ''runs'' */
 	private boolean simDispose;
 
+	/** Lazily resolved exploration algorithm (defaulting to Exploration when absent). */
+	private IExploration explorationAlgorithm;
+
 	/**
 	 * Instantiates a new batch agent.
 	 *
@@ -142,11 +147,22 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 	 */
 	@Override
 	public void _init_(final IScope scope) {
-		getSpecies().getExplorationAlgorithm().initializeFor(scope, this);
+		getExplorationAlgorithm().initializeFor(scope, this);
 		// Fix for issue #2088
 		// We call super _init_ here, but the result of automaticallyCreateFirstSimulation() will prevent from creating
 		// a first simulation (which we dont want as it should be the task of the exploration algorithm)
 		super._init_(scope);
+	}
+
+	/**
+	 * Returns the exploration algorithm configured on the species, or the default exploration when none is defined.
+	 */
+	private IExploration getExplorationAlgorithm() {
+		if (explorationAlgorithm == null) {
+			explorationAlgorithm = getSpecies().getExplorationAlgorithm();
+			if (explorationAlgorithm == null) { explorationAlgorithm = new Exploration(null); }
+		}
+		return explorationAlgorithm;
 	}
 
 	/**
@@ -205,9 +221,9 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 	private IMap<String, Object> manageOutputAndCloseSimulation(final IAgent sim, final ParametersSet sol,
 			final boolean memorize, final boolean dispose) {
 		IMap<String, Object> out = GamaMapFactory.create();
-		if (getSpecies().getExplorationAlgorithm().isFitnessBased()) {
+		if (getExplorationAlgorithm().isFitnessBased()) {
 			final IExpression fitness =
-					((AOptimizationAlgorithm) getSpecies().getExplorationAlgorithm()).getFitnessExpression();
+					((AOptimizationAlgorithm) getExplorationAlgorithm()).getFitnessExpression();
 			double lastFitnessValue = 0;
 			if (fitness != null) {
 				lastFitnessValue = Cast.asFloat(sim.getScope(), fitness.value(sim.getScope()));
@@ -217,7 +233,7 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 			// final FileOutput output = getSpecies().getLog();
 			// if (output != null) { getSpecies().getLog().doRefreshWriteAndClose(sol, out); }
 		} else {
-			AExplorationAlgorithm exp = (AExplorationAlgorithm) getSpecies().getExplorationAlgorithm();
+			AExplorationAlgorithm exp = (AExplorationAlgorithm) getExplorationAlgorithm();
 			if (exp.getOutputs() != null) {
 				final List<String> outputVals = exp.getLitteralOutputs();
 				for (String s : outputVals) {
@@ -248,7 +264,7 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 	public boolean step(final IScope scope) {
 		// We run the exploration algorithm. The future steps will be called by the exploration algorithm through the
 		// launchSimulationsWithSolution() method
-		getSpecies().getExplorationAlgorithm().run(scope);
+		getExplorationAlgorithm().run(scope);
 		// Once the algorithm has finished exploring the solutions, the agent is
 		// killed.
 		scope.getGui().getStatus().informStatus(endStatus(), IStatusMessage.SIMULATION_ICON);
@@ -409,11 +425,11 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 		// simulations if any
 		this.reset();
 
-		if (getSpecies().getExplorationAlgorithm().isFitnessBased()) {
+		if (getExplorationAlgorithm().isFitnessBased()) {
 			// We then return the combination (average, min or max) of the different
 			// fitness values computed by the
 			// different simulation.
-			AOptimizationAlgorithm oAlgo = (AOptimizationAlgorithm) getSpecies().getExplorationAlgorithm();
+			AOptimizationAlgorithm oAlgo = (AOptimizationAlgorithm) getExplorationAlgorithm();
 			final short fitnessCombination = oAlgo.getCombination();
 
 			res.forEach((p, map) -> {
@@ -523,11 +539,11 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 		// simulations if any
 		this.reset();
 
-		if (getSpecies().getExplorationAlgorithm().isFitnessBased()) {
+		if (getExplorationAlgorithm().isFitnessBased()) {
 			// We then return the combination (average, min or max) of the different
 			// fitness values computed by the
 			// different simulation.
-			AOptimizationAlgorithm oAlgo = (AOptimizationAlgorithm) getSpecies().getExplorationAlgorithm();
+			AOptimizationAlgorithm oAlgo = (AOptimizationAlgorithm) getExplorationAlgorithm();
 			final short fitnessCombination = oAlgo.getCombination();
 			lastSolution = currentSolution;
 			lastFitness = fitnessCombination == AOptimizationAlgorithm.C_MAX ? Collections.max(fitnessValues)
@@ -609,7 +625,7 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 
 		});
 
-		getSpecies().getExplorationAlgorithm().addParametersTo(params, this);
+		getExplorationAlgorithm().addParametersTo(params, this);
 	}
 
 	/**
