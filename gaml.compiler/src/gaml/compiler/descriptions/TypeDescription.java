@@ -566,7 +566,7 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 			assertActionsAreCompatible(newAction, existing, existing.getOriginName());
 			duplicateInfo(newAction, existing);
 		}
-		getActionsMap().put(actionName, newAction);
+		getModifiableActionsMap().put(actionName, newAction);
 	}
 
 	@Override
@@ -604,7 +604,7 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 	 *
 	 * @return the actions map
 	 */
-	public IMap<String, IActionDescription> getActionsMap() {
+	private IMap<String, IActionDescription> getModifiableActionsMap() {
 		if (actions == null) { actions = GamaMapFactory.create(); }
 		return actions;
 	}
@@ -616,7 +616,7 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 	 *            the temp
 	 */
 	public void removeAction(final String temp) {
-		getOwnActions().remove(temp);
+		getModifiableActionsMap().remove(temp);
 
 	}
 
