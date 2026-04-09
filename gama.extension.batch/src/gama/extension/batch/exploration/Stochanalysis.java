@@ -90,7 +90,7 @@ public class Stochanalysis {
 
 	/** The Constant SA. */
 	// List of methods
-	final static protected List<String> SA = List.of(CV, SE, ES, PT);
+	final static protected List<String> SA = List.of(CV, SE);//List.of(CV, SE, ES, PT);
 
 	/** The Constant SEP. */
 	// UTILS
@@ -234,7 +234,7 @@ public class Stochanalysis {
 		sb.append(ph.stream().collect(Collectors.joining(","))).append(SEP);
 
 		sb.append("Indicator").append(SEP);
-		sb.append(IntStream.range(1, nbreplicates).boxed().map(String::valueOf).collect(Collectors.joining(SEP)));
+		sb.append(IntStream.range(2, nbreplicates).boxed().map(String::valueOf).collect(Collectors.joining(SEP)));
 		sb.append(StringUtils.LN);
 
 		for (String o : Out.keySet()) {

@@ -13,7 +13,7 @@
 
 model Exploration
 
-import "../../../Tutorials/Predator Prey/models/Model 13.gaml"
+import "../../Predator Prey/models/Model 13.gaml"
 
 /*
  * Change a little bit the behavior of the world agent to fit exploration requirements
@@ -41,7 +41,7 @@ experiment batch_abstract type:batch virtual:true until:(time > end_cycle) {
 
 // This experiment runs the full factorial experiment (each combination of parameter) 5 times, that is 14k simulations :) see exhaustive_exploration experiment
 // At the end of each simulation (replicated 5 times), the people agents are saved in a shapefile
-experiment 'Run 5 simulations' parent: batch_abstract type: batch repeat: 5 keep_seed: true until: world.stop_sim() or (time > end_cycle){
+experiment 'Run every possible simulation 5 times' parent: batch_abstract type: batch repeat: 5 keep_seed: true until: world.stop_sim() or (time > end_cycle){
 	
 	// the reflex will be activated at the end of each run; in this experiment a run consists of the execution of 5 simulations (repeat: 5)
 	reflex end_of_runs
@@ -66,11 +66,11 @@ experiment replication_analysis parent: batch_abstract type: batch until: world.
 } 
 
 // This experiment explores the four parameters with an exhaustive strategy (default sampling method for exploration),
-// repeating each simulation three times. The overall combination of parameter values is 14000 (times 3 replications).
+// repeating each simulation three times. The overall combination of parameter values is 14000.
 // This is what we call 'brute force' exploration - because obviously it is not smart, nor gentle in the exploration approach. 
 // In order to diminish number of explored points, one can use 'factorial' facet (how many value per parameter) or diminish the step
 // facet of parameters each at a time. Another way is to rely on smarter strategy to sample from the parameter space using sampling methods.  
-experiment exhaustive_exploration parent: batch_abstract type: batch repeat: 3 keep_seed: true until: world.stop_sim() or ( time > end_cycle ) {
+experiment exhaustive_exploration parent: batch_abstract type: batch keep_seed: true until: world.stop_sim() or ( time > end_cycle ) {
 	method exploration;
 	
 	//the permanent section allows to define a output section that will be kept during all the batch experiment
