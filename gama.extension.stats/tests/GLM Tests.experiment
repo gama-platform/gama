@@ -1,0 +1,21 @@
+experiment "GLM Tests" type: test {
+
+	test "Operator glm" {
+		matrix<float> data <- matrix([[1.0, 2.0, 3.0, 4.0], [2.0, 3.0, 4.0, 2.0], [5.0, 1.0, 3.0, 5.0], [3.0, 4.0, 5.0, 1.0]]);
+		regression result <- glm(data);
+		
+		// The parameters should be [0.5, 2.5, 0.0, -1.5]
+		assert (result.parameters[0] with_precision 5) = 0.5;
+		assert (result.parameters[1] with_precision 5) = 2.5;
+		assert (result.parameters[2] with_precision 5) = 0.0;
+		assert (result.parameters[3] with_precision 5) = -1.5;
+	}
+
+	test "Operator predict with glm" {
+		matrix<float> data <- matrix([[1.0, 2.0, 3.0, 4.0], [2.0, 3.0, 4.0, 2.0]]);
+		regression result <- glm(data);
+		float prediction <- predict(result, [1, 2, 3, 2]);
+		assert prediction = 2.1818181818181817;
+	}
+
+}

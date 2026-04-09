@@ -2263,6 +2263,33 @@ public class Stats {
 	}
 
 	/**
+	 * Builds a Generalized Linear Model (currently using OLS).
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param data
+	 *            the data
+	 * @return the gama regression
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
+	@operator (
+			value = "glm",
+			can_be_const = false,
+			type = IType.REGRESSION,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC, IConcept.REGRESSION })
+	@doc (
+			value = "Returns a Generalized Linear Model (GLM) built from the matrix data. Currently implemented using Ordinary Least Squares (OLS).",
+			examples = { @example (
+					value = "glm(matrix([[1.0,2.0,3.0,4.0],[2.0,3.0,4.0,2.0]]))",
+					isExecutable = false) })
+	@test ("glm(matrix([[1.0,2.0,3.0,4.0],[2.0,3.0,4.0,2.0],[5.0,1.0,3.0,5.0],[3.0,4.0,5.0,1.0]])).parameters collect (each with_precision 5) = [0.5,2.5,0.0,-1.5]")
+	public static GamaRegression opGlm(final IScope scope, final IMatrix data) throws GamaRuntimeException {
+		return opRegression(scope, data);
+	}
+
+	/**
 	 * Compute adjusted R²
 	 *
 	 * @param scope
@@ -2284,6 +2311,167 @@ public class Stats {
 	@test ("rSquare(build(matrix([[4.0,1.0,2.0,3.0],[4.0,2.0,3.0,4.0]]))) = 0.8363636363636364")
 	public static Double rSquare(final IScope scope, final GamaRegression regression) {
 		return regression.getRSquare();
+	}
+
+	/**
+	 * Perform a one-way ANOVA test on a list of groups.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param data
+	 *            the data (list of lists of numbers)
+	 * @return the anova result
+	 */
+	@operator (
+			value = "anova",
+			type = IType.ANOVA,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = "Performs a one-way ANOVA test on a list of groups of data. Each group is a list of numbers.",
+			examples = { @example (
+					value = "anova([[6.0, 8.0, 4.0, 5.0, 3.0, 4.0], [8.0, 12.0, 9.0, 11.0, 6.0, 8.0], [13.0, 9.0, 11.0, 8.0, 7.0, 12.0]])",
+					isExecutable = false) })
+	@test ("(anova([[6.0, 8.0, 4.0, 5.0, 3.0, 4.0], [8.0, 12.0, 9.0, 11.0, 6.0, 8.0], [13.0, 9.0, 11.0, 8.0, 7.0, 12.0]]).f_stat with_precision 2) = 6.22")
+	public static GamaAnova anova(final IScope scope, final IList<IList<?>> data) {
+		return new GamaAnova(scope, (List) data);
+	}
+
+	/**
+	 * Performs a two-way ANOVA test with interactions.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param y
+	 *            the response variable
+	 * @param factorA
+	 *            the first factor
+	 * @param factorB
+	 *            the second factor
+	 * @return the multi-anova result
+	 */
+	@operator (
+			value = "multi_anova",
+			type = IType.ANOVA,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = "Performs a two-way ANOVA test with interactions on a response variable and two factors. Returns a map of p-values for main effects and interactions.",
+			examples = { @example (
+					value = "multi_anova([1.0, 2.0, 5.0, 6.0], ['a', 'a', 'b', 'b'], ['x', 'y', 'x', 'y'])",
+					isExecutable = false) })
+	@test ("(multi_anova([10.0, 11.0, 20.0, 21.0, 30.0, 31.0, 40.0, 41.0, 100.0, 101.0, 200.0, 201.0], ['a', 'a', 'a', 'a', 'b', 'b', 'b', 'b', 'c', 'c', 'c', 'c'], ['x', 'x', 'y', 'y', 'x', 'x', 'y', 'y', 'x', 'x', 'y', 'y']).p_values['A'] < 0.05)")
+	public static GamaMultiAnova multiAnova(final IScope scope, final IList<Double> y, final IList<?> factorA,
+			final IList<?> factorB) {
+		if (y.size() != factorA.size() || y.size() != factorB.size())
+			throw GamaRuntimeException.error("All input lists must have the same size", scope);
+
+		double[] yData = new double[y.size()];
+		for (int i = 0; i < y.size(); i++) yData[i] = y.get(i);
+
+		// Identify levels
+		List<Object> levelsA = new ArrayList<>();
+		for (Object o : factorA) if (!levelsA.contains(o)) levelsA.add(o);
+		List<Object> levelsB = new ArrayList<>();
+		for (Object o : factorB) if (!levelsB.contains(o)) levelsB.add(o);
+
+		// Type I Sum of Squares (Sequential)
+		// Model 0: Intercept only
+		double ssTotal = 0;
+		double meanY = 0;
+		for (double d : yData) meanY += d;
+		meanY /= yData.length;
+		for (double d : yData) ssTotal += (d - meanY) * (d - meanY);
+
+		// Helper to fit and get RSS
+		org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression regression =
+				new org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression();
+
+		// Model A: y ~ A
+		double[][] xA = new double[y.size()][levelsA.size() - 1];
+		for (int i = 0; i < y.size(); i++) {
+			int idx = levelsA.indexOf(factorA.get(i));
+			if (idx > 0) xA[i][idx - 1] = 1.0;
+		}
+		regression.newSampleData(yData, xA);
+		double ssA = ssTotal - regression.calculateResidualSumOfSquares();
+		int dfA = levelsA.size() - 1;
+
+		// Model A+B: y ~ A + B
+		double[][] xAB = new double[y.size()][levelsA.size() - 1 + levelsB.size() - 1];
+		for (int i = 0; i < y.size(); i++) {
+			int idxA = levelsA.indexOf(factorA.get(i));
+			if (idxA > 0) xAB[i][idxA - 1] = 1.0;
+			int idxB = levelsB.indexOf(factorB.get(i));
+			if (idxB > 0) xAB[i][levelsA.size() - 1 + idxB - 1] = 1.0;
+		}
+		regression.newSampleData(yData, xAB);
+		double ssB = ssTotal - regression.calculateResidualSumOfSquares() - ssA;
+		int dfB = levelsB.size() - 1;
+
+		// Model A+B+A:B: y ~ A + B + A:B
+		int nbInter = (levelsA.size() - 1) * (levelsB.size() - 1);
+		double[][] xFull = new double[y.size()][xAB[0].length + nbInter];
+		for (int i = 0; i < y.size(); i++) {
+			System.arraycopy(xAB[i], 0, xFull[i], 0, xAB[i].length);
+			int idxA = levelsA.indexOf(factorA.get(i));
+			int idxB = levelsB.indexOf(factorB.get(i));
+			if (idxA > 0 && idxB > 0) { xFull[i][xAB[i].length + (idxA - 1) * (levelsB.size() - 1) + (idxB - 1)] = 1.0; }
+		}
+		regression.newSampleData(yData, xFull);
+		double rssFull = regression.calculateResidualSumOfSquares();
+		double ssInter = ssTotal - rssFull - ssA - ssB;
+		int dfInter = nbInter;
+		int dfError = y.size() - (1 + dfA + dfB + dfInter);
+
+		double msError = rssFull / dfError;
+
+		GamaMultiAnova result = new GamaMultiAnova();
+		result.addEffect("A", computeP(ssA / dfA, msError, dfA, dfError), ssA / dfA / msError);
+		result.addEffect("B", computeP(ssB / dfB, msError, dfB, dfError), ssB / dfB / msError);
+		result.addEffect("A:B", computeP(ssInter / dfInter, msError, dfInter, dfError), ssInter / dfInter / msError);
+
+		return result;
+	}
+
+	/**
+	 * Computes the Hilbert-Schmidt Independence Criterion (HSIC) between two variables.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param x
+	 *            the first variable
+	 * @param y
+	 *            the second variable
+	 * @return the HSIC value
+	 */
+	@operator (
+			value = "hsic",
+			type = IType.FLOAT,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = "Computes the Hilbert-Schmidt Independence Criterion (HSIC) between two variables. HSIC is a kernel-based statistic to test the independence of two variables. A value close to 0 indicates independence.",
+			examples = { @example (
+					value = "hsic([1.0, 2.0, 3.0], [1.0, 2.0, 3.0])",
+					isExecutable = false) })
+	@test ("hsic([1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0, 4.0, 5.0]) > hsic([1.0, 2.0, 3.0, 4.0, 5.0], [5.0, 1.0, 4.0, 2.0, 3.0])")
+	public static Double opHSIC(final IScope scope, final IList<Double> x, final IList<Double> y) {
+		if (x.size() != y.size()) throw GamaRuntimeException.error("Input lists must have the same size", scope);
+		double[] xData = new double[x.size()];
+		double[] yData = new double[y.size()];
+		for (int i = 0; i < x.size(); i++) {
+			xData[i] = x.get(i);
+			yData[i] = y.get(i);
+		}
+		return HSIC.computeHSIC(xData, yData);
+	}
+
+	private static double computeP(double msEffect, double msError, int dfEffect, int dfError) {
+		double f = msEffect / msError;
+		org.apache.commons.math3.distribution.FDistribution fDist =
+				new org.apache.commons.math3.distribution.FDistribution(dfEffect, dfError);
+		return 1.0 - fDist.cumulativeProbability(f);
 	}
 
 	/**

@@ -203,6 +203,9 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	/** The object. */
 	int OBJECT = 33;
 
+	/** Type ID for the anova type (statistical analysis of variance). */
+	int ANOVA = 34;
+
 	// ==================== Type ID Ranges ====================
 
 	/** Starting ID for custom user-defined types. IDs >= this value are for custom types. */
