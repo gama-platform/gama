@@ -10,9 +10,6 @@
  ********************************************************************************************************/
 package gama.extension.stats;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import gama.annotations.doc;
@@ -23,6 +20,8 @@ import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
 import gama.api.types.misc.IValue;
 import gama.api.utils.json.IJson;
 import gama.api.utils.json.IJsonValue;
@@ -41,10 +40,10 @@ import gama.api.utils.json.IJsonValue;
 public class GamaMultiAnova implements IValue {
 
 	/** The p values. */
-	Map<String, Double> pValues = new LinkedHashMap<>();
+	IMap<String, Double> pValues = GamaMapFactory.create(Types.STRING, Types.FLOAT);
 
 	/** The f stats. */
-	Map<String, Double> fStats = new LinkedHashMap<>();
+	Map<String, Double> fStats = GamaMapFactory.create(Types.STRING, Types.FLOAT);
 
 	/**
 	 * Instantiates a new gama multi anova.
@@ -113,7 +112,7 @@ public class GamaMultiAnova implements IValue {
 
 	@Override
 	public IJsonValue serializeToJson(final IJson json) {
-		return json.typedObject(getGamlType(), "p_values", json.serialize(pValues), "f_stats", json.serialize(fStats));
+		return json.typedObject(getGamlType(), "p_values", json.valueOf(pValues), "f_stats", json.valueOf(fStats));
 	}
 
 }
