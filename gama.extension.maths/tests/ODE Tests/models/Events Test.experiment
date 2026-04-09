@@ -53,7 +53,6 @@ global{
 				if (test_t = 15) {do remove_infected();}
 				ask SIR_model {do solveEquation();}
 				ask S {do solveEquation();}
-				write error;
 			}
 		}
 	}
@@ -207,10 +206,10 @@ experiment dynamical_creation type: gui {
 experiment test type: test {
 	test "Equations" {
 		create SplitTest_model(with_viz:false);
-		write "Distance between the static split system\nand the static regular system: "+error;
+		//write "Distance between the static split system\nand the static regular system: "+error;
 		assert error = 0;
 		create SplitTest_model(with_viz:false, dynamics_creation:true);
-		write "Distance between the dynamics split system\nand the dynamics regular system: "+error;
+		//write "Distance between the dynamics split system\nand the dynamics regular system: "+error;
 		assert error = 0;
 	}	
 }

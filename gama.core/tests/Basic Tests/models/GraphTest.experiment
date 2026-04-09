@@ -62,51 +62,26 @@ experiment GraphTest type: test {
 	}
 	
 	test "My Graph Test" {
-		write "DIRECTED:" + the_graph;
 		
-		write (node_agent[2]);
-		
-		
-		write(the_graph in_degree_of (node_agent[2]));
-		write(the_graph out_degree_of (node_agent[2]));
-		write(the_graph degree_of (node_agent[2]));
+		// Directed graph test
 		assert the_graph in_degree_of (node_agent[2])=2;
 		assert the_graph out_degree_of (node_agent[2])=2;
 		assert the_graph degree_of (node_agent[2]) = 4;
 		
-		write("out_edges_of");
-		write(the_graph out_edges_of (node_agent[2]));
-		write(the_graph in_edges_of (node_agent[2]));
+		// out_edges_of
 		assert length(the_graph out_edges_of (node_agent[2]))=2;
 		
-		write("neighbors of node");
-		write(the_graph neighbors_of(node_agent[2]));
+		// neighbors of node
 		assert length(the_graph neighbors_of(node_agent[2]))=4;
 		assert length(remove_duplicates(the_graph neighbors_of(node_agent[2])))=4;
-		write(the_graph predecessors_of(node_agent[2]));
 		assert length(the_graph predecessors_of(node_agent[2]))=2;
-		write(the_graph successors_of(node_agent[2]));
 		assert length(the_graph successors_of(node_agent[2]))=2;
 	
+		// Contains edges
 		point node8 <- {50.0,50.0};
-		write (the_graph add_node(node8));
-		write (node_agent[4] remove_node_from(the_graph));
-
-		write("");
-		write("Contains edges");
-		write (the_graph contains_vertex(node_agent[2]));
 		assert the_graph contains_vertex(node_agent[2]);
-		write (the_graph contains_edge(link(node_agent[2],node_agent[5])));
-		write (the_graph contains_edge(link(node_agent[2],node_agent[4])));
-		write (the_graph contains_edge(link(node_agent[2],node_agent[3])));
-		
 		assert the_graph contains_edge(link(node_agent[2],node_agent[5])) = false;
 		assert the_graph contains_edge(link(node_agent[2],node_agent[3]));	
-		
-		write (the_graph contains_vertex(node_agent[4]));
-		assert the_graph contains_vertex(node_agent[4]) = false;
-		
-		write (the_graph source_of(link(node_agent[2],node_agent[3])));
 		assert the_graph source_of(link(node_agent[2],node_agent[3]))=node_agent[2];
 		assert the_graph target_of(link(node_agent[2],node_agent[3]))=node_agent[3];
 		

@@ -44,7 +44,6 @@ experiment QueryTests type: test {
 		using topology(world) {
 			closest_dummy <- dummy closest_to dummy(8);
 		}
-		write closest_dummy;
 		assert closest_dummy = dummy(4);
 		using topology(cell) {
 			closest_dummy <- dummy closest_to dummy(8);
@@ -66,7 +65,6 @@ experiment QueryTests type: test {
 		using topology(world) {
 			cl <-  topology(cell(73)) neighbors_of cell(73);
 		}
-		write cl contains_all [cell(72),cell(83),cell(63),cell(74)] ;
 		assert cl contains_all [cell(72),cell(83),cell(63),cell(74)];
 	} 
 	
@@ -75,7 +73,6 @@ experiment QueryTests type: test {
 		using topology(world) {
 			cl <-  (agent_closest_to (dummy(8)));
 		}
-		write cl;
 		assert cl = cell(73);
 	}
 	

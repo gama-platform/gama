@@ -748,8 +748,10 @@ public class FileUtils {
 	public static String constructAbsoluteTempFilePath(final IScope scope, final URL url) {
 		String query = url.getQuery();
 		if (query != null) { query = "?" + query; }
+		long q = checkSum(query);
+		String suffix = q == 0l ? "" : String.valueOf(q);
 		return getCache().getAbsolutePath() + SEPARATOR + url.getHost() + URL_SEPARATOR_REPLACEMENT
-				+ url.getPath().replace(SEPARATOR, URL_SEPARATOR_REPLACEMENT) + checkSum(query);
+				+ url.getPath().replace(SEPARATOR, URL_SEPARATOR_REPLACEMENT) + suffix;
 
 	}
 

@@ -75,11 +75,11 @@ experiment clean_network type: gui {
 	}
 	output {
 		layout #split;
-		display network type: 2d {
+		display network type: 3d {
 	
-			 overlay position: { 10#px, 10#px } size: { 800 #px, 60 #px } background: # black transparency: 0.5  rounded: true
+			 overlay position: { 10#px, 10#px } size: { 10 #px, 10 #px } background: # white transparency: 0.1  rounded: true
             {
-				draw legend color: #white font: font("SansSerif", 12, #bold) at: {40#px, 40#px, 1 };
+				draw legend color: #black font: font("SansSerif", 18, #bold) at: {40#px, 40#px, 1 };
 			}
 			species road ;
 			graphics "connected components" {

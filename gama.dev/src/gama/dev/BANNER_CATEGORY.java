@@ -35,6 +35,9 @@ public enum BANNER_CATEGORY {
 
 	/** The compil. */
 	COMPIL,
+
+	/** The tests. */
+	TESTS,
 	/** The pool. */
 	POOL;
 
