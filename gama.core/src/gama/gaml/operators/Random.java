@@ -922,7 +922,7 @@ public class Random {
 					test = false) },
 			see = { "rnd" })
 	@test ("seed <- 1.0; rnd_choice([\"toto\"::0.2,\"tata\"::0.5,\"tonton\"::0.3]) = \"tonton\"")
-	public static <T> T opRndCoice(final IScope scope, final IMap<T, Double> distribution) {
+	public static <T> T opRndCoice(final IScope scope, final IMap<T, ? extends Number> distribution) {
 		return RANDOM(scope).choiceIn(distribution);
 	}
 

@@ -648,6 +648,7 @@ public class Strings {
 	@operator (
 			value = { "regex_matches" },
 			can_be_const = true,
+			content_type = IType.STRING,
 			category = { IOperatorCategory.STRING },
 			concept = { IConcept.STRING })
 	@doc (

@@ -1,0 +1,16 @@
+experiment "MultiAnova Tests" type: test {
+
+	test "Operator multi_anova" {
+		list<float> y <- [10.0, 11.0, 20.0, 21.0, 30.0, 31.0, 40.0, 41.0, 100.0, 101.0, 200.0, 201.0];
+		list<string> fA <- ['a', 'a', 'a', 'a', 'b', 'b', 'b', 'b', 'c', 'c', 'c', 'c'];
+		list<string> fB <- ['x', 'x', 'y', 'y', 'x', 'x', 'y', 'y', 'x', 'x', 'y', 'y'];
+		
+		anova result <- multi_anova(y, fA, fB);
+		
+		map pvals <- result.p_values;
+		assert pvals['A'] < 0.05;
+		assert pvals['B'] < 0.05;
+		assert pvals['A:B'] < 0.05;
+	}
+
+}

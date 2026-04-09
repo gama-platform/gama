@@ -11,9 +11,8 @@
 
 model randomscheduler
 
-/* Insert your model definition here */
 
-global
+global 
 {
 	init
 	{
@@ -34,7 +33,10 @@ global
 		write "NEW STEP";
 	}
 }
-species no_scheduler schedules:shuffle(no_scheduler)
+
+species scheduler schedules:shuffle(no_scheduler);
+
+species no_scheduler schedules: []
 {
 	int nb_generated;
 	reflex sayHello
