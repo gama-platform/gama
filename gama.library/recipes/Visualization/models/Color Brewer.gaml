@@ -114,7 +114,7 @@ experiment BrewerPalette type: gui {
 experiment BrewerColoredAgent type: gui {
 	parameter "Number of data classes" var:nb_classes category:"Brewer";
 	output {
-		display View1 antialias:false axes:false{
+		display View1 type:3d antialias:false axes:false{
 			grid cell border: #black ;
 			graphics "Names" {
 				loop i from:0 to:length(palettes)-1 {
