@@ -16,6 +16,7 @@ import java.util.Map;
 
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IAgentConstructor;
+import gama.api.kernel.agent.IPopulation;
 
 /**
  * Registry for agent constructor implementations in GAMA.
@@ -102,14 +103,18 @@ public class AgentConstructorsRegistry {
 		} else {
 			regularNormal = clazz;
 		}
-		Constructor<? extends IAgent> constructor = (Constructor<? extends IAgent>) clazz.getDeclaredConstructors()[0];
-		CONSTRUCTORS.put(clazz, (manager, index) -> {
-			try {
-				return constructor.newInstance(manager, index);
-			} catch (Exception e) {
-				return null;
-			}
-		});
+		try {
+			Constructor<? extends IAgent> constructor = clazz.getDeclaredConstructor(IPopulation.class, int.class);
+			CONSTRUCTORS.put(clazz, (manager, index) -> {
+				try {
+					return constructor.newInstance(manager, index);
+				} catch (Exception e) {
+					return null;
+				}
+			});
+		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
+		}
 
 	}
 

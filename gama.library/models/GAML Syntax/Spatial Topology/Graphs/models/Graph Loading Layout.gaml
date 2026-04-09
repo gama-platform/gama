@@ -21,7 +21,7 @@ global {
 	float cooling_coefficient <- 0.1 min: 0.01 max: 0.5; 
 	float coeff_nb_places <- 1.2 min: 0.0 max: 2.0; 
 	float normalizationFactor <- 0.5 min: 0.1 max: 2.0; 
-	float theta <- 0.5 min: 0.1 max: 2.0; 
+	float theta <- 0.5 min: 0.1 max: 1.0; 
 	
 	
 	//The operator load_graph_from_file generates the graph from the file, and chose the vertices as agents of node_agent 
