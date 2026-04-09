@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +26,6 @@ import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
-import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.math3.distribution.TDistribution;
 import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
@@ -35,6 +33,7 @@ import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
@@ -336,63 +335,7 @@ public class Stochanalysis {
 
 	// ----------------------------- Inner methods
 
-	/**
-	 * Compute the mean of a List of object
-	 *
-	 * @param val
-	 *            : List of value (data of each replicates)
-	 * @param scope
-	 * @return return the mean for each number of replicates
-	 */
-	private static List<Double> computeMean(final List<?> val, final IScope scope) {
-		List<Double> mean = new ArrayList<>();
-		double tmp_mean = 0;
-		for (int i = 0; i < val.size(); i++) {
-			double tmp_val = Cast.asFloat(scope, val.get(i));
-			tmp_mean = tmp_mean + tmp_val;
-			mean.add(tmp_mean / (i + 1));
-		}
-		return mean;
-	}
-
-	/**
-	 * Compute the Standard Deviation of a list
-	 *
-	 * @param mean
-	 *            : the mean for each number of replicates
-	 * @param val
-	 *            : List of value (data of each replicates)
-	 * @param scope
-	 * @return return the standard deviation for each number of replicates (Always 0 for 1).
-	 */
-	private static List<Double> computeSTD(final List<Double> mean, final List<?> val, final IScope scope) {
-		List<Double> STD = new ArrayList<>();
-		for (int i = 0; i < mean.size(); i++) {
-			double sum = 0;
-			for (int y = 0; y < i; y++) {
-				double tmp_val = Cast.asFloat(scope, val.get(y));
-				sum = sum + Math.pow(tmp_val - mean.get(i), 2);
-			}
-			STD.add(Math.sqrt(sum / (i + 1)));
-		}
-		return STD;
-	}
-
-	/**
-	 * Compute the Coefficient of Variation of a list
-	 *
-	 * @param STD
-	 *            : the Standard deviation for each number of replicates
-	 * @param mean
-	 *            : the mean for each number of replicates
-	 * @return the coefficient of variation for each number of replicates to 2 at replicate max size
-	 */
-	private static List<Double> computeCV(final List<Double> STD, final List<Double> mean) {
-		List<Double> CV = new ArrayList<>();
-		for (int i = 1; i < mean.size(); i++) { CV.add(STD.get(i) / mean.get(i)); }
-		return CV;
-	}
-
+	
 	/**
 	 * Find the minimum replicates size depending of a threshold, when CV[i]-CV[i+1] < threshold, we keep the id "i".
 	 *
@@ -450,105 +393,179 @@ public class Stochanalysis {
 	 *         TODO : also export the raw result of stochasticity measures
 	 *
 	 */
-	public static IMap<ParametersSet, List<Double>> stochasticityAnalysis(
-			final IMap<ParametersSet, List<Object>> sample, final String method, final IScope scope) {
+	public static IMap<ParametersSet, IList<Double>> stochasticityAnalysis(
+			final IMap<ParametersSet, IList<Object>> sample, final String method, final IScope scope) {
 
-		@SuppressWarnings ("unchecked") IMap<ParametersSet, List<Double>> res = GamaMapFactory.create();
+		@SuppressWarnings ("unchecked") IMap<ParametersSet, IList<Double>> res = GamaMapFactory.create();
 		switch (method) {
 			case CV -> {
 				for (var es : sample.entrySet()) {
-					List<Object> currentXp = new ArrayList<>(es.getValue());
+					IList<Double> currentXp = es.getValue()
+							.stream(scope).mapToDouble(e -> Cast.asFloat(scope, e))
+							.boxed().collect(GamaListFactory.toGamaList());
 					Collections.shuffle(currentXp);
-					res.put(es.getKey(), coefficientOfVariance(currentXp, scope));
+					res.put(es.getKey(), coefficientOfVariance(scope,currentXp));
 				}
 			}
 			case SE -> {
 				for (var es : sample.entrySet()) {
-					List<Object> currentXp = new ArrayList<>(es.getValue());
+					IList<Double> currentXp = es.getValue().copy(scope)
+							.stream(scope).mapToDouble(e -> Cast.asFloat(scope, e))
+							.boxed().collect(GamaListFactory.toGamaList());
 					Collections.shuffle(currentXp);
-					res.put(es.getKey(), standardError(currentXp, scope));
+					res.put(es.getKey(), standardError(scope,currentXp));
 				}
 			}
 			case ES -> {
 				for (var es : sample.entrySet()) {
-					List<Object> currentXp = new ArrayList<>(es.getValue());
+					IList<Double> currentXp = es.getValue().copy(scope)
+							.stream(scope).mapToDouble(e -> Cast.asFloat(scope, e))
+							.boxed().collect(GamaListFactory.toGamaList());
 					Collections.shuffle(currentXp);
-					res.put(es.getKey(), criticalEffectSize(currentXp, scope));
+					res.put(es.getKey(), criticalEffectSize(scope,currentXp));
 				}
 			}
 			case PT -> {
 				double effectSize = fTestEffectSize(sample.values(), scope);
 				sample.getKeys().forEach(
-						ps -> res.put(ps, List.of(powerTestEffectSize(sample.size(), effectSize), effectSize)));
+						ps -> res.put(ps, 
+								List.of(powerTestEffectSize(sample.size(), effectSize), effectSize)
+									.stream().collect(GamaListFactory.toGamaList())));
 			}
 			default -> throw new IllegalArgumentException("Unexpected value: " + method);
 		}
 		return res;
 
 	}
-
+	
 	/**
-	 * Return the coefficient of variance over a set of replicates
-	 *
+	 * Return the rolling coefficient of variance according to the number of observations, i.e. </br>
+	 * value at index i is the coefficient of variance for the first i observations. </br>
+	 * 
+	 * @param scope
 	 * @param aSample
+	 * 		A sample of observations
 	 * @return
 	 */
-	private static List<Double> coefficientOfVariance(final List<Object> aSample, final IScope scope) {
-		List<Double> mean = computeMean(aSample, scope);
-		List<Double> std = computeSTD(mean, aSample, scope);
-		List<Double> cv = computeCV(std, mean);
+	public static IList<Double> coefficientOfVariance(final IScope scope, final IList<Double> aSample) {
+		IList<Double> mean = computeMean(aSample, scope);
+		IList<Double> std = computeSTD(mean, aSample, scope);
+		IList<Double> cv = computeCV(std, mean);
 		return cv;
 	}
 
 	/**
 	 *
-	 * @param aSample
+	 * Return the standard error over an incremental number of observation
+	 *
 	 * @param scope
+	 * @param aSample
+	 * 
 	 * @return
 	 */
-	private static List<Double> standardError(final List<Object> aSample, final IScope scope) {
-		List<Double> mean = computeMean(aSample, scope);
-		List<Double> std = computeSTD(mean, aSample, scope);
-		List<Double> SE = new ArrayList<>();
+	public static IList<Double> standardError(final IScope scope, final IList<Double> aSample) {
+		IList<Double> mean = computeMean(aSample, scope);
+		IList<Double> std = computeSTD(mean, aSample, scope);
+		IList<Double> SE = GamaListFactory.create(Types.FLOAT);
 		for (int i = 1; i < std.size(); i++) { SE.add(std.get(i) / Math.sqrt(i + 1)); }
 		return SE;
 	}
 
 	/**
-	 * Return a list of desired number of replicates based on more permissive conditions: <\br> from ES=0.01, alpha=.99
-	 * and beta=.95 to ES=0.8, alpha=.95 and beta=.80
+	 * Return a list of desired number of replicates based on more permissive conditions: <\br> 
+	 * from strongest hypothesis ES=0.01, alpha=.99 and beta=.95 to lowest ES=0.8, alpha=.95 and beta=.80
 	 *
 	 * @param aSample
 	 * @param scope
 	 * @return
 	 */
-	private static List<Double> criticalEffectSize(final List<Object> aSample, final IScope scope) {
-		List<Double> ce = new ArrayList<>();
+	public static IList<Double> criticalEffectSize(final IScope scope, final IList<Double> aSample) {
+		IList<Double> ce = GamaListFactory.create(Types.FLOAT);
 		for (double es : FISHEREffectSize) {
-			for (int i = 0; i < TALPHA.length; i++) { ce.add((double) ces(aSample, TALPHA[i], TBETA[i], es, scope)); }
+			for (int i = 0; i < TALPHA.length; i++) { ce.add(Cast.asFloat(scope, ces(scope, aSample, TALPHA[i], TBETA[i], es))); }
 		}
 		return ce;
 	}
+
+	/**
+	 * Compute the mean of a List of object
+	 *
+	 * @param val
+	 *            : List of value (data of each replicates)
+	 * @param scope
+	 * @return return the mean for each number of replicates
+	 */
+	private static IList<Double> computeMean(final IList<Double> val, final IScope scope) {
+		IList<Double> mean = GamaListFactory.create(Types.FLOAT);
+		double tmp_mean = 0;
+		for (int i = 0; i < val.size(); i++) {
+			double tmp_val = Cast.asFloat(scope, val.get(i));
+			tmp_mean = tmp_mean + tmp_val;
+			mean.add(tmp_mean / (i + 1));
+		}
+		return mean;
+	}
+
+	/**
+	 * Compute the Standard Deviation of a list
+	 *
+	 * @param mean
+	 *            : the mean for each number of replicates
+	 * @param val
+	 *            : List of value (data of each replicates)
+	 * @param scope
+	 * @return return the standard deviation for each number of replicates (Always 0 for 1).
+	 */
+	private static IList<Double> computeSTD(final IList<Double> mean, final IList<Double> val, final IScope scope) {
+		IList<Double> STD = GamaListFactory.create(Types.FLOAT);
+		for (int i = 0; i < mean.size(); i++) {
+			double sum = 0;
+			for (int y = 0; y <= i; y++) {
+				double tmp_val = Cast.asFloat(scope, val.get(y));
+				sum = sum + Math.pow(tmp_val - mean.get(i), 2);
+			}
+			STD.add(Math.sqrt(sum / (i + 1)));
+		}
+		return STD;
+	}
+
+	/**
+	 * Compute the Coefficient of Variation of a list
+	 *
+	 * @param STD
+	 *            : the Standard deviation for each number of replicates
+	 * @param mean
+	 *            : the mean for each number of replicates
+	 * @return the coefficient of variation for each number of replicates to 2 at replicate max size
+	 */
+	private static IList<Double> computeCV(final IList<Double> STD, final IList<Double> mean) {
+		IList<Double> CV = GamaListFactory.create(Types.FLOAT);
+		for (int i = 1; i < mean.size(); i++) { CV.add(STD.get(i) / mean.get(i)); }
+		return CV;
+	}
+
 
 	/**
 	 * @see inspiration: https://www.jasss.org/18/4/4.html
 	 * @see inspiration: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7745163/
 	 * @see actual implementation: https://rseri.me/publication/b016/B016.pdf
 	 *
+	 * @param scope
 	 * @param aSample
+	 * @param alpha
 	 * @param delta
 	 *            : test F value (from ANOVA),
-	 * @param scope
+	 * @param effectSize
+	 * 
 	 * @return
 	 */
-	private static int ces(final List<Object> aSample, final double alpha, final double beta, double effectSize,
-			final IScope scope) {
-		List<Double> dSample =
-				aSample.stream().mapToDouble(v -> Cast.asFloat(scope, v)).boxed().collect(Collectors.toList());
+	public static int ces(final IScope scope, final IList<Double> aSample, final double alpha, final double beta, double effectSize) {
+		IList<Double> dSample =
+				aSample.stream().mapToDouble(v -> Cast.asFloat(scope, v)).boxed().collect(GamaListFactory.toGamaList());
 		double mean = dSample.stream().mapToDouble(v -> v).average().getAsDouble();
 		effectSize *= mean;
 
-		List<Double> currentES = new ArrayList<>();
+		IList<Double> currentES = GamaListFactory.create();
 		// Starting from worst case deviation
 		currentES.add(Collections.min(dSample));
 		currentES.add(Collections.max(dSample));
@@ -590,7 +607,7 @@ public class Stochanalysis {
 	 * @return the double
 	 */
 	// see : https://en.wikipedia.org/wiki/F-test
-	private static double fTestEffectSize(final Collection<List<Object>> groups, final IScope scope) {
+	private static double fTestEffectSize(final Collection<IList<Object>> groups, final IScope scope) {
 		List<Double> groupMean = groups.stream()
 				.mapToDouble(group -> group.stream().mapToDouble(e -> Cast.asFloat(scope, e)).average().getAsDouble())
 				.boxed().toList();
@@ -625,9 +642,9 @@ public class Stochanalysis {
 	 *            the scope
 	 * @return the list
 	 */
-	public static List<Object> readSimulation(final String path, final int idOutput, final IScope scope)
+	public static IList<Object> readSimulation(final String path, final int idOutput, final IScope scope)
 			throws GamaRuntimeException {
-		List<Map<String, Object>> parameters = new ArrayList<>();
+		IList<Map<String, Object>> parameters = GamaListFactory.create();
 		try {
 			File file = new File(path);
 			try (FileReader fr = new FileReader(file); BufferedReader br = new BufferedReader(fr)) {
@@ -668,7 +685,7 @@ public class Stochanalysis {
 				parameters.get(i).remove(tmpNames.get(y));
 			}
 		});
-		List<Object> simulation_morris = new ArrayList<>();
+		IList<Object> simulation_morris = GamaListFactory.create();
 		simulation_morris.add(parameters);
 		simulation_morris.add(new_Outputs);
 		return simulation_morris;
@@ -704,20 +721,20 @@ public class Stochanalysis {
 	 */
 	@SuppressWarnings ("unchecked")
 	public static String stochasticityAnalysis_From_Data(final int replicat, final double threshold,
-			final List<Map<String, Object>> MySample, final Map<String, List<Double>> Outputs, final IScope scope) {
+			final IList<IMap<String, Object>> MySample, final IMap<String, IList<Double>> Outputs, final IScope scope) {
 		double min_replicat = 1;
-		for (List<Double> val : Outputs.values()) {
-			Map<String, List<Double>> groupedSample = new HashMap<>();
+		for (IList<Double> val : Outputs.values()) {
+			IMap<String, IList<Double>> groupedSample = GamaMapFactory.create();
 			for (int i = 0; i < MySample.size(); i++) {
 				String s = buildString(MySample.get(i));
-				groupedSample.computeIfAbsent(s, k -> new ArrayList<>()).add(val.get(i));
+				groupedSample.computeIfAbsent(s, k -> GamaListFactory.create()).add(val.get(i));
 			}
 			double tmp_replicat = 0;
 			for (String ps : groupedSample.keySet()) {
-				List<Double> outputForParams = groupedSample.get(ps);
-				List<Double> mean = computeMean(outputForParams, scope);
-				List<Double> std = computeSTD(mean, outputForParams, scope);
-				List<Double> cv = computeCV(std, mean);
+				IList<Double> outputForParams = groupedSample.get(ps);
+				IList<Double> mean = computeMean(outputForParams, scope);
+				IList<Double> std = computeSTD(mean, outputForParams, scope);
+				IList<Double> cv = computeCV(std, mean);
 				tmp_replicat = tmp_replicat + findWithThreshold(cv, threshold);
 			}
 			min_replicat = tmp_replicat / groupedSample.size();
@@ -745,9 +762,9 @@ public class Stochanalysis {
 	@SuppressWarnings ("unchecked")
 	public static String stochasticityAnalysis_From_CSV(final int replicat, final double threshold,
 			final String path_to_data, final int id_output, final IScope scope) {
-		List<Object> STO_simu = readSimulation(path_to_data, id_output, scope);
-		List<Map<String, Object>> MySample = GamaListFactory.castToList(scope, STO_simu.get(0));
-		Map<String, List<Double>> Outputs = GamaMapFactory.castToMap(scope, STO_simu.get(1));
+		IList<Object> STO_simu = readSimulation(path_to_data, id_output, scope);
+		IList<IMap<String, Object>> MySample = GamaListFactory.castToList(scope, STO_simu.get(0));
+		IMap<String, IList<Double>> Outputs = GamaMapFactory.castToMap(scope, STO_simu.get(1));
 		return stochasticityAnalysis_From_Data(replicat, threshold, MySample, Outputs, scope);
 	}
 }

@@ -42,6 +42,8 @@ experiment "Tests for gama.extension.stats" type: test {
 		map d <- ["p1":: [0.1, 0.2, 0.3, 0.4], "out":: [1.0, 1.1, 1.2, 1.3]];
 		assert sobolAnalysis(d, "temp_sob.txt", 1) != "";
 		assert sobolAnalysis(matrix([[0.1, 0.2, 0.3, 0.4], [1.0, 1.1, 1.2, 1.3]]), "temp_sob_mat.txt", 1) != "";
+		assert delete_file("temp_sob.txt");
+		assert delete_file("temp_sob_mat.txt");
 	}
 
 	test "Polymorphic morrisAnalysis" {

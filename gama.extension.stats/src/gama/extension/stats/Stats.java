@@ -15,7 +15,6 @@ import static gama.gaml.operators.Containers.collect;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -2451,16 +2450,16 @@ public class Stats {
 		int nbRows = mapData.values().iterator().next().size();
 		List<String> listNames = new ArrayList<>(mapData.keySet());
 
-		List<Map<String, Object>> MySample = new ArrayList<>();
-		Map<String, List<Double>> Outputs = new LinkedHashMap<>();
+		IList<IMap<String, Object>> MySample = GamaListFactory.create(Types.MAP);
+		IMap<String, IList<Double>> Outputs = GamaMapFactory.create();
 
 		for (int idx = 0; idx < nbCols; idx++) {
 			String name = listNames.get(idx);
-			if (idx >= nb_parameters) { Outputs.put(name, new ArrayList<>()); }
+			if (idx >= nb_parameters) { Outputs.put(name, GamaListFactory.create()); }
 		}
 
 		for (int row = 0; row < nbRows; row++) {
-			Map<String, Object> temp_map = new LinkedHashMap<>();
+			IMap<String, Object> temp_map = GamaMapFactory.create();
 			for (int idx = 0; idx < nbCols; idx++) {
 				String name = listNames.get(idx);
 				Double val = Cast.asFloat(scope, mapData.get(name).get(row));
@@ -2476,6 +2475,52 @@ public class Stats {
 		return Stochanalysis.stochasticityAnalysis_From_Data(replicat, threshold, MySample, Outputs, scope);
 	}
 
+	
+	@operator (
+			value = "rolling_vc",
+			type = IType.LIST,
+			content_type = IType.FLOAT,
+			can_be_const = true,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = "Return the list of rolling coefficient of variance according to the number of observations, </br> i.e. value at index i is the coefficient of variance for the first i observations.")
+	//@test ("rolling_vc([0.0,4.0,8.0]) != \"\"")
+	//@test ("morrisAnalysis(matrix([[0.1, 0.2, 0.3, 0.4, 0.5], [1.0, 1.1, 1.2, 1.3, 1.4]]), 4, 1) != \"\"")
+	@no_test
+	public static IList<Double> rollingVC(final IScope scope, final IList data) {
+		return Stochanalysis.coefficientOfVariance(scope,data);
+	}
+	
+	@operator (
+			value = "rolling_se",
+			type = IType.LIST,
+			content_type = IType.FLOAT,
+			can_be_const = true,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = "Return the list of standard error according to the number of observations, </br> i.e. value at index i is the standard error for the first i observations.")
+	@no_test
+	public static IList<Double> rollingSE(final IScope scope, final IList data) {
+		return Stochanalysis.standardError(scope,data);
+	}
+	
+	@operator (
+			value = "power_test",
+			type = IType.INT,
+			can_be_const = true,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = "Return the number of observation to satisfy power test given a critical effect size, tAlpha and tBeta."
+					+ "</br>see reference: https://rseri.me/publication/b016/B016.pdf (accessible as of 04/2026).")
+	@no_test
+	public static Integer powerTestCSE(final IScope scope, final IList data, double tAlpha, double tBeta, double criticalEffectSize) {
+		return Stochanalysis.ces(scope,data,tAlpha,tBeta,criticalEffectSize);
+	}
+	
+	
 	/**
 	 * Helper to convert matrix to map of columns.
 	 */
@@ -2488,39 +2533,8 @@ public class Stats {
 		}
 		return map;
 	}
-
-	/**
-	 *
-	 *
-	 * @param scope
-	 * @param size
-	 * @param sumOfSquares
-	 * @return
-	 */
-	@operator (
-			value = "rms",
-			can_be_const = true,
-			type = IType.FLOAT,
-			category = { IOperatorCategory.STATISTICAL },
-			concept = { IConcept.STATISTIC })
-	@doc (
-			value = """
-					Returns the RMS (Root-Mean-Square) of a data sequence. \
-					The RMS of data sequence is the square-root of the mean of the squares \
-					of the elements in the data sequence. It is a measure of the average size of \
-					the elements of a data sequence.""",
-			comment = "",
-			examples = { @example (" list<float> data_sequence <- [6.0, 7.0, 8.0, 9.0]; "),
-					@example (" list<float> squares <- data_sequence collect (each*each); "), @example (
-							value = " rms(length(data_sequence),sum(squares)) with_precision(4) ",
-							equals = "7.5829") })
-	public static Double opRms(final IScope scope, final Integer size, final Double sumOfSquares) {
-
-		// TODO input parameters validation
-
-		return Descriptive.rms(size, sumOfSquares);
-	}
-
+	
+	
 	// /**
 	// *
 	// *
@@ -2586,6 +2600,39 @@ public class Stats {
 	// return Descriptive.skew(toDoubleArrayList(scope, data), mean, standardDeviation);
 	// }
 
+	
+	/**
+	 *
+	 *
+	 * @param scope
+	 * @param size
+	 * @param sumOfSquares
+	 * @return
+	 */
+	@operator (
+			value = "rms",
+			can_be_const = true,
+			type = IType.FLOAT,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = """
+					Returns the RMS (Root-Mean-Square) of a data sequence. \
+					The RMS of data sequence is the square-root of the mean of the squares \
+					of the elements in the data sequence. It is a measure of the average size of \
+					the elements of a data sequence.""",
+			comment = "",
+			examples = { @example (" list<float> data_sequence <- [6.0, 7.0, 8.0, 9.0]; "),
+					@example (" list<float> squares <- data_sequence collect (each*each); "), @example (
+							value = " rms(length(data_sequence),sum(squares)) with_precision(4) ",
+							equals = "7.5829") })
+	public static Double opRms(final IScope scope, final Integer size, final Double sumOfSquares) {
+
+		// TODO input parameters validation
+
+		return Descriptive.rms(size, sumOfSquares);
+	}
+	
 	/**
 	 * Skewness.
 	 *
