@@ -14,7 +14,8 @@ import java.util.Set;
 /**
  * Interface defining all keywords and constants used in the GAML language.
  * <p>
- * This interface serves as a central repository for all GAML language keywords, including:
+ * This interface serves as a central repository for all GAML language keywords,
+ * including:
  * </p>
  * <ul>
  * <li>Statement keywords (e.g., "if", "loop", "create")</li>
@@ -26,7 +27,8 @@ import java.util.Set;
  * <li>And many other language-level constants</li>
  * </ul>
  * <p>
- * These constants are used throughout the GAMA platform for parsing, compiling, and executing GAML models, ensuring
+ * These constants are used throughout the GAMA platform for parsing, compiling,
+ * and executing GAML models, ensuring
  * consistency in keyword recognition and usage.
  * </p>
  *
@@ -576,6 +578,8 @@ public interface IKeyword {
 	 * TYPES
 	 */
 	String LIST = "list";
+
+	String DATAFRAME = "dataframe";
 
 	/** The location. */
 	String LOCATION = "location";
