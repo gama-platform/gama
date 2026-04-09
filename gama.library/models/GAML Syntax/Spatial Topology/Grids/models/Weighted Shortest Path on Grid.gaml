@@ -2,10 +2,10 @@
 * Name: Weighted Shortest Path on Grid
 * Author: Patrick Taillandier
 * Description: Demonstrates shortest-path computation on a grid where cells have different traversal costs
-*   (weights). Four algorithms are compared: BF, A*, Dijkstra, and JPS. The agent path minimizes total
-*   cumulative cost rather than the number of steps. Cells with higher weights (e.g., difficult terrain,
-*   water, buildings) are more expensive to cross. This model is the weighted counterpart to 'Shortest Path
-*   on Grid' and is the reference for realistic terrain-cost navigation in GAMA.
+*   (weights). Two algorithms are compared: A*, and Dijkstra (JPS and BF do not take into account weights). 
+*   The agent path minimizes total cumulative cost rather than the number of steps. Cells with higher weights 
+*   (e.g., difficult terrain, water, buildings) are more expensive to cross. This model is the weighted counterpart
+*   to 'Shortest Path on Grid' and is the reference for realistic terrain-cost navigation in GAMA.
 * Tags: grid, obstacle, shortest_path, weighted, cost, terrain, astar, dijkstra, pathfinding
 */
 
@@ -13,11 +13,9 @@ model Grid
 
 global {
 	
-	/*4 alogirithms for the shortest path computation on a grid:
+	/*2 alogirithms for the shortest path computation on a grid with weights:
 	*      - A* : default algorithm: Very efficient for both Moore (8) and Von Neumann (4) neighborhoods. An introduction to A*: http://www.redblobgames.com/pathfinding/a-star/introduction.html
 	*      - Dijkstra : Classic Dijkstra algorithm. An introduction to Dijkstra : http://www.redblobgames.com/pathfinding/a-star/introduction.html
-	*      - JPS : Jump Point Search, only usable for Moore (8) neighborhood. Most of time, more efficient than A*. An introduction to JPS: https://harablog.wordpress.com/2011/09/07/jump-point-search/#3
-	*      - BF : Breadth First Search. Should only be used for Von Neumann (4) neighborhood. An introduction to BF: http://www.redblobgames.com/pathfinding/a-star/introduction.html
 	*/
 	
 	file dem <- file("../includes/vulcano_50.asc");

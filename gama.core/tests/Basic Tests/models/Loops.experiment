@@ -37,7 +37,6 @@ experiment loop_over type:test{
 			value <- i;
 			i <- i + 1;
 		}
-		write dummy collect each.value;
 		int sum <- 0;
 		loop d over:dummy{
 			sum <- sum + d.value;

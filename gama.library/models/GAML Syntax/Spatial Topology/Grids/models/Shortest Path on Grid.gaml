@@ -23,13 +23,14 @@ global {
 	string scenario <- "wall" among: ["random", "wall"];
 	string algorithm <- "A*" among: ["A*", "Dijkstra", "JPS", "BF"];
 	int neighborhood_type <- 8 among:[4,8];
-	float obstacle_rate <- 0.1 min: 0.0 max: 0.9;
+	float obstacle_rate <- 0.1 min: 0.0 max: 0.9 step: 0.1;
 	int grid_size <- 50 min: 5 max: 100;
 	
 	point source;
 	point goal;
 	path the_path;
-	init toto {    
+	
+	init  {    
 		if (scenario = "wall") {
 			ask cell {is_obstacle <- false;}
 			int x_max <- round(grid_size * 2/3);
@@ -61,7 +62,7 @@ global {
 }
 
 grid cell width: grid_size height: grid_size neighbors: neighborhood_type optimizer: algorithm{
-	bool is_obstacle <- flip(0.1);
+	bool is_obstacle <- flip(obstacle_rate);
 	rgb color <- is_obstacle ? #black : #white;
 } 
 
@@ -69,12 +70,14 @@ grid cell width: grid_size height: grid_size neighbors: neighborhood_type optimi
 
 experiment goto_grid type: gui {
 	
-	parameter var:scenario;
-	parameter var:algorithm;
-	parameter var:neighborhood_type;
-	parameter var:obstacle_rate;
-	parameter var:grid_size;
+// Environment Category
+	parameter "Scenario type" var: scenario category: "Environment";
+	parameter "Grid size" var: grid_size category: "Environment";
+	parameter "Obstacle rate (only for random scenario)" var: obstacle_rate category: "Environment" ;
 	
+	// Algorithm Category
+	parameter "Pathfinding algorithm" var: algorithm category: "Algorithm";
+	parameter "Neighborhood type (4 or 8)" var: neighborhood_type category: "Algorithm";	
 	float minimum_cycle_duration <- 0.5#s;
 	
 	

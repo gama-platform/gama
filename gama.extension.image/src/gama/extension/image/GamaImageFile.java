@@ -267,9 +267,16 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 		final BufferedImage image;
 		try {
 			image = ImageCache.getInstance().getImageFromFile(scope, getPath(scope), useCache, null, extension);
-			if (image == null) throw GamaRuntimeException.error("This image format (." + getExtension(scope)
-					+ ") is not recognized. Please use a proper operator to read it (for example, pgm_file to read a .pgm format",
-					scope);
+			if (image == null) {
+				if (isRemote())
+					throw GamaRuntimeException.error(
+							"Could not load the image from URL '" + getOriginalPath()
+									+ "'. The file may not have been downloaded correctly. Please check the URL and your network connection.",
+							scope);
+				throw GamaRuntimeException.error("This image format (." + getExtension(scope)
+						+ ") is not recognized. Please use a proper operator to read it (for example, pgm_file to read a .pgm format",
+						scope);
+			}
 		} catch (final Exception e) {
 			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.create(e, scope), true);
 			return null;
