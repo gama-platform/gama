@@ -16,6 +16,7 @@ import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
+import gama.dev.DEBUG;
 import gama.extension.serialize.IGamaObjectInput;
 import gama.extension.serialize.IGamaObjectOutput;
 
@@ -53,6 +54,7 @@ class IListSerialiser extends FSTIndividualSerialiser<IList> {
 	@SuppressWarnings ("unchecked")
 	@Override
 	public void serialise(final IGamaObjectOutput out, final IList o) throws Exception {
+		DEBUG.ON("serialize LIST ");
 		out.writeObject(o.getGamlType().getContentType());
 		out.writeInt(o.size());
 		o.forEach(v -> {
@@ -78,6 +80,7 @@ class IListSerialiser extends FSTIndividualSerialiser<IList> {
 	@SuppressWarnings ({ "unchecked", "rawtypes" })
 	@Override
 	public IList deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
+		DEBUG.ON("deserialize LIST ");
 		IType c = (IType) in.readObject();
 		IList<Object> result = GamaListFactory.create(c);
 		int size = in.readInt();

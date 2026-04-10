@@ -54,15 +54,6 @@ class IGamaMailBoxSerialiser extends FSTIndividualSerialiser<GamaMailbox> {
 	@Override
 	public void serialise(final IGamaObjectOutput out, final GamaMailbox o) throws Exception {
 		DEBUG.ON("serialize GamaMailbox ");
-		out.writeObject(o.getGamlType().getContentType());
-		out.writeInt(o.size());
-		o.forEach(v -> {
-			try {
-				out.writeObject(v);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		});
 	}
 
 	/**
