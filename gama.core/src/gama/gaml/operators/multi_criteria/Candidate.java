@@ -13,21 +13,48 @@ package gama.gaml.operators.multi_criteria;
 import java.util.Map;
 
 /**
- * The Class Candidate.
+ * Represents a decision candidate in a Multi-Criteria Decision Making (MCDM) context. Each
+ * candidate is identified by a 0-based integer index and carries a map associating criterion names
+ * to their evaluated numeric values. Instances of this class are consumed by the {@link Electre},
+ * {@link Promethee}, and {@link EvidenceTheory} solvers to determine the best alternative among a
+ * set of candidates.
+ *
+ * <p>Example usage:
+ * <pre>{@code
+ * Map<String, Double> values = new HashMap<>();
+ * values.put("cost",     0.3);
+ * values.put("distance", 0.7);
+ * Candidate c = new Candidate(0, values);
+ * }</pre>
+ *
+ * @see Electre
+ * @see Promethee
+ * @see EvidenceTheory
  */
 public class Candidate {
 
-	/** The index. */
+	/**
+	 * The 0-based position of this candidate in the original list of alternatives. It is used as a
+	 * stable identifier throughout the MCDM computation, in particular when building the
+	 * proposition sets in {@link EvidenceTheory}.
+	 */
 	private int index;
-	
-	/** The val criteria. */
+
+	/**
+	 * A mapping from criterion name to the numeric evaluation of this candidate on that criterion.
+	 * All criteria referenced by the chosen MCDM solver must be present as keys in this map,
+	 * otherwise a {@link NullPointerException} will be raised during the computation.
+	 */
 	private Map<String, Double> valCriteria;
 
 	/**
-	 * Instantiates a new candidate.
+	 * Constructs a new {@code Candidate} with the given index and criterion values.
 	 *
-	 * @param index the index
-	 * @param valCriteria the val criteria
+	 * @param index
+	 *            the 0-based position of this candidate in the list of alternatives
+	 * @param valCriteria
+	 *            a map from each criterion name to the numeric value of this candidate on that
+	 *            criterion; must contain an entry for every criterion used by the solver
 	 */
 	protected Candidate(final int index, final Map<String, Double> valCriteria) {
 		super();
@@ -35,11 +62,22 @@ public class Candidate {
 		this.valCriteria = valCriteria;
 	}
 
+	/**
+	 * Returns a human-readable representation of this candidate, consisting of the index followed
+	 * by an arrow and the criterion-value map.
+	 *
+	 * @return a string of the form {@code "<index> -> {criterion=value, ...}"}
+	 */
 	@Override
 	public String toString() {
 		return index + " -> " + valCriteria;
 	}
 
+	/**
+	 * Computes a hash code based on the candidate's index and its criterion values map.
+	 *
+	 * @return the hash code for this candidate
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -49,6 +87,15 @@ public class Candidate {
 		return result;
 	}
 
+	/**
+	 * Checks equality by comparing both the index and the criterion-value map. Two candidates are
+	 * equal only if they share the same index and identical criterion evaluations.
+	 *
+	 * @param obj
+	 *            the object to compare with this candidate
+	 * @return {@code true} if {@code obj} is a {@code Candidate} with the same index and criterion
+	 *         values; {@code false} otherwise
+	 */
 	@Override
 	public boolean equals(final Object obj) {
 		if ( this == obj ) { return true; }
@@ -63,36 +110,40 @@ public class Candidate {
 	}
 
 	/**
-	 * Gets the index.
+	 * Returns the 0-based index that identifies this candidate in the list of alternatives.
 	 *
-	 * @return the index
+	 * @return the 0-based index of this candidate
 	 */
 	public int getIndex() {
 		return index;
 	}
 
 	/**
-	 * Sets the index.
+	 * Sets the 0-based index of this candidate.
 	 *
-	 * @param index the new index
+	 * @param index
+	 *            the new 0-based position of this candidate
 	 */
 	public void setIndex(final int index) {
 		this.index = index;
 	}
 
 	/**
-	 * Gets the val criteria.
+	 * Returns the map of criterion names to their evaluated numeric values for this candidate.
 	 *
-	 * @return the val criteria
+	 * @return a mutable map from criterion name to criterion value; never {@code null} after
+	 *         construction
 	 */
 	public Map<String, Double> getValCriteria() {
 		return valCriteria;
 	}
 
 	/**
-	 * Sets the val criteria.
+	 * Replaces the criterion-value map for this candidate.
 	 *
-	 * @param valCriteria the val criteria
+	 * @param valCriteria
+	 *            the new map from criterion name to numeric value; should contain an entry for
+	 *            every criterion used by the MCDM solver
 	 */
 	public void setValCriteria(final Map<String, Double> valCriteria) {
 		this.valCriteria = valCriteria;

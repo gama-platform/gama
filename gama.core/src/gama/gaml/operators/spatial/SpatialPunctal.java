@@ -22,6 +22,7 @@ import gama.annotations.example;
 import gama.annotations.no_test;
 import gama.annotations.operator;
 import gama.annotations.test;
+import gama.annotations.usage;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.annotations.support.Reason;
@@ -38,7 +39,32 @@ import gama.api.utils.geometry.GeometryUtils;
 import gama.gaml.operators.Maths;
 
 /**
- * The Class Punctal.
+ * Provides GAML point-specific geometric operators for extracting and computing point locations
+ * from or relative to geometries. All computation delegates to JTS (Java Topology Suite) geometry
+ * algorithms internally.
+ * <p>
+ * Operator families provided:
+ * <ul>
+ *   <li><b>Centroid / Location</b>: {@code centroid}, {@code any_location_in} /
+ *       {@code any_point_in} — obtain a representative point of a geometry.</li>
+ *   <li><b>Boundary sampling</b>: {@code points_on}, {@code points_along} — sample equidistant or
+ *       rate-based points along a geometry's boundary or skeleton.</li>
+ *   <li><b>Radial placement</b>: {@code points_at} — generate points arranged radially around the
+ *       calling agent at a given distance.</li>
+ *   <li><b>Closest / Farthest point</b>: {@code closest_points_with}, {@code farthest_point_to} —
+ *       compute the pair of nearest points between two geometries, or the vertex of a geometry
+ *       farthest from a reference point.</li>
+ *   <li><b>Angular measure</b>: {@code angle_between} — compute the angle formed by three
+ *       points.</li>
+ * </ul>
+ * <p>
+ * Operators that return a deterministic point from a pure geometry (e.g. {@code centroid},
+ * {@code angle_between}) carry {@code @test} annotations. Operators that depend on the agent's
+ * location, on randomness, or on runtime state use {@code @no_test}.
+ *
+ * @author Alexis Drogoul, Patrick Taillandier, Arnaud Grignard
+ * @see gama.api.types.geometry.IShape
+ * @see gama.api.types.geometry.IPoint
  */
 public class SpatialPunctal {
 
@@ -57,6 +83,9 @@ public class SpatialPunctal {
 			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_RELATION, IConcept.POINT })
 	@doc (
 			value = "Centroid (weighted sum of the centroids of a decomposition of the area into triangles) of the operand-geometry. Can be different to the location of the geometry",
+			usages = { @usage ("Returns nil if the operand geometry is nil or has no inner JTS geometry."),
+					@usage ("For a point geometry, returns the point itself as the centroid."),
+					@usage ("For a line geometry, returns the midpoint weighted by segment lengths.") },
 			examples = { @example (
 					value = "centroid(world)",
 					equals = "the centroid of the square, for example : {50.0,50.0}.",
@@ -84,6 +113,9 @@ public class SpatialPunctal {
 			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_RELATION, IConcept.POINT })
 	@doc (
 			value = "A point inside (or touching) the operand-geometry.",
+			usages = { @usage ("Returns nil if the operand is nil."),
+					@usage ("For a point geometry, returns that point itself."),
+					@usage ("The result is non-deterministic: the operator may return different interior points across calls.") },
 			examples = { @example (
 					value = "any_location_in(square(5))",
 					equals = "a point in the square, for example : {3,4.6}.",

@@ -53,12 +53,14 @@ species NetworkingAgent skills:[network]{
 	reflex send3 when: cycle mod 10  = 8
 	{
 		write "sending message: " + self;
-		do send(to:"sender", contents:self);		
+		do send(to:"receiver", contents:self);			
 	}
 	
 	reflex receive
 	{
-		write "length mail box "  + mailbox collect(each.contents);
+		write "length mail box "  + length(mailbox);
+		write "Last received message: "  + (!empty(mailbox) ? mailbox[0].contents : "");
+		
 	}
 }
 

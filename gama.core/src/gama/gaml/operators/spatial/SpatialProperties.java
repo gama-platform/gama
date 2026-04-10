@@ -21,7 +21,30 @@ import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 
 /**
- * The Class Properties.
+ * Provides GAML Boolean topological predicate operators implementing DE-9IM (Dimensionally Extended
+ * 9-Intersection Model) spatial relationships. All predicates delegate to JTS (Java Topology Suite)
+ * methods internally.
+ * <p>
+ * Operator families provided:
+ * <ul>
+ *   <li><b>Disjoint / Intersection</b>: {@code disjoint_from}, {@code intersects} — test whether
+ *       two geometries share any point.</li>
+ *   <li><b>Overlap</b>: {@code overlaps}, {@code partially_overlaps} — test whether interiors
+ *       intersect or share space without one fully covering the other.</li>
+ *   <li><b>Crossing / Touching</b>: {@code crosses}, {@code touches} (deprecated) — test
+ *       dimensionally-specific boundary intersection patterns.</li>
+ *   <li><b>Coverage / Equality</b>: {@code covers}, {@code equals} — test whether one geometry
+ *       fully contains another or both geometries are geometrically identical.</li>
+ * </ul>
+ * <p>
+ * These operators work on pure JTS {@code Geometry} instances and do <em>not</em> require an
+ * active simulation topology, making most of them safe to unit-test with literal geometry values.
+ * The {@code @no_test} annotation is therefore omitted for predicates that can be validated purely
+ * with geometric constructors.
+ *
+ * @author Alexis Drogoul, Patrick Taillandier, Arnaud Grignard
+ * @see gama.api.types.geometry.IShape
+ * @see gama.api.types.geometry.IPoint
  */
 public class SpatialProperties {
 
@@ -63,6 +86,8 @@ public class SpatialProperties {
 							equals = "true") },
 			see = { "intersects", "crosses", "overlaps", "partially_overlaps", "touches" })
 	@test ("polygon([{10,10},{10,20},{20,20},{20,10}]) disjoint_from {15,15} = false")
+	@test ("polygon([{0,0},{0,5},{5,5},{5,0}]) disjoint_from polygon([{10,10},{10,15},{15,15},{15,10}])")
+	@test ("!(polygon([{0,0},{0,5},{5,5},{5,0}]) disjoint_from polygon([{3,3},{3,8},{8,8},{8,3}]))")
 	public static Boolean disjoint_from(final IScope scope, final IShape g1, final IShape g2) {
 		if (g1 == null || g2 == null || g1.getInnerGeometry() == null || g2.getInnerGeometry() == null) return true;
 		return !g1.intersects(g2);
@@ -83,7 +108,8 @@ public class SpatialProperties {
 	@doc (
 			value = "A boolean, equal to true if the left-geometry (or agent/point) overlaps the right-geometry (or agent/point).",
 			usages = { @usage ("if one of the operand is null, returns false."),
-					@usage ("if one operand is a point, returns true if the point is included in the geometry") },
+					@usage ("if one operand is a point, returns true if the point is included in the geometry"),
+					@usage ("Note: unlike the strict JTS {@code overlaps} predicate, this GAML operator uses intersection semantics (equivalent to {@code intersects}): two geometries that only touch at a boundary point or line will still return true.") },
 			examples = { @example (
 					value = "polyline([{10,10},{20,20}]) overlaps polyline([{15,15},{25,25}])",
 					equals = "true"),
@@ -241,6 +267,8 @@ public class SpatialProperties {
 					equals = "false") },
 			see = { "disjoint_from", "crosses", "overlaps", "partially_overlaps", "touches" })
 	@test ("square(5) intersects square(2)")
+	@test ("square(10) intersects square(10)")
+	@test ("!(square(10) intersects polygon([{20,20},{20,25},{25,25},{25,20}]))")
 	public static Boolean intersects(final IShape g1, final IShape g2) {
 		if (g1 == null || g2 == null) return false;
 		return g1.intersects(g2);

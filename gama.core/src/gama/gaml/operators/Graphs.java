@@ -103,10 +103,73 @@ import gama.gaml.operators.spatial.SpatialTransformations;
 import one.util.streamex.StreamEx;
 
 /**
- * Written by drogoul Modified on 13 avr. 2011
+ * Provides all graph operators for the GAML language in the GAMA modeling and simulation platform.
  *
- * @todo Description
+ * <p>This class is the primary container for graph-related operators, organized into the following
+ * functional families:</p>
  *
+ * <ul>
+ *   <li><strong>Construction:</strong> {@code as_edge_graph}, {@code as_distance_graph},
+ *       {@code as_intersection_graph}, {@code directed}, {@code undirected},
+ *       {@code generate_barabasi_albert}, {@code generate_watts_strogatz},
+ *       {@code generate_random_graph}, {@code generate_complete_graph},
+ *       {@code spatial_graph}, {@code grid_cells_to_graph}</li>
+ *   <li><strong>Topology (layout):</strong> {@code layout_circle}, {@code layout_grid},
+ *       {@code layout_force}, {@code layout_force_FR}, {@code layout_force_FR_indexed}
+ *       (require a rendering context &mdash; marked {@code @no_test})</li>
+ *   <li><strong>Structure queries:</strong> {@code contains_vertex}, {@code contains_edge},
+ *       {@code connected_components_of}, {@code main_connected_component},
+ *       {@code successors_of}, {@code predecessors_of}, {@code neighbors_of},
+ *       {@code in_degree_of}, {@code out_degree_of}, {@code degree_of},
+ *       {@code in_edges_of}, {@code out_edges_of}, {@code edge_between}</li>
+ *   <li><strong>Edge/weight queries:</strong> {@code weight_of}, {@code source_of},
+ *       {@code target_of}, {@code edge}, {@code node}, {@code edge_betweenness}</li>
+ *   <li><strong>Pathfinding:</strong> {@code path_between}, {@code paths_between},
+ *       {@code max_flow_between}, {@code all_pairs_shortest_path},
+ *       {@code load_shortest_paths}, {@code use_cache}, {@code as_path}</li>
+ *   <li><strong>Graph metrics:</strong> {@code betweenness_centrality},
+ *       {@code alpha_index}, {@code beta_index}, {@code gamma_index},
+ *       {@code connectivity_index}, {@code nb_cycles}, {@code strahler}</li>
+ *   <li><strong>Clustering:</strong> {@code girvan_newman_clustering},
+ *       {@code k_spanning_tree_clustering}, {@code label_propagation_clustering},
+ *       {@code maximal_cliques_of}, {@code biggest_cliques_of}</li>
+ *   <li><strong>Maximum flow:</strong> {@code max_flow_between}</li>
+ *   <li><strong>Modification:</strong> {@code add_node}, {@code remove_node_from},
+ *       {@code add_edge}, {@code rewire_n}, {@code with_weights},
+ *       {@code with_shortest_path_algorithm}, {@code with_k_shortest_path_algorithm}</li>
+ * </ul>
+ *
+ * <p><strong>Important behavioural notes:</strong></p>
+ * <ul>
+ *   <li>The directed/undirected distinction affects successor/predecessor vs. neighbor queries:
+ *       on an undirected graph {@code successors_of} and {@code predecessors_of} are both
+ *       equivalent to {@code neighbors_of}.</li>
+ *   <li>Path operators ({@code path_between}, {@code paths_between}, etc.) return
+ *       {@code nil} when no path exists between two nodes in a disconnected graph or when
+ *       either node is not in the graph.</li>
+ *   <li>Layout operators ({@code layout_circle}, {@code layout_grid}, {@code layout_force},
+ *       {@code layout_force_FR}, {@code layout_force_FR_indexed}) modify vertex locations and
+ *       require a spatial/rendering context — they are therefore marked {@code @no_test}.</li>
+ * </ul>
+ *
+ * <p><strong>Typical usage in GAML:</strong></p>
+ * <pre>{@code
+ * // Build a graph from a map of point pairs
+ * graph<geometry,geometry> my_graph <- as_edge_graph([{0,0}::{10,0}, {10,0}::{10,10}]);
+ *
+ * // Query degree of a vertex
+ * int d <- my_graph in_degree_of {10,0};
+ *
+ * // Find shortest path
+ * path p <- path_between(my_graph, {0,0}, {10,10});
+ *
+ * // Compute betweenness centrality
+ * map<geometry,int> bc <- betweenness_centrality(my_graph);
+ * }</pre>
+ *
+ * @author Alexis Drogoul (drogoul@ird.fr) — Modified 13 avr. 2011
+ * @see gama.api.types.graph.IGraph
+ * @see gama.core.util.graph.GamaGraph
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class Graphs {
@@ -552,7 +615,11 @@ public class Graphs {
 			examples = { @example ("graph graphFromMap <-  as_edge_graph([{1,5}::{12,45},{12,45}::{34,56}]);"),
 					@example (
 							value = "graphFromMap weight_of(link({1,5},{12,45}))",
-							equals = "1.0") })
+							equals = "1.0") },
+			special_cases = {
+					"Returns 1.0 if the element is neither an edge nor a vertex of the graph (fall-through default).",
+					"In an unweighted graph, all edge and vertex weights default to 1.0 (the fixed internal default value).",
+					"If the graph is a localized (spatial) graph, the default edge weight is the geometric distance between the two endpoint vertices." })
 	public static Double weightOf(final IScope scope, final IGraph graph, final Object edge) {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
 		if (edge instanceof GraphObjectToAdd) {
@@ -663,6 +730,10 @@ public class Graphs {
 							value = "graphFromMap in_degree_of (node(3))",
 							equals = "2",
 							test = false) },
+			special_cases = {
+					"Returns 0 for an isolated vertex (a vertex with no incoming edges).",
+					"On an undirected graph, both in_degree_of and out_degree_of return the total degree of the vertex (number of incident edges).",
+					"Returns 0 if the vertex is not present in the graph." },
 			see = { "out_degree_of", "degree_of" })
 	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
 			+ "(g in_degree_of ({20,3})) = 1")
@@ -734,6 +805,10 @@ public class Graphs {
 							value = "graphFromMap out_degree_of (node(3))",
 							equals = "4",
 							test = false) },
+			special_cases = {
+					"Returns 0 for an isolated vertex (a vertex with no outgoing edges).",
+					"On an undirected graph, both out_degree_of and in_degree_of return the total degree of the vertex (number of incident edges).",
+					"Returns 0 if the vertex is not present in the graph." },
 			see = { "in_degree_of", "degree_of" })
 	@test ("graph<geometry, geometry> g1 <- directed(as_edge_graph([ edge({10,5}, {30,30}), edge({30,30}, {80,35}), node ({30,30})]));\r\n"
 			+ "g1 out_degree_of {30,30} = 1")
@@ -937,6 +1012,9 @@ public class Graphs {
 							value = "maximal_cliques_of (my_graph)",
 							equals = "the list of all the maximal cliques as list",
 							test = false) },
+			special_cases = {
+					"On an empty graph (no vertices), returns an empty list.",
+					"Every isolated vertex (degree 0) is itself a clique of size 1 and will appear as a singleton list in the result." },
 			see = { "biggest_cliques_of" })
 	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
 			+ " maximal_cliques_of(g) = [[{10.0,5.0,0.0},{20.0,3.0,0.0}],[{30.0,30.0,0.0},{10.0,5.0,0.0}],[{20.0,3.0,0.0}],[{30.0,30.0,0.0},{80.0,35.0,0.0}],[{40.0,60.0,0.0},{80.0,35.0,0.0}],[{40.0,60.0,0.0}]]  ")
@@ -1165,6 +1243,10 @@ public class Graphs {
 							value = "betweenness_centrality(graphEpidemio)",
 							equals = "the betweenness centrality index of the graph",
 							test = false) },
+			special_cases = {
+					"Returns 0 for all vertices in a disconnected graph that belong to isolated components: no shortest path from another component can pass through them.",
+					"Returns 0 for every vertex with degree 0 (isolated vertex), since no shortest path passes through it.",
+					"On a graph with a single vertex and no edges, returns a map with that vertex mapped to 0." },
 			see = {})
 	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
 			+ " betweenness_centrality(g) = [{10.0,5.0,0.0}::5,{20.0,3.0,0.0}::0,{30.0,30.0,0.0}::2,{80.0,35.0,0.0}::4,{40.0,60.0,0.0}::0] ")
@@ -1267,6 +1349,10 @@ public class Graphs {
 							value = "graphFromMap neighbors_of node({12,45})",
 							equals = "[{1.0,5.0},{34.0,56.0}]",
 							isExecutable = false) },
+			special_cases = {
+					"Returns an empty list for an isolated vertex (a vertex with no incident edges).",
+					"Returns an empty list if the vertex is not present in the graph.",
+					"On a directed graph, returns all vertices connected by any edge (both incoming and outgoing), i.e. the union of predecessors and successors." },
 			see = { "predecessors_of", "successors_of" })
 	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
 			+ "(g neighbors_of ({10,5}) sort_by point(each)) = [{20.0,3.0,0.0},{30.0,30.0,0.0},{80.0,35.0,0.0}]")
@@ -1307,6 +1393,10 @@ public class Graphs {
 							value = "graphEpidemio predecessors_of node({34,56})",
 							equals = "[{12;45}]",
 							test = false) },
+			special_cases = {
+					"Returns an empty list for a vertex with no incoming edges (in-degree 0).",
+					"Returns an empty list if the vertex is not present in the graph.",
+					"On an undirected graph, predecessors_of is equivalent to neighbors_of (all adjacent vertices are returned)." },
 			see = { "neighbors_of", "successors_of" })
 	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
 			+ "g predecessors_of ({10,5}) = [{80.0,35.0,0.0}]")
@@ -1343,6 +1433,10 @@ public class Graphs {
 					@example (
 							value = "graphEpidemio successors_of node({34,56})",
 							equals = "[]") },
+			special_cases = {
+					"Returns an empty list for a vertex with no outgoing edges (out-degree 0).",
+					"Returns an empty list if the vertex is not present in the graph.",
+					"On an undirected graph, successors_of is equivalent to neighbors_of (all adjacent vertices are returned)." },
 			see = { "predecessors_of", "neighbors_of" })
 	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
 			+ "g successors_of ({10,5}) = [{20.0,3.0,0.0},{30.0,30.0,0.0}]")
@@ -2208,7 +2302,11 @@ public class Graphs {
 			examples = { @example (
 					value = "path_between (my_graph, ag1, ag2)",
 					equals = "A path between ag1 and ag2",
-					isExecutable = false) })
+					isExecutable = false) },
+			special_cases = {
+					"Returns nil if no path exists between the two nodes (e.g. the graph is disconnected and source/target belong to different components).",
+					"Returns nil if either the source or the target node is not present in the graph.",
+					"On an empty graph (no vertices, no edges), always returns nil." })
 	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
 			+ " length((path_between (g, {10,5}, {50,50}))) = 1 ")
 	public static IPath path_between(final IScope scope, final IGraph graph, final Object source, final Object target)

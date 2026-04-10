@@ -49,10 +49,54 @@ import gama.api.utils.files.BufferingUtils;
 import gama.api.utils.files.FileUtils;
 
 /**
- * Written by drogoul Modified on 20 dec. 2010
+ * Provides GAML file I/O operators for the GAMA modeling and simulation platform.
  *
- * @todo Description
+ * <p>This class is the primary host for file-related operators that GAML models can use to
+ * interact with the filesystem at runtime. All path arguments that are relative are resolved
+ * against the simulation workspace root via
+ * {@link gama.api.utils.files.FileUtils#constructAbsoluteFilePath(IScope, String, boolean)}.
  *
+ * <p><strong>Operator families provided:</strong>
+ * <ul>
+ *   <li><strong>File existence:</strong> {@code file_exists}, {@code folder_exists} /
+ *       {@code directory_exists} — test whether a path refers to an existing file or directory.</li>
+ *   <li><strong>File access:</strong> {@code read} / {@code get} — read an attribute from an
+ *       agent, geometry, or the current GIS feature stream.</li>
+ *   <li><strong>File path manipulation:</strong> {@code to_absolute_path} — converts a
+ *       relative path to an absolute one using the simulation workspace root.</li>
+ *   <li><strong>File creation / writing:</strong> {@code save} and {@code write} are
+ *       implemented in other classes (see {@code SaveStatements}); cross-reference them when
+ *       documenting output workflows.</li>
+ *   <li><strong>Compression:</strong> {@code zip} — compresses a list of files/folders into a
+ *       standard ZIP archive; {@code unzip} — extracts a ZIP archive to a destination folder.</li>
+ *   <li><strong>Directory operations:</strong> {@code directory} / {@code folder} — opens an
+ *       existing directory as a {@link gama.api.types.file.GamaFolderFile};
+ *       {@code new_folder} — creates a directory if it does not yet exist.</li>
+ *   <li><strong>File management:</strong> {@code copy_file}, {@code rename_file},
+ *       {@code delete_file} — manipulate files and directories on the filesystem.</li>
+ *   <li><strong>Writable flag:</strong> {@code writable} — changes the read/write mode of an
+ *       open {@link gama.api.types.file.IGamaFile}.</li>
+ *   <li><strong>Buffered I/O:</strong> {@code flush_all_files} — flushes all pending buffered
+ *       save operations for the current simulation.</li>
+ * </ul>
+ *
+ * <p><strong>Path resolution:</strong> Relative paths are resolved against the simulation
+ * workspace root via
+ * {@link gama.api.utils.files.FileUtils#constructAbsoluteFilePath(IScope, String, boolean)}.
+ * The resulting absolute path uses the OS path separator.
+ *
+ * <p><strong>Testing:</strong> Most operators in this class are marked {@code @no_test} because
+ * their results depend on the filesystem and execution context and cannot be verified with static
+ * inline assertions.
+ *
+ * <p><strong>ZIP support:</strong> The {@code zip} and {@code unzip} operators create and read
+ * standard ZIP archives (as defined by {@link java.util.zip.ZipOutputStream} /
+ * {@link java.util.zip.ZipFile}).
+ *
+ * @author Alexis Drogoul (original author, 20 Dec 2010)
+ * @see gama.api.utils.files.FileUtils
+ * @see gama.api.types.file.IGamaFile
+ * @see IScope
  */
 @SuppressWarnings ({ "rawtypes" })
 public class Files {
@@ -108,7 +152,12 @@ public class Files {
 			category = IOperatorCategory.FILE,
 			concept = { IConcept.FILE })
 	@doc (
-			value = "Test whether the parameter is the path to an existing file. False if it does not exist of if it is a folder",
+			value = "Test whether the parameter is the path to an existing file. False if it does not exist or if it is a folder",
+			returns = "a {@code bool}: {@code true} if the file exists on the filesystem and is not a directory.",
+			special_cases = {
+					"An empty or null path returns false without raising an error.",
+					"Paths are resolved relative to the simulation workspace root via FileUtils.constructAbsoluteFilePath.",
+					"Returns false for directories; use folder_exists to check directories." },
 			examples = { @example (
 					value = "string file_name <-\"../includes/buildings.shp\";",
 					isExecutable = false),
@@ -145,7 +194,12 @@ public class Files {
 			category = IOperatorCategory.FILE,
 			concept = { IConcept.FILE })
 	@doc (
-			value = "Transforms a relative path into an absolute path. If the path is already absolute doesn't transform it.")
+			value = "Transforms a relative path into an absolute path. If the path is already absolute doesn't transform it.",
+			returns = "a {@code string} containing the absolute path resolved against the simulation workspace root.",
+			special_cases = {
+					"An empty string '' is resolved to the simulation root path itself.",
+					"If the path is already absolute it is returned unchanged.",
+					"The returned path uses the OS-specific path separator." })
 	@no_test
 	public static String toAbsoluteFile(final IScope scope, final String relativePath) {
 		return FileUtils.constructAbsoluteFilePath(scope, relativePath, false);
@@ -424,6 +478,11 @@ public class Files {
 			concept = { IConcept.FILE })
 	@doc (
 			value = "Unzip a given zip file into a given folder. Returns true if the file is well unzipped",
+			returns = "a {@code bool}: {@code true} if extraction completed without errors, {@code false} if the source or destination arguments are null/invalid.",
+			special_cases = {
+					"If the ZIP file does not exist or is not a valid ZIP archive, a GamaRuntimeException is raised.",
+					"Files are extracted to the specified destination folder, which is created if it does not exist.",
+					"If a file with the same name already exists at the destination it is overwritten." },
 			examples = { @example (
 					value = "bool unzip_ok <- unzip([\"../includes/my_folder\"], \"folder.zip\";",
 					isExecutable = false) })
@@ -455,6 +514,11 @@ public class Files {
 			concept = { IConcept.FILE })
 	@doc (
 			value = "Zip a given list of files or folders. Returns true if the files are well zipped",
+			returns = "a {@code bool}: {@code true} if the ZIP archive was created successfully, {@code false} if the source list or destination are null/empty.",
+			special_cases = {
+					"If any source file or folder does not exist on the filesystem, a GamaRuntimeException is raised.",
+					"The target ZIP file is created at the destination path; if a file already exists there it is overwritten.",
+					"An empty source list returns false without creating any archive." },
 			examples = { @example (
 					value = "bool zip_ok <- zip([\"../includes/my_folder\"], \"folder.zip\";",
 					isExecutable = false) })
@@ -493,6 +557,11 @@ public class Files {
 			concept = { IConcept.FILE })
 	@doc (
 			value = "Test whether the parameter is the path to an existing folder. False if it doesnt exist or if it is a file",
+			returns = "a {@code bool}: {@code true} if the path exists and is a directory.",
+			special_cases = {
+					"Returns false for regular file paths (non-directories); use file_exists to check plain files.",
+					"An empty or null path returns false without raising an error.",
+					"Paths are resolved relative to the simulation workspace root via FileUtils.constructAbsoluteFilePath." },
 			examples = { @example (
 					value = "string file_name <-\"../includes/\";",
 					isExecutable = false),

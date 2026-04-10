@@ -53,10 +53,64 @@ import gama.core.util.color.GamaPalette;
 import gama.core.util.color.GamaScale;
 
 /**
- * The Class Colors.
+ * The {@code Colors} class exposes all color-related operators available in GAML.
+ *
+ * <h2>Arithmetic operators</h2>
+ * <p>Colors can be combined with the four standard arithmetic operators. All operations are
+ * applied component-by-component to the red, green and blue channels. <strong>Components are
+ * NOT clamped</strong> automatically: values may exceed 255 or fall below 0.  The alpha of the
+ * result is always taken from the <em>left</em> operand.</p>
+ * <ul>
+ *   <li>{@code color + color} – adds each RGB component</li>
+ *   <li>{@code color + int}   – adds the integer to every RGB component</li>
+ *   <li>{@code color - color} – subtracts each RGB component</li>
+ *   <li>{@code color - int}   – subtracts the integer from every RGB component</li>
+ *   <li>{@code color * int}   – multiplies every RGB component by the integer</li>
+ *   <li>{@code color * float} – multiplies every RGB component by the float (truncated)</li>
+ *   <li>{@code color / int}   – divides every RGB component by the integer</li>
+ *   <li>{@code color / float} – divides every RGB component by the float (rounded)</li>
+ * </ul>
+ *
+ * <h2>Construction operators</h2>
+ * <ul>
+ *   <li>{@code rgb(r, g, b)} – creates a fully opaque color from integer components in [0,255]</li>
+ *   <li>{@code rgb(r, g, b, alpha)} – same with an explicit alpha (integer 0–255 or float 0.0–1.0)</li>
+ *   <li>{@code rgb(name)} / {@code rgb(name, alpha)} – creates a color from a CSS/Java color name</li>
+ *   <li>{@code rgb(color, alpha)} / {@code with_alpha(color, alpha)} – copies a color with new alpha</li>
+ *   <li>{@code hsb(h, s, b)} – creates a color from hue/saturation/brightness values in [0.0,1.0]</li>
+ *   <li>{@code hsb(h, s, b, alpha)} – same with an explicit alpha</li>
+ *   <li>{@code to_hsb(color)} – converts an rgb color to a {@code list<float>} [h, s, b]</li>
+ *   <li>{@code grayscale(color)} – converts a color to its grayscale equivalent</li>
+ *   <li>{@code rnd_color(max)} / {@code rnd_color(min, max)} – random color within a component range</li>
+ * </ul>
+ *
+ * <h2>Blending</h2>
+ * <ul>
+ *   <li>{@code blend(c1, c2)} – returns the even blend of two colors (ratio = 0.5)</li>
+ *   <li>{@code blend(c1, c2, ratio)} – returns {@code c1 * ratio + c2 * (1-ratio)}; ratio in [0,1]</li>
+ * </ul>
+ *
+ * <h2>Palette / gradient / scale operators</h2>
+ * <ul>
+ *   <li>{@code brewer_colors(name)} / {@code brewer_colors(name, n)} – ColorBrewer palette as a list</li>
+ *   <li>{@code brewer_palettes(min)} / {@code brewer_palettes(min, max)} – available palette names</li>
+ *   <li>{@code palette(list)} – wraps a color list as a {@link GamaPalette}</li>
+ *   <li>{@code gradient(c1, c2)} / {@code gradient(c1, c2, ratio)} / {@code gradient(list)} /
+ *       {@code gradient(map)} – builds a {@link GamaGradient} (color map)</li>
+ *   <li>{@code scale(map)} / {@code scale(map, min, max)} – builds a {@link GamaScale}</li>
+ * </ul>
+ *
+ * <h2>Component conventions</h2>
+ * <ul>
+ *   <li>RGB components are integers in the range [0, 255].</li>
+ *   <li>HSB components are floats in the range [0.0, 1.0].</li>
+ *   <li>Alpha can be supplied as an integer in [0, 255] or a float in [0.0, 1.0].</li>
+ * </ul>
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 20 août 2023
+ * @see IColor
+ * @see GamaColorFactory
  */
 public class Colors {
 
@@ -76,12 +130,16 @@ public class Colors {
 			concept = { IConcept.COLOR })
 	@doc (
 			value = "A new color resulting from the sum of the two operands, component by component. The alpha is the one of the left rgb color.",
+			returns = "a new rgb color with summed R, G and B components. Alpha is taken from the left operand. Components are NOT clamped to [0,255].",
+			special_cases = { "rgb([0,0,0]) + rgb([0,0,0]) = black.", "Adding black (rgb(0,0,0)) to any color is an identity operation." },
 			usages = @usage (
 					value = "if both operands are colors, returns a new color resulting from the sum of the two operands, component by component",
 					examples = { @example (
 							value = "rgb([255, 128, 32]) + rgb('red')",
 							equals = "rgb([255,128,32])") }))
 	@test ("rgb([255, 128, 32]) + rgb('red') = rgb([255,128,32])")
+	@test ("rgb([0,0,0]) + rgb([0,0,0]) = rgb([0,0,0])")
+	@test ("rgb([10,20,30]) + rgb([0,0,0]) = rgb([10,20,30])")
 	public static IColor add(final IColor c1, final IColor c2) {
 		return GamaColorFactory.createWithRGBA(c1.red() + c2.red(), c1.green() + c2.green(), c1.blue() + c2.blue(),
 				c1.alpha());
@@ -103,12 +161,15 @@ public class Colors {
 			concept = {})
 	@doc (
 			value = "A new color resulting from the sum of each component of the color with the right int operand. This value is directly added to the 0-255 values of r, g and b. The alpha component remains untouched",
+			returns = "a new rgb color with each R, G and B component increased by the integer operand. Alpha is unchanged. Components are NOT clamped to [0,255].",
+			special_cases = { "Adding 0 returns an equivalent color with the same component values." },
 			usages = @usage (
 					value = "if one operand is a color and the other an integer, returns a new color resulting from the sum of each component of the color with the right operand",
 					examples = { @example (
 							value = "rgb([255, 128, 32]) + 3",
 							equals = "rgb([255,131,35])") }))
 	@test ("rgb([255, 128, 32]) + 3 = rgb([255,131,35]) ")
+	@test ("rgb([10,20,30]) + 0 = rgb([10,20,30])")
 	public static IColor add(final IColor c, final Integer i) {
 		return GamaColorFactory.createWithRGBA(c.red() + i, c.green() + i, c.blue() + i, c.alpha());
 	}
@@ -155,12 +216,16 @@ public class Colors {
 			concept = {})
 	@doc (
 			value = "a new color resulting from the subtraction of the two operands, component by component",
+			returns = "a new rgb color with each R, G and B component equal to the difference of the two operands' components. Alpha is taken from the left operand. Components are NOT clamped to [0,255].",
+			special_cases = { "Subtracting a color from itself yields rgb(0,0,0) (black)." },
 			usages = @usage (
 					value = "if both operands are colors, returns a new color resulting from the subtraction of the two operands, component by component",
 					examples = { @example (
 							value = "rgb([255, 128, 32]) - rgb('red')",
 							equals = "rgb([0,128,32])") }))
 	@test ("rgb([255, 128, 32]) - rgb('red') = rgb([0,128,32])")
+	@test ("rgb([50,100,150]) - rgb([50,100,150]) = rgb([0,0,0])")
+	@test ("rgb([10,20,30]) - rgb([0,0,0]) = rgb([10,20,30])")
 	public static IColor subtract(final IColor c1, final IColor c) {
 		return GamaColorFactory.createWithRGBA(c1.red() - c.red(), c1.green() - c.green(), c1.blue() - c.blue(),
 				c1.alpha());
@@ -182,12 +247,15 @@ public class Colors {
 			concept = { IConcept.COLOR })
 	@doc (
 			value = "a new color resulting from the product of each component of the color with the right operand",
+			returns = "a new rgb color with each R, G and B component multiplied by the integer operand. Alpha is unchanged. Components are NOT clamped to [0,255].",
+			special_cases = { "Multiplying by 0 returns rgb(0,0,0) (black).", "Multiplying by 1 returns an equivalent color with the same component values." },
 			usages = @usage (
 					value = "if one operand is a color and the other an integer, returns a new color resulting from the product of each component of the color with the right operand (with a maximum value at 255)",
 					examples = { @example (
 							value = "rgb([255, 128, 32]) * 2",
 							equals = "rgb([255,255,64])") }))
 	@test ("rgb([255, 128, 32]) * 2 = rgb([255,255,64])")
+	@test ("rgb([10,20,30]) * 1 = rgb([10,20,30])")
 	public static IColor multiply(final IColor c, final Integer i) {
 		return GamaColorFactory.createWithRGBA(c.red() * i, c.green() * i, c.blue() * i, c.alpha());
 	}
@@ -235,12 +303,15 @@ public class Colors {
 			concept = { IConcept.COLOR })
 	@doc (
 			value = "a new color resulting from the division of each component of the color by the right operand",
+			returns = "a new rgb color with each R, G and B component divided (integer division) by the integer operand. Alpha is unchanged.",
+			special_cases = { "Dividing by 1 returns an equivalent color with the same component values.", "Dividing by 2 halves every component (integer division)." },
 			usages = @usage (
 					value = "if one operand is a color and the other an integer, returns a new color resulting from the division of each component of the color by the right operand",
 					examples = { @example (
 							value = "rgb([255, 128, 32]) / 2",
 							equals = "rgb([127,64,16])") }))
 	@test ("rgb([255, 128, 32]) / 2 = rgb([127,64,16])")
+	@test ("rgb([10,20,30]) / 1 = rgb([10,20,30])")
 	public static IColor divide(final IColor c, final Integer i) {
 		return GamaColorFactory.createWithRGBA(c.red() / i, c.green() / i, c.blue() / i, c.alpha());
 	}
@@ -405,11 +476,14 @@ public class Colors {
 			value = "Returns a color defined by red, green, blue components and an alpha blending value.",
 			masterDoc = true,
 			usages = @usage ("It can be used with r=red, g=green, b=blue, each between 0 and 255"),
+			special_cases = { "rgb(0,0,0) produces black (#black).", "rgb(255,255,255) produces white (#white).", "rgb(255,0,0) produces red (#red)." },
 			examples = @example (
 					value = "rgb (255,0,0)",
 					equals = "#red"),
 			see = "hsb")
 	@test ("rgb (255,0,0) = #red")
+	@test ("rgb(0,0,0) = #black")
+	@test ("rgb(255,255,255) = #white")
 	public static IColor rgb(final int r, final int g, final int b) {
 		return GamaColorFactory.createWithRGBA(r, g, b, 255);
 	}
@@ -669,12 +743,16 @@ public class Colors {
 	@doc (
 			value = "Blend two colors with an optional ratio (c1 `*` r + c2 `*` (1 - r)) between 0 and 1",
 			masterDoc = true,
+			returns = "a new rgb color interpolated between c1 and c2 according to the ratio. ratio=0.0 returns c2; ratio=1.0 returns c1.",
+			special_cases = { "A ratio of 0.0 returns the second color (c2) unchanged.", "A ratio of 1.0 returns the first color (c1) unchanged." },
 			examples = { @example (
 					value = "blend(#red, #blue, 0.3)",
 					equals = "to a color between the purple and the blue",
 					isExecutable = false) },
 			see = { "rgb", "hsb" })
 	@test ("blend(#red, #blue, 0.3) = rgb(76,0,178)")
+	@test ("blend(#black, #white, 0.0) = #white")
+	@test ("blend(#black, #white, 1.0) = #black")
 	public static IColor blend(final IColor c1, final IColor c2, final double r) {
 		final double ir = 1.0 - r;
 		return GamaColorFactory.createWithRGBA((int) (c1.red() * r + c2.red() * ir),

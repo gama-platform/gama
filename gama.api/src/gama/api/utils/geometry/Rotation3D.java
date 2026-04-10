@@ -280,11 +280,12 @@ public class Rotation3D implements Serializable, ITransformation3D {
 		final double squaredSine = q1 * q1 + q2 * q2 + q3 * q3;
 		if (squaredSine == 0) return PLUS_I;
 		final double sgn = +1;
+		
 		if (q0 < 0) {
-			final double inverse = sgn / Math.sqrt(squaredSine);
+			final double inverse = - sgn / Math.sqrt(squaredSine);
 			return GamaPointFactory.create(q1 * inverse, q2 * inverse, q3 * inverse);
 		}
-		final double inverse = -sgn / Math.sqrt(squaredSine);
+		final double inverse = sgn / Math.sqrt(squaredSine);
 		return GamaPointFactory.create(q1 * inverse, q2 * inverse, q3 * inverse);
 	}
 

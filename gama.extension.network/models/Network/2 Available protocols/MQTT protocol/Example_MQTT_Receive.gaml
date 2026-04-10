@@ -16,6 +16,11 @@ global {
 		write "A MQTT server should run." color: #red;
 		write "Another instance of GAMA should run the model Example_MQTT_Send.gaml, so that an agent can send messages.";
 		
+		// The sender will send itself during the exchange (NetworkingAgent, id = 0).
+		// To receive and recreate an agent, the same agent should not exist in the receiving simulation
+		// So we kill the first created (id = 0) and recreate another one (id = 1). 
+		create NetworkingAgent number:1 { do die(); }
+		
 		create NetworkingAgent number:1 {
 			name <- "receiver";
 			/**
