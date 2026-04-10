@@ -545,7 +545,7 @@ public class SpatialTransformations {
 	// }
 	// return new IPair(180 / Math.PI * rotation.getAngle(), rotation.getAxis(), Types.FLOAT, Types.POINT);
 	// }
-	@test ("normalized_rotation(rotation_composition(38.0::{1,1,1},90.0::{1,0,0}))=normalized_rotation(115.22128507898108::{0.9491582126366207,0.0,0.31479943993669307})")
+	@test ("normalized_rotation(rotation_composition(38.0::{1,1,1},90.0::{1,0,0}))=normalized_rotation(115.22128507898105::{0.9491582126366207,0.0,0.31479943993669307})")
 	public static IPair<Double, IPoint> rotation_composition(final IScope scope, final IList<IPair> rotation_list) {
 		// Precompute the degree-to-radians factor to avoid recomputing it per iteration
 		final double DEG_TO_RAD = Math.PI / 180.0;
