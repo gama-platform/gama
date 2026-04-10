@@ -23,6 +23,9 @@ import gama.api.runtime.scope.IScope;
 import gama.api.types.dataframe.GamaDataframe;
 import gama.api.types.dataframe.IDataframe;
 import gama.api.types.list.IList;
+import gama.api.types.map.IMap;
+import gama.api.types.matrix.IField;
+import gama.api.types.matrix.IMatrix;
 import gama.api.utils.prefs.GamaPreferences;
 
 /**
@@ -173,6 +176,79 @@ public class DataframeOperators {
 		return GamaDataframe.fromJson(scope, path);
 	}
 
+	/**
+	 * Loads a Parquet file into a dataframe.
+	 */
+	@operator (
+			value = "df_load_parquet",
+			can_be_const = false,
+			type = IType.DATAFRAME,
+			category = { IOperatorCategory.DATAFRAME, IOperatorCategory.FILE },
+			concept = { IConcept.DATAFRAME, IConcept.FILE })
+	@doc (
+			value = "Loads a Parquet file (.parquet) into a dataframe. The file path is relative to the model file.",
+			usages = { @usage (
+					value = "Load a Parquet file",
+					examples = { @example (
+							value = "dataframe df <- df_load_parquet(\"../includes/data.parquet\");",
+							isExecutable = false) }) },
+			see = { "df_save_parquet", "df_load_csv", "df_load_json" })
+	@no_test
+	public static GamaDataframe loadParquet(final IScope scope, final String path) {
+		return GamaDataframe.fromParquet(scope, path);
+	}
+
+	/**
+	 * Loads a whole database table into a dataframe via JDBC.
+	 */
+	@operator (
+			value = "df_load_table",
+			can_be_const = false,
+			type = IType.DATAFRAME,
+			category = { IOperatorCategory.DATAFRAME, IOperatorCategory.FILE },
+			concept = { IConcept.DATAFRAME, IConcept.DATABASE })
+	@doc (
+			value = "Loads a whole database table into a dataframe via JDBC. Arguments: the JDBC URL, the user, "
+					+ "the password, and the table name. Pass empty strings for user/password if the database does not "
+					+ "require credentials. The corresponding JDBC driver must be available on the classpath.",
+			usages = { @usage (
+					value = "Load a PostgreSQL table",
+					examples = { @example (
+							value = "dataframe df <- df_load_table(\"jdbc:postgresql://localhost:5432/mydb\", \"user\", \"pwd\", \"people\");",
+							isExecutable = false) }) },
+			see = { "df_load_sql", "df_save_table" })
+	@no_test
+	public static GamaDataframe loadTable(final IScope scope, final String jdbcUrl, final String user,
+			final String password, final String tableName) {
+		return GamaDataframe.fromDatabaseTable(scope, jdbcUrl, emptyToNull(user), emptyToNull(password), tableName);
+	}
+
+	/**
+	 * Loads the result of a SQL query into a dataframe via JDBC.
+	 */
+	@operator (
+			value = "df_load_sql",
+			can_be_const = false,
+			type = IType.DATAFRAME,
+			category = { IOperatorCategory.DATAFRAME, IOperatorCategory.FILE },
+			concept = { IConcept.DATAFRAME, IConcept.DATABASE })
+	@doc (
+			value = "Runs a SQL query on a database via JDBC and returns the result as a dataframe. "
+					+ "Arguments: the JDBC URL, the user, the password, and the SQL query. "
+					+ "Pass empty strings for user/password if the database does not require credentials. "
+					+ "The corresponding JDBC driver must be available on the classpath.",
+			usages = { @usage (
+					value = "Run a SQL query on a PostgreSQL database",
+					examples = { @example (
+							value = "dataframe df <- df_load_sql(\"jdbc:postgresql://localhost:5432/mydb\", \"user\", \"pwd\", \"SELECT name, age FROM people WHERE age > 18\");",
+							isExecutable = false) }) },
+			see = { "df_load_table", "df_save_table" })
+	@no_test
+	public static GamaDataframe loadSql(final IScope scope, final String jdbcUrl, final String user,
+			final String password, final String sqlQuery) {
+		return GamaDataframe.fromDatabaseQuery(scope, jdbcUrl, emptyToNull(user), emptyToNull(password), sqlQuery);
+	}
+
 	// ========================= Save operators =========================
 
 	/**
@@ -265,6 +341,61 @@ public class DataframeOperators {
 	@no_test
 	public static Boolean saveJson(final IScope scope, final IDataframe df, final String path) {
 		return GamaDataframe.saveJson(scope, (GamaDataframe) df, path);
+	}
+
+	/**
+	 * Saves a dataframe to a Parquet file.
+	 */
+	@operator (
+			value = "df_save_parquet",
+			can_be_const = false,
+			category = { IOperatorCategory.DATAFRAME, IOperatorCategory.FILE },
+			concept = { IConcept.DATAFRAME, IConcept.FILE })
+	@doc (
+			value = "Saves a dataframe to a Parquet file (.parquet). The file path is relative to the model file. "
+					+ "Missing parent directories are created automatically. Returns true on success.",
+			usages = { @usage (
+					value = "Save a dataframe to Parquet",
+					examples = { @example (
+							value = "bool success <- df_save_parquet(my_df, \"../results/output.parquet\");",
+							isExecutable = false) }) },
+			see = { "df_load_parquet", "df_save_csv", "df_save_json" })
+	@no_test
+	public static Boolean saveParquet(final IScope scope, final IDataframe df, final String path) {
+		return GamaDataframe.saveParquet(scope, (GamaDataframe) df, path);
+	}
+
+	/**
+	 * Saves a dataframe to a database table via JDBC.
+	 */
+	@operator (
+			value = "df_save_table",
+			can_be_const = false,
+			category = { IOperatorCategory.DATAFRAME, IOperatorCategory.FILE },
+			concept = { IConcept.DATAFRAME, IConcept.DATABASE })
+	@doc (
+			value = "Saves a dataframe to a database table via JDBC. Arguments: the dataframe, the JDBC URL, the user, "
+					+ "the password, and the destination table name. The table must already exist with a compatible schema. "
+					+ "Pass empty strings for user/password if the database does not require credentials. "
+					+ "The corresponding JDBC driver must be available on the classpath. Returns true on success.",
+			usages = { @usage (
+					value = "Save a dataframe to a PostgreSQL table",
+					examples = { @example (
+							value = "bool ok <- df_save_table(my_df, \"jdbc:postgresql://localhost:5432/mydb\", \"user\", \"pwd\", \"people\");",
+							isExecutable = false) }) },
+			see = { "df_load_table", "df_load_sql" })
+	@no_test
+	public static Boolean saveTable(final IScope scope, final IDataframe df, final String jdbcUrl, final String user,
+			final String password, final String tableName) {
+		return GamaDataframe.saveDatabaseTable(scope, (GamaDataframe) df, jdbcUrl, emptyToNull(user),
+				emptyToNull(password), tableName);
+	}
+
+	/**
+	 * Converts an empty string to null, used to make user/password arguments optional in GAML.
+	 */
+	private static String emptyToNull(final String s) {
+		return s == null || s.isEmpty() ? null : s;
 	}
 
 	// ========================= Column/Row access operators =========================
@@ -606,6 +737,75 @@ public class DataframeOperators {
 	public static String dfPrettyPrint(final IScope scope, final IDataframe df, int maxRows, int maxCols, int maxChars) {
 		return GamaDataframe.prettyPrint(df, maxRows, maxCols, maxChars);
 	}
-	
-	
+
+	// ========================= Outgoing conversions =========================
+
+	/**
+	 * Converts a dataframe into a map (column name -> column values).
+	 */
+	@operator (
+			value = "df_to_map",
+			can_be_const = true,
+			type = IType.MAP,
+			category = { IOperatorCategory.DATAFRAME },
+			concept = { IConcept.DATAFRAME, IConcept.MAP })
+	@doc (
+			value = "Converts a dataframe into an ordered map whose keys are column names and whose values are "
+					+ "lists of column values.",
+			usages = { @usage (
+					value = "Convert a dataframe to a map",
+					examples = { @example (
+							value = "map<string,list> m <- df_to_map(my_df);",
+							isExecutable = false) }) },
+			see = { "df_to_matrix", "df_to_field", "dataframe_with" })
+	@test ("df_to_map(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]))[\"name\"] = [\"Alice\",\"Bob\"]")
+	public static IMap<String, IList<Object>> dfToMap(final IScope scope, final IDataframe df) {
+		return GamaDataframe.toMap(scope, (GamaDataframe) df);
+	}
+
+	/**
+	 * Converts a dataframe into an object matrix.
+	 */
+	@operator (
+			value = "df_to_matrix",
+			can_be_const = true,
+			type = IType.MATRIX,
+			category = { IOperatorCategory.DATAFRAME },
+			concept = { IConcept.DATAFRAME, IConcept.MATRIX })
+	@doc (
+			value = "Converts a dataframe into a matrix with the same shape. Column names are dropped. "
+					+ "Cell values are kept as-is (object matrix).",
+			usages = { @usage (
+					value = "Convert a dataframe to a matrix",
+					examples = { @example (
+							value = "matrix m <- df_to_matrix(my_df);",
+							isExecutable = false) }) },
+			see = { "df_to_map", "df_to_field" })
+	@test ("df_to_matrix(dataframe_with([\"a\",\"b\"], [[1,2],[3,4]])) = matrix([[1,2],[3,4]])")
+	public static IMatrix<Object> dfToMatrix(final IScope scope, final IDataframe df) {
+		return GamaDataframe.toMatrix(scope, (GamaDataframe) df);
+	}
+
+	/**
+	 * Converts a dataframe into a GAMA field of float values.
+	 */
+	@operator (
+			value = "df_to_field",
+			can_be_const = true,
+			type = IType.FIELD,
+			category = { IOperatorCategory.DATAFRAME },
+			concept = { IConcept.DATAFRAME })
+	@doc (
+			value = "Converts a dataframe into a field of float values. All cells must be numeric (or parseable as "
+					+ "float); null cells become 0.0. Column names are dropped.",
+			usages = { @usage (
+					value = "Convert a numeric dataframe to a field",
+					examples = { @example (
+							value = "field f <- df_to_field(my_df);",
+							isExecutable = false) }) },
+			see = { "df_to_matrix", "df_to_map" })
+	@no_test
+	public static IField dfToField(final IScope scope, final IDataframe df) {
+		return GamaDataframe.toField(scope, (GamaDataframe) df);
+	}
 }

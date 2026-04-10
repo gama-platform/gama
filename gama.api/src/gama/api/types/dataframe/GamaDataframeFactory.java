@@ -17,6 +17,8 @@ import org.dflib.DataFrame;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.IList;
 import gama.api.types.map.IMap;
+import gama.api.types.matrix.IField;
+import gama.api.types.matrix.IMatrix;
 
 /**
  * A static factory for creating {@link GamaDataframe} instances.
@@ -142,6 +144,8 @@ public class GamaDataframeFactory {
 		if (obj instanceof IDataframe idf) return copy ? (GamaDataframe) idf.copy(scope) : (GamaDataframe) idf;
 		if (obj instanceof IMap<?, ?> map) return fromMap(scope, (IMap<String, IList<Object>>) map);
 		if (obj instanceof IList<?> list) return fromList(scope, (IList<IList<Object>>) list);
+		if (obj instanceof IMatrix<?> matrix) return fromMatrix(scope, matrix);
+		if (obj instanceof IField field) return fromField(scope, field);
 		return null;
 	}
 
@@ -194,5 +198,31 @@ public class GamaDataframeFactory {
 			for (int c = 0; c < colNames.length; c++) { flat[idx++] = c < row.size() ? row.get(c) : null; }
 		}
 		return new GamaDataframe(DataFrame.foldByRow(colNames).of(flat));
+	}
+	
+	/**
+	 * Creates a dataframe from a GAMA matrix. Each matrix column becomes a dataframe column named "col0", "col1", ...
+	 *
+	 * @param scope
+	 *            the execution scope
+	 * @param matrix
+	 *            the source matrix
+	 * @return a new dataframe
+	 */
+	public static GamaDataframe fromMatrix(final IScope scope, final IMatrix<?> matrix) {
+		return GamaDataframe.fromMatrix(scope, matrix);
+	}
+
+	/**
+	 * Creates a dataframe from a GAMA field. Each field column becomes a dataframe column named "col0", "col1", ...
+	 *
+	 * @param scope
+	 *            the execution scope
+	 * @param field
+	 *            the source field
+	 * @return a new dataframe
+	 */
+	public static GamaDataframe fromField(final IScope scope, final IField field) {
+		return GamaDataframe.fromField(scope, field);
 	}
 }

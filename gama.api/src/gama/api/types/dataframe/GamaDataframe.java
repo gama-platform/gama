@@ -25,7 +25,10 @@ import org.dflib.Printers;
 import org.dflib.csv.Csv;
 import org.dflib.csv.CsvLoader;
 import org.dflib.excel.Excel;
+import org.dflib.jdbc.Jdbc;
+import org.dflib.jdbc.connector.JdbcConnector;
 import org.dflib.json.Json;
+import org.dflib.parquet.Parquet;
 import org.dflib.print.Printer;
 
 import gama.api.GAMA;
@@ -37,6 +40,10 @@ import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.IPoint;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.api.types.matrix.GamaMatrixFactory;
+import gama.api.types.matrix.IField;
 import gama.api.types.matrix.IMatrix;
 import gama.api.types.misc.IContainer;
 import gama.api.utils.StringUtils;
@@ -126,13 +133,13 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 
 	@Override
 	public IMatrix<?> matrixValue(final IScope scope, final IType<?> contentType, final boolean copy) {
-		return listValue(scope, contentType, copy).matrixValue(scope, contentType, copy);
+		return toMatrix(scope, this);
 	}
 
 	@Override
 	public IMatrix<?> matrixValue(final IScope scope, final IType<?> contentType, final IPoint size,
 			final boolean copy) {
-		return listValue(scope, contentType, copy).matrixValue(scope, contentType, size, copy);
+		return toMatrix(scope, this);
 	}
 
 	// ========================= IValue =========================
@@ -242,6 +249,82 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	}
 
 	/**
+	 * Creates a GamaDataframe from a Parquet file.
+	 *
+	 * @param scope
+	 *            the execution scope
+	 * @param path
+	 *            the file path (relative to the model or absolute)
+	 * @return a new GamaDataframe
+	 */
+	public static GamaDataframe fromParquet(final IScope scope, final String path) {
+		final String resolvedPath = FileUtils.constructAbsoluteFilePath(scope, path, true);
+		return new GamaDataframe(Parquet.loader().load(new File(resolvedPath)));
+	}
+
+	/**
+	 * Creates a GamaDataframe by loading a whole database table via JDBC.
+	 *
+	 * @param scope
+	 *            the execution scope
+	 * @param jdbcUrl
+	 *            the JDBC URL (e.g. "jdbc:postgresql://host:5432/db", "jdbc:sqlite:/path/to/db")
+	 * @param user
+	 *            the database user (may be null)
+	 * @param password
+	 *            the database password (may be null)
+	 * @param tableName
+	 *            the table to load
+	 * @return a new GamaDataframe
+	 */
+	public static GamaDataframe fromDatabaseTable(final IScope scope, final String jdbcUrl, final String user,
+			final String password, final String tableName) {
+		try {
+			final JdbcConnector connector = buildJdbcConnector(jdbcUrl, user, password);
+			return new GamaDataframe(connector.tableLoader(tableName).load());
+		} catch (final Exception e) {
+			throw GamaRuntimeException.error(
+					"Failed to load table '" + tableName + "' from database: " + e.getMessage(), scope);
+		}
+	}
+
+	/**
+	 * Creates a GamaDataframe by running a SQL query via JDBC.
+	 *
+	 * @param scope
+	 *            the execution scope
+	 * @param jdbcUrl
+	 *            the JDBC URL
+	 * @param user
+	 *            the database user (may be null)
+	 * @param password
+	 *            the database password (may be null)
+	 * @param sqlQuery
+	 *            the SQL query (typically a SELECT)
+	 * @return a new GamaDataframe with the query result
+	 */
+	public static GamaDataframe fromDatabaseQuery(final IScope scope, final String jdbcUrl, final String user,
+			final String password, final String sqlQuery) {
+		try {
+			final JdbcConnector connector = buildJdbcConnector(jdbcUrl, user, password);
+			return new GamaDataframe(connector.sqlLoader(sqlQuery).load());
+		} catch (final Exception e) {
+			throw GamaRuntimeException.error(
+					"Failed to run SQL query on database: " + e.getMessage(), scope);
+		}
+	}
+
+	/**
+	 * Builds a DFLib JDBC connector from a URL and optional credentials.
+	 */
+	private static JdbcConnector buildJdbcConnector(final String jdbcUrl, final String user, final String password) {
+		var builder = Jdbc.connector(jdbcUrl);
+		if (user != null) { builder = builder.userName(user); }
+		if (password != null) { builder = builder.password(password); }
+		return builder.build();
+	}
+
+	/**
 	 * Creates a GamaDataframe from column names and row data.
 	 *
 	 * @param scope
@@ -271,6 +354,124 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 			for (final Object val : row) { flat[i++] = val; }
 		}
 		return new GamaDataframe(DataFrame.foldByRow(colArray).of(flat));
+	}
+
+	/**
+	 * Creates a GamaDataframe from a GAMA matrix. Each matrix column becomes a dataframe column named "col0", "col1",
+	 * ..., "colN". All cells are stored as-is (no type conversion).
+	 *
+	 * @param scope
+	 *            the execution scope
+	 * @param matrix
+	 *            the source matrix (must not be null)
+	 * @return a new GamaDataframe with the same shape as the matrix
+	 */
+	public static GamaDataframe fromMatrix(final IScope scope, final IMatrix<?> matrix) {
+		if (matrix == null) throw GamaRuntimeException.error("Cannot build a dataframe from a nil matrix", scope);
+		final int cols = matrix.getCols(scope);
+		final int rows = matrix.getRows(scope);
+		if (cols == 0 || rows == 0)
+			throw GamaRuntimeException.error("Cannot build a dataframe from an empty matrix", scope);
+		final String[] colNames = new String[cols];
+		for (int c = 0; c < cols; c++) { colNames[c] = "col" + c; }
+		final Object[] flat = new Object[rows * cols];
+		int i = 0;
+		for (int r = 0; r < rows; r++) {
+			for (int c = 0; c < cols; c++) { flat[i++] = matrix.get(scope, c, r); }
+		}
+		return new GamaDataframe(DataFrame.foldByRow(colNames).of(flat));
+	}
+
+	/**
+	 * Creates a GamaDataframe from a GAMA field. Each field column becomes a dataframe column named "col0", "col1",
+	 * ..., "colN". All cells are stored as {@code Double} values.
+	 *
+	 * @param scope
+	 *            the execution scope
+	 * @param field
+	 *            the source field (must not be null)
+	 * @return a new GamaDataframe with the same shape as the field
+	 */
+	public static GamaDataframe fromField(final IScope scope, final IField field) {
+		if (field == null) throw GamaRuntimeException.error("Cannot build a dataframe from a nil field", scope);
+		return fromMatrix(scope, field);
+	}
+
+	// ========================= Outgoing conversions =========================
+
+	/**
+	 * Converts the dataframe into an ordered map where keys are column names and values are lists of column values.
+	 *
+	 * @param scope
+	 *            the execution scope
+	 * @param df
+	 *            the dataframe to convert
+	 * @return a new ordered map (column name -&gt; column values)
+	 */
+	public static IMap<String, IList<Object>> toMap(final IScope scope, final GamaDataframe df) {
+		if (df == null) return null;
+		final IMap<String, IList<Object>> result = GamaMapFactory.create(Types.STRING, Types.LIST, true);
+		for (final String col : df.inner.getColumnsIndex()) { result.put(col, df.getColumnValues(col)); }
+		return result;
+	}
+
+	/**
+	 * Converts the dataframe into a GAMA object matrix. The matrix has the same shape as the dataframe (one cell per
+	 * row/column pair). Column names are lost during the conversion.
+	 *
+	 * @param scope
+	 *            the execution scope
+	 * @param df
+	 *            the dataframe to convert
+	 * @return a new {@link IMatrix} of {@code Object}
+	 */
+	public static IMatrix<Object> toMatrix(final IScope scope, final GamaDataframe df) {
+		if (df == null) return null;
+		final int cols = df.inner.width();
+		final int rows = df.inner.height();
+		@SuppressWarnings ("unchecked")
+		final IMatrix<Object> matrix = GamaMatrixFactory.create(cols, rows, Types.NO_TYPE);
+		final String[] colNames = df.inner.getColumnsIndex().toArray();
+		for (int r = 0; r < rows; r++) {
+			for (int c = 0; c < cols; c++) { matrix.set(scope, c, r, df.inner.get(colNames[c], r)); }
+		}
+		return matrix;
+	}
+
+	/**
+	 * Converts the dataframe into a GAMA field. All cell values must be numeric (they are cast to {@code double}).
+	 * Non-numeric values raise a {@link GamaRuntimeException}.
+	 *
+	 * @param scope
+	 *            the execution scope
+	 * @param df
+	 *            the dataframe to convert
+	 * @return a new {@link IField}
+	 */
+	public static IField toField(final IScope scope, final GamaDataframe df) {
+		if (df == null) return null;
+		final int cols = df.inner.width();
+		final int rows = df.inner.height();
+		final IField field = GamaMatrixFactory.createField(scope, cols, rows);
+		final String[] colNames = df.inner.getColumnsIndex().toArray();
+		for (int r = 0; r < rows; r++) {
+			for (int c = 0; c < cols; c++) {
+				final Object val = df.inner.get(colNames[c], r);
+				if (val == null) {
+					field.set(scope, c, r, 0.0);
+				} else if (val instanceof Number n) {
+					field.set(scope, c, r, n.doubleValue());
+				} else {
+					try {
+						field.set(scope, c, r, Double.parseDouble(val.toString()));
+					} catch (final NumberFormatException e) {
+						throw GamaRuntimeException.error("Cannot convert value '" + val + "' at [" + c + "," + r
+								+ "] to a float for field conversion", scope);
+					}
+				}
+			}
+		}
+		return field;
 	}
 
 	// ========================= Data manipulation operations =========================
@@ -387,6 +588,96 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 		return new GamaDataframe(df.inner.vConcat(newRow));
 	}
 
+	// ========================= Integer-based location (iloc) =========================
+
+	/**
+	 * Returns the cell value at the given (row, column) integer position, inspired by pandas' {@code DataFrame.iloc}.
+	 *
+	 * @param scope
+	 *            the execution scope
+	 * @param df
+	 *            the dataframe
+	 * @param rowIndex
+	 *            the zero-based row index
+	 * @param colIndex
+	 *            the zero-based column index
+	 * @return the cell value
+	 */
+	public static Object iloc(final IScope scope, final GamaDataframe df, final int rowIndex, final int colIndex) {
+		final int rows = df.inner.height();
+		final int cols = df.inner.width();
+		if (rowIndex < 0 || rowIndex >= rows)
+			throw GamaRuntimeException.error("iloc row index out of bounds: " + rowIndex + " (0.." + (rows - 1) + ")",
+					scope);
+		if (colIndex < 0 || colIndex >= cols)
+			throw GamaRuntimeException.error("iloc col index out of bounds: " + colIndex + " (0.." + (cols - 1) + ")",
+					scope);
+		final String colName = df.inner.getColumnsIndex().get(colIndex);
+		return df.inner.get(colName, rowIndex);
+	}
+
+	/**
+	 * Returns a sub-dataframe containing only the rows at the given integer indices, inspired by pandas'
+	 * {@code DataFrame.iloc}.
+	 *
+	 * @param scope
+	 *            the execution scope
+	 * @param df
+	 *            the dataframe
+	 * @param rowIndices
+	 *            the zero-based row indices
+	 * @return a new dataframe with the selected rows (same columns)
+	 */
+	public static GamaDataframe ilocRows(final IScope scope, final GamaDataframe df, final IList<Integer> rowIndices) {
+		if (rowIndices == null) throw GamaRuntimeException.error("iloc row indices cannot be nil", scope);
+		final int rows = df.inner.height();
+		final int[] idx = new int[rowIndices.size()];
+		for (int i = 0; i < idx.length; i++) {
+			final int r = rowIndices.get(i);
+			if (r < 0 || r >= rows) throw GamaRuntimeException
+					.error("iloc row index out of bounds: " + r + " (0.." + (rows - 1) + ")", scope);
+			idx[i] = r;
+		}
+		return new GamaDataframe(df.inner.rows(idx).select());
+	}
+
+	/**
+	 * Returns a sub-dataframe containing only the rows and columns at the given integer indices, inspired by pandas'
+	 * {@code DataFrame.iloc}.
+	 *
+	 * @param scope
+	 *            the execution scope
+	 * @param df
+	 *            the dataframe
+	 * @param rowIndices
+	 *            the zero-based row indices
+	 * @param colIndices
+	 *            the zero-based column indices
+	 * @return a new dataframe with the selected rows and columns
+	 */
+	public static GamaDataframe iloc(final IScope scope, final GamaDataframe df, final IList<Integer> rowIndices,
+			final IList<Integer> colIndices) {
+		if (rowIndices == null || colIndices == null)
+			throw GamaRuntimeException.error("iloc indices cannot be nil", scope);
+		final int rows = df.inner.height();
+		final int cols = df.inner.width();
+		final int[] rIdx = new int[rowIndices.size()];
+		for (int i = 0; i < rIdx.length; i++) {
+			final int r = rowIndices.get(i);
+			if (r < 0 || r >= rows) throw GamaRuntimeException
+					.error("iloc row index out of bounds: " + r + " (0.." + (rows - 1) + ")", scope);
+			rIdx[i] = r;
+		}
+		final int[] cIdx = new int[colIndices.size()];
+		for (int i = 0; i < cIdx.length; i++) {
+			final int c = colIndices.get(i);
+			if (c < 0 || c >= cols) throw GamaRuntimeException
+					.error("iloc col index out of bounds: " + c + " (0.." + (cols - 1) + ")", scope);
+			cIdx[i] = c;
+		}
+		return new GamaDataframe(df.inner.rows(rIdx).cols(cIdx).select());
+	}
+
 	// ========================= Save operations (scope-aware) =========================
 
 	/**
@@ -459,6 +750,57 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 			return true;
 		} catch (final Exception e) {
 			throw GamaRuntimeException.error("Failed to save JSON file: " + path + " - " + e.getMessage(), scope);
+		}
+	}
+
+	/**
+	 * Saves the dataframe to a Parquet file.
+	 *
+	 * @param scope
+	 *            the execution scope
+	 * @param df
+	 *            the dataframe
+	 * @param path
+	 *            the output file path (relative to the model or absolute)
+	 * @return true if saved successfully
+	 */
+	public static boolean saveParquet(final IScope scope, final GamaDataframe df, final String path) {
+		try {
+			final String resolvedPath = FileUtils.constructAbsoluteFilePath(scope, path, false);
+			Parquet.saver().createMissingDirs().save(df.inner, new File(resolvedPath));
+			return true;
+		} catch (final Exception e) {
+			throw GamaRuntimeException.error("Failed to save Parquet file: " + path + " - " + e.getMessage(), scope);
+		}
+	}
+
+	/**
+	 * Saves the dataframe to a database table via JDBC. Appends rows to the given table (the table must exist with a
+	 * compatible schema).
+	 *
+	 * @param scope
+	 *            the execution scope
+	 * @param df
+	 *            the dataframe to save
+	 * @param jdbcUrl
+	 *            the JDBC URL
+	 * @param user
+	 *            the database user (may be null)
+	 * @param password
+	 *            the database password (may be null)
+	 * @param tableName
+	 *            the destination table name
+	 * @return true if saved successfully
+	 */
+	public static boolean saveDatabaseTable(final IScope scope, final GamaDataframe df, final String jdbcUrl,
+			final String user, final String password, final String tableName) {
+		try {
+			final JdbcConnector connector = buildJdbcConnector(jdbcUrl, user, password);
+			connector.tableSaver(tableName).save(df.inner);
+			return true;
+		} catch (final Exception e) {
+			throw GamaRuntimeException.error(
+					"Failed to save dataframe to table '" + tableName + "': " + e.getMessage(), scope);
 		}
 	}
 
