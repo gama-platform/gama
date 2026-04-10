@@ -534,7 +534,7 @@ public class SpatialTransformations {
 			masterDoc = true,
 			examples = { @example (
 					value = "rotation_composition([38.0::{1,1,1},90.0::{1,0,0}])",
-					equals = "115.22128507898108::{0.9491582126366207,0.31479943993669307,-0.0}",
+					equals = "115.22128507898105::{0.9491582126366207,0.31479943993669307,-0.0}",
 					test = false) },
 			see = { "inverse_rotation" })
 	// public static IPair<Double, IPoint> rotation_composition(final IScope scope,
