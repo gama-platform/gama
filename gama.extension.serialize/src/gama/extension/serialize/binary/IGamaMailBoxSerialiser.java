@@ -60,11 +60,12 @@ class IGamaMailBoxSerialiser extends FSTIndividualSerialiser<GamaMailbox> {
 	public void serialise(final IGamaObjectOutput out, final GamaMailbox o) throws Exception {
 		DEBUG.OUT("serialize GamaMailbox ");
 		out.writeInt(o.size());
+		DEBUG.OUT("GamaMailbox size " + o.size());
 		
 		for(var auto: o)
 		{
 			DEBUG.OUT("serialize msg " + auto);
-			out.writeObject((IMessage) auto);
+			out.writeObject(auto);
 		}
 	}
 
@@ -90,6 +91,9 @@ class IGamaMailBoxSerialiser extends FSTIndividualSerialiser<GamaMailbox> {
 		for (int i = 0; i < size; i++) { 
 			DEBUG.OUT("index " + i);
 			mailBox.addMessage(scope,(IMessage) in.readObject()); 
+		}
+		for (int i = 0; i < size; i++) { 
+			DEBUG.OUT("message [" + i+"] " + mailBox.get(i));
 		}
 		return mailBox;
 	}
