@@ -220,5 +220,6 @@
 	<classpathentry exported="true" kind="lib" path="libs/dflib 2.0.0-M6/dflib-jdbc-2.0.0-M6.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/dflib 2.0.0-M6/dflib-json-2.0.0-M6.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/dflib 2.0.0-M6/dflib-parquet-2.0.0-M6.jar"/>
+	<classpathentry kind="lib" path="libs/dflib 2.0.0-M6/commons-codec-1.21.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

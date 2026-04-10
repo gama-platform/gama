@@ -164,6 +164,13 @@ Export-Package: com.bedatadriven.jackson.datatype.jts,
  net.sourceforge.jtds.jdbcx,
  net.sourceforge.jtds.jdbcx.proxy,
  one.util.streamex,
+ org.apache.commons.codec,
+ org.apache.commons.codec.binary,
+ org.apache.commons.codec.cli,
+ org.apache.commons.codec.digest,
+ org.apache.commons.codec.language,
+ org.apache.commons.codec.language.bm,
+ org.apache.commons.codec.net,
  org.apache.commons.csv,
  org.apache.commons.math3.distribution,
  org.apache.commons.math3.exception,
@@ -774,6 +781,7 @@ Bundle-ClassPath: .,
  libs/dflib 2.0.0-M6/dflib-jdbc-2.0.0-M6.jar,
  libs/dflib 2.0.0-M6/dflib-json-2.0.0-M6.jar,
  libs/dflib 2.0.0-M6/dflib-parquet-2.0.0-M6.jar,
- libs/dflib 2.0.0-M6/commons-csv-1.14.1.jar
+ libs/dflib 2.0.0-M6/commons-csv-1.14.1.jar,
+ libs/dflib 2.0.0-M6/commons-codec-1.21.0.jar
 Bundle-RequiredExecutionEnvironment: JavaSE-25
 Automatic-Module-Name: gama.dependencies

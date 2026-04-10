@@ -21,13 +21,16 @@ import java.util.function.Function;
 import org.apache.commons.csv.CSVFormat;
 import org.dflib.DataFrame;
 import org.dflib.Exp;
+import org.dflib.Printers;
 import org.dflib.csv.Csv;
 import org.dflib.csv.CsvLoader;
 import org.dflib.excel.Excel;
 import org.dflib.json.Json;
+import org.dflib.print.Printer;
 
 import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
@@ -35,6 +38,7 @@ import gama.api.types.geometry.IPoint;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
 import gama.api.types.matrix.IMatrix;
+import gama.api.types.misc.IContainer;
 import gama.api.utils.StringUtils;
 import gama.api.utils.files.FileUtils;
 import gama.api.utils.json.IJson;
@@ -55,7 +59,7 @@ import gama.api.utils.json.IJsonValue;
  *
  * @author GAMA Team
  */
-public class GamaDataframe implements IDataframe {
+public class GamaDataframe implements IDataframe, IContainer<String, IList<Object>> {
 
 	/** The underlying DFLib DataFrame. */
 	private final DataFrame inner;
@@ -181,23 +185,7 @@ public class GamaDataframe implements IDataframe {
 		return getRows();
 	}
 
-	// ========================= File I/O operations (scope-aware) =========================
 
-	/**
-	 * Resolves a GAMA file path to an absolute path using the scope context.
-	 *
-	 * @param scope
-	 *            the execution scope (provides model location for relative paths)
-	 * @param path
-	 *            the file path (may be relative to the model)
-	 * @param mustExist
-	 *            whether the file must already exist
-	 * @return the resolved absolute file path
-	 */
-	private static String resolvePath(final IScope scope, final String path, final boolean mustExist) {
-		if (scope == null) return path;
-		return FileUtils.constructAbsoluteFilePath(scope, path, mustExist);
-	}
 
 	/**
 	 * Creates a GamaDataframe from a CSV file.
@@ -216,7 +204,7 @@ public class GamaDataframe implements IDataframe {
 	 */
 	public static GamaDataframe fromCSV(final IScope scope, final String path, final char separator,
 			final boolean header, final String charset) {
-		final File file = new File(resolvePath(scope, path, true));
+		final File file = new File(FileUtils.constructAbsoluteFilePath(scope, path, true));
 		final Charset cs = charset != null ? Charset.forName(charset) : StandardCharsets.UTF_8;
 		CsvLoader loader = Csv.loader()
 				.format(CSVFormat.DEFAULT.withDelimiter(separator))
@@ -235,7 +223,7 @@ public class GamaDataframe implements IDataframe {
 	 * @return a new GamaDataframe
 	 */
 	public static GamaDataframe fromExcelFile(final IScope scope, final String path) {
-		final String resolvedPath = resolvePath(scope, path, true);
+		final String resolvedPath = FileUtils.constructAbsoluteFilePath(scope, path, true);
 		return new GamaDataframe(Excel.loader().load(resolvedPath).values().iterator().next());
 	}
 
@@ -249,7 +237,7 @@ public class GamaDataframe implements IDataframe {
 	 * @return a new GamaDataframe
 	 */
 	public static GamaDataframe fromJson(final IScope scope, final String path) {
-		final String resolvedPath = resolvePath(scope, path, true);
+		final String resolvedPath = FileUtils.constructAbsoluteFilePath(scope, path, true);
 		return new GamaDataframe(Json.loader().load(new File(resolvedPath)));
 	}
 
@@ -348,6 +336,12 @@ public class GamaDataframe implements IDataframe {
 		return new GamaDataframe(
 				df.inner.rows(r -> valueToMatch.equals(r.get(columnToCheck))).select());
 	}
+	
+//	public static GamaDataframe filterRows(final IScope scope, final GamaDataframe df, final String columnToCheck,
+//			final IExpression expressionToMatch) {
+//		return new GamaDataframe(df.inner.rows(r -> expressionToMatch.))
+//				stream(scope, c).filter(by(scope, eachName, filter)).toCollection(listLike(c));
+//	}
 
 	/**
 	 * Selects a subset of columns.
@@ -413,7 +407,7 @@ public class GamaDataframe implements IDataframe {
 	public static boolean saveCSV(final IScope scope, final GamaDataframe df, final String path,
 			final char separator, final String charset) {
 		try {
-			final String resolvedPath = resolvePath(scope, path, false);
+			final String resolvedPath = FileUtils.constructAbsoluteFilePath(scope, path, false);
 			Csv.saver()
 					.format(CSVFormat.DEFAULT.withDelimiter(separator))
 					.save(df.inner, resolvedPath);
@@ -439,7 +433,7 @@ public class GamaDataframe implements IDataframe {
 	public static boolean saveExcelSheet(final IScope scope, final GamaDataframe df, final String path,
 			final String sheetName) {
 		try {
-			final String resolvedPath = resolvePath(scope, path, false);
+			final String resolvedPath = FileUtils.constructAbsoluteFilePath(scope, path, false);
 			Excel.saver().saveSheet(df.inner, new File(resolvedPath), sheetName);
 			return true;
 		} catch (final Exception e) {
@@ -460,7 +454,7 @@ public class GamaDataframe implements IDataframe {
 	 */
 	public static boolean saveJson(final IScope scope, final GamaDataframe df, final String path) {
 		try {
-			final String resolvedPath = resolvePath(scope, path, false);
+			final String resolvedPath = FileUtils.constructAbsoluteFilePath(scope, path, false);
 			Json.saver().save(df.inner, resolvedPath);
 			return true;
 		} catch (final Exception e) {
@@ -541,6 +535,11 @@ public class GamaDataframe implements IDataframe {
 		}
 
 		return new GamaDataframe(DataFrame.foldByRow(newCols.toArray(new String[0])).of(flat));
+	}
+	
+	public static String prettyPrint(final IDataframe df, int maxRows, int maxCols, int maxChars) {
+		Printer printer = Printers.tabular(maxRows, maxCols, maxChars); 
+		return printer.print(df.getInnerDataFrame());	
 	}
 
 	@Override

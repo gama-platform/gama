@@ -13,6 +13,7 @@ import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
 import gama.annotations.operator;
+import gama.annotations.test;
 import gama.annotations.usage;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
@@ -62,6 +63,8 @@ public class DataframeOperators {
 					examples = { @example (
 							value = "dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]])",
 							isExecutable = false) }) })
+	@test ("df_rows(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]])) = 2")
+	@test ("df_columns(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]])) = [\"name\",\"age\"]")
 	public static GamaDataframe dataframeWith(final IScope scope, final IList<String> columns,
 			final IList<IList<Object>> data) {
 		return GamaDataframe.create(scope, columns, data);
@@ -279,7 +282,7 @@ public class DataframeOperators {
 							value = "list names <- df_column(my_df, \"name\");",
 							isExecutable = false) }) },
 			see = { "df_row", "df_cell", "df_columns" })
-	@no_test
+	@test ("df_column(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), \"name\") = [\"Alice\",\"Bob\"]")
 	public static IList<Object> dfColumn(final IScope scope, final IDataframe df, final String columnName) {
 		return df.getColumnValues(columnName);
 	}
@@ -302,7 +305,7 @@ public class DataframeOperators {
 							value = "list row_data <- df_row(my_df, 0);",
 							isExecutable = false) }) },
 			see = { "df_column", "df_cell", "df_rows" })
-	@no_test
+	@test ("df_row(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 0) = [\"Alice\",30]")
 	public static IList<Object> dfRow(final IScope scope, final IDataframe df, final Integer rowIndex) {
 		if (rowIndex < 0 || rowIndex >= df.getRows())
 			throw GamaRuntimeException.error("Row index out of bounds: " + rowIndex, scope);
@@ -325,7 +328,7 @@ public class DataframeOperators {
 							value = "unknown val <- df_cell(my_df, 0, \"name\");",
 							isExecutable = false) }) },
 			see = { "df_column", "df_row" })
-	@no_test
+	@test ("df_cell(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 1, \"name\") = \"Bob\"")
 	public static Object dfCell(final IScope scope, final IDataframe df, final Integer rowIndex,
 			final String columnName) {
 		if (rowIndex < 0 || rowIndex >= df.getRows())
@@ -351,7 +354,7 @@ public class DataframeOperators {
 							value = "list<string> cols <- df_columns(my_df);",
 							isExecutable = false) }) },
 			see = { "df_rows", "df_column" })
-	@no_test
+	@test ("df_columns(dataframe_with([\"name\",\"age\",\"city\"], [[\"Alice\",30,\"Paris\"]])) = [\"name\",\"age\",\"city\"]")
 	public static IList<String> dfColumns(final IScope scope, final IDataframe df) {
 		return df.getColumns();
 	}
@@ -372,7 +375,7 @@ public class DataframeOperators {
 							value = "int n <- df_rows(my_df);",
 							isExecutable = false) }) },
 			see = { "df_columns", "df_row" })
-	@no_test
+	@test ("df_rows(dataframe_with([\"name\"], [[\"Alice\"],[\"Bob\"],[\"Charlie\"]])) = 3")
 	public static Integer dfRows(final IScope scope, final IDataframe df) {
 		return df.getRows();
 	}
@@ -396,7 +399,7 @@ public class DataframeOperators {
 							value = "dataframe df2 <- df_filter(my_df, \"city\", \"Paris\");",
 							isExecutable = false) }) },
 			see = { "df_remove_empty", "df_select_columns" })
-	@no_test
+	@test ("df_rows(df_filter(dataframe_with([\"name\",\"city\"], [[\"Alice\",\"Paris\"],[\"Bob\",\"Lyon\"],[\"Eve\",\"Paris\"]]), \"city\", \"Paris\")) = 2")
 	public static GamaDataframe dfFilter(final IScope scope, final IDataframe df, final String columnName,
 			final Object value) {
 		return GamaDataframe.filterRows((GamaDataframe) df, columnName, value);
@@ -419,7 +422,7 @@ public class DataframeOperators {
 							value = "dataframe df2 <- df_remove_empty(my_df, \"name\");",
 							isExecutable = false) }) },
 			see = { "df_filter", "df_select_columns" })
-	@no_test
+	@test ("df_rows(df_remove_empty(dataframe_with([\"name\",\"email\"], [[\"Alice\",\"a@x\"],[\"Bob\",\"\"],[\"Charlie\",nil]]), \"email\")) = 1")
 	public static GamaDataframe dfRemoveEmpty(final IScope scope, final IDataframe df, final String columnName) {
 		return GamaDataframe.removeRowsWithEmptyValues((GamaDataframe) df, columnName);
 	}
@@ -441,7 +444,7 @@ public class DataframeOperators {
 							value = "dataframe df2 <- df_select_columns(my_df, [\"name\", \"age\"]);",
 							isExecutable = false) }) },
 			see = { "df_filter", "df_add_column", "df_columns" })
-	@no_test
+	@test ("df_columns(df_select_columns(dataframe_with([\"name\",\"age\",\"city\"], [[\"Alice\",30,\"Paris\"]]), [\"name\",\"city\"])) = [\"name\",\"city\"]")
 	public static GamaDataframe dfSelectColumns(final IScope scope, final IDataframe df,
 			final IList<String> columns) {
 		return GamaDataframe.selectColumns((GamaDataframe) df, columns);
@@ -466,7 +469,8 @@ public class DataframeOperators {
 							value = "dataframe df2 <- df_add_column(my_df, \"score\", 0);",
 							isExecutable = false) }) },
 			see = { "df_add_row", "df_select_columns" })
-	@no_test
+	@test ("df_columns(df_add_column(dataframe_with([\"name\"], [[\"Alice\"]]), \"score\", 0)) = [\"name\",\"score\"]")
+	@test ("df_cell(df_add_column(dataframe_with([\"name\"], [[\"Alice\"]]), \"score\", 0), 0, \"score\") = 0")
 	public static GamaDataframe dfAddColumn(final IScope scope, final IDataframe df, final String columnName,
 			final Object defaultValue) {
 		return GamaDataframe.addColumn((GamaDataframe) df, columnName, defaultValue);
@@ -489,7 +493,8 @@ public class DataframeOperators {
 							value = "dataframe df2 <- df_add_row(my_df, [\"Charlie\", 35, \"Marseille\"]);",
 							isExecutable = false) }) },
 			see = { "df_add_column", "df_merge" })
-	@no_test
+	@test ("df_rows(df_add_row(dataframe_with([\"name\",\"age\"], [[\"Alice\",30]]), [\"Bob\",25])) = 2")
+	@test ("df_cell(df_add_row(dataframe_with([\"name\",\"age\"], [[\"Alice\",30]]), [\"Bob\",25]), 1, \"name\") = \"Bob\"")
 	public static GamaDataframe dfAddRow(final IScope scope, final IDataframe df, final IList<Object> values) {
 		return GamaDataframe.addRow((GamaDataframe) df, values);
 	}
@@ -514,7 +519,7 @@ public class DataframeOperators {
 							value = "dataframe merged <- df_merge(df1, df2);",
 							isExecutable = false) }) },
 			see = { "df_join", "df_add_row" })
-	@no_test
+	@test ("df_rows(df_merge(dataframe_with([\"sensor\",\"value\"], [[\"temp\",22.5]]), dataframe_with([\"sensor\",\"value\"], [[\"temp\",23.1],[\"humidity\",60.0]]))) = 3")
 	public static GamaDataframe dfMerge(final IScope scope, final IDataframe df1, final IDataframe df2) {
 		return GamaDataframe.mergeDataframes((GamaDataframe) df1, (GamaDataframe) df2);
 	}
@@ -537,7 +542,7 @@ public class DataframeOperators {
 							value = "dataframe joined <- df_join(df_people, df_scores, \"id\");",
 							isExecutable = false) }) },
 			see = { "df_merge" })
-	@no_test
+	@test ("df_rows(df_join(dataframe_with([\"id\",\"name\"], [[1,\"Alice\"],[2,\"Bob\"],[3,\"Charlie\"]]), dataframe_with([\"id\",\"salary\"], [[1,55000],[2,48000]]), \"id\")) = 2")
 	public static GamaDataframe dfJoin(final IScope scope, final IDataframe df1, final IDataframe df2,
 			final String columnName) {
 		return GamaDataframe.joinDataframesOnCommonCol((GamaDataframe) df1, (GamaDataframe) df2, columnName);
@@ -563,9 +568,39 @@ public class DataframeOperators {
 							value = "dataframe pivoted <- df_pivot(sales_df, \"product\", \"quarter\", \"revenue\");",
 							isExecutable = false) }) },
 			see = { "df_filter", "df_select_columns" })
-	@no_test
+	@test ("df_rows(df_pivot(dataframe_with([\"product\",\"quarter\",\"revenue\"], [[\"Widget\",\"Q1\",1000],[\"Widget\",\"Q2\",1500],[\"Gadget\",\"Q1\",800],[\"Gadget\",\"Q2\",950]]), \"product\", \"quarter\", \"revenue\")) = 2")
 	public static GamaDataframe dfPivot(final IScope scope, final IDataframe df, final String indexColumn,
 			final String pivotColumn, final String valueColumn) {
 		return GamaDataframe.pivot((GamaDataframe) df, indexColumn, pivotColumn, valueColumn);
 	}
+	
+	@operator (
+			value = "df_pretty_print",
+			can_be_const = true,
+			type = IType.STRING,
+			category = {IOperatorCategory.DATAFRAME},
+			concept = {IConcept.DATAFRAME}
+	)
+	@doc (
+		value = "Creates a string representing the dataframe in a human readable format. The number of rows and columns is limited to 10 and the number of characters per cell to 50."
+	)
+	public static String dfPrettyPrint(final IScope scope, final IDataframe df) {
+		return GamaDataframe.prettyPrint(df, 10, 10, 50);
+	}
+	
+	@operator (
+			value = "df_pretty_print",
+			can_be_const = true,
+			type = IType.STRING,
+			category = {IOperatorCategory.DATAFRAME},
+			concept = {IConcept.DATAFRAME}
+	)
+	@doc (
+		value = "Creates a string representing the dataframe in a human readable format. The maximum number of rows, columns and the number of characters per cell to print is defined by the parameters."
+	)
+	public static String dfPrettyPrint(final IScope scope, final IDataframe df, int maxRows, int maxCols, int maxChars) {
+		return GamaDataframe.prettyPrint(df, maxRows, maxCols, maxChars);
+	}
+	
+	
 }
