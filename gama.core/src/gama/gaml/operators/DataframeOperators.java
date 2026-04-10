@@ -738,6 +738,171 @@ public class DataframeOperators {
 		return GamaDataframe.prettyPrint(df, maxRows, maxCols, maxChars);
 	}
 
+	// ========================= iloc (integer location) =========================
+	//
+	// Pandas-style purely integer-position-based indexing. See:
+	// https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.iloc.html
+	//
+	// Supported forms:
+	//   iloc(df, i)                -> row i as a list of values       (cf. df.iloc[i])
+	//   iloc(df, i, j)             -> scalar cell value               (cf. df.iloc[i, j])
+	//   iloc(df, i, [j,...])       -> row i restricted to given cols  (cf. df.iloc[i, [j,...]])
+	//   iloc(df, [i,...], j)       -> col j restricted to given rows  (cf. df.iloc[[i,...], j])
+	//   iloc(df, [i,...])          -> sub-dataframe with given rows   (cf. df.iloc[[i,...]])
+	//   iloc(df, [i,...], [j,...]) -> sub-dataframe                   (cf. df.iloc[[i,...], [j,...]])
+	//
+	// Negative indices are supported on both axes (Python-style: -1 = last element).
+
+	/**
+	 * Pandas-style {@code df.iloc[i]}: returns row i as a list of values.
+	 */
+	@operator (
+			value = "iloc",
+			can_be_const = true,
+			content_type = IType.NONE,
+			type = IType.LIST,
+			category = { IOperatorCategory.DATAFRAME },
+			concept = { IConcept.DATAFRAME })
+	@doc (
+			value = "Pandas-style df.iloc[i]: returns the row at integer position i as a list of values. "
+					+ "Negative indices are supported (-1 is the last row).",
+			usages = { @usage (
+					value = "Get the last row",
+					examples = { @example (
+							value = "list row <- iloc(my_df, -1);",
+							isExecutable = false) }) },
+			see = { "df_row", "df_cell" })
+	@test ("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 0) = [\"Alice\",30]")
+	@test ("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), -1) = [\"Bob\",25]")
+	public static IList<Object> ilocRow(final IScope scope, final IDataframe df, final Integer rowIndex) {
+		return GamaDataframe.ilocRow(scope, (GamaDataframe) df, rowIndex);
+	}
+
+	/**
+	 * Pandas-style {@code df.iloc[i, j]}: returns a single cell value at the given integer (row, col) position.
+	 */
+	@operator (
+			value = "iloc",
+			can_be_const = true,
+			category = { IOperatorCategory.DATAFRAME },
+			concept = { IConcept.DATAFRAME })
+	@doc (
+			value = "Pandas-style df.iloc[i, j]: returns the cell value at integer (row, col) position. "
+					+ "Negative indices are supported on both axes.",
+			usages = { @usage (
+					value = "Get the cell at row 1, column 0",
+					examples = { @example (
+							value = "unknown v <- iloc(my_df, 1, 0);",
+							isExecutable = false) }) },
+			see = { "df_cell", "df_row", "df_column" })
+	@test ("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 1, 0) = \"Bob\"")
+	@test ("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 0, 1) = 30")
+	@test ("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), -1, -1) = 25")
+	public static Object iloc(final IScope scope, final IDataframe df, final Integer rowIndex,
+			final Integer colIndex) {
+		return GamaDataframe.iloc(scope, (GamaDataframe) df, rowIndex, colIndex);
+	}
+
+	/**
+	 * Pandas-style {@code df.iloc[i, [j, ...]]}: returns row i restricted to the selected columns, as a list.
+	 */
+	@operator (
+			value = "iloc",
+			can_be_const = true,
+			content_type = IType.NONE,
+			type = IType.LIST,
+			category = { IOperatorCategory.DATAFRAME },
+			concept = { IConcept.DATAFRAME })
+	@doc (
+			value = "Pandas-style df.iloc[i, [j, ...]]: returns the values of row i taken from the selected columns, "
+					+ "in the order of the input column indices. Negative indices are supported.",
+			usages = { @usage (
+					value = "Get cells [0] and [2] of row 1",
+					examples = { @example (
+							value = "list values <- iloc(my_df, 1, [0, 2]);",
+							isExecutable = false) }) },
+			see = { "df_row", "df_select_columns" })
+	@test ("iloc(dataframe_with([\"a\",\"b\",\"c\"], [[1,2,3],[4,5,6]]), 1, [0,2]) = [4,6]")
+	public static IList<Object> ilocRowCols(final IScope scope, final IDataframe df, final Integer rowIndex,
+			final IList<Integer> colIndices) {
+		return GamaDataframe.iloc(scope, (GamaDataframe) df, rowIndex, colIndices);
+	}
+
+	/**
+	 * Pandas-style {@code df.iloc[[i, ...], j]}: returns column j restricted to the selected rows, as a list.
+	 */
+	@operator (
+			value = "iloc",
+			can_be_const = true,
+			content_type = IType.NONE,
+			type = IType.LIST,
+			category = { IOperatorCategory.DATAFRAME },
+			concept = { IConcept.DATAFRAME })
+	@doc (
+			value = "Pandas-style df.iloc[[i, ...], j]: returns the values of column j taken from the selected rows, "
+					+ "in the order of the input row indices. Negative indices are supported.",
+			usages = { @usage (
+					value = "Get column 1 values at rows 0 and 2",
+					examples = { @example (
+							value = "list values <- iloc(my_df, [0, 2], 1);",
+							isExecutable = false) }) },
+			see = { "df_column", "df_row" })
+	@test ("iloc(dataframe_with([\"a\",\"b\",\"c\"], [[1,2,3],[4,5,6],[7,8,9]]), [0,2], 1) = [2,8]")
+	public static IList<Object> ilocRowsCol(final IScope scope, final IDataframe df, final IList<Integer> rowIndices,
+			final Integer colIndex) {
+		return GamaDataframe.iloc(scope, (GamaDataframe) df, rowIndices, colIndex);
+	}
+
+	/**
+	 * Pandas-style {@code df.iloc[[i, ...]]}: returns a sub-dataframe with the selected rows (all columns kept).
+	 */
+	@operator (
+			value = "iloc",
+			can_be_const = true,
+			type = IType.DATAFRAME,
+			category = { IOperatorCategory.DATAFRAME },
+			concept = { IConcept.DATAFRAME })
+	@doc (
+			value = "Pandas-style df.iloc[[i, ...]]: returns a new dataframe containing only the rows at the given "
+					+ "integer indices (in that order). All columns are kept. Negative indices are supported.",
+			usages = { @usage (
+					value = "Select rows 0 and 2",
+					examples = { @example (
+							value = "dataframe sub <- iloc(my_df, [0, 2]);",
+							isExecutable = false) }) },
+			see = { "df_row", "df_filter" })
+	@test ("df_rows(iloc(dataframe_with([\"name\"], [[\"Alice\"],[\"Bob\"],[\"Eve\"]]), [0,2])) = 2")
+	@test ("df_cell(iloc(dataframe_with([\"name\"], [[\"Alice\"],[\"Bob\"],[\"Eve\"]]), [0,2]), 1, \"name\") = \"Eve\"")
+	public static GamaDataframe ilocRows(final IScope scope, final IDataframe df, final IList<Integer> rowIndices) {
+		return GamaDataframe.ilocRows(scope, (GamaDataframe) df, rowIndices);
+	}
+
+	/**
+	 * Pandas-style {@code df.iloc[[i, ...], [j, ...]]}: returns a sub-dataframe with the selected rows and columns.
+	 */
+	@operator (
+			value = "iloc",
+			can_be_const = true,
+			type = IType.DATAFRAME,
+			category = { IOperatorCategory.DATAFRAME },
+			concept = { IConcept.DATAFRAME })
+	@doc (
+			value = "Pandas-style df.iloc[[i, ...], [j, ...]]: returns a new dataframe containing only the rows and "
+					+ "columns at the given integer indices, in the order of the input indices. Negative indices are "
+					+ "supported on both axes.",
+			usages = { @usage (
+					value = "Select rows 0 and 2, columns 0 and 1",
+					examples = { @example (
+							value = "dataframe sub <- iloc(my_df, [0, 2], [0, 1]);",
+							isExecutable = false) }) },
+			see = { "df_select_columns", "df_filter" })
+	@test ("df_columns(iloc(dataframe_with([\"a\",\"b\",\"c\"], [[1,2,3],[4,5,6]]), [0], [0,2])) = [\"a\",\"c\"]")
+	@test ("df_cell(iloc(dataframe_with([\"a\",\"b\",\"c\"], [[1,2,3],[4,5,6]]), [1], [2]), 0, \"c\") = 6")
+	public static GamaDataframe iloc(final IScope scope, final IDataframe df, final IList<Integer> rowIndices,
+			final IList<Integer> colIndices) {
+		return GamaDataframe.iloc(scope, (GamaDataframe) df, rowIndices, colIndices);
+	}
+
 	// ========================= Outgoing conversions =========================
 
 	/**

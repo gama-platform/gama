@@ -589,92 +589,101 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	}
 
 	// ========================= Integer-based location (iloc) =========================
+	//
+	// These methods mimic pandas' DataFrame.iloc semantics
+	// (https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.iloc.html):
+	//
+	// - A single integer selects a single row (negative indices count from the end, like Python).
+	// - A list of integers selects multiple rows / columns and preserves the 2D dataframe shape.
+	// - A (row, col) pair with two integers returns a scalar cell.
+	// - Mixed (int, list) or (list, int) pairs return a 1D list of values, not a dataframe.
+	// - A pair of lists returns a sub-dataframe.
+	// - Out-of-bounds indices raise an IndexError-like GamaRuntimeException.
 
 	/**
-	 * Returns the cell value at the given (row, column) integer position, inspired by pandas' {@code DataFrame.iloc}.
-	 *
-	 * @param scope
-	 *            the execution scope
-	 * @param df
-	 *            the dataframe
-	 * @param rowIndex
-	 *            the zero-based row index
-	 * @param colIndex
-	 *            the zero-based column index
-	 * @return the cell value
+	 * Normalizes a possibly-negative pandas-style index against the axis size and checks bounds.
 	 */
-	public static Object iloc(final IScope scope, final GamaDataframe df, final int rowIndex, final int colIndex) {
-		final int rows = df.inner.height();
-		final int cols = df.inner.width();
-		if (rowIndex < 0 || rowIndex >= rows)
-			throw GamaRuntimeException.error("iloc row index out of bounds: " + rowIndex + " (0.." + (rows - 1) + ")",
-					scope);
-		if (colIndex < 0 || colIndex >= cols)
-			throw GamaRuntimeException.error("iloc col index out of bounds: " + colIndex + " (0.." + (cols - 1) + ")",
-					scope);
-		final String colName = df.inner.getColumnsIndex().get(colIndex);
-		return df.inner.get(colName, rowIndex);
+	private static int normalizeIloc(final IScope scope, final int idx, final int size, final String axis) {
+		final int n = idx < 0 ? idx + size : idx;
+		if (n < 0 || n >= size) throw GamaRuntimeException
+				.error("iloc " + axis + " index out of bounds: " + idx + " (size " + size + ")", scope);
+		return n;
 	}
 
 	/**
-	 * Returns a sub-dataframe containing only the rows at the given integer indices, inspired by pandas'
-	 * {@code DataFrame.iloc}.
-	 *
-	 * @param scope
-	 *            the execution scope
-	 * @param df
-	 *            the dataframe
-	 * @param rowIndices
-	 *            the zero-based row indices
-	 * @return a new dataframe with the selected rows (same columns)
+	 * Normalizes a list of pandas-style indices to a zero-based int[] with bounds checking.
+	 */
+	private static int[] normalizeIlocList(final IScope scope, final IList<Integer> indices, final int size,
+			final String axis) {
+		if (indices == null) throw GamaRuntimeException.error("iloc " + axis + " indices cannot be nil", scope);
+		final int[] out = new int[indices.size()];
+		for (int i = 0; i < out.length; i++) { out[i] = normalizeIloc(scope, indices.get(i), size, axis); }
+		return out;
+	}
+
+	/**
+	 * Pandas-style {@code df.iloc[row]}: returns the given row as a list of values. Negative indices are supported.
+	 */
+	public static IList<Object> ilocRow(final IScope scope, final GamaDataframe df, final int rowIndex) {
+		final int r = normalizeIloc(scope, rowIndex, df.inner.height(), "row");
+		return df.getRowValues(r);
+	}
+
+	/**
+	 * Pandas-style {@code df.iloc[row, col]}: returns a single cell value. Negative indices are supported on both
+	 * axes.
+	 */
+	public static Object iloc(final IScope scope, final GamaDataframe df, final int rowIndex, final int colIndex) {
+		final int r = normalizeIloc(scope, rowIndex, df.inner.height(), "row");
+		final int c = normalizeIloc(scope, colIndex, df.inner.width(), "col");
+		return df.inner.get(df.inner.getColumnsIndex().get(c), r);
+	}
+
+	/**
+	 * Pandas-style {@code df.iloc[row, [cols]]}: returns the given row restricted to the selected columns, as a list
+	 * of values (order matches the input column indices).
+	 */
+	public static IList<Object> iloc(final IScope scope, final GamaDataframe df, final int rowIndex,
+			final IList<Integer> colIndices) {
+		final int r = normalizeIloc(scope, rowIndex, df.inner.height(), "row");
+		final int[] cIdx = normalizeIlocList(scope, colIndices, df.inner.width(), "col");
+		final IList<Object> out = GamaListFactory.create(Types.NO_TYPE, cIdx.length);
+		final org.dflib.Index idx = df.inner.getColumnsIndex();
+		for (final int c : cIdx) { out.add(df.inner.get(idx.get(c), r)); }
+		return out;
+	}
+
+	/**
+	 * Pandas-style {@code df.iloc[[rows], col]}: returns the given column restricted to the selected rows, as a list
+	 * of values (order matches the input row indices).
+	 */
+	public static IList<Object> iloc(final IScope scope, final GamaDataframe df, final IList<Integer> rowIndices,
+			final int colIndex) {
+		final int c = normalizeIloc(scope, colIndex, df.inner.width(), "col");
+		final int[] rIdx = normalizeIlocList(scope, rowIndices, df.inner.height(), "row");
+		final String colName = df.inner.getColumnsIndex().get(c);
+		final IList<Object> out = GamaListFactory.create(Types.NO_TYPE, rIdx.length);
+		for (final int r : rIdx) { out.add(df.inner.get(colName, r)); }
+		return out;
+	}
+
+	/**
+	 * Pandas-style {@code df.iloc[[rows]]}: returns a sub-dataframe containing the selected rows (all columns kept,
+	 * in their original order). Row order matches the input indices (allowing reordering).
 	 */
 	public static GamaDataframe ilocRows(final IScope scope, final GamaDataframe df, final IList<Integer> rowIndices) {
-		if (rowIndices == null) throw GamaRuntimeException.error("iloc row indices cannot be nil", scope);
-		final int rows = df.inner.height();
-		final int[] idx = new int[rowIndices.size()];
-		for (int i = 0; i < idx.length; i++) {
-			final int r = rowIndices.get(i);
-			if (r < 0 || r >= rows) throw GamaRuntimeException
-					.error("iloc row index out of bounds: " + r + " (0.." + (rows - 1) + ")", scope);
-			idx[i] = r;
-		}
+		final int[] idx = normalizeIlocList(scope, rowIndices, df.inner.height(), "row");
 		return new GamaDataframe(df.inner.rows(idx).select());
 	}
 
 	/**
-	 * Returns a sub-dataframe containing only the rows and columns at the given integer indices, inspired by pandas'
-	 * {@code DataFrame.iloc}.
-	 *
-	 * @param scope
-	 *            the execution scope
-	 * @param df
-	 *            the dataframe
-	 * @param rowIndices
-	 *            the zero-based row indices
-	 * @param colIndices
-	 *            the zero-based column indices
-	 * @return a new dataframe with the selected rows and columns
+	 * Pandas-style {@code df.iloc[[rows], [cols]]}: returns a sub-dataframe with the selected rows and columns, in
+	 * the order of the input indices.
 	 */
 	public static GamaDataframe iloc(final IScope scope, final GamaDataframe df, final IList<Integer> rowIndices,
 			final IList<Integer> colIndices) {
-		if (rowIndices == null || colIndices == null)
-			throw GamaRuntimeException.error("iloc indices cannot be nil", scope);
-		final int rows = df.inner.height();
-		final int cols = df.inner.width();
-		final int[] rIdx = new int[rowIndices.size()];
-		for (int i = 0; i < rIdx.length; i++) {
-			final int r = rowIndices.get(i);
-			if (r < 0 || r >= rows) throw GamaRuntimeException
-					.error("iloc row index out of bounds: " + r + " (0.." + (rows - 1) + ")", scope);
-			rIdx[i] = r;
-		}
-		final int[] cIdx = new int[colIndices.size()];
-		for (int i = 0; i < cIdx.length; i++) {
-			final int c = colIndices.get(i);
-			if (c < 0 || c >= cols) throw GamaRuntimeException
-					.error("iloc col index out of bounds: " + c + " (0.." + (cols - 1) + ")", scope);
-			cIdx[i] = c;
-		}
+		final int[] rIdx = normalizeIlocList(scope, rowIndices, df.inner.height(), "row");
+		final int[] cIdx = normalizeIlocList(scope, colIndices, df.inner.width(), "col");
 		return new GamaDataframe(df.inner.rows(rIdx).cols(cIdx).select());
 	}
 
