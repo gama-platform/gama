@@ -127,8 +127,8 @@ public class System {
 					value = "dead(agent_A)",
 					equals = "true or false",
 					isExecutable = false))
-	@test ("dead(nil) = true")
-	@test ("dead(simulation) = false")
+	@test ("dead(agent(nil))")
+	@test ("not(dead(simulation))")
 	public static Boolean opDead(final IScope scope, final IAgent a) {
 		return a == null || a.dead();
 	}
@@ -152,15 +152,15 @@ public class System {
 			special_cases = {
 					"is_error evaluates the expression in a try-catch manner; if an error is raised, it returns true without propagating the error.",
 					"is_error(1/0) = true (integer division by zero is an error in GAML)." })
-	@test ("is_error(1.0 = 1) = false")
-	@test ("is_error(1/0) = true")
+	@test ("!is_error(1.0 = 1)")
+	@test ("is_error(1/0)")
 	@test ("!is_error(1/1)")
 	public static Boolean is_error(final IScope scope, final IExpression expr) {
 		try {
 			expr.value(scope);
 		} catch (final GamaRuntimeException e) {
 			return !e.isWarning();
-		} catch (final Exception e1) {}
+		} catch (final Exception e1) {return true;}
 		return false;
 	}
 

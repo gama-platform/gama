@@ -1266,7 +1266,9 @@ public class Maths {
 	@test ("sqrt(9) = 3.0")
 	@test ("is_error(sqrt(-1))")
 	public static Double sqrt(final IScope scope, final Integer v) throws GamaRuntimeException {
-		if (v < 0) throw GamaRuntimeException.warning("The sqrt operator cannot accept negative inputs", scope);
+		if (v < 0) GAMA.reportAndThrowIfNeeded(scope,
+				GamaRuntimeException.error("The sqrt operator cannot accept negative inputs", scope),
+				true);
 		return Math.sqrt(v);
 	}
 
@@ -1302,7 +1304,9 @@ public class Maths {
 	@test ("sqrt(1.0) = 1.0")
 	@test ("is_error(sqrt(-1.0))")
 	public static Double sqrt(final IScope scope, final Double v) throws GamaRuntimeException {
-		if (v < 0) throw GamaRuntimeException.warning("The sqrt operator cannot accept negative inputs", scope);
+		if (v < 0) GAMA.reportAndThrowIfNeeded(scope,
+				GamaRuntimeException.error("The sqrt operator cannot accept negative inputs", scope),
+				true);
 		return Math.sqrt(v);
 	}
 

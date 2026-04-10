@@ -9,8 +9,6 @@
  ********************************************************************************************************/
 package gama.api.utils.geometry;
 
-import static org.locationtech.jts.index.quadtree.IntervalSize.isZeroWidth;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Polygon;
@@ -19,6 +17,7 @@ import gama.api.types.geometry.GamaPointFactory;
 import gama.api.types.geometry.GamaShapeFactory;
 import gama.api.types.geometry.IPoint;
 import gama.api.types.geometry.IShape;
+import gama.api.utils.MathUtils;
 
 // import org.opengis.geometry.MismatchedDimensionException;
 
@@ -642,8 +641,8 @@ public class GamaEnvelope extends Envelope implements IEnvelope {
 	public boolean equals(final Object other) {
 		if (!(other instanceof final GamaEnvelope otherEnvelope)) return false;
 		if (isNull()) return otherEnvelope.isNull();
-		return super.equals(other) && isZeroWidth(minz, otherEnvelope.getMinZ())
-				&& isZeroWidth(maxz, otherEnvelope.getMaxZ());
+		return super.equals(other) && MathUtils.isZeroWidth(minz, otherEnvelope.getMinZ())
+				&& MathUtils.isZeroWidth(maxz, otherEnvelope.getMaxZ());
 	}
 
 	/**
