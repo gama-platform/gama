@@ -39,10 +39,36 @@ import gama.api.utils.random.RandomUtils;
 import one.util.streamex.IntStreamEx;
 
 /**
- * Written by drogoul Modified on 10 dec. 2010
+ * Provides all stochastic and random-number operators for the GAML language. Operators are organized into
+ * the following families:
+ * <ul>
+ *   <li><b>Sampling</b>: {@code rnd} (uniform integer / float / point), {@code rnd_choice} (weighted index
+ *       or key sampling), {@code one_of} (uniform draw from a container), {@code sample} (draw without /
+ *       with replacement).</li>
+ *   <li><b>Boolean</b>: {@code flip} (Bernoulli trial with a given probability).</li>
+ *   <li><b>Continuous distributions</b>: {@code gauss} / {@code gauss_rnd} (Normal),
+ *       {@code truncated_gauss} / {@code TGauss} (truncated Normal), {@code skew_gauss} (skewed Normal),
+ *       {@code weibull_rnd} (Weibull), {@code gamma_rnd} (Gamma), {@code lognormal_rnd} (log-Normal), and
+ *       their truncated variants {@code gamma_trunc_rnd}, {@code weibull_trunc_rnd},
+ *       {@code lognormal_trunc_rnd}.</li>
+ *   <li><b>Discrete distributions</b>: {@code poisson} (Poisson), {@code binomial} (Binomial).</li>
+ *   <li><b>Collections</b>: {@code shuffle} (random permutation of a list, matrix, or string).</li>
+ *   <li><b>Terrain generation</b>: {@code generate_terrain} (simplex-noise based pseudo-terrain).</li>
+ * </ul>
  *
- * @todo Description
+ * <p><b>Determinism and seeds</b>: every operator draws numbers from the simulation's current random
+ * stream ({@link gama.api.utils.random.IRandom}). Setting the built-in {@code seed} variable before a
+ * simulation run makes all stochastic results fully reproducible:
+ * <pre>
+ *   seed &lt;- 42.0;
+ *   write rnd(100);   // always the same value for seed 42
+ * </pre>
+ * In headless or batch mode, each simulation replication typically uses a different seed unless one is
+ * explicitly fixed, which may lead to different results across runs.</p>
  *
+ * @author drogoul (original), GAMA team
+ * @see gama.api.utils.random.IRandom
+ * @see gama.api.utils.random.RandomUtils
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class Random {
@@ -226,6 +252,8 @@ public class Random {
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "rnd", "skew_gauss",
 					"weibull_rnd", "gamma_trunc_rnd", "weibull_trunc_rnd", "lognormal_trunc_rnd" })
 	@test ("seed <- 1.0; TGauss({0,0.3}) = 0.10073201959421514")
+	@test ("seed <- 1.0; TGauss({0,0.3}) >= -0.3")
+	@test ("seed <- 1.0; TGauss({0,0.3}) <= 0.3")
 	public static Double opTGauss(final IScope scope, final IPoint p) {
 		return opTGauss(scope, GamaListFactory.wrap(Types.FLOAT, p.getX(), p.getY()));
 	}
@@ -248,6 +276,8 @@ public class Random {
 					value = "if the operand is a list, only the two first elements are taken into account as [mean, standardDeviation]"),
 					@usage (
 							value = "when truncated_gauss is called with a list of only one element mean, it will always return 0.0") },
+			special_cases = { "If the standard deviation is 0, the operator always returns the mean.",
+					"The result is always within ]mean-stddev, mean+stddev[." },
 			examples = { @example (
 					value = "truncated_gauss ([0.5, 0.0])",
 					equals = "0.5") },
@@ -295,6 +325,8 @@ public class Random {
 			value = "The operator can be used with an operand of type point {meand,standardDeviation}.",
 			usages = { @usage (
 					value = "when the operand is a point, it is read as {mean, standardDeviation}") },
+			special_cases = { "If the standard deviation is 0, always returns the mean.",
+					"Returns any real number (unbounded distribution)." },
 			examples = { @example (
 					value = "gauss({0,0.3})",
 					equals = "0.22354",
@@ -327,6 +359,8 @@ public class Random {
 			value = "A value from a normally distributed random variable with expected value (mean as first operand) and variance (standardDeviation as second operand). The probability density function of such a variable is a Gaussian.",
 			usages = { @usage (
 					value = "when standardDeviation value is 0.0, it always returns the mean value") },
+			special_cases = { "If the standard deviation is 0, always returns the mean.",
+					"Returns any real number (unbounded distribution)." },
 			examples = { @example (
 					value = "gauss(0,0.3)",
 					equals = "0.22354",
@@ -392,6 +426,8 @@ public class Random {
 	@doc (
 			value = "A value from a random variable following a Poisson distribution (with the positive expected number of occurence lambda as operand).",
 			comment = "The Poisson distribution is a discrete probability distribution that expresses the probability of a given number of events occurring in a fixed interval of time and/or space if these events occur with a known average rate and independently of the time since the last event, cf. Poisson distribution on Wikipedia.",
+			special_cases = { "The expected value (lambda) must be positive. If lambda is 0 or negative, behavior is undefined.",
+					"Returns a non-negative integer." },
 			examples = { @example (
 					value = "poisson(3.5)",
 					equals = "a random positive integer",
@@ -399,6 +435,7 @@ public class Random {
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "rnd", "skew_gauss", "truncated_gauss",
 					"weibull_rnd" })
 	@test ("seed <- 1.0; poisson(3.5) = 6")
+	@test ("seed <- 1.0; poisson(0.0) = 0")
 	public static Integer opPoisson(final IScope scope, final Double mean) {
 		IRandom ru = RANDOM(scope);
 		int x = 0;
@@ -429,6 +466,7 @@ public class Random {
 	@doc (
 			value = "A value from a random variable following a binomial distribution. The operands represent the number of experiments n and the success probability p.",
 			comment = "The binomial distribution is the discrete probability distribution of the number of successes in a sequence of n independent yes/no experiments, each of which yields success with probability p, cf. Binomial distribution on Wikipedia.",
+			special_cases = { "If n is 0, always returns 0.", "p must be in [0,1]." },
 			examples = { @example (
 					value = "binomial(15,0.6)",
 					equals = "a random positive integer",
@@ -440,6 +478,9 @@ public class Random {
 	@test ("binomial(15,1) = 15")
 	@test ("binomial(0,1) = 0")
 	@test ("binomial(0,0.9) = 0")
+	@test ("seed <- 1.0; binomial(0, 0.5) = 0")
+	@test ("seed <- 1.0; binomial(10, 0.0) = 0")
+	@test ("seed <- 1.0; binomial(10, 1.0) = 10")
 	public static Integer opBinomial(final IScope scope, final Integer n, final Double p) {
 		double value = p;
 
@@ -505,12 +546,16 @@ public class Random {
 			value = "Returns a new list containing the randomly shuffled elements of the container.",
 			usages = { @usage (
 					value = "if the operand is empty, returns an empty list (or string, matrix)") },
+			special_cases = { "If the container is empty, returns an empty list.",
+					"If the container has one element, returns a list with that single element." },
 			examples = { @example (
 					value = "shuffle ([12, 13, 14])",
 					equals = "[14,12,13] (for example)",
 					test = false) },
 			see = { "reverse" })
 	@test ("seed <- 1.0; shuffle ([12, 13, 14]) = [12,13,14]")
+	@test ("shuffle([]) = []")
+	@test ("length(shuffle([1,2,3])) = 3")
 	public static IList opShuffle(final IScope scope, final IContainer target) {
 		if (target == null || target.isEmpty(scope))
 			return GamaListFactory.create(target == null ? Types.NO_TYPE : target.getGamlType().getContentType());
@@ -602,6 +647,7 @@ public class Random {
 			masterDoc = true,
 			comment = "to obtain a probability between 0 and 1, use the expression (rnd n) / n, where n is used to indicate the precision",
 			usages = {},
+			special_cases = { "If the max is 0, returns 0.", "If max is negative, raises a runtime error." },
 			examples = { @example (
 					value = "rnd (2)",
 					equals = "0, 1 or 2",
@@ -609,6 +655,8 @@ public class Random {
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "skew_gauss", "truncated_gauss",
 					"weibull_rnd" })
 	@test ("seed <- 1.0; rnd(10) = 8")
+	@test ("seed <- 1.0; rnd(0) = 0")
+	@test ("seed <- 42.0; int r1 <- rnd(100); seed <- 42.0; int r2 <- rnd(100); r1 = r2")
 	public static Integer opRnd(final IScope scope, final Integer max) {
 		return opRnd(scope, 0, max);
 	}
@@ -630,6 +678,7 @@ public class Random {
 			concept = { IConcept.RANDOM })
 	@doc (
 			value = "a random integer in the interval [first operand, second operand]",
+			special_cases = { "If min equals max, always returns that value." },
 			examples = { @example (
 					value = "rnd (2, 4)",
 					equals = "2, 3 or 4",
@@ -661,6 +710,7 @@ public class Random {
 			concept = { IConcept.RANDOM })
 	@doc (
 			value = "a random integer in the interval [first operand, second operand], constrained by a step given by the last operand",
+			special_cases = { "If min equals max, always returns that value." },
 			examples = { @example (
 					value = "rnd (2, 12, 4)",
 					equals = "2, 6 or 10",
@@ -690,6 +740,7 @@ public class Random {
 			concept = { IConcept.RANDOM })
 	@doc (
 			value = "a random float in the interval [first operand, second operand]",
+			special_cases = { "If min equals max, always returns that value." },
 			examples = { @example (
 					value = "rnd (2.0, 4.0)",
 					equals = "a float number between 2.0 and 4.0",
@@ -721,6 +772,7 @@ public class Random {
 			concept = { IConcept.RANDOM })
 	@doc (
 			value = "a random float in the interval [first operand, second operand] constrained by the last operand (step)",
+			special_cases = { "If min equals max, always returns that value." },
 			examples = { @example (
 					value = "rnd (2.0, 4.0, 0.5)",
 					equals = "a float number between 2.0 and 4.0 every 0.5",
@@ -750,6 +802,7 @@ public class Random {
 			concept = { IConcept.RANDOM })
 	@doc (
 			value = "a random point in the interval [first operand, second operand]",
+			special_cases = { "If min equals max, always returns that value." },
 			examples = { @example (
 					value = "rnd ({2.0, 4.0}, {2.0, 5.0, 10.0})",
 					equals = "a point with x = 2.0, y between 2.0 and 4.0 and z between 0.0 and 10.0",
@@ -780,6 +833,7 @@ public class Random {
 			concept = { IConcept.RANDOM })
 	@doc (
 			value = "a random point in the interval [first operand, second operand], constained by the step provided by the last operand",
+			special_cases = { "If min equals max, always returns that value." },
 			examples = { @example (
 					value = "rnd ({2.0, 4.0}, {2.0, 5.0, 10.0}, 1)",
 					equals = "a point with x = 2.0, y equal to 2.0, 3.0 or 4.0 and z between 0.0 and 10.0 every 1.0",
@@ -837,6 +891,7 @@ public class Random {
 	@doc (
 			usages = { @usage (
 					value = "if the operand is a float, returns an uniformly distributed float random number in [0.0, to]") },
+			special_cases = { "If max is 0.0, returns 0.0." },
 			examples = { @example (
 					value = "rnd(3.4)",
 					equals = "a random float between 0.0 and 3.4",
@@ -844,6 +899,7 @@ public class Random {
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "skew_gauss", "truncated_gauss",
 					"weibull_rnd" })
 	@test (" seed <- 1.0; rnd(100) = 78")
+	@test ("seed <- 1.0; rnd(0.0) = 0.0")
 	public static Double opRnd(final IScope scope, final Double max) {
 		return opRnd(scope, 0.0, max);
 	}
@@ -865,12 +921,15 @@ public class Random {
 			value = "true or false given the probability represented by the operand",
 			usages = { @usage (
 					value = "flip 0 always returns false, flip 1 true") },
+			special_cases = { "flip(0.0) always returns false.", "flip(1.0) always returns true." },
 			examples = { @example (
 					value = "flip (0.66666)",
 					equals = "2/3 chances to return true.",
 					test = false) },
 			see = { "rnd" })
 	@test ("flip(0) = false and flip(1) = true")
+	@test ("!flip(0.0)")
+	@test ("flip(1.0)")
 	public static Boolean opFlip(final IScope scope, final Double probability) {
 		return probability > RANDOM(scope).between(0., 1.);
 	}
@@ -889,6 +948,9 @@ public class Random {
 			concept = { IConcept.RANDOM })
 	@doc (
 			value = "returns an index of the given list with a probability following the (normalized) distribution described in the list (a form of lottery)",
+			special_cases = { "The list of weights must not be empty.",
+					"All weights are assumed to be non-negative; negative weights lead to undefined behavior.",
+					"The weight list is normalized automatically." },
 			examples = { @example (
 					value = "rnd_choice([0.2,0.5,0.3])",
 					equals = "2/10 chances to return 0, 5/10 chances to return 1, 3/10 chances to return 2",

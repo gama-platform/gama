@@ -55,7 +55,31 @@ import gama.api.types.misc.IContainer;
 import gama.api.utils.geometry.GeometryUtils;
 
 /**
- * The Class Operators.
+ * Provides GAML geometric set-algebra operators (intersection, union, difference, buffer, etc.).
+ *
+ * <p>The following operators are exposed by this class (among others):
+ * <ul>
+ *   <li>{@code inter} / {@code intersection} — geometric intersection of two shapes</li>
+ *   <li>{@code union} / {@code +} — geometric union of two shapes or a list of shapes</li>
+ *   <li>{@code -} / {@code minus_zone} — geometric difference of two shapes</li>
+ *   <li>{@code add_point} — adds a coordinate to a geometry</li>
+ *   <li>{@code masked_by} — computes the visible region from the calling agent</li>
+ *   <li>{@code split_at} — splits a line at a given point</li>
+ * </ul>
+ *
+ * <p>Buffer / erosion operations are provided by {@link SpatialTransformations} via the
+ * {@code buffer} / {@code +} / {@code -} overloads on geometry operands.
+ *
+ * <p>Usage example:
+ * <pre>{@code
+ * geometry inter_geom <- square(10) inter circle(5);
+ * geometry union_geom <- square(10) + circle(5);
+ * geometry diff_geom  <- square(10) - circle(3);
+ * }</pre>
+ *
+ * @author Alexis Drogoul, Patrick Taillandier and others (UMI UMMISCO IRD/SU)
+ * @see IShape
+ * @see GeometryUtils
  */
 public class SpatialOperators {
 
@@ -75,7 +99,9 @@ public class SpatialOperators {
 			category = { IOperatorCategory.SPATIAL })
 	@doc (
 			value = "A geometry resulting from the intersection between the two geometries",
-			special_cases = { "returns nil if one of the operands is nil" },
+			special_cases = {
+					"Returns nil if one of the operands is nil.",
+					"Returns an empty geometry (i.e. nil) if the two operands do not overlap." },
 			examples = { @example (
 					value = "square(10) inter circle(5)",
 					equals = "circle(5)") },
@@ -148,6 +174,9 @@ public class SpatialOperators {
 	@doc (
 			usages = { @usage (
 					value = "if the right-operand is a container of points, geometries or agents, returns the geometry resulting from the union all the geometries") },
+			special_cases = {
+					"Returns nil if the container operand is nil.",
+					"Returns an empty geometry for an empty container." },
 			examples = { @example (
 					value = "union([geom1, geom2, geom3])",
 					equals = "a geometry corresponding to union between geom1, geom2 and geom3",

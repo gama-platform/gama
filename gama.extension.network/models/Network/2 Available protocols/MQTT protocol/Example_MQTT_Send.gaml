@@ -27,7 +27,8 @@ global {
 			do connect(with_name:"sender");
 			
 			// default ActiveMQ MQTT login is "admin", the password is "admin" and the port is 1883
-			// do connect to:"localhost" with_name:"sender" login:"admin" password:"admin" port: 1883;
+			// do connect(to:"localhost", port:1883, with_name:"sender");
+			// do connect(to:"localhost", port:1883, with_name:"sender", login:"admin", password:"admin", port: 1883);
 		}
 	}
 }
@@ -38,7 +39,6 @@ species NetworkingAgent skills:[network]{
 	reflex send when: cycle mod 10  = 3
 	{
 		write "sending message: " + "This message a string from " + name;
-		do send(to:"sender", contents:"This message a string from " + name);
 		do send(to:"receiver", contents:"This message a string from " + name);
 	}
 	
@@ -46,19 +46,13 @@ species NetworkingAgent skills:[network]{
 	{
 		int a <- 0;		
 		write "sending message: " + a;
-		do send(to:"sender", contents:a);
 		do send(to:"receiver", contents:a);		
-	}	
+	}
 
 	reflex send3 when: cycle mod 10  = 8
 	{
 		write "sending message: " + self;
-		do send(to:"sender", contents:self);		
-	}
-	
-	reflex receive
-	{
-		write "length mail box "  + mailbox collect(each.contents);
+		do send(to:"receiver", contents:self);			
 	}
 }
 

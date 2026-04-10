@@ -121,7 +121,7 @@ public class TopLevelFolder extends VirtualContent<NavigatorRoot> implements IGa
 	public int findMaxProblemSeverity() {
 		var severity = NO_PROBLEM;
 		for (final WrappedProject p : children) {
-			final var s = p.findMaxProblemSeverity();
+			final int s = p.findMaxProblemSeverity();
 			if (s > severity) { severity = s; }
 			if (severity == IMarker.SEVERITY_ERROR) { break; }
 		}

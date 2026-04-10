@@ -24,6 +24,7 @@ import java.util.Set;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.operator;
+import gama.annotations.test;
 import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
@@ -36,7 +37,40 @@ import gama.api.types.list.IList;
 import gama.api.types.map.IMap;
 
 /**
- * The Class MulticriteriaAnalyzeOperator.
+ * Provides GAML multi-criteria decision-making (MCDM) operators.
+ *
+ * <p>All operators in this class return the <b>0-based index</b> of the best candidate
+ * from the supplied list, or {@code -1} if the candidate list is {@code nil} or empty.
+ * Candidates are lists of criterion values (one numeric value per criterion); criteria
+ * are specified as maps with at minimum a {@code "name"} key and a {@code "weight"} key.
+ *
+ * <p>Available operators:
+ * <ul>
+ *   <li>{@code weighted_means_DM} — selects the candidate that maximises the
+ *       weighted arithmetic mean of its criterion values.</li>
+ *   <li>{@code fuzzy_choquet_DM} — selects the candidate that maximises the
+ *       Fuzzy Choquet Integral over the supplied sub-set weights.</li>
+ *   <li>{@code promethee_DM} — selects the best candidate according to the
+ *       PROMETHEE II outranking method.</li>
+ *   <li>{@code electre_DM} — selects the best candidate according to the ELECTRE
+ *       concordance / discordance method.</li>
+ *   <li>{@code evidence_theory_DM} — selects the best candidate according to a
+ *       method derived from Dempster–Shafer Evidence Theory.</li>
+ * </ul>
+ *
+ * <p>Usage example:
+ * <pre>{@code
+ * // Three candidates, two criteria (utility w=2, price w=1)
+ * int best <- weighted_means_DM(
+ *     [[1.0, 7.0], [4.0, 2.0], [3.0, 3.0]],
+ *     [["name"::"utility", "weight"::2.0],
+ *      ["name"::"price",   "weight"::1.0]]
+ * );
+ * // best = 1  (the second candidate has the highest weighted mean)
+ * }</pre>
+ *
+ * @author Patrick Taillandier, Alexis Drogoul and others (UMI UMMISCO IRD/SU)
+ * @see Candidate
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class MulticriteriaAnalyzeOperator {
@@ -63,11 +97,14 @@ public class MulticriteriaAnalyzeOperator {
 			concept = { IConcept.MULTI_CRITERIA })
 	@doc (
 			value = "The index of the candidate that maximizes the weighted mean of its criterion values. The first operand is the list of candidates (a candidate is a list of criterion values); the second operand the list of criterion (list of map)",
-			special_cases = { "returns -1 is the list of candidates is nil or empty" },
+			special_cases = {
+					"Returns -1 if the candidate list is nil or empty.",
+					"All criterion values must be numeric; non-numeric values are cast to float (0 if not convertible)." },
 			examples = { @example (
 					value = "weighted_means_DM([[1.0, 7.0],[4.0,2.0],[3.0, 3.0]], [[\"name\"::\"utility\", \"weight\" :: 2.0],[\"name\"::\"price\", \"weight\" :: 1.0]])",
 					equals = "1") },
 			see = { "promethee_DM", "electre_DM", "evidence_theory_DM" })
+	@test ("weighted_means_DM([[1.0],[4.0],[3.0]], [[\"name\"::\"v\",\"weight\"::1.0]]) = 1")
 	public static Integer weightedMeansDecisionMaking(final IScope scope, final IList<List> cands,
 			final IList<Map<String, Object>> criteriaMap) throws GamaRuntimeException {
 		if (cands == null || cands.isEmpty()) return -1;
@@ -238,7 +275,7 @@ public class MulticriteriaAnalyzeOperator {
 			concept = { IConcept.MULTI_CRITERIA })
 	@doc (
 			value = "The index of the best candidate according to the Promethee II method. This method is based on a comparison per pair of possible candidates along each criterion: all candidates are compared to each other by pair and ranked. More information about this method can be found in [Behzadian, M., Kazemzadeh, R., Albadvi, A., M., A.: PROMETHEE: A comprehensive literature review on methodologies and applications. European Journal of Operational Research(2010)](https://www.sciencedirect.com/science/article/abs/pii/S0377221709000071). The first operand is the list of candidates (a candidate is a list of criterion values); the second operand the list of criterion: A criterion is a map that contains fours elements: a name, a weight, a preference value (p) and an indifference value (q). The preference value represents the threshold from which the difference between two criterion values allows to prefer one vector of values over another. The indifference value represents the threshold from which the difference between two criterion values is considered significant.",
-			special_cases = { "returns -1 if the list of candidates is nil or empty" },
+			special_cases = { "Returns -1 if the candidate list is nil or empty." },
 			examples = { @example (
 					value = "promethee_DM([[1.0, 7.0],[4.0,2.0],[3.0, 3.0]], [[\"name\"::\"utility\", \"weight\" :: 2.0,\"p\"::0.5, \"q\"::0.0, \"s\"::1.0, \"maximize\" :: true],[\"name\"::\"price\", \"weight\" :: 1.0,\"p\"::0.5, \"q\"::0.0, \"s\"::1.0, \"maximize\" :: false]])",
 					equals = "1") },
@@ -336,7 +373,9 @@ public class MulticriteriaAnalyzeOperator {
 					The indifference value represents the threshold from which the difference between two criterion values is considered significant. \
 					The veto value represents the threshold from which the difference between two criterion values disqualifies the candidate that obtained the smaller value; \
 					the last operand is the fuzzy cut.""",
-			special_cases = { "returns -1 is the list of candidates is nil or empty" },
+			special_cases = {
+					"Returns -1 if the candidate list is nil or empty.",
+					"All preference (p), indifference (q) and veto (v) thresholds must be non-negative values." },
 			examples = { @example (
 					value = "electre_DM([[1.0, 7.0],[4.0,2.0],[3.0, 3.0]], [[\"name\"::\"utility\", \"weight\" :: 2.0,\"p\"::0.5, \"q\"::0.0, \"s\"::1.0, \"maximize\" :: true],[\"name\"::\"price\", \"weight\" :: 1.0,\"p\"::0.5, \"q\"::0.0, \"s\"::1.0, \"maximize\" :: false]],0.7)",
 					equals = "0") },
@@ -423,7 +462,7 @@ public class MulticriteriaAnalyzeOperator {
 			examples = { @example (
 					value = "evidence_theory_DM([[1.0, 7.0],[4.0,2.0],[3.0, 3.0]], [[\"name\"::\"utility\", \"s1\" :: 0.0,\"s2\"::1.0, \"v1p\"::0.0, \"v2p\"::1.0, \"v1c\"::0.0, \"v2c\"::0.0, \"maximize\" :: true],[\"name\"::\"price\",  \"s1\" :: 0.0,\"s2\"::1.0, \"v1p\"::0.0, \"v2p\"::1.0, \"v1c\"::0.0, \"v2c\"::0.0, \"maximize\" :: true]])",
 					equals = "0") },
-
+			special_cases = { "Returns -1 if the candidate list is nil or empty." },
 			usages = { @usage (
 					value = "if the operator is used with only 2 operands (the candidates and the criteria), the last parameter (use simple method) is set to true"), })
 	public static Integer evidenceTheoryDecisionMaking(final IScope scope, final IList<List> cands,
@@ -467,7 +506,9 @@ public class MulticriteriaAnalyzeOperator {
 					v1p, v2p, v1c and v2c have to been defined in order that: v1p + v1c <= 1.0; v2p + v2c <= 1.0.; \
 					the last operand allows to use a simple version of this multi-criteria decision making method (simple if true)""",
 			masterDoc = true,
-			special_cases = { "returns -1 is the list of candidates is nil or empty" },
+			special_cases = {
+					"Returns -1 if the candidate list is nil or empty.",
+					"The belief masses v1p, v2p, v1c, v2c must satisfy: v1p + v1c ≤ 1.0 and v2p + v2c ≤ 1.0." },
 			examples = { @example (
 					value = "evidence_theory_DM([[1.0, 7.0],[4.0,2.0],[3.0, 3.0]], [[\"name\"::\"utility\", \"s1\" :: 0.0,\"s2\"::1.0, \"v1p\"::0.0, \"v2p\"::1.0, \"v1c\"::0.0, \"v2c\"::0.0, \"maximize\" :: true],[\"name\"::\"price\",  \"s1\" :: 0.0,\"s2\"::1.0, \"v1p\"::0.0, \"v2p\"::1.0, \"v1c\"::0.0, \"v2c\"::0.0, \"maximize\" :: true]], false)",
 					equals = "0") },

@@ -67,7 +67,32 @@ import gama.gaml.operators.Containers;
 import gama.gaml.operators.Graphs;
 
 /**
- * The Class Transformations.
+ * Provides GAML spatial transformation operators that alter or reinterpret an existing geometry.
+ *
+ * <p>Operators exposed by this class include:
+ * <ul>
+ *   <li><b>Scaling:</b> {@code *} / {@code scaled_by}, {@code scaled_to}</li>
+ *   <li><b>Buffering:</b> {@code +} / {@code buffer} / {@code enlarged_by},
+ *       {@code -} / {@code reduced_by}</li>
+ *   <li><b>Rotation:</b> {@code rotated_by}, {@code rotation_composition},
+ *       {@code inverse_rotation}, {@code normalized_rotation}</li>
+ *   <li><b>Translation:</b> {@code translated_by}, {@code at_location}</li>
+ *   <li><b>Affine / general:</b> {@code transformed_by}</li>
+ *   <li><b>Topology:</b> {@code convex_hull}, {@code simplification},
+ *       {@code triangulate}, {@code skeletonize}, {@code to_GAMA_CRS},
+ *       {@code to_rectangles}, {@code split_lines}, {@code voronoi}</li>
+ * </ul>
+ *
+ * <p>Usage example:
+ * <pre>{@code
+ * geometry big   <- circle(5) + 3;         // buffer by 3 m
+ * geometry small <- square(10) - 2;        // erode by 2 m
+ * geometry rot   <- square(5) rotated_by 45;
+ * geometry hull  <- convex_hull(my_polygon);
+ * }</pre>
+ *
+ * @author Alexis Drogoul, Patrick Taillandier, Arnaud Grignard and others (UMI UMMISCO IRD/SU)
+ * @see IShape
  */
 public class SpatialTransformations {
 
@@ -359,7 +384,10 @@ public class SpatialTransformations {
 					examples = { @example (
 							value = "circle(5) + 5",
 							equals = "circle(10)",
-							test = false) }) })
+							test = false) }) },
+			special_cases = {
+					"A buffer distance of 0.0 returns a copy of the original geometry (no expansion).",
+					"A negative distance erodes the geometry (equivalent to reduced_by); very small geometries may collapse to an empty result." })
 	@test ("(circle(5) + 5).height with_precision 1 = 20.0")
 	@test ("(circle(5) + 5).location with_precision 9 = (circle(10)).location with_precision 9")
 	public static IShape enlarged_by(final IScope scope, final IShape g, final Double size) {
@@ -502,7 +530,7 @@ public class SpatialTransformations {
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_TRANSFORMATIONS },
 			concept = { IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_TRANSFORMATION })
 	@doc (
-			value = "The rotation resulting from the composition of the rotations in the list, from left to right. Angles are in degrees.",
+			value = "The rotation resulting from the composition of the rotations in the list, the rotations being applied in the order of the list. Angles are in degrees.",
 			masterDoc = true,
 			examples = { @example (
 					value = "rotation_composition([38.0::{1,1,1},90.0::{1,0,0}])",
@@ -517,7 +545,7 @@ public class SpatialTransformations {
 	// }
 	// return new IPair(180 / Math.PI * rotation.getAngle(), rotation.getAxis(), Types.FLOAT, Types.POINT);
 	// }
-	@test ("normalized_rotation(rotation_composition(38.0::{1,1,1},90.0::{1,0,0}))=normalized_rotation(115.22128507898108::{-0.9491582126366207,-0.0,-0.31479943993669307})")
+	@test ("normalized_rotation(rotation_composition(38.0::{1,1,1},90.0::{1,0,0}))=normalized_rotation(115.22128507898108::{0.9491582126366207,0.0,0.31479943993669307})")
 	public static IPair<Double, IPoint> rotation_composition(final IScope scope, final IList<IPair> rotation_list) {
 		// Precompute the degree-to-radians factor to avoid recomputing it per iteration
 		final double DEG_TO_RAD = Math.PI / 180.0;
@@ -525,11 +553,14 @@ public class SpatialTransformations {
 		for (final IPair element : rotation_list) {
 			final IPair<Double, IPoint> rot = (IPair<Double, IPoint>) GamaType
 					.from(Types.PAIR, Types.FLOAT, Types.POINT).cast(scope, element, null, false);
+			Rotation3D rotation2 = new Rotation3D(rot.value(), DEG_TO_RAD * rot.key());
 			rotation = rotation.applyTo(new Rotation3D(rot.value(), DEG_TO_RAD * rot.key()));
 		}
 		return GamaPairFactory.createWith(180 / Math.PI * rotation.getAngle(), rotation.getAxis(), Types.FLOAT,
 				Types.POINT);
 	}
+	
+	
 
 	/**
 	 * Rotated by.

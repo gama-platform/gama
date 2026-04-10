@@ -43,7 +43,33 @@ import gama.api.utils.geometry.IEnvelope;
 import gama.gaml.operators.Maths;
 
 /**
- * The Class Creation.
+ * Provides all geometry construction operators for the GAML language.
+ *
+ * <p>This class exposes the following shape-creation operators (among others):
+ * {@code circle}, {@code square}, {@code rectangle}, {@code triangle}, {@code ellipse},
+ * {@code cone}, {@code hexagon}, {@code polygon}, {@code polyline} / {@code line},
+ * {@code plan} / {@code polyplan}, {@code cylinder}, {@code box}, {@code sphere},
+ * {@code teapot}, {@code link}, {@code curve} (Bézier), {@code arc},
+ * {@code squircle}, {@code cross}, {@code geometry_collection}, {@code polyhedron}.
+ *
+ * <p><b>Location default:</b> operators that depend on the current agent location
+ * (e.g. {@code circle}, {@code square}, {@code rectangle}) default to the calling
+ * agent's location, or to {@code {0,0,0}} when no agent is available.
+ *
+ * <p><b>Degenerate inputs:</b> a radius (or side size) ≤ 0 passed to {@code circle}
+ * or {@code sphere} returns a <em>point</em> geometry instead of a proper shape.
+ *
+ * <p>Usage example:
+ * <pre>{@code
+ * geometry myCircle <- circle(10);
+ * geometry myRect   <- rectangle(20, 10);
+ * geometry myPoly   <- polygon([{0,0},{0,10},{10,10},{10,0}]);
+ * geometry myLine   <- line([{0,0},{5,5},{10,0}]);
+ * }</pre>
+ *
+ * @author Alexis Drogoul, Patrick Taillandier, Arnaud Grignard and others (UMI UMMISCO IRD/SU)
+ * @see IShape
+ * @see GamaShapeFactory
  */
 public class SpatialCreation {
 
@@ -75,6 +101,9 @@ public class SpatialCreation {
 			masterDoc = true,
 			usages = { @usage (
 					value = "returns a point if the radius operand is lower or equal to 0.") },
+			special_cases = {
+					"A radius ≤ 0 returns a point geometry at the agent's current location (or {0,0,0}).",
+					"The center is the location of the calling agent by default; use circle(r, pt) to specify an explicit center." },
 			comment = "the center of the circle is by default the location of the current agent in which has been called this operator.",
 			examples = { @example (
 					value = "circle(10)",
@@ -779,6 +808,8 @@ public class SpatialCreation {
 			value = "A square geometry which side size is equal to the operand.",
 			usages = { @usage (
 					value = "returns nil if the operand is nil.") },
+			special_cases = {
+					"A side length ≤ 0 returns a point geometry at the agent's current location (or {0,0,0})." },
 			comment = "the centre of the square is by default the location of the current agent in which has been called this operator.",
 			examples = { @example (
 					value = "square(10)",
@@ -912,6 +943,8 @@ public class SpatialCreation {
 			masterDoc = true,
 			usages = { @usage (
 					value = "returns nil if the operand is nil.") },
+			special_cases = {
+					"If either dimension is ≤ 0, the resulting geometry degenerates (width or height of 0 produces a line; both ≤ 0 produces a point)." },
 			comment = "the center of the rectangle is by default the location of the current agent in which has been called this operator.",
 			examples = { @example (
 					value = "rectangle(10, 5)",
@@ -1354,6 +1387,10 @@ public class SpatialCreation {
 							value = "if the operand is composed of a single point, returns a point geometry"),
 					@usage (
 							value = "if the operand is composed of 2 points, returns a polyline geometry.") },
+			special_cases = {
+					"An empty list returns a point at {0,0,0}.",
+					"A list with fewer than 3 distinct points may return a line or a point geometry.",
+					"Duplicate consecutive points are removed before the polygon is built." },
 			examples = { @example (
 					value = "polygon([{0,0}, {0,10}, {10,10}, {10,0}])",
 					equals = "a polygon geometry composed of the 4 points.",
@@ -2122,6 +2159,9 @@ public class SpatialCreation {
 					value = "if the points list operand is nil, returns the point geometry {0,0}"),
 					@usage (
 							value = "if the points list operand is composed of a single point, returns a point geometry.") },
+			special_cases = {
+					"An empty list returns the point geometry {0,0,0}.",
+					"A single-point list returns a degenerate point geometry (not a line)." },
 			examples = { @example (
 					value = "polyline([{0,0}, {0,10}, {10,10}])",
 					equals = "a polyline geometry composed of the 3 points.",

@@ -182,7 +182,7 @@ species animal{
 	float t;
 	float pop;
 	float r;
-	float k;
+	float k <- 1.0;
 	float saturationCoeff;
 	rgb color;
 	map<animal,string> interactionMap;

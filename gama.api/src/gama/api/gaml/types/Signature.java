@@ -230,10 +230,14 @@ public record Signature(IType... list) implements Iterable<IType> {
 		for (int i = 0; i < list.length; i++) {
 			final IType localType = list[i];
 			final IType requestedType = types.list[i];
-			if (Types.intFloatCase(localType, requestedType) || requestedType.isAssignableFrom(localType)
-					|| !localType.isNumber() && requestedType == Types.NO_TYPE) {
-				continue;
-			}
+			// Either int-float or float-int
+			if (Types.intFloatCase(localType, requestedType)) continue;
+			// Explicit unknown in the definition
+			if (requestedType == Types.NO_TYPE && !localType.isNumber()) continue;
+			// Explicit unknown passed with a formal parameter that is not a number
+			if (localType == Types.NO_TYPE && !requestedType.isNumber()) continue;
+			// Assignable types
+			if (requestedType.isAssignableFrom(localType)) continue;
 			return false;
 		}
 		return true;
