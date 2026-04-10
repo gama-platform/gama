@@ -31,6 +31,10 @@ import gama.extension.serialize.IGamaObjectOutput;
  */
 class IGamaMailBoxSerialiser extends FSTIndividualSerialiser<GamaMailbox> {
 
+	static
+	{
+		DEBUG.ON();
+	}
 	/**
 	 * Returns {@code false}: objects are not registered for FST back-reference tracking.
 	 *
@@ -53,7 +57,7 @@ class IGamaMailBoxSerialiser extends FSTIndividualSerialiser<GamaMailbox> {
 	 */
 	@Override
 	public void serialise(final IGamaObjectOutput out, final GamaMailbox o) throws Exception {
-		DEBUG.ON("serialize GamaMailbox ");
+		DEBUG.OUT("serialize GamaMailbox ");
 	}
 
 	/**
@@ -71,7 +75,7 @@ class IGamaMailBoxSerialiser extends FSTIndividualSerialiser<GamaMailbox> {
 	@SuppressWarnings ("unchecked")
 	@Override
 	public GamaMailbox deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
-		DEBUG.ON("deserialize GamaMailbox ");
+		DEBUG.OUT("deserialize GamaMailbox ");
 		/*IType c = (IType) in.readObject();
 		IList<Object> result = GamaListFactory.create(c);
 		int size = in.readInt();
