@@ -32,7 +32,8 @@ global {
 			do connect(with_name:"receiver");
 			
 			// default ActiveMQ MQTT login is "admin", the password is "admin" and the port is 1883
-			// do connect to:"localhost" with_name:"receiver" login:"admin" password:"admin" port: 1883;
+			// do connect(to:"localhost", port:1883, with_name:"receiver");
+			// do connect(to:"localhost", port:1883, with_name:"receiver", login:"admin", password:"admin", port: 1883);
 		}
 	}
 }
@@ -43,7 +44,8 @@ species NetworkingAgent skills:[network]{
 	reflex fetch when:has_more_message() {	
 		loop while: has_more_message() {
 			message mess <- fetch_message();
-			write "fetch this message: " + mess;				
+			write "fetch this message: " + mess;	
+			write "Number of NetworkingAgent: " + length(NetworkingAgent);			
 		}
 	}
 }
