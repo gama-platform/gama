@@ -34,6 +34,37 @@ experiment "Tests for gama.extension.stats" type: test {
 		assert [1,2,4,3,5,7,6,8] max_of (each * 100 ) = 800;
 	}
 
+	test "Operator anova" {
+		list<list<float>> data <- [[6.0, 8.0, 4.0, 5.0, 3.0, 4.0], [8.0, 12.0, 9.0, 11.0, 6.0, 8.0], [13.0, 9.0, 11.0, 8.0, 7.0, 12.0]];
+		anova result <- anova(data);
+		assert result.f_stat with_precision 2 = 9.26;
+		assert result.p_value with_precision 3 = 0.002;
+	}
+
+	test "Operator spearman_correlation" {
+		assert (spearman_correlation([1, 2, 3, 4, 5], [1, 2, 3, 4, 5]) ) = 1.0;
+	}
+
+	test "Operator hsic" {
+		assert hsic([1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0, 4.0, 5.0]) > hsic([1.0, 2.0, 3.0, 4.0, 5.0], [5.0, 1.0, 4.0, 2.0, 3.0]);
+		assert hsic([1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0, 4.0, 5.0]) <= 1.0;
+	}
+
+	test "Operator hsic_p_value" {
+		assert hsic_p_value([1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0, 4.0, 5.0], 100) < 0.05;
+	}
+
+	test "Operator multi_anova" {
+		list<float> y <- [10.0, 11.0, 20.0, 21.0, 30.0, 31.0, 40.0, 41.0, 100.0, 101.0, 200.0, 201.0];
+		list<string> fA <- ['a', 'a', 'a', 'a', 'b', 'b', 'b', 'b', 'c', 'c', 'c', 'c'];
+		list<string> fB <- ['x', 'x', 'y', 'y', 'x', 'x', 'y', 'y', 'x', 'x', 'y', 'y'];
+		anova result <- multi_anova(y, fA, fB);
+		map<string, float> pvals <- result.p_values;
+		assert pvals['A'] < 0.05;
+		assert pvals['B'] < 0.05;
+		assert pvals['A:B'] < 0.05;
+	}
+
 	test "Operator build" {
 		assert build(matrix([[1.0,2.0,3.0,4.0],[2.0,3.0,4.0,2.0],[5.0,1.0,3.0,5.0],[3.0,4.0,5.0,1.0]])).parameters collect (each with_precision 5) = [0.5,2.5,0.0,-1.5];
 	}
@@ -42,6 +73,8 @@ experiment "Tests for gama.extension.stats" type: test {
 		map d <- ["p1":: [0.1, 0.2, 0.3, 0.4], "out":: [1.0, 1.1, 1.2, 1.3]];
 		assert sobolAnalysis(d, "temp_sob.txt", 1) != "";
 		assert sobolAnalysis(matrix([[0.1, 0.2, 0.3, 0.4], [1.0, 1.1, 1.2, 1.3]]), "temp_sob_mat.txt", 1) != "";
+		assert delete_file("temp_sob.txt");
+		assert delete_file("temp_sob_mat.txt");
 	}
 
 	test "Polymorphic morrisAnalysis" {
