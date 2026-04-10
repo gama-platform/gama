@@ -1069,7 +1069,7 @@ public class Containers {
 			see = { "contains_all", "contains_any" })
 	@validator (AtValidator.class)
 	@test ("list<int> l <- [10,20,30]; l at 0 = 10")
-	@test ("list<int> l <- [10,20,30]; l at 2 = 30")
+	@test ("list<int> l2 <- [10,20,30]; l at 2 = 30")
 	public static Object at(final IScope scope, final IContainer container, final Object key) {
 		if (container instanceof IContainer.ToGet) return ((IContainer.ToGet) container).get(scope, key);
 		throw GamaRuntimeException.error("" + container + " cannot be accessed using " + key, scope);

@@ -301,7 +301,7 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
 	private void drawCachedGeometry(final IShape.Type type, /* final boolean solid, */ final IColor border) {
 		gl.pushMatrix();
 		gl.translateBy(_center);
-		gl.rotateBy(_rot.rotateToHorizontal(_normal, _tangent, false).revertInPlace());
+		gl.rotateBy(_rot.revertInPlace().rotateToHorizontal(_normal, _tangent, false));
 		gl.scaleBy(_scale);
 		gl.drawCachedGeometry(type, border);
 		gl.popMatrix();

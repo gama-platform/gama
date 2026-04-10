@@ -530,11 +530,11 @@ public class SpatialTransformations {
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_TRANSFORMATIONS },
 			concept = { IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_TRANSFORMATION })
 	@doc (
-			value = "The rotation resulting from the composition of the rotations in the list, the rotations being applied in the order of the list. Angles are in degrees.",
+			value = "The rotation resulting from the composition of the rotations in the list. Rotations will be applied in the order of the list: if R=[R1,...,Rn], Rx = Rn...R1x. Angles are in degrees.",
 			masterDoc = true,
 			examples = { @example (
 					value = "rotation_composition([38.0::{1,1,1},90.0::{1,0,0}])",
-					equals = "115.22128507898108::{0.9491582126366207,0.31479943993669307,-0.0}",
+					equals = "115.22128507898105::{0.9491582126366207,0.31479943993669307,-0.0}",
 					test = false) },
 			see = { "inverse_rotation" })
 	// public static IPair<Double, IPoint> rotation_composition(final IScope scope,
@@ -545,7 +545,7 @@ public class SpatialTransformations {
 	// }
 	// return new IPair(180 / Math.PI * rotation.getAngle(), rotation.getAxis(), Types.FLOAT, Types.POINT);
 	// }
-	@test ("normalized_rotation(rotation_composition(38.0::{1,1,1},90.0::{1,0,0}))=normalized_rotation(115.22128507898108::{0.9491582126366207,0.0,0.31479943993669307})")
+	@test ("normalized_rotation(rotation_composition(38.0::{1,1,1},90.0::{1,0,0}))=normalized_rotation(115.22128507898105::{0.9491582126366207,0.0,0.31479943993669307})")
 	public static IPair<Double, IPoint> rotation_composition(final IScope scope, final IList<IPair> rotation_list) {
 		// Precompute the degree-to-radians factor to avoid recomputing it per iteration
 		final double DEG_TO_RAD = Math.PI / 180.0;
@@ -553,7 +553,6 @@ public class SpatialTransformations {
 		for (final IPair element : rotation_list) {
 			final IPair<Double, IPoint> rot = (IPair<Double, IPoint>) GamaType
 					.from(Types.PAIR, Types.FLOAT, Types.POINT).cast(scope, element, null, false);
-			Rotation3D rotation2 = new Rotation3D(rot.value(), DEG_TO_RAD * rot.key());
 			rotation = rotation.applyTo(new Rotation3D(rot.value(), DEG_TO_RAD * rot.key()));
 		}
 		return GamaPairFactory.createWith(180 / Math.PI * rotation.getAngle(), rotation.getAxis(), Types.FLOAT,
@@ -1879,7 +1878,7 @@ public class SpatialTransformations {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	@operator (
+	@operator ( 
 			value = "split_lines",
 			content_type = IType.GEOMETRY,
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_TRANSFORMATIONS },
@@ -1895,85 +1894,20 @@ public class SpatialTransformations {
 	public static IList<IShape> split_lines(final IScope scope, final IContainer<?, IShape> geoms,
 			final boolean readAttributes) throws GamaRuntimeException {
 		if (geoms.isEmpty(scope)) return GamaListFactory.create(Types.GEOMETRY);
-		if (!readAttributes) return split_lines(scope, geoms);
-		boolean change = true;
-		IList<IShape> lines = GamaListFactory.create(Types.GEOMETRY);
-		lines.addAll((Collection<? extends IShape>) geoms);
-		final IList<IShape> split_lines = GamaListFactory.create(Types.GEOMETRY);
-		while (change) {
-			change = false;
-			final IList<IShape> lines2 = GamaListFactory.createWithoutCasting(Types.GEOMETRY, lines);
-			for (final IShape l : lines) {
-				lines2.remove(l);
-				if (!l.getInnerGeometry().isSimple()) {
-					final IList<IShape> segments = GamaListFactory.create(Types.GEOMETRY);
-					for (int i = 0; i < l.getPoints().size() - 1; i++) {
-						final IList<IShape> points = GamaListFactory.create(Types.POINT);
-						points.add(l.getPoints().get(i));
-						points.add(l.getPoints().get(i + 1));
-						segments.add(SpatialCreation.line(scope, points));
-					}
-					final IShape line = SpatialOperators.union(scope, segments);
-					final Geometry nodedLineStrings = line.getInnerGeometry();
-
-					for (int i = 0, n = nodedLineStrings.getNumGeometries(); i < n; i++) {
-						final Geometry g = nodedLineStrings.getGeometryN(i);
-						if (g instanceof LineString) {
-							final IShape gS = GamaShapeFactory.createFrom(g);
-							gS.copyAttributesOf(l);
-							lines2.add(GamaShapeFactory.createFrom(g));
-						}
-					}
-					change = true;
-
-					lines = lines2;
-					break;
-				}
-				final IShape gg =
-						SpatialTransformations.enlarged_by(scope, l, Math.min(0.001, l.getPerimeter() / 1000.0), 10);
-
-				final List<IShape> ls = gg == null ? GamaListFactory.create()
-						: (List<IShape>) SpatialQueries.overlapping(scope, lines2, gg);
-				if (!ls.isEmpty()) {
-					final IPoint pto = l.getPoints().firstValue(scope);
-					final IPoint ptd = l.getPoints().lastValue(scope);
-					@SuppressWarnings ("null") final PreparedGeometry pg =
-							PreparedGeometryFactory.prepare(gg.getInnerGeometry());
-					for (final IShape l2 : ls) {
-						if (pg.covers(l2.getInnerGeometry()) || pg.coveredBy(l2.getInnerGeometry())) { continue; }
-						final IShape it = SpatialOperators.inter(scope, l, l2);
-
-						if (it == null || it.getPerimeter() > 0.0) { continue; }
-						if (!it.getLocation().equals(pto) || !it.getLocation().equals(ptd)) {
-							final IPoint pt = it.getPoints().firstValue(scope);
-							final IList<IShape> res1 = SpatialOperators.split_at(l2, pt);
-							res1.removeIf(a -> a.getPerimeter() == 0.0);
-							final IList<IShape> res2 = SpatialOperators.split_at(l, pt);
-							res2.removeIf(a -> a.getPerimeter() == 0.0);
-							if (res1.size() > 1 || res2.size() > 1) {
-								change = true;
-								lines2.addAll(res1);
-								lines2.addAll(res2);
-								lines2.remove(l2);
-								break;
-							}
-						}
-					}
-					if (change) {
-						lines = lines2;
-						break;
-					}
-				}
-				split_lines.add(l);
+		IList<IShape> lines = split_lines(scope, geoms);
+		if (readAttributes) { 
+			for (IShape l : geoms.listValue(scope,Types.GEOMETRY, false)) {
+				IShape s = SpatialTransformations.enlarged_by(scope, l, 0.01);
+				IList<? extends IShape> ls = SpatialQueries.inside(scope, lines, s); 
+				for (IShape l2 : ls.listValue(scope,Types.GEOMETRY, false)) {
+					l2.copyAttributesOf(l);
+				}	
 			}
-
 		}
-
-		return split_lines;
+		return lines;
 	}
-
 	/**
-	 * Clean.
+	 * Clean. 
 	 *
 	 * @param scope
 	 *            the scope

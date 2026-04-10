@@ -38,6 +38,7 @@ import gama.api.gaml.types.IType;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.IExploration;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
 import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
@@ -143,12 +144,15 @@ public class StochanalysisExploration extends AExplorationAlgorithm {
 		Map<String, Map<ParametersSet, Map<String, List<Double>>>> MapOutput = new LinkedHashMap<>();
 		for (String out : outputs) {
 
-			IMap<ParametersSet, List<Object>> sp = GamaMapFactory.create();
-			for (ParametersSet ps : res_outputs.keySet()) { sp.put(ps, res_outputs.get(ps).get(out)); }
+			IMap<ParametersSet, IList<Object>> sp = GamaMapFactory.create();
+			for (ParametersSet ps : res_outputs.keySet()) { 
+				sp.put(ps, res_outputs.get(ps).get(out).stream()
+						.mapToDouble(d -> Cast.asFloat(scope, d)).boxed().collect(GamaListFactory.toGamaList())); 
+			}
 
 			Map<ParametersSet, Map<String, List<Double>>> res_val = GamaMapFactory.create();
 			for (String m : Stochanalysis.SA) {
-				Map<ParametersSet, List<Double>> stoch = Stochanalysis.stochasticityAnalysis(sp, m, scope);
+				IMap<ParametersSet, IList<Double>> stoch = Stochanalysis.stochasticityAnalysis(sp, m, scope);
 				for (ParametersSet p : sp.keySet()) {
 					if (!res_val.containsKey(p)) {
 						res_val.put(p, Stochanalysis.SA.stream()

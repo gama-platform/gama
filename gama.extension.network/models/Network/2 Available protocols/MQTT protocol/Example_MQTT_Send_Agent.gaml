@@ -24,7 +24,8 @@ global skills:[network]{
 		do connect(with_name:"sender");
 		
 		// default ActiveMQ MQTT login is "admin", the password is "admin" and the port is 1883
-		// do connect to:"localhost" with_name:"sender" login:"admin" password:"admin" port: 1883;
+		// do connect(to:"localhost", with_name:"sender" ,login:"admin", password:"admin", port: 1883);
+		// do connect(to:"localhost", with_name:"sender" ,port: 1883);
 		
 		create NetworkingAgent number:10{	
 			color <- rnd_color(255);	

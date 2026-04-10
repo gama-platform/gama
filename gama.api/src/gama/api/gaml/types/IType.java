@@ -212,9 +212,11 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 
 	/** The object. */
 	int OBJECT = 33;
-
+	/** Type ID for the anova type (statistical analysis of variance). */
+	int ANOVA = 34;
+	
 	/** The type ID for dataframe (tabular data with named columns) */
-	int DATAFRAME = 34;
+	int DATAFRAME = 35;
 
 	// ==================== Type ID Ranges ====================
 

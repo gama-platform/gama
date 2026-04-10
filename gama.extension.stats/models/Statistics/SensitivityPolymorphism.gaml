@@ -14,6 +14,7 @@ global {
 		map sobol_data <- ["p1":: [0.1, 0.2, 0.3, 0.4], "out":: [1.0, 1.1, 1.2, 1.3]];
 		string sobol_report <- sobolAnalysis(sobol_data, "sobol_test_report.txt", 1);
 		write "Sobol 1D Map: " + ((sobol_report != "") ? "OK" : "FAIL");
+		assert delete_file("sobol_test_report.txt");
 
 		map morris_data <- ["p1":: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6], "out":: [1.0, 1.1, 1.2, 1.3, 1.4, 1.5]];
 		string morris_report <- morrisAnalysis(morris_data, 4, 1);
@@ -59,9 +60,13 @@ global {
 		map data_map <- ["col0":: [0.1, 0.2, 0.3, 0.4], "col1":: [1.0, 1.1, 1.2, 1.3]];
 		matrix data_mat <- matrix([[0.1, 0.2, 0.3, 0.4], [1.0, 1.1, 1.2, 1.3]]);
 
-		if sobolAnalysis(data_map, "sob_map.txt", 1) = sobolAnalysis(data_mat, "sob_mat.txt", 1) {
+		string s1 <- sobolAnalysis(data_map, "sob_map.txt", 1);
+		string s2 <- sobolAnalysis(data_mat, "sob_mat.txt", 1);
+		if s1 = s2 {
 			write "  SUCCESS: Sobol Map == Matrix";
 		}
+		assert delete_file("sob_map.txt");
+		assert delete_file("sob_mat.txt");
 		
 		write "--- ALL TESTS COMPLETED ---";
 	}
