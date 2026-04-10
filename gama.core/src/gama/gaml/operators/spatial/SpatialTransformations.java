@@ -502,7 +502,7 @@ public class SpatialTransformations {
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_TRANSFORMATIONS },
 			concept = { IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_TRANSFORMATION })
 	@doc (
-			value = "The rotation resulting from the composition of the rotations in the list, the rotations being applied in the order of the list. Angles are in degrees.",
+			value = "The rotation resulting from the composition of the rotations in the list. Rotations will be applied in the order of the list: if R=[R1,...,Rn], Rx = Rn...R1x. Angles are in degrees.",
 			masterDoc = true,
 			examples = { @example (
 					value = "rotation_composition([38.0::{1,1,1},90.0::{1,0,0}])",
@@ -525,7 +525,6 @@ public class SpatialTransformations {
 		for (final IPair element : rotation_list) {
 			final IPair<Double, IPoint> rot = (IPair<Double, IPoint>) GamaType
 					.from(Types.PAIR, Types.FLOAT, Types.POINT).cast(scope, element, null, false);
-			Rotation3D rotation2 = new Rotation3D(rot.value(), DEG_TO_RAD * rot.key());
 			rotation = rotation.applyTo(new Rotation3D(rot.value(), DEG_TO_RAD * rot.key()));
 		}
 		return GamaPairFactory.createWith(180 / Math.PI * rotation.getAngle(), rotation.getAxis(), Types.FLOAT,

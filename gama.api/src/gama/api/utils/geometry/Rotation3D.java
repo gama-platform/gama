@@ -276,17 +276,16 @@ public class Rotation3D implements Serializable, ITransformation3D {
 	 *
 	 * @return normalized axis of the rotation
 	 */
+	
 	public IPoint getAxis() {
-		final double squaredSine = q1 * q1 + q2 * q2 + q3 * q3;
-		if (squaredSine == 0) return PLUS_I;
-		final double sgn = +1;
-		
-		if (q0 < 0) {
-			final double inverse = - sgn / Math.sqrt(squaredSine);
-			return GamaPointFactory.create(q1 * inverse, q2 * inverse, q3 * inverse);
-		}
-		final double inverse = sgn / Math.sqrt(squaredSine);
-		return GamaPointFactory.create(q1 * inverse, q2 * inverse, q3 * inverse);
+	    double squaredSine = q1*q1 + q2*q2 + q3*q3;
+	    if (squaredSine == 0) return PLUS_I;
+	    double inverse = 1.0 / Math.sqrt(squaredSine);
+	    return GamaPointFactory.create(
+	        q1 * inverse,
+	        q2 * inverse,
+	        q3 * inverse
+	    );
 	}
 
 	/**
@@ -295,10 +294,9 @@ public class Rotation3D implements Serializable, ITransformation3D {
 	 * @return angle of the rotation (between 0 and &pi;)
 	 * @see #Rotation(IPoint , double)
 	 */
+	
 	public double getAngle() {
-		if (q0 < -0.1 || q0 > 0.1) return 2 * Math.asin(Math.sqrt(q1 * q1 + q2 * q2 + q3 * q3));
-		if (q0 < 0) return 2 * Math.acos(-q0);
-		return 2 * Math.acos(q0);
+	    return 2 * Math.atan2(Math.sqrt(q1*q1 + q2*q2 + q3*q3), q0);
 	}
 
 	/**

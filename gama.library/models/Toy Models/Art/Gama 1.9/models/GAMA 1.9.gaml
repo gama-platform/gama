@@ -57,15 +57,15 @@ global {
 		    color<-#white;
 		    if (name = "gamablue"){
 		    	color<-#gamablue;
-		    	depth <- 0.0001;
+		    	depth <- 0.1;
 		    }
 		    if (name = "gamared"){
 		    	color<-#gamared;
-		    	depth <- 0.0001;
+		    	depth <- 0.1;
 		    }
 		    if (name = "gamaorange"){
 		    	color<-#gamaorange;
-		    	depth <- 0.0001;
+		    	depth <- 0.1;
 		    }
 		    if (name = "donut1"){
 		    	color<-rgb(#gamablue,25);
@@ -137,7 +137,7 @@ species objects skills:[moving]{
 	string type;
 	string name;
 	point axe <- {0,1,0};
-	float rotation_speed <- 1.0;
+	float rotation_speed <- - 1.0;
 	int level; 
 	list<objects> linked_objects <- [];
 	float depth <- 0.0;
@@ -200,12 +200,12 @@ species objects skills:[moving]{
 			
 }	
 
-experiment "Run me !"   type: gui autorun:true{
+experiment "Run me !"   type: gui autorun:false{
 	float minimum_cycle_duration<-0.025#sec;
 	parameter 'Mode' var: mode   category: "Preferences";
 	parameter 'Inner rings' var: inner_rings   category: "Preferences";
 	output {
-		display "1.9"  background: world.changeColor(cycle) type: 3d axes:false autosave:false fullscreen:false toolbar:false{
+		display "1.9"  background: world.changeColor(cycle) type: opengl axes:true autosave:false fullscreen:false toolbar:false{
 		  species objects aspect:obj;			
 		}
 	}
