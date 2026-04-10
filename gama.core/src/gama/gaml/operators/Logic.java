@@ -239,13 +239,13 @@ public class Logic {
 							value = "[10, 19, 43, 12, 7, 22] collect ((each > 20) ? 'above' : 'below')",
 							returnType = "list<string>",
 							equals = "['below', 'below', 'above', 'below', 'below', 'above']"),
-					@example (value = "(1 > 0) ? 'yes' : 'no'", equals = "'yes'"),
-					@example (value = "(1 < 0) ? 'yes' : 'no'", equals = "'no'"),
+					@example (value = "1 > 0 ? 'yes' : 'no'", equals = "'yes'"),
+					@example (value = "1 < 0 ? 'yes' : 'no'", equals = "'no'"),
 					@example ("rgb col <- (flip(0.3) ? #red : (flip(0.9) ? #blue : #green));")
 			},
 			see = ":")
-	@test ("(1 > 0) ? 'yes' : 'no' = 'yes'")
-	@test ("(1 < 0) ? 'yes' : 'no' = 'no'")
+	@test ("(1 > 0 ? 'yes' : 'no') = 'yes'")
+	@test ("(1 < 0 ? 'yes' : 'no') = 'no'")
 	@test ("(true ? 1 : 2) = 1")
 	@test ("(false ? 1 : 2) = 2")
 	public static Object iff(final IScope scope, final Boolean left, final IExpression right)

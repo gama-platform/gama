@@ -10,10 +10,8 @@
 package gama.gaml.operators;
 
 import static gama.annotations.constants.IKeyword.EQUALS;
-import static org.locationtech.jts.index.quadtree.IntervalSize.isZeroWidth;
 
 import org.eclipse.emf.ecore.EObject;
-import org.locationtech.jts.index.quadtree.IntervalSize;
 
 import gama.annotations.doc;
 import gama.annotations.example;
@@ -29,6 +27,7 @@ import gama.api.constants.IGamlIssue;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.IType;
 import gama.api.types.geometry.IPoint;
+import gama.api.utils.MathUtils;
 
 /**
  * Provides all comparison operators for the GAML language.
@@ -103,6 +102,7 @@ public class Comparison {
 	/** The Constant LTE. */
 	public final static String LTE = "<=";
 
+	
 	/**
 	 * Between.
 	 *
@@ -713,7 +713,7 @@ public class Comparison {
 		if (Double.isNaN(a) && Double.isNaN(b)) {
 	        return true;
 	    } 
-		return isZeroWidth(a, b);
+		return MathUtils.isZeroWidth(a, b);
 	}
 	
 	
