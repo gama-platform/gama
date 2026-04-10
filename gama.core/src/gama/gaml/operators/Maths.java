@@ -2093,6 +2093,7 @@ public class Maths {
 	@test ("(-7) mod 3 = -1")
 	@test ("is_error(5 mod 0)")
 	public static Integer opMod(final IScope scope, final Integer a, final Integer b) {
+		if (b == 0) GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("Division by zero", scope), false);
 		return a % b;
 	}
 

@@ -35,6 +35,7 @@ import gama.api.utils.geometry.GamaCoordinateSequence;
 import gama.api.utils.geometry.GamaGeometryFactory;
 import gama.api.utils.geometry.UniqueCoordinateSequence;
 import gama.core.topology.graph.GamaSpatialGraph;
+import gama.core.util.messaging.GamaMailbox;
 import gama.core.util.messaging.GamaMessage;
 import gama.core.util.path.GamaSpatialPath;
 import gama.extension.serialize.fst.FSTConfiguration;
@@ -178,6 +179,7 @@ public class BinarySerialiser implements ISerialisationConstants {
 		register(UniqueCoordinateSequence.class, new UniqueCoordinateSequenceSerialiser());
 		register(GamaCoordinateSequence.class, new GamaCoordinateSequenceSerialiser());
 		register(IColor.class, new IColorSerialiser());
+		register(GamaMailbox.class, new IGamaMailBoxSerialiser());
 	}
 
 	/**
