@@ -5,18 +5,19 @@ experiment "Tests Stockanalysis" type: test {
 	setup { data <- [0.1,0.2,0.3,0.3,0.3,0.3]; }
 	
 	test rollingcv {
-		
-		list lvc <- rolling_vc(data);
+
+		list<float> lvc <- rolling_vc(data);
 		assert length(lvc) = length(data)-1;
-		assert last(lvc) = standard_deviation(data) / mean(data);
-		
+		assert abs(last(lvc) - (standard_deviation(data) / mean(data))) < 1e-10;
+
 	}
-	
+
 	test rollingse {
-		
-		list lse <- rolling_se(data);
+
+		list<float> lse <- rolling_se(data);
 		assert length(lse) = length(data)-1;
-		assert last(lse) = standard_deviation(data) / sqrt(length(data));
+		assert abs(last(lse) - (standard_deviation(data) / sqrt(length(data)))) < 1e-10;
+
 	}
 	
 	test powertest {

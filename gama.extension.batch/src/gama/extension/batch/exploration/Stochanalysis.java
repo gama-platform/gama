@@ -396,46 +396,82 @@ public class Stochanalysis {
 	public static IMap<ParametersSet, IList<Double>> stochasticityAnalysis(
 			final IMap<ParametersSet, IList<Object>> sample, final String method, final IScope scope) {
 
-		@SuppressWarnings ("unchecked") IMap<ParametersSet, IList<Double>> res = GamaMapFactory.create();
+		IMap<ParametersSet, IList<Double>> res =
+				GamaMapFactory.create(Types.get(ParametersSet.class), Types.LIST.of(Types.FLOAT));
+		int nbBootstrap = 100;
+
 		switch (method) {
 			case CV -> {
 				for (var es : sample.entrySet()) {
-					IList<Double> currentXp = es.getValue()
-							.stream(scope).mapToDouble(e -> Cast.asFloat(scope, e))
-							.boxed().collect(GamaListFactory.toGamaList());
-					Collections.shuffle(currentXp);
-					res.put(es.getKey(), coefficientOfVariance(scope,currentXp));
+					IList<Double> data = es.getValue().stream(scope).mapToDouble(e -> Cast.asFloat(scope, e)).boxed()
+							.collect(GamaListFactory.toGamaList());
+					List<IList<Double>> bootstrapRuns = new ArrayList<>();
+					for (int i = 0; i < nbBootstrap; i++) {
+						IList<Double> bootstrapped = bootstrapSample(scope, data);
+						bootstrapRuns.add(coefficientOfVariance(scope, bootstrapped));
+					}
+					res.put(es.getKey(), averageLists(bootstrapRuns));
 				}
 			}
 			case SE -> {
 				for (var es : sample.entrySet()) {
-					IList<Double> currentXp = es.getValue().copy(scope)
-							.stream(scope).mapToDouble(e -> Cast.asFloat(scope, e))
-							.boxed().collect(GamaListFactory.toGamaList());
-					Collections.shuffle(currentXp);
-					res.put(es.getKey(), standardError(scope,currentXp));
+					IList<Double> data = es.getValue().stream(scope).mapToDouble(e -> Cast.asFloat(scope, e)).boxed()
+							.collect(GamaListFactory.toGamaList());
+					List<IList<Double>> bootstrapRuns = new ArrayList<>();
+					for (int i = 0; i < nbBootstrap; i++) {
+						IList<Double> bootstrapped = bootstrapSample(scope, data);
+						bootstrapRuns.add(standardError(scope, bootstrapped));
+					}
+					res.put(es.getKey(), averageLists(bootstrapRuns));
 				}
 			}
 			case ES -> {
 				for (var es : sample.entrySet()) {
-					IList<Double> currentXp = es.getValue().copy(scope)
-							.stream(scope).mapToDouble(e -> Cast.asFloat(scope, e))
-							.boxed().collect(GamaListFactory.toGamaList());
-					Collections.shuffle(currentXp);
-					res.put(es.getKey(), criticalEffectSize(scope,currentXp));
+					IList<Double> data = es.getValue().stream(scope).mapToDouble(e -> Cast.asFloat(scope, e)).boxed()
+							.collect(GamaListFactory.toGamaList());
+					List<IList<Double>> bootstrapRuns = new ArrayList<>();
+					for (int i = 0; i < nbBootstrap; i++) {
+						IList<Double> bootstrapped = bootstrapSample(scope, data);
+						bootstrapRuns.add(criticalEffectSize(scope, bootstrapped));
+					}
+					res.put(es.getKey(), averageLists(bootstrapRuns));
 				}
 			}
 			case PT -> {
 				double effectSize = fTestEffectSize(sample.values(), scope);
-				sample.getKeys().forEach(
-						ps -> res.put(ps, 
-								List.of(powerTestEffectSize(sample.size(), effectSize), effectSize)
-									.stream().collect(GamaListFactory.toGamaList())));
+				sample.getKeys().forEach(ps -> res.put(ps, List.of(powerTestEffectSize(sample.size(), effectSize), effectSize)
+						.stream().collect(GamaListFactory.toGamaList())));
 			}
 			default -> throw new IllegalArgumentException("Unexpected value: " + method);
 		}
 		return res;
 
+	}
+
+	/**
+	 * Helper to create a bootstrap sample (sampling with replacement).
+	 */
+	private static IList<Double> bootstrapSample(final IScope scope, final IList<Double> data) {
+		int n = data.size();
+		IList<Double> result = GamaListFactory.create(Types.FLOAT);
+		if (n == 0) return result;
+		for (int i = 0; i < n; i++) { result.add(data.get(scope.getRandom().getGenerator().nextInt(n))); }
+		return result;
+	}
+
+	/**
+	 * Helper to average multiple lists of doubles element-wise.
+	 */
+	private static IList<Double> averageLists(final List<IList<Double>> lists) {
+		if (lists == null || lists.isEmpty()) return GamaListFactory.create(Types.FLOAT);
+		int size = lists.get(0).size();
+		IList<Double> result = GamaListFactory.create(Types.FLOAT);
+		for (int i = 0; i < size; i++) {
+			double sum = 0;
+			for (IList<Double> list : lists) { sum += list.get(i); }
+			result.add(sum / lists.size());
+		}
+		return result;
 	}
 	
 	/**
@@ -519,12 +555,18 @@ public class Stochanalysis {
 	private static IList<Double> computeSTD(final IList<Double> mean, final IList<Double> val, final IScope scope) {
 		IList<Double> STD = GamaListFactory.create(Types.FLOAT);
 		for (int i = 0; i < mean.size(); i++) {
-			double sum = 0;
-			for (int y = 0; y <= i; y++) {
-				double tmp_val = Cast.asFloat(scope, val.get(y));
-				sum = sum + Math.pow(tmp_val - mean.get(i), 2);
+			if (i == 0) {
+				STD.add(0.0);
+			} else {
+				double m = mean.get(i);
+				double sumDiffSq = 0;
+				for (int y = 0; y <= i; y++) {
+					double tmp_val = Cast.asFloat(scope, val.get(y));
+					sumDiffSq += Math.pow(tmp_val - m, 2);
+				}
+				// GAMA's standard_deviation operator uses population variance (divide by N)
+				STD.add(Math.sqrt(sumDiffSq / (i + 1)));
 			}
-			STD.add(Math.sqrt(sum / (i + 1)));
 		}
 		return STD;
 	}
@@ -559,20 +601,22 @@ public class Stochanalysis {
 	 * 
 	 * @return
 	 */
-	public static int ces(final IScope scope, final IList<Double> aSample, final double alpha, final double beta, double effectSize) {
-		IList<Double> dSample =
-				aSample.stream().mapToDouble(v -> Cast.asFloat(scope, v)).boxed().collect(GamaListFactory.toGamaList());
-		double mean = dSample.stream().mapToDouble(v -> v).average().getAsDouble();
+	public static int ces(final IScope scope, final IList<Double> aSample, final double alpha, final double beta,
+			double effectSize) {
+		IList<Double> dSample = aSample.stream().mapToDouble(v -> Cast.asFloat(scope, v)).boxed()
+				.collect(GamaListFactory.toGamaList());
+		double mean = dSample.stream().mapToDouble(v -> v).average().orElse(0.0);
 		effectSize *= mean;
 
-		IList<Double> currentES = GamaListFactory.create();
+		IList<Double> currentES = GamaListFactory.create(Types.FLOAT);
 		// Starting from worst case deviation
 		currentES.add(Collections.min(dSample));
 		currentES.add(Collections.max(dSample));
 		dSample.removeAll(currentES);
 		// Sort according to deviation from the mean
-		dSample.stream().sorted((v1, v2) -> (v1.equals(v2) ? 0 : Math.abs(v1 - mean) > Math.abs(v2 - mean) ? -1 : 1));
-		for (Double n_incr : dSample) {
+		List<Double> sortedRemaining = dSample.stream()
+				.sorted((v1, v2) -> (v1.equals(v2) ? 0 : Math.abs(v1 - mean) > Math.abs(v2 - mean) ? -1 : 1)).toList();
+		for (Double n_incr : sortedRemaining) {
 			currentES.add(n_incr);
 			TDistribution td = new TDistribution(currentES.size() - 1);
 			double thresh = 2
@@ -615,8 +659,10 @@ public class Stochanalysis {
 		double betweenGroupVariability =
 				groupMean.stream().mapToDouble(mean -> Math.pow(overallMean - mean, 2)).sum() / (groups.size() - 1);
 		double withinGroupVariability = 0.0;
-		for (Double m : groupMean) {
-			withinGroupVariability += groups.stream().mapToDouble(d -> Math.pow(Cast.asFloat(scope, d) - m, 2)).sum();
+		int i = 0;
+		for (IList<Object> group : groups) {
+			Double m = groupMean.get(i++);
+			withinGroupVariability += group.stream().mapToDouble(d -> Math.pow(Cast.asFloat(scope, d) - m, 2)).sum();
 		}
 		withinGroupVariability /= groups.stream().mapToInt(List::size).sum();
 		return betweenGroupVariability / withinGroupVariability;
@@ -732,9 +778,13 @@ public class Stochanalysis {
 			double tmp_replicat = 0;
 			for (String ps : groupedSample.keySet()) {
 				IList<Double> outputForParams = groupedSample.get(ps);
-				IList<Double> mean = computeMean(outputForParams, scope);
-				IList<Double> std = computeSTD(mean, outputForParams, scope);
-				IList<Double> cv = computeCV(std, mean);
+				int nbBootstrap = 100;
+				List<IList<Double>> bootstrapRuns = new ArrayList<>();
+				for (int i = 0; i < nbBootstrap; i++) {
+					IList<Double> bootstrapped = bootstrapSample(scope, outputForParams);
+					bootstrapRuns.add(coefficientOfVariance(scope, bootstrapped));
+				}
+				IList<Double> cv = averageLists(bootstrapRuns);
 				tmp_replicat = tmp_replicat + findWithThreshold(cv, threshold);
 			}
 			min_replicat = tmp_replicat / groupedSample.size();

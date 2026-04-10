@@ -2431,7 +2431,7 @@ public class Stats {
 	}
 
 	/**
-	 * Performs a two-way ANOVA test with interactions.
+	 * Performs a two-way ANOVA test with interactions using Type III Sum of Squares.
 	 *
 	 * @param scope
 	 *            the scope
@@ -2441,7 +2441,7 @@ public class Stats {
 	 *            the first factor
 	 * @param factorB
 	 *            the second factor
-	 * @return the multi-anova result
+	 * @return the anova result
 	 */
 	@operator (
 			value = "multi_anova",
@@ -2449,7 +2449,7 @@ public class Stats {
 			category = { IOperatorCategory.STATISTICAL },
 			concept = { IConcept.STATISTIC })
 	@doc (
-			value = "Performs a two-way ANOVA test with interactions on a response variable and two factors. Returns a map of p-values for main effects and interactions.",
+			value = "Performs a two-way ANOVA test with interactions on a response variable and two factors. Uses Type III Sum of Squares (orthogonal to order).",
 			examples = { @example (
 					value = "multi_anova([1.0, 2.0, 5.0, 6.0], ['a', 'a', 'b', 'b'], ['x', 'y', 'x', 'y'])",
 					isExecutable = false) })
@@ -2468,73 +2468,81 @@ public class Stats {
 		List<Object> levelsB = new ArrayList<>();
 		for (Object o : factorB) if (!levelsB.contains(o)) levelsB.add(o);
 
-		// Type I Sum of Squares (Sequential)
-		// Model 0: Intercept only
-		double ssTotal = 0;
-		double meanY = 0;
-		for (double d : yData) meanY += d;
-		meanY /= yData.length;
-		for (double d : yData) ssTotal += (d - meanY) * (d - meanY);
-
 		try {
-			// Helper to fit and get RSS
-			org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression regression =
-					new org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression();
-
-			// Model A: y ~ A
-			double[][] xA = new double[y.size()][levelsA.size() - 1];
-			for (int i = 0; i < y.size(); i++) {
-				int idx = levelsA.indexOf(factorA.get(i));
-				if (idx > 0) xA[i][idx - 1] = 1.0;
-			}
-			regression.newSampleData(yData, xA);
-			double ssA = ssTotal - regression.calculateResidualSumOfSquares();
+			// Type III Sum of Squares requires Effect Coding (sum-to-zero)
+			// Model Full: y ~ A + B + A:B
 			int dfA = levelsA.size() - 1;
-
-			// Model A+B: y ~ A + B
-			double[][] xAB = new double[y.size()][levelsA.size() - 1 + levelsB.size() - 1];
-			for (int i = 0; i < y.size(); i++) {
-				int idxA = levelsA.indexOf(factorA.get(i));
-				if (idxA > 0) xAB[i][idxA - 1] = 1.0;
-				int idxB = levelsB.indexOf(factorB.get(i));
-				if (idxB > 0) xAB[i][levelsA.size() - 1 + idxB - 1] = 1.0;
-			}
-			regression.newSampleData(yData, xAB);
-			double ssB = ssTotal - regression.calculateResidualSumOfSquares() - ssA;
 			int dfB = levelsB.size() - 1;
+			int dfInter = dfA * dfB;
+			int nbCols = dfA + dfB + dfInter;
+			double[][] xFull = new double[y.size()][nbCols];
 
-			// Model A+B+A:B: y ~ A + B + A:B
-			int nbInter = (levelsA.size() - 1) * (levelsB.size() - 1);
-			double[][] xFull = new double[y.size()][xAB[0].length + nbInter];
 			for (int i = 0; i < y.size(); i++) {
-				System.arraycopy(xAB[i], 0, xFull[i], 0, xAB[i].length);
 				int idxA = levelsA.indexOf(factorA.get(i));
 				int idxB = levelsB.indexOf(factorB.get(i));
-				if (idxA > 0 && idxB > 0) { xFull[i][xAB[i].length + (idxA - 1) * (levelsB.size() - 1) + (idxB - 1)] = 1.0; }
+				// Factor A effect coding
+				if (idxA < dfA) {
+					if (idxA >= 0) xFull[i][idxA] = 1.0;
+				} else {
+					for (int j = 0; j < dfA; j++) xFull[i][j] = -1.0;
+				}
+				// Factor B effect coding
+				if (idxB < dfB) {
+					if (idxB >= 0) xFull[i][dfA + idxB] = 1.0;
+				} else {
+					for (int j = 0; j < dfB; j++) xFull[i][dfA + j] = -1.0;
+				}
+				// Interaction effect coding
+				for (int rowA = 0; rowA < dfA; rowA++) {
+					for (int colB = 0; colB < dfB; colB++) {
+						xFull[i][dfA + dfB + rowA * dfB + colB] = xFull[i][rowA] * xFull[i][dfA + colB];
+					}
+				}
 			}
-			regression.newSampleData(yData, xFull);
-			double rssFull = regression.calculateResidualSumOfSquares();
-			double ssInter = ssTotal - rssFull - ssA - ssB;
-			int dfInter = nbInter;
-			int dfError = y.size() - (1 + dfA + dfB + dfInter);
 
+			org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression reg =
+					new org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression();
+			reg.newSampleData(yData, xFull);
+			double rssFull = reg.calculateResidualSumOfSquares();
+			int dfError = y.size() - (1 + nbCols);
 			double msError = dfError > 0 ? rssFull / dfError : 0.0;
 
 			GamaAnova result = new GamaAnova();
-			if (dfError > 0 && msError > 0) {
-				result.addEffect("A", computeP(ssA / dfA, msError, dfA, dfError), ssA / dfA / msError);
-				result.addEffect("B", computeP(ssB / dfB, msError, dfB, dfError), ssB / dfB / msError);
-				result.addEffect("A:B", computeP(ssInter / dfInter, msError, dfInter, dfError),
-						ssInter / dfInter / msError);
-			} else {
+			if (dfError <= 0 || msError <= 0) {
 				result.addEffect("A", 1.0, 0.0);
 				result.addEffect("B", 1.0, 0.0);
 				result.addEffect("A:B", 1.0, 0.0);
+				return result;
 			}
+
+			// SS(A | B, A:B)
+			double[][] xNoA = new double[y.size()][dfB + dfInter];
+			for (int i = 0; i < y.size(); i++) System.arraycopy(xFull[i], dfA, xNoA[i], 0, dfB + dfInter);
+			reg.newSampleData(yData, xNoA);
+			double ssA = reg.calculateResidualSumOfSquares() - rssFull;
+
+			// SS(B | A, A:B)
+			double[][] xNoB = new double[y.size()][dfA + dfInter];
+			for (int i = 0; i < y.size(); i++) {
+				System.arraycopy(xFull[i], 0, xNoB[i], 0, dfA);
+				System.arraycopy(xFull[i], dfA + dfB, xNoB[i], dfA, dfInter);
+			}
+			reg.newSampleData(yData, xNoB);
+			double ssB = reg.calculateResidualSumOfSquares() - rssFull;
+
+			// SS(A:B | A, B)
+			double[][] xNoInter = new double[y.size()][dfA + dfB];
+			for (int i = 0; i < y.size(); i++) System.arraycopy(xFull[i], 0, xNoInter[i], 0, dfA + dfB);
+			reg.newSampleData(yData, xNoInter);
+			double ssInter = reg.calculateResidualSumOfSquares() - rssFull;
+
+			result.addEffect("A", computeP(ssA / dfA, msError, dfA, dfError), ssA / dfA / msError);
+			result.addEffect("B", computeP(ssB / dfB, msError, dfB, dfError), ssB / dfB / msError);
+			result.addEffect("A:B", computeP(ssInter / dfInter, msError, dfInter, dfError), ssInter / dfInter / msError);
 
 			return result;
 		} catch (Exception e) {
-			throw GamaRuntimeException.error("Failed to perform multi_anova, possibly due to a singular design matrix (e.g., missing factor combinations).", scope);
+			throw GamaRuntimeException.error("Failed to perform multi_anova (Type III).", scope);
 		}
 	}
 
@@ -2549,13 +2557,24 @@ public class Stats {
 	 *            the second variable
 	 * @return the HSIC value
 	 */
+	/**
+	 * Computes the normalized Hilbert-Schmidt Independence Criterion (HSIC) between two variables.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param x
+	 *            the first variable
+	 * @param y
+	 *            the second variable
+	 * @return the normalized HSIC value (bounded 0-1)
+	 */
 	@operator (
 			value = "hsic",
 			type = IType.FLOAT,
 			category = { IOperatorCategory.STATISTICAL },
 			concept = { IConcept.STATISTIC })
 	@doc (
-			value = "Computes the Hilbert-Schmidt Independence Criterion (HSIC) between two variables. HSIC is a kernel-based statistic to test the independence of two variables. A value close to 0 indicates independence.",
+			value = "Computes the normalized Hilbert-Schmidt Independence Criterion (HSIC) between two variables. HSIC is a kernel-based statistic to test the independence of two variables. Returns a value between 0 and 1, where 0 indicates independence.",
 			examples = { @example (
 					value = "hsic([1.0, 2.0, 3.0], [1.0, 2.0, 3.0])",
 					isExecutable = false) })
@@ -2568,7 +2587,7 @@ public class Stats {
 			xData[i] = x.get(i);
 			yData[i] = y.get(i);
 		}
-		return HSIC.computeHSIC(xData, yData);
+		return HSIC.computeNormalizedHSIC(xData, yData);
 	}
 
 	/**
@@ -2585,17 +2604,17 @@ public class Stats {
 	 * @return the p-value
 	 */
 	@operator (
-			value = "hsic",
+			value = "hsic_p_value",
 			type = IType.FLOAT,
 			category = { IOperatorCategory.STATISTICAL },
 			concept = { IConcept.STATISTIC })
 	@doc (
 			value = "Computes the p-value for the HSIC independence test between two variables using a permutation test. A small p-value (< 0.05) indicates strong evidence of dependence.",
 			examples = { @example (
-					value = "hsic([1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0, 4.0, 5.0], 100)",
+					value = "hsic_p_value([1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0, 4.0, 5.0], 100)",
 					isExecutable = false) })
-	@test ("hsic([1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0, 4.0, 5.0], 100) < 0.05")
-	public static Double opHSIC(final IScope scope, final IList<Double> x, final IList<Double> y,
+	@test ("hsic_p_value([1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0, 4.0, 5.0], 100) < 0.05")
+	public static Double opHSICPValue(final IScope scope, final IList<Double> x, final IList<Double> y,
 			final Integer permutations) {
 		if (x.size() != y.size()) throw GamaRuntimeException.error("Input lists must have the same size", scope);
 		double[] xData = new double[x.size()];
@@ -2814,10 +2833,10 @@ public class Stats {
 	//@test ("rolling_vc([0.0,4.0,8.0]) != \"\"")
 	//@test ("morrisAnalysis(matrix([[0.1, 0.2, 0.3, 0.4, 0.5], [1.0, 1.1, 1.2, 1.3, 1.4]]), 4, 1) != \"\"")
 	@no_test
-	public static IList<Double> rollingVC(final IScope scope, final IList data) {
-		return Stochanalysis.coefficientOfVariance(scope,data);
+	public static IList<Double> rollingVC(final IScope scope, final IList<Double> data) {
+		return Stochanalysis.coefficientOfVariance(scope, data);
 	}
-	
+
 	@operator (
 			value = "rolling_se",
 			type = IType.LIST,
@@ -2828,10 +2847,10 @@ public class Stats {
 	@doc (
 			value = "Return the list of standard error according to the number of observations, </br> i.e. value at index i is the standard error for the first i observations.")
 	@no_test
-	public static IList<Double> rollingSE(final IScope scope, final IList data) {
-		return Stochanalysis.standardError(scope,data);
+	public static IList<Double> rollingSE(final IScope scope, final IList<Double> data) {
+		return Stochanalysis.standardError(scope, data);
 	}
-	
+
 	@operator (
 			value = "power_test",
 			type = IType.INT,
@@ -2842,10 +2861,10 @@ public class Stats {
 			value = "Return the number of observation to satisfy power test given a critical effect size, tAlpha and tBeta."
 					+ "</br>see reference: https://rseri.me/publication/b016/B016.pdf (accessible as of 04/2026).")
 	@no_test
-	public static Integer powerTestCSE(final IScope scope, final IList data, double tAlpha, double tBeta, double criticalEffectSize) {
-		return Stochanalysis.ces(scope,data,tAlpha,tBeta,criticalEffectSize);
-	}
-	
+	public static Integer powerTestCSE(final IScope scope, final IList<Double> data, final double tAlpha,
+			final double tBeta, final double criticalEffectSize) {
+		return Stochanalysis.ces(scope, data, tAlpha, tBeta, criticalEffectSize);
+	}	
 	
 	/**
 	 * Helper to convert matrix to map of columns.
