@@ -127,6 +127,7 @@ public class System {
 					value = "dead(agent_A)",
 					equals = "true or false",
 					isExecutable = false))
+	@test ("dead(nil)")
 	@test ("dead(agent(nil))")
 	@test ("not(dead(simulation))")
 	public static Boolean opDead(final IScope scope, final IAgent a) {

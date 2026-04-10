@@ -45,7 +45,7 @@ public class MathUtils {
 	  */
 	 public static boolean isZeroWidth(double min, double max){
 	   double width = max - min;
-	   if (width <= GamlCoreConstants.min_float) return true;
+	   if (Math.abs(width) <= GamlCoreConstants.min_float) return true;
 	
 	   double maxAbs = Math.max(Math.abs(min), Math.abs(max));
 	   double scaledInterval = width / maxAbs;
