@@ -90,7 +90,7 @@ class IGamaMailBoxSerialiser extends FSTIndividualSerialiser<GamaMailbox> {
 		GamaMailbox mailBox = new GamaMailbox(size);
 		for (int i = 0; i < size; i++) { 
 			DEBUG.OUT("index " + i);
-			mailBox.addMessage(scope,(IMessage) in.readObject()); 
+			mailBox.add((IMessage) in.readObject()); 
 		}
 		for (int i = 0; i < size; i++) { 
 			DEBUG.OUT("message [" + i+"] " + mailBox.get(i));
