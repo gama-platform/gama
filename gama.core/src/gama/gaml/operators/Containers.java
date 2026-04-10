@@ -83,10 +83,48 @@ import one.util.streamex.StreamEx;
 /**
  * Written by drogoul Modified on 31 juil. 2010
  *
- * GAML operators dedicated to containers (list, matrix, graph, etc.)
+ * <p>
+ * Provides GAML operators for all container types: {@code list}, {@code map}, {@code matrix},
+ * {@code graph}, species populations, and any other {@link IContainer} implementors.
+ * </p>
  *
- * @see also IMatrix, IContainer for other operators
+ * <h3>Operator Families</h3>
+ * <ul>
+ *   <li><b>Access:</b> {@code at} ({@code []}), {@code first}, {@code last},
+ *       {@code copy_between}, {@code slice}, {@code sublist}</li>
+ *   <li><b>Arithmetic:</b> {@code +} (union/append), {@code -} (remove element),
+ *       {@code inter} (intersection), {@code union}</li>
+ *   <li><b>Predicates:</b> {@code contains}, {@code contains_any}, {@code contains_all},
+ *       {@code in}, {@code one_matches}, {@code all_match}, {@code none_matches}</li>
+ *   <li><b>Functional:</b> {@code collect}, {@code where}/{@code select}, {@code accumulate},
+ *       {@code first_with}, {@code last_with}, {@code count}, {@code sort_by},
+ *       {@code group_by}, {@code index_by}</li>
+ *   <li><b>Transformation:</b> {@code reverse}, {@code shuffle}, {@code distinct}/
+ *       {@code remove_duplicates}, {@code interleave}</li>
+ *   <li><b>Reduction:</b> {@code sum}, {@code mean}</li>
+ *   <li><b>Construction:</b> {@code range}, {@code create_map}, {@code as_map}</li>
+ *   <li><b>Graph:</b> {@code as_graph}, {@code as_spatial_graph}</li>
+ * </ul>
  *
+ * <h3>Indexing Convention</h3>
+ * <p>All container operators use <b>0-based indexing</b>. The first element of a list is at
+ * index {@code 0}, the last at index {@code length - 1}.</p>
+ *
+ * <h3>Nil and Empty Container Behavior</h3>
+ * <ul>
+ *   <li>Passing a {@code nil} container to most operators raises a
+ *       {@link gama.api.exceptions.GamaRuntimeException} at runtime.</li>
+ *   <li>Empty containers return neutral values where applicable: an empty list ({@code []}),
+ *       {@code 0} for numeric reductions, {@code false} for predicates.</li>
+ *   <li>Operators such as {@code contains} and {@code at} accept {@code nil} as a valid
+ *       element value when the container type permits it.</li>
+ * </ul>
+ *
+ * @author drogoul
+ * @see IContainer
+ * @see IList
+ * @see IMap
+ * @see IMatrix
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class Containers {
@@ -1009,6 +1047,10 @@ public class Containers {
 					The first element of the container is located at the index 0. \
 					In addition, if the user tries to get the element at an index higher or equals than the length of the container, he will get an IndexOutOfBoundException.\
 					The at operator behavior depends on the nature of the operand""",
+			special_cases = {
+					"If the index is out of bounds (negative or >= length), raises a runtime error.",
+					"If the container is nil, raises a runtime error.",
+					"For an empty container, any index raises a runtime error." },
 			usages = { @usage (
 					value = "if it is a list or a matrix, at returns the element at the index specified by the right operand",
 					examples = { @example (
@@ -1026,6 +1068,8 @@ public class Containers {
 					@usage ("if it is a graph and if the right operand is a pair node1::node2, at returns the edge from node1 to node2 in the graph") },
 			see = { "contains_all", "contains_any" })
 	@validator (AtValidator.class)
+	@test ("list<int> l <- [10,20,30]; l at 0 = 10")
+	@test ("list<int> l2 <- [10,20,30]; l at 2 = 30")
 	public static Object at(final IScope scope, final IContainer container, final Object key) {
 		if (container instanceof IContainer.ToGet) return ((IContainer.ToGet) container).get(scope, key);
 		throw GamaRuntimeException.error("" + container + " cannot be accessed using " + key, scope);
@@ -1203,6 +1247,10 @@ public class Containers {
 			concept = { IConcept.CONTAINER })
 	@doc (
 			value = "produces a set from the elements of the operand (i.e. a list without duplicated elements)",
+			special_cases = {
+					"If the container has no duplicates, returns an equivalent copy.",
+					"If the container is empty, returns an empty list.",
+					"Order of first occurrences is preserved." },
 			usages = { @usage (
 					value = "if the operand is empty, remove_duplicates returns an empty list",
 					examples = { @example (
@@ -1225,6 +1273,8 @@ public class Containers {
 					value = "remove_duplicates([3,2,5,1,2,3,5,5,5])",
 					equals = "[3,2,5,1]") })
 	@test ("remove_duplicates([3,2,5,1,2,3,5,5,5]) = [3,2,5,1]")
+	@test ("distinct([1,2,1,3]) = [1,2,3]")
+	@test ("distinct([]) = []")
 	public static IList remove_duplicates(final IScope scope, final IContainer c) {
 		return (IList) stream(scope, c).distinct().toCollection(listLike(c));
 	}
@@ -1327,11 +1377,17 @@ public class Containers {
 			category = { IOperatorCategory.CONTAINER },
 			concept = { IConcept.CONTAINER })
 	@doc (
-			value = "Returns the nth first elements of the container. If n is greater than the list size, a translation of the container to a list is returned. If it is equal or less than zero, returns an empty list")
+			value = "Returns the nth first elements of the container. If n is greater than the list size, a translation of the container to a list is returned. If it is equal or less than zero, returns an empty list",
+			special_cases = {
+					"If the container is empty, returns an empty list.",
+					"If the container is nil, raises a runtime error.",
+					"If n is greater than the container size, returns all elements as a list." })
 	@test ("first(3, [1,2,3,4,5,6]) = [1,2,3]")
 	@test ("first(0,[1,2,3,4,5,6]) = []")
 	@test ("first_of(3, [1,2,3,4,5,6]) = [1,2,3]")
 	@test ("first_of(0,[1,2,3,4,5,6]) = []")
+	@test ("first([1,2,3]) = 1")
+	@test ("first([]) = nil")
 	public static IList first(final IScope scope, final Integer number, final IContainer c) {
 		return (IList) stream(scope, c).limit(number < 0 ? 0 : number).toCollection(listLike(c));
 	}
@@ -1354,10 +1410,16 @@ public class Containers {
 			category = { IOperatorCategory.CONTAINER },
 			concept = { IConcept.CONTAINER })
 	@doc (
-			value = "Returns the nth last elements of the container. If n is greater than the list size,  returns the container cast as a list. If it is equal or less than zero, returns an empty list")
+			value = "Returns the nth last elements of the container. If n is greater than the list size,  returns the container cast as a list. If it is equal or less than zero, returns an empty list",
+			special_cases = {
+					"If the container is empty, returns an empty list.",
+					"If the container is nil, raises a runtime error.",
+					"If n is greater than the container size, returns all elements as a list." })
 	@test ("last(3, [1,2,3,4,5,6]) = [4,5,6]")
 	@test ("last(0,[1,2,3,4,5,6]) = []")
 	@test ("last(10,[1::2, 3::4]) is list")
+	@test ("last([1,2,3]) = 3")
+	@test ("last([]) = nil")
 	public static IList last(final IScope scope, final Integer number, final IContainer c) {
 		int n = number < 0 ? 0 : number;
 		return (IList) stream(scope, c).skip(Math.max(0, c.length(scope) - n)).toCollection(listLike(c));
@@ -1805,8 +1867,13 @@ public class Containers {
 							@example (
 									value = "[1,2,3,4,5,6] - 0",
 									returnType = "list<int>",
-									equals = "[1,2,3,4,5,6]") }) })
+									equals = "[1,2,3,4,5,6]") }) },
+			special_cases = {
+					"If the element is not in the list, returns the list unchanged.",
+					"If the list is empty, returns an empty list." })
 	@test ("[1,2,3,4,5,6] - 0 = [1,2,3,4,5,6]")
+	@test ("[1,2,3] - 2 = [1,3]")
+	@test ("[1,2,3] - 4 = [1,2,3]")
 	public static IList minus(final IScope scope, final IList l1, final Object object) {
 		final IList result = notNull(scope, l1).copy(scope);
 		result.remove(object);
@@ -1989,6 +2056,9 @@ public class Containers {
 			concept = { IConcept.CONTAINER })
 	@doc (
 			value = "returns a new list containing all the elements of both operands",
+			special_cases = {
+					"Adding an empty container to another returns a list containing all elements of the non-empty operand.",
+					"If one of the operands is nil, " + IKeyword.PLUS + " throws an error." },
 			usages = { @usage (
 					value = "if one of the operands is nil, " + IKeyword.PLUS + " throws an error"),
 					@usage (
@@ -2006,6 +2076,9 @@ public class Containers {
 											equals = "[1,2,3,4,5,6,0,8]") }) },
 			see = { "" + IKeyword.MINUS })
 	@test ("[1,2,3,4,5,6] + [2,4,9] = [1,2,3,4,5,6,2,4,9]")
+	@test ("[1,2] + [3,4] = [1,2,3,4]")
+	@test ("[1,2] + [] = [1,2]")
+	@test ("[] + [1,2] = [1,2]")
 	public static IContainer plus(final IScope scope, final IContainer c1, final IContainer c2) {
 		// special case for the addition of two populations or meta-populations
 		if (c1 instanceof IPopulationSet && c2 instanceof IPopulationSet) {
@@ -2290,6 +2363,10 @@ public class Containers {
 			value = "the sum of all the elements of the operand",
 			masterDoc = true,
 			comment = "the behavior depends on the nature of the operand",
+			special_cases = {
+					"For a typed empty list (e.g. list<int>), returns the identity value: 0 for int/float, an empty string for string, or {0,0} for point.",
+					"For an untyped empty list [], may raise a runtime error because the element type cannot be determined.",
+					"Nil elements in the list may raise a runtime error." },
 			usages = { @usage (
 					value = "if it is a list of int or float: sum returns the sum of all the elements",
 					examples = { @example (
@@ -2318,6 +2395,7 @@ public class Containers {
 			see = { "mul" })
 	@test ("sum([{1.0,3.0},{3.0,5.0},{9.0,1.0},{7.0,8.0}]) = {20.0,17.0}")
 	@test ("sum ([12,10,3]) = 25")
+	@test ("sum([1,2,3]) = 6")
 	public static Object sum(final IScope scope, final IContainer l) {
 		return sum_of(scope, IKeyword.EACH, l, null);
 	}
@@ -3406,12 +3484,15 @@ public class Containers {
 			value = "the mean of all the elements of the operand",
 			comment = "the elements of the operand are summed (see sum for more details about the sum of container elements ) and then the sum value is divided by the number of elements.",
 			special_cases = {
-					"if the container contains points, the result will be a point. If the container contains rgb values, the result will be a rgb color" },
+					"If the container contains points, the result will be a point. If the container contains rgb values, the result will be a rgb color",
+					"If the container is empty, the behavior depends on the element type: the sum step may raise a runtime error for untyped empty containers.",
+					"For numeric elements (int or float), the result is always a float." },
 			examples = { @example (
 					value = "mean ([4.5, 3.5, 5.5, 7.0])",
 					equals = "5.125 ") },
 			see = { "sum" })
 	@test ("mean ([4.5, 3.5, 5.5, 7.0]) with_precision 3 = 5.125")
+	@test ("mean([1,2,3]) = 2.0")
 	public static Object opMean(final IScope scope, final IContainer l) throws GamaRuntimeException {
 
 		final Object s = sum(scope, l);

@@ -24,7 +24,34 @@ import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 
 /**
- * The Class KmlOp.
+ * Provides GAML operators for building KML (Keyhole Markup Language) exports for Google Earth
+ * and compatible GIS tool visualisation. KML is an XML-based geographic data format originally
+ * developed by Google that describes points, lines, polygons, 3D models, and styled placemarks.
+ *
+ * <p>A {@link GamaKmlExport} object must be created first and passed as the first operand of
+ * every operator in this class. The operators modify the export object in place and return it,
+ * allowing fluent chaining of multiple additions.</p>
+ *
+ * <p>The following operators are provided:</p>
+ * <ul>
+ *   <li><strong>{@code add_geometry}</strong> – adds a geographic shape (polygon, line, or
+ *       point) with a defined visual style (line width, line colour, fill colour) and an
+ *       optional time span. Several overloads are available to omit begin/end dates or line
+ *       width.</li>
+ *   <li><strong>{@code add_3Dmodel}</strong> – adds a reference to a Collada 3D model
+ *       ({@code .dae}) at a given location with a specified scale, orientation, and optional
+ *       time span.</li>
+ *   <li><strong>{@code add_icon}</strong> – adds an icon/placemark at a given location using
+ *       an image file, with a specified scale, orientation, and optional time span.</li>
+ * </ul>
+ *
+ * <p>All operators are annotated {@code @no_test} because they require a
+ * {@link GamaKmlExport} context and produce file output that cannot be verified in standard
+ * unit tests. The resulting KML files can be opened in Google Earth or any compatible GIS
+ * application.</p>
+ *
+ * @author GAMA Development Team
+ * @see GamaKmlExport
  */
 public class KmlOp {
 
@@ -57,6 +84,10 @@ public class KmlOp {
 			concept = { IConcept.LOGICAL })
 	@doc (
 			value = "Define the kml export manager with new geometry",
+			returns = "the updated {@code kml} export object (modified in place).",
+			special_cases = {
+				"If the kml argument is nil, returns nil without modification.",
+				"If the shape is nil, returns the kml object unchanged." },
 			see = { "add_3Dmodel", "add_icon", "add_label" },
 			masterDoc = true)
 	@no_test
@@ -98,6 +129,11 @@ public class KmlOp {
 			concept = { IConcept.LOGICAL })
 	@doc (
 			value = "the kml export manager with new geometry: take the following argument: (kml, geometry,linewidth, linecolor,fillcolor, end date)",
+			returns = "the updated {@code kml} export object (modified in place).",
+			special_cases = {
+				"If the kml argument is nil, returns nil without modification.",
+				"If the shape is nil, returns the kml object unchanged.",
+				"Uses the current simulation clock time as the begin date." },
 			see = { "add_3Dmodel", "add_icon", "add_label" })
 	@no_test
 	public static GamaKmlExport addShape(final IScope scope, final GamaKmlExport kml, final IShape shape,
@@ -132,6 +168,11 @@ public class KmlOp {
 			concept = { IConcept.LOGICAL })
 	@doc (
 			value = "the kml export manager with new geometry: take the following argument: (kml, geometry,linewidth, linecolor,fillcolor)",
+			returns = "the updated {@code kml} export object (modified in place).",
+			special_cases = {
+				"If the kml argument is nil, returns nil without modification.",
+				"If the shape is nil, returns the kml object unchanged.",
+				"Uses the current simulation clock time as begin date and adds one step as end date." },
 			see = { "add_3Dmodel", "add_icon", "add_label" })
 	@no_test
 	public static GamaKmlExport addShape(final IScope scope, final GamaKmlExport kml, final IShape shape,
@@ -164,6 +205,11 @@ public class KmlOp {
 			concept = { IConcept.LOGICAL })
 	@doc (
 			value = "the kml export manager with new geometry: take the following argument: (kml, geometry, linecolor,fillcolor)",
+			returns = "the updated {@code kml} export object (modified in place).",
+			special_cases = {
+				"If the kml argument is nil, returns nil without modification.",
+				"If the shape is nil, returns the kml object unchanged.",
+				"Uses a default line width of 1.0." },
 			see = { "add_3Dmodel", "add_icon", "add_label" })
 	@no_test
 	public static GamaKmlExport addShape(final IScope scope, final GamaKmlExport kml, final IShape shape,
@@ -194,6 +240,11 @@ public class KmlOp {
 			concept = { IConcept.LOGICAL })
 	@doc (
 			value = "the kml export manager with new geometry: take the following argument: (kml, geometry,linewidth, color)",
+			returns = "the updated {@code kml} export object (modified in place).",
+			special_cases = {
+				"If the kml argument is nil, returns nil without modification.",
+				"If the shape is nil, returns the kml object unchanged.",
+				"The single color is used for both line and fill." },
 			see = { "add_3Dmodel", "add_icon", "add_label" })
 	@no_test
 	public static GamaKmlExport addShape(final IScope scope, final GamaKmlExport kml, final IShape shape,
@@ -230,6 +281,10 @@ public class KmlOp {
 			concept = { IConcept.LOGICAL })
 	@doc (
 			value = "the kml export manager with new 3D model: specify the 3D model (collada) to add to the kml",
+			returns = "the updated {@code kml} export object (modified in place).",
+			special_cases = {
+				"If the kml argument is nil, returns nil without modification.",
+				"If loc is nil, or file is nil or empty, returns the kml object unchanged." },
 			see = { "add_geometry", "add_icon", "add_label" },
 			masterDoc = true)
 	@no_test
@@ -266,6 +321,11 @@ public class KmlOp {
 			concept = { IConcept.LOGICAL })
 	@doc (
 			value = "Kml export with a 3D model",
+			returns = "the updated {@code kml} export object (modified in place).",
+			special_cases = {
+				"If the kml argument is nil, returns nil without modification.",
+				"If loc is nil, or file is nil or empty, returns the kml object unchanged.",
+				"Uses the current simulation clock time as begin date and adds one step as end date." },
 			see = { "add_geometry", "add_icon", "add_label" })
 	@no_test
 	public static GamaKmlExport add3DModel(final IScope scope, final GamaKmlExport kml, final IPoint loc,
@@ -304,6 +364,10 @@ public class KmlOp {
 			concept = { IConcept.LOGICAL })
 	@doc (
 			value = "Define the kml export manager with new icons",
+			returns = "the updated {@code kml} export object (modified in place).",
+			special_cases = {
+				"If the kml argument is nil, returns nil without modification.",
+				"If loc is nil, or file is nil or empty, returns the kml object unchanged." },
 			see = { "add_geometry", "add_icon" },
 			masterDoc = true)
 	@no_test
@@ -342,6 +406,11 @@ public class KmlOp {
 			concept = { IConcept.LOGICAL })
 	@doc (
 			value = "the kml export manager with new icons: take the following argument: (kml, location (point),orientation (float), scale (float), file_path (string))",
+			returns = "the updated {@code kml} export object (modified in place).",
+			special_cases = {
+				"If the kml argument is nil, returns nil without modification.",
+				"If loc is nil, or file is nil or empty, returns the kml object unchanged.",
+				"Uses the current simulation clock time as begin date and adds one step as end date." },
 			see = { "add_geometry", "add_icon" })
 	@no_test
 	public static GamaKmlExport addIcon(final IScope scope, final GamaKmlExport kml, final IPoint loc,

@@ -1,0 +1,34 @@
+experiment "Tests Stockanalysis" type: test {
+	
+	list<float> data <- [];
+	
+	setup { data <- [0.1,0.2,0.3,0.3,0.3,0.3]; }
+	
+	test rollingcv {
+
+		list<float> lvc <- rolling_vc(data);
+		assert length(lvc) = length(data)-1;
+		assert abs(last(lvc) - (standard_deviation(data) / mean(data))) < 1e-10;
+
+	}
+
+	test rollingse {
+
+		list<float> lse <- rolling_se(data);
+		assert length(lse) = length(data)-1;
+		assert abs(last(lse) - (standard_deviation(data) / sqrt(length(data)))) < 1e-10;
+
+	}
+	
+	test powertest {
+		
+		int nbrep <- power_test(data,0.95,0.80,0.05);
+		assert nbrep<=length(data);
+		list data_mult <- range(50) accumulate (data);
+		int nbrep_obsmult <- power_test(data_mult,0.95,0.80,0.1);
+		write length(data_mult);
+		assert nbrep_obsmult<nbrep;
+		
+	}
+	
+}

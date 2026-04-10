@@ -28,7 +28,29 @@ import gama.api.types.geometry.IShape;
 import gama.api.types.misc.IContainer;
 
 /**
- * The Class ThreeD.
+ * Provides GAML operators for manipulating the Z (elevation) component of geometries in
+ * three-dimensional space.
+ *
+ * <p>Operators exposed by this class:
+ * <ul>
+ *   <li>{@code set_z(geometry, int, float)} — sets the Z ordinate of the <em>n</em>-th
+ *       point of a geometry to the given value.</li>
+ *   <li>{@code set_z(geometry, list)} — sets the Z ordinate of every point of a geometry
+ *       to the corresponding value in the supplied list (in index order).</li>
+ * </ul>
+ *
+ * <p>Both operators return a new {@link IShape} with the modified Z coordinates; the
+ * original geometry is not mutated.  Out-of-bounds index accesses result in a
+ * {@code GamaRuntimeException} warning rather than a silent failure.
+ *
+ * <p>Usage example:
+ * <pre>{@code
+ * geometry elevated <- set_z(triangle(3), 1, 5.0);
+ * geometry terrain  <- triangle(3) set_z [0, 5, 10];
+ * }</pre>
+ *
+ * @author Alexis Drogoul, Patrick Taillandier and others (UMI UMMISCO IRD/SU)
+ * @see IShape
  */
 public class SpatialThreeD {
 

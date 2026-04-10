@@ -36,10 +36,43 @@ import gama.api.utils.StringUtils;
 import gama.api.utils.files.CompressionUtils;
 
 /**
- * Written by drogoul Modified on 10 d�c. 2010
+ * {@code Strings} provides GAML language operators for string manipulation, organized into the following operator
+ * families:
  *
- * @todo Description
+ * <ul>
+ * <li><b>Concatenation:</b> {@code +} (binary), {@code concatenate} (list &rarr; string, with optional separator)</li>
+ * <li><b>Substring / access:</b> {@code copy_between}, {@code at} ({@code @}), {@code reverse}, {@code first},
+ * {@code last}</li>
+ * <li><b>Search:</b> {@code in}, {@code contains}, {@code contains_any}, {@code contains_all}, {@code index_of},
+ * {@code last_index_of}, {@code starts_with}, {@code ends_with}</li>
+ * <li><b>Case conversion:</b> {@code upper_case}, {@code lower_case}, {@code capitalize}</li>
+ * <li><b>Splitting:</b> {@code split_with} / {@code tokenize}, {@code tokenize_regex}</li>
+ * <li><b>Replacement:</b> {@code replace}, {@code replace_regex}</li>
+ * <li><b>Information:</b> {@code length}, {@code empty}, {@code is_number}, {@code char}</li>
+ * <li><b>Compression:</b> {@code compress} / {@code zip}, {@code uncompress} / {@code unzip}</li>
+ * </ul>
  *
+ * <h3>Index convention</h3>
+ * <p>
+ * All character and substring indices are <b>0-based</b>, consistent with Java's {@link String} API. For example,
+ * {@code 'abc' at 0} returns {@code 'a'}.
+ * </p>
+ *
+ * <h3>Unicode awareness</h3>
+ * <p>
+ * All string comparisons and substring operations delegate to Java's {@link String} internals and are therefore
+ * Unicode-aware (UTF-16 code units).
+ * </p>
+ *
+ * <h3>Empty string</h3>
+ * <p>
+ * The empty string {@code ''} is a valid operand in all operators unless otherwise stated in the individual operator
+ * documentation.
+ * </p>
+ *
+ * @author Alexis Drogoul (original), GAMA development team
+ * @see gama.api.utils.StringUtils
+ * @see gama.gaml.operators.Cast
  */
 
 /**
@@ -83,6 +116,8 @@ public class Strings {
 	@test ("'a'+'b'='ab'")
 	@test ("''+'' = ''")
 	@test ("string a <- 'a'; a + '' = a")
+	@test ("'hello' + '' = 'hello'")
+	@test ("'' + 'world' = 'world'")
 	public static String opPlus(final String a, final String b) {
 		return a + b;
 	}
@@ -120,11 +155,17 @@ public class Strings {
 			category = { IOperatorCategory.STRING },
 			concept = { IConcept.STRING })
 	@doc (
+			value = "Concatenates the string with the string representation of any GAML object",
+			returns = "a {@code string} concatenation",
+			special_cases = { "If the right operand is nil, it is converted to the string 'nil'." },
 			usages = @usage (
 					value = "if the left-hand operand is a string, returns the concatenation of the two operands (the left-hand one beind casted into a string)",
 					examples = @example (
 							value = "\"hello \" + 12",
 							equals = "\"hello 12\"")))
+	@test ("'a' + 1 = 'a1'")
+	@test ("'a' + 1.5 = 'a1.5'")
+	@test ("'a' + true = 'atrue'")
 	public static String opPlus(final IScope scope, final String a, final Object b) throws GamaRuntimeException {
 		return a + Cast.asString(scope, b);
 	}
@@ -158,11 +199,18 @@ public class Strings {
 			category = { IOperatorCategory.STRING },
 			concept = { IConcept.STRING })
 	@doc (
+			masterDoc = true,
+			returns = "a {@code string} that is the concatenation of all elements in order.",
+			special_cases = { "If the list is empty, returns the empty string ''.",
+					"nil elements are converted to 'nil'." },
 			usages = @usage (
 					value = "concatenates a list of string into a string. More efficient than looping over the list and adding the strings individually",
 					examples = @example (
 							value = "concatenate(['a','bc'])",
 							equals = "'abc'")))
+	@test ("concatenate([]) = ''")
+	@test ("concatenate(['a']) = 'a'")
+	@test ("concatenate(['a','b','c']) = 'abc'")
 	public static String opConcatenate(final IScope scope, final IList<String> strings) throws GamaRuntimeException {
 		StringBuilder sb = new StringBuilder();
 		for (String s : strings) { sb.append(s); }
@@ -202,11 +250,17 @@ public class Strings {
 			category = { IOperatorCategory.STRING },
 			concept = { IConcept.STRING })
 	@doc (
+			returns = "a {@code string} with all elements joined by the separator.",
+			special_cases = { "If the list is empty, returns the empty string ''.",
+					"If the separator is empty, equivalent to concatenate/1." },
 			usages = @usage (
 					value = "concatenates a list of string into a string, inserting the separator between each. More efficient than looping over the list and adding the strings individually",
 					examples = @example (
 							value = "concatenate(['a','bc', 'cd'], '--')",
 							equals = "'a--bc--cd'")))
+	@test ("concatenate([], '--') = ''")
+	@test ("concatenate(['a'], '--') = 'a'")
+	@test ("concatenate(['a','b'], '') = 'ab'")
 	public static String opConcatenateSep(final IScope scope, final IList<String> strings, final String separator)
 			throws GamaRuntimeException {
 		StringJoiner sj = new StringJoiner(separator);
@@ -239,6 +293,11 @@ public class Strings {
 			category = { IOperatorCategory.STRING },
 			concept = { IConcept.STRING })
 	@doc (
+			value = "Returns true if the left-hand string is contained in the right-hand string.",
+			returns = "a {@code bool}.",
+			special_cases = {
+					"If the left operand is the empty string, returns true (the empty string is contained in any string).",
+					"The test is case-sensitive." },
 			usages =
 
 			@usage (
@@ -246,6 +305,11 @@ public class Strings {
 			examples = @example (
 					value = " 'bc' in 'abcded'",
 					equals = "true"))
+	@test ("'bc' in 'abcd'")
+	@test ("'' in 'abc'")
+	@test ("'abc' in 'abc'")
+	@test ("!('BC' in 'abcd')")
+	@test ("!('xyz' in 'abcd')")
 	public static Boolean opIn(final String pattern, final String target) {
 		return target.contains(pattern);
 	}
@@ -275,11 +339,17 @@ public class Strings {
 			category = { IOperatorCategory.STRING },
 			concept = { IConcept.STRING })
 	@doc (
+			value = "Returns true if the left-hand string contains the right-hand string.",
+			returns = "a {@code bool}.",
+			special_cases = { "If the right operand is the empty string, returns true." },
 			usages = @usage (
 					value = "if both operands are strings, returns true if the right-hand operand contains the right-hand pattern;"),
 			examples = @example (
 					value = "'abcded' contains 'bc'",
 					equals = "true"))
+	@test ("'abcd' contains 'bc'")
+	@test ("'abcd' contains ''")
+	@test ("!('abcd' contains 'xyz')")
 	public static Boolean opContains(final String target, final String pattern) {
 		return opIn(pattern, target);
 	}
@@ -309,9 +379,16 @@ public class Strings {
 			expected_content_type = { IType.STRING },
 			concept = { IConcept.STRING })
 	@doc (
+			value = "Returns true if the string contains at least one element of the list.",
+			returns = "a {@code bool}.",
+			special_cases = { "If the list is empty, returns false.",
+					"Non-string elements in the list are ignored." },
 			examples = @example (
 					value = "\"abcabcabc\" contains_any [\"ca\",\"xy\"]",
 					equals = "true"))
+	@test ("'abc' contains_any ['a', 'z']")
+	@test ("!('abc' contains_any ['x','y','z'])")
+	@test ("!('abc' contains_any [])")
 	public static Boolean opContainsAny(final String target, final IList l) {
 		for (final Object o : l) { if (o instanceof String && opContains(target, (String) o)) return true; }
 		return false;
@@ -342,11 +419,18 @@ public class Strings {
 			expected_content_type = { IType.STRING },
 			concept = { IConcept.STRING })
 	@doc (
+			value = "Returns true if the string contains all the elements of the list.",
+			returns = "a {@code bool}.",
+			special_cases = { "If the list is empty, returns true (vacuously true).",
+					"Non-string elements in the list cause the method to return false." },
 			usages = @usage (
 					value = "if the left-operand is a string, test whether the string contains all the element of the list;",
 					examples = @example (
 							value = "\"abcabcabc\" contains_all [\"ca\",\"xy\"]",
 							equals = "false")))
+	@test ("'abcabcabc' contains_all ['ab', 'bc']")
+	@test ("!('abc' contains_all ['ab','xyz'])")
+	@test ("'abc' contains_all []")
 	public static Boolean opContainsAll(final String target, final IList l) {
 		for (final Object o : l) { if (!(o instanceof String) || !opContains(target, (String) o)) return false; }
 		return true;
@@ -377,11 +461,18 @@ public class Strings {
 			category = { IOperatorCategory.STRING },
 			concept = { IConcept.STRING })
 	@doc (
+			value = "Returns the index of the first occurrence of the right-hand string in the left-hand string. The index is 0-based.",
+			returns = "an {@code int} &ge; 0 if found, or -1 if not found.",
+			special_cases = { "If the pattern is not found, returns -1.",
+					"If the pattern is the empty string, returns 0." },
 			usages = @usage (
 					value = "if both operands are strings, returns the index within the left-hand string of the first occurrence of the given right-hand string",
 					examples = @example (
 							value = "\"abcabcabc\" index_of \"ca\"",
 							equals = "2")))
+	@test ("'abcabcabc' index_of 'ca' = 2")
+	@test ("'abcabcabc' index_of 'x' = -1")
+	@test ("'abcabcabc' index_of '' = 0")
 	public static Integer opIndexOf(final String target, final String pattern) {
 		return target.indexOf(pattern);
 	}
@@ -416,6 +507,8 @@ public class Strings {
 					examples = @example (
 							value = "\"abcabcabc\" last_index_of \"ca\"",
 							equals = "5")))
+	@test ("'abcabcabc' last_index_of 'x' = -1")
+	@test ("'abcabcabc' last_index_of 'ca' = 5")
 	public static Integer opLastIndexOf(final String target, final String pattern) {
 		return target.lastIndexOf(pattern);
 	}
@@ -495,6 +588,8 @@ public class Strings {
 			examples = @example (
 					value = "'to be or not to be,that is the question' split_with ' ,'",
 					equals = "['to','be','or','not','to','be','that','is','the','question']"))
+	@test ("split_with('a,b,c', ',') = ['a','b','c']")
+	@test ("split_with('', ',') = []")
 	public static IList opTokenize(final IScope scope, final String target, final String pattern) {
 		return opTokenize(scope, target, pattern, false);
 	}
@@ -583,6 +678,8 @@ public class Strings {
 					value = "replace('to be or not to be,that is the question','to', 'do')",
 					equals = "'do be or not do be,that is the question'"),
 			see = { "replace_regex" })
+	@test ("replace('hello world', 'world', 'GAMA') = 'hello GAMA'")
+	@test ("replace('', 'x', 'y') = ''")
 	public static String opReplace(final String target, final String pattern, final String replacement) {
 		return target.replace(pattern, replacement);
 	}
@@ -708,6 +805,10 @@ public class Strings {
 					@example (
 							value = "is_number(\"#12FA\")",
 							equals = "true") })
+	@test ("is_number('42')")
+	@test ("is_number('3.14')")
+	@test ("!is_number('abc')")
+	@test ("!is_number('')")
 	public static Boolean isGamaNumber(final String s) {
 		return StringUtils.isGamaNumber(s);
 	}
@@ -738,6 +839,9 @@ public class Strings {
 					examples = @example (
 							value = "reverse ('abcd')",
 							equals = "'dcba'")))
+	@test ("reverse('') = ''")
+	@test ("reverse('abc') = 'cba'")
+	@test ("reverse('a') = 'a'")
 	static public String reverse(final String s) {
 		final StringBuilder buf = new StringBuilder(s);
 		buf.reverse();
@@ -862,6 +966,8 @@ public class Strings {
 					examples = @example (
 							value = "length (\"I am an agent\")",
 							equals = "13")))
+	@test ("length('') = 0")
+	@test ("length('abc') = 3")
 	static public Integer length(final String s) {
 		if (s == null) return 0;
 		return s.length();
@@ -993,6 +1099,8 @@ public class Strings {
 					value = "lower_case(\"Abc\")",
 					equals = "'abc'"),
 			see = { "upper_case" })
+	@test ("lower_case('') = ''")
+	@test ("lower_case('HELLO') = 'hello'")
 	static public String toLowerCase(final String s) {
 		if (s == null) return s;
 		return s.toLowerCase();
@@ -1024,6 +1132,8 @@ public class Strings {
 					value = "upper_case(\"Abc\")",
 					equals = "'ABC'"),
 			see = { "lower_case" })
+	@test ("upper_case('') = ''")
+	@test ("upper_case('hello') = 'HELLO'")
 	static public String toUpperCase(final String s) {
 		if (s == null) return s;
 		return s.toUpperCase();

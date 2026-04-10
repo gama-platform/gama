@@ -15,13 +15,13 @@ import static gama.gaml.operators.Containers.collect;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.math3.distribution.FDistribution;
 import org.apache.commons.math3.ml.clustering.CentroidCluster;
 import org.apache.commons.math3.ml.clustering.Cluster;
 import org.apache.commons.math3.ml.clustering.DBSCANClusterer;
@@ -32,6 +32,7 @@ import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.stat.descriptive.moment.Kurtosis;
 import org.apache.commons.math3.stat.descriptive.moment.Skewness;
 import org.apache.commons.math3.stat.inference.TTest;
+import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 
 import com.google.common.collect.Ordering;
 
@@ -610,9 +611,7 @@ public class Stats {
 	 *
 	 * @param scope
 	 * @param data1
-	 * @param standardDev1
 	 * @param data2
-	 * @param stanardDev2
 	 * @return
 	 */
 	@operator (
@@ -623,23 +622,119 @@ public class Stats {
 			category = { IOperatorCategory.STATISTICAL },
 			concept = { IConcept.STATISTIC })
 	@doc (
-			value = "Returns the correlation of two data sequences (having the same size)",
+			value = "Returns the Pearson correlation of two data sequences (having the same size)",
 			comment = "",
 			examples = { @example (
-					value = "correlation([1,2,1,3,1,2], [1,2,1,3,1,2]) with_precision(4)",
-					equals = "1.2"),
+					value = "correlation([1,2,1,3,1,2], [1,2,1,3,1,2])",
+					equals = "1.0"),
 					@example (
 							value = "correlation([13,2,1,4,1,2], [1,2,1,3,1,2]) with_precision(2)",
 							equals = "-0.21") })
 	public static Double opCorrelation(final IScope scope, final IContainer data1, final IContainer data2) {
-
-		// TODO input parameters validation
-
+		if (data1.length(scope) != data2.length(scope)) return 0.0;
+		if (data1.length(scope) == 0) return 0.0;
 		final double standardDev1 = Stats.opStandardDeviation(scope, data1);
 		final double standardDev2 = Stats.opStandardDeviation(scope, data2);
-
+		if (standardDev1 == 0 || standardDev2 == 0) return 0.0;
 		return Descriptive.correlation(toDoubleArrayList(scope, data1), standardDev1, toDoubleArrayList(scope, data2),
 				standardDev2);
+	}
+
+	/**
+	 * Returns the Spearman's rank correlation of two data sequences.
+	 *
+	 * @param scope
+	 * @param data1
+	 * @param data2
+	 * @return
+	 */
+	@operator (
+			value = "spearman_correlation",
+			can_be_const = true,
+			type = IType.FLOAT,
+			expected_content_type = { IType.INT, IType.FLOAT },
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = "Returns the Spearman's rank correlation of two data sequences (having the same size)",
+			comment = "Computes Pearson correlation on the ranks of the data.",
+			examples = { @example (
+					value = "spearman_correlation([1,2,3,4,5], [5,4,3,2,1])",
+					equals = "-1.0") })
+	@test ("(spearman_correlation([1, 2, 3, 4, 5], [1, 2, 3, 4, 5]) ) = 1.0")
+	public static Double opSpearmanCorrelation(final IScope scope, final IContainer data1, final IContainer data2) {
+		if (data1.length(scope) != data2.length(scope)) return 0.0;
+		int n = data1.length(scope);
+		if (n <= 1) return 1.0;
+
+		double[] r1 = computeRanks(scope, data1);
+		double[] r2 = computeRanks(scope, data2);
+
+		double sumD2 = 0;
+		for (int i = 0; i < n; i++) {
+			double d = r1[i] - r2[i];
+			sumD2 += d * d;
+		}
+
+		// If no ties, we can use the simplified formula for better precision
+		boolean hasTies = false;
+		for (int i = 0; i < n - 1; i++) {
+			if (r1[i] % 1 != 0 || r2[i] % 1 != 0) {
+				hasTies = true;
+				break;
+			}
+		}
+		// Actually checking for duplicate ranks is more reliable
+		if (!hasTies) {
+			double[] s1 = r1.clone();
+			double[] s2 = r2.clone();
+			Arrays.sort(s1);
+			Arrays.sort(s2);
+			for (int i = 0; i < n - 1; i++) {
+				if (s1[i] == s1[i + 1] || s2[i] == s2[i + 1]) {
+					hasTies = true;
+					break;
+				}
+			}
+		}
+
+		if (!hasTies) return 1.0 - 6.0 * sumD2 / (n * (Math.pow(n, 2) - 1));
+
+		// General formula (Pearson correlation of ranks)
+		double avgR = (n + 1) / 2.0;
+		double num = 0;
+		double den1 = 0;
+		double den2 = 0;
+		for (int i = 0; i < n; i++) {
+			num += (r1[i] - avgR) * (r2[i] - avgR);
+			den1 += Math.pow(r1[i] - avgR, 2);
+			den2 += Math.pow(r2[i] - avgR, 2);
+		}
+		if (den1 == 0 || den2 == 0) return 0.0;
+		return num / Math.sqrt(den1 * den2);
+	}
+
+	private static double[] computeRanks(IScope scope, IContainer data) {
+		int n = data.length(scope);
+		double[] vals = new double[n];
+		Integer[] idx = new Integer[n];
+		int count = 0;
+		for (Object o : data.iterable(scope)) {
+			vals[count] = Cast.asFloat(scope, o);
+			idx[count] = count;
+			count++;
+		}
+		Arrays.sort(idx, (a, b) -> Double.compare(vals[a], vals[b]));
+
+		double[] ranks = new double[n];
+		for (int i = 0; i < n; i++) {
+			int j = i;
+			while (j < n - 1 && vals[idx[j]] == vals[idx[j + 1]]) { j++; }
+			double rank = (i + j + 2) / 2.0;
+			for (int k = i; k <= j; k++) { ranks[idx[k]] = rank; }
+			i = j;
+		}
+		return ranks;
 	}
 
 	/**
@@ -2263,6 +2358,33 @@ public class Stats {
 	}
 
 	/**
+	 * Builds a Generalized Linear Model (currently using OLS).
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param data
+	 *            the data
+	 * @return the gama regression
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
+	@operator (
+			value = "glm",
+			can_be_const = false,
+			type = IType.REGRESSION,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC, IConcept.REGRESSION })
+	@doc (
+			value = "Returns a Generalized Linear Model (GLM) built from the matrix data. Currently implemented using Ordinary Least Squares (OLS).",
+			examples = { @example (
+					value = "glm(matrix([[1.0,2.0,3.0,4.0],[2.0,3.0,4.0,2.0]]))",
+					isExecutable = false) })
+	@test ("glm(matrix([[1.0,2.0,3.0,4.0],[2.0,3.0,4.0,2.0],[5.0,1.0,3.0,5.0],[3.0,4.0,5.0,1.0]])).parameters collect (each with_precision 5) = [0.5,2.5,0.0,-1.5]")
+	public static GamaRegression opGlm(final IScope scope, final IMatrix data) throws GamaRuntimeException {
+		return opRegression(scope, data);
+	}
+
+	/**
 	 * Compute adjusted R²
 	 *
 	 * @param scope
@@ -2284,6 +2406,232 @@ public class Stats {
 	@test ("rSquare(build(matrix([[4.0,1.0,2.0,3.0],[4.0,2.0,3.0,4.0]]))) = 0.8363636363636364")
 	public static Double rSquare(final IScope scope, final GamaRegression regression) {
 		return regression.getRSquare();
+	}
+
+	/**
+	 * Perform a one-way ANOVA test on a list of groups.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param data
+	 *            the data (list of lists of numbers)
+	 * @return the anova result
+	 */
+	@operator (
+			value = "anova",
+			type = IType.ANOVA,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = "Performs a one-way ANOVA test on a list of groups of data. Each group is a list of numbers.",
+			examples = { @example (
+					value = "anova([[6.0, 8.0, 4.0, 5.0, 3.0, 4.0], [8.0, 12.0, 9.0, 11.0, 6.0, 8.0], [13.0, 9.0, 11.0, 8.0, 7.0, 12.0]])",
+					isExecutable = false) })
+	@test ("(anova([[6.0, 8.0, 4.0, 5.0, 3.0, 4.0], [8.0, 12.0, 9.0, 11.0, 6.0, 8.0], [13.0, 9.0, 11.0, 8.0, 7.0, 12.0]]).f_stat with_precision 2) = 9.26")
+	public static GamaAnova anova(final IScope scope, final IList<IList<?>> data) {
+		return new GamaAnova(scope, data);
+	}
+
+	/**
+	 * Performs a two-way ANOVA test with interactions using Type III Sum of Squares.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param y
+	 *            the response variable
+	 * @param factorA
+	 *            the first factor
+	 * @param factorB
+	 *            the second factor
+	 * @return the anova result
+	 */
+	@operator (
+			value = "multi_anova",
+			type = IType.ANOVA,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = "Performs a two-way ANOVA test with interactions on a response variable and two factors. Uses Type III Sum of Squares (orthogonal to order).",
+			examples = { @example (
+					value = "multi_anova([1.0, 2.0, 5.0, 6.0], ['a', 'a', 'b', 'b'], ['x', 'y', 'x', 'y'])",
+					isExecutable = false) })
+	@test ("(float(multi_anova([10.0, 11.0, 20.0, 21.0, 30.0, 31.0, 40.0, 41.0, 100.0, 101.0, 200.0, 201.0], ['a', 'a', 'a', 'a', 'b', 'b', 'b', 'b', 'c', 'c', 'c', 'c'], ['x', 'x', 'y', 'y', 'x', 'x', 'y', 'y', 'x', 'x', 'y', 'y']).p_values['A']) < 0.05)")
+	public static GamaAnova multiAnova(final IScope scope, final IList<Double> y, final IList<?> factorA,
+			final IList<?> factorB) {
+		if (y.size() != factorA.size() || y.size() != factorB.size())
+			throw GamaRuntimeException.error("All input lists must have the same size", scope);
+
+		double[] yData = new double[y.size()];
+		for (int i = 0; i < y.size(); i++) yData[i] = y.get(i);
+
+		// Identify levels
+		List<Object> levelsA = new ArrayList<>();
+		for (Object o : factorA) if (!levelsA.contains(o)) levelsA.add(o);
+		List<Object> levelsB = new ArrayList<>();
+		for (Object o : factorB) if (!levelsB.contains(o)) levelsB.add(o);
+
+		try {
+			// Type III Sum of Squares requires Effect Coding (sum-to-zero)
+			// Model Full: y ~ A + B + A:B
+			int dfA = levelsA.size() - 1;
+			int dfB = levelsB.size() - 1;
+			int dfInter = dfA * dfB;
+			int nbCols = dfA + dfB + dfInter;
+			double[][] xFull = new double[y.size()][nbCols];
+
+			for (int i = 0; i < y.size(); i++) {
+				int idxA = levelsA.indexOf(factorA.get(i));
+				int idxB = levelsB.indexOf(factorB.get(i));
+				// Factor A effect coding
+				if (idxA < dfA) {
+					if (idxA >= 0) xFull[i][idxA] = 1.0;
+				} else {
+					for (int j = 0; j < dfA; j++) xFull[i][j] = -1.0;
+				}
+				// Factor B effect coding
+				if (idxB < dfB) {
+					if (idxB >= 0) xFull[i][dfA + idxB] = 1.0;
+				} else {
+					for (int j = 0; j < dfB; j++) xFull[i][dfA + j] = -1.0;
+				}
+				// Interaction effect coding
+				for (int rowA = 0; rowA < dfA; rowA++) {
+					for (int colB = 0; colB < dfB; colB++) {
+						xFull[i][dfA + dfB + rowA * dfB + colB] = xFull[i][rowA] * xFull[i][dfA + colB];
+					}
+				}
+			}
+
+			OLSMultipleLinearRegression reg = new OLSMultipleLinearRegression();
+			reg.newSampleData(yData, xFull);
+			double rssFull = reg.calculateResidualSumOfSquares();
+			int dfError = y.size() - (1 + nbCols);
+			double msError = dfError > 0 ? rssFull / dfError : 0.0;
+
+			GamaAnova result = new GamaAnova();
+			if (dfError <= 0 || msError <= 0) {
+				result.addEffect("A", 1.0, 0.0);
+				result.addEffect("B", 1.0, 0.0);
+				result.addEffect("A:B", 1.0, 0.0);
+				return result;
+			}
+
+			// SS(A | B, A:B)
+			double[][] xNoA = new double[y.size()][dfB + dfInter];
+			for (int i = 0; i < y.size(); i++) System.arraycopy(xFull[i], dfA, xNoA[i], 0, dfB + dfInter);
+			reg.newSampleData(yData, xNoA);
+			double ssA = reg.calculateResidualSumOfSquares() - rssFull;
+
+			// SS(B | A, A:B)
+			double[][] xNoB = new double[y.size()][dfA + dfInter];
+			for (int i = 0; i < y.size(); i++) {
+				System.arraycopy(xFull[i], 0, xNoB[i], 0, dfA);
+				System.arraycopy(xFull[i], dfA + dfB, xNoB[i], dfA, dfInter);
+			}
+			reg.newSampleData(yData, xNoB);
+			double ssB = reg.calculateResidualSumOfSquares() - rssFull;
+
+			// SS(A:B | A, B)
+			double[][] xNoInter = new double[y.size()][dfA + dfB];
+			for (int i = 0; i < y.size(); i++) System.arraycopy(xFull[i], 0, xNoInter[i], 0, dfA + dfB);
+			reg.newSampleData(yData, xNoInter);
+			double ssInter = reg.calculateResidualSumOfSquares() - rssFull;
+
+			result.addEffect("A", computeP(ssA / dfA, msError, dfA, dfError), ssA / dfA / msError);
+			result.addEffect("B", computeP(ssB / dfB, msError, dfB, dfError), ssB / dfB / msError);
+			result.addEffect("A:B", computeP(ssInter / dfInter, msError, dfInter, dfError), ssInter / dfInter / msError);
+
+			return result;
+		} catch (Exception e) {
+			throw GamaRuntimeException.error("Failed to perform multi_anova (Type III).", scope);
+		}
+	}
+
+	/**
+	 * Computes the Hilbert-Schmidt Independence Criterion (HSIC) between two variables.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param x
+	 *            the first variable
+	 * @param y
+	 *            the second variable
+	 * @return the HSIC value
+	 */
+	/**
+	 * Computes the normalized Hilbert-Schmidt Independence Criterion (HSIC) between two variables.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param x
+	 *            the first variable
+	 * @param y
+	 *            the second variable
+	 * @return the normalized HSIC value (bounded 0-1)
+	 */
+	@operator (
+			value = "hsic",
+			type = IType.FLOAT,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = "Computes the normalized Hilbert-Schmidt Independence Criterion (HSIC) between two variables. HSIC is a kernel-based statistic to test the independence of two variables. Returns a value between 0 and 1, where 0 indicates independence.",
+			examples = { @example (
+					value = "hsic([1.0, 2.0, 3.0], [1.0, 2.0, 3.0])",
+					isExecutable = false) })
+	@test ("hsic([1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0, 4.0, 5.0]) > hsic([1.0, 2.0, 3.0, 4.0, 5.0], [5.0, 1.0, 4.0, 2.0, 3.0])")
+	public static Double opHSIC(final IScope scope, final IList<Double> x, final IList<Double> y) {
+		if (x.size() != y.size()) throw GamaRuntimeException.error("Input lists must have the same size", scope);
+		double[] xData = new double[x.size()];
+		double[] yData = new double[y.size()];
+		for (int i = 0; i < x.size(); i++) {
+			xData[i] = x.get(i);
+			yData[i] = y.get(i);
+		}
+		return HSIC.computeNormalizedHSIC(xData, yData);
+	}
+
+	/**
+	 * Computes the p-value for the HSIC independence test between two variables using permutations.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param x
+	 *            the first variable
+	 * @param y
+	 *            the second variable
+	 * @param permutations
+	 *            the number of permutations
+	 * @return the p-value
+	 */
+	@operator (
+			value = "hsic_p_value",
+			type = IType.FLOAT,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = "Computes the p-value for the HSIC independence test between two variables using a permutation test. A small p-value (< 0.05) indicates strong evidence of dependence.",
+			examples = { @example (
+					value = "hsic_p_value([1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0, 4.0, 5.0], 100)",
+					isExecutable = false) })
+	@test ("hsic_p_value([1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0, 4.0, 5.0], 100) < 0.05")
+	public static Double opHSICPValue(final IScope scope, final IList<Double> x, final IList<Double> y,
+			final Integer permutations) {
+		if (x.size() != y.size()) throw GamaRuntimeException.error("Input lists must have the same size", scope);
+		double[] xData = new double[x.size()];
+		double[] yData = new double[y.size()];
+		for (int i = 0; i < x.size(); i++) {
+			xData[i] = x.get(i);
+			yData[i] = y.get(i);
+		}
+		return HSIC.computePValue(xData, yData, permutations);
+	}
+
+	private static double computeP(double msEffect, double msError, int dfEffect, int dfError) {
+		double f = msEffect / msError;
+		FDistribution fDist =
+				new FDistribution(dfEffect, dfError);
+		return 1.0 - fDist.cumulativeProbability(f);
 	}
 
 	/**
@@ -2448,16 +2796,16 @@ public class Stats {
 		int nbRows = mapData.values().iterator().next().size();
 		List<String> listNames = new ArrayList<>(mapData.keySet());
 
-		List<Map<String, Object>> MySample = new ArrayList<>();
-		Map<String, List<Double>> Outputs = new LinkedHashMap<>();
+		IList<IMap<String, Object>> MySample = GamaListFactory.create(Types.MAP);
+		IMap<String, IList<Double>> Outputs = GamaMapFactory.create();
 
 		for (int idx = 0; idx < nbCols; idx++) {
 			String name = listNames.get(idx);
-			if (idx >= nb_parameters) { Outputs.put(name, new ArrayList<>()); }
+			if (idx >= nb_parameters) { Outputs.put(name, GamaListFactory.create()); }
 		}
 
 		for (int row = 0; row < nbRows; row++) {
-			Map<String, Object> temp_map = new LinkedHashMap<>();
+			IMap<String, Object> temp_map = GamaMapFactory.create();
 			for (int idx = 0; idx < nbCols; idx++) {
 				String name = listNames.get(idx);
 				Double val = Cast.asFloat(scope, mapData.get(name).get(row));
@@ -2473,6 +2821,52 @@ public class Stats {
 		return Stochanalysis.stochasticityAnalysis_From_Data(replicat, threshold, MySample, Outputs, scope);
 	}
 
+	
+	@operator (
+			value = "rolling_vc",
+			type = IType.LIST,
+			content_type = IType.FLOAT,
+			can_be_const = true,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = "Return the list of rolling coefficient of variance according to the number of observations, </br> i.e. value at index i is the coefficient of variance for the first i observations.")
+	//@test ("rolling_vc([0.0,4.0,8.0]) != \"\"")
+	//@test ("morrisAnalysis(matrix([[0.1, 0.2, 0.3, 0.4, 0.5], [1.0, 1.1, 1.2, 1.3, 1.4]]), 4, 1) != \"\"")
+	@no_test
+	public static IList<Double> rollingVC(final IScope scope, final IList<Double> data) {
+		return Stochanalysis.coefficientOfVariance(scope, data);
+	}
+
+	@operator (
+			value = "rolling_se",
+			type = IType.LIST,
+			content_type = IType.FLOAT,
+			can_be_const = true,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = "Return the list of standard error according to the number of observations, </br> i.e. value at index i is the standard error for the first i observations.")
+	@no_test
+	public static IList<Double> rollingSE(final IScope scope, final IList<Double> data) {
+		return Stochanalysis.standardError(scope, data);
+	}
+
+	@operator (
+			value = "power_test",
+			type = IType.INT,
+			can_be_const = true,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = "Return the number of observation to satisfy power test given a critical effect size, tAlpha and tBeta."
+					+ "</br>see reference: https://rseri.me/publication/b016/B016.pdf (accessible as of 04/2026).")
+	@no_test
+	public static Integer powerTestCSE(final IScope scope, final IList<Double> data, final double tAlpha,
+			final double tBeta, final double criticalEffectSize) {
+		return Stochanalysis.ces(scope, data, tAlpha, tBeta, criticalEffectSize);
+	}	
+	
 	/**
 	 * Helper to convert matrix to map of columns.
 	 */
@@ -2485,39 +2879,8 @@ public class Stats {
 		}
 		return map;
 	}
-
-	/**
-	 *
-	 *
-	 * @param scope
-	 * @param size
-	 * @param sumOfSquares
-	 * @return
-	 */
-	@operator (
-			value = "rms",
-			can_be_const = true,
-			type = IType.FLOAT,
-			category = { IOperatorCategory.STATISTICAL },
-			concept = { IConcept.STATISTIC })
-	@doc (
-			value = """
-					Returns the RMS (Root-Mean-Square) of a data sequence. \
-					The RMS of data sequence is the square-root of the mean of the squares \
-					of the elements in the data sequence. It is a measure of the average size of \
-					the elements of a data sequence.""",
-			comment = "",
-			examples = { @example (" list<float> data_sequence <- [6.0, 7.0, 8.0, 9.0]; "),
-					@example (" list<float> squares <- data_sequence collect (each*each); "), @example (
-							value = " rms(length(data_sequence),sum(squares)) with_precision(4) ",
-							equals = "7.5829") })
-	public static Double opRms(final IScope scope, final Integer size, final Double sumOfSquares) {
-
-		// TODO input parameters validation
-
-		return Descriptive.rms(size, sumOfSquares);
-	}
-
+	
+	
 	// /**
 	// *
 	// *
@@ -2583,6 +2946,39 @@ public class Stats {
 	// return Descriptive.skew(toDoubleArrayList(scope, data), mean, standardDeviation);
 	// }
 
+	
+	/**
+	 *
+	 *
+	 * @param scope
+	 * @param size
+	 * @param sumOfSquares
+	 * @return
+	 */
+	@operator (
+			value = "rms",
+			can_be_const = true,
+			type = IType.FLOAT,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = """
+					Returns the RMS (Root-Mean-Square) of a data sequence. \
+					The RMS of data sequence is the square-root of the mean of the squares \
+					of the elements in the data sequence. It is a measure of the average size of \
+					the elements of a data sequence.""",
+			comment = "",
+			examples = { @example (" list<float> data_sequence <- [6.0, 7.0, 8.0, 9.0]; "),
+					@example (" list<float> squares <- data_sequence collect (each*each); "), @example (
+							value = " rms(length(data_sequence),sum(squares)) with_precision(4) ",
+							equals = "7.5829") })
+	public static Double opRms(final IScope scope, final Integer size, final Double sumOfSquares) {
+
+		// TODO input parameters validation
+
+		return Descriptive.rms(size, sumOfSquares);
+	}
+	
 	/**
 	 * Skewness.
 	 *
