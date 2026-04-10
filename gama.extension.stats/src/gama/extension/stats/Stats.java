@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.math3.distribution.FDistribution;
 import org.apache.commons.math3.ml.clustering.CentroidCluster;
 import org.apache.commons.math3.ml.clustering.Cluster;
 import org.apache.commons.math3.ml.clustering.DBSCANClusterer;
@@ -31,6 +32,7 @@ import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.stat.descriptive.moment.Kurtosis;
 import org.apache.commons.math3.stat.descriptive.moment.Skewness;
 import org.apache.commons.math3.stat.inference.TTest;
+import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 
 import com.google.common.collect.Ordering;
 
@@ -2500,8 +2502,7 @@ public class Stats {
 				}
 			}
 
-			org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression reg =
-					new org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression();
+			OLSMultipleLinearRegression reg = new OLSMultipleLinearRegression();
 			reg.newSampleData(yData, xFull);
 			double rssFull = reg.calculateResidualSumOfSquares();
 			int dfError = y.size() - (1 + nbCols);
@@ -2628,8 +2629,8 @@ public class Stats {
 
 	private static double computeP(double msEffect, double msError, int dfEffect, int dfError) {
 		double f = msEffect / msError;
-		org.apache.commons.math3.distribution.FDistribution fDist =
-				new org.apache.commons.math3.distribution.FDistribution(dfEffect, dfError);
+		FDistribution fDist =
+				new FDistribution(dfEffect, dfError);
 		return 1.0 - fDist.cumulativeProbability(f);
 	}
 

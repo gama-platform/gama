@@ -12,6 +12,7 @@ package gama.extension.stats;
 
 import java.util.Arrays;
 
+import org.apache.commons.math3.distribution.TDistribution;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 import org.apache.commons.math3.stat.regression.RegressionResults;
 
@@ -113,8 +114,7 @@ public class GamaRegression implements IValue {
 			pValues = new double[param.length];
 			int df = nbInstances - param.length;
 			if (df > 0) {
-				org.apache.commons.math3.distribution.TDistribution tDist =
-						new org.apache.commons.math3.distribution.TDistribution(df);
+				TDistribution tDist = new TDistribution(df);
 				for (int i = 0; i < param.length; i++) {
 					double t = Math.abs(param[i] / stdErrors[i]);
 					pValues[i] = 2.0 * (1.0 - tDist.cumulativeProbability(t));
