@@ -133,13 +133,13 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 
 	@Override
 	public IMatrix<?> matrixValue(final IScope scope, final IType<?> contentType, final boolean copy) {
-		return toMatrix(scope, this);
+		return toMatrix(scope, this, contentType);
 	}
 
 	@Override
 	public IMatrix<?> matrixValue(final IScope scope, final IType<?> contentType, final IPoint size,
 			final boolean copy) {
-		return toMatrix(scope, this);
+		return toMatrix(scope, this, contentType);
 	}
 
 	// ========================= IValue =========================
@@ -425,12 +425,11 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	 *            the dataframe to convert
 	 * @return a new {@link IMatrix} of {@code Object}
 	 */
-	public static IMatrix<Object> toMatrix(final IScope scope, final GamaDataframe df) {
+	public static IMatrix toMatrix(final IScope scope, final GamaDataframe df, final IType contentType) {
 		if (df == null) return null;
 		final int cols = df.inner.width();
 		final int rows = df.inner.height();
-		@SuppressWarnings ("unchecked")
-		final IMatrix<Object> matrix = GamaMatrixFactory.create(cols, rows, Types.NO_TYPE);
+		final IMatrix matrix = GamaMatrixFactory.create(cols, rows, contentType);
 		final String[] colNames = df.inner.getColumnsIndex().toArray();
 		for (int r = 0; r < rows; r++) {
 			for (int c = 0; c < cols; c++) { matrix.set(scope, c, r, df.inner.get(colNames[c], r)); }

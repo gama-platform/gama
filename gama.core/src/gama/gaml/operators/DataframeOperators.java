@@ -19,6 +19,7 @@ import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.dataframe.GamaDataframe;
 import gama.api.types.dataframe.IDataframe;
@@ -948,7 +949,7 @@ public class DataframeOperators {
 			see = { "df_to_map", "df_to_field" })
 	@test ("df_to_matrix(dataframe_with([\"a\",\"b\"], [[1,2],[3,4]])) = matrix([[1,2],[3,4]])")
 	public static IMatrix<Object> dfToMatrix(final IScope scope, final IDataframe df) {
-		return GamaDataframe.toMatrix(scope, (GamaDataframe) df);
+		return GamaDataframe.toMatrix(scope, (GamaDataframe) df, Types.NO_TYPE);
 	}
 
 	/**
