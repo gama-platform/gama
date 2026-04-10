@@ -16,6 +16,7 @@ import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
+import gama.api.types.message.IMessage;
 import gama.core.util.messaging.GamaMailbox;
 import gama.dev.DEBUG;
 import gama.extension.serialize.IGamaObjectInput;
@@ -58,6 +59,15 @@ class IGamaMailBoxSerialiser extends FSTIndividualSerialiser<GamaMailbox> {
 	@Override
 	public void serialise(final IGamaObjectOutput out, final GamaMailbox o) throws Exception {
 		DEBUG.OUT("serialize GamaMailbox ");
+		out.writeObject(o.getGamlType().getContentType());
+		out.writeInt(o.size());
+		o.forEach(v -> {
+			try {
+				out.writeObject((IMessage) v);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		});
 	}
 
 	/**
@@ -76,15 +86,10 @@ class IGamaMailBoxSerialiser extends FSTIndividualSerialiser<GamaMailbox> {
 	@Override
 	public GamaMailbox deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		DEBUG.OUT("deserialize GamaMailbox ");
-		/*IType c = (IType) in.readObject();
-		IList<Object> result = GamaListFactory.create(c);
+		GamaMailbox mailBox = (GamaMailbox) in.readObject();
 		int size = in.readInt();
-		for (int i = 0; i < size; i++) { result.add(in.readObject()); }
-		return result;*/
-		// Use in.read() (readIntByte) instead of in.readInt() (readFInt): writeFByte writes a raw single byte,
-		// so readIntByte correctly returns the unsigned value 0-255, whereas readFInt interprets byte 0xFF (-1)
-		// as integer -1, which normalize() then clamps to 0, corrupting the alpha channel.
-		return new GamaMailbox();
+		for (int i = 0; i < size; i++) { mailBox.addMessage(scope,(IMessage) in.readObject()); }
+		return mailBox;
 	}
 
 }

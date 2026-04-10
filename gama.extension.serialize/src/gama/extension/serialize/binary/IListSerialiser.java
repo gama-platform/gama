@@ -54,7 +54,6 @@ class IListSerialiser extends FSTIndividualSerialiser<IList> {
 	@SuppressWarnings ("unchecked")
 	@Override
 	public void serialise(final IGamaObjectOutput out, final IList o) throws Exception {
-		DEBUG.ON("serialize LIST ");
 		out.writeObject(o.getGamlType().getContentType());
 		out.writeInt(o.size());
 		o.forEach(v -> {
@@ -80,7 +79,6 @@ class IListSerialiser extends FSTIndividualSerialiser<IList> {
 	@SuppressWarnings ({ "unchecked", "rawtypes" })
 	@Override
 	public IList deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
-		DEBUG.ON("deserialize LIST ");
 		IType c = (IType) in.readObject();
 		IList<Object> result = GamaListFactory.create(c);
 		int size = in.readInt();
