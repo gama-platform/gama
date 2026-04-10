@@ -59,7 +59,6 @@ class IGamaMailBoxSerialiser extends FSTIndividualSerialiser<GamaMailbox> {
 	@Override
 	public void serialise(final IGamaObjectOutput out, final GamaMailbox o) throws Exception {
 		DEBUG.OUT("serialize GamaMailbox ");
-		out.writeObject(o.getGamlType().getContentType());
 		out.writeInt(o.size());
 		o.forEach(v -> {
 			try {
@@ -86,8 +85,8 @@ class IGamaMailBoxSerialiser extends FSTIndividualSerialiser<GamaMailbox> {
 	@Override
 	public GamaMailbox deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		DEBUG.OUT("deserialize GamaMailbox ");
-		GamaMailbox mailBox = (GamaMailbox) in.readObject();
-		int size = in.readInt();
+		final int size = in.readInt();
+		GamaMailbox mailBox = new GamaMailbox(size);
 		for (int i = 0; i < size; i++) { mailBox.addMessage(scope,(IMessage) in.readObject()); }
 		return mailBox;
 	}
