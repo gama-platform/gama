@@ -23,6 +23,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.types.dataframe.GamaDataframe;
 import gama.api.types.dataframe.IDataframe;
 import gama.api.types.list.IList;
+import gama.api.utils.prefs.GamaPreferences;
 
 /**
  * Operators for manipulating dataframes in GAML.
@@ -73,7 +74,7 @@ public class DataframeOperators {
 	// ========================= File loading operators =========================
 
 	/**
-	 * Loads a CSV file into a dataframe with default settings (comma separator, header, UTF-8).
+	 * Loads a CSV file into a dataframe with default settings (default separator, header, UTF-8).
 	 */
 	@operator (
 			value = "df_load_csv",
@@ -85,14 +86,18 @@ public class DataframeOperators {
 			value = "Loads a CSV file into a dataframe. The file path is relative to the model file. "
 					+ "Uses comma as separator, assumes the first row is a header, and reads in UTF-8.",
 			usages = { @usage (
-					value = "Load a CSV file with default settings (comma separator, with header, UTF-8)",
+					value = "Load a CSV file with default settings (default separator, with header, UTF-8)",
 					examples = { @example (
 							value = "dataframe df <- df_load_csv(\"../includes/data.csv\");",
 							isExecutable = false) }) },
 			see = { "df_load_csv_with", "df_load_excel", "df_load_json" })
 	@no_test
 	public static GamaDataframe loadCsv(final IScope scope, final String path) {
-		return GamaDataframe.fromCSV(scope, path, ',', true, null);
+		return GamaDataframe.fromCSV(	scope, 
+										path, 
+										GamaPreferences.External.CSV_SEPARATOR.value(scope).toString().charAt(0), 
+										true, 
+										null);
 	}
 
 	/**
