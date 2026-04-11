@@ -48,9 +48,9 @@ global {
 	// -----------------------------------------------------------------------
 	// Aggregation containers — populated in init, read by chart displays
 	// -----------------------------------------------------------------------
-	map<string, int>   listings_by_city      <- map([]);
-	map<string, float> revenue_by_city       <- map([]);
-	map<string, int>   listings_by_room_type <- map([]);
+	map<string, int>   listings_by_city      <- map<string,int>();
+	map<string, float> revenue_by_city       <- map<string, float>();
+	map<string, int>   listings_by_room_type <- map<string, int>();
 	map<string, int>   rating_buckets        <- map([
 		"< 3.0"::0, "3.0 – 3.5"::0, "3.5 – 4.0"::0,
 		"4.0 – 4.5"::0, "4.5 – 4.75"::0, "4.75 – 5.0"::0
