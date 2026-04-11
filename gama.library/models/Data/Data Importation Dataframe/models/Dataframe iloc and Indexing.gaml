@@ -39,7 +39,6 @@ global {
 		write "";
 		write "===== Column metadata =====";
 		write "Columns      : " + df_columns(sensors);
-		write "Column types : " + df_column_types(sensors);
 		write "Row count    : " + df_rows(sensors);
 
 		// ===== 2. iloc(df, i) — single row as a list =====

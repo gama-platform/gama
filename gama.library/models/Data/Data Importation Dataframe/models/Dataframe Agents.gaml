@@ -20,13 +20,11 @@ global {
 
 		// Create agents from the dataframe rows
 		loop i from: 0 to: df_rows(iris_df) - 1 {
-			create iris_flower {
-				sepal_length <- float(df_cell(iris_df, i, "sepallength"));
-				sepal_width <- float(df_cell(iris_df, i, "sepalwidth"));
-				petal_length <- float(df_cell(iris_df, i, "petallength"));
-				petal_width <- float(df_cell(iris_df, i, "petalwidth"));
-				iris_type <- string(df_cell(iris_df, i, "type"));
-			}
+			create iris_flower(sepal_length: float(df_cell(iris_df, i, "sepallength")),
+				sepal_width: float(df_cell(iris_df, i, "sepalwidth")),
+				petal_length: float(df_cell(iris_df, i, "petallength")),
+				petal_width: float(df_cell(iris_df, i, "petalwidth")),
+				iris_type: string(df_cell(iris_df, i, "type")));
 		}
 
 		write "Created " + length(iris_flower) + " iris agents";
@@ -51,7 +49,7 @@ species iris_flower {
 
 	aspect default {
 		// Position based on sepal dimensions, size based on petal width
-		draw circle(petal_width * 2) at: {sepal_length * 20, sepal_width * 20} color: color;
+		draw circle(petal_width * 2) at:location + {sepal_length, sepal_width } color: color;
 	}
 }
 

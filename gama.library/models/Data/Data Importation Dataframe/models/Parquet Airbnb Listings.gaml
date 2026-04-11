@@ -45,7 +45,6 @@ global {
 		write "===== Schema =====";
 		write "Rows    : " + df_rows(listings);
 		write "Columns : " + df_columns(listings);
-		write "Types   : " + df_column_types(listings);
 		write "";
 		write "Pretty-print (first 5 rows, first 8 cols):";
 		write df_pretty_print(iloc(listings, range(0, 4), range(0, 7)), 5, 8, 20);
