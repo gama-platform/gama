@@ -71,7 +71,7 @@ public class DataframeOperators {
 	@test ("df_rows(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]])) = 2")
 	@test ("df_columns(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]])) = [\"name\",\"age\"]")
 	public static GamaDataframe dataframeWith(final IScope scope, final IList<String> columns,
-			final IList<IList<Object>> data) {
+			final IList<IList> data) {
 		return GamaDataframe.create(scope, columns, data);
 	}
 
@@ -321,6 +321,30 @@ public class DataframeOperators {
 	public static Boolean saveExcel(final IScope scope, final IDataframe df, final String path,
 			final String sheetName) {
 		return GamaDataframe.saveExcelSheet(scope, (GamaDataframe) df, path, sheetName);
+	}
+
+	/**
+	 * Saves multiple dataframes to a single Excel workbook, one per sheet.
+	 */
+	@operator (
+			value = "df_save_excel_sheets",
+			can_be_const = false,
+			category = { IOperatorCategory.DATAFRAME, IOperatorCategory.FILE },
+			concept = { IConcept.DATAFRAME, IConcept.FILE })
+	@doc (
+			value = "Saves multiple dataframes to a single Excel workbook (.xlsx). The argument is a map whose keys "
+					+ "are sheet names and values are dataframes. All sheets are written in one pass; existing sheets "
+					+ "in the file that are not in the map are left untouched. Returns true on success.",
+			usages = { @usage (
+					value = "Save two dataframes as two sheets in one workbook",
+					examples = { @example (
+							value = "bool ok <- df_save_excel_sheets([\"Summary\"::df1, \"Details\"::df2], \"../results/report.xlsx\");",
+							isExecutable = false) }) },
+			see = { "df_save_excel", "df_load_excel" })
+	@no_test
+	public static Boolean saveExcelSheets(final IScope scope, final IMap<String, IDataframe> sheets,
+			final String path) {
+		return GamaDataframe.saveExcelSheets(scope, sheets, path);
 	}
 
 	/**
@@ -949,7 +973,7 @@ public class DataframeOperators {
 			see = { "df_to_map", "df_to_field" })
 	@test ("df_to_matrix(dataframe_with([\"a\",\"b\"], [[1,2],[3,4]])) = matrix([[1,2],[3,4]])")
 	public static IMatrix<Object> dfToMatrix(final IScope scope, final IDataframe df) {
-		return GamaDataframe.toMatrix(scope, (GamaDataframe) df, Types.NO_TYPE);
+		return GamaDataframe.toMatrix(scope, (GamaDataframe) df, df.getContentType(scope));
 	}
 
 	/**

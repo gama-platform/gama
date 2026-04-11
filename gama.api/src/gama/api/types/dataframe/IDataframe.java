@@ -68,6 +68,7 @@ public interface IDataframe extends IContainer.Addressable<String, IList<Object>
 	 */
 	@getter (COLUMNS)
 	IList<String> getColumns();
+	
 
 	/**
 	 * Returns the number of rows.
@@ -93,6 +94,13 @@ public interface IDataframe extends IContainer.Addressable<String, IList<Object>
 	 * @return the list of values
 	 */
 	IList<Object> getColumnValues(String columnName);
+	
+	/**
+	 * Returns the list of types of the columns
+	 * 
+	 * @return
+	 */
+	IList<IType> getColumnTypes();
 
 	/**
 	 * Returns all values in a given row as a list.
@@ -120,9 +128,16 @@ public interface IDataframe extends IContainer.Addressable<String, IList<Object>
 	 * @return the DFLib DataFrame
 	 */
 	org.dflib.DataFrame getInnerDataFrame();
+	
 
 	@Override
 	default IContainerType<?> getGamlType() { return Types.DATAFRAME; }
+	
+	/**
+	 * Tries to find a type common to all columns. If not possible will return NO_TYPE.
+	 * @return
+	 */
+	IType getContentType(final IScope scope);
 
 	@Override
 	default Object get(final IScope scope, final String columnName) {

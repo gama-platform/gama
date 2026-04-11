@@ -22,6 +22,7 @@ import org.apache.commons.csv.CSVFormat;
 import org.dflib.DataFrame;
 import org.dflib.Exp;
 import org.dflib.Printers;
+import org.dflib.Series;
 import org.dflib.csv.Csv;
 import org.dflib.csv.CsvLoader;
 import org.dflib.excel.Excel;
@@ -30,6 +31,8 @@ import org.dflib.jdbc.connector.JdbcConnector;
 import org.dflib.json.Json;
 import org.dflib.parquet.Parquet;
 import org.dflib.print.Printer;
+
+import com.fasterxml.jackson.databind.type.TypeFactory;
 
 import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
@@ -88,6 +91,15 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 		final String[] cols = inner.getColumnsIndex().toArray();
 		return GamaListFactory.createWithoutCasting(Types.STRING, List.of(cols));
 	}
+	
+	@Override
+	public IList<IType> getColumnTypes() {
+		final IList<IType> types = GamaListFactory.create(Types.TYPE);
+		for (final String col : inner.getColumnsIndex()) {
+			types.add(Types.get(inner.getColumn(col).getNominalType()));
+		}
+		return types;
+	}
 
 	@Override
 	public int getRows() {
@@ -122,6 +134,19 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	@Override
 	public DataFrame getInnerDataFrame() {
 		return inner;
+	}
+	
+	@Override
+	public IType getContentType(final IScope scope) {
+		var types = getColumnTypes();
+		if (types.length(scope) == 0) {
+			return Types.NO_TYPE;
+		}
+		IType common = types.removeFirst();
+		for(var t : types) {
+			common = common.findCommonSupertypeWith(t);
+		}
+		return common;
 	}
 
 	// ========================= IContainer =========================
@@ -336,24 +361,104 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	 * @return a new GamaDataframe
 	 */
 	public static GamaDataframe create(final IScope scope, final IList<String> columns,
-			final IList<IList<Object>> data) {
-		if (columns == null || columns.length(scope) == 0) {
-			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("Columns cannot be empty", scope), false);
-		}
-		if (data == null || data.length(scope) == 0) {
-			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("Data cannot be empty", scope), false);
-		}
-		if (data.firstValue(scope) != null && columns.length(scope) != data.firstValue(scope).length(scope)) {
-			GAMA.reportAndThrowIfNeeded(scope,
-					GamaRuntimeException.error("Columns and data must have the same length", scope), false);
-		}
+			final IList<IList> data) {
+		if (columns == null || columns.isEmpty())
+			throw GamaRuntimeException.error("Columns cannot be empty", scope);
+
 		final String[] colArray = columns.toArray(new String[0]);
-		final Object[] flat = new Object[data.size() * columns.size()];
-		int i = 0;
-		for (final IList<?> row : data) {
-			for (final Object val : row) { flat[i++] = val; }
+		final int numCols = colArray.length;
+
+		// Empty data = empty dataframe with correct column schema
+		if (data == null || data.isEmpty()) {
+			final Series<?>[] emptySeries = new Series<?>[numCols];
+			for (int c = 0; c < numCols; c++) { emptySeries[c] = Series.of(); }
+			return new GamaDataframe(DataFrame.byColumn(colArray).of(emptySeries));
 		}
-		return new GamaDataframe(DataFrame.foldByRow(colArray).of(flat));
+
+		// Validate row width against column count
+		final IList<?> firstRow = data.firstValue(scope);
+		if (firstRow != null && firstRow.size() != numCols)
+			throw GamaRuntimeException.error(
+					"Each row must have " + numCols + " values (got " + firstRow.size() + ")", scope);
+
+		final int numRows = data.size();
+
+		// Build one typed Series per column
+		final Series<?>[] series = new Series<?>[numCols];
+		for (int c = 0; c < numCols; c++) {
+			series[c] = buildTypedSeriesFromRows(data, c, numRows);
+		}
+		return new GamaDataframe(DataFrame.byColumn(colArray).of(series));
+	}
+
+	/**
+	 * Extracts column {@code col} from a list-of-rows, infers its uniform Java type, and returns a typed DFLib
+	 * {@link Series}. Mixed numeric types are promoted to {@code double}. Anything else falls back to
+	 * {@code Series<Object>}.
+	 */
+	@SuppressWarnings ("unchecked")
+	private static Series<?> buildTypedSeriesFromRows(final IList<IList> data, final int col, final int numRows) {
+		// Collect raw values for this column position
+		final Object[] vals = new Object[numRows];
+		for (int r = 0; r < numRows; r++) {
+			final IList<?> row = data.get(r);
+			vals[r] = col < row.size() ? row.get(col) : null;
+		}
+
+		// Infer the common Java class across all non-null values
+		final Class<?> type = inferColumnType(vals);
+
+		if (type == Integer.class) {
+			final int[] arr = new int[numRows];
+			for (int r = 0; r < numRows; r++) { arr[r] = vals[r] instanceof Number n ? n.intValue() : 0; }
+			return Series.ofInt(arr);
+		}
+		if (type == Long.class) {
+			final long[] arr = new long[numRows];
+			for (int r = 0; r < numRows; r++) { arr[r] = vals[r] instanceof Number n ? n.longValue() : 0L; }
+			return Series.ofLong(arr);
+		}
+		if (type == Double.class || type == Float.class) {
+			final double[] arr = new double[numRows];
+			for (int r = 0; r < numRows; r++) { arr[r] = vals[r] instanceof Number n ? n.doubleValue() : 0.0; }
+			return Series.ofDouble(arr);
+		}
+		if (type == Boolean.class) {
+			final boolean[] arr = new boolean[numRows];
+			for (int r = 0; r < numRows; r++) { arr[r] = Boolean.TRUE.equals(vals[r]); }
+			return Series.ofBool(arr);
+		}
+		if (type == String.class) {
+			final String[] arr = new String[numRows];
+			for (int r = 0; r < numRows; r++) { arr[r] = vals[r] != null ? vals[r].toString() : null; }
+			return Series.of(arr);
+		}
+		// Fallback: generic object series
+		return Series.of(vals);
+	}
+
+	/**
+	 * Infers the most specific uniform Java class across all non-null values. Integer + Double → Double (numeric
+	 * promotion). Any other mismatch → Object.
+	 */
+	private static Class<?> inferColumnType(final Object[] vals) {
+		Class<?> common = null;
+		for (final Object v : vals) {
+			if (v == null) { continue; }
+			final Class<?> c = v.getClass();
+			if (common == null) {
+				common = c;
+			} else if (common != c) {
+				// Promote int ↔ double mixed columns to double
+				if ((common == Integer.class || common == Double.class || common == Float.class || common == Long.class)
+						&& (c == Integer.class || c == Double.class || c == Float.class || c == Long.class)) {
+					common = Double.class;
+				} else {
+					return Object.class;
+				}
+			}
+		}
+		return common == null ? Object.class : common;
 	}
 
 	/**
@@ -372,14 +477,66 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 		final int rows = matrix.getRows(scope);
 		if (cols == 0 || rows == 0)
 			throw GamaRuntimeException.error("Cannot build a dataframe from an empty matrix", scope);
+
+		// Determine the content type of the matrix to build typed DFLib Series per column.
+		final IType<?> contentType = matrix.computeRuntimeType(scope).getContentType();
+		final int typeId = contentType == null ? IType.NONE : contentType.id();
+
 		final String[] colNames = new String[cols];
 		for (int c = 0; c < cols; c++) { colNames[c] = "col" + c; }
-		final Object[] flat = new Object[rows * cols];
-		int i = 0;
-		for (int r = 0; r < rows; r++) {
-			for (int c = 0; c < cols; c++) { flat[i++] = matrix.get(scope, c, r); }
+
+		final Series<?>[] series = new Series<?>[cols];
+		for (int c = 0; c < cols; c++) {
+			series[c] = buildTypedSeries(scope, matrix, c, rows, typeId);
 		}
-		return new GamaDataframe(DataFrame.foldByRow(colNames).of(flat));
+		return new GamaDataframe(DataFrame.byColumn(colNames).of(series));
+	}
+
+	/**
+	 * Builds a typed DFLib {@link Series} for column {@code col} of the given matrix. The series type mirrors the
+	 * matrix content type so that {@link #getColumnTypes()} returns accurate results.
+	 */
+	private static Series<?> buildTypedSeries(final IScope scope, final IMatrix<?> matrix, final int col,
+			final int rows, final int typeId) {
+		switch (typeId) {
+			case IType.INT: {
+				final int[] arr = new int[rows];
+				for (int r = 0; r < rows; r++) {
+					final Object v = matrix.get(scope, col, r);
+					arr[r] = v instanceof Number n ? n.intValue() : 0;
+				}
+				return Series.ofInt(arr);
+			}
+			case IType.FLOAT: {
+				final double[] arr = new double[rows];
+				for (int r = 0; r < rows; r++) {
+					final Object v = matrix.get(scope, col, r);
+					arr[r] = v instanceof Number n ? n.doubleValue() : 0.0;
+				}
+				return Series.ofDouble(arr);
+			}
+			case IType.BOOL: {
+				final boolean[] arr = new boolean[rows];
+				for (int r = 0; r < rows; r++) {
+					final Object v = matrix.get(scope, col, r);
+					arr[r] = Boolean.TRUE.equals(v);
+				}
+				return Series.ofBool(arr);
+			}
+			case IType.STRING: {
+				final String[] arr = new String[rows];
+				for (int r = 0; r < rows; r++) {
+					final Object v = matrix.get(scope, col, r);
+					arr[r] = v == null ? null : v.toString();
+				}
+				return Series.of(arr);
+			}
+			default: {
+				final Object[] arr = new Object[rows];
+				for (int r = 0; r < rows; r++) { arr[r] = matrix.get(scope, col, r); }
+				return Series.of(arr);
+			}
+		}
 	}
 
 	/**
@@ -733,10 +890,38 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 			final String sheetName) {
 		try {
 			final String resolvedPath = FileUtils.constructAbsoluteFilePath(scope, path, false);
-			Excel.saver().saveSheet(df.inner, new File(resolvedPath), sheetName);
+			Excel.saver().createMissingDirs().saveSheet(df.inner, new File(resolvedPath), sheetName);
 			return true;
 		} catch (final Exception e) {
 			throw GamaRuntimeException.error("Failed to save Excel file: " + path + " - " + e.getMessage(), scope);
+		}
+	}
+
+	/**
+	 * Saves multiple dataframes to an Excel workbook, one per sheet, in a single operation. The map keys are used as
+	 * sheet names. Existing sheets in the file that are not present in the map are left untouched.
+	 *
+	 * @param scope
+	 *            the execution scope
+	 * @param sheets
+	 *            a map of sheet name -&gt; dataframe
+	 * @param path
+	 *            the output file path (relative to the model or absolute)
+	 * @return true if saved successfully
+	 */
+	public static boolean saveExcelSheets(final IScope scope, final IMap<String, IDataframe> sheets,
+			final String path) {
+		try {
+			final String resolvedPath = FileUtils.constructAbsoluteFilePath(scope, path, false);
+			final Map<String, DataFrame> dfBySheet = new LinkedHashMap<>();
+			for (final Map.Entry<String, IDataframe> entry : sheets.entrySet()) {
+				dfBySheet.put(entry.getKey(), ((GamaDataframe) entry.getValue()).inner);
+			}
+			Excel.saver().createMissingDirs().save(dfBySheet, new File(resolvedPath));
+			return true;
+		} catch (final Exception e) {
+			throw GamaRuntimeException.error("Failed to save multi-sheet Excel file: " + path + " - " + e.getMessage(),
+					scope);
 		}
 	}
 

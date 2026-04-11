@@ -60,7 +60,7 @@ public class GamaDataframeFactory {
 	 * @return a new dataframe
 	 */
 	public static GamaDataframe create(final IScope scope, final IList<String> columns,
-			final IList<IList<Object>> data) {
+			final IList<IList> data) {
 		return GamaDataframe.create(scope, columns, data);
 	}
 
