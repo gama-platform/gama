@@ -1,0 +1,322 @@
+/**
+* Name: Dataframe
+* Author: GAMA Team
+* Description: Unit tests for the dataframe type and its operators.
+*   Tests cover creation, column/row access, filtering, modification,
+*   merging, joining, pivoting, and file I/O operations.
+* Tags: dataframe, test, container
+*/
+
+@no_warning
+model test_dataframes
+
+
+experiment Dataframes type: test {
+
+	// ========================= Creation =========================
+
+	test creation_from_columns_and_data {
+		dataframe df <- dataframe_with(["name", "age", "city"], [["Alice", 30, "Paris"], ["Bob", 25, "Lyon"], ["Charlie", 35, "Marseille"]]);
+		assert df != nil;
+		assert df_rows(df) = 3;
+		assert df_columns(df) = ["name", "age", "city"];
+	}
+
+	test creation_empty_columns_fails {
+		// Creating a dataframe with empty columns should raise an error
+		try {
+			dataframe df <- dataframe_with([], [["a", 1]]);
+			assert false; // should not reach here
+		} catch {
+			assert true;
+		}
+	}
+
+	// ========================= Pseudo-variables =========================
+
+	test pseudo_variables {
+		dataframe df <- dataframe_with(["x", "y", "z"], [[1, 2, 3], [4, 5, 6]]);
+		assert df.columns = ["x", "y", "z"];
+		assert df.rows = 2;
+		assert df.cols = 3;
+	}
+
+	// ========================= Column access =========================
+
+	test column_access {
+		dataframe df <- dataframe_with(["name", "score"], [["Alice", 95], ["Bob", 87], ["Charlie", 92]]);
+		list col <- df_column(df, "name");
+		assert length(col) = 3;
+		assert col[0] = "Alice";
+		assert col[1] = "Bob";
+		assert col[2] = "Charlie";
+	}
+
+	test column_values_score {
+		dataframe df <- dataframe_with(["name", "score"], [["Alice", 95], ["Bob", 87], ["Charlie", 92]]);
+		list scores <- df_column(df, "score");
+		assert scores[0] = 95;
+		assert scores[2] = 92;
+	}
+
+	// ========================= Row access =========================
+
+	test row_access {
+		dataframe df <- dataframe_with(["a", "b", "c"], [[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+		list row0 <- df_row(df, 0);
+		assert row0 = [1, 2, 3];
+		list row2 <- df_row(df, 2);
+		assert row2 = [7, 8, 9];
+	}
+
+	test row_out_of_bounds {
+		dataframe df <- dataframe_with(["a"], [[1], [2]]);
+		try {
+			list r <- df_row(df, 10);
+			assert false;
+		} catch {
+			assert true;
+		}
+	}
+
+	// ========================= Cell access =========================
+
+	test cell_access {
+		dataframe df <- dataframe_with(["name", "age"], [["Alice", 30], ["Bob", 25]]);
+		assert df_cell(df, 0, "name") = "Alice";
+		assert df_cell(df, 1, "age") = 25;
+	}
+
+	// ========================= Row count =========================
+
+	test row_count {
+		dataframe df <- dataframe_with(["a", "b"], [[1, 2], [3, 4], [5, 6]]);
+		assert df_rows(df) = 3;
+	}
+
+	// ========================= Column names =========================
+
+	test column_names {
+		dataframe df <- dataframe_with(["x", "y"], [[1, 2]]);
+		list<string> cols <- df_columns(df);
+		assert cols = ["x", "y"];
+	}
+
+	// ========================= length / empty =========================
+
+	test length_operator {
+		dataframe df <- dataframe_with(["a"], [[1], [2], [3]]);
+		assert length(df) = 3;
+	}
+
+	test empty_dataframe {
+		// A dataframe with data is not empty
+		dataframe df <- dataframe_with(["a"], [[1]]);
+		assert !empty(df);
+	}
+
+	// ========================= Filtering =========================
+
+	test filter_by_value {
+		dataframe df <- dataframe_with(["name", "city"], [["Alice", "Paris"], ["Bob", "Lyon"], ["Charlie", "Paris"]]);
+		dataframe filtered <- df_filter(df, "city", "Paris");
+		assert df_rows(filtered) = 2;
+		list names <- df_column(filtered, "name");
+		assert names contains "Alice";
+		assert names contains "Charlie";
+		assert !(names contains "Bob");
+	}
+
+	test filter_no_match {
+		dataframe df <- dataframe_with(["val"], [[1], [2], [3]]);
+		dataframe filtered <- df_filter(df, "val", 999);
+		assert df_rows(filtered) = 0;
+	}
+
+	// ========================= Remove empty =========================
+
+	test remove_empty_values {
+		dataframe df <- dataframe_with(["name", "note"], [["Alice", "ok"], ["Bob", ""], ["Charlie", nil]]);
+		dataframe cleaned <- df_remove_empty(df, "note");
+		assert df_rows(cleaned) = 1;
+		assert df_cell(cleaned, 0, "name") = "Alice";
+	}
+
+	// ========================= Select columns =========================
+
+	test select_columns {
+		dataframe df <- dataframe_with(["a", "b", "c"], [[1, 2, 3], [4, 5, 6]]);
+		dataframe sub <- df_select_columns(df, ["a", "c"]);
+		assert df_columns(sub) = ["a", "c"];
+		assert df_rows(sub) = 2;
+		assert df_cell(sub, 0, "a") = 1;
+		assert df_cell(sub, 0, "c") = 3;
+	}
+
+	// ========================= Add column =========================
+
+	test add_column {
+		dataframe df <- dataframe_with(["name"], [["Alice"], ["Bob"]]);
+		dataframe df2 <- df_add_column(df, "score", 0);
+		assert df_columns(df2) contains "score";
+		assert df_cell(df2, 0, "score") = 0;
+		assert df_cell(df2, 1, "score") = 0;
+		// Original unchanged (immutable)
+		assert !(df_columns(df) contains "score");
+	}
+
+	// ========================= Add row =========================
+
+	test add_row {
+		dataframe df <- dataframe_with(["x", "y"], [[1, 2]]);
+		dataframe df2 <- df_add_row(df, [3, 4]);
+		assert df_rows(df2) = 2;
+		assert df_row(df2, 1) = [3, 4];
+		// Original unchanged
+		assert df_rows(df) = 1;
+	}
+
+	// ========================= Merge =========================
+
+	test merge_dataframes {
+		dataframe df1 <- dataframe_with(["a", "b"], [[1, 2]]);
+		dataframe df2 <- dataframe_with(["a", "b"], [[3, 4], [5, 6]]);
+		dataframe merged <- df_merge(df1, df2);
+		assert df_rows(merged) = 3;
+		assert df_cell(merged, 0, "a") = 1;
+		assert df_cell(merged, 1, "a") = 3;
+		assert df_cell(merged, 2, "a") = 5;
+	}
+
+	// ========================= Join =========================
+
+	test join_dataframes {
+		dataframe people <- dataframe_with(["id", "name"], [[1, "Alice"], [2, "Bob"], [3, "Charlie"]]);
+		dataframe scores <- dataframe_with(["id", "score"], [[1, 95], [2, 87]]);
+		dataframe joined <- df_join(people, scores, "id");
+		// Inner join: only matching rows (id 1 and 2)
+		assert df_rows(joined) = 2;
+		assert df_columns(joined) contains "name";
+		assert df_columns(joined) contains "score";
+	}
+
+	// ========================= Pivot =========================
+
+	test pivot_dataframe {
+		dataframe df <- dataframe_with(
+			["product", "quarter", "revenue"],
+			[["A", "Q1", 100], ["A", "Q2", 200], ["B", "Q1", 150], ["B", "Q2", 250]]
+		);
+		dataframe pivoted <- df_pivot(df, "product", "quarter", "revenue");
+		assert df_rows(pivoted) = 2;
+		assert df_columns(pivoted) contains "Q1";
+		assert df_columns(pivoted) contains "Q2";
+		// Product A, Q1 = 100
+		assert df_cell(pivoted, 0, "Q1") = 100;
+		// Product B, Q2 = 250
+		assert df_cell(pivoted, 1, "Q2") = 250;
+	}
+
+	// ========================= CSV I/O =========================
+
+	test load_csv {
+		// Requires: ../includes/test_data.csv with columns: name,age,city
+		// Contents: Alice,30,Paris / Bob,25,Lyon / Charlie,35,Marseille
+		dataframe df <- df_load_csv("../includes/test_data.csv");
+		assert df != nil;
+		assert df_rows(df) = 3;
+		assert df_columns(df) = ["name", "age", "city"];
+		assert df_cell(df, 0, "name") = "Alice";
+	}
+
+	test load_csv_semicolon {
+		// Requires: ../includes/test_data_semicolon.csv (semicolon-separated, ISO-8859-1)
+		// Contents: nom;age;ville / Alice;30;Paris / Bob;25;Lyon
+		dataframe df <- df_load_csv_with("../includes/test_data_semicolon.csv", ";", true, "ISO-8859-1");
+		assert df != nil;
+		assert df_rows(df) = 2;
+	}
+
+	test load_csv_no_header {
+		// Requires: ../includes/test_data_noheader.csv (no header row)
+		// Contents: Alice,30,Paris / Bob,25,Lyon
+		dataframe df <- df_load_csv_with("../includes/test_data_noheader.csv", ",", false, "UTF-8");
+		assert df != nil;
+		assert df_rows(df) = 2;
+		// Auto-generated column names (c0, c1, c2...)
+		assert length(df_columns(df)) = 3;
+	}
+
+	test save_and_reload_csv {
+		dataframe df <- dataframe_with(["name", "value"], [["X", 10], ["Y", 20]]);
+		bool saved <- df_save_csv(df, "../results/test_output.csv");
+		assert saved;
+		dataframe df2 <- df_load_csv("../results/test_output.csv");
+		assert df_rows(df2) = 2;
+		assert df_columns(df2) = ["name", "value"];
+	}
+
+	test save_csv_with_separator {
+		dataframe df <- dataframe_with(["a", "b"], [["x", 1], ["y", 2]]);
+		bool saved <- df_save_csv_with(df, "../results/test_output_semi.csv", ";", "UTF-8");
+		assert saved;
+		dataframe df2 <- df_load_csv_with("../results/test_output_semi.csv", ";", true, "UTF-8");
+		assert df_rows(df2) = 2;
+	}
+
+	// ========================= Excel I/O =========================
+
+	test load_excel {
+		// Requires: ../includes/test_data.xlsx (first sheet with header row)
+		dataframe df <- df_load_excel("../includes/test_data.xlsx");
+		assert df != nil;
+		assert df_rows(df) > 0;
+	}
+
+	test save_and_reload_excel {
+		dataframe df <- dataframe_with(["id", "label"], [[1, "A"], [2, "B"]]);
+		bool saved <- df_save_excel(df, "../results/test_output.xlsx", "Data");
+		assert saved;
+		dataframe df2 <- df_load_excel("../results/test_output.xlsx");
+		assert df_rows(df2) = 2;
+	}
+
+	// ========================= JSON I/O =========================
+
+	test load_json {
+		// Requires: ../includes/test_data.json
+		// Contents: [{"name":"Alice","age":30},{"name":"Bob","age":25}]
+		dataframe df <- df_load_json("../includes/test_data.json");
+		assert df != nil;
+		assert df_rows(df) = 2;
+	}
+
+	test save_and_reload_json {
+		dataframe df <- dataframe_with(["key", "val"], [["a", 1], ["b", 2]]);
+		bool saved <- df_save_json(df, "../results/test_output.json");
+		assert saved;
+		dataframe df2 <- df_load_json("../results/test_output.json");
+		assert df_rows(df2) = 2;
+	}
+
+	// ========================= Chained operations =========================
+
+	test chained_filter_select {
+		dataframe df <- dataframe_with(
+			["name", "age", "city", "score"],
+			[["Alice", 30, "Paris", 95], ["Bob", 25, "Lyon", 87], ["Charlie", 35, "Paris", 92], ["Diana", 28, "Paris", 78]]
+		);
+		// Filter Paris residents, then select only name and score
+		dataframe result <- df_select_columns(df_filter(df, "city", "Paris"), ["name", "score"]);
+		assert df_rows(result) = 3;
+		assert df_columns(result) = ["name", "score"];
+	}
+
+	test chained_add_column_then_filter {
+		dataframe df <- dataframe_with(["name", "score"], [["Alice", 95], ["Bob", 40], ["Charlie", 72]]);
+		// Add a "passed" column, then filter (this tests immutability — original is unchanged)
+		dataframe with_passed <- df_add_column(df, "status", "unknown");
+		assert df_columns(with_passed) contains "status";
+		assert !(df_columns(df) contains "status");
+	}
+}

@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="gama/dependencies/kabeja/dxf/|gama/dependencies/kabeja/dxf/helpers/|gama/dependencies/kabeja/dxf/objects/|gama/dependencies/kabeja/io/|gama/dependencies/kabeja/math/|gama/dependencies/kabeja/parser/|gama/dependencies/kabeja/parser/dxf/|gama/dependencies/kabeja/parser/dxf/filter/|gama/dependencies/kabeja/parser/entities/|gama/dependencies/kabeja/parser/header/|gama/dependencies/kabeja/parser/objects/|gama/dependencies/kabeja/parser/table/|gama/dependencies/kabeja/processing/|gama/dependencies/kabeja/processing/event/|gama/dependencies/kabeja/processing/helper/|gama/dependencies/kabeja/tools/|gama/dependencies/kabeja/xml/" kind="src" path="src"/>
+	<classpathentry exported="true" kind="lib" path="libs/dflib 2.0.0-M6/poi-5.5.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/dflib 2.0.0-M6/commons-csv-1.14.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/jaxb-api-2.4.0-b180830.0359.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/jaxb-runtime-4.0.7.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jakarta.xml.bin-api 4.0.5/jakarta.xml.bind-api-4.0.5.jar"/>
@@ -212,5 +214,19 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry exported="true" kind="lib" path="libs/dflib 2.0.0-M6/dflib-2.0.0-M6.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/dflib 2.0.0-M6/dflib-avro-2.0.0-M6.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/dflib 2.0.0-M6/dflib-csv-2.0.0-M6.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/dflib 2.0.0-M6/dflib-excel-2.0.0-M6.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/dflib 2.0.0-M6/dflib-jdbc-2.0.0-M6.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/dflib 2.0.0-M6/dflib-json-2.0.0-M6.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/dflib 2.0.0-M6/dflib-parquet-2.0.0-M6.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/dflib 2.0.0-M6/commons-codec-1.21.0.jar"/>
+	<classpathentry kind="lib" path="libs/dflib 2.0.0-M6/parquet-common-1.17.0.jar"/>
+	<classpathentry kind="lib" path="libs/dflib 2.0.0-M6/parquet-column-1.17.0.jar"/>
+	<classpathentry kind="lib" path="libs/dflib 2.0.0-M6/parquet-hadoop-1.17.0.jar"/>
+	<classpathentry kind="lib" path="libs/dflib 2.0.0-M6/parquet-format-2.12.0.jar"/>
+	<classpathentry kind="lib" path="libs/dflib 2.0.0-M6/hadoop-common-3.5.0.jar"/>
+	<classpathentry kind="lib" path="libs/dflib 2.0.0-M6/hadoop-mapreduce-client-core-3.5.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

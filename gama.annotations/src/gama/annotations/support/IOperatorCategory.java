@@ -136,5 +136,8 @@ public interface IOperatorCategory {
 	public static final String GENSTAR 			= "Genstar operators";
 	
 	public static final String SPARQL 			= "SPARQL operators";
-	
+
+	/** The Constant DATAFRAME. */
+	public static final String DATAFRAME		= "Dataframe-related operators";
+
 }
