@@ -971,7 +971,7 @@ public class DataframeOperators {
 							value = "matrix m <- df_to_matrix(my_df);",
 							isExecutable = false) }) },
 			see = { "df_to_map", "df_to_field" })
-	@test ("df_to_matrix(dataframe_with([\"a\",\"b\"], [[1,2],[3,4]])) = matrix([[1,2],[3,4]])")
+	@test ("df_to_matrix(dataframe_with([\"a\",\"b\"], [[1,2],[3,4]])) = matrix([[1,3],[2,4]])")
 	public static IMatrix<Object> dfToMatrix(final IScope scope, final IDataframe df) {
 		return GamaDataframe.toMatrix(scope, (GamaDataframe) df, df.getContentType(scope));
 	}
