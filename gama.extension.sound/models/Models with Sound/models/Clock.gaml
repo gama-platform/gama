@@ -52,7 +52,6 @@ species  clock {
 		float nb_hours<-0.0 update:((timeElapsed mod 86400#s))/3600#s;
 		float nb_days <- 0.0 update:((timeElapsed mod 31536000#s))/86400#s;
 		reflex update {
-			write string(nb_hours)+" : "+nb_minutes;
 			if (cycle = alarmCycle) 
 			{
 				 write "Time to leave" ; 
@@ -63,21 +62,20 @@ species  clock {
 			}
 		}
 		aspect default {
-			draw string(" " + cycle + " cycles")  size:zoom/2 font:"times" color:°black at:{clock_x-5,clock_y+5};
-			draw clock_big_hand rotate: nb_minutes*(360/60)  + 90  size: {7 * zoom, 2} at:location + {0,0,0.1}; //Modulo with the representation of a minute in ms and divided by 10000 to get the degree of rotation
-			draw clock_small_hand rotate: nb_hours*(360/12)  + 90  size:{5*zoom, 2} at:location + {0,0,0.1};			
-			draw clock_alarm rotate:      (alarmCycle/12000)  size: zoom/3 at:location + {0,0,0.1}; // Alarm time
-			draw string( " " + int(nb_days) + " Days")  size:zoom/2 font:"times" color:°black at:{clock_x-5,clock_y+8};
-			draw string( " " + int(nb_hours) + " Hours")  size:zoom/2 font:"times" color:°black at:{clock_x-5,clock_y+10};
-			draw string( " " + int(nb_minutes) + " Minutes")  size:zoom/2 font:"times" color:°black at:{clock_x-5,clock_y+12};
-			draw string( " " + timeElapsed + " Seconds")  size:zoom/2 font:"times" color:°black at:{clock_x-5,clock_y+14};
-			 
+			draw image_file(clock_big_hand) rotate: nb_minutes * (360/60) + 90 size: {7 * zoom, 2} at: location + {0,0,0.1}; 
+		    draw image_file(clock_small_hand) rotate: nb_hours * (360/12) + 90 size: {5 * zoom, 2} at: location + {0,0,0.1};			
+		    draw image_file(clock_alarm) rotate: (alarmCycle/12000) size: zoom/3 at: location + {0,0,0.1}; 
+		    
+		    draw " " + int(nb_days) + " Days" color: #black font: font("times", zoom/2, #plain) at: {clock_x-5, clock_y+8};
+		    draw " " + int(nb_hours) + " Hours" color: #black font: font("times", zoom/2, #plain) at: {clock_x-5, clock_y+10};
+		    draw " " + int(nb_minutes) + " Minutes" color: #black font: font("times", zoom/2, #plain) at: {clock_x-5, clock_y+12};
+		    draw " " + timeElapsed + " Seconds" color: #black font: font("times", zoom/2, #plain) at: {clock_x-5, clock_y+14}; 
 		}
  
 }
 
 experiment Display type: gui {
-	float minimum_cycle_duration <- 0.1#s;
+	float minimum_cycle_duration <- 0.001#s;
 	parameter 'Zoom: ' var: zoom category: 'Init' ;
 	parameter 'Milliseconds/cycle' var: stepDuration category: 'Init';
 	parameter 'alarm Day' var: alarm_days;
@@ -87,7 +85,9 @@ experiment Display type: gui {
 	parameter 'alarm Seconds' var: alarm_seconds;
 	output {
 		display ClockView type: opengl { 
-			graphics "c" refresh: false {draw clock_normal size: 10*zoom at:{world.shape.width/5,world.shape.height/5} ;}
+			graphics "c" refresh: false {
+   				 draw image_file(clock_normal) size: 10 * zoom at: {world.shape.width / 5, world.shape.height / 5};
+			}		
 			species clock ;
 		}
 	}
