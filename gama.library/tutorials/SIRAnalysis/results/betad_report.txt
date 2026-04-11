@@ -1,0 +1,8 @@
+BETA b Kuiper based estimator :
+##############################
+inputs,nb_recovered
+nb_agents,0.6088359788359793
+nb_infected_init,0.38391534391534404
+infection_rate,0.3735978835978837
+infection_distance,0.48957671957672
+recovery_time,0.4011111111111112
