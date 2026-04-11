@@ -117,7 +117,7 @@ jobs:
       #
 
       - name: Compiling gama
-        run: bash $GITHUB_WORKSPACE/travis/build.sh -e -B ${{ inputs.mvn_extra_arguments }}
+        run: bash $GITHUB_WORKSPACE/travis/build.sh -e -B -T 4 ${{ inputs.mvn_extra_arguments }}
 
       # Spotbugs
       - name: Running SpotBugs
