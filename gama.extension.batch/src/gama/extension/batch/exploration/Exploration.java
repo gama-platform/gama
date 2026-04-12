@@ -83,7 +83,7 @@ import gama.core.experiment.parameters.ParametersSet;
 						name = Exploration.SAMPLE_SIZE,
 						type = IType.INT,
 						optional = true,
-						doc = @doc ("The number of sample required, 132 by default")),
+						doc = @doc ("The number of sample required, 255 by default")),
 				@facet (
 						name = Exploration.SAMPLE_FACTORIAL,
 						type = IType.INT,
