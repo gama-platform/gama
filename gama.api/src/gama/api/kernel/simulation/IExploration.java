@@ -365,6 +365,12 @@ public interface IExploration extends ISymbol {// , Runnable {
 	/** The Constant ITERATIONS */
 	String ITERATIONS = "iterations";
 
+	/** The LHS outer iteration count */
+	String LHS_OUTER = "outer_iter";
+
+	/** The LHS inner iteration count */
+	String LHS_INNER = "inner_iter";
+
 	/** The Constant FROM_FILE. */
 	String FROM_FILE = "FROMFILE";
 

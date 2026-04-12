@@ -94,7 +94,7 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	protected IExpression outputFilePath;
 
 	/** The sample size. */
-	protected int sample_size = -1;
+	protected int sample_size = 255;
 
 	@Override
 	public void initializeFor(final IScope scope, final IExperimentAgent.Batch agent) throws GamaRuntimeException {
@@ -246,11 +246,15 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 		return switch (method) {
 			case MORRIS:
 				yield MorrisSampling.makeMorrisSamplingOnly(hasFacet(MorrisExploration.NB_LEVELS)
-						? Cast.asInt(scope, getFacet(MorrisExploration.NB_LEVELS)) : Morris.DEFAULT_LEVELS, sample_size,
-						parameters, scope);
+						? Cast.asInt(scope, getFacet(MorrisExploration.NB_LEVELS).value(scope))
+						: Morris.DEFAULT_LEVELS, sample_size, parameters, scope);
 			case IKeyword.LHS:
 				yield LatinhypercubeSampling.latinHypercubeSamples(sample_size, parameters,
-						scope.getRandom().getGenerator(), scope);
+						scope.getRandom().getGenerator(), scope,
+						hasFacet(IExploration.LHS_OUTER) ? Cast.asInt(scope, getFacet(IExploration.LHS_OUTER).value(scope))
+								: 50,
+						hasFacet(IExploration.LHS_INNER) ? Cast.asInt(scope, getFacet(IExploration.LHS_INNER).value(scope))
+								: 100);
 			case IKeyword.ORTHOGONAL:
 				yield OrthogonalSampling.orthogonalSamples(sample_size,
 						hasFacet(IExploration.ITERATIONS)
@@ -380,21 +384,17 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	 * @param scope
 	 * @return
 	 */
+	@SuppressWarnings ("unchecked")
 	private List<ParametersSet> buildParameterFromMap(final IScope scope) {
 		IExpression psexp = getFacet(IKeyword.WITH);
-		if (psexp.getGamlType().isAssignableFrom(Types.LIST)) {
-			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("You cannot use "
-					+ IKeyword.WITH + " facet without input a list of maps: got " + psexp.getDenotedType(), scope), true);
+		if (psexp == null) return new ArrayList<>();
+		if (!Types.LIST.isAssignableFrom(psexp.getGamlType())) {
+			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("You cannot use " + IKeyword.WITH
+					+ " facet without input a list of maps: got " + psexp.getDenotedType(), scope), true);
 		}
-		List<Map<IExpression, IExpression>> parameterSets = StreamEx.of(((IExpression.List) psexp).getElements())
-				.map(e -> ((IExpression.Map) e).getElements()).toList();
-		List<Map<String, Object>> paramSets = new ArrayList<>();
-		for (Map<IExpression, IExpression> ps : parameterSets) {
-			Map<String, Object> lt = new HashMap<>();
-			for (var e : ps.entrySet()) { lt.put(e.getKey().getName(), e.getValue()); }
-			paramSets.add(lt);
-		}
-		return buildParametersSetList(scope, paramSets);
+		Object val = psexp.value(scope);
+		if (!(val instanceof List)) return new ArrayList<>();
+		return buildParametersSetList(scope, (List<Map<String, Object>>) val);
 	}
 
 	/**
