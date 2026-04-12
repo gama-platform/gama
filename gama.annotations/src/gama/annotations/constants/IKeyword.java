@@ -131,7 +131,7 @@ public interface IKeyword {
 	String BATCH = "batch";
 
 	/** The batch outputs */
-	String BATCH_OUTPUT = "results";
+	String BATCH_OUTPUT = "report";
 
 	/** The batch outputs */
 	String BATCH_REPORT = "report";
@@ -337,7 +337,7 @@ public interface IKeyword {
 	/** The error. */
 	String ERROR = "error";
 
-	/** The event. */
+	/** Hollywood Event */
 	String EVENT = "event";
 
 	/** The exists. */
@@ -558,6 +558,12 @@ public interface IKeyword {
 
 	/** Latin Hypercube Sampling */
 	String LHS = "latinhypercube";
+
+	/** LHS inner iteration count */
+	String LHS_INNER = "inner_iter";
+
+	/** LHS outer iteration count */
+	String LHS_OUTER = "outer_iter";
 
 	/** The lighted. */
 	String LIGHTED = "lighted";

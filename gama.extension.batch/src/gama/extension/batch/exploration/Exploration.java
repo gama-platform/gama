@@ -100,12 +100,12 @@ import gama.core.experiment.parameters.ParametersSet;
 						optional = true,
 						doc = @doc ("The number of iteration for orthogonal SAMPLING, 5 by default")),
 				@facet (
-						name = IExploration.LHS_OUTER,
+						name = IKeyword.LHS_OUTER,
 						type = IType.INT,
 						optional = true,
 						doc = @doc ("The number of outer iterations for Latin Hypercube Sampling (ESE), 50 by default")),
 				@facet (
-						name = IExploration.LHS_INNER,
+						name = IKeyword.LHS_INNER,
 						type = IType.INT,
 						optional = true,
 						doc = @doc ("The number of inner iterations for Latin Hypercube Sampling (ESE), 100 by default"))

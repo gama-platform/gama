@@ -251,9 +251,9 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 			case IKeyword.LHS:
 				yield LatinhypercubeSampling.latinHypercubeSamples(sample_size, parameters,
 						scope.getRandom().getGenerator(), scope,
-						hasFacet(IExploration.LHS_OUTER) ? Cast.asInt(scope, getFacet(IExploration.LHS_OUTER).value(scope))
+						hasFacet(IKeyword.LHS_OUTER) ? Cast.asInt(scope, getFacet(IKeyword.LHS_OUTER).value(scope))
 								: 50,
-						hasFacet(IExploration.LHS_INNER) ? Cast.asInt(scope, getFacet(IExploration.LHS_INNER).value(scope))
+						hasFacet(IKeyword.LHS_INNER) ? Cast.asInt(scope, getFacet(IKeyword.LHS_INNER).value(scope))
 								: 100);
 			case IKeyword.ORTHOGONAL:
 				yield OrthogonalSampling.orthogonalSamples(sample_size,
