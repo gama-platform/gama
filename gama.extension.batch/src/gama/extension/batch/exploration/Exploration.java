@@ -141,6 +141,21 @@ import gama.core.experiment.parameters.ParametersSet;
 								isExecutable = false) }) })
 public class Exploration extends AExplorationAlgorithm {
 
+	/** The Constant SAMPLING */
+	public static final String SAMPLING = "sampling";
+
+	/** The Constant SAMPLE_SIZE */
+	public static final String SAMPLE_SIZE = "sample";
+
+	/** The Constant SAMPLE_FACTORIAL */
+	public static final String SAMPLE_FACTORIAL = "factorial";
+
+	/** The Constant NB_LEVELS */
+	public static final String NB_LEVELS = "levels";
+
+	/** The Constant ITERATIONS */
+	public static final String ITERATIONS = "iterations";
+
 	/** The parameters. */
 	private List<Batch> parameters;
 
