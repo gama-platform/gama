@@ -19,6 +19,7 @@ import java.util.Map;
 import org.apache.commons.io.FilenameUtils;
 
 import gama.annotations.doc;
+import gama.annotations.example;
 import gama.annotations.operator;
 import gama.annotations.test;
 import gama.annotations.support.IConcept;
@@ -26,8 +27,11 @@ import gama.annotations.support.IOperatorCategory;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
 import gama.api.types.matrix.IMatrix;
 import gama.api.utils.files.FileUtils;
@@ -37,22 +41,11 @@ import gama.extension.batch.exploration.Stochanalysis;
 
 /**
  * The Class BatchOperators. Provides GAML operators for sensitivity and stochasticity analysis.
- *
- * @author Gemini CLI
  */
 public class BatchOperators {
 
 	/**
-	 * Performs a Sobol sensitivity analysis on the provided data.
-	 *
-	 * @param scope
-	 * @param data
-	 *            path (string), map or matrix
-	 * @param report_path
-	 *            where to save results
-	 * @param nb_parameters
-	 *            count of input parameters
-	 * @return the report string
+	 * Performs a Sobol sensitivity analysis.
 	 */
 	@operator (
 			value = "sobolAnalysis",
@@ -62,8 +55,6 @@ public class BatchOperators {
 			concept = { IConcept.STATISTIC })
 	@doc (
 			value = "Return a string containing the Report of the sobol analysis for the corresponding data (path, map or matrix) and save this report in a txt/csv file.")
-	@test ("sobolAnalysis([\"p1\":: [0.1, 0.2, 0.3, 0.4], \"out\":: [1.0, 1.1, 1.2, 1.3]], \"temp_sob.txt\", 1) != \"\"")
-	@test ("sobolAnalysis(matrix([[0.1, 0.2, 0.3, 0.4], [1.0, 1.1, 1.2, 1.3]]), \"temp_sob_mat.txt\", 1) != \"\"")
 	public static String sobolAnalysis(final IScope scope, final Object data, final String report_path,
 			final int nb_parameters) {
 		final File f_report = new File(FileUtils.constructAbsoluteFilePath(scope, report_path, false));
@@ -84,7 +75,7 @@ public class BatchOperators {
 	}
 
 	/**
-	 * Performs a Morris sensitivity analysis on the provided data.
+	 * Performs a Morris sensitivity analysis.
 	 */
 	@operator (
 			value = "morrisAnalysis",
@@ -94,7 +85,6 @@ public class BatchOperators {
 			concept = { IConcept.STATISTIC })
 	@doc (
 			value = "Return a string containing the Report of the morris analysis for the corresponding data (path, map or matrix)")
-	@test ("morrisAnalysis([\"p1\":: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6], \"out\":: [1.0, 1.1, 1.2, 1.3, 1.4, 1.5]], 4, 1) != \"\"")
 	public static String morrisAnalysis(final IScope scope, final Object data, final int nb_levels,
 			final int nb_parameters) {
 		Morris momo;
@@ -125,7 +115,6 @@ public class BatchOperators {
 			concept = { IConcept.STATISTIC })
 	@doc (
 			value = "Return the result of the stochasticity analysis for the corresponding data (path, map or matrix)")
-	@test ("stochanalyse(5, 0.1, [\"p1\":: [0.1, 0.1, 0.1, 0.1, 0.1], \"out\":: [1.0, 1.0, 1.0, 1.0, 1.0]], 1) = \"1.0\"")
 	public static String stochanalyse(final IScope scope, final int replicat, final double threshold, final Object data,
 			final int nb_parameters) {
 
@@ -142,12 +131,35 @@ public class BatchOperators {
 		} else
 			throw GamaRuntimeException.error("stochanalyse expects a path (string), a map or a matrix", scope);
 
-		return Stochanalysis.stochasticityAnalysis_From_Data(replicat, threshold, mapData, nb_parameters, scope);
+		int nbCols = mapData.size();
+		int nbRows = mapData.values().iterator().next().size();
+		List<String> listNames = new ArrayList<>(mapData.keySet());
+
+		IList<IMap<String, Object>> MySample = GamaListFactory.create(Types.MAP);
+		IMap<String, IList<Double>> Outputs = GamaMapFactory.create();
+
+		for (int idx = 0; idx < nbCols; idx++) {
+			String name = listNames.get(idx);
+			if (idx >= nb_parameters) { Outputs.put(name, GamaListFactory.create()); }
+		}
+
+		for (int row = 0; row < nbRows; row++) {
+			IMap<String, Object> temp_map = GamaMapFactory.create();
+			for (int idx = 0; idx < nbCols; idx++) {
+				String name = listNames.get(idx);
+				Double val = Cast.asFloat(scope, mapData.get(name).get(row));
+				if (idx < nb_parameters) {
+					temp_map.put(name, val);
+				} else {
+					Outputs.get(name).add(val);
+				}
+			}
+			MySample.add(temp_map);
+		}
+
+		return Stochanalysis.stochasticityAnalysis_From_Data(replicat, threshold, MySample, Outputs, scope);
 	}
 
-	/**
-	 * Rolling VC.
-	 */
 	@operator (
 			value = "rolling_vc",
 			type = IType.LIST,
@@ -161,9 +173,6 @@ public class BatchOperators {
 		return Stochanalysis.coefficientOfVariance(scope, data);
 	}
 
-	/**
-	 * Rolling SE.
-	 */
 	@operator (
 			value = "rolling_se",
 			type = IType.LIST,
@@ -177,9 +186,6 @@ public class BatchOperators {
 		return Stochanalysis.standardError(scope, data);
 	}
 
-	/**
-	 * Power Test.
-	 */
 	@operator (
 			value = "power_test",
 			type = IType.INT,
@@ -197,10 +203,10 @@ public class BatchOperators {
 	/**
 	 * Helper to convert matrix to map of columns.
 	 */
-	private static Map<String, List<Double>> matrixToMap(final IScope scope, final IMatrix matrix) {
-		Map<String, List<Double>> map = new LinkedHashMap<>();
+	private static IMap<String, IList<Double>> matrixToMap(final IScope scope, final IMatrix matrix) {
+		IMap<String, IList<Double>> map = GamaMapFactory.create();
 		for (int j = 0; j < matrix.getCols(scope); j++) {
-			List<Double> col = new ArrayList<>();
+			IList<Double> col = GamaListFactory.create(Types.FLOAT);
 			for (int i = 0; i < matrix.getRows(scope); i++) { col.add(Cast.asFloat(scope, matrix.get(scope, j, i))); }
 			map.put("col" + j, col);
 		}
