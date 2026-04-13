@@ -546,7 +546,7 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 			lastSolution = currentSolution;
 			lastFitness = fitnessCombination == AOptimizationAlgorithm.C_MAX ? Collections.max(fitnessValues)
 					: fitnessCombination == AOptimizationAlgorithm.C_MIN ? Collections.min(fitnessValues)
-					: fitnessValues.stream().mapToDouble(d -> d).average().orElse(0.0);
+					: fitnessValues.stream().mapToDouble(d -> d).average().orElse(Double.NaN);
 			outputs.put(IKeyword.FITNESS, GamaListFactory.createWithoutCasting(Types.FLOAT, lastFitness));
 			// we update the best solution found so far
 			oAlgo.updateBestFitness(lastSolution, lastFitness);
