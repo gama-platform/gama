@@ -83,7 +83,7 @@ import gama.core.experiment.parameters.ParametersSet;
 						name = IKeyword.BATCH_REPORT,
 						type = IType.STRING,
 						optional = false,
-						doc = @doc ("The path to the file where the Sobol report will be written")) },
+						doc = @doc ("The path to the file where the Sobol report will be written")),
 				@facet (
 						name = IKeyword.PATH,
 						type = IType.STRING,

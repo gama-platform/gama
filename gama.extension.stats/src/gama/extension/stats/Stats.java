@@ -2685,7 +2685,7 @@ public class Stats {
 		} else if (data instanceof IMap map) {
 			sob = new Sobol(convertToDoubleMap(scope, map), nb_parameters, scope);
 		} else if (data instanceof IMatrix matrix) {
-			sob = new Sobol(matrixToMap(scope, matrix), nb_parameters, scope);
+			sob = new Sobol(convertToDoubleMap(scope, matrixToMap(scope, matrix)), nb_parameters, scope);
 		} else
 			throw GamaRuntimeException.error("sobolAnalysis expects a path (string), a map or a matrix", scope);
 
@@ -2726,7 +2726,7 @@ public class Stats {
 		} else if (data instanceof IMap map) {
 			momo = new Morris(convertToDoubleMap(scope, map), nb_parameters, nb_levels, scope);
 		} else if (data instanceof IMatrix matrix) {
-			momo = new Morris(matrixToMap(scope, matrix), nb_parameters, nb_levels, scope);
+			momo = new Morris(convertToDoubleMap(scope, matrixToMap(scope, matrix)), nb_parameters, nb_levels, scope);
 		} else
 			throw GamaRuntimeException.error("morrisAnalysis expects a path (string), a map or a matrix", scope);
 
@@ -2867,10 +2867,10 @@ public class Stats {
 	/**
 	 * Helper to convert matrix to map of columns.
 	 */
-	private static Map<String, List<Double>> matrixToMap(final IScope scope, final IMatrix<Double> matrix) {
-		Map<String, List<Double>> map = new LinkedHashMap<>();
+	private static IMap<String, IList<Double>> matrixToMap(final IScope scope, final IMatrix<Double> matrix) {
+		IMap<String, IList<Double>> map = GamaMapFactory.create();
 		for (int j = 0; j < matrix.getCols(scope); j++) {
-			List<Double> col = new ArrayList<>();
+			IList<Double> col = GamaListFactory.create(Types.FLOAT);
 			for (int i = 0; i < matrix.getRows(scope); i++) { col.add(Cast.asFloat(scope, matrix.get(scope, j, i))); }
 			map.put("col" + j, col);
 		}
