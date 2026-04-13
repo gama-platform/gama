@@ -181,9 +181,9 @@ public class BatchValidator implements IDescriptionValidator {
 				if (!(xp instanceof IExpression.List list)) {
 					desc.error(IKeyword.BATCH_VAR_OUTPUTS + " expects a list of variables");
 				}
-				if (!tmpDesc.hasFacet(IKeyword.BATCH_OUTPUT)) {
+				if (!tmpDesc.hasFacet(IKeyword.BATCH_RAW_RESULTS)) {
 					desc.warning(
-							"Facet " + IKeyword.BATCH_OUTPUT
+							"Facet " + IKeyword.BATCH_RAW_RESULTS
 									+ " is undefined. Output will be saved in a default file beside this .gaml file",
 							"");
 				}

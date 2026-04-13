@@ -13,34 +13,13 @@ import java.util.Set;
 
 /**
  * Interface defining all keywords and constants used in the GAML language.
- * <p>
- * This interface serves as a central repository for all GAML language keywords,
- * including:
- * </p>
- * <ul>
- * <li>Statement keywords (e.g., "if", "loop", "create")</li>
- * <li>Facet names (e.g., "name", "type", "value")</li>
- * <li>Built-in constants (e.g., "true", "false", "nil")</li>
- * <li>Display and visualization keywords</li>
- * <li>File format identifiers</li>
- * <li>Optimization method names</li>
- * <li>And many other language-level constants</li>
- * </ul>
- * <p>
- * These constants are used throughout the GAMA platform for parsing, compiling,
- * and executing GAML models, ensuring
- * consistency in keyword recognition and usage.
- * </p>
- *
- * @author drogoul
- * @since 13 dec. 2011
  */
 public interface IKeyword {
 
-	/** The Constant JAVA2D. */
+	/** The 2 d. */
 	String _2D = "2d";
 
-	/** The Constant OPENGL. */
+	/** The 3 d. */
 	String _3D = "3d";
 
 	/** The dot. */
@@ -141,9 +120,6 @@ public interface IKeyword {
 	String BATCH = "batch";
 
 	/** The batch outputs */
-	String BATCH_OUTPUT = "results";
-
-	/** The batch outputs */
 	String BATCH_REPORT = "report";
 
 	/** The batch outputs */
@@ -242,7 +218,7 @@ public interface IKeyword {
 	/** The current state. */
 	String CURRENT_STATE = "currentState";
 
-	/** The Constant CYCLE. */
+	/** The cycle. */
 	String CYCLE = "cycle";
 
 	/** The darker. */
@@ -263,7 +239,7 @@ public interface IKeyword {
 	/** The destination. */
 	String DESTINATION = "destination";
 
-	/** The dif2. */
+	/** The dif 2. */
 	String DIF2 = "diff2";
 
 	/** The diff. */
@@ -335,10 +311,7 @@ public interface IKeyword {
 	/** The equation left. */
 	String EQUATION_LEFT = "left";
 
-	/** The equation op. */
-	/*
-	 * Equations
-	 */
+	/** The equals. */
 	String EQUALS = "=";
 
 	/** The equation right. */
@@ -365,7 +338,7 @@ public interface IKeyword {
 	/** The extensions. */
 	String EXTENSIONS = "extensions";
 
-	/** Factorial SAMPLING */
+	/** The factorial. */
 	String FACTORIAL = "factorial";
 
 	/** The fading. */
@@ -449,7 +422,7 @@ public interface IKeyword {
 	/** The grid. */
 	String GRID = "grid";
 
-	/** The grid population. */
+	/** The grid layer. */
 	String GRID_LAYER = "display_grid";
 
 	/** The grid value. */
@@ -461,7 +434,7 @@ public interface IKeyword {
 	/** The grid y. */
 	String GRID_Y = "grid_y";
 
-	/** The gui. */
+	/** The gui . */
 	String GUI_ = "gui";
 
 	/** The header. */
@@ -497,7 +470,7 @@ public interface IKeyword {
 	/** The image. */
 	String IMAGE = "image";
 
-	/** The display image. */
+	/** The image layer. */
 	String IMAGE_LAYER = "picture";
 
 	/** The in. */
@@ -508,6 +481,12 @@ public interface IKeyword {
 
 	/** The init. */
 	String INIT = "init";
+
+	/** The Constant LHS_INNER. */
+	String LHS_INNER = "inner_iter";
+
+	/** The Constant LHS_OUTER. */
+	String LHS_OUTER = "outer_iter";
 
 	/** The inspect. */
 	String INSPECT = "inspect";
@@ -539,7 +518,7 @@ public interface IKeyword {
 	/** The java. */
 	String JAVA = "java";
 
-	/** The Constant JAVA2D. */
+	/** The java 2 d. */
 	String JAVA2D = "java2D";
 
 	/** The keep seed. */
@@ -566,7 +545,7 @@ public interface IKeyword {
 	/** The let. */
 	String LET = "let";
 
-	/** Latin Hypercube Sampling */
+	/** The lhs. */
 	String LHS = "latinhypercube";
 
 	/** The lighted. */
@@ -584,11 +563,10 @@ public interface IKeyword {
 	/** The lines. */
 	String LINES = "lines";
 
-	/**
-	 * TYPES
-	 */
+	/** The list. */
 	String LIST = "list";
 
+	/** The dataframe. */
 	String DATAFRAME = "dataframe";
 
 	/** The location. */
@@ -660,31 +638,31 @@ public interface IKeyword {
 	/** The monitor. */
 	String MONITOR = "monitor";
 
-	/** The mouse clicked. */
+	/** The mouse click. */
 	String MOUSE_CLICK = "mouse_click";
 
 	/** The mouse down. */
 	String MOUSE_DOWN = "mouse_down";
 
-	/** The mouse dragged. */
+	/** The mouse drag. */
 	String MOUSE_DRAG = "mouse_drag";
 
-	/** The mouse entered. */
+	/** The mouse enter. */
 	String MOUSE_ENTER = "mouse_enter";
 
-	/** The mouse exited. */
+	/** The mouse exit. */
 	String MOUSE_EXIT = "mouse_exit";
 
 	/** The mouse menu. */
 	String MOUSE_MENU = "mouse_menu";
 
-	/** The mouse moved. */
+	/** The mouse move. */
 	String MOUSE_MOVE = "mouse_move";
 
 	/** The mouse up. */
 	String MOUSE_UP = "mouse_up";
 
-	/** The moving 3d skill. */
+	/** The moving 3 d skill. */
 	String MOVING_3D_SKILL = "moving3D";
 
 	/** The moving skill. */
@@ -732,13 +710,13 @@ public interface IKeyword {
 	/** The on change. */
 	String ON_CHANGE = "on_change";
 
-	/** The Constant OPENGL. */
+	/** The opengl. */
 	String OPENGL = "opengl";
 
 	/** The optional. */
 	String OPTIONAL = "optional";
 
-	/** The orthogonal SAMPLING */
+	/** The orthogonal. */
 	String ORTHOGONAL = "orthogonal";
 
 	/** The orthographic projection. */
@@ -752,6 +730,7 @@ public interface IKeyword {
 
 	/** The overlay. */
 	String OVERLAY = "overlay";
+
 	/** The overwrite. */
 	String OVERWRITE = "overwrite";
 
@@ -759,7 +738,6 @@ public interface IKeyword {
 	String PAIR = "pair";
 
 	/** The parallel. */
-	// "
 	String PARALLEL = "parallel";
 
 	/** The parameter. */
@@ -813,13 +791,13 @@ public interface IKeyword {
 	/** The pragma. */
 	String PRAGMA = "pragma";
 
-	/** The no experiment. */
+	/** The pragma no experiment. */
 	String PRAGMA_NO_EXPERIMENT = "no_experiment";
 
-	/** The no info. */
+	/** The pragma no info. */
 	String PRAGMA_NO_INFO = "no_info";
 
-	/** The no warning. */
+	/** The pragma no warning. */
 	String PRAGMA_NO_WARNING = "no_warning";
 
 	/** The pragma requires. */
@@ -912,7 +890,7 @@ public interface IKeyword {
 	/** The rounded. */
 	String ROUNDED = "rounded";
 
-	/** Saltelli */
+	/** The saltelli. */
 	String SALTELLI = "saltelli";
 
 	/** The save. */
@@ -978,7 +956,7 @@ public interface IKeyword {
 	/** The species. */
 	String SPECIES = "species";
 
-	/** The population. */
+	/** The species layer. */
 	String SPECIES_LAYER = "species_layer";
 
 	/** The speed. */
@@ -1035,7 +1013,7 @@ public interface IKeyword {
 	/** The texture. */
 	String TEXTURE = "texture";
 
-	/** The thrad skill. */
+	/** The thread skill. */
 	String THREAD_SKILL = "thread";
 
 	/** The three d. */
@@ -1083,7 +1061,7 @@ public interface IKeyword {
 	/** The type. */
 	String TYPE = "type";
 
-	/** Uniform SAMPLING */
+	/** The uniform. */
 	String UNIFORM = "uniform";
 
 	/** The unit. */
@@ -1161,10 +1139,10 @@ public interface IKeyword {
 	/** The void. */
 	String VOID = "void";
 
-	/** The warning. */
+	/** The warn. */
 	String WARN = "warn";
 
-	/** The warning test. */
+	/** The warning. */
 	String WARNING = "warning";
 
 	/** The weight. */
