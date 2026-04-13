@@ -46,13 +46,6 @@ public interface IKeyword {
 	/** The aggregation. */
 	String AGGREGATION = "aggregation";
 
-
-	/** The Constant LHS_INNER. */
-	String LHS_INNER = "inner_iter";
-
-	/** The Constant LHS_OUTER. */
-	String LHS_OUTER = "outer_iter";
-
 	/** The all. */
 	String ALL = "all";
 
@@ -482,12 +475,6 @@ public interface IKeyword {
 	/** The init. */
 	String INIT = "init";
 
-	/** The Constant LHS_INNER. */
-	String LHS_INNER = "inner_iter";
-
-	/** The Constant LHS_OUTER. */
-	String LHS_OUTER = "outer_iter";
-
 	/** The inspect. */
 	String INSPECT = "inspect";
 
@@ -547,6 +534,12 @@ public interface IKeyword {
 
 	/** The lhs. */
 	String LHS = "latinhypercube";
+
+	/** The Constant LHS_INNER. */
+	String LHS_INNER = "inner_iter";
+
+	/** The Constant LHS_OUTER. */
+	String LHS_OUTER = "outer_iter";
 
 	/** The lighted. */
 	String LIGHTED = "lighted";
