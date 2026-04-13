@@ -38,6 +38,8 @@ import gama.dev.DEBUG;
 	 *   <li>{@link FixActionParentheses} – adds missing empty parentheses to
 	 *       parameter-less {@code action} and typed-action declarations
 	 *       (e.g. {@code action foo \{} → {@code action foo() \{})</li>
+	 *   <li>{@link FixLetStatement} – transforms {@code let var type:T value:V;}
+	 *       into {@code T var <- V;}</li>
 	 * </ol>
  *
  * <p>Additional transformers can be registered at any time via
@@ -149,6 +151,8 @@ public class GamlFileProcessor {
 		transformers.add(new FixArrowBraces());
 		transformers.add(new FixActionParentheses());
 		transformers.add(new FixSetStatement());
+		transformers.add(new FixLetStatement());
+		transformers.add(new FixDoParentheses());
 	}
 
 	/**
