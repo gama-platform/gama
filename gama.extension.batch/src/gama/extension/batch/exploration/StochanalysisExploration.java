@@ -89,17 +89,7 @@ import gama.core.experiment.parameters.ParametersSet;
 						name = IKeyword.BATCH_REPORT,
 						type = IType.STRING,
 						optional = false,
-						doc = @doc ("The path to the file where the Stochasticity Analysis report will be written")),
-				@facet (
-						name = IKeyword.BATCH_OUTPUT,
-						type = IType.STRING,
-						optional = true,
-						doc = @doc ("The path to the file where the automatic batch report will be written")),
-				@facet (
-						name = Exploration.ITERATIONS,
-						type = IType.INT,
-						optional = true,
-						doc = @doc ("The number of iteration for orthogonal SAMPLING, 5 by default"))
+						doc = @doc ("The path to the file where the Stochasticity Analysis report will be written"))
 
 		},
 		omissible = IKeyword.NAME)

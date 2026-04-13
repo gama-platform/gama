@@ -2867,10 +2867,10 @@ public class Stats {
 	/**
 	 * Helper to convert matrix to map of columns.
 	 */
-	private static IMap<String, IList<Double>> matrixToMap(final IScope scope, final IMatrix<Double> matrix) {
-		IMap<String, IList<Double>> map = GamaMapFactory.create();
+	private static Map<String, List<Double>> matrixToMap(final IScope scope, final IMatrix<Double> matrix) {
+		Map<String, List<Double>> map = new LinkedHashMap<>();
 		for (int j = 0; j < matrix.getCols(scope); j++) {
-			IList<Double> col = GamaListFactory.create(Types.FLOAT);
+			List<Double> col = new ArrayList<>();
 			for (int i = 0; i < matrix.getRows(scope); i++) { col.add(Cast.asFloat(scope, matrix.get(scope, j, i))); }
 			map.put("col" + j, col);
 		}

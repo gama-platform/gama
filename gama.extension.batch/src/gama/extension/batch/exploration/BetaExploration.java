@@ -100,11 +100,6 @@ import gama.core.experiment.parameters.ParametersSet;
 						optional = true,
 						doc = @doc ("The number of time each parameter value is boostraped (or resampled in another context)")),
 				@facet (
-						name = IKeyword.BATCH_OUTPUT,
-						type = IType.STRING,
-						optional = true,
-						doc = @doc ("The path to the file where the automatic batch report will be written")),
-				@facet (
 						name = IKeyword.BATCH_REPORT,
 						type = IType.STRING,
 						optional = false,
