@@ -170,14 +170,14 @@ public class StochanalysisExploration extends AExplorationAlgorithm {
 		Stochanalysis.writeAndTellReport(f, MapOutput, sample_size, currentExperiment.getSeeds().length, scope);
 
 		/* Save the simulation values in the provided .csv file (input and corresponding output) */
-		if (hasFacet(IKeyword.BATCH_VAR_OUTPUTS) && hasFacet(IKeyword.BATCH_OUTPUT)) {
+		if (hasFacet(IKeyword.BATCH_VAR_OUTPUTS) && hasFacet(IKeyword.BATCH_RAW_RESULTS)) {
 			saveRawResults(scope, res_outputs);
 		}
 
 		/** If any of the two facet is missing pop up a warning */
-		if (hasFacet(IKeyword.BATCH_VAR_OUTPUTS) && hasFacet(IKeyword.BATCH_OUTPUT)) {
+		if (!(hasFacet(IKeyword.BATCH_VAR_OUTPUTS) && hasFacet(IKeyword.BATCH_RAW_RESULTS))) {
 			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.warning(
-					"Facet " + (hasFacet(IKeyword.BATCH_VAR_OUTPUTS) ? IKeyword.BATCH_OUTPUT
+					"Facet " + (hasFacet(IKeyword.BATCH_VAR_OUTPUTS) ? IKeyword.BATCH_RAW_RESULTS
 							: IKeyword.BATCH_VAR_OUTPUTS) + " is missing - corresponding results won't be saved",
 					scope), false);
 		}

@@ -116,8 +116,6 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 		if (hasFacet(IKeyword.BATCH_VAR_OUTPUTS)) { outputsExpression = getFacet(IKeyword.BATCH_VAR_OUTPUTS); }
 		if (hasFacet(IKeyword.BATCH_RAW_RESULTS)) { 
 			outputFilePath = getFacet(IKeyword.BATCH_RAW_RESULTS); 
-		} else if (hasFacet(IKeyword.BATCH_OUTPUT)) { 
-			outputFilePath = getFacet(IKeyword.BATCH_OUTPUT); 
 		}
 	}
 

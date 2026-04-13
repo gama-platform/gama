@@ -153,7 +153,7 @@ public class SobolExploration extends AExplorationAlgorithm {
 		sobol_analysis.evaluate();
 
 		/* Save the simulation values in the provided .csv file (input and corresponding output) */
-		if (hasFacet(IKeyword.BATCH_OUTPUT)) { saveRawResults(scope, res_outputs); }
+		if (hasFacet(IKeyword.BATCH_RAW_RESULTS)) { saveRawResults(scope, res_outputs); }
 
 		/* Save the Sobol analysis report in a .txt file */
 		String path_to = Cast.asString(scope, getFacet(IKeyword.BATCH_REPORT).value(scope));

@@ -194,7 +194,7 @@ public class MorrisExploration extends AExplorationAlgorithm {
 		}
 
 		/* Save the simulation values in the provided .csv file (input and corresponding output) */
-		if (hasFacet(IKeyword.BATCH_OUTPUT)) { saveRawResults(scope, res_outputs); }
+		if (hasFacet(IKeyword.BATCH_RAW_RESULTS)) { saveRawResults(scope, res_outputs); }
 
 		// Prevent OutOfBounds when experiment ends before morris exploration is completed
 		if (outsize == samples.size() && rebuilt_output.values().stream().findAny().get().size() == samples.size()) {
