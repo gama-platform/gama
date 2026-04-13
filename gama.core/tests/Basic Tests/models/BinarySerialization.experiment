@@ -1,0 +1,90 @@
+/**
+* Name: BinarySerialization
+* Based on the internal empty template. 
+* Author: Lucas Grosjean
+* Tags: serialization, binary, test
+*/
+
+model Serialization
+
+experiment BinarySerializationTest type:test {
+	
+	test binary_int {
+		assert from_binary(to_binary(1)) = 1;
+	}
+	
+	test binary_float {
+		assert from_binary(to_binary(1.2)) = 1.2;
+	}
+	
+	test binary_empty_string {
+		assert from_binary(to_binary("")) = "";
+	}
+	
+	test binary_string {
+		assert from_binary(to_binary("abcd")) = "abcd";
+	}
+	
+	test binary_empty_list {
+		assert from_binary(to_binary([])) = [];
+	}
+	
+	test binary_list {
+		assert from_binary(to_binary([1,"a",false])) = [1,"a",false];
+	}
+	
+	test binary_list_of_list {
+		assert from_binary(to_binary([[1,2,3],[4,5,6]])) = [[1,2,3],[4,5,6]];
+	}
+	
+	test binary_nil {
+		assert from_binary(to_binary(nil)) = nil;
+	}
+	
+	test binary_map {
+		map my_var <- [
+			"x"::"abc",
+			"y"::#red,
+			"z"::123,
+			"123"::10.2,
+			"a"::false
+		];
+		assert from_binary(to_binary(my_var)) = my_var;
+	}
+	
+	// Round-trip verification
+	test serialize_and_deserialize_binary {	
+		map my_var <- ["x"::"abc","y"::#red,"z"::123,"123"::10.2,"a"::false, "e"::[1,2,3]];
+		assert from_binary(to_binary(my_var)) = my_var;
+	}
+	
+	// Special Values: Infinity
+	test infinity_roundtrip {
+		assert from_binary(to_binary(#infinity)) = #infinity;
+	}
+	
+	test infinity_in_map_roundtrip {
+		assert from_binary(to_binary(map(['x'::#infinity]))) = map(['x'::#infinity]);
+	}
+	
+	test negative_infinity_roundtrip {
+		assert from_binary(to_binary(-#infinity)) = -#infinity;
+	}
+	
+	test negative_infinity_in_map_roundtrip {
+		assert from_binary(to_binary(map(['x'::-#infinity]))) = map(['x'::-#infinity]);
+	}
+	
+	// Special Values: NaN
+	test nan_roundtrip {
+		assert from_binary(to_binary(#nan)) = #nan;
+	}
+	
+	test nan_in_map_roundtrip {
+		assert from_binary(to_binary(map(["x"::#nan]))) = map(["x"::#nan]);
+	}
+
+	test from_binary_empty_string {
+		assert from_binary(to_binary('')) =  '';
+	}
+}
