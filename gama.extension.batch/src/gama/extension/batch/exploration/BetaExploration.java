@@ -85,6 +85,11 @@ import gama.core.experiment.parameters.ParametersSet;
 						optional = false,
 						doc = @doc ("The list of output variables to analyse")),
 				@facet (
+						name = IKeyword.BATCH_RAW_RESULTS,
+						type = IType.STRING,
+						optional = true,
+						doc = @doc ("The path to the file where the raw results will be written")),
+				@facet (
 						name = Exploration.SAMPLE_SIZE,
 						type = IType.INT,
 						optional = true,

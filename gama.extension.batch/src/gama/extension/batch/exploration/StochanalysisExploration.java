@@ -76,6 +76,11 @@ import gama.core.experiment.parameters.ParametersSet;
 						optional = false,
 						doc = @doc ("The list of output variables to analyse")),
 				@facet (
+						name = IKeyword.BATCH_RAW_RESULTS,
+						type = IType.STRING,
+						optional = true,
+						doc = @doc ("The path to the file where the raw results will be written")),
+				@facet (
 						name = Exploration.SAMPLE_SIZE,
 						type = IType.INT,
 						optional = true,
@@ -84,7 +89,7 @@ import gama.core.experiment.parameters.ParametersSet;
 						name = IKeyword.BATCH_REPORT,
 						type = IType.STRING,
 						optional = false,
-						doc = @doc ("The path to the file where the Sobol report will be written")),
+						doc = @doc ("The path to the file where the Stochasticity Analysis report will be written")),
 				@facet (
 						name = IKeyword.BATCH_OUTPUT,
 						type = IType.STRING,

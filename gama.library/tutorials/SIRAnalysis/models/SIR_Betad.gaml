@@ -73,7 +73,7 @@ global {
     }
 
     reflex stop when: cycle >= 1000 or nb_infected = 0 {
-        do halt;
+        do die();
     }
 }
 

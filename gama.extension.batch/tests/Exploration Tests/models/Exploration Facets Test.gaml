@@ -9,6 +9,7 @@ model exploration_facets_test
 global {
 	float p1 <- 0.0;
 	float p2 <- 0.0;
+	float nb_preys <- 0.0;
 	
 	reflex simulate {
 		// Dummy logic
@@ -21,14 +22,12 @@ experiment "LHS Facet Test" type: batch {
 	parameter "p2" var: p2 min: 0.0 max: 1.0;
 	
 	// Testing new ESE-LHS facets
-	method exploration sampling: "latinnhypercube" 
+	method exploration sampling: "latinhypercube" 
 	                   sample: 10 
 	                   outer_iter: 20 
 	                   inner_iter: 50;
 	
 	test "LHS Configuration" {
-		// In a batch test, we can check if the method is correctly initialized
-		// For CI, if this compiles and runs without error, it validates the facets are correctly bound to Java fields
 		assert true;
 	}
 }
@@ -38,7 +37,7 @@ experiment "Morris Facet Test" type: batch {
 	parameter "p1" var: p1 min: 0.0 max: 1.0;
 	parameter "p2" var: p2 min: 0.0 max: 1.0;
 	
-	method morris levels: 5 sample: 4;
+	method morris levels: 4 sample: 4 outputs: ["nb_preys"] report: "morris_report.txt";
 	
 	test "Morris Configuration" {
 		assert true;
@@ -62,10 +61,9 @@ experiment "With Facet Test" type: batch {
 experiment "Default Sample Test" type: batch {
 	parameter "p1" var: p1 min: 0.0 max: 1.0;
 	
-	method exploration sampling: "latinnhypercube";
+	method exploration sampling: "latinhypercube";
 	
 	test "Default Size is 255" {
-		// This validates that the default value we set in AExplorationAlgorithm is active
 		assert true;
 	}
 }

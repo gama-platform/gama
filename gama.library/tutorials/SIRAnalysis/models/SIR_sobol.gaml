@@ -64,7 +64,7 @@ global {
 
     // halt (not pause) — never blocks the batch scheduler
     reflex stop when: cycle >= 1000 or nb_infected = 0 {
-        do halt;
+        do die();
     }
 }
 

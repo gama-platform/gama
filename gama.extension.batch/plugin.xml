@@ -3,6 +3,15 @@
 <plugin>
    <extension
          point="gaml.extension">
+      <package
+            name="gama.extension.batch">
+      </package>
+      <package
+            name="gama.extension.batch.exploration">
+      </package>
+      <package
+            name="gama.extension.batch.optimization">
+      </package>
    </extension>
    <extension
          point="gama.experiment">
@@ -11,5 +20,4 @@
             keyword="batch">
       </implementation>
    </extension>
-
 </plugin>

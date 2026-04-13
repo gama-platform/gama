@@ -89,7 +89,7 @@ public class Stochanalysis {
 
 	/** The Constant SA. */
 	// List of methods
-	final static protected List<String> SA = List.of(CV, SE);//List.of(CV, SE, ES, PT);
+	final static public List<String> SA = List.of(CV, SE);//List.of(CV, SE, ES, PT);
 
 	/** The Constant SEP. */
 	// UTILS

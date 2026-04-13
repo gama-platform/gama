@@ -4,8 +4,10 @@ Bundle-Name: Stats
 Bundle-SymbolicName: gama.extension.stats;singleton:=true
 Bundle-Version: 0.0.0.qualifier
 Require-Bundle: gama.core,
+ gama.api,
  gama.extension.maths,
- gama.dependencies
+ gama.dependencies,
+ gama.annotations
 Bundle-ActivationPolicy: lazy
 Export-Package: gama.extension.stats
 Bundle-ClassPath: .,

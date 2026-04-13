@@ -72,7 +72,7 @@ import gama.core.experiment.parameters.ParametersSet;
 				doc = @doc ("The name of the method. For internal use only")),
 				@facet (
 						name = MorrisExploration.NB_LEVELS,
-						type = IType.ID,
+						type = IType.INT,
 						optional = true,
 						doc = @doc ("Number of level each trajectories is made of, can't be 1 / should be even - 4 by default")),
 				@facet (
@@ -80,6 +80,11 @@ import gama.core.experiment.parameters.ParametersSet;
 						type = IType.LIST,
 						optional = false,
 						doc = @doc ("The list of output variables to analyze through morris method")),
+				@facet (
+						name = IKeyword.BATCH_RAW_RESULTS,
+						type = IType.STRING,
+						optional = true,
+						doc = @doc ("The path to the file where the raw results will be written")),
 				@facet (
 						name = Exploration.SAMPLE_SIZE,
 						type = IType.INT,

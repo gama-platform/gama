@@ -17,8 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.DoubleStream;
 
-import org.jfree.data.statistics.Statistics;
-
 import gama.annotations.doc;
 import gama.annotations.experiment;
 import gama.annotations.constants.IKeyword;
@@ -548,7 +546,7 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 			lastSolution = currentSolution;
 			lastFitness = fitnessCombination == AOptimizationAlgorithm.C_MAX ? Collections.max(fitnessValues)
 					: fitnessCombination == AOptimizationAlgorithm.C_MIN ? Collections.min(fitnessValues)
-					: Statistics.calculateMean(fitnessValues);
+					: fitnessValues.stream().mapToDouble(d -> d).average().orElse(0.0);
 			outputs.put(IKeyword.FITNESS, GamaListFactory.createWithoutCasting(Types.FLOAT, lastFitness));
 			// we update the best solution found so far
 			oAlgo.updateBestFitness(lastSolution, lastFitness);
