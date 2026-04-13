@@ -17,6 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import gama.extension.stats.Sobol;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.facet;

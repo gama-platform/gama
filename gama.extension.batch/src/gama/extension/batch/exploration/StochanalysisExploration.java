@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import gama.extension.stats.Stochanalysis;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.facet;

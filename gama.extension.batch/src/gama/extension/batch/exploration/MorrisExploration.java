@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
 
+import gama.extension.stats.Morris;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.facet;

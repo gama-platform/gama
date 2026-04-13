@@ -32,6 +32,10 @@ import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.IExploration;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.map.IMap;
+import gama.extension.stats.LatinhypercubeSampling;
+import gama.extension.stats.Morris;
+import gama.extension.stats.Sobol;
+import gama.extension.stats.Stochanalysis;
 import gama.core.experiment.parameters.ParametersSet;
 
 /**
