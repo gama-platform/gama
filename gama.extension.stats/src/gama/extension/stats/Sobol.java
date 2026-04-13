@@ -7,7 +7,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.extension.batch.exploration;
+package gama.extension.stats;
 
 import java.io.BufferedReader;
 import java.io.File;

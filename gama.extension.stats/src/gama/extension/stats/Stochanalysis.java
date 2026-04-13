@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.extension.batch.exploration;
+package gama.extension.stats;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -89,7 +89,7 @@ public class Stochanalysis {
 
 	/** The Constant SA. */
 	// List of methods
-	final static protected List<String> SA = List.of(CV, SE);//List.of(CV, SE, ES, PT);
+	final static public List<String> SA = List.of(CV, SE);//List.of(CV, SE, ES, PT);
 
 	/** The Constant SEP. */
 	// UTILS

@@ -4,6 +4,8 @@ Bundle-Name: Batch experiments extension
 Bundle-SymbolicName: gama.extension.batch;singleton:=true
 Bundle-Version: 0.0.0.qualifier
 Require-Bundle: gama.core,
+ gama.api,
+ gama.extension.stats,
  gama.dependencies,
  gama.annotations,
  gama.dev

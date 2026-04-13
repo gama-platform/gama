@@ -17,6 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import gama.extension.stats.Sobol;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.facet;
@@ -74,10 +75,10 @@ import gama.core.experiment.parameters.ParametersSet;
 						optional = false,
 						doc = @doc ("The list of output variables to analyse through sobol indexes")),
 				@facet (
-						name = IKeyword.BATCH_OUTPUT,
+						name = IKeyword.BATCH_RAW_RESULTS,
 						type = IType.STRING,
 						optional = true,
-						doc = @doc ("The path to the file where the automatic batch report will be written")),
+						doc = @doc ("The path to the file where the raw results will be written")),
 				@facet (
 						name = IKeyword.BATCH_REPORT,
 						type = IType.STRING,
@@ -152,7 +153,7 @@ public class SobolExploration extends AExplorationAlgorithm {
 		sobol_analysis.evaluate();
 
 		/* Save the simulation values in the provided .csv file (input and corresponding output) */
-		if (hasFacet(IKeyword.BATCH_OUTPUT)) { saveRawResults(scope, res_outputs); }
+		if (hasFacet(IKeyword.BATCH_RAW_RESULTS)) { saveRawResults(scope, res_outputs); }
 
 		/* Save the Sobol analysis report in a .txt file */
 		String path_to = Cast.asString(scope, getFacet(IKeyword.BATCH_REPORT).value(scope));

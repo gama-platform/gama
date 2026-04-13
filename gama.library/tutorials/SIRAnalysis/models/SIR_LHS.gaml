@@ -27,8 +27,8 @@ global {
         nb_recovered   <- person count (each.status = "recovered");
     }
 
-    reflex stop_gui when: cycle >= 1000 or nb_infected = 0 {
-        do halt;
+    reflex stop when: cycle >= 1000 or nb_infected = 0 {
+        do die();
     }
 }
 

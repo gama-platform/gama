@@ -32,6 +32,10 @@ import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.IExploration;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.map.IMap;
+import gama.extension.stats.LatinhypercubeSampling;
+import gama.extension.stats.Morris;
+import gama.extension.stats.Sobol;
+import gama.extension.stats.Stochanalysis;
 import gama.core.experiment.parameters.ParametersSet;
 
 /**
@@ -75,15 +79,15 @@ import gama.core.experiment.parameters.ParametersSet;
 						optional = true,
 						doc = @doc ("The list of output variables to track throughout exploration")),
 				@facet (
-						name = IKeyword.BATCH_OUTPUT,
+						name = IKeyword.BATCH_RAW_RESULTS,
 						type = IType.STRING,
 						optional = true,
-						doc = @doc ("The path to the file where the automatic batch report will be written")),
+						doc = @doc ("The path to the file where the raw results will be written")),
 				@facet (
 						name = Exploration.SAMPLE_SIZE,
 						type = IType.INT,
 						optional = true,
-						doc = @doc ("The number of sample required, 132 by default")),
+						doc = @doc ("The number of sample required, 255 by default")),
 				@facet (
 						name = Exploration.SAMPLE_FACTORIAL,
 						type = IType.INT,
@@ -98,7 +102,17 @@ import gama.core.experiment.parameters.ParametersSet;
 						name = Exploration.ITERATIONS,
 						type = IType.INT,
 						optional = true,
-						doc = @doc ("The number of iteration for orthogonal SAMPLING, 5 by default"))
+						doc = @doc ("The number of iteration for orthogonal SAMPLING, 5 by default")),
+				@facet (
+						name = IKeyword.LHS_OUTER,
+						type = IType.INT,
+						optional = true,
+						doc = @doc ("The number of outer iterations for Latin Hypercube Sampling (ESE), 50 by default")),
+				@facet (
+						name = IKeyword.LHS_INNER,
+						type = IType.INT,
+						optional = true,
+						doc = @doc ("The number of inner iterations for Latin Hypercube Sampling (ESE), 100 by default"))
 
 		},
 		omissible = IKeyword.NAME)
@@ -130,6 +144,21 @@ import gama.core.experiment.parameters.ParametersSet;
 								value = "method exploration with:[[\"a\"::0.5, \"b\"::10],[\"a\"::0.1, \"b\"::100]]; ",
 								isExecutable = false) }) })
 public class Exploration extends AExplorationAlgorithm {
+
+	/** The Constant SAMPLING */
+	public static final String SAMPLING = "sampling";
+
+	/** The Constant SAMPLE_SIZE */
+	public static final String SAMPLE_SIZE = "sample";
+
+	/** The Constant SAMPLE_FACTORIAL */
+	public static final String SAMPLE_FACTORIAL = "factorial";
+
+	/** The Constant NB_LEVELS */
+	public static final String NB_LEVELS = "levels";
+
+	/** The Constant ITERATIONS */
+	public static final String ITERATIONS = "iterations";
 
 	/** The parameters. */
 	private List<Batch> parameters;

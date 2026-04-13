@@ -1,4 +1,4 @@
-package gama.extension.batch.exploration;
+package gama.extension.stats;
 
 import java.util.ArrayList;
 import java.util.Collections;

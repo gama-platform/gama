@@ -71,9 +71,6 @@ import gama.api.utils.StringUtils;
 import gama.api.utils.collections.Collector;
 import gama.api.utils.files.FileUtils;
 import gama.core.util.matrix.GamaField;
-import gama.extension.batch.exploration.Morris;
-import gama.extension.batch.exploration.Sobol;
-import gama.extension.batch.exploration.Stochanalysis;
 import gama.gaml.operators.Containers;
 import gama.gaml.operators.Containers.ComparableValidator;
 
@@ -2688,7 +2685,7 @@ public class Stats {
 		} else if (data instanceof IMap map) {
 			sob = new Sobol(convertToDoubleMap(scope, map), nb_parameters, scope);
 		} else if (data instanceof IMatrix matrix) {
-			sob = new Sobol(matrixToMap(scope, matrix), nb_parameters, scope);
+			sob = new Sobol(convertToDoubleMap(scope, matrixToMap(scope, matrix)), nb_parameters, scope);
 		} else
 			throw GamaRuntimeException.error("sobolAnalysis expects a path (string), a map or a matrix", scope);
 
@@ -2729,7 +2726,7 @@ public class Stats {
 		} else if (data instanceof IMap map) {
 			momo = new Morris(convertToDoubleMap(scope, map), nb_parameters, nb_levels, scope);
 		} else if (data instanceof IMatrix matrix) {
-			momo = new Morris(matrixToMap(scope, matrix), nb_parameters, nb_levels, scope);
+			momo = new Morris(convertToDoubleMap(scope, matrixToMap(scope, matrix)), nb_parameters, nb_levels, scope);
 		} else
 			throw GamaRuntimeException.error("morrisAnalysis expects a path (string), a map or a matrix", scope);
 
