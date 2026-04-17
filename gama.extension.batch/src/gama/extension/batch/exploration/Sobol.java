@@ -25,12 +25,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.math3.exception.OutOfRangeException;
 import org.moeaframework.util.sequence.Saltelli;
 
 import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
-import gama.api.gaml.types.Cast;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.StringUtils;
 

@@ -12,16 +12,14 @@ package gama.extension.stats;
 
 import static gama.gaml.operators.Containers.collect;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.math3.distribution.FDistribution;
+import org.apache.commons.math3.distribution.TDistribution;
 import org.apache.commons.math3.ml.clustering.CentroidCluster;
 import org.apache.commons.math3.ml.clustering.Cluster;
 import org.apache.commons.math3.ml.clustering.DBSCANClusterer;
@@ -31,6 +29,7 @@ import org.apache.commons.math3.ml.distance.EuclideanDistance;
 import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.stat.descriptive.moment.Kurtosis;
 import org.apache.commons.math3.stat.descriptive.moment.Skewness;
+import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 import org.apache.commons.math3.stat.inference.TTest;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 
@@ -69,11 +68,7 @@ import gama.api.types.matrix.IMatrix;
 import gama.api.types.misc.IContainer;
 import gama.api.utils.StringUtils;
 import gama.api.utils.collections.Collector;
-import gama.api.utils.files.FileUtils;
 import gama.core.util.matrix.GamaField;
-import gama.extension.batch.exploration.Morris;
-import gama.extension.batch.exploration.Sobol;
-import gama.extension.batch.exploration.Stochanalysis;
 import gama.gaml.operators.Containers;
 import gama.gaml.operators.Containers.ComparableValidator;
 
@@ -2658,170 +2653,6 @@ public class Stats {
 		return regression.getResiduals();
 	}
 
-	/**
-	 *
-	 * @param scope
-	 * @param data
-	 *            data as a path (String), map of columns (IMap) or matrix (IMatrix)
-	 * @param report_path
-	 *            path to save the sobol_report.txt file
-	 * @param nb_parameters
-	 *            number of parameters in the model
-	 * @return
-	 */
-	@operator (
-			value = "sobolAnalysis",
-			type = IType.STRING,
-			can_be_const = true,
-			category = { IOperatorCategory.STATISTICAL },
-			concept = { IConcept.STATISTIC })
-	@doc (
-			value = "Return a string containing the Report of the sobol analysis for the corresponding data (path, map of columns or matrix) and save this report in a txt/csv file.")
-	@no_test
-	public static String sobolAnalysis(final IScope scope, final Object data, final String report_path,
-			final int nb_parameters) {
-		final File f_report = new File(FileUtils.constructAbsoluteFilePath(scope, report_path, false));
-		Sobol sob;
-		if (data instanceof String path) {
-			final File f = new File(FileUtils.constructAbsoluteFilePath(scope, path, false));
-			sob = new Sobol(f, nb_parameters, scope);
-		} else if (data instanceof IMap map) {
-			sob = new Sobol(convertToDoubleMap(scope, map), nb_parameters, scope);
-		} else if (data instanceof IMatrix matrix) {
-			sob = new Sobol(matrixToMap(scope, matrix), nb_parameters, scope);
-		} else
-			throw GamaRuntimeException.error("sobolAnalysis expects a path (string), a map or a matrix", scope);
-
-		sob.evaluate();
-		sob.saveResult(f_report);
-		return sob.buildReportString(FilenameUtils.getExtension(f_report.getPath()));
-	}
-
-	/**
-	 *
-	 * @param scope
-	 * @param data
-	 *            data as a path (String), map of columns (IMap) or matrix (IMatrix)
-	 * @param nb_levels
-	 *            : the number of level
-	 * @param nb_parameters
-	 *            : the number of parameter
-	 * @return the result of a morris analysis
-	 *
-	 */
-	@operator (
-			value = "morrisAnalysis",
-			type = IType.STRING,
-			can_be_const = true,
-			category = { IOperatorCategory.STATISTICAL },
-			concept = { IConcept.STATISTIC })
-	@doc (
-			value = "Return a string containing the Report of the morris analysis for the corresponding data (path, map or matrix)")
-	@no_test
-	public static String morrisAnalysis(final IScope scope, final Object data, final int nb_levels,
-			final int nb_parameters) {
-		Morris momo;
-		String ext = "csv";
-		if (data instanceof String path) {
-			final File f = new File(FileUtils.constructAbsoluteFilePath(scope, path, false));
-			momo = new Morris(f, nb_parameters, nb_levels, scope);
-			ext = FilenameUtils.getExtension(path);
-		} else if (data instanceof IMap map) {
-			momo = new Morris(convertToDoubleMap(scope, map), nb_parameters, nb_levels, scope);
-		} else if (data instanceof IMatrix matrix) {
-			momo = new Morris(matrixToMap(scope, matrix), nb_parameters, nb_levels, scope);
-		} else
-			throw GamaRuntimeException.error("morrisAnalysis expects a path (string), a map or a matrix", scope);
-
-		momo.evaluate();
-		return momo.buildReportString(ext);
-	}
-
-	/**
-	 * Helper to convert a GAML map to a rigid Map<String, List<Double>>.
-	 */
-	private static Map<String, List<Double>> convertToDoubleMap(final IScope scope, final IMap<?, ?> map) {
-		Map<String, List<Double>> result = new LinkedHashMap<>();
-		map.forEach((k, v) -> {
-			if (v instanceof List<?> list) {
-				List<Double> doubles = new ArrayList<>();
-				for (Object o : list) { doubles.add(Cast.asFloat(scope, o)); }
-				result.put(Cast.asString(scope, k), doubles);
-			}
-		});
-		return result;
-	}
-
-	/**
-	 * Stochanalyse.
-	 *
-	 * @param replicat
-	 *            the replicat
-	 * @param threshold
-	 *            the threshold
-	 * @param data
-	 *            the data as a path (string), map of columns or matrix
-	 * @param nb_parameters
-	 *            the number of parameters (or index of first output for CSV)
-	 * @param scope
-	 *            the scope
-	 * @return the string
-	 */
-	@operator (
-			value = "stochanalyse",
-			type = IType.STRING,
-			can_be_const = true,
-			category = { IOperatorCategory.STATISTICAL },
-			concept = { IConcept.STATISTIC })
-	@doc (
-			value = "Return the result of the stochasticity analysis for the corresponding data (path, map or matrix)")
-	@no_test
-	public static String stochanalyse(final IScope scope, final int replicat, final double threshold, final Object data,
-			final int nb_parameters) {
-
-		if (data instanceof String path) {
-			String new_path = scope.getExperiment().getWorkingPath() + "/" + path;
-			return Stochanalysis.stochasticityAnalysis_From_CSV(replicat, threshold, new_path, nb_parameters, scope);
-		}
-
-		IMap<String, IList<Double>> mapData;
-		if (data instanceof IMap m) {
-			mapData = m;
-		} else if (data instanceof IMatrix matrix) {
-			mapData = matrixToMap(scope, matrix);
-		} else
-			throw GamaRuntimeException.error("stochanalyse expects a path (string), a map or a matrix", scope);
-
-		int nbCols = mapData.size();
-		int nbRows = mapData.values().iterator().next().size();
-		List<String> listNames = new ArrayList<>(mapData.keySet());
-
-		IList<IMap<String, Object>> MySample = GamaListFactory.create(Types.MAP);
-		IMap<String, IList<Double>> Outputs = GamaMapFactory.create();
-
-		for (int idx = 0; idx < nbCols; idx++) {
-			String name = listNames.get(idx);
-			if (idx >= nb_parameters) { Outputs.put(name, GamaListFactory.create()); }
-		}
-
-		for (int row = 0; row < nbRows; row++) {
-			IMap<String, Object> temp_map = GamaMapFactory.create();
-			for (int idx = 0; idx < nbCols; idx++) {
-				String name = listNames.get(idx);
-				Double val = Cast.asFloat(scope, mapData.get(name).get(row));
-				if (idx < nb_parameters) {
-					temp_map.put(name, val);
-				} else {
-					Outputs.get(name).add(val);
-				}
-			}
-			MySample.add(temp_map);
-		}
-
-		return Stochanalysis.stochasticityAnalysis_From_Data(replicat, threshold, MySample, Outputs, scope);
-	}
-
-	
 	@operator (
 			value = "rolling_vc",
 			type = IType.LIST,
@@ -2835,7 +2666,11 @@ public class Stats {
 	//@test ("morrisAnalysis(matrix([[0.1, 0.2, 0.3, 0.4, 0.5], [1.0, 1.1, 1.2, 1.3, 1.4]]), 4, 1) != \"\"")
 	@no_test
 	public static IList<Double> rollingVC(final IScope scope, final IList<Double> data) {
-		return Stochanalysis.coefficientOfVariance(scope, data);
+		IList<Double> mean = meanList(data, scope);
+		IList<Double> std = standardevList(mean, data, scope);
+		IList<Double> cv = GamaListFactory.create(Types.FLOAT);
+		for (int i = 1; i < mean.size(); i++) { cv.add(std.get(i) / mean.get(i)); }
+		return cv;
 	}
 
 	@operator (
@@ -2849,7 +2684,11 @@ public class Stats {
 			value = "Return the list of standard error according to the number of observations, </br> i.e. value at index i is the standard error for the first i observations.")
 	@no_test
 	public static IList<Double> rollingSE(final IScope scope, final IList<Double> data) {
-		return Stochanalysis.standardError(scope, data);
+		IList<Double> mean = meanList(data, scope);
+		IList<Double> std = standardevList(mean, data, scope);
+		IList<Double> se = GamaListFactory.create(Types.FLOAT);
+		for (int i = 1; i < std.size(); i++) { se.add(std.get(i) / Math.sqrt(i + 1)); }
+		return se;
 	}
 
 	@operator (
@@ -2864,88 +2703,81 @@ public class Stats {
 	@no_test
 	public static Integer powerTestCSE(final IScope scope, final IList<Double> data, final double tAlpha,
 			final double tBeta, final double criticalEffectSize) {
-		return Stochanalysis.ces(scope, data, tAlpha, tBeta, criticalEffectSize);
+		IList<Double> dSample = data.stream().mapToDouble(v -> Cast.asFloat(scope, v)).boxed()
+				.collect(GamaListFactory.toGamaList());
+		double mean = dSample.stream().mapToDouble(v -> v).average().orElse(0.0);
+
+		IList<Double> currentES = GamaListFactory.create(Types.FLOAT);
+		// Starting from worst case deviation
+		currentES.add(Collections.min(dSample));
+		currentES.add(Collections.max(dSample));
+		dSample.removeAll(currentES);
+		// Sort according to deviation from the mean
+		List<Double> sortedRemaining = dSample.stream()
+				.sorted((v1, v2) -> (v1.equals(v2) ? 0 : Math.abs(v1 - mean) > Math.abs(v2 - mean) ? -1 : 1)).toList();
+		for (Double n_incr : sortedRemaining) {
+			currentES.add(n_incr);
+			TDistribution td = new TDistribution(currentES.size() - 1);
+			double thresh = 2 / criticalEffectSize * mean
+					* Math.pow(new StandardDeviation().evaluate(currentES.stream().mapToDouble(v -> v).toArray()), 2)
+					* Math.pow(td.inverseCumulativeProbability(tAlpha) + td.inverseCumulativeProbability(tBeta), 2);
+			if (currentES.size() >= thresh) return currentES.size();
+		}
+		return data.size();
 	}	
 	
+	// ************ UTILITIES ************ //
+	
 	/**
-	 * Helper to convert matrix to map of columns.
+	 * Compute the mean of a List of object
+	 *
+	 * @param val
+	 *            : List of value (data of each replicates)
+	 * @param scope
+	 * @return return the mean for each number of replicates
 	 */
-	private static IMap<String, IList<Double>> matrixToMap(final IScope scope, final IMatrix<Double> matrix) {
-		IMap<String, IList<Double>> map = GamaMapFactory.create();
-		for (int j = 0; j < matrix.getCols(scope); j++) {
-			IList<Double> col = GamaListFactory.create(Types.FLOAT);
-			for (int i = 0; i < matrix.getRows(scope); i++) { col.add(Cast.asFloat(scope, matrix.get(scope, j, i))); }
-			map.put("col" + j, col);
+	private static IList<Double> meanList(final IList<Double> val, final IScope scope) {
+		IList<Double> mean = GamaListFactory.create(Types.FLOAT);
+		double tmp_mean = 0;
+		for (int i = 0; i < val.size(); i++) {
+			double tmp_val = Cast.asFloat(scope, val.get(i));
+			tmp_mean = tmp_mean + tmp_val;
+			mean.add(tmp_mean / (i + 1));
 		}
-		return map;
+		return mean;
 	}
 	
+
+	/**
+	 * Compute the Standard Deviation of a list
+	 *
+	 * @param mean
+	 *            : the mean for each number of replicates
+	 * @param val
+	 *            : List of value (data of each replicates)
+	 * @param scope
+	 * @return return the standard deviation for each number of replicates (Always 0 for 1).
+	 */
+	private static IList<Double> standardevList(final IList<Double> mean, final IList<Double> val, final IScope scope) {
+		IList<Double> STD = GamaListFactory.create(Types.FLOAT);
+		for (int i = 0; i < mean.size(); i++) {
+			if (i == 0) {
+				STD.add(0.0);
+			} else {
+				double m = mean.get(i);
+				double sumDiffSq = 0;
+				for (int y = 0; y <= i; y++) {
+					double tmp_val = Cast.asFloat(scope, val.get(y));
+					sumDiffSq += Math.pow(tmp_val - m, 2);
+				}
+				// GAMA's standard_deviation operator uses population variance (divide by N)
+				STD.add(Math.sqrt(sumDiffSq / (i + 1)));
+			}
+		}
+		return STD;
+	}
 	
-	// /**
-	// *
-	// *
-	// * @param scope
-	// * @param moment3
-	// * @param standardDeviation
-	// * @return
-	// */
-	// @operator (
-	// value = { "skew", "skewness" },
-	// can_be_const = true,
-	// type = IType.FLOAT,
-	// category = { IOperatorCategory.STATISTICAL },
-	// concept = { IConcept.STATISTIC })
-	// @doc (
-	// value = "Returns the skew of a data sequence when the 3rd moment has already been computed.",
-	// comment = "In R moment(c(1, 3, 5, 6, 9, 11, 12, 13), order=3,center=TRUE) is -10.125 and
-	// sd(c(1,3,5,6,9,11,12,13)) = 4.407785"
-	// + "The value of the skewness tested here is different because there are different types of estimator"
-	// + "Joanes and Gill (1998) discuss three methods for estimating skewness:"
-	// + "Type 1: g_1 = m_3 / m_2^(3/2). This is the typical definition used in many older textbooks."
-	// + "Type 2: G_1 = g_1 * sqrt(n(n-1)) / (n-2). Used in SAS and SPSS."
-	// + "Type 3: b_1 = m_3 / s^3 = g_1 ((n-1)/n)^(3/2). Used in MINITAB and BMDP."
-	// + "In R skewness(c(1, 3, 5, 6, 9, 11, 12, 13),type=3) is -0.1182316",
-	// examples = { @example (
-	// value = "skew(-10.125,4.407785) with_precision(2)",
-	// equals = "-0.12") })
-	// public static Double opSkew(final IScope scope, final Double moment3, final Double standardDeviation) {
-	//
-	// // TODO input parameters validation
-	//
-	// return Descriptive.skew(moment3, standardDeviation);
-	// }
-
-	// /**
-	// *
-	// *
-	// * @param scope
-	// * @param data
-	// * @param mean
-	// * @param standardDeviation
-	// * @return
-	// */
-	// @operator (
-	// value = "skew",
-	// can_be_const = true,
-	// type = IType.FLOAT,
-	// category = { IOperatorCategory.STATISTICAL },
-	// concept = { IConcept.STATISTIC })
-	// @doc (
-	// value = "Returns the skew of a data sequence, which is moment(data,3,mean) / standardDeviation3",
-	// comment = "",
-	// examples = { @example (
-	// value = "skew([1,3,5,6,9,11,12,13]) with_precision(2)",
-	// equals = "-0.14") })
-	// public static Double opSkew(final IScope scope, final IContainer data) {
-	//
-	// // TODO input parameters validation
-	//
-	// final double mean = (Double) Containers.opMean(scope, data);
-	// final double standardDeviation = Stats.opStandardDeviation(scope, data);
-	//
-	// return Descriptive.skew(toDoubleArrayList(scope, data), mean, standardDeviation);
-	// }
-
+	// ****************************************** //
 	
 	/**
 	 *

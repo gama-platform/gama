@@ -41,6 +41,7 @@ import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
 import gama.api.utils.StringUtils;
 import gama.core.experiment.parameters.ParametersSet;
+import gama.extension.stats.Stats;
 
 /**
  *
@@ -86,6 +87,8 @@ public class Stochanalysis {
 
 	/** The Constant PT. */
 	final static public String PT = "Power test";
+	
+	final static public int ROOLING_BOOTSTRAPS = 100;
 
 	/** The Constant SA. */
 	// List of methods
@@ -398,7 +401,6 @@ public class Stochanalysis {
 
 		IMap<ParametersSet, IList<Double>> res =
 				GamaMapFactory.create(Types.get(ParametersSet.class), Types.LIST.of(Types.FLOAT));
-		int nbBootstrap = 100;
 
 		switch (method) {
 			case CV -> {
@@ -406,9 +408,9 @@ public class Stochanalysis {
 					IList<Double> data = es.getValue().stream(scope).mapToDouble(e -> Cast.asFloat(scope, e)).boxed()
 							.collect(GamaListFactory.toGamaList());
 					List<IList<Double>> bootstrapRuns = new ArrayList<>();
-					for (int i = 0; i < nbBootstrap; i++) {
+					for (int i = 0; i < ROOLING_BOOTSTRAPS; i++) {
 						IList<Double> bootstrapped = bootstrapSample(scope, data);
-						bootstrapRuns.add(coefficientOfVariance(scope, bootstrapped));
+						bootstrapRuns.add(Stats.rollingVC(scope, bootstrapped));
 					}
 					res.put(es.getKey(), averageLists(bootstrapRuns));
 				}
@@ -418,9 +420,9 @@ public class Stochanalysis {
 					IList<Double> data = es.getValue().stream(scope).mapToDouble(e -> Cast.asFloat(scope, e)).boxed()
 							.collect(GamaListFactory.toGamaList());
 					List<IList<Double>> bootstrapRuns = new ArrayList<>();
-					for (int i = 0; i < nbBootstrap; i++) {
+					for (int i = 0; i < ROOLING_BOOTSTRAPS; i++) {
 						IList<Double> bootstrapped = bootstrapSample(scope, data);
-						bootstrapRuns.add(standardError(scope, bootstrapped));
+						bootstrapRuns.add(Stats.rollingSE(scope, bootstrapped));
 					}
 					res.put(es.getKey(), averageLists(bootstrapRuns));
 				}
@@ -430,7 +432,7 @@ public class Stochanalysis {
 					IList<Double> data = es.getValue().stream(scope).mapToDouble(e -> Cast.asFloat(scope, e)).boxed()
 							.collect(GamaListFactory.toGamaList());
 					List<IList<Double>> bootstrapRuns = new ArrayList<>();
-					for (int i = 0; i < nbBootstrap; i++) {
+					for (int i = 0; i < ROOLING_BOOTSTRAPS; i++) {
 						IList<Double> bootstrapped = bootstrapSample(scope, data);
 						bootstrapRuns.add(criticalEffectSize(scope, bootstrapped));
 					}
@@ -473,39 +475,6 @@ public class Stochanalysis {
 		}
 		return result;
 	}
-	
-	/**
-	 * Return the rolling coefficient of variance according to the number of observations, i.e. </br>
-	 * value at index i is the coefficient of variance for the first i observations. </br>
-	 * 
-	 * @param scope
-	 * @param aSample
-	 * 		A sample of observations
-	 * @return
-	 */
-	public static IList<Double> coefficientOfVariance(final IScope scope, final IList<Double> aSample) {
-		IList<Double> mean = computeMean(aSample, scope);
-		IList<Double> std = computeSTD(mean, aSample, scope);
-		IList<Double> cv = computeCV(std, mean);
-		return cv;
-	}
-
-	/**
-	 *
-	 * Return the standard error over an incremental number of observation
-	 *
-	 * @param scope
-	 * @param aSample
-	 * 
-	 * @return
-	 */
-	public static IList<Double> standardError(final IScope scope, final IList<Double> aSample) {
-		IList<Double> mean = computeMean(aSample, scope);
-		IList<Double> std = computeSTD(mean, aSample, scope);
-		IList<Double> SE = GamaListFactory.create(Types.FLOAT);
-		for (int i = 1; i < std.size(); i++) { SE.add(std.get(i) / Math.sqrt(i + 1)); }
-		return SE;
-	}
 
 	/**
 	 * Return a list of desired number of replicates based on more permissive conditions: <\br> 
@@ -518,114 +487,10 @@ public class Stochanalysis {
 	public static IList<Double> criticalEffectSize(final IScope scope, final IList<Double> aSample) {
 		IList<Double> ce = GamaListFactory.create(Types.FLOAT);
 		for (double es : FISHEREffectSize) {
-			for (int i = 0; i < TALPHA.length; i++) { ce.add(Cast.asFloat(scope, ces(scope, aSample, TALPHA[i], TBETA[i], es))); }
+			for (int i = 0; i < TALPHA.length; i++) { 
+				ce.add(Cast.asFloat(scope, Stats.powerTestCSE(scope, aSample, TALPHA[i], TBETA[i], es))); }
 		}
 		return ce;
-	}
-
-	/**
-	 * Compute the mean of a List of object
-	 *
-	 * @param val
-	 *            : List of value (data of each replicates)
-	 * @param scope
-	 * @return return the mean for each number of replicates
-	 */
-	private static IList<Double> computeMean(final IList<Double> val, final IScope scope) {
-		IList<Double> mean = GamaListFactory.create(Types.FLOAT);
-		double tmp_mean = 0;
-		for (int i = 0; i < val.size(); i++) {
-			double tmp_val = Cast.asFloat(scope, val.get(i));
-			tmp_mean = tmp_mean + tmp_val;
-			mean.add(tmp_mean / (i + 1));
-		}
-		return mean;
-	}
-
-	/**
-	 * Compute the Standard Deviation of a list
-	 *
-	 * @param mean
-	 *            : the mean for each number of replicates
-	 * @param val
-	 *            : List of value (data of each replicates)
-	 * @param scope
-	 * @return return the standard deviation for each number of replicates (Always 0 for 1).
-	 */
-	private static IList<Double> computeSTD(final IList<Double> mean, final IList<Double> val, final IScope scope) {
-		IList<Double> STD = GamaListFactory.create(Types.FLOAT);
-		for (int i = 0; i < mean.size(); i++) {
-			if (i == 0) {
-				STD.add(0.0);
-			} else {
-				double m = mean.get(i);
-				double sumDiffSq = 0;
-				for (int y = 0; y <= i; y++) {
-					double tmp_val = Cast.asFloat(scope, val.get(y));
-					sumDiffSq += Math.pow(tmp_val - m, 2);
-				}
-				// GAMA's standard_deviation operator uses population variance (divide by N)
-				STD.add(Math.sqrt(sumDiffSq / (i + 1)));
-			}
-		}
-		return STD;
-	}
-
-	/**
-	 * Compute the Coefficient of Variation of a list
-	 *
-	 * @param STD
-	 *            : the Standard deviation for each number of replicates
-	 * @param mean
-	 *            : the mean for each number of replicates
-	 * @return the coefficient of variation for each number of replicates to 2 at replicate max size
-	 */
-	private static IList<Double> computeCV(final IList<Double> STD, final IList<Double> mean) {
-		IList<Double> CV = GamaListFactory.create(Types.FLOAT);
-		for (int i = 1; i < mean.size(); i++) { CV.add(STD.get(i) / mean.get(i)); }
-		return CV;
-	}
-
-
-	/**
-	 * @see inspiration: https://www.jasss.org/18/4/4.html
-	 * @see inspiration: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7745163/
-	 * @see actual implementation: https://rseri.me/publication/b016/B016.pdf
-	 *
-	 * @param scope
-	 * @param aSample
-	 * @param alpha
-	 * @param delta
-	 *            : test F value (from ANOVA),
-	 * @param effectSize
-	 * 
-	 * @return
-	 */
-	public static int ces(final IScope scope, final IList<Double> aSample, final double alpha, final double beta,
-			double effectSize) {
-		IList<Double> dSample = aSample.stream().mapToDouble(v -> Cast.asFloat(scope, v)).boxed()
-				.collect(GamaListFactory.toGamaList());
-		double mean = dSample.stream().mapToDouble(v -> v).average().orElse(0.0);
-		effectSize *= mean;
-
-		IList<Double> currentES = GamaListFactory.create(Types.FLOAT);
-		// Starting from worst case deviation
-		currentES.add(Collections.min(dSample));
-		currentES.add(Collections.max(dSample));
-		dSample.removeAll(currentES);
-		// Sort according to deviation from the mean
-		List<Double> sortedRemaining = dSample.stream()
-				.sorted((v1, v2) -> (v1.equals(v2) ? 0 : Math.abs(v1 - mean) > Math.abs(v2 - mean) ? -1 : 1)).toList();
-		for (Double n_incr : sortedRemaining) {
-			currentES.add(n_incr);
-			TDistribution td = new TDistribution(currentES.size() - 1);
-			double thresh = 2
-					* Math.pow(new StandardDeviation().evaluate(currentES.stream().mapToDouble(v -> v).toArray()), 2)
-					/ effectSize
-					* Math.pow(td.inverseCumulativeProbability(alpha) + td.inverseCumulativeProbability(beta), 2);
-			if (currentES.size() >= thresh) return currentES.size();
-		}
-		return aSample.size();
 	}
 
 	// ########### POWER TEST
@@ -782,7 +647,7 @@ public class Stochanalysis {
 				List<IList<Double>> bootstrapRuns = new ArrayList<>();
 				for (int i = 0; i < nbBootstrap; i++) {
 					IList<Double> bootstrapped = bootstrapSample(scope, outputForParams);
-					bootstrapRuns.add(coefficientOfVariance(scope, bootstrapped));
+					bootstrapRuns.add(Stats.rollingVC(scope, bootstrapped));
 				}
 				IList<Double> cv = averageLists(bootstrapRuns);
 				tmp_replicat = tmp_replicat + findWithThreshold(cv, threshold);
