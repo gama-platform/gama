@@ -1,0 +1,34 @@
+== STOCHASTICITY ANALYSIS ==
+1 outputs | 10 samples | 20 max replications | Thresholds: [0.05, 0.01, 0.001] | T test alpha: 0.01 | T test beta: 0.05 | Critical effect size: [0.01, 0.05, 0.1, 0.2, 0.4, 0.8]
+Threshold meaning: threshold represent the marginal decrease of concerned statistic to decide on the number of replicates
+Exemple: increase one replicates decreases standard error, if marginal decrease is under a given threshold, then select this number of replicates
+Critical effect size: look at False negative (alpha) & False positive (beta) hypothesis - according to https://www.jasss.org/18/4/4.html
+
+
+## Output : nb_recovered
+Coefficient of variation
+0.05 : min = 2 | max = 19 | avr = 5
+0.01 : min = 2 | max = 19 | avr = 7
+0.001 : min = 2 | max = 19 | avr = 7
+Standard error
+0.05 : min = 2 | max = 12 | avr = 3
+0.01 : min = 2 | max = 19 | avr = 5
+0.001 : min = 2 | max = 19 | avr = 5
+Critical effect size
+Power test with  alpha=0.01 (0.05), beta=0.05 (0.2) and effect sized based on (ANOVA) f=0.476207630974621, theoretical number of replicate is 14.087640579995798
+ultra-micro (0.01) : min = 20 (15) | max = 20 (20) | avr = 20 (20)
+micro (0.05) : min = 11 (6) | max = 20 (20) | avr = 19 (19)
+small (0.1) : min = 8 (4) | max = 20 (20) | avr = 19 (18)
+medium (0.2) : min = 6 (4) | max = 20 (20) | avr = 19 (18)
+large (0.4) : min = 5 (3) | max = 20 (20) | avr = 19 (16)
+huge (0.8) : min = 4 (3) | max = 20 (20) | avr = 18 (16)
+Power test
+Power test with  alpha=0.01 (0.05), beta=0.05 (0.2) and effect sized based on (ANOVA) f=0.476207630974621, theoretical number of replicate is 14.087640579995798
+ultra-micro (0.01) : min = 20 (15) | max = 20 (20) | avr = 20 (20)
+micro (0.05) : min = 11 (6) | max = 20 (20) | avr = 19 (19)
+small (0.1) : min = 8 (4) | max = 20 (20) | avr = 19 (18)
+medium (0.2) : min = 6 (4) | max = 20 (20) | avr = 19 (18)
+large (0.4) : min = 5 (3) | max = 20 (20) | avr = 19 (16)
+huge (0.8) : min = 4 (3) | max = 20 (20) | avr = 18 (16)
+
+

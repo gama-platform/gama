@@ -37,7 +37,7 @@ global {
 
 	reflex new_Value {
 		loop i from: -10 to: 10 step: 5 {
-			cells[size / 2 - i + rnd_component, size / 2 + i + rnd_component] <- 15;
+			cells[size div 2 - i + rnd_component, size div 2 + i + rnd_component] <- 15;
 		}
 		
 	}

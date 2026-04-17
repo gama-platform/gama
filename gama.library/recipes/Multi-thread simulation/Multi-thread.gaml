@@ -36,7 +36,7 @@ grid cell width: 5 height: 5 parallel: true {
 	
 	reflex behavior {
 		val <- val + rnd(0.002) - 0.0009;
-		color <- rgb((1.0 - val)*255,(1.0 - val)*255,(1.0 - val)*255);
+		color <- rgb(int((1.0 - val)*255),int((1.0 - val)*255),int((1.0 - val)*255));
 	}
 }
 experiment multithread type: gui {

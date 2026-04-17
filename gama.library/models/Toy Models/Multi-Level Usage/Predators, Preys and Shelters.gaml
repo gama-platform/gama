@@ -162,7 +162,7 @@ species shelter skills: [moving]  frequency: 2 {
 	
 	aspect default {
 		draw shape color: shelter_color;
-		draw (string (length ((members)))) color: rgb ('white') size: 6 at: location anchor: #center font: font("Helvetica", 12*#zoom, #bold);
+		draw (string (length ((members)))) color: rgb ('white') size: 6 at: location anchor: #center font: font("Helvetica", int(12*#zoom), #bold);
 	}
 }
 

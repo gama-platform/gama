@@ -256,7 +256,7 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	 */
 	public static GamaDataframe fromExcelFile(final IScope scope, final String path) {
 		final String resolvedPath = FileUtils.constructAbsoluteFilePath(scope, path, true);
-		return new GamaDataframe(Excel.loader().load(resolvedPath).values().iterator().next());
+		return new GamaDataframe(Excel.loader().firstRowAsHeader().loadSheet(new java.io.File(resolvedPath), 0));
 	}
 
 	/**

@@ -131,7 +131,7 @@ public interface IKeyword {
 	String BATCH = "batch";
 
 	/** The batch outputs */
-	String BATCH_OUTPUT = "results";
+	String BATCH_RAW_RESULTS = "results";
 
 	/** The batch outputs */
 	String BATCH_REPORT = "report";
@@ -558,6 +558,12 @@ public interface IKeyword {
 
 	/** Latin Hypercube Sampling */
 	String LHS = "latinhypercube";
+
+	/** The Constant LHS_INNER. */
+	String LHS_INNER = "inner_iter";
+
+	/** The Constant LHS_OUTER. */
+	String LHS_OUTER = "outer_iter";
 
 	/** The lighted. */
 	String LIGHTED = "lighted";

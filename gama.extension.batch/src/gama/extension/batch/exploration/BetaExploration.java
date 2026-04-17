@@ -85,6 +85,11 @@ import gama.core.experiment.parameters.ParametersSet;
 						optional = false,
 						doc = @doc ("The list of output variables to analyse")),
 				@facet (
+						name = IKeyword.BATCH_RAW_RESULTS,
+						type = IType.STRING,
+						optional = true,
+						doc = @doc ("The path to the file where the raw results will be written")),
+				@facet (
 						name = Exploration.SAMPLE_SIZE,
 						type = IType.INT,
 						optional = true,
@@ -94,11 +99,6 @@ import gama.core.experiment.parameters.ParametersSet;
 						type = IType.INT,
 						optional = true,
 						doc = @doc ("The number of time each parameter value is boostraped (or resampled in another context)")),
-				@facet (
-						name = IKeyword.BATCH_OUTPUT,
-						type = IType.STRING,
-						optional = true,
-						doc = @doc ("The path to the file where the automatic batch report will be written")),
 				@facet (
 						name = IKeyword.BATCH_REPORT,
 						type = IType.STRING,
@@ -175,7 +175,7 @@ public class BetaExploration extends AExplorationAlgorithm {
 		}
 
 		/* Save the simulation values in the provided .csv file (input and corresponding output) */
-		if (hasFacet(IKeyword.BATCH_OUTPUT)) { saveRawResults(scope, res_outputs); }
+		if (hasFacet(IKeyword.BATCH_RAW_RESULTS)) { saveRawResults(scope, res_outputs); }
 
 		String path_to = Cast.asString(scope, getFacet(IKeyword.BATCH_REPORT).value(scope));
 		final File f = new File(FileUtils.constructAbsoluteFilePath(scope, path_to, false));

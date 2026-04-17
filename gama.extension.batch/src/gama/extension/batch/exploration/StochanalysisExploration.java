@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import gama.extension.stats.Stochanalysis;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.facet;
@@ -75,6 +76,11 @@ import gama.core.experiment.parameters.ParametersSet;
 						optional = false,
 						doc = @doc ("The list of output variables to analyse")),
 				@facet (
+						name = IKeyword.BATCH_RAW_RESULTS,
+						type = IType.STRING,
+						optional = true,
+						doc = @doc ("The path to the file where the raw results will be written")),
+				@facet (
 						name = Exploration.SAMPLE_SIZE,
 						type = IType.INT,
 						optional = true,
@@ -83,17 +89,7 @@ import gama.core.experiment.parameters.ParametersSet;
 						name = IKeyword.BATCH_REPORT,
 						type = IType.STRING,
 						optional = false,
-						doc = @doc ("The path to the file where the Sobol report will be written")),
-				@facet (
-						name = IKeyword.BATCH_OUTPUT,
-						type = IType.STRING,
-						optional = true,
-						doc = @doc ("The path to the file where the automatic batch report will be written")),
-				@facet (
-						name = Exploration.ITERATIONS,
-						type = IType.INT,
-						optional = true,
-						doc = @doc ("The number of iteration for orthogonal SAMPLING, 5 by default"))
+						doc = @doc ("The path to the file where the Stochasticity Analysis report will be written"))
 
 		},
 		omissible = IKeyword.NAME)
@@ -174,14 +170,14 @@ public class StochanalysisExploration extends AExplorationAlgorithm {
 		Stochanalysis.writeAndTellReport(f, MapOutput, sample_size, currentExperiment.getSeeds().length, scope);
 
 		/* Save the simulation values in the provided .csv file (input and corresponding output) */
-		if (hasFacet(IKeyword.BATCH_VAR_OUTPUTS) && hasFacet(IKeyword.BATCH_OUTPUT)) {
+		if (hasFacet(IKeyword.BATCH_VAR_OUTPUTS) && hasFacet(IKeyword.BATCH_RAW_RESULTS)) {
 			saveRawResults(scope, res_outputs);
 		}
 
 		/** If any of the two facet is missing pop up a warning */
-		if (hasFacet(IKeyword.BATCH_VAR_OUTPUTS) && hasFacet(IKeyword.BATCH_OUTPUT)) {
+		if (!(hasFacet(IKeyword.BATCH_VAR_OUTPUTS) && hasFacet(IKeyword.BATCH_RAW_RESULTS))) {
 			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.warning(
-					"Facet " + (hasFacet(IKeyword.BATCH_VAR_OUTPUTS) ? IKeyword.BATCH_OUTPUT
+					"Facet " + (hasFacet(IKeyword.BATCH_VAR_OUTPUTS) ? IKeyword.BATCH_RAW_RESULTS
 							: IKeyword.BATCH_VAR_OUTPUTS) + " is missing - corresponding results won't be saved",
 					scope), false);
 		}

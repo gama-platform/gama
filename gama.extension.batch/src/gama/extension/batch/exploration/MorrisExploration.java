@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
 
+import gama.extension.stats.Morris;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.facet;
@@ -71,7 +72,7 @@ import gama.core.experiment.parameters.ParametersSet;
 				doc = @doc ("The name of the method. For internal use only")),
 				@facet (
 						name = MorrisExploration.NB_LEVELS,
-						type = IType.ID,
+						type = IType.INT,
 						optional = true,
 						doc = @doc ("Number of level each trajectories is made of, can't be 1 / should be even - 4 by default")),
 				@facet (
@@ -79,6 +80,11 @@ import gama.core.experiment.parameters.ParametersSet;
 						type = IType.LIST,
 						optional = false,
 						doc = @doc ("The list of output variables to analyze through morris method")),
+				@facet (
+						name = IKeyword.BATCH_RAW_RESULTS,
+						type = IType.STRING,
+						optional = true,
+						doc = @doc ("The path to the file where the raw results will be written")),
 				@facet (
 						name = Exploration.SAMPLE_SIZE,
 						type = IType.INT,
@@ -93,12 +99,7 @@ import gama.core.experiment.parameters.ParametersSet;
 						name = MorrisExploration.PARAMETER_CSV_PATH,
 						type = IType.STRING,
 						optional = true,
-						doc = @doc ("The path of morris sample .csv file. If don't use, automatic morris SAMPLING will be perform and saved in the corresponding file")),
-				@facet (
-						name = IKeyword.BATCH_OUTPUT,
-						type = IType.STRING,
-						optional = true,
-						doc = @doc ("The path to the file where the automatic batch report will be written")) },
+						doc = @doc ("The path of morris sample .csv file. If don't use, automatic morris SAMPLING will be perform and saved in the corresponding file")) },
 		omissible = IKeyword.NAME)
 @doc (
 		value = "This algorithm runs a Morris exploration - it has been built upon the SILAB librairy - disabled the repeat facet of the experiment",
@@ -193,7 +194,7 @@ public class MorrisExploration extends AExplorationAlgorithm {
 		}
 
 		/* Save the simulation values in the provided .csv file (input and corresponding output) */
-		if (hasFacet(IKeyword.BATCH_OUTPUT)) { saveRawResults(scope, res_outputs); }
+		if (hasFacet(IKeyword.BATCH_RAW_RESULTS)) { saveRawResults(scope, res_outputs); }
 
 		// Prevent OutOfBounds when experiment ends before morris exploration is completed
 		if (outsize == samples.size() && rebuilt_output.values().stream().findAny().get().size() == samples.size()) {
