@@ -16,9 +16,8 @@ import org.apache.commons.math3.linear.RealMatrix;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.symbols.IParameter.Batch;
 import gama.api.runtime.scope.IScope;
-import gama.extension.stats.Morris;
-import gama.extension.stats.SamplingUtils;
 import gama.core.experiment.parameters.ParametersSet;
+import gama.extension.stats.utils.SamplingUtils;
 
 /**
  *

@@ -9,7 +9,10 @@ Require-Bundle: gama.core,
  gama.dependencies,
  gama.annotations
 Bundle-ActivationPolicy: lazy
-Export-Package: gama.extension.stats
+Export-Package: gama.extension.stats,
+ gama.extension.stats.analysis,
+ gama.extension.stats.sampling,
+ gama.extension.stats.utils
 Bundle-ClassPath: .,
  libs/colt 2.1.4/colt-2.1.4.jar
 Bundle-RequiredExecutionEnvironment: JavaSE-25

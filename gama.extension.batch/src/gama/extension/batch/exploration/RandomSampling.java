@@ -10,8 +10,8 @@ import java.util.stream.IntStream;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.gaml.symbols.IParameter.Batch;
 import gama.api.runtime.scope.IScope;
-import gama.extension.stats.SamplingUtils;
 import gama.core.experiment.parameters.ParametersSet;
+import gama.extension.stats.utils.SamplingUtils;
 
 /**
  * A SAMPLING method from a given parameter space with uniformally chosen points

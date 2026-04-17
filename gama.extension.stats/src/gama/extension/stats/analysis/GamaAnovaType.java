@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.extension.stats;
+package gama.extension.stats.analysis;
 
 import gama.annotations.doc;
 import gama.annotations.type;

@@ -17,7 +17,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import gama.extension.stats.Sobol;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.facet;
@@ -43,6 +42,7 @@ import gama.api.types.list.IList;
 import gama.api.types.map.IMap;
 import gama.api.utils.files.FileUtils;
 import gama.core.experiment.parameters.ParametersSet;
+import gama.extension.stats.sampling.Sobol;
 
 /**
  *

@@ -69,6 +69,9 @@ import gama.api.types.misc.IContainer;
 import gama.api.utils.StringUtils;
 import gama.api.utils.collections.Collector;
 import gama.core.util.matrix.GamaField;
+import gama.extension.stats.analysis.GamaAnova;
+import gama.extension.stats.analysis.GamaRegression;
+import gama.extension.stats.analysis.HSIC;
 import gama.gaml.operators.Containers;
 import gama.gaml.operators.Containers.ComparableValidator;
 

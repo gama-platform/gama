@@ -23,7 +23,6 @@ import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
 
-import gama.extension.stats.Morris;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.facet;
@@ -50,6 +49,7 @@ import gama.api.types.map.IMap;
 import gama.api.utils.files.FileUtils;
 import gama.core.experiment.parameters.ParameterAdapter;
 import gama.core.experiment.parameters.ParametersSet;
+import gama.extension.stats.sampling.Morris;
 
 /**
  *

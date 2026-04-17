@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.extension.stats;
+package gama.extension.stats.utils;
 
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;

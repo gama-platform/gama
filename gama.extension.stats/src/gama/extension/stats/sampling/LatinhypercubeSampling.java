@@ -1,4 +1,4 @@
-package gama.extension.stats;
+package gama.extension.stats.sampling;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,6 +12,7 @@ import java.util.stream.IntStream;
 import gama.api.gaml.symbols.IParameter.Batch;
 import gama.api.runtime.scope.IScope;
 import gama.core.experiment.parameters.ParametersSet;
+import gama.extension.stats.utils.SamplingUtils;
 
 /**
  * This class creates a Latin Hypercube Sampling. Optimized with a robust ESE-inspired algorithm (Jin et al. 2003)

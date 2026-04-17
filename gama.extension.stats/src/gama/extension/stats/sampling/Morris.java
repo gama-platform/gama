@@ -7,7 +7,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.extension.stats;
+package gama.extension.stats.sampling;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.pow;
