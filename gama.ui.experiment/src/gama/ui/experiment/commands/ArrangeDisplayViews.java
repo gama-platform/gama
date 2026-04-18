@@ -81,6 +81,14 @@ public class ArrangeDisplayViews extends AbstractHandler {
 	/** The Constant DISPLAY_INDEX_KEY. */
 	static final String DISPLAY_INDEX_KEY = "GamaIndex";
 
+	/**
+	 * Transient-data key placed on every sash-container subtree created by the layout algorithm. Used to identify and
+	 * remove stale subtrees that were attached in a previous layout pass (e.g. after a simulation reload) before
+	 * attaching the new one. Without this cleanup, each reload appends a new sash structure while leaving empty
+	 * containers from the previous run, which appear as black / disabled regions on Windows.
+	 */
+	static final String DISPLAY_LAYOUT_SUBTREE_TAG = "GamaDisplayLayoutSubtree";
+
 	@Override
 	public Object execute(final ExecutionEvent e) {
 		execute(GamaPreferences.Displays.LAYOUTS.indexOf(e.getParameter(LAYOUT_KEY)));
@@ -163,7 +171,11 @@ public class ArrangeDisplayViews extends AbstractHandler {
 				layoutDisplays(tree, holders);
 			} else {
 				final MPartStack displayStack = getDisplaysPlaceholder();
-				if (displayStack != null) { showDisplays(displayStack.getParent(), holders); }
+				if (displayStack != null) {
+					// Remove stale sash subtrees left by previous layout passes before stacking.
+					removeStaleSashSubtrees(displayStack.getParent());
+					showDisplays(displayStack.getParent(), holders);
+				}
 			}
 			DEBUG.OUT("[ArrangeDisplayViews] after show/layout in " + (System.currentTimeMillis() - t0) + "ms");
 			// Drain the asyncExec callbacks posted by the E4 renderer during showPart() so that
@@ -213,12 +225,20 @@ public class ArrangeDisplayViews extends AbstractHandler {
 		if (displayStack == null) return;
 		final MElementContainer<?> root = displayStack.getParent();
 
+		// Remove sash subtrees that were created by a previous layout pass (e.g. after a reload).
+		// Each call to layoutDisplays() adds a new subtree as a sibling of the "displays" PartStack
+		// inside its parent container. Without this cleanup, old empty subtrees remain in the E4 model
+		// and are rendered as black / disabled regions on Windows.
+		removeStaleSashSubtrees(root);
+
 		// Build the sash subtree WITHOUT attaching it to the live model yet.
 		// process() with a null initial root creates containers in memory only;
 		// create() returns the new top-level container without calling root.getChildren().add().
 		// We capture that top-level container by temporarily wrapping the build.
 		final MElementContainer<?> subtree = buildDetachedSubtree(child, holders);
 		if (subtree != null) {
+			// Tag this subtree so it can be identified and removed in the next layout pass.
+			subtree.getTransientData().put(DISPLAY_LAYOUT_SUBTREE_TAG, Boolean.TRUE);
 			// Single add() — the E4 renderer materialises the complete sash structure
 			// in one synchronous call instead of N incremental ones, eliminating the
 			// "sash containers appearing one by one" effect that caused the split-screen flash.
@@ -226,6 +246,26 @@ public class ArrangeDisplayViews extends AbstractHandler {
 			raw.getChildren().add(subtree);
 		}
 		showDisplays(root, holders);
+	}
+
+	/**
+	 * Removes all children of {@code root} that carry the {@link #DISPLAY_LAYOUT_SUBTREE_TAG} transient-data marker,
+	 * i.e. sash-container subtrees that were built and attached by a previous call to
+	 * {@link #layoutDisplays(GamaTree, List)}. Must be called on the UI thread.
+	 *
+	 * @param root
+	 *            the parent container whose children are inspected (typically the parent of the "displays" PartStack)
+	 */
+	@SuppressWarnings ("unchecked")
+	private static void removeStaleSashSubtrees(final MElementContainer<?> root) {
+		if (root == null) return;
+		final MElementContainer raw = root;
+		raw.getChildren().removeIf(e -> {
+			if (e instanceof MElementContainer<?> c) {
+				return c.getTransientData().containsKey(DISPLAY_LAYOUT_SUBTREE_TAG);
+			}
+			return false;
+		});
 	}
 
 	/**
