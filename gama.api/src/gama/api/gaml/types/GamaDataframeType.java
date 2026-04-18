@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * GamaDataframeType.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform.
+ * GamaDataFrameType.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform.
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -17,9 +17,9 @@ import gama.annotations.support.ISymbolKind;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
-import gama.api.types.dataframe.GamaDataframe;
-import gama.api.types.dataframe.GamaDataframeFactory;
-import gama.api.types.dataframe.IDataframe;
+import gama.api.types.dataframe.GamaDataFrame;
+import gama.api.types.dataframe.GamaDataFrameFactory;
+import gama.api.types.dataframe.IDataFrame;
 
 /**
  * Type representing tabular data (dataframes) in GAML.
@@ -30,18 +30,18 @@ import gama.api.types.dataframe.IDataframe;
  * </p>
  *
  * @author GAMA Team
- * @see IDataframe
- * @see GamaDataframe
- * @see GamaDataframeFactory
+ * @see IDataFrame
+ * @see GamaDataFrame
+ * @see GamaDataFrameFactory
  */
 @type (
 		name = IKeyword.DATAFRAME,
 		id = IType.DATAFRAME,
-		wraps = { IDataframe.class, GamaDataframe.class },
+		wraps = { IDataFrame.class, GamaDataFrame.class },
 		kind = ISymbolKind.CONTAINER,
 		concept = { IConcept.TYPE, IConcept.CONTAINER, IConcept.DATAFRAME },
 		doc = @doc ("Tabular data with named columns. Dataframes can be loaded from CSV, Excel or JSON files."))
-public class GamaDataframeType extends GamaContainerType<IDataframe> {
+public class GamaDataFrameType extends GamaContainerType<IDataFrame> {
 
 	/**
 	 * Constructs a new dataframe type with the specified types manager.
@@ -49,15 +49,15 @@ public class GamaDataframeType extends GamaContainerType<IDataframe> {
 	 * @param typesManager
 	 *            the types manager that owns this type
 	 */
-	public GamaDataframeType(final ITypesManager typesManager) {
+	public GamaDataFrameType(final ITypesManager typesManager) {
 		super(typesManager);
 	}
 
 	@Override
 	@doc ("Casts the operand into a dataframe. If already a dataframe, returns it (or a copy). Lists of lists and maps can be converted.")
-	public IDataframe cast(final IScope scope, final Object obj, final Object param, final IType<?> keyType,
+	public IDataFrame cast(final IScope scope, final Object obj, final Object param, final IType<?> keyType,
 			final IType<?> contentType, final boolean copy) throws GamaRuntimeException {
-		return GamaDataframeFactory.castToDataframe(scope, obj, copy);
+		return GamaDataFrameFactory.castToDataframe(scope, obj, copy);
 	}
 
 	@Override

@@ -46,6 +46,8 @@ import gama.api.gaml.GAML;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.GamaMetaModel;
 import gama.api.runtime.SystemInfo;
+import gama.api.types.dataframe.GamaDataFrameFactory;
+import gama.api.types.dataframe.IDataFrame;
 import gama.api.utils.files.IGamaFileMetaData;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
@@ -317,6 +319,9 @@ public class GamaBundleLoader {
 				System.exit(0);
 				return;
 			}
+
+			IDataFrame frame = GamaDataFrameFactory.create("");
+			DEBUG.OUT("Dataframe created: " + frame);
 			try {
 				preBuild(CORE_PLUGIN);
 			} catch (final Exception e2) {

@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * GamaDataframeFactory.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform.
+ * GamaDataFrameFactory.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform.
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -21,7 +21,7 @@ import gama.api.types.matrix.IField;
 import gama.api.types.matrix.IMatrix;
 
 /**
- * A static factory for creating {@link GamaDataframe} instances.
+ * A static factory for creating {@link GamaDataFrame} instances.
  *
  * <p>
  * Provides creation methods from various sources (columns + data, CSV files, Excel files, JSON files) and casting from
@@ -29,13 +29,13 @@ import gama.api.types.matrix.IMatrix;
  * </p>
  *
  * @author GAMA Team
- * @see GamaDataframe
- * @see IDataframe
+ * @see GamaDataFrame
+ * @see IDataFrame
  */
-public class GamaDataframeFactory {
+public class GamaDataFrameFactory {
 
 	/** Private constructor to prevent instantiation. */
-	private GamaDataframeFactory() {}
+	private GamaDataFrameFactory() {}
 
 	/**
 	 * Creates an empty dataframe with the specified column names.
@@ -44,8 +44,8 @@ public class GamaDataframeFactory {
 	 *            the column names
 	 * @return a new empty dataframe
 	 */
-	public static GamaDataframe create(final String... columns) {
-		return new GamaDataframe(DataFrame.foldByRow(columns).of());
+	public static GamaDataFrame create(final String... columns) {
+		return new GamaDataFrame(DataFrame.foldByRow(columns).of());
 	}
 
 	/**
@@ -59,9 +59,9 @@ public class GamaDataframeFactory {
 	 *            the row data (list of lists)
 	 * @return a new dataframe
 	 */
-	public static GamaDataframe create(final IScope scope, final IList<String> columns,
+	public static GamaDataFrame create(final IScope scope, final IList<String> columns,
 			final IList<IList> data) {
-		return GamaDataframe.create(scope, columns, data);
+		return GamaDataFrame.create(scope, columns, data);
 	}
 
 	/**
@@ -75,9 +75,9 @@ public class GamaDataframeFactory {
 	 *            whether the first row is a header
 	 * @return a new dataframe
 	 */
-	public static GamaDataframe fromCSV(final IScope scope, final String path, final char separator,
+	public static GamaDataFrame fromCSV(final IScope scope, final String path, final char separator,
 			final boolean header, final String charset) {
-		return GamaDataframe.fromCSV(scope, path, separator, header, charset);
+		return GamaDataFrame.fromCSV(scope, path, separator, header, charset);
 	}
 
 	/**
@@ -89,8 +89,8 @@ public class GamaDataframeFactory {
 	 *            the path to the Excel file
 	 * @return a new dataframe
 	 */
-	public static GamaDataframe fromExcel(final IScope scope, final String path) {
-		return GamaDataframe.fromExcelFile(scope, path);
+	public static GamaDataFrame fromExcel(final IScope scope, final String path) {
+		return GamaDataFrame.fromExcelFile(scope, path);
 	}
 
 	/**
@@ -102,29 +102,29 @@ public class GamaDataframeFactory {
 	 *            the path to the JSON file
 	 * @return a new dataframe
 	 */
-	public static GamaDataframe fromJson(final IScope scope, final String path) {
-		return GamaDataframe.fromJson(scope, path);
+	public static GamaDataFrame fromJson(final IScope scope, final String path) {
+		return GamaDataFrame.fromJson(scope, path);
 	}
 
 	/**
-	 * Wraps a DFLib DataFrame into a GamaDataframe.
+	 * Wraps a DFLib DataFrame into a GamaDataFrame.
 	 *
 	 * @param dataFrame
 	 *            the DFLib DataFrame
-	 * @return a new GamaDataframe wrapping it
+	 * @return a new GamaDataFrame wrapping it
 	 */
-	public static GamaDataframe wrap(final DataFrame dataFrame) {
-		return new GamaDataframe(dataFrame);
+	public static GamaDataFrame wrap(final DataFrame dataFrame) {
+		return new GamaDataFrame(dataFrame);
 	}
 
 	/**
-	 * Casts an arbitrary object to a GamaDataframe.
+	 * Casts an arbitrary object to a GamaDataFrame.
 	 *
 	 * <p>
 	 * Conversion strategies:
 	 * </p>
 	 * <ul>
-	 * <li><b>GamaDataframe:</b> returns it (or a copy)</li>
+	 * <li><b>GamaDataFrame:</b> returns it (or a copy)</li>
 	 * <li><b>IMap&lt;String, IList&gt;:</b> treats keys as column names, values as column data</li>
 	 * <li><b>IList&lt;IList&gt;:</b> treats first row as headers, remaining as data</li>
 	 * </ul>
@@ -135,13 +135,13 @@ public class GamaDataframeFactory {
 	 *            the object to cast
 	 * @param copy
 	 *            whether to create a copy
-	 * @return a GamaDataframe, or null if conversion is not possible
+	 * @return a GamaDataFrame, or null if conversion is not possible
 	 */
 	@SuppressWarnings ("unchecked")
-	public static GamaDataframe castToDataframe(final IScope scope, final Object obj, final boolean copy) {
+	public static GamaDataFrame castToDataframe(final IScope scope, final Object obj, final boolean copy) {
 		if (obj == null) return null;
-		if (obj instanceof GamaDataframe gdf) return copy ? (GamaDataframe) gdf.copy(scope) : gdf;
-		if (obj instanceof IDataframe idf) return copy ? (GamaDataframe) idf.copy(scope) : (GamaDataframe) idf;
+		if (obj instanceof GamaDataFrame gdf) return copy ? (GamaDataFrame) gdf.copy(scope) : gdf;
+		if (obj instanceof IDataFrame idf) return copy ? (GamaDataFrame) idf.copy(scope) : (GamaDataFrame) idf;
 		if (obj instanceof IMap<?, ?> map) return fromMap(scope, (IMap<String, IList<Object>>) map);
 		if (obj instanceof IList<?> list) return fromList(scope, (IList<IList<Object>>) list);
 		if (obj instanceof IMatrix<?> matrix) return fromMatrix(scope, matrix);
@@ -159,7 +159,7 @@ public class GamaDataframeFactory {
 	 * @return a new dataframe
 	 */
 	@SuppressWarnings ("unchecked")
-	private static GamaDataframe fromMap(final IScope scope, final IMap<String, IList<Object>> map) {
+	private static GamaDataFrame fromMap(final IScope scope, final IMap<String, IList<Object>> map) {
 		final List<String> colNames = new ArrayList<>(map.keySet());
 		if (colNames.isEmpty()) return create(new String[0]);
 		final int rowCount = map.get(colNames.get(0)).size();
@@ -171,7 +171,7 @@ public class GamaDataframeFactory {
 				flat[idx++] = r < colData.size() ? colData.get(r) : null;
 			}
 		}
-		return new GamaDataframe(DataFrame.foldByRow(colNames.toArray(new String[0])).of(flat));
+		return new GamaDataFrame(DataFrame.foldByRow(colNames.toArray(new String[0])).of(flat));
 	}
 
 	/**
@@ -184,7 +184,7 @@ public class GamaDataframeFactory {
 	 * @return a new dataframe
 	 */
 	@SuppressWarnings ("unchecked")
-	private static GamaDataframe fromList(final IScope scope, final IList<IList<Object>> list) {
+	private static GamaDataFrame fromList(final IScope scope, final IList<IList<Object>> list) {
 		if (list.isEmpty()) return create(new String[0]);
 		// First row is headers
 		final IList<Object> headers = list.get(0);
@@ -197,7 +197,7 @@ public class GamaDataframeFactory {
 			final IList<Object> row = list.get(r);
 			for (int c = 0; c < colNames.length; c++) { flat[idx++] = c < row.size() ? row.get(c) : null; }
 		}
-		return new GamaDataframe(DataFrame.foldByRow(colNames).of(flat));
+		return new GamaDataFrame(DataFrame.foldByRow(colNames).of(flat));
 	}
 	
 	/**
@@ -209,8 +209,8 @@ public class GamaDataframeFactory {
 	 *            the source matrix
 	 * @return a new dataframe
 	 */
-	public static GamaDataframe fromMatrix(final IScope scope, final IMatrix<?> matrix) {
-		return GamaDataframe.fromMatrix(scope, matrix);
+	public static GamaDataFrame fromMatrix(final IScope scope, final IMatrix<?> matrix) {
+		return GamaDataFrame.fromMatrix(scope, matrix);
 	}
 
 	/**
@@ -222,7 +222,7 @@ public class GamaDataframeFactory {
 	 *            the source field
 	 * @return a new dataframe
 	 */
-	public static GamaDataframe fromField(final IScope scope, final IField field) {
-		return GamaDataframe.fromField(scope, field);
+	public static GamaDataFrame fromField(final IScope scope, final IField field) {
+		return GamaDataFrame.fromField(scope, field);
 	}
 }

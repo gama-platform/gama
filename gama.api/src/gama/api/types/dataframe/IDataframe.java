@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * IDataframe.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform.
+ * IDataFrame.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform.
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -38,19 +38,19 @@ import gama.api.types.misc.IContainer;
  * @author GAMA Team
  */
 @vars ({ @variable (
-		name = IDataframe.COLUMNS,
+		name = IDataFrame.COLUMNS,
 		type = IType.LIST,
 		of = IType.STRING,
 		doc = { @doc ("Returns the list of column names of this dataframe") }),
 		@variable (
-				name = IDataframe.ROWS,
+				name = IDataFrame.ROWS,
 				type = IType.INT,
 				doc = { @doc ("Returns the number of rows of this dataframe") }),
 		@variable (
-				name = IDataframe.COLS,
+				name = IDataFrame.COLS,
 				type = IType.INT,
 				doc = { @doc ("Returns the number of columns of this dataframe") }) })
-public interface IDataframe extends IContainer.Addressable<String, IList<Object>, String, Object> {
+public interface IDataFrame extends IContainer.Addressable<String, IList<Object>, String, Object> {
 
 	/** Pseudo-variable name for the list of column names. */
 	String COLUMNS = "columns";

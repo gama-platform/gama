@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * GamaDataframe.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform.
+ * GamaDataFrame.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform.
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -55,36 +55,36 @@ import gama.api.utils.json.IJson;
 import gama.api.utils.json.IJsonValue;
 
 /**
- * The primary implementation of {@link IDataframe} for the GAMA platform.
+ * The primary implementation of {@link IDataFrame} for the GAMA platform.
  *
  * <p>
- * {@code GamaDataframe} wraps a DFLib {@link DataFrame} and integrates with GAMA's type system. It provides tabular
+ * {@code GamaDataFrame} wraps a DFLib {@link DataFrame} and integrates with GAMA's type system. It provides tabular
  * data operations including loading/saving from multiple formats, filtering, joining, pivoting, and row/column
  * manipulation.
  * </p>
  *
  * <p>
- * <b>Do not instantiate directly.</b> Use {@link GamaDataframeFactory} or the GAML operators instead.
+ * <b>Do not instantiate directly.</b> Use {@link GamaDataFrameFactory} or the GAML operators instead.
  * </p>
  *
  * @author GAMA Team
  */
-public class GamaDataframe implements IDataframe, IContainer<String, IList<Object>> {
+public class GamaDataFrame implements IDataFrame, IContainer<String, IList<Object>> {
 
 	/** The underlying DFLib DataFrame. */
 	private final DataFrame inner;
 
 	/**
-	 * Constructs a new GamaDataframe wrapping a DFLib DataFrame.
+	 * Constructs a new GamaDataFrame wrapping a DFLib DataFrame.
 	 *
 	 * @param inner
 	 *            the DFLib DataFrame to wrap
 	 */
-	GamaDataframe(final DataFrame inner) {
+	GamaDataFrame(final DataFrame inner) {
 		this.inner = inner;
 	}
 
-	// ========================= IDataframe implementation =========================
+	// ========================= IDataFrame implementation =========================
 
 	@Override
 	public IList<String> getColumns() {
@@ -152,8 +152,8 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	// ========================= IContainer =========================
 
 	@Override
-	public IDataframe copy(final IScope scope) {
-		return new GamaDataframe(inner);
+	public IDataFrame copy(final IScope scope) {
+		return new GamaDataFrame(inner);
 	}
 
 	@Override
@@ -220,7 +220,7 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 
 
 	/**
-	 * Creates a GamaDataframe from a CSV file.
+	 * Creates a GamaDataFrame from a CSV file.
 	 *
 	 * @param scope
 	 *            the execution scope
@@ -232,9 +232,9 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	 *            whether the first row is a header
 	 * @param charset
 	 *            the character encoding (e.g. "UTF-8", "ISO-8859-1"). If null, defaults to UTF-8.
-	 * @return a new GamaDataframe
+	 * @return a new GamaDataFrame
 	 */
-	public static GamaDataframe fromCSV(final IScope scope, final String path, final char separator,
+	public static GamaDataFrame fromCSV(final IScope scope, final String path, final char separator,
 			final boolean header, final String charset) {
 		final File file = new File(FileUtils.constructAbsoluteFilePath(scope, path, true));
 		final Charset cs = charset != null ? Charset.forName(charset) : StandardCharsets.UTF_8;
@@ -242,53 +242,53 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 				.format(CSVFormat.DEFAULT.withDelimiter(separator))
 				.encoding(cs);
 		if (!header) { loader = loader.generateHeader(); }
-		return new GamaDataframe(loader.load(file));
+		return new GamaDataFrame(loader.load(file));
 	}
 
 	/**
-	 * Creates a GamaDataframe from an Excel file (first sheet).
+	 * Creates a GamaDataFrame from an Excel file (first sheet).
 	 *
 	 * @param scope
 	 *            the execution scope
 	 * @param path
 	 *            the file path (relative to the model or absolute)
-	 * @return a new GamaDataframe
+	 * @return a new GamaDataFrame
 	 */
-	public static GamaDataframe fromExcelFile(final IScope scope, final String path) {
+	public static GamaDataFrame fromExcelFile(final IScope scope, final String path) {
 		final String resolvedPath = FileUtils.constructAbsoluteFilePath(scope, path, true);
-		return new GamaDataframe(Excel.loader().firstRowAsHeader().loadSheet(new java.io.File(resolvedPath), 0));
+		return new GamaDataFrame(Excel.loader().firstRowAsHeader().loadSheet(new java.io.File(resolvedPath), 0));
 	}
 
 	/**
-	 * Creates a GamaDataframe from a JSON file.
+	 * Creates a GamaDataFrame from a JSON file.
 	 *
 	 * @param scope
 	 *            the execution scope
 	 * @param path
 	 *            the file path (relative to the model or absolute)
-	 * @return a new GamaDataframe
+	 * @return a new GamaDataFrame
 	 */
-	public static GamaDataframe fromJson(final IScope scope, final String path) {
+	public static GamaDataFrame fromJson(final IScope scope, final String path) {
 		final String resolvedPath = FileUtils.constructAbsoluteFilePath(scope, path, true);
-		return new GamaDataframe(Json.loader().load(new File(resolvedPath)));
+		return new GamaDataFrame(Json.loader().load(new File(resolvedPath)));
 	}
 
 	/**
-	 * Creates a GamaDataframe from a Parquet file.
+	 * Creates a GamaDataFrame from a Parquet file.
 	 *
 	 * @param scope
 	 *            the execution scope
 	 * @param path
 	 *            the file path (relative to the model or absolute)
-	 * @return a new GamaDataframe
+	 * @return a new GamaDataFrame
 	 */
-	public static GamaDataframe fromParquet(final IScope scope, final String path) {
+	public static GamaDataFrame fromParquet(final IScope scope, final String path) {
 		final String resolvedPath = FileUtils.constructAbsoluteFilePath(scope, path, true);
-		return new GamaDataframe(Parquet.loader().load(new File(resolvedPath)));
+		return new GamaDataFrame(Parquet.loader().load(new File(resolvedPath)));
 	}
 
 	/**
-	 * Creates a GamaDataframe by loading a whole database table via JDBC.
+	 * Creates a GamaDataFrame by loading a whole database table via JDBC.
 	 *
 	 * @param scope
 	 *            the execution scope
@@ -300,13 +300,13 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	 *            the database password (may be null)
 	 * @param tableName
 	 *            the table to load
-	 * @return a new GamaDataframe
+	 * @return a new GamaDataFrame
 	 */
-	public static GamaDataframe fromDatabaseTable(final IScope scope, final String jdbcUrl, final String user,
+	public static GamaDataFrame fromDatabaseTable(final IScope scope, final String jdbcUrl, final String user,
 			final String password, final String tableName) {
 		try {
 			final JdbcConnector connector = buildJdbcConnector(jdbcUrl, user, password);
-			return new GamaDataframe(connector.tableLoader(tableName).load());
+			return new GamaDataFrame(connector.tableLoader(tableName).load());
 		} catch (final Exception e) {
 			throw GamaRuntimeException.error(
 					"Failed to load table '" + tableName + "' from database: " + e.getMessage(), scope);
@@ -314,7 +314,7 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	}
 
 	/**
-	 * Creates a GamaDataframe by running a SQL query via JDBC.
+	 * Creates a GamaDataFrame by running a SQL query via JDBC.
 	 *
 	 * @param scope
 	 *            the execution scope
@@ -326,13 +326,13 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	 *            the database password (may be null)
 	 * @param sqlQuery
 	 *            the SQL query (typically a SELECT)
-	 * @return a new GamaDataframe with the query result
+	 * @return a new GamaDataFrame with the query result
 	 */
-	public static GamaDataframe fromDatabaseQuery(final IScope scope, final String jdbcUrl, final String user,
+	public static GamaDataFrame fromDatabaseQuery(final IScope scope, final String jdbcUrl, final String user,
 			final String password, final String sqlQuery) {
 		try {
 			final JdbcConnector connector = buildJdbcConnector(jdbcUrl, user, password);
-			return new GamaDataframe(connector.sqlLoader(sqlQuery).load());
+			return new GamaDataFrame(connector.sqlLoader(sqlQuery).load());
 		} catch (final Exception e) {
 			throw GamaRuntimeException.error(
 					"Failed to run SQL query on database: " + e.getMessage(), scope);
@@ -350,7 +350,7 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	}
 
 	/**
-	 * Creates a GamaDataframe from column names and row data.
+	 * Creates a GamaDataFrame from column names and row data.
 	 *
 	 * @param scope
 	 *            the execution scope
@@ -358,9 +358,9 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	 *            the column names
 	 * @param data
 	 *            the row data (list of lists)
-	 * @return a new GamaDataframe
+	 * @return a new GamaDataFrame
 	 */
-	public static GamaDataframe create(final IScope scope, final IList<String> columns,
+	public static GamaDataFrame create(final IScope scope, final IList<String> columns,
 			final IList<IList> data) {
 		if (columns == null || columns.isEmpty())
 			throw GamaRuntimeException.error("Columns cannot be empty", scope);
@@ -372,7 +372,7 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 		if (data == null || data.isEmpty()) {
 			final Series<?>[] emptySeries = new Series<?>[numCols];
 			for (int c = 0; c < numCols; c++) { emptySeries[c] = Series.of(); }
-			return new GamaDataframe(DataFrame.byColumn(colArray).of(emptySeries));
+			return new GamaDataFrame(DataFrame.byColumn(colArray).of(emptySeries));
 		}
 
 		// Validate row width against column count
@@ -388,7 +388,7 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 		for (int c = 0; c < numCols; c++) {
 			series[c] = buildTypedSeriesFromRows(data, c, numRows);
 		}
-		return new GamaDataframe(DataFrame.byColumn(colArray).of(series));
+		return new GamaDataFrame(DataFrame.byColumn(colArray).of(series));
 	}
 
 	/**
@@ -462,16 +462,16 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	}
 
 	/**
-	 * Creates a GamaDataframe from a GAMA matrix. Each matrix column becomes a dataframe column named "col0", "col1",
+	 * Creates a GamaDataFrame from a GAMA matrix. Each matrix column becomes a dataframe column named "col0", "col1",
 	 * ..., "colN". All cells are stored as-is (no type conversion).
 	 *
 	 * @param scope
 	 *            the execution scope
 	 * @param matrix
 	 *            the source matrix (must not be null)
-	 * @return a new GamaDataframe with the same shape as the matrix
+	 * @return a new GamaDataFrame with the same shape as the matrix
 	 */
-	public static GamaDataframe fromMatrix(final IScope scope, final IMatrix<?> matrix) {
+	public static GamaDataFrame fromMatrix(final IScope scope, final IMatrix<?> matrix) {
 		if (matrix == null) throw GamaRuntimeException.error("Cannot build a dataframe from a nil matrix", scope);
 		final int cols = matrix.getCols(scope);
 		final int rows = matrix.getRows(scope);
@@ -489,7 +489,7 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 		for (int c = 0; c < cols; c++) {
 			series[c] = buildTypedSeries(scope, matrix, c, rows, typeId);
 		}
-		return new GamaDataframe(DataFrame.byColumn(colNames).of(series));
+		return new GamaDataFrame(DataFrame.byColumn(colNames).of(series));
 	}
 
 	/**
@@ -540,16 +540,16 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	}
 
 	/**
-	 * Creates a GamaDataframe from a GAMA field. Each field column becomes a dataframe column named "col0", "col1",
+	 * Creates a GamaDataFrame from a GAMA field. Each field column becomes a dataframe column named "col0", "col1",
 	 * ..., "colN". All cells are stored as {@code Double} values.
 	 *
 	 * @param scope
 	 *            the execution scope
 	 * @param field
 	 *            the source field (must not be null)
-	 * @return a new GamaDataframe with the same shape as the field
+	 * @return a new GamaDataFrame with the same shape as the field
 	 */
-	public static GamaDataframe fromField(final IScope scope, final IField field) {
+	public static GamaDataFrame fromField(final IScope scope, final IField field) {
 		if (field == null) throw GamaRuntimeException.error("Cannot build a dataframe from a nil field", scope);
 		return fromMatrix(scope, field);
 	}
@@ -565,7 +565,7 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	 *            the dataframe to convert
 	 * @return a new ordered map (column name -&gt; column values)
 	 */
-	public static IMap<String, IList<Object>> toMap(final IScope scope, final GamaDataframe df) {
+	public static IMap<String, IList<Object>> toMap(final IScope scope, final GamaDataFrame df) {
 		if (df == null) return null;
 		final IMap<String, IList<Object>> result = GamaMapFactory.create(Types.STRING, Types.LIST, true);
 		for (final String col : df.inner.getColumnsIndex()) { result.put(col, df.getColumnValues(col)); }
@@ -582,7 +582,7 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	 *            the dataframe to convert
 	 * @return a new {@link IMatrix} of {@code Object}
 	 */
-	public static IMatrix toMatrix(final IScope scope, final GamaDataframe df, final IType contentType) {
+	public static IMatrix toMatrix(final IScope scope, final GamaDataFrame df, final IType contentType) {
 		if (df == null) return null;
 		final int cols = df.inner.width();
 		final int rows = df.inner.height();
@@ -604,7 +604,7 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	 *            the dataframe to convert
 	 * @return a new {@link IField}
 	 */
-	public static IField toField(final IScope scope, final GamaDataframe df) {
+	public static IField toField(final IScope scope, final GamaDataFrame df) {
 		if (df == null) return null;
 		final int cols = df.inner.width();
 		final int rows = df.inner.height();
@@ -641,8 +641,8 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	 *            the second dataframe
 	 * @return a new merged dataframe
 	 */
-	public static GamaDataframe mergeDataframes(final GamaDataframe df1, final GamaDataframe df2) {
-		return new GamaDataframe(df1.inner.vConcat(df2.inner));
+	public static GamaDataFrame mergeDataframes(final GamaDataFrame df1, final GamaDataFrame df2) {
+		return new GamaDataFrame(df1.inner.vConcat(df2.inner));
 	}
 
 	/**
@@ -656,9 +656,9 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	 *            the column to join on
 	 * @return a new joined dataframe
 	 */
-	public static GamaDataframe joinDataframesOnCommonCol(final GamaDataframe df1, final GamaDataframe df2,
+	public static GamaDataFrame joinDataframesOnCommonCol(final GamaDataFrame df1, final GamaDataFrame df2,
 			final String colName) {
-		return new GamaDataframe(df1.inner.innerJoin(df2.inner).on(colName).select());
+		return new GamaDataFrame(df1.inner.innerJoin(df2.inner).on(colName).select());
 	}
 
 	/**
@@ -670,8 +670,8 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	 *            the column to check
 	 * @return a new filtered dataframe
 	 */
-	public static GamaDataframe removeRowsWithEmptyValues(final GamaDataframe df, final String columnToCheck) {
-		return new GamaDataframe(df.inner.rows(r -> {
+	public static GamaDataFrame removeRowsWithEmptyValues(final GamaDataFrame df, final String columnToCheck) {
+		return new GamaDataFrame(df.inner.rows(r -> {
 			final Object val = r.get(columnToCheck);
 			return val != null && !val.toString().isBlank();
 		}).select());
@@ -688,15 +688,15 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	 *            the value to match
 	 * @return a new filtered dataframe
 	 */
-	public static GamaDataframe filterRows(final GamaDataframe df, final String columnToCheck,
+	public static GamaDataFrame filterRows(final GamaDataFrame df, final String columnToCheck,
 			final Object valueToMatch) {
-		return new GamaDataframe(
+		return new GamaDataFrame(
 				df.inner.rows(r -> valueToMatch.equals(r.get(columnToCheck))).select());
 	}
 	
-//	public static GamaDataframe filterRows(final IScope scope, final GamaDataframe df, final String columnToCheck,
+//	public static GamaDataFrame filterRows(final IScope scope, final GamaDataFrame df, final String columnToCheck,
 //			final IExpression expressionToMatch) {
-//		return new GamaDataframe(df.inner.rows(r -> expressionToMatch.))
+//		return new GamaDataFrame(df.inner.rows(r -> expressionToMatch.))
 //				stream(scope, c).filter(by(scope, eachName, filter)).toCollection(listLike(c));
 //	}
 
@@ -709,8 +709,8 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	 *            the columns to select
 	 * @return a new dataframe with only the selected columns
 	 */
-	public static GamaDataframe selectColumns(final GamaDataframe df, final IList<String> columns) {
-		return new GamaDataframe(df.inner.cols(columns.toArray(new String[0])).select());
+	public static GamaDataFrame selectColumns(final GamaDataFrame df, final IList<String> columns) {
+		return new GamaDataFrame(df.inner.cols(columns.toArray(new String[0])).select());
 	}
 
 	/**
@@ -724,9 +724,9 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	 *            the default value for all rows
 	 * @return a new dataframe with the added column
 	 */
-	public static GamaDataframe addColumn(final GamaDataframe df, final String columnName,
+	public static GamaDataFrame addColumn(final GamaDataFrame df, final String columnName,
 			final Object defaultValue) {
-		return new GamaDataframe(df.inner.cols(columnName).merge(Exp.$val(defaultValue)));
+		return new GamaDataFrame(df.inner.cols(columnName).merge(Exp.$val(defaultValue)));
 	}
 
 	/**
@@ -738,10 +738,10 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	 *            the row values (must match column count)
 	 * @return a new dataframe with the added row
 	 */
-	public static GamaDataframe addRow(final GamaDataframe df, final IList<Object> values) {
+	public static GamaDataFrame addRow(final GamaDataFrame df, final IList<Object> values) {
 		final String[] colNames = df.inner.getColumnsIndex().toArray();
 		final DataFrame newRow = DataFrame.foldByRow(colNames).of(values.toArray());
-		return new GamaDataframe(df.inner.vConcat(newRow));
+		return new GamaDataFrame(df.inner.vConcat(newRow));
 	}
 
 	// ========================= Integer-based location (iloc) =========================
@@ -780,7 +780,7 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	/**
 	 * Pandas-style {@code df.iloc[row]}: returns the given row as a list of values. Negative indices are supported.
 	 */
-	public static IList<Object> ilocRow(final IScope scope, final GamaDataframe df, final int rowIndex) {
+	public static IList<Object> ilocRow(final IScope scope, final GamaDataFrame df, final int rowIndex) {
 		final int r = normalizeIloc(scope, rowIndex, df.inner.height(), "row");
 		return df.getRowValues(r);
 	}
@@ -789,7 +789,7 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	 * Pandas-style {@code df.iloc[row, col]}: returns a single cell value. Negative indices are supported on both
 	 * axes.
 	 */
-	public static Object iloc(final IScope scope, final GamaDataframe df, final int rowIndex, final int colIndex) {
+	public static Object iloc(final IScope scope, final GamaDataFrame df, final int rowIndex, final int colIndex) {
 		final int r = normalizeIloc(scope, rowIndex, df.inner.height(), "row");
 		final int c = normalizeIloc(scope, colIndex, df.inner.width(), "col");
 		return df.inner.get(df.inner.getColumnsIndex().get(c), r);
@@ -799,7 +799,7 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	 * Pandas-style {@code df.iloc[row, [cols]]}: returns the given row restricted to the selected columns, as a list
 	 * of values (order matches the input column indices).
 	 */
-	public static IList<Object> iloc(final IScope scope, final GamaDataframe df, final int rowIndex,
+	public static IList<Object> iloc(final IScope scope, final GamaDataFrame df, final int rowIndex,
 			final IList<Integer> colIndices) {
 		final int r = normalizeIloc(scope, rowIndex, df.inner.height(), "row");
 		final int[] cIdx = normalizeIlocList(scope, colIndices, df.inner.width(), "col");
@@ -813,7 +813,7 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	 * Pandas-style {@code df.iloc[[rows], col]}: returns the given column restricted to the selected rows, as a list
 	 * of values (order matches the input row indices).
 	 */
-	public static IList<Object> iloc(final IScope scope, final GamaDataframe df, final IList<Integer> rowIndices,
+	public static IList<Object> iloc(final IScope scope, final GamaDataFrame df, final IList<Integer> rowIndices,
 			final int colIndex) {
 		final int c = normalizeIloc(scope, colIndex, df.inner.width(), "col");
 		final int[] rIdx = normalizeIlocList(scope, rowIndices, df.inner.height(), "row");
@@ -827,20 +827,20 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	 * Pandas-style {@code df.iloc[[rows]]}: returns a sub-dataframe containing the selected rows (all columns kept,
 	 * in their original order). Row order matches the input indices (allowing reordering).
 	 */
-	public static GamaDataframe ilocRows(final IScope scope, final GamaDataframe df, final IList<Integer> rowIndices) {
+	public static GamaDataFrame ilocRows(final IScope scope, final GamaDataFrame df, final IList<Integer> rowIndices) {
 		final int[] idx = normalizeIlocList(scope, rowIndices, df.inner.height(), "row");
-		return new GamaDataframe(df.inner.rows(idx).select());
+		return new GamaDataFrame(df.inner.rows(idx).select());
 	}
 
 	/**
 	 * Pandas-style {@code df.iloc[[rows], [cols]]}: returns a sub-dataframe with the selected rows and columns, in
 	 * the order of the input indices.
 	 */
-	public static GamaDataframe iloc(final IScope scope, final GamaDataframe df, final IList<Integer> rowIndices,
+	public static GamaDataFrame iloc(final IScope scope, final GamaDataFrame df, final IList<Integer> rowIndices,
 			final IList<Integer> colIndices) {
 		final int[] rIdx = normalizeIlocList(scope, rowIndices, df.inner.height(), "row");
 		final int[] cIdx = normalizeIlocList(scope, colIndices, df.inner.width(), "col");
-		return new GamaDataframe(df.inner.rows(rIdx).cols(cIdx).select());
+		return new GamaDataFrame(df.inner.rows(rIdx).cols(cIdx).select());
 	}
 
 	// ========================= Save operations (scope-aware) =========================
@@ -860,7 +860,7 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	 *            the character encoding (e.g. "UTF-8"). If null, defaults to UTF-8.
 	 * @return true if saved successfully
 	 */
-	public static boolean saveCSV(final IScope scope, final GamaDataframe df, final String path,
+	public static boolean saveCSV(final IScope scope, final GamaDataFrame df, final String path,
 			final char separator, final String charset) {
 		try {
 			final String resolvedPath = FileUtils.constructAbsoluteFilePath(scope, path, false);
@@ -886,7 +886,7 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	 *            the sheet name
 	 * @return true if saved successfully
 	 */
-	public static boolean saveExcelSheet(final IScope scope, final GamaDataframe df, final String path,
+	public static boolean saveExcelSheet(final IScope scope, final GamaDataFrame df, final String path,
 			final String sheetName) {
 		try {
 			final String resolvedPath = FileUtils.constructAbsoluteFilePath(scope, path, false);
@@ -909,13 +909,13 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	 *            the output file path (relative to the model or absolute)
 	 * @return true if saved successfully
 	 */
-	public static boolean saveExcelSheets(final IScope scope, final IMap<String, IDataframe> sheets,
+	public static boolean saveExcelSheets(final IScope scope, final IMap<String, IDataFrame> sheets,
 			final String path) {
 		try {
 			final String resolvedPath = FileUtils.constructAbsoluteFilePath(scope, path, false);
 			final Map<String, DataFrame> dfBySheet = new LinkedHashMap<>();
-			for (final Map.Entry<String, IDataframe> entry : sheets.entrySet()) {
-				dfBySheet.put(entry.getKey(), ((GamaDataframe) entry.getValue()).inner);
+			for (final Map.Entry<String, IDataFrame> entry : sheets.entrySet()) {
+				dfBySheet.put(entry.getKey(), ((GamaDataFrame) entry.getValue()).inner);
 			}
 			Excel.saver().createMissingDirs().save(dfBySheet, new File(resolvedPath));
 			return true;
@@ -936,7 +936,7 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	 *            the output file path (relative to the model or absolute)
 	 * @return true if saved successfully
 	 */
-	public static boolean saveJson(final IScope scope, final GamaDataframe df, final String path) {
+	public static boolean saveJson(final IScope scope, final GamaDataFrame df, final String path) {
 		try {
 			final String resolvedPath = FileUtils.constructAbsoluteFilePath(scope, path, false);
 			Json.saver().save(df.inner, resolvedPath);
@@ -957,7 +957,7 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	 *            the output file path (relative to the model or absolute)
 	 * @return true if saved successfully
 	 */
-	public static boolean saveParquet(final IScope scope, final GamaDataframe df, final String path) {
+	public static boolean saveParquet(final IScope scope, final GamaDataFrame df, final String path) {
 		try {
 			final String resolvedPath = FileUtils.constructAbsoluteFilePath(scope, path, false);
 			Parquet.saver().createMissingDirs().save(df.inner, new File(resolvedPath));
@@ -985,7 +985,7 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	 *            the destination table name
 	 * @return true if saved successfully
 	 */
-	public static boolean saveDatabaseTable(final IScope scope, final GamaDataframe df, final String jdbcUrl,
+	public static boolean saveDatabaseTable(final IScope scope, final GamaDataFrame df, final String jdbcUrl,
 			final String user, final String password, final String tableName) {
 		try {
 			final JdbcConnector connector = buildJdbcConnector(jdbcUrl, user, password);
@@ -1012,7 +1012,7 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	 *            the column containing the values
 	 * @return a new pivoted dataframe
 	 */
-	public static GamaDataframe pivot(final GamaDataframe df, final String indexColumn, final String pivotColumn,
+	public static GamaDataFrame pivot(final GamaDataFrame df, final String indexColumn, final String pivotColumn,
 			final String valueColumn) {
 		return pivot(df, indexColumn, pivotColumn, valueColumn, vals -> vals.isEmpty() ? null : vals.get(0));
 	}
@@ -1032,7 +1032,7 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 	 *            the function to aggregate values
 	 * @return a new pivoted dataframe
 	 */
-	public static GamaDataframe pivot(final GamaDataframe df, final String indexColumn, final String pivotColumn,
+	public static GamaDataFrame pivot(final GamaDataFrame df, final String indexColumn, final String pivotColumn,
 			final String valueColumn, final Function<List<Object>, Object> aggregationFunction) {
 		final DataFrame dfInner = df.inner;
 
@@ -1069,10 +1069,10 @@ public class GamaDataframe implements IDataframe, IContainer<String, IList<Objec
 			for (final Object pv : pivotValues) { flat[idx++] = aggregationFunction.apply(entry.getValue().get(pv)); }
 		}
 
-		return new GamaDataframe(DataFrame.foldByRow(newCols.toArray(new String[0])).of(flat));
+		return new GamaDataFrame(DataFrame.foldByRow(newCols.toArray(new String[0])).of(flat));
 	}
 	
-	public static String prettyPrint(final IDataframe df, int maxRows, int maxCols, int maxChars) {
+	public static String prettyPrint(final IDataFrame df, int maxRows, int maxCols, int maxChars) {
 		Printer printer = Printers.tabular(maxRows, maxCols, maxChars); 
 		return printer.print(df.getInnerDataFrame());	
 	}

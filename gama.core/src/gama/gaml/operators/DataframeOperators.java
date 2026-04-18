@@ -21,8 +21,8 @@ import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.api.types.dataframe.GamaDataframe;
-import gama.api.types.dataframe.IDataframe;
+import gama.api.types.dataframe.GamaDataFrame;
+import gama.api.types.dataframe.IDataFrame;
 import gama.api.types.list.IList;
 import gama.api.types.map.IMap;
 import gama.api.types.matrix.IField;
@@ -70,9 +70,9 @@ public class DataframeOperators {
 							isExecutable = false) }) })
 	@test ("df_rows(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]])) = 2")
 	@test ("df_columns(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]])) = [\"name\",\"age\"]")
-	public static GamaDataframe dataframeWith(final IScope scope, final IList<String> columns,
+	public static GamaDataFrame dataframeWith(final IScope scope, final IList<String> columns,
 			final IList<IList> data) {
-		return GamaDataframe.create(scope, columns, data);
+		return GamaDataFrame.create(scope, columns, data);
 	}
 
 	// ========================= File loading operators =========================
@@ -96,8 +96,8 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_load_csv_with", "df_load_excel", "df_load_json" })
 	@no_test
-	public static GamaDataframe loadCsv(final IScope scope, final String path) {
-		return GamaDataframe.fromCSV(	scope, 
+	public static GamaDataFrame loadCsv(final IScope scope, final String path) {
+		return GamaDataFrame.fromCSV(	scope, 
 										path, 
 										GamaPreferences.External.CSV_SEPARATOR.value(scope).toString().charAt(0), 
 										true, 
@@ -124,11 +124,11 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_load_csv", "df_load_excel", "df_load_json" })
 	@no_test
-	public static GamaDataframe loadCsvWith(final IScope scope, final String path, final String separator,
+	public static GamaDataFrame loadCsvWith(final IScope scope, final String path, final String separator,
 			final Boolean header, final String charset) {
 		if (separator == null || separator.length() != 1)
 			throw GamaRuntimeException.error("Separator must be a single character, got: " + separator, scope);
-		return GamaDataframe.fromCSV(scope, path, separator.charAt(0), header != null && header, charset);
+		return GamaDataFrame.fromCSV(scope, path, separator.charAt(0), header != null && header, charset);
 	}
 
 	/**
@@ -150,8 +150,8 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_load_csv", "df_load_json", "df_save_excel" })
 	@no_test
-	public static GamaDataframe loadExcel(final IScope scope, final String path) {
-		return GamaDataframe.fromExcelFile(scope, path);
+	public static GamaDataFrame loadExcel(final IScope scope, final String path) {
+		return GamaDataFrame.fromExcelFile(scope, path);
 	}
 
 	/**
@@ -173,8 +173,8 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_load_csv", "df_load_excel", "df_save_json" })
 	@no_test
-	public static GamaDataframe loadJson(final IScope scope, final String path) {
-		return GamaDataframe.fromJson(scope, path);
+	public static GamaDataFrame loadJson(final IScope scope, final String path) {
+		return GamaDataFrame.fromJson(scope, path);
 	}
 
 	/**
@@ -195,8 +195,8 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_save_parquet", "df_load_csv", "df_load_json" })
 	@no_test
-	public static GamaDataframe loadParquet(final IScope scope, final String path) {
-		return GamaDataframe.fromParquet(scope, path);
+	public static GamaDataFrame loadParquet(final IScope scope, final String path) {
+		return GamaDataFrame.fromParquet(scope, path);
 	}
 
 	/**
@@ -219,9 +219,9 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_load_sql", "df_save_table" })
 	@no_test
-	public static GamaDataframe loadTable(final IScope scope, final String jdbcUrl, final String user,
+	public static GamaDataFrame loadTable(final IScope scope, final String jdbcUrl, final String user,
 			final String password, final String tableName) {
-		return GamaDataframe.fromDatabaseTable(scope, jdbcUrl, emptyToNull(user), emptyToNull(password), tableName);
+		return GamaDataFrame.fromDatabaseTable(scope, jdbcUrl, emptyToNull(user), emptyToNull(password), tableName);
 	}
 
 	/**
@@ -245,9 +245,9 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_load_table", "df_save_table" })
 	@no_test
-	public static GamaDataframe loadSql(final IScope scope, final String jdbcUrl, final String user,
+	public static GamaDataFrame loadSql(final IScope scope, final String jdbcUrl, final String user,
 			final String password, final String sqlQuery) {
-		return GamaDataframe.fromDatabaseQuery(scope, jdbcUrl, emptyToNull(user), emptyToNull(password), sqlQuery);
+		return GamaDataFrame.fromDatabaseQuery(scope, jdbcUrl, emptyToNull(user), emptyToNull(password), sqlQuery);
 	}
 
 	// ========================= Save operators =========================
@@ -270,8 +270,8 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_save_csv_with", "df_save_excel", "df_save_json", "df_load_csv" })
 	@no_test
-	public static Boolean saveCsv(final IScope scope, final IDataframe df, final String path) {
-		return GamaDataframe.saveCSV(scope, (GamaDataframe) df, path, ',', null);
+	public static Boolean saveCsv(final IScope scope, final IDataFrame df, final String path) {
+		return GamaDataFrame.saveCSV(scope, (GamaDataFrame) df, path, ',', null);
 	}
 
 	/**
@@ -293,11 +293,11 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_save_csv", "df_save_excel", "df_save_json", "df_load_csv_with" })
 	@no_test
-	public static Boolean saveCsvWith(final IScope scope, final IDataframe df, final String path,
+	public static Boolean saveCsvWith(final IScope scope, final IDataFrame df, final String path,
 			final String separator, final String charset) {
 		if (separator == null || separator.length() != 1)
 			throw GamaRuntimeException.error("Separator must be a single character, got: " + separator, scope);
-		return GamaDataframe.saveCSV(scope, (GamaDataframe) df, path, separator.charAt(0), charset);
+		return GamaDataFrame.saveCSV(scope, (GamaDataFrame) df, path, separator.charAt(0), charset);
 	}
 
 	/**
@@ -318,9 +318,9 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_save_csv", "df_save_json", "df_load_excel" })
 	@no_test
-	public static Boolean saveExcel(final IScope scope, final IDataframe df, final String path,
+	public static Boolean saveExcel(final IScope scope, final IDataFrame df, final String path,
 			final String sheetName) {
-		return GamaDataframe.saveExcelSheet(scope, (GamaDataframe) df, path, sheetName);
+		return GamaDataFrame.saveExcelSheet(scope, (GamaDataFrame) df, path, sheetName);
 	}
 
 	/**
@@ -342,9 +342,9 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_save_excel", "df_load_excel" })
 	@no_test
-	public static Boolean saveExcelSheets(final IScope scope, final IMap<String, IDataframe> sheets,
+	public static Boolean saveExcelSheets(final IScope scope, final IMap<String, IDataFrame> sheets,
 			final String path) {
-		return GamaDataframe.saveExcelSheets(scope, sheets, path);
+		return GamaDataFrame.saveExcelSheets(scope, sheets, path);
 	}
 
 	/**
@@ -364,8 +364,8 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_save_csv", "df_save_excel", "df_load_json" })
 	@no_test
-	public static Boolean saveJson(final IScope scope, final IDataframe df, final String path) {
-		return GamaDataframe.saveJson(scope, (GamaDataframe) df, path);
+	public static Boolean saveJson(final IScope scope, final IDataFrame df, final String path) {
+		return GamaDataFrame.saveJson(scope, (GamaDataFrame) df, path);
 	}
 
 	/**
@@ -386,8 +386,8 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_load_parquet", "df_save_csv", "df_save_json" })
 	@no_test
-	public static Boolean saveParquet(final IScope scope, final IDataframe df, final String path) {
-		return GamaDataframe.saveParquet(scope, (GamaDataframe) df, path);
+	public static Boolean saveParquet(final IScope scope, final IDataFrame df, final String path) {
+		return GamaDataFrame.saveParquet(scope, (GamaDataFrame) df, path);
 	}
 
 	/**
@@ -410,9 +410,9 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_load_table", "df_load_sql" })
 	@no_test
-	public static Boolean saveTable(final IScope scope, final IDataframe df, final String jdbcUrl, final String user,
+	public static Boolean saveTable(final IScope scope, final IDataFrame df, final String jdbcUrl, final String user,
 			final String password, final String tableName) {
-		return GamaDataframe.saveDatabaseTable(scope, (GamaDataframe) df, jdbcUrl, emptyToNull(user),
+		return GamaDataFrame.saveDatabaseTable(scope, (GamaDataFrame) df, jdbcUrl, emptyToNull(user),
 				emptyToNull(password), tableName);
 	}
 
@@ -444,7 +444,7 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_row", "df_cell", "df_columns" })
 	@test ("df_column(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), \"name\") = [\"Alice\",\"Bob\"]")
-	public static IList<Object> dfColumn(final IScope scope, final IDataframe df, final String columnName) {
+	public static IList<Object> dfColumn(final IScope scope, final IDataFrame df, final String columnName) {
 		return df.getColumnValues(columnName);
 	}
 
@@ -467,7 +467,7 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_column", "df_cell", "df_rows" })
 	@test ("df_row(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 0) = [\"Alice\",30]")
-	public static IList<Object> dfRow(final IScope scope, final IDataframe df, final Integer rowIndex) {
+	public static IList<Object> dfRow(final IScope scope, final IDataFrame df, final Integer rowIndex) {
 		if (rowIndex < 0 || rowIndex >= df.getRows())
 			throw GamaRuntimeException.error("Row index out of bounds: " + rowIndex, scope);
 		return df.getRowValues(rowIndex);
@@ -490,7 +490,7 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_column", "df_row" })
 	@test ("df_cell(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 1, \"name\") = \"Bob\"")
-	public static Object dfCell(final IScope scope, final IDataframe df, final Integer rowIndex,
+	public static Object dfCell(final IScope scope, final IDataFrame df, final Integer rowIndex,
 			final String columnName) {
 		if (rowIndex < 0 || rowIndex >= df.getRows())
 			throw GamaRuntimeException.error("Row index out of bounds: " + rowIndex, scope);
@@ -516,7 +516,7 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_rows", "df_column" })
 	@test ("df_columns(dataframe_with([\"name\",\"age\",\"city\"], [[\"Alice\",30,\"Paris\"]])) = [\"name\",\"age\",\"city\"]")
-	public static IList<String> dfColumns(final IScope scope, final IDataframe df) {
+	public static IList<String> dfColumns(final IScope scope, final IDataFrame df) {
 		return df.getColumns();
 	}
 
@@ -537,7 +537,7 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_columns", "df_row" })
 	@test ("df_rows(dataframe_with([\"name\"], [[\"Alice\"],[\"Bob\"],[\"Charlie\"]])) = 3")
-	public static Integer dfRows(final IScope scope, final IDataframe df) {
+	public static Integer dfRows(final IScope scope, final IDataFrame df) {
 		return df.getRows();
 	}
 
@@ -561,9 +561,9 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_remove_empty", "df_select_columns" })
 	@test ("df_rows(df_filter(dataframe_with([\"name\",\"city\"], [[\"Alice\",\"Paris\"],[\"Bob\",\"Lyon\"],[\"Eve\",\"Paris\"]]), \"city\", \"Paris\")) = 2")
-	public static GamaDataframe dfFilter(final IScope scope, final IDataframe df, final String columnName,
+	public static GamaDataFrame dfFilter(final IScope scope, final IDataFrame df, final String columnName,
 			final Object value) {
-		return GamaDataframe.filterRows((GamaDataframe) df, columnName, value);
+		return GamaDataFrame.filterRows((GamaDataFrame) df, columnName, value);
 	}
 
 	/**
@@ -584,8 +584,8 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_filter", "df_select_columns" })
 	@test ("df_rows(df_remove_empty(dataframe_with([\"name\",\"email\"], [[\"Alice\",\"a@x\"],[\"Bob\",\"\"],[\"Charlie\",nil]]), \"email\")) = 1")
-	public static GamaDataframe dfRemoveEmpty(final IScope scope, final IDataframe df, final String columnName) {
-		return GamaDataframe.removeRowsWithEmptyValues((GamaDataframe) df, columnName);
+	public static GamaDataFrame dfRemoveEmpty(final IScope scope, final IDataFrame df, final String columnName) {
+		return GamaDataFrame.removeRowsWithEmptyValues((GamaDataFrame) df, columnName);
 	}
 
 	/**
@@ -606,9 +606,9 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_filter", "df_add_column", "df_columns" })
 	@test ("df_columns(df_select_columns(dataframe_with([\"name\",\"age\",\"city\"], [[\"Alice\",30,\"Paris\"]]), [\"name\",\"city\"])) = [\"name\",\"city\"]")
-	public static GamaDataframe dfSelectColumns(final IScope scope, final IDataframe df,
+	public static GamaDataFrame dfSelectColumns(final IScope scope, final IDataFrame df,
 			final IList<String> columns) {
-		return GamaDataframe.selectColumns((GamaDataframe) df, columns);
+		return GamaDataFrame.selectColumns((GamaDataFrame) df, columns);
 	}
 
 	// ========================= Modification operators =========================
@@ -632,9 +632,9 @@ public class DataframeOperators {
 			see = { "df_add_row", "df_select_columns" })
 	@test ("df_columns(df_add_column(dataframe_with([\"name\"], [[\"Alice\"]]), \"score\", 0)) = [\"name\",\"score\"]")
 	@test ("df_cell(df_add_column(dataframe_with([\"name\"], [[\"Alice\"]]), \"score\", 0), 0, \"score\") = 0")
-	public static GamaDataframe dfAddColumn(final IScope scope, final IDataframe df, final String columnName,
+	public static GamaDataFrame dfAddColumn(final IScope scope, final IDataFrame df, final String columnName,
 			final Object defaultValue) {
-		return GamaDataframe.addColumn((GamaDataframe) df, columnName, defaultValue);
+		return GamaDataFrame.addColumn((GamaDataFrame) df, columnName, defaultValue);
 	}
 
 	/**
@@ -656,8 +656,8 @@ public class DataframeOperators {
 			see = { "df_add_column", "df_merge" })
 	@test ("df_rows(df_add_row(dataframe_with([\"name\",\"age\"], [[\"Alice\",30]]), [\"Bob\",25])) = 2")
 	@test ("df_cell(df_add_row(dataframe_with([\"name\",\"age\"], [[\"Alice\",30]]), [\"Bob\",25]), 1, \"name\") = \"Bob\"")
-	public static GamaDataframe dfAddRow(final IScope scope, final IDataframe df, final IList<Object> values) {
-		return GamaDataframe.addRow((GamaDataframe) df, values);
+	public static GamaDataFrame dfAddRow(final IScope scope, final IDataFrame df, final IList<Object> values) {
+		return GamaDataFrame.addRow((GamaDataFrame) df, values);
 	}
 
 	// ========================= Combining operators =========================
@@ -681,8 +681,8 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_join", "df_add_row" })
 	@test ("df_rows(df_merge(dataframe_with([\"sensor\",\"value\"], [[\"temp\",22.5]]), dataframe_with([\"sensor\",\"value\"], [[\"temp\",23.1],[\"humidity\",60.0]]))) = 3")
-	public static GamaDataframe dfMerge(final IScope scope, final IDataframe df1, final IDataframe df2) {
-		return GamaDataframe.mergeDataframes((GamaDataframe) df1, (GamaDataframe) df2);
+	public static GamaDataFrame dfMerge(final IScope scope, final IDataFrame df1, final IDataFrame df2) {
+		return GamaDataFrame.mergeDataframes((GamaDataFrame) df1, (GamaDataFrame) df2);
 	}
 
 	/**
@@ -704,9 +704,9 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_merge" })
 	@test ("df_rows(df_join(dataframe_with([\"id\",\"name\"], [[1,\"Alice\"],[2,\"Bob\"],[3,\"Charlie\"]]), dataframe_with([\"id\",\"salary\"], [[1,55000],[2,48000]]), \"id\")) = 2")
-	public static GamaDataframe dfJoin(final IScope scope, final IDataframe df1, final IDataframe df2,
+	public static GamaDataFrame dfJoin(final IScope scope, final IDataFrame df1, final IDataFrame df2,
 			final String columnName) {
-		return GamaDataframe.joinDataframesOnCommonCol((GamaDataframe) df1, (GamaDataframe) df2, columnName);
+		return GamaDataFrame.joinDataframesOnCommonCol((GamaDataFrame) df1, (GamaDataFrame) df2, columnName);
 	}
 
 	// ========================= Pivot operator =========================
@@ -730,9 +730,9 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_filter", "df_select_columns" })
 	@test ("df_rows(df_pivot(dataframe_with([\"product\",\"quarter\",\"revenue\"], [[\"Widget\",\"Q1\",1000],[\"Widget\",\"Q2\",1500],[\"Gadget\",\"Q1\",800],[\"Gadget\",\"Q2\",950]]), \"product\", \"quarter\", \"revenue\")) = 2")
-	public static GamaDataframe dfPivot(final IScope scope, final IDataframe df, final String indexColumn,
+	public static GamaDataFrame dfPivot(final IScope scope, final IDataFrame df, final String indexColumn,
 			final String pivotColumn, final String valueColumn) {
-		return GamaDataframe.pivot((GamaDataframe) df, indexColumn, pivotColumn, valueColumn);
+		return GamaDataFrame.pivot((GamaDataFrame) df, indexColumn, pivotColumn, valueColumn);
 	}
 	
 	@operator (
@@ -745,8 +745,8 @@ public class DataframeOperators {
 	@doc (
 		value = "Creates a string representing the dataframe in a human readable format. The number of rows and columns is limited to 10 and the number of characters per cell to 50."
 	)
-	public static String dfPrettyPrint(final IScope scope, final IDataframe df) {
-		return GamaDataframe.prettyPrint(df, 10, 10, 50);
+	public static String dfPrettyPrint(final IScope scope, final IDataFrame df) {
+		return GamaDataFrame.prettyPrint(df, 10, 10, 50);
 	}
 	
 	@operator (
@@ -759,8 +759,8 @@ public class DataframeOperators {
 	@doc (
 		value = "Creates a string representing the dataframe in a human readable format. The maximum number of rows, columns and the number of characters per cell to print is defined by the parameters."
 	)
-	public static String dfPrettyPrint(final IScope scope, final IDataframe df, int maxRows, int maxCols, int maxChars) {
-		return GamaDataframe.prettyPrint(df, maxRows, maxCols, maxChars);
+	public static String dfPrettyPrint(final IScope scope, final IDataFrame df, int maxRows, int maxCols, int maxChars) {
+		return GamaDataFrame.prettyPrint(df, maxRows, maxCols, maxChars);
 	}
 
 	// ========================= iloc (integer location) =========================
@@ -799,8 +799,8 @@ public class DataframeOperators {
 			see = { "df_row", "df_cell" })
 	@test ("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 0) = [\"Alice\",30]")
 	@test ("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), -1) = [\"Bob\",25]")
-	public static IList<Object> ilocRow(final IScope scope, final IDataframe df, final Integer rowIndex) {
-		return GamaDataframe.ilocRow(scope, (GamaDataframe) df, rowIndex);
+	public static IList<Object> ilocRow(final IScope scope, final IDataFrame df, final Integer rowIndex) {
+		return GamaDataFrame.ilocRow(scope, (GamaDataFrame) df, rowIndex);
 	}
 
 	/**
@@ -823,9 +823,9 @@ public class DataframeOperators {
 	@test ("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 1, 0) = \"Bob\"")
 	@test ("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 0, 1) = 30")
 	@test ("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), -1, -1) = 25")
-	public static Object iloc(final IScope scope, final IDataframe df, final Integer rowIndex,
+	public static Object iloc(final IScope scope, final IDataFrame df, final Integer rowIndex,
 			final Integer colIndex) {
-		return GamaDataframe.iloc(scope, (GamaDataframe) df, rowIndex, colIndex);
+		return GamaDataFrame.iloc(scope, (GamaDataFrame) df, rowIndex, colIndex);
 	}
 
 	/**
@@ -848,9 +848,9 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_row", "df_select_columns" })
 	@test ("iloc(dataframe_with([\"a\",\"b\",\"c\"], [[1,2,3],[4,5,6]]), 1, [0,2]) = [4,6]")
-	public static IList<Object> ilocRowCols(final IScope scope, final IDataframe df, final Integer rowIndex,
+	public static IList<Object> ilocRowCols(final IScope scope, final IDataFrame df, final Integer rowIndex,
 			final IList<Integer> colIndices) {
-		return GamaDataframe.iloc(scope, (GamaDataframe) df, rowIndex, colIndices);
+		return GamaDataFrame.iloc(scope, (GamaDataFrame) df, rowIndex, colIndices);
 	}
 
 	/**
@@ -873,9 +873,9 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_column", "df_row" })
 	@test ("iloc(dataframe_with([\"a\",\"b\",\"c\"], [[1,2,3],[4,5,6],[7,8,9]]), [0,2], 1) = [2,8]")
-	public static IList<Object> ilocRowsCol(final IScope scope, final IDataframe df, final IList<Integer> rowIndices,
+	public static IList<Object> ilocRowsCol(final IScope scope, final IDataFrame df, final IList<Integer> rowIndices,
 			final Integer colIndex) {
-		return GamaDataframe.iloc(scope, (GamaDataframe) df, rowIndices, colIndex);
+		return GamaDataFrame.iloc(scope, (GamaDataFrame) df, rowIndices, colIndex);
 	}
 
 	/**
@@ -898,8 +898,8 @@ public class DataframeOperators {
 			see = { "df_row", "df_filter" })
 	@test ("df_rows(iloc(dataframe_with([\"name\"], [[\"Alice\"],[\"Bob\"],[\"Eve\"]]), [0,2])) = 2")
 	@test ("df_cell(iloc(dataframe_with([\"name\"], [[\"Alice\"],[\"Bob\"],[\"Eve\"]]), [0,2]), 1, \"name\") = \"Eve\"")
-	public static GamaDataframe ilocRows(final IScope scope, final IDataframe df, final IList<Integer> rowIndices) {
-		return GamaDataframe.ilocRows(scope, (GamaDataframe) df, rowIndices);
+	public static GamaDataFrame ilocRows(final IScope scope, final IDataFrame df, final IList<Integer> rowIndices) {
+		return GamaDataFrame.ilocRows(scope, (GamaDataFrame) df, rowIndices);
 	}
 
 	/**
@@ -923,9 +923,9 @@ public class DataframeOperators {
 			see = { "df_select_columns", "df_filter" })
 	@test ("df_columns(iloc(dataframe_with([\"a\",\"b\",\"c\"], [[1,2,3],[4,5,6]]), [0], [0,2])) = [\"a\",\"c\"]")
 	@test ("df_cell(iloc(dataframe_with([\"a\",\"b\",\"c\"], [[1,2,3],[4,5,6]]), [1], [2]), 0, \"c\") = 6")
-	public static GamaDataframe iloc(final IScope scope, final IDataframe df, final IList<Integer> rowIndices,
+	public static GamaDataFrame iloc(final IScope scope, final IDataFrame df, final IList<Integer> rowIndices,
 			final IList<Integer> colIndices) {
-		return GamaDataframe.iloc(scope, (GamaDataframe) df, rowIndices, colIndices);
+		return GamaDataFrame.iloc(scope, (GamaDataFrame) df, rowIndices, colIndices);
 	}
 
 	// ========================= Outgoing conversions =========================
@@ -949,8 +949,8 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_to_matrix", "df_to_field", "dataframe_with" })
 	@test ("df_to_map(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]))[\"name\"] = [\"Alice\",\"Bob\"]")
-	public static IMap<String, IList<Object>> dfToMap(final IScope scope, final IDataframe df) {
-		return GamaDataframe.toMap(scope, (GamaDataframe) df);
+	public static IMap<String, IList<Object>> dfToMap(final IScope scope, final IDataFrame df) {
+		return GamaDataFrame.toMap(scope, (GamaDataFrame) df);
 	}
 
 	/**
@@ -972,8 +972,8 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_to_map", "df_to_field" })
 	@test ("df_to_matrix(dataframe_with([\"a\",\"b\"], [[1,2],[3,4]])) = matrix([[1,3],[2,4]])")
-	public static IMatrix<Object> dfToMatrix(final IScope scope, final IDataframe df) {
-		return GamaDataframe.toMatrix(scope, (GamaDataframe) df, df.getContentType(scope));
+	public static IMatrix<Object> dfToMatrix(final IScope scope, final IDataFrame df) {
+		return GamaDataFrame.toMatrix(scope, (GamaDataFrame) df, df.getContentType(scope));
 	}
 
 	/**
@@ -995,7 +995,7 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_to_matrix", "df_to_map" })
 	@no_test
-	public static IField dfToField(final IScope scope, final IDataframe df) {
-		return GamaDataframe.toField(scope, (GamaDataframe) df);
+	public static IField dfToField(final IScope scope, final IDataFrame df) {
+		return GamaDataFrame.toField(scope, (GamaDataFrame) df);
 	}
 }
