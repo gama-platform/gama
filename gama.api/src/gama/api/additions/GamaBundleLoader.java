@@ -311,6 +311,13 @@ public class GamaBundleLoader {
 
 			try {
 				preBuild(API_PLUGIN);
+			} catch (final Exception e2) {
+				ERROR("Error in loading GAML API. ", e2);
+				// We exit in case the core cannot be built, as there is no point in continuing past this point
+				System.exit(0);
+				return;
+			}
+			try {
 				preBuild(CORE_PLUGIN);
 			} catch (final Exception e2) {
 				ERROR("Error in loading core GAML language definition. ", e2);
@@ -408,7 +415,7 @@ public class GamaBundleLoader {
 					ERROR("Error in loading constants. ", e);
 				}
 				GamaMetaModel.getSpeciesDescription(IKeyword.PLATFORM).validate();
-			}, /*r -> Thread.ofVirtual().start(r)*/ r-> r.run());
+			}, Runnable::run);
 
 		});
 
@@ -611,9 +618,7 @@ public class GamaBundleLoader {
 			if (bundle.getEntry(REGULAR_TUTORIALS_LAYOUT) != null) {
 				TUTORIAL_PLUGINS.put(bundle, REGULAR_TUTORIALS_LAYOUT);
 			}
-			if (bundle.getEntry(REGULAR_RECIPES_LAYOUT) != null) {
-				RECIPE_PLUGINS.put(bundle, REGULAR_RECIPES_LAYOUT);
-			}
+			if (bundle.getEntry(REGULAR_RECIPES_LAYOUT) != null) { RECIPE_PLUGINS.put(bundle, REGULAR_RECIPES_LAYOUT); }
 		});
 		// We gather all the GAMA_PLUGINS that explicitly declare models using
 		// the non-default scheme (plugin > models ...).

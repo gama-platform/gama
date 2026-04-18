@@ -21,6 +21,9 @@ import gama.api.ui.IGui;
  * The Class SimulationPerspective.
  */
 public class SimulationPerspective implements IPerspectiveFactory {
+	// possible layout perspective: horizontal (vertical ( #parameters::7000, #consoles:: 3000) :: 3000,horizontal(
+	// #displays::7000, vertical(#inspectors::5000, #monitors::5000)::3000)::7000 )
+	// displays:
 
 	@Override
 	public void createInitialLayout(final IPageLayout layout) {
@@ -59,6 +62,3 @@ public class SimulationPerspective implements IPerspectiveFactory {
 	}
 
 }
-// layout perspective: horizontal (vertical ( #parameters::7000, #consoles:: 3000) :: 3000,horizontal( #displays::7000,
-// vertical(#inspectors::5000, #monitors::5000)::3000)::7000 )
-// displays:

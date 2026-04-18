@@ -79,10 +79,16 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
 			public void perspectiveChanged(final IWorkbenchPage page, final IPerspectiveDescriptor perspective,
 					final String changeId) {}
 
+			/**
+			 * Running the perspective listener to automatically launch modeling at startup in case a simulation
+			 * perspective is remembered.
+			 *
+			 * @param page
+			 * @param perspective
+			 */
 			@Override
 			public void perspectiveActivated(final IWorkbenchPage page, final IPerspectiveDescriptor perspective) {
 				if (PerspectiveHelper.isSimulationPerspective()) {
-					// DEBUG.OUT("Running the perspective listener to automatically launch modeling");
 					final IPerspectiveDescriptor desc = page.getPerspective();
 					page.closePerspective(desc, false, false);
 					PerspectiveHelper.openModelingPerspective(true, false);
@@ -93,6 +99,11 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
 		});
 		configurer.getWindow().addPageListener(new IPageListener() {
 
+			/**
+			 * Running the perspective listener to automatically launch modeling at startup.
+			 *
+			 * @param page
+			 */
 			@Override
 			public void pageActivated(final IWorkbenchPage page) {
 				configurer.getWindow().removePageListener(this);
@@ -105,9 +116,6 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
 			@Override
 			public void pageOpened(final IWorkbenchPage page) {}
 		});
-		// See #3187 -
-		// if (FLAGS.USE_OLD_TABS) {
-
 		configurer.setShowMenuBar(true);
 		configurer.setShowCoolBar(true);
 		configurer.setShowStatusLine(true);
@@ -126,29 +134,12 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
 	@Override
 	public void postWindowCreate() {
 		final IWorkbenchWindow window = getWindowConfigurer().getWindow();
-		// if (!GamaPreferences.Interface.CORE_REMEMBER_WINDOW.getValue()) {
-		// window.getShell().setMaximized(GamaPreferences.Interface.CORE_SHOW_MAXIMIZED.getValue());
-		// if (FLAGS.USE_DELAYED_RESIZE) {
-		// window.getShell().addControlListener(new ControlAdapter() {
-		//
-		// @Override
-		// public void controlResized(final ControlEvent e) {
-		// // window.getShell().layout(true, true);
-		// window.getShell().requestLayout();
-		// }
-		//
-		// });
-		// }
-		// }
 		PerspectiveHelper.showBottomTray((WorkbenchWindow) window, false);
 	}
 
 	@Override
 	public void postWindowOpen() {
 		PerspectiveHelper.cleanPerspectives();
-
-		// GAMA.getGui().openWelcomePage(true);
-		// GAMA.updateExperimentState(null, IExperimentStateListener.STATE_NONE);
 	}
 
 }

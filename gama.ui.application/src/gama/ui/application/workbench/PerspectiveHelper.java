@@ -76,7 +76,7 @@ public class PerspectiveHelper {
 	 * @return true, if successful
 	 */
 	static boolean matches(final String id) {
-		return !PerspectiveHelper.PERSPECTIVE_SIMULATION_ID.equals(id) && id.contains(PERSPECTIVE_SIMULATION_FRAGMENT);
+		return !PERSPECTIVE_SIMULATION_ID.equals(id) && id.contains(PERSPECTIVE_SIMULATION_FRAGMENT);
 	}
 
 	/**
@@ -192,13 +192,11 @@ public class PerspectiveHelper {
 	 *            the show
 	 */
 	public static void showBottomTray(final WorkbenchWindow window, final Boolean show) {
-
 		final MUIElement trimStatus = getTrimStatus(window);
 		if (trimStatus != null) {
 			// toggle statusbar visibility
 			trimStatus.setVisible(show);
 		}
-
 	}
 
 	/**
@@ -321,20 +319,9 @@ public class PerspectiveHelper {
 		if (perspectiveId == null) return false;
 		if (perspectiveId.equals(currentPerspectiveId)) return true;
 		IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-		// } catch (final Exception e) {
-		// try {
-		// page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().openPage(perspectiveId, null);
-		// } catch (final Exception e1) {
-		// e1.printStackTrace();
-		// }
-		// e.printStackTrace();
-		// }
 		if (page == null) return false;
-
 		if (GamaPreferences.Modeling.EDITOR_PERSPECTIVE_SAVE.getValue()) { page.saveAllEditors(false); }
-
 		if (memorizeEditors) { memorizeActiveEditor(page); }
-
 		final IPerspectiveDescriptor oldDescriptor = page.getPerspective();
 		final IPerspectiveDescriptor descriptor = findOrBuildPerspectiveWithId(perspectiveId);
 		final WorkbenchWindow window = (WorkbenchWindow) page.getWorkbenchWindow();
@@ -365,10 +352,12 @@ public class PerspectiveHelper {
 					currentSimulationPerspective = (SimulationPerspectiveDescriptor) descriptor;
 				}
 				applyActiveEditor(page);
-				final Boolean showControls = keepControls();
-				if (showControls != null) { window.setCoolBarVisible(showControls); }
-				final Boolean keepTray = keepTray();
-				if (keepTray != null) { showBottomTray(window, keepTray); }
+				if (isSimulationPerspective(perspectiveId)) {
+					final Boolean showControls = keepControls();
+					if (showControls != null) { window.setCoolBarVisible(showControls); }
+					final Boolean keepTray = keepTray();
+					if (keepTray != null) { showBottomTray(window, keepTray); }
+				}
 			} finally {
 				if (shell != null) { shell.setRedraw(true); }
 				// Delegate overlay creation to the GUI service so that the concrete
@@ -611,10 +600,10 @@ public class PerspectiveHelper {
 	 * Pre-warms the {@link SimulationPerspectiveDescriptor} infrastructure.
 	 *
 	 * <p>
-	 * On first use, {@link #findOrBuildPerspectiveWithId(String)} constructs a
-	 * {@link SimulationPerspectiveDescriptor} for the requested id and injects it into Eclipse's
-	 * {@link PerspectiveRegistry} via reflection. This method triggers that path once at startup, using a throw-away
-	 * dummy id, so that the real first experiment launch does not pay the class-loading and reflection cost.
+	 * On first use, {@link #findOrBuildPerspectiveWithId(String)} constructs a {@link SimulationPerspectiveDescriptor}
+	 * for the requested id and injects it into Eclipse's {@link PerspectiveRegistry} via reflection. This method
+	 * triggers that path once at startup, using a throw-away dummy id, so that the real first experiment launch does
+	 * not pay the class-loading and reflection cost.
 	 * </p>
 	 *
 	 * <p>
