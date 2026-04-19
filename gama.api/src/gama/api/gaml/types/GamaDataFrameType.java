@@ -17,7 +17,6 @@ import gama.annotations.support.ISymbolKind;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
-import gama.api.types.dataframe.GamaDataFrame;
 import gama.api.types.dataframe.GamaDataFrameFactory;
 import gama.api.types.dataframe.IDataFrame;
 
@@ -37,7 +36,7 @@ import gama.api.types.dataframe.IDataFrame;
 @type (
 		name = IKeyword.DATAFRAME,
 		id = IType.DATAFRAME,
-		wraps = { IDataFrame.class, GamaDataFrame.class },
+		wraps = { IDataFrame.class },
 		kind = ISymbolKind.CONTAINER,
 		concept = { IConcept.TYPE, IConcept.CONTAINER, IConcept.DATAFRAME },
 		doc = @doc ("Tabular data with named columns. Dataframes can be loaded from CSV, Excel or JSON files."))
@@ -61,9 +60,7 @@ public class GamaDataFrameType extends GamaContainerType<IDataFrame> {
 	}
 
 	@Override
-	public IType<?> getKeyType() {
-		return Types.STRING;
-	}
+	public IType<?> getKeyType() { return Types.STRING; }
 
 	@Override
 	public IType<?> contentsTypeIfCasting(final IExpression exp) {

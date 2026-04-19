@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * DataframeOperators.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform.
+ * DataFrameOperators.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform.
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -8,6 +8,18 @@
  *
  ********************************************************************************************************/
 package gama.gaml.operators;
+
+import java.io.File;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import org.apache.commons.csv.CSVFormat;
+import org.dflib.DataFrame;
+import org.dflib.csv.Csv;
+import org.dflib.excel.Excel;
+import org.dflib.jdbc.connector.JdbcConnector;
+import org.dflib.json.Json;
+import org.dflib.parquet.Parquet;
 
 import gama.annotations.doc;
 import gama.annotations.example;
@@ -19,14 +31,13 @@ import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
-import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.dataframe.GamaDataFrame;
+import gama.api.types.dataframe.GamaDataFrameFactory;
 import gama.api.types.dataframe.IDataFrame;
 import gama.api.types.list.IList;
 import gama.api.types.map.IMap;
-import gama.api.types.matrix.IField;
-import gama.api.types.matrix.IMatrix;
+import gama.api.utils.files.FileUtils;
 import gama.api.utils.prefs.GamaPreferences;
 
 /**
@@ -34,13 +45,13 @@ import gama.api.utils.prefs.GamaPreferences;
  *
  * <p>
  * Provides operators for creating, loading, saving, querying, filtering, transforming, and combining tabular data
- * (dataframes). Dataframes are two-dimensional data structures with named columns and indexed rows, similar to tables in
- * databases or spreadsheets.
+ * (dataframes). Dataframes are two-dimensional data structures with named columns and indexed rows, similar to tables
+ * in databases or spreadsheets.
  * </p>
  *
  * @author GAMA Team
  */
-public class DataframeOperators {
+public class DataFrameOperators {
 
 	// ========================= Creation operators =========================
 
@@ -70,9 +81,8 @@ public class DataframeOperators {
 							isExecutable = false) }) })
 	@test ("df_rows(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]])) = 2")
 	@test ("df_columns(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]])) = [\"name\",\"age\"]")
-	public static GamaDataFrame dataframeWith(final IScope scope, final IList<String> columns,
-			final IList<IList> data) {
-		return GamaDataFrame.create(scope, columns, data);
+	public static IDataFrame dataframeWith(final IScope scope, final IList<String> columns, final IList<IList> data) {
+		return GamaDataFrameFactory.create(scope, columns, data);
 	}
 
 	// ========================= File loading operators =========================
@@ -96,12 +106,9 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_load_csv_with", "df_load_excel", "df_load_json" })
 	@no_test
-	public static GamaDataFrame loadCsv(final IScope scope, final String path) {
-		return GamaDataFrame.fromCSV(	scope, 
-										path, 
-										GamaPreferences.External.CSV_SEPARATOR.value(scope).toString().charAt(0), 
-										true, 
-										null);
+	public static IDataFrame loadCsv(final IScope scope, final String path) {
+		return GamaDataFrameFactory.fromCSV(scope, path,
+				GamaPreferences.External.CSV_SEPARATOR.value(scope).toString().charAt(0), true, null);
 	}
 
 	/**
@@ -114,9 +121,10 @@ public class DataframeOperators {
 			category = { IOperatorCategory.DATAFRAME, IOperatorCategory.FILE },
 			concept = { IConcept.DATAFRAME, IConcept.FILE, IConcept.CSV })
 	@doc (
-			value = "Loads a CSV file into a dataframe with a custom separator, header option, and character encoding. "
-					+ "The separator is a string of length 1. The header flag indicates whether the first row contains column names. "
-					+ "The charset is a string like 'UTF-8' or 'ISO-8859-1'.",
+			value = """
+					Loads a CSV file into a dataframe with a custom separator, header option, and character encoding. \
+					The separator is a string of length 1. The header flag indicates whether the first row contains column names. \
+					The charset is a string like 'UTF-8' or 'ISO-8859-1'.""",
 			usages = { @usage (
 					value = "Load a semicolon-separated CSV file in ISO-8859-1 without header",
 					examples = { @example (
@@ -124,11 +132,11 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_load_csv", "df_load_excel", "df_load_json" })
 	@no_test
-	public static GamaDataFrame loadCsvWith(final IScope scope, final String path, final String separator,
+	public static IDataFrame loadCsvWith(final IScope scope, final String path, final String separator,
 			final Boolean header, final String charset) {
 		if (separator == null || separator.length() != 1)
 			throw GamaRuntimeException.error("Separator must be a single character, got: " + separator, scope);
-		return GamaDataFrame.fromCSV(scope, path, separator.charAt(0), header != null && header, charset);
+		return GamaDataFrameFactory.fromCSV(scope, path, separator.charAt(0), header != null && header, charset);
 	}
 
 	/**
@@ -150,8 +158,8 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_load_csv", "df_load_json", "df_save_excel" })
 	@no_test
-	public static GamaDataFrame loadExcel(final IScope scope, final String path) {
-		return GamaDataFrame.fromExcelFile(scope, path);
+	public static IDataFrame loadExcel(final IScope scope, final String path) {
+		return GamaDataFrameFactory.fromExcel(scope, path);
 	}
 
 	/**
@@ -173,8 +181,8 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_load_csv", "df_load_excel", "df_save_json" })
 	@no_test
-	public static GamaDataFrame loadJson(final IScope scope, final String path) {
-		return GamaDataFrame.fromJson(scope, path);
+	public static IDataFrame loadJson(final IScope scope, final String path) {
+		return GamaDataFrameFactory.fromJson(scope, path);
 	}
 
 	/**
@@ -195,8 +203,8 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_save_parquet", "df_load_csv", "df_load_json" })
 	@no_test
-	public static GamaDataFrame loadParquet(final IScope scope, final String path) {
-		return GamaDataFrame.fromParquet(scope, path);
+	public static IDataFrame loadParquet(final IScope scope, final String path) {
+		return GamaDataFrameFactory.fromParquet(scope, path);
 	}
 
 	/**
@@ -209,9 +217,10 @@ public class DataframeOperators {
 			category = { IOperatorCategory.DATAFRAME, IOperatorCategory.FILE },
 			concept = { IConcept.DATAFRAME, IConcept.DATABASE })
 	@doc (
-			value = "Loads a whole database table into a dataframe via JDBC. Arguments: the JDBC URL, the user, "
-					+ "the password, and the table name. Pass empty strings for user/password if the database does not "
-					+ "require credentials. The corresponding JDBC driver must be available on the classpath.",
+			value = """
+					Loads a whole database table into a dataframe via JDBC. Arguments: the JDBC URL, the user, \
+					the password, and the table name. Pass empty strings for user/password if the database does not \
+					require credentials. The corresponding JDBC driver must be available on the classpath.""",
 			usages = { @usage (
 					value = "Load a PostgreSQL table",
 					examples = { @example (
@@ -219,9 +228,10 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_load_sql", "df_save_table" })
 	@no_test
-	public static GamaDataFrame loadTable(final IScope scope, final String jdbcUrl, final String user,
+	public static IDataFrame loadTable(final IScope scope, final String jdbcUrl, final String user,
 			final String password, final String tableName) {
-		return GamaDataFrame.fromDatabaseTable(scope, jdbcUrl, emptyToNull(user), emptyToNull(password), tableName);
+		return GamaDataFrameFactory.fromDatabaseTable(scope, jdbcUrl, emptyToNull(user), emptyToNull(password),
+				tableName);
 	}
 
 	/**
@@ -234,10 +244,11 @@ public class DataframeOperators {
 			category = { IOperatorCategory.DATAFRAME, IOperatorCategory.FILE },
 			concept = { IConcept.DATAFRAME, IConcept.DATABASE })
 	@doc (
-			value = "Runs a SQL query on a database via JDBC and returns the result as a dataframe. "
-					+ "Arguments: the JDBC URL, the user, the password, and the SQL query. "
-					+ "Pass empty strings for user/password if the database does not require credentials. "
-					+ "The corresponding JDBC driver must be available on the classpath.",
+			value = """
+					Runs a SQL query on a database via JDBC and returns the result as a dataframe. \
+					Arguments: the JDBC URL, the user, the password, and the SQL query. \
+					Pass empty strings for user/password if the database does not require credentials. \
+					The corresponding JDBC driver must be available on the classpath.""",
 			usages = { @usage (
 					value = "Run a SQL query on a PostgreSQL database",
 					examples = { @example (
@@ -245,15 +256,17 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_load_table", "df_save_table" })
 	@no_test
-	public static GamaDataFrame loadSql(final IScope scope, final String jdbcUrl, final String user,
-			final String password, final String sqlQuery) {
-		return GamaDataFrame.fromDatabaseQuery(scope, jdbcUrl, emptyToNull(user), emptyToNull(password), sqlQuery);
+	public static IDataFrame loadSql(final IScope scope, final String jdbcUrl, final String user, final String password,
+			final String sqlQuery) {
+		return GamaDataFrameFactory.fromDatabaseQuery(scope, jdbcUrl, emptyToNull(user), emptyToNull(password),
+				sqlQuery);
 	}
 
 	// ========================= Save operators =========================
 
 	/**
-	 * Saves a dataframe to a CSV file with default settings (comma separator).
+	 * Saves a dataframe to a CSV file with default settings (comma separator). TODO WARNING: Should use the save
+	 * statement
 	 */
 	@operator (
 			value = "df_save_csv",
@@ -271,11 +284,11 @@ public class DataframeOperators {
 			see = { "df_save_csv_with", "df_save_excel", "df_save_json", "df_load_csv" })
 	@no_test
 	public static Boolean saveCsv(final IScope scope, final IDataFrame df, final String path) {
-		return GamaDataFrame.saveCSV(scope, (GamaDataFrame) df, path, ',', null);
+		return saveCsvWith(scope, df, path, ",", null);
 	}
 
 	/**
-	 * Saves a dataframe to a CSV file with custom separator and charset.
+	 * Saves a dataframe to a CSV file with custom separator and charset. TODO WARNING: Should use the save statement
 	 */
 	@operator (
 			value = "df_save_csv_with",
@@ -283,9 +296,10 @@ public class DataframeOperators {
 			category = { IOperatorCategory.DATAFRAME, IOperatorCategory.FILE },
 			concept = { IConcept.DATAFRAME, IConcept.FILE, IConcept.CSV })
 	@doc (
-			value = "Saves a dataframe to a CSV file with a custom separator and character encoding. "
-					+ "The separator is a string of length 1. The charset is a string like 'UTF-8' or 'ISO-8859-1'. "
-					+ "The file path is relative to the model file. Returns true on success.",
+			value = """
+					Saves a dataframe to a CSV file with a custom separator and character encoding. \
+					The separator is a string of length 1. The charset is a string like 'UTF-8' or 'ISO-8859-1'. \
+					The file path is relative to the model file. Returns true on success.""",
 			usages = { @usage (
 					value = "Save a dataframe to a semicolon-separated CSV in ISO-8859-1",
 					examples = { @example (
@@ -297,11 +311,19 @@ public class DataframeOperators {
 			final String separator, final String charset) {
 		if (separator == null || separator.length() != 1)
 			throw GamaRuntimeException.error("Separator must be a single character, got: " + separator, scope);
-		return GamaDataFrame.saveCSV(scope, (GamaDataFrame) df, path, separator.charAt(0), charset);
+
+		try {
+			final String resolvedPath = FileUtils.constructAbsoluteFilePath(scope, path, false);
+			Csv.saver().format(CSVFormat.DEFAULT.withDelimiter(separator.charAt(0))).save(df.getInner(), resolvedPath);
+			return true;
+		} catch (final Exception e) {
+			throw GamaRuntimeException.error("Failed to save CSV file: " + path + " - " + e.getMessage(), scope);
+		}
+
 	}
 
 	/**
-	 * Saves a dataframe to an Excel file.
+	 * Saves a dataframe to an Excel file. TODO WARNING: Should use the save statement
 	 */
 	@operator (
 			value = "df_save_excel",
@@ -320,11 +342,17 @@ public class DataframeOperators {
 	@no_test
 	public static Boolean saveExcel(final IScope scope, final IDataFrame df, final String path,
 			final String sheetName) {
-		return GamaDataFrame.saveExcelSheet(scope, (GamaDataFrame) df, path, sheetName);
+		try {
+			final String resolvedPath = FileUtils.constructAbsoluteFilePath(scope, path, false);
+			Excel.saver().createMissingDirs().saveSheet(df.getInner(), new File(resolvedPath), sheetName);
+			return true;
+		} catch (final Exception e) {
+			throw GamaRuntimeException.error("Failed to save Excel file: " + path + " - " + e.getMessage(), scope);
+		}
 	}
 
 	/**
-	 * Saves multiple dataframes to a single Excel workbook, one per sheet.
+	 * Saves multiple dataframes to a single Excel workbook, one per sheet. TODO WARNING: Should use the save statement
 	 */
 	@operator (
 			value = "df_save_excel_sheets",
@@ -332,9 +360,10 @@ public class DataframeOperators {
 			category = { IOperatorCategory.DATAFRAME, IOperatorCategory.FILE },
 			concept = { IConcept.DATAFRAME, IConcept.FILE })
 	@doc (
-			value = "Saves multiple dataframes to a single Excel workbook (.xlsx). The argument is a map whose keys "
-					+ "are sheet names and values are dataframes. All sheets are written in one pass; existing sheets "
-					+ "in the file that are not in the map are left untouched. Returns true on success.",
+			value = """
+					Saves multiple dataframes to a single Excel workbook (.xlsx). The argument is a map whose keys \
+					are sheet names and values are dataframes. All sheets are written in one pass; existing sheets \
+					in the file that are not in the map are left untouched. Returns true on success.""",
 			usages = { @usage (
 					value = "Save two dataframes as two sheets in one workbook",
 					examples = { @example (
@@ -344,11 +373,22 @@ public class DataframeOperators {
 	@no_test
 	public static Boolean saveExcelSheets(final IScope scope, final IMap<String, IDataFrame> sheets,
 			final String path) {
-		return GamaDataFrame.saveExcelSheets(scope, sheets, path);
+		try {
+			final String resolvedPath = FileUtils.constructAbsoluteFilePath(scope, path, false);
+			final Map<String, DataFrame> dfBySheet = new LinkedHashMap<>();
+			for (final Map.Entry<String, IDataFrame> entry : sheets.entrySet()) {
+				dfBySheet.put(entry.getKey(), entry.getValue().getInner());
+			}
+			Excel.saver().createMissingDirs().save(dfBySheet, new File(resolvedPath));
+			return true;
+		} catch (final Exception e) {
+			throw GamaRuntimeException.error("Failed to save multi-sheet Excel file: " + path + " - " + e.getMessage(),
+					scope);
+		}
 	}
 
 	/**
-	 * Saves a dataframe to a JSON file.
+	 * Saves a dataframe to a JSON file. TODO WARNING: Should use the save statement and use the JSON infrastructure...
 	 */
 	@operator (
 			value = "df_save_json",
@@ -365,11 +405,17 @@ public class DataframeOperators {
 			see = { "df_save_csv", "df_save_excel", "df_load_json" })
 	@no_test
 	public static Boolean saveJson(final IScope scope, final IDataFrame df, final String path) {
-		return GamaDataFrame.saveJson(scope, (GamaDataFrame) df, path);
+		try {
+			final String resolvedPath = FileUtils.constructAbsoluteFilePath(scope, path, false);
+			Json.saver().save(df.getInner(), resolvedPath);
+			return true;
+		} catch (final Exception e) {
+			throw GamaRuntimeException.error("Failed to save JSON file: " + path + " - " + e.getMessage(), scope);
+		}
 	}
 
 	/**
-	 * Saves a dataframe to a Parquet file.
+	 * Saves a dataframe to a Parquet file. TODO WARNING: Should use the save statement
 	 */
 	@operator (
 			value = "df_save_parquet",
@@ -387,7 +433,13 @@ public class DataframeOperators {
 			see = { "df_load_parquet", "df_save_csv", "df_save_json" })
 	@no_test
 	public static Boolean saveParquet(final IScope scope, final IDataFrame df, final String path) {
-		return GamaDataFrame.saveParquet(scope, (GamaDataFrame) df, path);
+		try {
+			final String resolvedPath = FileUtils.constructAbsoluteFilePath(scope, path, false);
+			Parquet.saver().createMissingDirs().save(df.getInner(), new File(resolvedPath));
+			return true;
+		} catch (final Exception e) {
+			throw GamaRuntimeException.error("Failed to save Parquet file: " + path + " - " + e.getMessage(), scope);
+		}
 	}
 
 	/**
@@ -399,10 +451,11 @@ public class DataframeOperators {
 			category = { IOperatorCategory.DATAFRAME, IOperatorCategory.FILE },
 			concept = { IConcept.DATAFRAME, IConcept.DATABASE })
 	@doc (
-			value = "Saves a dataframe to a database table via JDBC. Arguments: the dataframe, the JDBC URL, the user, "
-					+ "the password, and the destination table name. The table must already exist with a compatible schema. "
-					+ "Pass empty strings for user/password if the database does not require credentials. "
-					+ "The corresponding JDBC driver must be available on the classpath. Returns true on success.",
+			value = """
+					Saves a dataframe to a database table via JDBC. Arguments: the dataframe, the JDBC URL, the user, \
+					the password, and the destination table name. The table must already exist with a compatible schema. \
+					Pass empty strings for user/password if the database does not require credentials. \
+					The corresponding JDBC driver must be available on the classpath. Returns true on success.""",
 			usages = { @usage (
 					value = "Save a dataframe to a PostgreSQL table",
 					examples = { @example (
@@ -412,8 +465,14 @@ public class DataframeOperators {
 	@no_test
 	public static Boolean saveTable(final IScope scope, final IDataFrame df, final String jdbcUrl, final String user,
 			final String password, final String tableName) {
-		return GamaDataFrame.saveDatabaseTable(scope, (GamaDataFrame) df, jdbcUrl, emptyToNull(user),
-				emptyToNull(password), tableName);
+		try {
+			final JdbcConnector connector = GamaDataFrameFactory.buildJdbcConnector(jdbcUrl, user, password);
+			connector.tableSaver(tableName).save(df.getInner());
+			return true;
+		} catch (final Exception e) {
+			throw GamaRuntimeException.error("Failed to save dataframe to table '" + tableName + "': " + e.getMessage(),
+					scope);
+		}
 	}
 
 	/**
@@ -561,9 +620,9 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_remove_empty", "df_select_columns" })
 	@test ("df_rows(df_filter(dataframe_with([\"name\",\"city\"], [[\"Alice\",\"Paris\"],[\"Bob\",\"Lyon\"],[\"Eve\",\"Paris\"]]), \"city\", \"Paris\")) = 2")
-	public static GamaDataFrame dfFilter(final IScope scope, final IDataFrame df, final String columnName,
+	public static IDataFrame dfFilter(final IScope scope, final IDataFrame df, final String columnName,
 			final Object value) {
-		return GamaDataFrame.filterRows((GamaDataFrame) df, columnName, value);
+		return df.filterRows(columnName, value);
 	}
 
 	/**
@@ -584,8 +643,8 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_filter", "df_select_columns" })
 	@test ("df_rows(df_remove_empty(dataframe_with([\"name\",\"email\"], [[\"Alice\",\"a@x\"],[\"Bob\",\"\"],[\"Charlie\",nil]]), \"email\")) = 1")
-	public static GamaDataFrame dfRemoveEmpty(final IScope scope, final IDataFrame df, final String columnName) {
-		return GamaDataFrame.removeRowsWithEmptyValues((GamaDataFrame) df, columnName);
+	public static IDataFrame dfRemoveEmpty(final IScope scope, final IDataFrame df, final String columnName) {
+		return df.removeRowsWithEmptyValues(columnName);
 	}
 
 	/**
@@ -606,9 +665,8 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_filter", "df_add_column", "df_columns" })
 	@test ("df_columns(df_select_columns(dataframe_with([\"name\",\"age\",\"city\"], [[\"Alice\",30,\"Paris\"]]), [\"name\",\"city\"])) = [\"name\",\"city\"]")
-	public static GamaDataFrame dfSelectColumns(final IScope scope, final IDataFrame df,
-			final IList<String> columns) {
-		return GamaDataFrame.selectColumns((GamaDataFrame) df, columns);
+	public static IDataFrame dfSelectColumns(final IScope scope, final IDataFrame df, final IList<String> columns) {
+		return df.selectColumns(columns);
 	}
 
 	// ========================= Modification operators =========================
@@ -632,9 +690,9 @@ public class DataframeOperators {
 			see = { "df_add_row", "df_select_columns" })
 	@test ("df_columns(df_add_column(dataframe_with([\"name\"], [[\"Alice\"]]), \"score\", 0)) = [\"name\",\"score\"]")
 	@test ("df_cell(df_add_column(dataframe_with([\"name\"], [[\"Alice\"]]), \"score\", 0), 0, \"score\") = 0")
-	public static GamaDataFrame dfAddColumn(final IScope scope, final IDataFrame df, final String columnName,
+	public static IDataFrame dfAddColumn(final IScope scope, final IDataFrame df, final String columnName,
 			final Object defaultValue) {
-		return GamaDataFrame.addColumn((GamaDataFrame) df, columnName, defaultValue);
+		return df.addColumn(columnName, defaultValue);
 	}
 
 	/**
@@ -656,8 +714,8 @@ public class DataframeOperators {
 			see = { "df_add_column", "df_merge" })
 	@test ("df_rows(df_add_row(dataframe_with([\"name\",\"age\"], [[\"Alice\",30]]), [\"Bob\",25])) = 2")
 	@test ("df_cell(df_add_row(dataframe_with([\"name\",\"age\"], [[\"Alice\",30]]), [\"Bob\",25]), 1, \"name\") = \"Bob\"")
-	public static GamaDataFrame dfAddRow(final IScope scope, final IDataFrame df, final IList<Object> values) {
-		return GamaDataFrame.addRow((GamaDataFrame) df, values);
+	public static IDataFrame dfAddRow(final IScope scope, final IDataFrame df, final IList<Object> values) {
+		return df.addRow(values);
 	}
 
 	// ========================= Combining operators =========================
@@ -681,8 +739,8 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_join", "df_add_row" })
 	@test ("df_rows(df_merge(dataframe_with([\"sensor\",\"value\"], [[\"temp\",22.5]]), dataframe_with([\"sensor\",\"value\"], [[\"temp\",23.1],[\"humidity\",60.0]]))) = 3")
-	public static GamaDataFrame dfMerge(final IScope scope, final IDataFrame df1, final IDataFrame df2) {
-		return GamaDataFrame.mergeDataframes((GamaDataFrame) df1, (GamaDataFrame) df2);
+	public static IDataFrame dfMerge(final IScope scope, final IDataFrame df1, final IDataFrame df2) {
+		return df1.mergeWith(df2);
 	}
 
 	/**
@@ -704,9 +762,9 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_merge" })
 	@test ("df_rows(df_join(dataframe_with([\"id\",\"name\"], [[1,\"Alice\"],[2,\"Bob\"],[3,\"Charlie\"]]), dataframe_with([\"id\",\"salary\"], [[1,55000],[2,48000]]), \"id\")) = 2")
-	public static GamaDataFrame dfJoin(final IScope scope, final IDataFrame df1, final IDataFrame df2,
+	public static IDataFrame dfJoin(final IScope scope, final IDataFrame df1, final IDataFrame df2,
 			final String columnName) {
-		return GamaDataFrame.joinDataframesOnCommonCol((GamaDataFrame) df1, (GamaDataFrame) df2, columnName);
+		return df1.joinOnCommonCol(df2, columnName);
 	}
 
 	// ========================= Pivot operator =========================
@@ -730,36 +788,57 @@ public class DataframeOperators {
 							isExecutable = false) }) },
 			see = { "df_filter", "df_select_columns" })
 	@test ("df_rows(df_pivot(dataframe_with([\"product\",\"quarter\",\"revenue\"], [[\"Widget\",\"Q1\",1000],[\"Widget\",\"Q2\",1500],[\"Gadget\",\"Q1\",800],[\"Gadget\",\"Q2\",950]]), \"product\", \"quarter\", \"revenue\")) = 2")
-	public static GamaDataFrame dfPivot(final IScope scope, final IDataFrame df, final String indexColumn,
+	public static IDataFrame dfPivot(final IScope scope, final IDataFrame df, final String indexColumn,
 			final String pivotColumn, final String valueColumn) {
-		return GamaDataFrame.pivot((GamaDataFrame) df, indexColumn, pivotColumn, valueColumn);
+		return df.pivot(indexColumn, pivotColumn, valueColumn);
 	}
-	
+
+	/**
+	 * Df pretty print.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param df
+	 *            the df
+	 * @return the string
+	 */
 	@operator (
 			value = "df_pretty_print",
 			can_be_const = true,
 			type = IType.STRING,
-			category = {IOperatorCategory.DATAFRAME},
-			concept = {IConcept.DATAFRAME}
-	)
+			category = { IOperatorCategory.DATAFRAME },
+			concept = { IConcept.DATAFRAME })
 	@doc (
-		value = "Creates a string representing the dataframe in a human readable format. The number of rows and columns is limited to 10 and the number of characters per cell to 50."
-	)
+			value = "Creates a string representing the dataframe in a human readable format. The number of rows and columns is limited to 10 and the number of characters per cell to 50.")
 	public static String dfPrettyPrint(final IScope scope, final IDataFrame df) {
 		return GamaDataFrame.prettyPrint(df, 10, 10, 50);
 	}
-	
+
+	/**
+	 * Df pretty print.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param df
+	 *            the df
+	 * @param maxRows
+	 *            the max rows
+	 * @param maxCols
+	 *            the max cols
+	 * @param maxChars
+	 *            the max chars
+	 * @return the string
+	 */
 	@operator (
 			value = "df_pretty_print",
 			can_be_const = true,
 			type = IType.STRING,
-			category = {IOperatorCategory.DATAFRAME},
-			concept = {IConcept.DATAFRAME}
-	)
+			category = { IOperatorCategory.DATAFRAME },
+			concept = { IConcept.DATAFRAME })
 	@doc (
-		value = "Creates a string representing the dataframe in a human readable format. The maximum number of rows, columns and the number of characters per cell to print is defined by the parameters."
-	)
-	public static String dfPrettyPrint(final IScope scope, final IDataFrame df, int maxRows, int maxCols, int maxChars) {
+			value = "Creates a string representing the dataframe in a human readable format. The maximum number of rows, columns and the number of characters per cell to print is defined by the parameters.")
+	public static String dfPrettyPrint(final IScope scope, final IDataFrame df, final int maxRows, final int maxCols,
+			final int maxChars) {
 		return GamaDataFrame.prettyPrint(df, maxRows, maxCols, maxChars);
 	}
 
@@ -769,12 +848,12 @@ public class DataframeOperators {
 	// https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.iloc.html
 	//
 	// Supported forms:
-	//   iloc(df, i)                -> row i as a list of values       (cf. df.iloc[i])
-	//   iloc(df, i, j)             -> scalar cell value               (cf. df.iloc[i, j])
-	//   iloc(df, i, [j,...])       -> row i restricted to given cols  (cf. df.iloc[i, [j,...]])
-	//   iloc(df, [i,...], j)       -> col j restricted to given rows  (cf. df.iloc[[i,...], j])
-	//   iloc(df, [i,...])          -> sub-dataframe with given rows   (cf. df.iloc[[i,...]])
-	//   iloc(df, [i,...], [j,...]) -> sub-dataframe                   (cf. df.iloc[[i,...], [j,...]])
+	// iloc(df, i) -> row i as a list of values (cf. df.iloc[i])
+	// iloc(df, i, j) -> scalar cell value (cf. df.iloc[i, j])
+	// iloc(df, i, [j,...]) -> row i restricted to given cols (cf. df.iloc[i, [j,...]])
+	// iloc(df, [i,...], j) -> col j restricted to given rows (cf. df.iloc[[i,...], j])
+	// iloc(df, [i,...]) -> sub-dataframe with given rows (cf. df.iloc[[i,...]])
+	// iloc(df, [i,...], [j,...]) -> sub-dataframe (cf. df.iloc[[i,...], [j,...]])
 	//
 	// Negative indices are supported on both axes (Python-style: -1 = last element).
 
@@ -800,7 +879,7 @@ public class DataframeOperators {
 	@test ("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 0) = [\"Alice\",30]")
 	@test ("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), -1) = [\"Bob\",25]")
 	public static IList<Object> ilocRow(final IScope scope, final IDataFrame df, final Integer rowIndex) {
-		return GamaDataFrame.ilocRow(scope, (GamaDataFrame) df, rowIndex);
+		return df.ilocRow(scope, rowIndex);
 	}
 
 	/**
@@ -823,9 +902,8 @@ public class DataframeOperators {
 	@test ("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 1, 0) = \"Bob\"")
 	@test ("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 0, 1) = 30")
 	@test ("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), -1, -1) = 25")
-	public static Object iloc(final IScope scope, final IDataFrame df, final Integer rowIndex,
-			final Integer colIndex) {
-		return GamaDataFrame.iloc(scope, (GamaDataFrame) df, rowIndex, colIndex);
+	public static Object iloc(final IScope scope, final IDataFrame df, final Integer rowIndex, final Integer colIndex) {
+		return df.iloc(scope, rowIndex, colIndex);
 	}
 
 	/**
@@ -850,7 +928,7 @@ public class DataframeOperators {
 	@test ("iloc(dataframe_with([\"a\",\"b\",\"c\"], [[1,2,3],[4,5,6]]), 1, [0,2]) = [4,6]")
 	public static IList<Object> ilocRowCols(final IScope scope, final IDataFrame df, final Integer rowIndex,
 			final IList<Integer> colIndices) {
-		return GamaDataFrame.iloc(scope, (GamaDataFrame) df, rowIndex, colIndices);
+		return df.iloc(scope, rowIndex, colIndices);
 	}
 
 	/**
@@ -875,7 +953,7 @@ public class DataframeOperators {
 	@test ("iloc(dataframe_with([\"a\",\"b\",\"c\"], [[1,2,3],[4,5,6],[7,8,9]]), [0,2], 1) = [2,8]")
 	public static IList<Object> ilocRowsCol(final IScope scope, final IDataFrame df, final IList<Integer> rowIndices,
 			final Integer colIndex) {
-		return GamaDataFrame.iloc(scope, (GamaDataFrame) df, rowIndices, colIndex);
+		return df.iloc(scope, rowIndices, colIndex);
 	}
 
 	/**
@@ -898,8 +976,8 @@ public class DataframeOperators {
 			see = { "df_row", "df_filter" })
 	@test ("df_rows(iloc(dataframe_with([\"name\"], [[\"Alice\"],[\"Bob\"],[\"Eve\"]]), [0,2])) = 2")
 	@test ("df_cell(iloc(dataframe_with([\"name\"], [[\"Alice\"],[\"Bob\"],[\"Eve\"]]), [0,2]), 1, \"name\") = \"Eve\"")
-	public static GamaDataFrame ilocRows(final IScope scope, final IDataFrame df, final IList<Integer> rowIndices) {
-		return GamaDataFrame.ilocRows(scope, (GamaDataFrame) df, rowIndices);
+	public static IDataFrame ilocRows(final IScope scope, final IDataFrame df, final IList<Integer> rowIndices) {
+		return df.ilocRows(scope, rowIndices);
 	}
 
 	/**
@@ -912,9 +990,10 @@ public class DataframeOperators {
 			category = { IOperatorCategory.DATAFRAME },
 			concept = { IConcept.DATAFRAME })
 	@doc (
-			value = "Pandas-style df.iloc[[i, ...], [j, ...]]: returns a new dataframe containing only the rows and "
-					+ "columns at the given integer indices, in the order of the input indices. Negative indices are "
-					+ "supported on both axes.",
+			value = """
+					Pandas-style df.iloc[[i, ...], [j, ...]]: returns a new dataframe containing only the rows and \
+					columns at the given integer indices, in the order of the input indices. Negative indices are \
+					supported on both axes.""",
 			usages = { @usage (
 					value = "Select rows 0 and 2, columns 0 and 1",
 					examples = { @example (
@@ -923,79 +1002,9 @@ public class DataframeOperators {
 			see = { "df_select_columns", "df_filter" })
 	@test ("df_columns(iloc(dataframe_with([\"a\",\"b\",\"c\"], [[1,2,3],[4,5,6]]), [0], [0,2])) = [\"a\",\"c\"]")
 	@test ("df_cell(iloc(dataframe_with([\"a\",\"b\",\"c\"], [[1,2,3],[4,5,6]]), [1], [2]), 0, \"c\") = 6")
-	public static GamaDataFrame iloc(final IScope scope, final IDataFrame df, final IList<Integer> rowIndices,
+	public static IDataFrame iloc(final IScope scope, final IDataFrame df, final IList<Integer> rowIndices,
 			final IList<Integer> colIndices) {
-		return GamaDataFrame.iloc(scope, (GamaDataFrame) df, rowIndices, colIndices);
+		return df.iloc(scope, rowIndices, colIndices);
 	}
 
-	// ========================= Outgoing conversions =========================
-
-	/**
-	 * Converts a dataframe into a map (column name -> column values).
-	 */
-	@operator (
-			value = "df_to_map",
-			can_be_const = true,
-			type = IType.MAP,
-			category = { IOperatorCategory.DATAFRAME },
-			concept = { IConcept.DATAFRAME, IConcept.MAP })
-	@doc (
-			value = "Converts a dataframe into an ordered map whose keys are column names and whose values are "
-					+ "lists of column values.",
-			usages = { @usage (
-					value = "Convert a dataframe to a map",
-					examples = { @example (
-							value = "map<string,list> m <- df_to_map(my_df);",
-							isExecutable = false) }) },
-			see = { "df_to_matrix", "df_to_field", "dataframe_with" })
-	@test ("df_to_map(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]))[\"name\"] = [\"Alice\",\"Bob\"]")
-	public static IMap<String, IList<Object>> dfToMap(final IScope scope, final IDataFrame df) {
-		return GamaDataFrame.toMap(scope, (GamaDataFrame) df);
-	}
-
-	/**
-	 * Converts a dataframe into an object matrix.
-	 */
-	@operator (
-			value = "df_to_matrix",
-			can_be_const = true,
-			type = IType.MATRIX,
-			category = { IOperatorCategory.DATAFRAME },
-			concept = { IConcept.DATAFRAME, IConcept.MATRIX })
-	@doc (
-			value = "Converts a dataframe into a matrix with the same shape. Column names are dropped. "
-					+ "Cell values are kept as-is (object matrix).",
-			usages = { @usage (
-					value = "Convert a dataframe to a matrix",
-					examples = { @example (
-							value = "matrix m <- df_to_matrix(my_df);",
-							isExecutable = false) }) },
-			see = { "df_to_map", "df_to_field" })
-	@test ("df_to_matrix(dataframe_with([\"a\",\"b\"], [[1,2],[3,4]])) = matrix([[1,3],[2,4]])")
-	public static IMatrix<Object> dfToMatrix(final IScope scope, final IDataFrame df) {
-		return GamaDataFrame.toMatrix(scope, (GamaDataFrame) df, df.getContentType(scope));
-	}
-
-	/**
-	 * Converts a dataframe into a GAMA field of float values.
-	 */
-	@operator (
-			value = "df_to_field",
-			can_be_const = true,
-			type = IType.FIELD,
-			category = { IOperatorCategory.DATAFRAME },
-			concept = { IConcept.DATAFRAME })
-	@doc (
-			value = "Converts a dataframe into a field of float values. All cells must be numeric (or parseable as "
-					+ "float); null cells become 0.0. Column names are dropped.",
-			usages = { @usage (
-					value = "Convert a numeric dataframe to a field",
-					examples = { @example (
-							value = "field f <- df_to_field(my_df);",
-							isExecutable = false) }) },
-			see = { "df_to_matrix", "df_to_map" })
-	@no_test
-	public static IField dfToField(final IScope scope, final IDataFrame df) {
-		return GamaDataFrame.toField(scope, (GamaDataFrame) df);
-	}
 }
