@@ -1,0 +1,22 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: GAMA Developer Tools
+Bundle-SymbolicName: gama.ui.devtools;singleton:=true
+Bundle-Version: 0.0.0.qualifier
+Bundle-Vendor: UMMISCO
+Bundle-Activator: gama.ui.devtools.GamaDevToolsActivator
+Bundle-RequiredExecutionEnvironment: JavaSE-25
+Bundle-ActivationPolicy: lazy
+Automatic-Module-Name: gama.ui.devtools
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.core.resources,
+ org.eclipse.ui,
+ org.eclipse.ui.ide,
+ org.eclipse.jdt.core,
+ org.eclipse.pde.core,
+ org.eclipse.jface,
+ gama.dev
+Export-Package: gama.ui.devtools,
+ gama.ui.devtools.handlers,
+ gama.ui.devtools.wizards,
+ gama.ui.devtools.preferences

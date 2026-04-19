@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="gama.feature.devtools"
+      label="GAMA Developer Tools"
+      version="0.0.0.qualifier"
+      provider-name="UMMISCO">
+
+   <description url="http://gama-platform.org">
+      Installs the GAMA Developer Tools plugin, which provides wizards for creating new
+      GAMA plugins, skills, operators, and actions, as well as a Really Refresh utility
+      for cleaning and rebuilding the GAMA development workspace.
+   </description>
+
+   <copyright>
+      (c) 2007-2026 UMI 209 UMMISCO IRD/SU &amp; Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+   </copyright>
+
+   <license url="https://github.com/gama-platform/gama/blob/master/LICENSE">
+      GNU General Public License v3.0 or later.
+      See https://github.com/gama-platform/gama/blob/master/LICENSE for the full text.
+   </license>
+
+   <url>
+      <update label="GAMA 0.0.0 Update Site" url="https://updates.gama-platform.org/0.0.0"/>
+   </url>
+
+   <plugin
+         id="gama.ui.devtools"
+         version="0.0.0"/>
+
+</feature>
