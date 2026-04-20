@@ -21,6 +21,7 @@ import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
 import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
+import gama.api.types.matrix.IMatrix;
 import gama.api.types.misc.IContainer;
 
 /**
@@ -35,35 +36,26 @@ import gama.api.types.misc.IContainer;
  * @author GAMA Team
  */
 @vars ({ @variable (
-		name = IDataFrame.COLUMNS,
-		type = IType.LIST,
-		of = IType.STRING,
-		doc = { @doc ("Returns the list of column names of this dataframe") }),
+		name = IMatrix.COLUMNS,
+		type = IType.INT,
+		doc = { @doc ("Returns the number of columns of this dataframe") }),
 		@variable (
-				name = IDataFrame.ROWS,
+				name = IMatrix.ROWS,
 				type = IType.INT,
 				doc = { @doc ("Returns the number of rows of this dataframe") }),
 		@variable (
-				name = IDataFrame.COLS,
-				type = IType.INT,
-				doc = { @doc ("Returns the number of columns of this dataframe") }) })
+				name = IMap.KEYS,
+				type = IType.LIST,
+				of = IType.STRING,
+				doc = { @doc ("Returns the list of column names ('keys') of this dataframe") }) })
 public interface IDataFrame extends IContainer.Addressable<String, IList<Object>, String, Object> {
-
-	/** Pseudo-variable name for the list of column names. */
-	String COLUMNS = "columns";
-
-	/** Pseudo-variable name for the number of rows. */
-	String ROWS = "rows";
-
-	/** Pseudo-variable name for the number of columns. */
-	String COLS = "cols";
 
 	/**
 	 * Returns the list of column names.
 	 *
 	 * @return the column names as a list of strings
 	 */
-	@getter (COLUMNS)
+	@getter (IMap.KEYS)
 	IList<String> getColumns();
 
 	/**
@@ -71,7 +63,7 @@ public interface IDataFrame extends IContainer.Addressable<String, IList<Object>
 	 *
 	 * @return the row count
 	 */
-	@getter (ROWS)
+	@getter (IMatrix.ROWS)
 	int getRows();
 
 	/**
@@ -79,7 +71,7 @@ public interface IDataFrame extends IContainer.Addressable<String, IList<Object>
 	 *
 	 * @return the column count
 	 */
-	@getter (COLS)
+	@getter (IMatrix.COLUMNS)
 	int getCols();
 
 	/**
