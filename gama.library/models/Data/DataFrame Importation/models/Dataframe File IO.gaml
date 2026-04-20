@@ -15,25 +15,25 @@ global {
 		// ===== 1. Load CSV (default: comma, header, UTF-8) =====
 		write "===== CSV Import =====";
 		dataframe csv_data <- df_load_csv("../includes/sample_data.csv");
-		write "Loaded CSV: " + df_rows(csv_data) + " rows, columns: " + df_columns(csv_data);
+		write "Loaded CSV: " + (csv_data.rows) + " rows, columns: " + (csv_data.keys);
 
 		// ===== 2. Load CSV with custom separator and encoding =====
 		write "";
 		write "===== CSV Import (semicolon, ISO-8859-1) =====";
 		dataframe csv_semi <- df_load_csv_with("../includes/sample_data_fr.csv", ";", true, "ISO-8859-1");
-		write "Loaded: " + df_rows(csv_semi) + " rows, columns: " + df_columns(csv_semi);
+		write "Loaded: " + (csv_semi.rows) + " rows, columns: " + (csv_semi.keys);
 
 		// ===== 3. Load CSV without header =====
 		write "";
 		write "===== CSV Import (no header) =====";
 		dataframe csv_noheader <- df_load_csv_with("../includes/sample_noheader.csv", ",", false, "UTF-8");
-		write "Loaded: " + df_rows(csv_noheader) + " rows, auto-generated columns: " + df_columns(csv_noheader);
+		write "Loaded: " + (csv_noheader.rows) + " rows, auto-generated columns: " + (csv_noheader.keys);
 
 		// ===== 4. Load Excel =====
 		write "";
 		write "===== Excel Import =====";
 		dataframe excel_data <- df_load_excel("../includes/sample_data.xlsx");
-		write "Loaded Excel: " + df_rows(excel_data) + " rows, columns: " + df_columns(excel_data);
+		write "Loaded Excel: " + (excel_data.rows) + " rows, columns: " + (excel_data.keys);
 
 		// ===== 5. Load JSON =====
 		write "";
@@ -71,7 +71,7 @@ global {
 		write "";
 		write "===== Round-trip =====";
 		dataframe reloaded <- df_load_csv("../results/cities.csv");
-		write "Reloaded: " + df_rows(reloaded) + " rows, columns: " + df_columns(reloaded);
+		write "Reloaded: " + (reloaded.rows) + " rows, columns: " + (reloaded.keys);
 		write "First city: " + df_cell(reloaded, 0, "city");
 	}
 }

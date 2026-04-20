@@ -23,8 +23,8 @@ global {
 			[["temp", 23.1], ["humidity", 58.5], ["pressure", 1013.2]]
 		);
 		dataframe all_readings <- df_merge(batch1, batch2);
-		write "Merged: " + df_rows(all_readings) + " rows";
-		loop i from: 0 to: df_rows(all_readings) - 1 {
+		write "Merged: " + (all_readings.rows) + " rows";
+		loop i from: 0 to: (all_readings.rows) - 1 {
 			write "  " + df_cell(all_readings, i, "sensor") + " = " + df_cell(all_readings, i, "value");
 		}
 
@@ -41,9 +41,9 @@ global {
 		);
 		// Inner join: only employees with matching salary records
 		dataframe employee_data <- df_join(people, salaries, "id");
-		write "Joined: " + df_rows(employee_data) + " rows (Charlie excluded: no salary record)";
-		write "Columns: " + df_columns(employee_data);
-		loop i from: 0 to: df_rows(employee_data) - 1 {
+		write "Joined: " + (employee_data.rows) + " rows (Charlie excluded: no salary record)";
+		write "Columns: " + (employee_data.keys);
+		loop i from: 0 to: (employee_data.rows) - 1 {
 			write "  " + df_cell(employee_data, i, "name") + " earns " + df_cell(employee_data, i, "salary");
 		}
 
@@ -65,10 +65,10 @@ global {
 
 		// Pivot: rows = products, columns = quarters, values = revenue
 		dataframe pivot_table <- df_pivot(sales, "product", "quarter", "revenue");
-		write "Pivoted: " + df_rows(pivot_table) + " rows x " + df_columns(pivot_table);
-		loop i from: 0 to: df_rows(pivot_table) - 1 {
+		write "Pivoted: " + (pivot_table.rows) + " rows x " + (pivot_table.columns);
+		loop i from: 0 to: (pivot_table.rows) - 1 {
 			string line <- "  " + df_cell(pivot_table, i, "product");
-			loop col over: df_columns(pivot_table) {
+			loop col over: pivot_table.keys {
 				if (col != "product") {
 					line <- line + "  |  " + col + "=" + df_cell(pivot_table, i, col);
 				}

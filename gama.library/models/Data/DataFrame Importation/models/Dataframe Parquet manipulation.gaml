@@ -8,7 +8,7 @@
 *
 *   Key operations demonstrated:
 *     - df_load_parquet: load a .parquet file
-*     - df_columns / df_column_types: inspect schema
+*     - keys / df_column_types: inspect schema
 *     - df_filter / df_remove_empty: clean and subset data
 *     - df_select_columns: keep only relevant columns
 *     - df_column / df_cell: access values
@@ -68,8 +68,8 @@ global {
 
 		// ===== 1. Schema inspection =====
 		write "===== Schema =====";
-		write "Rows    : " + df_rows(listings);
-		write "Columns : " + df_columns(listings);
+		write "Rows    : " + (listings.rows);
+		write "Columns : " + (listings.keys);
 		write "";
 		write "First 5 rows (cols 0-7):";
 		write df_pretty_print(iloc(listings, range(0, 4), range(0, 7)), 5, 8, 20);
@@ -89,9 +89,9 @@ global {
 		// ===== 3. Single-pass aggregation over all listings =====
 		// We iterate once and fill all maps simultaneously for efficiency.
 		write "";
-		write "===== Aggregating (single pass over all " + df_rows(listings) + " listings) =====";
+		write "===== Aggregating (single pass over all " + (listings.rows) + " listings) =====";
 
-		int total <- df_rows(listings);
+		int total <- listings.rows;
 		loop i from: 0 to: total - 1 {
 
 			// — city count and revenue
@@ -211,21 +211,21 @@ global {
 			"rating_overall"
 		);
 
-		write "Rows : " + df_rows(seminyak_entire);
+		write "Rows : " + (seminyak_entire.rows);
 		write df_pretty_print(iloc(seminyak_entire, range(0, 4)), 5, 9, 16);
 
 		// Top-rated (>= 4.9)
-		dataframe top_rated <- dataframe_with(df_columns(seminyak_entire), []);
-		loop i from: 0 to: df_rows(seminyak_entire) - 1 {
+		dataframe top_rated <- dataframe_with((seminyak_entire.keys), []);
+		loop i from: 0 to: (seminyak_entire.rows) - 1 {
 			string rv <- string(df_cell(seminyak_entire, i, "rating_overall"));
 			if rv != nil and rv != "" and float(rv) >= 4.9 {
 				top_rated <- df_add_row(top_rated, df_row(seminyak_entire, i));
 			}
 		}
 		write "";
-		write "Top-rated (>= 4.9) : " + df_rows(top_rated) + " listings";
-		if df_rows(top_rated) > 0 {
-			write df_pretty_print(iloc(top_rated, range(0, min(4, df_rows(top_rated) - 1))), 5, 9, 16);
+		write "Top-rated (>= 4.9) : " + (top_rated.rows) + " listings";
+		if (top_rated.rows) > 0 {
+			write df_pretty_print(iloc(top_rated, range(0, min(4, (top_rated.rows) - 1))), 5, 9, 16);
 		}
 
 		// ===== 6. Save =====

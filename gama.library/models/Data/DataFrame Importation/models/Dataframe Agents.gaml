@@ -15,11 +15,11 @@ global {
 	dataframe iris_df <- df_load_csv("../includes/iris.csv");
 
 	init {
-		write "Loaded " + df_rows(iris_df) + " iris records";
-		write "Columns: " + df_columns(iris_df);
+		write "Loaded " + iris_df.rows + " iris records";
+		write "Columns: " + iris_df.keys;
 
 		// Create agents from the dataframe rows
-		loop i from: 0 to: df_rows(iris_df) - 1 {
+		loop i from: 0 to: iris_df.rows - 1 {
 			create iris_flower(sepal_length: float(df_cell(iris_df, i, "sepallength")),
 				sepal_width: float(df_cell(iris_df, i, "sepalwidth")),
 				petal_length: float(df_cell(iris_df, i, "petallength")),
@@ -34,7 +34,7 @@ global {
 		dataframe virginica <- df_filter(iris_df, "type", "Iris-virginica");
 		dataframe versicolor <- df_filter(iris_df, "type", "Iris-versicolor");
 
-		write "Setosa: " + df_rows(setosa) + ", Virginica: " + df_rows(virginica) + ", Versicolor: " + df_rows(versicolor);
+		write "Setosa: " + setosa.rows + ", Virginica: " + virginica.rows + ", Versicolor: " + versicolor.rows;
 	}
 }
 

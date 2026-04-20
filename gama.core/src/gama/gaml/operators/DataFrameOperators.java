@@ -79,8 +79,8 @@ public class DataFrameOperators {
 					examples = { @example (
 							value = "dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]])",
 							isExecutable = false) }) })
-	@test ("df_rows(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]])) = 2")
-	@test ("df_columns(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]])) = [\"name\",\"age\"]")
+	@test ("(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]])).rows = 2")
+	@test ("(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]])).keys = [\"name\",\"age\"]")
 	public static IDataFrame dataframeWith(final IScope scope, final IList<String> columns, final IList<IList> data) {
 		return GamaDataFrameFactory.create(scope, columns, data);
 	}
@@ -501,7 +501,7 @@ public class DataFrameOperators {
 					examples = { @example (
 							value = "list names <- df_column(my_df, \"name\");",
 							isExecutable = false) }) },
-			see = { "df_row", "df_cell", "df_columns" })
+			see = { "df_add_column" })
 	@test ("df_column(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), \"name\") = [\"Alice\",\"Bob\"]")
 	public static IList<Object> dfColumn(final IScope scope, final IDataFrame df, final String columnName) {
 		return df.getColumnValues(columnName);
@@ -524,7 +524,7 @@ public class DataFrameOperators {
 					examples = { @example (
 							value = "list row_data <- df_row(my_df, 0);",
 							isExecutable = false) }) },
-			see = { "df_column", "df_cell", "df_rows" })
+			see = { "df_column", "df_cell" })
 	@test ("df_row(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 0) = [\"Alice\",30]")
 	public static IList<Object> dfRow(final IScope scope, final IDataFrame df, final Integer rowIndex) {
 		if (rowIndex < 0 || rowIndex >= df.getRows())
@@ -556,50 +556,6 @@ public class DataFrameOperators {
 		return df.getCellValue(rowIndex, columnName);
 	}
 
-	/**
-	 * Returns the list of column names.
-	 */
-	@operator (
-			value = "df_columns",
-			can_be_const = true,
-			content_type = IType.STRING,
-			type = IType.LIST,
-			category = { IOperatorCategory.DATAFRAME },
-			concept = { IConcept.DATAFRAME })
-	@doc (
-			value = "Returns the list of column names of the dataframe.",
-			usages = { @usage (
-					value = "Get the column names",
-					examples = { @example (
-							value = "list<string> cols <- df_columns(my_df);",
-							isExecutable = false) }) },
-			see = { "df_rows", "df_column" })
-	@test ("df_columns(dataframe_with([\"name\",\"age\",\"city\"], [[\"Alice\",30,\"Paris\"]])) = [\"name\",\"age\",\"city\"]")
-	public static IList<String> dfColumns(final IScope scope, final IDataFrame df) {
-		return df.getColumns();
-	}
-
-	/**
-	 * Returns the number of rows.
-	 */
-	@operator (
-			value = "df_rows",
-			can_be_const = true,
-			category = { IOperatorCategory.DATAFRAME },
-			concept = { IConcept.DATAFRAME })
-	@doc (
-			value = "Returns the number of rows in the dataframe.",
-			usages = { @usage (
-					value = "Get the row count",
-					examples = { @example (
-							value = "int n <- df_rows(my_df);",
-							isExecutable = false) }) },
-			see = { "df_columns", "df_row" })
-	@test ("df_rows(dataframe_with([\"name\"], [[\"Alice\"],[\"Bob\"],[\"Charlie\"]])) = 3")
-	public static Integer dfRows(final IScope scope, final IDataFrame df) {
-		return df.getRows();
-	}
-
 	// ========================= Filtering operators =========================
 
 	/**
@@ -619,7 +575,7 @@ public class DataFrameOperators {
 							value = "dataframe df2 <- df_filter(my_df, \"city\", \"Paris\");",
 							isExecutable = false) }) },
 			see = { "df_remove_empty", "df_select_columns" })
-	@test ("df_rows(df_filter(dataframe_with([\"name\",\"city\"], [[\"Alice\",\"Paris\"],[\"Bob\",\"Lyon\"],[\"Eve\",\"Paris\"]]), \"city\", \"Paris\")) = 2")
+	@test ("(df_filter(dataframe_with([\"name\",\"city\"], [[\"Alice\",\"Paris\"],[\"Bob\",\"Lyon\"],[\"Eve\",\"Paris\"]]), \"city\", \"Paris\")).rows = 2")
 	public static IDataFrame dfFilter(final IScope scope, final IDataFrame df, final String columnName,
 			final Object value) {
 		return df.filterRows(columnName, value);
@@ -642,7 +598,7 @@ public class DataFrameOperators {
 							value = "dataframe df2 <- df_remove_empty(my_df, \"name\");",
 							isExecutable = false) }) },
 			see = { "df_filter", "df_select_columns" })
-	@test ("df_rows(df_remove_empty(dataframe_with([\"name\",\"email\"], [[\"Alice\",\"a@x\"],[\"Bob\",\"\"],[\"Charlie\",nil]]), \"email\")) = 1")
+	@test ("(df_remove_empty(dataframe_with([\"name\",\"email\"], [[\"Alice\",\"a@x\"],[\"Bob\",\"\"],[\"Charlie\",nil]]), \"email\")).rows = 1")
 	public static IDataFrame dfRemoveEmpty(final IScope scope, final IDataFrame df, final String columnName) {
 		return df.removeRowsWithEmptyValues(columnName);
 	}
@@ -663,8 +619,8 @@ public class DataFrameOperators {
 					examples = { @example (
 							value = "dataframe df2 <- df_select_columns(my_df, [\"name\", \"age\"]);",
 							isExecutable = false) }) },
-			see = { "df_filter", "df_add_column", "df_columns" })
-	@test ("df_columns(df_select_columns(dataframe_with([\"name\",\"age\",\"city\"], [[\"Alice\",30,\"Paris\"]]), [\"name\",\"city\"])) = [\"name\",\"city\"]")
+			see = { "df_filter", "df_add_column" })
+	@test ("(df_select_columns(dataframe_with([\"name\",\"age\",\"city\"], [[\"Alice\",30,\"Paris\"]]), [\"name\",\"city\"])).keys = [\"name\",\"city\"]")
 	public static IDataFrame dfSelectColumns(final IScope scope, final IDataFrame df, final IList<String> columns) {
 		return df.selectColumns(columns);
 	}
@@ -688,7 +644,7 @@ public class DataFrameOperators {
 							value = "dataframe df2 <- df_add_column(my_df, \"score\", 0);",
 							isExecutable = false) }) },
 			see = { "df_add_row", "df_select_columns" })
-	@test ("df_columns(df_add_column(dataframe_with([\"name\"], [[\"Alice\"]]), \"score\", 0)) = [\"name\",\"score\"]")
+	@test ("(df_add_column(dataframe_with([\"name\"], [[\"Alice\"]]), \"score\", 0)).keys = [\"name\",\"score\"]")
 	@test ("df_cell(df_add_column(dataframe_with([\"name\"], [[\"Alice\"]]), \"score\", 0), 0, \"score\") = 0")
 	public static IDataFrame dfAddColumn(final IScope scope, final IDataFrame df, final String columnName,
 			final Object defaultValue) {
@@ -712,7 +668,7 @@ public class DataFrameOperators {
 							value = "dataframe df2 <- df_add_row(my_df, [\"Charlie\", 35, \"Marseille\"]);",
 							isExecutable = false) }) },
 			see = { "df_add_column", "df_merge" })
-	@test ("df_rows(df_add_row(dataframe_with([\"name\",\"age\"], [[\"Alice\",30]]), [\"Bob\",25])) = 2")
+	@test ("(df_add_row(dataframe_with([\"name\",\"age\"], [[\"Alice\",30]]), [\"Bob\",25])).rows = 2")
 	@test ("df_cell(df_add_row(dataframe_with([\"name\",\"age\"], [[\"Alice\",30]]), [\"Bob\",25]), 1, \"name\") = \"Bob\"")
 	public static IDataFrame dfAddRow(final IScope scope, final IDataFrame df, final IList<Object> values) {
 		return df.addRow(values);
@@ -738,7 +694,7 @@ public class DataFrameOperators {
 							value = "dataframe merged <- df_merge(df1, df2);",
 							isExecutable = false) }) },
 			see = { "df_join", "df_add_row" })
-	@test ("df_rows(df_merge(dataframe_with([\"sensor\",\"value\"], [[\"temp\",22.5]]), dataframe_with([\"sensor\",\"value\"], [[\"temp\",23.1],[\"humidity\",60.0]]))) = 3")
+	@test ("(df_merge(dataframe_with([\"sensor\",\"value\"], [[\"temp\",22.5]]), dataframe_with([\"sensor\",\"value\"], [[\"temp\",23.1],[\"humidity\",60.0]]))).rows = 3")
 	public static IDataFrame dfMerge(final IScope scope, final IDataFrame df1, final IDataFrame df2) {
 		return df1.mergeWith(df2);
 	}
@@ -761,7 +717,7 @@ public class DataFrameOperators {
 							value = "dataframe joined <- df_join(df_people, df_scores, \"id\");",
 							isExecutable = false) }) },
 			see = { "df_merge" })
-	@test ("df_rows(df_join(dataframe_with([\"id\",\"name\"], [[1,\"Alice\"],[2,\"Bob\"],[3,\"Charlie\"]]), dataframe_with([\"id\",\"salary\"], [[1,55000],[2,48000]]), \"id\")) = 2")
+	@test ("(df_join(dataframe_with([\"id\",\"name\"], [[1,\"Alice\"],[2,\"Bob\"],[3,\"Charlie\"]]), dataframe_with([\"id\",\"salary\"], [[1,55000],[2,48000]]), \"id\")).rows = 2")
 	public static IDataFrame dfJoin(final IScope scope, final IDataFrame df1, final IDataFrame df2,
 			final String columnName) {
 		return df1.joinOnCommonCol(df2, columnName);
@@ -787,7 +743,7 @@ public class DataFrameOperators {
 							value = "dataframe pivoted <- df_pivot(sales_df, \"product\", \"quarter\", \"revenue\");",
 							isExecutable = false) }) },
 			see = { "df_filter", "df_select_columns" })
-	@test ("df_rows(df_pivot(dataframe_with([\"product\",\"quarter\",\"revenue\"], [[\"Widget\",\"Q1\",1000],[\"Widget\",\"Q2\",1500],[\"Gadget\",\"Q1\",800],[\"Gadget\",\"Q2\",950]]), \"product\", \"quarter\", \"revenue\")) = 2")
+	@test ("(df_pivot(dataframe_with([\"product\",\"quarter\",\"revenue\"], [[\"Widget\",\"Q1\",1000],[\"Widget\",\"Q2\",1500],[\"Gadget\",\"Q1\",800],[\"Gadget\",\"Q2\",950]]), \"product\", \"quarter\", \"revenue\")).rows = 2")
 	public static IDataFrame dfPivot(final IScope scope, final IDataFrame df, final String indexColumn,
 			final String pivotColumn, final String valueColumn) {
 		return df.pivot(indexColumn, pivotColumn, valueColumn);
@@ -974,7 +930,7 @@ public class DataFrameOperators {
 							value = "dataframe sub <- iloc(my_df, [0, 2]);",
 							isExecutable = false) }) },
 			see = { "df_row", "df_filter" })
-	@test ("df_rows(iloc(dataframe_with([\"name\"], [[\"Alice\"],[\"Bob\"],[\"Eve\"]]), [0,2])) = 2")
+	@test ("(iloc(dataframe_with([\"name\"], [[\"Alice\"],[\"Bob\"],[\"Eve\"]]), [0,2])).rows = 2")
 	@test ("df_cell(iloc(dataframe_with([\"name\"], [[\"Alice\"],[\"Bob\"],[\"Eve\"]]), [0,2]), 1, \"name\") = \"Eve\"")
 	public static IDataFrame ilocRows(final IScope scope, final IDataFrame df, final IList<Integer> rowIndices) {
 		return df.ilocRows(scope, rowIndices);
@@ -1000,7 +956,7 @@ public class DataFrameOperators {
 							value = "dataframe sub <- iloc(my_df, [0, 2], [0, 1]);",
 							isExecutable = false) }) },
 			see = { "df_select_columns", "df_filter" })
-	@test ("df_columns(iloc(dataframe_with([\"a\",\"b\",\"c\"], [[1,2,3],[4,5,6]]), [0], [0,2])) = [\"a\",\"c\"]")
+	@test ("(iloc(dataframe_with([\"a\",\"b\",\"c\"], [[1,2,3],[4,5,6]]), [0], [0,2])).keys = [\"a\",\"c\"]")
 	@test ("df_cell(iloc(dataframe_with([\"a\",\"b\",\"c\"], [[1,2,3],[4,5,6]]), [1], [2]), 0, \"c\") = 6")
 	public static IDataFrame iloc(final IScope scope, final IDataFrame df, final IList<Integer> rowIndices,
 			final IList<Integer> colIndices) {

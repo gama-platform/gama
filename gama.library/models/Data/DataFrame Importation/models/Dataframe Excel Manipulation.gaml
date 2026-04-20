@@ -134,7 +134,7 @@ global {
 		write "";
 		write "===== High-value transactions (unit_price >= 5.0) =====";
 		dataframe high_value <- dataframe_with(df_columns(transactions), []);
-		int total <- df_rows(transactions);
+		int total <- (transactions.rows);
 		loop i from: 0 to: total - 1 {
 			if float(df_cell(transactions, i, "unit_price")) >= 5.0 {
 				high_value <- df_add_row(high_value, df_row(transactions, i));
@@ -171,7 +171,7 @@ experiment "Explore Coffee Sales" type: gui {
 
 		display "Revenue by Store" type: 2d {
 			chart "Revenue by Store Location" type: pie {
-				loop i from: 0 to: df_rows(by_store) - 1 {
+				loop i from: 0 to: (by_store.rows) - 1 {
 					data string(df_cell(by_store, i, "store"))
 						value: float(df_cell(by_store, i, "revenue"));
 				}
@@ -180,7 +180,7 @@ experiment "Explore Coffee Sales" type: gui {
 
 		display "Revenue by Category" type: 2d {
 			chart "Revenue by Product Category" type: histogram {
-				loop i from: 0 to: df_rows(by_category) - 1 {
+				loop i from: 0 to: (by_category.rows) - 1 {
 					data string(df_cell(by_category, i, "category"))
 						value: float(df_cell(by_category, i, "revenue"));
 				}
@@ -189,7 +189,7 @@ experiment "Explore Coffee Sales" type: gui {
 
 		display "Avg Price by Category" type: 2d {
 			chart "Average Unit Price by Product Category" type: histogram {
-				loop i from: 0 to: df_rows(by_category) - 1 {
+				loop i from: 0 to: (by_category.rows) - 1 {
 					data string(df_cell(by_category, i, "category"))
 						value: float(df_cell(by_category, i, "avg_price"));
 				}

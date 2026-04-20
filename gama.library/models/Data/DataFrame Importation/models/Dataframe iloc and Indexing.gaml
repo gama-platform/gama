@@ -38,8 +38,8 @@ global {
 		// ===== 1. Column metadata =====
 		write "";
 		write "===== Column metadata =====";
-		write "Columns      : " + df_columns(sensors);
-		write "Row count    : " + df_rows(sensors);
+		write "Columns      : " + (sensors.keys);
+		write "Row count    : " + (sensors.rows);
 
 		// ===== 2. iloc(df, i) — single row as a list =====
 		write "";
@@ -106,7 +106,7 @@ global {
 		write "";
 		write "===== Row iteration with iloc =====";
 		write "All sensor readings (iloc loop):";
-		loop i from: 0 to: df_rows(sensors) - 1 {
+		loop i from: 0 to: (sensors.rows) - 1 {
 			list row <- iloc(sensors, i);
 			write "  [" + i + "] id=" + row[0] + "  " + row[1] + " @ " + row[2] + " -> " + row[3] + " " + row[4];
 		}

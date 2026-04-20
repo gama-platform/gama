@@ -17,8 +17,8 @@ global {
 
 	init {
 		write "===== Dataframe loaded from CSV =====";
-		write "Columns: " + df_columns(iris_data);
-		write "Number of rows: " + df_rows(iris_data);
+		write "Columns: " + iris_data.keys;
+		write "Number of rows: " + iris_data.rows;
 		write "";
 
 		// Access a specific column
@@ -36,9 +36,9 @@ global {
 		// Use pseudo-variables
 		write "";
 		write "===== Pseudo-variables =====";
-		write "iris_data.columns = " + iris_data.columns;
+		write "iris_data.keys (column names) = " + iris_data.keys;
 		write "iris_data.rows = " + iris_data.rows;
-		write "iris_data.cols = " + iris_data.cols;
+		write "iris_data.columns = " + iris_data.columns;
 	}
 }
 
