@@ -61,7 +61,7 @@ global {
 				["Gadget", "Q3", 1100]
 			]
 		);
-		write "Original sales data: " + df_rows(sales) + " rows";
+		write "Original sales data: " + sales.rows + " rows";
 
 		// Pivot: rows = products, columns = quarters, values = revenue
 		dataframe pivot_table <- df_pivot(sales, "product", "quarter", "revenue");

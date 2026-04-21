@@ -127,8 +127,8 @@ global {
 		write "";
 		write "===== Negative index tricks =====";
 		// Last column of all rows via mixed iloc
-		int last_col <- length(df_columns(sensors)) - 1;
-		list units <- iloc(sensors, range(0, df_rows(sensors) - 1), last_col);
+		int last_col <- length(sensors.keys) - 1;
+		list units <- iloc(sensors, range(0, (sensors.rows) - 1), last_col);
 		write "All units (last column): " + units;
 
 		// First and last row values for column 3 (value)

@@ -47,8 +47,8 @@ global {
 
 		// ===== 1. Schema inspection =====
 		write "===== Schema =====";
-		write "Rows    : " + df_rows(transactions);
-		write "Columns : " + df_columns(transactions);
+		write "Rows    : " + (transactions.rows);
+		write "Columns : " + (transactions.keys);
 		write "";
 		write "First 5 rows (all columns):";
 		write df_pretty_print(iloc(transactions, range(0, 4)), 5, 11, 18);
@@ -69,7 +69,7 @@ global {
 		loop store over: stores {
 			dataframe sub <- df_filter(transactions, "store_location", store);
 			float rev   <- 0.0;
-			int   count <- df_rows(sub);
+			int   count <- sub.rows;
 			loop i from: 0 to: count - 1 {
 				float qty   <- float(df_cell(sub, i, "transaction_qty"));
 				float price <- float(df_cell(sub, i, "unit_price"));
@@ -97,7 +97,7 @@ global {
 			dataframe sub   <- df_filter(transactions, "product_category", cat);
 			float rev       <- 0.0;
 			float price_sum <- 0.0;
-			int   count     <- df_rows(sub);
+			int   count     <- sub.rows;
 			loop i from: 0 to: count - 1 {
 				float qty   <- float(df_cell(sub, i, "transaction_qty"));
 				float price <- float(df_cell(sub, i, "unit_price"));
@@ -133,16 +133,16 @@ global {
 		// ===== 6. Filter: high-value transactions (unit_price >= 5) =====
 		write "";
 		write "===== High-value transactions (unit_price >= 5.0) =====";
-		dataframe high_value <- dataframe_with(df_columns(transactions), []);
-		int total <- (transactions.rows);
+		dataframe high_value <- dataframe_with((transactions.keys), []);
+		int total <- transactions.rows;
 		loop i from: 0 to: total - 1 {
 			if float(df_cell(transactions, i, "unit_price")) >= 5.0 {
 				high_value <- df_add_row(high_value, df_row(transactions, i));
 			}
 		}
-		write "High-value transactions : " + df_rows(high_value);
+		write "High-value transactions : " + high_value.rows;
 		write df_pretty_print(
-			df_select_columns(iloc(high_value, range(0, min(4, df_rows(high_value)-1))),
+			df_select_columns(iloc(high_value, range(0, min(4, (high_value.rows)-1))),
 				["transaction_id","store_location","product_category","product_detail","unit_price"]),
 			5, 5, 22
 		);

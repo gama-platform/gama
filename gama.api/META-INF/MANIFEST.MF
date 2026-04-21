@@ -69,17 +69,15 @@ Export-Package: gama.api,
  gaml.additions.api
 Require-Bundle: gama.annotations;visibility:=reexport,
  gama.processor,
+ gama.dependencies,
  org.eclipse.emf.common;bundle-version="[2.44.0,3.0.0)",
  org.eclipse.emf.ecore;bundle-version="[2.41.0,3.0.0)",
  org.eclipse.osgi;bundle-version="[3.24.0,4.0.0)",
  org.eclipse.core.filesystem;bundle-version="[1.11.0,2.0.0)",
  org.eclipse.core.resources;bundle-version="[3.23.0,4.0.0)",
  org.osgi.service.prefs;bundle-version="1.1.2",
- gama.dependencies,
  org.eclipse.core.runtime;bundle-version="[3.34.0,4.0.0)"
 Automatic-Module-Name: gama.api
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: gama.api.APIActivator
 Bundle-RequiredExecutionEnvironment: JavaSE-25
-Import-Package: org.apache.log4j.spi;version="[1.2.0,2.0.0)",
- org.slf4j;version="[2.0.0,3.0.0)"

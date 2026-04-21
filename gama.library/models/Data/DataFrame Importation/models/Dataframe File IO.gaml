@@ -39,7 +39,7 @@ global {
 		write "";
 		write "===== JSON Import =====";
 		dataframe json_data <- df_load_json("../includes/sample_data.json");
-		write "Loaded JSON: " + df_rows(json_data) + " rows, columns: " + df_columns(json_data);
+		write "Loaded JSON: " + json_data.rows + " rows, columns: " + json_data.keys;
 
 		// ===== 6. Save to CSV =====
 		write "";

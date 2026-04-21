@@ -312,7 +312,7 @@ public class GamaBundleLoader {
 			 */
 
 			try {
-				preBuild(API_PLUGIN);
+				loadGamlExtensions(API_PLUGIN);
 			} catch (final Exception e2) {
 				ERROR("Error in loading GAML API. ", e2);
 				// We exit in case the core cannot be built, as there is no point in continuing past this point
@@ -320,10 +320,8 @@ public class GamaBundleLoader {
 				return;
 			}
 
-			IDataFrame frame = GamaDataFrameFactory.create("");
-			DEBUG.OUT("Dataframe created: " + frame);
 			try {
-				preBuild(CORE_PLUGIN);
+				loadGamlExtensions(CORE_PLUGIN);
 			} catch (final Exception e2) {
 				ERROR("Error in loading core GAML language definition. ", e2);
 				// We exit in case the core cannot be built, as there is no point in continuing past this point
@@ -335,7 +333,7 @@ public class GamaBundleLoader {
 				for (final Bundle addition : GAMA_PLUGINS) {
 					CURRENT_PLUGIN_NAME = addition.getSymbolicName();
 					try {
-						preBuild(addition);
+						loadGamlExtensions(addition);
 					} catch (final Exception e1) {
 						ERROR("Error in loading plugin " + CURRENT_PLUGIN_NAME + ". ", e1);
 						// We do not systematically exit in case of additional plugins failing to load, so as to
@@ -733,7 +731,7 @@ public class GamaBundleLoader {
 	 *             if the additions class cannot be found, initialized, instantiated, or executed
 	 */
 	@SuppressWarnings ("unchecked")
-	public static void preBuild(final Bundle bundle) throws Exception {
+	public static void loadGamlExtensions(final Bundle bundle) throws Exception {
 		TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Extensions in " + bundle.getSymbolicName(), "loaded in", () -> {
 			final String symbolicName = bundle.getSymbolicName();
 			GAMA_PLUGINS_NAMES.add(symbolicName);
@@ -742,7 +740,7 @@ public class GamaBundleLoader {
 			final String classPath = ADDITIONS_PACKAGE_BASE + "." + shortcut + "." + ADDITIONS_CLASS_NAME;
 			Class<IGamlAdditions> clazz = null;
 			try {
-				clazz = (Class<IGamlAdditions>) bundle.loadClass(classPath);
+				clazz = (Class<IGamlAdditions>) GamaClassLoader.getInstance().loadClass(classPath);
 				clazz.getConstructor().newInstance().initialize();
 			} catch (final ClassNotFoundException e) {
 				final String error = ">> Impossible to load additions from " + bundle + " because " + classPath

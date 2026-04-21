@@ -500,4 +500,12 @@
          id="org.apache.aries.spifly.dynamic.bundle"
          version="0.0.0"/>
 
+   <plugin
+         id="org.apache.commons.commons-io"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.apache.commons.commons-codec"
+         version="0.0.0"/>
+
 </feature>

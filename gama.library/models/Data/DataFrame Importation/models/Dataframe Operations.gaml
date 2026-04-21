@@ -37,14 +37,14 @@ global {
 		write "";
 		write "===== Column selection =====";
 		dataframe names_grades <- df_select_columns(students, ["name", "grade"]);
-		write "Columns: " + df_columns(names_grades);
+		write "Columns: " + names_grades.keys;
 		write "Grades: " + df_column(names_grades, "grade");
 
 		// ===== 4. Add a column =====
 		write "";
 		write "===== Add column =====";
 		dataframe with_status <- df_add_column(students, "status", "enrolled");
-		write "New columns: " + df_columns(with_status);
+		write "New columns: " + with_status.keys;
 		write "Status of row 0: " + df_cell(with_status, 0, "status");
 		// Original is unchanged
 		write "Original columns (unchanged): " + (students.keys);
