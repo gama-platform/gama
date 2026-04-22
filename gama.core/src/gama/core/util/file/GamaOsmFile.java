@@ -1433,11 +1433,17 @@ public class GamaOsmFile extends GamaGisFile {
 		if (geomTmp != null && geomTmp.getInnerGeometry() != null && !geomTmp.getInnerGeometry().isEmpty()
 				&& geomTmp.getInnerGeometry().getArea() > 0) {
 
-			if (inner != null && !inner.isEmpty()) { geomTmp = SpatialOperators.minus(scope, geomTmp, inner); }
+			if (inner != null && !inner.isEmpty()) { 
+				IShape geomTmp2 = SpatialOperators.minus(scope, geomTmp, inner); 
+				if (geomTmp2 != null) {
+					geomTmp = geomTmp2;
+				}
+			}
 
 			final IShape geom = SpatialTransformations.clean(scope, geomTmp);
+			
 			values.forEach((k, v) -> geom.setAttribute(k, v));
-
+			
 			geometries.add(geom);
 			geom.forEachAttribute((att, val) -> {
 				final String idType = att + " (polygon)";
