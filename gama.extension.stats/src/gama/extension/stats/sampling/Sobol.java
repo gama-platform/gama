@@ -27,10 +27,24 @@ import java.util.Map.Entry;
 import org.apache.commons.io.FilenameUtils;
 import org.moeaframework.util.sequence.Saltelli;
 
+import gama.annotations.doc;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
 import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.api.types.matrix.IMatrix;
 import gama.api.utils.StringUtils;
+import gama.api.utils.files.FileUtils;
 
 /**
  * The Class Sobol.
@@ -239,7 +253,7 @@ public final class Sobol {
 	 * Evaluate the sobol indices
 	 */
 	public Map<String, Map<String, List<Double>>> evaluate() {
-		if (outputs.isEmpty()) { System.err.println("no output porivded call setOutputs before calling evaluate"); }
+		if (outputs.isEmpty()) { System.err.println("no output provided call setOutputs before calling evaluate"); }
 
 		double[] A = new double[sample];
 		double[] B = new double[sample];
@@ -460,4 +474,45 @@ public final class Sobol {
 		for (int i = 0; i < nresample; i++) { sss += Math.pow(s[i] - ss, 2.0); }
 		return 1.96 * Math.sqrt(sss / (nresample - 1));
 	}
+	
+	/**
+	 *
+	 * @param scope
+	 * @param data
+	 *            data as a path (String), map of columns (IMap) or matrix (IMatrix)
+	 * @param report_path
+	 *            path to save the sobol_report.txt file
+	 * @param nb_parameters
+	 *            number of parameters in the model
+	 * @return
+	 */
+	@operator (
+			value = "sobol_analysis",
+			type = IType.STRING,
+			can_be_const = true,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = "Return a string containing the Report of the sobol analysis for the corresponding data (path, map of columns or matrix) and save this report in a txt/csv file.")
+	@no_test
+	public static String sobolAnalysis(final IScope scope, final Object data, final String report_path,
+			final int nb_parameters) {
+		final File f_report = new File(FileUtils.constructAbsoluteFilePath(scope, report_path, false));
+		Sobol sob;
+		if (data instanceof String path) {
+			final File f = new File(FileUtils.constructAbsoluteFilePath(scope, path, false));
+			sob = new Sobol(f, nb_parameters, scope);
+		} else if (data instanceof IMap map) {
+			sob = new Sobol(map, nb_parameters, scope);
+		} else if (data instanceof IMatrix matrix) {
+			sob = new Sobol((IMap)GamaMapFactory.createFromMatrix(scope, matrix), nb_parameters, scope);
+		} else {
+			throw GamaRuntimeException.error("sobol_analysis expects a path (string), a map or a matrix", scope);
+		}
+
+		sob.evaluate();
+		sob.saveResult(f_report);
+		return sob.buildReportString(FilenameUtils.getExtension(f_report.getPath()));
+	}
+
 }

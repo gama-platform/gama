@@ -24,10 +24,23 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.FilenameUtils;
+
+import gama.annotations.doc;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
 import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.api.types.matrix.IMatrix;
 import gama.api.utils.StringUtils;
+import gama.api.utils.files.FileUtils;
 
 /**
  * The Class Morris. This class performs a robust Morris sensitivity analysis (Elementary Effects method).
@@ -377,4 +390,45 @@ public final class Morris {
 		}
 		return sb.toString();
 	}
+	
+	/**
+	 *
+	 * @param scope
+	 * @param data
+	 *            data as a path (String), map of columns (IMap) or matrix (IMatrix)
+	 * @param nb_levels
+	 *            : the number of level
+	 * @param nb_parameters
+	 *            : the number of parameter
+	 * @return the result of a morris analysis
+	 *
+	 */
+	@operator (
+			value = "morris_analysis",
+			type = IType.STRING,
+			can_be_const = true,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = "Return a string containing the Report of the morris analysis for the corresponding data (path, map or matrix)")
+	@no_test
+	public static String morrisAnalysis(final IScope scope, final Object data, final int nb_levels,
+			final int nb_parameters) {
+		String ext = "csv";
+		Morris momo = switch (data) {
+		case String path -> {
+			final File f = new File(FileUtils.constructAbsoluteFilePath(scope, path, false));
+			ext = FilenameUtils.getExtension(path);
+			yield new Morris(f, nb_parameters, nb_levels, scope);
+		}
+		case IMap map -> new Morris(map, nb_parameters, nb_levels, scope);
+		case IMatrix matrix -> new Morris( (IMap) GamaMapFactory.createFromMatrix(scope, matrix), nb_parameters, nb_levels, scope);
+		case null, default -> throw GamaRuntimeException.error("morris_analysis expects a path (string), a map or a matrix", scope);
+		};
+
+		momo.evaluate();
+		return momo.buildReportString(ext);
+	}
+
+	
 }

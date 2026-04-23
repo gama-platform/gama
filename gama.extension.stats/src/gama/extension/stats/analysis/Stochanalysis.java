@@ -28,15 +28,22 @@ import java.util.stream.IntStream;
 
 import org.apache.commons.io.FilenameUtils;
 
+import gama.annotations.doc;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
 import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
 import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
+import gama.api.types.matrix.IMatrix;
 import gama.api.utils.StringUtils;
 import gama.core.experiment.parameters.ParametersSet;
 import gama.extension.stats.Stats;
@@ -680,4 +687,75 @@ public class Stochanalysis {
 		IMap<String, IList<Double>> Outputs = GamaMapFactory.castToMap(scope, STO_simu.get(1));
 		return stochasticityAnalysis_From_Data(replicat, threshold, MySample, Outputs, scope);
 	}
+	
+
+	/**
+	 * stochanalysis.
+	 *
+	 * @param replicat
+	 *            the replicat
+	 * @param threshold
+	 *            the threshold
+	 * @param data
+	 *            the data as a path (string), map of columns or matrix
+	 * @param nb_parameters
+	 *            the number of parameters (or index of first output for CSV)
+	 * @param scope
+	 *            the scope
+	 * @return the string
+	 */
+	@operator (
+			value = "stochanalysis",
+			type = IType.STRING,
+			can_be_const = true,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = "Return the result of the stochasticity analysis for the corresponding data (path, map or matrix)")
+	@no_test
+	public static String stochanalysis(final IScope scope, final int replicat, final double threshold, final Object data,
+			final int nb_parameters) {
+
+		if (data instanceof String path) {
+			String new_path = scope.getExperiment().getWorkingPath() + "/" + path;
+			return Stochanalysis.stochasticityAnalysis_From_CSV(replicat, threshold, new_path, nb_parameters, scope);
+		}
+
+		IMap<String, IList<Double>> mapData;
+		if (data instanceof IMap m) {
+			mapData = m;
+		} else if (data instanceof IMatrix matrix) {
+			mapData = (IMap) GamaMapFactory.createFromMatrix(scope, matrix);
+		} else
+			throw GamaRuntimeException.error("stochanalysis expects a path (string), a map or a matrix", scope);
+
+		int nbCols = mapData.size();
+		int nbRows = mapData.values().iterator().next().size();
+		List<String> listNames = new ArrayList<>(mapData.keySet());
+
+		IList<IMap<String, Object>> MySample = GamaListFactory.create(Types.MAP);
+		IMap<String, IList<Double>> Outputs = GamaMapFactory.create();
+
+		for (int idx = 0; idx < nbCols; idx++) {
+			String name = listNames.get(idx);
+			if (idx >= nb_parameters) { Outputs.put(name, GamaListFactory.create()); }
+		}
+
+		for (int row = 0; row < nbRows; row++) {
+			IMap<String, Object> temp_map = GamaMapFactory.create();
+			for (int idx = 0; idx < nbCols; idx++) {
+				String name = listNames.get(idx);
+				Double val = Cast.asFloat(scope, mapData.get(name).get(row));
+				if (idx < nb_parameters) {
+					temp_map.put(name, val);
+				} else {
+					Outputs.get(name).add(val);
+				}
+			}
+			MySample.add(temp_map);
+		}
+
+		return Stochanalysis.stochasticityAnalysis_From_Data(replicat, threshold, MySample, Outputs, scope);
+	}
+	
 }

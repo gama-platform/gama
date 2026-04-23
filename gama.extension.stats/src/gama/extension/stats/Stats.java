@@ -2665,8 +2665,6 @@ public class Stats {
 			concept = { IConcept.STATISTIC })
 	@doc (
 			value = "Return the list of rolling coefficient of variance according to the number of observations, </br> i.e. value at index i is the coefficient of variance for the first i observations.")
-	//@test ("rolling_vc([0.0,4.0,8.0]) != \"\"")
-	//@test ("morrisAnalysis(matrix([[0.1, 0.2, 0.3, 0.4, 0.5], [1.0, 1.1, 1.2, 1.3, 1.4]]), 4, 1) != \"\"")
 	@no_test
 	public static IList<Double> rollingVC(final IScope scope, final IList<Double> data) {
 		IList<Double> mean = meanList(data, scope);

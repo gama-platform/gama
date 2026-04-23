@@ -19,11 +19,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
+import gama.api.types.matrix.IMatrix;
 import gama.api.types.misc.IContainer;
 
 /**
@@ -590,6 +593,27 @@ public class GamaMapFactory {
 			throw GamaRuntimeException.create(e, scope);
 		}
 
+	}
+	
+	/**
+	 * Creates a map from a matrix where each column is an entry
+	 * The key is the string "col" followed by the column index (e.g. "col0" for the column at index 0, which is the first one), and the value is a list containing all the elements of that column.
+	 * @param scope
+	 * @param m
+	 * @return
+	 */
+	public static IMap<String, IList> createFromMatrix(final IScope scope, final IMatrix m){
+		if (m == null || m.isEmpty(scope)) {
+			return create();
+		}
+		final IMap<String, IList> map = create(Types.STRING, Types.LIST, m.getCols(scope));
+		for (int j = 0; j < m.getCols(scope); j++) {
+			IList col = GamaListFactory.create(m.getGamlType().getContentType());
+			for (int i = 0; i < m.getRows(scope); i++) { col.add(m.get(scope, j, i)); }
+			map.put("col" + j, col);
+
+		}
+		return map;
 	}
 
 	/**

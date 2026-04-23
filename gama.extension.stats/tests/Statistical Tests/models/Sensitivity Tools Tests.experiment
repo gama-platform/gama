@@ -1,75 +1,77 @@
 /**
-* Name: Sensitivity Polymorphism Test
+* Name: Sensitivity Tools Test
 * Author: Gemini CLI
 * Description: Test the polymorphic behavior and consistency of sensitivity analysis operators (1D and 2D).
 */
 
-model sensitivity_polymorphism_test
+model sensitivity_tools_test
 
-global {
-	init {
-		// --- 1. 1D FUNCTIONAL TESTS ---
-		write "--- STARTING 1D TESTS ---";
+experiment tests type:test {
+	test sobol_1D_generates_reports {
 		
 		map sobol_data <- ["p1":: [0.1, 0.2, 0.3, 0.4], "out":: [1.0, 1.1, 1.2, 1.3]];
-		string sobol_report <- sobolAnalysis(sobol_data, "sobol_test_report.txt", 1);
-		write "Sobol 1D Map: " + ((sobol_report != "") ? "OK" : "FAIL");
+		string sobol_report <- sobol_analysis(sobol_data, "sobol_test_report.txt", 1);
+		assert sobol_report != "";
+		assert file_exists("sobol_test_report.txt");
 		assert delete_file("sobol_test_report.txt");
-
+	}
+	
+	test morris_1D_generates_report {
 		map morris_data <- ["p1":: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6], "out":: [1.0, 1.1, 1.2, 1.3, 1.4, 1.5]];
-		string morris_report <- morrisAnalysis(morris_data, 4, 1);
-		write "Morris 1D Map: " + ((morris_report != "") ? "OK" : "FAIL");
+		string morris_report <- morris_analysis(morris_data, 4, 1);
+		assert morris_report != '';
+	}
 
+	test stochanalysis_1D_not_empty {
+	
 		list stable_p <- [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1];
 		list stable_o <- [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0];
 		map stoch_data <- ["p1":: stable_p, "out":: stable_o];
-		write "Stochanalyse 1D Map: " + stochanalyse(10, 0.1, stoch_data, 1);
+		assert stochanalysis(10, 0.1, stoch_data, 1) != '';
+	}
 
-
-		// --- 2. 2D FUNCTIONAL TESTS ---
-		write "--- STARTING 2D TESTS ---";
-
+	test sobol_2D{
 		// Sobol 2D: k=2, needs multiple of (2*2+2) = 6
 		map sob2d <- [
 			"p1":: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6],
 			"p2":: [0.1, 0.1, 0.1, 0.2, 0.2, 0.2],
 			"out":: [1.0, 1.1, 1.2, 1.3, 1.4, 1.5]
 		];
-		write "Sobol 2D Map: " + (sobolAnalysis(sob2d, "sob2d.txt", 2) != "" ? "OK" : "FAIL");
-
+		assert sobol_analysis(sob2d, "sob2d.txt", 2) != "";
+		write sobol_analysis(sob2d, "sob2d.txt", 2);
+		assert file_exists("sob2d.txt");
+		assert delete_file("sob2d.txt");
+	}
+	
+	test morris_2D{
 		// Morris 2D: k=2, needs multiple of (2+1) = 3
 		map mor2d <- [
 			"p1":: [0.1, 0.5, 0.5, 0.1, 0.1, 0.5],
 			"p2":: [0.1, 0.1, 0.5, 0.5, 0.1, 0.1],
 			"out":: [1.0, 1.2, 1.8, 1.5, 1.0, 1.2]
 		];
-		write "Morris 2D Map: " + (morrisAnalysis(mor2d, 4, 2) != "" ? "OK" : "FAIL");
-
-		// Stochanalyse 2D: combination of p1,p2 (5 replicates each)
+		assert morris_analysis(mor2d, 4, 2) != "";
+	}
+	
+	test stochanalysis_2D{
+		// stochanalysis 2D: combination of p1,p2 (5 replicates each)
 		map stoch2d <- [
 			"p1":: [0.1, 0.1, 0.1, 0.1, 0.1, 0.2, 0.2, 0.2, 0.2, 0.2],
 			"p2":: [0.5, 0.5, 0.5, 0.5, 0.5, 0.6, 0.6, 0.6, 0.6, 0.6],
 			"out":: [1.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0, 2.0]
 		];
-		write "Stochanalyse 2D Map: " + stochanalyse(10, 0.1, stoch2d, 2);
+		assert stochanalysis(10, 0.1, stoch2d, 2) != '';
+	}
 
-
-		// --- 3. CONSISTENCY TESTS ---
-		write "--- STARTING CONSISTENCY TESTS ---";
-		
+	test sobol_matrix_produces_same_result_as_map{		
 		map data_map <- ["col0":: [0.1, 0.2, 0.3, 0.4], "col1":: [1.0, 1.1, 1.2, 1.3]];
 		matrix data_mat <- matrix([[0.1, 0.2, 0.3, 0.4], [1.0, 1.1, 1.2, 1.3]]);
 
-		string s1 <- sobolAnalysis(data_map, "sob_map.txt", 1);
-		string s2 <- sobolAnalysis(data_mat, "sob_mat.txt", 1);
-		if s1 = s2 {
-			write "  SUCCESS: Sobol Map == Matrix";
-		}
+		string s1 <- sobol_analysis(data_map, "sob_map.txt", 1);
+		string s2 <- sobol_analysis(data_mat, "sob_mat.txt", 1);
+		assert s1 = s2;
 		assert delete_file("sob_map.txt");
 		assert delete_file("sob_mat.txt");
 		
-		write "--- ALL TESTS COMPLETED ---";
 	}
 }
-
-experiment test_polymorphism type: gui;
