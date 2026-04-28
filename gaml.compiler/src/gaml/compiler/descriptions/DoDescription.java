@@ -227,22 +227,24 @@ public class DoDescription extends StatementDescription {
 			return null;
 		}
 		final IExpressionDescription targetFacet = getFacet(INTERNAL_TARGET);
-		if (functionFacet instanceof gaml.compiler.expressions.FacetListExpressionDescription) {
+		if (functionFacet instanceof gaml.compiler.expressions.FacetListExpressionDescription || targetFacet == null) {
 			// Deprecated facet-based form: FacetListExpressionDescription.compile() handles everything
 			// (target resolution + argument compilation) without touching the EMF parse tree.
 			functionFacet.compile(this);
-		} else if (targetFacet == null) {
-			// Should not happen after processDo, but guard defensively.
-			functionFacet.compile(this);
 		} else {
 			// Unified path for functional and dot-notation forms.
-			final IExpression compiled;
+			IExpression compiled;
 			if (targetFacet.getTarget() == null) {
 				// The target has no EObject backing (e.g. SelfOrSuperExpressionDescription):
-				// compile it to an IExpression first, then use the pre-compiled-owner overload.
-				final IExpression targetExpr = targetFacet.compile(this);
-				compiled = GamlExpressionCompiler.getInstance().compileActionCall(targetExpr,
-						functionFacet.getTarget(), this);
+				// We first verify if this is not an operator call (see
+				// https://github.com/gama-platform/gama/issues/1016)
+				compiled = GamlExpressionCompiler.getInstance().compile(functionFacet, this);
+				if (compiled == null) {
+					// compile it to an IExpression first, then use the pre-compiled-owner overload.
+					final IExpression targetExpr = targetFacet.compile(this);
+					compiled = GamlExpressionCompiler.getInstance().compileActionCall(targetExpr,
+							functionFacet.getTarget(), this);
+				}
 			} else {
 				compiled = GamlExpressionCompiler.getInstance().compileActionCall(targetFacet.getTarget(),
 						functionFacet.getTarget(), this);
