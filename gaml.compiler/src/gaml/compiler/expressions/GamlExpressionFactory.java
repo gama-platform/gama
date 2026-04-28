@@ -1075,7 +1075,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 				context, Collections.EMPTY_LIST, IKeyword.TYPE, IKeyword.UNKNOWN, IKeyword.NAME, TEMPORARY_ACTION_NAME);
 
 		// Parse the action code into statements and add them as children
-		final List<IDescription> children = GamlSyntheticResourcesServices.compileBlock(action, context, tempContext);
+		final List<IDescription> children = GamlSyntheticResourcesServices.compileBlock(action, desc, tempContext);
 		for (final IDescription child : children) { desc.addChild(child); }
 
 		// Validate and compile the action
