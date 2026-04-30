@@ -32,6 +32,7 @@ import gama.api.kernel.species.IModelSpecies;
 import gama.api.utils.GamlProperties;
 import gama.dev.DEBUG;
 import gaml.compiler.resource.GamlResource;
+import gaml.compiler.resource.GamlResourceServices;
 import one.util.streamex.StreamEx;
 
 /**
@@ -184,6 +185,11 @@ public class GamlModelBuilder implements IGamlModelBuilder {
 	 * @return the model description
 	 */
 	private IModelDescription buildModelDescription(final URI uri, final List<GamlCompilationError> errors) {
+		// Temporarily remove the editor listener for this URI so that transient compilation
+		// errors produced inside the build resource-set (e.g. from invalidate() on imported
+		// resources with linking issues) cannot corrupt the editor's validation state and
+		// cause "ghost" error markers after the model run.
+		final IGamlBuilderListener savedListener = GamlResourceServices.removeResourceListener(uri);
 		try {
 			final GamlResource r = (GamlResource) buildResourceSet.getResource(uri, true);
 			// Syntactic errors detected, we cannot build the resource
@@ -206,10 +212,18 @@ public class GamlModelBuilder implements IGamlModelBuilder {
 			final boolean wasDeliver = buildResourceSet.eDeliver();
 			try {
 				buildResourceSet.eSetDeliver(false);
+				// Discard all validation contexts produced during this build pass so that
+				// stale contexts (possibly containing imported-file errors) cannot be picked
+				// up by the editor's Xtext reconciler on the next validation cycle.
+				buildResourceSet.getResources().stream().filter(GamlResource.class::isInstance)
+						.map(GamlResource.class::cast).forEach(GamlResourceServices::discardValidationContext);
 				buildResourceSet.getResources().clear();
 			} finally {
 				buildResourceSet.eSetDeliver(wasDeliver);
 			}
+			// Restore the listener AFTER contexts have been discarded so that the next
+			// reconciler run starts with a clean slate.
+			if (savedListener != null) { GamlResourceServices.addResourceListener(uri, savedListener); }
 		}
 	}
 

@@ -216,6 +216,20 @@ public class GamlResourceServices {
 	}
 
 	/**
+	 * Atomically removes and returns the resource listener registered for the given URI, if any. Used by
+	 * {@link gaml.compiler.validation.GamlModelBuilder} to suppress editor notifications during a build pass so that
+	 * transient compilation errors in the build resource-set cannot corrupt the editor's validation state.
+	 *
+	 * @param uri
+	 *            the URI whose listener should be removed; a {@code null} URI is treated as a no-op
+	 * @return the removed listener, or {@code null} if none was registered or if {@code uri} is {@code null}
+	 */
+	public static IGamlBuilderListener removeResourceListener(final URI uri) {
+		if (uri == null) return null;
+		return resourceListeners.remove(uri);
+	}
+
+	/**
 	 * Removes the resource listener (happens when a file ceases being edited). Invalidates both the documentation
 	 * already collected and the collection of this documentation by the validation context if it exists.
 	 *
