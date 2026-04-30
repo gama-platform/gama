@@ -22,9 +22,6 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.events.ControlAdapter;
-import org.eclipse.swt.events.ControlEvent;
-import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Canvas;
@@ -534,23 +531,11 @@ public class SwtGui implements IGui {
 		};
 	}
 
-	/** The overlay Shell shown between perspective switch and display layout. */
-	private volatile Shell launchingOverlay;
-
-	/** The maximum number of lines shown in the overlay console log area. */
-	private static final int OVERLAY_CONSOLE_MAX_LINES = 3;
-
 	/**
-	 * The console listener that feeds messages into the launching overlay log area. Registered in
-	 * {@link #showLaunchingOverlay} and removed in {@link #hideLaunchingOverlay}.
+	 * The overlay shown between the perspective switch and the display layout. {@code null} when no experiment is being
+	 * launched.
 	 */
-	private volatile IConsoleListener launchingOverlayConsole;
-
-	/**
-	 * The real {@link IStatusControl} that was active before the launching overlay was shown. Saved in
-	 * {@link #showLaunchingOverlay} and restored in {@link #hideLaunchingOverlay}.
-	 */
-	private volatile IStatusControl savedStatusControl;
+	private volatile LaunchingOverlay launchingOverlay;
 
 	@Override
 	public void showLaunchingOverlay(final IModelSpecies model, final String perspectiveId) {
@@ -562,174 +547,8 @@ public class SwtGui implements IGui {
 		final String modelName = parts.length > 1 ? parts[1] : model != null ? model.getName() : "";
 		final String expName = parts.length > 2 ? parts[2] : "";
 
-		// SWT.ON_TOP removed intentionally: a child shell already stays above its parent
-		// (the workbench window), so GAMA windows are still covered. Without SWT.ON_TOP
-		// the overlay no longer floats above other applications (IDE, debugger, etc.).
-		final Shell overlay = new Shell(parent, SWT.NO_TRIM);
-		final Color bg = parent.getBackground();
-		final Color fg = parent.getForeground();
-		overlay.setBackground(bg);
-		overlay.setLayout(null);
-
-		// ── Cancel button ─────────────────────────────────────────────────────────
-		final org.eclipse.swt.widgets.ToolBar cancelBar =
-				new org.eclipse.swt.widgets.ToolBar(overlay, SWT.FLAT | SWT.NO_FOCUS);
-		cancelBar.setBackground(bg);
-		final org.eclipse.swt.widgets.ToolItem cancelItem =
-				new org.eclipse.swt.widgets.ToolItem(cancelBar, SWT.FLAT | SWT.PUSH);
-		final GamaIcon stopIcon = GamaIcon.named(IGamaIcons.EXPERIMENT_STOP);
-		cancelItem.setImage(stopIcon.image());
-		cancelItem.setDisabledImage(stopIcon.disabled());
-		cancelItem.setToolTipText("Cancel launch and return to the modelling perspective");
-		cancelItem.addSelectionListener(org.eclipse.swt.events.SelectionListener.widgetSelectedAdapter(e -> {
-			hideLaunchingOverlay();
-			new Thread(() -> GAMA.closeAllExperiments(true, false), "Cancel launch").start();
-		}));
-		cancelBar.pack();
-
-		// ── Rolling console-lines buffer (shared by canvas painter + listeners) ───
-		// Holds the last OVERLAY_CONSOLE_MAX_LINES non-blank text lines received
-		// either from status messages or from GAML write/print statements.
-		final java.util.ArrayDeque<String> consoleLines = new java.util.ArrayDeque<>(OVERLAY_CONSOLE_MAX_LINES + 1);
-
-		// Line height for the console area: point-size × 1.4, minimum 20 px.
-		final int lineHeight = Math.max(20, (int) (parent.getFont().getFontData()[0].getHeight() * 1.4));
-		final int consoleBottomMargin = 24;
-		final int consoleAreaHeight = lineHeight * OVERLAY_CONSOLE_MAX_LINES + 8 + consoleBottomMargin;
-
-		// ── Single canvas: title + subtitle + console lines ───────────────────────
-		// Drawing everything in one widget avoids any z-order / occlusion issues.
-		final Canvas canvas = new Canvas(overlay, SWT.NO_BACKGROUND | SWT.DOUBLE_BUFFERED);
-		canvas.addPaintListener(e -> {
-			final var b = canvas.getBounds();
-			e.gc.setBackground(bg);
-			e.gc.fillRectangle(0, 0, b.width, b.height);
-
-			// ── Title (20pt bold) ──
-			final var td =
-					new org.eclipse.swt.graphics.FontData(parent.getFont().getFontData()[0].getName(), 20, SWT.BOLD);
-			final var bigFont = new org.eclipse.swt.graphics.Font(e.display, td);
-			e.gc.setFont(bigFont);
-			e.gc.setForeground(fg);
-			final String title = "Launching experiment\u2026";
-			final var te = e.gc.textExtent(title);
-			final Object stored = canvas.getData("blockTop");
-			final int titleY = stored instanceof Integer bt ? bt : (b.height - te.y) / 2;
-			e.gc.drawText(title, (b.width - te.x) / 2, titleY, true);
-			bigFont.dispose();
-
-			// ── Subtitle (dimmed) ──
-			if (!modelName.isEmpty() || !expName.isEmpty()) {
-				e.gc.setFont(parent.getFont());
-				final String sub = modelName + (expName.isEmpty() ? "" : "  \u2192  " + expName);
-				final var se = e.gc.textExtent(sub);
-				final boolean dark = ThemeHelper.isDark();
-				final int dr = dark ? blend(bg.getRed(), 255, 45) : blend(bg.getRed(), 0, 45);
-				final int dg = dark ? blend(bg.getGreen(), 255, 45) : blend(bg.getGreen(), 0, 45);
-				final int db = dark ? blend(bg.getBlue(), 255, 45) : blend(bg.getBlue(), 0, 45);
-				final var dim = new Color(e.display, dr, dg, db);
-				e.gc.setForeground(dim);
-				e.gc.drawText(sub, (b.width - se.x) / 2, titleY + te.y + 4, true);
-				dim.dispose();
-			}
-
-			// ── Console log lines at the bottom (only when non-empty) ──
-			synchronized (consoleLines) {
-				if (!consoleLines.isEmpty()) {
-					final boolean dark = ThemeHelper.isDark();
-					final int dr = dark ? blend(bg.getRed(), 255, 55) : blend(bg.getRed(), 0, 55);
-					final int dg = dark ? blend(bg.getGreen(), 255, 55) : blend(bg.getGreen(), 0, 55);
-					final int db = dark ? blend(bg.getBlue(), 255, 55) : blend(bg.getBlue(), 0, 55);
-					final var dimColor = new Color(e.display, dr, dg, db);
-					e.gc.setFont(parent.getFont());
-					e.gc.setForeground(dimColor);
-					int y = b.height - consoleAreaHeight + 4;
-					for (final String line : consoleLines) {
-						final var ext = e.gc.textExtent(line);
-						e.gc.drawText(line, (b.width - ext.x) / 2, y, true);
-						y += lineHeight;
-					}
-					dimColor.dispose();
-				}
-			}
-		});
-
-		// Position and open
-		final Rectangle ca = parent.getClientArea();
-		final org.eclipse.swt.graphics.Point origin = parent.toDisplay(ca.x, ca.y);
-		overlay.setBounds(origin.x, origin.y, ca.width, ca.height);
-		positionOverlayChildren(overlay, cancelBar, canvas);
-		overlay.open();
-
-		// Resize tracking
-		final ControlListener[] ref = new ControlListener[1];
-		ref[0] = new ControlAdapter() {
-			@Override
-			public void controlResized(final ControlEvent e) {
-				if (overlay.isDisposed()) {
-					parent.removeControlListener(ref[0]);
-				} else {
-					final Rectangle ca2 = parent.getClientArea();
-					final org.eclipse.swt.graphics.Point o2 = parent.toDisplay(ca2.x, ca2.y);
-					overlay.setBounds(o2.x, o2.y, ca2.width, ca2.height);
-					positionOverlayChildren(overlay, cancelBar, canvas);
-				}
-			}
-		};
-		parent.addControlListener(ref[0]);
-		overlay.addDisposeListener(e -> parent.removeControlListener(ref[0]));
-		launchingOverlay = overlay;
-
-		// ── Helper: append a line to the buffer and schedule a canvas redraw ──────
-		// Called from both the console listener and the status control (below).
-		// updateWith() runs on the UI thread (UIJob), so canvas.redraw() is direct.
-		// The console listener may be called from any thread, so it uses asyncRun.
-		final Runnable redrawCanvas = () -> { if (!canvas.isDisposed()) { canvas.redraw(); } };
-
-		// ── Console listener: GAML write / print statements ───────────────────────
-		final IConsoleListener overlayConsoleListener = (msg, root, color) -> {
-			if (msg == null || msg.isBlank()) return;
-			final String firstLine = msg.lines().map(String::strip).filter(l -> !l.isBlank()).findFirst().orElse(null);
-			if (firstLine == null) return;
-			synchronized (consoleLines) {
-				consoleLines.addLast(firstLine);
-				if (consoleLines.size() > OVERLAY_CONSOLE_MAX_LINES) { consoleLines.pollFirst(); }
-			}
-			WorkbenchHelper.asyncRun(redrawCanvas);
-		};
-		launchingOverlayConsole = overlayConsoleListener;
-		getConsole().addConsoleListener(overlayConsoleListener);
-
-		// ── Status interceptor: informStatus / beginTask / setTaskCompletion ──────
-		// Installs a forwarding IStatusControl so every status update is shown in
-		// the overlay AND in the real status bar simultaneously. Restored on close.
-		final IStatusDisplayer statusDisplayer = getStatus();
-		if (statusDisplayer != null) {
-			final IStatusControl realControl = statusDisplayer.getStatusTarget();
-			savedStatusControl = realControl;
-			statusDisplayer.setStatusTarget(new IStatusControl() {
-				@Override
-				public boolean isDisposed() { return overlay.isDisposed(); }
-
-				@Override
-				public void updateWith(final IStatusMessage m) {
-					// Forward to the real status bar.
-					if (realControl != null && !realControl.isDisposed()) { realControl.updateWith(m); }
-					// Feed the overlay (skip EXPERIMENT-state messages — no useful text).
-					if (m == null || m.type() == IStatusMessage.StatusType.EXPERIMENT) return;
-					final String text = m.message();
-					if (text == null || text.isBlank()) return;
-					final String line = text.strip();
-					synchronized (consoleLines) {
-						if (!consoleLines.isEmpty() && consoleLines.peekLast().equals(line)) return;
-						consoleLines.addLast(line);
-						if (consoleLines.size() > OVERLAY_CONSOLE_MAX_LINES) { consoleLines.pollFirst(); }
-					}
-					// updateWith runs on the UI thread (UIJob) — call redraw directly.
-					redrawCanvas.run();
-				}
-			});
-		}
+		launchingOverlay = new LaunchingOverlay(parent, modelName, expName, getConsole(), getStatus(), null);
+		launchingOverlay.show();
 	}
 
 	@Override
@@ -758,71 +577,9 @@ public class SwtGui implements IGui {
 
 	@Override
 	public void hideLaunchingOverlay() {
-		// Non-SWT parts: restore the real status control and remove the console listener.
-		// These are thread-safe and must happen before the overlay shell is disposed so that
-		// subsequent status/error calls go to the real status bar, not the overlay interceptor.
-		final IStatusControl saved = savedStatusControl;
-		savedStatusControl = null;
-		if (saved != null) {
-			final IStatusDisplayer statusDisplayer = getStatus();
-			if (statusDisplayer != null) { statusDisplayer.setStatusTarget(saved); }
-		}
-		final IConsoleListener overlayConsole = launchingOverlayConsole;
-		launchingOverlayConsole = null;
-		if (overlayConsole != null) { getConsole().removeConsoleListener(overlayConsole); }
-		// SWT part: Shell.close() must run on the UI thread. Use asyncRun so this method is
-		// safe to call from the experiment command thread (as well as from the UI thread via
-		// cleanAfterExperiment → WorkbenchHelper.asyncRun(this::hideLaunchingOverlay)).
-		final Shell overlay = launchingOverlay;
+		final LaunchingOverlay overlay = launchingOverlay;
 		launchingOverlay = null;
-		if (overlay != null) { WorkbenchHelper.asyncRun(() -> { if (!overlay.isDisposed()) { overlay.close(); } }); }
-	}
-
-	/**
-	 * Lays out the overlay children so that the title + subtitle + cancel button form a single centred vertical block:
-	 *
-	 * <pre>
-	 *   Launching experiment…        (20pt bold, drawn by canvas)
-	 *   ModelName  →  ExperimentName (normal, dimmed, drawn by canvas)
-	 *   [■ stop icon]                (ToolItem, centred, 12px gap below subtitle)
-	 * </pre>
-	 *
-	 * The canvas fills the entire overlay so it can paint the background everywhere; the ToolBar is a transparent
-	 * overlay on top of it, positioned below the text.
-	 */
-	private static void positionOverlayChildren(final Shell overlay, final org.eclipse.swt.widgets.ToolBar cancelBar,
-			final Canvas canvas) {
-		final var sz = overlay.getSize();
-		// Canvas always fills the whole shell (paints background + text).
-		canvas.setBounds(0, 0, sz.x, sz.y);
-		final var bs = cancelBar.getSize(); // already packed
-
-		// Estimate the total block height so we can centre it vertically.
-		// Title at 20pt bold ≈ 28px, subtitle at system font ≈ 16px, gap = 4px between them,
-		// gap = 12px between subtitle and button. Use a rounded constant; actual pixel-perfect
-		// alignment is handled by the canvas PaintListener which has the real GC metrics.
-		final int titleH = 28;
-		final int subH = 16;
-		final int textToBtn = 12; // gap between bottom of subtitle and top of button
-		final int blockH = titleH + 4 + subH + textToBtn + bs.y;
-
-		final int blockTop = (sz.y - blockH) / 2;
-		// The title baseline in the canvas is at blockTop; subtitle is titleH+4 below that.
-		// The button starts titleH + 4 + subH + textToBtn below blockTop.
-		final int btnY = blockTop + titleH + 4 + subH + textToBtn;
-
-		cancelBar.setBounds((sz.x - bs.x) / 2, btnY, bs.x, bs.y);
-		cancelBar.moveAbove(canvas);
-
-		// Tell the canvas what vertical offset to use for the title so both widgets align.
-		// We piggy-back the value via the widget data map to avoid an extra field.
-		canvas.setData("blockTop", blockTop);
-		canvas.redraw();
-	}
-
-	/** Blends channel {@code a} toward {@code b} by {@code pct} percent. */
-	private static int blend(final int a, final int b, final int pct) {
-		return a + (b - a) * pct / 100;
+		if (overlay != null) { overlay.hide(); }
 	}
 
 	/**
