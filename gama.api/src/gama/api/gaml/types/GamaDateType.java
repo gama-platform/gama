@@ -19,6 +19,7 @@ import static java.time.temporal.ChronoField.YEAR;
 
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.SignStyle;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -171,8 +172,8 @@ public class GamaDateType extends GamaType<IDate> {
 	/** Key for accessing the default formatter in the FORMATTERS map. */
 	public static final String DEFAULT_KEY = "DEFAULT";
 
-	/** Default date format pattern: "yyyy-MM-dd HH:mm:ss". */
-	public static final String DEFAULT_FORMAT = "yyyy-MM-dd HH:mm:ss";
+	/** Default date format pattern: "uuuu-MM-dd HH:mm:ss". Uses proleptic year (u) to support negative years. */
+	public static final String DEFAULT_FORMAT = "uuuu-MM-dd HH:mm:ss";
 
 	/** ISO simple date format pattern: "yy-MM-dd HH:mm:ss". */
 	public static final String ISO_SIMPLE_FORMAT = "yy-MM-dd HH:mm:ss";
@@ -444,7 +445,7 @@ public class GamaDateType extends GamaType<IDate> {
 			if (s.charAt(0) == '%' && s.length() == 2) {
 				final Character c = s.charAt(1);
 				switch (c) {
-					case 'Y' -> df.appendValue(YEAR, 4);
+					case 'Y' -> df.appendValue(YEAR, 4, 10, SignStyle.EXCEEDS_PAD);
 					case 'M' -> df.appendValue(MONTH_OF_YEAR, 2);
 					case 'N' -> df.appendText(MONTH_OF_YEAR);
 					case 'D' -> df.appendValue(DAY_OF_MONTH, 2);
