@@ -685,11 +685,14 @@ public class TextDrawer extends ObjectDrawer<StringObject> {
 			rr.enable(gl2es2, true);
 			gl.pushMatrix();
 			try {
-				applyRotation(attributes, p);
+				final boolean rotated = applyRotation(attributes, p);
+				final double locX = rotated ? 0 : p.getX();
+				final double locY = rotated ? 0 : p.getY();
+				final double locZ = rotated ? 0 : p.getZ();
 				if (overlay) {
-					gl.translateBy(p.getX(), p.getY(), p.getZ());
+					gl.translateBy(locX, locY, locZ);
 				} else {
-					gl.translateBy(p.getX(), p.getY(), p.getZ() + gl.getCurrentZTranslation());
+					gl.translateBy(locX, locY, locZ + gl.getCurrentZTranslation());
 				}
 				// Approximate advance width for anchor offset: ascent * pixelSize * charCount
 				final float approxWidth = joglFont.getMetrics().getAscent() * pixelSize * text.length() * 0.6f;
@@ -748,9 +751,12 @@ public class TextDrawer extends ObjectDrawer<StringObject> {
 		IColor previous = null;
 		gl.pushMatrix();
 		try {
-			applyRotation(attributes, p);
-			gl.translateBy(p.getX() - width * scale * anchor.getX(), p.getY() + bounds.getY() * scale * anchor.getY(),
-					p.getZ() + gl.getCurrentZTranslation());
+			final boolean rotated = applyRotation(attributes, p);
+			final double locX = rotated ? 0 : p.getX();
+			final double locY = rotated ? 0 : p.getY();
+			final double locZ = rotated ? 0 : p.getZ();
+			gl.translateBy(locX - width * scale * anchor.getX(), locY + bounds.getY() * scale * anchor.getY(),
+					locZ + gl.getCurrentZTranslation());
 			gl.scaleBy(scale, scale, scale);
 
 			if (!gl.isWireframe()) {
@@ -827,10 +833,13 @@ public class TextDrawer extends ObjectDrawer<StringObject> {
 		gl.pushMatrix();
 		try {
 			final IPoint anchor = attributes.getAnchor();
-			applyRotation(attributes, p);
+			final boolean rotated = applyRotation(attributes, p);
+			final double locX = rotated ? 0 : p.getX();
+			final double locY = rotated ? 0 : p.getY();
+			final double locZ = rotated ? 0 : p.getZ();
 			final float scale = 1f / (float) gl.getRenderer().getAbsoluteRatioBetweenPixelsAndModelsUnits();
-			gl.translateBy(p.getX() - width * scale * anchor.getX(), p.getY() + y * scale * anchor.getY(),
-					p.getZ() + gl.getCurrentZTranslation());
+			gl.translateBy(locX - width * scale * anchor.getX(), locY + y * scale * anchor.getY(),
+					locZ + gl.getCurrentZTranslation());
 			gl.scaleBy(scale, scale, scale);
 			if (!gl.isWireframe()) {
 				previous = drawFacesAndBorder(previous);
@@ -1094,16 +1103,19 @@ public class TextDrawer extends ObjectDrawer<StringObject> {
 	 * @param attributes
 	 *            the drawing attributes containing the optional rotation
 	 * @param p
-	 *            the location point (mutated to zero if a rotation is applied, to avoid double-translation)
+	 *            the location point (read-only — not mutated)
+	 * @return true if rotation was applied (and the translation to p has already been performed), false otherwise
 	 */
-	private void applyRotation(final IDrawingAttributes attributes, final IPoint p) {
+	private boolean applyRotation(final IDrawingAttributes attributes, final IPoint p) {
 		final AxisAngle rotation = attributes.getRotation();
 		if (rotation != null) {
 			gl.translateBy(p.getX(), p.getY(), p.getZ());
 			final IPoint axis = rotation.getAxis();
 			gl.rotateBy(-rotation.getAngle(), axis.getX(), axis.getY(), axis.getZ());
-			p.setLocation(0, 0, 0);
+			// Return true so callers use (0,0,0) as the effective position (translation already applied)
+			return true;
 		}
+		return false;
 	}
 
 	// -------------------------------------------------------------------------
