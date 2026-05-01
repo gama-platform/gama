@@ -198,19 +198,9 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 			} else if (f.getSize() < 16) { fontToUse = GLUT.BITMAP_HELVETICA_12; }
 		}
 		gl.pushMatrix();
-		final AxisAngle rotation = attributes.getRotation();
 		final IPoint p = attributes.getLocation();
-
-		if (rotation != null) {
-			gl.translateBy(p.getX(), p.getY(), p.getZ());
-			final IPoint axis = rotation.getAxis();
-			// AD Change to a negative rotation to fix Issue #1514
-			gl.rotateBy(-rotation.getAngle(), axis.getX(), axis.getY(), axis.getZ());
-			// Voids the location so as to make only one translation
-			p.setLocation(0, 0, 0);
-		}
-
-		gl.rasterText(object, fontToUse, p.getX(), p.getY(), p.getZ());
+		final boolean rotated = applyRotation(attributes, p);
+		gl.rasterText(object, fontToUse, rotated ? 0 : p.getX(), rotated ? 0 : p.getY(), rotated ? 0 : p.getZ());
 		gl.popMatrix();
 	}
 
@@ -282,10 +272,13 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 		gl.pushMatrix();
 		try {
 			IPoint anchor = attributes.getAnchor();
-			applyRotation(attributes, p);
+			final boolean rotated = applyRotation(attributes, p);
+			final double locX = rotated ? 0 : p.getX();
+			final double locY = rotated ? 0 : p.getY();
+			final double locZ = rotated ? 0 : p.getZ();
 			final float scale = 1f / (float) gl.getRenderer().getAbsoluteRatioBetweenPixelsAndModelsUnits();
-			gl.translateBy(p.getX() - width * scale * anchor.getX(), p.getY() + y * scale * anchor.getY(),
-					p.getZ() + gl.getCurrentZTranslation());
+			gl.translateBy(locX - width * scale * anchor.getX(), locY + y * scale * anchor.getY(),
+					locZ + gl.getCurrentZTranslation());
 			gl.scaleBy(scale, scale, scale);
 			if (!gl.isWireframe()) {
 				previous = drawFacesAndBorder(previous);
@@ -353,17 +346,19 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 	 *            the attributes
 	 * @param p
 	 *            the p
+	 * @return true if rotation was applied (and the translation to p has already been performed)
 	 */
-	private void applyRotation(final IDrawingAttributes attributes, final IPoint p) {
+	private boolean applyRotation(final IDrawingAttributes attributes, final IPoint p) {
 		final AxisAngle rotation = attributes.getRotation();
 		if (rotation != null) {
 			gl.translateBy(p.getX(), p.getY(), p.getZ());
 			final IPoint axis = rotation.getAxis();
 			// AD Change to a negative rotation to fix Issue #1514
 			gl.rotateBy(-rotation.getAngle(), axis.getX(), axis.getY(), axis.getZ());
-			// Voids the location so as to make only one translation
-			p.setLocation(0, 0, 0);
+			// Return true so callers use (0,0,0) as the effective position (translation already applied)
+			return true;
 		}
+		return false;
 	}
 
 	/**
