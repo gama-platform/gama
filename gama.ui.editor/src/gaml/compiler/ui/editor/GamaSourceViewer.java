@@ -17,6 +17,10 @@ import java.util.List;
 import org.eclipse.jface.text.codemining.ICodeMiningProvider;
 import org.eclipse.jface.text.source.IOverviewRuler;
 import org.eclipse.jface.text.source.IVerticalRuler;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.custom.VerifyKeyListener;
+import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.internal.editors.text.codemining.annotation.AnnotationCodeMiningProvider;
 import org.eclipse.xtext.ui.editor.XtextSourceViewer;
@@ -31,6 +35,9 @@ import org.eclipse.xtext.ui.editor.XtextSourceViewer;
  * <li>Provides additive code-mining provider management so that GAML-specific providers can coexist with
  * providers registered by external plugins (e.g. GitHub Copilot) instead of replacing them.</li>
  * <li>Exposes a simple text-search helper ({@link #find(String)}).</li>
+ * <li>Prevents unexpected horizontal scrolling during vertical keyboard navigation (↑, ↓, Page Up, Page Down)
+ * so that the viewport stays stable when the cursor moves to lines of different widths — matching the
+ * behaviour of most modern text editors.</li>
  * </ul>
  * </p>
  *
@@ -69,6 +76,64 @@ public class GamaSourceViewer extends XtextSourceViewer {
 			final boolean showsAnnotationOverview, final int styles) {
 		super(parent, ruler, overviewRuler, showsAnnotationOverview, styles);
 		isOverviewVisible = showsAnnotationOverview && overviewRuler != null;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>
+	 * Installs the vertical-navigation horizontal-scroll lock after the underlying {@link StyledText} widget has
+	 * been created by the superclass.
+	 * </p>
+	 */
+	@Override
+	protected void createControl(final Composite parent, final int styles) {
+		super.createControl(parent, styles);
+		installVerticalNavigationScrollLock();
+	}
+
+	/**
+	 * Installs a {@link VerifyKeyListener} on the underlying {@link StyledText} widget that prevents the horizontal
+	 * scroll position from changing during pure vertical keyboard navigation (↑, ↓, Page Up, Page Down — with or
+	 * without Shift for selection extension).
+	 *
+	 * <p>
+	 * By default, SWT's {@link StyledText} calls {@code showCaret()} after every caret movement, which can cause the
+	 * viewport to scroll horizontally when the caret lands on a line that is wider than the visible area. This
+	 * matches the default Eclipse/SWT behaviour, but differs from most modern text editors (VS Code, Sublime,
+	 * IntelliJ) that keep the horizontal scroll position stable during vertical navigation.
+	 * </p>
+	 *
+	 * <p>
+	 * The fix works by capturing the horizontal pixel offset just before each vertical navigation key is processed
+	 * and restoring it asynchronously after the caret has been moved. The restore is scheduled via
+	 * {@link org.eclipse.swt.widgets.Display#asyncExec(Runnable)} so that it runs after SWT has finished processing
+	 * the key event (and after any internal {@code showCaret()} call), but before the next paint cycle — avoiding
+	 * any visible flicker.
+	 * </p>
+	 */
+	private void installVerticalNavigationScrollLock() {
+		final StyledText st = getTextWidget();
+		if (st == null) return;
+		st.addVerifyKeyListener(new VerifyKeyListener() {
+			@Override
+			public void verifyKey(final VerifyEvent event) {
+				switch (event.keyCode) {
+					case SWT.ARROW_UP:
+					case SWT.ARROW_DOWN:
+					case SWT.PAGE_UP:
+					case SWT.PAGE_DOWN: {
+						final int hPixel = st.getHorizontalPixel();
+						st.getDisplay().asyncExec(() -> {
+							if (!st.isDisposed()) { st.setHorizontalPixel(hPixel); }
+						});
+						break;
+					}
+					default:
+						break;
+				}
+			}
+		});
 	}
 
 	/**
