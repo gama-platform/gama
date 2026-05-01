@@ -377,7 +377,9 @@ public class GamaDateFactory {
 				day = date[0].substring(6, 8);
 			} else if (date.length >= 4 && date[0].isEmpty()) {
 				// Negative year: "-1000-01-01" splits to ["", "1000", "01", "01"]
-				year = "-" + date[1];
+				// Pad the numeric portion to at least 4 digits for ISO compliance
+				final String numericPart = date[1];
+				year = "-" + "0".repeat(Math.max(0, 4 - numericPart.length())) + numericPart;
 				month = date[2];
 				day = date[3];
 			} else {
