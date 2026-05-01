@@ -57,6 +57,15 @@ public class SwingControlWin extends SwingControl {
 			WorkbenchHelper.asyncRun(() -> {
 				frame = SWT_AWT.new_Frame(SwingControlWin.this);
 				frame.setAlwaysOnTop(false);
+				// Prevent native OS paint messages (e.g. WM_PAINT triggered by focus-change
+				// events on Windows) from bypassing Swing's RepaintManager / double-buffer and
+				// painting the component hierarchy directly to the screen. GAMA drives all
+				// repaints explicitly via updateDisplay() → repaint(), which is a
+				// software-generated event and is NOT suppressed by setIgnoreRepaint. Without
+				// this flag, clicking the display to change focus triggers multiple on-screen
+				// partial redraws (visible as 4 drawing "phases" of the grid), causing the
+				// blinking reported in https://github.com/gama-platform/gama/issues/3918.
+				frame.setIgnoreRepaint(true);
 				surface.setVisibility(() -> visible);
 				JPanel rootPane = new JPanel();
 				rootPane.setLayout(new GridBagLayout());

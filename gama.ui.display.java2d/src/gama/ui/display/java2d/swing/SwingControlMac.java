@@ -65,6 +65,10 @@ public class SwingControlMac extends SwingControl {
 	    WorkbenchHelper.asyncRun(() -> {
 		frame = SWT_AWT.new_Frame(SwingControlMac.this);
 		frame.setAlwaysOnTop(false);
+		// Prevent native OS paint messages triggered by focus-change events from
+		// bypassing Swing's RepaintManager / double-buffer. See SwingControlWin for
+		// the full explanation.
+		frame.setIgnoreRepaint(true);
 		if (swingKeyListener != null) {
 		    frame.addKeyListener(swingKeyListener);
 		}
