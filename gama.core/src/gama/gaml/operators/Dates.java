@@ -1112,6 +1112,7 @@ public class Dates {
 					value = "date('2000-01-01 00:00:00') + '_Test'",
 					equals = "'2000-01-01 00:00:00_Test'") })
 	@test ("date('2000-01-01 00:00:00') + '_Test' = '2000-01-01 00:00:00_Test'")
+	@test ("date('-1000-01-01 00:00:00') + '' = '-1000-01-01 00:00:00'")
 	public static String concatenateDate(final IScope scope, final IDate date1, final String text)
 			throws GamaRuntimeException {
 		return date1.toString() + text;
@@ -1423,6 +1424,7 @@ public class Dates {
 					value = "date('2000-01-01') minus_years 3",
 					equals = "date('1997-01-01')") })
 	@test ("date('2000-01-01') minus_years 3 = date('1997-01-01')")
+	@test ("date('0002-01-01') minus_years 3 = date('-0001-01-01')")
 	public static IDate subtractYears(final IScope scope, final IDate date1, final int nbYears)
 			throws GamaRuntimeException {
 		return date1.plus(-nbYears, YEARS);

@@ -375,12 +375,17 @@ public class GamaDateFactory {
 				year = date[0].substring(0, 4);
 				month = date[0].substring(4, 6);
 				day = date[0].substring(6, 8);
+			} else if (date.length >= 4 && date[0].isEmpty()) {
+				// Negative year: "-1000-01-01" splits to ["", "1000", "01", "01"]
+				year = "-" + date[1];
+				month = date[2];
+				day = date[3];
 			} else {
 				year = date[0];
 				month = date[1];
 				day = date[2];
 			}
-			if (year.length() == 2) { year = "20" + year; }
+			if (year.length() == 2 && !year.startsWith("-")) { year = "20" + year; }
 			if (month.length() == 1) { month = '0' + month; }
 			if (day.length() == 1) { day = '0' + day; }
 			dateStr = year + "-" + month + "-" + day + "T" + other;
