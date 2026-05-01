@@ -16,6 +16,8 @@ import gama.api.compilation.descriptions.IDescriptionValidator;
 import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.constants.IGamlIssue;
 import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.expressions.IExpressionDescription;
+import gama.api.gaml.types.Cast;
 import gama.api.kernel.simulation.IExploration;
 
 /**
@@ -190,8 +192,11 @@ public class BatchValidator implements IDescriptionValidator {
 			}
 
 			if (tmpDesc.hasFacet(IExploration.SAMPLE_SIZE)) {
-				int samples = Integer.parseInt(tmpDesc.getLitteral(IExploration.SAMPLE_SIZE));
-				if (samples < 1) { desc.error("Sampling must be a positive integer !"); }
+				IExpressionDescription exp = tmpDesc.getFacet(IExploration.SAMPLE_SIZE);
+				if (exp.isConst()) {
+					int samples = Cast.asInt(null, exp.getExpression().getConstValue());
+					if (samples < 1) { desc.error("Sampling must be a positive integer !"); }
+				}
 			}
 
 			if (tmpDesc.hasFacet(IExploration.SAMPLING)) {
@@ -203,16 +208,21 @@ public class BatchValidator implements IDescriptionValidator {
 							tmpDesc.warning("Levels are not defined for Morris SAMPLING, will be 4 by default",
 									IGamlIssue.MISSING_FACET);
 						} else {
-							int levels = Integer.parseInt(tmpDesc.getLitteral(IExploration.NB_LEVELS));
-							if (levels <= 0) { tmpDesc.error("Levels should be positive"); }
+							IExpressionDescription exp = tmpDesc.getFacet(IExploration.NB_LEVELS);
+							if (exp.isConst()) {
+								int levels = Cast.asInt(null, exp.getExpression().getConstValue());
+								if (levels <= 0) { tmpDesc.error("Levels should be positive"); }
+							}
 						}
 						if (!tmpDesc.hasFacet(IExploration.SAMPLE_SIZE)) {
 							tmpDesc.warning("Sample size not defined, will be 132 by default",
 									IGamlIssue.MISSING_FACET);
 						} else {
-							int sample = Integer.parseInt(tmpDesc.getLitteral(IExploration.SAMPLE_SIZE));
-							if (sample % 2 != 0) { tmpDesc.error("The sample size should be even"); }
-
+							IExpressionDescription exp = tmpDesc.getFacet(IExploration.SAMPLE_SIZE);
+							if (exp.isConst()) {
+								int sample = Cast.asInt(null, exp.getExpression().getConstValue());
+								if (sample % 2 != 0) { tmpDesc.error("The sample size should be even"); }
+							}
 						}
 						break;
 					case IKeyword.SALTELLI:
