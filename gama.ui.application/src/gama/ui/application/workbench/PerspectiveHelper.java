@@ -336,6 +336,8 @@ public class PerspectiveHelper {
 					DEBUG.LOG(
 							"NPE in WorkbenchPage.setPerspective(). See Issue #1602. Working around the bug in e4...");
 					page.setPerspective(descriptor);
+				} catch (final Throwable t) {
+					DEBUG.LOG("Error in WorkbenchPage.setPerspective(): " + t.getMessage());
 				}
 				activateAutoSave(withAutoSave);
 				if (isSimulationPerspective(currentPerspectiveId) && isSimulationPerspective(perspectiveId)) {
