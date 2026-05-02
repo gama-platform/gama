@@ -32,10 +32,7 @@ import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IPartListener2;
-import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IPerspectiveListener;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPartReference;
 
 import gama.api.GAMA;
 import gama.api.kernel.simulation.IExperimentStateListener;
@@ -43,12 +40,9 @@ import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.runtime.SystemInfo;
 import gama.api.ui.displays.IDisplayData.Changes;
 import gama.api.ui.displays.IDisplayData.DisplayDataListener;
-import gama.api.ui.displays.IDisplaySurface;
 import gama.api.utils.interfaces.IDisposable;
-import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
 import gama.dev.STRINGS;
-import gama.ui.application.workbench.PerspectiveHelper;
 import gama.ui.experiment.controls.SimulationSpeedContributionItem;
 import gama.ui.shared.bindings.GamaKeyBindings;
 import gama.ui.shared.menus.GamaColorMenu;
@@ -115,7 +109,10 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	boolean isOverlayTemporaryVisible, sideControlsVisible, interactiveConsoleVisible;
 
 	/** The perspective listener. */
-	protected IPerspectiveListener perspectiveListener;
+	private final IPerspectiveListener perspectiveListener = new LayeredDisplayPerspectiveListener(this);
+
+	/** The overlay listener. */
+	private final IPartListener2 overlayListener = new LayeredDisplayPartListener(this);
 
 	/** The relaunch experiment. */
 	GamaCommand toggleOverlay, takeSnapshot, antiAlias, toggleFullScreen, runExperiment, stepExperiment,
@@ -130,8 +127,6 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	LayeredDisplayDecorator(final LayeredDisplayView view) {
 		this.view = view;
 		createCommands();
-		WorkbenchHelper.getPage().addPartListener(overlayListener);
-		GAMA.addExperimentStateListener(this);
 	}
 
 	/**
@@ -176,88 +171,6 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 				STRINGS.PAD("Reload experiment", pad) + GamaKeyBindings.RELOAD_STRING,
 				e -> GAMA.reloadFrontmostExperiment(false));
 	}
-
-	/** The overlay listener. */
-	private final IPartListener2 overlayListener = new IPartListener2() {
-
-		private boolean ok(final IWorkbenchPartReference partRef) {
-			return partRef.getPart(false) == view && view.surfaceComposite != null
-					&& !view.surfaceComposite.isDisposed() && !view.isFullScreen();
-		}
-
-		@Override
-		public void partActivated(final IWorkbenchPartReference partRef) {
-			if (ok(partRef)) {
-				// DEBUG.STACK();
-				WorkbenchHelper.runInUI("Activating " + partRef.getTitle(), 0, m -> {
-					// DEBUG.OUT("Part Activated:" + partRef.getTitle());
-					view.showCanvas();
-					if (overlay != null) { overlay.display(); }
-				});
-			}
-		}
-
-		@Override
-		public void partClosed(final IWorkbenchPartReference partRef) {
-			if (ok(partRef) && overlay != null) { overlay.close(); }
-		}
-
-		@Override
-		public void partDeactivated(final IWorkbenchPartReference partRef) {
-			// On macOS, this event is wrongly sent when tabs are not displayed for the views and another display is
-			// selected
-			// if (PlatformHelper.isMac() && !PerspectiveHelper.keepTabs()) return;
-			// if (ok(partRef)) {
-			// DEBUG.OUT("Part Deactivated:" + partRef.getTitle());
-			// WorkbenchHelper.asyncRun(() -> {
-			// if (overlay != null) { overlay.hide(); }
-			// view.hideCanvas();
-			// });
-			// }
-		}
-
-		@Override
-		public void partHidden(final IWorkbenchPartReference partRef) {
-			// On macOS, this event is wrongly sent when tabs are not displayed for the views and another display is
-			// selected. After tests, the same happens on Linux and Windows -- so the test is generalized.
-			if (/* (PlatformHelper.isMac() || PlatformHelper.isLinux()) && */ !PerspectiveHelper.keepTabs()) return;
-			if (ok(partRef)) {
-				WorkbenchHelper.runInUI("Hide " + partRef.getTitle(), 0, m -> {
-					// DEBUG.OUT("Part hidden:" + partRef.getTitle());
-					view.hideCanvas();
-					if (overlay != null) { overlay.hide(); }
-				});
-			}
-		}
-
-		@Override
-		public void partVisible(final IWorkbenchPartReference partRef) {
-			if (ok(partRef)) {
-				WorkbenchHelper.runInUI("Unhide " + partRef.getTitle(), 0, m -> {
-					final long t0 = System.currentTimeMillis();
-					DEBUG.OUT("[partVisible UIJob] START: Unhide " + partRef.getTitle() + " thread="
-							+ Thread.currentThread().getName());
-					view.showCanvas();
-					IDisplaySurface s = view.getDisplaySurface();
-					if (s != null) {
-						final long t1 = System.currentTimeMillis();
-						s.getOutput().update();
-						DEBUG.OUT(
-								"[partVisible UIJob] output.update() took " + (System.currentTimeMillis() - t1) + "ms");
-					}
-					if (overlay != null) {
-						final long t2 = System.currentTimeMillis();
-						overlay.display();
-						DEBUG.OUT("[partVisible UIJob] overlay.display() took " + (System.currentTimeMillis() - t2)
-								+ "ms");
-					}
-					DEBUG.OUT("[partVisible UIJob] END: Unhide " + partRef.getTitle() + " total="
-							+ (System.currentTimeMillis() - t0) + "ms");
-				});
-			}
-		}
-
-	};
 
 	/** The enter full screen. */
 	public final GamaCommand enterFullScreen =
@@ -403,7 +316,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	 */
 	public void createDecorations() {
 		createOverlay();
-		addPerspectiveListener();
+		addListeners();
 		keyAndMouseListener = view.getMultiListener();
 		menuManager = new DisplaySurfaceMenu(view.getDisplaySurface(), view.getParentComposite(), presentationMenu());
 		// Run synchronously — createDecorations() is always called on the UI thread from ownCreatePartControl.
@@ -417,50 +330,21 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	}
 
 	/**
-	 * Adds the perspective listener.
+	 *
 	 */
-	private void addPerspectiveListener() {
-		perspectiveListener = new IPerspectiveListener() {
-			boolean previousState = false;
-
-			@Override
-			public void perspectiveChanged(final IWorkbenchPage page, final IPerspectiveDescriptor perspective,
-					final String changeId) {}
-
-			@Override
-			public void perspectiveActivated(final IWorkbenchPage page, final IPerspectiveDescriptor perspective) {
-				if (PerspectiveHelper.PERSPECTIVE_MODELING_ID.equals(perspective.getId())) {
-					if (view.getOutput() != null && view.getDisplaySurface() != null
-							&& !GamaPreferences.Displays.CORE_DISPLAY_PERSPECTIVE.getValue()) {
-						previousState = view.getOutput().isPaused();
-						view.getOutput().setPaused(true);
-					}
-					// Seems necessary in addition to the IPartListener
-					WorkbenchHelper.asyncRun(() -> {
-						if (SystemInfo.isMac() && overlay != null) { overlay.hide(); }
-						view.hideCanvas();
-					});
-				} else {
-					// Issue #2639
-					if (SystemInfo.isMac() && !view.isOpenGL()) {
-						final IDisplaySurface ds = view.getDisplaySurface();
-						if (ds != null) { ds.updateDisplay(true); }
-					}
-					if (!GamaPreferences.Displays.CORE_DISPLAY_PERSPECTIVE.getValue() && view.getOutput() != null
-							&& view.getDisplaySurface() != null) {
-						view.getOutput().setPaused(previousState);
-					}
-					// Necessary in addition to the IPartListener as there is no way to distinguish between the wrong
-					// "hidden" event and the good one when there are no tabs.
-					WorkbenchHelper.asyncRun(() -> {
-						if (SystemInfo.isMac() && overlay != null) { overlay.display(); }
-						// view.showCanvas();
-					});
-				}
-
-			}
-		};
+	private void addListeners() {
+		GAMA.addExperimentStateListener(this);
 		WorkbenchHelper.getWindow().addPerspectiveListener(perspectiveListener);
+		WorkbenchHelper.getPage().addPartListener(overlayListener);
+	}
+
+	/**
+	 * Removes the listeners.
+	 */
+	private void removeListeners() {
+		GAMA.removeExperimentStateListener(this);
+		WorkbenchHelper.getWindow().removePerspectiveListener(perspectiveListener);
+		WorkbenchHelper.getPage().removePartListener(overlayListener);
 	}
 
 	/**
@@ -659,11 +543,8 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	 * Dispose.
 	 */
 	public void dispose() {
-
-		GAMA.removeExperimentStateListener(this);
 		try {
-			WorkbenchHelper.getWindow().removePerspectiveListener(perspectiveListener);
-			WorkbenchHelper.getPage().removePartListener(overlayListener);
+			removeListeners();
 		} catch (final Exception e) {}
 		if (keyAndMouseListener != null) {
 			keyAndMouseListener.dispose();
