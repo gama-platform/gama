@@ -345,6 +345,11 @@ public class GamlSyntacticConverter {
 			}
 			case null, default -> {
 				switch (keyword) {
+					case ARG -> {
+						elt = FACTORY.create(keyword, stm, false);
+						elt.setFacet(IInternalFacets.GAML_ERROR, GAML.getExpressionDescriptionFactory().createConstant(
+								"`arg` is not allowed anymore, please use the functional syntax to declare arguments (e.g. `action(type1 arg1, type2 arg2 <- default2)`)"));
+					}
 					case SET -> {
 						elt = FACTORY.create(keyword, stm, true);
 						elt.setFacet(IInternalFacets.GAML_ERROR, GAML.getExpressionDescriptionFactory().createConstant(
