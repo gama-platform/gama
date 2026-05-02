@@ -19,12 +19,8 @@ import java.util.function.Supplier;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.jface.window.Window;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IViewPart;
@@ -67,9 +63,7 @@ import gama.api.ui.IGamaView.User;
 import gama.api.ui.IGui;
 import gama.api.ui.IOutput;
 import gama.api.ui.IProgressIndicator;
-import gama.api.ui.IStatusControl;
 import gama.api.ui.IStatusDisplayer;
-import gama.api.ui.IStatusMessage;
 import gama.api.ui.displays.IDisplayCreator;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.utils.prefs.GamaPreferences;
@@ -81,7 +75,6 @@ import gama.core.outputs.display.AbstractDisplayGraphics;
 import gama.dev.DEBUG;
 import gama.ui.application.workbench.PerspectiveHelper;
 import gama.ui.application.workbench.SimulationPerspectiveDescriptor;
-import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.interfaces.IDisplayLayoutManager;
 import gama.ui.shared.interfaces.IRefreshHandler;
 import gama.ui.shared.interfaces.ISpeedDisplayer;
@@ -90,8 +83,6 @@ import gama.ui.shared.parameters.GamaWizard;
 import gama.ui.shared.parameters.GamaWizardDialog;
 import gama.ui.shared.parameters.GamaWizardPage;
 import gama.ui.shared.resources.GamaColors;
-import gama.ui.shared.resources.GamaIcon;
-import gama.ui.shared.resources.IGamaIcons;
 import gama.workspace.console.CompositeConsoleListener;
 import gama.workspace.status.ProgressIndicator;
 
@@ -538,15 +529,14 @@ public class SwtGui implements IGui {
 	private volatile LaunchingOverlay launchingOverlay;
 
 	@Override
-	public void showLaunchingOverlay(final IModelSpecies model, final String perspectiveId) {
+	public void showLaunchingOverlay(final String perspectiveId) {
 		final Shell parent = WorkbenchHelper.getWindow() != null ? WorkbenchHelper.getWindow().getShell() : null;
 		if (parent == null || parent.isDisposed()) return;
 		// Extract model and experiment names from the perspective id:
 		// format is PERSPECTIVE_SIMULATION_FRAGMENT + ":" + modelName + ":" + experimentName
 		final String[] parts = perspectiveId == null ? new String[0] : perspectiveId.split(":", 3);
-		final String modelName = parts.length > 1 ? parts[1] : model != null ? model.getName() : "";
+		final String modelName = parts.length > 1 ? parts[1] : "";
 		final String expName = parts.length > 2 ? parts[2] : "";
-
 		launchingOverlay = new LaunchingOverlay(parent, modelName, expName, getConsole(), getStatus(), null);
 		launchingOverlay.show();
 	}

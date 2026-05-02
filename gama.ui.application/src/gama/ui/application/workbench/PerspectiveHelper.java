@@ -32,6 +32,7 @@ import org.eclipse.ui.internal.WorkbenchWindow;
 import org.eclipse.ui.internal.registry.PerspectiveDescriptor;
 import org.eclipse.ui.internal.registry.PerspectiveRegistry;
 
+import gama.api.GAMA;
 import gama.api.kernel.species.IModelSpecies;
 import gama.api.ui.IGui;
 import gama.api.utils.prefs.GamaPreferences;
@@ -166,7 +167,8 @@ public class PerspectiveHelper {
 	 */
 	public static final boolean openModelingPerspective(final boolean immediately, final boolean memorizeEditors) {
 		// AD 08/18: turn off autosave to prevent workspace corruption
-		return openPerspective(PERSPECTIVE_MODELING_ID, immediately, false, memorizeEditors);
+		// AD 04/26: turn off immediately to prevent locking
+		return openPerspective(PERSPECTIVE_MODELING_ID, false, false, memorizeEditors);
 	}
 
 	/**
@@ -337,7 +339,7 @@ public class PerspectiveHelper {
 				}
 				activateAutoSave(withAutoSave);
 				if (isSimulationPerspective(currentPerspectiveId) && isSimulationPerspective(perspectiveId)) {
-					DEBUG.OUT("Destroying perspective " + oldDescriptor.getId());
+					// DEBUG.OUT("Destroying perspective " + oldDescriptor.getId());
 					page.closePerspective(oldDescriptor, false, false);
 					getPerspectiveRegistry().deletePerspective(oldDescriptor);
 				}
@@ -359,9 +361,7 @@ public class PerspectiveHelper {
 			} finally {
 				// Delegate overlay creation to the GUI service so that the concrete
 				// implementation (SwtGui) can use the correct theme-aware icon and FlatButton.
-				if (isSimulationPerspective(perspectiveId)) {
-					gama.api.GAMA.getGui().showLaunchingOverlay(null, perspectiveId);
-				}
+				if (isSimulationPerspective(perspectiveId)) { GAMA.getGui().showLaunchingOverlay(perspectiveId); }
 			}
 		};
 		if (immediately) {
@@ -373,15 +373,6 @@ public class PerspectiveHelper {
 	}
 
 	/**
-	 * Delegates to {@link gama.api.ui.IGui#hideLaunchingOverlay()} — removes the overlay shell that was shown by
-	 * {@link gama.api.ui.IGui#showLaunchingOverlay} during the perspective switch. Must be called on the UI thread
-	 * after the full display layout has been applied.
-	 */
-	public static void removeLayoutOverlay() {
-		gama.api.GAMA.getGui().hideLaunchingOverlay();
-	}
-
-	/**
 	 * Apply active editor.
 	 *
 	 * @param page
@@ -390,12 +381,7 @@ public class PerspectiveHelper {
 	private static void applyActiveEditor(final IWorkbenchPage page) {
 		if (activeEditor == null) return;
 		final IEditorPart part = page.findEditor(activeEditor);
-		if (part != null) {
-			page.activate(part);
-			// DEBUG.OUT("Applying memorized editor to " + page.getPerspective().getId() + " = " +
-			// activeEditor.getName());
-			// page.bringToTop(part);
-		}
+		if (part != null) { page.activate(part); }
 
 	}
 

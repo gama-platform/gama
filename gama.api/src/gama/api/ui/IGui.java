@@ -412,18 +412,18 @@ public interface IGui {
 	default void cleanAfterExperiment() {}
 
 	/**
-	 * Shows a full-screen overlay covering the workbench shell between the simulation-perspective switch and the
-	 * moment when display views are fully laid out. The overlay displays a "Launching experiment…" message and a cancel
-	 * button so the user can abort the launch. The concrete UI implementation (SwtGui) builds an SWT child Shell
-	 * (without SWT.ON_TOP so that the overlay stays above GAMA windows only and does not cover other applications)
-	 * and uses the correct theme-aware icon for the cancel button.
+	 * Shows a full-screen overlay covering the workbench shell between the simulation-perspective switch and the moment
+	 * when display views are fully laid out. The overlay displays a "Launching experiment…" message and a cancel button
+	 * so the user can abort the launch. The concrete UI implementation (SwtGui) builds an SWT child Shell (without
+	 * SWT.ON_TOP so that the overlay stays above GAMA windows only and does not cover other applications) and uses the
+	 * correct theme-aware icon for the cancel button.
 	 *
 	 * @param model
 	 *            the model being launched (used to extract the model name for the subtitle)
 	 * @param experimentName
 	 *            the experiment name shown in the subtitle
 	 */
-	default void showLaunchingOverlay(final IModelSpecies model, final String experimentName) {}
+	default void showLaunchingOverlay(final String experimentName) {}
 
 	/**
 	 * Forces an immediate synchronous display of any pending (not yet shown) runtime exceptions in the error handler,
@@ -434,10 +434,10 @@ public interface IGui {
 	default void displayLatestErrors() {}
 
 	/**
-	 * Opens (or brings to front) the Error view without flushing the exception handler queue. Kept for
-	 * backward compatibility and external callers. The main error-display flow now goes through
-	 * {@link #displayErrors} which opens the view atomically on the UI thread when there are exceptions to
-	 * show. The default implementation is a no-op.
+	 * Opens (or brings to front) the Error view without flushing the exception handler queue. Kept for backward
+	 * compatibility and external callers. The main error-display flow now goes through {@link #displayErrors} which
+	 * opens the view atomically on the UI thread when there are exceptions to show. The default implementation is a
+	 * no-op.
 	 */
 	default void openErrorView() {}
 
