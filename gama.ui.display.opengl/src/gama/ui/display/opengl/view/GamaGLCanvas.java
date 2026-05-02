@@ -64,7 +64,7 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 	final GLWindow drawable;
 
 	/** The fps delegate. */
-	GamaGLAnimator animator;
+	private GamaGLAnimator animator;
 
 	/** The detached. */
 	protected boolean detached = false;
@@ -292,9 +292,6 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 	}
 
 	@Override
-	public GLAnimatorControl getAnimator() { return drawable.getAnimator(); }
-
-	@Override
 	public Thread setExclusiveContextThread(final Thread t) throws GLException {
 		return drawable.setExclusiveContextThread(t);
 	}
@@ -499,6 +496,23 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 	public void updateVisibleStatus(final boolean v) {
 		// DEBUG.OUT("VISIBLE changed through display : " + v);
 		visible = v;
+	}
+
+	@Override
+	public GamaGLAnimator getAnimator() { return animator; }
+
+	/**
+	 *
+	 */
+	public void pauseAnimator() {
+		if (animator != null) { animator.pause(); }
+	}
+
+	/**
+	 * Resume animator.
+	 */
+	public void resumeAnimator() {
+		if (animator != null) { animator.resume(); }
 	}
 
 }

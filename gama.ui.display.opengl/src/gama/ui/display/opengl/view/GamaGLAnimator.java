@@ -42,8 +42,11 @@ public class GamaGLAnimator implements Runnable, GLAnimatorControl, GLAnimatorCo
 	/** The animator thread. */
 	protected final Thread animatorThread;
 
-	/** The canvas. */
-	// private final GLAutoDrawable canvas;
+	/** Platform info for diagnostics. */
+	private static final String OS = System.getProperty("os.name").toLowerCase();
+
+	/** The paused. */
+	volatile boolean paused = false;
 
 	/** The display runnable. */
 	private final Runnable displayRunnable;
@@ -111,6 +114,9 @@ public class GamaGLAnimator implements Runnable, GLAnimatorControl, GLAnimatorCo
 		this.displayRunnable = () -> { if (window.isRealized()) { window.display(); } };
 		window.setAnimator(this);
 		this.animatorThread = Thread.ofPlatform().name("Animator thread").unstarted(this);
+		// if (DEBUG.IS_ON()) {
+		// DEBUG.OUT("[GamaGLAnimator] Created animatorThread: " + animatorThread + " on OS: " + OS);
+		// }
 		GamaPreferences.Displays.OPENGL_FPS.onChange(fpsChanged);
 		setUpdateFPSFrames(FPSCounter.DEFAULT_FRAMES_PER_INTERVAL, null);
 	}
@@ -123,19 +129,33 @@ public class GamaGLAnimator implements Runnable, GLAnimatorControl, GLAnimatorCo
 
 	@Override
 	public boolean start() {
+		// if (DEBUG.IS_ON()) { DEBUG.OUT("[GamaGLAnimator] start() called. Thread state: " +
+		// animatorThread.getState()); }
 		this.stopRequested = false;
-		this.animatorThread.start();
+		if (!animatorThread.isAlive()) {
+			animatorThread.start();
+			// if (DEBUG.IS_ON()) { DEBUG.OUT("[GamaGLAnimator] animatorThread started."); }
+		}
+		// else if (DEBUG.IS_ON()) { DEBUG.OUT("[GamaGLAnimator] animatorThread already alive."); }
 		fpsStartTime = System.currentTimeMillis();
 		return true;
 	}
 
 	@Override
 	public boolean stop() {
+		// if (DEBUG.IS_ON()) { DEBUG.OUT("[GamaGLAnimator] stop() called. Thread state: " + animatorThread.getState());
+		// }
 		this.stopRequested = true;
 		if (WorkbenchHelper.isDisplayThread()) return true;
 		try {
-			this.animatorThread.join();
-		} catch (final InterruptedException e) {} finally {
+			if (animatorThread.isAlive()) {
+				animatorThread.join(2000);
+				// if (DEBUG.IS_ON()) { DEBUG.OUT("[GamaGLAnimator] animatorThread joined."); }
+			}
+			// else if (DEBUG.IS_ON()) { DEBUG.OUT("[GamaGLAnimator] animatorThread not alive at stop."); }
+		} catch (final InterruptedException e) {
+			// if (DEBUG.IS_ON()) { DEBUG.OUT("[GamaGLAnimator] InterruptedException during stop: " + e.getMessage()); }
+		} finally {
 			this.stopRequested = false;
 			GamaPreferences.Displays.OPENGL_FPS.removeChangeListener(fpsChanged);
 		}
@@ -146,15 +166,22 @@ public class GamaGLAnimator implements Runnable, GLAnimatorControl, GLAnimatorCo
 	public boolean isAnimating() { return true; }
 
 	@Override
-	public boolean isPaused() { return false; }
+	public boolean isPaused() { return paused; }
 
 	@Override
 	public boolean pause() {
-		return false;
+		paused = true;
+		// if (DEBUG.IS_ON()) { DEBUG.OUT("[GamaGLAnimator] pause() called. Thread state: " +
+		// animatorThread.getState()); }
+		return true;
 	}
 
 	@Override
 	public boolean resume() {
+		paused = false;
+		// if (DEBUG.IS_ON()) {
+		// DEBUG.OUT("[GamaGLAnimator] resume() called. Thread state: " + animatorThread.getState());
+		// }
 		return true;
 	}
 
@@ -167,18 +194,16 @@ public class GamaGLAnimator implements Runnable, GLAnimatorControl, GLAnimatorCo
 	@Override
 	public void run() {
 		// while (!window.isRealized()) {}
+		// if (DEBUG.IS_ON()) {
+		// DEBUG.OUT("[GamaGLAnimator] run() started on thread: " + Thread.currentThread() + " (OS: " + OS + ")");
+		// }
 		while (!stopRequested) {
 			try {
-				// if (isARM() || PlatformHelper.isLinux()) {
-				// if (canvas.isRealized()) { canvas.display(); }
-				// Thread.ofVirtual().start(() -> {
-
-				// if (canvas.isRealized()) { canvas.display(); }
-
-				// });
-
-				WorkbenchHelper.run(displayRunnable);
-				// } else if (canvas.isRealized()) { canvas.display(); }
+				// if (DEBUG.IS_ON()) {
+				// DEBUG.OUT("[GamaGLAnimator] run() loop. paused=" + paused + ", stopRequested=" + stopRequested
+				// + ", thread state=" + animatorThread.getState());
+				// }
+				if (!paused) { WorkbenchHelper.run(displayRunnable); }
 				if (capFPS) {
 					final long frameDuration = 1000 / targetFPS;
 					final long timeSleep = frameDuration - fpsLastPeriod;
@@ -189,6 +214,7 @@ public class GamaGLAnimator implements Runnable, GLAnimatorControl, GLAnimatorCo
 			}
 			tickFPS();
 		}
+		// if (DEBUG.IS_ON()) { DEBUG.OUT("[GamaGLAnimator] run() exiting. Thread: " + Thread.currentThread()); }
 	}
 
 	@Override
@@ -222,11 +248,11 @@ public class GamaGLAnimator implements Runnable, GLAnimatorControl, GLAnimatorCo
 			fpsTotalDuration = Math.max(fpsTotalDuration, 1); // div 0
 			fpsTotal = fpsTotalFrames * 1000f / fpsTotalDuration;
 			fpsLastUpdateTime = now;
-			if (DEBUG.IS_ON()) {
-				// StringBuilder sb = new StringBuilder();
-				String fpsLastS = String.valueOf(fpsLast);
-				fpsLastS = fpsLastS.substring(0, fpsLastS.indexOf('.') + 2);
-			}
+			// if (DEBUG.IS_ON()) {
+			// // StringBuilder sb = new StringBuilder();
+			// String fpsLastS = String.valueOf(fpsLast);
+			// fpsLastS = fpsLastS.substring(0, fpsLastS.indexOf('.') + 2);
+			// }
 		}
 	}
 
