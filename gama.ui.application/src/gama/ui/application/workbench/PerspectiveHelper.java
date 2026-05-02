@@ -327,13 +327,11 @@ public class PerspectiveHelper {
 		final WorkbenchWindow window = (WorkbenchWindow) page.getWorkbenchWindow();
 
 		final Runnable r = () -> {
-			final var shell = window.getShell();
-			if (shell != null) { shell.setRedraw(false); }
 			try {
 				try {
 					page.setPerspective(descriptor);
 				} catch (final NullPointerException e) {
-					DEBUG.ERR(
+					DEBUG.LOG(
 							"NPE in WorkbenchPage.setPerspective(). See Issue #1602. Working around the bug in e4...");
 					page.setPerspective(descriptor);
 				}
@@ -359,7 +357,6 @@ public class PerspectiveHelper {
 					if (keepTray != null) { showBottomTray(window, keepTray); }
 				}
 			} finally {
-				if (shell != null) { shell.setRedraw(true); }
 				// Delegate overlay creation to the GUI service so that the concrete
 				// implementation (SwtGui) can use the correct theme-aware icon and FlatButton.
 				if (isSimulationPerspective(perspectiveId)) {

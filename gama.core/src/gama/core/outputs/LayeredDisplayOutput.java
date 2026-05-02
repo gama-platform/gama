@@ -226,7 +226,7 @@ import gama.dev.DEBUG;
 public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Display {
 
 	static {
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/** The layers. */
@@ -449,14 +449,14 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 
 		if (surface == null) return;
 		final long t0 = System.currentTimeMillis();
-		DEBUG.OUT("[LayeredDisplayOutput.update] START for " + getName()
-				+ " thread=" + Thread.currentThread().getName());
+		DEBUG.OUT(
+				"[LayeredDisplayOutput.update] START for " + getName() + " thread=" + Thread.currentThread().getName());
 		getData().update(getScope(), description.getFacets());
 		DEBUG.OUT("[LayeredDisplayOutput.update] after getData().update=" + (System.currentTimeMillis() - t0) + "ms");
 
 		super.update();
-		DEBUG.OUT("[LayeredDisplayOutput.update] END for " + getName()
-				+ " total=" + (System.currentTimeMillis() - t0) + "ms");
+		DEBUG.OUT("[LayeredDisplayOutput.update] END for " + getName() + " total=" + (System.currentTimeMillis() - t0)
+				+ "ms");
 		// See #3696
 		// if (!surface.shouldWaitToBecomeRendered()) { setRendered(true); }
 	}
@@ -504,9 +504,9 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 	 *
 	 * <p>
 	 * When an experiment has several displays they are all opened in sequence before
-	 * {@link gama.ui.experiment.commands.ArrangeDisplayViews} rearranges them into the requested sash layout.
-	 * Using {@code VIEW_ACTIVATE} (the default {@code 1}) causes E4 to show, activate and fully render each view
-	 * as soon as it is created, producing N intermediate layout passes (and the "split view appearing and immediately
+	 * {@link gama.ui.experiment.commands.ArrangeDisplayViews} rearranges them into the requested sash layout. Using
+	 * {@code VIEW_ACTIVATE} (the default {@code 1}) causes E4 to show, activate and fully render each view as soon as
+	 * it is created, producing N intermediate layout passes (and the "split view appearing and immediately
 	 * disappearing" artefact the user perceives as a 1–2 s lag).
 	 * </p>
 	 * <p>
@@ -519,7 +519,9 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 	 * @return {@code 2} ({@code IWorkbenchPage.VIEW_CREATE})
 	 */
 	@Override
-	protected int viewOpenMode() { return 2; }
+	protected int viewOpenMode() {
+		return 2;
+	}
 
 	/**
 	 * Gets the surface.

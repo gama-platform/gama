@@ -41,9 +41,9 @@ import gama.api.GAMA;
 import gama.api.kernel.simulation.IExperimentStateListener;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.runtime.SystemInfo;
-import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.displays.IDisplayData.Changes;
 import gama.api.ui.displays.IDisplayData.DisplayDataListener;
+import gama.api.ui.displays.IDisplaySurface;
 import gama.api.utils.interfaces.IDisposable;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
@@ -91,16 +91,16 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	protected Shell fullScreenShell;
 
 	/**
-	 * Guard against re-entrant or race-condition calls to {@link #toggleFullScreen()}. Set to {@code true} at the
-	 * start of a transition and cleared at the end, so that any second call arriving while the transition is in
-	 * progress (e.g. a UIJob queued by an E4 part-activation event) is silently ignored.
+	 * Guard against re-entrant or race-condition calls to {@link #toggleFullScreen()}. Set to {@code true} at the start
+	 * of a transition and cleared at the end, so that any second call arriving while the transition is in progress
+	 * (e.g. a UIJob queued by an E4 part-activation event) is silently ignored.
 	 */
 	private volatile boolean inFullScreenTransition;
 
 	/**
 	 * Timestamp (ms) recorded the last time fullscreen was <em>entered</em>. Used by
-	 * {@link #fullScreenEnteredRecently()} to debounce synthetic ESC {@code SWT.KeyDown} events that macOS injects
-	 * when a new {@code ON_TOP} shell becomes visible — these arrive after {@code inFullScreenTransition} is already
+	 * {@link #fullScreenEnteredRecently()} to debounce synthetic ESC {@code SWT.KeyDown} events that macOS injects when
+	 * a new {@code ON_TOP} shell becomes visible — these arrive after {@code inFullScreenTransition} is already
 	 * {@code false} and would otherwise immediately exit fullscreen.
 	 */
 	private volatile long lastFullScreenEnterTime = 0;
@@ -235,22 +235,24 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 			if (ok(partRef)) {
 				WorkbenchHelper.runInUI("Unhide " + partRef.getTitle(), 0, m -> {
 					final long t0 = System.currentTimeMillis();
-					DEBUG.OUT("[partVisible UIJob] START: Unhide " + partRef.getTitle()
-							+ " thread=" + Thread.currentThread().getName());
+					DEBUG.OUT("[partVisible UIJob] START: Unhide " + partRef.getTitle() + " thread="
+							+ Thread.currentThread().getName());
 					view.showCanvas();
 					IDisplaySurface s = view.getDisplaySurface();
 					if (s != null) {
 						final long t1 = System.currentTimeMillis();
 						s.getOutput().update();
-						DEBUG.OUT("[partVisible UIJob] output.update() took " + (System.currentTimeMillis() - t1) + "ms");
+						DEBUG.OUT(
+								"[partVisible UIJob] output.update() took " + (System.currentTimeMillis() - t1) + "ms");
 					}
 					if (overlay != null) {
 						final long t2 = System.currentTimeMillis();
 						overlay.display();
-						DEBUG.OUT("[partVisible UIJob] overlay.display() took " + (System.currentTimeMillis() - t2) + "ms");
+						DEBUG.OUT("[partVisible UIJob] overlay.display() took " + (System.currentTimeMillis() - t2)
+								+ "ms");
 					}
-					DEBUG.OUT("[partVisible UIJob] END: Unhide " + partRef.getTitle()
-							+ " total=" + (System.currentTimeMillis() - t0) + "ms");
+					DEBUG.OUT("[partVisible UIJob] END: Unhide " + partRef.getTitle() + " total="
+							+ (System.currentTimeMillis() - t0) + "ms");
 				});
 			}
 		}
@@ -276,61 +278,61 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 		if (inFullScreenTransition) return;
 		inFullScreenTransition = true;
 		try {
-		if (isFullScreen()) {
-			DEBUG.OUT("Is already full screen: exiting");
-			fs.setImage(GamaIcon.named(DISPLAY_FULLSCREEN_ENTER).image());
-			fs.setToolTipText(STRINGS.PAD("Enter fullscreen", 25) + "ESC");
-			toggleFullScreen = enterFullScreen;
-			// Toolbar
-			if (!toolbar.isDisposed()) {
-				toolbar.wipe(SWT.LEFT, true);
-				toolbar.setParent(normalParentOfToolbar);
-				normalParentOfToolbar.requestLayout();
+			if (isFullScreen()) {
+				DEBUG.OUT("Is already full screen: exiting");
+				fs.setImage(GamaIcon.named(DISPLAY_FULLSCREEN_ENTER).image());
+				fs.setToolTipText(STRINGS.PAD("Enter fullscreen", 25) + "ESC");
+				toggleFullScreen = enterFullScreen;
+				// Toolbar
+				if (!toolbar.isDisposed()) {
+					toolbar.wipe(SWT.LEFT, true);
+					toolbar.setParent(normalParentOfToolbar);
+					normalParentOfToolbar.requestLayout();
+				}
+				runExperimentItem = null;
+				view.getCentralPanel().setParent(normalParentOfFullScreenControl);
+				createOverlay();
+				normalParentOfFullScreenControl.requestLayout();
+				destroyFullScreenShell();
+			} else {
+				DEBUG.OUT("Is not full screen: entering");
+				fullScreenShell = createFullScreenShell();
+				if (fullScreenShell == null) return;
+				// Activate AFTER setting fullScreenShell so that ok() sees isFullScreen()=true
+				// and the overlayListener.partActivated UIJob is not queued. Previously, activate()
+				// was called before createFullScreenShell(), meaning isFullScreen() was still false
+				// when partActivated fired — causing an extra showCanvas UIJob that could race with
+				// (and undo) the fullscreen transition when called during decorateDisplays().
+				ViewsHelper.activate(view);
+				fs.setImage(GamaIcon.named(DISPLAY_FULLSCREEN_EXIT).image());
+				fs.setToolTipText(STRINGS.PAD("Exit fullscreen", 25) + "ESC");
+				toggleFullScreen = exitFullScreen;
+				normalParentOfFullScreenControl = view.getCentralPanel().getParent();
+				view.getCentralPanel().setParent(fullScreenShell);
+				fullScreenShell.layout(true, true);
+				fullScreenShell.setVisible(true);
+				lastFullScreenEnterTime = System.currentTimeMillis();
+				createOverlay();
+				// Toolbar
+				if (!toolbar.isDisposed()) {
+					toolbar.wipe(SWT.LEFT, true);
+					addFullscreenToolbarCommands();
+					normalParentOfToolbar = toolbar.getParent();
+					toolbar.setParent(fullScreenShell);
+				}
 			}
-			runExperimentItem = null;
-			view.getCentralPanel().setParent(normalParentOfFullScreenControl);
-			createOverlay();
-			normalParentOfFullScreenControl.requestLayout();
-			destroyFullScreenShell();
-		} else {
-			DEBUG.OUT("Is not full screen: entering");
-			fullScreenShell = createFullScreenShell();
-			if (fullScreenShell == null) return;
-			// Activate AFTER setting fullScreenShell so that ok() sees isFullScreen()=true
-			// and the overlayListener.partActivated UIJob is not queued. Previously, activate()
-			// was called before createFullScreenShell(), meaning isFullScreen() was still false
-			// when partActivated fired — causing an extra showCanvas UIJob that could race with
-			// (and undo) the fullscreen transition when called during decorateDisplays().
-			ViewsHelper.activate(view);
-			fs.setImage(GamaIcon.named(DISPLAY_FULLSCREEN_EXIT).image());
-			fs.setToolTipText(STRINGS.PAD("Exit fullscreen", 25) + "ESC");
-			toggleFullScreen = exitFullScreen;
-			normalParentOfFullScreenControl = view.getCentralPanel().getParent();
-			view.getCentralPanel().setParent(fullScreenShell);
-			fullScreenShell.layout(true, true);
-			fullScreenShell.setVisible(true);
-			lastFullScreenEnterTime = System.currentTimeMillis();
-			createOverlay();
-			// Toolbar
 			if (!toolbar.isDisposed()) {
-				toolbar.wipe(SWT.LEFT, true);
-				addFullscreenToolbarCommands();
-				normalParentOfToolbar = toolbar.getParent();
-				toolbar.setParent(fullScreenShell);
+				toolbar.wipe(SWT.RIGHT, true);
+				GamaToolbarFactory.buildToolbar(view, toolbar);
+				toolbar.requestLayout();
 			}
-		}
-		if (!toolbar.isDisposed()) {
-			toolbar.wipe(SWT.RIGHT, true);
-			GamaToolbarFactory.buildToolbar(view, toolbar);
-			toolbar.requestLayout();
-		}
-		if (overlay.isVisible()) {
-			WorkbenchHelper.runInUI("Display overlay", 50, m -> {
-				toggleOverlay();
-				toggleOverlay();
-			});
-		}
-		view.focusCanvas();
+			if (overlay.isVisible()) {
+				WorkbenchHelper.runInUI("Display overlay", 50, m -> {
+					toggleOverlay();
+					toggleOverlay();
+				});
+			}
+			view.focusCanvas();
 		} finally {
 			inFullScreenTransition = false;
 		}
@@ -434,7 +436,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 						view.getOutput().setPaused(true);
 					}
 					// Seems necessary in addition to the IPartListener
-					WorkbenchHelper.run(() -> {
+					WorkbenchHelper.asyncRun(() -> {
 						if (SystemInfo.isMac() && overlay != null) { overlay.hide(); }
 						view.hideCanvas();
 					});

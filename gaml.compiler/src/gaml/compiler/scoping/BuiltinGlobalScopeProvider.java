@@ -260,7 +260,6 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 			});
 			GAML.getUnits().forEach((t, u) -> {
 				try {
-					DEBUG.LOG("Adding unit artefact: " + t);
 					add(t, eUnit);
 				} catch (Exception ex) {
 					GamaBundleLoader.ERROR("Error when building unit artefact " + t, ex);
