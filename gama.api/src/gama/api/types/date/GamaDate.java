@@ -745,16 +745,18 @@ record GamaDate(Temporal internal) implements IDate {
 	}
 
 	/**
-	 * Returns a hash code for this {@code GamaDate} based on the underlying {@link Temporal} object. The hash code is
-	 * derived from {@link Temporal#hashCode()} of the {@link #internal} component, ensuring consistency with
-	 * {@link #equals(Object)}.
+	 * Returns a hash code for this {@code GamaDate} based on its {@link LocalDateTime} projection, ensuring
+	 * consistency with {@link #equals(Object)}, which also compares {@link LocalDateTime} values and ignores any
+	 * time-zone or offset differences. Two {@code GamaDate} instances that are {@link #equals equal} will therefore
+	 * always produce the same hash code, regardless of whether their underlying {@link #internal} representations
+	 * differ (e.g. {@link java.time.ZonedDateTime} vs {@link java.time.LocalDateTime}).
 	 *
-	 * @return the hash code of the underlying {@link Temporal} value
+	 * @return the hash code of the {@link LocalDateTime} projection of this date
 	 * @see #equals(Object)
 	 */
 	@Override
 	public int hashCode() {
-		return internal.hashCode();
+		return getLocalDateTime().hashCode();
 	}
 
 	/**
