@@ -116,16 +116,11 @@ public abstract class SwingControl extends Composite {
 
 			@Override
 			public void partHidden(final IWorkbenchPartReference partRef) {
-				if (partRef.getPart(false).equals(view)) {
-					// DEBUG.OUT("Hidden event received for " +
-					// view.getTitle());
-					visible = false;
-				}
+				if (partRef.getPart(false).equals(view)) { visible = false; }
 			}
 
 			@Override
 			public void partVisible(final IWorkbenchPartReference partRef) {
-				// DEBUG.OUT("Visible event received for " + view.getTitle());
 				if (partRef.getPart(false).equals(view)) { visible = true; }
 			}
 		};
@@ -147,15 +142,10 @@ public abstract class SwingControl extends Composite {
 		try {
 			result = super.isFocusControl();
 		} catch (final Exception e) {
-			// Nothing. Eliminates annoying exceptions when closing Java2D
-			// displays.
-			// However, it denotes that some listeners are still active while
-			// they should have been disposed a while
-			// ago. Therefore contributing to issue #489 (Memory leak in Java2D
-			// displays). The only solution is to
-			// remove the listeners from Display (as SWT_AWT does not do it
-			// correctly)
-
+			// Nothing. Eliminates annoying exceptions when closing Java2D displays. However, it denotes that some
+			// listeners are still active while they should have been disposed a while ago. Therefore contributing to
+			// issue #489 (Memory leak in Java2D displays). The only solution is to remove the listeners from Display
+			// (as SWT_AWT does not do it correctly)
 		}
 		return result;
 	}
@@ -184,7 +174,7 @@ public abstract class SwingControl extends Composite {
 			Listener listener = listeners[i];
 			if (listener != null && listener.getClass().getName().contains("SWT_AWT")) {
 				method.invoke(table, i);
-				DEBUG.OUT("Removed " + listener.getClass().getName());
+				// DEBUG.OUT("Removed " + listener.getClass().getName());
 			}
 		}
 	}
@@ -200,9 +190,9 @@ public abstract class SwingControl extends Composite {
 	 */
 	@Override
 	public final void setBounds(final int x, final int y, final int width, final int height) {
-		DEBUG.OUT("[SwingControl.setBounds] " + (surface != null ? surface.getName() : "null")
-				+ " x=" + x + " y=" + y + " w=" + width + " h=" + height
-				+ " thread=" + Thread.currentThread().getName());
+		// DEBUG.OUT("[SwingControl.setBounds] " + (surface != null ? surface.getName() : "null")
+		// + " x=" + x + " y=" + y + " w=" + width + " h=" + height
+		// + " thread=" + Thread.currentThread().getName());
 		populate();
 		// See Issue #3426
 		super.setBounds(x, y, width, height);

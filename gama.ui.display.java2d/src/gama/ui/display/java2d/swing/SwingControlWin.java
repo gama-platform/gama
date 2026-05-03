@@ -51,7 +51,7 @@ public class SwingControlWin extends SwingControl {
 
 	@Override
 	protected void populate() {
-		if (isDisposed()) { return; }
+		if (isDisposed()) return;
 		if (!populated) {
 			populated = true;
 			WorkbenchHelper.asyncRun(() -> {
@@ -141,20 +141,19 @@ public class SwingControlWin extends SwingControl {
 	@Override
 	protected void privateSetDimensions(final int width, final int height) {
 		// Assignment necessary for #3313 and #3239
-		DEBUG.OUT("[privateSetDimensions] " + (surface != null ? surface.getName() : "null")
-				+ " w=" + width + " h=" + height + " thread=" + Thread.currentThread().getName());
+		// DEBUG.OUT("[privateSetDimensions] " + (surface != null ? surface.getName() : "null") + " w=" + width + " h="
+		// + height + " thread=" + Thread.currentThread().getName());
 		WorkbenchHelper.asyncRun(() -> {
-			if (isDisposed()) { return; }
+			if (isDisposed()) return;
 			Rectangle r = this.getBounds();
 			int w = r.width;
 			int h = r.height;
 			// Solves a problem where the last view on HiDPI screens on Windows
 			// would be outscaled
 			if (!this.isDisposed() && surface.getWidth() != w && surface.getHeight() != h) {
-				DEBUG.OUT("[privateSetDimensions asyncRun] requestLayout for "
-						+ (surface != null ? surface.getName() : "null")
-						+ " surface=" + surface.getWidth() + "x" + surface.getHeight()
-						+ " swtBounds=" + w + "x" + h);
+				// DEBUG.OUT("[privateSetDimensions asyncRun] requestLayout for "
+				// + (surface != null ? surface.getName() : "null") + " surface=" + surface.getWidth() + "x"
+				// + surface.getHeight() + " swtBounds=" + w + "x" + h);
 				this.requestLayout();
 			}
 			// Use invokeLater rather than invokeAndWait: the latter blocked the SWT
@@ -162,11 +161,9 @@ public class SwingControlWin extends SwingControl {
 			// componentResized → resizeImage → repaint chain queued a full layer-draw on
 			// the AWT EDT that had to drain before the next invokeAndWait could run,
 			// making relaunch O(N) times slower (see issue #3719).
-			DEBUG.OUT("[privateSetDimensions asyncRun] invokeLater surface.setBounds for "
-					+ (surface != null ? surface.getName() : "null") + " " + w + "x" + h);
-			EventQueue.invokeLater(() -> {
-				surface.setBounds(0, 0, w, h);
-			});
+			// DEBUG.OUT("[privateSetDimensions asyncRun] invokeLater surface.setBounds for "
+			// + (surface != null ? surface.getName() : "null") + " " + w + "x" + h);
+			EventQueue.invokeLater(() -> { surface.setBounds(0, 0, w, h); });
 		});
 
 	}

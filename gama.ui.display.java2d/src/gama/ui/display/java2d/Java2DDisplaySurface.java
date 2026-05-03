@@ -151,6 +151,8 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	 *            the args
 	 */
 	public Java2DDisplaySurface(final IOutput.Display output, final Object uiComponent) {
+		// DEBUG.OUT("[Java2DDisplaySurface] Constructor START for display: " + (output != null ? output.getName() :
+		// "null") + " on thread: " + Thread.currentThread().getName());
 		this.output = output;
 		output.setSurface(this);
 		setDisplayScope(output.getScope().copyForGraphics("in java2D display"));
@@ -167,10 +169,9 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 
 			@Override
 			public void componentResized(final ComponentEvent e) {
-				DEBUG.OUT("[componentResized] " + output.getName() + " → new size=" + getWidth() + "x" + getHeight()
-						+ " iGraphics=" + (iGraphics != null ? "non-null" : "null")
-						+ " renderedOnce=" + renderedOnce
-						+ " thread=" + Thread.currentThread().getName());
+				// DEBUG.OUT("[componentResized] " + output.getName() + " → new size=" + getWidth() + "x" + getHeight()
+				// + " iGraphics=" + (iGraphics != null ? "non-null" : "null") + " renderedOnce=" + renderedOnce
+				// + " thread=" + Thread.currentThread().getName());
 				if (zoomFit) {
 					zoomFit();
 				} else {
@@ -184,6 +185,8 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 				previousPanelSize = getSize();
 			}
 		});
+		// DEBUG.OUT("[Java2DDisplaySurface] Constructor END for display: " + (output != null ? output.getName() :
+		// "null") + " on thread: " + Thread.currentThread().getName());
 
 	}
 
@@ -199,7 +202,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 
 	@Override
 	public void dispatchKeyEvent(final char e) {
-		DEBUG.OUT("Key received by the surface " + e);
+		// DEBUG.OUT("Key received by the surface " + e);
 		for (final IEventLayerListener gl : listeners) { gl.keyPressed(String.valueOf(e)); }
 	}
 
@@ -211,7 +214,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	 */
 	@Override
 	public void dispatchSpecialKeyEvent(final int e) {
-		DEBUG.OUT("Special key received by the surface " + e);
+		// DEBUG.OUT("Special key received by the surface " + e);
 		for (final IEventLayerListener gl : listeners) { gl.specialKeyPressed(e); }
 	}
 
@@ -271,7 +274,8 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	@Override
 	public void outputReloaded() {
 		final long t0 = System.currentTimeMillis();
-		DEBUG.OUT("[outputReloaded] START for " + output.getName() + " on thread " + Thread.currentThread().getName());
+		// DEBUG.OUT("[outputReloaded] START for " + output.getName() + " on thread " +
+		// Thread.currentThread().getName());
 		// Reset early so that: (1) any AWT repaints queued from the previous run are
 		// no-ops in paintComponent(), and (2) the updateDisplay calls inside
 		// resizeImage/zoomFit below use invokeLater rather than invokeAndWait, avoiding
@@ -283,18 +287,19 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 		// We disable error reporting
 		if (!GamaPreferences.Runtime.ERRORS_IN_DISPLAYS.getValue()) { getScope().disableErrorReporting(); }
 		layerManager.outputChanged();
-		DEBUG.OUT("[outputReloaded] after outputChanged in " + (System.currentTimeMillis() - t0) + "ms");
+		// DEBUG.OUT("[outputReloaded] after outputChanged in " + (System.currentTimeMillis() - t0) + "ms");
 		resizeImage(getWidth(), getHeight(), true);
-		DEBUG.OUT("[outputReloaded] after resizeImage in " + (System.currentTimeMillis() - t0) + "ms");
+		// DEBUG.OUT("[outputReloaded] after resizeImage in " + (System.currentTimeMillis() - t0) + "ms");
 		if (zoomFit) { zoomFit(); }
-		DEBUG.OUT("[outputReloaded] after zoomFit in " + (System.currentTimeMillis() - t0) + "ms");
+		// DEBUG.OUT("[outputReloaded] after zoomFit in " + (System.currentTimeMillis() - t0) + "ms");
 		// Re-null iGraphics in case resizeImage/zoomFit recreated it. Any AWT repaint
 		// requests queued above will be no-ops. iGraphics will be properly recreated by
 		// the componentResized → zoomFit() → resizeImage() chain once the new layout is
 		// applied and the surface receives its correct bounds.
 		iGraphics = null;
 		updateDisplay(true);
-		DEBUG.OUT("[outputReloaded] END for " + output.getName() + " total=" + (System.currentTimeMillis() - t0) + "ms");
+		// DEBUG.OUT(
+		// "[outputReloaded] END for " + output.getName() + " total=" + (System.currentTimeMillis() - t0) + "ms");
 	}
 
 	@Override
@@ -399,10 +404,10 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 		rendered = false;
 		final boolean syncMode = GAMA.isSynchronized() && renderedOnce;
 		final boolean onEDTorSWT = EventQueue.isDispatchThread() || WorkbenchHelper.isDisplayThread();
-		DEBUG.OUT("[updateDisplay] " + output.getName() + " force=" + force + " syncMode=" + syncMode
-				+ " onEDTorSWT=" + onEDTorSWT + " renderedOnce=" + renderedOnce
-				+ " thread=" + Thread.currentThread().getName()
-				+ " → " + (syncMode && !onEDTorSWT ? "invokeAndWait" : "invokeLater/direct"));
+		// DEBUG.OUT("[updateDisplay] " + output.getName() + " force=" + force + " syncMode=" + syncMode
+		// + " onEDTorSWT=" + onEDTorSWT + " renderedOnce=" + renderedOnce
+		// + " thread=" + Thread.currentThread().getName()
+		// + " → " + (syncMode && !onEDTorSWT ? "invokeAndWait" : "invokeLater/direct"));
 		Runnable toRun = () -> {
 			repaint();
 			if (synchronizer != null) { synchronizer.release(); }
@@ -411,14 +416,14 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 			if (onEDTorSWT) {
 				toRun.run();
 			} else {
-				final long t0 = System.currentTimeMillis();
+				// final long t0 = System.currentTimeMillis();
 				try {
 					EventQueue.invokeAndWait(toRun);
 				} catch (InvocationTargetException | InterruptedException e) {
 					e.printStackTrace();
 				}
-				DEBUG.OUT("[updateDisplay] invokeAndWait for " + output.getName() + " took "
-						+ (System.currentTimeMillis() - t0) + "ms");
+				// DEBUG.OUT("[updateDisplay] invokeAndWait for " + output.getName() + " took "
+				// + (System.currentTimeMillis() - t0) + "ms");
 			}
 		} else {
 			EventQueue.invokeLater(toRun);
@@ -554,13 +559,11 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	@Override
 	public void paintComponent(final Graphics g) {
 		final AWTDisplayGraphics gg = getIGraphics();
-		if (gg == null) {
-			DEBUG.OUT("[paintComponent] SKIPPED (iGraphics=null) for " + output.getName()
-					+ " thread=" + Thread.currentThread().getName());
+		if (gg == null) // DEBUG.OUT("[paintComponent] SKIPPED (iGraphics=null) for " + output.getName() + " thread="
+			// + Thread.currentThread().getName());
 			return;
-		}
 		final long t0 = System.currentTimeMillis();
-		DEBUG.OUT("[paintComponent] START for " + output.getName() + " thread=" + Thread.currentThread().getName());
+		// DEBUG.OUT("[paintComponent] START for " + output.getName() + " thread=" + Thread.currentThread().getName());
 		// DEBUG.OUT("-- Surface effectively painting on Java2D context");
 		super.paintComponent(g);
 		final Graphics2D g2d = (Graphics2D) g.create(getOrigin().x, getOrigin().y, (int) Math.round(getDisplayWidth()),
@@ -572,7 +575,8 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 		frames++;
 		rendered = true;
 		renderedOnce = true;
-		DEBUG.OUT("[paintComponent] END for " + output.getName() + " took " + (System.currentTimeMillis() - t0) + "ms");
+		// DEBUG.OUT("[paintComponent] END for " + output.getName() + " took " + (System.currentTimeMillis() - t0) +
+		// "ms");
 		// getOutput().setRendered(true);
 	}
 
@@ -780,7 +784,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 
 	@Override
 	public void setBounds(final int x, final int y, final int width, final int height) {
-		DEBUG.OUT("-- Java2D surface set bounds to " + x + " " + y + " | " + width + " " + height);
+		// DEBUG.OUT("-- Java2D surface set bounds to " + x + " " + y + " | " + width + " " + height);
 		if (width == 0 && height == 0 || width == this.getWidth() && height == this.getHeight()) return;
 		super.setBounds(x, y, width, height);
 	}
@@ -845,14 +849,9 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 		final int yc = mousey - origin.y;
 		final List<ILayer> layers = layerManager.getLayersIntersecting(xc, yc);
 		if (layers.isEmpty()) return;
-		EventQueue.invokeLater(() -> menuManager.buildMenu(mousex, mousey, xc, yc, layers));
 		// Modified for Issue #3404 -- now calls the menu asynchronously
-		// try {
-		// EventQueue.invokeAndWait(() -> menuManager.buildMenu(mousex, mousey,
-		// xc, yc, layers));
-		// } catch (InvocationTargetException | InterruptedException e) {
-		// e.printStackTrace();
-		// }
+		EventQueue.invokeLater(() -> menuManager.buildMenu(mousex, mousey, xc, yc, layers));
+
 	}
 
 	@Override
