@@ -124,6 +124,9 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 				md.createControls((EditorsGroup) monitorSection.getControl());
 				md.setCloser(() -> deleteMonitor(md));
 			});
+			if (monitorSection != null && !monitors.isEmpty()) {
+				monitorSection.setHeight(monitorSection.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT, true).y);
+			}
 		});
 		updateToolbar();
 	}
@@ -183,7 +186,11 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 	/**
 	 * Creates the new monitor.
 	 */
-	private void createNewMonitor() {
+	public void createNewMonitor() {
+		if (getEditorsList() == null) {
+			DEBUG.OUT("Cannot create monitor: no editors list (no experiment loaded?)");
+			return;
+		}
 		createMonitorSectionIfNeeded(true);
 		IScope scope = GAMA.getRuntimeScope();
 		MonitorOutput m = new MonitorOutput(scope, "Monitor " + COUNTER.COUNT(), null);
@@ -191,6 +198,7 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 		md.createControls((EditorsGroup) monitorSection.getControl());
 		monitorSection.setHeight(monitorSection.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT, true).y);
 		md.setCloser(() -> deleteMonitor(md));
+		getParentComposite().requestLayout();
 	}
 
 	/**
