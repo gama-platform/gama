@@ -105,17 +105,26 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 	 * in the console are stored directly in the {@link #temps} map so they survive across commands (similar to a Python
 	 * REPL session). The context is self-referential ({@code createChildContext} / {@code createCopy} / {@code
 	 * getOuterContext} all return {@code this}) so that it is never replaced when the underlying scope pushes and pops
-	 * statement contexts, and its {@code dispose()} is a no-op to prevent the console view from being torn down by
-	 * scope clean-up code.
+	 * statement contexts. Its lifecycle still clears the console bindings when the context is disposed or when the
+	 * active top-level agent changes, preventing variables from leaking across experiments/sessions.
 	 */
 	private final IExecutionContext consoleContext = new IExecutionContext() {
 
+		private ITopLevelAgent lastTopLevelAgent;
+
 		@Override
-		public void dispose() {} // No-op: the console view manages its own lifecycle
+		public void dispose() {
+			clearLocalVars();
+			lastTopLevelAgent = null;
+		}
 
 		@Override
 		public IScope getScope() {
 			final ITopLevelAgent a = GAMA.getCurrentTopLevelAgent();
+			if (a != lastTopLevelAgent) {
+				clearLocalVars();
+				lastTopLevelAgent = a;
+			}
 			return a != null ? a.getScope() : GAMA.getRuntimeScope();
 		}
 
