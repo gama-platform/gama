@@ -106,17 +106,22 @@ public class ExtractActionHandler {
 		final String actionCall = callIndent + "do " + actionName + ";";
 
 		// Apply both document changes.
-		// Order matters: insert the action first (at blockCloseBrace which is *after* selOffset),
-		// then replace the selection (whose offset has not shifted).
+		// Edits are applied in *reverse* document order (highest offset first) so that the first
+		// edit (at blockCloseBrace) does not shift the offset of the second edit (at selOffset).
+		// This is safe because blockCloseBrace > selOffset + selLength in the normal case,
+		// i.e. positions below blockCloseBrace are unaffected by the insertion.
 		try {
 			if (blockCloseBrace > selOffset + selLength) {
-				// Normal case: block end is after the selection.
+				// Normal case: block end is after the selection — insert action first (higher
+				// offset), then replace the selection (lower offset, unaffected by first edit).
 				doc.replace(blockCloseBrace, 0, actionDecl);
 				doc.replace(selOffset, selLength, actionCall);
 			} else {
-				// Fallback (should not normally happen for well-structured code).
+				// Fallback: replace selection first, then adjust blockCloseBrace for any length
+				// change caused by that replacement, and insert action at the adjusted position.
+				final int lengthDelta = actionCall.length() - selLength;
 				doc.replace(selOffset, selLength, actionCall);
-				doc.replace(blockCloseBrace, 0, actionDecl);
+				doc.replace(blockCloseBrace + lengthDelta, 0, actionDecl);
 			}
 		} catch (final BadLocationException e) {
 			showError(shell, "An error occurred while modifying the document: " + e.getMessage());
@@ -194,12 +199,26 @@ public class ExtractActionHandler {
 	private static int skipStringBackward(final String text, int pos) {
 		while (pos >= 0) {
 			final char c = text.charAt(pos);
-			if (c == '"' && (pos == 0 || text.charAt(pos - 1) != '\\')) {
+			if (c == '"' && isUnescapedAt(text, pos)) {
 				return pos - 1; // position just before the opening '"'
 			}
 			pos--;
 		}
 		return -1;
+	}
+
+	/**
+	 * Returns {@code true} if the character at {@code pos} is not preceded by an odd number of
+	 * consecutive backslashes (i.e. it is not escaped).
+	 */
+	private static boolean isUnescapedAt(final String text, final int pos) {
+		int backslashes = 0;
+		int k = pos - 1;
+		while (k >= 0 && text.charAt(k) == '\\') {
+			backslashes++;
+			k--;
+		}
+		return (backslashes % 2) == 0;
 	}
 
 	/**
@@ -213,7 +232,7 @@ public class ExtractActionHandler {
 	 * @param text
 	 *            the full document text
 	 * @param braceOffset
-	 *            the offset of the {@code {}
+	 *            the offset of the opening {@code \{}
 	 * @return the first identifier on the declaration line, or an empty string if none could be found
 	 */
 	private static String findKeywordBefore(final String text, final int braceOffset) {
@@ -251,8 +270,8 @@ public class ExtractActionHandler {
 	}
 
 	/**
-	 * Finds the closing {@code }} that matches the opening {@code {}} at {@code openBraceOffset},
-	 * skipping nested braces.
+	 * Finds the closing {@code \}} that matches the opening {@code \{} at {@code openBraceOffset},
+	 * skipping nested braces and string literals.
 	 */
 	private static int findMatchingCloseBrace(final String text, final int openBraceOffset) {
 		int depth = 1;
@@ -260,11 +279,11 @@ public class ExtractActionHandler {
 		while (i < text.length()) {
 			final char c = text.charAt(i);
 			if (c == '"') {
-				// Skip string literal forward.
+				// Skip string literal forward, respecting escaped quotes.
 				i++;
 				while (i < text.length()) {
 					final char sc = text.charAt(i);
-					if (sc == '"' && text.charAt(i - 1) != '\\') break;
+					if (sc == '"' && isUnescapedAt(text, i)) break;
 					i++;
 				}
 			} else if (c == '{') {
@@ -284,12 +303,12 @@ public class ExtractActionHandler {
 
 	/**
 	 * Detects the indentation string used for top-level statements inside the enclosing block. It does
-	 * this by looking at the first non-blank, non-closing-brace line after the opening {@code {}}.
+	 * this by looking at the first non-blank, non-closing-brace line after the opening {@code \{}.
 	 *
 	 * @param text
 	 *            the full document text
 	 * @param blockOpenBrace
-	 *            the offset of the block's opening {@code {}
+	 *            the offset of the block's opening {@code \{}
 	 * @return the leading whitespace of the first statement inside the block, or {@code "    "} (4
 	 *         spaces) as a fallback
 	 */
