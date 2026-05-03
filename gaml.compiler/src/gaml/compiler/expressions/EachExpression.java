@@ -12,6 +12,7 @@ package gaml.compiler.expressions;
 
 import gama.api.compilation.documentation.GamlConstantDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
+import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
@@ -60,7 +61,7 @@ public class EachExpression extends VariableExpression {
 
 	@Override
 	public IExpression resolveAgainst(final IScope scope) {
-		return this;
+		return GAML.getExpressionFactory().createConst(value(scope), type, name);
 	}
 
 }
