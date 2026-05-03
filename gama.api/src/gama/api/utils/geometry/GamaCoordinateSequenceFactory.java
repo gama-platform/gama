@@ -48,7 +48,7 @@ public class GamaCoordinateSequenceFactory {
 	 * @return the keystone identity
 	 */
 	public static ICoordinates getKeystoneIdentity() {
-		if (KEYSTONE_IDENTITY == null) { KEYSTONE_IDENTITY = create(3, 3).setTo(0d, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0); }
+		if (KEYSTONE_IDENTITY == null) { KEYSTONE_IDENTITY = create(4, 3).setTo(0d, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0); }
 		return KEYSTONE_IDENTITY;
 	}
 	//
