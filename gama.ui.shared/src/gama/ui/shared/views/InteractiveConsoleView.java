@@ -93,6 +93,13 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 	private final Map<String, Object> temps = new LinkedHashMap<>();
 
 	/**
+	 * Tracks the declared type of each persistent console variable. Populated the first time {@link #getVarExpr} is
+	 * called for a variable and kept even if the runtime value later becomes {@code nil}, so that the original
+	 * declaration type is preserved across commands.
+	 */
+	private final Map<String, IType<?>> tempTypes = new LinkedHashMap<>();
+
+	/**
 	 * A persistent execution context for the interactive console. All variable declarations and assignments performed
 	 * in the console are stored directly in the {@link #temps} map so they survive across commands (similar to a Python
 	 * REPL session). The context is self-referential ({@code createChildContext} / {@code createCopy} / {@code
@@ -134,7 +141,10 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 		public Map<? extends String, ? extends Object> getLocalVars() { return temps; }
 
 		@Override
-		public void clearLocalVars() { temps.clear(); }
+		public void clearLocalVars() {
+			temps.clear();
+			tempTypes.clear();
+		}
 
 		@Override
 		public void putLocalVar(final String varName, final Object val) { temps.put(varName, val); }
@@ -434,7 +444,10 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 	 */
 	@Override
 	public void topLevelAgentChanged(final ITopLevelAgent agent) {
-
+		// Clear persistent console variables when the top-level agent changes so that
+		// bindings from a previous experiment/model do not leak into the new session.
+		temps.clear();
+		tempTypes.clear();
 		if (agent == null) {
 			WorkbenchHelper.asyncRun(() -> {
 				if (toolbar != null && !toolbar.isDisposed()) {
@@ -538,7 +551,7 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 	@Override
 	public void clearLocalVars() {
 		temps.clear();
-
+		tempTypes.clear();
 	}
 
 	@Override
@@ -578,7 +591,10 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 	@Override
 	public IExpression getVarExpr(final String name, final boolean asField) {
 		if (temps.containsKey(name)) {
-			final IType<?> t = GamaType.of(temps.get(name));
+			// Use the cached declared type if available so that declarations like
+			// "int x <- nil" keep type int even after the value becomes nil.
+			// Fall back to deriving the type from the current runtime value.
+			final IType<?> t = tempTypes.computeIfAbsent(name, k -> GamaType.of(temps.get(k)));
 			return GAML.getExpressionFactory().createVar(name, t, false, IVarExpression.Category.TEMP, null);
 		}
 		return null;

@@ -1376,6 +1376,14 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 			if (contextVar != null) return contextVar;
 		}
 
+		// Fallback: check the secondary variable provider (e.g. persistent REPL vars in the
+		// interactive console) before reporting an "unknown variable" error.
+		final IVarDescriptionProvider tvp = context.getTempVarsProvider();
+		if (tvp != null) {
+			final IExpression tempVar = tvp.getVarExpr(varName, false);
+			if (tempVar != null) return tempVar;
+		}
+
 		return resolveOtherReferences(varName, object, ctx);
 	}
 

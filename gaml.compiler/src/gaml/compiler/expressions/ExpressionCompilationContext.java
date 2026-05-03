@@ -15,6 +15,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IVarDescriptionProvider;
 import gama.api.compilation.validation.IDocumentationContext;
 import gama.api.gaml.expressions.IVarExpression;
 import gama.api.gaml.types.ITypesManager;
@@ -71,6 +72,12 @@ public final class ExpressionCompilationContext implements Closeable {
 	 */
 	private final IDescription currentContext;
 
+	/**
+	 * An optional secondary variable provider consulted when the description hierarchy cannot resolve a variable name.
+	 * Used by the interactive console to expose persistent REPL variables to the expression compiler.
+	 */
+	private final IVarDescriptionProvider tempVarsProvider;
+
 	/** The documentation context. */
 	private final IDocumentationContext documentationContext;
 
@@ -81,9 +88,25 @@ public final class ExpressionCompilationContext implements Closeable {
 	 *            the initial description context for compilation
 	 */
 	public ExpressionCompilationContext(final IDescription context) {
+		this(context, null);
+	}
+
+	/**
+	 * Creates a new compilation context with the specified description context and an optional secondary variable
+	 * provider. The secondary provider is consulted when the description hierarchy cannot resolve a variable name (e.g.,
+	 * in the interactive console where persistent REPL variables live outside the species description).
+	 *
+	 * @param context
+	 *            the initial description context for compilation
+	 * @param tempVarsProvider
+	 *            an optional {@link IVarDescriptionProvider} used as a fallback for variable resolution, or
+	 *            {@code null}
+	 */
+	public ExpressionCompilationContext(final IDescription context, final IVarDescriptionProvider tempVarsProvider) {
 		this.currentContext = context;
 		this.currentTypesManager = Types.findTypesManager(context);
 		this.documentationContext = findDocumentationContext(context);
+		this.tempVarsProvider = tempVarsProvider;
 	}
 
 	/**
@@ -105,6 +128,14 @@ public final class ExpressionCompilationContext implements Closeable {
 	 * @return the current description context
 	 */
 	public IDescription getContext() { return currentContext; }
+
+	/**
+	 * Returns the optional secondary variable provider used as a fallback when the description hierarchy cannot resolve
+	 * a variable name.
+	 *
+	 * @return the temp-vars provider, or {@code null} if none was supplied
+	 */
+	public IVarDescriptionProvider getTempVarsProvider() { return tempVarsProvider; }
 
 	/**
 	 * Gets the current types manager.
