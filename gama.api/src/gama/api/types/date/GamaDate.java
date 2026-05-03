@@ -905,15 +905,15 @@ record GamaDate(Temporal internal) implements IDate {
 			// For calendar-based periods, compute N (e.g. 2 for "every 2 months") and use
 			// proper calendar arithmetic so that month/year lengths are respected.
 			final long N = calendarN(scope, period, current, calUnit);
-			IDate nextByPeriod = plus(N, calUnit);
+			IDate candidateDate = plus(N, calUnit);
 			// Null period?
-			if (this.equals(nextByPeriod)) return false;
+			if (this.equals(candidateDate)) return false;
 			// Exactly reached?
-			if (nextByPeriod.equals(current)) return true;
-			while (nextByPeriod.isSmallerThan(current, true)) { nextByPeriod = nextByPeriod.plus(N, calUnit); }
+			if (candidateDate.equals(current)) return true;
+			while (candidateDate.isSmallerThan(current, true)) { candidateDate = candidateDate.plus(N, calUnit); }
 			final long stepInMillis = scope.getClock().getStepInMillis();
 			final IDate nextByStep = current.plus(stepInMillis, ChronoUnit.MILLIS);
-			return nextByStep.isGreaterThan(nextByPeriod, true);
+			return nextByStep.isGreaterThan(candidateDate, true);
 		}
 
 		IDate nextByPeriod = plus(scope, period);
@@ -976,12 +976,12 @@ record GamaDate(Temporal internal) implements IDate {
 			// For calendar-based periods avoid modular arithmetic (which drifts because month/year
 			// lengths vary). Instead, anchor every period boundary to this starting date using
 			// proper calendar arithmetic, then check whether the current date falls inside the
-			// trigger window [expectedDate, expectedDate + step).
+			// trigger window [lastExpectedFiringDate, lastExpectedFiringDate + step).
 			final long N = calendarN(scope, period, current, calUnit);
 			final long unitsBetween = calUnit.between(getLocalDateTime(), current.getLocalDateTime());
 			final long k = unitsBetween / N;
-			final IDate expectedDate = this.plus(k * N, calUnit);
-			final long gapMillis = ChronoUnit.MILLIS.between(expectedDate.getLocalDateTime(), current.getLocalDateTime());
+			final IDate lastExpectedFiringDate = this.plus(k * N, calUnit);
+			final long gapMillis = ChronoUnit.MILLIS.between(lastExpectedFiringDate.getLocalDateTime(), current.getLocalDateTime());
 			final long tStepMillis = scope.getClock().getStepInMillis();
 			return gapMillis >= 0 && gapMillis < tStepMillis;
 		}
