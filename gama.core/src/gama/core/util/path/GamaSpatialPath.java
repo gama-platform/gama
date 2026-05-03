@@ -585,7 +585,8 @@ public class GamaSpatialPath extends GamaPath<IShape, IShape, IGraph<IShape, ISh
 			} else {
 				final java.util.Set<IPoint> ptsSet = new java.util.LinkedHashSet<>();
 				for (final IShape ent : segments) {
-					for (final IPoint p : GeometryUtils.getPointsOf(ent)) { ptsSet.add(p); }
+					final IPoint[] points = GeometryUtils.getPointsOf(ent);
+					for (final IPoint p : points) { ptsSet.add(p); }
 				}
 				if (ptsSet.size() > 1) { shape = GamaShapeFactory.buildPolyline(GamaListFactory.createWithoutCasting(Types.POINT, ptsSet)); }
 			}
