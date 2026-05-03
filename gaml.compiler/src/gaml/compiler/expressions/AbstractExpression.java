@@ -402,4 +402,25 @@ public abstract class AbstractExpression implements IExpression {
 	@Override
 	public boolean isTimeDependent() { return findAny(e -> e instanceof TimeUnitCustomExpression tu && !tu.isConst()); }
 
+	/**
+	 * Returns the {@link java.time.temporal.ChronoUnit} used by this expression if it contains a calendar-based time
+	 * unit (month or year). Searches the expression tree for a non-constant {@link TimeUnitCustomExpression} and
+	 * returns {@link java.time.temporal.ChronoUnit#MONTHS} or {@link java.time.temporal.ChronoUnit#YEARS} accordingly.
+	 * Returns {@code null} if no calendar-based unit is found.
+	 *
+	 * @return the calendar ChronoUnit, or {@code null} if not calendar-based
+	 */
+	@Override
+	public java.time.temporal.ChronoUnit getCalendarChronoUnit() {
+		final java.time.temporal.ChronoUnit[] found = { null };
+		findAny(e -> {
+			if (e instanceof TimeUnitCustomExpression tu && !tu.isConst()) {
+				found[0] = tu.isMonth ? java.time.temporal.ChronoUnit.MONTHS : java.time.temporal.ChronoUnit.YEARS;
+				return true;
+			}
+			return false;
+		});
+		return found[0];
+	}
+
 }
