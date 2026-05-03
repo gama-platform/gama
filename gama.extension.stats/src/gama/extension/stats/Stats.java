@@ -3420,7 +3420,7 @@ public class Stats {
 	@validator (ComparableValidator.class)
 	public static Object opMinOf(final IScope scope, final String eachName, final IContainer c,
 			final IExpression filter) {
-		return Containers.stream(scope, c).map(Containers.with(scope, eachName, filter)).minBy(Function.identity())
+		return Containers.stream(scope, c).map(Containers.buildFunctionWithEach(scope, eachName, filter)).minBy(Function.identity())
 				.orElse(null);
 	}
 
@@ -3469,7 +3469,7 @@ public class Stats {
 	@validator (ComparableValidator.class)
 	public static Object opMaxOf(final IScope scope, final String eachName, final IContainer c,
 			final IExpression filter) {
-		return Containers.stream(scope, c).map(Containers.with(scope, eachName, filter)).maxBy(Function.identity())
+		return Containers.stream(scope, c).map(Containers.buildFunctionWithEach(scope, eachName, filter)).maxBy(Function.identity())
 				.orElse(null);
 	}
 

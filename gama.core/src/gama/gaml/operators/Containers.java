@@ -19,6 +19,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -84,40 +85,41 @@ import one.util.streamex.StreamEx;
  * Written by drogoul Modified on 31 juil. 2010
  *
  * <p>
- * Provides GAML operators for all container types: {@code list}, {@code map}, {@code matrix},
- * {@code graph}, species populations, and any other {@link IContainer} implementors.
+ * Provides GAML operators for all container types: {@code list}, {@code map}, {@code matrix}, {@code graph}, species
+ * populations, and any other {@link IContainer} implementors.
  * </p>
  *
  * <h3>Operator Families</h3>
  * <ul>
- *   <li><b>Access:</b> {@code at} ({@code []}), {@code first}, {@code last},
- *       {@code copy_between}, {@code slice}, {@code sublist}</li>
- *   <li><b>Arithmetic:</b> {@code +} (union/append), {@code -} (remove element),
- *       {@code inter} (intersection), {@code union}</li>
- *   <li><b>Predicates:</b> {@code contains}, {@code contains_any}, {@code contains_all},
- *       {@code in}, {@code one_matches}, {@code all_match}, {@code none_matches}</li>
- *   <li><b>Functional:</b> {@code collect}, {@code where}/{@code select}, {@code accumulate},
- *       {@code first_with}, {@code last_with}, {@code count}, {@code sort_by},
- *       {@code group_by}, {@code index_by}</li>
- *   <li><b>Transformation:</b> {@code reverse}, {@code shuffle}, {@code distinct}/
- *       {@code remove_duplicates}, {@code interleave}</li>
- *   <li><b>Reduction:</b> {@code sum}, {@code mean}</li>
- *   <li><b>Construction:</b> {@code range}, {@code create_map}, {@code as_map}</li>
- *   <li><b>Graph:</b> {@code as_graph}, {@code as_spatial_graph}</li>
+ * <li><b>Access:</b> {@code at} ({@code []}), {@code first}, {@code last}, {@code copy_between}, {@code slice},
+ * {@code sublist}</li>
+ * <li><b>Arithmetic:</b> {@code +} (union/append), {@code -} (remove element), {@code inter} (intersection),
+ * {@code union}</li>
+ * <li><b>Predicates:</b> {@code contains}, {@code contains_any}, {@code contains_all}, {@code in}, {@code one_matches},
+ * {@code all_match}, {@code none_matches}</li>
+ * <li><b>Functional:</b> {@code collect}, {@code where}/{@code select}, {@code accumulate}, {@code first_with},
+ * {@code last_with}, {@code count}, {@code sort_by}, {@code group_by}, {@code index_by}</li>
+ * <li><b>Transformation:</b> {@code reverse}, {@code shuffle}, {@code distinct}/ {@code remove_duplicates},
+ * {@code interleave}</li>
+ * <li><b>Reduction:</b> {@code sum}, {@code mean}</li>
+ * <li><b>Construction:</b> {@code range}, {@code create_map}, {@code as_map}</li>
+ * <li><b>Graph:</b> {@code as_graph}, {@code as_spatial_graph}</li>
  * </ul>
  *
  * <h3>Indexing Convention</h3>
- * <p>All container operators use <b>0-based indexing</b>. The first element of a list is at
- * index {@code 0}, the last at index {@code length - 1}.</p>
+ * <p>
+ * All container operators use <b>0-based indexing</b>. The first element of a list is at index {@code 0}, the last at
+ * index {@code length - 1}.
+ * </p>
  *
  * <h3>Nil and Empty Container Behavior</h3>
  * <ul>
- *   <li>Passing a {@code nil} container to most operators raises a
- *       {@link gama.api.exceptions.GamaRuntimeException} at runtime.</li>
- *   <li>Empty containers return neutral values where applicable: an empty list ({@code []}),
- *       {@code 0} for numeric reductions, {@code false} for predicates.</li>
- *   <li>Operators such as {@code contains} and {@code at} accept {@code nil} as a valid
- *       element value when the container type permits it.</li>
+ * <li>Passing a {@code nil} container to most operators raises a {@link gama.api.exceptions.GamaRuntimeException} at
+ * runtime.</li>
+ * <li>Empty containers return neutral values where applicable: an empty list ({@code []}), {@code 0} for numeric
+ * reductions, {@code false} for predicates.</li>
+ * <li>Operators such as {@code contains} and {@code at} accept {@code nil} as a valid element value when the container
+ * type permits it.</li>
  * </ul>
  *
  * @author drogoul
@@ -128,6 +130,33 @@ import one.util.streamex.StreamEx;
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class Containers {
+
+	// Source - https://stackoverflow.com/a/32648397 - Posted by Emmanuel Touzery
+
+	/**
+	 * To map.
+	 *
+	 * @param <T>
+	 *            the generic type
+	 * @param <K>
+	 *            the key type
+	 * @param <U>
+	 *            the generic type
+	 * @param keyMapper
+	 *            the key mapper
+	 * @param valueMapper
+	 *            the value mapper
+	 * @return the collector
+	 */
+	public static <T, K, U> Collector<T, ?, IMap<K, U>> toIMap(final Function<? super T, ? extends K> keyMapper,
+			final Function<? super T, ? extends U> valueMapper, final IType keyType, final IType valueType) {
+		return Collectors.collectingAndThen(Collectors.toList(), list -> {
+			IMap<K, U> result = GamaMapFactory.create(keyType, valueType);
+			for (T item : list) { result.put(keyMapper.apply(item), valueMapper.apply(item)); }
+			return result;
+		});
+
+	}
 
 	/**
 	 * Not null.
@@ -202,10 +231,11 @@ public class Containers {
 	 *            the filter
 	 * @return the function
 	 */
-	public static <T> Function<Object, T> with(final IScope scope, final String eachName, final IExpression filter) {
+	public static Function<Object, Object> buildFunctionWithEach(final IScope scope, final String eachName,
+			final IExpression filter) {
 		return t -> {
 			scope.setEach(eachName, t);
-			return (T) filter.value(scope);
+			return filter.value(scope);
 		};
 	}
 
@@ -220,7 +250,8 @@ public class Containers {
 	 *            the filter
 	 * @return the predicate
 	 */
-	public static <T> Predicate<T> by(final IScope scope, final String eachName, final IExpression filter) {
+	public static <T> Predicate<T> buildPredicateWithEach(final IScope scope, final String eachName,
+			final IExpression filter) {
 		return (final T t) -> {
 			scope.setEach(eachName, t);
 			return Cast.asBool(scope, filter.value(scope));
@@ -1047,8 +1078,7 @@ public class Containers {
 					The first element of the container is located at the index 0. \
 					In addition, if the user tries to get the element at an index higher or equals than the length of the container, he will get an IndexOutOfBoundException.\
 					The at operator behavior depends on the nature of the operand""",
-			special_cases = {
-					"If the index is out of bounds (negative or >= length), raises a runtime error.",
+			special_cases = { "If the index is out of bounds (negative or >= length), raises a runtime error.",
 					"If the container is nil, raises a runtime error.",
 					"For an empty container, any index raises a runtime error." },
 			usages = { @usage (
@@ -1247,10 +1277,8 @@ public class Containers {
 			concept = { IConcept.CONTAINER })
 	@doc (
 			value = "produces a set from the elements of the operand (i.e. a list without duplicated elements)",
-			special_cases = {
-					"If the container has no duplicates, returns an equivalent copy.",
-					"If the container is empty, returns an empty list.",
-					"Order of first occurrences is preserved." },
+			special_cases = { "If the container has no duplicates, returns an equivalent copy.",
+					"If the container is empty, returns an empty list.", "Order of first occurrences is preserved." },
 			usages = { @usage (
 					value = "if the operand is empty, remove_duplicates returns an empty list",
 					examples = { @example (
@@ -1378,8 +1406,7 @@ public class Containers {
 			concept = { IConcept.CONTAINER })
 	@doc (
 			value = "Returns the nth first elements of the container. If n is greater than the list size, a translation of the container to a list is returned. If it is equal or less than zero, returns an empty list",
-			special_cases = {
-					"If the container is empty, returns an empty list.",
+			special_cases = { "If the container is empty, returns an empty list.",
 					"If the container is nil, raises a runtime error.",
 					"If n is greater than the container size, returns all elements as a list." })
 	@test ("first(3, [1,2,3,4,5,6]) = [1,2,3]")
@@ -1411,8 +1438,7 @@ public class Containers {
 			concept = { IConcept.CONTAINER })
 	@doc (
 			value = "Returns the nth last elements of the container. If n is greater than the list size,  returns the container cast as a list. If it is equal or less than zero, returns an empty list",
-			special_cases = {
-					"If the container is empty, returns an empty list.",
+			special_cases = { "If the container is empty, returns an empty list.",
 					"If the container is nil, raises a runtime error.",
 					"If n is greater than the container size, returns all elements as a list." })
 	@test ("last(3, [1,2,3,4,5,6]) = [4,5,6]")
@@ -1868,8 +1894,7 @@ public class Containers {
 									value = "[1,2,3,4,5,6] - 0",
 									returnType = "list<int>",
 									equals = "[1,2,3,4,5,6]") }) },
-			special_cases = {
-					"If the element is not in the list, returns the list unchanged.",
+			special_cases = { "If the element is not in the list, returns the list unchanged.",
 					"If the list is empty, returns an empty list." })
 	@test ("[1,2,3,4,5,6] - 0 = [1,2,3,4,5,6]")
 	@test ("[1,2,3] - 2 = [1,3]")
@@ -2233,8 +2258,8 @@ public class Containers {
 	@test ("[1::2, 3::4, 5::6] group_by (each > 4) = [false::[2, 4], true::[6]]")
 	public static IMap group_by(final IScope scope, final String eachName, final IContainer c, final IExpression e) {
 		final IType ct = notNull(scope, c).getGamlType().getContentType();
-		return (IMap) stream(scope, c).groupingTo(with(scope, eachName, e), asMapOf(e.getGamlType(), Types.LIST.of(ct)),
-				listOf(ct));
+		return (IMap) stream(scope, c).groupingTo(buildFunctionWithEach(scope, eachName, e),
+				asMapOf(e.getGamlType(), Types.LIST.of(ct)), listOf(ct));
 	}
 
 	/**
@@ -2286,7 +2311,8 @@ public class Containers {
 	@test ("[1,2,3,4,5,6,7,8] last_with (each > 3) = 8")
 	public static Object last_with(final IScope scope, final String eachName, final IContainer c,
 			final IExpression filter) {
-		return stream(scope, c).filter(by(scope, eachName, filter)).reduce((a, b) -> b).orElse(null);
+		return stream(scope, c).filter(buildPredicateWithEach(scope, eachName, filter)).reduce((a, b) -> b)
+				.orElse(null);
 	}
 
 	/**
@@ -2340,7 +2366,7 @@ public class Containers {
 	@test ("[1,2,3,4,5,6,7,8] first_with (each > 3) = 4")
 	public static Object first_with(final IScope scope, final String eachName, final IContainer c,
 			final IExpression filter) {
-		return stream(scope, c).findFirst(by(scope, eachName, filter)).orElse(null);
+		return stream(scope, c).findFirst(buildPredicateWithEach(scope, eachName, filter)).orElse(null);
 	}
 
 	/**
@@ -2488,7 +2514,7 @@ public class Containers {
 		Stream s = stream(scope, container);
 		IType t;
 		if (filter != null) {
-			s = s.map(with(scope, eachName, filter));
+			s = s.map(buildFunctionWithEach(scope, eachName, filter));
 			t = filter.getGamlType();
 		} else {
 			t = container.getGamlType().getContentType();
@@ -2632,7 +2658,8 @@ public class Containers {
 	@validator (ComparableValidator.class)
 	public static IList sort(final IScope scope, final String eachName, final IContainer c, final IExpression filter) {
 		try {
-			return (IList) stream(scope, c).sortedBy(with(scope, eachName, filter)).toCollection(listLike(c));
+			return (IList) stream(scope, c).sortedBy(buildFunctionWithEach(scope, eachName, filter))
+					.toCollection(listLike(c));
 		} catch (IllegalArgumentException e) {
 			// AD added here to avoid reporting concurrent modifications to the container while sorting it (can happen
 			// when relaunching simulations, see #693, with this exception in java.util.TimSort). Instead we return the
@@ -2693,7 +2720,8 @@ public class Containers {
 	@test ("[1,2,3,4,5,6,7,8] where (each > 3) = [4, 5, 6, 7, 8] ")
 	@test ("matrix([1, 2, 3], [4, 5, 6]) where (each > 2) = [4, 5, 3, 6] ")
 	public static IList where(final IScope scope, final String eachName, final IContainer c, final IExpression filter) {
-		return (IList) stream(scope, c).filter(by(scope, eachName, filter)).toCollection(listLike(c));
+		return (IList) stream(scope, c).filter(buildPredicateWithEach(scope, eachName, filter))
+				.toCollection(listLike(c));
 	}
 
 	/**
@@ -2815,7 +2843,7 @@ public class Containers {
 	@validator (ComparableValidator.class)
 	public static Object with_max_of(final IScope scope, final String eachName, final IContainer c,
 			final IExpression filter) {
-		return stream(scope, c).maxBy(with(scope, eachName, filter)).orElse(null);
+		return stream(scope, c).maxBy(buildFunctionWithEach(scope, eachName, filter)).orElse(null);
 	}
 
 	/**
@@ -2862,7 +2890,7 @@ public class Containers {
 	@validator (ComparableValidator.class)
 	public static Object with_min_of(final IScope scope, final String eachName, final IContainer c,
 			final IExpression filter) {
-		return stream(scope, c).minBy(with(scope, eachName, filter)).orElse(null);
+		return stream(scope, c).minBy(buildFunctionWithEach(scope, eachName, filter)).orElse(null);
 	}
 
 	/**
@@ -2906,7 +2934,7 @@ public class Containers {
 		final IType type = filter.getGamlType();
 		IType resultingContentsType = type;
 		if (resultingContentsType.isContainer()) { resultingContentsType = resultingContentsType.getContentType(); }
-		return (IList) stream(scope, c).flatCollection(with(scope, eachName, filter).andThen(toLists))
+		return (IList) stream(scope, c).flatCollection(buildFunctionWithEach(scope, eachName, filter).andThen(toLists))
 				.toCollection(listOf(resultingContentsType));
 
 	}
@@ -3023,7 +3051,8 @@ public class Containers {
 	@test ("[1,2] collect (i: ([1,2,3] collect (j: i+j))) = [[2,3,4],[3,4,5]]")
 	public static IList collect(final IScope scope, final String eachName, final IContainer c,
 			final IExpression filter) {
-		return (IList) stream(scope, c).map(with(scope, eachName, filter)).toCollection(listOf(filter.getGamlType()));
+		return (IList) stream(scope, c).map(buildFunctionWithEach(scope, eachName, filter))
+				.toCollection(listOf(filter.getGamlType()));
 	}
 
 	/**
@@ -3100,7 +3129,8 @@ public class Containers {
 			see = { "group_by" })
 	public static Integer count(final IScope scope, final String eachName, final IContainer original,
 			final IExpression filter) {
-		return (int) notNull(scope, original).stream(scope).filter(by(scope, eachName, filter)).count();
+		return (int) notNull(scope, original).stream(scope).filter(buildPredicateWithEach(scope, eachName, filter))
+				.count();
 	}
 
 	/**
@@ -3133,7 +3163,7 @@ public class Containers {
 			see = { "none_matches", "all_match", "count" })
 	public static Boolean one_matches(final IScope scope, final String eachName, final IContainer original,
 			final IExpression filter) {
-		return notNull(scope, original).stream(scope).anyMatch(by(scope, eachName, filter));
+		return notNull(scope, original).stream(scope).anyMatch(buildPredicateWithEach(scope, eachName, filter));
 	}
 
 	/**
@@ -3167,7 +3197,7 @@ public class Containers {
 			see = { "one_matches", "all_match", "count" })
 	public static Boolean none_matches(final IScope scope, final String eachName, final IContainer original,
 			final IExpression filter) {
-		return notNull(scope, original).stream(scope).noneMatch(by(scope, eachName, filter));
+		return notNull(scope, original).stream(scope).noneMatch(buildPredicateWithEach(scope, eachName, filter));
 	}
 
 	/**
@@ -3201,7 +3231,7 @@ public class Containers {
 			see = { "none_matches", "one_matches", "count" })
 	public static Boolean all_match(final IScope scope, final String eachName, final IContainer original,
 			final IExpression filter) {
-		return notNull(scope, original).stream(scope).allMatch(by(scope, eachName, filter));
+		return notNull(scope, original).stream(scope).allMatch(buildPredicateWithEach(scope, eachName, filter));
 	}
 
 	/**
@@ -3235,8 +3265,8 @@ public class Containers {
 
 		final StreamEx s = original.stream(scope);
 		final IType contentsType = original.getGamlType().getContentType();
-		return (IMap) s.collect(Collectors.toMap(with(scope, eachName, keyProvider), a -> a, (a, b) -> a,
-				asMapOf(keyProvider.getGamlType(), contentsType)));
+		return (IMap) s.collect(toIMap(buildFunctionWithEach(scope, eachName, keyProvider), Function.identity(),
+				keyProvider.getGamlType(), contentsType));
 	}
 
 	/**
@@ -3277,8 +3307,9 @@ public class Containers {
 			throw GamaRuntimeException.error("'as_map' expects a pair as second argument", scope);
 		final IExpression key = pair.arg(0);
 		final IExpression value = pair.arg(1);
-		return (IMap) stream(scope, original).collect(Collectors.toMap(with(scope, eachName, key),
-				with(scope, eachName, value), (a, b) -> a, asMapOf(key.getGamlType(), value.getGamlType())));
+
+		return (IMap) stream(scope, original).collect(toIMap(buildFunctionWithEach(scope, eachName, key),
+				buildFunctionWithEach(scope, eachName, value), key.getGamlType(), value.getGamlType()));
 	}
 
 	/**
