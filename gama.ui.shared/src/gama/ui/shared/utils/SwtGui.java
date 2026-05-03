@@ -412,7 +412,7 @@ public class SwtGui implements IGui {
 		// The parameters view update is purely cosmetic at launch time and does not need to complete
 		// before the simulation starts.
 		WorkbenchHelper.asyncRun(() -> {
-			boolean showIt = GAMA.getExperiment().hasParametersOrUserCommands()
+			boolean showIt = GAMA.getExperiment() != null && GAMA.getExperiment().hasParametersOrUserCommands()
 					&& !PerspectiveHelper.isModelingPerspective() && PerspectiveHelper.showParameters();
 			if (showIt) {
 				parametersView[0] = (Parameters) showView(GAMA.getRuntimeScope(), PARAMETER_VIEW_ID, null,
