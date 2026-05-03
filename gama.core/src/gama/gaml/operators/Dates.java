@@ -355,11 +355,14 @@ public class Dates {
 			concept = { IConcept.DATE, IConcept.CYCLE })
 	@doc (
 			see = { "since", "after" },
-			value = "expects a frequency (expressed in seconds of simulated time) as argument. Will return true every time the current_date matches with this frequency",
-			comment = "Used to do something at regular intervals of time. Can be used in conjunction with 'since', 'after', 'before', 'until' or 'between', so that this computation only takes place in the temporal segment defined by these operators. In all cases, the starting_date of the model is used as a reference starting point",
+			value = "expects a frequency (expressed in seconds of simulated time, or in calendar months/years) as argument. Will return true every time the current_date matches with this frequency",
+			comment = "Used to do something at regular intervals of time. Can be used in conjunction with 'since', 'after', 'before', 'until' or 'between', so that this computation only takes place in the temporal segment defined by these operators. In all cases, the starting_date of the model is used as a reference starting point. When used with #month or #year, calendar-correct arithmetic is applied so that every(1#month) fires on the same day of each calendar month.",
 			examples = { @example (
 					value = "reflex when: every(2#days) since date('2000-01-01') { .. }",
 					isExecutable = false),
+					@example (
+							value = "reflex when: every(1#month) { .. } // fires on the same calendar day each month",
+							isExecutable = false),
 					@example (
 							value = "state a { transition to: b when: every(2#mn);} state b { transition to: a when: every(30#s);} // This oscillatory behavior will use the starting_date of the model as its starting point in time",
 							isExecutable = false) })
@@ -446,10 +449,7 @@ public class Dates {
 			concept = { IConcept.DATE, IConcept.CYCLE })
 	@doc (
 			see = { "to" },
-			value = """
-					applies a step to an interval of dates defined by 'date1 to date2'. Beware that using every with #month or #year will produce odd results,\
-					as these pseudo-constants are not constant; only the first value will be used to compute the intervals, so, for instance, if current_date is set to February\
-					#month will only represent 28 or 29 days.\s""",
+			value = "applies a step to an interval of dates defined by 'date1 to date2'.",
 			comment = "",
 			examples = { @example (
 					value = "(date('2000-01-01') to date('2010-01-01')) every (#day) // builds an interval between these two dates which contains all the days starting from the beginning of the interval",

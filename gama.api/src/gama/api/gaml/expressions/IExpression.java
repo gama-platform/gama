@@ -610,4 +610,24 @@ public interface IExpression extends IGamlDescription, ITyped, IDisposable, IVar
 	 */
 	default boolean isTimeDependent() { return false; }
 
+	/**
+	 * Returns the {@link java.time.temporal.ChronoUnit} used by this expression when it represents a calendar-based
+	 * duration (months or years). Returns {@code null} for expressions that do not use calendar units.
+	 *
+	 * <p>
+	 * This is used by the {@code every} operator to detect when calendar-correct arithmetic (adding whole months or
+	 * years) should be used instead of fixed-millisecond modular arithmetic, which would otherwise drift because the
+	 * length of a month or year varies.
+	 * </p>
+	 *
+	 * <p>
+	 * For example, {@code 2#months} returns {@link java.time.temporal.ChronoUnit#MONTHS}, and {@code 3#years} returns
+	 * {@link java.time.temporal.ChronoUnit#YEARS}. Fixed-duration expressions like {@code 30#day} return {@code null}.
+	 * </p>
+	 *
+	 * @return {@link java.time.temporal.ChronoUnit#MONTHS}, {@link java.time.temporal.ChronoUnit#YEARS}, or
+	 *         {@code null} if this expression does not contain a calendar-based time unit
+	 */
+	default java.time.temporal.ChronoUnit getCalendarChronoUnit() { return null; }
+
 }

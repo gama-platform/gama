@@ -898,6 +898,24 @@ record GamaDate(Temporal internal) implements IDate {
 		if (this.equals(current)) return true;
 		// Not yet reached ?
 		if (isGreaterThan(current, true)) return false;
+
+		// Check whether the period uses calendar-based units (months or years)
+		final ChronoUnit calUnit = period.getCalendarChronoUnit();
+		if (calUnit != null) {
+			// For calendar-based periods, compute N (e.g. 2 for "every 2 months") and use
+			// proper calendar arithmetic so that month/year lengths are respected.
+			final long N = calendarN(scope, period, current, calUnit);
+			IDate candidateDate = plus(N, calUnit);
+			// Zero advancement? (N calendar units still maps to the same date – e.g. N=0)
+			if (this.equals(candidateDate)) return false;
+			// Exactly reached?
+			if (candidateDate.equals(current)) return true;
+			while (candidateDate.isSmallerThan(current, true)) { candidateDate = candidateDate.plus(N, calUnit); }
+			final long stepInMillis = scope.getClock().getStepInMillis();
+			final IDate nextByStep = current.plus(stepInMillis, ChronoUnit.MILLIS);
+			return nextByStep.isGreaterThan(candidateDate, true);
+		}
+
 		IDate nextByPeriod = plus(scope, period);
 		// Null period ?
 		if (this.equals(nextByPeriod)) return false;
@@ -951,6 +969,23 @@ record GamaDate(Temporal internal) implements IDate {
 
 		// Not yet reached ?
 		if (isGreaterThan(current, true)) return false;
+
+		// Check whether the period uses calendar-based units (months or years)
+		final ChronoUnit calUnit = period.getCalendarChronoUnit();
+		if (calUnit != null) {
+			// For calendar-based periods avoid modular arithmetic (which drifts because month/year
+			// lengths vary). Instead, anchor every period boundary to this starting date using
+			// proper calendar arithmetic, then check whether the current date falls inside the
+			// trigger window [lastExpectedFiringDate, lastExpectedFiringDate + step).
+			final long N = calendarN(scope, period, current, calUnit);
+			final long unitsBetween = calUnit.between(getLocalDateTime(), current.getLocalDateTime());
+			final long k = unitsBetween / N;
+			final IDate lastExpectedFiringDate = this.plus(k * N, calUnit);
+			final long gapMillis = ChronoUnit.MILLIS.between(lastExpectedFiringDate.getLocalDateTime(), current.getLocalDateTime());
+			final long tStepMillis = scope.getClock().getStepInMillis();
+			return gapMillis >= 0 && gapMillis < tStepMillis;
+		}
+
 		long tStep = (long) (scope.getSimulation().getTimeStep(scope) * 1000);
 		long periodToMilliSecond = (long) (Cast.asFloat(scope, period.value(scope)) * 1000);
 		if (tStep >= periodToMilliSecond) return true;
@@ -960,6 +995,36 @@ record GamaDate(Temporal internal) implements IDate {
 		if (r == 0) return true;
 		return r - tStep > 0 && r + tStep > periodToMilliSecond;
 
+	}
+
+	/**
+	 * Computes the integer multiplier {@code N} for a calendar-based {@code every} period such as {@code 2#months} or
+	 * {@code 3#years}. The multiplier is derived by dividing the evaluated period (in seconds) by the length of a
+	 * single calendar unit at the current date.
+	 *
+	 * <p>
+	 * Because {@link gama.api.gaml.constants.GamlCoreUnits#month} and
+	 * {@link gama.api.gaml.constants.GamlCoreUnits#year} evaluate to the actual length of the current month/year, the
+	 * division {@code periodSecs / unitSecs} always yields the original integer multiplier (e.g. {@code 2} for
+	 * {@code 2#months}).
+	 * </p>
+	 *
+	 * @param scope
+	 *            the current execution scope
+	 * @param period
+	 *            the period expression (e.g. {@code 2#months})
+	 * @param current
+	 *            the current simulation date (used to measure one unit's length)
+	 * @param calUnit
+	 *            {@link ChronoUnit#MONTHS} or {@link ChronoUnit#YEARS}
+	 * @return the positive integer multiplier N ≥ 1
+	 */
+	private static long calendarN(final IScope scope, final IExpression period, final IDate current,
+			final ChronoUnit calUnit) {
+		final double periodSecs = Cast.asFloat(scope, period.value(scope));
+		final double unitSecs = ChronoUnit.SECONDS.between(current.getLocalDateTime(),
+				current.plus(1L, calUnit).getLocalDateTime());
+		return Math.max(1L, Math.round(periodSecs / unitSecs));
 	}
 
 	/**

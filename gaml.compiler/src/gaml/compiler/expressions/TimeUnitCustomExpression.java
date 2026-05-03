@@ -79,4 +79,9 @@ public class TimeUnitCustomExpression extends UnitConstantExpression {
 	@Override
 	public boolean isAllowedInParameters() { return !isTimeDependent; }
 
+	@Override
+	public java.time.temporal.ChronoUnit getCalendarChronoUnit() {
+		return isTimeDependent ? (isMonth ? ChronoUnit.MONTHS : ChronoUnit.YEARS) : null;
+	}
+
 }
