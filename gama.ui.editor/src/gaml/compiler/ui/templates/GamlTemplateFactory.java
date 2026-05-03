@@ -73,6 +73,7 @@ public class GamlTemplateFactory {
 		boolean emptyName = name.isEmpty();
 		String pattern = u.pattern();
 		if (pattern.isEmpty()) {
+			StringBuilder patternBuilder = new StringBuilder(pattern);
 			for (final example e : u.examples()) {
 				if (emptyName) {
 					name = e.value();
@@ -80,16 +81,16 @@ public class GamlTemplateFactory {
 				}
 				if (!e.isPattern()) { isExample = true; }
 				// if ( e.isPattern() ) {
-				pattern += StringUtils.LN + e.value();
+				patternBuilder.append(StringUtils.LN).append(e.value());
 				// }
 			}
+			pattern = patternBuilder.toString();
 		}
 		if (pattern.isEmpty()) return null;
 		pattern += StringUtils.LN;
 		String[] path = u.path();
 		if (path.length == 0) { path = new String[] { org.apache.commons.lang3.StringUtils.capitalize(sp.getName()) }; }
-		String menuPath = "";
-		for (final String p : path) { menuPath += p + "."; }
+		String menuPath = path.length > 0 ? String.join(".", path) + "." : "";
 		String menu = u.menu();
 		if (usage.NULL.equals(menu)) { menu = ISymbolKind.TEMPLATE_MENU[sp.getKind().code()]; }
 		String desc = u.value();
