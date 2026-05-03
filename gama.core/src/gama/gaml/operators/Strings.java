@@ -48,7 +48,7 @@ import gama.api.utils.files.CompressionUtils;
  * <li><b>Case conversion:</b> {@code upper_case}, {@code lower_case}, {@code capitalize}</li>
  * <li><b>Splitting:</b> {@code split_with} / {@code tokenize}, {@code tokenize_regex}</li>
  * <li><b>Replacement:</b> {@code replace}, {@code replace_regex}</li>
- * <li><b>Information:</b> {@code length}, {@code empty}, {@code is_number}, {@code char}</li>
+ * <li><b>Information:</b> {@code length}, {@code empty}, {@code is_number}, {@code char}, {@code trim}</li>
  * <li><b>Compression:</b> {@code compress} / {@code zip}, {@code uncompress} / {@code unzip}</li>
  * </ul>
  *
@@ -194,7 +194,7 @@ public class Strings {
 	 *             the gama runtime exception
 	 */
 	@operator (
-			value = "concatenate",
+			value = { "concatenate", "join" },
 			can_be_const = true,
 			category = { IOperatorCategory.STRING },
 			concept = { IConcept.STRING })
@@ -245,7 +245,7 @@ public class Strings {
 	 *             the gama runtime exception
 	 */
 	@operator (
-			value = "concatenate",
+			value = { "concatenate", "join" },
 			can_be_const = true,
 			category = { IOperatorCategory.STRING },
 			concept = { IConcept.STRING })
@@ -437,6 +437,62 @@ public class Strings {
 	}
 
 	/**
+	 * Starts with.
+	 *
+	 * @param target
+	 *            the target
+	 * @param pattern
+	 *            the pattern
+	 * @return the boolean
+	 */
+	@operator (
+			value = "starts_with",
+			can_be_const = true,
+			category = { IOperatorCategory.STRING },
+			concept = { IConcept.STRING })
+	@doc (
+			value = "Returns true if the left-hand string starts with the right-hand string, false otherwise.",
+			usages = @usage (
+					value = "if both operands are strings, returns true if the left-hand string starts with the right-hand string",
+					examples = @example (
+							value = "\"abcabcabc\" starts_with \"ab\"",
+							equals = "true")))
+	@test ("'abcabcabc' starts_with 'ab' = true")
+	@test ("'abcabcabc' starts_with 'bc' = false")
+	public static Boolean startsWith(final String target, final String pattern) {
+		if (target == null || pattern == null) return false;
+		return target.startsWith(pattern);
+	}
+
+	/**
+	 * Ends with.
+	 *
+	 * @param target
+	 *            the target
+	 * @param pattern
+	 *            the pattern
+	 * @return the boolean
+	 */
+	@operator (
+			value = "ends_with",
+			can_be_const = true,
+			category = { IOperatorCategory.STRING },
+			concept = { IConcept.STRING })
+	@doc (
+			value = "Returns true if the left-hand string ends with the right-hand string, false otherwise.",
+			usages = @usage (
+					value = "if both operands are strings, returns true if the left-hand string ends with the right-hand string",
+					examples = @example (
+							value = "\"abcabcabc\" ends_with \"bc\"",
+							equals = "true")))
+	@test ("'abcabcabc' ends_with 'bc' = true")
+	@test ("'abcabcabc' ends_with 'ab' = false")
+	public static Boolean endsWith(final String target, final String pattern) {
+		if (target == null || pattern == null) return false;
+		return target.endsWith(pattern);
+	}
+
+	/**
 	 * Op index of.
 	 *
 	 * @param target
@@ -576,7 +632,7 @@ public class Strings {
 	 * @return the i list
 	 */
 	@operator (
-			value = { "split_with", "tokenize" },
+			value = { "split_with", "tokenize", "split" },
 			content_type = IType.STRING,
 			can_be_const = true,
 			category = { IOperatorCategory.STRING },
@@ -622,7 +678,7 @@ public class Strings {
 	 * @return the i list
 	 */
 	@operator (
-			value = { "split_with", "tokenize" },
+			value = { "split_with", "tokenize", "split" },
 			content_type = IType.STRING,
 			can_be_const = true,
 			category = { IOperatorCategory.STRING },
@@ -643,6 +699,39 @@ public class Strings {
 		final StringTokenizer st = new StringTokenizer(target, pattern);
 		return GamaListFactory.create(scope, Types.STRING, st);
 	}
+
+	/**
+	 * Op tokenize regex.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param target
+	 *            the target
+	 * @param pattern
+	 *            the pattern
+	 * @return the i list
+	 */
+	@operator (
+			value = { "tokenize_regex" },
+			content_type = IType.STRING,
+			can_be_const = true,
+			category = { IOperatorCategory.STRING },
+			concept = { IConcept.STRING })
+	@doc (
+			value = "Returns a list containing the sub-strings (tokens) of the left-hand operand computed by splitting it around matches of the given regular expression",
+			usages = @usage (
+					value = "if the left-hand operand is a string, returns a list of string splitted by the regular expression",
+					examples = @example (
+							value = "\"to be,or not to be,that is the question\" tokenize_regex \",| \"",
+							equals = "['to','be','or','not','to','be','that','is','the','question']")))
+	@test ("'a,b,c' tokenize_regex ',' = ['a','b','c']")
+	@test ("'' tokenize_regex ',' = ['']")
+	public static IList opTokenizeRegex(final IScope scope, final String target, final String pattern) {
+		if (target == null) return GamaListFactory.create();
+		if (pattern == null || pattern.isEmpty()) return GamaListFactory.create(scope, Types.STRING, target);
+		return GamaListFactory.create(scope, Types.STRING, target.split(pattern));
+	}
+
 
 	/**
 	 * Op replace.
@@ -1074,6 +1163,32 @@ public class Strings {
 	}
 
 	/**
+	 * Trim.
+	 *
+	 * @param target
+	 *            the target
+	 * @return the string
+	 */
+	@operator (
+			value = "trim",
+			can_be_const = true,
+			category = { IOperatorCategory.STRING },
+			concept = { IConcept.STRING })
+	@doc (
+			value = "Returns a copy of the string, with leading and trailing whitespace omitted.",
+			usages = @usage (
+					value = "if the operand is a string, returns the string without leading and trailing whitespace",
+					examples = @example (
+							value = "trim(\"  abc  \")",
+							equals = "\"abc\"")))
+	@test ("trim('  abc  ') = 'abc'")
+	@test ("trim('abc') = 'abc'")
+	public static String trim(final String target) {
+		if (target == null) return null;
+		return target.trim();
+	}
+
+	/**
 	 * To lower case.
 	 *
 	 * @param s
@@ -1171,6 +1286,259 @@ public class Strings {
 		if (str == null) throw GamaRuntimeException.error("String cannot be null", scope);
 		if (str.isEmpty()) return str;
 		return str.substring(0, 1).toUpperCase().concat(str.substring(1));
+	}
+
+
+	/**
+	 * Whitespace check.
+	 */
+	@operator (
+			value = { "whitespace", "is_whitespace" },
+			can_be_const = true,
+			category = { IOperatorCategory.STRING },
+			concept = { IConcept.STRING })
+	@doc (
+			value = "Returns true if the string is composed of whitespaces only",
+			examples = @example (
+					value = "whitespace(\"   \")",
+					equals = "true"))
+	@test ("whitespace('   ') = true")
+	@test ("whitespace('a') = false")
+	public static Boolean isWhitespace(final String target) {
+		if (target == null) return false;
+		return target.trim().isEmpty() && !target.isEmpty();
+	}
+
+	/**
+	 * Format.
+	 */
+	@operator (
+			value = "format",
+			can_be_const = true,
+			category = { IOperatorCategory.STRING },
+			concept = { IConcept.STRING })
+	@doc (
+			value = "Formats the given string by inserting values from the list into it",
+			examples = @example (
+					value = "format(\"Hello %s\", [\"world\"])",
+					equals = "\"Hello world\""))
+	@test ("format('Hello %s', ['world']) = 'Hello world'")
+	public static String format(final String target, final IList<?> values) {
+		if (target == null) return null;
+		if (values == null || values.isEmpty()) return target;
+		return String.format(target, values.toArray());
+	}
+
+	/**
+	 * Replace first.
+	 */
+	@operator (
+			value = "replace_first",
+			can_be_const = true,
+			category = { IOperatorCategory.STRING },
+			concept = { IConcept.STRING })
+	@doc (
+			value = "Returns a string where the first occurrence of the right-hand string is replaced by the third one",
+			examples = @example (
+					value = "replace_first(\"abcabc\", \"a\", \"d\")",
+					equals = "\"dbcabc\""))
+	@test ("replace_first('abcabc', 'a', 'd') = 'dbcabc'")
+	public static String replaceFirst(final String target, final String pattern, final String replacement) {
+		if (target == null) return null;
+		if (pattern == null || pattern.isEmpty()) return target;
+		return target.replaceFirst(java.util.regex.Pattern.quote(pattern), java.util.regex.Matcher.quoteReplacement(replacement));
+	}
+
+	/**
+	 * Count.
+	 */
+	@operator (
+			value = "count",
+			can_be_const = true,
+			category = { IOperatorCategory.STRING },
+			concept = { IConcept.STRING })
+	@doc (
+			value = "Counts the number of time a specific string appears in another one",
+			examples = @example (
+					value = "count(\"abcabc\", \"a\")",
+					equals = "2"))
+	@test ("count('abcabc', 'a') = 2")
+	public static Integer count(final String target, final String pattern) {
+		if (target == null || pattern == null || pattern.isEmpty()) return 0;
+		int c = 0;
+		int index = 0;
+		while ((index = target.indexOf(pattern, index)) != -1) {
+			c++;
+			index += pattern.length();
+		}
+		return c;
+	}
+
+	/**
+	 * Is alphanum.
+	 */
+	@operator (
+			value = "is_alphanum",
+			can_be_const = true,
+			category = { IOperatorCategory.STRING },
+			concept = { IConcept.STRING })
+	@doc (
+			value = "Returns true if the string is alphanumerical",
+			examples = @example (
+					value = "is_alphanum(\"a1\")",
+					equals = "true"))
+	@test ("is_alphanum('a1') = true")
+	@test ("is_alphanum('a 1') = false")
+	public static Boolean isAlphanum(final String target) {
+		if (target == null || target.isEmpty()) return false;
+		return target.matches("^[a-zA-Z0-9]+$");
+	}
+
+	/**
+	 * Is alpha.
+	 */
+	@operator (
+			value = "is_alpha",
+			can_be_const = true,
+			category = { IOperatorCategory.STRING },
+			concept = { IConcept.STRING })
+	@doc (
+			value = "Returns true if the string is alphabetical",
+			examples = @example (
+					value = "is_alpha(\"ab\")",
+					equals = "true"))
+	@test ("is_alpha('ab') = true")
+	@test ("is_alpha('a1') = false")
+	public static Boolean isAlpha(final String target) {
+		if (target == null || target.isEmpty()) return false;
+		return target.matches("^[a-zA-Z]+$");
+	}
+
+	/**
+	 * Is ascii.
+	 */
+	@operator (
+			value = "is_ascii",
+			can_be_const = true,
+			category = { IOperatorCategory.STRING },
+			concept = { IConcept.STRING })
+	@doc (
+			value = "Returns true if the string contains only ASCII characters",
+			examples = @example (
+					value = "is_ascii(\"ab\")",
+					equals = "true"))
+	@test ("is_ascii('ab') = true")
+	public static Boolean isAscii(final String target) {
+		if (target == null) return false;
+		return target.matches("^\\p{ASCII}*$");
+	}
+
+	/**
+	 * Is decimal.
+	 */
+	@operator (
+			value = "is_decimal",
+			can_be_const = true,
+			category = { IOperatorCategory.STRING },
+			concept = { IConcept.STRING })
+	@doc (
+			value = "Returns true if the string contains only decimal characters",
+			examples = @example (
+					value = "is_decimal(\"12\")",
+					equals = "true"))
+	@test ("is_decimal('12') = true")
+	@test ("is_decimal('1.2') = false")
+	public static Boolean isDecimal(final String target) {
+		if (target == null || target.isEmpty()) return false;
+		return target.matches("^[0-9]+$");
+	}
+
+	/**
+	 * Is digit.
+	 */
+	@operator (
+			value = "is_digit",
+			can_be_const = true,
+			category = { IOperatorCategory.STRING },
+			concept = { IConcept.STRING })
+	@doc (
+			value = "Returns true if the string contains only digit characters",
+			examples = @example (
+					value = "is_digit(\"12\")",
+					equals = "true"))
+	@test ("is_digit('12') = true")
+	@test ("is_digit('a1') = false")
+	public static Boolean isDigit(final String target) {
+		if (target == null || target.isEmpty()) return false;
+		for (int i = 0; i < target.length(); i++) {
+			if (!Character.isDigit(target.charAt(i))) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Is upper.
+	 */
+	@operator (
+			value = "is_upper",
+			can_be_const = true,
+			category = { IOperatorCategory.STRING },
+			concept = { IConcept.STRING })
+	@doc (
+			value = "Returns true if the string is in all uppercase",
+			examples = @example (
+					value = "is_upper(\"AB\")",
+					equals = "true"))
+	@test ("is_upper('AB') = true")
+	@test ("is_upper('Ab') = false")
+	public static Boolean isUpper(final String target) {
+		if (target == null || target.isEmpty()) return false;
+		return target.equals(target.toUpperCase());
+	}
+
+	/**
+	 * Is lower.
+	 */
+	@operator (
+			value = "is_lower",
+			can_be_const = true,
+			category = { IOperatorCategory.STRING },
+			concept = { IConcept.STRING })
+	@doc (
+			value = "Returns true if the string is in all lowercase",
+			examples = @example (
+					value = "is_lower(\"ab\")",
+					equals = "true"))
+	@test ("is_lower('ab') = true")
+	@test ("is_lower('Ab') = false")
+	public static Boolean isLower(final String target) {
+		if (target == null || target.isEmpty()) return false;
+		return target.equals(target.toLowerCase());
+	}
+
+	/**
+	 * String with.
+	 */
+	@operator (
+			value = "string_with",
+			can_be_const = true,
+			category = { IOperatorCategory.STRING },
+			concept = { IConcept.STRING })
+	@doc (
+			value = "Creates a string by repeating a string a given number of times",
+			examples = @example (
+					value = "string_with(3, \"a\")",
+					equals = "\"aaa\""))
+	@test ("string_with(3, 'a') = 'aaa'")
+	public static String stringWith(final Integer count, final String pattern) {
+		if (count == null || count <= 0 || pattern == null) return "";
+		StringBuilder sb = new StringBuilder(count * pattern.length());
+		for (int i = 0; i < count; i++) {
+			sb.append(pattern);
+		}
+		return sb.toString();
 	}
 
 	/**
