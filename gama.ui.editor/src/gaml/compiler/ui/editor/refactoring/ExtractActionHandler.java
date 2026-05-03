@@ -233,7 +233,7 @@ public class ExtractActionHandler {
 	 * @param text
 	 *            the full document text
 	 * @param braceOffset
-	 *            the offset of the opening {@code \{}
+	 *            the offset of the opening brace character
 	 * @return the first identifier on the declaration line, or an empty string if none could be found
 	 */
 	private static String findKeywordBefore(final String text, final int braceOffset) {
@@ -274,7 +274,7 @@ public class ExtractActionHandler {
 	}
 
 	/**
-	 * Finds the closing {@code \}} that matches the opening {@code \{} at {@code openBraceOffset},
+	 * Finds the closing brace that matches the opening brace at {@code openBraceOffset},
 	 * skipping nested braces and string literals.
 	 */
 	private static int findMatchingCloseBrace(final String text, final int openBraceOffset) {
@@ -307,12 +307,12 @@ public class ExtractActionHandler {
 
 	/**
 	 * Detects the indentation string used for top-level statements inside the enclosing block. It does
-	 * this by looking at the first non-blank, non-closing-brace line after the opening {@code \{}.
+	 * this by looking at the first non-blank, non-closing-brace line after the opening brace.
 	 *
 	 * @param text
 	 *            the full document text
 	 * @param blockOpenBrace
-	 *            the offset of the block's opening {@code \{}
+	 *            the offset of the block's opening brace character
 	 * @return the leading whitespace of the first statement inside the block, or {@code "    "} (4
 	 *         spaces) as a fallback
 	 */
