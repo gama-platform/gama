@@ -392,7 +392,7 @@ public class GeometryUtils {
 	 */
 	public static int nbCommonPoints(final Geometry p1, final Geometry p2) {
 		Set<Coordinate> cp = new HashSet<>();
-		final List<Coordinate> coords = Arrays.asList(p1.getCoordinates());
+		final Set<Coordinate> coords = new HashSet<>(Arrays.asList(p1.getCoordinates()));
 		for (final Coordinate pt : p2.getCoordinates()) { if (coords.contains(pt)) { cp.add(pt); } }
 		return cp.size();
 	}
