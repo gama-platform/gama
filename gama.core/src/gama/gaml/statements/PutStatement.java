@@ -26,8 +26,6 @@ import gama.api.compilation.serialization.ISymbolSerializer;
 import gama.api.constants.IGamlIssue;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
-import gama.api.gaml.statements.AbstractContainerStatement;
-import gama.api.gaml.statements.AbstractContainerStatement.ContainerValidator;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.graph.IGraph;
@@ -156,7 +154,6 @@ public class PutStatement extends AddStatement {
 		public void serialize(final IDescription cd, final StringBuilder sb, final boolean includingBuiltIn) {
 			final IExpression item = cd.getFacetExpr(ITEM);
 			final IExpression list = cd.getFacetExpr(TO);
-			// IExpression allFacet = f.getExpr(ALL);
 			final IExpression at = cd.getFacetExpr(AT);
 			sb.append(list.serializeToGaml(includingBuiltIn));
 			sb.append('[');
@@ -204,18 +201,6 @@ public class PutStatement extends AddStatement {
 
 	@Override
 	protected Object buildValue(final IScope scope, final IGraph container) {
-		// if ( asAllValues ) { return container.buildValues(scope, (IContainer)
-		// this.item.value(scope), containerType);
-		// }
-		// AD: Added to fix issue 1043: the value computed by maps is a pair
-		// (whose key is never used afterwards). However,
-		// when casting an existing pair to the key type/content type of the
-		// map, this would produce wrong values for the
-		// contents of the pair (or the list with 2 elements).
-		// O1/02/14: Not useful anymore
-		// if ( this.list.getType().id() == IType.MAP ) { return
-		// container.buildValue(scope,
-		// new IPair(null, this.item.value(scope))); }
 		return container.buildValue(scope, this.item.value(scope));
 	}
 
@@ -223,9 +208,6 @@ public class PutStatement extends AddStatement {
 	protected void apply(final IScope scope, final Object object, final Object position,
 			final IContainer.Modifiable container) throws GamaRuntimeException {
 		if (!asAll) {
-			// if (!container.checkBounds(scope, position, false)) throw GamaRuntimeException
-			// .error("Index " + position + " out of bounds of " + list.serialize(false), scope);
-			// Issue #3099
 			if (container instanceof IList && position instanceof IPair) {
 				((IList<Object>) container).replaceRange(scope, (IPair) position, object);
 			} else {
