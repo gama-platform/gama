@@ -73,7 +73,7 @@ import gama.api.types.matrix.IMatrix;
 		name = IKeyword.MATRIX,
 		id = IType.MATRIX,
 		wraps = { IMatrix.class },
-		kind = ISymbolKind.CONTAINER,
+		kind = ISymbolKind.REGULAR,
 		concept = { IConcept.TYPE, IConcept.CONTAINER, IConcept.MATRIX },
 		doc = @doc ("Matrices are 2-dimensional containers that can contain any type of date (not only floats or integers). They can be accessed with a point index or by rows / columns"))
 @SuppressWarnings ({ "unchecked", "rawtypes" })

@@ -41,6 +41,7 @@
 -Denable_logging=true 
 -Denable_debug=true
 -Duse_global_preference_store=true 
+-Dcast_container_contents=false
 -Dswt.autoScale=exact
 -Dread_only=false 
 -Duse_old_tabs=true 

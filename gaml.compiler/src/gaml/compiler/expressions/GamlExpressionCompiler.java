@@ -21,6 +21,7 @@ import com.google.common.cache.CacheBuilder;
 import gama.api.GAMA;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IVarDescriptionProvider;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IExpressionCompiler;
 import gama.api.gaml.expressions.IExpressionDescription;
@@ -170,7 +171,11 @@ public class GamlExpressionCompiler implements IExpressionCompiler<Expression> {
 			IExpression result = CONSTANT_SYNTHETIC_EXPRESSIONS.getIfPresent(expression);
 			if (result != null) return result;
 			final EObject o = GamlSyntheticResourcesServices.getEObjectOf(expression, tempContext, parsingContext);
-			try (ExpressionCompilationContext ctx = new ExpressionCompilationContext(parsingContext)) {
+			// If the execution context also acts as a variable-description provider (e.g. the
+			// interactive console), pass it so the compiler can resolve persistent REPL vars.
+			final IVarDescriptionProvider tvp =
+					tempContext instanceof IVarDescriptionProvider t ? t : null;
+			try (ExpressionCompilationContext ctx = new ExpressionCompilationContext(parsingContext, tvp)) {
 				result = compile(o, ctx);
 			}
 			// Cache context-independent expressions - Guava handles eviction automatically

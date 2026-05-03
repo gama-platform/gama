@@ -44,6 +44,7 @@ import gama.api.gaml.expressions.IVarExpression;
 import gama.api.gaml.symbols.ISymbol;
 import gama.api.gaml.types.GamaType;
 import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
 import gama.api.kernel.PlatformAgent;
 import gama.api.kernel.simulation.ITopLevelAgent;
 import gama.api.runtime.scope.IExecutionContext;
@@ -91,6 +92,88 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 
 	/** The temps. */
 	private final Map<String, Object> temps = new LinkedHashMap<>();
+
+	/**
+	 * Tracks the declared type of each persistent console variable. Populated the first time {@link #getVarExpr} is
+	 * called for a variable and kept even if the runtime value later becomes {@code nil}, so that the original
+	 * declaration type is preserved across commands.
+	 */
+	private final Map<String, IType<?>> tempTypes = new LinkedHashMap<>();
+
+	/**
+	 * A persistent execution context for the interactive console. All variable declarations and assignments performed
+	 * in the console are stored directly in the {@link #temps} map so they survive across commands (similar to a Python
+	 * REPL session). The context is self-referential ({@code createChildContext} / {@code createCopy} / {@code
+	 * getOuterContext} all return {@code this}) so that it is never replaced when the underlying scope pushes and pops
+	 * statement contexts. Its lifecycle still clears the console bindings when the context is disposed or when the
+	 * active top-level agent changes, preventing variables from leaking across experiments/sessions.
+	 */
+	private final IExecutionContext consoleContext = new IExecutionContext() {
+
+		private ITopLevelAgent lastTopLevelAgent;
+
+		@Override
+		public void dispose() {
+			clearLocalVars();
+			lastTopLevelAgent = null;
+		}
+
+		@Override
+		public IScope getScope() {
+			final ITopLevelAgent a = GAMA.getCurrentTopLevelAgent();
+			if (a != lastTopLevelAgent) {
+				clearLocalVars();
+				lastTopLevelAgent = a;
+			}
+			return a != null ? a.getScope() : GAMA.getRuntimeScope();
+		}
+
+		@Override
+		public IExecutionContext getOuterContext() { return this; }
+
+		@Override
+		public IExecutionContext createCopy(final ISymbol command) { return this; }
+
+		@Override
+		public IExecutionContext createChildContext(final ISymbol command) { return this; }
+
+		/** Always returns 0 — avoids infinite recursion from the default {@code depth()} implementation. */
+		@Override
+		public int depth() { return 0; }
+
+		@Override
+		public void setTempVar(final String name, final Object value) { temps.put(name, value); }
+
+		@Override
+		public Object getTempVar(final String name) { return temps.get(name); }
+
+		@Override
+		public Map<? extends String, ? extends Object> getLocalVars() { return temps; }
+
+		@Override
+		public void clearLocalVars() {
+			temps.clear();
+			tempTypes.clear();
+		}
+
+		@Override
+		public void putLocalVar(final String varName, final Object val) { temps.put(varName, val); }
+
+		@Override
+		public Object getLocalVar(final String string) { return temps.get(string); }
+
+		@Override
+		public boolean hasLocalVar(final String name) { return temps.containsKey(name); }
+
+		@Override
+		public void removeLocalVar(final String name) { temps.remove(name); }
+
+		@Override
+		public ISymbol getCurrentSymbol() { return null; }
+
+		@Override
+		public void setCurrentSymbol(final ISymbol statement) {}
+	};
 
 	/** The history. */
 	private final List<String> history = new ArrayList<>();
@@ -371,7 +454,10 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 	 */
 	@Override
 	public void topLevelAgentChanged(final ITopLevelAgent agent) {
-
+		// Clear persistent console variables when the top-level agent changes so that
+		// bindings from a previous experiment/model do not leak into the new session.
+		temps.clear();
+		tempTypes.clear();
 		if (agent == null) {
 			WorkbenchHelper.asyncRun(() -> {
 				if (toolbar != null && !toolbar.isDisposed()) {
@@ -419,6 +505,10 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 				result = GamlIdiomsProvider.getDocumentationOn(entered.substring(1));
 			} else {
 				IScope scope = agent.getScope().copy("In interactive console");
+				// Install the persistent console context so that variable declarations
+				// (e.g. "int i <- 0") survive across commands and are accessible in later
+				// commands (e.g. "i <- 1" or just "i").
+				scope.setExecutionContext(consoleContext);
 				try {
 					final IExpression expr = GAML.compileExpression(s, agent, this, false);
 					if (expr != null) { result = StringUtils.toGaml(scope.evaluate(expr, agent).getValue(), true); }
@@ -471,7 +561,7 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 	@Override
 	public void clearLocalVars() {
 		temps.clear();
-
+		tempTypes.clear();
 	}
 
 	@Override
@@ -510,10 +600,17 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 
 	@Override
 	public IExpression getVarExpr(final String name, final boolean asField) {
-
-		final var value = temps.get(name);
-		if (value != null) {
-			final IType<?> t = GamaType.of(value);
+		if (temps.containsKey(name)) {
+			// Look up the cached type first (set at declaration time or on first non-nil access).
+			IType<?> t = tempTypes.get(name);
+			if (t == null) {
+				// No cached type yet: derive from the current runtime value.
+				t = GamaType.of(temps.get(name));
+				// Only cache meaningful types; if the value is currently nil the derived type
+				// is NO_TYPE / unknown, and we leave tempTypes empty so the next call can try
+				// again once the value is non-nil.
+				if (t != null && t != Types.NO_TYPE) { tempTypes.put(name, t); }
+			}
 			return GAML.getExpressionFactory().createVar(name, t, false, IVarExpression.Category.TEMP, null);
 		}
 		return null;

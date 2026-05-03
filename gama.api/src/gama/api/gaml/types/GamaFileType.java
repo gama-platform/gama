@@ -111,7 +111,7 @@ import gama.api.types.misc.IContainer;
 		name = IKeyword.FILE,
 		id = IType.FILE,
 		wraps = { IGamaFile.class },
-		kind = ISymbolKind.CONTAINER,
+		kind = ISymbolKind.REGULAR,
 		concept = { IConcept.TYPE, IConcept.FILE },
 		doc = @doc ("Generic super-type of all file types"))
 @SuppressWarnings ({ "unchecked", "rawtypes" })

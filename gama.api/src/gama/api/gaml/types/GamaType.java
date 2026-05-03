@@ -155,7 +155,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 	 * <p>
 	 * The following metadata is extracted:
 	 * <ul>
-	 * <li>Variable kind (kind field)</li>
+	 * <li>AttributeDeclaration kind (kind field)</li>
 	 * <li>Type ID (id field)</li>
 	 * <li>Type name (name field)</li>
 	 * <li>Support class (wraps field)</li>

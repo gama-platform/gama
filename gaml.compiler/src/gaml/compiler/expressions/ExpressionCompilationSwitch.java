@@ -161,8 +161,7 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 			return expr;
 		} catch (final Exception e) {
 			if (context.getContext() != null) {
-				context.getContext().error(
-						"An internal error occurred while compiling expression: " + e.getMessage(),
+				context.getContext().error("An internal error occurred while compiling expression: " + e.getMessage(),
 						IGamlIssue.GENERAL, s);
 			}
 			return null;
@@ -352,7 +351,7 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 			return null;
 		}
 
-		final boolean isIterator = GAML.isIterator(op);
+		final boolean isIterator = GAML.isIterator(op) && left.getGamlType().isContainer();
 		if (isIterator) return compileIteratorBinary(op, left, originalExpression);
 
 		Expression rightMember = originalExpression;
@@ -1374,6 +1373,14 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 		if (temp_sd != null) {
 			final IExpression contextVar = resolveContextVariable(varName, object, temp_sd);
 			if (contextVar != null) return contextVar;
+		}
+
+		// Fallback: check the secondary variable provider (e.g. persistent REPL vars in the
+		// interactive console) before reporting an "unknown variable" error.
+		final IVarDescriptionProvider tvp = context.getTempVarsProvider();
+		if (tvp != null) {
+			final IExpression tempVar = tvp.getVarExpr(varName, false);
+			if (tempVar != null) return tempVar;
 		}
 
 		return resolveOtherReferences(varName, object, ctx);

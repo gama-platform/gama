@@ -95,7 +95,7 @@ import gaml.compiler.prototypes.SymbolArtefact;
  *   ├── StatementWithChildrenDescription → Compound statements (if, loop, etc.)
  *   │   ├── ActionDescription → User-defined actions
  *   │   └── DoDescription → Action invocations
- *   ├── VariableDescription → Variable declarations
+ *   ├── VariableDescription → AttributeDeclaration declarations
  *   ├── TypeDescription → Type definitions
  *   ├── SpeciesDescription → Agent type definitions
  *   │   ├── ExperimentDescription → Simulation experiments
@@ -1275,7 +1275,7 @@ public abstract class SymbolDescription extends DescriptionStateManager {
 				if (exp != null && !isBuiltIn) {
 					final IType<?> actualType = exp.getGamlType();
 					// Special case for init. Temporary solution before we can pass ITypeProvider.OWNER_TYPE to the init
-					// facet. Concerned types are point and date, which belong to "NumberVariable" and can accept nil,
+					// facet. Concerned types are point and date, which belong to "OrdinalAttributeDeclaration" and can accept nil,
 					// while int and float cannot
 					if (IKeyword.INIT.equals(fp.getName())) {
 						IType<?> requestedType = SymbolDescription.this.getGamlType();

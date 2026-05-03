@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * NumberVariable.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * (v.2025-03).
+ * OrdinalAttributeDeclaration.java, in gama.core, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -25,7 +25,6 @@ import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
-import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.object.IObject;
 import gama.api.runtime.scope.IScope;
 import gama.api.runtime.scope.InScope;
@@ -38,9 +37,9 @@ import gama.api.types.geometry.IPoint;
  * Represents a numeric variable declaration with automatic value clamping based on min, max, and step constraints.
  *
  * <p>
- * NumberVariable extends {@link Variable} to provide specialized handling for numeric types (int, float, point, date)
- * that can be constrained to a specific range. Values are automatically clamped when they fall outside the defined
- * min/max bounds, ensuring data integrity without throwing errors.
+ * OrdinalAttributeDeclaration extends {@link AttributeDeclaration} to provide specialized handling for numeric types
+ * (int, float, point, date) that can be constrained to a specific range. Values are automatically clamped when they
+ * fall outside the defined min/max bounds, ensuring data integrity without throwing errors.
  * </p>
  *
  * <h2>Supported Types</h2>
@@ -110,8 +109,7 @@ import gama.api.types.geometry.IPoint;
  * @param <Step>
  *            the comparable type for step values
  *
- * @see Variable for base variable functionality
- * @see ContainerVariable for container variables
+ * @see AttributeDeclaration for base variable functionality
  *
  * @author Alexis Drogoul
  * @since GAMA 1.0
@@ -195,7 +193,7 @@ import gama.api.types.geometry.IPoint;
 		kinds = { ISymbolKind.SPECIES, ISymbolKind.EXPERIMENT, ISymbolKind.MODEL, ISymbolKind.CLASS })
 @doc ("Declaration of an attribute of a species or an experiment; this type of attributes accepts "
 		+ "min:, max: and step: facets, automatically clamping the value if it is lower than min or higher than max.")
-public class NumberVariable<T extends Comparable, Step extends Comparable> extends Variable {
+public class OrdinalAttributeDeclaration<T extends Comparable, Step extends Comparable> extends AttributeDeclaration {
 
 	/** The max. */
 	private final IExpression min, max, step;
@@ -207,7 +205,7 @@ public class NumberVariable<T extends Comparable, Step extends Comparable> exten
 	private InScope<Step> stepVal;
 
 	/**
-	 * Constructs a new NumberVariable from its description.
+	 * Constructs a new OrdinalAttributeDeclaration from its description.
 	 *
 	 * <p>
 	 * This constructor extracts the min, max, and step facets and pre-compiles them if they are constant expressions.
@@ -224,10 +222,10 @@ public class NumberVariable<T extends Comparable, Step extends Comparable> exten
 	 * @throws GamaRuntimeException
 	 *             if the variable type is not supported for numeric constraints
 	 *
-	 * @see Variable#Variable(IDescription)
+	 * @see AttributeDeclaration#Variable(IDescription)
 	 */
 	@SuppressWarnings ("unchecked")
-	public NumberVariable(final IDescription sd) throws GamaRuntimeException {
+	public OrdinalAttributeDeclaration(final IDescription sd) throws GamaRuntimeException {
 		super(sd);
 		min = getFacet(IKeyword.MIN);
 		max = getFacet(IKeyword.MAX);
@@ -290,8 +288,8 @@ public class NumberVariable<T extends Comparable, Step extends Comparable> exten
 	 * Coerces a value to this variable's type and clamps it to the min/max range.
 	 *
 	 * <p>
-	 * This method overrides {@link Variable#coerce} to add automatic value clamping. After type conversion, the value
-	 * is checked against min and max constraints and silently clamped if it falls outside the valid range.
+	 * This method overrides {@link AttributeDeclaration#coerce} to add automatic value clamping. After type conversion,
+	 * the value is checked against min and max constraints and silently clamped if it falls outside the valid range.
 	 * </p>
 	 *
 	 * <p>
@@ -313,7 +311,7 @@ public class NumberVariable<T extends Comparable, Step extends Comparable> exten
 	 * @throws GamaRuntimeException
 	 *             if the value cannot be converted or the type is unsupported
 	 *
-	 * @see Variable#coerce(IAgent, IScope, Object)
+	 * @see AttributeDeclaration#coerce(IAgent, IScope, Object)
 	 * @see #checkMinMax(IAgent, IScope, Integer)
 	 * @see #checkMinMax(IAgent, IScope, Double)
 	 * @see #checkMinMax(IAgent, IScope, IPoint)
@@ -322,14 +320,14 @@ public class NumberVariable<T extends Comparable, Step extends Comparable> exten
 	@Override
 	protected Object coerce(final IObject agent, final IScope scope, final Object v) throws GamaRuntimeException {
 		final Object val = super.coerce(agent, scope, v);
-		return switch (type.id()) {
-			case IType.INT -> checkMinMax(agent, scope, (Integer) val);
-			case IType.FLOAT -> checkMinMax(agent, scope, (Double) val);
-			case IType.DATE -> checkMinMax(agent, scope, (IDate) val);
-			case IType.POINT -> checkMinMax(agent, scope, (IPoint) val);
+		return switch (val) {
+			case null -> val;
+			case Integer i -> checkMinMax(agent, scope, i);
+			case Double d -> checkMinMax(agent, scope, d);
+			case IDate date -> checkMinMax(agent, scope, date);
+			case IPoint point -> checkMinMax(agent, scope, point);
 			default -> throw GamaRuntimeException.error("Impossible to create " + getName(), scope);
 		};
-
 	}
 
 	/**

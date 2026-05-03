@@ -25,7 +25,7 @@ public enum ISymbolKind {
 	NUMBER(101),
 
 	/** The container. */
-	CONTAINER(102),
+	// CONTAINER(102),
 
 	/** The regular. */
 	REGULAR(104),
@@ -136,11 +136,11 @@ public enum ISymbolKind {
 			EnumSet.of(SPECIES, EXPERIMENT, MODEL, CLASS);
 
 	/** VARIABLES. Which statements are considered variable declarations. */
-	private static final EnumSet<ISymbolKind> VARIABLES = EnumSet.of(NUMBER, CONTAINER, REGULAR);
+	private static final EnumSet<ISymbolKind> VARIABLES = EnumSet.of(NUMBER, REGULAR);
 
 	/** The kinds as string. */
 	public static final Map<ISymbolKind, String> KINDS_AS_STRING =
-			Map.of(NUMBER, "Number variable", CONTAINER, "Container variable", REGULAR, "Variable");
+			Map.of(NUMBER, "Number variable", REGULAR, "Variable");
 
 	/**
 	 * Defines attributes.

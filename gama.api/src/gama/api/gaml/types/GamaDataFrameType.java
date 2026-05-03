@@ -37,7 +37,7 @@ import gama.api.types.dataframe.IDataFrame;
 		name = IKeyword.DATAFRAME,
 		id = IType.DATAFRAME,
 		wraps = { IDataFrame.class },
-		kind = ISymbolKind.CONTAINER,
+		kind = ISymbolKind.REGULAR,
 		concept = { IConcept.TYPE, IConcept.CONTAINER, IConcept.DATAFRAME },
 		doc = @doc ("Tabular data with named columns. Dataframes can be loaded from CSV, Excel or JSON files."))
 public class GamaDataFrameType extends GamaContainerType<IDataFrame> {

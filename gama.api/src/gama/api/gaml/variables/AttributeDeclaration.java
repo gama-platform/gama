@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * Variable.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
+ * AttributeDeclaration.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -71,7 +71,7 @@ import gama.dev.DEBUG;
  * (among), and change notifications.
  * </p>
  *
- * <h2>Variable Types</h2>
+ * <h2>AttributeDeclaration Types</h2>
  * <ul>
  * <li><b>Regular variables</b> - Standard attributes with optional init and update facets</li>
  * <li><b>Constants</b> - Immutable attributes defined with const: true</li>
@@ -90,7 +90,7 @@ import gama.dev.DEBUG;
  *
  * <h2>Usage Examples</h2>
  *
- * <h3>Basic Variable</h3>
+ * <h3>Basic AttributeDeclaration</h3>
  *
  * <pre>{@code
  * species MySpecies {
@@ -99,7 +99,7 @@ import gama.dev.DEBUG;
  * }
  * }</pre>
  *
- * <h3>Variable with Update</h3>
+ * <h3>AttributeDeclaration with Update</h3>
  *
  * <pre>{@code
  * species MySpecies {
@@ -107,7 +107,7 @@ import gama.dev.DEBUG;
  * }
  * }</pre>
  *
- * <h3>Constant Variable</h3>
+ * <h3>Constant AttributeDeclaration</h3>
  *
  * <pre>{@code
  * species MySpecies {
@@ -115,7 +115,7 @@ import gama.dev.DEBUG;
  * }
  * }</pre>
  *
- * <h3>Function Variable</h3>
+ * <h3>Function AttributeDeclaration</h3>
  *
  * <pre>{@code
  * species MySpecies {
@@ -124,7 +124,7 @@ import gama.dev.DEBUG;
  * }
  * }</pre>
  *
- * <h3>Variable with Change Notification</h3>
+ * <h3>AttributeDeclaration with Change Notification</h3>
  *
  * <pre>{@code
  * species MySpecies {
@@ -134,7 +134,7 @@ import gama.dev.DEBUG;
  * }
  * }</pre>
  *
- * <h3>Variable with Constraints</h3>
+ * <h3>AttributeDeclaration with Constraints</h3>
  *
  * <pre>{@code
  * species MySpecies {
@@ -143,7 +143,7 @@ import gama.dev.DEBUG;
  * }</pre>
  *
  * @see ContainerVariable for container-specific variables
- * @see NumberVariable for numeric variables with min/max/step constraints
+ * @see OrdinalAttributeDeclaration for numeric variables with min/max/step constraints
  * @see IVariable for the variable interface
  *
  * @author Alexis Drogoul
@@ -161,16 +161,6 @@ import gama.dev.DEBUG;
 						optional = true,
 						doc = { @doc ("The type of this attribute. Can be combined with facets 'of' and 'index' to describe container types") }),
 				@facet (
-						name = IKeyword.OF,
-						type = IType.TYPE_ID,
-						optional = true,
-						doc = { @doc ("The type of the elements contained in the type of this attribute if it is a container type") }),
-				@facet (
-						name = IKeyword.INDEX,
-						type = IType.TYPE_ID,
-						optional = true,
-						doc = { @doc ("The type of the index used to retrieve elements if the type of the attribute is a container type") }),
-				@facet (
 						name = IKeyword.INIT,
 						// AD 02/16 TODO Allow to declare ITypeProvider.OWNER_TYPE here
 						type = IType.NONE,
@@ -183,6 +173,17 @@ import gama.dev.DEBUG;
 						type = IType.NONE,
 						optional = true,
 						doc = @doc ("The initial value of the attribute. Same as init:")),
+				@facet (
+						name = IKeyword.OF,
+						type = IType.TYPE_ID,
+						optional = true,
+						doc = { @doc ("The type of the elements contained in the type of this attribute if it is a container type") }),
+				@facet (
+						name = IKeyword.INDEX,
+						type = IType.TYPE_ID,
+						optional = true,
+						doc = { @doc ("The type of the index used to retrieve elements if the type of the attribute is a container type") }),
+
 				@facet (
 						name = IKeyword.UPDATE,
 						// AD 02/16 TODO Allow to declare ITypeProvider.OWNER_TYPE here
@@ -205,7 +206,7 @@ import gama.dev.DEBUG;
 				@facet (
 						name = "->",
 						internal = true,
-						type = { IType.INT, IType.FLOAT, IType.POINT, IType.DATE },
+						type = IType.NONE,
 						optional = true,
 						doc = @doc ("Used to specify an expression that will be evaluated each time the attribute is accessed. Equivalent to 'function:'. This facet is incompatible with both 'init:' and 'update:' and 'on_change:' (or the equivalent final block)")),
 
@@ -227,9 +228,9 @@ import gama.dev.DEBUG;
 @inside (
 		kinds = { ISymbolKind.SPECIES, ISymbolKind.EXPERIMENT, ISymbolKind.MODEL, ISymbolKind.CLASS })
 @doc ("Declaration of an attribute of a species or an experiment")
-@validator (gama.api.gaml.variables.Variable.VarValidator.class)
+@validator (gama.api.gaml.variables.AttributeDeclaration.VarValidator.class)
 @SuppressWarnings ({ "rawtypes" })
-public class Variable extends Symbol implements IVariable {
+public class AttributeDeclaration extends Symbol implements IVariable {
 
 	static {
 		DEBUG.OFF();
@@ -241,7 +242,7 @@ public class Variable extends Symbol implements IVariable {
 	 * <p>
 	 * This validator ensures that:
 	 * <ul>
-	 * <li>Variable names are valid and not reserved keywords or type names</li>
+	 * <li>AttributeDeclaration names are valid and not reserved keywords or type names</li>
 	 * <li>Facets are used correctly (e.g., function cannot have init/update)</li>
 	 * <li>Constants don't have update or function facets</li>
 	 * <li>Parameters have required initial/min values</li>
@@ -400,7 +401,7 @@ public class Variable extends Symbol implements IVariable {
 			// final String firstValueFacet = null;
 			final IExpression amongExpression = vd.getFacetExpr(AMONG);
 			if (amongExpression != null && !vType.isAssignableFrom(amongExpression.getGamlType().getContentType())) {
-				vd.error("Variable " + vd.getName() + " of type " + vType + " cannot be chosen among "
+				vd.error("AttributeDeclaration " + vd.getName() + " of type " + vType + " cannot be chosen among "
 						+ amongExpression.serializeToGaml(false), IGamlIssue.NOT_AMONG, AMONG);
 			}
 			// AD 6/2/22 Restriction removed:
@@ -562,12 +563,12 @@ public class Variable extends Symbol implements IVariable {
 	// private Object speciesWideValue;
 
 	/**
-	 * Constructs a new Variable from its description.
+	 * Constructs a new AttributeDeclaration from its description.
 	 *
 	 * <p>
 	 * This constructor extracts and stores all relevant facets from the description:
 	 * <ul>
-	 * <li>Variable name and type</li>
+	 * <li>AttributeDeclaration name and type</li>
 	 * <li>Parameter metadata (if this is a parameter)</li>
 	 * <li>Initialization, update, and function expressions</li>
 	 * <li>Among constraint and on_change handler</li>
@@ -579,7 +580,7 @@ public class Variable extends Symbol implements IVariable {
 	 *
 	 * @see IVariableDescription
 	 */
-	public Variable(final IDescription sd) {
+	public AttributeDeclaration(final IDescription sd) {
 		super(sd);
 		final IVariableDescription desc = (IVariableDescription) sd;
 		setName(sd.getName());

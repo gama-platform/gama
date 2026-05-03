@@ -28,7 +28,7 @@ import gama.api.runtime.scope.IScope;
  * extend both {@link ISymbol} (compilation structure) and {@link IParameter} (runtime behavior).
  * </p>
  *
- * <h2>Variable Types</h2>
+ * <h2>AttributeDeclaration Types</h2>
  * <ul>
  * <li><strong>Regular variables</strong> - Standard attributes with init/update expressions</li>
  * <li><strong>Parameters</strong> - Variables that can be set from experiment interfaces</li>
