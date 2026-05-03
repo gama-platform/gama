@@ -695,6 +695,15 @@ public abstract class GamaFile<Container extends IContainer.Addressable & IConta
 	}
 
 	@Override
+	public String getText(final IScope scope) throws GamaRuntimeException {
+		try {
+			return java.nio.file.Files.readString(java.nio.file.Paths.get(getPath(scope)));
+		} catch (java.io.IOException e) {
+			throw GamaRuntimeException.create(e, scope);
+		}
+	}
+
+	@Override
 	public Container getContents(final IScope scope) throws GamaRuntimeException {
 		if (buffer == null && !exists(scope))
 			throw GamaRuntimeException.error("File " + getFile(scope).getAbsolutePath() + " does not exist", scope);

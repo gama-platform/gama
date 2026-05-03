@@ -173,7 +173,11 @@ import gama.api.utils.geometry.IEnvelopeProvider;
 				type = ITypeProvider.WRAPPED,
 				of = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
 				index = ITypeProvider.KEY_TYPE_AT_INDEX + 1,
-				doc = { @doc ("Returns the contents of the receiver file in the form of a container") }) })
+				doc = { @doc ("Returns the contents of the receiver file in the form of a container") }),
+		@variable (
+				name = IKeyword.TEXT,
+				type = IType.STRING,
+				doc = { @doc ("Returns the whole content of the receiver file as a single string") }) })
 @SuppressWarnings ({ "rawtypes" })
 public interface IGamaFile<C extends IContainer.Modifiable, Contents>
 		extends IContainer.Addressable, IContainer.Modifiable, IEnvelopeProvider, IAsset {
@@ -376,6 +380,18 @@ public interface IGamaFile<C extends IContainer.Modifiable, Contents>
 	 */
 	@getter (IKeyword.CONTENTS)
 	C getContents(IScope scope) throws GamaRuntimeException;
+
+	/**
+	 * Gets the text.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the text
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
+	@getter (IKeyword.TEXT)
+	String getText(IScope scope) throws GamaRuntimeException;
 
 	/**
 	 * Gets the attributes.
