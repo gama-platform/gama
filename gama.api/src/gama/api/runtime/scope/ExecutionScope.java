@@ -1391,7 +1391,8 @@ public class ExecutionScope implements IScope {
 	 * @param executionContext
 	 *            the new execution context
 	 */
-	protected void setExecutionContext(final IExecutionContext executionContext) {
+	@Override
+	public void setExecutionContext(final IExecutionContext executionContext) {
 		this.executionContext = executionContext;
 	}
 

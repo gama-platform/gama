@@ -778,6 +778,15 @@ public interface IScope extends Closeable, IBenchmarkable {
 	IExecutionContext getExecutionContext();
 
 	/**
+	 * Replaces the current execution context with the given one. This allows external code (e.g. the interactive
+	 * console) to inject a persistent execution context so that variable declarations survive across commands.
+	 *
+	 * @param context
+	 *            the execution context to install, must not be null
+	 */
+	default void setExecutionContext(final IExecutionContext context) {}
+
+	/**
 	 * Checks if this scope is in try mode, which affects how errors are handled.
 	 *
 	 * @return true if the scope is in try mode, false otherwise
