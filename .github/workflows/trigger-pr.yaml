@@ -43,13 +43,13 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Get Spotbugs result from base branch
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v4
         with:
           name: result-spotbugs-base
           path: ${{ github.workspace }}/main
 
       - name: Get Spotbugs result from PR branch
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v4
         with:
           name: result-spotbugs-pr
           path: ${{ github.workspace }}/pull-request
