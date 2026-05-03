@@ -412,15 +412,16 @@ public abstract class AbstractExpression implements IExpression {
 	 */
 	@Override
 	public java.time.temporal.ChronoUnit getCalendarChronoUnit() {
-		final java.time.temporal.ChronoUnit[] found = { null };
+		final java.util.concurrent.atomic.AtomicReference<java.time.temporal.ChronoUnit> found =
+				new java.util.concurrent.atomic.AtomicReference<>();
 		findAny(e -> {
 			if (e instanceof TimeUnitCustomExpression tu && !tu.isConst()) {
-				found[0] = tu.isMonth ? java.time.temporal.ChronoUnit.MONTHS : java.time.temporal.ChronoUnit.YEARS;
+				found.set(tu.isMonth ? java.time.temporal.ChronoUnit.MONTHS : java.time.temporal.ChronoUnit.YEARS);
 				return true;
 			}
 			return false;
 		});
-		return found[0];
+		return found.get();
 	}
 
 }

@@ -906,7 +906,7 @@ record GamaDate(Temporal internal) implements IDate {
 			// proper calendar arithmetic so that month/year lengths are respected.
 			final long N = calendarN(scope, period, current, calUnit);
 			IDate candidateDate = plus(N, calUnit);
-			// Null period?
+			// Zero advancement? (N calendar units still maps to the same date – e.g. N=0)
 			if (this.equals(candidateDate)) return false;
 			// Exactly reached?
 			if (candidateDate.equals(current)) return true;
