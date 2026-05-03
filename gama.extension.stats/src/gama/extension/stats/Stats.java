@@ -15,6 +15,7 @@ import static gama.gaml.operators.Containers.collect;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.function.Function;
 
@@ -2463,10 +2464,8 @@ public class Stats {
 		for (int i = 0; i < y.size(); i++) yData[i] = y.get(i);
 
 		// Identify levels
-		List<Object> levelsA = new ArrayList<>();
-		for (Object o : factorA) if (!levelsA.contains(o)) levelsA.add(o);
-		List<Object> levelsB = new ArrayList<>();
-		for (Object o : factorB) if (!levelsB.contains(o)) levelsB.add(o);
+		List<Object> levelsA = new ArrayList<>(new LinkedHashSet<>(factorA));
+		List<Object> levelsB = new ArrayList<>(new LinkedHashSet<>(factorB));
 
 		try {
 			// Type III Sum of Squares requires Effect Coding (sum-to-zero)

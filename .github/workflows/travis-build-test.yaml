@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Get linux testing releases
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v4
         with:
           name: ${{ inputs.artifact_download_id }}
 
@@ -26,6 +26,9 @@ jobs:
           distribution: "temurin"
           java-version: "25"
           java-package: jdk
+
+      - name: Make headless scripts executable
+        run: chmod -R +x $GITHUB_WORKSPACE/headless/
 
       - name: Test release
         run: |
