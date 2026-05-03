@@ -21,7 +21,7 @@ jobs:
           sudo apt-get install -y gcc dpkg-dev gpg
           mkdir -p ${{ github.workspace }}/${{ matrix.zipName }}/DEBIAN ${{ github.workspace }}/${{ matrix.zipName }}/opt/gama-platform ${{ github.workspace }}/${{ matrix.zipName }}/usr/share/applications
 
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v4
         with:
           name: gama-linux
           path: ${{ github.workspace }}/${{ matrix.zipName }}/opt/gama-platform

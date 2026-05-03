@@ -21,12 +21,12 @@ jobs:
     steps:
 
       - name: Get linux testing releases
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v4
         with:
           name: gama-compiled-archive
 
       - name: Get Travis scripts
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v4
         with:
           name: travis-scripts
           path: ${{ github.workspace }}/travis
