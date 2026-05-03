@@ -420,11 +420,7 @@ public class ChartJFreeChartOutputHeatmap extends ChartJFreeChartOutput {
 			domainAxis.setAutoRange(true);
 		}
 		if (this.usexrangeminmax) { domainAxis.setRange(xrangemin, xrangemax); }
-
-		if (!useyrangeinterval && !useyrangeminmax) {
-			// rangeAxis.setAutoRangeMinimumSize(0.5);
-			// rangeAxis.setAutoRange(true);
-		}
+		if ((usexmin || usexmax) && !usexrangeminmax) { applyXSingleBounds(scope, domainAxis); }
 
 		if (this.useyrangeinterval) {
 			rangeAxis.setFixedAutoRange(yrangeinterval);
@@ -432,6 +428,7 @@ public class ChartJFreeChartOutputHeatmap extends ChartJFreeChartOutput {
 			rangeAxis.setAutoRange(true);
 		}
 		if (this.useyrangeminmax) { rangeAxis.setRange(yrangemin, yrangemax); }
+		if ((useymin || useymax) && !useyrangeminmax) { applyYSingleBounds(scope, rangeAxis); }
 		if ("none".equals(this.series_label_position) && this.chart.getLegend() != null) {
 			this.chart.getLegend().setVisible(false);
 		}

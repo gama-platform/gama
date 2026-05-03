@@ -535,7 +535,9 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 			range2Axis = logAxis;
 		}
 
-		if (!getUseXRangeInterval(scope) && !getUseXRangeMinMax(scope)) { domainAxis.setAutoRange(true); }
+		if (!getUseXRangeInterval(scope) && !getUseXRangeMinMax(scope) && !getUseXMin(scope) && !getUseXMax(scope)) {
+			domainAxis.setAutoRange(true);
+		}
 
 		if (this.getUseXRangeInterval(scope)) {
 			domainAxis.setFixedAutoRange(getXRangeInterval(scope));
@@ -554,6 +556,9 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 			}
 
 		}
+		if ((getUseXMin(scope) || getUseXMax(scope)) && !getUseXRangeMinMax(scope)) {
+			applyXSingleBounds(scope, domainAxis);
+		}
 		Color tc = IColor.toAWTColor(tickColor);
 		if (this.getXTickLineVisible(scope)) {
 			((XYPlot) this.chart.getPlot()).setDomainGridlinePaint(tc);
@@ -569,7 +574,9 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 
 		}
 
-		if (!getUseYRangeInterval(scope) && !getUseYRangeMinMax(scope)) { rangeAxis.setAutoRange(true); }
+		if (!getUseYRangeInterval(scope) && !getUseYRangeMinMax(scope) && !getUseYMin(scope) && !getUseYMax(scope)) {
+			rangeAxis.setAutoRange(true);
+		}
 
 		if (this.getUseYRangeInterval(scope)) {
 			rangeAxis.setFixedAutoRange(getYRangeInterval(scope));
@@ -586,6 +593,9 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 				rangeAxis.setAutoRange(true);
 			}
 
+		}
+		if ((getUseYMin(scope) || getUseYMax(scope)) && !getUseYRangeMinMax(scope)) {
+			applyYSingleBounds(scope, rangeAxis);
 		}
 		if (this.getYTickLineVisible(scope)) {
 			((XYPlot) this.chart.getPlot()).setRangeGridlinePaint(tc);

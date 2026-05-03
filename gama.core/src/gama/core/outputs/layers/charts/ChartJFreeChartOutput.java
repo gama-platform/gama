@@ -36,6 +36,7 @@ import org.jfree.chart.ui.RectangleAnchor;
 import org.jfree.chart.ui.RectangleEdge;
 import org.jfree.chart.ui.VerticalAlignment;
 import org.jfree.data.general.Dataset;
+import org.jfree.chart.axis.NumberAxis;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.gaml.expressions.IExpression;
@@ -339,6 +340,44 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 
 	@Override
 	public JFreeChart getJFChart() { return chart; }
+
+	/**
+	 * Applies x_min and/or x_max single-bound constraints to the given domain axis. First triggers auto-range to
+	 * compute bounds from data, then clamps whichever bound was specified by the user. Only called when
+	 * {@link #usexrangeminmax} is not set and at least one of {@link #usexmin} / {@link #usexmax} is true.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param axis
+	 *            the numeric domain axis to constrain
+	 */
+	protected void applyXSingleBounds(final IScope scope, final NumberAxis axis) {
+		axis.setAutoRange(true);
+		double autoMin = axis.getRange().getLowerBound();
+		double autoMax = axis.getRange().getUpperBound();
+		double newMin = usexmin ? xmin_val : autoMin;
+		double newMax = usexmax ? xmax_val : autoMax;
+		if (newMax > newMin) { axis.setRange(newMin, newMax); }
+	}
+
+	/**
+	 * Applies y_min and/or y_max single-bound constraints to the given range axis. First triggers auto-range to
+	 * compute bounds from data, then clamps whichever bound was specified by the user. Only called when
+	 * {@link #useyrangeminmax} is not set and at least one of {@link #useymin} / {@link #useymax} is true.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param axis
+	 *            the numeric range axis to constrain
+	 */
+	protected void applyYSingleBounds(final IScope scope, final NumberAxis axis) {
+		axis.setAutoRange(true);
+		double autoMin = axis.getRange().getLowerBound();
+		double autoMax = axis.getRange().getUpperBound();
+		double newMin = useymin ? ymin_val : autoMin;
+		double newMax = useymax ? ymax_val : autoMax;
+		if (newMax > newMin) { axis.setRange(newMin, newMax); }
+	}
 
 	@Override
 	public void dispose(final IScope scope) {
