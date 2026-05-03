@@ -160,10 +160,11 @@ public class ExtractActionHandler {
 
 			// Skip single-line comments when scanning backward.
 			// A '//' comment occupies the text from '//' to the preceding newline.
+			// When scanning backward, the rightmost '/' of '//' is encountered first (at i);
+			// its left neighbour text.charAt(i-1) is the leftmost '/' -- together they form '//'.
 			if (c == '/' && i > 0 && text.charAt(i - 1) == '/') {
-				// We are at the second '/' of a '//' sequence.
-				// Skip back to the newline that started this comment line.
-				i -= 2; // past the '//'
+				// Walk back past both '/' characters and then to the preceding newline.
+				i -= 2;
 				while (i >= 0 && text.charAt(i) != '\n') { i--; }
 				continue;
 			}
@@ -249,8 +250,11 @@ public class ExtractActionHandler {
 
 			if (i < braceOffset && isIdentChar(text.charAt(i))) {
 				// First non-whitespace char before '{' on this line is an identifier — extract it.
+				// The upper bound uses braceOffset (the '{' position) so we never scan past the
+				// opening brace. Since '{' is not an identifier character the loop would stop
+				// there anyway, but the explicit bound makes the intent clear.
 				final int identStart = i;
-				while (i < text.length() && isIdentChar(text.charAt(i))) { i++; }
+				while (i < braceOffset && isIdentChar(text.charAt(i))) { i++; }
 				return text.substring(identStart, i);
 			}
 
