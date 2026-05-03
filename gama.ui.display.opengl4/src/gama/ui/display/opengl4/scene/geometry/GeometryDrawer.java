@@ -107,6 +107,7 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
 			if (type == IShape.Type.LINESTRING) {
 				final double lineWidth = object.getAttributes().getLineWidth();
 				if (lineWidth > 1.0) {
+					// Buffer by half the width on each side to achieve the desired total width
 					geometry = geometry.buffer(lineWidth / 2.0);
 					type = height != 0 ? IShape.Type.POLYHEDRON : IShape.Type.POLYGON;
 				}
