@@ -377,7 +377,7 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 			rangeAxis = logAxis;
 		}
 
-		if (!useyrangeinterval && !useyrangeminmax) { rangeAxis.setAutoRange(true); }
+		if (!useyrangeinterval && !useyrangeminmax && !useymin && !useymax) { rangeAxis.setAutoRange(true); }
 
 		if (this.useyrangeinterval) {
 			rangeAxis.setFixedAutoRange(yrangeinterval);
@@ -389,6 +389,7 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 			rangeAxis.setRange(yrangemin, yrangemax);
 
 		}
+		if ((useymin || useymax) && !useyrangeminmax) { applyYSingleBounds(scope, rangeAxis); }
 
 		resetDomainAxis(scope);
 

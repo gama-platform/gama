@@ -188,11 +188,23 @@ public abstract class ChartOutput implements IChart {
 	/** The usexrangeminmax. */
 	boolean usexrangeinterval = false, usexrangeminmax = false;
 
+	/** Individual x axis bound values. */
+	double xmin_val, xmax_val;
+
+	/** Flags for individual x axis bounds (x_min / x_max facets). */
+	boolean usexmin = false, usexmax = false;
+
 	/** The yrangemax. */
 	double yrangeinterval, yrangemin, yrangemax;
 
 	/** The useyrangeminmax. */
 	boolean useyrangeinterval = false, useyrangeminmax = false;
+
+	/** Individual y axis bound values. */
+	double ymin_val, ymax_val;
+
+	/** Flags for individual y axis bounds (y_min / y_max facets). */
+	boolean useymin = false, useymax = false;
 
 	/** The y 2 rangemax. */
 	double y2rangeinterval, y2rangemin, y2rangemax;
@@ -915,6 +927,76 @@ public abstract class ChartOutput implements IChart {
 	}
 
 	/**
+	 * Gets the use X min.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the use X min
+	 */
+	public boolean getUseXMin(final IScope scope) {
+		return usexmin;
+	}
+
+	/**
+	 * Gets the use X max.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the use X max
+	 */
+	public boolean getUseXMax(final IScope scope) {
+		return usexmax;
+	}
+
+	/**
+	 * Sets the X min.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param value
+	 *            the lower bound value for the x axis
+	 */
+	public void setXMin(final IScope scope, final double value) {
+		this.usexmin = true;
+		this.xmin_val = value;
+	}
+
+	/**
+	 * Sets the X max.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param value
+	 *            the upper bound value for the x axis
+	 */
+	public void setXMax(final IScope scope, final double value) {
+		this.usexmax = true;
+		this.xmax_val = value;
+	}
+
+	/**
+	 * Gets the X min value.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the x min value
+	 */
+	public double getXMin(final IScope scope) {
+		return xmin_val;
+	}
+
+	/**
+	 * Gets the X max value.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the x max value
+	 */
+	public double getXMax(final IScope scope) {
+		return xmax_val;
+	}
+
+	/**
 	 * Gets the y range interval.
 	 *
 	 * @param scope
@@ -978,6 +1060,76 @@ public abstract class ChartOutput implements IChart {
 	public double getYRangeMax(final IScope scope) {
 		return yrangemax;
 
+	}
+
+	/**
+	 * Gets the use Y min.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the use Y min
+	 */
+	public boolean getUseYMin(final IScope scope) {
+		return useymin;
+	}
+
+	/**
+	 * Gets the use Y max.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the use Y max
+	 */
+	public boolean getUseYMax(final IScope scope) {
+		return useymax;
+	}
+
+	/**
+	 * Sets the Y min.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param value
+	 *            the lower bound value for the y axis
+	 */
+	public void setYMin(final IScope scope, final double value) {
+		this.useymin = true;
+		this.ymin_val = value;
+	}
+
+	/**
+	 * Sets the Y max.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param value
+	 *            the upper bound value for the y axis
+	 */
+	public void setYMax(final IScope scope, final double value) {
+		this.useymax = true;
+		this.ymax_val = value;
+	}
+
+	/**
+	 * Gets the Y min value.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the y min value
+	 */
+	public double getYMin(final IScope scope) {
+		return ymin_val;
+	}
+
+	/**
+	 * Gets the Y max value.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the y max value
+	 */
+	public double getYMax(final IScope scope) {
+		return ymax_val;
 	}
 
 	/**

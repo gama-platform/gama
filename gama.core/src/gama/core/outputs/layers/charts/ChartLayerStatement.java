@@ -78,6 +78,26 @@ import gama.core.outputs.layers.AbstractLayerStatement;
 						optional = true,
 						doc = @doc ("range of the second y-axis. Can be a number (which will set the axis total range) or a point (which will set the min and max of the axis).")),
 				@facet (
+						name = ChartLayerStatement.XMIN,
+						type = { IType.FLOAT, IType.INT },
+						optional = true,
+						doc = @doc ("minimum value for the x-axis. Only the lower bound of the axis is fixed; the upper bound is computed automatically from the data.")),
+				@facet (
+						name = ChartLayerStatement.XMAX,
+						type = { IType.FLOAT, IType.INT },
+						optional = true,
+						doc = @doc ("maximum value for the x-axis. Only the upper bound of the axis is fixed; the lower bound is computed automatically from the data.")),
+				@facet (
+						name = ChartLayerStatement.YMIN,
+						type = { IType.FLOAT, IType.INT },
+						optional = true,
+						doc = @doc ("minimum value for the y-axis. Only the lower bound of the axis is fixed; the upper bound is computed automatically from the data.")),
+				@facet (
+						name = ChartLayerStatement.YMAX,
+						type = { IType.FLOAT, IType.INT },
+						optional = true,
+						doc = @doc ("maximum value for the y-axis. Only the upper bound of the axis is fixed; the lower bound is computed automatically from the data.")),
+				@facet (
 						name = IKeyword.POSITION,
 						type = IType.POINT,
 						optional = true,
@@ -323,6 +343,18 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 
 	/** The Constant Y2RANGE. */
 	public static final String Y2RANGE = "y2_range";
+
+	/** The Constant XMIN. */
+	public static final String XMIN = "x_min";
+
+	/** The Constant XMAX. */
+	public static final String XMAX = "x_max";
+
+	/** The Constant YMIN. */
+	public static final String YMIN = "y_min";
+
+	/** The Constant YMAX. */
+	public static final String YMAX = "y_max";
 
 	/** The Constant XLABEL. */
 	public static final String XLABEL = "x_label";
@@ -617,6 +649,15 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 						Cast.asFloat(scope, ((IList<?>) range).get(1)));
 			}
 		}
+
+		expr = getFacet(XMIN);
+		if (expr != null) { chartOutput.setXMin(scope, Cast.asFloat(scope, expr.value(scope))); }
+		expr = getFacet(XMAX);
+		if (expr != null) { chartOutput.setXMax(scope, Cast.asFloat(scope, expr.value(scope))); }
+		expr = getFacet(YMIN);
+		if (expr != null) { chartOutput.setYMin(scope, Cast.asFloat(scope, expr.value(scope))); }
+		expr = getFacet(YMAX);
+		if (expr != null) { chartOutput.setYMax(scope, Cast.asFloat(scope, expr.value(scope))); }
 		IExpression expr2 = getFacet(XTICKUNIT);
 		if (expr2 != null) {
 			final Object range = expr2.value(scope);
