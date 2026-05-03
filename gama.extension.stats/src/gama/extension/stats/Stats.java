@@ -16,7 +16,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.LinkedHashSet;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Function;
 
 import org.apache.commons.math3.distribution.FDistribution;
@@ -2464,8 +2465,12 @@ public class Stats {
 		for (int i = 0; i < y.size(); i++) yData[i] = y.get(i);
 
 		// Identify levels
-		List<Object> levelsA = new ArrayList<>(new LinkedHashSet<>(factorA));
-		List<Object> levelsB = new ArrayList<>(new LinkedHashSet<>(factorB));
+		List<Object> levelsA = new ArrayList<>();
+		Set<Object> setA = new HashSet<>();
+		for (Object o : factorA) if (setA.add(o)) levelsA.add(o);
+		List<Object> levelsB = new ArrayList<>();
+		Set<Object> setB = new HashSet<>();
+		for (Object o : factorB) if (setB.add(o)) levelsB.add(o);
 
 		try {
 			// Type III Sum of Squares requires Effect Coding (sum-to-zero)
