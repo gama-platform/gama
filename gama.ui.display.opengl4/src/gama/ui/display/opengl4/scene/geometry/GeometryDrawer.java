@@ -97,10 +97,20 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
 			applyScaling(object);
 			final IColor border = !object.isFilled() && object.getAttributes().getBorder() == null
 					? object.getAttributes().getColor() : object.getAttributes().getBorder();
-			final Geometry geometry = object.getObject();
+			Geometry geometry = object.getObject();
 			Double d = object.getAttributes().getDepth();
 			final double height = d == null ? 0d : d;
-			final IShape.Type type = object.getAttributes().getType();
+			IShape.Type type = object.getAttributes().getType();
+			// For line geometries with an explicit width > 1, use geometric buffering for
+			// consistent rendering across all GPU implementations instead of glLineWidth,
+			// which is unreliable and creates non-planar screen-space artifacts.
+			if (type == IShape.Type.LINESTRING) {
+				final double lineWidth = object.getAttributes().getLineWidth();
+				if (lineWidth > 1.0) {
+					geometry = geometry.buffer(lineWidth / 2.0);
+					type = height != 0 ? IShape.Type.POLYHEDRON : IShape.Type.POLYGON;
+				}
+			}
 			drawGeometry(geometry, border, height, type);
 		} finally {
 			gl.popMatrix();
@@ -552,11 +562,13 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
 		final Geometry point = GamaShapeFactory.buildCircle(height, position).getInnerGeometry();
 		boolean old = gl.setObjectWireframe(false);
 		boolean previous = gl.setObjectLighting(false);
+		float previousLineWidth = gl.setLineWidth(1.0f);
 		try {
 			drawSphere(point, /* true, */ height, DEFAULT_BORDER);
 		} finally {
 			gl.setObjectWireframe(old);
 			gl.setObjectLighting(previous);
+			gl.setLineWidth(previousLineWidth);
 		}
 	}
 

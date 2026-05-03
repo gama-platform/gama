@@ -166,8 +166,10 @@ import gama.gaml.statements.draw.DrawStatement.DrawValidator;
 						type = IType.FLOAT,
 						optional = true,
 						doc = @doc (
-								value = "The line width to use for drawing this object. In OpenGL displays, this attribute is considered as optional and not implemented by all gaphic card vendors. "
-										+ "The default value is set by the preference found in Displays>OpenGL Rendering Properties (which, when inspected, also provides the maximal possible value on the local graphics configuration)")), },
+								value = "The width to use when drawing lines and polylines in OpenGL displays. When greater than 1 (the default), lines are rendered as flat geometric polygons with the specified width in world coordinates, "
+										+ "which ensures consistent planar rendering across all GPU implementations. A value of 1 (the default) draws a standard 1-pixel line. "
+										+ "Note: when combined with the 'depth' facet, the resulting shape is a 3D box (width x depth). "
+										+ "The default value is set by the preference found in Displays>OpenGL Rendering Properties")), },
 
 		omissible = IKeyword.GEOMETRY)
 @inside (
