@@ -11,8 +11,10 @@ package gama.api.types.dataframe;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 import org.dflib.DataFrame;
@@ -462,13 +464,13 @@ public class GamaDataFrame implements IDataFrame, IContainer<String, IList<Objec
 			final Function<List<Object>, Object> aggregationFunction) {
 		final DataFrame dfInner = getInner();
 
-		final List<Object> pivotValues = new ArrayList<>();
-		final List<Object> indexValues = new ArrayList<>();
+		final Set<Object> pivotValues = new LinkedHashSet<>();
+		final Set<Object> indexValues = new LinkedHashSet<>();
 		for (int i = 0; i < dfInner.height(); i++) {
 			final Object pv = dfInner.get(pivotColumn, i);
 			final Object iv = dfInner.get(indexColumn, i);
-			if (!pivotValues.contains(pv)) { pivotValues.add(pv); }
-			if (!indexValues.contains(iv)) { indexValues.add(iv); }
+			pivotValues.add(pv);
+			indexValues.add(iv);
 		}
 
 		final Map<Object, Map<Object, List<Object>>> grouped = new LinkedHashMap<>();
