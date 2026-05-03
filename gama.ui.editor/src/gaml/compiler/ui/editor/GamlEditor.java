@@ -1044,7 +1044,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 
 		try {
 			final IDocument doc = getDocument();
-			var offset = doc.getLineOffset(doc.getNumberOfLines() - 1);
+			var offset = doc.getLength();
 			doc.replace(offset, 0, "\n\n");
 			offset += 2;
 			final var length = 0;
