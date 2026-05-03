@@ -369,7 +369,12 @@ import gama.api.ui.IExperimentDisplayable;
 				name = ISpecies.POPULATION,
 				type = IType.LIST,
 				of = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
-				doc = @doc ("The population that corresponds to this species in an instance of its host")) })
+				doc = @doc ("The population that corresponds to this species in an instance of its host")),
+		@variable (
+				name = ISpecies.SKILLS,
+				type = IType.LIST,
+				of = IType.STRING,
+				doc = @doc ("A list of the names of the skills of this species")) })
 public interface ISpecies
 		extends IClass, IContainer.Addressable<Integer, IAgent, Integer, IAgent>, IPopulationSet<IAgent> {
 
@@ -393,6 +398,9 @@ public interface ISpecies
 
 	/** The aspects. */
 	String ASPECTS = "aspects";
+
+	/** The skills. */
+	String SKILLS = "skills";
 
 	/**
 	 * Gets the frequency.
@@ -592,6 +600,17 @@ public interface ISpecies
 	@getter (ASPECTS)
 	@doc ("retuns the list of aspects defined in this species")
 	IList<String> getAspectNames();
+
+	/**
+	 * Gets the skill names.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the skill names
+	 */
+	@getter (SKILLS)
+	@doc ("returns the list of skills of this species")
+	IList<String> getSkillNames(final IScope scope);
 
 	/**
 	 * Gets the architecture.

@@ -1129,6 +1129,11 @@ public class GamlSpecies extends Symbol implements ISpecies {
 	}
 
 	@Override
+	public IList<String> getSkillNames(final IScope scope) {
+		return GamaListFactory.create(scope, Types.STRING, getDescription().getSkillsNames());
+	}
+
+	@Override
 	public String getArchitectureName() { return getLiteral(IKeyword.CONTROL); }
 
 	@Override
