@@ -40,15 +40,21 @@ import gama.api.utils.files.CompressionUtils;
  * families:
  *
  * <ul>
- * <li><b>Concatenation:</b> {@code +} (binary), {@code concatenate} (list &rarr; string, with optional separator)</li>
+ * <li><b>Concatenation:</b> {@code +} (binary), {@code concatenate} / {@code join} (list &rarr; string, with optional
+ * separator)</li>
  * <li><b>Substring / access:</b> {@code copy_between}, {@code at} ({@code @}), {@code reverse}, {@code first},
  * {@code last}</li>
  * <li><b>Search:</b> {@code in}, {@code contains}, {@code contains_any}, {@code contains_all}, {@code index_of},
- * {@code last_index_of}, {@code starts_with}, {@code ends_with}</li>
+ * {@code last_index_of}, {@code starts_with}, {@code ends_with}, {@code count_occurrences}</li>
  * <li><b>Case conversion:</b> {@code upper_case}, {@code lower_case}, {@code capitalize}</li>
- * <li><b>Splitting:</b> {@code split_with} / {@code tokenize}, {@code tokenize_regex}</li>
- * <li><b>Replacement:</b> {@code replace}, {@code replace_regex}</li>
+ * <li><b>Case testing:</b> {@code is_upper}, {@code is_lower}</li>
+ * <li><b>Splitting:</b> {@code split_with} / {@code split} / {@code tokenize}, {@code tokenize_regex}</li>
+ * <li><b>Replacement:</b> {@code replace}, {@code replace_first}, {@code replace_regex}</li>
+ * <li><b>Whitespace:</b> {@code trim}, {@code whitespace}</li>
+ * <li><b>Character-class predicates:</b> {@code is_alpha}, {@code is_alphanum}, {@code is_digit}, {@code is_decimal},
+ * {@code is_ascii}</li>
  * <li><b>Information:</b> {@code length}, {@code empty}, {@code is_number}, {@code char}</li>
+ * <li><b>Construction:</b> {@code string_with}, {@code format}</li>
  * <li><b>Compression:</b> {@code compress} / {@code zip}, {@code uncompress} / {@code unzip}</li>
  * </ul>
  *
@@ -194,7 +200,7 @@ public class Strings {
 	 *             the gama runtime exception
 	 */
 	@operator (
-			value = "concatenate",
+			value = { "concatenate", "join" },
 			can_be_const = true,
 			category = { IOperatorCategory.STRING },
 			concept = { IConcept.STRING })
@@ -211,6 +217,7 @@ public class Strings {
 	@test ("concatenate([]) = ''")
 	@test ("concatenate(['a']) = 'a'")
 	@test ("concatenate(['a','b','c']) = 'abc'")
+	@test ("join(['a','b','c']) = 'abc'")
 	public static String opConcatenate(final IScope scope, final IList<String> strings) throws GamaRuntimeException {
 		StringBuilder sb = new StringBuilder();
 		for (String s : strings) { sb.append(s); }
@@ -245,7 +252,7 @@ public class Strings {
 	 *             the gama runtime exception
 	 */
 	@operator (
-			value = "concatenate",
+			value = { "concatenate", "join" },
 			can_be_const = true,
 			category = { IOperatorCategory.STRING },
 			concept = { IConcept.STRING })
@@ -261,6 +268,7 @@ public class Strings {
 	@test ("concatenate([], '--') = ''")
 	@test ("concatenate(['a'], '--') = 'a'")
 	@test ("concatenate(['a','b'], '') = 'ab'")
+	@test ("join(['a','bc','cd'], '--') = 'a--bc--cd'")
 	public static String opConcatenateSep(final IScope scope, final IList<String> strings, final String separator)
 			throws GamaRuntimeException {
 		StringJoiner sj = new StringJoiner(separator);
@@ -576,7 +584,7 @@ public class Strings {
 	 * @return the i list
 	 */
 	@operator (
-			value = { "split_with", "tokenize" },
+			value = { "split_with", "tokenize", "split" },
 			content_type = IType.STRING,
 			can_be_const = true,
 			category = { IOperatorCategory.STRING },
@@ -590,6 +598,7 @@ public class Strings {
 					equals = "['to','be','or','not','to','be','that','is','the','question']"))
 	@test ("split_with('a,b,c', ',') = ['a','b','c']")
 	@test ("split_with('', ',') = []")
+	@test ("split('a,b,c', ',') = ['a','b','c']")
 	public static IList opTokenize(final IScope scope, final String target, final String pattern) {
 		return opTokenize(scope, target, pattern, false);
 	}
@@ -622,7 +631,7 @@ public class Strings {
 	 * @return the i list
 	 */
 	@operator (
-			value = { "split_with", "tokenize" },
+			value = { "split_with", "tokenize", "split" },
 			content_type = IType.STRING,
 			can_be_const = true,
 			category = { IOperatorCategory.STRING },
@@ -1242,6 +1251,493 @@ public class Strings {
 		if (str.isEmpty()) return str;
 		return new String(CompressionUtils.unzip(str.getBytes(StandardCharsets.ISO_8859_1)),
 				StandardCharsets.ISO_8859_1);
+	}
+
+	/**
+	 * Op trim.
+	 *
+	 * @param s
+	 *            the string to trim
+	 * @return the trimmed string
+	 */
+	@operator (
+			value = "trim",
+			can_be_const = true,
+			category = { IOperatorCategory.STRING },
+			concept = { IConcept.STRING })
+	@doc (
+			value = "Returns the string with all leading and trailing whitespace removed",
+			examples = @example (
+					value = "trim('  hello  ')",
+					equals = "'hello'"),
+			see = { "whitespace" })
+	@test ("trim('  hello  ') = 'hello'")
+	@test ("trim('hello') = 'hello'")
+	@test ("trim('') = ''")
+	@test ("trim('   ') = ''")
+	public static String opTrim(final String s) {
+		if (s == null) return "";
+		return s.strip();
+	}
+
+	/**
+	 * Checks if is whitespace.
+	 *
+	 * @param s
+	 *            the string to test
+	 * @return true if the string contains only whitespace characters
+	 */
+	@operator (
+			value = "whitespace",
+			can_be_const = true,
+			category = { IOperatorCategory.STRING },
+			concept = { IConcept.STRING })
+	@doc (
+			value = "Returns true if the string is non-empty and composed entirely of whitespace characters",
+			examples = { @example (
+					value = "whitespace('   ')",
+					equals = "true"),
+					@example (
+							value = "whitespace('abc')",
+							equals = "false") },
+			see = { "trim" })
+	@test ("whitespace('   ')")
+	@test ("!whitespace('')")
+	@test ("!whitespace('abc')")
+	@test ("!whitespace('  a  ')")
+	public static Boolean isWhitespace(final String s) {
+		return s != null && !s.isEmpty() && s.isBlank();
+	}
+
+	/**
+	 * Op starts with.
+	 *
+	 * @param s
+	 *            the target string
+	 * @param prefix
+	 *            the prefix to check
+	 * @return true if the string starts with the given prefix
+	 */
+	@operator (
+			value = "starts_with",
+			can_be_const = true,
+			category = { IOperatorCategory.STRING },
+			concept = { IConcept.STRING })
+	@doc (
+			value = "Returns true if the left-hand string starts with the right-hand string",
+			examples = { @example (
+					value = "'hello world' starts_with 'hello'",
+					equals = "true"),
+					@example (
+							value = "'hello world' starts_with 'world'",
+							equals = "false") },
+			see = { "ends_with", "contains" })
+	@test ("'hello world' starts_with 'hello'")
+	@test ("!('hello world' starts_with 'world')")
+	@test ("'hello' starts_with ''")
+	@test ("'hello' starts_with 'hello'")
+	public static Boolean opStartsWith(final String s, final String prefix) {
+		if (s == null || prefix == null) return false;
+		return s.startsWith(prefix);
+	}
+
+	/**
+	 * Op ends with.
+	 *
+	 * @param s
+	 *            the target string
+	 * @param suffix
+	 *            the suffix to check
+	 * @return true if the string ends with the given suffix
+	 */
+	@operator (
+			value = "ends_with",
+			can_be_const = true,
+			category = { IOperatorCategory.STRING },
+			concept = { IConcept.STRING })
+	@doc (
+			value = "Returns true if the left-hand string ends with the right-hand string",
+			examples = { @example (
+					value = "'hello world' ends_with 'world'",
+					equals = "true"),
+					@example (
+							value = "'hello world' ends_with 'hello'",
+							equals = "false") },
+			see = { "starts_with", "contains" })
+	@test ("'hello world' ends_with 'world'")
+	@test ("!('hello world' ends_with 'hello')")
+	@test ("'hello' ends_with ''")
+	@test ("'hello' ends_with 'hello'")
+	public static Boolean opEndsWith(final String s, final String suffix) {
+		if (s == null || suffix == null) return false;
+		return s.endsWith(suffix);
+	}
+
+	/**
+	 * Op replace first.
+	 *
+	 * @param target
+	 *            the target string
+	 * @param pattern
+	 *            the literal substring to replace
+	 * @param replacement
+	 *            the replacement string
+	 * @return the string with the first occurrence replaced
+	 */
+	@operator (
+			value = "replace_first",
+			can_be_const = true,
+			category = { IOperatorCategory.STRING },
+			concept = { IConcept.STRING })
+	@doc (
+			value = "Returns the string obtained by replacing the first occurrence of the second operand (a literal substring) by the third operand in the first operand",
+			examples = @example (
+					value = "replace_first('to be or not to be','to', 'do')",
+					equals = "'do be or not to be'"),
+			see = { "replace", "replace_regex" })
+	@test ("replace_first('hello hello', 'hello', 'world') = 'world hello'")
+	@test ("replace_first('abc', 'x', 'y') = 'abc'")
+	@test ("replace_first('', 'x', 'y') = ''")
+	public static String opReplaceFirst(final String target, final String pattern, final String replacement) {
+		if (target == null || pattern == null || pattern.isEmpty()) return target == null ? "" : target;
+		int idx = target.indexOf(pattern);
+		if (idx == -1) return target;
+		return target.substring(0, idx) + replacement + target.substring(idx + pattern.length());
+	}
+
+	/**
+	 * Op count occurrences.
+	 *
+	 * @param target
+	 *            the target string
+	 * @param pattern
+	 *            the substring to count
+	 * @return the number of non-overlapping occurrences of pattern in target
+	 */
+	@operator (
+			value = "count_occurrences",
+			can_be_const = true,
+			category = { IOperatorCategory.STRING },
+			concept = { IConcept.STRING })
+	@doc (
+			value = "Returns the number of non-overlapping occurrences of the second operand (a substring) in the first operand",
+			examples = { @example (
+					value = "count_occurrences('to be or not to be', 'to')",
+					equals = "2"),
+					@example (
+							value = "count_occurrences('aaa', 'aa')",
+							equals = "1") },
+			see = { "index_of", "contains" })
+	@test ("count_occurrences('to be or not to be', 'to') = 2")
+	@test ("count_occurrences('abc', 'x') = 0")
+	@test ("count_occurrences('', 'x') = 0")
+	@test ("count_occurrences('aaa', 'aa') = 1")
+	public static Integer opCountOccurrences(final String target, final String pattern) {
+		if (target == null || pattern == null || pattern.isEmpty()) return 0;
+		int count = 0;
+		int idx = 0;
+		while ((idx = target.indexOf(pattern, idx)) != -1) {
+			count++;
+			idx += pattern.length();
+		}
+		return count;
+	}
+
+	/**
+	 * Checks if is alpha.
+	 *
+	 * @param s
+	 *            the string to test
+	 * @return true if all characters are Unicode letters and the string is non-empty
+	 */
+	@operator (
+			value = "is_alpha",
+			can_be_const = true,
+			category = { IOperatorCategory.STRING },
+			concept = { IConcept.STRING })
+	@doc (
+			value = "Returns true if the string is non-empty and all its characters are Unicode letters",
+			examples = { @example (
+					value = "is_alpha('hello')",
+					equals = "true"),
+					@example (
+							value = "is_alpha('hello2')",
+							equals = "false") },
+			see = { "is_alphanum", "is_digit", "is_upper", "is_lower" })
+	@test ("is_alpha('hello')")
+	@test ("!is_alpha('hello2')")
+	@test ("!is_alpha('')")
+	@test ("!is_alpha('hello world')")
+	public static Boolean isAlpha(final String s) {
+		if (s == null || s.isEmpty()) return false;
+		return s.codePoints().allMatch(Character::isLetter);
+	}
+
+	/**
+	 * Checks if is alphanum.
+	 *
+	 * @param s
+	 *            the string to test
+	 * @return true if all characters are Unicode letters or digits and the string is non-empty
+	 */
+	@operator (
+			value = "is_alphanum",
+			can_be_const = true,
+			category = { IOperatorCategory.STRING },
+			concept = { IConcept.STRING })
+	@doc (
+			value = "Returns true if the string is non-empty and all its characters are Unicode letters or digits",
+			examples = { @example (
+					value = "is_alphanum('hello2')",
+					equals = "true"),
+					@example (
+							value = "is_alphanum('hello world')",
+							equals = "false") },
+			see = { "is_alpha", "is_digit" })
+	@test ("is_alphanum('hello2')")
+	@test ("is_alphanum('hello')")
+	@test ("is_alphanum('123')")
+	@test ("!is_alphanum('')")
+	@test ("!is_alphanum('hello world')")
+	public static Boolean isAlphanum(final String s) {
+		if (s == null || s.isEmpty()) return false;
+		return s.codePoints().allMatch(Character::isLetterOrDigit);
+	}
+
+	/**
+	 * Checks if is digit.
+	 *
+	 * @param s
+	 *            the string to test
+	 * @return true if all characters are ASCII digits (0-9) and the string is non-empty
+	 */
+	@operator (
+			value = "is_digit",
+			can_be_const = true,
+			category = { IOperatorCategory.STRING },
+			concept = { IConcept.STRING })
+	@doc (
+			value = "Returns true if the string is non-empty and all its characters are ASCII digits (0-9)",
+			examples = { @example (
+					value = "is_digit('123')",
+					equals = "true"),
+					@example (
+							value = "is_digit('12.3')",
+							equals = "false") },
+			see = { "is_decimal", "is_alpha", "is_alphanum", "is_number" })
+	@test ("is_digit('123')")
+	@test ("!is_digit('12.3')")
+	@test ("!is_digit('')")
+	@test ("!is_digit('abc')")
+	public static Boolean isDigit(final String s) {
+		if (s == null || s.isEmpty()) return false;
+		for (int i = 0; i < s.length(); i++) {
+			char c = s.charAt(i);
+			if (c < '0' || c > '9') return false;
+		}
+		return true;
+	}
+
+	/**
+	 * Checks if is decimal.
+	 *
+	 * @param s
+	 *            the string to test
+	 * @return true if all characters are Unicode decimal digits and the string is non-empty
+	 */
+	@operator (
+			value = "is_decimal",
+			can_be_const = true,
+			category = { IOperatorCategory.STRING },
+			concept = { IConcept.STRING })
+	@doc (
+			value = "Returns true if the string is non-empty and all its characters are Unicode decimal digit characters",
+			examples = { @example (
+					value = "is_decimal('123')",
+					equals = "true"),
+					@example (
+							value = "is_decimal('12.3')",
+							equals = "false") },
+			see = { "is_digit", "is_number" })
+	@test ("is_decimal('123')")
+	@test ("!is_decimal('12.3')")
+	@test ("!is_decimal('')")
+	@test ("!is_decimal('abc')")
+	public static Boolean isDecimal(final String s) {
+		if (s == null || s.isEmpty()) return false;
+		return s.codePoints().allMatch(c -> Character.getType(c) == Character.DECIMAL_DIGIT_NUMBER);
+	}
+
+	/**
+	 * Checks if is ascii.
+	 *
+	 * @param s
+	 *            the string to test
+	 * @return true if all characters are ASCII and the string is non-empty
+	 */
+	@operator (
+			value = "is_ascii",
+			can_be_const = true,
+			category = { IOperatorCategory.STRING },
+			concept = { IConcept.STRING })
+	@doc (
+			value = "Returns true if the string is non-empty and all its characters have an ASCII code (code point &lt; 128)",
+			examples = { @example (
+					value = "is_ascii('hello')",
+					equals = "true"),
+					@example (
+							value = "is_ascii('héllo')",
+							equals = "false") },
+			see = { "is_alpha", "is_alphanum" })
+	@test ("is_ascii('hello')")
+	@test ("!is_ascii('héllo')")
+	@test ("!is_ascii('')")
+	public static Boolean isAscii(final String s) {
+		if (s == null || s.isEmpty()) return false;
+		return s.chars().allMatch(c -> c < 128);
+	}
+
+	/**
+	 * Checks if is upper.
+	 *
+	 * @param s
+	 *            the string to test
+	 * @return true if all cased characters are uppercase and there is at least one cased character
+	 */
+	@operator (
+			value = "is_upper",
+			can_be_const = true,
+			category = { IOperatorCategory.STRING },
+			concept = { IConcept.STRING })
+	@doc (
+			value = "Returns true if all cased characters in the string are uppercase and there is at least one cased character",
+			examples = { @example (
+					value = "is_upper('HELLO')",
+					equals = "true"),
+					@example (
+							value = "is_upper('Hello')",
+							equals = "false") },
+			see = { "is_lower", "upper_case" })
+	@test ("is_upper('HELLO')")
+	@test ("!is_upper('Hello')")
+	@test ("!is_upper('')")
+	@test ("!is_upper('123')")
+	@test ("is_upper('HELLO 123')")
+	public static Boolean isUpper(final String s) {
+		if (s == null || s.isEmpty()) return false;
+		boolean hasCased = false;
+		for (int i = 0; i < s.length(); i++) {
+			char c = s.charAt(i);
+			if (Character.isLowerCase(c)) return false;
+			if (Character.isUpperCase(c)) { hasCased = true; }
+		}
+		return hasCased;
+	}
+
+	/**
+	 * Checks if is lower.
+	 *
+	 * @param s
+	 *            the string to test
+	 * @return true if all cased characters are lowercase and there is at least one cased character
+	 */
+	@operator (
+			value = "is_lower",
+			can_be_const = true,
+			category = { IOperatorCategory.STRING },
+			concept = { IConcept.STRING })
+	@doc (
+			value = "Returns true if all cased characters in the string are lowercase and there is at least one cased character",
+			examples = { @example (
+					value = "is_lower('hello')",
+					equals = "true"),
+					@example (
+							value = "is_lower('Hello')",
+							equals = "false") },
+			see = { "is_upper", "lower_case" })
+	@test ("is_lower('hello')")
+	@test ("!is_lower('Hello')")
+	@test ("!is_lower('')")
+	@test ("!is_lower('123')")
+	@test ("is_lower('hello 123')")
+	public static Boolean isLower(final String s) {
+		if (s == null || s.isEmpty()) return false;
+		boolean hasCased = false;
+		for (int i = 0; i < s.length(); i++) {
+			char c = s.charAt(i);
+			if (Character.isUpperCase(c)) return false;
+			if (Character.isLowerCase(c)) { hasCased = true; }
+		}
+		return hasCased;
+	}
+
+	/**
+	 * Op string with.
+	 *
+	 * @param n
+	 *            the number of repetitions
+	 * @param pattern
+	 *            the string to repeat
+	 * @return a new string composed of n repetitions of pattern
+	 */
+	@operator (
+			value = "string_with",
+			can_be_const = true,
+			category = { IOperatorCategory.STRING },
+			concept = { IConcept.STRING })
+	@doc (
+			value = "Returns a string created by repeating the right-hand string operand the number of times given by the left-hand integer operand. Returns an empty string if the count is zero or negative.",
+			examples = { @example (
+					value = "string_with(3, 'ab')",
+					equals = "'ababab'"),
+					@example (
+							value = "string_with(0, 'ab')",
+							equals = "''") },
+			see = { "concatenate" })
+	@test ("string_with(3, 'ab') = 'ababab'")
+	@test ("string_with(1, 'x') = 'x'")
+	@test ("string_with(0, 'ab') = ''")
+	@test ("string_with(5, '') = ''")
+	public static String opStringWith(final Integer n, final String pattern) {
+		if (n == null || n <= 0 || pattern == null || pattern.isEmpty()) return "";
+		return pattern.repeat(n);
+	}
+
+	/**
+	 * Op format.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param template
+	 *            the format template (uses Java's printf-style format specifiers, e.g. %s, %d, %05.2f)
+	 * @param args
+	 *            the list of values to insert
+	 * @return the formatted string
+	 */
+	@operator (
+			value = "format",
+			can_be_const = true,
+			category = { IOperatorCategory.STRING },
+			concept = { IConcept.STRING })
+	@doc (
+			value = "Returns the string produced by formatting the first operand with the values from the second operand list, using Java's printf-style format specifiers (e.g. %s for strings, %d for integers, %05.2f for floats with leading zeros)",
+			examples = { @example (
+					value = "format('Hello %s, you are %d years old', ['Alice', 30])",
+					equals = "'Hello Alice, you are 30 years old'"),
+					@example (
+							value = "format('%05d', [42])",
+							equals = "'00042'") },
+			see = { "concatenate" })
+	@test ("format('Hello %s', ['World']) = 'Hello World'")
+	@test ("format('%05d', [42]) = '00042'")
+	@test ("format('%.2f', [3.14159]) = '3.14'")
+	public static String opFormat(final IScope scope, final String template, final IList args) {
+		if (template == null) return "";
+		try {
+			return String.format(template, args.toArray());
+		} catch (java.util.IllegalFormatException e) {
+			throw GamaRuntimeException.error("format: invalid format string or arguments: " + e.getMessage(), scope);
+		}
 	}
 
 }
