@@ -26,7 +26,7 @@ import gama.api.types.graph.IGraph;
  * both directed and undirected graphs, weighted edges, and various graph algorithms for pathfinding, shortest paths,
  * and network analysis.
  * </p>
- * 
+ *
  * <h2>Key Features:</h2>
  * <ul>
  * <li>Vertices and edges as first-class elements</li>
@@ -36,7 +36,7 @@ import gama.api.types.graph.IGraph;
  * <li>Integration with agent-based models (agents as vertices)</li>
  * <li>Drawable for visualization</li>
  * </ul>
- * 
+ *
  * <h2>Type Parameters:</h2>
  * <p>
  * Graphs have two type parameters:
@@ -45,31 +45,31 @@ import gama.api.types.graph.IGraph;
  * <li>Edge type - the type of edges connecting vertices</li>
  * </ul>
  * </p>
- * 
+ *
  * <h2>Usage Examples:</h2>
- * 
+ *
  * <pre>
  * {@code
  * // Create a graph from a list of vertices and edges
  * graph my_graph <- graph([node1, node2, node3]);
- * 
+ *
  * // Create a road network from geometries
  * graph road_network <- as_edge_graph(road_shapefile);
- * 
+ *
  * // Add edges with weights
  * my_graph <- my_graph add_edge (node1::node2, 5.0);
- * 
+ *
  * // Find shortest path
  * path shortest <- path_between(my_graph, node1, node3);
- * 
+ *
  * // Directed graph
  * graph directed_net <- directed(graph([node1, node2]));
- * 
+ *
  * // Get neighbors
  * list<agent> neighbors <- my_graph neighbors_of(current_node);
  * }
  * </pre>
- * 
+ *
  * @author GAMA Development Team
  * @see GamaContainerType
  * @see IGraph
@@ -80,7 +80,7 @@ import gama.api.types.graph.IGraph;
 		name = IKeyword.GRAPH,
 		id = IType.GRAPH,
 		wraps = { IGraph.class },
-		kind = ISymbolKind.CONTAINER,
+		kind = ISymbolKind.REGULAR,
 		concept = { IConcept.TYPE, IConcept.GRAPH },
 		doc = @doc ("Special type of container composed of edges and vertices"))
 @SuppressWarnings ({ "unchecked", "rawtypes" })
@@ -88,7 +88,7 @@ public class GamaGraphType extends GamaContainerType<IGraph> {
 
 	/**
 	 * Constructs a new graph type.
-	 * 
+	 *
 	 * @param typesManager
 	 *            the types manager responsible for type resolution and management
 	 */
@@ -107,7 +107,7 @@ public class GamaGraphType extends GamaContainerType<IGraph> {
 	 * <li>Existing graph - returns a copy if requested</li>
 	 * </ul>
 	 * </p>
-	 * 
+	 *
 	 * @param scope
 	 *            the current execution scope
 	 * @param obj
@@ -139,7 +139,7 @@ public class GamaGraphType extends GamaContainerType<IGraph> {
 	 * <li>Edge type</li>
 	 * </ol>
 	 * </p>
-	 * 
+	 *
 	 * @return 2, as graphs have vertex and edge type parameters
 	 */
 	@Override
@@ -150,7 +150,7 @@ public class GamaGraphType extends GamaContainerType<IGraph> {
 	 * <p>
 	 * Graphs cannot be constant because their structure (vertices and edges) can change during simulation.
 	 * </p>
-	 * 
+	 *
 	 * @return false, graphs cannot be constant
 	 */
 	@Override
@@ -163,7 +163,7 @@ public class GamaGraphType extends GamaContainerType<IGraph> {
 	 * <p>
 	 * Graphs are drawable and can be visualized with vertices as points and edges as lines.
 	 * </p>
-	 * 
+	 *
 	 * @return true, graphs can be displayed
 	 */
 	@Override

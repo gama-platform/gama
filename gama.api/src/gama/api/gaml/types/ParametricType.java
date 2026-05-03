@@ -220,7 +220,7 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	 * @see gama.api.gaml.types.IType#getVarKind()
 	 */
 	@Override
-	public ISymbolKind getVarKind() { return ISymbolKind.CONTAINER; }
+	public ISymbolKind getVarKind() { return ISymbolKind.REGULAR; }
 
 	/**
 	 * Method getGetter()

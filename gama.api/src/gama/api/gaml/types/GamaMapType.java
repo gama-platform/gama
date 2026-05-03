@@ -23,7 +23,7 @@ import gama.api.types.map.IMap;
 /**
  * Type representing associative arrays (maps) in GAML. Maps store key-value pairs where each key is unique and maps to
  * exactly one value.
- * 
+ *
  * <p>
  * Maps in GAML:
  * </p>
@@ -34,26 +34,26 @@ import gama.api.types.map.IMap;
  * <li>Can be parameterized with both key and value types (e.g., {@code map<string,int>})</li>
  * <li>Support efficient key-based lookup, iteration, and transformation</li>
  * </ul>
- * 
+ *
  * <p>
  * Map literals and operations in GAML:
  * </p>
- * 
+ *
  * <pre>
  * // Empty map
  * map<string,int> scores <- map([]);
- * 
+ *
  * // Map with initial pairs
  * map<string,float> prices <- ["apple"::2.5, "banana"::1.8, "orange"::3.2];
- * 
+ *
  * // Map access and modification
  * scores["Alice"] <- 100;
  * int score <- scores["Alice"];
- * 
+ *
  * // Convert agent to map of its attributes
  * map<string,unknown> attrs <- map(myAgent);
  * </pre>
- * 
+ *
  * <p>
  * Type conversion to map handles various cases:
  * </p>
@@ -64,15 +64,15 @@ import gama.api.types.map.IMap;
  * <li><b>Matrix → Map:</b> Maps indices to values</li>
  * <li><b>Graph → Map:</b> Maps edges (as pairs) to their weights</li>
  * </ul>
- * 
+ *
  * <p>
- * Maps preserve insertion order, making them suitable for ordered dictionaries. They are implemented using
- * {@link IMap} interface and created via {@link GamaMapFactory}.
+ * Maps preserve insertion order, making them suitable for ordered dictionaries. They are implemented using {@link IMap}
+ * interface and created via {@link GamaMapFactory}.
  * </p>
- * 
+ *
  * @author drogoul
  * @since GAMA 1.0
- * 
+ *
  * @see IMap
  * @see GamaMapFactory
  * @see GamaContainerType
@@ -82,7 +82,7 @@ import gama.api.types.map.IMap;
 		name = IKeyword.MAP,
 		id = IType.MAP,
 		wraps = { IMap.class },
-		kind = ISymbolKind.CONTAINER,
+		kind = ISymbolKind.REGULAR,
 		concept = { IConcept.TYPE, IConcept.CONTAINER, IConcept.MAP },
 		doc = @doc ("Represents lists of pairs key::value, where each key is unique in the map. Maps are ordered by the insertion order of elements"))
 @SuppressWarnings ({ "unchecked", "rawtypes" })
@@ -90,7 +90,7 @@ public class GamaMapType extends GamaContainerType<IMap> {
 
 	/**
 	 * Constructs a new map type with the specified types manager.
-	 * 
+	 *
 	 * <p>
 	 * The map type is a built-in parametric type that requires two type parameters: key type and value type (e.g.,
 	 * {@code map<string,int>}).
@@ -105,7 +105,7 @@ public class GamaMapType extends GamaContainerType<IMap> {
 
 	/**
 	 * Casts an object to a GAMA map with specified key and content types.
-	 * 
+	 *
 	 * <p>
 	 * Conversion strategies:
 	 * </p>
@@ -117,22 +117,22 @@ public class GamaMapType extends GamaContainerType<IMap> {
 	 * <li><b>Graph → Map:</b> Maps edges (represented as pairs of vertices) to their weights</li>
 	 * <li><b>Existing map → Map:</b> Creates a copy or type-converted map</li>
 	 * </ul>
-	 * 
+	 *
 	 * <p>
 	 * Examples:
 	 * </p>
-	 * 
+	 *
 	 * <pre>
 	 * {@code
 	 * // Cast agent to map of attributes
 	 * IMap attrs = mapType.cast(scope, agent, null, Types.STRING, Types.NO_TYPE, false);
 	 * // Returns {"name": "agent1", "location": point(0,0), ...}
-	 * 
+	 *
 	 * // Cast list of pairs to map
 	 * IList pairs = GamaListFactory.create(scope, Types.PAIR, pair("a", 1), pair("b", 2));
 	 * IMap map = mapType.cast(scope, pairs, null, Types.STRING, Types.INT, false);
 	 * // Returns {"a": 1, "b": 2}
-	 * 
+	 *
 	 * // Parse JSON string to map
 	 * String json = "{\"x\": 10, \"y\": 20}";
 	 * IMap parsed = mapType.cast(scope, json, null, Types.STRING, Types.INT, false);
@@ -154,7 +154,7 @@ public class GamaMapType extends GamaContainerType<IMap> {
 	 * @return the object cast to an IMap
 	 * @throws GamaRuntimeException
 	 *             if the cast fails
-	 * 
+	 *
 	 * @see GamaMapFactory#castToMap(IScope, Object, IType, IType, boolean)
 	 */
 	@Override
@@ -166,7 +166,7 @@ public class GamaMapType extends GamaContainerType<IMap> {
 
 	/**
 	 * Returns the number of type parameters for maps, which is always 2 (key type and value type).
-	 * 
+	 *
 	 * <p>
 	 * Unlike lists (1 parameter) or simple types (0 parameters), maps require both a key type and a value type to be
 	 * fully specified.
@@ -179,7 +179,7 @@ public class GamaMapType extends GamaContainerType<IMap> {
 
 	/**
 	 * Determines the key type when casting a specific expression to a map.
-	 * 
+	 *
 	 * <p>
 	 * The inferred key type depends on the source expression type:
 	 * </p>
@@ -193,19 +193,19 @@ public class GamaMapType extends GamaContainerType<IMap> {
 	 * <li><b>List of pairs:</b> Keys are pair keys → pair's key type</li>
 	 * <li><b>List of other:</b> Keys are list elements → list's content type</li>
 	 * </ul>
-	 * 
+	 *
 	 * <p>
 	 * Examples:
 	 * </p>
-	 * 
+	 *
 	 * <pre>
 	 * {@code
 	 * // Agent expression
 	 * keyTypeIfCasting(agentExpr) → Types.STRING
-	 * 
+	 *
 	 * // List<pair<int,string>> expression
 	 * keyTypeIfCasting(listOfPairsExpr) → Types.INT
-	 * 
+	 *
 	 * // Matrix<float> expression
 	 * keyTypeIfCasting(matrixExpr) → Types.FLOAT
 	 * }
@@ -238,7 +238,7 @@ public class GamaMapType extends GamaContainerType<IMap> {
 
 	/**
 	 * Determines the value/content type when casting a specific expression to a map.
-	 * 
+	 *
 	 * <p>
 	 * The inferred content type depends on the source expression type:
 	 * </p>
@@ -279,7 +279,7 @@ public class GamaMapType extends GamaContainerType<IMap> {
 
 	/**
 	 * Indicates that maps can be cast to constant expressions.
-	 * 
+	 *
 	 * <p>
 	 * Map literals (e.g., {@code ["a"::1, "b"::2]}) can be evaluated at compile time and used in constant contexts.
 	 * </p>

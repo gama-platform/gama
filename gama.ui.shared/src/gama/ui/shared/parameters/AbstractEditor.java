@@ -32,7 +32,7 @@ import gama.api.gaml.symbols.IParameter;
 import gama.api.gaml.types.GamaStringType;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
-import gama.api.gaml.variables.Variable;
+import gama.api.gaml.variables.AttributeDeclaration;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.runtime.scope.IScope;
@@ -245,8 +245,8 @@ public abstract class AbstractEditor<T> implements Selector, ModifyListener, IPa
 	private final void modifyValueOfParameterWith(final Object newValue) throws GamaRuntimeException {
 		if (param instanceof ExperimentParameter && GAMA.getCurrentTopLevelAgent() instanceof ISimulationAgent) {
 			agent.getScope().setAgentVarValue(agent, param.getName(), newValue);
-		} else if (param instanceof Variable) {
-			((Variable) param).setVal(getScope(), agent, newValue);
+		} else if (param instanceof AttributeDeclaration) {
+			((AttributeDeclaration) param).setVal(getScope(), agent, newValue);
 			return;
 		}
 		param.setValue(agent.getScope(), newValue);

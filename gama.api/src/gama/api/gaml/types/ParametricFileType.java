@@ -371,7 +371,7 @@ public class ParametricFileType extends ParametricType {
 	 * @return container variable kind
 	 */
 	@Override
-	public ISymbolKind getVarKind() { return ISymbolKind.CONTAINER; }
+	public ISymbolKind getVarKind() { return ISymbolKind.REGULAR; }
 
 	/**
 	 * Returns the unique type identifier.

@@ -23,9 +23,8 @@ import gama.api.types.matrix.IField;
 /**
  * Represents the GAML field type.
  * <p>
- * Fields are two-dimensional matrices holding float values. They provide a lightweight alternative
- * to grids for models with large raster data, as they hold spatialized discrete values without
- * needing to build agents. Key features:
+ * Fields are two-dimensional matrices holding float values. They provide a lightweight alternative to grids for models
+ * with large raster data, as they hold spatialized discrete values without needing to build agents. Key features:
  * <ul>
  * <li>Can be created from grids, raster/DEM files, matrices, or manual definitions</li>
  * <li>Values are accessible by agents using their current location</li>
@@ -34,7 +33,7 @@ import gama.api.types.matrix.IField;
  * <li>By default cover the whole environment like grids</li>
  * </ul>
  * </p>
- * 
+ *
  * @author GAMA Development Team
  * @since GAMA 1.8
  * @see IField
@@ -44,7 +43,7 @@ import gama.api.types.matrix.IField;
 		name = IKeyword.FIELD,
 		id = IType.FIELD,
 		wraps = { IField.class },
-		kind = ISymbolKind.CONTAINER,
+		kind = ISymbolKind.REGULAR,
 		concept = { IConcept.TYPE, IConcept.GRID, IConcept.MATRIX },
 		doc = @doc ("""
 				Fields are two-dimensional matrices holding float values. They can be easily created from arbitrary sources (grid, raster or DEM files, matrices, \
@@ -58,8 +57,9 @@ public class GamaFieldType extends GamaMatrixType {
 
 	/**
 	 * Constructs a new GamaFieldType.
-	 * 
-	 * @param typesManager the types manager for type resolution
+	 *
+	 * @param typesManager
+	 *            the types manager for type resolution
 	 */
 	public GamaFieldType(final ITypesManager typesManager) {
 		super(typesManager);
@@ -68,18 +68,25 @@ public class GamaFieldType extends GamaMatrixType {
 	/**
 	 * Casts an object to a field with specified types.
 	 * <p>
-	 * Fields are specialized matrices that hold float values in a two-dimensional spatial grid.
-	 * This method handles conversion from various sources including matrices, files, and grids.
+	 * Fields are specialized matrices that hold float values in a two-dimensional spatial grid. This method handles
+	 * conversion from various sources including matrices, files, and grids.
 	 * </p>
 	 *
-	 * @param scope the execution scope
-	 * @param obj the object to cast
-	 * @param param optional casting parameter
-	 * @param keyType the key type (not used for fields, as they use spatial coordinates)
-	 * @param contentsType the content type (should be float)
-	 * @param copy whether to copy the result
+	 * @param scope
+	 *            the execution scope
+	 * @param obj
+	 *            the object to cast
+	 * @param param
+	 *            optional casting parameter
+	 * @param keyType
+	 *            the key type (not used for fields, as they use spatial coordinates)
+	 * @param contentsType
+	 *            the content type (should be float)
+	 * @param copy
+	 *            whether to copy the result
 	 * @return the field instance
-	 * @throws GamaRuntimeException if casting fails
+	 * @throws GamaRuntimeException
+	 *             if casting fails
 	 */
 	@Override
 	public IField cast(final IScope scope, final Object obj, final Object param, final IType keyType,
@@ -92,8 +99,9 @@ public class GamaFieldType extends GamaMatrixType {
 	 * <p>
 	 * Fields always contain float values.
 	 * </p>
-	 * 
-	 * @param exp the expression to analyze
+	 *
+	 * @param exp
+	 *            the expression to analyze
 	 * @return the FLOAT type
 	 */
 	@Override
@@ -103,7 +111,7 @@ public class GamaFieldType extends GamaMatrixType {
 
 	/**
 	 * Gets the content type for fields.
-	 * 
+	 *
 	 * @return the FLOAT type, as fields hold float values
 	 */
 	@Override
@@ -111,7 +119,7 @@ public class GamaFieldType extends GamaMatrixType {
 
 	/**
 	 * Indicates whether field values can be drawn/visualized.
-	 * 
+	 *
 	 * @return true, as fields can be visualized using mesh layers
 	 */
 	@Override

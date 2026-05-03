@@ -51,7 +51,7 @@ import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.GamaDateType;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
-import gama.api.gaml.variables.Variable;
+import gama.api.gaml.variables.AttributeDeclaration;
 import gama.api.runtime.IExecutable;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.color.IColor;
@@ -219,7 +219,7 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 	/**
 	 * The Class ExperimentParameterValidator.
 	 */
-	public static class ExperimentParameterValidator extends Variable.VarValidator {
+	public static class ExperimentParameterValidator extends AttributeDeclaration.VarValidator {
 		@Override
 		public void validate(final IDescription vd) {
 			super.validate(vd);

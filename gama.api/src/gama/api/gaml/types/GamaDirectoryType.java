@@ -20,11 +20,10 @@ import gama.api.types.file.GamaFolderFile;
 /**
  * Represents the GAML directory (folder) type.
  * <p>
- * This is a specialized file type specifically for directories/folders. Directory objects contain
- * the list of file names within the folder. They are container types with STRING content (file names)
- * indexed by integers.
+ * This is a specialized file type specifically for directories/folders. Directory objects contain the list of file
+ * names within the folder. They are container types with STRING content (file names) indexed by integers.
  * </p>
- * 
+ *
  * @author taillandier
  * @since GAMA 2021
  * @see GamaFileType
@@ -34,15 +33,16 @@ import gama.api.types.file.GamaFolderFile;
 		name = IKeyword.DIRECTORY,
 		id = IType.DIRECTORY,
 		wraps = { GamaFolderFile.class },
-		kind = ISymbolKind.CONTAINER,
+		kind = ISymbolKind.REGULAR,
 		concept = { IConcept.TYPE, IConcept.FILE },
 		doc = @doc ("specific type for directories (folders). Contains the list of file names"))
 public class GamaDirectoryType extends GamaFileType {
 
 	/**
 	 * Constructs a new GamaDirectoryType.
-	 * 
-	 * @param typesManager the types manager for type resolution
+	 *
+	 * @param typesManager
+	 *            the types manager for type resolution
 	 */
 	public GamaDirectoryType(final ITypesManager typesManager) {
 		super(typesManager);
@@ -53,7 +53,7 @@ public class GamaDirectoryType extends GamaFileType {
 	 * <p>
 	 * Directories contain strings (file names).
 	 * </p>
-	 * 
+	 *
 	 * @return the STRING type
 	 */
 	@Override
@@ -64,7 +64,7 @@ public class GamaDirectoryType extends GamaFileType {
 	 * <p>
 	 * Directory contents are indexed by integers.
 	 * </p>
-	 * 
+	 *
 	 * @return the INT type
 	 */
 	@Override

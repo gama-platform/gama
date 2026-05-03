@@ -79,8 +79,7 @@ public class VariableFactory implements ISymbolDescriptionFactory {
 
 	@Override
 	public ISymbolKind[] getKinds() {
-		return new ISymbolKind[] { ISymbolKind.CONTAINER, ISymbolKind.NUMBER, ISymbolKind.REGULAR,
-				ISymbolKind.PARAMETER };
+		return new ISymbolKind[] { ISymbolKind.NUMBER, ISymbolKind.REGULAR, ISymbolKind.PARAMETER };
 	}
 
 }
