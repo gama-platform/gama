@@ -260,6 +260,7 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 				newr.setDefaultPositiveItemLabelPosition(itemlabelposition);
 				newr.setDefaultNegativeItemLabelPosition(itemlabelposition);
 				newr.setDefaultItemLabelsVisible(true);
+				if (textColor != null) { newr.setDefaultItemLabelPaint(IColor.toAWTColor(textColor)); }
 			}
 
 			if (newr instanceof BarRenderer && gap >= 0) {
