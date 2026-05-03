@@ -45,6 +45,7 @@ import gama.api.utils.StringUtils;
 import gama.api.utils.files.BufferingUtils;
 import gama.api.utils.files.FileUtils;
 import gama.api.utils.prefs.IPreferenceChangeListener.IPreferenceBeforeChangeListener;
+import gama.dev.FLAGS;
 
 /**
  * {@code GamaPreferences} is the central registry of all GAMA user-configurable preferences. It owns the static factory
@@ -1210,11 +1211,11 @@ public class GamaPreferences {
 		/**
 		 * The label for the experimental features group, warning users that features within have not been fully tested.
 		 */
-		public static final String CATEGORY =
+		public static final String UNSAFE =
 				" These features have not been fully tested. Enable them at your own risks.";
 
 		/** The label for the safe optimizations group within the Advanced tab. */
-		public static final String OPTIMIZATIONS = "These optimizations are considered safe";
+		public static final String SAFE = "These optimizations are considered safe";
 
 		/**
 		 * The label for the graphical optimizations group within the Advanced tab, noting that some optimizations can
@@ -1229,7 +1230,7 @@ public class GamaPreferences {
 		 */
 		public static final Pref<Boolean> REQUIRED_PLUGINS = create("pref_required_plugins",
 				"Automatically add the plugins required to compile and run a model when editing it", false, IType.BOOL,
-				false).in(NAME, CATEGORY).hidden();
+				false).in(NAME, UNSAFE).hidden();
 
 		/**
 		 * Whether the spatial quadtree index should use a lazy insertion strategy (agents are added only when spatial
@@ -1237,7 +1238,7 @@ public class GamaPreferences {
 		 */
 		public static final Pref<Boolean> QUADTREE_OPTIMIZATION = create("pref_optimize_quadtree",
 				"Optimize spatial queries: add agents only when necessary in the quadtree (still experimental)", false,
-				IType.BOOL, true).in(NAME, CATEGORY);
+				IType.BOOL, true).in(NAME, UNSAFE);
 
 		/**
 		 * Whether operations on the spatial index (quadtree) should be synchronized to prevent concurrency errors.
@@ -1245,7 +1246,7 @@ public class GamaPreferences {
 		 */
 		public static final Pref<Boolean> QUADTREE_SYNCHRONIZATION = create("pref_synchronize_quadtree",
 				"Forces the spatial index to synchronize its operations. Useful for interactive models where the users interfere or parallel models with concurrency errors. Note that it may slow down simulations with a lot of mobile agents",
-				true, IType.BOOL, true).in(NAME, CATEGORY);
+				true, IType.BOOL, true).in(NAME, UNSAFE);
 
 		/**
 		 * Whether constant GAML expressions should be evaluated at compile time and replaced by their results (constant
@@ -1253,7 +1254,7 @@ public class GamaPreferences {
 		 */
 		public static final Pref<Boolean> CONSTANT_OPTIMIZATION = create("pref_optimize_constant_expressions",
 				"Optimize constant expressions (experimental, performs a rebuild of models)", false, IType.BOOL, true)
-						.in(NAME, CATEGORY).onChange(v -> {
+						.in(NAME, UNSAFE).onChange(v -> {
 							try {
 								GAMA.getWorkspaceManager().getWorkspace().build(IncrementalProjectBuilder.CLEAN_BUILD,
 										null);
@@ -1267,7 +1268,14 @@ public class GamaPreferences {
 		 */
 		public static final Pref<Boolean> PATH_COMPUTATION_OPTIMIZATION = create("pref_optimize_path_computation",
 				"Optimize the path computation operators and goto action (but with possible 'jump' issues)", false,
-				IType.BOOL, true).in(NAME, OPTIMIZATIONS);
+				IType.BOOL, true).in(NAME, SAFE);
+
+		/** The Constant CAST_CONTAINER_CONTENTS. */
+		public static final Pref<Boolean> CAST_CONTAINER_CONTENTS = create("pref_cast_container_contents",
+				"Cast the elements of a container to its declared type (If true, no verification is performed on the type of elements added to a container, which may lead to runtime errors)",
+				FLAGS.CAST_CONTAINER_CONTENTS, IType.BOOL, true).in(NAME, SAFE).onChange(newValue -> {
+					FLAGS.CAST_CONTAINER_CONTENTS = newValue;
+				});
 
 		/**
 		 * The tolerance (epsilon) used when comparing two GAML {@code point} values for equality. A value of
@@ -1275,7 +1283,7 @@ public class GamaPreferences {
 		 */
 		public static final Pref<Double> TOLERANCE_POINTS =
 				create("pref_point_tolerance", "Tolerance for the comparison of points", 0.0, IType.FLOAT, true)
-						.in(NAME, OPTIMIZATIONS);
+						.in(NAME, SAFE);
 
 		/**
 		 * Whether shapefile data should be mapped and cached entirely in memory for faster repeated access. Disable
@@ -1283,7 +1291,7 @@ public class GamaPreferences {
 		 */
 		public static final Pref<Boolean> SHAPEFILES_IN_MEMORY = create("pref_shapefiles_in_memory",
 				"Mapping and caching of shapefiles in memory (optimises access to shapefile data in exchange for increased memory usage). Disable this property if you are dealing with shapefiles that change frequently",
-				true, IType.BOOL, true).in(NAME, OPTIMIZATIONS);
+				true, IType.BOOL, true).in(NAME, SAFE);
 
 		/**
 		 * The default I/O buffering strategy applied to the GAML {@code save} statement. Corresponds to the preference
@@ -1291,7 +1299,7 @@ public class GamaPreferences {
 		 */
 		public static final Pref<String> DEFAULT_SAVE_BUFFERING_STRATEGY = create(PREF_SAVE_BUFFERING_STRATEGY,
 				"Default buffering strategy for the save statement", BufferingUtils.NO_BUFFERING, IType.STRING, true)
-						.among(BufferingUtils.BUFFERING_STRATEGIES.stream().toList()).in(NAME, OPTIMIZATIONS);
+						.among(BufferingUtils.BUFFERING_STRATEGIES.stream().toList()).in(NAME, SAFE);
 
 		/**
 		 * The default I/O buffering strategy applied to the GAML {@code write} statement. Corresponds to the preference
@@ -1299,7 +1307,7 @@ public class GamaPreferences {
 		 */
 		public static final Pref<String> DEFAULT_WRITE_BUFFERING_STRATEGY = create(PREF_WRITE_BUFFERING_STRATEGY,
 				"Default buffering strategy for the write statement", BufferingUtils.NO_BUFFERING, IType.STRING, true)
-						.among(BufferingUtils.BUFFERING_STRATEGIES.stream().toList()).in(NAME, OPTIMIZATIONS);
+						.among(BufferingUtils.BUFFERING_STRATEGIES.stream().toList()).in(NAME, SAFE);
 
 		/**
 		 * Whether object pooling should be used to reuse short-lived GAML runtime objects and reduce GC pressure. Still
@@ -1307,7 +1315,7 @@ public class GamaPreferences {
 		 */
 		public static final Pref<Boolean> USE_POOLING =
 				create("pref_use_pooling", "Use object pooling to reduce memory usage (still experimental)", false,
-						IType.BOOL, true).in(NAME, CATEGORY);
+						IType.BOOL, true).in(NAME, UNSAFE);
 
 	}
 

@@ -83,10 +83,10 @@ public class FLAGS {
 
 	/**
 	 * Indicates whether or not to cast the contents of a container to respect its type (e.g. all list<int> elements
-	 * casted to int). True by default.
+	 * casted to int). True by default. Not final so that it can be modified by a preference.
 	 *
 	 * The Constant CAST_CONTAINER_CONTENTS.
 	 */
-	public static final boolean CAST_CONTAINER_CONTENTS = get("cast_container_contents", true);
+	public static boolean CAST_CONTAINER_CONTENTS = get("cast_container_contents", true);
 
 }

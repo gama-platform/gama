@@ -321,6 +321,7 @@ public class OrdinalAttributeDeclaration<T extends Comparable, Step extends Comp
 	protected Object coerce(final IObject agent, final IScope scope, final Object v) throws GamaRuntimeException {
 		final Object val = super.coerce(agent, scope, v);
 		return switch (val) {
+			case null -> val;
 			case Integer i -> checkMinMax(agent, scope, i);
 			case Double d -> checkMinMax(agent, scope, d);
 			case IDate date -> checkMinMax(agent, scope, date);

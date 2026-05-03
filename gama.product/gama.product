@@ -35,7 +35,7 @@
 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.retryAttempts=10
 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.closeTimeout=6000
 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.readTimeout=6000
--Denable_logging=true -Denable_debug=true -Duse_global_preference_store=true -Dread_only=false -Duse_old_tabs=true
+-Denable_logging=true -Denable_debug=true -Duse_global_preference_store=true -Dread_only=false -Duse_old_tabs=true -Dcast_container_contents=false
 -Dswt.autoScale=exact
 -Declipse.e4.inject.javax.disabled=true
 -Djts.relate=ng
