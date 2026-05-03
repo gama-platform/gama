@@ -44,6 +44,7 @@ import gama.api.gaml.expressions.IVarExpression;
 import gama.api.gaml.symbols.ISymbol;
 import gama.api.gaml.types.GamaType;
 import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
 import gama.api.kernel.PlatformAgent;
 import gama.api.kernel.simulation.ITopLevelAgent;
 import gama.api.runtime.scope.IExecutionContext;
@@ -591,10 +592,16 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 	@Override
 	public IExpression getVarExpr(final String name, final boolean asField) {
 		if (temps.containsKey(name)) {
-			// Use the cached declared type if available so that declarations like
-			// "int x <- nil" keep type int even after the value becomes nil.
-			// Fall back to deriving the type from the current runtime value.
-			final IType<?> t = tempTypes.computeIfAbsent(name, k -> GamaType.of(temps.get(k)));
+			// Look up the cached type first (set at declaration time or on first non-nil access).
+			IType<?> t = tempTypes.get(name);
+			if (t == null) {
+				// No cached type yet: derive from the current runtime value.
+				t = GamaType.of(temps.get(name));
+				// Only cache meaningful types; if the value is currently nil the derived type
+				// is NO_TYPE / unknown, and we leave tempTypes empty so the next call can try
+				// again once the value is non-nil.
+				if (t != null && t != Types.NO_TYPE) { tempTypes.put(name, t); }
+			}
 			return GAML.getExpressionFactory().createVar(name, t, false, IVarExpression.Category.TEMP, null);
 		}
 		return null;
