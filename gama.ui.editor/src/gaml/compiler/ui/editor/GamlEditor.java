@@ -34,6 +34,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
@@ -164,6 +165,7 @@ import gaml.compiler.ui.reference.BuiltinReferenceMenu;
 import gaml.compiler.ui.reference.ColorReferenceMenu;
 import gaml.compiler.ui.reference.OperatorsReferenceMenu;
 import gaml.compiler.ui.reference.TemplateReferenceMenu;
+import gaml.compiler.ui.editor.refactoring.ExtractActionHandler;
 import gaml.compiler.ui.templates.GamlEditTemplateDialogFactory;
 import gaml.compiler.ui.templates.GamlTemplateStore;
 import gaml.compiler.validation.IGamlBuilderListener;
@@ -1252,6 +1254,19 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 			// DEBUG.OUT("Item " + item);
 			UICleanupTasks.RearrangeMenus.changeIcon(menu, item, item.getId());
 		}
+		menu.add(new Separator());
+		menu.add(new Action("Extract Action\u2026") {
+			@Override
+			public void run() {
+				ExtractActionHandler.extractAction(GamlEditor.this);
+			}
+
+			@Override
+			public boolean isEnabled() {
+				final ITextSelection sel = (ITextSelection) getSelectionProvider().getSelection();
+				return sel != null && sel.getLength() > 0;
+			}
+		});
 		menu.add(new Separator());
 		menu.add(new InternalMenuManager(parent -> new TemplateReferenceMenu().installSubMenuIn(parent)));
 		menu.add(new InternalMenuManager(parent -> new BuiltinReferenceMenu().installSubMenuIn(parent)));
