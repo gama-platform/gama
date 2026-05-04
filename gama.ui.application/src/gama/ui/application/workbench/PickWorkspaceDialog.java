@@ -136,16 +136,7 @@ public class PickWorkspaceDialog extends TitleAreaDialog {
 			rememberWorkspaceButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
 			rememberWorkspaceButton.setSelection(GAMA.getWorkspaceManager().isRememberWorkspace());
 
-			final String lastUsed = GAMA.getWorkspaceManager().getLastUsedWorkspaces();
-			lastUsedWorkspaces = new ArrayList<>();
-			if (lastUsed != null) {
-				final String[] all = lastUsed.split(splitChar);
-				for (String str : all) {
-					if (!str.isEmpty() && new File(str).exists()) {
-						lastUsedWorkspaces.add(str);
-					}
-				}
-			}
+			loadLastUsedWorkspaces();
 			for (final String last : lastUsedWorkspaces) { workspacePathCombo.add(last); }
 
 			/* Browse button on the right */
@@ -169,6 +160,19 @@ public class PickWorkspaceDialog extends TitleAreaDialog {
 		} catch (final RuntimeException err) {
 			err.printStackTrace();
 			return null;
+		}
+	}
+
+	private void loadLastUsedWorkspaces() {
+		final String lastUsed = GAMA.getWorkspaceManager().getLastUsedWorkspaces();
+		lastUsedWorkspaces = new ArrayList<>();
+		if (lastUsed != null) {
+			final String[] all = lastUsed.split(splitChar);
+			for (String str : all) {
+				if (!str.isEmpty() && new File(str).exists()) {
+					lastUsedWorkspaces.add(str);
+				}
+			}
 		}
 	}
 
