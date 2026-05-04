@@ -1,6 +1,7 @@
 /*******************************************************************************************************
  *
- * AttributeDeclaration.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
+ * AttributeDeclaration.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -963,7 +964,7 @@ public class AttributeDeclaration extends Symbol implements IVariable {
 		if (functionExpression != null) return scope.evaluate(functionExpression, object).getValue();
 		// Var not yet initialized. May happen when asking for its value while initializing an editor
 		// See Issue #2781 + Issue #3920
-		if (!object.hasAttribute(name) && (isNotModifiable || initExpression != null && initExpression.isConst())
+		if (!object.hasAttribute(name) && (isNotModifiable || initExpression != null /* && initExpression.isConst() */)
 				&& !description.isBuiltIn())
 			return getInitialValue(scope);
 		return object.getAttribute(name);
