@@ -140,7 +140,11 @@ public class PickWorkspaceDialog extends TitleAreaDialog {
 			lastUsedWorkspaces = new ArrayList<>();
 			if (lastUsed != null) {
 				final String[] all = lastUsed.split(splitChar);
-				Collections.addAll(lastUsedWorkspaces, all);
+				for (String str : all) {
+					if (!str.isEmpty() && new File(str).exists()) {
+						lastUsedWorkspaces.add(str);
+					}
+				}
 			}
 			for (final String last : lastUsedWorkspaces) { workspacePathCombo.add(last); }
 
