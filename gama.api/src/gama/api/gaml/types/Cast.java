@@ -38,6 +38,10 @@ import gama.api.types.map.IMap;
  *
  * @author drogoul
  */
+
+/**
+ * The Class Cast.
+ */
 @SuppressWarnings ({ "rawtypes" })
 public class Cast {
 
@@ -55,22 +59,32 @@ public class Cast {
 	 * @throws GamaRuntimeException
 	 *             if type resolution fails
 	 */
+
+	/**
+	 * Checks if is A.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param object
+	 *            the object
+	 * @param typeExpression
+	 *            the type expression
+	 * @return the boolean
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
 	@operator (
 			value = { IKeyword.IS },
 			category = { IOperatorCategory.CASTING },
 			concept = { IConcept.CAST, IConcept.TYPE })
 	@doc (
-			value = "returns true if the left operand is of the right operand type, false otherwise",
-			examples = { @example (
-					value = "0 is int",
-					equals = "true"),
-					@example (
-							value = "an_agent is node",
-							equals = "true",
-							isExecutable = false),
-					@example (
-							value = "1 is float",
-							equals = "false") })
+			value = """
+					Return true if the left operand is an instance of the specified type, false otherwise. \
+					Note that this operator only accepts simple types, object types and agent types (e.g., int, float, list, node, etc.). \
+					Parametric types such as list<int> are not supported.""")
+	@test ("0 is int")
+	@test ("[0, 1, 2] is list")
+	@test ("self is agent")
 	public static Boolean isA(final IScope scope, final Object object, final IExpression typeExpression)
 			throws GamaRuntimeException {
 		final IType<?> type = asType(scope, typeExpression);
@@ -92,16 +106,13 @@ public class Cast {
 	 *            the skill name
 	 * @return true if the agent's species implements the skill
 	 */
+
 	@operator (
 			value = IKeyword.IS_SKILL,
 			category = { IOperatorCategory.CASTING },
 			concept = { IConcept.CAST, IConcept.SKILL })
 	@doc (
-			value = "returns true if the left operand is an agent whose species implements the right-hand skill name",
-			examples = { @example (
-					value = "agentA is_skill 'moving'",
-					equals = "true",
-					isExecutable = false) })
+			value = "returns true if the left operand is an agent whose species implements the right-hand skill name")
 	@test ("simulation is_skill 'moving' = false")
 	public static Boolean isSkill(final IScope scope, final Object agent, final String skill) {
 		return agent instanceof IAgent a && a.getSpecies().implementsSkill(skill);
@@ -150,6 +161,18 @@ public class Cast {
 	 * @param type
 	 *            the target GAML type
 	 * @return the casted value
+	 */
+
+	/**
+	 * As.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param val
+	 *            the val
+	 * @param type
+	 *            the type
+	 * @return the object
 	 */
 	@operator (
 			value = IKeyword.AS,
@@ -236,6 +259,20 @@ public class Cast {
 	 * @throws GamaRuntimeException
 	 *             if the string cannot be parsed as an integer
 	 */
+
+	/**
+	 * As int.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param string
+	 *            the string
+	 * @param radix
+	 *            the radix
+	 * @return the integer
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
 	@operator (
 			value = "as_int",
 			can_be_const = true,
@@ -278,6 +315,18 @@ public class Cast {
 	 *            the initializer expression (evaluated in parallel for each position)
 	 * @return a new list filled with the expression value
 	 */
+
+	/**
+	 * Parallel list with.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param size
+	 *            the size
+	 * @param init
+	 *            the init
+	 * @return the i list
+	 */
 	@operator (
 			value = "parallel_list_with",
 			content_type = ITypeProvider.TYPE_AT_INDEX + 2,
@@ -308,6 +357,20 @@ public class Cast {
 	 * @param fillExpr
 	 *            the expression to evaluate for each position (may reference the loop variable)
 	 * @return a new list with the computed elements
+	 */
+
+	/**
+	 * List with.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param eachName
+	 *            the each name
+	 * @param size
+	 *            the size
+	 * @param fillExpr
+	 *            the fill expr
+	 * @return the i list
 	 */
 	@operator (
 			value = "list_with",
@@ -359,6 +422,20 @@ public class Cast {
 	 *            the pair expression to evaluate for each position (returns key::value pairs)
 	 * @return a new map with the computed entries
 	 */
+
+	/**
+	 * Map with.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param eachName
+	 *            the each name
+	 * @param size
+	 *            the size
+	 * @param pairs
+	 *            the pairs
+	 * @return the i map
+	 */
 	@operator (
 			value = "map_with",
 			iterator = true,
@@ -396,6 +473,18 @@ public class Cast {
 	 * @throws GamaRuntimeException
 	 *             if casting fails
 	 */
+
+	/**
+	 * As species.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param val
+	 *            the val
+	 * @return the i species
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
 	@operator (
 			value = { "species_of" },
 			content_type = ITypeProvider.TYPE_AT_INDEX + 1,
@@ -408,22 +497,22 @@ public class Cast {
 					@usage ("if the operand is a string, returns the species with this name (nil if not found);"),
 					@usage ("otherwise, returns nil") },
 			examples = { @example (
-					value = "species(self)",
+					value = "species_of(self)",
 					equals = "the species of the current agent",
 					isExecutable = false),
 					@example (
-							value = "species('node')",
+							value = "species_of('node')",
 							equals = "node",
 							isExecutable = false),
 					@example (
-							value = "species([1,5,9,3])",
+							value = "species_of([1,5,9,3])",
 							equals = "nil",
 							isExecutable = false),
 					@example (
-							value = "species(node1)",
+							value = "species_of(node1)",
 							equals = "node",
 							isExecutable = false) })
-	@test ("species([1,5,9,3]) = nil")
+	@test ("species_of([1,5,9,3]) = nil")
 	public static ISpecies asSpecies(final IScope scope, final Object val) throws GamaRuntimeException {
 		return (ISpecies) Types.SPECIES.cast(scope, val, null, false);
 	}
