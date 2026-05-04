@@ -166,11 +166,17 @@ public class PickWorkspaceDialog extends TitleAreaDialog {
 	private void loadLastUsedWorkspaces() {
 		final String lastUsed = GAMA.getWorkspaceManager().getLastUsedWorkspaces();
 		lastUsedWorkspaces = new ArrayList<>();
-		if (lastUsed != null) {
+		if (lastUsed != null && !lastUsed.isEmpty()) {
 			final String[] all = lastUsed.split(splitChar);
 			for (String str : all) {
-				if (!str.isEmpty() && new File(str).exists()) {
-					lastUsedWorkspaces.add(str);
+				if (str != null && !str.trim().isEmpty()) {
+					try {
+						if (new File(str).exists()) {
+							lastUsedWorkspaces.add(str);
+						}
+					} catch (Exception e) {
+						// Ignore invalid files
+					}
 				}
 			}
 		}
