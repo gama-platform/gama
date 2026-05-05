@@ -243,7 +243,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 
 				@Override
 				public int getElem(final int bank, final int i) {
-					return buffer.get(i);
+					return buffer.get(i) & 0xFF;
 				}
 			};
 			// Build the affine transform to flip the image
