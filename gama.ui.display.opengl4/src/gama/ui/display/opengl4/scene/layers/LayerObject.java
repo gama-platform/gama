@@ -327,8 +327,11 @@ public class LayerObject {
 			if (expr != null) { size = GamaPointFactory.castToPoint(scope, expr.value(scope)); }
 			double sx = size.getX();
 			double sy = size.getY();
-			if (sx <= 1) { sx *= renderer.getEnvWidth(); }
-			if (sy <= 1) { sy *= renderer.getEnvHeight(); }
+			// Only treat values in [0,1] as proportional (percentage of env size) when the
+			// expression does not contain pixel units. Fixes #656.
+			final boolean sizeContainsPixels = expr != null && expr.containsPixels();
+			if (!sizeContainsPixels && sx <= 1) { sx *= renderer.getEnvWidth(); }
+			if (!sizeContainsPixels && sy <= 1) { sy *= renderer.getEnvHeight(); }
 			gl.pushMatrix();
 			boolean previous = gl.setObjectWireframe(false);
 			try {

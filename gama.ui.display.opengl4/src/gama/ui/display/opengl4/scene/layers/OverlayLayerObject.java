@@ -50,7 +50,9 @@ public class OverlayLayerObject extends LayerObject {
 
 	@Override
 	public void computeScale(final Trace list) {
-		list.scale.setLocation(0.9, 0.9, 1);
+		// Use a 1:1 scale so that size:{1,1} maps exactly to the environment dimensions
+		// in the overlay ortho projection. Fixes #354 (2D/3D consistency) and #997.
+		list.scale.setLocation(1, 1, 1);
 	}
 
 	/**
@@ -79,11 +81,14 @@ public class OverlayLayerObject extends LayerObject {
 		if (expr != null) { size = GamaPointFactory.castToPoint(scope, expr.value(scope)); }
 		double sx = size.getX();
 		double sy = size.getY();
-		if (sx <= 1) {
+		// Only treat values in [0,1] as proportional (percentage of env size) when the
+		// expression does not contain pixel units. Fixes #656.
+		final boolean sizeContainsPixels = expr != null && expr.containsPixels();
+		if (!sizeContainsPixels && sx <= 1) {
 			sx *= renderer.getEnvWidth();
 			size.setX(sx);
 		}
-		if (sy <= 1) {
+		if (!sizeContainsPixels && sy <= 1) {
 			sy *= renderer.getEnvHeight();
 			size.setY(sy);
 		}
@@ -267,6 +272,9 @@ public class OverlayLayerObject extends LayerObject {
 		} else {
 			gl.getCurrentMatrixStack().ortho(0, maxDim, -maxDim / viewRatio, 0, -1, 1);
 		}
+		// Re-evaluate pixel-based positions every frame so they track view-size changes
+		// (e.g. going to fullscreen). Fixes #997.
+		list.computeOffset();
 		super.prepareDrawing(gl, list);
 
 	}

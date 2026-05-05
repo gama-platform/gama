@@ -24,9 +24,6 @@ public class OverlayLayerData extends FramedLayerData {
 	/** The rounded. */
 	final Attribute<Boolean> rounded;
 
-	/** The computed. */
-	boolean computed;
-
 	/**
 	 * Instantiates a new overlay layer data.
 	 *
@@ -42,9 +39,14 @@ public class OverlayLayerData extends FramedLayerData {
 
 	@Override
 	public void computePixelsDimensions(final IGraphics g) {
-		if (computed) return;
 		super.computePixelsDimensions(g);
-		computed = true;
+		// Translate the computed position so that {0,0} aligns with the top-left corner of
+		// the simulation viewport rather than the top-left corner of the enclosing panel.
+		// For OpenGL displays the viewport equals the full canvas, so these offsets are 0.
+		// Fixes #589 and #354 (2D/3D consistency): size:{1,1} now covers the rendered area.
+		final int vpOriginX = Math.max(0, (g.getViewWidth() - g.getDisplayWidth()) / 2);
+		final int vpOriginY = Math.max(0, (g.getViewHeight() - g.getDisplayHeight()) / 2);
+		getPositionInPixels().translate(vpOriginX, vpOriginY);
 	}
 
 	/**
