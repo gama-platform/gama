@@ -20,8 +20,8 @@ if [ -d "${headlessPath}/../jdk" ]; then
 else
   javaVersion=$(java -version 2>&1 | head -n 1 | cut -d "\"" -f 2)
   # Check if good Java version before everything
-  if [[ ${javaVersion:2} == 21 ]]; then
-    echo "You should use Java 21 to run GAMA"
+  if [[ ${javaVersion:0:2} != 25 ]]; then
+    echo "You should use Java 25 to run GAMA"
     echo "Found you using version : $javaVersion"
     exit 1
   fi
