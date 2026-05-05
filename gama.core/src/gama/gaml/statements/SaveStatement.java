@@ -102,6 +102,11 @@ import gaml.compiler.expressions.ConstantExpression;
 						optional = true,
 						doc = @doc ("the name of the projection, e.g. crs:\"EPSG:4326\" or its EPSG id, e.g. crs:4326. Here a list of the CRS codes (and EPSG id): http://spatialreference.org")),
 				@facet (
+						name = IKeyword.NO_DATA,
+						type = { IType.INT, IType.FLOAT },
+						optional = true,
+						doc = @doc ("the numeric value to write as the no-data marker when saving a GeoTIFF raster. When omitted, the field no_data value is used if available")),
+				@facet (
 						name = IKeyword.ATTRIBUTES,
 						type = { IType.MAP, IType.LIST },
 						remote_context = true,
@@ -158,6 +163,10 @@ import gaml.compiler.expressions.ConstantExpression;
 						examples = { @example (
 								value = "save grid to: \"save_grid.tif\" format: \"geotiff\";") }),
 				@usage (
+						value = "To save a field into geotiff with an explicit no-data value:",
+						examples = { @example (
+								value = "save my_field to: \"save_grid.tif\" format: \"geotiff\" no_data: -9999.0;") }),
+				@usage (
 						value = "To save the grid_value attributes of all the cells of a grid into png (with a worldfile):",
 						examples = { @example (
 								value = "save grid to: \"save_grid.png\" format: \"image\";") }),
@@ -193,6 +202,7 @@ public class SaveStatement extends AbstractStatementSequence {
 			final IExpression att = desc.getFacetExpr(ATTRIBUTES);
 			final IExpressionDescription type = desc.getFacet(FORMAT);
 			final IExpression bufferingStrategy = desc.getFacetExpr(IKeyword.BUFFERING);
+			final IExpression noData = desc.getFacetExpr(IKeyword.NO_DATA);
 
 			if (type != null) { desc.setFacetExprDescription(FORMAT, type); }
 			final IExpression format = type == null ? null : type.getExpression();
@@ -259,6 +269,18 @@ public class SaveStatement extends AbstractStatementSequence {
 						+ BufferingUtils.PER_SIMULATION_BUFFERING + "'.", IGamlIssue.WRONG_TYPE);
 			}
 
+			if (noData != null && noData.getGamlType() != Types.INT && noData.getGamlType() != Types.FLOAT) {
+				desc.error("The value for no_data must be numeric", IGamlIssue.WRONG_TYPE, IKeyword.NO_DATA);
+			}
+
+			if (noData != null) {
+				final String formatId = format == null ? ext : format.literalValue();
+				if (formatId != null && !isGeoTiffFormat(formatId)) {
+					desc.warning("The no_data facet is only used when saving GeoTIFF rasters", IGamlIssue.WRONG_TYPE,
+							IKeyword.NO_DATA);
+				}
+			}
+
 			// Starting from here we validate the attributes, other validations must be done before
 			switch (att) {
 				case null -> {
@@ -320,6 +342,18 @@ public class SaveStatement extends AbstractStatementSequence {
 
 		}
 
+		/**
+		 * Checks whether a format identifier targets a GeoTIFF raster.
+		 *
+		 * @param formatId
+		 *            the format identifier or file extension to test
+		 * @return {@code true} when the identifier designates a GeoTIFF format
+		 */
+		private boolean isGeoTiffFormat(final String formatId) {
+			return "geotiff".equalsIgnoreCase(formatId) || "tif".equalsIgnoreCase(formatId)
+					|| "tiff".equalsIgnoreCase(formatId);
+		}
+
 	}
 
 	/** The attributes facet. */
@@ -340,6 +374,9 @@ public class SaveStatement extends AbstractStatementSequence {
 	/** The buffering strategy. */
 	private final IExpression bufferingStrategy;
 
+	/** The no-data facet. */
+	private final IExpression noDataFacet;
+
 	/**
 	 * Instantiates a new save statement.
 	 *
@@ -354,6 +391,7 @@ public class SaveStatement extends AbstractStatementSequence {
 		rewriteExpr = getFacet(IKeyword.REWRITE);
 		attributesFacet = getFacet(IKeyword.ATTRIBUTES);
 		bufferingStrategy = getFacet(IKeyword.BUFFERING);
+		noDataFacet = getFacet(IKeyword.NO_DATA);
 	}
 
 	/**
@@ -366,6 +404,18 @@ public class SaveStatement extends AbstractStatementSequence {
 	private boolean shouldOverwrite(final IScope scope) {
 		if (rewriteExpr == null) return true;
 		return Cast.asBool(scope, rewriteExpr.value(scope));
+	}
+
+	/**
+	 * Resolves the optional no-data value requested by the statement.
+	 *
+	 * @param scope
+	 *            the current execution scope
+	 * @return the no-data value to forward to save delegates, or {@code null} when unspecified
+	 */
+	private Double getNoDataValue(final IScope scope) {
+		if (noDataFacet == null) return null;
+		return Cast.asFloat(scope, noDataFacet.value(scope));
 	}
 
 	/**
@@ -457,7 +507,8 @@ public class SaveStatement extends AbstractStatementSequence {
 			IType itemType = item.getGamlType();
 			ISaveDelegate delegate = GamaAdditionRegistry.getSaveDelegate(type, itemType);
 			if (delegate != null) {
-				var saveOptions = new SaveOptions(code, addHeader, type, attributesFacet, strategy, rewrite);
+				var saveOptions =
+						new SaveOptions(code, addHeader, type, attributesFacet, strategy, rewrite, getNoDataValue(scope));
 				delegate.save(scope, item, fileToSave, saveOptions);
 				return Cast.asString(scope, file.value(scope));
 			}

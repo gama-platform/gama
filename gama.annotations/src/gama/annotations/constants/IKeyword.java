@@ -701,6 +701,9 @@ public interface IKeyword {
 	/** The neighbors. */
 	String NEIGHBORS = "neighbors";
 
+	/** The no data. */
+	String NO_DATA = "no_data";
+
 	/** The node. */
 	String NODE = "node";
 

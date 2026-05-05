@@ -19,7 +19,7 @@ import gama.api.utils.files.BufferingUtils.BufferingStrategies;
  * The Class SaveOptions.
  */
 public record SaveOptions(String code, boolean addHeader, String type, Object attributesToSave,
-		BufferingStrategies bufferingStrategy, boolean rewrite, Charset writeCharset) {
+		BufferingStrategies bufferingStrategy, boolean rewrite, Double noData, Charset writeCharset) {
 
 	/**
 	 * Instantiates a new save options.
@@ -39,7 +39,31 @@ public record SaveOptions(String code, boolean addHeader, String type, Object at
 	 */
 	public SaveOptions(final String code2, final boolean addHeader2, final String type2,
 			final IExpression attributesFacet, final BufferingStrategies strategy, final boolean rewrite2) {
-		this(code2, addHeader2, type2, attributesFacet, strategy, rewrite2, StandardCharsets.UTF_8);
+		this(code2, addHeader2, type2, attributesFacet, strategy, rewrite2, null, StandardCharsets.UTF_8);
+	}
+
+	/**
+	 * Instantiates a new save options.
+	 *
+	 * @param code2
+	 *            the code 2
+	 * @param addHeader2
+	 *            the add header 2
+	 * @param type2
+	 *            the type 2
+	 * @param attributesFacet
+	 *            the attributes facet
+	 * @param strategy
+	 *            the strategy
+	 * @param rewrite2
+	 *            the rewrite 2
+	 * @param noData2
+	 *            the optional no-data value to persist when supported by the target format
+	 */
+	public SaveOptions(final String code2, final boolean addHeader2, final String type2,
+			final IExpression attributesFacet, final BufferingStrategies strategy, final boolean rewrite2,
+			final Double noData2) {
+		this(code2, addHeader2, type2, attributesFacet, strategy, rewrite2, noData2, StandardCharsets.UTF_8);
 	}
 
 	/**
@@ -50,7 +74,7 @@ public record SaveOptions(String code, boolean addHeader, String type, Object at
 	 * @return the save options
 	 */
 	public SaveOptions withCharset(final Charset c) {
-		return new SaveOptions(code, addHeader, type, attributesToSave, bufferingStrategy, rewrite, c);
+		return new SaveOptions(code, addHeader, type, attributesToSave, bufferingStrategy, rewrite, noData, c);
 	}
 
 }
