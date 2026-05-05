@@ -32,9 +32,9 @@ global{
 
 
 	int final_cycle <- 19;
-	file data_rk4_file <- csv_file(folder("../includes/") + "data_rk4.csv","\t", float, false);
-	file data_euler_file <- csv_file(folder("../includes/") + "data_euler.csv","\t", float, false);
-	file data_dp_file <- csv_file(folder("../includes/") + "data_dp.csv","\t", float, false);
+	file data_rk4_file <- csv_file("../includes/data_rk4.csv","\t", float, false);
+	file data_euler_file <- csv_file("../includes/data_euler.csv","\t", float, false);
+	file data_dp_file <- csv_file("../includes/data_dp.csv","\t", float, false);
 	matrix<float> data_rk4 <- matrix<float>(data_rk4_file);
 	matrix<float> data_euler <- matrix<float>(data_euler_file);  
 	matrix<float> data_dp <- matrix<float>(data_dp_file);  
