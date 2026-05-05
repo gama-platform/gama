@@ -62,7 +62,7 @@
             allowMultiple="false"
             category="gama.ui.category.gama"
             class="gama.ui.shared.views.InteractiveConsoleView"
-            icon="icons_svg/light/views/tabs/view.interactive.svg"
+            icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/tabs/view.interactive.svg"
             id="gama.ui.application.view.InteractiveConsoleView"
             name="Interactive console"
             restorable="true">
@@ -71,7 +71,7 @@
                   allowMultiple="false"
                   category="gama.ui.category.gama"
                   class="gama.ui.shared.views.TestView"
-                  icon="icons_svg/light/views/tabs/view.test.svg"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/tabs/view.test.svg"
                   id="gama.ui.application.view.TestView"
                   name="Tests"
                   restorable="false"> 
@@ -228,7 +228,7 @@
             locationURI="menu:support?after=group.about.ext">
          <command
                commandId="gama.application.command.web"
-               icon="icons_svg/light/generic/menu.help.svg"
+                icon="platform:/plugin/gama.ui.shared/icons_svg/light/generic/menu.help.svg"
                label="Documentation..."
                style="push"
                tooltip="Open GAMA documentation in a browser">
@@ -290,7 +290,7 @@
          </command>
          <command
                commandId="org.eclipse.ui.help.aboutAction"
-               icon="icons_svg/light/generic/menu.about.svg"
+                icon="platform:/plugin/gama.ui.shared/icons_svg/light/generic/menu.about.svg"
                label="About GAMA..."
                style="push">
             <visibleWhen

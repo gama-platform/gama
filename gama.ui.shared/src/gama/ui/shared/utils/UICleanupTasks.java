@@ -195,9 +195,27 @@ public class UICleanupTasks {
 			// DEBUG.OUT(LIGHT_SEGMENT + " <-> " + DARK_SEGMENT);
 		}
 
+		/** Prefix used in bundleresource URIs for the light icon folder of gama.ui.shared */
+		static final String LIGHT_ICONS_PATH = IGamaIcons.ICONS_FRAGMENT + IGamaIcons.LIGHT_PATH + "/";
+
+		/** Prefix used in bundleresource URIs for the dark icon folder of gama.ui.shared */
+		static final String DARK_ICONS_PATH = IGamaIcons.ICONS_FRAGMENT + IGamaIcons.DARK_PATH + "/";
+
 		@Override
 		public ImageDescriptor imageDescriptorFromURI(final URI path) {
 			// DEBUG.OUT("Requesting image at " + path);
+
+			// Eclipse's own SVG icons (from org.eclipse.* plugins) are referenced via platform: URIs but fail to load
+			// on Windows because URLImageDescriptor routes them through WIC which has no SVG support. We intercept
+			// these URIs here so they can be hidden (empty string value) or replaced with a GAMA icon.
+			String pathStr = path.toString();
+			if (DYNAMIC_SUBSTITIONS.containsKey(pathStr)) {
+				String replacement = DYNAMIC_SUBSTITIONS.get(pathStr);
+				if (replacement.isEmpty()) return null;
+				GamaIcon icon = GamaIcon.named(replacement);
+				return icon != null ? icon.descriptor() : null;
+			}
+
 			if (isPrefix(LIGHT_SEGMENT, path)) {
 				String pathToIcon = path.deresolve(LIGHT_SEGMENT).toString().replace(".svg", "");
 				boolean isDisabled = pathToIcon.endsWith("_disabled");
@@ -213,6 +231,31 @@ public class UICleanupTasks {
 				if (isDisabled) return icon.disabledDescriptor();
 				return icon.descriptor();
 			}
+
+			// On Windows, icon declarations using relative paths in plugin.xml produce bundleresource: URIs instead of
+			// platform: URIs. These URIs bypass the LIGHT_SEGMENT check above and would fall through to
+			// URLImageDescriptor which cannot load SVG on Windows (WIC has no SVG support). We handle them here by
+			// extracting the icon code from the path and loading it through GamaIcon's SVG-aware mechanism.
+			if ("bundleresource".equals(path.scheme())) {
+				String bundlePath = path.path(); // e.g. "/icons_svg/light/views/tabs/view.interactive.svg"
+				if (bundlePath != null) {
+					// Strip leading slash
+					if (bundlePath.startsWith("/")) { bundlePath = bundlePath.substring(1); }
+					String code = null;
+					if (bundlePath.startsWith(LIGHT_ICONS_PATH)) {
+						code = bundlePath.substring(LIGHT_ICONS_PATH.length()).replace(".svg", "");
+					} else if (bundlePath.startsWith(DARK_ICONS_PATH)) {
+						code = bundlePath.substring(DARK_ICONS_PATH.length()).replace(".svg", "");
+					}
+					if (code != null && GamaIcon.exist(code)) {
+						boolean isDisabled = code.endsWith("_disabled");
+						if (isDisabled) { code = code.substring(0, code.length() - "_disabled".length()); }
+						GamaIcon icon = GamaIcon.named(code);
+						if (icon != null) return isDisabled ? icon.disabledDescriptor() : icon.descriptor();
+					}
+				}
+			}
+
 			return super.imageDescriptorFromURI(path);
 
 		}
