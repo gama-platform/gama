@@ -106,8 +106,10 @@ public class UICleanupTasks {
 	public static final class GamaResourceUtilities extends ResourceUtility {
 
 		/**
-		 * The dynamic substitions. Not used for the moment. Kept for reference in order to implement substitutions with
-		 * GamaIcons if needed. The current implementation lists only a few of them. The complete list is :
+		 * The dynamic substitutions. Intercepts specific SVG icon URIs from Eclipse's own plugins and either hides them
+		 * (empty string value → returns null) or replaces them with a GAMA icon (non-empty value → GamaIcon code). This
+		 * is especially important on Windows where URLImageDescriptor routes SVG loading through WIC which has no SVG
+		 * support. The current implementation lists only a few of them. The complete list is :
 		 *
 		 * -- for org.eclipse.ui.ide :
 		 *
@@ -166,7 +168,7 @@ public class UICleanupTasks {
 		 *
 		 * -- for org.eclipse.ui:
 		 */
-		final static Map<String, String> DYNAMIC_SUBSTITIONS = Map.ofEntries(entry(
+		final static Map<String, String> DYNAMIC_SUBSTITUTIONS = Map.ofEntries(entry(
 				"platform:/plugin/org.eclipse.ui.workbench.texteditor/$nl$/icons/full/etool16/block_selection_mode.svg",
 				""), entry("platform:/plugin/org.eclipse.search/icons/full/eview16/searchres.svg", ""),
 				entry("platform:/plugin/org.eclipse.ui.ide/icons/full/eview16/bkmrk_nav.svg", ""),
@@ -209,8 +211,8 @@ public class UICleanupTasks {
 			// on Windows because URLImageDescriptor routes them through WIC which has no SVG support. We intercept
 			// these URIs here so they can be hidden (empty string value) or replaced with a GAMA icon.
 			String pathStr = path.toString();
-			if (DYNAMIC_SUBSTITIONS.containsKey(pathStr)) {
-				String replacement = DYNAMIC_SUBSTITIONS.get(pathStr);
+			if (DYNAMIC_SUBSTITUTIONS.containsKey(pathStr)) {
+				String replacement = DYNAMIC_SUBSTITUTIONS.get(pathStr);
 				if (replacement.isEmpty()) return null;
 				GamaIcon icon = GamaIcon.named(replacement);
 				return icon != null ? icon.descriptor() : null;
