@@ -82,13 +82,38 @@ public final class ExpressionCompilationContext implements Closeable {
 	private final IDocumentationContext documentationContext;
 
 	/**
-	 * Creates a new compilation context with the specified initial description context.
+	 * Creates a new compilation context with the specified initial description context. If the description hierarchy
+	 * contains a {@link gama.api.compilation.descriptions.ITypeDescription} with an alternate variable-description
+	 * provider attached (e.g. by the interactive console), that provider is automatically used as the
+	 * {@code tempVarsProvider}. This ensures that REPL variables are visible during the validation of statement
+	 * descriptions even when no explicit {@code tempVarsProvider} is passed (e.g. from
+	 * {@link gama.api.gaml.expressions.IExpressionDescription#compile(IDescription)}).
 	 *
-	 * @param initialContext
+	 * @param context
 	 *            the initial description context for compilation
 	 */
 	public ExpressionCompilationContext(final IDescription context) {
-		this(context, null);
+		this(context, findAlternateVarProvider(context));
+	}
+
+	/**
+	 * Walks up the description hierarchy starting from {@code context} and returns the first alternate variable
+	 * description provider attached to a {@link gama.api.compilation.descriptions.ITypeDescription}, or {@code null}
+	 * if none is found. This is used by the no-{@code tempVarsProvider} constructor so that REPL variables are always
+	 * visible during expression compilation triggered by description validation.
+	 *
+	 * @param context
+	 *            the description to start from; may be {@code null}
+	 * @return the first alternate {@link IVarDescriptionProvider} found in the hierarchy, or {@code null}
+	 */
+	static IVarDescriptionProvider findAlternateVarProvider(final IDescription context) {
+		IDescription current = context;
+		while (current != null) {
+			final IVarDescriptionProvider avp = current.getAlternateVarProvider();
+			if (avp != null) return avp;
+			current = current.getEnclosingDescription();
+		}
+		return null;
 	}
 
 	/**

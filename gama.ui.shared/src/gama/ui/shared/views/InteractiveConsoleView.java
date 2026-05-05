@@ -112,11 +112,15 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 
 		private ITopLevelAgent lastTopLevelAgent;
 
+		/**
+		 * Intentionally a no-op: {@link ExecutionScope#pop(ISymbol)} calls {@code previous.dispose()} on the context
+		 * after every statement execution. Because {@link #getOuterContext()} returns {@code this}, {@code previous} IS
+		 * the console context, so a normal {@code dispose()} implementation would wipe {@code temps} after every
+		 * command — preventing variables declared in one command from being visible in the next. Explicit cleanup is
+		 * handled by {@link InteractiveConsoleView#topLevelAgentChanged} and {@link InteractiveConsoleView#reset}.
+		 */
 		@Override
-		public void dispose() {
-			clearLocalVars();
-			lastTopLevelAgent = null;
-		}
+		public void dispose() { /* no-op: persist variables across commands */ }
 
 		@Override
 		public IScope getScope() {
@@ -165,8 +169,13 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 		@Override
 		public boolean hasLocalVar(final String name) { return temps.containsKey(name); }
 
+		/**
+		 * Intentionally a no-op: REPL variables declared in one command must persist into subsequent commands.
+		 * Removing a local var at block-scope exit would silently erase the user's declaration from the console
+		 * context. Use {@link #clearLocalVars()} (or {@link IExecutionContext#dispose()}) to wipe all bindings.
+		 */
 		@Override
-		public void removeLocalVar(final String name) { temps.remove(name); }
+		public void removeLocalVar(final String name) { /* no-op: persist across commands */ }
 
 		@Override
 		public ISymbol getCurrentSymbol() { return null; }
@@ -580,10 +589,13 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 		return temps.containsKey(name);
 	}
 
+	/**
+	 * Intentionally a no-op: REPL variables must persist across commands. Removing a local var at block-scope exit
+	 * would silently erase the user's declaration from the persistent console context. All bindings are cleared at
+	 * once by {@link #clearLocalVars()} when the experiment/session ends.
+	 */
 	@Override
-	public void removeLocalVar(final String name) {
-		temps.remove(name);
-	}
+	public void removeLocalVar(final String name) { /* no-op: persist across commands */ }
 
 	@Override
 	public IExecutionContext getOuterContext() { return this; }

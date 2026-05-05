@@ -34,6 +34,7 @@ import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
+import gama.api.compilation.descriptions.IVarDescriptionProvider;
 import gama.api.compilation.factories.IExpressionFactory;
 import gama.api.constants.IGamlIssue;
 import gama.api.exceptions.GamaRuntimeException;
@@ -1073,6 +1074,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 		// Create a new action description with a temporary name
 		final IActionDescription desc = (IActionDescription) GAML.getDescriptionFactory().create(IKeyword.ACTION,
 				context, Collections.EMPTY_LIST, IKeyword.TYPE, IKeyword.UNKNOWN, IKeyword.NAME, TEMPORARY_ACTION_NAME);
+		if (tempContext instanceof IVarDescriptionProvider vp) { desc.attachAlternateVarDescriptionProvider(vp); }
 
 		// Parse the action code into statements and add them as children
 		final List<IDescription> children = GamlSyntheticResourcesServices.compileBlock(action, desc, tempContext);
@@ -1087,7 +1089,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 		agent.getSpecies().addTemporaryAction(a);
 
 		// Return an expression that calls this temporary action
-		return GamlExpressionCompiler.getInstance().compile(TEMPORARY_ACTION_NAME + "()", context, null);
+		return GamlExpressionCompiler.getInstance().compile(TEMPORARY_ACTION_NAME + "()", context, tempContext);
 	}
 
 	/**

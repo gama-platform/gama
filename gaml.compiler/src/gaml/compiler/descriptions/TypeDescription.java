@@ -79,6 +79,13 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 	protected ITypeDescription parent;
 
 	/**
+	 * An optional fallback variable-description provider (e.g. the interactive console) that is consulted by
+	 * {@link #getDescriptionDeclaringVar(String)} when the variable is not a formal species attribute. This allows
+	 * persistent REPL variables to be visible during the compilation of action bodies created for the console.
+	 */
+	private IVarDescriptionProvider alternateVarProvider;
+
+	/**
 	 * Instantiates a new type description.
 	 *
 	 * @param keyword
@@ -245,10 +252,36 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 		return getOwnAttributes().containsKey(a) || parent != null && parent != this && parent.hasAttribute(a);
 	}
 
+	/**
+	 * Stores the alternate variable-description provider so that {@link #getDescriptionDeclaringVar(String)} can use it
+	 * as a fallback when the variable is not a formal species attribute.
+	 *
+	 * @param vp
+	 *            the provider to attach; must not be {@code null}
+	 */
+	@Override
+	public void attachAlternateVarDescriptionProvider(final IVarDescriptionProvider vp) {
+		this.alternateVarProvider = vp;
+	}
+
+	/**
+	 * Returns the alternate {@link IVarDescriptionProvider} attached to this type description, or {@code null} if none
+	 * has been set. This allows the expression compilation context to automatically discover the REPL alternate provider
+	 * by walking the description hierarchy, making REPL variables visible during statement validation.
+	 *
+	 * @return the attached alternate provider, or {@code null}
+	 */
+	@Override
+	public IVarDescriptionProvider getAlternateVarProvider() { return alternateVarProvider; }
+
 	@Override
 	public IVarDescriptionProvider getDescriptionDeclaringVar(final String aName) {
+		if (hasAttribute(aName)) return this;
+		// Consult the alternate provider (e.g. persistent REPL variables in the interactive console) before
+		// walking further up the enclosing description chain.
+		if (alternateVarProvider != null && alternateVarProvider.hasAttribute(aName)) return alternateVarProvider;
 		IDescription enc = getEnclosingDescription();
-		return hasAttribute(aName) ? this : enc == null ? null : enc.getDescriptionDeclaringVar(aName);
+		return enc == null ? null : enc.getDescriptionDeclaringVar(aName);
 	}
 
 	@Override
@@ -842,7 +875,7 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 	@Override
 	public boolean visitChildren(final DescriptionVisitor<IDescription> visitor) {
 		for (final IDescription d : getAttributes()) { if (!visitor.process(d)) return false; }
-		for (final IDescription d : getActions()) { if (!visitor.process(d)) return false; }
+		for (final IActionDescription d : getActions()) { if (!visitor.process(d)) return false; }
 		return true;
 	}
 

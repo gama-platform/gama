@@ -268,6 +268,13 @@ public abstract class SymbolDescription extends DescriptionStateManager {
 	private WeakReference<IModelDescription> modelDescriptionRef;
 
 	/**
+	 * Optional fallback variable-description provider attached to this description. Used by synthetic descriptions such
+	 * as interactive-console temporary actions so expression compilation can resolve REPL variables without depending on
+	 * an enclosing species-side side effect.
+	 */
+	private IVarDescriptionProvider alternateVarProvider;
+
+	/**
 	 * The origin name of the symbol that created this description.
 	 *
 	 * <p>
@@ -1553,7 +1560,12 @@ public abstract class SymbolDescription extends DescriptionStateManager {
 	 *            the variable description provider
 	 */
 	@Override
-	public void attachAlternateVarDescriptionProvider(final IVarDescriptionProvider vp) {}
+	public void attachAlternateVarDescriptionProvider(final IVarDescriptionProvider vp) {
+		alternateVarProvider = vp;
+	}
+
+	@Override
+	public IVarDescriptionProvider getAlternateVarProvider() { return alternateVarProvider; }
 
 	/**
 	 * Finds a child description in a container that matches the keyword and name of the given description.

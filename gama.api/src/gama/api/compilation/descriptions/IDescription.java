@@ -489,6 +489,20 @@ public interface IDescription
 	 */
 	void attachAlternateVarDescriptionProvider(final IVarDescriptionProvider vp);
 
+	/**
+	 * Returns the alternate {@link IVarDescriptionProvider} attached to this description, or {@code null} if none has
+	 * been attached. The alternate provider is used as a fallback when a variable name cannot be resolved through the
+	 * normal description hierarchy (e.g. persistent REPL variables in the interactive console).
+	 *
+	 * <p>
+	 * The default implementation returns {@code null}. Only {@link ITypeDescription} overrides this to expose the
+	 * provider set via {@link #attachAlternateVarDescriptionProvider(IVarDescriptionProvider)}.
+	 * </p>
+	 *
+	 * @return the attached alternate provider, or {@code null}
+	 */
+	default IVarDescriptionProvider getAlternateVarProvider() { return null; }
+
 	// =========================================================================
 	// Facet access and modification
 	// =========================================================================
