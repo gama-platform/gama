@@ -20,33 +20,45 @@ import gama.dev.DEBUG;
  * Applies a configurable chain of {@link IFileTransformer} instances to every
  * GAML source file found recursively under a given root directory.
  *
- * <p>By default the processor is pre-loaded with all built-in transformers
- * (one for each Python migration script):</p>
-	 * <ol>
-	 *   <li>{@link FixDiffuseVar} – replaces {@code diffuse var:} with
-	 *       {@code diffuse}</li>
-	 *   <li>{@link FixTransitionTo} – replaces {@code transition to:} with
-	 *       {@code transition}</li>
-	 *   <li>{@link FixDisplayExperimentNames} – rewrites quoted display/experiment
-	 *       names to identifier + {@code title:} syntax</li>
-	 *   <li>{@link FixImageToPicture} – replaces the {@code image} layer keyword
-	 *       with {@code picture} inside {@code display} blocks</li>
-	 *   <li>{@link FixWithPairs} – transforms {@code with: [key::val]} to
-	 *       {@code with: (key:val)}</li>
-	 *   <li>{@link FixArrowBraces} – removes outer braces from
-	 *       {@code -> { ... }} expressions</li>
-	 *   <li>{@link FixActionParentheses} – adds missing empty parentheses to
-	 *       parameter-less {@code action} and typed-action declarations
-	 *       (e.g. {@code action foo \{} → {@code action foo() \{})</li>
-	 *   <li>{@link FixLetStatement} – transforms {@code let var type:T value:V;}
-	 *       into {@code T var <- V;}</li>
-	 * </ol>
- *
- * <p>Additional transformers can be registered at any time via
- * {@link #addTransformer(IFileTransformer)}. The transformers are always
- * applied in registration order.</p>
- *
- * <h3>Typical usage</h3>
+ * <p>
+ * By default the processor is pre-loaded with all built-in transformers
+ * (one for each Python migration script):
+ * </p>
+ * <ol>
+ * <li>{@link FixDiffuseVar} – replaces {@code diffuse var:} with
+ * {@code diffuse}</li>
+ * <li>{@link FixTransitionTo} – replaces {@code transition to:} with
+ * {@code transition}</li>
+ * <li>{@link FixDisplayExperimentNames} – rewrites quoted display/experiment
+ * names to identifier + {@code title:} syntax</li>
+ * <li>{@link FixImageToPicture} – replaces the {@code image} layer keyword
+ * with {@code picture} inside {@code display} blocks</li>
+ * <li>{@link FixWithPairs} – transforms {@code with: [key::val]} to
+ * {@code with: (key:val)}</li>
+ * <li>{@link FixArrowBraces} – removes outer braces from
+ * {@code -> { ... }} expressions</li>
+ * <li>{@link FixActionParentheses} – adds missing empty parentheses to
+ * parameter-less {@code action} and typed-action declarations
+ * (e.g. {@code action foo \{} → {@code action foo() \{})</li>
+ *   
+<li>{@link FixLetStatement} – transforms {@code let var type:T value:V;}
+ *       into {@code T var <- V;}</li>
+ * 
+</ol>
+*
+* 
+<p>
+Additional transformers can be registered at any time via
+* {@link #addTransformer(IFileTransformer)}. The transformers are always
+* applied in registration order.
+</p>
+*
+* 
+<h3>Typical usage</h3>
+* 
+ * 
+ * 
+ * 
  * <pre>
  *   // Process all .gaml and .experiment files under a directory
  *   GamlFileProcessor processor = new GamlFileProcessor();
@@ -59,15 +71,25 @@ import gama.dev.DEBUG;
  *   // Add a custom transformer
  *   processor.addTransformer(content -> content.replace("old", "new"));
  * </pre>
- *
- * <h3>Command-line usage</h3>
+
+*
+* 
+<h3>Command-line usage</h3>
+* 
+ * 
+ * 
+ * 
  * <pre>
  *   java gaml.grammar.transition.GamlFileProcessor &lt;root&gt; [--dry-run]
  * </pre>
- *
- * <p>All informational output is routed through {@link DEBUG#LOG(Object)} and all error
- * output through {@link DEBUG#ERR(Object)}. Debugging is automatically enabled for this
- * class via {@link DEBUG#ON()} in the static initialiser.</p>
+
+*
+* 
+<p>
+All informational output is routed through {@link DEBUG#LOG(Object)} and all error
+* output through {@link DEBUG#ERR(Object)}. Debugging is automatically enabled for this
+* class via {@link DEBUG#ON()} in the static initialiser.
+</p>
  */
 public class GamlFileProcessor {
 
@@ -83,8 +105,8 @@ public class GamlFileProcessor {
 	 * Default file extensions processed by {@link #processDirectory}.
 	 * Files whose name ends with one of these suffixes are included.
 	 */
-	public static final List<String> DEFAULT_EXTENSIONS =
-			Collections.unmodifiableList(Arrays.asList(".gaml", ".experiment"));
+	public static final List<String> DEFAULT_EXTENSIONS = Collections
+			.unmodifiableList(Arrays.asList(".gaml", ".experiment"));
 
 	// -----------------------------------------------------------------------
 	// State
@@ -110,8 +132,10 @@ public class GamlFileProcessor {
 	 * Create a processor pre-loaded with all built-in transformers and the
 	 * {@link #DEFAULT_EXTENSIONS default file extensions}.
 	 *
-	 * <p>Output is routed through {@link DEBUG#LOG(Object)} and
-	 * {@link DEBUG#ERR(Object)}.</p>
+	 * <p>
+	 * Output is routed through {@link DEBUG#LOG(Object)} and
+	 * {@link DEBUG#ERR(Object)}.
+	 * </p>
 	 */
 	public GamlFileProcessor() {
 		this(DEFAULT_EXTENSIONS);
@@ -120,12 +144,14 @@ public class GamlFileProcessor {
 	/**
 	 * Create a processor with a custom list of file extensions.
 	 *
-	 * <p>The built-in transformers are registered in the order listed in the
-	 * class-level documentation.</p>
+	 * <p>
+	 * The built-in transformers are registered in the order listed in the
+	 * class-level documentation.
+	 * </p>
 	 *
 	 * @param extensions
-	 *            the file-name suffixes to include (e.g. {@code ".gaml"});
-	 *            must not be {@code null}
+	 *                   the file-name suffixes to include (e.g. {@code ".gaml"});
+	 *                   must not be {@code null}
 	 */
 	public GamlFileProcessor(final List<String> extensions) {
 		this.extensions = new ArrayList<>(extensions);
@@ -139,8 +165,10 @@ public class GamlFileProcessor {
 	/**
 	 * Register all built-in transformers in a fixed, deterministic order.
 	 *
-	 * <p>This method is called once by the constructor. It can be overridden in
-	 * subclasses to change the default set of transformers.</p>
+	 * <p>
+	 * This method is called once by the constructor. It can be overridden in
+	 * subclasses to change the default set of transformers.
+	 * </p>
 	 */
 	protected void registerBuiltInTransformers() {
 		transformers.add(new FixDiffuseVar());
@@ -153,13 +181,14 @@ public class GamlFileProcessor {
 		transformers.add(new FixSetStatement());
 		transformers.add(new FixLetStatement());
 		transformers.add(new FixDoParentheses());
+		transformers.add(new FixActionArguments());
 	}
 
 	/**
 	 * Append a transformer to the end of the transformation chain.
 	 *
 	 * @param transformer
-	 *            the transformer to add; must not be {@code null}
+	 *                    the transformer to add; must not be {@code null}
 	 */
 	public void addTransformer(final IFileTransformer transformer) {
 		transformers.add(transformer);
@@ -192,19 +221,23 @@ public class GamlFileProcessor {
 	/**
 	 * Apply all registered transformers to a single file.
 	 *
-	 * <p>The file is read as UTF-8. Each transformer is applied in order to the
+	 * <p>
+	 * The file is read as UTF-8. Each transformer is applied in order to the
 	 * current content; the output of one transformer becomes the input of the
 	 * next. If the final content differs from the original the file is
-	 * overwritten (unless {@code dryRun} is {@code true}).</p>
+	 * overwritten (unless {@code dryRun} is {@code true}).
+	 * </p>
 	 *
-	 * <p>Progress and diff output is sent to {@link DEBUG#LOG(Object)};
-	 * errors are sent to {@link DEBUG#ERR(Object)}.</p>
+	 * <p>
+	 * Progress and diff output is sent to {@link DEBUG#LOG(Object)};
+	 * errors are sent to {@link DEBUG#ERR(Object)}.
+	 * </p>
 	 *
 	 * @param path
-	 *            the path of the file to process; must not be {@code null}
+	 *               the path of the file to process; must not be {@code null}
 	 * @param dryRun
-	 *            when {@code true} the file is not written; changes are only
-	 *            logged via {@link DEBUG#LOG(Object)}
+	 *               when {@code true} the file is not written; changes are only
+	 *               logged via {@link DEBUG#LOG(Object)}
 	 * @return {@code true} if at least one transformation changed the content
 	 *         (or would have changed it in dry-run mode)
 	 */
@@ -226,7 +259,9 @@ public class GamlFileProcessor {
 			content = transformer.transform(content);
 		}
 
-		if (content.equals(original)) { return false; }
+		if (content.equals(original)) {
+			return false;
+		}
 
 		DEBUG.LOG("  " + (dryRun ? "[dry-run] " : "") + "Updating: " + path);
 		printLineDiff(original, content);
@@ -246,15 +281,17 @@ public class GamlFileProcessor {
 	 * Recursively walk {@code root} and process every file whose name ends with
 	 * one of the configured {@link #extensions}.
 	 *
-	 * <p>Hidden directories (whose name starts with {@code '.'}) are skipped.</p>
+	 * <p>
+	 * Hidden directories (whose name starts with {@code '.'}) are skipped.
+	 * </p>
 	 *
 	 * @param root
-	 *            the root directory to search; must not be {@code null}
+	 *               the root directory to search; must not be {@code null}
 	 * @param dryRun
-	 *            when {@code true} no files are written
+	 *               when {@code true} no files are written
 	 * @return the total number of files that were (or would be) updated
 	 * @throws IOException
-	 *             if an I/O error occurs while walking the directory tree
+	 *                     if an I/O error occurs while walking the directory tree
 	 */
 	public int processDirectory(final Path root, final boolean dryRun) throws IOException {
 		final int[] counts = { 0, 0 }; // [total, changed]
@@ -276,11 +313,12 @@ public class GamlFileProcessor {
 			public FileVisitResult visitFile(final Path file,
 					final BasicFileAttributes attrs) {
 				final String name = file.getFileName().toString();
-				final boolean matches =
-						extensions.stream().anyMatch(name::endsWith);
+				final boolean matches = extensions.stream().anyMatch(name::endsWith);
 				if (matches) {
 					counts[0]++;
-					if (processFile(file, dryRun)) { counts[1]++; }
+					if (processFile(file, dryRun)) {
+						counts[1]++;
+					}
 				}
 				return FileVisitResult.CONTINUE;
 			}
@@ -302,12 +340,12 @@ public class GamlFileProcessor {
 	 * Convenience overload that accepts a {@link String} path.
 	 *
 	 * @param rootPath
-	 *            the root directory as a string; must not be {@code null}
+	 *                 the root directory as a string; must not be {@code null}
 	 * @param dryRun
-	 *            when {@code true} no files are written
+	 *                 when {@code true} no files are written
 	 * @return the total number of files that were (or would be) updated
 	 * @throws IOException
-	 *             if an I/O error occurs while walking the directory tree
+	 *                     if an I/O error occurs while walking the directory tree
 	 * @see #processDirectory(Path, boolean)
 	 */
 	public int processDirectory(final String rootPath, final boolean dryRun)
@@ -323,14 +361,16 @@ public class GamlFileProcessor {
 	 * Log a compact line-by-line diff between {@code original} and
 	 * {@code updated} via {@link DEBUG#LOG(Object)}.
 	 *
-	 * <p>Only lines that actually changed are shown. If the number of lines
+	 * <p>
+	 * Only lines that actually changed are shown. If the number of lines
 	 * differs (e.g. because a multi-line block was collapsed) this is noted
-	 * as well.</p>
+	 * as well.
+	 * </p>
 	 *
 	 * @param original
-	 *            the original file content; never {@code null}
+	 *                 the original file content; never {@code null}
 	 * @param updated
-	 *            the transformed file content; never {@code null}
+	 *                 the transformed file content; never {@code null}
 	 */
 	private void printLineDiff(final String original, final String updated) {
 		final String[] origLines = original.split("\n", -1);
@@ -356,21 +396,26 @@ public class GamlFileProcessor {
 	/**
 	 * Command-line entry point.
 	 *
-	 * <p>Usage:</p>
+	 * <p>
+	 * Usage:
+	 * </p>
+	 * 
 	 * <pre>
 	 *   java gaml.grammar.transition.GamlFileProcessor &lt;root&gt; [--dry-run]
 	 * </pre>
 	 *
-	 * <p>Arguments:</p>
+	 * <p>
+	 * Arguments:
+	 * </p>
 	 * <ul>
-	 *   <li>{@code root} – the root directory to search recursively
-	 *       (required)</li>
-	 *   <li>{@code --dry-run} – optional flag; when present no files are
-	 *       written and only a preview is printed</li>
+	 * <li>{@code root} – the root directory to search recursively
+	 * (required)</li>
+	 * <li>{@code --dry-run} – optional flag; when present no files are
+	 * written and only a preview is printed</li>
 	 * </ul>
 	 *
 	 * @param args
-	 *            command-line arguments; never {@code null}
+	 *             command-line arguments; never {@code null}
 	 */
 	public static void main(final String[] args) {
 		if (args.length < 1) {
@@ -380,7 +425,9 @@ public class GamlFileProcessor {
 		final String root = args[0];
 		boolean dryRun = false;
 		for (int i = 1; i < args.length; i++) {
-			if ("--dry-run".equalsIgnoreCase(args[i])) { dryRun = true; }
+			if ("--dry-run".equalsIgnoreCase(args[i])) {
+				dryRun = true;
+			}
 		}
 
 		try {
