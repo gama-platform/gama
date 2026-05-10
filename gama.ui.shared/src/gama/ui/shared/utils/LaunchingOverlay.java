@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * LaunchingOverlay.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation
- * platform (v.2025-03).
+ * LaunchingOverlay.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -71,8 +71,8 @@ public class LaunchingOverlay {
 	private static final int CONSOLE_BOTTOM_MARGIN = 28;
 
 	/**
-	 * Horizontal margin on each side of the centred console widget, expressed as a fraction of the overlay width
-	 * (1/8th ≈ 12.5 % per side).
+	 * Horizontal margin on each side of the centred console widget, expressed as a fraction of the overlay width (1/8th
+	 * ≈ 12.5 % per side).
 	 */
 	private static final int CONSOLE_H_MARGIN_DIVISOR = 8;
 
@@ -209,9 +209,7 @@ public class LaunchingOverlay {
 		// Close the shell on the UI thread.
 		final Shell shell = overlayShell;
 		overlayShell = null;
-		if (shell != null) {
-			WorkbenchHelper.asyncRun(() -> { if (!shell.isDisposed()) { shell.close(); } });
-		}
+		if (shell != null) { WorkbenchHelper.asyncRun(() -> { if (!shell.isDisposed()) { shell.close(); } }); }
 	}
 
 	// ── Private helpers ───────────────────────────────────────────────────────────
@@ -341,6 +339,9 @@ public class LaunchingOverlay {
 		final IStatusControl realControl = statusDisplayer.getStatusTarget();
 		savedStatusControl = realControl;
 		statusDisplayer.setStatusTarget(new IStatusControl() {
+
+			String previous;
+
 			@Override
 			public boolean isDisposed() { return overlay.isDisposed(); }
 
@@ -351,7 +352,10 @@ public class LaunchingOverlay {
 				// Skip EXPERIMENT-state messages — they carry no useful text.
 				if (m == null || m.type() == IStatusMessage.StatusType.EXPERIMENT) return;
 				final String text = m.message();
-				appendToConsole(text);
+				if ((text != null) && !text.equals(previous)) {
+					appendToConsole(text);
+					previous = text;
+				}
 			}
 		});
 	}
