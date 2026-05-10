@@ -112,16 +112,6 @@ public class GAML {
 	private static final Map<String, Map<Signature, IArtefact.Operator>> OPERATORS = new ConcurrentHashMap<>();
 
 	/**
-	 * Thread-safe set of all registered iterator names in GAML.
-	 *
-	 * <p>
-	 * Iterators are special operators that loop over collections (e.g., "collect", "where", "count"). Uses
-	 * ConcurrentHashMap.newKeySet() for efficient thread-safe access during registration.
-	 * </p>
-	 */
-	private static final Set<String> ITERATORS = ConcurrentHashMap.newKeySet();
-
-	/**
 	 * Thread-safe set of all registered constant names in GAML.
 	 *
 	 * <p>
@@ -677,32 +667,6 @@ public class GAML {
 			OPERATORS.put(kw, registry);
 		}
 		return registry;
-	}
-
-	/**
-	 * Registers one or more iterator operator names in the {@code ITERATORS} set.
-	 *
-	 * <p>
-	 * Iterators are special operators that iterate over collections (e.g., {@code collect}, {@code where},
-	 * {@code count}). Registering a name here allows the compiler and validator to treat it accordingly.
-	 * </p>
-	 *
-	 * @param iterators
-	 *            the iterator names to register; duplicates are silently ignored
-	 */
-	public static void addIterators(final String... iterators) {
-		Collections.addAll(ITERATORS, iterators);
-	}
-
-	/**
-	 * Returns {@code true} if the given name is a registered GAML iterator.
-	 *
-	 * @param name
-	 *            the operator name to check
-	 * @return {@code true} if {@code name} is an iterator, {@code false} otherwise
-	 */
-	public static boolean isIterator(final String name) {
-		return ITERATORS.contains(name);
 	}
 
 	// ==================================================================================

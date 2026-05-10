@@ -89,11 +89,11 @@ public class ArtefactFactory implements IArtefactFactory {
 	 */
 	@Override
 	public IArtefact.Operator createOperatorArtefact(final String name, final AnnotatedElement object,
-			final IGamaGetter helper, final boolean b, final boolean c, final int returnType, final Class signature,
-			final int typeProvider, final int contentTypeProvider, final int keyTypeProvider,
-			final int[] expectedContentType) {
-		return new OperatorArtefact(name, object, helper, b, c, returnType, signature, typeProvider,
-				contentTypeProvider, keyTypeProvider, expectedContentType);
+			final IGamaGetter helper, final boolean canBeConst, final boolean isIterator, final boolean isField,
+			final int returnType, final Class signature, final int typeProvider, final int contentTypeProvider,
+			final int keyTypeProvider, final int[] expectedContentType) {
+		return new OperatorArtefact(name, object, helper, canBeConst, isIterator, isField, returnType, signature,
+				typeProvider, contentTypeProvider, keyTypeProvider, expectedContentType);
 	}
 
 	/**
@@ -115,11 +115,11 @@ public class ArtefactFactory implements IArtefactFactory {
 	 */
 	@Override
 	public IArtefact.Operator createOperatorArtefact(final String name, final Executable method,
-			final String constantDoc, final IGamaGetter helper, final boolean c, final boolean b, final IType rt,
-			final Signature signature, final int t, final int content, final int index, final int contentContentType,
-			final int[] expectedContentTypes, final String plugin) {
-		return new OperatorArtefact(name, method, constantDoc, helper, c, b, rt, signature, t, content, index,
-				contentContentType, expectedContentTypes, plugin);
+			final String constantDoc, final IGamaGetter helper, final boolean canBeConst, final boolean isIterator,
+			final boolean isField, final IType rt, final Signature signature, final int t, final int content,
+			final int index, final int contentContentType, final int[] expectedContentTypes, final String plugin) {
+		return new OperatorArtefact(name, method, constantDoc, helper, canBeConst, isIterator, isField, rt, signature,
+				t, content, index, contentContentType, expectedContentTypes, plugin);
 	}
 
 	@Override

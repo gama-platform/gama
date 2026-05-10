@@ -346,9 +346,9 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 	 *            the helper
 	 */
 	public void _operator(final String[] keywords, final Executable method, final String doc,
-			final int[] expectedContentTypes, final Object returnType, final boolean c, final int t, final int content,
-			final int index, final int contentContentType, final IGamaGetter helper, final boolean isIterator) {
-		if (isIterator) { GAML.addIterators(keywords); }
+			final int[] expectedContentTypes, final Object returnType, final boolean canBeConst, final int t,
+			final int content, final int index, final int contentContentType, final IGamaGetter helper,
+			final boolean isIterator) {
 		final Signature signature = method == null ? new Signature(Types.NO_TYPE) : new Signature(method);
 		int nbParam = signature.size();
 		final String plugin = GamaBundleLoader.CURRENT_PLUGIN_NAME;
@@ -359,8 +359,8 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 				boolean isField = nbParam == 2 && (OF.equals(kw) || _DOT.equals(kw))
 						&& (left.isObjectType() || left.isAgentType());
 				GAML.registerOperator(GAML.getArtefactFactory().createOperatorArtefact(kw, method, isField ? null : doc,
-						helper, c, isField, rt, signature, t, content, index, contentContentType, expectedContentTypes,
-						plugin));
+						helper, canBeConst, isIterator, isField, rt, signature, t, content, index, contentContentType,
+						expectedContentTypes, plugin));
 			}
 		}
 	}
@@ -469,8 +469,8 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 	 */
 	protected void _field(final Class clazz, final String name, final IGamaGetter helper, final int returnType,
 			final Class signature, final int typeProvider, final int contentTypeProvider, final int keyTypeProvider) {
-		IArtefact proto = GAML.getArtefactFactory().createOperatorArtefact(name, null, helper, false, true, returnType,
-				signature, typeProvider, contentTypeProvider, keyTypeProvider, AI);
+		IArtefact proto = GAML.getArtefactFactory().createOperatorArtefact(name, null, helper, false, false, true,
+				returnType, signature, typeProvider, contentTypeProvider, keyTypeProvider, AI);
 		GAML.addField(clazz, proto);
 	}
 

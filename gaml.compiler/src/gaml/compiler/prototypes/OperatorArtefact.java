@@ -13,6 +13,9 @@ package gaml.compiler.prototypes;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import gama.annotations.doc;
 import gama.annotations.operator;
@@ -35,7 +38,6 @@ import gama.api.compilation.documentation.GamlConstantDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.compilation.validation.IValidator;
 import gama.api.constants.IGamlIssue;
-import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.GamaType;
 import gama.api.gaml.types.IType;
@@ -57,14 +59,60 @@ import gama.dev.DEBUG;
 @SuppressWarnings ({ "rawtypes" })
 public class OperatorArtefact extends AbstractArtefact implements IArtefact.Operator {
 
+	/**
+	 * Thread-safe map of all registered iterator names and corresponding signatures in GAML.
+	 *
+	 * <p>
+	 * Iterators are special operators that loop over collections (e.g., "collect", "where", "count") or over indices
+	 * (e.g. "100 list_with expr").
+	 * </p>
+	 */
+	private static final Map<String, Set<Signature>> ITERATORS = new ConcurrentHashMap<>();
+
+	/**
+	 * Registers one or more iterator operator names in the {@code ITERATORS} set.
+	 *
+	 * <p>
+	 * Iterators are special operators that iterate over collections (e.g., {@code collect}, {@code where},
+	 * {@code count}). Registering a name here allows the compiler and validator to treat it accordingly.
+	 * </p>
+	 *
+	 * @param iterators
+	 *            the iterator names to register; duplicates are silently ignored
+	 */
+	public static void addIterators(final Signature signature, final String... iterators) {
+		final Signature simplified = signature.simplified();
+		for (String iterator : iterators) {
+			ITERATORS.computeIfAbsent(iterator, key -> ConcurrentHashMap.newKeySet()).add(simplified);
+		}
+	}
+
+	/**
+	 * Returns {@code true} if the given name is a registered GAML iterator.
+	 *
+	 * @param name
+	 *            the operator name to check
+	 * @return {@code true} if {@code name} is an iterator, {@code false} otherwise
+	 */
+	public static boolean isIterator(final String name, final Signature signature) {
+		if (name == null || signature == null) return false;
+		final Set<Signature> signatures = ITERATORS.get(name);
+		if (signatures == null || signatures.isEmpty()) return false;
+		final Signature simplified = signature.simplified();
+		for (final Signature iteratorSignature : signatures) {
+			if (simplified.matchesDesiredSignature(iteratorSignature)) return true;
+		}
+		return false;
+	}
+
 	/** The Constant EMPTY_DEPS. */
 	public static final String[] EMPTY_DEPS = {};
 
 	/** The as. */
 	public static OperatorArtefact AS;
 
-	/** The iterator. */
-	public final boolean isVarOrField, canBeConst, iterator;
+	/** The isIterator. */
+	public final boolean isVarOrField, canBeConst, isIterator;
 
 	/** The semantic validator. */
 	private IValidator semanticValidator;
@@ -121,13 +169,15 @@ public class OperatorArtefact extends AbstractArtefact implements IArtefact.Oper
 	 *            the plugin
 	 */
 	public OperatorArtefact(final String name, final AnnotatedElement method, final String constantDoc,
-			final IGamaGetter helper, final boolean canBeConst, final boolean isVarOrField, final IType returnType,
-			final Signature signature, final int typeProvider, final int contentTypeProvider, final int keyTypeProvider,
-			final int contentTypeContentTypeProvider, final int[] expectedContentType, final String plugin) {
+			final IGamaGetter helper, final boolean canBeConst, final boolean isIterator, final boolean isVarOrField,
+			final IType returnType, final Signature signature, final int typeProvider, final int contentTypeProvider,
+			final int keyTypeProvider, final int contentTypeContentTypeProvider, final int[] expectedContentType,
+			final String plugin) {
 		super(name, method, plugin);
-		iterator = GAML.isIterator(name);
 		if (constantDoc != null) { documentation = new GamlConstantDocumentation(constantDoc); }
 		if (IKeyword.AS.equals(name)) { AS = this; }
+		this.isIterator = isIterator;
+		if (isIterator) { addIterators(signature, name); }
 		this.returnType = returnType;
 		this.canBeConst = canBeConst;
 		this.isVarOrField = isVarOrField;
@@ -167,12 +217,12 @@ public class OperatorArtefact extends AbstractArtefact implements IArtefact.Oper
 	 *            the expected content type
 	 */
 	public OperatorArtefact(final String name, final AnnotatedElement method, final IGamaGetter helper,
-			final boolean canBeConst, final boolean isVarOrField, final int returnType, final Class signature,
-			final int typeProvider, final int contentTypeProvider, final int keyTypeProvider,
+			final boolean canBeConst, final boolean isIterator, final boolean isVarOrField, final int returnType,
+			final Class signature, final int typeProvider, final int contentTypeProvider, final int keyTypeProvider,
 			final int[] expectedContentType) {
-		this(name, method == null ? signature : method, null, helper, canBeConst, isVarOrField, Types.get(returnType),
-				new Signature(signature), typeProvider, contentTypeProvider, keyTypeProvider, ITypeProvider.NONE,
-				expectedContentType, GamaBundleLoader.CURRENT_PLUGIN_NAME);
+		this(name, method == null ? signature : method, null, helper, canBeConst, isIterator, isVarOrField,
+				Types.get(returnType), new Signature(signature), typeProvider, contentTypeProvider, keyTypeProvider,
+				ITypeProvider.NONE, expectedContentType, GamaBundleLoader.CURRENT_PLUGIN_NAME);
 	}
 
 	/**
@@ -210,7 +260,7 @@ public class OperatorArtefact extends AbstractArtefact implements IArtefact.Oper
 	 *            the gama type
 	 */
 	private OperatorArtefact(final OperatorArtefact op, final IType gamaType) {
-		this(op.name, op.support, null, op.getHelper(), op.canBeConst, op.isVarOrField, op.returnType,
+		this(op.name, op.support, null, op.getHelper(), op.canBeConst, op.isIterator, op.isVarOrField, op.returnType,
 				new Signature(gamaType), op.typeProvider, op.contentTypeProvider, op.keyTypeProvider,
 				op.contentTypeContentTypeProvider, op.expectedContentType, op.plugin);
 	}
@@ -262,7 +312,7 @@ public class OperatorArtefact extends AbstractArtefact implements IArtefact.Oper
 	@Override
 	public void verifyExpectedTypes(final IDescription context, final IType<?> rightType) {
 		if (expectedContentType == null || expectedContentType.length == 0 || context == null) return;
-		if (expectedContentType.length == 1 && iterator) {
+		if (expectedContentType.length == 1 && isIterator) {
 			final IType<?> expected = Types.get(expectedContentType[0]);
 			if (!rightType.isTranslatableInto(expected)) {
 				context.warning("Operator " + getName() + " expects an argument of type " + expected,
@@ -436,7 +486,7 @@ public class OperatorArtefact extends AbstractArtefact implements IArtefact.Oper
 	}
 
 	@Override
-	public boolean isIterator() { return iterator; }
+	public boolean isIterator() { return isIterator; }
 
 	@Override
 	public int getTypeProvider() { return typeProvider; }

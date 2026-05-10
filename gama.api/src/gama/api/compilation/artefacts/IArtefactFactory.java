@@ -200,7 +200,7 @@ public interface IArtefactFactory {
 	 * @return a new operator prototype
 	 */
 	IArtefact.Operator createOperatorArtefact(String name, AnnotatedElement object, IGamaGetter helper,
-			boolean canBeConst, boolean isIterator, int returnType, Class signature, int typeProvider,
+			boolean canBeConst, boolean isIterator, boolean isField, int returnType, Class signature, int typeProvider,
 			int contentTypeProvider, int keyTypeProvider, int[] expectedContentType);
 
 	/**
@@ -242,7 +242,7 @@ public interface IArtefactFactory {
 	 * @return a new operator prototype
 	 */
 	IArtefact.Operator createOperatorArtefact(String name, Executable method, String constantDoc, IGamaGetter helper,
-			boolean canBeConst, boolean isIterator, IType rt, Signature signature, int typeProvider,
+			boolean canBeConst, boolean isIterator, boolean isField, IType rt, Signature signature, int typeProvider,
 			int contentTypeProvider, int keyTypeProvider, int contentContentTypeProvider, int[] expectedContentTypes,
 			String plugin);
 

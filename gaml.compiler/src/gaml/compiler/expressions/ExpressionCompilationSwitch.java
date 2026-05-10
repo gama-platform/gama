@@ -98,6 +98,7 @@ import gaml.compiler.gaml.UnitName;
 import gaml.compiler.gaml.VarDefinition;
 import gaml.compiler.gaml.VariableRef;
 import gaml.compiler.gaml.util.GamlSwitch;
+import gaml.compiler.prototypes.OperatorArtefact;
 
 /**
  * ExpressionCompilationSwitch is a stateful switch class that handles the compilation of GAML AST nodes into executable
@@ -351,18 +352,18 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 			return null;
 		}
 
-		final boolean isIterator = GAML.isIterator(op) && left.getGamlType().isContainer();
+		final boolean isIterator = isIteratorBinary(op, left, originalExpression);
 		if (isIterator) return compileIteratorBinary(op, left, originalExpression);
 
 		Expression rightMember = originalExpression;
 
-		if (rightMember instanceof ExpressionList el) {
-			final List<Expression> list = EGAML.getExprsOf(el);
-			final int size = list.size();
+		if (rightMember instanceof ExpressionList params) {
+			final List<Expression> exprs = EGAML.getExprsOf(params);
+			final int size = exprs.size();
 			if (size > 1) {
 				final IExpression[] compiledArgs = new IExpression[size + 1];
 				compiledArgs[0] = left;
-				for (int i = 0; i < size; i++) { compiledArgs[i + 1] = compile(list.get(i)); }
+				for (int i = 0; i < size; i++) { compiledArgs[i + 1] = compile(exprs.get(i)); }
 				return FACTORY.createOperator(op, context.getContext(), rightMember, compiledArgs);
 			}
 		}
@@ -372,7 +373,29 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 	}
 
 	/**
-	 * Compiles iterator-based binary operations.
+	 * Checks whether a binary operator call should be compiled as an iterator.
+	 *
+	 * <p>
+	 * Iterator operators are registered with the internal signature {@code [string, left_type, no_type]} because the
+	 * compiler injects the iterator variable name as an implicit first argument and keeps the right operand lazy.
+	 * </p>
+	 *
+	 * @param op
+	 *            the operator name
+	 * @param left
+	 *            the compiled left operand
+	 * @param originalExpression
+	 *            the original right operand AST
+	 * @return {@code true} when the operator has a matching iterator overload for this binary form
+	 */
+	private boolean isIteratorBinary(final String op, final IExpression left, final Expression originalExpression) {
+		if (originalExpression instanceof ExpressionList params && EGAML.getExprsOf(params).size() != 1) return false;
+		return OperatorArtefact.isIterator(op,
+				new Signature(Types.STRING, left.getGamlType(), Types.NO_TYPE).simplified());
+	}
+
+	/**
+	 * Compiles isIterator-based binary operations.
 	 */
 	private IExpression compileIteratorBinary(final String op, final IExpression left,
 			final Expression originalExpression) {
