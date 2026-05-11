@@ -632,6 +632,7 @@ public class SwtGui implements IGui {
 			final boolean immediately) {
 		WorkbenchHelper.run(() -> {
 			final IWorkbenchPage page = WorkbenchHelper.getPage();
+			if (page == null) return;
 			final IViewReference[] views = page.getViewReferences();
 
 			for (final IViewReference view : views) {
@@ -640,6 +641,17 @@ public class SwtGui implements IGui {
 					if (part instanceof Console && GamaPreferences.Interface.CORE_CONSOLE_KEEP.getValue()) { continue; }
 					gv.close(scope);
 				}
+			}
+			// Most views close through GamaViewPart.close(), which posts an async hideView().
+			// When a new experiment is launched immediately afterwards, those pending hide
+			// operations can execute in the middle of the next perspective opening and leave
+			// the workbench in a mixed modeling/simulation state. Drain the current UI queue
+			// before continuing so all requested closures are applied first.
+			final Display display = WorkbenchHelper.getDisplay();
+			if (display != null && !display.isDisposed()) {
+				final boolean[] sentinel = { false };
+				display.asyncExec(() -> sentinel[0] = true);
+				while (!sentinel[0] && !display.isDisposed()) { display.readAndDispatch(); }
 			}
 			if (openModelingPerspective) {
 				DEBUG.OUT("Deleting simulation perspective and opening immediately the modeling perspective = "
