@@ -340,17 +340,26 @@ public class PerspectiveHelper {
 					DEBUG.LOG("Error in WorkbenchPage.setPerspective(): " + t.getMessage());
 				}
 				activateAutoSave(withAutoSave);
-				if (isSimulationPerspective(currentPerspectiveId) && isSimulationPerspective(perspectiveId)) {
-					// DEBUG.OUT("Destroying perspective " + oldDescriptor.getId());
-					page.closePerspective(oldDescriptor, false, false);
-					getPerspectiveRegistry().deletePerspective(oldDescriptor);
-				}
 
 				currentPerspectiveId = perspectiveId;
 				if (isSimulationPerspective(perspectiveId) && !descriptor.equals(currentSimulationPerspective)) {
 					// Early activation or deactivation of editors based on the global preference
 					page.setEditorAreaVisible(!GamaPreferences.Modeling.EDITOR_PERSPECTIVE_HIDE.getValue());
-					deleteCurrentSimulationPerspective();
+					// Destroy the previous simulation perspective exactly once, using the full
+					// cleanup path that also disposes the descriptor and removes the stale E4
+					// model element. The previous code first closed/deleted oldDescriptor here
+					// and then called deleteCurrentSimulationPerspective(), which duplicated the
+					// deletion during simulation-to-simulation switches and could leave the UI in
+					// an inconsistent state after a failed launch.
+					if (currentSimulationPerspective != null) {
+						deleteCurrentSimulationPerspective();
+					} else if (isSimulationPerspective(oldDescriptor.getId()) && oldDescriptor instanceof SimulationPerspectiveDescriptor oldSimulation
+							&& !descriptor.equals(oldSimulation)) {
+						page.closePerspective(oldSimulation, false, false);
+						getPerspectiveRegistry().deletePerspective(oldSimulation);
+						oldSimulation.dispose();
+						deletePerspectiveFromApplication(oldSimulation);
+					}
 					currentSimulationPerspective = (SimulationPerspectiveDescriptor) descriptor;
 				}
 				applyActiveEditor(page);
