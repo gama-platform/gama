@@ -76,7 +76,8 @@ Require-Bundle: gama.annotations;visibility:=reexport,
  org.eclipse.core.filesystem;bundle-version="[1.11.0,2.0.0)",
  org.eclipse.core.resources;bundle-version="[3.23.0,4.0.0)",
  org.osgi.service.prefs;bundle-version="1.1.2",
- org.eclipse.core.runtime;bundle-version="[3.34.0,4.0.0)"
+ org.eclipse.core.runtime;bundle-version="[3.34.0,4.0.0)",
+ org.apache.log4j
 Automatic-Module-Name: gama.api
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: gama.api.APIActivator

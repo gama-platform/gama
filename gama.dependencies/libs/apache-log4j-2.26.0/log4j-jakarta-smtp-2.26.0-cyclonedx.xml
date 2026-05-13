@@ -1,0 +1,581 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bom serialNumber="urn:uuid:3ae7ebc6-564e-33e6-88de-7e1e612d8c9a" version="1" xmlns="http://cyclonedx.org/schema/bom/1.6">
+  <metadata>
+    <lifecycles>
+      <lifecycle>
+        <phase>build</phase>
+      </lifecycle>
+    </lifecycles>
+    <tools>
+      <components>
+        <component type="library">
+          <author>OWASP Foundation</author>
+          <group>org.cyclonedx</group>
+          <name>cyclonedx-maven-plugin</name>
+          <version>2.9.1</version>
+          <description>CycloneDX Maven plugin</description>
+          <hashes>
+            <hash alg="MD5">9c7a565cf28cce58557d0c621c5ea4b1</hash>
+            <hash alg="SHA-1">be882d5a22050bfa9d19090b1420c188617d0e1c</hash>
+            <hash alg="SHA-256">698e0f37184a5b28c245c4065fd036dfce253b52f82fbb7113d81d36326cc249</hash>
+            <hash alg="SHA-512">c0f0b11026858166f872a2eb54719492e5cecaa0bc9cd6b30b3ecb4a174eed220f4a1b5829d18d6734128e778d3cb3db7ffed177c92866133129cb29081814a0</hash>
+            <hash alg="SHA-384">d80964707dfe5caca8c70521d5066f57589304c0a657e6fbc7c0614ea0fc7b3b3dbe7778361eee0f54ba111e9cb0ffcb</hash>
+            <hash alg="SHA3-384">80bc3a275d9514bc457461ff52a72add8c7ecbbc01d8912efce57139016c544ee776981851be0a58fa977ab4221f703f</hash>
+            <hash alg="SHA3-256">142317d6f245390f4fd2d0c100b16281b8dfc5c0c2cff86943bdcc97039cb699</hash>
+            <hash alg="SHA3-512">af0fb9137c90b65d1a07f72e4d51ae509956cdb8800f35c961b037cdda1fe4a14ce3b496cef71ba85f1621affcfe29cd42704ae4191ff0b090a9602087c8997b</hash>
+          </hashes>
+        </component>
+      </components>
+    </tools>
+    <component type="library" bom-ref="pkg:maven/org.apache.logging.log4j/log4j-jakarta-smtp@2.26.0?type=jar">
+      <publisher>The Apache Software Foundation</publisher>
+      <group>org.apache.logging.log4j</group>
+      <name>log4j-jakarta-smtp</name>
+      <version>2.26.0</version>
+      <description>Apache Log4j Simple Mail Transfer Protocol (SMTP) Appender, version for Jakarta EE 9.</description>
+      <licenses>
+        <license>
+          <id>Apache-2.0</id>
+          <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+      </licenses>
+      <purl>pkg:maven/org.apache.logging.log4j/log4j-jakarta-smtp@2.26.0?type=jar</purl>
+      <externalReferences>
+        <reference type="vulnerability-assertion">
+          <url>https://logging.apache.org/cyclonedx/vdr.xml</url>
+        </reference>
+        <reference type="website">
+          <url>https://logging.apache.org/log4j/2.x/</url>
+        </reference>
+        <reference type="build-system">
+          <url>https://github.com/apache/logging-log4j2/actions</url>
+        </reference>
+        <reference type="distribution">
+          <url>https://logging.apache.org/log4j/2.x/download.html</url>
+        </reference>
+        <reference type="distribution-intake">
+          <url>https://repository.apache.org/service/local/staging/deploy/maven2</url>
+        </reference>
+        <reference type="issue-tracker">
+          <url>https://github.com/apache/logging-log4j2/issues</url>
+        </reference>
+        <reference type="mailing-list">
+          <url>https://lists.apache.org/list.html?log4j-user@logging.apache.org</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://github.com/apache/logging-log4j2</url>
+        </reference>
+      </externalReferences>
+    </component>
+    <properties>
+      <property name="maven.goal">makeBom</property>
+      <property name="maven.scopes">compile,provided,runtime,system</property>
+      <property name="cdx:reproducible">enabled</property>
+    </properties>
+  </metadata>
+  <components>
+    <component type="library" bom-ref="pkg:maven/jakarta.activation/jakarta.activation-api@2.1.3?type=jar">
+      <publisher>Eclipse Foundation</publisher>
+      <group>jakarta.activation</group>
+      <name>jakarta.activation-api</name>
+      <version>2.1.3</version>
+      <description>Jakarta Activation API 2.1 Specification</description>
+      <scope>required</scope>
+      <hashes>
+        <hash alg="MD5">76e7b680375ea9f40f3ddbd702efcd25</hash>
+        <hash alg="SHA-1">fa165bd70cda600368eee31555222776a46b881f</hash>
+        <hash alg="SHA-256">01b176d718a169263e78290691fc479977186bcc6b333487325084d6586f4627</hash>
+        <hash alg="SHA-512">aaabd4d6085a07035eaaae7b5a81aef429fea76e7fe1c8d29971e6595f0adad6bcf1088cff8a1c8936d739b0e3fce4b845323032f046b7edab2eaebd0e10a2ad</hash>
+        <hash alg="SHA-384">4c4e73f59bf09342ca7691fd4855b41d3466da80618a5b7df059a2d89cf6d9779a4af751a6c4a9c48e5025c3ff75f42e</hash>
+        <hash alg="SHA3-384">20be816700c87778e9453d41b6d8cb9dc992a092a308a9b7f2dfbf72e2393940a7d666c46625f130a2b57bc414df85ca</hash>
+        <hash alg="SHA3-256">8a574b0a249842ea1b397d4cdef9b6d00b34ce8a849ea34184cdf45ac5aafe67</hash>
+        <hash alg="SHA3-512">69cfb7dddda70ac1fca272ace0a3d5551b85dd60a6dbaf987ee777fbf573b420d13f06b8990ae70e8fe063f92b78c8a447cf9309ba516a5e993ba2d49cca8d23</hash>
+      </hashes>
+      <licenses>
+        <license>
+          <id>BSD-3-Clause</id>
+        </license>
+      </licenses>
+      <purl>pkg:maven/jakarta.activation/jakarta.activation-api@2.1.3?type=jar</purl>
+      <externalReferences>
+        <reference type="website">
+          <url>https://github.com/jakartaee/jaf-api</url>
+        </reference>
+        <reference type="distribution-intake">
+          <url>https://jakarta.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </reference>
+        <reference type="issue-tracker">
+          <url>https://github.com/jakartaee/jaf-api/issues/</url>
+        </reference>
+        <reference type="mailing-list">
+          <url>https://dev.eclipse.org/mhonarc/lists/jakarta.ee-community/</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://github.com/jakartaee/jaf-api</url>
+        </reference>
+      </externalReferences>
+    </component>
+    <component type="library" bom-ref="pkg:maven/jakarta.mail/jakarta.mail-api@2.1.3?type=jar">
+      <publisher>Eclipse Foundation</publisher>
+      <group>jakarta.mail</group>
+      <name>jakarta.mail-api</name>
+      <version>2.1.3</version>
+      <description>Jakarta Mail API 2.1 Specification API</description>
+      <scope>required</scope>
+      <hashes>
+        <hash alg="MD5">288a687deb06b87602ce14cd03dddff4</hash>
+        <hash alg="SHA-1">a327aa5f514ba86e80d54584417d7376ed2bde0e</hash>
+        <hash alg="SHA-256">8051b58d75f982f9a5b963b3765426e824b2a64865ef0af17205e455b98db05c</hash>
+        <hash alg="SHA-512">841a9784cfcfa1723d1c634b094280fabe6ecfdf640513a76a6a39b1ad29d59c1207c086cd66ec8e7f161ffaacd9e1dad12828ac4c57583e9d8593f12ae6460d</hash>
+        <hash alg="SHA-384">dd18dbcf72559ea405946a6d73dc60e672b3bc222e32944b2bf51e81cd41348ad7873b5b2a9d86f0440b44bcd6e45176</hash>
+        <hash alg="SHA3-384">c02d8861b3c9fee8f18bfcb41947d2a83eeaed4ea9d1bb8784525c7fedd2ccab6b704663ff5a452c78537d1b79fd960a</hash>
+        <hash alg="SHA3-256">c10cb31acf35574a203d85427d81e36162edc44b9f6cd9b422c19144b8e7ae4b</hash>
+        <hash alg="SHA3-512">4034e1d5280fde464902035e7491e997ffec62a327844deec6f7e64b7b2d8d1d9fe505f10691caf7223ec06e6d27ac263ae1341582a5c48adad1c7635c13f0d5</hash>
+      </hashes>
+      <licenses>
+        <license>
+          <id>EPL-2.0</id>
+        </license>
+        <license>
+          <id>GPL-2.0-with-classpath-exception</id>
+        </license>
+        <license>
+          <id>BSD-3-Clause</id>
+        </license>
+      </licenses>
+      <purl>pkg:maven/jakarta.mail/jakarta.mail-api@2.1.3?type=jar</purl>
+      <externalReferences>
+        <reference type="website">
+          <url>https://projects.eclipse.org/projects/ee4j/jakarta.mail-api</url>
+        </reference>
+        <reference type="distribution-intake">
+          <url>https://jakarta.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </reference>
+        <reference type="issue-tracker">
+          <url>https://github.com/jakartaee/mail-api/issues</url>
+        </reference>
+        <reference type="mailing-list">
+          <url>https://dev.eclipse.org/mhonarc/lists/jakarta.ee-community/</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://github.com/jakartaee/mail-api</url>
+        </reference>
+      </externalReferences>
+    </component>
+    <component type="library" bom-ref="pkg:maven/org.apache.logging.log4j/log4j-api@2.26.0?type=jar">
+      <publisher>The Apache Software Foundation</publisher>
+      <group>org.apache.logging.log4j</group>
+      <name>log4j-api</name>
+      <version>2.26.0</version>
+      <description>The logging API of the Log4j project.
+    Library and application code can log through this API.
+    It contains a simple built-in implementation (`SimpleLogger`) for trivial use cases.
+    Production applications are recommended to use Log4j API in combination with a fully-fledged implementation, such as Log4j Core.</description>
+      <scope>required</scope>
+      <hashes>
+        <hash alg="MD5">564bc06e0f03e37193227b698acaa257</hash>
+        <hash alg="SHA-1">ad52af0ecf054a7e3f275a2e180ee06d9c490951</hash>
+        <hash alg="SHA-256">820de7bbaf430eaf2e3e5ccb92f23e2085797c5ac4d4f7fc6c8b660fbefa1dbc</hash>
+        <hash alg="SHA-512">86516750d5a43428b977da45d403718e903451bf0b9401ba306a35f001e812b8366c73978fbf6c628a93949d9386e3a21661f85672291111e5397e94ca1cc78f</hash>
+        <hash alg="SHA-384">38a1a06a9b91897874fb819aac8bac78ef13b95f45b3609b088b91d55f6f239dc289effa4a34ee5c7fa429b7b3f8e33c</hash>
+        <hash alg="SHA3-384">2ad01149db7b1f6c7bb62aa6a73ef788a81fc56708572266d71a04f572e63a204d92bef6bfdb048428fb4ab8bbe807ff</hash>
+        <hash alg="SHA3-256">807293030006b30b48c5f1a6782aef28fad96ca4c832ab8b8e02afa3504bf06e</hash>
+        <hash alg="SHA3-512">cfcb02091445750620fbe455c197f041cada377bd38fae245824fa85fdaa8921c4a85877072b918f89d5cd57dd3e433af8e8d77d78ac76a5f6060eff0cc31bbe</hash>
+      </hashes>
+      <licenses>
+        <license>
+          <id>Apache-2.0</id>
+          <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+      </licenses>
+      <purl>pkg:maven/org.apache.logging.log4j/log4j-api@2.26.0?type=jar</purl>
+      <externalReferences>
+        <reference type="website">
+          <url>https://logging.apache.org/log4j/2.x/</url>
+        </reference>
+        <reference type="build-system">
+          <url>https://github.com/apache/logging-log4j2/actions</url>
+        </reference>
+        <reference type="issue-tracker">
+          <url>https://github.com/apache/logging-log4j2/issues</url>
+        </reference>
+        <reference type="mailing-list">
+          <url>https://lists.apache.org/list.html?log4j-user@logging.apache.org</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://github.com/apache/logging-log4j2</url>
+        </reference>
+      </externalReferences>
+    </component>
+    <component type="library" bom-ref="pkg:maven/org.apache.logging.log4j/log4j-core@2.26.0?type=jar">
+      <publisher>The Apache Software Foundation</publisher>
+      <group>org.apache.logging.log4j</group>
+      <name>log4j-core</name>
+      <version>2.26.0</version>
+      <description>A versatile, industrial-grade, and reference implementation of the Log4j API.
+    It bundles a rich set of components to assist various use cases:
+    Appenders targeting files, network sockets, databases, SMTP servers;
+    Layouts that can render CSV, HTML, JSON, Syslog, etc. formatted outputs;
+    Filters that can be configured using log event rates, regular expressions, scripts, time, etc.
+    It contains several extension points to introduce custom components, if needed.</description>
+      <scope>required</scope>
+      <hashes>
+        <hash alg="MD5">6f35a16e514ca6d13938be57d107d139</hash>
+        <hash alg="SHA-1">d267ca60b27ddb075e0b4e75e7875859717bf85f</hash>
+        <hash alg="SHA-256">406bb3132c47a5d322e5c571feb0787ca84496469f346eb51f1ef2ee45499902</hash>
+        <hash alg="SHA-512">9523b574308be31c741252d2f789fb81d01d9526eaa3e94f25136f1044149ac235fef379514b1cc43611ca68f5e2d8400256886b49f4ef2686582c96b8679792</hash>
+        <hash alg="SHA-384">2d620584a1661268207947798616fca384d56cb472c1f32646b7f8c7b0178e21f1dabc5d578cef26eff02e9c46f64ac8</hash>
+        <hash alg="SHA3-384">2d89d99ad26ae43ffa3c8efdb3ec6af11b235b8ea4cc7f309e8c4963517b072932e7911ad6ba199a241c0405f49411b7</hash>
+        <hash alg="SHA3-256">f911a2eaa22ed4ceef5f6d06bc3f35f15531ae3403efe60e2281f449e7edbbae</hash>
+        <hash alg="SHA3-512">1db55d5fd1c23b75280061f1e799db69673a385fa65d86c0db1b1fbf3e463fb4c909ebe7fac8ca0cae61d3ec95d33d8acc48f1a6f62608b999393f82e56fca13</hash>
+      </hashes>
+      <licenses>
+        <license>
+          <id>Apache-2.0</id>
+          <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+      </licenses>
+      <purl>pkg:maven/org.apache.logging.log4j/log4j-core@2.26.0?type=jar</purl>
+      <externalReferences>
+        <reference type="website">
+          <url>https://logging.apache.org/log4j/2.x/</url>
+        </reference>
+        <reference type="build-system">
+          <url>https://github.com/apache/logging-log4j2/actions</url>
+        </reference>
+        <reference type="issue-tracker">
+          <url>https://github.com/apache/logging-log4j2/issues</url>
+        </reference>
+        <reference type="mailing-list">
+          <url>https://lists.apache.org/list.html?log4j-user@logging.apache.org</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://github.com/apache/logging-log4j2</url>
+        </reference>
+      </externalReferences>
+    </component>
+    <component type="library" bom-ref="pkg:maven/org.eclipse.angus/angus-activation@2.0.2?type=jar">
+      <publisher>Eclipse Foundation</publisher>
+      <group>org.eclipse.angus</group>
+      <name>angus-activation</name>
+      <version>2.0.2</version>
+      <description>Angus Activation Registries Implementation</description>
+      <scope>required</scope>
+      <hashes>
+        <hash alg="MD5">42bba74155dc773eca277ee7a16f74be</hash>
+        <hash alg="SHA-1">41f1e0ddd157c856926ed149ab837d110955a9fc</hash>
+        <hash alg="SHA-256">6dd3bcffc22bce83b07376a0e2e094e4964a3195d4118fb43e380ef35436cc1e</hash>
+        <hash alg="SHA-512">1482c759843c23e0343ca554194862d53ac18a04ab4691b3bf05145abb77283617022a895c5ba2e33f62b77c2cfb906b90d0cb690623621b11f35194b54b1180</hash>
+        <hash alg="SHA-384">0263b0f42e56f9cbf4a2446c26a29d6397477561c2149f7b7d0e62fb28ab4315d50faf4e96aff088d3ac204b16f90892</hash>
+        <hash alg="SHA3-384">e77e5bf8be9f98ed06a652e2317253bb29e8f79b26910075332823987b2e1bd3dfbb2d7aeb5a57a454c8632241abcc0a</hash>
+        <hash alg="SHA3-256">41d7d300d1399e4706a0ead464e13702d85023598a0a81899e40ee8eed847826</hash>
+        <hash alg="SHA3-512">dbdcb824069f0dcf9f9d362b8db7c2efa77f28d77e07c204a28e56b79ebfc478d9c5f9e5f01c7269d3afc0db0e6126d74237cc5a51b5e9ec6b6664580a06de8c</hash>
+      </hashes>
+      <licenses>
+        <license>
+          <id>BSD-3-Clause</id>
+        </license>
+      </licenses>
+      <purl>pkg:maven/org.eclipse.angus/angus-activation@2.0.2?type=jar</purl>
+      <externalReferences>
+        <reference type="website">
+          <url>https://github.com/eclipse-ee4j/angus-activation/angus-activation</url>
+        </reference>
+        <reference type="distribution-intake">
+          <url>https://jakarta.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </reference>
+        <reference type="issue-tracker">
+          <url>https://github.com/eclipse-ee4j/angus-activation/issues/</url>
+        </reference>
+        <reference type="mailing-list">
+          <url>https://dev.eclipse.org/mhonarc/lists/jakarta.ee-community/</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://github.com/eclipse-ee4j/angus-activation/angus-activation</url>
+        </reference>
+      </externalReferences>
+    </component>
+    <component type="library" bom-ref="pkg:maven/org.eclipse.angus/jakarta.mail@2.0.3?type=jar">
+      <publisher>Eclipse Foundation</publisher>
+      <group>org.eclipse.angus</group>
+      <name>jakarta.mail</name>
+      <version>2.0.3</version>
+      <description>Angus Mail default provider</description>
+      <scope>required</scope>
+      <hashes>
+        <hash alg="MD5">33043478b24ab3845a3bf702c18f9226</hash>
+        <hash alg="SHA-1">3dea6aeee9603f573687b0d4da5dc1316d921bb7</hash>
+        <hash alg="SHA-256">efb946424933806bc6f8136752d22fdb3ba887ea0527ff849c474e51f7b3715e</hash>
+        <hash alg="SHA-512">6e4abfa2efb985e2bb77e248c8788ea8dfd1fa2a3f88337399a0e4d0c748777100fb6b17c4d1f1e25ce2595fbbec78625f527b21a4986d4d16ea2132847fea51</hash>
+        <hash alg="SHA-384">9ab6e99b3d90c3ce031923dbed8ba018c6ae951d2b82d83b9918bc97da06b2096a74a47ae72f4be65bc60471745566b6</hash>
+        <hash alg="SHA3-384">c408a694e3c7db7e500f361ce0f999c905d27ba98d1fc4a1597904af2e5ae83689d5792b1a21369c440ef81f262a3c63</hash>
+        <hash alg="SHA3-256">8106e97a462f4fd311b9d5a1a3dbd1fa0e6df2ae3d1944240d8015bec1264c9a</hash>
+        <hash alg="SHA3-512">03a3e514d879d6533181f6e99cb234bc4c39cc67e19053ad33fd92547c3e41b8a744293b4bd90d6e89aa129c410b5fe819e6c852b360cb8d9f2a1bbe92126916</hash>
+      </hashes>
+      <licenses>
+        <license>
+          <id>EPL-2.0</id>
+        </license>
+        <license>
+          <id>GPL-2.0-with-classpath-exception</id>
+        </license>
+        <license>
+          <id>BSD-3-Clause</id>
+        </license>
+      </licenses>
+      <purl>pkg:maven/org.eclipse.angus/jakarta.mail@2.0.3?type=jar</purl>
+      <externalReferences>
+        <reference type="website">
+          <url>http://eclipse-ee4j.github.io/angus-mail/jakarta.mail</url>
+        </reference>
+        <reference type="distribution-intake">
+          <url>https://jakarta.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </reference>
+        <reference type="issue-tracker">
+          <url>https://github.com/eclipse-ee4j/angus-mail/issues</url>
+        </reference>
+        <reference type="mailing-list">
+          <url>https://dev.eclipse.org/mhonarc/lists/jakarta.ee-community/</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://github.com/eclipse-ee4j/angus-mail/jakarta.mail</url>
+        </reference>
+      </externalReferences>
+    </component>
+    <component type="library" bom-ref="pkg:maven/biz.aQute.bnd/biz.aQute.bnd.annotation@7.1.0?type=jar">
+      <publisher>Bndtools</publisher>
+      <group>biz.aQute.bnd</group>
+      <name>biz.aQute.bnd.annotation</name>
+      <version>7.1.0</version>
+      <description>bnd Annotations Library</description>
+      <scope>required</scope>
+      <hashes>
+        <hash alg="MD5">664c398da304527f42ab13a0f8036025</hash>
+        <hash alg="SHA-1">2f2be18c936d08cf46ea6cfa0043f34afdf38705</hash>
+        <hash alg="SHA-256">f69c2de3a695c113d125ac8053c92a680a3ce9d02ea25845095cf2d4626a7663</hash>
+        <hash alg="SHA-512">b29e68403ff0b0cd0efacf23a466390b922ef464f79b49c25518864839a1cd86329ace0a7214c6f0ce99056019d857301994bbb71dea0c35dd94511edd789ca4</hash>
+        <hash alg="SHA-384">71a5290b7cde52d3cae668492cfb368c6955a176dd7442a93e0f26f2258806c56b45869436ad9f336ad3f7a316b45838</hash>
+        <hash alg="SHA3-384">84c2757373413bfaedba04dc84329bf01b26c02a417d87674842f147a05e4001ed154efecc0f43d4473b8a7ba5175296</hash>
+        <hash alg="SHA3-256">f3cd557e7b9b6f8996ea1006cce7d4b007fbd3b1fc27b62dacdece5e38988d9e</hash>
+        <hash alg="SHA3-512">2059f5cb86d9d1b71479d2217107584fb0ff880f064a2cae0dd916d840e660314aaa746d4e6451c15ae56a500bc4e18191b40662ee4eda52aa3b0c33ea82c94b</hash>
+      </hashes>
+      <licenses>
+        <license>
+          <name>(Apache-2.0 OR EPL-2.0)</name>
+          <url>https://opensource.org/licenses/Apache-2.0,https://opensource.org/licenses/EPL-2.0</url>
+        </license>
+      </licenses>
+      <purl>pkg:maven/biz.aQute.bnd/biz.aQute.bnd.annotation@7.1.0?type=jar</purl>
+      <externalReferences>
+        <reference type="website">
+          <url>https://bnd.bndtools.org/</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://github.com/bndtools/bnd</url>
+        </reference>
+      </externalReferences>
+    </component>
+    <component type="library" bom-ref="pkg:maven/org.osgi/org.osgi.resource@1.0.0?type=jar">
+      <publisher>OSGi Alliance</publisher>
+      <group>org.osgi</group>
+      <name>org.osgi.resource</name>
+      <version>1.0.0</version>
+      <description>OSGi Companion Code for org.osgi.resource Version 1.0.0.</description>
+      <scope>required</scope>
+      <hashes>
+        <hash alg="MD5">7d857a4203e2996fab0cf070133e43df</hash>
+        <hash alg="SHA-1">343c88949132984b3f2d4175a72c40b77dc65619</hash>
+        <hash alg="SHA-256">81fc50f1f1d38a4af28e131907d4afe213249aab05060484edca0e60c4af9b4a</hash>
+        <hash alg="SHA-512">4e798790856f83f50832db80bfab64dfceeff1c509d7dde43e74a9f9192ea7a7d5ea77b9b1e81291fa6ba3dcef5ab8fa791ca8093a72a08d7ca6f6499e13e506</hash>
+        <hash alg="SHA-384">73038c395166552b64b6b5469bd8056584f48d19b5762df2e8bd2770405ed8f6071e397a87d9a7ed39f8c2e0e8ab85b2</hash>
+        <hash alg="SHA3-384">e06c8a460b3bf06d6cb22237aeffa6afd2eadd9461096c67b768a14603ad8aaa88f891d03cf0a273a99d86906c1c8eb3</hash>
+        <hash alg="SHA3-256">1097cfd20e80ce368fd828a23ad7c32a202cebd92106f6ebb88ba55ca74349ee</hash>
+        <hash alg="SHA3-512">d7b710e1e0484badb875f326c602c90df6705df48b0f057320919a5255d3ecbddd7053eabc68787480a70aebd7e553e9f51728112e1fa0846c849366b7e8d69b</hash>
+      </hashes>
+      <licenses>
+        <license>
+          <id>Apache-2.0</id>
+        </license>
+      </licenses>
+      <purl>pkg:maven/org.osgi/org.osgi.resource@1.0.0?type=jar</purl>
+      <externalReferences>
+        <reference type="website">
+          <url>http://www.osgi.org/</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://osgi.org/git/build.git</url>
+        </reference>
+      </externalReferences>
+    </component>
+    <component type="library" bom-ref="pkg:maven/org.osgi/org.osgi.service.serviceloader@1.0.0?type=jar">
+      <publisher>OSGi Alliance</publisher>
+      <group>org.osgi</group>
+      <name>org.osgi.service.serviceloader</name>
+      <version>1.0.0</version>
+      <description>OSGi Companion Code for org.osgi.service.serviceloader Version 1.0.0.</description>
+      <scope>required</scope>
+      <hashes>
+        <hash alg="MD5">4943f0102a6d893c4dd77f369a5f0537</hash>
+        <hash alg="SHA-1">3728ff37909c6a3c1870b3e851342d9f2bd3cc63</hash>
+        <hash alg="SHA-256">8f876ce2a9aa4e95b1f1952950255103e2487425050a654f3285447ba601c154</hash>
+        <hash alg="SHA-512">a7def4cb7a8ed992645faa80a780e0b30bd39c1587b5bcb65fe170d10842d0d880c2849edd50c64807fe0e4b9cc0051337d1b161d0d390465d9e63a762861c49</hash>
+        <hash alg="SHA-384">1e480694b8a541da4cd1e044d3f3ea3cd55152515ac022b80d865b6654242506c2138daabb4e71c30d36b12b9aaf676d</hash>
+        <hash alg="SHA3-384">7f076af200ae9c2bd9f235b949aee01a1a758c8aac10fee8b98ec2497197d2029117d5627eb0eabd9b42979eb1baa009</hash>
+        <hash alg="SHA3-256">83b1dce69c4c899176eb6e368e434ecb77dfed7c436530b8c5d08b9b6f2430aa</hash>
+        <hash alg="SHA3-512">5debde53a7ead231dcd907467d59728f59cae4eb3b967c19808f78890bd97d2f04657cad9c093e88f9818338b0b3b38a57c66400ebcff61fbb26d18e9f7bf8ed</hash>
+      </hashes>
+      <licenses>
+        <license>
+          <id>Apache-2.0</id>
+        </license>
+      </licenses>
+      <purl>pkg:maven/org.osgi/org.osgi.service.serviceloader@1.0.0?type=jar</purl>
+      <externalReferences>
+        <reference type="website">
+          <url>http://www.osgi.org/</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://osgi.org/git/build.git</url>
+        </reference>
+      </externalReferences>
+    </component>
+    <component type="library" bom-ref="pkg:maven/com.google.errorprone/error_prone_annotations@2.38.0?type=jar">
+      <publisher>Google LLC</publisher>
+      <group>com.google.errorprone</group>
+      <name>error_prone_annotations</name>
+      <version>2.38.0</version>
+      <description>Error Prone is a static analysis tool for Java that catches common programming mistakes at compile-time.</description>
+      <scope>required</scope>
+      <hashes>
+        <hash alg="MD5">912f8206614000252841d89cb0461895</hash>
+        <hash alg="SHA-1">fc0ae991433e8590ba51cd558421478318a74c8c</hash>
+        <hash alg="SHA-256">6661d5335090a5fc61dd869d2095bc6c1e2156e3aa47a6e4ababdf64c99a7889</hash>
+        <hash alg="SHA-512">b13fdb7e06ec1f12ea1d63b0ff942c239e4decb391d736a1f7d46c9aa9e2744e9391be4398a02a78d551a96969622e65b75bbd31e5bf67a5938716765f451f3a</hash>
+        <hash alg="SHA-384">47be5289bf8ca3f9dfe2d22e4baf6defc71dabb5476f878a240412e336d77d81148b2f79ffc0702079e48bd67ad7fd22</hash>
+        <hash alg="SHA3-384">53f3f57b51ea34afd38e1270fbe08dfcf1e2dcfb50f4ac9369bb625febb75611c9e5d8bb09f4dfcb504b5d0b9ac47443</hash>
+        <hash alg="SHA3-256">02eaa5431cda49a9e702cac4ad8051d88397e1d5219a0ef65673dae8eaf9c70d</hash>
+        <hash alg="SHA3-512">0307dfc76cae6d539d93649ef3ccb85937d62f6f74be212e8a05ae1cc892f3b63a5c03cd6f61ace9f5dbd0f8dfb0baf086eaf3cd10bbefd22640966d00686dac</hash>
+      </hashes>
+      <licenses>
+        <license>
+          <id>Apache-2.0</id>
+        </license>
+      </licenses>
+      <purl>pkg:maven/com.google.errorprone/error_prone_annotations@2.38.0?type=jar</purl>
+      <externalReferences>
+        <reference type="website">
+          <url>https://errorprone.info/error_prone_annotations</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://github.com/google/error-prone/error_prone_annotations</url>
+        </reference>
+      </externalReferences>
+    </component>
+    <component type="library" bom-ref="pkg:maven/org.osgi/org.osgi.annotation.bundle@2.0.0?type=jar">
+      <publisher>Eclipse Foundation</publisher>
+      <group>org.osgi</group>
+      <name>org.osgi.annotation.bundle</name>
+      <version>2.0.0</version>
+      <description>OSGi Companion Code for org.osgi.annotation.bundle Version 2.0.0</description>
+      <scope>required</scope>
+      <hashes>
+        <hash alg="MD5">19115314a0ce4cfb711a811dcc0be0a3</hash>
+        <hash alg="SHA-1">f5c2cd6e670c3c5d440d3003efd5ef2ead5c68eb</hash>
+        <hash alg="SHA-256">b9c9546ec5be3ebc2e85ba4919150ad76d64594805282fc895133a47d264a7ae</hash>
+        <hash alg="SHA-512">f16b8983240ba3c08d6bc78e2eae92e89eb528f32a705961d90b463def0a5ed1ba08cc3d0be38b5dcfb946c6f759df772e122fb769e58e8c20aa79a489a1fd21</hash>
+        <hash alg="SHA-384">88217b7d3a2d9a0a3f005162b95d68ba2bd29629688b2c32e93e4587d89fe6bd468f5c62ef422ebf2b609d402e62ff56</hash>
+        <hash alg="SHA3-384">c7ee64dd3e235d900d01d8629b82245303d34a006e1edcd2571ef736d9c6256dcb718be326ad4909cb6d2cea26118ea9</hash>
+        <hash alg="SHA3-256">9adcacb036caf30d17a13fcd5952a35e011678b1dbfabafdff73dba065ace8a3</hash>
+        <hash alg="SHA3-512">76bec6bb2cdbc8da043760a7aedd51203c8d70b740c9b8de0ba6b0cf9ad991a58059566e7f62dee30606f32d267b2596d5bd5e885c73e336ae7fff6cf7f970db</hash>
+      </hashes>
+      <licenses>
+        <license>
+          <id>Apache-2.0</id>
+          <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+      </licenses>
+      <purl>pkg:maven/org.osgi/org.osgi.annotation.bundle@2.0.0?type=jar</purl>
+      <externalReferences>
+        <reference type="website">
+          <url>https://docs.osgi.org/</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://github.com/osgi/osgi</url>
+        </reference>
+      </externalReferences>
+    </component>
+    <component type="library" bom-ref="pkg:maven/org.osgi/org.osgi.annotation.versioning@1.1.2?type=jar">
+      <publisher>Eclipse Foundation</publisher>
+      <group>org.osgi</group>
+      <name>org.osgi.annotation.versioning</name>
+      <version>1.1.2</version>
+      <description>OSGi Companion Code for org.osgi.annotation.versioning Version 1.1.2</description>
+      <scope>required</scope>
+      <hashes>
+        <hash alg="MD5">a61b3b8d09c85ad296c61e21bf77ec70</hash>
+        <hash alg="SHA-1">dc3cd4ec96c0b3c5459fe00694bd73a816ecf93e</hash>
+        <hash alg="SHA-256">f51f235e80df8ffbc30ef1b557b6ea38a696632d675404ec117e952978b8b863</hash>
+        <hash alg="SHA-512">a4c612bec624a168f25f0923d51925bbc914686673eeebd5b2442998b876f05855e2b0a6e6e9aca4a6533ed3156b0d24f94c3e508ee9778e1b2e469be318afa3</hash>
+        <hash alg="SHA-384">68a2046f083a2e77304622a56d07c0e73ba88534af4a87b5428cebf8b638c40ce21bbac089a8b5520ad488c946b633ea</hash>
+        <hash alg="SHA3-384">930734f6979650191d51cd8bf1f9ab4548d307950735aa98e2dbda7aecc19b49d01a3b968824f6df2ffafce65e122c60</hash>
+        <hash alg="SHA3-256">513392d0e8ddd873d04c5cf4f402a9cfe094413832bb859fe37b70fd0512dd12</hash>
+        <hash alg="SHA3-512">3d2bd7d2eb784a9fab4b09c42adb0722363079235340f1915bb82a99f1c5e616ee8f3dc34d2c90b941d2651dcb4f393c7fea3e23b579456a696604148d10f22b</hash>
+      </hashes>
+      <licenses>
+        <license>
+          <id>Apache-2.0</id>
+          <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+      </licenses>
+      <purl>pkg:maven/org.osgi/org.osgi.annotation.versioning@1.1.2?type=jar</purl>
+      <externalReferences>
+        <reference type="website">
+          <url>https://docs.osgi.org/</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://github.com/osgi/osgi</url>
+        </reference>
+      </externalReferences>
+    </component>
+  </components>
+  <dependencies>
+    <dependency ref="pkg:maven/org.apache.logging.log4j/log4j-jakarta-smtp@2.26.0?type=jar">
+      <dependency ref="pkg:maven/jakarta.activation/jakarta.activation-api@2.1.3?type=jar"/>
+      <dependency ref="pkg:maven/jakarta.mail/jakarta.mail-api@2.1.3?type=jar"/>
+      <dependency ref="pkg:maven/org.apache.logging.log4j/log4j-api@2.26.0?type=jar"/>
+      <dependency ref="pkg:maven/org.apache.logging.log4j/log4j-core@2.26.0?type=jar"/>
+      <dependency ref="pkg:maven/org.eclipse.angus/angus-activation@2.0.2?type=jar"/>
+      <dependency ref="pkg:maven/org.eclipse.angus/jakarta.mail@2.0.3?type=jar"/>
+      <dependency ref="pkg:maven/biz.aQute.bnd/biz.aQute.bnd.annotation@7.1.0?type=jar"/>
+      <dependency ref="pkg:maven/com.google.errorprone/error_prone_annotations@2.38.0?type=jar"/>
+      <dependency ref="pkg:maven/org.osgi/org.osgi.annotation.bundle@2.0.0?type=jar"/>
+      <dependency ref="pkg:maven/org.osgi/org.osgi.annotation.versioning@1.1.2?type=jar"/>
+    </dependency>
+    <dependency ref="pkg:maven/jakarta.activation/jakarta.activation-api@2.1.3?type=jar"/>
+    <dependency ref="pkg:maven/jakarta.mail/jakarta.mail-api@2.1.3?type=jar">
+      <dependency ref="pkg:maven/jakarta.activation/jakarta.activation-api@2.1.3?type=jar"/>
+    </dependency>
+    <dependency ref="pkg:maven/org.apache.logging.log4j/log4j-api@2.26.0?type=jar"/>
+    <dependency ref="pkg:maven/org.apache.logging.log4j/log4j-core@2.26.0?type=jar">
+      <dependency ref="pkg:maven/org.apache.logging.log4j/log4j-api@2.26.0?type=jar"/>
+    </dependency>
+    <dependency ref="pkg:maven/org.eclipse.angus/angus-activation@2.0.2?type=jar">
+      <dependency ref="pkg:maven/jakarta.activation/jakarta.activation-api@2.1.3?type=jar"/>
+    </dependency>
+    <dependency ref="pkg:maven/org.eclipse.angus/jakarta.mail@2.0.3?type=jar">
+      <dependency ref="pkg:maven/jakarta.activation/jakarta.activation-api@2.1.3?type=jar"/>
+      <dependency ref="pkg:maven/org.eclipse.angus/angus-activation@2.0.2?type=jar"/>
+    </dependency>
+    <dependency ref="pkg:maven/biz.aQute.bnd/biz.aQute.bnd.annotation@7.1.0?type=jar">
+      <dependency ref="pkg:maven/org.osgi/org.osgi.resource@1.0.0?type=jar"/>
+      <dependency ref="pkg:maven/org.osgi/org.osgi.service.serviceloader@1.0.0?type=jar"/>
+    </dependency>
+    <dependency ref="pkg:maven/org.osgi/org.osgi.resource@1.0.0?type=jar"/>
+    <dependency ref="pkg:maven/org.osgi/org.osgi.service.serviceloader@1.0.0?type=jar"/>
+    <dependency ref="pkg:maven/com.google.errorprone/error_prone_annotations@2.38.0?type=jar"/>
+    <dependency ref="pkg:maven/org.osgi/org.osgi.annotation.bundle@2.0.0?type=jar">
+      <dependency ref="pkg:maven/org.osgi/org.osgi.annotation.versioning@1.1.2?type=jar"/>
+    </dependency>
+    <dependency ref="pkg:maven/org.osgi/org.osgi.annotation.versioning@1.1.2?type=jar"/>
+  </dependencies>
+</bom>
