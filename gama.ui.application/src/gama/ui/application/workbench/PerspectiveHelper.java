@@ -216,7 +216,6 @@ public class PerspectiveHelper {
 		}
 		if (activePage == null) return false;
 		final IWorkbenchPage page = activePage;
-		final WorkbenchWindow window = (WorkbenchWindow) page.getWorkbenchWindow();
 		if (page.getPerspective().equals(currentSimulationPerspective)) return true;
 		Display.getDefault().asyncExec(() -> {
 			memorizeActiveEditor(page);
@@ -231,6 +230,7 @@ public class PerspectiveHelper {
 			} catch (final Exception e) {
 				DEBUG.OUT("Error in setPerspective():" + e.getMessage());
 			}
+			final WorkbenchWindow window = (WorkbenchWindow) page.getWorkbenchWindow();
 			final Boolean showControls = keepControls();
 			if (showControls != null) { window.setCoolBarVisible(showControls); }
 			final Boolean keepTray = keepTray();
