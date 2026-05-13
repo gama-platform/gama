@@ -189,8 +189,8 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	public void toggleFullScreen() {
 		if (inFullScreenTransition) return;
 		inFullScreenTransition = true;
-		if (isFullScreen()) {
-			WorkbenchHelper.asyncRun(() -> {
+		try {
+			if (isFullScreen()) {
 				DEBUG.OUT("Is already full screen: exiting");
 				fs.setImage(GamaIcon.named(DISPLAY_FULLSCREEN_ENTER).image());
 				fs.setToolTipText(STRINGS.PAD("Enter fullscreen", 25) + "ESC");
@@ -206,9 +206,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 				createOverlay();
 				normalParentOfFullScreenControl.requestLayout();
 				destroyFullScreenShell();
-			});
-		} else {
-			WorkbenchHelper.asyncRun(() -> {
+			} else {
 				DEBUG.OUT("Is not full screen: entering");
 				fullScreenShell = createFullScreenShell();
 				if (fullScreenShell == null) return;
@@ -234,28 +232,22 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 					normalParentOfToolbar = toolbar.getParent();
 					toolbar.setParent(fullScreenShell);
 				}
-			});
-		}
-		// Last actions to do, after which we mark the transition as passed
-		WorkbenchHelper.asyncRun(() -> {
-			try {
-				if (!toolbar.isDisposed()) {
-					toolbar.wipe(SWT.RIGHT, true);
-					GamaToolbarFactory.buildToolbar(view, toolbar);
-					toolbar.requestLayout();
-				}
-				if (overlay.isVisible()) {
-					WorkbenchHelper.runInUI("Display overlay", 50, m -> {
-						toggleOverlay();
-						toggleOverlay();
-					});
-				}
-				view.focusCanvas();
-			} finally {
-				inFullScreenTransition = false;
 			}
-		});
-
+			if (!toolbar.isDisposed()) {
+				toolbar.wipe(SWT.RIGHT, true);
+				GamaToolbarFactory.buildToolbar(view, toolbar);
+				toolbar.requestLayout();
+			}
+			if (overlay.isVisible()) {
+				WorkbenchHelper.runInUI("Display overlay", 50, m -> {
+					toggleOverlay();
+					toggleOverlay();
+				});
+			}
+			view.focusCanvas();
+		} finally {
+			inFullScreenTransition = false;
+		}
 	}
 
 	/**
