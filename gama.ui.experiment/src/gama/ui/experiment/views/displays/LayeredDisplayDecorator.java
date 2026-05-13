@@ -37,6 +37,7 @@ import org.eclipse.ui.IPerspectiveListener;
 import gama.api.GAMA;
 import gama.api.kernel.simulation.IExperimentStateListener;
 import gama.api.kernel.species.IExperimentSpecies;
+import gama.api.runtime.SystemInfo;
 import gama.api.ui.displays.IDisplayData.Changes;
 import gama.api.ui.displays.IDisplayData.DisplayDataListener;
 import gama.api.utils.interfaces.IDisposable;
@@ -393,16 +394,16 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	private void destroyFullScreenShell() {
 		if (fullScreenShell == null || fullScreenShell.isDisposed()) return;
 		DEBUG.OUT("Destroying full screen shell");
-		WorkbenchHelper.asyncRun(() -> {
-			if (!fullScreenShell.isDisposed()) {
-				fullScreenShell.close();
-				fullScreenShell.dispose();
-				fullScreenShell = null;
-			}
-			ViewsHelper.unregisterFullScreenView(view);
-			ViewsHelper.activate(view);
-		});
-
+		// Solves an issue in macOS where the development version of GAMA would not close the fullScreenShell.
+		if (SystemInfo.isMac()) {
+			fullScreenShell.setSize(1, 1);
+			fullScreenShell.setVisible(false);
+		}
+		fullScreenShell.close();
+		fullScreenShell.dispose();
+		fullScreenShell = null;
+		ViewsHelper.unregisterFullScreenView(view);
+		ViewsHelper.activate(view);
 	}
 
 	/**
