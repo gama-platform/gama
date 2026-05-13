@@ -13,9 +13,9 @@ package gama.ui.shared.utils;
 import static gama.ui.shared.utils.WorkbenchHelper.getPage;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
 import org.eclipse.swt.custom.CTabFolder;
@@ -44,6 +44,9 @@ public class ViewsHelper {
 
 	/** The is requesting. */
 	static volatile boolean isRequesting;
+
+	/** The fullscreen views. */
+	static Map<Integer, IGamaView.Display> FULLSCREEN_VIEWS = new ConcurrentHashMap<>();
 
 	static {
 		DEBUG.OFF();
@@ -261,9 +264,6 @@ public class ViewsHelper {
 		WorkbenchHelper.run(() -> part.toggleFullScreen());
 		return true;
 	}
-
-	/** The fullscreen views. */
-	static Map<Integer, IGamaView.Display> FULLSCREEN_VIEWS = new HashMap<>();
 
 	/**
 	 * Returns false if the screen is already covered by a view
