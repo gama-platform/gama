@@ -105,7 +105,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	public GamaToolbar2 toolbar;
 
 	/** The interactive console visible. */
-	boolean isOverlayTemporaryVisible, sideControlsVisible, interactiveConsoleVisible;
+	private volatile boolean isOverlayTemporaryVisible;
 
 	/** The perspective listener. */
 	private final IPerspectiveListener perspectiveListener = new LayeredDisplayPerspectiveListener(this);
