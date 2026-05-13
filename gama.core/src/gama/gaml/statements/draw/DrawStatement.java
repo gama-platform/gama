@@ -166,10 +166,10 @@ import gama.gaml.statements.draw.DrawStatement.DrawValidator;
 						type = IType.FLOAT,
 						optional = true,
 						doc = @doc (
-								value = "The width to use when drawing lines and polylines in OpenGL displays. When greater than 1 (the default), lines are rendered as flat geometric polygons with the specified width in world coordinates, "
-										+ "which ensures consistent planar rendering across all GPU implementations. A value of 1 (the default) draws a standard 1-pixel line. "
-										+ "Note: when combined with the 'depth' facet, the resulting shape is a 3D box (width x depth). "
-										+ "The default value is set by the preference found in Displays>OpenGL Rendering Properties")), },
+								value = """
+										The width in point units (not world units) to use in OpenGL displays for line-based geometries and for the borders or wireframes of arbitrary shapes. This value is passed directly to the underlying OpenGL line width setting, \
+										so the effective rendering depends on the capabilities of the current GPU and driver. \
+										The default value is set by the preference found in Displays>OpenGL Rendering Properties""")), },
 
 		omissible = IKeyword.GEOMETRY)
 @inside (
@@ -310,12 +310,14 @@ public class DrawStatement extends AbstractStatementSequence implements IStateme
 	private IDrawDelegate delegate;
 
 	/**
-	 * Inline two-slot cache replacing the former WeakHashMap. A draw statement is shared across all agents of a
-	 * species and is called once per agent per frame. Since 2D and 3D displays are never active simultaneously,
-	 * there are at most two distinct IGraphics instances in practice. A direct identity comparison is far cheaper
-	 * than a WeakHashMap get() called thousands of times per frame.
+	 * Inline two-slot cache replacing the former WeakHashMap. A draw statement is shared across all agents of a species
+	 * and is called once per agent per frame. Since 2D and 3D displays are never active simultaneously, there are at
+	 * most two distinct IGraphics instances in practice. A direct identity comparison is far cheaper than a WeakHashMap
+	 * get() called thousands of times per frame.
 	 */
 	private IGraphics cachedGraphics0, cachedGraphics1;
+
+	/** The cached data 1. */
 	private DrawingData cachedData0, cachedData1;
 
 	/**
@@ -390,8 +392,10 @@ public class DrawStatement extends AbstractStatementSequence implements IStateme
 
 	@Override
 	public void dispose() {
-		cachedGraphics0 = null; cachedData0 = null;
-		cachedGraphics1 = null; cachedData1 = null;
+		cachedGraphics0 = null;
+		cachedData0 = null;
+		cachedGraphics1 = null;
+		cachedData1 = null;
 		super.dispose();
 	}
 

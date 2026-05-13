@@ -92,7 +92,8 @@ public class OpenGLActivator extends GamaBundleActivator {
 		BANNER_CATEGORY prefix = BANNER_CATEGORY.OpenGL;
 		try {
 			// GLCapabilities cap = new GLCapabilities(OpenGL.PROFILE);
-			GLCapabilities cap = new GLCapabilities(GLProfile.getMaxProgrammable(true));
+			// Following problems on macOS with glLineWidth capabilities, stick for the moment to GL2.1
+			GLCapabilities cap = new GLCapabilities(GLProfile.getMaxFixedFunc(true));
 			cap.setDepthBits(24);
 			cap.setDoubleBuffered(true);
 			cap.setHardwareAccelerated(true);

@@ -104,17 +104,6 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
 			Double d = object.getAttributes().getDepth();
 			final double height = d == null ? 0d : d;
 			IShape.Type type = object.getAttributes().getType();
-			// For line geometries with an explicit width > 1, use geometric buffering for
-			// consistent rendering across all GPU implementations instead of glLineWidth,
-			// which is unreliable and creates non-planar screen-space artifacts.
-			if (type == IShape.Type.LINESTRING) {
-				final double lineWidth = object.getAttributes().getLineWidth();
-				if (lineWidth > 1.0) {
-					// Buffer by half the width on each side to achieve the desired total width
-					geometry = geometry.buffer(lineWidth / 2.0);
-					type = height != 0 ? IShape.Type.POLYHEDRON : IShape.Type.POLYGON;
-				}
-			}
 			drawGeometry(geometry, border, height, type);
 		} finally {
 			gl.popMatrix();
