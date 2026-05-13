@@ -152,7 +152,7 @@ species ant skills: [moving] control: fsm {
 
 	aspect info {
 		if (use_icons) {
-			draw ant_shape size: {7, 5} rotate:  heading + 1;
+			draw ant_shape size: {7, 5} rotate:  heading ;
 		} else {
 			draw circle(1) wireframe: !has_food color: #red;
 		}

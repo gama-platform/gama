@@ -88,8 +88,9 @@ species people skills: [moving] {
 		} }
 
 	aspect default {
-		draw rectangle(4,10) rotated_by (heading) color:( #dodgerblue) depth: 3;
-		draw rectangle(4, 6) rotated_by (heading) color:( #dodgerblue) depth: 4;
+		// TODO GAMA 2026-06 Correction to the headings -- needs to be verified
+		draw rectangle(4,10) rotate: (heading+90) color:( #dodgerblue) depth: 3;
+		draw rectangle(4, 6) rotate: (heading+90) color:( #dodgerblue) depth: 4;
 	} }
 	//Species to represent the buildings
 species building {
@@ -110,7 +111,7 @@ species road {
 	int buffer <- 10;
 
 	aspect default {
-		draw (shape + 5) color: #white;
+		draw (shape + 5) width: 2 color: #white ;
 	}
 
 }
