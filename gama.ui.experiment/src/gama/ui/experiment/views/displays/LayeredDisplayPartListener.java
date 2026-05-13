@@ -3,10 +3,13 @@
  */
 package gama.ui.experiment.views.displays;
 
+import java.util.Objects;
+
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPartReference;
 
 import gama.api.ui.displays.IDisplaySurface;
+import gama.dev.DEBUG;
 import gama.ui.application.workbench.PerspectiveHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
 
@@ -35,14 +38,15 @@ final class LayeredDisplayPartListener implements IPartListener2 {
 	 * @return true, if successful
 	 */
 	private boolean ok(final IWorkbenchPartReference partRef) {
-		return partRef.getPartName().equals(decorator.view.getPartName()) && decorator.view.surfaceComposite != null
+		return Objects.equals(partRef.getTitle(), decorator.view.getTitle()) && decorator.view.surfaceComposite != null
 				&& !decorator.view.surfaceComposite.isDisposed() && !decorator.isFullScreen();
 	}
 
 	@Override
 	public void partActivated(final IWorkbenchPartReference partRef) {
 		if (ok(partRef)) {
-			WorkbenchHelper.run(() -> {
+			DEBUG.OUT("partActivated: " + partRef.getTitle());
+			WorkbenchHelper.asyncRun(() -> {
 				decorator.view.showCanvas();
 				if (decorator.overlay != null) { decorator.overlay.display(); }
 			});
@@ -51,7 +55,10 @@ final class LayeredDisplayPartListener implements IPartListener2 {
 
 	@Override
 	public void partClosed(final IWorkbenchPartReference partRef) {
-		if (ok(partRef) && decorator.overlay != null) { decorator.overlay.close(); }
+		if (ok(partRef) && decorator.overlay != null) {
+			DEBUG.OUT("partClosed: " + partRef.getTitle());
+			decorator.overlay.close();
+		}
 	}
 
 	@Override
@@ -63,6 +70,7 @@ final class LayeredDisplayPartListener implements IPartListener2 {
 		// selected. After tests, the same happens on Linux and Windows -- so the test is generalized.
 		if (!PerspectiveHelper.keepTabs()) return;
 		if (ok(partRef)) {
+			DEBUG.OUT("partHidden: " + partRef.getTitle());
 			WorkbenchHelper.asyncRun(() -> {
 				decorator.view.hideCanvas();
 				if (decorator.overlay != null) { decorator.overlay.hide(); }
@@ -73,6 +81,7 @@ final class LayeredDisplayPartListener implements IPartListener2 {
 	@Override
 	public void partVisible(final IWorkbenchPartReference partRef) {
 		if (ok(partRef)) {
+			DEBUG.OUT("partVisible: " + partRef.getTitle());
 			WorkbenchHelper.asyncRun(() -> {
 				decorator.view.showCanvas();
 				IDisplaySurface s = decorator.view.getDisplaySurface();
