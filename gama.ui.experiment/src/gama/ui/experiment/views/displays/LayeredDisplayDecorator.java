@@ -37,6 +37,7 @@ import org.eclipse.ui.IPerspectiveListener;
 import gama.api.GAMA;
 import gama.api.kernel.simulation.IExperimentStateListener;
 import gama.api.kernel.species.IExperimentSpecies;
+import gama.api.runtime.SystemInfo;
 import gama.api.ui.displays.IDisplayData.Changes;
 import gama.api.ui.displays.IDisplayData.DisplayDataListener;
 import gama.api.utils.interfaces.IDisposable;
@@ -217,7 +218,8 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 				// was called before createFullScreenShell(), meaning isFullScreen() was still false
 				// when partActivated fired — causing an extra showCanvas UIJob that could race with
 				// (and undo) the fullscreen transition when called during decorateDisplays().
-				ViewsHelper.activate(view);
+				// Activation removed for the moment on macOS as it does not seem necessary.
+				if (!SystemInfo.isMac()) { ViewsHelper.activate(view); }
 				fs.setImage(GamaIcon.named(DISPLAY_FULLSCREEN_EXIT).image());
 				fs.setToolTipText(STRINGS.PAD("Exit fullscreen", 25) + "ESC");
 				toggleFullScreen = exitFullScreen;
@@ -250,7 +252,9 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 						toggleOverlay();
 					});
 				}
-				view.focusCanvas();
+				// Seems like a bad idea to steal the focus manually (in relation to
+				// https://github.com/gama-platform/gama/issues/994). Disabled only for macOS in case
+				if (!SystemInfo.isMac()) { view.focusCanvas(); }
 			} finally {
 				inFullScreenTransition = false;
 			}
@@ -401,7 +405,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	private void destroyFullScreenShell() {
 		if (fullScreenShell == null || fullScreenShell.isDisposed()) return;
 		DEBUG.OUT("Destroying full screen shell");
-		WorkbenchHelper.asyncRun(() -> {
+		WorkbenchHelper.run(() -> {
 			if (!fullScreenShell.isDisposed()) {
 				fullScreenShell.close();
 				fullScreenShell.dispose();

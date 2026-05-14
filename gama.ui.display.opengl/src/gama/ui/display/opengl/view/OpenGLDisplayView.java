@@ -146,9 +146,12 @@ public class OpenGLDisplayView extends LayeredDisplayView {
 
 	@Override
 	public void setFocus() {
-		Control c = this.getSurfaceComposite();
-		if (c != null && !c.isDisposed() && !c.isFocusControl()) {
-			c.setFocus(); // Necessary ?
-		}
+		// Temporarily disabled as the focus on the GLCanvas was stealing away all possibility of interaction with the
+		// view. See several issues related to this, including probably
+		// https://github.com/gama-platform/gama/issues/1055 and https://github.com/gama-platform/gama/issues/994
+		// GamaGLCanvas c = this.getGLCanvas();
+		// if (c != null && !c.isDisposed() && !c.isFocusControl()) {
+		// // c.setFocus(); // Necessary ?
+		// }
 	}
 }
