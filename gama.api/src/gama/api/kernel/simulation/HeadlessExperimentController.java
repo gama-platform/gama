@@ -267,12 +267,12 @@ public class HeadlessExperimentController implements IExperimentController {
 	}
 
 	@Override
-	public boolean processStep(final boolean andWait) {
+	public boolean processStep(final int nbSteps, final boolean andWait) {
 		return true;
 	}
 
 	@Override
-	public boolean processBack(final boolean andWait) {
+	public boolean processBack(final int nbSteps, final boolean andWait) {
 		return true;
 	}
 

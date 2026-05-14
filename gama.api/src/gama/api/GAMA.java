@@ -681,7 +681,7 @@ public class GAMA {
 	 */
 	public static boolean stepFrontmostExperiment(final boolean andWait) {
 		for (final IExperimentController controller : controllers) {
-			if (!controller.processStep(andWait)) return false;
+			if (!controller.processStep(1, andWait)) return false;
 		}
 		return true;
 	}
@@ -695,7 +695,7 @@ public class GAMA {
 	 */
 	public static boolean stepBackFrontmostExperiment(final boolean andWait) {
 		for (final IExperimentController controller : controllers) {
-			if (!controller.processBack(andWait)) return false;
+			if (!controller.processBack(1, andWait)) return false;
 		}
 		return true;
 	}

@@ -246,7 +246,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 		// Optimization: Cache scope to reduce volatile reads
 		final IScope currentScope = getScope();
 
-		switch (command) {
+		switch (command.type()) {
 			case _CLOSE:
 				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.NONE);
 				return true;
@@ -285,6 +285,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 				return true;
 
 			case _STEP:
+				// As we are in GUI, we assume there's only one step
 				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.PAUSED);
 				paused = true;
 				lock.release(); // let the execution thread run one step
@@ -293,6 +294,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 				return true;
 
 			case _BACK:
+				// As we are in GUI, we assume there's only one step
 				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.PAUSED);
 				paused = true;
 				// Optimization: Add null check before operation
@@ -314,7 +316,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 					paused = true;
 					currentScope.getGui().getStatus().waitStatus("Reloading...", IStatusMessage.SIMULATION_ICON,
 							() -> experiment.reload());
-					if (wasRunning) return processUserCommand(ExperimentCommand._START);
+					if (wasRunning) return processUserCommand(_START_CMD);
 					currentScope.getGui().getStatus().informStatus("Experiment reloaded",
 							IStatusMessage.SIMULATION_ICON);
 					return true;
@@ -383,7 +385,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 
 				// Signal command thread to exit its take() loop
 				if (commandThread != null && commandThread.isAlive()) {
-					commands.offer(ExperimentCommand._CLOSE);
+					commands.offer(_CLOSE_CMD);
 					try {
 						commandThread.join(1000);
 						if (commandThread.isAlive()) {

@@ -30,24 +30,35 @@ public interface IExperimentController extends IDisposable, Closeable {
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @date 24 oct. 2023
 	 */
-	enum ExperimentCommand {
-
-		/** The open. */
+	record ExperimentCommand(ExperimentCommandTypes type, int quantity) {}
+	
+	enum ExperimentCommandTypes {
 		_OPEN(),
-		/** The start. */
 		_START(),
-		/** The step. */
 		_STEP(),
-		/** The pause. */
 		_PAUSE(),
-		/** The reload. */
 		_RELOAD(),
-		/** The back. */
 		_BACK(),
-		/** The close. */
 		_CLOSE();
-
+		
 	}
+	
+	// Keeping static instances for the non-parameterable commands to avoid useless allocations
+	/** The open. */
+	public static ExperimentCommand _OPEN_CMD = new ExperimentCommand(ExperimentCommandTypes._OPEN, 0);
+	
+	/** The start. */
+	public static final ExperimentCommand _START_CMD = new ExperimentCommand(ExperimentCommandTypes._START, 0);
+		
+	/** The pause. */
+	public static final ExperimentCommand _PAUSE_CMD = new ExperimentCommand(ExperimentCommandTypes._PAUSE, 0);
+	
+	/** The reload. */
+	public static final ExperimentCommand _RELOAD_CMD = new ExperimentCommand(ExperimentCommandTypes._RELOAD, 0);
+
+	/** The close. */
+	public static final ExperimentCommand _CLOSE_CMD = new ExperimentCommand(ExperimentCommandTypes._CLOSE, 0);
+
 
 	/**
 	 * Gets the experiment.
@@ -120,7 +131,7 @@ public interface IExperimentController extends IDisposable, Closeable {
 	 *            the and wait
 	 * @date 23 oct. 2023
 	 */
-	boolean processStep(final boolean andWait);
+	boolean processStep(final int nbSteps, final boolean andWait);
 
 	/**
 	 * Process back.
@@ -130,7 +141,7 @@ public interface IExperimentController extends IDisposable, Closeable {
 	 *            the and wait
 	 * @date 23 oct. 2023
 	 */
-	boolean processBack(final boolean andWait);
+	boolean processBack(final int nbSteps, final boolean andWait);
 
 	/**
 	 * Process start pause.
