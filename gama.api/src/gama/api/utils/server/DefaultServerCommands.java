@@ -78,7 +78,10 @@ import gama.dev.DEBUG;
  */
 public class DefaultServerCommands {
 
-	/** The maximum time to retry async enqueuing before considering the controller stalled. */
+	/**
+	 * Maximum retry window for async command enqueueing before considering the controller stalled. 5 minutes keeps large
+	 * step bursts possible while preventing an infinite wait if command processing is blocked.
+	 */
 	private static final long ASYNC_COMMAND_RETRY_TIMEOUT_MS = 300_000L;
 
 	/** Initial delay between async enqueue attempts. */
@@ -275,11 +278,11 @@ public class DefaultServerCommands {
 		final long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(ASYNC_COMMAND_RETRY_TIMEOUT_MS);
 		long retryDelay = ASYNC_COMMAND_INITIAL_RETRY_DELAY_MS;
 		while (!controller.isDisposing() && !Thread.currentThread().isInterrupted()) {
-			if (command.getAsBoolean()) return true;
 			if (System.nanoTime() >= deadline) return false;
+			if (command.getAsBoolean()) return true;
 			try {
 				Thread.sleep(retryDelay);
-				retryDelay = Math.min(retryDelay << 1, ASYNC_COMMAND_MAX_RETRY_DELAY_MS);
+				retryDelay = Math.min(retryDelay * 2L, ASYNC_COMMAND_MAX_RETRY_DELAY_MS);
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
 				return false;
