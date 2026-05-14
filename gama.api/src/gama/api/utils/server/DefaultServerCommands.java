@@ -78,11 +78,14 @@ import gama.dev.DEBUG;
  */
 public class DefaultServerCommands {
 
-	/** The maximum time to retry async enqueuing when the command queue is full. */
+	/** The maximum time to retry async enqueuing before considering the controller stalled. */
 	private static final long ASYNC_COMMAND_RETRY_TIMEOUT_MS = 300_000L;
 
-	/** Delay between async enqueue attempts. */
-	private static final long ASYNC_COMMAND_RETRY_DELAY_MS = 10L;
+	/** Initial delay between async enqueue attempts. */
+	private static final long ASYNC_COMMAND_INITIAL_RETRY_DELAY_MS = 10L;
+
+	/** Upper bound for backoff delay between async enqueue attempts. */
+	private static final long ASYNC_COMMAND_MAX_RETRY_DELAY_MS = 250L;
 
 	/**
 	 * Load.
@@ -205,7 +208,8 @@ public class DefaultServerCommands {
 		for (int i = 0; i < nb_step; i++) {
 			try {
 				if (!processCommand(controller, sync, () -> controller.processStep(sync)))
-					return new CommandResponse(UnableToExecuteRequest, "Controller is full", map, false);
+					return new CommandResponse(UnableToExecuteRequest,
+							controller.isDisposing() ? "Controller is disposing" : "Controller is full", map, false);
 			} catch (RuntimeException e) {
 				DEBUG.OUT(e.getStackTrace());
 				return new CommandResponse(MessageType.RuntimeError, e, map, false);
@@ -244,7 +248,8 @@ public class DefaultServerCommands {
 		for (int i = 0; i < nb_step; i++) {
 			try {
 				if (!processCommand(controller, sync, () -> controller.processBack(sync)))
-					return new CommandResponse(UnableToExecuteRequest, "Controller is full", map, false);
+					return new CommandResponse(UnableToExecuteRequest,
+							controller.isDisposing() ? "Controller is disposing" : "Controller is full", map, false);
 			} catch (RuntimeException e) {
 				DEBUG.OUT(e.getStackTrace());
 				return new CommandResponse(MessageType.GamaServerError, e, map, false);
@@ -268,11 +273,13 @@ public class DefaultServerCommands {
 			final BooleanSupplier command) {
 		if (sync) return command.getAsBoolean();
 		final long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(ASYNC_COMMAND_RETRY_TIMEOUT_MS);
+		long retryDelay = ASYNC_COMMAND_INITIAL_RETRY_DELAY_MS;
 		while (!controller.isDisposing() && !Thread.currentThread().isInterrupted()) {
 			if (command.getAsBoolean()) return true;
 			if (System.nanoTime() >= deadline) return false;
 			try {
-				Thread.sleep(ASYNC_COMMAND_RETRY_DELAY_MS);
+				Thread.sleep(retryDelay);
+				retryDelay = Math.min(retryDelay << 1, ASYNC_COMMAND_MAX_RETRY_DELAY_MS);
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
 				return false;
