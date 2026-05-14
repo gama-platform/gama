@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BooleanSupplier;
 
 import org.java_websocket.WebSocket;
 
@@ -54,6 +55,7 @@ import gama.api.gaml.symbols.IVariable;
 import gama.api.kernel.agent.AgentReference;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.kernel.simulation.IExperimentController;
 import gama.api.kernel.simulation.IExperimentStateListener;
 import gama.api.kernel.simulation.ITopLevelAgent;
 import gama.api.kernel.species.IExperimentSpecies;
@@ -192,9 +194,10 @@ public class DefaultServerCommands {
 			nb_step = 1;
 		}
 		final boolean sync = map.get(SYNC) != null ? Boolean.parseBoolean("" + map.get(SYNC)) : false;
+		final IExperimentController controller = plan.getController();
 		for (int i = 0; i < nb_step; i++) {
 			try {
-				if (!plan.getController().processStep(sync))
+				if (!processCommand(controller, sync, () -> controller.processStep(sync)))
 					return new CommandResponse(UnableToExecuteRequest, "Controller is full", map, false);
 			} catch (RuntimeException e) {
 				DEBUG.OUT(e.getStackTrace());
@@ -230,9 +233,10 @@ public class DefaultServerCommands {
 			nb_step = 1;
 		}
 		final boolean sync = map.get(SYNC) != null ? Boolean.parseBoolean("" + map.get(SYNC)) : false;
+		final IExperimentController controller = plan.getController();
 		for (int i = 0; i < nb_step; i++) {
 			try {
-				if (!plan.getController().processBack(sync))
+				if (!processCommand(controller, sync, () -> controller.processBack(sync)))
 					return new CommandResponse(UnableToExecuteRequest, "Controller is full", map, false);
 			} catch (RuntimeException e) {
 				DEBUG.OUT(e.getStackTrace());
@@ -240,6 +244,32 @@ public class DefaultServerCommands {
 			}
 		}
 		return new CommandResponse(CommandExecutedSuccessfully, "", map, false);
+	}
+
+	/**
+	 * Processes commands synchronously, or retries asynchronous queuing while the controller can still accept commands.
+	 *
+	 * @param controller
+	 *            the controller
+	 * @param sync
+	 *            whether command should be synchronous
+	 * @param command
+	 *            command to process
+	 * @return true, if successful
+	 */
+	private static boolean processCommand(final IExperimentController controller, final boolean sync,
+			final BooleanSupplier command) {
+		if (sync) return command.getAsBoolean();
+		while (!controller.isDisposing()) {
+			if (command.getAsBoolean()) return true;
+			try {
+				Thread.sleep(1L);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				return false;
+			}
+		}
+		return false;
 	}
 
 	/**
