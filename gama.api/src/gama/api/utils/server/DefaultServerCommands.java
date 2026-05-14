@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 
 import org.java_websocket.WebSocket;
@@ -76,6 +77,12 @@ import gama.dev.DEBUG;
  * @date 15 oct. 2023
  */
 public class DefaultServerCommands {
+
+	/** The maximum time to retry async enqueuing when the command queue is full. */
+	private static final long ASYNC_COMMAND_RETRY_TIMEOUT_MS = 300_000L;
+
+	/** Delay between async enqueue attempts. */
+	private static final long ASYNC_COMMAND_RETRY_DELAY_MS = 10L;
 
 	/**
 	 * Load.
@@ -260,10 +267,12 @@ public class DefaultServerCommands {
 	private static boolean processCommand(final IExperimentController controller, final boolean sync,
 			final BooleanSupplier command) {
 		if (sync) return command.getAsBoolean();
-		while (!controller.isDisposing()) {
+		final long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(ASYNC_COMMAND_RETRY_TIMEOUT_MS);
+		while (!controller.isDisposing() && !Thread.currentThread().isInterrupted()) {
 			if (command.getAsBoolean()) return true;
+			if (System.nanoTime() >= deadline) return false;
 			try {
-				Thread.sleep(1L);
+				Thread.sleep(ASYNC_COMMAND_RETRY_DELAY_MS);
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
 				return false;
