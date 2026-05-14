@@ -441,6 +441,10 @@ public class DefaultServerCommands {
 			String line;
 			// read all the lines
 			while ((line = br.readLine()) != null) { sc.append(line).append("\n"); }
+			// we remove the last \n
+			if (!sc.isEmpty()) {
+				sc.deleteCharAt(sc.length()-1);
+			}
 			return new CommandResponse(CommandExecutedSuccessfully, sc.toString(), map, false);
 		} catch (Exception e) {
 			e.printStackTrace();
