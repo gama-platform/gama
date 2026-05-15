@@ -270,7 +270,7 @@ experiment Dataframes type: test {
 		// Requires: ../includes/test_data.xlsx (first sheet with header row)
 		dataframe df <- df_load_excel("../includes/test_data.xlsx");
 		assert df != nil;
-		assert df.rows > 0;
+		assert df.rows = 2;
 	}
 
 	test save_and_reload_excel {
