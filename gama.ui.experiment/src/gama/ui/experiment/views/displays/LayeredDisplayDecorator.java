@@ -190,8 +190,8 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	public void toggleFullScreen() {
 		if (inFullScreenTransition) return;
 		inFullScreenTransition = true;
-		try {
-			if (isFullScreen()) {
+		if (isFullScreen()) {
+			WorkbenchHelper.asyncRun(() -> {
 				DEBUG.OUT("Is already full screen: exiting");
 				fs.setImage(GamaIcon.named(DISPLAY_FULLSCREEN_ENTER).image());
 				fs.setToolTipText(STRINGS.PAD("Enter fullscreen", 25) + "ESC");
@@ -207,7 +207,9 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 				createOverlay();
 				normalParentOfFullScreenControl.requestLayout();
 				destroyFullScreenShell();
-			} else {
+			});
+		} else {
+			WorkbenchHelper.asyncRun(() -> {
 				DEBUG.OUT("Is not full screen: entering");
 				fullScreenShell = createFullScreenShell();
 				if (fullScreenShell == null) return;
@@ -216,7 +218,8 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 				// was called before createFullScreenShell(), meaning isFullScreen() was still false
 				// when partActivated fired — causing an extra showCanvas UIJob that could race with
 				// (and undo) the fullscreen transition when called during decorateDisplays().
-				ViewsHelper.activate(view);
+				// Activation removed for the moment on macOS as it does not seem necessary.
+				if (!SystemInfo.isMac()) { ViewsHelper.activate(view); }
 				fs.setImage(GamaIcon.named(DISPLAY_FULLSCREEN_EXIT).image());
 				fs.setToolTipText(STRINGS.PAD("Exit fullscreen", 25) + "ESC");
 				toggleFullScreen = exitFullScreen;
@@ -233,22 +236,30 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 					normalParentOfToolbar = toolbar.getParent();
 					toolbar.setParent(fullScreenShell);
 				}
-			}
-			if (!toolbar.isDisposed()) {
-				toolbar.wipe(SWT.RIGHT, true);
-				GamaToolbarFactory.buildToolbar(view, toolbar);
-				toolbar.requestLayout();
-			}
-			if (overlay.isVisible()) {
-				WorkbenchHelper.runInUI("Display overlay", 50, m -> {
-					toggleOverlay();
-					toggleOverlay();
-				});
-			}
-			view.focusCanvas();
-		} finally {
-			inFullScreenTransition = false;
+			});
 		}
+		// Last actions to do, after which we mark the transition as passed
+		WorkbenchHelper.asyncRun(() -> {
+			try {
+				if (!toolbar.isDisposed()) {
+					toolbar.wipe(SWT.RIGHT, true);
+					GamaToolbarFactory.buildToolbar(view, toolbar);
+					toolbar.requestLayout();
+				}
+				if (overlay.isVisible()) {
+					WorkbenchHelper.runInUI("Display overlay", 50, m -> {
+						toggleOverlay();
+						toggleOverlay();
+					});
+				}
+				// Seems like a bad idea to steal the focus manually (in relation to
+				// https://github.com/gama-platform/gama/issues/994). Disabled only for macOS in case
+				if (!SystemInfo.isMac()) { view.focusCanvas(); }
+			} finally {
+				inFullScreenTransition = false;
+			}
+		});
+
 	}
 
 	/**
@@ -394,16 +405,16 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	private void destroyFullScreenShell() {
 		if (fullScreenShell == null || fullScreenShell.isDisposed()) return;
 		DEBUG.OUT("Destroying full screen shell");
-		// Solves an issue in macOS where the development version of GAMA would not close the fullScreenShell.
-		if (SystemInfo.isMac()) {
-			fullScreenShell.setSize(1, 1);
-			fullScreenShell.setVisible(false);
-		}
-		fullScreenShell.close();
-		fullScreenShell.dispose();
-		fullScreenShell = null;
-		ViewsHelper.unregisterFullScreenView(view);
-		ViewsHelper.activate(view);
+		WorkbenchHelper.run(() -> {
+			if (!fullScreenShell.isDisposed()) {
+				fullScreenShell.close();
+				fullScreenShell.dispose();
+				fullScreenShell = null;
+			}
+			ViewsHelper.unregisterFullScreenView(view);
+			ViewsHelper.activate(view);
+		});
+
 	}
 
 	/**
