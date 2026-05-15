@@ -57,6 +57,48 @@ public record Signature(IType... list) implements Iterable<IType> {
 	static IType[] EMPTY_TYPES = {};
 
 	/**
+	 * Returns whether a split GAML {@code map} type can still use a runtime operator overload declared on
+	 * {@code container}.
+	 *
+	 * <p>
+	 * Maps are no longer in the GAML {@code container} inheritance branch, but the Java runtime still exposes
+	 * {@link gama.api.types.map.IMap} as an {@link gama.api.types.misc.IContainer}. Operator resolution therefore keeps
+	 * this one compatibility path so existing container-oriented implementations remain callable for maps until the Java
+	 * interfaces are detached as well.
+	 * </p>
+	 *
+	 * @param actualType
+	 *            the type provided by the user call
+	 * @param formalType
+	 *            the operator parameter type being tested
+	 * @return {@code true} when a map argument should be accepted for a container parameter
+	 */
+	private static boolean isRuntimeContainerCompatibility(final IType actualType, final IType formalType) {
+		return actualType != null && formalType != null && actualType.getGamlType() == Types.MAP
+				&& formalType.getGamlType() == Types.CONTAINER;
+	}
+
+	/**
+	 * Computes the compatibility distance between a formal operator parameter and the actual user argument type.
+	 *
+	 * <p>
+	 * The split {@code map}/{@code container} compatibility is intentionally given a distance of {@code 1}, so an
+	 * explicit map overload still wins over a generic container overload, while the latter remains selectable when no map
+	 * overload exists.
+	 * </p>
+	 *
+	 * @param formalType
+	 *            the operator parameter type
+	 * @param actualType
+	 *            the provided argument type
+	 * @return the overload distance, or {@link Integer#MAX_VALUE} when incompatible
+	 */
+	private static int compatibilityDistance(final IType formalType, final IType actualType) {
+		if (isRuntimeContainerCompatibility(actualType, formalType)) return 1;
+		return formalType.distanceTo(actualType);
+	}
+
+	/**
 	 * Builds a var-arg signature by wrapping the common type of elements into a list type.
 	 * <p>
 	 * This is useful when an operator accepts an arbitrary number of homogeneous arguments.
@@ -236,6 +278,8 @@ public record Signature(IType... list) implements Iterable<IType> {
 			if (requestedType == Types.NO_TYPE && !localType.isNumber()) continue;
 			// Explicit unknown passed with a formal parameter that is not a number
 			if (localType == Types.NO_TYPE && !requestedType.isNumber()) continue;
+			// Transitional runtime compatibility: maps still implement IContainer at Java level
+			if (isRuntimeContainerCompatibility(localType, requestedType)) continue;
 			// Assignable types
 			if (requestedType.isAssignableFrom(localType)) continue;
 			return false;
@@ -256,6 +300,7 @@ public record Signature(IType... list) implements Iterable<IType> {
 			final IType ownType = list[i];
 			final IType desiredType = types[i];
 			if (Types.intFloatCase(ownType, desiredType) || desiredType.isAssignableFrom(ownType)
+					|| isRuntimeContainerCompatibility(ownType, desiredType)
 					|| !desiredType.isNumber() && ownType == Types.NO_TYPE) {
 				continue;
 			}
@@ -283,7 +328,11 @@ public record Signature(IType... list) implements Iterable<IType> {
 		// Modified again for the case where [string, matrix, unknown] and [string, container, unknown] return both 1
 		// for an input of [string,matrix, int] ...Now we sum the distances between types and return this.
 		int totalDistance = 0;
-		for (int i = 0; i < formalTypes.length; i++) { totalDistance += formalTypes[i].distanceTo(passedTypes[i]); }
+		for (int i = 0; i < formalTypes.length; i++) {
+			final int distance = compatibilityDistance(formalTypes[i], passedTypes[i]);
+			if (distance == Integer.MAX_VALUE) return Integer.MAX_VALUE;
+			totalDistance += distance;
+		}
 		return totalDistance;
 	}
 

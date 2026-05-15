@@ -30,6 +30,7 @@ import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.kernel.species.IModelSpecies;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.misc.IRuntimeContainer;
 import gama.api.types.object.GamaGenericObjectType;
 import gama.dev.DEBUG;
 
@@ -47,6 +48,11 @@ public class Types {
 
 	static {
 		DEBUG.OFF();
+		addClassTypeCorrespondance(IRuntimeContainer.class, IKeyword.CONTAINER);
+		addClassTypeCorrespondance(IRuntimeContainer.Addressable.class, IKeyword.CONTAINER);
+		addClassTypeCorrespondance(IRuntimeContainer.Modifiable.class, IKeyword.CONTAINER);
+		addClassTypeCorrespondance(IRuntimeContainer.ToGet.class, IKeyword.CONTAINER);
+		addClassTypeCorrespondance(IRuntimeContainer.ToSet.class, IKeyword.CONTAINER);
 	}
 
 	/**
@@ -383,13 +389,19 @@ public class Types {
 	 *   ├─ string
 	 *   ├─ container
 	 *   │   ├─ list
-	 *   │   ├─ map
 	 *   │   ├─ matrix
 	 *   │   └─ graph
+	 *   ├─ map
 	 *   ├─ geometry
 	 *   │   └─ point
 	 *   └─ agent
 	 * </pre>
+	 *
+	 * <p>
+	 * Maps remain fully supported by GAML map syntax and operators, but they are intentionally excluded from the
+	 * {@code container} inheritance branch to avoid conflating associative maps with sequential/indexed containers in the
+	 * type hierarchy.
+	 * </p>
 	 *
 	 * <p>
 	 * This method should be called once during GAMA platform initialization, after all built-in types have been
@@ -406,7 +418,7 @@ public class Types {
 		}
 		for (IType t1 : types) {
 			for (IType t2 : types) {
-				if (t1 != t2 && t1.toClass().isAssignableFrom(t2.toClass())) {
+				if (t1 != t2 && t1.toClass().isAssignableFrom(t2.toClass()) && !shouldIgnoreHierarchyEdge(t1, t2)) {
 					outgoing.get(t1).add(t2);
 					incoming.get(t2).add(t1);
 				}
@@ -430,6 +442,25 @@ public class Types {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Indicates whether a Java-level assignability edge should be ignored when constructing the GAML type hierarchy.
+	 *
+	 * <p>
+	 * The runtime APIs still let maps participate in most container-oriented operators, but the type hierarchy must keep
+	 * {@code map} separate from {@code container} so assignability and common-supertype inference do not collapse
+	 * associative maps into sequential/indexed containers.
+	 * </p>
+	 *
+	 * @param parent
+	 *            the candidate parent type inferred from Java assignability
+	 * @param child
+	 *            the candidate child type inferred from Java assignability
+	 * @return {@code true} if this edge must be skipped in the GAML type hierarchy
+	 */
+	private static boolean shouldIgnoreHierarchyEdge(final IType<?> parent, final IType<?> child) {
+		return parent == CONTAINER && child == MAP;
 	}
 
 	/**

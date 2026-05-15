@@ -27,6 +27,7 @@ import gama.api.gaml.symbols.Facets;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.file.GamaFile;
+import gama.api.types.misc.IRuntimeContainer;
 import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
 import gama.api.utils.geometry.IEnvelope;
@@ -134,7 +135,7 @@ public class GamaJsonFile extends GamaFile<IMap<String, Object>, Object> {
 	}
 
 	@Override
-	public Modifiable ensureContentsIsCompatible(final Modifiable contents) {
+	public IRuntimeContainer.Modifiable ensureContentsIsCompatible(final IRuntimeContainer.Modifiable contents) {
 		if (contents instanceof IMap) return contents;
 		IMap map = GamaMapFactory.create();
 		map.put(IJson.Labels.CONTENTS_WITH_REFERENCES_LABEL, contents);

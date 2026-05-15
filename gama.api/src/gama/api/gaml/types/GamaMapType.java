@@ -69,6 +69,10 @@ import gama.api.types.map.IMap;
  * Maps preserve insertion order, making them suitable for ordered dictionaries. They are implemented using {@link IMap}
  * interface and created via {@link GamaMapFactory}.
  * </p>
+ * <p>
+ * In the GAML type hierarchy, maps are intentionally kept separate from the {@code container} inheritance branch even
+ * though they still support the same map syntax, parametric typing, and most container-oriented operators.
+ * </p>
  *
  * @author drogoul
  * @since GAMA 1.0
@@ -84,7 +88,7 @@ import gama.api.types.map.IMap;
 		wraps = { IMap.class },
 		kind = ISymbolKind.REGULAR,
 		concept = { IConcept.TYPE, IConcept.CONTAINER, IConcept.MAP },
-		doc = @doc ("Represents lists of pairs key::value, where each key is unique in the map. Maps are ordered by the insertion order of elements"))
+		doc = @doc ("Represents lists of pairs key::value, where each key is unique in the map. Maps are ordered by the insertion order of elements and remain separate from the `container` inheritance branch while keeping the same GAML syntax and operators."))
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamaMapType extends GamaContainerType<IMap> {
 

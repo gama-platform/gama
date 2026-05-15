@@ -29,40 +29,6 @@ public class AWTDisplayView extends LayeredDisplayView {
 		DEBUG.OFF();
 	}
 
-	// static IPartListener MyPartListener = new IPartListener() {
-	// @Override
-	// public void partActivated(IWorkbenchPart part) {
-	// DEBUG.OUT("Part activated: " + part.getTitle());
-	// // if (PlatformHelper.isWindows()) {
-	// // if (part instanceof AWTDisplayView av) {
-	// //
-	// // WorkbenchHelper.runInUI("", 20, m -> av.setFocus());
-	// //
-	// // }
-	// // }
-	// }
-	//
-	// @Override
-	// public void partBroughtToTop(IWorkbenchPart part) {
-	// DEBUG.OUT("Part brought to top: " + part.getTitle());
-	// }
-	//
-	// @Override
-	// public void partClosed(IWorkbenchPart part) {
-	// DEBUG.OUT("Part closed: " + part.getTitle());
-	// }
-	//
-	// @Override
-	// public void partDeactivated(IWorkbenchPart part) {
-	// DEBUG.OUT("Part deactivated: " + part.getTitle());
-	// }
-	//
-	// @Override
-	// public void partOpened(IWorkbenchPart part) {
-	// DEBUG.OUT("Part opened: " + part.getTitle());
-	// }
-	// };
-
 	@Override
 	protected Composite createSurfaceComposite(final Composite parent) {
 		// WorkbenchHelper.getPage().addPartListener(MyPartListener);

@@ -53,7 +53,7 @@ import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
 import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
-import gama.api.types.misc.IContainer;
+import gama.api.types.misc.IRuntimeContainer;
 import gama.api.types.topology.GamaTopologyFactory;
 import gama.api.types.topology.ITopology;
 import gama.api.utils.collections.Collector;
@@ -882,7 +882,7 @@ public class MovingSkill extends Skill {
 		IShape goal = computeTarget(scope, agent);
 		final Boolean returnPath =
 				scope.hasArg("return_path") ? (Boolean) scope.getArg("return_path", IType.NONE) : false;
-		IContainer on = null;
+		IRuntimeContainer<?, ?> on = null;
 
 		Object onV = scope.getArg("on", IType.NONE);
 		Object rt;

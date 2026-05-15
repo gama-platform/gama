@@ -30,7 +30,7 @@ import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.graph.IGraph;
 import gama.api.types.list.IList;
-import gama.api.types.misc.IContainer;
+import gama.api.types.misc.IRuntimeContainer;
 import gama.api.types.pair.IPair;
 import gama.gaml.statements.PutStatement.PutSerializer;
 import gama.gaml.statements.PutStatement.PutValidator;
@@ -65,7 +65,7 @@ import gama.gaml.statements.PutStatement.PutValidator;
 						doc = @doc ("the right member of the put assignment ('cont[index] <- expr;') is an expression expr that evaluates to the element(s) to be put in the container")),
 				@facet (
 						name = IKeyword.IN,
-						type = { IType.CONTAINER, IType.SPECIES, IType.AGENT, IType.GEOMETRY },
+												type = { IType.CONTAINER, IType.MAP, IType.SPECIES, IType.AGENT, IType.GEOMETRY },
 						optional = false,
 						doc = @doc ("the left member of the put assignment ('cont[index] <- expr;') is an expression cont that evaluates to a container (list, map, matrix). It makes no sense for graphs ")) },
 		omissible = IKeyword.ITEM)
@@ -206,7 +206,7 @@ public class PutStatement extends AddStatement {
 
 	@Override
 	protected void apply(final IScope scope, final Object object, final Object position,
-			final IContainer.Modifiable container) throws GamaRuntimeException {
+			final IRuntimeContainer.Modifiable container) throws GamaRuntimeException {
 		if (!asAll) {
 			if (container instanceof IList && position instanceof IPair) {
 				((IList<Object>) container).replaceRange(scope, (IPair) position, object);

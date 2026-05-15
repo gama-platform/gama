@@ -31,7 +31,7 @@ import gama.api.gaml.statements.AbstractContainerStatement.ContainerValidator;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.graph.IGraph;
-import gama.api.types.misc.IContainer;
+import gama.api.types.misc.IRuntimeContainer;
 import gama.gaml.statements.RemoveStatement.RemoveSerializer;
 
 /**
@@ -49,7 +49,7 @@ import gama.gaml.statements.RemoveStatement.RemoveSerializer;
 				doc = @doc ("the right member of the removal assignment ('cont >> expr;') is an expression expr that evaluates to the element(s) to be removed from the container")),
 				@facet (
 						name = IKeyword.FROM,
-						type = { IType.CONTAINER, IType.SPECIES, IType.AGENT, IType.GEOMETRY },
+												type = { IType.CONTAINER, IType.MAP, IType.SPECIES, IType.AGENT, IType.GEOMETRY },
 						optional = false,
 						doc = { @doc ("the left member of the removal assignment ('cont >> expr;') is an expression cont that evaluates to a container (list, map, graph) ") }),
 				@facet (
@@ -246,7 +246,7 @@ public class RemoveStatement extends AbstractContainerStatement {
 	@SuppressWarnings ("rawtypes")
 	@Override
 	protected void apply(final IScope scope, final Object object, final Object position,
-			final IContainer.Modifiable container) throws GamaRuntimeException {
+			final IRuntimeContainer.Modifiable container) throws GamaRuntimeException {
 
 		if (position == null) {
 			// If key/at/index/node is not mentioned
@@ -254,7 +254,7 @@ public class RemoveStatement extends AbstractContainerStatement {
 				// if we "remove all"
 				if (asAllValues) {
 					// if a container is passed
-					container.removeValues(scope, (IContainer) object);
+					container.removeValues(scope, (IRuntimeContainer) object);
 				} else {
 					// otherwise if it is a simple value
 					container.removeAllOccurrencesOfValue(scope, object);
@@ -264,7 +264,7 @@ public class RemoveStatement extends AbstractContainerStatement {
 				container.removeValue(scope, object);
 			}
 		} else if (asAllIndexes) {
-			container.removeIndexes(scope, (IContainer) position);
+			container.removeIndexes(scope, (IRuntimeContainer) position);
 		} else {
 			// If a key/index/at/node is mentioned
 			// simply remove the index.

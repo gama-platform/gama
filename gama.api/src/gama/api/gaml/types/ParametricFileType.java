@@ -29,6 +29,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.types.file.GenericFile;
 import gama.api.types.file.IGamaFile;
 import gama.api.types.misc.IContainer;
+import gama.api.types.misc.IRuntimeContainer;
 import gama.api.utils.GamlProperties;
 
 /**
@@ -439,7 +440,7 @@ public class ParametricFileType extends ParametricType {
 	 * @return the created file instance
 	 */
 	@SuppressWarnings ({ "rawtypes", "unchecked" })
-	public IGamaFile createFile(final IScope scope, final String path, final IContainer.Modifiable contents) {
+	public IGamaFile createFile(final IScope scope, final String path, final IRuntimeContainer.Modifiable contents) {
 		final IGamaFile file = builder.get(scope, path);
 		if (contents != null) {
 			file.setWritable(scope, true);

@@ -19,13 +19,18 @@ import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.IList;
 import gama.api.types.misc.IContainer;
+import gama.api.types.misc.IRuntimeContainer;
 
 /**
  * Represents the generic GAML container type.
  * <p>
- * This is the super-type of all container types in GAML (list, graph, matrix, map, etc.). It provides a generic
- * framework for types that hold collections of values with keys/indices. Container types are compound types with
- * variable length and support parameterization by key type and content type.
+ * This is the super-type of the indexed/sequential container types in GAML (list, graph, matrix, etc.). It provides a
+ * generic framework for types that hold collections of values with keys/indices. Container types are compound types
+ * with variable length and support parameterization by key type and content type.
+ * </p>
+ * <p>
+ * Maps still expose most container-oriented operators in GAML, but they are intentionally kept out of the
+ * {@code container} inheritance branch of the type hierarchy.
  * </p>
  * <p>
  * When casting to a container type, if the object is already a container it is returned as-is, otherwise it is cast to
@@ -38,6 +43,7 @@ import gama.api.types.misc.IContainer;
  * @author drogoul
  * @since GAMA 1.0
  * @see IContainer
+ * @see IRuntimeContainer
  * @see IContainerType
  */
 @type (
@@ -46,8 +52,8 @@ import gama.api.types.misc.IContainer;
 		wraps = { IContainer.class },
 		kind = ISymbolKind.REGULAR,
 		concept = { IConcept.TYPE, IConcept.CONTAINER },
-		doc = @doc ("Generic super-type of all the container types (list, graph, matrix, etc.)"))
-public class GamaContainerType<T extends IContainer<?, ?>> extends GamaType<T> implements IContainerType<T> {
+		doc = @doc ("Generic super-type of indexed/sequential container types (list, graph, matrix, etc.). Maps keep the same GAML capabilities but are no longer in this inheritance branch."))
+public class GamaContainerType<T extends IRuntimeContainer<?, ?>> extends GamaType<T> implements IContainerType<T> {
 
 	/**
 	 * Constructs a new GamaContainerType.
@@ -212,7 +218,7 @@ public class GamaContainerType<T extends IContainer<?, ?>> extends GamaType<T> i
 			if (kt == Types.NO_TYPE) return this;
 			ct = getContentType();
 		}
-		return new ParametricType(typesManager, (IContainerType<IContainer<?, ?>>) this, kt, ct);
+		return new ParametricType(typesManager, (IContainerType<IRuntimeContainer<?, ?>>) this, kt, ct);
 
 	}
 
@@ -239,7 +245,7 @@ public class GamaContainerType<T extends IContainer<?, ?>> extends GamaType<T> i
 			ct = getContentType();
 		}
 		if (kt == Types.NO_TYPE) { kt = getKeyType(); }
-		return new ParametricType(typesManager, (IContainerType<IContainer<?, ?>>) this, kt, ct);
+		return new ParametricType(typesManager, (IContainerType<IRuntimeContainer<?, ?>>) this, kt, ct);
 
 	}
 

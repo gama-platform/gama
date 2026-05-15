@@ -33,12 +33,13 @@ import gama.api.types.matrix.IMatrix;
 import one.util.streamex.StreamEx;
 
 /**
- * The fundamental interface for all collection-like structures in GAMA.
+ * The fundamental interface for indexed and sequential container structures in GAMA.
  * 
  * <p>
- * IContainer provides a unified abstraction over diverse collection types including lists, maps, matrices, graphs,
- * populations (species), files, and pairs. This uniformity allows GAML operators to work consistently across different
- * container types.
+ * IContainer provides the GAML {@code container} branch abstraction over indexed and sequential structures such as
+ * lists, matrices, graphs, populations (species), files, and pairs. Maps now remain outside this inheritance branch in
+ * the GAML type system, while still sharing the extracted Java-level runtime contract defined by
+ * {@link IRuntimeContainer}.
  * </p>
  * 
  * <h2>Type Parameters</h2>
@@ -78,7 +79,8 @@ import one.util.streamex.StreamEx;
  * </p>
  * <ul>
  * <li><strong>Lists:</strong> KeyType=Integer, ordered sequences indexed from 0</li>
- * <li><strong>Maps:</strong> KeyType=any, unordered key-value associations</li>
+ * <li><strong>Maps:</strong> now handled through {@link IRuntimeContainer} and {@code map}, not through the GAML
+ * {@code container} inheritance branch</li>
  * <li><strong>Matrices:</strong> KeyType=IPoint, 2D grids indexed by {column, row}</li>
  * <li><strong>Graphs:</strong> KeyType=node, ValueType=edge (or vice versa)</li>
  * <li><strong>Populations:</strong> KeyType=Integer/String, ValueType=IAgent</li>
@@ -146,7 +148,7 @@ import one.util.streamex.StreamEx;
  * @author drogoul
  * @since GAMA 1.0
  */
-public interface IContainer<KeyType, ValueType> extends IValue {
+public interface IContainer<KeyType, ValueType> extends IRuntimeContainer<KeyType, ValueType> {
 
 	/**
 	 * Returns a copy of this container.
@@ -354,49 +356,7 @@ public interface IContainer<KeyType, ValueType> extends IValue {
 	 * @param <ValueType>
 	 *            the type of elements returned
 	 */
-	public interface ToGet<KeyType, ValueType> {
-
-		/**
-		 * Gets the element at the specified key/index.
-		 * 
-		 * <p>
-		 * The behavior depends on the container type:
-		 * </p>
-		 * <ul>
-		 * <li><strong>Lists:</strong> index must be an integer in [0, length)</li>
-		 * <li><strong>Maps:</strong> index is a key in the map</li>
-		 * <li><strong>Matrices:</strong> index is a point {col, row}</li>
-		 * </ul>
-		 *
-		 * @param scope
-		 *            the current GAMA execution scope
-		 * @param index
-		 *            the key or index of the element to retrieve
-		 * @return the element at the specified index, or null if not found
-		 * @throws GamaRuntimeException
-		 *             if the index is invalid or out of bounds
-		 */
-		ValueType get(IScope scope, KeyType index) throws GamaRuntimeException;
-
-		/**
-		 * Gets multiple elements using a list of keys/indices.
-		 * 
-		 * <p>
-		 * This method is called from GAML when accessing a container with a list of indices. The container is
-		 * responsible for extracting each index and returning the corresponding value.
-		 * </p>
-		 *
-		 * @param scope
-		 *            the current GAMA execution scope
-		 * @param indices
-		 *            the list of keys/indices to retrieve
-		 * @return the value(s) at those indices (semantics depend on implementation)
-		 * @throws GamaRuntimeException
-		 *             if any index is invalid
-		 */
-		ValueType getFromIndicesList(IScope scope, IList<KeyType> indices) throws GamaRuntimeException;
-
-	}
+	public interface ToGet<KeyType, ValueType> extends IRuntimeContainer.ToGet<KeyType, ValueType> {}
 
 	/**
 	 * Interface combining IContainer with read capabilities.
@@ -416,7 +376,8 @@ public interface IContainer<KeyType, ValueType> extends IValue {
 	 *            the type returned by addressing (may differ from Value)
 	 */
 	public interface Addressable<Key, Value, AddressableKey, AddressableValue>
-			extends IContainer<Key, Value>, IContainer.ToGet<AddressableKey, AddressableValue> {}
+			extends IContainer<Key, Value>, IRuntimeContainer.Addressable<Key, Value, AddressableKey, AddressableValue>,
+				IContainer.ToGet<AddressableKey, AddressableValue> {}
 
 	/**
 	 * Interface combining IContainer with write capabilities.
@@ -437,9 +398,8 @@ public interface IContainer<KeyType, ValueType> extends IValue {
 	 *            the type of values to add/set (may differ from V)
 	 */
 	public interface Modifiable<K, V, KeyToAdd, ValueToAdd>
-			extends IContainer<K, V>, IContainer.ToSet<KeyToAdd, ValueToAdd> {
-
-	}
+			extends IContainer<K, V>, IRuntimeContainer.Modifiable<K, V, KeyToAdd, ValueToAdd>,
+				IContainer.ToSet<KeyToAdd, ValueToAdd> {}
 
 	/**
 	 * Interface for containers that support element modification and removal.
@@ -454,163 +414,40 @@ public interface IContainer<KeyType, ValueType> extends IValue {
 	 * @param <ValueType>
 	 *            the type of elements to add/set
 	 */
-	public interface ToSet<KeyType, ValueType> {
+	public interface ToSet<KeyType, ValueType> extends IRuntimeContainer.ToSet<KeyType, ValueType> {
 
-		/**
-		 * Adds a value to the container.
-		 * 
-		 * <p>
-		 * The exact behavior depends on the container type:
-		 * </p>
-		 * <ul>
-		 * <li><strong>Lists:</strong> appends to the end</li>
-		 * <li><strong>Sets:</strong> adds if not present</li>
-		 * <li><strong>Maps:</strong> requires a key (see addValueAtIndex)</li>
-		 * </ul>
-		 *
-		 * @param scope
-		 *            the current GAMA execution scope
-		 * @param value
-		 *            the value to add
-		 */
-		void addValue(IScope scope, final ValueType value);
-
-		/**
-		 * Adds a value at a specific index/key.
-		 * 
-		 * <p>
-		 * The behavior depends on the container type:
-		 * </p>
-		 * <ul>
-		 * <li><strong>Lists:</strong> inserts at the index, shifting subsequent elements</li>
-		 * <li><strong>Maps:</strong> adds a new key-value pair (or replaces if key exists)</li>
-		 * <li><strong>Matrices:</strong> sets the cell at the point index</li>
-		 * </ul>
-		 *
-		 * @param scope
-		 *            the current GAMA execution scope
-		 * @param index
-		 *            the index/key where to add the value
-		 * @param value
-		 *            the value to add
-		 */
-		void addValueAtIndex(IScope scope, final Object index, final ValueType value);
-
-		/**
-		 * Sets the value at a specific index/key.
-		 * 
-		 * <p>
-		 * Unlike {@link #addValueAtIndex(IScope, Object, Object)}, this typically requires that the index already
-		 * exists (for lists) or replaces an existing value (for maps/matrices).
-		 * </p>
-		 *
-		 * @param scope
-		 *            the current GAMA execution scope
-		 * @param index
-		 *            the index/key to set
-		 * @param value
-		 *            the new value
-		 */
-		void setValueAtIndex(IScope scope, final Object index, final ValueType value);
-
-		/**
-		 * Adds all values from another container.
-		 * 
-		 * <p>
-		 * This method adds elements without replacing existing ones. For lists, elements are appended. For maps, new
-		 * pairs are added.
-		 * </p>
-		 *
-		 * @param scope
-		 *            the current GAMA execution scope
-		 * @param index
-		 *            optional index/key hint for where to add (may be null)
-		 * @param values
-		 *            the container of values to add
-		 */
 		void addValues(IScope scope, Object index, IContainer<?, ?> values);
 
-		/**
-		 * Adds all values from another container (convenience method without index).
-		 *
-		 * @param scope
-		 *            the current GAMA execution scope
-		 * @param values
-		 *            the container of values to add
-		 */
 		default void addValues(final IScope scope, final IContainer<?, ?> values) {
 			addValues(scope, null, values);
 		}
 
-		/**
-		 * Sets all elements in the container to a single value.
-		 * 
-		 * <p>
-		 * For matrices and grids, this fills all cells. For lists, this may replace all elements or set a default
-		 * value.
-		 * </p>
-		 *
-		 * @param scope
-		 *            the current GAMA execution scope
-		 * @param value
-		 *            the value to set everywhere
-		 */
-		void setAllValues(IScope scope, ValueType value);
+		@Override
+		default void addValues(final IScope scope, final Object index, final IRuntimeContainer<?, ?> values) {
+			addValues(scope, index,
+					values instanceof IContainer<?, ?> c ? c : values.listValue(scope, Types.NO_TYPE, false));
+		}
 
-		/**
-		 * Removes the first occurrence of a value from the container.
-		 *
-		 * @param scope
-		 *            the current GAMA execution scope
-		 * @param value
-		 *            the value to remove
-		 */
-		void removeValue(IScope scope, Object value);
+		@Override
+		default void addValues(final IScope scope, final IRuntimeContainer<?, ?> values) {
+			addValues(scope, null, values);
+		}
 
-		/**
-		 * Removes the element at a specific index/key.
-		 *
-		 * @param scope
-		 *            the current GAMA execution scope
-		 * @param index
-		 *            the index/key to remove
-		 */
-		void removeIndex(IScope scope, Object index);
-
-		/**
-		 * Removes all elements at the specified indices/keys.
-		 *
-		 * @param scope
-		 *            the current GAMA execution scope
-		 * @param index
-		 *            container of indices/keys to remove
-		 */
 		void removeIndexes(IScope scope, IContainer<?, ?> index);
 
-		/**
-		 * Removes all elements matching values in the provided container.
-		 *
-		 * @param scope
-		 *            the current GAMA execution scope
-		 * @param values
-		 *            container of values to remove
-		 */
+		@Override
+		default void removeIndexes(final IScope scope, final IRuntimeContainer<?, ?> index) {
+			removeIndexes(scope,
+					index instanceof IContainer<?, ?> c ? c : index.listValue(scope, Types.NO_TYPE, false));
+		}
+
 		void removeValues(IScope scope, IContainer<?, ?> values);
 
-		/**
-		 * Removes all occurrences of a specific value.
-		 * 
-		 * <p>
-		 * Unlike {@link #removeValue(IScope, Object)} which removes only the first occurrence, this removes all
-		 * occurrences.
-		 * </p>
-		 *
-		 * @param scope
-		 *            the current GAMA execution scope
-		 * @param value
-		 *            the value to remove completely
-		 */
-		void removeAllOccurrencesOfValue(IScope scope, Object value);
+		@Override
+		default void removeValues(final IScope scope, final IRuntimeContainer<?, ?> values) {
+			removeValues(scope,
+					values instanceof IContainer<?, ?> c ? c : values.listValue(scope, Types.NO_TYPE, false));
+		}
 
 	}
 

@@ -662,8 +662,8 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 *   ├─ float
 	 *   ├─ container
 	 *   │   ├─ list
-	 *   │   ├─ map
 	 *   │   └─ matrix
+	 *   ├─ map
 	 *   └─ geometry
 	 *       └─ point
 	 * </pre>

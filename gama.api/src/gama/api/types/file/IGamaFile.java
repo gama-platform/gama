@@ -12,10 +12,15 @@ package gama.api.types.file;
 import org.eclipse.emf.common.util.URI;
 
 import gama.annotations.doc;
+import gama.annotations.example;
 import gama.annotations.getter;
+import gama.annotations.operator;
+import gama.annotations.test;
 import gama.annotations.variable;
 import gama.annotations.vars;
 import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
 import gama.annotations.support.ITypeProvider;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.symbols.Facets;
@@ -24,6 +29,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.IShape;
 import gama.api.types.list.IList;
 import gama.api.types.misc.IContainer;
+import gama.api.types.misc.IRuntimeContainer;
 import gama.api.ui.displays.IAsset;
 import gama.api.utils.geometry.IEnvelopeProvider;
 
@@ -32,8 +38,8 @@ import gama.api.utils.geometry.IEnvelopeProvider;
  * 
  * <p>
  * {@code IGamaFile} provides a unified abstraction for accessing and manipulating files within GAMA models.
- * It extends both {@link gama.api.types.misc.IContainer.Addressable} and
- * {@link gama.api.types.misc.IContainer.Modifiable} to enable file contents to be treated as addressable
+ * It extends both {@link gama.api.types.misc.IRuntimeContainer.Addressable} and
+ * {@link gama.api.types.misc.IRuntimeContainer.Modifiable} to enable file contents to be treated as addressable
  * and modifiable containers, allowing natural integration with GAML's container operations.
  * </p>
  * 
@@ -123,7 +129,7 @@ import gama.api.utils.geometry.IEnvelopeProvider;
  * </ul>
  * 
  * @param <C>
- *            the container type for storing file contents (must be both Addressable and Modifiable)
+ *            the runtime container type for storing file contents (must be both Addressable and Modifiable)
  * @param <Contents>
  *            the type of individual elements within the container
  * 
@@ -179,8 +185,8 @@ import gama.api.utils.geometry.IEnvelopeProvider;
 				type = IType.STRING,
 				doc = { @doc ("Returns the whole content of the receiver file as a single string") }) })
 @SuppressWarnings ({ "rawtypes" })
-public interface IGamaFile<C extends IContainer.Modifiable, Contents>
-		extends IContainer.Addressable, IContainer.Modifiable, IEnvelopeProvider, IAsset {
+public interface IGamaFile<C extends IRuntimeContainer.Modifiable, Contents>
+		extends IRuntimeContainer.Addressable, IRuntimeContainer.Modifiable, IEnvelopeProvider, IAsset {
 
 	/**
 	 * Marker interface for file types that can be rendered visually in displays.
@@ -251,7 +257,7 @@ public interface IGamaFile<C extends IContainer.Modifiable, Contents>
 	 * 
 	 * <p>
 	 * This method controls whether the file can accept modifications and be saved back to disk.
-	 * Setting a file as writable enables operations like {@link #setContents(IContainer)} and
+	 * Setting a file as writable enables operations like {@link #setContents(IRuntimeContainer.Modifiable)} and
 	 * allows the file to be used as an output destination in save operations.
 	 * </p>
 	 * 
@@ -267,6 +273,24 @@ public interface IGamaFile<C extends IContainer.Modifiable, Contents>
 	 *            true to mark this file as writable, false otherwise
 	 */
 	void setWritable(IScope scope, final boolean w);
+
+	/**
+	 * Returns whether the file contents contain the provided value.
+	 *
+	 * @param scope
+	 *            the current execution scope
+	 * @param o
+	 *            the searched value
+	 * @return {@code true} if the buffered contents contain the value
+	 */
+	@operator (
+			value = { "contains", "contains_value" },
+			can_be_const = true,
+			category = { IOperatorCategory.CONTAINER, IOperatorCategory.FILE },
+			concept = { IConcept.CONTAINER, IConcept.FILE })
+	@doc (value = "true if the buffered contents of the file contain the right operand, false otherwise")
+	@Override
+	boolean contains(IScope scope, Object o) throws GamaRuntimeException;
 
 	/**
 	 * Sets the contents of this file.
@@ -303,6 +327,113 @@ public interface IGamaFile<C extends IContainer.Modifiable, Contents>
 	 */
 	@Override
 	IGamaFile copy(IScope scope);
+
+	/**
+	 * Returns the first value of the buffered contents.
+	 *
+	 * @param scope
+	 *            the current execution scope
+	 * @return the first buffered value, or {@code nil} when appropriate
+	 * @throws GamaRuntimeException
+	 *             if the buffered contents cannot be accessed
+	 */
+	@operator (
+			value = "first",
+			can_be_const = true,
+			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.CONTAINER, IOperatorCategory.FILE },
+			concept = { IConcept.CONTAINER, IConcept.FILE })
+	@doc (value = "the first value of the buffered file contents")
+	@Override
+	Contents firstValue(IScope scope) throws GamaRuntimeException;
+
+	/**
+	 * Returns the last value of the buffered contents.
+	 *
+	 * @param scope
+	 *            the current execution scope
+	 * @return the last buffered value, or {@code nil} when appropriate
+	 * @throws GamaRuntimeException
+	 *             if the buffered contents cannot be accessed
+	 */
+	@operator (
+			value = "last",
+			can_be_const = true,
+			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.CONTAINER, IOperatorCategory.FILE },
+			concept = { IConcept.CONTAINER, IConcept.FILE })
+	@doc (value = "the last value of the buffered file contents")
+	@Override
+	Contents lastValue(IScope scope) throws GamaRuntimeException;
+
+	/**
+	 * Returns the number of buffered elements in this file.
+	 *
+	 * @param scope
+	 *            the current execution scope
+	 * @return the buffered length of the file contents
+	 */
+	@operator (
+			value = "length",
+			can_be_const = true,
+			category = { IOperatorCategory.CONTAINER, IOperatorCategory.FILE },
+			concept = { IConcept.CONTAINER, IConcept.FILE })
+	@doc (value = "the number of elements in the buffered file contents")
+	@Override
+	int length(IScope scope);
+
+	/**
+	 * Returns whether the buffered contents are empty.
+	 *
+	 * @param scope
+	 *            the current execution scope
+	 * @return {@code true} if the buffered contents are empty
+	 */
+	@operator (
+			value = "empty",
+			can_be_const = true,
+			category = { IOperatorCategory.CONTAINER, IOperatorCategory.FILE },
+			concept = { IConcept.CONTAINER, IConcept.FILE })
+	@doc (value = "true if the buffered file contents are empty, false otherwise")
+	@Override
+	boolean isEmpty(IScope scope);
+
+	/**
+	 * Returns a reversed view or copy of the buffered contents.
+	 *
+	 * @param scope
+	 *            the current execution scope
+	 * @return the reversed buffered contents
+	 * @throws GamaRuntimeException
+	 *             if the buffered contents cannot be reversed
+	 */
+	@operator (
+			value = "reverse",
+			can_be_const = true,
+			type = ITypeProvider.TYPE_AT_INDEX + 1,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.CONTAINER, IOperatorCategory.FILE },
+			concept = { IConcept.CONTAINER, IConcept.FILE })
+	@doc (value = "a reversed copy of the buffered contents of the file")
+	@Override
+	IRuntimeContainer<?, ?> reverse(IScope scope) throws GamaRuntimeException;
+
+	/**
+	 * Returns one buffered value, typically chosen at random.
+	 *
+	 * @param scope
+	 *            the current execution scope
+	 * @return one buffered value, or {@code nil} if the contents are empty
+	 */
+	@operator (
+			value = { "one_of", "any" },
+			can_be_const = false,
+			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.CONTAINER, IOperatorCategory.FILE },
+			concept = { IConcept.CONTAINER, IConcept.FILE })
+	@doc (value = "one of the elements of the buffered file contents")
+	@Override
+	Contents anyValue(IScope scope);
 
 	/**
 	 * Gets the internal buffer containing the file's loaded contents.
@@ -473,10 +604,16 @@ public interface IGamaFile<C extends IContainer.Modifiable, Contents>
 	 *            the o
 	 * @return true, if successful
 	 */
+	@operator (
+			value = { "contains_key" },
+			can_be_const = true,
+			category = { IOperatorCategory.CONTAINER, IOperatorCategory.FILE },
+			concept = { IConcept.CONTAINER, IConcept.FILE })
+	@doc (value = "true if the buffered contents of the file contain the right operand as a key or index")
 	@Override
 	default boolean containsKey(final IScope scope, final Object o) {
 		final C contents = getContents(scope);
-		return contents != null && contents.contains(scope, o);
+		return contents != null && contents.containsKey(scope, o);
 	}
 
 	/**
@@ -514,7 +651,7 @@ public interface IGamaFile<C extends IContainer.Modifiable, Contents>
 	 * @return the i modifiable container
 	 * @date 4 nov. 2023
 	 */
-	default Modifiable ensureContentsIsCompatible(final Modifiable contents) {
+	default IRuntimeContainer.Modifiable ensureContentsIsCompatible(final IRuntimeContainer.Modifiable contents) {
 		return contents;
 	}
 
