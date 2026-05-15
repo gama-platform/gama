@@ -140,7 +140,7 @@ public interface IDataFrame extends IContainer.Addressable<String, IList<Object>
 	 *
 	 * @return
 	 */
-	IType getContentType(final IScope scope);
+	IType getContentType();
 
 	/**
 	 * Gets the.
