@@ -39,9 +39,9 @@ on:
         type: string
         required: false
         default: ""
-      DONT_PUBLISH_P2:
+      GITHUB_ONLY:
         type: boolean
-        default: true
+        default: false
     secrets:
       GAMA_KEYSTORE_BASE64:
         required: false
@@ -115,6 +115,12 @@ jobs:
       # ██████╔╝╚██████╔╝██║███████╗██████╔╝██║██║ ╚████║╚██████╔╝
       # ╚═════╝  ╚═════╝ ╚═╝╚══════╝╚═════╝ ╚═╝╚═╝  ╚═══╝ ╚═════╝
       #
+
+      - name: Disable dev logging for public release
+        if: "${{ inputs.GITHUB_ONLY }}"
+        run: |
+          sed -i 's/-Denable_logging=true/-Denable_logging=false/g' ./gama.product/*product
+          sed -i 's/-Denable_debug=true/-Denable_debug=false/g' ./gama.product/*product
 
       - name: Compiling gama
         run: bash $GITHUB_WORKSPACE/travis/build.sh -e -B -T 4 ${{ inputs.mvn_extra_arguments }}
