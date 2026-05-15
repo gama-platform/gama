@@ -36,7 +36,7 @@ experiment Dataframes type: test {
 
 	test pseudo_variables {
 		dataframe df <- dataframe_with(["x", "y", "z"], [[1, 2, 3], [4, 5, 6]]);
-		assert df.columns = ["x", "y", "z"];
+		assert df.keys = ["x", "y", "z"];
 		assert df.rows = 2;
 		assert df.columns = 3;
 	}
