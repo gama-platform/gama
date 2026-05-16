@@ -221,6 +221,32 @@ public class Containers {
 	}
 
 	/**
+	 * Evaluates a supplier with a temporary iterator value, then restores the previous one.
+	 *
+	 * @param <T>
+	 *            the result type
+	 * @param scope
+	 *            the execution scope
+	 * @param eachName
+	 *            the iterator variable name
+	 * @param eachValue
+	 *            the temporary iterator value
+	 * @param supplier
+	 *            the computation to evaluate
+	 * @return the result of the computation
+	 */
+	private static <T> T withEach(final IScope scope, final String eachName, final Object eachValue,
+			final Supplier<T> supplier) {
+		final Object previousEach = scope.getEach(eachName);
+		scope.setEach(eachName, eachValue);
+		try {
+			return supplier.get();
+		} finally {
+			scope.setEach(eachName, previousEach);
+		}
+	}
+
+	/**
 	 * With.
 	 *
 	 * @param <T>
@@ -233,10 +259,7 @@ public class Containers {
 	 */
 	public static Function<Object, Object> buildFunctionWithEach(final IScope scope, final String eachName,
 			final IExpression filter) {
-		return t -> {
-			scope.setEach(eachName, t);
-			return filter.value(scope);
-		};
+		return t -> withEach(scope, eachName, t, () -> filter.value(scope));
 	}
 
 	/**
@@ -252,10 +275,7 @@ public class Containers {
 	 */
 	public static <T> Predicate<T> buildPredicateWithEach(final IScope scope, final String eachName,
 			final IExpression filter) {
-		return (final T t) -> {
-			scope.setEach(eachName, t);
-			return Cast.asBool(scope, filter.value(scope));
-		};
+		return (final T t) -> withEach(scope, eachName, t, () -> Cast.asBool(scope, filter.value(scope)));
 	}
 
 	/**
@@ -2765,11 +2785,15 @@ public class Containers {
 	private static IList where(final IScope scope, final Iterable c, final IType contentType, final String eachName,
 			final IExpression filter) {
 		final IList result = GamaListFactory.create(contentType);
-		for (final Object o : c) {
-			scope.setEach(eachName, o);
-			if (Cast.asBool(scope, filter.value(scope))) { result.add(o); }
+		final Object previousEach = scope.getEach(eachName);
+		try {
+			for (final Object o : c) {
+				scope.setEach(eachName, o);
+				if (Cast.asBool(scope, filter.value(scope))) { result.add(o); }
+			}
+		} finally {
+			scope.setEach(eachName, previousEach);
 		}
-		scope.setEach(eachName, null);
 		return result;
 	}
 
@@ -2998,11 +3022,16 @@ public class Containers {
 			default -> GamaMatrixFactory.create(cols, rows, filter.getGamlType());
 		};
 
-		for (int x = 0; x < cols; x++) {
-			for (int y = 0; y < rows; y++) {
-				scope.setEach(eachName, c.get(scope, x, y));
-				result.set(scope, x, y, filter.value(scope));
+		final Object previousEach = scope.getEach(eachName);
+		try {
+			for (int x = 0; x < cols; x++) {
+				for (int y = 0; y < rows; y++) {
+					scope.setEach(eachName, c.get(scope, x, y));
+					result.set(scope, x, y, filter.value(scope));
+				}
 			}
+		} finally {
+			scope.setEach(eachName, previousEach);
 		}
 		return result;
 	}
