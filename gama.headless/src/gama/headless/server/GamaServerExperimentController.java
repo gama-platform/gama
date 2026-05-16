@@ -124,7 +124,7 @@ public class GamaServerExperimentController extends AbstractExperimentController
 	 */
 	@Override
 	protected boolean processUserCommand(final ExperimentCommand command) {
-		switch (command) {
+		switch (command.type()) {
 			case _OPEN:
 				try {
 					_job.loadAndBuildWithJson(parameters, stopCondition);
@@ -142,13 +142,17 @@ public class GamaServerExperimentController extends AbstractExperimentController
 				paused = true;
 				return true;
 			case _STEP:
-				previouslock.acquire();
-				paused = true;
-				lock.release();
+				for(int i = 0; i < command.quantity(); i++) {
+					previouslock.acquire();
+					paused = true;
+					lock.release();					
+				}
 				return true;
 			case _BACK:
-				paused = true;
-				experiment.getAgent().backward(getScope());
+				for(int i = 0; i < command.quantity(); i++) {
+					paused = true;
+					experiment.getAgent().backward(getScope());
+				}
 				return true;
 			case _RELOAD:
 				try {
@@ -188,7 +192,7 @@ public class GamaServerExperimentController extends AbstractExperimentController
 				experimentAlive = false;
 				lock.release();
 				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.NONE);
-				if (commandThread != null && commandThread.isAlive()) { commands.offer(ExperimentCommand._CLOSE); }
+				if (commandThread != null && commandThread.isAlive()) { commands.offer(_CLOSE_CMD); }
 			}
 		}
 	}
@@ -260,23 +264,27 @@ public class GamaServerExperimentController extends AbstractExperimentController
 	}
 
 	@Override
-	public boolean processStep(final boolean andWait) {
+	public boolean processStep(final int nbSteps, final boolean andWait) {
 		paused = true;
 		if (andWait) {
-			_job.doStep();
+			for(int i = 0 ; i < nbSteps; i++) {
+				_job.doStep();				
+			}
 			return true;
 		}
-		return super.processStep(andWait);
+		return super.processStep(nbSteps, andWait);
 	}
 
 	@Override
-	public boolean processBack(final boolean andWait) {
+	public boolean processBack(final int nbSteps, final boolean andWait) {
 		paused = true;
 		if (andWait) {
-			_job.doBackStep();
+			for(int i = 0; i < nbSteps; i++) {
+				_job.doBackStep();				
+			}
 			return true;
 		}
-		return super.processBack(andWait);
+		return super.processBack(nbSteps, andWait);
 	}
 
 }

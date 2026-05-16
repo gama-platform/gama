@@ -192,14 +192,13 @@ public class DefaultServerCommands {
 			nb_step = 1;
 		}
 		final boolean sync = map.get(SYNC) != null ? Boolean.parseBoolean("" + map.get(SYNC)) : false;
-		for (int i = 0; i < nb_step; i++) {
-			try {
-				if (!plan.getController().processStep(sync))
-					return new CommandResponse(UnableToExecuteRequest, "Controller is full", map, false);
-			} catch (RuntimeException e) {
-				DEBUG.OUT(e.getStackTrace());
-				return new CommandResponse(MessageType.RuntimeError, e, map, false);
+		try {
+			if (!plan.getController().processStep(nb_step, sync)) {
+				return new CommandResponse(UnableToExecuteRequest, "Controller is full", map, false);
 			}
+		} catch (RuntimeException e) {
+			DEBUG.OUT(e.getStackTrace());
+			return new CommandResponse(MessageType.RuntimeError, e, map, false);
 		}
 		return new CommandResponse(CommandExecutedSuccessfully, "", map, false);
 	}
@@ -230,14 +229,13 @@ public class DefaultServerCommands {
 			nb_step = 1;
 		}
 		final boolean sync = map.get(SYNC) != null ? Boolean.parseBoolean("" + map.get(SYNC)) : false;
-		for (int i = 0; i < nb_step; i++) {
-			try {
-				if (!plan.getController().processBack(sync))
-					return new CommandResponse(UnableToExecuteRequest, "Controller is full", map, false);
-			} catch (RuntimeException e) {
-				DEBUG.OUT(e.getStackTrace());
-				return new CommandResponse(MessageType.GamaServerError, e, map, false);
+		try {
+			if (!plan.getController().processBack(nb_step, sync)) {
+				return new CommandResponse(UnableToExecuteRequest, "Controller is full", map, false);
 			}
+		} catch (RuntimeException e) {
+			DEBUG.OUT(e.getStackTrace());
+			return new CommandResponse(MessageType.GamaServerError, e, map, false);
 		}
 		return new CommandResponse(CommandExecutedSuccessfully, "", map, false);
 	}
