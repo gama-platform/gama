@@ -51,47 +51,46 @@ import gama.api.utils.files.FileUtils;
 /**
  * Provides GAML file I/O operators for the GAMA modeling and simulation platform.
  *
- * <p>This class is the primary host for file-related operators that GAML models can use to
- * interact with the filesystem at runtime. All path arguments that are relative are resolved
- * against the simulation workspace root via
+ * <p>
+ * This class is the primary host for file-related operators that GAML models can use to interact with the filesystem at
+ * runtime. All path arguments that are relative are resolved against the simulation workspace root via
  * {@link gama.api.utils.files.FileUtils#constructAbsoluteFilePath(IScope, String, boolean)}.
  *
- * <p><strong>Operator families provided:</strong>
+ * <p>
+ * <strong>Operator families provided:</strong>
  * <ul>
- *   <li><strong>File existence:</strong> {@code file_exists}, {@code folder_exists} /
- *       {@code directory_exists} — test whether a path refers to an existing file or directory.</li>
- *   <li><strong>File access:</strong> {@code read} / {@code get} — read an attribute from an
- *       agent, geometry, or the current GIS feature stream.</li>
- *   <li><strong>File path manipulation:</strong> {@code to_absolute_path} — converts a
- *       relative path to an absolute one using the simulation workspace root.</li>
- *   <li><strong>File creation / writing:</strong> {@code save} and {@code write} are
- *       implemented in other classes (see {@code SaveStatements}); cross-reference them when
- *       documenting output workflows.</li>
- *   <li><strong>Compression:</strong> {@code zip} — compresses a list of files/folders into a
- *       standard ZIP archive; {@code unzip} — extracts a ZIP archive to a destination folder.</li>
- *   <li><strong>Directory operations:</strong> {@code directory} / {@code folder} — opens an
- *       existing directory as a {@link gama.api.types.file.GamaFolderFile};
- *       {@code new_folder} — creates a directory if it does not yet exist.</li>
- *   <li><strong>File management:</strong> {@code copy_file}, {@code rename_file},
- *       {@code delete_file} — manipulate files and directories on the filesystem.</li>
- *   <li><strong>Writable flag:</strong> {@code writable} — changes the read/write mode of an
- *       open {@link gama.api.types.file.IGamaFile}.</li>
- *   <li><strong>Buffered I/O:</strong> {@code flush_all_files} — flushes all pending buffered
- *       save operations for the current simulation.</li>
+ * <li><strong>File existence:</strong> {@code file_exists}, {@code folder_exists} / {@code directory_exists} — test
+ * whether a path refers to an existing file or directory.</li>
+ * <li><strong>File access:</strong> {@code read} / {@code get} — read an attribute from an agent, geometry, or the
+ * current GIS feature stream.</li>
+ * <li><strong>File path manipulation:</strong> {@code to_absolute_path} — converts a relative path to an absolute one
+ * using the simulation workspace root.</li>
+ * <li><strong>File creation / writing:</strong> {@code save} and {@code write} are implemented in other classes (see
+ * {@code SaveStatements}); cross-reference them when documenting output workflows.</li>
+ * <li><strong>Compression:</strong> {@code zip} — compresses a list of files/folders into a standard ZIP archive;
+ * {@code unzip} — extracts a ZIP archive to a destination folder.</li>
+ * <li><strong>Directory operations:</strong> {@code directory} / {@code folder} — opens an existing directory as a
+ * {@link gama.api.types.file.GamaFolderFile}; {@code new_folder} — creates a directory if it does not yet exist.</li>
+ * <li><strong>File management:</strong> {@code copy_file}, {@code rename_file}, {@code delete_file} — manipulate files
+ * and directories on the filesystem.</li>
+ * <li><strong>Writable flag:</strong> {@code writable} — changes the read/write mode of an open
+ * {@link gama.api.types.file.IGamaFile}.</li>
+ * <li><strong>Buffered I/O:</strong> {@code flush_all_files} — flushes all pending buffered save operations for the
+ * current simulation.</li>
  * </ul>
  *
- * <p><strong>Path resolution:</strong> Relative paths are resolved against the simulation
- * workspace root via
- * {@link gama.api.utils.files.FileUtils#constructAbsoluteFilePath(IScope, String, boolean)}.
- * The resulting absolute path uses the OS path separator.
+ * <p>
+ * <strong>Path resolution:</strong> Relative paths are resolved against the simulation workspace root via
+ * {@link gama.api.utils.files.FileUtils#constructAbsoluteFilePath(IScope, String, boolean)}. The resulting absolute
+ * path uses the OS path separator.
  *
- * <p><strong>Testing:</strong> Most operators in this class are marked {@code @no_test} because
- * their results depend on the filesystem and execution context and cannot be verified with static
- * inline assertions.
+ * <p>
+ * <strong>Testing:</strong> Most operators in this class are marked {@code @no_test} because their results depend on
+ * the filesystem and execution context and cannot be verified with static inline assertions.
  *
- * <p><strong>ZIP support:</strong> The {@code zip} and {@code unzip} operators create and read
- * standard ZIP archives (as defined by {@link java.util.zip.ZipOutputStream} /
- * {@link java.util.zip.ZipFile}).
+ * <p>
+ * <strong>ZIP support:</strong> The {@code zip} and {@code unzip} operators create and read standard ZIP archives (as
+ * defined by {@link java.util.zip.ZipOutputStream} / {@link java.util.zip.ZipFile}).
  *
  * @author Alexis Drogoul (original author, 20 Dec 2010)
  * @see gama.api.utils.files.FileUtils
@@ -154,8 +153,7 @@ public class Files {
 	@doc (
 			value = "Test whether the parameter is the path to an existing file. False if it does not exist or if it is a folder",
 			returns = "a {@code bool}: {@code true} if the file exists on the filesystem and is not a directory.",
-			special_cases = {
-					"An empty or null path returns false without raising an error.",
+			special_cases = { "An empty or null path returns false without raising an error.",
 					"Paths are resolved relative to the simulation workspace root via FileUtils.constructAbsoluteFilePath.",
 					"Returns false for directories; use folder_exists to check directories." },
 			examples = { @example (
@@ -196,8 +194,7 @@ public class Files {
 	@doc (
 			value = "Transforms a relative path into an absolute path. If the path is already absolute doesn't transform it.",
 			returns = "a {@code string} containing the absolute path resolved against the simulation workspace root.",
-			special_cases = {
-					"An empty string '' is resolved to the simulation root path itself.",
+			special_cases = { "An empty string '' is resolved to the simulation root path itself.",
 					"If the path is already absolute it is returned unchanged.",
 					"The returned path uses the OS-specific path separator." })
 	@no_test
