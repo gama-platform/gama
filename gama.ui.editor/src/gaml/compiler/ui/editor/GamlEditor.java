@@ -26,7 +26,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 import org.eclipse.core.resources.IFile;
@@ -50,8 +49,6 @@ import org.eclipse.jface.text.ITextViewerExtension;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextSelection;
-import org.eclipse.jface.text.codemining.ICodeMining;
-import org.eclipse.jface.text.codemining.ICodeMiningProvider;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.CompositeRuler;
 import org.eclipse.jface.text.source.IAnnotationAccess;
@@ -77,6 +74,7 @@ import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
@@ -484,11 +482,19 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 					if (time - lastEvent > 500) {
 						lastEvent = time;
 						updateToolbar(state, true);
+						refreshCodeMinings();
 					}
 				});
 			}
 		});
 		toolbarParent.requestLayout();
+		if (getStyledText().getHorizontalBar() != null) {
+			getStyledText().getHorizontalBar().addSelectionListener(new SelectionAdapter() {
+
+				@Override
+				public void widgetSelected(final SelectionEvent e) { refreshCodeMinings(); }
+			});
+		}
 		// See issue #502 https://github.com/gama-platform/gama/issues/502
 		this.getStyledText().addFocusListener(new FocusListener() {
 
@@ -880,34 +886,13 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	}
 
 	/**
-	 * The Class GamlCodeMiningProvider.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @date 16 sept. 2023
+	 * Requests a refresh of the inline code minings if the editor viewer is still alive.
 	 */
-	public class GamlCodeMiningProvider extends AnnotationCodeMiningProvider implements ICodeMiningProvider {
-
-		/**
-		 * Instantiates a new gaml code mining provider.
-		 *
-		 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-		 * @date 16 sept. 2023
-		 */
-		GamlCodeMiningProvider() {
-			this.setContext(GamlEditor.this);
+	private void refreshCodeMinings() {
+		final GamaSourceViewer viewer = getInternalSourceViewer();
+		if (viewer != null && viewer.getTextWidget() != null && !viewer.getTextWidget().isDisposed()) {
+			viewer.updateCodeMinings();
 		}
-
-		/** The empty. */
-		static CompletableFuture<List<? extends ICodeMining>> EMPTY =
-				CompletableFuture.completedFuture(Collections.EMPTY_LIST);
-
-		@Override
-		public CompletableFuture<List<? extends ICodeMining>> provideCodeMinings(final ITextViewer viewer,
-				final IProgressMonitor monitor) {
-			if (!GamaPreferences.Modeling.EDITOR_MINING.getValue()) return EMPTY;
-			return super.provideCodeMinings(viewer, monitor);
-		}
-
 	}
 
 	/**
@@ -929,7 +914,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 		// Using replaceAnnotationCodeMiningProvider() instead of addCodeMiningProvider() avoids
 		// having two AnnotationCodeMiningProvider instances active simultaneously, which would
 		// cause every annotation code mining to be rendered twice in the editor.
-		getInternalSourceViewer().replaceAnnotationCodeMiningProvider(new GamlCodeMiningProvider());
+		getInternalSourceViewer().replaceAnnotationCodeMiningProvider(new GamlAnnotationCodeMiningProvider(this));
 	}
 
 	/**
@@ -1233,10 +1218,12 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 			sourceViewer.setTopIndex(topIndex);
 			if (parent instanceof Composite composite) { composite.layout(true); }
 			parent.setRedraw(true);
+			refreshCodeMinings();
 		} else {
 			StyledText styledText = sourceViewer.getTextWidget();
 			styledText.setFont(font);
 			if (getVerticalRuler() instanceof IVerticalRulerExtension e) { e.setFont(font); }
+			refreshCodeMinings();
 		}
 	}
 
