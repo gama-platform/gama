@@ -62,33 +62,43 @@ public class CSVContentProvider implements IStructuredContentProvider, ILazyCont
 			CSVModel model = (CSVModel) viewer.getInput();
 			Object[] rows = model.getArrayRows(false);
 
-			if (viewer.getFilters() != null && viewer.getFilters().length > 0) {
-				java.util.List<Object> filteredRows = new java.util.ArrayList<>();
-				for (Object row : rows) {
-					boolean select = true;
-					for (ViewerFilter filter : viewer.getFilters()) {
-						if (!filter.select(viewer, model, row)) {
-							select = false;
-							break;
-						}
-					}
-					if (select) filteredRows.add(row);
-				}
-				rows = filteredRows.toArray();
-			}
-
-			if (viewer.getComparator() != null) {
-				java.util.Arrays.sort(rows, new java.util.Comparator<Object>() {
-					@Override
-					public int compare(Object o1, Object o2) {
-						return viewer.getComparator().compare(viewer, o1, o2);
-					}
-				});
-			}
+			rows = applyFiltersAndSorters(rows, model);
 
 			if (index >= 0 && index < rows.length) {
 				viewer.replace(rows[index], index);
 			}
 		}
+	}
+
+	private Object[] applyFiltersAndSorters(Object[] rows, CSVModel model) {
+		if (viewer.getFilters() != null && viewer.getFilters().length > 0) {
+			java.util.List<Object> filteredRows = new java.util.ArrayList<>();
+			for (Object row : rows) {
+				if (isRowSelected(model, row)) {
+					filteredRows.add(row);
+				}
+			}
+			rows = filteredRows.toArray();
+		}
+
+		if (viewer.getComparator() != null) {
+			java.util.Arrays.sort(rows, new java.util.Comparator<Object>() {
+				@Override
+				public int compare(Object o1, Object o2) {
+					return viewer.getComparator().compare(viewer, o1, o2);
+				}
+			});
+		}
+
+		return rows;
+	}
+
+	private boolean isRowSelected(CSVModel model, Object row) {
+		for (ViewerFilter filter : viewer.getFilters()) {
+			if (!filter.select(viewer, model, row)) {
+				return false;
+			}
+		}
+		return true;
 	}
 }
