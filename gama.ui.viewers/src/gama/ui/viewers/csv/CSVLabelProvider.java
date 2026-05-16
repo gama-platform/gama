@@ -33,6 +33,9 @@ public class CSVLabelProvider extends StyledCellLabelProvider {
 
 	// implements ITableLabelProvider
 
+	/** The model column index displayed by this label provider. */
+	private final int modelColumnIndex;
+
 	/** The search text. */
 	private String searchText;
 	
@@ -43,6 +46,17 @@ public class CSVLabelProvider extends StyledCellLabelProvider {
 	 *
 	 */
 	public CSVLabelProvider() {
+		this(0);
+	}
+
+	/**
+	 * Creates a label provider bound to the given model column.
+	 *
+	 * @param modelColumnIndex
+	 *            the underlying CSV model column index displayed by the SWT column
+	 */
+	public CSVLabelProvider(final int modelColumnIndex) {
+		this.modelColumnIndex = modelColumnIndex;
 		searchColor = WorkbenchHelper.getDisplay().getSystemColor(SWT.COLOR_YELLOW);
 	}
 
@@ -98,8 +112,7 @@ public class CSVLabelProvider extends StyledCellLabelProvider {
 	@Override
 	public void update(final ViewerCell cell) {
 		final CSVRow element = (CSVRow) cell.getElement();
-		final int index = cell.getColumnIndex();
-		final String columnText = getColumnText(element, index);
+		final String columnText = getColumnText(element, modelColumnIndex);
 		cell.setText(columnText);
 		cell.setImage(null);
 		if (searchText != null && searchText.length() > 0) {

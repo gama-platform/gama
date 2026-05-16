@@ -10,10 +10,13 @@
  ********************************************************************************************************/
 package gama.ui.viewers.csv.model;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -118,6 +121,29 @@ public class CSVModel implements IRowChangesListener {
 	}
 
 	/**
+	 * Sets the model input from a reader.
+	 *
+	 * @param reader
+	 *            the reader used to load the CSV contents
+	 */
+	public void setInput(final Reader reader) {
+		readLines(reader);
+	}
+
+	/**
+	 * Reloads the model directly from the workspace file.
+	 */
+	public void reloadFromFile() {
+		try (InputStream stream = file.getContents();
+				Reader reader = new InputStreamReader(stream, Charset.forName(file.getCharset()))) {
+			readLines(reader);
+		} catch (final Exception e) {
+			DEBUG.ERR("exception while reloading csv file " + e);
+			e.printStackTrace();
+		}
+	}
+
+	/**
 	 * @param reader
 	 * @return
 	 */
@@ -144,7 +170,10 @@ public class CSVModel implements IRowChangesListener {
 	protected void readLines(final Reader reader) {
 		rows.clear();
 		final CSVInfo info = getInfo();
+		final int previousRowCount = info.rows;
 		info.cols = 0;
+		info.rows = 0;
+		rows.ensureCapacity(Math.max(previousRowCount, 0));
 
 		try (final CsvReader csvReader = initializeReader(reader)) {
 			// case when the first line is the encoding
@@ -159,22 +188,20 @@ public class CSVModel implements IRowChangesListener {
 				if (info.header && !setHeader) {
 					setHeader = true;
 					csvRow.setHeader(true);
-					getInfo().headers = new String[getInfo().cols];
-					for (int i = 0; i < getInfo().cols; i++) { getInfo().headers[i] = rowValues[i]; }
+					info.headers = new String[info.cols];
+					for (int i = 0; i < info.cols; i++) { info.headers[i] = rowValues[i]; }
 				}
 				rows.add(csvRow);
 			}
 			if (!info.header) {
-				getInfo().headers = new String[getInfo().cols];
-				for (int i = 0; i < getInfo().cols; i++) { getInfo().headers[i] = "Column" + (i + 1); }
+				info.headers = new String[info.cols];
+				for (int i = 0; i < info.cols; i++) { info.headers[i] = "Column" + (i + 1); }
 			}
-
-			csvReader.close();
+			info.rows = rows.size();
 		} catch (final Exception e) {
 			DEBUG.ERR("exception in readLines " + e);
 			e.printStackTrace();
 		}
-		saveMetaData();
 	}
 
 	/**
@@ -232,7 +259,7 @@ public class CSVModel implements IRowChangesListener {
 	 * @return
 	 */
 	public int findRow(final CSVRow findRow) {
-		for (int i = 0; i <= getArrayRows(true).length; i++) {
+		for (int i = 0; i < rows.size(); i++) {
 			final CSVRow row = getRowAt(i);
 			if (row.equals(findRow)) return i;
 		}
@@ -263,6 +290,45 @@ public class CSVModel implements IRowChangesListener {
 	 */
 	public CSVRow getRowAt(final int index) {
 		return rows.get(index);
+	}
+
+	/**
+	 * Gets the number of rows displayed in the table, excluding the header row when one is configured.
+	 *
+	 * @return the number of data rows visible in the table viewer
+	 */
+	public int getDataRowCount() {
+		return isFirstLineHeader() ? Math.max(0, rows.size() - 1) : rows.size();
+	}
+
+	/**
+	 * Gets a displayed row by its table index, excluding the header row when one is configured.
+	 *
+	 * @param index
+	 *            the displayed row index
+	 * @return the matching data row, or {@code null} if the index is out of bounds
+	 */
+	public CSVRow getDataRowAt(final int index) {
+		if (index < 0 || index >= getDataRowCount()) return null;
+		final int actualIndex = isFirstLineHeader() ? index + 1 : index;
+		return rows.get(actualIndex);
+	}
+
+	/**
+	 * Finds the displayed row index for a data row, excluding the header row when one is configured.
+	 *
+	 * @param findRow
+	 *            the row to locate in the table
+	 * @return the displayed row index, or {@code -1} when the row cannot be found or refers to the header row
+	 */
+	public int findDataRow(final CSVRow findRow) {
+		final int actualIndex = findRow(findRow);
+		if (actualIndex < 0) return -1;
+		if (isFirstLineHeader()) {
+			if (actualIndex == 0) return -1;
+			return actualIndex - 1;
+		}
+		return actualIndex;
 	}
 
 	/**
