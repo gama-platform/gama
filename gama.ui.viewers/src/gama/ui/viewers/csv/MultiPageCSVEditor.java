@@ -173,7 +173,7 @@ public class MultiPageCSVEditor extends MultiPageEditorPart
 		final Composite intermediate = new Composite(parent, SWT.NONE);
 		final Composite composite = GamaToolbarFactory.createToolbars(this, intermediate);
 		tableViewer =
-				new TableViewer(composite, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
+				new TableViewer(composite, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER | SWT.VIRTUAL);
 		tableViewer.setUseHashlookup(true);
 		final Table table = tableViewer.getTable();
 		table.setHeaderVisible(true);
@@ -211,6 +211,38 @@ public class MultiPageCSVEditor extends MultiPageEditorPart
 	 *
 	 */
 	public void tableModified() {
+		if (tableViewer.getFilters() != null && tableViewer.getFilters().length > 0) {
+			java.util.List<Object> filteredRows = new java.util.ArrayList<>();
+			for (Object row : model.getArrayRows(false)) {
+				boolean select = true;
+				for (org.eclipse.jface.viewers.ViewerFilter filter : tableViewer.getFilters()) {
+					if (!filter.select(tableViewer, model, row)) {
+						select = false;
+						break;
+					}
+				}
+				if (select) filteredRows.add(row);
+			}
+			tableViewer.setItemCount(filteredRows.size());
+		} else {
+			tableViewer.setItemCount(model.getArrayRows(false).length);
+		}
+		if (tableViewer.getFilters() != null && tableViewer.getFilters().length > 0) {
+			java.util.List<Object> filteredRows = new java.util.ArrayList<>();
+			for (Object row : model.getArrayRows(false)) {
+				boolean select = true;
+				for (org.eclipse.jface.viewers.ViewerFilter filter : tableViewer.getFilters()) {
+					if (!filter.select(tableViewer, model, row)) {
+						select = false;
+						break;
+					}
+				}
+				if (select) filteredRows.add(row);
+			}
+			tableViewer.setItemCount(filteredRows.size());
+		} else {
+			tableViewer.setItemCount(model.getArrayRows(false).length);
+		}
 		tableViewer.refresh();
 		final boolean wasPageModified = isPageModified;
 		isPageModified = true;
@@ -240,6 +272,23 @@ public class MultiPageCSVEditor extends MultiPageEditorPart
 			column.getColumn().setMoveable(true);
 			column.setLabelProvider(new CSVLabelProvider());
 			addMenuItemToColumn(column.getColumn(), index);
+		}
+
+		if (tableViewer.getFilters() != null && tableViewer.getFilters().length > 0) {
+			java.util.List<Object> filteredRows = new java.util.ArrayList<>();
+			for (Object row : model.getArrayRows(false)) {
+				boolean select = true;
+				for (org.eclipse.jface.viewers.ViewerFilter filter : tableViewer.getFilters()) {
+					if (!filter.select(tableViewer, model, row)) {
+						select = false;
+						break;
+					}
+				}
+				if (select) filteredRows.add(row);
+			}
+			tableViewer.setItemCount(filteredRows.size());
+		} else {
+			tableViewer.setItemCount(model.getArrayRows(false).length);
 		}
 		tableViewer.setInput(model);
 		model.addModelListener(csvFileListener);
@@ -310,6 +359,22 @@ public class MultiPageCSVEditor extends MultiPageEditorPart
 					tableViewer.getTable().setSortColumn(null);
 				} else {
 					tableViewer.getTable().setSortColumn(column);
+				}
+				if (tableViewer.getFilters() != null && tableViewer.getFilters().length > 0) {
+					java.util.List<Object> filteredRows = new java.util.ArrayList<>();
+					for (Object row : model.getArrayRows(false)) {
+						boolean select = true;
+						for (org.eclipse.jface.viewers.ViewerFilter filter : tableViewer.getFilters()) {
+							if (!filter.select(tableViewer, model, row)) {
+								select = false;
+								break;
+							}
+						}
+						if (select) filteredRows.add(row);
+					}
+					tableViewer.setItemCount(filteredRows.size());
+				} else {
+					tableViewer.setItemCount(model.getArrayRows(false).length);
 				}
 				tableViewer.refresh();
 			}
@@ -514,6 +579,22 @@ public class MultiPageCSVEditor extends MultiPageEditorPart
 					final CellLabelProvider labelProvider = tableViewer.getLabelProvider(i);
 					if (labelProvider != null) { ((CSVLabelProvider) labelProvider).setSearchText(filterText); }
 				}
+				if (tableViewer.getFilters() != null && tableViewer.getFilters().length > 0) {
+					java.util.List<Object> filteredRows = new java.util.ArrayList<>();
+					for (Object row : model.getArrayRows(false)) {
+						boolean select = true;
+						for (org.eclipse.jface.viewers.ViewerFilter filter : tableViewer.getFilters()) {
+							if (!filter.select(tableViewer, model, row)) {
+								select = false;
+								break;
+							}
+						}
+						if (select) filteredRows.add(row);
+					}
+					tableViewer.setItemCount(filteredRows.size());
+				} else {
+					tableViewer.setItemCount(model.getArrayRows(false).length);
+				}
 				tableViewer.refresh();
 			}
 		});
@@ -573,7 +654,24 @@ public class MultiPageCSVEditor extends MultiPageEditorPart
 							if (acPage.open() == Window.OK) {
 								final String colToInsert = acPage.getColumnNewName();
 								model.addColumn(colToInsert);
-								tableViewer.setInput(model);
+
+		if (tableViewer.getFilters() != null && tableViewer.getFilters().length > 0) {
+			java.util.List<Object> filteredRows = new java.util.ArrayList<>();
+			for (Object row : model.getArrayRows(false)) {
+				boolean select = true;
+				for (org.eclipse.jface.viewers.ViewerFilter filter : tableViewer.getFilters()) {
+					if (!filter.select(tableViewer, model, row)) {
+						select = false;
+						break;
+					}
+				}
+				if (select) filteredRows.add(row);
+			}
+			tableViewer.setItemCount(filteredRows.size());
+		} else {
+			tableViewer.setItemCount(model.getArrayRows(false).length);
+		}
+		tableViewer.setInput(model);
 								final TableColumn column = new TableColumn(tableViewer.getTable(), SWT.LEFT);
 								column.setText(colToInsert);
 								column.setWidth(100);
