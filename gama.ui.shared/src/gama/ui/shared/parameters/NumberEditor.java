@@ -120,8 +120,11 @@ public abstract class NumberEditor<T extends Comparable> extends ExpressionBased
 
 	@Override
 	protected int[] getToolItems() {
+		if (param.getAmongValue(getScope()) != null) {
+			if (acceptNull) return new int[] { DEFINE, REVERT };
+			return new int[] { REVERT };
+		}
 		if (acceptNull) return new int[] { DEFINE, PLUS, MINUS, REVERT };
-		if (param.getAmongValue(getScope()) != null) return new int[] { REVERT };
 		return new int[] { PLUS, MINUS, REVERT };
 	}
 }
