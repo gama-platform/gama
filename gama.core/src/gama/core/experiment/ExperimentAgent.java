@@ -10,6 +10,7 @@
  ********************************************************************************************************/
 package gama.core.experiment;
 
+import java.nio.file.FileSystems;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -680,7 +681,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	 */
 	@Override
 
-	public String getProjectPath() { return getModel().getProjectPath() + "/"; }
+	public String getProjectPath() { return getModel().getProjectPath() + FileSystems.getDefault().getSeparator(); }
 
 	/**
 	 * Gets the cycle.
