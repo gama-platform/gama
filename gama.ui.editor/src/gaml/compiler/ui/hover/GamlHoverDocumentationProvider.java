@@ -264,7 +264,7 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 		if (facetName.endsWith(":")) { facetName = facetName.substring(0, facetName.length() - 1); }
 		final EObject cont = facet.eContainer();
 		String key = EGaml.getInstance().getKeyOf(cont);
-		if (cont instanceof Statement ds) {
+		if (cont instanceof Statement ds && isDefinedInDisplay(ds)) {
 			String layerName = ds.getKey();
 			if (IKeyword.SPECIES.equals(layerName)) {
 				key = IKeyword.SPECIES_LAYER;
@@ -396,6 +396,23 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 		if (GAML.isAStatement(name)) return ArtefactRegistry.getStatementArtefact(name);
 		if (Types.hasType(name)) return Types.get(name);
 		return null;
+	}
+
+	/**
+	 * Checks whether a statement is defined inside a display block.
+	 *
+	 * @param statement
+	 *            the statement to inspect
+	 * @return {@code true} if the statement belongs to a display, {@code false} otherwise
+	 */
+	private boolean isDefinedInDisplay(final Statement statement) {
+		EObject current = statement == null ? null : statement.eContainer();
+		while (current != null) {
+			if (current instanceof S_Display) return true;
+			if (current instanceof Statement) return false;
+			current = current.eContainer();
+		}
+		return false;
 	}
 
 }
