@@ -25,6 +25,7 @@ import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.map.IMap;
 import gama.api.types.misc.IContainer;
+import gama.api.types.misc.IRuntimeContainer;
 import gama.api.utils.GamlProperties;
 import gama.dev.DEBUG;
 
@@ -59,14 +60,14 @@ import gama.dev.DEBUG;
  * @see GamaContainerType
  * @see IType
  */
-public class ParametricType implements IContainerType<IContainer<?, ?>> {
+public class ParametricType implements IContainerType<IRuntimeContainer<?, ?>> {
 
 	static {
 		DEBUG.OFF();
 	}
 
 	/** The base container type (e.g., list, map, matrix). */
-	private final IContainerType<IContainer<?, ?>> type;
+	private final IContainerType<IRuntimeContainer<?, ?>> type;
 
 	/** The content/value type parameter. */
 	private final IType<?> contentsType;
@@ -99,7 +100,8 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	 * @param ct
 	 *            the content type parameter
 	 */
-	protected ParametricType(final ITypesManager manager, final IContainerType<IContainer<?, ?>> t, final IType<?> kt,
+	protected ParametricType(final ITypesManager manager, final IContainerType<IRuntimeContainer<?, ?>> t,
+			final IType<?> kt,
 			final IType<?> ct) {
 		type = t;
 		contentsType = ct;
@@ -172,7 +174,7 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	 * @see gama.api.gaml.types.ITyped#getGamlType()
 	 */
 	@Override
-	public IContainerType<IContainer<?, ?>> getGamlType() { return type; }
+	public IContainerType<IRuntimeContainer<?, ?>> getGamlType() { return type; }
 
 	/**
 	 * Method cast()
@@ -181,7 +183,7 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	 *      gama.api.gaml.types.IType, gama.api.gaml.types.IType)
 	 */
 	@Override
-	public IContainer<?, ?> cast(final IScope scope, final Object obj, final Object param, final IType<?> kt,
+	public IRuntimeContainer<?, ?> cast(final IScope scope, final Object obj, final Object param, final IType<?> kt,
 			final IType<?> ct, final boolean copy) throws GamaRuntimeException {
 		return type.cast(scope, obj, param, keyType, contentsType, copy);
 	}
@@ -202,7 +204,7 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	 * @see gama.api.gaml.types.IType#toClass()
 	 */
 	@Override
-	public Class<? extends IContainer<?, ?>> toClass() {
+	public Class<? extends IRuntimeContainer<?, ?>> toClass() {
 		return type.toClass();
 	}
 
@@ -212,7 +214,7 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	 * @see gama.api.gaml.types.IType#getDefault()
 	 */
 	@Override
-	public IContainer<?, ?> getDefault() { return type.getDefault(); }
+	public IRuntimeContainer<?, ?> getDefault() { return type.getDefault(); }
 
 	/**
 	 * Method getVarKind()
@@ -350,7 +352,7 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	 * @see gama.api.gaml.types.IType#setParent(gama.api.gaml.types.IType)
 	 */
 	@Override
-	public void setParent(final IType<? super IContainer<?, ?>> p) {}
+	public void setParent(final IType<? super IRuntimeContainer<?, ?>> p) {}
 
 	/**
 	 * Method getParent()
@@ -378,8 +380,13 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	@Override
 	public int computeDistanceTo(final IType<?> t) {
 		// Use polymorphic internal methods to avoid recursion
-		return t.getGamlType().computeDistanceTo(type) + t.getContentType().computeDistanceTo(contentsType)
-				+ t.getKeyType().computeDistanceTo(keyType);
+		final int typeDistance = t.getGamlType().computeDistanceTo(type);
+		if (typeDistance == Integer.MAX_VALUE) return Integer.MAX_VALUE;
+		final int contentDistance = t.getContentType().computeDistanceTo(contentsType);
+		if (contentDistance == Integer.MAX_VALUE) return Integer.MAX_VALUE;
+		final int keyDistance = t.getKeyType().computeDistanceTo(keyType);
+		if (keyDistance == Integer.MAX_VALUE) return Integer.MAX_VALUE;
+		return typeDistance + contentDistance + keyDistance;
 	}
 
 	@Override
@@ -433,7 +440,7 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	 */
 	@SuppressWarnings ("unchecked")
 	@Override
-	public IType<? super IContainer<?, ?>> computeFindCommonSupertypeWith(final IType<?> iType) {
+	public IType<? super IRuntimeContainer<?, ?>> computeFindCommonSupertypeWith(final IType<?> iType) {
 		// Use polymorphic internal methods to avoid recursion
 		if (iType instanceof ParametricType) {
 			final IType<?> pType = iType;
@@ -441,19 +448,19 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 			if (cType.isContainer()) {
 				final IType<?> kt = keyType.computeFindCommonSupertypeWith(pType.getKeyType());
 				final IType<?> ct = contentsType.computeFindCommonSupertypeWith(pType.getContentType());
-				return (IType<? super IContainer<?, ?>>) GamaType.from(cType, kt, ct);
+				return (IType<? super IRuntimeContainer<?, ?>>) GamaType.from(cType, kt, ct);
 			}
-			return (IType<? super IContainer<?, ?>>) cType;
+			return (IType<? super IRuntimeContainer<?, ?>>) cType;
 		}
-		return type;
+		return (IType<? super IRuntimeContainer<?, ?>>) type.computeFindCommonSupertypeWith(iType);
 	}
 
 	@SuppressWarnings ("unchecked")
 	@Override
-	public IType<? super IContainer<?, ?>> findCommonSupertypeWith(final IType<?> iType) {
+	public IType<? super IRuntimeContainer<?, ?>> findCommonSupertypeWith(final IType<?> iType) {
 		// Use cached version if typesManager is available
 		if (typesManager != null)
-			return (IType<? super IContainer<?, ?>>) typesManager.computeCommonSupertype(this, iType);
+			return (IType<? super IRuntimeContainer<?, ?>>) typesManager.computeCommonSupertype(this, iType);
 		// Fallback to direct computation
 		return computeFindCommonSupertypeWith(iType);
 	}
@@ -462,7 +469,7 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	public boolean isDrawable() { return type.isDrawable(); }
 
 	@Override
-	public IContainer<?, ?> cast(final IScope scope, final Object obj, final Object param, final boolean copy)
+	public IRuntimeContainer<?, ?> cast(final IScope scope, final Object obj, final Object param, final boolean copy)
 			throws GamaRuntimeException {
 		return cast(scope, obj, param, keyType, contentsType, copy);
 	}
@@ -597,7 +604,7 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	public Map<String, IArtefact.Operator> getFieldGetters() { return type.getFieldGetters(); }
 
 	@Override
-	public IContainer<?, ?> deserializeFromJson(final IScope scope, final IMap<String, Object> map2) {
+	public IRuntimeContainer<?, ?> deserializeFromJson(final IScope scope, final IMap<String, Object> map2) {
 		map2.put("requested_type", this);
 		return type.deserializeFromJson(scope, map2);
 	}

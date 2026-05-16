@@ -153,7 +153,7 @@ public class GamaMatrixType extends GamaContainerType<IMatrix> {
 	 * contain:
 	 * <ul>
 	 * <li>For list of lists: returns the type of elements in the inner lists</li>
-	 * <li>For containers: returns the container's content type</li>
+	 * <li>For container-like values (including maps): returns the source content type</li>
 	 * <li>Otherwise: returns the expression's type itself</li>
 	 * </ul>
 	 * </p>
@@ -178,7 +178,7 @@ public class GamaMatrixType extends GamaContainerType<IMatrix> {
 			if (array.length == 0) return Types.NO_TYPE;
 			return array[0].getGamlType().getContentType();
 		}
-		if (Types.CONTAINER.isAssignableFrom(itemType)) return itemType.getContentType();
+		if (itemType.isContainer()) return itemType.getContentType();
 		return itemType;
 	}
 

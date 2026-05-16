@@ -27,6 +27,7 @@ import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.IList;
 import gama.api.types.misc.IContainer;
+import gama.api.types.misc.IRuntimeContainer;
 import gama.api.types.pair.IPair;
 import gama.api.utils.interfaces.BiConsumerWithPruning;
 import gama.api.utils.interfaces.ConsumerWithPruning;
@@ -35,7 +36,17 @@ import gama.api.utils.interfaces.ConsumerWithPruning;
  * The main interface for type-safe, key-value maps in the GAMA modeling platform.
  *
  * <p>
- * {@code IMap} extends Java's {@link Map} interface while integrating with GAMA's type system and runtime capabilities.
+ * {@code IMap} extends Java's {@link Map} interface while integrating with GAMA's type system and runtime
+ * capabilities.
+ * </p>
+ *
+ * <p>
+ * In the GAML type hierarchy, {@code map} is now distinct from {@code container}. At the Java level, {@code IMap}
+ * now depends on the extracted runtime contracts in {@link IRuntimeContainer} rather than inheriting the legacy
+ * {@link IContainer} capability branch directly.
+ * </p>
+ *
+ * <p>
  * It provides:
  * </p>
  * <ul>
@@ -128,7 +139,8 @@ import gama.api.utils.interfaces.ConsumerWithPruning;
  *
  * <h2>Usage in GAML</h2>
  * <p>
- * Maps are fundamental container types in GAML:
+ * Maps are fundamental associative collection types in GAML. They still support many container-like operators, but
+ * they no longer belong to the {@code container} inheritance branch of the GAML type hierarchy:
  * </p>
  *
  * <pre>
@@ -150,12 +162,12 @@ import gama.api.utils.interfaces.ConsumerWithPruning;
  *
  * <h2>IPairList Interface</h2>
  * <p>
- * Nested interface that combines {@link Set} and {@link IList} for entry pairs:
+ * Nested interface representing the ordered list view returned by {@link #getPairs()}:
  * </p>
  * <ul>
  * <li>Returned by {@link #getPairs()}</li>
- * <li>Implements both Set&lt;Map.Entry&gt; and IList&lt;Map.Entry&gt;</li>
- * <li>Preserves order (in ordered maps)</li>
+ * <li>Contains {@link IPair} elements exposing both key and value</li>
+ * <li>Preserves insertion order when the underlying map is ordered</li>
  * </ul>
  *
  * <h2>Default Implementations</h2>
@@ -196,7 +208,8 @@ import gama.api.utils.interfaces.ConsumerWithPruning;
  *
  * @see GamaMapFactory for creating IMap instances
  * @see GamaMap for the primary implementation
- * @see IContainer for parent container interfaces
+ * @see IRuntimeContainer for the extracted shared Java-level runtime contract
+ * @see IContainer for the legacy container API from which maps are now detached
  * @see Map for Java Map interface
  *
  * @author drogoul
@@ -218,10 +231,16 @@ import gama.api.utils.interfaces.ConsumerWithPruning;
 				doc = { @doc ("Returns the list of pairs (key, value) that compose this map") }) })
 @SuppressWarnings ("unchecked")
 
-public interface IMap<K, V> extends Map<K, V>, IContainer.Modifiable<K, V, K, V>, IContainer.Addressable<K, V, K, V> {
+public interface IMap<K, V> extends Map<K, V>, IRuntimeContainer.Modifiable<K, V, K, V>,
+		IRuntimeContainer.Addressable<K, V, K, V> {
 
 	/**
-	 * The Interface IPairList.
+	 * Ordered list view of the pairs contained in a map.
+	 *
+	 * <p>
+	 * This view is primarily used by the {@link #getPairs()} getter and by operators that need stable traversal of map
+	 * entries as {@link IPair} values.
+	 * </p>
 	 *
 	 * @param <K>
 	 *            the key type
@@ -242,28 +261,42 @@ public interface IMap<K, V> extends Map<K, V>, IContainer.Modifiable<K, V, K, V>
 
 	}
 
-	/** The keys. */
+	/** Name of the pseudo-variable exposing the list of keys. */
 	String KEYS = "keys";
 
-	/** The values. */
+	/** Name of the pseudo-variable exposing the list of values. */
 	String VALUES = "values";
 
-	/** The pairs. */
+	/** Name of the pseudo-variable exposing the list of key/value pairs. */
 	String PAIRS = "pairs";
 
 	/**
+	 * Returns the value located at the specified iteration position.
 	 *
-	 *
-	 * /** Value at.
+	 * <p>
+	 * The index refers to the traversal order of the map values, which is stable only when {@link #isOrdered()} is
+	 * {@code true}.
+	 * </p>
 	 *
 	 * @param index
-	 *            the index
-	 * @return the v
+	 *            the zero-based position of the value in iteration order
+	 * @return the value at that position
 	 */
 	V valueAt(final int index);
 
 	/**
-	 * Method buildValue()
+	 * Casts or normalizes a value so it matches this map content type.
+	 *
+	 * <p>
+	 * Implementations honor the map type and the current runtime casting policy before the value is inserted or
+	 * replaced.
+	 * </p>
+	 *
+	 * @param scope
+	 *            the current execution scope
+	 * @param object
+	 *            the candidate value to adapt
+	 * @return the value converted to the map content type
 	 *
 	 * @see gama.api.types.misc.IContainer.ToSet#buildValue(gama.api.runtime.scope.IScope, java.lang.Object,
 	 *      gama.gaml.types.IContainerType)
@@ -271,12 +304,163 @@ public interface IMap<K, V> extends Map<K, V>, IContainer.Modifiable<K, V, K, V>
 	V buildValue(final IScope scope, final Object object);
 
 	/**
-	 * Method buildIndex()
+	 * Casts or normalizes a key so it matches this map key type.
+	 *
+	 * @param scope
+	 *            the current execution scope
+	 * @param object
+	 *            the candidate key to adapt
+	 * @return the key converted to the map key type
 	 *
 	 * @see gama.api.types.misc.IContainer.ToSet#buildIndex(gama.api.runtime.scope.IScope, java.lang.Object,
 	 *      gama.gaml.types.IContainerType)
 	 */
 	K buildIndex(final IScope scope, final Object object);
+
+	/**
+	 * Returns whether this map contains the provided value.
+	 *
+	 * @param scope
+	 *            the current execution scope
+	 * @param o
+	 *            the searched value
+	 * @return {@code true} if the value is present in the map
+	 * @throws GamaRuntimeException
+	 *             if the test cannot be evaluated
+	 */
+	@operator (
+			value = { "contains", "contains_value" },
+			can_be_const = true,
+			category = { IOperatorCategory.CONTAINER, IOperatorCategory.MAP },
+			concept = { IConcept.CONTAINER, IConcept.MAP })
+	@doc (
+			value = "true if the map contains the right operand as one of its values, false otherwise",
+			examples = { @example (
+					value = "[1::2, 3::4, 5::6] contains 4",
+					equals = "true"),
+				@example (
+						value = "[1::2, 3::4, 5::6] contains 3",
+						equals = "false") },
+			see = { "contains_key" })
+	@Override
+	boolean contains(IScope scope, Object o) throws GamaRuntimeException;
+
+	/**
+	 * Returns whether this map contains the provided key.
+	 *
+	 * @param scope
+	 *            the current execution scope
+	 * @param o
+	 *            the searched key
+	 * @return {@code true} if the key is present in the map
+	 * @throws GamaRuntimeException
+	 *             if the test cannot be evaluated
+	 */
+	@operator (
+			value = { "contains_key" },
+			can_be_const = true,
+			category = { IOperatorCategory.CONTAINER, IOperatorCategory.MAP },
+			concept = { IConcept.CONTAINER, IConcept.MAP })
+	@doc (
+			value = "true if the map contains the right operand as one of its keys, false otherwise",
+			examples = { @example (
+					value = "[1::2, 3::4, 5::6] contains_key 3",
+					equals = "true"),
+				@example (
+						value = "[1::2, 3::4, 5::6] contains_key 4",
+						equals = "false") },
+			see = { "contains" })
+	@Override
+	boolean containsKey(IScope scope, Object o) throws GamaRuntimeException;
+
+	/**
+	 * Returns the first value of this map in iteration order.
+	 *
+	 * @param scope
+	 *            the current execution scope
+	 * @return the first mapped value, or {@code nil} if the map is empty
+	 * @throws GamaRuntimeException
+	 *             if the value cannot be retrieved
+	 */
+	@operator (
+			value = "first",
+			can_be_const = true,
+			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.CONTAINER, IOperatorCategory.MAP },
+			concept = { IConcept.CONTAINER, IConcept.MAP })
+	@doc (
+			value = "the first value of the first pair of the map in iteration order",
+			examples = { @example (
+					value = "first([1::2, 3::4])",
+					equals = "2") },
+			see = { "last" })
+	@Override
+	V firstValue(IScope scope) throws GamaRuntimeException;
+
+	/**
+	 * Returns the last value of this map in iteration order.
+	 *
+	 * @param scope
+	 *            the current execution scope
+	 * @return the last mapped value, or {@code nil} if the map is empty
+	 * @throws GamaRuntimeException
+	 *             if the value cannot be retrieved
+	 */
+	@operator (
+			value = "last",
+			can_be_const = true,
+			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.CONTAINER, IOperatorCategory.MAP },
+			concept = { IConcept.CONTAINER, IConcept.MAP })
+	@doc (
+			value = "the last value of the last pair of the map in iteration order",
+			examples = { @example (
+					value = "last([1::2, 3::4])",
+					equals = "4") },
+			see = { "first" })
+	@Override
+	V lastValue(IScope scope) throws GamaRuntimeException;
+
+	/**
+	 * Returns the number of key/value pairs stored in this map.
+	 *
+	 * @param scope
+	 *            the current execution scope
+	 * @return the map size
+	 */
+	@operator (
+			value = "length",
+			can_be_const = true,
+			category = { IOperatorCategory.CONTAINER, IOperatorCategory.MAP },
+			concept = { IConcept.CONTAINER, IConcept.MAP })
+	@doc (
+			value = "the number of key-value mappings contained in the map",
+			examples = { @example (
+					value = "length([1::2, 3::4])",
+					equals = "2") })
+	@Override
+	int length(IScope scope);
+
+	/**
+	 * Returns whether this map is empty.
+	 *
+	 * @param scope
+	 *            the current execution scope
+	 * @return {@code true} if the map contains no pair
+	 */
+	@operator (
+			value = "empty",
+			can_be_const = true,
+			category = { IOperatorCategory.CONTAINER, IOperatorCategory.MAP },
+			concept = { IConcept.CONTAINER, IConcept.MAP })
+	@doc (
+			value = "true if the map contains no key-value mappings, false otherwise",
+			examples = { @example (
+					value = "empty([] as_map (each::each))",
+					equals = "true",
+					test = false) })
+	@Override
+	boolean isEmpty(IScope scope);
 
 	/**
 	 * Reverse.
@@ -291,8 +475,8 @@ public interface IMap<K, V> extends Map<K, V>, IContainer.Modifiable<K, V, K, V>
 			type = IType.MAP,
 			content_type = ITypeProvider.KEY_TYPE_AT_INDEX + 1,
 			index_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
-			category = { IOperatorCategory.CONTAINER },
-			concept = { IConcept.CONTAINER })
+			category = { IOperatorCategory.MAP },
+			concept = { IConcept.MAP })
 	@doc (
 			value = "Specialization of the reverse operator for maps. Reverses keys and values",
 			comment = "",
@@ -306,71 +490,94 @@ public interface IMap<K, V> extends Map<K, V>, IContainer.Modifiable<K, V, K, V>
 	IMap reverse(final IScope scope);
 
 	/**
-	 * Gets the keys.
+	 * Returns one mapped value, typically chosen at random.
 	 *
-	 * @return the keys
+	 * @param scope
+	 *            the current execution scope
+	 * @return one of the map values, or {@code nil} if the map is empty
+	 */
+	@operator (
+			value = { "one_of", "any" },
+			can_be_const = false,
+			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.CONTAINER, IOperatorCategory.MAP },
+			concept = { IConcept.CONTAINER, IConcept.MAP })
+	@doc (
+			value = "one of the values stored in the map, chosen from a random key",
+			examples = { @example (
+					value = "int x <- one_of([1::2, 3::4]);",
+					equals = "2 or 4",
+					test = false) },
+			see = { "contains" })
+	@Override
+	V anyValue(IScope scope);
+
+	/**
+	 * Returns the keys of this map as a list.
+	 *
+	 * @return the keys in map iteration order
 	 */
 	@getter ("keys")
 	IList<K> getKeys();
 
 	/**
-	 * Gets the values.
+	 * Returns the values of this map as a list.
 	 *
-	 * @return the values
+	 * @return the values in map iteration order
 	 */
 	@getter ("values")
 	IList<V> getValues();
 
 	/**
-	 * Gets the pairs.
+	 * Returns the pairs of this map as an ordered list view.
 	 *
-	 * @return the pairs
+	 * @return the map entries exposed as {@link IPair} values
 	 */
 	@getter (PAIRS)
-	IPairList getPairs();
+	IPairList<K, V> getPairs();
 
 	/**
-	 * For each pair.
+	 * Visits each key/value pair until the visitor requests pruning.
 	 *
 	 * @param visitor
-	 *            the visitor
-	 * @return true, if successful
+	 *            the visitor invoked on each pair
+	 * @return {@code true} if the whole traversal completed, {@code false} if it was pruned early
 	 */
 	boolean forEachPair(final BiConsumerWithPruning<K, V> visitor);
 
 	/**
-	 * Checks if is ordered.
+	 * Indicates whether this map preserves a stable iteration order.
 	 *
-	 * @return true, if is ordered
+	 * @return {@code true} if iteration order is stable and meaningful
 	 */
 	boolean isOrdered();
 
 	/**
-	 * For each value.
+	 * Visits each value until the visitor requests pruning.
 	 *
 	 * @param visitor
-	 *            the visitor
-	 * @return true, if successful
+	 *            the visitor invoked on each value
+	 * @return {@code true} if the whole traversal completed, {@code false} if it was pruned early
 	 */
 	boolean forEachValue(final ConsumerWithPruning<? super V> visitor);
 
 	/**
-	 * For each key.
+	 * Visits each key until the visitor requests pruning.
 	 *
 	 * @param visitor
-	 *            the visitor
-	 * @return true, if successful
+	 *            the visitor invoked on each key
+	 * @return {@code true} if the whole traversal completed, {@code false} if it was pruned early
 	 */
 	boolean forEachKey(final ConsumerWithPruning<K> visitor);
 
 	/**
-	 * Copy.
+	 * Returns a copy of this map.
 	 *
 	 * @param scope
-	 *            the scope
-	 * @return the i map
+	 *            the current execution scope
+	 * @return a map containing the same entries
 	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
+	 *             if the copy cannot be produced
 	 */
 	@Override
 	IMap<K, V> copy(IScope scope) throws GamaRuntimeException;

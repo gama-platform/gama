@@ -65,6 +65,7 @@ import gama.api.types.map.IMap;
 import gama.api.types.matrix.GamaMatrixFactory;
 import gama.api.types.matrix.IMatrix;
 import gama.api.types.misc.IContainer;
+import gama.api.types.misc.IRuntimeContainer;
 import gama.api.types.pair.GamaPairFactory;
 import gama.api.types.pair.IPair;
 import gama.api.utils.StringUtils;
@@ -1408,7 +1409,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 	 *      gama.api.types.misc.IContainer, gama.api.gaml.types.IContainerType)
 	 */
 	@Override
-	public IContainer<?, GraphObjectToAdd> buildValues(final IScope scope, final IContainer objects) {
+	public IContainer<?, GraphObjectToAdd> buildValues(final IScope scope, final IRuntimeContainer objects) {
 		try (final Collector.AsList list = Collector.getList()) {
 			if (!(objects instanceof gama.core.util.graph.NodesToAdd)) {
 				for (final Object o : objects.iterable(scope)) { list.add(buildValue(scope, o)); }
@@ -1431,7 +1432,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 	}
 
 	@Override
-	public IContainer<?, IPair<V, V>> buildIndexes(final IScope scope, final IContainer value) {
+	public IContainer<?, IPair<V, V>> buildIndexes(final IScope scope, final IRuntimeContainer value) {
 		final IList<IPair<V, V>> result = GamaListFactory.create(Types.PAIR);
 		for (final Object o : value.iterable(scope)) { result.add(buildIndex(scope, o)); }
 		return result;

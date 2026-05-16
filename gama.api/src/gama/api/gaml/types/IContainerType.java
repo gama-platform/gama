@@ -14,6 +14,7 @@ import gama.annotations.constants.IKeyword;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.misc.IContainer;
+import gama.api.types.misc.IRuntimeContainer;
 import gama.api.utils.json.IJson;
 import gama.api.utils.json.IJsonValue;
 
@@ -40,9 +41,10 @@ import gama.api.utils.json.IJsonValue;
  * @since GAMA 1.0
  * @see IType
  * @see IContainer
+ * @see IRuntimeContainer
  * @see GamaContainerType
  */
-public interface IContainerType<T extends IContainer<?, ?>> extends IType<T> {
+public interface IContainerType<T extends IRuntimeContainer<?, ?>> extends IType<T> {
 
 	/**
 	 * Gets the GAML type representation of this container type.

@@ -31,6 +31,7 @@ import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.map.IMap;
 import gama.api.types.misc.IContainer;
+import gama.api.types.misc.IRuntimeContainer;
 import gama.api.types.misc.IValue;
 import gama.api.utils.GamlProperties;
 import gama.dev.DEBUG;
@@ -745,7 +746,10 @@ public abstract class GamaType<Support> implements IType<Support> {
 			IType<?> parent = type.getParent();
 			return 1 + distanceTo(parent);
 		}
-		return 1 + getParent().distanceTo(type);
+		final IType<?> parent = getParent();
+		if (parent == null || parent == Types.NO_TYPE) return Integer.MAX_VALUE;
+		final int parentDistance = parent.distanceTo(type);
+		return parentDistance == Integer.MAX_VALUE ? Integer.MAX_VALUE : 1 + parentDistance;
 	}
 
 	/**
@@ -781,7 +785,8 @@ public abstract class GamaType<Support> implements IType<Support> {
 	 * Algorithm:
 	 * <ul>
 	 * <li>If types are identical, return this type</li>
-	 * <li>If other type is NO_TYPE, return this type (or NO_TYPE if default is null)</li>
+	 * <li>If other type is NO_TYPE, return this type unless the current type is already a direct child of the root, in
+	 * which case NO_TYPE is the only remaining common supertype</li>
 	 * <li>If other type is translatable into this, return this type</li>
 	 * <li>If this is translatable into other, return other type</li>
 	 * <li>Otherwise, recursively find common supertype of parents</li>
@@ -796,7 +801,10 @@ public abstract class GamaType<Support> implements IType<Support> {
 	@Override
 	public IType<? super Support> computeFindCommonSupertypeWith(final IType<?> type) {
 		if (type == this) return this;
-		if (type == Types.NO_TYPE) return getDefault() == null ? this : (GamaNoType) type;
+		if (type == Types.NO_TYPE) {
+			if (getParent() == Types.NO_TYPE) return (GamaNoType) type;
+			return getDefault() == null ? this : (GamaNoType) type;
+		}
 		if (type.isTranslatableInto(this)) return this;
 		if (this.isTranslatableInto(type)) return (IType) type;
 		return getParent().findCommonSupertypeWith(type.getParent());
@@ -951,7 +959,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 	 *            the desired content type (or NO_TYPE to use default)
 	 * @return a parametric container type with the specified key and content types
 	 */
-	public static IContainerType<?> from(final IContainerType<IContainer<?, ?>> t, final IType<?> keyType,
+	public static IContainerType<?> from(final IContainerType<IRuntimeContainer<?, ?>> t, final IType<?> keyType,
 			final IType<?> contentType) {
 		if ((keyType == null || keyType == Types.NO_TYPE) && (contentType == null || contentType == Types.NO_TYPE))
 			return t;

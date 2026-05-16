@@ -32,6 +32,7 @@ import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.misc.IContainer;
+import gama.api.types.misc.IRuntimeContainer;
 import gama.gaml.statements.AddStatement.AddSerializer;
 import gama.gaml.statements.AddStatement.AddValidator;
 
@@ -45,7 +46,7 @@ import gama.gaml.statements.AddStatement.AddValidator;
 @facets (
 		value = { @facet (
 				name = IKeyword.TO,
-				type = { IType.CONTAINER, IType.SPECIES, IType.AGENT, IType.GEOMETRY },
+				type = { IType.CONTAINER, IType.MAP, IType.SPECIES, IType.AGENT, IType.GEOMETRY },
 				optional = false,
 				doc = { @doc ("the left member of the addition assignment ('cont << expr;') is an expression cont that evaluates to a container (list, map, matrix, graph) ") }),
 				@facet (
@@ -308,7 +309,7 @@ public class AddStatement extends AbstractContainerStatement {
 
 	@Override
 	protected void apply(final IScope scope, final Object object, final Object position,
-			final IContainer.Modifiable container) throws GamaRuntimeException {
+			final IRuntimeContainer.Modifiable container) throws GamaRuntimeException {
 		// if (position != null && !container.checkBounds(scope, position, true)) {
 		// throw GamaRuntimeException.warning("Index " + position + " out of bounds of " + list.serialize(false),
 		// scope);
@@ -319,9 +320,9 @@ public class AddStatement extends AbstractContainerStatement {
 			} else {
 				container.addValueAtIndex(scope, position, object);
 			}
-		} else if (object instanceof IContainer) {
+		} else if (object instanceof IRuntimeContainer) {
 			// AD July 2020: Addition of the position (see #2985)
-			container.addValues(scope, position, (IContainer<?, ?>) object);
+			container.addValues(scope, position, (IRuntimeContainer<?, ?>) object);
 		}
 	}
 

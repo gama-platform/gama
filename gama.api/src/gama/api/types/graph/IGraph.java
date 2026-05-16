@@ -29,6 +29,7 @@ import gama.api.types.matrix.IMatrix;
 import gama.api.types.misc.IContainer;
 import gama.api.types.misc.IContainer.Addressable;
 import gama.api.types.misc.IContainer.Modifiable;
+import gama.api.types.misc.IRuntimeContainer;
 import gama.api.types.pair.IPair;
 
 /**
@@ -294,7 +295,7 @@ public interface IGraph<Vertex, Edge>
 	 *            the objects
 	 * @return the i container
 	 */
-	IContainer buildValues(IScope scope, IContainer objects);
+	IContainer buildValues(IScope scope, IRuntimeContainer objects);
 
 	/**
 	 * Builds the index.
@@ -316,7 +317,7 @@ public interface IGraph<Vertex, Edge>
 	 *            the value
 	 * @return the i container
 	 */
-	IContainer<?, IPair<Vertex, Vertex>> buildIndexes(IScope scope, IContainer value);
+	IContainer<?, IPair<Vertex, Vertex>> buildIndexes(IScope scope, IRuntimeContainer value);
 
 	/**
 	 * Gets the vertex species.

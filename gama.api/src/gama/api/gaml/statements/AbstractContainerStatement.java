@@ -30,6 +30,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.IShape;
 import gama.api.types.graph.IGraph;
 import gama.api.types.misc.IContainer;
+import gama.api.types.misc.IRuntimeContainer;
 
 /**
  * Abstract base class for statements that manipulate containers (add, remove, put).
@@ -99,6 +100,22 @@ import gama.api.types.misc.IContainer;
 @validator (ContainerValidator.class)
 @SuppressWarnings ({ "rawtypes" })
 public abstract class AbstractContainerStatement extends AbstractStatement {
+
+	/**
+	 * Returns whether a GAML type should still be handled through the runtime container APIs.
+	 *
+	 * <p>
+	 * Maps are no longer in the GAML {@code container} inheritance branch, but container statements must still accept
+	 * them through the shared runtime-container contracts for validation and execution.
+	 * </p>
+	 *
+	 * @param type
+	 *            the type to inspect
+	 * @return {@code true} for GAML containers and for maps during the transition period
+	 */
+	private static boolean isRuntimeContainerLike(final IType<?> type) {
+		return type != null && (type.isContainer() || type.getGamlType() == Types.MAP);
+	}
 
 	/**
 	 * Validator for container manipulation statements.
@@ -324,7 +341,7 @@ public abstract class AbstractContainerStatement extends AbstractStatement {
 				final IType<?> contentType = list.getGamlType().getContentType();
 				boolean isAll = false;
 				IType<?> valueType;
-				if (!PUT.equals(keyword) && all && item.getGamlType().isTranslatableInto(Types.CONTAINER)) {
+				if (!PUT.equals(keyword) && all && isRuntimeContainerLike(item.getGamlType())) {
 					isAll = true;
 					valueType = item.getGamlType().getContentType();
 				} else {
@@ -416,17 +433,17 @@ public abstract class AbstractContainerStatement extends AbstractStatement {
 		list = getFacet(IKeyword.TO);
 
 		asAll = all != null && IKeyword.TRUE.equals(all.literalValue());
-		asAllValues = asAll && item != null && item.getGamlType().isTranslatableInto(Types.CONTAINER);
-		asAllIndexes = asAll && index != null && index.getGamlType().isTranslatableInto(Types.CONTAINER);
+		asAllValues = asAll && item != null && isRuntimeContainerLike(item.getGamlType());
+		asAllIndexes = asAll && index != null && isRuntimeContainerLike(index.getGamlType());
 		final IType<?> t = list.getGamlType();
-		isDirect = t.isContainer();
+		isDirect = isRuntimeContainerLike(t);
 		isGraph = t.isTranslatableInto(Types.GRAPH);
 	}
 
 	@Override
 	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
 		// We then identify the container
-		final IContainer.Modifiable container = identifyContainer(scope);
+		final IRuntimeContainer.Modifiable container = identifyContainer(scope);
 
 		final Object position = identifyIndex(scope, container);
 		final Object object = identifyValue(scope, container);
@@ -451,7 +468,7 @@ public abstract class AbstractContainerStatement extends AbstractStatement {
 	 *            the container
 	 * @return the object
 	 */
-	protected Object identifyValue(final IScope scope, final IContainer.Modifiable container) {
+	protected Object identifyValue(final IScope scope, final IRuntimeContainer.Modifiable container) {
 		if (item == null) return null;
 		// For the moment, only graphs need to recompute their objects
 		// GamaFloatMatrix and GamaField need too, as GAML happily accepts int ...
@@ -472,7 +489,7 @@ public abstract class AbstractContainerStatement extends AbstractStatement {
 	 *            the container
 	 * @return the object
 	 */
-	protected Object identifyIndex(final IScope scope, final IContainer.Modifiable container) {
+	protected Object identifyIndex(final IScope scope, final IRuntimeContainer.Modifiable container) {
 		if (index == null) return null;
 		if (isGraph) return buildIndex(scope, (IGraph) container);
 		return index.value(scope);
@@ -488,7 +505,7 @@ public abstract class AbstractContainerStatement extends AbstractStatement {
 	 * @return the object
 	 */
 	protected Object buildValue(final IScope scope, final IGraph container) {
-		if (asAllValues) return container.buildValues(scope, (IContainer.Modifiable) this.item.value(scope));
+		if (asAllValues) return container.buildValues(scope, (IRuntimeContainer) this.item.value(scope));
 		return container.buildValue(scope, this.item.value(scope));
 	}
 
@@ -502,7 +519,7 @@ public abstract class AbstractContainerStatement extends AbstractStatement {
 	 * @return the object
 	 */
 	protected Object buildIndex(final IScope scope, final IGraph container) {
-		if (asAllIndexes) return container.buildIndexes(scope, (IContainer.Modifiable) this.index.value(scope));
+		if (asAllIndexes) return container.buildIndexes(scope, (IRuntimeContainer) this.index.value(scope));
 		return container.buildIndex(scope, this.index.value(scope));
 	}
 
@@ -510,9 +527,9 @@ public abstract class AbstractContainerStatement extends AbstractStatement {
 	 * @throws GamaRuntimeException
 	 * @return the container to which this command will be applied
 	 */
-	private IContainer.Modifiable identifyContainer(final IScope scope) throws GamaRuntimeException {
+	private IRuntimeContainer.Modifiable identifyContainer(final IScope scope) throws GamaRuntimeException {
 		final Object cont = list.value(scope);
-		if (isDirect) return (IContainer.Modifiable) cont;
+		if (isDirect) return (IRuntimeContainer.Modifiable) cont;
 		if (cont instanceof IShape) return ((IShape) cont).getOrCreateAttributes();
 		throw GamaRuntimeException.warning("Cannot use " + list.serializeToGaml(false) + ", of type "
 				+ list.getGamlType().toString() + ", as a container", scope);
@@ -527,7 +544,7 @@ public abstract class AbstractContainerStatement extends AbstractStatement {
 	 * @param container
 	 * @throws GamaRuntimeException
 	 */
-	protected abstract void apply(IScope scope, Object object, Object position, IContainer.Modifiable container)
+	protected abstract void apply(IScope scope, Object object, Object position, IRuntimeContainer.Modifiable container)
 			throws GamaRuntimeException;
 
 }

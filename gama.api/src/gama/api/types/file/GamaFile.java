@@ -34,6 +34,7 @@ import gama.api.types.list.IList;
 import gama.api.types.map.IMap;
 import gama.api.types.matrix.IMatrix;
 import gama.api.types.misc.IContainer;
+import gama.api.types.misc.IRuntimeContainer;
 import gama.api.ui.IStatusMessage;
 import gama.api.utils.files.FileUtils;
 import gama.api.utils.geometry.IEnvelope;
@@ -59,8 +60,8 @@ import one.util.streamex.StreamEx;
  * <h2>Type Parameters</h2>
  * <ul>
  * <li>{@code Container} - The container type used to hold file contents. Must be both
- * {@link gama.api.types.misc.IContainer.Addressable} (support indexed/keyed access) and
- * {@link gama.api.types.misc.IContainer.Modifiable} (support modifications)</li>
+ * {@link gama.api.types.misc.IRuntimeContainer.Addressable} (support indexed/keyed access) and
+ * {@link gama.api.types.misc.IRuntimeContainer.Modifiable} (support modifications)</li>
  * <li>{@code Contents} - The type of individual elements stored in the container</li>
  * </ul>
  * 
@@ -173,7 +174,7 @@ import one.util.streamex.StreamEx;
  */
 
 @SuppressWarnings ({ "rawtypes", "unchecked" })
-public abstract class GamaFile<Container extends IContainer.Addressable & IContainer.Modifiable, Contents>
+public abstract class GamaFile<Container extends IRuntimeContainer.Addressable & IRuntimeContainer.Modifiable, Contents>
 		implements IGamaFile<Container, Contents> {
 
 	/** The file. */
@@ -425,7 +426,7 @@ public abstract class GamaFile<Container extends IContainer.Addressable & IConta
 	 * <p>
 	 * This method is called lazily when file contents are first accessed. Subclasses must
 	 * implement this method to read the file from disk (or other source) and populate the
-	 * buffer with appropriate data. The loaded contents should be set using {@link #setBuffer(IContainer)}.
+	 * buffer with appropriate data. The loaded contents should be set using {@link #setBuffer(IRuntimeContainer.Modifiable)}.
 	 * </p>
 	 * 
 	 * <p>
@@ -569,7 +570,7 @@ public abstract class GamaFile<Container extends IContainer.Addressable & IConta
 	// Then, methods for "all" operations
 	// Adds the values if possible, without replacing existing ones
 	@Override
-	public void addValues(final IScope scope, final Object index, final IContainer values) {
+	public void addValues(final IScope scope, final Object index, final IRuntimeContainer values) {
 		// Addition of the index (see #2985)
 		fillBuffer(scope);
 		getBuffer().addValues(scope, index, values);
@@ -596,7 +597,7 @@ public abstract class GamaFile<Container extends IContainer.Addressable & IConta
 	}
 
 	@Override
-	public void removeValues(final IScope scope, final IContainer values) {
+	public void removeValues(final IScope scope, final IRuntimeContainer values) {
 		fillBuffer(scope);
 		getBuffer().removeValues(scope, values);
 	}
@@ -608,7 +609,7 @@ public abstract class GamaFile<Container extends IContainer.Addressable & IConta
 	}
 
 	@Override
-	public void removeIndexes(final IScope scope, final IContainer indexes) {
+	public void removeIndexes(final IScope scope, final IRuntimeContainer indexes) {
 		fillBuffer(scope);
 		getBuffer().removeIndexes(scope, indexes);
 	}
@@ -803,7 +804,7 @@ public abstract class GamaFile<Container extends IContainer.Addressable & IConta
 	}
 
 	@Override
-	public IContainer<?, ?> reverse(final IScope scope) throws GamaRuntimeException {
+	public IRuntimeContainer<?, ?> reverse(final IScope scope) throws GamaRuntimeException {
 		getContents(scope);
 		return getBuffer().reverse(scope);
 		// No side effect

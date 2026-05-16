@@ -74,6 +74,7 @@ import gama.api.types.matrix.GamaMatrixFactory;
 import gama.api.types.matrix.IField;
 import gama.api.types.matrix.IMatrix;
 import gama.api.types.misc.IContainer;
+import gama.api.types.misc.IRuntimeContainer;
 import gama.api.types.pair.GamaPairFactory;
 import gama.api.types.pair.IPair;
 import gama.api.types.topology.ITopology;
@@ -85,8 +86,9 @@ import one.util.streamex.StreamEx;
  * Written by drogoul Modified on 31 juil. 2010
  *
  * <p>
- * Provides GAML operators for all container types: {@code list}, {@code map}, {@code matrix}, {@code graph}, species
- * populations, and any other {@link IContainer} implementors.
+ * Provides GAML operators for collection-like runtime types used in GAMA: sequential/indexed containers
+ * ({@code list}, {@code matrix}, {@code graph}, species populations, etc.) as well as {@code map}, whose GAML type
+ * hierarchy is now distinct even though the Java runtime still shares part of the container API.
  * </p>
  *
  * <h3>Operator Families</h3>
@@ -194,8 +196,8 @@ public class Containers {
 		 */
 		public InterleavingIterator(final IScope scope, final Object... objects) {
 			for (final Object object : objects) {
-				if (object instanceof IContainer) {
-					queue.add(((IContainer) object).iterable(scope).iterator());
+				if (object instanceof IRuntimeContainer) {
+					queue.add(((IRuntimeContainer) object).iterable(scope).iterator());
 				} else if (object instanceof Iterator) {
 					queue.add((Iterator) object);
 				} else if (object instanceof Iterable) {
@@ -269,8 +271,8 @@ public class Containers {
 	 *            the l
 	 * @return the predicate
 	 */
-	public static <T> Predicate<T> inContainer(final IScope scope, final IContainer l) {
-		final IContainer c = notNull(scope, l);
+	public static <T> Predicate<T> inContainer(final IScope scope, final IRuntimeContainer l) {
+		final IRuntimeContainer c = notNull(scope, l);
 		return t -> c.contains(scope, t);
 	}
 
@@ -287,7 +289,7 @@ public class Containers {
 	 *            the c
 	 * @return the stream ex
 	 */
-	public static StreamEx stream(final IScope scope, final IContainer c) {
+	public static StreamEx stream(final IScope scope, final IRuntimeContainer c) {
 		return notNull(scope, c).stream(scope);
 	}
 
@@ -309,7 +311,7 @@ public class Containers {
 	 *            the c
 	 * @return the supplier
 	 */
-	public static Supplier<IList> listLike(final IContainer c) {
+	public static Supplier<IList> listLike(final IRuntimeContainer c) {
 		return GamaListFactory.getSupplier(c == null ? Types.NO_TYPE : c.getGamlType().getContentType());
 	}
 
@@ -322,7 +324,7 @@ public class Containers {
 	 *            the c 1
 	 * @return the supplier
 	 */
-	public static Supplier<IList> listLike(final IContainer c, final IContainer c1) {
+	public static Supplier<IList> listLike(final IRuntimeContainer c, final IRuntimeContainer c1) {
 		return listOf(c.getGamlType().getContentType().findCommonSupertypeWith(c1.getGamlType().getContentType()));
 	}
 
@@ -1047,10 +1049,11 @@ public class Containers {
 			see = { IKeyword.AT })
 	@no_test
 	@validator (InternalAtValidator.class)
-	public static Object internal_at(final IScope scope, final IContainer container, final IList indices)
+	public static Object internal_at(final IScope scope, final IRuntimeContainer container,
+			final IList indices)
 			throws GamaRuntimeException {
-		if (container instanceof IContainer.ToGet)
-			return ((IContainer.ToGet) container).getFromIndicesList(scope, indices);
+		if (container instanceof IRuntimeContainer.ToGet)
+			return ((IRuntimeContainer.ToGet) container).getFromIndicesList(scope, indices);
 		throw GamaRuntimeException.error("" + container + " cannot be accessed using " + indices, scope);
 	}
 
@@ -1100,8 +1103,8 @@ public class Containers {
 	@validator (AtValidator.class)
 	@test ("list<int> l <- [10,20,30]; l at 0 = 10")
 	@test ("list<int> l2 <- [10,20,30]; l at 2 = 30")
-	public static Object at(final IScope scope, final IContainer container, final Object key) {
-		if (container instanceof IContainer.ToGet) return ((IContainer.ToGet) container).get(scope, key);
+	public static Object at(final IScope scope, final IRuntimeContainer container, final Object key) {
+		if (container instanceof IRuntimeContainer.ToGet) return ((IRuntimeContainer.ToGet) container).get(scope, key);
 		throw GamaRuntimeException.error("" + container + " cannot be accessed using " + key, scope);
 	}
 
@@ -1303,7 +1306,7 @@ public class Containers {
 	@test ("remove_duplicates([3,2,5,1,2,3,5,5,5]) = [3,2,5,1]")
 	@test ("distinct([1,2,1,3]) = [1,2,3]")
 	@test ("distinct([]) = []")
-	public static IList remove_duplicates(final IScope scope, final IContainer c) {
+	public static IList remove_duplicates(final IScope scope, final IRuntimeContainer c) {
 		return (IList) stream(scope, c).distinct().toCollection(listLike(c));
 	}
 
@@ -1343,7 +1346,7 @@ public class Containers {
 	@test ("[1,2,3,4,5,6] contains_all [2,8] = false")
 	@test ("[1::2, 3::4, 5::6] contains_all [1,3] = false")
 	@test ("[1::2, 3::4, 5::6] contains_all [2,4] = true")
-	public static Boolean contains_all(final IScope scope, final IContainer c, final IContainer c2) {
+	public static Boolean contains_all(final IScope scope, final IRuntimeContainer c, final IRuntimeContainer c2) {
 		return stream(scope, c2).allMatch(inContainer(scope, c));
 	}
 
@@ -1383,7 +1386,7 @@ public class Containers {
 	@test ("[1,2,3,4,5,6] contains_any [2,4] = true")
 	@test ("[1,2,3,4,5,6] contains_any [2,8] = true")
 	@test ("[1::2, 3::4, 5::6] contains_any [2,4] = true")
-	public static Boolean contains_any(final IScope scope, final IContainer c, final IContainer c1) {
+	public static Boolean contains_any(final IScope scope, final IRuntimeContainer c, final IRuntimeContainer c1) {
 		return stream(scope, c1).anyMatch(inContainer(scope, c));
 	}
 
@@ -1415,7 +1418,7 @@ public class Containers {
 	@test ("first_of(0,[1,2,3,4,5,6]) = []")
 	@test ("first([1,2,3]) = 1")
 	@test ("first([]) = nil")
-	public static IList first(final IScope scope, final Integer number, final IContainer c) {
+	public static IList first(final IScope scope, final Integer number, final IRuntimeContainer c) {
 		return (IList) stream(scope, c).limit(number < 0 ? 0 : number).toCollection(listLike(c));
 	}
 
@@ -1446,7 +1449,7 @@ public class Containers {
 	@test ("last(10,[1::2, 3::4]) is list")
 	@test ("last([1,2,3]) = 3")
 	@test ("last([]) = nil")
-	public static IList last(final IScope scope, final Integer number, final IContainer c) {
+	public static IList last(final IScope scope, final Integer number, final IRuntimeContainer c) {
 		int n = number < 0 ? 0 : number;
 		return (IList) stream(scope, c).skip(Math.max(0, c.length(scope) - n)).toCollection(listLike(c));
 	}
@@ -1488,7 +1491,7 @@ public class Containers {
 	@test ("2 in [1,2,3,4,5,6] = true")
 	@test ("3 in [1::2, 3::4, 5::6] = false")
 
-	public static Boolean in(final IScope scope, final Object o, final IContainer c) throws GamaRuntimeException {
+	public static Boolean in(final IScope scope, final Object o, final IRuntimeContainer c) throws GamaRuntimeException {
 		return notNull(scope, c).contains(scope, o);
 	}
 
@@ -1763,7 +1766,7 @@ public class Containers {
 	@doc (
 			value = "the index of the last occurence of the right operand in the left operand container",
 			usages = @usage (
-					value = "if the left operand is a map, last_index_of returns the index as an int (the key of the pair)",
+					value = "if the left operand is a map, last_index_of returns the last key mapped to that value",
 					examples = { @example (
 							value = "[1::2, 3::4, 5::4] last_index_of 4",
 							equals = "5") }))
@@ -1818,7 +1821,7 @@ public class Containers {
 							equals = "[]") },
 			see = { "remove_duplicates" })
 	@test ("[1,2,3,4,5,6] inter [0,8] = []")
-	public static IList inter(final IScope scope, final IContainer c, final IContainer c1) {
+	public static IList inter(final IScope scope, final IRuntimeContainer c, final IRuntimeContainer c1) {
 		return (IList) stream(scope, c).filter(inContainer(scope, c1)).distinct().toCollection(listLike(c, c1));
 	}
 
@@ -2208,7 +2211,7 @@ public class Containers {
 							equals = "[1,3,2,4,5,6,8,0]") },
 			see = { "inter", IKeyword.PLUS })
 	@test ("[1,2,3,4,5,6] union [2,4,9] = [1,2,3,4,5,6,9]")
-	public static IList union(final IScope scope, final IContainer c, final IContainer c1) {
+	public static IList union(final IScope scope, final IRuntimeContainer c, final IRuntimeContainer c1) {
 		return (IList) stream(scope, c).append(stream(scope, c1)).distinct().toCollection(listLike(c, c1));
 	}
 
@@ -2256,7 +2259,8 @@ public class Containers {
 			see = { "first_with", "last_with", "where" })
 	@test ("[1,2,3,4,5,6,7,8] group_by (each > 3) = [false::[1, 2, 3], true::[4, 5, 6, 7, 8]]")
 	@test ("[1::2, 3::4, 5::6] group_by (each > 4) = [false::[2, 4], true::[6]]")
-	public static IMap group_by(final IScope scope, final String eachName, final IContainer c, final IExpression e) {
+	public static IMap group_by(final IScope scope, final String eachName, final IRuntimeContainer c,
+			final IExpression e) {
 		final IType ct = notNull(scope, c).getGamlType().getContentType();
 		return (IMap) stream(scope, c).groupingTo(buildFunctionWithEach(scope, eachName, e),
 				asMapOf(e.getGamlType(), Types.LIST.of(ct)), listOf(ct));
@@ -2309,7 +2313,7 @@ public class Containers {
 							isExecutable = false) },
 			see = { "group_by", "first_with", "where" })
 	@test ("[1,2,3,4,5,6,7,8] last_with (each > 3) = 8")
-	public static Object last_with(final IScope scope, final String eachName, final IContainer c,
+	public static Object last_with(final IScope scope, final String eachName, final IRuntimeContainer c,
 			final IExpression filter) {
 		return stream(scope, c).filter(buildPredicateWithEach(scope, eachName, filter)).reduce((a, b) -> b)
 				.orElse(null);
@@ -2364,7 +2368,7 @@ public class Containers {
 							isExecutable = false) },
 			see = { "group_by", "last_with", "where" })
 	@test ("[1,2,3,4,5,6,7,8] first_with (each > 3) = 4")
-	public static Object first_with(final IScope scope, final String eachName, final IContainer c,
+	public static Object first_with(final IScope scope, final String eachName, final IRuntimeContainer c,
 			final IExpression filter) {
 		return stream(scope, c).findFirst(buildPredicateWithEach(scope, eachName, filter)).orElse(null);
 	}
@@ -2422,7 +2426,7 @@ public class Containers {
 	@test ("sum([{1.0,3.0},{3.0,5.0},{9.0,1.0},{7.0,8.0}]) = {20.0,17.0}")
 	@test ("sum ([12,10,3]) = 25")
 	@test ("sum([1,2,3]) = 6")
-	public static Object sum(final IScope scope, final IContainer l) {
+	public static Object sum(final IScope scope, final IRuntimeContainer l) {
 		return sum_of(scope, IKeyword.EACH, l, null);
 	}
 
@@ -2509,7 +2513,7 @@ public class Containers {
 					equals = "300") },
 			see = { "min_of", "max_of", "product_of", "mean_of" })
 	@test ("[1,2] sum_of (each * 100 ) = 300")
-	public static Object sum_of(final IScope scope, final String eachName, final IContainer container,
+	public static Object sum_of(final IScope scope, final String eachName, final IRuntimeContainer container,
 			final IExpression filter) {
 		Stream s = stream(scope, container);
 		IType t;
@@ -2574,7 +2578,7 @@ public class Containers {
 							equals = "2 or 4",
 							test = false) })
 	@no_test
-	public static IList among(final IScope scope, final Integer number, final IContainer c)
+	public static IList among(final IScope scope, final Integer number, final IRuntimeContainer c)
 			throws GamaRuntimeException {
 		if (number <= 0) {
 			if (number < 0) {
@@ -2656,7 +2660,8 @@ public class Containers {
 			see = { "group_by" })
 	@test ("[1,2,4,3,5,7,6,8] sort_by (each) = [1,2,3,4,5,6,7,8]")
 	@validator (ComparableValidator.class)
-	public static IList sort(final IScope scope, final String eachName, final IContainer c, final IExpression filter) {
+	public static IList sort(final IScope scope, final String eachName, final IRuntimeContainer c,
+			final IExpression filter) {
 		try {
 			return (IList) stream(scope, c).sortedBy(buildFunctionWithEach(scope, eachName, filter))
 					.toCollection(listLike(c));
@@ -2719,7 +2724,8 @@ public class Containers {
 			see = { "first_with", "last_with" })
 	@test ("[1,2,3,4,5,6,7,8] where (each > 3) = [4, 5, 6, 7, 8] ")
 	@test ("matrix([1, 2, 3], [4, 5, 6]) where (each > 2) = [4, 5, 3, 6] ")
-	public static IList where(final IScope scope, final String eachName, final IContainer c, final IExpression filter) {
+	public static IList where(final IScope scope, final String eachName, final IRuntimeContainer c,
+			final IExpression filter) {
 		return (IList) stream(scope, c).filter(buildPredicateWithEach(scope, eachName, filter))
 				.toCollection(listLike(c));
 	}
@@ -2841,7 +2847,7 @@ public class Containers {
 			see = { "where", "with_min_of" })
 	@test ("[1,2,3,4,5,6,7,8] with_max_of (each ) = 8")
 	@validator (ComparableValidator.class)
-	public static Object with_max_of(final IScope scope, final String eachName, final IContainer c,
+	public static Object with_max_of(final IScope scope, final String eachName, final IRuntimeContainer c,
 			final IExpression filter) {
 		return stream(scope, c).maxBy(buildFunctionWithEach(scope, eachName, filter)).orElse(null);
 	}
@@ -2888,7 +2894,7 @@ public class Containers {
 			see = { "where", "with_max_of" })
 	@test ("[1,2,3,4,5,6,7,8] with_min_of (each )  = 1")
 	@validator (ComparableValidator.class)
-	public static Object with_min_of(final IScope scope, final String eachName, final IContainer c,
+	public static Object with_min_of(final IScope scope, final String eachName, final IRuntimeContainer c,
 			final IExpression filter) {
 		return stream(scope, c).minBy(buildFunctionWithEach(scope, eachName, filter)).orElse(null);
 	}
@@ -2928,7 +2934,7 @@ public class Containers {
 							equals = "[2,4,8]") },
 			see = { "collect" })
 	@test ("[1,2,4] accumulate ([2,4]) = [2,4,2,4,2,4]")
-	public static IList accumulate(final IScope scope, final String eachName, final IContainer c,
+	public static IList accumulate(final IScope scope, final String eachName, final IRuntimeContainer c,
 			final IExpression filter) {
 		// WARNING TODO The resulting type is not computed
 		final IType type = filter.getGamlType();
@@ -3049,7 +3055,7 @@ public class Containers {
 	@test ("[1,2,4] collect ([2,4]) = [[2,4],[2,4],[2,4]]")
 	@test ("[1,2,3] collect (i: i+1) = [2,3,4]")
 	@test ("[1,2] collect (i: ([1,2,3] collect (j: i+j))) = [[2,3,4],[3,4,5]]")
-	public static IList collect(final IScope scope, final String eachName, final IContainer c,
+	public static IList collect(final IScope scope, final String eachName, final IRuntimeContainer c,
 			final IExpression filter) {
 		return (IList) stream(scope, c).map(buildFunctionWithEach(scope, eachName, filter))
 				.toCollection(listOf(filter.getGamlType()));
@@ -3078,7 +3084,7 @@ public class Containers {
 					@example (
 							value = "interleave([['e11','e12','e13'],['e21','e22','e23'],['e31','e32','e33']])",
 							equals = "['e11','e21','e31','e12','e22','e32','e13','e23','e33']") })
-	public static IList interleave(final IScope scope, final IContainer cc) {
+	public static IList interleave(final IScope scope, final IRuntimeContainer cc) {
 		final Iterable iterable = notNull(scope, cc).iterable(scope);
 		IType type = cc.getGamlType().getContentType();
 		if (type.isContainer()) { type = type.getContentType(); }
@@ -3127,7 +3133,7 @@ public class Containers {
 							value = "[1::2, 3::4, 5::6] count (each > 4)",
 							equals = "1") },
 			see = { "group_by" })
-	public static Integer count(final IScope scope, final String eachName, final IContainer original,
+	public static Integer count(final IScope scope, final String eachName, final IRuntimeContainer original,
 			final IExpression filter) {
 		return (int) notNull(scope, original).stream(scope).filter(buildPredicateWithEach(scope, eachName, filter))
 				.count();
@@ -3161,7 +3167,7 @@ public class Containers {
 							value = "[1::2, 3::4, 5::6] one_matches (each > 4)",
 							equals = "true") },
 			see = { "none_matches", "all_match", "count" })
-	public static Boolean one_matches(final IScope scope, final String eachName, final IContainer original,
+	public static Boolean one_matches(final IScope scope, final String eachName, final IRuntimeContainer original,
 			final IExpression filter) {
 		return notNull(scope, original).stream(scope).anyMatch(buildPredicateWithEach(scope, eachName, filter));
 	}
@@ -3195,7 +3201,7 @@ public class Containers {
 							value = "[1::2, 3::4, 5::6] none_matches (each > 4)",
 							equals = "false") },
 			see = { "one_matches", "all_match", "count" })
-	public static Boolean none_matches(final IScope scope, final String eachName, final IContainer original,
+	public static Boolean none_matches(final IScope scope, final String eachName, final IRuntimeContainer original,
 			final IExpression filter) {
 		return notNull(scope, original).stream(scope).noneMatch(buildPredicateWithEach(scope, eachName, filter));
 	}
@@ -3229,7 +3235,7 @@ public class Containers {
 							value = "[1::2, 3::4, 5::6] all_match (each > 4)",
 							equals = "false") },
 			see = { "none_matches", "one_matches", "count" })
-	public static Boolean all_match(final IScope scope, final String eachName, final IContainer original,
+	public static Boolean all_match(final IScope scope, final String eachName, final IRuntimeContainer original,
 			final IExpression filter) {
 		return notNull(scope, original).stream(scope).allMatch(buildPredicateWithEach(scope, eachName, filter));
 	}
@@ -3250,8 +3256,8 @@ public class Containers {
 			iterator = true,
 			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
 			index_type = ITypeProvider.TYPE_AT_INDEX + 3,
-			category = IOperatorCategory.CONTAINER,
-			concept = { IConcept.CONTAINER })
+			category = IOperatorCategory.MAP,
+			concept = { IConcept.CONTAINER, IConcept.MAP })
 	@doc (
 			value = "produces a new map from the evaluation of the right-hand operand for each element of the left-hand operand",
 			usages = {
@@ -3260,7 +3266,7 @@ public class Containers {
 					value = "[1,2,3,4,5,6,7,8] index_by (each - 1)",
 					equals = "[0::1, 1::2, 2::3, 3::4, 4::5, 5::6, 6::7, 7::8]") },
 			see = {})
-	public static IMap index_by(final IScope scope, final String eachName, final IContainer original,
+	public static IMap index_by(final IScope scope, final String eachName, final IRuntimeContainer original,
 			final IExpression keyProvider) {
 
 		final StreamEx s = original.stream(scope);
@@ -3301,7 +3307,7 @@ public class Containers {
 							returnType = "map<int,int>",
 							equals = "[2::4, 4::8, 6::12] ") },
 			see = {})
-	public static IMap as_map(final IScope scope, final String eachName, final IContainer original,
+	public static IMap as_map(final IScope scope, final String eachName, final IRuntimeContainer original,
 			final IExpression filter) {
 		if (!(filter instanceof IOperator pair) || !"::".equals(pair.getName()))
 			throw GamaRuntimeException.error("'as_map' expects a pair as second argument", scope);
@@ -3375,8 +3381,8 @@ public class Containers {
 			can_be_const = true,
 			type = ITypeProvider.BOTH,
 			content_type = ITypeProvider.BOTH,
-			category = IOperatorCategory.CONTAINER,
-			concept = { IConcept.CONTAINER })
+			category = IOperatorCategory.MAP,
+			concept = { IConcept.MAP })
 	@doc (
 			value = "returns a new map containing all the elements of both operands",
 			examples = { @example (
@@ -3409,8 +3415,8 @@ public class Containers {
 			can_be_const = true,
 			type = ITypeProvider.TYPE_AT_INDEX + 1,
 			content_type = ITypeProvider.BOTH,
-			category = IOperatorCategory.CONTAINER,
-			concept = { IConcept.CONTAINER })
+			category = IOperatorCategory.MAP,
+			concept = { IConcept.MAP })
 	@doc (
 			value = "returns a new map containing all the elements of both operands",
 			examples = { @example (
@@ -3443,8 +3449,8 @@ public class Containers {
 			can_be_const = true,
 			type = ITypeProvider.BOTH,
 			content_type = ITypeProvider.BOTH,
-			category = IOperatorCategory.CONTAINER,
-			concept = {})
+			category = IOperatorCategory.MAP,
+			concept = { IConcept.MAP })
 	@doc (
 			value = "returns a new map containing all the elements of the first operand not present in the second operand",
 			examples = { @example (
@@ -3476,8 +3482,8 @@ public class Containers {
 			can_be_const = true,
 			type = ITypeProvider.TYPE_AT_INDEX + 1,
 			content_type = ITypeProvider.BOTH,
-			category = IOperatorCategory.CONTAINER,
-			concept = {})
+			category = IOperatorCategory.MAP,
+			concept = { IConcept.MAP })
 	@doc (
 			value = "returns a new map containing all the elements of the first operand without the one of the second operand",
 			examples = { @example (
@@ -3524,7 +3530,7 @@ public class Containers {
 			see = { "sum" })
 	@test ("mean ([4.5, 3.5, 5.5, 7.0]) with_precision 3 = 5.125")
 	@test ("mean([1,2,3]) = 2.0")
-	public static Object opMean(final IScope scope, final IContainer l) throws GamaRuntimeException {
+	public static Object opMean(final IScope scope, final IRuntimeContainer l) throws GamaRuntimeException {
 
 		final Object s = sum(scope, l);
 		int size = l.length(scope);

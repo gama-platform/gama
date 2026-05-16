@@ -33,6 +33,7 @@ import gama.api.types.list.IList;
 import gama.api.types.matrix.GamaMatrixFactory;
 import gama.api.types.matrix.IMatrix;
 import gama.api.types.misc.IContainer;
+import gama.api.types.misc.IRuntimeContainer;
 import gama.api.types.pair.GamaPairFactory;
 import gama.api.types.pair.IPair;
 import gama.api.utils.interfaces.BiConsumerWithPruning;
@@ -316,7 +317,7 @@ public class GamaMap<K, V> extends LinkedHashMap<K, V> implements IMap<K, V> {
 	 */
 	// AD July 2020: Addition of the index (see #2985)
 	@Override
-	public void addValues(final IScope scope, final Object index, final IContainer/* <?, IPair<K, V>> */ values) {
+	public void addValues(final IScope scope, final Object index, final IRuntimeContainer/* <?, IPair<K, V>> */ values) {
 		// If an index is specified, we add only the last object
 		if (index != null) {
 			final Iterable list = values.iterable(scope);
@@ -440,7 +441,7 @@ public class GamaMap<K, V> extends LinkedHashMap<K, V> implements IMap<K, V> {
 	 * @see gama.api.types.misc.IContainer#removeAll(gama.api.runtime.scope.IScope, gama.api.types.misc.IContainer)
 	 */
 	@Override
-	public void removeValues(final IScope scope, final IContainer<?, ?> values) {
+	public void removeValues(final IScope scope, final IRuntimeContainer<?, ?> values) {
 		// we suppose we have pairs
 		for (final Object o : values.iterable(scope)) { removeValue(scope, o); }
 	}
@@ -462,7 +463,7 @@ public class GamaMap<K, V> extends LinkedHashMap<K, V> implements IMap<K, V> {
 	 *      gama.api.types.misc.IContainer)
 	 */
 	@Override
-	public void removeIndexes(final IScope scope, final IContainer<?, ?> index) {
+	public void removeIndexes(final IScope scope, final IRuntimeContainer<?, ?> index) {
 		for (final Object key : index.iterable(scope)) { remove(key); }
 	}
 
