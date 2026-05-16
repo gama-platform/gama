@@ -57,7 +57,16 @@ public class GamaDataFrame implements IDataFrame, IContainer<String, IList<Objec
 
 	/** The underlying DFLib DataFrame. */
 	private final DataFrame inner;
+	
+	// The common type of all column, if no columns or not compatible types: NO_TYPE
+	// because the class is immutable there's no reprocessing needed
+	private IType contentType = Types.NO_TYPE;
+	
+	// List of all the types of each column
+	// because the class is immutable there's no reprocessing needed
+	private IList<IType> columnTypes = GamaListFactory.create(Types.TYPE);
 
+	
 	/**
 	 * Constructs a new GamaDataFrame wrapping a DFLib DataFrame.
 	 *
@@ -66,8 +75,36 @@ public class GamaDataFrame implements IDataFrame, IContainer<String, IList<Objec
 	 */
 	GamaDataFrame(final DataFrame inner) {
 		this.inner = inner;
+		
+		// processing the column types and the common type
+		columnTypes = GamaListFactory.create(Types.TYPE);
+		contentType = Types.NO_TYPE;
+		IType common = null;
+		for (final String col : inner.getColumnsIndex()) {
+			columnTypes.add(Types.get(inner.getColumn(col).getNominalType()));
+			if (common == null) {
+				common = columnTypes.getLast();
+			}
+			else {
+				common = common.findCommonSupertypeWith(columnTypes.getLast());
+			}
+		}
+		if (common != null) {
+			contentType = common;
+		}
 	}
 
+	// ========================= Private method for internal state updates
+
+	private IType processContentType() {
+		var types = getColumnTypes();
+		if (types.size() == 0) return Types.NO_TYPE;
+		IType common = types.getFirst();
+		for (var t : types.subList(1, types.size()-1)) { common = common.findCommonSupertypeWith(t); }
+		return common;
+	}
+	
+	
 	// ========================= IDataFrame implementation =========================
 
 	@Override
@@ -78,12 +115,10 @@ public class GamaDataFrame implements IDataFrame, IContainer<String, IList<Objec
 
 	@Override
 	public IList<IType> getColumnTypes() {
-		final IList<IType> types = GamaListFactory.create(Types.TYPE);
-		for (final String col : getInner().getColumnsIndex()) {
-			types.add(Types.get(getInner().getColumn(col).getNominalType()));
-		}
-		return types;
+		return columnTypes;
 	}
+	
+
 
 	@Override
 	public int getRows() { return getInner().height(); }
@@ -93,14 +128,14 @@ public class GamaDataFrame implements IDataFrame, IContainer<String, IList<Objec
 
 	@Override
 	public IList<Object> getColumnValues(final String columnName) {
-		final IList<Object> result = GamaListFactory.create(Types.NO_TYPE, getInner().height());
+		final IList<Object> result = GamaListFactory.create(columnTypes.get(getInner().getColumnsIndex().position(columnName)), getInner().height());
 		for (int i = 0; i < getInner().height(); i++) { result.add(getInner().get(columnName, i)); }
 		return result;
 	}
 
 	@Override
 	public IList<Object> getRowValues(final int rowIndex) {
-		final IList<Object> result = GamaListFactory.create(Types.NO_TYPE, getInner().width());
+		final IList<Object> result = GamaListFactory.create(contentType, getInner().width());
 		final String[] cols = getInner().getColumnsIndex().toArray();
 		for (final String col : cols) { result.add(getInner().get(col, rowIndex)); }
 		return result;
@@ -112,13 +147,10 @@ public class GamaDataFrame implements IDataFrame, IContainer<String, IList<Objec
 	}
 
 	@Override
-	public IType getContentType(final IScope scope) {
-		var types = getColumnTypes();
-		if (types.length(scope) == 0) return Types.NO_TYPE;
-		IType common = types.removeFirst();
-		for (var t : types) { common = common.findCommonSupertypeWith(t); }
-		return common;
+	public IType getContentType() {
+		return contentType;
 	}
+
 
 	// ========================= IContainer =========================
 
