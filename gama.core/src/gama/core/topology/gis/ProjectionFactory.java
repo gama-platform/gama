@@ -10,6 +10,8 @@
  ********************************************************************************************************/
 package gama.core.topology.gis;
 
+import static gama.dev.DEBUG.TIMER_WITH_EXCEPTIONS;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -19,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
@@ -39,6 +42,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.types.map.GamaMapFactory;
 import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.prefs.GamaPreferences;
+import gama.dev.BANNER_CATEGORY;
 import tech.units.indriya.unit.Units;
 
 /**
@@ -79,15 +83,6 @@ public class ProjectionFactory implements IProjectionFactory {
 
 	/** The epsg3857. */
 	public static ICoordinateReferenceSystem EPSG3857 = null;
-
-	static {
-		// have to use a tmp variable because CRS.decode() throws a checked exception
-		ICoordinateReferenceSystem tmp = null;
-		try {
-			tmp = new GamaCRS(CRS.decode("EPSG:3857"));
-		} catch (FactoryException e) {}
-		EPSG3857 = tmp;
-	}
 
 	/**
 	 * Manage google CRS.
@@ -534,5 +529,20 @@ public class ProjectionFactory implements IProjectionFactory {
 	 */
 	@Override
 	public UnitConverter getUnitConverter() { return unitConverter; }
+
+	/**
+	 *
+	 */
+	public static void initialize() {
+		Runnable task = () -> {
+			try {
+				TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GEOTLS, "Initializing projections", "completed in", () -> {
+					EPSG3857 = new GamaCRS(CRS.decode("EPSG:3857"));
+				});
+			} catch (FactoryException e) {}
+		};
+		CompletableFuture.runAsync(task, r -> Thread.ofVirtual().start(r));
+
+	}
 
 }
