@@ -217,10 +217,11 @@ public class GamlModelBuilder implements IGamlModelBuilder {
 				// up by the editor's Xtext reconciler on the next validation cycle.
 				buildResourceSet.getResources().stream().filter(GamlResource.class::isInstance)
 						.map(GamlResource.class::cast).forEach(GamlResourceServices::discardValidationContext);
-				// Keep immutable resources coming from installed plug-ins to avoid re-parsing
-				// them on every model compilation. Non plug-in resources are still dropped so
+				// Keep immutable resources coming from installed plugins to avoid re-parsing
+				// them on every model compilation. Non plugin resources are still dropped so
 				// local/workspace model changes are always reloaded on next compile.
-				buildResourceSet.getResources().removeIf(resource -> !keepCachedResource(resource.getURI(), uri));
+				buildResourceSet.getResources()
+						.removeIf(resource -> resource == null || !keepCachedResource(resource.getURI(), uri));
 			} finally {
 				buildResourceSet.eSetDeliver(wasDeliver);
 			}
