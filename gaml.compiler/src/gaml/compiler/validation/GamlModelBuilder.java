@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
+import java.util.Objects;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.ResourceSet;
@@ -220,8 +221,8 @@ public class GamlModelBuilder implements IGamlModelBuilder {
 				// Keep immutable resources coming from installed plugins to avoid re-parsing
 				// them on every model compilation. Non plugin resources are still dropped so
 				// local/workspace model changes are always reloaded on next compile.
-				buildResourceSet.getResources()
-						.removeIf(resource -> resource == null || !keepCachedResource(resource.getURI(), uri));
+				buildResourceSet.getResources().removeIf(
+						resource -> resource == null || !keepCachedResource(resource.getURI(), uri));
 			} finally {
 				buildResourceSet.eSetDeliver(wasDeliver);
 			}
@@ -297,7 +298,7 @@ public class GamlModelBuilder implements IGamlModelBuilder {
 	 * @return {@code true} when the resource can be safely reused across compilations
 	 */
 	private boolean keepCachedResource(final URI resourceURI, final URI rootURI) {
-		if (resourceURI == null || resourceURI.equals(rootURI)) return false;
+		if (resourceURI == null || Objects.equals(resourceURI, rootURI)) return false;
 		return resourceURI.isPlatformPlugin();
 	}
 }
