@@ -88,10 +88,11 @@ public class DefaultServerCommands {
 	 */
 	public static GamaServerMessage LOAD(final IGamaServer server, final WebSocket socket,
 			final Map<String, Object> map) {
+		//TODO: is this thing really used ? I think what happens is that the call just hangs until the experiment is closed
 		if (!GAMA.isInHeadLessMode()
 				&& GAMA.getExperimentState(GAMA.getExperiment()) == IExperimentStateListener.State.NOTREADY)
 			return new CommandResponse(MessageType.UnableToExecuteRequest,
-					"Unable to start new experiment, another one is loading", map, false);
+					"Unable to start new experiment, another one is loading", map, false); 
 
 		final Object modelPath = map.get("model");
 		final Object experiment = map.get("experiment");

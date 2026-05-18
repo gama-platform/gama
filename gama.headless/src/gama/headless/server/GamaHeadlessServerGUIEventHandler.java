@@ -32,15 +32,15 @@ import gama.api.utils.server.GamaServerStatusDisplayer;
 import gama.api.utils.server.ISocketCommand;
 import gama.api.utils.server.MessageType;
 import gama.dev.DEBUG;
-import gama.headless.listener.LoadCommand;
-import gama.headless.listener.PlayCommand;
-import gama.headless.listener.StopCommand;
+import gama.headless.listener.HeadlessLoadCommand;
+import gama.headless.listener.HeadlessPlayCommand;
+import gama.headless.listener.HeadlessStopCommand;
 
 /**
  * Implements the behaviours to trigger when GUI events happen in a simulation run in GamaServer
  *
  */
-public class GamaServerGUIHandler extends NullGuiHandler {
+public class GamaHeadlessServerGUIEventHandler extends NullGuiHandler {
 
 	/** The status. */
 	IStatusDisplayer status;
@@ -114,10 +114,10 @@ public class GamaServerGUIHandler extends NullGuiHandler {
 	@Override
 	public Map<String, ISocketCommand> getServerCommands() {
 		final Map<String, ISocketCommand> cmds = new HashMap<>(CommandExecutor.getDefaultCommands());
-		// We replace some commands by specialized commands
-		cmds.put(LOAD, new LoadCommand());
-		cmds.put(PLAY, new PlayCommand());
-		cmds.put(STOP, new StopCommand());
+		// We replace some commands by specialized headless commands
+		cmds.put(LOAD, new HeadlessLoadCommand());
+		cmds.put(PLAY, new HeadlessPlayCommand());
+		cmds.put(STOP, new HeadlessStopCommand());
 		return Collections.unmodifiableMap(cmds);
 	}
 
