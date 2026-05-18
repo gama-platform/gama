@@ -297,7 +297,7 @@ public class GamlModelBuilder implements IGamlModelBuilder {
 	 * @return {@code true} when the resource can be safely reused across compilations
 	 */
 	private boolean keepCachedResource(final URI resourceURI, final URI currentModelURI) {
-		if (resourceURI == null || currentModelURI != null && resourceURI.equals(currentModelURI)) return false;
+		if (resourceURI == null || (currentModelURI != null && resourceURI.equals(currentModelURI))) return false;
 		return resourceURI.isPlatformPlugin();
 	}
 }
