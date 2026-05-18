@@ -217,7 +217,10 @@ public class GamlModelBuilder implements IGamlModelBuilder {
 				// up by the editor's Xtext reconciler on the next validation cycle.
 				buildResourceSet.getResources().stream().filter(GamlResource.class::isInstance)
 						.map(GamlResource.class::cast).forEach(GamlResourceServices::discardValidationContext);
-				buildResourceSet.getResources().clear();
+				// Keep immutable resources coming from installed plug-ins to avoid re-parsing
+				// them on every model compilation. Non plug-in resources are still dropped so
+				// local/workspace model changes are always reloaded on next compile.
+				buildResourceSet.getResources().removeIf(resource -> !keepCachedResource(resource.getURI(), uri));
 			} finally {
 				buildResourceSet.eSetDeliver(wasDeliver);
 			}
@@ -281,5 +284,19 @@ public class GamlModelBuilder implements IGamlModelBuilder {
 	private URI convertURLToURI(final URL url) throws URISyntaxException {
 		final java.net.URI uri = new java.net.URI(url.getProtocol(), url.getPath(), null).normalize();
 		return URI.createURI(uri.toString());
+	}
+
+	/**
+	 * Returns whether a resource should stay cached in the build resource set after a compilation pass.
+	 *
+	 * @param resourceURI
+	 *            URI of the cached resource
+	 * @param rootURI
+	 *            URI of the currently compiled model
+	 * @return {@code true} when the resource can be safely reused across compilations
+	 */
+	private boolean keepCachedResource(final URI resourceURI, final URI rootURI) {
+		if (resourceURI == null || resourceURI.equals(rootURI)) return false;
+		return resourceURI.isPlatformPlugin();
 	}
 }
