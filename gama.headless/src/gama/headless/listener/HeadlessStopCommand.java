@@ -12,6 +12,7 @@ package gama.headless.listener;
 
 import org.java_websocket.WebSocket;
 
+import gama.api.GAMA;
 import gama.api.exceptions.CommandException;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.utils.server.CommandResponse;
@@ -36,11 +37,12 @@ public class HeadlessStopCommand implements ISocketCommand {
 		} catch (CommandException e) {
 			return e.getResponse();
 		}
-		if (plan.getController().processPause(true)) {
-			plan.getController().dispose();
+		try {
+			GAMA.closeExperiment(plan);			
 			return new CommandResponse(MessageType.CommandExecutedSuccessfully, "", map, false);
 		}
-		return new CommandResponse(MessageType.UnableToExecuteRequest, "Controller is full", map, false);
-
+		catch(Throwable ex) {
+			return new CommandResponse(MessageType.GamaServerError, ex.getMessage(), map, false);
+		}
 	}
 }
