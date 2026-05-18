@@ -610,7 +610,7 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 		// Make sure that the attributes in experiment are initialized (see #3842)
 		agent.getParameterValues().forEach((n, v) -> { if (hasVar(n)) { agent.setDirectVarValue(myScope, n, v); } });
 		myScope.push(agent);
-		prepareGui();
+		prepareGui(); //TODO: do we really need that in headless ?
 		IScope scope = agent.getScope();
 		agent.schedule(scope);
 
