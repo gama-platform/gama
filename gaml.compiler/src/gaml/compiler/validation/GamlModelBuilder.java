@@ -220,8 +220,10 @@ public class GamlModelBuilder implements IGamlModelBuilder {
 				// Keep immutable resources coming from installed plugins to avoid re-parsing
 				// them on every model compilation. Non plugin resources are still dropped so
 				// local/workspace model changes are always reloaded on next compile.
-				buildResourceSet.getResources()
-						.removeIf(resource -> !keepCachedResource(resource == null ? null : resource.getURI(), uri));
+				buildResourceSet.getResources().removeIf(resource -> {
+					if (resource == null) return true;
+					return !keepCachedResource(resource.getURI(), uri);
+				});
 			} finally {
 				buildResourceSet.eSetDeliver(wasDeliver);
 			}
@@ -297,6 +299,8 @@ public class GamlModelBuilder implements IGamlModelBuilder {
 	 * @return {@code true} when the resource can be safely reused across compilations
 	 */
 	private boolean keepCachedResource(final URI resourceURI, final URI currentModelURI) {
+		// Do not retain the model currently being compiled, even when it is a plugin model:
+		// the next compilation must always re-open the root resource to observe updates.
 		if (resourceURI == null || (currentModelURI != null && resourceURI.equals(currentModelURI))) return false;
 		return resourceURI.isPlatformPlugin();
 	}
