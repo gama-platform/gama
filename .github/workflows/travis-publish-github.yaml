@@ -99,7 +99,9 @@ jobs:
             fi
 
             if [[ "$file" == *"aarch64"* ]]; then
-              prefix="_M1${prefix}"
+              prefix="_Silicon${prefix}"
+            else 
+              prefix="_Intel${prefix}"
             fi
             
             prefix="GAMA_${{ inputs.RELEASE_VERSION }}_MacOS${prefix}"
