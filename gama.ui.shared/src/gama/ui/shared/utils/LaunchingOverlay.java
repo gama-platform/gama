@@ -243,25 +243,28 @@ public class LaunchingOverlay {
 	 * </p>
 	 */
 	public void hide() {
-		WorkbenchHelper.asyncRun(() -> {
-			final List<IGamaView.Display> suppressedDisplays = drainSuppressedNativeDisplays();
+		launchOverlayVisible = false;
+		final List<IGamaView.Display> suppressedDisplays = drainSuppressedNativeDisplays();
 
-			// Restore the real status control first (thread-safe).
-			final IStatusControl saved = savedStatusControl;
-			savedStatusControl = null;
-			if (saved != null && statusDisplayer != null) { statusDisplayer.setStatusTarget(saved); }
+		// Restore the real status control first (thread-safe).
+		final IStatusControl saved = savedStatusControl;
+		savedStatusControl = null;
+		if (saved != null && statusDisplayer != null) { statusDisplayer.setStatusTarget(saved); }
 
-			// Remove the console listener (thread-safe).
-			final IConsoleListener listener = overlayConsoleListener;
-			overlayConsoleListener = null;
-			if (listener != null && consoleSource != null) { consoleSource.removeConsoleListener(listener); }
+		// Remove the console listener (thread-safe).
+		final IConsoleListener listener = overlayConsoleListener;
+		overlayConsoleListener = null;
+		if (listener != null && consoleSource != null) { consoleSource.removeConsoleListener(listener); }
 
-			final Shell shell = overlayShell;
-			overlayShell = null;
-			if (shell != null && !shell.isDisposed()) { shell.close(); }
-			restoreNativeDisplays(suppressedDisplays);
-			launchOverlayVisible = false;
-		});
+		// Close the shell on the UI thread.
+		final Shell shell = overlayShell;
+		overlayShell = null;
+		if (shell != null || !suppressedDisplays.isEmpty()) {
+			WorkbenchHelper.asyncRun(() -> {
+				if (shell != null && !shell.isDisposed()) { shell.close(); }
+				restoreNativeDisplays(suppressedDisplays);
+			});
+		}
 	}
 
 	// ── Private helpers ───────────────────────────────────────────────────────────
