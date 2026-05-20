@@ -75,6 +75,7 @@ import gama.ui.experiment.menus.AgentsMenu;
 import gama.ui.experiment.views.displays.DisplaySurfaceMenu;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
+import gama.ui.shared.utils.LaunchingOverlay;
 import gama.ui.shared.utils.DPIHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
 
@@ -149,7 +150,9 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 		layerManager = new LayerManager(this, output);
 		if (!layerManager.stayProportional()) { output.getData().setDrawEnv(false); }
 		renderer = createRenderer();
-		animator = new GamaGLCanvas(this.parent, renderer, getOutput().getTitle()).getAnimator();
+		final GamaGLCanvas canvas = new GamaGLCanvas(this.parent, renderer, getOutput().getTitle());
+		if (LaunchingOverlay.isLaunchOverlayVisible()) { canvas.setVisible(false); }
+		animator = canvas.getAnimator();
 		animator.start();
 	}
 

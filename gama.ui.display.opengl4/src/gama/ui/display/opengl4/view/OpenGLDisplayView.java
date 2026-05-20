@@ -18,6 +18,7 @@ import gama.api.runtime.SystemInfo;
 import gama.api.utils.interfaces.IDisposable;
 import gama.dev.DEBUG;
 import gama.ui.experiment.views.displays.LayeredDisplayView;
+import gama.ui.shared.utils.LaunchingOverlay;
 
 /**
  * Class OpenGLLayeredDisplayView.
@@ -43,6 +44,7 @@ public class OpenGLDisplayView extends LayeredDisplayView {
 		final SWTOpenGLDisplaySurface surface =
 				(SWTOpenGLDisplaySurface) GAMA.getGui().createDisplaySurfaceFor(getOutput(), parent);
 		surfaceComposite = surface.renderer.getCanvas();
+		LaunchingOverlay.suppressNativeDisplayIfLaunching(this);
 		// synchronizer.setSurface(getDisplaySurface());
 		surface.outputReloaded();
 		return surfaceComposite;
@@ -99,6 +101,7 @@ public class OpenGLDisplayView extends LayeredDisplayView {
 	 */
 	@Override
 	public void showCanvas() {
+		if (LaunchingOverlay.suppressNativeDisplayIfLaunching(this)) return;
 		getGLCanvas().setVisible(true);
 		// Prevents JOGL views to move over Java2D views created before (needed on both macOS and Windows)
 		if (SystemInfo.isMac() || SystemInfo.isWindows()) { getGLCanvas().reparentWindow(); }

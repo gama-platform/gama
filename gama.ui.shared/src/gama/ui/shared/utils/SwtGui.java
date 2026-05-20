@@ -776,12 +776,9 @@ public class SwtGui implements IGui {
 			if (arrange != null) { arrange.run(); }
 			openAll.run();
 			manager.applyLayoutNow(layout);
-			// Defer overlay close to AFTER this syncExec returns.
-			// Closing an ON_TOP Shell on macOS re-enters the Cocoa event loop synchronously,
-			// dispatching any queued OS events (including the synthetic ESC KeyDown that macOS
-			// injects when the fullscreen ON_TOP shell becomes visible). If we close the overlay
-			// here, that synthetic ESC fires while we are still inside the syncExec and calls
-			// toggleFullScreen() a second time — exiting fullscreen immediately after entering it.
+			// Defer overlay close to AFTER this syncExec returns so disposing the temporary
+			// launch shell does not interleave with the same UI transaction that opens display
+			// views and applies the layout, which is especially sensitive on macOS.
 			WorkbenchHelper.asyncRun(this::hideLaunchingOverlay);
 		});
 	}

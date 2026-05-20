@@ -10,6 +10,11 @@
  ********************************************************************************************************/
 package gama.ui.shared.utils;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.ControlAdapter;
@@ -22,9 +27,12 @@ import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
+import org.eclipse.ui.IWorkbenchPart;
 
 import gama.api.GAMA;
 import gama.api.ui.IConsoleListener;
+import gama.api.ui.IGamaView;
+import gama.api.ui.IGui;
 import gama.api.ui.IStatusControl;
 import gama.api.ui.IStatusDisplayer;
 import gama.api.ui.IStatusMessage;
@@ -81,6 +89,25 @@ public class LaunchingOverlay {
 	 * {@link StyledText#setMargins(int, int, int, int)}.
 	 */
 	private static final int CONSOLE_TEXT_PADDING = 6;
+
+	/**
+	 * SWT style of the overlay shell. {@link SWT#APPLICATION_MODAL} keeps the overlay above the application's own
+	 * shells and blocks interaction with them while the experiment is launching, without pinning the overlay above other
+	 * applications the way {@link SWT#ON_TOP} does.
+	 */
+	private static final int OVERLAY_SHELL_STYLE = SWT.NO_TRIM | SWT.APPLICATION_MODAL;
+
+	/**
+	 * Displays whose native OpenGL canvases were hidden for the current launch overlay and must be restored when the
+	 * overlay closes.
+	 */
+	private static final Set<IGamaView.Display> SUPPRESSED_NATIVE_DISPLAYS = ConcurrentHashMap.newKeySet();
+
+	/**
+	 * Indicates whether a launching overlay is currently active. OpenGL views created while this flag is {@code true}
+	 * keep their native canvases hidden until the launch completes.
+	 */
+	private static volatile boolean launchOverlayVisible;
 
 	// ── Construction-time dependencies (never null after construction) ───────────
 
@@ -174,6 +201,26 @@ public class LaunchingOverlay {
 		this.cancelAction = cancelAction;
 	}
 
+	/**
+	 * Returns whether a launching overlay is currently active.
+	 *
+	 * @return {@code true} if a launching overlay is currently visible or being prepared, {@code false} otherwise
+	 */
+	public static boolean isLaunchOverlayVisible() { return launchOverlayVisible; }
+
+	/**
+	 * Hides the native canvas of the given display when a launching overlay is active.
+	 *
+	 * @param display
+	 *            the display whose native canvas should remain hidden during launch
+	 * @return {@code true} if the display is currently suppressed for launch, {@code false} otherwise
+	 */
+	public static boolean suppressNativeDisplayIfLaunching(final IGamaView.Display display) {
+		if (!launchOverlayVisible || !isNativeOpenGLDisplay(display)) return false;
+		WorkbenchHelper.asyncRun(() -> suppressNativeDisplay(display));
+		return true;
+	}
+
 	// ── Public API ───────────────────────────────────────────────────────────────
 
 	/**
@@ -196,6 +243,9 @@ public class LaunchingOverlay {
 	 * </p>
 	 */
 	public void hide() {
+		launchOverlayVisible = false;
+		final List<IGamaView.Display> suppressedDisplays = drainSuppressedNativeDisplays();
+
 		// Restore the real status control first (thread-safe).
 		final IStatusControl saved = savedStatusControl;
 		savedStatusControl = null;
@@ -209,7 +259,12 @@ public class LaunchingOverlay {
 		// Close the shell on the UI thread.
 		final Shell shell = overlayShell;
 		overlayShell = null;
-		if (shell != null) { WorkbenchHelper.asyncRun(() -> { if (!shell.isDisposed()) { shell.close(); } }); }
+		if (shell != null || !suppressedDisplays.isEmpty()) {
+			WorkbenchHelper.asyncRun(() -> {
+				if (shell != null && !shell.isDisposed()) { shell.close(); }
+				restoreNativeDisplays(suppressedDisplays);
+			});
+		}
 	}
 
 	// ── Private helpers ───────────────────────────────────────────────────────────
@@ -221,15 +276,15 @@ public class LaunchingOverlay {
 		final Color bg = parent.getBackground();
 		final Color fg = parent.getForeground();
 
-		// SWT.ON_TOP ensures the overlay stays above every child shell (display views, etc.)
-		// that is opened during the launch sequence. The macOS synthetic-ESC issue that
-		// originally motivated removing this flag is already neutralised by the
-		// asyncRun(hideLaunchingOverlay) call in SwtGui.openAndApplyLayout(), which defers
-		// the shell close until after the syncExec that opens the display views returns.
-		final Shell overlay = new Shell(parent, SWT.NO_TRIM | SWT.ON_TOP);
+		// Use application modality rather than SWT.ON_TOP so the overlay behaves like an
+		// in-app modal dialog: it stays above all GAMA shells involved in the launch
+		// sequence, while no longer floating above other applications.
+		final Shell overlay = new Shell(parent, OVERLAY_SHELL_STYLE);
 		overlay.setBackground(bg);
 		overlay.setLayout(null);
 		overlayShell = overlay;
+		launchOverlayVisible = true;
+		suppressExistingNativeDisplays();
 
 		// ── Cancel (stop) button ────────────────────────────────────────────────
 		final ToolBar cancelBar = new ToolBar(overlay, SWT.FLAT | SWT.NO_FOCUS);
@@ -269,19 +324,34 @@ public class LaunchingOverlay {
 		overlay.setBounds(origin.x, origin.y, ca.width, ca.height);
 		positionChildren(overlay, cancelBar);
 		overlay.open();
+		overlay.forceActive();
 
 		// ── Resize tracking ───────────────────────────────────────────────────────
 		final ControlListener[] ref = new ControlListener[1];
 		ref[0] = new ControlAdapter() {
+
+			private void syncOverlayBounds() {
+				final Rectangle ca2 = parent.getClientArea();
+				final org.eclipse.swt.graphics.Point o2 = parent.toDisplay(ca2.x, ca2.y);
+				overlay.setBounds(o2.x, o2.y, ca2.width, ca2.height);
+				positionChildren(overlay, cancelBar);
+			}
+
+			@Override
+			public void controlMoved(final ControlEvent e) {
+				if (overlay.isDisposed()) {
+					parent.removeControlListener(ref[0]);
+				} else {
+					syncOverlayBounds();
+				}
+			}
+
 			@Override
 			public void controlResized(final ControlEvent e) {
 				if (overlay.isDisposed()) {
 					parent.removeControlListener(ref[0]);
 				} else {
-					final Rectangle ca2 = parent.getClientArea();
-					final org.eclipse.swt.graphics.Point o2 = parent.toDisplay(ca2.x, ca2.y);
-					overlay.setBounds(o2.x, o2.y, ca2.width, ca2.height);
-					positionChildren(overlay, cancelBar);
+					syncOverlayBounds();
 				}
 			}
 		};
@@ -455,5 +525,66 @@ public class LaunchingOverlay {
 	 */
 	private static int blend(final int a, final int b, final int pct) {
 		return a + (b - a) * pct / 100;
+	}
+
+	/**
+	 * Hides all currently open native OpenGL displays while the launch overlay is active.
+	 */
+	private static void suppressExistingNativeDisplays() {
+		for (final IGamaView.Display display : ViewsHelper.getDisplayViews(null)) {
+			if (display.isVisible()) { suppressNativeDisplay(display); }
+		}
+	}
+
+	/**
+	 * Hides the native canvas of a single display and remembers it for later restoration.
+	 *
+	 * @param display
+	 *            the display to suppress
+	 */
+	private static void suppressNativeDisplay(final IGamaView.Display display) {
+		if (!launchOverlayVisible || !isNativeOpenGLDisplay(display)) return;
+		if (display.getDisplaySurface() == null || display.getDisplaySurface().isDisposed()) return;
+		if (SUPPRESSED_NATIVE_DISPLAYS.add(display)) { display.hideCanvas(); }
+	}
+
+	/**
+	 * Drains and returns the set of native displays currently suppressed by the launch overlay.
+	 *
+	 * @return the displays that must be restored after the overlay closes
+	 */
+	private static List<IGamaView.Display> drainSuppressedNativeDisplays() {
+		final List<IGamaView.Display> displays = new ArrayList<>(SUPPRESSED_NATIVE_DISPLAYS);
+		SUPPRESSED_NATIVE_DISPLAYS.clear();
+		return displays;
+	}
+
+	/**
+	 * Restores the native canvases of displays that were hidden while the launch overlay was active.
+	 *
+	 * @param displays
+	 *            the displays to restore
+	 */
+	private static void restoreNativeDisplays(final List<IGamaView.Display> displays) {
+		for (final IGamaView.Display display : displays) {
+			if (display == null || display.getDisplaySurface() == null || display.getDisplaySurface().isDisposed()) {
+				continue;
+			}
+			display.showCanvas();
+		}
+	}
+
+	/**
+	 * Returns whether the specified display is backed by a native OpenGL canvas that can paint above SWT controls.
+	 *
+	 * @param display
+	 *            the display to examine
+	 * @return {@code true} if the display is a native OpenGL display, {@code false} otherwise
+	 */
+	private static boolean isNativeOpenGLDisplay(final IGamaView.Display display) {
+		if (display == null || display.is2D()) return false;
+		if (!(display instanceof IWorkbenchPart part) || part.getSite() == null) return false;
+		final String id = part.getSite().getId();
+		return IGui.GL_LAYER_VIEW_ID.equals(id) || IGui.GL_LAYER_VIEW_ID2.equals(id);
 	}
 }
