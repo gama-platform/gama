@@ -226,7 +226,7 @@ experiment "Classic" type: gui parent:base{
 		save simulation to: '../result/file.simulation' format: "json" ;}
 	
 	output {
-		display Ants antialias: false type: 3d axes: true background: #blue{
+		display Ants antialias: false type: 3d axes: true {
 			light #ambient intensity: 127;
 			light #default intensity: 127;
 			picture terrain refresh: false;
@@ -278,8 +278,8 @@ experiment "3 Simulations" type: gui  parent:base{
 	}
 
 	output {
-		layout #split editors: false consoles: false toolbars: true tabs: true tray: false parameters: true background: #red;
-		display Ants background: #blue type: 3d toolbar: color axes: false {
+		layout #split editors: false consoles: false toolbars: true tabs: true tray: false parameters: true ;
+		display Ants background: color type: 3d toolbar: color axes: false {
 			picture terrain position: {0.05, 0.05} size: {0.9, 0.9} refresh: false;
 			agents "agents" transparency: 0.5 position: {0.05, 0.05} size: {0.9, 0.9} value: (ant_grid as list) where ((each.food > 0) or (each.road > 0) or (each.is_nest));
 			species ant position: {0.05, 0.05} size: {0.9, 0.9} aspect: icon;
