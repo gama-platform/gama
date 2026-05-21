@@ -266,7 +266,7 @@ public class LaunchingOverlay {
 		if (shell != null || !suppressedDisplays.isEmpty()) {
 			WorkbenchHelper.asyncRun(() -> {
 				if (shell != null && !shell.isDisposed()) { shell.close(); }
-				WorkbenchHelper.asyncRun(() -> restoreNativeDisplays(suppressedDisplays));
+				restoreNativeDisplays(suppressedDisplays);
 			});
 		}
 	}
