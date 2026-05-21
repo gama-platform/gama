@@ -150,11 +150,31 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 		layerManager = new LayerManager(this, output);
 		if (!layerManager.stayProportional()) { output.getData().setDrawEnv(false); }
 		renderer = createRenderer();
-		final GamaGLCanvas canvas = new GamaGLCanvas(this.parent, renderer, getOutput().getTitle());
-		if (LaunchingOverlay.isLaunchOverlayVisible()) { canvas.setVisible(false); }
+		final GamaGLCanvas canvas =
+				new GamaGLCanvas(this.parent, renderer, getOutput().getTitle(), !LaunchingOverlay.isLaunchOverlayVisible());
 		animator = canvas.getAnimator();
-		animator.start();
+		if (!LaunchingOverlay.isLaunchOverlayVisible()) { canvas.startAnimator(); }
 	}
+
+	/**
+	 * Creates the native OpenGL canvas on demand and returns it.
+	 *
+	 * @return the lazily created canvas
+	 */
+	public GamaGLCanvas ensureCanvas() {
+		GamaGLCanvas canvas = renderer.getCanvas();
+		if (canvas != null) return canvas;
+		canvas = new GamaGLCanvas(parent, renderer, getOutput().getTitle(), !LaunchingOverlay.isLaunchOverlayVisible());
+		animator = canvas.getAnimator();
+		return canvas;
+	}
+
+	/**
+	 * Returns the native OpenGL canvas if it has already been created.
+	 *
+	 * @return the canvas, or {@code null} if it has not yet been created
+	 */
+	public GamaGLCanvas getCanvas() { return renderer.getCanvas(); }
 
 	/**
 	 * Creates the renderer.
@@ -356,7 +376,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	public void runAndUpdate(final Runnable r) {
 		r.run();
 		if (getScope().isPaused()) { updateDisplay(true); }
-		if (animator.isPaused()) {
+		if (animator != null && animator.isPaused()) {
 			animator.resume();
 			animator.pause();
 		}
@@ -369,7 +389,8 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	 */
 	@Override
 	public int getWidth() {
-		return renderer.getCanvas().getSurfaceWidth();
+		final GamaGLCanvas canvas = renderer.getCanvas();
+		return canvas == null ? 0 : canvas.getSurfaceWidth();
 		// return size.x;
 	}
 
@@ -380,7 +401,8 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	 */
 	@Override
 	public int getHeight() {
-		return renderer.getCanvas().getSurfaceHeight();
+		final GamaGLCanvas canvas = renderer.getCanvas();
+		return canvas == null ? 0 : canvas.getSurfaceHeight();
 		// return size.y;
 	}
 
@@ -473,13 +495,15 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 		if (currentLayer instanceof OverlayLayer) return getScope().getSimulation().getEnvelope();
 		IEnvelope e = currentLayer.getData().getVisibleRegion();
 		if (e == null) {
+			final GamaGLCanvas canvas = renderer.getCanvas();
+			if (canvas == null) return getScope().getSimulation().getEnvelope();
 			e = GamaEnvelopeFactory.create();
 			final Point origin = new Point(0, 0);
 			int xc = -origin.x;
 			int yc = -origin.y;
 			e.expandToInclude(currentLayer.getModelCoordinatesFrom(xc, yc, this));
-			xc = xc + renderer.getCanvas().getSurfaceWidth();
-			yc = yc + renderer.getCanvas().getSurfaceHeight();
+			xc = xc + canvas.getSurfaceWidth();
+			yc = yc + canvas.getSurfaceHeight();
 			e.expandToInclude(currentLayer.getModelCoordinatesFrom(xc, yc, this));
 			currentLayer.getData().setVisibleRegion(e);
 		}
@@ -554,6 +578,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	 */
 	@Override
 	public void setPaused(final boolean paused) {
+		if (animator == null) return;
 		if (paused) {
 			animator.pause();
 		} else {
@@ -629,7 +654,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 
 				@Override
 				public void menuHidden(final MenuEvent e) {
-					animator.resume();
+					if (animator != null) { animator.resume(); }
 					// Will be run after the selection
 					WorkbenchHelper.asyncRun(() -> renderer.getCameraHelper().cancelROI());
 
@@ -637,7 +662,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 
 				@Override
 				public void menuShown(final MenuEvent e) {
-					animator.pause();
+					if (animator != null) { animator.pause(); }
 				}
 			});
 
@@ -719,7 +744,11 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	 * @see gama.api.ui.displays.IDisplaySurface#getFPS()
 	 */
 	@Override
-	public int getFPS() { return Math.round(renderer.getCanvas().getLastFPS()); }
+	public int getFPS() {
+		final GamaGLCanvas canvas = renderer.getCanvas();
+		return canvas == null ? 0 : Math.round(canvas.getLastFPS());
+	}
+
 
 	@Override
 	public boolean isDisposed() { return disposed; }
@@ -788,7 +817,8 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	@Override
 	public boolean isVisible() {
 		if (renderer == null) return false;
-		return renderer.getCanvas().getVisibleStatus();
+		final GamaGLCanvas canvas = renderer.getCanvas();
+		return canvas != null && canvas.getVisibleStatus();
 	}
 
 	@Override
@@ -796,9 +826,11 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 
 	@Override
 	public Rectangle getBoundsForRobotSnapshot() {
-		var rect = WorkbenchHelper.displaySizeOf(renderer.getCanvas());
+		final GamaGLCanvas canvas = renderer.getCanvas();
+		if (canvas == null) return new Rectangle(0, 0, 0, 0);
+		var rect = WorkbenchHelper.displaySizeOf(canvas);
 		// For some reason, macOS requires the native dimension for the robot to snapshot correctly
-		if (SystemInfo.isMac()) { rect = DPIHelper.autoScaleUp(renderer.getCanvas().getMonitor(), rect); }
+		if (SystemInfo.isMac()) { rect = DPIHelper.autoScaleUp(canvas.getMonitor(), rect); }
 		return new Rectangle(rect.x, rect.y, rect.width, rect.height);
 	}
 
@@ -810,11 +842,13 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	 * @date 17 sept. 2023
 	 */
 	public Rectangle getBoundsForRegularSnapshot() {
-		var rect = WorkbenchHelper.displaySizeOf(renderer.getCanvas());
+		final GamaGLCanvas canvas = renderer.getCanvas();
+		if (canvas == null) return new Rectangle(0, 0, 0, 0);
+		var rect = WorkbenchHelper.displaySizeOf(canvas);
 		// For some reason, macOS and Windows require the native dimension for the internal process to snapshot
 		// correctly
 		if (SystemInfo.isMac() || SystemInfo.isWindows()) {
-			rect = DPIHelper.autoScaleUp(renderer.getCanvas().getMonitor(), rect);
+			rect = DPIHelper.autoScaleUp(canvas.getMonitor(), rect);
 		}
 		return new Rectangle(rect.x, rect.y, rect.width, rect.height);
 	}

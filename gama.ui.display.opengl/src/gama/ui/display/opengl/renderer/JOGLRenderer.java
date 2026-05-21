@@ -155,8 +155,10 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 
 	@Override
 	public boolean beginDrawingLayers() {
-		if (isNotReadyToUpdate()) // DEBUG.OUT(">>> " + getSurface().getOutput().getName() + " is not ready to update");
+		if (isNotReadyToUpdate()) {
+			if (synchronizer != null) { synchronizer.release(); }
 			return false;
+		}
 		// while (!inited) {
 		// try {
 		// Thread.sleep(10);

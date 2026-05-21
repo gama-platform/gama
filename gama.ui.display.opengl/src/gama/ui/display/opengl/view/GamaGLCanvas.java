@@ -11,6 +11,7 @@
 package gama.ui.display.opengl.view;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.swt.SWT;
@@ -58,10 +59,10 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 	}
 
 	/** The canvas. */
-	final Control canvas;
+	Control canvas;
 
 	/** The drawable. */
-	final GLWindow drawable;
+	GLWindow drawable;
 
 	/** The fps delegate. */
 	private GamaGLAnimator animator;
@@ -78,6 +79,15 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 	/** The monitor. */
 	private Monitor monitor;
 
+	/** The renderer owning this canvas. */
+	private final IOpenGLRenderer renderer;
+
+	/** GLEventListeners registered before the native peer exists. */
+	private final List<GLEventListener> pendingGlListeners = new ArrayList<>();
+
+	/** Camera listeners registered before the native peer exists. */
+	private final List<IMultiListener> pendingCameraListeners = new ArrayList<>();
+
 	/**
 	 * Instantiates a new gama GL canvas.
 	 *
@@ -89,7 +99,28 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 	 *            for debug purposes
 	 */
 	public GamaGLCanvas(final Composite parent, final IOpenGLRenderer renderer, final String name) {
+		this(parent, renderer, name, true);
+	}
+
+	/**
+	 * Instantiates a new gama GL canvas with a specified initial visibility.
+	 *
+	 * @param parent
+	 *            the parent
+	 * @param renderer
+	 *            the renderer
+	 * @param name
+	 *            for debug purposes
+	 * @param initiallyVisible
+	 *            whether both the SWT host control and the native GL window should start visible
+	 */
+	public GamaGLCanvas(final Composite parent, final IOpenGLRenderer renderer, final String name,
+			final boolean initiallyVisible) {
 		super(parent, SWT.NONE);
+		this.renderer = renderer;
+		visible = initiallyVisible;
+		super.setVisible(initiallyVisible);
+		setBackground(parent.getBackground());
 		parent.addControlListener(new ControlAdapter() {
 			@Override
 			public void controlMoved(final ControlEvent e) {
@@ -108,13 +139,8 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 		this.name = name;
 		parent.setLayout(new FillLayout());
 		this.setLayout(new FillLayout());
-		final GLCapabilities cap = defineCapabilities();
-
-		drawable = GLWindow.create(cap);
-		drawable.setAutoSwapBufferMode(true);
-		canvas = new NewtCanvasSWT(this, SWT.NONE, drawable);
-		animator = new GamaGLAnimator(drawable);
 		renderer.setCanvas(this);
+		if (initiallyVisible) { ensureNativePeer(); }
 		addControlListener(new ControlAdapter() {
 			@Override
 			public void controlResized(final ControlEvent e) {
@@ -137,9 +163,32 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 			}
 		});
 		addDisposeListener(e -> new Thread(() -> {
-			animator.stop();
+			if (animator != null) { animator.stop(); }
 			animator = null;
 		}).start());
+	}
+
+	/**
+	 * Creates the heavyweight NEWT/SWT native peer the first time it is needed.
+	 */
+	private void ensureNativePeer() {
+		if (drawable != null || isDisposed()) return;
+		final GLCapabilities cap = defineCapabilities();
+		drawable = GLWindow.create(cap);
+		drawable.setAutoSwapBufferMode(true);
+		canvas = new NewtCanvasSWT(this, SWT.NONE, drawable);
+		canvas.setBackground(getBackground());
+		canvas.setVisible(visible);
+		for (final GLEventListener listener : pendingGlListeners) {
+			drawable.addGLEventListener(listener);
+		}
+		for (final IMultiListener listener : pendingCameraListeners) {
+			drawable.addKeyListener(listener);
+			drawable.addMouseListener(listener);
+		}
+		animator = new GamaGLAnimator(drawable);
+		drawable.setVisible(visible);
+		layout(true, true);
 	}
 
 	/**
@@ -194,173 +243,202 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 
 	@Override
 	public void setRealized(final boolean realized) {
+		ensureNativePeer();
 		drawable.setRealized(realized);
 	}
 
 	@Override
-	public boolean isRealized() { return drawable.isRealized(); }
+	public boolean isRealized() { return drawable != null && drawable.isRealized(); }
 
 	@Override
-	public int getSurfaceWidth() { return drawable.getSurfaceWidth(); }
+	public int getSurfaceWidth() { return drawable == null ? 0 : drawable.getSurfaceWidth(); }
 
 	@Override
-	public int getSurfaceHeight() { return drawable.getSurfaceHeight(); }
+	public int getSurfaceHeight() { return drawable == null ? 0 : drawable.getSurfaceHeight(); }
 
 	@Override
-	public boolean isGLOriented() { return drawable.isGLOriented(); }
+	public boolean isGLOriented() { return drawable != null && drawable.isGLOriented(); }
 
 	@Override
 	public void swapBuffers() throws GLException {
+		if (drawable == null) return;
 		drawable.swapBuffers();
 	}
 
 	@Override
-	public GLCapabilitiesImmutable getChosenGLCapabilities() { return drawable.getChosenGLCapabilities(); }
+	public GLCapabilitiesImmutable getChosenGLCapabilities() {
+		return drawable == null ? null : drawable.getChosenGLCapabilities();
+	}
 
 	@Override
-	public GLCapabilitiesImmutable getRequestedGLCapabilities() { return drawable.getRequestedGLCapabilities(); }
+	public GLCapabilitiesImmutable getRequestedGLCapabilities() {
+		return drawable == null ? null : drawable.getRequestedGLCapabilities();
+	}
 
 	@Override
-	public GLProfile getGLProfile() { return drawable.getGLProfile(); }
+	public GLProfile getGLProfile() { return drawable == null ? null : drawable.getGLProfile(); }
 
 	@Override
-	public NativeSurface getNativeSurface() { return drawable.getNativeSurface(); }
+	public NativeSurface getNativeSurface() { return drawable == null ? null : drawable.getNativeSurface(); }
 
 	@Override
-	public long getHandle() { return drawable.getHandle(); }
+	public long getHandle() { return drawable == null ? 0L : drawable.getHandle(); }
 
 	@Override
-	public GLDrawableFactory getFactory() { return drawable.getFactory(); }
+	public GLDrawableFactory getFactory() { return drawable == null ? null : drawable.getFactory(); }
 
 	@Override
-	public GLDrawable getDelegatedDrawable() { return drawable.getDelegatedDrawable(); }
+	public GLDrawable getDelegatedDrawable() { return drawable == null ? null : drawable.getDelegatedDrawable(); }
 
 	@Override
-	public GLContext getContext() { return drawable.getContext(); }
+	public GLContext getContext() { return drawable == null ? null : drawable.getContext(); }
 
 	@Override
 	public GLContext setContext(final GLContext newCtx, final boolean destroyPrevCtx) {
+		ensureNativePeer();
 		return drawable.setContext(newCtx, destroyPrevCtx);
 	}
 
 	@Override
 	public void addGLEventListener(final GLEventListener listener) {
-		drawable.addGLEventListener(listener);
+		if (drawable == null) {
+			pendingGlListeners.add(listener);
+		} else {
+			drawable.addGLEventListener(listener);
+		}
 	}
 
 	@Override
 	public void addGLEventListener(final int index, final GLEventListener listener) throws IndexOutOfBoundsException {
-		drawable.addGLEventListener(index, listener);
+		if (drawable == null) {
+			pendingGlListeners.add(index, listener);
+		} else {
+			drawable.addGLEventListener(index, listener);
+		}
 	}
 
 	@Override
-	public int getGLEventListenerCount() { return drawable.getGLEventListenerCount(); }
+	public int getGLEventListenerCount() { return drawable == null ? pendingGlListeners.size() : drawable.getGLEventListenerCount(); }
 
 	@Override
 	public boolean areAllGLEventListenerInitialized() {
-		return drawable.areAllGLEventListenerInitialized();
+		return drawable == null || drawable.areAllGLEventListenerInitialized();
 	}
 
 	@Override
 	public GLEventListener getGLEventListener(final int index) throws IndexOutOfBoundsException {
-		return drawable.getGLEventListener(index);
+		return drawable == null ? pendingGlListeners.get(index) : drawable.getGLEventListener(index);
 	}
 
 	@Override
 	public boolean getGLEventListenerInitState(final GLEventListener listener) {
-		return drawable.getGLEventListenerInitState(listener);
+		return drawable != null && drawable.getGLEventListenerInitState(listener);
 	}
 
 	@Override
 	public void setGLEventListenerInitState(final GLEventListener listener, final boolean initialized) {
-		drawable.setGLEventListenerInitState(listener, initialized);
+		if (drawable != null) { drawable.setGLEventListenerInitState(listener, initialized); }
 	}
 
 	@Override
 	public GLEventListener disposeGLEventListener(final GLEventListener listener, final boolean remove) {
+		if (drawable == null) {
+			if (remove) { pendingGlListeners.remove(listener); }
+			return listener;
+		}
 		return drawable.disposeGLEventListener(listener, remove);
 	}
 
 	@Override
 	public GLEventListener removeGLEventListener(final GLEventListener listener) {
+		if (drawable == null) {
+			pendingGlListeners.remove(listener);
+			return listener;
+		}
 		return drawable.removeGLEventListener(listener);
 	}
 
 	@Override
 	public void setAnimator(final GLAnimatorControl animatorControl) throws GLException {
+		ensureNativePeer();
 		drawable.setAnimator(animatorControl);
 	}
 
 	@Override
 	public Thread setExclusiveContextThread(final Thread t) throws GLException {
+		ensureNativePeer();
 		return drawable.setExclusiveContextThread(t);
 	}
 
 	@Override
-	public Thread getExclusiveContextThread() { return drawable.getExclusiveContextThread(); }
+	public Thread getExclusiveContextThread() { return drawable == null ? null : drawable.getExclusiveContextThread(); }
 
 	@Override
 	public boolean invoke(final boolean wait, final GLRunnable glRunnable) throws IllegalStateException {
-		return drawable.invoke(wait, glRunnable);
+		return drawable != null && drawable.invoke(wait, glRunnable);
 	}
 
 	@Override
 	public boolean invoke(final boolean wait, final List<GLRunnable> glRunnables) throws IllegalStateException {
-		return drawable.invoke(wait, glRunnables);
+		return drawable != null && drawable.invoke(wait, glRunnables);
 	}
 
 	@Override
 	public void flushGLRunnables() {
-		drawable.flushGLRunnables();
+		if (drawable != null) { drawable.flushGLRunnables(); }
 	}
 
 	@Override
 	public void destroy() {
-		drawable.destroy();
+		if (drawable != null) { drawable.destroy(); }
 	}
 
 	@Override
 	public void display() {
-		drawable.display();
+		if (drawable != null) { drawable.display(); }
 	}
 
 	@Override
 	public void setAutoSwapBufferMode(final boolean enable) {
+		ensureNativePeer();
 		drawable.setAutoSwapBufferMode(enable);
 	}
 
 	@Override
-	public boolean getAutoSwapBufferMode() { return drawable.getAutoSwapBufferMode(); }
+	public boolean getAutoSwapBufferMode() { return drawable != null && drawable.getAutoSwapBufferMode(); }
 
 	@Override
 	public void setContextCreationFlags(final int flags) {
+		ensureNativePeer();
 		drawable.setContextCreationFlags(flags);
 	}
 
 	@Override
-	public int getContextCreationFlags() { return drawable.getContextCreationFlags(); }
+	public int getContextCreationFlags() { return drawable == null ? 0 : drawable.getContextCreationFlags(); }
 
 	@Override
 	public GLContext createContext(final GLContext shareWith) {
+		ensureNativePeer();
 		return drawable.createContext(shareWith);
 	}
 
 	@Override
-	public GL getGL() { return drawable.getGL(); }
+	public GL getGL() { return drawable == null ? null : drawable.getGL(); }
 
 	@Override
 	public GL setGL(final GL gl) {
+		ensureNativePeer();
 		return drawable.setGL(gl);
 	}
 
 	@Override
-	public Object getUpstreamWidget() { return drawable.getUpstreamWidget(); }
+	public Object getUpstreamWidget() { return drawable == null ? null : drawable.getUpstreamWidget(); }
 
 	@Override
-	public RecursiveLock getUpstreamLock() { return drawable.getUpstreamLock(); }
+	public RecursiveLock getUpstreamLock() { return drawable == null ? null : drawable.getUpstreamLock(); }
 
 	@Override
-	public boolean isThreadGLCapable() { return drawable.isThreadGLCapable(); }
+	public boolean isThreadGLCapable() { return drawable != null && drawable.isThreadGLCapable(); }
 
 	/**
 	 * Gets the NEWT window.
@@ -374,11 +452,12 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 	 */
 	public void reparentWindow() {
 		DEBUG.OUT("Entering making GLWindow " + name + " reparent ");
+		if (!visible) return;
 		final Window w = drawable;
 		setWindowVisible(false);
 		w.setFullscreen(true);
 		w.setFullscreen(false);
-		setWindowVisible(true);
+		setWindowVisible(visible);
 		fixSurfaceScaleOnWindows();
 	}
 
@@ -401,6 +480,8 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 
 	@Override
 	public boolean setFocus() {
+		ensureNativePeer();
+		if (canvas == null) return false;
 		return canvas.setFocus();
 	}
 
@@ -412,7 +493,11 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 	 */
 	public void addCameraListeners(final IMultiListener camera) {
 		WorkbenchHelper.asyncRun(() -> {
-			if (isDisposed() || canvas.isDisposed()) return;
+			if (isDisposed()) return;
+			if (drawable == null || canvas == null || canvas.isDisposed()) {
+				if (!pendingCameraListeners.contains(camera)) { pendingCameraListeners.add(camera); }
+				return;
+			}
 			drawable.addKeyListener(camera);
 			drawable.addMouseListener(camera);
 		});
@@ -426,7 +511,9 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 	 */
 	public void removeCameraListeners(final IMultiListener camera) {
 		WorkbenchHelper.asyncRun(() -> {
-			if (isDisposed() || canvas.isDisposed()) return;
+			if (isDisposed()) return;
+			pendingCameraListeners.remove(camera);
+			if (drawable == null || canvas == null || canvas.isDisposed()) return;
 			drawable.removeKeyListener(camera);
 			drawable.removeMouseListener(camera);
 		});
@@ -434,49 +521,51 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 
 	@Override
 	public void setUpdateFPSFrames(final int frames, final PrintStream out) {
-		animator.setUpdateFPSFrames(frames, out);
+		if (animator != null) { animator.setUpdateFPSFrames(frames, out); }
 	}
 
 	@Override
 	public void resetFPSCounter() {
-		animator.resetFPSCounter();
+		if (animator != null) { animator.resetFPSCounter(); }
 	}
 
 	@Override
 	public int getUpdateFPSFrames() {
-		return animator.getUpdateFPSFrames();
+		return animator == null ? 0 : animator.getUpdateFPSFrames();
 
 	}
 
 	@Override
-	public long getFPSStartTime() { return animator.getFPSStartTime(); }
+	public long getFPSStartTime() { return animator == null ? 0L : animator.getFPSStartTime(); }
 
 	@Override
 	public long getLastFPSUpdateTime() {
-		return animator.getLastFPSUpdateTime();
+		return animator == null ? 0L : animator.getLastFPSUpdateTime();
 
 	}
 
 	@Override
-	public long getLastFPSPeriod() { return animator.getLastFPSPeriod(); }
+	public long getLastFPSPeriod() { return animator == null ? 0L : animator.getLastFPSPeriod(); }
 
 	@Override
-	public float getLastFPS() { return animator.getLastFPS(); }
+	public float getLastFPS() { return animator == null ? 0f : animator.getLastFPS(); }
 
 	@Override
-	public int getTotalFPSFrames() { return animator.getTotalFPSFrames(); }
+	public int getTotalFPSFrames() { return animator == null ? 0 : animator.getTotalFPSFrames(); }
 
 	@Override
-	public long getTotalFPSDuration() { return animator.getTotalFPSDuration(); }
+	public long getTotalFPSDuration() { return animator == null ? 0L : animator.getTotalFPSDuration(); }
 
 	@Override
-	public float getTotalFPS() { return animator.getTotalFPS(); }
+	public float getTotalFPS() { return animator == null ? 0f : animator.getTotalFPS(); }
 
 	@Override
 	public void setVisible(final boolean v) {
 		// DEBUG.OUT("VISIBLE changed through composite : " + v);
 		visible = v;
-		setWindowVisible(v);
+		if (v) { ensureNativePeer(); }
+		if (canvas != null && !canvas.isDisposed()) { canvas.setVisible(v); }
+		if (drawable != null) { setWindowVisible(v); }
 		if (!isDisposed()) { super.setVisible(v); }
 	}
 
@@ -500,6 +589,16 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 
 	@Override
 	public GamaGLAnimator getAnimator() { return animator; }
+
+	/**
+	 * Starts the animator if needed and ensures it is not paused.
+	 */
+	public void startAnimator() {
+		ensureNativePeer();
+		if (animator == null) return;
+		if (!animator.isStarted()) { animator.start(); }
+		animator.resume();
+	}
 
 	/**
 	 *

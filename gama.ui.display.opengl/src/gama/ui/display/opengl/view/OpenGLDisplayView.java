@@ -29,6 +29,28 @@ import gama.ui.shared.utils.LaunchingOverlay;
  */
 public class OpenGLDisplayView extends LayeredDisplayView {
 
+	/**
+	 * Lazily installs NEWT listeners once the native OpenGL window has actually been created.
+	 */
+	private final class DeferredMultiListener implements IDisposable {
+
+		private IDisposable delegate;
+
+		void ensureInstalled() {
+			if (delegate != null || getGLCanvas().getNEWTWindow() == null) return;
+			delegate = new NEWTLayeredDisplayMultiListener(decorator, getDisplaySurface(), getGLCanvas().getNEWTWindow());
+		}
+
+		@Override
+		public void dispose() {
+			if (delegate != null) { delegate.dispose(); }
+			delegate = null;
+		}
+	}
+
+	/** The deferred input listener wrapper. */
+	private final DeferredMultiListener deferredMultiListener = new DeferredMultiListener();
+
 	{
 		DEBUG.OFF();
 	}
@@ -85,7 +107,7 @@ public class OpenGLDisplayView extends LayeredDisplayView {
 	// */
 	@Override
 	public IDisposable getMultiListener() {
-		return new NEWTLayeredDisplayMultiListener(decorator, getDisplaySurface(), getGLCanvas().getNEWTWindow());
+		return deferredMultiListener;
 	}
 
 	/**
@@ -103,10 +125,11 @@ public class OpenGLDisplayView extends LayeredDisplayView {
 	@Override
 	public void showCanvas() {
 		if (LaunchingOverlay.suppressNativeDisplayIfLaunching(this)) return;
+		getGLCanvas().startAnimator();
+		deferredMultiListener.ensureInstalled();
 		getGLCanvas().setVisible(true);
 		// Prevents JOGL views to move over Java2D views created before (needed on both macOS and Windows)
 		if (SystemInfo.isMac() || SystemInfo.isWindows()) { getGLCanvas().reparentWindow(); }
-		getGLCanvas().resumeAnimator();
 	}
 
 	/**
