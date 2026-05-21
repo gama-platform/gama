@@ -134,6 +134,12 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 		lightHelper.initialize();
 		// We mark the renderer as inited
 		inited = true;
+		WorkbenchHelper.asyncRun(() -> {
+			final GamaGLCanvas glCanvas = getCanvas();
+			if (glCanvas != null && !glCanvas.isDisposed() && glCanvas.getVisibleStatus()) {
+				getSurface().updateDisplay(true, null);
+			}
+		});
 	}
 
 	@Override

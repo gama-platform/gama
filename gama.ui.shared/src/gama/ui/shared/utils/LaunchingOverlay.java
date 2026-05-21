@@ -91,12 +91,6 @@ public class LaunchingOverlay {
 	private static final int CONSOLE_TEXT_PADDING = 6;
 
 	/**
-	 * Short delay, in milliseconds, before the overlay shell is finally closed after native OpenGL displays have been
-	 * restored. This lets any transient native redraw happen behind the overlay instead of flashing in front of it.
-	 */
-	private static final int OVERLAY_CLOSE_DELAY_MS = 75;
-
-	/**
 	 * SWT style of the overlay shell. {@link SWT#APPLICATION_MODAL} keeps the overlay above the application's own
 	 * shells and blocks interaction with them while the experiment is launching, without pinning the overlay above other
 	 * applications the way {@link SWT#ON_TOP} does.
@@ -223,7 +217,11 @@ public class LaunchingOverlay {
 	 */
 	public static boolean suppressNativeDisplayIfLaunching(final IGamaView.Display display) {
 		if (!launchOverlayVisible || !isNativeOpenGLDisplay(display)) return false;
-		WorkbenchHelper.asyncRun(() -> suppressNativeDisplay(display));
+		if (WorkbenchHelper.isDisplayThread()) {
+			suppressNativeDisplay(display);
+		} else {
+			WorkbenchHelper.run(() -> suppressNativeDisplay(display));
+		}
 		return true;
 	}
 
@@ -267,12 +265,8 @@ public class LaunchingOverlay {
 		overlayShell = null;
 		if (shell != null || !suppressedDisplays.isEmpty()) {
 			WorkbenchHelper.asyncRun(() -> {
-				restoreNativeDisplays(suppressedDisplays);
-				if (shell != null && !shell.isDisposed()) {
-					shell.getDisplay().timerExec(OVERLAY_CLOSE_DELAY_MS, () -> {
-						if (!shell.isDisposed()) { shell.close(); }
-					});
-				}
+				if (shell != null && !shell.isDisposed()) { shell.close(); }
+				WorkbenchHelper.asyncRun(() -> restoreNativeDisplays(suppressedDisplays));
 			});
 		}
 	}

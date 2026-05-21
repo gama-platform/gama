@@ -127,9 +127,10 @@ public class OpenGLDisplayView extends LayeredDisplayView {
 		if (LaunchingOverlay.suppressNativeDisplayIfLaunching(this)) return;
 		getGLCanvas().startAnimator();
 		deferredMultiListener.ensureInstalled();
+		final boolean firstShow = getGLCanvas().consumeNativePeerJustCreated();
 		getGLCanvas().setVisible(true);
 		// Prevents JOGL views to move over Java2D views created before (needed on both macOS and Windows)
-		if (SystemInfo.isMac() || SystemInfo.isWindows()) { getGLCanvas().reparentWindow(); }
+		if (!firstShow && (SystemInfo.isMac() || SystemInfo.isWindows())) { getGLCanvas().reparentWindow(); }
 	}
 
 	/**

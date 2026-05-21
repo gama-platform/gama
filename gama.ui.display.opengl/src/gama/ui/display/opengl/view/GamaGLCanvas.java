@@ -88,6 +88,9 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 	/** Camera listeners registered before the native peer exists. */
 	private final List<IMultiListener> pendingCameraListeners = new ArrayList<>();
 
+	/** Indicates that the native peer has just been created and not yet shown once. */
+	private boolean nativePeerJustCreated;
+
 	/**
 	 * Instantiates a new gama GL canvas.
 	 *
@@ -188,7 +191,19 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 		}
 		animator = new GamaGLAnimator(drawable);
 		drawable.setVisible(visible);
+		nativePeerJustCreated = true;
 		layout(true, true);
+	}
+
+	/**
+	 * Returns whether the native peer was created since the last call, then clears the flag.
+	 *
+	 * @return {@code true} if the native peer has just been created, {@code false} otherwise
+	 */
+	public boolean consumeNativePeerJustCreated() {
+		final boolean result = nativePeerJustCreated;
+		nativePeerJustCreated = false;
+		return result;
 	}
 
 	/**
