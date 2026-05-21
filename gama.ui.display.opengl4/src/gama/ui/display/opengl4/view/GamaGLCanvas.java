@@ -143,11 +143,12 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 		parent.setLayout(new FillLayout());
 		this.setLayout(new FillLayout());
 		renderer.setCanvas(this);
-		if (initiallyVisible) { ensureNativePeer(); }
+		ensureNativePeer();
 		addControlListener(new ControlAdapter() {
 			@Override
 			public void controlResized(final ControlEvent e) {
 				/* Detached views have no title! */
+				if (drawable == null || nativePeerJustCreated) return;
 				if (SystemInfo.isMac() || SystemInfo.isWindows()) {
 					final var isDetached = parent.getShell().getText().length() == 0;
 					if (isDetached) {
@@ -462,7 +463,7 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 	 */
 	public void reparentWindow() {
 		DEBUG.OUT("Entering making GLWindow " + name + " reparent ");
-		if (!visible) return;
+		if (!visible || drawable == null) return;
 		final Window w = drawable;
 		setWindowVisible(false);
 		w.setFullscreen(true);

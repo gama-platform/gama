@@ -134,12 +134,6 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 		lightHelper.initialize();
 		// We mark the renderer as inited
 		inited = true;
-		WorkbenchHelper.asyncRun(() -> {
-			final GamaGLCanvas glCanvas = getCanvas();
-			if (glCanvas != null && !glCanvas.isDisposed() && glCanvas.getVisibleStatus()) {
-				getSurface().updateDisplay(true, null);
-			}
-		});
 	}
 
 	@Override
@@ -236,8 +230,48 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	/** The first. */
 	boolean first = true;
 
+	/** Tracks whether the initial forced layer redraw must wait until the canvas is shown. */
+	private boolean pendingInitialVisibleRedraw;
+
+	/** Guards the asynchronous completion of the deferred initial redraw. */
+	private boolean initialVisibleRedrawScheduled;
+
 	/** The synchronizer. */
 	private GeneralSynchronizer synchronizer;
+
+	/**
+	 * Requests completion of a deferred initial redraw after the canvas becomes visible.
+	 */
+	public void onCanvasShown() {
+		schedulePendingInitialVisibleRedraw();
+	}
+
+	/**
+	 * Schedules the deferred initial redraw once on the UI thread so late show/resize events can settle first.
+	 */
+	private void schedulePendingInitialVisibleRedraw() {
+		if (!pendingInitialVisibleRedraw || initialVisibleRedrawScheduled) return;
+		initialVisibleRedrawScheduled = true;
+		WorkbenchHelper.asyncRun(() -> {
+			initialVisibleRedrawScheduled = false;
+			flushPendingInitialVisibleRedraw();
+		});
+	}
+
+	/**
+	 * Forces a one-time redraw of cached layers once the visible OpenGL viewport has stabilized enough to be trusted.
+	 */
+	private void flushPendingInitialVisibleRedraw() {
+		if (!pendingInitialVisibleRedraw) return;
+		final GamaGLCanvas currentCanvas = getCanvas();
+		if (currentCanvas == null || !currentCanvas.getVisibleStatus() || openGL.getViewWidth() <= 0
+				|| openGL.getViewHeight() <= 0) {
+			return;
+		}
+		pendingInitialVisibleRedraw = false;
+		surface.getManager().forceRedrawingLayers();
+		surface.updateDisplay(true, synchronizer);
+	}
 
 	@Override
 	public void reshape(final GLAutoDrawable drawable, final int arg1, final int arg2, final int w, final int h) {
@@ -248,10 +282,19 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 		// width = scaleDownIfMac(width);
 		// height = scaleDownIfMac(height);
 		if (width <= 0 || height <= 0 || openGL.getViewWidth() == width && openGL.getViewHeight() == height) return;
+		final boolean firstMeaningfulReshape = openGL.getViewWidth() <= 0 || openGL.getViewHeight() <= 0;
 		final GL2 gl = drawable.getContext().getGL().getGL2();
 		keystoneHelper.reshape(width, height);
 		openGL.reshape(gl, width, height);
-		// sceneHelper.reshape(width, height);
+		if (firstMeaningfulReshape) {
+			if (getCanvas().getVisibleStatus()) {
+				surface.getManager().forceRedrawingLayers();
+			} else {
+				pendingInitialVisibleRedraw = true;
+			}
+		} else if (pendingInitialVisibleRedraw && getCanvas().getVisibleStatus()) {
+			schedulePendingInitialVisibleRedraw();
+		}
 		surface.updateDisplay(true, synchronizer);
 		getCanvas().updateVisibleStatus(getCanvas().isVisible());
 	}

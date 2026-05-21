@@ -51,6 +51,9 @@ public class OpenGLDisplayView extends LayeredDisplayView {
 	/** The deferred input listener wrapper. */
 	private final DeferredMultiListener deferredMultiListener = new DeferredMultiListener();
 
+	/** Indicates that the native canvas is currently hidden by the launch overlay. */
+	private boolean hiddenForLaunchOverlay;
+
 	{
 		DEBUG.OFF();
 	}
@@ -115,6 +118,7 @@ public class OpenGLDisplayView extends LayeredDisplayView {
 	 */
 	@Override
 	public void hideCanvas() {
+		hiddenForLaunchOverlay |= LaunchingOverlay.isLaunchOverlayVisible();
 		getGLCanvas().pauseAnimator();
 		getGLCanvas().setVisible(false);
 	}
@@ -125,12 +129,18 @@ public class OpenGLDisplayView extends LayeredDisplayView {
 	@Override
 	public void showCanvas() {
 		if (LaunchingOverlay.suppressNativeDisplayIfLaunching(this)) return;
-		getGLCanvas().startAnimator();
-		deferredMultiListener.ensureInstalled();
-		final boolean firstShow = getGLCanvas().consumeNativePeerJustCreated();
+		final boolean restoringAfterLaunchOverlay = hiddenForLaunchOverlay && !LaunchingOverlay.isLaunchOverlayVisible();
+		hiddenForLaunchOverlay = false;
 		getGLCanvas().setVisible(true);
+		getGLCanvas().startAnimator();
+		final boolean firstShow = getGLCanvas().consumeNativePeerJustCreated();
+		deferredMultiListener.ensureInstalled();
 		// Prevents JOGL views to move over Java2D views created before (needed on both macOS and Windows)
-		if (!firstShow && (SystemInfo.isMac() || SystemInfo.isWindows())) { getGLCanvas().reparentWindow(); }
+		if ((isFullScreen() || !firstShow && !restoringAfterLaunchOverlay)
+				&& (SystemInfo.isMac() || SystemInfo.isWindows())) {
+			getGLCanvas().reparentWindow();
+		}
+		getDisplaySurface().renderer.onCanvasShown();
 	}
 
 	/**
