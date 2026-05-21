@@ -555,6 +555,18 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	@Override
 	public final int getDisplayHeight() { return (int) Math.round(getHeight()); }
 
+	@Override
+	public int getViewWidth() {
+		final GamaGLCanvas currentCanvas = getCanvas();
+		return currentCanvas == null || currentCanvas.isDisposed() ? super.getViewWidth() : currentCanvas.getClientArea().width;
+	}
+
+	@Override
+	public int getViewHeight() {
+		final GamaGLCanvas currentCanvas = getCanvas();
+		return currentCanvas == null || currentCanvas.isDisposed() ? super.getViewHeight() : currentCanvas.getClientArea().height;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 *

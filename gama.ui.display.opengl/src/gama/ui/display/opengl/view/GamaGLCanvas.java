@@ -124,6 +124,7 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 		visible = initiallyVisible;
 		super.setVisible(initiallyVisible);
 		setBackground(parent.getBackground());
+		setMonitor(parent.getMonitor());
 		parent.addControlListener(new ControlAdapter() {
 			@Override
 			public void controlMoved(final ControlEvent e) {
@@ -579,9 +580,13 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 	public void setVisible(final boolean v) {
 		// DEBUG.OUT("VISIBLE changed through composite : " + v);
 		visible = v;
+		if (v && getParent() != null && !getParent().isDisposed()) {
+			setMonitor(getParent().getMonitor());
+		}
 		if (v) { ensureNativePeer(); }
 		if (canvas != null && !canvas.isDisposed()) { canvas.setVisible(v); }
 		if (drawable != null) { setWindowVisible(v); }
+		if (v) { fixSurfaceScaleOnWindows(); }
 		if (!isDisposed()) { super.setVisible(v); }
 	}
 
