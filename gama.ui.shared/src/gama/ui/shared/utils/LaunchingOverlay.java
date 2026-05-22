@@ -91,11 +91,11 @@ public class LaunchingOverlay {
 	private static final int CONSOLE_TEXT_PADDING = 6;
 
 	/**
-	 * SWT style of the overlay shell. {@link SWT#APPLICATION_MODAL} keeps the overlay above the application's own
-	 * shells and blocks interaction with them while the experiment is launching, without pinning the overlay above other
-	 * applications the way {@link SWT#ON_TOP} does.
+	 * SWT style of the overlay shell. The overlay is intentionally modeless so the native frame of the parent workbench
+	 * shell remains draggable and resizable while launch feedback is displayed. {@link SWT#NO_TRIM} preserves the
+	 * current undecorated full-client-area appearance.
 	 */
-	private static final int OVERLAY_SHELL_STYLE = SWT.NO_TRIM | SWT.APPLICATION_MODAL;
+	private static final int OVERLAY_SHELL_STYLE = SWT.NO_TRIM;
 
 	/**
 	 * Displays whose native OpenGL canvases were hidden for the current launch overlay and must be restored when the
@@ -280,9 +280,9 @@ public class LaunchingOverlay {
 		final Color bg = parent.getBackground();
 		final Color fg = parent.getForeground();
 
-		// Use application modality rather than SWT.ON_TOP so the overlay behaves like an
-		// in-app modal dialog: it stays above all GAMA shells involved in the launch
-		// sequence, while no longer floating above other applications.
+		// Keep the overlay as an owned, undecorated child shell instead of a modal one so
+		// it still covers the workbench client area while leaving the native window frame
+		// available for move/resize interactions.
 		final Shell overlay = new Shell(parent, OVERLAY_SHELL_STYLE);
 		overlay.setBackground(bg);
 		overlay.setLayout(null);
@@ -426,7 +426,7 @@ public class LaunchingOverlay {
 				// Skip EXPERIMENT-state messages — they carry no useful text.
 				if (m == null || m.type() == IStatusMessage.StatusType.EXPERIMENT) return;
 				final String text = m.message();
-				if ((text != null) && !text.equals(previous)) {
+				if (text != null && !text.equals(previous)) {
 					appendToConsole(text);
 					previous = text;
 				}
@@ -547,8 +547,7 @@ public class LaunchingOverlay {
 	 *            the display to suppress
 	 */
 	private static void suppressNativeDisplay(final IGamaView.Display display) {
-		if (!launchOverlayVisible || !isNativeOpenGLDisplay(display)) return;
-		if (display.getDisplaySurface() == null || display.getDisplaySurface().isDisposed()) return;
+		if (!launchOverlayVisible || !isNativeOpenGLDisplay(display) || display.getDisplaySurface() == null || display.getDisplaySurface().isDisposed()) return;
 		if (SUPPRESSED_NATIVE_DISPLAYS.add(display)) { display.hideCanvas(); }
 	}
 
@@ -586,8 +585,7 @@ public class LaunchingOverlay {
 	 * @return {@code true} if the display is a native OpenGL display, {@code false} otherwise
 	 */
 	private static boolean isNativeOpenGLDisplay(final IGamaView.Display display) {
-		if (display == null || display.is2D()) return false;
-		if (!(display instanceof IWorkbenchPart part) || part.getSite() == null) return false;
+		if (display == null || display.is2D() || !(display instanceof IWorkbenchPart part) || part.getSite() == null) return false;
 		final String id = part.getSite().getId();
 		return IGui.GL_LAYER_VIEW_ID.equals(id) || IGui.GL_LAYER_VIEW_ID2.equals(id);
 	}
