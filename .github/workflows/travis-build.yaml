@@ -89,9 +89,11 @@ jobs:
       - name: Tag GAMA with new release
         if: "${{ inputs.get_all_archives_for_release }}"
         run: |
-          bash $GITHUB_WORKSPACE/travis/bumpGamaVersion.sh ${{ inputs.new_release_tag }} ${{ inputs.IS_STABLE_RELEASE }}
+          bash $GITHUB_WORKSPACE/travis/bumpGamaVersion.sh $NEW_RELEASE_TAG $IS_STABLE_RELEASE
         env:
           JDK_EMBEDDED_VERSION: ${{ inputs.jdk_embedded_version }}
+          NEW_RELEASE_TAG: ${{ inputs.new_release_tag }}
+          IS_STABLE_RELEASE: ${{ inputs.IS_STABLE_RELEASE }}
 
       - name: Import & Prepare JAR signing
         if: "${{ inputs.get_all_archives_for_release }}"
@@ -123,7 +125,9 @@ jobs:
           sed -i 's/-Denable_debug=true/-Denable_debug=false/g' ./gama.product/*product
 
       - name: Compiling gama
-        run: bash $GITHUB_WORKSPACE/travis/build.sh -e -B -T 4 ${{ inputs.mvn_extra_arguments }}
+        run: bash $GITHUB_WORKSPACE/travis/build.sh -e -B -T 4 $MVN_EXTRA_ARGUMENTS
+        env:
+          MVN_EXTRA_ARGUMENTS: ${{ inputs.mvn_extra_arguments }}
 
       # Spotbugs
       - name: Running SpotBugs
