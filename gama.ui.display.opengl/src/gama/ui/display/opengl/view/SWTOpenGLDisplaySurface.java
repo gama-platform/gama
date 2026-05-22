@@ -686,8 +686,11 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	public void dispose() {
 		if (disposed) return;
 		disposed = true;
+		final JOGLRenderer currentRenderer = renderer;
+		final GamaGLCanvas currentCanvas = currentRenderer == null ? null : currentRenderer.getCanvas();
 		if (layerManager != null) { layerManager.dispose(); }
 		if (animator != null && animator.isStarted()) { animator.stop(); }
+		if (currentCanvas != null) { currentCanvas.disposeNativePeer(); }
 		this.menuManager = null;
 		this.listeners.clear();
 		this.renderer = null;

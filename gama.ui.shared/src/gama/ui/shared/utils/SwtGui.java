@@ -243,7 +243,6 @@ public class SwtGui implements IGui {
 					final String second = secondaryId == null ? null
 							: secondaryId + "@@@" + String.valueOf(System.currentTimeMillis());
 					// The goal here is to address #2441 by randomizing the ids of views.
-					// DEBUG.LOG("Opening view " + viewId + " " + second);
 					result[0] = page.showView(viewId, second, code);
 				}
 			} catch (final Exception e) {
@@ -642,16 +641,17 @@ public class SwtGui implements IGui {
 					gv.close(scope);
 				}
 			}
-			// Most views close through GamaViewPart.close(), which posts an async hideView().
-			// When a new experiment is launched immediately afterwards, those pending hide
-			// operations can execute in the middle of the next perspective opening and leave
-			// the workbench in a mixed modeling/simulation state. Drain the current UI queue
-			// before continuing so all requested closures are applied first.
-			final Display display = WorkbenchHelper.getDisplay();
-			if (display != null && !display.isDisposed()) {
-				final boolean[] sentinel = { false };
-				display.asyncExec(() -> sentinel[0] = true);
-				while (!sentinel[0] && !display.isDisposed()) { display.readAndDispatch(); }
+			// Draining the whole UI queue is only needed when we are about to switch back to
+			// the modeling perspective; keeping it on simple in-place reloads leaves several
+			// OpenGL view disposals to serialize before the new displays can open, causing the
+			// visible blank delay during relaunch.
+			if (openModelingPerspective) {
+				final Display display = WorkbenchHelper.getDisplay();
+				if (display != null && !display.isDisposed()) {
+					final boolean[] sentinel = { false };
+					display.asyncExec(() -> sentinel[0] = true);
+					while (!sentinel[0] && !display.isDisposed()) { display.readAndDispatch(); }
+				}
 			}
 			if (openModelingPerspective) {
 				DEBUG.OUT("Deleting simulation perspective and opening immediately the modeling perspective = "

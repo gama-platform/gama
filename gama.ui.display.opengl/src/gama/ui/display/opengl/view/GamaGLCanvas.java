@@ -91,6 +91,9 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 	/** Indicates that the native peer has just been created and not yet shown once. */
 	private boolean nativePeerJustCreated;
 
+	/** Guards explicit native peer shutdown so dispose paths stay idempotent. */
+	private volatile boolean nativePeerDisposalRequested;
+
 	/**
 	 * Instantiates a new gama GL canvas.
 	 *
@@ -167,10 +170,36 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 				}
 			}
 		});
-		addDisposeListener(e -> new Thread(() -> {
-			if (animator != null) { animator.stop(); }
-			animator = null;
-		}).start());
+		addDisposeListener(e -> disposeNativePeer());
+	}
+
+	/**
+	 * Stops the animator and destroys the heavyweight NEWT window exactly once.
+	 *
+	 * <p>
+	 * Reload can recreate several OpenGL displays immediately after hiding the previous ones. Making the native peer
+	 * teardown explicit here avoids leaving JOGL/NEWT resource destruction to later implicit SWT cleanup, which can
+	 * serialize the creation of the next displays on some drivers/platforms.
+	 * </p>
+	 */
+	public void disposeNativePeer() {
+		if (nativePeerDisposalRequested) return;
+		nativePeerDisposalRequested = true;
+		final GamaGLAnimator currentAnimator = animator;
+		final GLWindow currentDrawable = drawable;
+		animator = null;
+		drawable = null;
+		canvas = null;
+		nativePeerJustCreated = false;
+		final Runnable shutdown = () -> {
+			if (currentAnimator != null) { currentAnimator.stop(); }
+			if (currentDrawable != null) { currentDrawable.destroy(); }
+		};
+		if (WorkbenchHelper.isDisplayThread()) {
+			Thread.ofPlatform().name("Dispose GL native peer").start(shutdown);
+		} else {
+			shutdown.run();
+		}
 	}
 
 	/**
