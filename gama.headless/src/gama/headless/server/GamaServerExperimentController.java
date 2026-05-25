@@ -254,7 +254,7 @@ public class GamaServerExperimentController extends AbstractExperimentController
 		}
 		try {
 			_job.doStep();
-		} catch (RuntimeException e) {
+		} catch (Throwable e) {
 			// e.printStackTrace();
 			serverConfiguration.socket()
 					.send(GAMA.getJsonEncoder().valueOf(new GamaServerMessage(MessageType.RuntimeError, e)).toString());
@@ -265,14 +265,14 @@ public class GamaServerExperimentController extends AbstractExperimentController
 
 	@Override
 	public boolean processStep(final int nbSteps, final boolean andWait) {
-		paused = true;
-		if (andWait) {
-			for(int i = 0 ; i < nbSteps; i++) {
-				_job.doStep();				
-			}
-			return true;
-		}
-		return super.processStep(nbSteps, andWait);
+//			paused = true;
+//			if (andWait) {
+//				for(int i = 0 ; i < nbSteps; i++) {
+//					_job.doStep();				
+//				}
+//				return true;
+//			}
+			return super.processStep(nbSteps, andWait);			
 	}
 
 	@Override

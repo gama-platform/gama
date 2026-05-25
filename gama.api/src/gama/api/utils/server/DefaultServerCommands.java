@@ -197,9 +197,12 @@ public class DefaultServerCommands {
 			if (!plan.getController().processStep(nb_step, sync)) {
 				return new CommandResponse(UnableToExecuteRequest, "Controller is full", map, false);
 			}
-		} catch (RuntimeException e) {
+		} catch (Throwable e) {
 			DEBUG.OUT(e.getStackTrace());
 			return new CommandResponse(MessageType.RuntimeError, e, map, false);
+		}
+		if (plan.getController().isDisposing()) {
+			return new CommandResponse(MessageType.RuntimeError, "", map, false);
 		}
 		return new CommandResponse(CommandExecutedSuccessfully, "", map, false);
 	}
