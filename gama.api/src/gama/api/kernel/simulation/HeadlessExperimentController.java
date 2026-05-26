@@ -13,6 +13,7 @@ package gama.api.kernel.simulation;
 import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.species.IExperimentSpecies;
+import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
 
 /**
@@ -233,17 +234,20 @@ public class HeadlessExperimentController implements IExperimentController {
 	}
 
 	@Override
-	public void schedule(final IExperimentAgent agent) {
+	public IExecutionResult schedule(final IExperimentAgent agent) {
 		this.agent = agent;
 		final IScope scope = agent.getScope();
-		if (scope == null) return;
+		if (scope == null) return IExecutionResult.PASSED;
+		IExecutionResult res = IExecutionResult.FAILED;
 		try {
-			if (!scope.init(agent).passed()) { scope.setDisposeStatus(); }
+			res = scope.init(agent);
+			if (!res.passed()) { scope.setDisposeStatus(); }
 		} catch (final Throwable e) {
 			if (!(e instanceof GamaRuntimeException)) {
 				GAMA.reportError(scope, GamaRuntimeException.create(e, scope), true);
 			}
 		}
+		return res;
 	}
 
 	@Override

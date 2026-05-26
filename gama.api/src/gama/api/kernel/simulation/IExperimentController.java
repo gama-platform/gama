@@ -13,6 +13,7 @@ package gama.api.kernel.simulation;
 import java.io.Closeable;
 
 import gama.api.kernel.species.IExperimentSpecies;
+import gama.api.runtime.scope.IExecutionResult;
 import gama.api.utils.interfaces.IDisposable;
 
 /**
@@ -91,7 +92,7 @@ public interface IExperimentController extends IDisposable, Closeable {
 	 * @param agent
 	 *            the agent
 	 */
-	default void schedule(final IExperimentAgent agent) {}
+	default IExecutionResult schedule(final IExperimentAgent agent) { return IExecutionResult.PASSED;}
 
 	/**
 	 * Process open.

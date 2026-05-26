@@ -50,6 +50,7 @@ import gama.api.runtime.GamaExecutorService;
 import gama.api.runtime.GamaExecutorService.Caller;
 import gama.api.runtime.IExecutable;
 import gama.api.runtime.scope.ExecutionScope;
+import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.color.IColor;
 import gama.api.types.date.IDate;
@@ -373,8 +374,8 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	public void setColor(final IColor color) { this.color = color; }
 
 	@Override
-	public void schedule(final IScope scope) {
-		super.schedule(this.getScope());
+	public IExecutionResult schedule(final IScope scope) {
+		return super.schedule(this.getScope());
 	}
 
 	@Override

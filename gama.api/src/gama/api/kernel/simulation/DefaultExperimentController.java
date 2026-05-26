@@ -14,6 +14,7 @@ import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.runtime.GamaExecutorService;
+import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
 import gama.api.ui.IStatusMessage;
 import gama.dev.DEBUG;
@@ -541,13 +542,15 @@ public class DefaultExperimentController extends AbstractExperimentController {
 	 *            the agent
 	 */
 	@Override
-	public void schedule(final IExperimentAgent agent) {
+	public IExecutionResult schedule(final IExperimentAgent agent) {
 		this.agent = agent;
 		scope = agent.getScope();
 		serverConfiguration = GAMA.getServer() != null ? GAMA.getServer().obtainGuiServerConfiguration() : null;
 		scope.setServerConfiguration(serverConfiguration);
+		IExecutionResult res = IExecutionResult.FAILED;
 		try {
-			if (!scope.init(agent).passed()) {
+			res = scope.init(agent);
+			if (!res.passed()) {
 				scope.setDisposeStatus();
 			} else if (agent instanceof IExperimentAgent.Test || agent.getSpecies().isAutorun()) {
 				asynchronousStart();
@@ -559,6 +562,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 			// the modelling perspective.
 			if (scope != null && !scope.interrupted()) { notifyExceptionAndReloadExperiment(e); }
 		}
+		return res;
 	}
 
 	/**

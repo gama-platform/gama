@@ -20,6 +20,7 @@ import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.IExperimentStateListener;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.runtime.GamaExecutorService;
+import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.IList;
 import gama.api.types.map.IMap;
@@ -127,13 +128,12 @@ public class GamaServerExperimentController extends AbstractExperimentController
 		switch (command.type()) {
 			case _OPEN:
 				try {
-					_job.loadAndBuildWithJson(parameters, stopCondition);
+					return _job.loadAndBuildWithJson(parameters, stopCondition).passed();	
 				} catch (Exception e) {
 					DEBUG.OUT(e);
 					GAMA.reportError(scope, GamaRuntimeException.create(e, scope), true);
 					return false;
 				}
-				return true;
 			case _START:
 				paused = false;
 				lock.release();
@@ -231,17 +231,21 @@ public class GamaServerExperimentController extends AbstractExperimentController
 	 *            the agent
 	 */
 	@Override
-	public void schedule(final IExperimentAgent agent) {
+	public IExecutionResult schedule(final IExperimentAgent agent) {
 		scope = agent.getScope();
 		serverConfiguration = serverConfiguration.withExpId(_job.getExperimentID());
 		scope.setServerConfiguration(serverConfiguration);
+		IExecutionResult res = IExecutionResult.FAILED;
 		try {
-			if (!scope.init(agent).passed()) { scope.setDisposeStatus(); }
+			res = scope.init(agent);
+			if (!res.passed()) { scope.setDisposeStatus(); }
+			
 		} catch (final Throwable e) {
 			if (scope != null && scope.interrupted()) {} else if (!(e instanceof GamaRuntimeException)) {
 				GAMA.reportError(scope, GamaRuntimeException.create(e, scope), true);
 			}
 		}
+		return res;
 	}
 
 	/**

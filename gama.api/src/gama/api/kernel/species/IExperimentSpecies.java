@@ -22,6 +22,7 @@ import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.IExperimentController;
 import gama.api.kernel.simulation.IExploration;
 import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.IList;
 import gama.api.ui.IExperimentDisplayable;
@@ -370,7 +371,7 @@ public interface IExperimentSpecies extends ISpecies {
 	/**
 	 * @param seed
 	 */
-	void open(Double seed);
+	IExecutionResult open(Double seed);
 
 	/**
 	 * @param scope
