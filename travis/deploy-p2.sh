@@ -1,6 +1,10 @@
 #!/bin/bash
 
+# exit on error
+set -e
+
 if [ $1 == "true" ]; then
+    shift # $1 <- $2 ... to prevent the additional mvn commands "$@" to contain the "true"
 
     echo "[I] Checking to add forgotten features to category =================="
 
