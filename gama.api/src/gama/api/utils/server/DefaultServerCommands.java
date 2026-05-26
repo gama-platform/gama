@@ -365,8 +365,7 @@ public class DefaultServerCommands {
 		List<GamlCompilationError> errors = GAML.validate(entered, syntaxOnly);
 		if (errors != null && !errors.isEmpty()) return new CommandResponse(UnableToExecuteRequest,
 				new GamaCompilationFailedException(errors).toJsonString(), map, true);
-		final boolean escaped = map.get(ESCAPED) == null ? false : Boolean.parseBoolean("" + map.get(ESCAPED));
-		return new CommandResponse(CommandExecutedSuccessfully, entered, map, escaped);
+		return new CommandResponse(CommandExecutedSuccessfully, "", map, false);
 	}
 
 	/**
