@@ -236,6 +236,13 @@ public class SceneHelper extends AbstractRendererHelper {
 	}
 
 	/**
+	 * Invalidates cached scenes after a size change so overlay and static layers are rebuilt with the new dimensions.
+	 */
+	public void reshape() {
+		layersChanged();
+	}
+
+	/**
 	 * Discard static scene.
 	 */
 	protected void discardStaticScene() {
