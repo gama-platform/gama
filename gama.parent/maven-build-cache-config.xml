@@ -1,0 +1,46 @@
+<cache xmlns="http://maven.apache.org/BUILD-CACHE-CONFIG/1.2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/BUILD-CACHE-CONFIG/1.2.0 https://maven.apache.org/xsd/build-cache-config-1.2.0.xsd">
+  <configuration>
+    <enabled/>
+    <attachedOutputs>
+      <dirNames>
+        <dirName>classes</dirName>
+      </dirNames>
+    </attachedOutputs>
+    <local>
+      <maxBuildsCached>1</maxBuildsCached>
+    </local>
+  </configuration>
+  <input>
+    <global>
+      <glob/>
+      <includes>
+        <include recursive="true" glob="*" />
+        <include>.classpath</include>
+        <include>.factorypath</include>
+        <include>.project</include>
+        <include recursive="true" glob="*">src</include>
+        <include recursive="true" glob="*">META-INF</include>
+        <include recursive="true" glob="*">.settings</include>
+        <include recursive="true" glob="*">models</include>
+        <include recursive="true" glob="*">libs</include>
+        <include recursive="true" glob="*">tests</include>
+        <include recursive="true" glob="*">icons</include>
+        <include recursive="true" glob="*">doc</include>
+        <include recursive="true" glob="*">schema</include>
+        <include recursive="true" glob="*">res</include>
+        <include recursive="true" glob="*">utils</include>
+        <include recursive="true" glob="*">model</include>
+        <include recursive="true" glob="*">src-gen</include>
+        <include recursive="true" glob="*">fonts</include>
+        <include recursive="true" glob="*">welcome</include>
+        <include recursive="true" glob="*">icons_svg</include>
+        <include recursive="true" glob="*">templates</include>
+        <include recursive="true" glob="*">extraresources</include>
+        <include recursive="true" glob="*">files</include>
+        <include recursive="true" glob="*">recipes</include>
+        <include recursive="true" glob="*">tutorials</include>
+      </includes>
+    </global>
+  </input>
+</cache>
