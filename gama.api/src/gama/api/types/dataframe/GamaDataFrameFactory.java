@@ -62,6 +62,15 @@ public class GamaDataFrameFactory {
 	public static IDataFrame create(final String... columns) {
 		return new GamaDataFrame(DataFrame.foldByRow(columns).of());
 	}
+	
+	/**
+	 * Creates an empty dataframe with the specified column names
+	 * @param columns
+	 * @return
+	 */
+	public static IDataFrame create(final List<String> columns) {
+		return create(columns.toArray(new String[0]));
+	}
 
 	/**
 	 * Creates a dataframe from column names and row data.
