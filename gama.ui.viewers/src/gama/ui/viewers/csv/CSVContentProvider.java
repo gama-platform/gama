@@ -10,14 +10,15 @@
  ********************************************************************************************************/
 package gama.ui.viewers.csv;
 
-import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.Viewer;
 
 import gama.ui.viewers.csv.model.CSVModel;
 
 /**
+ * Provides CSV rows to a regular table viewer by materializing the data rows to display.
  *
  * @author fhenri
- *
  */
 public class CSVContentProvider implements IStructuredContentProvider {
 
@@ -28,9 +29,8 @@ public class CSVContentProvider implements IStructuredContentProvider {
 	 */
 	@Override
 	public Object[] getElements(final Object element) {
-
-		if(element instanceof CSVModel) {
-			CSVModel model = (CSVModel) element;
+		if (element instanceof CSVModel) {
+			final CSVModel model = (CSVModel) element;
 			return model.getArrayRows(false);
 		}
 		return null;
@@ -40,8 +40,7 @@ public class CSVContentProvider implements IStructuredContentProvider {
 	 * @see org.eclipse.jface.viewers.IContentProvider#dispose()
 	 */
 	@Override
-	public void dispose() {
-	}
+	public void dispose() {}
 
 	/**
 	 * Notifies this content provider that the given viewer's input
@@ -50,6 +49,5 @@ public class CSVContentProvider implements IStructuredContentProvider {
 	 * @see org.eclipse.jface.viewers.IContentProvider#inputChanged(org.eclipse.jface.viewers.Viewer, java.lang.Object, java.lang.Object)
 	 */
 	@Override
-	public void inputChanged(final Viewer viewer, final Object oldInput, final Object newInput) {
-	}
+	public void inputChanged(final Viewer viewer, final Object oldInput, final Object newInput) {}
 }

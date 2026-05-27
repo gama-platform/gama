@@ -41,7 +41,7 @@ jobs:
       new_release_tag: ${{ inputs.tag }}
       jdk_embedded_version: ${{ inputs.jdk }}
       IS_STABLE_RELEASE: ${{ inputs.IS_STABLE_RELEASE }}
-      DONT_PUBLISH_P2: ${{ inputs.releaseGithubOnly }}
+      GITHUB_ONLY: ${{ inputs.releaseGithubOnly }}
     secrets:
       GAMA_KEYSTORE_BASE64: ${{ secrets.GAMA_KEYSTORE_BASE64 }}
       GAMA_KEYSTORE_STOREPASS: ${{ secrets.GAMA_KEYSTORE_STOREPASS }}

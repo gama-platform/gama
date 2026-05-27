@@ -49,7 +49,7 @@ public class DependenciesActivator extends GamaBundleActivator {
 
 		// Set some GeoTools default hints to speed up operations
 		runAsync(() -> {
-			DEBUG.TIMER(BANNER_CATEGORY.GAMA, "GeoTools hints setup", "completed in", () -> {
+			DEBUG.TIMER(BANNER_CATEGORY.GEOTLS, "GeoTools hints setup", "completed in", () -> {
 				Hints.putSystemDefault(Hints.FILTER_FACTORY, CommonFactoryFinder.getFilterFactory(null));
 				Hints.putSystemDefault(Hints.STYLE_FACTORY, CommonFactoryFinder.getStyleFactory(null));
 				Hints.putSystemDefault(Hints.FEATURE_FACTORY, CommonFactoryFinder.getFeatureFactory(null));

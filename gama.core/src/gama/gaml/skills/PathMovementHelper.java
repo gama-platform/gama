@@ -1,6 +1,7 @@
 /*******************************************************************************************************
  *
- * PathMovementHelper.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
+ * PathMovementHelper.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -21,8 +22,8 @@ import java.util.List;
 import org.locationtech.jts.algorithm.Distance;
 import org.locationtech.jts.geom.Coordinate;
 
-import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
+import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.GamaPointFactory;
@@ -36,20 +37,17 @@ import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
 import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
-import gama.api.types.topology.ITopology;
 import gama.api.utils.collections.Collector;
 import gama.api.utils.interfaces.IAgentFilter;
 import gama.core.topology.filter.In;
 import gama.core.topology.graph.GamaSpatialGraph;
-import gama.core.util.path.GamaPath;
 import gama.core.util.path.GamaSpatialPath;
 import gama.gaml.operators.spatial.SpatialPunctal;
 import gama.gaml.operators.spatial.SpatialRelations;
-import gama.api.gaml.types.Types;
 
 /**
- * PathMovementHelper - Utility class for handling agent movement along paths and graphs.
- * Extracted from MovingSkill to improve modularity and maintainability.
+ * PathMovementHelper - Utility class for handling agent movement along paths and graphs. Extracted from MovingSkill to
+ * improve modularity and maintainability.
  *
  * @author drogoul
  */
@@ -60,15 +58,41 @@ public class PathMovementHelper {
 	 * Result of path initialization containing current position and indices.
 	 */
 	public static class PathInitResult {
+
+		/** The index. */
 		public int index;
+
+		/** The index segment. */
 		public int indexSegment;
+
+		/** The end index segment. */
 		public int endIndexSegment;
+
+		/** The current location. */
 		public IPoint currentLocation;
+
+		/** The false target. */
 		public IPoint falseTarget;
+
+		/** The reverse. */
 		public int reverse; // Used for graph movement
 
-		public PathInitResult(int index, int indexSegment, int endIndexSegment, 
-				IPoint currentLocation, IPoint falseTarget) {
+		/**
+		 * Instantiates a new path init result.
+		 *
+		 * @param index
+		 *            the index
+		 * @param indexSegment
+		 *            the index segment
+		 * @param endIndexSegment
+		 *            the end index segment
+		 * @param currentLocation
+		 *            the current location
+		 * @param falseTarget
+		 *            the false target
+		 */
+		public PathInitResult(final int index, final int indexSegment, final int endIndexSegment, final IPoint currentLocation,
+				final IPoint falseTarget) {
 			this.index = index;
 			this.indexSegment = indexSegment;
 			this.endIndexSegment = endIndexSegment;
@@ -76,7 +100,17 @@ public class PathMovementHelper {
 			this.falseTarget = falseTarget;
 		}
 
-		public PathInitResult(int index, int indexSegment, int reverse) {
+		/**
+		 * Instantiates a new path init result.
+		 *
+		 * @param index
+		 *            the index
+		 * @param indexSegment
+		 *            the index segment
+		 * @param reverse
+		 *            the reverse
+		 */
+		public PathInitResult(final int index, final int indexSegment, final int reverse) {
 			this.index = index;
 			this.indexSegment = indexSegment;
 			this.reverse = reverse;
@@ -87,16 +121,44 @@ public class PathMovementHelper {
 	 * Result of movement along a path.
 	 */
 	public static class MovementResult {
+
+		/** The final location. */
 		public IPoint finalLocation;
+
+		/** The final index. */
 		public int finalIndex;
+
+		/** The final index segment. */
 		public int finalIndexSegment;
+
+		/** The final reverse. */
 		public int finalReverse;
+
+		/** The travelled distance. */
 		public double travelledDistance;
+
+		/** The computed heading. */
 		public double computedHeading;
+
+		/** The path followed. */
 		public IPath pathFollowed; // Only set when return_path is true
 
-		public MovementResult(IPoint finalLocation, int finalIndex, int finalIndexSegment,
-				double travelledDistance, double computedHeading) {
+		/**
+		 * Instantiates a new movement result.
+		 *
+		 * @param finalLocation
+		 *            the final location
+		 * @param finalIndex
+		 *            the final index
+		 * @param finalIndexSegment
+		 *            the final index segment
+		 * @param travelledDistance
+		 *            the travelled distance
+		 * @param computedHeading
+		 *            the computed heading
+		 */
+		public MovementResult(final IPoint finalLocation, final int finalIndex, final int finalIndexSegment, final double travelledDistance,
+				final double computedHeading) {
 			this.finalLocation = finalLocation;
 			this.finalIndex = finalIndex;
 			this.finalIndexSegment = finalIndexSegment;
@@ -107,10 +169,13 @@ public class PathMovementHelper {
 
 	/**
 	 * Initializes movement along a path (3D variant).
-	 * 
-	 * @param agent the agent moving
-	 * @param path the path to follow
-	 * @param cl the current location
+	 *
+	 * @param agent
+	 *            the agent moving
+	 * @param path
+	 *            the path to follow
+	 * @param cl
+	 *            the current location
 	 * @return initialization values (index, indexSegment, endIndexSegment, currentLocation, falseTarget)
 	 */
 	public static IList initMoveAlongPath3D(final IAgent agent, final IPath path, final IPoint cl) {
@@ -175,13 +240,15 @@ public class PathMovementHelper {
 	}
 
 	/**
-	 * Initializes movement along a path (standard variant).
-	 * Finds the closest point on the path to the agent's current location and determines
-	 * the segment indices for starting the movement.
-	 * 
-	 * @param agent the agent moving
-	 * @param path the path to follow
-	 * @param cl the current location
+	 * Initializes movement along a path (standard variant). Finds the closest point on the path to the agent's current
+	 * location and determines the segment indices for starting the movement.
+	 *
+	 * @param agent
+	 *            the agent moving
+	 * @param path
+	 *            the path to follow
+	 * @param cl
+	 *            the current location
 	 * @return initialization values (index, indexSegment, endIndexSegment, currentLocation, falseTarget)
 	 */
 	public static IList initMoveAlongPath(final IAgent agent, final IPath path, final IPoint cl) {
@@ -288,13 +355,17 @@ public class PathMovementHelper {
 	}
 
 	/**
-	 * Initializes movement along a graph.
-	 * Determines the starting edge and segment for an agent moving on a spatial graph.
-	 * 
-	 * @param scope the execution scope
-	 * @param agent the agent moving
-	 * @param graph the spatial graph
-	 * @param currentLoc the current location
+	 * Initializes movement along a graph. Determines the starting edge and segment for an agent moving on a spatial
+	 * graph.
+	 *
+	 * @param scope
+	 *            the execution scope
+	 * @param agent
+	 *            the agent moving
+	 * @param graph
+	 *            the spatial graph
+	 * @param currentLoc
+	 *            the current location
 	 * @return initialization values (index, indexSegment, reverse)
 	 */
 	@SuppressWarnings ("null")
@@ -324,8 +395,8 @@ public class PathMovementHelper {
 					if (graph.isAgentEdge()) {
 						final IAgentFilter filter = In.edgesOf(graph);
 						if (optimization) {
-							final java.util.Collection<IAgent> ags = scope.getSimulation().getTopology().getNeighborsOf(scope,
-									currentLocation, dist, filter);
+							final java.util.Collection<IAgent> ags = scope.getSimulation().getTopology()
+									.getNeighborsOf(scope, currentLocation, dist, filter);
 							if (!ags.isEmpty()) {
 								double distMin = Double.MAX_VALUE;
 								for (final IAgent e : ags) {
@@ -390,12 +461,14 @@ public class PathMovementHelper {
 	}
 
 	/**
-	 * Computes the weight for movement along an edge.
-	 * Weight is calculated as edge weight divided by edge perimeter.
-	 * 
-	 * @param graph the graph containing the edge
-	 * @param path the path being followed
-	 * @param line the edge shape
+	 * Computes the weight for movement along an edge. Weight is calculated as edge weight divided by edge perimeter.
+	 *
+	 * @param graph
+	 *            the graph containing the edge
+	 * @param path
+	 *            the path being followed
+	 * @param line
+	 *            the edge shape
 	 * @return the weight value for movement calculation
 	 */
 	public static double computeWeight(final IGraph graph, final IPath path, final IShape line) {
@@ -405,14 +478,19 @@ public class PathMovementHelper {
 	}
 
 	/**
-	 * Moves an agent to the next location along a graph, handling random edge selection.
-	 * This method handles movement on graphs where the agent can wander randomly.
-	 * 
-	 * @param scope the execution scope
-	 * @param agent the agent to move
-	 * @param graph the spatial graph to move on
-	 * @param distance the maximum distance to travel
-	 * @param probaEdge optional probability map for edge selection
+	 * Moves an agent to the next location along a graph, handling random edge selection. This method handles movement
+	 * on graphs where the agent can wander randomly.
+	 *
+	 * @param scope
+	 *            the execution scope
+	 * @param agent
+	 *            the agent to move
+	 * @param graph
+	 *            the spatial graph to move on
+	 * @param distance
+	 *            the maximum distance to travel
+	 * @param probaEdge
+	 *            optional probability map for edge selection
 	 * @return movement result with final position and statistics
 	 */
 	public static MovementResult moveAlongGraph(final IScope scope, final IAgent agent, final GamaSpatialGraph graph,
@@ -420,7 +498,7 @@ public class PathMovementHelper {
 		IPoint currentLocation = agent.getLocation().copy(scope);
 		final IList indexVals = initMoveAlongPath(scope, agent, graph, currentLocation);
 		if (indexVals == null) return null;
-		
+
 		int index = (Integer) indexVals.get(0);
 		int indexSegment = (Integer) indexVals.get(1);
 		int inverse = (Integer) indexVals.get(2);
@@ -428,7 +506,7 @@ public class PathMovementHelper {
 		double remainingDistance = distance;
 		double travelledDist = 0.0;
 		double computedHeading = 0.0;
-		
+
 		while (true) {
 			Coordinate coords[] = edge.getInnerGeometry().getCoordinates();
 			if (!graph.isDirected() && inverse == 1) {
@@ -479,19 +557,17 @@ public class PathMovementHelper {
 						remainingDistance = 0;
 						break;
 					}
-					if (nextRoads.size() == 1) { 
-						edge = nextRoads.get(0); 
+					if (nextRoads.size() == 1) {
+						edge = nextRoads.get(0);
+					} else if (probaEdge == null || probaEdge.isEmpty()) {
+						edge = nextRoads.get(scope.getRandom().between(0, nextRoads.size() - 1));
 					} else {
-						if (probaEdge == null || probaEdge.isEmpty()) {
-							edge = nextRoads.get(scope.getRandom().between(0, nextRoads.size() - 1));
-						} else {
-							final IList<Double> distribution = GamaListFactory.create(Types.FLOAT);
-							for (final IShape r : nextRoads) {
-								final Double val = (Double) probaEdge.get(r);
-								distribution.add(val == null ? 0.0 : val);
-							}
-							edge = nextRoads.get(scope.getRandom().choiceIn(distribution));
+						final IList<Double> distribution = GamaListFactory.create(Types.FLOAT);
+						for (final IShape r : nextRoads) {
+							final Double val = (Double) probaEdge.get(r);
+							distribution.add(val == null ? 0.0 : val);
 						}
+						edge = nextRoads.get(scope.getRandom().choiceIn(distribution));
 					}
 					index = graph.getEdges().indexOf(edge);
 					if (!graph.isDirected()) {
@@ -508,33 +584,39 @@ public class PathMovementHelper {
 			indexSegment = 1;
 		}
 
-		MovementResult result = new MovementResult(currentLocation, index, indexSegment, travelledDist, computedHeading);
+		MovementResult result =
+				new MovementResult(currentLocation, index, indexSegment, travelledDist, computedHeading);
 		result.finalReverse = inverse;
 		return result;
 	}
 
 	/**
-	 * Moves an agent along a path, optionally returning the path followed.
-	 * This unified method handles both simple movement and path tracking.
-	 * 
-	 * @param scope the execution scope
-	 * @param agent the agent to move
-	 * @param path the path to follow
-	 * @param distance the maximum distance to travel
-	 * @param weights optional weights for edges
-	 * @param returnPath whether to build and return the followed path
+	 * Moves an agent along a path, optionally returning the path followed. This unified method handles both simple
+	 * movement and path tracking.
+	 *
+	 * @param scope
+	 *            the execution scope
+	 * @param agent
+	 *            the agent to move
+	 * @param path
+	 *            the path to follow
+	 * @param distance
+	 *            the maximum distance to travel
+	 * @param weights
+	 *            optional weights for edges
+	 * @param returnPath
+	 *            whether to build and return the followed path
 	 * @return movement result with optional path followed
 	 */
 	public static MovementResult moveAlongPath(final IScope scope, final IAgent agent, final IPath path,
 			final double distance, final IMap weights, final boolean returnPath) {
 		final IPoint startLocation = returnPath ? agent.getLocation().copy(scope) : null;
 		IPoint currentLocation = agent.getLocation().copy(scope);
-		
-		final IList indexVals = ((GamaSpatialPath) path).isThreeD() 
-				? initMoveAlongPath3D(agent, path, currentLocation)
+
+		final IList indexVals = ((GamaSpatialPath) path).isThreeD() ? initMoveAlongPath3D(agent, path, currentLocation)
 				: initMoveAlongPath(agent, path, currentLocation);
 		if (indexVals == null) return null;
-		
+
 		// Pre-size collections for performance
 		final IList<IShape> segments = returnPath ? GamaListFactory.create(Types.GEOMETRY) : null;
 		final IMap agents = returnPath ? GamaMapFactory.createUnordered() : null;
@@ -550,11 +632,11 @@ public class PathMovementHelper {
 		double travelledDist = 0.0;
 		double computedHeading = 0.0;
 		final GamaSpatialGraph graph = (GamaSpatialGraph) path.getGraph();
-		
+
 		for (int i = index; i < nb; i++) {
 			final IShape line = edges.get(i);
 			final Coordinate coords[] = line.getInnerGeometry().getCoordinates();
-			
+
 			double weight;
 			if (weights == null) {
 				weight = computeWeight(graph, path, line);
@@ -583,7 +665,7 @@ public class PathMovementHelper {
 						travelledDist += dis * ratio;
 						currentLocation = currentLocation.plus(pt.minus(currentLocation).times(ratio));
 						remainingDistance = 0;
-						
+
 						final IShape gl = GamaShapeFactory.buildLine(pto, currentLocation);
 						final IShape sh = path.getRealObject(line);
 						if (sh != null) {
@@ -638,21 +720,22 @@ public class PathMovementHelper {
 			indexSegment = 1;
 			if (index < nb - 1) { index++; }
 		}
-		
+
 		if (currentLocation.equals(falseTarget)) {
 			currentLocation = GamaPointFactory.castToPoint(scope, path.getEndVertex(), returnPath);
 			index++;
 		}
-		
-		MovementResult result = new MovementResult(currentLocation, index, indexSegment, travelledDist, computedHeading);
-		
+
+		MovementResult result =
+				new MovementResult(currentLocation, index, indexSegment, travelledDist, computedHeading);
+
 		if (returnPath && segments != null && !segments.isEmpty()) {
-			final IPath followedPath = GamaPathFactory.createFrom(scope, agent.getTopology(), 
-					startLocation, currentLocation, segments, false);
+			final IPath followedPath = GamaPathFactory.createFrom(scope, path.getTopology(scope), startLocation,
+					currentLocation, segments, false);
 			followedPath.setRealObjects(agents);
 			result.pathFollowed = followedPath;
 		}
-		
+
 		return result;
 	}
 }

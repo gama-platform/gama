@@ -10,6 +10,11 @@
  ********************************************************************************************************/
 package gama.ui.viewers.csv;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -17,6 +22,10 @@ import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IStorage;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -38,12 +47,14 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IStorageEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.dialogs.SaveAsDialog;
+import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.FileEditorInput;
-import org.eclipse.ui.part.MultiPageEditorPart;
 
 import gama.api.GAMA;
 import gama.api.utils.StringUtils;
@@ -59,26 +70,40 @@ import gama.ui.viewers.csv.model.CSVModel;
 import gama.ui.viewers.csv.model.CSVRow;
 import gama.ui.viewers.csv.model.ICsvFileModelListener;
 import gama.ui.viewers.csv.text.CSVTableFilter;
-import gama.ui.viewers.csv.text.CSVTextEditor;
 
 /**
  *
  * @author fhenri
  *
  */
-public class MultiPageCSVEditor extends MultiPageEditorPart
-		implements IResourceChangeListener, IToolbarDecoratedView.Sizable {
+public class MultiPageCSVEditor extends EditorPart implements IResourceChangeListener, IToolbarDecoratedView.Sizable {
+
+	/** Row-count threshold above which the table switches to fast virtual browsing. */
+	private static final int LARGE_FILE_ROW_THRESHOLD = 10_000;
+
+	/** File-size threshold above which the table switches to fast virtual browsing without querying metadata. */
+	private static final long LARGE_FILE_SIZE_THRESHOLD = 2_000_000L;
+
+	/** Maximum number of columns displayed at once in fast browsing mode. */
+	private static final int FAST_VISIBLE_COLUMN_COUNT = 50;
 
 	/** The is page modified. */
 	private boolean isPageModified;
 
-	/** index of the source page */
-	public static final int indexSRC = 1;
-	/** index of the table page */
-	public static final int indexTBL = 0;
+	/** Whether the current table uses the virtual browsing mode. */
+	private boolean virtualTable;
 
-	/** The text editor used in page 0. */
-	protected CSVTextEditor editor;
+	/** Monotonic identifier used to ignore stale background table loads. */
+	private int tableLoadGeneration;
+
+	/** First model column currently displayed in fast browsing mode. */
+	private int visibleColumnStart;
+
+	/** Toolbar button moving to the previous column window. */
+	private ToolItem previousColumnsButton;
+
+	/** Toolbar button moving to the next column window. */
+	private ToolItem nextColumnsButton;
 
 	/** The table viewer used in page 1. */
 	protected TableViewer tableViewer;
@@ -93,7 +118,7 @@ public class MultiPageCSVEditor extends MultiPageEditorPart
 	CSVModel model;
 
 	/** The csv file listener. */
-	private final ICsvFileModelListener csvFileListener = (row, rowIndex) -> tableModified();
+	private final ICsvFileModelListener csvFileListener = (row, rowIndex) -> updateEditedRow(row);
 
 	/**
 	 * Creates a multi-page editor example.
@@ -111,20 +136,20 @@ public class MultiPageCSVEditor extends MultiPageEditorPart
 		return tableViewer.getTable();
 	}
 
-	/**
-	 * Creates the pages of the multi-page editor.
-	 *
-	 * @see org.eclipse.ui.part.MultiPageEditorPart#createPages()
-	 */
 	@Override
-	protected void createPages() {
+	public void init(final IEditorSite site, final IEditorInput input) throws PartInitException {
+		setSite(site);
+		setInput(input);
+		updateTitle();
+	}
+
+	@Override
+	public void createPartControl(final Composite parent) {
 		try {
 			model = new CSVModel(getFileFor(getEditorInput()));
-			createTablePage();
-			createSourcePage();
-			updateTitle();
+			virtualTable = useVirtualTable();
+			createTablePage(parent);
 			populateTablePage();
-			setActivePage(0);
 		} catch (final Exception e) {
 			System.err.println(e);
 			e.printStackTrace();
@@ -152,40 +177,25 @@ public class MultiPageCSVEditor extends MultiPageEditorPart
 	}
 
 	/**
-	 * Creates page 0 of the multi-page editor, which contains a text editor.
-	 */
-	private void createSourcePage() {
-		try {
-			editor = new CSVTextEditor(model.getCustomDelimiter());
-			addPage(editor, getEditorInput());
-			setPageText(indexSRC, "Text");
-		} catch (final PartInitException e) {
-			// ErrorDialog.openError(getSite().getShell(), "Error creating
-			// nested text editor", null, e.getStatus());
-		}
-	}
-
-	/**
 	 *
 	 */
-	private void createTablePage() {
-		final Composite parent = getContainer();
+	private void createTablePage(final Composite parent) {
 		final Composite intermediate = new Composite(parent, SWT.NONE);
 		final Composite composite = GamaToolbarFactory.createToolbars(this, intermediate);
-		tableViewer =
-				new TableViewer(composite, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
+		final int tableStyle = SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER
+				| (virtualTable ? SWT.VIRTUAL : SWT.NONE);
+		tableViewer = new TableViewer(composite, tableStyle);
 		tableViewer.setUseHashlookup(true);
 		final Table table = tableViewer.getTable();
 		table.setHeaderVisible(true);
 		table.setLinesVisible(true);
 		// set the sorter for the table
 
-		tableViewer.setComparator(tableSorter);
-		// set a table filter
-		tableViewer.addFilter(tableFilter);
-
-		addPage(intermediate);
-		setPageText(indexTBL, "Table");
+		if (!virtualTable) {
+			tableViewer.setComparator(tableSorter);
+			// set a table filter
+			tableViewer.addFilter(tableFilter);
+		}
 	}
 
 	/**
@@ -201,55 +211,219 @@ public class MultiPageCSVEditor extends MultiPageEditorPart
 	 * @throws Exception
 	 */
 	private void populateTablePage() {
-		tableViewer.setContentProvider(new CSVContentProvider());
+		tableViewer.setContentProvider(virtualTable ? new CSVLazyContentProvider() : new CSVContentProvider());
 		// make the selection available
 		getSite().setSelectionProvider(tableViewer);
-		tableViewer.getTable().getDisplay().asyncExec(this::updateTableFromTextEditor);
+		tableViewer.getTable().getDisplay().asyncExec(this::scheduleTableLoadFromFile);
+	}
+
+	/**
+	 * Loads the current CSV file in a background job and applies the resulting model on the UI thread.
+	 */
+	private void scheduleTableLoadFromFile() {
+		final IFile file = getFileFor(getEditorInput());
+		if (file == null) return;
+		if (model != null) { model.removeModelListener(csvFileListener); }
+		final int generation = ++tableLoadGeneration;
+		tableViewer.getTable().removeAll();
+		tableViewer.setInput(null);
+		tableViewer.setItemCount(0);
+		final Job job = new Job("Load CSV table") {
+
+			@Override
+			protected IStatus run(final IProgressMonitor monitor) {
+				final CSVModel loadedModel = new CSVModel(file);
+				loadedModel.reloadFromFile();
+				WorkbenchHelper.asyncRun(() -> {
+					if (tableViewer == null || tableViewer.getTable().isDisposed()) return;
+					if (generation != tableLoadGeneration) return;
+					model = loadedModel;
+					applyModelToTable();
+				});
+				return Status.OK_STATUS;
+			}
+		};
+		job.setSystem(true);
+		job.schedule();
 	}
 
 	/**
 	 *
 	 */
 	public void tableModified() {
+		tableViewer.setItemCount(model.getDataRowCount());
 		tableViewer.refresh();
+		markDirty();
+	}
+
+	/**
+	 * Updates the edited row without reloading the whole table whenever possible.
+	 *
+	 * @param row
+	 *            the row that has just been modified
+	 */
+	private void updateEditedRow(final CSVRow row) {
+		markDirty();
+		final int rowIndex = model.findDataRow(row);
+		if (rowIndex >= 0) {
+			tableViewer.update(row, null);
+			if (virtualTable) { tableViewer.replace(row, rowIndex); }
+			return;
+		}
+		tableModified();
+	}
+
+	/**
+	 * Marks the editor dirty and validates the underlying file state.
+	 */
+	private void markDirty() {
 		final boolean wasPageModified = isPageModified;
 		isPageModified = true;
-		if (!wasPageModified) {
-			firePropertyChange(IEditorPart.PROP_DIRTY);
-			editor.validateEditorInputState(); // will invoke:
-			// FileModificationValidator.validateEdit()
-			// (expected by some repository
-			// providers)
-		}
+		if (!wasPageModified) { firePropertyChange(IEditorPart.PROP_DIRTY); }
 	}
 
 	/**
 	 *
 	 */
-	void updateTableFromTextEditor() {
+	void updateTableFromModel() {
+		tableLoadGeneration++;
 		model.removeModelListener(csvFileListener);
-		model.setInput(editor.getDocumentProvider().getDocument(editor.getEditorInput()).get());
+		applyModelToTable();
+	}
+
+	/**
+	 * Applies the currently loaded model to the table viewer.
+	 */
+	private void applyModelToTable() {
+		rebuildVisibleColumns();
+		tableViewer.setInput(model);
+		if (virtualTable) { tableViewer.setItemCount(model.getDataRowCount()); }
+		tableViewer.refresh();
+		model.addModelListener(csvFileListener);
+		defineCellEditing();
+	}
+
+	/**
+	 * Rebuilds the visible SWT columns according to the current windowed column range.
+	 */
+	private void rebuildVisibleColumns() {
+		clampVisibleColumnStart();
 		final TableColumn[] columns = tableViewer.getTable().getColumns();
 		for (final TableColumn c : columns) { c.dispose(); }
-		for (int i = 0; i < model.getHeader().size(); i++) {
+		for (int i = getFirstVisibleColumn(); i < getLastVisibleColumn(); i++) {
 			final TableViewerColumn column = new TableViewerColumn(tableViewer, SWT.LEFT);
-			final int index = i;
 			column.getColumn().setText(model.getHeader().get(i));
 			column.getColumn().setWidth(100);
 			column.getColumn().setResizable(true);
 			column.getColumn().setMoveable(true);
-			column.setLabelProvider(new CSVLabelProvider());
-			addMenuItemToColumn(column.getColumn(), index);
+			column.setLabelProvider(new CSVLabelProvider(i));
+			addMenuItemToColumn(column.getColumn(), i);
 		}
-		tableViewer.setInput(model);
-		model.addModelListener(csvFileListener);
-		defineCellEditing();
+		updateColumnWindowButtons();
+	}
+
+	/**
+	 * Returns whether fast mode currently displays only a subset of columns.
+	 *
+	 * @return {@code true} if the editor uses a windowed column range in fast mode
+	 */
+	private boolean usesColumnWindow() {
+		return virtualTable && model != null && model.getColumnCount() > FAST_VISIBLE_COLUMN_COUNT;
+	}
+
+	/**
+	 * Gets the first visible model column.
+	 *
+	 * @return the inclusive start index of the displayed column window
+	 */
+	private int getFirstVisibleColumn() {
+		return usesColumnWindow() ? visibleColumnStart : 0;
+	}
+
+	/**
+	 * Gets the exclusive end index of the displayed column window.
+	 *
+	 * @return the exclusive end index of the displayed column window
+	 */
+	private int getLastVisibleColumn() {
+		if (model == null) return 0;
+		return usesColumnWindow() ? Math.min(model.getColumnCount(), visibleColumnStart + FAST_VISIBLE_COLUMN_COUNT)
+				: model.getColumnCount();
+	}
+
+	/**
+	 * Ensures that the first visible column stays within the valid range.
+	 */
+	private void clampVisibleColumnStart() {
+		if (!usesColumnWindow()) {
+			visibleColumnStart = 0;
+			return;
+		}
+		final int maxStart = Math.max(0, model.getColumnCount() - FAST_VISIBLE_COLUMN_COUNT);
+		if (visibleColumnStart < 0) {
+			visibleColumnStart = 0;
+		} else if (visibleColumnStart > maxStart) {
+			visibleColumnStart = maxStart;
+		}
+	}
+
+	/**
+	 * Moves the visible column window by the given delta.
+	 *
+	 * @param delta
+	 *            the number of model columns to shift by
+	 */
+	private void shiftVisibleColumns(final int delta) {
+		if (!usesColumnWindow()) return;
+		visibleColumnStart += delta;
+		clampVisibleColumnStart();
+		rebuildVisibleColumns();
+		tableViewer.refresh();
+	}
+
+	/**
+	 * Updates the enabled state and tooltip of the column window navigation buttons.
+	 */
+	private void updateColumnWindowButtons() {
+		if (previousColumnsButton == null || previousColumnsButton.isDisposed() || nextColumnsButton == null
+				|| nextColumnsButton.isDisposed())
+			return;
+		final boolean enabled = usesColumnWindow();
+		previousColumnsButton.setEnabled(enabled && getFirstVisibleColumn() > 0);
+		nextColumnsButton.setEnabled(enabled && getLastVisibleColumn() < model.getColumnCount());
+		if (!enabled) {
+			previousColumnsButton.setToolTipText("All columns are currently visible");
+			nextColumnsButton.setToolTipText("All columns are currently visible");
+			return;
+		}
+		final String range = (getFirstVisibleColumn() + 1) + "-" + getLastVisibleColumn() + " / "
+				+ model.getColumnCount();
+			previousColumnsButton.setToolTipText("Show previous columns (currently " + range + ")");
+			nextColumnsButton.setToolTipText("Show next columns (currently " + range + ")");
+	}
+
+	/**
+	 * Determines whether the current CSV file should use the virtual browsing mode.
+	 *
+	 * @return {@code true} for large CSV files, {@code false} otherwise
+	 */
+	private boolean useVirtualTable() {
+		final IFile file = getFileFor(getEditorInput());
+		if (file != null && file.getLocation() != null && file.getLocation().toFile().length() >= LARGE_FILE_SIZE_THRESHOLD)
+			return true;
+		return model != null && model.getInfo().rows >= LARGE_FILE_ROW_THRESHOLD;
 	}
 
 	/**
 	 *
 	 */
 	void defineCellEditing() {
+		if (virtualTable) {
+			tableViewer.setColumnProperties(new String[0]);
+			tableViewer.setCellEditors(null);
+			tableViewer.setCellModifier(null);
+			return;
+		}
 		final String[] columnProperties = new String[model.getColumnCount()];
 		final CellEditor[] cellEditors = new CellEditor[model.getColumnCount()];
 
@@ -287,6 +461,7 @@ public class MultiPageCSVEditor extends MultiPageEditorPart
 	 * @param index
 	 */
 	void addMenuItemToColumn(final TableColumn column, final int index) {
+		if (virtualTable) return;
 		// Setting the right sorter
 		column.addSelectionListener(new SelectionAdapter() {
 
@@ -340,13 +515,9 @@ public class MultiPageCSVEditor extends MultiPageEditorPart
 	 */
 	@Override
 	public void doSave(final IProgressMonitor monitor) {
-		if (getActivePage() == indexTBL && isPageModified) {
-			updateTextEditorFromTable();
-		} else {
-			updateTableFromTextEditor();
-		}
+		saveModelToFile(getFileFor(getEditorInput()), monitor);
 		isPageModified = false;
-		editor.doSave(monitor);
+		firePropertyChange(IEditorPart.PROP_DIRTY);
 		model.saveMetaData();
 	}
 
@@ -366,58 +537,69 @@ public class MultiPageCSVEditor extends MultiPageEditorPart
 	 */
 	@Override
 	public void doSaveAs() {
-		if (getActivePage() == indexTBL && isPageModified) {
-			updateTextEditorFromTable();
-		} else {
-			updateTableFromTextEditor();
-		}
+		final SaveAsDialog dialog = new SaveAsDialog(getSite().getShell());
+		dialog.setOriginalFile(getFileFor(getEditorInput()));
+		if (dialog.open() != Window.OK || dialog.getResult() == null) return;
+		final IFile destination = ResourcesPlugin.getWorkspace().getRoot().getFile(dialog.getResult());
+		saveModelToFile(destination, new NullProgressMonitor());
+		final char delimiter = model.getCustomDelimiter();
+		final boolean firstLineHeader = model.isFirstLineHeader();
+		final String text = model.getTextRepresentation();
+		setInput(new FileEditorInput(destination));
+		model = new CSVModel(destination);
+		model.setCustomDelimiter(delimiter);
+		model.setFirstLineHeader(firstLineHeader);
+		model.setInput(text);
+		applyModelToTable();
 		isPageModified = false;
-		editor.doSaveAs();
-		setInput(editor.getEditorInput());
+		firePropertyChange(IEditorPart.PROP_DIRTY);
 		updateTitle();
 	}
 
 	/**
-	 * @see org.eclipse.ui.part.MultiPageEditorPart#handlePropertyChange(int)
-	 */
-	@Override
-	protected void handlePropertyChange(final int propertyId) {
-		if (propertyId == IEditorPart.PROP_DIRTY) { isPageModified = isDirty(); }
-		super.handlePropertyChange(propertyId);
-	}
-
-	/**
-	 * @see org.eclipse.ui.part.MultiPageEditorPart#isDirty()
-	 */
-	@Override
-	public boolean isDirty() { return isPageModified || super.isDirty(); }
-
-	/**
-	 * Calculates the contents of page 2 when the it is activated.
+	 * Saves the current table model into the given workspace file.
 	 *
-	 * @see org.eclipse.ui.part.MultiPageEditorPart#pageChange(int)
+	 * @param file
+	 *            the destination file
+	 * @param monitor
+	 *            the progress monitor to use
 	 */
-	@Override
-	protected void pageChange(final int newPageIndex) {
-		switch (newPageIndex) {
-			case indexSRC:
-				if (isDirty()) { updateTextEditorFromTable(); }
-				break;
-			case indexTBL:
-				if (isDirty()) { updateTableFromTextEditor(); }
-				break;
+	private void saveModelToFile(final IFile file, final IProgressMonitor monitor) {
+		if (file == null) return;
+		final IProgressMonitor progress = monitor == null ? new NullProgressMonitor() : monitor;
+		final Charset charset = getCharset(file);
+		final byte[] bytes = model.getTextRepresentation().getBytes(charset);
+		try (ByteArrayInputStream stream = new ByteArrayInputStream(bytes)) {
+			if (file.exists()) {
+				file.setContents(stream, true, true, progress);
+			} else {
+				file.create(stream, true, progress);
+			}
+		} catch (final Exception e) {
+			throw new RuntimeException(e);
 		}
-		isPageModified = false;
-		super.pageChange(newPageIndex);
 	}
 
 	/**
+	 * Resolves the charset used to persist the given file.
 	 *
+	 * @param file
+	 *            the target file
+	 * @return the charset to use for saving the CSV contents
 	 */
-	private void updateTextEditorFromTable() {
-		editor.getDocumentProvider().getDocument(editor.getEditorInput())
-				.set(((CSVModel) tableViewer.getInput()).getTextRepresentation());
+	private Charset getCharset(final IFile file) {
+		try {
+			return Charset.forName(file.getCharset());
+		} catch (final Exception e) {
+			return StandardCharsets.UTF_8;
+		}
 	}
+
+	/**
+	 * @see org.eclipse.ui.part.EditorPart#isDirty()
+	 */
+	@Override
+	public boolean isDirty() { return isPageModified; }
 
 	/**
 	 * When the focus shifts to the editor, this method is called; it must then redirect focus to the appropriate editor
@@ -427,14 +609,7 @@ public class MultiPageCSVEditor extends MultiPageEditorPart
 	 */
 	@Override
 	public void setFocus() {
-		switch (getActivePage()) {
-			case indexSRC:
-				editor.setFocus();
-				break;
-			case indexTBL:
-				tableViewer.getTable().setFocus();
-				break;
-		}
+		tableViewer.getTable().setFocus();
 	}
 
 	/**
@@ -446,11 +621,12 @@ public class MultiPageCSVEditor extends MultiPageEditorPart
 	public void resourceChanged(final IResourceChangeEvent event) {
 		if (event.getType() == IResourceChangeEvent.PRE_CLOSE || event.getType() == IResourceChangeEvent.PRE_DELETE) {
 			WorkbenchHelper.asyncRun(() -> {
+				final IEditorInput currentInput = getEditorInput();
 				final IWorkbenchPage[] pages = getSite().getWorkbenchWindow().getPages();
 				for (final IWorkbenchPage page : pages) {
-					if (((FileEditorInput) editor.getEditorInput()).getFile().getProject()
+					if (((FileEditorInput) currentInput).getFile().getProject()
 							.equals(event.getResource())) {
-						final IEditorPart editorPart = page.findEditor(editor.getEditorInput());
+						final IEditorPart editorPart = page.findEditor(currentInput);
 						page.closeEditor(editorPart, true);
 					}
 				}
@@ -468,7 +644,11 @@ public class MultiPageCSVEditor extends MultiPageEditorPart
 				else if (delta.getKind() == IResourceDelta.CHANGED) {
 					final int flags = delta.getFlags();
 					if ((flags & IResourceDelta.CONTENT) != 0 || (flags & IResourceDelta.LOCAL_CHANGED) != 0) {
-						WorkbenchHelper.asyncRun(MultiPageCSVEditor.this::updateTableFromTextEditor);
+						WorkbenchHelper.asyncRun(() -> {
+							if (!isDirty()) {
+								scheduleTableLoadFromFile();
+							}
+						});
 					}
 				}
 			}
@@ -483,12 +663,12 @@ public class MultiPageCSVEditor extends MultiPageEditorPart
 	 *            the c
 	 */
 	void refreshWithDelimiter(final Character c) {
+		final String text = model.getTextRepresentation();
 		if (c != null) {
 			model.setCustomDelimiter(c);
-			editor.setDelimiter(c);
 		}
-		updateTableFromTextEditor();
-		updateTextEditorFromTable();
+		model.setInput(text);
+		updateTableFromModel();
 	}
 
 	/**
@@ -499,15 +679,24 @@ public class MultiPageCSVEditor extends MultiPageEditorPart
 	 */
 	@Override
 	public void createToolItems(final GamaToolbar2 tb) {
+		previousColumnsButton = tb.button(IGamaIcons.BROWSER_BACK, "Prev columns",
+				"Show previous columns in fast browse mode", e -> shiftVisibleColumns(-FAST_VISIBLE_COLUMN_COUNT),
+				SWT.RIGHT);
+		nextColumnsButton = tb.button(IGamaIcons.BROWSER_FORWARD, "Next columns",
+				"Show next columns in fast browse mode", e -> shiftVisibleColumns(FAST_VISIBLE_COLUMN_COUNT), SWT.RIGHT);
+		updateColumnWindowButtons();
 
 		// add the filtering and coloring when searching specific elements.
 		final Text searchText =
 				new Text(tb.getToolbar(SWT.LEFT), SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
 		tb.control(searchText, 150, SWT.LEFT);
+		searchText.setEnabled(!virtualTable);
+		if (virtualTable) { searchText.setMessage("Search disabled in fast browse mode"); }
 		searchText.addKeyListener(new KeyAdapter() {
 
 			@Override
 			public void keyReleased(final KeyEvent ke) {
+				if (virtualTable) return;
 				tableFilter.setSearchText(searchText.getText());
 				final String filterText = searchText.getText();
 				for (int i = 0; i < tableViewer.getColumnProperties().length; i++) {
@@ -573,14 +762,7 @@ public class MultiPageCSVEditor extends MultiPageEditorPart
 							if (acPage.open() == Window.OK) {
 								final String colToInsert = acPage.getColumnNewName();
 								model.addColumn(colToInsert);
-								tableViewer.setInput(model);
-								final TableColumn column = new TableColumn(tableViewer.getTable(), SWT.LEFT);
-								column.setText(colToInsert);
-								column.setWidth(100);
-								column.setResizable(true);
-								column.setMoveable(true);
-								addMenuItemToColumn(column, model.getColumnCount() - 1);
-								defineCellEditing();
+								updateTableFromModel();
 								tableModified();
 
 							}
@@ -597,11 +779,9 @@ public class MultiPageCSVEditor extends MultiPageEditorPart
 									if (dcPage.open() == Window.OK) {
 										final String[] colToDelete = dcPage.getColumnSelected();
 										for (final String column : colToDelete) {
-											final int colIndex = findColumnForName(column);
-											tableViewer.getTable().getColumn(colIndex).dispose();
-											// tableHeaderMenu.getItem(colIndex).dispose();
 											model.removeColumn(column);
 										}
+																		updateTableFromModel();
 										tableModified();
 									}
 

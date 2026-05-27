@@ -316,7 +316,10 @@ public class DefaultExperimentController extends AbstractExperimentController {
 					final boolean wasRunning = !isPaused() && !experiment.isAutorun();
 					paused = true;
 					currentScope.getGui().getStatus().waitStatus("Reloading...", IStatusMessage.SIMULATION_ICON,
-							() -> experiment.reload());
+							() -> {
+								currentScope.getGui().showLaunchingOverlay(experiment.getName());
+								experiment.reload();
+							});
 					if (wasRunning) return processUserCommand(_START_CMD);
 					currentScope.getGui().getStatus().informStatus("Experiment reloaded",
 							IStatusMessage.SIMULATION_ICON);
@@ -552,8 +555,11 @@ public class DefaultExperimentController extends AbstractExperimentController {
 			res = scope.init(agent);
 			if (!res.passed()) {
 				scope.setDisposeStatus();
-			} else if (agent instanceof IExperimentAgent.Test || agent.getSpecies().isAutorun()) {
+			} else if (agent instanceof IExperimentAgent.Test) {
 				asynchronousStart();
+			} else if (agent.getSpecies().isAutorun()) {
+				final IScope currentScope = scope;
+				currentScope.getGui().run("Starting experiment", this::asynchronousStart, true);
 			}
 		} catch (final Throwable e) {
 			// Any throwable during initialization (GamaRuntimeException, Error, etc.) is

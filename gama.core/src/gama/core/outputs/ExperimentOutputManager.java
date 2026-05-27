@@ -16,6 +16,8 @@ import static gama.api.utils.prefs.GamaPreferences.Displays.LAYOUTS;
 
 import gama.annotations.doc;
 import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
 import gama.annotations.inside;
 import gama.annotations.symbol;
 import gama.annotations.usage;
@@ -26,6 +28,7 @@ import gama.api.GAMA;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.gaml.GAML;
 import gama.api.gaml.symbols.Symbol;
+import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
 import gama.api.ui.IOutput;
 import gama.api.utils.prefs.GamaPreferences;
@@ -45,6 +48,18 @@ import gama.dev.DEBUG;
 
 @inside (
 		kinds = { ISymbolKind.EXPERIMENT })
+@facets ({ @facet (
+		name = "synchronized",
+		type = IType.BOOL,
+		optional = true,
+		doc = @doc (
+				value = "Indicates whether the displays that compose this output should be synchronized with the simulation cycles")),
+		@facet (
+				name = IKeyword.AUTOSAVE,
+				type = { IType.BOOL, IType.STRING },
+				optional = true,
+				doc = @doc ("Allows to save the whole screen on disk. A value of true/false will save it with the resolution of the physical screen. Passing it a string allows to define the filename "
+						+ "Note that setting autosave to true (or to any other value than false) will synchronize all the displays defined in the experiment")) })
 @doc (
 		value = "Represents the outputs of the experiment itself. In a batch experiment, the permanent section allows to define an output block that will NOT be re-initialized at the beginning of each simulation but will be filled at the end of each simulation.",
 		usages = { @usage (
