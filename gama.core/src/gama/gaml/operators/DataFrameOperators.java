@@ -355,7 +355,7 @@ public class DataFrameOperators {
 	 * Saves multiple dataframes to a single Excel workbook, one per sheet. TODO WARNING: Should use the save statement
 	 */
 	@operator (
-			value = "df_save_excel_sheets",
+			value = "df_save_excel",
 			can_be_const = false,
 			category = { IOperatorCategory.DATAFRAME, IOperatorCategory.FILE },
 			concept = { IConcept.DATAFRAME, IConcept.FILE })
@@ -367,9 +367,9 @@ public class DataFrameOperators {
 			usages = { @usage (
 					value = "Save two dataframes as two sheets in one workbook",
 					examples = { @example (
-							value = "bool ok <- df_save_excel_sheets([\"Summary\"::df1, \"Details\"::df2], \"../results/report.xlsx\");",
+							value = "bool ok <- df_save_excel([\"Summary\"::df1, \"Details\"::df2], \"../results/report.xlsx\");",
 							isExecutable = false) }) },
-			see = { "df_save_excel", "df_load_excel" })
+			see = { "df_load_excel" })
 	@no_test
 	public static Boolean saveExcelSheets(final IScope scope, final IMap<String, IDataFrame> sheets,
 			final String path) {
@@ -503,7 +503,7 @@ public class DataFrameOperators {
 							isExecutable = false) }) },
 			see = { "df_add_column" })
 	@test ("df_column(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), \"name\") = [\"Alice\",\"Bob\"]")
-	public static IList<Object> dfColumn(final IScope scope, final IDataFrame df, final String columnName) {
+	public static IList dfColumn(final IScope scope, final IDataFrame df, final String columnName) {
 		return df.getColumnValues(columnName);
 	}
 
@@ -526,7 +526,7 @@ public class DataFrameOperators {
 							isExecutable = false) }) },
 			see = { "df_column", "df_cell" })
 	@test ("df_row(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 0) = [\"Alice\",30]")
-	public static IList<Object> dfRow(final IScope scope, final IDataFrame df, final Integer rowIndex) {
+	public static IList dfRow(final IScope scope, final IDataFrame df, final Integer rowIndex) {
 		if (rowIndex < 0 || rowIndex >= df.getRows())
 			throw GamaRuntimeException.error("Row index out of bounds: " + rowIndex, scope);
 		return df.getRowValues(rowIndex);

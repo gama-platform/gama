@@ -30,7 +30,7 @@ global {
 		// Inserting global averages at the end
 		stats <- df_add_row(stats, ['Global', mean(list<point>(df_column(stats, "average location"))), mean(df_column(stats, "average size"))]);
 		
-		ok <- df_save_excel_sheets(map("Bugs"::bugs, "Stats"::stats), stats_path);
+		ok <- df_save_excel(map("Bugs"::bugs, "Stats"::stats), stats_path);
 		write "Saving all bugs and their stats in one xlsx file (" + stats_path + "): " + ok;
 		do pause();
 	}

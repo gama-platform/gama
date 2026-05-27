@@ -127,15 +127,15 @@ public class GamaDataFrame implements IDataFrame, IContainer<String, IList<Objec
 	public int getCols() { return getInner().width(); }
 
 	@Override
-	public IList<Object> getColumnValues(final String columnName) {
-		final IList<Object> result = GamaListFactory.create(columnTypes.get(getInner().getColumnsIndex().position(columnName)), getInner().height());
+	public IList getColumnValues(final String columnName) {
+		final IList result = GamaListFactory.create(columnTypes.get(getInner().getColumnsIndex().position(columnName)), getInner().height());
 		for (int i = 0; i < getInner().height(); i++) { result.add(getInner().get(columnName, i)); }
 		return result;
 	}
 
 	@Override
-	public IList<Object> getRowValues(final int rowIndex) {
-		final IList<Object> result = GamaListFactory.create(contentType, getInner().width());
+	public IList getRowValues(final int rowIndex) {
+		final IList result = GamaListFactory.create(contentType, getInner().width());
 		final String[] cols = getInner().getColumnsIndex().toArray();
 		for (final String col : cols) { result.add(getInner().get(col, rowIndex)); }
 		return result;
