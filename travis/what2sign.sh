@@ -18,7 +18,7 @@ alreadySawJar=()
 # Add a jar to the list of jars to sign
 function addJarInFile(){
 	if [[ $(tail -n 1 $NEED_TO_SIGN_FILENAME) != "$1" ]]; then
-		echo $1 >> $NEED_TO_SIGN_FILENAME
+		echo "$1" >> $NEED_TO_SIGN_FILENAME
 	fi
 
 	if (( $# != 1 )); then
@@ -34,7 +34,7 @@ function getJarToCheck(){
 	currentAppJar=($(find "$target_directory" -name "*.jar"))
 
 	# Remove already checked lines
-	currentAppJar=($(grep -v -x -f <(printf "%s\n" "${alreadySawJar[@]}") <(printf "%s\n" "${currentAppJar[@]}")))
+	currentAppJar=($(grep -v -x -f <(printf "%s\n" "${alreadySawJar[@]}") <(printf "%s\n" "${currentAppJar[@]}") || true))
 	
 	alreadySawJar=("${alreadySawJar[@]}" "${currentAppJar[@]}")
 }
