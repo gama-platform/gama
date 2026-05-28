@@ -1,0 +1,57 @@
+name: Maven Cache
+description: Upload or retrieve maven cached data
+
+inputs:
+  action:
+    required: true
+    type: choice
+    description: save/restore cache
+    options:
+    - save
+    - restore
+  cachePath:
+    required: true
+    type: string
+    default: "~/.m2/build-cache"
+  cacheTag:
+    required: true
+    type: string
+    default: "default"
+  GH_TOKEN:
+    required: true
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+
+  - name: Remove old maven cache
+    if: "${{inputs.action == 'save'}}"
+    run: "gh cache delete maven-cache-$CACHE_TAG --ref ${{ github.ref }} --repo ${{ github.repository }}"
+    continue-on-error: true
+    shell: bash
+    env:
+      GH_TOKEN: ${{ inputs.GH_TOKEN }}
+      CACHE_TAG: ${{ inputs.cacheTag }}
+
+  - uses: actions/cache/save@v5
+    if: "${{inputs.action == 'save'}}"
+    name: Save Maven Cache
+    with:
+      path: ${{ inputs.cachePath }}
+      key: "maven-cache-${{ inputs.cacheTag }}"
+
+  - uses: actions/cache/restore@v5
+    if: "${{ inputs.action == 'restore' }}"
+    name: Restore Maven Cache
+    with:
+      path: ${{ inputs.cachePath }}
+      key: "maven-cache-${{ inputs.cacheTag }}"
+
+# debug cache hashes
+  # - name: Restore Maven Cache
+  #   if: "${{ inputs.action == 'restore' }}"
+  #   run: "ls ~/.m2/build-cache/v1.1/org.gama/*/"
+  #   shell: bash
+    
+  

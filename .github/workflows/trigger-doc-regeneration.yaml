@@ -15,6 +15,9 @@ jobs:
   generating-documentation:
     runs-on: ubuntu-latest
 
+    permissions:
+      artifact-metadata: write
+      
     steps:
       - uses: actions/checkout@v6
 
@@ -29,8 +32,19 @@ jobs:
         run: |
           echo "MAVEN_OPTS='-Xmx15g'" >> ~/.mavenrc
 
+      - uses: ./.github/actions/maven-build-cache
+        name: Restore maven cache
+        with:
+          action: restore
+
       - name: Compiling GAMA
         run: bash travis/build.sh -B -T 4
+
+      - uses: ./.github/actions/maven-build-cache
+        name: Save maven cache
+        with:
+          action: save
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
       - name: Generate documentation
         run: |

@@ -59,6 +59,9 @@ on:
 jobs:
   compilation:
     runs-on: ubuntu-latest
+    permissions:
+      artifact-metadata: write
+      
     steps:
       # Prep runner
       - uses: actions/checkout@v6
@@ -122,8 +125,19 @@ jobs:
           sed -i 's/-Denable_logging=true/-Denable_logging=false/g' ./gama.product/*product
           sed -i 's/-Denable_debug=true/-Denable_debug=false/g' ./gama.product/*product
 
+      - uses: ./.github/actions/maven-build-cache
+        name: Restore maven cache
+        with:
+          action: restore
+
       - name: Compiling gama
         run: bash $GITHUB_WORKSPACE/travis/build.sh -e -B -T 4 ${{ inputs.mvn_extra_arguments }}
+
+      - uses: ./.github/actions/maven-build-cache
+        name: Save maven cache
+        with:
+          action: save
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
       # Spotbugs
       - name: Running SpotBugs
