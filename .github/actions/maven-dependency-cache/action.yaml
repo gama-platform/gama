@@ -1,0 +1,60 @@
+name: Maven Dependency Cache
+description: Upload or retrieve maven cached dependencies data
+
+inputs:
+  action:
+    required: true
+    type: choice
+    description: save/restore cache
+    options:
+    - save
+    - restore
+  cachePath:
+    required: true
+    type: string
+    default: "~/.m2/repository"
+  cacheTag:
+    required: true
+    type: string
+    default: "default"
+  GH_TOKEN:
+    required: true
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+
+  - name: Remove Old Maven Dependency Cache
+    if: "${{inputs.action == 'save'}} || ( ${{ github.ref_name }} == 'main' )"
+    run: "gh cache delete maven-dependency-cache-${CACHE_TAG} --ref ${REF}  --repo ${REPO}"
+    continue-on-error: true
+    shell: bash
+    env:
+      GH_TOKEN: ${{ inputs.GH_TOKEN }}
+      CACHE_TAG: ${{ inputs.cacheTag }}
+      REF: ${{ github.ref }}
+      REPO: ${{ github.repository }}
+
+  - uses: actions/cache/save@v5
+    if: "${{inputs.action == 'save'}} || ( ${{ github.ref_name }} == 'main' )"
+    name: Save Maven Dependency Cache
+    with:
+      path: ${{ inputs.cachePath }}
+      key: "maven-dependency-cache-${{ inputs.cacheTag }}"
+
+  - uses: actions/cache/restore@v5
+    if: "${{ inputs.action == 'restore' }}"
+    name: Restore Maven Dependency Cache
+    with:
+      path: ${{ inputs.cachePath }}
+      key: "maven-dependency-cache-${{ inputs.cacheTag }}"
+
+  - name: Compute Maven Dependency Cache Hash
+    if: "${{ inputs.action == 'restore' }}"
+    shell: bash
+    run: ./travis/compute_hash.sh
+    env:
+      MAVEN_CACHE_PATH: ${{ inputs.cachePath }}
+    
+  
