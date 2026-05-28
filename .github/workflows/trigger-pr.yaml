@@ -7,6 +7,10 @@ on:
   # Triggers the workflow on pull request events
   pull_request:
   workflow_dispatch: # For manual trigger
+    USE_BUILD_CACHE:
+      type: boolean
+      default: false
+      required: true
 
 jobs:
   compiling-gama-base:
@@ -19,6 +23,7 @@ jobs:
       RUN_SPOTBUGS: true
       SPOTBUGS_OUTPUT_ARTIFACT_NAME: "result-spotbugs-base"
       CHECKOUT_BRANCH: "main"
+      USE_BUILD_CACHE: ${{ inputs.USE_BUILD_CACHE }}
 
   compiling-gama-pr:
     if: "! github.event.pull_request.draft || github.event_name == 'workflow_dispatch'"
@@ -29,6 +34,7 @@ jobs:
       get_all_archives_for_release: false
       RUN_SPOTBUGS: true
       SPOTBUGS_OUTPUT_ARTIFACT_NAME: "result-spotbugs-pr"
+      USE_BUILD_CACHE: ${{ inputs.USE_BUILD_CACHE }}
 
   testing-gama-pr:
     name: Testing built GAMA

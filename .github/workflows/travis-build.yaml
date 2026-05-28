@@ -42,6 +42,9 @@ on:
       GITHUB_ONLY:
         type: boolean
         default: false
+      USE_BUILD_CACHE:
+        type: boolean
+        default: true
     secrets:
       GAMA_KEYSTORE_BASE64:
         required: false
@@ -127,6 +130,7 @@ jobs:
 
       - uses: ./.github/actions/maven-build-cache
         name: Restore maven cache
+        if: "${{ inputs.USE_BUILD_CACHE }}"
         with:
           action: restore
 
@@ -135,6 +139,7 @@ jobs:
 
       - uses: ./.github/actions/maven-build-cache
         name: Save maven cache
+        if: "${{ inputs.USE_BUILD_CACHE }}"
         with:
           action: save
           GH_TOKEN: ${{secrets.GITHUB_TOKEN}}

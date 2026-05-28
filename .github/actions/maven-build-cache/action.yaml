@@ -1,5 +1,5 @@
-name: Maven Cache
-description: Upload or retrieve maven cached data
+name: Maven Build Cache
+description: Upload or retrieve maven cached build data
 
 inputs:
   action:
@@ -25,28 +25,30 @@ runs:
   using: "composite"
   steps:
 
-  - name: Remove old maven cache
+  - name: Remove Old Maven Build Cache
     if: "${{inputs.action == 'save'}}"
-    run: "gh cache delete maven-cache-$CACHE_TAG --ref ${{ github.ref }} --repo ${{ github.repository }}"
+    run: "gh cache delete maven-build-cache-$CACHE_TAG --ref ${REF} --repo ${REPO}"
     continue-on-error: true
     shell: bash
     env:
       GH_TOKEN: ${{ inputs.GH_TOKEN }}
       CACHE_TAG: ${{ inputs.cacheTag }}
+      REF: ${{ github.ref }}
+      REPO: ${{ github.repository }}
 
   - uses: actions/cache/save@v5
     if: "${{inputs.action == 'save'}}"
-    name: Save Maven Cache
+    name: Save Maven Build Cache
     with:
       path: ${{ inputs.cachePath }}
-      key: "maven-cache-${{ inputs.cacheTag }}"
+      key: "maven-build-cache-${{ inputs.cacheTag }}"
 
   - uses: actions/cache/restore@v5
     if: "${{ inputs.action == 'restore' }}"
-    name: Restore Maven Cache
+    name: Restore Maven Build Cache
     with:
       path: ${{ inputs.cachePath }}
-      key: "maven-cache-${{ inputs.cacheTag }}"
+      key: "maven-build-cache-${{ inputs.cacheTag }}"
 
 # debug cache hashes
   # - name: Restore Maven Cache
