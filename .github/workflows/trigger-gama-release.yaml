@@ -69,13 +69,16 @@ jobs:
         run: |
           chmod +x ${{ github.workspace }}/travis/*
           # Overkill, but will catch every extraresources files to bump version there too
-          bash ${{ github.workspace }}/travis/bumpGamaVersion.sh ${{ inputs.tag }} ${{ inputs.IS_STABLE_RELEASE }}
+          bash ${{ github.workspace }}/travis/bumpGamaVersion.sh "${TAG}" "${IS_STABLE_RELEASE}"
           #
           mv ${{ github.workspace }}/gama.product/extraresources ${{ github.workspace }}/travis
           mv ${{ github.workspace }}/LICENSE ${{ github.workspace }}/travis
 
           commit=$(git rev-parse --short=7 HEAD)
           echo "commit=$commit" >> "$GITHUB_OUTPUT"
+        env:
+          TAG: ${{ inputs.tag }}
+          IS_STABLE_RELEASE: ${{ inputs.IS_STABLE_RELEASE }}
 
       - uses: actions/upload-artifact@v6
         with:

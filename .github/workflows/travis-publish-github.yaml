@@ -66,57 +66,12 @@ jobs:
 
       - name: Setup new release data and rename files accordingly 
         id: setup_new_release_data
-        run: |
-          date=$(date +'%d/%m/%y %R')
-          echo "date=$date" >> "$GITHUB_OUTPUT"
-
-          # Add naming file depending on if current file is pre-release or not
-          fileNameExtension=""
-          if [[ "${{ inputs.IS_STABLE_RELEASE }}" == "false" ]]; then
-            timestamp="$(echo $date | cut -d' ' -f1 | sed 's|/|.|g')"
-
-            fileNameExtension=_${timestamp}_${{ inputs.COMMIT_SHA }}
-          fi
-            
-          mkdir ${{ runner.temp }}/files
-          mv *.zip *.deb *.dmg *.exe ${{ runner.temp }}/files
-          cd ${{ runner.temp }}/files
-
-          # Windows
-          for file in *.exe *win32*.zip; do
-            if [[ "$(echo $file | awk -F'_' '{print $NF}')" == *"withJDK"* ]]; then
-              mv -v "$file" "GAMA_${{ inputs.RELEASE_VERSION }}_Windows_with_JDK${fileNameExtension}.$(echo $file | awk -F'.' '{print $NF}')"
-            else
-              mv -v "$file" "GAMA_${{ inputs.RELEASE_VERSION }}_Windows${fileNameExtension}.$(echo $file | awk -F'.' '{print $NF}')"
-            fi
-          done
-
-          # Mac
-          for file in *.dmg; do
-            prefix="${fileNameExtension}.dmg"
-            if [[ "$(echo $file | awk -F'_' '{print $NF}')" == *"withJDK"* ]]; then
-              prefix="_with_JDK${prefix}"
-            fi
-
-            if [[ "$file" == *"aarch64"* ]]; then
-              prefix="_Silicon${prefix}"
-            else 
-              prefix="_Intel${prefix}"
-            fi
-            
-            prefix="GAMA_${{ inputs.RELEASE_VERSION }}_MacOS${prefix}"
-
-            mv -v $file $prefix
-          done
-
-          # Linux
-          for file in *.deb gama-platform*.zip; do
-            if [[ "$(echo $file | awk -F'_' '{print $1}')" == *"jdk"* ]]; then
-              mv -v "$file" "GAMA_${{ inputs.RELEASE_VERSION }}_Linux_with_JDK${fileNameExtension}.$(echo $file | awk -F'.' '{print $NF}')"
-            else
-              mv -v "$file" "GAMA_${{ inputs.RELEASE_VERSION }}_Linux${fileNameExtension}.$(echo $file | awk -F'.' '{print $NF}')"
-            fi
-          done
+        run: bash $GITHUB_WORKSPACE/travis/publish-github.sh
+        env:
+          TEMP: ${{ runner.temp }}
+          IS_STABLE_RELEASE: ${{ inputs.IS_STABLE_RELEASE }}
+          COMMIT_SHA: ${{ inputs.COMMIT_SHA }}
+          RELEASE_VERSION: ${{ inputs.RELEASE_VERSION }}
 
       - name: Create checksum file
         run: |

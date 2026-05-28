@@ -19,7 +19,9 @@ jobs:
       - name: Prepare vm
         run: |
           sudo apt-get install -y gcc dpkg-dev gpg
-          mkdir -p ${{ github.workspace }}/${{ matrix.zipName }}/DEBIAN ${{ github.workspace }}/${{ matrix.zipName }}/opt/gama-platform ${{ github.workspace }}/${{ matrix.zipName }}/usr/share/applications
+          mkdir -p ${{ github.workspace }}/${ZIPNAME}/DEBIAN ${{ github.workspace }}/${ZIPNAME}/opt/gama-platform ${{ github.workspace }}/${ZIPNAME}/usr/share/applications
+        env:
+          ZIPNAME: ${{ matrix.zipName }}
 
       - uses: actions/download-artifact@v4
         with:
@@ -28,25 +30,31 @@ jobs:
 
       - name: Get extra files
         run: |
-          unzip ${{ github.workspace }}/${{ matrix.zipName }}/opt/gama-platform/extraresources-unix.zip -d ${{ github.workspace }}/${{ matrix.zipName }} && rm ${{ github.workspace }}/${{ matrix.zipName }}/opt/gama-platform/extraresources-unix.zip
-          mv ${{ github.workspace }}/${{ matrix.zipName }}/gama-platform.desktop ${{ github.workspace }}/${{ matrix.zipName }}/usr/share/applications/gama-platform.desktop
-          cd ${{ github.workspace }}/${{ matrix.zipName }}/opt/gama-platform && unzip ${{ matrix.zipName }}.zip && cd -
-          rm ${{ github.workspace }}/${{ matrix.zipName }}/opt/gama-platform/*.zip
+          unzip ${{ github.workspace }}/${ZIPNAME}/opt/gama-platform/extraresources-unix.zip -d ${{ github.workspace }}/${ZIPNAME} && rm ${{ github.workspace }}/${ZIPNAME}/opt/gama-platform/extraresources-unix.zip
+          mv ${{ github.workspace }}/${ZIPNAME}/gama-platform.desktop ${{ github.workspace }}/${ZIPNAME}/usr/share/applications/gama-platform.desktop
+          cd ${{ github.workspace }}/${ZIPNAME}/opt/gama-platform && unzip ${ZIPNAME}.zip && cd -
+          rm ${{ github.workspace }}/${ZIPNAME}/opt/gama-platform/*.zip
+        env:
+          ZIPNAME: ${{ matrix.zipName }}   
 
       - name: Tweaks for package w/ JDK
         if: contains(matrix.zipName, 'jdk')
         run: |
-          sed -i "s/gama-platform-jdk$/gama-platform/g" ${{ github.workspace }}/${{ matrix.zipName }}/DEBIAN/control
-          sed -i "s/Package: gama-platform$/Package: gama-platform-jdk/g" ${{ github.workspace }}/${{ matrix.zipName }}/DEBIAN/control
-          sed -i "/^Depends:.*$/d" ${{ github.workspace }}/${{ matrix.zipName }}/DEBIAN/control
+          sed -i "s/gama-platform-jdk$/gama-platform/g" ${{ github.workspace }}/${ZIPNAME}/DEBIAN/control
+          sed -i "s/Package: gama-platform$/Package: gama-platform-jdk/g" ${{ github.workspace }}/${ZIPNAME}/DEBIAN/control
+          sed -i "/^Depends:.*$/d" ${{ github.workspace }}/${ZIPNAME}/DEBIAN/control
+        env:
+          ZIPNAME: ${{ matrix.zipName }}
 
       - name: Build DEB archive
         run: |
-          chmod 0755  ${{ github.workspace }}/${{ matrix.zipName }}/DEBIAN/postinst
-          chmod 0755  ${{ github.workspace }}/${{ matrix.zipName }}/DEBIAN/postrm
+          chmod 0755  ${{ github.workspace }}/${ZIPNAME}/DEBIAN/postinst
+          chmod 0755  ${{ github.workspace }}/${ZIPNAME}/DEBIAN/postrm
           # Build package
-          dpkg --build ${{ github.workspace }}/${{ matrix.zipName }}
-          dpkg --info ${{ github.workspace }}/${{ matrix.zipName }}.deb
+          dpkg --build ${{ github.workspace }}/${ZIPNAME}
+          dpkg --info ${{ github.workspace }}/${ZIPNAME}.deb
+        env:
+          ZIPNAME: ${{ matrix.zipName }}
 
       - uses: actions/upload-artifact@v6
         with:
