@@ -14,9 +14,6 @@ on:
 jobs:
   generating-documentation:
     runs-on: ubuntu-latest
-
-    permissions:
-      artifact-metadata: write
       
     steps:
       - uses: actions/checkout@v6

@@ -10,6 +10,7 @@
     <local>
       <maxBuildsCached>1</maxBuildsCached>
     </local>
+    <projectVersioning adjustMetaInf="true" calculateProjectVersionChecksum="true" />
   </configuration>
   <input>
     <global>

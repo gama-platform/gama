@@ -62,8 +62,6 @@ on:
 jobs:
   compilation:
     runs-on: ubuntu-latest
-    permissions:
-      artifact-metadata: write
       
     steps:
       # Prep runner
@@ -129,7 +127,7 @@ jobs:
           sed -i 's/-Denable_debug=true/-Denable_debug=false/g' ./gama.product/*product
 
       - uses: ./.github/actions/maven-build-cache
-        name: Restore maven cache
+        name: Restore Maven Build cache
         if: "${{ inputs.USE_BUILD_CACHE }}"
         with:
           action: restore
@@ -138,7 +136,7 @@ jobs:
         run: bash $GITHUB_WORKSPACE/travis/build.sh -e -B -T 4 ${{ inputs.mvn_extra_arguments }}
 
       - uses: ./.github/actions/maven-build-cache
-        name: Save maven cache
+        name: Save Maven Build Cache
         if: "${{ inputs.USE_BUILD_CACHE }}"
         with:
           action: save
