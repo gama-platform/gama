@@ -11,6 +11,10 @@ on:
       - 'travis/**'
 
   workflow_dispatch: # For manual trigger
+    inputs:
+      USE_DEPENDENCY_CACHE:
+        type: boolean
+        default: true
 
 jobs:
 
@@ -39,6 +43,7 @@ jobs:
     with:
       get_testing_compiled_archives: true
       get_all_archives_for_release: false
+      USE_DEPENDENCY_CACHE: ${{ inputs.USE_DEPENDENCY_CACHE || github.event_name == 'push' }}
 
   testing-gama:
     name: Testing built GAMA

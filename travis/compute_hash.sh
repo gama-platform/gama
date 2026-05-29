@@ -26,4 +26,9 @@ if ! [ $current_hash == $stored_hash ]; then
         echo cache hit
 fi
 
+# if no pre-existing cache, create one
+if ! [ -d ${MAVEN_CACHE_PATH} ]; then
+    mkdir -p ${MAVEN_CACHE_PATH}
+fi
+
 echo "$current_hash" > ${MAVEN_CACHE_PATH}/cachehash.sha256sum

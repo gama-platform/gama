@@ -42,6 +42,9 @@ on:
       GITHUB_ONLY:
         type: boolean
         default: false
+      USE_DEPENDENCY_CACHE:
+        type: boolean
+        default: true
     secrets:
       GAMA_KEYSTORE_BASE64:
         required: false
@@ -122,8 +125,21 @@ jobs:
           sed -i 's/-Denable_logging=true/-Denable_logging=false/g' ./gama.product/*product
           sed -i 's/-Denable_debug=true/-Denable_debug=false/g' ./gama.product/*product
 
+      - uses: ./.github/actions/maven-dependency-cache
+        name: Restore Maven Dependency Cache
+        if: "${{ inputs.USE_DEPENDENCY_CACHE }}"
+        with:
+          action: restore
+
       - name: Compiling gama
         run: bash $GITHUB_WORKSPACE/travis/build.sh -e -B -T 4 ${{ inputs.mvn_extra_arguments }}
+
+      - uses: ./.github/actions/maven-dependency-cache
+        name: Save Maven Dependency Cache
+        if: "${{ inputs.USE_DEPENDENCY_CACHE && (github.ref_name == 'main') }}"
+        with:
+          action: save
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
       # Spotbugs
       - name: Running SpotBugs

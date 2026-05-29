@@ -12,7 +12,7 @@ inputs:
   cachePath:
     required: true
     type: string
-    default: "~/.m2/repository"
+    default: "/home/runner/.m2/repository"
   cacheTag:
     required: true
     type: string
@@ -26,7 +26,7 @@ runs:
   steps:
 
   - name: Remove Old Maven Dependency Cache
-    if: "${{inputs.action == 'save'}} || ( ${{ github.ref_name }} == 'main' )"
+    if: "${{inputs.action == 'save'}}"
     run: "gh cache delete maven-dependency-cache-${CACHE_TAG} --ref ${REF}  --repo ${REPO}"
     continue-on-error: true
     shell: bash
@@ -37,7 +37,7 @@ runs:
       REPO: ${{ github.repository }}
 
   - uses: actions/cache/save@v5
-    if: "${{inputs.action == 'save'}} || ( ${{ github.ref_name }} == 'main' )"
+    if: "${{inputs.action == 'save'}}"
     name: Save Maven Dependency Cache
     with:
       path: ${{ inputs.cachePath }}
