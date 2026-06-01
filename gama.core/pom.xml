@@ -13,29 +13,8 @@
   <build>
     <plugins>
       <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>build-helper-maven-plugin</artifactId>
-          <version>3.5.0</version>
-          <executions>
-              <execution>
-                  <id>attach-local-artifacts</id>
-                  <phase>package</phase>
-                  <goals>
-                      <goal>attach-artifact</goal>
-                  </goals>
-                  <configuration>
-                      <artifacts>
-                          <artifact>
-                              <file>
-                                  ${project.build.directory}/local-artifacts.properties
-                              </file>
-                              <type>properties</type>
-                              <classifier>local-artifacts</classifier>
-                          </artifact>
-                      </artifacts>
-                  </configuration>
-              </execution>
-          </executions>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>
