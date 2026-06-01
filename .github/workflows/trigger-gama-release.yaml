@@ -28,6 +28,10 @@ on:
         type: boolean
         required: true
         default: false
+      USE_DEPENDENCY_CACHE:
+        type: boolean
+        required: true
+        default: false
 
 run-name: Building GAMA release
 
@@ -42,6 +46,7 @@ jobs:
       jdk_embedded_version: ${{ inputs.jdk }}
       IS_STABLE_RELEASE: ${{ inputs.IS_STABLE_RELEASE }}
       GITHUB_ONLY: ${{ inputs.releaseGithubOnly }}
+      USE_DEPENDENCY_CACHE: ${{ inputs.USE_DEPENDENCY_CACHE }}
     secrets:
       GAMA_KEYSTORE_BASE64: ${{ secrets.GAMA_KEYSTORE_BASE64 }}
       GAMA_KEYSTORE_STOREPASS: ${{ secrets.GAMA_KEYSTORE_STOREPASS }}
