@@ -30,8 +30,12 @@ on:
         default: false
       USE_BUILD_CACHE:
         type: boolean
-        default: false
         required: true
+        default: false
+      USE_DEPENDENCY_CACHE:
+        type: boolean
+        required: true
+        default: false
 
 run-name: Building GAMA release
 
@@ -47,6 +51,7 @@ jobs:
       IS_STABLE_RELEASE: ${{ inputs.IS_STABLE_RELEASE }}
       GITHUB_ONLY: ${{ inputs.releaseGithubOnly }}
       USE_BUILD_CACHE: ${{ inputs.USE_BUILD_CACHE }}
+      USE_DEPENDENCY_CACHE: ${{ inputs.USE_DEPENDENCY_CACHE }}
     secrets:
       GAMA_KEYSTORE_BASE64: ${{ secrets.GAMA_KEYSTORE_BASE64 }}
       GAMA_KEYSTORE_STOREPASS: ${{ secrets.GAMA_KEYSTORE_STOREPASS }}
@@ -74,13 +79,16 @@ jobs:
         run: |
           chmod +x ${{ github.workspace }}/travis/*
           # Overkill, but will catch every extraresources files to bump version there too
-          bash ${{ github.workspace }}/travis/bumpGamaVersion.sh ${{ inputs.tag }} ${{ inputs.IS_STABLE_RELEASE }}
+          bash ${{ github.workspace }}/travis/bumpGamaVersion.sh "${TAG}" "${IS_STABLE_RELEASE}"
           #
           mv ${{ github.workspace }}/gama.product/extraresources ${{ github.workspace }}/travis
           mv ${{ github.workspace }}/LICENSE ${{ github.workspace }}/travis
 
           commit=$(git rev-parse --short=7 HEAD)
           echo "commit=$commit" >> "$GITHUB_OUTPUT"
+        env:
+          TAG: ${{ inputs.tag }}
+          IS_STABLE_RELEASE: ${{ inputs.IS_STABLE_RELEASE }}
 
       - uses: actions/upload-artifact@v6
         with:

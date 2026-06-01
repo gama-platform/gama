@@ -30,7 +30,12 @@ jobs:
           echo "MAVEN_OPTS='-Xmx15g'" >> ~/.mavenrc
 
       - uses: ./.github/actions/maven-build-cache
-        name: Restore maven cache
+        name: Restore Maven Build Cache
+        with:
+          action: restore
+          
+      - uses: ./.github/actions/maven-dependency-cache
+        name: Restore Maven Dependency Cache
         with:
           action: restore
 
@@ -38,7 +43,14 @@ jobs:
         run: bash travis/build.sh -B -T 4
 
       - uses: ./.github/actions/maven-build-cache
-        name: Save maven cache
+        name: Save Maven Build Cache
+        with:
+          action: save
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          
+      - uses: ./.github/actions/maven-dependency-cache
+        name: Save Maven Dependency Cache
+        if: "${{ github.ref_name }} == 'main'"
         with:
           action: save
           GH_TOKEN: ${{secrets.GITHUB_TOKEN}}

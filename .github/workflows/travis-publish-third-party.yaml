@@ -157,8 +157,11 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: token ${{ secrets.BOT_TOKEN }}" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
-            --data '{"ref": "main", "inputs": {"tag": "${{ inputs.tag }}"}}' \
+            --data "{'ref': 'main', 'inputs': {'tag': '${TAG}'}}" \
             https://api.github.com/repos/gama-platform/gama.ppa/actions/workflows/69865833/dispatches
+        env:
+          TAG: ${{ inputs.tag }}
+          
 
 
   prism-gaml:
@@ -169,7 +172,7 @@ jobs:
     steps:
       - name: Push prism-gaml.js to prism-gaml repository
         run: |
-          NPM_TAG="${{ inputs.tag }}${{ inputs.IS_STABLE_RELEASE && '' || '-alpha' }}"
+          NPM_TAG="${TAG}${{ inputs.IS_STABLE_RELEASE && '' || '-alpha' }}"
           git clone --depth 1 https://gama-bot:$BOT_TOKEN@github.com/gama-platform/prism-gaml.git $GITHUB_WORKSPACE/../prism-gaml
           cd $GITHUB_WORKSPACE/../prism-gaml
           git config user.email "my.gama.bot@gmail.com"
@@ -182,6 +185,7 @@ jobs:
           git push --tags
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          TAG: ${{ inputs.tag }}
 
   # linux-arch:
   #   needs: get-tag-info
