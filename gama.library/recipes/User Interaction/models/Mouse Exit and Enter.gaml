@@ -28,7 +28,7 @@ species eyes {
 	}
 	
 	aspect outside {
-			draw sphere(15) color: #white ;
+			draw sphere(15) color: closed ? #gamaorange : #white;
 	}
 	
 	aspect inside {
@@ -39,6 +39,7 @@ species eyes {
 experiment Run {
 	output {
 		display Eyes type: 3d axes: false {
+			camera 'default' location: {50.0,50.0025,145.8607} target: {50.0,50.0,0.0};
 			graphics face {
 				draw circle(60) color: #gamaorange;
 			}
@@ -48,9 +49,10 @@ experiment Run {
 			}
 
 			species eyes aspect: inside;
-			species eyes aspect: outside transparency: closed ? 0.1 : 0.5;
+			species eyes aspect: outside transparency: closed ? 0 : 0.5;
 			event #mouse_exit {
 				closed <- true;
+				do update_outputs();
 			}
 
 			event #mouse_enter {
