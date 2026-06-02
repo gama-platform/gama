@@ -53,8 +53,9 @@ runs:
   - name: Compute Maven Dependency Cache Hash
     if: "${{ inputs.action == 'restore' }}"
     shell: bash
-    run: ./travis/compute_hash.sh
+    run: ${GITHUB_ACTION_PATH}/compute_hash.sh
     env:
       MAVEN_CACHE_PATH: ${{ inputs.cachePath }}
+      GITHUB_ACTION_PATH: ${{ github.action_path }}
     
   
