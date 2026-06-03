@@ -13,6 +13,7 @@ package gama.core.util.file;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 import gama.dev.DEBUG;
 
@@ -21,6 +22,9 @@ import gama.dev.DEBUG;
  */
 @SuppressWarnings ({ "rawtypes", "unchecked" })
 public class MtlLoader {
+
+	/** Reused whitespace splitter for all parsed lines. */
+	private static final Pattern WHITESPACE = Pattern.compile("\\s+");
 
 	/** The Materials. */
 	protected ArrayList materials = new ArrayList<>();
@@ -189,46 +193,34 @@ public class MtlLoader {
 							materials.add(matset);
 							matset = new Mtl();
 						}
-						final String[] coordstext = newline.split("\\s+");
+						final String[] coordstext = WHITESPACE.split(newline);
 						matset.name = coordstext[1];
 						matset.mtlNum = mtlcounter;
 						mtlcounter++;
 					} else if (newline.charAt(0) == 'K' && newline.charAt(1) == 'a') {
-						final String[] coordstext = newline.split("\\s+");
+						final String[] coordstext = WHITESPACE.split(newline);
 						for (int i = 1; i < coordstext.length; i++) {
 							matset.Ka[i - 1] = Float.parseFloat(coordstext[i]);
 						}
 					} else if (newline.charAt(0) == 'K' && newline.charAt(1) == 'd') {
-						final String[] coordstext = newline.split("\\s+");
+						final String[] coordstext = WHITESPACE.split(newline);
 						for (int i = 1; i < coordstext.length; i++) {
 							matset.Kd[i - 1] = Float.parseFloat(coordstext[i]);
 						}
 					} else if (newline.charAt(0) == 'K' && newline.charAt(1) == 's') {
-						final String[] coordstext = newline.split("\\s+");
+						final String[] coordstext = WHITESPACE.split(newline);
 						for (int i = 1; i < coordstext.length; i++) {
 							matset.Ks[i - 1] = Float.parseFloat(coordstext[i]);
 						}
 					} else if (newline.charAt(0) == 'd') {
-						final String[] coordstext = newline.split("\\s+");
+						final String[] coordstext = WHITESPACE.split(newline);
 						matset.d = Float.parseFloat(coordstext[1]);
 					} else if (newline.contains("map_Ka")) {
-						String texture = newline.replace("map_Ka ", "");
-						while (texture.startsWith(" ")) {
-							texture = texture.replaceFirst(" ", "");
-						}
-						matset.map_Ka = texture;
+						matset.map_Ka = newline.replace("map_Ka ", "").stripLeading();
 					} else if (newline.contains("map_Kd")) {
-						String texture = newline.replace("map_Kd ", "");
-						while (texture.startsWith(" ")) {
-							texture = texture.replaceFirst(" ", "");
-						}
-						matset.map_Kd = texture;
+						matset.map_Kd = newline.replace("map_Kd ", "").stripLeading();
 					} else if (newline.contains("map_d")) {
-						String texture = newline.replace("map_d ", "");
-						while (texture.startsWith(" ")) {
-							texture = texture.replaceFirst(" ", "");
-						}
-						matset.map_d = texture;
+						matset.map_d = newline.replace("map_d ", "").stripLeading();
 					}
 				}
 			}
