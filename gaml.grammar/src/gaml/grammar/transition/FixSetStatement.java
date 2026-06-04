@@ -27,16 +27,17 @@ public class FixSetStatement implements IFileTransformer {
 	/**
 	 * Regex breakdown:
 	 *
-	 * ^(\s*)                  → group 1: indentation
-	 * set\s+                  → keyword
-	 * ([A-Za-z_][A-Za-z0-9_]*)→ group 2: variable name
-	 * \s+                     → spaces
-	 * (?:value:\s*|<-\s*)     → either "value:" or "<-"
-	 * (.+?)                   → group 3: expression
-	 * \s*;                    → semicolon
+	 * ^(\s*)                                → group 1: indentation
+	 * set\s+                                → keyword
+	 * ([A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*)    → group 2: variable name, including
+	 *                                          member-access chains (e.g. myself.field)
+	 * \s+                                   → spaces
+	 * (?:value:\s*|<-\s*)                   → either "value:" or "<-"
+	 * (.+?)                                 → group 3: expression
+	 * \s*;                                  → semicolon
 	 */
 	private static final Pattern PATTERN = Pattern.compile(
-			"^(\\s*)set\\s+([A-Za-z_][A-Za-z0-9_]*)\\s+(?:value:\\s*|<-\\s*)(.+?)\\s*;",
+			"^(\\s*)set\\s+([A-Za-z_]\\w*(?:\\.[A-Za-z_]\\w*)*)\\s+(?:value:\\s*|<-\\s*)(.+?)\\s*;",
 			Pattern.MULTILINE);
 
 	@Override

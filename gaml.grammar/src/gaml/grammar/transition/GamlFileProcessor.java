@@ -43,7 +43,11 @@ import gama.dev.DEBUG;
  *   
 <li>{@link FixLetStatement} – transforms {@code let var type:T value:V;}
  *       into {@code T var <- V;}</li>
- * 
+ * <li>{@link FixDoAction} – replaces {@code do action: name} with
+ *       {@code do name}</li>
+ * <li>{@link FixListOf} – replaces {@code list of: T} with
+ *       {@code list<T>}</li>
+ *
 </ol>
 *
 * 
@@ -179,7 +183,9 @@ public class GamlFileProcessor {
 		transformers.add(new FixArrowBraces());
 		transformers.add(new FixActionParentheses());
 		transformers.add(new FixSetStatement());
+		transformers.add(new FixListOf());
 		transformers.add(new FixLetStatement());
+		transformers.add(new FixDoAction());
 		transformers.add(new FixDoParentheses());
 		transformers.add(new FixActionArguments());
 	}
