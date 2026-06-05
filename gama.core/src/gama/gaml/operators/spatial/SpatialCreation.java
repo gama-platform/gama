@@ -1509,15 +1509,15 @@ public class SpatialCreation {
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SHAPE },
 			concept = { IConcept.SHAPE, IConcept.GEOMETRY, IConcept.POINT })
 	@doc (
-			value = "The operator computes a Bezier curve geometry between the given operators, with 10 or a given number of points, and from left to rigth or right to left.",
+			value = "The operator computes a Bezier curve geometry corresponding to control points provided in arguments, with a given number of points (default = 10).",
 			masterDoc = true,
 			usages = { @usage (
 					value = "if one  of the operand is nil, returns nil"),
 					@usage (
-							value = "When used with 3 points, it computes a quadratic Bezier curve geometry built from the three given points and composed of 10 points.",
+							value = "When used with 3 points in argument, it computes a quadratic Bezier curve geometry with these three control points. It is composed of the default number of points.",
 							examples = { @example (
 									value = "curve({0,0}, {0,10}, {10,10})",
-									equals = "a quadratic Bezier curve geometry composed of 10 points from p0 to p2.",
+									equals = "a quadratic Bezier curve geometry composed of 10 points, with control points p0, p1 and p2.",
 									test = false) }) },
 			see = { "around", "circle", "cone", "link", "norm", "point", "polygone", "rectangle", "square", "triangle",
 					"line" })
@@ -1564,12 +1564,12 @@ public class SpatialCreation {
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SHAPE },
 			concept = {})
 	@doc (
-			value = "A quadratic Bezier curve geometry built from the three given points composed of a given numnber of points.",
+			value = "A quadratic Bezier curve geometry built from the three given points and composed of a given number of points.",
 			usages = { @usage (
-					value = "When used with 3 points and an integer, it  computes a quadratic Bezier curve geometry built from the three given points. If the last operand (number of points) is inferior to 2, returns nil",
+					value = "When used with 3 points p0, p1, p2 and an integer n, it  computes a n-points quadratic Bezier curve geometry built from control points p0, p1, p2. If n is inferior to 2, returns nil.",
 					examples = { @example (
 							value = "curve({0,0}, {0,10}, {10,10}, 20)",
-							equals = "a quadratic Bezier curve geometry composed of 20 points from p0 to p2.",
+							equals = "a quadratic Bezier curve geometry composed of 20 points with control points p0, p1 and p2.",
 							test = false) }) },
 			see = { "around", "circle", "cone", "link", "norm", "point", "polygone", "rectangle", "square", "triangle",
 					"line" })
@@ -1617,12 +1617,12 @@ public class SpatialCreation {
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SHAPE },
 			concept = {})
 	@doc (
-			value = "A cubic Bezier curve geometry built from the four given points composed of 10 points.",
+			value = "A cubic Bezier curve geometry built with four control points and composed of 10 points.",
 			usages = { @usage (
-					value = "When used with 4 points, it computes, it computes a cubic Bezier curve geometry built from the four given points and composed of 10 points. ",
+					value = "When used with 4 points, it computes a cubic Bezier curve geometry built with the four given control points and composed of 10 points.",
 					examples = { @example (
 							value = "curve({0,0}, {0,10}, {10,10})",
-							equals = "a cubic Bezier curve geometry composed of 10 points from p0 to p3.",
+							equals = "a cubic Bezier curve geometry composed of 10 points with control points p0, ..., p3.",
 							test = false) }) },
 			see = { "around", "circle", "cone", "link", "norm", "point", "polygone", "rectangle", "square", "triangle",
 					"line" })
@@ -1889,7 +1889,7 @@ public class SpatialCreation {
 			final int nbPoints, final double proportion, final double angle) {
 		if (p0 == null || p1 == null) return null;
 		IShape shape = bezierCurve(scope, p0, p1, coefficient, false, nbPoints, proportion);
-		shape = SpatialTransformations.rotated_by(scope, shape, angle, p0.minus(p1));
+		shape = SpatialTransformations.rotated_by(scope, shape, -angle, p0.minus(p1));
 		if (shape == null) return null;
 		final IPoint newPt0 = shape.getPoints().get(0);
 		return SpatialTransformations.translated_by(scope, shape, p0.minus(newPt0));

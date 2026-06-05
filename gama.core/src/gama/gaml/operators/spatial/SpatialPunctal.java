@@ -357,22 +357,35 @@ public class SpatialPunctal {
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.POINT },
 			concept = { IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_RELATION, IConcept.POINT })
 	@doc (
-			value = "the angle between vectors P0P1 and P0P2 (P0, P1, P2 being the three point operands)",
+			value = "the angle between vectors P0P1 and P0P2 (P0, P1, P2 being the three point operands). Returns an oriented angle in 2d (no Z coordinate), and a non-oriented angle in 3d.",
 			examples = { @example (
 					value = "angle_between({5,5},{10,5},{5,10})",
 					equals = "90") })
 	public static Double angleInDegreesBetween(final IScope scope, final IPoint p0, final IPoint p1, final IPoint p2) {
 		final double Xa = p1.getX() - p0.getX();
 		final double Ya = p1.getY() - p0.getY();
+		final double Za = p1.getZ() - p0.getZ();
 		final double Xb = p2.getX() - p0.getX();
 		final double Yb = p2.getY() - p0.getY();
-		// Math.hypot is faster and more numerically stable than Maths.sqrt(scope, ...)
-		final double Na = Math.hypot(Xa, Ya);
-		final double Nb = Math.hypot(Xb, Yb);
-		final double C = Maths.round((Xa * Xb + Ya * Yb) / (Na * Nb), 10);
-		final double S = Xa * Yb - Ya * Xb;
-		final double result = S > 0 ? Maths.acos(C) : -1 * Maths.acos(C);
-		return Maths.checkHeading(result);
+		final double Zb = p2.getZ() - p0.getZ();
+		if (Math.abs(Za) < 1e-12 && Math.abs(Zb) < 1e-12) {
+			// 2D case, returns an oriented angle
+			// Math.hypot is faster and more numerically stable than Maths.sqrt(scope, ...)
+			final double Na = Math.hypot(Xa, Ya);
+			final double Nb = Math.hypot(Xb, Yb);
+			final double C = Maths.round((Xa * Xb + Ya * Yb) / (Na * Nb), 10);
+			final double S = Xa * Yb - Ya * Xb;
+			final double result = S > 0 ? Maths.acos(C) : -1 * Maths.acos(C);
+			return Maths.checkHeading(result);
+		}
+		// 3D case, returns a non-oriented angle
+		final double dot = Xa * Xb + Ya * Yb + Za * Zb;
+		final double Cx = Ya * Zb - Za * Yb;
+		final double Cy = Za * Xb - Xa * Zb;
+		final double Cz = Xa * Yb - Ya * Xb;
+		final double crossNorm = Math.sqrt(Cx * Cx + Cy * Cy + Cz * Cz);
+		final double angle = Math.atan2(crossNorm, dot);
+		return Math.toDegrees(angle);
 	}
 
 }
