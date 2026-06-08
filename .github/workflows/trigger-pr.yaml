@@ -11,6 +11,11 @@ on:
       USE_DEPENDENCY_CACHE:
         type: boolean
         default: true
+        required: true
+      USE_BUILD_CACHE:
+        type: boolean
+        default: false
+        required: true
 
 jobs:
   compiling-gama-base:
@@ -23,7 +28,8 @@ jobs:
       RUN_SPOTBUGS: true
       SPOTBUGS_OUTPUT_ARTIFACT_NAME: "result-spotbugs-base"
       CHECKOUT_BRANCH: "main"
-      USE_DEPENDENCY_CACHE: ${{ inputs.USE_DEPENDENCY_CACHE }}
+      USE_BUILD_CACHE: ${{ inputs.USE_BUILD_CACHE || github.event_name == 'pull_request' }}
+      USE_DEPENDENCY_CACHE: ${{ inputs.USE_DEPENDENCY_CACHE || github.event_name == 'pull_request' }}
 
   compiling-gama-pr:
     if: "! github.event.pull_request.draft || github.event_name == 'workflow_dispatch'"
@@ -34,7 +40,8 @@ jobs:
       get_all_archives_for_release: false
       RUN_SPOTBUGS: true
       SPOTBUGS_OUTPUT_ARTIFACT_NAME: "result-spotbugs-pr"
-      USE_DEPENDENCY_CACHE: ${{ inputs.USE_DEPENDENCY_CACHE }}
+      USE_BUILD_CACHE: ${{ inputs.USE_BUILD_CACHE || github.event_name == 'pull_request'}}
+      USE_DEPENDENCY_CACHE: ${{ inputs.USE_DEPENDENCY_CACHE || github.event_name == 'pull_request'}}
 
   testing-gama-pr:
     name: Testing built GAMA

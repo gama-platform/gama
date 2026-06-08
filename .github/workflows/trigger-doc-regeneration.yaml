@@ -14,7 +14,7 @@ on:
 jobs:
   generating-documentation:
     runs-on: ubuntu-latest
-
+      
     steps:
       - uses: actions/checkout@v6
 
@@ -29,6 +29,11 @@ jobs:
         run: |
           echo "MAVEN_OPTS='-Xmx15g'" >> ~/.mavenrc
 
+      - uses: ./.github/actions/maven-build-cache
+        name: Restore Maven Build Cache
+        with:
+          action: restore
+          
       - uses: ./.github/actions/maven-dependency-cache
         name: Restore Maven Dependency Cache
         with:
@@ -37,6 +42,12 @@ jobs:
       - name: Compiling GAMA
         run: bash travis/build.sh -B -T 4
 
+      - uses: ./.github/actions/maven-build-cache
+        name: Save Maven Build Cache
+        with:
+          action: save
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          
       - uses: ./.github/actions/maven-dependency-cache
         name: Save Maven Dependency Cache
         if: "${{ github.ref_name }} == 'main'"

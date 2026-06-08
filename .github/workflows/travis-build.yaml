@@ -42,6 +42,9 @@ on:
       GITHUB_ONLY:
         type: boolean
         default: false
+      USE_BUILD_CACHE:
+        type: boolean
+        default: true
       USE_DEPENDENCY_CACHE:
         type: boolean
         default: true
@@ -62,6 +65,7 @@ on:
 jobs:
   compilation:
     runs-on: ubuntu-latest
+      
     steps:
       # Prep runner
       - uses: actions/checkout@v6
@@ -127,6 +131,12 @@ jobs:
           sed -i 's/-Denable_logging=true/-Denable_logging=false/g' ./gama.product/*product
           sed -i 's/-Denable_debug=true/-Denable_debug=false/g' ./gama.product/*product
 
+      - uses: ./.github/actions/maven-build-cache
+        name: Restore Maven Build cache
+        if: "${{ inputs.USE_BUILD_CACHE }}"
+        with:
+          action: restore
+          
       - uses: ./.github/actions/maven-dependency-cache
         name: Restore Maven Dependency Cache
         if: "${{ inputs.USE_DEPENDENCY_CACHE }}"
@@ -141,6 +151,13 @@ jobs:
       - uses: ./.github/actions/maven-dependency-cache
         name: Save Maven Dependency Cache
         if: "${{ inputs.USE_DEPENDENCY_CACHE && (github.ref_name == 'main') }}"
+        with:
+          action: save
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+      - uses: ./.github/actions/maven-build-cache
+        name: Save Maven Build Cache
+        if: "${{ inputs.USE_BUILD_CACHE }}"
         with:
           action: save
           GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
