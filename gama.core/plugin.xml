@@ -79,6 +79,18 @@
             class="gama.gaml.statements.save.JsonSaver"
             description="Saves items in json format">
       </implementation>
+      <implementation
+            class="gama.gaml.statements.save.ExcelSaver"
+            description="Saves a dataframe (or a map of dataframes) as a .xlsx workbook">
+      </implementation>
+      <implementation
+            class="gama.gaml.statements.save.ParquetSaver"
+            description="Saves a dataframe as a .parquet file">
+      </implementation>
+      <implementation
+            class="gama.gaml.statements.save.AvroSaver"
+            description="Saves a dataframe as an .avro file">
+      </implementation>
    </extension>
    <extension
          point="gama.draw">

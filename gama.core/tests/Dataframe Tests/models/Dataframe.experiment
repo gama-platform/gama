@@ -249,8 +249,7 @@ experiment Dataframes type: test {
 
 	test save_and_reload_csv {
 		dataframe df <- dataframe_with(["name", "value"], [["X", 10], ["Y", 20]]);
-		bool saved <- df_save_csv(df, "../results/test_output.csv");
-		assert saved;
+		save df to: "../results/test_output.csv" format: "csv";
 		dataframe df2 <- df_load_csv("../results/test_output.csv");
 		assert df2.rows = 2;
 		assert df2.keys = ["name", "value"];
@@ -258,10 +257,11 @@ experiment Dataframes type: test {
 
 	test save_csv_with_separator {
 		dataframe df <- dataframe_with(["a", "b"], [["x", 1], ["y", 2]]);
-		bool saved <- df_save_csv_with(df, "../results/test_output_semi.csv", ";", "UTF-8");
-		assert saved;
+		// The 'separator:' facet of the save statement sets the CSV delimiter
+		save df to: "../results/test_output_semi.csv" format: "csv" separator: ";";
 		dataframe df2 <- df_load_csv_with("../results/test_output_semi.csv", ";", true, "UTF-8");
 		assert df2.rows = 2;
+		assert df2.keys = ["a", "b"];
 	}
 
 	// ========================= Excel I/O =========================
@@ -275,8 +275,7 @@ experiment Dataframes type: test {
 
 	test save_and_reload_excel {
 		dataframe df <- dataframe_with(["id", "label"], [[1, "A"], [2, "B"]]);
-		bool saved <- df_save_excel(df, "../results/test_output.xlsx", "Data");
-		assert saved;
+		save df to: "../results/test_output.xlsx" format: "xlsx";
 		dataframe df2 <- df_load_excel("../results/test_output.xlsx");
 		assert df2.rows = 2;
 	}
@@ -293,8 +292,7 @@ experiment Dataframes type: test {
 
 	test save_and_reload_json {
 		dataframe df <- dataframe_with(["key", "val"], [["a", 1], ["b", 2]]);
-		bool saved <- df_save_json(df, "../results/test_output.json");
-		assert saved;
+		save df to: "../results/test_output.json" format: "json";
 		dataframe df2 <- df_load_json("../results/test_output.json");
 		assert df2.rows = 2;
 	}

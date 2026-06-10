@@ -21,17 +21,19 @@ global {
 		string bugs_path <- "../results/bugs.xlsx";
 		string stats_path <- "../results/bugs_and_stats.xlsx";
 		dataframe bugs <- dataframe_with(["name", "speed", "size"], bug collect ([each.name, each.speed, each.size]));
-		bool ok <- df_save_excel(bugs, bugs_path, "Sheet 1");
-		write "Saving all bugs in one xlsx file (" + bugs_path + "): " + ok;
+		// A single dataframe is saved as a one-sheet workbook with the 'save' statement
+		save bugs to: bugs_path format: "xlsx";
+		write "Saving all bugs in one xlsx file (" + bugs_path + ")";
 		write "Now processing some stats";
-		
+
 		dataframe stats <- dataframe_with(["id", "average location", "average size"], bug collect ([each.index ,mean(each.past_locations), mean(each.past_sizes)]));
-		
+
 		// Inserting global averages at the end
 		stats <- df_add_row(stats, ['Global', mean(list<point>(df_column(stats, "average location"))), mean(df_column(stats, "average size"))]);
-		
-		ok <- df_save_excel(map("Bugs"::bugs, "Stats"::stats), stats_path);
-		write "Saving all bugs and their stats in one xlsx file (" + stats_path + "): " + ok;
+
+		// A map of dataframes is saved as a multi-sheet workbook (keys become sheet names)
+		save map("Bugs"::bugs, "Stats"::stats) to: stats_path format: "xlsx";
+		write "Saving all bugs and their stats in one xlsx file (" + stats_path + ")";
 		do pause();
 	}
 }

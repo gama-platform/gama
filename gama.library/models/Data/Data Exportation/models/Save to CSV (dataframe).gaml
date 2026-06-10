@@ -1,15 +1,15 @@
 /**
-* Name: Save Dataframe to CSV
+* Name: Save to CSV (dataframe)
 * Author: GAMA Team
-* Description: Shows how to save a dataframe to a CSV file. A dataframe is built from a population
-*   of bug agents, then written to CSV with the default comma separator (df_save_csv) and with a
-*   custom separator and character encoding (df_save_csv_with). The file is finally reloaded with
-*   df_load_csv to demonstrate a round-trip. Unlike the agent-based 'save' statement (see
-*   "Save to CSV"), the dataframe operators give full control over the tabular content and headers.
+* Description: Shows how to save a dataframe to a CSV file with the 'save' statement. A dataframe is
+*   built from a population of bug agents, then written to CSV (the format is taken from the file
+*   extension, or can be forced with the 'format:' facet). The file is finally reloaded with
+*   df_load_csv to demonstrate a round-trip. Saving a dataframe uses the same 'save ... to: ... '
+*   statement as agents and other containers — see "Save to CSV (agents)" for the agent-based variant.
 * Tags: save_file, csv, export, dataframe, tabular, data
 */
 
-model SaveDataframeToCSV
+model SaveToCSVDataframe
 
 global {
 	init {
@@ -24,13 +24,15 @@ global {
 			bug collect ([each.name, each.speed, each.size])
 		);
 
-		// Save with default settings (comma separator, UTF-8)
-		bool ok <- df_save_csv(bugs, "../results/bugs.csv");
-		write "Saved bugs.csv (comma, UTF-8) : " + ok;
+		// Save the dataframe to CSV with the 'save' statement.
+		// The format is inferred from the ".csv" extension; the 'format:' facet makes it explicit.
+		save bugs to: "../results/bugs.csv" format: "csv";
+		write "Saved bugs.csv";
 
-		// Save with a custom separator and encoding
-		bool ok_semi <- df_save_csv_with(bugs, "../results/bugs_semicolon.csv", ";", "ISO-8859-1");
-		write "Saved bugs_semicolon.csv (semicolon, ISO-8859-1) : " + ok_semi;
+		// The 'separator:' facet sets the column delimiter (here ';'). When omitted, the
+		// 'CSV separator' preference is used. This facet works for any CSV save (agents, lists, dataframes).
+		save bugs to: "../results/bugs_semicolon.csv" format: "csv" separator: ";";
+		write "Saved bugs_semicolon.csv (semicolon-separated)";
 
 		// Round-trip: reload the file we just wrote
 		dataframe reloaded <- df_load_csv("../results/bugs.csv");

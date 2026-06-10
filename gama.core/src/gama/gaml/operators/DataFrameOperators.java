@@ -9,18 +9,7 @@
  ********************************************************************************************************/
 package gama.gaml.operators;
 
-import java.io.File;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import org.apache.commons.csv.CSVFormat;
-import org.dflib.DataFrame;
-import org.dflib.avro.Avro;
-import org.dflib.csv.Csv;
-import org.dflib.excel.Excel;
 import org.dflib.jdbc.connector.JdbcConnector;
-import org.dflib.json.Json;
-import org.dflib.parquet.Parquet;
 
 import gama.annotations.doc;
 import gama.annotations.example;
@@ -37,8 +26,6 @@ import gama.api.types.dataframe.GamaDataFrame;
 import gama.api.types.dataframe.GamaDataFrameFactory;
 import gama.api.types.dataframe.IDataFrame;
 import gama.api.types.list.IList;
-import gama.api.types.map.IMap;
-import gama.api.utils.files.FileUtils;
 import gama.api.utils.prefs.GamaPreferences;
 
 /**
@@ -157,7 +144,7 @@ public class DataFrameOperators {
 					examples = { @example (
 							value = "dataframe df <- df_load_excel(\"../includes/data.xlsx\");",
 							isExecutable = false) }) },
-			see = { "df_load_csv", "df_load_json", "df_save_excel" })
+			see = { "df_load_csv", "df_load_json" })
 	@no_test
 	public static IDataFrame loadExcel(final IScope scope, final String path) {
 		return GamaDataFrameFactory.fromExcel(scope, path);
@@ -180,7 +167,7 @@ public class DataFrameOperators {
 					examples = { @example (
 							value = "dataframe df <- df_load_json(\"../includes/data.json\");",
 							isExecutable = false) }) },
-			see = { "df_load_csv", "df_load_excel", "df_save_json" })
+			see = { "df_load_csv", "df_load_excel" })
 	@no_test
 	public static IDataFrame loadJson(final IScope scope, final String path) {
 		return GamaDataFrameFactory.fromJson(scope, path);
@@ -202,7 +189,7 @@ public class DataFrameOperators {
 					examples = { @example (
 							value = "dataframe df <- df_load_parquet(\"../includes/data.parquet\");",
 							isExecutable = false) }) },
-			see = { "df_save_parquet", "df_load_csv", "df_load_json" })
+			see = { "df_load_csv", "df_load_json" })
 	@no_test
 	public static IDataFrame loadParquet(final IScope scope, final String path) {
 		return GamaDataFrameFactory.fromParquet(scope, path);
@@ -224,7 +211,7 @@ public class DataFrameOperators {
 					examples = { @example (
 							value = "dataframe df <- df_load_avro(\"../includes/data.avro\");",
 							isExecutable = false) }) },
-			see = { "df_save_avro", "df_load_parquet", "df_load_csv", "df_load_json" })
+			see = { "df_load_parquet", "df_load_csv", "df_load_json" })
 	@no_test
 	public static IDataFrame loadAvro(final IScope scope, final String path) {
 		return GamaDataFrameFactory.fromAvro(scope, path);
@@ -286,212 +273,6 @@ public class DataFrameOperators {
 	}
 
 	// ========================= Save operators =========================
-
-	/**
-	 * Saves a dataframe to a CSV file with default settings (comma separator). TODO WARNING: Should use the save
-	 * statement
-	 */
-	@operator (
-			value = "df_save_csv",
-			can_be_const = false,
-			category = { IOperatorCategory.DATAFRAME, IOperatorCategory.FILE },
-			concept = { IConcept.DATAFRAME, IConcept.FILE, IConcept.CSV })
-	@doc (
-			value = "Saves a dataframe to a CSV file with comma separator. "
-					+ "The file path is relative to the model file. Returns true on success.",
-			usages = { @usage (
-					value = "Save a dataframe to CSV",
-					examples = { @example (
-							value = "bool success <- df_save_csv(my_df, \"../results/output.csv\");",
-							isExecutable = false) }) },
-			see = { "df_save_csv_with", "df_save_excel", "df_save_json", "df_load_csv" })
-	@no_test
-	public static Boolean saveCsv(final IScope scope, final IDataFrame df, final String path) {
-		return saveCsvWith(scope, df, path, ",", null);
-	}
-
-	/**
-	 * Saves a dataframe to a CSV file with custom separator and charset. TODO WARNING: Should use the save statement
-	 */
-	@operator (
-			value = "df_save_csv_with",
-			can_be_const = false,
-			category = { IOperatorCategory.DATAFRAME, IOperatorCategory.FILE },
-			concept = { IConcept.DATAFRAME, IConcept.FILE, IConcept.CSV })
-	@doc (
-			value = """
-					Saves a dataframe to a CSV file with a custom separator and character encoding. \
-					The separator is a string of length 1. The charset is a string like 'UTF-8' or 'ISO-8859-1'. \
-					The file path is relative to the model file. Returns true on success.""",
-			usages = { @usage (
-					value = "Save a dataframe to a semicolon-separated CSV in ISO-8859-1",
-					examples = { @example (
-							value = "bool success <- df_save_csv_with(my_df, \"../results/output.csv\", \";\", \"ISO-8859-1\");",
-							isExecutable = false) }) },
-			see = { "df_save_csv", "df_save_excel", "df_save_json", "df_load_csv_with" })
-	@no_test
-	public static Boolean saveCsvWith(final IScope scope, final IDataFrame df, final String path,
-			final String separator, final String charset) {
-		if (separator == null || separator.length() != 1)
-			throw GamaRuntimeException.error("Separator must be a single character, got: " + separator, scope);
-
-		try {
-			final String resolvedPath = FileUtils.constructAbsoluteFilePath(scope, path, false);
-			Csv.saver().format(CSVFormat.DEFAULT.withDelimiter(separator.charAt(0))).save(df.getInner(), resolvedPath);
-			return true;
-		} catch (final Exception e) {
-			throw GamaRuntimeException.error("Failed to save CSV file: " + path + " - " + e.getMessage(), scope);
-		}
-
-	}
-
-	/**
-	 * Saves a dataframe to an Excel file. TODO WARNING: Should use the save statement
-	 */
-	@operator (
-			value = "df_save_excel",
-			can_be_const = false,
-			category = { IOperatorCategory.DATAFRAME, IOperatorCategory.FILE },
-			concept = { IConcept.DATAFRAME, IConcept.FILE })
-	@doc (
-			value = "Saves a dataframe to an Excel file (.xlsx) with the given sheet name. "
-					+ "The file path is relative to the model file. Returns true on success.",
-			usages = { @usage (
-					value = "Save a dataframe to an Excel file",
-					examples = { @example (
-							value = "bool success <- df_save_excel(my_df, \"../results/output.xlsx\", \"Sheet1\");",
-							isExecutable = false) }) },
-			see = { "df_save_csv", "df_save_json", "df_load_excel" })
-	@no_test
-	public static Boolean saveExcel(final IScope scope, final IDataFrame df, final String path,
-			final String sheetName) {
-		try {
-			final String resolvedPath = FileUtils.constructAbsoluteFilePath(scope, path, false);
-			Excel.saver().createMissingDirs().saveSheet(df.getInner(), new File(resolvedPath), sheetName);
-			return true;
-		} catch (final Exception e) {
-			throw GamaRuntimeException.error("Failed to save Excel file: " + path + " - " + e.getMessage(), scope);
-		}
-	}
-
-	/**
-	 * Saves multiple dataframes to a single Excel workbook, one per sheet. TODO WARNING: Should use the save statement
-	 */
-	@operator (
-			value = "df_save_excel",
-			can_be_const = false,
-			category = { IOperatorCategory.DATAFRAME, IOperatorCategory.FILE },
-			concept = { IConcept.DATAFRAME, IConcept.FILE })
-	@doc (
-			value = """
-					Saves multiple dataframes to a single Excel workbook (.xlsx). The argument is a map whose keys \
-					are sheet names and values are dataframes. All sheets are written in one pass; existing sheets \
-					in the file that are not in the map are left untouched. Returns true on success.""",
-			usages = { @usage (
-					value = "Save two dataframes as two sheets in one workbook",
-					examples = { @example (
-							value = "bool ok <- df_save_excel([\"Summary\"::df1, \"Details\"::df2], \"../results/report.xlsx\");",
-							isExecutable = false) }) },
-			see = { "df_load_excel" })
-	@no_test
-	public static Boolean saveExcelSheets(final IScope scope, final IMap<String, IDataFrame> sheets,
-			final String path) {
-		try {
-			final String resolvedPath = FileUtils.constructAbsoluteFilePath(scope, path, false);
-			final Map<String, DataFrame> dfBySheet = new LinkedHashMap<>();
-			for (final Map.Entry<String, IDataFrame> entry : sheets.entrySet()) {
-				dfBySheet.put(entry.getKey(), entry.getValue().getInner());
-			}
-			Excel.saver().createMissingDirs().save(dfBySheet, new File(resolvedPath));
-			return true;
-		} catch (final Exception e) {
-			throw GamaRuntimeException.error("Failed to save multi-sheet Excel file: " + path + " - " + e.getMessage(),
-					scope);
-		}
-	}
-
-	/**
-	 * Saves a dataframe to a JSON file. TODO WARNING: Should use the save statement and use the JSON infrastructure...
-	 */
-	@operator (
-			value = "df_save_json",
-			can_be_const = false,
-			category = { IOperatorCategory.DATAFRAME, IOperatorCategory.FILE },
-			concept = { IConcept.DATAFRAME, IConcept.FILE })
-	@doc (
-			value = "Saves a dataframe to a JSON file. The file path is relative to the model file. Returns true on success.",
-			usages = { @usage (
-					value = "Save a dataframe to JSON",
-					examples = { @example (
-							value = "bool success <- df_save_json(my_df, \"../results/output.json\");",
-							isExecutable = false) }) },
-			see = { "df_save_csv", "df_save_excel", "df_load_json" })
-	@no_test
-	public static Boolean saveJson(final IScope scope, final IDataFrame df, final String path) {
-		try {
-			final String resolvedPath = FileUtils.constructAbsoluteFilePath(scope, path, false);
-			Json.saver().save(df.getInner(), resolvedPath);
-			return true;
-		} catch (final Exception e) {
-			throw GamaRuntimeException.error("Failed to save JSON file: " + path + " - " + e.getMessage(), scope);
-		}
-	}
-
-	/**
-	 * Saves a dataframe to a Parquet file. TODO WARNING: Should use the save statement
-	 */
-	@operator (
-			value = "df_save_parquet",
-			can_be_const = false,
-			category = { IOperatorCategory.DATAFRAME, IOperatorCategory.FILE },
-			concept = { IConcept.DATAFRAME, IConcept.FILE })
-	@doc (
-			value = "Saves a dataframe to a Parquet file (.parquet). The file path is relative to the model file. "
-					+ "Missing parent directories are created automatically. Returns true on success.",
-			usages = { @usage (
-					value = "Save a dataframe to Parquet",
-					examples = { @example (
-							value = "bool success <- df_save_parquet(my_df, \"../results/output.parquet\");",
-							isExecutable = false) }) },
-			see = { "df_load_parquet", "df_save_csv", "df_save_json" })
-	@no_test
-	public static Boolean saveParquet(final IScope scope, final IDataFrame df, final String path) {
-		try {
-			final String resolvedPath = FileUtils.constructAbsoluteFilePath(scope, path, false);
-			Parquet.saver().createMissingDirs().save(df.getInner(), new File(resolvedPath));
-			return true;
-		} catch (final Exception e) {
-			throw GamaRuntimeException.error("Failed to save Parquet file: " + path + " - " + e.getMessage(), scope);
-		}
-	}
-
-	/**
-	 * Saves a dataframe to an Avro file. TODO WARNING: Should use the save statement
-	 */
-	@operator (
-			value = "df_save_avro",
-			can_be_const = false,
-			category = { IOperatorCategory.DATAFRAME, IOperatorCategory.FILE },
-			concept = { IConcept.DATAFRAME, IConcept.FILE })
-	@doc (
-			value = "Saves a dataframe to an Avro file (.avro). The file path is relative to the model file. "
-					+ "Missing parent directories are created automatically. Returns true on success.",
-			usages = { @usage (
-					value = "Save a dataframe to Avro",
-					examples = { @example (
-							value = "bool success <- df_save_avro(my_df, \"../results/output.avro\");",
-							isExecutable = false) }) },
-			see = { "df_load_avro", "df_save_parquet", "df_save_csv", "df_save_json" })
-	@no_test
-	public static Boolean saveAvro(final IScope scope, final IDataFrame df, final String path) {
-		try {
-			final String resolvedPath = FileUtils.constructAbsoluteFilePath(scope, path, false);
-			Avro.saver().createMissingDirs().save(df.getInner(), new File(resolvedPath));
-			return true;
-		} catch (final Exception e) {
-			throw GamaRuntimeException.error("Failed to save Avro file: " + path + " - " + e.getMessage(), scope);
-		}
-	}
 
 	/**
 	 * Saves a dataframe to a database table via JDBC.
