@@ -18,6 +18,7 @@ import java.util.List;
 import org.apache.commons.csv.CSVFormat;
 import org.dflib.DataFrame;
 import org.dflib.Series;
+import org.dflib.avro.Avro;
 import org.dflib.csv.Csv;
 import org.dflib.csv.CsvLoader;
 import org.dflib.excel.Excel;
@@ -224,6 +225,20 @@ public class GamaDataFrameFactory {
 	public static IDataFrame fromParquet(final IScope scope, final String path) {
 		final String resolvedPath = FileUtils.constructAbsoluteFilePath(scope, path, true);
 		return new GamaDataFrame(Parquet.loader().load(new File(resolvedPath)));
+	}
+
+	/**
+	 * Creates a GamaDataFrame from an Avro file.
+	 *
+	 * @param scope
+	 *            the execution scope
+	 * @param path
+	 *            the file path (relative to the model or absolute)
+	 * @return a new GamaDataFrame
+	 */
+	public static IDataFrame fromAvro(final IScope scope, final String path) {
+		final String resolvedPath = FileUtils.constructAbsoluteFilePath(scope, path, true);
+		return new GamaDataFrame(Avro.loader().load(new File(resolvedPath)));
 	}
 
 	/**

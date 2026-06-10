@@ -15,6 +15,7 @@ import java.util.Map;
 
 import org.apache.commons.csv.CSVFormat;
 import org.dflib.DataFrame;
+import org.dflib.avro.Avro;
 import org.dflib.csv.Csv;
 import org.dflib.excel.Excel;
 import org.dflib.jdbc.connector.JdbcConnector;
@@ -205,6 +206,28 @@ public class DataFrameOperators {
 	@no_test
 	public static IDataFrame loadParquet(final IScope scope, final String path) {
 		return GamaDataFrameFactory.fromParquet(scope, path);
+	}
+
+	/**
+	 * Loads an Avro file into a dataframe.
+	 */
+	@operator (
+			value = "df_load_avro",
+			can_be_const = false,
+			type = IType.DATAFRAME,
+			category = { IOperatorCategory.DATAFRAME, IOperatorCategory.FILE },
+			concept = { IConcept.DATAFRAME, IConcept.FILE })
+	@doc (
+			value = "Loads an Avro file (.avro) into a dataframe. The file path is relative to the model file.",
+			usages = { @usage (
+					value = "Load an Avro file",
+					examples = { @example (
+							value = "dataframe df <- df_load_avro(\"../includes/data.avro\");",
+							isExecutable = false) }) },
+			see = { "df_save_avro", "df_load_parquet", "df_load_csv", "df_load_json" })
+	@no_test
+	public static IDataFrame loadAvro(final IScope scope, final String path) {
+		return GamaDataFrameFactory.fromAvro(scope, path);
 	}
 
 	/**
@@ -439,6 +462,34 @@ public class DataFrameOperators {
 			return true;
 		} catch (final Exception e) {
 			throw GamaRuntimeException.error("Failed to save Parquet file: " + path + " - " + e.getMessage(), scope);
+		}
+	}
+
+	/**
+	 * Saves a dataframe to an Avro file. TODO WARNING: Should use the save statement
+	 */
+	@operator (
+			value = "df_save_avro",
+			can_be_const = false,
+			category = { IOperatorCategory.DATAFRAME, IOperatorCategory.FILE },
+			concept = { IConcept.DATAFRAME, IConcept.FILE })
+	@doc (
+			value = "Saves a dataframe to an Avro file (.avro). The file path is relative to the model file. "
+					+ "Missing parent directories are created automatically. Returns true on success.",
+			usages = { @usage (
+					value = "Save a dataframe to Avro",
+					examples = { @example (
+							value = "bool success <- df_save_avro(my_df, \"../results/output.avro\");",
+							isExecutable = false) }) },
+			see = { "df_load_avro", "df_save_parquet", "df_save_csv", "df_save_json" })
+	@no_test
+	public static Boolean saveAvro(final IScope scope, final IDataFrame df, final String path) {
+		try {
+			final String resolvedPath = FileUtils.constructAbsoluteFilePath(scope, path, false);
+			Avro.saver().createMissingDirs().save(df.getInner(), new File(resolvedPath));
+			return true;
+		} catch (final Exception e) {
+			throw GamaRuntimeException.error("Failed to save Avro file: " + path + " - " + e.getMessage(), scope);
 		}
 	}
 
