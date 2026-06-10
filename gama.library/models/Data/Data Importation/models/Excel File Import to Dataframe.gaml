@@ -1,25 +1,21 @@
 /**
-* Name: Excel Coffee Shop Sales
+* Name: Excel File Import to Dataframe
 * Author: GAMA Team
-* Description: Demonstrates loading an Excel workbook into a dataframe, performing
-*   column-based aggregations over 149 116 coffee-shop transactions, visualising
-*   the results in charts, and exporting a summary workbook with two sheets.
+* Description: Demonstrates loading an Excel workbook (.xlsx) into a dataframe with df_load_excel,
+*   then exploring a real-world dataset of 149 116 coffee-shop transactions: schema inspection,
+*   column and cell access, positional sampling, filtering and on-the-fly aggregations rendered
+*   as charts. Unlike a matrix import, a dataframe preserves column names and types.
 *
 *   Operations demonstrated:
 *     - df_load_excel       : load the first sheet of an .xlsx file
-*     - df_columns / df_column_types / df_rows : schema inspection
+*     - keys / rows         : schema inspection
 *     - df_column / df_cell : access columns and cells
 *     - df_filter           : subset by store location or product category
 *     - df_select_columns   : keep only relevant columns
 *     - iloc                : positional sampling
 *     - df_pretty_print     : compact display
-*     - manual aggregation  : revenue = unit_price × transaction_qty per group
-*     - dataframe_with      : build summary dataframes from scratch
-*     - df_save_excel_sheets: export two-sheet workbook in a single call
 *
-*   The output workbook (results/coffee_summary.xlsx) contains:
-*     - "By Store"    : total revenue and transaction count per store location
-*     - "By Category" : total revenue, average unit price, transaction count per product category
+*   To save a dataframe back to Excel, see "Save to Excel" in Data Exportation.
 *
 * Dataset: Coffee Shop Sales
 *   Source : https://www.kaggle.com/datasets/ahmedabbas757/coffee-sales
@@ -27,10 +23,10 @@
 *   License: GNU Lesser General Public License v3.0 (LGPL-3.0)
 *            https://www.gnu.org/licenses/lgpl-3.0.html
 *
-* Tags: excel, dataframe, load_file, aggregation, chart, coffee, tabular
+* Tags: excel, dataframe, load_file, import, aggregation, chart, coffee, tabular
 */
 
-model ExcelCoffeeShopSales
+model ExcelFileImportToDataframe
 
 global {
 
@@ -146,16 +142,6 @@ global {
 				["transaction_id","store_location","product_category","product_detail","unit_price"]),
 			5, 5, 22
 		);
-
-		// ===== 7. Export two-sheet Excel workbook =====
-		write "";
-		write "===== Exporting summary workbook =====";
-
-		bool ok <- df_save_excel_sheets(
-			["By Store"::by_store, "By Category"::by_category],
-			"../results/coffee_summary.xlsx"
-		);
-		write "Saved coffee_summary.xlsx (2 sheets) : " + ok;
 
 		write "";
 		write "Done.";

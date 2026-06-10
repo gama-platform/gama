@@ -1,21 +1,21 @@
 /**
-* Name: Parquet Airbnb Listings
+* Name: Parquet File Import to Dataframe
 * Author: GAMA Team
-* Description: Demonstrates loading a Parquet file into a dataframe and performing
-*   common data exploration tasks on a real-world Airbnb listings dataset (Bali, Indonesia).
-*   The dataset contains 29 440 listings with 61 columns covering location, pricing,
-*   ratings, occupancy and revenue metrics — all stored as strings in the Parquet file.
+* Description: Demonstrates loading a Parquet file (.parquet) into a dataframe with df_load_parquet
+*   and performing common data exploration tasks on a real-world Airbnb listings dataset
+*   (Bali, Indonesia). The dataset contains 29 440 listings with 61 columns covering location,
+*   pricing, ratings, occupancy and revenue metrics — all stored as strings in the Parquet file.
 *
 *   Key operations demonstrated:
 *     - df_load_parquet: load a .parquet file
-*     - keys / df_column_types: inspect schema
+*     - keys: inspect schema
 *     - df_filter / df_remove_empty: clean and subset data
 *     - df_select_columns: keep only relevant columns
 *     - df_column / df_cell: access values
 *     - iloc: position-based sampling (first, last, arbitrary rows)
-*     - df_add_column: derive a new column
-*     - df_save_csv: export results
 *     - loop + df_cell: aggregate statistics manually
+*
+*   To save a dataframe to CSV, see "Save Dataframe to CSV" in Data Exportation.
 *
 *   Charts displayed:
 *     1. Listings by City (bar) — top 10 cities by listing count
@@ -33,10 +33,10 @@
 *   Note   : This model and its associated data file are provided for educational and
 *            non-commercial use only, in accordance with the dataset license.
 *
-* Tags: parquet, dataframe, load_file, airbnb, tabular, iloc, filter, statistics, chart
+* Tags: parquet, dataframe, load_file, import, airbnb, tabular, iloc, filter, statistics, chart
 */
 
-model ParquetAirbnbListings
+model ParquetFileImportToDataframe
 
 global {
 
@@ -228,11 +228,7 @@ global {
 			write df_pretty_print(iloc(top_rated, range(0, min(4, (top_rated.rows) - 1))), 5, 9, 16);
 		}
 
-		// ===== 6. Save =====
 		write "";
-		write "===== Saving =====";
-		bool ok <- df_save_csv(seminyak_entire, "../results/seminyak_entire_home.csv");
-		write "Saved seminyak_entire_home.csv : " + ok;
 		write "Done.";
 	}
 }
