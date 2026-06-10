@@ -12,7 +12,9 @@ package gama.gaml.statements;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import gama.annotations.doc;
 import gama.annotations.example;
@@ -378,6 +380,20 @@ public class SaveStatement extends AbstractStatementSequence {
 	private final IExpression noDataFacet;
 
 	/**
+	 * Memoizes the resolution of the file names (as evaluated from the 'to:' facet) to their absolute {@link File}.
+	 * Resolving a path goes through {@link FileUtils#constructAbsoluteFilePath}, which performs workspace lookups and
+	 * filesystem accesses. Doing it on every execution makes tight save loops (especially when a buffering strategy is
+	 * used and the physical write is deferred) spend most of their time re-resolving the very same path. The working
+	 * paths of a model do not change during a run, so the resolution of a given name is stable and can safely be
+	 * cached. A {@link ConcurrentHashMap} is used because the same compiled statement may be executed by several
+	 * simulations running in parallel.
+	 */
+	private final Map<String, File> resolvedFilePaths = new ConcurrentHashMap<>();
+
+	/** Upper bound on {@link #resolvedFilePaths} entries, to guard against unbounded growth on highly dynamic names. */
+	private static final int MAX_CACHED_PATHS = 1024;
+
+	/**
 	 * Instantiates a new save statement.
 	 *
 	 * @param desc
@@ -419,6 +435,30 @@ public class SaveStatement extends AbstractStatementSequence {
 	}
 
 	/**
+	 * Resolves the (possibly relative) file name to its absolute {@link File}, caching the result. The expensive path
+	 * resolution is only performed the first time a given name is encountered (see {@link #resolvedFilePaths} for why
+	 * the result can be memoized).
+	 *
+	 * @param scope
+	 *            the current scope
+	 * @param fileName
+	 *            the file name as evaluated from the 'to:' facet
+	 * @return the absolute file to save into, or null if the path could not be constructed
+	 */
+	private File getFileToSave(final IScope scope, final String fileName) {
+		final File cached = resolvedFilePaths.get(fileName);
+		if (cached != null) return cached;
+		final String filePath = FileUtils.constructAbsoluteFilePath(scope, fileName, false);
+		if (filePath == null || filePath.isEmpty()) return null;
+		final File result = new File(filePath);
+		// The cache only needs to speed up repeated saves to the same (small set of) file(s); reset it if it grows
+		// unexpectedly large because the destination name is dynamic.
+		if (resolvedFilePaths.size() >= MAX_CACHED_PATHS) { resolvedFilePaths.clear(); }
+		resolvedFilePaths.put(fileName, result);
+		return result;
+	}
+
+	/**
 	 * In case the save statement is called with a file object, calls the save method from this object
 	 *
 	 * @param scope
@@ -444,9 +484,8 @@ public class SaveStatement extends AbstractStatementSequence {
 		if (file == null) return saveFile(scope);
 
 		final String fileName = Cast.asString(scope, file.value(scope));
-		final String filePath = FileUtils.constructAbsoluteFilePath(scope, fileName, false);
-		if (filePath == null || "".equals(filePath)) return null;
-		final File fileToSave = new File(filePath);
+		final File fileToSave = getFileToSave(scope, fileName);
+		if (fileToSave == null) return null;
 		String typeExp = getLiteral(IKeyword.FORMAT);
 		// Second case: a filename is indicated but not the type. In that case,
 		// we try to build a new GamaFile from it and save it
@@ -488,8 +527,14 @@ public class SaveStatement extends AbstractStatementSequence {
 		}
 
 		try {
-			Files.createDirectories(fileToSave.toPath().getParent());
-			boolean exists = fileToSave.exists() || BufferingUtils.getInstance().isFileWaitingToBeWritten(fileToSave);
+			// Performance: a file already waiting to be written by a buffering strategy has had its parent directory
+			// created by the first buffered write, and its pending content already makes it count as "existing". We can
+			// therefore skip both the directory creation and the filesystem existence check, which would otherwise be
+			// paid (as system calls) on every single save in a tight buffered-writing loop.
+			final boolean waiting = BufferingUtils.getInstance().isFileWaitingToBeWritten(fileToSave);
+			final boolean alreadyBuffered = waiting && strategy != BufferingStrategies.NO_BUFFERING;
+			if (!alreadyBuffered) { Files.createDirectories(fileToSave.toPath().getParent()); }
+			final boolean exists = waiting || fileToSave.exists();
 			final boolean rewrite = shouldOverwrite(scope);
 
 			IExpression header = getFacet(IKeyword.HEADER);
