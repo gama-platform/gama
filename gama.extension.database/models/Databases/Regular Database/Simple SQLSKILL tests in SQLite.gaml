@@ -23,15 +23,22 @@ global {
 		}
 
 		ask (DB_Accessor) {
-			do executeUpdate(params: PARAMS, updateComm: "DROP TABLE IF EXISTS registration");					
+			do executeUpdate(params: PARAMS, updateComm: "DROP TABLE IF EXISTS registration");
 			do executeUpdate(params: PARAMS, updateComm: "CREATE TABLE registration" + "(id INTEGER PRIMARY KEY, " + " first TEXT NOT NULL, " + " last TEXT NOT NULL, " + " age INTEGER);");
 			write "REGISTRATION table has been created.";
 			do executeUpdate(params: PARAMS, updateComm: "INSERT INTO registration " + "VALUES(100, 'Zara', 'Ali', 18);");
 			do executeUpdate(params: PARAMS, updateComm: "INSERT INTO registration " + "VALUES(?, ?, ?, ?);", values: [101, 'Mr', 'Mme', 45]);
-			do insert(params: PARAMS, into: "registration", values: [102, 'Mahnaz', 'Fatma', 25]);
-			do insert(params: PARAMS, into: "registration", columns: ["id", "first", "last"], values: [103, 'Zaid tim', 'Kha']);
-			do insert(params: PARAMS, into: "registration", columns: ["id", "first", "last"], values: [104, 'Bill', 'Clark']);
-			write "Five records have been inserted.";
+			// 'insert' accepts three kinds of data:
+			// - a list: a single row, one value per column in declaration order
+			do insert(params: PARAMS, into: "registration", data: [102, 'Mahnaz', 'Fatma', 25]);
+			// - a map: a single row, keys are the target columns
+			do insert(params: PARAMS, into: "registration", data: ["id"::103, "first"::'Zaid tim', "last"::'Kha', "age"::33]);
+			// - a dataframe: several rows inserted at once, in a single batch
+			do insert(params: PARAMS, into: "registration", data: dataframe_with(
+				["id", "first", "last", "age"],
+				[[104, 'Bill', 'Clark', 40], [105, 'Zara', 'Ali', 22]]
+			));
+			write "Six records have been inserted.";
 			write "Click on <<Step>> button to view selected data";
 		}
 	}
@@ -39,28 +46,26 @@ global {
 
 species DB_Accessor skills: [SQLSKILL] {
 	reflex select {
-		list<list> t <- select(PARAMS, "SELECT * FROM registration");
-		write "Select before updated " + t;
-		write "    Metadata (column names): " + t[0];
-		write "    Metadata (column types): " + t[1];
-		write "    Data                   : " + t[2]; 
+		// 'select' now returns a dataframe: named, typed columns directly usable in GAML
+		dataframe t <- select(PARAMS, "SELECT * FROM registration");
+		write "Select before update: " + t.rows + " rows, columns: " + t.keys;
+		write df_pretty_print(t);
 	}
 
 	reflex select_parametric {
-		list<list> t <- self.select(params: PARAMS, 
+		dataframe t <- self.select(params: PARAMS,
                             select: "SELECT * FROM registration WHERE age < ?;",
                             values: [26] );
-		write "Parametric select before updated " + t;
-		write "    Metadata (column names): " + t[0];
-		write "    Metadata (column types): " + t[1];
-		write "    Data                   : " + t[2]; 
+		write "Parametric select (age < 26): " + t.rows + " rows";
+		write df_pretty_print(t);
 	}
 
 	reflex update {
 		do executeUpdate(params: PARAMS, updateComm: "UPDATE registration SET age = 30 WHERE id IN (100, 101)");
 		do executeUpdate(params: PARAMS, updateComm: "DELETE FROM registration where id=103 ");
-		list<list> t <- select(PARAMS, "SELECT * FROM registration");
-		write "Select after updated " + t;
+		dataframe t <- select(PARAMS, "SELECT * FROM registration");
+		write "Select after update:";
+		write df_pretty_print(t);
 	}
 
 	reflex drop {
