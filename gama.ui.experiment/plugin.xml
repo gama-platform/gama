@@ -219,7 +219,7 @@
                   name="gama.ui.experiment.separator12"
                   visible="true">
             </separator>
-            <command
+            <!-- <command
                   commandId="gama.application.commands.Cancel"
                   icon="platform:/plugin/gama.ui.shared/icons_svg/light/experiment/experiment.stop.svg"
                   label="Close Experiment"
@@ -236,7 +236,7 @@
                      </reference>
                   </and>
                </visibleWhen>
-            </command>
+            </command> -->
          </menu>
          <menu
                label="Agents">
@@ -672,7 +672,7 @@
                   </and>
                </visibleWhen>
             </command>
-            <command
+            <!-- <command
                   commandId="gama.application.commands.Cancel"
                   icon="platform:/plugin/gama.ui.shared/icons_svg/light/experiment/experiment.stop.svg"
                   label="Close Experiment"
@@ -689,7 +689,7 @@
                      </reference>
                   </and>
                </visibleWhen>
-            </command>
+            </command> -->
          </toolbar>
       </menuContribution>
    </extension>
@@ -793,7 +793,7 @@
             </reference>
          </activeWhen>
       </handler>
-      <handler
+      <!-- <handler
             class="gama.ui.experiment.commands.CancelRun"
             commandId="gama.application.commands.Cancel">
          <activeWhen>
@@ -801,7 +801,7 @@
                   definitionId="isInSimulationPerspective">
             </reference>
          </activeWhen>
-      </handler>
+      </handler> -->
       <handler
             class="gama.ui.experiment.commands.ErrorsPauseAndEdit"
             commandId="gama.application.commands.PauseAndEdit">
@@ -1126,11 +1126,11 @@
             id="gama.application.commands.ShowHideConsoleView"
             name="Show console">
       </command>
-      <command
+      <!-- <command
             categoryId="gama.category"
             id="gama.application.commands.Cancel"
             name="Cancel">
-      </command>
+      </command> -->
       <command
             categoryId="gama.category"
             id="gama.application.commands.PauseAndEdit"
