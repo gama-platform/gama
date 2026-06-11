@@ -30,6 +30,7 @@ import gama.api.additions.registries.GamaAdditionRegistry;
 import gama.api.runtime.GamaExecutorService;
 import gama.api.types.file.IGamaFile;
 import gama.api.ui.IGui;
+import gama.gaml.operators.Files;
 import gama.api.utils.files.FileUtils;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
@@ -41,9 +42,9 @@ import gama.workspace.manager.WorkspaceModelsManager;
  * The Class ApplicationWorkbenchAdvisor.
  */
 public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
-
+	static
 	{
-		DEBUG.OFF();
+		DEBUG.ON();
 	}
 
 	/**
@@ -96,34 +97,34 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 		// Start Server after the GUI is loaded
 		GamaGuiWebSocketServer.startGuiServer();
 
-		if (args.length > 0) {
-			int i = 0;
-			if (args[0].contains("--launcher.defaultAction")) { i += 2; }
-			if (i < args.length) {
-				String exp = args[i];
-				if (!exp.endsWith(".gamr")) {
-					WorkspaceModelsManager.instance.openModelPassedAsArgument(args[args.length - 1]);
-					return;
-				}
-				for (final IEventLayerDelegate delegate : GamaAdditionRegistry.getEventLayerDelegates()) {
-					if (delegate.acceptSource(null, "launcher")) {
-						delegate.createFrom(null, args[args.length - 1], null);
-					}
-				}
-			}
+		// if (args.length > 0) {
+		// 	int i = 0;
+		// 	if (args[0].contains("--launcher.defaultAction")) { i += 2; }
+		// 	if (i < args.length) {
+		// 		String exp = args[i];
+		// 		if (!exp.endsWith(".gamr")) {
+		// 			WorkspaceModelsManager.instance.openModelPassedAsArgument(args[args.length - 1]);
+		// 			return;
+		// 		}
+		// 		for (final IEventLayerDelegate delegate : GamaAdditionRegistry.getEventLayerDelegates()) {
+		// 			if (delegate.acceptSource(null, "launcher")) {
+		// 				delegate.createFrom(null, args[args.length - 1], null);
+		// 			}
+		// 		}
+		// 	}
 
+		// }
+
+		String path = "/home/cytech/Gama_Workspace_Dev/projet_cool/models/model_cool.gaml";
+		String experiment = "prey_predator";
+
+		IGamaFile<?, ?> file = Files.from(null, path);
+		if (file != null && file.exists(null)) {
+			StringBuilder name = new StringBuilder().append(file.getPath(null));
+			if (experiment != null && !experiment.isBlank()) { name.append("#").append(experiment); }
+			WorkspaceModelsManager.instance.openModelPassedAsArgument(name.toString());
 		}
 
-		if (GamaPreferences.Interface.CORE_STARTUP_MODEL.getValue()) {
-			IGamaFile<?, ?> file = GamaPreferences.Interface.CORE_DEFAULT_MODEL.getValue();
-			if (file != null && file.exists(null)) {
-				StringBuilder name = new StringBuilder().append(file.getPath(null));
-				String exp = GamaPreferences.Interface.CORE_DEFAULT_EXPERIMENT.getValue();
-				if (exp != null && !exp.isBlank()) { name.append("#").append(exp); }
-				WorkspaceModelsManager.instance.openModelPassedAsArgument(name.toString());
-			}
-
-		}
 
 	}
 

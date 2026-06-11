@@ -562,11 +562,7 @@ public class WorkspaceManager implements IWorkspaceManager {
 		}
 
 		if (!remember) {
-			String wr = GAMA.getGui().getDialogFactory().openWorkspaceSelectionDialog(true);
-			if (wr == null) {
-				GAMA.getGui().getDialogFactory().error("GAMA can not start without a workspace and will now exit.");
-				return IApplication.EXIT_OK;
-			}
+			String wr = "/home/cytech/Gama_Workspace_Dev";
 			instanceLoc.set(new URL("file", null, wr), false);
 		} else if (!instanceLoc.isSet()) {
 			instanceLoc.set(new URL("file", null, lastUsedWs), false);
