@@ -451,10 +451,11 @@ public class SaveStatement extends AbstractStatementSequence {
 		final String filePath = FileUtils.constructAbsoluteFilePath(scope, fileName, false);
 		if (filePath == null || filePath.isEmpty()) return null;
 		final File result = new File(filePath);
-		// The cache only needs to speed up repeated saves to the same (small set of) file(s); reset it if it grows
-		// unexpectedly large because the destination name is dynamic.
-		if (resolvedFilePaths.size() >= MAX_CACHED_PATHS) { resolvedFilePaths.clear(); }
-		resolvedFilePaths.put(fileName, result);
+		
+		// In case there's a big amount of files written, we just stop caching them
+		if (resolvedFilePaths.size() < MAX_CACHED_PATHS) { 
+			resolvedFilePaths.put(fileName, result);			
+		}
 		return result;
 	}
 
