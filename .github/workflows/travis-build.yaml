@@ -144,7 +144,12 @@ jobs:
           action: restore
 
       - name: Compiling gama
-        run: bash $GITHUB_WORKSPACE/travis/build.sh -e -B -T 4 $MVN_EXTRA_ARGUMENTS
+        run: |
+          # Remove Copilot plugin from the built
+          # Tycho doesn't honor optional tag : https://www.eclipse.org/lists/tycho-user/msg03542.html
+          # Related #836
+          sed -i '/gama\.feature\.copilot/d' $GITHUB_WORKSPACE/gama.product/gama.product
+          bash $GITHUB_WORKSPACE/travis/build.sh -e -B -T 4 $MVN_EXTRA_ARGUMENTS
         env:
           MVN_EXTRA_ARGUMENTS: ${{ inputs.mvn_extra_arguments }}
 

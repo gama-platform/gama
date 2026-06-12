@@ -114,6 +114,7 @@
       <feature id="gama.feature.extension.image" installMode="root"/>
       <feature id="gama.feature.extension.sound" installMode="root"/>
       <feature id="gama.feature.extension.stats" installMode="root"/>
+      <feature id="gama.feature.copilot" installMode="root"/>
    </features>
 
    <configurations>
