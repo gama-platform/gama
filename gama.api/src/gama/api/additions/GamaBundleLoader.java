@@ -43,6 +43,8 @@ import gama.api.additions.delegates.IEventLayerDelegate;
 import gama.api.additions.delegates.ISaveDelegate;
 import gama.api.additions.registries.GamaAdditionRegistry;
 import gama.api.gaml.GAML;
+import gama.api.utils.server.CommandExecutor;
+import gama.api.utils.server.ISocketCommand;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.GamaMetaModel;
 import gama.api.runtime.SystemInfo;
@@ -184,6 +186,9 @@ public class GamaBundleLoader {
 
 	/** The Constant METADATA_EXTENSION. */
 	public static final String METADATA_EXTENSION = "gama.metadata";
+
+	/** The server command extension. Allows plug-ins to register new gama-server (WebSocket) commands. */
+	public static final String SERVER_COMMAND_EXTENSION = "gama.server_command";
 
 	/** The regular models layout. */
 	public static final String REGULAR_MODELS_LAYOUT = "models";
@@ -381,6 +386,14 @@ public class GamaBundleLoader {
 					ERROR("Error in loading extensions to 'metadata'. ", e);
 				}
 				try {
+					TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Loading extensions to 'server_command'", "completed in",
+							() -> {
+								loadServerCommandExt(registry);
+							});
+				} catch (RuntimeException e) {
+					ERROR("Error in loading extensions to 'server_command'. ", e);
+				}
+				try {
 					TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Gathering built-in models", "completed in",
 							() -> { loadModels(registry); });
 				} catch (RuntimeException e) {
@@ -550,6 +563,33 @@ public class GamaBundleLoader {
 				// We do not systematically exit in case of additional plugins failing to load, so as to
 				// give the platform a chance to execute even in case of errors (to save files, to
 				// remove offending plugins, etc.)
+			}
+		}
+	}
+
+	/**
+	 * Loads server command extensions from registered plugins. This method discovers all {@link ISocketCommand}
+	 * implementations contributed through the {@code gama.server_command} extension point and registers them on
+	 * {@link CommandExecutor}, making them available to both the GUI and the headless gama-server.
+	 *
+	 * <p>
+	 * Each contribution associates a command keyword (the JSON {@code type} field sent by clients, e.g. {@code "stream"})
+	 * with a class implementing {@link ISocketCommand}.
+	 *
+	 * @param registry
+	 *            the Eclipse extension registry containing plugin contributions
+	 */
+	private static void loadServerCommandExt(final IExtensionRegistry registry) {
+		for (final IConfigurationElement e : registry.getConfigurationElementsFor(SERVER_COMMAND_EXTENSION)) {
+			try {
+				final String type = e.getAttribute("type");
+				final ISocketCommand command = (ISocketCommand) e.createExecutableExtension("class");
+				CommandExecutor.registerContributedCommand(type, command);
+			} catch (final Exception e1) {
+				ERROR("Error in loading server command from "
+						+ e.getDeclaringExtension().getContributor().getName(), e1);
+				// We do not systematically exit in case of additional plugins failing to load, so as to
+				// give the platform a chance to execute even in case of errors.
 			}
 		}
 	}
