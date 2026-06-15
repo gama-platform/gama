@@ -11,6 +11,7 @@
    <extension-point id="gama.experiment" name="Implementations of IExperimentAgent" schema="schema/gama.experiment.exsd"/>
    <extension-point id="gama.constants" name="Implementations of IConstantsSupplier" schema="schema/gama.constants.exsd"/>
    <extension-point id="gama.metadata" name="Implementations of IGamaFileMetaData" schema="schema/gama.metadata.exsd"/>
+   <extension-point id="gama.server_command" name="Implementations of ISocketCommand" schema="schema/gama.server_command.exsd"/>
    <extension
          point="gaml.extension">
    </extension>
