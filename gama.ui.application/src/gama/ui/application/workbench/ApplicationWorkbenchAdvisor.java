@@ -37,6 +37,13 @@ import gama.dev.DEBUG;
 import gama.ui.application.Application;
 import gama.ui.application.server.GamaGuiWebSocketServer;
 import gama.workspace.manager.WorkspaceModelsManager;
+import gaml.compiler.validation.GamlModelBuilder;
+import gama.dev.THREADS;
+import gama.api.kernel.species.IModelSpecies;
+import java.util.ArrayList;
+import java.util.List;
+import gama.api.compilation.GamlCompilationError;
+import org.eclipse.emf.common.util.URI;
 
 /**
  * The Class ApplicationWorkbenchAdvisor.
@@ -114,17 +121,34 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 		// 	}
 
 		// }
+Display.getDefault().asyncExec(new Runnable() {
+    @Override
+    public void run() {
 
 		String path = "/home/cytech/Gama_Workspace_Dev/projet_cool/models/model_cool.gaml";
 		String experiment = "prey_predator";
 
 		IGamaFile<?, ?> file = Files.from(null, path);
 		if (file != null && file.exists(null)) {
-			StringBuilder name = new StringBuilder().append(file.getPath(null));
-			if (experiment != null && !experiment.isBlank()) { name.append("#").append(experiment); }
-			WorkspaceModelsManager.instance.openModelPassedAsArgument(name.toString());
+
+			while (GAMA.getRegularGui() == null) {
+				THREADS.WAIT(100, Thread.currentThread().getName() + ": waiting for the GUI to become available");
+			}
+
+            final URI uri = file.getURIRelativeToWorkspace();
+            final List<GamlCompilationError> errors = new ArrayList<GamlCompilationError>();
+            final IModelSpecies model = GamlModelBuilder.getInstance().compile(uri,errors);
+
+            GAMA.runGuiExperiment(experiment,model);
+
+			// StringBuilder name = new StringBuilder().append(file.getPath(null));
+			// if (experiment != null && !experiment.isBlank()) { name.append("#").append(experiment); }
+			// WorkspaceModelsManager.instance.openModelPassedAsArgument(name.toString());
 		}
 
+
+    }
+});
 
 	}
 
