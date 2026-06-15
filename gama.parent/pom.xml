@@ -139,6 +139,7 @@
 		<module>../gama.extension.stats</module>
 		<module>../gama.extension.maths</module>
 		<module>../gama.extension.image</module>
+		<module>../gama.extension.streaming</module>
 		<module>../gama.extension.traffic</module>
 		<module>../gama.extension.network</module>
 		<module>../gama.extension.physics</module>
