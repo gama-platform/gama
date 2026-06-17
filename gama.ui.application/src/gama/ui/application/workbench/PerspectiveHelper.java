@@ -353,7 +353,7 @@ public class PerspectiveHelper {
 					// an inconsistent state after a failed launch.
 					if (currentSimulationPerspective != null) {
 						deleteCurrentSimulationPerspective();
-					} else if (isSimulationPerspective(oldDescriptor.getId()) && oldDescriptor instanceof SimulationPerspectiveDescriptor oldSimulation
+					} else if (oldDescriptor != null && isSimulationPerspective(oldDescriptor.getId()) && oldDescriptor instanceof SimulationPerspectiveDescriptor oldSimulation
 							&& !descriptor.equals(oldSimulation)) {
 						page.closePerspective(oldSimulation, false, false);
 						getPerspectiveRegistry().deletePerspective(oldSimulation);

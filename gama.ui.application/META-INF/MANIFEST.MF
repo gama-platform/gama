@@ -19,7 +19,8 @@ Require-Bundle: gama.workspace,
  org.osgi.service.event,
  gama.api,
  gama.dependencies,
- gama.core
+ gama.core,
+ gaml.compiler
 Bundle-Vendor: UMMISCO
 Bundle-Version: 0.0.0.qualifier
 Bundle-ManifestVersion: 2

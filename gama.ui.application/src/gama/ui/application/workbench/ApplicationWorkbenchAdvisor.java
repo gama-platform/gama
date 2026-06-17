@@ -121,34 +121,39 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 		// 	}
 
 		// }
-Display.getDefault().asyncExec(new Runnable() {
-    @Override
-    public void run() {
 
-		String path = "/home/cytech/Gama_Workspace_Dev/projet_cool/models/model_cool.gaml";
-		String experiment = "prey_predator";
+        Display.getDefault().syncExec(
+            new Runnable() {
 
-		IGamaFile<?, ?> file = Files.from(null, path);
-		if (file != null && file.exists(null)) {
+                static 
+                {
+                    DEBUG.ON();
+                }
 
-			while (GAMA.getRegularGui() == null) {
-				THREADS.WAIT(100, Thread.currentThread().getName() + ": waiting for the GUI to become available");
-			}
+                @Override
+                public void run() {
 
-            final URI uri = file.getURIRelativeToWorkspace();
-            final List<GamlCompilationError> errors = new ArrayList<GamlCompilationError>();
-            final IModelSpecies model = GamlModelBuilder.getInstance().compile(uri,errors);
+                String path = "/home/cytech/Gama_Workspace_Dev/projet_cool/models/model_cool.gaml";
+                String experiment = "prey_predator";
 
-            GAMA.runGuiExperiment(experiment,model);
+                IGamaFile<?, ?> file = Files.from(null, path);
+                if (file != null && file.exists(null)) {
 
-			// StringBuilder name = new StringBuilder().append(file.getPath(null));
-			// if (experiment != null && !experiment.isBlank()) { name.append("#").append(experiment); }
-			// WorkspaceModelsManager.instance.openModelPassedAsArgument(name.toString());
-		}
+                    while (GAMA.getRegularGui() == null) {
+                        THREADS.WAIT(100, Thread.currentThread().getName() + ": waiting for the GUI to become available");
+                    }
 
+                    final URI uri = file.getURIRelativeToWorkspace();
+                    final List<GamlCompilationError> errors = new ArrayList<GamlCompilationError>();
 
-    }
-});
+            		final IModelSpecies model = GamlModelBuilder.getInstance().compile(uri,errors);
+
+            		GAMA.runGuiExperiment(experiment,model);
+
+		        }
+            }
+        }
+    );
 
 	}
 

@@ -1,0 +1,19 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Gama Export Plugin
+Bundle-Vendor: UMMISCO
+Bundle-Version: 0.0.0.qualifier
+Bundle-SymbolicName: gama.export;singleton:=true
+Bundle-ActivationPolicy: lazy
+Require-Bundle: gaml.compiler;visibility:=reexport,
+ org.eclipse.xtext.ui,
+ org.eclipse.xtext.ui.shared,
+ gama.dependencies,
+ org.eclipse.ui,
+ org.antlr.runtime;bundle-version="[3.2.0,3.2.1)"
+Bundle-Activator: gama.export.ExportActivator
+Export-Package: gama.export
+Bundle-RequiredExecutionEnvironment: JavaSE-25
+Automatic-Module-Name: gama.export
+Import-Package: org.apache.log4j,
+ org.slf4j;version="[2.0.0,3.0.0)"

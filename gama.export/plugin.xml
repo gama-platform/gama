@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+	<extension
+		point="org.eclipse.emf.ecore.extension_parser">
+		<parser
+			class="gama.export.GamlExecutableExtensionFactory:org.eclipse.xtext.resource.IResourceFactory"
+			type="gaml">
+		</parser>
+  <parser
+        class="gama.export.GamlExecutableExtensionFactory:org.eclipse.xtext.resource.IResourceFactory"
+        type="experiment">
+  </parser>
+	</extension>
+	<!-- <extension point="org.eclipse.xtext.extension_resourceServiceProvider">
+		<resourceServiceProvider
+			class="gama.export.GamlExecutableExtensionFactory:org.eclipse.xtext.ui.resource.IResourceUIServiceProvider"
+			uriExtension="gaml">
+		</resourceServiceProvider>
+        <resourceServiceProvider
+              class="gama.export.GamlExecutableExtensionFactory:org.eclipse.xtext.ui.resource.IResourceUIServiceProvider"
+              uriExtension="experiment">
+        </resourceServiceProvider>
+    </extension> -->
+ <!-- <extension
+       point="org.eclipse.ui.editors.documentProviders">
+    <provider
+          class="gaml.compiler.ui.GamlExecutableExtensionFactory:org.eclipse.xtext.ui.editor.model.XtextDocumentProvider"
+          extensions="gaml,experiment"
+          id="gaml.compiler.Gaml.editors.documentProviders">
+    </provider>
+ </extension> -->
+</plugin>
