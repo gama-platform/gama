@@ -2295,9 +2295,49 @@ public class Maths {
 					@example (
 							value = "atan2 (-1,-1)",
 							equals = "-135.0"), },
-			see = { "atan", "acos", "asin" })
+			see = { "atan", "acos", "asin", "atan2_rad" })
 	public static double atan2(final double y, final double x) {
 		return Math.atan2(y, x) * toDeg;
+	}
+	
+	@operator (
+			value = "atan2_rad",
+			can_be_const = true,
+			category = { IOperatorCategory.ARITHMETIC },
+			concept = { IConcept.MATH, IConcept.ARITHMETIC })
+	@doc (
+			value = "the atan2 value of the two operands, expressed in radians.",
+					examples = { @example (
+							value = "atan2 (0,0)",
+							equals = "0.0"),
+							@example (
+									value = "atan2 (0,1)",
+									equals = "0.0"),
+							@example (
+									value = "atan2 (0,-1)",
+									equals = "#pi"),
+							@example (
+									value = "atan2 (1,0)",
+									equals = "#pi/2"),
+							@example (
+									value = "atan2 (1,1)",
+									equals = "#pi/4"),
+							@example (
+									value = "atan2 (1,-1)",
+									equals = "3*#pi/4"),
+							@example (
+									value = "atan2 (-1,0)",
+									equals = "-#pi/2"),
+							@example (
+									value = "atan2 (-1,1)",
+									equals = "-#pi/4"),
+							@example (
+									value = "atan2 (-1,-1)",
+									equals = "-3*#pi/4"), },
+			see = { "atan2", "cos_rad", "sin_rad", "tan_rad"}
+			)
+	public static double atan2_rad(final double y, final double x) {
+		return Math.atan2(y, x);
 	}
 
 	/**

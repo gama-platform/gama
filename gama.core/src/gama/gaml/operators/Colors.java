@@ -388,12 +388,12 @@ public class Colors {
 	 * @return the gama color
 	 */
 	@operator (
-			value = "hsb",
+			value = {"hsb", "from_hsb"},
 			can_be_const = true,
 			category = { IOperatorCategory.COLOR },
 			concept = {})
 	@doc (
-			value = "Converts hsb (h=hue, s=saturation, b=brightness) value to Gama color",
+			value = "Converts hsb (h=hue, s=saturation, b=brightness) value to Gama color (rgb). Each value should be beetween 0.0 and 1.0.",
 			examples = @example (
 					value = "hsb (0.5,1.0,1.0,0.0)",
 					equals = "rgb(\"cyan\",0)"))
