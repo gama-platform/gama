@@ -14,6 +14,11 @@ import static gama.api.utils.server.ISocketCommand.EXP_ID;
 
 import java.io.PrintStream;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CodingErrorAction;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
@@ -64,6 +69,14 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 	/** The listeners. */
 	protected final ListenerList<Listener> listeners = new ListenerList<>(ListenerList.IDENTITY);
 
+	// Is thread local because the decoder is stateful
+	// TODO: It may be better to have one decoder per open connection (needs to be benchmarked) but good enough for now
+	protected static final ThreadLocal<CharsetDecoder> DECODER = ThreadLocal.withInitial(() ->
+	    StandardCharsets.UTF_8.newDecoder()
+	        .onMalformedInput(CodingErrorAction.REPLACE)
+	        .onUnmappableCharacter(CodingErrorAction.REPLACE)
+	);
+	
 	/**
 	 * Instantiates a new gama web socket server.
 	 *
@@ -221,9 +234,16 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 			}
 		} catch (Exception e1) {
 			DEBUG.OUT(e1);
-			socket.send(
-					GAMA.getJsonEncoder().valueOf(new GamaServerMessage(MessageType.GamaServerError, e1)).toString());
-
+			socket.send(GAMA.getJsonEncoder().valueOf(new GamaServerMessage(MessageType.GamaServerError, e1)).toString());
+		}
+	}
+	
+	@Override
+	public void onMessage(WebSocket socket, ByteBuffer message) {
+		try {
+			onMessage(socket, DECODER.get().decode(message).toString());
+		} catch (CharacterCodingException e) {
+			socket.send(GAMA.getJsonEncoder().valueOf(new GamaServerMessage(MessageType.GamaServerError, e)).toString());
 		}
 	}
 

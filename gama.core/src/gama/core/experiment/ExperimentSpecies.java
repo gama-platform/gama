@@ -56,6 +56,7 @@ import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.kernel.species.IModelSpecies;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.ExecutionScope;
+import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.color.IColor;
 import gama.api.types.geometry.IPoint;
@@ -600,8 +601,9 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 	 *            the seed
 	 */
 	@Override
-	public synchronized void open(final Double seed) {
+	public synchronized IExecutionResult open(final Double seed) {
 
+		IExecutionResult res = IExecutionResult.FAILED;
 		createAgent(seed);
 
 		// We add the agent as soon as possible so as to make it possible to
@@ -610,17 +612,18 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 		// Make sure that the attributes in experiment are initialized (see #3842)
 		agent.getParameterValues().forEach((n, v) -> { if (hasVar(n)) { agent.setDirectVarValue(myScope, n, v); } });
 		myScope.push(agent);
-		prepareGui();
+		prepareGui(); //TODO: do we really need that in headless ?
 		IScope scope = agent.getScope();
-		agent.schedule(scope);
+		res = agent.schedule(scope);
 
 		// showParameters();
 
-		if (isBatch()) {
+		if (res.passed() && isBatch()) {
 			myScope.getGui().getStatus().informStatus(" Batch ready. Click run to begin.",
 					IStatusMessage.SIMULATION_ICON);
 			GAMA.updateExperimentState(this);
 		}
+		return res;
 
 	}
 
@@ -668,8 +671,10 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 		try {
 
 			reloading = true;
-			agent.dispose();
-			agent = null;
+			if (agent != null) {
+				agent.dispose();				
+				agent = null;
+			}
 		} finally {
 			reloading = false;
 		}

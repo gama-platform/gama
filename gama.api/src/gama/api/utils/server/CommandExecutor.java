@@ -112,13 +112,15 @@ public class CommandExecutor implements ICommandExecuter {
 		if (command == null) throw new IllegalArgumentException("Invalid command type: " + cmd_type);
 
 		// Executes the command in a separate thread so the executor can
-		// continue with the next one without waiting for it to finish
-		// new Thread(() -> {
-		var res = command.execute(server, socket, map);
-		if (res != null && ReadyState.OPEN.equals(socket.getReadyState())) {
-			socket.send(GAMA.getJsonEncoder().valueOf(res).toString());
-		}
-		// }).start();
+		// continue with the next one without waiting for it to finish.
+		// This is necessary to prevent connection closing during long commands
+		// because the main thread is busy and can't answer to the keepalive ping.
+		new Thread(() -> {
+			var res = command.execute(server, socket, map);
+			if (res != null && ReadyState.OPEN.equals(socket.getReadyState())) {
+				socket.send(GAMA.getJsonEncoder().valueOf(res).toString());
+			}
+		 }).start();
 	}
 
 	/**

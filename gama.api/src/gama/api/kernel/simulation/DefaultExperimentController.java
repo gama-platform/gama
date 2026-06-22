@@ -14,6 +14,7 @@ import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.runtime.GamaExecutorService;
+import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
 import gama.api.ui.IStatusMessage;
 import gama.dev.DEBUG;
@@ -246,7 +247,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 		// Optimization: Cache scope to reduce volatile reads
 		final IScope currentScope = getScope();
 
-		switch (command) {
+		switch (command.type()) {
 			case _CLOSE:
 				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.NONE);
 				return true;
@@ -285,6 +286,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 				return true;
 
 			case _STEP:
+				// As we are in GUI, we assume there's only one step
 				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.PAUSED);
 				paused = true;
 				lock.release(); // let the execution thread run one step
@@ -293,6 +295,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 				return true;
 
 			case _BACK:
+				// As we are in GUI, we assume there's only one step
 				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.PAUSED);
 				paused = true;
 				// Optimization: Add null check before operation
@@ -317,7 +320,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 								currentScope.getGui().showLaunchingOverlay(experiment.getName());
 								experiment.reload();
 							});
-					if (wasRunning) return processUserCommand(ExperimentCommand._START);
+					if (wasRunning) return processUserCommand(_START_CMD);
 					currentScope.getGui().getStatus().informStatus("Experiment reloaded",
 							IStatusMessage.SIMULATION_ICON);
 					return true;
@@ -386,7 +389,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 
 				// Signal command thread to exit its take() loop
 				if (commandThread != null && commandThread.isAlive()) {
-					commands.offer(ExperimentCommand._CLOSE);
+					commands.offer(_CLOSE_CMD);
 					try {
 						commandThread.join(1000);
 						if (commandThread.isAlive()) {
@@ -542,13 +545,15 @@ public class DefaultExperimentController extends AbstractExperimentController {
 	 *            the agent
 	 */
 	@Override
-	public void schedule(final IExperimentAgent agent) {
+	public IExecutionResult schedule(final IExperimentAgent agent) {
 		this.agent = agent;
 		scope = agent.getScope();
 		serverConfiguration = GAMA.getServer() != null ? GAMA.getServer().obtainGuiServerConfiguration() : null;
 		scope.setServerConfiguration(serverConfiguration);
+		IExecutionResult res = IExecutionResult.FAILED;
 		try {
-			if (!scope.init(agent).passed()) {
+			res = scope.init(agent);
+			if (!res.passed()) {
 				scope.setDisposeStatus();
 			} else if (agent instanceof IExperimentAgent.Test) {
 				asynchronousStart();
@@ -563,6 +568,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 			// the modelling perspective.
 			if (scope != null && !scope.interrupted()) { notifyExceptionAndReloadExperiment(e); }
 		}
+		return res;
 	}
 
 	/**

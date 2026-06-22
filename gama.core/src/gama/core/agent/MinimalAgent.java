@@ -42,6 +42,7 @@ import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.species.GamlSpecies;
 import gama.api.kernel.species.IModelSpecies;
 import gama.api.kernel.species.ISpecies;
+import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.GamaShapeFactory;
 import gama.api.types.geometry.IPoint;
@@ -631,8 +632,9 @@ public class MinimalAgent implements IAgent, Comparable<IAgent> {
 	public void setHost(final IMacroAgent macroAgent) {}
 
 	@Override
-	public void schedule(final IScope scope) {
-		if (!dead()) { scope.init(this); }
+	public IExecutionResult schedule(final IScope scope) {
+		if (!dead()) { return scope.init(this); }
+		return IExecutionResult.PASSED;
 	}
 
 	@Override

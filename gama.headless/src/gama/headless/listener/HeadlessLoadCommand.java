@@ -33,11 +33,12 @@ import gama.headless.server.GamaServerExperimentJob;
 
 /**
  * The Class LoadCommand.
+ * Specialized for calls in headless server, strips out GUI dependencies
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 15 oct. 2023
  */
-public class LoadCommand implements ISocketCommand {
+public class HeadlessLoadCommand implements ISocketCommand {
 	@Override
 	public CommandResponse execute(final IGamaServer server, final WebSocket socket, final ReceivedMessage map) {
 		final Object model = map.get(IKeyword.MODEL);
