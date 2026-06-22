@@ -91,6 +91,20 @@ public class LaunchingOverlay {
 	private static final int CONSOLE_TEXT_PADDING = 6;
 
 	/**
+	 * Blend percentage (0–100) used to derive the console border colour from the overlay background and foreground. A
+	 * value of 30 means the border is 30 % of the way between the background and the foreground, creating a subtle but
+	 * clearly visible frame on both light and dark themes.
+	 */
+	private static final int CONSOLE_BORDER_BLEND_PCT = 30;
+
+	/**
+	 * Blend percentage (0–100) used to tint the console background colour away from the overlay background. A value of
+	 * 8 means only a slight tint toward white (dark theme) or black (light theme), just enough to visually separate the
+	 * terminal area from the surrounding overlay without being distracting.
+	 */
+	private static final int CONSOLE_BG_BLEND_PCT = 8;
+
+	/**
 	 * SWT style of the overlay shell. The overlay is intentionally modeless so the native frame of the parent workbench
 	 * shell remains draggable and resizable while launch feedback is displayed. {@link SWT#NO_TRIM} preserves the
 	 * current undecorated full-client-area appearance.
@@ -307,17 +321,21 @@ public class LaunchingOverlay {
 		canvas.addPaintListener(e -> paintCanvas(e, bg, fg));
 
 		// ── Scrollable console area at the bottom ─────────────────────────────────
-		// No SWT.BORDER – we use a tinted background instead to frame the widget.
 		// No SWT.H_SCROLL – SWT.WRAP already prevents horizontal overflow.
+		// A tinted background and a drawn border (see paintCanvas) frame the widget.
 		consoleText = new StyledText(overlay, SWT.MULTI | SWT.V_SCROLL | SWT.READ_ONLY | SWT.WRAP);
 		consoleText.setEditable(false);
-		consoleText.setBackground(bg);
-		// Dimmed foreground matching the subtitle style
+		// Tinted background: slightly lighter (dark theme) or slightly darker (light theme) than the overlay
+		// background, so the console area is visually distinct on every platform.
 		final boolean dark = ThemeHelper.isDark();
+		final var consoleBg = createConsoleBgColor(overlay.getDisplay(), bg, dark);
+		consoleText.setBackground(consoleBg);
+		consoleText.addDisposeListener(ev -> consoleBg.dispose());
+		// Dimmed foreground matching the subtitle style
 		final var consoleFg = new Color(overlay.getDisplay(), blend(fg.getRed(), dark ? 255 : 0, 20),
 				blend(fg.getGreen(), dark ? 255 : 0, 20), blend(fg.getBlue(), dark ? 255 : 0, 20));
 		consoleText.setForeground(consoleFg);
-		consoleText.addDisposeListener(e -> consoleFg.dispose());
+		consoleText.addDisposeListener(ev -> consoleFg.dispose());
 		consoleText.setFont(parent.getFont());
 		// Inner padding so text doesn't touch the widget edges.
 		consoleText.setMargins(CONSOLE_TEXT_PADDING, CONSOLE_TEXT_PADDING, CONSOLE_TEXT_PADDING, CONSOLE_TEXT_PADDING);
@@ -394,9 +412,13 @@ public class LaunchingOverlay {
 			if (consoleText == null || consoleText.isDisposed()) return;
 			if (consoleText.getCharCount() > 0) { consoleText.append(System.lineSeparator()); }
 			consoleText.append(firstLine);
-			// Auto-scroll to the bottom so the latest line is always visible;
-			// the user can freely scroll up to read earlier lines.
-			consoleText.setTopIndex(consoleText.getLineCount() - 1);
+			// Auto-scroll to the bottom: compute how many lines fit in the visible area and
+			// set topIndex so that the most-recent line appears at the bottom (terminal behaviour).
+			final int lineCount = consoleText.getLineCount();
+			final int lineHeight = consoleText.getLineHeight();
+			final int clientHeight = consoleText.getClientArea().height;
+			final int visibleLines = lineHeight > 0 && clientHeight > 0 ? clientHeight / lineHeight : 1;
+			consoleText.setTopIndex(Math.max(0, lineCount - visibleLines));
 		});
 	}
 
@@ -469,8 +491,10 @@ public class LaunchingOverlay {
 		consoleText.setBounds(hMargin, consoleY, sz.x - 2 * hMargin, CONSOLE_AREA_HEIGHT);
 		consoleText.moveAbove(canvas);
 
-		// Tell the canvas its blockTop so the title is vertically aligned with the cancel bar.
+		// Tell the canvas its blockTop so the title is vertically aligned with the cancel bar,
+		// and the console bounds so it can draw a visible border around the terminal area.
 		canvas.setData("blockTop", blockTop);
+		canvas.setData("consoleBounds", new Rectangle(hMargin, consoleY, sz.x - 2 * hMargin, CONSOLE_AREA_HEIGHT));
 		canvas.redraw();
 	}
 
@@ -488,6 +512,26 @@ public class LaunchingOverlay {
 		final var b = canvas.getBounds();
 		e.gc.setBackground(bg);
 		e.gc.fillRectangle(0, 0, b.width, b.height);
+
+		// ── Console area: tinted fill + border ────────────────────────────────
+		final Object consoleBoundsData = canvas.getData("consoleBounds");
+		if (consoleBoundsData instanceof Rectangle cb) {
+			// Fill the tinted background region so it shows even behind the StyledText (avoids gaps on resize)
+			final boolean darkBg = ThemeHelper.isDark();
+			final var consoleBgColor = createConsoleBgColor(e.display, bg, darkBg);
+			e.gc.setBackground(consoleBgColor);
+			e.gc.fillRectangle(cb.x, cb.y, cb.width, cb.height);
+			consoleBgColor.dispose();
+			// Draw a 1-px border with CONSOLE_BORDER_BLEND_PCT % blend toward the foreground
+			final var borderColor = new Color(e.display, blend(bg.getRed(), fg.getRed(), CONSOLE_BORDER_BLEND_PCT),
+					blend(bg.getGreen(), fg.getGreen(), CONSOLE_BORDER_BLEND_PCT),
+					blend(bg.getBlue(), fg.getBlue(), CONSOLE_BORDER_BLEND_PCT));
+			e.gc.setForeground(borderColor);
+			e.gc.drawRectangle(cb.x - 1, cb.y - 1, cb.width + 2, cb.height + 2);
+			borderColor.dispose();
+			// Restore background for subsequent text drawing
+			e.gc.setBackground(bg);
+		}
 
 		// ── Title (20pt bold) ─────────────────────────────────────────────────
 		final FontData fd = parent.getFont().getFontData()[0];
@@ -529,6 +573,27 @@ public class LaunchingOverlay {
 	 */
 	private static int blend(final int a, final int b, final int pct) {
 		return a + (b - a) * pct / 100;
+	}
+
+	/**
+	 * Creates a tinted version of the given background colour for use as the console area background. The tint blends
+	 * {@code CONSOLE_BG_BLEND_PCT} percent toward white on dark themes and toward black on light themes, so the console
+	 * area is subtly distinct from the surrounding overlay on every platform.
+	 *
+	 * @param display
+	 *            the SWT display to allocate the colour on
+	 * @param bg
+	 *            the overlay background colour
+	 * @param dark
+	 *            {@code true} if the current theme is dark, {@code false} if light
+	 * @return a new {@link Color} that the caller is responsible for disposing
+	 */
+	private static Color createConsoleBgColor(final org.eclipse.swt.widgets.Display display, final Color bg,
+			final boolean dark) {
+		final int target = dark ? 255 : 0;
+		return new Color(display, blend(bg.getRed(), target, CONSOLE_BG_BLEND_PCT),
+				blend(bg.getGreen(), target, CONSOLE_BG_BLEND_PCT),
+				blend(bg.getBlue(), target, CONSOLE_BG_BLEND_PCT));
 	}
 
 	/**
