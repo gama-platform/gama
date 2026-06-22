@@ -527,7 +527,7 @@ public class LaunchingOverlay {
 					blend(bg.getGreen(), fg.getGreen(), CONSOLE_BORDER_BLEND_PCT),
 					blend(bg.getBlue(), fg.getBlue(), CONSOLE_BORDER_BLEND_PCT));
 			e.gc.setForeground(borderColor);
-			e.gc.drawRectangle(cb.x - 1, cb.y - 1, cb.width + 2, cb.height + 2);
+			e.gc.drawRectangle(cb.x - 1, cb.y - 1, cb.width + 1, cb.height + 1);
 			borderColor.dispose();
 			// Restore background for subsequent text drawing
 			e.gc.setBackground(bg);
