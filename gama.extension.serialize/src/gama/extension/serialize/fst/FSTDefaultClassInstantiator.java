@@ -103,7 +103,7 @@ public class FSTDefaultClassInstantiator implements FSTClassInstantiator {
 	 */
 	private static Constructor newSerializationConstructor(final Class clazz, final Class baseClass) {
 		try {
-			Constructor base = baseClass.getDeclaredConstructor((Class[]) null);
+			Constructor base = baseClass.getDeclaredConstructor();
 			Constructor c = ReflectionFactory.getReflectionFactory().newConstructorForSerialization(clazz, base);
 			if (c != null) { c.setAccessible(true); }
 			return c;
