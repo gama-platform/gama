@@ -76,12 +76,17 @@ public class GamaFoldingRegionProvider extends DefaultFoldingRegionProvider {
 						if (length > 0 && foldingRegionAcceptor instanceof IFoldingRegionAcceptorExtension<?> ext) {
 							@SuppressWarnings ("unchecked") final var typedExt =
 									(IFoldingRegionAcceptorExtension<ITextRegion>) ext;
-							typedExt.accept(offset, length, initiallyFolded, null);
+							typedExt.accept(offset, length, initiallyFolded);
 						}
 					}
 				}
 			}
-			// Empty block or node not found: skip folding for this S_If
+			// Still traverse children so nested folds (including else / else-if) are computed.
+			if (shouldProcessContent(eObject)) {
+				for (final EObject child : eObject.eContents()) {
+					computeObjectFolding(child, foldingRegionAcceptor, initiallyFolded);
+				}
+			}
 			return;
 		}
 		super.computeObjectFolding(eObject, foldingRegionAcceptor, initiallyFolded);
