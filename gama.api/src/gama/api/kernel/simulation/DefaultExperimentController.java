@@ -515,9 +515,9 @@ public class DefaultExperimentController extends AbstractExperimentController {
 		// Step 3: dispose any partially-created simulation and return to the
 		// modeling perspective (andLeaveExperimentPerspective = true), so a failed
 		// launch cannot leave a stale simulation perspective behind.
-		// NOTE: this triggers ExperimentOutputManager.dispose() → cleanAfterExperiment()
-		// → handler.stop(). By then displayLatestErrors() has already populated
-		// cleanExceptions, so the view content survives the stop.
+		// NOTE: this triggers ExperimentOutputManager.dispose() → gui.cleanAfterExperiment().
+		// displayLatestErrors() has already flushed pending exceptions, so the Errors view is populated
+		// before the UI cleanup/perspective switch runs.
 		// DO NOT call experiment.reload() here — that creates an infinite loop.
 		try {
 			if (agent != null) { agent.closeSimulations(true); }
