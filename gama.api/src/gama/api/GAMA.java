@@ -400,7 +400,12 @@ public class GAMA {
 		}
 
 		controller = newExperiment.getController();
-		if (!controllers.isEmpty()) { closeAllExperiments(false, false); }
+		// Close all existing experiments and switch back to the modeling perspective
+		// before opening the new one. Passing true for andOpenModelingPerspective
+		// ensures a full perspective reset — equivalent to pressing the "close
+		// experiment" button — so any partial or failed simulation state is discarded
+		// before the new experiment's perspective is opened.
+		if (!controllers.isEmpty()) { closeAllExperiments(true, false); }
 
 		if (newExperiment.isTest()) {
 			// controllers.add(controller);
