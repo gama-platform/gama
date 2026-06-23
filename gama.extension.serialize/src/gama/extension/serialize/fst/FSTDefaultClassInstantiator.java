@@ -107,7 +107,7 @@ public class FSTDefaultClassInstantiator implements FSTClassInstantiator {
 			Constructor c = ReflectionFactory.getReflectionFactory().newConstructorForSerialization(clazz, base);
 			if (c != null) { c.setAccessible(true); }
 			return c;
-		} catch (NoClassDefFoundError | NoSuchMethodException ex) {
+		} catch (NoClassDefFoundError | NoSuchMethodException | SecurityException | RuntimeException ex) {
 			return null;
 		}
 	}
