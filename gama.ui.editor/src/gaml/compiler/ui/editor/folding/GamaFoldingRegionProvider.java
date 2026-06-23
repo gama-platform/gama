@@ -73,9 +73,10 @@ public class GamaFoldingRegionProvider extends DefaultFoldingRegionProvider {
 					if (sIfNode != null && lastStmtNode != null) {
 						final int offset = sIfNode.getOffset();
 						final int length = lastStmtNode.getOffset() + lastStmtNode.getLength() - offset;
-						if (length > 0) {
-							((IFoldingRegionAcceptorExtension<ITextRegion>) foldingRegionAcceptor).accept(offset,
-									length, initiallyFolded, null);
+						if (length > 0 && foldingRegionAcceptor instanceof IFoldingRegionAcceptorExtension<?> ext) {
+							@SuppressWarnings("unchecked") final var typedExt =
+									(IFoldingRegionAcceptorExtension<ITextRegion>) ext;
+							typedExt.accept(offset, length, initiallyFolded, null);
 							return;
 						}
 					}
