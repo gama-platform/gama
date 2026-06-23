@@ -351,7 +351,7 @@ public abstract class AbstractContainerStatement extends AbstractStatement {
 							isAll ? list.getGamlType().toString() : contentType.toString());
 				}
 				final IType<?> keyType = list.getGamlType().getKeyType();
-				if (index != null && keyType != Types.NO_TYPE && !index.getGamlType().isTranslatableInto(keyType)) {
+				if (index != null && keyType != Types.NO_TYPE && !keyType.isAssignableFrom(index.getGamlType())) {
 					if (Types.LIST.isAssignableFrom(list.getGamlType())
 							&& Types.PAIR.of(Types.INT, Types.INT).equals(index.getGamlType()))
 						return;
