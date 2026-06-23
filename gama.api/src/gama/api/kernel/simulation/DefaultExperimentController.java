@@ -450,13 +450,13 @@ public class DefaultExperimentController extends AbstractExperimentController {
 	}
 
 	/**
-	 * Cleans up any partially-created simulation, then reports the runtime exception to the Errors view, the status bar
-	 * and opens the Errors view — while returning to a clean modeling perspective.
+	 * Reports the runtime exception to the Errors view and the status bar, then cleans up any partially-created
+	 * simulation — keeping the experiment perspective open so the user can inspect the error.
 	 *
 	 * <p>
 	 * This is used for initialisation-time errors (thrown from {@link #schedule}) where the simulation has not been
-	 * fully created yet and any partially-opened simulation perspective must be discarded before another model is
-	 * launched.
+	 * fully created yet. The experiment perspective remains visible so the error stays accessible. Any subsequent
+	 * model launch will close this failed experiment cleanly via {@link gama.api.GAMA#runGuiExperiment}.
 	 * </p>
 	 *
 	 * <p>
@@ -469,9 +469,9 @@ public class DefaultExperimentController extends AbstractExperimentController {
 	 * <li><b>Queue and show the error</b> — {@code runtimeError} pushes the exception to the runtime handler,
 	 * {@code errorStatus} sets the status bar label, and {@code displayLatestErrors} flushes the handler immediately so
 	 * the Errors view is populated before disposal.</li>
-	 * <li><b>Dispose the partial simulation</b> — {@code agent.closeSimulations(true)} disposes any partial simulation
-	 * and fully exits the simulation perspective, restoring the modeling perspective before another model is opened.
-	 * Disposing after reporting keeps the error visible while the UI is being cleaned.</li>
+	 * <li><b>Dispose the partial simulation</b> — {@code agent.closeSimulations(false)} disposes any partial simulation
+	 * while keeping the experiment perspective open. Disposing after reporting ensures the error remains visible and
+	 * the subsequent "disposing simulation" status text does not overwrite the error message.</li>
 	 * <li><b>Set state to {@code NOTREADY}</b> — disables the Run/Step buttons while leaving Reload active. Calling
 	 * {@code experiment.reload()} here would create an infinite loop (reload → open → schedule → init fails → reload →
 	 * …), so we do not.</li>
@@ -500,8 +500,8 @@ public class DefaultExperimentController extends AbstractExperimentController {
 		// Step 2: report the error BEFORE disposing, so the handler queue and
 		// cleanExceptions are populated before cleanAfterExperiment() is called
 		// (from within closeSimulations → ExperimentOutputManager.dispose()).
-		// cleanAfterExperiment() would otherwise race with displayLatestErrors and
-		// leave the Errors view empty.
+		// Note: cleanAfterExperiment() intentionally does not stop the handler,
+		// so displayLatestErrors() can safely populate the Errors view first.
 		if (gre != null && localScope != null) {
 			localScope.getGui().runtimeError(localScope, gre);
 			// Show error text in the status bar.
@@ -512,15 +512,12 @@ public class DefaultExperimentController extends AbstractExperimentController {
 			localScope.getGui().displayLatestErrors();
 		}
 
-		// Step 3: dispose any partially-created simulation and return to the
-		// modeling perspective (andLeaveExperimentPerspective = true), so a failed
-		// launch cannot leave a stale simulation perspective behind.
-		// NOTE: this triggers ExperimentOutputManager.dispose() → gui.cleanAfterExperiment().
-		// displayLatestErrors() has already flushed pending exceptions, so the Errors view is populated
-		// before the UI cleanup/perspective switch runs.
+		// Step 3: dispose any partially-created simulation, keeping the experiment
+		// perspective open (andLeaveExperimentPerspective = false) so the error
+		// remains visible. The next model launch will do a full perspective reset.
 		// DO NOT call experiment.reload() here — that creates an infinite loop.
 		try {
-			if (agent != null) { agent.closeSimulations(true); }
+			if (agent != null) { agent.closeSimulations(false); }
 		} catch (final Throwable disposeError) {
 			DEBUG.ERR("Error while disposing partial simulation after init failure", disposeError);
 		}
@@ -567,8 +564,9 @@ public class DefaultExperimentController extends AbstractExperimentController {
 			}
 		} catch (final Throwable e) {
 			// Any throwable during initialization (GamaRuntimeException, Error, etc.) is
-			// reported to the errors view and the partial simulation is closed so the user
-			// returns to a clean modeling perspective before launching another model.
+			// reported to the errors view and the partial simulation is disposed while
+			// the experiment perspective remains open. The next model launch will
+			// perform a full cleanup via runGuiExperiment → closeAllExperiments(true).
 			if (scope != null && !scope.interrupted()) { notifyExceptionAndReloadExperiment(e); }
 		}
 		return res;
