@@ -33,7 +33,7 @@ import org.eclipse.xtext.util.TextRegion;
 import gaml.compiler.EGaml;
 import gaml.compiler.gaml.Block;
 import gaml.compiler.gaml.GamlPackage;
-import gaml.compiler.gaml.S_If;
+import gaml.compiler.gaml.impl.S_IfImpl;
 
 /**
  * The class GamaFoldingRegionProvider.
@@ -59,7 +59,7 @@ public class GamaFoldingRegionProvider extends DefaultFoldingRegionProvider {
 	@Override
 	protected void computeObjectFolding(final EObject eObject,
 			final IFoldingRegionAcceptor<ITextRegion> foldingRegionAcceptor, final boolean initiallyFolded) {
-		if (eObject instanceof S_If sIf && sIf.eIsSet(GamlPackage.SIF__ELSE)) {
+		if (eObject instanceof S_IfImpl sIf && sIf.eIsSet(GamlPackage.SIF__ELSE)) {
 			// When an if has an else clause, the default fold would cover the entire S_If node
 			// (including the else), hiding the else when the if is folded. Instead, compute a
 			// fold region that ends at the last statement of the if-block so that the
@@ -74,10 +74,9 @@ public class GamaFoldingRegionProvider extends DefaultFoldingRegionProvider {
 						final int offset = sIfNode.getOffset();
 						final int length = lastStmtNode.getOffset() + lastStmtNode.getLength() - offset;
 						if (length > 0 && foldingRegionAcceptor instanceof IFoldingRegionAcceptorExtension<?> ext) {
-							@SuppressWarnings("unchecked") final var typedExt =
+							@SuppressWarnings ("unchecked") final var typedExt =
 									(IFoldingRegionAcceptorExtension<ITextRegion>) ext;
 							typedExt.accept(offset, length, initiallyFolded, null);
-							return;
 						}
 					}
 				}
@@ -93,8 +92,8 @@ public class GamaFoldingRegionProvider extends DefaultFoldingRegionProvider {
 		// Don't create a separate fold for the if-block when the S_If has an else clause.
 		// The custom fold in computeObjectFolding handles the if-block region directly,
 		// so a Block-level fold would create a redundant and confusing second toggle on the same line.
-		if (eObject instanceof Block block && block.eContainer() instanceof S_If sIf
-				&& block == sIf.getBlock() && sIf.eIsSet(GamlPackage.SIF__ELSE))
+		if (eObject instanceof Block block && block.eContainer() instanceof S_IfImpl sIf && block == sIf.getBlock()
+				&& sIf.eIsSet(GamlPackage.SIF__ELSE))
 			return false;
 		return EGaml.getInstance().hasChildren(eObject) && super.isHandled(eObject);
 	}
