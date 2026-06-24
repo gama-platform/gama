@@ -17,6 +17,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Map;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileInfo;
@@ -143,6 +144,43 @@ public class FileUtils {
 		return Paths.get(filePath).isAbsolute();
 	}
 
+	/** Upper bound for the per-experiment file-path resolution cache, to guard against unbounded growth. */
+	private static final int MAX_CACHED_RESOLVED_PATHS = 2048;
+
+	/**
+	 * Constructs the absolute path of a (possibly relative) file name. When {@code mustExist} is {@code false}, the
+	 * result does not depend on the file actually existing - only on the experiment's (fixed) working paths - so it is
+	 * memoized in a per-experiment cache shared by all its simulations (see
+	 * {@link IExperimentAgent#getResolvedFilePathCache()}). Existence-checked resolutions ({@code mustExist == true})
+	 * are never cached, since their result depends on the current state of the filesystem and may create workspace
+	 * links.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param filePath
+	 *            the file path
+	 * @param mustExist
+	 *            whether the file is required to already exist
+	 * @return the resolved absolute path
+	 */
+	static public String constructAbsoluteFilePath(final IScope scope, final String filePath, final boolean mustExist) {
+		if (!mustExist && scope != null) {
+			final IExperimentAgent exp = scope.getExperiment();
+			if (exp != null) {
+				final Map<String, String> cache = exp.getResolvedFilePathCache();
+				final String hit = cache.get(filePath);
+				if (hit != null) return hit;
+				final String resolved = resolveAbsoluteFilePath(scope, filePath, false);
+				if (resolved != null && !resolved.isEmpty()) {
+					if (cache.size() >= MAX_CACHED_RESOLVED_PATHS) { cache.clear(); }
+					cache.put(filePath, resolved);
+				}
+				return resolved;
+			}
+		}
+		return resolveAbsoluteFilePath(scope, filePath, mustExist);
+	}
+
 	// Add a thin layer of workspace-based searching in order to resolve linked
 	// resources.
 	/**
@@ -157,7 +195,7 @@ public class FileUtils {
 	 * @return the string
 	 */
 	// Should be able to catch most of the calls to relative resources as well
-	static public String constructAbsoluteFilePath(final IScope scope, final String filePath, final boolean mustExist) {
+	static private String resolveAbsoluteFilePath(final IScope scope, final String filePath, final boolean mustExist) {
 		String fp;
 		if (filePath.startsWith(HOME)) {
 			fp = filePath.replaceFirst(HOME, USER_HOME);

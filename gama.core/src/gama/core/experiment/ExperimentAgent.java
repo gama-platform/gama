@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.common.collect.Iterables;
 
@@ -133,6 +134,12 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 
 	/** The own model path. */
 	protected String ownModelPath;
+
+	/**
+	 * Memoizes absolute file-path resolutions that do not depend on file existence, shared across this experiment's
+	 * simulations. See {@link gama.api.kernel.simulation.IExperimentAgent#getResolvedFilePathCache()}.
+	 */
+	private final Map<String, String> resolvedFilePathCache = new ConcurrentHashMap<>();
 
 	/** The scheduled. */
 	// protected SimulationPopulation populationOfSimulations;
@@ -649,6 +656,9 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		result.addAll(getModel().getImportedPaths());
 		return result;
 	}
+
+	@Override
+	public Map<String, String> getResolvedFilePathCache() { return resolvedFilePathCache; }
 
 	/**
 	 * Sets the working path.
