@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GAMA display web streaming — demo client</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: system-ui, sans-serif; margin: 0; padding: 1rem; display: grid; grid-template-columns: 320px 1fr; gap: 1rem; }
+  h1 { font-size: 1.1rem; grid-column: 1 / -1; margin: 0 0 .25rem; }
+  fieldset { border: 1px solid #8884; border-radius: 8px; margin: 0 0 .75rem; }
+  legend { font-weight: 600; }
+  label { display: block; font-size: .8rem; margin: .35rem 0 .1rem; }
+  input { width: 100%; box-sizing: border-box; padding: .35rem; }
+  .row { display: flex; gap: .4rem; }
+  .row > * { flex: 1; }
+  button { padding: .45rem .6rem; border-radius: 6px; border: 1px solid #8886; cursor: pointer; }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  #stage { display: flex; flex-direction: column; gap: .5rem; }
+  canvas { border: 1px solid #8886; border-radius: 8px; background: #0001; max-width: 100%; image-rendering: pixelated; }
+  #log { font-family: ui-monospace, monospace; font-size: .72rem; height: 220px; overflow: auto; white-space: pre-wrap;
+         background: #0001; border-radius: 8px; padding: .5rem; }
+  .pill { font-size: .72rem; padding: .1rem .4rem; border-radius: 999px; background: #8883; }
+</style>
+</head>
+<body>
+  <h1>GAMA display web streaming — demo client</h1>
+
+  <div>
+    <fieldset>
+      <legend>Connection</legend>
+      <label>Server URL</label>
+      <input id="url" value="ws://localhost:6868" />
+      <div class="row" style="margin-top:.5rem">
+        <button id="connect">Connect</button>
+        <button id="disconnect" disabled>Disconnect</button>
+      </div>
+      <p>Status: <span id="status" class="pill">disconnected</span> · exp_id: <span id="expid" class="pill">—</span></p>
+    </fieldset>
+
+    <fieldset>
+      <legend>Model</legend>
+      <label>Model path (absolute .gaml on the server)</label>
+      <input id="model" value="/absolute/path/to/model.gaml" />
+      <label>Experiment name</label>
+      <input id="experiment" value="my_experiment" />
+      <button id="load" disabled style="margin-top:.5rem">load</button>
+    </fieldset>
+
+    <fieldset>
+      <legend>Display stream</legend>
+      <label>Display name</label>
+      <input id="display" value="my_display" />
+      <div class="row">
+        <div><label>width</label><input id="width" type="number" value="500" /></div>
+        <div><label>height</label><input id="height" type="number" value="500" /></div>
+        <div><label>frame_rate</label><input id="frate" type="number" value="1" /></div>
+      </div>
+      <div class="row" style="margin-top:.5rem">
+        <button id="subscribe" disabled>stream on</button>
+        <button id="unsubscribe" disabled>stream off</button>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Simulation</legend>
+      <div class="row">
+        <button id="play" disabled>play</button>
+        <button id="pause" disabled>pause</button>
+        <button id="step" disabled>step</button>
+        <button id="stop" disabled>stop</button>
+      </div>
+    </fieldset>
+  </div>
+
+  <div id="stage">
+    <div>Frames: <span id="frames" class="pill">0</span> · last cycle: <span id="cycle" class="pill">—</span></div>
+    <canvas id="canvas" width="500" height="500"></canvas>
+    <div id="log"></div>
+  </div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const canvas = $('canvas');
+const ctx = canvas.getContext('2d');
+let ws = null, expId = null, frames = 0;
+
+function log(msg) {
+  const t = new Date().toLocaleTimeString();
+  $('log').textContent += `[${t}] ${msg}\n`;
+  $('log').scrollTop = $('log').scrollHeight;
+}
+
+function setConnected(connected) {
+  $('status').textContent = connected ? 'connected' : 'disconnected';
+  $('connect').disabled = connected;
+  $('disconnect').disabled = !connected;
+  for (const id of ['load','subscribe','unsubscribe','play','pause','step','stop'])
+    $(id).disabled = !connected;
+}
+
+// Send a command. The server expects a JSON object with a "type" field.
+function send(cmd) {
+  if (!ws || ws.readyState !== WebSocket.OPEN) { log('not connected'); return; }
+  if (expId && cmd.exp_id === undefined) cmd.exp_id = expId;
+  ws.send(JSON.stringify(cmd));
+  log('→ ' + JSON.stringify(cmd));
+}
+
+function drawFrame(content) {
+  const img = new Image();
+  img.onload = () => {
+    if (canvas.width !== img.width || canvas.height !== img.height) {
+      canvas.width = img.width; canvas.height = img.height;
+    }
+    ctx.drawImage(img, 0, 0);
+    frames++;
+    $('frames').textContent = frames;
+    if (content.cycle !== undefined) $('cycle').textContent = content.cycle;
+  };
+  img.src = 'data:' + (content.mime || 'image/png') + ';base64,' + content.data;
+}
+
+function onMessage(ev) {
+  let msg;
+  try { msg = JSON.parse(ev.data); } catch (e) { log('← (non-JSON, ' + ev.data.length + ' bytes)'); return; }
+
+  if (msg.type === 'SimulationImage') {
+    // content carries { display, cycle, width, height, mime, data }
+    drawFrame(typeof msg.content === 'string' ? { data: msg.content } : msg.content);
+    return;
+  }
+
+  log('← ' + JSON.stringify(msg).slice(0, 400));
+
+  // The 'load' command answers with the new experiment id in 'content'.
+  if (msg.type === 'CommandExecutedSuccessfully' && msg.command && msg.command.type === 'load' && msg.content) {
+    expId = '' + msg.content;
+    $('expid').textContent = expId;
+    log('experiment id = ' + expId);
+  }
+}
+
+$('connect').onclick = () => {
+  ws = new WebSocket($('url').value.trim());
+  ws.onopen = () => { setConnected(true); log('connected'); };
+  ws.onclose = () => { setConnected(false); log('closed'); };
+  ws.onerror = () => log('socket error');
+  ws.onmessage = onMessage;
+};
+$('disconnect').onclick = () => ws && ws.close();
+
+$('load').onclick = () => send({
+  type: 'load',
+  model: $('model').value.trim(),
+  experiment: $('experiment').value.trim(),
+});
+
+$('subscribe').onclick = () => send({
+  type: 'stream',
+  display: $('display').value.trim(),
+  width: parseInt($('width').value, 10),
+  height: parseInt($('height').value, 10),
+  frame_rate: parseInt($('frate').value, 10),
+  enabled: true,
+});
+$('unsubscribe').onclick = () => send({ type: 'stream', display: $('display').value.trim(), enabled: false });
+
+$('play').onclick  = () => send({ type: 'play' });
+$('pause').onclick = () => send({ type: 'pause' });
+$('step').onclick  = () => send({ type: 'step' });
+$('stop').onclick  = () => send({ type: 'stop' });
+</script>
+</body>
+</html>
