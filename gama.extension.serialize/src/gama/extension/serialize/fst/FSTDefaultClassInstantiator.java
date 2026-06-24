@@ -58,9 +58,15 @@ public class FSTDefaultClassInstantiator implements FSTClassInstantiator {
 
 	@Override
 	public Constructor findConstructorForSerializable(final Class clazz) {
-		if (!Serializable.class.isAssignableFrom(clazz)) // in case forceSerializable flag is present, just look for
-															// no-arg constructor
-			return findConstructorForExternalize(clazz);
+		if (!Serializable.class.isAssignableFrom(clazz)) {
+			// In forceSerializable mode the class is (de)serialised field by field. Prefer a real public no-arg
+			// constructor when the class exposes one
+			Constructor ext = findConstructorForExternalize(clazz);
+			if (ext != null) return ext;
+			// otherwise allocate the instance without running any of the class' own constructors
+			// This is a fallback to avoid runtime crashes, but a proper no-arg constructor is recommended
+			return newSerializationConstructor(clazz, Object.class);
+		}
 		if (FSTClazzInfo.BufferConstructorMeta) {
 			Constructor constructor = constructorMap.get(clazz);
 			if (constructor != null) return constructor;
@@ -79,6 +85,29 @@ public class FSTDefaultClassInstantiator implements FSTClassInstantiator {
 			if (FSTClazzInfo.BufferConstructorMeta) { constructorMap.put(clazz, c); }
 			return c;
 		} catch (NoClassDefFoundError | NoSuchMethodException ex) {
+			return null;
+		}
+	}
+
+	/**
+	 * Creates a constructor that allocates an instance of {@code clazz} without running any of its own constructors,
+	 * delegating to the no-arg constructor of {@code baseClass} (a superclass of {@code clazz}) through
+	 * {@link ReflectionFactory}. This mirrors how the JDK instantiates objects during deserialisation and is used in
+	 * forceSerializable mode for classes that do not expose a no-arg constructor.
+	 *
+	 * @param clazz
+	 *            the class to instantiate
+	 * @param baseClass
+	 *            a superclass of {@code clazz} whose no-arg constructor will be invoked (typically {@link Object})
+	 * @return a serialisation constructor, or {@code null} if one cannot be created
+	 */
+	private static Constructor newSerializationConstructor(final Class clazz, final Class baseClass) {
+		try {
+			Constructor base = baseClass.getDeclaredConstructor();
+			Constructor c = ReflectionFactory.getReflectionFactory().newConstructorForSerialization(clazz, base);
+			if (c != null) { c.setAccessible(true); }
+			return c;
+		} catch (NoClassDefFoundError | NoSuchMethodException | SecurityException | RuntimeException ex) {
 			return null;
 		}
 	}
