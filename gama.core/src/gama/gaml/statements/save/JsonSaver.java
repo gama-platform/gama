@@ -15,10 +15,14 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
+import org.dflib.json.Json;
+
 import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.dataframe.IDataFrame;
 import gama.api.utils.files.SaveOptions;
 
 /**
@@ -32,6 +36,11 @@ public class JsonSaver extends AbstractSaver {
 	@Override
 	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions saveOptions)
 			throws GamaRuntimeException {
+		// Dataframes are written as a JSON array of objects through DFLib, so they can be reloaded with df_load_json
+		if (item.getGamlType().id() == IType.DATAFRAME) {
+			Json.save(((IDataFrame) item.value(scope)).getInner(), file);
+			return;
+		}
 		try (Writer fw = new FileWriter(file, StandardCharsets.UTF_8, !saveOptions.rewrite())) {
 			fw.write(GAMA.getJsonEncoder().valueOf(item.value(scope)).toPrettyPrint());
 		} catch (final GamaRuntimeException e) {

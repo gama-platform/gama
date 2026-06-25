@@ -92,6 +92,11 @@ import gaml.compiler.expressions.ConstantExpression;
 						optional = true,
 						doc = @doc ("an expression that evaluates to a boolean, specifying whether the save will write a header if the file does not exist")),
 				@facet (
+						name = "separator",
+						type = IType.STRING,
+						optional = true,
+						doc = @doc ("the single character used to separate columns when saving tabular data to CSV (e.g. \";\"). If omitted, the value of the 'CSV separator' preference is used. Only applies to CSV output.")),
+				@facet (
 						name = IKeyword.TO,
 						type = IType.STRING,
 						optional = true,
@@ -377,6 +382,9 @@ public class SaveStatement extends AbstractStatementSequence {
 	/** The no-data facet. */
 	private final IExpression noDataFacet;
 
+	/** The CSV separator facet. */
+	private final IExpression separatorFacet;
+
 	/**
 	 * Instantiates a new save statement.
 	 *
@@ -392,6 +400,7 @@ public class SaveStatement extends AbstractStatementSequence {
 		attributesFacet = getFacet(IKeyword.ATTRIBUTES);
 		bufferingStrategy = getFacet(IKeyword.BUFFERING);
 		noDataFacet = getFacet(IKeyword.NO_DATA);
+		separatorFacet = getFacet("separator");
 	}
 
 	/**
@@ -509,6 +518,9 @@ public class SaveStatement extends AbstractStatementSequence {
 			if (delegate != null) {
 				var saveOptions =
 						new SaveOptions(code, addHeader, type, attributesFacet, strategy, rewrite, getNoDataValue(scope));
+				if (separatorFacet != null) {
+					saveOptions = saveOptions.withSeparator(Cast.asString(scope, separatorFacet.value(scope)));
+				}
 				delegate.save(scope, item, fileToSave, saveOptions);
 				return Cast.asString(scope, file.value(scope));
 			}

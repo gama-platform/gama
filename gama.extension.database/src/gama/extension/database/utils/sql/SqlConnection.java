@@ -24,8 +24,13 @@ import org.locationtech.jts.geom.Geometry;
 
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.Types;
 import gama.api.kernel.topology.IProjection;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.dataframe.GamaDataFrameFactory;
+import gama.api.types.dataframe.IDataFrame;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IShape;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
 import gama.api.utils.geometry.GamaEnvelopeFactory;
@@ -454,20 +459,15 @@ public abstract class SqlConnection implements AutoCloseable {
 			throws GamaRuntimeException;
 
 	/**
-	 * Select DB.
+	 * Opens a connection, runs the given SELECT statement and returns the result as a dataframe.
 	 *
 	 * @param scope
 	 *            the scope
 	 * @param selectComm
-	 *            the select comm
-	 * @return the i list<? super I list<? super I list>>
+	 *            the SELECT statement
+	 * @return the result as a dataframe
 	 */
-	/*
-	 * Make a connection to BDMS and execute the select statement
-	 *
-	 * @return IList<IList<Object>>
-	 */
-	public IList<? super IList<? super IList>> selectDB(final IScope scope, final String selectComm) {
+	public IDataFrame selectDB(final IScope scope, final String selectComm) {
 		try (Connection conn = connectDB();) {
 			return selectDB(scope, conn, selectComm);
 		} catch (final Exception e) {
@@ -476,93 +476,92 @@ public abstract class SqlConnection implements AutoCloseable {
 
 	}
 
-	/*
-	 * Make a connection to BDMS and execute the select statement
-	 *
-	 * @return IList<IList<Object>>
-	 */
 	/**
-	 * Select DB.
+	 * Runs the given SELECT statement on an existing connection and returns the result as a dataframe.
 	 *
 	 * @param scope
 	 *            the scope
 	 * @param conn
-	 *            the conn
+	 *            the connection
 	 * @param selectComm
-	 *            the select comm
-	 * @return the i list<? super I list<? super I list>>
+	 *            the SELECT statement
+	 * @return the result as a dataframe
 	 */
-	// public IList<IList<Object>> selectDB(String selectComm)
-	public IList<? super IList<? super IList>> selectDB(final IScope scope, final Connection conn,
-			final String selectComm) {
-
-		// ResultSet rs;
-		IList<? super IList<? super IList>> result =
-				GamaListFactory.create(gama.api.gaml.types.Types.LIST.of(gama.api.gaml.types.Types.LIST));
-		// IList<? extends IList<? super IList>> result = new
-		// IList();
-
-		// IList<Object> rowList = new IList<Object>();
-		IList repRequest;
-		try (final Statement st = conn.createStatement(); ResultSet rs = st.executeQuery(selectComm);) {
-
-			final ResultSetMetaData rsmd = rs.getMetaData();
-			if (DEBUG.IS_ON()) { DEBUG.OUT("MetaData:" + rsmd.toString()); }
-			result.add(getColumnName(rsmd));
-			final IList<Object> columns = getColumnTypeName(rsmd);
-			result.add(columns);
-			repRequest = resultSet2GamaList(rs);
-			result.add(repRequest);
-
-			/**
-			 * AD: Added to transform Geometries
-			 */
-			// if ( columns.contains(GEOMETRYTYPE) && transformed) {
-			// if ( gis == null ) {
-			// // we have at least one geometry type and we compute the envelope
-			// if no gis is present
-			// // Envelope env = getBounds(repRequest);
-			// Envelope env = getBounds(result);
-			// // we now compute the GisUtils instance for our case (based on
-			// params and env)
-			// gis =
-			// scope.getSimulationScope().getProjectionFactory().fromParams(params,
-			// env);
-			// }
-			// // and we transform the geometries using its projection
-			// // repRequest = SqlUtils.transform(gis, repRequest, false);
-			// result = SqlUtils.transform(gis, result, false);
-			// }
-
-			if (columns.contains(GEOMETRYTYPE) && transformed) {
-				gis = scope.getSimulation().getProjectionFactory().getWorld();
-				if (gis != null) // create envelope for environment
-				{
-					final IEnvelope env = scope.getSimulation().getEnvelope();
-					gis = scope.getSimulation().getProjectionFactory().fromParams(scope, params, env);
-					result = SqlUtils.transform(scope, gis, result, false);
-				}
-			}
-			/**
-			 * AD
-			 */
-
-			// result.add(repRequest);
-
-			if (DEBUG.IS_ON()) {
-				DEBUG.OUT("list of column name:" + result.get(0));
-				DEBUG.OUT("list of column type:" + result.get(1));
-				DEBUG.OUT("list of data:" + result.get(2));
-			}
-
-			st.close();
-
-			rs.close();
+	public IDataFrame selectDB(final IScope scope, final Connection conn, final String selectComm) {
+		try (final Statement st = conn.createStatement(); final ResultSet rs = st.executeQuery(selectComm);) {
+			return buildDataFrame(scope, rs);
 		} catch (final SQLException e) {
 			throw GamaRuntimeException.error("SQLConnection.selectDB: " + e.toString(), scope);
 		}
-		// return repRequest;
-		return result;
+	}
+
+	/**
+	 * Builds a dataframe from a result set: reads column names and types, converts records (geometry columns are
+	 * reprojected to the world CRS when {@code transformed} is set), and wraps everything as an {@link IDataFrame} whose
+	 * geometry cells are GAMA geometries.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param rs
+	 *            the result set
+	 * @return the dataframe
+	 * @throws SQLException
+	 *             the SQL exception
+	 */
+	private IDataFrame buildDataFrame(final IScope scope, final ResultSet rs) throws SQLException {
+		final ResultSetMetaData rsmd = rs.getMetaData();
+		final IList<Object> colNames = getColumnName(rsmd);
+		final IList<Object> colTypes = getColumnTypeName(rsmd);
+		IList<Object> records = (IList<Object>) (IList) resultSet2GamaList(rsmd, rs);
+		// Reproject geometries to the world CRS if requested
+		if (colTypes.contains(GEOMETRYTYPE) && transformed
+				&& scope.getSimulation().getProjectionFactory().getWorld() != null) {
+			final IEnvelope env = scope.getSimulation().getEnvelope();
+			gis = scope.getSimulation().getProjectionFactory().fromParams(scope, params, env);
+			final IList<Object> triple = GamaListFactory.create();
+			triple.add(colNames);
+			triple.add(colTypes);
+			triple.add(records);
+			records = (IList<Object>) SqlUtils.transform(scope, gis, triple, false).get(2);
+		}
+		return toDataFrame(scope, colNames, colTypes, records);
+	}
+
+	/**
+	 * Converts the (column names, column types, records) triple produced by a query into an {@link IDataFrame}. Geometry
+	 * cells (columns typed {@link #GEOMETRYTYPE}) are turned into GAMA geometries so the dataframe is directly usable in
+	 * GAML and by the 'create ... from:' delegate.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param colNames
+	 *            the column names
+	 * @param colTypes
+	 *            the column types
+	 * @param records
+	 *            the records (list of rows)
+	 * @return the dataframe
+	 */
+	private IDataFrame toDataFrame(final IScope scope, final IList<Object> colNames, final IList<Object> colTypes,
+			final IList<Object> records) {
+		final IList<String> columns = GamaListFactory.create(Types.STRING);
+		for (final Object c : colNames) { columns.add(String.valueOf(c)); }
+		final int nbCol = columns.size();
+		final IList<IList> rows = GamaListFactory.create(Types.LIST);
+		for (final Object recObj : records) {
+			final IList<Object> rec = (IList<Object>) recObj;
+			final IList<Object> row = GamaListFactory.create();
+			for (int j = 0; j < nbCol; j++) {
+				final Object v = rec.get(j);
+				if (v instanceof Geometry geom && GEOMETRYTYPE.equalsIgnoreCase(String.valueOf(colTypes.get(j)))) {
+					row.add(GamaShapeFactory.createFrom(geom));
+				} else {
+					row.add(v);
+				}
+			}
+			rows.add(row);
+		}
+		return GamaDataFrameFactory.create(scope, columns, rows);
 	}
 
 	/*
@@ -626,20 +625,6 @@ public abstract class SqlConnection implements AutoCloseable {
 	}
 
 	/**
-	 * Result set 2 gama list.
-	 *
-	 * @param rs
-	 *            the rs
-	 * @return the i list
-	 * @throws SQLException
-	 *             the SQL exception
-	 */
-	private IList<IList<Object>> resultSet2GamaList(final ResultSet rs) throws SQLException {
-		final ResultSetMetaData rsmd = rs.getMetaData();
-		return resultSet2GamaList(rsmd, rs);
-	}
-
-	/**
 	 * Gets the column name.
 	 *
 	 * @param rsmd
@@ -687,199 +672,189 @@ public abstract class SqlConnection implements AutoCloseable {
 	 */
 	public String getUser() { return userName; }
 
-	/*
-	 * @Method: getBounds( IList<Object> IList)
-	 *
-	 * @Description: Get Envelope of a set of geometry
-	 *
-	 * @param IList<Object> IList: IList is a set of geometry type
-	 *
-	 * @return Envelope: Envelope/boundary of the geometry set.
-	 *
-	 * @throws Exception
-	 */
-
-	// public static Envelope getBounds(final IList<? extends IList<?
 	/**
-	 * Gets the bounds.
+	 * Computes the envelope enclosing every geometry contained in the first geometry column of a query-result
+	 * dataframe. Returns null if the dataframe has no geometry column or no rows.
 	 *
-	 * @param IList
-	 *            the i list
-	 * @return the bounds
+	 * @param df
+	 *            the dataframe produced by a select
+	 * @return the bounding envelope, or null
 	 */
-	// super IList>> IList) {
-	public static IEnvelope getBounds(final IList<? super IList<? super IList>> IList) {
-
-		IEnvelope envelope;
-		// get Column name
-		// final IList colNames = (IList) IList.get(0);
-		// get Column type
-		final IList colTypes = (IList) IList.get(1);
-		final int index = colTypes.indexOf(GEOMETRYTYPE);
-		if (index < 0) return null;
-		// Get ResultSet
-		final IList initValue = (IList) IList.get(2);
-		final int n = initValue.size();
-		// int max = number == null ? Integer.MAX_VALUE : numberOfAgents;
-		if (n == 0) return null;
-		IList<Object> rowList = (IList<Object>) initValue.get(0);
-		Geometry geo = (Geometry) rowList.get(index);
-		envelope = GamaEnvelopeFactory.of(geo);
-		double maxX = envelope.getMaxX();
-		double maxY = envelope.getMaxY();
-		double minX = envelope.getMinX();
-		double minY = envelope.getMinY();
-		for (int i = 1; i < n && i < Integer.MAX_VALUE; i++) {
-			rowList = (IList<Object>) initValue.get(i);
-			geo = (Geometry) rowList.get(index);
-			envelope = GamaEnvelopeFactory.of(geo);
-			final double maxX1 = envelope.getMaxX();
-			final double maxY1 = envelope.getMaxY();
-			final double minX1 = envelope.getMinX();
-			final double minY1 = envelope.getMinY();
-
-			maxX = maxX > maxX1 ? maxX : maxX1;
-			maxY = maxY > maxY1 ? maxY : maxY1;
-			minX = minX < minX1 ? minX : minX1;
-			minY = minY < minY1 ? minY : minY1;
-			envelope.init(minX, maxX, minY, maxY);
-
+	public static IEnvelope getBounds(final IDataFrame df) {
+		if (df == null || df.getRows() == 0) return null;
+		// Locate the (first) geometry column: after conversion its cells are GAMA geometries
+		String geoCol = null;
+		final IList<Object> firstRow = df.getRowValues(0);
+		final IList<String> cols = df.getColumns();
+		for (int j = 0; j < cols.size(); j++) {
+			if (firstRow.get(j) instanceof IShape) {
+				geoCol = cols.get(j);
+				break;
+			}
 		}
-		return envelope;
+		if (geoCol == null) return null;
+		final List<IShape> shapes = new ArrayList<>();
+		for (int i = 0; i < df.getRows(); i++) {
+			if (df.getCellValue(i, geoCol) instanceof IShape s) { shapes.add(s); }
+		}
+		return shapes.isEmpty() ? null : GamaEnvelopeFactory.of(shapes);
 	}
 
 	/**
-	 * Insert DB.
+	 * Inserts every row of a dataframe into a table, in a single JDBC batch. The dataframe column names are used as the
+	 * target columns, and each row becomes one record. This supports inserting many rows in one call (a single-row
+	 * insert is simply a one-row dataframe).
 	 *
 	 * @param scope
 	 *            the scope
 	 * @param conn
-	 *            the conn
+	 *            the connection
 	 * @param table_name
 	 *            the table name
-	 * @param cols
-	 *            the cols
-	 * @param values
-	 *            the values
-	 * @return the int
+	 * @param data
+	 *            the dataframe whose rows are inserted
+	 * @return the number of inserted rows
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	/*-------------------------------------------------------------------------------------------------------------------------
-	 * Make Insert a reccord into table
+	public int insertDB(final IScope scope, final Connection conn, final String table_name, final IDataFrame data)
+			throws GamaRuntimeException {
+		final IList<Object> cols = GamaListFactory.create();
+		cols.addAll(data.getColumns());
+		int total = 0;
+		try (final Statement st = conn.createStatement();) {
+			final int nbRows = data.getRows();
+			for (int i = 0; i < nbRows; i++) {
+				st.addBatch(getInsertString(scope, conn, table_name, cols, data.getRowValues(i)));
+			}
+			for (final int count : st.executeBatch()) { total += count >= 0 ? count : 1; }
+			if (DEBUG.IS_ON()) { DEBUG.OUT("SQLConnection.insertDB inserted " + total + " row(s)"); }
+		} catch (final SQLException e) {
+			throw GamaRuntimeException.error("SQLConnection.insertDB " + e.toString(), scope);
+		}
+		return total;
+	}
+
+	/**
+	 * Inserts every row of a dataframe into a table, opening and closing a connection. See
+	 * {@link #insertDB(IScope, Connection, String, IDataFrame)}.
 	 *
+	 * @param scope
+	 *            the scope
+	 * @param table_name
+	 *            the table name
+	 * @param data
+	 *            the dataframe whose rows are inserted
+	 * @return the number of inserted rows
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
+	public int insertDB(final IScope scope, final String table_name, final IDataFrame data) throws GamaRuntimeException {
+		try (Connection conn = connectDB();) {
+			return insertDB(scope, conn, table_name, data);
+		} catch (final Exception e) {
+			throw GamaRuntimeException.error("SQLConnection.insertDB " + e.toString(), scope);
+		}
+	}
+
+	/**
+	 * Inserts a single row into the given columns of a table (column names and values are provided as parallel lists).
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param conn
+	 *            the connection
+	 * @param table_name
+	 *            the table name
+	 * @param cols
+	 *            the column names
+	 * @param values
+	 *            the values, in the same order as the columns
+	 * @return the number of inserted rows
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	public int insertDB(final IScope scope, final Connection conn, final String table_name, final IList<Object> cols,
 			final IList<Object> values) throws GamaRuntimeException {
-		int rec_no = -1;
 		if (values.size() != cols.size())
-			throw new IndexOutOfBoundsException("Size of columns list and values list are not equal");
+			throw GamaRuntimeException.error("Size of columns list and values list are not equal", scope);
 		try (final Statement st = conn.createStatement();) {
-			final String sqlStr = getInsertString(scope, conn, table_name, cols, values);
-			if (DEBUG.IS_ON()) { DEBUG.OUT("SQLConnection.insertBD.STR:" + sqlStr); }
-			rec_no = st.executeUpdate(sqlStr);
-
-			if (DEBUG.IS_ON()) { DEBUG.OUT("SQLConnection.insertBD.rec_no:" + rec_no); }
-
+			return st.executeUpdate(getInsertString(scope, conn, table_name, cols, values));
 		} catch (final SQLException e) {
-			e.printStackTrace();
-			throw GamaRuntimeException.error("SQLConnection.insertBD " + e.toString(), scope);
+			throw GamaRuntimeException.error("SQLConnection.insertDB " + e.toString(), scope);
 		}
-
-		return rec_no;
 	}
 
 	/**
-	 * Insert DB.
+	 * Inserts a single row into the given columns of a table, opening and closing a connection. See
+	 * {@link #insertDB(IScope, Connection, String, IList, IList)}.
 	 *
 	 * @param scope
 	 *            the scope
 	 * @param table_name
 	 *            the table name
 	 * @param cols
-	 *            the cols
+	 *            the column names
 	 * @param values
 	 *            the values
-	 * @return the int
+	 * @return the number of inserted rows
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
-	 */
-	/*-------------------------------------------------------------------------------------------------------------------------
-	 *  Insert a reccord into table
-	 *
 	 */
 	public int insertDB(final IScope scope, final String table_name, final IList<Object> cols,
 			final IList<Object> values) throws GamaRuntimeException {
-		int rec_no = -1;
 		try (Connection conn = connectDB();) {
-			rec_no = insertDB(scope, conn, table_name, cols, values);
+			return insertDB(scope, conn, table_name, cols, values);
 		} catch (final Exception e) {
-			throw GamaRuntimeException.error("SQLConnection.insertBD " + e.toString(), scope);
+			throw GamaRuntimeException.error("SQLConnection.insertDB " + e.toString(), scope);
 		}
-		return rec_no;
 	}
 
 	/**
-	 * Insert DB.
+	 * Inserts a single row into a table, providing a value for every column in declaration order.
 	 *
 	 * @param scope
 	 *            the scope
 	 * @param conn
-	 *            the conn
+	 *            the connection
 	 * @param table_name
 	 *            the table name
 	 * @param values
-	 *            the values
-	 * @return the int
+	 *            one value per column, in the table's column order
+	 * @return the number of inserted rows
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
-	 */
-	/*
-	 * Insert a reccord into table
 	 */
 	public int insertDB(final IScope scope, final Connection conn, final String table_name, final IList<Object> values)
 			throws GamaRuntimeException {
-		int rec_no = -1;
 		try (final Statement st = conn.createStatement();) {
-			// Get Insert command
-
-			rec_no = st.executeUpdate(getInsertString(scope, conn, table_name, values));
-			// st=null;
-			// System.gc();
-			if (DEBUG.IS_ON()) { DEBUG.OUT("SQLConnection.insertBD.rec_no:" + rec_no); }
-
+			return st.executeUpdate(getInsertString(scope, conn, table_name, values));
 		} catch (final SQLException e) {
-			e.printStackTrace();
-			throw GamaRuntimeException.error("SQLConnection.insertBD " + e.toString(), scope);
+			throw GamaRuntimeException.error("SQLConnection.insertDB " + e.toString(), scope);
 		}
-		return rec_no;
 	}
 
 	/**
-	 * Insert DB.
+	 * Inserts a single row into a table (one value per column), opening and closing a connection. See
+	 * {@link #insertDB(IScope, Connection, String, IList)}.
 	 *
 	 * @param scope
 	 *            the scope
 	 * @param table_name
 	 *            the table name
 	 * @param values
-	 *            the values
-	 * @return the int
+	 *            one value per column, in the table's column order
+	 * @return the number of inserted rows
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	/*
-	 * Insert a reccord into table
-	 */
 	public int insertDB(final IScope scope, final String table_name, final IList<Object> values)
 			throws GamaRuntimeException {
-		int rec_no = -1;
 		try (Connection conn = connectDB();) {
-			rec_no = insertDB(scope, conn, table_name, values);
+			return insertDB(scope, conn, table_name, values);
 		} catch (final Exception e) {
-			throw GamaRuntimeException.error("SQLConnection.insertBD " + e.toString(), scope);
+			throw GamaRuntimeException.error("SQLConnection.insertDB " + e.toString(), scope);
 		}
-		return rec_no;
 	}
 
 	/**
@@ -898,56 +873,18 @@ public abstract class SqlConnection implements AutoCloseable {
 	 *             the gama runtime exception
 	 */
 	/*
-	 * @Method: executeQueryDB(Connection conn,String queryStr, IList<Object> condition_value)
-	 *
-	 * @Description: Executes the SQL query in this PreparedStatement object and returns the ResultSet object generated
-	 * by the query
-	 *
-	 * @param queryStr: SQL query string with question mark (?).
-	 *
-	 * @param condition_value:List of values that are used to assign into conditions of queryStr
-	 *
-	 * @return ResultSet:returns the ResultSet object generated by the query.
-	 *
-	 * @throws GamaRuntimeException: if a database access error occurs or the SQL statement does not return a ResultSet
-	 * object
+	 * Executes a parametrized SQL query (with '?' placeholders) and returns the result as a dataframe.
 	 */
-	public IList<Object> executeQueryDB(final IScope scope, final Connection conn, final String queryStr,
+	public IDataFrame executeQueryDB(final IScope scope, final Connection conn, final String queryStr,
 			final IList<Object> condition_values) throws GamaRuntimeException {
-
-		IList<Object> result = GamaListFactory.create();
-		IList repRequest;
-		final int condition_count = condition_values.size();
-		try (PreparedStatement pstmt = conn.prepareStatement(queryStr);) {
-
-			// set value for each condition
-			for (int i = 0; i < condition_count; i++) { pstmt.setObject(i + 1, condition_values.get(i)); }
-			try (ResultSet rs = pstmt.executeQuery();) {
-
-				final ResultSetMetaData rsmd = rs.getMetaData();
-				if (DEBUG.IS_ON()) { DEBUG.OUT("MetaData:" + rsmd.toString()); }
-				result.add(getColumnName(rsmd));
-				final IList columns = getColumnTypeName(rsmd);
-				result.add(columns);
-
-				repRequest = resultSet2GamaList(rs);
-				if (columns.contains(GEOMETRYTYPE) && transformed) {
-					gis = scope.getSimulation().getProjectionFactory().getWorld();
-					if (gis != null) {
-						final IEnvelope env = scope.getSimulation().getEnvelope();
-						gis = scope.getSimulation().getProjectionFactory().fromParams(scope, params, env);
-						result = SqlUtils.transform(scope, gis, result, false);
-					}
-				}
+		try (final PreparedStatement pstmt = conn.prepareStatement(queryStr);) {
+			for (int i = 0; i < condition_values.size(); i++) { pstmt.setObject(i + 1, condition_values.get(i)); }
+			try (final ResultSet rs = pstmt.executeQuery();) {
+				return buildDataFrame(scope, rs);
 			}
-
-			result.add(repRequest);
-
 		} catch (final SQLException e) {
-			throw GamaRuntimeException.error("SQLConnection.selectDB: " + e.toString(), scope);
+			throw GamaRuntimeException.error("SQLConnection.executeQueryDB: " + e.toString(), scope);
 		}
-		return result;
-
 	}
 
 	/**
@@ -959,38 +896,21 @@ public abstract class SqlConnection implements AutoCloseable {
 	 *            the query str
 	 * @param condition_values
 	 *            the condition values
-	 * @return the i list
+	 * @return the dataframe
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
 	/*
-	 * @Method: ExecuteQueryDB(Connection conn,String queryStr, IList<Object> condition_values)
-	 *
-	 * @Description: Executes the SQL query in this PreparedStatement object and returns the ResultSet object generated
-	 * by the query
-	 *
-	 * @param conn: MAP of Connection parameters to RDBM
-	 *
-	 * @param queryStr: SQL query (select) string with question mark (?).
-	 *
-	 * @param condition_value:List of values that are used to assign into conditions of queryStr
-	 *
-	 * @return ResultSet:returns the ResultSet object generated by the query.
-	 *
-	 * @throws GamaRuntimeException: if a database access error occurs or the SQL statement does not return a ResultSet
-	 * object
+	 * Executes a parametrized SQL query (with '?' placeholders), opening and closing a connection, and returns the
+	 * result as a dataframe.
 	 */
-	public IList<Object> executeQueryDB(final IScope scope, final String queryStr, final IList<Object> condition_values)
+	public IDataFrame executeQueryDB(final IScope scope, final String queryStr, final IList<Object> condition_values)
 			throws GamaRuntimeException {
-		IList<Object> result;
 		try (Connection conn = connectDB();) {
-			result = executeQueryDB(scope, conn, queryStr, condition_values);
-			// set value for each condition
+			return executeQueryDB(scope, conn, queryStr, condition_values);
 		} catch (final Exception e) {
-			throw GamaRuntimeException.error("SQLConnection.executeQuery: " + e.toString(), scope);
+			throw GamaRuntimeException.error("SQLConnection.executeQueryDB: " + e.toString(), scope);
 		}
-		return result;
-
 	}
 
 	/**

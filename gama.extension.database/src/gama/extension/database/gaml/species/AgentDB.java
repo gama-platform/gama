@@ -21,7 +21,10 @@ import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.dataframe.IDataFrame;
+import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
+import gama.api.types.map.IMap;
 import gama.core.agent.GamlAgent;
 import gama.dev.DEBUG;
 import gama.extension.database.utils.sql.SqlConnection;
@@ -228,27 +231,18 @@ public class AgentDB extends GamlAgent {
 							doc = @doc ("List of values that are used to replace question marks")) },
 			doc = @doc (
 					value = "Make a connection to DBMS and execute the select statement.",
-					returns = "Returns the obtained result from executing the select statement."))
-	public IList select(final IScope scope) throws GamaRuntimeException {
+					returns = "Returns the result of the select statement as a dataframe."))
+	public IDataFrame select(final IScope scope) throws GamaRuntimeException {
 
 		if (!isConnection) throw GamaRuntimeException.error("AgentDB.select: Connection was not established ", scope);
 		final String selectComm = (String) scope.getArg("select", IType.STRING);
 		final IList<Object> values = (IList<Object>) scope.getArg("values", IType.LIST);
-		IList<? super IList<? super IList>> repRequest;
-		// get data
 		try {
-			if (values.size() > 0) {
-				repRequest = sqlConn.executeQueryDB(scope, conn, selectComm, values);
-			} else {
-				repRequest = sqlConn.selectDB(scope, conn, selectComm);
-			}
-			return repRequest;
+			return values.size() > 0 ? sqlConn.executeQueryDB(scope, conn, selectComm, values)
+					: sqlConn.selectDB(scope, conn, selectComm);
 		} catch (final Exception e) {
-			e.printStackTrace();
 			throw GamaRuntimeException.error("AgentDB.select: " + e.toString(), scope);
 		}
-		// --------------------------------------------------------------------------------------------------
-
 	}
 
 	/**
@@ -385,39 +379,29 @@ public class AgentDB extends GamlAgent {
 					optional = false,
 					doc = @doc ("Table name")),
 					@arg (
-							name = "columns",
-							type = IType.LIST,
-							optional = true,
-							doc = @doc ("List of column name of table")),
-					@arg (
-							name = "values",
-							type = IType.LIST,
+							name = "data",
+							type = IType.NONE,
 							optional = false,
-							doc = @doc ("List of values that are used to insert into table. Columns and values must have same size")) },
+							doc = @doc ("The data to insert. A dataframe inserts all its rows in a single batch (columns = dataframe column names). A map inserts a single row (keys = columns, values = values). A list inserts a single row, one value per column in the table's declaration order.")) },
 			doc = @doc (
-					value = "- Make a connection to DBMS - Executes the insert statement.",
-					returns = "Returns the number of updated rows. "))
+					value = "Inserts data into a table on the current connection. Accepts a dataframe (several rows, batched), a map (a single named-column row) or a list (a single positional row).",
+					returns = "Returns the number of inserted rows. "))
 	public int insert(final IScope scope) throws GamaRuntimeException {
 
-		if (!isConnection) throw GamaRuntimeException.error("AgentDB.select: Connection was not established ", scope);
+		if (!isConnection) throw GamaRuntimeException.error("AgentDB.insert: Connection was not established ", scope);
 		final String table_name = (String) scope.getArg("into", IType.STRING);
-		final IList<Object> cols = (IList<Object>) scope.getArg("columns", IType.LIST);
-		final IList<Object> values = (IList<Object>) scope.getArg("values", IType.LIST);
-		int rec_no = -1;
-
-		try {
-			if (cols.size() > 0) {
-				rec_no = sqlConn.insertDB(scope, conn, table_name, cols, values);
-			} else {
-				rec_no = sqlConn.insertDB(scope, conn, table_name, values);
-			}
-		} catch (final Exception e) {
-			e.printStackTrace();
-			throw GamaRuntimeException.error("AgentDB.insert: " + e.toString(), scope);
+		final Object data = scope.getArg("data", IType.NONE);
+		if (data instanceof IDataFrame df) return sqlConn.insertDB(scope, conn, table_name, df);
+		if (data instanceof IMap map) {
+			final IList<Object> cols = GamaListFactory.create();
+			cols.addAll(map.getKeys());
+			final IList<Object> values = GamaListFactory.create();
+			values.addAll(map.getValues());
+			return sqlConn.insertDB(scope, conn, table_name, cols, values);
 		}
-		if (DEBUG.IS_ON()) { DEBUG.OUT("Insert into " + " was run"); }
-
-		return rec_no;
+		if (data instanceof IList values) return sqlConn.insertDB(scope, conn, table_name, (IList<Object>) values);
+		throw GamaRuntimeException.error("AgentDB.insert: the 'data' argument must be a dataframe, a map or a list, "
+				+ "but was " + data, scope);
 	}
 	// -----------------------------------------------------------------------------------------------------
 }

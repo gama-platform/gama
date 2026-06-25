@@ -43,10 +43,14 @@ global {
 			write "REGISTRATION table has been created.";
 			do executeUpdate(updateComm: "INSERT INTO registration " + "VALUES(100, 'Zara', 'Ali', 18);");
 			do executeUpdate(updateComm: "INSERT INTO registration " + "VALUES(?, ?, ?, ?);", values: [101, 'Mr', 'Mme', 45]);
-			do insert(into: "registration", values: [102, 'Mahnaz', 'Fatma', 25]);
-			do insert(into: "registration", columns: ["id", "first", "last"], values: [103, 'Zaid tim', 'Kha']);
-			do insert(into: "registration", columns: ["id", "first", "last"], values: [104, 'Bill', 'Clark']);
-			write "Five records have been inserted.";
+			// 'insert' accepts a list (single positional row), a map (single named row) or a dataframe (batch)
+			do insert(into: "registration", data: [102, 'Mahnaz', 'Fatma', 25]);
+			do insert(into: "registration", data: ["id"::103, "first"::'Zaid tim', "last"::'Kha', "age"::33]);
+			do insert(into: "registration", data: dataframe_with(
+				["id", "first", "last", "age"],
+				[[104, 'Bill', 'Clark', 40], [105, 'Zara', 'Ali', 22]]
+			));
+			write "Six records have been inserted.";
 			write "Click on <<Step>> button to view selected data";
 		}
 
@@ -56,15 +60,18 @@ global {
 
 species DB_Accessor parent: AgentDB {
 	reflex select {
-		list<list> t <- list<list> (select (select::"SELECT * FROM registration"));
-		write "Select before updated " + t;
+		// 'select' now returns a dataframe
+		dataframe t <- select(select::"SELECT * FROM registration");
+		write "Select before update:";
+		write df_pretty_print(t);
 	}
 
 	reflex update {
 		do executeUpdate(updateComm: "UPDATE registration SET age = 30 WHERE id IN (100, 101)");
 		do executeUpdate(updateComm: "DELETE FROM registration where id=103 ");
-		list<list> t <- list<list> (select("SELECT * FROM registration"));
-		write "Select after updated " + t;
+		dataframe t <- select("SELECT * FROM registration");
+		write "Select after update:";
+		write df_pretty_print(t);
 	}
 
 	reflex drop {

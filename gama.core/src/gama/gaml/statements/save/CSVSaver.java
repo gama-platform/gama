@@ -14,6 +14,9 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Set;
 
+import org.apache.commons.csv.CSVFormat;
+import org.dflib.csv.Csv;
+
 import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
@@ -21,6 +24,7 @@ import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.dataframe.IDataFrame;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
 import gama.api.types.matrix.IMatrix;
@@ -77,6 +81,15 @@ public class CSVSaver extends AbstractSaver {
 	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions saveOptions)
 			throws GamaRuntimeException, IOException {
 
+		// Dataframes are written directly through DFLib, which preserves column names and types.
+		// The delimiter comes from the 'separator' facet, or the CSV_SEPARATOR preference if omitted.
+		if (item.getGamlType().id() == IType.DATAFRAME) {
+			final char del = resolveDelimiter(saveOptions);
+			Csv.saver().format(CSVFormat.DEFAULT.withDelimiter(del)).save(((IDataFrame) item.value(scope)).getInner(),
+					file);
+			return;
+		}
+
 		StringBuilder sb = new StringBuilder();
 		final IType itemType = item.getGamlType();
 		final ITypeDescription sd;
@@ -91,7 +104,7 @@ public class CSVSaver extends AbstractSaver {
 		final IList values = itemType.isContainer() ? GamaListFactory.castToList(scope, value)
 				: GamaListFactory.create(scope, itemType, value);
 		if (values.isEmpty()) return;
-		char del = AbstractCSVManipulator.getDefaultDelimiter();
+		char del = resolveDelimiter(saveOptions);
 		if (sd != null) {
 			final Collection<String> attributeNames = sd.getAttributeNames();
 			attributeNames.removeAll(SaveStatement.NON_SAVEABLE_ATTRIBUTE_NAMES);
@@ -156,6 +169,20 @@ public class CSVSaver extends AbstractSaver {
 
 		}
 		return val;
+	}
+
+	/**
+	 * Resolves the column delimiter to use: the 'separator' save option if it was provided, otherwise the value of the
+	 * 'CSV separator' preference.
+	 *
+	 * @param options
+	 *            the save options
+	 * @return the delimiter character
+	 */
+	private static char resolveDelimiter(final SaveOptions options) {
+		final String s = options.separator();
+		if (s != null && !s.isEmpty()) return s.charAt(0);
+		return AbstractCSVManipulator.getDefaultDelimiter();
 	}
 
 	@Override

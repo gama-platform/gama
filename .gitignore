@@ -28,3 +28,4 @@ gama.dependencies/lib/
 /*/.tycho-consumer-pom.xml
 **/org.eclipse.jdt.core.prefs
 /.project
+/gama.core/tests/Dataframe Tests/results
