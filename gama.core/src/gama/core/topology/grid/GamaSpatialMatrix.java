@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -1089,8 +1090,13 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 			final List<IAgent> currentList) throws GamaRuntimeException {
 		final List<IAgent> agents = new ArrayList(getNeighborsOf(scope, agent.getLocation(), 1.0, null));
 		final List<IAgent> neighs = new ArrayList<>();
+		final Set<Integer> visitedCells = new HashSet<>(cells);
+		final Set<IAgent> currentAgents = new HashSet<>(currentList);
+		final Set<IAgent> seenNeighbors = new HashSet<>();
 		for (final IAgent ag : agents) {
-			if (!cells.contains(ag.getIndex()) && !currentList.contains(ag) && !neighs.contains(ag)) { neighs.add(ag); }
+			if (!visitedCells.contains(ag.getIndex()) && !currentAgents.contains(ag) && seenNeighbors.add(ag)) {
+				neighs.add(ag);
+			}
 		}
 		return neighs;
 	}
