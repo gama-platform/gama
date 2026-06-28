@@ -167,7 +167,7 @@ public class EGaml {
 		return switch (o) {
 			case S_Reflex r -> {
 				String s = r.getName();
-				yield s == null ? IInternalFacets.INTERNAL + getKeyOf(r) + COUNTER.COUNT() : s;
+				yield s == null ? IInternalFacets.INTERNAL + getKeyOf(r) + COUNTER.GET_UNIQUE() : s;
 			}
 			case Statement s when IKeyword.METHOD.equals(s.getKey()) -> getNameOf(s.getExpr());
 			case GamlDefinition g -> g.getName();

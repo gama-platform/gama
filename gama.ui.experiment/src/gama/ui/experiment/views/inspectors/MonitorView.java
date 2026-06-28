@@ -176,7 +176,7 @@ public class MonitorView extends ExpandableItemsView<MonitorOutput> implements I
 	@SuppressWarnings ("unused")
 	public static void createNewMonitor(final IScope scope) {
 		// TODO ADD the possibility to do it in several simulations
-		new MonitorOutput(scope, "monitor" + COUNTER.COUNT(), "");
+		new MonitorOutput(scope, "monitor" + COUNTER.GET_UNIQUE(), "");
 	}
 
 	@Override

@@ -209,7 +209,7 @@ public class InspectDisplayOutput extends AbstractValuedDisplayOutput implements
 		// Opens a table inspector on the agents of this species
 		IDescription desc = GAML.getDescriptionFactory()
 				.create(IKeyword.INSPECT, GAML.getExperimentContext(rootAgent), IKeyword.NAME,
-						StringUtils.toGamlString("Browse(" + COUNTER.COUNT() + ")"), IKeyword.VALUE,
+						StringUtils.toGamlString("Browse(" + COUNTER.GET_UNIQUE() + ")"), IKeyword.VALUE,
 						species == null ? "nil" : species.getName(), IKeyword.TYPE, types.get(INSPECT_TABLE))
 				.validate();
 		if (attributes != null) { desc.setFacet(IKeyword.ATTRIBUTES, attributes); }
@@ -231,7 +231,7 @@ public class InspectDisplayOutput extends AbstractValuedDisplayOutput implements
 		// Opens a table inspector on the agents of this container
 		IDescription desc = GAML.getDescriptionFactory()
 				.create(IKeyword.INSPECT, GAML.getExperimentContext(agent), IKeyword.NAME,
-						StringUtils.toGamlString("Browse(" + COUNTER.COUNT() + ")"), IKeyword.VALUE,
+						StringUtils.toGamlString("Browse(" + COUNTER.GET_UNIQUE() + ")"), IKeyword.VALUE,
 						StringUtils.toGaml(agents, false), IKeyword.TYPE, types.get(INSPECT_TABLE))
 				.validate();
 		if (attributes != null) { desc.setFacet(IKeyword.ATTRIBUTES, attributes); }
@@ -254,7 +254,7 @@ public class InspectDisplayOutput extends AbstractValuedDisplayOutput implements
 		// Opens a table inspector on the agents of this container
 		IDescription desc = GAML.getDescriptionFactory()
 				.create(IKeyword.INSPECT, GAML.getExperimentContext(agent), IKeyword.NAME,
-						StringUtils.toGamlString("Browse(" + COUNTER.COUNT() + ")"), IKeyword.TYPE,
+						StringUtils.toGamlString("Browse(" + COUNTER.GET_UNIQUE() + ")"), IKeyword.TYPE,
 						types.get(INSPECT_TABLE))
 				.validate();
 		desc.setFacet(IKeyword.VALUE, agents);

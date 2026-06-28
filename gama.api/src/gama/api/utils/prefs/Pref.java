@@ -33,8 +33,8 @@ import one.util.streamex.StreamEx;
 /**
  * {@code Pref<T>} is the fundamental building block of the GAMA preference system. Each instance represents a single
  * named, typed user preference and implements the {@link IParameter} contract so that preferences can participate in
- * the GAML parameter infrastructure (e.g. appear in the parameters view and be read/written from GAML via the
- * built-in {@code platform} species).
+ * the GAML parameter infrastructure (e.g. appear in the parameters view and be read/written from GAML via the built-in
+ * {@code platform} species).
  *
  * <p>
  * A preference has:
@@ -50,8 +50,8 @@ import one.util.streamex.StreamEx;
  * {@link #inGaml}.</li>
  * <li>Cross-preference activation/deactivation/refresh references: {@link #enables}, {@link #disables},
  * {@link #refreshes}.</li>
- * <li>A set of {@link IPreferenceChangeListener}s that are notified before and after each value change, and can
- * veto the change.</li>
+ * <li>A set of {@link IPreferenceChangeListener}s that are notified before and after each value change, and can veto
+ * the change.</li>
  * </ul>
  * </p>
  *
@@ -66,20 +66,20 @@ import one.util.streamex.StreamEx;
 public class Pref<T> implements IParameter {
 
 	/**
-	 * A monotonically increasing creation counter used to preserve the registration order of preferences when
-	 * iterating the store. Preferences with a smaller {@code order} value were created earlier.
+	 * A monotonically increasing creation counter used to preserve the registration order of preferences when iterating
+	 * the store. Preferences with a smaller {@code order} value were created earlier.
 	 */
-	private final long order = COUNTER.COUNT();
+	private final long order = COUNTER.GET_UNIQUE();
 
 	/**
-	 * Whether this preference is accessible from GAML as a variable of the built-in {@code platform} species.
-	 * Set at construction time and immutable.
+	 * Whether this preference is accessible from GAML as a variable of the built-in {@code platform} species. Set at
+	 * construction time and immutable.
 	 */
 	private final boolean inGaml;
 
 	/**
-	 * The unique preference key used as the key in the backing store and in GAML.
-	 * Also serves as the {@link IParameter#getName()} value.
+	 * The unique preference key used as the key in the backing store and in GAML. Also serves as the
+	 * {@link IParameter#getName()} value.
 	 */
 	String key, title;
 
@@ -104,8 +104,8 @@ public class Pref<T> implements IParameter {
 	boolean disabled = false; // by default
 
 	/**
-	 * Whether this preference should be hidden from the preferences UI. Hidden preferences are still registered
-	 * and functional, but are not shown to the user. Defaults to {@code false}.
+	 * Whether this preference should be hidden from the preferences UI. Hidden preferences are still registered and
+	 * functional, but are not shown to the user. Defaults to {@code false}.
 	 */
 	boolean hidden = false; // by default
 
@@ -115,14 +115,14 @@ public class Pref<T> implements IParameter {
 	boolean restartRequired = false; // by default
 
 	/**
-	 * Whether this preference is scoped to the current workspace (i.e. its file-system paths must be children
-	 * of the workspace root). Defaults to {@code false}.
+	 * Whether this preference is scoped to the current workspace (i.e. its file-system paths must be children of the
+	 * workspace root). Defaults to {@code false}.
 	 */
 	boolean isWorkspace = false;
 
 	/**
-	 * A lazily-evaluated supplier that provides the current value of this preference. May be {@code null} before
-	 * the preference has been initialized.
+	 * A lazily-evaluated supplier that provides the current value of this preference. May be {@code null} before the
+	 * preference has been initialized.
 	 */
 	Supplier<T> valueProvider;
 
@@ -132,8 +132,8 @@ public class Pref<T> implements IParameter {
 	final int type;
 
 	/**
-	 * An optional supplier that returns the list of permitted values for this preference (used for combo-box
-	 * controls). {@code null} means any value of type {@code T} is accepted.
+	 * An optional supplier that returns the list of permitted values for this preference (used for combo-box controls).
+	 * {@code null} means any value of type {@code T} is accepted.
 	 */
 	Supplier<List<T>> valuesProvider;
 
@@ -143,27 +143,27 @@ public class Pref<T> implements IParameter {
 	Comparable min, max, step;
 
 	/**
-	 * Whether a slider control should be used for numeric preferences when both {@link #min} and {@link #max}
-	 * are set. Defaults to {@code true}.
+	 * Whether a slider control should be used for numeric preferences when both {@link #min} and {@link #max} are set.
+	 * Defaults to {@code true}.
 	 */
 	boolean slider = true; // by default
 
 	/**
-	 * Arrays of preference keys that are enabled, disabled, or refreshed when this preference changes its value.
-	 * These are used by the UI to implement conditional activation of related preferences.
+	 * Arrays of preference keys that are enabled, disabled, or refreshed when this preference changes its value. These
+	 * are used by the UI to implement conditional activation of related preferences.
 	 */
 	String[] enables = EMPTY_STRINGS, disables = EMPTY_STRINGS, refreshes = EMPTY_STRINGS,
 			fileExtensions = EMPTY_STRINGS;
 
 	/**
-	 * The default boolean labels used in the UI when the preference type is {@code IType.BOOL} and no custom
-	 * labels have been set via {@link #withLabels(String...)}.
+	 * The default boolean labels used in the UI when the preference type is {@code IType.BOOL} and no custom labels
+	 * have been set via {@link #withLabels(String...)}.
 	 */
 	static String[] PREF_SWITCH_STRINGS = { "Yes", "No" };
 
 	/**
-	 * The UI labels used for the preference's allowed values. Defaults to {@link #PREF_SWITCH_STRINGS} (Yes/No).
-	 * Can be overridden via {@link #withLabels(String...)}.
+	 * The UI labels used for the preference's allowed values. Defaults to {@link #PREF_SWITCH_STRINGS} (Yes/No). Can be
+	 * overridden via {@link #withLabels(String...)}.
 	 */
 	String[] labels = PREF_SWITCH_STRINGS;
 
@@ -174,16 +174,16 @@ public class Pref<T> implements IParameter {
 	Supplier<List<IColor>> colors = Collections::emptyList;
 
 	/**
-	 * The set of change listeners registered on this preference. Each listener is notified before and after each
-	 * value change, and can veto the change in the {@code before} phase.
+	 * The set of change listeners registered on this preference. Each listener is notified before and after each value
+	 * change, and can veto the change in the {@code before} phase.
 	 */
 	Set<IPreferenceChangeListener<T>> listeners = new HashSet<>();
 
 	/**
-	 * Constructs a new {@code Pref} with the given key, GAML type identifier, and GAML visibility flag. The
-	 * preference is not yet initialized (no value, no tab, no group); call the builder-style methods
-	 * ({@link #named(String)}, {@link #init(Object)}, {@link #in(String, String)}, etc.) to complete
-	 * configuration before registering it with the preference store.
+	 * Constructs a new {@code Pref} with the given key, GAML type identifier, and GAML visibility flag. The preference
+	 * is not yet initialized (no value, no tab, no group); call the builder-style methods ({@link #named(String)},
+	 * {@link #init(Object)}, {@link #in(String, String)}, etc.) to complete configuration before registering it with
+	 * the preference store.
 	 *
 	 * @param key
 	 *            the unique string key identifying this preference in the backing store and in GAML; must not be
@@ -191,8 +191,8 @@ public class Pref<T> implements IParameter {
 	 * @param type
 	 *            the GAML type identifier for this preference's value (one of the {@code IType.*} constants)
 	 * @param inGaml
-	 *            {@code true} if this preference should be accessible from GAML as a variable of the
-	 *            {@code platform} built-in species
+	 *            {@code true} if this preference should be accessible from GAML as a variable of the {@code platform}
+	 *            built-in species
 	 */
 	public Pref(final String key, final int type, final boolean inGaml) {
 		this.type = type;
@@ -201,8 +201,8 @@ public class Pref<T> implements IParameter {
 	}
 
 	/**
-	 * Marks this preference as disabled in the preferences UI (grayed out and not editable). This is a builder
-	 * method that returns {@code this} for fluent chaining.
+	 * Marks this preference as disabled in the preferences UI (grayed out and not editable). This is a builder method
+	 * that returns {@code this} for fluent chaining.
 	 *
 	 * @return {@code this} preference, for method chaining
 	 */
@@ -219,10 +219,9 @@ public class Pref<T> implements IParameter {
 	public boolean isDisabled() { return disabled; }
 
 	/**
-	 * Registers an {@link IPreferenceAfterChangeListener} that will be notified each time this preference's
-	 * value is successfully committed. This is a convenience shorthand for
-	 * {@link #addChangeListener(IPreferenceChangeListener)} that only listens to the "after" phase. Returns
-	 * {@code this} for fluent chaining.
+	 * Registers an {@link IPreferenceAfterChangeListener} that will be notified each time this preference's value is
+	 * successfully committed. This is a convenience shorthand for {@link #addChangeListener(IPreferenceChangeListener)}
+	 * that only listens to the "after" phase. Returns {@code this} for fluent chaining.
 	 *
 	 * @param consumer
 	 *            the listener to call after each successful value change; must not be {@code null}
@@ -237,8 +236,8 @@ public class Pref<T> implements IParameter {
 	public long getOrder() { return order; }
 
 	/**
-	 * Restricts this preference to the given set of allowed values (varargs overload). The values are wrapped in
-	 * a fixed-size list and stored as the {@link #valuesProvider}. Returns {@code this} for fluent chaining.
+	 * Restricts this preference to the given set of allowed values (varargs overload). The values are wrapped in a
+	 * fixed-size list and stored as the {@link #valuesProvider}. Returns {@code this} for fluent chaining.
 	 *
 	 * @param v
 	 *            the allowed values; must not be {@code null}
@@ -262,9 +261,9 @@ public class Pref<T> implements IParameter {
 	}
 
 	/**
-	 * Restricts this preference to values supplied lazily by the given {@link Supplier}. The supplier is
-	 * invoked each time the list of allowed values is needed (e.g., when the combo box is opened). Returns
-	 * {@code this} for fluent chaining.
+	 * Restricts this preference to values supplied lazily by the given {@link Supplier}. The supplier is invoked each
+	 * time the list of allowed values is needed (e.g., when the combo box is opened). Returns {@code this} for fluent
+	 * chaining.
 	 *
 	 * @param v
 	 *            a supplier that provides the current list of allowed values; must not be {@code null}
@@ -276,8 +275,8 @@ public class Pref<T> implements IParameter {
 	}
 
 	/**
-	 * Sets an inclusive numeric range for this preference. The {@link #min} and {@link #max} fields are updated.
-	 * Pass {@code null} for either bound to indicate an open-ended range. Returns {@code this} for fluent chaining.
+	 * Sets an inclusive numeric range for this preference. The {@link #min} and {@link #max} fields are updated. Pass
+	 * {@code null} for either bound to indicate an open-ended range. Returns {@code this} for fluent chaining.
 	 *
 	 * @param mini
 	 *            the lower bound (inclusive), or {@code null} for no lower bound
@@ -292,8 +291,8 @@ public class Pref<T> implements IParameter {
 	}
 
 	/**
-	 * Sets the increment step used when this preference is displayed as a slider or a spinner. Returns
-	 * {@code this} for fluent chaining.
+	 * Sets the increment step used when this preference is displayed as a slider or a spinner. Returns {@code this} for
+	 * fluent chaining.
 	 *
 	 * @param step
 	 *            the increment step; must not be {@code null}
@@ -305,8 +304,8 @@ public class Pref<T> implements IParameter {
 	}
 
 	/**
-	 * Places this preference in the given {@code tab} and {@code group} of the preferences dialog. Returns
-	 * {@code this} for fluent chaining.
+	 * Places this preference in the given {@code tab} and {@code group} of the preferences dialog. Returns {@code this}
+	 * for fluent chaining.
 	 *
 	 * @param category
 	 *            the name of the preferences tab (e.g. {@code "Interface"}); must not be {@code null}
@@ -321,8 +320,8 @@ public class Pref<T> implements IParameter {
 	}
 
 	/**
-	 * Sets an optional comment or unit label displayed next to the preference control in the UI. Returns
-	 * {@code this} for fluent chaining.
+	 * Sets an optional comment or unit label displayed next to the preference control in the UI. Returns {@code this}
+	 * for fluent chaining.
 	 *
 	 * @param aComment
 	 *            the comment string to display; may be {@code null}
@@ -334,8 +333,8 @@ public class Pref<T> implements IParameter {
 	}
 
 	/**
-	 * Sets the human-readable title/label for this preference as shown in the preferences dialog. Returns
-	 * {@code this} for fluent chaining.
+	 * Sets the human-readable title/label for this preference as shown in the preferences dialog. Returns {@code this}
+	 * for fluent chaining.
 	 *
 	 * @param t
 	 *            the display title; must not be {@code null}
@@ -348,10 +347,9 @@ public class Pref<T> implements IParameter {
 	}
 
 	/**
-	 * Sets the initial (default) value of this preference to an eagerly provided value. The value is wrapped in
-	 * a simple lambda supplier. This method is intended for use during preference construction; use
-	 * {@link #set(Object)} to change the value and trigger listeners at runtime. Returns {@code this} for fluent
-	 * chaining.
+	 * Sets the initial (default) value of this preference to an eagerly provided value. The value is wrapped in a
+	 * simple lambda supplier. This method is intended for use during preference construction; use {@link #set(Object)}
+	 * to change the value and trigger listeners at runtime. Returns {@code this} for fluent chaining.
 	 *
 	 * @param v
 	 *            the initial value; may be {@code null}
@@ -363,9 +361,9 @@ public class Pref<T> implements IParameter {
 	}
 
 	/**
-	 * Sets the initial (default) value of this preference to a lazily evaluated supplier. The supplier is
-	 * invoked each time the preference value is read via {@link #getValue()}, deferring potentially expensive
-	 * computations until first access. Returns {@code this} for fluent chaining.
+	 * Sets the initial (default) value of this preference to a lazily evaluated supplier. The supplier is invoked each
+	 * time the preference value is read via {@link #getValue()}, deferring potentially expensive computations until
+	 * first access. Returns {@code this} for fluent chaining.
 	 *
 	 * @param p
 	 *            a {@link Supplier} that produces the preference value on demand; may be {@code null}
@@ -399,8 +397,8 @@ public class Pref<T> implements IParameter {
 	}
 
 	/**
-	 * Returns {@code true} if {@code newValue} is different from the preference's current value. The comparison
-	 * uses {@link Objects#equals(Object, Object)} so that {@code null} values are handled correctly.
+	 * Returns {@code true} if {@code newValue} is different from the preference's current value. The comparison uses
+	 * {@link Objects#equals(Object, Object)} so that {@code null} values are handled correctly.
 	 *
 	 * @param newValue
 	 *            the candidate new value
@@ -411,8 +409,8 @@ public class Pref<T> implements IParameter {
 	}
 
 	/**
-	 * Sets the preference keys that should be <em>enabled</em> in the UI whenever this preference changes its
-	 * value (conditional activation). Returns {@code this} for fluent chaining.
+	 * Sets the preference keys that should be <em>enabled</em> in the UI whenever this preference changes its value
+	 * (conditional activation). Returns {@code this} for fluent chaining.
 	 *
 	 * @param link
 	 *            the preference keys to enable; must not be {@code null}
@@ -424,8 +422,8 @@ public class Pref<T> implements IParameter {
 	}
 
 	/**
-	 * Sets the preference keys that should be <em>disabled</em> in the UI whenever this preference changes its
-	 * value (conditional deactivation). Returns {@code this} for fluent chaining.
+	 * Sets the preference keys that should be <em>disabled</em> in the UI whenever this preference changes its value
+	 * (conditional deactivation). Returns {@code this} for fluent chaining.
 	 *
 	 * @param link
 	 *            the preference keys to disable; must not be {@code null}
@@ -437,8 +435,8 @@ public class Pref<T> implements IParameter {
 	}
 
 	/**
-	 * Sets the preference keys whose UI controls should be <em>refreshed</em> (re-read and re-rendered) whenever
-	 * this preference changes its value. Returns {@code this} for fluent chaining.
+	 * Sets the preference keys whose UI controls should be <em>refreshed</em> (re-read and re-rendered) whenever this
+	 * preference changes its value. Returns {@code this} for fluent chaining.
 	 *
 	 * @param link
 	 *            the preference keys to refresh; must not be {@code null}
@@ -450,19 +448,16 @@ public class Pref<T> implements IParameter {
 	}
 
 	/**
-	 * Returns the current value of this preference by invoking the {@link #valueProvider} supplier. If the
-	 * supplier is {@code null} (i.e. the preference has not been initialized), returns {@code null}.
+	 * Returns the current value of this preference by invoking the {@link #valueProvider} supplier. If the supplier is
+	 * {@code null} (i.e. the preference has not been initialized), returns {@code null}.
 	 *
 	 * @return the current preference value, or {@code null} if not yet initialized
 	 */
-	public T getValue() {
-		return valueProvider == null ? null : valueProvider.get();
-	}
+	public T getValue() { return valueProvider == null ? null : valueProvider.get(); }
 
 	/**
-	 * Returns the GAML type identifier of this preference's value. The returned integer is one of the
-	 * {@code IType.*} constants (e.g. {@link gama.api.gaml.types.IType#INT},
-	 * {@link gama.api.gaml.types.IType#BOOL}, etc.).
+	 * Returns the GAML type identifier of this preference's value. The returned integer is one of the {@code IType.*}
+	 * constants (e.g. {@link gama.api.gaml.types.IType#INT}, {@link gama.api.gaml.types.IType#BOOL}, etc.).
 	 *
 	 * @return the GAML type identifier
 	 */
@@ -482,9 +477,8 @@ public class Pref<T> implements IParameter {
 	public String getKey() { return key; }
 
 	/**
-	 * Returns the current list of permitted values for this preference by invoking the
-	 * {@link #valuesProvider} supplier, or {@code null} if no restriction has been set via
-	 * {@link #among(Object...)}.
+	 * Returns the current list of permitted values for this preference by invoking the {@link #valuesProvider}
+	 * supplier, or {@code null} if no restriction has been set via {@link #among(Object...)}.
 	 *
 	 * @return the list of allowed values, or {@code null} if unrestricted
 	 */
@@ -511,10 +505,10 @@ public class Pref<T> implements IParameter {
 	}
 
 	/**
-	 * Registers the given {@link IPreferenceChangeListener} on this preference. The listener will be notified
-	 * via {@link IPreferenceChangeListener#beforeValueChange(Object)} and
-	 * {@link IPreferenceChangeListener#afterValueChange(Object)} on each value change. Returns {@code this} for
-	 * fluent chaining.
+	 * Registers the given {@link IPreferenceChangeListener} on this preference. The listener will be notified via
+	 * {@link IPreferenceChangeListener#beforeValueChange(Object)} and
+	 * {@link IPreferenceChangeListener#afterValueChange(Object)} on each value change. Returns {@code this} for fluent
+	 * chaining.
 	 *
 	 * @param r
 	 *            the listener to register; must not be {@code null}
@@ -526,8 +520,8 @@ public class Pref<T> implements IParameter {
 	}
 
 	/**
-	 * Removes the specified {@link IPreferenceChangeListener} from this preference. If the listener is not
-	 * registered, this method does nothing.
+	 * Removes the specified {@link IPreferenceChangeListener} from this preference. If the listener is not registered,
+	 * this method does nothing.
 	 *
 	 * @param r
 	 *            the listener to remove; must not be {@code null}
@@ -537,8 +531,8 @@ public class Pref<T> implements IParameter {
 	}
 
 	/**
-	 * Removes all registered {@link IPreferenceChangeListener}s from this preference. After this call, value
-	 * changes will not trigger any listener callbacks.
+	 * Removes all registered {@link IPreferenceChangeListener}s from this preference. After this call, value changes
+	 * will not trigger any listener callbacks.
 	 */
 	public void removeChangeListeners() {
 		listeners.clear();
@@ -589,10 +583,10 @@ public class Pref<T> implements IParameter {
 	}
 
 	/**
-	 * Asks each registered {@link IPreferenceChangeListener} whether the proposed value change should be
-	 * accepted. Returns {@code false} as soon as any listener returns {@code false} from its
-	 * {@link IPreferenceChangeListener#beforeValueChange(Object)} callback; returns {@code true} if all
-	 * listeners agree.
+	 * Asks each registered {@link IPreferenceChangeListener} whether the proposed value change should be accepted.
+	 * Returns {@code false} as soon as any listener returns {@code false} from its
+	 * {@link IPreferenceChangeListener#beforeValueChange(Object)} callback; returns {@code true} if all listeners
+	 * agree.
 	 *
 	 * @param newValue
 	 *            the candidate new value
@@ -606,8 +600,8 @@ public class Pref<T> implements IParameter {
 	}
 
 	/**
-	 * Notifies all registered {@link IPreferenceChangeListener}s that the preference value has changed.
-	 * Called after the new value has been committed to {@link #valueProvider}.
+	 * Notifies all registered {@link IPreferenceChangeListener}s that the preference value has changed. Called after
+	 * the new value has been committed to {@link #valueProvider}.
 	 *
 	 * @param newValue
 	 *            the new value that has just been assigned
@@ -629,8 +623,8 @@ public class Pref<T> implements IParameter {
 	public String[] getFileExtensions() { return this.fileExtensions; }
 
 	/**
-	 * Persists the current value of this preference to the global preference store by building a single-entry
-	 * map and delegating to {@link GamaPreferences#setNewPreferences(java.util.Map)}.
+	 * Persists the current value of this preference to the global preference store by building a single-entry map and
+	 * delegating to {@link GamaPreferences#setNewPreferences(java.util.Map)}.
 	 */
 	public void save() {
 		final Map<String, Object> map = new HashMap<>();
@@ -644,8 +638,8 @@ public class Pref<T> implements IParameter {
 	}
 
 	/**
-	 * Marks this preference as hidden, meaning it will not be displayed in the GAMA preferences dialog but will
-	 * still be registered and functional. Returns {@code this} for fluent chaining.
+	 * Marks this preference as hidden, meaning it will not be displayed in the GAMA preferences dialog but will still
+	 * be registered and functional. Returns {@code this} for fluent chaining.
 	 *
 	 * @return {@code this} preference, for method chaining
 	 */
@@ -662,8 +656,8 @@ public class Pref<T> implements IParameter {
 	public boolean isHidden() { return hidden; }
 
 	/**
-	 * Marks this preference as requiring a GAMA restart before its new value takes effect. The preferences UI
-	 * will inform the user accordingly. Returns {@code this} for fluent chaining.
+	 * Marks this preference as requiring a GAMA restart before its new value takes effect. The preferences UI will
+	 * inform the user accordingly. Returns {@code this} for fluent chaining.
 	 *
 	 * @return {@code this} preference, for method chaining
 	 */
@@ -680,8 +674,8 @@ public class Pref<T> implements IParameter {
 	public boolean isRestartRequired() { return restartRequired; }
 
 	/**
-	 * Returns {@code true} if this preference is accessible from GAML as a variable of the built-in
-	 * {@code platform} species.
+	 * Returns {@code true} if this preference is accessible from GAML as a variable of the built-in {@code platform}
+	 * species.
 	 *
 	 * @return {@code true} if the preference is accessible in GAML, {@code false} otherwise
 	 */
@@ -691,8 +685,8 @@ public class Pref<T> implements IParameter {
 
 	/**
 	 * Returns the list of colors associated with the allowed values of this preference, as provided by the
-	 * {@link #colors} supplier. Used by color-coded UI controls (e.g. toggle buttons). Returns an empty list
-	 * if no colors have been set via {@link #withColors(Supplier...)}.
+	 * {@link #colors} supplier. Used by color-coded UI controls (e.g. toggle buttons). Returns an empty list if no
+	 * colors have been set via {@link #withColors(Supplier...)}.
 	 *
 	 * @param scope
 	 *            the current GAMA scope (unused, may be {@code null})
@@ -704,8 +698,8 @@ public class Pref<T> implements IParameter {
 	}
 
 	/**
-	 * Returns the first color in the colors list, or {@code null} if no colors have been set. Convenience
-	 * shorthand for {@code getColors(scope).get(0)} with a null guard.
+	 * Returns the first color in the colors list, or {@code null} if no colors have been set. Convenience shorthand for
+	 * {@code getColors(scope).get(0)} with a null guard.
 	 *
 	 * @param scope
 	 *            the current GAMA scope (unused, may be {@code null})
@@ -721,9 +715,8 @@ public class Pref<T> implements IParameter {
 	public boolean isDefinedInExperiment() { return false; }
 
 	/**
-	 * Returns {@code true} if this preference represents a file-system path that must be a child of the current
-	 * GAMA workspace root. When {@code true}, the file-chooser UI control will restrict navigation to the
-	 * workspace.
+	 * Returns {@code true} if this preference represents a file-system path that must be a child of the current GAMA
+	 * workspace root. When {@code true}, the file-chooser UI control will restrict navigation to the workspace.
 	 *
 	 * @return {@code true} if restricted to the workspace, {@code false} otherwise
 	 */
@@ -731,8 +724,8 @@ public class Pref<T> implements IParameter {
 	public boolean isWorkspace() { return isWorkspace; }
 
 	/**
-	 * Marks this preference as workspace-scoped, meaning its value must be a path within the current GAMA
-	 * workspace. Returns {@code this} for fluent chaining.
+	 * Marks this preference as workspace-scoped, meaning its value must be a path within the current GAMA workspace.
+	 * Returns {@code this} for fluent chaining.
 	 *
 	 * @return {@code this} preference, for method chaining
 	 */
@@ -742,13 +735,12 @@ public class Pref<T> implements IParameter {
 	}
 
 	/**
-	 * Sets the accepted file extensions for file-chooser controls associated with this preference (only
-	 * relevant for preferences of type {@link gama.api.gaml.types.IType#FILE}). Returns {@code this} for
-	 * fluent chaining.
+	 * Sets the accepted file extensions for file-chooser controls associated with this preference (only relevant for
+	 * preferences of type {@link gama.api.gaml.types.IType#FILE}). Returns {@code this} for fluent chaining.
 	 *
 	 * @param fileExtensions
-	 *            the accepted file extensions without leading dot (e.g. {@code "gaml"}, {@code "experiment"});
-	 *            must not be {@code null}
+	 *            the accepted file extensions without leading dot (e.g. {@code "gaml"}, {@code "experiment"}); must not
+	 *            be {@code null}
 	 * @return {@code this} preference, for method chaining
 	 */
 	public Pref<T> withExtensions(final String... fileExtensions) {
@@ -758,8 +750,8 @@ public class Pref<T> implements IParameter {
 
 	/**
 	 * Bypasses the change-listener pipeline and sets the value provider directly without firing any
-	 * {@link IPreferenceChangeListener} callbacks. This is intended for internal use by the preference store
-	 * when restoring a saved value without triggering side-effects.
+	 * {@link IPreferenceChangeListener} callbacks. This is intended for internal use by the preference store when
+	 * restoring a saved value without triggering side-effects.
 	 *
 	 * @param value
 	 *            the new raw value to assign; will be cast to {@code T} at runtime
@@ -770,8 +762,8 @@ public class Pref<T> implements IParameter {
 
 	/**
 	 * Sets the UI display labels for the allowed values of this preference. For boolean preferences the labels
-	 * correspond to the {@code true} and {@code false} states respectively; for list preferences each label
-	 * corresponds to the value at the same index. Returns {@code this} for fluent chaining.
+	 * correspond to the {@code true} and {@code false} states respectively; for list preferences each label corresponds
+	 * to the value at the same index. Returns {@code this} for fluent chaining.
 	 *
 	 * @param strings
 	 *            the display labels in the same order as the corresponding values; must not be {@code null}
@@ -783,9 +775,9 @@ public class Pref<T> implements IParameter {
 	}
 
 	/**
-	 * Sets the colors associated with each allowed value of this preference. Each color is supplied lazily via
-	 * a {@link Supplier} to avoid eager construction. The colors list is built by invoking all suppliers when
-	 * needed. Returns {@code this} for fluent chaining.
+	 * Sets the colors associated with each allowed value of this preference. Each color is supplied lazily via a
+	 * {@link Supplier} to avoid eager construction. The colors list is built by invoking all suppliers when needed.
+	 * Returns {@code this} for fluent chaining.
 	 *
 	 * @param gcs
 	 *            the color suppliers, one per allowed value in the same order; must not be {@code null}
@@ -798,8 +790,8 @@ public class Pref<T> implements IParameter {
 	}
 
 	/**
-	 * Returns the UI display labels for the allowed values of this preference. For boolean preferences, index
-	 * 0 corresponds to {@code true} and index 1 to {@code false}.
+	 * Returns the UI display labels for the allowed values of this preference. For boolean preferences, index 0
+	 * corresponds to {@code true} and index 1 to {@code false}.
 	 *
 	 * @param scope
 	 *            the current GAMA scope (unused, may be {@code null})
@@ -841,8 +833,8 @@ public class Pref<T> implements IParameter {
 	public void setGroup(final String group) { this.group = group; }
 
 	/**
-	 * Returns the {@link Supplier} that provides the current value of this preference. This is the raw
-	 * value supplier and does not go through any listener pipeline. Useful for override-resolution code in
+	 * Returns the {@link Supplier} that provides the current value of this preference. This is the raw value supplier
+	 * and does not go through any listener pipeline. Useful for override-resolution code in
 	 * {@link GamaPreferenceStore#register(Pref)}.
 	 *
 	 * @return the value supplier; may be {@code null} if the preference has not been initialized

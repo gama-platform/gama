@@ -20,7 +20,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 
@@ -193,7 +192,7 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 		}
 		createMonitorSectionIfNeeded(true);
 		IScope scope = GAMA.getRuntimeScope();
-		MonitorOutput m = new MonitorOutput(scope, "Monitor " + COUNTER.COUNT(), null);
+		MonitorOutput m = new MonitorOutput(scope, "Monitor " + COUNTER.GET_UNIQUE(), null);
 		MonitorDisplayer md = getEditorsList().addMonitor(GAMA.getCurrentTopLevelAgent().getScope(), m);
 		md.createControls((EditorsGroup) monitorSection.getControl());
 		monitorSection.setHeight(monitorSection.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT, true).y);
