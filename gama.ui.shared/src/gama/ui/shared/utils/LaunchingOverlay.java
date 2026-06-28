@@ -187,6 +187,13 @@ public class LaunchingOverlay {
 	 */
 	private volatile IStatusControl savedStatusControl;
 
+	/**
+	 * The last line of text that was actually appended to the console widget. Tracked on the UI thread inside
+	 * {@link #appendToConsole(String)} to deduplicate identical consecutive messages that may arrive through multiple
+	 * channels (the console listener and the status interceptor can both deliver the same text).
+	 */
+	private String lastConsoleLine;
+
 	// ── Constructor ──────────────────────────────────────────────────────────────
 
 	/**
@@ -410,6 +417,11 @@ public class LaunchingOverlay {
 		if (firstLine == null) return;
 		WorkbenchHelper.asyncRun(() -> {
 			if (consoleText == null || consoleText.isDisposed()) return;
+			// Deduplicate: skip if this line is identical to the one just appended.
+			// Both the console listener and the status interceptor can deliver the same text,
+			// so we guard here on the UI thread (single-threaded) rather than in each caller.
+			if (firstLine.equals(lastConsoleLine)) return;
+			lastConsoleLine = firstLine;
 			if (consoleText.getCharCount() > 0) { consoleText.append(System.lineSeparator()); }
 			consoleText.append(firstLine);
 			// Auto-scroll to the bottom: compute how many lines fit in the visible area and
