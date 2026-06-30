@@ -347,13 +347,13 @@ public class GamlSyntacticConverter {
 				switch (keyword) {
 					case ARG -> {
 						elt = FACTORY.create(keyword, stm, false);
-						elt.setFacet(IInternalFacets.GAML_ERROR, GAML.getExpressionDescriptionFactory().createConstant(
-								"`arg` is not allowed anymore, please use the functional syntax to declare arguments (e.g. `action(type1 arg1, type2 arg2 <- default2)`)"));
+						emitError(elt,
+								"`arg` is not allowed anymore, please use the functional syntax to declare arguments (e.g. `action(type1 arg1, type2 arg2 <- default2)`)");
 					}
 					case SET -> {
 						elt = FACTORY.create(keyword, stm, true);
-						elt.setFacet(IInternalFacets.GAML_ERROR, GAML.getExpressionDescriptionFactory().createConstant(
-								"`set` is not allowed anymore, please use the direct assignment syntax (i.e. `variable <- value`)"));
+						emitError(elt,
+								"`set` is not allowed anymore, please use the direct assignment syntax (i.e. `variable <- value`)");
 					}
 					case IKeyword.CREATE -> {
 						elt = FACTORY.create(keyword, stm, true);
@@ -380,8 +380,7 @@ public class GamlSyntacticConverter {
 		// Will mark for instance: int my_action {...}
 		// This is a temporary feature to ease the transitioning towards the full functional syntax
 		if (isWronglyClassifiedInStatements && elt != null) {
-			elt.setFacet(IInternalFacets.GAML_WARNING,
-					GAML.getExpressionDescriptionFactory().createConstant("Action declaration is missing parentheses"));
+			emitWarning(elt, "Action declaration is missing parentheses");
 			String type = elt.getKeyword();
 			elt.setKeyword(ACTION);
 			elt.setFacet(TYPE, GAML.getExpressionDescriptionFactory().createStringBased(type));
@@ -395,6 +394,30 @@ public class GamlSyntacticConverter {
 
 		if (!IKeyword.PARAMETER.equals(keyword)) { convertBlock(keyword, elt, stm.getBlock()); }
 		return elt;
+	}
+
+	/**
+	 * Emit warning.
+	 *
+	 * @param elt
+	 *            the elt
+	 * @param message
+	 *            the message
+	 */
+	private void emitWarning(final ISyntacticElement elt, final String message) {
+		elt.setFacet(IInternalFacets.GAML_WARNING, GAML.getExpressionDescriptionFactory().createConstant(message));
+	}
+
+	/**
+	 * Emit error.
+	 *
+	 * @param elt
+	 *            the elt
+	 * @param message
+	 *            the message
+	 */
+	private void emitError(final ISyntacticElement elt, final String message) {
+		elt.setFacet(IInternalFacets.GAML_ERROR, GAML.getExpressionDescriptionFactory().createConstant(message));
 	}
 
 	/**
@@ -495,8 +518,8 @@ public class GamlSyntacticConverter {
 		Expression exp = stm.getExpr();
 		boolean hasWith = EGAML.hasFacet(stm, IKeyword.WITH);
 		if (hasWith && !(exp instanceof Function)) {
-			addFacet(elt, IInternalFacets.GAML_WARNING, GAML.getExpressionDescriptionFactory().createConstant(
-					"The use of with: is deprecated. Prefer the functional form 'create species_name(args) number:...;'"));
+			emitWarning(elt,
+					"The use of with: is deprecated. Prefer the functional form 'create species_name(args) number:...;'");
 		} else if (!hasWith && exp instanceof Function function) {
 			ExpressionList parameters = function.getRight();
 			Expression species = function.getLeft();
@@ -557,8 +580,7 @@ public class GamlSyntacticConverter {
 		} else {
 			final Expression e = stm.getExpr();
 			if (e == null) // We do not attempt anything
-				// addFacet(elt, IInternalFacets.GAML_ERROR,
-				// GAML.getExpressionDescriptionFactory().createConstant("Action cannot be determined"));
+				// emitError(elt, "Action cannot be determined");
 				return;
 			// Implicit self/super target is the same for both remaining forms
 			addFacet(elt, IInternalFacets.INTERNAL_TARGET,
@@ -580,11 +602,9 @@ public class GamlSyntacticConverter {
 				addFacet(elt, IInternalFacets.INTERNAL_FUNCTION,
 						new gaml.compiler.expressions.FacetListExpressionDescription(e, ff));
 				if (ff.isEmpty()) {
-					addFacet(elt, IInternalFacets.GAML_WARNING, GAML.getExpressionDescriptionFactory()
-							.createConstant("Missing parentheses after action name"));
+					emitWarning(elt, "Missing parentheses after action name");
 				} else {
-					addFacet(elt, IInternalFacets.GAML_WARNING, GAML.getExpressionDescriptionFactory().createConstant(
-							"Deprecated use of facets to pass arguments. Use the functional form instead."));
+					emitWarning(elt, "Deprecated use of facets to pass arguments. Use the functional form instead.");
 				}
 			}
 		}
@@ -616,8 +636,29 @@ public class GamlSyntacticConverter {
 	 *            the expr
 	 */
 	private void addFacet(final ISyntacticElement e, final String key, final IExpressionDescription expr) {
+		addFacet(e, key, expr, true);
+	}
+
+	/**
+	 * Adds the facet.
+	 *
+	 * @param e
+	 *            the e
+	 * @param key
+	 *            the key
+	 * @param expr
+	 *            the expr
+	 * @param errorIfDuplicate
+	 *            the error if duplicate
+	 */
+	private void addFacet(final ISyntacticElement e, final String key, final IExpressionDescription expr,
+			final boolean errorIfDuplicate) {
 		if (e.hasFacet(key)) {
-			e.setFacet(IInternalFacets.DUPLICATE_FACET, GAML.getExpressionDescriptionFactory().createConstant(key));
+			if (errorIfDuplicate) {
+				e.setFacet(IInternalFacets.DUPLICATE_FACET, GAML.getExpressionDescriptionFactory().createConstant(key));
+			} else {
+				// emitWarning(e, "Facet " + key + " is already defined");
+			}
 		} else {
 			e.setFacet(key, expr);
 		}
@@ -878,13 +919,15 @@ public class GamlSyntacticConverter {
 	 * @param elt
 	 *            the syntactic element to populate; must not be null
 	 */
-	private void applyFacets(final List<Facet> facets, final IArtefact.Symbol artefact, final ISyntacticElement elt) {
-		for (final Facet f : facets) {
-			final String fname = EGAML.getKeyOf(f);
+	private void applyFacets(final Map<String, Facet> facets, final IArtefact.Symbol artefact,
+			final ISyntacticElement elt) {
+		String keyword = elt.getKeyword();
+		facets.forEach((fname, f) -> {
+			fname = replaceAssignments(keyword, fname);
 			final boolean label = artefact != null && artefact.isLabel(fname);
 			final IExpressionDescription fexpr = convExpr(f, label);
 			addFacet(elt, fname, fexpr);
-		}
+		});
 	}
 
 	/**
@@ -904,23 +947,24 @@ public class GamlSyntacticConverter {
 	 *            the syntactic element to populate
 	 */
 	private void convertFacets(final Statement stm, final String keyword, final ISyntacticElement elt) {
-		final IArtefact.Symbol p = ArtefactRegistry.getArtefact(keyword, null);
-		final List<Facet> raw = EGAML.getFacetsOf(stm);
-		// Normalise facet names before delegating to the shared helper
-		if (!raw.isEmpty()) {
-			for (final Facet f : raw) {
-				String fname = replaceAssignments(keyword, EGAML.getKeyOf(f));
-				final boolean label = p != null && p.isLabel(fname);
-				final IExpressionDescription fexpr = convExpr(f, label);
-				addFacet(elt, fname, fexpr);
-			}
-		}
+		final IArtefact.Symbol artefact = ArtefactRegistry.getArtefact(keyword, null);
+		final Map<String, Facet> facets = EGAML.getFacetsMapOf(stm);
+		applyFacets(facets, artefact, elt);
 
 		// Add the omissible (default) facet when it has not been supplied explicitly
 		final String def = ArtefactRegistry.getOmissibleFacetForSymbol(keyword);
-		if (def != null && !def.isEmpty() && !elt.hasFacet(def)) {
+		if (def != null && !def.isEmpty()) {
 			final IExpressionDescription ed = findExpr(stm);
-			if (ed != null) { elt.setFacet(def, ed); }
+
+			if (ed != null) {
+				addFacet(elt, def, ed, false);
+				// boolean alreadyThere = elt.hasFacet(def);
+				// if (!alreadyThere) {
+				// elt.setFacet(def, ed);
+				// } else {
+				// emitWarning(elt, def + " is already defined as the default facet");
+				// }
+			}
 		}
 		if (LET.equals(keyword) && elt.hasFacet(TYPE)) {
 			elt.setFacet(NO_TYPE_INFERENCE, GAML.getExpressionDescriptionFactory().createConstant(true));
@@ -938,7 +982,7 @@ public class GamlSyntacticConverter {
 	 */
 	private void convertFacets(final StandaloneExperiment stm, final ISyntacticElement elt) {
 		final IArtefact.Symbol p = ArtefactRegistry.getArtefact(EXPERIMENT, null);
-		applyFacets(EGAML.getFacetsOf(stm), p, elt);
+		applyFacets(EGAML.getFacetsMapOf(stm), p, elt);
 		final IExpressionDescription ed = findExpr(stm);
 		addFacet(elt, NAME, ed);
 		addFacet(elt, TITLE, ed);
@@ -962,12 +1006,16 @@ public class GamlSyntacticConverter {
 	 *            the raw facet name extracted from the parsed model
 	 * @return the canonical facet name, or {@code fname} unchanged if no substitution applies
 	 */
-	private String replaceAssignments(final String keyword, String fname) {
+	private String replaceAssignments(final String keyword, final String fname) {
 		// We change the "<-" and "->" symbols into full names
-		if ("<-".equals(fname)) {
-			fname = LET.equals(keyword) || SET.equals(keyword) ? VALUE : INIT;
-		} else if ("->".equals(fname)) { fname = FUNCTION; }
-		return fname;
+		return switch (fname) {
+			case "<-":
+				yield LET.equals(keyword) || SET.equals(keyword) ? VALUE : INIT;
+			case "->":
+				yield FUNCTION;
+			default:
+				yield fname;
+		};
 	}
 
 	/**

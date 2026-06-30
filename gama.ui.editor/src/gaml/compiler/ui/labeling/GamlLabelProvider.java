@@ -10,7 +10,6 @@
  ********************************************************************************************************/
 package gaml.compiler.ui.labeling;
 
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -256,14 +255,8 @@ public class GamlLabelProvider extends DefaultEObjectLabelProvider implements IG
 	 * @return the string
 	 */
 	String image(final S_Experiment ele) {
-		final List<Facet> facets = EGaml.getInstance().getFacetsOf(ele);
-		Facet type = null;
-		for (final Facet f : facets) {
-			if (f.getKey().startsWith(IKeyword.TYPE)) {
-				type = f;
-				break;
-			}
-		}
+		final Map<String, Facet> facets = EGaml.getInstance().getFacetsMapOf(ele);
+		Facet type = facets.get(IKeyword.TYPE);
 		if (type == null) return "_gui.png";
 		return typeImage(EGaml.getInstance().toString(type.getExpr()));
 	}
@@ -276,14 +269,8 @@ public class GamlLabelProvider extends DefaultEObjectLabelProvider implements IG
 	 * @return the string
 	 */
 	String image(final StandaloneExperiment ele) {
-		final List<Facet> facets = EGaml.getInstance().getFacetsOf(ele);
-		Facet type = null;
-		for (final Facet f : facets) {
-			if (f.getKey().startsWith(IKeyword.TYPE)) {
-				type = f;
-				break;
-			}
-		}
+		final Map<String, Facet> facets = EGaml.getInstance().getFacetsMapOf(ele);
+		Facet type = facets.get(IKeyword.TYPE);
 		if (type == null) return "_batch.png";
 		return typeImage(EGaml.getInstance().toString(type.getExpr()));
 	}
@@ -301,10 +288,9 @@ public class GamlLabelProvider extends DefaultEObjectLabelProvider implements IG
 		if (kw == null) return null;
 		if (IKeyword.PARAMETER.equals(kw)) return parameterImage(ele);
 		if (IKeyword.VAR.equals(kw) || IKeyword.CONST.equals(kw)) {
-			for (final Facet f : EGaml.getInstance().getFacetsOf(ele)) {
-				if (EGaml.getInstance().getKeyOf(f).startsWith(IKeyword.TYPE))
-					return typeImage(EGaml.getInstance().getKeyOf(f.getExpr()));
-			}
+			final Map<String, Facet> facets = EGaml.getInstance().getFacetsMapOf(ele);
+			Facet type = facets.get(IKeyword.TYPE);
+			if (type != null) return typeImage(EGaml.getInstance().toString(type.getExpr()));
 		}
 		return typeImage(kw);
 	}

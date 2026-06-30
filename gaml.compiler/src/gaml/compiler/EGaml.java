@@ -26,7 +26,6 @@ import gama.api.compilation.descriptions.IModelDescription;
 import gama.dev.COUNTER;
 import gaml.compiler.gaml.ActionDefinition;
 import gaml.compiler.gaml.ActionRef;
-import gaml.compiler.gaml.ArgumentDefinition;
 import gaml.compiler.gaml.BinaryOperator;
 import gaml.compiler.gaml.EquationDefinition;
 import gaml.compiler.gaml.EquationRef;
@@ -86,9 +85,6 @@ public class EGaml {
 
 	/** The singleton instance. */
 	private static final EGaml instance = new EGaml();
-
-	/** Cache for empty argument lists to avoid repeated allocations. */
-	private static final List<ArgumentDefinition> EMPTY_ARG_LIST = Collections.emptyList();
 
 	/** Cache for empty facet lists to avoid repeated allocations. */
 	private static final List<Facet> EMPTY_FACET_LIST = Collections.emptyList();
@@ -164,6 +160,25 @@ public class EGaml {
 	 * @return the name of the object, or null if the object type doesn't have a name
 	 */
 	public String getNameOf(final EObject o) {
+		if (o instanceof GamlEObjectImpl geo) {
+			String name = geo.getCachedName();
+			if (name == null) {
+				name = computeNameOf(o);
+				geo.setCachedName(name);
+			}
+			return name;
+		}
+		return computeNameOf(o);
+	}
+
+	/**
+	 * Computes the name of an EObject without using the cache.
+	 *
+	 * @param o
+	 *            the EObject
+	 * @return the computed name, or null
+	 */
+	private String computeNameOf(final EObject o) {
 		return switch (o) {
 			case S_Reflex r -> {
 				String s = r.getName();
@@ -199,21 +214,6 @@ public class EGaml {
 	}
 
 	/**
-	 * Gets the facets of a statement. Extracts the list of facets from statements or headless experiments.
-	 *
-	 * @param s
-	 *            the statement or experiment object
-	 * @return the list of facets, or an empty list if not available
-	 */
-	public List<Facet> getFacetsOf(final EObject s) {
-		if (s instanceof StatementImpl) {
-			if (((StatementImpl) s).eIsSet(GamlPackage.STATEMENT__FACETS)) return ((StatementImpl) s).getFacets();
-		} else if (s instanceof StandaloneExperimentImpl sei && sei.eIsSet(GamlPackage.STANDALONE_EXPERIMENT__FACETS))
-			return sei.getFacets();
-		return EMPTY_FACET_LIST;
-	}
-
-	/**
 	 * Gets the facets map of a statement. Converts the facet list into a map keyed by facet name for efficient lookup
 	 * operations.
 	 *
@@ -222,7 +222,31 @@ public class EGaml {
 	 * @return a map of facet names to Facet objects, or an empty map if no facets exist
 	 */
 	public Map<String, Facet> getFacetsMapOf(final EObject s) {
-		final List<? extends EObject> list = getFacetsOf(s);
+		if (s instanceof GamlEObjectImpl geo) {
+			Map<String, Facet> cached = geo.getCachedFacetsMap();
+			if (cached == null) {
+				cached = computeFacetsMapOf(s);
+				geo.setCachedFacetsMap(cached);
+			}
+			return cached;
+		}
+		return computeFacetsMapOf(s);
+	}
+
+	/**
+	 * Computes the facets map without using the cache.
+	 *
+	 * @param s
+	 *            the statement or experiment object
+	 * @return computed facets map
+	 */
+	private Map<String, Facet> computeFacetsMapOf(final EObject s) {
+		List<? extends EObject> list = EMPTY_FACET_LIST;
+		if (s instanceof StatementImpl) {
+			if (((StatementImpl) s).eIsSet(GamlPackage.STATEMENT__FACETS)) { list = ((StatementImpl) s).getFacets(); }
+		} else if (s instanceof StandaloneExperimentImpl sei && sei.eIsSet(GamlPackage.STANDALONE_EXPERIMENT__FACETS)) {
+			list = sei.getFacets();
+		}
 		if (list.isEmpty()) return Collections.emptyMap();
 		final Map<String, Facet> map = new HashMap<>();
 		for (final EObject f : list) { if (f instanceof Facet) { map.put(getKeyOf(f), (Facet) f); } }
@@ -230,8 +254,7 @@ public class EGaml {
 	}
 
 	/**
-	 * Tells if a facet is present in a statement. This is more efficient than getting the full facet map when you only
-	 * need to check for existence.
+	 * Tells if a facet is present in a statement.
 	 *
 	 * @param s
 	 *            the statement or experiment object
@@ -240,15 +263,7 @@ public class EGaml {
 	 * @return true if the facet exists, false otherwise
 	 */
 	public boolean hasFacet(final EObject s, final String facet) {
-		final List<? extends EObject> list = getFacetsOf(s);
-		if (list.isEmpty()) return false;
-		for (final EObject f : list) {
-			if (f instanceof Facet) {
-				final String name = getKeyOf(f);
-				if (facet.equals(name)) return true;
-			}
-		}
-		return false;
+		return getFacetsMapOf(s).containsKey(facet);
 	}
 
 	/**
@@ -263,18 +278,24 @@ public class EGaml {
 	 */
 	public Expression getExpressionAtKey(final EObject s, final String name) {
 		if (s == null || name == null) return null;
-		if (VALUE.equals(name) && s instanceof S_Assignment) return ((S_Assignment) s).getValue();
-		final List<Facet> list = getFacetsOf(s);
-
-		for (final Facet f : list) {
-			final String key = getKeyOf(f);
-			if (s instanceof Statement && (VALUE.equals(name) || INIT.equals(name))) {
-				if (ARROW.equals(key)) return f.getExpr();
-			} else if (s instanceof S_Assignment && ITEM.equals(name)
-					&& (key.contains(LESS_THAN) || key.contains(GREATER_THAN)))
-				return f.getExpr();
-			if (name.equals(key)) return f.getExpr();
+		final Map<String, Facet> facets = getFacetsMapOf(s);
+		Facet f = facets.get(name);
+		if (f != null) return f.getExpr();
+		if (s instanceof S_Assignment) {
+			if (VALUE.equals(name)) return ((S_Assignment) s).getValue();
+			if (ITEM.equals(name)) {
+				for (String key : facets.keySet()) {
+					if (key.contains(LESS_THAN) || key.contains(GREATER_THAN)) {
+						f = facets.get(key);
+						if (f != null) return f.getExpr();
+					}
+				}
+			}
+		} else if (s instanceof Statement && (VALUE.equals(name) || INIT.equals(name))) {
+			f = facets.get(ARROW);
+			if (f != null) return f.getExpr();
 		}
+
 		return null;
 	}
 
@@ -352,7 +373,15 @@ public class EGaml {
 
 	public String getKeyOf(final EObject f) {
 		if (f == null) return null;
-		return getKeyOf(f, f.eClass());
+		if (f instanceof GamlEObjectImpl geo) {
+			String key = geo.getCachedKey();
+			if (key == null) {
+				key = computeKeyOf(f, f.eClass());
+				geo.setCachedKey(key);
+			}
+			return key;
+		}
+		return computeKeyOf(f, f.eClass());
 	}
 
 	/**
@@ -366,6 +395,19 @@ public class EGaml {
 	 */
 
 	public String getKeyOf(final EObject object, final EClass clazz) {
+		return computeKeyOf(object, clazz);
+	}
+
+	/**
+	 * Computes the key of an EObject for a given eClass without using the cache.
+	 *
+	 * @param object
+	 *            the EObject
+	 * @param clazz
+	 *            the eClass
+	 * @return computed key
+	 */
+	private String computeKeyOf(final EObject object, final EClass clazz) {
 		final int id = clazz.getClassifierID();
 		return switch (id) {
 			case GamlPackage.UNARY -> ((Unary) object).getOp();
@@ -383,7 +425,7 @@ public class EGaml {
 					.getOp();
 			default -> {
 				final List<EClass> eSuperTypes = clazz.getESuperTypes();
-				yield eSuperTypes.isEmpty() ? null : getKeyOf(object, eSuperTypes.get(0));
+				yield eSuperTypes.isEmpty() ? null : computeKeyOf(object, eSuperTypes.get(0));
 			}
 		};
 	}
