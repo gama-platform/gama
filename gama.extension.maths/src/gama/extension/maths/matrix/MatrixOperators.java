@@ -74,8 +74,7 @@ public class MatrixOperators {
 					examples = @example (
 							value = "matrix([[1,1],[1,2]]) . matrix([[1,1],[1,2]])",
 							equals = "matrix([[2,3],[3,5]])")))
-	@test ("matrix([[1,1],[1,2]]) . matrix([[1,1],[1,2]]) = matrix([[2,3],[3,5]])")
-	public static IMatrix matrixMultiplication(final IScope scope, final IMatrix a, final IMatrix b)
+	@test ("matrix([[1,1],[1,2]]) . matrix([[1,1],[1,2]]) = matrix([[2,3],[3,5]])")	public static IMatrix matrixMultiplication(final IScope scope, final IMatrix a, final IMatrix b)
 			throws GamaRuntimeException {
 		int aRows = a.getRows(scope);
 		int aCols = a.getCols(scope);
