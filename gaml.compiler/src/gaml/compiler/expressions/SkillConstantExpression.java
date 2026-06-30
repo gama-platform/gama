@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * SkillConstantExpression.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * SkillConstantExpression.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -12,7 +11,6 @@ package gaml.compiler.expressions;
 
 import gama.api.additions.registries.GamaSkillRegistry;
 import gama.api.compilation.documentation.IGamlDocumentation;
-import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.skill.IArchitecture;
 import gama.api.kernel.skill.ISkill;
@@ -39,22 +37,26 @@ public class SkillConstantExpression extends ConstantExpression {
 	 * @see gama.api.gaml.expressions.IExpression#getDocumentation()
 	 */
 	@Override
-	public IGamlDocumentation getDocumentation() { return ((ISkill) value).getDocumentation(); }
+	public IGamlDocumentation getDocumentation() {
+		return value instanceof ISkill skill ? skill.getDocumentation() : IGamlDocumentation.EMPTY_DOC;
+	}
 
 	@Override
-	public String getTitle() { return ((ISkill) value).getTitle(); }
+	public String getTitle() { return value instanceof ISkill skill ? skill.getTitle() : "Unknown skill"; }
 
 	@Override
 	public String literalValue() {
-		return ((ISkill) value).getName();
+		return value instanceof ISkill skill ? skill.getName() : "Unknown skill";
 	}
 
 	@Override
 	public void collectMetaInformation(final GamlProperties meta) {
-		final ISkill skill = (ISkill) value;
-		meta.put(GamlProperties.PLUGINS, skill.getDefiningPlugin());
-		meta.put(skill instanceof IArchitecture ? GamlProperties.ARCHITECTURES : GamlProperties.SKILLS,
-				skill.getName());
+		final ISkill skill = value instanceof ISkill s ? s : null;
+		if (skill != null) {
+			meta.put(GamlProperties.PLUGINS, skill.getDefiningPlugin());
+			meta.put(skill instanceof IArchitecture ? GamlProperties.ARCHITECTURES : GamlProperties.SKILLS,
+					skill.getName());
+		}
 	}
 
 }
