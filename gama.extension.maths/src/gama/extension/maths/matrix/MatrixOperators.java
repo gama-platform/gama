@@ -87,22 +87,35 @@ public class MatrixOperators {
 
 		boolean isInt = a instanceof GamaIntMatrix && b instanceof GamaIntMatrix;
 
-		double[] aData = new double[aRows * aCols];
-		for (int i = 0; i < aRows; i++) {
-			for (int j = 0; j < aCols; j++) {
-				aData[i * aCols + j] = Cast.asFloat(scope, a.get(scope, j, i));
+		double[] aData = extractMatrixData(scope, a, aRows, aCols);
+		double[] bTransposedData = extractTransposedMatrixData(scope, b, bRows, bCols);
+		double[] cData = computeMatrixProduct(aData, bTransposedData, aRows, aCols, bCols);
+
+		return createResultMatrix(scope, cData, aRows, bCols, isInt);
+	}
+
+	private static double[] extractMatrixData(final IScope scope, final IMatrix a, int rows, int cols) {
+		double[] data = new double[rows * cols];
+		for (int i = 0; i < rows; i++) {
+			for (int j = 0; j < cols; j++) {
+				data[i * cols + j] = Cast.asFloat(scope, a.get(scope, j, i));
 			}
 		}
+		return data;
+	}
 
-		double[] bTransposedData = new double[bRows * bCols];
-		for (int i = 0; i < bCols; i++) {
-			for (int j = 0; j < bRows; j++) {
-				bTransposedData[i * bRows + j] = Cast.asFloat(scope, b.get(scope, i, j));
+	private static double[] extractTransposedMatrixData(final IScope scope, final IMatrix b, int rows, int cols) {
+		double[] transposedData = new double[rows * cols];
+		for (int i = 0; i < cols; i++) {
+			for (int j = 0; j < rows; j++) {
+				transposedData[i * rows + j] = Cast.asFloat(scope, b.get(scope, i, j));
 			}
 		}
+		return transposedData;
+	}
 
+	private static double[] computeMatrixProduct(double[] aData, double[] bTransposedData, int aRows, int aCols, int bCols) {
 		double[] cData = new double[aRows * bCols];
-
 		int upperBound = SPECIES.loopBound(aCols);
 		for (int i = 0; i < aRows; i++) {
 			for (int j = 0; j < bCols; j++) {
@@ -111,30 +124,33 @@ public class MatrixOperators {
 				DoubleVector sumVector = DoubleVector.zero(SPECIES);
 				for (; k < upperBound; k += SPECIES.length()) {
 					DoubleVector va = DoubleVector.fromArray(SPECIES, aData, i * aCols + k);
-					DoubleVector vb = DoubleVector.fromArray(SPECIES, bTransposedData, j * bRows + k);
+					DoubleVector vb = DoubleVector.fromArray(SPECIES, bTransposedData, j * aCols + k);
 					sumVector = va.fma(vb, sumVector);
 				}
 				sum += sumVector.reduceLanes(jdk.incubator.vector.VectorOperators.ADD);
 				for (; k < aCols; k++) {
-					sum += aData[i * aCols + k] * bTransposedData[j * bRows + k];
+					sum += aData[i * aCols + k] * bTransposedData[j * aCols + k];
 				}
 				cData[i * bCols + j] = sum;
 			}
 		}
+		return cData;
+	}
 
+	private static IMatrix createResultMatrix(final IScope scope, double[] cData, int rows, int cols, boolean isInt) {
 		if (isInt) {
-			GamaIntMatrix result = (GamaIntMatrix) GamaMatrixFactory.createIntMatrix(bCols, aRows);
-			for (int i = 0; i < aRows; i++) {
-				for (int j = 0; j < bCols; j++) {
-					result.set(scope, j, i, (int) cData[i * bCols + j]);
+			GamaIntMatrix result = (GamaIntMatrix) GamaMatrixFactory.createIntMatrix(cols, rows);
+			for (int i = 0; i < rows; i++) {
+				for (int j = 0; j < cols; j++) {
+					result.set(scope, j, i, (int) cData[i * cols + j]);
 				}
 			}
 			return result;
 		} else {
-			IMatrix result = GamaMatrixFactory.createFloatMatrix(bCols, aRows);
-			for (int i = 0; i < aRows; i++) {
-				for (int j = 0; j < bCols; j++) {
-					result.set(scope, j, i, cData[i * bCols + j]);
+			IMatrix result = GamaMatrixFactory.createFloatMatrix(cols, rows);
+			for (int i = 0; i < rows; i++) {
+				for (int j = 0; j < cols; j++) {
+					result.set(scope, j, i, cData[i * cols + j]);
 				}
 			}
 			return result;
