@@ -957,13 +957,14 @@ public class GamlSyntacticConverter {
 			final IExpressionDescription ed = findExpr(stm);
 
 			if (ed != null) {
-				addFacet(elt, def, ed, false);
-				// boolean alreadyThere = elt.hasFacet(def);
-				// if (!alreadyThere) {
-				// elt.setFacet(def, ed);
-				// } else {
-				// emitWarning(elt, def + " is already defined as the default facet");
-				// }
+				// If the facet has already been defined by the user then it's a duplicate (but not if it has been added
+				// by this class)
+				if (!EGAML.hasFacet(stm, def)) {
+					addFacet(elt, def, ed, false);
+				} else {
+					emitError(elt, "'" + def + "' is already defined as the default facet");
+				}
+
 			}
 		}
 		if (LET.equals(keyword) && elt.hasFacet(TYPE)) {
