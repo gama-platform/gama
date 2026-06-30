@@ -1088,7 +1088,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 	 */
 	private List<IAgent> getNeighborhoods(final IScope scope, final IAgent agent, final List<Integer> cells,
 			final List<IAgent> currentList) throws GamaRuntimeException {
-		final List<IAgent> agents = new ArrayList(getNeighborsOf(scope, agent.getLocation(), 1.0, null));
+		final List<IAgent> agents = new ArrayList<>(getNeighborsOf(scope, agent.getLocation(), 1.0, null));
 		final List<IAgent> neighs = new ArrayList<>();
 		final Set<Integer> visitedCells = new HashSet<>(cells);
 		final Set<IAgent> currentAgents = new HashSet<>(currentList);
