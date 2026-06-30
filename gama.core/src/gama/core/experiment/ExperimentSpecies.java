@@ -380,7 +380,7 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 		setName(description.getName());
 		experimentType = description.getLitteral(IKeyword.TYPE);
 		// final String type = description.getFacets().getLabel(IKeyword.TYPE);
-		//if (IKeyword.BATCH.equals(experimentType)) { exploration = new Exploration(null); }
+		// if (IKeyword.BATCH.equals(experimentType)) { exploration = new Exploration(null); }
 
 		// else if (IKeyword.HEADLESS_UI.equals(experimentType)) {
 		// setHeadless(true); }
@@ -603,7 +603,6 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 	@Override
 	public synchronized IExecutionResult open(final Double seed) {
 
-		IExecutionResult res = IExecutionResult.FAILED;
 		createAgent(seed);
 
 		// We add the agent as soon as possible so as to make it possible to
@@ -612,9 +611,9 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 		// Make sure that the attributes in experiment are initialized (see #3842)
 		agent.getParameterValues().forEach((n, v) -> { if (hasVar(n)) { agent.setDirectVarValue(myScope, n, v); } });
 		myScope.push(agent);
-		prepareGui(); //TODO: do we really need that in headless ?
+		prepareGui(); // TODO: do we really need that in headless ?
 		IScope scope = agent.getScope();
-		res = agent.schedule(scope);
+		IExecutionResult res = agent.schedule(scope);
 
 		// showParameters();
 
@@ -672,7 +671,7 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 
 			reloading = true;
 			if (agent != null) {
-				agent.dispose();				
+				agent.dispose();
 				agent = null;
 			}
 		} finally {
@@ -693,10 +692,10 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 
 	// @Override
 	@Override
-	public boolean isBatch() { return IKeyword.BATCH.equals(getExperimentType()); }
+	public boolean isBatch() { return getDescription().isBatch(); }
 
 	@Override
-	public boolean isTest() { return IKeyword.TEST.equals(getExperimentType()); }
+	public boolean isTest() { return getDescription().isTest(); }
 
 	@Override
 	public boolean isMemorize() { return getDescription().hasFacet(IKeyword.RECORD); }

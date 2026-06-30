@@ -103,4 +103,9 @@ public interface IExperimentDescription extends ISpeciesDescription {
 	 */
 	String getExperimentTitleFacet();
 
+	/**
+	 * @return
+	 */
+	boolean isTest();
+
 }
