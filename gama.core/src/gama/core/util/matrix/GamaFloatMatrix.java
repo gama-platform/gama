@@ -442,62 +442,102 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 
 	@Override
 	public IMatrix plus(final IScope scope, final IMatrix other) throws GamaRuntimeException {
-		return applyMatrixOp(scope, other, (a, b) -> a + b, jdk.incubator.vector.VectorOperators.ADD);
+		final GamaFloatMatrix matb = from(scope, other);
+		if (matb != null && this.numCols == matb.numCols && this.numRows == matb.numRows) {
+			final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
+			for (int i = 0; i < matrix.length; i++) { nm.matrix[i] = matrix[i] + matb.matrix[i]; }
+			return nm;
+		}
+		throw GamaRuntimeException.error(" The dimensions of the matrices do not correspond", scope);
 	}
 
 	@Override
 	public IMatrix times(final IScope scope, final IMatrix other) throws GamaRuntimeException {
-		return applyMatrixOp(scope, other, (a, b) -> a * b, jdk.incubator.vector.VectorOperators.MUL);
+		final GamaFloatMatrix matb = from(scope, other);
+		if (matb != null && this.numCols == matb.numCols && this.numRows == matb.numRows) {
+			final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
+			for (int i = 0; i < matrix.length; i++) { nm.matrix[i] = matrix[i] * matb.matrix[i]; }
+			return nm;
+		}
+		throw GamaRuntimeException.error(" The dimensions of the matrices do not correspond", scope);
 	}
 
 	@Override
 	public IMatrix minus(final IScope scope, final IMatrix other) throws GamaRuntimeException {
-		return applyMatrixOp(scope, other, (a, b) -> a - b, jdk.incubator.vector.VectorOperators.SUB);
+		final GamaFloatMatrix matb = from(scope, other);
+		if (matb != null && this.numCols == matb.numCols && this.numRows == matb.numRows) {
+			final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
+			for (int i = 0; i < matrix.length; i++) { nm.matrix[i] = matrix[i] - matb.matrix[i]; }
+			return nm;
+		}
+		throw GamaRuntimeException.error(" The dimensions of the matrices do not correspond", scope);
 	}
 
 	@Override
 	public IMatrix times(final Double val) throws GamaRuntimeException {
-		return applyScalarOp(val, (a, b) -> a * b, jdk.incubator.vector.VectorOperators.MUL);
+		final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
+		for (int i = 0; i < matrix.length; i++) { nm.matrix[i] = matrix[i] * val; }
+		return nm;
 	}
 
 	@Override
 	public IMatrix times(final Integer val) throws GamaRuntimeException {
-		return applyScalarOp(val.doubleValue(), (a, b) -> a * b, jdk.incubator.vector.VectorOperators.MUL);
+		final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
+		for (int i = 0; i < matrix.length; i++) { nm.matrix[i] = matrix[i] * val; }
+		return nm;
 	}
 
 	@Override
 	public IMatrix divides(final Double val) throws GamaRuntimeException {
-		return applyScalarOp(val, (a, b) -> a / b, jdk.incubator.vector.VectorOperators.DIV);
+		final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
+		for (int i = 0; i < matrix.length; i++) { nm.matrix[i] = matrix[i] / val; }
+		return nm;
 	}
 
 	@Override
 	public IMatrix divides(final Integer val) throws GamaRuntimeException {
-		return applyScalarOp(val.doubleValue(), (a, b) -> a / b, jdk.incubator.vector.VectorOperators.DIV);
+		final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
+		for (int i = 0; i < matrix.length; i++) { nm.matrix[i] = matrix[i] / val; }
+		return nm;
 	}
 
 	@Override
 	public IMatrix divides(final IScope scope, final IMatrix other) throws GamaRuntimeException {
-		return applyMatrixOp(scope, other, (a, b) -> a / b, jdk.incubator.vector.VectorOperators.DIV);
+		final GamaFloatMatrix matb = from(scope, other);
+		if (matb != null && this.numCols == matb.numCols && this.numRows == matb.numRows) {
+			final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
+			for (int i = 0; i < matrix.length; i++) { nm.matrix[i] = matrix[i] / matb.matrix[i]; }
+			return nm;
+		}
+		throw GamaRuntimeException.error(" The dimensions of the matrices do not correspond", scope);
 	}
 
 	@Override
 	public IMatrix plus(final Double val) throws GamaRuntimeException {
-		return applyScalarOp(val, (a, b) -> a + b, jdk.incubator.vector.VectorOperators.ADD);
+		final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
+		for (int i = 0; i < matrix.length; i++) { nm.matrix[i] = matrix[i] + val; }
+		return nm;
 	}
 
 	@Override
 	public IMatrix plus(final Integer val) throws GamaRuntimeException {
-		return applyScalarOp(val.doubleValue(), (a, b) -> a + b, jdk.incubator.vector.VectorOperators.ADD);
+		final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
+		for (int i = 0; i < matrix.length; i++) { nm.matrix[i] = matrix[i] + val; }
+		return nm;
 	}
 
 	@Override
 	public IMatrix minus(final Double val) throws GamaRuntimeException {
-		return applyScalarOp(val, (a, b) -> a - b, jdk.incubator.vector.VectorOperators.SUB);
+		final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
+		for (int i = 0; i < matrix.length; i++) { nm.matrix[i] = matrix[i] - val; }
+		return nm;
 	}
 
 	@Override
 	public IMatrix minus(final Integer val) throws GamaRuntimeException {
-		return applyScalarOp(val.doubleValue(), (a, b) -> a - b, jdk.incubator.vector.VectorOperators.SUB);
+		final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
+		for (int i = 0; i < matrix.length; i++) { nm.matrix[i] = matrix[i] - val; }
+		return nm;
 	}
 
 	@Override
