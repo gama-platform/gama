@@ -44,6 +44,12 @@ import java.util.ArrayList;
 import java.util.List;
 import gama.api.compilation.GamlCompilationError;
 import org.eclipse.emf.common.util.URI;
+import com.google.inject.Injector;
+import gaml.compiler.GamlStandaloneSetup;
+import gama.api.additions.GamaBundleLoader;
+import org.osgi.framework.Bundle;
+// import org.eclipse.emf.ecore.resource.Resource;
+
 
 /**
  * The Class ApplicationWorkbenchAdvisor.
@@ -51,7 +57,7 @@ import org.eclipse.emf.common.util.URI;
 public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 	static
 	{
-		DEBUG.ON();
+		DEBUG.OFF();
 	}
 
 	/**
@@ -103,58 +109,58 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 		
 		// Start Server after the GUI is loaded
 		GamaGuiWebSocketServer.startGuiServer();
+		if (args.length > 0) {
+			int i = 0;
+			if (args[0].contains("--launcher.defaultAction")) { i += 2; }
+			if (i < args.length) {
+				String exp = args[i];
+				String modelPath = args[args.length - 1];
+				if (!exp.endsWith(".gamr") && modelPath.endsWith(".gaml")) {
+					WorkspaceModelsManager.instance.openModelPassedAsArgument(modelPath);
+					return;
+				}
+				for (final IEventLayerDelegate delegate : GamaAdditionRegistry.getEventLayerDelegates()) {
+					if (delegate.acceptSource(null, "launcher")) {
+						delegate.createFrom(null, args[args.length - 1], null);
+					}
+				}
+			}
+		}
 
-		// if (args.length > 0) {
-		// 	int i = 0;
-		// 	if (args[0].contains("--launcher.defaultAction")) { i += 2; }
-		// 	if (i < args.length) {
-		// 		String exp = args[i];
-		// 		if (!exp.endsWith(".gamr")) {
-		// 			WorkspaceModelsManager.instance.openModelPassedAsArgument(args[args.length - 1]);
-		// 			return;
-		// 		}
-		// 		for (final IEventLayerDelegate delegate : GamaAdditionRegistry.getEventLayerDelegates()) {
-		// 			if (delegate.acceptSource(null, "launcher")) {
-		// 				delegate.createFrom(null, args[args.length - 1], null);
-		// 			}
-		// 		}
-		// 	}
+		if (GamaPreferences.Interface.CORE_STARTUP_MODEL.getValue()) {
+			String experiment = GamaPreferences.Interface.CORE_DEFAULT_EXPERIMENT.getValue();
+			GamlModelBuilder builder = null;
 
-		// }
+			// final boolean isEditorLoaded =  
+			// 	Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap().containsKey("gaml");
+			final boolean isEditorLoaded = Platform.getBundle("gama.ui.editor") != null;
 
-        Display.getDefault().syncExec(
-            new Runnable() {
+			// create a new GamlModelBuilder only if gama.ui.editor is not loaded
+			if(isEditorLoaded) {
+				builder = GamlModelBuilder.getInstance();
+			}
+			else {
+				Injector injector = GamlStandaloneSetup.doSetup();
+				builder = new GamlModelBuilder(injector);
+			}
 
-                static 
-                {
-                    DEBUG.ON();
-                }
+			// opening the selected file
+			IGamaFile<?, ?> file = GamaPreferences.Interface.CORE_DEFAULT_MODEL.getValue();
+			if (file != null && file.exists(null) && experiment != null) {
 
-                @Override
-                public void run() {
+				while (GAMA.getRegularGui() == null) {
+					THREADS.WAIT(100, Thread.currentThread().getName() + ": waiting for the GUI to become available");
+				}
 
-                String path = "/home/cytech/Gama_Workspace_Dev/projet_cool/models/model_cool.gaml";
-                String experiment = "prey_predator";
+				final URI uri = file.getURIRelativeToWorkspace();
+				final List<GamlCompilationError> errors = new ArrayList<GamlCompilationError>();
 
-                IGamaFile<?, ?> file = Files.from(null, path);
-                if (file != null && file.exists(null)) {
+				final IModelSpecies model = builder.compile(uri,errors);
 
-                    while (GAMA.getRegularGui() == null) {
-                        THREADS.WAIT(100, Thread.currentThread().getName() + ": waiting for the GUI to become available");
-                    }
+				GAMA.runGuiExperiment(experiment,model);
 
-                    final URI uri = file.getURIRelativeToWorkspace();
-                    final List<GamlCompilationError> errors = new ArrayList<GamlCompilationError>();
-
-            		final IModelSpecies model = GamlModelBuilder.getInstance().compile(uri,errors);
-
-            		GAMA.runGuiExperiment(experiment,model);
-
-		        }
-            }
-        }
-    );
-
+			}
+		}
 	}
 
 	/**

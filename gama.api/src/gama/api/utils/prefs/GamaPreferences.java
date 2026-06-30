@@ -12,6 +12,7 @@ package gama.api.utils.prefs;
 
 import static gama.api.types.color.GamaColorFactory.LIGHT_GRAY;
 
+import java.io.File;
 import java.awt.Font;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -279,9 +280,7 @@ public class GamaPreferences {
 							List<String> result = new ArrayList<>();
 							if (CORE_STARTUP_MODEL.getValue()) {
 								IGamaFile file = CORE_DEFAULT_MODEL.getValue();
-								final URI uriModel = FileUtils.getURI(file.getOriginalPath(), null);
-								if (uriModel == null) return result;
-								result.addAll(GAML.getInfo(uriModel).getExperiments());
+								result.addAll(GAML.getInfo(new File(file.getPath(null))).getExperiments());
 							}
 							return result;
 						});

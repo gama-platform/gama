@@ -158,7 +158,7 @@
 			GAMA interfaces modules
 		-->
 		<module>../gama.ui.shared</module>
-		<!-- <module>../gama.ui.editor</module> -->
+		<module>../gama.ui.editor</module>
 		<module>../gama.ui.viewers</module>
 		<module>../gama.ui.navigator</module>
 		<module>../gama.ui.experiment</module>
@@ -184,7 +184,7 @@
 		-->
 		<module>../gama.feature.ui</module>
 		<module>../gama.feature.core</module>
-		<!-- <module>../gama.feature.ui.editor</module> -->
+		<module>../gama.feature.ui.editor</module>
 		<module>../gama.feature.export</module>
 		<module>../gama.feature.dependencies</module>
 		<module>../gama.feature.ui.experiment</module>

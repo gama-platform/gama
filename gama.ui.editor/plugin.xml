@@ -310,10 +310,10 @@
 			class="gaml.compiler.ui.GamlExecutableExtensionFactory:org.eclipse.xtext.resource.IResourceFactory"
 			type="gaml">
 		</parser>
-  <parser
-        class="gaml.compiler.ui.GamlExecutableExtensionFactory:org.eclipse.xtext.resource.IResourceFactory"
-        type="experiment">
-  </parser>
+            <parser
+                  class="gaml.compiler.ui.GamlExecutableExtensionFactory:org.eclipse.xtext.resource.IResourceFactory"
+                  type="experiment">
+            </parser>
 	</extension>
 	<extension point="org.eclipse.xtext.extension_resourceServiceProvider">
 		<resourceServiceProvider

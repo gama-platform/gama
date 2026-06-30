@@ -1,4 +1,4 @@
-package gama.export;
+package gama.export.dependency;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,24 +15,17 @@ import java.util.stream.Stream;
 
 public class BundleDependencyAnalyzer {
 
+    private static String jdepsLocation = Path.of(System.getProperty("java.home"),"bin","jdeps").toString();
+
     private final Collection<String> exportedRoots;
 
     public BundleDependencyAnalyzer(Collection<String> exportedRoots) {
         this.exportedRoots = Objects.requireNonNull(exportedRoots);
     }
 
-    public Set<Path> analyze(Path bundlesRoot, Path libsRoot) throws IOException {
+    public Set<Path> analyze(Set<Path> targetBundles, Path libsRoot) throws IOException {
 
-        List<Path> targetBundles; // gama modules
         List<Path> libraries; // gama.dependencies libs
-
-        // retrive all gama.*.jar files
-        try (Stream<Path> stream = Files.walk(bundlesRoot)) {
-            targetBundles = stream
-                    .filter(p -> p.getFileName().toString().startsWith("gam"))
-                    .filter(p -> p.toString().endsWith(".jar"))
-                    .toList();
-        }
 
         // retrive gama.dependencies libs
         try (Stream<Path> stream = Files.walk(libsRoot)) {
@@ -41,11 +34,10 @@ public class BundleDependencyAnalyzer {
                     .toList();
         }
 
-
         // mapping libraries with the packages they export
         Map<Path, Set<String>> exportedPackages = new HashMap<>();
 
-        System.out.println("Scanning exported packages");
+        // System.out.println("Scanning exported packages");
 
         for (Path library : libraries) {
             exportedPackages.put(library, getExportedPackages(library));
@@ -54,11 +46,11 @@ public class BundleDependencyAnalyzer {
         //  scan for used library can begin
         Map<Path, Set<String>> usedLibraries = new HashMap<>();
 
-        System.out.println("Scanning used packages");
+        // System.out.println("Scanning used packages");
 
         for (Path bundle : targetBundles) {
 
-            System.out.println(bundle.getFileName());
+            // System.out.println(bundle.getFileName());
 
             Set<String> dependencies =
                     filterDependencies(getDependencies(bundle));
@@ -84,10 +76,10 @@ public class BundleDependencyAnalyzer {
 
                 if (!intersection.isEmpty()) {
 
-                    System.out.println("\t" + library);
+                    // System.out.println("\t" + library);
 
-                    intersection.forEach(
-                            dep -> System.out.println("\t\t" + dep));
+                    // intersection.forEach(
+                    //         dep -> // System.out.println("\t\t" + dep));
 
                     usedLibraries
                             .computeIfAbsent(library, k -> new HashSet<>())
@@ -96,23 +88,23 @@ public class BundleDependencyAnalyzer {
             }
         }
 
-        System.out.println();
-        System.out.println(usedLibraries.size() + " useful libs found");
+        // System.out.println();
+        // System.out.println(usedLibraries.size() + " useful libs found");
 
-        usedLibraries.keySet()
-                .forEach(System.out::println);
+        // usedLibraries.keySet()
+        //         .forEach(System.out::println);
 
         Set<Path> removable =
                 new HashSet<>(libraries);
 
         removable.removeAll(usedLibraries.keySet());
 
-        System.out.println();
-        System.out.println("You can remove:");
+        // System.out.println();
+        // System.out.println("You can remove:");
 
-        removable.forEach(System.out::println);
+        // removable.forEach(System.out::println);
 
-        return removeable;
+        return removable;
     }
 
     private Set<String> filterDependencies(Set<String> dependencies) {
@@ -138,7 +130,7 @@ public class BundleDependencyAnalyzer {
         Set<String> result = new HashSet<>();
 
         ProcessBuilder pb = new ProcessBuilder(
-                "jdeps",
+                jdepsLocation,
                 "--recursive",
                 jar.toAbsolutePath().toString());
 

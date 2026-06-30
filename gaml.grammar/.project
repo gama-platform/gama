@@ -3,8 +3,7 @@
 	<name>gaml.grammar</name>
 	<comment></comment>
 	<projects>
-		<!-- <project>gama.ui.editor</project> -->
-		<project>gama.export</project>
+		<project>gama.ui.editor</project>
 		<project>gaml.compiler</project>
 	</projects>
 	<buildSpec>
