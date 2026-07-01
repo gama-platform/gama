@@ -1555,7 +1555,7 @@ public class Containers {
 			category = { IOperatorCategory.LIST },
 			concept = { IConcept.LIST })
 	@doc (
-			value = "the index of the first occurence of the right operand in the left operand container",
+			value = "the index of the first occurence of the right operand in the left operand container, or -1 if this list does not contain the element",
 			masterDoc = true,
 			comment = "The definition of index_of and the type of the index depend on the container",
 			usages = @usage (
