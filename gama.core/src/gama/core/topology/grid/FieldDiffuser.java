@@ -347,10 +347,43 @@ public class FieldDiffuser {
 
 	}
 
+	private void fastDiffusionWithConvolution() {
+		final int kRows = diffusion.diffusionMatrix.length;
+		final int kCols = diffusion.diffusionMatrix[0].length;
+		final int kCenterX = kCols / 2;
+		final int kCenterY = kRows / 2;
+
+		for (int j = 0; j < context.nbRows; ++j) { // output columns (rows in memory)
+			for (int i = 0; i < context.nbCols; ++i) { // output rows (columns in memory)
+				double sum = 0.0;
+				for (int m = 0; m < kRows; ++m) { // kernel rows
+					for (int n = 0; n < kCols; ++n) { // kernel columns
+						int ii = i + n - kCenterX;
+						int jj = j + m - kCenterY;
+						if (ii >= 0 && ii < context.nbCols && jj >= 0 && jj < context.nbRows) {
+							sum += input[jj * context.nbCols + ii]
+									* diffusion.diffusionMatrix[kRows - m - 1][kCols - n - 1];
+						}
+					}
+				}
+				if (output[j * context.nbCols + i] == -Double.MAX_VALUE) {
+					output[j * context.nbCols + i] = sum;
+				} else {
+					output[j * context.nbCols + i] += sum;
+				}
+			}
+		}
+	}
+
 	/**
 	 * Diffusion with convolution.
 	 */
 	public void diffusionWithConvolution() {
+		if (!context.isTorus && !diffusion.isGradient && diffusion.mask == null && !diffusion.avoidMask) {
+			fastDiffusionWithConvolution();
+			return;
+		}
+
 		// default method : convolution
 
 		final int kRows = diffusion.diffusionMatrix.length;
@@ -428,10 +461,43 @@ public class FieldDiffuser {
 		}
 	}
 
+	private void fastDiffusionWithDotProduct() {
+		final int kRows = diffusion.diffusionMatrix.length;
+		final int kCols = diffusion.diffusionMatrix[0].length;
+		final int kCenterX = kCols / 2;
+		final int kCenterY = kRows / 2;
+
+		for (int ii = 0; ii < context.nbRows; ++ii) { // input rows
+			for (int jj = 0; jj < context.nbCols; ++jj) { // input columns
+				for (int m = 0; m < kRows; ++m) { // kernel rows
+					for (int n = 0; n < kCols; ++n) { // kernel columns
+						int i = ii + n - kCenterX;
+						int j = jj + m - kCenterY;
+						if (i >= 0 && i < context.nbCols && j >= 0 && j < context.nbRows) {
+							final int outputIndex = j * context.nbCols + i;
+							final int inputIndex = jj * context.nbCols + ii;
+							final double matrixValue = diffusion.diffusionMatrix[m][n];
+							if (output[outputIndex] == -Double.MAX_VALUE) {
+								output[outputIndex] = input[inputIndex] * matrixValue;
+							} else {
+								output[outputIndex] += input[inputIndex] * matrixValue;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
 	/**
 	 * Diffusion with dot product.
 	 */
 	public void diffusionWithDotProduct() {
+		if (!context.isTorus && !diffusion.isGradient && diffusion.mask == null && !diffusion.avoidMask) {
+			fastDiffusionWithDotProduct();
+			return;
+		}
+
 		// dot product
 
 		final int kRows = diffusion.diffusionMatrix.length;
