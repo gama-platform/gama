@@ -10,6 +10,7 @@
 package gama.gaml.operators;
 
 import gama.annotations.doc;
+import gama.annotations.example;
 import gama.annotations.no_test;
 import gama.annotations.operator;
 import gama.annotations.support.IConcept;
@@ -24,6 +25,7 @@ import gama.core.util.matrix.GamaFloatMatrix;
 import gama.api.types.list.IList;
 import gama.api.types.matrix.IField;
 import gama.api.types.matrix.IMatrix;
+import gama.api.types.matrix.GamaMatrixFactory;
 
 /**
  * Provides GAML field/grid operators for operating on {@link IField} (raster/field matrix)
@@ -269,7 +271,7 @@ public class Fields {
 		int cols = matrix.getCols(scope);
 		int rows = matrix.getRows(scope);
 		GamaFloatMatrix mat = GamaFloatMatrix.from(scope, matrix);
-		GamaFloatMatrix res = new GamaFloatMatrix(cols, rows);
+		GamaFloatMatrix res = (GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(cols, rows);
 		double[] dataIn = mat.getMatrix();
 		double[] dataOut = res.getMatrix();
 
@@ -306,7 +308,7 @@ public class Fields {
 		IGrid g = grid.getGrid();
 		int cols = g.getCols(scope);
 		int rows = g.getRows(scope);
-		GamaFloatMatrix matrix = new GamaFloatMatrix(cols, rows);
+		GamaFloatMatrix matrix = (GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(cols, rows);
 		g.getValuesInto(scope, varName, -Double.MAX_VALUE, matrix.getMatrix());
 		return matrix;
 	}

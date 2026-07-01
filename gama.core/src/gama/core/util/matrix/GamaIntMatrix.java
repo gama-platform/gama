@@ -549,17 +549,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	public IMatrix times(final Double val) throws GamaRuntimeException {
 		final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
 		final double[] mm = nm.getMatrix();
-		int i = 0;
-		final double[] dMatrix = new double[GamaFloatMatrix.SPECIES.length()];
-
-		int upperBound = GamaFloatMatrix.SPECIES.loopBound(matrix.length);
-			for (int j = 0; j < dMatrix.length; j++) { dMatrix[j] = matrix[i + j]; }
-
-			for(int j=0; j<GamaFloatMatrix.SPECIES.length(); j++) dMatrix[j] = matrix[i+j];
-			DoubleVector va = DoubleVector.fromArray(GamaFloatMatrix.SPECIES, dMatrix, 0);
-			va.mul(val).intoArray(mm, i);
-		}
-		for (; i < matrix.length; i++) { mm[i] = matrix[i] * val; }
+		for (int i = 0; i < matrix.length; i++) { mm[i] = matrix[i] * val; }
 		return nm;
 	}
 
@@ -580,17 +570,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	public IMatrix divides(final Double val) throws GamaRuntimeException {
 		final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
 		final double[] mm = nm.getMatrix();
-		int i = 0;
-		int upperBound = GamaFloatMatrix.SPECIES.loopBound(matrix.length);
-		final double[] dMatrix = new double[GamaFloatMatrix.SPECIES.length()];
-
-		for (; i < upperBound; i += GamaFloatMatrix.SPECIES.length()) {
-			for (int j = 0; j < dMatrix.length; j++) { dMatrix[j] = matrix[i + j]; }
-
-			DoubleVector va = DoubleVector.fromArray(GamaFloatMatrix.SPECIES, dMatrix, 0);
-			va.div(val).intoArray(mm, i);
-		}
-		for (; i < matrix.length; i++) { mm[i] = matrix[i] / val; }
+		for (int i = 0; i < matrix.length; i++) { mm[i] = matrix[i] / val; }
 		return nm;
 	}
 
@@ -598,17 +578,8 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	public IMatrix divides(final Integer val) throws GamaRuntimeException {
 		final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
 		final double[] mm = nm.getMatrix();
-		final double[] dMatrix = new double[GamaFloatMatrix.SPECIES.length()];
-
-		int i = 0;
-			for (int j = 0; j < dMatrix.length; j++) { dMatrix[j] = matrix[i + j]; }
-
-			double[] dMatrix = new double[GamaFloatMatrix.SPECIES.length()];
-			for(int j=0; j<GamaFloatMatrix.SPECIES.length(); j++) dMatrix[j] = matrix[i+j];
-			DoubleVector va = DoubleVector.fromArray(GamaFloatMatrix.SPECIES, dMatrix, 0);
-			va.div((double) val).intoArray(mm, i);
-		}
-		for (; i < matrix.length; i++) { mm[i] = matrix[i] / (double) val; }
+		final double dVal = val;
+		for (int i = 0; i < matrix.length; i++) { mm[i] = matrix[i] / dVal; }
 		return nm;
 	}
 
@@ -634,17 +605,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	public IMatrix plus(final Double val) throws GamaRuntimeException {
 		final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
 		final double[] mm = nm.getMatrix();
-		final double[] dMatrix = new double[GamaFloatMatrix.SPECIES.length()];
-
-		int i = 0;
-			for (int j = 0; j < dMatrix.length; j++) { dMatrix[j] = matrix[i + j]; }
-
-			double[] dMatrix = new double[GamaFloatMatrix.SPECIES.length()];
-			for(int j=0; j<GamaFloatMatrix.SPECIES.length(); j++) dMatrix[j] = matrix[i+j];
-			DoubleVector va = DoubleVector.fromArray(GamaFloatMatrix.SPECIES, dMatrix, 0);
-			va.add(val).intoArray(mm, i);
-		}
-		for (; i < matrix.length; i++) { mm[i] = matrix[i] + val; }
+		for (int i = 0; i < matrix.length; i++) { mm[i] = matrix[i] + val; }
 		return nm;
 	}
 
@@ -665,15 +626,9 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	public IMatrix minus(final Double val) throws GamaRuntimeException {
 		final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
 		final double[] mm = nm.getMatrix();
-		final double[] dMatrix = new double[GamaFloatMatrix.SPECIES.length()];
-		int i = 0;
-			for (int j = 0; j < dMatrix.length; j++) { dMatrix[j] = matrix[i + j]; }
-			double[] dMatrix = new double[GamaFloatMatrix.SPECIES.length()];
-			for(int j=0; j<GamaFloatMatrix.SPECIES.length(); j++) dMatrix[j] = matrix[i+j];
-			DoubleVector va = DoubleVector.fromArray(GamaFloatMatrix.SPECIES, dMatrix, 0);
-			va.sub(val).intoArray(mm, i);
-		}
-		for (; i < matrix.length; i++) { mm[i] = matrix[i] - val; }
+
+
+		for (int i = 0; i < matrix.length; i++) { mm[i] = matrix[i] - val; }
 		return nm;
 	}
 

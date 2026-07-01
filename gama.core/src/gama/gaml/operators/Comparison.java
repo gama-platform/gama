@@ -26,7 +26,9 @@ import gama.api.compilation.validation.IOperatorValidator;
 import gama.api.constants.IGamlIssue;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.IType;
+import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.IPoint;
+import gama.api.types.matrix.GamaMatrixFactory;
 import gama.api.utils.MathUtils;
 import gama.api.types.matrix.IMatrix;
 import gama.core.util.matrix.GamaFloatMatrix;
@@ -318,7 +320,7 @@ public class Comparison {
 			value = "Returns a binary matrix where each element is 1.0 if the corresponding matrix element is strictly greater than the scalar, and 0.0 otherwise.")
 	public static IMatrix greater(final IScope scope, final IMatrix a, final Double b) {
 		final GamaFloatMatrix mat = GamaFloatMatrix.from(scope, a);
-		final GamaFloatMatrix nm = new GamaFloatMatrix(mat.getCols(scope), mat.getRows(scope));
+		final GamaFloatMatrix nm = (GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(mat.getCols(scope), mat.getRows(scope));
 		final double[] m = mat.getMatrix();
 		int i = 0;
 		int upperBound = GamaFloatMatrix.SPECIES.loopBound(m.length);
@@ -336,6 +338,8 @@ public class Comparison {
 			can_be_const = true,
 			category = { IOperatorCategory.COMPARISON, IOperatorCategory.MATRIX },
 			concept = {})
+	@doc (value = "Returns a binary matrix where each element is 1.0 if the corresponding matrix element is strictly greater than the scalar integer, and 0.0 otherwise.")
+	@test ("matrix([[1,2],[3,4]]) > 2 = matrix([[0.0,0.0],[1.0,1.0]])")
 	public static IMatrix greater(final IScope scope, final IMatrix a, final Integer b) {
 		return greater(scope, a, b.doubleValue());
 	}
@@ -349,7 +353,7 @@ public class Comparison {
 			value = "Returns a binary matrix where each element is 1.0 if the corresponding matrix element is strictly less than the scalar, and 0.0 otherwise.")
 	public static IMatrix less(final IScope scope, final IMatrix a, final Double b) {
 		final GamaFloatMatrix mat = GamaFloatMatrix.from(scope, a);
-		final GamaFloatMatrix nm = new GamaFloatMatrix(mat.getCols(scope), mat.getRows(scope));
+		final GamaFloatMatrix nm = (GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(mat.getCols(scope), mat.getRows(scope));
 		final double[] m = mat.getMatrix();
 		int i = 0;
 		int upperBound = GamaFloatMatrix.SPECIES.loopBound(m.length);
@@ -367,6 +371,8 @@ public class Comparison {
 			can_be_const = true,
 			category = { IOperatorCategory.COMPARISON, IOperatorCategory.MATRIX },
 			concept = {})
+	@doc (value = "Returns a binary matrix where each element is 1.0 if the corresponding matrix element is strictly less than the scalar integer, and 0.0 otherwise.")
+	@test ("matrix([[1,2],[3,4]]) < 3 = matrix([[1.0,1.0],[0.0,0.0]])")
 	public static IMatrix less(final IScope scope, final IMatrix a, final Integer b) {
 		return less(scope, a, b.doubleValue());
 	}
@@ -380,7 +386,7 @@ public class Comparison {
 			value = "Returns a binary matrix where each element is 1.0 if the corresponding matrix element is equal to the scalar, and 0.0 otherwise.")
 	public static IMatrix equal(final IScope scope, final IMatrix a, final Double b) {
 		final GamaFloatMatrix mat = GamaFloatMatrix.from(scope, a);
-		final GamaFloatMatrix nm = new GamaFloatMatrix(mat.getCols(scope), mat.getRows(scope));
+		final GamaFloatMatrix nm = (GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(mat.getCols(scope), mat.getRows(scope));
 		final double[] m = mat.getMatrix();
 		int i = 0;
 		int upperBound = GamaFloatMatrix.SPECIES.loopBound(m.length);
@@ -398,6 +404,8 @@ public class Comparison {
 			can_be_const = true,
 			category = { IOperatorCategory.COMPARISON, IOperatorCategory.MATRIX },
 			concept = {})
+	@doc (value = "Returns a binary matrix where each element is 1.0 if the corresponding matrix element is equal to the scalar integer, and 0.0 otherwise.")
+	@test ("matrix([[1,2],[3,4]]) = 2 = matrix([[0.0,1.0],[0.0,0.0]])")
 	public static IMatrix equal(final IScope scope, final IMatrix a, final Integer b) {
 		return equal(scope, a, b.doubleValue());
 	}

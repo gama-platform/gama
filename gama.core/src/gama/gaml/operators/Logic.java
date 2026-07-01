@@ -24,6 +24,7 @@ import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IOperator;
 import gama.api.gaml.types.Cast;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.matrix.GamaMatrixFactory;
 import gama.api.types.matrix.IMatrix;
 import gama.core.util.matrix.GamaFloatMatrix;
 
@@ -182,7 +183,7 @@ public class Logic {
 			can_be_const = true,
 			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
 			category = { IOperatorCategory.LOGIC, IOperatorCategory.MATRIX },
-			concept = { IConcept.LOGIC, IConcept.MATRIX })
+			concept = { IConcept.LOGICAL, IConcept.MATRIX })
 	@doc (
 			value = "Returns a new matrix where elements are selected from the true_matrix if the condition matrix element is strictly positive (> 0.0), and from the false_matrix otherwise.",
 			examples = { @example (
@@ -193,7 +194,7 @@ public class Logic {
 		final GamaFloatMatrix tMat = GamaFloatMatrix.from(scope, trueMatrix);
 		final GamaFloatMatrix fMat = GamaFloatMatrix.from(scope, falseMatrix);
 		
-		final GamaFloatMatrix nm = new GamaFloatMatrix(cond.getCols(scope), cond.getRows(scope));
+		final GamaFloatMatrix nm = (GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(cond.getCols(scope), cond.getRows(scope));
 		final double[] mCond = cond.getMatrix();
 		final double[] mT = tMat.getMatrix();
 		final double[] mF = fMat.getMatrix();

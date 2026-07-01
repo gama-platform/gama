@@ -21,9 +21,11 @@ import gama.annotations.support.ITypeProvider;
 import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.matrix.GamaMatrixFactory;
 import gama.api.types.matrix.IField;
 import gama.api.types.matrix.IMatrix;
 import gama.api.utils.MathUtils;
+import gama.core.util.matrix.GamaFloatMatrix;
 
 /**
  * Provides all mathematical and arithmetic operators for the GAML language.
@@ -199,13 +201,13 @@ public class Maths {
 					equals = "matrix([[1.0, 4.0], [9.0, 16.0]])") })
 	@test ("matrix([[1, 2], [3, 4]]) ^ 2.0 = matrix([[1.0, 4.0], [9.0, 16.0]])")
 	public static IMatrix pow(final IScope scope, final IMatrix a, final Double b) {
-		final gama.core.util.matrix.GamaFloatMatrix mat = gama.core.util.matrix.GamaFloatMatrix.from(scope, a);
-		final gama.core.util.matrix.GamaFloatMatrix nm = new gama.core.util.matrix.GamaFloatMatrix(mat.getCols(scope), mat.getRows(scope));
+		final GamaFloatMatrix mat = GamaFloatMatrix.from(scope, a);
+		final GamaFloatMatrix nm = (GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(mat.getCols(scope), mat.getRows(scope));
 		final double[] m = mat.getMatrix();
 		int i = 0;
-		int upperBound = gama.core.util.matrix.GamaFloatMatrix.SPECIES.loopBound(m.length);
-		for (; i < upperBound; i += gama.core.util.matrix.GamaFloatMatrix.SPECIES.length()) {
-			jdk.incubator.vector.DoubleVector va = jdk.incubator.vector.DoubleVector.fromArray(gama.core.util.matrix.GamaFloatMatrix.SPECIES, m, i);
+		int upperBound = GamaFloatMatrix.SPECIES.loopBound(m.length);
+		for (; i < upperBound; i += GamaFloatMatrix.SPECIES.length()) {
+			jdk.incubator.vector.DoubleVector va = jdk.incubator.vector.DoubleVector.fromArray(GamaFloatMatrix.SPECIES, m, i);
 			va.pow(b).intoArray(nm.getMatrix(), i);
 		}
 		for (; i < m.length; i++) { nm.getMatrix()[i] = Math.pow(m[i], b); }
@@ -224,15 +226,15 @@ public class Maths {
 					value = "matrix([[1, 2, 1], [3, 4, 1], [1, 1, 1]]) convolution matrix([[0, 1, 0], [1, -4, 1], [0, 1, 0]])",
 					equals = "matrix([[-1, 2, -1], [1, -7, 0], [1, 2, 1]])") })
 	public static IMatrix convolve(final IScope scope, final IMatrix a, final IMatrix kernel) {
-		final gama.core.util.matrix.GamaFloatMatrix matA = gama.core.util.matrix.GamaFloatMatrix.from(scope, a);
-		final gama.core.util.matrix.GamaFloatMatrix k = gama.core.util.matrix.GamaFloatMatrix.from(scope, kernel);
+		final GamaFloatMatrix matA = GamaFloatMatrix.from(scope, a);
+		final GamaFloatMatrix k = GamaFloatMatrix.from(scope, kernel);
 		
 		int rowsA = matA.getRows(scope);
 		int colsA = matA.getCols(scope);
 		int rowsK = k.getRows(scope);
 		int colsK = k.getCols(scope);
 		
-		final gama.core.util.matrix.GamaFloatMatrix result = new gama.core.util.matrix.GamaFloatMatrix(colsA, rowsA);
+		final GamaFloatMatrix result = (GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(colsA, rowsA);
 		
 		int padRow = rowsK / 2;
 		int padCol = colsK / 2;
@@ -286,6 +288,10 @@ public class Maths {
 	@test ("abs(-2.0) = 2.0")
 	@test ("abs(0.0) = 0.0")
 	@test ("abs(-0.0) = 0.0")
+	public static Double abs(final Double rv) {
+		return Math.abs(rv);
+	}
+
 	@operator (
 			value = "abs",
 			can_be_const = true,
@@ -297,21 +303,17 @@ public class Maths {
 					value = "abs(matrix([[-1, 2], [-3, -4]]))",
 					equals = "matrix([[1.0, 2.0], [3.0, 4.0]])") })
 	public static IMatrix abs(final IScope scope, final IMatrix a) {
-		final gama.core.util.matrix.GamaFloatMatrix mat = gama.core.util.matrix.GamaFloatMatrix.from(scope, a);
-		final gama.core.util.matrix.GamaFloatMatrix nm = new gama.core.util.matrix.GamaFloatMatrix(mat.getCols(scope), mat.getRows(scope));
+		final GamaFloatMatrix mat = GamaFloatMatrix.from(scope, a);
+		final GamaFloatMatrix nm = (GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(mat.getCols(scope), mat.getRows(scope));
 		final double[] m = mat.getMatrix();
 		int i = 0;
-		int upperBound = gama.core.util.matrix.GamaFloatMatrix.SPECIES.loopBound(m.length);
-		for (; i < upperBound; i += gama.core.util.matrix.GamaFloatMatrix.SPECIES.length()) {
-			jdk.incubator.vector.DoubleVector va = jdk.incubator.vector.DoubleVector.fromArray(gama.core.util.matrix.GamaFloatMatrix.SPECIES, m, i);
+		int upperBound = GamaFloatMatrix.SPECIES.loopBound(m.length);
+		for (; i < upperBound; i += GamaFloatMatrix.SPECIES.length()) {
+			jdk.incubator.vector.DoubleVector va = jdk.incubator.vector.DoubleVector.fromArray(GamaFloatMatrix.SPECIES, m, i);
 			va.abs().intoArray(nm.getMatrix(), i);
 		}
 		for (; i < m.length; i++) { nm.getMatrix()[i] = Math.abs(m[i]); }
 		return nm;
-	}
-
-	public static Double abs(final Double rv) {
-		return Math.abs(rv);
 	}
 
 	/**
@@ -665,6 +667,15 @@ public class Maths {
 							value = "cos(-720.0)",
 							equals = "1.0") },
 			see = { "sin", "tan" })
+	@test ("cos(0.0) = 1.0")
+	@test ("cos(90.0) with_precision 10 = 0.0")
+	@test ("cos(180.0) = -1.0")
+	@test ("cos(360.0) = 1.0")
+	@test ("cos(-180.0) = -1.0")
+	public static Double cos(final Double rv) {
+		return Math.cos(rv * toRad);
+	}
+
 	@operator (
 			value = "cos",
 			can_be_const = true,
@@ -673,26 +684,17 @@ public class Maths {
 	@doc (
 			value = "Returns a new matrix where the cosine function is applied to each element (element values are assumed to be in degrees).")
 	public static IMatrix cos(final IScope scope, final IMatrix a) {
-		final gama.core.util.matrix.GamaFloatMatrix mat = gama.core.util.matrix.GamaFloatMatrix.from(scope, a);
-		final gama.core.util.matrix.GamaFloatMatrix nm = new gama.core.util.matrix.GamaFloatMatrix(mat.getCols(scope), mat.getRows(scope));
+		final GamaFloatMatrix mat = GamaFloatMatrix.from(scope, a);
+		final GamaFloatMatrix nm = (GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(mat.getCols(scope), mat.getRows(scope));
 		final double[] m = mat.getMatrix();
 		int i = 0;
-		int upperBound = gama.core.util.matrix.GamaFloatMatrix.SPECIES.loopBound(m.length);
-		for (; i < upperBound; i += gama.core.util.matrix.GamaFloatMatrix.SPECIES.length()) {
-			jdk.incubator.vector.DoubleVector va = jdk.incubator.vector.DoubleVector.fromArray(gama.core.util.matrix.GamaFloatMatrix.SPECIES, m, i);
+		int upperBound = GamaFloatMatrix.SPECIES.loopBound(m.length);
+		for (; i < upperBound; i += GamaFloatMatrix.SPECIES.length()) {
+			jdk.incubator.vector.DoubleVector va = jdk.incubator.vector.DoubleVector.fromArray(GamaFloatMatrix.SPECIES, m, i);
 			va.mul(toRad).lanewise(jdk.incubator.vector.VectorOperators.COS).intoArray(nm.getMatrix(), i);
 		}
 		for (; i < m.length; i++) { nm.getMatrix()[i] = Math.cos(m[i] * toRad); }
 		return nm;
-	}
-
-	@test ("cos(0.0) = 1.0")
-	@test ("cos(90.0) with_precision 10 = 0.0")
-	@test ("cos(180.0) = -1.0")
-	@test ("cos(360.0) = 1.0")
-	@test ("cos(-180.0) = -1.0")
-	public static Double cos(final Double rv) {
-		return Math.cos(rv * toRad);
 	}
 
 	/**
@@ -745,6 +747,15 @@ public class Maths {
 					value = "sin(360) with_precision 10 with_precision 10",
 					equals = "0.0") },
 			see = { "cos", "tan" })
+	@test ("sin(0.0) = 0.0")
+	@test ("sin(90.0) = 1.0")
+	@test ("sin(-90.0) = -1.0")
+	@test ("sin(180.0) with_precision 10 = 0.0")
+	@test ("sin(270.0) = -1.0")
+	public static Double sin(final Double rv) {
+		return Math.sin(rv * toRad);
+	}
+
 	@operator (
 			value = "sin",
 			can_be_const = true,
@@ -753,26 +764,17 @@ public class Maths {
 	@doc (
 			value = "Returns a new matrix where the sine function is applied to each element (element values are assumed to be in degrees).")
 	public static IMatrix sin(final IScope scope, final IMatrix a) {
-		final gama.core.util.matrix.GamaFloatMatrix mat = gama.core.util.matrix.GamaFloatMatrix.from(scope, a);
-		final gama.core.util.matrix.GamaFloatMatrix nm = new gama.core.util.matrix.GamaFloatMatrix(mat.getCols(scope), mat.getRows(scope));
+		final GamaFloatMatrix mat = GamaFloatMatrix.from(scope, a);
+		final GamaFloatMatrix nm = (GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(mat.getCols(scope), mat.getRows(scope));
 		final double[] m = mat.getMatrix();
 		int i = 0;
-		int upperBound = gama.core.util.matrix.GamaFloatMatrix.SPECIES.loopBound(m.length);
-		for (; i < upperBound; i += gama.core.util.matrix.GamaFloatMatrix.SPECIES.length()) {
-			jdk.incubator.vector.DoubleVector va = jdk.incubator.vector.DoubleVector.fromArray(gama.core.util.matrix.GamaFloatMatrix.SPECIES, m, i);
+		int upperBound = GamaFloatMatrix.SPECIES.loopBound(m.length);
+		for (; i < upperBound; i += GamaFloatMatrix.SPECIES.length()) {
+			jdk.incubator.vector.DoubleVector va = jdk.incubator.vector.DoubleVector.fromArray(GamaFloatMatrix.SPECIES, m, i);
 			va.mul(toRad).lanewise(jdk.incubator.vector.VectorOperators.SIN).intoArray(nm.getMatrix(), i);
 		}
 		for (; i < m.length; i++) { nm.getMatrix()[i] = Math.sin(m[i] * toRad); }
 		return nm;
-	}
-
-	@test ("sin(0.0) = 0.0")
-	@test ("sin(90.0) = 1.0")
-	@test ("sin(-90.0) = -1.0")
-	@test ("sin(180.0) with_precision 10 = 0.0")
-	@test ("sin(270.0) = -1.0")
-	public static Double sin(final Double rv) {
-		return Math.sin(rv * toRad);
 	}
 
 	/**
@@ -934,6 +936,10 @@ public class Maths {
 	@doc (
 			value = "returns Euler's number e raised to the power of the operand.")
 	@test ("exp (0) = 1.0")
+	public static Double exp(final Integer rv) {
+		return Math.exp(rv.doubleValue());
+	}
+
 	@operator (
 			value = "exp",
 			can_be_const = true,
@@ -943,7 +949,7 @@ public class Maths {
 			value = "Returns a new matrix where Euler's number e is raised to the power of each element.")
 	public static IMatrix exp(final IScope scope, final IMatrix a) {
 		final GamaFloatMatrix mat = GamaFloatMatrix.from(scope, a);
-		final GamaFloatMatrix nm = new GamaFloatMatrix(mat.getCols(scope), mat.getRows(scope));
+		final GamaFloatMatrix nm = (GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(mat.getCols(scope), mat.getRows(scope));
 		final double[] m = mat.getMatrix();
 		int i = 0;
 		int upperBound = GamaFloatMatrix.SPECIES.loopBound(m.length);
@@ -956,10 +962,6 @@ public class Maths {
 		}
 		for (i = 0; i < m.length; i++) { nm.getMatrix()[i] = Math.exp(m[i]); }
 		return nm;
-	}
-
-	public static Double exp(final Integer rv) {
-		return Math.exp(rv.doubleValue());
 	}
 
 	/**
@@ -1891,18 +1893,6 @@ public class Maths {
 	 *            the b
 	 * @return the i matrix
 	 */
-	@operator (
-			value = IKeyword.PLUS,
-			can_be_const = true,
-			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
-			category = { IOperatorCategory.ARITHMETIC },
-			concept = {})
-	@doc (
-			usages = { @usage (
-					value = "if one operand is a matrix and the other a number (float or int), performs a normal arithmetic sum of the number with each element of the matrix (results are float if the number is a float.",
-					examples = { @example (
-							value = "3.5 + matrix([[2,5],[3,4]])",
-							equals = "matrix([[5.5,8.5],[6.5,7.5]])") }) })
 	/**
 	 * Op plus.
 	 *
