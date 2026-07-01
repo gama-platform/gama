@@ -28,6 +28,8 @@ import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.IType;
 import gama.api.types.geometry.IPoint;
 import gama.api.utils.MathUtils;
+import gama.api.types.matrix.IMatrix;
+import gama.core.util.matrix.GamaFloatMatrix;
 
 /**
  * Provides all comparison operators for the GAML language.
@@ -305,6 +307,99 @@ public class Comparison {
 	public static Boolean greater(final Double a, final Double b) {
 		if (a == null || b == null) return false;
 		return a > b;
+	}
+
+	@operator (
+			value = { GT },
+			can_be_const = true,
+			category = { IOperatorCategory.COMPARISON, IOperatorCategory.MATRIX },
+			concept = { IConcept.COMPARISON, IConcept.MATRIX })
+	@doc (
+			value = "Returns a binary matrix where each element is 1.0 if the corresponding matrix element is strictly greater than the scalar, and 0.0 otherwise.")
+	public static IMatrix greater(final IScope scope, final IMatrix a, final Double b) {
+		final GamaFloatMatrix mat = GamaFloatMatrix.from(scope, a);
+		final GamaFloatMatrix nm = new GamaFloatMatrix(mat.getCols(scope), mat.getRows(scope));
+		final double[] m = mat.getMatrix();
+		int i = 0;
+		int upperBound = GamaFloatMatrix.SPECIES.loopBound(m.length);
+		for (; i < upperBound; i += GamaFloatMatrix.SPECIES.length()) {
+			jdk.incubator.vector.DoubleVector va = jdk.incubator.vector.DoubleVector.fromArray(GamaFloatMatrix.SPECIES, m, i);
+			jdk.incubator.vector.VectorMask<Double> mask = va.compare(jdk.incubator.vector.VectorOperators.GT, b);
+			jdk.incubator.vector.DoubleVector.broadcast(GamaFloatMatrix.SPECIES, 1.0).intoArray(nm.getMatrix(), i, mask);
+		}
+		for (; i < m.length; i++) { nm.getMatrix()[i] = m[i] > b ? 1.0 : 0.0; }
+		return nm;
+	}
+
+	@operator (
+			value = { GT },
+			can_be_const = true,
+			category = { IOperatorCategory.COMPARISON, IOperatorCategory.MATRIX },
+			concept = {})
+	public static IMatrix greater(final IScope scope, final IMatrix a, final Integer b) {
+		return greater(scope, a, b.doubleValue());
+	}
+
+	@operator (
+			value = { LT },
+			can_be_const = true,
+			category = { IOperatorCategory.COMPARISON, IOperatorCategory.MATRIX },
+			concept = { IConcept.COMPARISON, IConcept.MATRIX })
+	@doc (
+			value = "Returns a binary matrix where each element is 1.0 if the corresponding matrix element is strictly less than the scalar, and 0.0 otherwise.")
+	public static IMatrix less(final IScope scope, final IMatrix a, final Double b) {
+		final GamaFloatMatrix mat = GamaFloatMatrix.from(scope, a);
+		final GamaFloatMatrix nm = new GamaFloatMatrix(mat.getCols(scope), mat.getRows(scope));
+		final double[] m = mat.getMatrix();
+		int i = 0;
+		int upperBound = GamaFloatMatrix.SPECIES.loopBound(m.length);
+		for (; i < upperBound; i += GamaFloatMatrix.SPECIES.length()) {
+			jdk.incubator.vector.DoubleVector va = jdk.incubator.vector.DoubleVector.fromArray(GamaFloatMatrix.SPECIES, m, i);
+			jdk.incubator.vector.VectorMask<Double> mask = va.compare(jdk.incubator.vector.VectorOperators.LT, b);
+			jdk.incubator.vector.DoubleVector.broadcast(GamaFloatMatrix.SPECIES, 1.0).intoArray(nm.getMatrix(), i, mask);
+		}
+		for (; i < m.length; i++) { nm.getMatrix()[i] = m[i] < b ? 1.0 : 0.0; }
+		return nm;
+	}
+
+	@operator (
+			value = { LT },
+			can_be_const = true,
+			category = { IOperatorCategory.COMPARISON, IOperatorCategory.MATRIX },
+			concept = {})
+	public static IMatrix less(final IScope scope, final IMatrix a, final Integer b) {
+		return less(scope, a, b.doubleValue());
+	}
+
+	@operator (
+			value = { EQUALS },
+			can_be_const = true,
+			category = { IOperatorCategory.COMPARISON, IOperatorCategory.MATRIX },
+			concept = { IConcept.COMPARISON, IConcept.MATRIX })
+	@doc (
+			value = "Returns a binary matrix where each element is 1.0 if the corresponding matrix element is equal to the scalar, and 0.0 otherwise.")
+	public static IMatrix equal(final IScope scope, final IMatrix a, final Double b) {
+		final GamaFloatMatrix mat = GamaFloatMatrix.from(scope, a);
+		final GamaFloatMatrix nm = new GamaFloatMatrix(mat.getCols(scope), mat.getRows(scope));
+		final double[] m = mat.getMatrix();
+		int i = 0;
+		int upperBound = GamaFloatMatrix.SPECIES.loopBound(m.length);
+		for (; i < upperBound; i += GamaFloatMatrix.SPECIES.length()) {
+			jdk.incubator.vector.DoubleVector va = jdk.incubator.vector.DoubleVector.fromArray(GamaFloatMatrix.SPECIES, m, i);
+			jdk.incubator.vector.VectorMask<Double> mask = va.compare(jdk.incubator.vector.VectorOperators.EQ, b);
+			jdk.incubator.vector.DoubleVector.broadcast(GamaFloatMatrix.SPECIES, 1.0).intoArray(nm.getMatrix(), i, mask);
+		}
+		for (; i < m.length; i++) { nm.getMatrix()[i] = equal(m[i], b) ? 1.0 : 0.0; }
+		return nm;
+	}
+
+	@operator (
+			value = { EQUALS },
+			can_be_const = true,
+			category = { IOperatorCategory.COMPARISON, IOperatorCategory.MATRIX },
+			concept = {})
+	public static IMatrix equal(final IScope scope, final IMatrix a, final Integer b) {
+		return equal(scope, a, b.doubleValue());
 	}
 
 	/**

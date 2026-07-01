@@ -24,6 +24,8 @@ import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IOperator;
 import gama.api.gaml.types.Cast;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.matrix.IMatrix;
+import gama.core.util.matrix.GamaFloatMatrix;
 
 /**
  * Provides the core boolean and ternary logic operators for the GAML language.
@@ -173,6 +175,42 @@ public class Logic {
 	public static Boolean and(final IScope scope, final Boolean left, final IExpression right)
 			throws GamaRuntimeException {
 		return left != null && left && right != null && Cast.asBool(scope, right.value(scope));
+	}
+
+	@operator (
+			value = "ifelse",
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
+			category = { IOperatorCategory.LOGIC, IOperatorCategory.MATRIX },
+			concept = { IConcept.LOGIC, IConcept.MATRIX })
+	@doc (
+			value = "Returns a new matrix where elements are selected from the true_matrix if the condition matrix element is strictly positive (> 0.0), and from the false_matrix otherwise.",
+			examples = { @example (
+					value = "ifelse(matrix([[1.0, 0.0], [0.0, 1.0]]), matrix([[1, 2], [3, 4]]), matrix([[9, 8], [7, 6]]))",
+					equals = "matrix([[1.0, 8.0], [7.0, 4.0]])") })
+	public static IMatrix ifelse(final IScope scope, final IMatrix condition, final IMatrix trueMatrix, final IMatrix falseMatrix) {
+		final GamaFloatMatrix cond = GamaFloatMatrix.from(scope, condition);
+		final GamaFloatMatrix tMat = GamaFloatMatrix.from(scope, trueMatrix);
+		final GamaFloatMatrix fMat = GamaFloatMatrix.from(scope, falseMatrix);
+		
+		final GamaFloatMatrix nm = new GamaFloatMatrix(cond.getCols(scope), cond.getRows(scope));
+		final double[] mCond = cond.getMatrix();
+		final double[] mT = tMat.getMatrix();
+		final double[] mF = fMat.getMatrix();
+		final double[] mRes = nm.getMatrix();
+		
+		int i = 0;
+		int upperBound = GamaFloatMatrix.SPECIES.loopBound(mCond.length);
+		for (; i < upperBound; i += GamaFloatMatrix.SPECIES.length()) {
+			jdk.incubator.vector.DoubleVector vCond = jdk.incubator.vector.DoubleVector.fromArray(GamaFloatMatrix.SPECIES, mCond, i);
+			jdk.incubator.vector.DoubleVector vT = jdk.incubator.vector.DoubleVector.fromArray(GamaFloatMatrix.SPECIES, mT, i);
+			jdk.incubator.vector.DoubleVector vF = jdk.incubator.vector.DoubleVector.fromArray(GamaFloatMatrix.SPECIES, mF, i);
+			
+			jdk.incubator.vector.VectorMask<Double> mask = vCond.compare(jdk.incubator.vector.VectorOperators.GT, 0.0);
+			vT.blend(vF, mask).intoArray(mRes, i);
+		}
+		for (; i < mCond.length; i++) { mRes[i] = mCond[i] > 0.0 ? mT[i] : mF[i]; }
+		return nm;
 	}
 
 	/**

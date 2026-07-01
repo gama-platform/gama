@@ -18,8 +18,12 @@ import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.IPoint;
 import gama.api.types.geometry.IShape;
+import gama.api.kernel.agent.IPopulation;
+import gama.api.kernel.topology.IGrid;
+import gama.core.util.matrix.GamaFloatMatrix;
 import gama.api.types.list.IList;
 import gama.api.types.matrix.IField;
+import gama.api.types.matrix.IMatrix;
 
 /**
  * Provides GAML field/grid operators for operating on {@link IField} (raster/field matrix)
@@ -248,6 +252,87 @@ public class Fields {
 	@no_test
 	public static IList<IPoint> getNeighborsOf(final IScope scope, final IField field, final IPoint point) {
 		return field.getNeighborsOf(scope, point);
+	}
+
+	@operator (
+			value = "shift",
+			can_be_const = true,
+			category = { IOperatorCategory.GRID, IOperatorCategory.MATRIX },
+			concept = { IConcept.GRID, IConcept.MATRIX },
+			doc = { @doc (
+				value = "Shifts a matrix spatially by x and y offsets. Zeros are introduced for edge boundaries unless wrapped. Very useful for summing neighborhood offsets in cellular automata.",
+				returns = "A spatially shifted matrix.",
+				examples = { @example (
+					value = "matrix shifted <- shift(mat, 1, 0, true);",
+					isExecutable = false) }) })
+	public static IMatrix shiftMatrix(final IScope scope, final IMatrix matrix, final Integer dx, final Integer dy, final Boolean wrap) {
+		int cols = matrix.getCols(scope);
+		int rows = matrix.getRows(scope);
+		GamaFloatMatrix mat = GamaFloatMatrix.from(scope, matrix);
+		GamaFloatMatrix res = new GamaFloatMatrix(cols, rows);
+		double[] dataIn = mat.getMatrix();
+		double[] dataOut = res.getMatrix();
+
+		for (int r = 0; r < rows; r++) {
+			for (int c = 0; c < cols; c++) {
+				int nc = c - dx;
+				int nr = r - dy;
+				if (wrap != null && wrap) {
+					nc = (nc % cols + cols) % cols;
+					nr = (nr % rows + rows) % rows;
+				}
+				if (nc >= 0 && nc < cols && nr >= 0 && nr < rows) {
+					dataOut[r * cols + c] = dataIn[nr * cols + nc];
+				} else {
+					dataOut[r * cols + c] = 0.0;
+				}
+			}
+		}
+		return res;
+	}
+
+	@operator (
+			value = "matrix_with",
+			can_be_const = false,
+			category = { IOperatorCategory.GRID, IOperatorCategory.MATRIX },
+			concept = { IConcept.GRID, IConcept.MATRIX },
+			doc = { @doc (
+				value = "Extracts the value of a specific variable from all cells of a grid population into a matrix. Extremely fast compared to doing `grid collect each.var`.",
+				returns = "A float matrix containing the values.",
+				examples = { @example (
+					value = "matrix mat <- matrix_with(ant_grid, \"road\");",
+					isExecutable = false) }) })
+	public static IMatrix matrixWith(final IScope scope, final IPopulation.Grid grid, final String varName) {
+		IGrid g = grid.getGrid();
+		int cols = g.getCols(scope);
+		int rows = g.getRows(scope);
+		GamaFloatMatrix matrix = new GamaFloatMatrix(cols, rows);
+		g.getValuesInto(scope, varName, -Double.MAX_VALUE, matrix.getMatrix());
+		return matrix;
+	}
+
+	@operator (
+			value = "set_values",
+			can_be_const = false,
+			category = { IOperatorCategory.GRID, IOperatorCategory.MATRIX },
+			concept = { IConcept.GRID, IConcept.MATRIX },
+			doc = { @doc (
+				value = "Sets the values of a specific variable in all cells of a grid population using the provided matrix. Bypasses standard `ask` loops for massive speedups.",
+				examples = { @example (
+					value = "ant_grid set_values (\"road\", new_road_matrix);",
+					isExecutable = false) }) })
+	public static IPopulation.Grid setValues(final IScope scope, final IPopulation.Grid grid, final String varName, final IMatrix matrix) {
+		IGrid g = grid.getGrid();
+		int cols = g.getCols(scope);
+		int rows = g.getRows(scope);
+		GamaFloatMatrix mat = GamaFloatMatrix.from(scope, matrix);
+		double[] data = mat.getMatrix();
+		
+		int size = Math.min(cols * rows, data.length);
+		for (int i = 0; i < size; i++) {
+			g.setValueAtIndex(scope, i, varName, data[i]);
+		}
+		return grid;
 	}
 
 }
