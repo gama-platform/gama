@@ -10,6 +10,9 @@
  ********************************************************************************************************/
 package gama.core.topology.grid;
 
+import jdk.incubator.vector.DoubleVector;
+import jdk.incubator.vector.VectorSpecies;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -347,14 +350,67 @@ public class FieldDiffuser {
 
 	}
 
+	private static final VectorSpecies<Double> SPECIES = DoubleVector.SPECIES_PREFERRED;
+
 	private void fastDiffusionWithConvolution() {
 		final int kRows = diffusion.diffusionMatrix.length;
 		final int kCols = diffusion.diffusionMatrix[0].length;
 		final int kCenterX = kCols / 2;
 		final int kCenterY = kRows / 2;
-
+		
+		// Flatten the kernel to use vector api on it inside the inner loop if possible, 
+		// but since the kernel is usually very small (3x3), standard array access is often faster.
+		// A better vectorization approach for 2D convolution is to vectorize the inner loop over the columns.
+		
 		for (int j = 0; j < context.nbRows; ++j) { // output columns (rows in memory)
-			for (int i = 0; i < context.nbCols; ++i) { // output rows (columns in memory)
+			int i = 0;
+			int upperBound = SPECIES.loopBound(context.nbCols);
+			
+			for (; i < upperBound; i += SPECIES.length()) { // vectorize over columns
+				DoubleVector sumVec = DoubleVector.zero(SPECIES);
+				for (int m = 0; m < kRows; ++m) { // kernel rows
+					int jj = j + m - kCenterY;
+					if (jj >= 0 && jj < context.nbRows) {
+						for (int n = 0; n < kCols; ++n) { // kernel columns
+							int ii = i + n - kCenterX;
+							// If the vector fully fits inside the bounds
+							if (ii >= 0 && ii + SPECIES.length() <= context.nbCols) {
+								DoubleVector inputVec = DoubleVector.fromArray(SPECIES, input, jj * context.nbCols + ii);
+								sumVec = sumVec.add(inputVec.mul(diffusion.diffusionMatrix[kRows - m - 1][kCols - n - 1]));
+							} else {
+								// Edge cases fallback (partially outside bounds)
+								double[] tempSum = new double[SPECIES.length()];
+								for (int v = 0; v < SPECIES.length(); v++) {
+									int iii = ii + v;
+									if (iii >= 0 && iii < context.nbCols) {
+										tempSum[v] = input[jj * context.nbCols + iii] * diffusion.diffusionMatrix[kRows - m - 1][kCols - n - 1];
+									}
+								}
+								sumVec = sumVec.add(DoubleVector.fromArray(SPECIES, tempSum, 0));
+							}
+						}
+					}
+				}
+				
+				// Apply sumVec to output
+				double[] tempOut = new double[SPECIES.length()];
+				DoubleVector outVec = DoubleVector.fromArray(SPECIES, output, j * context.nbCols + i);
+				
+				// Handle -Double.MAX_VALUE initialization
+				for (int v = 0; v < SPECIES.length(); v++) {
+					if (output[j * context.nbCols + i + v] == -Double.MAX_VALUE) {
+						tempOut[v] = sumVec.lane(v);
+					} else {
+						tempOut[v] = output[j * context.nbCols + i + v] + sumVec.lane(v);
+					}
+				}
+				for (int v = 0; v < SPECIES.length(); v++) {
+					output[j * context.nbCols + i + v] = tempOut[v];
+				}
+			}
+			
+			// Tail processing
+			for (; i < context.nbCols; ++i) { // output rows (columns in memory)
 				double sum = 0.0;
 				for (int m = 0; m < kRows; ++m) { // kernel rows
 					for (int n = 0; n < kCols; ++n) { // kernel columns
