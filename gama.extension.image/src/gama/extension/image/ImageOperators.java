@@ -899,8 +899,14 @@ public class ImageOperators implements ImageConstants {
 		final int xSize = image.getWidth();
 		final int ySize = image.getHeight();
 		final IMatrix matrix = GamaMatrixFactory.createIntMatrix(xSize, ySize);
-		if (matrix instanceof GamaIntMatrix gim && image.getRaster().getDataBuffer() instanceof DataBufferInt buffer) {
-			System.arraycopy(buffer.getData(), 0, gim.getMatrix(), 0, Math.min(buffer.getData().length, gim.getMatrix().length));
+		if (matrix instanceof GamaIntMatrix gim) {
+			final int[] target = gim.getMatrix();
+			if (image.getRaster().getDataBuffer() instanceof DataBufferInt buffer) {
+				System.arraycopy(buffer.getData(), 0, target, 0, Math.min(buffer.getData().length, target.length));
+			} else {
+				final int[] source = image.getRGB(0, 0, xSize, ySize, null, 0, xSize);
+				System.arraycopy(source, 0, target, 0, Math.min(source.length, target.length));
+			}
 			return matrix;
 		}
 		for (int i = 0; i < xSize; i++) {
