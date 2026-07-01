@@ -1723,6 +1723,106 @@ public class Maths {
 					examples = { @example (
 							value = "3.5 + matrix([[2,5],[3,4]])",
 							equals = "matrix([[5.5,8.5],[6.5,7.5]])") }) })
+	/**
+	 * Op plus.
+	 *
+	 * @param a
+	 *            the a
+	 * @param b
+	 *            the b
+	 * @return the i matrix
+	 */
+	@operator (
+			value = IKeyword.PLUS,
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.MATRIX },
+			concept = { IConcept.MATRIX })
+	@doc (
+			value = "Returns the element-wise addition of two matrices.",
+			examples = { @example (
+					value = "matrix([[1, 2], [3, 4]]) + matrix([[1, 2], [3, 4]])",
+					equals = "matrix([[2, 4], [6, 8]])") })
+	@test ("matrix([[1, 2], [3, 4]]) + matrix([[1, 2], [3, 4]]) = matrix([[2, 4], [6, 8]])")
+	public static IMatrix opPlus(final IScope scope, final IMatrix a, final IMatrix b) {
+		return a.plus(scope, b);
+	}
+
+	/**
+	 * Op minus.
+	 *
+	 * @param a
+	 *            the a
+	 * @param b
+	 *            the b
+	 * @return the i matrix
+	 */
+	@operator (
+			value = IKeyword.MINUS,
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.MATRIX },
+			concept = { IConcept.MATRIX })
+	@doc (
+			value = "Returns the element-wise subtraction of two matrices.",
+			examples = { @example (
+					value = "matrix([[1, 2], [3, 4]]) - matrix([[1, 2], [3, 4]])",
+					equals = "matrix([[0, 0], [0, 0]])") })
+	@test ("matrix([[1, 2], [3, 4]]) - matrix([[1, 2], [3, 4]]) = matrix([[0, 0], [0, 0]])")
+	public static IMatrix opMinus(final IScope scope, final IMatrix a, final IMatrix b) {
+		return a.minus(scope, b);
+	}
+
+	/**
+	 * Op times.
+	 *
+	 * @param a
+	 *            the a
+	 * @param b
+	 *            the b
+	 * @return the i matrix
+	 */
+	@operator (
+			value = IKeyword.MULTIPLY,
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.MATRIX },
+			concept = { IConcept.MATRIX })
+	@doc (
+			value = "Returns the element-wise multiplication (Hadamard product) of two matrices. For matrix multiplication, use the `.` operator.",
+			examples = { @example (
+					value = "matrix([[1, 2], [3, 4]]) * matrix([[1, 2], [3, 4]])",
+					equals = "matrix([[1, 4], [9, 16]])") })
+	@test ("matrix([[1, 2], [3, 4]]) * matrix([[1, 2], [3, 4]]) = matrix([[1, 4], [9, 16]])")
+	public static IMatrix opTimes(final IScope scope, final IMatrix a, final IMatrix b) {
+		return a.times(scope, b);
+	}
+
+	/**
+	 * Op divide.
+	 *
+	 * @param a
+	 *            the a
+	 * @param b
+	 *            the b
+	 * @return the i matrix
+	 */
+	@operator (
+			value = IKeyword.DIVIDE,
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.MATRIX },
+			concept = { IConcept.MATRIX })
+	@doc (
+			value = "Returns the element-wise division of two matrices.",
+			examples = { @example (
+					value = "matrix([[1, 2], [3, 4]]) / matrix([[1, 2], [3, 4]])",
+					equals = "matrix([[1, 1], [1, 1]])") })
+	@test ("matrix([[1, 2], [3, 4]]) / matrix([[1, 2], [3, 4]]) = matrix([[1.0, 1.0], [1.0, 1.0]])")
+	public static IMatrix opDivide(final IScope scope, final IMatrix a, final IMatrix b) {
+		return a.divides(scope, b);
+	}
+
 	// TODO check update
 	public static IMatrix opPlus(final Integer a, final IMatrix b) {
 		return b.plus(a);

@@ -42,6 +42,10 @@ import gama.gaml.operators.Colors;
 import gama.gaml.statements.draw.MeshDrawingAttributes;
 import one.util.streamex.DoubleStreamEx;
 import one.util.streamex.StreamEx;
+import jdk.incubator.vector.DoubleVector;
+import jdk.incubator.vector.VectorMask;
+import jdk.incubator.vector.VectorSpecies;
+import jdk.incubator.vector.VectorOperators;
 
 /**
  * The Class GamaField.
@@ -457,56 +461,112 @@ public class GamaField extends GamaFloatMatrix implements IField {
 	@Override
 	public IField times(final Double val) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
-		for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] *= val; } }
+		int i = 0;
+		int upperBound = SPECIES.loopBound(matrix.length);
+		for (; i < upperBound; i += SPECIES.length()) {
+			DoubleVector va = DoubleVector.fromArray(SPECIES, matrix, i);
+			VectorMask<Double> mask = va.compare(VectorOperators.NE, noDataValue);
+			va.mul(val).intoArray(matrix, i, mask);
+		}
+		for (; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] *= val; } }
 		return this;
 	}
 
 	@Override
 	public IField times(final Integer val) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
-		for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] *= val; } }
+		int i = 0;
+		int upperBound = SPECIES.loopBound(matrix.length);
+		for (; i < upperBound; i += SPECIES.length()) {
+			DoubleVector va = DoubleVector.fromArray(SPECIES, matrix, i);
+			VectorMask<Double> mask = va.compare(VectorOperators.NE, noDataValue);
+			va.mul((double) val).intoArray(matrix, i, mask);
+		}
+		for (; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] *= val; } }
 		return this;
 	}
 
 	@Override
 	public IField divides(final Double val) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
-		for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] /= val; } }
+		int i = 0;
+		int upperBound = SPECIES.loopBound(matrix.length);
+		for (; i < upperBound; i += SPECIES.length()) {
+			DoubleVector va = DoubleVector.fromArray(SPECIES, matrix, i);
+			VectorMask<Double> mask = va.compare(VectorOperators.NE, noDataValue);
+			va.div(val).intoArray(matrix, i, mask);
+		}
+		for (; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] /= val; } }
 		return this;
 	}
 
 	@Override
 	public IField divides(final Integer val) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
-		for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] /= val; } }
+		int i = 0;
+		int upperBound = SPECIES.loopBound(matrix.length);
+		for (; i < upperBound; i += SPECIES.length()) {
+			DoubleVector va = DoubleVector.fromArray(SPECIES, matrix, i);
+			VectorMask<Double> mask = va.compare(VectorOperators.NE, noDataValue);
+			va.div((double) val).intoArray(matrix, i, mask);
+		}
+		for (; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] /= val; } }
 		return this;
 	}
 
 	@Override
 	public IField plus(final Double val) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
-		for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] += val; } }
+		int i = 0;
+		int upperBound = SPECIES.loopBound(matrix.length);
+		for (; i < upperBound; i += SPECIES.length()) {
+			DoubleVector va = DoubleVector.fromArray(SPECIES, matrix, i);
+			VectorMask<Double> mask = va.compare(VectorOperators.NE, noDataValue);
+			va.add(val).intoArray(matrix, i, mask);
+		}
+		for (; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] += val; } }
 		return this;
 	}
 
 	@Override
 	public IField plus(final Integer val) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
-		for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] += val; } }
+		int i = 0;
+		int upperBound = SPECIES.loopBound(matrix.length);
+		for (; i < upperBound; i += SPECIES.length()) {
+			DoubleVector va = DoubleVector.fromArray(SPECIES, matrix, i);
+			VectorMask<Double> mask = va.compare(VectorOperators.NE, noDataValue);
+			va.add((double) val).intoArray(matrix, i, mask);
+		}
+		for (; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] += val; } }
 		return this;
 	}
 
 	@Override
 	public IField minus(final Double val) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
-		for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] -= val; } }
+		int i = 0;
+		int upperBound = SPECIES.loopBound(matrix.length);
+		for (; i < upperBound; i += SPECIES.length()) {
+			DoubleVector va = DoubleVector.fromArray(SPECIES, matrix, i);
+			VectorMask<Double> mask = va.compare(VectorOperators.NE, noDataValue);
+			va.sub(val).intoArray(matrix, i, mask);
+		}
+		for (; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] -= val; } }
 		return this;
 	}
 
 	@Override
 	public IField minus(final Integer val) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
-		for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] -= val; } }
+		int i = 0;
+		int upperBound = SPECIES.loopBound(matrix.length);
+		for (; i < upperBound; i += SPECIES.length()) {
+			DoubleVector va = DoubleVector.fromArray(SPECIES, matrix, i);
+			VectorMask<Double> mask = va.compare(VectorOperators.NE, noDataValue);
+			va.sub((double) val).intoArray(matrix, i, mask);
+		}
+		for (; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] -= val; } }
 		return this;
 	}
 
