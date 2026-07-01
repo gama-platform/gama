@@ -36,6 +36,8 @@ global torus: torus_environment {
 	//Shape of the environment
 	geometry shape <- rectangle(environment_width, environment_height);
 	
+	matrix kernel <- matrix([[1, 1, 1], [1, 0, 1], [1, 1, 1]]);
+
 	//Initialization of the model by writing the description of the model in the console
 	init {
 		do description();
@@ -43,10 +45,15 @@ global torus: torus_environment {
 	
 	//Ask at each life_cell to evolve and update
 	reflex generation {
-		// The computation is made in parallel
-		ask life_cell parallel: parallel {
-			do evolve();
-		}
+		matrix m_alive <- matrix_with(life_cell, "alive_float");
+		matrix m_living <- convolution(m_alive, kernel);
+		
+		matrix stay_alive <- (m_living = 2.0) + (m_living = 3.0);
+		matrix new_born <- (m_living = 3.0);
+		
+		matrix next_state <- ifelse(m_alive, stay_alive, new_born);
+		
+		do set_values(life_cell, "alive_float", next_state);
 	}
 	//Write the description of the model in the console
 	action description() {
@@ -73,35 +80,10 @@ global torus: torus_environment {
 //Grid species representing a cellular automata
 grid life_cell width: environment_width height: environment_height neighbors: 8  use_individual_shapes: false use_regular_agents: false 
 use_neighbors_cache: false parallel: parallel{
-	//Boolean to know if it is the new state of the cell
-	bool new_state;
-	//List of all the neighbours
-	list<life_cell> neighbours <- self neighbors_at 1;
-	//Boolean  to know if it is a living or dead cell
-	bool alive <- (rnd(100)) < density;
+	float alive_float <- (rnd(100)) < density ? 1.0 : 0.0;
+	bool alive -> alive_float > 0.0;
 	
 	rgb color <- alive ? livingcolor : deadcolor;
-	
-	//Action to evolve the cell considering its neighbours
-	action evolve() {
-		//Count the number of living neighbours of the cells
-		int living <- neighbours count each.alive;
-		if alive {
-			//If the number of living respect the conditions, the cell is still alive
-			new_state <- living in living_conditions;
-			color <- new_state ? livingcolor : dyingcolor;
-		} else {
-			//If the number of living meets the conditions, the cell go to born
-			new_state <- living in birth_conditions;
-			color <- new_state ? emergingcolor : deadcolor;
-		}
-
-	}
-	//Action to update the new state of the cell
-	reflex update {
-		alive <- new_state;
-	}
-
 }
 
 
