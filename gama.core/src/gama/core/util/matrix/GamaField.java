@@ -44,7 +44,6 @@ import one.util.streamex.DoubleStreamEx;
 import one.util.streamex.StreamEx;
 import jdk.incubator.vector.DoubleVector;
 import jdk.incubator.vector.VectorMask;
-import jdk.incubator.vector.VectorSpecies;
 import jdk.incubator.vector.VectorOperators;
 
 /**
