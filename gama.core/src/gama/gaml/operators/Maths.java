@@ -170,6 +170,96 @@ public class Maths {
 		return Math.pow(a, b);
 	}
 
+	@operator (
+			value = { "^" },
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.ARITHMETIC, IOperatorCategory.MATRIX },
+			concept = { IConcept.MATH, IConcept.ARITHMETIC, IConcept.MATRIX })
+	@doc (
+			value = "Returns the element-wise power of the matrix.",
+			examples = { @example (
+					value = "matrix([[1, 2], [3, 4]]) ^ 2",
+					equals = "matrix([[1.0, 4.0], [9.0, 16.0]])") })
+	@test ("matrix([[1, 2], [3, 4]]) ^ 2 = matrix([[1.0, 4.0], [9.0, 16.0]])")
+	public static IMatrix pow(final IScope scope, final IMatrix a, final Integer b) {
+		return pow(scope, a, b.doubleValue());
+	}
+
+	@operator (
+			value = { "^" },
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.ARITHMETIC, IOperatorCategory.MATRIX },
+			concept = {})
+	@doc (
+			value = "Returns the element-wise power of the matrix.",
+			examples = { @example (
+					value = "matrix([[1, 2], [3, 4]]) ^ 2.0",
+					equals = "matrix([[1.0, 4.0], [9.0, 16.0]])") })
+	@test ("matrix([[1, 2], [3, 4]]) ^ 2.0 = matrix([[1.0, 4.0], [9.0, 16.0]])")
+	public static IMatrix pow(final IScope scope, final IMatrix a, final Double b) {
+		final gama.core.util.matrix.GamaFloatMatrix mat = gama.core.util.matrix.GamaFloatMatrix.from(scope, a);
+		final gama.core.util.matrix.GamaFloatMatrix nm = new gama.core.util.matrix.GamaFloatMatrix(mat.getCols(scope), mat.getRows(scope));
+		final double[] m = mat.getMatrix();
+		int i = 0;
+		int upperBound = gama.core.util.matrix.GamaFloatMatrix.SPECIES.loopBound(m.length);
+		for (; i < upperBound; i += gama.core.util.matrix.GamaFloatMatrix.SPECIES.length()) {
+			jdk.incubator.vector.DoubleVector va = jdk.incubator.vector.DoubleVector.fromArray(gama.core.util.matrix.GamaFloatMatrix.SPECIES, m, i);
+			va.pow(b).intoArray(nm.getMatrix(), i);
+		}
+		for (; i < m.length; i++) { nm.getMatrix()[i] = Math.pow(m[i], b); }
+		return nm;
+	}
+
+	@operator (
+			value = { "convolution", "convolve" },
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.ARITHMETIC, IOperatorCategory.MATRIX },
+			concept = { IConcept.MATH, IConcept.ARITHMETIC, IConcept.MATRIX })
+	@doc (
+			value = "Returns the 2D convolution of the first matrix (e.g. grid values) using the second matrix as the convolution kernel. Useful for fast grid neighborhood computations.",
+			examples = { @example (
+					value = "matrix([[1, 2, 1], [3, 4, 1], [1, 1, 1]]) convolution matrix([[0, 1, 0], [1, -4, 1], [0, 1, 0]])",
+					equals = "matrix([[-1, 2, -1], [1, -7, 0], [1, 2, 1]])") })
+	public static IMatrix convolve(final IScope scope, final IMatrix a, final IMatrix kernel) {
+		final gama.core.util.matrix.GamaFloatMatrix matA = gama.core.util.matrix.GamaFloatMatrix.from(scope, a);
+		final gama.core.util.matrix.GamaFloatMatrix k = gama.core.util.matrix.GamaFloatMatrix.from(scope, kernel);
+		
+		int rowsA = matA.getRows(scope);
+		int colsA = matA.getCols(scope);
+		int rowsK = k.getRows(scope);
+		int colsK = k.getCols(scope);
+		
+		final gama.core.util.matrix.GamaFloatMatrix result = new gama.core.util.matrix.GamaFloatMatrix(colsA, rowsA);
+		
+		int padRow = rowsK / 2;
+		int padCol = colsK / 2;
+		
+		double[] arrayA = matA.getMatrix();
+		double[] arrayK = k.getMatrix();
+		double[] arrayRes = result.getMatrix();
+		
+		for (int r = 0; r < rowsA; r++) {
+			for (int c = 0; c < colsA; c++) {
+				double sum = 0.0;
+				for (int kr = 0; kr < rowsK; kr++) {
+					for (int kc = 0; kc < colsK; kc++) {
+						int rr = r + kr - padRow;
+						int cc = c + kc - padCol;
+						if (rr >= 0 && rr < rowsA && cc >= 0 && cc < colsA) {
+							sum += arrayA[rr * colsA + cc] * arrayK[kr * colsK + kc];
+						}
+					}
+				}
+				arrayRes[r * colsA + c] = sum;
+			}
+		}
+		
+		return result;
+	}
+
 	// ==== Operators
 
 	/**
