@@ -230,9 +230,14 @@ public class GridLayerData extends LayerData {
 	 */
 	public BufferedImage updateImageFromGridDisplayData() {
 		if (image == null || grid == null) return image;
-		final int[] imageData = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
 		final int[] displayData = getGrid().getDisplayData();
-		System.arraycopy(displayData, 0, imageData, 0, Math.min(displayData.length, imageData.length));
+		final var buffer = image.getRaster().getDataBuffer();
+		if (buffer instanceof DataBufferInt db) {
+			final int[] imageData = db.getData();
+			System.arraycopy(displayData, 0, imageData, 0, Math.min(displayData.length, imageData.length));
+		} else {
+			image.setRGB(0, 0, image.getWidth(), image.getHeight(), displayData, 0, image.getWidth());
+		}
 		return image;
 	}
 
