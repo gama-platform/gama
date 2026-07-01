@@ -29,12 +29,10 @@ import gama.api.gaml.types.Types;
 import gama.api.kernel.species.ISpecies;
 import gama.api.kernel.topology.IProjection;
 import gama.api.runtime.scope.IScope;
-import gama.api.types.color.GamaColorFactory;
 import gama.api.types.matrix.IField;
 import gama.api.utils.files.SaveOptions;
 import gama.core.topology.gis.ProjectionFactory;
 import gama.core.topology.grid.GridPopulation;
-import gama.gaml.operators.Maths;
 import gama.gaml.statements.save.AbstractSaver;
 
 /**
@@ -167,12 +165,17 @@ public class ImageSaver extends AbstractSaver {
 		final double[] minmaxVal = field.getMinMax();
 		final double[] values = field.getFieldData(scope);
 		final double range = minmaxVal[1] - minmaxVal[0];
+		final double min = minmaxVal[0];
+		final double invRange = range == 0 ? 0 : 255d / range;
 		for (int row = 0; row < rows; row++) {
 			final int sourceOffset = row * cols;
 			final int targetOffset = (rows - 1 - row) * cols;
 			for (int col = 0; col < cols; col++) {
-				final int vRef = Maths.round((values[sourceOffset + col] - minmaxVal[0]) / range * 255);
-				imageData[targetOffset + col] = GamaColorFactory.get(vRef, vRef, vRef).getRGB();
+				int gray = range == 0 ? 0 : (int) Math.round((values[sourceOffset + col] - min) * invRange);
+				if (gray < 0) {
+					gray = 0;
+				} else if (gray > 255) { gray = 255; }
+				imageData[targetOffset + col] = 0x010101 * gray;
 			}
 		}
 		ImageIO.write(image, t, f);

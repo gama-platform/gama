@@ -11,7 +11,6 @@ package gama.core.outputs.layers;
 
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
 import java.util.Collections;
 import java.util.Set;
 
@@ -85,12 +84,7 @@ public class GridLayer extends AbstractLayer {
 		if (textureFile != null) {
 			attributes.setTextures(Collections.singletonList(textureFile));
 		} else if (image != null) {
-			final int[] imageData = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
-			// DEBUG.OUT("ImageData different from DisplayData ? "
-			// + !Arrays.equals(imageData, data.getGrid().getDisplayData()));
-			final int[] displayData = data.getGrid().getDisplayData();
-			System.arraycopy(displayData, 0, imageData, 0, Math.min(displayData.length, imageData.length));
-			attributes.setTextures(Collections.singletonList(image));
+			attributes.setTextures(Collections.singletonList(data.updateImageFromGridDisplayData()));
 		}
 		attributes.setTriangulated(data.isTriangulated());
 		attributes.setWithText(data.isShowText());
