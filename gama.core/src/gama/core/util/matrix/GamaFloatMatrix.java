@@ -14,7 +14,12 @@ import static org.locationtech.jts.index.quadtree.IntervalSize.isZeroWidth;
 
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
+
 import java.util.List;
+
+import jdk.incubator.vector.DoubleVector;
+import jdk.incubator.vector.VectorSpecies;
+
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.locationtech.jts.index.quadtree.IntervalSize;

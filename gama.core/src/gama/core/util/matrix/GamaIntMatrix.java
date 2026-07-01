@@ -12,7 +12,12 @@ package gama.core.util.matrix;
 
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
+
 import java.util.List;
+
+import jdk.incubator.vector.IntVector;
+import jdk.incubator.vector.VectorSpecies;
+
 
 import org.apache.commons.lang3.ArrayUtils;
 

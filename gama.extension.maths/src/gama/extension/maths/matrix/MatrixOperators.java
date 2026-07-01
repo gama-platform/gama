@@ -16,6 +16,10 @@ import org.apache.commons.math3.linear.EigenDecomposition;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 
+import jdk.incubator.vector.DoubleVector;
+import jdk.incubator.vector.VectorSpecies;
+
+
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
@@ -42,6 +46,9 @@ import gama.core.util.matrix.GamaIntMatrix;
  */
 public class MatrixOperators {
 
+	private static final VectorSpecies<Double> SPECIES = DoubleVector.SPECIES_PREFERRED;
+
+
 	/**
 	 * Matrix multiplication.
 	 *
@@ -67,16 +74,94 @@ public class MatrixOperators {
 					examples = @example (
 							value = "matrix([[1,1],[1,2]]) . matrix([[1,1],[1,2]])",
 							equals = "matrix([[2,3],[3,5]])")))
-	@test ("matrix([[1,1],[1,2]]) . matrix([[1,1],[1,2]]) = matrix([[2,3],[3,5]])")
-	public static IMatrix matrixMultiplication(final IScope scope, final IMatrix a, final IMatrix b)
+	@test ("matrix([[1,1],[1,2]]) . matrix([[1,1],[1,2]]) = matrix([[2,3],[3,5]])")	public static IMatrix matrixMultiplication(final IScope scope, final IMatrix a, final IMatrix b)
 			throws GamaRuntimeException {
-		try {
-			if (a instanceof GamaIntMatrix && b instanceof GamaIntMatrix)
-				return toGamaIntMatrix(getRealMatrix(a).multiply(getRealMatrix(b)));
-			return toGamaFloatMatrix(getRealMatrix(a).multiply(getRealMatrix(b)));
-		} catch (final DimensionMismatchException e) {
+		int aRows = a.getRows(scope);
+		int aCols = a.getCols(scope);
+		int bRows = b.getRows(scope);
+		int bCols = b.getCols(scope);
+
+		if (aCols != bRows) {
 			throw GamaRuntimeException.error(" The dimensions of the matrices do not correspond", scope);
 		}
+
+		boolean isInt = a instanceof GamaIntMatrix && b instanceof GamaIntMatrix;
+
+		double[] aData = extractMatrixData(scope, a, aRows, aCols);
+		double[] bTransposedData = extractTransposedMatrixData(scope, b, bRows, bCols);
+		double[] cData = computeMatrixProduct(aData, bTransposedData, new int[]{aRows, aCols, bCols});
+
+		if (isInt) {
+			return createIntResultMatrix(scope, cData, aRows, bCols);
+		} else {
+			return createFloatResultMatrix(scope, cData, aRows, bCols);
+		}
+	}
+
+	private static double[] extractMatrixData(final IScope scope, final IMatrix a, int rows, int cols) {
+		double[] data = new double[rows * cols];
+		for (int i = 0; i < rows; i++) {
+			for (int j = 0; j < cols; j++) {
+				data[i * cols + j] = Cast.asFloat(scope, a.get(scope, j, i));
+			}
+		}
+		return data;
+	}
+
+	private static double[] extractTransposedMatrixData(final IScope scope, final IMatrix b, int rows, int cols) {
+		double[] transposedData = new double[rows * cols];
+		for (int i = 0; i < cols; i++) {
+			for (int j = 0; j < rows; j++) {
+				transposedData[i * rows + j] = Cast.asFloat(scope, b.get(scope, i, j));
+			}
+		}
+		return transposedData;
+	}
+
+	private static double[] computeMatrixProduct(double[] aData, double[] bTransposedData, int[] dims) {
+		int aRows = dims[0];
+		int aCols = dims[1];
+		int bCols = dims[2];
+		double[] cData = new double[aRows * bCols];
+		int upperBound = SPECIES.loopBound(aCols);
+		for (int i = 0; i < aRows; i++) {
+			for (int j = 0; j < bCols; j++) {
+				double sum = 0;
+				int k = 0;
+				DoubleVector sumVector = DoubleVector.zero(SPECIES);
+				for (; k < upperBound; k += SPECIES.length()) {
+					DoubleVector va = DoubleVector.fromArray(SPECIES, aData, i * aCols + k);
+					DoubleVector vb = DoubleVector.fromArray(SPECIES, bTransposedData, j * aCols + k);
+					sumVector = va.fma(vb, sumVector);
+				}
+				sum += sumVector.reduceLanes(jdk.incubator.vector.VectorOperators.ADD);
+				for (; k < aCols; k++) {
+					sum += aData[i * aCols + k] * bTransposedData[j * aCols + k];
+				}
+				cData[i * bCols + j] = sum;
+			}
+		}
+		return cData;
+	}
+
+	private static GamaIntMatrix createIntResultMatrix(final IScope scope, double[] cData, int rows, int cols) {
+		GamaIntMatrix result = (GamaIntMatrix) GamaMatrixFactory.createIntMatrix(cols, rows);
+		for (int i = 0; i < rows; i++) {
+			for (int j = 0; j < cols; j++) {
+				result.set(scope, j, i, (int) cData[i * cols + j]);
+			}
+		}
+		return result;
+	}
+
+	private static IMatrix createFloatResultMatrix(final IScope scope, double[] cData, int rows, int cols) {
+		IMatrix result = GamaMatrixFactory.createFloatMatrix(cols, rows);
+		for (int i = 0; i < rows; i++) {
+			for (int j = 0; j < cols; j++) {
+				result.set(scope, j, i, cData[i * cols + j]);
+			}
+		}
+		return result;
 	}
 
 	/**
