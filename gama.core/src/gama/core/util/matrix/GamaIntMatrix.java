@@ -34,7 +34,8 @@ import gama.api.utils.interfaces.IImageProvider;
 import gama.api.utils.random.IRandom;
 import one.util.streamex.IntStreamEx;
 import one.util.streamex.StreamEx;
-import jdk.incubator.vector.DoubleVector;
+import jdk.incubator.vector.DoubleVector;
+
 import jdk.incubator.vector.IntVector;
 import jdk.incubator.vector.VectorSpecies;
 
@@ -548,9 +549,9 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 		final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
 		final double[] mm = nm.getMatrix();
 		int i = 0;
+		final double[] dMatrix = new double[GamaFloatMatrix.SPECIES.length()];
 		int upperBound = GamaFloatMatrix.SPECIES.loopBound(matrix.length);
-		for (; i < upperBound; i += GamaFloatMatrix.SPECIES.length()) {
-			double[] dMatrix = new double[GamaFloatMatrix.SPECIES.length()];
+			for (int j = 0; j < dMatrix.length; j++) { dMatrix[j] = matrix[i + j]; }
 			for(int j=0; j<GamaFloatMatrix.SPECIES.length(); j++) dMatrix[j] = matrix[i+j];
 			DoubleVector va = DoubleVector.fromArray(GamaFloatMatrix.SPECIES, dMatrix, 0);
 			va.mul(val).intoArray(mm, i);
