@@ -1913,7 +1913,18 @@ public class Maths {
 		return a.divides(scope, b);
 	}
 
-	// TODO check update
+	@operator (
+			value = IKeyword.PLUS,
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
+			category = { IOperatorCategory.ARITHMETIC },
+			concept = {})
+	@doc (
+			usages = { @usage (
+					value = "if one operand is a matrix and the other a number (float or int), performs a normal arithmetic sum of the number with each element of the matrix (results are float if the number is a float.",
+					examples = { @example (
+							value = "3.5 + matrix([[2,5],[3,4]])",
+							equals = "matrix([[5.5,8.5],[6.5,7.5]])") }) })
 	public static IMatrix opPlus(final Integer a, final IMatrix b) {
 		return b.plus(a);
 	}
