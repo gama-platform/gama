@@ -394,7 +394,6 @@ public class FieldDiffuser {
 				
 				// Apply sumVec to output
 				double[] tempOut = new double[SPECIES.length()];
-				DoubleVector outVec = DoubleVector.fromArray(SPECIES, output, j * context.nbCols + i);
 				
 				// Handle -Double.MAX_VALUE initialization
 				for (int v = 0; v < SPECIES.length(); v++) {
