@@ -34,6 +34,7 @@ import gama.api.utils.interfaces.IImageProvider;
 import gama.api.utils.random.IRandom;
 import one.util.streamex.IntStreamEx;
 import one.util.streamex.StreamEx;
+import jdk.incubator.vector.DoubleVector;
 import jdk.incubator.vector.IntVector;
 import jdk.incubator.vector.VectorSpecies;
 
