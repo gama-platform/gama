@@ -208,7 +208,7 @@ public class Logic {
 			jdk.incubator.vector.DoubleVector vF = jdk.incubator.vector.DoubleVector.fromArray(GamaFloatMatrix.SPECIES, mF, i);
 			
 			jdk.incubator.vector.VectorMask<Double> mask = vCond.compare(jdk.incubator.vector.VectorOperators.GT, 0.0);
-			vT.blend(vF, mask).intoArray(mRes, i);
+			vF.blend(vT, mask).intoArray(mRes, i);
 		}
 		for (; i < mCond.length; i++) { mRes[i] = mCond[i] > 0.0 ? mT[i] : mF[i]; }
 		return nm;
