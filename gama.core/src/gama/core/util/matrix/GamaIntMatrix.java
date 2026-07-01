@@ -549,9 +549,11 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 		final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
 		final double[] mm = nm.getMatrix();
 		int i = 0;
-		final double[] dMatrix = new double[GamaFloatMatrix.SPECIES.length()];
+		final double[] dMatrix = new double[GamaFloatMatrix.SPECIES.length()];
+
 		int upperBound = GamaFloatMatrix.SPECIES.loopBound(matrix.length);
-			for (int j = 0; j < dMatrix.length; j++) { dMatrix[j] = matrix[i + j]; }
+			for (int j = 0; j < dMatrix.length; j++) { dMatrix[j] = matrix[i + j]; }
+
 			for(int j=0; j<GamaFloatMatrix.SPECIES.length(); j++) dMatrix[j] = matrix[i+j];
 			DoubleVector va = DoubleVector.fromArray(GamaFloatMatrix.SPECIES, dMatrix, 0);
 			va.mul(val).intoArray(mm, i);
@@ -593,9 +595,9 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	public IMatrix divides(final Integer val) throws GamaRuntimeException {
 		final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
 		final double[] mm = nm.getMatrix();
+		final double[] dMatrix = new double[GamaFloatMatrix.SPECIES.length()];
 		int i = 0;
-		int upperBound = GamaFloatMatrix.SPECIES.loopBound(matrix.length);
-		for (; i < upperBound; i += GamaFloatMatrix.SPECIES.length()) {
+			for (int j = 0; j < dMatrix.length; j++) { dMatrix[j] = matrix[i + j]; }
 			double[] dMatrix = new double[GamaFloatMatrix.SPECIES.length()];
 			for(int j=0; j<GamaFloatMatrix.SPECIES.length(); j++) dMatrix[j] = matrix[i+j];
 			DoubleVector va = DoubleVector.fromArray(GamaFloatMatrix.SPECIES, dMatrix, 0);
