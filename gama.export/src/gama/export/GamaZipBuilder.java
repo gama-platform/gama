@@ -12,9 +12,12 @@ import java.util.zip.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.prefs.Preferences;
 
+import gama.api.utils.prefs.JREPreferenceStore;
+import gama.api.utils.prefs.GamaPreferenceStore;
 import gama.export.dependency.BundleDependencyAnalyzer;
-// import gama.export.ExportActivator;
+import gama.export.ExportActivator;
 import gama.export.ZipHelper;
 
 public class GamaZipBuilder {
@@ -47,15 +50,17 @@ public class GamaZipBuilder {
     // depends on the operating system
     private Set<String> neededGamaModules;
 
-    private static final Path appRootPath = Path.of("/home/cytech/workspace/Repos/gama/gama.product/target/products/gama.ui.application.product/linux/gtk/x86_64");
+    private static final Path appRootPath = Path.of(ExportActivator.appRootPathStr);
     
     private static final Path pluginsPath = Path.of(appRootPath.toString(),"plugins");
 
     private static final Path tmpDirectoryPath = Path.of(System.getProperty("java.io.tmpdir"),"gama.export.tmp");
 
-    private static final Path gamaIniTmpPath = Path.of(tmpDirectoryPath.toString(),"gama.ini.tmp");
+    private static final Path gamaIniTmpPath = tmpDirectoryPath.resolve("gama.ini.tmp");
 
-    private static final Path gamaDependenciesTmpPath = Path.of(tmpDirectoryPath.toString(),"gama.dependencies.tmp");
+    private static final Path gamaPrefsTmpPath = tmpDirectoryPath.resolve("gama.prefs.tmp");
+
+    private static final Path gamaDependenciesTmpPath = tmpDirectoryPath.resolve("gama.dependencies.tmp");
     
     private static String gamaDependenciesModuleFileName = null;
 
@@ -65,6 +70,7 @@ public class GamaZipBuilder {
         Path.of(appRootPath.toString(),"configuration","org.eclipse.osgi"),
         Path.of(appRootPath.toString(),"configuration","org.eclipse.core.runtime"),
         Path.of(appRootPath.toString(),"configuration","org.eclipse.e4.ui.css.swt.theme"),
+        Path.of(appRootPath.toString(),"configuration",".settings"),
         Path.of(appRootPath.toString(),"Gama.ini")
     ));
 
@@ -276,6 +282,22 @@ public class GamaZipBuilder {
             zos.closeEntry();
 
             // creating / updating preferences
+            JREPreferenceStore store = new JREPreferenceStore(Preferences.userRoot().node(GamaPreferenceStore.NODE_NAME));
+
+            store.putInStore("pref_workspace_path","/home/cytech/workspace/Repos/gama/gama.product/target/products/gama.ui.application/linux/gtk/x86_64/Embedded_Workspace");
+            store.putInStore("pref_workspace_remember",true);
+            store.putInStore("pref_startup_model",true);
+            store.putInStore("pref_default_model","/home/cytech/workspace/Repos/gama/gama.product/target/products/gama.ui.application/linux/gtk/x86_64/Embedded_Workspace/projet_cool/models/model_cool.gaml");
+            store.putInStore("pref_default_experiment","prey_predator");
+            
+            store.saveToProperties(GamaZipBuilder.gamaPrefsTmpPath.toString());
+
+            ZipEntry gamaPrefsEntry = new ZipEntry(Path.of("configuration",".settings","gama.prefs").toString());
+            zos.putNextEntry(gamaPrefsEntry);
+            
+            // Write bytes to the entry
+            Files.copy(GamaZipBuilder.gamaPrefsTmpPath, zos);
+            zos.closeEntry();
 
             deleteDirectory(GamaZipBuilder.tmpDirectoryPath);
         }

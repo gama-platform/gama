@@ -3,37 +3,57 @@
  */
 package gama.export;
 
-import java.io.File;
+import java.nio.file.Path;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleActivator;
 
-/**
- * This class was generated. Customizations should only happen in a newly
- * introduced subclass. 
- */
+import gama.export.Main;
+import java.util.prefs.Preferences;
+import gama.api.utils.prefs.JREPreferenceStore;
+import gama.api.utils.prefs.GamaPreferenceStore;
+
+
 public class ExportActivator implements BundleActivator {
 
-	public static String appRoot = null;
+	  public static String appRootPathStr = null;
 
     @Override
     public void start(BundleContext context) throws Exception {
-		// super.start(context);
-        // 1. Get the system bundle (the core OSGi launcher)
-        String location = context.getBundle(0).getLocation();
+      
+        // // 1. Get the system bundle (the core OSGi launcher)
+        String location = context.getBundle().getLocation();
         
-        // 2. Clean URL prefixes (like file:) if present
-        String cleanPath = location.replaceAll("^[A-Za-z]+:", ""); 
-        File launcherFile = new File(cleanPath);
+        // // Clean URL prefixes (like file:) if present
+        String cleanPathStr = location.replaceAll(".*plugins", "plugins");
+
+        Path absolutePath = Path.of(cleanPathStr).toAbsolutePath();
         
-        // 3. Get the folder containing the launcher executable/JAR
-        File rootDir = launcherFile.getParentFile();
-        
-        appRoot = rootDir.getAbsolutePath();
+        appRootPathStr = absolutePath.getParent().getParent().toString();
+
+        // JREPreferenceStore store = new JREPreferenceStore(Preferences.userRoot().node(GamaPreferenceStore.NODE_NAME));
+
+        // String workspacePathPreferenceOld = store.getInStore("pref_workspace_path","");
+        // String workspaceRememberPreferenceOld = store.getInStore("pref_workspace_remember","false");
+        // String startupModelPreferenceOld = store.getInStore("pref_startup_model","false");
+        // String defaultModelPreferenceOld = store.getInStore("pref_default_model","Enter Path");
+        // String defaultExperimentPreferenceOld = store.getInStore("pref_default_experiment","");
+
+
+
+        // store.putInStore("pref_workspace_path",workspacePathPreferenceOld);
+        // store.putInStore("pref_workspace_remember",workspaceRememberPreferenceOld);
+        // store.putInStore("pref_startup_model",startupModelPreferenceOld);
+        // store.putInStore("pref_default_model",defaultModelPreferenceOld);
+        // store.putInStore("pref_default_experiment",defaultExperimentPreferenceOld);
+
+        String[] args = {};
+        Main.main(args);
+        System.out.println("PACKAGE EXPORT DONE");
     }
 
     @Override
     public void stop(BundleContext context) throws Exception {
-		// super.stop(context);
+
     }
 }
