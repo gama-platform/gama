@@ -20,9 +20,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
+import java.awt.image.DataBufferInt;
 import java.awt.image.RescaleOp;
-import java.awt.image.WritableRaster;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -51,6 +50,7 @@ import gama.api.ui.IOutput;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.utils.server.MessageType;
 import gama.core.outputs.LayeredDisplayOutput;
+import gama.core.util.matrix.GamaIntMatrix;
 import gama.extension.image.ImageHelper.Mode;
 import gama.extension.image.ImageHelper.TransferableImage;
 
@@ -572,23 +572,30 @@ public class ImageOperators implements ImageConstants {
 		Graphics2D graphics = result.createGraphics();
 		graphics.drawImage(image, 0, 0, null);
 		graphics.dispose();
-		ColorModel cm = result.getColorModel();
-		WritableRaster raster = result.getRaster();
 		float r = color.red() / 255f;
 		float g = color.green() / 255f;
 		float b = color.blue() / 255f;
 		float a = color.alpha() / 255f;
-		for (int i = 0; i < result.getWidth(); i++) {
-			for (int j = 0; j < result.getHeight(); j++) {
-				int ax = cm.getAlpha(raster.getDataElements(i, j, null));
-				int rx = cm.getRed(raster.getDataElements(i, j, null));
-				int gx = cm.getGreen(raster.getDataElements(i, j, null));
-				int bx = cm.getBlue(raster.getDataElements(i, j, null));
-				rx *= r;
-				gx *= g;
-				bx *= b;
-				ax *= a;
-				result.setRGB(i, j, ax << 24 | rx << 16 | gx << 8 | bx);
+		if (result.getRaster().getDataBuffer() instanceof DataBufferInt buffer) {
+			final int[] pixels = buffer.getData();
+			for (int i = 0; i < pixels.length; i++) {
+				final int p = pixels[i];
+				int ax = (int) (((p >>> 24) & 0xFF) * a);
+				int rx = (int) (((p >>> 16) & 0xFF) * r);
+				int gx = (int) (((p >>> 8) & 0xFF) * g);
+				int bx = (int) ((p & 0xFF) * b);
+				pixels[i] = ax << 24 | rx << 16 | gx << 8 | bx;
+			}
+		} else {
+			for (int i = 0; i < result.getWidth(); i++) {
+				for (int j = 0; j < result.getHeight(); j++) {
+					final int p = result.getRGB(i, j);
+					int ax = (int) (((p >>> 24) & 0xFF) * a);
+					int rx = (int) (((p >>> 16) & 0xFF) * r);
+					int gx = (int) (((p >>> 8) & 0xFF) * g);
+					int bx = (int) ((p & 0xFF) * b);
+					result.setRGB(i, j, ax << 24 | rx << 16 | gx << 8 | bx);
+				}
 			}
 		}
 		result.setId(image.getId() + "tinted" + color.getRGB());
@@ -892,6 +899,10 @@ public class ImageOperators implements ImageConstants {
 		final int xSize = image.getWidth();
 		final int ySize = image.getHeight();
 		final IMatrix matrix = GamaMatrixFactory.createIntMatrix(xSize, ySize);
+		if (matrix instanceof GamaIntMatrix gim && image.getRaster().getDataBuffer() instanceof DataBufferInt buffer) {
+			System.arraycopy(buffer.getData(), 0, gim.getMatrix(), 0, Math.min(buffer.getData().length, gim.getMatrix().length));
+			return matrix;
+		}
 		for (int i = 0; i < xSize; i++) {
 			for (int j = 0; j < ySize; j++) { matrix.set(scope, i, j, image.getRGB(i, j)); }
 		}

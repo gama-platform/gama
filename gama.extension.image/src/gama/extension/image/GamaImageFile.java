@@ -12,6 +12,7 @@ package gama.extension.image;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 import java.awt.image.PixelGrabber;
 import java.io.BufferedReader;
 import java.io.File;
@@ -343,8 +344,13 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 			// image = resultingImage;
 		}
 		final IMatrix matrix = GamaMatrixFactory.createIntMatrix(xSize, ySize);
-		for (int i = 0; i < xSize; i++) {
-			for (int j = 0; j < ySize; j++) { matrix.set(scope, i, j, resultingImage.getRGB(i, j)); }
+		if (matrix instanceof GamaIntMatrix intMatrix
+				&& resultingImage.getRaster().getDataBuffer() instanceof DataBufferInt buffer) {
+			System.arraycopy(buffer.getData(), 0, intMatrix.getMatrix(), 0, xSize * ySize);
+		} else {
+			for (int i = 0; i < xSize; i++) {
+				for (int j = 0; j < ySize; j++) { matrix.set(scope, i, j, resultingImage.getRGB(i, j)); }
+			}
 		}
 		return matrix;
 

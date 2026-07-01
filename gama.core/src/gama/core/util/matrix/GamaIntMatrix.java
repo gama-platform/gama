@@ -11,6 +11,7 @@
 package gama.core.util.matrix;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 import java.util.Arrays;
 import java.util.List;
 
@@ -732,7 +733,8 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 		int w = getCols(scope);
 		int h = getRows(scope);
 		BufferedImage ret = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-		for (int i = 0; i < w; i++) { for (int j = 0; j < h; j++) { ret.setRGB(i, j, get(scope, i, j)); } }
+		final int[] imageData = ((DataBufferInt) ret.getRaster().getDataBuffer()).getData();
+		System.arraycopy(matrix, 0, imageData, 0, Math.min(matrix.length, imageData.length));
 		return ret;
 	}
 

@@ -163,12 +163,16 @@ public class ImageSaver extends AbstractSaver {
 			fw.write(cw + "\n0.0\n0.0\n" + ch + "\n" + x + "\n" + y);
 		}
 		final BufferedImage image = new BufferedImage(cols, rows, BufferedImage.TYPE_INT_RGB);
-		double[] minmaxVal = field.getMinMax();
+		final int[] imageData = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
+		final double[] minmaxVal = field.getMinMax();
+		final double[] values = field.getFieldData(scope);
+		final double range = minmaxVal[1] - minmaxVal[0];
 		for (int row = 0; row < rows; row++) {
+			final int sourceOffset = row * cols;
+			final int targetOffset = (rows - 1 - row) * cols;
 			for (int col = 0; col < cols; col++) {
-				double v = field.get(scope, col, row);
-				int vRef = Maths.round((v - minmaxVal[0]) / (minmaxVal[1] - minmaxVal[0]) * 255);
-				image.setRGB(col, rows - 1 - row, GamaColorFactory.get(vRef, vRef, vRef).getRGB());
+				final int vRef = Maths.round((values[sourceOffset + col] - minmaxVal[0]) / range * 255);
+				imageData[targetOffset + col] = GamaColorFactory.get(vRef, vRef, vRef).getRGB();
 			}
 		}
 		ImageIO.write(image, t, f);

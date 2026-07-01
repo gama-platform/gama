@@ -13,6 +13,7 @@ package gama.core.util.matrix;
 import static org.locationtech.jts.index.quadtree.IntervalSize.isZeroWidth;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 import java.util.Arrays;
 import java.util.List;
 
@@ -671,7 +672,8 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 		int w = getCols(scope);
 		int h = getRows(scope);
 		BufferedImage ret = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-		for (int i = 0; i < w; i++) { for (int j = 0; j < h; j++) { ret.setRGB(i, j, get(scope, i, j).intValue()); } }
+		final int[] imageData = ((DataBufferInt) ret.getRaster().getDataBuffer()).getData();
+		for (int i = 0; i < Math.min(matrix.length, imageData.length); i++) { imageData[i] = (int) matrix[i]; }
 		return ret;
 	}
 

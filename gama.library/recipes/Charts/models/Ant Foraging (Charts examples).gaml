@@ -37,15 +37,19 @@ global {
 	reflex diffuse {
       diffuse var:road on:ant_grid proportion: diffusion_rate radius:2 propagation: gradient;
    }
-
-
-
+   
+	reflex evaporate {
+		matrix m_road <- matrix_with(ant_grid, "road");
+		matrix evapo <- m_road - evaporation_per_cycle;
+		matrix evapo_clamped <- ifelse(evapo > 0.0, evapo, 0.0);
+		do set_values(ant_grid, "road", evapo_clamped);
+	}
 }
 
 //Grid to discretize space for the food and the nest
 grid ant_grid width: gridsize height: gridsize neighbors: 8 use_regular_agents: false {
 	bool multiagent <- true ;
-	float road <- 0.0 max:240.0 update: (road<=evaporation_per_cycle) ? 0.0 : road-evaporation_per_cycle;
+	float road <- 0.0 max:240.0;
 	int type <- int(types at {grid_x,grid_y}) ;
 	bool isNestLocation <- (self distance_to center) < 4 ; 
 	bool isFoodLocation <- type = 2 ; 

@@ -94,7 +94,7 @@ public class GaussianBlurMeshSmoothProvider implements IMeshSmoothProvider {
 			var fv = scl[ti];
 			var lv = scl[ti + cols * (rows - 1)];
 			var val = (r + 1) * fv;
-			for (var j = 0; j < r; j++) { val += scl[ti + j * rows]; }
+			for (var j = 0; j < r; j++) { val += scl[ti + j * cols]; }
 			for (var j = 0; j <= r; j++) {
 				val += scl[ri] - fv;
 				scl[ti] = val * iarr;
