@@ -88,7 +88,8 @@ public class GridLayer extends AbstractLayer {
 			final int[] imageData = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
 			// DEBUG.OUT("ImageData different from DisplayData ? "
 			// + !Arrays.equals(imageData, data.getGrid().getDisplayData()));
-			System.arraycopy(data.getGrid().getDisplayData(), 0, imageData, 0, imageData.length);
+			final int[] displayData = data.getGrid().getDisplayData();
+			System.arraycopy(displayData, 0, imageData, 0, Math.min(displayData.length, imageData.length));
 			attributes.setTextures(Collections.singletonList(image));
 		}
 		attributes.setTriangulated(data.isTriangulated());

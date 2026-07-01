@@ -2026,6 +2026,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 	@Override
 	public double getValueAtIndex(final IScope scope, final int i, final String varName) {
 		if (IKeyword.GRID_VALUE.equals(varName)) return getValue(i);
+		if (!isHexagon && IKeyword.COLOR.equals(varName)) return supportImagePixels[i];
 		IAgent a = matrix[i].getAgent();
 		return Cast.asFloat(scope, a.getDirectVarValue(scope, varName));
 	}
@@ -2034,6 +2035,10 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 	public void setValueAtIndex(final IScope scope, final int i, final String varName, final double valToPut) {
 		if (IKeyword.GRID_VALUE.equals(varName)) {
 			setValue(i, valToPut);
+			return;
+		}
+		if (!isHexagon && IKeyword.COLOR.equals(varName)) {
+			supportImagePixels[i] = (int) valToPut;
 			return;
 		}
 		IAgent a = matrix[i].getAgent();
@@ -2045,6 +2050,13 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 		if (IKeyword.GRID_VALUE.equals(varName)) {
 			for (int i = 0; i < input.length; i++) {
 				final double val = gridValue[i];
+				input[i] = val < minValue ? 0 : val;
+			}
+			return;
+		}
+		if (!isHexagon && IKeyword.COLOR.equals(varName)) {
+			for (int i = 0; i < input.length; i++) {
+				final double val = supportImagePixels[i];
 				input[i] = val < minValue ? 0 : val;
 			}
 			return;
