@@ -27,6 +27,7 @@ public class GamaZipBuilder {
         "gama.api",
         "gama.core",
         "gama.dev",
+        "gama.export",
         "gama.dependencies",
         "gama.extension.batch",
         "gama.extension.image",
@@ -50,6 +51,8 @@ public class GamaZipBuilder {
     // depends on the operating system
     private Set<String> neededGamaModules;
 
+    private static final String embeddedWorkspaceName = "Embedded_Workspace";
+
     private static final Path appRootPath = Path.of(ExportActivator.appRootPathStr);
     
     private static final Path pluginsPath = Path.of(appRootPath.toString(),"plugins");
@@ -63,6 +66,12 @@ public class GamaZipBuilder {
     private static final Path gamaDependenciesTmpPath = tmpDirectoryPath.resolve("gama.dependencies.tmp");
     
     private static String gamaDependenciesModuleFileName = null;
+
+    private String targetWorkspacePathStr = null;
+    
+    private String targetModelPathStr = null;
+
+    private String targetExperiment = null;
 
     private static Set<Path> dontZipPaths = new HashSet<Path>(Set.of(
         Path.of(appRootPath.toString(),"configuration","org.eclipse.equinox.app"),
@@ -90,17 +99,20 @@ public class GamaZipBuilder {
             }
     }
 
-    public GamaZipBuilder(Set<String> modules, final boolean shrinkGamaDependencies) 
+    public GamaZipBuilder(Set<String> modules, String targetWorkspacePathStr, String targetModelPathStr, String targetExperiment,  final boolean shrinkGamaDependencies) 
     {
-        this(modules);
+        this(modules,targetWorkspacePathStr,targetModelPathStr,targetExperiment);
 
         if(shrinkGamaDependencies)
             GamaZipBuilder.necessaryGamaModules.remove("gama.dependencies");
     }
 
-    public GamaZipBuilder(Set<String> modules) 
+    public GamaZipBuilder(Set<String> modules, String targetWorkspacePathStr, String targetModelPathStr, String targetExperiment) 
     {
         neededGamaModules = modules;
+        this.targetWorkspacePathStr = targetWorkspacePathStr; 
+        this.targetModelPathStr = targetModelPathStr;
+        this.targetExperiment = targetExperiment;
     }
 
     private Stream<Path> filter(Stream<Path> stream)
@@ -261,14 +273,17 @@ public class GamaZipBuilder {
             // switching to non global preferences
             Files.copy(appRootPath.resolve("Gama.ini"),GamaZipBuilder.gamaIniTmpPath);
             String gamaIniContent = Files.readString(GamaZipBuilder.gamaIniTmpPath); 
+
             if (gamaIniContent.contains("\n-Duse_global_preference_store="))
-            {
                 gamaIniContent = gamaIniContent.replaceAll("\n-Duse_global_preference_store=.*","\n-Duse_global_preference_store=false");
-            }
             else
-            {
-                gamaIniContent += "\n-Duse_global_preference_store=false";
-            }
+                gamaIniContent += "\n-Duse_global_preference_store=false\n";
+
+            if (gamaIniContent.contains("\n-Dsimulation_only="))
+                gamaIniContent = gamaIniContent.replaceAll("\n-Dsimulation_only=.*","\n-Dsimulation_only=true");
+            else
+                gamaIniContent += "\n-Dsimulation_only=true\n";
+
 
             Files.writeString(GamaZipBuilder.gamaIniTmpPath,gamaIniContent);
 
@@ -284,11 +299,13 @@ public class GamaZipBuilder {
             // creating / updating preferences
             JREPreferenceStore store = new JREPreferenceStore(Preferences.userRoot().node(GamaPreferenceStore.NODE_NAME));
 
-            store.putInStore("pref_workspace_path","/home/cytech/workspace/Repos/gama/gama.product/target/products/gama.ui.application/linux/gtk/x86_64/Embedded_Workspace");
+            //pref error display
+            // show errors in editor
+            store.putInStore("pref_workspace_path",GamaZipBuilder.embeddedWorkspaceName);
             store.putInStore("pref_workspace_remember",true);
             store.putInStore("pref_startup_model",true);
-            store.putInStore("pref_default_model","/home/cytech/workspace/Repos/gama/gama.product/target/products/gama.ui.application/linux/gtk/x86_64/Embedded_Workspace/projet_cool/models/model_cool.gaml");
-            store.putInStore("pref_default_experiment","prey_predator");
+            store.putInStore("pref_default_model",targetModelPathStr.replace(targetWorkspacePathStr,GamaZipBuilder.embeddedWorkspaceName));
+            store.putInStore("pref_default_experiment",targetExperiment);
             
             store.saveToProperties(GamaZipBuilder.gamaPrefsTmpPath.toString());
 
@@ -298,6 +315,40 @@ public class GamaZipBuilder {
             // Write bytes to the entry
             Files.copy(GamaZipBuilder.gamaPrefsTmpPath, zos);
             zos.closeEntry();
+
+            ////////////////////////////////////
+            // Embedding the target workspace //
+            ////////////////////////////////////
+
+            try (Stream<Path> stream = Files.walk(Path.of(targetWorkspacePathStr))) {
+                stream.forEach(filePath -> {
+                    
+                    try 
+                    {
+                        if(! Files.isDirectory(filePath))
+                        {
+                            zos.putNextEntry(
+                                new ZipEntry(filePath.toString().replace(targetWorkspacePathStr,GamaZipBuilder.embeddedWorkspaceName)));
+                            
+                            Files.copy(filePath, zos);
+
+                            zos.closeEntry();                        
+                        }
+                    } 
+                    catch (IOException e)
+                    {
+                        throw new RuntimeException("Failed to copy: " + filePath, e);
+                    }
+                });
+                
+            } catch (RuntimeException e) {
+                // Unwrap IOException from the stream loop
+                if (e.getCause() instanceof IOException) {
+                    throw (IOException) e.getCause();
+                }
+                throw e;
+            }
+
 
             deleteDirectory(GamaZipBuilder.tmpDirectoryPath);
         }

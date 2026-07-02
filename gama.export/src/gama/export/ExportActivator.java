@@ -12,7 +12,7 @@ import gama.export.Main;
 import java.util.prefs.Preferences;
 import gama.api.utils.prefs.JREPreferenceStore;
 import gama.api.utils.prefs.GamaPreferenceStore;
-
+import gama.dev.FLAGS;
 
 public class ExportActivator implements BundleActivator {
 
@@ -21,15 +21,10 @@ public class ExportActivator implements BundleActivator {
     @Override
     public void start(BundleContext context) throws Exception {
       
-        // // 1. Get the system bundle (the core OSGi launcher)
-        String location = context.getBundle().getLocation();
-        
-        // // Clean URL prefixes (like file:) if present
-        String cleanPathStr = location.replaceAll(".*plugins", "plugins");
+        // appRootPathStr = System.getProperty("osgi.install.area");
+        appRootPathStr = System.getProperty("eclipse.home.location");
+        appRootPathStr = appRootPathStr.replaceAll("file:", "");
 
-        Path absolutePath = Path.of(cleanPathStr).toAbsolutePath();
-        
-        appRootPathStr = absolutePath.getParent().getParent().toString();
 
         // JREPreferenceStore store = new JREPreferenceStore(Preferences.userRoot().node(GamaPreferenceStore.NODE_NAME));
 
@@ -39,17 +34,18 @@ public class ExportActivator implements BundleActivator {
         // String defaultModelPreferenceOld = store.getInStore("pref_default_model","Enter Path");
         // String defaultExperimentPreferenceOld = store.getInStore("pref_default_experiment","");
 
-
-
         // store.putInStore("pref_workspace_path",workspacePathPreferenceOld);
         // store.putInStore("pref_workspace_remember",workspaceRememberPreferenceOld);
         // store.putInStore("pref_startup_model",startupModelPreferenceOld);
         // store.putInStore("pref_default_model",defaultModelPreferenceOld);
         // store.putInStore("pref_default_experiment",defaultExperimentPreferenceOld);
 
-        String[] args = {};
-        Main.main(args);
-        System.out.println("PACKAGE EXPORT DONE");
+        if (! FLAGS.SIMULATION_ONLY)
+        {
+            String[] args = {};
+            Main.main(args);
+            System.out.println("PACKAGE EXPORT DONE");
+        }
     }
 
     @Override

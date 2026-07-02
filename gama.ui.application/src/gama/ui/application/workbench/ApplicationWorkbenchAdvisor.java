@@ -29,6 +29,7 @@ import gama.api.additions.delegates.IEventLayerDelegate;
 import gama.api.additions.registries.GamaAdditionRegistry;
 import gama.api.runtime.GamaExecutorService;
 import gama.api.types.file.IGamaFile;
+import gama.api.types.file.GenericFile;
 import gama.api.ui.IGui;
 import gama.gaml.operators.Files;
 import gama.api.utils.files.FileUtils;
@@ -49,6 +50,8 @@ import gaml.compiler.GamlStandaloneSetup;
 import gama.api.additions.GamaBundleLoader;
 import org.osgi.framework.Bundle;
 // import org.eclipse.emf.ecore.resource.Resource;
+
+import gama.export.ExportHelper;
 
 
 /**
@@ -146,6 +149,9 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
 			// opening the selected file
 			IGamaFile<?, ?> file = GamaPreferences.Interface.CORE_DEFAULT_MODEL.getValue();
+			String filePathStr = file.getPath(null);
+			file = new GenericFile(ExportHelper.resolveEmbeddedPath(filePathStr));
+
 			if (file != null && file.exists(null) && experiment != null) {
 
 				while (GAMA.getRegularGui() == null) {

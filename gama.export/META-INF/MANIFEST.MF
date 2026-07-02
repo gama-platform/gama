@@ -6,7 +6,8 @@ Bundle-Version: 0.0.0.qualifier
 Export-Package: gama.export
 Bundle-Activator: gama.export.ExportActivator
 Bundle-Vendor: UMMISCO
-Require-Bundle: gama.api
+Require-Bundle: gama.api,
+ gama.dev
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-25
 Automatic-Module-Name: gama.export

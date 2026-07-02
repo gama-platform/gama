@@ -23,12 +23,14 @@ public class Main {
             "gama.extension.traffic",
             "gama.library",
             "gama.ui.display.opengl",
-            "gama.ui.display.opengl4",
-            "gama.export"
+            "gama.ui.display.opengl4"
         );
 
         // GamaZipBuilder ziper = new GamaZipBuilder(neededModules);
-        GamaZipBuilder ziper = new GamaZipBuilder(Collections.<String>emptySet());
+        GamaZipBuilder ziper = new GamaZipBuilder(Collections.<String>emptySet(),
+            "/home/cytech/Gama_Workspace_Dev",
+            "/home/cytech/Gama_Workspace_Dev/projet_cool/models/model_cool.gaml",
+            "prey_predator");
         try { 
             ziper.zip("/home/cytech/gamatest.zip");
         } catch (Exception e) {

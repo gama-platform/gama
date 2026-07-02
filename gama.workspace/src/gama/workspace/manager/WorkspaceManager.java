@@ -37,6 +37,7 @@ import gama.api.runtime.IWorkspaceManager;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 import gama.workspace.WorkspaceActivator;
+import gama.export.ExportHelper;
 
 /**
  * Singleton implementation of {@link IWorkspaceManager} that manages the GAMA workspace lifecycle.
@@ -538,7 +539,7 @@ public class WorkspaceManager implements IWorkspaceManager {
 		String lastUsedWs = null;
 
 		if (instanceLoc.isSet()) {
-			lastUsedWs = instanceLoc.getURL().getFile();
+			lastUsedWs = ExportHelper.resolveEmbeddedPath(instanceLoc.getURL().getFile());
 			final String ret = checkWorkspaceDirectory(lastUsedWs, false, false, false);
 			if (ret != null) {
 				GAMA.getGui().getDialogFactory().error("The workspace provided cannot be used. Please change it");
@@ -547,7 +548,7 @@ public class WorkspaceManager implements IWorkspaceManager {
 			}
 		} else {
 			remember = isRememberWorkspace();
-			lastUsedWs = getLastSetWorkspaceDirectory();
+			lastUsedWs = ExportHelper.resolveEmbeddedPath(getLastSetWorkspaceDirectory());
 			// A "remember" flag without a stored path is meaningless.
 			if (remember && (lastUsedWs == null || lastUsedWs.isEmpty())) { remember = false; }
 			if (remember) {
