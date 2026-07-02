@@ -83,7 +83,7 @@ use_neighbors_cache: false parallel: parallel{
 	float alive_float <- (rnd(100)) < density ? 1.0 : 0.0;
 	bool alive -> alive_float > 0.0;
 	
-	rgb color <- alive ? livingcolor : deadcolor;
+	rgb color <- alive ? livingcolor : deadcolor update: (alive ? livingcolor : deadcolor);
 }
 
 
