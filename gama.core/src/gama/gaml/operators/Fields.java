@@ -15,11 +15,14 @@ import gama.annotations.no_test;
 import gama.annotations.operator;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.agent.IPopulation;
+import gama.api.kernel.species.ISpecies;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.IPoint;
 import gama.api.types.geometry.IShape;
-import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.topology.IGrid;
 import gama.core.util.matrix.GamaFloatMatrix;
 import gama.api.types.list.IList;
@@ -314,6 +317,24 @@ public class Fields {
 	}
 
 	@operator (
+			value = "matrix_with",
+			can_be_const = false,
+			category = { IOperatorCategory.GRID, IOperatorCategory.MATRIX },
+			concept = { IConcept.GRID, IConcept.MATRIX })
+	@doc (
+			value = "Extracts the value of a specific variable from all cells of a grid species into a matrix.",
+			examples = { @example (
+					value = "matrix mat <- matrix_with(life_cell, \"alive_float\");",
+					isExecutable = false) })
+	public static IMatrix matrixWith(final IScope scope, final ISpecies gridSpecies, final String varName) {
+		final IPopulation<? extends IAgent> population = scope.getAgent().getPopulationFor(gridSpecies);
+		if (!(population instanceof IPopulation.Grid grid)) {
+			throw GamaRuntimeException.error(gridSpecies.getName() + " is not a grid species", scope);
+		}
+		return matrixWith(scope, grid, varName);
+	}
+
+	@operator (
 			value = "set_values",
 			can_be_const = false,
 			category = { IOperatorCategory.GRID, IOperatorCategory.MATRIX },
@@ -335,6 +356,24 @@ public class Fields {
 			g.setValueAtIndex(scope, i, varName, data[i]);
 		}
 		return grid;
+	}
+
+	@operator (
+			value = "set_values",
+			can_be_const = false,
+			category = { IOperatorCategory.GRID, IOperatorCategory.MATRIX },
+			concept = { IConcept.GRID, IConcept.MATRIX })
+	@doc (
+			value = "Sets values of a specific variable in all cells of a grid species using the provided matrix.",
+			examples = { @example (
+					value = "do set_values(life_cell, \"alive_float\", next_state);",
+					isExecutable = false) })
+	public static IPopulation.Grid setValues(final IScope scope, final ISpecies gridSpecies, final String varName, final IMatrix matrix) {
+		final IPopulation<? extends IAgent> population = scope.getAgent().getPopulationFor(gridSpecies);
+		if (!(population instanceof IPopulation.Grid grid)) {
+			throw GamaRuntimeException.error(gridSpecies.getName() + " is not a grid species", scope);
+		}
+		return setValues(scope, grid, varName, matrix);
 	}
 
 }
