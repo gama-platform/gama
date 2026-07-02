@@ -150,11 +150,11 @@ public class Containers {
 	 */
 	public static <T, K, U> Collector<T, ?, IMap<K, U>> toIMap(final Function<? super T, ? extends K> keyMapper,
 			final Function<? super T, ? extends U> valueMapper, final IType keyType, final IType valueType) {
-		return Collectors.collectingAndThen(Collectors.toList(), list -> {
-			IMap<K, U> result = GamaMapFactory.create(keyType, valueType);
-			for (T item : list) { result.put(keyMapper.apply(item), valueMapper.apply(item)); }
-			return result;
-		});
+		return Collector.of(() -> GamaMapFactory.<K, U>create(keyType, valueType),
+				(result, item) -> result.put(keyMapper.apply(item), valueMapper.apply(item)), (left, right) -> {
+					left.putAll(right);
+					return left;
+				});
 
 	}
 
