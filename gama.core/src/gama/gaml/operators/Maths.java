@@ -951,16 +951,8 @@ public class Maths {
 		final GamaFloatMatrix mat = GamaFloatMatrix.from(scope, a);
 		final GamaFloatMatrix nm = (GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(mat.getCols(scope), mat.getRows(scope));
 		final double[] m = mat.getMatrix();
-		int i = 0;
-		int upperBound = GamaFloatMatrix.SPECIES.loopBound(m.length);
-		for (; i < upperBound; i += GamaFloatMatrix.SPECIES.length()) {
-			jdk.incubator.vector.DoubleVector va = jdk.incubator.vector.DoubleVector.fromArray(GamaFloatMatrix.SPECIES, m, i);
-			// DoubleVector in Vector API doesn't have a direct exp method, but we can compute it using math loops.
-			// Actually VectorMath might exist. Wait, jdk.incubator.vector.VectorMath does not exist.
-			// Math.exp is not natively vectorized in pure Java Vector API yet (unlike basic arithmetic).
-			// So we just iterate.
-		}
-		for (i = 0; i < m.length; i++) { nm.getMatrix()[i] = Math.exp(m[i]); }
+		final double[] out = nm.getMatrix();
+		for (int i = 0; i < m.length; i++) { out[i] = Math.exp(m[i]); }
 		return nm;
 	}
 
@@ -1993,18 +1985,30 @@ public class Maths {
 		return a.divides(scope, b);
 	}
 
-	@operator (
-			value = IKeyword.PLUS,
-			can_be_const = true,
-			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
-			category = { IOperatorCategory.ARITHMETIC },
-			concept = {})
-	@doc (
-			usages = { @usage (
-					value = "if one operand is a matrix and the other a number (float or int), performs a normal arithmetic sum of the number with each element of the matrix (results are float if the number is a float.",
-					examples = { @example (
-							value = "3.5 + matrix([[2,5],[3,4]])",
-							equals = "matrix([[5.5,8.5],[6.5,7.5]])") }) })
+	@operator (
+
+			value = IKeyword.PLUS,
+
+			can_be_const = true,
+
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
+
+			category = { IOperatorCategory.ARITHMETIC },
+
+			concept = {})
+
+	@doc (
+
+			usages = { @usage (
+
+					value = "if one operand is a matrix and the other a number (float or int), performs a normal arithmetic sum of the number with each element of the matrix (results are float if the number is a float.",
+
+					examples = { @example (
+
+							value = "3.5 + matrix([[2,5],[3,4]])",
+
+							equals = "matrix([[5.5,8.5],[6.5,7.5]])") }) })
+
 	public static IMatrix opPlus(final Integer a, final IMatrix b) {
 		return b.plus(a);
 	}
