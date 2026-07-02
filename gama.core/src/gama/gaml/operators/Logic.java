@@ -214,6 +214,54 @@ public class Logic {
 		return nm;
 	}
 
+	@operator (
+			value = "ifelse",
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
+			category = { IOperatorCategory.LOGIC, IOperatorCategory.MATRIX },
+			concept = { IConcept.LOGICAL, IConcept.MATRIX })
+	@doc (
+			value = "Returns a new matrix where elements are selected from the true_matrix if the condition matrix element is strictly positive (> 0.0), and set to the scalar false_value otherwise.",
+			examples = { @example (
+					value = "ifelse(matrix([[1.0, 0.0], [0.0, 1.0]]), matrix([[1, 2], [3, 4]]), 0.0)",
+					equals = "matrix([[1.0, 0.0], [0.0, 4.0]])") })
+	public static IMatrix ifelse(final IScope scope, final IMatrix condition, final IMatrix trueMatrix, final Double falseValue) {
+		final GamaFloatMatrix cond = GamaFloatMatrix.from(scope, condition);
+		final GamaFloatMatrix tMat = GamaFloatMatrix.from(scope, trueMatrix);
+		final GamaFloatMatrix nm =
+				(GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(cond.getCols(scope), cond.getRows(scope));
+		final double[] mCond = cond.getMatrix();
+		final double[] mT = tMat.getMatrix();
+		final double[] mRes = nm.getMatrix();
+
+		int i = 0;
+		int upperBound = GamaFloatMatrix.SPECIES.loopBound(mCond.length);
+		for (; i < upperBound; i += GamaFloatMatrix.SPECIES.length()) {
+			jdk.incubator.vector.DoubleVector vCond =
+					jdk.incubator.vector.DoubleVector.fromArray(GamaFloatMatrix.SPECIES, mCond, i);
+			jdk.incubator.vector.DoubleVector vT =
+					jdk.incubator.vector.DoubleVector.fromArray(GamaFloatMatrix.SPECIES, mT, i);
+			jdk.incubator.vector.DoubleVector vF =
+					jdk.incubator.vector.DoubleVector.broadcast(GamaFloatMatrix.SPECIES, falseValue);
+			jdk.incubator.vector.VectorMask<Double> mask =
+					vCond.compare(jdk.incubator.vector.VectorOperators.GT, 0.0);
+			vF.blend(vT, mask).intoArray(mRes, i);
+		}
+		for (; i < mCond.length; i++) { mRes[i] = mCond[i] > 0.0 ? mT[i] : falseValue; }
+		return nm;
+	}
+
+	@operator (
+			value = "ifelse",
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
+			category = { IOperatorCategory.LOGIC, IOperatorCategory.MATRIX },
+			concept = { IConcept.LOGICAL, IConcept.MATRIX })
+	@doc (value = "Same as ifelse(matrix, matrix, float) with an integer false_value.")
+	public static IMatrix ifelse(final IScope scope, final IMatrix condition, final IMatrix trueMatrix, final Integer falseValue) {
+		return ifelse(scope, condition, trueMatrix, falseValue.doubleValue());
+	}
+
 	/**
 	 * Not.
 	 *
