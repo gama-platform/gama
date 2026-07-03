@@ -21,10 +21,12 @@ import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.dataframe.GamaDataFrame;
 import gama.api.types.dataframe.GamaDataFrameFactory;
 import gama.api.types.dataframe.IDataFrame;
+import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
 import gama.api.utils.prefs.GamaPreferences;
 
@@ -386,6 +388,131 @@ public class DataFrameOperators {
 		if (rowIndex < 0 || rowIndex >= df.getRows())
 			throw GamaRuntimeException.error("Row index out of bounds: " + rowIndex, scope);
 		return df.getCellValue(rowIndex, columnName);
+	}
+
+	// ========================= Matrix-style access (merged operators) =========================
+	//
+	// These operators reuse the vocabulary of the existing GAML matrix operators (row_at, column_at,
+	// rows_list, columns_list) so that a dataframe can be manipulated like a matrix. They are additive
+	// overloads registered for the DATAFRAME operand type and do not affect the matrix versions.
+
+	/**
+	 * Returns the row at the given index as a list, mirroring the matrix {@code row_at} operator.
+	 */
+	@operator (
+			value = "row_at",
+			can_be_const = true,
+			content_type = IType.NONE,
+			type = IType.LIST,
+			category = { IOperatorCategory.DATAFRAME },
+			concept = { IConcept.DATAFRAME })
+	@doc (
+			value = "Returns the row of the dataframe at the given index as a list of values. "
+					+ "Overloads the matrix 'row_at' operator for dataframes.",
+			usages = { @usage (
+					value = "Get the row at index 1",
+					examples = { @example (
+							value = "my_df row_at 1",
+							isExecutable = false) }) },
+			see = { "column_at", "rows_list", "iloc" })
+	@test ("(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]) row_at 1) = [\"Bob\",25]")
+	public static IList rowAt(final IScope scope, final IDataFrame df, final Integer rowIndex) {
+		if (rowIndex < 0 || rowIndex >= df.getRows())
+			throw GamaRuntimeException.error("Row index out of bounds: " + rowIndex, scope);
+		return df.getRowValues(rowIndex);
+	}
+
+	/**
+	 * Returns a column by name as a list, mirroring the matrix {@code column_at} operator.
+	 */
+	@operator (
+			value = "column_at",
+			can_be_const = true,
+			content_type = IType.NONE,
+			type = IType.LIST,
+			category = { IOperatorCategory.DATAFRAME },
+			concept = { IConcept.DATAFRAME })
+	@doc (
+			value = "Returns the values of the named column of the dataframe as a list. "
+					+ "Overloads the matrix 'column_at' operator to accept a column name.",
+			usages = { @usage (
+					value = "Get the 'name' column",
+					examples = { @example (
+							value = "my_df column_at \"name\"",
+							isExecutable = false) }) },
+			see = { "row_at", "columns_list" })
+	@test ("(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]) column_at \"name\") = [\"Alice\",\"Bob\"]")
+	public static IList columnAtName(final IScope scope, final IDataFrame df, final String columnName) {
+		if (!df.getColumns().contains(columnName))
+			throw GamaRuntimeException.error("Unknown column: " + columnName, scope);
+		return df.getColumnValues(columnName);
+	}
+
+	/**
+	 * Returns a column by integer index as a list, mirroring the matrix {@code column_at} operator.
+	 */
+	@operator (
+			value = "column_at",
+			can_be_const = true,
+			content_type = IType.NONE,
+			type = IType.LIST,
+			category = { IOperatorCategory.DATAFRAME },
+			concept = { IConcept.DATAFRAME })
+	@doc (
+			value = "Returns the values of the column at the given integer position as a list. "
+					+ "Overloads the matrix 'column_at' operator for dataframes.",
+			usages = { @usage (
+					value = "Get the first column",
+					examples = { @example (
+							value = "my_df column_at 0",
+							isExecutable = false) }) },
+			see = { "row_at", "columns_list" })
+	@test ("(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]) column_at 0) = [\"Alice\",\"Bob\"]")
+	public static IList columnAtIndex(final IScope scope, final IDataFrame df, final Integer columnIndex) {
+		final IList<String> cols = df.getColumns();
+		if (columnIndex < 0 || columnIndex >= cols.size())
+			throw GamaRuntimeException.error("Column index out of bounds: " + columnIndex, scope);
+		return df.getColumnValues(cols.get(columnIndex));
+	}
+
+	/**
+	 * Returns all rows as a list of lists, mirroring the matrix {@code rows_list} operator.
+	 */
+	@operator (
+			value = "rows_list",
+			can_be_const = true,
+			content_type = IType.LIST,
+			type = IType.LIST,
+			category = { IOperatorCategory.DATAFRAME },
+			concept = { IConcept.DATAFRAME })
+	@doc (
+			value = "Returns the list of the rows of the dataframe, each row being a list of its cell values. "
+					+ "Overloads the matrix 'rows_list' operator for dataframes.",
+			see = { "columns_list", "row_at" })
+	@test ("rows_list(dataframe_with([\"a\",\"b\"], [[1,2],[3,4]])) = [[1,2],[3,4]]")
+	public static IList rowsList(final IScope scope, final IDataFrame df) {
+		return df.listValue(scope, null, false);
+	}
+
+	/**
+	 * Returns all columns as a list of lists, mirroring the matrix {@code columns_list} operator.
+	 */
+	@operator (
+			value = "columns_list",
+			can_be_const = true,
+			content_type = IType.LIST,
+			type = IType.LIST,
+			category = { IOperatorCategory.DATAFRAME },
+			concept = { IConcept.DATAFRAME })
+	@doc (
+			value = "Returns the list of the columns of the dataframe, each column being a list of its values. "
+					+ "Overloads the matrix 'columns_list' operator for dataframes.",
+			see = { "rows_list", "column_at" })
+	@test ("columns_list(dataframe_with([\"a\",\"b\"], [[1,2],[3,4]])) = [[1,3],[2,4]]")
+	public static IList columnsList(final IScope scope, final IDataFrame df) {
+		final IList result = GamaListFactory.create(Types.LIST);
+		for (final String col : df.getColumns()) { result.add(df.getColumnValues(col)); }
+		return result;
 	}
 
 	// ========================= Filtering operators =========================
