@@ -30,8 +30,8 @@ global {
 		write "First row: " + first_row;
 
 		// Access a specific cell
-		write "Species of row 0: " + df_cell(iris_data, 0, "type");
-		write "Species of row 50: " + df_cell(iris_data, 50, "type");
+		write "Species of row 0: " + cell(iris_data, 0, "type");
+		write "Species of row 50: " + cell(iris_data, 50, "type");
 
 		// Use pseudo-variables
 		write "";

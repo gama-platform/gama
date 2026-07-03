@@ -37,7 +37,7 @@ global {
 		// Round-trip: reload the file we just wrote
 		dataframe reloaded <- df_load_csv("../results/bugs.csv");
 		write "Reloaded bugs.csv : " + reloaded.rows + " rows, columns: " + reloaded.keys;
-		write "First bug name : " + df_cell(reloaded, 0, "name");
+		write "First bug name : " + cell(reloaded, 0, "name");
 
 		do pause();
 	}

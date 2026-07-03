@@ -64,7 +64,7 @@ species DB_Accessor parent: AgentDB {
 		// 'select' now returns a dataframe
 		dataframe t <- select("SELECT * FROM registration");
 		write "Select before update:";
-		write df_pretty_print(t);
+		write pretty_print(t);
 	}
 
 	reflex update {
@@ -72,7 +72,7 @@ species DB_Accessor parent: AgentDB {
 		do executeUpdate (updateComm: "DELETE FROM registration where id=103 ");
 		dataframe t <- select("SELECT * FROM registration");
 		write "Select after update:";
-		write df_pretty_print(t);
+		write pretty_print(t);
 	}
 
 	reflex drop {

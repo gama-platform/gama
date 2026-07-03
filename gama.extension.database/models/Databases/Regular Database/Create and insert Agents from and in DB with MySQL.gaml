@@ -30,7 +30,7 @@ global {
 										) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
 		}
 
-		write df_pretty_print(first(DB_accessor).select (PARAMS, SQLquery_idPoint));
+		write pretty_print(first(DB_accessor).select (PARAMS, SQLquery_idPoint));
 
 		// 'create ... from:' a select now reads its rows from the returned dataframe (columns matched by name)
 		create idPoint(name: "idPointgrille", RRmm:"RR", Tmin:"Tmin", Tmax:"Tmax", Rglot:"Rglot", ETPmm:"ETPmm")
@@ -89,8 +89,8 @@ species DB_accessor skills: [SQLSKILL] {
 			write "Connection Database OK.";
 		}
 
-		write df_pretty_print(select(PARAMS, "SELECT * FROM meteo_table"));
-		write df_pretty_print(select(PARAMS, SQLquery_idPoint));
+		write pretty_print(select(PARAMS, "SELECT * FROM meteo_table"));
+		write pretty_print(select(PARAMS, SQLquery_idPoint));
 	}
 
 }

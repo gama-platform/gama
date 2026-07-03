@@ -83,8 +83,8 @@ experiment Dataframes type: test {
 
 	test cell_access {
 		dataframe df <- dataframe_with(["name", "age"], [["Alice", 30], ["Bob", 25]]);
-		assert df_cell(df, 0, "name") = "Alice";
-		assert df_cell(df, 1, "age") = 25;
+		assert cell(df, 0, "name") = "Alice";
+		assert cell(df, 1, "age") = 25;
 	}
 
 	// ========================= Row count =========================
@@ -137,30 +137,30 @@ experiment Dataframes type: test {
 
 	test remove_empty_values {
 		dataframe df <- dataframe_with(["name", "note"], [["Alice", "ok"], ["Bob", ""], ["Charlie", nil]]);
-		dataframe cleaned <- df_remove_empty(df, "note");
+		dataframe cleaned <- remove_empty(df, "note");
 		assert cleaned.rows = 1;
-		assert df_cell(cleaned, 0, "name") = "Alice";
+		assert cell(cleaned, 0, "name") = "Alice";
 	}
 
 	// ========================= Select columns =========================
 
 	test select_columns {
 		dataframe df <- dataframe_with(["a", "b", "c"], [[1, 2, 3], [4, 5, 6]]);
-		dataframe sub <- df_select_columns(df, ["a", "c"]);
+		dataframe sub <- select_columns(df, ["a", "c"]);
 		assert sub.keys = ["a", "c"];
 		assert sub.rows = 2;
-		assert df_cell(sub, 0, "a") = 1;
-		assert df_cell(sub, 0, "c") = 3;
+		assert cell(sub, 0, "a") = 1;
+		assert cell(sub, 0, "c") = 3;
 	}
 
 	// ========================= Add column =========================
 
 	test add_column {
 		dataframe df <- dataframe_with(["name"], [["Alice"], ["Bob"]]);
-		dataframe df2 <- df_add_column(df, "score", 0);
+		dataframe df2 <- add_column(df, "score", 0);
 		assert df2.keys contains "score";
-		assert df_cell(df2, 0, "score") = 0;
-		assert df_cell(df2, 1, "score") = 0;
+		assert cell(df2, 0, "score") = 0;
+		assert cell(df2, 1, "score") = 0;
 		// Original unchanged (immutable)
 		assert !(df.keys contains "score");
 	}
@@ -183,9 +183,9 @@ experiment Dataframes type: test {
 		dataframe df2 <- dataframe_with(["a", "b"], [[3, 4], [5, 6]]);
 		dataframe merged <- (df1 + df2);
 		assert merged.rows = 3;
-		assert df_cell(merged, 0, "a") = 1;
-		assert df_cell(merged, 1, "a") = 3;
-		assert df_cell(merged, 2, "a") = 5;
+		assert cell(merged, 0, "a") = 1;
+		assert cell(merged, 1, "a") = 3;
+		assert cell(merged, 2, "a") = 5;
 	}
 
 	// ========================= Join =========================
@@ -207,14 +207,14 @@ experiment Dataframes type: test {
 			["product", "quarter", "revenue"],
 			[["A", "Q1", 100], ["A", "Q2", 200], ["B", "Q1", 150], ["B", "Q2", 250]]
 		);
-		dataframe pivoted <- df_pivot(df, "product", "quarter", "revenue");
+		dataframe pivoted <- pivot(df, "product", "quarter", "revenue");
 		assert pivoted.rows = 2;
 		assert pivoted.keys contains "Q1";
 		assert pivoted.keys contains "Q2";
 		// Product A, Q1 = 100
-		assert df_cell(pivoted, 0, "Q1") = 100;
+		assert cell(pivoted, 0, "Q1") = 100;
 		// Product B, Q2 = 250
-		assert df_cell(pivoted, 1, "Q2") = 250;
+		assert cell(pivoted, 1, "Q2") = 250;
 	}
 
 	// ========================= CSV I/O =========================
@@ -226,7 +226,7 @@ experiment Dataframes type: test {
 		assert df != nil;
 		assert df.rows = 3;
 		assert df.keys = ["name", "age", "city"];
-		assert df_cell(df, 0, "name") = "Alice";
+		assert cell(df, 0, "name") = "Alice";
 	}
 
 	test load_csv_semicolon {
@@ -305,7 +305,7 @@ experiment Dataframes type: test {
 			[["Alice", 30, "Paris", 95], ["Bob", 25, "Lyon", 87], ["Charlie", 35, "Paris", 92], ["Diana", 28, "Paris", 78]]
 		);
 		// Filter Paris residents, then select only name and score
-		dataframe result <- df_select_columns(df_filter(df, "city", "Paris"), ["name", "score"]);
+		dataframe result <- select_columns(df_filter(df, "city", "Paris"), ["name", "score"]);
 		assert result.rows = 3;
 		assert result.keys = ["name", "score"];
 	}
@@ -313,7 +313,7 @@ experiment Dataframes type: test {
 	test chained_add_column_then_filter {
 		dataframe df <- dataframe_with(["name", "score"], [["Alice", 95], ["Bob", 40], ["Charlie", 72]]);
 		// Add a "passed" column, then filter (this tests immutability — original is unchanged)
-		dataframe with_passed <- df_add_column(df, "status", "unknown");
+		dataframe with_passed <- add_column(df, "status", "unknown");
 		assert with_passed.keys contains "status";
 		assert !(df.keys contains "status");
 	}

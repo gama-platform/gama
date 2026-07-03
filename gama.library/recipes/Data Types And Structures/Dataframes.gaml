@@ -46,13 +46,13 @@ species declaring_dataframes {
 		write sample(students.columns);  // number of columns
 		write sample(empty_df.keys);
 		write sample(empty_df.rows);
-		// df_pretty_print returns a nicely formatted, human-readable table.
-		write df_pretty_print(students);
+		// pretty_print returns a nicely formatted, human-readable table.
+		write pretty_print(students);
 		write "";
 		// A dataframe loaded from CSV infers its columns from the header line.
 		write sample(iris.keys);
 		write sample(iris.rows);
-		write df_pretty_print(iris);
+		write pretty_print(iris);
 	}
 }
 
@@ -73,11 +73,11 @@ species accessing_dataframe_elements {
 		write "";
 		write "== ACCESSING DATAFRAME ELEMENTS ==";
 		write "";
-		write df_pretty_print(sensors);
+		write pretty_print(sensors);
 		// Column-, row- and cell-based access by name/index.
 		write sample(sensors column_at "sensor");   // a whole column as a list
 		write sample(sensors row_at 0);              // a whole row as a list
-		write sample(df_cell(sensors, 1, "location")); // a single cell (row 1, column "location")
+		write sample(cell(sensors, 1, "location")); // a single cell (row 1, column "location")
 
 		// iloc provides positional (integer) indexing, mirroring pandas' DataFrame.iloc.
 		// Negative indices count from the end, exactly like in Python (-1 is the last).
@@ -89,8 +89,8 @@ species accessing_dataframe_elements {
 		write sample(iloc(sensors, [0, 2, 4], 3)); // column 3, restricted to rows 0,2,4
 
 		// iloc with a list of rows (and optionally columns) returns a sub-dataframe.
-		write df_pretty_print(iloc(sensors, [0, 2, 4]));            // rows 0,2,4, all columns
-		write df_pretty_print(iloc(sensors, [0, 1], [1, 2, 3]));    // rows 0-1, columns 1-3
+		write pretty_print(iloc(sensors, [0, 2, 4]));            // rows 0,2,4, all columns
+		write pretty_print(iloc(sensors, [0, 1], [1, 2, 3]));    // rows 0-1, columns 1-3
 	}
 }
 
@@ -113,36 +113,36 @@ species combining_dataframes {
 		write "";
 		// df_filter keeps the rows whose column equals a given value.
 		write sample(df_filter(students, "city", "Paris").rows);
-		write df_pretty_print(df_filter(students, "city", "Paris"));
-		// df_select_columns keeps only the given columns.
-		write sample(df_select_columns(students, ["name", "grade"]).keys);
+		write pretty_print(df_filter(students, "city", "Paris"));
+		// select_columns keeps only the given columns.
+		write sample(select_columns(students, ["name", "grade"]).keys);
 		// Operators can be chained: names and grades of Paris students only.
-		write df_pretty_print(df_select_columns(df_filter(students, "city", "Paris"), ["name", "grade"]));
+		write pretty_print(select_columns(df_filter(students, "city", "Paris"), ["name", "grade"]));
 
-		// df_remove_empty drops the rows with an empty/nil value in a given column.
+		// remove_empty drops the rows with an empty/nil value in a given column.
 		dataframe with_gaps <- dataframe_with(
 			["name", "email"],
 			[["Alice", "alice@x.org"], ["Bob", ""], ["Charlie", nil], ["Diana", "diana@x.org"]]
 		);
 		write sample(with_gaps.rows);
-		write sample(df_remove_empty(with_gaps, "email").rows);
+		write sample(remove_empty(with_gaps, "email").rows);
 
 		// '+' concatenates two dataframes vertically (they must share the same columns).
 		dataframe batch1 <- dataframe_with(["sensor", "value"], [["temp", 22.5], ["humidity", 60.0]]);
 		dataframe batch2 <- dataframe_with(["sensor", "value"], [["temp", 23.1], ["pressure", 1013.2]]);
-		write df_pretty_print(batch1 + batch2);
+		write pretty_print(batch1 + batch2);
 
 		// 'join' performs an inner join on a common key column.
 		dataframe people   <- dataframe_with(["id", "name"],   [[1, "Alice"], [2, "Bob"], [3, "Charlie"]]);
 		dataframe salaries <- dataframe_with(["id", "salary"], [[1, 55000],   [2, 48000]]);
-		write df_pretty_print(join(people, salaries, "id")); // Charlie dropped: no salary record
+		write pretty_print(join(people, salaries, "id")); // Charlie dropped: no salary record
 
-		// df_pivot reshapes long data into a wide table (rows / columns / values).
+		// pivot reshapes long data into a wide table (rows / columns / values).
 		dataframe sales <- dataframe_with(
 			["product", "quarter", "revenue"],
 			[["Widget", "Q1", 1000], ["Widget", "Q2", 1500], ["Gadget", "Q1", 800], ["Gadget", "Q2", 950]]
 		);
-		write df_pretty_print(df_pivot(sales, "product", "quarter", "revenue"));
+		write pretty_print(pivot(sales, "product", "quarter", "revenue"));
 	}
 }
 
@@ -161,8 +161,8 @@ species modifying_dataframes {
 		write sample(students.keys);
 		write sample(students.rows);
 
-		// df_add_column returns a copy with one extra column (same value for every row).
-		dataframe with_status <- df_add_column(students, "status", "enrolled");
+		// add_column returns a copy with one extra column (same value for every row).
+		dataframe with_status <- add_column(students, "status", "enrolled");
 		write sample(with_status.keys);
 		// '+' with a row (list of values) returns a copy with one extra row.
 		dataframe with_frank <- (students + ["Frank", 25]);
@@ -187,7 +187,7 @@ species looping_on_dataframes {
 		write "";
 		// Imperative iteration: loop over the row indices and read cells by column name.
 		loop i from: 0 to: sales.rows - 1 {
-			write "Row #" + i + ": " + df_cell(sales, i, "product") + " -> " + df_cell(sales, i, "revenue");
+			write "Row #" + i + ": " + cell(sales, i, "product") + " -> " + cell(sales, i, "revenue");
 		}
 
 		// iloc(df, i) gives a whole row as a list, convenient for unpacking.

@@ -30,7 +30,7 @@ global {
 		// Round-trip: reload the file we just wrote
 		dataframe reloaded <- df_load_parquet("../results/bugs.parquet");
 		write "Reloaded bugs.parquet : " + reloaded.rows + " rows, columns: " + reloaded.keys;
-		write "First bug name : " + df_cell(reloaded, 0, "name");
+		write "First bug name : " + cell(reloaded, 0, "name");
 
 		do pause();
 	}

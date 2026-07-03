@@ -49,7 +49,7 @@ species DB_Accessor skills: [SQLSKILL] {
 		// 'select' now returns a dataframe: named, typed columns directly usable in GAML
 		dataframe t <- select(PARAMS, "SELECT * FROM registration");
 		write "Select before update: " + t.rows + " rows, columns: " + t.keys;
-		write df_pretty_print(t);
+		write pretty_print(t);
 	}
 
 	reflex select_parametric {
@@ -57,7 +57,7 @@ species DB_Accessor skills: [SQLSKILL] {
                             select: "SELECT * FROM registration WHERE age < ?;",
                             values: [26] );
 		write "Parametric select (age < 26): " + t.rows + " rows";
-		write df_pretty_print(t);
+		write pretty_print(t);
 	}
 
 	reflex update {
@@ -65,7 +65,7 @@ species DB_Accessor skills: [SQLSKILL] {
 		do executeUpdate(params: PARAMS, updateComm: "DELETE FROM registration where id=103 ");
 		dataframe t <- select(PARAMS, "SELECT * FROM registration");
 		write "Select after update:";
-		write df_pretty_print(t);
+		write pretty_print(t);
 	}
 
 	reflex drop {

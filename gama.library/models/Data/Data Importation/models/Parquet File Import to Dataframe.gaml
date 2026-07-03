@@ -9,11 +9,11 @@
 *   Key operations demonstrated:
 *     - df_load_parquet: load a .parquet file
 *     - keys: inspect schema
-*     - df_filter / df_remove_empty: clean and subset data
-*     - df_select_columns: keep only relevant columns
-*     - column_at / df_cell: access values
+*     - df_filter / remove_empty: clean and subset data
+*     - select_columns: keep only relevant columns
+*     - column_at / cell: access values
 *     - iloc: position-based sampling (first, last, arbitrary rows)
-*     - loop + df_cell: aggregate statistics manually
+*     - loop + cell: aggregate statistics manually
 *
 *   To save a dataframe to CSV, see "Save Dataframe to CSV" in Data Exportation.
 *
@@ -72,7 +72,7 @@ global {
 		write "Columns : " + (listings.keys);
 		write "";
 		write "First 5 rows (cols 0-7):";
-		write df_pretty_print(iloc(listings, range(0, 4), range(0, 7)), 5, 8, 20);
+		write pretty_print(iloc(listings, range(0, 4), range(0, 7)), 5, 8, 20);
 
 		// ===== 2. Quick positional look with iloc =====
 		write "";
@@ -84,7 +84,7 @@ global {
 		write "City at row 10: " + iloc(listings, 10, 60);
 
 		dataframe sample5 <- iloc(listings, range(0, 4), [0, 1, 60]);
-		write df_pretty_print(sample5, 5, 3, 25);
+		write pretty_print(sample5, 5, 3, 25);
 
 		// ===== 3. Single-pass aggregation over all listings =====
 		// We iterate once and fill all maps simultaneously for efficiency.
@@ -95,8 +95,8 @@ global {
 		loop i from: 0 to: total - 1 {
 
 			// — city count and revenue
-			string city    <- string(df_cell(listings, i, "city"));
-			string rev_str <- string(df_cell(listings, i, "ttm_revenue"));
+			string city    <- string(cell(listings, i, "city"));
+			string rev_str <- string(cell(listings, i, "ttm_revenue"));
 			if city != nil and city != "" {
 				listings_by_city[city] <- (listings_by_city contains_key city
 					? listings_by_city[city] : 0) + 1;
@@ -108,14 +108,14 @@ global {
 			}
 
 			// — room type
-			string rtype <- string(df_cell(listings, i, "room_type"));
+			string rtype <- string(cell(listings, i, "room_type"));
 			if rtype != nil and rtype != "" {
 				listings_by_room_type[rtype] <- (listings_by_room_type contains_key rtype
 					? listings_by_room_type[rtype] : 0) + 1;
 			}
 
 			// — rating bucket
-			string rat_str <- string(df_cell(listings, i, "rating_overall"));
+			string rat_str <- string(cell(listings, i, "rating_overall"));
 			if rat_str != nil and rat_str != "" {
 				float rat <- float(rat_str);
 				string bucket <- 
@@ -128,7 +128,7 @@ global {
 			}
 
 			// — occupancy bucket
-			string occ_str <- string(df_cell(listings, i, "ttm_occupancy"));
+			string occ_str <- string(cell(listings, i, "ttm_occupancy"));
 			if occ_str != nil and occ_str != "" {
 				float occ <- float(occ_str) * 100.0;
 				string ob <-
@@ -141,10 +141,10 @@ global {
 			}
 
 			// — price tier for Seminyak entire-home
-			string city2  <- string(df_cell(listings, i, "city"));
-			string rtype2 <- string(df_cell(listings, i, "room_type"));
+			string city2  <- string(cell(listings, i, "city"));
+			string rtype2 <- string(cell(listings, i, "room_type"));
 			if city2 = "Seminyak" and rtype2 = "entire_home" {
-				string rate_str <- string(df_cell(listings, i, "ttm_avg_rate"));
+				string rate_str <- string(cell(listings, i, "ttm_avg_rate"));
 				if rate_str != nil and rate_str != "" {
 					float rate <- float(rate_str);
 					string tier <-
@@ -202,8 +202,8 @@ global {
 		// ===== 5. Detailed look at Seminyak entire-home =====
 		write "";
 		write "===== Seminyak entire-home — detailed stats =====";
-		dataframe seminyak_entire <- df_remove_empty(
-			df_select_columns(
+		dataframe seminyak_entire <- remove_empty(
+			select_columns(
 				df_filter(df_filter(listings, "city", "Seminyak"), "room_type", "entire_home"),
 				["listing_id","listing_type","guests","bedrooms",
 				 "num_reviews","rating_overall","ttm_revenue","ttm_occupancy","ttm_avg_rate"]
@@ -212,12 +212,12 @@ global {
 		);
 
 		write "Rows : " + (seminyak_entire.rows);
-		write df_pretty_print(iloc(seminyak_entire, range(0, 4)), 5, 9, 16);
+		write pretty_print(iloc(seminyak_entire, range(0, 4)), 5, 9, 16);
 
 		// Top-rated (>= 4.9)
 		dataframe top_rated <- dataframe_with((seminyak_entire.keys), []);
 		loop i from: 0 to: (seminyak_entire.rows) - 1 {
-			string rv <- string(df_cell(seminyak_entire, i, "rating_overall"));
+			string rv <- string(cell(seminyak_entire, i, "rating_overall"));
 			if rv != nil and rv != "" and float(rv) >= 4.9 {
 				top_rated <- (top_rated + (seminyak_entire row_at i));
 			}
@@ -225,7 +225,7 @@ global {
 		write "";
 		write "Top-rated (>= 4.9) : " + (top_rated.rows) + " listings";
 		if (top_rated.rows) > 0 {
-			write df_pretty_print(iloc(top_rated, range(0, min(4, (top_rated.rows) - 1))), 5, 9, 16);
+			write pretty_print(iloc(top_rated, range(0, min(4, (top_rated.rows) - 1))), 5, 9, 16);
 		}
 
 		write "";

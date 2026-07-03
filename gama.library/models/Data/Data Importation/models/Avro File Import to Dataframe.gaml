@@ -20,7 +20,7 @@ global {
 		write "Columns        : " + employees.keys;
 		write "Number of rows : " + employees.rows;
 		write "";
-		write df_pretty_print(employees);
+		write pretty_print(employees);
 
 		// Access a specific column
 		write "";
@@ -32,17 +32,17 @@ global {
 		write "";
 		write "===== Row and cell access =====";
 		write "First row          : " + (employees row_at 0);
-		write "Department of row 3: " + df_cell(employees, 3, "department");
+		write "Department of row 3: " + cell(employees, 3, "department");
 
 		// Filter and select on the imported data
 		write "";
 		write "===== Filtering =====";
-		dataframe engineers <- df_select_columns(
+		dataframe engineers <- select_columns(
 			df_filter(employees, "department", "Engineering"),
 			["name", "city", "salary"]
 		);
 		write "Engineers (" + engineers.rows + " rows):";
-		write df_pretty_print(engineers);
+		write pretty_print(engineers);
 	}
 }
 

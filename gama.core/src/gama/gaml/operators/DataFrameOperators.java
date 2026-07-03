@@ -326,7 +326,7 @@ public class DataFrameOperators {
 	 * Returns a single cell value.
 	 */
 	@operator (
-			value = "df_cell",
+			value = "cell",
 			can_be_const = true,
 			category = { IOperatorCategory.DATAFRAME },
 			concept = { IConcept.DATAFRAME })
@@ -335,10 +335,10 @@ public class DataFrameOperators {
 			usages = { @usage (
 					value = "Get a specific cell value",
 					examples = { @example (
-							value = "unknown val <- df_cell(my_df, 0, \"name\");",
+							value = "unknown val <- cell(my_df, 0, \"name\");",
 							isExecutable = false) }) },
 			see = { "column_at", "row_at" })
-	@test ("df_cell(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 1, \"name\") = \"Bob\"")
+	@test ("cell(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 1, \"name\") = \"Bob\"")
 	public static Object dfCell(final IScope scope, final IDataFrame df, final Integer rowIndex,
 			final String columnName) {
 		if (rowIndex < 0 || rowIndex >= df.getRows())
@@ -489,7 +489,7 @@ public class DataFrameOperators {
 					examples = { @example (
 							value = "dataframe df2 <- df_filter(my_df, \"city\", \"Paris\");",
 							isExecutable = false) }) },
-			see = { "df_remove_empty", "df_select_columns" })
+			see = { "remove_empty", "select_columns" })
 	@test ("(df_filter(dataframe_with([\"name\",\"city\"], [[\"Alice\",\"Paris\"],[\"Bob\",\"Lyon\"],[\"Eve\",\"Paris\"]]), \"city\", \"Paris\")).rows = 2")
 	public static IDataFrame dfFilter(final IScope scope, final IDataFrame df, final String columnName,
 			final Object value) {
@@ -500,7 +500,7 @@ public class DataFrameOperators {
 	 * Removes rows where a column has empty or null values.
 	 */
 	@operator (
-			value = "df_remove_empty",
+			value = "remove_empty",
 			can_be_const = true,
 			type = IType.DATAFRAME,
 			category = { IOperatorCategory.DATAFRAME },
@@ -510,10 +510,10 @@ public class DataFrameOperators {
 			usages = { @usage (
 					value = "Remove rows with empty 'name' values",
 					examples = { @example (
-							value = "dataframe df2 <- df_remove_empty(my_df, \"name\");",
+							value = "dataframe df2 <- remove_empty(my_df, \"name\");",
 							isExecutable = false) }) },
-			see = { "df_filter", "df_select_columns" })
-	@test ("(df_remove_empty(dataframe_with([\"name\",\"email\"], [[\"Alice\",\"a@x\"],[\"Bob\",\"\"],[\"Charlie\",nil]]), \"email\")).rows = 1")
+			see = { "df_filter", "select_columns" })
+	@test ("(remove_empty(dataframe_with([\"name\",\"email\"], [[\"Alice\",\"a@x\"],[\"Bob\",\"\"],[\"Charlie\",nil]]), \"email\")).rows = 1")
 	public static IDataFrame dfRemoveEmpty(final IScope scope, final IDataFrame df, final String columnName) {
 		return df.removeRowsWithEmptyValues(columnName);
 	}
@@ -522,7 +522,7 @@ public class DataFrameOperators {
 	 * Selects a subset of columns.
 	 */
 	@operator (
-			value = "df_select_columns",
+			value = "select_columns",
 			can_be_const = true,
 			type = IType.DATAFRAME,
 			category = { IOperatorCategory.DATAFRAME },
@@ -532,10 +532,10 @@ public class DataFrameOperators {
 			usages = { @usage (
 					value = "Select only 'name' and 'age' columns",
 					examples = { @example (
-							value = "dataframe df2 <- df_select_columns(my_df, [\"name\", \"age\"]);",
+							value = "dataframe df2 <- select_columns(my_df, [\"name\", \"age\"]);",
 							isExecutable = false) }) },
-			see = { "df_filter", "df_add_column" })
-	@test ("(df_select_columns(dataframe_with([\"name\",\"age\",\"city\"], [[\"Alice\",30,\"Paris\"]]), [\"name\",\"city\"])).keys = [\"name\",\"city\"]")
+			see = { "df_filter", "add_column" })
+	@test ("(select_columns(dataframe_with([\"name\",\"age\",\"city\"], [[\"Alice\",30,\"Paris\"]]), [\"name\",\"city\"])).keys = [\"name\",\"city\"]")
 	public static IDataFrame dfSelectColumns(final IScope scope, final IDataFrame df, final IList<String> columns) {
 		return df.selectColumns(columns);
 	}
@@ -546,7 +546,7 @@ public class DataFrameOperators {
 	 * Adds a column with a default value.
 	 */
 	@operator (
-			value = "df_add_column",
+			value = "add_column",
 			can_be_const = true,
 			type = IType.DATAFRAME,
 			category = { IOperatorCategory.DATAFRAME },
@@ -556,11 +556,11 @@ public class DataFrameOperators {
 			usages = { @usage (
 					value = "Add a 'score' column with default value 0",
 					examples = { @example (
-							value = "dataframe df2 <- df_add_column(my_df, \"score\", 0);",
+							value = "dataframe df2 <- add_column(my_df, \"score\", 0);",
 							isExecutable = false) }) },
-			see = { "df_select_columns" })
-	@test ("(df_add_column(dataframe_with([\"name\"], [[\"Alice\"]]), \"score\", 0)).keys = [\"name\",\"score\"]")
-	@test ("df_cell(df_add_column(dataframe_with([\"name\"], [[\"Alice\"]]), \"score\", 0), 0, \"score\") = 0")
+			see = { "select_columns" })
+	@test ("(add_column(dataframe_with([\"name\"], [[\"Alice\"]]), \"score\", 0)).keys = [\"name\",\"score\"]")
+	@test ("cell(add_column(dataframe_with([\"name\"], [[\"Alice\"]]), \"score\", 0), 0, \"score\") = 0")
 	public static IDataFrame dfAddColumn(final IScope scope, final IDataFrame df, final String columnName,
 			final Object defaultValue) {
 		return df.addColumn(columnName, defaultValue);
@@ -585,7 +585,7 @@ public class DataFrameOperators {
 					examples = { @example (
 							value = "join(df_people, df_scores, \"id\")",
 							isExecutable = false) }) },
-			see = { "df_pivot" })
+			see = { "pivot" })
 	@test ("(join(dataframe_with([\"id\",\"name\"], [[1,\"Alice\"],[2,\"Bob\"],[3,\"Charlie\"]]), dataframe_with([\"id\",\"salary\"], [[1,55000],[2,48000]]), \"id\")).rows = 2")
 	public static IDataFrame join(final IScope scope, final IDataFrame df1, final IDataFrame df2,
 			final String keyColumn) {
@@ -684,7 +684,7 @@ public class DataFrameOperators {
 	 * Pivots a dataframe.
 	 */
 	@operator (
-			value = "df_pivot",
+			value = "pivot",
 			can_be_const = true,
 			type = IType.DATAFRAME,
 			category = { IOperatorCategory.DATAFRAME },
@@ -695,10 +695,10 @@ public class DataFrameOperators {
 			usages = { @usage (
 					value = "Pivot a sales dataframe",
 					examples = { @example (
-							value = "dataframe pivoted <- df_pivot(sales_df, \"product\", \"quarter\", \"revenue\");",
+							value = "dataframe pivoted <- pivot(sales_df, \"product\", \"quarter\", \"revenue\");",
 							isExecutable = false) }) },
-			see = { "df_filter", "df_select_columns" })
-	@test ("(df_pivot(dataframe_with([\"product\",\"quarter\",\"revenue\"], [[\"Widget\",\"Q1\",1000],[\"Widget\",\"Q2\",1500],[\"Gadget\",\"Q1\",800],[\"Gadget\",\"Q2\",950]]), \"product\", \"quarter\", \"revenue\")).rows = 2")
+			see = { "df_filter", "select_columns" })
+	@test ("(pivot(dataframe_with([\"product\",\"quarter\",\"revenue\"], [[\"Widget\",\"Q1\",1000],[\"Widget\",\"Q2\",1500],[\"Gadget\",\"Q1\",800],[\"Gadget\",\"Q2\",950]]), \"product\", \"quarter\", \"revenue\")).rows = 2")
 	public static IDataFrame dfPivot(final IScope scope, final IDataFrame df, final String indexColumn,
 			final String pivotColumn, final String valueColumn) {
 		return df.pivot(indexColumn, pivotColumn, valueColumn);
@@ -714,7 +714,7 @@ public class DataFrameOperators {
 	 * @return the string
 	 */
 	@operator (
-			value = "df_pretty_print",
+			value = "pretty_print",
 			can_be_const = true,
 			type = IType.STRING,
 			category = { IOperatorCategory.DATAFRAME },
@@ -741,7 +741,7 @@ public class DataFrameOperators {
 	 * @return the string
 	 */
 	@operator (
-			value = "df_pretty_print",
+			value = "pretty_print",
 			can_be_const = true,
 			type = IType.STRING,
 			category = { IOperatorCategory.DATAFRAME },
@@ -786,7 +786,7 @@ public class DataFrameOperators {
 					examples = { @example (
 							value = "list row <- iloc(my_df, -1);",
 							isExecutable = false) }) },
-			see = { "row_at", "df_cell" })
+			see = { "row_at", "cell" })
 	@test ("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 0) = [\"Alice\",30]")
 	@test ("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), -1) = [\"Bob\",25]")
 	public static IList<Object> ilocRow(final IScope scope, final IDataFrame df, final Integer rowIndex) {
@@ -809,7 +809,7 @@ public class DataFrameOperators {
 					examples = { @example (
 							value = "unknown v <- iloc(my_df, 1, 0);",
 							isExecutable = false) }) },
-			see = { "df_cell", "row_at", "column_at" })
+			see = { "cell", "row_at", "column_at" })
 	@test ("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 1, 0) = \"Bob\"")
 	@test ("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 0, 1) = 30")
 	@test ("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), -1, -1) = 25")
@@ -835,7 +835,7 @@ public class DataFrameOperators {
 					examples = { @example (
 							value = "list values <- iloc(my_df, 1, [0, 2]);",
 							isExecutable = false) }) },
-			see = { "row_at", "df_select_columns" })
+			see = { "row_at", "select_columns" })
 	@test ("iloc(dataframe_with([\"a\",\"b\",\"c\"], [[1,2,3],[4,5,6]]), 1, [0,2]) = [4,6]")
 	public static IList<Object> ilocRowCols(final IScope scope, final IDataFrame df, final Integer rowIndex,
 			final IList<Integer> colIndices) {
@@ -886,7 +886,7 @@ public class DataFrameOperators {
 							isExecutable = false) }) },
 			see = { "row_at", "df_filter" })
 	@test ("(iloc(dataframe_with([\"name\"], [[\"Alice\"],[\"Bob\"],[\"Eve\"]]), [0,2])).rows = 2")
-	@test ("df_cell(iloc(dataframe_with([\"name\"], [[\"Alice\"],[\"Bob\"],[\"Eve\"]]), [0,2]), 1, \"name\") = \"Eve\"")
+	@test ("cell(iloc(dataframe_with([\"name\"], [[\"Alice\"],[\"Bob\"],[\"Eve\"]]), [0,2]), 1, \"name\") = \"Eve\"")
 	public static IDataFrame ilocRows(final IScope scope, final IDataFrame df, final IList<Integer> rowIndices) {
 		return df.ilocRows(scope, rowIndices);
 	}
@@ -910,9 +910,9 @@ public class DataFrameOperators {
 					examples = { @example (
 							value = "dataframe sub <- iloc(my_df, [0, 2], [0, 1]);",
 							isExecutable = false) }) },
-			see = { "df_select_columns", "df_filter" })
+			see = { "select_columns", "df_filter" })
 	@test ("(iloc(dataframe_with([\"a\",\"b\",\"c\"], [[1,2,3],[4,5,6]]), [0], [0,2])).keys = [\"a\",\"c\"]")
-	@test ("df_cell(iloc(dataframe_with([\"a\",\"b\",\"c\"], [[1,2,3],[4,5,6]]), [1], [2]), 0, \"c\") = 6")
+	@test ("cell(iloc(dataframe_with([\"a\",\"b\",\"c\"], [[1,2,3],[4,5,6]]), [1], [2]), 0, \"c\") = 6")
 	public static IDataFrame iloc(final IScope scope, final IDataFrame df, final IList<Integer> rowIndices,
 			final IList<Integer> colIndices) {
 		return df.iloc(scope, rowIndices, colIndices);

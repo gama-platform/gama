@@ -9,11 +9,11 @@
 *   Operations demonstrated:
 *     - df_load_excel       : load the first sheet of an .xlsx file
 *     - keys / rows         : schema inspection
-*     - column_at / df_cell : access columns and cells
+*     - column_at / cell : access columns and cells
 *     - df_filter           : subset by store location or product category
-*     - df_select_columns   : keep only relevant columns
+*     - select_columns   : keep only relevant columns
 *     - iloc                : positional sampling
-*     - df_pretty_print     : compact display
+*     - pretty_print     : compact display
 *
 *   To save a dataframe back to Excel, see "Save to Excel" in Data Exportation.
 *
@@ -47,14 +47,14 @@ global {
 		write "Columns : " + (transactions.keys);
 		write "";
 		write "First 5 rows (all columns):";
-		write df_pretty_print(iloc(transactions, range(0, 4)), 5, 11, 18);
+		write pretty_print(iloc(transactions, range(0, 4)), 5, 11, 18);
 
 		// ===== 2. Column access =====
 		write "";
 		write "===== Spot checks =====";
 		write "First transaction_id  : " + iloc(transactions, 0,  0);
 		write "Last  transaction_date: " + iloc(transactions, -1, 1);
-		write "Cell (row 2, 'store_location'): " + df_cell(transactions, 2, "store_location");
+		write "Cell (row 2, 'store_location'): " + cell(transactions, 2, "store_location");
 
 		// ===== 3. Revenue aggregation by store =====
 		write "";
@@ -67,8 +67,8 @@ global {
 			float rev   <- 0.0;
 			int   count <- sub.rows;
 			loop i from: 0 to: count - 1 {
-				float qty   <- float(df_cell(sub, i, "transaction_qty"));
-				float price <- float(df_cell(sub, i, "unit_price"));
+				float qty   <- float(cell(sub, i, "transaction_qty"));
+				float price <- float(cell(sub, i, "unit_price"));
 				rev <- rev + qty * price;
 			}
 			rev <- round(rev * 100) / 100.0;
@@ -78,7 +78,7 @@ global {
 
 		write "";
 		write "By-store summary:";
-		write df_pretty_print(by_store, 5, 3, 20);
+		write pretty_print(by_store, 5, 3, 20);
 
 		// ===== 4. Revenue aggregation by product category =====
 		write "";
@@ -95,8 +95,8 @@ global {
 			float price_sum <- 0.0;
 			int   count     <- sub.rows;
 			loop i from: 0 to: count - 1 {
-				float qty   <- float(df_cell(sub, i, "transaction_qty"));
-				float price <- float(df_cell(sub, i, "unit_price"));
+				float qty   <- float(cell(sub, i, "transaction_qty"));
+				float price <- float(cell(sub, i, "unit_price"));
 				rev       <- rev       + qty * price;
 				price_sum <- price_sum + price;
 			}
@@ -108,7 +108,7 @@ global {
 
 		write "";
 		write "By-category summary:";
-		write df_pretty_print(by_category, 10, 4, 22);
+		write pretty_print(by_category, 10, 4, 22);
 
 		// ===== 5. Most sold product type overall =====
 		write "";
@@ -132,13 +132,13 @@ global {
 		dataframe high_value <- dataframe_with((transactions.keys), []);
 		int total <- transactions.rows;
 		loop i from: 0 to: total - 1 {
-			if float(df_cell(transactions, i, "unit_price")) >= 5.0 {
+			if float(cell(transactions, i, "unit_price")) >= 5.0 {
 				high_value <- (high_value + (transactions row_at i));
 			}
 		}
 		write "High-value transactions : " + high_value.rows;
-		write df_pretty_print(
-			df_select_columns(iloc(high_value, range(0, min(4, (high_value.rows)-1))),
+		write pretty_print(
+			select_columns(iloc(high_value, range(0, min(4, (high_value.rows)-1))),
 				["transaction_id","store_location","product_category","product_detail","unit_price"]),
 			5, 5, 22
 		);
@@ -158,8 +158,8 @@ experiment "Explore Coffee Sales" type: gui {
 		display "Revenue by Store" type: 2d {
 			chart "Revenue by Store Location" type: pie {
 				loop i from: 0 to: (by_store.rows) - 1 {
-					data string(df_cell(by_store, i, "store"))
-						value: float(df_cell(by_store, i, "revenue"));
+					data string(cell(by_store, i, "store"))
+						value: float(cell(by_store, i, "revenue"));
 				}
 			}
 		}
@@ -167,8 +167,8 @@ experiment "Explore Coffee Sales" type: gui {
 		display "Revenue by Category" type: 2d {
 			chart "Revenue by Product Category" type: histogram {
 				loop i from: 0 to: (by_category.rows) - 1 {
-					data string(df_cell(by_category, i, "category"))
-						value: float(df_cell(by_category, i, "revenue"));
+					data string(cell(by_category, i, "category"))
+						value: float(cell(by_category, i, "revenue"));
 				}
 			}
 		}
@@ -176,8 +176,8 @@ experiment "Explore Coffee Sales" type: gui {
 		display "Avg Price by Category" type: 2d {
 			chart "Average Unit Price by Product Category" type: histogram {
 				loop i from: 0 to: (by_category.rows) - 1 {
-					data string(df_cell(by_category, i, "category"))
-						value: float(df_cell(by_category, i, "avg_price"));
+					data string(cell(by_category, i, "category"))
+						value: float(cell(by_category, i, "avg_price"));
 				}
 			}
 		}
