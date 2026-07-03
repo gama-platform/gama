@@ -415,6 +415,21 @@ public abstract class SqlConnection implements AutoCloseable {
 	}
 
 	/**
+	 * Returns true if a column's declared type name denotes a geometry: any of the OGC geometry type names, or BLOB,
+	 * under which SpatiaLite stores geometries.
+	 *
+	 * @param s
+	 *            the declared SQL type name
+	 * @return true if it denotes a geometry column
+	 */
+	public static boolean isGeometryType(final String s) {
+		return BLOB.equalsIgnoreCase(s) || GEOMETRYTYPE.equalsIgnoreCase(s) || "POINT".equalsIgnoreCase(s)
+				|| "LINESTRING".equalsIgnoreCase(s) || "POLYGON".equalsIgnoreCase(s) || "MULTIPOINT".equalsIgnoreCase(s)
+				|| "MULTILINESTRING".equalsIgnoreCase(s) || "MULTIPOLYGON".equalsIgnoreCase(s)
+				|| "GEOMETRYCOLLECTION".equalsIgnoreCase(s);
+	}
+
+	/**
 	 * Gets the insert string.
 	 *
 	 * @param scope
