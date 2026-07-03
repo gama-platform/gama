@@ -10,7 +10,9 @@
 package gama.gaml.statements.save;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.Collection;
 import java.util.Set;
 
@@ -83,10 +85,13 @@ public class CSVSaver extends AbstractSaver {
 
 		// Dataframes are written directly through DFLib, which preserves column names and types.
 		// The delimiter comes from the 'separator' facet, or the CSV_SEPARATOR preference if omitted.
+		// The 'encoding' facet is honored here through a charset-aware Writer (DFLib writes UTF-8 to a File otherwise).
 		if (item.getGamlType().id() == IType.DATAFRAME) {
 			final char del = resolveDelimiter(saveOptions);
-			Csv.saver().format(CSVFormat.DEFAULT.withDelimiter(del)).save(((IDataFrame) item.value(scope)).getInner(),
-					file);
+			try (Writer w = new FileWriter(file, saveOptions.writeCharset(), false)) {
+				Csv.saver().format(CSVFormat.DEFAULT.withDelimiter(del))
+						.save(((IDataFrame) item.value(scope)).getInner(), w);
+			}
 			return;
 		}
 

@@ -11,6 +11,7 @@ package gama.gaml.statements;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.Set;
 
@@ -96,6 +97,11 @@ import gaml.compiler.expressions.ConstantExpression;
 						type = IType.STRING,
 						optional = true,
 						doc = @doc ("the single character used to separate columns when saving tabular data to CSV (e.g. \";\"). If omitted, the value of the 'CSV separator' preference is used. Only applies to CSV output.")),
+				@facet (
+						name = "encoding",
+						type = IType.STRING,
+						optional = true,
+						doc = @doc ("the name of the character encoding to use when writing the file (e.g. \"UTF-8\", \"ISO-8859-1\"). Only taken into account when saving to CSV, or when saving a dataframe to JSON; ignored for every other data type and format.")),
 				@facet (
 						name = IKeyword.TO,
 						type = IType.STRING,
@@ -286,6 +292,20 @@ public class SaveStatement extends AbstractStatementSequence {
 				}
 			}
 
+			final IExpression encoding = desc.getFacetExpr("encoding");
+			if (encoding != null) {
+				final String formatId = format == null ? ext : format.literalValue();
+				// Honored by the CSV saver (any data) and by the dataframe->JSON path. Warn when we can statically
+				// determine the encoding will be ignored, but stay silent when the format cannot be resolved
+				// (dynamic 'format:'/'to:' expression) to avoid false positives.
+				final boolean honored = formatId != null && ("csv".equalsIgnoreCase(formatId)
+						|| "json".equalsIgnoreCase(formatId) && dataType.id() == IType.DATAFRAME);
+				if (formatId != null && !honored) {
+					desc.warning("The encoding facet is only used when saving to CSV, or a dataframe to JSON",
+							IGamlIssue.WRONG_TYPE, "encoding");
+				}
+			}
+
 			// Starting from here we validate the attributes, other validations must be done before
 			switch (att) {
 				case null -> {
@@ -385,6 +405,9 @@ public class SaveStatement extends AbstractStatementSequence {
 	/** The CSV separator facet. */
 	private final IExpression separatorFacet;
 
+	/** The encoding facet (only used when saving a dataframe to JSON). */
+	private final IExpression encodingFacet;
+
 	/**
 	 * Instantiates a new save statement.
 	 *
@@ -401,6 +424,7 @@ public class SaveStatement extends AbstractStatementSequence {
 		bufferingStrategy = getFacet(IKeyword.BUFFERING);
 		noDataFacet = getFacet(IKeyword.NO_DATA);
 		separatorFacet = getFacet("separator");
+		encodingFacet = getFacet("encoding");
 	}
 
 	/**
@@ -520,6 +544,14 @@ public class SaveStatement extends AbstractStatementSequence {
 						new SaveOptions(code, addHeader, type, attributesFacet, strategy, rewrite, getNoDataValue(scope));
 				if (separatorFacet != null) {
 					saveOptions = saveOptions.withSeparator(Cast.asString(scope, separatorFacet.value(scope)));
+				}
+				if (encodingFacet != null) {
+					final String enc = Cast.asString(scope, encodingFacet.value(scope));
+					try {
+						saveOptions = saveOptions.withCharset(Charset.forName(enc));
+					} catch (final IllegalArgumentException e) {
+						throw GamaRuntimeException.error("Unknown encoding: " + enc, scope);
+					}
 				}
 				delegate.save(scope, item, fileToSave, saveOptions);
 				return Cast.asString(scope, file.value(scope));
