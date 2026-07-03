@@ -20,10 +20,12 @@ import java.util.function.Function;
 import org.dflib.DataFrame;
 import org.dflib.Exp;
 import org.dflib.Printers;
+import org.dflib.Series;
 import org.dflib.print.Printer;
 
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.GamaType;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
@@ -75,36 +77,39 @@ public class GamaDataFrame implements IDataFrame, IContainer<String, IList<Objec
 	 */
 	GamaDataFrame(final DataFrame inner) {
 		this.inner = inner;
-		
-		// processing the column types and the common type
+
+		// Process the column types and the common (content) type once, at creation (the class is immutable).
 		columnTypes = GamaListFactory.create(Types.TYPE);
 		contentType = Types.NO_TYPE;
 		IType common = null;
 		for (final String col : inner.getColumnsIndex()) {
-			columnTypes.add(Types.get(inner.getColumn(col).getNominalType()));
-			if (common == null) {
-				common = columnTypes.getLast();
-			}
-			else {
-				common = common.findCommonSupertypeWith(columnTypes.getLast());
-			}
+			final IType colType = columnType(inner.getColumn(col));
+			columnTypes.add(colType);
+			common = common == null ? colType : common.findCommonSupertypeWith(colType);
 		}
-		if (common != null) {
-			contentType = common;
-		}
+		if (common != null) { contentType = common; }
 	}
 
-	// ========================= Private method for internal state updates
-
-	private IType processContentType() {
-		var types = getColumnTypes();
-		if (types.size() == 0) return Types.NO_TYPE;
-		IType common = types.getFirst();
-		for (var t : types.subList(1, types.size()-1)) { common = common.findCommonSupertypeWith(t); }
-		return common;
+	/**
+	 * Determines the GAML type of a DFLib column. The nominal (declared) type is used first; when it is uninformative
+	 * (typically an {@code Object} series holding GAMA values such as points, lists or maps, which resolve to
+	 * {@code unknown}), the type is inferred from the first non-null cell via {@link GamaType#of(Object)}.
+	 *
+	 * @param series
+	 *            the DFLib column
+	 * @return the GAML type of the column, or {@link Types#NO_TYPE} when it cannot be determined
+	 */
+	private static IType columnType(final Series<?> series) {
+		final IType nominal = Types.get(series.getNominalType());
+		if (nominal != null && nominal != Types.NO_TYPE) return nominal;
+		// Fall back to the runtime type of the actual content (handles points, lists, maps, etc.).
+		for (int i = 0; i < series.size(); i++) {
+			final Object v = series.get(i);
+			if (v != null) return GamaType.of(v);
+		}
+		return Types.NO_TYPE;
 	}
-	
-	
+
 	// ========================= IDataFrame implementation =========================
 
 	@Override
