@@ -9,7 +9,7 @@
 *   Operations demonstrated:
 *     - df_load_excel       : load the first sheet of an .xlsx file
 *     - keys / rows         : schema inspection
-*     - df_column / df_cell : access columns and cells
+*     - column_at / df_cell : access columns and cells
 *     - df_filter           : subset by store location or product category
 *     - df_select_columns   : keep only relevant columns
 *     - iloc                : positional sampling
@@ -73,7 +73,7 @@ global {
 			}
 			rev <- round(rev * 100) / 100.0;
 			write "  " + store + " : $" + rev + "  (" + count + " transactions)";
-			by_store <- df_add_row(by_store, [store, rev, count]);
+			by_store <- (by_store + [store, rev, count]);
 		}
 
 		write "";
@@ -103,7 +103,7 @@ global {
 			rev           <- round(rev * 100)           / 100.0;
 			float avg_p   <- count > 0 ? round(price_sum / count * 100) / 100.0 : 0.0;
 			write "  " + cat + " : $" + rev + "  avg $" + avg_p + "  (" + count + " transactions)";
-			by_category <- df_add_row(by_category, [cat, rev, avg_p, count]);
+			by_category <- (by_category + [cat, rev, avg_p, count]);
 		}
 
 		write "";
@@ -114,7 +114,7 @@ global {
 		write "";
 		write "===== Top 5 product types by transaction count =====";
 
-		list<string> all_types  <- df_column(transactions, "product_type");
+		list<string> all_types  <- (transactions column_at "product_type");
 		map<string,int> type_counts <- map<string,int>();
 		loop t over: all_types {
 			if t != nil { type_counts[t] <- (type_counts contains_key t ? type_counts[t] : 0) + 1; }
@@ -133,7 +133,7 @@ global {
 		int total <- transactions.rows;
 		loop i from: 0 to: total - 1 {
 			if float(df_cell(transactions, i, "unit_price")) >= 5.0 {
-				high_value <- df_add_row(high_value, df_row(transactions, i));
+				high_value <- (high_value + (transactions row_at i));
 			}
 		}
 		write "High-value transactions : " + high_value.rows;

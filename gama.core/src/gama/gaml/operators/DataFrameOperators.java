@@ -317,55 +317,10 @@ public class DataFrameOperators {
 		return s == null || s.isEmpty() ? null : s;
 	}
 
-	// ========================= Column/Row access operators =========================
-
-	/**
-	 * Returns the values of a column as a list.
-	 */
-	@operator (
-			value = "df_column",
-			can_be_const = true,
-			content_type = IType.NONE,
-			type = IType.LIST,
-			category = { IOperatorCategory.DATAFRAME },
-			concept = { IConcept.DATAFRAME })
-	@doc (
-			value = "Returns all values of the given column as a list.",
-			usages = { @usage (
-					value = "Get all values from the 'name' column",
-					examples = { @example (
-							value = "list names <- df_column(my_df, \"name\");",
-							isExecutable = false) }) },
-			see = { "df_add_column" })
-	@test ("df_column(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), \"name\") = [\"Alice\",\"Bob\"]")
-	public static IList dfColumn(final IScope scope, final IDataFrame df, final String columnName) {
-		return df.getColumnValues(columnName);
-	}
-
-	/**
-	 * Returns the values of a row as a list.
-	 */
-	@operator (
-			value = "df_row",
-			can_be_const = true,
-			content_type = IType.NONE,
-			type = IType.LIST,
-			category = { IOperatorCategory.DATAFRAME },
-			concept = { IConcept.DATAFRAME })
-	@doc (
-			value = "Returns all values of the row at the given index as a list.",
-			usages = { @usage (
-					value = "Get all values from the first row",
-					examples = { @example (
-							value = "list row_data <- df_row(my_df, 0);",
-							isExecutable = false) }) },
-			see = { "df_column", "df_cell" })
-	@test ("df_row(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 0) = [\"Alice\",30]")
-	public static IList dfRow(final IScope scope, final IDataFrame df, final Integer rowIndex) {
-		if (rowIndex < 0 || rowIndex >= df.getRows())
-			throw GamaRuntimeException.error("Row index out of bounds: " + rowIndex, scope);
-		return df.getRowValues(rowIndex);
-	}
+	// ========================= Cell access operator =========================
+	//
+	// Column and row access is provided by the matrix-style operators 'column_at' and 'row_at'
+	// (see the "Matrix-style access" section below).
 
 	/**
 	 * Returns a single cell value.
@@ -382,7 +337,7 @@ public class DataFrameOperators {
 					examples = { @example (
 							value = "unknown val <- df_cell(my_df, 0, \"name\");",
 							isExecutable = false) }) },
-			see = { "df_column", "df_row" })
+			see = { "column_at", "row_at" })
 	@test ("df_cell(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 1, \"name\") = \"Bob\"")
 	public static Object dfCell(final IScope scope, final IDataFrame df, final Integer rowIndex,
 			final String columnName) {
@@ -603,84 +558,12 @@ public class DataFrameOperators {
 					examples = { @example (
 							value = "dataframe df2 <- df_add_column(my_df, \"score\", 0);",
 							isExecutable = false) }) },
-			see = { "df_add_row", "df_select_columns" })
+			see = { "df_select_columns" })
 	@test ("(df_add_column(dataframe_with([\"name\"], [[\"Alice\"]]), \"score\", 0)).keys = [\"name\",\"score\"]")
 	@test ("df_cell(df_add_column(dataframe_with([\"name\"], [[\"Alice\"]]), \"score\", 0), 0, \"score\") = 0")
 	public static IDataFrame dfAddColumn(final IScope scope, final IDataFrame df, final String columnName,
 			final Object defaultValue) {
 		return df.addColumn(columnName, defaultValue);
-	}
-
-	/**
-	 * Adds a row to a dataframe.
-	 */
-	@operator (
-			value = "df_add_row",
-			can_be_const = true,
-			type = IType.DATAFRAME,
-			category = { IOperatorCategory.DATAFRAME },
-			concept = { IConcept.DATAFRAME })
-	@doc (
-			value = "Returns a new dataframe with an additional row. The values list must match the number of columns.",
-			usages = { @usage (
-					value = "Add a new row",
-					examples = { @example (
-							value = "dataframe df2 <- df_add_row(my_df, [\"Charlie\", 35, \"Marseille\"]);",
-							isExecutable = false) }) },
-			see = { "df_add_column", "df_merge" })
-	@test ("(df_add_row(dataframe_with([\"name\",\"age\"], [[\"Alice\",30]]), [\"Bob\",25])).rows = 2")
-	@test ("df_cell(df_add_row(dataframe_with([\"name\",\"age\"], [[\"Alice\",30]]), [\"Bob\",25]), 1, \"name\") = \"Bob\"")
-	public static IDataFrame dfAddRow(final IScope scope, final IDataFrame df, final IList<Object> values) {
-		return df.addRow(values);
-	}
-
-	// ========================= Combining operators =========================
-
-	/**
-	 * Vertically concatenates two dataframes.
-	 */
-	@operator (
-			value = "df_merge",
-			can_be_const = true,
-			type = IType.DATAFRAME,
-			category = { IOperatorCategory.DATAFRAME },
-			concept = { IConcept.DATAFRAME })
-	@doc (
-			value = "Vertically concatenates two dataframes (appends rows of the second to the first). "
-					+ "Both dataframes must have the same column structure.",
-			usages = { @usage (
-					value = "Merge two dataframes vertically",
-					examples = { @example (
-							value = "dataframe merged <- df_merge(df1, df2);",
-							isExecutable = false) }) },
-			see = { "df_join", "df_add_row" })
-	@test ("(df_merge(dataframe_with([\"sensor\",\"value\"], [[\"temp\",22.5]]), dataframe_with([\"sensor\",\"value\"], [[\"temp\",23.1],[\"humidity\",60.0]]))).rows = 3")
-	public static IDataFrame dfMerge(final IScope scope, final IDataFrame df1, final IDataFrame df2) {
-		return df1.mergeWith(df2);
-	}
-
-	/**
-	 * Inner joins two dataframes on a common column.
-	 */
-	@operator (
-			value = "df_join",
-			can_be_const = true,
-			type = IType.DATAFRAME,
-			category = { IOperatorCategory.DATAFRAME },
-			concept = { IConcept.DATAFRAME })
-	@doc (
-			value = "Performs an inner join of two dataframes on a common column. "
-					+ "Only rows with matching values in both dataframes are retained.",
-			usages = { @usage (
-					value = "Join two dataframes on the 'id' column",
-					examples = { @example (
-							value = "dataframe joined <- df_join(df_people, df_scores, \"id\");",
-							isExecutable = false) }) },
-			see = { "df_merge" })
-	@test ("(df_join(dataframe_with([\"id\",\"name\"], [[1,\"Alice\"],[2,\"Bob\"],[3,\"Charlie\"]]), dataframe_with([\"id\",\"salary\"], [[1,55000],[2,48000]]), \"id\")).rows = 2")
-	public static IDataFrame dfJoin(final IScope scope, final IDataFrame df1, final IDataFrame df2,
-			final String columnName) {
-		return df1.joinOnCommonCol(df2, columnName);
 	}
 
 	// ========================= Join (merged operator) =========================
@@ -702,7 +585,7 @@ public class DataFrameOperators {
 					examples = { @example (
 							value = "join(df_people, df_scores, \"id\")",
 							isExecutable = false) }) },
-			see = { "df_merge" })
+			see = { "df_pivot" })
 	@test ("(join(dataframe_with([\"id\",\"name\"], [[1,\"Alice\"],[2,\"Bob\"],[3,\"Charlie\"]]), dataframe_with([\"id\",\"salary\"], [[1,55000],[2,48000]]), \"id\")).rows = 2")
 	public static IDataFrame join(final IScope scope, final IDataFrame df1, final IDataFrame df2,
 			final String keyColumn) {
@@ -903,7 +786,7 @@ public class DataFrameOperators {
 					examples = { @example (
 							value = "list row <- iloc(my_df, -1);",
 							isExecutable = false) }) },
-			see = { "df_row", "df_cell" })
+			see = { "row_at", "df_cell" })
 	@test ("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 0) = [\"Alice\",30]")
 	@test ("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), -1) = [\"Bob\",25]")
 	public static IList<Object> ilocRow(final IScope scope, final IDataFrame df, final Integer rowIndex) {
@@ -926,7 +809,7 @@ public class DataFrameOperators {
 					examples = { @example (
 							value = "unknown v <- iloc(my_df, 1, 0);",
 							isExecutable = false) }) },
-			see = { "df_cell", "df_row", "df_column" })
+			see = { "df_cell", "row_at", "column_at" })
 	@test ("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 1, 0) = \"Bob\"")
 	@test ("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 0, 1) = 30")
 	@test ("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), -1, -1) = 25")
@@ -952,7 +835,7 @@ public class DataFrameOperators {
 					examples = { @example (
 							value = "list values <- iloc(my_df, 1, [0, 2]);",
 							isExecutable = false) }) },
-			see = { "df_row", "df_select_columns" })
+			see = { "row_at", "df_select_columns" })
 	@test ("iloc(dataframe_with([\"a\",\"b\",\"c\"], [[1,2,3],[4,5,6]]), 1, [0,2]) = [4,6]")
 	public static IList<Object> ilocRowCols(final IScope scope, final IDataFrame df, final Integer rowIndex,
 			final IList<Integer> colIndices) {
@@ -977,7 +860,7 @@ public class DataFrameOperators {
 					examples = { @example (
 							value = "list values <- iloc(my_df, [0, 2], 1);",
 							isExecutable = false) }) },
-			see = { "df_column", "df_row" })
+			see = { "column_at", "row_at" })
 	@test ("iloc(dataframe_with([\"a\",\"b\",\"c\"], [[1,2,3],[4,5,6],[7,8,9]]), [0,2], 1) = [2,8]")
 	public static IList<Object> ilocRowsCol(final IScope scope, final IDataFrame df, final IList<Integer> rowIndices,
 			final Integer colIndex) {
@@ -1001,7 +884,7 @@ public class DataFrameOperators {
 					examples = { @example (
 							value = "dataframe sub <- iloc(my_df, [0, 2]);",
 							isExecutable = false) }) },
-			see = { "df_row", "df_filter" })
+			see = { "row_at", "df_filter" })
 	@test ("(iloc(dataframe_with([\"name\"], [[\"Alice\"],[\"Bob\"],[\"Eve\"]]), [0,2])).rows = 2")
 	@test ("df_cell(iloc(dataframe_with([\"name\"], [[\"Alice\"],[\"Bob\"],[\"Eve\"]]), [0,2]), 1, \"name\") = \"Eve\"")
 	public static IDataFrame ilocRows(final IScope scope, final IDataFrame df, final IList<Integer> rowIndices) {

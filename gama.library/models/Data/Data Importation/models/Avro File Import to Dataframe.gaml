@@ -25,13 +25,13 @@ global {
 		// Access a specific column
 		write "";
 		write "===== Column access =====";
-		write "All names    : " + df_column(employees, "name");
-		write "All salaries : " + df_column(employees, "salary");
+		write "All names    : " + (employees column_at "name");
+		write "All salaries : " + (employees column_at "salary");
 
 		// Access a specific row and cell
 		write "";
 		write "===== Row and cell access =====";
-		write "First row          : " + df_row(employees, 0);
+		write "First row          : " + (employees row_at 0);
 		write "Department of row 3: " + df_cell(employees, 3, "department");
 
 		// Filter and select on the imported data

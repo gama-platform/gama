@@ -75,8 +75,8 @@ species accessing_dataframe_elements {
 		write "";
 		write df_pretty_print(sensors);
 		// Column-, row- and cell-based access by name/index.
-		write sample(df_column(sensors, "sensor"));   // a whole column as a list
-		write sample(df_row(sensors, 0));              // a whole row as a list
+		write sample(sensors column_at "sensor");   // a whole column as a list
+		write sample(sensors row_at 0);              // a whole row as a list
 		write sample(df_cell(sensors, 1, "location")); // a single cell (row 1, column "location")
 
 		// iloc provides positional (integer) indexing, mirroring pandas' DataFrame.iloc.
@@ -127,15 +127,15 @@ species combining_dataframes {
 		write sample(with_gaps.rows);
 		write sample(df_remove_empty(with_gaps, "email").rows);
 
-		// df_merge concatenates two dataframes vertically (they must share the same columns).
+		// '+' concatenates two dataframes vertically (they must share the same columns).
 		dataframe batch1 <- dataframe_with(["sensor", "value"], [["temp", 22.5], ["humidity", 60.0]]);
 		dataframe batch2 <- dataframe_with(["sensor", "value"], [["temp", 23.1], ["pressure", 1013.2]]);
-		write df_pretty_print(df_merge(batch1, batch2));
+		write df_pretty_print(batch1 + batch2);
 
-		// df_join performs an inner join on a common column.
+		// 'join' performs an inner join on a common key column.
 		dataframe people   <- dataframe_with(["id", "name"],   [[1, "Alice"], [2, "Bob"], [3, "Charlie"]]);
 		dataframe salaries <- dataframe_with(["id", "salary"], [[1, 55000],   [2, 48000]]);
-		write df_pretty_print(df_join(people, salaries, "id")); // Charlie dropped: no salary record
+		write df_pretty_print(join(people, salaries, "id")); // Charlie dropped: no salary record
 
 		// df_pivot reshapes long data into a wide table (rows / columns / values).
 		dataframe sales <- dataframe_with(
@@ -164,8 +164,8 @@ species modifying_dataframes {
 		// df_add_column returns a copy with one extra column (same value for every row).
 		dataframe with_status <- df_add_column(students, "status", "enrolled");
 		write sample(with_status.keys);
-		// df_add_row returns a copy with one extra row.
-		dataframe with_frank <- df_add_row(students, ["Frank", 25]);
+		// '+' with a row (list of values) returns a copy with one extra row.
+		dataframe with_frank <- (students + ["Frank", 25]);
 		write sample(with_frank.rows);
 
 		// The original is unchanged by either operation.
@@ -197,8 +197,8 @@ species looping_on_dataframes {
 		}
 
 		// Functional style: pull a column out as a list and use the usual list operators.
-		write sample(sum(list<int>(df_column(sales, "revenue"))));
-		write sample(max(list<int>(df_column(sales, "revenue"))));
+		write sample(sum(list<int>(sales column_at "revenue")));
+		write sample(max(list<int>(sales column_at "revenue")));
 	}
 }
 

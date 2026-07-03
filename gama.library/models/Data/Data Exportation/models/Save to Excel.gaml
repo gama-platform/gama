@@ -29,7 +29,7 @@ global {
 		dataframe stats <- dataframe_with(["id", "average location", "average size"], bug collect ([each.index ,mean(each.past_locations), mean(each.past_sizes)]));
 
 		// Inserting global averages at the end
-		stats <- df_add_row(stats, ['Global', mean(list<point>(df_column(stats, "average location"))), mean(df_column(stats, "average size"))]);
+		stats <- (stats + ['Global', mean(list<point>(stats column_at "average location")), mean(stats column_at "average size")]);
 
 		// A map of dataframes is saved as a multi-sheet workbook (keys become sheet names)
 		save map("Bugs"::bugs, "Stats"::stats) to: stats_path format: "xlsx";

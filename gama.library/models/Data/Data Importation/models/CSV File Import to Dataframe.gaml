@@ -22,11 +22,11 @@ global {
 		write "";
 
 		// Access a specific column
-		list sepal_lengths <- df_column(iris_data, "sepallength");
+		list sepal_lengths <- (iris_data column_at "sepallength");
 		write "First 5 sepal lengths: " + copy_between(sepal_lengths, 0, 5);
 
 		// Access a specific row
-		list first_row <- df_row(iris_data, 0);
+		list first_row <- (iris_data row_at 0);
 		write "First row: " + first_row;
 
 		// Access a specific cell

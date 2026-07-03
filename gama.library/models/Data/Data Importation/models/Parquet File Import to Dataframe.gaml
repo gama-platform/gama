@@ -11,7 +11,7 @@
 *     - keys: inspect schema
 *     - df_filter / df_remove_empty: clean and subset data
 *     - df_select_columns: keep only relevant columns
-*     - df_column / df_cell: access values
+*     - column_at / df_cell: access values
 *     - iloc: position-based sampling (first, last, arbitrary rows)
 *     - loop + df_cell: aggregate statistics manually
 *
@@ -219,7 +219,7 @@ global {
 		loop i from: 0 to: (seminyak_entire.rows) - 1 {
 			string rv <- string(df_cell(seminyak_entire, i, "rating_overall"));
 			if rv != nil and rv != "" and float(rv) >= 4.9 {
-				top_rated <- df_add_row(top_rated, df_row(seminyak_entire, i));
+				top_rated <- (top_rated + (seminyak_entire row_at i));
 			}
 		}
 		write "";
