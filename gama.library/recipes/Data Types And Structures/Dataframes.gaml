@@ -196,6 +196,15 @@ species looping_on_dataframes {
 			write "  " + row[0] + " = " + row[1];
 		}
 
+		// A dataframe can also be iterated directly: each iteration yields one ROW, exposed as a
+		// map keyed by column name (Model R). This makes the usual container iterators available.
+		loop row over: sales {
+			write "  " + map(row)["product"] + " = " + map(row)["revenue"];
+		}
+		// 'where' / 'collect' work on the rows just like on any container.
+		write sample(sales where (int(map(each)["revenue"]) > 900));
+		write sample(sales collect (map(each)["product"]));
+
 		// Functional style: pull a column out as a list and use the usual list operators.
 		write sample(sum(list<int>(sales column_at "revenue")));
 		write sample(max(list<int>(sales column_at "revenue")));

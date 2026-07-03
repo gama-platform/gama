@@ -447,7 +447,11 @@ public class DataFrameOperators {
 			see = { "columns_list", "row_at" })
 	@test ("rows_list(dataframe_with([\"a\",\"b\"], [[1,2],[3,4]])) = [[1,2],[3,4]]")
 	public static IList rowsList(final IScope scope, final IDataFrame df) {
-		return df.listValue(scope, null, false);
+		// Explicitly build a list of rows-as-lists (row values), independent of the dataframe's iteration
+		// element type, which under Model R is a row-map rather than a row-list.
+		final IList result = GamaListFactory.create(Types.LIST);
+		for (int i = 0; i < df.getRows(); i++) { result.add(df.getRowValues(i)); }
+		return result;
 	}
 
 	/**

@@ -55,7 +55,7 @@ import gama.api.utils.json.IJsonValue;
  *
  * @author GAMA Team
  */
-public class GamaDataFrame implements IDataFrame, IContainer<String, IList<Object>>, IFieldMatrixProvider {
+public class GamaDataFrame implements IDataFrame, IContainer<String, Object>, IFieldMatrixProvider {
 
 	/** The underlying DFLib DataFrame. */
 	private final DataFrame inner;
