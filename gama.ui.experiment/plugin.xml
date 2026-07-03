@@ -234,6 +234,9 @@
                      <reference
                            definitionId="isSimulationExisting">
                      </reference>
+                     <not>
+                     <systemTest property="simulation_only" value="true"/>
+                     </not>
                   </and>
                </visibleWhen>
             </command>
@@ -448,11 +451,16 @@
                   tooltip="Open modeling perspective">
                <visibleWhen
                      checkEnabled="false">
-                  <not>
-                     <reference
-                           definitionId="isInModelingPerspective">
-                     </reference>
-                  </not>
+                  <and>
+                        <not>
+                        <reference
+                              definitionId="isInModelingPerspective">
+                        </reference>
+                        </not>
+                        <not>
+                              <systemTest property="simulation_only" value="true"/>
+                        </not>
+                  </and>
                </visibleWhen>
             </command>
             <command
@@ -523,11 +531,16 @@
                   tooltip="Open modeling perspective">
                <visibleWhen
                      checkEnabled="false">
-                  <not>
-                     <reference
-                           definitionId="isInModelingPerspective">
-                     </reference>
-                  </not>
+                  <and>
+                        <not>
+                              <systemTest property="simulation_only" value="true"/>
+                        </not>
+                        <not>
+                              <reference
+                                    definitionId="isInModelingPerspective">
+                              </reference>
+                        </not>
+                  </and>
                </visibleWhen>
             </command>
             <command
@@ -687,6 +700,9 @@
                      <reference
                            definitionId="isSimulationExisting">
                      </reference>
+                     <not>
+                     <systemTest property="simulation_only" value="true"/>
+                     </not>
                   </and>
                </visibleWhen>
             </command>
