@@ -149,7 +149,6 @@
 		<module>../gama.extension.image</module>
 		<module>../gama.extension.traffic</module>
 		<module>../gama.extension.network</module>
-		<module>../gama.extension.mcp</module>
 		<module>../gama.extension.physics</module>
 		<module>../gama.extension.database</module>
 		<module>../gama.extension.serialize</module>
@@ -167,7 +166,6 @@
 		<module>../gama.ui.display.opengl</module>
 		<module>../gama.ui.display.opengl4</module>
 		<module>../gama.ui.display.java2d</module>
-		<module>../gama.ui.display.webrtc</module>
 
 		<!--
 			Runtimes modules
