@@ -383,6 +383,21 @@ public interface IDataFrame extends IContainer.Addressable<String, IList<Object>
 	IDataFrame joinOnCommonCol(IDataFrame df2, String columnName);
 
 	/**
+	 * Joins this dataframe with another one on one or several key columns, using an explicit join type.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param other
+	 *            the dataframe to join with
+	 * @param keyColumns
+	 *            the common key column(s) to join on (must exist in both dataframes)
+	 * @param joinType
+	 *            one of "inner", "left", "right", "full" (case-insensitive); null defaults to "inner"
+	 * @return the joined dataframe
+	 */
+	IDataFrame join(IScope scope, IDataFrame other, IList<String> keyColumns, String joinType);
+
+	/**
 	 * @param columnName
 	 * @return
 	 */

@@ -278,6 +278,40 @@ public class GamaDataFrame implements IDataFrame, IContainer<String, IList<Objec
 	}
 
 	/**
+	 * Joins this dataframe with another on one or several key columns, with an explicit join type.
+	 *
+	 * <p>
+	 * A single key column uses DFLib's {@code on(String)}; several key columns are combined into a
+	 * {@link org.dflib.Hasher} (same-named columns on both sides).
+	 * </p>
+	 */
+	@Override
+	public IDataFrame join(final IScope scope, final IDataFrame other, final IList<String> keyColumns,
+			final String joinType) {
+		if (keyColumns == null || keyColumns.isEmpty())
+			throw GamaRuntimeException.error("A join requires at least one key column", scope);
+		final DataFrame right = other.getInner();
+		final String jt = joinType == null ? "inner" : joinType.trim().toLowerCase();
+		final org.dflib.join.Join join = switch (jt) {
+			case "inner" -> getInner().innerJoin(right);
+			case "left" -> getInner().leftJoin(right);
+			case "right" -> getInner().rightJoin(right);
+			case "full", "outer", "full_outer" -> getInner().fullJoin(right);
+			default -> throw GamaRuntimeException
+					.error("Unknown join type '" + joinType + "'. Expected: inner, left, right or full.", scope);
+		};
+		final org.dflib.join.Join configured;
+		if (keyColumns.size() == 1) {
+			configured = join.on(keyColumns.get(0));
+		} else {
+			org.dflib.Hasher hasher = org.dflib.Hasher.of(keyColumns.get(0));
+			for (int i = 1; i < keyColumns.size(); i++) { hasher = hasher.and(keyColumns.get(i)); }
+			configured = join.on(hasher);
+		}
+		return new GamaDataFrame(configured.select());
+	}
+
+	/**
 	 * Removes rows where the specified column has empty or null values.
 	 *
 	 * @param df

@@ -17,6 +17,7 @@ import gama.annotations.no_test;
 import gama.annotations.operator;
 import gama.annotations.test;
 import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.api.exceptions.GamaRuntimeException;
@@ -680,6 +681,118 @@ public class DataFrameOperators {
 	public static IDataFrame dfJoin(final IScope scope, final IDataFrame df1, final IDataFrame df2,
 			final String columnName) {
 		return df1.joinOnCommonCol(df2, columnName);
+	}
+
+	// ========================= Join (merged operator) =========================
+
+	/**
+	 * Inner-joins two dataframes on a single common key column.
+	 */
+	@operator (
+			value = "join",
+			can_be_const = true,
+			type = IType.DATAFRAME,
+			category = { IOperatorCategory.DATAFRAME },
+			concept = { IConcept.DATAFRAME })
+	@doc (
+			value = "Inner-joins two dataframes on the given common key column: only the rows whose key matches in "
+					+ "both dataframes are kept.",
+			usages = { @usage (
+					value = "Join two dataframes on the 'id' column",
+					examples = { @example (
+							value = "join(df_people, df_scores, \"id\")",
+							isExecutable = false) }) },
+			see = { "df_merge" })
+	@test ("(join(dataframe_with([\"id\",\"name\"], [[1,\"Alice\"],[2,\"Bob\"],[3,\"Charlie\"]]), dataframe_with([\"id\",\"salary\"], [[1,55000],[2,48000]]), \"id\")).rows = 2")
+	public static IDataFrame join(final IScope scope, final IDataFrame df1, final IDataFrame df2,
+			final String keyColumn) {
+		final IList<String> cols = GamaListFactory.create(Types.STRING);
+		cols.add(keyColumn);
+		return df1.join(scope, df2, cols, "inner");
+	}
+
+	/**
+	 * Inner-joins two dataframes on several common key columns.
+	 */
+	@operator (
+			value = "join",
+			can_be_const = true,
+			type = IType.DATAFRAME,
+			category = { IOperatorCategory.DATAFRAME },
+			concept = { IConcept.DATAFRAME })
+	@doc (
+			value = "Inner-joins two dataframes on the given list of common key columns.",
+			usages = { @usage (
+					value = "Join two dataframes on two key columns",
+					examples = { @example (
+							value = "join(df1, df2, [\"country\", \"year\"])",
+							isExecutable = false) }) },
+			see = { "join" })
+	@test ("(join(dataframe_with([\"id\",\"name\"], [[1,\"Alice\"],[2,\"Bob\"]]), dataframe_with([\"id\",\"salary\"], [[1,55000],[2,48000]]), [\"id\"])).rows = 2")
+	public static IDataFrame join(final IScope scope, final IDataFrame df1, final IDataFrame df2,
+			final IList<String> keyColumns) {
+		return df1.join(scope, df2, keyColumns, "inner");
+	}
+
+	/**
+	 * Joins two dataframes on several key columns using an explicit join type.
+	 */
+	@operator (
+			value = "join",
+			can_be_const = true,
+			type = IType.DATAFRAME,
+			category = { IOperatorCategory.DATAFRAME },
+			concept = { IConcept.DATAFRAME })
+	@doc (
+			value = "Joins two dataframes on the given key columns using an explicit join type: \"inner\" (default), "
+					+ "\"left\", \"right\" or \"full\".",
+			usages = { @usage (
+					value = "Left-join two dataframes on 'id' (keeps every row of the left dataframe)",
+					examples = { @example (
+							value = "join(df1, df2, [\"id\"], \"left\")",
+							isExecutable = false) }) },
+			see = { "join" })
+	@test ("(join(dataframe_with([\"id\",\"name\"], [[1,\"Alice\"],[2,\"Bob\"],[3,\"Charlie\"]]), dataframe_with([\"id\",\"salary\"], [[1,55000],[2,48000]]), [\"id\"], \"left\")).rows = 3")
+	public static IDataFrame join(final IScope scope, final IDataFrame df1, final IDataFrame df2,
+			final IList<String> keyColumns, final String joinType) {
+		return df1.join(scope, df2, keyColumns, joinType);
+	}
+
+	// ========================= Concatenation via '+' (merged operator) =========================
+
+	/**
+	 * Vertically concatenates two dataframes with the '+' operator.
+	 */
+	@operator (
+			value = IKeyword.PLUS,
+			can_be_const = true,
+			type = IType.DATAFRAME,
+			category = { IOperatorCategory.DATAFRAME },
+			concept = { IConcept.DATAFRAME })
+	@doc (
+			value = "Vertically concatenates two dataframes (appends the rows of the second to the first). "
+					+ "Both dataframes must share the same column structure.",
+			see = { "join" })
+	@test ("(dataframe_with([\"a\",\"b\"], [[1,2]]) + dataframe_with([\"a\",\"b\"], [[3,4],[5,6]])).rows = 3")
+	public static IDataFrame plus(final IScope scope, final IDataFrame df1, final IDataFrame df2) {
+		return df1.mergeWith(df2);
+	}
+
+	/**
+	 * Appends a single row (given as a list of values) to a dataframe with the '+' operator.
+	 */
+	@operator (
+			value = IKeyword.PLUS,
+			can_be_const = true,
+			type = IType.DATAFRAME,
+			category = { IOperatorCategory.DATAFRAME },
+			concept = { IConcept.DATAFRAME })
+	@doc (
+			value = "Appends a single row to the dataframe. The list of values must match the number of columns.",
+			see = { "join" })
+	@test ("(dataframe_with([\"a\",\"b\"], [[1,2]]) + [3,4]).rows = 2")
+	public static IDataFrame plus(final IScope scope, final IDataFrame df, final IList<Object> row) {
+		return df.addRow(row);
 	}
 
 	// ========================= Pivot operator =========================
