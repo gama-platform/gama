@@ -376,13 +376,6 @@ public interface IDataFrame extends IContainer.Addressable<String, IList<Object>
 	IList<Object> iloc(IScope scope, IList<Integer> rowIndices, int colIndex);
 
 	/**
-	 * @param df2
-	 * @param columnName
-	 * @return
-	 */
-	IDataFrame joinOnCommonCol(IDataFrame df2, String columnName);
-
-	/**
 	 * Joins this dataframe with another one on one or several key columns, using an explicit join type.
 	 *
 	 * @param scope

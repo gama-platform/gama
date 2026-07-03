@@ -267,22 +267,6 @@ public class GamaDataFrame implements IDataFrame, IContainer<String, IList<Objec
 	}
 
 	/**
-	 * Inner joins two dataframes on a common column.
-	 *
-	 * @param df1
-	 *            the first dataframe
-	 * @param df2
-	 *            the second dataframe
-	 * @param colName
-	 *            the column to join on
-	 * @return a new joined dataframe
-	 */
-	@Override
-	public IDataFrame joinOnCommonCol(final IDataFrame df2, final String colName) {
-		return new GamaDataFrame(getInner().innerJoin(df2.getInner()).on(colName).select());
-	}
-
-	/**
 	 * Joins this dataframe with another on one or several key columns, with an explicit join type.
 	 *
 	 * <p>
