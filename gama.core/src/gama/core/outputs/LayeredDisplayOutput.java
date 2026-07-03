@@ -46,6 +46,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.ui.IGamaView;
 import gama.api.ui.IGui;
 import gama.api.ui.IOutput;
+import gama.api.ui.displays.DisplayDescription;
 import gama.api.ui.displays.IDisplayCreator;
 import gama.api.ui.displays.IDisplayData;
 import gama.api.ui.displays.IDisplaySurface;
@@ -494,6 +495,8 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 	public String getViewId() {
 		if (getData().isWeb()) return IGui.GL_LAYER_VIEW_ID3;
 		if (getData().isOpenGL2()) return IGui.GL_LAYER_VIEW_ID2;
+		IDisplayCreator creator = GamaAdditionRegistry.getDisplay(getData().getDisplayType());
+		if (creator instanceof DisplayDescription dd && !dd.getViewId().isEmpty()) return dd.getViewId();
 		if (getData().is3D()) return IGui.GL_LAYER_VIEW_ID;
 		return IGui.LAYER_VIEW_ID;
 	}

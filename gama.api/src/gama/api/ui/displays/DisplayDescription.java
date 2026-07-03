@@ -67,6 +67,15 @@ public class DisplayDescription extends GamlAddition implements IDisplayCreator 
 	private final IDisplayCreator delegate;
 
 	/**
+	 * The Eclipse view ID that this display type requires, or an empty string to use the
+	 * platform's built-in routing in {@code LayeredDisplayOutput.getViewId()}.
+	 */
+	private final String viewId;
+
+	/** Whether this display type renders in 3D. */
+	private final boolean is3D;
+
+	/**
 	 * Creates a new display description.
 	 * 
 	 * <p>This constructor initializes the description with metadata about the display
@@ -80,8 +89,41 @@ public class DisplayDescription extends GamlAddition implements IDisplayCreator 
 	 */
 	public DisplayDescription(final IDisplayCreator original, final Class<? extends IDisplaySurface> support,
 			final String name, final String plugin) {
+		this(original, support, name, plugin, "", false);
+	}
+
+	/**
+	 * Creates a new display description with an explicit Eclipse view ID.
+	 *
+	 * @param original  the delegate creator that will handle surface creation, or null
+	 * @param support   the class of the display surface implementation
+	 * @param name      the unique identifier for this display type (e.g., "java2D", "opengl")
+	 * @param plugin    the plugin that provides this display implementation
+	 * @param viewId    the Eclipse view ID used to open the concrete view, or empty string to
+	 *                  use the platform's built-in routing
+	 */
+	public DisplayDescription(final IDisplayCreator original, final Class<? extends IDisplaySurface> support,
+			final String name, final String plugin, final String viewId) {
+		this(original, support, name, plugin, viewId, false);
+	}
+
+	/**
+	 * Creates a new display description with an explicit Eclipse view ID and 3D flag.
+	 *
+	 * @param original  the delegate creator that will handle surface creation, or null
+	 * @param support   the class of the display surface implementation
+	 * @param name      the unique identifier for this display type (e.g., "java2D", "opengl")
+	 * @param plugin    the plugin that provides this display implementation
+	 * @param viewId    the Eclipse view ID used to open the concrete view, or empty string to
+	 *                  use the platform's built-in routing
+	 * @param is3D      whether this display type renders in 3D
+	 */
+	public DisplayDescription(final IDisplayCreator original, final Class<? extends IDisplaySurface> support,
+			final String name, final String plugin, final String viewId, final boolean is3D) {
 		super(name, support, plugin);
 		this.delegate = original;
+		this.viewId = viewId != null ? viewId : "";
+		this.is3D = is3D;
 	}
 
 	/**
@@ -102,6 +144,26 @@ public class DisplayDescription extends GamlAddition implements IDisplayCreator 
 	public IDisplaySurface create(final IOutput.Display output, final Object uiComponent) {
 		if (delegate != null) return delegate.create(output, uiComponent);
 		return IDisplaySurface.NULL;
+	}
+
+	/**
+	 * Returns the Eclipse view ID that this display type requires.
+	 *
+	 * <p>When non-empty, {@code LayeredDisplayOutput.getViewId()} uses this value instead of
+	 * falling through to the built-in type checks (isWeb, isOpenGL2, is3D, etc.).
+	 * An empty string means "use the platform's built-in routing".</p>
+	 *
+	 * @return the Eclipse view ID, or an empty string if not applicable
+	 */
+	public String getViewId() { return viewId; }
+
+	/**
+	 * Returns whether this display type is a 3D display.
+	 *
+	 * @return true if this display type renders in 3D
+	 */
+	public boolean is3D() {
+		return is3D;
 	}
 
 	/**

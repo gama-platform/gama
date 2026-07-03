@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import gama.annotations.constants.IKeyword;
+import gama.annotations.display;
 import gama.annotations.support.ISymbolKind;
 import gama.annotations.support.ITypeProvider;
 import gama.api.additions.registries.ArtefactRegistry;
@@ -169,7 +170,11 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 	 */
 	public void _display(final String string, final Class<? extends IDisplaySurface> support, final IDisplayCreator d) {
 		GAML.addConstants(string);
-		GamaAdditionRegistry.addDelegate(string, new DisplayDescription(d, support, string, CURRENT_PLUGIN_NAME));
+		display ann = support.getAnnotation(display.class);
+		String vid = ann != null ? ann.viewId() : "";
+		boolean is3D = ann != null && ann.is3D();
+		GamaAdditionRegistry.addDelegate(string,
+				new DisplayDescription(d, support, string, CURRENT_PLUGIN_NAME, vid, is3D));
 		GamaBundleLoader.addDisplayPlugin(CURRENT_PLUGIN_NAME);
 	}
 
