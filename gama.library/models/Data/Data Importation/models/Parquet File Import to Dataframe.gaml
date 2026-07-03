@@ -9,7 +9,7 @@
 *   Key operations demonstrated:
 *     - df_load_parquet: load a .parquet file
 *     - keys: inspect schema
-*     - df_filter / remove_empty: clean and subset data
+*     - filter / remove_empty: clean and subset data
 *     - select_columns: keep only relevant columns
 *     - column_at / cell: access values
 *     - iloc: position-based sampling (first, last, arbitrary rows)
@@ -204,7 +204,7 @@ global {
 		write "===== Seminyak entire-home — detailed stats =====";
 		dataframe seminyak_entire <- remove_empty(
 			select_columns(
-				df_filter(df_filter(listings, "city", "Seminyak"), "room_type", "entire_home"),
+				filter(filter(listings, "city", "Seminyak"), "room_type", "entire_home"),
 				["listing_id","listing_type","guests","bedrooms",
 				 "num_reviews","rating_overall","ttm_revenue","ttm_occupancy","ttm_avg_rate"]
 			),

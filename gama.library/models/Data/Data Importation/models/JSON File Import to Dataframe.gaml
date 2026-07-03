@@ -38,7 +38,7 @@ global {
 		write "";
 		write "===== Filtering =====";
 		dataframe engineers <- select_columns(
-			df_filter(employees, "department", "Engineering"),
+			filter(employees, "department", "Engineering"),
 			["name", "city", "salary"]
 		);
 		write "Engineers (" + engineers.rows + " rows):";

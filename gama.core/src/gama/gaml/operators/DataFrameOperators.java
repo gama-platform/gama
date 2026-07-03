@@ -481,7 +481,7 @@ public class DataFrameOperators {
 	 * Filters rows where a column matches a value.
 	 */
 	@operator (
-			value = "df_filter",
+			value = "filter",
 			can_be_const = true,
 			type = IType.DATAFRAME,
 			category = { IOperatorCategory.DATAFRAME },
@@ -491,10 +491,10 @@ public class DataFrameOperators {
 			usages = { @usage (
 					value = "Filter rows where 'city' equals 'Paris'",
 					examples = { @example (
-							value = "dataframe df2 <- df_filter(my_df, \"city\", \"Paris\");",
+							value = "dataframe df2 <- filter(my_df, \"city\", \"Paris\");",
 							isExecutable = false) }) },
 			see = { "remove_empty", "select_columns" })
-	@test ("(df_filter(dataframe_with([\"name\",\"city\"], [[\"Alice\",\"Paris\"],[\"Bob\",\"Lyon\"],[\"Eve\",\"Paris\"]]), \"city\", \"Paris\")).rows = 2")
+	@test ("(filter(dataframe_with([\"name\",\"city\"], [[\"Alice\",\"Paris\"],[\"Bob\",\"Lyon\"],[\"Eve\",\"Paris\"]]), \"city\", \"Paris\")).rows = 2")
 	public static IDataFrame dfFilter(final IScope scope, final IDataFrame df, final String columnName,
 			final Object value) {
 		return df.filterRows(columnName, value);
@@ -516,7 +516,7 @@ public class DataFrameOperators {
 					examples = { @example (
 							value = "dataframe df2 <- remove_empty(my_df, \"name\");",
 							isExecutable = false) }) },
-			see = { "df_filter", "select_columns" })
+			see = { "filter", "select_columns" })
 	@test ("(remove_empty(dataframe_with([\"name\",\"email\"], [[\"Alice\",\"a@x\"],[\"Bob\",\"\"],[\"Charlie\",nil]]), \"email\")).rows = 1")
 	public static IDataFrame dfRemoveEmpty(final IScope scope, final IDataFrame df, final String columnName) {
 		return df.removeRowsWithEmptyValues(columnName);
@@ -538,7 +538,7 @@ public class DataFrameOperators {
 					examples = { @example (
 							value = "dataframe df2 <- select_columns(my_df, [\"name\", \"age\"]);",
 							isExecutable = false) }) },
-			see = { "df_filter", "add_column" })
+			see = { "filter", "add_column" })
 	@test ("(select_columns(dataframe_with([\"name\",\"age\",\"city\"], [[\"Alice\",30,\"Paris\"]]), [\"name\",\"city\"])).keys = [\"name\",\"city\"]")
 	public static IDataFrame dfSelectColumns(final IScope scope, final IDataFrame df, final IList<String> columns) {
 		return df.selectColumns(columns);
@@ -701,7 +701,7 @@ public class DataFrameOperators {
 					examples = { @example (
 							value = "dataframe pivoted <- pivot(sales_df, \"product\", \"quarter\", \"revenue\");",
 							isExecutable = false) }) },
-			see = { "df_filter", "select_columns" })
+			see = { "filter", "select_columns" })
 	@test ("(pivot(dataframe_with([\"product\",\"quarter\",\"revenue\"], [[\"Widget\",\"Q1\",1000],[\"Widget\",\"Q2\",1500],[\"Gadget\",\"Q1\",800],[\"Gadget\",\"Q2\",950]]), \"product\", \"quarter\", \"revenue\")).rows = 2")
 	public static IDataFrame dfPivot(final IScope scope, final IDataFrame df, final String indexColumn,
 			final String pivotColumn, final String valueColumn) {
@@ -888,7 +888,7 @@ public class DataFrameOperators {
 					examples = { @example (
 							value = "dataframe sub <- iloc(my_df, [0, 2]);",
 							isExecutable = false) }) },
-			see = { "row_at", "df_filter" })
+			see = { "row_at", "filter" })
 	@test ("(iloc(dataframe_with([\"name\"], [[\"Alice\"],[\"Bob\"],[\"Eve\"]]), [0,2])).rows = 2")
 	@test ("cell(iloc(dataframe_with([\"name\"], [[\"Alice\"],[\"Bob\"],[\"Eve\"]]), [0,2]), 1, \"name\") = \"Eve\"")
 	public static IDataFrame ilocRows(final IScope scope, final IDataFrame df, final IList<Integer> rowIndices) {
@@ -914,7 +914,7 @@ public class DataFrameOperators {
 					examples = { @example (
 							value = "dataframe sub <- iloc(my_df, [0, 2], [0, 1]);",
 							isExecutable = false) }) },
-			see = { "select_columns", "df_filter" })
+			see = { "select_columns", "filter" })
 	@test ("(iloc(dataframe_with([\"a\",\"b\",\"c\"], [[1,2,3],[4,5,6]]), [0], [0,2])).keys = [\"a\",\"c\"]")
 	@test ("cell(iloc(dataframe_with([\"a\",\"b\",\"c\"], [[1,2,3],[4,5,6]]), [1], [2]), 0, \"c\") = 6")
 	public static IDataFrame iloc(final IScope scope, final IDataFrame df, final IList<Integer> rowIndices,

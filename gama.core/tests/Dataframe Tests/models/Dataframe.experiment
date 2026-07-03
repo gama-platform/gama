@@ -119,7 +119,7 @@ experiment Dataframes type: test {
 
 	test filter_by_value {
 		dataframe df <- dataframe_with(["name", "city"], [["Alice", "Paris"], ["Bob", "Lyon"], ["Charlie", "Paris"]]);
-		dataframe filtered <- df_filter(df, "city", "Paris");
+		dataframe filtered <- filter(df, "city", "Paris");
 		assert filtered.rows = 2;
 		list names <- (filtered column_at "name");
 		assert names contains "Alice";
@@ -129,7 +129,7 @@ experiment Dataframes type: test {
 
 	test filter_no_match {
 		dataframe df <- dataframe_with(["val"], [[1], [2], [3]]);
-		dataframe filtered <- df_filter(df, "val", 999);
+		dataframe filtered <- filter(df, "val", 999);
 		assert filtered.rows = 0;
 	}
 
@@ -305,7 +305,7 @@ experiment Dataframes type: test {
 			[["Alice", 30, "Paris", 95], ["Bob", 25, "Lyon", 87], ["Charlie", 35, "Paris", 92], ["Diana", 28, "Paris", 78]]
 		);
 		// Filter Paris residents, then select only name and score
-		dataframe result <- select_columns(df_filter(df, "city", "Paris"), ["name", "score"]);
+		dataframe result <- select_columns(filter(df, "city", "Paris"), ["name", "score"]);
 		assert result.rows = 3;
 		assert result.keys = ["name", "score"];
 	}

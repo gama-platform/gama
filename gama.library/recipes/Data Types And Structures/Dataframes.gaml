@@ -111,13 +111,13 @@ species combining_dataframes {
 		write "";
 		write "== COMBINING AND TRANSFORMING DATAFRAMES ==";
 		write "";
-		// df_filter keeps the rows whose column equals a given value.
-		write sample(df_filter(students, "city", "Paris").rows);
-		write pretty_print(df_filter(students, "city", "Paris"));
+		// filter keeps the rows whose column equals a given value.
+		write sample(filter(students, "city", "Paris").rows);
+		write pretty_print(filter(students, "city", "Paris"));
 		// select_columns keeps only the given columns.
 		write sample(select_columns(students, ["name", "grade"]).keys);
 		// Operators can be chained: names and grades of Paris students only.
-		write pretty_print(select_columns(df_filter(students, "city", "Paris"), ["name", "grade"]));
+		write pretty_print(select_columns(filter(students, "city", "Paris"), ["name", "grade"]));
 
 		// remove_empty drops the rows with an empty/nil value in a given column.
 		dataframe with_gaps <- dataframe_with(

@@ -10,7 +10,7 @@
 *     - df_load_excel       : load the first sheet of an .xlsx file
 *     - keys / rows         : schema inspection
 *     - column_at / cell : access columns and cells
-*     - df_filter           : subset by store location or product category
+*     - filter           : subset by store location or product category
 *     - select_columns   : keep only relevant columns
 *     - iloc                : positional sampling
 *     - pretty_print     : compact display
@@ -63,7 +63,7 @@ global {
 		list<string> stores <- ["Lower Manhattan", "Hell's Kitchen", "Astoria"];
 
 		loop store over: stores {
-			dataframe sub <- df_filter(transactions, "store_location", store);
+			dataframe sub <- filter(transactions, "store_location", store);
 			float rev   <- 0.0;
 			int   count <- sub.rows;
 			loop i from: 0 to: count - 1 {
@@ -90,7 +90,7 @@ global {
 		];
 
 		loop cat over: categories {
-			dataframe sub   <- df_filter(transactions, "product_category", cat);
+			dataframe sub   <- filter(transactions, "product_category", cat);
 			float rev       <- 0.0;
 			float price_sum <- 0.0;
 			int   count     <- sub.rows;
