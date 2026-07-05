@@ -51,6 +51,18 @@ import gama.ui.shared.utils.WorkbenchHelper;
 public class ArrangeDisplayViews extends AbstractHandler {
 
 	/**
+	 * Indicates that display parts are currently being revealed as part of the batched layout application.
+	 */
+	private static volatile boolean applyingLayout;
+
+	/**
+	 * Returns whether the display layout/show batch is currently in progress.
+	 *
+	 * @return {@code true} while displays are being revealed during layout application, {@code false} otherwise
+	 */
+	public static boolean isApplyingLayout() { return applyingLayout; }
+
+	/**
 	 * Gets the part service.
 	 *
 	 * @return the part service
@@ -162,6 +174,7 @@ public class ArrangeDisplayViews extends AbstractHandler {
 		final long t0 = System.currentTimeMillis();
 		final var window = WorkbenchHelper.getWindow();
 		final var shell = window != null ? window.getShell() : null;
+		applyingLayout = true;
 		if (shell != null) { shell.setRedraw(false); }
 		try {
 			final List<MPlaceholder> holders =
@@ -205,6 +218,7 @@ public class ArrangeDisplayViews extends AbstractHandler {
 		} catch (Exception e) {
 			DEBUG.ERR(e);
 		} finally {
+			applyingLayout = false;
 			if (shell != null) { shell.setRedraw(true); }
 		}
 		DEBUG.OUT("[ArrangeDisplayViews] TOTAL execute() time=" + (System.currentTimeMillis() - t0) + "ms");

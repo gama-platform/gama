@@ -38,6 +38,9 @@ public enum BANNER_CATEGORY {
 
 	/** The tests. */
 	TESTS,
+
+	/** The geotls. */
+	GEOTLS,
 	/** The pool. */
 	POOL;
 

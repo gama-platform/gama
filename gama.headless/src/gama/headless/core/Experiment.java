@@ -17,6 +17,7 @@ import gama.api.gaml.expressions.IExpression;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.kernel.species.IModelSpecies;
+import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.IList;
 import gama.api.ui.IOutput;
@@ -97,10 +98,10 @@ public class Experiment implements IExperiment {
 	 * @date 28 oct. 2023
 	 */
 	@Override
-	public synchronized void setup(final String expName, final double sd, final IList params,
+	public synchronized IExecutionResult setup(final String expName, final double sd, final IList params,
 			final GamaServerExperimentJob ec) {
 		this.seed = sd;
-		this.loadCurrentExperiment(expName, params, ec);
+		return this.loadCurrentExperiment(expName, params, ec);
 	}
 
 	/**
@@ -110,7 +111,7 @@ public class Experiment implements IExperiment {
 	 *            the exp name
 	 */
 	@SuppressWarnings ("rawtypes")
-	private void loadCurrentExperiment(final String expName, final IList p, final GamaServerExperimentJob ec) {
+	private IExecutionResult loadCurrentExperiment(final String expName, final IList p, final GamaServerExperimentJob ec) {
 		this.experimentName = expName;
 		this.currentStep = 0;
 
@@ -118,12 +119,13 @@ public class Experiment implements IExperiment {
 		curExperiment.setHeadless(true);
 		curExperiment.setController(ec.controller);
 		curExperiment.setParameterValues(p);
-		curExperiment.open(seed);
+		IExecutionResult res = curExperiment.open(seed);
 		if (!GAMA.getControllers().contains(curExperiment.getController())) {
 			GAMA.getControllers().add(curExperiment.getController());
 		}
 		this.currentExperiment = curExperiment;
 		this.currentExperiment.setHeadless(true);
+		return res;
 	}
 
 	/**

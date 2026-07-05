@@ -25,6 +25,7 @@ import gama.core.agent.GamlAgent;
 import gama.core.agent.MinimalAgent;
 import gama.core.geometry.InternalGamaShapeFactory;
 import gama.core.topology.InternalTopologyFactory;
+import gama.core.topology.gis.ProjectionFactory;
 import gama.core.util.graph.InternalGamaGraphFactory;
 import gama.core.util.json.Json;
 import gama.core.util.matrix.InternalGamaMatrixFactory;
@@ -158,6 +159,9 @@ public class CoreActivator extends GamaBundleActivator {
 	 * @see gama.api.data.factories for the abstract factory interfaces
 	 */
 	void initializeFactories() {
+		// We load the projection factory in a different thread in order to initialize projections
+		ProjectionFactory.initialize();
+
 		// Collection factories for data structures
 		// GamaListFactory.setBuilder(new InternalGamaListFactory());
 		// GamaMapFactory.setBuilder(new InternalGamaMapFactory());

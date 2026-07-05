@@ -29,6 +29,7 @@ import gama.api.exceptions.GamaCompilationFailedException;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.species.IModelSpecies;
+import gama.api.runtime.scope.IExecutionResult;
 import gama.api.types.list.IList;
 import gama.api.types.map.IMap;
 import gama.core.experiment.ExperimentSpecies;
@@ -123,13 +124,16 @@ public class GamaServerExperimentJob extends ExperimentJob {
 	 * @throws GamaHeadlessException
 	 *             the gama headless exception
 	 */
-	public void loadAndBuildWithJson(final IList params, final String endCond)
+	public IExecutionResult loadAndBuildWithJson(final IList params, final String endCond)
 			throws IOException, GamaCompilationFailedException {
 		if (this.simulator == null) { this.load(); }
 		this.setup();
 		controller.setExperiment(simulator.getModel().getExperiment(experimentName));
-		simulator.setup(experimentName, this.seed, params, this);
-		simulator.getExperimentPlan().setStopCondition(endCond);
+		IExecutionResult ex = simulator.setup(experimentName, this.seed, params, this);
+		if (ex.passed()) {
+			simulator.getExperimentPlan().setStopCondition(endCond);			
+		}
+		return ex;
 	}
 
 	/**

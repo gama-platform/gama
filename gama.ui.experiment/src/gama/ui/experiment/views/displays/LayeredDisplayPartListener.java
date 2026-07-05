@@ -10,6 +10,7 @@ import org.eclipse.ui.IWorkbenchPartReference;
 
 import gama.api.ui.displays.IDisplaySurface;
 import gama.dev.DEBUG;
+import gama.ui.experiment.commands.ArrangeDisplayViews;
 import gama.ui.application.workbench.PerspectiveHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
 
@@ -85,7 +86,13 @@ final class LayeredDisplayPartListener implements IPartListener2 {
 			WorkbenchHelper.asyncRun(() -> {
 				decorator.view.showCanvas();
 				IDisplaySurface s = decorator.view.getDisplaySurface();
-				if (s != null) { s.getOutput().update(); }
+				final boolean revealingDuringLayout = ArrangeDisplayViews.isApplyingLayout();
+				// Display outputs are already opened and updated before ArrangeDisplayViews reveals the
+				// parts. Re-running a full output update here for every part during that same batch makes
+				// displays compete for repaint/recompute work and causes the delayed, "racing" appearance
+				// observed on reload (notably for Java2D). Keep the forced update outside this initial
+				// batched reveal path only.
+				if (s != null && !revealingDuringLayout) { s.getOutput().update(); }
 				if (decorator.overlay != null) { decorator.overlay.display(); }
 			});
 		}

@@ -290,14 +290,14 @@ public abstract class AbstractNAryOperator extends AbstractExpression implements
 		if (IKeyword.AS.equals(getName())) return getTitleForCasting();
 		final StringBuilder sb = new StringBuilder(50);
 		sb.append("operator ").append(getName()).append(" (");
-		if (exprs != null) {
+		if (prototype != null) {
+			sb.append(prototype.documentSignature());
+		} else if (exprs != null) {
 			for (final IExpression expr : exprs) {
 				sb.append(expr == null ? "nil" : expr.getGamlType().getName());
 				sb.append(',');
 			}
-			sb.setLength(sb.length() - 1);
-		} else if (prototype.getSignature() != null) {
-			sb.append("Argument types: " + prototype.getSignature().toString());
+			if (exprs.length > 0) { sb.setLength(sb.length() - 1); }
 		}
 		sb.append(") returns ");
 		sb.append(type.getName());

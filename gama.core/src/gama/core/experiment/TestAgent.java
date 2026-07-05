@@ -22,6 +22,7 @@ import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.statements.IStatement;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.tests.TestExperimentSummary;
 import gama.api.utils.tests.WithTestSummary;
@@ -72,8 +73,9 @@ public class TestAgent extends ExperimentAgent implements IExperimentAgent.Test 
 	}
 
 	@Override
-	public void schedule(final IScope scope) {
+	public IExecutionResult schedule(final IScope scope) {
 		scheduled = true;
+		return IExecutionResult.PASSED;
 		// scheduled = true;
 		// The experiment agent is scheduled in the global scheduler
 		// getSpecies().getController().schedule(this);

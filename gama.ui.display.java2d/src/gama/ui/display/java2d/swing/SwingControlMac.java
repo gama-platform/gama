@@ -125,6 +125,10 @@ public class SwingControlMac extends SwingControl {
 				// DEBUG.OUT("[SwingControlMac] Frame created for display: "
 				// + (surface != null ? surface.getName() : "null") + " in " + (frameEnd - frameStart) + " ms");
 				frame.setAlwaysOnTop(false);
+				// Prevent native OS paint messages triggered by focus-change events from
+				// bypassing Swing's RepaintManager / double-buffer. See SwingControlWin for
+				// the full explanation.
+				frame.setIgnoreRepaint(true);
 				surface.setVisibility(() -> visible);
 				if (swingKeyListener != null) { frame.addKeyListener(swingKeyListener); }
 				if (swingMouseListener != null) { frame.addMouseMotionListener(swingMouseListener); }

@@ -39,7 +39,13 @@ on:
         type: string
         required: false
         default: ""
-      DONT_PUBLISH_P2:
+      GITHUB_ONLY:
+        type: boolean
+        default: false
+      USE_BUILD_CACHE:
+        type: boolean
+        default: true
+      USE_DEPENDENCY_CACHE:
         type: boolean
         default: true
     secrets:
@@ -59,6 +65,7 @@ on:
 jobs:
   compilation:
     runs-on: ubuntu-latest
+      
     steps:
       # Prep runner
       - uses: actions/checkout@v6
@@ -89,9 +96,11 @@ jobs:
       - name: Tag GAMA with new release
         if: "${{ inputs.get_all_archives_for_release }}"
         run: |
-          bash $GITHUB_WORKSPACE/travis/bumpGamaVersion.sh ${{ inputs.new_release_tag }} ${{ inputs.IS_STABLE_RELEASE }}
+          bash $GITHUB_WORKSPACE/travis/bumpGamaVersion.sh $NEW_RELEASE_TAG $IS_STABLE_RELEASE
         env:
           JDK_EMBEDDED_VERSION: ${{ inputs.jdk_embedded_version }}
+          NEW_RELEASE_TAG: ${{ inputs.new_release_tag }}
+          IS_STABLE_RELEASE: ${{ inputs.IS_STABLE_RELEASE }}
 
       - name: Import & Prepare JAR signing
         if: "${{ inputs.get_all_archives_for_release }}"
@@ -116,8 +125,47 @@ jobs:
       # ╚═════╝  ╚═════╝ ╚═╝╚══════╝╚═════╝ ╚═╝╚═╝  ╚═══╝ ╚═════╝
       #
 
+      - name: Disable dev logging for public release
+        if: "${{ inputs.GITHUB_ONLY }}"
+        run: |
+          sed -i 's/-Denable_logging=true/-Denable_logging=false/g' ./gama.product/*product
+          sed -i 's/-Denable_debug=true/-Denable_debug=false/g' ./gama.product/*product
+
+      - uses: ./.github/actions/maven-build-cache
+        name: Restore Maven Build cache
+        if: "${{ inputs.USE_BUILD_CACHE }}"
+        with:
+          action: restore
+          
+      - uses: ./.github/actions/maven-dependency-cache
+        name: Restore Maven Dependency Cache
+        if: "${{ inputs.USE_DEPENDENCY_CACHE }}"
+        with:
+          action: restore
+
       - name: Compiling gama
-        run: bash $GITHUB_WORKSPACE/travis/build.sh -e -B -T 4 ${{ inputs.mvn_extra_arguments }}
+        run: |
+          # Remove Copilot plugin from the built
+          # Tycho doesn't honor optional tag : https://www.eclipse.org/lists/tycho-user/msg03542.html
+          # Related #836
+          sed -i '/gama\.feature\.copilot/d' $GITHUB_WORKSPACE/gama.product/gama.product
+          bash $GITHUB_WORKSPACE/travis/build.sh -e -B -T 4 $MVN_EXTRA_ARGUMENTS
+        env:
+          MVN_EXTRA_ARGUMENTS: ${{ inputs.mvn_extra_arguments }}
+
+      - uses: ./.github/actions/maven-dependency-cache
+        name: Save Maven Dependency Cache
+        if: "${{ inputs.USE_DEPENDENCY_CACHE && (github.ref_name == 'main') }}"
+        with:
+          action: save
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+      - uses: ./.github/actions/maven-build-cache
+        name: Save Maven Build Cache
+        if: "${{ inputs.USE_BUILD_CACHE }}"
+        with:
+          action: save
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
       # Spotbugs
       - name: Running SpotBugs

@@ -268,8 +268,8 @@ public abstract class AbstractExperimentController implements IExperimentControl
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @date 25 oct. 2023
 	 */
-	protected boolean synchronousStep() {
-		return processUserCommand(ExperimentCommand._STEP);
+	protected boolean synchronousStep(final int nbSteps) {
+		return processUserCommand(new ExperimentCommand(ExperimentCommandTypes._STEP, nbSteps));
 
 	}
 
@@ -279,8 +279,8 @@ public abstract class AbstractExperimentController implements IExperimentControl
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @date 25 oct. 2023
 	 */
-	protected boolean synchronousStepBack() {
-		return processUserCommand(ExperimentCommand._BACK);
+	protected boolean synchronousStepBack(final int nbSteps) {
+		return processUserCommand(new ExperimentCommand(ExperimentCommandTypes._BACK, nbSteps));
 	}
 
 	/**
@@ -290,7 +290,7 @@ public abstract class AbstractExperimentController implements IExperimentControl
 	 * @date 25 oct. 2023
 	 */
 	protected boolean synchronousStart() {
-		return processUserCommand(ExperimentCommand._START);
+		return processUserCommand(_START_CMD);
 	}
 
 	/**
@@ -300,7 +300,7 @@ public abstract class AbstractExperimentController implements IExperimentControl
 	 * @date 25 oct. 2023
 	 */
 	protected boolean synchronousReload() {
-		return processUserCommand(ExperimentCommand._RELOAD);
+		return processUserCommand(_RELOAD_CMD);
 	}
 
 	/**
@@ -310,7 +310,7 @@ public abstract class AbstractExperimentController implements IExperimentControl
 	 * @date 25 oct. 2023
 	 */
 	protected boolean asynchronousPause() {
-		return offer(ExperimentCommand._PAUSE);
+		return offer(_PAUSE_CMD);
 	}
 
 	/**
@@ -320,7 +320,7 @@ public abstract class AbstractExperimentController implements IExperimentControl
 	 * @date 25 oct. 2023
 	 */
 	protected boolean synchronousPause() {
-		return processUserCommand(ExperimentCommand._PAUSE);
+		return processUserCommand(_PAUSE_CMD);
 	}
 
 	/**
@@ -329,8 +329,8 @@ public abstract class AbstractExperimentController implements IExperimentControl
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @date 25 oct. 2023
 	 */
-	protected boolean asynchronousStep() {
-		return offer(ExperimentCommand._STEP);
+	protected boolean asynchronousStep(final int nbSteps) {
+		return offer(new ExperimentCommand(ExperimentCommandTypes._STEP, nbSteps));
 	}
 
 	/**
@@ -339,8 +339,8 @@ public abstract class AbstractExperimentController implements IExperimentControl
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @date 25 oct. 2023
 	 */
-	protected boolean asynchronousStepBack() {
-		return offer(ExperimentCommand._BACK);
+	protected boolean asynchronousStepBack(final int nbSteps) {
+		return offer(new ExperimentCommand(ExperimentCommandTypes._BACK, nbSteps));
 	}
 
 	/**
@@ -350,7 +350,7 @@ public abstract class AbstractExperimentController implements IExperimentControl
 	 * @date 25 oct. 2023
 	 */
 	protected boolean asynchronousReload() {
-		return offer(ExperimentCommand._RELOAD);
+		return offer(_RELOAD_CMD);
 	}
 
 	/**
@@ -360,7 +360,7 @@ public abstract class AbstractExperimentController implements IExperimentControl
 	 * @date 25 oct. 2023
 	 */
 	protected boolean synchronousOpen() {
-		return processUserCommand(ExperimentCommand._OPEN);
+		return processUserCommand(_OPEN_CMD);
 	}
 
 	/**
@@ -370,7 +370,7 @@ public abstract class AbstractExperimentController implements IExperimentControl
 	 * @date 25 oct. 2023
 	 */
 	protected boolean asynchronousStart() {
-		return offer(ExperimentCommand._START);
+		return offer(_START_CMD);
 	}
 
 	/**
@@ -380,7 +380,7 @@ public abstract class AbstractExperimentController implements IExperimentControl
 	 * @date 25 oct. 2023
 	 */
 	protected boolean asynchronousOpen() {
-		return offer(ExperimentCommand._OPEN);
+		return offer(_OPEN_CMD);
 	}
 
 	@Override
@@ -442,8 +442,8 @@ public abstract class AbstractExperimentController implements IExperimentControl
 	 * @date 23 oct. 2023
 	 */
 	@Override
-	public boolean processStep(final boolean andWait) {
-		return andWait ? synchronousStep() : asynchronousStep();
+	public boolean processStep(final int nbSteps, final boolean andWait) {
+		return andWait ? synchronousStep(nbSteps) : asynchronousStep(nbSteps);
 	}
 
 	/**
@@ -455,8 +455,8 @@ public abstract class AbstractExperimentController implements IExperimentControl
 	 * @date 23 oct. 2023
 	 */
 	@Override
-	public boolean processBack(final boolean andWait) {
-		return andWait ? synchronousStepBack() : asynchronousStepBack();
+	public boolean processBack(final int nbSteps, final boolean andWait) {
+		return andWait ? synchronousStepBack(nbSteps) : asynchronousStepBack(nbSteps);
 	}
 
 	/**

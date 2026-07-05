@@ -23,12 +23,12 @@ import gama.api.types.geometry.IPoint;
  * Interface defining all core constants available in the GAML modeling language. This interface serves as a central
  * repository for built-in constants that are automatically available in all GAML models without requiring imports or
  * declarations.
- * 
+ *
  * <p>
  * Constants defined in this interface are accessible in GAML using the '#' prefix (e.g., {@code #pi}, {@code #e},
  * {@code #infinity}). They cover various domains including:
  * </p>
- * 
+ *
  * <h3>Constant Categories:</h3>
  * <ul>
  * <li><b>Mathematical Constants:</b> Fundamental mathematical values such as pi, e, infinity, NaN, and conversion
@@ -44,7 +44,7 @@ import gama.api.types.geometry.IPoint;
  * <li><b>Text Anchors:</b> Predefined anchor points for text positioning (center, top_left, bottom_right, etc.)</li>
  * <li><b>Runtime State:</b> Current error message and current date (now)</li>
  * </ul>
- * 
+ *
  * <h3>Annotation-Based Documentation:</h3>
  * <p>
  * Each constant is annotated with {@code @constant} and {@code @doc} annotations that provide:
@@ -56,30 +56,30 @@ import gama.api.types.geometry.IPoint;
  * <li>Associated concepts for semantic grouping</li>
  * <li>Comprehensive documentation describing purpose and usage</li>
  * </ul>
- * 
+ *
  * <h3>Usage Examples:</h3>
- * 
+ *
  * <pre>
  * // Mathematical constants
  * float circumference <- 2 * #pi * radius;
  * float angle_deg <- angle_rad * #to_deg;
- * 
+ *
  * // Shortest path algorithms
  * path shortest <- compute_path(graph: road_network, algorithm: #Dijkstra);
  * path alternative <- compute_path(graph: road_network, algorithm: #AStar);
- * 
+ *
  * // Font styles
  * draw "Title" font: font("Arial", 24, #bold + #italic);
- * 
+ *
  * // Display properties
  * geometry click_location <- {#user_location.x, #user_location.y};
  * float pixel_size <- #pixels;
- * 
+ *
  * // Text anchors
  * draw "Label" anchor: #top_left;
  * draw "Center" anchor: #center;
  * </pre>
- * 
+ *
  * <h3>Dynamic Constants:</h3>
  * <p>
  * Some constants like {@code user_location}, {@code camera_location}, {@code zoom}, {@code pixels}, and
@@ -87,13 +87,13 @@ import gama.api.types.geometry.IPoint;
  * particularly within display and graphics contexts. They provide runtime information about the simulation state and
  * user interaction.
  * </p>
- * 
+ *
  * <h3>Implementation Notes:</h3>
  * <p>
  * This interface is not meant to be implemented by user code. It serves solely as a declaration point for constants
  * that are automatically discovered and registered by the {@link CoreConstantsSupplier} during GAMA initialization.
  * </p>
- * 
+ *
  * @author GAMA Development Team
  * @see GamlCoreUnits
  * @see CoreConstantsSupplier
@@ -147,7 +147,7 @@ public interface GamlCoreConstants {
 			value = "nan",
 			category = { IConstantCategory.CONSTANT },
 			concept = { IConcept.CONSTANT },
-			doc = @doc ("A constant holding a Not-a-Number (NaN) value of type float (Java Double.POSITIVE_INFINITY)")) double nan =
+			doc = @doc ("A constant holding a Not-a-Number (NaN) value of type float (Java Double.NaN)")) double nan =
 					Double.NaN;
 
 	/** The infinity. */

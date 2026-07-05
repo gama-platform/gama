@@ -59,9 +59,11 @@ jobs:
           # Windows Family
           mv ${{ github.workspace }}/travis/extraresources/installer/windows/* ${{ github.workspace }}
           # Debian Family
-          mv gama.application-linux.gtk.x86_64.zip gama-platform_${{ inputs.RELEASE_VERSION }}-1_amd64.zip
-          mv gama.application-linux.gtk.x86_64_withJDK.zip gama-platform-jdk_${{ inputs.RELEASE_VERSION }}-1_amd64.zip
+          mv gama.application-linux.gtk.x86_64.zip gama-platform_${RELEASE_VERSION}-1_amd64.zip
+          mv gama.application-linux.gtk.x86_64_withJDK.zip gama-platform-jdk_${RELEASE_VERSION}-1_amd64.zip
           cd ${{ github.workspace }}/travis/extraresources/installer/unix && zip -r ${{ github.workspace }}/extraresources-unix.zip .
+        env:
+          RELEASE_VERSION: ${{ inputs.RELEASE_VERSION }}
 
       - uses: actions/upload-artifact@v6
         with:

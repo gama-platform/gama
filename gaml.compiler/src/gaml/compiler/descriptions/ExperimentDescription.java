@@ -73,6 +73,7 @@ public class ExperimentDescription extends SpeciesDescription implements IExperi
 		super(keyword, null, enclosing, null, cp, source, facets);
 		String type = getLitteral(IKeyword.TYPE);
 		setIf(Flag.isBatch, IKeyword.BATCH.equals(type));
+		setIf(Flag.isTest, IKeyword.TEST.equals(type));
 		setIf(Flag.isMemorize, facets.containsKey(IKeyword.RECORD));
 	}
 
@@ -226,6 +227,11 @@ public class ExperimentDescription extends SpeciesDescription implements IExperi
 	@Override
 	public void addOwnAttribute(final IVariableDescription var) {
 		if (!PARAMETER.equals(var.getKeyword())) {
+			if (isTest() && IKeyword.SEED.equals(var.getName())) {
+				var.warning(
+						"Setting the seed in a test experiment is not advised. It should better be set in each individual test.",
+						IGamlIssue.WRONG_REDEFINITION);
+			}
 			super.addOwnAttribute(var);
 		} else {
 			addParameter(var);

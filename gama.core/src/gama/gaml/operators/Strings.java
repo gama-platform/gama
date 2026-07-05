@@ -10,6 +10,9 @@
 package gama.gaml.operators;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.StringJoiner;
 import java.util.StringTokenizer;
 import java.util.regex.MatchResult;
@@ -80,6 +83,38 @@ import gama.api.utils.files.CompressionUtils;
  */
 @SuppressWarnings ({ "rawtypes" })
 public class Strings {
+
+	/** Upper bound for cached compiled regex patterns used by string operators. */
+	private static final int REGEX_CACHE_SIZE = 256;
+
+	/** Small LRU cache to avoid recompiling frequently reused regex patterns. */
+	private static final Map<String, Pattern> REGEX_CACHE =
+			Collections.synchronizedMap(new LinkedHashMap<>(REGEX_CACHE_SIZE, 0.75f, true) {
+
+				@Override
+				protected boolean removeEldestEntry(final Map.Entry<String, Pattern> eldest) {
+					return size() > REGEX_CACHE_SIZE;
+				}
+			});
+
+	/**
+	 * Returns a compiled regex pattern from cache or compiles and stores it if missing.
+	 *
+	 * @param pattern
+	 *            the regex source
+	 * @return the compiled {@link Pattern}
+	 * @throws PatternSyntaxException
+	 *             if the regex is invalid
+	 */
+	private static Pattern getCachedPattern(final String pattern) {
+		synchronized (REGEX_CACHE) {
+			final Pattern cached = REGEX_CACHE.get(pattern);
+			if (cached != null) { return cached; }
+			final Pattern compiled = Pattern.compile(pattern);
+			REGEX_CACHE.put(pattern, compiled);
+			return compiled;
+		}
+	}
 
 	/**
 	 * Op plus.
@@ -729,7 +764,7 @@ public class Strings {
 	public static IList opTokenizeRegex(final IScope scope, final String target, final String pattern) {
 		if (target == null) return GamaListFactory.create();
 		if (pattern == null || pattern.isEmpty()) return GamaListFactory.create(scope, Types.STRING, target);
-		return GamaListFactory.create(scope, Types.STRING, target.split(pattern));
+		return GamaListFactory.create(scope, Types.STRING, getCachedPattern(pattern).split(target));
 	}
 
 
@@ -809,7 +844,7 @@ public class Strings {
 			see = { "replace" })
 	public static String opReplaceRegex(final String target, final String pattern, final String replacement) {
 		// DEBUG.OUT("String pattern = " + pattern);
-		return target.replaceAll(pattern, replacement);
+		return getCachedPattern(pattern).matcher(target).replaceAll(replacement);
 	}
 
 	/**
@@ -847,7 +882,7 @@ public class Strings {
 		if (pattern == null || pattern.isEmpty()) return GamaListFactory.create();
 		Pattern p;
 		try {
-			p = Pattern.compile(pattern);
+			p = getCachedPattern(pattern);
 		} catch (PatternSyntaxException e) {
 			return target.contains(pattern) ? GamaListFactory.createWithoutCasting(Types.STRING, pattern)
 					: GamaListFactory.create();

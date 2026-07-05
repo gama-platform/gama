@@ -18,6 +18,7 @@ import gama.api.runtime.SystemInfo;
 import gama.api.utils.interfaces.IDisposable;
 import gama.dev.DEBUG;
 import gama.ui.experiment.views.displays.LayeredDisplayView;
+import gama.ui.shared.utils.LaunchingOverlay;
 
 /**
  * Class OpenGLLayeredDisplayView.
@@ -27,6 +28,31 @@ import gama.ui.experiment.views.displays.LayeredDisplayView;
  *
  */
 public class OpenGLDisplayView extends LayeredDisplayView {
+
+	/**
+	 * Lazily installs NEWT listeners once the native OpenGL window has actually been created.
+	 */
+	private final class DeferredMultiListener implements IDisposable {
+
+		private IDisposable delegate;
+
+		void ensureInstalled() {
+			if (delegate != null || getGLCanvas().getNEWTWindow() == null) return;
+			delegate = new NEWTLayeredDisplayMultiListener(decorator, getDisplaySurface(), getGLCanvas().getNEWTWindow());
+		}
+
+		@Override
+		public void dispose() {
+			if (delegate != null) { delegate.dispose(); }
+			delegate = null;
+		}
+	}
+
+	/** The deferred input listener wrapper. */
+	private final DeferredMultiListener deferredMultiListener = new DeferredMultiListener();
+
+	/** Indicates that the native canvas is currently hidden by the launch overlay. */
+	private boolean hiddenForLaunchOverlay;
 
 	{
 		DEBUG.OFF();
@@ -43,6 +69,7 @@ public class OpenGLDisplayView extends LayeredDisplayView {
 		final SWTOpenGLDisplaySurface surface =
 				(SWTOpenGLDisplaySurface) GAMA.getGui().createDisplaySurfaceFor(getOutput(), parent);
 		surfaceComposite = surface.renderer.getCanvas();
+		LaunchingOverlay.suppressNativeDisplayIfLaunching(this);
 		// synchronizer.setSurface(getDisplaySurface());
 		surface.outputReloaded();
 		return surfaceComposite;
@@ -83,7 +110,7 @@ public class OpenGLDisplayView extends LayeredDisplayView {
 	// */
 	@Override
 	public IDisposable getMultiListener() {
-		return new NEWTLayeredDisplayMultiListener(decorator, getDisplaySurface(), getGLCanvas().getNEWTWindow());
+		return deferredMultiListener;
 	}
 
 	/**
@@ -91,6 +118,8 @@ public class OpenGLDisplayView extends LayeredDisplayView {
 	 */
 	@Override
 	public void hideCanvas() {
+		hiddenForLaunchOverlay |= LaunchingOverlay.isLaunchOverlayVisible();
+		getGLCanvas().pauseAnimator();
 		getGLCanvas().setVisible(false);
 	}
 
@@ -99,9 +128,21 @@ public class OpenGLDisplayView extends LayeredDisplayView {
 	 */
 	@Override
 	public void showCanvas() {
-		getGLCanvas().setVisible(true);
+		if (LaunchingOverlay.suppressNativeDisplayIfLaunching(this)) return;
+		final GamaGLCanvas canvas = getGLCanvas();
+		final boolean wasVisible = canvas.getVisibleStatus();
+		final boolean restoringAfterLaunchOverlay = hiddenForLaunchOverlay && !LaunchingOverlay.isLaunchOverlayVisible();
+		hiddenForLaunchOverlay = false;
+		canvas.setVisible(true);
+		canvas.startAnimator();
+		final boolean firstShow = canvas.consumeNativePeerJustCreated();
+		deferredMultiListener.ensureInstalled();
 		// Prevents JOGL views to move over Java2D views created before (needed on both macOS and Windows)
-		if (SystemInfo.isMac() || SystemInfo.isWindows()) { getGLCanvas().reparentWindow(); }
+		if (!wasVisible && (isFullScreen() || !firstShow && !restoringAfterLaunchOverlay)
+				&& (SystemInfo.isMac() || SystemInfo.isWindows())) {
+			canvas.reparentWindow();
+		}
+		getDisplaySurface().renderer.onCanvasShown();
 	}
 
 	/**

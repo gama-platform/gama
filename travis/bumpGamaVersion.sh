@@ -7,13 +7,14 @@ inputVersion=$1
 
 # Flip workflow bool parameter "isRelease" to "isSnapshot"
 isSnapshot=true
-if [ "$2" = true ]; then
+if [ "$2" = "true" ]; then
     isSnapshot=false
 fi
 
-month=$(echo $inputVersion | awk -F'.' '{print $2}' | awk '{print int($1)}')
+# Parse version and remove leading zero(s) after dot character, enforcing OSGi version format
+month=$(echo $inputVersion | awk -F '.' '{print $2}' | awk '{print int($1)}')
 id=$(echo $inputVersion | awk -F'.' '{print $3}' | awk '{print int($1)}')
-versionToTag=$(echo $inputVersion | awk -F'.' -v month="$month" -v id="$id" '{$2=month; $3=id; print}' | sed 's/\ /\./g') # Remove leading zero(s) after dot character, enforcing OSGi version format
+versionToTag=$(echo $inputVersion | awk -F'.' -v month="$month" -v id="$id" '{$2=month; $3=id; print}' | sed 's/\ /\./g') 
 
 # Set path
 path="$( dirname $( realpath "${BASH_SOURCE[0]}" ) )/.."
@@ -34,7 +35,7 @@ fi
 
 cd $path/gama.annotations && mvn clean -B
 cd $path/gama.processor && mvn clean -B
-cd $path/gama.parent && mvn clean -B
+cd $path/gama.parent && mvn clean -B -T 4
 
 #
 #	UPDATING MAVEN & OSGi VERSIONS via Tycho
@@ -51,7 +52,7 @@ echo "Update versions with Tycho (processor)"
 cd $path/gama.processor && mvn -B ${TYCHO_VERSIONS_MOJO} -DnewVersion="$newVersion"
 
 echo "Update versions with Tycho (reactor)"
-cd $path/gama.parent && mvn -B ${TYCHO_VERSIONS_MOJO} -DnewVersion="$newVersion"
+cd $path/gama.parent && mvn -B -T 4 ${TYCHO_VERSIONS_MOJO} -DnewVersion="$newVersion"
 
 #
 #	Update sites url (feature descriptions — not covered by tycho-versions)

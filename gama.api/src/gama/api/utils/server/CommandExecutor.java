@@ -29,8 +29,10 @@ import static gama.api.utils.server.ISocketCommand.VALIDATE;
 import static java.util.Map.entry;
 
 import java.util.AbstractMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.java_websocket.WebSocket;
@@ -60,6 +62,26 @@ public class CommandExecutor implements ICommandExecuter {
 			entry(UPLOAD, DefaultServerCommands::UPLOAD), entry(ASK, DefaultServerCommands::ASK),
 			entry(VALIDATE, DefaultServerCommands::VALIDATE), entry(DESCRIBE, DefaultServerCommands::DESCRIBE));
 
+	/**
+	 * Commands contributed by plug-ins through the {@code gama.server_command} extension point. Populated by
+	 * {@code GamaBundleLoader} at startup and merged into every {@link CommandExecutor} instance, so that contributed
+	 * commands are available to both the GUI and the headless servers.
+	 */
+	private static final Map<String, ISocketCommand> CONTRIBUTED_COMMANDS = new ConcurrentHashMap<>();
+
+	/**
+	 * Registers a command contributed by a plug-in. Called by {@code GamaBundleLoader} when reading the
+	 * {@code gama.server_command} extension point.
+	 *
+	 * @param type
+	 *            the command keyword (the JSON 'type' field sent by clients)
+	 * @param command
+	 *            the command implementation
+	 */
+	public static void registerContributedCommand(final String type, final ISocketCommand command) {
+		if (type != null && command != null) { CONTRIBUTED_COMMANDS.put(type, command); }
+	}
+
 	/** The commands. */
 	protected final Map<String, ISocketCommand> commands;
 
@@ -77,7 +99,10 @@ public class CommandExecutor implements ICommandExecuter {
 	 */
 
 	public CommandExecutor() {
-		commands = GAMA.getGui().getServerCommands();
+		// Copy into a mutable map (some IGui implementations return an immutable/shared map) and merge the commands
+		// contributed by plug-ins through the 'gama.server_command' extension point.
+		commands = new HashMap<>(GAMA.getGui().getServerCommands());
+		commands.putAll(CONTRIBUTED_COMMANDS);
 		commandQueue = new LinkedBlockingQueue<>();
 	}
 
@@ -112,13 +137,15 @@ public class CommandExecutor implements ICommandExecuter {
 		if (command == null) throw new IllegalArgumentException("Invalid command type: " + cmd_type);
 
 		// Executes the command in a separate thread so the executor can
-		// continue with the next one without waiting for it to finish
-		// new Thread(() -> {
-		var res = command.execute(server, socket, map);
-		if (res != null && ReadyState.OPEN.equals(socket.getReadyState())) {
-			socket.send(GAMA.getJsonEncoder().valueOf(res).toString());
-		}
-		// }).start();
+		// continue with the next one without waiting for it to finish.
+		// This is necessary to prevent connection closing during long commands
+		// because the main thread is busy and can't answer to the keepalive ping.
+		new Thread(() -> {
+			var res = command.execute(server, socket, map);
+			if (res != null && ReadyState.OPEN.equals(socket.getReadyState())) {
+				socket.send(GAMA.getJsonEncoder().valueOf(res).toString());
+			}
+		 }).start();
 	}
 
 	/**

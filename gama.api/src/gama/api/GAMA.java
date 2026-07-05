@@ -400,7 +400,12 @@ public class GAMA {
 		}
 
 		controller = newExperiment.getController();
-		if (!controllers.isEmpty()) { closeAllExperiments(false, false); }
+		// Close all existing experiments and switch back to the modeling perspective
+		// before opening the new one. Passing true for andOpenModelingPerspective
+		// ensures a full perspective reset — equivalent to pressing the "close
+		// experiment" button — so any partial or failed simulation state is discarded
+		// before the new experiment's perspective is opened.
+		if (!controllers.isEmpty()) { closeAllExperiments(true, false); }
 
 		if (newExperiment.isTest()) {
 			// controllers.add(controller);
@@ -681,7 +686,7 @@ public class GAMA {
 	 */
 	public static boolean stepFrontmostExperiment(final boolean andWait) {
 		for (final IExperimentController controller : controllers) {
-			if (!controller.processStep(andWait)) return false;
+			if (!controller.processStep(1, andWait)) return false;
 		}
 		return true;
 	}
@@ -695,7 +700,7 @@ public class GAMA {
 	 */
 	public static boolean stepBackFrontmostExperiment(final boolean andWait) {
 		for (final IExperimentController controller : controllers) {
-			if (!controller.processBack(andWait)) return false;
+			if (!controller.processBack(1, andWait)) return false;
 		}
 		return true;
 	}

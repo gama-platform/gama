@@ -26,7 +26,7 @@ import gama.api.utils.server.ReceivedMessage;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 15 oct. 2023
  */
-public class PlayCommand implements ISocketCommand {
+public class HeadlessPlayCommand implements ISocketCommand {
 
 	@Override
 	public CommandResponse execute(final IGamaServer server, final WebSocket socket, final ReceivedMessage map) {

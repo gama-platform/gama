@@ -1,0 +1,36 @@
+<cache xmlns="http://maven.apache.org/BUILD-CACHE-CONFIG/1.2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/BUILD-CACHE-CONFIG/1.2.0 https://maven.apache.org/xsd/build-cache-config-1.2.0.xsd">
+  <configuration>
+    <enabled/>
+    <attachedOutputs>
+      <dirNames>
+        <dirName>classes</dirName>
+      </dirNames>
+    </attachedOutputs>
+    <local>
+      <maxBuildsCached>1</maxBuildsCached>
+    </local>
+    <projectVersioning adjustMetaInf="true" calculateProjectVersionChecksum="true" />
+  </configuration>
+  <input>
+    <global>
+      <glob/>
+      <includes>
+        <include recursive="true" glob="*" />
+        <include>.classpath</include>
+        <include>.project</include>
+        <include recursive="true" glob="*">src</include>
+        <include recursive="true" glob="*">META-INF</include>
+        <include recursive="true" glob="*">.settings</include>
+        <include recursive="true" glob="*">models</include>
+      </includes>
+    </global>
+  </input>
+  <executionControl>
+    <runAlways>
+      <plugins>
+        <plugin groupId="org.eclipse.tycho" artifactId="tycho-p2-plugin" />
+      </plugins>
+    </runAlways>
+  </executionControl>
+</cache>

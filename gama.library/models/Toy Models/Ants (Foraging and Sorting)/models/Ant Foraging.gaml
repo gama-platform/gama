@@ -76,6 +76,13 @@ global {
 	reflex diffuse {
 		diffuse var: road on: ant_grid proportion: diffusion_rate radius: 3 propagation: gradient method: convolution;
 	}
+	
+	reflex evaporate {
+		matrix m_road <- matrix_with(ant_grid, "road");
+		matrix evapo <- m_road - evaporation_per_cycle;
+		matrix evapo_clamped <- ifelse(evapo > 0.0, evapo, 0.0);
+		do set_values(ant_grid, "road", evapo_clamped);
+	}
 }
 
 	//Grid used to discretize the space to place food
@@ -83,7 +90,7 @@ grid ant_grid width: gridsize height: gridsize neighbors: 8 frequency: grid_freq
 	bool is_nest const: true <- (topology(ant_grid) distance_between [self, center]) < 4;
 	// Precomputed once; used in choose_best_place to avoid repeated distance_to calls
 	float dist_to_nest const: true <- topology(ant_grid) distance_between [self, center];
-	float road <- 0.0 max: 240.0 update: (road <= evaporation_per_cycle) ? 0.0 : road - evaporation_per_cycle;
+	float road <- 0.0 max: 240.0;
 	// Init expression removed: the update expression already covers the initial state
 	rgb color update: is_nest ? nest_color : ((food > 0) ? food_color : ((road < 0.001) ? background : rgb(0, 99, 0) + int(road * 5)));
 	int food <- 0;
@@ -233,6 +240,7 @@ experiment "Classic" type: gui parent:base{
 			agents "Grid" transparency: 0.4 value: ant_grid where ((each.food > 0) or (each.road > 0) or (each.is_nest));
 			species ant aspect: info;
 		}
+
 	}
 }
 
@@ -277,7 +285,7 @@ experiment "3 Simulations" type: gui  parent:base{
 	}
 
 	output {
-		layout #split editors: false consoles: false toolbars: true tabs: true tray: false parameters: true background: #red;
+		layout #split editors: false consoles: false toolbars: true tabs: true tray: false parameters: true ;
 		display Ants background: color type: 3d toolbar: color axes: false {
 			picture terrain position: {0.05, 0.05} size: {0.9, 0.9} refresh: false;
 			agents "agents" transparency: 0.5 position: {0.05, 0.05} size: {0.9, 0.9} value: (ant_grid as list) where ((each.food > 0) or (each.road > 0) or (each.is_nest));

@@ -14,6 +14,11 @@
 	<artifactId>gama.product</artifactId>
 	<packaging>eclipse-repository</packaging>
 
+    <properties>
+        <maven.build.cache.skipCache>true</maven.build.cache.skipCache>
+        <maven.build.cache.enabled>false</maven.build.cache.enabled>
+    </properties>
+
 	<build>
 		<plugins>
 			<plugin>

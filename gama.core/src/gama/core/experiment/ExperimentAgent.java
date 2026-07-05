@@ -10,6 +10,7 @@
  ********************************************************************************************************/
 package gama.core.experiment;
 
+import java.nio.file.FileSystems;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -48,6 +49,7 @@ import gama.api.kernel.species.IModelSpecies;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.IExecutable;
 import gama.api.runtime.scope.ExecutionScope;
+import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.color.GamaColorFactory;
 import gama.api.types.color.IColor;
@@ -480,10 +482,10 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	 *            the scope
 	 */
 	@Override
-	public void schedule(final IScope scope) {
+	public IExecutionResult schedule(final IScope scope) {
 		scheduled = true;
 		// The experiment agent is scheduled in the global scheduler
-		getSpecies().getController().schedule(this);
+		return getSpecies().getController().schedule(this);
 	}
 
 	/**
@@ -680,7 +682,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	 */
 	@Override
 
-	public String getProjectPath() { return getModel().getProjectPath() + "/"; }
+	public String getProjectPath() { return getModel().getProjectPath() + FileSystems.getDefault().getSeparator(); }
 
 	/**
 	 * Gets the cycle.

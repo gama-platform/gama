@@ -61,7 +61,7 @@ import gama.headless.core.GamaHeadlessException;
 import gama.headless.job.ExperimentJob;
 import gama.headless.job.IExperimentJob;
 import gama.headless.script.ExperimentationPlanFactory;
-import gama.headless.server.GamaServerGUIHandler;
+import gama.headless.server.GamaHeadlessServerGUIEventHandler;
 import gama.headless.xml.ConsoleReader;
 import gama.headless.xml.Reader;
 import gama.headless.xml.XMLWriter;
@@ -97,7 +97,7 @@ public class HeadlessApplication implements IApplication {
 		DEBUG.LOG("GAMA configuring and loading...");
 		System.setProperty("java.awt.headless", "true");
 		GAMA.setHeadLessMode(isServer);
-		GAMA.setHeadlessGui(isServer ? new GamaServerGUIHandler() : new NullGuiHandler());
+		GAMA.setHeadlessGui(isServer ? new GamaHeadlessServerGUIEventHandler() : new NullGuiHandler());
 		// Trigger gama.workspace lazy activation so WorkspaceActivator registers the workspace
 		WorkspaceActivator.load();
 		try {

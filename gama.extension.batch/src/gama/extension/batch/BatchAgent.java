@@ -36,6 +36,7 @@ import gama.api.kernel.simulation.IExploration;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.runtime.GamaExecutorService;
+import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.map.GamaMapFactory;
@@ -124,8 +125,9 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 	}
 
 	@Override
-	public void schedule(final IScope scope) {
-		super.schedule(scope);
+	public IExecutionResult schedule(final IScope scope) {
+		
+		IExecutionResult res = super.schedule(scope);
 		// Necessary to run it here, as if the seed has been fixed in the
 		// experiment, it is now defined and initialized
 		if (getSpecies().keepsSeed()) {
@@ -133,6 +135,7 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 				getSeeds()[i] = getScope().getRandom().between(0d, Long.MAX_VALUE);
 			}
 		}
+		return res;
 
 	}
 

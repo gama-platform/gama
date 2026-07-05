@@ -640,7 +640,7 @@ public interface IList<E>
 	 *      gama.gaml.types.IContainerType)
 	 */
 	default Integer buildIndex(final IScope scope, final Object object) {
-		if (!FLAGS.CAST_CONTAINER_CONTENTS) return (Integer) object;
+		if (!FLAGS.CAST_CONTAINER_CONTENTS && object instanceof Number n) return n.intValue();
 		return GamaIntegerType.staticCast(scope, object, null, false);
 	}
 

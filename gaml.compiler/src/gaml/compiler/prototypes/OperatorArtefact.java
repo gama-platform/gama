@@ -13,6 +13,8 @@ package gaml.compiler.prototypes;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -269,7 +271,57 @@ public class OperatorArtefact extends AbstractArtefact implements IArtefact.Oper
 	public String getTitle() {
 		if (isVarOrField) return "field " + getName() + " of type " + returnType + ", for values of type "
 				+ signature.asPattern(false);
-		return "operator " + getName() + "(" + signature.asPattern(false) + "), returns " + documentReturnType();
+		return "operator " + getName() + "(" + documentSignature() + "), returns " + documentReturnType();
+	}
+
+	/**
+	 * Documents the operator signature for hover information.
+	 *
+	 * <p>
+	 * When the underlying support is a reflected Java method compiled with parameter metadata, this method includes
+	 * parameter names in the inline signature. Otherwise, it gracefully falls back to the plain type-only signature.
+	 * </p>
+	 *
+	 * @return the signature string displayed in hover documentation
+	 */
+	@Override
+	public String documentSignature() {
+		if (!(support instanceof final Method method)) return signature.asPattern(false);
+		final StringBuilder builder = new StringBuilder();
+		int signatureIndex = 0;
+		if (!Modifier.isStatic(method.getModifiers()) && signatureIndex < signature.size()) {
+			appendDocumentedOperand(builder, null, signature.get(signatureIndex++));
+		}
+		for (final Parameter parameter : method.getParameters()) {
+			if (parameter.getType() == IScope.class) { continue; }
+			if (signatureIndex >= signature.size()) return signature.asPattern(false);
+			appendDocumentedOperand(builder, parameter.isNamePresent() ? parameter.getName() : null,
+					signature.get(signatureIndex++));
+		}
+		return signatureIndex == signature.size() ? builder.toString() : signature.asPattern(false);
+	}
+
+	/**
+	 * Appends one operand description to the documented signature.
+	 *
+	 * @param builder
+	 *            the target string builder receiving the operand description
+	 * @param parameterName
+	 *            the Java parameter name, or {@code null} when no stable name is available
+	 * @param parameterType
+	 *            the GAML type to display for this operand
+	 */
+	private void appendDocumentedOperand(final StringBuilder builder, final String parameterName,
+			final IType<?> parameterType) {
+		if (builder.length() > 0) { builder.append(", "); }
+		String tt = parameterType.serializeToGaml(true);
+		builder.append(tt).append(" ");
+		if (parameterName != null && !parameterName.isBlank()) {
+			builder.append(parameterName);
+		} else {
+			builder.append(tt.substring(0, 1));
+		}
+
 	}
 
 	/**

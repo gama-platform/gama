@@ -79,15 +79,15 @@ public class DefaultServerCommands {
 	 * Load.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param socket
-	 *            the socket
-	 * @param map
-	 *            the map
+	 * @param socket the socket
+	 * @param map    the map
 	 * @return the command response
 	 * @date 15 oct. 2023
 	 */
 	public static GamaServerMessage LOAD(final IGamaServer server, final WebSocket socket,
 			final Map<String, Object> map) {
+		// TODO: is this thing really used ? I think what happens is that the call just
+		// hangs until the experiment is closed
 		if (!GAMA.isInHeadLessMode()
 				&& GAMA.getExperimentState(GAMA.getExperiment()) == IExperimentStateListener.State.NOTREADY)
 			return new CommandResponse(MessageType.UnableToExecuteRequest,
@@ -95,13 +95,15 @@ public class DefaultServerCommands {
 
 		final Object modelPath = map.get("model");
 		final Object experiment = map.get("experiment");
-		if (modelPath == null || experiment == null) return new CommandResponse(MalformedRequest,
-				"For 'load', mandatory parameters are: 'model' and 'experiment'", map, false);
+		if (modelPath == null || experiment == null)
+			return new CommandResponse(MalformedRequest,
+					"For 'load', mandatory parameters are: 'model' and 'experiment'", map, false);
 		String pathToModel = modelPath.toString().trim();
 		String nameOfExperiment = experiment.toString().trim();
 		File ff = new File(pathToModel);
-		if (!ff.exists()) return new CommandResponse(UnableToExecuteRequest,
-				"'" + ff.getAbsolutePath() + "' does not exist", map, false);
+		if (!ff.exists())
+			return new CommandResponse(UnableToExecuteRequest, "'" + ff.getAbsolutePath() + "' does not exist", map,
+					false);
 		if (!GamlFileExtension.isGaml(ff.getAbsoluteFile().toString()))
 			return new CommandResponse(MessageType.UnableToExecuteRequest,
 					"'" + ff.getAbsolutePath() + "' is not a gaml file", map, false);
@@ -115,12 +117,15 @@ public class DefaultServerCommands {
 			return new CommandResponse(UnableToExecuteRequest,
 					"Impossible to compile '" + ff.getAbsolutePath() + "' because of " + e.getMessage(), map, false);
 		}
-		if (!model.getDescription().hasExperiment(nameOfExperiment)) return new CommandResponse(UnableToExecuteRequest,
-				"'" + nameOfExperiment + "' is not an experiment present in '" + ff.getAbsolutePath() + "'", map,
-				false);
+		if (!model.getDescription().hasExperiment(nameOfExperiment))
+			return new CommandResponse(	UnableToExecuteRequest,
+										"'" + nameOfExperiment + "' is not an experiment present in '" + ff.getAbsolutePath() + "'", 
+										map,
+										false);
 		final IModelSpecies mm = model;
-		GAMA.getGui().run("Opening experiment " + nameOfExperiment, () -> GAMA.runGuiExperiment(nameOfExperiment, mm),
-				false);
+		GAMA.getGui().run(	"Opening experiment " + nameOfExperiment, 
+							() -> GAMA.runGuiExperiment(nameOfExperiment, mm),
+							false);
 		return new CommandResponse(CommandExecutedSuccessfully, nameOfExperiment, map, false);
 	}
 
@@ -128,10 +133,8 @@ public class DefaultServerCommands {
 	 * Play.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param socket
-	 *            the socket
-	 * @param map
-	 *            the map
+	 * @param socket the socket
+	 * @param map    the map
 	 * @return the command response
 	 * @date 15 oct. 2023
 	 */
@@ -146,10 +149,8 @@ public class DefaultServerCommands {
 	 * Pause.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param socket
-	 *            the socket
-	 * @param map
-	 *            the map
+	 * @param socket the socket
+	 * @param map    the map
 	 * @return the command response
 	 * @date 15 oct. 2023
 	 */
@@ -170,10 +171,8 @@ public class DefaultServerCommands {
 	 * Step.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param socket
-	 *            the socket
-	 * @param map
-	 *            the map
+	 * @param socket the socket
+	 * @param map    the map
 	 * @return the command response
 	 * @date 15 oct. 2023
 	 */
@@ -192,14 +191,16 @@ public class DefaultServerCommands {
 			nb_step = 1;
 		}
 		final boolean sync = map.get(SYNC) != null ? Boolean.parseBoolean("" + map.get(SYNC)) : false;
-		for (int i = 0; i < nb_step; i++) {
-			try {
-				if (!plan.getController().processStep(sync))
-					return new CommandResponse(UnableToExecuteRequest, "Controller is full", map, false);
-			} catch (RuntimeException e) {
-				DEBUG.OUT(e.getStackTrace());
-				return new CommandResponse(MessageType.RuntimeError, e, map, false);
+		try {
+			if (!plan.getController().processStep(nb_step, sync)) {
+				return new CommandResponse(UnableToExecuteRequest, "Controller is full", map, false);
 			}
+		} catch (Throwable e) {
+			DEBUG.OUT(e.getStackTrace());
+			return new CommandResponse(MessageType.RuntimeError, e, map, false);
+		}
+		if (plan.getController().isDisposing()) {
+			return new CommandResponse(MessageType.RuntimeError, "", map, false);
 		}
 		return new CommandResponse(CommandExecutedSuccessfully, "", map, false);
 	}
@@ -208,10 +209,8 @@ public class DefaultServerCommands {
 	 * Back.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param socket
-	 *            the socket
-	 * @param map
-	 *            the map
+	 * @param socket the socket
+	 * @param map    the map
 	 * @return the command response
 	 * @date 15 oct. 2023
 	 */
@@ -230,14 +229,13 @@ public class DefaultServerCommands {
 			nb_step = 1;
 		}
 		final boolean sync = map.get(SYNC) != null ? Boolean.parseBoolean("" + map.get(SYNC)) : false;
-		for (int i = 0; i < nb_step; i++) {
-			try {
-				if (!plan.getController().processBack(sync))
-					return new CommandResponse(UnableToExecuteRequest, "Controller is full", map, false);
-			} catch (RuntimeException e) {
-				DEBUG.OUT(e.getStackTrace());
-				return new CommandResponse(MessageType.GamaServerError, e, map, false);
+		try {
+			if (!plan.getController().processBack(nb_step, sync)) {
+				return new CommandResponse(UnableToExecuteRequest, "Controller is full", map, false);
 			}
+		} catch (RuntimeException e) {
+			DEBUG.OUT(e.getStackTrace());
+			return new CommandResponse(MessageType.GamaServerError, e, map, false);
 		}
 		return new CommandResponse(CommandExecutedSuccessfully, "", map, false);
 	}
@@ -246,10 +244,8 @@ public class DefaultServerCommands {
 	 * Stop.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param socket
-	 *            the socket
-	 * @param map
-	 *            the map
+	 * @param socket the socket
+	 * @param map    the map
 	 * @return the command response
 	 * @date 15 oct. 2023
 	 */
@@ -263,10 +259,8 @@ public class DefaultServerCommands {
 	 * Reload.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param socket
-	 *            the socket
-	 * @param map
-	 *            the map
+	 * @param socket the socket
+	 * @param map    the map
 	 * @return the command response
 	 * @date 15 oct. 2023
 	 */
@@ -281,7 +275,8 @@ public class DefaultServerCommands {
 		IList params = (IList) map.get(PARAMETERS);
 		// checking the parameters' format
 		var parametersError = CommandExecutor.checkLoadParameters(params, map);
-		if (parametersError != null) return parametersError;
+		if (parametersError != null)
+			return parametersError;
 		plan.setParameterValues(params);
 		plan.setStopCondition((String) map.get(ISocketCommand.UNTIL));
 		// actual reload
@@ -294,10 +289,8 @@ public class DefaultServerCommands {
 	 * Eval.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param socket
-	 *            the socket
-	 * @param map
-	 *            the map
+	 * @param socket the socket
+	 * @param map    the map
 	 * @return the command response
 	 * @date 15 oct. 2023
 	 */
@@ -310,12 +303,15 @@ public class DefaultServerCommands {
 			return e.getResponse();
 		}
 		final Object expr = map.get(EXPR);
-		if (expr == null) return new CommandResponse(MalformedRequest,
-				"For " + EXPRESSION + ", mandatory parameter is: " + EXPR, map, false);
+		if (expr == null)
+			return new CommandResponse(MalformedRequest, "For " + EXPRESSION + ", mandatory parameter is: " + EXPR, map,
+					false);
 		String entered = expr.toString().trim();
 		String res = null;
 		ITopLevelAgent agent = plan.getAgent();
-		if (agent == null) { agent = GAMA.getPlatformAgent(); }
+		if (agent == null) {
+			agent = GAMA.getPlatformAgent();
+		}
 		final IScope scope = agent.getScope().copy("in web socket");
 		if (entered.startsWith("?")) {
 			res = GamlIdiomsProvider.getDocumentationOn(entered.substring(1));
@@ -342,12 +338,9 @@ public class DefaultServerCommands {
 	 * Validate. Accepts
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param server
-	 *            the server
-	 * @param socket
-	 *            the socket
-	 * @param map
-	 *            the map
+	 * @param server the server
+	 * @param socket the socket
+	 * @param map    the map
 	 * @return the gama server message
 	 * @date 11 janv. 2024
 	 */
@@ -356,25 +349,25 @@ public class DefaultServerCommands {
 		final Object expr = map.get(EXPR);
 		final Object syntax = map.get(SYNTAX);
 		boolean syntaxOnly = syntax instanceof Boolean b && b;
-		if (expr == null) return new CommandResponse(MessageType.MalformedRequest,
-				"For " + ISocketCommand.VALIDATE + ", mandatory parameter is: " + EXPR, map, false);
+		if (expr == null)
+			return new CommandResponse(MessageType.MalformedRequest,
+					"For " + ISocketCommand.VALIDATE + ", mandatory parameter is: " + EXPR, map, false);
 		String entered = expr.toString().trim();
-		if (entered.isBlank()) return new CommandResponse(CommandExecutedSuccessfully, entered, map, false);
+		if (entered.isBlank())
+			return new CommandResponse(CommandExecutedSuccessfully, entered, map, false);
 		List<GamlCompilationError> errors = GAML.validate(entered, syntaxOnly);
-		if (errors != null && !errors.isEmpty()) return new CommandResponse(UnableToExecuteRequest,
-				new GamaCompilationFailedException(errors).toJsonString(), map, true);
-		final boolean escaped = map.get(ESCAPED) == null ? false : Boolean.parseBoolean("" + map.get(ESCAPED));
-		return new CommandResponse(CommandExecutedSuccessfully, entered, map, escaped);
+		if (errors != null && !errors.isEmpty())
+			return new CommandResponse(UnableToExecuteRequest,
+					new GamaCompilationFailedException(errors).toJsonString(), map, true);
+		return new CommandResponse(CommandExecutedSuccessfully, "", map, false);
 	}
 
 	/**
 	 * Ask.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param socket
-	 *            the socket
-	 * @param map
-	 *            the map
+	 * @param socket the socket
+	 * @param map    the map
 	 * @return the gama server message
 	 * @date 26 nov. 2023
 	 */
@@ -387,8 +380,9 @@ public class DefaultServerCommands {
 			return e.getResponse();
 		}
 		final String action = map.get(IKeyword.ACTION) != null ? map.get(IKeyword.ACTION).toString().trim() : null;
-		if (action == null) return new CommandResponse(MessageType.MalformedRequest,
-				"For " + ISocketCommand.ASK + ", mandatory parameter is: 'action'", map, false);
+		if (action == null)
+			return new CommandResponse(MessageType.MalformedRequest,
+					"For " + ISocketCommand.ASK + ", mandatory parameter is: 'action'", map, false);
 		final String ref = map.get(IKeyword.AGENT) != null ? map.get(IKeyword.AGENT).toString().trim() : null;
 		final IExperimentAgent exp = plan.getAgent();
 		IScope scope = exp.getScope();
@@ -396,9 +390,11 @@ public class DefaultServerCommands {
 		if (agent == null)
 			return new CommandResponse(UnableToExecuteRequest, "Agent does not exist: " + ref, map, false);
 		final IExecutable exec = agent.getSpecies().getAction(action);
-		if (exec == null) return new CommandResponse(UnableToExecuteRequest,
-				"Action " + action + " does not exist in agent " + ref, map, false);
-		// TODO Verify that it is not a JSON string...Otherwise, use Json.getNew().parse(...)
+		if (exec == null)
+			return new CommandResponse(UnableToExecuteRequest, "Action " + action + " does not exist in agent " + ref,
+					map, false);
+		// TODO Verify that it is not a JSON string...Otherwise, use
+		// Json.getNew().parse(...)
 		String json = (String) map.get(ARGS);
 		IJsonValue object = GAMA.getJsonEncoder().parse(json);
 		Map<String, Object> args = GamaMapFactory.castToMap(scope, object.toGamlValue(scope));
@@ -422,28 +418,29 @@ public class DefaultServerCommands {
 	 * Download.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param socket
-	 *            the socket
-	 * @param map
-	 *            the map
+	 * @param socket the socket
+	 * @param map    the map
 	 * @return the command response
 	 * @date 15 oct. 2023
 	 */
 	public static CommandResponse DOWNLOAD(final IGamaServer server, final WebSocket socket,
 			final Map<String, Object> map) {
 		final String filepath = map.containsKey(IKeyword.FILE) ? map.get(IKeyword.FILE).toString() : null;
-		if (filepath == null) return new CommandResponse(MessageType.MalformedRequest,
-				"For 'download', mandatory parameter is: 'file'", map, false);
+		if (filepath == null)
+			return new CommandResponse(MessageType.MalformedRequest, "For 'download', mandatory parameter is: 'file'",
+					map, false);
 		try (InputStream is = Files.newInputStream(new File(filepath).toPath());
 				InputStreamReader isr = new InputStreamReader(is, "UTF-8");
 				BufferedReader br = new BufferedReader(isr)) {
 			StringBuilder sc = new StringBuilder();
 			String line;
 			// read all the lines
-			while ((line = br.readLine()) != null) { sc.append(line).append("\n"); }
+			while ((line = br.readLine()) != null) {
+				sc.append(line).append("\n");
+			}
 			// we remove the last \n
 			if (!sc.isEmpty()) {
-				sc.deleteCharAt(sc.length()-1);
+				sc.deleteCharAt(sc.length() - 1);
 			}
 			return new CommandResponse(CommandExecutedSuccessfully, sc.toString(), map, false);
 		} catch (Exception e) {
@@ -456,10 +453,8 @@ public class DefaultServerCommands {
 	 * Upload.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param socket
-	 *            the socket
-	 * @param map
-	 *            the map
+	 * @param socket the socket
+	 * @param map    the map
 	 * @return the command response
 	 * @date 15 oct. 2023
 	 */
@@ -467,8 +462,9 @@ public class DefaultServerCommands {
 			final Map<String, Object> map) {
 		final String filepath = map.containsKey("file") ? map.get("file").toString() : null;
 		final String content = map.containsKey("content") ? map.get("content").toString() : null;
-		if (filepath == null || content == null) return new CommandResponse(MessageType.MalformedRequest,
-				"For 'upload', mandatory parameters are: 'file' and 'content'", map, false);
+		if (filepath == null || content == null)
+			return new CommandResponse(MessageType.MalformedRequest,
+					"For 'upload', mandatory parameters are: 'file' and 'content'", map, false);
 		try (FileWriter myWriter = new FileWriter(filepath, StandardCharsets.UTF_8)) {
 			myWriter.write(content);
 			return new CommandResponse(MessageType.CommandExecutedSuccessfully, "", map, false);
@@ -482,10 +478,8 @@ public class DefaultServerCommands {
 	 * Description.
 	 *
 	 * @author Johary Rakotomalala (johary.rakotomalala.31@gmail.com)
-	 * @param socket
-	 *            the socket
-	 * @param map
-	 *            the map
+	 * @param socket the socket
+	 * @param map    the map
 	 * @return the command response
 	 * @date 24 jan. 2025
 	 */
@@ -497,8 +491,9 @@ public class DefaultServerCommands {
 			return new CommandResponse(MalformedRequest, "For 'describe', mandatory parameter is: 'model'", map, false);
 		String pathToModel = modelPath.toString().trim();
 		File ff = new File(pathToModel);
-		if (!ff.exists()) return new CommandResponse(UnableToExecuteRequest,
-				"'" + ff.getAbsolutePath() + "' does not exist", map, false);
+		if (!ff.exists())
+			return new CommandResponse(UnableToExecuteRequest, "'" + ff.getAbsolutePath() + "' does not exist", map,
+					false);
 		if (!GamlFileExtension.isGaml(ff.getAbsoluteFile().toString()))
 			return new CommandResponse(MessageType.UnableToExecuteRequest,
 					"'" + ff.getAbsolutePath() + "' is not a gaml file", map, false);
@@ -526,9 +521,13 @@ public class DefaultServerCommands {
 		// Gathering information
 		Map<String, Object> res = new HashMap<>();
 
-		if (readExperiments) { res.put("experiments", getExperiments(model)); }
+		if (readExperiments) {
+			res.put("experiments", getExperiments(model));
+		}
 
-		if (readSpeciesNames) { res.put("species", readSpecies(model, readSpeciesActions, readspeciesVariables)); }
+		if (readSpeciesNames) {
+			res.put("species", readSpecies(model, readSpeciesActions, readspeciesVariables));
+		}
 
 		res.put(IKeyword.NAME, model.getName());
 		res.put("path", pathToModel);
@@ -538,8 +537,7 @@ public class DefaultServerCommands {
 	/**
 	 * Gets the species variables.
 	 *
-	 * @param species
-	 *            the species
+	 * @param species the species
 	 * @return the species variables
 	 */
 	private static List<Map<String, String>> getSpeciesVariables(final ISpecies species) {
@@ -556,8 +554,7 @@ public class DefaultServerCommands {
 	/**
 	 * Gets the species actions.
 	 *
-	 * @param species
-	 *            the species
+	 * @param species the species
 	 * @return the species actions
 	 */
 	private static List<Map<String, Object>> getSpeciesActions(final ISpecies species) {
@@ -584,12 +581,9 @@ public class DefaultServerCommands {
 	/**
 	 * Read species.
 	 *
-	 * @param model
-	 *            the model
-	 * @param readSpeciesActions
-	 *            the read species actions
-	 * @param readspeciesVariables
-	 *            the readspecies variables
+	 * @param model                the model
+	 * @param readSpeciesActions   the read species actions
+	 * @param readspeciesVariables the readspecies variables
 	 * @return the list
 	 */
 	private static List<Map<String, Object>> readSpecies(final IModelSpecies model, final boolean readSpeciesActions,
@@ -601,10 +595,14 @@ public class DefaultServerCommands {
 			resSpecie.put(IKeyword.NAME, species.getName());
 
 			// Variables
-			if (readspeciesVariables) { resSpecie.put("variables", getSpeciesVariables(species)); }
+			if (readspeciesVariables) {
+				resSpecie.put("variables", getSpeciesVariables(species));
+			}
 
 			// Actions
-			if (readSpeciesActions) { resSpecie.put("actions", getSpeciesActions(species)); }
+			if (readSpeciesActions) {
+				resSpecie.put("actions", getSpeciesActions(species));
+			}
 
 			resAllSpecies.add(resSpecie);
 		}
@@ -614,8 +612,7 @@ public class DefaultServerCommands {
 	/**
 	 * Gets the experiments.
 	 *
-	 * @param model
-	 *            the model
+	 * @param model the model
 	 * @return the experiments
 	 */
 	private static List<Map<String, Object>> getExperiments(final IModelSpecies model) {
@@ -644,10 +641,8 @@ public class DefaultServerCommands {
 	 * Exit.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param socket
-	 *            the socket
-	 * @param map
-	 *            the map
+	 * @param socket the socket
+	 * @param map    the map
 	 * @return the gama server message
 	 * @date 15 oct. 2023
 	 */

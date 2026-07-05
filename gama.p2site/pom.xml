@@ -36,6 +36,8 @@
 				<ftp.toDir>/var/www/gama_updates/0.0.0</ftp.toDir>
 				<!-- Relative path to the repo being uploaded -->
 				<repo.path>${project.build.directory}/repository/</repo.path>
+				<maven.build.cache.skipCache>true</maven.build.cache.skipCache>
+				<maven.build.cache.enabled>false</maven.build.cache.enabled>
 			</properties>
 
 			<build>
@@ -101,7 +103,10 @@
 		</profile>
 	</profiles>
 
-
+    <properties>
+        <maven.build.cache.skipCache>true</maven.build.cache.skipCache>
+        <maven.build.cache.enabled>false</maven.build.cache.enabled>
+    </properties>
 
 	<build>
 

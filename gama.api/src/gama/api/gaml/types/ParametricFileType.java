@@ -134,7 +134,13 @@ public class ParametricFileType extends ParametricType {
 		if (genericInstance == null) {
 			genericInstance =
 					new ParametricFileType("generic_file", IGamaFile.class, (s, o) -> new GenericFile(s, (String) o[0]),
-							Types.LIST, Types.NO_TYPE, Types.NO_TYPE, GamaFileType.provideNewIndex());
+							Types.LIST, Types.NO_TYPE, Types.NO_TYPE, GamaFileType.provideNewIndex()) {
+						@Override
+						public Map<String, IArtefact.Operator>
+								getFieldGetters() { return getGamlType().getFieldGetters(); }
+					};
+			genericInstance.setParent(Types.FILE);
+			Types.addRegularType(genericInstance.getName(), genericInstance, "gama.core");
 		}
 		return genericInstance;
 	}
@@ -520,8 +526,7 @@ public class ParametricFileType extends ParametricType {
 	 */
 	@Override
 	public IArtefact getGetter(final String field) {
-		if (getters == null) return null;
-		return getters.get(field);
+		return getFieldGetters().get(field);
 	}
 
 	/**
@@ -532,12 +537,8 @@ public class ParametricFileType extends ParametricType {
 	 */
 	@Override
 	public void documentFields(final IGamlDocumentation result) {
-		if (getters != null) {
-			// sb.append("<b><br/>Fields :</b><ul>");
-			for (final IArtefact.Operator f : getters.values()) { getFieldDocumentation(result, f); }
-
-			result.append("</ul>");
-		}
+		for (final IArtefact.Operator f : getFieldGetters().values()) { getFieldDocumentation(result, f); }
+		result.append("</ul>");
 	}
 
 	/**

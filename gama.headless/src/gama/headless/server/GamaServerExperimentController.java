@@ -20,6 +20,7 @@ import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.IExperimentStateListener;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.runtime.GamaExecutorService;
+import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.IList;
 import gama.api.types.map.IMap;
@@ -124,16 +125,15 @@ public class GamaServerExperimentController extends AbstractExperimentController
 	 */
 	@Override
 	protected boolean processUserCommand(final ExperimentCommand command) {
-		switch (command) {
+		switch (command.type()) {
 			case _OPEN:
 				try {
-					_job.loadAndBuildWithJson(parameters, stopCondition);
+					return _job.loadAndBuildWithJson(parameters, stopCondition).passed();	
 				} catch (Exception e) {
 					DEBUG.OUT(e);
 					GAMA.reportError(scope, GamaRuntimeException.create(e, scope), true);
 					return false;
 				}
-				return true;
 			case _START:
 				paused = false;
 				lock.release();
@@ -142,13 +142,17 @@ public class GamaServerExperimentController extends AbstractExperimentController
 				paused = true;
 				return true;
 			case _STEP:
-				previouslock.acquire();
-				paused = true;
-				lock.release();
+				for(int i = 0; i < command.quantity(); i++) {
+					previouslock.acquire();
+					paused = true;
+					lock.release();					
+				}
 				return true;
 			case _BACK:
-				paused = true;
-				experiment.getAgent().backward(getScope());
+				for(int i = 0; i < command.quantity(); i++) {
+					paused = true;
+					experiment.getAgent().backward(getScope());
+				}
 				return true;
 			case _RELOAD:
 				try {
@@ -188,7 +192,7 @@ public class GamaServerExperimentController extends AbstractExperimentController
 				experimentAlive = false;
 				lock.release();
 				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.NONE);
-				if (commandThread != null && commandThread.isAlive()) { commands.offer(ExperimentCommand._CLOSE); }
+				if (commandThread != null && commandThread.isAlive()) { commands.offer(_CLOSE_CMD); }
 			}
 		}
 	}
@@ -227,17 +231,21 @@ public class GamaServerExperimentController extends AbstractExperimentController
 	 *            the agent
 	 */
 	@Override
-	public void schedule(final IExperimentAgent agent) {
+	public IExecutionResult schedule(final IExperimentAgent agent) {
 		scope = agent.getScope();
 		serverConfiguration = serverConfiguration.withExpId(_job.getExperimentID());
 		scope.setServerConfiguration(serverConfiguration);
+		IExecutionResult res = IExecutionResult.FAILED;
 		try {
-			if (!scope.init(agent).passed()) { scope.setDisposeStatus(); }
+			res = scope.init(agent);
+			if (!res.passed()) { scope.setDisposeStatus(); }
+			
 		} catch (final Throwable e) {
 			if (scope != null && scope.interrupted()) {} else if (!(e instanceof GamaRuntimeException)) {
 				GAMA.reportError(scope, GamaRuntimeException.create(e, scope), true);
 			}
 		}
+		return res;
 	}
 
 	/**
@@ -250,7 +258,7 @@ public class GamaServerExperimentController extends AbstractExperimentController
 		}
 		try {
 			_job.doStep();
-		} catch (RuntimeException e) {
+		} catch (Throwable e) {
 			// e.printStackTrace();
 			serverConfiguration.socket()
 					.send(GAMA.getJsonEncoder().valueOf(new GamaServerMessage(MessageType.RuntimeError, e)).toString());
@@ -260,23 +268,27 @@ public class GamaServerExperimentController extends AbstractExperimentController
 	}
 
 	@Override
-	public boolean processStep(final boolean andWait) {
-		paused = true;
-		if (andWait) {
-			_job.doStep();
-			return true;
-		}
-		return super.processStep(andWait);
+	public boolean processStep(final int nbSteps, final boolean andWait) {
+//			paused = true;
+//			if (andWait) {
+//				for(int i = 0 ; i < nbSteps; i++) {
+//					_job.doStep();				
+//				}
+//				return true;
+//			}
+			return super.processStep(nbSteps, andWait);			
 	}
 
 	@Override
-	public boolean processBack(final boolean andWait) {
+	public boolean processBack(final int nbSteps, final boolean andWait) {
 		paused = true;
 		if (andWait) {
-			_job.doBackStep();
+			for(int i = 0; i < nbSteps; i++) {
+				_job.doBackStep();				
+			}
 			return true;
 		}
-		return super.processBack(andWait);
+		return super.processBack(nbSteps, andWait);
 	}
 
 }

@@ -27,7 +27,7 @@ global {
 	
 	
 	action activate_act() {
-		button selected_but <- first(button overlapping (circle(1) at_location #user_location));
+		button selected_but <- first(button overlapping #user_location);
 		if(selected_but != nil) {
 			ask selected_but {
 				ask button {bord_col<-#black;}
@@ -43,7 +43,7 @@ global {
 	}
 	
 	action cell_management() {
-		cell selected_cell <- first(cell overlapping (circle(1.0) at_location #user_location));
+		cell selected_cell <- first(cell overlapping #user_location);
 		if(selected_cell != nil) {
 			ask selected_cell {
 				building <- action_type;
@@ -91,7 +91,7 @@ experiment ToolsPanel type: gui {
 			
 		}
 		//display the action buttons
-		display action_button background:#black title:"Tools panel"  type:2d antialias:false{
+		display action_button background:#black title:"Tools panel"  type:2d antialias:false locked:true{
 			species button aspect:normal ;
 			event #mouse_down {ask simulation {do activate_act();}}  
 		}

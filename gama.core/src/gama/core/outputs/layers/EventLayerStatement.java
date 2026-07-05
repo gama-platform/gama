@@ -42,6 +42,7 @@ import gama.api.gaml.symbols.ISymbol;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.IExecutable;
+import gama.api.runtime.SystemInfo;
 import gama.api.runtime.scope.IScope;
 import gama.api.ui.IOutput;
 import gama.api.ui.layers.ILayerStatement;
@@ -162,6 +163,10 @@ public class EventLayerStatement extends AbstractLayerStatement implements ILaye
 					description.error("No event can be triggered for '" + name + "'. Acceptable values are "
 							+ error.append(" or a character").toString(), IGamlIssue.UNKNOWN_ARGUMENT, NAME);
 					return;
+				}
+				if (SystemInfo.isLinux() && IKeyword.MOUSE_EXIT.equals(name)) {
+					description.warning("'" + IKeyword.MOUSE_EXIT + "' may not fire reliably on Linux systems",
+							IGamlIssue.GENERAL, TRIGGER);
 				}
 			}
 

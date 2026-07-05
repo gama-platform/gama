@@ -10,6 +10,11 @@
  ********************************************************************************************************/
 package gama.ui.shared.utils;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.ControlAdapter;
@@ -22,9 +27,12 @@ import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
+import org.eclipse.ui.IWorkbenchPart;
 
 import gama.api.GAMA;
 import gama.api.ui.IConsoleListener;
+import gama.api.ui.IGamaView;
+import gama.api.ui.IGui;
 import gama.api.ui.IStatusControl;
 import gama.api.ui.IStatusDisplayer;
 import gama.api.ui.IStatusMessage;
@@ -81,6 +89,39 @@ public class LaunchingOverlay {
 	 * {@link StyledText#setMargins(int, int, int, int)}.
 	 */
 	private static final int CONSOLE_TEXT_PADDING = 6;
+
+	/**
+	 * Blend percentage (0–100) used to derive the console border colour from the overlay background and foreground. A
+	 * value of 30 means the border is 30 % of the way between the background and the foreground, creating a subtle but
+	 * clearly visible frame on both light and dark themes.
+	 */
+	private static final int CONSOLE_BORDER_BLEND_PCT = 30;
+
+	/**
+	 * Blend percentage (0–100) used to tint the console background colour away from the overlay background. A value of
+	 * 8 means only a slight tint toward white (dark theme) or black (light theme), just enough to visually separate the
+	 * terminal area from the surrounding overlay without being distracting.
+	 */
+	private static final int CONSOLE_BG_BLEND_PCT = 8;
+
+	/**
+	 * SWT style of the overlay shell. The overlay is intentionally modeless so the native frame of the parent workbench
+	 * shell remains draggable and resizable while launch feedback is displayed. {@link SWT#NO_TRIM} preserves the
+	 * current undecorated full-client-area appearance.
+	 */
+	private static final int OVERLAY_SHELL_STYLE = SWT.NO_TRIM;
+
+	/**
+	 * Displays whose native OpenGL canvases were hidden for the current launch overlay and must be restored when the
+	 * overlay closes.
+	 */
+	private static final Set<IGamaView.Display> SUPPRESSED_NATIVE_DISPLAYS = ConcurrentHashMap.newKeySet();
+
+	/**
+	 * Indicates whether a launching overlay is currently active. OpenGL views created while this flag is {@code true}
+	 * keep their native canvases hidden until the launch completes.
+	 */
+	private static volatile boolean launchOverlayVisible;
 
 	// ── Construction-time dependencies (never null after construction) ───────────
 
@@ -146,6 +187,13 @@ public class LaunchingOverlay {
 	 */
 	private volatile IStatusControl savedStatusControl;
 
+	/**
+	 * The last line of text that was actually appended to the console widget. Tracked on the UI thread inside
+	 * {@link #appendToConsole(String)} to deduplicate identical consecutive messages that may arrive through multiple
+	 * channels (the console listener and the status interceptor can both deliver the same text).
+	 */
+	private String lastConsoleLine;
+
 	// ── Constructor ──────────────────────────────────────────────────────────────
 
 	/**
@@ -174,6 +222,30 @@ public class LaunchingOverlay {
 		this.cancelAction = cancelAction;
 	}
 
+	/**
+	 * Returns whether a launching overlay is currently active.
+	 *
+	 * @return {@code true} if a launching overlay is currently visible or being prepared, {@code false} otherwise
+	 */
+	public static boolean isLaunchOverlayVisible() { return launchOverlayVisible; }
+
+	/**
+	 * Hides the native canvas of the given display when a launching overlay is active.
+	 *
+	 * @param display
+	 *            the display whose native canvas should remain hidden during launch
+	 * @return {@code true} if the display is currently suppressed for launch, {@code false} otherwise
+	 */
+	public static boolean suppressNativeDisplayIfLaunching(final IGamaView.Display display) {
+		if (!launchOverlayVisible || !isNativeOpenGLDisplay(display)) return false;
+		if (WorkbenchHelper.isDisplayThread()) {
+			suppressNativeDisplay(display);
+		} else {
+			WorkbenchHelper.run(() -> suppressNativeDisplay(display));
+		}
+		return true;
+	}
+
 	// ── Public API ───────────────────────────────────────────────────────────────
 
 	/**
@@ -196,6 +268,9 @@ public class LaunchingOverlay {
 	 * </p>
 	 */
 	public void hide() {
+		launchOverlayVisible = false;
+		final List<IGamaView.Display> suppressedDisplays = drainSuppressedNativeDisplays();
+
 		// Restore the real status control first (thread-safe).
 		final IStatusControl saved = savedStatusControl;
 		savedStatusControl = null;
@@ -209,7 +284,12 @@ public class LaunchingOverlay {
 		// Close the shell on the UI thread.
 		final Shell shell = overlayShell;
 		overlayShell = null;
-		if (shell != null) { WorkbenchHelper.asyncRun(() -> { if (!shell.isDisposed()) { shell.close(); } }); }
+		if (shell != null || !suppressedDisplays.isEmpty()) {
+			WorkbenchHelper.asyncRun(() -> {
+				if (shell != null && !shell.isDisposed()) { shell.close(); }
+				restoreNativeDisplays(suppressedDisplays);
+			});
+		}
 	}
 
 	// ── Private helpers ───────────────────────────────────────────────────────────
@@ -221,15 +301,15 @@ public class LaunchingOverlay {
 		final Color bg = parent.getBackground();
 		final Color fg = parent.getForeground();
 
-		// SWT.ON_TOP ensures the overlay stays above every child shell (display views, etc.)
-		// that is opened during the launch sequence. The macOS synthetic-ESC issue that
-		// originally motivated removing this flag is already neutralised by the
-		// asyncRun(hideLaunchingOverlay) call in SwtGui.openAndApplyLayout(), which defers
-		// the shell close until after the syncExec that opens the display views returns.
-		final Shell overlay = new Shell(parent, SWT.NO_TRIM | SWT.ON_TOP);
+		// Keep the overlay as an owned, undecorated child shell instead of a modal one so
+		// it still covers the workbench client area while leaving the native window frame
+		// available for move/resize interactions.
+		final Shell overlay = new Shell(parent, OVERLAY_SHELL_STYLE);
 		overlay.setBackground(bg);
 		overlay.setLayout(null);
 		overlayShell = overlay;
+		launchOverlayVisible = true;
+		suppressExistingNativeDisplays();
 
 		// ── Cancel (stop) button ────────────────────────────────────────────────
 		final ToolBar cancelBar = new ToolBar(overlay, SWT.FLAT | SWT.NO_FOCUS);
@@ -248,17 +328,21 @@ public class LaunchingOverlay {
 		canvas.addPaintListener(e -> paintCanvas(e, bg, fg));
 
 		// ── Scrollable console area at the bottom ─────────────────────────────────
-		// No SWT.BORDER – we use a tinted background instead to frame the widget.
 		// No SWT.H_SCROLL – SWT.WRAP already prevents horizontal overflow.
+		// A tinted background and a drawn border (see paintCanvas) frame the widget.
 		consoleText = new StyledText(overlay, SWT.MULTI | SWT.V_SCROLL | SWT.READ_ONLY | SWT.WRAP);
 		consoleText.setEditable(false);
-		consoleText.setBackground(bg);
-		// Dimmed foreground matching the subtitle style
+		// Tinted background: slightly lighter (dark theme) or slightly darker (light theme) than the overlay
+		// background, so the console area is visually distinct on every platform.
 		final boolean dark = ThemeHelper.isDark();
+		final var consoleBg = createConsoleBgColor(overlay.getDisplay(), bg, dark);
+		consoleText.setBackground(consoleBg);
+		consoleText.addDisposeListener(ev -> consoleBg.dispose());
+		// Dimmed foreground matching the subtitle style
 		final var consoleFg = new Color(overlay.getDisplay(), blend(fg.getRed(), dark ? 255 : 0, 20),
 				blend(fg.getGreen(), dark ? 255 : 0, 20), blend(fg.getBlue(), dark ? 255 : 0, 20));
 		consoleText.setForeground(consoleFg);
-		consoleText.addDisposeListener(e -> consoleFg.dispose());
+		consoleText.addDisposeListener(ev -> consoleFg.dispose());
 		consoleText.setFont(parent.getFont());
 		// Inner padding so text doesn't touch the widget edges.
 		consoleText.setMargins(CONSOLE_TEXT_PADDING, CONSOLE_TEXT_PADDING, CONSOLE_TEXT_PADDING, CONSOLE_TEXT_PADDING);
@@ -269,19 +353,34 @@ public class LaunchingOverlay {
 		overlay.setBounds(origin.x, origin.y, ca.width, ca.height);
 		positionChildren(overlay, cancelBar);
 		overlay.open();
+		overlay.forceActive();
 
 		// ── Resize tracking ───────────────────────────────────────────────────────
 		final ControlListener[] ref = new ControlListener[1];
 		ref[0] = new ControlAdapter() {
+
+			private void syncOverlayBounds() {
+				final Rectangle ca2 = parent.getClientArea();
+				final org.eclipse.swt.graphics.Point o2 = parent.toDisplay(ca2.x, ca2.y);
+				overlay.setBounds(o2.x, o2.y, ca2.width, ca2.height);
+				positionChildren(overlay, cancelBar);
+			}
+
+			@Override
+			public void controlMoved(final ControlEvent e) {
+				if (overlay.isDisposed()) {
+					parent.removeControlListener(ref[0]);
+				} else {
+					syncOverlayBounds();
+				}
+			}
+
 			@Override
 			public void controlResized(final ControlEvent e) {
 				if (overlay.isDisposed()) {
 					parent.removeControlListener(ref[0]);
 				} else {
-					final Rectangle ca2 = parent.getClientArea();
-					final org.eclipse.swt.graphics.Point o2 = parent.toDisplay(ca2.x, ca2.y);
-					overlay.setBounds(o2.x, o2.y, ca2.width, ca2.height);
-					positionChildren(overlay, cancelBar);
+					syncOverlayBounds();
 				}
 			}
 		};
@@ -318,11 +417,20 @@ public class LaunchingOverlay {
 		if (firstLine == null) return;
 		WorkbenchHelper.asyncRun(() -> {
 			if (consoleText == null || consoleText.isDisposed()) return;
+			// Deduplicate: skip if this line is identical to the one just appended.
+			// Both the console listener and the status interceptor can deliver the same text,
+			// so we guard here on the UI thread (single-threaded) rather than in each caller.
+			if (firstLine.equals(lastConsoleLine)) return;
+			lastConsoleLine = firstLine;
 			if (consoleText.getCharCount() > 0) { consoleText.append(System.lineSeparator()); }
 			consoleText.append(firstLine);
-			// Auto-scroll to the bottom so the latest line is always visible;
-			// the user can freely scroll up to read earlier lines.
-			consoleText.setTopIndex(consoleText.getLineCount() - 1);
+			// Auto-scroll to the bottom: compute how many lines fit in the visible area and
+			// set topIndex so that the most-recent line appears at the bottom (terminal behaviour).
+			final int lineCount = consoleText.getLineCount();
+			final int lineHeight = consoleText.getLineHeight();
+			final int clientHeight = consoleText.getClientArea().height;
+			final int visibleLines = lineHeight > 0 && clientHeight > 0 ? clientHeight / lineHeight : 1;
+			consoleText.setTopIndex(Math.max(0, lineCount - visibleLines));
 		});
 	}
 
@@ -352,7 +460,7 @@ public class LaunchingOverlay {
 				// Skip EXPERIMENT-state messages — they carry no useful text.
 				if (m == null || m.type() == IStatusMessage.StatusType.EXPERIMENT) return;
 				final String text = m.message();
-				if ((text != null) && !text.equals(previous)) {
+				if (text != null && !text.equals(previous)) {
 					appendToConsole(text);
 					previous = text;
 				}
@@ -395,8 +503,10 @@ public class LaunchingOverlay {
 		consoleText.setBounds(hMargin, consoleY, sz.x - 2 * hMargin, CONSOLE_AREA_HEIGHT);
 		consoleText.moveAbove(canvas);
 
-		// Tell the canvas its blockTop so the title is vertically aligned with the cancel bar.
+		// Tell the canvas its blockTop so the title is vertically aligned with the cancel bar,
+		// and the console bounds so it can draw a visible border around the terminal area.
 		canvas.setData("blockTop", blockTop);
+		canvas.setData("consoleBounds", new Rectangle(hMargin, consoleY, sz.x - 2 * hMargin, CONSOLE_AREA_HEIGHT));
 		canvas.redraw();
 	}
 
@@ -414,6 +524,26 @@ public class LaunchingOverlay {
 		final var b = canvas.getBounds();
 		e.gc.setBackground(bg);
 		e.gc.fillRectangle(0, 0, b.width, b.height);
+
+		// ── Console area: tinted fill + border ────────────────────────────────
+		final Object consoleBoundsData = canvas.getData("consoleBounds");
+		if (consoleBoundsData instanceof Rectangle cb) {
+			// Fill the tinted background region so it shows even behind the StyledText (avoids gaps on resize)
+			final boolean darkBg = ThemeHelper.isDark();
+			final var consoleBgColor = createConsoleBgColor(e.display, bg, darkBg);
+			e.gc.setBackground(consoleBgColor);
+			e.gc.fillRectangle(cb.x, cb.y, cb.width, cb.height);
+			consoleBgColor.dispose();
+			// Draw a 1-px border with CONSOLE_BORDER_BLEND_PCT % blend toward the foreground
+			final var borderColor = new Color(e.display, blend(bg.getRed(), fg.getRed(), CONSOLE_BORDER_BLEND_PCT),
+					blend(bg.getGreen(), fg.getGreen(), CONSOLE_BORDER_BLEND_PCT),
+					blend(bg.getBlue(), fg.getBlue(), CONSOLE_BORDER_BLEND_PCT));
+			e.gc.setForeground(borderColor);
+			e.gc.drawRectangle(cb.x - 1, cb.y - 1, cb.width + 1, cb.height + 1);
+			borderColor.dispose();
+			// Restore background for subsequent text drawing
+			e.gc.setBackground(bg);
+		}
 
 		// ── Title (20pt bold) ─────────────────────────────────────────────────
 		final FontData fd = parent.getFont().getFontData()[0];
@@ -455,5 +585,85 @@ public class LaunchingOverlay {
 	 */
 	private static int blend(final int a, final int b, final int pct) {
 		return a + (b - a) * pct / 100;
+	}
+
+	/**
+	 * Creates a tinted version of the given background colour for use as the console area background. The tint blends
+	 * {@code CONSOLE_BG_BLEND_PCT} percent toward white on dark themes and toward black on light themes, so the console
+	 * area is subtly distinct from the surrounding overlay on every platform.
+	 *
+	 * @param display
+	 *            the SWT display to allocate the colour on
+	 * @param bg
+	 *            the overlay background colour
+	 * @param dark
+	 *            {@code true} if the current theme is dark, {@code false} if light
+	 * @return a new {@link Color} that the caller is responsible for disposing
+	 */
+	private static Color createConsoleBgColor(final org.eclipse.swt.widgets.Display display, final Color bg,
+			final boolean dark) {
+		final int target = dark ? 255 : 0;
+		return new Color(display, blend(bg.getRed(), target, CONSOLE_BG_BLEND_PCT),
+				blend(bg.getGreen(), target, CONSOLE_BG_BLEND_PCT),
+				blend(bg.getBlue(), target, CONSOLE_BG_BLEND_PCT));
+	}
+
+	/**
+	 * Hides all currently open native OpenGL displays while the launch overlay is active.
+	 */
+	private static void suppressExistingNativeDisplays() {
+		for (final IGamaView.Display display : ViewsHelper.getDisplayViews(null)) {
+			if (display.isVisible()) { suppressNativeDisplay(display); }
+		}
+	}
+
+	/**
+	 * Hides the native canvas of a single display and remembers it for later restoration.
+	 *
+	 * @param display
+	 *            the display to suppress
+	 */
+	private static void suppressNativeDisplay(final IGamaView.Display display) {
+		if (!launchOverlayVisible || !isNativeOpenGLDisplay(display) || display.getDisplaySurface() == null || display.getDisplaySurface().isDisposed()) return;
+		if (SUPPRESSED_NATIVE_DISPLAYS.add(display)) { display.hideCanvas(); }
+	}
+
+	/**
+	 * Drains and returns the set of native displays currently suppressed by the launch overlay.
+	 *
+	 * @return the displays that must be restored after the overlay closes
+	 */
+	private static List<IGamaView.Display> drainSuppressedNativeDisplays() {
+		final List<IGamaView.Display> displays = new ArrayList<>(SUPPRESSED_NATIVE_DISPLAYS);
+		SUPPRESSED_NATIVE_DISPLAYS.clear();
+		return displays;
+	}
+
+	/**
+	 * Restores the native canvases of displays that were hidden while the launch overlay was active.
+	 *
+	 * @param displays
+	 *            the displays to restore
+	 */
+	private static void restoreNativeDisplays(final List<IGamaView.Display> displays) {
+		for (final IGamaView.Display display : displays) {
+			if (display == null || display.getDisplaySurface() == null || display.getDisplaySurface().isDisposed()) {
+				continue;
+			}
+			display.showCanvas();
+		}
+	}
+
+	/**
+	 * Returns whether the specified display is backed by a native OpenGL canvas that can paint above SWT controls.
+	 *
+	 * @param display
+	 *            the display to examine
+	 * @return {@code true} if the display is a native OpenGL display, {@code false} otherwise
+	 */
+	private static boolean isNativeOpenGLDisplay(final IGamaView.Display display) {
+		if (display == null || display.is2D() || !(display instanceof IWorkbenchPart part) || part.getSite() == null) return false;
+		final String id = part.getSite().getId();
+		return IGui.GL_LAYER_VIEW_ID.equals(id) || IGui.GL_LAYER_VIEW_ID2.equals(id);
 	}
 }

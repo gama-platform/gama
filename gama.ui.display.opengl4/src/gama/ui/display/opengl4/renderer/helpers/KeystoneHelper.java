@@ -167,7 +167,11 @@ public class KeystoneHelper extends AbstractRendererHelper {
 		final GL4 gl = getGL();
 		gl.glClearColor(0, 0, 0, 1.0f);
 		gl.glClear(GL.GL_STENCIL_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
-		if (fboScene == null) { fboScene = new FrameBufferObject(gl, getViewWidth(), getViewHeight()); }
+		if (fboScene == null) {
+			final var monitor = renderer.getCanvas().getMonitor();
+			fboScene = new FrameBufferObject(gl, DPIHelper.autoScaleUp(monitor, getViewWidth()),
+					DPIHelper.autoScaleUp(monitor, getViewHeight()));
+		}
 		// redirect the rendering to the fbo_scene (will be rendered later, as a texture)
 		fboScene.bindFrameBuffer();
 

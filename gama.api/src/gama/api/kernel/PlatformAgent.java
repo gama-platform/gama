@@ -50,6 +50,7 @@ import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.IExecutable;
 import gama.api.runtime.SystemInfo;
 import gama.api.runtime.scope.ExecutionScope;
+import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.color.GamaColorFactory;
 import gama.api.types.color.IColor;
@@ -795,7 +796,7 @@ public class PlatformAgent implements ITopLevelAgent.Platform {
 	public void setHost(final IMacroAgent macroAgent) {}
 
 	@Override
-	public void schedule(final IScope scope) {}
+	public IExecutionResult schedule(final IScope scope) {return IExecutionResult.PASSED;}
 
 	@Override
 	public int getIndex() { return 0; }

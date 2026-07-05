@@ -377,7 +377,7 @@ public abstract class GamaViewPart extends ViewPart
 
 	@Override
 	public void close(final IScope scope) {
-		WorkbenchHelper.asyncRun(() -> {
+		WorkbenchHelper.run(() -> {
 			try {
 				ViewsHelper.hideView(GamaViewPart.this);
 				Job job = getUpdateJob();

@@ -14,6 +14,7 @@ import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.runtime.GamaExecutorService;
+import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
 import gama.api.ui.IStatusMessage;
 import gama.dev.DEBUG;
@@ -246,7 +247,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 		// Optimization: Cache scope to reduce volatile reads
 		final IScope currentScope = getScope();
 
-		switch (command) {
+		switch (command.type()) {
 			case _CLOSE:
 				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.NONE);
 				return true;
@@ -285,6 +286,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 				return true;
 
 			case _STEP:
+				// As we are in GUI, we assume there's only one step
 				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.PAUSED);
 				paused = true;
 				lock.release(); // let the execution thread run one step
@@ -293,6 +295,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 				return true;
 
 			case _BACK:
+				// As we are in GUI, we assume there's only one step
 				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.PAUSED);
 				paused = true;
 				// Optimization: Add null check before operation
@@ -313,8 +316,11 @@ public class DefaultExperimentController extends AbstractExperimentController {
 					final boolean wasRunning = !isPaused() && !experiment.isAutorun();
 					paused = true;
 					currentScope.getGui().getStatus().waitStatus("Reloading...", IStatusMessage.SIMULATION_ICON,
-							() -> experiment.reload());
-					if (wasRunning) return processUserCommand(ExperimentCommand._START);
+							() -> {
+								currentScope.getGui().showLaunchingOverlay(experiment.getName());
+								experiment.reload();
+							});
+					if (wasRunning) return processUserCommand(_START_CMD);
 					currentScope.getGui().getStatus().informStatus("Experiment reloaded",
 							IStatusMessage.SIMULATION_ICON);
 					return true;
@@ -383,7 +389,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 
 				// Signal command thread to exit its take() loop
 				if (commandThread != null && commandThread.isAlive()) {
-					commands.offer(ExperimentCommand._CLOSE);
+					commands.offer(_CLOSE_CMD);
 					try {
 						commandThread.join(1000);
 						if (commandThread.isAlive()) {
@@ -444,12 +450,13 @@ public class DefaultExperimentController extends AbstractExperimentController {
 	}
 
 	/**
-	 * Cleans up any partially-created simulation, then reports the runtime exception to the Errors view, the status bar
-	 * and opens the Errors view — all while keeping the experiment perspective open so the user can re-run.
+	 * Reports the runtime exception to the Errors view and the status bar, then cleans up any partially-created
+	 * simulation — keeping the experiment perspective open so the user can inspect the error.
 	 *
 	 * <p>
 	 * This is used for initialisation-time errors (thrown from {@link #schedule}) where the simulation has not been
-	 * fully created yet but the experiment agent and its perspective are still valid.
+	 * fully created yet. The experiment perspective remains visible so the error stays accessible. Any subsequent
+	 * model launch will close this failed experiment cleanly via {@link gama.api.GAMA#runGuiExperiment}.
 	 * </p>
 	 *
 	 * <p>
@@ -459,11 +466,12 @@ public class DefaultExperimentController extends AbstractExperimentController {
 	 * <li><b>Hide the launching overlay</b> — calls {@code gui.hideLaunchingOverlay()} to dismiss the Shell that covers
 	 * the workbench during experiment launch. Without this call the overlay stays visible forever because it is
 	 * normally hidden by {@code cleanAfterExperiment()}, which is only called on the success path.</li>
+	 * <li><b>Queue and show the error</b> — {@code runtimeError} pushes the exception to the runtime handler,
+	 * {@code errorStatus} sets the status bar label, and {@code displayLatestErrors} flushes the handler immediately so
+	 * the Errors view is populated before disposal.</li>
 	 * <li><b>Dispose the partial simulation</b> — {@code agent.closeSimulations(false)} disposes any partial simulation
-	 * while keeping the experiment perspective. Disposing before reporting ensures the subsequent error message
-	 * overwrites the "disposing simulation N" status text.</li>
-	 * <li><b>Report the error</b> — {@code runtimeError} queues it for the Errors view, {@code errorStatus} sets the
-	 * status bar label, and {@code displayErrors} opens/activates the Errors view immediately.</li>
+	 * while keeping the experiment perspective open. Disposing after reporting ensures the error remains visible and
+	 * the subsequent "disposing simulation" status text does not overwrite the error message.</li>
 	 * <li><b>Set state to {@code NOTREADY}</b> — disables the Run/Step buttons while leaving Reload active. Calling
 	 * {@code experiment.reload()} here would create an infinite loop (reload → open → schedule → init fails → reload →
 	 * …), so we do not.</li>
@@ -489,12 +497,13 @@ public class DefaultExperimentController extends AbstractExperimentController {
 			}
 		}
 
-		// Step 2: report the error BEFORE disposing, so the handler's queue and
+		// Step 2: report the error BEFORE disposing, so the handler queue and
 		// cleanExceptions are populated before cleanAfterExperiment() is called
 		// (from within closeSimulations → ExperimentOutputManager.dispose()).
-		// cleanAfterExperiment() calls handler.stop() which, if called first, races
-		// with displayLatestErrors and leaves the Errors view empty.
+		// Note: cleanAfterExperiment() intentionally does not stop the handler,
+		// so displayLatestErrors() can safely populate the Errors view first.
 		if (gre != null && localScope != null) {
+			localScope.getGui().runtimeError(localScope, gre);
 			// Show error text in the status bar.
 			localScope.getGui().getStatus().errorStatus(gre);
 			// Force-flush the handler's incoming queue → populates cleanExceptions
@@ -504,10 +513,8 @@ public class DefaultExperimentController extends AbstractExperimentController {
 		}
 
 		// Step 3: dispose any partially-created simulation, keeping the experiment
-		// perspective open (andLeaveExperimentPerspective = false).
-		// NOTE: this triggers ExperimentOutputManager.dispose() → cleanAfterExperiment()
-		// → handler.stop(). By then displayLatestErrors() has already populated
-		// cleanExceptions, so the view content survives the stop.
+		// perspective open (andLeaveExperimentPerspective = false) so the error
+		// remains visible. The next model launch will do a full perspective reset.
 		// DO NOT call experiment.reload() here — that creates an infinite loop.
 		try {
 			if (agent != null) { agent.closeSimulations(false); }
@@ -539,24 +546,30 @@ public class DefaultExperimentController extends AbstractExperimentController {
 	 *            the agent
 	 */
 	@Override
-	public void schedule(final IExperimentAgent agent) {
+	public IExecutionResult schedule(final IExperimentAgent agent) {
 		this.agent = agent;
 		scope = agent.getScope();
 		serverConfiguration = GAMA.getServer() != null ? GAMA.getServer().obtainGuiServerConfiguration() : null;
 		scope.setServerConfiguration(serverConfiguration);
+		IExecutionResult res = IExecutionResult.FAILED;
 		try {
-			if (!scope.init(agent).passed()) {
+			res = scope.init(agent);
+			if (!res.passed()) {
 				scope.setDisposeStatus();
-			} else if (agent instanceof IExperimentAgent.Test || agent.getSpecies().isAutorun()) {
+			} else if (agent instanceof IExperimentAgent.Test) {
 				asynchronousStart();
+			} else if (agent.getSpecies().isAutorun()) {
+				final IScope currentScope = scope;
+				currentScope.getGui().run("Starting experiment", this::asynchronousStart, true);
 			}
 		} catch (final Throwable e) {
 			// Any throwable during initialization (GamaRuntimeException, Error, etc.) is
-			// reported to the errors view and the experiment is reloaded so the user remains
-			// in the simulation perspective and can re-run rather than being dumped back to
-			// the modelling perspective.
+			// reported to the errors view and the partial simulation is disposed while
+			// the experiment perspective remains open. The next model launch will
+			// perform a full cleanup via runGuiExperiment → closeAllExperiments(true).
 			if (scope != null && !scope.interrupted()) { notifyExceptionAndReloadExperiment(e); }
 		}
+		return res;
 	}
 
 	/**
