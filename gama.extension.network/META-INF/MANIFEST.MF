@@ -7,6 +7,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-25
 Export-Package: 
  com.fazecast.jSerialComm,
  gama.extension.network.common,
+ gama.extension.network.common.socket,
  gama.extension.network.mqtt,
  gama.extension.network.skills,
  gama.extension.network.tcp,

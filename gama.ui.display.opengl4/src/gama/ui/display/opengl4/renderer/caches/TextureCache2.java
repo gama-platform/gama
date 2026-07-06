@@ -10,7 +10,9 @@
  ********************************************************************************************************/
 package gama.ui.display.opengl4.renderer.caches;
 
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -18,16 +20,15 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.GL;
-import com.jogamp.opengl.GLException;
+import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureData;
-import com.jogamp.opengl.util.texture.awt.AWTTextureIO;
 
 import gama.api.utils.interfaces.IImageProvider;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
-import gama.extension.image.GamaImage;
 import gama.ui.display.opengl4.OpenGL;
 
 /**
@@ -198,20 +199,51 @@ public class TextureCache2 implements ITextureCache {
 	 * @return the texture
 	 */
 	Texture buildTexture(final GL gl, final BufferedImage im) {
-		TextureData data = null;
+		if (im == null) return null;
 		try {
-			data = AWTTextureIO.newTextureData(gl.getGLProfile(), im, true);
-		} catch (final GLException e) {
-			BufferedImage copy = GamaImage.from(im, true);
-			data = AWTTextureIO.newTextureData(gl.getGLProfile(), copy, true);
-		}
-		if (data != null) {
+			// Ensure the image is in TYPE_INT_ARGB so we can reliably read ARGB pixels
+			BufferedImage argbImage;
+			if (im.getType() == BufferedImage.TYPE_INT_ARGB) {
+				argbImage = im;
+			} else {
+				argbImage = new BufferedImage(im.getWidth(), im.getHeight(), BufferedImage.TYPE_INT_ARGB);
+				Graphics2D g2d = argbImage.createGraphics();
+				g2d.drawImage(im, 0, 0, null);
+				g2d.dispose();
+			}
+
+			final int w = argbImage.getWidth();
+			final int h = argbImage.getHeight();
+			final int[] pixels = argbImage.getRGB(0, 0, w, h, null, 0, w);
+
+			// Convert ARGB int pixels to RGBA byte layout for OpenGL.
+			// Keep pixels in Java's top-to-bottom order and let TextureData handle the flip.
+			final ByteBuffer buffer = Buffers.newDirectByteBuffer(w * h * 4);
+			for (int y = 0; y < h; y++) {
+				for (int x = 0; x < w; x++) {
+					final int argb = pixels[y * w + x];
+					buffer.put((byte) ((argb >> 16) & 0xFF)); // R
+					buffer.put((byte) ((argb >> 8) & 0xFF));  // G
+					buffer.put((byte) (argb & 0xFF));         // B
+					buffer.put((byte) ((argb >> 24) & 0xFF)); // A
+				}
+			}
+			buffer.flip();
+
+			final GLProfile profile = gl.getGLProfile();
+			final TextureData data = new TextureData(profile, GL.GL_RGBA,
+					w, h, 0,
+					GL.GL_RGBA, GL.GL_UNSIGNED_BYTE,
+					false, false, true,
+					buffer, null);
 			final Texture texture = new Texture(gl, data);
 			data.flush();
 			return texture;
+		} catch (final Throwable e) {
+			DEBUG.ERR("TextureCache2.buildTexture failed: " + e.getMessage());
+			e.printStackTrace();
+			return null;
 		}
-		return null;
-
 	}
 
 }

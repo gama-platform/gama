@@ -13,7 +13,6 @@ package gama.core.util.matrix;
 import static org.locationtech.jts.index.quadtree.IntervalSize.isZeroWidth;
 
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
 import java.util.Arrays;
 import java.util.List;
 
@@ -40,16 +39,12 @@ import gama.api.utils.random.IRandom;
 import gama.gaml.operators.Comparison;
 import one.util.streamex.DoubleStreamEx;
 import one.util.streamex.StreamEx;
-import jdk.incubator.vector.DoubleVector;
-import jdk.incubator.vector.VectorSpecies;
 
 /**
  * The Class GamaFloatMatrix.
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvider {
-
-	public static final VectorSpecies<Double> SPECIES = DoubleVector.SPECIES_PREFERRED;
 
 	/**
 	 * From.
@@ -445,14 +440,7 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 		final GamaFloatMatrix matb = from(scope, other);
 		if (matb != null && this.numCols == matb.numCols && this.numRows == matb.numRows) {
 			final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
-			int i = 0;
-			int upperBound = SPECIES.loopBound(matrix.length);
-			for (; i < upperBound; i += SPECIES.length()) {
-				DoubleVector va = DoubleVector.fromArray(SPECIES, matrix, i);
-				DoubleVector vb = DoubleVector.fromArray(SPECIES, matb.matrix, i);
-				va.add(vb).intoArray(nm.matrix, i);
-			}
-			for (; i < matrix.length; i++) { nm.matrix[i] = matrix[i] + matb.matrix[i]; }
+			for (int i = 0; i < matrix.length; i++) { nm.matrix[i] = matrix[i] + matb.matrix[i]; }
 			return nm;
 		}
 		throw GamaRuntimeException.error(" The dimensions of the matrices do not correspond", scope);
@@ -463,14 +451,7 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 		final GamaFloatMatrix matb = from(scope, other);
 		if (matb != null && this.numCols == matb.numCols && this.numRows == matb.numRows) {
 			final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
-			int i = 0;
-			int upperBound = SPECIES.loopBound(matrix.length);
-			for (; i < upperBound; i += SPECIES.length()) {
-				DoubleVector va = DoubleVector.fromArray(SPECIES, matrix, i);
-				DoubleVector vb = DoubleVector.fromArray(SPECIES, matb.matrix, i);
-				va.mul(vb).intoArray(nm.matrix, i);
-			}
-			for (; i < matrix.length; i++) { nm.matrix[i] = matrix[i] * matb.matrix[i]; }
+			for (int i = 0; i < matrix.length; i++) { nm.matrix[i] = matrix[i] * matb.matrix[i]; }
 			return nm;
 		}
 		throw GamaRuntimeException.error(" The dimensions of the matrices do not correspond", scope);
@@ -481,14 +462,7 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 		final GamaFloatMatrix matb = from(scope, other);
 		if (matb != null && this.numCols == matb.numCols && this.numRows == matb.numRows) {
 			final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
-			int i = 0;
-			int upperBound = SPECIES.loopBound(matrix.length);
-			for (; i < upperBound; i += SPECIES.length()) {
-				DoubleVector va = DoubleVector.fromArray(SPECIES, matrix, i);
-				DoubleVector vb = DoubleVector.fromArray(SPECIES, matb.matrix, i);
-				va.sub(vb).intoArray(nm.matrix, i);
-			}
-			for (; i < matrix.length; i++) { nm.matrix[i] = matrix[i] - matb.matrix[i]; }
+			for (int i = 0; i < matrix.length; i++) { nm.matrix[i] = matrix[i] - matb.matrix[i]; }
 			return nm;
 		}
 		throw GamaRuntimeException.error(" The dimensions of the matrices do not correspond", scope);
@@ -497,52 +471,28 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 	@Override
 	public IMatrix times(final Double val) throws GamaRuntimeException {
 		final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
-		int i = 0;
-		int upperBound = SPECIES.loopBound(matrix.length);
-		for (; i < upperBound; i += SPECIES.length()) {
-			DoubleVector va = DoubleVector.fromArray(SPECIES, matrix, i);
-			va.mul(val).intoArray(nm.matrix, i);
-		}
-		for (; i < matrix.length; i++) { nm.matrix[i] = matrix[i] * val; }
+		for (int i = 0; i < matrix.length; i++) { nm.matrix[i] = matrix[i] * val; }
 		return nm;
 	}
 
 	@Override
 	public IMatrix times(final Integer val) throws GamaRuntimeException {
 		final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
-		int i = 0;
-		int upperBound = SPECIES.loopBound(matrix.length);
-		for (; i < upperBound; i += SPECIES.length()) {
-			DoubleVector va = DoubleVector.fromArray(SPECIES, matrix, i);
-			va.mul((double) val).intoArray(nm.matrix, i);
-		}
-		for (; i < matrix.length; i++) { nm.matrix[i] = matrix[i] * val; }
+		for (int i = 0; i < matrix.length; i++) { nm.matrix[i] = matrix[i] * val; }
 		return nm;
 	}
 
 	@Override
 	public IMatrix divides(final Double val) throws GamaRuntimeException {
 		final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
-		int i = 0;
-		int upperBound = SPECIES.loopBound(matrix.length);
-		for (; i < upperBound; i += SPECIES.length()) {
-			DoubleVector va = DoubleVector.fromArray(SPECIES, matrix, i);
-			va.div(val).intoArray(nm.matrix, i);
-		}
-		for (; i < matrix.length; i++) { nm.matrix[i] = matrix[i] / val; }
+		for (int i = 0; i < matrix.length; i++) { nm.matrix[i] = matrix[i] / val; }
 		return nm;
 	}
 
 	@Override
 	public IMatrix divides(final Integer val) throws GamaRuntimeException {
 		final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
-		int i = 0;
-		int upperBound = SPECIES.loopBound(matrix.length);
-		for (; i < upperBound; i += SPECIES.length()) {
-			DoubleVector va = DoubleVector.fromArray(SPECIES, matrix, i);
-			va.div((double) val).intoArray(nm.matrix, i);
-		}
-		for (; i < matrix.length; i++) { nm.matrix[i] = matrix[i] / val; }
+		for (int i = 0; i < matrix.length; i++) { nm.matrix[i] = matrix[i] / val; }
 		return nm;
 	}
 
@@ -551,14 +501,7 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 		final GamaFloatMatrix matb = from(scope, other);
 		if (matb != null && this.numCols == matb.numCols && this.numRows == matb.numRows) {
 			final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
-			int i = 0;
-			int upperBound = SPECIES.loopBound(matrix.length);
-			for (; i < upperBound; i += SPECIES.length()) {
-				DoubleVector va = DoubleVector.fromArray(SPECIES, matrix, i);
-				DoubleVector vb = DoubleVector.fromArray(SPECIES, matb.matrix, i);
-				va.div(vb).intoArray(nm.matrix, i);
-			}
-			for (; i < matrix.length; i++) { nm.matrix[i] = matrix[i] / matb.matrix[i]; }
+			for (int i = 0; i < matrix.length; i++) { nm.matrix[i] = matrix[i] / matb.matrix[i]; }
 			return nm;
 		}
 		throw GamaRuntimeException.error(" The dimensions of the matrices do not correspond", scope);
@@ -567,52 +510,28 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 	@Override
 	public IMatrix plus(final Double val) throws GamaRuntimeException {
 		final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
-		int i = 0;
-		int upperBound = SPECIES.loopBound(matrix.length);
-		for (; i < upperBound; i += SPECIES.length()) {
-			DoubleVector va = DoubleVector.fromArray(SPECIES, matrix, i);
-			va.add(val).intoArray(nm.matrix, i);
-		}
-		for (; i < matrix.length; i++) { nm.matrix[i] = matrix[i] + val; }
+		for (int i = 0; i < matrix.length; i++) { nm.matrix[i] = matrix[i] + val; }
 		return nm;
 	}
 
 	@Override
 	public IMatrix plus(final Integer val) throws GamaRuntimeException {
 		final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
-		int i = 0;
-		int upperBound = SPECIES.loopBound(matrix.length);
-		for (; i < upperBound; i += SPECIES.length()) {
-			DoubleVector va = DoubleVector.fromArray(SPECIES, matrix, i);
-			va.add((double) val).intoArray(nm.matrix, i);
-		}
-		for (; i < matrix.length; i++) { nm.matrix[i] = matrix[i] + val; }
+		for (int i = 0; i < matrix.length; i++) { nm.matrix[i] = matrix[i] + val; }
 		return nm;
 	}
 
 	@Override
 	public IMatrix minus(final Double val) throws GamaRuntimeException {
 		final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
-		int i = 0;
-		int upperBound = SPECIES.loopBound(matrix.length);
-		for (; i < upperBound; i += SPECIES.length()) {
-			DoubleVector va = DoubleVector.fromArray(SPECIES, matrix, i);
-			va.sub(val).intoArray(nm.matrix, i);
-		}
-		for (; i < matrix.length; i++) { nm.matrix[i] = matrix[i] - val; }
+		for (int i = 0; i < matrix.length; i++) { nm.matrix[i] = matrix[i] - val; }
 		return nm;
 	}
 
 	@Override
 	public IMatrix minus(final Integer val) throws GamaRuntimeException {
 		final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
-		int i = 0;
-		int upperBound = SPECIES.loopBound(matrix.length);
-		for (; i < upperBound; i += SPECIES.length()) {
-			DoubleVector va = DoubleVector.fromArray(SPECIES, matrix, i);
-			va.sub((double) val).intoArray(nm.matrix, i);
-		}
-		for (; i < matrix.length; i++) { nm.matrix[i] = matrix[i] - val; }
+		for (int i = 0; i < matrix.length; i++) { nm.matrix[i] = matrix[i] - val; }
 		return nm;
 	}
 
@@ -672,8 +591,7 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 		int w = getCols(scope);
 		int h = getRows(scope);
 		BufferedImage ret = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-		final int[] imageData = ((DataBufferInt) ret.getRaster().getDataBuffer()).getData();
-		for (int i = 0; i < Math.min(matrix.length, imageData.length); i++) { imageData[i] = (int) matrix[i]; }
+		for (int i = 0; i < w; i++) { for (int j = 0; j < h; j++) { ret.setRGB(i, j, get(scope, i, j).intValue()); } }
 		return ret;
 	}
 
