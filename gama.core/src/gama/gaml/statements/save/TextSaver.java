@@ -56,10 +56,14 @@ public class TextSaver extends AbstractSaver {
 	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions options)
 			throws GamaRuntimeException {
 		String toSave = Cast.asString(scope, item.value(scope));
-		char id = toSave.charAt(0);
-		Charset ch = id == ISerialisationConstants.GAMA_AGENT_IDENTIFIER
-				|| id == ISerialisationConstants.GAMA_OBJECT_IDENTIFIER
-						? ISerialisationConstants.STRING_BYTE_ARRAY_CHARSET : StandardCharsets.UTF_8;
+
+		Charset ch = StandardCharsets.UTF_8;
+		if (!toSave.isEmpty()) {
+			char id = toSave.charAt(0);
+			ch = id == ISerialisationConstants.GAMA_AGENT_IDENTIFIER
+					|| id == ISerialisationConstants.GAMA_OBJECT_IDENTIFIER
+							? ISerialisationConstants.STRING_BYTE_ARRAY_CHARSET : StandardCharsets.UTF_8;
+		}
 		try {
 			BufferingUtils.getInstance().askWriteFile(file.getAbsolutePath(), scope, toSave, options.withCharset(ch));
 		} catch (final GamaRuntimeException e) {
