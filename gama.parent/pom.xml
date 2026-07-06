@@ -35,14 +35,6 @@
 				<enabled>false</enabled>
 			</snapshots>
 		</repository>
-		<repository>
-			<id>github-copilot</id>
-			<url>https://azuredownloads-g3ahgwb5b8bkbxhd.b01.azurefd.net/github-copilot</url>
-			<layout>p2</layout>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-		</repository>
 	</repositories>
 
 	<profiles>
