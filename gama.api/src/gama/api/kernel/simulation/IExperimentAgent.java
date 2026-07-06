@@ -12,6 +12,7 @@ package gama.api.kernel.simulation;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import gama.annotations.doc;
 import gama.annotations.getter;
@@ -182,6 +183,16 @@ public interface IExperimentAgent extends ITopLevelAgent {
 	 * @return the working paths
 	 */
 	List<String> getWorkingPaths();
+
+	/**
+	 * Returns the per-experiment cache that memoizes absolute file-path resolutions which do not depend on the file
+	 * actually existing (see {@link gama.api.utils.files.FileUtils#constructAbsoluteFilePath}). The working paths of an
+	 * experiment do not change during its life, so such resolutions are stable and can be shared by all the simulations
+	 * it runs. The returned map is thread-safe and never null.
+	 *
+	 * @return the cache mapping a requested path to its resolved absolute path
+	 */
+	Map<String, String> getResolvedFilePathCache();
 
 	/**
 	 * Gets the parameters.
