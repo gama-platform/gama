@@ -158,25 +158,22 @@ public class ChartJFreeChartOutputHeatmap extends ChartJFreeChartOutput {
 	 */
 	protected static final LookupPaintScale createLUT(final int ncol, final float vmin, final float vmax,
 			final Color start, final Color med, final Color end) {
-		final float[][] colors =
-				{ { start.getRed() / 255f, start.getGreen() / 255f, start.getBlue() / 255f, start.getAlpha() / 255f },
-						{ med.getRed() / 255f, med.getGreen() / 255f, med.getBlue() / 255f, med.getAlpha() / 255f },
-						{ end.getRed() / 255f, end.getGreen() / 255f, end.getBlue() / 255f, end.getAlpha() / 255f } };
-		final float[] limits = { 0, 0.5f, 1 };
 		if (vmin >= vmax) return new LookupPaintScale();
 		final LookupPaintScale lut = new LookupPaintScale(vmin, vmax, med);
-		float val;
-		float r, g, b, a;
+		final float vSpan = vmax - vmin;
+		final float vScale = 1f / (ncol - 0.99f);
+		final int sr = start.getRed(), sg = start.getGreen(), sb = start.getBlue(), sa = start.getAlpha();
+		final int mr = med.getRed(), mg = med.getGreen(), mb = med.getBlue(), ma = med.getAlpha();
+		final int er = end.getRed(), eg = end.getGreen(), eb = end.getBlue(), ea = end.getAlpha();
 		for (int j = 0; j < ncol; j++) {
-			val = j / (ncol - 0.99f);
-			int i = 0;
-			for (i = 0; i < limits.length; i++) { if (val < limits[i]) { break; } }
-			i = i - 1;
-			r = colors[i][0] + (val - limits[i]) / (limits[i + 1] - limits[i]) * (colors[i + 1][0] - colors[i][0]);
-			g = colors[i][1] + (val - limits[i]) / (limits[i + 1] - limits[i]) * (colors[i + 1][1] - colors[i][1]);
-			b = colors[i][2] + (val - limits[i]) / (limits[i + 1] - limits[i]) * (colors[i + 1][2] - colors[i][2]);
-			a = colors[i][3] + (val - limits[i]) / (limits[i + 1] - limits[i]) * (colors[i + 1][3] - colors[i][3]);
-			lut.add(val * (vmax - vmin) + vmin, new Color(r, g, b, a));
+			final float val = j * vScale;
+			final boolean firstHalf = val < 0.5f;
+			final float t = firstHalf ? val * 2f : (val - 0.5f) * 2f;
+			final int r = firstHalf ? Math.round(sr + t * (mr - sr)) : Math.round(mr + t * (er - mr));
+			final int g = firstHalf ? Math.round(sg + t * (mg - sg)) : Math.round(mg + t * (eg - mg));
+			final int b = firstHalf ? Math.round(sb + t * (mb - sb)) : Math.round(mb + t * (eb - mb));
+			final int a = firstHalf ? Math.round(sa + t * (ma - sa)) : Math.round(ma + t * (ea - ma));
+			lut.add(val * vSpan + vmin, new Color(r, g, b, a));
 		}
 		return lut;
 	}
@@ -198,22 +195,19 @@ public class ChartJFreeChartOutputHeatmap extends ChartJFreeChartOutput {
 	 */
 	protected static final LookupPaintScale createLUT(final int ncol, final float vmin, final float vmax,
 			final Color start, final Color end) {
-		final float[][] colors =
-				{ { start.getRed() / 255f, start.getGreen() / 255f, start.getBlue() / 255f, start.getAlpha() / 255f },
-						{ end.getRed() / 255f, end.getGreen() / 255f, end.getBlue() / 255f, end.getAlpha() / 255f } };
-		final float[] limits = { 0, 1 };
 		if (vmin >= vmax) return new LookupPaintScale();
 		final LookupPaintScale lut = new LookupPaintScale(vmin, vmax, start);
-		float val;
-		float r, g, b, a;
+		final float vSpan = vmax - vmin;
+		final float vScale = 1f / (ncol - 0.99f);
+		final int sr = start.getRed(), sg = start.getGreen(), sb = start.getBlue(), sa = start.getAlpha();
+		final int er = end.getRed(), eg = end.getGreen(), eb = end.getBlue(), ea = end.getAlpha();
 		for (int j = 0; j < ncol; j++) {
-			val = j / (ncol - 0.99f);
-			final int i = 0;
-			r = colors[i][0] + (val - limits[i]) / (limits[i + 1] - limits[i]) * (colors[i + 1][0] - colors[i][0]);
-			g = colors[i][1] + (val - limits[i]) / (limits[i + 1] - limits[i]) * (colors[i + 1][1] - colors[i][1]);
-			b = colors[i][2] + (val - limits[i]) / (limits[i + 1] - limits[i]) * (colors[i + 1][2] - colors[i][2]);
-			a = colors[i][3] + (val - limits[i]) / (limits[i + 1] - limits[i]) * (colors[i + 1][3] - colors[i][3]);
-			lut.add(val * (vmax - vmin) + vmin, new Color(r, g, b, a));
+			final float val = j * vScale;
+			final int r = Math.round(sr + val * (er - sr));
+			final int g = Math.round(sg + val * (eg - sg));
+			final int b = Math.round(sb + val * (eb - sb));
+			final int a = Math.round(sa + val * (ea - sa));
+			lut.add(val * vSpan + vmin, new Color(r, g, b, a));
 		}
 		return lut;
 	}
