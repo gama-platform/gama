@@ -11,7 +11,6 @@
 package gama.core.outputs.layers;
 
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
 import java.util.Collection;
 
 import gama.annotations.constants.IKeyword;
@@ -222,19 +221,6 @@ public class GridLayerData extends LayerData {
 	 * @return the image
 	 */
 	public BufferedImage getImage() { return image; }
-
-	/**
-	 * Updates image pixels from current grid display data.
-	 *
-	 * @return the updated image or null if no image is allocated
-	 */
-	public BufferedImage updateImageFromGridDisplayData() {
-		if (image == null || grid == null) return image;
-		final int[] imageData = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
-		final int[] displayData = getGrid().getDisplayData();
-		System.arraycopy(displayData, 0, imageData, 0, Math.min(displayData.length, imageData.length));
-		return image;
-	}
 
 	/**
 	 * Checks if is wireframe.

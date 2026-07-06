@@ -20,10 +20,7 @@ public class GaussianBlurMeshSmoothProvider implements IMeshSmoothProvider {
 
 	@Override
 	public double[] smooth(final int cols, final int rows, final double[] data, final double noData, final int passes) {
-		if (passes <= 0 || data.length == 0) return data.clone();
-		double[] current = data.clone();
-		double[] scratch = new double[current.length];
-		double[] output = new double[current.length];
+		final var result = data.clone();
 		int nbBoxes = 3;
 		var wIdeal = Math.sqrt(12 * passes * passes / nbBoxes + 1); // Ideal averaging filter width
 		double wl = Math.floor(wIdeal);
@@ -36,55 +33,49 @@ public class GaussianBlurMeshSmoothProvider implements IMeshSmoothProvider {
 		var boxes = sizes;
 		int r = (int) Math.round((boxes[0] - 1) / 2);
 		if (r <= cols / 2 && r <= rows / 2) {
-			boxBlurHorizontal(cols, rows, current, scratch, r);
-			boxBlurVertical(cols, rows, scratch, output, r);
-			final double[] previous = current;
-			current = output;
-			output = previous;
+			// DEBUG.LOG("r =" + r + " w = " + cols + " h = " + rows);
+			boxBlurHorizontal(cols, rows, result, r);
+			boxBlurVertical(cols, rows, result, r);
 		}
 		r = (int) Math.round((boxes[1] - 1) / 2);
 		if (r <= cols / 2 && r <= rows / 2) {
-			boxBlurHorizontal(cols, rows, current, scratch, r);
-			boxBlurVertical(cols, rows, scratch, output, r);
-			final double[] previous = current;
-			current = output;
-			output = previous;
+			// DEBUG.LOG("r =" + r + " w = " + cols + " h = " + rows);
+			boxBlurHorizontal(cols, rows, result, r);
+			boxBlurVertical(cols, rows, result, r);
 		}
 		r = (int) Math.round((boxes[2] - 1) / 2);
 		if (r <= cols / 2 && r <= rows / 2) {
-			boxBlurHorizontal(cols, rows, current, scratch, r);
-			boxBlurVertical(cols, rows, scratch, output, r);
-			final double[] previous = current;
-			current = output;
-			output = previous;
+			// DEBUG.LOG("r =" + r + " w = " + cols + " h = " + rows);
+			boxBlurHorizontal(cols, rows, result, r);
+			boxBlurVertical(cols, rows, result, r);
 		}
-		return current;
+		return result;
 	}
 
 	/**
 	 * Box blur operating vertically
 	 */
-	void boxBlurVertical(final int cols, final int rows, final double[] src, final double[] dst, final int r) {
+	void boxBlurVertical(final int cols, final int rows, final double[] scl, final int r) {
 		double iarr = 1d / (r + r + 1);
 		for (var i = 0; i < rows; i++) {
 			var ti = i * cols;
 			var li = ti;
 			var ri = ti + r;
-			var fv = src[ti];
-			var lv = src[ti + cols - 1];
+			var fv = scl[ti];
+			var lv = scl[ti + cols - 1];
 			var val = (r + 1) * fv;
-			for (var j = 0; j < r; j++) { val += src[ti + j]; }
+			for (var j = 0; j < r; j++) { val += scl[ti + j]; }
 			for (var j = 0; j <= r; j++) {
-				val += src[ri++] - fv;
-				dst[ti++] = val * iarr;
+				val += scl[ri++] - fv;
+				scl[ti++] = val * iarr;
 			}
 			for (var j = r + 1; j < cols - r; j++) {
-				val += src[ri++] - src[li++];
-				dst[ti++] = val * iarr;
+				val += scl[ri++] - scl[li++];
+				scl[ti++] = val * iarr;
 			}
 			for (var j = cols - r; j < cols; j++) {
-				val += lv - src[li++];
-				dst[ti++] = val * iarr;
+				val += lv - scl[li++];
+				scl[ti++] = val * iarr;
 			}
 		}
 	}
@@ -94,32 +85,32 @@ public class GaussianBlurMeshSmoothProvider implements IMeshSmoothProvider {
 	 *
 	 * @return the function
 	 */
-	void boxBlurHorizontal(final int cols, final int rows, final double[] src, final double[] dst, final int r) {
+	void boxBlurHorizontal(final int cols, final int rows, final double[] scl, final int r) {
 		double iarr = 1d / (r + r + 1);
 		for (var i = 0; i < cols; i++) {
 			var ti = i;
 			var li = ti;
 			var ri = ti + r * cols;
-			var fv = src[ti];
-			var lv = src[ti + cols * (rows - 1)];
+			var fv = scl[ti];
+			var lv = scl[ti + cols * (rows - 1)];
 			var val = (r + 1) * fv;
-			for (var j = 0; j < r; j++) { val += src[ti + j * cols]; }
+			for (var j = 0; j < r; j++) { val += scl[ti + j * rows]; }
 			for (var j = 0; j <= r; j++) {
-				val += src[ri] - fv;
-				dst[ti] = val * iarr;
+				val += scl[ri] - fv;
+				scl[ti] = val * iarr;
 				ri += cols;
 				ti += cols;
 			}
 			for (var j = r + 1; j < rows - r; j++) {
-				val += src[ri] - src[li];
-				dst[ti] = val * iarr;
+				val += scl[ri] - scl[li];
+				scl[ti] = val * iarr;
 				li += cols;
 				ri += cols;
 				ti += cols;
 			}
 			for (var j = rows - r; j < rows; j++) {
-				val += lv - src[li];
-				dst[ti] = val * iarr;
+				val += lv - scl[li];
+				scl[ti] = val * iarr;
 				li += cols;
 				ti += cols;
 			}
