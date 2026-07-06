@@ -40,12 +40,12 @@ public class ExportActivator implements BundleActivator {
         // store.putInStore("pref_default_model",defaultModelPreferenceOld);
         // store.putInStore("pref_default_experiment",defaultExperimentPreferenceOld);
 
-        if (! FLAGS.SIMULATION_ONLY)
-        {
-            String[] args = {};
-            Main.main(args);
-            System.out.println("PACKAGE EXPORT DONE");
-        }
+        // if (! FLAGS.SIMULATION_ONLY)
+        // {
+        //     String[] args = {};
+        //     Main.main(args);
+        //     System.out.println("PACKAGE EXPORT DONE");
+        // }
     }
 
     @Override

@@ -157,6 +157,7 @@ import gaml.compiler.ui.editor.toolbar.CreateExperimentSelectionListener;
 import gaml.compiler.ui.editor.toolbar.EditorSearchControls;
 import gaml.compiler.ui.editor.toolbar.EditorToolbar;
 import gaml.compiler.ui.editor.toolbar.OpenExperimentSelectionListener;
+import gaml.compiler.ui.editor.toolbar.ExportExperimentSelectionListener;
 import gaml.compiler.ui.editor.toolbar.OpenImportedErrorSelectionListener;
 import gaml.compiler.ui.editor.toolbar.RevalidateModelSelectionListener;
 import gaml.compiler.ui.reference.BuiltinReferenceMenu;
@@ -703,6 +704,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 						displayExperimentMenu(newState, listener);
 					} else {
 						displayExperimentButtons(newState, listener);
+						displayExperimentExportButton(newState,new ExportExperimentSelectionListener(GamlEditor.this, newState));
 					}
 				}
 				toolbar.requestLayout();
@@ -789,6 +791,22 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 		// Necessary to recompute the width correctly
 		toolbar.normalizeToolbars();
 	}
+
+	/**
+	 * Display experiment buttons.
+	 *
+	 * @param newState
+	 *            the new state
+	 * @param listener
+	 *            the listener
+	 */
+	private void displayExperimentExportButton(final GamlEditorState state, final Selector listener) {
+		final ToolItem t =
+				toolbar.button(IGamaIcons.MENU_EXPORT,null, "Export this model", listener, SWT.LEFT);
+		// Necessary to recompute the width correctly
+		toolbar.normalizeToolbars();
+	}
+
 
 	/**
 	 * Display experiment menu.

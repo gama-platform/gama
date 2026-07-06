@@ -110,7 +110,7 @@ public class GamaZipBuilder {
     public GamaZipBuilder(Set<String> modules, String targetWorkspacePathStr, String targetModelPathStr, String targetExperiment) 
     {
         neededGamaModules = modules;
-        this.targetWorkspacePathStr = targetWorkspacePathStr; 
+        this.targetWorkspacePathStr = Path.of(targetWorkspacePathStr).toString(); 
         this.targetModelPathStr = targetModelPathStr;
         this.targetExperiment = targetExperiment;
     }
@@ -299,6 +299,12 @@ public class GamaZipBuilder {
             // creating / updating preferences
             JREPreferenceStore store = new JREPreferenceStore(Preferences.userRoot().node(GamaPreferenceStore.NODE_NAME));
 
+            String workspacePathPreferenceOld = store.getInStore("pref_workspace_path","");
+            String workspaceRememberPreferenceOld = store.getInStore("pref_workspace_remember","false");
+            String startupModelPreferenceOld = store.getInStore("pref_startup_model","false");
+            String defaultModelPreferenceOld = store.getInStore("pref_default_model","Enter Path");
+            String defaultExperimentPreferenceOld = store.getInStore("pref_default_experiment","");
+
             //pref error display
             // show errors in editor
             store.putInStore("pref_workspace_path",GamaZipBuilder.embeddedWorkspaceName);
@@ -308,6 +314,12 @@ public class GamaZipBuilder {
             store.putInStore("pref_default_experiment",targetExperiment);
             
             store.saveToProperties(GamaZipBuilder.gamaPrefsTmpPath.toString());
+
+            store.putInStore("pref_workspace_path",workspacePathPreferenceOld);
+            store.putInStore("pref_workspace_remember",workspaceRememberPreferenceOld);
+            store.putInStore("pref_startup_model",startupModelPreferenceOld);
+            store.putInStore("pref_default_model",defaultModelPreferenceOld);
+            store.putInStore("pref_default_experiment",defaultExperimentPreferenceOld);
 
             ZipEntry gamaPrefsEntry = new ZipEntry(Path.of("configuration",".settings","gama.prefs").toString());
             zos.putNextEntry(gamaPrefsEntry);

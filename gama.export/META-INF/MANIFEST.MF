@@ -3,11 +3,14 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Gama Export Plugin
 Bundle-SymbolicName: gama.export;singleton:=true
 Bundle-Version: 0.0.0.qualifier
-Export-Package: gama.export
+Export-Package: gama.export,
+ gama.export.dependency,
+ gama.export.ui
 Bundle-Activator: gama.export.ExportActivator
 Bundle-Vendor: UMMISCO
 Require-Bundle: gama.api,
- gama.dev
+ gama.dev,
+ org.eclipse.jface
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-25
 Automatic-Module-Name: gama.export
