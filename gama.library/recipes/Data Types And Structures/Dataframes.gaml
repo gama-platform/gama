@@ -120,10 +120,12 @@ species combining_dataframes {
 		write pretty_print(select_columns(filter(students, "city", "Paris"), ["name", "grade"]));
 
 		// remove_empty drops the rows with an empty/nil value in a given column.
+		write "";
 		dataframe with_gaps <- dataframe_with(
 			["name", "email"],
 			[["Alice", "alice@x.org"], ["Bob", ""], ["Charlie", nil], ["Diana", "diana@x.org"]]
 		);
+		write pretty_print(with_gaps);
 		write sample(with_gaps.rows);
 		write sample(remove_empty(with_gaps, "email").rows);
 
@@ -189,6 +191,7 @@ species looping_on_dataframes {
 		loop i from: 0 to: sales.rows - 1 {
 			write "Row #" + i + ": " + cell(sales, i, "product") + " -> " + cell(sales, i, "revenue");
 		}
+		write "Second way of looping over values:";
 
 		// iloc(df, i) gives a whole row as a list, convenient for unpacking.
 		loop i from: 0 to: sales.rows - 1 {
@@ -197,13 +200,13 @@ species looping_on_dataframes {
 		}
 
 		// A dataframe can also be iterated directly: each iteration yields one ROW, exposed as a
-		// map keyed by column name (Model R). This makes the usual container iterators available.
+		// map keyed by column name. This makes the usual container iterators available.
 		loop row over: sales {
-			write "  " + map(row)["product"] + " = " + map(row)["revenue"];
+			write "  " + row["product"] + " = " + row["revenue"];
 		}
 		// 'where' / 'collect' work on the rows just like on any container.
-		write sample(sales where (int(map(each)["revenue"]) > 900));
-		write sample(sales collect (map(each)["product"]));
+		write sample(sales where (int(each["revenue"]) > 900));
+		write sample(sales collect (each["product"]));
 
 		// Functional style: pull a column out as a list and use the usual list operators.
 		write sample(sum(list<int>(sales column_at "revenue")));
@@ -212,9 +215,10 @@ species looping_on_dataframes {
 }
 
 experiment Dataframes type: gui {
-	user_command "Declaring dataframes"            {create declaring_dataframes;}
-	user_command "Accessing dataframe elements"    {create accessing_dataframe_elements;}
-	user_command "Combining dataframes"            {create combining_dataframes;}
-	user_command "Modifying dataframes"            {create modifying_dataframes;}
-	user_command "Looping on dataframes"           {create looping_on_dataframes;}
+	category "User commands" expanded:true;
+	user_command "Declaring dataframes"            category:"User commands" {create declaring_dataframes;} 
+	user_command "Accessing dataframe elements"    category:"User commands" {create accessing_dataframe_elements;}
+	user_command "Combining dataframes"            category:"User commands" {create combining_dataframes;}
+	user_command "Modifying dataframes"            category:"User commands" {create modifying_dataframes;}
+	user_command "Looping on dataframes"           category:"User commands" {create looping_on_dataframes;}
 }

@@ -390,9 +390,9 @@ experiment Dataframes type: test {
 		assert paris = 2;
 
 		// the generic container iterators now operate on rows
-		list parisians <- df where (map(each)["city"] = "Paris");
+		list parisians <- df where (each["city"] = "Paris");
 		assert length(parisians) = 2;
-		list ages <- df collect (int(map(each)["age"]));
+		list ages <- df collect (int(each["age"]));
 		assert ages = [30, 25, 35];
 	}
 }

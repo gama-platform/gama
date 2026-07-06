@@ -18,6 +18,7 @@ global {
 
 	// Build a dataframe from the agents and save it once the simulation has run a bit
 	reflex save_bugs when: cycle = 100 {
+		write "Start saving agents. Loading needed libraries can be quite long the first time, next operations/simulations will be faster.";
 		dataframe bugs <- dataframe_with(
 			["name", "speed", "size"],
 			bug collect ([each.name, each.speed, each.size])

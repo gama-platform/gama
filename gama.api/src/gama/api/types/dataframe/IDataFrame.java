@@ -213,7 +213,7 @@ public interface IDataFrame extends IContainer.Addressable<String, Object, Strin
 	 */
 	@Override
 	default IList<Object> listValue(final IScope scope, final IType<?> contentType, final boolean copy) {
-		// Model R: a dataframe is iterated as a sequence of rows, each row exposed as a map
+		// A dataframe is iterated as a sequence of rows, each row exposed as a map
 		// (column name -> value), so that the generic container iterators (where, collect, ...) can
 		// address cells by column name, e.g. 'df where (each["city"] = "Paris")'.
 		final IList<Object> result = GamaListFactory.create(Types.MAP);
@@ -223,7 +223,7 @@ public interface IDataFrame extends IContainer.Addressable<String, Object, Strin
 
 	/**
 	 * Returns the row at the given index as a map (column name -&gt; cell value). This is the element type produced
-	 * when iterating a dataframe (Model R): it lets generic container operators address cells by column name.
+	 * when iterating a dataframe: it lets generic container operators address cells by column name.
 	 *
 	 * @param rowIndex
 	 *            the 0-based row index
