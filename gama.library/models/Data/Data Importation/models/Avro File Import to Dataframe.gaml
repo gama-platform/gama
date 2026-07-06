@@ -1,7 +1,7 @@
 /**
 * Name: Avro File Import to Dataframe
 * Author: GAMA Team
-* Description: Shows how to load an Avro file into a dataframe with df_load_avro and explore its contents.
+* Description: Shows how to load an Avro file into a dataframe with dataframe_file and explore its contents.
 *   Avro is a compact, schema-based binary format widely used for data exchange and streaming (Kafka,
 *   Hadoop, ...). The schema (column names and types) is embedded in the file, so the resulting dataframe
 *   keeps named, typed columns — just like the CSV, JSON, Excel and Parquet importers.
@@ -13,7 +13,7 @@ model AvroFileImportToDataframe
 global {
 	// Load an Avro file into a dataframe.
 	// The file path is relative to the model file location.
-	dataframe employees <- df_load_avro("../includes/employees.avro");
+	dataframe employees <- dataframe(dataframe_file("../includes/employees.avro"));
 
 	init {
 		write "===== Dataframe loaded from Avro =====";

@@ -13,7 +13,7 @@ model CSVDataframeImport
 global {
 	// Load a CSV file into a dataframe (comma-separated, with header, UTF-8)
 	// The file path is relative to the model file location
-	dataframe iris_data <- df_load_csv("../includes/iris.csv");
+	dataframe iris_data <- dataframe(dataframe_file("../includes/iris.csv"));
 
 	init {
 		write "===== Dataframe loaded from CSV =====";

@@ -34,7 +34,7 @@ species declaring_dataframes {
 	dataframe empty_df <- dataframe_with(["col_a", "col_b"], []);
 	// A dataframe can also be loaded directly from a CSV file (comma separator, header, UTF-8).
 	// The file path is relative to the model file location.
-	dataframe iris <- df_load_csv("includes/iris_small.csv");
+	dataframe iris <- dataframe(dataframe_file("includes/iris_small.csv"));
 
 	init {
 		write "";

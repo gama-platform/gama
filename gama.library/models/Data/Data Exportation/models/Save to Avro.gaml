@@ -4,7 +4,7 @@
 * Description: Shows how to save a dataframe to an Avro file with the 'save' statement. A dataframe is
 *   built from a population of bug agents and written out in the Avro format, a compact, schema-based
 *   binary format widely used for data exchange and streaming (Kafka, Hadoop, ...). The file is then
-*   reloaded with df_load_avro to demonstrate a round-trip. Avro embeds the schema in the file, so
+*   reloaded with dataframe_file to demonstrate a round-trip. Avro embeds the schema in the file, so
 *   column names and types are preserved.
 * Tags: save_file, avro, export, dataframe, tabular, data
 */
@@ -30,7 +30,7 @@ global {
 		write "Saved bugs.avro";
 
 		// Round-trip: reload the file we just wrote
-		dataframe reloaded <- df_load_avro("../results/bugs.avro");
+		dataframe reloaded <- dataframe(dataframe_file("../results/bugs.avro"));
 		write "Reloaded bugs.avro : " + reloaded.rows + " rows, columns: " + reloaded.keys;
 		write "First bug name : " + cell(reloaded, 0, "name");
 

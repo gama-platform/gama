@@ -222,7 +222,7 @@ experiment Dataframes type: test {
 	test load_csv {
 		// Requires: ../includes/test_data.csv with columns: name,age,city
 		// Contents: Alice,30,Paris / Bob,25,Lyon / Charlie,35,Marseille
-		dataframe df <- df_load_csv("../includes/test_data.csv");
+		dataframe df <- dataframe(dataframe_file("../includes/test_data.csv"));
 		assert df != nil;
 		assert df.rows = 3;
 		assert df.keys = ["name", "age", "city"];
@@ -232,7 +232,7 @@ experiment Dataframes type: test {
 	test load_csv_semicolon {
 		// Requires: ../includes/test_data_semicolon.csv (semicolon-separated, ISO-8859-1)
 		// Contents: nom;age;ville / Alice;30;Paris / Bob;25;Lyon
-		dataframe df <- df_load_csv_with("../includes/test_data_semicolon.csv", ";", true, "ISO-8859-1");
+		dataframe df <- dataframe(dataframe_file("../includes/test_data_semicolon.csv", ";", true, "ISO-8859-1"));
 		assert df != nil;
 		assert df.rows = 2;
 	}
@@ -240,7 +240,7 @@ experiment Dataframes type: test {
 	test load_csv_no_header {
 		// Requires: ../includes/test_data_noheader.csv (no header row)
 		// Contents: Alice,30,Paris / Bob,25,Lyon
-		dataframe df <- df_load_csv_with("../includes/test_data_noheader.csv", ",", false, "UTF-8");
+		dataframe df <- dataframe(dataframe_file("../includes/test_data_noheader.csv", ",", false, "UTF-8"));
 		assert df != nil;
 		assert df.rows = 2;
 		// Auto-generated column names (c0, c1, c2...)
@@ -250,7 +250,7 @@ experiment Dataframes type: test {
 	test save_and_reload_csv {
 		dataframe df <- dataframe_with(["name", "value"], [["X", 10], ["Y", 20]]);
 		save df to: "../results/test_output.csv" format: "csv";
-		dataframe df2 <- df_load_csv("../results/test_output.csv");
+		dataframe df2 <- dataframe(dataframe_file("../results/test_output.csv"));
 		assert df2.rows = 2;
 		assert df2.keys = ["name", "value"];
 	}
@@ -259,7 +259,7 @@ experiment Dataframes type: test {
 		dataframe df <- dataframe_with(["a", "b"], [["x", 1], ["y", 2]]);
 		// The 'separator:' facet of the save statement sets the CSV delimiter
 		save df to: "../results/test_output_semi.csv" format: "csv" separator: ";";
-		dataframe df2 <- df_load_csv_with("../results/test_output_semi.csv", ";", true, "UTF-8");
+		dataframe df2 <- dataframe(dataframe_file("../results/test_output_semi.csv", ";", true, "UTF-8"));
 		assert df2.rows = 2;
 		assert df2.keys = ["a", "b"];
 	}
@@ -268,7 +268,7 @@ experiment Dataframes type: test {
 
 	test load_excel {
 		// Requires: ../includes/test_data.xlsx (first sheet with header row)
-		dataframe df <- df_load_excel("../includes/test_data.xlsx");
+		dataframe df <- dataframe(dataframe_file("../includes/test_data.xlsx"));
 		assert df != nil;
 		assert df.rows = 2;
 	}
@@ -276,7 +276,7 @@ experiment Dataframes type: test {
 	test save_and_reload_excel {
 		dataframe df <- dataframe_with(["id", "label"], [[1, "A"], [2, "B"]]);
 		save df to: "../results/test_output.xlsx" format: "xlsx";
-		dataframe df2 <- df_load_excel("../results/test_output.xlsx");
+		dataframe df2 <- dataframe(dataframe_file("../results/test_output.xlsx"));
 		assert df2.rows = 2;
 	}
 
@@ -285,7 +285,7 @@ experiment Dataframes type: test {
 	test load_json {
 		// Requires: ../includes/test_data.json
 		// Contents: [{"name":"Alice","age":30},{"name":"Bob","age":25}]
-		dataframe df <- df_load_json("../includes/test_data.json");
+		dataframe df <- dataframe(dataframe_file("../includes/test_data.json"));
 		assert df != nil;
 		assert df.rows = 2;
 	}
@@ -293,7 +293,7 @@ experiment Dataframes type: test {
 	test save_and_reload_json {
 		dataframe df <- dataframe_with(["key", "val"], [["a", 1], ["b", 2]]);
 		save df to: "../results/test_output.json" format: "json";
-		dataframe df2 <- df_load_json("../results/test_output.json");
+		dataframe df2 <- dataframe(dataframe_file("../results/test_output.json"));
 		assert df2.rows = 2;
 	}
 

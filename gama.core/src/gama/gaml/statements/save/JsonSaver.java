@@ -36,7 +36,7 @@ public class JsonSaver extends AbstractSaver {
 	@Override
 	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions saveOptions)
 			throws GamaRuntimeException {
-		// Dataframes are written as a JSON array of objects through DFLib, so they can be reloaded with df_load_json.
+		// Dataframes are written as a JSON array of objects through DFLib, so they can be reloaded with dataframe_file.
 		// This is the only path that honors the 'encoding' facet (carried by saveOptions.writeCharset()).
 		if (item.getGamlType().id() == IType.DATAFRAME) {
 			try (Writer w = new FileWriter(file, saveOptions.writeCharset(), false)) {

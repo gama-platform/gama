@@ -4,7 +4,7 @@
 * Description: Shows how to save a dataframe to a CSV file with the 'save' statement. A dataframe is
 *   built from a population of bug agents, then written to CSV (the format is taken from the file
 *   extension, or can be forced with the 'format:' facet). The file is finally reloaded with
-*   df_load_csv to demonstrate a round-trip. Saving a dataframe uses the same 'save ... to: ... '
+*   dataframe_file to demonstrate a round-trip. Saving a dataframe uses the same 'save ... to: ... '
 *   statement as agents and other containers — see "Save to CSV (agents)" for the agent-based variant.
 * Tags: save_file, csv, export, dataframe, tabular, data
 */
@@ -35,7 +35,7 @@ global {
 		write "Saved bugs_semicolon.csv (semicolon-separated)";
 
 		// Round-trip: reload the file we just wrote
-		dataframe reloaded <- df_load_csv("../results/bugs.csv");
+		dataframe reloaded <- dataframe(dataframe_file("../results/bugs.csv"));
 		write "Reloaded bugs.csv : " + reloaded.rows + " rows, columns: " + reloaded.keys;
 		write "First bug name : " + cell(reloaded, 0, "name");
 

@@ -3,7 +3,7 @@
 * Author: GAMA Team
 * Description: Shows how to save a dataframe to a Parquet file with the 'save' statement. A dataframe is
 *   built from a population of bug agents and written out in the columnar Parquet format, which is compact
-*   and efficient for large tabular datasets. The file is then reloaded with df_load_parquet to demonstrate
+*   and efficient for large tabular datasets. The file is then reloaded with dataframe_file to demonstrate
 *   a round-trip. Parquet preserves column names and is widely used in data-science pipelines (pandas, Spark).
 * Tags: save_file, parquet, export, dataframe, tabular, data
 */
@@ -29,7 +29,7 @@ global {
 		write "Saved bugs.parquet";
 
 		// Round-trip: reload the file we just wrote
-		dataframe reloaded <- df_load_parquet("../results/bugs.parquet");
+		dataframe reloaded <- dataframe(dataframe_file("../results/bugs.parquet"));
 		write "Reloaded bugs.parquet : " + reloaded.rows + " rows, columns: " + reloaded.keys;
 		write "First bug name : " + cell(reloaded, 0, "name");
 

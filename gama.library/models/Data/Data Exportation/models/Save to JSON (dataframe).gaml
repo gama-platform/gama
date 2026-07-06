@@ -3,7 +3,7 @@
 * Author: GAMA Team
 * Description: Shows how to save a dataframe to a JSON file with the 'save' statement. A dataframe is
 *   built from a population of bug agents and written out as a JSON array of objects (one object per
-*   row, keys taken from the column names). The file is then reloaded with df_load_json to demonstrate
+*   row, keys taken from the column names). The file is then reloaded with dataframe_file to demonstrate
 *   a round-trip. JSON is convenient for interoperating with web services and scripting languages.
 * Tags: save_file, json, export, dataframe, tabular, data
 */
@@ -28,7 +28,7 @@ global {
 		write "Saved bugs.json";
 
 		// Round-trip: reload the file we just wrote
-		dataframe reloaded <- df_load_json("../results/bugs.json");
+		dataframe reloaded <- dataframe(dataframe_file("../results/bugs.json"));
 		write "Reloaded bugs.json : " + reloaded.rows + " rows, columns: " + reloaded.keys;
 		write "First bug name : " + cell(reloaded, 0, "name");
 

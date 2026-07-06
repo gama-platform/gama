@@ -1,13 +1,13 @@
 /**
 * Name: Excel File Import to Dataframe
 * Author: GAMA Team
-* Description: Demonstrates loading an Excel workbook (.xlsx) into a dataframe with df_load_excel,
+* Description: Demonstrates loading an Excel workbook (.xlsx) into a dataframe with dataframe_file,
 *   then exploring a real-world dataset of 149 116 coffee-shop transactions: schema inspection,
 *   column and cell access, positional sampling, filtering and on-the-fly aggregations rendered
 *   as charts. Unlike a matrix import, a dataframe preserves column names and types.
 *
 *   Operations demonstrated:
-*     - df_load_excel       : load the first sheet of an .xlsx file
+*     - dataframe_file      : load the first sheet of an .xlsx file
 *     - keys / rows         : schema inspection
 *     - column_at / cell : access columns and cells
 *     - filter           : subset by store location or product category
@@ -33,7 +33,7 @@ global {
 	// -----------------------------------------------------------------------
 	// Load the Excel file at startup (first sheet: "Transactions")
 	// -----------------------------------------------------------------------
-	dataframe transactions <- df_load_excel("../includes/Coffee Shop Sales.xlsx");
+	dataframe transactions <- dataframe(dataframe_file("../includes/Coffee Shop Sales.xlsx"));
 
 	// Aggregated summaries — built in init, used by charts
 	dataframe by_store    <- dataframe_with(["store", "revenue", "transactions"], []);

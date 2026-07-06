@@ -1,13 +1,13 @@
 /**
 * Name: Parquet File Import to Dataframe
 * Author: GAMA Team
-* Description: Demonstrates loading a Parquet file (.parquet) into a dataframe with df_load_parquet
+* Description: Demonstrates loading a Parquet file (.parquet) into a dataframe with dataframe_file
 *   and performing common data exploration tasks on a real-world Airbnb listings dataset
 *   (Bali, Indonesia). The dataset contains 29 440 listings with 61 columns covering location,
 *   pricing, ratings, occupancy and revenue metrics — all stored as strings in the Parquet file.
 *
 *   Key operations demonstrated:
-*     - df_load_parquet: load a .parquet file
+*     - dataframe_file: load a .parquet file
 *     - keys: inspect schema
 *     - filter / remove_empty: clean and subset data
 *     - select_columns: keep only relevant columns
@@ -43,7 +43,7 @@ global {
 	// -----------------------------------------------------------------------
 	// Load the Parquet file at startup (all 61 columns as strings)
 	// -----------------------------------------------------------------------
-	dataframe listings <- df_load_parquet("../includes/listings.parquet");
+	dataframe listings <- dataframe(dataframe_file("../includes/listings.parquet"));
 
 	// -----------------------------------------------------------------------
 	// Aggregation containers — populated in init, read by chart displays

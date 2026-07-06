@@ -30,6 +30,7 @@ import org.dflib.parquet.Parquet;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.file.IGamaFile;
 import gama.api.types.list.IList;
 import gama.api.types.map.IMap;
 import gama.api.types.matrix.IField;
@@ -328,6 +329,18 @@ public class GamaDataFrameFactory {
 	}
 
 	/**
+	 * Wraps a dataframe into a mutable view (used as the buffer of a {@code dataframe_file}). Reads delegate to the
+	 * dataframe; writes rebuild it in place.
+	 *
+	 * @param df
+	 *            the dataframe to wrap
+	 * @return a mutable dataframe view
+	 */
+	public static GamaMutableDataFrame mutable(final IDataFrame df) {
+		return new GamaMutableDataFrame(df);
+	}
+
+	/**
 	 * Casts an arbitrary object to a GamaDataFrame.
 	 *
 	 * <p>
@@ -352,6 +365,11 @@ public class GamaDataFrameFactory {
 		return switch (obj) {
 			case null -> null;
 			case IDataFrame idf -> copy ? idf.copy(scope) : idf;
+			// A file (e.g. a dataframe_file) exposes its loaded contents as its buffer; read it and cast that.
+			case IGamaFile<?, ?> f -> {
+				final Object contents = f.getContents(scope);
+				yield contents == obj ? null : castToDataframe(scope, contents, copy);
+			}
 			case IMap<?, ?> map -> fromMap(scope, (IMap<String, IList<Object>>) map);
 			case IList<?> list -> fromList(scope, (IList<IList<Object>>) list);
 			case IField field -> fromField(scope, field);

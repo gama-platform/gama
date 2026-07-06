@@ -1,7 +1,7 @@
 /**
 * Name: JSON File Import to Dataframe
 * Author: GAMA Team
-* Description: Shows how to load a JSON file into a dataframe with df_load_json and explore its
+* Description: Shows how to load a JSON file into a dataframe with dataframe_file and explore its
 *   contents. The JSON file must contain an array of objects with consistent keys — each object
 *   becomes a row and each key becomes a column. This is the tabular counterpart to the
 *   "JSON File Import" model, which reads hierarchical JSON into a map.
@@ -13,7 +13,7 @@ model JSONFileImportToDataframe
 global {
 	// Load a JSON array of objects into a dataframe.
 	// The file path is relative to the model file location.
-	dataframe employees <- df_load_json("../includes/employees.json");
+	dataframe employees <- dataframe(dataframe_file("../includes/employees.json"));
 
 	init {
 		write "===== Dataframe loaded from JSON =====";
