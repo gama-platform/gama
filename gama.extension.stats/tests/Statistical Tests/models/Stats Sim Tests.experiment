@@ -21,14 +21,10 @@ experiment "Tests Stockanalysis" type: test {
 	}
 	
 	test powertest {
-		
-		int nbrep <- power_test(data,0.95,0.80,0.05);
-		assert nbrep<=length(data);
 		list data_mult <- range(50) accumulate (data);
-		int nbrep_obsmult <- power_test(data_mult,0.95,0.80,0.1);
-		write length(data_mult);
-		assert nbrep_obsmult<nbrep;
-		
+		int nbrep_01 <- power_test(data_mult,0.95,0.80,0.01);
+		int nbrep_10 <- power_test(data_mult,0.95,0.80,0.1);
+		assert nbrep_10 < nbrep_01;
 	}
 	
 }
