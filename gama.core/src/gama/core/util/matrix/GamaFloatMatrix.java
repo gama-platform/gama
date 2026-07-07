@@ -10,14 +10,11 @@
  ********************************************************************************************************/
 package gama.core.util.matrix;
 
-import static org.locationtech.jts.index.quadtree.IntervalSize.isZeroWidth;
-
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.locationtech.jts.index.quadtree.IntervalSize;
 
 import com.google.common.primitives.Doubles;
 
