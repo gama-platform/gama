@@ -1,4 +1,4 @@
-package gama.export.ui;
+package gama.ui.application.workbench;
 
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
@@ -16,7 +16,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.graphics.Color;
 
-public class SelectExperimentDialog extends TitleAreaDialog {
+public class PickExperimentDialog extends TitleAreaDialog {
 
     final public static String DEFAULT_EXPERIMENT = "";
 
@@ -26,7 +26,7 @@ public class SelectExperimentDialog extends TitleAreaDialog {
     private String[] availableExperiments;
 
 
-    public SelectExperimentDialog(String[] experimentNames) {
+    public PickExperimentDialog(String[] experimentNames) {
         super(Display.getDefault().getActiveShell());
         availableExperiments = experimentNames;
         setHelpAvailable(false);

@@ -87,21 +87,21 @@ public class ExportExperimentSelectionListener implements Selector {
 				
 				// Récupération des données via les getters de la classe
 				final String outputPathStr = dialog.getOutputPath();
-				final boolean multiExperimentExport = dialog.isMultiExperimentExportSelected();
-				final String targetExperiment = dialog.getSelectedExperiment();
+				
+				final String targetExperiments = String.join("#",dialog.getSelectedExperiments());
 
-				final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd.HHmmss");
-				final String formattedTimestamp = LocalDateTime.now().format(formatter);
+				final String formattedTimestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy.MM.dd.HHmmss"));
 
 				final String modelName = Path.of(relativeModelPathStr).getFileName().toString().replace(".gaml","");
-				final String outputFilename = modelName  + (multiExperimentExport ? "-" : "-" + targetExperiment + "-") + formattedTimestamp + ".zip";
+
+				final String outputFilename = modelName  + "-" + targetExperiments + "-" + formattedTimestamp + ".zip";
 
 				final Path outputPath = Path.of(outputPathStr,outputFilename);
 
 				final GamaZipBuilder ziper = new GamaZipBuilder(neededModules,
 					workspacePathStr,
 					modelPath.toString(),
-					targetExperiment);
+					targetExperiments);
 				try { 
 					ziper.zip(outputPath.toString());
 				} catch (Exception exception) {

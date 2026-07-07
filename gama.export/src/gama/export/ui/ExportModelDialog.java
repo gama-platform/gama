@@ -1,5 +1,8 @@
 package gama.export.ui;
 
+import java.util.List;
+import java.util.ArrayList;
+
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
@@ -7,7 +10,6 @@ import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DirectoryDialog;
@@ -18,20 +20,16 @@ import org.eclipse.swt.widgets.Text;
 public class ExportModelDialog extends TitleAreaDialog {
 
     private Text txtOutputPath;
-    private Button btnMultiExperimentExport;
-    private Combo experimentsCombo;
+    private Button[] buttons;
 
     private String outputPath = "";
-    private String selectedExperiment = DEFAULT_EXPERIMENT;
-    private boolean multiExperimentExport = false;
     private String[] availableExperiments;
-
-    public static final String DEFAULT_EXPERIMENT = "";
-
+    private List<String> selectedExperiments;
 
     public ExportModelDialog(String[] experimentNames) {
         super(Display.getDefault().getActiveShell());
         availableExperiments = experimentNames;
+        buttons = new Button[experimentNames.length];
         setHelpAvailable(false);
     }
 
@@ -56,7 +54,6 @@ public class ExportModelDialog extends TitleAreaDialog {
         container.setLayout(layout);
 
         createOptionSection(container);
-        createDropdownSection(container);
         createPathSection(container);
 
         return area;
@@ -67,33 +64,13 @@ public class ExportModelDialog extends TitleAreaDialog {
         lblOptions.setText("Options :");
         lblOptions.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1));
 
-        btnMultiExperimentExport = new Button(container, SWT.CHECK);
-        btnMultiExperimentExport.setText("Multi-experiment launcher");
-        btnMultiExperimentExport.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 3, 1));
-
-        btnMultiExperimentExport.addListener(SWT.Selection, event -> {
-            // updates the state of the dropdown depending on the "multi-experiment" checkbox
-            boolean isChecked = btnMultiExperimentExport.getSelection();
-            experimentsCombo.setEnabled(!isChecked);
-        });
+        for (int i=0 ; i < availableExperiments.length ; i++)
+        {
+            buttons[i] = new Button(container, SWT.CHECK);
+            buttons[i].setText(availableExperiments[i]);
+            buttons[i].setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 3, 1));
+        }
     }
-
-        private void createDropdownSection(Composite container) {
-        CLabel lblCombo = new CLabel(container, SWT.NONE);
-        lblCombo.setText("Exported experiment :");
-        lblCombo.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
-
-        experimentsCombo = new Combo(container, SWT.DROP_DOWN | SWT.READ_ONLY);
-        GridData gdCombo = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
-        experimentsCombo.setLayoutData(gdCombo);
-
-        experimentsCombo.setItems(availableExperiments);
-        experimentsCombo.select(0); 
-
-        // Règle l'état de départ : désactivé si btnOption1 n'est pas coché par défaut
-        experimentsCombo.setEnabled(!btnMultiExperimentExport.getSelection());
-    }
-
 
     private void createPathSection(Composite container) {
         CLabel lblPath = new CLabel(container, SWT.NONE);
@@ -127,8 +104,13 @@ public class ExportModelDialog extends TitleAreaDialog {
     @Override
     protected void okPressed() {
         outputPath = txtOutputPath.getText().trim();
-        multiExperimentExport = btnMultiExperimentExport.getSelection();
-        selectedExperiment = experimentsCombo.getText();
+        selectedExperiments = new ArrayList<String>();
+
+        for(int i=0 ; i < availableExperiments.length ; i++)
+        {
+            if(buttons[i].getSelection())
+                selectedExperiments.add(availableExperiments[i]);
+        }
 
         if (outputPath.isEmpty()) {
             setMessage("Error : The destination path cannot be empty.", IMessageProvider.ERROR);
@@ -142,11 +124,7 @@ public class ExportModelDialog extends TitleAreaDialog {
         return outputPath;
     }
 
-    public boolean isMultiExperimentExportSelected() {
-        return multiExperimentExport;
-    }
-
-    public String getSelectedExperiment() {
-        return multiExperimentExport ? ExportModelDialog.DEFAULT_EXPERIMENT : selectedExperiment;
+    public String[] getSelectedExperiments() {
+        return selectedExperiments.toArray(new String[0]);
     }
 }

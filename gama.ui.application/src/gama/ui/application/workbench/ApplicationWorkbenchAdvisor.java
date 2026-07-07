@@ -10,6 +10,10 @@
  ********************************************************************************************************/
 package gama.ui.application.workbench;
 
+import java.util.stream.StreamSupport;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -23,6 +27,11 @@ import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.internal.PluginActionBuilder;
 import org.eclipse.ui.internal.ide.application.IDEWorkbenchAdvisor;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.emf.common.util.URI;
+import org.osgi.framework.Bundle;
+import com.google.inject.Injector;
+
 
 import gama.api.GAMA;
 import gama.api.additions.delegates.IEventLayerDelegate;
@@ -41,17 +50,13 @@ import gama.workspace.manager.WorkspaceModelsManager;
 import gaml.compiler.validation.GamlModelBuilder;
 import gama.dev.THREADS;
 import gama.api.kernel.species.IModelSpecies;
-import java.util.ArrayList;
-import java.util.List;
 import gama.api.compilation.GamlCompilationError;
-import org.eclipse.emf.common.util.URI;
-import com.google.inject.Injector;
 import gaml.compiler.GamlStandaloneSetup;
 import gama.api.additions.GamaBundleLoader;
-import org.osgi.framework.Bundle;
 // import org.eclipse.emf.ecore.resource.Resource;
 
 import gama.export.ExportHelper;
+import gama.ui.application.workbench.StartupModelHelper;
 
 
 /**
@@ -131,7 +136,8 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 		}
 
 		if (GamaPreferences.Interface.CORE_STARTUP_MODEL.getValue()) {
-			String experiment = GamaPreferences.Interface.CORE_DEFAULT_EXPERIMENT.getValue();
+			// String experiment = GamaPreferences.Interface.CORE_DEFAULT_EXPERIMENT.getValue();
+			String experiment = StartupModelHelper.getInstance().getExperiment();
 			GamlModelBuilder builder = null;
 
 			// final boolean isEditorLoaded =  
@@ -152,7 +158,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 			String filePathStr = file.getPath(null);
 			file = new GenericFile(ExportHelper.resolveEmbeddedPath(filePathStr));
 
-			if (file != null && file.exists(null) && experiment != null) {
+			if (file != null && file.exists(null) && experiment != "") {
 
 				while (GAMA.getRegularGui() == null) {
 					THREADS.WAIT(100, Thread.currentThread().getName() + ": waiting for the GUI to become available");

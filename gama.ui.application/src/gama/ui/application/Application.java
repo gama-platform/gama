@@ -38,6 +38,7 @@ import gama.api.utils.files.BufferingUtils;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 import gama.ui.application.workbench.ApplicationWorkbenchAdvisor;
+import gama.ui.application.workbench.StartupModelHelper;
 import gama.workspace.manager.WorkspaceModelsManager;
 
 /** This class controls all aspects of the application's execution */
@@ -111,6 +112,10 @@ public class Application implements IApplication {
 		});
 		final Display display = configureDisplay();
 		Object check = Display.getCurrent().syncCall(() -> GAMA.getWorkspaceManager().checkWorkspace());
+
+		StartupModelHelper smh = StartupModelHelper.getInstance();
+		smh.initialize();
+
 		if (!EXIT_OK.equals(check)) {
 			try {
 				createProcessor(display);
