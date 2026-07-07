@@ -37,7 +37,7 @@ import gama.api.utils.prefs.GamaPreferences;
 
 /**
  * A file type that reads tabular data into a {@link IDataFrame}, exposing dataframe loading through GAMA's standard file
- * interface (like {@code csv_file}, {@code shape_file}, …) instead of ad-hoc {@code df_load_*} operators.
+ * interface (like {@code csv_file}, {@code shape_file}, …) instead of ad-hoc operators.
  *
  * <p>
  * The actual format is chosen from the file extension: {@code csv}/{@code tsv} (with optional separator, header and
