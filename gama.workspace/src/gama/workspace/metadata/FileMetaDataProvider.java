@@ -373,8 +373,9 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 	 */
 	private IGamaFileMetaData buildAndStore(final String contentType, final IFile file, final Object element) {
 		try {
-			// Re-check: another thread may have stored it while we were waiting.
-			IGamaFileMetaData data = readMetadata(contentType, file, true);
+			// Re-check: another thread may have stored or updated it while we were waiting.
+			// Only get a cached file if it is up-to-date
+			IGamaFileMetaData data = readMetadata(contentType, file, false);
 			if (data != null) return data;
 
 			final Function<IFile, IGamaFileMetaData> builder = metadataBuilders.get(contentType);
@@ -395,6 +396,37 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 	}
 
 	/**
+	 * Computes a robust, cross-platform content stamp used to decide whether a file's cached metadata is still valid.
+	 * <p>
+	 * We cannot use {@link IResource#getModificationStamp()} because it is an Eclipse-internal counter that is <b>not</b> 
+	 * updated when a file is modified outside of the workspace. 
+	 * <p>
+	 * Instead, this reads the <b>real</b> file-system last-modified time. Any content change updates the
+	 * last-modified time, so the stamp changes and the cache is invalidated. False positives (the stamp changing
+	 * without an actual content change, e.g. after a bare {@code touch}) are harmless, they merely trigger a
+	 * recomputation, whereas false negatives (reusing cached metadata after the content changed) are avoided for every
+	 * realistic edit.
+	 * <p>
+	 * Only regular files use this scheme; projects and folders keep the workspace stamp, as do files whose local
+	 * location cannot be resolved (the method then falls back to {@link IResource#getModificationStamp()}).
+	 *
+	 * @param file
+	 *            the resource whose content stamp is requested
+	 * @return the content stamp of the file, or the workspace modification stamp when the local file is unavailable
+	 */
+	private static long getContentStamp(final IResource file) {
+		try {
+			if (file.getType() == IResource.FILE && file.getLocation() != null) {
+				final java.io.File f = file.getLocation().toFile();
+				if (f.exists()) return f.lastModified();
+			}
+		} catch (final Exception e) {
+			// Ignore and fall back to the workspace modification stamp below.
+		}
+		return file.getModificationStamp();
+	}
+
+	/**
 	 * Read metadata from either session properties (runtime) or persistent properties (startup). Handles both
 	 * compressed and uncompressed data formats for backward compatibility.
 	 *
@@ -411,7 +443,7 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 		if (file == null || !file.isAccessible() || contentType == null) return null;
 
 		IGamaFileMetaData result = null;
-		final long modificationStamp = file.getModificationStamp();
+		final long modificationStamp = getContentStamp(file);
 
 		try {
 			// First try to get from session properties (runtime cache)
@@ -484,7 +516,7 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 		try {
 			if (GAMA.getWorkspaceManager().getWorkspace().isTreeLocked()) return;
 
-			if (data != null) { data.setModificationStamp(file.getModificationStamp()); }
+			if (data != null) { data.setModificationStamp(getContentStamp(file)); }
 
 			final Runnable runnable = () -> {
 				try {
