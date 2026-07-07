@@ -1,4 +1,4 @@
-experiment "Tests Stockanalysis" type: test {
+experiment "Tests Stochanalysis" type: test {
 	
 	list<float> data <- [];
 	
