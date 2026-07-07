@@ -445,12 +445,12 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 						reportUnprocessedData(scope);
 						break readingLoop;
 					}
-					matrix.set(scope, i/cols, i%cols, s);
+					matrix.set(scope, i%cols, i/cols, s);
 					i++;
 					nbC++;
 				}
 				while (nbC < cols && i < nbElmt) {
-					matrix.set(scope, i/cols, i%cols, defaultVal);
+					matrix.set(scope, i%cols, i/cols, defaultVal);
 					i++;
 					nbC++;
 				}
