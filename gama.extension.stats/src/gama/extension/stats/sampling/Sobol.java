@@ -101,7 +101,7 @@ public final class Sobol {
 		this.outputs = new HashMap<>();
 
 		this.sample = sample;
-		this._sample = sample * (2 * parameters.size() + 2);
+		this._sample = sample * (parameters.size() + 2);
 	}
 
 	/**
@@ -128,9 +128,9 @@ public final class Sobol {
 		}
 
 		_sample = this.parameters.values().iterator().next().size();
-		if (_sample % (2 * nb_parameters + 2) != 0) throw new IllegalArgumentException(
+		if (_sample % (nb_parameters + 2) != 0) throw new IllegalArgumentException(
 				"Number of sample in the data doesn't match the number of parameters");
-		sample = _sample / (2 * nb_parameters + 2);
+		sample = _sample / (nb_parameters + 2);
 	}
 
 	/**
@@ -265,13 +265,10 @@ public final class Sobol {
 
 			for (int i = 0; i < sample; i++) {
 				A[i] = Double.parseDouble(it.next().toString());
+				B[i] = Double.parseDouble(it.next().toString());
 				for (int j = 0; j < this.parameters.size(); j++) {
 					C_A[i][j] = Double.parseDouble(it.next().toString());
 				}
-				for (int j = 0; j < this.parameters.size(); j++) {
-					it.next();
-				}
-				B[i] = Double.parseDouble(it.next().toString());
 			}
 
 			int j = 0;
@@ -424,6 +421,7 @@ public final class Sobol {
 	}
 
 	private double computeFirstOrder(final double[] a0, final double[] a1, final double[] a2, final int nsample) {
+		if (nsample <= 1) return 0.0;
 		double c = 0.0;
 		for (int i = 0; i < nsample; i++) { c += a0[i]; }
 		c /= nsample;
@@ -434,26 +432,27 @@ public final class Sobol {
 			tmp2 += a2[i] - c;
 			tmp3 += (a1[i] - c) * (a2[i] - c);
 		}
-		EY2 /= nsample;
+		EY2 /= (nsample - 1);
 		double V = tmp1 / (nsample - 1) - Math.pow(tmp2 / nsample, 2.0);
+		if (V == 0.0) return 0.0;
 		double U = tmp3 / (nsample - 1);
 		return (U - EY2) / V;
 	}
 
 	private double computeTotalOrder(final double[] a0, final double[] a1, final double[] a2, final int nsample) {
+		if (nsample <= 1) return 0.0;
 		double c = 0.0;
 		for (int i = 0; i < nsample; i++) { c += a0[i]; }
 		c /= nsample;
-		double tmp1 = 0.0, tmp2 = 0.0, tmp3 = 0.0;
+		double tmp1 = 0.0, tmp2 = 0.0;
 		for (int i = 0; i < nsample; i++) {
 			tmp1 += (a0[i] - c) * (a0[i] - c);
 			tmp2 += (a0[i] - c) * (a1[i] - c);
-			tmp3 += a0[i] - c;
 		}
-		double EY2 = Math.pow(tmp3 / nsample, 2.0);
-		double V = tmp1 / (nsample - 1) - EY2;
+		double V = tmp1 / (nsample - 1);
+		if (V == 0.0) return 0.0;
 		double U = tmp2 / (nsample - 1);
-		return 1.0 - (U - EY2) / V;
+		return 1.0 - U / V;
 	}
 
 	private double computeTotalOrderConfidence(final double[] a0, final double[] a1, final double[] a2,
