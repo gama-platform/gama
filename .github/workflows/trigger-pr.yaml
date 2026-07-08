@@ -72,7 +72,7 @@ jobs:
           python3 -m pip install lxml
           python3 $GITHUB_WORKSPACE/travis/get_spotbugs_xml_diff.py -n $GITHUB_WORKSPACE/pull-request/spotbugsXml.xml -o $GITHUB_WORKSPACE/main/spotbugsXml.xml -d $GITHUB_WORKSPACE/final-report-spotbugsXml.xml
 
-      - uses: lcollins/spotbugs-github-action@v3.0.0
+      - uses: lcollins/spotbugs-github-action@v3.2.0
         with:
           path: ${{ github.workspace }}/final-report-spotbugsXml.xml
           fail-on-violation: true
