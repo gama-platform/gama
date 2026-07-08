@@ -75,6 +75,14 @@ public class ModelLibraryTester extends AbstractModelLibraryRunner {
 		final List<URL> allURLs = new ArrayList<>();
 		for (final Bundle bundle : plugins.keySet()) {
 			for (final String entry : plugins.get(bundle)) {
+				// Force a full extraction of the test folder tree from the (possibly jarred) bundle so that
+				// non-model resources referenced by tests at runtime (e.g. data files in includes/) are
+				// materialized on disk next to the models. Resolving the enclosing directory makes Equinox
+				// explode the whole subtree, mirroring what the GUI does in
+				// WorkspaceModelsManager.linkModelsToWorkspace(). Without this, FileLocator.toFileURL below
+				// only extracts the individual test model files, leaving sibling folders like includes/ missing.
+				final URL entryURL = bundle.getEntry(entry);
+				if (entryURL != null) { FileLocator.toFileURL(entryURL); }
 				final Enumeration<URL> urls = bundle.findEntries(entry, "*", true);
 				if (urls != null) {
 					while (urls.hasMoreElements()) {
