@@ -704,8 +704,8 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 						displayExperimentMenu(newState, listener);
 					} else {
 						displayExperimentButtons(newState, listener);
-						displayExperimentExportButton(newState,new ExportExperimentSelectionListener(GamlEditor.this, newState));
 					}
+					displayExperimentExportButton(newState,new ExportExperimentSelectionListener(GamlEditor.this, newState));
 				}
 				toolbar.requestLayout();
 

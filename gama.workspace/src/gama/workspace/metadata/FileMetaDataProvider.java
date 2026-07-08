@@ -53,6 +53,7 @@ import gama.api.utils.files.IFileMetadataProvider;
 import gama.api.utils.files.IGamaFileMetaData;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
+import gama.dev.FLAGS;
 
 /**
  * FileMetaDataProvider is responsible for managing metadata for files and projects in the GAMA workspace. It provides
@@ -677,7 +678,7 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 
 			@Override
 			public void saving(final ISaveContext context) throws CoreException {
-				if (context.getKind() != ISaveContext.FULL_SAVE) return;
+				if (context.getKind() != ISaveContext.FULL_SAVE || FLAGS.SIMULATION_ONLY) return;
 
 				TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAMA, "workspace metadata ", "saved in", () -> {
 					GAMA.getWorkspaceManager().getRoot().accept(resource -> {

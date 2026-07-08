@@ -18,11 +18,9 @@ import org.eclipse.swt.graphics.Color;
 
 public class PickExperimentDialog extends TitleAreaDialog {
 
-    final public static String DEFAULT_EXPERIMENT = "";
-
     private Combo experimentsCombo;
 
-    private String selectedExperiment = DEFAULT_EXPERIMENT;
+    private String selectedExperiment;
     private String[] availableExperiments;
 
 

@@ -34,6 +34,7 @@ import org.eclipse.ui.internal.ide.application.DelayedEventsProcessor;
 import gama.api.GAMA;
 import gama.api.runtime.IWorkspaceManager;
 import gama.api.runtime.SystemInfo;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.api.utils.files.BufferingUtils;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
@@ -113,8 +114,8 @@ public class Application implements IApplication {
 		final Display display = configureDisplay();
 		Object check = Display.getCurrent().syncCall(() -> GAMA.getWorkspaceManager().checkWorkspace());
 
-		StartupModelHelper smh = StartupModelHelper.getInstance();
-		smh.initialize();
+		if (GamaPreferences.Interface.CORE_STARTUP_MODEL.getValue())
+			StartupModelHelper.getInstance().initialize();
 
 		if (!EXIT_OK.equals(check)) {
 			try {

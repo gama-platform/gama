@@ -235,8 +235,27 @@
                            definitionId="isSimulationExisting">
                      </reference>
                      <not>
-                     <systemTest property="simulation_only" value="true"/>
+                        <systemTest property="simulation_only" value="true"/>
                      </not>
+                  </and>
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="gama.application.commands.SelectExperiment"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.project.svg"
+                  label="Select Experiment"
+                  style="push"
+                  tooltip="Select another experiment to run.">
+               <visibleWhen
+                     checkEnabled="false">
+                  <and>
+                     <reference
+                           definitionId="isInSimulationPerspective">
+                     </reference>
+                     <reference
+                           definitionId="isSimulationExisting">
+                     </reference>
+                     <systemTest property="simulation_only" value="true"/>
                   </and>
                </visibleWhen>
             </command>
@@ -706,6 +725,25 @@
                   </and>
                </visibleWhen>
             </command>
+            <command
+                  commandId="gama.application.commands.SelectExperiment"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.project.svg"
+                  label="Select Another Experiment"
+                  style="push"
+                  tooltip="Select another experiment to run.">
+               <visibleWhen
+                     checkEnabled="false">
+                  <and>
+                     <reference
+                           definitionId="isInSimulationPerspective">
+                     </reference>
+                     <reference
+                           definitionId="isSimulationExisting">
+                     </reference>
+                     <systemTest property="simulation_only" value="true"/>
+                  </and>
+               </visibleWhen>
+            </command>
          </toolbar>
       </menuContribution>
    </extension>
@@ -813,9 +851,26 @@
             class="gama.ui.experiment.commands.CancelRun"
             commandId="gama.application.commands.Cancel">
          <activeWhen>
-            <reference
-                  definitionId="isInSimulationPerspective">
-            </reference>
+            <and>
+                  <reference
+                        definitionId="isInSimulationPerspective">
+                  </reference>
+                  <not>
+                        <systemTest property="simulation_only" value="true"/>
+                  </not>
+            </and>
+         </activeWhen>
+      </handler>
+      <handler
+            class="gama.ui.experiment.commands.SelectExperiment"
+            commandId="gama.application.commands.SelectExperiment">
+         <activeWhen>
+            <and>
+                  <reference
+                        definitionId="isInSimulationPerspective">
+                  </reference>
+                  <systemTest property="simulation_only" value="true"/>
+            </and>
          </activeWhen>
       </handler>
       <handler
@@ -834,14 +889,19 @@
             class="gama.ui.shared.commands.SwitchToModeling"
             commandId="gama.application.goto.modeling">
          <activeWhen>
-            <or>
-               <reference
-                     definitionId="isSimulationReady">
-               </reference>
-               <reference
-                     definitionId="isSimulationFinished">
-               </reference>
-            </or>
+            <and>
+                  <or>
+                  <reference
+                        definitionId="isSimulationReady">
+                  </reference>
+                  <reference
+                        definitionId="isSimulationFinished">
+                  </reference>
+                  </or>
+                  <not>
+                        <systemTest property="simulation_only" value="true"/>
+                  </not>
+            </and>
          </activeWhen>
       </handler>
       <handler

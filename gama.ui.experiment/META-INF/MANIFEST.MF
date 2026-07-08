@@ -8,6 +8,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-25
 Require-Bundle: gama.ui.application,
  gama.ui.shared,
  gama.core,
+ gama.dev,
  org.eclipse.core.runtime;visibility:=reexport,
  org.eclipse.ui.console,
  org.eclipse.jface.text,
