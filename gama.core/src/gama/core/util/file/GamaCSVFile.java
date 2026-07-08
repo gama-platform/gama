@@ -414,62 +414,45 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 		try {
 			String task = "Reading file " + getName(scope);
 			scope.getGui().getStatus().beginTask(task, IStatusMessage.DOWNLOAD_ICON);
-			if (t == IType.INT) {
-				matrix = GamaMatrixFactory.createIntMatrix((int) userSize.getX(), (int) userSize.getY());
-				final int[] m = ((GamaIntMatrix) matrix).getMatrix();
-				int i = 0;
-				while (reader.readRecord()) {
-					percentage = reader.getCurrentRecord() / userSize.getY();
-					scope.getGui().getStatus().setTaskCompletion(task, percentage);
-					int nbC = 0;
-					for (final String s : reader.getValues()) {
-						m[i++] = Cast.asInt(scope, s);
-						nbC++;
+			Object defaultVal;
+			
+			switch (t){
+				case IType.FLOAT:
+					defaultVal = 0.0;
+					matrix = GamaMatrixFactory.createFloatMatrix((int) userSize.getX(), (int) userSize.getY());
+					break;
+				case IType.INT:
+					defaultVal = 0;
+					matrix = GamaMatrixFactory.createIntMatrix((int) userSize.getX(), (int) userSize.getY());
+					break;
+				default:
+					defaultVal = null;
+					matrix = GamaMatrixFactory.create((int) userSize.getX(), (int) userSize.getY(), Types.STRING);
+				
+			}
+			
+			final int cols = matrix.getCols(null);
+			final int nbElmt = cols * matrix.getRows(null);
+			
+			int i = 0;
+			readingLoop:
+			while (reader.readRecord()) {
+				percentage = reader.getCurrentRecord() / userSize.getY();
+				scope.getGui().getStatus().setTaskCompletion(task, percentage);
+				int nbC = 0;
+				for (final String s : reader.getValues()) {
+					if (i == nbElmt) {
+						reportUnprocessedData(scope);
+						break readingLoop;
 					}
-					while (nbC < matrix.getCols(null)) {
-						m[i++] = 0;
-						nbC++;
-					}
+					matrix.set(scope, i%cols, i/cols, s);
+					i++;
+					nbC++;
 				}
-			} else if (t == IType.FLOAT) {
-				matrix = GamaMatrixFactory.createFloatMatrix((int) userSize.getX(), (int) userSize.getY());
-				final double[] m = ((GamaFloatMatrix) matrix).getMatrix();
-				int i = 0;
-				while (reader.readRecord()) {
-					percentage = reader.getCurrentRecord() / userSize.getY();
-					scope.getGui().getStatus().setTaskCompletion(task, percentage);
-					int nbC = 0;
-					for (final String s : reader.getValues()) {
-						m[i++] = Cast.asFloat(scope, s);
-						nbC++;
-					}
-					while (nbC < matrix.getCols(null)) {
-						m[i++] = 0.0;
-						nbC++;
-					}
-				}
-			} else {
-				matrix = GamaMatrixFactory.create((int) userSize.getX(), (int) userSize.getY(), Types.STRING);
-				final Object[] m = ((GamaObjectMatrix) matrix).getMatrix();
-				int i = 0;
-				while (reader.readRecord()) {
-					percentage = reader.getCurrentRecord() / userSize.getY();
-					scope.getGui().getStatus().setTaskCompletion(task, percentage);
-					int nbC = 0;
-
-					for (final String s : reader.getValues()) {
-						if (i == m.length) {
-							GAMA.reportError(scope, GamaRuntimeException.warning("The file " + getFile(scope).getName()
-									+ " seems to contain data that have not been processed", scope), false);
-							break;
-						}
-						nbC++;
-						m[i++] = s;
-					}
-					while (nbC < matrix.getCols(null)) {
-						m[i++] = null;
-						nbC++;
-					}
+				while (nbC < cols && i < nbElmt) {
+					matrix.set(scope, i%cols, i/cols, defaultVal);
+					i++;
+					nbC++;
 				}
 			}
 
@@ -477,6 +460,22 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 		} finally {
 			scope.getGui().getStatus().endTask("Reading CSV File", IStatusMessage.DOWNLOAD_ICON);
 		}
+	}
+
+	/**
+	 * Reports, as a non-blocking warning, that the file contains more data than the matrix computed from its (possibly
+	 * cached or under-estimated) metadata can hold. See issue #1127: this happens typically when the file has been
+	 * modified outside of GAMA (so that the cached dimensions are stale) or when it lacks a trailing newline. The
+	 * warning is reported only once, when the matrix is full, and the remaining records are ignored instead of throwing
+	 * an ArrayIndexOutOfBoundsException.
+	 *
+	 * @param scope
+	 *            the scope
+	 */
+	private void reportUnprocessedData(final IScope scope) {
+		GAMA.reportError(scope, GamaRuntimeException.warning(
+				"The file " + getFile(scope).getName() + " seems to contain data that have not been processed", scope),
+				false);
 	}
 
 	/**
