@@ -23,12 +23,10 @@ import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
-import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.dataframe.GamaDataFrameFactory;
+import gama.api.types.dataframe.IDataFrame;
 import gama.api.types.list.GamaListFactory;
-import gama.api.types.list.IList;
-import gama.api.types.map.GamaMapFactory;
-import gama.api.types.map.IMap;
 
 /**
  * The Class SPARQLOperators.
@@ -56,7 +54,7 @@ public class SPARQLOperators {
 			category = { IOperatorCategory.SPARQL },
 			concept = { IConcept.DATABASE })
 	@no_test
-	public static IMap<String, IList<String>> queryEndpoint(final IScope scope, final String queryStr,
+	public static IDataFrame queryEndpoint(final IScope scope, final String queryStr,
 			final String endpoint) {
 		return queryEndpoint(scope, queryStr, endpoint, 10000);
 	}
@@ -85,10 +83,9 @@ public class SPARQLOperators {
 			category = { IOperatorCategory.SPARQL },
 			concept = { IConcept.DATABASE })
 	@no_test
-	public static IMap<String, IList<String>> queryEndpoint(final IScope scope, final String queryStr,
+	public static IDataFrame queryEndpoint(final IScope scope, final String queryStr,
 			final String endpoint, final int timeout) {
-
-		final IMap<String, IList<String>> res = GamaMapFactory.create(Types.STRING, Types.LIST);
+		IDataFrame res = null;
 		QueryExecution qexec = null;
 
 		try {
@@ -99,22 +96,23 @@ public class SPARQLOperators {
 			ResultSet rs = qexec.execSelect();
 
 			// We start by creating the lists for each variable
-			var variables = rs.getResultVars();
-			variables.forEach(v -> res.put(v, GamaListFactory.create(Types.STRING)));
+			res = GamaDataFrameFactory.create(rs.getResultVars());
+			
 
 			while (rs.hasNext()) {
 				QuerySolution qs = rs.next();
-
-				for (var variable : variables) {
-					String value = null;
+				var values = GamaListFactory.create();
+				for (var variable : res.getColumns()) {
+					Object value = null;
 					try {
 						// This may fail if the variable is not present in this row
-						value = qs.get(variable).toString();
+						value = qs.get(variable);
 					} catch (Exception e) {
 						// We just leave the value to null
 					}
-					res.get(variable).add(value);
+					values.add(value);
 				}
+				res.addRow(values);
 			}
 		} catch (Exception e) {
 			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("While executing request: '" + queryStr

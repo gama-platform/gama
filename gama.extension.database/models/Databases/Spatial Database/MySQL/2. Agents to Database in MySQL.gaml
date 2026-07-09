@@ -25,54 +25,39 @@ global {
 		create buildings(type:string(read ('NATURE'))) from: buildingsShp;
 		create bounds from: boundsShp;
 		
-		create DB_Accessor number: 1  
-		{ 			
-			do executeUpdate (params: PARAMS, updateComm: "DELETE FROM buildings");	
+		create DB_Accessor number: 1
+		{
+			do executeUpdate (params: PARAMS, updateComm: "DELETE FROM buildings");
 			do executeUpdate (params: PARAMS, updateComm: "DELETE FROM bounds");
 		}
-		write "Click on <<Step>> button to save data of agents to DB";		 
+		write "Click on <<Step>> button to save data of agents to DB";
 	}
-}   
- 
-species DB_Accessor skills: [SQLSKILL] ;   
 
-species bounds {
-	reflex printdata{
-		 write ' name : ' + (name) ;
-	}
-	
-	reflex savetosql{  // save data into MySQL
-		write "begin save of: "+ name;
-		ask DB_Accessor {
+	// All agents of each species are saved in a single batch insert, by building a dataframe
+	// whose 'geom' column holds their geometries.
+	reflex save_to_db when: cycle = 1 {
+		ask first(DB_Accessor) {
 			do insert (params: PARAMS, into: "bounds",
-					  columns: ["geom"],
-					  values: [myself.shape]);
+				data: dataframe_with(["geom"], bounds collect [each.shape]));
+			do insert (params: PARAMS, into: "buildings",
+				data: dataframe_with(["name", "type", "geom"], buildings collect [each.name, each.type, each.shape]));
 		}
-	    write "finished save of: "+ name;
-	}		
+		write "" + length(bounds) + " bound(s) and " + length(buildings) + " building(s) saved to the database.";
+		do pause();
+	}
 }
+
+species DB_Accessor skills: [SQLSKILL] ;
+
+species bounds ;
 
 species buildings {
 	string type;
-	
-	reflex printdata{
-		 write ' name : ' + (name) + '; type: ' + (type) + "shape:" + shape;
-	}
-	
-	reflex savetosql{  // save data into MySQL
-		write "begin save of: "+ name;
-		ask DB_Accessor {
-			do insert (params: PARAMS, into: "buildings",
-					  columns: ["name", "type","geom"],
-					  values: [myself.name,myself.type,myself.shape]);
-		}
-	    write "finished save of: "+ name;
-	}	
-	
+
 	aspect default {
 		draw shape color: #gray ;
 	}
-}     
+}
 
 experiment default_expr type: gui {
 	output {

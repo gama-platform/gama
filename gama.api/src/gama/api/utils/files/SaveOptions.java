@@ -19,7 +19,7 @@ import gama.api.utils.files.BufferingUtils.BufferingStrategies;
  * The Class SaveOptions.
  */
 public record SaveOptions(String code, boolean addHeader, String type, Object attributesToSave,
-		BufferingStrategies bufferingStrategy, boolean rewrite, Double noData, Charset writeCharset) {
+		BufferingStrategies bufferingStrategy, boolean rewrite, Double noData, Charset writeCharset, String separator) {
 
 	/**
 	 * Instantiates a new save options.
@@ -39,7 +39,7 @@ public record SaveOptions(String code, boolean addHeader, String type, Object at
 	 */
 	public SaveOptions(final String code2, final boolean addHeader2, final String type2,
 			final IExpression attributesFacet, final BufferingStrategies strategy, final boolean rewrite2) {
-		this(code2, addHeader2, type2, attributesFacet, strategy, rewrite2, null, StandardCharsets.UTF_8);
+		this(code2, addHeader2, type2, attributesFacet, strategy, rewrite2, null, StandardCharsets.UTF_8, null);
 	}
 
 	/**
@@ -63,7 +63,7 @@ public record SaveOptions(String code, boolean addHeader, String type, Object at
 	public SaveOptions(final String code2, final boolean addHeader2, final String type2,
 			final IExpression attributesFacet, final BufferingStrategies strategy, final boolean rewrite2,
 			final Double noData2) {
-		this(code2, addHeader2, type2, attributesFacet, strategy, rewrite2, noData2, StandardCharsets.UTF_8);
+		this(code2, addHeader2, type2, attributesFacet, strategy, rewrite2, noData2, StandardCharsets.UTF_8, null);
 	}
 
 	/**
@@ -74,7 +74,20 @@ public record SaveOptions(String code, boolean addHeader, String type, Object at
 	 * @return the save options
 	 */
 	public SaveOptions withCharset(final Charset c) {
-		return new SaveOptions(code, addHeader, type, attributesToSave, bufferingStrategy, rewrite, noData, c);
+		return new SaveOptions(code, addHeader, type, attributesToSave, bufferingStrategy, rewrite, noData, c,
+				separator);
+	}
+
+	/**
+	 * With separator. Returns a copy of these options using the given column separator (used for CSV output).
+	 *
+	 * @param s
+	 *            the separator
+	 * @return the save options
+	 */
+	public SaveOptions withSeparator(final String s) {
+		return new SaveOptions(code, addHeader, type, attributesToSave, bufferingStrategy, rewrite, noData, writeCharset,
+				s);
 	}
 
 }

@@ -48,7 +48,7 @@ import gama.api.types.misc.IContainer;
 				type = IType.LIST,
 				of = IType.STRING,
 				doc = { @doc ("Returns the list of column names ('keys') of this dataframe") }) })
-public interface IDataFrame extends IContainer.Addressable<String, IList<Object>, String, Object> {
+public interface IDataFrame extends IContainer.Addressable<String, Object, String, Object> {
 
 	/**
 	 * Returns the list of column names.
@@ -140,7 +140,7 @@ public interface IDataFrame extends IContainer.Addressable<String, IList<Object>
 	 *
 	 * @return
 	 */
-	IType getContentType(final IScope scope);
+	IType getContentType();
 
 	/**
 	 * Gets the.
@@ -152,7 +152,7 @@ public interface IDataFrame extends IContainer.Addressable<String, IList<Object>
 	 * @return the object
 	 */
 	@Override
-	default Object get(final IScope scope, final String columnName) {
+	default IList<Object> get(final IScope scope, final String columnName) {
 		return getColumnValues(columnName);
 	}
 
@@ -166,7 +166,7 @@ public interface IDataFrame extends IContainer.Addressable<String, IList<Object>
 	 * @return the from indices list
 	 */
 	@Override
-	default Object getFromIndicesList(final IScope scope, final IList<String> indices) {
+	default IList<Object> getFromIndicesList(final IScope scope, final IList<String> indices) {
 		if (indices == null || indices.isEmpty()) return null;
 		return get(scope, indices.get(0));
 	}
@@ -212,10 +212,29 @@ public interface IDataFrame extends IContainer.Addressable<String, IList<Object>
 	 * @return the i list
 	 */
 	@Override
-	default IList<IList<Object>> listValue(final IScope scope, final IType<?> contentType, final boolean copy) {
-		final IList<IList<Object>> result = GamaListFactory.create(Types.LIST);
-		for (int i = 0; i < getRows(); i++) { result.add(getRowValues(i)); }
+	default IList<Object> listValue(final IScope scope, final IType<?> contentType, final boolean copy) {
+		// A dataframe is iterated as a sequence of rows, each row exposed as a map
+		// (column name -> value), so that the generic container iterators (where, collect, ...) can
+		// address cells by column name, e.g. 'df where (each["city"] = "Paris")'.
+		final IList<Object> result = GamaListFactory.create(Types.MAP);
+		for (int i = 0; i < getRows(); i++) { result.add(getRowMap(i)); }
 		return result;
+	}
+
+	/**
+	 * Returns the row at the given index as a map (column name -&gt; cell value). This is the element type produced
+	 * when iterating a dataframe: it lets generic container operators address cells by column name.
+	 *
+	 * @param rowIndex
+	 *            the 0-based row index
+	 * @return the row as a map keyed by column name
+	 */
+	default IMap<String, Object> getRowMap(final int rowIndex) {
+		final IMap<String, Object> row = GamaMapFactory.create(Types.STRING, Types.NO_TYPE);
+		final IList<Object> values = getRowValues(rowIndex);
+		final IList<String> cols = getColumns();
+		for (int c = 0; c < cols.size(); c++) { row.put(cols.get(c), values.get(c)); }
+		return row;
 	}
 
 	/**
@@ -251,7 +270,7 @@ public interface IDataFrame extends IContainer.Addressable<String, IList<Object>
 	 * @return the iterable<? extends I list< object>>
 	 */
 	@Override
-	default Iterable<? extends IList<Object>> iterable(final IScope scope) {
+	default Iterable<? extends Object> iterable(final IScope scope) {
 		return listValue(scope, Types.NO_TYPE, false);
 	}
 
@@ -287,9 +306,9 @@ public interface IDataFrame extends IContainer.Addressable<String, IList<Object>
 	 * @return the i list
 	 */
 	@Override
-	default IList<Object> firstValue(final IScope scope) {
+	default Object firstValue(final IScope scope) {
 		if (getRows() == 0) return null;
-		return getRowValues(0);
+		return getRowMap(0);
 	}
 
 	/**
@@ -300,9 +319,9 @@ public interface IDataFrame extends IContainer.Addressable<String, IList<Object>
 	 * @return the i list
 	 */
 	@Override
-	default IList<Object> lastValue(final IScope scope) {
+	default Object lastValue(final IScope scope) {
 		if (getRows() == 0) return null;
-		return getRowValues(getRows() - 1);
+		return getRowMap(getRows() - 1);
 	}
 
 	/**
@@ -313,10 +332,10 @@ public interface IDataFrame extends IContainer.Addressable<String, IList<Object>
 	 * @return the i list
 	 */
 	@Override
-	default IList<Object> anyValue(final IScope scope) {
+	default Object anyValue(final IScope scope) {
 		if (getRows() == 0) return null;
 		final int i = scope.getRandom().between(0, getRows() - 1);
-		return getRowValues(i);
+		return getRowMap(i);
 	}
 
 	/**
@@ -327,7 +346,7 @@ public interface IDataFrame extends IContainer.Addressable<String, IList<Object>
 	 * @return the i container
 	 */
 	@Override
-	default IContainer<String, IList<Object>> reverse(final IScope scope) {
+	default IContainer<String, Object> reverse(final IScope scope) {
 		return copy(scope);
 	}
 
@@ -376,11 +395,19 @@ public interface IDataFrame extends IContainer.Addressable<String, IList<Object>
 	IList<Object> iloc(IScope scope, IList<Integer> rowIndices, int colIndex);
 
 	/**
-	 * @param df2
-	 * @param columnName
-	 * @return
+	 * Joins this dataframe with another one on one or several key columns, using an explicit join type.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param other
+	 *            the dataframe to join with
+	 * @param keyColumns
+	 *            the common key column(s) to join on (must exist in both dataframes)
+	 * @param joinType
+	 *            one of "inner", "left", "right", "full" (case-insensitive); null defaults to "inner"
+	 * @return the joined dataframe
 	 */
-	IDataFrame joinOnCommonCol(IDataFrame df2, String columnName);
+	IDataFrame join(IScope scope, IDataFrame other, IList<String> keyColumns, String joinType);
 
 	/**
 	 * @param columnName
