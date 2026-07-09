@@ -142,6 +142,8 @@ public class LaunchingOverlay {
 	 */
 	private final Runnable cancelAction;
 
+	private final boolean showCancelButton;
+
 	// ── Runtime state ────────────────────────────────────────────────────────────
 
 	/**
@@ -192,13 +194,14 @@ public class LaunchingOverlay {
 	 *            runnable invoked (on a fresh thread) when the user clicks the cancel button
 	 */
 	public LaunchingOverlay(final Shell parent, final String modelName, final String expName,
-			final IConsoleListener consoleSource, final IStatusDisplayer statusDisplayer, final Runnable cancelAction) {
+			final IConsoleListener consoleSource, final IStatusDisplayer statusDisplayer, final Runnable cancelAction, final boolean showCancelButton) {
 		this.parent = parent;
 		this.modelName = modelName;
 		this.expName = expName;
 		this.consoleSource = consoleSource;
 		this.statusDisplayer = statusDisplayer;
 		this.cancelAction = cancelAction;
+		this.showCancelButton = showCancelButton;
 	}
 
 	/**
@@ -290,17 +293,21 @@ public class LaunchingOverlay {
 		launchOverlayVisible = true;
 		suppressExistingNativeDisplays();
 
-		// ── Cancel (stop) button ────────────────────────────────────────────────
 		final ToolBar cancelBar = new ToolBar(overlay, SWT.FLAT | SWT.NO_FOCUS);
-		cancelBar.setBackground(bg);
-		final ToolItem cancelItem = new ToolItem(cancelBar, SWT.FLAT | SWT.PUSH);
-		final GamaIcon stopIcon = GamaIcon.named(IGamaIcons.EXPERIMENT_STOP);
-		cancelItem.setImage(stopIcon.image());
-		cancelItem.setDisabledImage(stopIcon.disabled());
-		cancelItem.setToolTipText("Cancel launch and return to the modelling perspective");
-		cancelItem.addSelectionListener(
-				org.eclipse.swt.events.SelectionListener.widgetSelectedAdapter(e -> handleCancel()));
-		cancelBar.pack();
+
+		// ── Cancel (stop) button ────────────────────────────────────────────────
+		if(showCancelButton)
+		{
+			cancelBar.setBackground(bg);
+			final ToolItem cancelItem = new ToolItem(cancelBar, SWT.FLAT | SWT.PUSH);
+			final GamaIcon stopIcon = GamaIcon.named(IGamaIcons.EXPERIMENT_STOP);
+			cancelItem.setImage(stopIcon.image());
+			cancelItem.setDisabledImage(stopIcon.disabled());
+			cancelItem.setToolTipText("Cancel launch and return to the modelling perspective");
+			cancelItem.addSelectionListener(
+					org.eclipse.swt.events.SelectionListener.widgetSelectedAdapter(e -> handleCancel()));
+			cancelBar.pack();
+		}
 
 		// ── Canvas for background + title + subtitle ─────────────────────────────
 		canvas = new Canvas(overlay, SWT.NO_BACKGROUND | SWT.DOUBLE_BUFFERED);

@@ -528,7 +528,7 @@ public class SwtGui implements IGui {
 	private volatile LaunchingOverlay launchingOverlay;
 
 	@Override
-	public void showLaunchingOverlay(final String perspectiveId) {
+	public void showLaunchingOverlay(final String perspectiveId, final boolean showCancelButton) {
 		final Shell parent = WorkbenchHelper.getWindow() != null ? WorkbenchHelper.getWindow().getShell() : null;
 		if (parent == null || parent.isDisposed()) return;
 		// Extract model and experiment names from the perspective id:
@@ -536,7 +536,7 @@ public class SwtGui implements IGui {
 		final String[] parts = perspectiveId == null ? new String[0] : perspectiveId.split(":", 3);
 		final String modelName = parts.length > 1 ? parts[1] : "";
 		final String expName = parts.length > 2 ? parts[2] : "";
-		launchingOverlay = new LaunchingOverlay(parent, modelName, expName, getConsole(), getStatus(), null);
+		launchingOverlay = new LaunchingOverlay(parent, modelName, expName, getConsole(), getStatus(), null,showCancelButton);
 		launchingOverlay.show();
 	}
 

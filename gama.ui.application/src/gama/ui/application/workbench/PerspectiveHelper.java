@@ -376,7 +376,7 @@ public class PerspectiveHelper {
 			} finally {
 				// Delegate overlay creation to the GUI service so that the concrete
 				// implementation (SwtGui) can use the correct theme-aware icon and FlatButton.
-				if (isSimulationPerspective(perspectiveId)) { GAMA.getGui().showLaunchingOverlay(perspectiveId); }
+				if (isSimulationPerspective(perspectiveId)) { GAMA.getGui().showLaunchingOverlay(perspectiveId,!FLAGS.SIMULATION_ONLY); }
 			}
 		};
 		if (immediately) {

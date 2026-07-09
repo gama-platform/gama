@@ -423,7 +423,7 @@ public interface IGui {
 	 * @param experimentName
 	 *            the experiment name shown in the subtitle
 	 */
-	default void showLaunchingOverlay(final String experimentName) {}
+	default void showLaunchingOverlay(final String experimentName,final boolean showCancelButton) {}
 
 	/**
 	 * Forces an immediate synchronous display of any pending (not yet shown) runtime exceptions in the error handler,
