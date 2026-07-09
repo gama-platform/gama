@@ -38,7 +38,7 @@ public class GamaZipBuilder {
         "gama.extension.stats",
         "gama.headless",
         "gama.processor",
-        "gama.ui.application",
+        // "gama.ui.application",
         "gama.ui.display.java2d",
         "gama.ui.experiment",
         "gama.ui.navigator",
@@ -63,9 +63,13 @@ public class GamaZipBuilder {
 
     private static final Path gamaPrefsTmpPath = tmpDirectoryPath.resolve("gama.prefs.tmp");
 
+    private static final Path gamaUiApplicationJarTmpPath = tmpDirectoryPath.resolve("gama.ui.application.jar.tmp");
+
     private static final Path gamaDependenciesTmpPath = tmpDirectoryPath.resolve("gama.dependencies.tmp");
     
     private static String gamaDependenciesModuleFileName = null;
+
+    private static String gamaUiApplicationModuleFileName = null;
 
     private String targetWorkspacePathStr = null;
     
@@ -143,6 +147,9 @@ public class GamaZipBuilder {
                     else
                         if(filename.startsWith("gama.dependencies"))
                             GamaZipBuilder.gamaDependenciesModuleFileName = filename;
+                        else
+                            if(filename.startsWith("gama.ui.application"))
+                                GamaZipBuilder.gamaUiApplicationModuleFileName = filename;
                     
                     return false;
                 }
@@ -197,6 +204,22 @@ public class GamaZipBuilder {
                 }
                 throw e;
             }
+
+            ///////////////////////////////////////
+            // Adding gama.ui.application to     //
+            // the zip file and changing the     //
+            // splash screen                     //
+            ///////////////////////////////////////
+
+            Files.copy(GamaZipBuilder.pluginsPath.resolve(GamaZipBuilder.gamaUiApplicationModuleFileName),GamaZipBuilder.gamaUiApplicationJarTmpPath);
+            ZipHelper.renameEntry(GamaZipBuilder.gamaUiApplicationJarTmpPath,"splash.png","old_splash.png");
+            ZipHelper.renameEntry(GamaZipBuilder.gamaUiApplicationJarTmpPath,"splash_simulation_launcher.png","splash.png");
+
+            zos.putNextEntry(new ZipEntry(Path.of("plugins",GamaZipBuilder.gamaUiApplicationModuleFileName).toString()));
+
+            Files.copy(GamaZipBuilder.gamaUiApplicationJarTmpPath, zos);
+
+            zos.closeEntry();                   
 
             ////////////////////////////////////////
             // Filtering the desired dependencies //
@@ -304,6 +327,7 @@ public class GamaZipBuilder {
             String startupModelPreferenceOld = store.getInStore("pref_startup_model","false");
             String defaultModelPreferenceOld = store.getInStore("pref_default_model","Enter Path");
             String defaultExperimentPreferenceOld = store.getInStore("pref_default_experiment","");
+            String errorsInEditorPreferenceOld = store.getInStore("pref_errors_in_editor","true");
 
             //pref error display
             // show errors in editor
@@ -312,6 +336,7 @@ public class GamaZipBuilder {
             store.putInStore("pref_startup_model",true);
             store.putInStore("pref_default_model",targetModelPathStr.replace(targetWorkspacePathStr,GamaZipBuilder.embeddedWorkspaceName));
             store.putInStore("pref_default_experiment",targetExperiment);
+            store.putInStore("pref_errors_in_editor",false);
             
             store.saveToProperties(GamaZipBuilder.gamaPrefsTmpPath.toString());
 
@@ -320,6 +345,7 @@ public class GamaZipBuilder {
             store.putInStore("pref_startup_model",startupModelPreferenceOld);
             store.putInStore("pref_default_model",defaultModelPreferenceOld);
             store.putInStore("pref_default_experiment",defaultExperimentPreferenceOld);
+            store.putInStore("pref_errors_in_editor",errorsInEditorPreferenceOld);
 
             ZipEntry gamaPrefsEntry = new ZipEntry(Path.of("configuration",".settings","gama.prefs").toString());
             zos.putNextEntry(gamaPrefsEntry);

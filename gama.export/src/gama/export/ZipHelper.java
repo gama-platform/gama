@@ -1,15 +1,22 @@
 package gama.export;
 
-import java.io.*;
+import java.io.File;
+import java.io.BufferedOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.nio.file.*;
-import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Stream;
-
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.net.URI;
 
 public class ZipHelper {
 
@@ -75,6 +82,24 @@ public class ZipHelper {
                 zipIn.closeEntry();
                 entry = zipIn.getNextEntry();
             }
+        }
+    }
+
+    public static void renameEntry(Path  zipPath, String sourceEntry, String targetEntry) {
+        // Define the zip file system URI
+        URI zipUri = URI.create("jar:file:" + zipPath.toString());
+        Map<String, String> env = new HashMap<>();
+        
+        try (FileSystem zipfs = FileSystems.newFileSystem(zipUri, env)) {
+            // Locate the target entry and define its new name
+            Path sourcePath = zipfs.getPath(sourceEntry);
+            Path targetPath = zipfs.getPath(targetEntry);
+            
+            // Execute the rename using an atomic move operation
+            Files.move(sourcePath, targetPath, StandardCopyOption.ATOMIC_MOVE);
+            
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
