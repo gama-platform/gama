@@ -152,7 +152,7 @@ public interface IDataFrame extends IContainer.Addressable<String, Object, Strin
 	 * @return the object
 	 */
 	@Override
-	default Object get(final IScope scope, final String columnName) {
+	default IList<Object> get(final IScope scope, final String columnName) {
 		return getColumnValues(columnName);
 	}
 
@@ -166,7 +166,7 @@ public interface IDataFrame extends IContainer.Addressable<String, Object, Strin
 	 * @return the from indices list
 	 */
 	@Override
-	default Object getFromIndicesList(final IScope scope, final IList<String> indices) {
+	default IList<Object> getFromIndicesList(final IScope scope, final IList<String> indices) {
 		if (indices == null || indices.isEmpty()) return null;
 		return get(scope, indices.get(0));
 	}
