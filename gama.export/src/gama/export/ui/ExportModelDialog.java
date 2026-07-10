@@ -21,6 +21,7 @@ public class ExportModelDialog extends TitleAreaDialog {
 
     private Text txtOutputPath;
     private Button[] buttons;
+    private Button selectAllExperimentsButton;
 
     private String outputPath = "";
     private String[] availableExperiments;
@@ -64,12 +65,31 @@ public class ExportModelDialog extends TitleAreaDialog {
         lblOptions.setText("Options :");
         lblOptions.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1));
 
+        selectAllExperimentsButton = new Button(container, SWT.CHECK);
+        selectAllExperimentsButton.setText("Select all experiments");
+        selectAllExperimentsButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 3, 1));
+
         for (int i=0 ; i < availableExperiments.length ; i++)
         {
+            final int index = i;
             buttons[i] = new Button(container, SWT.CHECK);
             buttons[i].setText(availableExperiments[i]);
             buttons[i].setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 3, 1));
+            buttons[i].addListener(SWT.Selection, event -> {
+                if (!buttons[index].getSelection() && selectAllExperimentsButton.getSelection())
+                    selectAllExperimentsButton.setSelection(false);
+            });
         }
+
+        selectAllExperimentsButton.addListener(SWT.Selection, event -> {
+            // Récupère l'état actuel de la case maîtresse (true/false)
+            final boolean masterState = selectAllExperimentsButton.getSelection();
+            
+            // Applique cet état exact à chaque enfant de la liste
+            for (Button button : buttons) {
+                button.setSelection(masterState);
+            }
+        });
     }
 
     private void createPathSection(Composite container) {
@@ -115,6 +135,12 @@ public class ExportModelDialog extends TitleAreaDialog {
         if (outputPath.isEmpty()) {
             setMessage("Error : The destination path cannot be empty.", IMessageProvider.ERROR);
             return;
+        }
+
+        if (selectedExperiments.isEmpty())
+        {
+            setMessage("Error : There must be at least one experiment", IMessageProvider.ERROR);
+            return;            
         }
 
         super.okPressed();
