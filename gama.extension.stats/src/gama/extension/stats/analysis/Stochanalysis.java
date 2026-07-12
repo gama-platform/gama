@@ -230,38 +230,45 @@ public class Stochanalysis {
 	 * @param scope
 	 * @return
 	 */
-	private static String buildStochMap(final Map<String, Map<ParametersSet, Map<String, List<Double>>>> Out,
-			final int nbsample, final int nbreplicates, final IScope scope) {
-		StringBuilder sb = new StringBuilder();
-		// Header of the csv
+	private static boolean buildStochMapHeader(StringBuilder sb, Map<String, Map<ParametersSet, Map<String, List<Double>>>> Out, int nbreplicates, List<String> phRet) {
 		sb.append("Outputs").append(SEP);
-
-		// Parameters
-		if (Out == null || Out.isEmpty()) return "";
+		if (Out == null || Out.isEmpty()) return false;
 		Map<ParametersSet, Map<String, List<Double>>> firstMap = Out.values().stream().findAny().orElse(null);
-		if (firstMap == null || firstMap.isEmpty()) return "";
+		if (firstMap == null || firstMap.isEmpty()) return false;
 		ParametersSet firstPS = firstMap.keySet().stream().findAny().orElse(null);
-		if (firstPS == null) return "";
+		if (firstPS == null) return false;
 		IList<String> ph = firstPS.getKeys();
+		phRet.addAll(ph);
 		sb.append(ph.stream().collect(Collectors.joining(","))).append(SEP);
 
 		sb.append("Indicator").append(SEP);
 		sb.append(IntStream.range(2, nbreplicates).boxed().map(String::valueOf).collect(Collectors.joining(SEP)));
 		sb.append(StringUtils.LN);
+		return true;
+	}
+
+	private static void appendStochMapRows(StringBuilder sb, String o, Map<ParametersSet, Map<String, List<Double>>> om, List<String> ph) {
+		for (ParametersSet p : om.keySet()) {
+			String lineP = ph.stream().map(head -> p.get(head).toString()).collect(Collectors.joining(SEP));
+			Map<String, List<Double>> cr = om.get(p);
+			for (String m : cr.keySet()) {
+				sb.append(o).append(SEP);
+				sb.append(lineP).append(SEP);
+				sb.append(m).append(SEP);
+				sb.append(cr.get(m).stream().skip(1).map(String::valueOf).collect(Collectors.joining(SEP)));
+				sb.append(StringUtils.LN);
+			}
+		}
+	}
+
+	private static String buildStochMap(final Map<String, Map<ParametersSet, Map<String, List<Double>>>> Out,
+			final int nbsample, final int nbreplicates, final IScope scope) {
+		StringBuilder sb = new StringBuilder();
+		List<String> ph = new java.util.ArrayList<>();
+		if (!buildStochMapHeader(sb, Out, nbreplicates, ph)) return "";
 
 		for (String o : Out.keySet()) {
-			Map<ParametersSet, Map<String, List<Double>>> om = Out.get(o);
-			for (ParametersSet p : om.keySet()) {
-				String lineP = ph.stream().map(head -> p.get(head).toString()).collect(Collectors.joining(SEP));
-				Map<String, List<Double>> cr = om.get(p);
-				for (String m : cr.keySet()) {
-					sb.append(o).append(SEP);
-					sb.append(lineP).append(SEP);
-					sb.append(m).append(SEP);
-					sb.append(cr.get(m).stream().skip(1).map(String::valueOf).collect(Collectors.joining(SEP)));
-					sb.append(StringUtils.LN);
-				}
-			}
+			appendStochMapRows(sb, o, Out.get(o), ph);
 		}
 
 		return sb.toString();
@@ -300,12 +307,7 @@ public class Stochanalysis {
 	 * @param scope
 	 * @return
 	 */
-	public static String buildSimulationCsv(final IMap<ParametersSet, Map<String, List<Object>>> outputs,
-			final IScope scope) {
-		StringBuilder sb = new StringBuilder();
-		String sep = ";";
-
-		// Write the header
+	private static void buildSimulationCsvHeader(StringBuilder sb, String sep, final IMap<ParametersSet, Map<String, List<Object>>> outputs) {
 		Optional<ParametersSet> firstPs = outputs.keySet().stream().findFirst();
 		if (firstPs.isPresent()) {
 			for (String param : firstPs.get().keySet()) { sb.append(param).append(sep); }
@@ -315,24 +317,34 @@ public class Stochanalysis {
 		if (firstRes != null) {
 			for (String output : firstRes.keySet()) { sb.append(output).append(sep); }
 		}
+	}
 
-		// Find results and append to global string
-		for (ParametersSet ps : outputs.keySet()) {
-			Map<String, List<Object>> res = outputs.get(ps);
-			if (res == null || res.isEmpty()) continue;
-			int nbr = res.values().stream().findAny().orElse(java.util.Collections.emptyList()).size();
-			if (!res.values().stream().allMatch(r -> r.size() == nbr)) {
-				GAMA.reportAndThrowIfNeeded(scope,
-						GamaRuntimeException.warning(
-								"Not all sample of stochastic analysis have the same number of replicates", scope),
-						false);
-			} else {
-				for (int r = 0; r < nbr; r++) {
-					sb.append(StringUtils.LN);
-					for (Object pvalue : ps.values()) { sb.append(pvalue).append(sep); }
-					for (String output : res.keySet()) { sb.append(res.get(output).get(r)).append(sep); }
-				}
+	private static void appendSimulationCsvRows(StringBuilder sb, String sep, ParametersSet ps, Map<String, List<Object>> res, IScope scope) {
+		if (res == null || res.isEmpty()) return;
+		int nbr = res.values().stream().findAny().orElse(java.util.Collections.emptyList()).size();
+		if (!res.values().stream().allMatch(r -> r.size() == nbr)) {
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.warning(
+							"Not all sample of stochastic analysis have the same number of replicates", scope),
+					false);
+		} else {
+			for (int r = 0; r < nbr; r++) {
+				sb.append(StringUtils.LN);
+				for (Object pvalue : ps.values()) { sb.append(pvalue).append(sep); }
+				for (String output : res.keySet()) { sb.append(res.get(output).get(r)).append(sep); }
 			}
+		}
+	}
+
+	public static String buildSimulationCsv(final IMap<ParametersSet, Map<String, List<Object>>> outputs,
+			final IScope scope) {
+		StringBuilder sb = new StringBuilder();
+		String sep = ";";
+
+		buildSimulationCsvHeader(sb, sep, outputs);
+
+		for (ParametersSet ps : outputs.keySet()) {
+			appendSimulationCsvRows(sb, sep, ps, outputs.get(ps), scope);
 		}
 
 		return sb.toString();
