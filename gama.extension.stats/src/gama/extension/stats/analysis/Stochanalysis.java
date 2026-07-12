@@ -237,7 +237,12 @@ public class Stochanalysis {
 		sb.append("Outputs").append(SEP);
 
 		// Parameters
-		IList<String> ph = Out.get(Out.keySet().stream().findAny().get()).keySet().stream().findAny().get().getKeys();
+		if (Out == null || Out.isEmpty()) return "";
+		Map<ParametersSet, Map<String, List<Double>>> firstMap = Out.values().stream().findAny().orElse(null);
+		if (firstMap == null || firstMap.isEmpty()) return "";
+		ParametersSet firstPS = firstMap.keySet().stream().findAny().orElse(null);
+		if (firstPS == null) return "";
+		IList<String> ph = firstPS.getKeys();
 		sb.append(ph.stream().collect(Collectors.joining(","))).append(SEP);
 
 		sb.append("Indicator").append(SEP);
@@ -301,13 +306,21 @@ public class Stochanalysis {
 		String sep = ";";
 
 		// Write the header
-		for (String param : outputs.keySet().stream().findFirst().get().keySet()) { sb.append(param).append(sep); }
-		for (String output : outputs.anyValue(scope).keySet()) { sb.append(output).append(sep); }
+		Optional<ParametersSet> firstPs = outputs.keySet().stream().findFirst();
+		if (firstPs.isPresent()) {
+			for (String param : firstPs.get().keySet()) { sb.append(param).append(sep); }
+		}
+		
+		Map<String, List<Object>> firstRes = outputs.values().stream().findFirst().orElse(null);
+		if (firstRes != null) {
+			for (String output : firstRes.keySet()) { sb.append(output).append(sep); }
+		}
 
 		// Find results and append to global string
 		for (ParametersSet ps : outputs.keySet()) {
 			Map<String, List<Object>> res = outputs.get(ps);
-			int nbr = res.values().stream().findAny().get().size();
+			if (res == null || res.isEmpty()) continue;
+			int nbr = res.values().stream().findAny().orElse(java.util.Collections.emptyList()).size();
 			if (!res.values().stream().allMatch(r -> r.size() == nbr)) {
 				GAMA.reportAndThrowIfNeeded(scope,
 						GamaRuntimeException.warning(
@@ -376,6 +389,7 @@ public class Stochanalysis {
 	 * @return the minimum replicates size to reach a given threshold of marginal benefit adding a new replicates
 	 */
 	private static int findWithRelativeThreshold(final List<Double> Stat, final double threshold) {
+		if (Stat == null || Stat.isEmpty()) return 0;
 		double th = Collections.min(Stat) * threshold;
 		for (int i = 2; i < Stat.size(); i++) {
 			double delta = Stat.get(i - 1) - Stat.get(i);
@@ -522,19 +536,31 @@ public class Stochanalysis {
 	 */
 	// see : https://en.wikipedia.org/wiki/F-test
 	private static double fTestEffectSize(final Collection<IList<Object>> groups, final IScope scope) {
+		if (groups.isEmpty() || groups.size() == 1) return 0.0;
 		List<Double> groupMean = groups.stream()
-				.mapToDouble(group -> group.stream().mapToDouble(e -> Cast.asFloat(scope, e)).average().getAsDouble())
+				.mapToDouble(group -> group.isEmpty() ? 0.0 : group.stream().mapToDouble(e -> Cast.asFloat(scope, e)).average().orElse(0.0))
 				.boxed().toList();
-		double overallMean = groupMean.stream().mapToDouble(d -> d).average().getAsDouble();
-		double betweenGroupVariability =
-				groupMean.stream().mapToDouble(mean -> Math.pow(overallMean - mean, 2)).sum() / (groups.size() - 1);
-		double withinGroupVariability = 0.0;
+		double overallMean = groupMean.stream().mapToDouble(d -> d).average().orElse(0.0);
+		double betweenGroupVariability = 0.0;
 		int i = 0;
+		for (IList<Object> group : groups) {
+			double mean = groupMean.get(i++);
+			betweenGroupVariability += group.size() * Math.pow(mean - overallMean, 2);
+		}
+		betweenGroupVariability /= (groups.size() - 1);
+
+		double withinGroupVariability = 0.0;
+		int totalSize = 0;
+		i = 0;
 		for (IList<Object> group : groups) {
 			Double m = groupMean.get(i++);
 			withinGroupVariability += group.stream().mapToDouble(d -> Math.pow(Cast.asFloat(scope, d) - m, 2)).sum();
+			totalSize += group.size();
 		}
-		withinGroupVariability /= groups.stream().mapToInt(List::size).sum();
+		if (totalSize <= groups.size()) return 0.0;
+		withinGroupVariability /= (totalSize - groups.size());
+		
+		if (withinGroupVariability == 0.0) return 0.0;
 		return betweenGroupVariability / withinGroupVariability;
 	}
 
@@ -569,7 +595,7 @@ public class Stochanalysis {
 				List<String> list_name = new ArrayList<>();
 				int i = 0;
 				while ((line = br.readLine()) != null) {
-					tempArr = line.split(",");
+					tempArr = parseCsvLine(line);
 					for (String tempStr : tempArr) { if (i == 0) { list_name.add(tempStr); } }
 					if (i > 0) {
 						Map<String, Object> temp_map = new LinkedHashMap<>();
@@ -757,5 +783,22 @@ public class Stochanalysis {
 
 		return Stochanalysis.stochasticityAnalysis_From_Data(replicat, threshold, MySample, Outputs, scope);
 	}
-	
+	private static String[] parseCsvLine(String line) {
+		List<String> result = new ArrayList<>();
+		StringBuilder cur = new StringBuilder();
+		boolean inQuotes = false;
+		for (int i = 0; i < line.length(); i++) {
+			char c = line.charAt(i);
+			if (c == '\"') {
+				inQuotes = !inQuotes;
+			} else if (c == ',' && !inQuotes) {
+				result.add(cur.toString());
+				cur.setLength(0);
+			} else {
+				cur.append(c);
+			}
+		}
+		result.add(cur.toString());
+		return result.toArray(new String[0]);
+	}
 }

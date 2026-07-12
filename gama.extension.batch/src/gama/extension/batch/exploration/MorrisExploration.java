@@ -316,7 +316,7 @@ public class MorrisExploration extends AExplorationAlgorithm {
 				List<String> list_name = new ArrayList<>();
 				int i = 0;
 				while ((line = br.readLine()) != null) {
-					tempArr = line.split(",");
+					tempArr = parseCsvLine(line);
 					for (String tempStr : tempArr) { if (i == 0) { list_name.add(tempStr); } }
 					if (i > 0) {
 						Map<String, Object> temp_map = new HashMap<>();
@@ -339,7 +339,27 @@ public class MorrisExploration extends AExplorationAlgorithm {
 			}
 			sets.add(p);
 		}
+		momo = new Morris(this.samples, this.nb_levels);
 		return sets;
+	}
+
+	private String[] parseCsvLine(String line) {
+		List<String> result = new ArrayList<>();
+		StringBuilder cur = new StringBuilder();
+		boolean inQuotes = false;
+		for (int i = 0; i < line.length(); i++) {
+			char c = line.charAt(i);
+			if (c == '\"') {
+				inQuotes = !inQuotes;
+			} else if (c == ',' && !inQuotes) {
+				result.add(cur.toString());
+				cur.setLength(0);
+			} else {
+				cur.append(c);
+			}
+		}
+		result.add(cur.toString());
+		return result.toArray(new String[0]);
 	}
 
 }
