@@ -288,6 +288,7 @@ public class Random {
 		if (list.size() < 2) return 0d;
 		final double mean = Cast.asFloat(scope, list.get(0));
 		final double range = Cast.asFloat(scope, list.get(1));
+		if (range <= 0.0) return mean;
 		/*
 		 * We want to have a real gamma like distribution though it s truncated one to do so we set that 2 stdDevation =
 		 * deviation which means we will have 95% of the random generated number within ]mean - deviation; mean +
@@ -437,6 +438,7 @@ public class Random {
 	@test ("seed <- 1.0; poisson(3.5) = 6")
 	@test ("seed <- 1.0; poisson(0.0) = 0")
 	public static Integer opPoisson(final IScope scope, final Double mean) {
+		if (mean == null || mean <= 0.0) return 0;
 		IRandom ru = RANDOM(scope);
 		int x = 0;
 		double t = 0.0;
@@ -811,7 +813,7 @@ public class Random {
 					"weibull_rnd" })
 	@test ("seed <- 1.0; rnd ({2.0, 4.0}, {2.0, 5.0, 10.0}) = {2.0,4.785039740667429,5.087825199078746}")
 	public static IPoint opRnd(final IScope scope, final IPoint min, final IPoint max) {
-		return scope.getRandom().between(min, max);
+		return RANDOM(scope).between(min, max);
 	}
 
 	/**
@@ -842,7 +844,7 @@ public class Random {
 					"weibull_rnd" })
 	@test ("seed <- 1.0; rnd ({2.0, 4.0}, {2.0, 5.0, 10.0},1) = {2.0,5.0,5.0}")
 	public static IPoint opRnd(final IScope scope, final IPoint min, final IPoint max, final Double step) {
-		return scope.getRandom().between(min, max, GamaPointFactory.create(step, step, step));
+		return RANDOM(scope).between(min, max, GamaPointFactory.create(step, step, step));
 	}
 
 	/** The null point. */
@@ -1024,7 +1026,7 @@ public class Random {
 		final IList result = GamaListFactory.create(x.getGamlType());
 		final IList source = replacement ? x : x.copy(scope);
 		while (result.size() < nb && !source.isEmpty()) {
-			final int i = scope.getRandom().between(0, source.size() - 1);
+			final int i = RANDOM(scope).between(0, source.size() - 1);
 			if (replacement) {
 				result.add(source.get(i));
 			} else {
