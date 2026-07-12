@@ -249,14 +249,15 @@ public class Stochanalysis {
 	}
 
 	private static void appendStochMapRows(StringBuilder sb, String o, Map<ParametersSet, Map<String, List<Double>>> om, List<String> ph) {
-		for (ParametersSet p : om.keySet()) {
+		for (Map.Entry<ParametersSet, Map<String, List<Double>>> pEntry : om.entrySet()) {
+			ParametersSet p = pEntry.getKey();
 			String lineP = ph.stream().map(head -> p.get(head).toString()).collect(Collectors.joining(SEP));
-			Map<String, List<Double>> cr = om.get(p);
-			for (String m : cr.keySet()) {
+			Map<String, List<Double>> cr = pEntry.getValue();
+			for (Map.Entry<String, List<Double>> mEntry : cr.entrySet()) {
 				sb.append(o).append(SEP);
 				sb.append(lineP).append(SEP);
-				sb.append(m).append(SEP);
-				sb.append(cr.get(m).stream().skip(1).map(String::valueOf).collect(Collectors.joining(SEP)));
+				sb.append(mEntry.getKey()).append(SEP);
+				sb.append(mEntry.getValue().stream().skip(1).map(String::valueOf).collect(Collectors.joining(SEP)));
 				sb.append(StringUtils.LN);
 			}
 		}
@@ -268,8 +269,8 @@ public class Stochanalysis {
 		List<String> ph = new java.util.ArrayList<>();
 		if (!buildStochMapHeader(sb, Out, nbreplicates, ph)) return "";
 
-		for (String o : Out.keySet()) {
-			appendStochMapRows(sb, o, Out.get(o), ph);
+		for (Map.Entry<String, Map<ParametersSet, Map<String, List<Double>>>> entry : Out.entrySet()) {
+			appendStochMapRows(sb, entry.getKey(), entry.getValue(), ph);
 		}
 
 		return sb.toString();
@@ -332,7 +333,7 @@ public class Stochanalysis {
 			for (int r = 0; r < nbr; r++) {
 				sb.append(StringUtils.LN);
 				for (Object pvalue : ps.values()) { sb.append(pvalue).append(sep); }
-				for (String output : res.keySet()) { sb.append(res.get(output).get(r)).append(sep); }
+				for (Map.Entry<String, List<Object>> entry : res.entrySet()) { sb.append(entry.getValue().get(r)).append(sep); }
 			}
 		}
 	}
@@ -344,8 +345,8 @@ public class Stochanalysis {
 
 		buildSimulationCsvHeader(sb, sep, outputs);
 
-		for (ParametersSet ps : outputs.keySet()) {
-			appendSimulationCsvRows(sb, sep, ps, outputs.get(ps), scope);
+		for (Map.Entry<ParametersSet, Map<String, List<Object>>> entry : outputs.entrySet()) {
+			appendSimulationCsvRows(sb, sep, entry.getKey(), entry.getValue(), scope);
 		}
 
 		return sb.toString();
