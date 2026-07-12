@@ -270,7 +270,7 @@ public class MorrisExploration extends AExplorationAlgorithm {
 				try {
 					rebuilt_output.get(output).add(Cast.asFloat(scope, res_outputs.get(sol).get(output).get(0)));
 				} catch (NullPointerException e) {
-					return rebuilt_output;
+					throw GamaRuntimeException.error("Missing output '" + output + "' for parameter set: " + sol + ". A simulation might have failed or the output is undefined.", scope);
 				}
 			}
 		}
