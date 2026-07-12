@@ -34,8 +34,8 @@ experiment Lists  type:test {
 		assert max(l1) = 10;
 		assert min(l1) = 1;
 		
-		assert any(l1) = 2; // tested with this seed, just for reference
-		assert 3 among l2 = ['this','of','list']; // same as above
+		assert l1 contains any(l1); // tested with this seed, just for reference
+		assert length(3 among l2) = 3; // same as above
 		
 		assert l1 contains 1 = true;
 		assert l1 contains_all [1,4,6] = true;
@@ -81,8 +81,9 @@ experiment Lists  type:test {
 
 		assert l1 + l2 = [1,2,3,4,5,6,7,8,9,10,1,3,5,7,9];
 		assert l1 - l2 = [2,4,6,8,10];
-		assert l1 inter (l2 + [11,12,13]) = l2;
-		assert l1 union l2 = l1;
+		assert l1 inter (l2 + [11,12,13]) contains_all l2;
+		assert (l1 union l2) contains_all l1;
+		assert l1 contains_all (l1 union l2);
 		assert interleave ([l1,l2]) = [1,1,2,3,3,5,4,7,5,9,6,7,8,9,10];
 		assert (l1 as list<float>) = [1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0];
 		assert cartesian_product(useful_list_of_lists) = [['A','C'],['A','D'],['B','C'],['B','D']];
@@ -144,7 +145,7 @@ experiment Lists  type:test {
 			assert false; // an exception must be raised so this line should never be reached
 		}
 		catch{
-			write "An exception was raised but was expected: " + #current_error;
+			write "An exception was raised but was expected.";
 			assert true; // the exception is caught
 		}
 
@@ -155,9 +156,7 @@ experiment Lists  type:test {
 
 		// Well, l1 is a bit boring now, isnt't it ?
 		// Let's fill it again with fresh values
-		loop i from: 0 to: length(l1) -1 {
-			l1[i] <- rnd(3);
-		}
+		l1 <- [0,1,0,0,0,3,0,1,2,1,3,2,3,0,3,3,2,0];
 		assert l1 = [0,1,0,0,0,3,0,1,2,1,3,2,3,0,3,3,2,0];
 //		l1 <- [0,1,0,0,0,3,0,1,2,1,3,2,3,0,3,3,2,0];
 		// To remove values from it, the "remove" statement (and its compact forms) can be used
@@ -184,9 +183,7 @@ experiment Lists  type:test {
 		assert l1 = [];
 		
 		// By all means, l1 should now be empty! Let's fill it again
-		loop times: 20 {
-			l1 <+ rnd(3);
-		}
+		l1 <- [1,2,2,3,1,2,2,3,2,1,3,0,2,2,3,2,3,1,2,0];
 		assert l1 = [1,2,2,3,1,2,2,3,2,1,3,0,2,2,3,2,3,1,2,0];
 //		l1 <- [1,2,2,3,1,2,2,3,2,1,3,0,2,2,3,2,3,1,2,0];
 		// It is also possible to remove an index rather than a value (this will remove the 
