@@ -172,8 +172,8 @@ public class SobolExploration extends AExplorationAlgorithm {
 		// Needs a step to explore a parameter, also for any SAMPLING methods only min/max is required
 		List<Batch> params = new ArrayList<>(currentExperiment.getParametersToExplore());
 		parameters = parameters == null ? params : parameters;
-		/* times the number of parameters plus 2 because of sample A & B (Saltelli 2002) */
-		_sample = sample * (parameters.size() + 2);
+		/* times 2 the number of parameters for the bootstraping (Saltelli 2002) and +2 because of sample A & B */
+		_sample = sample * (2 * parameters.size() + 2);
 
 		// Retrieve the list of parameters from the batch experiment
 		LinkedHashMap<String, List<Object>> problem = new LinkedHashMap<>();

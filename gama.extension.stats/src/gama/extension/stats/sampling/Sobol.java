@@ -101,7 +101,7 @@ public final class Sobol {
 		this.outputs = new HashMap<>();
 
 		this.sample = sample;
-		this._sample = sample * (parameters.size() + 2);
+		this._sample = sample * (2 * parameters.size() + 2);
 	}
 
 	/**
@@ -128,9 +128,9 @@ public final class Sobol {
 		}
 
 		_sample = this.parameters.values().iterator().next().size();
-		if (_sample % (nb_parameters + 2) != 0) throw new IllegalArgumentException(
+		if (_sample % (2 * nb_parameters + 2) != 0) throw new IllegalArgumentException(
 				"Number of sample in the data doesn't match the number of parameters");
-		sample = _sample / (nb_parameters + 2);
+		sample = _sample / (2 * nb_parameters + 2);
 	}
 
 	/**
@@ -265,10 +265,13 @@ public final class Sobol {
 
 			for (int i = 0; i < sample; i++) {
 				A[i] = Double.parseDouble(it.next().toString());
-				B[i] = Double.parseDouble(it.next().toString());
 				for (int j = 0; j < this.parameters.size(); j++) {
 					C_A[i][j] = Double.parseDouble(it.next().toString());
 				}
+				for (int j = 0; j < this.parameters.size(); j++) {
+					it.next();
+				}
+				B[i] = Double.parseDouble(it.next().toString());
 			}
 
 			int j = 0;
