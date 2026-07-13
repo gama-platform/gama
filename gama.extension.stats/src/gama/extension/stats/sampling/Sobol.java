@@ -424,6 +424,7 @@ public final class Sobol {
 	}
 
 	private double computeFirstOrder(final double[] a0, final double[] a1, final double[] a2, final int nsample) {
+		if (nsample <= 1) return 0.0;
 		double c = 0.0;
 		for (int i = 0; i < nsample; i++) { c += a0[i]; }
 		c /= nsample;
@@ -434,26 +435,27 @@ public final class Sobol {
 			tmp2 += a2[i] - c;
 			tmp3 += (a1[i] - c) * (a2[i] - c);
 		}
-		EY2 /= nsample;
+		EY2 /= (nsample - 1);
 		double V = tmp1 / (nsample - 1) - Math.pow(tmp2 / nsample, 2.0);
+		if (V == 0.0) return 0.0;
 		double U = tmp3 / (nsample - 1);
 		return (U - EY2) / V;
 	}
 
 	private double computeTotalOrder(final double[] a0, final double[] a1, final double[] a2, final int nsample) {
+		if (nsample <= 1) return 0.0;
 		double c = 0.0;
 		for (int i = 0; i < nsample; i++) { c += a0[i]; }
 		c /= nsample;
-		double tmp1 = 0.0, tmp2 = 0.0, tmp3 = 0.0;
+		double tmp1 = 0.0, tmp2 = 0.0;
 		for (int i = 0; i < nsample; i++) {
 			tmp1 += (a0[i] - c) * (a0[i] - c);
 			tmp2 += (a0[i] - c) * (a1[i] - c);
-			tmp3 += a0[i] - c;
 		}
-		double EY2 = Math.pow(tmp3 / nsample, 2.0);
-		double V = tmp1 / (nsample - 1) - EY2;
+		double V = tmp1 / (nsample - 1);
+		if (V == 0.0) return 0.0;
 		double U = tmp2 / (nsample - 1);
-		return 1.0 - (U - EY2) / V;
+		return 1.0 - U / V;
 	}
 
 	private double computeTotalOrderConfidence(final double[] a0, final double[] a1, final double[] a2,

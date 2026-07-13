@@ -1342,7 +1342,7 @@ public class Maths {
 	@test ("is_error(1/0)")
 	@test ("3/5=0.6")
 	public static Double opDivide(final IScope scope, final Integer a, final Integer b) throws GamaRuntimeException {
-		if (b == 0) throw GamaRuntimeException.error("Division by zero", scope);
+		if (b == null || b == 0) throw GamaRuntimeException.error("Division by zero", scope);
 		return a.doubleValue() / b.doubleValue();
 	}
 
@@ -1371,7 +1371,7 @@ public class Maths {
 	@test ("is_error(1.5/0)")
 	@test ("0.0/5=0.0")
 	public static Double opDivide(final IScope scope, final Double a, final Integer b) throws GamaRuntimeException {
-		if (b == 0) throw GamaRuntimeException.error("Division by zero", scope);
+		if (b == null || b == 0) throw GamaRuntimeException.error("Division by zero", scope);
 		return a / b.doubleValue();
 	}
 
@@ -1400,7 +1400,7 @@ public class Maths {
 	@test ("is_error(1.5/0.0)")
 	@test ("0.0/1.0=0.0")
 	public static Double opDivide(final IScope scope, final Double a, final Double b) throws GamaRuntimeException {
-		if (b.equals(0.0)) throw GamaRuntimeException.error("Division by zero", scope);
+		if (b == null || b == 0.0) throw GamaRuntimeException.error("Division by zero", scope);
 		return a / b;
 	}
 
@@ -1429,7 +1429,7 @@ public class Maths {
 	@test ("is_error(2/0.0)")
 	@test ("0/0.3=0.0")
 	public static Double opDivide(final IScope scope, final Integer a, final Double b) throws GamaRuntimeException {
-		if (b.equals(0.0)) throw GamaRuntimeException.error("Division by zero", scope);
+		if (b == null || b == 0.0) throw GamaRuntimeException.error("Division by zero", scope);
 		return a.doubleValue() / b.doubleValue();
 	}
 
@@ -2396,10 +2396,7 @@ public class Maths {
 					value = "hypot(0,1,0,1)",
 					equals = "sqrt(2)"))
 	public static double hypot(final IScope scope, final double x1, final double x2, final double y1, final double y2) {
-		// return Math.hypot(x2 - x1, y2 - y1); VERY SLOW !
-		final double dx = x2 - x1;
-		final double dy = y2 - y1;
-		return sqrt(scope, dx * dx + dy * dy);
+		return Math.hypot(x2 - x1, y2 - y1);
 	}
 
 	/**

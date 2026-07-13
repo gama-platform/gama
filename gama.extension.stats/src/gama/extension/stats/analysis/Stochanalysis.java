@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
@@ -230,33 +231,46 @@ public class Stochanalysis {
 	 * @param scope
 	 * @return
 	 */
-	private static String buildStochMap(final Map<String, Map<ParametersSet, Map<String, List<Double>>>> Out,
-			final int nbsample, final int nbreplicates, final IScope scope) {
-		StringBuilder sb = new StringBuilder();
-		// Header of the csv
+	private static boolean buildStochMapHeader(StringBuilder sb, Map<String, Map<ParametersSet, Map<String, List<Double>>>> Out, int nbreplicates, List<String> phRet) {
 		sb.append("Outputs").append(SEP);
-
-		// Parameters
-		IList<String> ph = Out.get(Out.keySet().stream().findAny().get()).keySet().stream().findAny().get().getKeys();
+		if (Out == null || Out.isEmpty()) return false;
+		Map<ParametersSet, Map<String, List<Double>>> firstMap = Out.values().stream().findAny().orElse(null);
+		if (firstMap == null || firstMap.isEmpty()) return false;
+		ParametersSet firstPS = firstMap.keySet().stream().findAny().orElse(null);
+		if (firstPS == null) return false;
+		IList<String> ph = firstPS.getKeys();
+		phRet.addAll(ph);
 		sb.append(ph.stream().collect(Collectors.joining(","))).append(SEP);
 
 		sb.append("Indicator").append(SEP);
 		sb.append(IntStream.range(2, nbreplicates).boxed().map(String::valueOf).collect(Collectors.joining(SEP)));
 		sb.append(StringUtils.LN);
+		return true;
+	}
 
-		for (String o : Out.keySet()) {
-			Map<ParametersSet, Map<String, List<Double>>> om = Out.get(o);
-			for (ParametersSet p : om.keySet()) {
-				String lineP = ph.stream().map(head -> p.get(head).toString()).collect(Collectors.joining(SEP));
-				Map<String, List<Double>> cr = om.get(p);
-				for (String m : cr.keySet()) {
-					sb.append(o).append(SEP);
-					sb.append(lineP).append(SEP);
-					sb.append(m).append(SEP);
-					sb.append(cr.get(m).stream().skip(1).map(String::valueOf).collect(Collectors.joining(SEP)));
-					sb.append(StringUtils.LN);
-				}
+	private static void appendStochMapRows(StringBuilder sb, String o, Map<ParametersSet, Map<String, List<Double>>> om, List<String> ph) {
+		for (Map.Entry<ParametersSet, Map<String, List<Double>>> pEntry : om.entrySet()) {
+			ParametersSet p = pEntry.getKey();
+			String lineP = ph.stream().map(head -> p.get(head).toString()).collect(Collectors.joining(SEP));
+			Map<String, List<Double>> cr = pEntry.getValue();
+			for (Map.Entry<String, List<Double>> mEntry : cr.entrySet()) {
+				sb.append(o).append(SEP);
+				sb.append(lineP).append(SEP);
+				sb.append(mEntry.getKey()).append(SEP);
+				sb.append(mEntry.getValue().stream().skip(1).map(String::valueOf).collect(Collectors.joining(SEP)));
+				sb.append(StringUtils.LN);
 			}
+		}
+	}
+
+	private static String buildStochMap(final Map<String, Map<ParametersSet, Map<String, List<Double>>>> Out,
+			final int nbsample, final int nbreplicates, final IScope scope) {
+		StringBuilder sb = new StringBuilder();
+		List<String> ph = new java.util.ArrayList<>();
+		if (!buildStochMapHeader(sb, Out, nbreplicates, ph)) return "";
+
+		for (Map.Entry<String, Map<ParametersSet, Map<String, List<Double>>>> entry : Out.entrySet()) {
+			appendStochMapRows(sb, entry.getKey(), entry.getValue(), ph);
 		}
 
 		return sb.toString();
@@ -295,31 +309,44 @@ public class Stochanalysis {
 	 * @param scope
 	 * @return
 	 */
+	private static void buildSimulationCsvHeader(StringBuilder sb, String sep, final IMap<ParametersSet, Map<String, List<Object>>> outputs) {
+		Optional<ParametersSet> firstPs = outputs.keySet().stream().findFirst();
+		if (firstPs.isPresent()) {
+			for (String param : firstPs.get().keySet()) { sb.append(param).append(sep); }
+		}
+		
+		Map<String, List<Object>> firstRes = outputs.values().stream().findFirst().orElse(null);
+		if (firstRes != null) {
+			for (String output : firstRes.keySet()) { sb.append(output).append(sep); }
+		}
+	}
+
+	private static void appendSimulationCsvRows(StringBuilder sb, String sep, ParametersSet ps, Map<String, List<Object>> res, IScope scope) {
+		if (res == null || res.isEmpty()) return;
+		int nbr = res.values().stream().findAny().orElse(java.util.Collections.emptyList()).size();
+		if (!res.values().stream().allMatch(r -> r.size() == nbr)) {
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.warning(
+							"Not all sample of stochastic analysis have the same number of replicates", scope),
+					false);
+		} else {
+			for (int r = 0; r < nbr; r++) {
+				sb.append(StringUtils.LN);
+				for (Object pvalue : ps.values()) { sb.append(pvalue).append(sep); }
+				for (Map.Entry<String, List<Object>> entry : res.entrySet()) { sb.append(entry.getValue().get(r)).append(sep); }
+			}
+		}
+	}
+
 	public static String buildSimulationCsv(final IMap<ParametersSet, Map<String, List<Object>>> outputs,
 			final IScope scope) {
 		StringBuilder sb = new StringBuilder();
 		String sep = ";";
 
-		// Write the header
-		for (String param : outputs.keySet().stream().findFirst().get().keySet()) { sb.append(param).append(sep); }
-		for (String output : outputs.anyValue(scope).keySet()) { sb.append(output).append(sep); }
+		buildSimulationCsvHeader(sb, sep, outputs);
 
-		// Find results and append to global string
-		for (ParametersSet ps : outputs.keySet()) {
-			Map<String, List<Object>> res = outputs.get(ps);
-			int nbr = res.values().stream().findAny().get().size();
-			if (!res.values().stream().allMatch(r -> r.size() == nbr)) {
-				GAMA.reportAndThrowIfNeeded(scope,
-						GamaRuntimeException.warning(
-								"Not all sample of stochastic analysis have the same number of replicates", scope),
-						false);
-			} else {
-				for (int r = 0; r < nbr; r++) {
-					sb.append(StringUtils.LN);
-					for (Object pvalue : ps.values()) { sb.append(pvalue).append(sep); }
-					for (String output : res.keySet()) { sb.append(res.get(output).get(r)).append(sep); }
-				}
-			}
+		for (Map.Entry<ParametersSet, Map<String, List<Object>>> entry : outputs.entrySet()) {
+			appendSimulationCsvRows(sb, sep, entry.getKey(), entry.getValue(), scope);
 		}
 
 		return sb.toString();
@@ -376,6 +403,7 @@ public class Stochanalysis {
 	 * @return the minimum replicates size to reach a given threshold of marginal benefit adding a new replicates
 	 */
 	private static int findWithRelativeThreshold(final List<Double> Stat, final double threshold) {
+		if (Stat == null || Stat.isEmpty()) return 0;
 		double th = Collections.min(Stat) * threshold;
 		for (int i = 2; i < Stat.size(); i++) {
 			double delta = Stat.get(i - 1) - Stat.get(i);
@@ -522,19 +550,31 @@ public class Stochanalysis {
 	 */
 	// see : https://en.wikipedia.org/wiki/F-test
 	private static double fTestEffectSize(final Collection<IList<Object>> groups, final IScope scope) {
+		if (groups.isEmpty() || groups.size() == 1) return 0.0;
 		List<Double> groupMean = groups.stream()
-				.mapToDouble(group -> group.stream().mapToDouble(e -> Cast.asFloat(scope, e)).average().getAsDouble())
+				.mapToDouble(group -> group.isEmpty() ? 0.0 : group.stream().mapToDouble(e -> Cast.asFloat(scope, e)).average().orElse(0.0))
 				.boxed().toList();
-		double overallMean = groupMean.stream().mapToDouble(d -> d).average().getAsDouble();
-		double betweenGroupVariability =
-				groupMean.stream().mapToDouble(mean -> Math.pow(overallMean - mean, 2)).sum() / (groups.size() - 1);
-		double withinGroupVariability = 0.0;
+		double overallMean = groupMean.stream().mapToDouble(d -> d).average().orElse(0.0);
+		double betweenGroupVariability = 0.0;
 		int i = 0;
+		for (IList<Object> group : groups) {
+			double mean = groupMean.get(i++);
+			betweenGroupVariability += group.size() * Math.pow(mean - overallMean, 2);
+		}
+		betweenGroupVariability /= (groups.size() - 1);
+
+		double withinGroupVariability = 0.0;
+		int totalSize = 0;
+		i = 0;
 		for (IList<Object> group : groups) {
 			Double m = groupMean.get(i++);
 			withinGroupVariability += group.stream().mapToDouble(d -> Math.pow(Cast.asFloat(scope, d) - m, 2)).sum();
+			totalSize += group.size();
 		}
-		withinGroupVariability /= groups.stream().mapToInt(List::size).sum();
+		if (totalSize <= groups.size()) return 0.0;
+		withinGroupVariability /= (totalSize - groups.size());
+		
+		if (withinGroupVariability == 0.0) return 0.0;
 		return betweenGroupVariability / withinGroupVariability;
 	}
 
@@ -569,7 +609,7 @@ public class Stochanalysis {
 				List<String> list_name = new ArrayList<>();
 				int i = 0;
 				while ((line = br.readLine()) != null) {
-					tempArr = line.split(",");
+					tempArr = parseCsvLine(line);
 					for (String tempStr : tempArr) { if (i == 0) { list_name.add(tempStr); } }
 					if (i > 0) {
 						Map<String, Object> temp_map = new LinkedHashMap<>();
@@ -757,5 +797,22 @@ public class Stochanalysis {
 
 		return Stochanalysis.stochasticityAnalysis_From_Data(replicat, threshold, MySample, Outputs, scope);
 	}
-	
+	private static String[] parseCsvLine(String line) {
+		List<String> result = new ArrayList<>();
+		StringBuilder cur = new StringBuilder();
+		boolean inQuotes = false;
+		for (int i = 0; i < line.length(); i++) {
+			char c = line.charAt(i);
+			if (c == '\"') {
+				inQuotes = !inQuotes;
+			} else if (c == ',' && !inQuotes) {
+				result.add(cur.toString());
+				cur.setLength(0);
+			} else {
+				cur.append(c);
+			}
+		}
+		result.add(cur.toString());
+		return result.toArray(new String[0]);
+	}
 }
