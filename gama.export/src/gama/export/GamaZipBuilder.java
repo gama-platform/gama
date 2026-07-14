@@ -10,8 +10,8 @@ import java.util.stream.Stream;
 import java.nio.file.*;
 import java.util.zip.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
+// import java.util.regex.Pattern;
+// import java.util.regex.Matcher;
 import java.util.prefs.Preferences;
 
 import gama.api.utils.prefs.JREPreferenceStore;
@@ -22,40 +22,54 @@ import gama.export.ZipHelper;
 
 public class GamaZipBuilder {
 
+
+    /**
+	 * The set of plugins which must always be included in a Gama distribution.
+     * gama.dependencies and gama.ui.application are necessary but they
+     * are treated separately
+	 */
     private static Set<String> necessaryGamaModules = new HashSet<String>(Set.of(
-        "gama.annotations",
-        "gama.api",
-        "gama.core",
-        "gama.dev",
-        "gama.export",
         "gama.dependencies",
-        "gama.extension.batch",
-        "gama.extension.image",
-        "gama.extension.maths",
-        "gama.extension.network",
-        "gama.extension.serialize",
-        "gama.extension.sound",
         "gama.extension.stats",
         "gama.headless",
-        "gama.processor",
-        // "gama.ui.application",
-        "gama.ui.display.java2d",
-        "gama.ui.experiment",
+        "gama.ui.application",
         "gama.ui.navigator",
         "gama.ui.shared",
-        "gama.ui.viewers",
-        "gama.workspace",
-        "gaml.compiler"
+        "gama.ui.viewers"
     ));
+
+    // private static Set<String> necessaryGamaModules = new HashSet<String>(Set.of(
+    //     "gama.annotations",
+    //     "gama.api",
+    //     "gama.core",
+    //     "gama.dev",
+    //     "gama.export",
+    //     "gama.dependencies",
+    //     "gama.extension.maths",
+    //     "gama.extension.serialize",
+    //     "gama.extension.stats",
+    //     "gama.headless",
+    //     "gama.processor",
+    //     "gama.ui.experiment",
+    //     "gama.ui.navigator",
+    //     "gama.ui.shared",
+    //     "gama.ui.viewers",
+    //     "gama.workspace",
+    //     "gaml.compiler"
+    // ));
 
     // depends on the operating system
     private Set<String> neededGamaModules;
+
+    private Set<Path> neededGamaModulesPath;
 
     private static final String embeddedWorkspaceName = "Embedded_Workspace";
 
     private static final Path appRootPath = Path.of(ExportActivator.appRootPathStr);
     
-    private static final Path pluginsPath = Path.of(appRootPath.toString(),"plugins");
+    private static final Path pluginsPath = appRootPath.resolve("plugins");
+
+    private static final Path dropinsPath = appRootPath.resolve("dropins");
 
     private static final Path tmpDirectoryPath = Path.of(System.getProperty("java.io.tmpdir"),"gama.export.tmp");
 
@@ -66,12 +80,18 @@ public class GamaZipBuilder {
     private static final Path gamaUiApplicationJarTmpPath = tmpDirectoryPath.resolve("gama.ui.application.jar.tmp");
 
     private static final Path gamaDependenciesTmpPath = tmpDirectoryPath.resolve("gama.dependencies.tmp");
-    
-    private static String gamaDependenciesModuleFileName = null;
 
-    private static String gamaUiApplicationModuleFileName = null;
+    private static final Path gamaDependenciesModulePath = BundleDependencyAnalyzer.getPluginPath("gama.dependencies");
+
+    private static final Path gamaUiApplicationModulePath = BundleDependencyAnalyzer.getPluginPath("gama.ui.application");
+    
+    private static final String gamaDependenciesModuleFileName = gamaDependenciesModulePath.getFileName().toString();
+
+    private static final String gamaUiApplicationModuleFileName = gamaUiApplicationModulePath.getFileName().toString();
 
     private String targetWorkspacePathStr = null;
+
+    private boolean shrinkGamaDependencies;
     
     private String targetModelPathStr = null;
 
@@ -105,18 +125,34 @@ public class GamaZipBuilder {
 
     public GamaZipBuilder(Set<String> modules, String targetWorkspacePathStr, String targetModelPathStr, String targetExperiment,  final boolean shrinkGamaDependencies) 
     {
-        this(modules,targetWorkspacePathStr,targetModelPathStr,targetExperiment);
+        neededGamaModules = modules;
+        neededGamaModules.addAll(necessaryGamaModules);
+
+        this.targetWorkspacePathStr = Path.of(targetWorkspacePathStr).toString(); 
+        this.targetModelPathStr = targetModelPathStr;
+        this.targetExperiment = targetExperiment;
+
+        // expanding necessary modules based on needed modules (GamlProperties doesn't expand the dependency tree)
+        neededGamaModulesPath = BundleDependencyAnalyzer.getMinimalGamaModuleSet(neededGamaModules);
+
+        System.out.println("Including the following plugins : ");
+        neededGamaModules.forEach(System.out::println);
 
         if(shrinkGamaDependencies)
-            GamaZipBuilder.necessaryGamaModules.remove("gama.dependencies");
+        {
+            neededGamaModules.remove("gama.dependencies");
+            neededGamaModulesPath.remove(gamaDependenciesModulePath);
+        }
+
+        neededGamaModules.remove("gama.ui.application");
+        neededGamaModulesPath.remove(gamaUiApplicationModulePath);
+        
+        this.shrinkGamaDependencies = shrinkGamaDependencies;
     }
 
     public GamaZipBuilder(Set<String> modules, String targetWorkspacePathStr, String targetModelPathStr, String targetExperiment) 
     {
-        neededGamaModules = modules;
-        this.targetWorkspacePathStr = Path.of(targetWorkspacePathStr).toString(); 
-        this.targetModelPathStr = targetModelPathStr;
-        this.targetExperiment = targetExperiment;
+        this(modules,targetWorkspacePathStr,targetModelPathStr,targetExperiment,false);
     }
 
     private Stream<Path> filter(Stream<Path> stream)
@@ -125,32 +161,16 @@ public class GamaZipBuilder {
         // filter the non essential GAMA modules
             .filter(path -> {
                 String filename = path.getFileName().toString();
-                if
-                (
-                    path.startsWith(GamaZipBuilder.pluginsPath)
-                    &&
-                    filename.startsWith("gama.") && (filename.endsWith(".jar") || Files.isDirectory(path))
-                    &&
-                    (
-                        ! necessaryGamaModules.stream()
-                        .anyMatch(module -> filename.contains(module))
-                        && 
-                        ! neededGamaModules.stream()
-                            .anyMatch(module -> filename.contains(module))
-                    )
+                if((path.startsWith(GamaZipBuilder.pluginsPath) || path.startsWith(GamaZipBuilder.dropinsPath)) 
+                    && (filename.startsWith("gama.") || filename.startsWith("gaml."))
+                    && (filename.endsWith(".jar") || Files.isDirectory(path))
+                    && ! neededGamaModulesPath.contains(path)
+                    // && ! neededGamaModules.stream().anyMatch(module -> filename.contains(module))
                 ) 
                 {
                     if (Files.isDirectory(path))
-                    {
                         GamaZipBuilder.dontZipPaths.add(path);
-                    }
-                    else
-                        if(filename.startsWith("gama.dependencies"))
-                            GamaZipBuilder.gamaDependenciesModuleFileName = filename;
-                        else
-                            if(filename.startsWith("gama.ui.application"))
-                                GamaZipBuilder.gamaUiApplicationModuleFileName = filename;
-                    
+
                     return false;
                 }
 
@@ -219,50 +239,28 @@ public class GamaZipBuilder {
 
             Files.copy(GamaZipBuilder.gamaUiApplicationJarTmpPath, zos);
 
-            zos.closeEntry();                   
+            zos.closeEntry();
 
             ////////////////////////////////////////
             // Filtering the desired dependencies //
             // in gama.dependencies               //
             ////////////////////////////////////////
-            if (! GamaZipBuilder.necessaryGamaModules.contains("gama.dependencies"))
+            if (shrinkGamaDependencies)
             {
                 final Path gamaDependenciesJarTmpPath = Path.of(GamaZipBuilder.tmpDirectoryPath.toString(),GamaZipBuilder.gamaDependenciesModuleFileName);
 
                 // Unzip dependencies in tmp folder
-                ZipHelper.unzip(Path.of(GamaZipBuilder.pluginsPath.toString(),GamaZipBuilder.gamaDependenciesModuleFileName), GamaZipBuilder.gamaDependenciesTmpPath);
+                ZipHelper.unzip(GamaZipBuilder.gamaDependenciesModulePath, GamaZipBuilder.gamaDependenciesTmpPath);
 
                 // Read ande parse the META-INF/MANIFEST.MF file, to retrieve the exported packages
-
-                final String manifest = Files.readString(Path.of(GamaZipBuilder.gamaDependenciesTmpPath.toString(),"META-INF","MANIFEST.MF"));
-                Matcher matcher = Pattern.compile("(Export-Package[\s]*:[\s]*)([^:]*)\n([^\n:]*:)").matcher(manifest);
-
-                if(! matcher.find())
-                    System.err.println("an error occured while parsing manifest of gama.dependencies");
-                
-                final Set<String> exportedPackages = Set.of(matcher.group(2).replaceAll("[\n\s\r]","").split(","));
+                final Set<String> exportedPackages = BundleDependencyAnalyzer.getManifestAttribute(GamaZipBuilder.gamaDependenciesModulePath,"Export-Package");
 
                 // Analyze dependencies
                 final BundleDependencyAnalyzer analyzer =
                     new BundleDependencyAnalyzer(exportedPackages);
 
-                Set<Path> targetBundles = new HashSet<Path>();
-
-                try (Stream<Path> stream = Files.walk(pluginsPath)) {
-                    stream.forEach(pluginPath -> {
-                        String pluginPathString = pluginPath.toString();
-                        if( (GamaZipBuilder.necessaryGamaModules.stream().anyMatch( module -> 
-                                pluginPathString.startsWith(pluginsPath.resolve(module).toString())) 
-                            || 
-                            this.neededGamaModules.stream().anyMatch( module -> 
-                                    pluginPathString.startsWith(pluginsPath.resolve(module).toString())))
-                            && !Files.isDirectory(pluginPath) && pluginPathString.endsWith(".jar")
-                        )
-                            targetBundles.add(pluginPath);
-                    });
-                }
-
-                final Set<Path> removableDependencies = analyzer.analyze(targetBundles,GamaZipBuilder.gamaDependenciesTmpPath);
+                neededGamaModulesPath.add(gamaUiApplicationModulePath);
+                final Set<Path> removableDependencies = analyzer.analyze(neededGamaModulesPath,GamaZipBuilder.gamaDependenciesTmpPath);
                 
                 // Remove non essential dependencies
 

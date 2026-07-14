@@ -10,6 +10,7 @@ Bundle-Activator: gama.export.ExportActivator
 Bundle-Vendor: UMMISCO
 Require-Bundle: gama.api,
  gama.dev,
+ org.eclipse.core.runtime,
  org.eclipse.jface
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-25

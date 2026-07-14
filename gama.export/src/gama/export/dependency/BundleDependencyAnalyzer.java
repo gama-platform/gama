@@ -3,6 +3,8 @@ package gama.export.dependency;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -12,6 +14,12 @@ import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.Collections;
+import org.eclipse.core.runtime.Platform;
+import org.osgi.framework.Bundle;
+
+import gama.export.ExportHelper;
+
 
 public class BundleDependencyAnalyzer {
 
@@ -194,5 +202,102 @@ private Set<String> getExportedPackages(Path jar) {
         throw new RuntimeException(
                 "Failed to read classes from " + jar, e);
         }
+    }
+
+    public static Set<String> getManifestAttribute(Path jarPath, String attribute)
+    {
+        try {
+            Manifest manifest = null; 
+
+            if(Files.isDirectory(jarPath))
+            {
+                InputStream is = new FileInputStream(jarPath.resolve("META-INF").resolve("MANIFEST.MF").toString());
+                manifest = new Manifest(is);
+            } else {
+                JarFile jar = new JarFile(jarPath.toString());
+                manifest = jar.getManifest();
+            }
+
+            Attributes attribs = manifest.getMainAttributes();
+        
+            return parseOsgiHeader(attribs.getValue(attribute));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Collections.<String>emptySet();
+        }
+    }
+
+    private static Set<String> parseOsgiHeader(String headerValue) {
+        Set<String> elements = new HashSet<>();
+        if (headerValue == null || headerValue.trim().isEmpty()) {
+            return elements;
+        }
+
+        // Regex split on commas that are NOT inside double quotes
+        String[] parts = headerValue.split(",(?=([^\\\"]*\\\"[^\\\"]*\\\")*[^\\\"]*$)");
+
+        for (String part : parts) {
+            // Strip out any trailing semicolon directives/parameters (e.g., ;version="1.0.0")
+            String cleanIdentifier = part.split(";")[0].trim();
+            if (!cleanIdentifier.isEmpty()) {
+                elements.add(cleanIdentifier);
+            }
+        }
+        return elements;
+    }
+
+    public static Path getPluginPath(String name)
+    {
+        Bundle bundle = Platform.getBundle(name);
+
+        if (bundle == null)
+            return null;
+        else
+            return Path.of(ExportHelper.resolveEmbeddedPath(bundle.getLocation().replaceAll(".*file:","")));
+    }
+
+    public static Set<Path> getMinimalGamaModuleSet(Set<String> modules)
+    {
+        Set<Path> necessaryGamaModules = new HashSet<Path>();
+        Set<String> alreadySeenModules = new HashSet<String>();
+
+        Set<String> modulesToCheck = new HashSet<String>(modules);
+        
+        while(! modulesToCheck.isEmpty())
+        {
+            Set<String> foundModules = new HashSet<String>();
+
+            for (String module : modulesToCheck)
+            {
+                alreadySeenModules.add(module);
+                modules.add(module);
+                Path modulePath = getPluginPath(module);
+                
+                if (modulePath == null)
+                    continue;
+
+                necessaryGamaModules.add(modulePath);
+
+                System.out.println(modulePath);
+
+                Set<String> neededModules = getManifestAttribute(modulePath,"Require-Bundle");
+                neededModules.addAll(getManifestAttribute(modulePath,"Import-Package"));
+
+                for (String neededModule : neededModules)
+                {
+                    if ((neededModule.startsWith("gama.") || neededModule.startsWith("gaml.")) 
+                        && ! modulesToCheck.contains(neededModule) 
+                        && ! alreadySeenModules.contains(neededModule)) {
+                        
+                        foundModules.add(neededModule);
+                    }
+                }
+            }
+
+            modulesToCheck = foundModules;
+        }
+
+        return necessaryGamaModules;
     }
 }

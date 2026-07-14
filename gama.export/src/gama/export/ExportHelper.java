@@ -9,6 +9,14 @@ public class ExportHelper
         
     }
 
+    public static Path resolveEmbeddedPath(Path path)
+    {
+        if (!path.isAbsolute())
+            path = Path.of(ExportActivator.appRootPathStr,path.toString());
+
+        return path;
+    }
+
     public static String resolveEmbeddedPath(String pathStr)
     {
         Path path = Path.of(pathStr);

@@ -8,7 +8,6 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleActivator;
 
-import gama.export.Main;
 import java.util.prefs.Preferences;
 import gama.api.utils.prefs.JREPreferenceStore;
 import gama.api.utils.prefs.GamaPreferenceStore;
@@ -21,31 +20,8 @@ public class ExportActivator implements BundleActivator {
     @Override
     public void start(BundleContext context) throws Exception {
       
-        // appRootPathStr = System.getProperty("osgi.install.area");
         appRootPathStr = System.getProperty("eclipse.home.location");
         appRootPathStr = appRootPathStr.replaceAll("file:", "");
-
-
-        // JREPreferenceStore store = new JREPreferenceStore(Preferences.userRoot().node(GamaPreferenceStore.NODE_NAME));
-
-        // String workspacePathPreferenceOld = store.getInStore("pref_workspace_path","");
-        // String workspaceRememberPreferenceOld = store.getInStore("pref_workspace_remember","false");
-        // String startupModelPreferenceOld = store.getInStore("pref_startup_model","false");
-        // String defaultModelPreferenceOld = store.getInStore("pref_default_model","Enter Path");
-        // String defaultExperimentPreferenceOld = store.getInStore("pref_default_experiment","");
-
-        // store.putInStore("pref_workspace_path",workspacePathPreferenceOld);
-        // store.putInStore("pref_workspace_remember",workspaceRememberPreferenceOld);
-        // store.putInStore("pref_startup_model",startupModelPreferenceOld);
-        // store.putInStore("pref_default_model",defaultModelPreferenceOld);
-        // store.putInStore("pref_default_experiment",defaultExperimentPreferenceOld);
-
-        // if (! FLAGS.SIMULATION_ONLY)
-        // {
-        //     String[] args = {};
-        //     Main.main(args);
-        //     System.out.println("PACKAGE EXPORT DONE");
-        // }
     }
 
     @Override

@@ -14,8 +14,10 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import gama.api.GAMA;
 import gaml.compiler.validation.GamlModelBuilder;
 import gama.api.kernel.species.IModelSpecies;
+import gama.api.types.file.GenericFile;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.utils.prefs.GamaPreferences;
+import gama.api.utils.GamlProperties;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.toolbar.Selector;
 import gaml.compiler.ui.editor.GamlEditor;
@@ -52,18 +54,6 @@ public class ExportExperimentSelectionListener implements Selector {
 			WorkbenchHelper.getPage().saveAllEditors(GamaPreferences.Modeling.EDITOR_SAVE_ASK.getValue());
 		}
 
-		Set<String> neededModules = Set.of(
-            "gama.extension.bdi",
-            "gama.extension.database",
-            "gama.extension.fipa",
-            "gama.extension.pedestrian",
-            "gama.extension.physics",
-            "gama.extension.traffic",
-            "gama.library",
-            "gama.ui.display.opengl",
-            "gama.ui.display.opengl4"
-        );
-
 		final URI modelURI = editor.getURI();
 
 		final String relativeModelPathStr = modelURI.toPlatformString(true);
@@ -72,13 +62,20 @@ public class ExportExperimentSelectionListener implements Selector {
 
 		final Path modelPath = Path.of(workspacePathStr,relativeModelPathStr);
 		
-		final IModelSpecies model = GamlModelBuilder.getInstance().compile(modelURI,null);
+		final GenericFile modelFile = new GenericFile(modelPath.toString());
 
-		final String[] experimentNames = StreamSupport.stream(model.getExperiments().spliterator(),false)
-			.map(experiment -> experiment.getDescription().getName())
-			.toArray(String[]::new);
+		final GamlProperties metaProperties = new GamlProperties();
+
 
 		try {
+			final IModelSpecies model = GamlModelBuilder.getInstance().compile(modelFile.getFile(null),null,metaProperties);
+			
+			Set<String> plugins = metaProperties.get(GamlProperties.PLUGINS); 
+
+			final String[] experimentNames = StreamSupport.stream(model.getExperiments().spliterator(),false)
+				.map(experiment -> experiment.getDescription().getName())
+				.toArray(String[]::new);
+				
 			final ExportModelDialog dialog = new ExportModelDialog(experimentNames);
 
 			final int result = dialog.open();
@@ -98,7 +95,8 @@ public class ExportExperimentSelectionListener implements Selector {
 
 				final Path outputPath = Path.of(outputPathStr,outputFilename);
 
-				final GamaZipBuilder ziper = new GamaZipBuilder(neededModules,
+				final GamaZipBuilder ziper = new GamaZipBuilder(
+					plugins,
 					workspacePathStr,
 					modelPath.toString(),
 					targetExperiments);
@@ -106,6 +104,7 @@ public class ExportExperimentSelectionListener implements Selector {
 					ziper.zip(outputPath.toString());
 				} catch (Exception exception) {
 					System.err.println("Exception raised while cloning GAMA :\n" + exception);
+					exception.printStackTrace();
 				}
         }
 				} catch (Throwable t) {
