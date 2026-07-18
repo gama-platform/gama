@@ -78,12 +78,12 @@ global torus: torus_environment {
 }
 
 //Grid species representing a cellular automata
-grid life_cell width: environment_width height: environment_height neighbors: 8  use_individual_shapes: false use_regular_agents: false 
+grid life_cell width: environment_width height: environment_height neighbors: 4  use_individual_shapes: false use_regular_agents: false 
 use_neighbors_cache: false parallel: parallel{
 	float alive_float <- (rnd(100)) < density ? 1.0 : 0.0;
 	bool alive -> alive_float > 0.0;
 	
-	rgb color <- alive ? livingcolor : deadcolor;
+	rgb color <- alive ? livingcolor : deadcolor update: (alive ? livingcolor : deadcolor);
 }
 
 
