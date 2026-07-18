@@ -6,7 +6,8 @@
 *   cell with 2 or 3 live neighbors survives; otherwise it dies; (2) a dead cell with exactly 3 live neighbors
 *   becomes alive. Despite these simple rules, complex and persistent patterns emerge, including oscillators,
 *   spaceships, and stable structures. The model supports toroidal or bounded environments and multiple random
-*   initial configurations.
+*   initial configurations. 
+* 	This model proposes also to edit the death/birth configurations easily
 * Tags: grid, cellular_automaton, life, game_of_life, emergence, Conway, complexity
 */
 model life
@@ -14,8 +15,8 @@ model life
 //Declare the world as a torus or not torus environment
 global torus: torus_environment {
 	//Size of the environment
-	int environment_width <- 200 min: 10 max: 1000;
-	int environment_height <- 200 min: 10 max: 1000;
+	int environment_width <- 300 min: 10 max: 1000;
+	int environment_height <- 300 min: 10 max: 1000;
 	bool parallel <- true;
 	//Declare as torus or not
 	bool torus_environment <- true;
@@ -36,8 +37,6 @@ global torus: torus_environment {
 	//Shape of the environment
 	geometry shape <- rectangle(environment_width, environment_height);
 	
-	matrix kernel <- matrix([[1, 1, 1], [1, 0, 1], [1, 1, 1]]);
-
 	//Initialization of the model by writing the description of the model in the console
 	init {
 		do description();
@@ -45,15 +44,10 @@ global torus: torus_environment {
 	
 	//Ask at each life_cell to evolve and update
 	reflex generation {
-		matrix m_alive <- matrix_with(life_cell, "alive_float");
-		matrix m_living <- convolution(m_alive, kernel);
-		
-		matrix stay_alive <- (m_living = 2.0) + (m_living = 3.0);
-		matrix new_born <- (m_living = 3.0);
-		
-		matrix next_state <- ifelse(m_alive, stay_alive, new_born);
-		
-		do set_values(life_cell, "alive_float", next_state);
+		// The computation is made in parallel
+		ask life_cell parallel: parallel {
+			do evolve();
+		}
 	}
 	//Write the description of the model in the console
 	action description() {
@@ -78,12 +72,37 @@ global torus: torus_environment {
 }
 
 //Grid species representing a cellular automata
-grid life_cell width: environment_width height: environment_height neighbors: 4  use_individual_shapes: false use_regular_agents: false 
+grid life_cell width: environment_width height: environment_height neighbors: 8  use_individual_shapes: false use_regular_agents: false 
 use_neighbors_cache: false parallel: parallel{
-	float alive_float <- (rnd(100)) < density ? 1.0 : 0.0;
-	bool alive -> alive_float > 0.0;
+	//Boolean to know if it is the new state of the cell
+	bool new_state;
+	//List of all the neighbours
+	list<life_cell> neighbours <- self neighbors_at 1;
+	//Boolean  to know if it is a living or dead cell
+	bool alive <- (rnd(100)) < density;
 	
-	rgb color <- alive ? livingcolor : deadcolor update: (alive ? livingcolor : deadcolor);
+	rgb color <- alive ? livingcolor : deadcolor;
+	
+	//Action to evolve the cell considering its neighbours
+	action evolve() {
+		//Count the number of living neighbours of the cells
+		int living <- neighbours count each.alive;
+		if alive {
+			//If the number of living respect the conditions, the cell is still alive
+			new_state <- living in living_conditions;
+			color <- new_state ? livingcolor : dyingcolor;
+		} else {
+			//If the number of living meets the conditions, the cell go to born
+			new_state <- living in birth_conditions;
+			color <- new_state ? emergingcolor : deadcolor;
+		}
+
+	}
+	//Action to update the new state of the cell
+	reflex update {
+		alive <- new_state;
+	}
+
 }
 
 

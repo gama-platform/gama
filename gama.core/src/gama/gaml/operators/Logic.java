@@ -110,11 +110,14 @@ public class Logic {
 	public static IMatrix ifelse(final IScope scope, final IMatrix condition, final IMatrix trueMatrix,
 			final Double falseValue) {
 		final GamaFloatMatrix cond = GamaFloatMatrix.from(scope, condition);
-		final GamaFloatMatrix tMat = GamaFloatMatrix.from(scope, trueMatrix);
-		final GamaFloatMatrix nm =
-				(GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(cond.getCols(scope), cond.getRows(scope));
+		final int cols = cond.getCols(scope);
+		final int rows = cond.getRows(scope);
+
+		// Retrieve or build a perfectly aligned column-major double array for trueMatrix
 		final double[] mCond = cond.getMatrix();
-		final double[] mT = tMat.getMatrix();
+		final double[] mT = getSafeDoubleArray(scope, trueMatrix, cols, rows);
+
+		final GamaFloatMatrix nm = (GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(cols, rows);
 		final double[] mRes = nm.getMatrix();
 
 		int i = 0;
@@ -319,16 +322,18 @@ public class Logic {
 	public static IMatrix ifelse(final IScope scope, final IMatrix condition, final IMatrix trueMatrix,
 			final IMatrix falseMatrix) {
 		final GamaFloatMatrix cond = GamaFloatMatrix.from(scope, condition);
-		final GamaFloatMatrix tMat = GamaFloatMatrix.from(scope, trueMatrix);
-		final GamaFloatMatrix fMat = GamaFloatMatrix.from(scope, falseMatrix);
+		final int cols = cond.getCols(scope);
+		final int rows = cond.getRows(scope);
 
-		final GamaFloatMatrix nm =
-				(GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(cond.getCols(scope), cond.getRows(scope));
+		// 1. Retrieve or build perfectly aligned column-major double arrays
 		final double[] mCond = cond.getMatrix();
-		final double[] mT = tMat.getMatrix();
-		final double[] mF = fMat.getMatrix();
+		final double[] mT = getSafeDoubleArray(scope, trueMatrix, cols, rows);
+		final double[] mF = getSafeDoubleArray(scope, falseMatrix, cols, rows);
+
+		final GamaFloatMatrix nm = (GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(cols, rows);
 		final double[] mRes = nm.getMatrix();
 
+		// 2. Run the high-performance Java Vector API loop
 		int i = 0;
 		int upperBound = GamaFloatMatrix.SPECIES.loopBound(mCond.length);
 		for (; i < upperBound; i += GamaFloatMatrix.SPECIES.length()) {
@@ -340,10 +345,37 @@ public class Logic {
 					jdk.incubator.vector.DoubleVector.fromArray(GamaFloatMatrix.SPECIES, mF, i);
 
 			jdk.incubator.vector.VectorMask<Double> mask = vCond.compare(jdk.incubator.vector.VectorOperators.GT, 0.0);
-			vT.blend(vF, mask).intoArray(mRes, i);
+			vF.blend(vT, mask).intoArray(mRes, i);
 		}
+		// Fallback loop for remaining elements
 		for (; i < mCond.length; i++) { mRes[i] = mCond[i] > 0.0 ? mT[i] : mF[i]; }
 		return nm;
+	}
+
+	/**
+	 * Gets the safe double array.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param matrix
+	 *            the matrix
+	 * @param cols
+	 *            the cols
+	 * @param rows
+	 *            the rows
+	 * @return the safe double array
+	 */
+	// Helper method to guarantee a flat, column-major double array
+	private static double[] getSafeDoubleArray(final IScope scope, final IMatrix<?> matrix, final int cols,
+			final int rows) {
+		if (matrix instanceof GamaFloatMatrix) return ((GamaFloatMatrix) matrix).getMatrix();
+		final double[] arr = new double[cols * rows];
+		int i = 0;
+		// GAMA standard column-major flat layout: column-first, then row
+		for (int c = 0; c < cols; c++) {
+			for (int r = 0; r < rows; r++) { arr[i++] = Cast.asFloat(scope, matrix.get(scope, c, r)); }
+		}
+		return arr;
 	}
 
 	/**

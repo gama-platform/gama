@@ -1,12 +1,11 @@
 /*******************************************************************************************************
  *
- * IDiffusionTarget.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * IDiffusionTarget.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.api.utils.interfaces;
 
@@ -20,7 +19,8 @@ public interface IDiffusionTarget {
 	/**
 	 * Gets the cols.
 	 *
-	 * @param scope the scope
+	 * @param scope
+	 *            the scope
 	 * @return the cols
 	 */
 	int getCols(IScope scope);
@@ -28,7 +28,8 @@ public interface IDiffusionTarget {
 	/**
 	 * Gets the rows.
 	 *
-	 * @param scope the scope
+	 * @param scope
+	 *            the scope
 	 * @return the rows
 	 */
 	int getRows(IScope scope);
@@ -43,9 +44,12 @@ public interface IDiffusionTarget {
 	/**
 	 * Gets the value at index.
 	 *
-	 * @param scope the scope
-	 * @param i the i
-	 * @param var_diffu the var diffu
+	 * @param scope
+	 *            the scope
+	 * @param i
+	 *            the i
+	 * @param var_diffu
+	 *            the var diffu
 	 * @return the value at index
 	 */
 	double getValueAtIndex(IScope scope, int i, String var_diffu);
@@ -53,22 +57,43 @@ public interface IDiffusionTarget {
 	/**
 	 * Sets the value at index.
 	 *
-	 * @param scope the scope
-	 * @param i the i
-	 * @param var_diffu the var diffu
-	 * @param valToPut the val to put
+	 * @param scope
+	 *            the scope
+	 * @param i
+	 *            the i
+	 * @param var_diffu
+	 *            the var diffu
+	 * @param valToPut
+	 *            the val to put
 	 */
 	void setValueAtIndex(IScope scope, int i, String var_diffu, double valToPut);
 
 	/**
 	 * Gets the values into.
 	 *
-	 * @param scope the scope
-	 * @param varName the var name
-	 * @param minValue the min value
-	 * @param input the input
+	 * @param scope
+	 *            the scope
+	 * @param varName
+	 *            the var name
+	 * @param minValue
+	 *            the min value
+	 * @param input
+	 *            the input
 	 * @return the values into
 	 */
 	void getValuesInto(IScope scope, String varName, double minValue, double[] input);
+
+	/**
+	 * Gets the values into.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param varName
+	 *            the var name
+	 * @param input
+	 *            the input
+	 * @return the values into
+	 */
+	void getValuesInto(IScope scope, String varName, double[] input);
 
 }

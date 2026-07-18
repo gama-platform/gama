@@ -2084,6 +2084,31 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 	}
 
 	@Override
+	public void getValuesInto(final IScope scope, final String varName, final double[] input) {
+		switch (varName) {
+			case IKeyword.GRID_VALUE:
+				System.arraycopy(gridValue, 0, input, 0, gridValue.length);
+				return;
+			case IKeyword.COLOR:
+				if (!isHexagon) {
+					System.arraycopy(gridValue, 0, input, 0, supportImagePixels.length);
+					return;
+				}
+				break;
+			case IKeyword.GRID_X:
+				for (int i = 0; i < input.length; i++) { input[i] = i % numCols; }
+				return;
+			case IKeyword.GRID_Y:
+				for (int i = 0; i < input.length; i++) { input[i] = i / numCols; }
+				return;
+		}
+		for (int i = 0; i < input.length; i++) {
+			input[i] = Cast.asFloat(scope, matrix[i].getAgent().getDirectVarValue(scope, varName));
+		}
+
+	}
+
+	@Override
 	public void setGridValues(final double[] gridValues) { this.gridValue = gridValues; }
 
 }
