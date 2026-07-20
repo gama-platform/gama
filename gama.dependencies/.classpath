@@ -110,13 +110,8 @@
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-main-33.4.jar" sourcepath="libs/geotools 33.4/src.zip"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-metadata-33.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-mongodb-33.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-process-33.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-process-feature-33.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-process-geometry-33.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-process-raster-33.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-property-33.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-referencing-33.4.jar" sourcepath="libs/geotools 33.4/src.zip"/>
-	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-render-33.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-shapefile-33.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-transform-33.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-wfs-ng-33.4.jar"/>
