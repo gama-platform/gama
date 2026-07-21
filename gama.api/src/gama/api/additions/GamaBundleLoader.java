@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
-import org.apache.hadoop.thirdparty.com.google.common.collect.Lists;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.IExtensionPoint;
@@ -32,6 +31,7 @@ import org.eclipse.core.runtime.Platform;
 import org.osgi.framework.Bundle;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
 import gama.annotations.constants.IKeyword;
@@ -359,8 +359,8 @@ public class GamaBundleLoader {
 				try {
 					loadSaveExt(registry);
 					DEBUG.BANNER(BANNER_CATEGORY.GAML, "Loading extensions to 'save'", "file types",
-							StreamEx.of(GamaAdditionRegistry.getSaveFileFormats()).remove(String::isBlank).distinct()
-									.map(s -> "." + s).sorted().joining("|"));
+							StreamEx.of(GamaAdditionRegistry.getSaveFileFormats()).remove(String::isBlank)
+									.map(s -> "." + s.toLowerCase()).distinct().sorted().joining("|"));
 				} catch (RuntimeException e) {
 					ERROR("Error in loading extensions to 'save'. ", e);
 				}
@@ -381,8 +381,8 @@ public class GamaBundleLoader {
 				try {
 					loadContentExtensions(registry);
 					DEBUG.BANNER(BANNER_CATEGORY.GAML, "Loading file content extensions", "file types",
-							StreamEx.of(HANDLED_FILE_EXTENSIONS.values()).remove(String::isBlank).distinct()
-									.map(s -> "." + s).sorted().joining("|"));
+							StreamEx.of(HANDLED_FILE_EXTENSIONS.values()).remove(String::isBlank)
+									.map(s -> "." + s.toLowerCase()).distinct().sorted().joining("|"));
 				} catch (RuntimeException e) {
 					ERROR("Error in loading content extensions. ", e);
 				}
@@ -390,7 +390,7 @@ public class GamaBundleLoader {
 					loadMetadataExt(registry);
 					DEBUG.BANNER(BANNER_CATEGORY.GAML, "Loading file metadata extensions", "file types",
 							StreamEx.of(GAMA.getMetadataProvider().getMetadataFileExtensions()).remove(String::isBlank)
-									.distinct().map(s -> "." + s).sorted().joining("|"));
+									.map(s -> "." + s.toLowerCase()).distinct().sorted().joining("|"));
 				} catch (RuntimeException e) {
 					ERROR("Error in loading extensions to 'metadata'. ", e);
 				}
