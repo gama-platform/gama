@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="gama.save">
+   </extension>
+   <extension
+         point="gaml.extension">
+   </extension>
+   <extension
+         point="gama.metadata">
+   </extension>
+   <extension
+         point="org.eclipse.core.contenttype.contentTypes">
+   </extension>
+
+</plugin> 
