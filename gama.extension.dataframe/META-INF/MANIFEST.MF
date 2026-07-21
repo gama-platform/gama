@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: GAML Image Extension
+Bundle-Name: GAML Dataframe Extension
 Bundle-SymbolicName: gama.extension.dataframe;singleton:=true
 Bundle-Version: 0.0.0.qualifier
 Export-Package: gama.extension.dataframe
