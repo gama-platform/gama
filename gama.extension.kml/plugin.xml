@@ -7,13 +7,6 @@
    
    
    <extension
-         point="gama.metadata">
-               <implementation
-                     class="gama.extension.kml.OSMInfo"
-                     content_type="gama.osm.file.type">
-               </implementation>
-   </extension>
-   <extension
          point="org.eclipse.core.contenttype.contentTypes">
       <content-type
             file-extensions="osm,OSM,pbf,PBF,bz2,BZ2,gz,GZ"

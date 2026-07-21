@@ -7,7 +7,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.core.util.file;
+package gama.extension.dxf;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -46,6 +46,7 @@ import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
 import gama.api.utils.geometry.GamaEnvelopeFactory;
 import gama.api.utils.geometry.IEnvelope;
+import gama.core.util.file.GamaGeometryFile;
 import gama.gaml.operators.spatial.SpatialCreation;
 import gama.gaml.operators.spatial.SpatialTransformations;
 
@@ -61,7 +62,7 @@ import gama.gaml.operators.spatial.SpatialTransformations;
 		buffer_type = IType.LIST,
 		buffer_content = IType.GEOMETRY,
 		buffer_index = IType.INT,
-		concept = { IConcept.DXF, IConcept.FILE },
+		concept = { "dxf", IConcept.FILE },
 		doc = @doc ("DXF files are 2D geometrical files. The internal representation is a list of geometries"))
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamaDXFFile extends GamaGeometryFile {
@@ -465,8 +466,8 @@ public class GamaDXFFile extends GamaGeometryFile {
 						g.setAttribute("color_index", obj.getColor());
 
 						if (obj.getColorRGB() != null) {
-							g.setAttribute("color", GamaColorFactory.createWithRGBA(obj.getColorRGB()[0], obj.getColorRGB()[1],
-									obj.getColorRGB()[2], 255));
+							g.setAttribute("color", GamaColorFactory.createWithRGBA(obj.getColorRGB()[0],
+									obj.getColorRGB()[1], obj.getColorRGB()[2], 255));
 						}
 						if (obj.getLineType() != null) { g.setAttribute("line_type", obj.getLineType()); }
 
@@ -498,8 +499,8 @@ public class GamaDXFFile extends GamaGeometryFile {
 					g.setAttribute("color_index", obj.getColor());
 
 					if (obj.getColorRGB() != null) {
-						g.setAttribute("color", GamaColorFactory.createWithRGBA(obj.getColorRGB()[0], obj.getColorRGB()[1],
-								obj.getColorRGB()[2], 255));
+						g.setAttribute("color", GamaColorFactory.createWithRGBA(obj.getColorRGB()[0],
+								obj.getColorRGB()[1], obj.getColorRGB()[2], 255));
 					}
 					if (obj.getLineType() != null) { g.setAttribute("line_type", obj.getLineType()); }
 

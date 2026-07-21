@@ -237,9 +237,6 @@ public interface IConcept {
 	/** The Constant DISTRIBUTION. */
 	String DISTRIBUTION = "distribution";
 
-	/** The Constant DXF. */
-	String DXF = "dxf";
-
 	/** The Constant EDGE. */
 	String EDGE = "edge";
 

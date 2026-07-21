@@ -405,18 +405,19 @@ public class GamaOsmFile extends GamaGisFile {
 		 *             if decompression fails
 		 */
 		private byte[] zlibDecompress(final byte[] compressed, final int expectedSize) throws IOException {
-			final Inflater inflater = new Inflater();
-			inflater.setInput(compressed);
-			final byte[] result = new byte[expectedSize];
-			try {
-				final int n = inflater.inflate(result);
-				if (n != expectedSize)
-					throw new IOException("Decompressed size mismatch: expected " + expectedSize + ", got " + n);
-				return result;
-			} catch (final DataFormatException e) {
-				throw new IOException("Failed to decompress zlib data", e);
-			} finally {
-				inflater.end();
+			try (Inflater inflater = new Inflater()) {
+				inflater.setInput(compressed);
+				final byte[] result = new byte[expectedSize];
+				try {
+					final int n = inflater.inflate(result);
+					if (n != expectedSize)
+						throw new IOException("Decompressed size mismatch: expected " + expectedSize + ", got " + n);
+					return result;
+				} catch (final DataFormatException e) {
+					throw new IOException("Failed to decompress zlib data", e);
+				} finally {
+					inflater.end();
+				}
 			}
 		}
 
