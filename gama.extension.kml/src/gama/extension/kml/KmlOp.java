@@ -7,7 +7,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.gaml.operators;
+package gama.extension.kml;
 
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
@@ -16,7 +16,7 @@ import gama.api.types.date.IDate;
 import gama.api.types.geometry.IPoint;
 import gama.api.types.geometry.IShape;
 import gama.api.utils.files.FileUtils;
-import gama.core.util.file.GamaKmlExport;
+import gama.gaml.operators.Dates;
 import gama.annotations.doc;
 import gama.annotations.no_test;
 import gama.annotations.operator;

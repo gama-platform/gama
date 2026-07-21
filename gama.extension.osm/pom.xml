@@ -6,7 +6,7 @@
   	<version>0.0.0-SNAPSHOT</version>
 	<relativePath>../gama.parent/</relativePath>
   </parent>
-  <artifactId>gama.extension.fipa</artifactId>
+  <artifactId>gama.extension.osm</artifactId>
   <packaging>eclipse-plugin</packaging>
   <build>
     <plugins>

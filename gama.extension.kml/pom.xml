@@ -4,9 +4,9 @@
   	<groupId>org.gama</groupId>
   	<artifactId>gama.parent</artifactId>
   	<version>0.0.0-SNAPSHOT</version>
-  	<relativePath>../gama.parent/</relativePath>
+	<relativePath>../gama.parent/</relativePath>
   </parent>
-  <artifactId>gama.extension.dataframe</artifactId>
+  <artifactId>gama.extension.kml</artifactId>
   <packaging>eclipse-plugin</packaging>
   <build>
     <plugins>

@@ -193,9 +193,6 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	/** Type ID for the type type (meta-type representing types themselves). */
 	int TYPE = 28;
 
-	/** Type ID for the KML type (KML geographic files). */
-	int KML = 29;
-
 	/** Type ID for the directory type (file system directories). */
 	int DIRECTORY = 30;
 

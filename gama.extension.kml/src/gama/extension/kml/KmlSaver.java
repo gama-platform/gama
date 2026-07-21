@@ -7,7 +7,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.gaml.statements.save;
+package gama.extension.kml;
 
 import java.io.File;
 import java.util.Set;
@@ -15,7 +15,7 @@ import java.util.Set;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.files.SaveOptions;
-import gama.core.util.file.GamaKmlExport;
+import gama.gaml.statements.save.AbstractSaver;
 
 /**
  * The Class KmlSaver.
@@ -46,6 +46,11 @@ public class KmlSaver extends AbstractSaver {
 		}
 	}
 
+	/**
+	 * Compute file types.
+	 *
+	 * @return the sets the
+	 */
 	@Override
 	public Set<String> computeFileTypes() {
 		return Set.of("kml", "kmz");

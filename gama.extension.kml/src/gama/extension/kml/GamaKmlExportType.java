@@ -7,7 +7,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.core.util.file;
+package gama.extension.kml;
 
 import gama.annotations.doc;
 import gama.annotations.type;
@@ -24,13 +24,16 @@ import gama.api.runtime.scope.IScope;
  */
 @type (
 		name = "kml",
-		id = IType.KML,
+		id = GamaKmlExportType.ID,
 		wraps = { GamaKmlExport.class },
 		kind = ISymbolKind.REGULAR,
 		concept = { IConcept.TYPE },
 		doc = { @doc (
 				value = "Type of variables that enables to store objects and to export them into a KML (Keyhole Markup Language) file") })
 public class GamaKmlExportType extends GamaType<GamaKmlExport> {
+
+	/** Type ID for the KML type (KML geographic files). */
+	static final int ID = IType.BEGINNING_OF_CUSTOM_TYPES + 29;
 
 	/**
 	 * @param typesManager

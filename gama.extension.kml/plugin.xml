@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="gaml.extension">
+   </extension>
+   
+   
+   <extension
+         point="gama.metadata">
+               <implementation
+                     class="gama.extension.kml.OSMInfo"
+                     content_type="gama.osm.file.type">
+               </implementation>
+   </extension>
+   <extension
+         point="org.eclipse.core.contenttype.contentTypes">
+      <content-type
+            file-extensions="osm,OSM,pbf,PBF,bz2,BZ2,gz,GZ"
+            id="gama.osm.file.type"
+            name="OSM"
+            priority="high">
+      </content-type>
+   </extension>
+   <extension
+         point="gama.save">
+      <implementation
+            class="gama.extension.kml.KmlSaver"
+            description="Saves KML or KMZ files">
+      </implementation>
+   </extension>
+
+</plugin>
