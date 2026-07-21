@@ -41,6 +41,6 @@ Bundle-ClassPath: .,
  libs/dflib 2.0.0-M6/woodstox-core-7.1.1.jar,
  libs/dflib 2.0.0-M6/xmlbeans-5.3.0.jar
 Bundle-RequiredExecutionEnvironment: JavaSE-25
-Automatic-Module-Name: gama.extension.image
+Automatic-Module-Name: gama.extension.dataframe
 Bundle-ActivationPolicy: lazy
 Import-Package: org.osgi.framework

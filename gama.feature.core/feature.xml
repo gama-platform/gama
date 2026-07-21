@@ -86,4 +86,8 @@
          id="gama.workspace"
          version="0.0.0"/>
 
+   <plugin
+         id="gama.extension.osm"
+         version="0.0.0"/>
+
 </feature>

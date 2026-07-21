@@ -197,17 +197,6 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 	/** The Constant INSTANCE. */
 	private static FileMetaDataProvider INSTANCE;
 
-	/** The Constant OSMExt. */
-	public static final ArrayList<String> OSMExt = new ArrayList<>() {
-
-		{
-			add("osm");
-			add("gz");
-			add("pbf");
-			add("bz2");
-		}
-	};
-
 	/** The Constant longNames. */
 	public static final HashMap<String, String> longNames = new HashMap<>() {
 
@@ -606,7 +595,6 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 		if (GamlFileExtension.isAny(p.getName())) return GAML_CT_ID;
 		final String ext = p.getFileExtension();
 		if ("shp".equals(ext)) return SHAPEFILE_CT_ID;
-		if (OSMExt.contains(ext)) return OSM_CT_ID;
 		if (longNames.containsKey(ext)) return SHAPEFILE_SUPPORT_CT_ID;
 		if ("gsim".equals(ext)) return GSIM_CT_ID;
 		return "";

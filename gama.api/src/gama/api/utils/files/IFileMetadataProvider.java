@@ -39,9 +39,6 @@ public interface IFileMetadataProvider {
 	/** The Constant SHAPEFILE_CT_ID. */
 	String SHAPEFILE_CT_ID = "gama.shapefile.type";
 
-	/** The Constant OSM_CT_ID. */
-	String OSM_CT_ID = "gama.osm.file.type";
-
 	/** The Constant SHAPEFILE_SUPPORT_CT_ID. */
 	String SHAPEFILE_SUPPORT_CT_ID = "gama.shapefile.support.type";
 

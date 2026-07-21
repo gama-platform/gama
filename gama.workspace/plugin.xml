@@ -133,12 +133,6 @@
             priority="normal">
       </content-type>
       <content-type
-            file-extensions="osm,OSM,pbf,PBF,bz2,BZ2,gz,GZ"
-            id="gama.osm.file.type"
-            name="OSM"
-            priority="high">
-      </content-type>
-      <content-type
             default-charset="UTF-8"
             file-extensions="json,JSON,geojson,GEOJSON"
             id="gama.json.file.type"

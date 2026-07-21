@@ -7,7 +7,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.core.util.file;
+package gama.extension.osm;
 
 import java.io.DataInputStream;
 import java.io.File;
@@ -79,6 +79,7 @@ import gama.api.types.map.IMap;
 import gama.api.utils.geometry.GamaEnvelopeFactory;
 import gama.api.utils.geometry.IEnvelope;
 import gama.core.topology.gis.GamaCRS;
+import gama.core.util.file.GamaGisFile;
 import gama.gaml.operators.spatial.SpatialOperators;
 import gama.gaml.operators.spatial.SpatialTransformations;
 
@@ -91,7 +92,7 @@ import gama.gaml.operators.spatial.SpatialTransformations;
 		buffer_type = IType.LIST,
 		buffer_content = IType.GEOMETRY,
 		buffer_index = IType.INT,
-		concept = { IConcept.OSM, IConcept.FILE },
+		concept = { "osm", IConcept.FILE },
 		doc = @doc ("Represents files that contain OSM GIS information. The internal representation is a list of geometries. See https://en.wikipedia.org/wiki/OpenStreetMap for more information"))
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamaOsmFile extends GamaGisFile {
@@ -1433,17 +1434,15 @@ public class GamaOsmFile extends GamaGisFile {
 		if (geomTmp != null && geomTmp.getInnerGeometry() != null && !geomTmp.getInnerGeometry().isEmpty()
 				&& geomTmp.getInnerGeometry().getArea() > 0) {
 
-			if (inner != null && !inner.isEmpty()) { 
-				IShape geomTmp2 = SpatialOperators.minus(scope, geomTmp, inner); 
-				if (geomTmp2 != null) {
-					geomTmp = geomTmp2;
-				}
+			if (inner != null && !inner.isEmpty()) {
+				IShape geomTmp2 = SpatialOperators.minus(scope, geomTmp, inner);
+				if (geomTmp2 != null) { geomTmp = geomTmp2; }
 			}
 
 			final IShape geom = SpatialTransformations.clean(scope, geomTmp);
-			
+
 			values.forEach((k, v) -> geom.setAttribute(k, v));
-			
+
 			geometries.add(geom);
 			geom.forEachAttribute((att, val) -> {
 				final String idType = att + " (polygon)";
@@ -1491,33 +1490,31 @@ public class GamaOsmFile extends GamaGisFile {
 		int order = 0;
 		for (final RelationMember member : relation.getMembers()) {
 			final Entity entity = geomMap.get(member.getMemberId());
-			
+
 			if (entity instanceof Way) {
 				final List<WayNode> relationWays = ((Way) entity).getWayNodes();
 				final Map<String, Object> wayValues = GamaMapFactory.create();
-				
+
 				// 1. Add structural metadata
 				wayValues.put("entity_order", order++);
 				wayValues.put("osm_way_id", entity.getId());
 				wayValues.put("osm_relation_id", relation.getId());
-				
+
 				// 2. Dynamically inject all the relation's tags (attributes)
-				if (values != null) {
-					wayValues.putAll(values);
-				}
+				if (values != null) { wayValues.putAll(values); }
 
 				if (relationWays.size() > 0) {
 					final List<IShape> geoms = createSplitRoad(relationWays, wayValues, intersectionNodes, nodesPt);
 					geometries.addAll(geoms);
 				}
-				
+
 			} else if (entity instanceof Node) {
 				final IShape pt = nodesPt.get(entity.getId());
 				final IShape pt2 = pt.copy(scope);
 
 				// 1. Add structural metadata
 				pt2.setAttribute("osm_relation_id", relation.getId());
-				
+
 				// 2. Dynamically inject all the relation's tags (attributes)
 				if (values != null) {
 					for (Map.Entry<String, Object> entry : values.entrySet()) {
@@ -1529,6 +1526,7 @@ public class GamaOsmFile extends GamaGisFile {
 			}
 		}
 	}
+
 	/**
 	 * Creates the split road.
 	 *

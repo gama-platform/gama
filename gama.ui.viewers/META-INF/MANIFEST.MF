@@ -17,7 +17,8 @@ Require-Bundle: org.eclipse.core.resources,
  gama.ui.navigator,
  gama.workspace,
  com.github.weisj.jsvg,
- org.eclipse.ui.views;bundle-version="3.12.800"
+ org.eclipse.ui.views;bundle-version="3.12.800",
+ gama.extension.osm;bundle-version="[0.0.0,1.0.0)"
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: gama.ui.viewers.json.eclipse.JsonEditorActivator
 Bundle-ClassPath: .,

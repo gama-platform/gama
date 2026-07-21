@@ -110,10 +110,6 @@
                      content_type="gama.csv.file.type">
                </implementation>
                <implementation
-                     class="gama.core.util.file.OSMInfo"
-                     content_type="gama.osm.file.type">
-               </implementation>
-               <implementation
                      class="gama.core.util.file.ShapeInfo"
                      content_type="gama.shapefile.type">
                </implementation>

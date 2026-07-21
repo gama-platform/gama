@@ -7,7 +7,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.core.util.file;
+package gama.extension.osm;
 
 import static org.apache.commons.lang3.StringUtils.splitByWholeSeparatorPreserveAllTokens;
 

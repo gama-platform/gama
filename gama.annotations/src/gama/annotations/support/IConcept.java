@@ -399,9 +399,6 @@ public interface IConcept {
 	/** The Constant OPTIMIZATION. */
 	String OPTIMIZATION = "optimization";
 
-	/** The Constant OSM. */
-	String OSM = "osm";
-
 	/** The Constant OUTPUT. */
 	String OUTPUT = "output";
 
