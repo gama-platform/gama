@@ -7,7 +7,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.api.types.dataframe;
+package gama.extension.dataframe;
 
 import gama.annotations.doc;
 import gama.annotations.getter;
@@ -133,7 +133,7 @@ public interface IDataFrame extends IContainer.Addressable<String, Object, Strin
 	 * @return the gaml type
 	 */
 	@Override
-	default IContainerType<?> getGamlType() { return Types.DATAFRAME; }
+	default IContainerType<?> getGamlType() { return IDataframeConstants.TYPE; }
 
 	/**
 	 * Tries to find a type common to all columns. If not possible will return NO_TYPE.

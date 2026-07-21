@@ -7,7 +7,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.api.types.dataframe;
+package gama.extension.dataframe;
 
 import java.util.HashSet;
 import java.util.Set;

@@ -35,6 +35,7 @@
       <import plugin="gama.extension.traffic"/>
       <import plugin="gama.extension.database"/>
       <import plugin="gama.extension.network"/>
+      <import plugin="gama.extension.dataframe"/>
       <import plugin="org.eclipse.xtext"/>
       <import plugin="org.eclipse.xtext.util"/>
       <import plugin="org.eclipse.emf.common"/>

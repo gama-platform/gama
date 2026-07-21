@@ -7,18 +7,19 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.api.gaml.types;
+package gama.extension.dataframe;
 
 import gama.annotations.doc;
 import gama.annotations.type;
-import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.GamaContainerType;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.ITypesManager;
+import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.api.types.dataframe.GamaDataFrameFactory;
-import gama.api.types.dataframe.IDataFrame;
 
 /**
  * Type representing tabular data (dataframes) in GAML.
@@ -34,11 +35,11 @@ import gama.api.types.dataframe.IDataFrame;
  * @see GamaDataFrameFactory
  */
 @type (
-		name = IKeyword.DATAFRAME,
-		id = IType.DATAFRAME,
+		name = IDataframeConstants.NAME,
+		id = IDataframeConstants.ID,
 		wraps = { IDataFrame.class },
 		kind = ISymbolKind.REGULAR,
-		concept = { IConcept.TYPE, IConcept.CONTAINER, IConcept.DATAFRAME },
+		concept = { IConcept.TYPE, IConcept.CONTAINER, IDataframeConstants.CONCEPT },
 		doc = @doc ("Tabular data with named columns, addressed by column name and indexed by row position. Dataframes can be loaded from CSV, Excel, JSON, Parquet or Avro files, from databases, or built programmatically."))
 public class GamaDataFrameType extends GamaContainerType<IDataFrame> {
 

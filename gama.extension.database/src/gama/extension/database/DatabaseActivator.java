@@ -14,7 +14,6 @@ import org.osgi.framework.BundleContext;
 
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.topology.IProjection;
-import gama.api.types.dataframe.IDataFrame;
 import gama.api.types.map.IMap;
 import gama.api.utils.geometry.GamaEnvelopeFactory;
 import gama.api.utils.geometry.IEnvelope;
@@ -27,6 +26,7 @@ import gama.extension.database.utils.sql.postgres.PostgresConnection;
 import gama.extension.database.utils.sql.postgres.PostgresConnector;
 import gama.extension.database.utils.sql.sqlite.SqliteConnection;
 import gama.extension.database.utils.sql.sqlite.SqliteConnector;
+import gama.extension.dataframe.IDataFrame;
 
 /**
  * The Class DatabaseActivator.

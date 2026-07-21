@@ -7,7 +7,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.core.util.file;
+package gama.extension.dataframe;
 
 import java.io.File;
 
@@ -26,9 +26,6 @@ import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.symbols.Facets;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
-import gama.api.types.dataframe.GamaDataFrameFactory;
-import gama.api.types.dataframe.GamaMutableDataFrame;
-import gama.api.types.dataframe.IDataFrame;
 import gama.api.types.file.GamaFile;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
@@ -36,15 +33,15 @@ import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.prefs.GamaPreferences;
 
 /**
- * A file type that reads tabular data into a {@link IDataFrame}, exposing dataframe loading through GAMA's standard file
- * interface (like {@code csv_file}, {@code shape_file}, …) instead of ad-hoc operators.
+ * A file type that reads tabular data into a {@link IDataFrame}, exposing dataframe loading through GAMA's standard
+ * file interface (like {@code csv_file}, {@code shape_file}, …) instead of ad-hoc operators.
  *
  * <p>
  * The actual format is chosen from the file extension: {@code csv}/{@code tsv} (with optional separator, header and
- * encoding), {@code xlsx}, {@code json}, {@code parquet} and {@code avro}. Only {@code xlsx}/{@code parquet}/{@code avro}
- * are registered for the generic {@code file(...)} resolver (the {@code csv}/{@code tsv}/{@code json} extensions keep
- * their existing {@code csv_file}/{@code json_file} meaning); the CSV/JSON formats remain available here through the
- * explicit {@code dataframe_file(...)} constructor.
+ * encoding), {@code xlsx}, {@code json}, {@code parquet} and {@code avro}. Only
+ * {@code xlsx}/{@code parquet}/{@code avro} are registered for the generic {@code file(...)} resolver (the
+ * {@code csv}/{@code tsv}/{@code json} extensions keep their existing {@code csv_file}/{@code json_file} meaning); the
+ * CSV/JSON formats remain available here through the explicit {@code dataframe_file(...)} constructor.
  * </p>
  *
  * <p>
@@ -55,9 +52,9 @@ import gama.api.utils.prefs.GamaPreferences;
 @file (
 		name = "dataframe",
 		extensions = { "xlsx", "parquet", "avro" },
-		buffer_type = IType.DATAFRAME,
+		buffer_type = IDataframeConstants.ID,
 		buffer_index = IType.STRING,
-		concept = { IConcept.FILE, IConcept.DATAFRAME },
+		concept = { IConcept.FILE, IDataframeConstants.CONCEPT },
 		doc = @doc ("A file that reads tabular data (csv, tsv, xlsx, json, parquet, avro) into a dataframe"))
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamaDataFrameFile extends GamaFile<GamaMutableDataFrame, Object> {

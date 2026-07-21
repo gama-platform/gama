@@ -218,9 +218,9 @@ public class SaveStatement extends AbstractStatementSequence {
 			if (type != null) { desc.setFacetExprDescription(FORMAT, type); }
 			final IExpression format = type == null ? null : type.getExpression();
 
-			final IExpression data = desc.getFacetExpr(DATA);
-			if (data == null) return;
-			final IType<?> dataType = data.getGamlType();
+			final IExpression item = desc.getFacetExpr(DATA);
+			if (item == null) return;
+			final IType<?> dataType = item.getGamlType();
 			final IExpression to = desc.getFacetExpr(TO);
 
 			boolean isAFile = Types.FILE.isAssignableFrom(dataType);
@@ -280,37 +280,39 @@ public class SaveStatement extends AbstractStatementSequence {
 						+ BufferingUtils.PER_SIMULATION_BUFFERING + "'.", IGamlIssue.WRONG_TYPE);
 			}
 
-			if (noData != null && noData.getGamlType() != Types.INT && noData.getGamlType() != Types.FLOAT) {
-				desc.error("The value for no_data must be numeric", IGamlIssue.WRONG_TYPE, IKeyword.NO_DATA);
-			}
-
 			if (noData != null) {
+				if (noData.getGamlType() != Types.INT && noData.getGamlType() != Types.FLOAT) {
+					desc.error("The value for no_data must be numeric", IGamlIssue.WRONG_TYPE, IKeyword.NO_DATA);
+				}
 				final String formatId = format == null ? ext : format.literalValue();
-				if (formatId != null && !isGeoTiffFormat(formatId)) {
-					desc.warning("The no_data facet is only used when saving GeoTIFF rasters", IGamlIssue.WRONG_TYPE,
-							IKeyword.NO_DATA);
+				ISaveDelegate saver = GamaAdditionRegistry.getSaveDelegate(formatId, dataType);
+				if (saver != null && !saver.handlesNoData()) {
+					desc.warning("The no_data facet will not be respected for this format (" + formatId + ")",
+							IGamlIssue.WRONG_TYPE, IKeyword.NO_DATA);
 				}
 			}
 
 			final IExpression encoding = desc.getFacetExpr("encoding");
 			if (encoding != null) {
 				final String formatId = format == null ? ext : format.literalValue();
-				// Honored by the CSV saver (any data) and by the dataframe->JSON path. Warn when we can statically
-				// determine the encoding will be ignored, but stay silent when the format cannot be resolved
-				// (dynamic 'format:'/'to:' expression) to avoid false positives.
-				final boolean honored = formatId != null && ("csv".equalsIgnoreCase(formatId)
-						|| "json".equalsIgnoreCase(formatId) && dataType.id() == IType.DATAFRAME);
-				if (formatId != null && !honored) {
-					desc.warning("The encoding facet is only used when saving to CSV, or a dataframe to JSON",
+				ISaveDelegate saver = GamaAdditionRegistry.getSaveDelegate(formatId, dataType);
+				if (saver != null && !saver.handlesEncoding()) {
+					desc.warning("The encoding facet will not be respected for this format (" + formatId + ")",
 							IGamlIssue.WRONG_TYPE, "encoding");
 				}
 			}
 
+			if (att == null) return;
+			final String formatId = format == null ? ext : format.literalValue();
+			ISaveDelegate saver = GamaAdditionRegistry.getSaveDelegate(formatId, dataType);
+			if (saver != null && !saver.handlesAttributes()) {
+				desc.warning("Attributes can only be defined for shape, geojson or json files", IGamlIssue.WRONG_TYPE,
+						ATTRIBUTES);
+			}
+
 			// Starting from here we validate the attributes, other validations must be done before
 			switch (att) {
-				case null -> {
-					return;
-				}
+
 				case IExpression.Map map -> {
 					if (map.getGamlType().getKeyType() != Types.STRING) {
 						desc.error(
@@ -354,29 +356,10 @@ public class SaveStatement extends AbstractStatementSequence {
 				}
 			}
 
-			if (ext != null && format == null && !"shp".equals(ext) && !"json".equals(ext) && !"geojson".equals(ext)
-					|| format != null && !"shp".equals(format.literalValue())
-							&& !"geojson".equals(format.literalValue()) && !"json".equals(format.literalValue())) {
-				desc.warning("Attributes can only be defined for shape, geojson or json files", IGamlIssue.WRONG_TYPE,
-						ATTRIBUTES);
-			}
-
 			// Error deactivated for fixing #2982.
 			// desc.error("Attributes can only be saved for agents", IGamlIssue.UNKNOWN_FACET,
 			// att == null ? WITH : ATTRIBUTES);
 
-		}
-
-		/**
-		 * Checks whether a format identifier targets a GeoTIFF raster.
-		 *
-		 * @param formatId
-		 *            the format identifier or file extension to test
-		 * @return {@code true} when the identifier designates a GeoTIFF format
-		 */
-		private boolean isGeoTiffFormat(final String formatId) {
-			return "geotiff".equalsIgnoreCase(formatId) || "tif".equalsIgnoreCase(formatId)
-					|| "tiff".equalsIgnoreCase(formatId);
 		}
 
 	}
@@ -540,8 +523,8 @@ public class SaveStatement extends AbstractStatementSequence {
 			IType itemType = item.getGamlType();
 			ISaveDelegate delegate = GamaAdditionRegistry.getSaveDelegate(type, itemType);
 			if (delegate != null) {
-				var saveOptions =
-						new SaveOptions(code, addHeader, type, attributesFacet, strategy, rewrite, getNoDataValue(scope));
+				var saveOptions = new SaveOptions(code, addHeader, type, attributesFacet, strategy, rewrite,
+						getNoDataValue(scope));
 				if (separatorFacet != null) {
 					saveOptions = saveOptions.withSeparator(Cast.asString(scope, separatorFacet.value(scope)));
 				}

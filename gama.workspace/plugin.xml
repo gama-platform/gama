@@ -127,7 +127,7 @@
       </content-type>
       <content-type
             base-type="org.eclipse.core.runtime.text"
-            file-extensions="html, HTML, htm, HTM, svg, SVG"
+            file-extensions="html,HTML,htm,HTM,svg,SVG"
             id="gama.html.file.type"
             name="HTML (in GAMA)"
             priority="normal">

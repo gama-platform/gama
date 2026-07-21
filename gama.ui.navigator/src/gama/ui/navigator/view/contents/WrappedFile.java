@@ -77,7 +77,7 @@ public class WrappedFile extends WrappedResource<WrappedResource<?, ?>, IFile> {
 	 */
 	protected void computeFileImage() {
 		final IFile f = getResource();
-		if (GamaBundleLoader.HANDLED_FILE_EXTENSIONS.contains(f.getFileExtension())) {
+		if (GamaBundleLoader.HANDLED_FILE_EXTENSIONS.containsValue(f.getFileExtension())) {
 			if (isShapeFileSupport) {
 				image = GamaIcon.named(IGamaIcons.FILE_SHAPESUPPORT).descriptor();
 			} else {

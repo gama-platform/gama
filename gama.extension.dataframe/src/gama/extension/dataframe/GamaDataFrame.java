@@ -7,7 +7,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.api.types.dataframe;
+package gama.extension.dataframe;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -59,16 +59,17 @@ public class GamaDataFrame implements IDataFrame, IContainer<String, Object>, IF
 
 	/** The underlying DFLib DataFrame. */
 	private final DataFrame inner;
-	
+
 	// The common type of all column, if no columns or not compatible types: NO_TYPE
+	/** The content type. */
 	// because the class is immutable there's no reprocessing needed
 	private IType contentType = Types.NO_TYPE;
-	
+
 	// List of all the types of each column
+	/** The column types. */
 	// because the class is immutable there's no reprocessing needed
 	private IList<IType> columnTypes = GamaListFactory.create(Types.TYPE);
 
-	
 	/**
 	 * Constructs a new GamaDataFrame wrapping a DFLib DataFrame.
 	 *
@@ -119,11 +120,7 @@ public class GamaDataFrame implements IDataFrame, IContainer<String, Object>, IF
 	}
 
 	@Override
-	public IList<IType> getColumnTypes() {
-		return columnTypes;
-	}
-	
-
+	public IList<IType> getColumnTypes() { return columnTypes; }
 
 	@Override
 	public int getRows() { return getInner().height(); }
@@ -133,7 +130,8 @@ public class GamaDataFrame implements IDataFrame, IContainer<String, Object>, IF
 
 	@Override
 	public IList getColumnValues(final String columnName) {
-		final IList result = GamaListFactory.create(columnTypes.get(getInner().getColumnsIndex().position(columnName)), getInner().height());
+		final IList result = GamaListFactory.create(columnTypes.get(getInner().getColumnsIndex().position(columnName)),
+				getInner().height());
 		for (int i = 0; i < getInner().height(); i++) { result.add(getInner().get(columnName, i)); }
 		return result;
 	}
@@ -152,10 +150,7 @@ public class GamaDataFrame implements IDataFrame, IContainer<String, Object>, IF
 	}
 
 	@Override
-	public IType getContentType() {
-		return contentType;
-	}
-
+	public IType getContentType() { return contentType; }
 
 	// ========================= IContainer =========================
 
@@ -212,7 +207,7 @@ public class GamaDataFrame implements IDataFrame, IContainer<String, Object>, IF
 
 	@Override
 	public IType<?> computeRuntimeType(final IScope scope) {
-		return Types.DATAFRAME;
+		return IDataframeConstants.TYPE;
 	}
 
 	@Override

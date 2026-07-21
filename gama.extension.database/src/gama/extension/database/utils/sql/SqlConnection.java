@@ -27,8 +27,6 @@ import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.topology.IProjection;
 import gama.api.runtime.scope.IScope;
-import gama.api.types.dataframe.GamaDataFrameFactory;
-import gama.api.types.dataframe.IDataFrame;
 import gama.api.types.geometry.GamaShapeFactory;
 import gama.api.types.geometry.IShape;
 import gama.api.types.list.GamaListFactory;
@@ -38,6 +36,8 @@ import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.core.topology.gis.Projection;
 import gama.dev.DEBUG;
+import gama.extension.dataframe.GamaDataFrameFactory;
+import gama.extension.dataframe.IDataFrame;
 
 /**
  * The Class SqlConnection.

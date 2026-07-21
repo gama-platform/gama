@@ -1,8 +1,9 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: GAML Image Extension
-Bundle-SymbolicName: gama.extension.image;singleton:=true
+Bundle-SymbolicName: gama.extension.dataframe;singleton:=true
 Bundle-Version: 0.0.0.qualifier
+Export-Package: gama.extension.dataframe
 Bundle-Vendor: UMMISCO
 Require-Bundle: gama.core,
  gama.dependencies

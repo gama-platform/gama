@@ -10,6 +10,9 @@
  ********************************************************************************************************/
 package gama.api.utils.files;
 
+import java.util.Collections;
+import java.util.Set;
+
 import org.eclipse.core.resources.IResource;
 
 /**
@@ -89,5 +92,12 @@ public interface IFileMetadataProvider {
 	 * @param class1
 	 */
 	default void registerMetadataClass(final String attribute, final Class<? extends IGamaFileMetaData> class1) {}
+
+	/**
+	 * Gets the metadata file extensions.
+	 *
+	 * @return the metadata file extensions
+	 */
+	default Set<String> getMetadataFileExtensions() { return Collections.EMPTY_SET; }
 
 }

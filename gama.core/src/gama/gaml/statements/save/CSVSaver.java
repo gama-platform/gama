@@ -10,14 +10,9 @@
 package gama.gaml.statements.save;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.util.Collection;
 import java.util.Set;
-
-import org.apache.commons.csv.CSVFormat;
-import org.dflib.csv.Csv;
 
 import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.exceptions.GamaRuntimeException;
@@ -26,7 +21,6 @@ import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
-import gama.api.types.dataframe.IDataFrame;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
 import gama.api.types.matrix.IMatrix;
@@ -82,18 +76,6 @@ public class CSVSaver extends AbstractSaver {
 	@Override
 	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions saveOptions)
 			throws GamaRuntimeException, IOException {
-
-		// Dataframes are written directly through DFLib, which preserves column names and types.
-		// The delimiter comes from the 'separator' facet, or the CSV_SEPARATOR preference if omitted.
-		// The 'encoding' facet is honored here through a charset-aware Writer (DFLib writes UTF-8 to a File otherwise).
-		if (item.getGamlType().id() == IType.DATAFRAME) {
-			final char del = resolveDelimiter(saveOptions);
-			try (Writer w = new FileWriter(file, saveOptions.writeCharset(), false)) {
-				Csv.saver().format(CSVFormat.DEFAULT.withDelimiter(del))
-						.save(((IDataFrame) item.value(scope)).getInner(), w);
-			}
-			return;
-		}
 
 		StringBuilder sb = new StringBuilder();
 		final IType itemType = item.getGamlType();
@@ -184,7 +166,7 @@ public class CSVSaver extends AbstractSaver {
 	 *            the save options
 	 * @return the delimiter character
 	 */
-	private static char resolveDelimiter(final SaveOptions options) {
+	public static char resolveDelimiter(final SaveOptions options) {
 		final String s = options.separator();
 		if (s != null && !s.isEmpty()) return s.charAt(0);
 		return AbstractCSVManipulator.getDefaultDelimiter();
@@ -193,6 +175,11 @@ public class CSVSaver extends AbstractSaver {
 	@Override
 	protected Set<String> computeFileTypes() {
 		return Set.of("csv");
+	}
+
+	@Override
+	public boolean handlesEncoding() {
+		return true;
 	}
 
 }

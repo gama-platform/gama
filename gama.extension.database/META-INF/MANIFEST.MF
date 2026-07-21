@@ -5,7 +5,8 @@ Bundle-SymbolicName: gama.extension.database;singleton:=true
 Bundle-Version: 0.0.0.qualifier
 Require-Bundle: gama.dependencies,
  gama.core,
- org.eclipse.osgi
+ org.eclipse.osgi,
+ gama.extension.dataframe;bundle-version="0.0.0"
 Export-Package: gama.extension.database.gaml.skills,
  gama.extension.database.gaml.species,
  gama.extension.database.utils,

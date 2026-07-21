@@ -19,8 +19,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -45,6 +47,7 @@ import org.eclipse.core.runtime.content.IContentTypeManager;
 import org.eclipse.emf.common.util.URI;
 
 import gama.api.GAMA;
+import gama.api.additions.GamaBundleLoader;
 import gama.api.constants.GamlFileExtension;
 import gama.api.ui.IStatusMessage;
 import gama.api.utils.files.CompressionUtils;
@@ -80,6 +83,9 @@ import gama.dev.DEBUG;
  * @version 2.0 - Improved thread safety and compression handling
  */
 public class FileMetaDataProvider implements IFileMetadataProvider {
+
+	/** The handled file extensions. */
+	private final Set<String> handledFileExtensions = new HashSet<>();
 
 	/** The metadata builders. */
 	Map<String, Function<IFile, IGamaFileMetaData>> metadataBuilders = new HashMap<>();
@@ -124,8 +130,12 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 				return null;
 			}
 		};
+		handledFileExtensions.addAll(GamaBundleLoader.HANDLED_FILE_EXTENSIONS.get(contentType));
 		registerMetadataDecoder(contentType, retriever);
 	}
+
+	@Override
+	public Set<String> getMetadataFileExtensions() { return handledFileExtensions; }
 
 	/**
 	 * Register metadata builder.
@@ -398,14 +408,13 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 	/**
 	 * Computes a robust, cross-platform content stamp used to decide whether a file's cached metadata is still valid.
 	 * <p>
-	 * We cannot use {@link IResource#getModificationStamp()} because it is an Eclipse-internal counter that is <b>not</b> 
-	 * updated when a file is modified outside of the workspace. 
+	 * We cannot use {@link IResource#getModificationStamp()} because it is an Eclipse-internal counter that is
+	 * <b>not</b> updated when a file is modified outside of the workspace.
 	 * <p>
-	 * Instead, this reads the <b>real</b> file-system last-modified time. Any content change updates the
-	 * last-modified time, so the stamp changes and the cache is invalidated. False positives (the stamp changing
-	 * without an actual content change, e.g. after a bare {@code touch}) are harmless, they merely trigger a
-	 * recomputation, whereas false negatives (reusing cached metadata after the content changed) are avoided for every
-	 * realistic edit.
+	 * Instead, this reads the <b>real</b> file-system last-modified time. Any content change updates the last-modified
+	 * time, so the stamp changes and the cache is invalidated. False positives (the stamp changing without an actual
+	 * content change, e.g. after a bare {@code touch}) are harmless, they merely trigger a recomputation, whereas false
+	 * negatives (reusing cached metadata after the content changed) are avoided for every realistic edit.
 	 * <p>
 	 * Only regular files use this scheme; projects and folders keep the workspace stamp, as do files whose local
 	 * location cannot be resolved (the method then falls back to {@link IResource#getModificationStamp()}).

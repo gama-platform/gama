@@ -7,7 +7,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.gaml.statements.save;
+package gama.extension.dataframe;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,9 +22,9 @@ import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
-import gama.api.types.dataframe.IDataFrame;
 import gama.api.types.map.IMap;
 import gama.api.utils.files.SaveOptions;
+import gama.gaml.statements.save.AbstractSaver;
 
 /**
  * Saves data to an Excel workbook (.xlsx) through the 'save' statement. Dispatches on the type of the saved object: a
@@ -67,8 +67,8 @@ public class ExcelSaver extends AbstractSaver {
 	@Override
 	public boolean handlesDataType(final IType request) {
 		if (request == null) return false;
-		return request.id() == IType.DATAFRAME
-				|| request.id() == IType.MAP && request.getContentType().id() == IType.DATAFRAME;
+		return request.id() == IDataframeConstants.ID
+				|| request.id() == IType.MAP && request.getContentType().id() == IDataframeConstants.ID;
 	}
 
 	@Override
