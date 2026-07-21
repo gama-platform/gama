@@ -188,7 +188,7 @@ for targetPlatform in ${TARGET_PLATFORMS[@]}; do
     # zip
     echo "Ziping build with JDK"
 	cd $RUNNER_TMP
-	sudo zip -9 -qyr "${archivePath}-${targetPlatform}_withJDK.zip" . && echo "Successfully compressed ${archivePath}-${targetPlatform}_withJDK.zip" || echo "Failed compressing ${archivePath}-${targetPlatform}_withJDK.zip"
+	sudo zip -9 -qyr "${archivePath}-${targetPlatform}_withJDK.zip" . -x "_*" -x *.sh && echo "Successfully compressed ${archivePath}-${targetPlatform}_withJDK.zip" || echo "Failed compressing ${archivePath}-${targetPlatform}_withJDK.zip"
 
     # clean the tmp folder
 	cd $GITHUB_WORKSPACE
