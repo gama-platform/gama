@@ -242,11 +242,16 @@ public class GridPopulation extends AbstractPopulation<IAgent> implements IPopul
 
 	@Override
 	public void killMembers() throws GamaRuntimeException {
-		for (final IShape a : getGrid().matrix) { if (a != null) { a.dispose(); } }
+		IAgent[] toDispose = toArray(); // to be on the safe side
+		for (final IShape a : toDispose) { if (a != null) { a.dispose(); } }
 	}
+
+	/** The Constant EMPTY. */
+	private static final IAgent[] EMPTY = {};
 
 	@Override
 	public IAgent[] toArray() {
+		if (agentsContainer == null || agentsContainer.matrix == null) return EMPTY;
 		return Arrays.copyOf(agentsContainer.matrix, agentsContainer.matrix.length, IAgent[].class);
 	}
 
