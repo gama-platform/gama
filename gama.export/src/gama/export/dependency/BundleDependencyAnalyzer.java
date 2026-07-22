@@ -19,128 +19,29 @@ import org.eclipse.core.runtime.Platform;
 import org.osgi.framework.Bundle;
 
 import gama.export.ExportHelper;
+import gama.export.ZipHelper;
 
 
 public class BundleDependencyAnalyzer {
 
     private static String jdepsLocation = Path.of(System.getProperty("java.home"),"bin","jdeps").toString();
 
-    private final Collection<String> exportedRoots;
-
-    public BundleDependencyAnalyzer(Collection<String> exportedRoots) {
-        this.exportedRoots = Objects.requireNonNull(exportedRoots);
-    }
-
-    public Set<Path> analyze(Set<Path> targetBundles, Path libsRoot) throws IOException {
-
-        List<Path> libraries; // gama.dependencies libs
-
-        // retrive gama.dependencies libs
-        try (Stream<Path> stream = Files.walk(libsRoot)) {
-            libraries = stream
-                    .filter(p -> p.toString().endsWith(".jar"))
-                    .toList();
-        }
-
-        // mapping libraries with the packages they export
-        Map<Path, Set<String>> exportedPackages = new HashMap<>();
-
-        // System.out.println("Scanning exported packages");
-
-        for (Path library : libraries) {
-            exportedPackages.put(library, getExportedPackages(library));
-        }
-
-        //  scan for used library can begin
-        Map<Path, Set<String>> usedLibraries = new HashMap<>();
-
-        // System.out.println("Scanning used packages");
-
-        for (Path bundle : targetBundles) {
-
-            // System.out.println(bundle.getFileName());
-
-            Set<String> dependencies =
-                    filterDependencies(getDependencies(bundle));
-
-
-            for (Map.Entry<Path, Set<String>> entry : exportedPackages.entrySet()) {
-
-                Path library = entry.getKey();
-                Set<String> exports = entry.getValue();
-
-                Set<String> intersection = new HashSet<String>(dependencies.size());
-                
-                for (String dependency : dependencies)
-                {
-                    for (String exportedPackage : exports)
-                    {
-                        if (dependency.startsWith(exportedPackage) || exportedPackage.startsWith(dependency))
-                        {
-                            intersection.add(exportedPackage);
-                        }
-                    }
-                }
-
-                if (!intersection.isEmpty()) {
-
-                    // System.out.println("\t" + library);
-
-                    // intersection.forEach(
-                    //         dep -> // System.out.println("\t\t" + dep));
-
-                    usedLibraries
-                            .computeIfAbsent(library, k -> new HashSet<>())
-                            .addAll(intersection);
-                }
-            }
-        }
-
-        // System.out.println();
-        // System.out.println(usedLibraries.size() + " useful libs found");
-
-        // usedLibraries.keySet()
-        //         .forEach(System.out::println);
-
-        Set<Path> removable =
-                new HashSet<>(libraries);
-
-        removable.removeAll(usedLibraries.keySet());
-
-        // System.out.println();
-        // System.out.println("You can remove:");
-
-        // removable.forEach(System.out::println);
-
-        return removable;
-    }
-
-    private Set<String> filterDependencies(Set<String> dependencies) {
-
-        Set<String> result = new HashSet<>();
-
-        for (String dependency : dependencies) {
-            for (String exportedRoot : exportedRoots) {
-
-                if (dependency.startsWith(exportedRoot)) {
-                    result.add(exportedRoot);
-                    result.add(dependency);
-                    break;
-                }
-            }
-        }
-
-        return result;
-    }
-
-    private Set<String> getDependencies(Path jar) {
+    /**
+     * get the set of dependencies classes of a jar
+     * 
+     * @param jarPath
+     *              Path of the target jar
+     * 
+     * @return Set<String> of the dependencies
+     */
+    private static Set<String> getDependencies(Path jarPath) {
 
         Set<String> result = new HashSet<>();
 
         ProcessBuilder pb = new ProcessBuilder(
                 jdepsLocation,
                 "--recursive",
-                jar.toAbsolutePath().toString());
+                jarPath.toAbsolutePath().toString());
 
         try {
 
@@ -180,30 +81,50 @@ public class BundleDependencyAnalyzer {
 
         } catch (Exception e) {
             throw new RuntimeException(
-                    "Failed to execute jdeps on " + jar, e);
+                    "Failed to execute jdeps on " + jarPath, e);
         }
 
         return result;
     }
 
-private Set<String> getExportedPackages(Path jar) {
+    /**
+     * Get the set of classes inside a jar.
+     * Assume each class is declared in its own file.
+     * 
+     * @param jarPath
+     *              Path of the target jar
+     * 
+     * @return Set<String> of the classes
+     */
+    private static Set<String> getClasses(Path jarPath) {
 
-    try (JarFile jarFile = new JarFile(jar.toFile())) {
+        try (JarFile jarFile = new JarFile(jarPath.toFile())) {
 
-        return jarFile.stream()
-                .map(entry -> entry.getName())
-                .filter(name -> name.endsWith(".class"))
-                .map(name -> name
-                        .replace('/', '.')
-                        .substring(0, name.length() - 6))
-                .collect(Collectors.toSet());
+            return jarFile.stream()
+                    .map(entry -> entry.getName())
+                    .filter(name -> name.endsWith(".class"))
+                    .map(name -> name
+                            .replace('/', '.')
+                            .substring(0, name.length() - 6))
+                    .collect(Collectors.toSet());
 
-    } catch (IOException e) {
-        throw new RuntimeException(
-                "Failed to read classes from " + jar, e);
+        } catch (IOException e) {
+            throw new RuntimeException(
+                    "Failed to read classes from " + jarPath, e);
+            }
         }
-    }
 
+    /**
+     * Get the MANIFEST attribute of a jar 
+     * 
+     * @param jarPath
+     *              Path of the target jar
+     * 
+     * @param attribute
+     *                name of the attribute
+     * 
+     * @return Set<String> of values in the target attribute of target MANIFEST.MF
+     */
     public static Set<String> getManifestAttribute(Path jarPath, String attribute)
     {
         try {
@@ -228,6 +149,14 @@ private Set<String> getExportedPackages(Path jar) {
         }
     }
 
+    /**
+     * Parse a MANIFEST.MF OSGI bundle header content
+     * 
+     * @param headerValue
+     *                  the String content of the header to parse
+     * 
+     * @return Set<String> of values in the target header
+     */
     private static Set<String> parseOsgiHeader(String headerValue) {
         Set<String> elements = new HashSet<>();
         if (headerValue == null || headerValue.trim().isEmpty()) {
@@ -247,6 +176,14 @@ private Set<String> getExportedPackages(Path jar) {
         return elements;
     }
 
+    /**
+     * Get the Path of a plugin from its name
+     * 
+     * @param name
+     *              name of the target plugin
+     * 
+     * @return Path of the target plugin
+     */
     public static Path getPluginPath(String name)
     {
         Bundle bundle = Platform.getBundle(name);
@@ -257,47 +194,57 @@ private Set<String> getExportedPackages(Path jar) {
             return Path.of(ExportHelper.resolveEmbeddedPath(bundle.getLocation().replaceAll(".*file:","")));
     }
 
-    public static Set<Path> getMinimalGamaModuleSet(Set<String> modules)
+    /**
+     * Resolve all the required GAMA plugins recursively,
+     * from a subset of known required GAMA plugins.
+     * The dependencies relations are based on MANFIEST.MF.
+     * 
+     * @param plugins
+     *              needed GAMA plugins names (Sring)
+     * 
+     * @return Set<Path> of all the required GAMA plugins
+     */
+    public static Set<Path> getMinimalGamaPluginSet(Set<String> plugins)
     {
-        Set<Path> necessaryGamaModules = new HashSet<Path>();
-        Set<String> alreadySeenModules = new HashSet<String>();
+        Set<Path> necessaryGamaPlugins = new HashSet<Path>();
+        Set<String> alreadySeenPlugins = new HashSet<String>();
 
-        Set<String> modulesToCheck = new HashSet<String>(modules);
+        Set<String> pluginsToCheck = new HashSet<String>(plugins);
         
-        while(! modulesToCheck.isEmpty())
+        while(! pluginsToCheck.isEmpty())
         {
-            Set<String> foundModules = new HashSet<String>();
+            Set<String> foundPlugins = new HashSet<String>();
 
-            for (String module : modulesToCheck)
+            for (String plugin : pluginsToCheck)
             {
-                alreadySeenModules.add(module);
-                modules.add(module);
-                Path modulePath = getPluginPath(module);
+                alreadySeenPlugins.add(plugin);
+                plugins.add(plugin);
+                Path pluginPath = getPluginPath(plugin);
                 
-                if (modulePath == null)
+                if (pluginPath == null)
                     continue;
 
-                necessaryGamaModules.add(modulePath);
+                necessaryGamaPlugins.add(pluginPath);
 
-                System.out.println(modulePath);
+                System.out.println(pluginPath);
 
-                Set<String> neededModules = getManifestAttribute(modulePath,"Require-Bundle");
-                neededModules.addAll(getManifestAttribute(modulePath,"Import-Package"));
+                Set<String> neededPlugins = getManifestAttribute(pluginPath,"Require-Bundle");
+                neededPlugins.addAll(getManifestAttribute(pluginPath,"Import-Package"));
 
-                for (String neededModule : neededModules)
+                for (String neededPlugin : neededPlugins)
                 {
-                    if ((neededModule.startsWith("gama.") || neededModule.startsWith("gaml.")) 
-                        && ! modulesToCheck.contains(neededModule) 
-                        && ! alreadySeenModules.contains(neededModule)) {
+                    if ((neededPlugin.startsWith("gama.") || neededPlugin.startsWith("gaml.")) 
+                        && ! pluginsToCheck.contains(neededPlugin) 
+                        && ! alreadySeenPlugins.contains(neededPlugin)) {
                         
-                        foundModules.add(neededModule);
+                        foundPlugins.add(neededPlugin);
                     }
                 }
             }
 
-            modulesToCheck = foundModules;
+            pluginsToCheck = foundPlugins;
         }
 
-        return necessaryGamaModules;
+        return necessaryGamaPlugins;
     }
 }

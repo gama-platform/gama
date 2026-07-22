@@ -87,7 +87,7 @@ public class ZipHelper {
 
     public static void renameEntry(Path  zipPath, String sourceEntry, String targetEntry) {
         // Define the zip file system URI
-        URI zipUri = URI.create("jar:file:" + zipPath.toString());
+        URI zipUri = URI.create("jar:" + zipPath.toUri().toString());
         Map<String, String> env = new HashMap<>();
         
         try (FileSystem zipfs = FileSystems.newFileSystem(zipUri, env)) {
@@ -100,6 +100,30 @@ public class ZipHelper {
             
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public static boolean removeEntry(Path  zipPath, String sourceEntry) {
+        // Define the zip file system URI
+        URI zipUri = URI.create("jar:" + zipPath.toUri().toString());
+        Map<String, String> env = new HashMap<>();
+        
+        try (FileSystem zipfs = FileSystems.newFileSystem(zipUri, env)) {
+            // Locate the target entry and define its new name
+            Path sourcePath = zipfs.getPath(sourceEntry);
+            
+            // Execute the rename using an atomic move operation
+            if(Files.exists(sourcePath))
+            {
+                Files.delete(sourcePath);
+                return true;
+            }
+
+            return false;
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 }
