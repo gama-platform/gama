@@ -40,7 +40,11 @@ jobs:
           action: restore
 
       - name: Compiling GAMA
-        run: bash travis/build.sh -B -T 4
+        run: |
+          # Tycho doesn't honor optional tag : https://www.eclipse.org/lists/tycho-user/msg03542.html
+          # Related #836
+          sed -i '/gama\.feature\.copilot/d' $GITHUB_WORKSPACE/gama.product/gama.product
+          bash travis/build.sh -B -T 4
 
       - uses: ./.github/actions/maven-build-cache
         name: Save Maven Build Cache
