@@ -14,6 +14,8 @@ import java.util.prefs.Preferences;
 
 import gama.api.utils.prefs.JREPreferenceStore;
 import gama.api.utils.prefs.GamaPreferenceStore;
+import gama.api.GAMA;
+import gama.api.runtime.IWorkspaceManager;
 import gama.export.dependency.BundleDependencyAnalyzer;
 import gama.export.ExportActivator;
 import gama.export.ZipHelper;
@@ -77,7 +79,7 @@ public class GamaZipBuilder {
     
     private static final String gamaUiApplicationPluginFileName = gamaUiApplicationPluginPath.getFileName().toString();
 
-    private String targetWorkspacePathStr = null;
+    private String targetModelRelativePathStr = null;
 
     private String targetModelPathStr = null;
 
@@ -109,12 +111,12 @@ public class GamaZipBuilder {
             }
     }
 
-    public GamaZipBuilder(Set<String> plugins, String targetWorkspacePathStr, String targetModelPathStr, String targetExperiment) 
+    public GamaZipBuilder(Set<String> plugins, String targetModelRelativePathStr, String targetModelPathStr, String targetExperiment) 
     {
         neededGamaPlugins = plugins;
         neededGamaPlugins.addAll(necessaryGamaPlugins);
 
-        this.targetWorkspacePathStr = Path.of(targetWorkspacePathStr).toString(); 
+        this.targetModelRelativePathStr = Path.of(targetModelRelativePathStr).toString(); 
         this.targetModelPathStr = targetModelPathStr;
         this.targetExperiment = targetExperiment;
 
@@ -260,7 +262,7 @@ public class GamaZipBuilder {
             store.putInStore("pref_workspace_path",GamaZipBuilder.embeddedWorkspaceName);
             store.putInStore("pref_workspace_remember",true);
             store.putInStore("pref_startup_model",true);
-            store.putInStore("pref_default_model",targetModelPathStr.replace(targetWorkspacePathStr,GamaZipBuilder.embeddedWorkspaceName));
+            store.putInStore("pref_default_model",GamaZipBuilder.embeddedWorkspaceName + targetModelRelativePathStr);
             store.putInStore("pref_default_experiment",targetExperiment);
             store.putInStore("pref_errors_in_editor",false);
             
@@ -284,7 +286,10 @@ public class GamaZipBuilder {
             // Embedding the target workspace //
             ////////////////////////////////////
 
-            try (Stream<Path> stream = Files.walk(Path.of(targetWorkspacePathStr))) {
+            String targetWorkspacePathStr = targetModelPathStr.replace(targetModelRelativePathStr,"");
+            Path targetProjectPath = Path.of(targetWorkspacePathStr).resolve(Path.of(targetModelRelativePathStr).subpath(0,1));
+
+            try (Stream<Path> stream = Files.walk(targetProjectPath)) {
                 stream.forEach(filePath -> {
                     
                     try 
@@ -312,13 +317,22 @@ public class GamaZipBuilder {
                 }
                 throw e;
             }
+            
+            // WORKSPACE_IDENTIFIER
+            zos.putNextEntry(
+                new ZipEntry(GamaZipBuilder.embeddedWorkspaceName + File.separator + IWorkspaceManager.WORKSPACE_IDENTIFIER));
 
+            zos.closeEntry();
 
+            //WORKSPACE MODEL IDENTIFIER
+            zos.putNextEntry(
+                new ZipEntry(GamaZipBuilder.embeddedWorkspaceName + File.separator + GAMA.getWorkspaceManager().getModelIdentifier()));
+
+            zos.closeEntry();
+
+            // clean tmp files
             deleteDirectory(GamaZipBuilder.tmpDirectoryPath);
+
         }
     }
-
-
-
-    
 }

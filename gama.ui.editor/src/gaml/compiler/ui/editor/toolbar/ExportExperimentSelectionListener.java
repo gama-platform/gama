@@ -7,9 +7,13 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 
-import org.eclipse.emf.common.util.URI;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.IPath;
 
 import gama.api.GAMA;
 import gaml.compiler.validation.GamlModelBuilder;
@@ -54,15 +58,13 @@ public class ExportExperimentSelectionListener implements Selector {
 			WorkbenchHelper.getPage().saveAllEditors(GamaPreferences.Modeling.EDITOR_SAVE_ASK.getValue());
 		}
 
-		final URI modelURI = editor.getURI();
+		final IFile file = ((IFileEditorInput) editor.getEditorInput()).getFile();
 
-		final String relativeModelPathStr = modelURI.toPlatformString(true);
+		final String relativeModelPathStr = file.getFullPath().toOSString();
 
-		final String workspacePathStr =  GAMA.getWorkspaceManager().getWorkspaceLocation();
-
-		final Path modelPath = Path.of(workspacePathStr,relativeModelPathStr);
+		final String modelPathStr = file.getLocation().toOSString();
 		
-		final GenericFile modelFile = new GenericFile(modelPath.toString());
+		final GenericFile modelFile = new GenericFile(modelPathStr);
 
 		final GamlProperties metaProperties = new GamlProperties();
 
@@ -97,11 +99,12 @@ public class ExportExperimentSelectionListener implements Selector {
 
 				final GamaZipBuilder ziper = new GamaZipBuilder(
 					plugins,
-					workspacePathStr,
-					modelPath.toString(),
+					relativeModelPathStr,
+					modelPathStr,
 					targetExperiments);
 				try { 
 					ziper.zip(outputPath.toString());
+					System.out.println("Model exported successfully");
 				} catch (Exception exception) {
 					System.err.println("Exception raised while cloning GAMA :\n" + exception);
 					exception.printStackTrace();

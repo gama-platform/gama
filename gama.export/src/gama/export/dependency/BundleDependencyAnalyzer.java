@@ -226,7 +226,7 @@ public class BundleDependencyAnalyzer {
 
                 necessaryGamaPlugins.add(pluginPath);
 
-                System.out.println(pluginPath);
+                // System.out.println(pluginPath);
 
                 Set<String> neededPlugins = getManifestAttribute(pluginPath,"Require-Bundle");
                 neededPlugins.addAll(getManifestAttribute(pluginPath,"Import-Package"));
