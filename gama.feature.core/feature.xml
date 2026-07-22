@@ -63,6 +63,10 @@
          version="0.0.0"/>
 
    <plugin
+         id="gama.extension.gml"
+         version="0.0.0"/>
+
+   <plugin
          id="gama.extension.database"
          version="0.0.0"/>
 

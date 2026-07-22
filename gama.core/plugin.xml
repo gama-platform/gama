@@ -109,10 +109,6 @@
                      class="gama.core.util.file.ShapeInfo"
                      content_type="gama.shapefile.type">
                </implementation>
-               <implementation
-                     class="gama.core.util.file.GMLInfo"
-                     content_type="gama.gml.file.type">
-               </implementation>
    </extension>
 
 </plugin>

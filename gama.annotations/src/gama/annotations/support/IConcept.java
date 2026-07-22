@@ -282,9 +282,6 @@ public interface IConcept {
 	/** The Constant GRAPH_WEIGHT. */
 	String GRAPH_WEIGHT = "graph_weight";
 
-	/** The Constant GML. */
-	String GML = "gml";
-
 	/** The Constant GRID. */
 	String GRID = "grid";
 

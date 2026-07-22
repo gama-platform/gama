@@ -1,14 +1,13 @@
 /*******************************************************************************************************
  *
- * GamaGMLFile.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * GamaGMLFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
-package gama.core.util.file;
+package gama.extension.gml;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -30,6 +29,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
 import gama.api.utils.geometry.GamaEnvelopeFactory;
+import gama.core.util.file.GamaGisFile;
 
 /**
  * Written by drogoul Modified on 13 nov. 2011
@@ -43,7 +43,7 @@ import gama.api.utils.geometry.GamaEnvelopeFactory;
 		buffer_type = IType.LIST,
 		buffer_content = IType.GEOMETRY,
 		buffer_index = IType.INT,
-		concept = { IConcept.GML, IConcept.FILE },
+		concept = { "gml", IConcept.FILE },
 		doc = @doc ("Represents a Geography Markup Language (GML) file as defined by the Open Geospatial Consortium. See https://en.wikipedia.org/wiki/Geography_Markup_Language for more information."))
 @SuppressWarnings ({ "unchecked" })
 public class GamaGMLFile extends GamaGisFile {
@@ -65,10 +65,14 @@ public class GamaGMLFile extends GamaGisFile {
 	/**
 	 * Instantiates a new gama GML file.
 	 *
-	 * @param scope the scope
-	 * @param pathName the path name
-	 * @param code the code
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @param scope
+	 *            the scope
+	 * @param pathName
+	 *            the path name
+	 * @param code
+	 *            the code
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	@doc (
 			value = "This file constructor allows to read a gml file and specifying the coordinates system code, as an int (epsg code)",
@@ -82,10 +86,14 @@ public class GamaGMLFile extends GamaGisFile {
 	/**
 	 * Instantiates a new gama GML file.
 	 *
-	 * @param scope the scope
-	 * @param pathName the path name
-	 * @param code the code
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @param scope
+	 *            the scope
+	 * @param pathName
+	 *            the path name
+	 * @param code
+	 *            the code
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	@doc (
 			value = "This file constructor allows to read a gml file and specifying the coordinates system code (epg,...,), as a string",
@@ -100,10 +108,14 @@ public class GamaGMLFile extends GamaGisFile {
 	/**
 	 * Instantiates a new gama GML file.
 	 *
-	 * @param scope the scope
-	 * @param pathName the path name
-	 * @param with3D the with 3 D
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @param scope
+	 *            the scope
+	 * @param pathName
+	 *            the path name
+	 * @param with3D
+	 *            the with 3 D
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	@doc (
 			value = "This file constructor allows to read a gml file and take a potential z value (not taken in account by default)",
@@ -118,11 +130,16 @@ public class GamaGMLFile extends GamaGisFile {
 	/**
 	 * Instantiates a new gama GML file.
 	 *
-	 * @param scope the scope
-	 * @param pathName the path name
-	 * @param code the code
-	 * @param with3D the with 3 D
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @param scope
+	 *            the scope
+	 * @param pathName
+	 *            the path name
+	 * @param code
+	 *            the code
+	 * @param with3D
+	 *            the with 3 D
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	@doc (
 			value = "This file constructor allows to read a gml file, specifying the coordinates system code, as an int (epsg code) and take a potential z value (not taken in account by default)",
@@ -138,11 +155,16 @@ public class GamaGMLFile extends GamaGisFile {
 	/**
 	 * Instantiates a new gama GML file.
 	 *
-	 * @param scope the scope
-	 * @param pathName the path name
-	 * @param code the code
-	 * @param with3D the with 3 D
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @param scope
+	 *            the scope
+	 * @param pathName
+	 *            the path name
+	 * @param code
+	 *            the code
+	 * @param with3D
+	 *            the with 3 D
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	@doc (
 			value = "This file constructor allows to read a gml file, specifying the coordinates system code (epg,...,), as a string and take a potential z value (not taken in account by default",

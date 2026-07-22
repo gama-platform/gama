@@ -138,6 +138,7 @@
 		<module>../gama.extension.osm</module>
 		<module>../gama.extension.dxf</module>
 		<module>../gama.extension.kml</module>		
+		<module>../gama.extension.gml</module>
 		<module>../gama.extension.dataframe</module>
 		<module>../gama.extension.sound</module>
 		<module>../gama.extension.stats</module>

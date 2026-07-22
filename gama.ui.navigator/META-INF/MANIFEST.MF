@@ -21,7 +21,8 @@ Require-Bundle: gama.ui.shared,
  org.eclipse.ltk.ui.refactoring,
  gama.workspace,
  gaml.compiler,
- gama.extension.osm;bundle-version="[0.0.0,1.0.0)"
+ gama.extension.osm,
+ gama.extension.gml
 Bundle-ActivationPolicy: lazy
 Export-Package: gama.ui.navigator.commands,
  gama.ui.navigator.view,
