@@ -1962,11 +1962,25 @@ public class DocProcessor extends ElementProcessor<doc> {
 					}
 				}
 			}
-		} else if (!categories.contains(tc.getProperCategory(e.getEnclosingElement().getSimpleName().toString()))) {
-			final org.w3c.dom.Element catElt = doc.createElement(XMLElements.CATEGORY);
-			catElt.setAttribute(XMLElements.ATT_CAT_ID,
-					tc.getProperCategory(e.getEnclosingElement().getSimpleName().toString()));
-			categoriesElt.appendChild(catElt);
+		} else {
+			final String fallbackCategory =
+					tc.getProperCategory(e.getEnclosingElement().getSimpleName().toString());
+			// The element declares no explicit category, so we fall back to the enclosing class name mapped through
+			// the category table. If the result is not a canonical operator category, the documentation will silently
+			// drop it: warn so that a category= is added to the annotation (or the class registered in TypeConverter).
+			if (!tc.isProperCategory(fallbackCategory) && mes != null) {
+				mes.printMessage(Kind.WARNING,
+						"GAML doc: '" + e.getSimpleName() + "' has no explicit category and falls back to '"
+								+ fallbackCategory
+								+ "', which is not a known operator category. It will be missing from the documentation. "
+								+ "Add a category=... to its annotation or map its class in TypeConverter.",
+						e);
+			}
+			if (!categories.contains(fallbackCategory)) {
+				final org.w3c.dom.Element catElt = doc.createElement(XMLElements.CATEGORY);
+				catElt.setAttribute(XMLElements.ATT_CAT_ID, fallbackCategory);
+				categoriesElt.appendChild(catElt);
+			}
 		}
 
 		// We add a particular category that is read from the iterator

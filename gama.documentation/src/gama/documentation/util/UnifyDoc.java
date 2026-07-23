@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import org.jdom2.Attribute;
 import org.jdom2.Document;
@@ -106,7 +107,10 @@ public class UnifyDoc {
 
 			for (String elt : tabEltXML) { doc.getRootElement().addContent(new Element(elt)); }
 
-			for (Entry<String, File> fileDoc : hmFilesPackages.entrySet()) {
+			// Iterate plugins in a stable (alphabetical) order. The dedup below keeps the first-seen element, so a
+			// HashMap iteration order would make the merge result - and thus which duplicated operators survive -
+			// vary from one run to the next.
+			for (Entry<String, File> fileDoc : new TreeMap<>(hmFilesPackages).entrySet()) {
 				Document docTemp = builder.build(fileDoc.getValue());
 
 				for (String catXML : tabEltXML) {

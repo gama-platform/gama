@@ -101,6 +101,10 @@ public class XMLUtils {
 
 			// Creation of the output file
 			final File file = new File(targetFile);
+			// Ensure the target directory exists: the transformer writes through a plain
+			// FileOutputStream that does not create parent folders, so a missing output
+			// directory (e.g. WikiOnly) would silently drop the generated page.
+			if (file.getParentFile() != null) { file.getParentFile().mkdirs(); }
 			final Result result = new StreamResult(file);
 
 			// configuration of the transformer
