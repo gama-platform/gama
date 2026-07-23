@@ -65,6 +65,33 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:wiki="www.google.fr">
 
 ----
 
+## Operators by category
+<xsl:for-each select="//doc/operatorsCategories/category[not(@id = (preceding-sibling::*/@id))]">
+	<xsl:sort select="@id" />
+	<xsl:variable name="categoryGlobal" select="@id" />
+	<xsl:text>
+
+### </xsl:text><xsl:value-of select="@id" /><xsl:text>
+</xsl:text>
+	<xsl:for-each select="/doc/operators/operator[operatorCategories/category/@id = $categoryGlobal]">
+		<xsl:sort select="@name" />
+		<xsl:if test="position() != 1"><xsl:text>, </xsl:text></xsl:if>
+		<xsl:text>[</xsl:text><xsl:value-of select="@name" /><xsl:text>](</xsl:text>
+		<xsl:choose>
+			<xsl:when test="@alphabetOrder = 'aa'"><xsl:value-of select="$fileOperatorsAA" /></xsl:when>
+			<xsl:when test="@alphabetOrder = 'bc'"><xsl:value-of select="$fileOperatorsBC" /></xsl:when>
+			<xsl:when test="@alphabetOrder = 'dh'"><xsl:value-of select="$fileOperatorsDH" /></xsl:when>
+			<xsl:when test="@alphabetOrder = 'im'"><xsl:value-of select="$fileOperatorsIM" /></xsl:when>
+			<xsl:when test="@alphabetOrder = 'nr'"><xsl:value-of select="$fileOperatorsNR" /></xsl:when>
+			<xsl:otherwise><xsl:value-of select="$fileOperatorsSZ" /></xsl:otherwise>
+		</xsl:choose>
+		<xsl:text>#</xsl:text><xsl:value-of select="@name" /><xsl:text>)</xsl:text>
+	</xsl:for-each>
+</xsl:for-each>
+
+
+----
+
 ## Statements
 <xsl:for-each select="/doc/statements/statement">
 	<xsl:sort select="@name" />
