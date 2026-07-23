@@ -140,4 +140,10 @@ public interface IOperatorCategory {
 	/** The Constant DATAFRAME. */
 	public static final String DATAFRAME		= "Dataframe-related operators";
 
+	/** The Constant IMAGE. */
+	public static final String IMAGE			= "Image operators";
+
+	/** The Constant DISPLAY. */
+	public static final String DISPLAY			= "Display operators";
+
 }

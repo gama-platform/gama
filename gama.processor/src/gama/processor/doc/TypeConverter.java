@@ -392,6 +392,10 @@ public class TypeConverter {
 		hm.put("GamaListFactory", IOperatorCategory.CONTAINER);
 		hm.put("IPoint", IOperatorCategory.POINT);
 		hm.put("GamaSVGFile", IOperatorCategory.FILE);
+		// Classes whose operators do not declare a category and would otherwise appear under a non-uniform title
+		// derived from the class name (e.g. "ImageOperators", "Displays") instead of a proper "... operators" title.
+		hm.put("ImageOperators", IOperatorCategory.IMAGE);
+		hm.put("Displays", IOperatorCategory.DISPLAY);
 		return hm;
 	}
 
