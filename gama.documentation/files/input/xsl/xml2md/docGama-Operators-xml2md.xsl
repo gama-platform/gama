@@ -214,12 +214,12 @@ Note that due to the fact that actions are written by modelers, the general func
 	
 	<xsl:if test="documentation/result[text()]"> 
 
-**Result:** <xsl:value-of select="documentation/result"/>
+**Result:** <xsl:call-template name="printParagraphs"><xsl:with-param name="text" select="documentation/result"/></xsl:call-template>
     </xsl:if>
     
   <xsl:if test="documentation/comment[text()]">  
 
-**Comment:** <xsl:value-of select="documentation/comment"/> 
+**Comment:** <xsl:call-template name="printParagraphs"><xsl:with-param name="text" select="documentation/comment"/></xsl:call-template>
   </xsl:if>
   
   <xsl:if test="documentation/specialCases[node()] | documentation/usages[node()] | documentation/usagesNoExample[node()]">
