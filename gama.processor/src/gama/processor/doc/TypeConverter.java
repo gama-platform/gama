@@ -300,7 +300,7 @@ public class TypeConverter {
 		hm.put(0, "any type"); // NONE
 		hm.put(1, "int");
 		hm.put(2, "float");
-		hm.put(3, "boolean");
+		hm.put(3, "bool");
 		hm.put(4, "string");
 		hm.put(5, "list");
 		hm.put(6, "rgb");
