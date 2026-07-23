@@ -70,6 +70,11 @@ public class PrepareEnv {
 		genFolder.mkdir();
 		new File(Constants.JAVA2XML_FOLDER).mkdirs();
 		new File(Constants.XML2WIKI_FOLDER).mkdirs();
+		// Operator detail pages (OperatorsAA..SZ) are written here; the folder is not
+		// guaranteed to exist in a freshly cloned wiki, so create it to avoid the
+		// transform failing with FileNotFoundException.
+		new File(Constants.WIKI_FOLDER_WIKI_ONLY).mkdirs();
+		new File(Constants.WIKI_FOLDER_EXT_PLUGIN).mkdirs();
 		new File(Constants.TEST_FOLDER).mkdirs();
 		new File(Constants.PRISM_GEN_FOLDER).mkdir();
 		new File(Constants.LATEX_STYLE_GEN_FOLDER).mkdir();
