@@ -62,15 +62,11 @@ public class ExportExperimentSelectionListener implements Selector {
 
 		final String relativeModelPathStr = file.getFullPath().toOSString();
 
-		final String modelPathStr = file.getLocation().toOSString();
-		
-		final GenericFile modelFile = new GenericFile(modelPathStr);
-
 		final GamlProperties metaProperties = new GamlProperties();
 
 
 		try {
-			final IModelSpecies model = GamlModelBuilder.getInstance().compile(modelFile.getFile(null),null,metaProperties);
+			final IModelSpecies model = GamlModelBuilder.getInstance().compile(file.getLocation().toFile(),null,metaProperties);
 			
 			Set<String> plugins = metaProperties.get(GamlProperties.PLUGINS); 
 
@@ -82,35 +78,33 @@ public class ExportExperimentSelectionListener implements Selector {
 
 			final int result = dialog.open();
         
-			if (result == IDialogConstants.OK_ID) {
+			if (result != IDialogConstants.OK_ID)
+				return;
 				
-				// Récupération des données via les getters de la classe
-				final String outputPathStr = dialog.getOutputPath();
-				
-				final String targetExperiments = String.join("#",dialog.getSelectedExperiments());
+			// Récupération des données via les getters de la classe
+			
+			final String targetExperiments = String.join("#",dialog.getSelectedExperiments());
 
-				final String formattedTimestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy.MM.dd.HHmmss"));
+			// final String formattedTimestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy.MM.dd.HHmmss"));
+			// final String modelName = Path.of(relativeModelPathStr).getFileName().toString().replace(".gaml","");
+			// final String outputFileName = modelName  + "-" + targetExperiments + "-" + formattedTimestamp + ".zip";
 
-				final String modelName = Path.of(relativeModelPathStr).getFileName().toString().replace(".gaml","");
+			final Path outputPath = Path.of(dialog.getOutputPath(),dialog.getOutputFileName());
 
-				final String outputFilename = modelName  + "-" + targetExperiments + "-" + formattedTimestamp + ".zip";
+			final GamaZipBuilder ziper = new GamaZipBuilder(
+				plugins,
+				file.getProject().getLocation().toOSString(),
+				relativeModelPathStr,
+				targetExperiments);
+			try { 
+				ziper.zip(outputPath.toString());
+				System.out.println("Model exported successfully");
+			} catch (Exception exception) {
+				System.err.println("Exception raised while cloning GAMA :\n" + exception);
+				exception.printStackTrace();
+			}
 
-				final Path outputPath = Path.of(outputPathStr,outputFilename);
-
-				final GamaZipBuilder ziper = new GamaZipBuilder(
-					plugins,
-					relativeModelPathStr,
-					modelPathStr,
-					targetExperiments);
-				try { 
-					ziper.zip(outputPath.toString());
-					System.out.println("Model exported successfully");
-				} catch (Exception exception) {
-					System.err.println("Exception raised while cloning GAMA :\n" + exception);
-					exception.printStackTrace();
-				}
-        }
-				} catch (Throwable t) {
+		} catch (Throwable t) {
             t.printStackTrace();
         }
 

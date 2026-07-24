@@ -11,6 +11,7 @@ import java.nio.file.*;
 import java.util.zip.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
 
 import gama.api.utils.prefs.JREPreferenceStore;
 import gama.api.utils.prefs.GamaPreferenceStore;
@@ -19,6 +20,7 @@ import gama.api.runtime.IWorkspaceManager;
 import gama.export.dependency.BundleDependencyAnalyzer;
 import gama.export.ExportActivator;
 import gama.export.ZipHelper;
+import gama.export.ExportHelper;
 
 public class GamaZipBuilder {
 
@@ -59,7 +61,7 @@ public class GamaZipBuilder {
 
     private Set<Path> neededGamaPluginsPath;
 
-    private static final String embeddedWorkspaceName = "Embedded_Workspace";
+    private static final String embeddedWorkspaceName = ExportHelper.getEmbeddedWorkspaceName();
 
     private static final Path appRootPath = Path.of(ExportActivator.appRootPathStr);
     
@@ -81,7 +83,7 @@ public class GamaZipBuilder {
 
     private String targetModelRelativePathStr = null;
 
-    private String targetModelPathStr = null;
+    private String targetProjectPathStr = null;
 
     private String targetExperiment = null;
 
@@ -111,13 +113,13 @@ public class GamaZipBuilder {
             }
     }
 
-    public GamaZipBuilder(Set<String> plugins, String targetModelRelativePathStr, String targetModelPathStr, String targetExperiment) 
+    public GamaZipBuilder(Set<String> plugins, String targetProjectPathStr, String targetModelRelativePathStr, String targetExperiment) 
     {
         neededGamaPlugins = plugins;
         neededGamaPlugins.addAll(necessaryGamaPlugins);
 
-        this.targetModelRelativePathStr = Path.of(targetModelRelativePathStr).toString(); 
-        this.targetModelPathStr = targetModelPathStr;
+        this.targetModelRelativePathStr = targetModelRelativePathStr; 
+        this.targetProjectPathStr = targetProjectPathStr;
         this.targetExperiment = targetExperiment;
 
         // expanding necessary plugins based on needed plugins (GamlProperties doesn't expand the dependency tree)
@@ -286,8 +288,8 @@ public class GamaZipBuilder {
             // Embedding the target workspace //
             ////////////////////////////////////
 
-            String targetWorkspacePathStr = targetModelPathStr.replace(targetModelRelativePathStr,"");
-            Path targetProjectPath = Path.of(targetWorkspacePathStr).resolve(Path.of(targetModelRelativePathStr).subpath(0,1));
+            Path targetProjectPath = Path.of(targetProjectPathStr);
+            String targetWorkspacePathStr = targetProjectPath.getParent().toString();
 
             try (Stream<Path> stream = Files.walk(targetProjectPath)) {
                 stream.forEach(filePath -> {

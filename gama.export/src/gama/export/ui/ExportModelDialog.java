@@ -20,10 +20,12 @@ import org.eclipse.swt.widgets.Text;
 public class ExportModelDialog extends TitleAreaDialog {
 
     private Text txtOutputPath;
+    private Text txtOutputFileName;
     private Button[] buttons;
     private Button selectAllExperimentsButton;
 
     private String outputPath = "";
+    private String outputFileName = "";
     private String[] availableExperiments;
     private List<String> selectedExperiments;
 
@@ -56,6 +58,7 @@ public class ExportModelDialog extends TitleAreaDialog {
 
         createOptionSection(container);
         createPathSection(container);
+        createFileNameSection(container);
 
         return area;
     }
@@ -116,6 +119,17 @@ public class ExportModelDialog extends TitleAreaDialog {
         });
     }
 
+    private void createFileNameSection(Composite container) {
+        CLabel lblPath = new CLabel(container, SWT.NONE);
+        lblPath.setText("Export file name : ");
+        lblPath.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1));
+
+        txtOutputFileName = new Text(container, SWT.BORDER);
+        txtOutputFileName.setText("launcher.zip");
+        GridData gdText = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
+        txtOutputFileName.setLayoutData(gdText);
+    }
+
     @Override
     protected boolean isResizable() {
         return true;
@@ -124,6 +138,7 @@ public class ExportModelDialog extends TitleAreaDialog {
     @Override
     protected void okPressed() {
         outputPath = txtOutputPath.getText().trim();
+        outputFileName = txtOutputFileName.getText().trim();
         selectedExperiments = new ArrayList<String>();
 
         for(int i=0 ; i < availableExperiments.length ; i++)
@@ -143,11 +158,21 @@ public class ExportModelDialog extends TitleAreaDialog {
             return;            
         }
 
+        if (outputFileName.isEmpty()) {
+            setMessage("Error : The export file name cannot be empty.", IMessageProvider.ERROR);
+            return;
+        }
+
         super.okPressed();
     }
 
     public String getOutputPath() {
         return outputPath;
+    }
+
+    public String getOutputFileName()
+    {
+        return outputFileName;
     }
 
     public String[] getSelectedExperiments() {

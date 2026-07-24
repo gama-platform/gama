@@ -287,6 +287,12 @@
                      value="gama.ui.export.ExternalProject">
                </parameter>
             </command>
+            <command
+                  commandId="gama.ui.navigator.commands.exportProjectAsSimulation"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/menu.export.svg"
+                  label="As simulation launcher"
+                  style="push">
+            </command>
             <visibleWhen
                   checkEnabled="false">
                <with
@@ -912,5 +918,26 @@ type="java.lang.Object">
              </with>
           </enabledWhen>
        </handler>
+      <handler
+            class="gama.ui.navigator.commands.ExportProjectAsSimulation"
+            commandId="gama.ui.navigator.commands.exportProjectAsSimulation">
+         <activeWhen>
+               <with
+                     variable="selection">
+                  <iterate
+                        ifEmpty="true"
+                        operator="and">
+                     <or>
+                        <instanceof
+                              value="gama.ui.navigator.view.contents.WrappedProject">
+                        </instanceof>
+                        <instanceof
+                              value="gama.ui.navigator.view.contents.WrappedFolder">
+                        </instanceof>
+                     </or>
+                  </iterate>
+               </with>
+         </activeWhen>
+      </handler>
     </extension>
 </plugin>

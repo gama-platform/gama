@@ -2,6 +2,8 @@ package gama.ui.application.workbench;
     
 import java.util.ArrayList;
 import java.util.List;
+import java.io.File;
+import java.util.Arrays;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.core.runtime.Platform;
@@ -28,9 +30,13 @@ public class StartupModelHelper
 
     private static String SEPARATOR = "#";
 
+	private final static String CONTEXTUAL_SEPARATOR = "    from model    ";
+
     private IModelSpecies model;
 
     private GamlModelBuilder builder = null;
+
+    private String specificModelPathStr = null;
 
     private String experiment;
 
@@ -40,22 +46,51 @@ public class StartupModelHelper
     {
         experiment = GamaPreferences.Interface.CORE_DEFAULT_EXPERIMENT.getValue();
 
-        if(experiment.contains(StartupModelHelper.SEPARATOR))
+        if(experiment.contains(SEPARATOR) || experiment.contains(CONTEXTUAL_SEPARATOR))
             pickExperiment(true);
     }
 
     public void pickExperiment(boolean startup)
     {
         experiment = GamaPreferences.Interface.CORE_DEFAULT_EXPERIMENT.getValue();
+    
+        final String [] experimentArray = experiment.split(StartupModelHelper.SEPARATOR);
+        String[] experimentNames;
 
-        final String [] experimentNames = experiment.split(StartupModelHelper.SEPARATOR);
-        
+        if (experimentArray.length > 0 && experimentArray[0].contains("@"))
+            experimentNames = Arrays.stream(experimentArray).map(experimentName -> {
+                int lastIndex = experimentName.lastIndexOf("@");
+                
+                if (lastIndex == -1)
+                    return experimentName;
+
+                return experimentName.substring(0,lastIndex) + CONTEXTUAL_SEPARATOR + experimentName.substring(lastIndex + 1);
+            }).toArray(String[]::new);
+        else
+            experimentNames = experimentArray;
+            
+
         final PickExperimentDialog dialog = new PickExperimentDialog(experimentNames);
 
         final int result = dialog.open();
 
         if(result == IDialogConstants.OK_ID)
+        {
             experiment = dialog.getSelectedExperiment();
+
+            int lastIndex = experiment.lastIndexOf(CONTEXTUAL_SEPARATOR);
+
+            if (lastIndex != -1)
+            {
+                String newSpecificModelPathStr = experiment.substring(lastIndex + CONTEXTUAL_SEPARATOR.length());
+                experiment = experiment.substring(0,lastIndex);
+                if (specificModelPathStr == null || ! specificModelPathStr.equals(newSpecificModelPathStr))
+                {
+                    specificModelPathStr = newSpecificModelPathStr;
+                    model = null;
+                }
+            }
+        }
         else
         {
             if (startup)
@@ -110,8 +145,16 @@ public class StartupModelHelper
     {
         if(model == null)
         {
-            IGamaFile<?, ?> file = GamaPreferences.Interface.CORE_DEFAULT_MODEL.getValue();
-			String filePathStr = file.getPath(null);
+            IGamaFile<?, ?> file;
+            String filePathStr;
+            
+            if (specificModelPathStr == null) {
+                filePathStr = GamaPreferences.Interface.CORE_DEFAULT_MODEL.getValue().getPath(null);
+            } else {
+                filePathStr = ExportHelper.resolveEmbeddedWorkspacePath(specificModelPathStr);
+            }
+
+
 			file = new GenericFile(ExportHelper.resolveEmbeddedPath(filePathStr));
 
             if (file != null && file.exists(null)) {
