@@ -11,6 +11,7 @@
 package gama.processor.doc;
 
 import java.lang.reflect.Field;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -51,7 +52,7 @@ public class TypeConverter {
 	public static final HashMap<Integer, String> typeStringFromIType = new HashMap<>();
 
 	/** The symbol kind string from I symbol kind. */
-	HashMap<Integer, String> symbolKindStringFromISymbolKind;
+	EnumMap<ISymbolKind, String> symbolKindStringFromISymbolKind;
 
 	/**
 	 * Instantiates a new type converter.
@@ -106,26 +107,28 @@ public class TypeConverter {
 	 *
 	 * @return the hash map
 	 */
-	private HashMap<Integer, String> initSymbolKindStringFromISymbolKind() {
-		final HashMap<Integer, String> hm = new HashMap<>();
-		hm.put(0, "Species");
-		hm.put(1, "Model");
-		hm.put(2, "Single statement");
-		hm.put(3, "Behavior");
-		hm.put(4, "Parameter");
-		hm.put(5, "Output");
-		hm.put(6, "Layer");
-		hm.put(7, "Skill");
-		hm.put(8, "Batch section");
-		hm.put(9, "Batch method");
-		hm.put(10, "Environment");
-		hm.put(11, "Sequence of statements or action");
-		hm.put(13, "Experiment");
-		hm.put(14, "Abstract section");
-		hm.put(101, "Variable (number)");
-		hm.put(102, "Variable (container)");
-		hm.put(103, "Variable (signal)");
-		hm.put(104, "Variable (regular)");
+	private EnumMap<ISymbolKind, String> initSymbolKindStringFromISymbolKind() {
+		final EnumMap<ISymbolKind, String> hm = new EnumMap<>(ISymbolKind.class);
+		hm.put(ISymbolKind.SPECIES, "Species");
+		hm.put(ISymbolKind.MODEL, "Model");
+		hm.put(ISymbolKind.SINGLE_STATEMENT, "Single statement");
+		hm.put(ISymbolKind.BEHAVIOR, "Behavior");
+		hm.put(ISymbolKind.PARAMETER, "Parameter");
+		hm.put(ISymbolKind.OUTPUT, "Output");
+		hm.put(ISymbolKind.LAYER, "Layer");
+		hm.put(ISymbolKind.SKILL, "Skill");
+		hm.put(ISymbolKind.BATCH_SECTION, "Batch section");
+		hm.put(ISymbolKind.BATCH_METHOD, "Batch method");
+		hm.put(ISymbolKind.ENVIRONMENT, "Environment");
+		hm.put(ISymbolKind.SEQUENCE_STATEMENT, "Sequence of statements or action");
+		hm.put(ISymbolKind.ACTION, "Sequence of statements or action");
+		hm.put(ISymbolKind.EXPERIMENT, "Experiment");
+		hm.put(ISymbolKind.ABSTRACT_SECTION, "Abstract section");
+		hm.put(ISymbolKind.OPERATOR, "Operator");
+		hm.put(ISymbolKind.PLATFORM, "Platform");
+		hm.put(ISymbolKind.CLASS, "Class");
+		hm.put(ISymbolKind.NUMBER, "Variable (number)");
+		hm.put(ISymbolKind.REGULAR, "Variable (regular)");
 		return hm;
 	}
 
@@ -562,6 +565,6 @@ public class TypeConverter {
 	 */
 	public String getSymbolKindStringFromISymbolKind(final ISymbolKind i) {
 		if (symbolKindStringFromISymbolKind.containsKey(i)) return symbolKindStringFromISymbolKind.get(i);
-		return "" + i.code();
+		return i.name();
 	}
 }
