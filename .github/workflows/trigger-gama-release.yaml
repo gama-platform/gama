@@ -12,12 +12,12 @@ on:
         description: "The tag of the release to publish (YYYY.MM.0)"
         type: string
         required: true
-        default: 2026.04.0
+        default: 2026.08.0
       jdk:
         description: "Choose a JDK version to embed inside GAMA release"
         type: string
         required: true
-        default: 25.0.2+10
+        default: 25.0.4+7
       releaseGithubOnly:
         description: "Release only on Github (not on Microsoft Stores, else) ?"
         type: boolean
