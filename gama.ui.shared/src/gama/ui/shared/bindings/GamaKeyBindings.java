@@ -25,6 +25,7 @@ import gama.api.GAMA;
 import gama.api.runtime.SystemInfo;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
+import gama.dev.FLAGS;
 import gama.ui.application.workbench.PerspectiveHelper;
 import gama.ui.shared.utils.ViewsHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
@@ -144,7 +145,8 @@ public class GamaKeyBindings implements Listener {
 			case 'x':
 				if (ctrl(event) && shift(event)) {
 					consume(event);
-					GAMA.closeAllExperiments(true, false);
+					if (! FLAGS.SIMULATION_ONLY)
+						GAMA.closeAllExperiments(true, false);
 				}
 				break;
 			default:

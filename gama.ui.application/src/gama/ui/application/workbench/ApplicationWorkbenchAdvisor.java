@@ -10,6 +10,9 @@
  ********************************************************************************************************/
 package gama.ui.application.workbench;
 
+import java.util.List;
+import java.util.ArrayList;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -23,6 +26,12 @@ import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.internal.PluginActionBuilder;
 import org.eclipse.ui.internal.ide.application.IDEWorkbenchAdvisor;
+import org.eclipse.ui.keys.IBindingService;	
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.internal.keys.BindingService;
+import org.eclipse.ui.keys.IBindingService;
+import org.eclipse.jface.bindings.Binding;
+import org.eclipse.jface.bindings.keys.KeySequence;
 
 import gama.api.GAMA;
 import gama.api.additions.delegates.IEventLayerDelegate;
@@ -33,6 +42,7 @@ import gama.gaml.operators.Files;
 import gama.api.utils.files.FileUtils;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
+import gama.dev.FLAGS;
 import gama.ui.application.Application;
 import gama.ui.application.server.GamaGuiWebSocketServer;
 import gama.workspace.manager.WorkspaceModelsManager;
@@ -116,6 +126,41 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 			}
 		}
 
+		// Disable Ctrl+N (opens new wizard menu) if simulation mode
+		if (FLAGS.SIMULATION_ONLY)
+		{
+			IBindingService service = (IBindingService) PlatformUI.getWorkbench().getService(IBindingService.class);
+			
+			if (service instanceof BindingService) {
+				BindingService bindingService = (BindingService) service;
+				
+				try {
+					KeySequence ctrlN = KeySequence.getInstance("M1+N");
+					Binding[] currentBindings = bindingService.getBindings();
+					
+					// Create a list or array excluding the Ctrl+N binding
+					List<Binding> newBindingsList = new ArrayList<>();
+					
+					for (Binding binding : currentBindings) {
+						if (!ctrlN.equals(binding.getTriggerSequence())) {
+							newBindingsList.add(binding);
+						}
+					}
+					
+					// Update the binding manager with the filtered list
+					Binding[] newBindingsArray = newBindingsList.toArray(new Binding[0]);
+					bindingService.getBindingManager().setBindings(newBindingsArray);
+					
+					// Force Eclipse to refresh the system shortcuts
+					bindingService.savePreferences(bindingService.getActiveScheme(), newBindingsArray);
+					
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}	
+		}
+
+		// handle startup model mode
 		if (GamaPreferences.Interface.CORE_STARTUP_MODEL.getValue())
 			StartupModelHelper.getInstance().startSimulation();
 			

@@ -42,6 +42,7 @@ import gama.api.ui.displays.IDisplayData.Changes;
 import gama.api.ui.displays.IDisplayData.DisplayDataListener;
 import gama.api.utils.interfaces.IDisposable;
 import gama.dev.DEBUG;
+import gama.dev.FLAGS;
 import gama.dev.STRINGS;
 import gama.ui.experiment.controls.SimulationSpeedContributionItem;
 import gama.ui.shared.bindings.GamaKeyBindings;
@@ -166,7 +167,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 				e -> GAMA.stepFrontmostExperiment(false));
 		closeExperiment = new GamaCommand(IGamaIcons.EXPERIMENT_STOP,
 				STRINGS.PAD("Closes experiment", pad) + GamaKeyBindings.QUIT_STRING,
-				e -> new Thread(() -> GAMA.closeAllExperiments(true, false)).start());
+				FLAGS.SIMULATION_ONLY ? null : e -> new Thread(() -> GAMA.closeAllExperiments(true, false)).start());
 		relaunchExperiment = new GamaCommand(IGamaIcons.EXPERIMENT_RELOAD,
 				STRINGS.PAD("Reload experiment", pad) + GamaKeyBindings.RELOAD_STRING,
 				e -> GAMA.reloadFrontmostExperiment(false));
@@ -298,7 +299,9 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 		toolbar.control(SimulationSpeedContributionItem.create(toolbar.getToolbar(SWT.LEFT)),
 				SimulationSpeedContributionItem.totalWidth(), SWT.LEFT);
 		toolbar.button(relaunchExperiment, SWT.LEFT);
-		toolbar.button(closeExperiment, SWT.LEFT);
+
+		if(! FLAGS.SIMULATION_ONLY)
+			toolbar.button(closeExperiment, SWT.LEFT);
 	}
 
 	/**

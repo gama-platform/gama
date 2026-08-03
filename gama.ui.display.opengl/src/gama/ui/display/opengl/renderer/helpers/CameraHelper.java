@@ -30,6 +30,7 @@ import gama.api.utils.geometry.GamaEnvelopeFactory;
 import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
+import gama.dev.FLAGS;
 import gama.gaml.operators.Maths;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.camera.IMultiListener;
@@ -852,7 +853,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 				break;
 			case 'X':
 			case 'x': {
-				if (isControlDown(e) && e.isShiftDown()) {
+				if (isControlDown(e) && e.isShiftDown() && !FLAGS.SIMULATION_ONLY) {
 					GAMA.closeAllExperiments(true, false);
 					return;
 				}
