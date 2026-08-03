@@ -227,15 +227,20 @@ public class GamaZipBuilder {
             Files.copy(appRootPath.resolve("Gama.ini"),GamaZipBuilder.gamaIniTmpPath);
             String gamaIniContent = Files.readString(GamaZipBuilder.gamaIniTmpPath); 
 
+            // use embedded preferences
             if (gamaIniContent.contains("\n-Duse_global_preference_store="))
                 gamaIniContent = gamaIniContent.replaceAll("\n-Duse_global_preference_store=.*","\n-Duse_global_preference_store=false");
             else
                 gamaIniContent += "\n-Duse_global_preference_store=false\n";
 
+            // trigger simulation only mode
             if (gamaIniContent.contains("\n-Dsimulation_only="))
                 gamaIniContent = gamaIniContent.replaceAll("\n-Dsimulation_only=.*","\n-Dsimulation_only=true");
             else
                 gamaIniContent += "\n-Dsimulation_only=true\n";
+            
+            // avoid saving corrupted ui states
+            gamaIniContent = gamaIniContent.replace("-vmargs","-persistState\nfalse\n-vmargs");
 
 
             Files.writeString(GamaZipBuilder.gamaIniTmpPath,gamaIniContent);
