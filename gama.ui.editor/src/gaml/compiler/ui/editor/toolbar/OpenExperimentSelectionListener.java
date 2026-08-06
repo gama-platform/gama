@@ -10,6 +10,7 @@
  ********************************************************************************************************/
 package gaml.compiler.ui.editor.toolbar;
 
+import gama.dev.DEBUG;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.swt.events.SelectionEvent;
 
@@ -64,7 +65,12 @@ public class OpenExperimentSelectionListener implements Selector {
 		}
 		String name = (String) e.widget.getData("exp");
 		final int i = state.abbreviations.indexOf(name);
-		if (i == -1) return;
+		if (i == -1) {
+			// Happens when the state has been rebuilt without experiments (e.g. the model no longer validates)
+			DEBUG.ERR("Experiment '" + name + "' is not among the experiments known to the editor ("
+					+ state.abbreviations + "): nothing to launch");
+			return;
+		}
 		name = state.experiments.get(i);
 		modelsManager.runModel(editor.getDocument(), name);
 

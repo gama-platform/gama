@@ -439,6 +439,9 @@ public class DefaultExperimentController extends AbstractExperimentController {
 	 */
 	public void notifyExceptionAndCloseExperiment(final Throwable e) {
 		final IScope localScope = scope; // capture before concurrent dispose() can null it
+		// If the failure occurs before the experiment agent (and thus the scope) exists, the block below is skipped
+		// and the exception is lost: the experiment just closes with no trace anywhere. Always trace it first.
+		if (e != null && localScope == null) { DEBUG.ERR("Experiment failed to open before its scope existed", e); }
 		if (e != null && localScope != null) {
 			final GamaRuntimeException gre = GamaRuntimeException.create(e, localScope);
 			// Report to the errors view BEFORE closing so that isDisposing() is still false
@@ -482,6 +485,11 @@ public class DefaultExperimentController extends AbstractExperimentController {
 	 */
 	protected void notifyExceptionAndReloadExperiment(final Throwable e) {
 		final IScope localScope = scope;
+		// When the failure happens before the experiment agent exists, the scope is still null and every reporting
+		// step below is skipped: the exception would be lost entirely. Always trace it first.
+		if (e != null && localScope == null) {
+			DEBUG.ERR("Experiment initialisation failed before its scope existed", e);
+		}
 		final GamaRuntimeException gre =
 				e != null && localScope != null ? GamaRuntimeException.create(e, localScope) : null;
 

@@ -824,7 +824,7 @@ public class Stats {
 			}
 			for (final Integer id : remainingData) {
 				final IList clG = GamaListFactory.create();
-				clG.add(id);
+				clG.add((long) id);
 				results.add(clG);
 			}
 			return results.items();
@@ -1014,12 +1014,12 @@ public class Stats {
 	public static IMap opFrequencyOf(final IScope scope, final String eachName, final IContainer original,
 			final IExpression filter) throws GamaRuntimeException {
 		if (original == null) return GamaMapFactory.create(Types.NO_TYPE, Types.INT);
-		final IMap<Object, Integer> result = GamaMapFactory.create(original.getGamlType().getContentType(), Types.INT);
+		final IMap<Object, Long> result = GamaMapFactory.create(original.getGamlType().getContentType(), Types.INT);
 		for (final Object each : original.iterable(scope)) {
 			scope.setEach(eachName, each);
 			final Object key = filter.value(scope);
 			if (!result.containsKey(key)) {
-				result.put(key, 1);
+				result.put(key, 1l);
 			} else {
 				result.put(key, result.get(key) + 1);
 			}

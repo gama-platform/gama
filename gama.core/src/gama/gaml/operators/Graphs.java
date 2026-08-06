@@ -1255,7 +1255,7 @@ public class Graphs {
 
 		final IMap mapResult = GamaMapFactory.create(graph.getGamlType().getKeyType(), Types.INT);
 		final IList vertices = GamaListFactory.castToList(scope, graph.vertexSet());
-		for (final Object v : vertices) { mapResult.put(v, 0); }
+		for (final Object v : vertices) { mapResult.put(v, 0l); }
 		final boolean directed = graph.isDirected();
 		for (int i = 0; i < vertices.size(); i++) {
 			for (int j = directed ? 0 : i + 1; j < vertices.size(); j++) {
@@ -1306,7 +1306,7 @@ public class Graphs {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
 
 		final IMap mapResult = GamaMapFactory.create(graph.getGamlType().getContentType(), Types.INT);
-		for (final Object v : graph.edgeSet()) { mapResult.put(v, 0); }
+		for (final Object v : graph.edgeSet()) { mapResult.put(v, 0l); }
 		final IList vertices = GamaListFactory.castToList(scope, graph.vertexSet());
 		final boolean directed = graph.isDirected();
 		for (int i = 0; i < vertices.size(); i++) {
@@ -2809,7 +2809,7 @@ public class Graphs {
 			value = "retur for each edge, its strahler number")
 	@no_test
 	public static IMap strahlerNumber(final IScope scope, final IGraph graph) {
-		final IMap<Object, Integer> results = GamaMapFactory.create(Types.NO_TYPE, Types.INT);
+		final IMap<Object, Long> results = GamaMapFactory.create(Types.NO_TYPE, Types.INT);
 		if (graph == null || graph.isEmpty(scope)) return results;
 
 		IGraph g = graph.getConnected() ? asDirectedGraph(graph)
@@ -2824,15 +2824,15 @@ public class Graphs {
 				final List previousEdges = inEdgesOf(scope, g, g.getEdgeSource(e));
 				final List nextEdges = outEdgesOf(scope, g, g.getEdgeTarget(e));
 				if (nextEdges.isEmpty()) {
-					results.put(e, 1);
+					results.put(e, 1l);
 					newList.addAll(previousEdges);
 				} else {
 					final boolean notCompleted = nextEdges.stream().anyMatch(a -> !results.containsKey(a));
 					if (notCompleted) {
 						newList.add(e);
 					} else {
-						final List<Integer> vals = StreamEx.of(nextEdges).map(a -> results.get(a)).toList();
-						final Integer maxVal = Collections.max(vals);
+						final List<Long> vals = StreamEx.of(nextEdges).map(a -> results.get(a)).toList();
+						final Long maxVal = Collections.max(vals);
 						final int nbIt = Collections.frequency(vals, maxVal);
 						if (nbIt > 1) {
 							results.put(e, maxVal + 1);

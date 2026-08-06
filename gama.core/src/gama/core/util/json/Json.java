@@ -76,8 +76,8 @@ public final class Json implements IJsonConstants, IJson {
 				case Character c -> valueOf(c);
 				case Double d -> valueOf(d.doubleValue());
 				case Float f -> valueOf(f.doubleValue());
-				case Integer n -> valueOf(n.intValue());
-				case Long n -> valueOf((int) n.longValue());
+				case Integer n -> valueOf(n.longValue());
+				case Long n -> valueOf(n.longValue());
 				case Boolean b -> valueOf(b.booleanValue());
 				case Collection<?> c -> (JsonValue) GamaListFactory.wrap(Types.NO_TYPE, c).serializeToJson(this);
 				case Map<?, ?> m -> (JsonValue) GamaMapFactory.wrap(m).serializeToJson(this);

@@ -23,15 +23,16 @@ import gama.api.types.misc.IValue;
 /**
  * Represents the GAML integer type.
  * <p>
- * This type wraps Java Integer/int/Long values, representing whole numbers in GAML.
+ * This type is backed by Java Long values (int/Integer/short are also accepted, so that internal signatures
+ * that still return them keep declaring int in GAML), representing whole numbers in GAML.
  * Integer supports conversion from various types:
  * <ul>
  * <li>null → 0</li>
- * <li>Integer → itself</li>
- * <li>Any Number → intValue()</li>
+ * <li>Long → itself</li>
+ * <li>Any Number → longValue()</li>
  * <li>String → parsed (supports hex with # prefix, custom radix via param)</li>
  * <li>Boolean → 1 for true, 0 for false</li>
- * <li>IValue → intValue()</li>
+ * <li>IValue → longValue()</li>
  * <li>Other → 0</li>
  * </ul>
  * Integers can be coerced to floats when necessary.
@@ -43,9 +44,10 @@ import gama.api.types.misc.IValue;
 @type (
 		name = IKeyword.INT,
 		id = IType.INT,
-		// long/Long first: they are the canonical support of the GAML int type. int/Integer/short remain
-		// registered so that the (many) internal Java signatures still returning them keep declaring int in GAML
-		wraps = { long.class, Long.class, int.class, Integer.class, short.class, Short.class },
+		// Long first: wraps()[0] becomes the type's support class, and it is used with isInstance()/isAssignableFrom(),
+		// which always answer false on a primitive class. int/Integer/short remain registered so that the (many)
+		// internal Java signatures still returning them keep declaring int in GAML
+		wraps = { Long.class, long.class, int.class, Integer.class, short.class, Short.class },
 		kind = ISymbolKind.NUMBER,
 		concept = { IConcept.TYPE },
 		doc = @doc ("Type of integer numbers"))

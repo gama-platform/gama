@@ -122,7 +122,7 @@ public class MulticriteriaAnalyzeOperator {
 		}
 		int cpt = 0;
 		double utilityMax = -Double.MAX_VALUE;
-		final IList<Integer> bestCands = GamaListFactory.create(Types.INT);
+		final IList<Long> bestCands = GamaListFactory.create(Types.INT);
 		for (final List cand : cands) {
 			int i = 0;
 			double utility = 0;
@@ -131,10 +131,10 @@ public class MulticriteriaAnalyzeOperator {
 				i++;
 			}
 			if (utilityMax == utility) {
-				bestCands.add(cpt);
+				bestCands.add((long) cpt);
 			} else if (utilityMax < utility) {
 				bestCands.clear();
-				bestCands.add(cpt);
+				bestCands.add((long) cpt);
 				utilityMax = utility;
 			}
 			cpt++;

@@ -501,7 +501,7 @@ public class GamlSpecies extends Symbol implements ISpecies {
 		 */
 		private void verifyFrequency(final ISpeciesDescription sd) {
 			final IExpression freq = sd.getFacetExpr(FREQUENCY);
-			if (freq != null && freq.isConst() && Integer.valueOf(0).equals(freq.getConstValue())) {
+			if (freq != null && freq.isConst() && freq.getConstValue() instanceof Number n && n.longValue() == 0) {
 				for (final IVariableDescription vd : sd.getAttributes()) {
 					if (vd.getFacet(UPDATE, VALUE) != null) {
 						vd.warning(vd.getName() + " will never be updated because " + sd.getName()

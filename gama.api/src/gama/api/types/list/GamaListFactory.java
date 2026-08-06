@@ -217,9 +217,9 @@ public class GamaListFactory {
 	 *            the array of integers.
 	 * @return the created {@link IList}.
 	 */
-	public static IList<Integer> createWithoutCasting(final IType contentType, final int[] objects) {
-		final IList<Integer> list = create(contentType, objects.length);
-		for (int i : objects) { list.add(i); }
+	public static IList<Long> createWithoutCasting(final IType contentType, final int[] objects) {
+		final IList<Long> list = create(contentType, objects.length);
+		for (int i : objects) { list.add((long) i); }
 		return list;
 	}
 
@@ -442,10 +442,10 @@ public class GamaListFactory {
 		final IList list = create(contentType, ints == null ? 0 : ints.length);
 		if (ints == null) return list;
 		if (!FLAGS.CAST_CONTAINER_CONTENTS) {
-			for (final int o : ints) { list.add(Integer.valueOf(o)); }
+			for (final int o : ints) { list.add(Long.valueOf(o)); }
 			return list;
 		}
-		for (final int o : ints) { castAndAdd(scope, list, Integer.valueOf(o)); }
+		for (final int o : ints) { castAndAdd(scope, list, Long.valueOf(o)); }
 		return list;
 	}
 

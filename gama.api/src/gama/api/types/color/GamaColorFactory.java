@@ -445,11 +445,11 @@ public class GamaColorFactory {
 					NAME_REGISTRY.put(s, c);
 				}
 				switch (param) {
-					case Integer i -> {
-						return createWithAlpha(c, i);
-					}
 					case Double d -> {
 						return createWithAlpha(c, d);
+					}
+					case Number n -> {
+						return createWithAlpha(c, n.longValue());
 					}
 					case null, default -> {
 						return c;

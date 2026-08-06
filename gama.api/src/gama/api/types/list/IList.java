@@ -606,9 +606,9 @@ public interface IList<E>
 	 */
 	@Override
 	default void removeIndexes(final IScope scope, final IContainer<?, ?> index) {
-		final IList<Integer> l = (IList<Integer>) index.listValue(scope, Types.INT, false);
+		final IList<Long> l = (IList<Long>) index.listValue(scope, Types.INT, false);
 		Collections.sort(l, Collections.reverseOrder());
-		for (final Integer i : l) { removeIndex(scope, i); }
+		for (final Long i : l) { removeIndex(scope, i.intValue()); }
 	}
 
 	/**

@@ -388,7 +388,12 @@ public class GAMA {
 	 */
 	public static void runGuiExperiment(final String id, final IModelSpecies model) {
 		final IExperimentSpecies newExperiment = model.getExperiment(id);
-		if (newExperiment == null) return;
+		if (newExperiment == null) {
+			// Silently returning here leaves the user without any feedback at all
+			getGui().getDialogFactory().error(
+					"Experiment " + id + " cannot be found in model " + model.getName() + " and cannot be launched");
+			return;
+		}
 
 		IExperimentController controller = getFrontmostController();
 		if (controller != null) {
