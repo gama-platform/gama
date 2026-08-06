@@ -390,12 +390,13 @@ public record SerialisedAgent(int index, String species, Map<String, Object> att
 				final Map<String, Object> attr = attributes();
 				Double seedValue = (Double) attr.remove(IKeyword.SEED);
 				String rngValue = (String) attr.remove(IKeyword.RNG);
-				Integer usageValue = (Integer) attr.remove(ISimulationAgent.USAGE);
+				Object usage = attr.remove(ISimulationAgent.USAGE);
+				Integer usageValue = usage == null ? null : ((Number) usage).intValue();
 				sim.generateRandomGenerator(seedValue, rngValue);
 				sim.setUsage(usageValue);
 				// Update Clock
-				final Integer cycle = (Integer) sim.getAttribute(IKeyword.CYCLE);
-				sim.getClock().setCycleNoCheck(cycle);
+				final Object cycle = sim.getAttribute(IKeyword.CYCLE);
+				if (cycle != null) { sim.getClock().setCycleNoCheck(((Number) cycle).intValue()); }
 
 			}
 		}

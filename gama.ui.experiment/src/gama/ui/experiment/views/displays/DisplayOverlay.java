@@ -628,9 +628,9 @@ public class DisplayOverlay {
 			final IEnvelope roi = ((IDisplaySurface.OpenGL) surface).getROIDimensions();
 			if (roi != null) {
 				sb.append(" ROI [");
-				sb.append(Maths.round(roi.getWidth(), 2));
+				sb.append(Maths.round(roi.getWidth(), 2l));
 				sb.append(" x ");
-				sb.append(Maths.round(roi.getHeight(), 2));
+				sb.append(Maths.round(roi.getHeight(), 2l));
 				sb.append("]");
 			}
 		}

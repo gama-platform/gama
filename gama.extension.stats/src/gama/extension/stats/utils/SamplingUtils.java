@@ -74,8 +74,8 @@ public abstract class SamplingUtils {
 			final double ValFromSampling) {
 		switch (var.getType().id()) {
 			case IType.INT:
-				int intValue = Cast.asInt(scope, var.getMinValue(scope));
-				int maxIntValue = Cast.asInt(scope, var.getMaxValue(scope));
+				int intValue = Cast.asInt(scope, var.getMinValue(scope)).intValue();
+				int maxIntValue = Cast.asInt(scope, var.getMaxValue(scope)).intValue();
 				int sampleIValue = intValue + (int) (ValFromSampling * (maxIntValue - intValue + 1));
 				if (sampleIValue > maxIntValue) sampleIValue = maxIntValue;
 				set.put(var.getName(), sampleIValue);

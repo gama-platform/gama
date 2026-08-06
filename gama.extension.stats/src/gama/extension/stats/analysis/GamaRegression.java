@@ -264,7 +264,7 @@ public class GamaRegression implements IValue {
 	}
 
 	@Override
-	public int intValue(final IScope scope) {
+	public long longValue(final IScope scope) {
 		return this.nbFeatures;
 	}
 

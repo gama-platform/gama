@@ -250,19 +250,19 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 		return switch (method) {
 			case MORRIS:
 				yield MorrisSampling.makeMorrisSamplingOnly(hasFacet(MorrisExploration.NB_LEVELS)
-						? Cast.asInt(scope, getFacet(MorrisExploration.NB_LEVELS).value(scope))
+						? Cast.asInt(scope, getFacet(MorrisExploration.NB_LEVELS).value(scope)).intValue()
 						: Morris.DEFAULT_LEVELS, sample_size, parameters, scope);
 			case IKeyword.LHS:
 				yield LatinhypercubeSampling.latinHypercubeSamples(sample_size, parameters,
 						scope.getRandom().getGenerator(), scope,
-						hasFacet(IKeyword.LHS_OUTER) ? Cast.asInt(scope, getFacet(IKeyword.LHS_OUTER).value(scope))
+						hasFacet(IKeyword.LHS_OUTER) ? Cast.asInt(scope, getFacet(IKeyword.LHS_OUTER).value(scope)).intValue()
 								: 50,
-						hasFacet(IKeyword.LHS_INNER) ? Cast.asInt(scope, getFacet(IKeyword.LHS_INNER).value(scope))
+						hasFacet(IKeyword.LHS_INNER) ? Cast.asInt(scope, getFacet(IKeyword.LHS_INNER).value(scope)).intValue()
 								: 100);
 			case IKeyword.ORTHOGONAL:
 				yield OrthogonalSampling.orthogonalSamples(sample_size,
 						hasFacet(IExploration.ITERATIONS)
-								? Cast.asInt(scope, getFacet(IExploration.ITERATIONS).value(scope))
+								? Cast.asInt(scope, getFacet(IExploration.ITERATIONS).value(scope)).intValue()
 								: OrthogonalSampling.DEFAULT_ITERATION,
 						parameters, scope.getRandom().getGenerator(), scope);
 			case IKeyword.SALTELLI:
@@ -293,14 +293,14 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	@SuppressWarnings ("unchecked")
 	public int[] getFactorial(final IScope scope, final List<Batch> parameters) {
 
-		IList<Integer> fact = GamaListFactory.castToList(scope, getFacet(IExploration.SAMPLE_FACTORIAL).value(scope));
+		IList<Long> fact = GamaListFactory.castToList(scope, getFacet(IExploration.SAMPLE_FACTORIAL).value(scope));
 		if (fact.size() < parameters.size()) {
-			fact.addAll(Collections.nCopies(parameters.size() - fact.size(), IExploration.DEFAULT_FACTORIAL));
+			fact.addAll(Collections.nCopies(parameters.size() - fact.size(), (long) IExploration.DEFAULT_FACTORIAL));
 		} else if (fact.size() > parameters.size()) {
 			fact = GamaListFactory.castToList(scope, fact.subList(0, parameters.size()));
 		}
 
-		return IntStreamEx.of(fact).toArray();
+		return fact.stream().mapToInt(Long::intValue).toArray();
 	}
 
 	/**
@@ -528,7 +528,7 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 		}
 		int K = agent.getParametersToExplore().size();
 		int N = hasFacet(IExploration.SAMPLE_SIZE)
-				? Cast.asInt(agent.getScope(), getFacet(IExploration.SAMPLE_SIZE).value(agent.getScope()))
+				? Cast.asInt(agent.getScope(), getFacet(IExploration.SAMPLE_SIZE).value(agent.getScope())).intValue()
 				: sample_size;
 		long res = switch (method) {
 			case MORRIS:
@@ -714,8 +714,8 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	private List<Object> getIntParameterSwip(final IScope scope, final Batch var) {
 		List<Object> res = new ArrayList<>();
 
-		int minValue = Cast.asInt(scope, var.getMinValue(scope));
-		int maxValue = Cast.asInt(scope, var.getMaxValue(scope));
+		int minValue = Cast.asInt(scope, var.getMinValue(scope)).intValue();
+		int maxValue = Cast.asInt(scope, var.getMaxValue(scope)).intValue();
 		double stepValue = 1;
 		double df = IExploration.DEFAULT_FACTORIAL - 1;
 

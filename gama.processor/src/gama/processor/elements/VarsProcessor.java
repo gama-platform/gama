@@ -297,8 +297,10 @@ public class VarsProcessor extends ElementProcessor<vars> {
 		final boolean isDynamic = scope ? n == 3 : n == 2;
 		final String param_class = checkPrim(isDynamic ? args[!scope ? 1 : 2] : args[!scope ? 0 : 1]);
 
+		final StringBuilder value = new StringBuilder();
+		param(value, param_class, "v");
 		return concat("(s,a,t,v)->{if (t != null) ((", clazz, ") t).", method, "(", scope ? "s," : "",
-				isDynamic ? "a, " : "", "(" + param_class + ") v); return null; }");
+				isDynamic ? "a, " : "", value.toString(), "); return null; }");
 	}
 
 	/**
@@ -336,10 +338,12 @@ public class VarsProcessor extends ElementProcessor<vars> {
 
 		final String getterHelper;
 		if (isField) {
-			getterHelper = concat("(s, o)->((", clazz, ")o[0]).", method, scope ? "(s)" : "()");
+			getterHelper = concat("(s, o)->",
+					normalizeReturn(returns, concat("((", clazz, ")o[0]).", method, scope ? "(s)" : "()")));
 		} else {
-			getterHelper = concat("(s,a,t,v)->t==null?", returnWhenNull(checkPrim(returns)), ":((", clazz, ")t).",
-					method, "(", scope ? "s" : "", dynamic ? (scope ? "," : "") + "a)" : ")");
+			getterHelper = concat("(s,a,t,v)->t==null?", returnWhenNull(checkPrim(returns)), ":",
+					normalizeReturn(returns, concat("((", clazz, ")t).", method, "(", scope ? "s" : "",
+							dynamic ? (scope ? "," : "") + "a)" : ")")));
 		}
 
 		final String initerHelper = ex.getAnnotation(getter.class).initializer() ? getterHelper : null;

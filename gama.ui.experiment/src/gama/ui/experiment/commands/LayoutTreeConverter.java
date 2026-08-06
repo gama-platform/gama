@@ -76,13 +76,13 @@ public class LayoutTreeConverter {
 		Arrays.sort(indices);
 		final GamaTree<String> result = newLayoutTree();
 		switch (layout) {
-			case none:
-			case stack:
+			case (int) none:
+			case (int) stack:
 				return buildStackTree(result, indices);
-			case split:
+			case (int) split:
 				return buildGridTree(result, indices);
-			case horizontal:
-			case vertical:
+			case (int) horizontal:
+			case (int) vertical:
 				return buildHorizontalOrVerticalTree(result, indices, layout == horizontal);
 			// Issue #3313. Forcing a layout seems to be the solution to the sizing problem of Java2D displays
 			// case none:

@@ -62,7 +62,7 @@ public class InternalGamaMatrixFactory implements IMatrixFactory {
 				break;
 			case IType.INT:
 				result = new GamaIntMatrix(cols, rows);
-				final int[] ii = ((GamaIntMatrix) result).getMatrix();
+				final long[] ii = ((GamaIntMatrix) result).getMatrix();
 				if (fillExpr.isConst()) {
 					Arrays.fill(ii, Cast.asInt(scope, fillExpr.value(scope)));
 				} else if (!parallel) {
@@ -132,7 +132,7 @@ public class InternalGamaMatrixFactory implements IMatrixFactory {
 	public IMatrix createWithValue(final IScope scope, final Object val, final int cols, final int rows,
 			final IType contentsType) throws GamaRuntimeException {
 
-		if (contentsType == Types.INT || val instanceof Integer) {
+		if (contentsType == Types.INT || val instanceof Integer || val instanceof Long) {
 			final GamaIntMatrix matrix = new GamaIntMatrix(cols, rows);
 			matrix.setAllValues(scope, Types.INT.cast(scope, val, null, false));
 			return matrix;
@@ -219,7 +219,7 @@ public class InternalGamaMatrixFactory implements IMatrixFactory {
 				yield result;
 			}
 			case IType.INT -> {
-				final int[] ii = ((GamaIntMatrix) result).getMatrix();
+				final long[] ii = ((GamaIntMatrix) result).getMatrix();
 				Arrays.fill(ii, Cast.asInt(scope, init.value(scope)));
 				yield result;
 			}

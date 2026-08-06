@@ -79,6 +79,7 @@ import gama.api.types.pair.IPair;
 import gama.api.types.topology.ITopology;
 import gama.core.population.MetaPopulation;
 import one.util.streamex.IntStreamEx;
+import one.util.streamex.LongStreamEx;
 import one.util.streamex.StreamEx;
 
 /**
@@ -394,9 +395,9 @@ public class Containers {
 		@test ("range(2) = [0,1,2]")
 		@test ("range(-2) = [0,-1,-2]")
 		@test ("range(1) collect(i: range(1) collect(j: i + j)) = [[0,1],[1,2]]")
-		public static IList range(final IScope scope, final Integer end) {
-			if (end == 0) return GamaListFactory.wrap(Types.INT, 0);
-			return range(scope, 0, end);
+		public static IList range(final IScope scope, final Long end) {
+			if (end == 0) return GamaListFactory.wrap(Types.INT, 0l);
+			return range(scope, 0l, end);
 		}
 
 		/**
@@ -431,8 +432,8 @@ public class Containers {
 		@test ("range(0,2) = [0,1,2]")
 		@test ("range(2,0) = [2,1,0]")
 		@test ("range(0,0) = [0]")
-		public static IList range(final IScope scope, final Integer start, final Integer end) {
-			final Integer step = start > end ? -1 : 1;
+		public static IList range(final IScope scope, final Long start, final Long end) {
+			final Long step = start > end ? -1l : 1l;
 			return range(scope, start, end, step);
 		}
 
@@ -461,7 +462,7 @@ public class Containers {
 						examples = { @example (
 								value = "range(0,6,2)",
 								equals = "[0,2,4,6]") }) })
-		public static IList range(final IScope scope, final Integer start, final Integer end, final Integer step) {
+		public static IList range(final IScope scope, final Long start, final Long end, final Long step) {
 			if (step == 0) throw GamaRuntimeException.error("The step of a range should not be equal to 0", scope);
 			if (start.equals(end)) return GamaListFactory.wrap(Types.INT, start);
 			if (end > start) {
@@ -469,7 +470,7 @@ public class Containers {
 					throw GamaRuntimeException.error("Negative step would result in an infinite range", scope);
 			} else if (step > 0)
 				throw GamaRuntimeException.error("Positive step would result in an infinite range", scope);
-			return IntStreamEx.rangeClosed(start, end, step).boxed().toCollection(listOf(Types.INT));
+			return LongStreamEx.rangeClosed(start, end, step).boxed().toCollection(listOf(Types.INT));
 
 		}
 
@@ -492,10 +493,10 @@ public class Containers {
 		@doc (
 				value = "Retrieves elements from the first argument every `step` (second argument) elements. Raises an error if the step is negative or equal to zero")
 		@test ("[1,2,3,4,5] every 2 = [1,3,5]")
-		public static IList every(final IScope scope, final IList source, final Integer step) {
+		public static IList every(final IScope scope, final IList source, final Long step) {
 			if (step <= 0)
 				throw GamaRuntimeException.error("The step value in `every` should be strictly positive", scope);
-			return IntStreamEx.range(0, notNull(scope, source).size(), step).mapToObj(source::get)
+			return IntStreamEx.range(0, notNull(scope, source).size(), step.intValue()).mapToObj(source::get)
 					.toCollection(listLike(source));
 		}
 
@@ -528,10 +529,10 @@ public class Containers {
 						@usage ("If the first operand is nil, raises an error") },
 				see = { "slice", "submatrix", "sublist" })
 		@test ("copy_between ([4, 1, 6, 9 ,7], 1, 3) = [1,6]")
-		public static IList copy_between(final IScope scope, final IList l1, final Integer begin, final Integer end) {
-			final int beginIndex = begin < 0 ? 0 : begin;
+		public static IList copy_between(final IScope scope, final IList l1, final Long begin, final Long end) {
+			final int beginIndex = begin < 0 ? 0 : begin.intValue();
 			final int size = notNull(scope, l1).size();
-			final int endIndex = end > size ? size : end;
+			final int endIndex = end > size ? size : end.intValue();
 			final IList result = listLike(l1).get();
 			if (beginIndex < endIndex) { result.addAll(l1.subList(beginIndex, endIndex)); }
 			return result;
@@ -547,10 +548,10 @@ public class Containers {
 		 *            the size
 		 * @return the int
 		 */
-		protected static int convertToListIndex(final int idx, final int size) {
-			int i = idx;
+		protected static int convertToListIndex(final long idx, final int size) {
+			long i = idx;
 			if (idx < 0) { i = size + idx; }
-			return Math.max(Math.min(i, size - 1), 0);
+			return (int) Math.max(Math.min(i, size - 1L), 0L);
 		}
 
 		/**
@@ -581,13 +582,13 @@ public class Containers {
 						@usage ("If an index in the second operand is out of bounds (either > size of the first operand or < of - size) it will be clamped to 0 or size-1.") },
 				see = { "copy_between", "between", "submatrix", "slice" })
 		@test ("sublist ([4, 1, 6, 9 ,7], [2, 2, 4]) = [6, 6, 7]")
-		public static IList sublist(final IScope scope, final IList l1, final IList<Integer> indices) {
+		public static IList sublist(final IScope scope, final IList l1, final IList<Long> indices) {
 
 			final IList result = listLike(l1).get();
 
 			if (l1.size() == 0) return result;
 
-			for (int i : indices) { result.add(l1.get(convertToListIndex(i, l1.size()))); }
+			for (long i : indices) { result.add(l1.get(convertToListIndex(i, l1.size()))); }
 			return result;
 		}
 
@@ -622,8 +623,8 @@ public class Containers {
 						@usage ("If the first operand is nil, raises an error") },
 				see = { "copy_between", "between", "sublist", "submatrix" })
 		@test ("slice ([4, 1, 6, 9 ,7], 1, 5, 2) = [1,9]")
-		public static IList slice(final IScope scope, final IList l1, final Integer begin, final Integer end,
-				final Integer step) {
+		public static IList slice(final IScope scope, final IList l1, final Long begin, final Long end,
+				final Long step) {
 			// TODO: could generate the list of indices then call sublist but would do one more round of
 			// convertToListIndex and create a potentially big intermediate list
 			final int size = notNull(scope, l1).size();
@@ -673,11 +674,12 @@ public class Containers {
 				see = { "copy_between", "between", "sublist", "submatrix" })
 		@test ("slice ([4, 1, 6, 9 ,7], 1, 5) = [1, 6, 9, 7]")
 		@test ("slice ([4, 1, 6, 9 ,7], 5, 1) = [7, 9, 6, 1]")
-		public static IList slice(final IScope scope, final IList l1, final Integer begin, final Integer end) {
+		public static IList slice(final IScope scope, final IList l1, final Long begin, final Long end) {
 			final int size = notNull(scope, l1).size();
 			int beginIdx = convertToListIndex(begin, size);
 			int endIdx = convertToListIndex(end, size);
-			return slice(scope, l1, beginIdx, endIdx, endIdx == beginIdx ? 1 : (int) Math.signum(endIdx - beginIdx));
+			return slice(scope, l1, (long) beginIdx, (long) endIdx,
+					endIdx == beginIdx ? 1l : (long) Math.signum(endIdx - beginIdx));
 		}
 
 		/**
@@ -709,15 +711,16 @@ public class Containers {
 						@usage ("If the first operand is nil, raises an error") },
 				see = { "copy_between", "between", "slice" })
 		@test ("submatrix (matrix([[1, 4, 7], [2, 5, 8], [3, 6, 9 ], [1, 1, 1]]), [2, 1, 3], [0, 1]) = matrix([[3, 6], [2, 5], [1, 1]])")
-		public static IMatrix submatrix(final IScope scope, final IMatrix m1, final IList<Integer> columns,
-				final IList<Integer> rows) {
+		public static IMatrix submatrix(final IScope scope, final IMatrix m1, final IList<Long> columns,
+				final IList<Long> rows) {
 
 			final IPoint aimedDimensions = GamaPointFactory.create(columns.size(), rows.size());
 			final IMatrix result = GamaMatrixFactory.createMatrixLike(scope, m1, aimedDimensions);
 
 			for (int colIdx = 0; colIdx < columns.size(); colIdx++) {
 				for (int rowIdx = 0; rowIdx < rows.size(); rowIdx++) {
-					result.set(scope, colIdx, rowIdx, m1.get(scope, columns.get(colIdx), rows.get(rowIdx)));
+					result.set(scope, colIdx, rowIdx,
+							m1.get(scope, columns.get(colIdx).intValue(), rows.get(rowIdx).intValue()));
 				}
 			}
 
@@ -753,8 +756,8 @@ public class Containers {
 						@usage ("If the first operand is nil, raises an error") },
 				see = { "copy_between", "between", "slice" })
 		@test ("submatrix (field([[1, 4, 7], [2, 5, 8], [3, 6, 9 ], [1, 1, 1]]), [2, 1, 3], [0, 1]) = field([[3, 6], [2, 5], [1, 1]])")
-		public static IField submatrix(final IScope scope, final IField f, final IList<Integer> columns,
-				final IList<Integer> rows) {
+		public static IField submatrix(final IScope scope, final IField f, final IList<Long> columns,
+				final IList<Long> rows) {
 			return (IField) submatrix(scope, (IMatrix) f, columns, rows);
 		}
 
@@ -789,8 +792,8 @@ public class Containers {
 						@usage ("If the first operand is nil, raises an error") },
 				see = { "copy_between", "between", "slice" })
 		@test ("slice (matrix([[1, 4, 7], [2, 5, 8], [3, 6, 9 ], [1, 1, 1]]), 1::3, 0::1, 2::1) = matrix([[2, 5], [1, 1]])")
-		public static IMatrix submatrix(final IScope scope, final IMatrix m1, final IPair<Integer, Integer> columns,
-				final IPair<Integer, Integer> rows, final IPair<Integer, Integer> steps) {
+		public static IMatrix submatrix(final IScope scope, final IMatrix m1, final IPair<Long, Long> columns,
+				final IPair<Long, Long> rows, final IPair<Long, Long> steps) {
 
 			// TODO: this definition relies on the submatrix that uses lists of indices, could be optimized to avoid
 			// creating the intermediate lists
@@ -807,13 +810,13 @@ public class Containers {
 					|| (positiveRowStep ? startRow > endRow : startRow < endRow))
 				return GamaMatrixFactory.createMatrixLike(scope, m1, GamaPointFactory.create(0, 0));
 
-			IList<Integer> cols = GamaListFactory.create(Types.INT);
-			IList<Integer> rowsList = GamaListFactory.create(Types.INT);
+			IList<Long> cols = GamaListFactory.create(Types.INT);
+			IList<Long> rowsList = GamaListFactory.create(Types.INT);
 			for (int col = startCol; positiveColStep ? col <= endCol : col >= endCol; col += steps.key()) {
-				cols.add(col);
+				cols.add((long) col);
 			}
 			for (int row = startRow; positiveRowStep ? row <= endRow : row >= endRow; row += steps.value()) {
-				rowsList.add(row);
+				rowsList.add((long) row);
 			}
 
 			return submatrix(scope, m1, cols, rowsList);
@@ -850,8 +853,8 @@ public class Containers {
 						@usage ("If the first operand is nil, raises an error") },
 				see = { "copy_between", "between", "slice" })
 		@test ("slice (field([[1, 4, 7], [2, 5, 8], [3, 6, 9 ], [1, 1, 1]]), 1::3, 0::1, 2::1) = field([[2, 5], [1, 1]])")
-		public static IField submatrix(final IScope scope, final IField f, final IPair<Integer, Integer> columns,
-				final IPair<Integer, Integer> rows, final IPair<Integer, Integer> steps) {
+		public static IField submatrix(final IScope scope, final IField f, final IPair<Long, Long> columns,
+				final IPair<Long, Long> rows, final IPair<Long, Long> steps) {
 			return (IField) submatrix(scope, (IMatrix) f, columns, rows, steps);
 		}
 
@@ -884,15 +887,15 @@ public class Containers {
 						@usage ("If the first operand is nil, raises an error") },
 				see = { "copy_between", "between", "slice" })
 		@test ("slice (matrix([[1, 4, 7], [2, 5, 8], [3, 6, 9 ], [1, 1, 1]]), 1::3, 0::1) = matrix([[2, 5], [3, 6], [1, 1]])")
-		public static IMatrix submatrix(final IScope scope, final IMatrix m1, final IPair<Integer, Integer> columns,
-				final IPair<Integer, Integer> rows) {
+		public static IMatrix submatrix(final IScope scope, final IMatrix m1, final IPair<Long, Long> columns,
+				final IPair<Long, Long> rows) {
 			final int firstCol = convertToListIndex(columns.key(), (int) m1.getDimensions().getX());
 			final int lastCol = convertToListIndex(columns.value(), (int) m1.getDimensions().getX());
 			final int firstRow = convertToListIndex(rows.key(), (int) m1.getDimensions().getY());
 			final int lastRow = convertToListIndex(rows.value(), (int) m1.getDimensions().getY());
-			IPair<Integer, Integer> steps =
-					GamaPairFactory.createWith(lastCol == firstCol ? 1 : (int) Math.signum(lastCol - firstCol),
-							lastRow == firstRow ? 1 : (int) Math.signum(lastRow - firstRow), Types.INT, Types.INT);
+			IPair<Long, Long> steps =
+					GamaPairFactory.createWith(lastCol == firstCol ? 1l : (long) Math.signum(lastCol - firstCol),
+							lastRow == firstRow ? 1l : (long) Math.signum(lastRow - firstRow), Types.INT, Types.INT);
 			return submatrix(scope, m1, columns, rows, steps);
 		}
 
@@ -925,8 +928,8 @@ public class Containers {
 						@usage ("If the first operand is nil, raises an error") },
 				see = { "copy_between", "between", "slice" })
 		@test ("slice (field([[1, 4, 7], [2, 5, 8], [3, 6, 9 ], [1, 1, 1]]), 1::3, 0::1) = field([[2, 5], [3, 6], [1, 1]])")
-		public static IField submatrix(final IScope scope, final IField f, final IPair<Integer, Integer> columns,
-				final IPair<Integer, Integer> rows) {
+		public static IField submatrix(final IScope scope, final IField f, final IPair<Long, Long> columns,
+				final IPair<Long, Long> rows) {
 			return (IField) submatrix(scope, (IMatrix) f, columns, rows);
 		}
 
@@ -978,7 +981,7 @@ public class Containers {
 			value = "For internal use only.Corresponds to the 2 elements list created when accessed matrices with int cols and rows",
 			masterDoc = true)
 	@no_test
-	public static IList internal_list(final IScope scope, final Integer i, final Integer j) {
+	public static IList internal_list(final IScope scope, final Long i, final Long j) {
 		return GamaListFactory.create(scope, Types.INT, i, j);
 	}
 
@@ -1192,7 +1195,7 @@ public class Containers {
 			concept = { IConcept.CONTAINER })
 	@doc ("the element at the right operand index of the container")
 	@no_test
-	public static Object at(final IScope scope, final IList container, final Integer key) {
+	public static Object at(final IScope scope, final IList container, final Long key) {
 		return container.get(scope, key);
 	}
 
@@ -1238,8 +1241,8 @@ public class Containers {
 			concept = { IConcept.CONTAINER })
 	@doc ("the agent at the right operand index of the given species")
 	@no_test
-	public static IAgent at(final IScope scope, final ISpecies species, final Integer key) {
-		return species.get(scope, key);
+	public static IAgent at(final IScope scope, final ISpecies species, final Long key) {
+		return species.get(scope, key.intValue());
 	}
 
 	/**
@@ -1435,7 +1438,7 @@ public class Containers {
 	@test ("first_of(0,[1,2,3,4,5,6]) = []")
 	@test ("first([1,2,3]) = 1")
 	@test ("first([]) = nil")
-	public static IList first(final IScope scope, final Integer number, final IContainer c) {
+	public static IList first(final IScope scope, final Long number, final IContainer c) {
 		return (IList) stream(scope, c).limit(number < 0 ? 0 : number).toCollection(listLike(c));
 	}
 
@@ -1466,8 +1469,8 @@ public class Containers {
 	@test ("last(10,[1::2, 3::4]) is list")
 	@test ("last([1,2,3]) = 3")
 	@test ("last([]) = nil")
-	public static IList last(final IScope scope, final Integer number, final IContainer c) {
-		int n = number < 0 ? 0 : number;
+	public static IList last(final IScope scope, final Long number, final IContainer c) {
+		int n = number < 0 ? 0 : number.intValue();
 		return (IList) stream(scope, c).skip(Math.max(0, c.length(scope) - n)).toCollection(listLike(c));
 	}
 
@@ -1533,9 +1536,9 @@ public class Containers {
 					+ "If the argument is not an agent of this species, returns -1. Use int(agent) instead"),
 			masterDoc = true)
 	@no_test
-	public static Integer index_of(final IScope scope, final ISpecies s, final Object o) {
-		if (!(o instanceof IAgent) || !((IAgent) o).isInstanceOf(notNull(scope, s), true)) return -1;
-		return ((IAgent) o).getIndex();
+	public static Long index_of(final IScope scope, final ISpecies s, final Object o) {
+		if (!(o instanceof IAgent) || !((IAgent) o).isInstanceOf(notNull(scope, s), true)) return -1l;
+		return (long) ((IAgent) o).getIndex();
 	}
 
 	/**
@@ -1568,8 +1571,8 @@ public class Containers {
 									equals = "0") }),
 			see = { "at", "last_index_of" })
 	@test ("[1,2,3,1,2,1,4,5] index_of 4 = 6")
-	public static Integer index_of(final IScope scope, final IList c, final Object o) {
-		return notNull(scope, c).indexOf(o);
+	public static Long index_of(final IScope scope, final IList c, final Object o) {
+		return (long) notNull(scope, c).indexOf(o);
 	}
 
 	/**
@@ -1663,7 +1666,9 @@ public class Containers {
 			see = { "index_of", "last_index_of" })
 	public static IList all_indexes_of2(final IScope scope, final IList c, final Object o) {
 		final IList results = GamaListFactory.create(Types.INT);
-		for (int i = 0; i < notNull(scope, c).size(); i++) { if (o.equals(c.get(scope, i))) { results.add(i); } }
+		for (int i = 0; i < notNull(scope, c).size(); i++) {
+			if (o.equals(c.get(scope, i))) { results.add((long) i); }
+		}
 		return results;
 
 		// Note: I also tested the following version with streams, but it was around 2 times slower...
@@ -1692,7 +1697,7 @@ public class Containers {
 			usages = @usage ("if the left operand is a species, the last index of an agent is the same as its index"),
 			see = { "at", "index_of" })
 	@test ("last_index_of([1,2,2,2,5], 2) = 3")
-	public static Integer last_index_of(final IScope scope, final ISpecies c, final Object o) {
+	public static Long last_index_of(final IScope scope, final ISpecies c, final Object o) {
 		return index_of(scope, notNull(scope, c), o);
 	}
 
@@ -1726,8 +1731,8 @@ public class Containers {
 									equals = "5") }) },
 			see = { "at", "last_index_of" })
 	@test ("[4,2,3,4,5,4] last_index_of 4 = 5")
-	public static Integer last_index_of(final IScope scope, final IList c, final Object o) {
-		return notNull(scope, c).lastIndexOf(o);
+	public static Long last_index_of(final IScope scope, final IList c, final Object o) {
+		return (long) notNull(scope, c).lastIndexOf(o);
 	}
 
 	/**
@@ -2594,7 +2599,7 @@ public class Containers {
 							equals = "2 or 4",
 							test = false) })
 	@no_test
-	public static IList among(final IScope scope, final Integer number, final IContainer c)
+	public static IList among(final IScope scope, final Long number, final IContainer c)
 			throws GamaRuntimeException {
 		if (number <= 0) {
 			if (number < 0) {
@@ -3156,10 +3161,9 @@ public class Containers {
 							value = "[1::2, 3::4, 5::6] count (each > 4)",
 							equals = "1") },
 			see = { "group_by" })
-	public static Integer count(final IScope scope, final String eachName, final IContainer original,
+	public static Long count(final IScope scope, final String eachName, final IContainer original,
 			final IExpression filter) {
-		return (int) notNull(scope, original).stream(scope).filter(buildPredicateWithEach(scope, eachName, filter))
-				.count();
+		return notNull(scope, original).stream(scope).filter(buildPredicateWithEach(scope, eachName, filter)).count();
 	}
 
 	/**
@@ -3560,8 +3564,8 @@ public class Containers {
 		if (size == 0) { size = 1; }
 		return switch (s) {
 			case Number n -> n.doubleValue() / size;
-			case IPoint ip -> ip.dividedBy(size);
-			case IColor ic -> Colors.divide(ic, size);
+			case IPoint ip -> ip.dividedBy((long) size);
+			case IColor ic -> Colors.divide(ic, (long) size);
 			case null, default -> Cast.asFloat(scope, s) / size;
 		};
 	}

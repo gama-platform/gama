@@ -974,8 +974,8 @@ public class ExecutionScope implements IScope {
 	}
 
 	@Override
-	public final Integer getIntArg(final String name) throws GamaRuntimeException {
-		return (Integer) getArg(name, IType.INT);
+	public final Long getIntArg(final String name) throws GamaRuntimeException {
+		return (Long) getArg(name, IType.INT);
 	}
 
 	@Override

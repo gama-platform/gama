@@ -31,13 +31,13 @@ import gama.ui.shared.utils.WorkbenchHelper;
 public class GamaGLAnimator implements Runnable, GLAnimatorControl, GLAnimatorControl.UncaughtExceptionHandler {
 
 	/** The fps changed. */
-	IPreferenceAfterChangeListener<Integer> fpsChanged = newValue -> targetFPS = newValue;
+	IPreferenceAfterChangeListener<Long> fpsChanged = newValue -> targetFPS = newValue.intValue();
 
 	/** The cap FPS. */
 	protected volatile boolean capFPS = GamaPreferences.Displays.OPENGL_CAP_FPS.getValue();
 
 	/** The target FPS. */
-	protected volatile int targetFPS = GamaPreferences.Displays.OPENGL_FPS.getValue();
+	protected volatile int targetFPS = GamaPreferences.Displays.OPENGL_FPS.getValue().intValue();
 
 	/** The animator thread. */
 	protected final Thread animatorThread;

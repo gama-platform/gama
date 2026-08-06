@@ -230,9 +230,9 @@ public class GamaSVGFile extends GamaGeometryFile {
 			value = "image")
 	@doc ("Builds a new image from the specified file, passing the width and height in parameter ")
 	@no_test
-	public static GamaImage image(final IScope scope, final IGamaFile file, final int w, final int h) {
+	public static GamaImage image(final IScope scope, final IGamaFile file, final long w, final long h) {
 		if (file instanceof GamaSVGFile svg)
-			return GamaImage.from(svg.getImage(scope, true, w, h), true, file.getPath(scope) + w + "x" + h);
+			return GamaImage.from(svg.getImage(scope, true, (int) w, (int) h), true, file.getPath(scope) + w + "x" + h);
 		if (file instanceof GamaImageFile f) return ImageOperators.with_size(scope,
 				GamaImage.from(f.getImage(scope, true), true, f.getOriginalPath()), w, h);
 		return null;

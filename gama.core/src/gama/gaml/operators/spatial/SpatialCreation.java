@@ -399,11 +399,11 @@ public class SpatialCreation {
 	@no_test // (comment="See Creation.experiment in test models : {Arc tests}")
 
 	public static IShape ellipticalArc(final IScope scope, final IPoint pt1, final IPoint pt2, final double h,
-			final int nPts) {
+			final long nPts) {
 		double xRadius = pt1.distance(pt2) / 2.0;
 		double yRadius = h;
 
-		Coordinate[] pts = new Coordinate[nPts];
+		Coordinate[] pts = new Coordinate[(int) nPts];
 		int iPt = 0;
 		for (int i = 0; i < nPts; i++) {
 			double ang = i * (Math.PI / nPts);
@@ -676,7 +676,7 @@ public class SpatialCreation {
 					"triangle" })
 	@no_test // no idea how to test a cone
 	@depends_on (IKeyword.SHAPE)
-	public static IShape cone(final IScope scope, final Integer p1, final Integer p2) {
+	public static IShape cone(final IScope scope, final Long p1, final Long p2) {
 		if (p1 == null || p2 == null) return null;
 		final Double min_angle = Maths.checkHeading(p1);
 		final Double max_angle = Maths.checkHeading(p2);
@@ -732,7 +732,7 @@ public class SpatialCreation {
 	@no_test // no idea how to test a cone
 	public static IShape cone(final IScope scope, final IPoint p) {
 		if (p == null) return null;
-		return cone(scope, (int) p.getX(), (int) p.getY());
+		return cone(scope, (long) p.getX(), (long) p.getY());
 	}
 
 	/**
@@ -1575,9 +1575,9 @@ public class SpatialCreation {
 					"line" })
 	@no_test
 	public static IShape bezierCurve(final IScope scope, final IPoint p0, final IPoint p1, final IPoint p2,
-			final int nbPoints) {
+			final long nbPoints) {
 		if (p0 == null || p1 == null || p2 == null || nbPoints < 2) return null;
-		return GamaShapeFactory.buildPolyline(quadraticBezierCurve(p0, p1, p2, nbPoints));
+		return GamaShapeFactory.buildPolyline(quadraticBezierCurve(p0, p1, p2, (int) nbPoints));
 	}
 
 	/**
@@ -1784,7 +1784,7 @@ public class SpatialCreation {
 					"line" })
 	@no_test
 	public static IShape bezierCurve(final IScope scope, final IPoint p0, final IPoint p1, final Double coefficient,
-			final boolean right, final int nbPoints) {
+			final boolean right, final long nbPoints) {
 		return bezierCurve(scope, p0, p1, coefficient, right, nbPoints, 0.5);
 	}
 
@@ -1832,7 +1832,7 @@ public class SpatialCreation {
 					"line" })
 	@no_test
 	public static IShape bezierCurve(final IScope scope, final IPoint p0, final IPoint p1, final Double coefficient,
-			final boolean right, final int nbPoints, final double proportion) {
+			final boolean right, final long nbPoints, final double proportion) {
 		if (p0 == null || p1 == null) return null;
 		IPoint p01 = p0.plus(p1.minus(p0).times(proportion));
 		final double val = coefficient * p0.euclidianDistanceTo(p1);
@@ -1886,7 +1886,7 @@ public class SpatialCreation {
 					"line" })
 	@no_test
 	public static IShape bezierCurve(final IScope scope, final IPoint p0, final IPoint p1, final Double coefficient,
-			final int nbPoints, final double proportion, final double angle) {
+			final long nbPoints, final double proportion, final double angle) {
 		if (p0 == null || p1 == null) return null;
 		IShape shape = bezierCurve(scope, p0, p1, coefficient, false, nbPoints, proportion);
 		shape = SpatialTransformations.rotated_by(scope, shape, -angle, p0.minus(p1));
@@ -1937,7 +1937,7 @@ public class SpatialCreation {
 					"line" })
 	@no_test
 	public static IShape bezierCurve(final IScope scope, final IPoint p0, final IPoint p1, final Double coefficient,
-			final int nbPoints, final double angle) {
+			final long nbPoints, final double angle) {
 		return bezierCurve(scope, p0, p1, coefficient, nbPoints, 0.5, angle);
 	}
 
@@ -2027,9 +2027,9 @@ public class SpatialCreation {
 					"line" })
 	@no_test
 	public static IShape bezierCurve(final IScope scope, final IPoint p0, final IPoint p1, final IPoint p2,
-			final IPoint p3, final int nbPoints) {
+			final IPoint p3, final long nbPoints) {
 		if (p0 == null || p1 == null || p2 == null || p3 == null || nbPoints < 2) return null;
-		return GamaShapeFactory.buildPolyline(cubicBezierCurve(p0, p1, p2, p3, nbPoints));
+		return GamaShapeFactory.buildPolyline(cubicBezierCurve(p0, p1, p2, p3, (int) nbPoints));
 	}
 
 	/**
@@ -2438,7 +2438,7 @@ public class SpatialCreation {
 	 * @operator("envelope")
 	 *
 	 * @doc(value =
-	 * "A rectangular 3D geometry that represents the rectangle that surrounds the geometries or the surface described by the arguments. More general than geometry(arguments).envelope, as it allows to pass int, double, point, image files, shape files, asc files, or any list combining these arguments, in which case the envelope will be correctly expanded. If an envelope cannot be determined from the arguments, a default one of dimensions (0,100, 0, 100, 0, 100) is returned"
+	 * "A rectangular 3D geometry that represents the rectangle that surrounds the geometries or the surface described by the arguments. More general than geometry(arguments).envelope, as it allows to pass long, double, point, image files, shape files, asc files, or any list combining these arguments, in which case the envelope will be correctly expanded. If an envelope cannot be determined from the arguments, a default one of dimensions (0,100, 0, 100, 0, 100) is returned"
 	 * ) public static IShape envelope(final IScope scope, final Object obj) { GamaEnvelope env = new
 	 * GamaEnvelope(GeometryUtils.computeEnvelopeFrom(scope, obj)); if ( env.isNull() ) { env = new GamaEnvelope(0, 100,
 	 * 0, 100, 0, 100); } final IShape shape = GamaGeometryType.buildBox(env.getWidth(), env.getHeight(),

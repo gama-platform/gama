@@ -228,12 +228,12 @@ public class System {
 					value = "write sample(is_reachable(\"www.google.com\", 200));",
 					isExecutable = false) })
 	@no_test
-	public static Boolean is_reachable(final IScope scope, final String address, final int openPort,
-			final int timeout) {
+	public static Boolean is_reachable(final IScope scope, final String address, final long openPort,
+			final long timeout) {
 		// Any Open port on other machine
 		// openPort = 22 - ssh, 80 or 443 - webserver, 25 - mailserver etc.
 		try (Socket soc = new Socket()) {
-			soc.connect(new InetSocketAddress(address, openPort), timeout);
+			soc.connect(new InetSocketAddress(address, (int) openPort), (int) timeout);
 			return true;
 		} catch (IOException ex) {
 			return false;
@@ -319,7 +319,7 @@ public class System {
 					value = "write sample(is_reachable(\"www.google.com\", 200));",
 					isExecutable = false) })
 	@no_test
-	public static Boolean is_reachable(final IScope scope, final String address, final int timeout) {
+	public static Boolean is_reachable(final IScope scope, final String address, final long timeout) {
 		return is_reachable(scope, address, 80, timeout);
 	}
 
@@ -1025,7 +1025,7 @@ public class System {
 	@doc (
 			value = "Allows the user to enter an int by specifying a title and an initial value")
 	@no_test
-	public static IParameter enterValue(final IScope scope, final String title, final Integer init) {
+	public static IParameter enterValue(final IScope scope, final String title, final Long init) {
 		return enterValue(scope, title, Types.INT, init);
 	}
 
@@ -1068,8 +1068,8 @@ public class System {
 			value = "Allows the user to enter an int by specifying a title, an initial value, a min and a max value. "
 					+ "The initial value is clamped if it is lower than min or higher than max.")
 	@no_test
-	public static IParameter enterValue(final IScope scope, final String title, final Integer init, final Integer min,
-			final Integer max) {
+	public static IParameter enterValue(final IScope scope, final String title, final Long init, final Long min,
+			final Long max) {
 		return new InputParameter(title, init, min, max);
 	}
 
@@ -1127,8 +1127,8 @@ public class System {
 									value = "map resMMStepFF <- user_input([enter(\"Title\",5,0.1,10.1,0.5)]);",
 									test = false) }) })
 	@no_test
-	public static IParameter enterValue(final IScope scope, final String title, final Integer init, final Integer min,
-			final Integer max, final Integer step) {
+	public static IParameter enterValue(final IScope scope, final String title, final Long init, final Long min,
+			final Long max, final Long step) {
 		return new InputParameter(title, init, min, max, step);
 	}
 

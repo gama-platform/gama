@@ -252,7 +252,7 @@ public class Graphs {
 			if (!(p1 instanceof IAgent ag)) return false;
 			IContainer<?, IShape> places = ag.getPopulation().getTopology().getPlaces();
 			if (!(places instanceof IGrid g)) return false;
-			return g.getNeighborhood().getNeighborsIn(scope, ag.getIndex(), 1).contains(p2);
+			return g.getNeighborhood().getNeighborsIn(scope, (int) ag.getIndex(), 1).contains(p2);
 		}
 
 		/**
@@ -737,7 +737,7 @@ public class Graphs {
 			see = { "out_degree_of", "degree_of" })
 	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
 			+ "(g in_degree_of ({20,3})) = 1")
-	public static int inDregreeOf(final IScope scope, final IGraph graph, final Object vertex) {
+	public static long inDregreeOf(final IScope scope, final IGraph graph, final Object vertex) {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
 		if (graph.containsVertex(vertex)) return graph.inDegreeOf(vertex);
 		return 0;
@@ -814,7 +814,7 @@ public class Graphs {
 			+ "g1 out_degree_of {30,30} = 1")
 	@test ("graph<geometry, geometry> g2 <- directed(as_edge_graph([ edge({30,30}, {10,5}), edge({30,30}, {80,35}), node ({30,30})]));\r\n"
 			+ "g2 out_degree_of {30,30} = 2")
-	public static int outDregreeOf(final IScope scope, final IGraph graph, final Object vertex) {
+	public static long outDregreeOf(final IScope scope, final IGraph graph, final Object vertex) {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
 		if (graph.containsVertex(vertex)) return graph.outDegreeOf(vertex);
 		return 0;
@@ -848,7 +848,7 @@ public class Graphs {
 			see = { "in_degree_of", "out_degree_of" })
 	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
 			+ " (g degree_of ({10,5})) = 3")
-	public static int degreeOf(final IScope scope, final IGraph graph, final Object vertex) {
+	public static long degreeOf(final IScope scope, final IGraph graph, final Object vertex) {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
 		if (graph.containsVertex(vertex)) return graph.degreeOf(vertex);
 		return 0;
@@ -1092,7 +1092,7 @@ public class Graphs {
 			see = { "alpha_index", "beta_index", "gamma_index", "connectivity_index" })
 	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
 			+ " nb_cycles(g) = 1 ")
-	public static int nbCycles(final IScope scope, final IGraph graph) {
+	public static long nbCycles(final IScope scope, final IGraph graph) {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
 		final int S = graph.vertexSet().size();
 		final int C = connectedComponentOf(scope, graph).size();
@@ -1255,7 +1255,7 @@ public class Graphs {
 
 		final IMap mapResult = GamaMapFactory.create(graph.getGamlType().getKeyType(), Types.INT);
 		final IList vertices = GamaListFactory.castToList(scope, graph.vertexSet());
-		for (final Object v : vertices) { mapResult.put(v, 0); }
+		for (final Object v : vertices) { mapResult.put(v, 0l); }
 		final boolean directed = graph.isDirected();
 		for (int i = 0; i < vertices.size(); i++) {
 			for (int j = directed ? 0 : i + 1; j < vertices.size(); j++) {
@@ -1269,7 +1269,7 @@ public class Graphs {
 					Object node = graph.getEdgeTarget(edge);
 
 					if (node == vc) { node = graph.getEdgeSource(edge); }
-					if (node != v2 && node != v1) { mapResult.put(node, (Integer) mapResult.get(node) + 1); }
+					if (node != v2 && node != v1) { mapResult.put(node, ((Number) mapResult.get(node)).longValue() + 1); }
 					vc = node;
 				}
 			}
@@ -1306,7 +1306,7 @@ public class Graphs {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
 
 		final IMap mapResult = GamaMapFactory.create(graph.getGamlType().getContentType(), Types.INT);
-		for (final Object v : graph.edgeSet()) { mapResult.put(v, 0); }
+		for (final Object v : graph.edgeSet()) { mapResult.put(v, 0l); }
 		final IList vertices = GamaListFactory.castToList(scope, graph.vertexSet());
 		final boolean directed = graph.isDirected();
 		for (int i = 0; i < vertices.size(); i++) {
@@ -1316,7 +1316,7 @@ public class Graphs {
 				if (v1 == v2) { continue; }
 				final List edges = graph.getPathComputer().computeBestRouteBetween(scope, v1, v2);
 				if (edges == null) { continue; }
-				for (final Object edge : edges) { mapResult.put(edge, (Integer) mapResult.get(edge) + 1); }
+				for (final Object edge : edges) { mapResult.put(edge, ((Number) mapResult.get(edge)).longValue() + 1); }
 			}
 		}
 		return mapResult;
@@ -2237,8 +2237,8 @@ public class Graphs {
 							value = "graphEpidemio rewire_n 10",
 							equals = "the graph with 3 edges rewired",
 							test = false) })
-	public static IGraph rewireGraph(final IScope scope, final IGraph g, final Integer count) {
-		GraphAlgorithmsHandmade.rewireGraphCount(scope, g, count);
+	public static IGraph rewireGraph(final IScope scope, final IGraph g, final Long count) {
+		GraphAlgorithmsHandmade.rewireGraphCount(scope, g, count.intValue());
 		g.getPathComputer().incVersion();
 		return g;
 	}
@@ -2358,10 +2358,10 @@ public class Graphs {
 
 			""")
 	public static IList<IPath> kPathsBetween(final IScope scope, final IGraphEventProvider graph, final IPair sourTarg,
-			final int k) throws GamaRuntimeException {
+			final long k) throws GamaRuntimeException {
 
 		return GamaTopologyFactory.castToTopology(scope, graph, false).kPathsBetween(scope, (IShape) sourTarg.key(),
-				(IShape) sourTarg.value(), k);
+				(IShape) sourTarg.value(), (int) k);
 	}
 
 	/**
@@ -2533,9 +2533,9 @@ public class Graphs {
 					distance of displacement for a vertice to be considered as in equilibrium""")
 	@no_test
 	public static IGraph layoutForce(final IScope scope, final IGraph graph, final IShape bounds,
-			final double coeffForce, final double coolingRate, final int maxIteration, final double criterion) {
+			final double coeffForce, final double coolingRate, final long maxIteration, final double criterion) {
 		final LayoutForceDirected sim =
-				new LayoutForceDirected(graph, bounds, coeffForce, coolingRate, maxIteration, true, criterion);
+				new LayoutForceDirected(graph, bounds, coeffForce, coolingRate, (int) maxIteration, true, criterion);
 		sim.startSimulation(scope);
 		return graph;
 	}
@@ -2571,8 +2571,8 @@ public class Graphs {
 					  max_iteration is the maximal number of iterations""")
 	@no_test
 	public static IGraph layoutForceFR(final IScope scope, final IGraph graph, final IShape bounds,
-			final double normalization_factor, final int maxIteration) {
-		final FRLayoutAlgorithm2D sim = new FRLayoutAlgorithm2D(maxIteration, normalization_factor,
+			final double normalization_factor, final long maxIteration) {
+		final FRLayoutAlgorithm2D sim = new FRLayoutAlgorithm2D((int) maxIteration, normalization_factor,
 				scope.getSimulation().getRandomGenerator().getGenerator());
 		LayoutModel2D model = toModel(graph, bounds);
 		sim.layout(graph, model);
@@ -2612,12 +2612,12 @@ public class Graphs {
 					  max_iteration is the maximal number of iterations""")
 	@no_test
 	public static IGraph indexedFRLayout(final IScope scope, final IGraph graph, final IShape bounds,
-			final double theta, final double normalizationFactor, final int maxIteration) throws GamaRuntimeException {
+			final double theta, final double normalizationFactor, final long maxIteration) throws GamaRuntimeException {
         if (theta < 0d || theta > 1d) {
             throw GamaRuntimeException.error("Theta parameter should be between 0 and 1 (included)", scope);
         }
 
-		final IndexedFRLayoutAlgorithm2D sim = new IndexedFRLayoutAlgorithm2D(maxIteration, theta, normalizationFactor,
+		final IndexedFRLayoutAlgorithm2D sim = new IndexedFRLayoutAlgorithm2D((int) maxIteration, theta, normalizationFactor,
 				scope.getSimulation().getRandomGenerator().getGenerator());
 		LayoutModel2D model = toModel(graph, bounds);
 		sim.layout(graph, model);
@@ -2697,9 +2697,9 @@ public class Graphs {
 					distance of displacement for a vertice to be considered as in equilibrium""")
 	@no_test
 	public static IGraph layoutForce(final IScope scope, final IGraph graph, final IShape bounds,
-			final double coeffForce, final double coolingRate, final int maxIteration) {
+			final double coeffForce, final double coolingRate, final long maxIteration) {
 		final LayoutForceDirected sim =
-				new LayoutForceDirected(graph, bounds, coeffForce, coolingRate, maxIteration, false, 0);
+				new LayoutForceDirected(graph, bounds, coeffForce, coolingRate, (int) maxIteration, false, 0);
 		sim.startSimulation(scope);
 		return graph;
 	}
@@ -2809,7 +2809,7 @@ public class Graphs {
 			value = "retur for each edge, its strahler number")
 	@no_test
 	public static IMap strahlerNumber(final IScope scope, final IGraph graph) {
-		final IMap<Object, Integer> results = GamaMapFactory.create(Types.NO_TYPE, Types.INT);
+		final IMap<Object, Long> results = GamaMapFactory.create(Types.NO_TYPE, Types.INT);
 		if (graph == null || graph.isEmpty(scope)) return results;
 
 		IGraph g = graph.getConnected() ? asDirectedGraph(graph)
@@ -2824,15 +2824,15 @@ public class Graphs {
 				final List previousEdges = inEdgesOf(scope, g, g.getEdgeSource(e));
 				final List nextEdges = outEdgesOf(scope, g, g.getEdgeTarget(e));
 				if (nextEdges.isEmpty()) {
-					results.put(e, 1);
+					results.put(e, 1l);
 					newList.addAll(previousEdges);
 				} else {
 					final boolean notCompleted = nextEdges.stream().anyMatch(a -> !results.containsKey(a));
 					if (notCompleted) {
 						newList.add(e);
 					} else {
-						final List<Integer> vals = StreamEx.of(nextEdges).map(a -> results.get(a)).toList();
-						final Integer maxVal = Collections.max(vals);
+						final List<Long> vals = StreamEx.of(nextEdges).map(a -> results.get(a)).toList();
+						final Long maxVal = Collections.max(vals);
 						final int nbIt = Collections.frequency(vals, maxVal);
 						if (nbIt > 1) {
 							results.put(e, maxVal + 1);
@@ -2891,7 +2891,7 @@ public class Graphs {
 	@doc (
 			value = "Allows to create a wrapper (of type unknown) that wraps two objects and indicates they should be considered as the source and the target of a new edge of a graph. The third parameter indicates which weight this edge should have in the graph")
 	@no_test
-	public static Object edge(final Object source, final Object target, final Integer weight) {
+	public static Object edge(final Object source, final Object target, final Long weight) {
 		return edge(source, target, null, weight);
 	}
 
@@ -2935,7 +2935,7 @@ public class Graphs {
 	@doc (
 			value = "Allows to create a wrapper (of type unknown) that wraps a pair of objects and a third and indicates  they should respectively be considered as the source (key of the pair), the target (value of the pair) and the actual object representing an edge of a graph. The third parameter indicates which weight this edge should have in the graph")
 	@no_test
-	public static Object edge(final IPair pair, final Object object, final Integer weight) {
+	public static Object edge(final IPair pair, final Object object, final Long weight) {
 		return edge(pair.key(), pair.value(), object, weight);
 	}
 
@@ -3025,7 +3025,7 @@ public class Graphs {
 	@doc (
 			value = "Allows to create a wrapper (of type unknown) that wraps two objects and indicates they should be considered as the source and the target of a new edge of a graph. The fourth parameter indicates which weight this edge should have in the graph")
 	@no_test
-	public static Object edge(final Object source, final Object target, final Object object, final Integer weight) {
+	public static Object edge(final Object source, final Object target, final Object object, final Long weight) {
 		return new EdgeToAdd(source, target, object, weight == null ? 0d : weight.doubleValue());
 	}
 
@@ -3065,7 +3065,7 @@ public class Graphs {
 	@doc (
 			value = "Allows to create a wrapper (of type unknown) that wraps an actual object and indicates it should be considered as an edge of a graph. The second parameter indicates which weight this edge should have in the graph")
 	@no_test
-	public static Object edge(final Object edgeObject, final Integer weight) {
+	public static Object edge(final Object edgeObject, final Long weight) {
 		return edge(null, null, edgeObject, weight);
 	}
 
@@ -3105,7 +3105,7 @@ public class Graphs {
 	@doc (
 			value = "Allows to create a wrapper (of type unknown) that wraps a pair of objects and indicates they should be considered as the source and target of an edge. The second parameter indicates which weight this edge should have in the graph")
 	@no_test
-	public static Object edge(final IPair pair, final Integer weight) {
+	public static Object edge(final IPair pair, final Long weight) {
 		return edge(pair.key(), pair.value(), null, weight);
 	}
 
@@ -3356,11 +3356,12 @@ public class Graphs {
 									isExecutable = false) }) },
 			see = { "generate_watts_strogatz" })
 	@no_test
-	public static IGraph generateGraphBarabasiAlbert(final IScope scope, final Integer initNbNodes,
-			final Integer nbEdgesAdded, final Integer nbNodes, final Boolean directed, final ISpecies node_species,
+	public static IGraph generateGraphBarabasiAlbert(final IScope scope, final Long initNbNodes,
+			final Long nbEdgesAdded, final Long nbNodes, final Boolean directed, final ISpecies node_species,
 			final ISpecies edges_species) {
 
-		BarabasiAlbertGraphGenerator gen = new BarabasiAlbertGraphGenerator(initNbNodes, nbEdgesAdded, nbNodes,
+		BarabasiAlbertGraphGenerator gen = new BarabasiAlbertGraphGenerator(initNbNodes.intValue(),
+				nbEdgesAdded.intValue(), nbNodes.intValue(),
 				scope.getSimulation().getRandomGenerator().getGenerator());
 		AbstractBaseGraph<String, DefaultEdge> graph = directed
 				? new DirectedMultigraph(SupplierUtil.createStringSupplier(), SupplierUtil.DEFAULT_EDGE_SUPPLIER, true)
@@ -3409,10 +3410,10 @@ public class Graphs {
 			see = { "generate_watts_strogatz" })
 	@no_test
 	public static IGraph generateGraphBarabasiAlbert(final IScope scope, final IContainer nodes,
-			final Integer initNbNodes, final Integer nbEdgesAdded, final Boolean directed) {
+			final Long initNbNodes, final Long nbEdgesAdded, final Boolean directed) {
 
-		BarabasiAlbertGraphGenerator gen = new BarabasiAlbertGraphGenerator(initNbNodes, nbEdgesAdded,
-				nodes.length(scope), scope.getSimulation().getRandomGenerator().getGenerator());
+		BarabasiAlbertGraphGenerator gen = new BarabasiAlbertGraphGenerator(initNbNodes.intValue(),
+				nbEdgesAdded.intValue(), nodes.length(scope), scope.getSimulation().getRandomGenerator().getGenerator());
 		AbstractBaseGraph<String, DefaultEdge> graph = directed
 				? new DirectedMultigraph(SupplierUtil.createStringSupplier(), SupplierUtil.DEFAULT_EDGE_SUPPLIER, true)
 				: new Multigraph(SupplierUtil.createStringSupplier(), SupplierUtil.DEFAULT_EDGE_SUPPLIER, true);
@@ -3483,8 +3484,8 @@ public class Graphs {
 									isExecutable = false) }) },
 			see = { "generate_watts_strogatz" })
 	@no_test
-	public static IGraph generateGraphBarabasiAlbert(final IScope scope, final Integer InitNbNodes,
-			final Integer nbEdgesAdded, final Integer nbNodes, final Boolean directed, final ISpecies node_species) {
+	public static IGraph generateGraphBarabasiAlbert(final IScope scope, final Long InitNbNodes,
+			final Long nbEdgesAdded, final Long nbNodes, final Boolean directed, final ISpecies node_species) {
 
 		return generateGraphBarabasiAlbert(scope, InitNbNodes, nbEdgesAdded, nbNodes, directed, node_species, null);
 	}
@@ -3540,8 +3541,8 @@ public class Graphs {
 									isExecutable = false) }) },
 			see = { "generate_watts_strogatz" })
 	@no_test
-	public static IGraph generateGraphBarabasiAlbert(final IScope scope, final Integer InitNbNodes,
-			final Integer nbEdgesAdded, final Integer nbNodes, final Boolean directed) {
+	public static IGraph generateGraphBarabasiAlbert(final IScope scope, final Long InitNbNodes,
+			final Long nbEdgesAdded, final Long nbNodes, final Boolean directed) {
 
 		return generateGraphBarabasiAlbert(scope, InitNbNodes, nbEdgesAdded, nbNodes, directed, null, null);
 	}
@@ -3607,10 +3608,10 @@ public class Graphs {
 									isExecutable = false) }) },
 			see = { "generate_barabasi_albert" })
 	@no_test
-	public static IGraph generateGraphWattsStrogatz(final IScope scope, final Integer nbNodes, final Double p,
-			final Integer k, final Boolean directed, final ISpecies node_species, final ISpecies edges_species) {
+	public static IGraph generateGraphWattsStrogatz(final IScope scope, final Long nbNodes, final Double p,
+			final Long k, final Boolean directed, final ISpecies node_species, final ISpecies edges_species) {
 
-		WattsStrogatzGraphGenerator wsg = new WattsStrogatzGraphGenerator(nbNodes, k, p, false,
+		WattsStrogatzGraphGenerator wsg = new WattsStrogatzGraphGenerator(nbNodes.intValue(), k.intValue(), p, false,
 				scope.getSimulation().getRandomGenerator().getGenerator());
 		AbstractBaseGraph<String, DefaultEdge> graph = directed
 				? new DirectedMultigraph(SupplierUtil.createStringSupplier(), SupplierUtil.DEFAULT_EDGE_SUPPLIER, true)
@@ -3676,8 +3677,8 @@ public class Graphs {
 									isExecutable = false) }) },
 			see = { "generate_barabasi_albert" })
 	@no_test
-	public static IGraph generateGraphWattsStrogatz(final IScope scope, final Integer nbNodes, final Double p,
-			final Integer k, final Boolean directed, final ISpecies node_species) {
+	public static IGraph generateGraphWattsStrogatz(final IScope scope, final Long nbNodes, final Double p,
+			final Long k, final Boolean directed, final ISpecies node_species) {
 
 		return generateGraphWattsStrogatz(scope, nbNodes, p, k, directed, node_species, null);
 
@@ -3733,8 +3734,8 @@ public class Graphs {
 									isExecutable = false) }) },
 			see = { "generate_barabasi_albert" })
 	@no_test
-	public static IGraph generateGraphWattsStrogatz(final IScope scope, final Integer nbNodes, final Double p,
-			final Integer k, final Boolean directed) {
+	public static IGraph generateGraphWattsStrogatz(final IScope scope, final Long nbNodes, final Double p,
+			final Long k, final Boolean directed) {
 
 		return generateGraphWattsStrogatz(scope, nbNodes, p, k, directed, null, null);
 
@@ -3791,9 +3792,9 @@ public class Graphs {
 			see = { "generate_barabasi_albert" })
 	@no_test
 	public static IGraph generateGraphWattsStrogatz(final IScope scope, final IContainer nodes, final Double p,
-			final Integer k, final Boolean directed) {
+			final Long k, final Boolean directed) {
 
-		WattsStrogatzGraphGenerator wsg = new WattsStrogatzGraphGenerator(nodes.length(scope), k, p, false,
+		WattsStrogatzGraphGenerator wsg = new WattsStrogatzGraphGenerator(nodes.length(scope), k.intValue(), p, false,
 				scope.getSimulation().getRandomGenerator().getGenerator());
 		AbstractBaseGraph<String, DefaultEdge> graph = directed
 				? new DirectedMultigraph(SupplierUtil.createStringSupplier(), SupplierUtil.DEFAULT_EDGE_SUPPLIER, true)
@@ -3851,13 +3852,13 @@ public class Graphs {
 									isExecutable = false) }) },
 			see = { "generate_barabasi_albert", "generate_watts_strogatz" })
 	@no_test
-	public static IGraph generateGraphRandom(final IScope scope, final int nbNodes, final int nbEdges,
+	public static IGraph generateGraphRandom(final IScope scope, final long nbNodes, final long nbEdges,
 			final Boolean directed, final ISpecies node_species, final ISpecies edges_species) {
 		AbstractBaseGraph<String, DefaultEdge> graph = directed
 				? new DirectedMultigraph(SupplierUtil.createStringSupplier(), SupplierUtil.DEFAULT_EDGE_SUPPLIER, true)
 				: new Multigraph(SupplierUtil.createStringSupplier(), SupplierUtil.DEFAULT_EDGE_SUPPLIER, true);
 		GnmRandomGraphGenerator gen =
-				new GnmRandomGraphGenerator(nbNodes, nbEdges, scope.getSimulation().getSeed().longValue());
+				new GnmRandomGraphGenerator((int) nbNodes, (int) nbEdges, scope.getSimulation().getSeed().longValue());
 		gen.generateGraph(graph, null);
 
 		return new GamaGraph<>(scope, graph, node_species, edges_species);
@@ -3903,7 +3904,7 @@ public class Graphs {
 									isExecutable = false) }) },
 			see = { "generate_barabasi_albert", "generate_watts_strogatz" })
 	@no_test
-	public static IGraph generateGraphRandom(final IScope scope, final int nbNodes, final int nbEdges,
+	public static IGraph generateGraphRandom(final IScope scope, final long nbNodes, final long nbEdges,
 			final Boolean directed, final ISpecies node_species) {
 		return generateGraphRandom(scope, nbNodes, nbEdges, directed, node_species, null);
 
@@ -3943,7 +3944,7 @@ public class Graphs {
 									isExecutable = false) }) },
 			see = { "generate_barabasi_albert", "generate_watts_strogatz" })
 	@no_test
-	public static IGraph generateGraphRandom(final IScope scope, final int nbNodes, final int nbEdges,
+	public static IGraph generateGraphRandom(final IScope scope, final long nbNodes, final long nbEdges,
 			final Boolean directed) {
 		return generateGraphRandom(scope, nbNodes, nbEdges, directed, (ISpecies) null, (ISpecies) null);
 
@@ -4058,7 +4059,7 @@ public class Graphs {
 									isExecutable = false) }) },
 			see = { "generate_barabasi_albert", "generate_watts_strogatz" })
 	@no_test
-	public static IGraph generateGraphComplete(final IScope scope, final int nbNodes, final Boolean directed,
+	public static IGraph generateGraphComplete(final IScope scope, final long nbNodes, final Boolean directed,
 			final ISpecies node_species, final ISpecies edges_species) {
 		AbstractBaseGraph<String, DefaultEdge> graph = directed
 				? new DirectedMultigraph(SupplierUtil.createStringSupplier(), SupplierUtil.DEFAULT_EDGE_SUPPLIER, true)
@@ -4105,7 +4106,7 @@ public class Graphs {
 									isExecutable = false) }) },
 			see = { "generate_barabasi_albert", "generate_watts_strogatz" })
 	@no_test
-	public static IGraph generateGraphComplete(final IScope scope, final int nbNodes, final Boolean directed,
+	public static IGraph generateGraphComplete(final IScope scope, final long nbNodes, final Boolean directed,
 			final ISpecies node_species) {
 		return generateGraphComplete(scope, nbNodes, directed, node_species, null);
 
@@ -4140,7 +4141,7 @@ public class Graphs {
 									isExecutable = false) }) },
 			see = { "generate_barabasi_albert", "generate_watts_strogatz" })
 	@no_test
-	public static IGraph generateGraphComplete(final IScope scope, final int nbNodes, final Boolean directed) {
+	public static IGraph generateGraphComplete(final IScope scope, final long nbNodes, final Boolean directed) {
 		return generateGraphComplete(scope, nbNodes, directed, (ISpecies) null, (ISpecies) null);
 
 	}
@@ -4164,14 +4165,14 @@ public class Graphs {
 			value = "The Girvan�Newman algorithm is a hierarchical method used to detect communities. It detects communities by progressively removing edges from the original network."
 					+ "It returns a list of list of vertices and takes as operand the graph and the number of clusters")
 	@no_test
-	public static IList girvanNewmanClustering(final IScope scope, final IGraph graph, final int numCLusters) {
+	public static IList girvanNewmanClustering(final IScope scope, final IGraph graph, final long numCLusters) {
 		if (graph.getVertices().isEmpty() || graph.getEdges().isEmpty()) {
 			IList<IGraph> emptyL = GamaListFactory.create(Types.GRAPH);
 			emptyL.add((IGraph) graph.copy(scope));
 			return emptyL;
 		}
 
-		GirvanNewmanClustering clustering = new GirvanNewmanClustering(graph, numCLusters);
+		GirvanNewmanClustering clustering = new GirvanNewmanClustering(graph, (int) numCLusters);
 		Clustering clusters = clustering.getClustering();
 		IList clustersV = GamaListFactory.create(Types.LIST);
 		for (Object s : clusters.getClusters()) {
@@ -4202,14 +4203,14 @@ public class Graphs {
 					 clusters.\
 					It returns a list of list of vertices and takes as operand the graph and the number of clusters""")
 	@no_test
-	public static IList KSpanningTreeClusteringAfl(final IScope scope, final IGraph graph, final int numCLusters) {
+	public static IList KSpanningTreeClusteringAfl(final IScope scope, final IGraph graph, final long numCLusters) {
 		if (graph.getVertices().isEmpty() || graph.getEdges().isEmpty()) {
 			IList<IGraph> emptyL = GamaListFactory.create(Types.GRAPH);
 			emptyL.add((IGraph) graph.copy(scope));
 			return emptyL;
 		}
 
-		KSpanningTreeClustering clustering = new KSpanningTreeClustering(graph, numCLusters);
+		KSpanningTreeClustering clustering = new KSpanningTreeClustering(graph, (int) numCLusters);
 		Clustering clusters = clustering.getClustering();
 		IList clustersV = GamaListFactory.create(Types.LIST);
 		for (Object s : clusters.getClusters()) {
@@ -4240,14 +4241,14 @@ public class Graphs {
 					 * community structures in large-scale networks. Physical review E, 76(3), 036106.\
 					It returns a list of list of vertices and takes as operand the graph and maximal number of iteration""")
 	@no_test
-	public static IList labelPropagationClusteringAgl(final IScope scope, final IGraph graph, final int maxIteration) {
+	public static IList labelPropagationClusteringAgl(final IScope scope, final IGraph graph, final long maxIteration) {
 		if (graph.getVertices().isEmpty() || graph.getEdges().isEmpty()) {
 			IList<IGraph> emptyL = GamaListFactory.create(Types.GRAPH);
 			emptyL.add((IGraph) graph.copy(scope));
 			return emptyL;
 		}
 
-		LabelPropagationClustering clustering = new LabelPropagationClustering(graph, maxIteration,
+		LabelPropagationClustering clustering = new LabelPropagationClustering(graph, (int) maxIteration,
 				scope.getSimulation().getRandomGenerator().getGenerator());
 		Clustering clusters = clustering.getClustering();
 		IList clustersV = GamaListFactory.create(Types.LIST);

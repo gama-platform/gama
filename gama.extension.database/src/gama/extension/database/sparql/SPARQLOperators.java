@@ -84,7 +84,7 @@ public class SPARQLOperators {
 			concept = { IConcept.DATABASE })
 	@no_test
 	public static IDataFrame queryEndpoint(final IScope scope, final String queryStr,
-			final String endpoint, final int timeout) {
+			final String endpoint, final long timeout) {
 		IDataFrame res = null;
 		QueryExecution qexec = null;
 

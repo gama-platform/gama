@@ -312,7 +312,7 @@ public class OrdinalAttributeDeclaration<T extends Comparable, Step extends Comp
 	 *             if the value cannot be converted or the type is unsupported
 	 *
 	 * @see AttributeDeclaration#coerce(IAgent, IScope, Object)
-	 * @see #checkMinMax(IAgent, IScope, Integer)
+	 * @see #checkMinMax(IAgent, IScope, Long)
 	 * @see #checkMinMax(IAgent, IScope, Double)
 	 * @see #checkMinMax(IAgent, IScope, IPoint)
 	 * @see #checkMinMax(IAgent, IScope, IDate)
@@ -322,7 +322,8 @@ public class OrdinalAttributeDeclaration<T extends Comparable, Step extends Comp
 		final Object val = super.coerce(agent, scope, v);
 		return switch (val) {
 			case null -> val;
-			case Integer i -> checkMinMax(agent, scope, i);
+			case Long l -> checkMinMax(agent, scope, l);
+			case Integer i -> checkMinMax(agent, scope, i.longValue());
 			case Double d -> checkMinMax(agent, scope, d);
 			case IDate date -> checkMinMax(agent, scope, date);
 			case IPoint point -> checkMinMax(agent, scope, point);
@@ -352,16 +353,16 @@ public class OrdinalAttributeDeclaration<T extends Comparable, Step extends Comp
 	 * @throws GamaRuntimeException
 	 *             if min/max evaluation fails
 	 */
-	protected Integer checkMinMax(final IObject agent, final IScope scope, final Integer f)
+	protected Long checkMinMax(final IObject agent, final IScope scope, final Long f)
 			throws GamaRuntimeException {
 		if (min != null) {
-			final Integer m = minVal == null ? Cast.asInt(scope, scope.evaluate(min, agent).getValue())
-					: (Integer) minVal.run(scope);
+			final Long m = minVal == null ? Cast.asInt(scope, scope.evaluate(min, agent).getValue())
+					: Cast.asInt(scope, minVal.run(scope));
 			if (f < m) return m;
 		}
 		if (max != null) {
-			final Integer m = maxVal == null ? Cast.asInt(scope, scope.evaluate(max, agent).getValue())
-					: (Integer) maxVal.run(scope);
+			final Long m = maxVal == null ? Cast.asInt(scope, scope.evaluate(max, agent).getValue())
+					: Cast.asInt(scope, maxVal.run(scope));
 			if (f > m) return m;
 		}
 		return f;

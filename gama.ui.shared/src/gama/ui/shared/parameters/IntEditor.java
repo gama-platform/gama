@@ -21,7 +21,7 @@ import gama.ui.shared.interfaces.EditorListener;
 /**
  * The Class IntEditor.
  */
-public class IntEditor extends NumberEditor<Integer> {
+public class IntEditor extends NumberEditor<Long> {
 
 	/**
 	 * Instantiates a new int editor.
@@ -37,32 +37,32 @@ public class IntEditor extends NumberEditor<Integer> {
 	 * @param l
 	 *            the l
 	 */
-	IntEditor(final IAgent agent, final IParameter param, final boolean canBeNull, final EditorListener<Integer> l) {
+	IntEditor(final IAgent agent, final IParameter param, final boolean canBeNull, final EditorListener<Long> l) {
 		super(agent, param, l, canBeNull);
 	}
 
 	@Override
-	protected Integer defaultStepValue() {
-		return 1;
+	protected Long defaultStepValue() {
+		return 1l;
 	}
 
 	@Override
-	protected Integer applyPlus() {
-		if (currentValue == null) return 0;
-		final Integer i = currentValue;
-		return i + getStepValue().intValue();
+	protected Long applyPlus() {
+		if (currentValue == null) return 0l;
+		final Long i = currentValue;
+		return i + getStepValue().longValue();
 	}
 
 	@Override
-	protected Integer applyMinus() {
-		if (currentValue == null) return 0;
-		final Integer i = currentValue;
-		return i - getStepValue().intValue();
+	protected Long applyMinus() {
+		if (currentValue == null) return 0l;
+		final Long i = currentValue;
+		return i - getStepValue().longValue();
 	}
 
 	@Override
 	protected boolean modifyValue(final Object val) throws GamaRuntimeException {
-		final int i = Cast.asInt(getScope(), val);
+		final long i = Cast.asInt(getScope(), val);
 		if (getMinValue() != null && i < Cast.asInt(getScope(), getMinValue()))
 			throw GamaRuntimeException.error("Value " + i + " should be greater than " + getMinValue(), getScope());
 		if (getMaxValue() != null && i > Cast.asInt(getScope(), getMaxValue()))
@@ -82,13 +82,13 @@ public class IntEditor extends NumberEditor<Integer> {
 	}
 
 	@Override
-	protected Integer normalizeValues() throws GamaRuntimeException {
-		final Integer valueToConsider = getOriginalValue() == null ? 0 : Cast.asInt(getScope(), getOriginalValue());
+	protected Long normalizeValues() throws GamaRuntimeException {
+		final Long valueToConsider = getOriginalValue() == null ? 0l : Cast.asInt(getScope(), getOriginalValue());
 		currentValue = getOriginalValue() == null ? null : valueToConsider;
 		return valueToConsider;
 	}
 
 	@Override
-	public IType<Integer> getExpectedType() { return Types.INT; }
+	public IType<Long> getExpectedType() { return Types.INT; }
 
 }

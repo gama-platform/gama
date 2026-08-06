@@ -498,16 +498,16 @@ public final class Sobol {
 			value = "Return a string containing the Report of the sobol analysis for the corresponding data (path, map of columns or matrix) and save this report in a txt/csv file.")
 	@no_test
 	public static String sobolAnalysis(final IScope scope, final Object data, final String report_path,
-			final int nb_parameters) {
+			final long nb_parameters) {
 		final File f_report = new File(FileUtils.constructAbsoluteFilePath(scope, report_path, false));
 		Sobol sob;
 		if (data instanceof String path) {
 			final File f = new File(FileUtils.constructAbsoluteFilePath(scope, path, false));
-			sob = new Sobol(f, nb_parameters, scope);
+			sob = new Sobol(f, (int) nb_parameters, scope);
 		} else if (data instanceof IMap map) {
-			sob = new Sobol(map, nb_parameters, scope);
+			sob = new Sobol(map, (int) nb_parameters, scope);
 		} else if (data instanceof IMatrix matrix) {
-			sob = new Sobol((IMap)GamaMapFactory.createFromMatrix(scope, matrix), nb_parameters, scope);
+			sob = new Sobol((IMap)GamaMapFactory.createFromMatrix(scope, matrix), (int) nb_parameters, scope);
 		} else {
 			throw GamaRuntimeException.error("sobol_analysis expects a path (string), a map or a matrix", scope);
 		}

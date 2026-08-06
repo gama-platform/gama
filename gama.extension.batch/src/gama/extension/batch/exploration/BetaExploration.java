@@ -147,7 +147,7 @@ public class BetaExploration extends AExplorationAlgorithm {
 		parameters = parameters == null ? getParams(currentExperiment) : parameters;
 
 		if (hasFacet(IExploration.SAMPLE_SIZE)) {
-			sample_size = Cast.asInt(scope, getFacet(IExploration.SAMPLE_SIZE).value(scope));
+			sample_size = Cast.asInt(scope, getFacet(IExploration.SAMPLE_SIZE).value(scope)).intValue();
 		}
 		if (sample_size < 1) { sample_size = 2; }
 
@@ -218,7 +218,7 @@ public class BetaExploration extends AExplorationAlgorithm {
 
 		List<ParametersSet> returnedSet = new ArrayList<>(sets);
 
-		if (hasFacet(BOOTSTRAP)) { bootstrap = Cast.asInt(scope, getFacet(BOOTSTRAP).value(scope)); }
+		if (hasFacet(BOOTSTRAP)) { bootstrap = Cast.asInt(scope, getFacet(BOOTSTRAP).value(scope)).intValue(); }
 
 		// For each parameter, duplicates 'fact' times all sampled values
 		for (Batch b : parameters) {

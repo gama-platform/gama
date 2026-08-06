@@ -66,7 +66,7 @@ public class ConsoleView extends GamaViewPart implements IToolbarDecoratedView.S
 	/** The pause buffer. */
 	private final StringBuilder pauseBuffer =
 			new StringBuilder(GamaPreferences.Interface.CORE_CONSOLE_BUFFER.getValue() == -1 ? 0
-					: GamaPreferences.Interface.CORE_CONSOLE_BUFFER.getValue());
+					: GamaPreferences.Interface.CORE_CONSOLE_BUFFER.getValue().intValue());
 
 	/** The writers. */
 	private final HashMap<Color, BufferedWriter> writers = new HashMap<>();
@@ -87,8 +87,8 @@ public class ConsoleView extends GamaViewPart implements IToolbarDecoratedView.S
 
 	@Override
 	public void ownCreatePartControl(final Composite parent) {
-		setCharacterLimit(GamaPreferences.Interface.CORE_CONSOLE_SIZE.getValue());
-		GamaPreferences.Interface.CORE_CONSOLE_SIZE.onChange(this::setCharacterLimit);
+		setCharacterLimit(GamaPreferences.Interface.CORE_CONSOLE_SIZE.getValue().intValue());
+		GamaPreferences.Interface.CORE_CONSOLE_SIZE.onChange(limit -> setCharacterLimit(limit.intValue()));
 		viewer = new IOConsoleViewer(parent, msgConsole);
 		viewer.setWordWrap(GamaPreferences.Interface.CORE_CONSOLE_WRAP.getValue());
 	}
@@ -164,8 +164,8 @@ public class ConsoleView extends GamaViewPart implements IToolbarDecoratedView.S
 				writer.flush();
 			} catch (final IOException e) {}
 		} else {
-			int maxMemorized = GamaPreferences.Interface.CORE_CONSOLE_BUFFER.getValue();
-			final int maxDisplayed = GamaPreferences.Interface.CORE_CONSOLE_SIZE.getValue();
+			int maxMemorized = GamaPreferences.Interface.CORE_CONSOLE_BUFFER.getValue().intValue();
+			final int maxDisplayed = GamaPreferences.Interface.CORE_CONSOLE_SIZE.getValue().intValue();
 			if (maxDisplayed > -1) {
 				// we limit the size of the buffer to the size of the displayed
 				// characters, as there is no need to buffer more than what can

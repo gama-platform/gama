@@ -23,6 +23,7 @@ import org.locationtech.jts.algorithm.Distance;
 import org.locationtech.jts.geom.Coordinate;
 
 import gama.api.GAMA;
+import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
@@ -384,9 +385,9 @@ public class PathMovementHelper {
 				indexSegment = 1;
 			} else {
 				IShape line = null;
-				index = (Integer) agent.getAttribute("index_on_path");
-				indexSegment = (Integer) agent.getAttribute("index_on_path_segment");
-				reverse = (Integer) agent.getAttribute("reverse");
+				index = Cast.asInt(scope, agent.getAttribute("index_on_path")).intValue();
+				indexSegment = Cast.asInt(scope, agent.getAttribute("index_on_path_segment")).intValue();
+				reverse = Cast.asInt(scope, agent.getAttribute("reverse")).intValue();
 				if (index == null || indexSegment == null) {
 					reverse = scope.getRandom().between(0, 1);
 					final boolean optimization = graph.edgeSet().size() > 1000;
@@ -499,9 +500,9 @@ public class PathMovementHelper {
 		final IList indexVals = initMoveAlongPath(scope, agent, graph, currentLocation);
 		if (indexVals == null) return null;
 
-		int index = (Integer) indexVals.get(0);
-		int indexSegment = (Integer) indexVals.get(1);
-		int inverse = (Integer) indexVals.get(2);
+		int index = ((Number) indexVals.get(0)).intValue();
+		int indexSegment = ((Number) indexVals.get(1)).intValue();
+		int inverse = ((Number) indexVals.get(2)).intValue();
 		IShape edge = (IShape) graph.getEdges().get(index);
 		double remainingDistance = distance;
 		double travelledDist = 0.0;
@@ -621,9 +622,9 @@ public class PathMovementHelper {
 		final IList<IShape> segments = returnPath ? GamaListFactory.create(Types.GEOMETRY) : null;
 		final IMap agents = returnPath ? GamaMapFactory.createUnordered() : null;
 
-		int index = (Integer) indexVals.get(0);
-		int indexSegment = (Integer) indexVals.get(1);
-		final int endIndexSegment = (Integer) indexVals.get(2);
+		int index = ((Number) indexVals.get(0)).intValue();
+		int indexSegment = ((Number) indexVals.get(1)).intValue();
+		final int endIndexSegment = ((Number) indexVals.get(2)).intValue();
 		currentLocation = (IPoint) indexVals.get(3);
 		final IPoint falseTarget = (IPoint) indexVals.get(4);
 		final IList<IShape> edges = path.getEdgeGeometry();

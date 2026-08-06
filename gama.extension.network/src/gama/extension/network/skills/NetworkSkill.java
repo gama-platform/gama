@@ -27,6 +27,7 @@ import gama.annotations.vars;
 import gama.annotations.support.IConcept;
 import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IPopulation;
@@ -242,7 +243,7 @@ public class NetworkSkill extends MessagingSkill {
 		final String protocol = (String) scope.getArg(INetworkSkill.PROTOCOL, IType.STRING);
 		final Boolean force_local = (Boolean) scope.getArg(INetworkSkill.FORCE_NETWORK_USE, IType.BOOL);
 		final Boolean raw_package = (Boolean) scope.getArg(INetworkSkill.RAW, IType.BOOL);
-		final Integer port = (Integer) scope.getArg(INetworkSkill.PORT, IType.INT);
+		final Integer port = Cast.asInt(scope, scope.getArg(INetworkSkill.PORT, IType.INT)).intValue();
 		final String packet_size = (String) scope.getArg(INetworkSkill.MAX_DATA_PACKET_SIZE, IType.STRING);
 
 		// Fix to Issue #2618

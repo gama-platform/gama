@@ -225,11 +225,11 @@ public class TabuSearch extends ALocalSearchAlgorithm {
 	public void initParams(final IScope scope) {
 		final IExpression maxIt = getFacet(ITER_MAX);
 		if (maxIt != null) {
-			iterMax = Cast.asInt(scope, maxIt.value(scope));
+			iterMax = Cast.asInt(scope, maxIt.value(scope)).intValue();
 			stoppingCriterion = new StoppingCriterionMaxIt(iterMax);
 		}
 		final IExpression listsize = getFacet(LIST_SIZE);
-		if (listsize != null) { tabuListSize = Cast.asInt(scope, listsize.value(scope)); }
+		if (listsize != null) { tabuListSize = Cast.asInt(scope, listsize.value(scope)).intValue(); }
 	}
 
 	@Override

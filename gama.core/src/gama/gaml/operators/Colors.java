@@ -170,7 +170,7 @@ public class Colors {
 							equals = "rgb([255,131,35])") }))
 	@test ("rgb([255, 128, 32]) + 3 = rgb([255,131,35]) ")
 	@test ("rgb([10,20,30]) + 0 = rgb([10,20,30])")
-	public static IColor add(final IColor c, final Integer i) {
+	public static IColor add(final IColor c, final Long i) {
 		return GamaColorFactory.createWithRGBA(c.red() + i, c.green() + i, c.blue() + i, c.alpha());
 	}
 
@@ -196,7 +196,7 @@ public class Colors {
 							value = "rgb([255, 128, 32]) - 3",
 							equals = "rgb([252,125,29])") }))
 	@test ("rgb([255, 128, 32]) - 3 = rgb([252,125,29]) ")
-	public static IColor subtract(final IColor c, final Integer i) {
+	public static IColor subtract(final IColor c, final Long i) {
 		return GamaColorFactory.createWithRGBA(c.red() - i, c.green() - i, c.blue() - i, c.alpha());
 	}
 
@@ -256,7 +256,7 @@ public class Colors {
 							equals = "rgb([255,255,64])") }))
 	@test ("rgb([255, 128, 32]) * 2 = rgb([255,255,64])")
 	@test ("rgb([10,20,30]) * 1 = rgb([10,20,30])")
-	public static IColor multiply(final IColor c, final Integer i) {
+	public static IColor multiply(final IColor c, final Long i) {
 		return GamaColorFactory.createWithRGBA(c.red() * i, c.green() * i, c.blue() * i, c.alpha());
 	}
 
@@ -312,7 +312,7 @@ public class Colors {
 							equals = "rgb([127,64,16])") }))
 	@test ("rgb([255, 128, 32]) / 2 = rgb([127,64,16])")
 	@test ("rgb([10,20,30]) / 1 = rgb([10,20,30])")
-	public static IColor divide(final IColor c, final Integer i) {
+	public static IColor divide(final IColor c, final Long i) {
 		return GamaColorFactory.createWithRGBA(c.red() / i, c.green() / i, c.blue() / i, c.alpha());
 	}
 
@@ -452,7 +452,7 @@ public class Colors {
 	@doc (
 			value = "Converts hsb (h=hue, s=saturation, b=brightness) value to Gama color")
 	@test ("int(hsb(200,40, 90)) = -526409")
-	public static IColor hsb(final Double h, final Double s, final Double b, final Integer a) {
+	public static IColor hsb(final Double h, final Double s, final Double b, final Long a) {
 		return GamaColorFactory.createWithAlpha(Color.getHSBColor(h.floatValue(), s.floatValue(), b.floatValue()), a);
 	}
 
@@ -484,7 +484,7 @@ public class Colors {
 	@test ("rgb (255,0,0) = #red")
 	@test ("rgb(0,0,0) = #black")
 	@test ("rgb(255,255,255) = #white")
-	public static IColor rgb(final int r, final int g, final int b) {
+	public static IColor rgb(final long r, final long g, final long b) {
 		return GamaColorFactory.createWithRGBA(r, g, b, 255);
 	}
 
@@ -515,7 +515,7 @@ public class Colors {
 					test = false) },
 			see = "hsb")
 	@test ("rgb (255,0,0,125).alpha = 125")
-	public static IColor rgb(final int r, final int g, final int b, final int alpha) {
+	public static IColor rgb(final long r, final long g, final long b, final long alpha) {
 		return GamaColorFactory.createWithRGBA(r, g, b, alpha);
 	}
 
@@ -546,7 +546,7 @@ public class Colors {
 					test = false),
 			see = "hsb")
 	@test (" int(rgb (255,0,0,0.5)) = 2147418112")
-	public static IColor rgb(final int r, final int g, final int b, final double alpha) {
+	public static IColor rgb(final long r, final long g, final long b, final double alpha) {
 		return GamaColorFactory.createWithDoubleAlpha(r, g, b, alpha);
 	}
 
@@ -574,7 +574,7 @@ public class Colors {
 					equals = "rgb(255,0,0)"),
 			see = "hsb")
 	@test ("rgb ('red') = rgb(255,0,0) ")
-	public static IColor rgb(final IScope scope, final String s, final int a) {
+	public static IColor rgb(final IScope scope, final String s, final long a) {
 		return GamaColorFactory.createWithAlpha(s, a);
 	}
 
@@ -603,7 +603,7 @@ public class Colors {
 					test = false),
 			see = "hsb")
 	@test ("int(rgb(rgb(255,0,0),125)) = 2113863680")
-	public static IColor rgb(final IScope scope, final IColor s, final int a) {
+	public static IColor rgb(final IScope scope, final IColor s, final long a) {
 		return GamaColorFactory.createWithAlpha(s, a);
 	}
 
@@ -685,9 +685,9 @@ public class Colors {
 					test = false),
 			see = { "rgb", "hsb" })
 	@test ("seed <- 1.0; int(rnd_color(255)) = -3749758")
-	public static IColor random_color(final IScope scope, final Integer max) {
+	public static IColor random_color(final IScope scope, final Long max) {
 		final IRandom r = scope.getRandom();
-		final int realMax = Math.max(0, Math.min(max, 255));
+		final int realMax = (int) Math.max(0, Math.min(max, 255));
 		return GamaColorFactory.createWithRGBA(r.between(0, realMax), r.between(0, realMax), r.between(0, realMax),
 				255);
 	}
@@ -716,10 +716,10 @@ public class Colors {
 					test = false),
 			see = { "rgb", "hsb" })
 	@test ("seed <- 1.0; int(rnd_color(100, 200)) = -5065833")
-	public static IColor random_color(final IScope scope, final Integer min, final Integer max) {
+	public static IColor random_color(final IScope scope, final Long min, final Long max) {
 		final IRandom r = scope.getRandom();
-		final int realMax = Math.max(0, Math.min(max, 255));
-		final int realMin = Math.max(0, Math.min(min, realMax));
+		final int realMax = (int) Math.max(0, Math.min(max, 255));
+		final int realMin = (int) Math.max(0, Math.min(min, realMax));
 		return GamaColorFactory.createWithRGBA(r.between(realMin, realMax), r.between(realMin, realMax),
 				r.between(realMin, realMax), 255);
 	}
@@ -807,9 +807,9 @@ public class Colors {
 						final IExpression exp = arguments[1];
 						if (exp.isConst()) {
 							final Object number = exp.getConstValue();
-							if (number instanceof Integer) {
+							if (number instanceof Number n) {
 								final BrewerPalette pal = BREWER.getPalette(p);
-								if (pal.getCount() < (Integer) number) {
+								if (pal.getCount() < n.longValue()) {
 									context.warning("Palette " + p + " has only " + pal.getCount() + " colors.",
 											IGamlIssue.WRONG_VALUE, emfContext, String.valueOf(pal.getCount()));
 								}
@@ -902,7 +902,7 @@ public class Colors {
 					isExecutable = false) },
 			see = { "brewer_palettes" })
 	@no_test
-	public static GamaPalette brewerPaletteColors(final IScope scope, final String type, final int nbClasses) {
+	public static GamaPalette brewerPaletteColors(final IScope scope, final String type, final long nbClasses) {
 		final GamaPalette cols = brewerPaletteColors(scope, type);
 		if (cols.size() < nbClasses)
 			throw GamaRuntimeException.error(type + " has less than " + nbClasses + " colors", scope);
@@ -934,7 +934,7 @@ public class Colors {
 					isExecutable = false) },
 			see = { "brewer_colors" })
 	@no_test
-	public static IList<String> brewerPaletteNames(final int min, final int max) {
+	public static IList<String> brewerPaletteNames(final long min, final long max) {
 		final IList<String> palettes = GamaListFactory.create(Types.STRING);
 		for (final BrewerPalette p : BREWER.getPalettes()) {
 			if (p.getCount() >= min && p.getCount() <= max) { palettes.add(p.getName()); }
@@ -963,7 +963,7 @@ public class Colors {
 					isExecutable = false) },
 			see = { "brewer_colors" })
 	@no_test
-	public static IList<String> brewerPaletteNames(final int min) {
+	public static IList<String> brewerPaletteNames(final long min) {
 		final IList<String> palettes = GamaListFactory.create(Types.STRING);
 		for (final BrewerPalette p : BREWER.getPalettes()) { if (p.getCount() >= min) { palettes.add(p.getName()); } }
 		return palettes;

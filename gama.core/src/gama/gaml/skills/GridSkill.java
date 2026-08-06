@@ -99,7 +99,7 @@ public class GridSkill extends Skill {
 	 * @return the x
 	 */
 	@getter ("grid_x")
-	public final int getX(final IAgent agent) {
+	public final long getX(final IAgent agent) {
 		return getGrid(agent).getX(agent);
 	}
 
@@ -159,7 +159,7 @@ public class GridSkill extends Skill {
 	 * @return the y
 	 */
 	@getter ("grid_y")
-	public final int getY(final IAgent agent) {
+	public final long getY(final IAgent agent) {
 		return getGrid(agent).getY(agent);
 	}
 
@@ -172,7 +172,7 @@ public class GridSkill extends Skill {
 	 *            the i
 	 */
 	@setter ("grid_x")
-	public final void setX(final IAgent agent, final Integer i) {}
+	public final void setX(final IAgent agent, final Long i) {}
 
 	/**
 	 * Sets the value.
@@ -196,7 +196,7 @@ public class GridSkill extends Skill {
 	 *            the i
 	 */
 	@setter ("grid_y")
-	public final void setY(final IAgent agent, final Integer i) {}
+	public final void setY(final IAgent agent, final Long i) {}
 
 	/**
 	 * Gets the color.

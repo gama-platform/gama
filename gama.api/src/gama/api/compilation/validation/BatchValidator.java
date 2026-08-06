@@ -194,7 +194,7 @@ public class BatchValidator implements IDescriptionValidator {
 			if (tmpDesc.hasFacet(IExploration.SAMPLE_SIZE)) {
 				IExpressionDescription exp = tmpDesc.getFacet(IExploration.SAMPLE_SIZE);
 				if (exp.isConst()) {
-					int samples = Cast.asInt(null, exp.getExpression().getConstValue());
+					int samples = Cast.asInt(null, exp.getExpression().getConstValue()).intValue();
 					if (samples < 1) { desc.error("Sampling must be a positive integer !"); }
 				}
 			}
@@ -210,7 +210,7 @@ public class BatchValidator implements IDescriptionValidator {
 						} else {
 							IExpressionDescription exp = tmpDesc.getFacet(IExploration.NB_LEVELS);
 							if (exp.isConst()) {
-								int levels = Cast.asInt(null, exp.getExpression().getConstValue());
+								int levels = Cast.asInt(null, exp.getExpression().getConstValue()).intValue();
 								if (levels <= 0) { tmpDesc.error("Levels should be positive"); }
 							}
 						}
@@ -220,7 +220,7 @@ public class BatchValidator implements IDescriptionValidator {
 						} else {
 							IExpressionDescription exp = tmpDesc.getFacet(IExploration.SAMPLE_SIZE);
 							if (exp.isConst()) {
-								int sample = Cast.asInt(null, exp.getExpression().getConstValue());
+								int sample = Cast.asInt(null, exp.getExpression().getConstValue()).intValue();
 								if (sample % 2 != 0) { tmpDesc.error("The sample size should be even"); }
 							}
 						}

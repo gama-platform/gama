@@ -35,9 +35,8 @@ import gama.core.topology.graph.GamaSpatialGraph;
 import gama.gaml.operators.Maths;
 
 /**
- * MovingSkill3D : This class is intended to define the minimal set of behaviours required from an agent that is able to
- * move. Each member that has a meaning in GAML is annotated with the respective tags (vars, getter, setter, init,
- * action & args)
+ * MovingSkill3D : This class is intended to define the minimal set of behaviours required from an agent that is able to move. 
+ * Each member that has a meaning in GAML is annotated with the respective tags (vars, getter, setter, init, action & args)
  *
  * @author Arnaud Grignard
  */
@@ -156,7 +155,7 @@ public class MovingSkill3D extends MovingSkill {
 	 *             the gama runtime exception
 	 */
 	protected double computePitchFromAmplitude(final IScope scope, final IAgent agent) throws GamaRuntimeException {
-		final int ampl = scope.hasArg("amplitude") ? scope.getIntArg("amplitude") : 359;
+		final long ampl = scope.hasArg("amplitude") ? scope.getIntArg("amplitude") : 359;
 		setPitch(agent, getPitch(agent) + scope.getRandom().between(-ampl / 2, ampl / 2));
 		return getPitch(agent);
 	}
@@ -173,7 +172,7 @@ public class MovingSkill3D extends MovingSkill {
 	 *             the gama runtime exception
 	 */
 	protected double computePitch(final IScope scope, final IAgent agent) throws GamaRuntimeException {
-		final Integer pitch = scope.hasArg(IKeyword.PITCH) ? scope.getIntArg(IKeyword.PITCH) : null;
+		final Long pitch = scope.hasArg(IKeyword.PITCH) ? scope.getIntArg(IKeyword.PITCH) : null;
 		if (pitch != null) { setPitch(agent, pitch); }
 		return getPitch(agent);
 	}
@@ -323,8 +322,8 @@ public class MovingSkill3D extends MovingSkill {
 		final double dx = diff.getX();
 		final double dy = diff.getY();
 		final double dz = diff.getZ();
-		final int signumX = Maths.signum(dx);
-		final int signumY = Maths.signum(dy);
+		final int signumX = Maths.signum(dx).intValue();
+		final int signumY = Maths.signum(dy).intValue();
 		// Heading
 		if (signumX == 0) {
 			setHeading(agent, signumY == 0 ? 0 : signumY > 0 ? 90 : 270);
@@ -334,7 +333,7 @@ public class MovingSkill3D extends MovingSkill {
 
 		// Pitch
 		if (signumX == 0 && signumY == 0) {
-			final int signumZ = Maths.signum(dz);
+			final int signumZ = Maths.signum(dz).intValue();
 			setPitch(agent, signumZ == 0 ? 0 : signumZ > 0 ? 90 : 270);
 		} else {
 			setPitch(agent, Math.atan(dz / Math.sqrt(dx * dx + dy * dy)) * Maths.toDeg);

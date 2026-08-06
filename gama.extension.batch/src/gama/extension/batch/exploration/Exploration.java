@@ -178,7 +178,7 @@ public class Exploration extends AExplorationAlgorithm {
 		parameters = parameters == null ? currentExperiment.getParametersToExplore() : parameters;
 
 		if (hasFacet(IExploration.SAMPLE_SIZE)) {
-			this.sample_size = Cast.asInt(scope, getFacet(SAMPLE_SIZE).value(scope));
+			this.sample_size = Cast.asInt(scope, getFacet(SAMPLE_SIZE).value(scope)).intValue();
 		}
 
 		List<ParametersSet> sets = getExperimentPlan(parameters, scope);

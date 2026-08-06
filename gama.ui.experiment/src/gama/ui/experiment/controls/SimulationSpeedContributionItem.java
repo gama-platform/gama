@@ -205,7 +205,7 @@ public class SimulationSpeedContributionItem extends WorkbenchWindowControlContr
 		GAMA.getExperiment().getAgent().setMinimumDurationExternal(valueFromPosition(position) / 1000);
 		for (final SimpleSlider slider2 : sliders) {
 			slider2.setToolTipText(
-					"Minimum duration of a cycle " + Maths.opTruncate(valueFromPosition(position) / 1000, 3) + " s");
+					"Minimum duration of a cycle " + Maths.opTruncate(valueFromPosition(position) / 1000, 3l) + " s");
 			if (slider2 == s) { continue; }
 			slider2.updateSlider(position, false);
 		}

@@ -75,8 +75,8 @@ public class GamaGMLFile extends GamaGisFile {
 			examples = { @example (
 					value = "file f <- gml_file(\"file.gml\", 32648);",
 					isExecutable = false) })
-	public GamaGMLFile(final IScope scope, final String pathName, final Integer code) throws GamaRuntimeException {
-		super(scope, pathName, code);
+	public GamaGMLFile(final IScope scope, final String pathName, final Long code) throws GamaRuntimeException {
+		super(scope, pathName, code == null ? null : code.intValue());
 	}
 
 	/**
@@ -130,9 +130,9 @@ public class GamaGMLFile extends GamaGisFile {
 					value = "file f <- gml_file(\"file.gml\", 32648, true);",
 					isExecutable = false) })
 
-	public GamaGMLFile(final IScope scope, final String pathName, final Integer code, final boolean with3D)
+	public GamaGMLFile(final IScope scope, final String pathName, final Long code, final boolean with3D)
 			throws GamaRuntimeException {
-		super(scope, pathName, code, with3D);
+		super(scope, pathName, code == null ? null : code.intValue(), with3D);
 	}
 
 	/**

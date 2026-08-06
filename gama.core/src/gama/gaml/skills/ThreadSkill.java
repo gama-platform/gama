@@ -46,7 +46,7 @@ import gama.api.runtime.scope.IScope;
 public class ThreadSkill extends Skill {
 
 	/** The executor. */
-	ScheduledExecutorService executor = Executors.newScheduledThreadPool(GamaExecutorService.THREADS_NUMBER.getValue());
+	ScheduledExecutorService executor = Executors.newScheduledThreadPool(GamaExecutorService.THREADS_NUMBER.getValue().intValue());
 
 	/** The Constant ACTION_NAME. */
 	private static final String ACTION_NAME = "thread_action";

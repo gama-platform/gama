@@ -355,7 +355,7 @@ public interface IColor extends IValue, Comparable<IColor> {
 	 * @return the packed RGBA integer value
 	 */
 	@Override
-	default int intValue(final IScope scope) {
+	default long longValue(final IScope scope) {
 		return getRGB();
 	}
 

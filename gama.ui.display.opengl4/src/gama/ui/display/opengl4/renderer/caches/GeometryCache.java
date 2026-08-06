@@ -253,7 +253,7 @@ public class GeometryCache {
 		fileCache = newBuilder().expireAfterAccess(2, MINUTES).initialCapacity(10).removalListener(notif -> {
 			if (renderer.isDisposed()) return;
 			// Release the Runnable stored in OpenGL's list cache when a file entry expires.
-			renderer.getOpenGLHelper().deleteList((Integer) notif.getValue());
+			renderer.getOpenGLHelper().deleteList(((Number) notif.getValue()).intValue());
 		}).build(new CacheLoader<String, Integer>() {
 			@Override
 			public Integer load(final String file) {
@@ -395,7 +395,7 @@ public class GeometryCache {
 	 * @param gl the {@link OpenGL} helper
 	 */
 	public void initialize(final OpenGL gl) {
-		final int slices = GamaPreferences.Displays.DISPLAY_SLICE_NUMBER.getValue();
+		final int slices = GamaPreferences.Displays.DISPLAY_SLICE_NUMBER.getValue().intValue();
 		final int stacks = slices;
 
 		put(SPHERE, BuiltInGeometry.assemble().faces(gl.compileAsList(() -> {

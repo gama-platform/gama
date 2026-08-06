@@ -121,9 +121,10 @@ public class ActionProcessor extends ElementProcessor<action> {
 		final boolean isVirtual = action.virtual();
 
 		sb.append(in).append("_action(");
+		final String actionCall = concat("((", clazz, ") t).", method, "(s)");
 		sb.append("new " + rawNameOf("gama.api.additions.GamaHelper") + "(").append(toJavaString(actionName))
 				.append(',').append(clazzObject).append(',').append("(s,a,t,v)->").append(isVoid ? "{" : "")
-				.append("((").append(clazz).append(") t).").append(method).append("(s)")
+				.append(isVoid ? actionCall : normalizeReturn(ret, actionCall))
 				.append(isVoid ? ";return null;})," : "),");
 		sb.append("desc(PRIM,");
 		buildArgs(e, action.args(), sb);

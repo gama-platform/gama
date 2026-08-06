@@ -115,7 +115,7 @@ public class GamaObjectMatrix extends GamaMatrix<Object> {
 	 * @param objects
 	 *            the objects
 	 */
-	GamaObjectMatrix(final int cols, final int rows, final int[] objects) {
+	GamaObjectMatrix(final int cols, final int rows, final long[] objects) {
 		this(cols, rows, Types.INT);
 		final int n = Math.min(objects.length, rows * cols);
 		for (int i = 0; i < n; i++) { matrix[i] = objects[i]; }

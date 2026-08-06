@@ -199,7 +199,7 @@ public class GeometryCache {
 		builtInCache = newBuilder().concurrencyLevel(2).initialCapacity(10).build();
 		fileCache = newBuilder().expireAfterAccess(2, MINUTES).initialCapacity(10).removalListener(notif -> {
 			if (renderer.isDisposed()) return;
-			renderer.getOpenGLHelper().getGL().glDeleteLists((Integer) notif.getValue(), 1);
+			renderer.getOpenGLHelper().getGL().glDeleteLists(((Number) notif.getValue()).intValue(), 1);
 
 		}).build(new CacheLoader<String, Integer>() {
 
@@ -342,7 +342,7 @@ public class GeometryCache {
 	 *            the gl
 	 */
 	public void initialize(final OpenGL gl) {
-		final int slices = GamaPreferences.Displays.DISPLAY_SLICE_NUMBER.getValue();
+		final int slices = GamaPreferences.Displays.DISPLAY_SLICE_NUMBER.getValue().intValue();
 		final int stacks = slices;
 		put(SPHERE, BuiltInGeometry.assemble().faces(gl.compileAsList(() -> {
 			gl.translateBy(0d, 0d, 1d);

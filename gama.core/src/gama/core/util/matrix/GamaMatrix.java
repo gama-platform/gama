@@ -257,10 +257,10 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 		if (size == 1) {
 			final Object index = indices.get(0);
 			if (index instanceof IPoint ip) return get(scope, ip);
-			return this.getNthElement(Cast.asInt(scope, index));
+			return this.getNthElement(Cast.asInt(scope, index).intValue());
 		}
-		final int px = Cast.asInt(scope, indices.get(0));
-		final int py = Cast.asInt(scope, indices.get(1));
+		final int px = Cast.asInt(scope, indices.get(0)).intValue();
+		final int py = Cast.asInt(scope, indices.get(1)).intValue();
 		if (px > numCols - 1 || px < 0)
 			throw GamaRuntimeException.error("Access to a matrix element out of its bounds: " + px, scope);
 		if (py > numRows - 1 || py < 0)
@@ -453,8 +453,8 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 	// set, that takes a mandatory index (also replaces the parameter)
 	@Override
 	public void setValueAtIndex(final IScope scope, final Object index, final T value) {
-		if (index instanceof Integer) {
-			setNthElement(scope, (int) index, value);
+		if (index instanceof Number n) {
+			setNthElement(scope, n.intValue(), value);
 			return;
 		}
 		final IPoint p = buildIndex(scope, index);
@@ -538,7 +538,7 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 	@Override
 	public IList<IList<T>> getRowsList() {
 		final IList result = GamaListFactory.create(Types.LIST.of(getGamlType().getContentType()));
-		for (int i = 0; i < numRows; i++) { result.add(getRow(i)); }
+		for (int i = 0; i < numRows; i++) { result.add(getRow((long) i)); }
 		return result;
 	}
 
@@ -550,7 +550,7 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 	@Override
 	public IList<IList<T>> getColumnsList() {
 		final IList result = GamaListFactory.create(Types.LIST.of(getGamlType().getContentType()));
-		for (int i = 0, n = numCols; i < n; i++) { result.add(getColumn(i)); }
+		for (int i = 0, n = numCols; i < n; i++) { result.add(getColumn((long) i)); }
 		return result;
 	}
 
@@ -560,10 +560,11 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 	 * @see gama.interfaces.IMatrix#getRow(java.lang.Integer)
 	 */
 	@Override
-	public IList<T> getRow(final Integer n) {
+	public IList<T> getRow(final Long n) {
 		final IList result = GamaListFactory.create(getGamlType().getContentType());
 		if (n >= numRows || n < 0) return result;
-		for (int i = 0; i < numCols; i++) { result.add(getNthElement(n * numCols + i)); }
+		final int row = n.intValue();
+		for (int i = 0; i < numCols; i++) { result.add(getNthElement(row * numCols + i)); }
 		return result;
 	}
 
@@ -573,10 +574,11 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 	 * @see gama.interfaces.IMatrix#getColumn(java.lang.Integer)
 	 */
 	@Override
-	public IList<T> getColumn(final Integer n) {
+	public IList<T> getColumn(final Long n) {
 		final IList result = GamaListFactory.create(getGamlType().getContentType());
 		if (n >= numCols || n < 0) return result;
-		for (int i = 0; i < numRows; i++) { result.add(getNthElement(i * numCols + n)); }
+		final int col = n.intValue();
+		for (int i = 0; i < numRows; i++) { result.add(getNthElement(i * numCols + col)); }
 		return result;
 	}
 
@@ -760,7 +762,7 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 	}
 
 	@Override
-	public IMatrix times(final Integer val) throws GamaRuntimeException {
+	public IMatrix times(final Long val) throws GamaRuntimeException {
 		return this;
 	}
 
@@ -770,7 +772,7 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 	}
 
 	@Override
-	public IMatrix divides(final Integer val) throws GamaRuntimeException {
+	public IMatrix divides(final Long val) throws GamaRuntimeException {
 		return this;
 	}
 
@@ -780,7 +782,7 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 	}
 
 	@Override
-	public IMatrix plus(final Integer val) throws GamaRuntimeException {
+	public IMatrix plus(final Long val) throws GamaRuntimeException {
 		return this;
 	}
 
@@ -790,7 +792,7 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 	}
 
 	@Override
-	public IMatrix minus(final Integer val) throws GamaRuntimeException {
+	public IMatrix minus(final Long val) throws GamaRuntimeException {
 		return this;
 	}
 

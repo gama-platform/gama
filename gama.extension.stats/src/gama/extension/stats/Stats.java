@@ -386,14 +386,14 @@ public class Stats {
 					@example (
 							value = "auto_correlation([1,0,1,0,1,0],1)",
 							equals = "-1") })
-	public static Double opAutoCorrelation(final IScope scope, final IContainer data, final Integer lag) {
+	public static Double opAutoCorrelation(final IScope scope, final IContainer data, final Long lag) {
 
 		// TODO input parameters validation
 
 		final double mean = (Double) Containers.opMean(scope, data);
 		final double variance = Stats.opVariance(scope, data);
 
-		return Descriptive.autoCorrelation(toDoubleArrayList(scope, data), lag, mean, variance);
+		return Descriptive.autoCorrelation(toDoubleArrayList(scope, data), lag.intValue(), mean, variance);
 	}
 
 	/**
@@ -448,7 +448,7 @@ public class Stats {
 					value = "binomial_coeff(10,2)",
 					equals = "45") })
 
-	public static Double opBinomialCoeff(final IScope scope, final Integer n, final Integer k) {
+	public static Double opBinomialCoeff(final IScope scope, final Long n, final Long k) {
 
 		// Returns "n choose k" as a double. Note the "integerization" of
 		// the double return value.
@@ -482,13 +482,13 @@ public class Stats {
 					value = "binomial_complemented(10,5,0.5) with_precision(2)",
 					equals = "0.38") })
 
-	public static Double opBinomialComplemented(final IScope scope, final Integer n, final Integer k, final Double p) {
+	public static Double opBinomialComplemented(final IScope scope, final Long n, final Long k, final Double p) {
 
 		// Returns the sum of the terms k+1 through n of the Binomial
 		// probability density, where n is the number of trials and P is
 		// the probability of success in the range 0 to 1.
 		try {
-			return Probability.binomialComplemented(k, n, p);
+			return Probability.binomialComplemented(k.intValue(), n.intValue(), p);
 		} catch (final IllegalArgumentException | ArithmeticException ex) {
 			throw GamaRuntimeException.error("colt .binomialComplement reports: " + ex, scope);
 		}
@@ -517,13 +517,13 @@ public class Stats {
 					value = "binomial_sum(5,10,0.5) with_precision(2)",
 					equals = "0.62") })
 
-	public static Double opBinomialSum(final IScope scope, final Integer k, final Integer n, final Double p) {
+	public static Double opBinomialSum(final IScope scope, final Long k, final Long n, final Double p) {
 
 		// Returns the sum of the terms 0 through k of the Binomial
 		// probability density, where n is the number of trials and p is
 		// the probability of success in the range 0 to 1.
 		try {
-			return Probability.binomial(k, n, p);
+			return Probability.binomial(k.intValue(), n.intValue(), p);
 		} catch (final IllegalArgumentException ex) {
 			throw GamaRuntimeException.error("colt Probability.binomial reports: " + ex, scope);
 		} catch (final ArithmeticException ex) {
@@ -798,10 +798,10 @@ public class Stats {
 			examples = { @example (
 					value = "dbscan ([[2,4,5], [3,8,2], [1,1,3], [4,3,4]],10,2)",
 					equals = "[[0,1,2,3]]") })
-	public static IList<IList> opDBScan(final IScope scope, final IList data, final Double eps, final Integer minPts)
+	public static IList<IList> opDBScan(final IScope scope, final IList data, final Double eps, final Long minPts)
 			throws GamaRuntimeException {
 		final IList<Integer> remainingData = GamaListFactory.create(Types.INT);
-		final DBSCANClusterer<DoublePoint> dbscan = new DBSCANClusterer(eps, minPts);
+		final DBSCANClusterer<DoublePoint> dbscan = new DBSCANClusterer(eps, minPts.intValue());
 		final List<DoublePoint> instances = new ArrayList<>();
 		for (int i = 0; i < data.size(); i++) {
 			final IList d = (IList) data.get(i);
@@ -824,7 +824,7 @@ public class Stats {
 			}
 			for (final Integer id : remainingData) {
 				final IList clG = GamaListFactory.create();
-				clG.add(id);
+				clG.add((long) id);
 				results.add(clG);
 			}
 			return results.items();
@@ -944,7 +944,7 @@ public class Stats {
 					value = "dtw([10.0,5.0,1.0, 3.0],[1.0,10.0,5.0,1.0], 2)",
 					equals = "11.0") })
 	public static Double opDynamicTimeWarping(final IScope scope, final IList vals1, final IList vals2,
-			final int radius) throws GamaRuntimeException {
+			final long radius) throws GamaRuntimeException {
 		final int n1 = vals1.size();
 		final int n2 = vals2.size();
 		final double[][] table = new double[2][n2 + 1];
@@ -954,8 +954,8 @@ public class Stats {
 		for (int i = 1; i <= n2; i++) { table[0][i] = Double.POSITIVE_INFINITY; }
 
 		for (int i = 1; i <= n1; i++) {
-			final int start = Math.max(1, i - radius);
-			final int end = Math.min(n2, i + radius);
+			final int start = (int) Math.max(1, i - radius);
+			final int end = (int) Math.min(n2, i + radius);
 
 			table[1][start - 1] = Double.POSITIVE_INFINITY;
 			if (end < n2) { table[1][end + 1] = Double.POSITIVE_INFINITY; }
@@ -1014,12 +1014,12 @@ public class Stats {
 	public static IMap opFrequencyOf(final IScope scope, final String eachName, final IContainer original,
 			final IExpression filter) throws GamaRuntimeException {
 		if (original == null) return GamaMapFactory.create(Types.NO_TYPE, Types.INT);
-		final IMap<Object, Integer> result = GamaMapFactory.create(original.getGamlType().getContentType(), Types.INT);
+		final IMap<Object, Long> result = GamaMapFactory.create(original.getGamlType().getContentType(), Types.INT);
 		for (final Object each : original.iterable(scope)) {
 			scope.setEach(eachName, each);
 			final Object key = filter.value(scope);
 			if (!result.containsKey(key)) {
-				result.put(key, 1);
+				result.put(key, 1l);
 			} else {
 				result.put(key, result.get(key) + 1);
 			}
@@ -1481,9 +1481,9 @@ public class Stats {
 					examples = { @example (
 							value = "kmeans ([[2,4,5], [3,8,2], [1,1,3], [4,3,4]],2)",
 							equals = "[[0,2,3],[1]]") }) })
-	public static IList<IList> opKMeans(final IScope scope, final IList data, final Integer k)
+	public static IList<IList> opKMeans(final IScope scope, final IList data, final Long k)
 			throws GamaRuntimeException {
-		return opKMeans(scope, data, k, -1);
+		return opKMeans(scope, data, k, -1l);
 	}
 
 	/**
@@ -1518,7 +1518,7 @@ public class Stats {
 			examples = { @example (
 					value = "kmeans ([[2,4,5], [3,8,2], [1,1,3], [4,3,4]],2,10)",
 					equals = "[[0,2,3],[1]]") })
-	public static IList<IList> opKMeans(final IScope scope, final IList data, final Integer k, final Integer maxIt)
+	public static IList<IList> opKMeans(final IScope scope, final IList data, final Long k, final Long maxIt)
 			throws GamaRuntimeException {
 		// AD 04/21 : Is it ok to use an additional generator here ?
 		final MersenneTwister rand = new MersenneTwister(scope.getRandom().getSeed().longValue());
@@ -1531,7 +1531,7 @@ public class Stats {
 			instances.add(new Instance(i, point));
 		}
 		final KMeansPlusPlusClusterer<DoublePoint> kmeans =
-				new KMeansPlusPlusClusterer<>(k, maxIt, new EuclideanDistance(), rand);
+				new KMeansPlusPlusClusterer<>(k.intValue(), maxIt.intValue(), new EuclideanDistance(), rand);
 		final List<CentroidCluster<DoublePoint>> clusters = kmeans.cluster(instances);
 		try (final Collector.AsList results = Collector.getList()) {
 			for (final Cluster<DoublePoint> cl : clusters) {
@@ -1920,11 +1920,11 @@ public class Stats {
 			examples = { @example (
 					value = "moment([13,2,1,4,1,2], 2, 1.2) with_precision(4)",
 					equals = "24.74") })
-	public static Double opMoment(final IScope scope, final IContainer data, final Integer k, final Double c) {
+	public static Double opMoment(final IScope scope, final IContainer data, final Long k, final Double c) {
 
 		// TODO input parameters validation
 
-		return Descriptive.moment(toDoubleArrayList(scope, data), k, c);
+		return Descriptive.moment(toDoubleArrayList(scope, data), k.intValue(), c);
 	}
 
 	/**
@@ -2186,8 +2186,8 @@ public class Stats {
 					value = "pValue_for_fStat(1.9,10,12) with_precision(3)",
 					equals = "0.145") })
 
-	public static Double opPvalueForFstat(final IScope scope, final Double fstat, final Integer dfn,
-			final Integer dfd) { // see Spatial.Punctual.angle_between
+	public static Double opPvalueForFstat(final IScope scope, final Double fstat, final Long dfn,
+			final Long dfd) { // see Spatial.Punctual.angle_between
 
 		// Returns the P value of F statistic fstat with numerator degrees
 		// of freedom dfn and denominator degrees of freedom dfd.
@@ -2223,7 +2223,7 @@ public class Stats {
 					value = "pValue_for_tStat(0.9,10) with_precision(3)",
 					equals = "0.389") })
 
-	public static Double opPvalueForTstat(final IScope scope, final Double tstat, final Integer df) {
+	public static Double opPvalueForTstat(final IScope scope, final Double tstat, final Long df) {
 
 		// Returns the P value of the T statistic tstat with df degrees of
 		// freedom. This is a two-tailed test so we just double the right
@@ -2613,7 +2613,7 @@ public class Stats {
 					isExecutable = false) })
 	@test ("hsic_p_value([1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0, 4.0, 5.0], 100) < 0.05")
 	public static Double opHSICPValue(final IScope scope, final IList<Double> x, final IList<Double> y,
-			final Integer permutations) {
+			final Long permutations) {
 		if (x.size() != y.size()) throw GamaRuntimeException.error("Input lists must have the same size", scope);
 		double[] xData = new double[x.size()];
 		double[] yData = new double[y.size()];
@@ -2621,7 +2621,7 @@ public class Stats {
 			xData[i] = x.get(i);
 			yData[i] = y.get(i);
 		}
-		return HSIC.computePValue(xData, yData, permutations);
+		return HSIC.computePValue(xData, yData, permutations.intValue());
 	}
 
 	private static double computeP(double msEffect, double msError, int dfEffect, int dfError) {
@@ -2701,7 +2701,7 @@ public class Stats {
 			value = "Return the number of observation to satisfy power test given a critical effect size, tAlpha and tBeta."
 					+ "</br>see reference: https://rseri.me/publication/b016/B016.pdf (accessible as of 04/2026).")
 	@no_test
-	public static Integer powerTestCSE(final IScope scope, final IList<Double> data, final double tAlpha,
+	public static Long powerTestCSE(final IScope scope, final IList<Double> data, final double tAlpha,
 			final double tBeta, final double criticalEffectSize) {
 		IList<Double> dSample = data.stream().mapToDouble(v -> Cast.asFloat(scope, v)).boxed()
 				.collect(GamaListFactory.toGamaList());
@@ -2721,9 +2721,9 @@ public class Stats {
 			double std = new StandardDeviation().evaluate(currentES.stream().mapToDouble(v -> v).toArray());
 			double thresh = 2 * Math.pow(std / (criticalEffectSize * mean), 2)
 					* Math.pow(td.inverseCumulativeProbability(tAlpha) + td.inverseCumulativeProbability(tBeta), 2);
-			if (currentES.size() >= thresh) return currentES.size();
+			if (currentES.size() >= thresh) return (long) currentES.size();
 		}
-		return data.size();
+		return (long) data.size();
 	}	
 	
 	// ************ UTILITIES ************ //
@@ -2804,11 +2804,11 @@ public class Stats {
 					@example (" list<float> squares <- data_sequence collect (each*each); "), @example (
 							value = " rms(length(data_sequence),sum(squares)) with_precision(4) ",
 							equals = "7.5829") })
-	public static Double opRms(final IScope scope, final Integer size, final Double sumOfSquares) {
+	public static Double opRms(final IScope scope, final Long size, final Double sumOfSquares) {
 
 		// TODO input parameters validation
 
-		return Descriptive.rms(size, sumOfSquares);
+		return Descriptive.rms(size.intValue(), sumOfSquares);
 	}
 	
 	/**
@@ -2904,7 +2904,7 @@ public class Stats {
 					value = "split_in(li,3)",
 					equals = "[[1.0,3.1,5.2,6.0,9.2,11.1,12.0,13.0],[19.9],[35.9,40.0]]") })
 
-	public static <T extends Number> IList<IList<T>> opSplitIn(final IScope scope, final IList<T> list, final int nb) {
+	public static <T extends Number> IList<IList<T>> opSplitIn(final IScope scope, final IList<T> list, final long nb) {
 		return opSplitIn(scope, list, nb, true);
 	}
 
@@ -2940,7 +2940,7 @@ public class Stats {
 					value = "split_in(l,3, true)",
 					equals = "[[1.0,3.1,5.2,6.0,9.2,11.1,12.0,13.0],[19.9],[35.9,40.0]]") })
 
-	public static <T extends Number> IList<IList<T>> opSplitIn(final IScope scope, final IList<T> list, final int nb,
+	public static <T extends Number> IList<IList<T>> opSplitIn(final IScope scope, final IList<T> list, final long nb,
 			final boolean strict) {
 		if (nb <= 1) {
 			final IList<IList<T>> result = GamaListFactory.create(Types.LIST.of(list.getGamlType().getContentType()));
@@ -2948,7 +2948,7 @@ public class Stats {
 			return result;
 		}
 		final DataSet d = toDataSet(scope, list);
-		final IList<Double> stops = GamaListFactory.create(scope, Types.FLOAT, d.getStops(nb));
+		final IList<Double> stops = GamaListFactory.create(scope, Types.FLOAT, d.getStops((int) nb));
 		return opSplitUsing(scope, list, stops);
 	}
 
@@ -3097,7 +3097,7 @@ public class Stats {
 					value = "student_area(1.64,3) with_precision(2)",
 					equals = "0.9") })
 
-	public static Double opStudentArea(final IScope scope, final Double x, final Integer df) {
+	public static Double opStudentArea(final IScope scope, final Double x, final Long df) {
 
 		// Returns the area to the left of x in the Student T distribution
 		// with the given degrees of freedom.
@@ -3131,7 +3131,7 @@ public class Stats {
 					value = "student_t_inverse(0.9,3) with_precision(2)",
 					equals = "1.64") })
 
-	public static Double opStudentTInverse(final IScope scope, final Double x, final Integer df) {
+	public static Double opStudentTInverse(final IScope scope, final Double x, final Long df) {
 
 		// Returns the value, t, for which the area under the Student-t
 		// probability density function (integrated from minus infinity to
@@ -3139,7 +3139,7 @@ public class Stats {
 		// is equal to x.
 		final double a = 2.0 * (1.0 - x);
 		try {
-			return Probability.studentTInverse(a, df);
+			return Probability.studentTInverse(a, df.intValue());
 		} catch (final IllegalArgumentException | ArithmeticException ex) {
 			throw GamaRuntimeException.error("colt .studentTInverse reports: " + ex, scope);
 		}
@@ -3264,12 +3264,12 @@ public class Stats {
 					value = "int(variance(4,16,84))",
 					equals = "5",
 					returnType = "int") })
-	public static Double opVariance(final IScope scope, final Integer size, final Double sum,
+	public static Double opVariance(final IScope scope, final Long size, final Double sum,
 			final Double numOfSquares) {
 
 		// TODO input parameters validation
 
-		return Descriptive.variance(size, sum, numOfSquares);
+		return Descriptive.variance(size.intValue(), sum, numOfSquares);
 	}
 
 	/**

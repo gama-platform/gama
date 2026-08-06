@@ -759,12 +759,12 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 			final double priority_list[] = listMentalStatesTest.stream().mapToDouble(s -> s.getStrength()).toArray();
 
 			final IList priorities = GamaListFactory.create(scope, Types.FLOAT, priority_list);
-			final int index_choice = Random.opRndChoice(scope, priorities);
+			final int index_choice = Random.opRndChoice(scope, priorities).intValue();
 			newIntention = listMentalStatesTest.get(index_choice);
 			newIntStrength = listMentalStatesTest.get(index_choice).getStrength();
 			if (listMentalStatesTest.size() > intentionBase.size()) {
 				while (intentionBase.contains(newIntention)) {
-					final int index_choice2 = Random.opRndChoice(scope, priorities);
+					final int index_choice2 = Random.opRndChoice(scope, priorities).intValue();
 					newIntention = listMentalStatesTest.get(index_choice2);
 					newIntStrength = listMentalStatesTest.get(index_choice2).getStrength();
 				}
@@ -937,7 +937,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 					priorities.add(1.0);
 				}
 			}
-			final int index_plan = gama.gaml.operators.Random.opRndChoice(scope, priorities);
+			final int index_plan = gama.gaml.operators.Random.opRndChoice(scope, priorities).intValue();
 			resultStatement = temp_plan.get(index_plan);
 		}
 
@@ -1034,7 +1034,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 					priorities.add(1.0);
 				}
 			}
-			final int index_plan = Random.opRndChoice(scope, priorities);
+			final int index_plan = Random.opRndChoice(scope, priorities).intValue();
 			resultStatement = temp_norm.get(index_plan);
 		}
 

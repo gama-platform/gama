@@ -34,7 +34,7 @@ public class ChartDataSourceUnique extends ChartDataSource {
 	public boolean cloneMe(final IScope scope, final int chartCycle, final ChartDataSource source) {
 		final boolean res = super.cloneMe(scope, chartCycle, source);
 		final IColor col =
-				GamaColorFactory.createWithRGBA(Random.opRnd(scope, 255), Random.opRnd(scope, 255), Random.opRnd(scope, 255), 255);
+				GamaColorFactory.createWithRGBA(Random.opRnd(scope, 255l), Random.opRnd(scope, 255l), Random.opRnd(scope, 255l), 255);
 		final IExpression ncol = GAML.getExpressionFactory().createConst(col, Types.COLOR);
 		this.colorexp = ncol;
 		final String previousname = ((ChartDataSourceUnique) source).legend;
@@ -42,7 +42,7 @@ public class ChartDataSourceUnique extends ChartDataSource {
 		if (previousname.endsWith("*")) {
 			final int index = previousname.lastIndexOf('_');
 			final String nosim = previousname.substring(index + 1, previousname.lastIndexOf('*'));
-			int nosimv = Cast.asInt(scope, nosim);
+			int nosimv = Cast.asInt(scope, nosim).intValue();
 			final String basename = previousname.substring(0, index);
 			nosimv = nosimv + 1;
 			legend = basename + "_" + nosimv + "*";

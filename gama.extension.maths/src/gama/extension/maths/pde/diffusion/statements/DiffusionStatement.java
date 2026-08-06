@@ -270,7 +270,7 @@ public class DiffusionStatement extends AbstractStatement {
 				if (first instanceof IAgent) { on = ((IAgent) first).getPopulation().getTopology().getPlaces(); }
 			}
 			this.terrain = (IDiffusionTarget) on;
-			cycleLength = Cast.asInt(scope, getFacetValue(scope, CYCLE_LENGTH, 1));
+			cycleLength = Cast.asInt(scope, getFacetValue(scope, CYCLE_LENGTH, 1)).intValue();
 			nbNeighbors = terrain.getNbNeighbours();
 			avoidMask = false;
 			if (getFacet(AVOID_MASK) != null) { avoidMask = Cast.asBool(scope, getFacet(AVOID_MASK).value(scope)); }
@@ -437,7 +437,7 @@ public class DiffusionStatement extends AbstractStatement {
 		double[][] mat_diffu;
 		double proportion = Cast.asFloat(scope, getFacetValue(scope, PROPORTION));
 		final double variation = Cast.asFloat(scope, getFacetValue(scope, VARIATION));
-		int range = Cast.asInt(scope, getFacetValue(scope, RADIUS));
+		int range = Cast.asInt(scope, getFacetValue(scope, RADIUS)).intValue();
 		DiffusionData data = dataSupplier.get(scope);
 		if (range == 0) { range = 1; }
 		if (proportion == 0) { proportion = 1; }

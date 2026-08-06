@@ -206,7 +206,17 @@ public class GamlModelBuilder implements IGamlModelBuilder {
 			final IModelDescription model = r.buildCompleteDescription();
 			if (model != null) { model.validate(); }
 			if (errors != null) { Iterables.addAll(errors, r.getValidationContext()); }
-			if (r.getValidationContext().hasErrors()) return null;
+			if (r.getValidationContext().hasErrors()) {
+				// Returning null here is what makes a failed build silent for the caller: at the very least, say why
+				final StringBuilder sb = new StringBuilder("Model ").append(uri.lastSegment())
+						.append(" cannot be built because of the following errors:");
+				for (final GamlCompilationError error : r.getValidationContext()) {
+					if (!error.isError()) { continue; }
+					sb.append(System.lineSeparator()).append(" - ").append(error);
+				}
+				DEBUG.ERR(sb.toString());
+				return null;
+			}
 			return model;
 		} finally {
 			final boolean wasDeliver = buildResourceSet.eDeliver();

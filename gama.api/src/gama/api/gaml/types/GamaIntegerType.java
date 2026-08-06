@@ -23,15 +23,16 @@ import gama.api.types.misc.IValue;
 /**
  * Represents the GAML integer type.
  * <p>
- * This type wraps Java Integer/int/Long values, representing whole numbers in GAML.
+ * This type is backed by Java Long values (int/Integer/short are also accepted, so that internal signatures
+ * that still return them keep declaring int in GAML), representing whole numbers in GAML.
  * Integer supports conversion from various types:
  * <ul>
  * <li>null → 0</li>
- * <li>Integer → itself</li>
- * <li>Any Number → intValue()</li>
+ * <li>Long → itself</li>
+ * <li>Any Number → longValue()</li>
  * <li>String → parsed (supports hex with # prefix, custom radix via param)</li>
  * <li>Boolean → 1 for true, 0 for false</li>
- * <li>IValue → intValue()</li>
+ * <li>IValue → longValue()</li>
  * <li>Other → 0</li>
  * </ul>
  * Integers can be coerced to floats when necessary.
@@ -43,11 +44,14 @@ import gama.api.types.misc.IValue;
 @type (
 		name = IKeyword.INT,
 		id = IType.INT,
-		wraps = { Integer.class, int.class, Long.class },
+		// Long first: wraps()[0] becomes the type's support class, and it is used with isInstance()/isAssignableFrom(),
+		// which always answer false on a primitive class. int/Integer/short remain registered so that the (many)
+		// internal Java signatures still returning them keep declaring int in GAML
+		wraps = { Long.class, long.class, int.class, Integer.class, short.class, Short.class },
 		kind = ISymbolKind.NUMBER,
 		concept = { IConcept.TYPE },
 		doc = @doc ("Type of integer numbers"))
-public class GamaIntegerType extends GamaType<Integer> {
+public class GamaIntegerType extends GamaType<Long> {
 
 	/**
 	 * Constructs a new GamaIntegerType.
@@ -63,7 +67,7 @@ public class GamaIntegerType extends GamaType<Integer> {
 			Returns the parameter casted to an int value. If it is an integer, returns it. A float, returns its integer value. \
 			A color, its rgb value. An agent, its index. A string, attempts to parse it (with a radix of 16 if it begins with '#'). \
 			A bool, return 1 if true. A font, return its size.  Otherwise return 0""")
-	public Integer cast(final IScope scope, final Object obj, final Object param, final boolean copy)
+	public Long cast(final IScope scope, final Object obj, final Object param, final boolean copy)
 			throws GamaRuntimeException {
 		return staticCast(scope, obj, param, copy);
 	}
@@ -80,15 +84,16 @@ public class GamaIntegerType extends GamaType<Integer> {
 	 * @param copy whether to copy the result (not applicable for primitives)
 	 * @return the integer value resulting from the cast
 	 */
-	public static Integer staticCast(final IScope scope, final Object obj, final Object param, final boolean copy) {
+	public static Long staticCast(final IScope scope, final Object obj, final Object param, final boolean copy) {
 		return switch (obj) {
-			case null -> 0;
-			case Integer i -> i;
-			case Number n -> n.intValue();
+			case null -> 0l;
+			case Integer i -> i.longValue();
+			case Long l -> l;
+			case Number n -> n.longValue();
 			case String s -> castFromString(s, param);
-			case Boolean b -> b ? 1 : 0;
-			case IValue v -> v.intValue(scope);
-			default -> 0;
+			case Boolean b -> b ? 1l : 0l;
+			case IValue v -> v.longValue(scope);
+			default -> 0l;
 		};
 	}
 
@@ -106,24 +111,24 @@ public class GamaIntegerType extends GamaType<Integer> {
 	 * </p>
 	 *
 	 * @param s the string to parse
-	 * @param param optional radix parameter (Integer)
+	 * @param param optional radix parameter (a Number)
 	 * @return the parsed integer value, or 0 if parsing fails
 	 */
-	private static Integer castFromString(final String s, final Object param) {
+	private static Long castFromString(final String s, final Object param) {
 		String n = s.replaceAll("\\p{Zs}", "");
 		try {
-			if (n.startsWith("#")) return Integer.parseInt(n.substring(1), 16);
+			if (n.startsWith("#")) return Long.parseLong(n.substring(1), 16);
 			int radix = 10;
-			if (param instanceof Integer) { radix = (Integer) param; }
-			return Integer.parseInt(n, radix);
+			if (param instanceof Number number) { radix = number.intValue(); }
+			return Long.parseLong(n, radix);
 		} catch (final NumberFormatException e) {
 			Double d = 0d;
 			try {
 				d = Double.parseDouble(n);
 			} catch (final NumberFormatException e1) {
-				return 0;
+				return 0l;
 			}
-			return d.intValue();
+			return d.longValue();
 		}
 	}
 
@@ -133,7 +138,7 @@ public class GamaIntegerType extends GamaType<Integer> {
 	 * @return 0, the default integer value
 	 */
 	@Override
-	public Integer getDefault() { return 0; }
+	public Long getDefault() { return 0l; }
 
 	/**
 	 * Checks if this type can be translated into another type.

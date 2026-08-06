@@ -105,9 +105,9 @@ public class MulticriteriaAnalyzeOperator {
 					equals = "1") },
 			see = { "promethee_DM", "electre_DM", "evidence_theory_DM" })
 	@test ("weighted_means_DM([[1.0],[4.0],[3.0]], [[\"name\"::\"v\",\"weight\"::1.0]]) = 1")
-	public static Integer weightedMeansDecisionMaking(final IScope scope, final IList<List> cands,
+	public static Long weightedMeansDecisionMaking(final IScope scope, final IList<List> cands,
 			final IList<Map<String, Object>> criteriaMap) throws GamaRuntimeException {
-		if (cands == null || cands.isEmpty()) return -1;
+		if (cands == null || cands.isEmpty()) return -1l;
 		final List<String> criteriaStr = new LinkedList<>();
 		final Map<String, Double> weight = new HashMap<>();
 		for (final Map<String, Object> critMap : criteriaMap) {
@@ -122,7 +122,7 @@ public class MulticriteriaAnalyzeOperator {
 		}
 		int cpt = 0;
 		double utilityMax = -Double.MAX_VALUE;
-		final IList<Integer> bestCands = GamaListFactory.create(Types.INT);
+		final IList<Long> bestCands = GamaListFactory.create(Types.INT);
 		for (final List cand : cands) {
 			int i = 0;
 			double utility = 0;
@@ -131,15 +131,15 @@ public class MulticriteriaAnalyzeOperator {
 				i++;
 			}
 			if (utilityMax == utility) {
-				bestCands.add(cpt);
+				bestCands.add((long) cpt);
 			} else if (utilityMax < utility) {
 				bestCands.clear();
-				bestCands.add(cpt);
+				bestCands.add((long) cpt);
 				utilityMax = utility;
 			}
 			cpt++;
 		}
-		return bestCands.anyValue(scope);
+		return ((Number) bestCands.anyValue(scope)).longValue();
 	}
 
 	/**
@@ -199,9 +199,9 @@ public class MulticriteriaAnalyzeOperator {
 					value = "fuzzy_choquet_DM([[1.0, 7.0],[4.0,2.0],[3.0, 3.0]], [\"utility\", \"price\", \"size\"],[[\"utility\"]::0.5,[\"size\"]::0.1,[\"price\"]::0.4,[\"utility\", \"price\"]::0.55])",
 					equals = "0") },
 			see = { "promethee_DM", "electre_DM", "evidence_theory_DM" })
-	public static Integer fuzzyChoquetDecisionMaking(final IScope scope, final IList<List> cands,
+	public static Long fuzzyChoquetDecisionMaking(final IScope scope, final IList<List> cands,
 			final IList<String> criteria, final IMap criteriaWeights) throws GamaRuntimeException {
-		if (cands == null || cands.isEmpty()) return -1;
+		if (cands == null || cands.isEmpty()) return -1l;
 		final Map<String, Double> critWeight = new HashMap<>();
 		final Map<Set<String>, Double> weight = new HashMap<>();
 		for (final Object o : criteriaWeights.keySet()) {
@@ -252,7 +252,7 @@ public class MulticriteriaAnalyzeOperator {
 			}
 			cpt++;
 		}
-		return indexCand;
+		return (long) indexCand;
 
 	}
 
@@ -280,9 +280,9 @@ public class MulticriteriaAnalyzeOperator {
 					value = "promethee_DM([[1.0, 7.0],[4.0,2.0],[3.0, 3.0]], [[\"name\"::\"utility\", \"weight\" :: 2.0,\"p\"::0.5, \"q\"::0.0, \"s\"::1.0, \"maximize\" :: true],[\"name\"::\"price\", \"weight\" :: 1.0,\"p\"::0.5, \"q\"::0.0, \"s\"::1.0, \"maximize\" :: false]])",
 					equals = "1") },
 			see = { "weighted_means_DM", "electre_DM", "evidence_theory_DM" })
-	public static Integer prometheeDecisionMaking(final IScope scope, final IList<List> cands,
+	public static Long prometheeDecisionMaking(final IScope scope, final IList<List> cands,
 			final IList<Map<String, Object>> criteriaMap) throws GamaRuntimeException {
-		if (cands == null || cands.isEmpty()) return -1;
+		if (cands == null || cands.isEmpty()) return -1l;
 		int cpt = 0;
 		final LinkedList<Candidate> candidates = new LinkedList<>();
 		final List<String> criteriaStr = new LinkedList<>();
@@ -329,12 +329,12 @@ public class MulticriteriaAnalyzeOperator {
 			cpt++;
 		}
 		final LinkedList<Candidate> candsFilter = filtering(candidates, new HashMap<>());
-		if (candsFilter.isEmpty()) return scope.getRandom().between(0, candidates.size() - 1);
+		if (candsFilter.isEmpty()) return (long) scope.getRandom().between(0, candidates.size() - 1);
 		if (candsFilter.size() == 1)
-			return ((Candidate) GamaListFactory.create(scope, Types.NO_TYPE, (Iterable) candsFilter).firstValue(scope))
-					.getIndex();
+			return (long) ((Candidate) GamaListFactory.create(scope, Types.NO_TYPE, (Iterable) candsFilter)
+					.firstValue(scope)).getIndex();
 		final Candidate decision = promethee.decision(candsFilter);
-		return decision.getIndex();
+		return (long) decision.getIndex();
 
 	}
 
@@ -380,11 +380,11 @@ public class MulticriteriaAnalyzeOperator {
 					value = "electre_DM([[1.0, 7.0],[4.0,2.0],[3.0, 3.0]], [[\"name\"::\"utility\", \"weight\" :: 2.0,\"p\"::0.5, \"q\"::0.0, \"s\"::1.0, \"maximize\" :: true],[\"name\"::\"price\", \"weight\" :: 1.0,\"p\"::0.5, \"q\"::0.0, \"s\"::1.0, \"maximize\" :: false]],0.7)",
 					equals = "0") },
 			see = { "weighted_means_DM", "promethee_DM", "evidence_theory_DM" })
-	public static Integer electreDecisionMaking(final IScope scope, final IList<List> cands,
+	public static Long electreDecisionMaking(final IScope scope, final IList<List> cands,
 			final IList<Map<String, Object>> criteriaMap, final Double cut) throws GamaRuntimeException {
 		Double fuzzyCut = cut;
 		if (fuzzyCut == null) { fuzzyCut = 0.7; }
-		if (cands == null || cands.isEmpty()) return -1;
+		if (cands == null || cands.isEmpty()) return -1l;
 		int cpt = 0;
 		final List<Candidate> candidates = new ArrayList<>();
 		final List<String> criteriaStr = GamaListFactory.create(Types.STRING);
@@ -435,9 +435,9 @@ public class MulticriteriaAnalyzeOperator {
 			cpt++;
 		}
 		final LinkedList<Candidate> candsFilter = filtering(candidates, new HashMap<>());
-		if (candsFilter.isEmpty()) return scope.getRandom().between(0, candidates.size() - 1);
+		if (candsFilter.isEmpty()) return (long) scope.getRandom().between(0, candidates.size() - 1);
 		final Candidate decision = electre.decision(candsFilter);
-		return decision.getIndex();
+		return (long) decision.getIndex();
 
 	}
 
@@ -465,7 +465,7 @@ public class MulticriteriaAnalyzeOperator {
 			special_cases = { "Returns -1 if the candidate list is nil or empty." },
 			usages = { @usage (
 					value = "if the operator is used with only 2 operands (the candidates and the criteria), the last parameter (use simple method) is set to true"), })
-	public static Integer evidenceTheoryDecisionMaking(final IScope scope, final IList<List> cands,
+	public static Long evidenceTheoryDecisionMaking(final IScope scope, final IList<List> cands,
 			final IList<Map<String, Object>> criteriaMap) throws GamaRuntimeException {
 		return evidenceTheoryDecisionMaking(scope, cands, criteriaMap, true);
 	}
@@ -513,9 +513,9 @@ public class MulticriteriaAnalyzeOperator {
 					value = "evidence_theory_DM([[1.0, 7.0],[4.0,2.0],[3.0, 3.0]], [[\"name\"::\"utility\", \"s1\" :: 0.0,\"s2\"::1.0, \"v1p\"::0.0, \"v2p\"::1.0, \"v1c\"::0.0, \"v2c\"::0.0, \"maximize\" :: true],[\"name\"::\"price\",  \"s1\" :: 0.0,\"s2\"::1.0, \"v1p\"::0.0, \"v2p\"::1.0, \"v1c\"::0.0, \"v2c\"::0.0, \"maximize\" :: true]], false)",
 					equals = "0") },
 			see = { "weighted_means_DM", "electre_DM", "electre_DM" })
-	public static Integer evidenceTheoryDecisionMaking(final IScope scope, final IList<List> cands,
+	public static Long evidenceTheoryDecisionMaking(final IScope scope, final IList<List> cands,
 			final IList<Map<String, Object>> criteriaMap, final Boolean isSimple) throws GamaRuntimeException {
-		if (cands == null || cands.isEmpty()) return -1;
+		if (cands == null || cands.isEmpty()) return -1l;
 		int cpt = 0;
 		final boolean simple = isSimple == null ? false : isSimple;
 		final Map<String, Boolean> maximizeCrit = new HashMap<>();
@@ -559,12 +559,12 @@ public class MulticriteriaAnalyzeOperator {
 		}
 		// DEBUG.LOG("candidates : " + candidates.size());
 		final LinkedList<Candidate> candsFilter = filtering(candidates, maximizeCrit);
-		if (candsFilter.isEmpty()) return scope.getRandom().between(0, candidates.size() - 1);
+		if (candsFilter.isEmpty()) return (long) scope.getRandom().between(0, candidates.size() - 1);
 		// DEBUG.LOG("candfilter : " + candsFilter);
 		final Candidate decision = evt.decision(criteresFC, candsFilter, simple);
 		// DEBUG.LOG("decision : " + decision.getIndex());
 
-		return decision.getIndex();
+		return (long) decision.getIndex();
 
 	}
 

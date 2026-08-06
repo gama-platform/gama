@@ -284,7 +284,7 @@ public interface GamlCoreUnits {
 			altNames = { "cycles" },
 			category = { IConstantCategory.TIME },
 			concept = { IConcept.DIMENSION, IConcept.DATE, IConcept.TIME_UNIT, IConcept.TIME },
-			doc = @doc ("cycle: the discrete measure of time in the simulation. Used to force a temporal expression to be expressed in terms of cycles rather than seconds")) int cycle =
+			doc = @doc ("cycle: the discrete measure of time in the simulation. Used to force a temporal expression to be expressed in terms of cycles rather than seconds")) long cycle =
 					1;
 
 	/** The Constant s. */

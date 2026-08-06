@@ -73,7 +73,7 @@ public class SpatialStatistics {
 							+ "k-nearest neighbors of our agent ",
 					isExecutable = false) })
 	@no_test
-	public static Object KNN(final IScope scope, final IAgent agent, final IMap<IAgent, Object> agents, final int k) {
+	public static Object KNN(final IScope scope, final IAgent agent, final IMap<IAgent, Object> agents, final long k) {
 		/**
 		 * Create an inner class named "DistanceCalc" with Comparable interface, we will use this later to compare the
 		 * distance between our agent and other agents
@@ -99,7 +99,7 @@ public class SpatialStatistics {
 		for (var key : agents.getKeys()) { result.add(new DistanceCalc(agent, key, agents.get(key))); }
 		Collections.sort(result);
 		// store k nearest neighbors
-		ArrayList<Object> K_neighbors = new ArrayList<>(Math.min(k, result.size()));
+		ArrayList<Object> K_neighbors = new ArrayList<>((int) Math.min(k, result.size()));
 		for (int i = 0; i < Math.min(k, result.size()); i++) { K_neighbors.add(result.get(i).label); }
 		// find most frequent element (majority voting) in O(k) instead of O(k²)
 		final java.util.Map<Object, Integer> freqMap = new java.util.HashMap<>();
@@ -357,7 +357,7 @@ public class SpatialStatistics {
 					list<point> queryPoint <- [{0,5}];\r
 					float((IDW(list(geometry(queryPoint)),mapLocationPoints,1)).pairs[0].value) with_precision 1 = 3.5""")
 	public static IMap<IShape, Double> primIDW(final IScope scope, final IContainer<?, ? extends IShape> geometries,
-			final IMap points, final int power) {
+			final IMap points, final long power) {
 		final IMap<IShape, Double> results = GamaMapFactory.create(Types.GEOMETRY, Types.FLOAT);
 		if (points == null || points.isEmpty()) return null;
 		if (geometries == null || geometries.isEmpty(scope)) return results;

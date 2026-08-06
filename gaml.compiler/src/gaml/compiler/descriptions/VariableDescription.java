@@ -204,7 +204,7 @@ public class VariableDescription extends SymbolDescription implements IVariableD
 	public IType<?> getTypeNamed(final String s) {
 		final IType<?> result = super.getTypeNamed(s);
 		if (result == Types.NO_TYPE) {
-			final int provider = GamaIntegerType.staticCast(null, s, null, false);
+			final int provider = GamaIntegerType.staticCast(null, s, null, false).intValue();
 			switch (provider) {
 				case ITypeProvider.MACRO_TYPE:
 					final IDescription species = this.getEnclosingDescription();

@@ -495,7 +495,7 @@ public interface IField extends IMatrix<Double>, IDiffusionTarget, IImageProvide
 			concept = { IConcept.MATRIX },
 			doc = @doc ("Performs a multiplication between the two field operands"))
 	@test ("field([[1,2],[3,4]]) * 2 = field([[2,4],[6,8]])")
-	IField times(Integer val) throws GamaRuntimeException;
+	IField times(Long val) throws GamaRuntimeException;
 
 	/**
 	 * Divides.
@@ -535,7 +535,7 @@ public interface IField extends IMatrix<Double>, IDiffusionTarget, IImageProvide
 			concept = {},
 			doc = @doc ("Divides all the elements of the field operand by the integer operand"))
 	@test ("field([[1,2],[3,4]]) / 2 = field([[0.5,1],[1.5,2]])")
-	IField divides(Integer val) throws GamaRuntimeException;
+	IField divides(Long val) throws GamaRuntimeException;
 
 	/**
 	 * Plus.
@@ -575,7 +575,7 @@ public interface IField extends IMatrix<Double>, IDiffusionTarget, IImageProvide
 			concept = {},
 			doc = @doc ("Adds the int operand to all the elements in the field"))
 	@test ("field([[1,2],[3,4]]) + 2 = field([[3,4],[5,6]])")
-	IField plus(Integer val) throws GamaRuntimeException;
+	IField plus(Long val) throws GamaRuntimeException;
 
 	/**
 	 * Minus.
@@ -615,7 +615,7 @@ public interface IField extends IMatrix<Double>, IDiffusionTarget, IImageProvide
 			concept = {},
 			doc = @doc ("Subtracts the int operand from all the elements in the field"))
 	@test ("field([[1,2],[3,4]]) - 1 = field([[0,1],[2,3]])")
-	IField minus(Integer val) throws GamaRuntimeException;
+	IField minus(Long val) throws GamaRuntimeException;
 
 	/**
 	 * Flattens or processes the field using a custom computer/provider.

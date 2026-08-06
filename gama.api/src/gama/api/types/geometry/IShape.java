@@ -586,7 +586,7 @@ public interface IShape extends ILocated, IValue, IAttributed, IEnvelopeProvider
 	 * @return the int
 	 */
 	@Override
-	default int intValue(final IScope scope) {
+	default long longValue(final IScope scope) {
 		return getArea().intValue();
 	}
 

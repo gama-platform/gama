@@ -50,7 +50,7 @@ public class MeshLayerData extends LayerData {
 	final Attribute<IImageProvider> texture;
 
 	/** The smooth. */
-	final Attribute<Integer> smooth;
+	final Attribute<Long> smooth;
 
 	/** The elevation. */
 	final Attribute<IField> elevation;
@@ -106,8 +106,8 @@ public class MeshLayerData extends LayerData {
 		triangulation = create(IKeyword.TRIANGULATION, Types.BOOL, false);
 		smooth = create(IKeyword.SMOOTH, (scope, exp) -> {
 			final Object result = exp.value(scope);
-			return result instanceof Boolean b ? b ? 1 : 0 : Cast.asInt(scope, result);
-		}, Types.INT, 0);
+			return result instanceof Boolean b ? b ? 1l : 0l : Cast.asInt(scope, result);
+		}, Types.INT, 0l);
 		grayscale = create(IKeyword.GRAYSCALE, Types.BOOL, false);
 		wireframe = create(IKeyword.WIREFRAME, Types.BOOL, false);
 		text = create(IKeyword.TEXT, Types.BOOL, false);
@@ -233,7 +233,7 @@ public class MeshLayerData extends LayerData {
 	 *
 	 * @return the smooth
 	 */
-	public Integer getSmooth() { return smooth.get(); }
+	public Integer getSmooth() { return smooth.get().intValue(); }
 
 	/**
 	 * Gets the scale.

@@ -147,7 +147,7 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 	 * @param objects
 	 *            the objects
 	 */
-	GamaFloatMatrix(final int cols, final int rows, final int[] objects) {
+	GamaFloatMatrix(final int cols, final int rows, final long[] objects) {
 		this(cols, rows);
 		for (int i = 0, n = Math.min(objects.length, rows * cols); i < n; i++) { matrix[i] = objects[i]; }
 	}
@@ -473,7 +473,7 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 	}
 
 	@Override
-	public IMatrix times(final Integer val) throws GamaRuntimeException {
+	public IMatrix times(final Long val) throws GamaRuntimeException {
 		final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
 		for (int i = 0; i < matrix.length; i++) { nm.matrix[i] = matrix[i] * val; }
 		return nm;
@@ -487,7 +487,7 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 	}
 
 	@Override
-	public IMatrix divides(final Integer val) throws GamaRuntimeException {
+	public IMatrix divides(final Long val) throws GamaRuntimeException {
 		final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
 		for (int i = 0; i < matrix.length; i++) { nm.matrix[i] = matrix[i] / val; }
 		return nm;
@@ -512,7 +512,7 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 	}
 
 	@Override
-	public IMatrix plus(final Integer val) throws GamaRuntimeException {
+	public IMatrix plus(final Long val) throws GamaRuntimeException {
 		final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
 		for (int i = 0; i < matrix.length; i++) { nm.matrix[i] = matrix[i] + val; }
 		return nm;
@@ -526,7 +526,7 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 	}
 
 	@Override
-	public IMatrix minus(final Integer val) throws GamaRuntimeException {
+	public IMatrix minus(final Long val) throws GamaRuntimeException {
 		final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
 		for (int i = 0; i < matrix.length; i++) { nm.matrix[i] = matrix[i] - val; }
 		return nm;
@@ -566,18 +566,6 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 	@Override
 	public double[] getFieldData(final IScope scope) {
 		return matrix;
-	}
-
-	/**
-	 * Transforms a matrix of integers into the corresponding BufferedImage. The matrix has to follow the ARGB encoding
-	 *
-	 * @param scope
-	 * @param matrix
-	 * @return
-	 */
-	public static BufferedImage constructBufferedImageFromMatrix(final IScope scope, final IMatrix<Integer> matrix) {
-		if (!(matrix instanceof GamaIntMatrix gim)) return null;
-		return gim.getImage(scope);
 	}
 
 	@Override

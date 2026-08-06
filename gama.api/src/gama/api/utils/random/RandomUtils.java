@@ -266,6 +266,22 @@ public class RandomUtils implements IRandom {
 	 *            the a
 	 */
 	@Override
+	public void shuffleInPlace(final long[] a) {
+		for (int i = 0; i < a.length; i++) {
+			final int change = between(i, a.length - 1);
+			final long helper = a[i];
+			a[i] = a[change];
+			a[change] = helper;
+		}
+	}
+
+	/**
+	 * Shuffle in place.
+	 *
+	 * @param a
+	 *            the a
+	 */
+	@Override
 	public void shuffleInPlace(final short[] a) {
 		for (int i = 0; i < a.length; i++) {
 			final int change = between(i, a.length - 1);
@@ -331,6 +347,14 @@ public class RandomUtils implements IRandom {
 	}
 
 	/**
+	 * @return an uniformly distributed long random number in [from, to]
+	 */
+	@Override
+	public long between(final long min, final long max) {
+		return min + (long) ((1L + max - min) * next());
+	}
+
+	/**
 	 * Between.
 	 *
 	 * @param min
@@ -352,6 +376,15 @@ public class RandomUtils implements IRandom {
 	public int between(final int min, final int max, final int step) {
 		final int nbSteps = (max - min) / step;
 		return min + between(0, nbSteps) * step;
+	}
+
+	/**
+	 * @return an uniformly distributed long random number in [min, max] respecting the step
+	 */
+	@Override
+	public long between(final long min, final long max, final long step) {
+		final long nbSteps = (max - min) / step;
+		return min + between(0L, nbSteps) * step;
 	}
 
 	/**

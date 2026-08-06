@@ -376,9 +376,9 @@ public class ImageOperators implements ImageConstants {
 	@operator ("antialiased")
 	@doc ("Application of a very light blur kernel that acts like an anti-aliasing filter when applied to an image. If the last argument is > 0,  applies the filter the equivalent number of times. If it is equal or smaller than zero, the image is returned untouched")
 	@no_test
-	public static GamaImage antialiased(final IScope scope, final GamaImage image, final int count) {
+	public static GamaImage antialiased(final IScope scope, final GamaImage image, final long count) {
 		try {
-			return apply(image, OP_ANTIALIAS, count);
+			return apply(image, OP_ANTIALIAS, (int) count);
 		} catch (Exception e) {
 			return image;
 		}
@@ -422,9 +422,9 @@ public class ImageOperators implements ImageConstants {
 	@doc ("Applies a proportional scaling to the image passed in parameter to  return a new scaled image with the corresponding width. "
 			+ "A width of 0 will return nil, a width equal to the width of the image will return the original image. Automatic scaling and resizing methods are used. The original image is left untouched")
 	@no_test
-	public static GamaImage with_width(final IScope scope, final GamaImage image, final Integer width) {
+	public static GamaImage with_width(final IScope scope, final GamaImage image, final Long width) {
 		return image == null || width <= 0d ? null : width == image.getWidth() ? image
-				: resize(image, Mode.FIT_TO_WIDTH, width, width);
+				: resize(image, Mode.FIT_TO_WIDTH, width.intValue(), width.intValue());
 	}
 
 	/**
@@ -442,9 +442,9 @@ public class ImageOperators implements ImageConstants {
 	@doc ("Applies a proportional scaling to the image passed in parameter to return a new scaled image with the corresponding height. "
 			+ "A height of 0 will return nil, a height equal to the height of the image will return the original image. Automatic scaling and resizing methods are used. The original image is left untouched")
 	@no_test
-	public static GamaImage with_height(final IScope scope, final GamaImage image, final Integer height) {
+	public static GamaImage with_height(final IScope scope, final GamaImage image, final Long height) {
 		return image == null || height <= 0d ? null : height == image.getHeight() ? image
-				: resize(image, Mode.FIT_TO_HEIGHT, height, height);
+				: resize(image, Mode.FIT_TO_HEIGHT, height.intValue(), height.intValue());
 	}
 
 	/**
@@ -464,11 +464,11 @@ public class ImageOperators implements ImageConstants {
 	@doc ("Applies a non-proportional scaling to the image passed in parameter to return a new scaled image with the corresponding width and height. "
 			+ "A height of 0 or a width of 0 will return nil. If the width and height parameters are repectively equal to the width and height of the original image, it is returned. Automatic scaling and resizing methods are used. The original image is left untouched")
 	@no_test
-	public static GamaImage with_size(final IScope scope, final GamaImage image, final Integer width,
-			final Integer height) {
+	public static GamaImage with_size(final IScope scope, final GamaImage image, final Long width,
+			final Long height) {
 		return image == null || height <= 0d || width <= 0d ? null
 				: height == image.getHeight() && width == image.getWidth() ? image
-				: resize(image, Mode.FIT_EXACT, width, height);
+				: resize(image, Mode.FIT_EXACT, width.intValue(), height.intValue());
 	}
 
 	/**
@@ -631,7 +631,7 @@ public class ImageOperators implements ImageConstants {
 		g.drawImage(image, 0, 0, null);
 		g.setComposite(AlphaComposite.SrcAtop.derive(Math.min(1f, Math.max((float) ratio, 0f))));
 		g.setColor(IColor.toAWTColor(color));
-		g.fillRect(0, 0, w, h);
+		g.fillRect(0, 0, (int) w, (int) h);
 		g.dispose();
 		result.setId(image.getId() + "tinted" + color + "|" + ratio);
 		return result;
@@ -702,8 +702,8 @@ public class ImageOperators implements ImageConstants {
 	@operator ("blurred")
 	@doc ("Application of a blurrying filter to the image passed in parameter. This operation is applied multiple times if the last argument is > 0. The original image is left untouched")
 	@no_test
-	public static GamaImage blur(final IScope scope, final GamaImage image, final int count) {
-		return apply(image, OP_BLUR, count);
+	public static GamaImage blur(final IScope scope, final GamaImage image, final long count) {
+		return apply(image, OP_BLUR, (int) count);
 	}
 
 	/**
@@ -738,8 +738,8 @@ public class ImageOperators implements ImageConstants {
 	@operator ("sharpened")
 	@doc ("Application of a sharpening filter to the image passed in parameter. This operation is applied multiple times if the last argument is > 0. The original image is left untouched")
 	@no_test
-	public static GamaImage sharpen(final IScope scope, final GamaImage image, final int count) {
-		return apply(image, OP_SHARPEN, count);
+	public static GamaImage sharpen(final IScope scope, final GamaImage image, final long count) {
+		return apply(image, OP_SHARPEN, (int) count);
 	}
 
 	/**
@@ -766,14 +766,14 @@ public class ImageOperators implements ImageConstants {
 			 The original image is left untouched""")
 	@no_test
 
-	public static GamaImage cropped(final IScope scope, final GamaImage image, final int ox, final int oy, final int ow,
-			final int oh) {
+	public static GamaImage cropped(final IScope scope, final GamaImage image, final long ox, final long oy, final long ow,
+			final long oh) {
 		int iw = image.getWidth();
 		int ih = image.getHeight();
-		int width = Math.min(iw, Math.max(0, ow));
-		int height = Math.min(ih, Math.max(0, oh));
-		int x = Math.min(iw, Math.max(0, ox));
-		int y = Math.min(ih, Math.max(0, oy));
+		int width = (int) Math.min(iw, Math.max(0, ow));
+		int height = (int) Math.min(ih, Math.max(0, oh));
+		int x = (int) Math.min(iw, Math.max(0, ox));
+		int y = (int) Math.min(ih, Math.max(0, oy));
 		if (x == width || width == 0 || height == 0 || y == height) return image;
 		if (x == 0 && y == 0 && width == iw && height == ih) return image;
 		GamaImage result = GamaImage.bestFor(image, width, height);
@@ -824,8 +824,8 @@ public class ImageOperators implements ImageConstants {
 			value = "image")
 	@doc ("Builds a new blank image of the specified dimensions, which does not accept transparency")
 	@no_test
-	public static GamaImage image(final int w, final int h) {
-		return GamaImage.ofDimensions(w, h, BufferedImage.TYPE_INT_ARGB);
+	public static GamaImage image(final long w, final long h) {
+		return GamaImage.ofDimensions((int) w, (int) h, BufferedImage.TYPE_INT_ARGB);
 	}
 
 	/**
@@ -844,11 +844,11 @@ public class ImageOperators implements ImageConstants {
 			value = "image")
 	@doc ("Builds a new image with the specified dimensions and already filled with the given rgb color")
 	@no_test
-	public static GamaImage image(final int w, final int h, final IColor color) {
-		GamaImage gi = GamaImage.ofDimensions(w, h, BufferedImage.TYPE_INT_ARGB);
+	public static GamaImage image(final long w, final long h, final IColor color) {
+		GamaImage gi = GamaImage.ofDimensions((int) w, (int) h, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = gi.createGraphics();
 		g.setColor(IColor.toAWTColor(color));
-		g.fillRect(0, 0, w, h);
+		g.fillRect(0, 0, (int) w, (int) h);
 		g.dispose();
 		return gi;
 	}
@@ -869,8 +869,8 @@ public class ImageOperators implements ImageConstants {
 			value = "image")
 	@doc ("Builds a new blank image with the specified dimensions and indicates if it will support transparency or not")
 	@no_test
-	public static GamaImage image(final int w, final int h, final boolean alpha) {
-		return GamaImage.ofDimensions(w, h, alpha ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB);
+	public static GamaImage image(final long w, final long h, final boolean alpha) {
+		return GamaImage.ofDimensions((int) w, (int) h, alpha ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB);
 	}
 
 	/**

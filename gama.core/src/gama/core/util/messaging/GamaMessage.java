@@ -249,7 +249,7 @@ public class GamaMessage implements IMessage {
 	 * @return the int
 	 */
 	@Override
-	public int intValue(final IScope scope) {
+	public long longValue(final IScope scope) {
 		return getEmissionTimestamp();
 	}
 

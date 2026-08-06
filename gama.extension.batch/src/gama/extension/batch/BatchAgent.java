@@ -119,7 +119,7 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 		final IScope scope = getSpecies().getExperimentScope();
 		final IExpression expr = getSpecies().getFacet(IKeyword.REPEAT);
 		int innerLoopRepeat = 1;
-		if (expr != null && expr.isConst()) { innerLoopRepeat = Cast.asInt(scope, expr.value(scope)); }
+		if (expr != null && expr.isConst()) { innerLoopRepeat = Cast.asInt(scope, expr.value(scope)).intValue(); }
 		setSeeds(new Double[innerLoopRepeat]);
 		setKeepSimulations(getSpecies().keepsSimulations());
 	}

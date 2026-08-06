@@ -655,9 +655,9 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 			Object stepValue = getStepValue(scope);
 			return switch (type.id()) {
 				case IType.INT -> {
-					final int iMin = minValue == null ? Integer.MIN_VALUE : Cast.asInt(scope, minValue);
-					final int iMax = maxValue == null ? Integer.MAX_VALUE : Cast.asInt(scope, maxValue);
-					final int iStep = stepValue == null ? 1 : Cast.asInt(scope, stepValue);
+					final long iMin = minValue == null ? Integer.MIN_VALUE : Cast.asInt(scope, minValue);
+					final long iMax = maxValue == null ? Integer.MAX_VALUE : Cast.asInt(scope, maxValue);
+					final long iStep = stepValue == null ? 1 : Cast.asInt(scope, stepValue);
 					yield GAMA.getRandom(scope).between(iMin, iMax, iStep);
 				}
 				case IType.POINT -> {
@@ -714,10 +714,10 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 			Object stepValue = getStepValue(scope);
 			switch (type.id()) {
 				case IType.INT:
-					final int iMin = minValue == null ? Integer.MIN_VALUE : Cast.asInt(scope, minValue);
-					final int iMax = maxValue == null ? Integer.MAX_VALUE : Cast.asInt(scope, maxValue);
-					final int iStep = stepValue == null ? 1 : Cast.asInt(scope, stepValue);
-					final int iVal = Cast.asInt(scope, value(scope));
+					final long iMin = minValue == null ? Integer.MIN_VALUE : Cast.asInt(scope, minValue);
+					final long iMax = maxValue == null ? Integer.MAX_VALUE : Cast.asInt(scope, maxValue);
+					final long iStep = stepValue == null ? 1 : Cast.asInt(scope, stepValue);
+					final long iVal = Cast.asInt(scope, value(scope));
 					if (iVal >= iMin + iStep) { neighborValues.add(iVal - iStep); }
 					if (iVal <= iMax - iStep) { neighborValues.add(iVal + iStep); }
 					break;

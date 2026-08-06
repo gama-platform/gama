@@ -195,23 +195,23 @@ public class TabuSearchReactive extends ALocalSearchAlgorithm {
 	public void initParams(final IScope scope) {
 		final IExpression maxIt = getFacet(ITER_MAX);
 		if (maxIt != null) {
-			iterMax = Cast.asInt(scope, maxIt.value(scope));
+			iterMax = Cast.asInt(scope, maxIt.value(scope)).intValue();
 			stoppingCriterion = new StoppingCriterionMaxIt(iterMax);
 		}
 		final IExpression listSizeInit = getFacet(LIST_SIZE_INIT);
-		if (listSizeInit != null) { tabuListSizeInit = Cast.asInt(scope, listSizeInit.value(scope)); }
+		if (listSizeInit != null) { tabuListSizeInit = Cast.asInt(scope, listSizeInit.value(scope)).intValue(); }
 		final IExpression listSizeMax = getFacet(LIST_SIZE_MAX);
-		if (listSizeMax != null) { tabuListSizeMax = Cast.asInt(scope, listSizeMax.value(scope)); }
+		if (listSizeMax != null) { tabuListSizeMax = Cast.asInt(scope, listSizeMax.value(scope)).intValue(); }
 		final IExpression listSizeMin = getFacet(LIST_SIZE_MIN);
-		if (listSizeMin != null) { tabuListSizeMin = Cast.asInt(scope, listSizeMin.value(scope)); }
+		if (listSizeMin != null) { tabuListSizeMin = Cast.asInt(scope, listSizeMin.value(scope)).intValue(); }
 		final IExpression nbTestWtoutColMax = getFacet(NB_TESTS_MAX);
 		if (nbTestWtoutColMax != null) {
-			nbTestWithoutCollisionMax = Cast.asInt(scope, nbTestWtoutColMax.value(scope));
+			nbTestWithoutCollisionMax = Cast.asInt(scope, nbTestWtoutColMax.value(scope)).intValue();
 		}
 		final IExpression cycleMax = getFacet(CYCLE_SIZE_MAX);
-		if (cycleMax != null) { cycleSizeMax = Cast.asInt(scope, cycleMax.value(scope)); }
+		if (cycleMax != null) { cycleSizeMax = Cast.asInt(scope, cycleMax.value(scope)).intValue(); }
 		final IExpression cycleMin = getFacet(CYCLE_SIZE_MIN);
-		if (cycleMin != null) { cycleSizeMin = Cast.asInt(scope, cycleMin.value(scope)); }
+		if (cycleMin != null) { cycleSizeMin = Cast.asInt(scope, cycleMin.value(scope)).intValue(); }
 	}
 
 	/**

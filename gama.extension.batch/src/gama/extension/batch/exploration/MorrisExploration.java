@@ -164,9 +164,9 @@ public class MorrisExploration extends AExplorationAlgorithm {
 	@Override
 	public void explore(final IScope scope) {
 		this.sample = hasFacet(IExploration.SAMPLE_SIZE)
-				? Cast.asInt(scope, getFacet(IExploration.SAMPLE_SIZE).value(scope)) : Morris.DEFAULT_TRAJECTORIES;
+				? Cast.asInt(scope, getFacet(IExploration.SAMPLE_SIZE).value(scope)).intValue() : Morris.DEFAULT_TRAJECTORIES;
 		this.nb_levels =
-				hasFacet(NB_LEVELS) ? Cast.asInt(scope, getFacet(NB_LEVELS).value(scope)) : Morris.DEFAULT_LEVELS;
+				hasFacet(NB_LEVELS) ? Cast.asInt(scope, getFacet(NB_LEVELS).value(scope)).intValue() : Morris.DEFAULT_LEVELS;
 		if (hasFacet(PARAMETER_CSV_PATH)) {
 			IExpression path_facet = getFacet(PARAMETER_CSV_PATH);
 			String path =

@@ -402,7 +402,7 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 	public IList<? extends IAgent> privateExecuteIn(final IScope scope) throws GamaRuntimeException {
 
 		// First, we compute the number of agents to create
-		final Integer max = number == null ? null : Cast.asInt(scope, number.value(scope));
+		final Integer max = number == null ? null : Cast.asJavaInt(scope, number.value(scope), "The number of agents to create");
 		if (from == null && max != null && max <= 0) return GamaListFactory.getEmptyList();
 
 		// Next, we compute the species to instantiate

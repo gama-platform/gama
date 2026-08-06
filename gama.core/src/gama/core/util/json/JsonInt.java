@@ -84,7 +84,7 @@ class JsonInt extends JsonValue {
 	 */
 	@Override
 	public int asInt() {
-		return Integer.parseInt(string, 10);
+		return (int) asLong();
 	}
 
 	/**
@@ -96,7 +96,7 @@ class JsonInt extends JsonValue {
 	 */
 	@Override
 	public long asLong() {
-		return asInt();
+		return Long.parseLong(string, 10);
 	}
 
 	/**
@@ -108,7 +108,7 @@ class JsonInt extends JsonValue {
 	 */
 	@Override
 	public float asFloat() {
-		return asInt();
+		return asLong();
 	}
 
 	/**
@@ -120,7 +120,7 @@ class JsonInt extends JsonValue {
 	 */
 	@Override
 	public double asDouble() {
-		return asInt();
+		return asLong();
 	}
 
 	/**
@@ -163,7 +163,7 @@ class JsonInt extends JsonValue {
 	 */
 	@Override
 	public Number toGamlValue(final IScope scope) {
-		return asInt();
+		return asLong();
 	}
 
 }

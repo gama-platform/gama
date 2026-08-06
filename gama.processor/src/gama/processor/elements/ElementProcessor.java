@@ -569,6 +569,21 @@ public abstract class ElementProcessor<T extends Annotation> implements IProcess
 	}
 
 	/**
+	 * Normalizes a value returned to GAML. The GAML int type is backed by long, so the (many) Java signatures
+	 * still returning an int or an Integer must be boxed as a Long, otherwise the values they produce would not
+	 * compare equal to the ones produced by the rest of the platform.
+	 *
+	 * @param returnClass
+	 *            the raw name of the Java return type
+	 * @param call
+	 *            the generated call expression
+	 * @return the call, wrapped if a conversion is needed
+	 */
+	protected static String normalizeReturn(final String returnClass, final String call) {
+		return INTEGER.equals(checkPrim(returnClass)) ? "toLong(" + call + ")" : call;
+	}
+
+	/**
 	 * Param.
 	 *
 	 * @param sb
@@ -582,7 +597,9 @@ public abstract class ElementProcessor<T extends Annotation> implements IProcess
 		final String jc = checkPrim(c);
 		switch (jc) {
 			case DOUBLE -> sb.append("asFloat(s,").append(par).append(')');
-			case INTEGER -> sb.append("asInt(s,").append(par).append(')');
+			// The GAML int type is backed by long: narrow explicitly for the (legacy) Java signatures still in int
+			case INTEGER -> sb.append("asInt(s,").append(par).append(").intValue()");
+			case LONG -> sb.append("asInt(s,").append(par).append(')');
 			case BOOLEAN -> sb.append("asBool(s,").append(par).append(')');
 			case OBJECT -> sb.append(par);
 			default -> sb.append("((").append(jc).append(")").append(par).append(')');

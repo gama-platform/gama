@@ -123,10 +123,10 @@ public class ArrangeDisplayViews extends AbstractHandler {
 	@SuppressWarnings ("unchecked")
 	public static void execute(final Object layout) {
 		switch (layout) {
-			case Integer i -> {
+			case Number i -> {
 				// Collect once; pass the list to convert() so it doesn't collect again.
 				final List<MPlaceholder> holders = collectAndPrepareDisplayViews();
-				execute(LayoutTreeConverter.convert(i, holders), holders);
+				execute(LayoutTreeConverter.convert(i.intValue(), holders), holders);
 			}
 			case GamaTree t -> execute(t, null);
 			case GamaNode n -> {

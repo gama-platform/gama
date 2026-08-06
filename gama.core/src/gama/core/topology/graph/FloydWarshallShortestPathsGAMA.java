@@ -261,7 +261,7 @@ public class FloydWarshallShortestPathsGAMA<V, E> {
 		int prev = v_a;
 		final List<E> edges = new ArrayList<>();
 		if (matrix != null) {
-			v_a = matrix.get(GAMA.getRuntimeScope(), v_b, v_a);
+			v_a = matrix.get(GAMA.getRuntimeScope(), v_b, v_a).intValue();
 			if (v_a != -1) {
 				while (prev != v_b) {
 					final Set<E> eds = graph.getAllEdges(vertices.get(prev), vertices.get(v_a));

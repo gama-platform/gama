@@ -73,7 +73,7 @@ import gama.gaml.operators.spatial.SpatialProjections;
 		concept = { IConcept.IMAGE, IConcept.FILE },
 		doc = @doc ("Image files can be of 6 different formats: tiff, jpeg, png, pict or bmp. Their internal representation is a matrix of colors"))
 @SuppressWarnings ({ "unchecked", "rawtypes" })
-public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
+public class GamaImageFile extends GamaFile<IMatrix<Long>, Integer>
 		implements IFieldMatrixProvider, IImageProvider, IGamaFile.Drawable {
 
 	/**
@@ -184,7 +184,7 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 			examples = { @example (
 					value = "file f <-image_file(\"file.png\");",
 					isExecutable = false) })
-	public GamaImageFile(final IScope scope, final String pathName, final IMatrix<Integer> image) {
+	public GamaImageFile(final IScope scope, final String pathName, final IMatrix<Long> image) {
 		super(scope, pathName, image);
 		ImageCache.getInstance().clearCache(getPath(scope));
 	}

@@ -1214,7 +1214,7 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 	@Override
 	public IExpression caseIntLiteral(final IntLiteral object) {
 		try {
-			final Integer val = Integer.parseInt(EGAML.getKeyOf(object), 10);
+			final Long val = Long.parseLong(EGAML.getKeyOf(object), 10);
 			return FACTORY.createConst(val, Types.INT);
 		} catch (final NumberFormatException e) {
 			context.getContext().error("Malformed integer: " + EGAML.getKeyOf(object), IGamlIssue.UNKNOWN_NUMBER,

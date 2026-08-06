@@ -93,7 +93,7 @@ public class Maths {
 	@test ("0^0 = 1.0")
 	@test ("(-2)^2 = 4.0")
 	@test ("2^1 = 2.0")
-	public static Double pow(final Integer a, final Integer b) {
+	public static Double pow(final Long a, final Long b) {
 		return pow(a.doubleValue(), b.doubleValue());
 	}
 
@@ -116,7 +116,7 @@ public class Maths {
 	@test ("4.0^2 = 16.0")
 	@test ("8.0^0 = 1.0")
 	@test ("8.0^1 = 8.0")
-	public static Double pow(final Double a, final Integer b) {
+	public static Double pow(final Double a, final Long b) {
 		return pow(a, b.doubleValue());
 	}
 
@@ -140,7 +140,7 @@ public class Maths {
 	@test ("2^0.5 = sqrt(2)")
 	@test ("2^0.0 = 1.0")
 	@test ("2^1.0 = 2.0")
-	public static Double pow(final Integer a, final Double b) {
+	public static Double pow(final Long a, final Double b) {
 		return pow(a.doubleValue(), b);
 	}
 
@@ -226,9 +226,9 @@ public class Maths {
 	@test ("abs(-2) = 2")
 	@test ("abs(0) = 0")
 	@test ("abs(-0) = 0")
-	public static Integer abs(final Integer rv) {
-		int a = rv.intValue();
-		return (a ^ a >> 31) - (a >> 31);
+	public static Long abs(final Long rv) {
+		long a = rv.longValue();
+		return (a ^ a >> 63) - (a >> 63);
 	}
 
 	/**
@@ -281,7 +281,7 @@ public class Maths {
 	@test ("acos(1) = 0.0")
 	@test ("not(is_number(acos(-10)))")
 	@test ("not(is_number(acos(10)))")
-	public static Double acos(final Integer rv) {
+	public static Double acos(final Long rv) {
 		return Math.acos(rv) * toDeg;
 	}
 
@@ -339,7 +339,7 @@ public class Maths {
 	@test ("asin(1) = 90.0")
 	@test ("not(is_number(asin(-10)))")
 	@test ("not(is_number(asin(10)))")
-	public static Double asin(final Integer rv) {
+	public static Double asin(final Long rv) {
 		return Math.asin(rv) * toDeg;
 	}
 
@@ -387,7 +387,7 @@ public class Maths {
 	@test ("atan(0) = 0.0")
 	@test ("atan(-1) = -45.0")
 	@test ("atan(1) = 45.0")
-	public static Double atan(final Integer rv) {
+	public static Double atan(final Long rv) {
 		return Math.atan(rv) * toDeg;
 	}
 
@@ -441,7 +441,7 @@ public class Maths {
 	@test ("tanh(100) = 1.0")
 	@test ("tanh(0) = 0.0")
 	@test ("tanh(-100) = -1.0")
-	public static Double tanh(final Integer rv) {
+	public static Double tanh(final Long rv) {
 		return Math.tanh(rv);
 	}
 
@@ -583,7 +583,7 @@ public class Maths {
 					@example (
 							value = "cos(-720)",
 							equals = "1.0") })
-	public static Double cos(final Integer rv) {
+	public static Double cos(final Long rv) {
 		return Math.cos(rv * toRad);
 		// double rad = toRad * rv;
 		// return Math.cos(rad);
@@ -636,7 +636,7 @@ public class Maths {
 			examples = { @example (
 					value = "sin (0)",
 					equals = "0.0") })
-	public static Double sin(final Integer rv) {
+	public static Double sin(final Long rv) {
 		// double rad = toRad * rv;
 		return Math.sin(rv * toRad);
 		// double rad = rv / 180 * Math.PI;
@@ -690,7 +690,7 @@ public class Maths {
 					@example (
 							value = "tan(90)",
 							equals = "1.633123935319537E16") })
-	public static Double tan(final Integer v) {
+	public static Double tan(final Long v) {
 		return Math.tan(toRad * v);
 	}
 
@@ -724,7 +724,7 @@ public class Maths {
 	@test ("even(-4)")
 	@test ("!even(1)")
 	@test ("!even(-3)")
-	public static Boolean even(final Integer rv) {
+	public static Boolean even(final Long rv) {
 		return (rv.intValue() & 1) == 0;
 	}
 
@@ -778,7 +778,7 @@ public class Maths {
 	@doc (
 			value = "returns Euler's number e raised to the power of the operand.")
 	@test ("exp (0) = 1.0")
-	public static Double exp(final Integer rv) {
+	public static Double exp(final Long rv) {
 		return Math.exp(rv.doubleValue());
 	}
 
@@ -813,7 +813,7 @@ public class Maths {
 	@test ("fact(4) = 24.0")
 	@test ("fact(-1) = 0.0")
 	@test ("fact(10) = 3628800.0")
-	public static Double fact(final Integer n) {
+	public static Double fact(final Long n) {
 		if (n < 0) return 0.0;
 		double product = 1;
 		for (int i = 2; i <= n; i++) { product *= i; }
@@ -886,7 +886,7 @@ public class Maths {
 			})
 	@test ("ln(1) = 0.0")
 	@test ("ln(10) with_precision 5 = 2.30259")
-	public static Double ln(final IScope scope, final Integer x) {
+	public static Double ln(final IScope scope, final Long x) {
 		if (x <= 0) {
 			GAMA.reportAndThrowIfNeeded(scope,
 					GamaRuntimeException.warning("The ln operator cannot accept negative or null inputs", scope),
@@ -961,7 +961,7 @@ public class Maths {
 	@test ("log(1) = 0.0")
 	@test ("log(10) = 1.0")
 	@test ("log(100) = 2.0")
-	public static Double log(final IScope scope, final Integer x) {
+	public static Double log(final IScope scope, final Long x) {
 		if (x <= 0) {
 			GAMA.reportAndThrowIfNeeded(scope,
 					GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope),
@@ -1001,7 +1001,7 @@ public class Maths {
 	@test ("log(100, 100) = 1.0")
 	@test ("log(8, 2) with_precision 10 = 3.0")
 	@test ("log(1, 10) = 0.0")
-	public static Double log(final IScope scope, final Integer x, final Integer b) {
+	public static Double log(final IScope scope, final Long x, final Long b) {
 		if (x <= 0) {
 			GAMA.reportAndThrowIfNeeded(scope,
 					GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope),
@@ -1031,7 +1031,7 @@ public class Maths {
 			examples = @example (
 					value = "log(100, 100.0)",
 					equals = "1.0"))
-	public static Double log(final IScope scope, final Integer x, final Double b) {
+	public static Double log(final IScope scope, final Long x, final Double b) {
 		if (x <= 0) {
 			GAMA.reportAndThrowIfNeeded(scope,
 					GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope),
@@ -1091,7 +1091,7 @@ public class Maths {
 			examples = @example (
 					value = "log(100.0, 100)",
 					equals = "1.0"))
-	public static Double log(final IScope scope, final Double x, final Integer b) {
+	public static Double log(final IScope scope, final Double x, final Long b) {
 		if (x <= 0) {
 			GAMA.reportAndThrowIfNeeded(scope,
 					GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope),
@@ -1152,7 +1152,7 @@ public class Maths {
 	@test ("-(-56) = 56")
 	@test ("-(0) = 0")
 	@test ("-(5) = -5")
-	public static Integer negate(final Integer x) {
+	public static Long negate(final Long x) {
 		return -x;
 	}
 
@@ -1194,12 +1194,12 @@ public class Maths {
 	@test ("round(0.0) = 0")
 	@test ("round(-2.3) = -2")
 	@test ("round(2.7) = 3")
-	public static Integer round(final Double v) {
-		int i;
+	public static Long round(final Double v) {
+		long i;
 		if (v >= 0) {
-			i = (int) (v + .5);
+			i = (long) (v + .5);
 		} else {
-			i = (int) (v - .5);
+			i = (long) (v - .5);
 		}
 		return i;
 	}
@@ -1224,7 +1224,7 @@ public class Maths {
 	@test ("round(0) = 0")
 	@test ("round(-5) = -5")
 
-	public static Integer round(final Integer v) {
+	public static Long round(final Long v) {
 		return v;
 	}
 
@@ -1265,7 +1265,7 @@ public class Maths {
 	@test ("sqrt(1) = 1.0")
 	@test ("sqrt(9) = 3.0")
 	@test ("is_error(sqrt(-1))")
-	public static Double sqrt(final IScope scope, final Integer v) throws GamaRuntimeException {
+	public static Double sqrt(final IScope scope, final Long v) throws GamaRuntimeException {
 		if (v < 0) GAMA.reportAndThrowIfNeeded(scope,
 				GamaRuntimeException.error("The sqrt operator cannot accept negative inputs", scope),
 				true);
@@ -1341,7 +1341,7 @@ public class Maths {
 	@test ("0/1=0")
 	@test ("is_error(1/0)")
 	@test ("3/5=0.6")
-	public static Double opDivide(final IScope scope, final Integer a, final Integer b) throws GamaRuntimeException {
+	public static Double opDivide(final IScope scope, final Long a, final Long b) throws GamaRuntimeException {
 		if (b == null || b == 0) throw GamaRuntimeException.error("Division by zero", scope);
 		return a.doubleValue() / b.doubleValue();
 	}
@@ -1370,7 +1370,7 @@ public class Maths {
 	@test ("0.2/2=0.1")
 	@test ("is_error(1.5/0)")
 	@test ("0.0/5=0.0")
-	public static Double opDivide(final IScope scope, final Double a, final Integer b) throws GamaRuntimeException {
+	public static Double opDivide(final IScope scope, final Double a, final Long b) throws GamaRuntimeException {
 		if (b == null || b == 0) throw GamaRuntimeException.error("Division by zero", scope);
 		return a / b.doubleValue();
 	}
@@ -1428,7 +1428,7 @@ public class Maths {
 	@test ("1/0.5=2.0")
 	@test ("is_error(2/0.0)")
 	@test ("0/0.3=0.0")
-	public static Double opDivide(final IScope scope, final Integer a, final Double b) throws GamaRuntimeException {
+	public static Double opDivide(final IScope scope, final Long a, final Double b) throws GamaRuntimeException {
 		if (b == null || b == 0.0) throw GamaRuntimeException.error("Division by zero", scope);
 		return a.doubleValue() / b.doubleValue();
 	}
@@ -1456,7 +1456,7 @@ public class Maths {
 							value = "1 * 1",
 							equals = "1")),
 			see = { IKeyword.PLUS, IKeyword.MINUS, IKeyword.DIVIDE })
-	public static Integer opTimes(final Integer a, final Integer b) {
+	public static Long opTimes(final Long a, final Long b) {
 		return a * b;
 	}
 
@@ -1480,7 +1480,7 @@ public class Maths {
 					value = "2.5 * 2",
 					equals = "5.0") },
 			see = "/")
-	public static Double opTimes(final Double a, final Integer b) {
+	public static Double opTimes(final Double a, final Long b) {
 		return a * b;
 	}
 
@@ -1530,7 +1530,7 @@ public class Maths {
 	@test ("2 * 2.0 = 4.0")
 	@test ("1 * (- 1.0) = -1.0")
 	@test ("1 * 0.0 = 0.0")
-	public static Double opTimes(final Integer a, final Double b) {
+	public static Double opTimes(final Long a, final Double b) {
 		return a * b;
 	}
 
@@ -1555,7 +1555,7 @@ public class Maths {
 					examples = { @example (
 							value = "2 * matrix([[2,5],[3,4]])",
 							equals = "matrix([[4,10],[6,8]])") }) })
-	public static IMatrix opTimes(final Integer a, final IMatrix b) {
+	public static IMatrix opTimes(final Long a, final IMatrix b) {
 		return b.times(a);
 	}
 
@@ -1580,7 +1580,7 @@ public class Maths {
 					examples = { @example (
 							value = "2 * matrix([[2,5],[3,4]])",
 							equals = "matrix([[4,10],[6,8]])") }) })
-	public static IField opTimes(final Integer a, final IField b) {
+	public static IField opTimes(final Long a, final IField b) {
 		return b.times(a);
 	}
 
@@ -1628,7 +1628,7 @@ public class Maths {
 							value = "1 + 1",
 							equals = "2") }) },
 			see = { IKeyword.MINUS, IKeyword.MULTIPLY, IKeyword.DIVIDE })
-	public static Integer opPlus(final Integer a, final Integer b) {
+	public static Long opPlus(final Long a, final Long b) {
 		return a + b;
 	}
 
@@ -1654,7 +1654,7 @@ public class Maths {
 					@example (
 							value = "1.0 + 2.5",
 							equals = "3.5") })
-	public static Double opPlus(final Double a, final Integer b) {
+	public static Double opPlus(final Double a, final Long b) {
 		return a + b;
 	}
 
@@ -1698,7 +1698,7 @@ public class Maths {
 			value = "the sum, union or concatenation of the two operands.")
 	@test ("1 + (- 1.0) = 0.0")
 	@test ("1 + 1.0 = 2.0")
-	public static Double opPlus(final Integer a, final Double b) {
+	public static Double opPlus(final Long a, final Double b) {
 		return a + b;
 	}
 
@@ -1724,7 +1724,7 @@ public class Maths {
 							value = "3.5 + matrix([[2,5],[3,4]])",
 							equals = "matrix([[5.5,8.5],[6.5,7.5]])") }) })
 	// TODO check update
-	public static IMatrix opPlus(final Integer a, final IMatrix b) {
+	public static IMatrix opPlus(final Long a, final IMatrix b) {
 		return b.plus(a);
 	}
 
@@ -1775,7 +1775,7 @@ public class Maths {
 							value = "1 - 1",
 							equals = "0") }) },
 			see = { IKeyword.PLUS, IKeyword.MULTIPLY, IKeyword.DIVIDE })
-	public static Integer opMinus(final Integer a, final Integer b) {
+	public static Long opMinus(final Long a, final Long b) {
 		return a - b;
 	}
 
@@ -1804,7 +1804,7 @@ public class Maths {
 					@example (
 							value = "3.0 - 1",
 							equals = "2.0") })
-	public static Double opMinus(final Double a, final Integer b) {
+	public static Double opMinus(final Double a, final Long b) {
 		return a - b;
 	}
 
@@ -1859,7 +1859,7 @@ public class Maths {
 					@example (
 							value = "3 - 1.2",
 							equals = "1.8") })
-	public static Double opMinus(final Integer a, final Double b) {
+	public static Double opMinus(final Long a, final Double b) {
 		return a - b;
 	}
 
@@ -1886,8 +1886,8 @@ public class Maths {
 							value = "3.5 - matrix([[2,5],[3,4]])",
 							equals = "matrix([[1.5,-1.5],[0.5,-0.5]])") }) })
 	// TODO check update
-	public static IMatrix opMinus(final Integer a, final IMatrix b) {
-		return b.times(-1).plus(a);
+	public static IMatrix opMinus(final Long a, final IMatrix b) {
+		return b.times(-1l).plus(a);
 	}
 
 	/**
@@ -1911,7 +1911,7 @@ public class Maths {
 					value = "(10.0 - (3.0 as_matrix({2,3})))",
 					equals = "matrix([[7.0,7.0,7.0],[7.0,7.0,7.0]])") })
 	public static IMatrix opMinus(final Double a, final IMatrix b) {
-		return b.times(-1).plus(a);
+		return b.times(-1l).plus(a);
 	}
 
 	// @operator(value = "with_precision", can_be_const = true)
@@ -1931,7 +1931,7 @@ public class Maths {
 	 * @return the double
 	 */
 	// "round")
-	public static Double opTruncate(final Double x, final Integer precision) {
+	public static Double opTruncate(final Double x, final Long precision) {
 		final double x1 = x.doubleValue();
 		final int precision1 = precision.intValue();
 		double fract;
@@ -1939,11 +1939,11 @@ public class Maths {
 		double mult;
 		if (x1 > 0) {
 			whole = floor(x1);
-			mult = pow(10.0, precision1);
+			mult = pow(10.0, (long) precision1);
 			fract = floor((x1 - whole) * mult) / mult;
 		} else {
 			whole = ceil(x1);
-			mult = pow(10, precision1);
+			mult = pow(10l, (long) precision1);
 			fract = ceil((x1 - whole) * mult) / mult;
 		}
 		return whole + fract;
@@ -1972,8 +1972,8 @@ public class Maths {
 							value = "123 with_precision 2",
 							equals = "123.00") },
 			see = "round")
-	public static double round(final Double v, final Integer precision) {
-		return MathUtils.round(v, precision);
+	public static double round(final Double v, final Long precision) {
+		return MathUtils.round(v, precision.intValue());
 	}
 
 	/**
@@ -2010,7 +2010,7 @@ public class Maths {
 	@test ("floor(3.0) = 3")
 	@test ("floor(-2.0) = -2")
 	@test ("floor(0.0) = 0")
-	public static final int floor(final double x) {
+	public static final long floor(final double x) {
 		// This method is a *lot* faster than using (int)Math.floor(x)
 		int xi = (int) x;
 		return x < xi ? xi - 1 : xi;
@@ -2049,7 +2049,7 @@ public class Maths {
 	@test ("ceil(3.0) = 3")
 	@test ("ceil(-2.0) = -2")
 	@test ("ceil(0.0) = 0")
-	public static final int ceil(final double d) {
+	public static final long ceil(final double d) {
 		return (int) Math.ceil(d);
 	}
 
@@ -2092,7 +2092,7 @@ public class Maths {
 	@test ("6 mod 3 = 0")
 	@test ("(-7) mod 3 = -1")
 	@test ("is_error(5 mod 0)")
-	public static Integer opMod(final IScope scope, final Integer a, final Integer b) {
+	public static Long opMod(final IScope scope, final Long a, final Long b) {
 		if (b == 0) GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("Division by zero", scope), false);
 		return a % b;
 	}
@@ -2136,7 +2136,7 @@ public class Maths {
 	@test ("(-7) div 2 = -3")
 	@test ("6 div 3 = 2")
 	@test ("is_error(5 div 0)")
-	public static Integer div(final IScope scope, final Integer a, final Integer b) throws GamaRuntimeException {
+	public static Long div(final IScope scope, final Long a, final Long b) throws GamaRuntimeException {
 		if (b == 0) throw GamaRuntimeException.error("Division by zero", scope);
 		return a / b;
 	}
@@ -2165,9 +2165,9 @@ public class Maths {
 					value = "40.5 div 3",
 					equals = "13"),
 			see = "mod")
-	public static Integer div(final IScope scope, final Double a, final Integer b) throws GamaRuntimeException {
+	public static Long div(final IScope scope, final Double a, final Long b) throws GamaRuntimeException {
 		if (b == 0) throw GamaRuntimeException.error("Division by zero", scope);
-		return (int) (a / b);
+		return (long) (a / b);
 	}
 
 	/**
@@ -2193,9 +2193,9 @@ public class Maths {
 			examples = @example (
 					value = "40 div 4.1",
 					equals = "9"))
-	public static Integer div(final IScope scope, final Integer a, final Double b) throws GamaRuntimeException {
+	public static Long div(final IScope scope, final Long a, final Double b) throws GamaRuntimeException {
 		if (b.equals(0.0)) throw GamaRuntimeException.error("Division by zero", scope);
-		return (int) (a / b);
+		return (long) (a / b);
 	}
 
 	/**
@@ -2221,9 +2221,9 @@ public class Maths {
 			examples = @example (
 					value = "40.1 div 4.5",
 					equals = "8"))
-	public static Integer div(final IScope scope, final Double a, final Double b) throws GamaRuntimeException {
+	public static Long div(final IScope scope, final Double a, final Double b) throws GamaRuntimeException {
 		if (b.equals(0.0)) throw GamaRuntimeException.error("Division by zero", scope);
-		return (int) (a / b);
+		return (long) (a / b);
 	}
 
 	/** Constant field PI. */
@@ -2473,10 +2473,10 @@ public class Maths {
 					@example (
 							value = "signum(0.0)",
 							equals = "0") })
-	public static Integer signum(final Double d) {
-		if (d == null || d.isNaN() || Comparison.equal(d, 0d)) return 0;
-		if (d < 0) return -1;
-		return 1;
+	public static Long signum(final Double d) {
+		if (d == null || d.isNaN() || Comparison.equal(d, 0d)) return 0l;
+		if (d < 0) return -1l;
+		return 1l;
 	}
 
 	/**
@@ -2502,9 +2502,9 @@ public class Maths {
 					@example (
 							value = "signum(0)",
 							equals = "0") })
-	public static Integer signum(final Integer d) {
-		int a = d.intValue();
-		return a < 0 ? -1 : a == 0 ? 0 : 1;
+	public static Long signum(final Long d) {
+		long a = d.longValue();
+		return a < 0 ? -1l : a == 0 ? 0l : 1l;
 	}
 
 }

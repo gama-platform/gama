@@ -167,7 +167,7 @@ public class ImageSaver extends AbstractSaver {
 		for (int row = 0; row < rows; row++) {
 			for (int col = 0; col < cols; col++) {
 				double v = field.get(scope, col, row);
-				int vRef = Maths.round((v - minmaxVal[0]) / (minmaxVal[1] - minmaxVal[0]) * 255);
+				int vRef = Maths.round((v - minmaxVal[0]) / (minmaxVal[1] - minmaxVal[0]) * 255).intValue();
 				image.setRGB(col, rows - 1 - row, GamaColorFactory.get(vRef, vRef, vRef).getRGB());
 			}
 		}

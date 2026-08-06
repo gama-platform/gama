@@ -165,7 +165,14 @@ public class GamlResourceValidator implements IResourceValidator {
 
 		};
 
-		block.run();
+		try {
+			block.run();
+		} catch (final RuntimeException | Error e) {
+			// An exception here leaves `result` empty, which is indistinguishable from a model that validates
+			// cleanly: no marker, no experiment in the toolbar, and no way for the user to know why.
+			DEBUG.ERR("Validation of " + name + " failed with an exception", e);
+			throw e;
+		}
 
 		// DEBUG.TIMER(BANNER_CATEGORY.COMPIL, name, "in", block, duration -> VALIDATION_DURATION += duration);
 

@@ -437,10 +437,10 @@ public class Random {
 					"weibull_rnd" })
 	@test ("seed <- 1.0; poisson(3.5) = 6")
 	@test ("seed <- 1.0; poisson(0.0) = 0")
-	public static Integer opPoisson(final IScope scope, final Double mean) {
-		if (mean == null || mean <= 0.0) return 0;
+	public static Long opPoisson(final IScope scope, final Double mean) {
+		if (mean == null || mean <= 0.0) return 0l;
 		IRandom ru = RANDOM(scope);
-		int x = 0;
+		long x = 0;
 		double t = 0.0;
 		while (true) {
 			t -= Math.log(ru.next()) / mean;
@@ -483,7 +483,7 @@ public class Random {
 	@test ("seed <- 1.0; binomial(0, 0.5) = 0")
 	@test ("seed <- 1.0; binomial(10, 0.0) = 0")
 	@test ("seed <- 1.0; binomial(10, 1.0) = 10")
-	public static Integer opBinomial(final IScope scope, final Integer n, final Double p) {
+	public static Long opBinomial(final IScope scope, final Long n, final Double p) {
 		double value = p;
 
 		// to avoid infinite loops
@@ -517,7 +517,8 @@ public class Random {
 		}
 		final BitString pBits = new BitString(bits.toString());
 		IRandom ru = RANDOM(scope);
-		int trials = n;
+		// the underlying BitString is int-bounded: refuse rather than silently truncate
+		int trials = Cast.asJavaInt(scope, n, "The number of trials of a binomial draw");
 		int totalSuccesses = 0;
 		int pIndex = pBits.getLength() - 1;
 		while (trials > 0 && pIndex >= 0) {
@@ -527,7 +528,7 @@ public class Random {
 			if (pBits.getBit(pIndex)) { totalSuccesses += successes; }
 			--pIndex;
 		}
-		return totalSuccesses;
+		return (long) totalSuccesses;
 	}
 
 	/**
@@ -659,8 +660,8 @@ public class Random {
 	@test ("seed <- 1.0; rnd(10) = 8")
 	@test ("seed <- 1.0; rnd(0) = 0")
 	@test ("seed <- 42.0; int r1 <- rnd(100); seed <- 42.0; int r2 <- rnd(100); r1 = r2")
-	public static Integer opRnd(final IScope scope, final Integer max) {
-		return opRnd(scope, 0, max);
+	public static Long opRnd(final IScope scope, final Long max) {
+		return opRnd(scope, 0l, max);
 	}
 
 	/**
@@ -688,7 +689,7 @@ public class Random {
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "skew_gauss", "truncated_gauss",
 					"weibull_rnd" })
 	@test ("seed <- 1.0; rnd(1,5) = 4")
-	public static Integer opRnd(final IScope scope, final Integer min, final Integer max) {
+	public static Long opRnd(final IScope scope, final Long min, final Long max) {
 		final IRandom r = RANDOM(scope);
 		return r.between(min, max);
 	}
@@ -720,7 +721,7 @@ public class Random {
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "skew_gauss", "truncated_gauss",
 					"weibull_rnd" })
 	@test ("seed <- 1.0; rnd (2, 12, 4) = 10")
-	public static Integer opRnd(final IScope scope, final Integer min, final Integer max, final Integer step) {
+	public static Long opRnd(final IScope scope, final Long min, final Long max, final Long step) {
 		final IRandom r = RANDOM(scope);
 		return r.between(min, max, step);
 	}
@@ -959,8 +960,8 @@ public class Random {
 					test = false) },
 			see = { "rnd" })
 	@test ("seed <- 1.0; rnd_choice([0.2,0.5,0.3]) = 2")
-	public static Integer opRndChoice(final IScope scope, final IList distribution) {
-		return RANDOM(scope).choiceIn(distribution);
+	public static Long opRndChoice(final IScope scope, final IList distribution) {
+		return (long) RANDOM(scope).choiceIn(distribution);
 	}
 
 	/**
@@ -1020,7 +1021,7 @@ public class Random {
 			list l1 <- sample([2,10,1],2,false);\r
 					list l2 <-  [1,10];\
 			l1 = l2""")
-	public static IList opSample(final IScope scope, final IList x, final int nb, final boolean replacement) {
+	public static IList opSample(final IScope scope, final IList x, final long nb, final boolean replacement) {
 		if (nb < 0.0) throw GamaRuntimeException
 				.create(new RuntimeException("The number of elements of the sample should be positive."), scope);
 		final IList result = GamaListFactory.create(x.getGamlType());
@@ -1068,7 +1069,7 @@ public class Random {
 					list l1 <- sample([2,10,1],2,false,[0.1,0.7,0.2]);\r
 					list l2 <-  [10,1];\r
 					l1 = l2\s""")
-	public static IList opSample(final IScope scope, final IList x, final int nb, final boolean replacement,
+	public static IList opSample(final IScope scope, final IList x, final long nb, final boolean replacement,
 			final IList weights) {
 		if (weights == null) return opSample(scope, x, nb, replacement);
 		if (nb < 0.0) throw GamaRuntimeException
@@ -1080,7 +1081,7 @@ public class Random {
 		final IList source = replacement ? x : x.copy(scope);
 		final IList weights_s = replacement ? weights : weights.copy(scope);
 		while (result.size() < nb && !source.isEmpty()) {
-			final int i = opRndChoice(scope, weights_s);
+			final int i = opRndChoice(scope, weights_s).intValue();
 			if (replacement) {
 				result.add(source.get(i));
 			} else {
@@ -1133,7 +1134,7 @@ public class Random {
 			, then the value (between 0 and 1) of smoothess, with 0 being completely rought and 1 super smooth, and finally the value (between 0 and 1) of \
 			scattering, with 0 building maps in 'one piece' and 1 completely scattered ones.""")
 	@no_test
-	public static IField generateTerrain(final IScope scope, final int seed, final int width, final int height,
+	public static IField generateTerrain(final IScope scope, final long seed, final long width, final long height,
 			final double details, final double smoothness, final double scattering) {
 
 		IRandom rand = new RandomUtils((double) seed, IKeyword.MERSENNE);
@@ -1155,7 +1156,7 @@ public class Random {
 		double scale = scattering <= 0 ? 0.0001 : scattering >= 1 ? 0.01 : scattering / 100d;
 		// details between 0 (1 octave) and 1 (10 octaves)
 		int octaves = details < 0.1 ? 1 : details >= 1 ? 10 : (int) (details * 10);
-		IField result = GamaMatrixFactory.createFieldWithSize(scope, width, height);
+		IField result = GamaMatrixFactory.createFieldWithSize(scope, (int) width, (int) height);
 		double[] totalNoise = result.getMatrix();
 		double layerWeight = 1d;
 		double weightSum = 0d;
@@ -1168,7 +1169,7 @@ public class Random {
 					double xin = x * scale, yin = y * scale;
 					// Skew the input space to determine which simplex cell we're in
 					double s = (xin + yin) * F2; // Hairy factor for 2D
-					int i = Maths.floor(xin + s), j = Maths.floor(yin + s);
+					int i = (int) Maths.floor(xin + s), j = (int) Maths.floor(yin + s);
 					double t = (i + j) * G2, X0 = i - t, Y0 = j - t, x0 = xin - X0, y0 = yin - Y0;
 					// For the 2D case, the simplex shape is an equilateral triangle.
 					// Determine which simplex we are in.
@@ -1208,7 +1209,7 @@ public class Random {
 					}
 					// Add contributions from each corner to get the final noise value.
 					// The result is scaled to return values in the interval [-1,1].
-					totalNoise[y * width + x] += 70.0 * (n0 + n1 + n2) * layerWeight;
+					totalNoise[(int) (y * width + x)] += 70.0 * (n0 + n1 + n2) * layerWeight;
 				}
 			}
 			// Increase variables with each incrementing octave

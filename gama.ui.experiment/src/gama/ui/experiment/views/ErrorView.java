@@ -50,7 +50,7 @@ public class ErrorView extends ExpandableItemsView<GamaRuntimeException> impleme
 	public static final String ID = IGui.ERROR_VIEW_ID;
 
 	/** The number of displayed errors. */
-	int numberOfDisplayedErrors = GamaPreferences.Runtime.CORE_ERRORS_NUMBER.getValue();
+	int numberOfDisplayedErrors = GamaPreferences.Runtime.CORE_ERRORS_NUMBER.getValue().intValue();
 
 	/** The most recent first. */
 	boolean mostRecentFirst = GamaPreferences.Runtime.CORE_RECENT.getValue();

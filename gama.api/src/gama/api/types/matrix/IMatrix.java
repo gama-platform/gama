@@ -261,7 +261,7 @@ public interface IMatrix<T> extends IContainer.Modifiable<IPoint, T, IPoint, T>,
 					value = "matrix([[\"el11\",\"el12\",\"el13\"],[\"el21\",\"el22\",\"el23\"],[\"el31\",\"el32\",\"el33\"]]) row_at 2",
 					equals = "[\"el13\",\"el23\",\"el33\"]") },
 			see = { "column_at", "columns_list" })
-	IList<T> getRow(Integer num_line);
+	IList<T> getRow(Long num_line);
 
 	/**
 	 * Gets the column.
@@ -282,7 +282,7 @@ public interface IMatrix<T> extends IContainer.Modifiable<IPoint, T, IPoint, T>,
 					value = "matrix([[\"el11\",\"el12\",\"el13\"],[\"el21\",\"el22\",\"el23\"],[\"el31\",\"el32\",\"el33\"]]) column_at 2",
 					equals = "[\"el31\",\"el32\",\"el33\"]") },
 			see = { "row_at", "rows_list" })
-	IList<T> getColumn(Integer num_line);
+	IList<T> getColumn(Long num_line);
 
 	/**
 	 * Plus.
@@ -404,7 +404,7 @@ public interface IMatrix<T> extends IContainer.Modifiable<IPoint, T, IPoint, T>,
 			concept = { IConcept.MATRIX },
 			doc = @doc ("Performs a multiplication between the two matrix operands"))
 	@test ("matrix([[1,2],[3,4]]) * 2 = matrix([[2,4],[6,8]])")
-	IMatrix times(Integer val) throws GamaRuntimeException;
+	IMatrix times(Long val) throws GamaRuntimeException;
 
 	/**
 	 * Divides.
@@ -442,7 +442,7 @@ public interface IMatrix<T> extends IContainer.Modifiable<IPoint, T, IPoint, T>,
 			concept = {},
 			doc = @doc ("Divides all the elements of the matrix operand by the integer operand"))
 	@test ("matrix([[1,2],[3,4]]) / 2 = matrix([[0.5,1],[1.5,2]])")
-	IMatrix divides(Integer val) throws GamaRuntimeException;
+	IMatrix divides(Long val) throws GamaRuntimeException;
 
 	/**
 	 * Plus.
@@ -480,7 +480,7 @@ public interface IMatrix<T> extends IContainer.Modifiable<IPoint, T, IPoint, T>,
 			concept = {},
 			doc = @doc ("Adds the int operand to all the elements in the matrix"))
 	@test ("matrix([[1,2],[3,4]]) + 2 = matrix([[3,4],[5,6]])")
-	IMatrix plus(Integer val) throws GamaRuntimeException;
+	IMatrix plus(Long val) throws GamaRuntimeException;
 
 	/**
 	 * Minus.
@@ -518,7 +518,7 @@ public interface IMatrix<T> extends IContainer.Modifiable<IPoint, T, IPoint, T>,
 			concept = {},
 			doc = @doc ("Subtracts the int operand from all the elements in the matrix"))
 	@test ("matrix([[1,2],[3,4]]) - 1 = matrix([[0,1],[2,3]])")
-	IMatrix minus(Integer val) throws GamaRuntimeException;
+	IMatrix minus(Long val) throws GamaRuntimeException;
 
 	/**
 	 * Gets the.

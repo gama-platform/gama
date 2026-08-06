@@ -155,10 +155,10 @@ public class PathComputer<V, E> implements IPathComputer<V, E> {
 	 */
 	@Override
 	public GamaIntMatrix saveShortestPaths(final IScope scope) {
-		final IMap<V, Integer> indexVertices = GamaMapFactory.create(graph.getGamlType().getKeyType(), Types.INT);
+		final IMap<V, Long> indexVertices = GamaMapFactory.create(graph.getGamlType().getKeyType(), Types.INT);
 		final IList<V> vertices = graph.getVertices();
 
-		for (int i = 0; i < graph.getVertexMap().size(); i++) { indexVertices.put(vertices.get(i), i); }
+		for (int i = 0; i < graph.getVertexMap().size(); i++) { indexVertices.put(vertices.get(i), (long)i); }
 		final GamaIntMatrix matrix =
 				(GamaIntMatrix) GamaMatrixFactory.create(vertices.size(), vertices.size(), IType.INT);
 		for (int i = 0; i < vertices.size(); i++) {
@@ -202,10 +202,10 @@ public class PathComputer<V, E> implements IPathComputer<V, E> {
 
 						V target = graph.getEdgeTarget(edge);
 						if (!graph.isDirected() && target == source) { target = graph.getEdgeSource(edge); }
-						final Integer k = indexVertices.get(scope, target);
+						final Long k = indexVertices.get(scope, target);
 						// DEBUG.LOG("k : " +k);
 						matrix.set(scope, j, s, k);
-						s = k;
+						s = k.intValue();
 						source = target;
 					}
 
@@ -232,7 +232,7 @@ public class PathComputer<V, E> implements IPathComputer<V, E> {
 	 * @return the integer
 	 */
 	@SuppressWarnings ("unchecked")
-	private Integer nextVertice(final IScope scope, final E edge, final V source, final IMap<V, Integer> indexVertices,
+	private Long nextVertice(final IScope scope, final E edge, final V source, final IMap<V, Long> indexVertices,
 			final boolean isDirected) {
 		if (isDirected) return indexVertices.get(scope, graph.getEdgeTarget(edge));
 
@@ -314,11 +314,11 @@ public class PathComputer<V, E> implements IPathComputer<V, E> {
 		final int indexS = vertices.indexOf(vs);
 		final int indexT = vertices.indexOf(t);
 		int previous = indexS;
-		Integer next = shortestPathMatrix.get(graph.getScope(), indexT, previous);
+		Long next = shortestPathMatrix.get(graph.getScope(), indexT, previous);
 		if (previous == next) return edges;
 		do {
 			if (next == -1) return GamaListFactory.create(graph.getGamlType().getContentType());
-			final V vn = vertices.get(next);
+			final V vn = vertices.get(next.intValue());
 
 			final Set<E> eds = graph.getAllEdges(vs, vn);
 			E edge = null;
@@ -327,8 +327,8 @@ public class PathComputer<V, E> implements IPathComputer<V, E> {
 			}
 			if (edge == null) return GamaListFactory.create(graph.getGamlType().getContentType());
 			edges.add(edge);
-			previous = next;
-			next = shortestPathMatrix.get(graph.getScope(), indexT, next);
+			previous = next.intValue();
+			next = shortestPathMatrix.get(graph.getScope(), indexT, previous);
 			vs = vn;
 		} while (previous != indexT);
 		return edges;
@@ -467,14 +467,14 @@ public class PathComputer<V, E> implements IPathComputer<V, E> {
 					break;
 				case DeltaStepping: {
 					ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors
-							.newFixedThreadPool(GamaExecutorService.THREADS_NUMBER.getValue());
+							.newFixedThreadPool(GamaExecutorService.THREADS_NUMBER.getValue().intValue());
 					spl = getShortestPath(scope, new DeltaSteppingShortestPath<>(graph, executor), source, target);
 					break;
 				}
 				case TransitNodeRouting:
 					if (transitNodeRouting == null) {
 						ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors
-								.newFixedThreadPool(GamaExecutorService.THREADS_NUMBER.getValue());
+								.newFixedThreadPool(GamaExecutorService.THREADS_NUMBER.getValue().intValue());
 						transitNodeRouting = new TransitNodeRoutingShortestPath<>(graph, executor);
 					}
 					spl = getShortestPath(scope, transitNodeRouting, source, target);
@@ -482,7 +482,7 @@ public class PathComputer<V, E> implements IPathComputer<V, E> {
 				case CHBidirectionalDijkstra:
 					if (contractionHierarchyBD == null) {
 						ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors
-								.newFixedThreadPool(GamaExecutorService.THREADS_NUMBER.getValue());
+								.newFixedThreadPool(GamaExecutorService.THREADS_NUMBER.getValue().intValue());
 						contractionHierarchyBD = new ContractionHierarchyBidirectionalDijkstra<>(graph, executor);
 					}
 					spl = getShortestPath(scope, contractionHierarchyBD, source, target);

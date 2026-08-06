@@ -230,7 +230,7 @@ public class MetaPopulation implements IContainer.ToGet<Integer, IAgent>, IPopul
 
 	@Override
 	public boolean containsKey(final IScope scope, final Object o) {
-		if (o instanceof final Integer i) return i > 0 && i < length(scope);
+		if (o instanceof Number n) return n.longValue() > 0 && n.longValue() < length(scope);
 		return false;
 	}
 

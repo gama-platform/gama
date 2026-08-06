@@ -671,7 +671,7 @@ public class HeadlessApplication implements IApplication {
 		}
 
 		GamaExecutorService.CONCURRENCY_SIMULATIONS.set(true);
-		GamaExecutorService.THREADS_NUMBER.set(processorQueue.getCorePoolSize());
+		GamaExecutorService.THREADS_NUMBER.set((long) processorQueue.getCorePoolSize());
 
 		final IExperimentSpecies expPlan = mdl.getExperiment(experimentName);
 		assertIsExperiment(experimentName, expPlan);

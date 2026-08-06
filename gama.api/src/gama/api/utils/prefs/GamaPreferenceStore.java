@@ -272,7 +272,7 @@ public abstract class GamaPreferenceStore<T> implements IGamaPreferenceStore {
 			case IType.BOOL -> (Supplier) () -> asBool(null, val);
 			case IType.STRING -> (Supplier) () -> toJavaString(asString(null, val));
 			case IType.FILE -> (Supplier) () -> new GenericFile(val, false);
-			case IType.COLOR -> (Supplier) () -> GamaColorFactory.get(asInt(null, val));
+			case IType.COLOR -> (Supplier) () -> GamaColorFactory.get(asInt(null, val).intValue());
 			case IType.FONT -> (Supplier) () -> {
 				if (DEFAULT_FONT.equals(val)) return null;
 				return castToFont(null, asString(null, val), false);

@@ -36,6 +36,7 @@ import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
@@ -398,7 +399,7 @@ public class MovingSkill extends Skill {
 	 */
 	public void setCurrentEdge(final IAgent agent, final IPath path) {
 		if (path != null) {
-			final Integer index = (Integer) agent.getAttribute(MovementAttributes.INDEX_ON_PATH);
+			final int index = Cast.asInt(agent.getScope(), agent.getAttribute(MovementAttributes.INDEX_ON_PATH)).intValue();
 			if (index < path.getEdgeList().size()) {
 				agent.setAttribute(MovementAttributes.CURRENT_EDGE, path.getEdgeList().get(index));
 			}
@@ -415,7 +416,7 @@ public class MovingSkill extends Skill {
 	 */
 	public void setCurrentEdge(final IAgent agent, final IGraph graph) {
 		if (graph != null) {
-			final Integer index = (Integer) agent.getAttribute(MovementAttributes.INDEX_ON_PATH);
+			final int index = Cast.asInt(agent.getScope(), agent.getAttribute(MovementAttributes.INDEX_ON_PATH)).intValue();
 			if (index < graph.getEdges().size()) { 
 				agent.setAttribute(MovementAttributes.CURRENT_EDGE, graph.getEdges().get(index)); 
 			}
@@ -433,7 +434,7 @@ public class MovingSkill extends Skill {
 	 * @throws GamaRuntimeException if computation fails
 	 */
 	protected double computeHeadingFromAmplitude(final IScope scope, final IAgent agent) throws GamaRuntimeException {
-		final double ampl = scope.hasArg("amplitude") ? scope.getFloatArg("amplitude") : 359;
+		final double ampl = scope.hasArg("amplitude") ? scope.getFloatArg("amplitude") : 359.0;
 		setHeading(agent, getHeading(agent) + scope.getRandom().between(-ampl / 2.0, ampl / 2.0));
 		return getHeading(agent);
 	}

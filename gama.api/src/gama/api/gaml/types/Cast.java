@@ -227,8 +227,44 @@ public class Cast {
 	 *            the value to cast
 	 * @return the integer result
 	 */
-	public static Integer asInt(final IScope scope, final Object val) {
+	public static Long asInt(final IScope scope, final Object val) {
+
 		return GamaIntegerType.staticCast(scope, val, null, false);
+
+	}
+
+	/**
+	 * Widens a number produced by an int-returning Java signature into the Long the GAML int type is backed by.
+	 * Used by the generated GAML additions, so that no Integer ever reaches a model.
+	 *
+	 * @param n
+	 *            the number to widen, possibly null
+	 * @return the value as a Long, or null if n is null
+	 */
+	public static Long toLong(final Number n) {
+		return n == null ? null : n.longValue();
+	}
+
+	/**
+	 * Casts a value to the GAML int type and narrows it to a Java int, raising an error rather than silently
+	 * truncating. To be used wherever a model provides a size or a count that indexes an int-bounded Java
+	 * structure (an array, a list, an image...).
+	 *
+	 * @param scope
+	 *            the execution scope
+	 * @param val
+	 *            the value to cast
+	 * @param what
+	 *            what the value represents, used in the error message
+	 * @return the value as a Java int
+	 * @throws GamaRuntimeException
+	 *             if the value does not fit in a Java int
+	 */
+	public static int asJavaInt(final IScope scope, final Object val, final String what) {
+		final long l = asInt(scope, val);
+		if (l > Integer.MAX_VALUE || l < Integer.MIN_VALUE) throw GamaRuntimeException
+				.error(what + " (" + l + ") is too large to be represented on 32 bits", scope);
+		return (int) l;
 	}
 
 	/**
@@ -298,9 +334,9 @@ public class Cast {
 							value = "'hello' as_int 32",
 							equals = "18306744") },
 			see = { "int" })
-	public static Integer asInt(final IScope scope, final String string, final Integer radix)
+	public static Long asInt(final IScope scope, final String string, final Long radix)
 			throws GamaRuntimeException {
-		if (string == null || string.isEmpty()) return 0;
+		if (string == null || string.isEmpty()) return 0l;
 		return GamaIntegerType.staticCast(scope, string, radix, false);
 	}
 
@@ -340,8 +376,8 @@ public class Cast {
 					value = "parallel_list_with(5,2)",
 					equals = "[2,2,2,2,2]") })
 	@test ("parallel_list_with(5,2) = [2,2,2,2,2]")
-	public static IList parallel_list_with(final IScope scope, final Integer size, final IExpression init) {
-		return GamaListFactory.create(scope, init, size, true);
+	public static IList parallel_list_with(final IScope scope, final Long size, final IExpression init) {
+		return GamaListFactory.create(scope, init, size.intValue(), true);
 	}
 
 	/**
@@ -388,17 +424,17 @@ public class Cast {
 	@test ("list_with(5,2) = [2,2,2,2,2]")
 	@test ("5 list_with(i: i+1) = [1,2,3,4,5]")
 	@test ("5 list_with string(each / 2) = ['0.0','0.5','1.0','1.5','2.0']")
-	public static IList list_with(final IScope scope, final String eachName, final Integer size,
+	public static IList list_with(final IScope scope, final String eachName, final Long size,
 			final IExpression fillExpr) {
 		if (fillExpr == null || size <= 0) return GamaListFactory.create(Types.NO_TYPE);
-		final Object[] contents = new Object[size];
+		final Object[] contents = new Object[size.intValue()];
 		final IType contentType = fillExpr.getGamlType();
 
 		// Use parallel fill for constant expressions, sequential for others
 		if (fillExpr.isConst()) {
 			final Object value = fillExpr.value(scope);
 			GamaExecutorService
-					.executeThreaded(() -> IntStream.range(0, size).parallel().forEach(i -> contents[i] = value));
+					.executeThreaded(() -> IntStream.range(0, size.intValue()).parallel().forEach(i -> contents[i] = value));
 		} else {
 			for (int i = 0; i < size; i++) {
 				scope.setEach(eachName, i);
@@ -450,7 +486,7 @@ public class Cast {
 			see = { "map" })
 	@test ("5 map_with(i: i::i+1) = [0::1,1::2,2::3,3::4,4::5]")
 	@test ("5 map_with(i: i::i+1) = range(4) as_map (each::each+1)")
-	public static IMap map_with(final IScope scope, final String eachName, final Integer size,
+	public static IMap map_with(final IScope scope, final String eachName, final Long size,
 			final IExpression pairs) {
 		if (pairs == null || size <= 0) return GamaMapFactory.create();
 		IMap<?, Object> result =

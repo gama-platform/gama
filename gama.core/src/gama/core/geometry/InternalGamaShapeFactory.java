@@ -554,7 +554,7 @@ public class InternalGamaShapeFactory implements IShapeFactory {
 	public IShape buildEllipse(final double xRadius, final double yRadius, final IPoint location) {
 		if (xRadius <= 0 && yRadius <= 0) return createFrom(location);
 		final GeometricShapeFactory factory = new GeometricShapeFactory(GeometryUtils.getGeometryFactory());
-		factory.setNumPoints(GamaPreferences.Displays.DISPLAY_SLICE_NUMBER.getValue());
+		factory.setNumPoints(GamaPreferences.Displays.DISPLAY_SLICE_NUMBER.getValue().intValue());
 		factory.setCentre(location.toCoordinate());
 		factory.setWidth(xRadius);
 		factory.setHeight(yRadius);
@@ -579,7 +579,7 @@ public class InternalGamaShapeFactory implements IShapeFactory {
 	public IShape buildSquircle(final double xRadius, final double power, final IPoint location) {
 		if (xRadius <= 0) return createFrom(location);
 		final GeometricShapeFactory factory = new GeometricShapeFactory(GeometryUtils.getGeometryFactory());
-		factory.setNumPoints(GamaPreferences.Displays.DISPLAY_SLICE_NUMBER.getValue());
+		factory.setNumPoints(GamaPreferences.Displays.DISPLAY_SLICE_NUMBER.getValue().intValue());
 		factory.setCentre(location.toCoordinate());
 		factory.setSize(xRadius);
 		final Geometry g = factory.createSupercircle(power);
@@ -609,7 +609,7 @@ public class InternalGamaShapeFactory implements IShapeFactory {
 			final IPoint location) {
 		if (amplitude <= 0 || xRadius <= 0) return createFrom(location);
 		final GeometricShapeFactory factory = new GeometricShapeFactory(GeometryUtils.getGeometryFactory());
-		factory.setNumPoints(GamaPreferences.Displays.DISPLAY_SLICE_NUMBER.getValue());
+		factory.setNumPoints(GamaPreferences.Displays.DISPLAY_SLICE_NUMBER.getValue().intValue());
 		factory.setCentre(location.toCoordinate());
 		factory.setSize(xRadius);
 		double list_ampl = amplitude % 360;

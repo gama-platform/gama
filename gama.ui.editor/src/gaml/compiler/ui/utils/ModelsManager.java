@@ -126,6 +126,27 @@ public class ModelsManager extends AbstractServiceFactory implements IModelsMana
 	 * @param object
 	 * @return
 	 */
+	/**
+	 * Reports why a model could not be built. Without this, a model that fails validation would leave the user with
+	 * no feedback at all: the caller simply returns and the editor stays as it was.
+	 *
+	 * @param name
+	 *            the name of the model
+	 * @param errors
+	 *            the errors collected during the build
+	 */
+	private void reportBuildFailure(final String name, final List<GamlCompilationError> errors) {
+		final StringBuilder sb = new StringBuilder();
+		sb.append("Model ").append(name).append(" cannot be built because of ").append(errors.size())
+				.append(" compilation errors");
+		for (final GamlCompilationError error : errors) {
+			if (!error.isError()) { continue; }
+			sb.append(System.lineSeparator()).append(" - ").append(error.toString());
+		}
+		DEBUG.ERR(sb.toString());
+		GAMA.getGui().getDialogFactory().error(sb.toString());
+	}
+
 	private IModelSpecies findModel(final Object object) {
 		if (object instanceof IModelSpecies) return (IModelSpecies) object;
 		if (object instanceof WrappedGamaFile) return findModel(((WrappedGamaFile) object).getResource());
@@ -147,16 +168,15 @@ public class ModelsManager extends AbstractServiceFactory implements IModelsMana
 			case URI uri -> {
 				final List<GamlCompilationError> errors = new ArrayList<>();
 				final IModelSpecies model = GamlModelBuilder.getInstance().compile(uri, errors);
-				if (model == null) {
-					GAMA.getGui().getDialogFactory().error("File " + uri.lastSegment() + " cannot be built because of "
-							+ errors.size() + " compilation errors");
-				}
+				if (model == null) { reportBuildFailure(uri.lastSegment(), errors); }
 				return model;
 			}
 			case IXtextDocument doc -> {
 				IModelSpecies model = null;
+				final List<GamlCompilationError> errors = new ArrayList<>();
 				try {
-					model = doc.readOnly(state -> GamlModelBuilder.getInstance().compile(state.getURI(), null));
+					model = doc.readOnly(state -> GamlModelBuilder.getInstance().compile(state.getURI(), errors));
+					if (model == null) { reportBuildFailure("in the current editor", errors); }
 				} catch (final Exception ex) {
 					GAMA.getGui().getDialogFactory().error(
 							"Experiment cannot be instantiated because of the following error: " + ex.getMessage());

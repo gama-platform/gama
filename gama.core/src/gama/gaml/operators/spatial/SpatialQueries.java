@@ -579,12 +579,12 @@ public class SpatialQueries {
 					"agent_closest_to" })
 	@no_test // already done in Spatial tests Models
 	public static IList<? extends IShape> closest_to(final IScope scope, final IContainer<?, ? extends IShape> list,
-			final IShape source, final int number) {
+			final IShape source, final long number) {
 		if (list == null || list.isEmpty(scope)) return GamaListFactory.getEmptyList();
 		final IType contentType = list.getGamlType().getContentType();
-		if (contentType.isAgentType()) return _closest(scope, In.list(scope, list), source, number);
+		if (contentType.isAgentType()) return _closest(scope, In.list(scope, list), source, (int) number);
 		if (list.getGamlType().getContentType().isTranslatableInto(Types.GEOMETRY))
-			return geomClosestTo(scope, list, source, number);
+			return geomClosestTo(scope, list, source, (int) number);
 		return GamaListFactory.create(contentType);
 	}
 

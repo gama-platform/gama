@@ -394,7 +394,7 @@ public class AgentsMenu extends ContributionItem {
 	public static void fillPopulationSubMenu(final Menu menu, final Collection<? extends IAgent> species,
 			final MenuAction... actions) {
 		final boolean isSimulations = species instanceof SimulationPopulation;
-		int subMenuSize = Math.max(2, GamaPreferences.Interface.CORE_MENU_SIZE.getValue());
+		int subMenuSize = (int) Math.max(2, GamaPreferences.Interface.CORE_MENU_SIZE.getValue());
 		final List<IAgent> agents = species == null ? new ArrayList<>() : new ArrayList<>(species);
 		final int size = agents.size();
 		if (size >= 1) {

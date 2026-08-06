@@ -220,7 +220,7 @@ public class GamaFontFactory {
 	 */
 	public static IFont castToFont(final IScope scope, final Object obj, final boolean copy) {
 		return switch (obj) {
-			case Number size -> cloneWithSize(getDefaultFont(), size.intValue());
+			case Number size -> cloneWithSize(getDefaultFont(), size.longValue());
 			case IFont f -> copy ? cloneFont(f) : f;
 			case String s -> createFontFrom(s);
 			case null, default -> getDefaultFont();
@@ -265,8 +265,8 @@ public class GamaFontFactory {
 					equals = "a bold and italic face of the Helvetica Neue family with a size of 24 points",
 					test = false))
 	@no_test
-	public static IFont cloneWithSize(final IFont font, final Integer size) {
-		return createFont(font.getName(), font.getStyle(), size);
+	public static IFont cloneWithSize(final IFont font, final Long size) {
+		return createFont(font.getName(), font.getStyle(), size.intValue());
 	}
 
 	/**
@@ -324,8 +324,8 @@ public class GamaFontFactory {
 					equals = "a plain face of the Helvetica Neue family with a size of 12 points",
 					test = false))
 	@no_test
-	public static IFont cloneWithStyle(final IFont font, final Integer style) {
-		return createFont(font.getName(), style, font.getSize());
+	public static IFont cloneWithStyle(final IFont font, final Long style) {
+		return createFont(font.getName(), style.intValue(), font.getSize());
 	}
 
 	/**
@@ -372,8 +372,8 @@ public class GamaFontFactory {
 	@doc (
 			value = "Creates a new font, by specifying its name (either a font face name like 'Lucida Grande Bold' or 'Helvetica', or a logical name like 'Dialog', 'SansSerif', 'Serif', etc.) and a size in points. No style is attached to this font")
 	@no_test
-	public static IFont createFont(final String name, final Integer size) {
-		return createFont(name, Font.PLAIN, size);
+	public static IFont createFont(final String name, final Long size) {
+		return createFont(name, Font.PLAIN, size.intValue());
 	}
 
 	/**
@@ -423,7 +423,7 @@ public class GamaFontFactory {
 	 * @see #cloneWithStyle(IFont, Integer)
 	 * @see java.awt.Font#Font(String, int, int)
 	 */
-	public static IFont createFont(final String name, final Integer style, final Integer size) {
+	public static IFont createFont(final String name, final int style, final int size) {
 		return createFontFrom(new Font(name, style, size));
 	}
 
@@ -459,8 +459,8 @@ public class GamaFontFactory {
 					equals = "a bold and italic face of the Helvetica Neue family",
 					test = false))
 	@no_test
-	public static IFont font(final String name, final Integer size, final Integer style) {
-		return createFont(name, style, size);
+	public static IFont font(final String name, final Long size, final Long style) {
+		return createFont(name, style.intValue(), size.intValue());
 	}
 
 }

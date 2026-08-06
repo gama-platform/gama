@@ -129,6 +129,14 @@ public interface IRandom {
 	 * @param a
 	 *            the a
 	 */
+	void shuffleInPlace(long[] a);
+
+	/**
+	 * Shuffle in place.
+	 *
+	 * @param a
+	 *            the a
+	 */
 	void shuffleInPlace(short[] a);
 
 	/**
@@ -168,6 +176,17 @@ public interface IRandom {
 	 *            the min
 	 * @param max
 	 *            the max
+	 * @return an uniformly distributed long random number in [min, max]
+	 */
+	long between(long min, long max);
+
+	/**
+	 * Between.
+	 *
+	 * @param min
+	 *            the min
+	 * @param max
+	 *            the max
 	 * @return the double
 	 */
 	double between(double min, double max);
@@ -176,6 +195,19 @@ public interface IRandom {
 	 * @return an uniformly distributed int random number in [min, max] respecting the step
 	 */
 	int between(int min, int max, int step);
+
+	/**
+	 * Between.
+	 *
+	 * @param min
+	 *            the min
+	 * @param max
+	 *            the max
+	 * @param step
+	 *            the step
+	 * @return an uniformly distributed long random number in [min, max] respecting the step
+	 */
+	long between(long min, long max, long step);
 
 	/**
 	 * Between.

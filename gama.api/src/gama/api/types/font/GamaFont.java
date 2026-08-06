@@ -273,7 +273,7 @@ record GamaFont(Font internal) implements IFont {
 	 * @return the font size in points
 	 */
 	@Override
-	public int intValue(final IScope scope) {
+	public long longValue(final IScope scope) {
 		return getSize();
 	}
 

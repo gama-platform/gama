@@ -142,7 +142,7 @@ public class Comparison {
 	@test ("between(5, 1, 10)")
 	@test ("!between(1, 1, 10)")
 	@test ("!between(0, 1, 10)")
-	public static Boolean between(final Integer a, final Integer inf, final Integer sup) {
+	public static Boolean between(final Long a, final Long inf, final Long sup) {
 		if (inf > sup) return false;
 		return a >= sup ? false : a > inf;
 	}
@@ -215,7 +215,7 @@ public class Comparison {
 	@test ("2 > 1")
 	@test ("!(1 > 1)")
 	@test ("!(0 > 1)")
-	public static Boolean greater(final Integer a, final Integer b) {
+	public static Boolean greater(final Long a, final Long b) {
 		if (a == null || b == null) return false;
 		return a > b;
 	}
@@ -243,7 +243,7 @@ public class Comparison {
 	@test ("3 > 2.5")
 	@test ("!(3 > 3.0)")
 	@test ("!(2 > 3.5)")
-	public static Boolean greater(final Integer a, final Double b) {
+	public static Boolean greater(final Long a, final Double b) {
 		if (a == null || b == null) return false;
 		return a > b;
 	}
@@ -272,7 +272,7 @@ public class Comparison {
 	@test ("!(3.5 > 7)")
 	@test ("7.5 > 7")
 	@test ("!(7.0 > 7)")
-	public static Boolean greater(final Double a, final Integer b) {
+	public static Boolean greater(final Double a, final Long b) {
 		if (a == null || b == null) return false;
 		return a > b;
 	}
@@ -337,7 +337,7 @@ public class Comparison {
 	@test ("!(7 < 7)")
 	@test ("!(8 < 7)")
 	@test ("1 < 2")
-	public static Boolean less(final Integer a, final Integer b) {
+	public static Boolean less(final Long a, final Long b) {
 		if (a == null || b == null) return false;
 		return a < b;
 	}
@@ -366,7 +366,7 @@ public class Comparison {
 	@test ("!(3 < 2.5)")
 	@test ("2 < 2.5")
 	@test ("!(3 < 3.0)")
-	public static Boolean less(final Integer a, final Double b) {
+	public static Boolean less(final Long a, final Double b) {
 		if (a == null || b == null) return false;
 		return a < b;
 	}
@@ -395,7 +395,7 @@ public class Comparison {
 	@test ("3.5 < 7")
 	@test ("!(7.0 < 7)")
 	@test ("!(8.5 < 7)")
-	public static Boolean less(final Double a, final Integer b) {
+	public static Boolean less(final Double a, final Long b) {
 		if (a == null || b == null) return false;
 		return a < b;
 	}
@@ -458,7 +458,7 @@ public class Comparison {
 	@test ("!(3 >= 7)")
 	@test ("7 >= 7")
 	@test ("8 >= 7")
-	public static Boolean greaterOrEqual(final Integer a, final Integer b) {
+	public static Boolean greaterOrEqual(final Long a, final Long b) {
 		if (a == null || b == null) return false;
 		return a >= b;
 	}
@@ -487,7 +487,7 @@ public class Comparison {
 	@test ("3 >= 2.5")
 	@test ("3 >= 3.0")
 	@test ("!(2 >= 3.0)")
-	public static Boolean greaterOrEqual(final Integer a, final Double b) {
+	public static Boolean greaterOrEqual(final Long a, final Double b) {
 		if (a == null || b == null) return false;
 		return a >= b;
 	}
@@ -516,7 +516,7 @@ public class Comparison {
 	@test ("!(3.5 >= 7)")
 	@test ("7.0 >= 7")
 	@test ("8.5 >= 7")
-	public static Boolean greaterOrEqual(final Double a, final Integer b) {
+	public static Boolean greaterOrEqual(final Double a, final Long b) {
 		if (a == null || b == null) return false;
 		return a >= b;
 	}
@@ -579,7 +579,7 @@ public class Comparison {
 	@test ("3 <= 7")
 	@test ("7 <= 7")
 	@test ("!(8 <= 7)")
-	public static Boolean opLessThanOrEqual(final Integer a, final Integer b) {
+	public static Boolean opLessThanOrEqual(final Long a, final Long b) {
 		if (a == null || b == null) return false;
 		return a <= b;
 	}
@@ -609,7 +609,7 @@ public class Comparison {
 	@test ("!(3 <= 2.5)")
 	@test ("3 <= 3.0")
 	@test ("2 <= 3.0")
-	public static Boolean lessOrEqual(final Integer a, final Double b) {
+	public static Boolean lessOrEqual(final Long a, final Double b) {
 		if (a == null || b == null) return false;
 		return a <= b;
 	}
@@ -638,7 +638,7 @@ public class Comparison {
 	@test ("7.0 <= 7")
 	@test ("6.5 <= 7")
 	@test ("!(8.5 <= 7)")
-	public static Boolean lessOrEqual(final Double a, final Integer b) {
+	public static Boolean lessOrEqual(final Double a, final Long b) {
 		if (a == null || b == null) return false;
 		return a <= b;
 	}
@@ -746,7 +746,7 @@ public class Comparison {
 	@test ("4 = 4")
 	@test ("!(4 = 5)")
 	@test ("0 = 0")
-	public static Boolean equal(final Integer a, final Integer b) {
+	public static Boolean equal(final Long a, final Long b) {
 		return a == null ? b == null : a.intValue() == b.intValue();
 		// return !(a < b) && !(a > b);
 	}
@@ -777,7 +777,7 @@ public class Comparison {
 	@test ("3 = 3.0")
 	@test ("!(4 = 4.7)")
 	@test ("0 = 0.0")
-	public static Boolean equal(final Integer a, final Double b) {
+	public static Boolean equal(final Long a, final Double b) {
 		return a == null ? b == null : Comparison.equal(a.doubleValue(), b);
 		// return !(a < b) && !(a > b);
 	}
@@ -808,7 +808,7 @@ public class Comparison {
 	@test ("!(4.7 = 4)")
 	@test ("4.0 = 4")
 	@test ("0.0 = 0")
-	public static Boolean equal(final Double a, final Integer b) {
+	public static Boolean equal(final Double a, final Long b) {
 		return a == null ? b == null : Comparison.equal(a, b.doubleValue());
 		// return !(a < b) && !(a > b);
 	}
@@ -879,7 +879,7 @@ public class Comparison {
 	@test ("!(3 != 3)")
 	@test ("4 != 5")
 	@test ("!(0 != 0)")
-	public static Boolean different(final Integer a, final Integer b) {
+	public static Boolean different(final Long a, final Long b) {
 		if (a == null) return b != null;
 		if (b == null) return false;
 		return a.intValue() != b.intValue();
@@ -909,7 +909,7 @@ public class Comparison {
 	@test ("!(3 != 3.0)")
 	@test ("4 != 4.7")
 	@test ("!(0 != 0.0)")
-	public static Boolean different(final Integer a, final Double b) {
+	public static Boolean different(final Long a, final Double b) {
 		return a == null ? b == null : !Comparison.equal(a.doubleValue(), b);
 		// return !(a < b) && !(a > b);
 	}
@@ -938,7 +938,7 @@ public class Comparison {
 	@test ("!(3.0 != 3)")
 	@test ("4.7 != 4")
 	@test ("!(0.0 != 0)")
-	public static Boolean different(final Double a, final Integer b) {
+	public static Boolean different(final Double a, final Long b) {
 		return a == null ? b == null : !Comparison.equal(a, b.doubleValue());
 	}
 

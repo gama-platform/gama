@@ -88,6 +88,7 @@ public class JREPreferenceStore extends GamaPreferenceStore<Preferences> {
 			case null -> store.put(key, "");
 			case String s -> store.put(key, s);
 			case Integer i -> store.putInt(key, i);
+			case Long l -> store.putLong(key, l);
 			case Double j -> store.putDouble(key, j);
 			case Boolean k -> store.putBoolean(key, k);
 			default -> {

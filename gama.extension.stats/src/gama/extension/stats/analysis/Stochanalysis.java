@@ -725,7 +725,7 @@ public class Stochanalysis {
 		IList<Object> STO_simu = readSimulation(path_to_data, id_output, scope);
 		IList<IMap<String, Object>> MySample = GamaListFactory.castToList(scope, STO_simu.get(0));
 		IMap<String, IList<Double>> Outputs = GamaMapFactory.castToMap(scope, STO_simu.get(1));
-		return stochasticityAnalysis_From_Data(replicat, threshold, MySample, Outputs, scope);
+		return stochasticityAnalysis_From_Data((int) replicat, threshold, MySample, Outputs, scope);
 	}
 	
 
@@ -753,12 +753,12 @@ public class Stochanalysis {
 	@doc (
 			value = "Return the result of the stochasticity analysis for the corresponding data (path, map or matrix)")
 	@no_test
-	public static String stochanalysis(final IScope scope, final int replicat, final double threshold, final Object data,
-			final int nb_parameters) {
+	public static String stochanalysis(final IScope scope, final long replicat, final double threshold, final Object data,
+			final long nb_parameters) {
 
 		if (data instanceof String path) {
 			String new_path = scope.getExperiment().getWorkingPath() + "/" + path;
-			return Stochanalysis.stochasticityAnalysis_From_CSV(replicat, threshold, new_path, nb_parameters, scope);
+			return Stochanalysis.stochasticityAnalysis_From_CSV((int) replicat, threshold, new_path, (int) nb_parameters, scope);
 		}
 
 		IMap<String, IList<Double>> mapData;
@@ -795,7 +795,7 @@ public class Stochanalysis {
 			MySample.add(temp_map);
 		}
 
-		return Stochanalysis.stochasticityAnalysis_From_Data(replicat, threshold, MySample, Outputs, scope);
+		return Stochanalysis.stochasticityAnalysis_From_Data((int) replicat, threshold, MySample, Outputs, scope);
 	}
 	private static String[] parseCsvLine(String line) {
 		List<String> result = new ArrayList<>();

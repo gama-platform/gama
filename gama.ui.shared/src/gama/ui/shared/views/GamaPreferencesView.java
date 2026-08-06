@@ -81,8 +81,8 @@ public class GamaPreferencesView {
 			"Size of the preferences dialog on screen", GamaPointFactory.create(-1, -1), IType.POINT, false).hidden();
 
 	/** The dialog tab. */
-	static final Pref<Integer> DIALOG_TAB = GamaPreferences
-			.create("dialog_tab", "Tab selected in the preferences dialog", -1, IType.INT, false).hidden();
+	static final Pref<Long> DIALOG_TAB = GamaPreferences
+			.create("dialog_tab", "Tab selected in the preferences dialog", -1l, IType.INT, false).hidden();
 
 	/** The prefs images. */
 	public static final Map<String, Image> prefs_images = new LinkedHashMap();
@@ -490,7 +490,7 @@ public class GamaPreferencesView {
 	 */
 	private void saveTab() {
 		final var index = tabFolder.getSelectionIndex();
-		DIALOG_TAB.set(index).save();
+		DIALOG_TAB.set((long) index).save();
 	}
 
 	/**
@@ -513,7 +513,7 @@ public class GamaPreferencesView {
 		if (!preloaded) { preload(); }
 		final var loc = DIALOG_LOCATION.getValue();
 		final var size = DIALOG_SIZE.getValue();
-		final int tab = DIALOG_TAB.getValue();
+		final int tab = DIALOG_TAB.getValue().intValue();
 		var x = (int) loc.getX();
 		var y = (int) loc.getY();
 		var width = (int) size.getX();

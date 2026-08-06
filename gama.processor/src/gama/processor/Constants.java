@@ -264,7 +264,7 @@ public interface Constants {
 	/** The boolean. */
 	String IAGENT = "IAgent", IPOPULATION = "IPopulation", ISIMULATION = "ISimulation", ISKILL = "ISkill",
 			ISYMBOL = "ISymbol", IDESC = "IDescription", ISCOPE = "IScope", OBJECT = "Object", IVALUE = "IValue",
-			IEXPRESSION = "IExpression", INTEGER = "Integer", DOUBLE = "Double", BOOLEAN = "Boolean";
+			IEXPRESSION = "IExpression", INTEGER = "Integer", LONG = "Long", DOUBLE = "Double", BOOLEAN = "Boolean";
 
 	/** The explicit imports. */
 	String[] INDIVIDUAL_IMPORTS = {};
@@ -327,6 +327,7 @@ public interface Constants {
 		{
 			put(DOUBLE, " 0d");
 			put(INTEGER, " 0");
+			put(LONG, " 0l");
 			put(BOOLEAN, " false");
 		}
 	};
@@ -336,7 +337,7 @@ public interface Constants {
 		{
 			put("int", INTEGER);
 			put("short", INTEGER);
-			put("long", INTEGER);
+			put("long", LONG);
 			put("double", DOUBLE);
 			put("float", DOUBLE);
 			put("boolean", BOOLEAN);

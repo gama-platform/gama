@@ -288,7 +288,7 @@ public class LawStatement extends AbstractStatement {
 			tempNewObligation.setStrength(Cast.asFloat(scope, strength.value(scope)));
 		}
 		if (lifetime != null) {
-			tempNewObligation.setLifeTime(Cast.asInt(scope, lifetime.value(scope)));
+			tempNewObligation.setLifeTime(Cast.asInt(scope, lifetime.value(scope)).intValue());
 		}
 		// Only do it if there's not already an obligation
 		if (!BdiUtils.hasObligation(scope, tempNewObligation)) {

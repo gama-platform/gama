@@ -398,7 +398,7 @@ public abstract class AbstractPopulation<T extends IAgent> implements IPopulatio
 	public boolean step(final IScope scope) throws GamaRuntimeException {
 		final IExpression frequencyExp = species.getFrequency();
 		if (frequencyExp != null) {
-			final int frequency = Cast.asInt(scope, frequencyExp.value(scope));
+			final int frequency = Cast.asInt(scope, frequencyExp.value(scope)).intValue();
 			final int step = scope.getClock().getCycle();
 			if (frequency == 0 || step % frequency != 0) return true;
 		}

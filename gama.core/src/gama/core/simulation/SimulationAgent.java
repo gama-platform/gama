@@ -357,7 +357,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 			value = IKeyword.COLOR,
 			initializer = true)
 	public IColor getColor() {
-		if (color == null) { color = GamaPreferences.Interface.getColorForSimulation(getIndex()); }
+		if (color == null) { color = GamaPreferences.Interface.getColorForSimulation((int) getIndex()); }
 		return color;
 	}
 
@@ -1001,7 +1001,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 			switch (varName) {
 				case IKeyword.SEED -> seedValue = (Double) attrValue;
 				case IKeyword.RNG -> rngValue = (String) attrValue;
-				case ISimulationAgent.USAGE -> usageValue = (Integer) attrValue;
+				case ISimulationAgent.USAGE -> usageValue = attrValue == null ? null : ((Number) attrValue).intValue();
 				default -> this.setDirectVarValue(scope, varName, attrValue);
 			}
 
@@ -1013,7 +1013,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 
 		// Update Clock
 		final Object cycle = sa.getAttributeValue(IKeyword.CYCLE);
-		ownClock.setCycleNoCheck((Integer) cycle);
+		if (cycle != null) { ownClock.setCycleNoCheck(((Number) cycle).intValue()); }
 
 		final Map<String, ISerialisedPopulation> savedAgentInnerPop = sa.innerPopulations();
 

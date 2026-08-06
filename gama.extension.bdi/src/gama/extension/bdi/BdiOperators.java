@@ -1273,9 +1273,9 @@ public class BdiOperators {
 					value = "new_mental_state(\"belief\", raining, 10)",
 					isExecutable = false))
 	@no_test
-	public static MentalState newMentalState(final String modality, final Predicate pred, final Integer life)
+	public static MentalState newMentalState(final String modality, final Predicate pred, final Long life)
 			throws GamaRuntimeException {
-		return new MentalState(modality, pred, life);
+		return new MentalState(modality, pred, life.intValue());
 	}
 
 	/**
@@ -1336,8 +1336,8 @@ public class BdiOperators {
 					isExecutable = false))
 	@no_test
 	public static MentalState newMentalState(final String modality, final Predicate pred, final Double strength,
-			final Integer life) throws GamaRuntimeException {
-		return new MentalState(modality, pred, strength, life);
+			final Long life) throws GamaRuntimeException {
+		return new MentalState(modality, pred, strength, life.intValue());
 	}
 
 	/**
@@ -1366,9 +1366,9 @@ public class BdiOperators {
 					value = "new_mental_state(\"belief\", raining, 10, agent1)",
 					isExecutable = false))
 	@no_test
-	public static MentalState newMentalState(final String modality, final Predicate pred, final Integer life,
+	public static MentalState newMentalState(final String modality, final Predicate pred, final Long life,
 			final IAgent ag) throws GamaRuntimeException {
-		return new MentalState(modality, pred, life, ag);
+		return new MentalState(modality, pred, life.intValue(), ag);
 	}
 
 	/**
@@ -1400,8 +1400,8 @@ public class BdiOperators {
 					isExecutable = false))
 	@no_test
 	public static MentalState newMentalState(final String modality, final Predicate pred, final Double strength,
-			final Integer life, final IAgent ag) throws GamaRuntimeException {
-		return new MentalState(modality, pred, strength, life, ag);
+			final Long life, final IAgent ag) throws GamaRuntimeException {
+		return new MentalState(modality, pred, strength, life.intValue(), ag);
 	}
 
 	/**
@@ -1513,9 +1513,9 @@ public class BdiOperators {
 					value = "new_mental_state(\"belief\", mental_state1, 10)",
 					isExecutable = false))
 	@no_test
-	public static MentalState newMentalState(final String modality, final MentalState pred, final Integer life)
+	public static MentalState newMentalState(final String modality, final MentalState pred, final Long life)
 			throws GamaRuntimeException {
-		return new MentalState(modality, pred, life);
+		return new MentalState(modality, pred, life.intValue());
 	}
 
 	/**
@@ -1576,8 +1576,8 @@ public class BdiOperators {
 					isExecutable = false))
 	@no_test
 	public static MentalState newMentalState(final String modality, final MentalState pred, final Double strength,
-			final Integer life) throws GamaRuntimeException {
-		return new MentalState(modality, pred, strength, life);
+			final Long life) throws GamaRuntimeException {
+		return new MentalState(modality, pred, strength, life.intValue());
 	}
 
 	/**
@@ -1606,9 +1606,9 @@ public class BdiOperators {
 					value = "new_mental_state(\"belief\", mental_state1, 10, agent1)",
 					isExecutable = false))
 	@no_test
-	public static MentalState newMentalState(final String modality, final MentalState pred, final Integer life,
+	public static MentalState newMentalState(final String modality, final MentalState pred, final Long life,
 			final IAgent ag) throws GamaRuntimeException {
-		return new MentalState(modality, pred, life, ag);
+		return new MentalState(modality, pred, life.intValue(), ag);
 	}
 
 	/**
@@ -1640,8 +1640,8 @@ public class BdiOperators {
 					isExecutable = false))
 	@no_test
 	public static MentalState newMentalState(final String modality, final MentalState pred, final Double strength,
-			final Integer life, final IAgent ag) throws GamaRuntimeException {
-		return new MentalState(modality, pred, strength, life, ag);
+			final Long life, final IAgent ag) throws GamaRuntimeException {
+		return new MentalState(modality, pred, strength, life.intValue(), ag);
 	}
 
 	/**
@@ -1753,9 +1753,9 @@ public class BdiOperators {
 					value = "new_mental_state(\"belief\",  my_joy, 10)",
 					isExecutable = false))
 	@no_test
-	public static MentalState newMentalState(final String modality, final Emotion pred, final Integer life)
+	public static MentalState newMentalState(final String modality, final Emotion pred, final Long life)
 			throws GamaRuntimeException {
-		return new MentalState(modality, pred, life);
+		return new MentalState(modality, pred, life.intValue());
 	}
 
 	/**
@@ -1816,8 +1816,8 @@ public class BdiOperators {
 					isExecutable = false))
 	@no_test
 	public static MentalState newMentalState(final String modality, final Emotion pred, final Double strength,
-			final Integer life) throws GamaRuntimeException {
-		return new MentalState(modality, pred, strength, life);
+			final Long life) throws GamaRuntimeException {
+		return new MentalState(modality, pred, strength, life.intValue());
 	}
 
 	/**
@@ -1846,9 +1846,9 @@ public class BdiOperators {
 					value = "new_mental_state(\"belief\", my_joy, 10, agent1)",
 					isExecutable = false))
 	@no_test
-	public static MentalState newMentalState(final String modality, final Emotion pred, final Integer life,
+	public static MentalState newMentalState(final String modality, final Emotion pred, final Long life,
 			final IAgent ag) throws GamaRuntimeException {
-		return new MentalState(modality, pred, life, ag);
+		return new MentalState(modality, pred, life.intValue(), ag);
 	}
 
 	/**
@@ -1880,8 +1880,8 @@ public class BdiOperators {
 					isExecutable = false))
 	@no_test
 	public static MentalState newMentalState(final String modality, final Emotion pred, final Double strength,
-			final Integer life, final IAgent ag) throws GamaRuntimeException {
-		return new MentalState(modality, pred, strength, life, ag);
+			final Long life, final IAgent ag) throws GamaRuntimeException {
+		return new MentalState(modality, pred, strength, life.intValue(), ag);
 	}
 
 	/**
@@ -1979,8 +1979,8 @@ public class BdiOperators {
 					value = "mental state set_lifetime 1",
 					isExecutable = false))
 	@no_test
-	public static MentalState setLifetime(final MentalState mental, final int life) {
-		mental.setLifeTime(life);
+	public static MentalState setLifetime(final MentalState mental, final long life) {
+		mental.setLifeTime((int) life);
 		return mental;
 	}
 

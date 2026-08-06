@@ -102,8 +102,7 @@ public class GamaBoolType extends GamaType<Boolean> {
 			case IGamaFile f -> f.exists(scope);
 			case IContainer c -> !c.isEmpty(scope);
 			case File f -> f.exists();
-			case Integer i -> i != 0;
-			case Double d -> d != 0d;
+			case Number n -> n.doubleValue() != 0d;
 			case String s -> "true".equals(s);
 			default -> false;
 		};
