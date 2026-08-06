@@ -511,19 +511,43 @@ public class GAML {
 			final IExecutionContext tempContext, final boolean onlyExpression) throws GamaRuntimeException {
 		if (agent == null) throw GamaRuntimeException.error("Agent is nil", tempContext.getScope());
 		final IDescription context = agent.getSpecies().getDescription();
+		IExpression result = null;
+		Throwable error = null;
 		try {
-			return getExpressionFactory().createExpr(expression, context, tempContext);
+			result = getExpressionFactory().createExpr(expression, context, tempContext);
 		} catch (final Throwable e) {
-			// Maybe it is a statement instead ?
-			if (onlyExpression) throw GamaRuntimeException.create(e, tempContext.getScope());
-			try {
-				return getExpressionFactory().createTemporaryActionForAgent(agent, expression, tempContext);
-			} catch (final Throwable e2) {
-				// Not a statement.
-				throw GamaRuntimeException.error(e.getMessage() + "\n" + e2.getMessage(), tempContext.getScope());
-			}
-
+			error = e;
 		}
+		
+		if (result != null) return result;
+
+		// if getExpressionFactory returned null, we stop here if we are in expression only, and  try to create an action otherwise.
+		
+		// it is possible that no exception was raised but getExpressionFactory wasn't able to create an expression either
+		final String firstError =	error == null 
+								? "'" + expression + "' cannot be compiled as an expression" 
+								: error.getMessage();
+		if (onlyExpression) {
+			throw	error == null 
+				? GamaRuntimeException.error(firstError, tempContext.getScope())
+				: GamaRuntimeException.create(error, tempContext.getScope());
+		}
+		
+		// Maybe it is a statement instead ?
+		try {
+			error = null;
+			result = getExpressionFactory().createTemporaryActionForAgent(agent, expression, tempContext);
+		} catch (final Throwable e2) {
+			error = e2;
+		}
+		if (result != null) return result;
+		
+		// If nothing worked until then, we have to raise an exception
+		final String secondError =	error == null
+								? firstError
+								: firstError + "\n" + error.getMessage();
+		
+		throw GamaRuntimeException.error(secondError, tempContext.getScope());
 	}
 
 	// ==================================================================================
