@@ -535,6 +535,12 @@
                   label="Hide/Show Editor Area"
                   style="push"
                   tooltip="Hide or show the editors">
+               <visibleWhen
+                     checkEnabled="false">
+                        <not>
+                              <systemTest property="simulation_only" value="true"/>
+                        </not>
+               </visibleWhen>                  
             </command>
          </menu>
       </menuContribution>
@@ -1281,6 +1287,12 @@
             defaultHandler="gama.ui.experiment.commands.HideShowEditors"
             id="gama.ui.hideShowEditors"
             name="Hide/Show Editors">
+            <visibleWhen
+                  checkEnabled="false">
+                  <not>
+                        <systemTest property="simulation_only" value="true"/>
+                  </not>
+            </visibleWhen>    
       </command>
       <command
             id="gama.ui.experiment.toolbar.simulation.menu"

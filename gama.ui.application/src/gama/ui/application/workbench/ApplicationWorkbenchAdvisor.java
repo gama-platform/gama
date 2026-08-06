@@ -32,6 +32,12 @@ import org.eclipse.ui.internal.keys.BindingService;
 import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.jface.bindings.Binding;
 import org.eclipse.jface.bindings.keys.KeySequence;
+import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.internal.WorkbenchWindow;
+import org.eclipse.ui.application.ActionBarAdvisor;
+import org.eclipse.ui.application.IActionBarConfigurer;
 
 import gama.api.GAMA;
 import gama.api.additions.delegates.IEventLayerDelegate;
@@ -159,6 +165,28 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 				}
 			}	
 		}
+
+        if (FLAGS.SIMULATION_ONLY) {
+			
+            // IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+            for(IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
+
+            if (window instanceof WorkbenchWindow) {
+                IMenuManager menuBarManager = ((WorkbenchWindow) window).getMenuBarManager();
+                IContributionItem[] items = menuBarManager.getItems();
+                
+                for (IContributionItem item : items) {
+                    String id = item.getId();
+                    // Match the default Eclipse legacy menu IDs
+					System.out.println(id);
+                    if ("file".equals(id) || "edit".equals(id) || "org.eclipse.search.menu".equals(id) || "additions".equals(id)) {
+                        item.setVisible(false);
+                    }
+                }
+                // Force the top navigation bar to redraw its layout
+                menuBarManager.update(true);
+            }
+        }}
 
 		// handle startup model mode
 		if (GamaPreferences.Interface.CORE_STARTUP_MODEL.getValue())
