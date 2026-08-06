@@ -223,15 +223,15 @@ public class GeneticAlgorithm extends AOptimizationAlgorithm {
 		}
 
 		final IExpression popDim = getFacet(POP_DIM);
-		if (popDim != null) { populationDim = Cast.asInt(scope, popDim.value(scope)); }
+		if (popDim != null) { populationDim = Cast.asInt(scope, popDim.value(scope)).intValue(); }
 		final IExpression crossOverPb = getFacet(CROSSOVER_PROB);
 		if (crossOverPb != null) { crossoverProb = Cast.asFloat(scope, crossOverPb.value(scope)); }
 		final IExpression mutationPb = getFacet(MUTATION_PROB);
 		if (mutationPb != null) { mutationProb = Cast.asFloat(scope, mutationPb.value(scope)); }
 		final IExpression nbprelimgen = getFacet(NB_GEN);
-		if (nbprelimgen != null) { nbPrelimGenerations = Cast.asInt(scope, nbprelimgen.value(scope)); }
+		if (nbprelimgen != null) { nbPrelimGenerations = Cast.asInt(scope, nbprelimgen.value(scope)).intValue(); }
 		final IExpression maxgen = getFacet(MAX_GEN);
-		if (maxgen != null) { maxGenerations = Cast.asInt(scope, maxgen.value(scope)); }
+		if (maxgen != null) { maxGenerations = Cast.asInt(scope, maxgen.value(scope)).intValue(); }
 	}
 
 	@Override

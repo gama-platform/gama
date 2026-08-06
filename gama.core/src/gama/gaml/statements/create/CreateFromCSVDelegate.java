@@ -78,7 +78,7 @@ public class CreateFromCSVDelegate implements ICreateDelegate {
 		}
 		for (int i = 0; i < rows; i++) {
 			final Map<String, Object> map = GamaMapFactory.create(hasHeader ? Types.STRING : Types.INT, Types.NO_TYPE);
-			final IList vals = mat.getRow(i);
+			final IList vals = mat.getRow((long) i);
 			for (int j = 0; j < cols; j++) {
 				// see issue #3786
 				String s = clean(headers.get(j));

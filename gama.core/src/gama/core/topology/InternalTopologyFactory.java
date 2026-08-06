@@ -146,11 +146,11 @@ public class InternalTopologyFactory implements ITopologyFactory {
 		final int rows = exp == null
 				? species.hasFacet(CELL_WIDTH)
 						? (int) (env.getWidth() / Cast.asFloat(scope, species.getFacet(CELL_WIDTH).value(scope))) : 100
-				: Cast.asInt(scope, exp.value(scope));
+				: Cast.asInt(scope, exp.value(scope)).intValue();
 		exp = species.getFacet(IKeyword.HEIGHT);
 		final int columns = exp == null ? species.hasFacet(CELL_HEIGHT)
 				? (int) (env.getHeight() / Cast.asFloat(scope, species.getFacet(CELL_HEIGHT).value(scope))) : 100
-				: Cast.asInt(scope, exp.value(scope));
+				: Cast.asInt(scope, exp.value(scope)).intValue();
 
 		final boolean isTorus = host.getTopology().isTorus();
 		exp = species.getFacet("use_individual_shapes");

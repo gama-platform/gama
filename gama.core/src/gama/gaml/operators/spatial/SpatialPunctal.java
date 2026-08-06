@@ -221,7 +221,7 @@ public class SpatialPunctal {
 					test = false) },
 			see = { "any_location_in", "any_point_in", "closest_points_with", "farthest_point_to" })
 	@no_test (Reason.IMPOSSIBLE_TO_TEST)
-	public static IList<IPoint> points_at(final IScope scope, final Integer nbLoc, final Double distance) {
+	public static IList<IPoint> points_at(final IScope scope, final Long nbLoc, final Double distance) {
 		if (distance == null || nbLoc == null) // scope.setStatus(ExecutionStatus.failure);
 			throw GamaRuntimeException.error("Impossible to compute points_at", scope);
 		final IList<IPoint> locations = GamaListFactory.create(Types.POINT);
@@ -373,7 +373,7 @@ public class SpatialPunctal {
 			// Math.hypot is faster and more numerically stable than Maths.sqrt(scope, ...)
 			final double Na = Math.hypot(Xa, Ya);
 			final double Nb = Math.hypot(Xb, Yb);
-			final double C = Maths.round((Xa * Xb + Ya * Yb) / (Na * Nb), 10);
+			final double C = Maths.round((Xa * Xb + Ya * Yb) / (Na * Nb), 10l);
 			final double S = Xa * Yb - Ya * Xb;
 			final double result = S > 0 ? Maths.acos(C) : -1 * Maths.acos(C);
 			return Maths.checkHeading(result);

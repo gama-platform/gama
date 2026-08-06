@@ -76,7 +76,7 @@ public class UDPConnector extends Connector {
 	 *            the agent
 	 */
 	public void openServerSocket(final IAgent agent) {
-		final Integer port = Cast.asInt(agent.getScope(), this.getConfigurationParameter(SERVER_PORT));
+		final Integer port = Cast.asInt(agent.getScope(), this.getConfigurationParameter(SERVER_PORT)).intValue();
 
 		if (agent.getSimulation().getAttribute(_UDP_SERVER + port) == null) {
 			try {
@@ -104,7 +104,7 @@ public class UDPConnector extends Connector {
 		content = content.replace("\n", "@n@");
 
 		final String sport = this.getConfigurationParameter(SERVER_PORT);
-		final Integer port = Cast.asInt(sender.getScope(), sport);
+		final Integer port = Cast.asInt(sender.getScope(), sport).intValue();
 		final String sURL = this.getConfigurationParameter(SERVER_URL);
 
 		try (final DatagramSocket clientSocket = new DatagramSocket();) {
@@ -133,7 +133,7 @@ public class UDPConnector extends Connector {
 	@Override
 	protected boolean isAlive(final IAgent agent) throws GamaNetworkException {
 		final String sport = this.getConfigurationParameter(SERVER_PORT);
-		final Integer port = Cast.asInt(agent.getScope(), sport);
+		final Integer port = Cast.asInt(agent.getScope(), sport).intValue();
 		final Thread sersock = (Thread) agent.getSimulation().getAttribute(_UDP_SERVER + port);
 		if (sersock != null && sersock.isAlive()) return true;
 
@@ -143,7 +143,7 @@ public class UDPConnector extends Connector {
 	@Override
 	protected void releaseConnection(final IScope scope) throws GamaNetworkException {
 		final String sport = this.getConfigurationParameter(SERVER_PORT);
-		final Integer port = Cast.asInt(scope, sport);
+		final Integer port = Cast.asInt(scope, sport).intValue();
 		final MultiThreadedUDPSocketServer UDPsersock =
 				(MultiThreadedUDPSocketServer) scope.getSimulation().getAttribute(_UDP_SERVER + port);
 		try {

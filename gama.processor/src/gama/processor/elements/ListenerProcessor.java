@@ -81,8 +81,10 @@ public class ListenerProcessor extends ElementProcessor<listener> {
 		final boolean isDynamic = scope ? n == 3 : n == 2;
 		final String param_class = checkPrim(isDynamic ? args[!scope ? 1 : 2] : args[!scope ? 0 : 1]);
 
-		String listenerHelper = concat("(s,a,t,v)->{if (t != null) ((", clazz, ") t).", method, "(", scope ? "s," : "",
-				isDynamic ? "a, " : "", "(" + param_class + ") v); return null; }");
+		final StringBuilder value = new StringBuilder();
+		param(value, param_class, "v");
+		String listenerHelper = concat("(s,a,t,v)->{if (t != null) ((", clazz, ") t).", method, "(",
+				scope ? "s," : "", isDynamic ? "a, " : "", value.toString(), "); return null; }");
 
 		sb.append("_listener(").append(toJavaString(node.value())).append(',').append(clazzObject).append(',')
 				.append(listenerHelper).append(");");

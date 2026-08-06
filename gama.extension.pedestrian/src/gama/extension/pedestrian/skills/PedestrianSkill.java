@@ -25,6 +25,7 @@ import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.statements.IStatement;
 import gama.api.gaml.symbols.Arguments;
+import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
@@ -958,7 +959,7 @@ public class PedestrianSkill extends MovingSkill {
 	 */
 	@getter (CURRENT_INDEX)
 	public Integer getCurrentIndex(final IAgent agent) {
-		return (Integer) agent.getAttribute(CURRENT_INDEX);
+		return Cast.asInt(agent.getScope(), agent.getAttribute(CURRENT_INDEX)).intValue();
 	}
 
 	/**

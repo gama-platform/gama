@@ -411,12 +411,12 @@ public class GamaSpatialPath extends GamaPath<IShape, IShape, IGraph<IShape, ISh
 
 	@Override
 	public int indexOf(final IAgent a) {
-		return Cast.asInt(null, a.getAttribute("index_on_path")); // ???
+		return Cast.asInt(null, a.getAttribute("index_on_path")).intValue(); // ???
 	}
 
 	@Override
 	public int indexSegmentOf(final IAgent a) {
-		return Cast.asInt(null, a.getAttribute("index_on_path_segment")); // ???
+		return Cast.asInt(null, a.getAttribute("index_on_path_segment")).intValue(); // ???
 	}
 
 	@Override

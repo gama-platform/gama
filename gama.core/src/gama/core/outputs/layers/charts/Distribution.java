@@ -392,7 +392,7 @@ public class Distribution {
 			see = "as_map")
 	@no_test
 	public static IMap Distribution2dOf(final IScope scope, final IContainer valuesx, final IContainer valuesy,
-			final Integer nbbarsx, final Integer nbbarsy) throws GamaRuntimeException {
+			final Long nbbarsx, final Long nbbarsy) throws GamaRuntimeException {
 
 		if (valuesx == null) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
 		final IList lvaluex = GamaListFactory.castToList(scope, valuesx);
@@ -444,7 +444,7 @@ public class Distribution {
 			see = "as_map")
 	@no_test
 	public static IMap Distribution2dOf(final IScope scope, final IContainer valuesx, final IContainer valuesy,
-			final Integer nbbarsx, final Double startvaluex, final Double endvaluex, final Integer nbbarsy,
+			final Long nbbarsx, final Double startvaluex, final Double endvaluex, final Long nbbarsy,
 			final Double startvaluey, final Double endvaluey) throws GamaRuntimeException {
 
 		if (valuesx == null) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
@@ -665,7 +665,7 @@ public class Distribution {
 
 			distribInts[i] = nba - nbaprec;
 			nbaprec = nba;
-			distribLegend[i] = "[" + Maths.round(preval, scale + 8) + ":" + Maths.round(postval, scale + 8) + "]";
+			distribLegend[i] = "[" + Maths.round(preval, (long) (scale + 8)) + ":" + Maths.round(postval, (long) (scale + 8)) + "]";
 
 		}
 
@@ -710,7 +710,7 @@ public class Distribution {
 					isExecutable = false) },
 			see = "as_map")
 	@no_test
-	public static IMap DistributionOf(final IScope scope, final IContainer values, final Integer nbbars)
+	public static IMap DistributionOf(final IScope scope, final IContainer values, final Long nbbars)
 			throws GamaRuntimeException {
 
 		if (values == null) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
@@ -791,7 +791,7 @@ public class Distribution {
 					isExecutable = false) },
 			see = "as_map")
 	@no_test
-	public static IMap DistributionOf(final IScope scope, final IContainer values, final Integer nbbars,
+	public static IMap DistributionOf(final IScope scope, final IContainer values, final Long nbbars,
 			final Double startvalue, final Double endvalue) throws GamaRuntimeException {
 
 		if (values == null) { return GamaMapFactory.create(Types.STRING, Types.LIST); }

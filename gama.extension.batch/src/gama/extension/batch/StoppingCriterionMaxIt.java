@@ -19,7 +19,7 @@ public record StoppingCriterionMaxIt(int maxIt) implements StoppingCriterion {
 	@Override
 	@SuppressWarnings ("boxing")
 	public boolean stopSearchProcess(final Map<String, Object> parameters) {
-		return (Integer) parameters.get("Iteration") > maxIt;
+		return ((Number) parameters.get("Iteration")).longValue() > maxIt;
 	}
 
 }

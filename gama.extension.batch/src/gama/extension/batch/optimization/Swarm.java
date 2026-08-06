@@ -171,13 +171,13 @@ public class Swarm extends AOptimizationAlgorithm {
 	public void initParams(final IScope scope) {
 		final IExpression maxItExp = getFacet(ITER_MAX);
 		if (maxItExp != null) {
-			maxIt = Cast.asInt(scope, maxItExp.value(scope));
+			maxIt = Cast.asInt(scope, maxItExp.value(scope)).intValue();
 			stoppingCriterion = new StoppingCriterionMaxIt(maxIt);
 		}
 
 		final IExpression numParticExp = getFacet(NUM_PARTICLES);
 		if (maxItExp != null) {
-			numParticles = Cast.asInt(scope, numParticExp.value(scope));
+			numParticles = Cast.asInt(scope, numParticExp.value(scope)).intValue();
 		} else {
 			numParticles = 10;
 		}

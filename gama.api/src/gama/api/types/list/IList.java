@@ -168,7 +168,7 @@ public interface IList<E>
 	 */
 	@Override
 	default boolean containsKey(final IScope scope, final Object o) {
-		if (o instanceof final Integer i) return i >= 0 && i < this.size();
+		if (o instanceof Number n) return n.longValue() >= 0 && n.longValue() < this.size();
 		return false;
 	}
 
@@ -349,7 +349,7 @@ public interface IList<E>
 	 */
 	// See Issue #3099
 	default void replaceRange(final IScope scope, final IPair range, final E value) {
-		this.subList(Cast.asInt(scope, range.key()), Cast.asInt(scope, range.value()))
+		this.subList(Cast.asInt(scope, range.key()).intValue(), Cast.asInt(scope, range.value()).intValue())
 				.replaceAll(v -> buildValue(scope, value));
 	}
 
@@ -592,7 +592,7 @@ public interface IList<E>
 	@Override
 	default E getFromIndicesList(final IScope scope, final IList indices) throws GamaRuntimeException {
 		if (indices == null || indices.isEmpty()) return null;
-		return get(scope, Cast.asInt(scope, indices.get(0)));
+		return get(scope, Cast.asInt(scope, indices.get(0)).intValue());
 		// We do not consider the case where multiple indices are used. Maybe
 		// could be used in the
 		// future to return a list of values ?
@@ -641,7 +641,7 @@ public interface IList<E>
 	 */
 	default Integer buildIndex(final IScope scope, final Object object) {
 		if (!FLAGS.CAST_CONTAINER_CONTENTS && object instanceof Number n) return n.intValue();
-		return GamaIntegerType.staticCast(scope, object, null, false);
+		return GamaIntegerType.staticCast(scope, object, null, false).intValue();
 	}
 
 	/**

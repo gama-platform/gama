@@ -37,6 +37,7 @@ import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.statements.IStatement;
 import gama.api.gaml.symbols.Arguments;
+import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
@@ -51,7 +52,6 @@ import gama.api.types.graph.IGraph;
 import gama.api.types.graph.IPath;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
-import gama.api.types.topology.ITopology;
 import gama.core.topology.graph.GamaSpatialGraph;
 import gama.dev.DEBUG;
 import gama.extension.traffic.driving.carfollowing.MOBIL;
@@ -773,7 +773,7 @@ public class DrivingSkill extends MovingSkill {
 	 */
 	@getter (CURRENT_INDEX)
 	public static Integer getCurrentIndex(final IAgent vehicle) {
-		return (Integer) vehicle.getAttribute(CURRENT_INDEX);
+		return Cast.asInt(vehicle.getScope(), vehicle.getAttribute(CURRENT_INDEX)).intValue();
 	}
 
 	/**
@@ -798,7 +798,7 @@ public class DrivingSkill extends MovingSkill {
 	 */
 	@getter (SEGMENT_INDEX)
 	public static Integer getSegmentIndex(final IAgent vehicle) {
-		return (Integer) vehicle.getAttribute(SEGMENT_INDEX);
+		return Cast.asInt(vehicle.getScope(), vehicle.getAttribute(SEGMENT_INDEX)).intValue();
 	}
 
 	/**
@@ -1286,7 +1286,7 @@ public class DrivingSkill extends MovingSkill {
 	 */
 	@getter (NUM_LANES_OCCUPIED)
 	public static Integer getNumLanesOccupied(final IAgent vehicle) {
-		return (Integer) vehicle.getAttribute(NUM_LANES_OCCUPIED);
+		return Cast.asInt(vehicle.getScope(), vehicle.getAttribute(NUM_LANES_OCCUPIED)).intValue();
 	}
 
 	/**
@@ -1887,7 +1887,7 @@ public class DrivingSkill extends MovingSkill {
 			Double val = roadProba.get(r);
 			distribution.add(val == null ? 0.0 : val);
 		}
-		return possibleRoads.get(Random.opRndChoice(scope, distribution));
+		return possibleRoads.get(Random.opRndChoice(scope, distribution).intValue());
 	}
 
 	/**
@@ -2120,7 +2120,7 @@ public class DrivingSkill extends MovingSkill {
 					value = "action to drive by chosen randomly the next road",
 					examples = { @example ("do drive_random init_node: some_node;") }))
 	public double primForceMove(final IScope scope) throws GamaRuntimeException {
-		Integer lane = scope.getIntArg("lane");
+		Integer lane = scope.getIntArg("lane").intValue();
 		Double acc = scope.getFloatArg(ACCELERATION);
 		Double time = scope.getFloatArg("time");
 		return moveAcrossSegments(scope, acc, time, lane);
@@ -2263,7 +2263,7 @@ public class DrivingSkill extends MovingSkill {
 		IAgent currentRoad = getCurrentRoad(driver);
 		if (currentRoad == null) return false;
 
-		Integer lowestLane = (Integer) driver.getAttribute(LOWEST_LANE);
+		Integer lowestLane = Cast.asInt(driver.getScope(), driver.getAttribute(LOWEST_LANE)).intValue();
 		int numLanesOccupied = (int) driver.getAttribute(NUM_LANES_OCCUPIED);
 		for (int i = 0; i < numLanesOccupied; i += 1) {
 			int lane = lowestLane + i;

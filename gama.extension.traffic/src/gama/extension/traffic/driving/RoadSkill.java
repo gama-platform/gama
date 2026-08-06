@@ -455,7 +455,7 @@ public class RoadSkill extends Skill {
 	public boolean primRegister(final IScope scope) throws GamaRuntimeException {
 		final IAgent road = getCurrentAgent(scope);
 		final IAgent driver = (IAgent) scope.getArg(IKeyword.AGENT, IType.AGENT);
-		int lane = scope.getIntArg("lane");
+		int lane = scope.getIntArg("lane").intValue();
 
 		return register(scope, driver, road, lane);
 	}

@@ -294,8 +294,8 @@ public class GamaPreferences {
 		 * The threshold at which agent lists in context menus are broken into sub-menus. For example, a value of 50
 		 * means that menus showing more than 50 agents will be split into groups of 50.
 		 */
-		public static final Pref<Integer> CORE_MENU_SIZE =
-				create("pref_menu_size", "Break down agents in menus every", 50, IType.INT, false).between(10, 1000)
+		public static final Pref<Long> CORE_MENU_SIZE =
+				create("pref_menu_size", "Break down agents in menus every", 50l, IType.INT, false).between(10, 1000)
 						.in(NAME, MENUS);
 		/** The name of the "Console" group within the Interface tab. */
 		public static final String CONSOLE = "Console";
@@ -304,15 +304,15 @@ public class GamaPreferences {
 		 * The maximum number of characters that can be displayed in the GAMA console at any time. A value of {@code -1}
 		 * means unlimited.
 		 */
-		public static final Pref<Integer> CORE_CONSOLE_SIZE = create("pref_console_size",
-				"Max. number of characters to display (-1 = unlimited)", 20000, IType.INT, true).in(NAME, CONSOLE);
+		public static final Pref<Long> CORE_CONSOLE_SIZE = create("pref_console_size",
+				"Max. number of characters to display (-1 = unlimited)", 20000l, IType.INT, true).in(NAME, CONSOLE);
 
 		/**
 		 * The maximum number of characters kept in the console buffer while the simulation is paused. A value of
 		 * {@code -1} means unlimited.
 		 */
-		public static final Pref<Integer> CORE_CONSOLE_BUFFER =
-				create("pref_console_buffer", "Max. number of characters to keep when paused (-1 = unlimited)", 20000,
+		public static final Pref<Long> CORE_CONSOLE_BUFFER =
+				create("pref_console_buffer", "Max. number of characters to keep when paused (-1 = unlimited)", 20000l,
 						IType.INT, true).in(NAME, CONSOLE);
 
 		/**
@@ -681,13 +681,13 @@ public class GamaPreferences {
 						.in(NAME, MEMORY).activates("pref_memory_threshold", "pref_memory_frequency").hidden();
 
 		/** The percentage of available heap below which a low-memory warning is emitted (0–100). */
-		public static final Pref<Integer> CORE_MEMORY_PERCENTAGE =
-				create("pref_memory_threshold", "Emit a warning when the percentage of available memory is under", 20,
+		public static final Pref<Long> CORE_MEMORY_PERCENTAGE =
+				create("pref_memory_threshold", "Emit a warning when the percentage of available memory is under", 20l,
 						IType.INT, true).in(NAME, MEMORY).between(0, 100);
 
 		/** The polling interval in seconds at which the memory level is checked for low-memory warnings. */
-		public static final Pref<Integer> CORE_MEMORY_FREQUENCY = create("pref_memory_frequency",
-				"Interval (in seconds) at which memory should be monitored", 2, IType.INT, true).in(NAME, MEMORY);
+		public static final Pref<Long> CORE_MEMORY_FREQUENCY = create("pref_memory_frequency",
+				"Interval (in seconds) at which memory should be monitored", 2l, IType.INT, true).in(NAME, MEMORY);
 
 		/**
 		 * The action GAMA takes when an experiment runs out of memory: {@code true} (labelled "Close") closes the
@@ -713,8 +713,8 @@ public class GamaPreferences {
 				"Show errors thrown in displays and outputs", false, IType.BOOL, true).in(NAME, ERRORS);
 
 		/** The maximum number of errors to display simultaneously in the error view. */
-		public static final Pref<Integer> CORE_ERRORS_NUMBER =
-				create("pref_errors_number", "Number of errors to display", 10, IType.INT, true).in(NAME, ERRORS)
+		public static final Pref<Long> CORE_ERRORS_NUMBER =
+				create("pref_errors_number", "Number of errors to display", 10l, IType.INT, true).in(NAME, ERRORS)
 						.between(1, null);
 
 		/**
@@ -748,16 +748,16 @@ public class GamaPreferences {
 						.activates("pref_server_port", "pref_server_ping", "pref_server_console");
 
 		/** The TCP port on which the GAMA Server listens for incoming client connections. */
-		public static final Pref<Integer> CORE_SERVER_PORT =
-				create("pref_server_port", "Port to which GAMA Server is listening", 1000, IType.INT, true)
+		public static final Pref<Long> CORE_SERVER_PORT =
+				create("pref_server_port", "Port to which GAMA Server is listening", 1000l, IType.INT, true)
 						.in(Network.NAME, Network.SERVER);
 
 		/**
 		 * The interval in milliseconds between two keep-alive pings from the server to connected clients. Use
 		 * {@code -1} to disable pinging.
 		 */
-		public static final Pref<Integer> CORE_SERVER_PING =
-				create("pref_server_ping", "Interval between two pings (-1 to disable)", 10000, IType.INT, true)
+		public static final Pref<Long> CORE_SERVER_PING =
+				create("pref_server_ping", "Interval between two pings (-1 to disable)", 10000l, IType.INT, true)
 						.in(Network.NAME, Network.SERVER);
 
 		/**
@@ -930,8 +930,8 @@ public class GamaPreferences {
 		 * The number of polygon slices used when approximating circular geometries in OpenGL. Higher values produce
 		 * smoother circles but increase GPU load.
 		 */
-		public static final Pref<Integer> DISPLAY_SLICE_NUMBER = create("pref_display_slice_number",
-				"Number of slices of circular geometries in OpenGL (the higher the more resources consuming)", 16,
+		public static final Pref<Long> DISPLAY_SLICE_NUMBER = create("pref_display_slice_number",
+				"Number of slices of circular geometries in OpenGL (the higher the more resources consuming)", 16l,
 				IType.INT, true).in(Experimental.NAME, Experimental.GRAPHICAL);
 
 		/**
@@ -988,8 +988,8 @@ public class GamaPreferences {
 				IType.BOOL, true).in(Experimental.NAME, Experimental.GRAPHICAL).activates("pref_display_max_fps");
 
 		/** The maximum number of frames per second for the OpenGL renderer when {@link #OPENGL_CAP_FPS} is active. */
-		public static final Pref<Integer> OPENGL_FPS =
-				create("pref_display_max_fps", "Max. number of frames per second", 60, IType.INT, true)
+		public static final Pref<Long> OPENGL_FPS =
+				create("pref_display_max_fps", "Max. number of frames per second", 60l, IType.INT, true)
 						.in(Experimental.NAME, Experimental.GRAPHICAL);
 
 		/**
@@ -1019,8 +1019,8 @@ public class GamaPreferences {
 		 * The default intensity of OpenGL light sources, ranging from {@code 0} (completely dark) to {@code 255}
 		 * (maximum brightness).
 		 */
-		public static final Pref<Integer> OPENGL_DEFAULT_LIGHT_INTENSITY = create("pref_display_light_intensity",
-				"Set the default intensity of the lights (from 0, dark, to 255, light)", 160, IType.INT, true)
+		public static final Pref<Long> OPENGL_DEFAULT_LIGHT_INTENSITY = create("pref_display_light_intensity",
+				"Set the default intensity of the lights (from 0, dark, to 255, light)", 160l, IType.INT, true)
 						.in(NAME, RENDERING).between(0, 255);
 
 		/**
@@ -1044,18 +1044,18 @@ public class GamaPreferences {
 		public static final String NAME = "Data and Operators";
 
 		/** The timeout in milliseconds for establishing an HTTP connection to a remote server. */
-		public static final Pref<Integer> CORE_HTTP_CONNECT_TIMEOUT =
-				create("pref_http_connect_timeout", "Connection timeout (in ms)", 20000, IType.INT, true)
+		public static final Pref<Long> CORE_HTTP_CONNECT_TIMEOUT =
+				create("pref_http_connect_timeout", "Connection timeout (in ms)", 20000l, IType.INT, true)
 						.in(Network.NAME, Network.HTTP);
 
 		/** The timeout in milliseconds for reading data from an established HTTP connection. */
-		public static final Pref<Integer> CORE_HTTP_READ_TIMEOUT =
-				create("pref_http_read_timeout", "Read timeout (in ms)", 20000, IType.INT, true).in(Network.NAME,
+		public static final Pref<Long> CORE_HTTP_READ_TIMEOUT =
+				create("pref_http_read_timeout", "Read timeout (in ms)", 20000l, IType.INT, true).in(Network.NAME,
 						Network.HTTP);
 
 		/** The number of times GAMA should retry a failed HTTP connection attempt before giving up. */
-		public static final Pref<Integer> CORE_HTTP_RETRY_NUMBER =
-				create("pref_http_retry_number", "Number of times to retry if connection cannot be established", 3,
+		public static final Pref<Long> CORE_HTTP_RETRY_NUMBER =
+				create("pref_http_retry_number", "Number of times to retry if connection cannot be established", 3l,
 						IType.INT, true).in(Network.NAME, Network.HTTP);
 
 		/**
@@ -1128,10 +1128,10 @@ public class GamaPreferences {
 		 * The EPSG code of the default target CRS used when projecting GIS data. Also used as the fallback CRS when no
 		 * projection information is available in the source file. The listener rejects unknown EPSG codes.
 		 */
-		public static final Pref<Integer> LIB_TARGET_CRS = create("pref_gis_default_crs",
+		public static final Pref<Long> LIB_TARGET_CRS = create("pref_gis_default_crs",
 				"...or use the following EPSG code (the one that will also be used if no projection information is found)",
-				32648, IType.INT, true).in(NAME, GEOTOOLS)
-						.addChangeListener((IPreferenceBeforeChangeListener<Integer>) newValue -> {
+				32648l, IType.INT, true).in(NAME, GEOTOOLS)
+						.addChangeListener((IPreferenceBeforeChangeListener<Long>) newValue -> {
 							final var codes = CRS.getSupportedCodes(newValue.toString());
 							if (codes.isEmpty()) return false;
 							return true;
@@ -1141,9 +1141,9 @@ public class GamaPreferences {
 		 * The EPSG code assumed for the source (input) CRS of GIS data when no {@code .prj} file is found. Used when
 		 * {@link #LIB_PROJECTED} is inactive. The listener rejects unknown EPSG codes.
 		 */
-		public static final Pref<Integer> LIB_INITIAL_CRS =
-				create("pref_gis_initial_crs", "...or use the following CRS (EPSG code)", 4326, IType.INT, true)
-						.in(NAME, GEOTOOLS).addChangeListener((IPreferenceBeforeChangeListener<Integer>) newValue -> {
+		public static final Pref<Long> LIB_INITIAL_CRS =
+				create("pref_gis_initial_crs", "...or use the following CRS (EPSG code)", 4326l, IType.INT, true)
+						.in(NAME, GEOTOOLS).addChangeListener((IPreferenceBeforeChangeListener<Long>) newValue -> {
 							final var codes = CRS.getSupportedCodes(newValue.toString());
 							if (codes.isEmpty()) return false;
 							return true;
@@ -1153,9 +1153,9 @@ public class GamaPreferences {
 		 * The EPSG code to use for the output CRS when saving GIS data without an explicit CRS. Used when
 		 * {@link #LIB_USE_DEFAULT} is inactive. The listener rejects unknown EPSG codes.
 		 */
-		public static final Pref<Integer> LIB_OUTPUT_CRS =
-				create("pref_gis_output_crs", "... or use this following CRS (EPSG code)", 4326, IType.INT, true)
-						.in(NAME, GEOTOOLS).addChangeListener((IPreferenceBeforeChangeListener<Integer>) newValue -> {
+		public static final Pref<Long> LIB_OUTPUT_CRS =
+				create("pref_gis_output_crs", "... or use this following CRS (EPSG code)", 4326l, IType.INT, true)
+						.in(NAME, GEOTOOLS).addChangeListener((IPreferenceBeforeChangeListener<Long>) newValue -> {
 							final var codes = CRS.getSupportedCodes(newValue.toString());
 							if (codes.isEmpty()) return false;
 							return true;

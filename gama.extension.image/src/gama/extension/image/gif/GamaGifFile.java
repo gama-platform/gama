@@ -71,7 +71,7 @@ public class GamaGifFile extends GamaImageFile {
 					value = "gif_file f <- gif_file(\"file.gif\",matrix([10,10],[10,10]));",
 					isExecutable = false) })
 
-	public GamaGifFile(final IScope scope, final String pathName, final IMatrix<Integer> image) {
+	public GamaGifFile(final IScope scope, final String pathName, final IMatrix<Long> image) {
 		super(scope, pathName, image);
 
 	}

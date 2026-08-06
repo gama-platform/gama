@@ -227,7 +227,7 @@ public class PedestrianNetwork {
 				}
 			}
 			for (IPoint pt : pts) {
-				area = SpatialOperators.minus(scope, area, SpatialTransformations.enlarged_by(scope, pt, 0.01, 5));
+				area = SpatialOperators.minus(scope, area, SpatialTransformations.enlarged_by(scope, pt, 0.01, 5l));
 			}
 		}
 		return area;

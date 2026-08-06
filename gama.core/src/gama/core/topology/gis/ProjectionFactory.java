@@ -142,7 +142,7 @@ public class ProjectionFactory implements IProjectionFactory {
 		if (targetCRS != null && !targetCRS.isNull()) return;
 		try {
 			if (!GamaPreferences.External.LIB_TARGETED.getValue()) {
-				targetCRS = computeDefaultCRS(scope, GamaPreferences.External.LIB_TARGET_CRS.getValue(), true);
+				targetCRS = computeDefaultCRS(scope, GamaPreferences.External.LIB_TARGET_CRS.getValue().intValue(), true);
 			} else if (crs.getCRS() instanceof DefaultProjectedCRS dpc) { // Temporary fix of issue 766... a better
 				// solution
 				final CartesianCS ccs = dpc.getCoordinateSystem();
@@ -204,7 +204,7 @@ public class ProjectionFactory implements IProjectionFactory {
 	public ICoordinateReferenceSystem getTargetCRS(final IScope scope) {
 		if (targetCRS == null || targetCRS.isNull()) {
 			try {
-				return computeDefaultCRS(scope, GamaPreferences.External.LIB_TARGET_CRS.getValue(), true);
+				return computeDefaultCRS(scope, GamaPreferences.External.LIB_TARGET_CRS.getValue().intValue(), true);
 			} catch (final GamaRuntimeException e) {
 				e.addContext(
 						"The cause could be that you try to re-project already projected data (see Gama > __PREFS__... > External for turning the option to true)");
@@ -224,7 +224,7 @@ public class ProjectionFactory implements IProjectionFactory {
 	@Override
 	public ICoordinateReferenceSystem getSaveCRS(final IScope scope) {
 		if (GamaPreferences.External.LIB_USE_DEFAULT.getValue()) return getWorld().getInitialCRS(scope);
-		return computeDefaultCRS(scope, GamaPreferences.External.LIB_OUTPUT_CRS.getValue(), false);
+		return computeDefaultCRS(scope, GamaPreferences.External.LIB_OUTPUT_CRS.getValue().intValue(), false);
 	}
 
 	/**
@@ -494,7 +494,7 @@ public class ProjectionFactory implements IProjectionFactory {
 	public ICoordinateReferenceSystem getDefaultInitialCRS(final IScope scope) {
 		if (GamaPreferences.External.LIB_PROJECTED.getValue()) return getTargetCRS(scope);
 		try {
-			return getCRS(scope, GamaPreferences.External.LIB_INITIAL_CRS.getValue());
+			return getCRS(scope, GamaPreferences.External.LIB_INITIAL_CRS.getValue().intValue());
 		} catch (final GamaRuntimeException e) {
 			throw GamaRuntimeException.error("The code " + GamaPreferences.External.LIB_INITIAL_CRS.getValue()
 					+ " does not correspond to a known EPSG code. Try to change it in Gama > Preferences... > External",

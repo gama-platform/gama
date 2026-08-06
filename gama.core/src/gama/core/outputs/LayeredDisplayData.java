@@ -605,7 +605,7 @@ public class LayeredDisplayData implements IDisplayData {
 			if (fs.getGamlType() == Types.BOOL) {
 				monitor = Cast.asBool(scope, fs.value(scope)) ? 0 : -1;
 			} else {
-				monitor = Cast.asInt(scope, fs.value(scope));
+				monitor = Cast.asInt(scope, fs.value(scope)).intValue();
 			}
 			setFullScreen(monitor);
 		}
@@ -627,7 +627,7 @@ public class LayeredDisplayData implements IDisplayData {
 			if (light.getGamlType().equals(Types.COLOR)) {
 				intensity = GamaColorFactory.castToColor(scope, light.value(scope));
 			} else {
-				final int meanValue = Cast.asInt(scope, light.value(scope));
+				final int meanValue = Cast.asInt(scope, light.value(scope)).intValue();
 				intensity = GamaColorFactory.createWithRGBA(meanValue, meanValue, meanValue, 255);
 			}
 			lights.put(ILightDefinition.ambient, new GenericLightDefinition(ILightDefinition.ambient, -1, intensity));
@@ -1064,9 +1064,9 @@ public class LayeredDisplayData implements IDisplayData {
 	private final Map<String, ILightDefinition> lights = new LinkedHashMap<>() {
 		{
 			put(ILightDefinition.ambient, new GenericLightDefinition(ILightDefinition.ambient, -1,
-					GamaPreferences.Displays.OPENGL_DEFAULT_LIGHT_INTENSITY.getValue()));
+					GamaPreferences.Displays.OPENGL_DEFAULT_LIGHT_INTENSITY.getValue().intValue()));
 			put(IKeyword.DEFAULT, new GenericLightDefinition(IKeyword.DEFAULT, 0,
-					GamaPreferences.Displays.OPENGL_DEFAULT_LIGHT_INTENSITY.getValue()));
+					GamaPreferences.Displays.OPENGL_DEFAULT_LIGHT_INTENSITY.getValue().intValue()));
 		}
 	};
 

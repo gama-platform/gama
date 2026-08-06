@@ -79,8 +79,8 @@ public class GamaGeoJsonFile extends GamaGisFile {
 			examples = { @example (
 					value = "file f <- geojson_file(\"file.json\", 32648);",
 					isExecutable = false) })
-	public GamaGeoJsonFile(final IScope scope, final String pathName, final Integer code) {
-		super(scope, pathName, code);
+	public GamaGeoJsonFile(final IScope scope, final String pathName, final Long code) {
+		super(scope, pathName, code == null ? null : code.intValue());
 		// TODO Auto-generated constructor stub
 	}
 
@@ -141,8 +141,8 @@ public class GamaGeoJsonFile extends GamaGisFile {
 			examples = { @example (
 					value = "file f <- geojson_file(\"file.json\",32648, true);",
 					isExecutable = false) })
-	public GamaGeoJsonFile(final IScope scope, final String pathName, final Integer code, final boolean withZ) {
-		super(scope, pathName, code, withZ);
+	public GamaGeoJsonFile(final IScope scope, final String pathName, final Long code, final boolean withZ) {
+		super(scope, pathName, code == null ? null : code.intValue(), withZ);
 		// TODO Auto-generated constructor stub
 	}
 

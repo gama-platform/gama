@@ -412,17 +412,17 @@ public final class Morris {
 	@doc (
 			value = "Return a string containing the Report of the morris analysis for the corresponding data (path, map or matrix)")
 	@no_test
-	public static String morrisAnalysis(final IScope scope, final Object data, final int nb_levels,
-			final int nb_parameters) {
+	public static String morrisAnalysis(final IScope scope, final Object data, final long nb_levels,
+			final long nb_parameters) {
 		String ext = "csv";
 		Morris momo = switch (data) {
 		case String path -> {
 			final File f = new File(FileUtils.constructAbsoluteFilePath(scope, path, false));
 			ext = FilenameUtils.getExtension(path);
-			yield new Morris(f, nb_parameters, nb_levels, scope);
+			yield new Morris(f, (int) nb_parameters, (int) nb_levels, scope);
 		}
-		case IMap map -> new Morris(map, nb_parameters, nb_levels, scope);
-		case IMatrix matrix -> new Morris( (IMap) GamaMapFactory.createFromMatrix(scope, matrix), nb_parameters, nb_levels, scope);
+		case IMap map -> new Morris(map, (int) nb_parameters, (int) nb_levels, scope);
+		case IMatrix matrix -> new Morris( (IMap) GamaMapFactory.createFromMatrix(scope, matrix), (int) nb_parameters, (int) nb_levels, scope);
 		case null, default -> throw GamaRuntimeException.error("morris_analysis expects a path (string), a map or a matrix", scope);
 		};
 

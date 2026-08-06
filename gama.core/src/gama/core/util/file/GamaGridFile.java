@@ -196,8 +196,8 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 			examples = { @example (
 					value = "file f <- grid_file(\"file.asc\", 32648);",
 					isExecutable = false) })
-	public GamaGridFile(final IScope scope, final String pathName, final Integer code) throws GamaRuntimeException {
-		super(scope, pathName, code);
+	public GamaGridFile(final IScope scope, final String pathName, final Long code) throws GamaRuntimeException {
+		super(scope, pathName, code == null ? null : code.intValue());
 	}
 
 	/**

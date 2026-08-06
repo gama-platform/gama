@@ -186,7 +186,7 @@ public class HillClimbing extends ALocalSearchAlgorithm {
 	protected void initParams(final IScope scope) {
 		final IExpression maxItExp = getFacet(ITER_MAX);
 		if (maxItExp != null) {
-			maxIt = Cast.asInt(scope, maxItExp.value(scope));
+			maxIt = Cast.asInt(scope, maxItExp.value(scope)).intValue();
 			stoppingCriterion = new StoppingCriterionMaxIt(maxIt);
 		}
 	}

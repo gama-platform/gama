@@ -192,7 +192,7 @@ public class GamaList<E> extends ArrayList<E> implements IList<E> {
 	@Override
 	public E getFromIndicesList(final IScope scope, final IList indices) throws GamaRuntimeException {
 		if (indices == null || indices.isEmpty()) return null;
-		return get(scope, Cast.asInt(scope, indices.get(0)));
+		return get(scope, Cast.asInt(scope, indices.get(0)).intValue());
 		// We do not consider the case where multiple indices are used. Maybe
 		// could be used in the future to return a list of values ?
 	}

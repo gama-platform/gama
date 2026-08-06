@@ -79,7 +79,7 @@ public class SpatialThreeD {
 					test = false) },
 			see = {})
 	@test ("set_z (triangle(3), 1, 3.0).points[1].z = 3.0")
-	public static IShape set_z(final IScope scope, final IShape geom, final Integer index, final Double z) {
+	public static IShape set_z(final IScope scope, final IShape geom, final Long index, final Double z) {
 		if (geom == null) return null;
 		final Geometry g = geom.getInnerGeometry();
 		if (g == null) return geom;

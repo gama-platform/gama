@@ -216,7 +216,7 @@ public class GamaDataFrame implements IDataFrame, IContainer<String, Object>, IF
 	}
 
 	@Override
-	public int intValue(final IScope scope) {
+	public long longValue(final IScope scope) {
 		return getRows();
 	}
 
@@ -404,11 +404,11 @@ public class GamaDataFrame implements IDataFrame, IContainer<String, Object>, IF
 	/**
 	 * Normalizes a list of pandas-style indices to a zero-based int[] with bounds checking.
 	 */
-	private static int[] normalizeIlocList(final IScope scope, final IList<Integer> indices, final int size,
+	private static int[] normalizeIlocList(final IScope scope, final IList<? extends Number> indices, final int size,
 			final String axis) {
 		if (indices == null) throw GamaRuntimeException.error("iloc " + axis + " indices cannot be nil", scope);
 		final int[] out = new int[indices.size()];
-		for (int i = 0; i < out.length; i++) { out[i] = normalizeIloc(scope, indices.get(i), size, axis); }
+		for (int i = 0; i < out.length; i++) { out[i] = normalizeIloc(scope, indices.get(i).intValue(), size, axis); }
 		return out;
 	}
 
@@ -436,7 +436,7 @@ public class GamaDataFrame implements IDataFrame, IContainer<String, Object>, IF
 	 * values (order matches the input column indices).
 	 */
 	@Override
-	public IList<Object> iloc(final IScope scope, final int rowIndex, final IList<Integer> colIndices) {
+	public IList<Object> iloc(final IScope scope, final int rowIndex, final IList<? extends Number> colIndices) {
 		final int r = normalizeIloc(scope, rowIndex, getInner().height(), "row");
 		final int[] cIdx = normalizeIlocList(scope, colIndices, getInner().width(), "col");
 		final IList<Object> out = GamaListFactory.create(Types.NO_TYPE, cIdx.length);
@@ -450,7 +450,7 @@ public class GamaDataFrame implements IDataFrame, IContainer<String, Object>, IF
 	 * values (order matches the input row indices).
 	 */
 	@Override
-	public IList<Object> iloc(final IScope scope, final IList<Integer> rowIndices, final int colIndex) {
+	public IList<Object> iloc(final IScope scope, final IList<? extends Number> rowIndices, final int colIndex) {
 		final int c = normalizeIloc(scope, colIndex, getInner().width(), "col");
 		final int[] rIdx = normalizeIlocList(scope, rowIndices, getInner().height(), "row");
 		final String colName = getInner().getColumnsIndex().get(c);
@@ -464,7 +464,7 @@ public class GamaDataFrame implements IDataFrame, IContainer<String, Object>, IF
 	 * their original order). Row order matches the input indices (allowing reordering).
 	 */
 	@Override
-	public IDataFrame ilocRows(final IScope scope, final IList<Integer> rowIndices) {
+	public IDataFrame ilocRows(final IScope scope, final IList<? extends Number> rowIndices) {
 		final int[] idx = normalizeIlocList(scope, rowIndices, getInner().height(), "row");
 		return new GamaDataFrame(getInner().rows(idx).select());
 	}
@@ -474,7 +474,7 @@ public class GamaDataFrame implements IDataFrame, IContainer<String, Object>, IF
 	 * order of the input indices.
 	 */
 	@Override
-	public IDataFrame iloc(final IScope scope, final IList<Integer> rowIndices, final IList<Integer> colIndices) {
+	public IDataFrame iloc(final IScope scope, final IList<? extends Number> rowIndices, final IList<? extends Number> colIndices) {
 		final int[] rIdx = normalizeIlocList(scope, rowIndices, getInner().height(), "row");
 		final int[] cIdx = normalizeIlocList(scope, colIndices, getInner().width(), "col");
 		return new GamaDataFrame(getInner().rows(rIdx).cols(cIdx).select());

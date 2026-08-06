@@ -888,9 +888,9 @@ public class FileUtils {
 		final java.nio.file.Path p = new File(pathName).toPath();
 		try {
 			try (InputStream in = web.get(urlPath).ensureSuccess()
-					.connectTimeout(GamaPreferences.External.CORE_HTTP_CONNECT_TIMEOUT.getValue())
-					.readTimeout(GamaPreferences.External.CORE_HTTP_READ_TIMEOUT.getValue())
-					.retry(GamaPreferences.External.CORE_HTTP_RETRY_NUMBER.getValue(), false).asStream().getBody()) {
+					.connectTimeout(GamaPreferences.External.CORE_HTTP_CONNECT_TIMEOUT.getValue().intValue())
+					.readTimeout(GamaPreferences.External.CORE_HTTP_READ_TIMEOUT.getValue().intValue())
+					.retry(GamaPreferences.External.CORE_HTTP_RETRY_NUMBER.getValue().intValue(), false).asStream().getBody()) {
 				// Ensure the cache directory exists
 				final java.nio.file.Path parent = p.getParent();
 				if (parent != null && !Files.exists(parent)) { Files.createDirectories(parent); }

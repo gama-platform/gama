@@ -205,8 +205,8 @@ public class GamaAnova implements IValue {
 	}
 
 	@Override
-	public int intValue(final IScope scope) {
-		return (int) fStat;
+	public long longValue(final IScope scope) {
+		return (long) fStat;
 	}
 
 	@Override

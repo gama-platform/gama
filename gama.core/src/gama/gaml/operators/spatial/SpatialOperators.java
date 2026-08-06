@@ -511,8 +511,8 @@ public class SpatialOperators {
 					isExecutable = false) })
 	@no_test
 	public static IShape masked_by(final IScope scope, final IShape source, final IContainer<?, IShape> obstacles,
-			final Integer prec) {
-		final int precision = prec == null ? 120 : prec;
+			final Long prec) {
+		final int precision = prec == null ? 120 : prec.intValue();
 		final IAgent a = scope.getAgent();
 		final IPoint location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		final Geometry visiblePercept = GeometryUtils.getGeometryFactory().createGeometry(source.getInnerGeometry());

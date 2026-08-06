@@ -132,7 +132,7 @@ public final class Json implements IJsonConstants, IJson {
 	 */
 	@Override
 	public JsonValue valueOf(final long value) {
-		return new JsonInt(Integer.toString((int) value));
+		return new JsonInt(Long.toString(value, 10));
 	}
 
 	/**

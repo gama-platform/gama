@@ -199,8 +199,8 @@ public class GridLayerStatement extends AbstractLayerStatement {
 			}
 			final IExpression exp = sd.getFacetExpr(NEIGHBORS);
 			if (exp != null && exp.isConst()) {
-				final Integer n = (Integer) exp.getConstValue();
-				if (n == 6) { d.setFacet("hexagonal", GAML.getExpressionFactory().getTrue()); }
+				final Object n = exp.getConstValue();
+				if (n instanceof Number number && number.longValue() == 6) { d.setFacet("hexagonal", GAML.getExpressionFactory().getTrue()); }
 			}
 			final IExpression tx = d.getFacetExpr(TEXTURE);
 			final IExpression el = d.getFacetExpr(ELEVATION);

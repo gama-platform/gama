@@ -488,7 +488,7 @@ public interface IPoint extends IShape, IIntersectable, Cloneable, Comparable<Co
 									equals = "{5.0, 10.0}") }))
 	@test ("{2,5} * 4 = {8,20}")
 	@test ("{2,5} * 0 = {0,0}")
-	default IPoint times(final Integer i) {
+	default IPoint times(final Long i) {
 		return times(i.doubleValue());
 	}
 
@@ -533,7 +533,7 @@ public interface IPoint extends IShape, IIntersectable, Cloneable, Comparable<Co
 			value = "Returns a point with coordinates divided by the number")
 	@test ("{2,5} / 4 = {0.5,1.25}")
 	@test ("is_error({2,5} / 0)")
-	default IPoint dividedBy(final Integer i) {
+	default IPoint dividedBy(final Long i) {
 		return dividedBy(i.doubleValue());
 	}
 
@@ -615,7 +615,7 @@ public interface IPoint extends IShape, IIntersectable, Cloneable, Comparable<Co
 					value = "{2.0,3.0,4.0} - 1",
 					equals = "{1.0,2.0,3.0}") })
 	@test ("{2.0,3.0,4.0} - 1 = {1.0,2.0,3.0}")
-	default IPoint minus(final Integer i) {
+	default IPoint minus(final Long i) {
 		return minus(i.doubleValue());
 	}
 
@@ -697,7 +697,7 @@ public interface IPoint extends IShape, IIntersectable, Cloneable, Comparable<Co
 			examples = { @example (
 					value = "{1, 2} + 4",
 					equals = "{5.0, 6.0,4.0}") })
-	default IPoint plus(final Integer i) {
+	default IPoint plus(final Long i) {
 		return plus(i.doubleValue());
 	}
 
@@ -850,7 +850,7 @@ public interface IPoint extends IShape, IIntersectable, Cloneable, Comparable<Co
 	 *            the i
 	 * @return the gama point
 	 */
-	IPoint withPrecision(int i);
+	IPoint withPrecision(long i);
 
 	/**
 	 * Clone.

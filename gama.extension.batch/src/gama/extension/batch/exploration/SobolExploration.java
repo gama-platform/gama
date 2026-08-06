@@ -167,7 +167,7 @@ public class SobolExploration extends AExplorationAlgorithm {
 	@SuppressWarnings ("unchecked")
 	@Override
 	public List<ParametersSet> buildParameterSets(final IScope scope, final List<ParametersSet> sets, final int index) {
-		int sample = Cast.asInt(scope, getFacet(SAMPLE_SIZE).value(scope));
+		int sample = Cast.asInt(scope, getFacet(SAMPLE_SIZE).value(scope)).intValue();
 		// Do not trust getExplorableParameter of the BatchAgent
 		// Needs a step to explore a parameter, also for any SAMPLING methods only min/max is required
 		List<Batch> params = new ArrayList<>(currentExperiment.getParametersToExplore());

@@ -59,7 +59,7 @@ public abstract class SliderEditor<T extends Comparable> extends AbstractEditor<
 	/**
 	 * The Class Int.
 	 */
-	public static class Int extends SliderEditor<Integer> {
+	public static class Int extends SliderEditor<Long> {
 
 		/**
 		 * Instantiates a new int.
@@ -73,7 +73,7 @@ public abstract class SliderEditor<T extends Comparable> extends AbstractEditor<
 		 * @param l
 		 *            the l
 		 */
-		public Int(final IAgent a, final IParameter variable, final EditorListener<Integer> l) {
+		public Int(final IAgent a, final IParameter variable, final EditorListener<Long> l) {
 			super(a, variable, l);
 		}
 
@@ -88,14 +88,14 @@ public abstract class SliderEditor<T extends Comparable> extends AbstractEditor<
 		}
 
 		@Override
-		protected Integer defaultStepValue() {
-			return 1;
+		protected Long defaultStepValue() {
+			return 1l;
 		}
 
 		@Override
-		protected Integer computeValue(final double position) {
-			return (int) (Cast.asInt(getScope(), getMinValue()) + Math
-					.round(position * (Cast.asInt(getScope(), getMaxValue()) - Cast.asInt(getScope(), getMinValue()))));
+		protected Long computeValue(final double position) {
+			return Cast.asInt(getScope(), getMinValue()) + Math
+					.round(position * (Cast.asInt(getScope(), getMaxValue()) - Cast.asInt(getScope(), getMinValue())));
 		}
 	}
 

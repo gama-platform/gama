@@ -86,7 +86,7 @@ public class Displays {
 				"If only 1 element is provided, behavior is undefined.",
 				"Weight values determine relative proportions; negative or zero weights lead to undefined layout behavior." })
 	@no_test
-	public static GamaNode<String> horizontal(final IScope scope, final IMap<Object, Integer> nodes) {
+	public static GamaNode<String> horizontal(final IScope scope, final IMap<Object, Long> nodes) {
 		return buildSashFromMap(scope, HORIZONTAL, nodes);
 	}
 
@@ -111,7 +111,7 @@ public class Displays {
 				"If only 1 element is provided, behavior is undefined.",
 				"Weight values determine relative proportions; negative or zero weights lead to undefined layout behavior." })
 	@no_test
-	public static GamaNode<String> vertical(final IScope scope, final IMap<Object, Integer> nodes) {
+	public static GamaNode<String> vertical(final IScope scope, final IMap<Object, Long> nodes) {
 		return buildSashFromMap(scope, VERTICAL, nodes);
 	}
 
@@ -133,7 +133,7 @@ public class Displays {
 			special_cases = { "Each element in the stack is shown as a tab.",
 					"An empty list produces an error; at least one display index must be provided." })
 	@no_test
-	public static GamaNode<String> stack(final IScope scope, final IList<Integer> nodes) {
+	public static GamaNode<String> stack(final IScope scope, final IList<Long> nodes) {
 		if (nodes == null) throw GamaRuntimeException.error("Nodes of a stack cannot be nil", scope);
 		if (nodes.isEmpty())
 			throw GamaRuntimeException.error("At least one display must be defined in the stack", scope);
@@ -160,7 +160,7 @@ public class Displays {
 			special_cases = { "Each element in the stack is shown as a tab.",
 					"An empty map produces an error; at least one display entry must be provided." })
 	@no_test
-	public static GamaNode<String> stack(final IScope scope, final IMap<Object, Integer> nodes) {
+	public static GamaNode<String> stack(final IScope scope, final IMap<Object, Long> nodes) {
 		if (nodes == null) throw GamaRuntimeException.error("Nodes of a stack cannot be nil", scope);
 		if (nodes.isEmpty())
 			throw GamaRuntimeException.error("At least one display must be defined in the stack", scope);
@@ -182,7 +182,7 @@ public class Displays {
 	 */
 	@SuppressWarnings ("unchecked")
 	private static GamaNode<String> buildSashFromMap(final IScope scope, final String orientation,
-			final IMap<Object, Integer> nodes) {
+			final IMap<Object, Long> nodes) {
 		if (nodes == null)
 			throw GamaRuntimeException.error("Nodes of a " + orientation + " layout cannot be nil", scope);
 		if (nodes.size() < 2) throw GamaRuntimeException
@@ -191,11 +191,11 @@ public class Displays {
 		nodes.forEach((key, value) -> {
 			if (key instanceof GamaNode) {
 				final GamaNode<String> n = (GamaNode<String>) key;
-				n.setWeight(Cast.asInt(scope, value));
+				n.setWeight(Cast.asInt(scope, value).intValue());
 				n.attachTo(node);
 			} else {
-				final Integer index = Cast.asInt(scope, key);
-				node.addChild(String.valueOf(index), Cast.asInt(scope, value));
+				final Integer index = Cast.asInt(scope, key).intValue();
+				node.addChild(String.valueOf(index), Cast.asInt(scope, value).intValue());
 			}
 		});
 		return node;

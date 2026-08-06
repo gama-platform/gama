@@ -619,7 +619,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 * @throws GamaRuntimeException
 	 *             If the argument doesn't exist or cannot be cast
 	 */
-	Integer getIntArg(String string) throws GamaRuntimeException;
+	Long getIntArg(String string) throws GamaRuntimeException;
 
 	/**
 	 * Returns the value of an argument as a Double.

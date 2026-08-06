@@ -939,7 +939,7 @@ public class RuleStatement extends AbstractStatement {
             	state.setStrength(Cast.asFloat(scope,strength.value(scope) instanceof Number n ?  n : ((List<Float>) strength.value(scope)).get(i)));
             }
             if (lifetime != null) {
-            	state.setLifeTime(Cast.asInt(scope, lifetime.value(scope) instanceof List l ? l.get(i) : lifetime.value(scope)));
+            	state.setLifeTime(Cast.asInt(scope, lifetime.value(scope) instanceof List l ? l.get(i) : lifetime.value(scope)).intValue());
             }
             addInBaseFunction.accept(state);
             i++;
@@ -1128,7 +1128,7 @@ public class RuleStatement extends AbstractStatement {
             prepared.setStrength(Cast.asFloat(scope, strength.value(scope)));
         }
         if (lifetime != null) {
-            prepared.setLifeTime(Cast.asInt(scope, lifetime.value(scope)));
+            prepared.setLifeTime(Cast.asInt(scope, lifetime.value(scope)).intValue());
         }
         return prepared;
     }

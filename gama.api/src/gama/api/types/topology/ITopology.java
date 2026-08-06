@@ -553,8 +553,8 @@ public interface ITopology extends IValue {
 	 * @return the number of places as an integer
 	 */
 	@Override
-	default int intValue(final IScope scope) {
-		return this.getPlaces().intValue(scope);
+	default long longValue(final IScope scope) {
+		return this.getPlaces().longValue(scope);
 	}
 
 	/**

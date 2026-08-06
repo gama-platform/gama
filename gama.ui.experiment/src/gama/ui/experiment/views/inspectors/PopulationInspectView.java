@@ -692,7 +692,7 @@ public class PopulationInspectView extends GamaViewPart
 							final IVariableDescription v = getOutput().getSpeciesDescription().getAttribute(attribute);
 							final int id = v.getGamlType().id();
 							rc = switch (id) {
-								case IType.INT -> ((Integer) v1).compareTo((Integer) v2);
+								case IType.INT -> Long.compare(((Number) v1).longValue(), ((Number) v2).longValue());
 								case IType.FLOAT -> ((Double) v1).compareTo((Double) v2);
 								case IType.STRING -> stringComparator.compare(v1, v2);
 								case IType.POINT -> ((IPoint) v1).compareTo((IPoint) v2);

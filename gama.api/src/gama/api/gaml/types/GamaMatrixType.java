@@ -217,8 +217,8 @@ public class GamaMatrixType extends GamaContainerType<IMatrix> {
 	public IMatrix deserializeFromJson(final IScope scope, final IMap<String, Object> map2) {
 		IType requested = (IType) map2.remove("requested_type");
 		IList contents = (IList) map2.get("contents");
-		Integer x = (Integer) map2.get("cols");
-		Integer y = (Integer) map2.get("rows");
+		Long x = Cast.asInt(scope, map2.get("cols"));
+		Long y = Cast.asInt(scope, map2.get("rows"));
 		IPoint size = GamaPointFactory.create(x, y);
 		return GamaMatrixFactory.createFrom(scope, contents, requested.getContentType(), size);
 	}

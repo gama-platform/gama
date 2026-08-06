@@ -18,6 +18,7 @@ import gama.annotations.variable;
 import gama.annotations.vars;
 import gama.annotations.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
@@ -215,7 +216,7 @@ public class Norm implements IValue {
 		this.isApplied = false;
 		this.isSanctioned = false;
 		if (statement._lifetime != null) {
-			this.lifetimeViolation = (Integer) statement._lifetime.value(scope);
+			this.lifetimeViolation = Cast.asInt(scope, statement._lifetime.value(scope)).intValue();
 			this.noLifetime = false;
 		} else {
 			this.lifetimeViolation = -1;
@@ -259,7 +260,7 @@ public class Norm implements IValue {
 		this.isViolated = true;
 		this.isApplied = false;
 		if (this.normStatement._lifetime != null) {
-			this.lifetimeViolation = (Integer) this.normStatement._lifetime.value(scope);
+			this.lifetimeViolation = Cast.asInt(scope, this.normStatement._lifetime.value(scope)).intValue();
 		} else {
 			this.lifetimeViolation = 1;
 		}

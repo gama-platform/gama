@@ -115,7 +115,8 @@ public class GridPopulation extends AbstractPopulation<IAgent> implements IPopul
 
 		createAgents(scope, null);
 		for (final Map attr : initialValues) {
-			final IAgent agt = getAgent((Integer) attr.get("grid_x"), (Integer) attr.get("grid_y"));
+			final IAgent agt = getAgent(((Number) attr.get("grid_x")).intValue(),
+					((Number) attr.get("grid_y")).intValue());
 			if (agt != null) { agt.setAttributes(attr); }
 		}
 		return (IList) getAgents(scope);
@@ -280,9 +281,9 @@ public class GridPopulation extends AbstractPopulation<IAgent> implements IPopul
 		if (indices == null) return null;
 		final int n = indices.length(scope);
 		if (n == 0) return null;
-		final int x = Cast.asInt(scope, indices.get(scope, 0));
-		if (n == 1) return getAgent(Cast.asInt(scope, x));
-		final int y = Cast.asInt(scope, indices.get(scope, 1));
+		final int x = Cast.asInt(scope, indices.get(scope, 0)).intValue();
+		if (n == 1) return getAgent(Cast.asInt(scope, x).intValue());
+		final int y = Cast.asInt(scope, indices.get(scope, 1)).intValue();
 		final IShape s = getGrid().get(scope, x, y);
 		if (s == null) return null;
 		return s.getAgent();
@@ -394,7 +395,7 @@ public class GridPopulation extends AbstractPopulation<IAgent> implements IPopul
 	 */
 	@Override
 	public boolean containsKey(final IScope scope, final Object o) {
-		if (o instanceof Integer i) return super.containsKey(scope, i);
+		if (o instanceof Number n) return super.containsKey(scope, n.intValue());
 		if (o instanceof IPoint) return getGrid().containsKey(scope, o);
 		return false;
 	}

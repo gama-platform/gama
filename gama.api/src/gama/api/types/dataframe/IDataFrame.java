@@ -364,14 +364,14 @@ public interface IDataFrame extends IContainer.Addressable<String, Object, Strin
 	 * @param colIndices
 	 * @return
 	 */
-	IDataFrame iloc(IScope scope, IList<Integer> rowIndices, IList<Integer> colIndices);
+	IDataFrame iloc(IScope scope, IList<? extends Number> rowIndices, IList<? extends Number> colIndices);
 
 	/**
 	 * @param scope
 	 * @param rowIndices
 	 * @return
 	 */
-	IDataFrame ilocRows(IScope scope, IList<Integer> rowIndices);
+	IDataFrame ilocRows(IScope scope, IList<? extends Number> rowIndices);
 
 	/**
 	 * @param columnName
@@ -392,7 +392,7 @@ public interface IDataFrame extends IContainer.Addressable<String, Object, Strin
 	 * @param colIndex
 	 * @return
 	 */
-	IList<Object> iloc(IScope scope, IList<Integer> rowIndices, int colIndex);
+	IList<Object> iloc(IScope scope, IList<? extends Number> rowIndices, int colIndex);
 
 	/**
 	 * Joins this dataframe with another one on one or several key columns, using an explicit join type.
@@ -421,7 +421,7 @@ public interface IDataFrame extends IContainer.Addressable<String, Object, Strin
 	 * @param colIndices
 	 * @return
 	 */
-	IList<Object> iloc(IScope scope, int rowIndex, IList<Integer> colIndices);
+	IList<Object> iloc(IScope scope, int rowIndex, IList<? extends Number> colIndices);
 
 	/**
 	 * @param scope

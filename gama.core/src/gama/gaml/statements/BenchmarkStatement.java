@@ -114,7 +114,7 @@ public class BenchmarkStatement extends AbstractStatementSequence {
 
 	@Override
 	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
-		final int repeatTimes = repeat == null ? 1 : Cast.asInt(scope, repeat.value(scope));
+		final int repeatTimes = repeat == null ? 1 : Cast.asInt(scope, repeat.value(scope)).intValue();
 		IColor rgb = null;
 		if (color != null) { rgb = (IColor) color.value(scope); }
 		BufferingStrategies strategy = BufferingUtils.stringToBufferingStrategies(scope,

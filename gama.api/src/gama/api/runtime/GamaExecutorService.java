@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.GamaType;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.agent.IAgent;
@@ -199,16 +200,16 @@ public abstract class GamaExecutorService {
 			IType.BOOL, true).in(GamaPreferences.Runtime.NAME, GamaPreferences.Runtime.CONCURRENCY);
 
 	/** The Constant CONCURRENCY_THRESHOLD. */
-	public static final Pref<Integer> CONCURRENCY_THRESHOLD =
-			create("pref_parallel_threshold", "Size under which populations are executed sequentially", 20, IType.INT,
+	public static final Pref<Long> CONCURRENCY_THRESHOLD =
+			create("pref_parallel_threshold", "Size under which populations are executed sequentially", 20l, IType.INT,
 					true).between(1, null).in(GamaPreferences.Runtime.NAME, GamaPreferences.Runtime.CONCURRENCY);
 
 	/** The Constant THREADS_NUMBER. */
-	public static final Pref<Integer> THREADS_NUMBER =
+	public static final Pref<Long> THREADS_NUMBER =
 			create("pref_parallel_threads",
 					"Max. number of threads to use (available processors: " + Runtime.getRuntime().availableProcessors()
 							+ ")",
-					4, IType.INT, true).between(1, null)
+					4l, IType.INT, true).between(1, null)
 							.in(GamaPreferences.Runtime.NAME, GamaPreferences.Runtime.CONCURRENCY)
 							.onChange(newValue -> {
 								reset();
@@ -221,7 +222,7 @@ public abstract class GamaExecutorService {
 	 */
 	public static void reset() {
 		// Called by the activator to init the preferences and executor services
-		setConcurrencyLevel(THREADS_NUMBER.getValue());
+		setConcurrencyLevel(THREADS_NUMBER.getValue().intValue());
 	}
 
 	/**
@@ -304,18 +305,18 @@ public abstract class GamaExecutorService {
 			case IType.BOOL: {
 				Boolean c = (Boolean) concurrency.value(scope);
 				if (Boolean.FALSE.equals(c)) return 0;
-				if (caller == Caller.SIMULATION) return THREADS_NUMBER.getValue();
-				return CONCURRENCY_THRESHOLD.getValue();
+				if (caller == Caller.SIMULATION) return THREADS_NUMBER.getValue().intValue();
+				return CONCURRENCY_THRESHOLD.getValue().intValue();
 			}
 			case IType.INT:
-				return Math.abs((Integer) concurrency.value(scope));
+				return (int) Math.abs(Cast.asInt(scope, concurrency.value(scope)));
 			default:
 				break;
 		}
 		return switch (caller) {
-			case SIMULATION -> CONCURRENCY_SIMULATIONS.getValue() ? THREADS_NUMBER.getValue() : 0;
-			case SPECIES -> CONCURRENCY_SPECIES.getValue() ? CONCURRENCY_THRESHOLD.getValue() : 0;
-			case GRID -> CONCURRENCY_GRID.getValue() ? CONCURRENCY_THRESHOLD.getValue() : 0;
+			case SIMULATION -> CONCURRENCY_SIMULATIONS.getValue() ? THREADS_NUMBER.getValue().intValue() : 0;
+			case SPECIES -> CONCURRENCY_SPECIES.getValue() ? CONCURRENCY_THRESHOLD.getValue().intValue() : 0;
+			case GRID -> CONCURRENCY_GRID.getValue() ? CONCURRENCY_THRESHOLD.getValue().intValue() : 0;
 			default -> 0;
 		};
 	}

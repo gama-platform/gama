@@ -173,7 +173,7 @@ public interface IPathComputer<V, E> {
 	 *            the scope
 	 * @return the gama int matrix
 	 */
-	IMatrix<Integer> saveShortestPaths(IScope scope);
+	IMatrix<Long> saveShortestPaths(IScope scope);
 
 	/**
 	 * Save paths.

@@ -102,9 +102,9 @@ public class Fields {
 				special_cases = {
 					"Returns nil if the column or row index is outside the field dimensions." }) })
 	@no_test
-	public static IShape buildShapeFromFieldLocation(final IScope scope, final IField field, final int columns,
-			final int rows) {
-		return field.getCellShapeAt(scope, columns, rows);
+	public static IShape buildShapeFromFieldLocation(final IScope scope, final IField field, final long columns,
+			final long rows) {
+		return field.getCellShapeAt(scope, (int) columns, (int) rows);
 	}
 
 	/**

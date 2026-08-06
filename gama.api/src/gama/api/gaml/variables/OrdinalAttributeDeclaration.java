@@ -355,13 +355,13 @@ public class OrdinalAttributeDeclaration<T extends Comparable, Step extends Comp
 	protected Integer checkMinMax(final IObject agent, final IScope scope, final Integer f)
 			throws GamaRuntimeException {
 		if (min != null) {
-			final Integer m = minVal == null ? Cast.asInt(scope, scope.evaluate(min, agent).getValue())
-					: (Integer) minVal.run(scope);
+			final Integer m = minVal == null ? Cast.asInt(scope, scope.evaluate(min, agent).getValue()).intValue()
+					: Cast.asInt(scope, minVal.run(scope)).intValue();
 			if (f < m) return m;
 		}
 		if (max != null) {
-			final Integer m = maxVal == null ? Cast.asInt(scope, scope.evaluate(max, agent).getValue())
-					: (Integer) maxVal.run(scope);
+			final Integer m = maxVal == null ? Cast.asInt(scope, scope.evaluate(max, agent).getValue()).intValue()
+					: Cast.asInt(scope, maxVal.run(scope)).intValue();
 			if (f > m) return m;
 		}
 		return f;

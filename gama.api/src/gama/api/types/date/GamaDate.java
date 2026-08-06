@@ -205,8 +205,8 @@ record GamaDate(Temporal internal) implements IDate {
 	 * @see #floatValue(IScope)
 	 */
 	@Override
-	public int intValue(final IScope scope) {
-		return (int) floatValue(scope);
+	public long longValue(final IScope scope) {
+		return (long) floatValue(scope);
 	}
 
 	/**

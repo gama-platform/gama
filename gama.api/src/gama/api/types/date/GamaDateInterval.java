@@ -24,6 +24,7 @@ import com.google.common.collect.Iterators;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.GamaDateType;
 import gama.api.gaml.types.IContainerType;
+import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
@@ -336,7 +337,7 @@ public final class GamaDateInterval implements IList<IDate> {
 
 	@Override
 	public IDate getFromIndicesList(final IScope scope, final IList indices) throws GamaRuntimeException {
-		return get(scope, (Integer) indices.get(0));
+		return get(scope, Cast.asInt(scope, indices.get(0)).intValue());
 	}
 
 	@Override

@@ -162,11 +162,11 @@ public class DataFrameOperators {
 					@example(value = "unknown val <- cell(my_df, 0, \"name\");", isExecutable = false) }) }, see = {
 							"column_at", "row_at" })
 	@test("cell(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 1, \"name\") = \"Bob\"")
-	public static Object dfCell(final IScope scope, final IDataFrame df, final Integer rowIndex,
+	public static Object dfCell(final IScope scope, final IDataFrame df, final Long rowIndex,
 			final String columnName) {
 		if (rowIndex < 0 || rowIndex >= df.getRows())
 			throw GamaRuntimeException.error("Row index out of bounds: " + rowIndex, scope);
-		return df.getCellValue(rowIndex, columnName);
+		return df.getCellValue(rowIndex.intValue(), columnName);
 	}
 
 	// ========================= Matrix-style access (merged operators)
@@ -191,10 +191,10 @@ public class DataFrameOperators {
 							@example(value = "my_df row_at 1", isExecutable = false) }) }, see = { "column_at",
 									"rows_list", "iloc" })
 	@test("(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]) row_at 1) = [\"Bob\",25]")
-	public static IList rowAt(final IScope scope, final IDataFrame df, final Integer rowIndex) {
+	public static IList rowAt(final IScope scope, final IDataFrame df, final Long rowIndex) {
 		if (rowIndex < 0 || rowIndex >= df.getRows())
 			throw GamaRuntimeException.error("Row index out of bounds: " + rowIndex, scope);
-		return df.getRowValues(rowIndex);
+		return df.getRowValues(rowIndex.intValue());
 	}
 
 	/**
@@ -227,11 +227,11 @@ public class DataFrameOperators {
 							@example(value = "my_df column_at 0", isExecutable = false) }) }, see = { "row_at",
 									"columns_list" })
 	@test("(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]) column_at 0) = [\"Alice\",\"Bob\"]")
-	public static IList columnAtIndex(final IScope scope, final IDataFrame df, final Integer columnIndex) {
+	public static IList columnAtIndex(final IScope scope, final IDataFrame df, final Long columnIndex) {
 		final IList<String> cols = df.getColumns();
 		if (columnIndex < 0 || columnIndex >= cols.size())
 			throw GamaRuntimeException.error("Column index out of bounds: " + columnIndex, scope);
-		return df.getColumnValues(cols.get(columnIndex));
+		return df.getColumnValues(cols.get(columnIndex.intValue()));
 	}
 
 	/**
@@ -458,9 +458,9 @@ public class DataFrameOperators {
 	@operator(value = "pretty_print", can_be_const = true, type = IType.STRING, category = {
 			IOperatorCategory.DATAFRAME }, concept = { IConcept.DATAFRAME })
 	@doc(value = "Creates a string representing the dataframe in a human readable format. The maximum number of rows, columns and the number of characters per cell to print is defined by the parameters.")
-	public static String dfPrettyPrint(final IScope scope, final IDataFrame df, final int maxRows, final int maxCols,
-			final int maxChars) {
-		return GamaDataFrame.prettyPrint(df, maxRows, maxCols, maxChars);
+	public static String dfPrettyPrint(final IScope scope, final IDataFrame df, final long maxRows, final long maxCols,
+			final long maxChars) {
+		return GamaDataFrame.prettyPrint(df, (int) maxRows, (int) maxCols, (int) maxChars);
 	}
 
 	// ========================= iloc (integer location) =========================
@@ -493,8 +493,8 @@ public class DataFrameOperators {
 									"row_at", "cell" })
 	@test("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 0) = [\"Alice\",30]")
 	@test("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), -1) = [\"Bob\",25]")
-	public static IList<Object> ilocRow(final IScope scope, final IDataFrame df, final Integer rowIndex) {
-		return df.ilocRow(scope, rowIndex);
+	public static IList<Object> ilocRow(final IScope scope, final IDataFrame df, final Long rowIndex) {
+		return df.ilocRow(scope, rowIndex.intValue());
 	}
 
 	/**
@@ -511,8 +511,8 @@ public class DataFrameOperators {
 	@test("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 1, 0) = \"Bob\"")
 	@test("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), 0, 1) = 30")
 	@test("iloc(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]), -1, -1) = 25")
-	public static Object iloc(final IScope scope, final IDataFrame df, final Integer rowIndex, final Integer colIndex) {
-		return df.iloc(scope, rowIndex, colIndex);
+	public static Object iloc(final IScope scope, final IDataFrame df, final Long rowIndex, final Long colIndex) {
+		return df.iloc(scope, rowIndex.intValue(), colIndex.intValue());
 	}
 
 	/**
@@ -527,9 +527,9 @@ public class DataFrameOperators {
 							@example(value = "list values <- iloc(my_df, 1, [0, 2]);", isExecutable = false) }) }, see = {
 									"row_at", "select_columns" })
 	@test("iloc(dataframe_with([\"a\",\"b\",\"c\"], [[1,2,3],[4,5,6]]), 1, [0,2]) = [4,6]")
-	public static IList<Object> ilocRowCols(final IScope scope, final IDataFrame df, final Integer rowIndex,
-			final IList<Integer> colIndices) {
-		return df.iloc(scope, rowIndex, colIndices);
+	public static IList<Object> ilocRowCols(final IScope scope, final IDataFrame df, final Long rowIndex,
+			final IList<Long> colIndices) {
+		return df.iloc(scope, rowIndex.intValue(), colIndices);
 	}
 
 	/**
@@ -544,9 +544,9 @@ public class DataFrameOperators {
 							@example(value = "list values <- iloc(my_df, [0, 2], 1);", isExecutable = false) }) }, see = {
 									"column_at", "row_at" })
 	@test("iloc(dataframe_with([\"a\",\"b\",\"c\"], [[1,2,3],[4,5,6],[7,8,9]]), [0,2], 1) = [2,8]")
-	public static IList<Object> ilocRowsCol(final IScope scope, final IDataFrame df, final IList<Integer> rowIndices,
-			final Integer colIndex) {
-		return df.iloc(scope, rowIndices, colIndex);
+	public static IList<Object> ilocRowsCol(final IScope scope, final IDataFrame df, final IList<Long> rowIndices,
+			final Long colIndex) {
+		return df.iloc(scope, rowIndices, colIndex.intValue());
 	}
 
 	/**
@@ -562,7 +562,7 @@ public class DataFrameOperators {
 									"row_at", "filter" })
 	@test("(iloc(dataframe_with([\"name\"], [[\"Alice\"],[\"Bob\"],[\"Eve\"]]), [0,2])).rows = 2")
 	@test("cell(iloc(dataframe_with([\"name\"], [[\"Alice\"],[\"Bob\"],[\"Eve\"]]), [0,2]), 1, \"name\") = \"Eve\"")
-	public static IDataFrame ilocRows(final IScope scope, final IDataFrame df, final IList<Integer> rowIndices) {
+	public static IDataFrame ilocRows(final IScope scope, final IDataFrame df, final IList<Long> rowIndices) {
 		return df.ilocRows(scope, rowIndices);
 	}
 
@@ -580,8 +580,8 @@ public class DataFrameOperators {
 					"select_columns", "filter" })
 	@test("(iloc(dataframe_with([\"a\",\"b\",\"c\"], [[1,2,3],[4,5,6]]), [0], [0,2])).keys = [\"a\",\"c\"]")
 	@test("cell(iloc(dataframe_with([\"a\",\"b\",\"c\"], [[1,2,3],[4,5,6]]), [1], [2]), 0, \"c\") = 6")
-	public static IDataFrame iloc(final IScope scope, final IDataFrame df, final IList<Integer> rowIndices,
-			final IList<Integer> colIndices) {
+	public static IDataFrame iloc(final IScope scope, final IDataFrame df, final IList<Long> rowIndices,
+			final IList<Long> colIndices) {
 		return df.iloc(scope, rowIndices, colIndices);
 	}
 

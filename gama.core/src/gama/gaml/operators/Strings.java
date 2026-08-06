@@ -564,8 +564,8 @@ public class Strings {
 	@test ("'abcabcabc' index_of 'ca' = 2")
 	@test ("'abcabcabc' index_of 'x' = -1")
 	@test ("'abcabcabc' index_of '' = 0")
-	public static Integer opIndexOf(final String target, final String pattern) {
-		return target.indexOf(pattern);
+	public static Long opIndexOf(final String target, final String pattern) {
+		return (long) target.indexOf(pattern);
 	}
 
 	/**
@@ -600,8 +600,8 @@ public class Strings {
 							equals = "5")))
 	@test ("'abcabcabc' last_index_of 'x' = -1")
 	@test ("'abcabcabc' last_index_of 'ca' = 5")
-	public static Integer opLastIndexOf(final String target, final String pattern) {
-		return target.lastIndexOf(pattern);
+	public static Long opLastIndexOf(final String target, final String pattern) {
+		return (long) target.lastIndexOf(pattern);
 	}
 
 	/**
@@ -636,9 +636,9 @@ public class Strings {
 			examples = @example (
 					value = "copy_between(\"abcabcabc\", 2,6)",
 					equals = "\"cabc\""))
-	public static String opCopy(final String target, final Integer beginIndex, final Integer endIndex) {
-		final int bIndex = beginIndex < 0 ? 0 : beginIndex;
-		final int eIndex = endIndex > target.length() ? target.length() : endIndex;
+	public static String opCopy(final String target, final Long beginIndex, final Long endIndex) {
+		final int bIndex = beginIndex < 0 ? 0 : beginIndex.intValue();
+		final int eIndex = endIndex > target.length() ? target.length() : endIndex.intValue();
 		if (bIndex >= eIndex) return "";
 		return target.substring(bIndex, eIndex);
 	}
@@ -1092,9 +1092,9 @@ public class Strings {
 							equals = "13")))
 	@test ("length('') = 0")
 	@test ("length('abc') = 3")
-	static public Integer length(final String s) {
-		if (s == null) return 0;
-		return s.length();
+	static public Long length(final String s) {
+		if (s == null) return 0l;
+		return (long) s.length();
 	}
 
 	/**
@@ -1125,8 +1125,8 @@ public class Strings {
 			examples = @example (
 					value = "'abcdef' at 0",
 					equals = "'a'"))
-	public static String get(final String lv, final int rv) {
-		return rv < lv.length() && rv >= 0 ? lv.substring(rv, rv + 1) : "";
+	public static String get(final String lv, final long rv) {
+		return rv < lv.length() && rv >= 0 ? lv.substring((int) rv, (int) rv + 1) : "";
 	}
 
 	/**
@@ -1155,7 +1155,7 @@ public class Strings {
 					examples = @example (
 							value = "char (34)",
 							equals = "'\"'")))
-	static public String asChar(final Integer s) {
+	static public String asChar(final Long s) {
 		if (s == null) return "";
 		return Character.toString((char) s.byteValue());
 	}
@@ -1189,10 +1189,10 @@ public class Strings {
 			examples = @example (
 					value = "\"my\" + indented_by(\"text\", 1)",
 					equals = "\"my	text\""))
-	static public String indent(final String s, final int nb) {
+	static public String indent(final String s, final long nb) {
 		if (nb <= 0) return s;
-		final StringBuilder sb = new StringBuilder(nb);
-		for (int i = 0; i < nb; i++) { sb.append(StringUtils.TAB); }
+		final StringBuilder sb = new StringBuilder((int) Math.min(nb, Integer.MAX_VALUE));
+		for (long i = 0; i < nb; i++) { sb.append(StringUtils.TAB); }
 		final String t = sb.toString();
 		return s.replaceAll("(?m)^", t);
 	}
@@ -1398,15 +1398,15 @@ public class Strings {
 					value = "count(\"abcabc\", \"a\")",
 					equals = "2"))
 	@test ("count('abcabc', 'a') = 2")
-	public static Integer count(final String target, final String pattern) {
-		if (target == null || pattern == null || pattern.isEmpty()) return 0;
+	public static Long count(final String target, final String pattern) {
+		if (target == null || pattern == null || pattern.isEmpty()) return 0l;
 		int c = 0;
 		int index = 0;
 		while ((index = target.indexOf(pattern, index)) != -1) {
 			c++;
 			index += pattern.length();
 		}
-		return c;
+		return (long) c;
 	}
 
 	/**
@@ -1567,10 +1567,10 @@ public class Strings {
 					value = "string_with(3, \"a\")",
 					equals = "\"aaa\""))
 	@test ("string_with(3, 'a') = 'aaa'")
-	public static String stringWith(final Integer count, final String pattern) {
+	public static String stringWith(final Long count, final String pattern) {
 		if (count == null || count <= 0 || pattern == null) return "";
-		StringBuilder sb = new StringBuilder(count * pattern.length());
-		for (int i = 0; i < count; i++) {
+		StringBuilder sb = new StringBuilder((int) Math.min(count * pattern.length(), Integer.MAX_VALUE));
+		for (long i = 0; i < count; i++) {
 			sb.append(pattern);
 		}
 		return sb.toString();

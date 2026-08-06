@@ -328,7 +328,7 @@ public class SolveStatement extends AbstractStatement implements MathConstants {
 			maxStep = Cast.asFloat(scope, maxStepExp.value(scope));
 			scalAbsoluteTolerance = Cast.asFloat(scope, absTolerExp.value(scope));
 			scalRelativeTolerance = Cast.asFloat(scope, relTolerExp.value(scope));
-			if (nStepsExp != null) { nSteps = Cast.asInt(scope, nStepsExp.value(scope)); }
+			if (nStepsExp != null) { nSteps = Cast.asInt(scope, nStepsExp.value(scope)).intValue(); }
 		}
 
 		return switch (solverName) {

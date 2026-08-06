@@ -102,8 +102,8 @@ public class GamaFontType extends GamaType<IFont> {
 	 */
 	@Override
 	public IFont deserializeFromJson(final IScope scope, final IMap<String, Object> map2) {
-		return GamaFontFactory.createFont(Cast.asString(scope, map2.get(IKeyword.NAME)), Cast.asInt(scope, map2.get("style")),
-				Cast.asInt(scope, map2.get("size")));
+		return GamaFontFactory.createFont(Cast.asString(scope, map2.get(IKeyword.NAME)), Cast.asInt(scope, map2.get("style")).intValue(),
+				Cast.asInt(scope, map2.get("size")).intValue());
 	}
 
 }

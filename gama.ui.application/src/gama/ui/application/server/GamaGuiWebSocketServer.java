@@ -43,8 +43,8 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 	 * Creates the gui server.
 	 */
 	private static void createGuiServer() {
-		final int port = GamaPreferences.Runtime.CORE_SERVER_PORT.getValue();
-		final int ping = GamaPreferences.Runtime.CORE_SERVER_PING.getValue();
+		final int port = GamaPreferences.Runtime.CORE_SERVER_PORT.getValue().intValue();
+		final int ping = GamaPreferences.Runtime.CORE_SERVER_PING.getValue().intValue();
 		final boolean noDelay = GamaPreferences.Runtime.CORE_SERVER_NO_DELAY.getValue();
 		GAMA.setServer(startForGUI(port, ping, noDelay));
 	}

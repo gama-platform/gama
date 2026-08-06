@@ -279,7 +279,7 @@ public class GamaMatrixFactory {
 	}
 
 	/**
-	 * Creates a matrix of integers.
+	 * Creates a matrix of longs.
 	 *
 	 * @param cols
 	 *            number of columns.
@@ -287,7 +287,7 @@ public class GamaMatrixFactory {
 	 *            number of rows.
 	 * @return a new integer {@link IMatrix}.
 	 */
-	public static IMatrix<Integer> createIntMatrix(final int cols, final int rows) {
+	public static IMatrix<Long> createIntMatrix(final int cols, final int rows) {
 		return create(cols, rows, Types.INT);
 	}
 
@@ -548,11 +548,11 @@ public class GamaMatrixFactory {
 			concept = { IConcept.GRID },
 			doc = { @doc ("Allows to build a field by specifying, in order, its number of columns, number of rows, the initial value of its cells and the value representing the absence of value") })
 	@no_test
-	public static IField createFieldWithSizeValueAndNoData(final IScope scope, final int cols, final int rows,
+	public static IField createFieldWithSizeValueAndNoData(final IScope scope, final long cols, final long rows,
 			final double init, final double no) {
-		double[] data = new double[cols * rows];
+		double[] data = new double[(int) (cols * rows)];
 		Arrays.fill(data, init);
-		return createField(scope, cols, rows, data, no);
+		return createField(scope, (int) cols, (int) rows, data, no);
 	}
 
 	/**
@@ -576,7 +576,7 @@ public class GamaMatrixFactory {
 			doc = { @doc ("Allows to build a field by specifying, in order, its number of columns, "
 					+ "number of rows and the initial value of its cells. The value representing the absence of value is set to #max_float") })
 	@no_test
-	public static IField createFieldWithSizeAndValue(final IScope scope, final int cols, final int rows,
+	public static IField createFieldWithSizeAndValue(final IScope scope, final long cols, final long rows,
 			final double init) {
 		return createFieldWithSizeValueAndNoData(scope, cols, rows, init, IField.NO_NO_DATA);
 	}
@@ -631,7 +631,7 @@ public class GamaMatrixFactory {
 			doc = { @doc ("Allows to build a field by specifying, in order, its number of columns and number of rows. "
 					+ "The initial value of its cells is set to 0.0 and the value representing the absence of value is set to #max_float") })
 	@no_test
-	public static IField createFieldWithSize(final IScope scope, final int cols, final int rows) {
+	public static IField createFieldWithSize(final IScope scope, final long cols, final long rows) {
 		return createFieldWithSizeAndValue(scope, cols, rows, 0d);
 	}
 

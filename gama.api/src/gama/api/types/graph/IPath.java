@@ -380,7 +380,7 @@ public interface IPath<V, E, G extends IGraph<V, E>> extends IValue {// extends 
 	 * @return the int
 	 */
 	@Override
-	default int intValue(final IScope scope) {
+	default long longValue(final IScope scope) {
 		return this.getLength();
 	}
 

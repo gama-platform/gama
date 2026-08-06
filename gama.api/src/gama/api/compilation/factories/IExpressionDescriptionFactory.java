@@ -82,7 +82,7 @@ public interface IExpressionDescriptionFactory {
 	/**
 	 * Creates an expression description for an integer constant value.
 	 * <p>
-	 * This is a specialized version of {@link #createConstant(Object)} for Integer values, providing type-safe creation
+	 * This is a specialized version of {@link #createConstant(Object)} for int values (backed by Long), providing type-safe creation
 	 * with caching capabilities.
 	 * </p>
 	 *
@@ -90,7 +90,7 @@ public interface IExpressionDescriptionFactory {
 	 *            the Integer constant value to create an expression description for
 	 * @return an IExpressionDescription representing the integer constant
 	 */
-	IExpressionDescription createConstant(Integer val);
+	IExpressionDescription createConstant(Long val);
 
 	/**
 	 * Creates an expression description for a double constant value.

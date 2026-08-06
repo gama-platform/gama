@@ -946,8 +946,9 @@ public class GamaPoint extends Coordinate implements IPoint {
 	 * @return the gama point
 	 */
 	@Override
-	public IPoint withPrecision(final int i) {
-		return GamaPointFactory.create(round(x, i), round(y, i), round(z, i));
+	public IPoint withPrecision(final long i) {
+		final int precision = (int) i;
+		return GamaPointFactory.create(round(x, precision), round(y, precision), round(z, precision));
 	}
 
 	@Override

@@ -109,15 +109,15 @@ public class ExpressionDescriptionFactory extends GamlSwitch<IExpressionDescript
 	 */
 	@Override
 	public ConstantExpressionDescription caseIntLiteral(final IntLiteral object) {
-		if (object == null) return createConstant(0);
+		if (object == null) return createConstant(0l);
 
 		ConstantExpressionDescription ed;
 		try {
 			final String operand = object.getOp();
-			ed = createConstant(operand != null ? Integer.parseInt(operand) : 0);
+			ed = createConstant(operand != null ? Long.parseLong(operand) : 0l);
 		} catch (final NumberFormatException e) {
 			// Default to 0 if parsing fails
-			ed = createConstant(0);
+			ed = createConstant(0l);
 		}
 		Resource r = object.eResource();
 		if (r != null) { GamlResourceServices.getResourceDocumenter().setGamlDocumentation(r.getURI(), object, ed); }
@@ -336,10 +336,10 @@ public class ExpressionDescriptionFactory extends GamlSwitch<IExpressionDescript
 	}
 
 	@Override
-	public ConstantExpressionDescription createConstant(final Integer val) {
+	public ConstantExpressionDescription createConstant(final Long val) {
 		if (val == null) return getNull();
 		initIntDescriptions();
-		if (val >= MIN_INT && val < MAX_INT) return INT_DESCRIPTIONS[val - MIN_INT];
+		if (val >= MIN_INT && val < MAX_INT) return INT_DESCRIPTIONS[(int) (val - MIN_INT)];
 		try {
 			return CACHE.get(val, () -> new ConstantExpressionDescription(val, Types.INT));
 		} catch (final ExecutionException e) {
@@ -352,7 +352,8 @@ public class ExpressionDescriptionFactory extends GamlSwitch<IExpressionDescript
 	 */
 	private void initIntDescriptions() {
 		if (INT_DESCRIPTIONS == null) {
-			INT_DESCRIPTIONS = range(MIN_INT, MAX_INT).mapToObj(i -> new ConstantExpressionDescription(i, Types.INT))
+			INT_DESCRIPTIONS = range(MIN_INT, MAX_INT)
+					.mapToObj(i -> new ConstantExpressionDescription((long) i, Types.INT))
 					.toArray(ConstantExpressionDescription.class);
 		}
 	}

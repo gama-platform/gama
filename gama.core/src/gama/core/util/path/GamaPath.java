@@ -264,13 +264,13 @@ public class GamaPath<V, E, G extends IGraph<V, E>> implements Comparable, Graph
 	@Override
 	// FIXME
 	public int indexOf(final IAgent a) {
-		return Cast.asInt(null, a.getAttribute("index_on_path")); // ???
+		return Cast.asInt(null, a.getAttribute("index_on_path")).intValue(); // ???
 	}
 
 	@Override
 	// FIXME
 	public int indexSegmentOf(final IAgent a) {
-		return Cast.asInt(null, a.getAttribute("index_on_path_segment")); // ???
+		return Cast.asInt(null, a.getAttribute("index_on_path_segment")).intValue(); // ???
 	}
 
 	@Override

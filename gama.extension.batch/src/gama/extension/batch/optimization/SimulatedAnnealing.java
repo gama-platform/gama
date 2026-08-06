@@ -160,7 +160,7 @@ public class SimulatedAnnealing extends ALocalSearchAlgorithm {
 		if (tempinit != null) { temperatureInit = Cast.asFloat(scope, tempinit.value(scope)); }
 
 		final IExpression nbIterCstT = getFacet(NB_ITER);
-		if (nbIterCstT != null) { nbIterCstTemp = Cast.asInt(scope, nbIterCstT.value(scope)); }
+		if (nbIterCstT != null) { nbIterCstTemp = Cast.asInt(scope, nbIterCstT.value(scope)).intValue(); }
 	}
 
 	@Override

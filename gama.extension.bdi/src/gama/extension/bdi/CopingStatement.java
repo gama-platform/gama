@@ -664,7 +664,7 @@ public class CopingStatement extends AbstractStatementSequence{
 			state.setStrength(Cast.asFloat(scope,strength.value(scope)));
 		}
 		if (lifetime != null) {
-			state.setLifeTime(Cast.asInt(scope,lifetime.value(scope)));
+			state.setLifeTime(Cast.asInt(scope,lifetime.value(scope)).intValue());
 		}
 		return state;
 	}

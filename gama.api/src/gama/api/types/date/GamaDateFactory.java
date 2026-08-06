@@ -298,16 +298,16 @@ public class GamaDateFactory {
 		int second = 0;
 		final int size = vals.size();
 		if (size > 0) {
-			year = Cast.asInt(scope, vals.get(0));
+			year = Cast.asInt(scope, vals.get(0)).intValue();
 			if (size > 1) {
-				month = Cast.asInt(scope, vals.get(1));
+				month = Cast.asInt(scope, vals.get(1)).intValue();
 				if (size > 2) {
-					day = Cast.asInt(scope, vals.get(2));
+					day = Cast.asInt(scope, vals.get(2)).intValue();
 					if (size > 3) {
-						hour = Cast.asInt(scope, vals.get(3));
+						hour = Cast.asInt(scope, vals.get(3)).intValue();
 						if (size > 4) {
-							minute = Cast.asInt(scope, vals.get(4));
-							if (size > 5) { second = Cast.asInt(scope, vals.get(5)); }
+							minute = Cast.asInt(scope, vals.get(4)).intValue();
+							if (size > 5) { second = Cast.asInt(scope, vals.get(5)).intValue(); }
 						}
 					}
 				}

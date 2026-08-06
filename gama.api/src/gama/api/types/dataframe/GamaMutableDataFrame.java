@@ -172,22 +172,22 @@ public class GamaMutableDataFrame implements IDataFrame, IContainer.Modifiable<S
 	}
 
 	@Override
-	public IList<Object> iloc(final IScope scope, final int rowIndex, final IList<Integer> colIndices) {
+	public IList<Object> iloc(final IScope scope, final int rowIndex, final IList<? extends Number> colIndices) {
 		return current.iloc(scope, rowIndex, colIndices);
 	}
 
 	@Override
-	public IList<Object> iloc(final IScope scope, final IList<Integer> rowIndices, final int colIndex) {
+	public IList<Object> iloc(final IScope scope, final IList<? extends Number> rowIndices, final int colIndex) {
 		return current.iloc(scope, rowIndices, colIndex);
 	}
 
 	@Override
-	public IDataFrame ilocRows(final IScope scope, final IList<Integer> rowIndices) {
+	public IDataFrame ilocRows(final IScope scope, final IList<? extends Number> rowIndices) {
 		return current.ilocRows(scope, rowIndices);
 	}
 
 	@Override
-	public IDataFrame iloc(final IScope scope, final IList<Integer> rowIndices, final IList<Integer> colIndices) {
+	public IDataFrame iloc(final IScope scope, final IList<? extends Number> rowIndices, final IList<? extends Number> colIndices) {
 		return current.iloc(scope, rowIndices, colIndices);
 	}
 
@@ -293,7 +293,7 @@ public class GamaMutableDataFrame implements IDataFrame, IContainer.Modifiable<S
 
 	/** Converts a possibly-negative, possibly-non-integer index to a bounds-checked int. */
 	private int normalizeIndex(final IScope scope, final Object index, final int size) {
-		int i = Cast.asInt(scope, index);
+		int i = Cast.asInt(scope, index).intValue();
 		if (i < 0) { i += size; }
 		if (i < 0 || i >= size)
 			throw GamaRuntimeException.error("Row index out of bounds: " + index + " (size " + size + ")", scope);

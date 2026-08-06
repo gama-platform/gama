@@ -212,8 +212,8 @@ public class GamaShapeFile extends GamaGisFile {
 			examples = { @example (
 					value = "file f <- shape_file(\"file.shp\", \"32648\");",
 					isExecutable = false) })
-	public GamaShapeFile(final IScope scope, final String pathName, final Integer code) throws GamaRuntimeException {
-		super(scope, pathName, code);
+	public GamaShapeFile(final IScope scope, final String pathName, final Long code) throws GamaRuntimeException {
+		super(scope, pathName, code == null ? null : code.intValue());
 	}
 
 	/**
@@ -359,9 +359,9 @@ public class GamaShapeFile extends GamaGisFile {
 			examples = { @example (
 					value = "file f <- shape_file(\"file.shp\", \"32648\", true);",
 					isExecutable = false) })
-	public GamaShapeFile(final IScope scope, final String pathName, final Integer code, final boolean with3D)
+	public GamaShapeFile(final IScope scope, final String pathName, final Long code, final boolean with3D)
 			throws GamaRuntimeException {
-		super(scope, pathName, code, with3D);
+		super(scope, pathName, code == null ? null : code.intValue(), with3D);
 	}
 
 	/**

@@ -247,9 +247,9 @@ public class SpatialTransformations {
 							test = false) }) })
 	@test ("(circle(5) + (5,32)).height with_precision 5 = 20.0")
 	public static IShape enlarged_by(final IScope scope, final IShape g, final Double size,
-			final Integer numberOfSegments) {
+			final Long numberOfSegments) {
 		if (g == null) return null;
-		final Geometry gg = g.getInnerGeometry().buffer(size, numberOfSegments);
+		final Geometry gg = g.getInnerGeometry().buffer(size, numberOfSegments.intValue());
 		if (gg != null && !gg.isEmpty()) return GamaShapeFactory.createFrom(gg).withAttributesOf(g);
 		return null;
 	}
@@ -282,9 +282,9 @@ public class SpatialTransformations {
 							test = false) }) })
 	@test ("(circle(5) + (5,32,#round)).height with_precision 5 = 20.0")
 	public static IShape enlarged_by(final IScope scope, final IShape g, final Double size,
-			final Integer numberOfSegments, final Integer endCap) {
+			final Long numberOfSegments, final Long endCap) {
 		if (g == null) return null;
-		final Geometry gg = g.getInnerGeometry().buffer(size, numberOfSegments, endCap);
+		final Geometry gg = g.getInnerGeometry().buffer(size, numberOfSegments.intValue(), endCap.intValue());
 		if (gg != null && !gg.isEmpty()) return GamaShapeFactory.createFrom(gg).withAttributesOf(g);
 		return null;
 	}
@@ -319,9 +319,9 @@ public class SpatialTransformations {
 							test = false) }) })
 	@test ("(line([{10,10}, {50,50}]) + (5,32,#round, true)).area with_precision 1 = 282.8")
 	public static IShape enlarged_by(final IScope scope, final IShape g, final Double size,
-			final Integer numberOfSegments, final Integer endCap, final Boolean isSingleSided) {
+			final Long numberOfSegments, final Long endCap, final Boolean isSingleSided) {
 		if (g == null) return null;
-		BufferParameters param = new BufferParameters(numberOfSegments, endCap);
+		BufferParameters param = new BufferParameters(numberOfSegments.intValue(), endCap.intValue());
 		param.setSingleSided(isSingleSided);
 		Geometry gg = BufferOp.bufferOp(g.getInnerGeometry(), size, param);
 		if (gg != null && !gg.isEmpty()) return GamaShapeFactory.createFrom(gg).withAttributesOf(g);
@@ -674,7 +674,7 @@ public class SpatialTransformations {
 	@doc (
 			usages = { @usage ("the right-hand operand representing  the angle can be a float or an integer") })
 	@no_test
-	public static IShape rotated_by(final IScope scope, final IShape g1, final Integer angle) {
+	public static IShape rotated_by(final IScope scope, final IShape g1, final Long angle) {
 		if (g1 == null) return null;
 		if (angle == null) return g1.copy(scope);
 		// if ( g1.isPoint() ) { return g1.copy(scope); }
@@ -1293,10 +1293,10 @@ public class SpatialTransformations {
 					equals = "the list of 10 squares corresponding to the discretization into squares of the geometry of the agent applying the operator. The squares overlapping the border of the geometry are kept",
 					test = false) })
 	@no_test
-	public static IList<IShape> toSquares(final IScope scope, final IShape geom, final Integer nbSquares,
+	public static IList<IShape> toSquares(final IScope scope, final IShape geom, final Long nbSquares,
 			final boolean overlaps) {
 		if (geom == null || geom.getInnerGeometry().getArea() <= 0) return GamaListFactory.create(Types.GEOMETRY);
-		return GeometryUtils.squareDiscretization(geom.getInnerGeometry(), nbSquares, overlaps, 0.99);
+		return GeometryUtils.squareDiscretization(geom.getInnerGeometry(), nbSquares.intValue(), overlaps, 0.99);
 	}
 
 	/**
@@ -1327,10 +1327,10 @@ public class SpatialTransformations {
 					equals = "the list of 10 squares corresponding to the discretization into squares of the geometry of the agent applying the operator. The squares overlapping the border of the geometry are kept",
 					test = false) })
 	@no_test
-	public static IList<IShape> squareDiscretization(final IScope scope, final IShape geom, final Integer nbSquares,
+	public static IList<IShape> squareDiscretization(final IScope scope, final IShape geom, final Long nbSquares,
 			final boolean overlaps, final double precision) {
 		if (geom == null || geom.getInnerGeometry().getArea() <= 0) return GamaListFactory.create(Types.GEOMETRY);
-		return GeometryUtils.squareDiscretization(geom.getInnerGeometry(), nbSquares, overlaps, precision);
+		return GeometryUtils.squareDiscretization(geom.getInnerGeometry(), nbSquares.intValue(), overlaps, precision);
 	}
 
 	/**
@@ -1393,7 +1393,7 @@ public class SpatialTransformations {
 					equals = "the list of rectangles corresponding to the discretization by a grid of 5 columns and 20 rows into rectangles of the geometry of the agent applying the operator. The rectangles overlapping the border of the geometry are kept",
 					test = false) })
 	@no_test
-	public static IList<IShape> to_rectangle(final IScope scope, final IShape geom, final int nbCols, final int nbRows,
+	public static IList<IShape> to_rectangle(final IScope scope, final IShape geom, final long nbCols, final long nbRows,
 			final boolean overlaps) {
 		if (geom == null || geom.getInnerGeometry().getArea() <= 0) return GamaListFactory.create(Types.GEOMETRY);
 		final IEnvelope envelope = geom.getEnvelope();
@@ -1485,8 +1485,8 @@ public class SpatialTransformations {
 					equals = "the list of the geometries corresponding to the decomposition of the geometry of the agent applying the operator",
 					test = false) })
 	@test ("length(square(10.0) split_geometry(2,2)) = 4")
-	public static IList<IShape> to_rectangle(final IScope scope, final IShape geom, final int nbCols,
-			final int nbRows) {
+	public static IList<IShape> to_rectangle(final IScope scope, final IShape geom, final long nbCols,
+			final long nbRows) {
 		if (geom == null || geom.getInnerGeometry().getArea() <= 0) return GamaListFactory.create(Types.GEOMETRY);
 		final IEnvelope envelope = geom.getEnvelope();
 		final double x_size = envelope.getWidth() / nbCols;
@@ -1517,7 +1517,7 @@ public class SpatialTransformations {
 				final IPoint[] pts = GeometryUtils.getPointsOf(sp);
 				for (int i = 0; i < pts.length; i++) {
 					final IPoint gp = pts[i];
-					if (zVal != gp.getZ()) { SpatialThreeD.set_z(null, sp, i, zVal); }
+					if (zVal != gp.getZ()) { SpatialThreeD.set_z(null, sp, (long) i, zVal); }
 				}
 				geoms.add(sp);
 			}
@@ -2160,7 +2160,7 @@ public class SpatialTransformations {
 					equals = "the geometry resulting from the rounding of points of the geometry with a precision of 0.1.",
 					test = false) })
 	@no_test
-	public static IShape withPrecision(final IScope scope, final IShape g1, final Integer precision) {
+	public static IShape withPrecision(final IScope scope, final IShape g1, final Long precision) {
 		if (g1 == null || g1.getInnerGeometry() == null) return g1;
 		final double scale = Math.pow(10, precision);
 		final PrecisionModel pm = new PrecisionModel(scale);

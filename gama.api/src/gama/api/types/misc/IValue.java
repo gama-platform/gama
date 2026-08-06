@@ -143,8 +143,8 @@ public interface IValue extends IGamlable, ITyped, IJsonable {
 	 *            the current GAMA execution scope
 	 * @return the integer representation of this value
 	 */
-	default int intValue(final IScope scope) {
-		return 0;
+	default long longValue(final IScope scope) {
+		return 0l;
 	}
 
 	/**
@@ -165,7 +165,7 @@ public interface IValue extends IGamlable, ITyped, IJsonable {
 	 * @return the floating-point representation of this value
 	 */
 	default double floatValue(final IScope scope) {
-		return intValue(scope);
+		return longValue(scope);
 	}
 
 	/**

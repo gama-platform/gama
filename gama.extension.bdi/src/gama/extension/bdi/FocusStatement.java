@@ -331,7 +331,7 @@ public class FocusStatement extends AbstractStatement {
 			tempBelief.setStrength(Cast.asFloat(scope, strength.value(scope)));
 		}
 		if (lifetime != null) {
-			tempBelief.setLifeTime(Cast.asInt(scopeLifetime, lifetime.value(scope)));
+			tempBelief.setLifeTime(Cast.asInt(scopeLifetime, lifetime.value(scope)).intValue());
 		}
 		if (isUncertain != null && (Boolean) isUncertain.value(scopeMySelf)) {
 			if (!BdiUtils.hasUncertainty(scopeMySelf, tempBelief)) {
@@ -392,7 +392,7 @@ public class FocusStatement extends AbstractStatement {
 				tempBelief = new MentalState("Uncertainty", tempPred);
 			}
 			if (lifetime != null) {
-				tempBelief.setLifeTime(Cast.asInt(scopeMySelf, lifetime.value(scope)));
+				tempBelief.setLifeTime(Cast.asInt(scopeMySelf, lifetime.value(scope)).intValue());
 			}
 			if (!BdiUtils.hasUncertainty(scopeMySelf, tempBelief)) {
 				BdiUtils.addUncertainty(scopeMySelf, tempBelief);
@@ -404,7 +404,7 @@ public class FocusStatement extends AbstractStatement {
 				tempBelief = new MentalState("Belief", tempPred);
 			}
 			if (lifetime != null) {
-				tempBelief.setLifeTime(Cast.asInt(lifetimeScope, lifetime.value(scope)));
+				tempBelief.setLifeTime(Cast.asInt(lifetimeScope, lifetime.value(scope)).intValue());
 			}
 			if (!BdiUtils.hasBelief(scopeMySelf, tempBelief)) {
 				BdiUtils.addBelief(scopeMySelf, tempBelief);

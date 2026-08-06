@@ -82,10 +82,10 @@ public class LightDefinition extends AbstractDefinition implements ILightDefinit
 		angleAttribute = create("angle", Types.FLOAT, DEFAULT_ANGLE);
 		drawAttribute = create("show", Types.BOOL, false);
 		activeAttribute = create("active", Types.BOOL, true);
-		Integer i = GamaPreferences.Displays.OPENGL_DEFAULT_LIGHT_INTENSITY.getValue();
+		Integer i = GamaPreferences.Displays.OPENGL_DEFAULT_LIGHT_INTENSITY.getValue().intValue();
 		intensityAttribute = create(IKeyword.INTENSITY, (scope, exp) -> {
 			if (exp.getGamlType() == Types.INT) {
-				int v = Cast.asInt(scope, exp.value(scope));
+				int v = Cast.asInt(scope, exp.value(scope)).intValue();
 				return GamaColorFactory.createWithRGBA(v, v, v, 255);
 			}
 			return GamaColorFactory.castToColor(scope, exp.value(scope));

@@ -338,10 +338,7 @@ public class PedestrianRoadSkill extends Skill {
 	public boolean primInitialize(final IScope scope) throws GamaRuntimeException {
 		final IAgent agent = getCurrentAgent(scope);
 
-		int status = scope.hasArg("status") ? scope.getIntArg("status")
-				: agent.getGeometry().hasAttribute(PEDESTRIAN_ROAD_STATUS) ? GamaIntegerType.staticCast(scope,
-						agent.getGeometry().getAttribute(PEDESTRIAN_ROAD_STATUS), null, false)
-				: 1;
+		int status = scope.getTypedArgIfExists("status", IType.INT, scope.getTypedArgIfExists(PEDESTRIAN_ROAD_STATUS, IType.INT, 1l)).intValue();
 		setPedestrianRoadStatus(agent, status);
 		double distAdd = scope.hasArg("distance_extremity") ? scope.getFloatArg("distance_extremity") : 0.0;
 		IShape freeSpace = agent.getGeometry().copy(scope);
@@ -354,7 +351,7 @@ public class PedestrianRoadSkill extends Skill {
 
 			if (dist > 0) {
 				freeSpace = SpatialTransformations.enlarged_by(scope, freeSpace, dist,
-						BufferParameters.DEFAULT_QUADRANT_SEGMENTS, BufferParameters.CAP_FLAT);
+						(long) BufferParameters.DEFAULT_QUADRANT_SEGMENTS, (long) BufferParameters.CAP_FLAT);
 			}
 
 			if (scope.hasArg("obstacles")) {
@@ -410,7 +407,7 @@ public class PedestrianRoadSkill extends Skill {
 
 			if (scope.hasArg("masked_by")) {
 				IContainer maskedbyLC = (IContainer) scope.getArg("masked_by", IType.CONTAINER);
-				Integer prec = scope.hasArg("masked_by_precision") ? scope.getIntArg("masked_by_precision") : null;
+				Long prec = scope.hasArg("masked_by_precision") ? scope.getIntArg("masked_by_precision") : null;
 				if (maskedbyLC instanceof ISpecies) {
 					freeSpace = SpatialOperators.masked_by(scope, freeSpace, maskedbyLC, prec);
 				} else {

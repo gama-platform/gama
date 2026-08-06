@@ -170,7 +170,7 @@ public class GamaColorFactory {
 	 *            the alpha component (0-255).
 	 * @return the new {@link IColor} instance.
 	 */
-	public static IColor createWithAlpha(final String c, final int alpha) {
+	public static IColor createWithAlpha(final String c, final long alpha) {
 		IColor color = get(c);
 		if (color == null) { color = BLACK; }
 		return color.withAlpha(alpha / 255d);
@@ -204,7 +204,7 @@ public class GamaColorFactory {
 	 *            the alpha component (0-255).
 	 * @return the corresponding {@link IColor} instance.
 	 */
-	public static IColor createWithRGBA(final int r, final int g, final int b, final int a) {
+	public static IColor createWithRGBA(final long r, final long g, final long b, final long a) {
 		// rgb in 3 components + alpha
 		return get((normalize(a) & 0xFF) << 24 | (normalize(r) & 0xFF) << 16 | (normalize(g) & 0xFF) << 8
 				| (normalize(b) & 0xFF) << 0);
@@ -224,7 +224,7 @@ public class GamaColorFactory {
 	 *            depends on implementation interpretation (often normalized).
 	 * @return the corresponding {@link IColor} instance.
 	 */
-	public static IColor createWithDoubleAlpha(final int r, final int g, final int b, final double t) {
+	public static IColor createWithDoubleAlpha(final long r, final long g, final long b, final double t) {
 		return createWithRGBA(r, g, b, normalize(t));
 	}
 
@@ -397,8 +397,8 @@ public class GamaColorFactory {
 				return null;
 			}
 			case IColor col -> {
-				if (param instanceof Integer a) return createWithRGBA(col.red(), col.green(), col.blue(), a);
 				if (param instanceof Double a) return createWithDoubleAlpha(col.red(), col.green(), col.blue(), a);
+				if (param instanceof Number a) return createWithRGBA(col.red(), col.green(), col.blue(), a.longValue());
 				return (IColor) obj;
 			}
 			case List l -> {
@@ -461,8 +461,8 @@ public class GamaColorFactory {
 				return cond ? createFromAWTColor(Color.black) : createFromAWTColor(Color.white);
 			}
 			default -> {
-				final int i = Cast.asInt(scope, obj);
-				if (param instanceof Integer in) return createWithAlpha(i, in);
+				final int i = Cast.asInt(scope, obj).intValue();
+				if (param instanceof Number n) return createWithAlpha(i, n.intValue());
 				if (param instanceof Double d) return createWithAlpha(i, Double.valueOf(d * 255).intValue());
 				return get(i);
 			}
@@ -527,8 +527,8 @@ public class GamaColorFactory {
 	 *            the color component value to normalize
 	 * @return the normalized value in the range 0-255
 	 */
-	private static int normalize(final int number) {
-		return number < 0 ? 0 : number > 255 ? 255 : number;
+	private static int normalize(final long number) {
+		return (int) (number < 0 ? 0 : number > 255 ? 255 : number);
 	}
 
 }

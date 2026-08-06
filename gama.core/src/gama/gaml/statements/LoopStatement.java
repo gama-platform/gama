@@ -605,12 +605,12 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 	 *
 	 * <p>
 	 * <b>Performance:</b> the {@link #intFrom(IScope)}, {@link #intTo(IScope)} and {@link #intStep(IScope)} helpers
-	 * return primitive {@code int} values, avoiding the unboxing overhead that would result from calling the inherited
-	 * {@link Bounded#computeFrom}/{@code computeTo}/{@code computeStep} methods which return boxed {@link Integer}
+	 * return primitive {@code long} values, avoiding the unboxing overhead that would result from calling the inherited
+	 * {@link Bounded#computeFrom}/{@code computeTo}/{@code computeStep} methods which return boxed {@link Long}
 	 * objects.
 	 * </p>
 	 */
-	class IntBounded extends Bounded<Integer> {
+	class IntBounded extends Bounded<Long> {
 
 		/**
 		 * Instantiates a new bounded.
@@ -623,24 +623,24 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 		}
 
 		@Override
-		protected Integer value(final IScope scope, final IExpression exp) {
+		protected Long value(final IScope scope, final IExpression exp) {
 			return Cast.asInt(scope, exp.value(scope));
 		}
 
 		@Override
-		Integer defaultStep() {
-			return 1;
+		Long defaultStep() {
+			return 1l;
 		}
 
 		/**
-		 * Returns the loop start value as a primitive {@code int}, avoiding an unbox of the inherited
+		 * Returns the loop start value as a primitive {@code long}, avoiding an unbox of the inherited
 		 * {@link Bounded#computeFrom(IScope)} result.
 		 *
 		 * @param scope
 		 *            the scope
-		 * @return the from value as a primitive int
+		 * @return the from value as a primitive long
 		 */
-		private int intFrom(final IScope scope) {
+		private long intFrom(final IScope scope) {
 			return constantFrom != null ? constantFrom : Cast.asInt(scope, fromExpression.value(scope));
 		}
 
@@ -649,9 +649,9 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 		 *
 		 * @param scope
 		 *            the scope
-		 * @return the to value as a primitive int
+		 * @return the to value as a primitive long
 		 */
-		private int intTo(final IScope scope) {
+		private long intTo(final IScope scope) {
 			return constantTo != null ? constantTo : Cast.asInt(scope, toExpression.value(scope));
 		}
 
@@ -660,20 +660,20 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 		 *
 		 * @param scope
 		 *            the scope
-		 * @return the step value as a primitive int
+		 * @return the step value as a primitive long
 		 */
-		private int intStep(final IScope scope) {
+		private long intStep(final IScope scope) {
 			return constantStep != null ? constantStep : Cast.asInt(scope, stepExpression.value(scope));
 		}
 
 		@Override
 		public Object runIn(final IScope scope) throws GamaRuntimeException {
 			final Object[] result = new Object[1];
-			final int from = intFrom(scope);
-			final int to = intTo(scope);
+			final long from = intFrom(scope);
+			final long to = intTo(scope);
 			final boolean reverse = from > to;
-			final int step = intStep(scope) * stepSign(reverse);
-			for (int i = from; reverse ? i >= to : i <= to; i += step) {
+			final long step = intStep(scope) * stepSign(reverse);
+			for (long i = from; reverse ? i >= to : i <= to; i += step) {
 				if (BREAK_STATUSES.contains(loopBody(scope, i, result))) { break; }
 			}
 			return result[0];
@@ -800,7 +800,7 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 		/** The times. */
 		private final IExpression timesExpression;
 		/** The constant times. */
-		private Integer constantTimes;
+		private Long constantTimes;
 
 		/**
 		 * Instantiates a new times.
@@ -818,8 +818,8 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 		@Override
 		public Object runIn(final IScope scope) throws GamaRuntimeException {
 			final Object[] result = new Object[1];
-			final int max = constantTimes == null ? Cast.asInt(scope, timesExpression.value(scope)) : constantTimes;
-			for (int i = 0; i < max; i++) { if (BREAK_STATUSES.contains(loopBody(scope, null, result))) { break; } }
+			final long max = constantTimes == null ? Cast.asInt(scope, timesExpression.value(scope)) : constantTimes;
+			for (long i = 0; i < max; i++) { if (BREAK_STATUSES.contains(loopBody(scope, null, result))) { break; } }
 			return result[0];
 		}
 

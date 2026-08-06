@@ -169,7 +169,7 @@ public abstract class SqlConnection implements AutoCloseable {
 		final String srid = (String) params.get("srid");
 		if (srid != null) {
 			try {
-				return scope.getSimulation().getProjectionFactory().forSavingWith(scope, Cast.asInt(scope, srid),
+				return scope.getSimulation().getProjectionFactory().forSavingWith(scope, Cast.asInt(scope, srid).intValue(),
 						longitudeFirst);
 			} catch (final Exception e) {
 
@@ -180,7 +180,7 @@ public abstract class SqlConnection implements AutoCloseable {
 		}
 		try {
 			return scope.getSimulation().getProjectionFactory().forSavingWith(scope,
-					GamaPreferences.External.LIB_OUTPUT_CRS.getValue());
+					GamaPreferences.External.LIB_OUTPUT_CRS.getValue().intValue());
 		} catch (final Exception e) {
 
 			throw GamaRuntimeException.error(

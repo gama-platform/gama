@@ -179,16 +179,16 @@ public interface GamlCoreConstants {
 			value = "min_int",
 			category = { IConstantCategory.CONSTANT },
 			concept = { IConcept.CONSTANT },
-			doc = @doc ("A constant holding the minimum value an int can have (Java Integer.MIN_VALUE)")) int min_int =
-					Integer.MIN_VALUE;
+			doc = @doc ("A constant holding the minimum value an int can have (Java Long.MIN_VALUE)")) long min_int =
+					Long.MIN_VALUE;
 
 	/** The max int. */
 	@constant (
 			value = "max_int",
 			category = { IConstantCategory.CONSTANT },
 			concept = { IConcept.CONSTANT },
-			doc = @doc ("A constant holding the maximum value an int can have (Java Integer.MAX_VALUE)")) int max_int =
-					Integer.MAX_VALUE;
+			doc = @doc ("A constant holding the maximum value an int can have (Java Long.MAX_VALUE)")) long max_int =
+					Long.MAX_VALUE;
 
 	/**
 	 * Shortest Path algorithm constants
@@ -300,21 +300,21 @@ public interface GamlCoreConstants {
 			value = "round",
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.GEOMETRY, IConcept.CONSTANT },
-			doc = @doc ("This constant represents a round line buffer end cap style")) int round = 1;
+			doc = @doc ("This constant represents a round line buffer end cap style")) long round = 1;
 
 	/** The flat. */
 	@constant (
 			value = "flat",
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.GEOMETRY, IConcept.CONSTANT },
-			doc = @doc ("This constant represents a flat line buffer end cap style")) int flat = 2;
+			doc = @doc ("This constant represents a flat line buffer end cap style")) long flat = 2;
 
 	/** The square. */
 	@constant (
 			value = "square",
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.GEOMETRY, IConcept.CONSTANT },
-			doc = @doc ("This constant represents a square line buffer end cap style")) int square = 3;
+			doc = @doc ("This constant represents a square line buffer end cap style")) long square = 3;
 
 	/**
 	 * Layout constants
@@ -324,21 +324,21 @@ public interface GamlCoreConstants {
 			value = "none",
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
-			doc = @doc ("This constant represents the absence of a predefined layout")) int none = 0;
+			doc = @doc ("This constant represents the absence of a predefined layout")) long none = 0;
 
 	/** The stack. */
 	@constant (
 			value = "stack",
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
-			doc = @doc ("This constant represents a layout where all display views are stacked")) int stack = 1;
+			doc = @doc ("This constant represents a layout where all display views are stacked")) long stack = 1;
 
 	/** The split. */
 	@constant (
 			value = "split",
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
-			doc = @doc ("This constant represents a layout where all display views are split in a grid-like structure")) int split =
+			doc = @doc ("This constant represents a layout where all display views are split in a grid-like structure")) long split =
 					2;
 
 	/** The horizontal. */
@@ -346,7 +346,7 @@ public interface GamlCoreConstants {
 			value = "horizontal",
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
-			doc = @doc ("This constant represents a layout where all display views are aligned horizontally")) int horizontal =
+			doc = @doc ("This constant represents a layout where all display views are aligned horizontally")) long horizontal =
 					3;
 
 	/** The vertical. */
@@ -354,7 +354,7 @@ public interface GamlCoreConstants {
 			value = "vertical",
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
-			doc = @doc ("This constant represents a layout where all display views are aligned vertically")) int vertical =
+			doc = @doc ("This constant represents a layout where all display views are aligned vertically")) long vertical =
 					4;
 
 	/**
@@ -365,7 +365,7 @@ public interface GamlCoreConstants {
 			value = "bold",
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.GRAPHIC, IConcept.TEXT },
-			doc = @doc ("This constant allows to build a font with a bold face. Can be combined with #italic")) int bold =
+			doc = @doc ("This constant allows to build a font with a bold face. Can be combined with #italic")) long bold =
 					Font.BOLD; /* 1 */
 
 	/** The italic. */
@@ -373,7 +373,7 @@ public interface GamlCoreConstants {
 			value = "italic",
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.GRAPHIC, IConcept.TEXT },
-			doc = @doc ("This constant allows to build a font with an italic face. Can be combined with #bold")) int italic =
+			doc = @doc ("This constant allows to build a font with an italic face. Can be combined with #bold")) long italic =
 					Font.ITALIC; /* 2 */
 
 	/** The plain. */
@@ -381,7 +381,7 @@ public interface GamlCoreConstants {
 			value = "plain",
 			category = { IConstantCategory.GRAPHIC },
 			concept = { IConcept.GRAPHIC, IConcept.TEXT },
-			doc = @doc ("This constant allows to build a font with a plain face")) int plain = Font.PLAIN;
+			doc = @doc ("This constant allows to build a font with a plain face")) long plain = Font.PLAIN;
 	/**
 	 * Special units
 	 */

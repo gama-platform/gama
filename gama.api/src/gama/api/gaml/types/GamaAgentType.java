@@ -149,7 +149,7 @@ public class GamaAgentType<T extends IAgent> extends GamaType<T> {
 		if (obj instanceof IAgent ia) return ia.isInstanceOf(species, false) ? (T) ia : null;
 		final IAgent agent = scope.getAgent();
 		if (agent != null) {
-			if (obj instanceof Integer i) return (T) agent.getPopulationFor(species).getAgent(i);
+			if (obj instanceof Number n) return (T) agent.getPopulationFor(species).getAgent(n.intValue());
 			if (obj instanceof IPoint p) return (T) agent.getPopulationFor(species).getAgent(scope, p);
 		}
 		return null;

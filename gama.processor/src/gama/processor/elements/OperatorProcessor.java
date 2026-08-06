@@ -126,24 +126,26 @@ public class OperatorProcessor extends ElementProcessor<operator> {
 	 *            the method call
 	 */
 	private void buildHelperCall(final StringBuilder sb, final boolean hasScope, final boolean isStatic,
-			final String[] classes, final String methodCall) {
+			final String[] classes, final String methodCall, final String returnType) {
 		sb.append(',').append("(s,o)->");
+		final StringBuilder call = new StringBuilder();
 		final int start = isStatic ? 0 : 1;
 		final String firstArg = hasScope ? "s" : "";
 		if (isStatic) {
-			sb.append(methodCall).append('(').append(firstArg);
+			call.append(methodCall).append('(').append(firstArg);
 		} else {
 			final String methodName = extractMethod(methodCall, false);
-			sb.append("((").append(classes[0]).append(")o[0]).").append(methodName).append('(').append(firstArg);
+			call.append("((").append(classes[0]).append(")o[0]).").append(methodName).append('(').append(firstArg);
 		}
 		if (start < classes.length) {
-			if (hasScope) { sb.append(','); }
+			if (hasScope) { call.append(','); }
 			for (int i = start; i < classes.length; i++) {
-				param(sb, classes[i], "o[" + i + "]");
-				sb.append(i != classes.length - 1 ? "," : "");
+				param(call, classes[i], "o[" + i + "]");
+				call.append(i != classes.length - 1 ? "," : "");
 			}
 		}
-		sb.append(")");
+		call.append(")");
+		sb.append(normalizeReturn(returnType, call.toString()));
 	}
 
 	/**
@@ -167,10 +169,10 @@ public class OperatorProcessor extends ElementProcessor<operator> {
 				warning = "it is safer to use the IList type";
 				break;
 			case "short":
-			case "long":
-			case "Long":
+			case "int":
+			case "Integer":
 			case "Short":
-				warning = "it is safer to use the Integer type";
+				warning = "the GAML int type is backed by long: it is safer to use the Long type";
 				break;
 			case "float":
 			case "Float":
@@ -418,7 +420,7 @@ public class OperatorProcessor extends ElementProcessor<operator> {
 				.append(op.content_type()).append(',').append(op.index_type()).append(',')
 				.append(op.content_type_content_type());
 
-		buildHelperCall(sb, hasScope, isStatic, classes, methodCall);
+		buildHelperCall(sb, hasScope, isStatic, classes, methodCall, returnType);
 		sb.append(',').append(toBoolean(op.iterator()));
 		sb.append(");");
 	}

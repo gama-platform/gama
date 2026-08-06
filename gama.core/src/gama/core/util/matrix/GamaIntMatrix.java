@@ -16,7 +16,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import com.google.common.primitives.Ints;
+import com.google.common.primitives.Longs;
 
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Cast;
@@ -32,14 +32,14 @@ import gama.api.types.matrix.IMatrix;
 import gama.api.types.misc.IContainer;
 import gama.api.utils.interfaces.IImageProvider;
 import gama.api.utils.random.IRandom;
-import one.util.streamex.IntStreamEx;
+import one.util.streamex.LongStreamEx;
 import one.util.streamex.StreamEx;
 
 /**
  * The Class GamaIntMatrix.
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
-public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider {
+public class GamaIntMatrix extends GamaMatrix<Long> implements IImageProvider {
 
 	/**
 	 * From.
@@ -90,7 +90,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	@Override
 	public IMatrix _opAppendVertically(final IScope scope, final IMatrix b) {
 		if (b instanceof GamaIntMatrix gfm) {
-			final int[] mab = ArrayUtils.addAll(getMatrix(), gfm.getMatrix());
+			final long[] mab = ArrayUtils.addAll(getMatrix(), gfm.getMatrix());
 			return new GamaIntMatrix(numCols, numRows + gfm.getRows(scope), mab);
 		}
 		return this;
@@ -101,7 +101,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	private double cellSize;
 
 	/** The matrix. */
-	int[] matrix;
+	long[] matrix;
 
 	/**
 	 * Instantiates a new gama int matrix.
@@ -133,7 +133,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	 */
 	GamaIntMatrix(final int cols, final int rows) {
 		super(cols, rows, Types.INT);
-		matrix = new int[cols * rows];
+		matrix = new long[cols * rows];
 	}
 
 	/**
@@ -141,7 +141,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	 *
 	 * @return the matrix
 	 */
-	public int[] getMatrix() { return matrix; }
+	public long[] getMatrix() { return matrix; }
 
 	/**
 	 * Instantiates a new gama int matrix.
@@ -155,7 +155,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	 */
 	GamaIntMatrix(final int cols, final int rows, final double[] objects) {
 		this(cols, rows);
-		for (int i = 0, n = Math.min(objects.length, rows * cols); i < n; i++) { matrix[i] = (int) objects[i]; }
+		for (int i = 0, n = Math.min(objects.length, rows * cols); i < n; i++) { matrix[i] = (long) objects[i]; }
 	}
 
 	/**
@@ -168,7 +168,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	 * @param objects
 	 *            the objects
 	 */
-	GamaIntMatrix(final int cols, final int rows, final int[] objects) {
+	GamaIntMatrix(final int cols, final int rows, final long[] objects) {
 		this(cols, rows);
 		java.lang.System.arraycopy(objects, 0, matrix, 0, Math.min(objects.length, rows * cols));
 	}
@@ -200,7 +200,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	 * @param mat
 	 *            the mat
 	 */
-	GamaIntMatrix(final IScope scope, final int[] mat) {
+	GamaIntMatrix(final IScope scope, final long[] mat) {
 		super(1, mat.length, Types.INT);
 		matrix = mat;
 	}
@@ -217,7 +217,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	 */
 	GamaIntMatrix(final IScope scope, final List objects, final IPoint preferredSize) {
 		super(scope, objects, preferredSize, Types.INT);
-		matrix = new int[numRows * numCols];
+		matrix = new long[numRows * numCols];
 		if (preferredSize != null) {
 			for (int i = 0, stop = Math.min(matrix.length, objects.size()); i < stop; i++) {
 				matrix[i] = Cast.asInt(scope, objects.get(i));
@@ -258,21 +258,21 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 
 	@Override
 	protected boolean _contains(final IScope scope, final Object o) {
-		for (final int element : matrix) {
-			if (o instanceof Integer && element == ((Integer) o).intValue()) return true;
+		for (final long element : matrix) {
+			if (o instanceof Long && element == ((Long) o).longValue()) return true;
 		}
 		return false;
 	}
 
 	@Override
-	public Integer _first(final IScope scope) {
-		if (matrix.length == 0) return 0;
+	public Long _first(final IScope scope) {
+		if (matrix.length == 0) return 0l;
 		return matrix[0];
 	}
 
 	@Override
-	public Integer _last(final IScope scope) {
-		if (matrix.length == 0) return 0;
+	public Long _last(final IScope scope) {
+		if (matrix.length == 0) return 0l;
 		return matrix[matrix.length - 1];
 	}
 
@@ -290,7 +290,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	 * @return the matrix concatenated
 	 */
 	public IMatrix _opAppendVertically(final IScope scope, final GamaIntMatrix b) {
-		final int[] mab = ArrayUtils.addAll(getMatrix(), b.getMatrix());
+		final long[] mab = ArrayUtils.addAll(getMatrix(), b.getMatrix());
 		return new GamaIntMatrix(numCols, numRows + b.getRows(scope), mab);
 	}
 
@@ -312,7 +312,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 
 	@Override
 	public boolean _isEmpty(final IScope scope) {
-		for (final int element : matrix) { if (element != 0) return false; }
+		for (final long element : matrix) { if (element != 0) return false; }
 		return true;
 	}
 
@@ -365,13 +365,13 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	 * @param o
 	 *            the o
 	 */
-	public void fillWith(final int o) {
+	public void fillWith(final long o) {
 		Arrays.fill(matrix, o);
 	}
 
 	@Override
-	public Integer get(final IScope scope, final int col, final int row) {
-		if (col >= numCols || col < 0 || row >= numRows || row < 0) return 0;
+	public Long get(final IScope scope, final int col, final int row) {
+		if (col >= numCols || col < 0 || row >= numRows || row < 0) return 0l;
 		return matrix[row * numCols + col];
 	}
 
@@ -395,7 +395,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	 *            the obj
 	 */
 	// @Override
-	public void set(final IScope scope, final int col, final int row, final int obj) {
+	public void set(final IScope scope, final int col, final int row, final long obj) {
 		if (col >= numCols || col < 0 || row >= numRows || row < 0) return;
 		matrix[row * numCols + col] = obj;
 	}
@@ -413,7 +413,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	 *            the o
 	 * @return true, if successful
 	 */
-	public boolean remove(final int o) {
+	public boolean remove(final long o) {
 		for (int i = 0; i < matrix.length; i++) {
 			if (matrix[i] == o) {
 				matrix[i] = 0;
@@ -424,15 +424,15 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	}
 
 	@Override
-	public Integer remove(final IScope scope, final int col, final int row) {
-		if (col >= numCols || col < 0 || row >= numRows || row < 0) return 0;
-		final int o = matrix[row * numCols + col];
+	public Long remove(final IScope scope, final int col, final int row) {
+		if (col >= numCols || col < 0 || row >= numRows || row < 0) return 0l;
+		final long o = matrix[row * numCols + col];
 		matrix[row * numCols + col] = 0;
 		return o;
 	}
 
 	@Override
-	public boolean _removeFirst(final IScope scope, final Integer o) {
+	public boolean _removeFirst(final IScope scope, final Long o) {
 		return remove(o);
 	}
 
@@ -443,7 +443,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	 *            the o
 	 * @return true, if successful
 	 */
-	public boolean removeAll(final int o) {
+	public boolean removeAll(final long o) {
 		boolean removed = false;
 		for (int i = 0; i < matrix.length; i++) {
 			if (matrix[i] == o) {
@@ -455,8 +455,8 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	}
 
 	@Override
-	public boolean _removeAll(final IScope scope, final IContainer<?, Integer> list) {
-		for (final Integer o : list.iterable(scope)) { removeAll(o); }
+	public boolean _removeAll(final IScope scope, final IContainer<?, Long> list) {
+		for (final Long o : list.iterable(scope)) { removeAll(o); }
 		// TODO Make a test to verify the return
 		return true;
 	}
@@ -480,8 +480,8 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	 * @see gama.core.util.matrix.GamaMatrix#iterator()
 	 */
 	@Override
-	public java.lang.Iterable<Integer> iterable(final IScope scope) {
-		return Ints.asList(matrix);
+	public java.lang.Iterable<Long> iterable(final IScope scope) {
+		return Longs.asList(matrix);
 	}
 
 	@Override
@@ -526,7 +526,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	}
 
 	@Override
-	public IMatrix times(final Integer val) throws GamaRuntimeException {
+	public IMatrix times(final Long val) throws GamaRuntimeException {
 		final GamaIntMatrix nm = new GamaIntMatrix(this.numCols, this.numRows);
 		for (int i = 0; i < matrix.length; i++) { nm.matrix[i] = matrix[i] * val; }
 		return nm;
@@ -541,7 +541,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	}
 
 	@Override
-	public IMatrix divides(final Integer val) throws GamaRuntimeException {
+	public IMatrix divides(final Long val) throws GamaRuntimeException {
 		final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
 		final double[] mm = nm.getMatrix();
 		for (int i = 0; i < matrix.length; i++) { mm[i] = matrix[i] / (double) val; }
@@ -568,7 +568,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	}
 
 	@Override
-	public IMatrix plus(final Integer val) throws GamaRuntimeException {
+	public IMatrix plus(final Long val) throws GamaRuntimeException {
 		final GamaIntMatrix nm = new GamaIntMatrix(this.numCols, this.numRows);
 		for (int i = 0; i < matrix.length; i++) { nm.matrix[i] = matrix[i] + val; }
 		return nm;
@@ -583,15 +583,15 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	}
 
 	@Override
-	public IMatrix minus(final Integer val) throws GamaRuntimeException {
+	public IMatrix minus(final Long val) throws GamaRuntimeException {
 		final GamaIntMatrix nm = new GamaIntMatrix(this.numCols, this.numRows);
 		for (int i = 0; i < matrix.length; i++) { nm.matrix[i] = matrix[i] - val; }
 		return nm;
 	}
 
 	@Override
-	public Integer getNthElement(final Integer index) {
-		if (index == null || index > getMatrix().length) return 0;
+	public Long getNthElement(final Integer index) {
+		if (index == null || index > getMatrix().length) return 0l;
 		return getMatrix()[index];
 	}
 
@@ -601,8 +601,8 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	}
 
 	@Override
-	public StreamEx<Integer> stream(final IScope scope) {
-		return IntStreamEx.of(matrix).boxed();
+	public StreamEx<Long> stream(final IScope scope) {
+		return LongStreamEx.of(matrix).boxed();
 	}
 
 	@Override
@@ -619,7 +619,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	 * @param matrix
 	 * @return
 	 */
-	public static BufferedImage constructBufferedImageFromMatrix(final IScope scope, final IMatrix<Integer> matrix) {
+	public static BufferedImage constructBufferedImageFromMatrix(final IScope scope, final IMatrix<Long> matrix) {
 		if (!(matrix instanceof GamaIntMatrix gim)) return null;
 		return gim.getImage(scope);
 	}
@@ -632,7 +632,9 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 		int w = getCols(scope);
 		int h = getRows(scope);
 		BufferedImage ret = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-		for (int i = 0; i < w; i++) { for (int j = 0; j < h; j++) { ret.setRGB(i, j, get(scope, i, j)); } }
+		for (int i = 0; i < w; i++) {
+			for (int j = 0; j < h; j++) { ret.setRGB(i, j, get(scope, i, j).intValue()); }
+		}
 		return ret;
 	}
 

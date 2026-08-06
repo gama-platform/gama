@@ -59,9 +59,9 @@ public class SubModel {
 			value = "Load a submodel",
 			comment = "loaded submodel")
 	@no_test
-	public static Integer stepSubModel(final IScope scope, final IExperimentAgent expName) {
+	public static Long stepSubModel(final IScope scope, final IExperimentAgent expName) {
 		final Experiment exp = (Experiment) scope.getVarValue(expName.toString());
-		return (int) exp.step();
+		return (long) exp.step();
 	}
 
 	/**

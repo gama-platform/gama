@@ -77,7 +77,7 @@ public class LayerData extends AttributeHolder implements ILayerData {
 	final Attribute<Boolean> fading;
 
 	/** The trace. */
-	final Attribute<Integer> trace;
+	final Attribute<Long> trace;
 
 	/** The selectable. */
 	Attribute<Boolean> selectable;
@@ -111,7 +111,7 @@ public class LayerData extends AttributeHolder implements ILayerData {
 		fading = create(FADING, BOOL, false);
 		visible = create(VISIBLE, BOOL, true);
 		trace = create(TRACE, (scope, exp) -> exp.getGamlType() == BOOL && Cast.asBool(scope, exp.value(scope))
-				? Integer.MAX_VALUE : Cast.asInt(scope, exp.value(scope)), INT, 0);
+				? (long) Integer.MAX_VALUE : Cast.asInt(scope, exp.value(scope)), INT, 0l);
 		selectable = create(SELECTABLE, BOOL, true);
 		transparency = create(TRANSPARENCY,
 				(scope, exp) -> Math.min(Math.max(Cast.asFloat(scope, exp.value(scope)), 0d), 1d), FLOAT, 0d);
@@ -181,7 +181,7 @@ public class LayerData extends AttributeHolder implements ILayerData {
 	 * @see gama.api.ui.layers.ILayerData#getTrace()
 	 */
 	@Override
-	public Integer getTrace() { return trace.get(); }
+	public Integer getTrace() { return trace.get().intValue(); }
 
 	@Override
 	public Double getRotation() { return rotation.get(); }
