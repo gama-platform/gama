@@ -37,6 +37,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import gaml.compiler.validation.GamlModelBuilder;
+import gaml.compiler.resource.GamlFileInfo;
 import gama.api.kernel.species.IModelSpecies;
 import gama.api.utils.GamlProperties;
 import gama.api.constants.GamlFileExtension;
@@ -114,6 +115,8 @@ public class ExportProjectAsSimulation extends AbstractHandler {
 			final List<IFile> modelFiles = new ArrayList<>();
 			getModelsFromProject(project,modelFiles);
 
+			final Set<String> dataFiles = new HashSet<>();
+
 			for (IFile modelFile : modelFiles)
 			{
 				final GamlProperties metaProperties = new GamlProperties();
@@ -129,6 +132,14 @@ public class ExportProjectAsSimulation extends AbstractHandler {
 					.map(experiment -> experiment.getDescription().getName() + contextualSeparator + modelFile.getFullPath().toOSString())
 					.toList()
 				);
+
+				// Gather the data files imported by this model and resolve them
+				// to absolute paths so the builder can embed the external ones.
+				final GamlFileInfo fileInfo = new GamlFileInfo(modelFile);
+				final Path modelFileParent = Path.of(modelFile.getLocation().toOSString()).getParent();
+				for (final String use : fileInfo.getUses()) {
+					dataFiles.add(modelFileParent.resolve(use).normalize().toString());
+				}
 
 			}
 			
@@ -158,7 +169,8 @@ public class ExportProjectAsSimulation extends AbstractHandler {
 				plugins,
 				project.getLocation().toOSString(),
 				"",
-				targetExperiments);
+				targetExperiments,
+				dataFiles);
 
 			try { 
 				ziper.zip(outputPath.toString());

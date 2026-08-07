@@ -2,6 +2,7 @@ package gaml.compiler.ui.editor.toolbar;
 
 import java.nio.file.Path;
 import java.util.Set;
+import java.util.HashSet;
 import java.util.stream.StreamSupport;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -28,6 +29,7 @@ import gaml.compiler.ui.editor.GamlEditor;
 import gaml.compiler.ui.editor.GamlEditorState;
 import gama.export.GamaZipBuilder;
 import gama.export.ui.ExportModelDialog;
+import gaml.compiler.resource.GamlFileInfo;
 
 public class ExportExperimentSelectionListener implements Selector {
 
@@ -67,8 +69,14 @@ public class ExportExperimentSelectionListener implements Selector {
 
 		try {
 			final IModelSpecies model = GamlModelBuilder.getInstance().compile(file.getLocation().toFile(),null,metaProperties);
-			
-			Set<String> plugins = metaProperties.get(GamlProperties.PLUGINS); 
+			GamlFileInfo fileInfo = new GamlFileInfo(file);
+			final Path modelFileParent = Path.of(file.getLocation().toOSString()).getParent();
+			final Set<String> dataFiles = new HashSet<>();
+			for (final String use : fileInfo.getUses()) {
+				dataFiles.add(modelFileParent.resolve(use).normalize().toString());
+			}
+
+			Set<String> plugins = metaProperties.get(GamlProperties.PLUGINS);
 
 			final String[] experimentNames = StreamSupport.stream(model.getExperiments().spliterator(),false)
 				.map(experiment -> experiment.getDescription().getName())
@@ -95,7 +103,8 @@ public class ExportExperimentSelectionListener implements Selector {
 				plugins,
 				file.getProject().getLocation().toOSString(),
 				relativeModelPathStr,
-				targetExperiments);
+				targetExperiments,
+				dataFiles);
 			try { 
 				ziper.zip(outputPath.toString());
 				System.out.println("Model exported successfully");
