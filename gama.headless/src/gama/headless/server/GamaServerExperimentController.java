@@ -114,6 +114,7 @@ public class GamaServerExperimentController extends AbstractExperimentController
 
 		commandThread.setUncaughtExceptionHandler(GamaExecutorService.EXCEPTION_HANDLER);
 		lock.acquire();
+		previouslock.acquire();
 		commandThread.start();
 	}
 
@@ -143,9 +144,9 @@ public class GamaServerExperimentController extends AbstractExperimentController
 				return true;
 			case _STEP:
 				for(int i = 0; i < command.quantity(); i++) {
-					previouslock.acquire();
 					paused = true;
-					lock.release();					
+					lock.release();			
+					previouslock.acquire();
 				}
 				return true;
 			case _BACK:
