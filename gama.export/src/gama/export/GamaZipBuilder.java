@@ -16,6 +16,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
+import org.eclipse.core.resources.IProject;
 import gama.api.utils.prefs.JREPreferenceStore;
 import gama.api.utils.prefs.GamaPreferenceStore;
 import gama.api.GAMA;
@@ -84,9 +85,13 @@ public class GamaZipBuilder {
     
     private static final String gamaUiApplicationPluginFileName = gamaUiApplicationPluginPath.getFileName().toString();
 
+    private IProject targetProject = null;
+    
     private String targetModelRelativePathStr = null;
 
     private String targetProjectPathStr = null;
+
+    private String targetWorkspacePathStr = null;
 
     private String targetExperiment = null;
 
@@ -124,14 +129,41 @@ public class GamaZipBuilder {
             }
     }
 
-    public GamaZipBuilder(final Set<String> plugins, final String targetProjectPathStr,
+    public void handleUpdateGamlImports(Path filePath, Path includeDir, Map<Path,String> externalDataFiles, ZipOutputStream zos) throws IOException, RuntimeException{
+        String content = Files.readString(filePath, StandardCharsets.UTF_8);
+        final Path gamlParent = filePath.getParent();
+
+        for (final Map.Entry<Path, String> entry : externalDataFiles.entrySet()) {
+            final Path sourcePath = entry.getKey();
+            final String uniqueName = entry.getValue();
+            // Only meaningful when both paths share the same root.
+            // if (!gamlParent.getRoot().equals(sourcePath.getRoot())) {
+            //     continue;
+            // }
+            final String originalString =
+                    gamlParent.relativize(sourcePath).toString().replace('\\', '/');
+            final String newRelativePath = gamlParent
+                    .relativize(includeDir.resolve(uniqueName)).toString().replace('\\', '/');
+            content = content.replace("\"" + originalString + "\"",
+                    "\"" + newRelativePath + "\"");
+            content = content.replace("'" + originalString + "'",
+                    "'" + newRelativePath + "'");
+        }
+        zos.write(content.getBytes(StandardCharsets.UTF_8));
+    }
+
+    public GamaZipBuilder(final Set<String> plugins, final IProject targetProject,
             final String targetModelRelativePathStr, final String targetExperiment, final Set<String> dataFiles) 
     {
         neededGamaPlugins = plugins;
         neededGamaPlugins.addAll(necessaryGamaPlugins);
 
+        this.targetProject = targetProject;
+
+        this.targetProjectPathStr = targetProject.getLocation().toOSString();
+        this.targetWorkspacePathStr = targetProject.getWorkspace().getRoot().getLocation().toOSString();
+
         this.targetModelRelativePathStr = targetModelRelativePathStr; 
-        this.targetProjectPathStr = targetProjectPathStr;
         this.targetExperiment = targetExperiment;
         this.dataFiles = dataFiles;
 
@@ -307,14 +339,15 @@ public class GamaZipBuilder {
             ////////////////////////////////////
 
             Path targetProjectPath = Path.of(targetProjectPathStr);
-            String targetWorkspacePathStr = targetProjectPath.getParent().toString();
+            // String targetWorkspacePathStr = targetProjectPath.getParent().toString();
 
-            ///////////////////////////////////////////////////////////////////
+            ////////////////////////////////////////////////////////////////////
             // Computing the data files that lie outside the exported project //
-            // and must be rerouted into the project's "include" directory.  //
-            // Their path is rewritten in every GAML file that references    //
-            // them during the project walk below.                          //
-            ///////////////////////////////////////////////////////////////////
+            // and must be rerouted into the project's "include" directory.   //
+            // Their path is rewritten in every GAML file that references     //
+            // them during the project walk below.                            //
+            ////////////////////////////////////////////////////////////////////
+
             final Path includeDir = targetProjectPath.resolve("includes");
             final String projectName = targetProjectPath.getFileName().toString();
             final Map<Path, String> externalDataFiles = new LinkedHashMap<>();
@@ -399,25 +432,7 @@ public class GamaZipBuilder {
                             // Rewrite, in every GAML file, the paths of the data
                             // files that have been rerouted into the include dir.
                             if (isGaml && !externalDataFiles.isEmpty()) {
-                                String content = Files.readString(filePath, StandardCharsets.UTF_8);
-                                final Path gamlParent = filePath.getParent();
-                                for (final Map.Entry<Path, String> entry : externalDataFiles.entrySet()) {
-                                    final Path sourcePath = entry.getKey();
-                                    final String uniqueName = entry.getValue();
-                                    // Only meaningful when both paths share the same root.
-                                    // if (!gamlParent.getRoot().equals(sourcePath.getRoot())) {
-                                    //     continue;
-                                    // }
-                                    final String originalString =
-                                            gamlParent.relativize(sourcePath).toString().replace('\\', '/');
-                                    final String newRelativePath = gamlParent
-                                            .relativize(includeDir.resolve(uniqueName)).toString().replace('\\', '/');
-                                    content = content.replace("\"" + originalString + "\"",
-                                            "\"" + newRelativePath + "\"");
-                                    content = content.replace("'" + originalString + "'",
-                                            "'" + newRelativePath + "'");
-                                }
-                                zos.write(content.getBytes(StandardCharsets.UTF_8));
+                                handleUpdateGamlImports(filePath,includeDir,externalDataFiles,zos);
                             } else {
                                 Files.copy(filePath, zos);
                             }
@@ -441,13 +456,36 @@ public class GamaZipBuilder {
 
             ////////////////////////////////////////////////////////////
             // Embedding the external data files into the project's   //
-            // "include" directory so they travel with the export.   //
+            // "include" directory so they travel with the export.    //
             ////////////////////////////////////////////////////////////
+
             for (final Map.Entry<Path, String> entry : externalDataFiles.entrySet()) {
                 final String zipEntryPath = Path.of(GamaZipBuilder.embeddedWorkspaceName, projectName, "includes",
                         entry.getValue()).toString();
                 zos.putNextEntry(new ZipEntry(zipEntryPath));
                 Files.copy(entry.getKey(), zos);
+                zos.closeEntry();
+            }
+
+            ////////////////////////////////////////
+            // Resolving the project linked files //
+            ////////////////////////////////////////
+
+            final Map<String,Path> linkedFilesMap = ExportHelper.resolveLinks(targetProjectPath.resolve(".project"),targetProject);
+            
+            for (String virtualPathStr : linkedFilesMap.keySet())
+            {
+                // preserve the link virtual path /Embedded_Workspace/projectName/path/to/link
+                zos.putNextEntry(
+                    new ZipEntry(
+                        GamaZipBuilder.embeddedWorkspaceName 
+                        + File.separator + projectName 
+                        + File.separator + virtualPathStr
+                    ));
+
+                // but write the actual content of the file designed by the link
+                handleUpdateGamlImports(linkedFilesMap.get(virtualPathStr),includeDir,externalDataFiles,zos);
+                // Files.copy(linkedFilesMap.get(virtualPathStr),zos);
                 zos.closeEntry();
             }
             

@@ -11,6 +11,9 @@ Bundle-Vendor: UMMISCO
 Require-Bundle: gama.api,
  gama.dev,
  org.eclipse.core.runtime,
+ org.eclipse.core.resources,
+ org.eclipse.core.filesystem,
+ org.eclipse.core.runtime,
  org.eclipse.jface
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-25

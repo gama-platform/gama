@@ -167,7 +167,7 @@ public class ExportProjectAsSimulation extends AbstractHandler {
 
 			final GamaZipBuilder ziper = new GamaZipBuilder(
 				plugins,
-				project.getLocation().toOSString(),
+				project,
 				"",
 				targetExperiments,
 				dataFiles);

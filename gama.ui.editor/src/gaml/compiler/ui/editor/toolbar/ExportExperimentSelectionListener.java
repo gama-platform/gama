@@ -101,7 +101,7 @@ public class ExportExperimentSelectionListener implements Selector {
 
 			final GamaZipBuilder ziper = new GamaZipBuilder(
 				plugins,
-				file.getProject().getLocation().toOSString(),
+				file.getProject(),
 				relativeModelPathStr,
 				targetExperiments,
 				dataFiles);
