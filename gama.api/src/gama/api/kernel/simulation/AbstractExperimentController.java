@@ -270,7 +270,6 @@ public abstract class AbstractExperimentController implements IExperimentControl
 	 */
 	protected boolean synchronousStep(final int nbSteps) {
 		return processUserCommand(new ExperimentCommand(ExperimentCommandTypes._STEP, nbSteps));
-
 	}
 
 	/**
