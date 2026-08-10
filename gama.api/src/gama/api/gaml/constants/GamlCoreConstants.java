@@ -426,6 +426,23 @@ public interface GamlCoreConstants {
 			doc = @doc ("This unit, only available when running aspects or declaring displays, returns the current orientation of the camera as a point")) IPoint camera_orientation =
 					GamaPointFactory.create();
 
+	/** The camera up vector. */
+	@constant (
+			value = "camera_up",
+			category = IConstantCategory.GRAPHIC,
+			concept = { IConcept.GRAPHIC, IConcept.GRAPHIC_UNIT, IConcept.THREED },
+			doc = @doc ("This unit, only available when running aspects or declaring displays, returns the current up axis of the camera as a point")) IPoint camera_up =
+					GamaPointFactory.create();
+
+	/** The camera right vector. */
+	@constant (
+			value = "camera_right",
+			category = IConstantCategory.GRAPHIC,
+			concept = { IConcept.GRAPHIC, IConcept.GRAPHIC_UNIT, IConcept.THREED },
+			doc = @doc ("This unit, only available when running aspects or declaring displays, returns the current right axis of the camera as a point")) IPoint camera_right =
+					GamaPointFactory.create();
+
+	
 	/**
 	 * Anchor constants
 	 */
