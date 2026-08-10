@@ -18,21 +18,43 @@ on:
         type: string
         required: true
         default: 25.0.4+7
-      releaseGithubOnly:
-        description: "Release only on Github (not on Microsoft Stores, else) ?"
+      releaseGithub:
+        description: "[Release] On Github (uncheck == no) ?"
+        type: boolean
+        required: true
+        default: false
+      releaseDocker:
+        description: "[Release] On Docker (uncheck == no) ?"
+        type: boolean
+        required: true
+        default: false
+      releaseMicrosoft:
+        description: "[Release] On Microsoft Store (uncheck == no) ?"
+        type: boolean
+        required: true
+        default: false
+      releaseLinuxPpa:
+        description: "[Release] On Linux PPA (uncheck == no) ?"
+        type: boolean
+        required: true
+        default: false
+      releaseNpmGaml:
+        description: "[Release] Create new GAML syntax highlighting plugin (JS plugin, uncheck == no) ?"
         type: boolean
         required: true
         default: false
       skipTests:
-        description: "Skip all test workflows ?"
+        description: "[Test] Skip all test workflows ?"
         type: boolean
         required: true
         default: false
       USE_BUILD_CACHE:
+        description: "[DEBUG] Use build cache ?"
         type: boolean
         required: true
         default: false
       USE_DEPENDENCY_CACHE:
+        description: "[DEBUG] Use dependency cache ?"
         type: boolean
         required: true
         default: false
@@ -146,6 +168,10 @@ jobs:
       RELEASE_VERSION: ${{ inputs.tag }}
       IS_STABLE_RELEASE: ${{ inputs.IS_STABLE_RELEASE }}
       COMMIT_SHA: ${{needs.travis-scripts.outputs.commit}}
-      RELEASE_GITHUB_ONLY: ${{ inputs.releaseGithubOnly }}
+      RELEASE_GITHUB: ${{ inputs.releaseGithub }}
+      RELEASE_DOCKER: ${{ inputs.releaseDocker }}
+      RELEASE_MICROSOFT: ${{ inputs.releaseMicrosoft }}
+      RELEASE_LINUX_PPA: ${{ inputs.releaseLinuxPpa }}
+      RELEASE_NPM_GAML: ${{ inputs.releaseNpmGaml }}
     secrets:
       BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
