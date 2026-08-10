@@ -12,6 +12,8 @@ package gama.processor.doc;
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -118,6 +120,49 @@ public class DocProcessor extends ElementProcessor<doc> {
 	protected Class<doc> getAnnotationClass() { return doc.class; }
 
 	/**
+	 * Total order used to iterate over annotated elements: declaring type first, then the element signature.
+	 *
+	 * <p>
+	 * {@link javax.lang.model.element.Element#toString()} is unique inside a given type (a method renders as
+	 * {@code name(paramTypes)}, a field as its simple name), and the enclosing element renders as a qualified name, so
+	 * the two keys together are a total order over the elements of a compilation.
+	 */
+	private static final Comparator<Element> BY_DECLARING_TYPE_THEN_SIGNATURE =
+			Comparator.comparing((final Element e) -> e.getEnclosingElement().toString())
+					.thenComparing(Element::toString);
+
+	/**
+	 * Imposes a deterministic iteration order on a set of annotated elements.
+	 *
+	 * <p>
+	 * {@link RoundEnvironment#getElementsAnnotatedWith} hands back the elements in whatever order javac happened to
+	 * scan the compilation units; that order is not part of its contract and does vary between builds (the root
+	 * elements follow the file order the compiler was handed, which comes from an unsorted directory scan, and
+	 * incremental or cached builds change the set of roots altogether).
+	 *
+	 * <p>
+	 * Every {@code processDocXML*} method below folds its input into the XML document in iteration order, and most of
+	 * them dedup on a first-seen-wins basis, so an unstable input order leaks all the way into the generated wiki: the
+	 * signatures listed under "Possible uses", the paragraphs of a merged "Result", the {@code varN} numbering of the
+	 * examples (the index is the document position of the {@code example} element) and the back-references appended by
+	 * {@link #processSeeAlso} all get reshuffled from one regeneration to the next. Sorting here is what keeps the
+	 * generated documentation diff-free when nothing has actually changed.
+	 *
+	 * @param <T>
+	 *            the concrete element type
+	 * @param set
+	 *            the elements as returned by the round environment
+	 * @return the same elements, in a stable order
+	 */
+	private static <T extends Element> Set<T> sorted(final Set<T> set) {
+		final List<T> list = new ArrayList<>(set);
+		list.sort(BY_DECLARING_TYPE_THEN_SIGNATURE);
+		// A LinkedHashSet keeps the order above while still deduping on identity, unlike a TreeSet which would drop
+		// any two elements the comparator considers equal.
+		return new LinkedHashSet<>(list);
+	}
+
+	/**
 	 * Gets the root name.
 	 *
 	 * @return the root name
@@ -153,7 +198,7 @@ public class DocProcessor extends ElementProcessor<doc> {
 
 		// ////////////////////////////////////////////////
 		// /// Parsing of Constants Categories
-		final Set<? extends Element> setConstants = context.getElementsAnnotatedWith(constant.class);
+		final Set<? extends Element> setConstants = sorted(context.getElementsAnnotatedWith(constant.class));
 
 		root.appendChild(this.processDocXMLCategories(setConstants, XMLElements.CONSTANTS_CATEGORIES));
 
@@ -170,34 +215,34 @@ public class DocProcessor extends ElementProcessor<doc> {
 		// ////////////////////////////////////////////////
 		// /// Parsing of Operators Categories
 		@SuppressWarnings ("unchecked") final Set<? extends ExecutableElement> setOperatorsCategories =
-				(Set<? extends ExecutableElement>) context.getElementsAnnotatedWith(operator.class);
+				sorted((Set<? extends ExecutableElement>) context.getElementsAnnotatedWith(operator.class));
 		root.appendChild(this.processDocXMLCategories(setOperatorsCategories, XMLElements.OPERATORS_CATEGORIES));
 
 		// ////////////////////////////////////////////////
 		// /// Parsing of Operators
 		@SuppressWarnings ("unchecked") final Set<? extends ExecutableElement> setOperators =
-				(Set<? extends ExecutableElement>) context.getElementsAnnotatedWith(operator.class);
+				sorted((Set<? extends ExecutableElement>) context.getElementsAnnotatedWith(operator.class));
 		root.appendChild(this.processDocXMLOperators(setOperators));
 
 		// ////////////////////////////////////////////////
 		// /// Parsing of Skills
-		final Set<? extends Element> setSkills = context.getElementsAnnotatedWith(skill.class);
+		final Set<? extends Element> setSkills = sorted(context.getElementsAnnotatedWith(skill.class));
 		root.appendChild(this.processDocXMLSkills(setSkills, context));
 
 		// ////////////////////////////////////////////////
 		// /// Parsing of Architectures
-		final Set<? extends Element> setArchitectures = context.getElementsAnnotatedWith(skill.class);
+		final Set<? extends Element> setArchitectures = sorted(context.getElementsAnnotatedWith(skill.class));
 		root.appendChild(this.processDocXMLArchitectures(setArchitectures, context));
 
 		// ////////////////////////////////////////////////
 		// /// Parsing of Species
 		@SuppressWarnings ("unchecked") final Set<? extends TypeElement> setSpecies =
-				(Set<? extends TypeElement>) context.getElementsAnnotatedWith(species.class);
+				sorted((Set<? extends TypeElement>) context.getElementsAnnotatedWith(species.class));
 		root.appendChild(this.processDocXMLSpecies(setSpecies));
 
 		// ////////////////////////////////////////////////
 		// /// Parsing of Inside statements (kinds and symbols)
-		final Set<? extends Element> setStatements = context.getElementsAnnotatedWith(symbol.class);
+		final Set<? extends Element> setStatements = sorted(context.getElementsAnnotatedWith(symbol.class));
 		root.appendChild(this.processDocXMLStatementsInsideKind(setStatements));
 		root.appendChild(this.processDocXMLStatementsInsideSymbol(setStatements));
 
@@ -208,7 +253,7 @@ public class DocProcessor extends ElementProcessor<doc> {
 
 		// ////////////////////////////////////////////////
 		// /// Parsing of Types to get operators
-		final Set<? extends Element> setOperatorsTypes = context.getElementsAnnotatedWith(type.class);
+		final Set<? extends Element> setOperatorsTypes = sorted(context.getElementsAnnotatedWith(type.class));
 		final ArrayList<org.w3c.dom.Element> listEltOperatorsFromTypes =
 				this.processDocXMLOperatorsFromTypes(setOperatorsTypes);
 
@@ -218,7 +263,7 @@ public class DocProcessor extends ElementProcessor<doc> {
 
 		// ////////////////////////////////////////////////
 		// /// Parsing of Files to get operators
-		final Set<? extends Element> setFilesOperators = context.getElementsAnnotatedWith(file.class);
+		final Set<? extends Element> setFilesOperators = sorted(context.getElementsAnnotatedWith(file.class));
 		final ArrayList<org.w3c.dom.Element> listEltOperatorsFromFiles =
 				this.processDocXMLOperatorsFromFiles(setFilesOperators);
 
@@ -228,12 +273,12 @@ public class DocProcessor extends ElementProcessor<doc> {
 		// /// Parsing of Files
 
 		// TODO : manage to get the documentation...
-		final Set<? extends Element> setFiles = context.getElementsAnnotatedWith(file.class);
+		final Set<? extends Element> setFiles = sorted(context.getElementsAnnotatedWith(file.class));
 		root.appendChild(this.processDocXMLTypes(setFiles));
 
 		// ////////////////////////////////////////////////
 		// /// Parsing of Types
-		final Set<? extends Element> setTypes = context.getElementsAnnotatedWith(type.class);
+		final Set<? extends Element> setTypes = sorted(context.getElementsAnnotatedWith(type.class));
 		root.appendChild(this.processDocXMLTypes(setTypes, context));
 
 		// //////////////////////
