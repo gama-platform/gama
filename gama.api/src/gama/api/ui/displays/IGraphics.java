@@ -73,6 +73,20 @@ public interface IGraphics {
 		 * @return the camera orientation
 		 */
 		IPoint getCameraOrientation();
+		
+		/**
+		 * Gets the camera up axis.
+		 *
+		 * @return the camera orientation
+		 */
+		IPoint getCameraUp();
+		
+		/**
+		 * Gets the camera right axis.
+		 *
+		 * @return the camera orientation
+		 */
+		IPoint getCameraRight();
 	}
 
 	/** The quality rendering. */

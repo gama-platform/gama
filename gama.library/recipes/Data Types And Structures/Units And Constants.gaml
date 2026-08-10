@@ -201,14 +201,16 @@ experiment exp {
 			// So pixel is used to define the dimension of an overlay in order to keep it size constant.
             overlay position: { 0, 0 } size: { 300 #pixels, 200 #px } background: #grey transparency: 0.2 border: #black rounded: true {
             	// Constant contain useful information about the way of vizualising the simulation with: the camera location (#camera_location), 
-            	// orientation (#camera_orientation) and target (#camera_target). 
+            	// orientation (#camera_orientation), target (#camera_target), up axis (#camera_up) and right axis (#camera_right). 
                 draw "Camera location:  " + string(#camera_location with_precision 3) at:{10#px,20#px,0#px} color: #black font: my_font_plain;
 				draw "Camera orientation:  " + string(#camera_orientation with_precision 3) at:{10#px,40#px,0} color: #black font: my_font_plain;
+				draw "Camera up axis:  " + string(#camera_up with_precision 3) at:{10#px,60#px,0} color: #black font: my_font_plain;
+				draw "Camera right axis:  " + string(#camera_right with_precision 3) at:{10#px,80#px,0} color: #black font: my_font_plain;
 				draw "Zoom level:  " + string(#zoom) at:{10#px,60#px,0} color: #black font: my_font_plain;	
 				// #display_height and #display_width contain the size in pixel of the simulation environment.
 				// It obviously depends on the zoom level.		
-				draw "Display height:  " + string(#display_height) at:{10#px,80#px,0} color: #black font: my_font_plain;				  		
-				draw "Display width:  " + string(#display_width) at:{10#px,100#px,0} color: #black font: my_font_plain;				  		  
+				draw "Display height:  " + string(#display_height) at:{10#px,100#px,0} color: #black font: my_font_plain;				  		
+				draw "Display width:  " + string(#display_width) at:{10#px,120#px,0} color: #black font: my_font_plain;				  		  
 			}
 					
 			// We can access location of the mouse in the display using #mouse_location.
