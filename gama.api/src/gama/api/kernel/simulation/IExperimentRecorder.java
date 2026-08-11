@@ -237,9 +237,11 @@ public interface IExperimentRecorder {
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @param sim
 	 *            the sim
+	 * @return {@code true} if a previous state was actually restored, {@code false} if there was nothing to restore.
+	 *         Lets callers distinguish a real step back from a no-op.
 	 * @date 8 août 2023
 	 */
-	void restore(ISimulationAgent sim);
+	boolean restore(ISimulationAgent sim);
 
 	/**
 	 * Can step back.

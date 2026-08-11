@@ -947,12 +947,16 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	 */
 	@Override
 	public boolean backward(final IScope scope) {
-		final boolean result = true;
+		// No recorder when the experiment is not declared with `record:` or no implementation is available.
+		if (recorder == null) return false;
+		final boolean[] restored = { false };
 		try {
 			GAMA.runAndUpdateAll(() -> {
 				for (ISimulationAgent sim : getSimulationPopulation()) {
 					if (recorder.canStepBack(sim)) {
-						recorder.restore(sim);
+						// restore() returns false when there is nothing left to restore.
+						if (!recorder.restore(sim)) { continue; }
+						restored[0] = true;
 						if (!((ExperimentSpecies) this.getSpecies()).keepsSeed()) {
 							sim.setRandomGenerator(
 									new RandomUtils(random.next(), sim.getRandomGenerator().getRngName()));
@@ -965,7 +969,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 			informStatus();
 			GAMA.updateExperimentState(getSpecies());
 		}
-		return result;
+		return restored[0];
 	}
 
 	/**
@@ -1325,7 +1329,11 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	public boolean isExperiment() { return true; }
 
 	@Override
-	public IExpression getStopCondition() { return stopCondition; }
+	public IExpression getStopCondition() {
+		// Read from the species, which may set it after the agent has been built (gama-server does so when loading).
+		final IExpression fromSpecies = getSpecies().getStopCondition();
+		return fromSpecies == null ? stopCondition : fromSpecies;
+	}
 
 	@Override
 	public boolean isGUI() { return true; }

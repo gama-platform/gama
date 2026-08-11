@@ -92,10 +92,32 @@ public class GamaHeadlessServerGUIEventHandler extends NullGuiHandler {
 	@Override
 	public void runtimeError(final IScope scope, final GamaRuntimeException g) {
 		DEBUG.OUT(g);
+		// Recorded before the guard below, as synchronous commands report the error whatever the `runtime:` setting.
+		recordOnController(scope, g);
 		// removed to fix #3758
 		// if (!canSendDialogMessages(scope)) return;
 		if (!canSendRuntimeErrors(scope)) return;
 		dialogMessager.sendMessage(scope.getExperiment(), g, MessageType.SimulationError);
+	}
+
+	/**
+	 * Records the error on the server controller driving this experiment, so that synchronous commands can report it.
+	 * Never propagates: this runs on the error path, which must stay usable.
+	 *
+	 * @param scope
+	 *            the scope in which the error was raised
+	 * @param g
+	 *            the error
+	 */
+	private void recordOnController(final IScope scope, final GamaRuntimeException g) {
+		try {
+			final IExperimentAgent agent = scope == null ? null : scope.getExperiment();
+			if (agent == null) return;
+			final GamaServerExperimentController c = GamaServerExperimentController.of(agent);
+			if (c != null) { c.recordRuntimeError(g); }
+		} catch (Throwable t) {
+			DEBUG.OUT("Could not record the runtime error on the controller: " + t);
+		}
 	}
 
 	@Override
