@@ -27,7 +27,9 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.server.SSLParametersWebSocketServerFactory;
 
 import gama.annotations.constants.IKeyword;
+import gama.api.GAMA;
 import gama.api.exceptions.CommandException;
+import gama.api.kernel.simulation.IExperimentController;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.utils.server.CommandResponse;
 import gama.api.utils.server.GamaWebSocketServer;
@@ -35,6 +37,7 @@ import gama.api.utils.server.IGamaServer;
 import gama.api.utils.server.IServerConfiguration;
 import gama.api.utils.server.ISocketCommand;
 import gama.api.utils.server.MessageType;
+import gama.dev.DEBUG;
 
 /**
  * The Class GamaWebSocketServer.
@@ -211,14 +214,22 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 	public void onClose(final WebSocket socket, final int code, final String reason, final boolean remote) {
 		super.onClose(socket, code, reason, remote);
 		String socketId = getSocketId(socket);
-		if (getLaunchedExperiments().get(socketId) != null) {
-			for (IExperimentSpecies e : getLaunchedExperiments().get(socketId).values()) {
-				e.getController().processPause(true);
-				e.getController().close();
-				e.getController().dispose();
+		final Map<String, IExperimentSpecies> experiments = getLaunchedExperiments().get(socketId);
+		if (experiments == null) return;
+		for (IExperimentSpecies e : experiments.values()) {
+			try {
+				final IExperimentController c = e.getController();
+				c.processPause(true);
+				c.close();
+				c.dispose();
+				// Disposing a controller does not unregister it. Left in the list, it stays what
+				// GAMA.getFrontmostController() returns for the rest of the server's life.
+				GAMA.getControllers().remove(c);
+			} catch (Throwable t) {
+				DEBUG.OUT("Could not close an experiment of the disconnected socket " + socketId + ": " + t);
 			}
-			getLaunchedExperiments().get(socketId).clear();
 		}
+		experiments.clear();
 	}
 
 	/**

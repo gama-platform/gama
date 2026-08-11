@@ -947,7 +947,8 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 	 */
 	@Override
 	public void setController(final IExperimentController ec) {
-		if (controller != null && controller.equals(ec)) {
+		// The controller being replaced is the one to shut down. Reassigning the same one must leave it alone.
+		if (controller != null && !controller.equals(ec)) {
 			controller.close();
 			controller.dispose();
 		}
