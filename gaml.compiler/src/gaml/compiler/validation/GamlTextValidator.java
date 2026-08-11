@@ -13,6 +13,7 @@ package gaml.compiler.validation;
 import static gama.api.compilation.GamlCompilationError.Type.Error;
 import static gama.api.compilation.GamlCompilationError.Type.Info;
 import static gama.api.compilation.GamlCompilationError.Type.Warning;
+import static gama.api.constants.IGamlIssue.GENERAL;
 import static gama.api.constants.IGamlIssue.LINKING_ERROR;
 import static gama.api.constants.IGamlIssue.SYNTACTIC_ERROR;
 import static org.eclipse.xtext.diagnostics.Severity.INFO;
@@ -96,7 +97,13 @@ public class GamlTextValidator implements IGamlTextValidator {
 				}
 			}
 			if (syntaxOnly) return;
-			resource.validate();
+			try {
+				resource.validate();
+			} catch (Throwable t) {
+				// DescriptionErrorManager throws for errors it cannot properly report. So we have to catch it here
+				// and register it as a regular error.
+				errors.add(GamlCompilationError.create(t.getMessage(), GENERAL, resource.getURI(), Error));
+			}
 			if (resource.hasSemanticErrors()) {
 				for (GamlCompilationError error : resource.getValidationContext().getInternalErrors()) {
 					errors.add(error);
