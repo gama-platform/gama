@@ -22,10 +22,12 @@ public class ExportModelDialog extends TitleAreaDialog {
     private Text txtOutputPath;
     private Text txtOutputFileName;
     private Button[] buttons;
+    private Button includeJdkButton;
     private Button selectAllExperimentsButton;
 
     private String outputPath = "";
     private String outputFileName = "";
+    private boolean includeJdk = true;
     private String[] availableExperiments;
     private List<String> selectedExperiments;
 
@@ -56,17 +58,18 @@ public class ExportModelDialog extends TitleAreaDialog {
         layout.marginHeight = 15;
         container.setLayout(layout);
 
-        createOptionSection(container);
+        createExperimentSection(container);
+        createOptionsSection(container);
         createPathSection(container);
         createFileNameSection(container);
 
         return area;
     }
 
-    private void createOptionSection(Composite container) {
-        CLabel lblOptions = new CLabel(container, SWT.NONE);
-        lblOptions.setText("Options :");
-        lblOptions.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1));
+    private void createExperimentSection(Composite container) {
+        CLabel lblExperiments = new CLabel(container, SWT.NONE);
+        lblExperiments.setText("Select the experiments you want to export :");
+        lblExperiments.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1));
 
         selectAllExperimentsButton = new Button(container, SWT.CHECK);
         selectAllExperimentsButton.setText("Select all experiments");
@@ -93,6 +96,17 @@ public class ExportModelDialog extends TitleAreaDialog {
                 button.setSelection(masterState);
             }
         });
+    }
+
+    private void createOptionsSection(Composite container) {
+        CLabel lblOptions = new CLabel(container, SWT.NONE);
+        lblOptions.setText("Options :");
+        lblOptions.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1));
+
+        includeJdkButton = new Button(container, SWT.CHECK);
+        includeJdkButton.setText("Include the JDK");
+        includeJdkButton.setSelection(true);
+        includeJdkButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 3, 1));
     }
 
     private void createPathSection(Composite container) {
@@ -140,6 +154,7 @@ public class ExportModelDialog extends TitleAreaDialog {
         outputPath = txtOutputPath.getText().trim();
         outputFileName = txtOutputFileName.getText().trim();
         selectedExperiments = new ArrayList<String>();
+        includeJdk = includeJdkButton.getSelection();
 
         for(int i=0 ; i < availableExperiments.length ; i++)
         {
@@ -173,6 +188,11 @@ public class ExportModelDialog extends TitleAreaDialog {
     public String getOutputFileName()
     {
         return outputFileName;
+    }
+
+    public boolean getIncludeJdk()
+    {
+        return includeJdk;
     }
 
     public String[] getSelectedExperiments() {

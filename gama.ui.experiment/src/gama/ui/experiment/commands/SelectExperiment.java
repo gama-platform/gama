@@ -29,10 +29,9 @@ public class SelectExperiment extends AbstractHandler implements IElementUpdater
 	@Override
 	public Object execute(final ExecutionEvent event) throws ExecutionException {
 		// get new experiment
-		StartupModelHelper.getInstance().pickExperiment();
-		// close current experiment
-		// open new experiment
-		StartupModelHelper.getInstance().startSimulation();
+		if(StartupModelHelper.getInstance().pickExperiment())
+			// open new experiment (closing the current experiment is done later)
+			StartupModelHelper.getInstance().startSimulation();
 
 		return null;
 	}

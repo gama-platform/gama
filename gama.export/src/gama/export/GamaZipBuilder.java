@@ -4,12 +4,15 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.StandardCopyOption;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.Comparator;
 import java.util.stream.Stream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.*;
 import java.util.zip.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -21,6 +24,7 @@ import gama.api.utils.prefs.JREPreferenceStore;
 import gama.api.utils.prefs.GamaPreferenceStore;
 import gama.api.GAMA;
 import gama.api.runtime.IWorkspaceManager;
+import gama.api.runtime.SystemInfo;
 import gama.export.dependency.BundleDependencyAnalyzer;
 import gama.export.ExportActivator;
 import gama.export.ZipHelper;
@@ -67,6 +71,8 @@ public class GamaZipBuilder {
 
     private static final String embeddedWorkspaceName = ExportHelper.getEmbeddedWorkspaceName();
 
+    private static final Path embeddedJdkPath = Path.of("jdk");
+
     private static final Path appRootPath = Path.of(ExportActivator.appRootPathStr);
     
     private static final Path pluginsPath = appRootPath.resolve("plugins");
@@ -95,6 +101,9 @@ public class GamaZipBuilder {
 
     private String targetExperiment = null;
 
+    private boolean zipWithJdk = false;
+
+    private static Path jdkPath = null; 
     /**
      * Data files referenced by the exported models, as absolute, normalized
      * paths. Those that live outside the exported project are rerouted into the
@@ -110,6 +119,7 @@ public class GamaZipBuilder {
         Path.of(appRootPath.toString(),"configuration","org.eclipse.core.runtime"),
         Path.of(appRootPath.toString(),"configuration","org.eclipse.e4.ui.css.swt.theme"),
         Path.of(appRootPath.toString(),"configuration",".settings"),
+        Path.of(appRootPath.toString(),"jdk"),
         Path.of(appRootPath.toString(),"Gama.ini")
     ));
 
@@ -153,10 +163,15 @@ public class GamaZipBuilder {
     }
 
     public GamaZipBuilder(final Set<String> plugins, final IProject targetProject,
-            final String targetModelRelativePathStr, final String targetExperiment, final Set<String> dataFiles) 
+            final String targetModelRelativePathStr, final String targetExperiment, 
+            final Set<String> dataFiles, final boolean zipWithJdk) 
     {
         neededGamaPlugins = plugins;
         neededGamaPlugins.addAll(necessaryGamaPlugins);
+        this.zipWithJdk = zipWithJdk;
+        
+        if(zipWithJdk && GamaZipBuilder.jdkPath == null)
+            GamaZipBuilder.jdkPath = Path.of(System.getProperty("java.home"));
 
         this.targetProject = targetProject;
 
@@ -265,7 +280,6 @@ public class GamaZipBuilder {
 
             /////////////////////////////////////
             // Applying the needed preferences //
-            // to start a simulation           //
             /////////////////////////////////////
 
             // switching to non global preferences
@@ -287,6 +301,22 @@ public class GamaZipBuilder {
             // avoid saving corrupted ui states
             gamaIniContent = gamaIniContent.replace("-vmargs","-persistState\nfalse\n-vmargs");
 
+            // register embedded jdk if needed
+            if(this.zipWithJdk)
+            {
+                String javaBinaryPathStr = null;
+                if(SystemInfo.isWindows())
+                    javaBinaryPathStr = "./jdk/bin/javaw";
+                if(SystemInfo.isLinux())
+                    javaBinaryPathStr = "./jdk/bin/java";
+                if(SystemInfo.isMac())
+                    javaBinaryPathStr = "./jdk/Contents/Home/bin/java/";
+
+                if(gamaIniContent.contains("-vm\n"))
+                    gamaIniContent.replaceAll("^-vm\n.*\n","-vm\n" + javaBinaryPathStr + "\n");
+                else
+                    gamaIniContent = "-vm\n" + javaBinaryPathStr + "\n" + gamaIniContent;
+            }
 
             Files.writeString(GamaZipBuilder.gamaIniTmpPath,gamaIniContent);
 
@@ -500,6 +530,44 @@ public class GamaZipBuilder {
                 new ZipEntry(GamaZipBuilder.embeddedWorkspaceName + File.separator + GAMA.getWorkspaceManager().getModelIdentifier()));
 
             zos.closeEntry();
+
+            /////////////////////////
+            // Embedding the JDK   //
+            /////////////////////////
+
+            if (this.zipWithJdk)
+            {
+                // Walk the appRootPath tree stream
+                try (Stream<Path> stream = Files.walk(jdkPath)) {
+                    stream.forEach(sourcePath -> {
+                        try {
+                            if(! Files.isDirectory(sourcePath))
+                            {
+                                ZipEntry entry = new ZipEntry(GamaZipBuilder.embeddedJdkPath
+                                    .resolve(jdkPath.relativize(sourcePath)).toString());
+                                // Replace existing files/directories if needed
+                                // Create a new entry inside the ZIP archive
+                                zos.putNextEntry(entry);
+                                
+                                // Write bytes to the entry
+                                Files.copy(sourcePath, zos);
+                                zos.closeEntry();
+                            }
+                            
+                            // Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
+                        } catch (IOException e) {
+                            throw new RuntimeException("Failed to copy: " + sourcePath, e);
+                        }
+                    });
+                } catch (RuntimeException e) {
+                    // Unwrap IOException from the stream loop
+                    if (e.getCause() instanceof IOException) {
+                        throw (IOException) e.getCause();
+                    }
+                    throw e;
+                }                
+            }
+
 
             // clean tmp files
             deleteDirectory(GamaZipBuilder.tmpDirectoryPath);

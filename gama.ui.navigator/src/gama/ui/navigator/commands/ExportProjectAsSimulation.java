@@ -152,6 +152,8 @@ public class ExportProjectAsSimulation extends AbstractHandler {
 
 			final Path outputPath = Path.of(dialog.getOutputPath(),dialog.getOutputFileName());
 
+			final boolean zipWithJdk = dialog.getIncludeJdk();
+
 			// "prey_predator from model testmodel" becomes "prey_predator@testmodel"
 			final String[] formattedtargetExperiments = Arrays.stream(dialog.getSelectedExperiments()).map(label -> {
 				int lastIndex = label.lastIndexOf(contextualSeparator);
@@ -170,7 +172,8 @@ public class ExportProjectAsSimulation extends AbstractHandler {
 				project,
 				"",
 				targetExperiments,
-				dataFiles);
+				dataFiles,
+				zipWithJdk);
 
 			try { 
 				ziper.zip(outputPath.toString());
