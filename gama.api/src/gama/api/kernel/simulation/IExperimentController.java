@@ -12,6 +12,7 @@ package gama.api.kernel.simulation;
 
 import java.io.Closeable;
 
+import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.runtime.scope.IExecutionResult;
 import gama.api.utils.interfaces.IDisposable;
@@ -133,6 +134,15 @@ public interface IExperimentController extends IDisposable, Closeable {
 	 * @date 23 oct. 2023
 	 */
 	boolean processStep(final int nbSteps, final boolean andWait);
+
+	/**
+	 * Returns and clears the runtime error raised during the last execution (step, open or reload), if any. GAML
+	 * runtime errors do not propagate out of these calls, so this is the only way for a caller that waited for the
+	 * execution to know that it did not run cleanly. Clearing on read keeps an error from leaking into the next one.
+	 *
+	 * @return the error raised during the last execution, or {@code null} if it ran without one
+	 */
+	default GamaRuntimeException consumeLastRuntimeError() { return null; }
 
 	/**
 	 * Process back.

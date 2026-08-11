@@ -201,9 +201,12 @@ public class SimulationRunner implements ISimulationRunner {
 					if (shutdown || agent.dead()) { break; }
 					try {
 						agent.step();
-						experimentSemaphore.release();
 					} catch (Throwable tg) {
 						EXCEPTION_HANDLER.uncaughtException(Thread.currentThread(), tg);
+					} finally {
+						// Released whatever the outcome: a step that throws still consumed the permit granted by
+						// step(), which would otherwise wait for it forever.
+						experimentSemaphore.release();
 					}
 				}
 			}
