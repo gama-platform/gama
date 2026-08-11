@@ -178,8 +178,8 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
                 for (IContributionItem item : items) {
                     String id = item.getId();
                     // Match the default Eclipse legacy menu IDs
-					System.out.println(id);
-                    if ("file".equals(id) || "edit".equals(id) || "org.eclipse.search.menu".equals(id) || "additions".equals(id)) {
+					// System.out.println(id);
+                    if ("file".equals(id) || "edit".equals(id) || "org.eclipse.search.menu".equals(id)) {
                         item.setVisible(false);
                     }
                 }

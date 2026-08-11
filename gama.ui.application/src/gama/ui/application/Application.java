@@ -114,8 +114,8 @@ public class Application implements IApplication {
 		final Display display = configureDisplay();
 		Object check = Display.getCurrent().syncCall(() -> GAMA.getWorkspaceManager().checkWorkspace());
 
-		if (GamaPreferences.Interface.CORE_STARTUP_MODEL.getValue())
-			StartupModelHelper.getInstance().initialize();
+		if (!EXIT_OK.equals(check) && GamaPreferences.Interface.CORE_STARTUP_MODEL.getValue())
+			check = StartupModelHelper.getInstance().initialize();
 
 		if (!EXIT_OK.equals(check)) {
 			try {

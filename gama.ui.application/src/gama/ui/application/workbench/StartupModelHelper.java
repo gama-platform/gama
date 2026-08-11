@@ -6,6 +6,7 @@ import java.io.File;
 import java.util.Arrays;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.equinox.app.IApplication;
 import org.eclipse.core.runtime.Platform;
 import com.google.inject.Injector;
 
@@ -42,15 +43,24 @@ public class StartupModelHelper
 
     public StartupModelHelper() {}
 
-    public void initialize()
+    public Object initialize()
     {
         experiment = GamaPreferences.Interface.CORE_DEFAULT_EXPERIMENT.getValue();
+        boolean experimentHasBeenPicked = true;
 
         if(experiment.contains(SEPARATOR) || experiment.contains(CONTEXTUAL_SEPARATOR))
-            pickExperiment(true);
+            experimentHasBeenPicked = pickExperiment();
+
+        if (!experimentHasBeenPicked)
+        {
+            GAMA.getGui().getDialogFactory().error("The GAMA simulation launcher has to start on an experiment.");
+            return IApplication.EXIT_OK;
+        }
+
+        return null;
     }
 
-    public void pickExperiment(boolean startup)
+    public boolean pickExperiment()
     {
         experiment = GamaPreferences.Interface.CORE_DEFAULT_EXPERIMENT.getValue();
     
@@ -90,21 +100,9 @@ public class StartupModelHelper
                     model = null;
                 }
             }
+            return true;
         }
-        else
-        {
-            if (startup)
-            {
-                GAMA.getGui().getDialogFactory().error("The GAMA simulation launcher has to start on an experiment.");
-                GAMA.getGui().exit();
-            }
-        }
-
-    }
-
-    public void pickExperiment()
-    {
-        pickExperiment(false);
+        return false;
     }
 
     public static StartupModelHelper getInstance()
