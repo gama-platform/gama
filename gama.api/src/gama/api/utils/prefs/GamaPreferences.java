@@ -743,13 +743,13 @@ public class GamaPreferences {
 		 * network socket. Activates the port, ping interval, and console output preferences.
 		 */
 		public static final Pref<Boolean> CORE_SERVER_MODE =
-				create("pref_enable_server", "Enable GAMA Server mode", true, IType.BOOL, true)
+				create("pref_enable_server", "Enable GAMA server mode", true, IType.BOOL, true)
 						.in(Network.NAME, Network.SERVER)
 						.activates("pref_server_port", "pref_server_ping", "pref_server_console");
 
 		/** The TCP port on which the GAMA Server listens for incoming client connections. */
 		public static final Pref<Integer> CORE_SERVER_PORT =
-				create("pref_server_port", "Port to which GAMA Server is listening", 1000, IType.INT, true)
+				create("pref_server_port", "Port to which GAMA server is listening", 1000, IType.INT, true)
 						.in(Network.NAME, Network.SERVER);
 
 		/**
@@ -764,12 +764,17 @@ public class GamaPreferences {
 		 * Whether the {@code TCP_NODELAY} socket option should be set, disabling Nagle's algorithm for lower latency.
 		 */
 		public static final Pref<Boolean> CORE_SERVER_NO_DELAY =
-				create("pref_server_no_delay", "Sets the TCP_NODELAY option to true for gama server", false, IType.BOOL,
+				create("pref_server_no_delay", "Sets the TCP_NODELAY option to true for GAMA server", false, IType.BOOL,
 						true).in(Network.NAME, Network.SERVER);
 
 		/** The Constant CORE_SERVER_CONSOLE. */
 		public static final Pref<Boolean> CORE_SERVER_CONSOLE =
 				create("pref_server_console", "Send console outputs to clients", true, IType.BOOL, true)
+						.in(Network.NAME, Network.SERVER);
+		
+		/** The maximum number of simultaneous commands an experiment can accept through GAMA server. */
+		public static final Pref<Integer> CORE_SERVER_COMMAND_QUEUE_SIZE =
+				create("pref_server_command_queue_size", "Maximum number of simultaneous commands an experiment can accept through GAMA server.", 50, IType.INT, true)
 						.in(Network.NAME, Network.SERVER);
 	}
 

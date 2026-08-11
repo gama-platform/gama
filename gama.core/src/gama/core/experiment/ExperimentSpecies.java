@@ -197,9 +197,9 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 
 	/** The controller. */
 	protected IExperimentController controller;
-	// An original copy of the simualtion outputs (which will be eventually
-	/** The original simulation outputs. */
+	// An original copy of the simulation outputs (which will be eventually
 	// duplicated in all the simulations)
+	/** The original simulation outputs. */
 	protected SimulationOutputManager originalSimulationOutputs;
 
 	/** The experiment outputs. */
@@ -947,7 +947,8 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 	 */
 	@Override
 	public void setController(final IExperimentController ec) {
-		if (controller != null && controller.equals(ec)) {
+		// The controller being replaced is the one to shut down. Reassigning the same one must leave it alone.
+		if (controller != null && !controller.equals(ec)) {
 			controller.close();
 			controller.dispose();
 		}
