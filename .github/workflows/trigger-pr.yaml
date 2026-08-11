@@ -6,7 +6,7 @@ name: "Pull Request validation"
 on:
   # Triggers the workflow on pull request events
   pull_request:
-  workflow_dispatch: # For manual trigger
+  workflow_dispatch:  # For manual trigger
     inputs:
       USE_DEPENDENCY_CACHE:
         type: boolean

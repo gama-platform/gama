@@ -10,7 +10,7 @@ on:
       - '.github/**'
       - 'travis/**'
 
-  workflow_dispatch: # For manual trigger
+  workflow_dispatch:  # For manual trigger
     inputs:
       USE_BUILD_CACHE:
         type: boolean

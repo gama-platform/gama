@@ -116,7 +116,7 @@ jobs:
         run: |
           # Add delay to let the PR being opened and API to update
           sleep 10
-          #  
+          #
           curl -G \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${{ secrets.BOT_TOKEN }}" \

@@ -7,14 +7,14 @@
 name: "Documentation Auto Refresh"
 
 on:
-  workflow_dispatch: # For manual trigger
+  workflow_dispatch:  # For manual trigger
   schedule:
     - cron: "0 0 * * 6"
 
 jobs:
   generating-documentation:
     runs-on: ubuntu-latest
-      
+
     steps:
       - uses: actions/checkout@v6
 
@@ -33,7 +33,7 @@ jobs:
         name: Restore Maven Build Cache
         with:
           action: restore
-          
+
       - uses: ./.github/actions/maven-dependency-cache
         name: Restore Maven Dependency Cache
         with:
@@ -51,7 +51,7 @@ jobs:
         with:
           action: save
           GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
-          
+
       - uses: ./.github/actions/maven-dependency-cache
         name: Save Maven Dependency Cache
         if: "${{ github.ref_name }} == 'main'"

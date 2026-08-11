@@ -71,7 +71,7 @@ jobs:
       new_release_tag: ${{ inputs.tag }}
       jdk_embedded_version: ${{ inputs.jdk }}
       IS_STABLE_RELEASE: ${{ inputs.IS_STABLE_RELEASE }}
-      GITHUB_ONLY: ${{ inputs.releaseGithubOnly }}
+      GITHUB_ONLY: ${{ inputs.releaseGithub }}
       USE_BUILD_CACHE: ${{ inputs.USE_BUILD_CACHE }}
       USE_DEPENDENCY_CACHE: ${{ inputs.USE_DEPENDENCY_CACHE }}
     secrets:
