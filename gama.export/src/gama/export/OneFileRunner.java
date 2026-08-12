@@ -4,9 +4,9 @@ import java.io.BufferedOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -29,8 +29,8 @@ public class OneFileRunner {
             destDirectory.toFile().mkdirs();
         }
         
-        try (ZipInputStream zipIn = new ZipInputStream(new FileInputStream(src.toString()))) {
-            ZipEntry entry = zipIn.getNextEntry();
+        try (ZipArchiveInputStream zipIn = new ZipArchiveInputStream(new FileInputStream(src.toString()))) {
+            ZipArchiveEntry entry = zipIn.getNextEntry();
             while (entry != null) {
                 File filePath = new File(destDirectory.toString(), entry.getName());
                 if (!entry.isDirectory()) {
@@ -47,7 +47,7 @@ public class OneFileRunner {
                 } else { // if filepath is a directory
                     filePath.mkdirs();
                 }
-                zipIn.closeEntry();
+                // zipIn.closeArchiveEntry();
                 entry = zipIn.getNextEntry();
             }
         }
