@@ -21,6 +21,7 @@ import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IVarExpression;
 import gama.api.gaml.types.IType;
+import gama.api.kernel.object.IObject;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.GamlProperties;
 import gama.api.utils.collections.ICollector;
@@ -55,12 +56,12 @@ public class TypeAttributeExpression extends VariableExpression implements IVarE
 
 	@Override
 	public Object _value(final IScope scope) throws GamaRuntimeException {
-		return scope.getAgentVarValue(scope.getAgent(), getName());
+		return scope.getCurrentAgentOrObjectAttributeValue(getName());
 	}
 
 	@Override
 	public void setVal(final IScope scope, final Object v, final boolean create) throws GamaRuntimeException {
-		scope.setAgentVarValue(scope.getAgent(), getName(), v);
+		scope.setAgentVarValue(scope.getCurrentObjectOrAgent(), getName(), v);
 	}
 
 	@Override

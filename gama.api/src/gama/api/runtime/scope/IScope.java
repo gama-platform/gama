@@ -369,7 +369,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 * @return The result of the execution
 	 */
 	default IExecutionResult execute(final IExecutable executable) {
-		return execute(executable, getAgent(), null);
+		return execute(executable, getCurrentObjectOrAgent(), null);
 	}
 
 	/**
@@ -382,7 +382,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 * @return The result of the execution
 	 */
 	default IExecutionResult execute(final IExecutable executable, final Arguments args) {
-		return execute(executable, getAgent(), args);
+		return execute(executable, getCurrentObjectOrAgent(), args);
 	}
 
 	/**
