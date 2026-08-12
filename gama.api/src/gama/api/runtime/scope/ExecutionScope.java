@@ -579,24 +579,24 @@ public class ExecutionScope implements IScope {
 	public boolean push(final IObject agent) {
 		if (exclusive) {
 			// Fast path: no synchronization needed for thread-exclusive scopes
-			final IAgent a = agentContext == null ? null : agentContext.getFirstAgent();
-			if (a == null) {
+			final IObject obj = agentContext == null ? null : agentContext.getCurrentObjectOrAgent();
+			if (obj == null) {
 				if (agent instanceof ITopLevelAgent tla) { setRoot(tla); }
 				agentContext = null;
-			} else if (a == agent) return false;
+			} else if (obj == agent) return false;
 			agentContext = createChildContext(agent);
 			return true;
 		}
 		synchronized (lock) {
-			final IAgent a = agentContext == null ? null : agentContext.getFirstAgent();
-			if (a == null) {
+			final IObject obj = agentContext == null ? null : agentContext.getCurrentObjectOrAgent();
+			if (obj == null) {
 				if (agent instanceof ITopLevelAgent tla) {
 					// Previous context didnt have a root.
 					setRoot(tla);
 				}
 				// get rid of the previous context **important**
 				agentContext = null;
-			} else if (a == agent) return false;
+			} else if (obj == agent) return false;
 			agentContext = createChildContext(agent);
 			return true;
 		}
