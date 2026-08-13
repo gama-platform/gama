@@ -964,7 +964,7 @@ public class Random {
 	}
 
 	/**
-	 * Op rnd coice.
+	 * Op rnd choice.
 	 *
 	 * @param <T>
 	 *            the generic type
