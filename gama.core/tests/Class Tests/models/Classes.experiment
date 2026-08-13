@@ -16,7 +16,7 @@ class MainClass {
 	
 	action do_stuff(){}
 	
-	string return_hello {
+	string return_hello() {
 		return "hello";
 	}
 	
@@ -29,7 +29,8 @@ class MainClass {
 }
 
 
-class ChildClass parent:MainClass{
+class ChildClass parent:MainClass {
+	
 	int i <- 3;
 	int k <- 10;
 	
