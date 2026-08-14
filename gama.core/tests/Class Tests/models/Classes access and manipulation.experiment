@@ -2,7 +2,7 @@
 * Name: Classesaccessandmanipulation
 * Based on the internal empty template. 
 * Author: Baptiste Lesquoy
-* Tags: 
+* Tags: Class, Object, Test
 */
 
 
@@ -17,11 +17,27 @@ class ExampleClass {
 	init {
 		initializedInInit <- 10;	
 	}
+	
+	int simple_action(){
+		return 5;
+	}
+	
+	int action_with_parameters(int i, int j){
+		return 2 * i * j;
+	}
+	
+	action state_changing_action(){
+		notInitializedInt <- 123;
+	}
 }
 
 
 experiment testAccess type:test{
 	
+	test unitializedClassIsNil {
+		ExampleClass c;
+		assert c = nil;
+	}
 	test defaultIntFieldValue {
 		ExampleClass c <- ExampleClass();
 		assert c.notInitializedInt = 0;
@@ -63,7 +79,14 @@ experiment testAccess type:test{
 		assert c = b;
 	}
 	
-	test objectCopyt {
+	test sameObjectsAreNotEqual{
+		ExampleClass a <- ExampleClass();
+		ExampleClass b <- ExampleClass();
+		assert a != b;
+	}
+	
+
+	test objectCopy {
 		ExampleClass c <- ExampleClass();
 		ExampleClass b <- copy(c);
 		c.notInitializedInt <- 10;
@@ -71,5 +94,39 @@ experiment testAccess type:test{
 		assert b != c;
 	}
 	
+		
+	test execSimpleAction{
+		ExampleClass c <- ExampleClass();
+		assert c.simple_action() = 5;
+	}
+	
+
+	test execActionWithParams{
+		ExampleClass c <- ExampleClass();
+		assert c.action_with_parameters(4, 5) = 40;
+	}	
+	
+	test execStateAlteringAction{
+		ExampleClass c <- ExampleClass();
+		assert c.notInitializedInt = 0;
+		c.state_changing_action();
+		assert c.notInitializedInt = 123;
+		
+	}
+	
+	test objectsAreNotInAgents {
+		ExampleClass obj <- ExampleClass();
+		assert !(agents contains obj);
+	}
+	
+	test createListObjects {
+		list<ExampleClass> l <- list_with(3, ExampleClass(initializedInt:rnd(1,10)));
+		assert length(l) = 3;
+		assert l none_matches (each = nil);
+		assert l all_match (each.initializedInt > 0);
+	}
+	
 	
 }
+
+
