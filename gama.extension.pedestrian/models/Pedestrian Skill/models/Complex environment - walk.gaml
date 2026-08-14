@@ -52,20 +52,17 @@ global {
 	float P_relaxion_SFM_simple <- 0.54 ;
 	float P_A_pedestrian_SFM_simple <- 15.0;
 	
-	float P_path_deviation <- 0.5;
-	float P_path_deviation_radius <- 25#m;
+	float P_path_deviation <- 0.02;
+	float P_path_deviation_radius <- 5#m;
 	
 	float step <- 0.1;
 	int nb_people <- 250;
 
 	geometry open_area ;
 	
-	list<point> dests;
-	
 	init {
 		
 		open_area <- first(open_area_shape_file.contents);
-		dests <- range(4) collect (any_location_in(open_area));
 		create wall from:wall_shapefile;
 		create pedestrian_path from: pedestrian_paths_shape_file {
 			free_space <- free_spaces_shape_file[int(self)]; 
@@ -153,7 +150,7 @@ species people skills: [pedestrian]{
 
 	reflex move  {
 		if (final_waypoint = nil) {
-			do compute_virtual_path (pedestrian_graph:network, target: any(dests)) ;
+			do compute_virtual_path (pedestrian_graph:network, target: any_location_in(open_area)) ;
 		}
 		do walk() ;
 	}	
