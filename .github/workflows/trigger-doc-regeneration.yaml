@@ -7,14 +7,14 @@
 name: "Documentation Auto Refresh"
 
 on:
-  workflow_dispatch: # For manual trigger
+  workflow_dispatch:  # For manual trigger
   schedule:
     - cron: "0 0 * * 6"
 
 jobs:
   generating-documentation:
     runs-on: ubuntu-latest
-      
+
     steps:
       - uses: actions/checkout@v6
 
@@ -33,21 +33,25 @@ jobs:
         name: Restore Maven Build Cache
         with:
           action: restore
-          
+
       - uses: ./.github/actions/maven-dependency-cache
         name: Restore Maven Dependency Cache
         with:
           action: restore
 
       - name: Compiling GAMA
-        run: bash travis/build.sh -B -T 4
+        run: |
+          # Tycho doesn't honor optional tag : https://www.eclipse.org/lists/tycho-user/msg03542.html
+          # Related #836
+          sed -i '/gama\.feature\.copilot/d' $GITHUB_WORKSPACE/gama.product/gama.product
+          bash travis/build.sh -B -T 4
 
       - uses: ./.github/actions/maven-build-cache
         name: Save Maven Build Cache
         with:
           action: save
           GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
-          
+
       - uses: ./.github/actions/maven-dependency-cache
         name: Save Maven Dependency Cache
         if: "${{ github.ref_name }} == 'main'"

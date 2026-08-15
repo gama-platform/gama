@@ -137,8 +137,8 @@
    </configurations>
 
    <repositories>
-      <repository location="https://updates.gama-platform.org/SNAPSHOT" name="Gama" enabled="true" />
-      <repository location="https://updates.gama-platform.org/experimental/SNAPSHOT" name="Experimental" enabled="true" />
+      <repository location="https://updates.gama-platform.org/SNAPSHOT" name="Core GAMA modules" enabled="true" />
+      <repository location="https://updates.gama-platform.org/plugin/SNAPSHOT" name="Optional GAMA plugins" enabled="true" />
       <repository location="https://anb0s.github.io/EasyShell/release/" name="EasyShell" enabled="true" />
       <repository location="https://download.eclipse.org/egit/updates/" name="EGit" enabled="true" />
       <repository location="https://azuredownloads-g3ahgwb5b8bkbxhd.b01.azurefd.net/github-copilot" name="Github Copilot" enabled="true" />

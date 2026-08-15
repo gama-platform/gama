@@ -14,7 +14,7 @@ import org.osgi.framework.BundleContext;
 
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.topology.IProjection;
-import gama.api.types.list.IList;
+import gama.api.types.dataframe.IDataFrame;
 import gama.api.types.map.IMap;
 import gama.api.utils.geometry.GamaEnvelopeFactory;
 import gama.api.utils.geometry.IEnvelope;
@@ -59,7 +59,7 @@ public class DatabaseActivator extends GamaBundleActivator {
 				// create connection
 				// sqlConn = SqlUtils.createConnectionObject(scope, params);
 				// get data
-				final IList gamaList = sqlConn.selectDB(scope, (String) params.get("select"));
+				final IDataFrame gamaList = sqlConn.selectDB(scope, (String) params.get("select"));
 				env = SqlConnection.getBounds(gamaList);
 
 				IProjection gis = scope.getSimulation().getProjectionFactory().fromParams(scope, params, env);

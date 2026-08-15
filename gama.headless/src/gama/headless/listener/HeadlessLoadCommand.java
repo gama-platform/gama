@@ -19,6 +19,7 @@ import org.java_websocket.WebSocket;
 import gama.annotations.constants.IKeyword;
 import gama.api.constants.GamlFileExtension;
 import gama.api.exceptions.GamaCompilationFailedException;
+import gama.api.exceptions.GamaRuntimeException;
 import gama.api.types.list.IList;
 import gama.api.utils.server.CommandExecutor;
 import gama.api.utils.server.CommandResponse;
@@ -127,6 +128,9 @@ public class HeadlessLoadCommand implements ISocketCommand {
 			return new CommandResponse(MessageType.CommandExecutedSuccessfully, selectedJob.getExperimentID(), map,
 					false);
 		}
+		// A runtime error raised by the init does not propagate, so it is reported here rather than as a bare failure.
+		final GamaRuntimeException error = selectedJob.controller.consumeLastRuntimeError();
+		if (error != null) return new CommandResponse(MessageType.RuntimeError, error, map, false);
 		return new CommandResponse(MessageType.UnableToExecuteRequest, selectedJob.getExperimentID(), map, false);
 
 	}

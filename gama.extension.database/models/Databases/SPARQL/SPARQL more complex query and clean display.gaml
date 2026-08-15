@@ -55,9 +55,9 @@ WHERE {
 GROUP BY ?X
 ORDER BY ASC(MIN(?birthdate))';
 		write "Running query:\n" + query +"\n";
-		map<string,list<string>> result <- sparql_query(query, "https://dbpedia.org/sparql");
+		dataframe result <- sparql_query(query, "https://dbpedia.org/sparql");
 
-		if empty(result) {
+		if empty(result) and !empty(#current_error){
 			write "An error occured: " + #current_error color:#red;
 			return;
 		}

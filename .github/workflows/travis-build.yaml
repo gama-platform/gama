@@ -65,7 +65,7 @@ on:
 jobs:
   compilation:
     runs-on: ubuntu-latest
-      
+
     steps:
       # Prep runner
       - uses: actions/checkout@v6
@@ -136,7 +136,7 @@ jobs:
         if: "${{ inputs.USE_BUILD_CACHE }}"
         with:
           action: restore
-          
+
       - uses: ./.github/actions/maven-dependency-cache
         name: Restore Maven Dependency Cache
         if: "${{ inputs.USE_DEPENDENCY_CACHE }}"
@@ -198,7 +198,7 @@ jobs:
         with:
           key: ${{ secrets.GAMA_SERVER_SSH_PRIVATE_KEY }}
           known_hosts: ${{ secrets.GAMA_SERVER_SSH_KNOWN_HOSTS }}
-          if_key_exists: replace # replace / ignore / fail; optional (defaults to fail)
+          if_key_exists: replace  # replace / ignore / fail; optional (defaults to fail)
 
       - name: Deploy p2 GAMA's module
         # Publish P2 everytime we generate a release (both alpha and stable)

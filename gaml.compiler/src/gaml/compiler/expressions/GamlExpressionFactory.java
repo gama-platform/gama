@@ -430,6 +430,32 @@ public class GamlExpressionFactory implements IExpressionFactory {
 					if (g == null || g.is2D()) return null;
 					return ((IGraphics.ThreeD) g).getCameraOrientation().yNegated();
 				});
+			case "camera_up":
+				// 3D camera up axis
+				return new CustomExpression<>(unit, Types.POINT, GamaPointFactory.create(), doc, sc -> {
+					IScope scope = sc;
+					if (scope == null || !scope.isGraphics()) {
+						IDisplaySurface surface = GAMA.getGui().getFrontmostDisplaySurface();
+						if (surface == null) return null;
+						scope = surface.getScope();
+					}
+					final IGraphics g = scope.getGraphics();
+					if (g == null || g.is2D()) return null;
+					return ((IGraphics.ThreeD) g).getCameraUp().yNegated();
+				});
+			case "camera_right":
+				// 3D camera right axis
+				return new CustomExpression<>(unit, Types.POINT, GamaPointFactory.create(), doc, sc -> {
+					IScope scope = sc;
+					if (scope == null || !scope.isGraphics()) {
+						IDisplaySurface surface = GAMA.getGui().getFrontmostDisplaySurface();
+						if (surface == null) return null;
+						scope = surface.getScope();
+					}
+					final IGraphics g = scope.getGraphics();
+					if (g == null || g.is2D()) return null;
+					return ((IGraphics.ThreeD) g).getCameraRight().yNegated();
+				});
 			case "user_location":
 			case "user_location_in_world":
 				// Mouse cursor location in world coordinates

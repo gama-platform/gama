@@ -20,12 +20,12 @@ import gama.annotations.skill;
 import gama.annotations.support.IConcept;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
-import gama.api.gaml.types.Types;
 import gama.api.kernel.skill.Skill;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.dataframe.IDataFrame;
+import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
-import gama.api.types.matrix.GamaMatrixFactory;
-import gama.api.types.matrix.IMatrix;
+import gama.api.types.map.IMap;
 import gama.dev.DEBUG;
 import gama.extension.database.utils.sql.SqlConnection;
 import gama.extension.database.utils.sql.SqlUtils;
@@ -180,40 +180,53 @@ public class SQLSkill extends Skill {
 							optional = false,
 							doc = @doc ("Table name")),
 					@arg (
-							name = "columns",
-							type = IType.LIST,
-							optional = true,
-							doc = @doc ("List of column name of table")),
-					@arg (
-							name = "values",
-							type = IType.LIST,
+							name = "data",
+							type = IType.NONE,
 							optional = false,
-							doc = @doc ("List of values that are used to insert into table. Columns and values must have same size")) },
+							doc = @doc ("The data to insert. A dataframe inserts all its rows in a single batch (columns = dataframe column names). A map inserts a single row (keys = columns, values = values). A list inserts a single row, one value per column in the table's declaration order.")) },
 			doc = @doc (
-					value = "Action used to insert new data in a database",
+					value = "Action used to insert data into a database table. Accepts a dataframe (several rows, batched), a map (a single named-column row) or a list (a single positional row).",
 					examples = {
-							@example ("do insert params: PARAMS into: \"registration\" values: [102, 'Mahnaz', 'Fatma', 25];"),
-							@example ("do insert params: PARAMS into: \"registration\" columns: [\"id\", \"first\", \"last\"] values: [103, 'Zaid tim', 'Kha'];") }))
+							@example ("do insert params: PARAMS into: \"registration\" data: dataframe_with([\"id\",\"first\",\"last\",\"age\"], [[102,'Mahnaz','Fatma',25],[103,'Zaid','Kha',30]]);"),
+							@example ("do insert params: PARAMS into: \"registration\" data: [104, 'Bill', 'Clark', 40];"),
+							@example ("do insert params: PARAMS into: \"registration\" data: [\"id\"::105, \"first\"::\"Zara\", \"last\"::\"Ali\"];") }))
 	public int insert(final IScope scope) throws GamaRuntimeException {
 
 		final String table_name = (String) scope.getArg("into", IType.STRING);
-		final IList<Object> cols = (IList<Object>) scope.getArg("columns", IType.LIST);
-		final IList<Object> values = (IList<Object>) scope.getArg("values", IType.LIST);
-		int rec_no = -1;
+		final Object data = scope.getArg("data", IType.NONE);
 		try (final SqlConnection sqlConn = SqlUtils.createConnectionObject(scope);) {
-			if (cols.size() > 0) {
-				rec_no = sqlConn.insertDB(scope, table_name, cols, values);
-			} else {
-				rec_no = sqlConn.insertDB(scope, table_name, values);
-			}
+			return insertData(scope, sqlConn, table_name, data);
 		} catch (final Exception e) {
-			e.printStackTrace();
 			throw GamaRuntimeException.error("SQLSkill.insert: " + e.toString(), scope);
 		}
-		DEBUG.OUT("Insert into " + " was run");
+	}
 
-		return rec_no;
-		// ------------------------------------------------------------------------------------------
+	/**
+	 * Dispatches an insert depending on the runtime type of the data: dataframe (batch of rows), map (one named-column
+	 * row) or list (one positional row).
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param sqlConn
+	 *            the connection
+	 * @param table
+	 *            the table name
+	 * @param data
+	 *            the data to insert (dataframe, map or list)
+	 * @return the number of inserted rows
+	 */
+	static int insertData(final IScope scope, final SqlConnection sqlConn, final String table, final Object data) {
+		if (data instanceof IDataFrame df) return sqlConn.insertDB(scope, table, df);
+		if (data instanceof IMap map) {
+			final IList<Object> cols = GamaListFactory.create();
+			cols.addAll(map.getKeys());
+			final IList<Object> values = GamaListFactory.create();
+			values.addAll(map.getValues());
+			return sqlConn.insertDB(scope, table, cols, values);
+		}
+		if (data instanceof IList values) return sqlConn.insertDB(scope, table, (IList<Object>) values);
+		throw GamaRuntimeException.error(
+				"insert: the 'data' argument must be a dataframe, a map or a list, but was " + data, scope);
 	}
 
 	/**
@@ -252,100 +265,19 @@ public class SQLSkill extends Skill {
 							optional = true,
 							doc = @doc ("List of values that are used to replace question marks")) },
 			doc = @doc (
-					value = "Action used to restrieve data from a database",
+					value = "Action used to retrieve data from a database. The result is returned as a dataframe.",
 					examples = {
-							@example ("list<list> t <- list<list> (select(PARAMS, \"SELECT * FROM registration\"));") }))
-	public IList select_QM(final IScope scope) throws GamaRuntimeException {
+							@example ("dataframe t <- select(PARAMS, \"SELECT * FROM registration\");") }))
+	public IDataFrame select_QM(final IScope scope) throws GamaRuntimeException {
 
 		final String selectComm = (String) scope.getArg("select", IType.STRING);
 		final IList<Object> values = (IList<Object>) scope.getArg("values", IType.LIST);
 
-		IList<? super IList<Object>> repRequest;
 		try (final SqlConnection sqlConn = SqlUtils.createConnectionObject(scope);) {
-			if (values.size() > 0) {
-				repRequest = sqlConn.executeQueryDB(scope, selectComm, values);
-			} else {
-				repRequest = sqlConn.selectDB(scope, selectComm);
-			}
-			return repRequest;
+			return values.size() > 0 ? sqlConn.executeQueryDB(scope, selectComm, values)
+					: sqlConn.selectDB(scope, selectComm);
 		} catch (final Exception e) {
-			e.printStackTrace();
 			throw GamaRuntimeException.error("SQLSkill.select_QM: " + e.toString(), scope);
-		}
-
-		// ------------------------------------------------------------------------------------------
-
-	}
-
-	/**
-	 * List 2 matrix.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @return the i matrix
-	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
-	 */
-	@action (
-			name = "list2Matrix",
-			args = { @arg (
-					name = "param",
-					type = IType.LIST,
-					optional = false,
-					doc = @doc (
-							value = "Param: a list of records and metadata")),
-					@arg (
-							name = "getName",
-							type = IType.BOOL,
-							optional = true,
-							doc = @doc (
-									value = "getType: a boolean value, optional parameter",
-									comment = "if it is true then the action will return columnNames and data. default is true")),
-					@arg (
-							name = "getType",
-							type = IType.BOOL,
-							optional = true,
-							doc = @doc (
-									value = "getType: a boolean value, optional parameter",
-									comment = "if it is true then the action will return columnTypes and data. default is false")) },
-			doc = @doc (
-					value = "Action that transforms the list of list of data and metadata (resulting from a query) into a matrix.",
-					examples = {
-							@example ("list<list> t <- list<list> (select(PARAMS, \"SELECT * FROM registration\"));\r\n"
-									+ "write list2Matrix(t, true, true);") }))
-	public IMatrix list2Matrix(final IScope scope) throws GamaRuntimeException {
-		try {
-			final boolean getName = scope.hasArg("getName") ? (Boolean) scope.getArg("getName", IType.BOOL) : true;
-			final boolean getType = scope.hasArg("getType") ? (Boolean) scope.getArg("getType", IType.BOOL) : false;
-			final IList<Object> value = (IList<Object>) scope.getArg("param", IType.LIST);
-			final IList<Object> columnNames = (IList<Object>) value.get(0);
-			final IList<Object> columnTypes = (IList<Object>) value.get(1);
-			final IList<Object> records = (IList<Object>) value.get(2);
-			final int columnSize = columnNames.size();
-			final int lineSize = records.size();
-
-			final IMatrix matrix = GamaMatrixFactory.create(columnSize,
-					lineSize + (getType ? 1 : 0) + (getName ? 1 : 0), Types.NO_TYPE);
-			// Add ColumnNames to Matrix
-			if (getName) { for (int j = 0; j < columnSize; j++) { matrix.set(scope, j, 0, columnNames.get(j)); } }
-			// Add Columntype to Matrix
-			if (getType) {
-				for (int j = 0; j < columnSize; j++) {
-					matrix.set(scope, j, 0 + (getName ? 1 : 0), columnTypes.get(j));
-				}
-			}
-			// Add Records to Matrix
-			for (int i = 0; i < lineSize; i++) {
-				final IList<Object> record = (IList<Object>) records.get(i);
-				for (int j = 0; j < columnSize; j++) {
-					matrix.set(scope, j, i + (getType ? 1 : 0) + (getName ? 1 : 0), record.get(j));
-				}
-			}
-			return matrix;
-		} catch (final Exception e) {
-
-			e.printStackTrace();
-			return null;
 		}
 	}
 }

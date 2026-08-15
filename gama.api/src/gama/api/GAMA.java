@@ -582,6 +582,27 @@ public class GAMA {
 	// ==================================================================================
 
 	/**
+	 * Whether an error raised in this scope can still be reported, i.e. whether the experiment it belongs to is alive.
+	 *
+	 * <p>
+	 * Decided from the experiment of the scope rather than from the frontmost controller: controllers accumulate over
+	 * the life of the platform, and a stale one sitting at the head of the list would silence the errors of every other
+	 * experiment. The frontmost controller is only consulted for scopes that have no experiment of their own.
+	 * </p>
+	 *
+	 * @param scope
+	 *            the scope in which the error was raised
+	 * @return true if the error is worth reporting
+	 */
+	private static boolean canReport(final IScope scope) {
+		final IExperimentAgent agent = scope == null ? null : scope.getExperiment();
+		if (agent != null) return !agent.dead();
+		final IExperimentController controller = getFrontmostController();
+		return controller != null && controller.getExperiment() != null && !controller.isDisposing()
+				&& controller.getExperiment().getAgent() != null;
+	}
+
+	/**
 	 * Reports an error to the UI and determines whether the simulation should continue. This method handles both
 	 * warnings and errors according to user preferences.
 	 *
@@ -599,10 +620,7 @@ public class GAMA {
 		final boolean shouldStop = (warning && GamaPreferences.Runtime.CORE_WARNINGS_AS_ERRORS.getValue()
 				|| !warning && shouldStopSimulation) && GamaPreferences.Runtime.CORE_STOP_AT_FIRST_ERROR.getValue();
 		if (g.isReported()) return !shouldStop;
-		final IExperimentController controller = getFrontmostController();
-		if (controller == null || controller.getExperiment() == null || controller.isDisposing()
-				|| controller.getExperiment().getAgent() == null)
-			return false;
+		if (!canReport(scope)) return false;
 		// DEBUG.LOG("report error : " + g.getMessage());
 		// Returns whether or not to continue
 		if (!(g instanceof GamaRuntimeFileException) && scope != null && !scope.reportErrors()) {

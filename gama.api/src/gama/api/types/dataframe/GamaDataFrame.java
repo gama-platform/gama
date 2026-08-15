@@ -20,10 +20,12 @@ import java.util.function.Function;
 import org.dflib.DataFrame;
 import org.dflib.Exp;
 import org.dflib.Printers;
+import org.dflib.Series;
 import org.dflib.print.Printer;
 
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.GamaType;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
@@ -53,11 +55,20 @@ import gama.api.utils.json.IJsonValue;
  *
  * @author GAMA Team
  */
-public class GamaDataFrame implements IDataFrame, IContainer<String, IList<Object>>, IFieldMatrixProvider {
+public class GamaDataFrame implements IDataFrame, IContainer<String, Object>, IFieldMatrixProvider {
 
 	/** The underlying DFLib DataFrame. */
 	private final DataFrame inner;
+	
+	// The common type of all column, if no columns or not compatible types: NO_TYPE
+	// because the class is immutable there's no reprocessing needed
+	private IType contentType = Types.NO_TYPE;
+	
+	// List of all the types of each column
+	// because the class is immutable there's no reprocessing needed
+	private IList<IType> columnTypes = GamaListFactory.create(Types.TYPE);
 
+	
 	/**
 	 * Constructs a new GamaDataFrame wrapping a DFLib DataFrame.
 	 *
@@ -66,6 +77,37 @@ public class GamaDataFrame implements IDataFrame, IContainer<String, IList<Objec
 	 */
 	GamaDataFrame(final DataFrame inner) {
 		this.inner = inner;
+
+		// Process the column types and the common (content) type once, at creation (the class is immutable).
+		columnTypes = GamaListFactory.create(Types.TYPE);
+		contentType = Types.NO_TYPE;
+		IType common = null;
+		for (final String col : inner.getColumnsIndex()) {
+			final IType colType = columnType(inner.getColumn(col));
+			columnTypes.add(colType);
+			common = common == null ? colType : common.findCommonSupertypeWith(colType);
+		}
+		if (common != null) { contentType = common; }
+	}
+
+	/**
+	 * Determines the GAML type of a DFLib column. The nominal (declared) type is used first; when it is uninformative
+	 * (typically an {@code Object} series holding GAMA values such as points, lists or maps, which resolve to
+	 * {@code unknown}), the type is inferred from the first non-null cell via {@link GamaType#of(Object)}.
+	 *
+	 * @param series
+	 *            the DFLib column
+	 * @return the GAML type of the column, or {@link Types#NO_TYPE} when it cannot be determined
+	 */
+	private static IType columnType(final Series<?> series) {
+		final IType nominal = Types.get(series.getNominalType());
+		if (nominal != null && nominal != Types.NO_TYPE) return nominal;
+		// Fall back to the runtime type of the actual content (handles points, lists, maps, etc.).
+		for (int i = 0; i < series.size(); i++) {
+			final Object v = series.get(i);
+			if (v != null) return GamaType.of(v);
+		}
+		return Types.NO_TYPE;
 	}
 
 	// ========================= IDataFrame implementation =========================
@@ -78,12 +120,10 @@ public class GamaDataFrame implements IDataFrame, IContainer<String, IList<Objec
 
 	@Override
 	public IList<IType> getColumnTypes() {
-		final IList<IType> types = GamaListFactory.create(Types.TYPE);
-		for (final String col : getInner().getColumnsIndex()) {
-			types.add(Types.get(getInner().getColumn(col).getNominalType()));
-		}
-		return types;
+		return columnTypes;
 	}
+	
+
 
 	@Override
 	public int getRows() { return getInner().height(); }
@@ -92,15 +132,15 @@ public class GamaDataFrame implements IDataFrame, IContainer<String, IList<Objec
 	public int getCols() { return getInner().width(); }
 
 	@Override
-	public IList<Object> getColumnValues(final String columnName) {
-		final IList<Object> result = GamaListFactory.create(Types.NO_TYPE, getInner().height());
+	public IList getColumnValues(final String columnName) {
+		final IList result = GamaListFactory.create(columnTypes.get(getInner().getColumnsIndex().position(columnName)), getInner().height());
 		for (int i = 0; i < getInner().height(); i++) { result.add(getInner().get(columnName, i)); }
 		return result;
 	}
 
 	@Override
-	public IList<Object> getRowValues(final int rowIndex) {
-		final IList<Object> result = GamaListFactory.create(Types.NO_TYPE, getInner().width());
+	public IList getRowValues(final int rowIndex) {
+		final IList result = GamaListFactory.create(contentType, getInner().width());
 		final String[] cols = getInner().getColumnsIndex().toArray();
 		for (final String col : cols) { result.add(getInner().get(col, rowIndex)); }
 		return result;
@@ -112,13 +152,10 @@ public class GamaDataFrame implements IDataFrame, IContainer<String, IList<Objec
 	}
 
 	@Override
-	public IType getContentType(final IScope scope) {
-		var types = getColumnTypes();
-		if (types.length(scope) == 0) return Types.NO_TYPE;
-		IType common = types.removeFirst();
-		for (var t : types) { common = common.findCommonSupertypeWith(t); }
-		return common;
+	public IType getContentType() {
+		return contentType;
 	}
+
 
 	// ========================= IContainer =========================
 
@@ -230,19 +267,37 @@ public class GamaDataFrame implements IDataFrame, IContainer<String, IList<Objec
 	}
 
 	/**
-	 * Inner joins two dataframes on a common column.
+	 * Joins this dataframe with another on one or several key columns, with an explicit join type.
 	 *
-	 * @param df1
-	 *            the first dataframe
-	 * @param df2
-	 *            the second dataframe
-	 * @param colName
-	 *            the column to join on
-	 * @return a new joined dataframe
+	 * <p>
+	 * A single key column uses DFLib's {@code on(String)}; several key columns are combined into a
+	 * {@link org.dflib.Hasher} (same-named columns on both sides).
+	 * </p>
 	 */
 	@Override
-	public IDataFrame joinOnCommonCol(final IDataFrame df2, final String colName) {
-		return new GamaDataFrame(getInner().innerJoin(df2.getInner()).on(colName).select());
+	public IDataFrame join(final IScope scope, final IDataFrame other, final IList<String> keyColumns,
+			final String joinType) {
+		if (keyColumns == null || keyColumns.isEmpty())
+			throw GamaRuntimeException.error("A join requires at least one key column", scope);
+		final DataFrame right = other.getInner();
+		final String jt = joinType == null ? "inner" : joinType.trim().toLowerCase();
+		final org.dflib.join.Join join = switch (jt) {
+			case "inner" -> getInner().innerJoin(right);
+			case "left" -> getInner().leftJoin(right);
+			case "right" -> getInner().rightJoin(right);
+			case "full", "outer", "full_outer" -> getInner().fullJoin(right);
+			default -> throw GamaRuntimeException
+					.error("Unknown join type '" + joinType + "'. Expected: inner, left, right or full.", scope);
+		};
+		final org.dflib.join.Join configured;
+		if (keyColumns.size() == 1) {
+			configured = join.on(keyColumns.get(0));
+		} else {
+			org.dflib.Hasher hasher = org.dflib.Hasher.of(keyColumns.get(0));
+			for (int i = 1; i < keyColumns.size(); i++) { hasher = hasher.and(keyColumns.get(i)); }
+			configured = join.on(hasher);
+		}
+		return new GamaDataFrame(configured.select());
 	}
 
 	/**

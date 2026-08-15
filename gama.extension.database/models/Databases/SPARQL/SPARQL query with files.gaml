@@ -23,7 +23,7 @@ global {
 		string full_query_text <- concatenate(query.contents, "\n");
 		
 		// running the query
-		map<string, list<string>> result <- sparql_query(full_query_text, endpoint);
+		dataframe result <- sparql_query(full_query_text, endpoint);
 		
 		// we check for errors
 		if empty(result){

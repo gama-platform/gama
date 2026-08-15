@@ -34,7 +34,7 @@ on:
         required: true
       GAMA_KEYSTORE_STOREPASS:
         required: true
-      # === 
+        # ===
 
 jobs:
 
@@ -52,23 +52,23 @@ jobs:
     secrets:
       GAMA_KEYSTORE_BASE64: ${{ secrets.GAMA_KEYSTORE_BASE64 }}
       GAMA_KEYSTORE_STOREPASS: ${{ secrets.GAMA_KEYSTORE_STOREPASS }}
-  
+
   #
   #  _      _____ _   _ _    ___   __
   # | |    |_   _| \ | | |  | \ \ / /
-  # | |      | | |  \| | |  | |\ V / 
-  # | |      | | | . ` | |  | | > <  
-  # | |____ _| |_| |\  | |__| |/ . \ 
-  # |______|_____|_| \_|\____//_/ \_\\
+  # | |      | | |  \| | |  | |\ V /
+  # | |      | | | . ` | |  | | > <
+  # | |____ _| |_| |\  | |__| |/ . \
+  # |______|_____|_| \_|\____//_/ \_\
   #
-  
+
   packaging-linux:
     name: Packaging GAMA for Linux
     needs: packaging-jdk
     uses: ./.github/workflows/travis-packaging-linux.yaml
     with:
       RELEASE_VERSION: ${{ inputs.RELEASE_VERSION }}
-  
+
   packaging-linux-test:
     needs: packaging-linux
     if: ${{ !inputs.SKIP_TESTS }}
@@ -76,14 +76,14 @@ jobs:
     uses: ./.github/workflows/travis-packaging-linux-test.yaml
     with:
       RELEASE_VERSION: ${{ inputs.RELEASE_VERSION }}
-  
+
   #
-  # __          _______ _   _ _____   ______          _______ 
+  # __          _______ _   _ _____   ______          _______
   # \ \        / /_   _| \ | |  __ \ / __ \ \        / / ____|
-  #  \ \  /\  / /  | | |  \| | |  | | |  | \ \  /\  / / (___  
-  #   \ \/  \/ /   | | | . ` | |  | | |  | |\ \/  \/ / \___ \ 
+  #  \ \  /\  / /  | | |  \| | |  | | |  | \ \  /\  / / (___
+  #   \ \/  \/ /   | | | . ` | |  | | |  | |\ \/  \/ / \___ \
   #    \  /\  /   _| |_| |\  | |__| | |__| | \  /\  /  ____) |
-  #     \/  \/   |_____|_| \_|_____/ \____/   \/  \/  |_____/ 
+  #     \/  \/   |_____|_| \_|_____/ \____/   \/  \/  |_____/
   #
 
   packaging-windows:
@@ -92,12 +92,12 @@ jobs:
     uses: ./.github/workflows/travis-packaging-windows.yaml
 
   #
-  #   __  __          _____    ____   _____ 
+  #   __  __          _____    ____   _____
   # |  \/  |   /\   / ____|  / __ \ / ____|
-  # | \  / |  /  \ | |      | |  | | (___  
-  # | |\/| | / /\ \| |      | |  | |\___ \ 
+  # | \  / |  /  \ | |      | |  | | (___
+  # | |\/| | / /\ \| |      | |  | |\___ \
   # | |  | |/ ____ \ |____  | |__| |____) |
-  # |_|  |_/_/    \_\_____|  \____/|_____/ 
+  # |_|  |_/_/    \_\_____|  \____/|_____/
   #
 
   packaging-macos:
@@ -112,7 +112,7 @@ jobs:
       NOTARY_APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
       NOTARY_PASSWORD: ${{ secrets.NOTARY_PASSWORD }}
       NOTARY_TEAM_ID: ${{ secrets.NOTARY_TEAM_ID }}
-  
+
   packaging-macos-test:
     needs: packaging-macos
     if: ${{ !inputs.SKIP_TESTS }}

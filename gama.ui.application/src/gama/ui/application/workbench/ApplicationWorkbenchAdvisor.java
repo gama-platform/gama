@@ -16,8 +16,13 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IDecoratorManager;
+import org.osgi.service.prefs.BackingStoreException;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.ide.IDE;
@@ -28,6 +33,7 @@ import gama.api.GAMA;
 import gama.api.additions.delegates.IEventLayerDelegate;
 import gama.api.additions.registries.GamaAdditionRegistry;
 import gama.api.runtime.GamaExecutorService;
+import gama.api.runtime.SystemInfo;
 import gama.api.types.file.IGamaFile;
 import gama.api.ui.IGui;
 import gama.api.utils.files.FileUtils;
@@ -96,6 +102,8 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 		// Start Server after the GUI is loaded
 		GamaGuiWebSocketServer.startGuiServer();
 
+		warnIfWaylandUnstable();
+
 		if (args.length > 0) {
 			int i = 0;
 			if (args[0].contains("--launcher.defaultAction")) { i += 2; }
@@ -125,6 +133,50 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
 		}
 
+	}
+
+	/** Qualifier of the workspace-scoped preference node holding the Wayland-warning dismissal flag. */
+	private static final String WAYLAND_PREF_QUALIFIER = "gama.ui.application";
+
+	/** Key of the boolean flag recording that the user dismissed the Wayland warning for the current workspace. */
+	private static final String WAYLAND_WARNING_DISMISSED = "wayland.warning.dismissed";
+
+	/**
+	 * On Linux/Wayland, warns the user that GAMA (whose 3D/OpenGL rendering relies on JOGL) is not stable under the
+	 * Wayland display server, and recommends relaunching with {@code GDK_BACKEND=x11} or using the installed
+	 * application launcher (which is already configured for this). Does nothing when GAMA is not running under native
+	 * Wayland, when the x11 backend has already been forced, or when the user dismissed the warning for this workspace.
+	 * <p>
+	 * The dismissal flag is stored in the workspace-scoped {@link InstanceScope} (i.e. in the current workspace's
+	 * {@code .metadata}), so ticking "do not show again" only silences the warning for that workspace; a fresh
+	 * workspace warns again. This deliberately bypasses {@code GamaPreferences}, whose store is global to the GAMA
+	 * installation/user account. This only runs in GUI mode, since headless uses a separate application that never
+	 * loads this advisor.
+	 */
+	private void warnIfWaylandUnstable() {
+		if (!SystemInfo.isLinux()) return;
+		if (System.getenv("WAYLAND_DISPLAY") == null) return;
+		if ("x11".equals(System.getenv("GDK_BACKEND"))) return; // already forced onto XWayland
+
+		final IEclipsePreferences node = InstanceScope.INSTANCE.getNode(WAYLAND_PREF_QUALIFIER);
+		if (node.getBoolean(WAYLAND_WARNING_DISMISSED, false)) return; // dismissed for this workspace
+
+		final Shell shell = Display.getDefault().getActiveShell(); // postStartup runs on the UI thread
+		final String title = "Wayland compatibility warning";
+		final String message = "GAMA is not stable under the Wayland display server "
+				+ "(its 3D/OpenGL rendering relies on JOGL, which does not support Wayland).\n\n"
+				+ "For a stable experience, relaunch GAMA with the environment variable GDK_BACKEND=x11, "
+				+ "or start it from the installed application launcher, which is already configured for this.";
+		final MessageDialogWithToggle dialog = MessageDialogWithToggle.openWarning(shell, title, message,
+				"Do not show this warning again for this workspace", false, null, null);
+		if (dialog.getToggleState()) {
+			node.putBoolean(WAYLAND_WARNING_DISMISSED, true);
+			try {
+				node.flush();
+			} catch (final BackingStoreException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	/**

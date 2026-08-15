@@ -491,6 +491,13 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	public final IPoint getCameraOrientation() { return cameraHelper.getOrientation(); }
 
 	@Override
+	public final IPoint getCameraUp() { return cameraHelper.getUp(); }
+	
+	@Override
+	public final IPoint getCameraRight() { return cameraHelper.getRight(); }
+
+	
+	@Override
 	public double getxRatioBetweenPixelsAndModelUnits() {
 		return DPIHelper.autoScaleDown(getCanvas().getMonitor(), openGL.getRatios().getX());
 	}

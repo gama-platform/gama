@@ -3,7 +3,7 @@ name: "[./.github/workflows/travis-packaging-jdk.yaml]"
 on:
   workflow_call:
     inputs:
-      RELEASE_VERSION: 
+      RELEASE_VERSION:
         required: true
         type: string
       jdk_embedded_version:
@@ -16,7 +16,7 @@ on:
         required: true
 
 jobs:
-  add-jdk: 
+  add-jdk:
     runs-on: ubuntu-latest
     steps:
 
@@ -36,7 +36,7 @@ jobs:
         run: |
           # Convert to zip archives
           find . -name "gama.application-*.tar.gz" -print -exec bash -c 'tar xzf {} && zip -9 -r -q $(basename \{} .tar.gz).zip $(tar --exclude="*/*" -tf {}) && rm -fr $(tar tf {}) {} && echo "Compressed and convert {} to zip"' \;
-          
+
       - name: Make zip file
         shell: bash
         run: |
@@ -80,7 +80,7 @@ jobs:
           path: |
             ./gama-platform*amd64.zip
             ./extraresources-unix.zip
-      
+
       - uses: actions/upload-artifact@v6
         with:
           name: gama-windows

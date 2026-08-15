@@ -18,6 +18,7 @@ import java.util.List;
 import org.apache.commons.csv.CSVFormat;
 import org.dflib.DataFrame;
 import org.dflib.Series;
+import org.dflib.avro.Avro;
 import org.dflib.csv.Csv;
 import org.dflib.csv.CsvLoader;
 import org.dflib.excel.Excel;
@@ -29,6 +30,7 @@ import org.dflib.parquet.Parquet;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.file.IGamaFile;
 import gama.api.types.list.IList;
 import gama.api.types.map.IMap;
 import gama.api.types.matrix.IField;
@@ -61,6 +63,15 @@ public class GamaDataFrameFactory {
 	 */
 	public static IDataFrame create(final String... columns) {
 		return new GamaDataFrame(DataFrame.foldByRow(columns).of());
+	}
+	
+	/**
+	 * Creates an empty dataframe with the specified column names
+	 * @param columns
+	 * @return
+	 */
+	public static IDataFrame create(final List<String> columns) {
+		return create(columns.toArray(new String[0]));
 	}
 
 	/**
@@ -218,6 +229,20 @@ public class GamaDataFrameFactory {
 	}
 
 	/**
+	 * Creates a GamaDataFrame from an Avro file.
+	 *
+	 * @param scope
+	 *            the execution scope
+	 * @param path
+	 *            the file path (relative to the model or absolute)
+	 * @return a new GamaDataFrame
+	 */
+	public static IDataFrame fromAvro(final IScope scope, final String path) {
+		final String resolvedPath = FileUtils.constructAbsoluteFilePath(scope, path, true);
+		return new GamaDataFrame(Avro.loader().load(new File(resolvedPath)));
+	}
+
+	/**
 	 * Creates a GamaDataFrame from a JSON file.
 	 *
 	 * @param scope
@@ -304,6 +329,18 @@ public class GamaDataFrameFactory {
 	}
 
 	/**
+	 * Wraps a dataframe into a mutable view (used as the buffer of a {@code dataframe_file}). Reads delegate to the
+	 * dataframe; writes rebuild it in place.
+	 *
+	 * @param df
+	 *            the dataframe to wrap
+	 * @return a mutable dataframe view
+	 */
+	public static GamaMutableDataFrame mutable(final IDataFrame df) {
+		return new GamaMutableDataFrame(df);
+	}
+
+	/**
 	 * Casts an arbitrary object to a GamaDataFrame.
 	 *
 	 * <p>
@@ -328,6 +365,11 @@ public class GamaDataFrameFactory {
 		return switch (obj) {
 			case null -> null;
 			case IDataFrame idf -> copy ? idf.copy(scope) : idf;
+			// A file (e.g. a dataframe_file) exposes its loaded contents as its buffer; read it and cast that.
+			case IGamaFile<?, ?> f -> {
+				final Object contents = f.getContents(scope);
+				yield contents == obj ? null : castToDataframe(scope, contents, copy);
+			}
 			case IMap<?, ?> map -> fromMap(scope, (IMap<String, IList<Object>>) map);
 			case IList<?> list -> fromList(scope, (IList<IList<Object>>) list);
 			case IField field -> fromField(scope, field);

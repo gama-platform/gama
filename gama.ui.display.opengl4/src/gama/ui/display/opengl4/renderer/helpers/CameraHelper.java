@@ -257,7 +257,30 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 *
 	 * @return the orientation
 	 */
-	public IPoint getOrientation() { return up; }
+	public IPoint getOrientation() { return data.getCameraOrientation(); }
+	
+	/**
+	 * Gets the orientation.
+	 *
+	 * @return the up axis
+	 */
+	public IPoint getUp() { return up; }
+	
+	/**
+	 * Gets the orientation.
+	 *
+	 * @return the right axis
+	 */
+	public IPoint getRight() { 
+		IPoint orientation =  data.getCameraOrientation().normalize();
+		return GamaPointFactory.create(
+				orientation.getY() * up.getZ() - orientation.getZ() * up.getY(),
+				orientation.getZ() * up.getX() - orientation.getX() * up.getZ(), 
+				orientation.getX() * up.getY() - orientation.getY() * up.getX());
+		}
+
+	
+	
 
 	/**
 	 * Animate.

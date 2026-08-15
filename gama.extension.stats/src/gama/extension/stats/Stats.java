@@ -2718,8 +2718,8 @@ public class Stats {
 		for (Double n_incr : sortedRemaining) {
 			currentES.add(n_incr);
 			TDistribution td = new TDistribution(currentES.size() - 1);
-			double thresh = 2 / criticalEffectSize * mean
-					* Math.pow(new StandardDeviation().evaluate(currentES.stream().mapToDouble(v -> v).toArray()), 2)
+			double std = new StandardDeviation().evaluate(currentES.stream().mapToDouble(v -> v).toArray());
+			double thresh = 2 * Math.pow(std / (criticalEffectSize * mean), 2)
 					* Math.pow(td.inverseCumulativeProbability(tAlpha) + td.inverseCumulativeProbability(tBeta), 2);
 			if (currentES.size() >= thresh) return currentES.size();
 		}

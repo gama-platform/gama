@@ -10,6 +10,10 @@
  ********************************************************************************************************/
 package gama.headless.server;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.WeakHashMap;
+
 import org.java_websocket.WebSocket;
 
 import gama.api.GAMA;
@@ -46,6 +50,71 @@ public class GamaServerExperimentController extends AbstractExperimentController
 
 	/** The job. */
 	private final GamaServerExperimentJob _job;
+
+	/**
+	 * Maps each experiment agent to the controller driving it. Several controllers can share the same experiment
+	 * species over the life of a server, so the agent is the only reliable key for the error path to find the
+	 * controller that is currently running the command. Weak keys, so a disposed experiment drops its entry.
+	 */
+	private static final Map<IExperimentAgent, GamaServerExperimentController> BY_AGENT =
+			Collections.synchronizedMap(new WeakHashMap<>());
+
+	/**
+	 * Returns the controller driving the given experiment agent.
+	 *
+	 * @param agent
+	 *            the experiment agent
+	 * @return the controller, or null if this agent is not driven by a server controller
+	 */
+	static GamaServerExperimentController of(final IExperimentAgent agent) { return BY_AGENT.get(agent); }
+
+	/** Set once {@link ExecutionRunnable#run()} has left its loop. No step will ever be executed again after that. */
+	protected volatile boolean executionFinished = false;
+
+	/**
+	 * The runtime error raised by the execution in progress, if any. Set by
+	 * {@link GamaHeadlessServerGUIEventHandler#runtimeError}, as GAML errors do not propagate out of the execution.
+	 */
+	private volatile GamaRuntimeException lastRuntimeError;
+
+	/**
+	 * Records a runtime error raised while executing this experiment.
+	 *
+	 * @param error
+	 *            the error reported by the runtime
+	 */
+	public void recordRuntimeError(final GamaRuntimeException error) {
+		// First error wins: over a series of steps, the one that matters is the one that broke the series.
+		if (lastRuntimeError == null) { lastRuntimeError = error; }
+	}
+
+	/**
+	 * Recovers the runtime error of an init that failed without notifying the GUI, which happens while the controller
+	 * is not yet the frontmost one. The scopes keep the error, so they are probed instead.
+	 */
+	private void captureInitError() {
+		if (lastRuntimeError != null) return;
+		GamaRuntimeException found = null;
+		try {
+			final ISimulationAgent sim = _job.simulator == null ? null : _job.simulator.getSimulation();
+			if (sim != null && sim.getScope() != null) { found = sim.getScope().getCurrentError(); }
+			if (found == null && scope != null) { found = scope.getCurrentError(); }
+		} catch (Throwable t) {
+			DEBUG.OUT("Could not probe the scopes for an init error: " + t);
+		}
+		lastRuntimeError = found;
+	}
+
+	@Override
+	public GamaRuntimeException consumeLastRuntimeError() {
+		final GamaRuntimeException error = lastRuntimeError;
+		lastRuntimeError = null;
+		return error;
+	}
+
+	static {
+		DEBUG.ON();
+	}
 
 	/**
 	 * The Class OwnRunnable.
@@ -91,6 +160,10 @@ public class GamaServerExperimentController extends AbstractExperimentController
 				}
 			} catch (Exception e) {
 				DEBUG.OUT(e);
+			} finally {
+				// Releasing previouslock unblocks any step waiting on the iteration that was not run.
+				executionFinished = true;
+				previouslock.release();
 			}
 		}
 	}
@@ -114,6 +187,7 @@ public class GamaServerExperimentController extends AbstractExperimentController
 
 		commandThread.setUncaughtExceptionHandler(GamaExecutorService.EXCEPTION_HANDLER);
 		lock.acquire();
+		previouslock.acquire();
 		commandThread.start();
 	}
 
@@ -127,11 +201,17 @@ public class GamaServerExperimentController extends AbstractExperimentController
 	protected boolean processUserCommand(final ExperimentCommand command) {
 		switch (command.type()) {
 			case _OPEN:
+				lastRuntimeError = null;
 				try {
-					return _job.loadAndBuildWithJson(parameters, stopCondition).passed();	
+					final boolean opened = _job.loadAndBuildWithJson(parameters, stopCondition).passed();
+					if (!opened) { captureInitError(); }
+					return opened;
 				} catch (Exception e) {
 					DEBUG.OUT(e);
-					GAMA.reportError(scope, GamaRuntimeException.create(e, scope), true);
+					final GamaRuntimeException gre =
+							e instanceof GamaRuntimeException g ? g : GamaRuntimeException.create(e, scope);
+					lastRuntimeError = gre;
+					GAMA.reportError(scope, gre, true);
 					return false;
 				}
 			case _START:
@@ -142,19 +222,28 @@ public class GamaServerExperimentController extends AbstractExperimentController
 				paused = true;
 				return true;
 			case _STEP:
+				// Refused rather than blocking forever on previouslock, which nobody will release any more.
+				if (executionFinished) return false;
+				lastRuntimeError = null;
 				for(int i = 0; i < command.quantity(); i++) {
-					previouslock.acquire();
 					paused = true;
-					lock.release();					
+					lock.release();
+					previouslock.acquire();
+					if (executionFinished) return false;
+					// A series stops on its first error, which the caller is then told about.
+					if (lastRuntimeError != null) { break; }
 				}
 				return true;
 			case _BACK:
+				if (executionFinished || !experiment.isMemorize()) return false;
 				for(int i = 0; i < command.quantity(); i++) {
 					paused = true;
-					experiment.getAgent().backward(getScope());
+					// backward() returns false when there is no recorded state left to go back to.
+					if (!experiment.getAgent().backward(getScope())) return false;
 				}
 				return true;
 			case _RELOAD:
+				lastRuntimeError = null;
 				try {
 					experiment.reload();
 				} catch (final GamaRuntimeException e) {
@@ -232,6 +321,7 @@ public class GamaServerExperimentController extends AbstractExperimentController
 	 */
 	@Override
 	public IExecutionResult schedule(final IExperimentAgent agent) {
+		BY_AGENT.put(agent, this);
 		scope = agent.getScope();
 		serverConfiguration = serverConfiguration.withExpId(_job.getExperimentID());
 		scope.setServerConfiguration(serverConfiguration);
@@ -267,24 +357,43 @@ public class GamaServerExperimentController extends AbstractExperimentController
 		}
 	}
 
+	/**
+	 * Whether the simulation has already reached its stop condition. Evaluated on demand, as {@link #executionFinished}
+	 * is only set once the execution loop has re-evaluated the condition, which happens after a step has returned.
+	 * Mirrors the test performed by {@link ExecutionRunnable#run()}.
+	 *
+	 * @return true if no further step should be accepted
+	 */
+	private boolean hasReachedStopCondition() {
+		try {
+			final IExperimentAgent exp = _job.simulator.getExperimentPlan().getAgent();
+			if (exp == null || exp.getStopCondition() == null) return false;
+			final ISimulationAgent sim = _job.simulator.getSimulation();
+			final IScope scope = sim == null ? exp.getScope() : sim.getScope();
+			return Cast.asBool(scope, exp.getStopCondition().value(scope));
+		} catch (Throwable e) {
+			// If the condition cannot be evaluated, let the step through.
+			DEBUG.OUT("Unable to evaluate the stop condition: " + e.getMessage());
+			return false;
+		}
+	}
+
 	@Override
 	public boolean processStep(final int nbSteps, final boolean andWait) {
-//			paused = true;
-//			if (andWait) {
-//				for(int i = 0 ; i < nbSteps; i++) {
-//					_job.doStep();				
-//				}
-//				return true;
-//			}
-			return super.processStep(nbSteps, andWait);			
+			// Checked here and not only in processUserCommand, which the asynchronous path runs after answering.
+			if (executionFinished || hasReachedStopCondition()) return false;
+			return super.processStep(nbSteps, andWait);
 	}
 
 	@Override
 	public boolean processBack(final int nbSteps, final boolean andWait) {
+		// Guards repeated here as the synchronous branch below bypasses processUserCommand(_BACK).
+		if (executionFinished || !experiment.isMemorize()) return false;
 		paused = true;
 		if (andWait) {
 			for(int i = 0; i < nbSteps; i++) {
-				_job.doBackStep();				
+				// backward() rather than _job.doBackStep(), which discards its result.
+				if (!experiment.getAgent().backward(getScope())) return false;
 			}
 			return true;
 		}

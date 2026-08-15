@@ -11,7 +11,6 @@
 package gama.api.utils.server;
 
 import static gama.api.utils.server.ISocketCommand.ARGS;
-import static gama.api.utils.server.ISocketCommand.ESCAPED;
 import static gama.api.utils.server.ISocketCommand.EXPR;
 import static gama.api.utils.server.ISocketCommand.EXPRESSION;
 import static gama.api.utils.server.ISocketCommand.NB_STEP;
@@ -74,7 +73,7 @@ import gama.dev.DEBUG;
  * @date 15 oct. 2023
  */
 public class DefaultServerCommands {
-
+	
 	/**
 	 * Load.
 	 *
@@ -193,7 +192,9 @@ public class DefaultServerCommands {
 		final boolean sync = map.get(SYNC) != null ? Boolean.parseBoolean("" + map.get(SYNC)) : false;
 		try {
 			if (!plan.getController().processStep(nb_step, sync)) {
-				return new CommandResponse(UnableToExecuteRequest, "Controller is full", map, false);
+				return new CommandResponse(UnableToExecuteRequest,
+						"Unable to step: the simulation is over (its stop condition has been reached) or the controller is full",
+						map, false);
 			}
 		} catch (Throwable e) {
 			DEBUG.OUT(e.getStackTrace());
@@ -202,6 +203,10 @@ public class DefaultServerCommands {
 		if (plan.getController().isDisposing()) {
 			return new CommandResponse(MessageType.RuntimeError, "", map, false);
 		}
+		// processStep() returns true even when a runtime error occurred, as GAML errors do not propagate. A caller
+		// that waited for the step must be told about it.
+		final GamaRuntimeException error = plan.getController().consumeLastRuntimeError();
+		if (sync && error != null) return new CommandResponse(MessageType.RuntimeError, error, map, false);
 		return new CommandResponse(CommandExecutedSuccessfully, "", map, false);
 	}
 
@@ -231,7 +236,9 @@ public class DefaultServerCommands {
 		final boolean sync = map.get(SYNC) != null ? Boolean.parseBoolean("" + map.get(SYNC)) : false;
 		try {
 			if (!plan.getController().processBack(nb_step, sync)) {
-				return new CommandResponse(UnableToExecuteRequest, "Controller is full", map, false);
+				return new CommandResponse(UnableToExecuteRequest,
+						"Unable to step back: the experiment must be declared with 'record: true' and the simulation must have at least one recorded previous state",
+						map, false);
 			}
 		} catch (RuntimeException e) {
 			DEBUG.OUT(e.getStackTrace());
@@ -280,8 +287,12 @@ public class DefaultServerCommands {
 		plan.setParameterValues(params);
 		plan.setStopCondition((String) map.get(ISocketCommand.UNTIL));
 		// actual reload
-		if (!plan.getController().processReload(true))
-			return new CommandResponse(UnableToExecuteRequest, "Controller is full", map, false);
+		final boolean reloaded = plan.getController().processReload(true);
+		// A runtime error raised by the init does not propagate, so it is checked separately from the reload status.
+		final GamaRuntimeException error = plan.getController().consumeLastRuntimeError();
+		if (error != null) return new CommandResponse(MessageType.RuntimeError, error, map, false);
+		if (!reloaded) return new CommandResponse(UnableToExecuteRequest,
+				"Unable to reload the experiment: the controller is full or the reload failed", map, false);
 		return new CommandResponse(CommandExecutedSuccessfully, "", map, false);
 	}
 

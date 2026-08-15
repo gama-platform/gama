@@ -15,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 import gama.api.constants.ISerialisationConstants;
+import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.serialization.SerialisedAgent;
 import gama.api.kernel.simulation.IExperimentRecorder;
 import gama.api.kernel.simulation.ISimulationAgent;
@@ -112,18 +113,25 @@ public class SimulationSerialiser implements IExperimentRecorder, ISerialisation
 	 * @date 8 août 2023
 	 */
 	@Override
-	public void restore(final ISimulationAgent sim) {
+	public boolean restore(final ISimulationAgent sim) {
 		final ReentrantLock l = lockFor(sim);
 		l.lock();
 		try {
 			LinkedList<SimulationHistoryNode> history = getSimulationHistory(sim);
-			SimulationHistoryNode node = history.pop();
-			if (node != null && node.cycle() == sim.getClock().getCycle()) { node = history.pop(); }
-			if (node != null) {
-				processor.restoreAgentFromBytes(sim, node.bytes());
+			// poll() rather than pop(), as the history may be shorter than expected.
+			SimulationHistoryNode node = history.poll();
+			// The state recorded at the end of the current cycle is the one we are already in: skip it.
+			if (node != null && node.cycle() == sim.getClock().getCycle()) { node = history.poll(); }
+			if (node == null) {
+				DEBUG.ERR("Step back: nothing left in the history of " + sim);
+				return false;
 			}
+			processor.restoreAgentFromBytes(sim, node.bytes());
+			return true;
 		} catch (Throwable e) {
-			e.printStackTrace();
+			// Rethrown so that the reason reaches the caller: a failure here leaves the simulation untouched.
+			DEBUG.ERR("Step back failed while restoring " + sim + " : " + e.getMessage(), e);
+			throw GamaRuntimeException.create(e, sim.getScope());
 		} finally {
 			l.unlock();
 		}
@@ -139,7 +147,17 @@ public class SimulationSerialiser implements IExperimentRecorder, ISerialisation
 	 */
 	@Override
 	public boolean canStepBack(final ISimulationAgent sim) {
-		return getSimulationHistory(sim).size() > 0;
+		final ReentrantLock l = lockFor(sim);
+		l.lock();
+		try {
+			SimulationHistory history = getSimulationHistory(sim);
+			SimulationHistoryNode top = history.peek();
+			if (top == null) return false;
+			// Mirrors restore(), which skips the node recorded for the current cycle and so needs one behind it.
+			return history.size() > 1 || top.cycle() != sim.getClock().getCycle();
+		} finally {
+			l.unlock();
+		}
 	}
 
 }

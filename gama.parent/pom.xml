@@ -184,7 +184,6 @@
 		<module>../gama.feature.extension.sound</module>
 		<module>../gama.feature.extension.stats</module>
 		<module>../gama.feature.extension.image</module>
-		<module>../gama.feature.copilot</module>
 
 		<module>../gama.p2site</module>
 
@@ -475,7 +474,7 @@
 			<plugin>
 				<groupId>com.github.spotbugs</groupId>
 				<artifactId>spotbugs-maven-plugin</artifactId>
-				<version>4.9.8.3</version>
+				<version>4.10.2.0</version>
 				<configuration>
 					<xmlOutput>true</xmlOutput>
 					<failOnError>false</failOnError>

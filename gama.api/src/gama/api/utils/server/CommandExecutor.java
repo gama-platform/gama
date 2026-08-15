@@ -42,6 +42,7 @@ import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
 import gama.api.gaml.types.Types;
 import gama.api.types.list.IList;
+import gama.dev.DEBUG;
 
 /**
  * The Class CommandExecutor.
@@ -141,7 +142,14 @@ public class CommandExecutor implements ICommandExecuter {
 		// This is necessary to prevent connection closing during long commands
 		// because the main thread is busy and can't answer to the keepalive ping.
 		new Thread(() -> {
-			var res = command.execute(server, socket, map);
+			GamaServerMessage res;
+			try {
+				res = command.execute(server, socket, map);
+			} catch (Throwable t) {
+				// We ensure that every request gets an answer, even in case of complete crash
+				DEBUG.ERR("Error while executing the command '" + cmd_type + "'", t);
+				res = new CommandResponse(MessageType.GamaServerError, t, map, false);
+			}
 			if (res != null && ReadyState.OPEN.equals(socket.getReadyState())) {
 				socket.send(GAMA.getJsonEncoder().valueOf(res).toString());
 			}

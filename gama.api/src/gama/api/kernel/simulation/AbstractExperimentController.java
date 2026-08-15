@@ -16,6 +16,7 @@ import gama.api.GAMA;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.runtime.GeneralSynchronizer;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.api.utils.server.IServerConfiguration;
 import gama.dev.DEBUG;
 
@@ -208,7 +209,7 @@ public abstract class AbstractExperimentController implements IExperimentControl
 	protected IExperimentSpecies experiment;
 
 	/** The commands. Blocking queue of pending experiment commands. {@link ArrayBlockingQueue} is thread-safe; the field itself must not be re-assigned after construction. */
-	protected final ArrayBlockingQueue<ExperimentCommand> commands = new ArrayBlockingQueue<>(50);
+	protected final ArrayBlockingQueue<ExperimentCommand> commands = new ArrayBlockingQueue<>(GamaPreferences.Runtime.CORE_SERVER_COMMAND_QUEUE_SIZE.getValue());
 
 	/** The command thread. Processes commands from the {@link #commands} queue in a dedicated thread. */
 	protected Thread commandThread = new Thread(() -> {
@@ -270,7 +271,6 @@ public abstract class AbstractExperimentController implements IExperimentControl
 	 */
 	protected boolean synchronousStep(final int nbSteps) {
 		return processUserCommand(new ExperimentCommand(ExperimentCommandTypes._STEP, nbSteps));
-
 	}
 
 	/**
