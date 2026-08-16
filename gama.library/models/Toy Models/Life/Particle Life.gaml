@@ -1,12 +1,11 @@
 /**
- * ╔══════════════════════════════════════════════════════════════════════════╗
- * ║                    PARTICLE LIFE SIMULATION                             ║
- * ║                                                                          ║
- * ║  Inspired by : OfficialCodeNoodles/Particle-Life-Simulation (Godot)     ║
- * ║                & hunar4321/particle-life                                 ║
- * ║                                                                          ║
- * ║  Compatible GAMA 2025-06        nb_types fixed at 5                     ║
- * ╚══════════════════════════════════════════════════════════════════════════╝
+ * ═════════════════════════════════════════════════════════════════════════
+ *                     PARTICLE LIFE SIMULATION                              
+ *                                                                           
+ *   Inspired by : OfficialCodeNoodles/Particle-Life-Simulation (Godot)      
+ *                 & hunar4321/particle-life                                 
+ * 
+ * ═════════════════════════════════════════════════════════════════════════
  */
 
 model ParticleLife
@@ -162,9 +161,9 @@ global {
     init {
         write "
 ╔══════════════════════════════════════════════════════════════════════════╗
-║                    PARTICLE LIFE SIMULATION                             ║
+║                    PARTICLE LIFE SIMULATION                              ║
 ║                                                                          ║
-║  Inspired by : OfficialCodeNoodles/Particle-Life-Simulation (Godot)     ║
+║  Inspired by : OfficialCodeNoodles/Particle-Life-Simulation (Godot)      ║
 ║                & hunar4321/particle-life                                 ║
 ║                                                                          ║
 ║  Principle :                                                             ║
@@ -177,15 +176,15 @@ global {
 ║                                                                          ║
 ║  Physical model :                                                        ║
 ║    - Zone [0, min_radius[          : hard repulsion (anti-overlap)       ║
-║    - Zone [min_radius, max_radius] : force from attraction_matrix[i,j]  ║
+║    - Zone [min_radius, max_radius] : force from attraction_matrix[i,j]   ║
 ║    - Beyond max_radius             : no interaction                      ║
 ║    - Update rule :                                                       ║
-║        v(t+1) = v(t) x friction + F x force_scale x dt                  ║
-║        x(t+1) = x(t) + v(t+1) x dt                                      ║
+║        v(t+1) = v(t) x friction + F x force_scale x dt                   ║
+║        x(t+1) = x(t) + v(t+1) x dt                                       ║
 ║                                                                          ║
 ║  EDITABLE MATRIX FROM THE INTERFACE :                                    ║
-║    Each cell A_i_j is exposed as a slider in the category               ║
-║    'Matrix [Colour]' of the Parameters panel. Values range from -1.0    ║
+║    Each cell A_i_j is exposed as a slider in the category                ║
+║    'Matrix [Colour]' of the Parameters panel. Values range from -1.0     ║
 ║    (max repulsion) to +1.0 (max attraction). The internal matrix is      ║
 ║    synchronised each cycle via the sync_matrix reflex.                   ║
 ╚══════════════════════════════════════════════════════════════════════════╝
@@ -262,70 +261,66 @@ species particle {
     action compute_force() {
         force_acc     <- {0.0, 0.0};
         local_density <- 0.0;
-        list<particle> neighbors <- particle at_distance max_radius;
+        list<particle> neighbors <- (particle at_distance max_radius) - self;
 
         // ── Pass 1 : local density computation ────────────────────────────
         //   same type      -> full contribution  (1 - dist/max_radius)
         //   different type -> reduced contribution (x 0.5)
         loop other over: neighbors {
-            if other != self {
-                float dx <- other.location.x - location.x;
-                float dy <- other.location.y - location.y;
-                if wrap_borders {
-                    if dx >  world.shape.width  / 2.0 { dx <- dx - world.shape.width;  }
-                    if dx < -world.shape.width  / 2.0 { dx <- dx + world.shape.width;  }
-                    if dy >  world.shape.height / 2.0 { dy <- dy - world.shape.height; }
-                    if dy < -world.shape.height / 2.0 { dy <- dy + world.shape.height; }
-                }
-                float dist <- sqrt(dx * dx + dy * dy);
-                if dist > 0 and dist < max_radius {
-                    float contrib <- 1.0 - dist / max_radius;
-                    if (density_limit != 0) {
-	                    if other.ptype = ptype {
-	                        local_density <- local_density + contrib;
-	                    } else {
-	                        local_density <- local_density + contrib * 0.5;
-	                    } 
-	                }
+            float dx <- other.location.x - location.x;
+            float dy <- other.location.y - location.y;
+            if wrap_borders {
+                if dx >  world.shape.width  / 2.0 { dx <- dx - world.shape.width;  }
+                if dx < -world.shape.width  / 2.0 { dx <- dx + world.shape.width;  }
+                if dy >  world.shape.height / 2.0 { dy <- dy - world.shape.height; }
+                if dy < -world.shape.height / 2.0 { dy <- dy + world.shape.height; }
+            }
+            float dist <- sqrt(dx * dx + dy * dy);
+            if dist > 0 and dist < max_radius {
+                float contrib <- 1.0 - dist / max_radius;
+                if (density_limit != 0) {
+                    if other.ptype = ptype {
+                        local_density <- local_density + contrib;
+                    } else {
+                        local_density <- local_density + contrib * 0.5;
+                    } 
                 }
             }
         }
 
         // ── Pass 2 : force computation with density attenuation ───────────
         loop other over: neighbors {
-            if other != self {
-                float dx <- other.location.x - location.x;
-                float dy <- other.location.y - location.y;
-                if wrap_borders {
-                    if dx >  world.shape.width  / 2.0 { dx <- dx - world.shape.width;  }
-                    if dx < -world.shape.width  / 2.0 { dx <- dx + world.shape.width;  }
-                    if dy >  world.shape.height / 2.0 { dy <- dy - world.shape.height; }
-                    if dy < -world.shape.height / 2.0 { dy <- dy + world.shape.height; }
-                }
-                float dist <- sqrt(dx * dx + dy * dy);
-                if dist > 0 and dist < max_radius {
-                    float fx <- 0.0;
-                    float fy <- 0.0;
-                    if dist < min_radius {
-                        // Hard repulsion zone : prevents particle overlap
-                        float repulsion <- (min_radius - dist) / min_radius;
-                        fx <- -repulsion * (dx / dist);
-                        fy <- -repulsion * (dy / dist);
-                    } else {
-                        float g <- attraction_matrix[ptype, other.ptype];
-                        // Attenuate attraction when local density exceeds density_limit
-                        if g > 0.0 and density_limit != 0{
-                            float excess         <- max(0.0, local_density - density_limit);
-                            float density_factor <- 1.0 - min(excess, 1.0);
-                            g <- g * density_factor;
-                        }
-                        float norm_dist <- (dist - min_radius) / (max_radius - min_radius);
-                        float strength  <- g * (1.0 - norm_dist);
-                        fx <- strength * (dx / dist);
-                        fy <- strength * (dy / dist);
+            float dx <- other.location.x - location.x;
+            float dy <- other.location.y - location.y;
+            if wrap_borders {
+                if dx >  world.shape.width  / 2.0 { dx <- dx - world.shape.width;  }
+                if dx < -world.shape.width  / 2.0 { dx <- dx + world.shape.width;  }
+                if dy >  world.shape.height / 2.0 { dy <- dy - world.shape.height; }
+                if dy < -world.shape.height / 2.0 { dy <- dy + world.shape.height; }
+            }
+            float dist <- sqrt(dx * dx + dy * dy);
+            if dist > 0 and dist < max_radius {
+                float fx <- 0.0;
+                float fy <- 0.0;
+                if dist < min_radius {
+                    // Hard repulsion zone : prevents particle overlap
+                    float repulsion <- (min_radius - dist) / min_radius;
+                    fx <- -repulsion * (dx / dist);
+                    fy <- -repulsion * (dy / dist);
+                } else {
+                    float g <- attraction_matrix[ptype, other.ptype];
+                    // Attenuate attraction when local density exceeds density_limit
+                    if g > 0.0 and density_limit != 0{
+                        float excess         <- max(0.0, local_density - density_limit);
+                        float density_factor <- 1.0 - min(excess, 1.0);
+                        g <- g * density_factor;
                     }
-                    force_acc <- {force_acc.x + fx, force_acc.y + fy};
+                    float norm_dist <- (dist - min_radius) / (max_radius - min_radius);
+                    float strength  <- g * (1.0 - norm_dist);
+                    fx <- strength * (dx / dist);
+                    fy <- strength * (dy / dist);
                 }
+                force_acc <- {force_acc.x + fx, force_acc.y + fy};
             }
         }
     }
