@@ -2,6 +2,7 @@ package gama.export;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.StandardCopyOption;
@@ -21,8 +22,12 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
+import java.net.URL;
 
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 import org.eclipse.core.resources.IProject;
+
 import gama.api.utils.prefs.JREPreferenceStore;
 import gama.api.utils.prefs.GamaPreferenceStore;
 import gama.api.GAMA;
@@ -32,6 +37,7 @@ import gama.export.dependency.BundleDependencyAnalyzer;
 import gama.export.ExportActivator;
 import gama.export.ZipHelper;
 import gama.export.ExportHelper;
+import gama.export.ElfPacker;
 
 public class GamaZipBuilder {
 
@@ -106,6 +112,8 @@ public class GamaZipBuilder {
 
     private boolean zipWithJdk = false;
 
+    private boolean isOneFileExport = false;
+
     private static Path jdkPath = null; 
     /**
      * Data files referenced by the exported models, as absolute, normalized
@@ -167,7 +175,7 @@ public class GamaZipBuilder {
 
     public GamaZipBuilder(final Set<String> plugins, final IProject targetProject,
             final String targetModelRelativePathStr, final String targetExperiment, 
-            final Set<String> dataFiles, final boolean zipWithJdk) 
+            final Set<String> dataFiles, final boolean zipWithJdk, final boolean isOneFileExport) 
     {
         neededGamaPlugins = plugins;
         neededGamaPlugins.addAll(necessaryGamaPlugins);
@@ -184,6 +192,8 @@ public class GamaZipBuilder {
         this.targetModelRelativePathStr = targetModelRelativePathStr; 
         this.targetExperiment = targetExperiment;
         this.dataFiles = dataFiles;
+
+        this.isOneFileExport = isOneFileExport;
 
         // expanding necessary plugins based on needed plugins (GamlProperties doesn't expand the dependency tree)
         neededGamaPluginsPath = BundleDependencyAnalyzer.getMinimalGamaPluginSet(neededGamaPlugins);
@@ -225,12 +235,14 @@ public class GamaZipBuilder {
     {
         final Path outputPath = Path.of(outputPathStr);
 
+        final Path zipOutputPath = isOneFileExport ? GamaZipBuilder.tmpDirectoryPath.resolve("archive.zip") : outputPath;
+
         if(Files.isDirectory(GamaZipBuilder.tmpDirectoryPath))
             deleteDirectory(GamaZipBuilder.tmpDirectoryPath); 
 
         Files.createDirectories(GamaZipBuilder.tmpDirectoryPath);
 
-        try(ZipArchiveOutputStream zos = new ZipArchiveOutputStream(new FileOutputStream(outputPath.toFile()))){
+        try(ZipArchiveOutputStream zos = new ZipArchiveOutputStream(new FileOutputStream(zipOutputPath.toFile()))){
         
             ///////////////////////////////////////////
             // Zipping GAMA in the desired directory //
@@ -580,10 +592,60 @@ public class GamaZipBuilder {
                 }                
             }
 
-
-            // clean tmp files
-            deleteDirectory(GamaZipBuilder.tmpDirectoryPath);
-
         }
+
+        if(isOneFileExport) {
+            if(SystemInfo.isLinux()) {
+                Bundle bundle = FrameworkUtil.getBundle(this.getClass());
+
+                if (bundle == null)
+                    throw new IllegalStateException(
+                        "Unable to access gama.export osgi bundle"
+                    );
+
+                URL runnerUrl = bundle.getEntry("binaries/runner");
+                URL zipExtractorUrl = bundle.getEntry("binaries/zipextractor");
+
+                if (runnerUrl == null)
+                    throw new IOException(
+                        "unable to find the elf64 runner : binaries/runner"
+                    );
+
+                if (zipExtractorUrl == null)
+                    throw new IOException(
+                        "unable to find the elf64 zip extractor : binaries/zipextractor"
+                    );
+
+                Path tmpRunnerPath = GamaZipBuilder.tmpDirectoryPath.resolve("runner");
+                Path tmpZipExtractorPath = GamaZipBuilder.tmpDirectoryPath.resolve("zipextractor");
+
+                try (InputStream inputStream = runnerUrl.openStream()) {
+                    Files.copy(
+                        inputStream,
+                        tmpRunnerPath,
+                        StandardCopyOption.REPLACE_EXISTING
+                    );
+                }
+
+                try (InputStream inputStream = zipExtractorUrl.openStream()) {
+                    Files.copy(
+                        inputStream,
+                        tmpZipExtractorPath,
+                        StandardCopyOption.REPLACE_EXISTING
+                    );
+                }
+                
+                try {
+                    ElfPacker.pack(tmpRunnerPath,tmpZipExtractorPath,zipOutputPath,outputPath);
+                } catch (Exception e)
+                {
+                    System.out.println("error: unable to pack the elf64 executable : ");
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        // clean tmp directory
+        deleteDirectory(GamaZipBuilder.tmpDirectoryPath);
     }
 }

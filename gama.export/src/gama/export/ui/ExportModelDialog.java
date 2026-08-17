@@ -24,10 +24,12 @@ public class ExportModelDialog extends TitleAreaDialog {
     private Button[] buttons;
     private Button includeJdkButton;
     private Button selectAllExperimentsButton;
+    private Button oneFileButton;
 
     private String outputPath = "";
     private String outputFileName = "";
-    private boolean includeJdk = true;
+    private boolean includeJdk;
+    private boolean oneFile;
     private String[] availableExperiments;
     private List<String> selectedExperiments;
 
@@ -107,6 +109,11 @@ public class ExportModelDialog extends TitleAreaDialog {
         includeJdkButton.setText("Include the JDK");
         includeJdkButton.setSelection(true);
         includeJdkButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 3, 1));
+
+        oneFileButton = new Button(container, SWT.CHECK);
+        oneFileButton.setText("Export as a single file executable");
+        oneFileButton.setSelection(false);
+        oneFileButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 3, 1));
     }
 
     private void createPathSection(Composite container) {
@@ -155,6 +162,7 @@ public class ExportModelDialog extends TitleAreaDialog {
         outputFileName = txtOutputFileName.getText().trim();
         selectedExperiments = new ArrayList<String>();
         includeJdk = includeJdkButton.getSelection();
+        oneFile = oneFileButton.getSelection();
 
         for(int i=0 ; i < availableExperiments.length ; i++)
         {
@@ -193,6 +201,10 @@ public class ExportModelDialog extends TitleAreaDialog {
     public boolean getIncludeJdk()
     {
         return includeJdk;
+    }
+
+    public boolean getOneFile() {
+        return oneFile;
     }
 
     public String[] getSelectedExperiments() {

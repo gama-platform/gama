@@ -93,6 +93,7 @@ public class ExportExperimentSelectionListener implements Selector {
 			
 			final String targetExperiments = String.join("#",dialog.getSelectedExperiments());
 			final boolean zipWithJdk = dialog.getIncludeJdk();
+			final boolean oneFile = dialog.getOneFile();
 
 			// final String formattedTimestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy.MM.dd.HHmmss"));
 			// final String modelName = Path.of(relativeModelPathStr).getFileName().toString().replace(".gaml","");
@@ -106,7 +107,8 @@ public class ExportExperimentSelectionListener implements Selector {
 				relativeModelPathStr,
 				targetExperiments,
 				dataFiles,
-				zipWithJdk);
+				zipWithJdk,
+				oneFile);
 			try { 
 				ziper.zip(outputPath.toString());
 				System.out.println("Model exported successfully");
