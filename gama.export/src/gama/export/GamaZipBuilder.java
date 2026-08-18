@@ -100,6 +100,8 @@ public class GamaZipBuilder {
     
     private static final String gamaUiApplicationPluginFileName = gamaUiApplicationPluginPath.getFileName().toString();
 
+    private static final Set<String> shapeFileExtensionsSet = new HashSet<String>(Set.of(".shx",".dbf",".prj",".sbn",".sbx",".xml"));
+
     private IProject targetProject = null;
     
     private String targetModelRelativePathStr = null;
@@ -441,11 +443,19 @@ public class GamaZipBuilder {
                         try (Stream<Path> stream = Files.walk(resolved.getParent())) {
                             stream.forEach(filePath -> { 
                                 final String currentFileName = filePath.getFileName().toString();
+                                final int lastDotIndex = currentFileName.lastIndexOf('.');
+
+                                if (lastDotIndex < 0)
+                                    return;
+
+                                final String currentFilePrefix = currentFileName.substring(0, lastDotIndex);
+                                final String currentFileExtension = currentFileName.substring(lastDotIndex);
 
                                 if (
                                     ! externalDataFiles.containsKey(filePath)
                                     && ! Files.isDirectory(filePath) 
-                                    && currentFileName.startsWith(filePrefix)
+                                    && currentFilePrefix.equals(filePrefix)
+                                    && shapeFileExtensionsSet.contains(currentFileExtension)
                                 )
                                     externalDataFiles.put(filePath, currentFileName.replace(filePrefix,uniquePrefix));
                             });
