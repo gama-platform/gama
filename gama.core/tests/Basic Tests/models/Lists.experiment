@@ -66,7 +66,7 @@ experiment Lists  type:test {
 		assert l2 max_of (length(each)) = length('strings'); 
 		assert copy_between(l2,1,3) = ['is', 'a'];
 		assert copy_between(l2, 1, length(l2) - 1) = ['is','a','list', 'of'];
-		assert l2 as_map (length(each)::"new"+each) = map([4::'newthis',2::'newis',1::'newa',7::'newstrings']);
+		assert l2 as_map (length(each)::"new"+each) = map([4::'newlist',2::'newof',1::'newa',7::'newstrings']);
 		assert l2[1::3] = ['is', 'a'];
 	}
 	
