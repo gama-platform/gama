@@ -38,6 +38,7 @@ import gama.export.ExportActivator;
 import gama.export.ZipHelper;
 import gama.export.ExportHelper;
 import gama.export.ElfPacker;
+import gama.export.ArchiveBuilder;
 
 public class GamaZipBuilder {
 
@@ -152,7 +153,8 @@ public class GamaZipBuilder {
             }
     }
 
-    public void handleUpdateGamlImports(Path filePath, Path includeDir, Map<Path,String> externalDataFiles, ZipArchiveOutputStream zos) throws IOException, RuntimeException{
+    public void addEntryAndUpdateGamlImports(Path filePath, Path includeDir, Map<Path,String> externalDataFiles, String entryName, ArchiveBuilder archive) throws IOException, RuntimeException{
+
         String content = Files.readString(filePath, StandardCharsets.UTF_8);
         final Path gamlParent = filePath.getParent();
 
@@ -172,12 +174,18 @@ public class GamaZipBuilder {
             content = content.replace("'" + originalString + "'",
                     "'" + newRelativePath + "'");
         }
-        zos.write(content.getBytes(StandardCharsets.UTF_8));
+
+        archive.addEntryFromString(content,entryName);
     }
 
-    public GamaZipBuilder(final Set<String> plugins, final IProject targetProject,
-            final String targetModelRelativePathStr, final String targetExperiment, 
-            final Set<String> dataFiles, final boolean zipWithJdk, final boolean isOneFileExport) 
+    public GamaZipBuilder(
+        final Set<String> plugins,
+        final IProject targetProject,
+        final String targetModelRelativePathStr,
+        final String targetExperiment,
+        final Set<String> dataFiles,
+        final boolean zipWithJdk,
+        final boolean isOneFileExport)
     {
         neededGamaPlugins = plugins;
         neededGamaPlugins.addAll(necessaryGamaPlugins);
@@ -244,7 +252,7 @@ public class GamaZipBuilder {
 
         Files.createDirectories(GamaZipBuilder.tmpDirectoryPath);
 
-        try(ZipArchiveOutputStream zos = new ZipArchiveOutputStream(new FileOutputStream(zipOutputPath.toFile()))){
+        try(ArchiveBuilder archive = new ArchiveBuilder(zipOutputPath,isOneFileExport)){
         
             ///////////////////////////////////////////
             // Zipping GAMA in the desired directory //
@@ -254,19 +262,7 @@ public class GamaZipBuilder {
             try (Stream<Path> stream = filter(Files.walk(appRootPath))) {
                 stream.forEach(sourcePath -> {
                     try {
-                        if(! Files.isDirectory(sourcePath))
-                        {
-                            ZipArchiveEntry entry = new ZipArchiveEntry(appRootPath.relativize(sourcePath).toString());
-                            // Replace existing files/directories if needed
-                            // Create a new entry inside the ZIP archive
-                            if (SystemInfo.isLinux() || SystemInfo.isMac())
-                                    ZipHelper.transfertFilePermissions(sourcePath,entry);
-                            zos.putArchiveEntry(entry);
-                            
-                            // Write bytes to the entry
-                            Files.copy(sourcePath, zos);
-                            zos.closeArchiveEntry();
-                        }
+                        archive.addEntry(sourcePath,appRootPath.relativize(sourcePath).toString());
                         
                         // Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
                     } catch (IOException e) {
@@ -291,11 +287,7 @@ public class GamaZipBuilder {
             ZipHelper.renameEntry(GamaZipBuilder.gamaUiApplicationJarTmpPath,"splash.png","old_splash.png");
             ZipHelper.renameEntry(GamaZipBuilder.gamaUiApplicationJarTmpPath,"splash_simulation_launcher.png","splash.png");
 
-            zos.putArchiveEntry(new ZipArchiveEntry(Path.of("plugins",GamaZipBuilder.gamaUiApplicationPluginFileName).toString()));
-
-            Files.copy(GamaZipBuilder.gamaUiApplicationJarTmpPath, zos);
-
-            zos.closeArchiveEntry();
+            archive.addEntry(GamaZipBuilder.gamaUiApplicationJarTmpPath,Path.of("plugins",GamaZipBuilder.gamaUiApplicationPluginFileName).toString());
 
             /////////////////////////////////////
             // Applying the needed preferences //
@@ -339,14 +331,9 @@ public class GamaZipBuilder {
 
             Files.writeString(GamaZipBuilder.gamaIniTmpPath,gamaIniContent);
 
-            ZipArchiveEntry gamaIniEntry = new ZipArchiveEntry(Path.of("Gama.ini").toString());
             // Replace existing files/directories if needed
             // Create a new entry inside the ZIP archive
-            zos.putArchiveEntry(gamaIniEntry);
-            
-            // Write bytes to the entry
-            Files.copy(GamaZipBuilder.gamaIniTmpPath, zos);
-            zos.closeArchiveEntry();
+            archive.addEntry(GamaZipBuilder.gamaIniTmpPath,Path.of("Gama.ini").toString());
 
             // creating / updating preferences
             JREPreferenceStore store = new JREPreferenceStore(Preferences.userRoot().node(GamaPreferenceStore.NODE_NAME));
@@ -376,12 +363,7 @@ public class GamaZipBuilder {
             store.putInStore("pref_default_experiment",defaultExperimentPreferenceOld);
             store.putInStore("pref_errors_in_editor",errorsInEditorPreferenceOld);
 
-            ZipArchiveEntry gamaPrefsEntry = new ZipArchiveEntry(Path.of("configuration",".settings","gama.prefs").toString());
-            zos.putArchiveEntry(gamaPrefsEntry);
-            
-            // Write bytes to the entry
-            Files.copy(GamaZipBuilder.gamaPrefsTmpPath, zos);
-            zos.closeArchiveEntry();
+            archive.addEntry(GamaZipBuilder.gamaPrefsTmpPath,Path.of("configuration",".settings","gama.prefs").toString());
 
             ////////////////////////////////////
             // Embedding the target workspace //
@@ -480,25 +462,16 @@ public class GamaZipBuilder {
                     {
                         if(! Files.isDirectory(filePath))
                         {
-                            ZipArchiveEntry entry = new ZipArchiveEntry(filePath.toString().replace(targetWorkspacePathStr,GamaZipBuilder.embeddedWorkspaceName));
-
-                            if (SystemInfo.isLinux() || SystemInfo.isMac())
-                                    ZipHelper.transfertFilePermissions(filePath,entry);
-
-                            zos.putArchiveEntry(entry);
-                            
                             final String currentFileName = filePath.getFileName().toString();
                             final boolean isGaml = currentFileName.toLowerCase().endsWith(".gaml");
+                            String entryName = filePath.toString().replace(targetWorkspacePathStr,GamaZipBuilder.embeddedWorkspaceName);
 
                             // Rewrite, in every GAML file, the paths of the data
                             // files that have been rerouted into the include dir.
-                            if (isGaml && !externalDataFiles.isEmpty()) {
-                                handleUpdateGamlImports(filePath,includeDir,externalDataFiles,zos);
-                            } else {
-                                Files.copy(filePath, zos);
-                            }
-
-                            zos.closeArchiveEntry();                        
+                            if (isGaml && !externalDataFiles.isEmpty())
+                                addEntryAndUpdateGamlImports(filePath,includeDir,externalDataFiles,entryName,archive);
+                            else
+                                archive.addEntry(filePath,entryName);
                         }
                     } 
                     catch (IOException e)
@@ -521,11 +494,10 @@ public class GamaZipBuilder {
             ////////////////////////////////////////////////////////////
 
             for (final Map.Entry<Path, String> entry : externalDataFiles.entrySet()) {
-                final String ZipArchiveEntryPath = Path.of(GamaZipBuilder.embeddedWorkspaceName, projectName, "includes",
+                final String zipArchiveEntryPathStr = Path.of(GamaZipBuilder.embeddedWorkspaceName, projectName, "includes",
                         entry.getValue()).toString();
-                zos.putArchiveEntry(new ZipArchiveEntry(ZipArchiveEntryPath));
-                Files.copy(entry.getKey(), zos);
-                zos.closeArchiveEntry();
+
+                archive.addEntry(entry.getKey(),zipArchiveEntryPathStr);
             }
 
             ////////////////////////////////////////
@@ -537,30 +509,20 @@ public class GamaZipBuilder {
             for (String virtualPathStr : linkedFilesMap.keySet())
             {
                 // preserve the link virtual path /Embedded_Workspace/projectName/path/to/link
-                zos.putArchiveEntry(
-                    new ZipArchiveEntry(
+                String entryName = 
                         GamaZipBuilder.embeddedWorkspaceName 
                         + File.separator + projectName 
-                        + File.separator + virtualPathStr
-                    ));
+                        + File.separator + virtualPathStr;
 
                 // but write the actual content of the file designed by the link
-                handleUpdateGamlImports(linkedFilesMap.get(virtualPathStr),includeDir,externalDataFiles,zos);
-                // Files.copy(linkedFilesMap.get(virtualPathStr),zos);
-                zos.closeArchiveEntry();
+                addEntryAndUpdateGamlImports(linkedFilesMap.get(virtualPathStr),includeDir,externalDataFiles,entryName, archive);
             }
             
             // WORKSPACE_IDENTIFIER
-            zos.putArchiveEntry(
-                new ZipArchiveEntry(GamaZipBuilder.embeddedWorkspaceName + File.separator + IWorkspaceManager.WORKSPACE_IDENTIFIER));
-
-            zos.closeArchiveEntry();
+            archive.addEntryFromString("",GamaZipBuilder.embeddedWorkspaceName + File.separator + IWorkspaceManager.WORKSPACE_IDENTIFIER);
 
             //WORKSPACE MODEL IDENTIFIER
-            zos.putArchiveEntry(
-                new ZipArchiveEntry(GamaZipBuilder.embeddedWorkspaceName + File.separator + GAMA.getWorkspaceManager().getModelIdentifier()));
-
-            zos.closeArchiveEntry();
+            archive.addEntryFromString("",GamaZipBuilder.embeddedWorkspaceName + File.separator + GAMA.getWorkspaceManager().getModelIdentifier());
 
             /////////////////////////
             // Embedding the JDK   //
@@ -574,18 +536,9 @@ public class GamaZipBuilder {
                         try {
                             if(! Files.isDirectory(sourcePath))
                             {
-                                ZipArchiveEntry entry = new ZipArchiveEntry(GamaZipBuilder.embeddedJdkPath
-                                    .resolve(jdkPath.relativize(sourcePath)).toString());
-                                // Replace existing files/directories if needed
-                                // Create a new entry inside the ZIP archive
-                                if (SystemInfo.isLinux() || SystemInfo.isMac())
-                                    ZipHelper.transfertFilePermissions(sourcePath,entry);
-                                
-                                zos.putArchiveEntry(entry);
-                                
-                                // Write bytes to the entry
-                                Files.copy(sourcePath, zos);
-                                zos.closeArchiveEntry();
+                                archive.addEntry(sourcePath,GamaZipBuilder.embeddedJdkPath
+                                    .resolve(jdkPath.relativize(sourcePath)).toString()
+                                );
                             }
                             
                             // Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
