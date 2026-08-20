@@ -416,16 +416,20 @@ public abstract class AbstractOutputManager extends Symbol implements IOutputMan
 
 	@Override
 	public boolean isSynchronized() {
-		if (GamaPreferences.Runtime.CORE_SYNC.getValue()) return true;
+		return GamaPreferences.Runtime.CORE_SYNC.getValue() || isDescriptionSynchronized()
+				|| outputs.values().stream().anyMatch(IOutput::isAutoSave);
+	}
+
+	/**
+	 * Checks if the manager description specifies synchronization or autosave.
+	 *
+	 * @return true if description requires synchronization
+	 */
+	private boolean isDescriptionSynchronized() {
 		final IDescription desc = getDescription();
-		if (desc != null) {
-			if ("true".equals(desc.getLitteral("synchronized"))) return true;
-			if (desc.hasFacet(IKeyword.AUTOSAVE) && !"false".equals(desc.getLitteral(IKeyword.AUTOSAVE))) return true;
-		}
-		for (final IOutput o : outputs.values()) {
-			if (o.isAutoSave()) return true;
-		}
-		return false;
+		if (desc == null) return false;
+		if ("true".equals(desc.getLitteral("synchronized"))) return true;
+		return desc.hasFacet(IKeyword.AUTOSAVE) && !"false".equals(desc.getLitteral(IKeyword.AUTOSAVE));
 	}
 
 	@Override
