@@ -17,6 +17,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import gama.api.runtime.SystemInfo;
+
 public class ExportModelDialog extends TitleAreaDialog {
 
     private Text txtOutputPath;
@@ -28,8 +30,8 @@ public class ExportModelDialog extends TitleAreaDialog {
 
     private String outputPath = "";
     private String outputFileName = "";
-    private boolean includeJdk;
-    private boolean oneFile;
+    private boolean includeJdk = true;
+    private boolean oneFile = false;
     private String[] availableExperiments;
     private List<String> selectedExperiments;
 
@@ -110,10 +112,27 @@ public class ExportModelDialog extends TitleAreaDialog {
         includeJdkButton.setSelection(true);
         includeJdkButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 3, 1));
 
-        oneFileButton = new Button(container, SWT.CHECK);
-        oneFileButton.setText("Export as a single file executable");
-        oneFileButton.setSelection(false);
-        oneFileButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 3, 1));
+        if (! SystemInfo.isMac()) {
+            oneFileButton = new Button(container, SWT.CHECK);
+            oneFileButton.setText("Export as a single file executable");
+            oneFileButton.setSelection(false);
+            oneFileButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 3, 1));
+            oneFileButton.addListener(SWT.Selection, event -> {
+
+                final String currentOutputFileNameValue = txtOutputFileName.getText();
+
+                if(! currentOutputFileNameValue.startsWith("launcher.") && ! currentOutputFileNameValue.equals("launcher"))
+                    return;
+
+                if(oneFileButton.getSelection())
+                    if(SystemInfo.isWindows())
+                        txtOutputFileName.setText("launcher.exe");
+                    else
+                        txtOutputFileName.setText("launcher");
+                else
+                    txtOutputFileName.setText("launcher.zip");
+            });        
+        }
     }
 
     private void createPathSection(Composite container) {

@@ -11,6 +11,7 @@
 package gama.ui.navigator.commands;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Set;
 import java.util.HashSet;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.StreamSupport;
 import java.util.stream.Collectors;
+import java.awt.Desktop;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -177,13 +179,32 @@ public class ExportProjectAsSimulation extends AbstractHandler {
 				zipWithJdk,
 				oneFile);
 
-			try { 
-				ziper.zip(outputPath.toString());
-				System.out.println("Model exported successfully");
-			} catch (Exception exception) {
-				System.err.println("Exception raised while cloning GAMA :\n" + exception);
-				exception.printStackTrace();
-			}
+			new Thread(() -> {
+				try { 
+					ziper.zip(outputPath.toString());
+					System.out.println("Model exported successfully");
+					if(
+						Desktop.isDesktopSupported()
+					    &&
+						GAMA.getGui()
+							.getDialogFactory()
+								.question("Model export successful","Do you want to show the target directory ?")
+					)
+					{
+						Desktop desktop = Desktop.getDesktop();
+						try {
+							desktop.open(outputPath.getParent().toFile());
+						} catch (IOException ioe) {
+							ioe.printStackTrace();
+						}
+					}
+
+				} catch (Exception exception) {
+					System.err.println("Exception raised while cloning GAMA :\n" + exception);
+					exception.printStackTrace();
+					GAMA.getGui().getDialogFactory().error("An error occured while exporting the model.");
+				}
+			}).start();
 
 		} catch (Throwable t) {
             t.printStackTrace();

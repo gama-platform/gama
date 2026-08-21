@@ -33,6 +33,8 @@ import org.eclipse.core.resources.IProject;
 import gama.api.utils.prefs.JREPreferenceStore;
 import gama.api.utils.prefs.GamaPreferenceStore;
 import gama.api.GAMA;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.ui.IStatusMessage;
 import gama.api.runtime.IWorkspaceManager;
 import gama.api.runtime.SystemInfo;
 import gama.export.dependency.BundleDependencyAnalyzer;
@@ -262,6 +264,9 @@ public class GamaZipBuilder {
 
     public void zip(String outputPathStr) throws IOException
     {
+        GAMA.getGui().getStatus().setStatus("Exporting the simulation", IStatusMessage.COMPILE_ICON,
+                GamaColorFactory.get(200, 200, 200));
+
         final Path outputPath = Path.of(outputPathStr);
 
         final Path zipOutputPath = isOneFileExport ? GamaZipBuilder.tmpDirectoryPath.resolve("archive.zip") : outputPath;
@@ -546,9 +551,11 @@ public class GamaZipBuilder {
             /////////////////////////
             // Embedding the JDK   //
             /////////////////////////
-
+       
             if (this.zipWithJdk)
             {
+                GAMA.getGui().getStatus().setStatus("Exporting the JDK", IStatusMessage.COMPILE_ICON,
+                        GamaColorFactory.get(200, 200, 200));
                 // Walk the appRootPath tree stream
                 try (Stream<Path> stream = Files.walk(jdkPath)) {
                     stream.forEach(sourcePath -> {
@@ -577,6 +584,10 @@ public class GamaZipBuilder {
         }
 
         if(isOneFileExport) {
+
+            GAMA.getGui().getStatus().setStatus("Packing the final executable", IStatusMessage.COMPILE_ICON,
+                    GamaColorFactory.get(200, 200, 200));
+
             Bundle bundle = null;
 
             if(SystemInfo.isLinux() || SystemInfo.isWindows()) {
