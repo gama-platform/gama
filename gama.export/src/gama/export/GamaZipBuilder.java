@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.StandardOpenOption;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.StandardCopyOption;
 import java.util.Set;
@@ -192,7 +194,21 @@ public class GamaZipBuilder {
         this.zipWithJdk = zipWithJdk;
         
         if(zipWithJdk && GamaZipBuilder.jdkPath == null)
-            GamaZipBuilder.jdkPath = Path.of(System.getProperty("java.home"));
+        {
+            String javaHome = System.getProperty("java.home");
+
+            if (SystemInfo.isWindows())
+            {
+                int index = 0;
+                while(javaHome.charAt(index) == '\\' || javaHome.charAt(index) == '/')
+                    index++;
+                
+                if (index > 0)
+                    GamaZipBuilder.jdkPath = Path.of(javaHome.substring(index));
+            }
+            else
+                GamaZipBuilder.jdkPath = Path.of(javaHome);
+        }
 
         this.targetProject = targetProject;
 
@@ -204,6 +220,9 @@ public class GamaZipBuilder {
         this.dataFiles = dataFiles;
 
         this.isOneFileExport = isOneFileExport;
+
+        if(isOneFileExport && SystemInfo.isWindows())
+            dontZipPaths.add(Path.of(appRootPath.toString(),"Gamac.exe"));
 
         // expanding necessary plugins based on needed plugins (GamlProperties doesn't expand the dependency tree)
         neededGamaPluginsPath = BundleDependencyAnalyzer.getMinimalGamaPluginSet(neededGamaPlugins);
@@ -558,14 +577,17 @@ public class GamaZipBuilder {
         }
 
         if(isOneFileExport) {
-            if(SystemInfo.isLinux()) {
-                Bundle bundle = FrameworkUtil.getBundle(this.getClass());
+            Bundle bundle = null;
 
+            if(SystemInfo.isLinux() || SystemInfo.isWindows()) {
+                bundle = FrameworkUtil.getBundle(this.getClass());
                 if (bundle == null)
                     throw new IllegalStateException(
                         "Unable to access gama.export osgi bundle"
                     );
-
+            }
+            
+            if(SystemInfo.isLinux()) {
                 URL runnerUrl = bundle.getEntry("binaries/runner");
                 URL zipExtractorUrl = bundle.getEntry("binaries/zipextractor");
 
@@ -604,6 +626,35 @@ public class GamaZipBuilder {
                 {
                     System.out.println("error: unable to pack the elf64 executable : ");
                     e.printStackTrace();
+                }
+            }
+
+            if(SystemInfo.isWindows()) {
+                URL sevenZStubUrl = bundle.getEntry("binaries/7zS2.sfx");
+                
+                if (sevenZStubUrl == null)
+                    throw new IOException(
+                        "unable to find the 7zS2.sfx stub for building Windows x64 PE file : binaries/7zS2.sfx"
+                    );
+
+                Path tmpSevenZStubPath = GamaZipBuilder.tmpDirectoryPath.resolve("7zS2.sfx");
+
+                try (InputStream inputStream = sevenZStubUrl.openStream()) {
+                    Files.copy(
+                        inputStream,
+                        tmpSevenZStubPath,
+                        StandardCopyOption.REPLACE_EXISTING
+                    );
+                }
+
+                try (OutputStream out = Files.newOutputStream(
+                        outputPath,
+                        StandardOpenOption.CREATE,
+                        StandardOpenOption.TRUNCATE_EXISTING,
+                        StandardOpenOption.WRITE
+                )) {
+                        Files.copy(tmpSevenZStubPath, out);
+                        Files.copy(zipOutputPath, out);
                 }
             }
         }

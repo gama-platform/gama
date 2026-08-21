@@ -11,10 +11,17 @@ CLASS_PATH=".:${GAMA_EXPORT_PLUGIN_PATH}/dev-libs/org.apache.commons.commons-com
 ZIP_EXTRACTOR_SRC_PATH="${GAMA_EXPORT_PLUGIN_PATH}/dev-src/ZipExtractor.java"
 ASM_RUNNER_SRC_PATH="${GAMA_EXPORT_PLUGIN_PATH}/dev-src/runner.asm"
 
+function removeFileIfExists() {
+    local filepath="$1"
 
-if ! [ -d $GAMA_EXPORT_BINARIES_PATH ]; then
-    mkdir $GAMA_EXPORT_BINARIES_PATH
-fi
+    if [ -f "$1" ]; then
+        rm "$1"
+    fi
+}
+
+removeFileIfExists "${GAMA_EXPORT_BINARIES_PATH}/runner"
+removeFileIfExists "${GAMA_EXPORT_BINARIES_PATH}/zipextractor"
+removeFileIfExists "${GAMA_EXPORT_BINARIES_PATH}/ZipExtractor.class"
 
 echo "Building the elf64 runner"
 nasm -f bin $ASM_RUNNER_SRC_PATH -o $GAMA_EXPORT_BINARIES_PATH/runner
@@ -26,5 +33,7 @@ echo "Building a native executable from ZipExtractor.class"
 cd $GAMA_EXPORT_BINARIES_PATH
 CLASS_PATH=$(echo $CLASS_PATH | sed "s;${GAMA_EXPORT_PLUGIN_PATH};..;g")
 native-image -cp .:$CLASS_PATH ZipExtractor
+
+removeFileIfExists "ZipExtractor.class"
 
 echo "Done"

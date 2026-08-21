@@ -4,24 +4,44 @@
 package gama.export;
 
 import java.nio.file.Path;
+import java.util.prefs.Preferences;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleActivator;
 
-import java.util.prefs.Preferences;
 import gama.api.utils.prefs.JREPreferenceStore;
+import gama.api.runtime.SystemInfo;
 import gama.api.utils.prefs.GamaPreferenceStore;
 import gama.dev.FLAGS;
 
 public class ExportActivator implements BundleActivator {
 
-	  public static String appRootPathStr = null;
+	public static String appRootPathStr = null;
 
     @Override
     public void start(BundleContext context) throws Exception {
       
         appRootPathStr = System.getProperty("eclipse.home.location");
         appRootPathStr = appRootPathStr.replaceAll("file:", "");
+
+        if(SystemInfo.isWindows())
+        {
+            int index = 0;
+            while (appRootPathStr.charAt(index) == '\\' || appRootPathStr.charAt(index) == '/')
+                index++;
+            
+            if (index > 0)
+                appRootPathStr = appRootPathStr.substring(index);
+        }
+
+        // System.out.println("IS WINDOWS : " + SystemInfo.isWindows());
+        // System.out.println("INDEX : " + index);
+        // System.out.println("COMPARISION FIRST CHAR : " + (appRootPathStr.charAt(index) == '\\'));
+        // int charValue = (int) appRootPathStr.charAt(index);
+        // System.out.println("FIRST CHAR ORD : " + charValue);
+        // System.out.println("ECLIPSE HOME LOCATION : " + System.getProperty("eclipse.home.location"));
+        // System.out.println("APP ROOT PATH : " + appRootPathStr);
+        // System.out.println("APP ROOT PATH SUBSTRING : " + appRootPathStr.substring(1));
     }
 
     @Override

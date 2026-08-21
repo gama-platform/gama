@@ -1,6 +1,7 @@
 package gama.export;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
@@ -85,7 +86,7 @@ public final class ElfPacker {
                 Path outputPath
                 ) throws IOException {
 
-                try (var out = Files.newOutputStream(
+                try (OutputStream out = Files.newOutputStream(
                         outputPath,
                         StandardOpenOption.CREATE,
                         StandardOpenOption.TRUNCATE_EXISTING,

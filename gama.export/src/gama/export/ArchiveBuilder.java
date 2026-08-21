@@ -118,6 +118,9 @@ public class ArchiveBuilder implements AutoCloseable {
      */
     private void addSevenZEntry(Path targetFilePath, String entryName) throws IOException
     {
+        // Replace windows back slashes with slashes because it may cause errors when extracting 
+        entryName = entryName.replaceAll("\\\\","/");
+
         // Create an entry with the target internal filename
         SevenZArchiveEntry entry = sevenZOutputFile.createArchiveEntry(targetFilePath.toFile(), entryName);
         sevenZOutputFile.putArchiveEntry(entry);
@@ -145,6 +148,10 @@ public class ArchiveBuilder implements AutoCloseable {
      *                will be extracted
      */
     private void addSevenZEntryFromString(String stringContent, String entryName) throws IOException {
+        
+        // Replace windows back slashes with slashes because it may cause errors when extracting 
+        entryName = entryName.replaceAll("\\\\","/");
+
         SevenZArchiveEntry entry = new SevenZArchiveEntry();
         byte[] data = stringContent.getBytes(StandardCharsets.UTF_8);
 
