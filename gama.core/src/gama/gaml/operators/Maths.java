@@ -94,7 +94,7 @@ public class Maths {
 	@test ("(-2)^2 = 4.0")
 	@test ("2^1 = 2.0")
 	public static Double pow(final Integer a, final Integer b) {
-		return pow(a.doubleValue(), b.doubleValue());
+		return Math.pow(a,b);
 	}
 
 	/**
