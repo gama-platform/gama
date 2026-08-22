@@ -2,7 +2,7 @@
 * Name: Lifewithtime
 * Description: A game of life in 3D with time as the z axis. Inspired by: https://www.youtube.com/shorts/5BY9N_Rp244 and https://www.instagram.com/reel/C2hoRnFsmQW/?igsh=MWluZzJqdDV1cGY1bQ==
 * Author: Baptiste Lesquoy
-* Tags: Life, 3D
+* Tags: Life, 3D, Cellular Automaton, Conway
 */
 
 

@@ -215,7 +215,6 @@ experiment "With Inspector" type: gui parent:base{
 }
 
 experiment "Classic" type: gui parent:base{
-	parameter 'toto' var: ants_number ;
 	parameter 'Number of ants:' var: ants_number category: 'Model';
 	parameter 'Evaporation of the signal (unit/cycle):' var: evaporation_per_cycle category: 'Model';
 	parameter 'Rate of diffusion of the signal (%/cycle):' var: diffusion_rate category: 'Model';
