@@ -3114,6 +3114,28 @@ public class Containers {
 		final Iterator it = new InterleavingIterator(scope, Iterables.toArray(iterable, Object.class));
 		return GamaListFactory.create(scope, type, it);
 	}
+	
+	
+	@operator(value = "enumerate", content_type = IType.PAIR)
+	@doc(
+		value = "Returns a list of pairs in which the keys are indices the original container and the value is the object found at the index in the original container.",
+		examples = {
+				@example(value = "enumerate(['a','b','c'])",
+						equals = "list(0::'a', 1::'b', 2::'c')")
+		}
+	)
+	public static <T> IList<IPair<Integer, T>> enumerate(final IScope scope, final IContainer<?,T> cont){
+		IList<IPair<Integer, T>> ret = GamaListFactory.create(Types.PAIR);
+		int i = 0;
+		if (cont == null) return ret;
+		for(T obj : cont.iterable(scope)) {
+			ret.add(GamaPairFactory.createWith(i, obj));
+			i++;
+		}
+		return ret;
+	}
+	
+	
 
 	/**
 	 * Count.
