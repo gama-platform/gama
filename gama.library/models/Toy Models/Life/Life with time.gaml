@@ -5,7 +5,6 @@
 * Tags: Life, 3D, Cellular Automaton, Conway
 */
 
-
 model Lifewithtime
 
 global  {
@@ -124,11 +123,7 @@ class cell {
 	action update() {
 		state <- new_state;
 	}
-	
-
 }
-
-
 
 experiment "Game of Life" type: gui record: true {
 	parameter 'Width:' var: environment_width category: 'Board';
@@ -147,10 +142,8 @@ experiment "Game of Life" type: gui record: true {
 				loop c over:current_grid + accumulate(history, each){
 					draw c.shape at:c.location color:c.color ;
 				}
-				
 			}
 		}
-
 	}
 
 }
