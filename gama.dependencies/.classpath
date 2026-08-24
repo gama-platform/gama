@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="gama/dependencies/kabeja/dxf/|gama/dependencies/kabeja/dxf/helpers/|gama/dependencies/kabeja/dxf/objects/|gama/dependencies/kabeja/io/|gama/dependencies/kabeja/math/|gama/dependencies/kabeja/parser/|gama/dependencies/kabeja/parser/dxf/|gama/dependencies/kabeja/parser/dxf/filter/|gama/dependencies/kabeja/parser/entities/|gama/dependencies/kabeja/parser/header/|gama/dependencies/kabeja/parser/objects/|gama/dependencies/kabeja/parser/table/|gama/dependencies/kabeja/processing/|gama/dependencies/kabeja/processing/event/|gama/dependencies/kabeja/processing/helper/|gama/dependencies/kabeja/tools/|gama/dependencies/kabeja/xml/" kind="src" path="src"/>
-	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/istack-commons-runtime-4.2.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/jakarta.activation-api-2.1.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/jaxb-core-4.0.7.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/imageio-ext-cog-reader-1.4.16.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/imageio-ext-cog-streams-1.4.16.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/imageio-ext-cog-commons-1.4.16.jar"/>
