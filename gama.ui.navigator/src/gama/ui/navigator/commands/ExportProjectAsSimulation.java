@@ -31,12 +31,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.ui.handlers.HandlerUtil;
 
 import gaml.compiler.validation.GamlModelBuilder;
 import gaml.compiler.resource.GamlFileInfo;
@@ -47,6 +42,7 @@ import gama.api.utils.files.IFileMetadataProvider;
 import gama.api.GAMA;
 import gama.export.ui.ExportModelDialog;
 import gama.export.GamaZipBuilder;
+import gama.export.ExportHelper;
 
 /**
  * Exports a whole project as a simulation launcher. 
@@ -54,32 +50,6 @@ import gama.export.GamaZipBuilder;
 public class ExportProjectAsSimulation extends AbstractHandler {
 
 	private final static String contextualSeparator = "    from model    ";
-
-
-	public static IProject getProjectFromEvent(final ExecutionEvent event) {
-        ISelection selection = HandlerUtil.getCurrentSelection(event);
-		IProject project = null;
-        
-        if (selection instanceof IStructuredSelection) {
-            IStructuredSelection structuredSelection = (IStructuredSelection) selection;
-            Object firstElement = structuredSelection.getFirstElement();
-            
-            if (firstElement != null) {
-                
-                if (firstElement instanceof IProject) {
-                    project = (IProject) firstElement;
-                } 
-                else if (firstElement instanceof IAdaptable) {
-                    IResource resource = ((IAdaptable) firstElement).getAdapter(IResource.class);
-                    if (resource != null) {
-                        project = resource.getProject();
-                    }
-                }
-            }
-        }
-		return project;
-	} 
-
 
 	/**
 	 * Process container.
@@ -104,7 +74,7 @@ public class ExportProjectAsSimulation extends AbstractHandler {
 	@Override
 	public Object execute(final ExecutionEvent event) throws ExecutionException {
 
-		IProject project = getProjectFromEvent(event);
+		IProject project = ExportHelper.getProjectFromEvent(event);
 
 		if (project == null)
 			return null;

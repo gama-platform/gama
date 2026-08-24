@@ -10,13 +10,20 @@ import java.io.InputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.filesystem.URIUtil;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IPathVariableManager;
+import org.eclipse.core.filesystem.URIUtil;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.handlers.HandlerUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+
 
 import gama.export.ExportActivator;
 
@@ -136,4 +143,29 @@ public class ExportHelper
             return null;
         }
     }
+
+	public static IProject getProjectFromEvent(final ExecutionEvent event) {
+        ISelection selection = HandlerUtil.getCurrentSelection(event);
+		IProject project = null;
+        
+        if (selection != null && selection instanceof IStructuredSelection) {
+            IStructuredSelection structuredSelection = (IStructuredSelection) selection;
+            Object firstElement = structuredSelection.getFirstElement();
+            
+            if (firstElement != null) {
+                
+                if (firstElement instanceof IProject) {
+                    project = (IProject) firstElement;
+                } 
+                else if (firstElement instanceof IAdaptable) {
+                    IResource resource = ((IAdaptable) firstElement).getAdapter(IResource.class);
+                    if (resource != null) {
+                        project = resource.getProject();
+                    }
+                }
+            }
+        }
+		return project;
+	} 
+
 }

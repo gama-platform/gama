@@ -259,6 +259,25 @@
                   </and>
                </visibleWhen>
             </command>
+            <command
+                  commandId="gama.application.commands.SaveSimulationsArtifacts"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/status/status.download.svg"
+                  label="Save Simulation Data"
+                  style="push"
+                  tooltip="Save the data of the previously ran simulations, in the desired directory.">
+               <visibleWhen
+                     checkEnabled="false">
+                  <and>
+                     <reference
+                           definitionId="isInSimulationPerspective">
+                     </reference>
+                     <reference
+                           definitionId="isSimulationExisting">
+                     </reference>
+                     <systemTest property="simulation_only" value="true"/>
+                  </and>
+               </visibleWhen>
+            </command>
          </menu>
          <menu
                label="Agents">
@@ -750,6 +769,25 @@
                   </and>
                </visibleWhen>
             </command>
+            <command
+                  commandId="gama.application.commands.SaveSimulationsArtifacts"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/status/status.download.svg"
+                  label="Save Simulation Data"
+                  style="push"
+                  tooltip="Save the data of the previously ran simulations, in the desired directory.">
+               <visibleWhen
+                     checkEnabled="false">
+                  <and>
+                     <reference
+                           definitionId="isInSimulationPerspective">
+                     </reference>
+                     <reference
+                           definitionId="isSimulationExisting">
+                     </reference>
+                     <systemTest property="simulation_only" value="true"/>
+                  </and>
+               </visibleWhen>
+            </command>
          </toolbar>
       </menuContribution>
    </extension>
@@ -864,6 +902,18 @@
                   <not>
                         <systemTest property="simulation_only" value="true"/>
                   </not>
+            </and>
+         </activeWhen>
+      </handler>
+      <handler
+            class="gama.ui.experiment.commands.SaveSimulationsArtifacts"
+            commandId="gama.application.commands.SaveSimulationsArtifacts">
+         <activeWhen>
+            <and>
+                  <reference
+                        definitionId="isInSimulationPerspective">
+                  </reference>
+                  <systemTest property="simulation_only" value="true"/>
             </and>
          </activeWhen>
       </handler>
