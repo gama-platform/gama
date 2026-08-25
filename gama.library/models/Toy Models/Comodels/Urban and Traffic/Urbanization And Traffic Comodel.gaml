@@ -102,13 +102,9 @@ global
 						{
 							create road from: list(s[1]);
 						}
-
 					}
-
 				}
-
 			}
-
 		}
 
 		i1 <- i1 sort_by (each distance_to p1);
