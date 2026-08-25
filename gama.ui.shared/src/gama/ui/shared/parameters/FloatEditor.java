@@ -124,9 +124,9 @@ public class FloatEditor extends NumberEditor<Double> {
 	protected void updateToolbar() {
 		super.updateToolbar();
 		editorToolbar.enable(PLUS,
-				param.isDefined() && (getMaxValue() == null || applyPlus() < Cast.asFloat(getScope(), getMaxValue())));
+				param.isDefined() && (getMaxValue() == null || applyPlus() <= Cast.asFloat(getScope(), getMaxValue())));
 		editorToolbar.enable(MINUS,
-				param.isDefined() && (getMinValue() == null || applyMinus() > Cast.asFloat(getScope(), getMinValue())));
+				param.isDefined() && (getMinValue() == null || applyMinus() >= Cast.asFloat(getScope(), getMinValue())));
 	}
 
 	@Override
