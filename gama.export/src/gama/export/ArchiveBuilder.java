@@ -6,11 +6,15 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.ArrayList;
 import java.lang.AutoCloseable;
 
 
 import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry;
 import org.apache.commons.compress.archivers.sevenz.SevenZOutputFile;
+import org.apache.commons.compress.archivers.sevenz.SevenZMethodConfiguration;
+import org.apache.commons.compress.archivers.sevenz.SevenZMethod;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 
@@ -28,6 +32,15 @@ public class ArchiveBuilder implements AutoCloseable {
     public ZipArchiveOutputStream zipArchiveOutputStream = null;
 
     public SevenZOutputFile sevenZOutputFile = null;
+
+    public static List<SevenZMethodConfiguration> sevenZmethods = 
+        new ArrayList<SevenZMethodConfiguration>(
+            List.of(
+                // sets removes any compression,
+                // which means faster archive creation and extraction.
+                new SevenZMethodConfiguration(SevenZMethod.COPY)
+            )
+        );
 
     @FunctionalInterface
     private interface iAddEntryFunction {
@@ -200,6 +213,7 @@ public class ArchiveBuilder implements AutoCloseable {
         if (this.isWindows && selfExtractingArchive)
         {
             sevenZOutputFile = new SevenZOutputFile(archiveOutputPath.toFile());
+            sevenZOutputFile.setContentMethods(sevenZmethods);
             this.addEntryProxy = this::addSevenZEntry;
             this.addEntryFromStringProxy = this::addSevenZEntryFromString;
         } 
