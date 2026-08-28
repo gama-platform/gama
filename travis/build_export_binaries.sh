@@ -8,7 +8,8 @@ GAMA_EXPORT_BINARIES_PATH="${GAMA_EXPORT_PLUGIN_PATH}/binaries"
 
 CLASS_PATH=".:${GAMA_EXPORT_PLUGIN_PATH}/dev-libs/org.apache.commons.commons-compress_1.28.0.jar:${GAMA_EXPORT_PLUGIN_PATH}/dev-libs/org.apache.commons.commons-io_2.21.0.jar"
 
-ZIP_EXTRACTOR_SRC_PATH="${GAMA_EXPORT_PLUGIN_PATH}/dev-src/ZipExtractor.java"
+# ZIP_EXTRACTOR_SRC_PATH="${GAMA_EXPORT_PLUGIN_PATH}/dev-src/ZipExtractor.java"
+ZIP_EXTRACTOR_SRC_PATH="${GAMA_EXPORT_PLUGIN_PATH}/dev-src/zipextractor.go"
 ASM_RUNNER_SRC_PATH="${GAMA_EXPORT_PLUGIN_PATH}/dev-src/runner.asm"
 
 function removeFileIfExists() {
@@ -26,14 +27,17 @@ removeFileIfExists "${GAMA_EXPORT_BINARIES_PATH}/ZipExtractor.class"
 echo "Building the elf64 runner"
 nasm -f bin $ASM_RUNNER_SRC_PATH -o $GAMA_EXPORT_BINARIES_PATH/runner
 
-echo "Compiling ZipExtractor.java"
-javac -cp $CLASS_PATH -d $GAMA_EXPORT_BINARIES_PATH $ZIP_EXTRACTOR_SRC_PATH
+echo "Compiling zipextractor.go"
+go build -o "${GAMA_EXPORT_BINARIES_PATH}/zipextractor" $ZIP_EXTRACTOR_SRC_PATH
 
-echo "Building a native executable from ZipExtractor.class" 
-cd $GAMA_EXPORT_BINARIES_PATH
-CLASS_PATH=$(echo $CLASS_PATH | sed "s;${GAMA_EXPORT_PLUGIN_PATH};..;g")
-native-image -cp .:$CLASS_PATH ZipExtractor
+# echo "Compiling ZipExtractor.java"
+# javac -cp $CLASS_PATH -d $GAMA_EXPORT_BINARIES_PATH $ZIP_EXTRACTOR_SRC_PATH
 
-removeFileIfExists "ZipExtractor.class"
+# echo "Building a native executable from ZipExtractor.class" 
+# cd $GAMA_EXPORT_BINARIES_PATH
+# CLASS_PATH=$(echo $CLASS_PATH | sed "s;${GAMA_EXPORT_PLUGIN_PATH};..;g")
+# native-image -cp .:$CLASS_PATH ZipExtractor
+
+# removeFileIfExists "ZipExtractor.class"
 
 echo "Done"
