@@ -97,6 +97,19 @@ public class ChartDataSourceList extends ChartDataSource {
 
 	}
 
+	private IList<?> extractLegends(final IScope scope) {
+		if (legendExp == null) return null;
+		final Object legObj = legendExp.value(scope);
+		if (legObj instanceof Boolean b && !b) return null;
+		if (legObj instanceof IList l) return GamaListFactory.castToList(scope, l);
+		return null;
+	}
+
+	private String getLegendLabel(final IScope scope, final IList<?> legends, final int index) {
+		if (legends == null || index >= legends.size() || legends.get(index) == null) return "";
+		return Cast.asString(scope, legends.get(index));
+	}
+
 	/**
 	 * Updateserielist.
 	 *
@@ -109,12 +122,7 @@ public class ChartDataSourceList extends ChartDataSource {
 		final Object valObj = getValue() == null ? null : getValue().value(scope);
 		final IList<?> values = valObj instanceof IList ? GamaListFactory.castToList(scope, valObj) : GamaListFactory.create();
 		final int targetSize = values.size();
-
-		final Object legObj = legendExp == null ? null : legendExp.value(scope);
-		IList<?> legends = legObj instanceof IList ? GamaListFactory.castToList(scope, legObj) : null;
-		if (legObj instanceof Boolean b && !b) {
-			legends = null;
-		}
+		final IList<?> legends = extractLegends(scope);
 
 		final ArrayList<String> previousSeries = currentSeriesNames != null ? currentSeriesNames : new ArrayList<>();
 		currentSeriesNames = new ArrayList<>();
@@ -123,17 +131,13 @@ public class ChartDataSourceList extends ChartDataSource {
 			String serieId = "dl_" + this.hashCode() + "_" + i;
 			currentSeriesNames.add(serieId);
 
-			String legendStr = "";
-			if (legends != null && i < legends.size() && legends.get(i) != null) {
-				legendStr = Cast.asString(scope, legends.get(i));
-			}
+			String legendStr = getLegendLabel(scope, legends, i);
 
-			ChartDataSeries myserie;
+			ChartDataSeries myserie = previousSeries.contains(serieId)
+					? mySeries.get(serieId)
+					: myDataset.createOrGetSerie(scope, serieId, this);
 			if (!previousSeries.contains(serieId)) {
-				myserie = myDataset.createOrGetSerie(scope, serieId, this);
 				mySeries.put(serieId, myserie);
-			} else {
-				myserie = mySeries.get(serieId);
 			}
 			if (myserie != null) {
 				myserie.setSeriesLegend(legendStr);
