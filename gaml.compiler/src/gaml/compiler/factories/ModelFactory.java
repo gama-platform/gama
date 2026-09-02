@@ -1069,11 +1069,17 @@ public class ModelFactory implements IModelFactory {
 		final ITypeDescription mDesc = cache.get(micro.getName());
 		if (!(mDesc instanceof IClassDescription cd)) return;
 		String p = cd.getLitteral(IKeyword.PARENT);
-		// If no parent is defined, we assume it is "agent"
+		// If no parent is defined, we assume it is "object"
 		if (p == null) { p = IKeyword.OBJECT; }
 		IClassDescription parent = lookupClass(p, cache);
 		if (parent == null) { parent = model.getClassDescription(p); }
-		cd.setParent(parent);
+		if (parent == null) {
+			cd.error("Parent '" + p + "' is not a valid class or does not exist", IGamlIssue.WRONG_PARENT,
+					IKeyword.PARENT);
+			cd.setParent(GamaMetaModel.getObjectClassDescription());
+		} else {
+			cd.setParent(parent);
+		}
 	}
 
 	/**
