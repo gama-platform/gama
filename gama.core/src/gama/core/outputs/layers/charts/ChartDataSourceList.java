@@ -16,6 +16,7 @@ import java.util.HashMap;
 import gama.annotations.constants.IKeyword;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
@@ -101,6 +102,7 @@ public class ChartDataSourceList extends ChartDataSource {
 		if (legendExp == null) return null;
 		final Object legObj = legendExp.value(scope);
 		if (legObj instanceof Boolean b && !b) return null;
+		if (legObj instanceof String s) return GamaListFactory.create(scope, Types.STRING, s);
 		if (legObj instanceof IList l) return GamaListFactory.castToList(scope, l);
 		return null;
 	}
