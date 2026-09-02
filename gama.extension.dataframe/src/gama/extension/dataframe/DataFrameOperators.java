@@ -70,6 +70,9 @@ public class DataFrameOperators {
 							isExecutable = false) }) })
 	@test ("(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]])).rows = 2")
 	@test ("(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]])).keys = [\"name\",\"age\"]")
+	@test ("string(type_of((dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]))[\"name\"])) = \"list<unknown>\"")
+	@test ("string(type_of((dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]))[\"name\"][0])) = \"unknown\"")
+	@test ("string(actual_type_of((dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]))[\"name\"])) = \"list<string>\"")
 	public static IDataFrame dataframeWith(final IScope scope, final IList<String> columns, final IList<IList> data) {
 		return GamaDataFrameFactory.create(scope, columns, data);
 	}
