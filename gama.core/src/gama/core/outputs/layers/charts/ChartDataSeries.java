@@ -66,6 +66,9 @@ public class ChartDataSeries {
 	/** The name. */
 	String name;
 
+	/** The series legend label. */
+	String seriesLegend = null;
+
 	/** The ongoing update. */
 	boolean ongoing_update = false;
 
@@ -141,9 +144,24 @@ public class ChartDataSeries {
 	 * @return the serie legend
 	 */
 	public Comparable getSerieLegend(final IScope scope) {
-
+		if (seriesLegend != null) return seriesLegend;
 		return name;
 	}
+
+	/**
+	 * Gets the series legend string.
+	 *
+	 * @return the series legend
+	 */
+	public String getSeriesLegend() { return seriesLegend; }
+
+	/**
+	 * Sets the series legend string.
+	 *
+	 * @param legend
+	 *            the legend
+	 */
+	public void setSeriesLegend(final String legend) { this.seriesLegend = legend; }
 
 	/**
 	 * Gets the serie id.
@@ -361,24 +379,15 @@ public class ChartDataSeries {
 	 */
 	private Object getlistvalue(final IScope scope, final HashMap barvalues, final String valuetype,
 			final int listvalue) {
-
 		if (!barvalues.containsKey(valuetype)) return null;
-		boolean uselist = true;
-		if (listvalue < 0) { uselist = false; }
-		final Object oexp = barvalues.get(valuetype);
-		Object o = oexp;
-		if (oexp instanceof IExpression) { o = ((IExpression) oexp).value(scope); }
-
-		if (!uselist) return o;
-
-		if (o instanceof IList) {
-			final IList ol = GamaListFactory.castToList(scope, o);
-			if (ol.size() < listvalue) return null;
-			return ol.get(listvalue);
-
+		Object o = barvalues.get(valuetype);
+		if (o instanceof IExpression expr) { o = expr.value(scope); }
+		if (listvalue < 0) return o;
+		if (o instanceof IList ol) {
+			if (ol.isEmpty()) return null;
+			return ol.get(listvalue % ol.size());
 		}
 		return o;
-
 	}
 
 	/**
