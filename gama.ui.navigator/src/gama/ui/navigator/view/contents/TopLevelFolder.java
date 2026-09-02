@@ -136,7 +136,10 @@ public class TopLevelFolder extends VirtualContent<NavigatorRoot> implements IGa
 		if (project == null || !project.exists()) return false;
 		// TODO This one is clearly a hack. Should be replaced by a proper way
 		// to track persistently the closed projects
-		if (!project.isOpen()) return estimateLocation(project.getLocation()) == location;
+		if (!project.isOpen()) {
+			final Location estimated = estimateLocation(project.getLocation());
+			return estimated == location || estimated == Location.Unknown && location == Location.Other;
+		}
 		try {
 			return accepts(project.getDescription());
 		} catch (final CoreException e) {
@@ -183,8 +186,8 @@ public class TopLevelFolder extends VirtualContent<NavigatorRoot> implements IGa
 
 			if (!isTest && projectPath.startsWith(corePath)) return Location.CoreModels;
 
-			final String parentPath = new java.io.File(corePath).getParent().replace('\\', '/');
-			if (parentPath != null && projectPath.startsWith(parentPath)) {
+			final String parentPath = new java.io.File(corePath).getParent();
+			if (parentPath != null && projectPath.startsWith(parentPath.replace('\\', '/'))) {
 				return isTest ? Location.Tests : Location.Plugins;
 			}
 		} catch (final Exception e) {
