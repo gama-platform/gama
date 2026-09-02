@@ -999,8 +999,10 @@ public class ModelFactory implements IModelFactory {
 		if (parent == null) { parent = model.getSpeciesDescription(parentName); }
 
 		if (parent == null) {
-			speciesDesc.error("Species " + parentName + " is not a valid species or does not exist",
+			speciesDesc.error("Parent '" + parentName + "' is not a valid species or does not exist",
 					IGamlIssue.WRONG_PARENT, IKeyword.PARENT);
+			// Keep the species hierarchy consistent to avoid cascading errors
+			speciesDesc.setParent(GamaMetaModel.getSpeciesDescription(IKeyword.AGENT));
 		} else {
 			speciesDesc.setParent(parent);
 		}
