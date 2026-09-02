@@ -227,7 +227,7 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 
 	private void configureLegend(final AbstractCategoryItemRenderer newr, final ChartDataSeries myserie, final int myrow, final IScope scope) {
 		final String legStr = myserie.getSerieLegend(scope) == null ? "" : myserie.getSerieLegend(scope).toString();
-		if (legStr.isEmpty()) {
+		if (StringUtils.isBlank(legStr)) {
 			newr.setSeriesVisibleInLegend(myrow, false);
 			return;
 		}
