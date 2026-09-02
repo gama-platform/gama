@@ -402,7 +402,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 				if (headingComplete) {
 					String[] l = line.split(" ");
 					for (int i = 0; i < l.length; i++) {
-						if (l[i] == "") { continue; }
+						if (l[i].isEmpty()) { continue; }
 						if (noDataD != null && noDataD.isNaN()) {
 							Double v = 0.0;
 							try {
@@ -547,7 +547,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 			numCols = store.getOriginalGridRange().getHigh(0) + 1;
 			coverage = store.read(null);
 		} catch (Throwable e) {
-			// Suppress or log fallback failures cleanly
+			throw new RuntimeException(e);
 		} finally {
 			if (store != null) { store.dispose(); }
 			scope.getGui().getStatus().endTask("Opening file " + getName(scope), IStatusMessage.DOWNLOAD_ICON);
