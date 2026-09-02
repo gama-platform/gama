@@ -289,7 +289,7 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 	private void configureLegend(final AbstractXYItemRenderer newr, final ChartDataSeries myserie,
 			final IScope scope) {
 		final String legStr = myserie.getSerieLegend(scope) == null ? "" : myserie.getSerieLegend(scope).toString();
-		if (legStr.isEmpty()) {
+		if (StringUtils.isBlank(legStr)) {
 			newr.setSeriesVisibleInLegend(0, false);
 			return;
 		}
