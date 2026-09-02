@@ -987,8 +987,8 @@ public class ModelFactory implements IModelFactory {
 	void parentSpecies(final ISpeciesDescription macro, final ISyntacticElement micro, final IModelDescription model,
 			final Map<String, ITypeDescription> cache) {
 		// Gather the previously created species
-		final ISpeciesDescription speciesDesc = (ISpeciesDescription) cache.get(micro.getName());
-		if (speciesDesc == null || speciesDesc.isExperiment()) return;
+		final ITypeDescription tDesc = cache.get(micro.getName());
+		if (!(tDesc instanceof ISpeciesDescription speciesDesc) || speciesDesc.isExperiment()) return;
 
 		// Get parent name from facet, default to "agent" if not specified
 		String parentName = speciesDesc.getLitteral(IKeyword.PARENT);
@@ -998,7 +998,17 @@ public class ModelFactory implements IModelFactory {
 		ISpeciesDescription parent = lookupSpecies(parentName, cache);
 		if (parent == null) { parent = model.getSpeciesDescription(parentName); }
 
-		speciesDesc.setParent(parent);
+		if (parent == null) {
+			speciesDesc.error("Parent '" + parentName + "' is not a valid species or does not exist",
+
+					IGamlIssue.WRONG_PARENT, IKeyword.PARENT);
+			// Keep the species hierarchy consistent to avoid cascading errors
+
+			speciesDesc.setParent(GamaMetaModel.getSpeciesDescription(IKeyword.AGENT));
+
+		} else {
+			speciesDesc.setParent(parent);
+		}
 
 		// Recursively process micro-species
 		micro.visitSpecies(element -> parentSpecies(speciesDesc, element, model, cache));
@@ -1019,9 +1029,10 @@ public class ModelFactory implements IModelFactory {
 	 * @return the species description if found, null otherwise
 	 */
 	ISpeciesDescription lookupSpecies(final String name, final Map<String, ITypeDescription> cache) {
-		ISpeciesDescription result = (ISpeciesDescription) cache.get(name);
-		if (result == null) { result = GamaMetaModel.getSpeciesDescription(name); }
-		return result;
+		ITypeDescription desc = cache.get(name);
+		if (desc instanceof ISpeciesDescription speciesDesc) return speciesDesc;
+		if (desc != null) return null;
+		return GamaMetaModel.getSpeciesDescription(name);
 	}
 
 	/**
@@ -1069,11 +1080,17 @@ public class ModelFactory implements IModelFactory {
 		final ITypeDescription mDesc = cache.get(micro.getName());
 		if (!(mDesc instanceof IClassDescription cd)) return;
 		String p = cd.getLitteral(IKeyword.PARENT);
-		// If no parent is defined, we assume it is "agent"
+		// If no parent is defined, we assume it is "object"
 		if (p == null) { p = IKeyword.OBJECT; }
-		IClassDescription parentDesc = lookupClass(p, cache);
-		if (parentDesc == null) { parentDesc = model.getClassDescription(p); }
-		cd.setParent(parentDesc);
+		IClassDescription parent = lookupClass(p, cache);
+		if (parent == null) { parent = model.getClassDescription(p); }
+		if (parent == null) {
+			cd.error("Parent '" + p + "' is not a valid class or does not exist", IGamlIssue.WRONG_PARENT,
+					IKeyword.PARENT);
+			cd.setParent(GamaMetaModel.getObjectClassDescription());
+		} else {
+			cd.setParent(parent);
+		}
 	}
 
 	/**

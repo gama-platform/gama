@@ -139,8 +139,8 @@ public interface IEventLayerDelegate {
 					IKeyword.MOUSE_DRAG;
 
 	/** The Constant MOUSE_EVENTS. */
-	Set<String> MOUSE_EVENTS = new HashSet<>(
-			Arrays.asList(MOUSE_UP, MOUSE_DOWN, MOUSE_MOVED, MOUSE_ENTERED, MOUSE_EXITED, MOUSE_MENU, MOUSE_DRAGGED));
+	Set<String> MOUSE_EVENTS = Set.of(MOUSE_UP, MOUSE_DOWN, MOUSE_CLICKED, MOUSE_MOVED, MOUSE_ENTERED, MOUSE_EXITED,
+			MOUSE_MENU, MOUSE_DRAGGED);
 
 	/** The Constant SHIFT_MODIFIER. */
 	@constant (
