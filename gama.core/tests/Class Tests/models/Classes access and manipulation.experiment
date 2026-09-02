@@ -30,7 +30,7 @@ class ExampleClass {
 
 experiment testAccess type:test{
 
-	test unitializedClassIsNil {
+	test uninitializedClassIsNil {
 		ExampleClass c;
 		assert c = nil;
 	}
