@@ -645,6 +645,22 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	 * @param statement
 	 *            the ce
 	 */
+	/**
+	 * Verifies whether the aspect name collides with an attribute defined in the species.
+	 *
+	 * @param statement
+	 *            the aspect statement description
+	 * @param aspectName
+	 *            the aspect name
+	 */
+	private void verifyAttributeCollision(final IStatementDescription statement, final String aspectName) {
+		final IVariableDescription var = getAttribute(aspectName);
+		if (var != null && !var.isSynthetic()) {
+			statement.error("Aspect " + aspectName + " has the same name as an existing attribute in " + getName(),
+					IGamlIssue.DUPLICATE_NAME, IKeyword.NAME);
+		}
+	}
+
 	private void addAspect(final IStatementDescription statement) {
 		String aspectName = statement.getName();
 		if (aspectName == null) {
@@ -654,6 +670,7 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 		if (!IKeyword.DEFAULT.equals(aspectName) && hasAspect(aspectName)) {
 			duplicateInfo(statement, getAspect(aspectName));
 		}
+		verifyAttributeCollision(statement, aspectName);
 		getAspectsMap().put(aspectName, statement);
 	}
 
