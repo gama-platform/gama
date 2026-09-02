@@ -440,41 +440,33 @@ public class GamaDateType extends GamaType<IDate> {
 	private static DateTimeFormatter buildModelFormatter(final String pattern, final String locale) {
 		final DateTimeFormatterBuilder df = new DateTimeFormatterBuilder();
 		df.parseCaseInsensitive();
-		for (final String s : parseModelPatternTokens(pattern)) {
-			appendModelToken(df, s);
+		final Matcher m = model_pattern.matcher(pattern);
+		int last = 0;
+		while (m.find()) {
+			if (last != m.start()) {
+				df.appendLiteral(pattern.substring(last, m.start()));
+			}
+			appendModelSymbol(df, m.group().charAt(1));
+			last = m.end();
+		}
+		if (last != pattern.length()) {
+			df.appendLiteral(pattern.substring(last));
 		}
 		return df.toFormatter(getLocale(locale));
 	}
 
-	private static List<String> parseModelPatternTokens(final String pattern) {
-		final List<String> dateList = new ArrayList<>();
-		final Matcher m = model_pattern.matcher(pattern);
-		int i = 0;
-		while (m.find()) {
-			if (i != m.start()) { dateList.add(pattern.substring(i, m.start())); }
-			dateList.add(m.group());
-			i = m.end();
-		}
-		if (i != pattern.length()) { dateList.add(pattern.substring(i)); }
-		return dateList;
-	}
-
-	private static void appendModelToken(final DateTimeFormatterBuilder df, final String s) {
-		if (s.length() == 2 && s.charAt(0) == '%') {
-			switch (s.charAt(1)) {
-				case 'Y' -> df.appendValue(YEAR, 4, 10, SignStyle.EXCEEDS_PAD);
-				case 'M' -> df.appendValue(MONTH_OF_YEAR, 2);
-				case 'N' -> df.appendText(MONTH_OF_YEAR);
-				case 'D' -> df.appendValue(DAY_OF_MONTH, 2);
-				case 'E' -> df.appendText(DAY_OF_WEEK);
-				case 'h' -> df.appendValue(HOUR_OF_DAY, 2);
-				case 'm' -> df.appendValue(MINUTE_OF_HOUR, 2);
-				case 's' -> df.appendValue(SECOND_OF_MINUTE, 2);
-				case 'z' -> df.appendZoneOrOffsetId();
-				default -> df.appendLiteral(s);
-			}
-		} else {
-			df.appendLiteral(s);
+	private static void appendModelSymbol(final DateTimeFormatterBuilder df, final char symbol) {
+		switch (symbol) {
+			case 'Y' -> df.appendValue(YEAR, 4, 10, SignStyle.EXCEEDS_PAD);
+			case 'M' -> df.appendValue(MONTH_OF_YEAR, 2);
+			case 'N' -> df.appendText(MONTH_OF_YEAR);
+			case 'D' -> df.appendValue(DAY_OF_MONTH, 2);
+			case 'E' -> df.appendText(DAY_OF_WEEK);
+			case 'h' -> df.appendValue(HOUR_OF_DAY, 2);
+			case 'm' -> df.appendValue(MINUTE_OF_HOUR, 2);
+			case 's' -> df.appendValue(SECOND_OF_MINUTE, 2);
+			case 'z' -> df.appendZoneOrOffsetId();
+			default -> df.appendLiteral("%" + symbol);
 		}
 	}
 

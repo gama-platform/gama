@@ -340,12 +340,8 @@ public class GamaDateFactory {
 		try {
 			final TemporalAccessor ta = df.parse(original);
 			if (ta instanceof Temporal tmp) return tmp;
-			if (!ta.isSupported(ChronoField.YEAR) && !ta.isSupported(ChronoField.MONTH_OF_YEAR)
-					&& !ta.isSupported(ChronoField.DAY_OF_MONTH) && ta.isSupported(ChronoField.HOUR_OF_DAY))
-				return LocalTime.from(ta);
-			if (!ta.isSupported(ChronoField.HOUR_OF_DAY) && !ta.isSupported(ChronoField.MINUTE_OF_HOUR)
-					&& !ta.isSupported(ChronoField.SECOND_OF_MINUTE))
-				return LocalDate.from(ta);
+			if (isTimeOnly(ta)) return LocalTime.from(ta);
+			if (isDateOnly(ta)) return LocalDate.from(ta);
 			return LocalDateTime.from(ta);
 		} catch (final DateTimeParseException e) {
 			e.printStackTrace();
@@ -355,6 +351,20 @@ public class GamaDateFactory {
 						THE_DATE + original + " can not correctly be parsed by the pattern provided", scope),
 				false);
 		return parse(scope, original, null);
+	}
+
+	private static boolean isTimeOnly(final TemporalAccessor ta) {
+		final boolean hasDate = ta.isSupported(ChronoField.YEAR)
+				|| ta.isSupported(ChronoField.MONTH_OF_YEAR)
+				|| ta.isSupported(ChronoField.DAY_OF_MONTH);
+		return !hasDate && ta.isSupported(ChronoField.HOUR_OF_DAY);
+	}
+
+	private static boolean isDateOnly(final TemporalAccessor ta) {
+		final boolean hasTime = ta.isSupported(ChronoField.HOUR_OF_DAY)
+				|| ta.isSupported(ChronoField.MINUTE_OF_HOUR)
+				|| ta.isSupported(ChronoField.SECOND_OF_MINUTE);
+		return !hasTime;
 	}
 
 	private static Temporal parseIsoString(final IScope scope, final String original) {
