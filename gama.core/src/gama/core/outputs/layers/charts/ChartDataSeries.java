@@ -392,8 +392,8 @@ public class ChartDataSeries {
 		if (o instanceof IList) {
 			final IList ol = GamaListFactory.castToList(scope, o);
 			if (ol.isEmpty()) return null;
-			return ol.get(listvalue % ol.size());
-
+			if (IKeyword.COLOR.equals(valuetype)) return ol.get(listvalue % ol.size());
+			return listvalue < ol.size() ? ol.get(listvalue) : null;
 		}
 		return o;
 
