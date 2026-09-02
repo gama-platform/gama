@@ -1410,9 +1410,9 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	}
 
 	/**
-	 * Invalidate cached texture state.
+	 * Invalidate cached bound-texture state.
 	 */
-	public void invalidateTextureCache() {
+	public void invalidateBoundTextureState() {
 		lastBoundTexture = NO_TEXTURE;
 	}
 
@@ -1420,7 +1420,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * Delete volatile textures.
 	 */
 	public void deleteVolatileTextures() {
-		lastBoundTexture = NO_TEXTURE;
+		invalidateBoundTextureState();
 		textureCache.deleteVolatileTextures();
 	}
 
