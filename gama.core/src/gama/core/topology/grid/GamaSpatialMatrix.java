@@ -2091,7 +2091,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 				return;
 			case IKeyword.COLOR:
 				if (!isHexagon) {
-					System.arraycopy(gridValue, 0, input, 0, supportImagePixels.length);
+					for (int i = 0; i < input.length; i++) { input[i] = supportImagePixels[i]; }
 					return;
 				}
 				break;
