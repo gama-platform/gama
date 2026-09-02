@@ -408,62 +408,69 @@ public class GamaDateType extends GamaType<IDate> {
 	 * @return the DateTimeFormatter for the pattern and locale
 	 */
 	public static DateTimeFormatter getFormatter(final String p, final String locale) {
-
-		final String pattern = p;
-		// Can happen during initialization
+		final String pattern = p != null && p.contains("y") ? p.replace('y', 'u') : p;
 		if (FORMATTERS == null || FORMATTERS.isEmpty()) return DateTimeFormatter.ofPattern(GamaDateType.DEFAULT_FORMAT);
 		if (pattern == null) return FORMATTERS.get(GamaDateType.DEFAULT_KEY);
-		final DateTimeFormatter formatter = FORMATTERS.get(getFormatterKey(pattern, locale));
-		if (formatter != null) return formatter;
-		if (!pattern.contains("%")) {
-			try {
-				final DateTimeFormatterBuilder df = new DateTimeFormatterBuilder();
-				final DateTimeFormatter result =
-						df.parseCaseInsensitive().appendPattern(pattern).toFormatter(getLocale(locale));
-				FORMATTERS.put(getFormatterKey(pattern, locale), result);
-				return result;
-			} catch (final IllegalArgumentException e) {
-				GAMA.reportAndThrowIfNeeded(GAMA.getRuntimeScope(),
-						GamaRuntimeException.create(e, GAMA.getRuntimeScope()), false);
-				return FORMATTERS.get(GamaDateType.DEFAULT_KEY);
-			}
+
+		final String key = getFormatterKey(pattern, locale);
+		final DateTimeFormatter cached = FORMATTERS.get(key);
+		if (cached != null) return cached;
+
+		final Locale loc = getLocale(locale);
+		final DateTimeFormatter formatter = pattern.contains("%")
+				? buildModelFormatter(pattern, loc)
+				: buildJavaFormatter(pattern, loc);
+
+		if (formatter == null) return FORMATTERS.get(GamaDateType.DEFAULT_KEY);
+
+		FORMATTERS.put(key, formatter);
+		return formatter;
+	}
+
+	private static DateTimeFormatter buildJavaFormatter(final String pattern, final Locale loc) {
+		try {
+			return new DateTimeFormatterBuilder()
+					.parseCaseInsensitive()
+					.appendPattern(pattern)
+					.toFormatter(loc);
+		} catch (final IllegalArgumentException e) {
+			GAMA.reportAndThrowIfNeeded(GAMA.getRuntimeScope(),
+					GamaRuntimeException.create(e, GAMA.getRuntimeScope()), false);
+			return null;
 		}
+	}
+
+	private static DateTimeFormatter buildModelFormatter(final String pattern, final Locale loc) {
 		final DateTimeFormatterBuilder df = new DateTimeFormatterBuilder();
 		df.parseCaseInsensitive();
-		final List<String> dateList = new ArrayList<>();
 		final Matcher m = model_pattern.matcher(pattern);
-		int i = 0;
+		int last = 0;
 		while (m.find()) {
-			final String tmp = m.group();
-			if (i != m.start()) { dateList.add(pattern.substring(i, m.start())); }
-			dateList.add(tmp);
-			i = m.end();
-		}
-		if (i != pattern.length()) { dateList.add(pattern.substring(i)); }
-		for (i = 0; i < dateList.size(); i++) {
-			final String s = dateList.get(i);
-			if (s.charAt(0) == '%' && s.length() == 2) {
-				final Character c = s.charAt(1);
-				switch (c) {
-					case 'Y' -> df.appendValue(YEAR, 4, 10, SignStyle.EXCEEDS_PAD);
-					case 'M' -> df.appendValue(MONTH_OF_YEAR, 2);
-					case 'N' -> df.appendText(MONTH_OF_YEAR);
-					case 'D' -> df.appendValue(DAY_OF_MONTH, 2);
-					case 'E' -> df.appendText(DAY_OF_WEEK);
-					case 'h' -> df.appendValue(HOUR_OF_DAY, 2);
-					case 'm' -> df.appendValue(MINUTE_OF_HOUR, 2);
-					case 's' -> df.appendValue(SECOND_OF_MINUTE, 2);
-					case 'z' -> df.appendZoneOrOffsetId();
-					default -> df.appendLiteral(s);
-				}
-
-			} else {
-				df.appendLiteral(s);
+			if (last != m.start()) {
+				df.appendLiteral(pattern.substring(last, m.start()));
 			}
+			appendModelSymbol(df, m.group().charAt(1));
+			last = m.end();
 		}
-		final DateTimeFormatter result = df.toFormatter(getLocale(locale));
-		FORMATTERS.put(getFormatterKey(pattern, locale), result);
-		return result;
+		if (last != pattern.length()) {
+			df.appendLiteral(pattern.substring(last));
+		}
+		return df.toFormatter(loc);
+	}
+
+	private static void appendModelSymbol(final DateTimeFormatterBuilder df, final char symbol) {
+		switch (symbol) {
+			case 'Y' -> df.appendValue(YEAR, 4, 10, SignStyle.EXCEEDS_PAD);
+			case 'M' -> df.appendValue(MONTH_OF_YEAR, 2);
+			case 'N' -> df.appendText(MONTH_OF_YEAR);
+			case 'D' -> df.appendValue(DAY_OF_MONTH, 2);
+			case 'E' -> df.appendText(DAY_OF_WEEK);
+			case 'h' -> df.appendValue(HOUR_OF_DAY, 2);
+			case 'm' -> df.appendValue(MINUTE_OF_HOUR, 2);
+			case 's' -> df.appendValue(SECOND_OF_MINUTE, 2);
+			case 'z' -> df.appendZoneOrOffsetId();
+			default -> df.appendLiteral("%" + symbol);
+		}
 	}
 
 }
