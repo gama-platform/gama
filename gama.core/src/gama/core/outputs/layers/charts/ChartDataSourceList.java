@@ -16,6 +16,7 @@ import java.util.HashMap;
 import gama.annotations.constants.IKeyword;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
@@ -97,6 +98,23 @@ public class ChartDataSourceList extends ChartDataSource {
 
 	}
 
+	private IList<?> extractLegends(final IScope scope) {
+		if (legendExp == null) return null;
+		final Object legObj = legendExp.value(scope);
+		if (legObj instanceof Boolean b && !b) return null;
+		if (legObj instanceof String s) return GamaListFactory.create(scope, Types.STRING, s);
+		if (legObj instanceof IList l) return GamaListFactory.castToList(scope, l);
+		return null;
+	}
+
+	private String getLegendLabel(final IScope scope, final IList<?> legends, final int index) {
+		if (legends == null) return "";
+		if (index >= legends.size()) return "";
+		final Object val = legends.get(index);
+		if (val == null) return "";
+		return Cast.asString(scope, val);
+	}
+
 	/**
 	 * Updateserielist.
 	 *
@@ -106,75 +124,47 @@ public class ChartDataSourceList extends ChartDataSource {
 	 *            the chart cycle
 	 */
 	private void updateserielist(final IScope scope, final int chartCycle) {
-		final IList<String> legends =
-				legendExp == null ? null : GamaListFactory.castToList(scope, legendExp.value(scope));
-		if (legends == null) return;
-		final IList<?> values = GamaListFactory.castToList(scope, getValue().value(scope));
-		final ArrayList<String> previousSeries = currentSeriesNames;
+		final Object valObj = getValue() == null ? null : getValue().value(scope);
+		final IList<?> values = valObj instanceof IList ? GamaListFactory.castToList(scope, valObj) : GamaListFactory.create();
+		final int targetSize = values.size();
+		final IList<?> legends = extractLegends(scope);
+
+		final ArrayList<String> previousSeries = currentSeriesNames != null ? currentSeriesNames : new ArrayList<>();
 		currentSeriesNames = new ArrayList<>();
-		boolean somethingChanged = false;
-		if (legends.size() > 0) {
-			// value list case
-			for (int i = 0; i < Math.min(values.size(), legends.size()); i++) {
-				final String name = legends.get(i);
-				if (name != null) {
-					currentSeriesNames.add(name);
-					if (i >= previousSeries.size() || !previousSeries.get(i).equals(name)) {
-						somethingChanged = true;
-						if (previousSeries.contains(name)) {
-							// serie i was serie k before
-						} else {
-							// new serie
-							newSerie(scope, name);
-						}
-					}
-				}
+
+		for (int i = 0; i < targetSize; i++) {
+			String serieId = "dl_" + this.hashCode() + "_" + i;
+			currentSeriesNames.add(serieId);
+
+			String legendStr = getLegendLabel(scope, legends, i);
+
+			ChartDataSeries myserie = previousSeries.contains(serieId)
+					? mySeries.get(serieId)
+					: myDataset.createOrGetSerie(scope, serieId, this);
+			if (!previousSeries.contains(serieId)) {
+				mySeries.put(serieId, myserie);
+			}
+			if (myserie != null) {
+				myserie.setSeriesLegend(legendStr);
 			}
 		}
-		if (currentSeriesNames.size() != previousSeries.size()) { somethingChanged = true; }
-		if (somethingChanged) {
-			for (String s : previousSeries) {
-				if (!currentSeriesNames.contains(s)) { getDataset().removeserie(scope, s); }
+
+		if (previousSeries.size() > targetSize) {
+			for (int i = targetSize; i < previousSeries.size(); i++) {
+				String s = previousSeries.get(i);
+				mySeries.remove(s);
+				getDataset().removeserie(scope, s);
 			}
-			for (String element : currentSeriesNames) { getDataset().addSerieAtTheEnd(scope, element); }
-
 		}
 
-	}
-
-	/**
-	 * Newserie.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param myname
-	 *            the myname
-	 */
-	private void newSerie(final IScope scope, final String myname) {
-		if (this.getDataset().getDataSeriesIds(scope).contains(myname)) {
-			DEBUG.LOG("Serie " + myname + "s already exists... Will replace old one!!");
+		for (String element : currentSeriesNames) {
+			getDataset().addSerieAtTheEnd(scope, element);
 		}
-		final ChartDataSeries myserie = myDataset.createOrGetSerie(scope, myname, this);
-		mySeries.put(myname, myserie);
-
 	}
 
 	@Override
 	public void createInitialSeries(final IScope scope) {
-
-		final Object on = legendExp == null ? null : legendExp.value(scope);
-
-		if (on instanceof IList lval) {
-			currentSeriesNames = new ArrayList<>();
-			for (int i = 0; i < lval.size(); i++) {
-				final Object no = lval.get(i);
-				if (no != null) {
-					final String myname = Cast.asString(scope, no);
-					newSerie(scope, myname);
-					currentSeriesNames.add(i, myname);
-				}
-			}
-		}
+		updateserielist(scope, 0);
 		inferDatasetProperties(scope);
 	}
 
