@@ -66,6 +66,9 @@ public class ChartDataSeries {
 	/** The name. */
 	String name;
 
+	/** The series legend label. */
+	String seriesLegend = null;
+
 	/** The ongoing update. */
 	boolean ongoing_update = false;
 
@@ -141,9 +144,24 @@ public class ChartDataSeries {
 	 * @return the serie legend
 	 */
 	public Comparable getSerieLegend(final IScope scope) {
-
+		if (seriesLegend != null) return seriesLegend;
 		return name;
 	}
+
+	/**
+	 * Gets the series legend string.
+	 *
+	 * @return the series legend
+	 */
+	public String getSeriesLegend() { return seriesLegend; }
+
+	/**
+	 * Sets the series legend string.
+	 *
+	 * @param legend
+	 *            the legend
+	 */
+	public void setSeriesLegend(final String legend) { this.seriesLegend = legend; }
 
 	/**
 	 * Gets the serie id.
@@ -373,9 +391,9 @@ public class ChartDataSeries {
 
 		if (o instanceof IList) {
 			final IList ol = GamaListFactory.castToList(scope, o);
-			if (ol.size() < listvalue) return null;
-			return ol.get(listvalue);
-
+			if (ol.isEmpty()) return null;
+			if (IKeyword.COLOR.equals(valuetype)) return ol.get(listvalue % ol.size());
+			return listvalue < ol.size() ? ol.get(listvalue) : null;
 		}
 		return o;
 

@@ -225,6 +225,19 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 		return newr;
 	}
 
+	private void configureLegend(final AbstractCategoryItemRenderer newr, final ChartDataSeries myserie, final int myrow, final IScope scope) {
+		final String legStr = myserie.getSerieLegend(scope) == null ? "" : myserie.getSerieLegend(scope).toString();
+		if (StringUtils.isBlank(legStr)) {
+			newr.setSeriesVisibleInLegend(myrow, false);
+			return;
+		}
+		newr.setLegendItemLabelGenerator((dataset, series) -> {
+			String id = (String) dataset.getRowKey(series);
+			ChartDataSeries ds = getChartdataset().getDataSeries(scope, id);
+			return ds != null && ds.getSerieLegend(scope) != null ? ds.getSerieLegend(scope).toString() : id;
+		});
+	}
+
 	/**
 	 * Reset renderer.
 	 *
@@ -234,41 +247,30 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 	 *            the serieid
 	 */
 	protected void resetRenderer(final IScope scope, final String serieid) {
-		// AbstractCategoryItemRenderer
-		// newr=(AbstractCategoryItemRenderer)this.getOrCreateRenderer(scope,
-		// serieid);
 		final CategoryPlot plot = (CategoryPlot) this.chart.getPlot();
 		final AbstractCategoryItemRenderer newr = (AbstractCategoryItemRenderer) plot.getRenderer();
-		// if
-		// (serieid!=this.getChartdataset().series.keySet().iterator().next())
-		// newr=(AbstractCategoryItemRenderer)this.getOrCreateRenderer(scope,
-		// serieid);
 
 		final ChartDataSeries myserie = this.getChartdataset().getDataSeries(scope, serieid);
-		if (!idPosition.containsKey(serieid)) {
-			// DEBUG.LOG("pb!!!");
-		} else {
-			final int myrow = idPosition.get(serieid);
-			if (myserie.getMycolor() != null) { newr.setSeriesPaint(myrow, IColor.toAWTColor(myserie.getMycolor())); }
+		if (!idPosition.containsKey(serieid)) return;
 
-			if ("onchart".equals(this.series_label_position)) {
-				// ((BarRenderer)newr).setBaseItemLabelGenerator(new
-				// LabelGenerator());
-				newr.setDefaultItemLabelGenerator(new LabelGenerator());
-				final ItemLabelPosition itemlabelposition =
-						new ItemLabelPosition(ItemLabelAnchor.OUTSIDE12, TextAnchor.BOTTOM_CENTER);
-				newr.setDefaultPositiveItemLabelPosition(itemlabelposition);
-				newr.setDefaultNegativeItemLabelPosition(itemlabelposition);
-				newr.setDefaultItemLabelsVisible(true);
-				if (textColor != null) { newr.setDefaultItemLabelPaint(IColor.toAWTColor(textColor)); }
-			}
+		final int myrow = idPosition.get(serieid);
+		if (myserie.getMycolor() != null) { newr.setSeriesPaint(myrow, IColor.toAWTColor(myserie.getMycolor())); }
 
-			if (newr instanceof BarRenderer && gap >= 0) {
-				((BarRenderer) newr).setMaximumBarWidth(1 - gap);
+		configureLegend(newr, myserie, myrow, scope);
 
-			}
+		if ("onchart".equals(this.series_label_position)) {
+			newr.setDefaultItemLabelGenerator(new LabelGenerator());
+			final ItemLabelPosition itemlabelposition =
+					new ItemLabelPosition(ItemLabelAnchor.OUTSIDE12, TextAnchor.BOTTOM_CENTER);
+			newr.setDefaultPositiveItemLabelPosition(itemlabelposition);
+			newr.setDefaultNegativeItemLabelPosition(itemlabelposition);
+			newr.setDefaultItemLabelsVisible(true);
+			if (textColor != null) { newr.setDefaultItemLabelPaint(IColor.toAWTColor(textColor)); }
 		}
 
+		if (newr instanceof BarRenderer && gap >= 0) {
+			((BarRenderer) newr).setMaximumBarWidth(1 - gap);
+		}
 	}
 
 	@Override

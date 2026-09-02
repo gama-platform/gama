@@ -72,9 +72,9 @@ import gama.annotations.support.ISymbolKind;
 						doc = @doc ("the marker sizes to display. Can be a list of numbers (same size for each marker of the series) or a list of list (different sizes by point)")),
 				@facet (
 						name = IKeyword.LEGEND,
-						type = IType.LIST,
+						type = { IType.LIST, IType.BOOL, IType.STRING, IType.NONE },
 						optional = true,
-						doc = @doc ("the name of the series: a list of strings (can be a variable with dynamic names)")),
+						doc = @doc ("the name of the series: a list of strings (can be a variable with dynamic names), or false to hide the legend. Use nil/whitespace for individual points to hide them from legend.")),
 				@facet (
 						name = ChartDataStatement.MARKER,
 						type = IType.BOOL,
@@ -108,9 +108,9 @@ import gama.annotations.support.ISymbolKind;
 						doc = @doc ("Marker filled (true) or not (false), same for all series.")),
 				@facet (
 						name = IKeyword.COLOR,
-						type = IType.LIST,
+						type = { IType.LIST, IType.COLOR, IType.CONTAINER, IType.NONE },
 						optional = true,
-						doc = @doc ("list of colors, for heatmaps can be a list of [minColor,maxColor] or [minColor,medColor,maxColor]")),
+						doc = @doc ("a single color or list of colors. If a list of colors smaller than the list of values is provided, colors will cycle. For heatmaps can be a list of [minColor,maxColor] or [minColor,medColor,maxColor]")),
 				@facet (
 						name = ChartDataStatement.THICKNESS,
 						type = IType.FLOAT,
@@ -124,7 +124,7 @@ import gama.annotations.support.ISymbolKind;
 								IKeyword.EXPLODED },
 						optional = true,
 						doc = @doc ("Style for the serie (if not the default one sepecified on chart statement)")) },
-		omissible = IKeyword.LEGEND)
+		omissible = IKeyword.VALUE)
 public class ChartDataListStatement extends AbstractStatement {
 
 	/**

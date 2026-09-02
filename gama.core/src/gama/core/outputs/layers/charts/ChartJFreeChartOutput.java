@@ -236,48 +236,50 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 			if (chart.getLegend() != null) { chart.getLegend().setBackgroundPaint(bg); }
 		}
 		if (chart.getLegend() != null) {
-			LegendTitle legend = chart.getLegend(); // Get the existing legend
+			LegendTitle legend = chart.getLegend();
 			legend.setItemFont(getLegendFont());
 			legend.setFrame(BlockBorder.NONE);
 			legend.setPosition(RectangleEdge.BOTTOM);
-			// legend.setPadding(5, 5, 5, 5);
-			// Set legend position
-			switch (series_label_position) {
-				case IKeyword.LEFT:
-					legend.setPosition(RectangleEdge.LEFT);
-					break;
-				case IKeyword.RIGHT:
-					legend.setPosition(RectangleEdge.RIGHT);
-					break;
-				case IKeyword.TOP:
-					legend.setPosition(RectangleEdge.TOP);
-					break;
-				case "none":
-					legend.setVisible(false);
-					break;
-				case "onchart":
-					if (plot instanceof XYPlot p) {
-						// Place the legend inside the chart area at the corner specified by the anchor
-						double x = series_label_anchor.getX() / 2 + 0.25; // Normalize to [0.25, 0.75]
-						double y = series_label_anchor.getY() / 2 + 0.25;
-						XYTitleAnnotation ta = new XYTitleAnnotation(x, y, legend, RectangleAnchor.CENTER);
-						ta.setMaxWidth(0.5); // Legend will take up to 50% of the chart width by default
-						ta.setMaxHeight(0.5);
-						legend.setHorizontalAlignment(HorizontalAlignment.CENTER);
-						legend.setVerticalAlignment(VerticalAlignment.CENTER);
-						// Legend with 50% transparency by default
-						legend.setBackgroundPaint(IColor.toAWTColor(Colors.rgb(scope, backgroundColor, 0.5)));
-						p.addAnnotation(ta);
-						// Remove the default legend
-						chart.removeLegend();
-					}
-			}
 
-			// Set legend text color
+			configureLegendPosition(legend, plot, scope);
+			configureLegendOrientation(legend);
+
 			if (textColor != null) { legend.setItemPaint(IColor.toAWTColor(textColor)); }
-
 		}
 
+	}
+
+	private void configureLegendPosition(final LegendTitle legend, final Plot plot, final IScope scope) {
+		switch (series_label_position) {
+			case IKeyword.LEFT -> legend.setPosition(RectangleEdge.LEFT);
+			case IKeyword.RIGHT -> legend.setPosition(RectangleEdge.RIGHT);
+			case IKeyword.TOP -> legend.setPosition(RectangleEdge.TOP);
+			case "none" -> legend.setVisible(false);
+			case "onchart" -> {
+				if (plot instanceof XYPlot p) {
+					double x = series_label_anchor.getX() / 2 + 0.25;
+					double y = series_label_anchor.getY() / 2 + 0.25;
+					XYTitleAnnotation ta = new XYTitleAnnotation(x, y, legend, RectangleAnchor.CENTER);
+					ta.setMaxWidth(0.5);
+					ta.setMaxHeight(0.5);
+					legend.setHorizontalAlignment(HorizontalAlignment.CENTER);
+					legend.setVerticalAlignment(VerticalAlignment.CENTER);
+					legend.setBackgroundPaint(IColor.toAWTColor(Colors.rgb(scope, backgroundColor, 0.5)));
+					p.addAnnotation(ta);
+					chart.removeLegend();
+				}
+			}
+			default -> {
+			}
+		}
+	}
+
+	private void configureLegendOrientation(final LegendTitle legend) {
+		if ("vertical".equalsIgnoreCase(legend_orientation)) {
+			legend.getItemContainer().setArrangement(new org.jfree.chart.block.ColumnArrangement());
+		} else if ("horizontal".equalsIgnoreCase(legend_orientation)) {
+			legend.getItemContainer().setArrangement(new org.jfree.chart.block.FlowArrangement());
+		}
 	}
 
 	/**

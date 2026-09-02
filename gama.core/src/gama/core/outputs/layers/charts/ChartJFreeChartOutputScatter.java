@@ -286,6 +286,27 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 		return newr;
 	}
 
+	private void configureLegend(final AbstractXYItemRenderer newr, final ChartDataSeries myserie,
+			final IScope scope) {
+		final String legStr = myserie.getSerieLegend(scope) == null ? "" : myserie.getSerieLegend(scope).toString();
+		if (StringUtils.isBlank(legStr)) {
+			newr.setSeriesVisibleInLegend(0, false);
+			return;
+		}
+		newr.setLegendItemLabelGenerator((dataset, series) -> {
+			String id = (String) dataset.getSeriesKey(series);
+			ChartDataSeries ds = getChartdataset().getDataSeries(scope, id);
+			return ds != null && ds.getSerieLegend(scope) != null ? ds.getSerieLegend(scope).toString() : id;
+		});
+	}
+
+	private void configureErrorRenderer(final CustomXYErrorRenderer xy, final ChartDataSeries myserie,
+			final IScope scope) {
+		xy.setDrawYError(myserie.isUseYErrValues());
+		xy.setDrawXError(myserie.isUseXErrValues());
+		if (myserie.getMysource().isUseSize()) { xy.setUseSize(scope, true); }
+	}
+
 	/**
 	 * Reset renderer.
 	 *
@@ -296,33 +317,28 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 	 */
 	protected void resetRenderer(final IScope scope, final String serieid) {
 		final AbstractXYItemRenderer newr = (AbstractXYItemRenderer) this.getOrCreateRenderer(scope, serieid);
-
-		// newr.setSeriesStroke(0, new BasicStroke(0));
 		newr.setDefaultCreateEntities(true);
+
 		final ChartDataSeries myserie = this.getChartdataset().getDataSeries(scope, serieid);
-		if (myserie.getName() == null || myserie.getName().isEmpty()) { newr.setSeriesVisibleInLegend(0, false); }
+		configureLegend(newr, myserie, scope);
+
 		if (newr instanceof XYLineAndShapeRenderer xy) {
 			xy.setSeriesLinesVisible(0, myserie.getMysource().showLine);
 			xy.setSeriesShapesFilled(0, myserie.getMysource().fillMarker);
 			xy.setSeriesShapesVisible(0, myserie.getMysource().useMarker);
-
 		}
 
 		if (newr instanceof XYShapeRenderer xy && !myserie.getMysource().fillMarker) {
 			xy.setUseFillPaint(false);
-			// ((XYShapeRenderer) newr).setDrawOutlines(true);
 		}
+
 		if (myserie.getMycolor() != null) { newr.setSeriesPaint(0, IColor.toAWTColor(myserie.getMycolor())); }
-		// DEBUG.OUT("Changing series stroke to " + myserie.getLineThickness().value(scope));
+
 		newr.setSeriesStroke(0,
 				new BasicStroke(Cast.asFloat(scope, myserie.getLineThickness().value(scope)).floatValue()));
 
 		if (newr instanceof CustomXYErrorRenderer xy) {
-			xy.setDrawYError(false);
-			xy.setDrawXError(false);
-			if (myserie.isUseYErrValues()) { xy.setDrawYError(true); }
-			if (myserie.isUseXErrValues()) { xy.setDrawXError(true); }
-			if (myserie.getMysource().isUseSize()) { xy.setUseSize(scope, true); }
+			configureErrorRenderer(xy, myserie, scope);
 		}
 
 		if (myserie.getMysource().getUniqueMarkerName() != null) {
@@ -352,7 +368,7 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 	protected void createNewSerie(final IScope scope, final String serieid) {
 
 		final ChartDataSeries dataserie = chartdataset.getDataSeries(scope, serieid);
-		final XYIntervalSeries serie = new XYIntervalSeries(dataserie.getSerieLegend(scope), false, true);
+		final XYIntervalSeries serie = new XYIntervalSeries(serieid, false, true);
 		final XYPlot plot = (XYPlot) this.chart.getPlot();
 
 		final XYIntervalSeriesCollection firstdataset = (XYIntervalSeriesCollection) plot.getDataset();
