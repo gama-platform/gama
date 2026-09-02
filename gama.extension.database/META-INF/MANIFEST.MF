@@ -5,7 +5,8 @@ Bundle-SymbolicName: gama.extension.database;singleton:=true
 Bundle-Version: 0.0.0.qualifier
 Require-Bundle: gama.dependencies,
  gama.core,
- org.eclipse.osgi
+ org.eclipse.osgi,
+ gama.extension.dataframe;bundle-version="0.0.0"
 Export-Package: gama.extension.database.gaml.skills,
  gama.extension.database.gaml.species,
  gama.extension.database.utils,
@@ -21,4 +22,13 @@ Bundle-ClassPath: .,
  libs/SPARQL/jena 5.5.0/jena-iri-5.5.0.jar,
  libs/SPARQL/libthrift-0.22.0.jar,
  libs/SPARQL/caffeine-3.2.3.jar,
- libs/SPARQL/com.google.gson-2.9.1.jar
+ libs/SPARQL/com.google.gson-2.9.1.jar,
+ libs/geotools 33.4/commons-dbcp-1.4.jar,
+ libs/geotools 33.4/commons-pool-1.5.4.jar,
+ libs/geotools 33.4/gt-geopkg-33.4.jar,
+ libs/geotools 33.4/gt-jdbc-33.4.jar,
+ libs/geotools 33.4/gt-jdbc-mysql-33.4.jar,
+ libs/geotools 33.4/mysql-connector-j-9.1.0.jar,
+ libs/geotools 33.4/sqlite-jdbc-3.41.2.2.jar,
+ libs/geotools 33.4/gt-jdbc-postgis-33.4.jar,
+ libs/geotools 33.4/postgresql-42.2.19.jar

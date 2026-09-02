@@ -127,16 +127,10 @@
       </content-type>
       <content-type
             base-type="org.eclipse.core.runtime.text"
-            file-extensions="html, HTML, htm, HTM, svg, SVG"
+            file-extensions="html,HTML,htm,HTM,svg,SVG"
             id="gama.html.file.type"
             name="HTML (in GAMA)"
             priority="normal">
-      </content-type>
-      <content-type
-            file-extensions="osm,OSM,pbf,PBF,bz2,BZ2,gz,GZ"
-            id="gama.osm.file.type"
-            name="OSM"
-            priority="high">
       </content-type>
       <content-type
             default-charset="UTF-8"

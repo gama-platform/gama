@@ -562,7 +562,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 		if (gg == null) // DEBUG.OUT("[paintComponent] SKIPPED (iGraphics=null) for " + output.getName() + " thread="
 			// + Thread.currentThread().getName());
 			return;
-		final long t0 = System.currentTimeMillis();
+		// final long t0 = System.currentTimeMillis();
 		// DEBUG.OUT("[paintComponent] START for " + output.getName() + " thread=" + Thread.currentThread().getName());
 		// DEBUG.OUT("-- Surface effectively painting on Java2D context");
 		super.paintComponent(g);

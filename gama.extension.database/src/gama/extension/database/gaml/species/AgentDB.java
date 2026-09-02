@@ -21,7 +21,6 @@ import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.runtime.scope.IScope;
-import gama.api.types.dataframe.IDataFrame;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
 import gama.api.types.map.IMap;
@@ -29,6 +28,7 @@ import gama.core.agent.GamlAgent;
 import gama.dev.DEBUG;
 import gama.extension.database.utils.sql.SqlConnection;
 import gama.extension.database.utils.sql.SqlUtils;
+import gama.extension.dataframe.IDataFrame;
 
 /**
  * The Class AgentDB.

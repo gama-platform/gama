@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry exported="true" kind="lib" path="libs/osmosis 0.49.2/osmosis-0.49.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/osmosis 0.49.2/osmosis-apidb-0.49.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/osmosis 0.49.2/osmosis-areafilter-0.49.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/osmosis 0.49.2/osmosis-core-0.49.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/osmosis 0.49.2/osmosis-core-0.49.2-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/osmosis 0.49.2/osmosis-dataset-0.49.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/osmosis 0.49.2/osmosis-extract-0.49.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/osmosis 0.49.2/osmosis-hstore-jdbc-0.49.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/osmosis 0.49.2/osmosis-pbf-0.49.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/osmosis 0.49.2/osmosis-pbf2-0.49.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/osmosis 0.49.2/osmosis-pgsimple-0.49.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/osmosis 0.49.2/osmosis-pgsnapshot-0.49.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/osmosis 0.49.2/osmosis-replication-0.49.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/osmosis 0.49.2/osmosis-set-0.49.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/osmosis 0.49.2/osmosis-tagfilter-0.49.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/osmosis 0.49.2/osmosis-tagtransform-0.49.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/osmosis 0.49.2/osmosis-xml-0.49.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/osmosis 0.49.2/osmpbf-1.6.0.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-25"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="gaml">
+		<attributes>
+			<attribute name="optional" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

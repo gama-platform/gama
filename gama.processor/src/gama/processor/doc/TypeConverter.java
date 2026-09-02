@@ -228,7 +228,7 @@ public class TypeConverter {
 
 		hm.put("gama.core.util.IContainer.Addressable", "container");
 
-		hm.put("gama.gaml.types.GamaKmlExport", "kml");
+		hm.put("gama.extension.kml.GamaKmlExport", "kml");
 
 		hm.put("gama.core.kernel.experiment.IParameter", "unknown");
 
@@ -325,7 +325,7 @@ public class TypeConverter {
 		hm.put(23, "date");
 		hm.put(24, "message");
 		hm.put(25, "material");
-		hm.put(29, "kml");
+		hm.put(5029, "kml");
 		hm.put(30, "directory");
 		hm.put(31, "field");
 		hm.put(50, "available_types");
