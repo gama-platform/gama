@@ -106,8 +106,11 @@ public class ChartDataSourceList extends ChartDataSource {
 	}
 
 	private String getLegendLabel(final IScope scope, final IList<?> legends, final int index) {
-		if (legends == null || index >= legends.size() || legends.get(index) == null) return "";
-		return Cast.asString(scope, legends.get(index));
+		if (legends == null) return "";
+		if (index >= legends.size()) return "";
+		final Object val = legends.get(index);
+		if (val == null) return "";
+		return Cast.asString(scope, val);
 	}
 
 	/**

@@ -588,6 +588,24 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 		return true;
 	}
 
+	private void updateLegendProperties(final IScope scope) {
+		IExpression expr = getFacet(ChartLayerStatement.SERIES_LABEL_POSITION);
+		if (expr != null) {
+			String pos = Cast.asString(scope, expr.value(scope));
+			chartOutput.setSeriesLabelPosition(scope, pos);
+		}
+		expr = getFacet(ChartLayerStatement.LEGEND_ORIENTATION);
+		if (expr != null) {
+			String orient = Cast.asString(scope, expr.value(scope));
+			chartOutput.setLegendOrientation(scope, orient);
+		}
+		expr = getFacet(IKeyword.ANCHOR);
+		if (expr != null) {
+			final IPoint pt = GamaPointFactory.castToPoint(scope, expr.value(scope));
+			chartOutput.setSeriesLabelAnchor(scope, pt);
+		}
+	}
+
 	/**
 	 * Gets the chart name.
 	 *
@@ -726,22 +744,7 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 		string1 = getFacet("lines");
 		if (string1 != null) { chartOutput.setGridLinesVisible(scope, Cast.asBool(scope, string1.value(scope))); }
 
-		// Legend position and anchor
-		expr = getFacet(ChartLayerStatement.SERIES_LABEL_POSITION);
-		if (expr != null) {
-			String pos = Cast.asString(scope, expr.value(scope));
-			chartOutput.setSeriesLabelPosition(scope, pos);
-		}
-		expr = getFacet(ChartLayerStatement.LEGEND_ORIENTATION);
-		if (expr != null) {
-			String orient = Cast.asString(scope, expr.value(scope));
-			chartOutput.setLegendOrientation(scope, orient);
-		}
-		expr = getFacet(IKeyword.ANCHOR);
-		if (expr != null) {
-			final IPoint pt = GamaPointFactory.castToPoint(scope, expr.value(scope));
-			chartOutput.setSeriesLabelAnchor(scope, pt);
-		}
+		updateLegendProperties(scope);
 
 		color = getFacet(IKeyword.COLOR);
 		if (color != null) { colorvalue = GamaColorFactory.castToColor(scope, color.value(scope)); }
