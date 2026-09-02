@@ -395,7 +395,7 @@ public class Comparison {
 			jdk.incubator.vector.VectorMask<Double> mask = va.compare(jdk.incubator.vector.VectorOperators.EQ, b);
 			jdk.incubator.vector.DoubleVector.broadcast(GamaFloatMatrix.SPECIES, 1.0).intoArray(nm.getMatrix(), i, mask);
 		}
-		for (; i < m.length; i++) { nm.getMatrix()[i] = equal(m[i], b) ? 1.0 : 0.0; }
+		for (; i < m.length; i++) { nm.getMatrix()[i] = m[i] == b ? 1.0 : 0.0; }
 		return nm;
 	}
 
