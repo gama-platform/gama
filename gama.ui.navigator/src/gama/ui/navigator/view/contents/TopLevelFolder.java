@@ -152,26 +152,31 @@ public class TopLevelFolder extends VirtualContent<NavigatorRoot> implements IGa
 	 * @return the location
 	 */
 	protected Location estimateLocation(final IPath location) {
+		if (location == null) return Location.Unknown;
 		try {
 			final var old_url = new URL("platform:/plugin/" + GamaBundleLoader.CORE_MODELS.getSymbolicName() + "/");
 			final var new_url = FileLocator.toFileURL(old_url);
 			// windows URL formating
 			final var resolvedURI = new URI(new_url.getProtocol(), new_url.getPath(), null).normalize();
-			final var urlRep = resolvedURI.toURL();
-			final var osString = location.toOSString();
-			final var isTest = osString.contains(GamaBundleLoader.REGULAR_TESTS_LAYOUT);
-			final var isTutorial = osString.contains("/" + GamaBundleLoader.REGULAR_TUTORIALS_LAYOUT + "/");
-			final var isRecipe = osString.contains("/" + GamaBundleLoader.REGULAR_RECIPES_LAYOUT + "/");
+			final var pathString = location.toString();
+			final var isTest = pathString.contains("/" + GamaBundleLoader.REGULAR_TESTS_LAYOUT)
+					|| pathString.contains(GamaBundleLoader.GENERATED_TESTS_LAYOUT);
+			final var isTutorial = pathString.contains("/" + GamaBundleLoader.REGULAR_TUTORIALS_LAYOUT + "/");
+			final var isRecipe = pathString.contains("/" + GamaBundleLoader.REGULAR_RECIPES_LAYOUT + "/");
 			if (isTutorial) return Location.Tutorials;
 			if (isRecipe) return Location.Recipes;
-			if (!isTest && osString.startsWith(urlRep.getPath())) return Location.CoreModels;
-			if (osString
-					.startsWith(urlRep.getPath().replace(GamaBundleLoader.CORE_MODELS.getSymbolicName() + "/", ""))) {
+
+			final String corePath = new java.io.File(resolvedURI).getAbsolutePath().replace('\\', '/');
+			final String projectPath = location.toFile().getAbsolutePath().replace('\\', '/');
+
+			if (!isTest && projectPath.startsWith(corePath)) return Location.CoreModels;
+			final String parentPath = new java.io.File(corePath).getParent().replace('\\', '/');
+			if (parentPath != null && projectPath.startsWith(parentPath)) {
 				if (isTest) return Location.Tests;
 				return Location.Plugins;
 			}
 			return Location.Other;
-		} catch (final IOException | URISyntaxException e) {
+		} catch (final Exception e) {
 			e.printStackTrace();
 			return Location.Unknown;
 		}
