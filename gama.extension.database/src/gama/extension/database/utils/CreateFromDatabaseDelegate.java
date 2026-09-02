@@ -85,7 +85,8 @@ public class CreateFromDatabaseDelegate implements ICreateDelegate {
 
 	@Override
 	public IType fromFacetType() {
-		return IDataframeConstants.TYPE;
+		final IType type = Types.get(IDataframeConstants.NAME);
+		return type == null ? Types.NO_TYPE : type;
 	}
 
 }
