@@ -547,7 +547,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 			numCols = store.getOriginalGridRange().getHigh(0) + 1;
 			coverage = store.read(null);
 		} catch (Throwable e) {
-			throw new RuntimeException(e);
+			throw GamaRuntimeException.create(e, scope);
 		} finally {
 			if (store != null) { store.dispose(); }
 			scope.getGui().getStatus().endTask("Opening file " + getName(scope), IStatusMessage.DOWNLOAD_ICON);
