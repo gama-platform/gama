@@ -299,9 +299,6 @@ public abstract class AbstractOutputManager extends Symbol implements IOutputMan
 	public AbstractOutputManager(final IDescription desc) {
 		super(desc);
 		autosave = desc.getFacetExpr(IKeyword.AUTOSAVE);
-		boolean sync = GamaPreferences.Runtime.CORE_SYNC.getValue() || "true".equals(desc.getLitteral("synchronized"))
-				|| desc.hasFacet(IKeyword.AUTOSAVE) && !"false".equals(desc.getLitteral(IKeyword.AUTOSAVE));
-		if (sync) { GAMA.synchronizeFrontmostExperiment(); }
 	}
 
 	// @Override
@@ -380,7 +377,6 @@ public abstract class AbstractOutputManager extends Symbol implements IOutputMan
 			if (s instanceof LayoutStatement) {
 				layout = (LayoutStatement) s;
 			} else if (s instanceof IOutput o) {
-				if (o.isAutoSave()) { GAMA.synchronizeFrontmostExperiment(); }
 				add(o);
 				o.setUserCreated(false);
 				if (o instanceof LayeredDisplayOutput ldo) { ldo.setIndex(displayIndex++); }
@@ -419,7 +415,26 @@ public abstract class AbstractOutputManager extends Symbol implements IOutputMan
 	}
 
 	@Override
+	public boolean isSynchronized() {
+		return GamaPreferences.Runtime.CORE_SYNC.getValue() || isDescriptionSynchronized()
+				|| outputs.values().stream().anyMatch(IOutput::isAutoSave);
+	}
+
+	/**
+	 * Checks if the manager description specifies synchronization or autosave.
+	 *
+	 * @return true if description requires synchronization
+	 */
+	private boolean isDescriptionSynchronized() {
+		final IDescription desc = getDescription();
+		if (desc == null) return false;
+		if ("true".equals(desc.getLitteral("synchronized"))) return true;
+		return desc.hasFacet(IKeyword.AUTOSAVE) && !"false".equals(desc.getLitteral(IKeyword.AUTOSAVE));
+	}
+
+	@Override
 	public boolean init(final IScope scope) {
+		if (isSynchronized()) { GAMA.synchronizeFrontmostExperiment(); }
 		name = scope.getRoot().getName();
 		for (final IOutput output : ImmutableList.copyOf(outputs.values())) { if (!open(scope, output)) return false; }
 		evaluateAutoSave(scope);

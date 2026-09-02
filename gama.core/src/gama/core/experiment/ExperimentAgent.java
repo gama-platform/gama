@@ -409,6 +409,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	public boolean init(final IScope scope) {
 		showParameters(scope);
 		GAMA.changeCurrentTopLevelAgent(this, true);
+		GAMA.desynchronizeFrontmostExperiment();
 		scope.getGui().clearErrors(scope);
 		super.init(scope);
 		final IOutputManager outputs = getOutputManager();
