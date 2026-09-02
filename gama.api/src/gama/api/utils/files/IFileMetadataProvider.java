@@ -95,6 +95,6 @@ public interface IFileMetadataProvider {
 	 *
 	 * @return the metadata file extensions
 	 */
-	default Set<String> getMetadataFileExtensions() { return Collections.EMPTY_SET; }
+	default Set<String> getMetadataFileExtensions() { return Collections.emptySet(); }
 
 }
