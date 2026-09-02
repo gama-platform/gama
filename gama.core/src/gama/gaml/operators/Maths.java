@@ -1900,7 +1900,6 @@ public class Maths {
 			category = { IOperatorCategory.MATRIX },
 			concept = { IConcept.MATRIX })
 	@doc (
-
 			value = "Returns the element-wise addition of two matrices.",
 			examples = { @example (
 					value = "matrix([[1, 2], [3, 4]]) + matrix([[1, 2], [3, 4]])",
@@ -1998,21 +1997,15 @@ public class Maths {
 			concept = {})
 
 	@doc (
-
 			usages = { @usage (
-
 					value = "if one operand is a matrix and the other a number (float or int), performs a normal arithmetic sum of the number with each element of the matrix (results are float if the number is a float.",
-
 					examples = { @example (
-
 							value = "3.5 + matrix([[2,5],[3,4]])",
-
 							equals = "matrix([[5.5,8.5],[6.5,7.5]])") }) })
-
+	@test ("3 + matrix([[2,5],[3,4]]) = matrix([[5,8],[6,7]])")
 	public static IMatrix opPlus(final Integer a, final IMatrix b) {
 		return b.plus(a);
 	}
-
 	/**
 	 * Op plus.
 	 *
@@ -2033,6 +2026,7 @@ public class Maths {
 			examples = {},
 			see = "/")
 	@test ("1.0 + matrix([[5.5,8.5],[6.5,7.5]]) = matrix([[6.5,9.5],[7.5,8.5]])")
+	@test ("3.5 + matrix([[2,5],[3,4]]) = matrix([[5.5,8.5],[6.5,7.5]])")
 	public static IMatrix opPlus(final Double a, final IMatrix b) {
 		return b.plus(a);
 	}

@@ -319,6 +319,7 @@ public class Logic {
 			examples = { @example (
 					value = "ifelse(matrix([[1.0, 0.0], [0.0, 1.0]]), matrix([[1, 2], [3, 4]]), matrix([[9, 8], [7, 6]]))",
 					equals = "matrix([[1.0, 8.0], [7.0, 4.0]])") })
+	@test ("ifelse(matrix([[1.0, 0.0], [0.0, 1.0]]), matrix([[1, 2], [3, 4]]), matrix([[9, 8], [7, 6]])) = matrix([[1.0, 8.0], [7.0, 4.0]])")
 	public static IMatrix ifelse(final IScope scope, final IMatrix condition, final IMatrix trueMatrix,
 			final IMatrix falseMatrix) {
 		final GamaFloatMatrix cond = GamaFloatMatrix.from(scope, condition);
