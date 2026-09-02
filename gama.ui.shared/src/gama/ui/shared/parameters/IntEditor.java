@@ -83,8 +83,10 @@ public class IntEditor extends NumberEditor<Integer> {
 
 	@Override
 	protected Integer normalizeValues() throws GamaRuntimeException {
-		final Integer valueToConsider = getOriginalValue() == null ? 0 : Cast.asInt(getScope(), getOriginalValue());
-		currentValue = getOriginalValue() == null ? null : valueToConsider;
+		Object orig = getOriginalValue();
+		if (orig == null && param != null) { orig = param.value(getScope()); }
+		final Integer valueToConsider = orig == null ? 0 : Cast.asInt(getScope(), orig);
+		currentValue = valueToConsider;
 		return valueToConsider;
 	}
 

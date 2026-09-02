@@ -98,8 +98,10 @@ public class FloatEditor extends NumberEditor<Double> {
 
 	@Override
 	protected Double normalizeValues() throws GamaRuntimeException {
-		final Double valueToConsider = getOriginalValue() == null ? 0.0 : Cast.asFloat(getScope(), getOriginalValue());
-		currentValue = getOriginalValue() == null ? null : valueToConsider;
+		Object orig = getOriginalValue();
+		if (orig == null && param != null) { orig = param.value(getScope()); }
+		final Double valueToConsider = orig == null ? 0.0 : Cast.asFloat(getScope(), orig);
+		currentValue = valueToConsider;
 		return valueToConsider;
 	}
 
