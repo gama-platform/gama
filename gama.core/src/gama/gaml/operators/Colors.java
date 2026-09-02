@@ -684,7 +684,7 @@ public class Colors {
 					equals = "a random color, equivalent to rgb(rnd(255),rnd(255),rnd(255))",
 					test = false),
 			see = { "rgb", "hsb" })
-	@no_test
+	@test ("seed <- 1.0; int(rnd_color(255)) = -3749758")
 	public static IColor random_color(final IScope scope, final Integer max) {
 		final IRandom r = scope.getRandom();
 		final int realMax = Math.max(0, Math.min(max, 255));
@@ -715,7 +715,7 @@ public class Colors {
 					equals = "a random color, equivalent to rgb(rnd(100, 200),rnd(100, 200),rnd(100, 200))",
 					test = false),
 			see = { "rgb", "hsb" })
-	@no_test
+	@test ("seed <- 1.0; int(rnd_color(100, 200)) = -5065833")
 	public static IColor random_color(final IScope scope, final Integer min, final Integer max) {
 		final IRandom r = scope.getRandom();
 		final int realMax = Math.max(0, Math.min(max, 255));
