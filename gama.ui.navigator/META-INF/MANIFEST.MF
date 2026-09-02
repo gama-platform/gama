@@ -20,7 +20,9 @@ Require-Bundle: gama.ui.shared,
  org.eclipse.ltk.core.refactoring,
  org.eclipse.ltk.ui.refactoring,
  gama.workspace,
- gaml.compiler
+ gaml.compiler,
+ gama.extension.osm,
+ gama.extension.gml
 Bundle-ActivationPolicy: lazy
 Export-Package: gama.ui.navigator.commands,
  gama.ui.navigator.view,

@@ -238,7 +238,7 @@ public class SobolExploration extends AExplorationAlgorithm {
 		}
 
 		// Add the points to explore to the solutions set
-		Map<String, List<Object>> sample2 = sobol_analysis.getParametersValues();
+		Map<String, List> sample2 = sobol_analysis.getParametersValues();
 
 		for (int i = 0; i < _sample; i++) {
 			ParametersSet origi = new ParametersSet();
@@ -276,7 +276,8 @@ public class SobolExploration extends AExplorationAlgorithm {
 				try {
 					rebuilt_output.get(output).add(res_outputs.get(sol).get(output).get(0));
 				} catch (NullPointerException e) {
-					throw GamaRuntimeException.error("Missing output '" + output + "' for parameter set: " + sol + ". A simulation might have failed or the output is undefined.", null);
+					throw GamaRuntimeException.error("Missing output '" + output + "' for parameter set: " + sol
+							+ ". A simulation might have failed or the output is undefined.", null);
 				}
 			}
 		}

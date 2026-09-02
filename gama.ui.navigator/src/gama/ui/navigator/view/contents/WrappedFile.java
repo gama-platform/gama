@@ -28,9 +28,9 @@ import gama.api.additions.GamaBundleLoader;
 import gama.api.kernel.GamaMetaModel;
 import gama.api.utils.files.IFileMetadataProvider;
 import gama.api.utils.files.IGamaFileMetaData;
-import gama.core.util.file.GMLInfo;
-import gama.core.util.file.OSMInfo;
 import gama.core.util.file.ShapeInfo;
+import gama.extension.gml.GMLInfo;
+import gama.extension.osm.OSMInfo;
 import gama.ui.navigator.view.NavigatorContentProvider;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaIcon;
@@ -77,7 +77,7 @@ public class WrappedFile extends WrappedResource<WrappedResource<?, ?>, IFile> {
 	 */
 	protected void computeFileImage() {
 		final IFile f = getResource();
-		if (GamaBundleLoader.HANDLED_FILE_EXTENSIONS.contains(f.getFileExtension())) {
+		if (GamaBundleLoader.HANDLED_FILE_EXTENSIONS.containsValue(f.getFileExtension())) {
 			if (isShapeFileSupport) {
 				image = GamaIcon.named(IGamaIcons.FILE_SHAPESUPPORT).descriptor();
 			} else {

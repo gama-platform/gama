@@ -15,6 +15,7 @@ import javax.media.jai.JAI;
 
 import org.geotools.coverage.CoverageFactoryFinder;
 import org.geotools.factory.CommonFactoryFinder;
+import org.geotools.referencing.factory.PropertyAuthorityFactory;
 import org.geotools.util.factory.GeoTools;
 import org.geotools.util.factory.Hints;
 import org.osgi.framework.BundleContext;
@@ -33,6 +34,9 @@ public class DependenciesActivator extends GamaBundleActivator {
 	@Override
 	public void initialize(final BundleContext bundleContext) {
 
+		// Installs the new RelateNG JTS library (supposedly more efficient that RelateOp).
+		System.setProperty("jts.relate", "ng");
+
 		// Forces early initialisation of operation registry of JAI. It fixes initialisation
 		// problems in some third party equinox x@applications such as OpenMOLE.
 		// Launch ImageIO plugin scan on a virtual thread in parallel with GeoTools hints setup.
@@ -50,6 +54,7 @@ public class DependenciesActivator extends GamaBundleActivator {
 		// Set some GeoTools default hints to speed up operations
 		runAsync(() -> {
 			DEBUG.TIMER(BANNER_CATEGORY.GEOTLS, "GeoTools hints setup", "completed in", () -> {
+				Hints.putSystemDefault(Hints.CRS_AUTHORITY_FACTORY, PropertyAuthorityFactory.class);
 				Hints.putSystemDefault(Hints.FILTER_FACTORY, CommonFactoryFinder.getFilterFactory(null));
 				Hints.putSystemDefault(Hints.STYLE_FACTORY, CommonFactoryFinder.getStyleFactory(null));
 				Hints.putSystemDefault(Hints.FEATURE_FACTORY, CommonFactoryFinder.getFeatureFactory(null));
@@ -58,8 +63,19 @@ public class DependenciesActivator extends GamaBundleActivator {
 				// Initialize GridCoverageFactory so that we don't make a lookup every time a factory is needed
 				Hints.putSystemDefault(Hints.GRID_COVERAGE_FACTORY,
 						CoverageFactoryFinder.getGridCoverageFactory(defHints));
-				// Installs the new RelateNG JTS library (supposedly more efficient that RelateOp).
-				System.setProperty("jts.relate", "ng");
+				// Silence PAM/JAXB NPE info traces from GeoTools
+				java.util.logging.Logger logger = java.util.logging.Logger
+						.getLogger("org.geotools.coverage.grid.io.AbstractGridCoverage2DReader");
+				logger.setLevel(java.util.logging.Level.OFF);
+				for (java.util.logging.Handler handler : logger.getHandlers()) {
+					handler.setLevel(java.util.logging.Level.OFF);
+				}
+
+				java.util.logging.Logger pamLogger = java.util.logging.Logger.getLogger("it.geosolutions.imageio.pam");
+				pamLogger.setLevel(java.util.logging.Level.OFF);
+				for (java.util.logging.Handler handler : pamLogger.getHandlers()) {
+					handler.setLevel(java.util.logging.Level.OFF);
+				}
 			});
 		});
 

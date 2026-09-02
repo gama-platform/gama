@@ -76,15 +76,25 @@ public class IntEditor extends NumberEditor<Integer> {
 		// Disable + and - if the value is among a set of values
 		if (param.getAmongValue(getScope()) != null) return;
 		editorToolbar.enable(PLUS,
-				param.isDefined() && (getMaxValue() == null || applyPlus() < Cast.asInt(getScope(), getMaxValue())));
+				param.isDefined() && (getMaxValue() == null || applyPlus() <= Cast.asInt(getScope(), getMaxValue())));
+
 		editorToolbar.enable(MINUS,
-				param.isDefined() && (getMinValue() == null || applyMinus() > Cast.asInt(getScope(), getMinValue())));
+				param.isDefined() && (getMinValue() == null || applyMinus() >= Cast.asInt(getScope(), getMinValue())));
+
 	}
 
 	@Override
 	protected Integer normalizeValues() throws GamaRuntimeException {
-		final Integer valueToConsider = getOriginalValue() == null ? 0 : Cast.asInt(getScope(), getOriginalValue());
-		currentValue = getOriginalValue() == null ? null : valueToConsider;
+		final Object orig = getOriginalValue() == null && param != null ? param.value(getScope()) : getOriginalValue();
+
+		if (acceptNull && orig == null) {
+			setOriginalValue(null);
+			currentValue = null;
+			return null;
+		}
+		final Integer valueToConsider = orig == null ? 0 : Cast.asInt(getScope(), orig);
+		if (getOriginalValue() == null) { setOriginalValue(valueToConsider); }
+		currentValue = valueToConsider;
 		return valueToConsider;
 	}
 

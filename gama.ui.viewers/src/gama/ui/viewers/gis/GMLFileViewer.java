@@ -51,7 +51,7 @@ import org.geotools.wfs.GML.Version;
 
 import gama.api.GAMA;
 import gama.api.types.color.IColor;
-import gama.core.util.file.GMLInfo;
+import gama.extension.gml.GMLInfo;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.GamaColors;

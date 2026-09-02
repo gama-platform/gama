@@ -472,4 +472,9 @@ public abstract class AbstractShapeSaver extends AbstractSaver {
 		return true;
 	}
 
+	@Override
+	public boolean handlesAttributes() {
+		return true;
+	}
+
 }

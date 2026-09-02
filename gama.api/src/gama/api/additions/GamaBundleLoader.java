@@ -16,7 +16,6 @@ import static gama.dev.DEBUG.TIMER_WITH_EXCEPTIONS;
 import java.awt.Toolkit;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -32,6 +31,7 @@ import org.eclipse.core.runtime.Platform;
 import org.osgi.framework.Bundle;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
 import gama.annotations.constants.IKeyword;
@@ -43,16 +43,16 @@ import gama.api.additions.delegates.IEventLayerDelegate;
 import gama.api.additions.delegates.ISaveDelegate;
 import gama.api.additions.registries.GamaAdditionRegistry;
 import gama.api.gaml.GAML;
-import gama.api.utils.server.CommandExecutor;
-import gama.api.utils.server.ISocketCommand;
+import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.GamaMetaModel;
 import gama.api.runtime.SystemInfo;
-import gama.api.types.dataframe.GamaDataFrameFactory;
-import gama.api.types.dataframe.IDataFrame;
 import gama.api.utils.files.IGamaFileMetaData;
+import gama.api.utils.server.CommandExecutor;
+import gama.api.utils.server.ISocketCommand;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
+import one.util.streamex.StreamEx;
 
 /**
  * The GamaBundleLoader class is responsible for loading and initializing all GAMA plugins and their extensions at
@@ -250,7 +250,7 @@ public class GamaBundleLoader {
 	private static final Multimap<Bundle, String> RECIPE_PLUGINS = ArrayListMultimap.create();
 
 	/** The handled file extensions. */
-	public static final Set<String> HANDLED_FILE_EXTENSIONS = new LinkedHashSet<>();
+	public static final Multimap<String, String> HANDLED_FILE_EXTENSIONS = ArrayListMultimap.create();
 
 	/**
 	 * Builds all plugin contributions to the GAMA platform. This is the main entry point for the plugin loading process
@@ -349,17 +349,18 @@ public class GamaBundleLoader {
 				}
 				CURRENT_PLUGIN_NAME = null;
 				try {
-					TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Loading extensions to 'create'", "completed in",
-							() -> {
-								loadCreateExt(registry);
-							});
+					loadCreateExt(registry);
+					DEBUG.BANNER(BANNER_CATEGORY.GAML, "Loading extensions to 'create'", "data types",
+							StreamEx.of(Lists.newArrayList(GamaAdditionRegistry.getCreateDelegateTypes()))
+									.map(IType::getName).remove(String::isBlank).distinct().sorted().joining("|"));
 				} catch (RuntimeException e) {
 					ERROR("Error in loading extensions to 'create'. ", e);
 				}
 				try {
-					TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Loading extensions to 'save'", "completed in", () -> {
-						loadSaveExt(registry);
-					});
+					loadSaveExt(registry);
+					DEBUG.BANNER(BANNER_CATEGORY.GAML, "Loading extensions to 'save'", "file types",
+							StreamEx.of(GamaAdditionRegistry.getSaveFileFormats()).remove(String::isBlank)
+									.map(s -> "." + s.toLowerCase()).distinct().sorted().joining("|"));
 				} catch (RuntimeException e) {
 					ERROR("Error in loading extensions to 'save'. ", e);
 				}
@@ -378,16 +379,24 @@ public class GamaBundleLoader {
 					ERROR("Error in loading extensions to 'event'. ", e);
 				}
 				try {
-					TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Loading extensions to 'metadata'", "completed in",
-							() -> {
-								loadMetadataExt(registry);
-							});
+					loadContentExtensions(registry);
+					DEBUG.BANNER(BANNER_CATEGORY.GAML, "Loading file content extensions", "file types",
+							StreamEx.of(HANDLED_FILE_EXTENSIONS.values()).remove(String::isBlank)
+									.map(s -> "." + s.toLowerCase()).distinct().sorted().joining("|"));
+				} catch (RuntimeException e) {
+					ERROR("Error in loading content extensions. ", e);
+				}
+				try {
+					loadMetadataExt(registry);
+					DEBUG.BANNER(BANNER_CATEGORY.GAML, "Loading file metadata extensions", "file types",
+							StreamEx.of(GAMA.getMetadataProvider().getMetadataFileExtensions()).remove(String::isBlank)
+									.map(s -> "." + s.toLowerCase()).distinct().sorted().joining("|"));
 				} catch (RuntimeException e) {
 					ERROR("Error in loading extensions to 'metadata'. ", e);
 				}
 				try {
-					TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Loading extensions to 'server_command'", "completed in",
-							() -> {
+					TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Loading extensions to 'server_command'",
+							"completed in", () -> {
 								loadServerCommandExt(registry);
 							});
 				} catch (RuntimeException e) {
@@ -399,13 +408,7 @@ public class GamaBundleLoader {
 				} catch (RuntimeException e) {
 					ERROR("Error in gathering built-in models. ", e);
 				}
-				try {
-					TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAMA, "Loading content extensions", "completed in", () -> {
-						loadContentExtensions(registry);
-					});
-				} catch (RuntimeException e) {
-					ERROR("Error in loading content extensions. ", e);
-				}
+
 				// CRUCIAL INITIALIZATIONS
 				// We init the meta-model of GAMA (i.e. abstract agent, model, experiment species)
 				try {
@@ -549,8 +552,7 @@ public class GamaBundleLoader {
 	 *            the Eclipse extension registry containing plugin contributions
 	 */
 	private static void loadMetadataExt(final IExtensionRegistry registry) {
-		// We gather all the extensions to the `metadata` statement and add them
-		// as delegates to MetadataStatement
+		// We gather all the extensions to the `metadata` statement
 		for (final IConfigurationElement e : registry.getConfigurationElementsFor(METADATA_EXTENSION)) {
 			try {
 				GAMA.getMetadataProvider().registerMetadataClass(e.getAttribute("content_type"),
@@ -558,8 +560,8 @@ public class GamaBundleLoader {
 								.loadClass(e.getAttribute("class")));
 				// TODO Add the defining plug-in
 			} catch (final Exception e1) {
-				ERROR("Error in loading MetadataStatement delegate : "
-						+ e.getDeclaringExtension().getContributor().getName(), e1);
+				ERROR("Error in loading metadata declaration : " + e.getDeclaringExtension().getContributor().getName(),
+						e1);
 				// We do not systematically exit in case of additional plugins failing to load, so as to
 				// give the platform a chance to execute even in case of errors (to save files, to
 				// remove offending plugins, etc.)
@@ -573,8 +575,8 @@ public class GamaBundleLoader {
 	 * {@link CommandExecutor}, making them available to both the GUI and the headless gama-server.
 	 *
 	 * <p>
-	 * Each contribution associates a command keyword (the JSON {@code type} field sent by clients, e.g. {@code "stream"})
-	 * with a class implementing {@link ISocketCommand}.
+	 * Each contribution associates a command keyword (the JSON {@code type} field sent by clients, e.g.
+	 * {@code "stream"}) with a class implementing {@link ISocketCommand}.
 	 *
 	 * @param registry
 	 *            the Eclipse extension registry containing plugin contributions
@@ -586,8 +588,8 @@ public class GamaBundleLoader {
 				final ISocketCommand command = (ISocketCommand) e.createExecutableExtension("class");
 				CommandExecutor.registerContributedCommand(type, command);
 			} catch (final Exception e1) {
-				ERROR("Error in loading server command from "
-						+ e.getDeclaringExtension().getContributor().getName(), e1);
+				ERROR("Error in loading server command from " + e.getDeclaringExtension().getContributor().getName(),
+						e1);
 				// We do not systematically exit in case of additional plugins failing to load, so as to
 				// give the platform a chance to execute even in case of errors.
 			}
@@ -701,7 +703,8 @@ public class GamaBundleLoader {
 				final String s = config.getAttribute("file-extensions");
 				if (s != null) {
 					final String[] fileExts = s.split(",");
-					Collections.addAll(HANDLED_FILE_EXTENSIONS, fileExts);
+					HANDLED_FILE_EXTENSIONS.putAll(config.getAttribute("id"),
+							StreamEx.of(fileExts).map(String::trim).toList());
 				}
 			}
 		}

@@ -21,12 +21,13 @@ import gama.api.gaml.symbols.Arguments;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.api.types.dataframe.IDataFrame;
 import gama.api.types.map.GamaMapFactory;
+import gama.extension.dataframe.IDataframeConstants;
+import gama.extension.dataframe.IDataFrame;
 
 /**
- * Delegate that lets the 'create' statement build agents from the dataframe returned by a database 'select'. Each row of
- * the dataframe becomes one agent; the 'init' facet maps an agent attribute to a column name. Geometry columns are
+ * Delegate that lets the 'create' statement build agents from the dataframe returned by a database 'select'. Each row
+ * of the dataframe becomes one agent; the 'init' facet maps an agent attribute to a column name. Geometry columns are
  * already GAMA geometries in the dataframe, so no extra conversion is needed here.
  *
  * @author drogoul
@@ -84,7 +85,8 @@ public class CreateFromDatabaseDelegate implements ICreateDelegate {
 
 	@Override
 	public IType fromFacetType() {
-		return Types.DATAFRAME;
+		final IType type = Types.get(IDataframeConstants.NAME);
+		return type == null ? Types.NO_TYPE : type;
 	}
 
 }

@@ -425,6 +425,7 @@ public class WorkspaceModelsManager {
 			@Override
 			public IStatus runInWorkspace(final IProgressMonitor monitor) {
 				// DEBUG.OUT("Asynchronous link of models library...");
+				loadModelsLibrary();
 				GAMA.getGui().refreshNavigator();
 				return GamaBundleLoader.ERRORED ? Status.CANCEL_STATUS : Status.OK_STATUS;
 			}
@@ -479,6 +480,7 @@ public class WorkspaceModelsManager {
 		// DEBUG.OUT("Linking library from bundle " + bundle.getSymbolicName() + " at path " + path);
 		final boolean core = bundle.equals(GamaBundleLoader.CORE_MODELS);
 		final URL fileURL = bundle.getEntry(path);
+		if (fileURL == null) return;
 		File modelsRep = null;
 		try {
 			final URL resolvedFileURL = FileLocator.toFileURL(fileURL);
@@ -490,7 +492,7 @@ public class WorkspaceModelsManager {
 			e1.printStackTrace();
 		}
 
-		final Map<File, IPath> foundProjects = new HashMap<>();
+		final Map<File, IPath> foundProjects = new ConcurrentHashMap<>();
 		findProjects(modelsRep, foundProjects);
 		importBuiltInProjects(bundle, core, tests, foundProjects);
 

@@ -10,6 +10,9 @@
  ********************************************************************************************************/
 package gama.api.utils.files;
 
+import java.util.Collections;
+import java.util.Set;
+
 import org.eclipse.core.resources.IResource;
 
 /**
@@ -35,9 +38,6 @@ public interface IFileMetadataProvider {
 
 	/** The Constant SHAPEFILE_CT_ID. */
 	String SHAPEFILE_CT_ID = "gama.shapefile.type";
-
-	/** The Constant OSM_CT_ID. */
-	String OSM_CT_ID = "gama.osm.file.type";
 
 	/** The Constant SHAPEFILE_SUPPORT_CT_ID. */
 	String SHAPEFILE_SUPPORT_CT_ID = "gama.shapefile.support.type";
@@ -89,5 +89,12 @@ public interface IFileMetadataProvider {
 	 * @param class1
 	 */
 	default void registerMetadataClass(final String attribute, final Class<? extends IGamaFileMetaData> class1) {}
+
+	/**
+	 * Gets the metadata file extensions.
+	 *
+	 * @return the metadata file extensions
+	 */
+	default Set<String> getMetadataFileExtensions() { return Collections.emptySet(); }
 
 }

@@ -24,9 +24,9 @@ import gama.annotations.support.IOperatorCategory;
 import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
-import gama.api.types.dataframe.GamaDataFrameFactory;
-import gama.api.types.dataframe.IDataFrame;
 import gama.api.types.list.GamaListFactory;
+import gama.extension.dataframe.GamaDataFrameFactory;
+import gama.extension.dataframe.IDataFrame;
 
 /**
  * The Class SPARQLOperators.

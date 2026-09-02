@@ -24,8 +24,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
+
 import org.geotools.api.coverage.grid.GridCoverageWriter;
-import org.geotools.api.data.DataSourceException;
 import org.geotools.api.geometry.Position;
 import org.geotools.api.parameter.GeneralParameterValue;
 import org.geotools.api.referencing.FactoryException;
@@ -34,6 +37,7 @@ import org.geotools.api.referencing.crs.ProjectedCRS;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridCoverageFactory;
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
+import org.geotools.coverage.grid.io.imageio.geotiff.GeoTiffIIOMetadataDecoder;
 import org.geotools.data.PrjFileReader;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.gce.arcgrid.ArcGridReader;
@@ -43,6 +47,7 @@ import org.geotools.gce.geotiff.GeoTiffReader;
 import org.geotools.geometry.Envelope2DArchived;
 import org.geotools.geometry.GeneralBounds;
 import org.geotools.geometry.Position2D;
+import org.geotools.referencing.CRS;
 import org.geotools.util.factory.Hints;
 
 import gama.annotations.doc;
@@ -397,9 +402,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 				if (headingComplete) {
 					String[] l = line.split(" ");
 					for (int i = 0; i < l.length; i++) {
-						if (l[i] == "") {
-							continue;
-						}
+						if (l[i].isEmpty()) { continue; }
 						if (noDataD != null && noDataD.isNaN()) {
 							Double v = 0.0;
 							try {
@@ -501,26 +504,40 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
-	private void privateCreateCoverage(final IScope scope, final InputStream fis)
-			throws DataSourceException, IOException {
+	private void privateCreateCoverage(final IScope scope, final InputStream fis) {
 		AbstractGridCoverage2DReader store = null;
 		try {
-			// Necessary to compute it here, because it needs to be passed to the Hints
 			final ICoordinateReferenceSystem crs = getExistingCRS(scope);
+			CoordinateReferenceSystem geoToolsCrs = crs == null ? null : crs.getCRS();
+			Hints hints = new Hints();
+			hints.put(Hints.SKIP_EXTERNAL_OVERVIEWS, Boolean.TRUE);
+
+			if (geoToolsCrs != null) { hints.put(DEFAULT_COORDINATE_REFERENCE_SYSTEM, geoToolsCrs); }
+
 			if (isTiff(scope)) {
-				System.out.println("CRS: " + crs);
-				CoordinateReferenceSystem geoToolsCrs = crs.getCRS();
-				System.out.println("new Hints(DEFAULT_COORDINATE_REFERENCE_SYSTEM, crs): " + new Hints(DEFAULT_COORDINATE_REFERENCE_SYSTEM, geoToolsCrs));
-				store = crs == null || crs.isNull() ? new GeoTiffReader(getFile(scope))
-						: new GeoTiffReader(getFile(scope), new Hints(DEFAULT_COORDINATE_REFERENCE_SYSTEM, geoToolsCrs));
-			
+				// If no CRS resolved yet, try extracting GeoKeys EPSG directly
+				if (geoToolsCrs == null) {
+					Integer epsgCode = extractEPSGCode(getFile(scope));
+					if (epsgCode != null) {
+						try {
+							geoToolsCrs = CRS.decode("EPSG:" + epsgCode);
+							hints.put(DEFAULT_COORDINATE_REFERENCE_SYSTEM, geoToolsCrs);
+						} catch (Throwable ignored) {}
+					}
+				}
+
+				try {
+					store = new GeoTiffReader(getFile(scope), hints);
+				} catch (Throwable e) {
+					// Hard fallback
+					Integer epsgCode = extractEPSGCode(getFile(scope));
+					if (epsgCode == null) throw e;
+					hints.put(DEFAULT_COORDINATE_REFERENCE_SYSTEM, CRS.decode("EPSG:" + epsgCode));
+					store = new GeoTiffReader(getFile(scope), hints);
+				}
 				noData = ((GeoTiffReader) store).getMetadata().getNoData();
-			} else if (crs == null || crs.isNull()) {
-				store = new ArcGridReader(fis);
 			} else {
-				CoordinateReferenceSystem geoToolsCrs = crs.getCRS();
-				
-				store = new ArcGridReader(fis, new Hints(DEFAULT_COORDINATE_REFERENCE_SYSTEM, geoToolsCrs));
+				store = new ArcGridReader(fis, hints);
 			}
 			genv = store.getOriginalEnvelope();
 			final IEnvelope env = GamaEnvelopeFactory.of(genv.getMinimum(0), genv.getMaximum(0), genv.getMinimum(1),
@@ -529,8 +546,8 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 			numRows = store.getOriginalGridRange().getHigh(1) + 1;
 			numCols = store.getOriginalGridRange().getHigh(0) + 1;
 			coverage = store.read(null);
-		} catch (Exception e) {
-			System.out.println("On est ici: " + e);
+		} catch (Throwable e) {
+			throw GamaRuntimeException.create(e, scope);
 		} finally {
 			if (store != null) { store.dispose(); }
 			scope.getGui().getStatus().endTask("Opening file " + getName(scope), IStatusMessage.DOWNLOAD_ICON);
@@ -744,10 +761,26 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 			}
 		}
 		if (isTiff(scope)) {
+			// 1. Extract top-level EPSG code directly via GeoKeys first to bypass component queries
+			Integer epsgCode = extractEPSGCode(getFile(scope));
+			Hints hints = new Hints();
+			hints.put(Hints.SKIP_EXTERNAL_OVERVIEWS, Boolean.TRUE);
+
+			if (epsgCode != null) {
+				try {
+					CoordinateReferenceSystem crs = CRS.decode("EPSG:" + epsgCode);
+					hints.put(DEFAULT_COORDINATE_REFERENCE_SYSTEM, crs);
+					return new GamaCRS(crs);
+				} catch (Throwable ignored) {}
+			}
+
+			// 2. Fallback to standard reader with SKIP_EXTERNAL_OVERVIEWS hint
 			try {
-				final GeoTiffReader store = new GeoTiffReader(getFile(scope));
-				return new GamaCRS(store.getCoordinateReferenceSystem());
-			} catch (final DataSourceException e) {
+				final GeoTiffReader store = new GeoTiffReader(getFile(scope), hints);
+				CoordinateReferenceSystem crs = store.getCoordinateReferenceSystem();
+				store.dispose();
+				return new GamaCRS(crs);
+			} catch (final Throwable e) {
 				GAMA.reportError(scope,
 						GamaRuntimeException.warning(
 								"Problem when reading the CRS of the " + this.getOriginalPath() + " file", scope),
@@ -755,6 +788,66 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 			}
 		}
 
+		return null;
+	}
+
+	/**
+	 * Extracts the top-level Projected or Geographic EPSG code from GeoTIFF GeoKeys metadata. Bypasses component-level
+	 * database queries when running in database-free environments.
+	 */
+	/**
+	 * Extracts the top-level Projected or Geographic EPSG code from GeoTIFF GeoKeys metadata. Bypasses component-level
+	 * database queries when running in database-free environments.
+	 */
+	private Integer extractEPSGCode(final File file) {
+		ImageInputStream in = null;
+		ImageReader reader = null;
+		try {
+			in = ImageIO.createImageInputStream(file);
+			if (in == null) return null;
+
+			// Use the explicit GeoTools TIFF ImageReader SPI
+			org.geotools.coverage.grid.io.imageio.geotiff.GeoTiffIIOMetadataDecoder metadata;
+			it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReaderSpi spi =
+					new it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReaderSpi();
+
+			reader = spi.createReaderInstance();
+			reader.setInput(in);
+
+			javax.imageio.metadata.IIOMetadata iioMetadata = reader.getImageMetadata(0);
+			metadata = new GeoTiffIIOMetadataDecoder(iioMetadata);
+
+			if (metadata.hasGeoKey()) {
+				// ProjectedCSTypeGeoKey = 1024
+				String projStr = metadata.getGeoKey(1024);
+				if (projStr != null) {
+					try {
+						int projectedCode = Integer.parseInt(projStr.trim());
+						if (projectedCode != 32767 && projectedCode != 0) return projectedCode;
+					} catch (Exception ignored) {}
+				}
+
+				// GeographicTypeGeoKey = 2048
+				String geoStr = metadata.getGeoKey(2048);
+				if (geoStr != null) {
+					try {
+						int geographicCode = Integer.parseInt(geoStr.trim());
+						if (geographicCode != 32767 && geographicCode != 0) return geographicCode;
+					} catch (Exception ignored) {}
+				}
+			}
+		} catch (Exception ignored) {} finally {
+			if (reader != null) {
+				try {
+					reader.dispose();
+				} catch (Exception ignored) {}
+			}
+			if (in != null) {
+				try {
+					in.close();
+				} catch (Exception ignored) {}
+			}
+		}
 		return null;
 	}
 
