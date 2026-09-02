@@ -370,10 +370,9 @@ public class Logic {
 			final int rows) {
 		if (matrix instanceof GamaFloatMatrix) return ((GamaFloatMatrix) matrix).getMatrix();
 		final double[] arr = new double[cols * rows];
-		int i = 0;
-		// GAMA standard column-major flat layout: column-first, then row
-		for (int c = 0; c < cols; c++) {
-			for (int r = 0; r < rows; r++) { arr[i++] = Cast.asFloat(scope, matrix.get(scope, c, r)); }
+		// GAMA standard row-major flat layout: row-first, then column
+		for (int r = 0; r < rows; r++) {
+			for (int c = 0; c < cols; c++) { arr[r * cols + c] = Cast.asFloat(scope, matrix.get(scope, c, r)); }
 		}
 		return arr;
 	}
