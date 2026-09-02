@@ -416,20 +416,21 @@ public class GamaDateType extends GamaType<IDate> {
 		final DateTimeFormatter cached = FORMATTERS.get(key);
 		if (cached != null) return cached;
 
+		final Locale loc = getLocale(locale);
 		final DateTimeFormatter formatter = pattern.contains("%")
-				? buildModelFormatter(pattern, locale)
-				: buildJavaFormatter(pattern, locale);
+				? buildModelFormatter(pattern, loc)
+				: buildJavaFormatter(pattern, loc);
 
 		FORMATTERS.put(key, formatter);
 		return formatter;
 	}
 
-	private static DateTimeFormatter buildJavaFormatter(final String pattern, final String locale) {
+	private static DateTimeFormatter buildJavaFormatter(final String pattern, final Locale loc) {
 		try {
 			return new DateTimeFormatterBuilder()
 					.parseCaseInsensitive()
 					.appendPattern(pattern)
-					.toFormatter(getLocale(locale));
+					.toFormatter(loc);
 		} catch (final IllegalArgumentException e) {
 			GAMA.reportAndThrowIfNeeded(GAMA.getRuntimeScope(),
 					GamaRuntimeException.create(e, GAMA.getRuntimeScope()), false);
@@ -437,7 +438,7 @@ public class GamaDateType extends GamaType<IDate> {
 		}
 	}
 
-	private static DateTimeFormatter buildModelFormatter(final String pattern, final String locale) {
+	private static DateTimeFormatter buildModelFormatter(final String pattern, final Locale loc) {
 		final DateTimeFormatterBuilder df = new DateTimeFormatterBuilder();
 		df.parseCaseInsensitive();
 		final Matcher m = model_pattern.matcher(pattern);
@@ -452,7 +453,7 @@ public class GamaDateType extends GamaType<IDate> {
 		if (last != pattern.length()) {
 			df.appendLiteral(pattern.substring(last));
 		}
-		return df.toFormatter(getLocale(locale));
+		return df.toFormatter(loc);
 	}
 
 	private static void appendModelSymbol(final DateTimeFormatterBuilder df, final char symbol) {
