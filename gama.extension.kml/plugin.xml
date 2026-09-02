@@ -9,9 +9,9 @@
    <extension
          point="org.eclipse.core.contenttype.contentTypes">
       <content-type
-            file-extensions="osm,OSM,pbf,PBF,bz2,BZ2,gz,GZ"
-            id="gama.osm.file.type"
-            name="OSM"
+            file-extensions="kml,KML"
+            id="gama.kml.file.type"
+            name="KML"
             priority="high">
       </content-type>
    </extension>
