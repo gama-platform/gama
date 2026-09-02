@@ -415,8 +415,6 @@ public class GamaOsmFile extends GamaGisFile {
 					return result;
 				} catch (final DataFormatException e) {
 					throw new IOException("Failed to decompress zlib data", e);
-				} finally {
-					inflater.end();
 				}
 			}
 		}
