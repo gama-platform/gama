@@ -1071,9 +1071,9 @@ public class ModelFactory implements IModelFactory {
 		String p = cd.getLitteral(IKeyword.PARENT);
 		// If no parent is defined, we assume it is "agent"
 		if (p == null) { p = IKeyword.OBJECT; }
-		IClassDescription parent = lookupClass(p, cache);
-		if (parent == null) { parent = model.getClassDescription(p); }
-		cd.setParent(parent);
+		IClassDescription parentDesc = lookupClass(p, cache);
+		if (parentDesc == null) { parentDesc = model.getClassDescription(p); }
+		cd.setParent(parentDesc);
 	}
 
 	/**
