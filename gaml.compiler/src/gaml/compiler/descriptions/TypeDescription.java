@@ -459,6 +459,10 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 			markAttributeRedefinition(existing, vd);
 			vd.copyFrom(existing);
 		}
+		if (this instanceof ISpeciesDescription species && !vd.isSynthetic() && species.hasAspect(newVarName)) {
+			vd.error("Attribute " + newVarName + " has the same name as an existing aspect in " + getName(),
+					IGamlIssue.DUPLICATE_NAME, IKeyword.NAME);
+		}
 
 		getAttributesMap().put(vd.getName(), vd);
 	}

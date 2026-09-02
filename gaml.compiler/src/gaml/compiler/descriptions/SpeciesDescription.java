@@ -654,6 +654,13 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 		if (!IKeyword.DEFAULT.equals(aspectName) && hasAspect(aspectName)) {
 			duplicateInfo(statement, getAspect(aspectName));
 		}
+		if (hasAttribute(aspectName)) {
+			final IVariableDescription var = getAttribute(aspectName);
+			if (var != null && !var.isSynthetic()) {
+				statement.error("Aspect " + aspectName + " has the same name as an existing attribute in " + getName(),
+						IGamlIssue.DUPLICATE_NAME, IKeyword.NAME);
+			}
+		}
 		getAspectsMap().put(aspectName, statement);
 	}
 
