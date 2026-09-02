@@ -35,10 +35,10 @@ import gama.api.types.misc.IContainer;
 import gama.api.utils.interfaces.IImageProvider;
 import gama.api.utils.random.IRandom;
 import gama.gaml.operators.Comparison;
-import one.util.streamex.DoubleStreamEx;
-import one.util.streamex.StreamEx;
 import jdk.incubator.vector.DoubleVector;
 import jdk.incubator.vector.VectorSpecies;
+import one.util.streamex.DoubleStreamEx;
+import one.util.streamex.StreamEx;
 
 /**
  * The Class GamaFloatMatrix.
@@ -46,6 +46,7 @@ import jdk.incubator.vector.VectorSpecies;
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvider {
 
+	/** The Constant SPECIES. */
 	public static final VectorSpecies<Double> SPECIES = DoubleVector.SPECIES_PREFERRED;
 
 	/**
@@ -235,9 +236,7 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 	@Override
 	public boolean _contains(final IScope scope, final Object o) {
 		if (o instanceof Double d) {
-			for (int i = 0; i < getMatrix().length; i++) {
-				if (Comparison.equal(getMatrix()[i], d)) return true;
-			}
+			for (int i = 0; i < getMatrix().length; i++) { if (Comparison.equal(getMatrix()[i], d)) return true; }
 		}
 		return false;
 	}
@@ -511,7 +510,7 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 		int upperBound = SPECIES.loopBound(matrix.length);
 		for (; i < upperBound; i += SPECIES.length()) {
 			DoubleVector va = DoubleVector.fromArray(SPECIES, matrix, i);
-			va.mul((double) val).intoArray(nm.matrix, i);
+			va.mul(val).intoArray(nm.matrix, i);
 		}
 		for (; i < matrix.length; i++) { nm.matrix[i] = matrix[i] * val; }
 		return nm;
@@ -537,7 +536,7 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 		int upperBound = SPECIES.loopBound(matrix.length);
 		for (; i < upperBound; i += SPECIES.length()) {
 			DoubleVector va = DoubleVector.fromArray(SPECIES, matrix, i);
-			va.div((double) val).intoArray(nm.matrix, i);
+			va.div(val).intoArray(nm.matrix, i);
 		}
 		for (; i < matrix.length; i++) { nm.matrix[i] = matrix[i] / val; }
 		return nm;
@@ -581,7 +580,7 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 		int upperBound = SPECIES.loopBound(matrix.length);
 		for (; i < upperBound; i += SPECIES.length()) {
 			DoubleVector va = DoubleVector.fromArray(SPECIES, matrix, i);
-			va.add((double) val).intoArray(nm.matrix, i);
+			va.add(val).intoArray(nm.matrix, i);
 		}
 		for (; i < matrix.length; i++) { nm.matrix[i] = matrix[i] + val; }
 		return nm;
@@ -607,7 +606,7 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 		int upperBound = SPECIES.loopBound(matrix.length);
 		for (; i < upperBound; i += SPECIES.length()) {
 			DoubleVector va = DoubleVector.fromArray(SPECIES, matrix, i);
-			va.sub((double) val).intoArray(nm.matrix, i);
+			va.sub(val).intoArray(nm.matrix, i);
 		}
 		for (; i < matrix.length; i++) { nm.matrix[i] = matrix[i] - val; }
 		return nm;

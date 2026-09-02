@@ -10,13 +10,7 @@
  ********************************************************************************************************/
 package gama.extension.serialize.binary;
 
-import java.io.IOException;
-
-import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
-import gama.api.types.list.GamaListFactory;
-import gama.api.types.list.IList;
-import gama.api.types.message.IMessage;
 import gama.core.util.messaging.GamaMailbox;
 import gama.dev.DEBUG;
 import gama.extension.serialize.IGamaObjectInput;
@@ -32,10 +26,10 @@ import gama.extension.serialize.IGamaObjectOutput;
  */
 class IGamaMailBoxSerialiser extends FSTIndividualSerialiser<GamaMailbox> {
 
-	static
-	{
+	static {
 		DEBUG.ON();
 	}
+
 	/**
 	 * Returns {@code false}: objects are not registered for FST back-reference tracking.
 	 *
@@ -61,9 +55,8 @@ class IGamaMailBoxSerialiser extends FSTIndividualSerialiser<GamaMailbox> {
 		DEBUG.OUT("serialize GamaMailbox ");
 		out.writeInt(o.size());
 		DEBUG.OUT("GamaMailbox size " + o.size());
-		
-		for(var auto: o)
-		{
+
+		for (var auto : o) {
 			DEBUG.OUT("serialize msg " + auto);
 			out.writeObject(auto);
 		}
@@ -88,13 +81,11 @@ class IGamaMailBoxSerialiser extends FSTIndividualSerialiser<GamaMailbox> {
 		final int size = in.readInt();
 		DEBUG.OUT("deserialize GamaMailbox size " + size);
 		GamaMailbox mailBox = new GamaMailbox(size);
-		for (int i = 0; i < size; i++) { 
+		for (int i = 0; i < size; i++) {
 			DEBUG.OUT("index " + i);
-			mailBox.add((IMessage) in.readObject()); 
+			mailBox.add(in.readObject());
 		}
-		for (int i = 0; i < size; i++) { 
-			DEBUG.OUT("message [" + i+"] " + mailBox.get(i));
-		}
+		for (int i = 0; i < size; i++) { DEBUG.OUT("message [" + i + "] " + mailBox.get(i)); }
 		return mailBox;
 	}
 

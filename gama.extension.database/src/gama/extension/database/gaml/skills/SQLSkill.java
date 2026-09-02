@@ -216,17 +216,19 @@ public class SQLSkill extends Skill {
 	 * @return the number of inserted rows
 	 */
 	static int insertData(final IScope scope, final SqlConnection sqlConn, final String table, final Object data) {
-		if (data instanceof IDataFrame df) return sqlConn.insertDB(scope, table, df);
-		if (data instanceof IMap map) {
-			final IList<Object> cols = GamaListFactory.create();
-			cols.addAll(map.getKeys());
-			final IList<Object> values = GamaListFactory.create();
-			values.addAll(map.getValues());
-			return sqlConn.insertDB(scope, table, cols, values);
-		}
-		if (data instanceof IList values) return sqlConn.insertDB(scope, table, (IList<Object>) values);
-		throw GamaRuntimeException.error(
-				"insert: the 'data' argument must be a dataframe, a map or a list, but was " + data, scope);
+		return switch (data) {
+			case IDataFrame df -> sqlConn.insertDB(scope, table, df);
+			case IMap map -> {
+				final IList<Object> cols = GamaListFactory.create();
+				cols.addAll(map.getKeys());
+				final IList<Object> values = GamaListFactory.create();
+				values.addAll(map.getValues());
+				yield sqlConn.insertDB(scope, table, cols, values);
+			}
+			case IList values -> sqlConn.insertDB(scope, table, values);
+			case null, default -> throw GamaRuntimeException
+					.error("insert: the 'data' argument must be a dataframe, a map or a list, but was " + data, scope);
+		};
 	}
 
 	/**
@@ -266,8 +268,7 @@ public class SQLSkill extends Skill {
 							doc = @doc ("List of values that are used to replace question marks")) },
 			doc = @doc (
 					value = "Action used to retrieve data from a database. The result is returned as a dataframe.",
-					examples = {
-							@example ("dataframe t <- select(PARAMS, \"SELECT * FROM registration\");") }))
+					examples = { @example ("dataframe t <- select(PARAMS, \"SELECT * FROM registration\");") }))
 	public IDataFrame select_QM(final IScope scope) throws GamaRuntimeException {
 
 		final String selectComm = (String) scope.getArg("select", IType.STRING);

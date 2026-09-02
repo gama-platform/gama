@@ -56,7 +56,6 @@ import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
-import gama.api.kernel.agent.IMacroAgent;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.ISimulationAgent;
@@ -380,10 +379,8 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 			final String potentialSpeciesName = species.getDenotedType().getSpeciesName();
 			if (potentialSpeciesName != null) { s = scope.getModel().getSpecies(potentialSpeciesName); }
 		}
-		if (s == null) {
-			throw GamaRuntimeException.error("No population of " + species.serializeToGaml(false)
+		if (s == null) throw GamaRuntimeException.error("No population of " + species.serializeToGaml(false)
 				+ " is accessible in the context of " + executor + ".", scope);
-		}
 		IPopulation pop = executor.getPopulationFor(s);
 		// hqnghi population of micro-model's experiment is not exist, we
 		// must create the new one. Store on experiment agent instead of simulation.
@@ -391,7 +388,7 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 			pop = ep.createPopulation(scope);
 			final IScope sc = ep.getExperimentScope();
 			pop.initializeFor(sc);
-			((IMacroAgent) scope.getExperiment()).addExternMicroPopulation(
+			scope.getExperiment().addExternMicroPopulation(
 					s.getDescription().getModelDescription().getMicroAlias() + "." + s.getName(), pop);
 		}
 		// end-hqnghi

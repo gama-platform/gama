@@ -391,17 +391,20 @@ public class AgentDB extends GamlAgent {
 		if (!isConnection) throw GamaRuntimeException.error("AgentDB.insert: Connection was not established ", scope);
 		final String table_name = (String) scope.getArg("into", IType.STRING);
 		final Object data = scope.getArg("data", IType.NONE);
-		if (data instanceof IDataFrame df) return sqlConn.insertDB(scope, conn, table_name, df);
-		if (data instanceof IMap map) {
-			final IList<Object> cols = GamaListFactory.create();
-			cols.addAll(map.getKeys());
-			final IList<Object> values = GamaListFactory.create();
-			values.addAll(map.getValues());
-			return sqlConn.insertDB(scope, conn, table_name, cols, values);
-		}
-		if (data instanceof IList values) return sqlConn.insertDB(scope, conn, table_name, (IList<Object>) values);
-		throw GamaRuntimeException.error("AgentDB.insert: the 'data' argument must be a dataframe, a map or a list, "
-				+ "but was " + data, scope);
+		return switch (data) {
+			case IDataFrame df -> sqlConn.insertDB(scope, conn, table_name, df);
+			case IMap map -> {
+				final IList<Object> cols = GamaListFactory.create();
+				cols.addAll(map.getKeys());
+				final IList<Object> values = GamaListFactory.create();
+				values.addAll(map.getValues());
+				yield sqlConn.insertDB(scope, conn, table_name, cols, values);
+			}
+			case IList values -> sqlConn.insertDB(scope, conn, table_name, values);
+			case null, default -> throw GamaRuntimeException.error(
+					"AgentDB.insert: the 'data' argument must be a dataframe, a map or a list, " + "but was " + data,
+					scope);
+		};
 	}
 	// -----------------------------------------------------------------------------------------------------
 }
