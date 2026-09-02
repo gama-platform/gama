@@ -135,7 +135,7 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 	}
 
 	@Override
-	public Set<String> getMetadataFileExtensions() { return handledFileExtensions; }
+	public Set<String> getMetadataFileExtensions() { return Collections.unmodifiableSet(handledFileExtensions); }
 
 	/**
 	 * Register metadata builder.
