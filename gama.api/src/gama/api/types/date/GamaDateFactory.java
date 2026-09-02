@@ -369,25 +369,32 @@ public class GamaDateFactory {
 			} else {
 				other = base[1];
 			}
-			String year, month, day;
-			if (date.length == 1) {
-				// ISO basic date format
-				year = date[0].substring(0, 4);
-				month = date[0].substring(4, 6);
-				day = date[0].substring(6, 8);
-			} else if (date.length >= 4 && date[0].isEmpty()) {
-				// Negative year: "-1000-01-01" splits to ["", "1000", "01", "01"]
-				// Pad the numeric portion to at least 4 digits for ISO compliance
-				final String numericPart = date[1];
-				year = "-" + "0".repeat(Math.max(0, 4 - numericPart.length())) + numericPart;
-				month = date[2];
-				day = date[3];
-			} else {
-				year = date[0];
-				month = date[1];
-				day = date[2];
+			String year, month = "01", day = "01";
+			boolean negativeYear = date[0].isEmpty();
+			int yearIndex = negativeYear ? 1 : 0;
+			if (date.length <= yearIndex) {
+				throw GamaRuntimeException.error(
+						THE_DATE + original + " is not correctly formatted. Please refer to the ISO date/time format",
+						scope);
 			}
-			if (year.length() == 2 && !year.startsWith("-")) { year = "20" + year; }
+			String numericPart = date[yearIndex];
+			if (negativeYear) {
+				year = "-" + "0".repeat(Math.max(0, 4 - numericPart.length())) + numericPart;
+			} else {
+				if (numericPart.length() >= 8 && date.length == 1) {
+					// ISO basic date format e.g. 20240315
+					year = numericPart.substring(0, 4);
+					month = numericPart.substring(4, 6);
+					day = numericPart.substring(6, 8);
+				} else {
+					year = numericPart;
+					if (year.length() == 2) { year = "20" + year; }
+				}
+			}
+			if (!(!negativeYear && numericPart.length() >= 8 && date.length == 1)) {
+				if (date.length > yearIndex + 1) month = date[yearIndex + 1];
+				if (date.length > yearIndex + 2) day = date[yearIndex + 2];
+			}
 			if (month.length() == 1) { month = '0' + month; }
 			if (day.length() == 1) { day = '0' + day; }
 			dateStr = year + "-" + month + "-" + day + "T" + other;

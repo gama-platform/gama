@@ -409,7 +409,7 @@ public class GamaDateType extends GamaType<IDate> {
 	 */
 	public static DateTimeFormatter getFormatter(final String p, final String locale) {
 
-		final String pattern = p;
+		final String pattern = p != null && p.contains("y") ? p.replace('y', 'u') : p;
 		// Can happen during initialization
 		if (FORMATTERS == null || FORMATTERS.isEmpty()) return DateTimeFormatter.ofPattern(GamaDateType.DEFAULT_FORMAT);
 		if (pattern == null) return FORMATTERS.get(GamaDateType.DEFAULT_KEY);
