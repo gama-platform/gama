@@ -76,9 +76,9 @@ public class IntEditor extends NumberEditor<Integer> {
 		// Disable + and - if the value is among a set of values
 		if (param.getAmongValue(getScope()) != null) return;
 		editorToolbar.enable(PLUS,
-				param.isDefined() && (getMaxValue() == null || applyPlus() < Cast.asInt(getScope(), getMaxValue())));
+				param.isDefined() && (getMaxValue() == null || applyPlus() <= Cast.asInt(getScope(), getMaxValue())));
 		editorToolbar.enable(MINUS,
-				param.isDefined() && (getMinValue() == null || applyMinus() > Cast.asInt(getScope(), getMinValue())));
+				param.isDefined() && (getMinValue() == null || applyMinus() >= Cast.asInt(getScope(), getMinValue())));
 	}
 
 	@Override
