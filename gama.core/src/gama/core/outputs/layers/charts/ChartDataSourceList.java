@@ -106,75 +106,56 @@ public class ChartDataSourceList extends ChartDataSource {
 	 *            the chart cycle
 	 */
 	private void updateserielist(final IScope scope, final int chartCycle) {
-		final IList<String> legends =
-				legendExp == null ? null : GamaListFactory.castToList(scope, legendExp.value(scope));
-		if (legends == null) return;
-		final IList<?> values = GamaListFactory.castToList(scope, getValue().value(scope));
-		final ArrayList<String> previousSeries = currentSeriesNames;
+		final Object valObj = getValue() == null ? null : getValue().value(scope);
+		final IList<?> values = valObj instanceof IList ? GamaListFactory.castToList(scope, valObj) : GamaListFactory.create();
+		final int targetSize = values.size();
+
+		final Object legObj = legendExp == null ? null : legendExp.value(scope);
+		IList<?> legends = legObj instanceof IList ? GamaListFactory.castToList(scope, legObj) : null;
+		if (legObj instanceof Boolean b && !b) {
+			legends = null;
+		}
+
+		final ArrayList<String> previousSeries = currentSeriesNames != null ? currentSeriesNames : new ArrayList<>();
 		currentSeriesNames = new ArrayList<>();
-		boolean somethingChanged = false;
-		if (legends.size() > 0) {
-			// value list case
-			for (int i = 0; i < Math.min(values.size(), legends.size()); i++) {
-				final String name = legends.get(i);
-				if (name != null) {
-					currentSeriesNames.add(name);
-					if (i >= previousSeries.size() || !previousSeries.get(i).equals(name)) {
-						somethingChanged = true;
-						if (previousSeries.contains(name)) {
-							// serie i was serie k before
-						} else {
-							// new serie
-							newSerie(scope, name);
-						}
-					}
-				}
+
+		for (int i = 0; i < targetSize; i++) {
+			String serieId = "dl_" + this.hashCode() + "_" + i;
+			currentSeriesNames.add(serieId);
+
+			String legendStr = "";
+			if (legends != null && i < legends.size() && legends.get(i) != null) {
+				legendStr = Cast.asString(scope, legends.get(i));
+			}
+
+			ChartDataSeries myserie;
+			if (!previousSeries.contains(serieId)) {
+				myserie = myDataset.createOrGetSerie(scope, serieId, this);
+				mySeries.put(serieId, myserie);
+			} else {
+				myserie = mySeries.get(serieId);
+			}
+			if (myserie != null) {
+				myserie.setSeriesLegend(legendStr);
 			}
 		}
-		if (currentSeriesNames.size() != previousSeries.size()) { somethingChanged = true; }
-		if (somethingChanged) {
-			for (String s : previousSeries) {
-				if (!currentSeriesNames.contains(s)) { getDataset().removeserie(scope, s); }
+
+		if (previousSeries.size() > targetSize) {
+			for (int i = targetSize; i < previousSeries.size(); i++) {
+				String s = previousSeries.get(i);
+				mySeries.remove(s);
+				getDataset().removeserie(scope, s);
 			}
-			for (String element : currentSeriesNames) { getDataset().addSerieAtTheEnd(scope, element); }
-
 		}
 
-	}
-
-	/**
-	 * Newserie.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param myname
-	 *            the myname
-	 */
-	private void newSerie(final IScope scope, final String myname) {
-		if (this.getDataset().getDataSeriesIds(scope).contains(myname)) {
-			DEBUG.LOG("Serie " + myname + "s already exists... Will replace old one!!");
+		for (String element : currentSeriesNames) {
+			getDataset().addSerieAtTheEnd(scope, element);
 		}
-		final ChartDataSeries myserie = myDataset.createOrGetSerie(scope, myname, this);
-		mySeries.put(myname, myserie);
-
 	}
 
 	@Override
 	public void createInitialSeries(final IScope scope) {
-
-		final Object on = legendExp == null ? null : legendExp.value(scope);
-
-		if (on instanceof IList lval) {
-			currentSeriesNames = new ArrayList<>();
-			for (int i = 0; i < lval.size(); i++) {
-				final Object no = lval.get(i);
-				if (no != null) {
-					final String myname = Cast.asString(scope, no);
-					newSerie(scope, myname);
-					currentSeriesNames.add(i, myname);
-				}
-			}
-		}
+		updateserielist(scope, 0);
 		inferDatasetProperties(scope);
 	}
 

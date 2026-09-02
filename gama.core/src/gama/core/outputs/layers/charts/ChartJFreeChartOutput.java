@@ -273,6 +273,12 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 					}
 			}
 
+			if ("vertical".equalsIgnoreCase(legend_orientation)) {
+				legend.getItemContainer().setArrangement(new org.jfree.chart.block.ColumnArrangement());
+			} else if ("horizontal".equalsIgnoreCase(legend_orientation)) {
+				legend.getItemContainer().setArrangement(new org.jfree.chart.block.FlowArrangement());
+			}
+
 			// Set legend text color
 			if (textColor != null) { legend.setItemPaint(IColor.toAWTColor(textColor)); }
 

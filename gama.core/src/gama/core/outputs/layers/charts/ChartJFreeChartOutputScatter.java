@@ -300,7 +300,19 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 		// newr.setSeriesStroke(0, new BasicStroke(0));
 		newr.setDefaultCreateEntities(true);
 		final ChartDataSeries myserie = this.getChartdataset().getDataSeries(scope, serieid);
-		if (myserie.getName() == null || myserie.getName().isEmpty()) { newr.setSeriesVisibleInLegend(0, false); }
+		final String legStr = myserie.getSerieLegend(scope) == null ? "" : myserie.getSerieLegend(scope).toString();
+		if (legStr.isEmpty()) {
+			newr.setSeriesVisibleInLegend(0, false);
+		} else {
+			newr.setLegendItemLabelGenerator((dataset, series) -> {
+				String id = (String) dataset.getSeriesKey(series);
+				ChartDataSeries ds = getChartdataset().getDataSeries(scope, id);
+				if (ds != null && ds.getSerieLegend(scope) != null) {
+					return ds.getSerieLegend(scope).toString();
+				}
+				return id;
+			});
+		}
 		if (newr instanceof XYLineAndShapeRenderer xy) {
 			xy.setSeriesLinesVisible(0, myserie.getMysource().showLine);
 			xy.setSeriesShapesFilled(0, myserie.getMysource().fillMarker);

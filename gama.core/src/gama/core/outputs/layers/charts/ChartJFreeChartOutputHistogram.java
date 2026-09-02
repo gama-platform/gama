@@ -251,6 +251,20 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 			final int myrow = idPosition.get(serieid);
 			if (myserie.getMycolor() != null) { newr.setSeriesPaint(myrow, IColor.toAWTColor(myserie.getMycolor())); }
 
+			final String legStr = myserie.getSerieLegend(scope) == null ? "" : myserie.getSerieLegend(scope).toString();
+			if (legStr.isEmpty()) {
+				newr.setSeriesVisibleInLegend(myrow, false);
+			} else {
+				newr.setLegendItemLabelGenerator((dataset, series) -> {
+					String id = (String) dataset.getRowKey(series);
+					ChartDataSeries ds = getChartdataset().getDataSeries(scope, id);
+					if (ds != null && ds.getSerieLegend(scope) != null) {
+						return ds.getSerieLegend(scope).toString();
+					}
+					return id;
+				});
+			}
+
 			if ("onchart".equals(this.series_label_position)) {
 				// ((BarRenderer)newr).setBaseItemLabelGenerator(new
 				// LabelGenerator());
