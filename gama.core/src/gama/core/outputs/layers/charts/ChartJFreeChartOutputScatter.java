@@ -368,7 +368,7 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 	protected void createNewSerie(final IScope scope, final String serieid) {
 
 		final ChartDataSeries dataserie = chartdataset.getDataSeries(scope, serieid);
-		final XYIntervalSeries serie = new XYIntervalSeries(dataserie.getSerieLegend(scope), false, true);
+		final XYIntervalSeries serie = new XYIntervalSeries(serieid, false, true);
 		final XYPlot plot = (XYPlot) this.chart.getPlot();
 
 		final XYIntervalSeriesCollection firstdataset = (XYIntervalSeriesCollection) plot.getDataset();
