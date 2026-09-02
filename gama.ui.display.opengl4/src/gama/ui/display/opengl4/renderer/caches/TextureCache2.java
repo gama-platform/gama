@@ -137,8 +137,10 @@ public class TextureCache2 implements ITextureCache {
 		Texture old = volatileTextures.remove(id);
 		if (old != null) { old.destroy(gl.getGL()); }
 		Texture texture = this.buildTexture(gl.getGL(), img);
-		if (texture != null) { volatileTextures.put(id, texture); }
-		gl.invalidateBoundTextureState();
+		if (texture != null) {
+			volatileTextures.put(id, texture);
+			gl.invalidateBoundTextureState();
+		}
 		return texture;
 	}
 
