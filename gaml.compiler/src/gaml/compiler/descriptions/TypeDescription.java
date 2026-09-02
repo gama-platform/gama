@@ -448,6 +448,20 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 	 * @param vd
 	 *            the vd
 	 */
+	/**
+	 * Verifies whether the attribute name collides with an aspect defined in the species.
+	 *
+	 * @param vd
+	 *            the variable description
+	 */
+	private void verifyAspectCollision(final IVariableDescription vd) {
+		if (vd.isSynthetic() || !(this instanceof ISpeciesDescription species)) return;
+		if (species.hasAspect(vd.getName())) {
+			vd.error("Attribute " + vd.getName() + " has the same name as an existing aspect in " + getName(),
+					IGamlIssue.DUPLICATE_NAME, IKeyword.NAME);
+		}
+	}
+
 	public void addOwnAttribute(final IVariableDescription vd) {
 		final String newVarName = vd.getName();
 		final IVariableDescription existing = getAttribute(newVarName);
@@ -459,10 +473,7 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 			markAttributeRedefinition(existing, vd);
 			vd.copyFrom(existing);
 		}
-		if (this instanceof ISpeciesDescription species && !vd.isSynthetic() && species.hasAspect(newVarName)) {
-			vd.error("Attribute " + newVarName + " has the same name as an existing aspect in " + getName(),
-					IGamlIssue.DUPLICATE_NAME, IKeyword.NAME);
-		}
+		verifyAspectCollision(vd);
 
 		getAttributesMap().put(vd.getName(), vd);
 	}
