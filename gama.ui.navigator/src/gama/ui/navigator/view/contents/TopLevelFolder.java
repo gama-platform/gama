@@ -145,6 +145,25 @@ public class TopLevelFolder extends VirtualContent<NavigatorRoot> implements IGa
 	}
 
 	/**
+	 * Resolves the core models physical directory path with forward slashes.
+	 */
+	private String getCoreModelsPath() throws IOException, URISyntaxException {
+		final URL oldUrl = new URL("platform:/plugin/" + GamaBundleLoader.CORE_MODELS.getSymbolicName() + "/");
+		final URL newUrl = FileLocator.toFileURL(oldUrl);
+		final URI resolvedURI = new URI(newUrl.getProtocol(), newUrl.getPath(), null).normalize();
+		return new java.io.File(resolvedURI).getAbsolutePath().replace('\\', '/');
+	}
+
+	/**
+	 * Checks if the path belongs to tutorials or recipes virtual folders.
+	 */
+	private Location checkTutorialOrRecipe(final String pathString) {
+		if (pathString.contains("/" + GamaBundleLoader.REGULAR_TUTORIALS_LAYOUT + "/")) return Location.Tutorials;
+		if (pathString.contains("/" + GamaBundleLoader.REGULAR_RECIPES_LAYOUT + "/")) return Location.Recipes;
+		return null;
+	}
+
+	/**
 	 * Estimate location.
 	 *
 	 * @param location
@@ -154,26 +173,20 @@ public class TopLevelFolder extends VirtualContent<NavigatorRoot> implements IGa
 	protected Location estimateLocation(final IPath location) {
 		if (location == null) return Location.Unknown;
 		try {
-			final var old_url = new URL("platform:/plugin/" + GamaBundleLoader.CORE_MODELS.getSymbolicName() + "/");
-			final var new_url = FileLocator.toFileURL(old_url);
-			// windows URL formating
-			final var resolvedURI = new URI(new_url.getProtocol(), new_url.getPath(), null).normalize();
-			final var pathString = location.toString();
-			final var isTest = pathString.contains("/" + GamaBundleLoader.REGULAR_TESTS_LAYOUT)
-					|| pathString.contains(GamaBundleLoader.GENERATED_TESTS_LAYOUT);
-			final var isTutorial = pathString.contains("/" + GamaBundleLoader.REGULAR_TUTORIALS_LAYOUT + "/");
-			final var isRecipe = pathString.contains("/" + GamaBundleLoader.REGULAR_RECIPES_LAYOUT + "/");
-			if (isTutorial) return Location.Tutorials;
-			if (isRecipe) return Location.Recipes;
+			final String pathString = location.toString();
+			final Location specificLoc = checkTutorialOrRecipe(pathString);
+			if (specificLoc != null) return specificLoc;
 
-			final String corePath = new java.io.File(resolvedURI).getAbsolutePath().replace('\\', '/');
+			final boolean isTest = pathString.contains("/" + GamaBundleLoader.REGULAR_TESTS_LAYOUT)
+					|| pathString.contains(GamaBundleLoader.GENERATED_TESTS_LAYOUT);
+			final String corePath = getCoreModelsPath();
 			final String projectPath = location.toFile().getAbsolutePath().replace('\\', '/');
 
 			if (!isTest && projectPath.startsWith(corePath)) return Location.CoreModels;
+
 			final String parentPath = new java.io.File(corePath).getParent().replace('\\', '/');
 			if (parentPath != null && projectPath.startsWith(parentPath)) {
-				if (isTest) return Location.Tests;
-				return Location.Plugins;
+				return isTest ? Location.Tests : Location.Plugins;
 			}
 			return Location.Other;
 		} catch (final Exception e) {
