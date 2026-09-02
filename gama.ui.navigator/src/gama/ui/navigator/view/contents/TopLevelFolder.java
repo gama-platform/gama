@@ -145,25 +145,6 @@ public class TopLevelFolder extends VirtualContent<NavigatorRoot> implements IGa
 	}
 
 	/**
-	 * Resolves the core models physical directory path with forward slashes.
-	 */
-	private String getCoreModelsPath() throws IOException, URISyntaxException {
-		final URL oldUrl = new URL("platform:/plugin/" + GamaBundleLoader.CORE_MODELS.getSymbolicName() + "/");
-		final URL newUrl = FileLocator.toFileURL(oldUrl);
-		final URI resolvedURI = new URI(newUrl.getProtocol(), newUrl.getPath(), null).normalize();
-		return new java.io.File(resolvedURI).getAbsolutePath().replace('\\', '/');
-	}
-
-	/**
-	 * Checks if the path belongs to tutorials or recipes virtual folders.
-	 */
-	private Location checkTutorialOrRecipe(final String pathString) {
-		if (pathString.contains("/" + GamaBundleLoader.REGULAR_TUTORIALS_LAYOUT + "/")) return Location.Tutorials;
-		if (pathString.contains("/" + GamaBundleLoader.REGULAR_RECIPES_LAYOUT + "/")) return Location.Recipes;
-		return null;
-	}
-
-	/**
 	 * Estimate location.
 	 *
 	 * @param location
@@ -173,24 +154,23 @@ public class TopLevelFolder extends VirtualContent<NavigatorRoot> implements IGa
 	protected Location estimateLocation(final IPath location) {
 		if (location == null) return Location.Unknown;
 		try {
-			final String pathString = location.toString();
-			final Location specificLoc = checkTutorialOrRecipe(pathString);
-			if (specificLoc != null) return specificLoc;
+			final String locPath = location.toFile().getAbsolutePath().replace('\\', '/');
+			if (locPath.contains("/" + GamaBundleLoader.REGULAR_TUTORIALS_LAYOUT + "/")) return Location.Tutorials;
+			if (locPath.contains("/" + GamaBundleLoader.REGULAR_RECIPES_LAYOUT + "/")) return Location.Recipes;
 
-			final boolean isTest = pathString.contains("/" + GamaBundleLoader.REGULAR_TESTS_LAYOUT)
-					|| pathString.contains(GamaBundleLoader.GENERATED_TESTS_LAYOUT);
-			final String corePath = getCoreModelsPath();
-			final String projectPath = location.toFile().getAbsolutePath().replace('\\', '/');
+			final URL oldUrl = new URL("platform:/plugin/" + GamaBundleLoader.CORE_MODELS.getSymbolicName() + "/");
+			final URL resolvedUrl = FileLocator.toFileURL(oldUrl);
+			final URI uri = new URI(resolvedUrl.getProtocol(), resolvedUrl.getPath(), null).normalize();
+			final String corePath = new java.io.File(uri).getAbsolutePath().replace('\\', '/');
 
-			if (!isTest && projectPath.startsWith(corePath)) return Location.CoreModels;
+			final boolean isTest = locPath.contains("/" + GamaBundleLoader.REGULAR_TESTS_LAYOUT);
+			if (!isTest && locPath.startsWith(corePath)) return Location.CoreModels;
 
 			final String parentPath = new java.io.File(corePath).getParent().replace('\\', '/');
-			if (parentPath != null && projectPath.startsWith(parentPath)) {
-				return isTest ? Location.Tests : Location.Plugins;
-			}
+			if (parentPath != null && locPath.startsWith(parentPath)) return isTest ? Location.Tests : Location.Plugins;
+
 			return Location.Other;
 		} catch (final Exception e) {
-			e.printStackTrace();
 			return Location.Unknown;
 		}
 	}
