@@ -40,6 +40,9 @@ import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.interfaces.IFieldMatrixProvider;
 import gama.gaml.operators.Colors;
 import gama.gaml.statements.draw.MeshDrawingAttributes;
+import jdk.incubator.vector.DoubleVector;
+import jdk.incubator.vector.VectorMask;
+import jdk.incubator.vector.VectorOperators;
 import one.util.streamex.DoubleStreamEx;
 import one.util.streamex.StreamEx;
 
@@ -237,6 +240,11 @@ public class GamaField extends GamaFloatMatrix implements IField {
 	public void getValuesInto(final IScope scope, final String varName, final double minValue, final double[] input) {
 		System.arraycopy(matrix, 0, input, 0, input.length);
 		for (int i = 0; i < input.length; i++) { if (input[i] < minValue) { input[i] = 0; } }
+	}
+
+	@Override
+	public void getValuesInto(final IScope scope, final String varName, final double[] input) {
+		System.arraycopy(matrix, 0, input, 0, input.length);
 	}
 
 	/**
@@ -457,56 +465,112 @@ public class GamaField extends GamaFloatMatrix implements IField {
 	@Override
 	public IField times(final Double val) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
-		for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] *= val; } }
+		int i = 0;
+		int upperBound = SPECIES.loopBound(matrix.length);
+		for (; i < upperBound; i += SPECIES.length()) {
+			DoubleVector va = DoubleVector.fromArray(SPECIES, matrix, i);
+			VectorMask<Double> mask = va.compare(VectorOperators.NE, noDataValue);
+			va.mul(val).intoArray(matrix, i, mask);
+		}
+		for (; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] *= val; } }
 		return this;
 	}
 
 	@Override
 	public IField times(final Integer val) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
-		for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] *= val; } }
+		int i = 0;
+		int upperBound = SPECIES.loopBound(matrix.length);
+		for (; i < upperBound; i += SPECIES.length()) {
+			DoubleVector va = DoubleVector.fromArray(SPECIES, matrix, i);
+			VectorMask<Double> mask = va.compare(VectorOperators.NE, noDataValue);
+			va.mul(val).intoArray(matrix, i, mask);
+		}
+		for (; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] *= val; } }
 		return this;
 	}
 
 	@Override
 	public IField divides(final Double val) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
-		for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] /= val; } }
+		int i = 0;
+		int upperBound = SPECIES.loopBound(matrix.length);
+		for (; i < upperBound; i += SPECIES.length()) {
+			DoubleVector va = DoubleVector.fromArray(SPECIES, matrix, i);
+			VectorMask<Double> mask = va.compare(VectorOperators.NE, noDataValue);
+			va.div(val).intoArray(matrix, i, mask);
+		}
+		for (; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] /= val; } }
 		return this;
 	}
 
 	@Override
 	public IField divides(final Integer val) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
-		for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] /= val; } }
+		int i = 0;
+		int upperBound = SPECIES.loopBound(matrix.length);
+		for (; i < upperBound; i += SPECIES.length()) {
+			DoubleVector va = DoubleVector.fromArray(SPECIES, matrix, i);
+			VectorMask<Double> mask = va.compare(VectorOperators.NE, noDataValue);
+			va.div(val).intoArray(matrix, i, mask);
+		}
+		for (; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] /= val; } }
 		return this;
 	}
 
 	@Override
 	public IField plus(final Double val) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
-		for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] += val; } }
+		int i = 0;
+		int upperBound = SPECIES.loopBound(matrix.length);
+		for (; i < upperBound; i += SPECIES.length()) {
+			DoubleVector va = DoubleVector.fromArray(SPECIES, matrix, i);
+			VectorMask<Double> mask = va.compare(VectorOperators.NE, noDataValue);
+			va.add(val).intoArray(matrix, i, mask);
+		}
+		for (; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] += val; } }
 		return this;
 	}
 
 	@Override
 	public IField plus(final Integer val) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
-		for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] += val; } }
+		int i = 0;
+		int upperBound = SPECIES.loopBound(matrix.length);
+		for (; i < upperBound; i += SPECIES.length()) {
+			DoubleVector va = DoubleVector.fromArray(SPECIES, matrix, i);
+			VectorMask<Double> mask = va.compare(VectorOperators.NE, noDataValue);
+			va.add(val).intoArray(matrix, i, mask);
+		}
+		for (; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] += val; } }
 		return this;
 	}
 
 	@Override
 	public IField minus(final Double val) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
-		for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] -= val; } }
+		int i = 0;
+		int upperBound = SPECIES.loopBound(matrix.length);
+		for (; i < upperBound; i += SPECIES.length()) {
+			DoubleVector va = DoubleVector.fromArray(SPECIES, matrix, i);
+			VectorMask<Double> mask = va.compare(VectorOperators.NE, noDataValue);
+			va.sub(val).intoArray(matrix, i, mask);
+		}
+		for (; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] -= val; } }
 		return this;
 	}
 
 	@Override
 	public IField minus(final Integer val) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
-		for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] -= val; } }
+		int i = 0;
+		int upperBound = SPECIES.loopBound(matrix.length);
+		for (; i < upperBound; i += SPECIES.length()) {
+			DoubleVector va = DoubleVector.fromArray(SPECIES, matrix, i);
+			VectorMask<Double> mask = va.compare(VectorOperators.NE, noDataValue);
+			va.sub(val).intoArray(matrix, i, mask);
+		}
+		for (; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] -= val; } }
 		return this;
 	}
 

@@ -35,6 +35,7 @@ import org.locationtech.jts.operation.distance.DistanceOp;
 
 import com.google.common.collect.Ordering;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
@@ -2024,22 +2025,87 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 
 	@Override
 	public double getValueAtIndex(final IScope scope, final int i, final String varName) {
+		if (IKeyword.GRID_VALUE.equals(varName)) return getValue(i);
+		if (!isHexagon && IKeyword.COLOR.equals(varName)) return supportImagePixels[i];
+		if (IKeyword.GRID_X.equals(varName)) return i % numCols;
+		if (IKeyword.GRID_Y.equals(varName)) return i / numCols;
 		IAgent a = matrix[i].getAgent();
 		return Cast.asFloat(scope, a.getDirectVarValue(scope, varName));
 	}
 
 	@Override
 	public void setValueAtIndex(final IScope scope, final int i, final String varName, final double valToPut) {
+		if (IKeyword.GRID_VALUE.equals(varName)) {
+			setValue(i, valToPut);
+			return;
+		}
+		if (!isHexagon && IKeyword.COLOR.equals(varName)) {
+			supportImagePixels[i] = (int) valToPut;
+			return;
+		}
 		IAgent a = matrix[i].getAgent();
 		a.setDirectVarValue(scope, varName, valToPut);
 	}
 
 	@Override
 	public void getValuesInto(final IScope scope, final String varName, final double minValue, final double[] input) {
+		if (IKeyword.GRID_VALUE.equals(varName)) {
+			for (int i = 0; i < input.length; i++) {
+				final double val = gridValue[i];
+				input[i] = val < minValue ? 0 : val;
+			}
+			return;
+		}
+		if (!isHexagon && IKeyword.COLOR.equals(varName)) {
+			for (int i = 0; i < input.length; i++) {
+				final double val = supportImagePixels[i];
+				input[i] = val < minValue ? 0 : val;
+			}
+			return;
+		}
+		if (IKeyword.GRID_X.equals(varName)) {
+			for (int i = 0; i < input.length; i++) {
+				final double val = i % numCols;
+				input[i] = val < minValue ? 0 : val;
+			}
+			return;
+		}
+		if (IKeyword.GRID_Y.equals(varName)) {
+			for (int i = 0; i < input.length; i++) {
+				final double val = i / numCols;
+				input[i] = val < minValue ? 0 : val;
+			}
+			return;
+		}
 		for (int i = 0; i < input.length; i++) {
-			double val = Cast.asFloat(scope, getValueAtIndex(scope, i, varName));
+			double val = Cast.asFloat(scope, matrix[i].getAgent().getDirectVarValue(scope, varName));
 			input[i] = val < minValue ? 0 : val;
 		}
+	}
+
+	@Override
+	public void getValuesInto(final IScope scope, final String varName, final double[] input) {
+		switch (varName) {
+			case IKeyword.GRID_VALUE:
+				System.arraycopy(gridValue, 0, input, 0, gridValue.length);
+				return;
+			case IKeyword.COLOR:
+				if (!isHexagon) {
+					for (int i = 0; i < input.length; i++) { input[i] = supportImagePixels[i]; }
+					return;
+				}
+				break;
+			case IKeyword.GRID_X:
+				for (int i = 0; i < input.length; i++) { input[i] = i % numCols; }
+				return;
+			case IKeyword.GRID_Y:
+				for (int i = 0; i < input.length; i++) { input[i] = i / numCols; }
+				return;
+		}
+		for (int i = 0; i < input.length; i++) {
+			input[i] = Cast.asFloat(scope, matrix[i].getAgent().getDirectVarValue(scope, varName));
+		}
+
 	}
 
 	@Override

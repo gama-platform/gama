@@ -21,9 +21,11 @@ import gama.annotations.support.ITypeProvider;
 import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.matrix.GamaMatrixFactory;
 import gama.api.types.matrix.IField;
 import gama.api.types.matrix.IMatrix;
 import gama.api.utils.MathUtils;
+import gama.core.util.matrix.GamaFloatMatrix;
 
 /**
  * Provides all mathematical and arithmetic operators for the GAML language.
@@ -170,6 +172,96 @@ public class Maths {
 		return Math.pow(a, b);
 	}
 
+	@operator (
+			value = { "^" },
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.ARITHMETIC, IOperatorCategory.MATRIX },
+			concept = { IConcept.MATH, IConcept.ARITHMETIC, IConcept.MATRIX })
+	@doc (
+			value = "Returns the element-wise power of the matrix.",
+			examples = { @example (
+					value = "matrix([[1, 2], [3, 4]]) ^ 2",
+					equals = "matrix([[1.0, 4.0], [9.0, 16.0]])") })
+	@test ("matrix([[1, 2], [3, 4]]) ^ 2 = matrix([[1.0, 4.0], [9.0, 16.0]])")
+	public static IMatrix pow(final IScope scope, final IMatrix a, final Integer b) {
+		return pow(scope, a, b.doubleValue());
+	}
+
+	@operator (
+			value = { "^" },
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.ARITHMETIC, IOperatorCategory.MATRIX },
+			concept = {})
+	@doc (
+			value = "Returns the element-wise power of the matrix.",
+			examples = { @example (
+					value = "matrix([[1, 2], [3, 4]]) ^ 2.0",
+					equals = "matrix([[1.0, 4.0], [9.0, 16.0]])") })
+	@test ("matrix([[1, 2], [3, 4]]) ^ 2.0 = matrix([[1.0, 4.0], [9.0, 16.0]])")
+	public static IMatrix pow(final IScope scope, final IMatrix a, final Double b) {
+		final GamaFloatMatrix mat = GamaFloatMatrix.from(scope, a);
+		final GamaFloatMatrix nm = (GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(mat.getCols(scope), mat.getRows(scope));
+		final double[] m = mat.getMatrix();
+		int i = 0;
+		int upperBound = GamaFloatMatrix.SPECIES.loopBound(m.length);
+		for (; i < upperBound; i += GamaFloatMatrix.SPECIES.length()) {
+			jdk.incubator.vector.DoubleVector va = jdk.incubator.vector.DoubleVector.fromArray(GamaFloatMatrix.SPECIES, m, i);
+			va.pow(b).intoArray(nm.getMatrix(), i);
+		}
+		for (; i < m.length; i++) { nm.getMatrix()[i] = Math.pow(m[i], b); }
+		return nm;
+	}
+
+	@operator (
+			value = { "convolution", "convolve" },
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.ARITHMETIC, IOperatorCategory.MATRIX },
+			concept = { IConcept.MATH, IConcept.ARITHMETIC, IConcept.MATRIX })
+	@doc (
+			value = "Returns the 2D convolution of the first matrix (e.g. grid values) using the second matrix as the convolution kernel. Useful for fast grid neighborhood computations.",
+			examples = { @example (
+					value = "matrix([[1, 2, 1], [3, 4, 1], [1, 1, 1]]) convolution matrix([[0, 1, 0], [1, -4, 1], [0, 1, 0]])",
+					equals = "matrix([[-1, 2, -1], [1, -7, 0], [1, 2, 1]])") })
+	public static IMatrix convolve(final IScope scope, final IMatrix a, final IMatrix kernel) {
+		final GamaFloatMatrix matA = GamaFloatMatrix.from(scope, a);
+		final GamaFloatMatrix k = GamaFloatMatrix.from(scope, kernel);
+		
+		int rowsA = matA.getRows(scope);
+		int colsA = matA.getCols(scope);
+		int rowsK = k.getRows(scope);
+		int colsK = k.getCols(scope);
+		
+		final GamaFloatMatrix result = (GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(colsA, rowsA);
+		
+		int padRow = rowsK / 2;
+		int padCol = colsK / 2;
+		
+		double[] arrayA = matA.getMatrix();
+		double[] arrayK = k.getMatrix();
+		double[] arrayRes = result.getMatrix();
+		
+		for (int r = 0; r < rowsA; r++) {
+			for (int c = 0; c < colsA; c++) {
+				double sum = 0.0;
+				for (int kr = 0; kr < rowsK; kr++) {
+					for (int kc = 0; kc < colsK; kc++) {
+						int rr = r + kr - padRow;
+						int cc = c + kc - padCol;
+						if (rr >= 0 && rr < rowsA && cc >= 0 && cc < colsA) {
+							sum += arrayA[rr * colsA + cc] * arrayK[kr * colsK + kc];
+						}
+					}
+				}
+				arrayRes[r * colsA + c] = sum;
+			}
+		}
+		
+		return result;
+	}
+
 	// ==== Operators
 
 	/**
@@ -198,6 +290,30 @@ public class Maths {
 	@test ("abs(-0.0) = 0.0")
 	public static Double abs(final Double rv) {
 		return Math.abs(rv);
+	}
+
+	@operator (
+			value = "abs",
+			can_be_const = true,
+			category = { IOperatorCategory.ARITHMETIC, IOperatorCategory.MATRIX },
+			concept = { IConcept.MATH, IConcept.ARITHMETIC, IConcept.MATRIX })
+	@doc (
+			value = "Returns a new matrix containing the absolute value of each element.",
+			examples = { @example (
+					value = "abs(matrix([[-1, 2], [-3, -4]]))",
+					equals = "matrix([[1.0, 2.0], [3.0, 4.0]])") })
+	public static IMatrix abs(final IScope scope, final IMatrix a) {
+		final GamaFloatMatrix mat = GamaFloatMatrix.from(scope, a);
+		final GamaFloatMatrix nm = (GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(mat.getCols(scope), mat.getRows(scope));
+		final double[] m = mat.getMatrix();
+		int i = 0;
+		int upperBound = GamaFloatMatrix.SPECIES.loopBound(m.length);
+		for (; i < upperBound; i += GamaFloatMatrix.SPECIES.length()) {
+			jdk.incubator.vector.DoubleVector va = jdk.incubator.vector.DoubleVector.fromArray(GamaFloatMatrix.SPECIES, m, i);
+			va.abs().intoArray(nm.getMatrix(), i);
+		}
+		for (; i < m.length; i++) { nm.getMatrix()[i] = Math.abs(m[i]); }
+		return nm;
 	}
 
 	/**
@@ -560,6 +676,27 @@ public class Maths {
 		return Math.cos(rv * toRad);
 	}
 
+	@operator (
+			value = "cos",
+			can_be_const = true,
+			category = { IOperatorCategory.ARITHMETIC, IOperatorCategory.MATRIX },
+			concept = { IConcept.MATH, IConcept.ARITHMETIC, IConcept.MATRIX })
+	@doc (
+			value = "Returns a new matrix where the cosine function is applied to each element (element values are assumed to be in degrees).")
+	public static IMatrix cos(final IScope scope, final IMatrix a) {
+		final GamaFloatMatrix mat = GamaFloatMatrix.from(scope, a);
+		final GamaFloatMatrix nm = (GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(mat.getCols(scope), mat.getRows(scope));
+		final double[] m = mat.getMatrix();
+		int i = 0;
+		int upperBound = GamaFloatMatrix.SPECIES.loopBound(m.length);
+		for (; i < upperBound; i += GamaFloatMatrix.SPECIES.length()) {
+			jdk.incubator.vector.DoubleVector va = jdk.incubator.vector.DoubleVector.fromArray(GamaFloatMatrix.SPECIES, m, i);
+			va.mul(toRad).lanewise(jdk.incubator.vector.VectorOperators.COS).intoArray(nm.getMatrix(), i);
+		}
+		for (; i < m.length; i++) { nm.getMatrix()[i] = Math.cos(m[i] * toRad); }
+		return nm;
+	}
+
 	/**
 	 * Cos.
 	 *
@@ -617,6 +754,27 @@ public class Maths {
 	@test ("sin(270.0) = -1.0")
 	public static Double sin(final Double rv) {
 		return Math.sin(rv * toRad);
+	}
+
+	@operator (
+			value = "sin",
+			can_be_const = true,
+			category = { IOperatorCategory.ARITHMETIC, IOperatorCategory.MATRIX },
+			concept = { IConcept.MATH, IConcept.ARITHMETIC, IConcept.MATRIX })
+	@doc (
+			value = "Returns a new matrix where the sine function is applied to each element (element values are assumed to be in degrees).")
+	public static IMatrix sin(final IScope scope, final IMatrix a) {
+		final GamaFloatMatrix mat = GamaFloatMatrix.from(scope, a);
+		final GamaFloatMatrix nm = (GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(mat.getCols(scope), mat.getRows(scope));
+		final double[] m = mat.getMatrix();
+		int i = 0;
+		int upperBound = GamaFloatMatrix.SPECIES.loopBound(m.length);
+		for (; i < upperBound; i += GamaFloatMatrix.SPECIES.length()) {
+			jdk.incubator.vector.DoubleVector va = jdk.incubator.vector.DoubleVector.fromArray(GamaFloatMatrix.SPECIES, m, i);
+			va.mul(toRad).lanewise(jdk.incubator.vector.VectorOperators.SIN).intoArray(nm.getMatrix(), i);
+		}
+		for (; i < m.length; i++) { nm.getMatrix()[i] = Math.sin(m[i] * toRad); }
+		return nm;
 	}
 
 	/**
@@ -780,6 +938,21 @@ public class Maths {
 	@test ("exp (0) = 1.0")
 	public static Double exp(final Integer rv) {
 		return Math.exp(rv.doubleValue());
+	}
+
+	@operator (
+			value = "exp",
+			can_be_const = true,
+			category = { IOperatorCategory.ARITHMETIC, IOperatorCategory.MATRIX },
+			concept = { IConcept.MATH, IConcept.ARITHMETIC, IConcept.MATRIX })
+	@doc (
+			value = "Returns a new matrix where Euler's number e is raised to the power of each element.")
+	public static IMatrix exp(final IScope scope, final IMatrix a) {
+		final GamaFloatMatrix mat = GamaFloatMatrix.from(scope, a);
+		final GamaFloatMatrix nm = (GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(mat.getCols(scope), mat.getRows(scope));
+		final double[] m = mat.getMatrix();
+		for (int i = 0; i < m.length; i++) { nm.getMatrix()[i] = Math.exp(m[i]); }
+		return nm;
 	}
 
 	/**
@@ -1711,23 +1884,128 @@ public class Maths {
 	 *            the b
 	 * @return the i matrix
 	 */
+	/**
+	 * Op plus.
+	 *
+	 * @param a
+	 *            the a
+	 * @param b
+	 *            the b
+	 * @return the i matrix
+	 */
 	@operator (
 			value = IKeyword.PLUS,
 			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.MATRIX },
+			concept = { IConcept.MATRIX })
+	@doc (
+			value = "Returns the element-wise addition of two matrices.",
+			examples = { @example (
+					value = "matrix([[1, 2], [3, 4]]) + matrix([[1, 2], [3, 4]])",
+					equals = "matrix([[2, 4], [6, 8]])") })
+	@test ("matrix([[1, 2], [3, 4]]) + matrix([[1, 2], [3, 4]]) = matrix([[2, 4], [6, 8]])")
+	public static IMatrix opPlus(final IScope scope, final IMatrix a, final IMatrix b) {
+		return a.plus(scope, b);
+	}
+
+	/**
+	 * Op minus.
+	 *
+	 * @param a
+	 *            the a
+	 * @param b
+	 *            the b
+	 * @return the i matrix
+	 */
+	@operator (
+			value = IKeyword.MINUS,
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.MATRIX },
+			concept = { IConcept.MATRIX })
+	@doc (
+			value = "Returns the element-wise subtraction of two matrices.",
+			examples = { @example (
+					value = "matrix([[1, 2], [3, 4]]) - matrix([[1, 2], [3, 4]])",
+					equals = "matrix([[0, 0], [0, 0]])") })
+	@test ("matrix([[1, 2], [3, 4]]) - matrix([[1, 2], [3, 4]]) = matrix([[0, 0], [0, 0]])")
+	public static IMatrix opMinus(final IScope scope, final IMatrix a, final IMatrix b) {
+		return a.minus(scope, b);
+	}
+
+	/**
+	 * Op times.
+	 *
+	 * @param a
+	 *            the a
+	 * @param b
+	 *            the b
+	 * @return the i matrix
+	 */
+	@operator (
+			value = IKeyword.MULTIPLY,
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.MATRIX },
+			concept = { IConcept.MATRIX })
+	@doc (
+			value = "Returns the element-wise multiplication (Hadamard product) of two matrices. For matrix multiplication, use the `.` operator.",
+			examples = { @example (
+					value = "matrix([[1, 2], [3, 4]]) * matrix([[1, 2], [3, 4]])",
+					equals = "matrix([[1, 4], [9, 16]])") })
+	@test ("matrix([[1, 2], [3, 4]]) * matrix([[1, 2], [3, 4]]) = matrix([[1, 4], [9, 16]])")
+	public static IMatrix opTimes(final IScope scope, final IMatrix a, final IMatrix b) {
+		return a.times(scope, b);
+	}
+
+	/**
+	 * Op divide.
+	 *
+	 * @param a
+	 *            the a
+	 * @param b
+	 *            the b
+	 * @return the i matrix
+	 */
+	@operator (
+			value = IKeyword.DIVIDE,
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.MATRIX },
+			concept = { IConcept.MATRIX })
+	@doc (
+			value = "Returns the element-wise division of two matrices.",
+			examples = { @example (
+					value = "matrix([[1, 2], [3, 4]]) / matrix([[1, 2], [3, 4]])",
+					equals = "matrix([[1, 1], [1, 1]])") })
+	@test ("matrix([[1, 2], [3, 4]]) / matrix([[1, 2], [3, 4]]) = matrix([[1.0, 1.0], [1.0, 1.0]])")
+	public static IMatrix opDivide(final IScope scope, final IMatrix a, final IMatrix b) {
+		return a.divides(scope, b);
+	}
+
+	@operator (
+
+			value = IKeyword.PLUS,
+
+			can_be_const = true,
+
 			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
+
 			category = { IOperatorCategory.ARITHMETIC },
+
 			concept = {})
+
 	@doc (
 			usages = { @usage (
 					value = "if one operand is a matrix and the other a number (float or int), performs a normal arithmetic sum of the number with each element of the matrix (results are float if the number is a float.",
 					examples = { @example (
 							value = "3.5 + matrix([[2,5],[3,4]])",
 							equals = "matrix([[5.5,8.5],[6.5,7.5]])") }) })
-	// TODO check update
+	@test ("3 + matrix([[2,5],[3,4]]) = matrix([[5,8],[6,7]])")
 	public static IMatrix opPlus(final Integer a, final IMatrix b) {
 		return b.plus(a);
 	}
-
 	/**
 	 * Op plus.
 	 *
@@ -1748,6 +2026,7 @@ public class Maths {
 			examples = {},
 			see = "/")
 	@test ("1.0 + matrix([[5.5,8.5],[6.5,7.5]]) = matrix([[6.5,9.5],[7.5,8.5]])")
+	@test ("3.5 + matrix([[2,5],[3,4]]) = matrix([[5.5,8.5],[6.5,7.5]])")
 	public static IMatrix opPlus(final Double a, final IMatrix b) {
 		return b.plus(a);
 	}

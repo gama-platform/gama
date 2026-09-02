@@ -6,7 +6,8 @@
 *   cell with 2 or 3 live neighbors survives; otherwise it dies; (2) a dead cell with exactly 3 live neighbors
 *   becomes alive. Despite these simple rules, complex and persistent patterns emerge, including oscillators,
 *   spaceships, and stable structures. The model supports toroidal or bounded environments and multiple random
-*   initial configurations.
+*   initial configurations. 
+* 	This model proposes also to edit the death/birth configurations easily
 * Tags: grid, cellular_automaton, life, game_of_life, emergence, Conway, complexity
 */
 model life
@@ -14,8 +15,8 @@ model life
 //Declare the world as a torus or not torus environment
 global torus: torus_environment {
 	//Size of the environment
-	int environment_width <- 200 min: 10 max: 1000;
-	int environment_height <- 200 min: 10 max: 1000;
+	int environment_width <- 300 min: 10 max: 1000;
+	int environment_height <- 300 min: 10 max: 1000;
 	bool parallel <- true;
 	//Declare as torus or not
 	bool torus_environment <- true;
