@@ -13,9 +13,12 @@ package gaml.compiler.descriptions;
 import org.eclipse.emf.ecore.EObject;
 
 import gama.annotations.constants.IKeyword;
+import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IClassDescription;
 import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.documentation.IGamlDocumentation;
+import gama.api.constants.IGamlIssue;
 import gama.api.gaml.symbols.Facets;
 import gama.api.kernel.GamaMetaModel;
 import gama.api.kernel.object.IClass;
@@ -86,6 +89,17 @@ public class ClassDescription extends TypeDescription implements IClassDescripti
 
 	@Override
 	public Class<? extends IObject> getJavaBase() { return IObject.class; }
+
+	@Override
+	public void addChild(final IDescription child) {
+		if (child instanceof IActionDescription ad) {
+			addAction(ad);
+		} else if (child instanceof IVariableDescription vd) {
+			addOwnAttribute(vd);
+		} else if (child != null) {
+			child.error(child.getKeyword() + " cannot be defined in " + getKeyword(), IGamlIssue.WRONG_CONTEXT);
+		}
+	}
 
 	/**
 	 * Document this.
