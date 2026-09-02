@@ -999,10 +999,13 @@ public class ModelFactory implements IModelFactory {
 		if (parent == null) { parent = model.getSpeciesDescription(parentName); }
 
 		if (parent == null) {
-			speciesDesc.error("Parent '" + parentName + "' is not a valid species or does not exist",
+			speciesDesc.error("Parent '" + parentName + "' is not a valid species or does not exist",
+
 					IGamlIssue.WRONG_PARENT, IKeyword.PARENT);
-			// Keep the species hierarchy consistent to avoid cascading errors
-			speciesDesc.setParent(GamaMetaModel.getSpeciesDescription(IKeyword.AGENT));
+			// Keep the species hierarchy consistent to avoid cascading errors
+
+			speciesDesc.setParent(GamaMetaModel.getSpeciesDescription(IKeyword.AGENT));
+
 		} else {
 			speciesDesc.setParent(parent);
 		}
@@ -1079,7 +1082,8 @@ public class ModelFactory implements IModelFactory {
 		String p = cd.getLitteral(IKeyword.PARENT);
 		// If no parent is defined, we assume it is "object"
 		if (p == null) { p = IKeyword.OBJECT; }
-		IClassDescription parent = lookupClass(p, cache);
+			cd.error("Parent '" + p + "' is not a valid class or does not exist", IGamlIssue.WRONG_PARENT, IKeyword.PARENT);
+			cd.setParent(GamaMetaModel.getObjectClassDescription());
 		if (parent == null) { parent = model.getClassDescription(p); }
 		if (parent == null) {
 			cd.error("Class " + p + " is not a valid class or does not exist", IGamlIssue.WRONG_PARENT, IKeyword.PARENT);
