@@ -421,6 +421,8 @@ public class GamaDateType extends GamaType<IDate> {
 				? buildModelFormatter(pattern, loc)
 				: buildJavaFormatter(pattern, loc);
 
+		if (formatter == null) return FORMATTERS.get(GamaDateType.DEFAULT_KEY);
+
 		FORMATTERS.put(key, formatter);
 		return formatter;
 	}
@@ -434,7 +436,7 @@ public class GamaDateType extends GamaType<IDate> {
 		} catch (final IllegalArgumentException e) {
 			GAMA.reportAndThrowIfNeeded(GAMA.getRuntimeScope(),
 					GamaRuntimeException.create(e, GAMA.getRuntimeScope()), false);
-			return FORMATTERS.get(GamaDateType.DEFAULT_KEY);
+			return null;
 		}
 	}
 
