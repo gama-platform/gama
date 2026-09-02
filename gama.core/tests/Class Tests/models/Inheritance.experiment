@@ -52,7 +52,7 @@ experiment "Test inheritance" type:test{
 		assert c.initializedInInit = 10;
 	}
 
-	test inheritedFieldInitializationIsOverriden{
+	test inheritedFieldInitializationIsOverridden{
 		Child c <- Child();
 		assert c.intToOverride = 5;
 	}
