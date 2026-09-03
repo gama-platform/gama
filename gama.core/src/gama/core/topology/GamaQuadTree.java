@@ -214,7 +214,7 @@ public class GamaQuadTree implements ISpatialIndex {
 		return root.bounds.covers(env);
 	}
 
-	private void ensureBoundsCover(final IEnvelope env) {
+	private synchronized void ensureBoundsCover(final IEnvelope env) {
 		if (isCovered(env)) return;
 		while (!root.bounds.covers(env)) {
 			if (!expandRootStep(env)) break;
@@ -247,17 +247,27 @@ public class GamaQuadTree implements ISpatialIndex {
 		final double maxY = Math.max(b.getMaxY(), env.getMaxY());
 		final QuadNode newRoot = new QuadNode(GamaEnvelopeFactory.of(minX, maxX, minY, maxY));
 
-		oldRoot.objects.forEach((a, e) -> {
+		migrateSubtree(oldRoot, newRoot);
+		root = newRoot;
+	}
+
+	private void migrateSubtree(final QuadNode node, final QuadNode target) {
+		if (node == null) return;
+		node.objects.forEach((a, e) -> {
 			if (a != null && !a.dead() && e != null) {
 				if (e instanceof IPoint) {
-					newRoot.add((IPoint) e, a);
+					target.add((IPoint) e, a);
 				} else {
-					newRoot.add((IEnvelope) e, a);
+					target.add((IEnvelope) e, a);
 				}
 			}
 		});
-		oldRoot.objects.clear();
-		root = newRoot;
+		final QuadNode[] ch = node.children;
+		if (ch != null) {
+			for (final QuadNode child : ch) {
+				migrateSubtree(child, target);
+			}
+		}
 	}
 
 	private void expandRootBounds(final IEnvelope env, final IEnvelope b, final double w, final double h) {

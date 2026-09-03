@@ -435,7 +435,7 @@ public class GamaOctTree implements ISpatialIndex {
 		return root.bounds.covers(env);
 	}
 
-	private void ensureBoundsCover(final IEnvelope env) {
+	private synchronized void ensureBoundsCover(final IEnvelope env) {
 		if (isCovered(env)) return;
 		while (!root.bounds.covers(env)) {
 			if (!expandRootStep(env)) break;
@@ -475,17 +475,31 @@ public class GamaOctTree implements ISpatialIndex {
 		final double maxZ = Math.max(b.getMaxZ(), env.getMaxZ());
 		final OctNode newRoot = new OctNode(GamaEnvelopeFactory.of(minX, maxX, minY, maxY, minZ, maxZ));
 
-		oldRoot.objects.forEach((a, e) -> {
+		migrateSubtree(oldRoot, newRoot);
+		root = newRoot;
+	}
+
+	private void migrateSubtree(final OctNode node, final OctNode target) {
+		if (node == null) return;
+		node.objects.forEach((a, e) -> {
 			if (a != null && !a.dead() && e != null) {
 				if (e instanceof IPoint) {
-					newRoot.add((IPoint) e, a);
+					target.add((IPoint) e, a);
 				} else {
-					newRoot.add((IEnvelope) e, a);
+					target.add((IEnvelope) e, a);
 				}
 			}
 		});
-		oldRoot.objects.clear();
-		root = newRoot;
+		if (node.nwf != null) {
+			migrateSubtree(node.nwf, target);
+			migrateSubtree(node.nef, target);
+			migrateSubtree(node.swf, target);
+			migrateSubtree(node.sef, target);
+			migrateSubtree(node.nwb, target);
+			migrateSubtree(node.neb, target);
+			migrateSubtree(node.swb, target);
+			migrateSubtree(node.seb, target);
+		}
 	}
 
 	private void expandRootBounds(final IEnvelope env, final IEnvelope b, final double w, final double h, final double d) {
