@@ -429,89 +429,73 @@ public class GamaOctTree implements ISpatialIndex {
 	 * @param agent
 	 *            the agent to insert; {@code null} is silently ignored
 	 */
+	private boolean isCovered(final IEnvelope env) {
+		if (env == null) return true;
+		if (env.isNull()) return true;
+		return root.bounds.covers(env);
+	}
+
 	private void ensureBoundsCover(final IEnvelope env) {
-		if (env == null || env.isNull() || root.bounds.covers(env)) return;
+		if (isCovered(env)) return;
 		while (!root.bounds.covers(env)) {
 			if (!expandRootStep(env)) break;
 		}
 	}
 
 	private boolean expandRootStep(final IEnvelope env) {
-		final double minX = root.bounds.getMinX();
-		final double maxX = root.bounds.getMaxX();
-		final double minY = root.bounds.getMinY();
-		final double maxY = root.bounds.getMaxY();
-		final double minZ = root.bounds.getMinZ();
-		final double maxZ = root.bounds.getMaxZ();
-		final double w = maxX - minX;
-		final double h = maxY - minY;
-		final double d = maxZ - minZ;
+		final IEnvelope b = root.bounds;
+		final double w = b.getWidth();
+		final double h = b.getHeight();
+		final double d = b.getDepth();
 
 		if (w <= 0 || h <= 0 || d <= 0) {
-			recreateDegenerateRoot(env, minX, maxX, minY, maxY, minZ, maxZ);
+			recreateDegenerateRoot(env, b);
 			return false;
 		}
 
-		expandRootBounds(env, minX, maxX, minY, maxY, minZ, maxZ, w, h, d);
+		expandRootBounds(env, b, w, h, d);
 		return true;
 	}
 
-	private void recreateDegenerateRoot(final IEnvelope env, final double minX, final double maxX, final double minY, final double maxY, final double minZ, final double maxZ) {
+	private void recreateDegenerateRoot(final IEnvelope env, final IEnvelope b) {
 		root = new OctNode(GamaEnvelopeFactory.of(
-				Math.min(minX, env.getMinX()), Math.max(maxX, env.getMaxX()),
-				Math.min(minY, env.getMinY()), Math.max(maxY, env.getMaxY()),
-				Math.min(minZ, env.getMinZ()), Math.max(maxZ, env.getMaxZ())));
+				Math.min(b.getMinX(), env.getMinX()), Math.max(b.getMaxX(), env.getMaxX()),
+				Math.min(b.getMinY(), env.getMinY()), Math.max(b.getMaxY(), env.getMaxY()),
+				Math.min(b.getMinZ(), env.getMinZ()), Math.max(b.getMaxZ(), env.getMaxZ())));
 	}
 
-	private void expandRootBounds(final IEnvelope env, final double minX, final double maxX, final double minY, final double maxY, final double minZ, final double maxZ, final double w, final double h, final double d) {
-		final boolean expandWest = env.getMinX() < minX;
-		final boolean expandNorth = env.getMinY() < minY;
-		final boolean expandFront = env.getMinZ() < minZ;
+	private void expandRootBounds(final IEnvelope env, final IEnvelope b, final double w, final double h, final double d) {
+		final boolean expandWest = env.getMinX() < b.getMinX();
+		final boolean expandNorth = env.getMinY() < b.getMinY();
+		final boolean expandFront = env.getMinZ() < b.getMinZ();
 
-		final double newMinX = expandWest ? minX - w : minX;
-		final double newMaxX = expandWest ? maxX : maxX + w;
-		final double newMinY = expandNorth ? minY - h : minY;
-		final double newMaxY = expandNorth ? maxY : maxY + h;
-		final double newMinZ = expandFront ? minZ - d : minZ;
-		final double newMaxZ = expandFront ? maxZ : maxZ + d;
+		final double minX = expandWest ? b.getMinX() - w : b.getMinX();
+		final double maxX = expandWest ? b.getMaxX() : b.getMaxX() + w;
+		final double minY = expandNorth ? b.getMinY() - h : b.getMinY();
+		final double maxY = expandNorth ? b.getMaxY() : b.getMaxY() + h;
+		final double minZ = expandFront ? b.getMinZ() - d : b.getMinZ();
+		final double maxZ = expandFront ? b.getMaxZ() : b.getMaxZ() + d;
 
-		final IEnvelope newBounds = GamaEnvelopeFactory.of(newMinX, newMaxX, newMinY, newMaxY, newMinZ, newMaxZ);
-		final OctNode newRoot = new OctNode(newBounds);
+		final OctNode newRoot = new OctNode(GamaEnvelopeFactory.of(minX, maxX, minY, maxY, minZ, maxZ));
+		final int oldOctant = (expandFront ? 4 : 0) | (expandNorth ? 2 : 0) | (expandWest ? 1 : 0);
 
-		createChildrenForNewRoot(newRoot, newMinX, newMaxX, newMinY, newMaxY, newMinZ, newMaxZ);
-		assignOldRootToOctant(newRoot, expandFront, expandNorth, expandWest);
-
+		populateNewRootChildren(newRoot, oldOctant, minX, maxX, minY, maxY, minZ, maxZ);
 		root = newRoot;
 	}
 
-	private void createChildrenForNewRoot(final OctNode newRoot, final double minX, final double maxX, final double minY, final double maxY, final double minZ, final double maxZ) {
+	private void populateNewRootChildren(final OctNode newRoot, final int oldOctant, final double minX, final double maxX, final double minY, final double maxY, final double minZ, final double maxZ) {
 		final double hx = newRoot.halfx;
 		final double hy = newRoot.halfy;
 		final double hz = newRoot.halfz;
 
-		newRoot.nwf = new OctNode(GamaEnvelopeFactory.of(minX, hx, minY, hy, minZ, hz));
-		newRoot.nef = new OctNode(GamaEnvelopeFactory.of(hx, maxX, minY, hy, minZ, hz));
-		newRoot.swf = new OctNode(GamaEnvelopeFactory.of(minX, hx, hy, maxY, minZ, hz));
-		newRoot.sef = new OctNode(GamaEnvelopeFactory.of(hx, maxX, hy, maxY, minZ, hz));
-		newRoot.nwb = new OctNode(GamaEnvelopeFactory.of(minX, hx, minY, hy, hz, maxZ));
-		newRoot.neb = new OctNode(GamaEnvelopeFactory.of(hx, maxX, minY, hy, hz, maxZ));
-		newRoot.swb = new OctNode(GamaEnvelopeFactory.of(minX, hx, hy, maxY, hz, maxZ));
-		newRoot.seb = new OctNode(GamaEnvelopeFactory.of(hx, maxX, hy, maxY, hz, maxZ));
-	}
-
-	private void assignOldRootToOctant(final OctNode newRoot, final boolean expandFront, final boolean expandNorth, final boolean expandWest) {
-		final int oldOctant = (expandFront ? 4 : 0) | (expandNorth ? 2 : 0) | (expandWest ? 1 : 0);
-		switch (oldOctant) {
-			case 0 -> newRoot.nwf = root;
-			case 1 -> newRoot.nef = root;
-			case 2 -> newRoot.swf = root;
-			case 3 -> newRoot.sef = root;
-			case 4 -> newRoot.nwb = root;
-			case 5 -> newRoot.neb = root;
-			case 6 -> newRoot.swb = root;
-			case 7 -> newRoot.seb = root;
-			default -> {}
-		}
+		newRoot.nwf = oldOctant == 0 ? root : new OctNode(GamaEnvelopeFactory.of(minX, hx, minY, hy, minZ, hz));
+		newRoot.nef = oldOctant == 1 ? root : new OctNode(GamaEnvelopeFactory.of(hx, maxX, minY, hy, minZ, hz));
+		newRoot.swf = oldOctant == 2 ? root : new OctNode(GamaEnvelopeFactory.of(minX, hx, hy, maxY, minZ, hz));
+		newRoot.sef = oldOctant == 3 ? root : new OctNode(GamaEnvelopeFactory.of(hx, maxX, hy, maxY, minZ, hz));
+		newRoot.nwb = oldOctant == 4 ? root : new OctNode(GamaEnvelopeFactory.of(minX, hx, minY, hy, hz, maxZ));
+		newRoot.neb = oldOctant == 5 ? root : new OctNode(GamaEnvelopeFactory.of(hx, maxX, minY, hy, hz, maxZ));
+		newRoot.swb = oldOctant == 6 ? root : new OctNode(GamaEnvelopeFactory.of(minX, hx, hy, maxY, hz, maxZ));
+		newRoot.seb = oldOctant == 7 ? root : new OctNode(GamaEnvelopeFactory.of(hx, maxX, hy, maxY, hz, maxZ));
 	}
 
 	@Override

@@ -208,49 +208,51 @@ public class GamaQuadTree implements ISpatialIndex {
 		root.dispose();
 	}
 
+	private boolean isCovered(final IEnvelope env) {
+		if (env == null) return true;
+		if (env.isNull()) return true;
+		return root.bounds.covers(env);
+	}
+
 	private void ensureBoundsCover(final IEnvelope env) {
-		if (env == null || env.isNull() || root.bounds.covers(env)) return;
+		if (isCovered(env)) return;
 		while (!root.bounds.covers(env)) {
 			if (!expandRootStep(env)) break;
 		}
 	}
 
 	private boolean expandRootStep(final IEnvelope env) {
-		final double minX = root.bounds.getMinX();
-		final double maxX = root.bounds.getMaxX();
-		final double minY = root.bounds.getMinY();
-		final double maxY = root.bounds.getMaxY();
-		final double w = maxX - minX;
-		final double h = maxY - minY;
+		final IEnvelope b = root.bounds;
+		final double w = b.getWidth();
+		final double h = b.getHeight();
 
 		if (w <= 0 || h <= 0) {
-			recreateDegenerateRoot(env, minX, maxX, minY, maxY);
+			recreateDegenerateRoot(env, b);
 			return false;
 		}
 
-		expandRootBounds(env, minX, maxX, minY, maxY, w, h);
+		expandRootBounds(env, b, w, h);
 		return true;
 	}
 
-	private void recreateDegenerateRoot(final IEnvelope env, final double minX, final double maxX, final double minY, final double maxY) {
+	private void recreateDegenerateRoot(final IEnvelope env, final IEnvelope b) {
 		root = new QuadNode(GamaEnvelopeFactory.of(
-				Math.min(minX, env.getMinX()), Math.max(maxX, env.getMaxX()),
-				Math.min(minY, env.getMinY()), Math.max(maxY, env.getMaxY())));
+				Math.min(b.getMinX(), env.getMinX()), Math.max(b.getMaxX(), env.getMaxX()),
+				Math.min(b.getMinY(), env.getMinY()), Math.max(b.getMaxY(), env.getMaxY())));
 	}
 
-	private void expandRootBounds(final IEnvelope env, final double minX, final double maxX, final double minY, final double maxY, final double w, final double h) {
-		final boolean expandWest = env.getMinX() < minX;
-		final boolean expandNorth = env.getMinY() < minY;
-		final double newMinX = expandWest ? minX - w : minX;
-		final double newMaxX = expandWest ? maxX : maxX + w;
-		final double newMinY = expandNorth ? minY - h : minY;
-		final double newMaxY = expandNorth ? maxY : maxY + h;
+	private void expandRootBounds(final IEnvelope env, final IEnvelope b, final double w, final double h) {
+		final boolean expandWest = env.getMinX() < b.getMinX();
+		final boolean expandNorth = env.getMinY() < b.getMinY();
+		final double minX = expandWest ? b.getMinX() - w : b.getMinX();
+		final double maxX = expandWest ? b.getMaxX() : b.getMaxX() + w;
+		final double minY = expandNorth ? b.getMinY() - h : b.getMinY();
+		final double maxY = expandNorth ? b.getMaxY() : b.getMaxY() + h;
 
-		final IEnvelope newBounds = GamaEnvelopeFactory.of(newMinX, newMaxX, newMinY, newMaxY);
-		final QuadNode newRoot = new QuadNode(newBounds);
+		final QuadNode newRoot = new QuadNode(GamaEnvelopeFactory.of(minX, maxX, minY, maxY));
 		final int oldQuadrant = (expandNorth ? 2 : 0) | (expandWest ? 1 : 0);
 
-		newRoot.children = createExpandedChildren(newRoot, oldQuadrant, newMinX, newMaxX, newMinY, newMaxY);
+		newRoot.children = createExpandedChildren(newRoot, oldQuadrant, minX, maxX, minY, maxY);
 		root = newRoot;
 	}
 
