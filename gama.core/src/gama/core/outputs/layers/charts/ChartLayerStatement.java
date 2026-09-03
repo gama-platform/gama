@@ -741,7 +741,13 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 		string1 = getFacet(ChartLayerStatement.XTICKVALUEVISIBLE);
 		if (string1 != null) { chartOutput.setXTickValueVisible(scope, Cast.asBool(scope, string1.value(scope))); }
 		string1 = getFacet(ChartLayerStatement.YTICKVALUEVISIBLE);
-		if (string1 != null) { chartOutput.setYTickValueVisible(scope, Cast.asBool(scope, string1.value(scope))); }
+		if (string1 != null) {
+			final boolean yTickValueVisible = Cast.asBool(scope, string1.value(scope));
+			chartOutput.setYTickValueVisible(scope, yTickValueVisible);
+			if (getFacet(ChartLayerStatement.Y2TICKVALUEVISIBLE) == null) {
+				chartOutput.setY2TickValueVisible(scope, yTickValueVisible);
+			}
+		}
 		string1 = getFacet(ChartLayerStatement.Y2TICKVALUEVISIBLE);
 		if (string1 != null) { chartOutput.setY2TickValueVisible(scope, Cast.asBool(scope, string1.value(scope))); }
 		string1 = getFacet(ChartLayerStatement.TITLEVISIBLE);
