@@ -580,7 +580,8 @@ public class System {
 			value = "returns a copy of the operand.",
 			returns = "a deep copy of the operand.",
 			special_cases = { "copy(nil) returns nil.",
-					"The copy is independent of the original; modifying one does not affect the other." })
+					"The copy is independent of the original for all operand types except agents; modifying one does not affect the other.",
+					"Agents cannot be copied: copy(agent) returns the agent itself. To duplicate an agent, use the create statement instead (e.g. create species_of(agent) from: agent;)." })
 	@no_test
 	public static Object opCopy(final IScope scope, final Object o) throws GamaRuntimeException {
 		if (o instanceof IValue) return ((IValue) o).copy(scope);
