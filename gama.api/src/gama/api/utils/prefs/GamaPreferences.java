@@ -813,6 +813,14 @@ public class GamaPreferences {
 						IType.BOOL, true).in(NAME, PRESENTATION);
 
 		/**
+		 * Whether chart displays should continue to refresh even while the Modeling perspective is active (i.e., not
+		 * the simulation perspective).
+		 */
+		public static final Pref<Boolean> CHART_PERSPECTIVE =
+				create("pref_chart_continue_drawing", "Continue to draw charts when in Modeling perspective", true,
+						IType.BOOL, true).in(NAME, PRESENTATION);
+
+		/**
 		 * Whether to use a faster but potentially incomplete snapshot mechanism. Fast snapshots may be incorrect if the
 		 * display is obscured by other windows.
 		 */

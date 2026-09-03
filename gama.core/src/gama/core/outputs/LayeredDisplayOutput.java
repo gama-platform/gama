@@ -57,6 +57,7 @@ import gama.api.utils.prefs.GamaPreferences;
 import gama.core.outputs.LayeredDisplayOutput.DisplaySerializer;
 import gama.core.outputs.LayeredDisplayOutput.DisplayValidator;
 import gama.core.outputs.layers.AbstractLayerStatement;
+import gama.core.outputs.layers.charts.ChartLayerStatement;
 import gama.core.outputs.layers.properties.CameraStatement;
 import gama.core.outputs.layers.properties.LightStatement;
 import gama.core.outputs.layers.properties.RotationStatement;
@@ -664,6 +665,14 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 
 	@Override
 	public IGamaView.Display getView() { return (IGamaView.Display) super.getView(); }
+
+	@Override
+	public boolean containsChart() {
+		for (final ILayerStatement layer : getLayers()) {
+			if (layer instanceof ChartLayerStatement) return true;
+		}
+		return false;
+	}
 
 	/**
 	 * Release view.
