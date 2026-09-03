@@ -214,6 +214,7 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 			put("qml", "Style information");
 			put("gfs", "GML Feature Store");
 			put("xsd", "XML Schema Definition");
+			put("rds", "R Data Serialization file");
 		}
 	};
 
