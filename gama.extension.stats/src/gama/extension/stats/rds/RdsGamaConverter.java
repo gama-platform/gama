@@ -111,7 +111,7 @@ public class RdsGamaConverter {
 					list.add(extractVectorElement(dataVec, idx));
 				}
 			}
-			return GamaMatrixFactory.create(scope, list, cols, rows, Types.NO_TYPE);
+			return GamaMatrixFactory.createFrom(scope, list, Types.NO_TYPE, gama.api.types.geometry.GamaPointFactory.create(cols, rows));
 		}
 
 		private static IDataFrame convertDataFrame(final IScope scope, final ListVector lv) {
