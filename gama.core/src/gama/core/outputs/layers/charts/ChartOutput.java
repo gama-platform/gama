@@ -175,13 +175,11 @@ public abstract class ChartOutput implements IChart {
 	/** The series label position. */
 	protected String series_label_position = IKeyword.DEFAULT;
 
-/** The legend orientation. */
+	/** The legend orientation. */
+	protected String legend_orientation = "default";
 
-protected String legend_orientation = "default";
-
-/** Sets the legend orientation. */
-
-public void setLegendOrientation(final IScope scope, final String orient) { legend_orientation = orient; }
+	/** Sets the legend orientation. */
+	public void setLegendOrientation(final IScope scope, final String orient) { legend_orientation = orient; }
 
 
 
