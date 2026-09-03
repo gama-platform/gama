@@ -208,13 +208,66 @@ public class GamaQuadTree implements ISpatialIndex {
 		root.dispose();
 	}
 
+	private void ensureBoundsCover(final IEnvelope env) {
+		if (env == null || env.isNull() || root.bounds.covers(env)) return;
+		while (!root.bounds.covers(env)) {
+			final double minX = root.bounds.getMinX();
+			final double maxX = root.bounds.getMaxX();
+			final double minY = root.bounds.getMinY();
+			final double maxY = root.bounds.getMaxY();
+			double w = maxX - minX;
+			double h = maxY - minY;
+			if (w <= 0 || h <= 0) {
+				w = Math.max(1.0, env.getWidth());
+				h = Math.max(1.0, env.getHeight());
+				root = new QuadNode(GamaEnvelopeFactory.of(
+						Math.min(minX, env.getMinX()), Math.max(maxX, env.getMaxX()),
+						Math.min(minY, env.getMinY()), Math.max(maxY, env.getMaxY())));
+				break;
+			}
+			final boolean expandWest = env.getMinX() < minX;
+			final boolean expandNorth = env.getMinY() < minY;
+			final double newMinX = expandWest ? minX - w : minX;
+			final double newMaxX = expandWest ? maxX : maxX + w;
+			final double newMinY = expandNorth ? minY - h : minY;
+			final double newMaxY = expandNorth ? maxY : maxY + h;
+
+			final IEnvelope newBounds = GamaEnvelopeFactory.of(newMinX, newMaxX, newMinY, newMaxY);
+			final QuadNode newRoot = new QuadNode(newBounds);
+			final QuadNode[] ch = new QuadNode[4];
+
+			final int oldQuadrant = (expandNorth ? 2 : 0) | (expandWest ? 1 : 0);
+			ch[oldQuadrant] = root;
+
+			final double halfx = newRoot.halfx;
+			final double halfy = newRoot.halfy;
+
+			if (0 != oldQuadrant) {
+				ch[0] = new QuadNode(GamaEnvelopeFactory.of(newMinX, halfx, newMinY, halfy));
+			}
+			if (1 != oldQuadrant) {
+				ch[1] = new QuadNode(GamaEnvelopeFactory.of(halfx, newMaxX, newMinY, halfy));
+			}
+			if (2 != oldQuadrant) {
+				ch[2] = new QuadNode(GamaEnvelopeFactory.of(newMinX, halfx, halfy, newMaxY));
+			}
+			if (3 != oldQuadrant) {
+				ch[3] = new QuadNode(GamaEnvelopeFactory.of(halfx, newMaxX, halfy, newMaxY));
+			}
+			newRoot.children = ch;
+			root = newRoot;
+		}
+	}
+
 	@Override
 	public void insert(final IAgent agent) {
 		if (agent == null) return;
+		final IEnvelope env = agent.getEnvelope();
+		ensureBoundsCover(env);
 		if (agent.isPoint()) {
 			root.add(agent.getLocation(), agent);
 		} else {
-			root.add(agent.getEnvelope(), agent);
+			root.add(env, agent);
 		}
 	}
 
