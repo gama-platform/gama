@@ -339,10 +339,10 @@ public class RdsGamaConverter {
 		}
 
 		private static LogicalArrayVector buildLogicalVector(final List<?> list, final int size) {
-			boolean[] arr = new boolean[size];
+			Logical[] arr = new Logical[size];
 			for (int i = 0; i < size; i++) {
 				Object o = list.get(i);
-				arr[i] = (o != null && (Boolean) o);
+				arr[i] = (o == null) ? Logical.NA : ((Boolean) o ? Logical.TRUE : Logical.FALSE);
 			}
 			return new LogicalArrayVector(arr);
 		}
