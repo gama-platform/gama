@@ -485,6 +485,10 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 	 * @return the number axis
 	 */
 	public NumberAxis formatYAxis(final IScope scope, final NumberAxis axis) {
+		return formatYAxis(scope, axis, false);
+	}
+
+	public NumberAxis formatYAxis(final IScope scope, final NumberAxis axis, final boolean isSecondAxis) {
 		Color ac = IColor.toAWTColor(axesColor);
 		axis.setAxisLinePaint(ac);
 		axis.setTickLabelFont(getTickFont());
@@ -494,21 +498,15 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 			axis.setLabelPaint(tc);
 			axis.setTickLabelPaint(tc);
 		}
-		axis.setAxisLinePaint(ac);
-		axis.setLabelFont(getLabelFont());
-		axis.setTickLabelFont(getTickFont());
-		if (textColor != null) {
-			Color tc = IColor.toAWTColor(textColor);
-			axis.setLabelPaint(tc);
-			axis.setTickLabelPaint(tc);
-		}
-		if (!this.getYTickValueVisible(scope)) {
+		boolean visible = isSecondAxis ? this.getY2TickValueVisible(scope) : this.getYTickValueVisible(scope);
+		if (!visible) {
 			axis.setTickMarksVisible(false);
 			axis.setTickLabelsVisible(false);
-
+		} else {
+			axis.setTickMarksVisible(true);
+			axis.setTickLabelsVisible(true);
 		}
 		return axis;
-
 	}
 
 	@Override
@@ -524,9 +522,11 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 				final NumberAxis secondAxis = new NumberAxis("");
 				((XYPlot) this.chart.getPlot()).setRangeAxis(1, secondAxis);
 				range2Axis = (NumberAxis) ((XYPlot) this.chart.getPlot()).getRangeAxis(1);
-				range2Axis = formatYAxis(scope, range2Axis);
+				range2Axis = formatYAxis(scope, range2Axis, true);
 
 				((XYPlot) this.chart.getPlot()).setRangeAxis(1, range2Axis);
+			} else {
+				formatYAxis(scope, range2Axis, true);
 			}
 		}
 
@@ -539,14 +539,16 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 		if (getY_LogScale(scope)) {
 			LogarithmicAxis logAxis = new LogarithmicAxis(rangeAxis.getLabel());
 			logAxis.setAllowNegativesFlag(true);
-			logAxis = (LogarithmicAxis) formatYAxis(scope, logAxis);
+			logAxis = (LogarithmicAxis) formatYAxis(scope, logAxis, false);
 			((XYPlot) this.chart.getPlot()).setRangeAxis(logAxis);
 			rangeAxis = logAxis;
+		} else {
+			formatYAxis(scope, rangeAxis, false);
 		}
 		if (secondaxis && getY2_LogScale(scope)) {
 			LogarithmicAxis logAxis = new LogarithmicAxis(range2Axis.getLabel());
 			logAxis.setAllowNegativesFlag(true);
-			logAxis = (LogarithmicAxis) formatYAxis(scope, logAxis);
+			logAxis = (LogarithmicAxis) formatYAxis(scope, logAxis, true);
 			((XYPlot) this.chart.getPlot()).setRangeAxis(1, logAxis);
 			range2Axis = logAxis;
 		}

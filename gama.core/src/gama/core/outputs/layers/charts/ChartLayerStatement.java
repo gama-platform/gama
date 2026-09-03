@@ -163,6 +163,11 @@ import gama.core.outputs.layers.AbstractLayerStatement;
 						optional = true,
 						doc = @doc ("Y tick values visible")),
 				@facet (
+						name = ChartLayerStatement.Y2TICKVALUEVISIBLE,
+						type = IType.BOOL,
+						optional = true,
+						doc = @doc ("Y2 tick values visible")),
+				@facet (
 						name = ChartLayerStatement.TITLEVISIBLE,
 						type = IType.BOOL,
 						optional = true,
@@ -415,6 +420,9 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 
 	/** The Constant YTICKVALUEVISIBLE. */
 	public static final String YTICKVALUEVISIBLE = "y_tick_values_visible";
+
+	/** The Constant Y2TICKVALUEVISIBLE. */
+	public static final String Y2TICKVALUEVISIBLE = "y2_tick_values_visible";
 
 	/** The Constant TICKFONTFACE. */
 	public static final String TICKFONTFACE = "tick_font";
@@ -734,6 +742,8 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 		if (string1 != null) { chartOutput.setXTickValueVisible(scope, Cast.asBool(scope, string1.value(scope))); }
 		string1 = getFacet(ChartLayerStatement.YTICKVALUEVISIBLE);
 		if (string1 != null) { chartOutput.setYTickValueVisible(scope, Cast.asBool(scope, string1.value(scope))); }
+		string1 = getFacet(ChartLayerStatement.Y2TICKVALUEVISIBLE);
+		if (string1 != null) { chartOutput.setY2TickValueVisible(scope, Cast.asBool(scope, string1.value(scope))); }
 		string1 = getFacet(ChartLayerStatement.TITLEVISIBLE);
 		if (string1 != null) { chartOutput.setTitleVisible(scope, Cast.asBool(scope, string1.value(scope))); }
 
