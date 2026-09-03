@@ -90,6 +90,13 @@ import gama.api.ui.layers.ILayerStatement;
 public interface IOutput extends ISymbol, IStepable, IScoped {
 
 	/**
+	 * Checks if this output contains any chart layers.
+	 *
+	 * @return true if at least one layer is a chart layer
+	 */
+	default boolean containsChart() { return false; }
+
+	/**
 	 * The Interface Display.
 	 */
 	interface Display extends IOutput {
