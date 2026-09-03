@@ -21,9 +21,11 @@ public class SaveSimulationsArtifactsDialog extends TitleAreaDialog {
 
     private Text txtOutputPath;
     private Text txtOutputDirectoryName;
+    private Button openFileExplorerButton;
 
     private String outputPath = "";
     private String outputDirectoryName = "";
+    private boolean openFileExplorer = false;
     
     public SaveSimulationsArtifactsDialog() {
         super(Display.getDefault().getActiveShell());
@@ -52,8 +54,21 @@ public class SaveSimulationsArtifactsDialog extends TitleAreaDialog {
         
         createPathSection(container);
         createDirectoryNameSection(container);
+        createOptionsSection(container);
         return area;
     }
+
+    private void createOptionsSection(Composite container) {
+        CLabel lblOptions = new CLabel(container, SWT.NONE);
+        lblOptions.setText("Options :");
+        lblOptions.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1));
+
+        openFileExplorerButton = new Button(container, SWT.CHECK);
+        openFileExplorerButton.setText("Open file explorer after saving ?");
+        openFileExplorerButton.setSelection(this.openFileExplorer);
+        openFileExplorerButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 3, 1));
+    }
+
 
     private void createPathSection(Composite container) {
         CLabel lblPath = new CLabel(container, SWT.NONE);
@@ -99,6 +114,7 @@ public class SaveSimulationsArtifactsDialog extends TitleAreaDialog {
     protected void okPressed() {
         outputPath = txtOutputPath.getText().trim();
         outputDirectoryName = txtOutputDirectoryName.getText().trim();
+        openFileExplorer = openFileExplorerButton.getSelection();
 
         if (outputPath.isEmpty()) {
             setMessage("Error : The destination path cannot be empty.", IMessageProvider.ERROR);
@@ -117,8 +133,11 @@ public class SaveSimulationsArtifactsDialog extends TitleAreaDialog {
         return outputPath;
     }
 
-    public String getOutputDirectoryName()
-    {
+    public String getOutputDirectoryName() {
         return outputDirectoryName;
+    }
+
+    public boolean getOpenFileExplorer(){
+        return openFileExplorer;
     }
 }

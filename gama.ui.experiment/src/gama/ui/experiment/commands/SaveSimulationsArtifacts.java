@@ -12,12 +12,8 @@ package gama.ui.experiment.commands;
 
 import java.util.Map;
 import java.nio.file.Path;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-import java.util.stream.Stream;
 import java.io.IOException;
 import java.awt.Desktop;
-import java.lang.Iterable;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -40,52 +36,43 @@ public class SaveSimulationsArtifacts extends AbstractHandler implements IElemen
 	@Override
 	public Object execute(final ExecutionEvent event) throws ExecutionException {
 
-		Path projectPath = Path.of(StartupModelHelper.getInstance().getModel().getProjectPath());
 		final SaveSimulationsArtifactsDialog dialog = new SaveSimulationsArtifactsDialog();
 		final int result = dialog.open();
-		
+
 		if (result != IDialogConstants.OK_ID)
 			return null;	
-	
-		Path outputParentDirectory = Path.of(dialog.getOutputPath());
-		String outputDirectoryName = dialog.getOutputDirectoryName();
-
-		Path targetSavePath = outputParentDirectory.resolve(outputDirectoryName);
 
 		new Thread(() -> {
-
-			try(Stream<Path> stream = Files.walk(projectPath))
+			try
 			{
-				Files.createDirectories(targetSavePath);
-				
-				for (Path path : (Iterable<Path>) stream::iterator) {
-						Path targetPath = targetSavePath.resolve(projectPath.relativize(path));
+				if(StartupModelHelper.getInstance().areThereAnyArtifactsToSave())
+				{	
+					final Path outputParentDirectory = Path.of(dialog.getOutputPath());
+					final String outputDirectoryName = dialog.getOutputDirectoryName();
+					final boolean openFileExplorer = dialog.getOpenFileExplorer(); 
 
-						if (targetPath.getParent() != null)
-							Files.createDirectories(targetPath.getParent());
+					final Path targetSavePath = outputParentDirectory.resolve(outputDirectoryName);
 
-						if(! Files.isDirectory(targetPath))
-							Files.copy(path,targetPath,StandardCopyOption.REPLACE_EXISTING);
-				}
-
-			
-				System.out.println("Simulation artifacts saved successfully.");
-				
-				if(
-					Desktop.isDesktopSupported()
-					&&
-					GAMA.getGui()
-						.getDialogFactory()
-							.question("Simulation artifacts save successful","Do you want to show the target directory ?")
-				)
-				{
-					Desktop desktop = Desktop.getDesktop();
-					try {
-						desktop.open(targetSavePath.toFile());
-					} catch (IOException ioe) {
-						ioe.printStackTrace();
+					StartupModelHelper.getInstance().saveSimulationArtifacts(targetSavePath);
+					System.out.println("Simulation artifacts saved successfully.");
+					
+					if(Desktop.isDesktopSupported() && openFileExplorer)
+					{
+						Desktop desktop = Desktop.getDesktop();
+						try {
+							desktop.open(targetSavePath.toFile());
+						} catch (IOException ioe) {
+							ioe.printStackTrace();
+						}
 					}
-
+				} else {
+					
+					System.out.println("No new artifacts worth saving have been found.");
+					
+					if(Desktop.isDesktopSupported())
+						GAMA.getGui()
+							.getDialogFactory()
+								.inform("No new artifacts worth saving have been found.");
 				}
 
 			} catch (IOException e) {

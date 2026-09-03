@@ -12,6 +12,7 @@ package gama.ui.application.workbench;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.nio.file.Path;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
@@ -38,7 +39,10 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.internal.WorkbenchWindow;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
+import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.jface.dialogs.IDialogConstants;
 
+import gama.export.ui.SaveSimulationsArtifactsDialog;
 import gama.api.GAMA;
 import gama.api.additions.delegates.IEventLayerDelegate;
 import gama.api.additions.registries.GamaAdditionRegistry;
@@ -279,10 +283,52 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 	@Override
 	public boolean preShutdown() {
 		try {
+			if(FLAGS.SIMULATION_ONLY
+			   && StartupModelHelper.getInstance().areThereAnyArtifactsToSave()
+			   && GAMA.getGui()
+				.getDialogFactory()
+					.question("New simulation artifacts have been found.","Do you want to save them ?")
+			)
+			{
+				IHandlerService handlerService =
+					(IHandlerService) PlatformUI.getWorkbench()
+						.getService(IHandlerService.class);
+
+				if (handlerService != null) {
+					try {
+						handlerService.executeCommand(
+							"gama.application.commands.SaveSimulationsArtifacts",
+							null
+						);
+
+					} catch (Exception exception) {
+						exception.printStackTrace();
+					}
+				}
+			// 	final SaveSimulationsArtifactsDialog dialog = new SaveSimulationsArtifactsDialog();
+			// 	final int result = dialog.open();
+				
+			// 	if (result == IDialogConstants.OK_ID)
+			// 	{
+			// 		Path outputParentDirectory = Path.of(dialog.getOutputPath());
+			// 		String outputDirectoryName = dialog.getOutputDirectoryName();
+
+			// 		Path targetSavePath = outputParentDirectory.resolve(outputDirectoryName);
+			// 		try {
+			// 			StartupModelHelper.getInstance().saveSimulationArtifacts(targetSavePath);
+			// 		} catch (final Exception exception) {
+			// 			System.out.println("An error occured while saving simulation artifacts : ");
+			// 			exception.printStackTrace();
+			// 			GAMA.getGui().getDialogFactory().error("An error occured while saving simulation artifacts.");
+			// 		}
+			// 	}
+			}			
+
 			GAMA.closeAllExperiments(true, true);
 			PerspectiveHelper.deleteCurrentSimulationPerspective();
 			// So that they are not saved to the workbench.xmi file
 			PerspectiveHelper.cleanPerspectives();
+
 		} catch (final Exception e) {
 			e.printStackTrace();
 		}

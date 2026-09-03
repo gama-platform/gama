@@ -1,9 +1,18 @@
 package gama.ui.application.workbench;
     
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
+import java.util.HashSet;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.io.File;
-import java.util.Arrays;
+import java.io.IOException;
+import java.lang.Iterable;
+import java.time.Instant;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.equinox.app.IApplication;
@@ -35,13 +44,19 @@ public class StartupModelHelper
 
     private IModelSpecies model;
 
+    private Path projectPath;
+
     private GamlModelBuilder builder = null;
 
     private String specificModelPathStr = null;
 
     private String experiment;
 
-    public StartupModelHelper() {}
+    private long lastSimulationArtifactsUpdateMs;
+
+    public StartupModelHelper() {
+        lastSimulationArtifactsUpdateMs = Instant.now().toEpochMilli();
+    }
 
     public Object initialize()
     {
@@ -139,6 +154,44 @@ public class StartupModelHelper
         return builder;
     }
 
+    public boolean saveSimulationArtifacts(Path targetSavePath) throws IOException {
+
+        Stream<Path> stream = Files.walk(getProjectPath());
+        boolean somethingHasBeenSaved = false;
+                
+        for (Path path : (Iterable<Path>) stream::iterator) {
+
+                if(path.toFile().lastModified() <= lastSimulationArtifactsUpdateMs)
+                    continue;
+                
+                Path targetPath = targetSavePath.resolve(getProjectPath().relativize(path));
+
+                if (targetPath.getParent() != null)
+                       Files.createDirectories(targetPath.getParent());
+
+                if(! Files.isDirectory(targetPath))
+                {
+                    Files.copy(path,targetPath,StandardCopyOption.REPLACE_EXISTING);
+                    somethingHasBeenSaved = true;
+                }
+        }
+        
+        lastSimulationArtifactsUpdateMs = Instant.now().toEpochMilli();
+        return somethingHasBeenSaved;   
+    }
+
+    public boolean areThereAnyArtifactsToSave() throws IOException {
+        Stream<Path> stream = Files.walk(getProjectPath());
+
+        for (Path path : (Iterable<Path>) stream::iterator) {
+
+                if(path.toFile().lastModified() > lastSimulationArtifactsUpdateMs)
+                    return true;
+        }
+        
+        return false;   
+    }
+
     public IModelSpecies getModel()
     {
         if(model == null)
@@ -169,6 +222,14 @@ public class StartupModelHelper
         }
 
         return model;
+    }
+
+    public Path getProjectPath()
+    {
+        if(projectPath == null)
+		    projectPath = Path.of(getModel().getProjectPath());
+        
+        return projectPath;
     }
 
     public void startSimulation()
