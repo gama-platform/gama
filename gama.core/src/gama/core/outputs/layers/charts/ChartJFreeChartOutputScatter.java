@@ -488,7 +488,7 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 		return formatYAxis(scope, axis, false);
 	}
 
-	public NumberAxis formatYAxis(final IScope scope, final NumberAxis axis, final boolean isSecondAxis) {
+	private NumberAxis formatYAxis(final IScope scope, final NumberAxis axis, final boolean isSecondAxis) {
 		Color ac = IColor.toAWTColor(axesColor);
 		axis.setAxisLinePaint(ac);
 		axis.setTickLabelFont(getTickFont());
