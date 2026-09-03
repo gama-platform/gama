@@ -645,8 +645,8 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 			else if (axisIndex == 1) chartOutput.setYRangeMinMax(scope, point.getX(), point.getY());
 			else if (axisIndex == 2) chartOutput.setY2RangeMinMax(scope, point.getX(), point.getY());
 		} else if (range instanceof IList<?> list) {
-			float min = Cast.asFloat(scope, list.get(0));
-			float max = Cast.asFloat(scope, list.get(1));
+			double min = Cast.asFloat(scope, list.get(0));
+			double max = Cast.asFloat(scope, list.get(1));
 			if (axisIndex == 0) chartOutput.setXRangeMinMax(scope, min, max);
 			else if (axisIndex == 1) chartOutput.setYRangeMinMax(scope, min, max);
 			else if (axisIndex == 2) chartOutput.setY2RangeMinMax(scope, min, max);
