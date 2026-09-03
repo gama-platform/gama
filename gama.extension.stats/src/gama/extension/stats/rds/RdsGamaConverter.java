@@ -263,8 +263,11 @@ public class RdsGamaConverter {
 		}
 
 		private static SEXP scalarToSexp(final Object value) {
-			if (value instanceof Integer || value instanceof Long) {
+			if (value instanceof Byte || value instanceof Short || value instanceof Integer) {
 				return new IntArrayVector(((Number) value).intValue());
+			}
+			if (value instanceof Long) {
+				return new DoubleArrayVector(((Number) value).doubleValue());
 			}
 			if (value instanceof Number num) {
 				return new DoubleArrayVector(num.doubleValue());
