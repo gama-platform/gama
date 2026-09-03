@@ -421,7 +421,7 @@ public class RdsGamaConverter {
 					IAgent ag = Cast.asAgent(scope, list.get(i));
 					attrValues.add(ag.getDirectVarValue(scope, attr));
 				}
-				builder.add(attr, RdsExporter.exportValue(scope, attrValues));
+				builder.add(attr, RdsExporter.toVectorSexp(scope, attrValues));
 			}
 		}
 	}
