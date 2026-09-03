@@ -89,12 +89,12 @@ public class RdsGamaConverter {
 
 		private static boolean isDataFrame(final SEXP sexp) {
 			if (sexp.inherits("data.frame")) return true;
-			return sexp instanceof ListVector && sexp.getAttribute(Symbol.get("row.names")) != null;
+			return sexp instanceof ListVector && sexp.getAttribute(Symbol.get("row.names")) != Null.INSTANCE;
 		}
 
 		private static boolean isFactor(final SEXP sexp) {
 			if (sexp.inherits("factor")) return true;
-			return sexp.getAttribute(Symbol.get("levels")) != null;
+			return sexp.getAttribute(Symbol.get("levels")) != Null.INSTANCE;
 		}
 
 		private static IMatrix convertMatrix(final IScope scope, final SEXP sexp) {
