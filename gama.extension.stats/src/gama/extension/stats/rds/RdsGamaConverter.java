@@ -60,8 +60,7 @@ public class RdsGamaConverter {
 		if (isFactor(sexp)) return convertFactor(sexp);
 
 		if (sexp instanceof ListVector lv) {
-			if (lv.hasNames()) return convertNamedList(scope, lv);
-			return convertGenericList(scope, lv);
+			return lv.hasNames() ? convertNamedList(scope, lv) : convertGenericList(scope, lv);
 		}
 
 		if (sexp instanceof PairList pl) return convertPairList(scope, pl);
@@ -207,7 +206,7 @@ public class RdsGamaConverter {
 		if (value instanceof IDataFrame df) return dataFrameToSexp(scope, df);
 		if (value instanceof IMatrix matrix) return matrixToSexp(scope, matrix);
 		if (value instanceof IMap map) return mapToSexp(scope, map);
-		if (isAgentList(value)) return agentListToSexp(scope, (IList) value);
+		if (isAgentList(value)) return new AgentExporter(scope, (IList) value).export();
 		if (value instanceof IList list) return toVectorSexp(scope, list);
 
 		return scalarToSexp(value);
@@ -257,53 +256,60 @@ public class RdsGamaConverter {
 		return value instanceof IList list && !list.isEmpty() && list.get(0) instanceof IAgent;
 	}
 
-	private static SEXP agentListToSexp(final IScope scope, final IList list) {
-		IAgent firstAgent = (IAgent) list.get(0);
-		ITypeDescription sd = firstAgent.getSpecies().getDescription();
-		Collection<String> attrNames = new ArrayList<>(sd.getAttributeNames());
-		attrNames.removeAll(SaveStatement.NON_SAVEABLE_ATTRIBUTE_NAMES);
+	private static class AgentExporter {
+		private final IScope scope;
+		private final IList list;
+		private final int count;
+		private final ListVector.NamedBuilder builder = ListVector.newNamedBuilder();
 
-		ListVector.NamedBuilder builder = ListVector.newNamedBuilder();
-		int agentCount = list.size();
-
-		addAgentBaseColumns(scope, list, builder, agentCount);
-		addAgentCustomAttributes(scope, list, builder, agentCount, attrNames);
-
-		ListVector lv = builder.build();
-		SEXP withClass = lv.setAttribute("class", new StringArrayVector("data.frame"));
-		return withClass.setAttribute("row.names", createRowNames(agentCount));
-	}
-
-	private static void addAgentBaseColumns(final IScope scope, final IList list, final ListVector.NamedBuilder builder,
-			final int count) {
-		String[] names = new String[count];
-		double[] locX = new double[count];
-		double[] locY = new double[count];
-		double[] locZ = new double[count];
-
-		for (int i = 0; i < count; i++) {
-			IAgent ag = Cast.asAgent(scope, list.get(i));
-			names[i] = ag.getName();
-			locX[i] = ag.getLocation().getX();
-			locY[i] = ag.getLocation().getY();
-			locZ[i] = ag.getLocation().getZ();
+		AgentExporter(final IScope scope, final IList list) {
+			this.scope = scope;
+			this.list = list;
+			this.count = list.size();
 		}
 
-		builder.add("name", new StringArrayVector(names));
-		builder.add("x", new DoubleArrayVector(locX));
-		builder.add("y", new DoubleArrayVector(locY));
-		builder.add("z", new DoubleArrayVector(locZ));
-	}
+		SEXP export() {
+			addBaseColumns();
+			addCustomAttributes();
+			ListVector lv = builder.build();
+			SEXP withClass = lv.setAttribute("class", new StringArrayVector("data.frame"));
+			return withClass.setAttribute("row.names", createRowNames(count));
+		}
 
-	private static void addAgentCustomAttributes(final IScope scope, final IList list,
-			final ListVector.NamedBuilder builder, final int count, final Collection<String> attrNames) {
-		for (String attr : attrNames) {
-			List<Object> attrValues = new ArrayList<>(count);
+		private void addBaseColumns() {
+			String[] names = new String[count];
+			double[] locX = new double[count];
+			double[] locY = new double[count];
+			double[] locZ = new double[count];
+
 			for (int i = 0; i < count; i++) {
 				IAgent ag = Cast.asAgent(scope, list.get(i));
-				attrValues.add(ag.getDirectVarValue(scope, attr));
+				names[i] = ag.getName();
+				locX[i] = ag.getLocation().getX();
+				locY[i] = ag.getLocation().getY();
+				locZ[i] = ag.getLocation().getZ();
 			}
-			builder.add(attr, toVectorSexp(scope, attrValues));
+
+			builder.add("name", new StringArrayVector(names));
+			builder.add("x", new DoubleArrayVector(locX));
+			builder.add("y", new DoubleArrayVector(locY));
+			builder.add("z", new DoubleArrayVector(locZ));
+		}
+
+		private void addCustomAttributes() {
+			IAgent firstAgent = (IAgent) list.get(0);
+			ITypeDescription sd = firstAgent.getSpecies().getDescription();
+			Collection<String> attrNames = new ArrayList<>(sd.getAttributeNames());
+			attrNames.removeAll(SaveStatement.NON_SAVEABLE_ATTRIBUTE_NAMES);
+
+			for (String attr : attrNames) {
+				List<Object> attrValues = new ArrayList<>(count);
+				for (int i = 0; i < count; i++) {
+					IAgent ag = Cast.asAgent(scope, list.get(i));
+					attrValues.add(ag.getDirectVarValue(scope, attr));
+				}
+				builder.add(attr, toVectorSexp(scope, attrValues));
+			}
 		}
 	}
 
@@ -344,23 +350,32 @@ public class RdsGamaConverter {
 	private enum ListTypeKind { INT, DOUBLE, BOOL, STRING, MIXED }
 
 	private static ListTypeKind determineListType(final List<?> list) {
-		boolean allDouble = true;
-		boolean allInt = true;
-		boolean allString = true;
-		boolean allBool = true;
-
+		ListTypeKind common = null;
 		for (Object elem : list) {
 			if (elem == null) continue;
-			if (!(elem instanceof Double || elem instanceof Float)) allDouble = false;
-			if (!(elem instanceof Integer || elem instanceof Short || elem instanceof Byte)) allInt = false;
-			if (!(elem instanceof String)) allString = false;
-			if (!(elem instanceof Boolean)) allBool = false;
+			ListTypeKind kind = getElementKind(elem);
+			if (kind == ListTypeKind.MIXED) return ListTypeKind.MIXED;
+			if (common == null) {
+				common = kind;
+			} else if (common != kind) {
+				common = resolveBroaderType(common, kind);
+				if (common == ListTypeKind.MIXED) return ListTypeKind.MIXED;
+			}
 		}
+		return common == null ? ListTypeKind.DOUBLE : common;
+	}
 
-		if (allInt) return ListTypeKind.INT;
-		if (allDouble) return ListTypeKind.DOUBLE;
-		if (allBool) return ListTypeKind.BOOL;
-		if (allString) return ListTypeKind.STRING;
+	private static ListTypeKind resolveBroaderType(final ListTypeKind current, final ListTypeKind next) {
+		if (current == ListTypeKind.INT && next == ListTypeKind.DOUBLE) return ListTypeKind.DOUBLE;
+		if (current == ListTypeKind.DOUBLE && next == ListTypeKind.INT) return ListTypeKind.DOUBLE;
+		return ListTypeKind.MIXED;
+	}
+
+	private static ListTypeKind getElementKind(final Object elem) {
+		if (elem instanceof Integer || elem instanceof Short || elem instanceof Byte) return ListTypeKind.INT;
+		if (elem instanceof Double || elem instanceof Float || elem instanceof Long) return ListTypeKind.DOUBLE;
+		if (elem instanceof Boolean) return ListTypeKind.BOOL;
+		if (elem instanceof String) return ListTypeKind.STRING;
 		return ListTypeKind.MIXED;
 	}
 
