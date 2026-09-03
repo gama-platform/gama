@@ -111,12 +111,12 @@ public class RdsGamaConverter {
 					list.add(extractVectorElement(dataVec, idx));
 				}
 			}
-			return GamaMatrixFactory.createFrom(scope, list, Types.NO_TYPE, gama.api.types.geometry.GamaPointFactory.create(cols, rows));
+			return GamaMatrixFactory.create(scope, list, cols, rows, Types.NO_TYPE);
 		}
 
 		private static IDataFrame convertDataFrame(final IScope scope, final ListVector lv) {
 			IList<String> colNames = GamaListFactory.create(Types.STRING);
-			IList<IList<Object>> colData = GamaListFactory.create();
+			IList colData = GamaListFactory.create();
 
 			for (int i = 0; i < lv.length(); i++) {
 				String name = lv.hasNames() ? lv.getName(i) : "col_" + i;
@@ -194,13 +194,20 @@ public class RdsGamaConverter {
 		private static Object extractVectorElement(final Vector vec, final int i) {
 			if (vec.isElementNA(i)) return null;
 
-			return switch (vec.getVectorType()) {
-				case DOUBLE -> vec.getElementAsDouble(i);
-				case INTEGER -> vec.getElementAsInt(i);
-				case STRING -> vec.getElementAsString(i);
-				case LOGICAL -> vec.getElementAsLogical(i) == Logical.TRUE;
-				default -> vec.getElementAsObject(i);
-			};
+			if (vec instanceof DoubleArrayVector || vec.getVectorType() == Vector.Type.DOUBLE) {
+				return vec.getElementAsDouble(i);
+			}
+			if (vec instanceof IntArrayVector || vec.getVectorType() == Vector.Type.INTEGER) {
+				return vec.getElementAsInt(i);
+			}
+			if (vec instanceof StringArrayVector || vec.getVectorType() == Vector.Type.STRING) {
+				return vec.getElementAsString(i);
+			}
+			if (vec instanceof LogicalArrayVector || vec.getVectorType() == Vector.Type.LOGICAL) {
+				Logical l = vec.getElementAsLogical(i);
+				return l == Logical.TRUE;
+			}
+			return vec.getElementAsObject(i);
 		}
 	}
 
@@ -263,11 +270,8 @@ public class RdsGamaConverter {
 		}
 
 		private static SEXP scalarToSexp(final Object value) {
-			if (value instanceof Byte || value instanceof Short || value instanceof Integer) {
+			if (value instanceof Integer || value instanceof Long) {
 				return new IntArrayVector(((Number) value).intValue());
-			}
-			if (value instanceof Long) {
-				return new DoubleArrayVector(((Number) value).doubleValue());
 			}
 			if (value instanceof Number num) {
 				return new DoubleArrayVector(num.doubleValue());
@@ -339,10 +343,10 @@ public class RdsGamaConverter {
 		}
 
 		private static LogicalArrayVector buildLogicalVector(final List<?> list, final int size) {
-			Logical[] arr = new Logical[size];
+			boolean[] arr = new boolean[size];
 			for (int i = 0; i < size; i++) {
 				Object o = list.get(i);
-				arr[i] = (o == null) ? Logical.NA : ((Boolean) o ? Logical.TRUE : Logical.FALSE);
+				arr[i] = (o != null && (Boolean) o);
 			}
 			return new LogicalArrayVector(arr);
 		}

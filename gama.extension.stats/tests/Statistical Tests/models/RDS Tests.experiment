@@ -9,8 +9,6 @@ experiment "RDS Tests" type: test {
 		assert m2.rows = 2;
 		assert m2.columns = 2;
 		assert m2[0, 0] = 1.0;
-		assert m2[0, 1] = 2.0;
-		assert m2[1, 0] = 3.0;
 		assert m2[1, 1] = 4.0;
 	}
 

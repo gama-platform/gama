@@ -27,6 +27,7 @@ import gama.api.gaml.symbols.Facets;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.file.GamaFile;
+import gama.api.types.misc.IContainer;
 import gama.api.utils.geometry.IEnvelope;
 import se.alipsa.rdatautils.RDataUtil;
 
@@ -40,7 +41,7 @@ import se.alipsa.rdatautils.RDataUtil;
 		concept = { IConcept.FILE, IConcept.STATISTIC },
 		doc = @doc ("A file that reads and writes R RDS data serialization files (.rds)"))
 @SuppressWarnings ({ "unchecked", "rawtypes" })
-public class GamaRdsFile extends GamaFile<Object, Object> {
+public class GamaRdsFile extends GamaFile<IContainer, Object> {
 
 	/**
 	 * Creates an rds_file object from a file path.
@@ -62,7 +63,7 @@ public class GamaRdsFile extends GamaFile<Object, Object> {
 			examples = { @example (
 					value = "file f <- rds_file(\"out.rds\", my_dataframe);",
 					isExecutable = false) })
-	public GamaRdsFile(final IScope scope, final String pathName, final Object container) {
+	public GamaRdsFile(final IScope scope, final String pathName, final IContainer container) {
 		super(scope, pathName, container);
 	}
 
@@ -76,7 +77,9 @@ public class GamaRdsFile extends GamaFile<Object, Object> {
 		try (InputStream is = new FileInputStream(file)) {
 			SEXP sexp = RDataUtil.read(is);
 			Object converted = RdsGamaConverter.toGamaObject(scope, sexp);
-			setBuffer(converted);
+			if (converted instanceof IContainer container) {
+				setBuffer(container);
+			}
 		} catch (IOException e) {
 			throw GamaRuntimeException.create(e, scope);
 		}
