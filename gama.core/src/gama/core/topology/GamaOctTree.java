@@ -114,7 +114,7 @@ public class GamaOctTree implements ISpatialIndex {
 	/**
 	 * The root node of the octree. It covers the entire simulation envelope.
 	 */
-	final OctNode root;
+	volatile OctNode root;
 
 	/**
 	 * The maximum number of agents that a single {@link OctNode} may hold before it is split into eight children.
@@ -466,13 +466,26 @@ public class GamaOctTree implements ISpatialIndex {
 	}
 
 	private void recreateDegenerateRoot(final IEnvelope env, final IEnvelope b) {
+		final OctNode oldRoot = root;
 		final double minX = Math.min(b.getMinX(), env.getMinX());
 		final double maxX = Math.max(b.getMaxX(), env.getMaxX());
 		final double minY = Math.min(b.getMinY(), env.getMinY());
 		final double maxY = Math.max(b.getMaxY(), env.getMaxY());
 		final double minZ = Math.min(b.getMinZ(), env.getMinZ());
 		final double maxZ = Math.max(b.getMaxZ(), env.getMaxZ());
-		root = new OctNode(GamaEnvelopeFactory.of(minX, maxX, minY, maxY, minZ, maxZ));
+		final OctNode newRoot = new OctNode(GamaEnvelopeFactory.of(minX, maxX, minY, maxY, minZ, maxZ));
+
+		oldRoot.objects.forEach((a, e) -> {
+			if (a != null && !a.dead() && e != null) {
+				if (e instanceof IPoint) {
+					newRoot.add((IPoint) e, a);
+				} else {
+					newRoot.add((IEnvelope) e, a);
+				}
+			}
+		});
+		oldRoot.objects.clear();
+		root = newRoot;
 	}
 
 	private void expandRootBounds(final IEnvelope env, final IEnvelope b, final double w, final double h, final double d) {

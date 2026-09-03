@@ -73,7 +73,7 @@ public class GamaQuadTree implements ISpatialIndex {
 	private static final int NW = 0, NE = 1, SW = 2, SE = 3;
 
 	/** The root. */
-	final QuadNode root;
+	volatile QuadNode root;
 
 	/** The Constant maxCapacity. */
 	final static int maxCapacity = 100;
@@ -240,11 +240,24 @@ public class GamaQuadTree implements ISpatialIndex {
 	}
 
 	private void recreateDegenerateRoot(final IEnvelope env, final IEnvelope b) {
+		final QuadNode oldRoot = root;
 		final double minX = Math.min(b.getMinX(), env.getMinX());
 		final double maxX = Math.max(b.getMaxX(), env.getMaxX());
 		final double minY = Math.min(b.getMinY(), env.getMinY());
 		final double maxY = Math.max(b.getMaxY(), env.getMaxY());
-		root = new QuadNode(GamaEnvelopeFactory.of(minX, maxX, minY, maxY));
+		final QuadNode newRoot = new QuadNode(GamaEnvelopeFactory.of(minX, maxX, minY, maxY));
+
+		oldRoot.objects.forEach((a, e) -> {
+			if (a != null && !a.dead() && e != null) {
+				if (e instanceof IPoint) {
+					newRoot.add((IPoint) e, a);
+				} else {
+					newRoot.add((IEnvelope) e, a);
+				}
+			}
+		});
+		oldRoot.objects.clear();
+		root = newRoot;
 	}
 
 	private void expandRootBounds(final IEnvelope env, final IEnvelope b, final double w, final double h) {

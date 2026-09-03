@@ -44,7 +44,6 @@ import gama.api.types.topology.ITopology;
 import gama.api.utils.collections.Collector;
 import gama.api.utils.collections.ICollector;
 import gama.api.utils.geometry.GeometryUtils;
-import gama.api.utils.geometry.GamaEnvelopeFactory;
 import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.interfaces.IAgentFilter;
 import gama.core.topology.continuous.RootTopology;
@@ -628,7 +627,7 @@ public abstract class AbstractTopology implements ITopology {
 		boolean covered = relation == SpatialRelation.INSIDE;
 		// insertAgents(scope, f);
 		if (!isTorus()) {
-			final IEnvelope envelope = GamaEnvelopeFactory.of(source.getEnvelope());
+			final IEnvelope envelope = source.getEnvelope();
 			try {
 				final Collection<IAgent> shapes = getSpatialIndex().allInEnvelope(scope, source, envelope, f, covered);
 				final PreparedGeometry pg = pgFact.create(source.getInnerGeometry());
