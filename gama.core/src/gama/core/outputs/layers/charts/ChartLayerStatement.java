@@ -632,60 +632,40 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 	 *            the scope
 	 * @return true, if successful
 	 */
-	// what can be updated at each step
-	public boolean updateValues(final IScope scope) {
+	private void updateAxisRange(final IScope scope, final String facetName, final int axisIndex) {
+		final IExpression expr = getFacet(facetName);
+		if (expr == null) return;
+		final Object range = expr.value(scope);
+		if (range instanceof Number number) {
+			if (axisIndex == 0) chartOutput.setXRangeInterval(scope, number.doubleValue());
+			else if (axisIndex == 1) chartOutput.setYRangeInterval(scope, number.doubleValue());
+			else if (axisIndex == 2) chartOutput.setY2RangeInterval(scope, number.doubleValue());
+		} else if (range instanceof IPoint point) {
+			if (axisIndex == 0) chartOutput.setXRangeMinMax(scope, point.getX(), point.getY());
+			else if (axisIndex == 1) chartOutput.setYRangeMinMax(scope, point.getX(), point.getY());
+			else if (axisIndex == 2) chartOutput.setY2RangeMinMax(scope, point.getX(), point.getY());
+		} else if (range instanceof IList<?> list) {
+			float min = Cast.asFloat(scope, list.get(0));
+			float max = Cast.asFloat(scope, list.get(1));
+			if (axisIndex == 0) chartOutput.setXRangeMinMax(scope, min, max);
+			else if (axisIndex == 1) chartOutput.setYRangeMinMax(scope, min, max);
+			else if (axisIndex == 2) chartOutput.setY2RangeMinMax(scope, min, max);
+		}
+	}
 
+	private void updateLabelsAndRanges(final IScope scope) {
 		IExpression string1 = getFacet(ChartLayerStatement.XLABEL);
 		if (string1 != null) { chartOutput.setXLabel(scope, Cast.asString(scope, string1.value(scope))); }
-
 		string1 = getFacet(ChartLayerStatement.YLABEL);
 		if (string1 != null) { chartOutput.setYLabel(scope, Cast.asString(scope, string1.value(scope))); }
-
 		string1 = getFacet(ChartLayerStatement.Y2LABEL);
 		if (string1 != null) { chartOutput.setY2Label(scope, Cast.asString(scope, string1.value(scope))); }
 
-		IExpression expr = getFacet(XRANGE);
-		if (expr != null) {
-			final Object range = expr.value(scope);
+		updateAxisRange(scope, XRANGE, 0);
+		updateAxisRange(scope, YRANGE, 1);
+		updateAxisRange(scope, Y2RANGE, 2);
 
-			if (range instanceof Number) {
-				chartOutput.setXRangeInterval(scope, ((Number) range).doubleValue());
-			} else if (range instanceof IPoint) {
-				chartOutput.setXRangeMinMax(scope, ((IPoint) range).getX(), ((IPoint) range).getY());
-			} else if (range instanceof IList) {
-				chartOutput.setXRangeMinMax(scope, Cast.asFloat(scope, ((IList<?>) range).get(0)),
-						Cast.asFloat(scope, ((IList<?>) range).get(1)));
-			}
-		}
-
-		expr = getFacet(YRANGE);
-		if (expr != null) {
-			final Object range = expr.value(scope);
-
-			if (range instanceof Number) {
-				chartOutput.setYRangeInterval(scope, ((Number) range).doubleValue());
-			} else if (range instanceof IPoint) {
-				chartOutput.setYRangeMinMax(scope, ((IPoint) range).getX(), ((IPoint) range).getY());
-			} else if (range instanceof IList) {
-				chartOutput.setYRangeMinMax(scope, Cast.asFloat(scope, ((IList<?>) range).get(0)),
-						Cast.asFloat(scope, ((IList<?>) range).get(1)));
-			}
-		}
-		expr = getFacet(Y2RANGE);
-		if (expr != null) {
-			final Object range = expr.value(scope);
-
-			if (range instanceof Number) {
-				chartOutput.setY2RangeInterval(scope, ((Number) range).doubleValue());
-			} else if (range instanceof IPoint) {
-				chartOutput.setY2RangeMinMax(scope, ((IPoint) range).getX(), ((IPoint) range).getY());
-			} else if (range instanceof IList) {
-				chartOutput.setY2RangeMinMax(scope, Cast.asFloat(scope, ((IList<?>) range).get(0)),
-						Cast.asFloat(scope, ((IList<?>) range).get(1)));
-			}
-		}
-
-		expr = getFacet(XMIN);
+		IExpression expr = getFacet(XMIN);
 		if (expr != null) { chartOutput.setXMin(scope, Cast.asFloat(scope, expr.value(scope))); }
 		expr = getFacet(XMAX);
 		if (expr != null) { chartOutput.setXMax(scope, Cast.asFloat(scope, expr.value(scope))); }
@@ -693,61 +673,30 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 		if (expr != null) { chartOutput.setYMin(scope, Cast.asFloat(scope, expr.value(scope))); }
 		expr = getFacet(YMAX);
 		if (expr != null) { chartOutput.setYMax(scope, Cast.asFloat(scope, expr.value(scope))); }
+	}
+
+	private void updateTickAndLineProperties(final IScope scope) {
 		IExpression expr2 = getFacet(XTICKUNIT);
-		if (expr2 != null) {
-			final Object range = expr2.value(scope);
-
-			if (range instanceof Number) {
-				final double r = ((Number) range).doubleValue();
-				chartOutput.setXTickUnit(scope, r);
-			}
+		if (expr2 != null && expr2.value(scope) instanceof Number number) {
+			chartOutput.setXTickUnit(scope, number.doubleValue());
 		}
-
 		expr2 = getFacet(YTICKUNIT);
-		if (expr2 != null) {
-			final Object range = expr2.value(scope);
-
-			if (range instanceof Number) {
-				final double r = ((Number) range).doubleValue();
-				chartOutput.setYTickUnit(scope, r);
-			}
+		if (expr2 != null && expr2.value(scope) instanceof Number number) {
+			chartOutput.setYTickUnit(scope, number.doubleValue());
 		}
 		expr2 = getFacet(Y2TICKUNIT);
-		if (expr2 != null) {
-			final Object range = expr2.value(scope);
-
-			if (range instanceof Number) {
-				final double r = ((Number) range).doubleValue();
-				chartOutput.setY2TickUnit(scope, r);
-			}
+		if (expr2 != null && expr2.value(scope) instanceof Number number) {
+			chartOutput.setY2TickUnit(scope, number.doubleValue());
 		}
 		expr2 = getFacet(IKeyword.GAP);
 		if (expr2 != null) {
-			final Double range = Cast.asFloat(scope, expr2.value(scope));
-			chartOutput.setGap(scope, range);
+			chartOutput.setGap(scope, Cast.asFloat(scope, expr2.value(scope)));
 		}
-		// ((BarRenderer) plot.getRenderer()).setItemMargin(gap);
 
-		IColor colorvalue = GamaColorFactory.BLACK;
-		IExpression color = getFacet(IKeyword.AXES);
-		if (color != null) { colorvalue = GamaColorFactory.castToColor(scope, color.value(scope)); }
-		chartOutput.setAxesColorValue(scope, colorvalue);
-
-		colorvalue = GamaColorFactory.BLACK;
-		color = getFacet(ChartLayerStatement.TICKLINECOLOR);
-		if (color != null) { colorvalue = GamaColorFactory.castToColor(scope, color.value(scope)); }
-		chartOutput.setTickColorValue(scope, colorvalue);
-
-		string1 = getFacet(ChartLayerStatement.XTICKVALUEVISIBLE);
+		IExpression string1 = getFacet(ChartLayerStatement.XTICKVALUEVISIBLE);
 		if (string1 != null) { chartOutput.setXTickValueVisible(scope, Cast.asBool(scope, string1.value(scope))); }
 		string1 = getFacet(ChartLayerStatement.YTICKVALUEVISIBLE);
-		if (string1 != null) {
-			final boolean yTickValueVisible = Cast.asBool(scope, string1.value(scope));
-			chartOutput.setYTickValueVisible(scope, yTickValueVisible);
-			if (getFacet(ChartLayerStatement.Y2TICKVALUEVISIBLE) == null) {
-				chartOutput.setY2TickValueVisible(scope, yTickValueVisible);
-			}
-		}
+		if (string1 != null) { chartOutput.setYTickValueVisible(scope, Cast.asBool(scope, string1.value(scope))); }
 		string1 = getFacet(ChartLayerStatement.Y2TICKVALUEVISIBLE);
 		if (string1 != null) { chartOutput.setY2TickValueVisible(scope, Cast.asBool(scope, string1.value(scope))); }
 		string1 = getFacet(ChartLayerStatement.TITLEVISIBLE);
@@ -761,10 +710,63 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 		if (string1 != null) { chartOutput.setGridLinesVisible(scope, Cast.asBool(scope, string1.value(scope))); }
 
 		updateLegendProperties(scope);
+	}
+
+	private void updateFontProperty(final IScope scope, final String facetName, final int fontType) {
+		IExpression face = getFacet(facetName);
+		if (face == null) return;
+		if (face.getGamlType() == Types.STRING) {
+			String str = Cast.asString(scope, face.value(scope));
+			switch (fontType) {
+				case 0 -> chartOutput.setTickFontFace(scope, str);
+				case 1 -> chartOutput.setLabelFontFace(scope, str);
+				case 2 -> chartOutput.setLegendFontFace(scope, str);
+				case 3 -> chartOutput.setTitleFontFace(scope, str);
+			}
+		} else {
+			IFont font = (IFont) Types.FONT.cast(scope, face.value(scope), null, false);
+			if (font != null) {
+				switch (fontType) {
+					case 0 -> {
+						chartOutput.setTickFontFace(scope, font.getFontName());
+						chartOutput.setTickFontSize(scope, font.getSize());
+						chartOutput.setTickFontStyle(scope, font.getStyle());
+					}
+					case 1 -> {
+						chartOutput.setLabelFontFace(scope, font.getFontName());
+						chartOutput.setLabelFontSize(scope, font.getSize());
+						chartOutput.setLabelFontStyle(scope, font.getStyle());
+					}
+					case 2 -> {
+						chartOutput.setLegendFontFace(scope, font.getFontName());
+						chartOutput.setLegendFontSize(scope, font.getSize());
+						chartOutput.setLegendFontStyle(scope, font.getStyle());
+					}
+					case 3 -> {
+						chartOutput.setTitleFontFace(scope, font.getFontName());
+						chartOutput.setTitleFontSize(scope, font.getSize());
+						chartOutput.setTitleFontStyle(scope, font.getStyle());
+					}
+				}
+			}
+		}
+	}
+
+	private void updateColorAndFontProperties(final IScope scope) {
+		IColor colorvalue = GamaColorFactory.BLACK;
+		IExpression color = getFacet(IKeyword.AXES);
+		if (color != null) { colorvalue = GamaColorFactory.castToColor(scope, color.value(scope)); }
+		chartOutput.setAxesColorValue(scope, colorvalue);
+
+		colorvalue = GamaColorFactory.BLACK;
+		color = getFacet(ChartLayerStatement.TICKLINECOLOR);
+		if (color != null) { colorvalue = GamaColorFactory.castToColor(scope, color.value(scope)); }
+		chartOutput.setTickColorValue(scope, colorvalue);
 
 		color = getFacet(IKeyword.COLOR);
 		if (color != null) { colorvalue = GamaColorFactory.castToColor(scope, color.value(scope)); }
 		chartOutput.setColorValue(scope, colorvalue);
+
 		colorvalue = GamaColorFactory.WHITE;
 		color = getFacet(IKeyword.BACKGROUND);
 		if (color != null) { colorvalue = GamaColorFactory.castToColor(scope, color.value(scope)); }
@@ -772,78 +774,25 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 
 		color = getFacet(LABELTEXTCOLOR);
 		if (color != null) {
-			colorvalue = GamaColorFactory.castToColor(scope, color.value(scope));
-			chartOutput.setLabelTextColorValue(scope, colorvalue);
+			chartOutput.setLabelTextColorValue(scope, GamaColorFactory.castToColor(scope, color.value(scope)));
 		}
 
 		color = getFacet(LABELBACKGROUNDCOLOR);
 		if (color != null) {
-			colorvalue = GamaColorFactory.castToColor(scope, color.value(scope));
-			chartOutput.setLabelBackgroundColorValue(scope, colorvalue);
+			chartOutput.setLabelBackgroundColorValue(scope, GamaColorFactory.castToColor(scope, color.value(scope)));
 		}
 
-		color = getFacet(IKeyword.BACKGROUND);
-		if (color != null) {
-			colorvalue = GamaColorFactory.castToColor(scope, color.value(scope));
-			chartOutput.setBackgroundColorValue(scope, colorvalue);
-		}
-		IFont font = null;
-		IExpression face = getFacet(TICKFONTFACE);
-		if (face != null) {
-			if (face.getGamlType() == Types.STRING) {
-				chartOutput.setTickFontFace(scope, Cast.asString(scope, face.value(scope)));
-			} else {
-				font = (IFont) Types.FONT.cast(scope, face.value(scope), null, false);
-				if (font != null) {
-					chartOutput.setTickFontFace(scope, font.getFontName());
-					chartOutput.setTickFontSize(scope, font.getSize());
-					chartOutput.setTickFontStyle(scope, font.getStyle());
-				}
-			}
-		}
+		updateFontProperty(scope, TICKFONTFACE, 0);
+		updateFontProperty(scope, LABELFONTFACE, 1);
+		updateFontProperty(scope, LEGENDFONTFACE, 2);
+		updateFontProperty(scope, TITLEFONTFACE, 3);
+	}
 
-		face = getFacet(LABELFONTFACE);
-		if (face != null) {
-			if (face.getGamlType() == Types.STRING) {
-				chartOutput.setLabelFontFace(scope, Cast.asString(scope, face.value(scope)));
-			} else {
-				font = (IFont) Types.FONT.cast(scope, face.value(scope), null, false);
-				if (font != null) {
-					chartOutput.setLabelFontFace(scope, font.getFontName());
-					chartOutput.setLabelFontSize(scope, font.getSize());
-					chartOutput.setLabelFontStyle(scope, font.getStyle());
-				}
-			}
-		}
-
-		face = getFacet(LEGENDFONTFACE);
-		if (face != null) {
-			if (face.getGamlType() == Types.STRING) {
-				chartOutput.setLegendFontFace(scope, Cast.asString(scope, face.value(scope)));
-			} else {
-				font = (IFont) Types.FONT.cast(scope, face.value(scope), null, false);
-				if (font != null) {
-					chartOutput.setLegendFontFace(scope, font.getFontName());
-					chartOutput.setLegendFontSize(scope, font.getSize());
-					chartOutput.setLegendFontStyle(scope, font.getStyle());
-				}
-			}
-		}
-
-		face = getFacet(TITLEFONTFACE);
-		if (face != null) {
-			if (face.getGamlType() == Types.STRING) {
-				chartOutput.setTitleFontFace(scope, Cast.asString(scope, face.value(scope)));
-			} else {
-				font = (IFont) Types.FONT.cast(scope, face.value(scope), null, false);
-				if (font != null) {
-					chartOutput.setTitleFontFace(scope, font.getFontName());
-					chartOutput.setTitleFontSize(scope, font.getSize());
-					chartOutput.setTitleFontStyle(scope, font.getStyle());
-				}
-			}
-		}
-
+	// what can be updated at each step
+	public boolean updateValues(final IScope scope) {
+		updateLabelsAndRanges(scope);
+		updateTickAndLineProperties(scope);
+		updateColorAndFontProperties(scope);
 		return true;
 	}
 

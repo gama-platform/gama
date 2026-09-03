@@ -488,7 +488,7 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 		return formatYAxis(scope, axis, false);
 	}
 
-	private NumberAxis formatYAxis(final IScope scope, final NumberAxis axis, final boolean isSecondAxis) {
+	public NumberAxis formatYAxis(final IScope scope, final NumberAxis axis, final boolean isSecondAxis) {
 		Color ac = IColor.toAWTColor(axesColor);
 		axis.setAxisLinePaint(ac);
 		axis.setTickLabelFont(getTickFont());
@@ -509,75 +509,27 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 		return axis;
 	}
 
-	@Override
-	public void resetAxes(final IScope scope) {
-		NumberAxis domainAxis = (NumberAxis) ((XYPlot) this.chart.getPlot()).getDomainAxis();
-		NumberAxis rangeAxis = (NumberAxis) ((XYPlot) this.chart.getPlot()).getRangeAxis();
-		NumberAxis range2Axis = rangeAxis;
-		boolean secondaxis = false;
-		if (getUseSecondYAxis(scope)) {
-			secondaxis = true;
-			range2Axis = (NumberAxis) ((XYPlot) this.chart.getPlot()).getRangeAxis(1);
-			if (range2Axis == null) {
-				final NumberAxis secondAxis = new NumberAxis("");
-				((XYPlot) this.chart.getPlot()).setRangeAxis(1, secondAxis);
-				range2Axis = (NumberAxis) ((XYPlot) this.chart.getPlot()).getRangeAxis(1);
-				range2Axis = formatYAxis(scope, range2Axis, true);
-
-				((XYPlot) this.chart.getPlot()).setRangeAxis(1, range2Axis);
-			} else {
-				formatYAxis(scope, range2Axis, true);
-			}
-		}
-
-		if (getX_LogScale(scope)) {
-			final LogarithmicAxis logAxis = new LogarithmicAxis(domainAxis.getLabel());
-			logAxis.setAllowNegativesFlag(true);
-			((XYPlot) this.chart.getPlot()).setDomainAxis(logAxis);
-			domainAxis = logAxis;
-		}
-		if (getY_LogScale(scope)) {
-			LogarithmicAxis logAxis = new LogarithmicAxis(rangeAxis.getLabel());
-			logAxis.setAllowNegativesFlag(true);
-			logAxis = (LogarithmicAxis) formatYAxis(scope, logAxis, false);
-			((XYPlot) this.chart.getPlot()).setRangeAxis(logAxis);
-			rangeAxis = logAxis;
-		} else {
-			formatYAxis(scope, rangeAxis, false);
-		}
-		if (secondaxis && getY2_LogScale(scope)) {
-			LogarithmicAxis logAxis = new LogarithmicAxis(range2Axis.getLabel());
-			logAxis.setAllowNegativesFlag(true);
-			logAxis = (LogarithmicAxis) formatYAxis(scope, logAxis, true);
-			((XYPlot) this.chart.getPlot()).setRangeAxis(1, logAxis);
-			range2Axis = logAxis;
-		}
-
+	private void configureXAxis(final IScope scope, final NumberAxis domainAxis, final Color tc) {
 		if (!getUseXRangeInterval(scope) && !getUseXRangeMinMax(scope) && !getUseXMin(scope) && !getUseXMax(scope)) {
 			domainAxis.setAutoRange(true);
 		}
-
 		if (this.getUseXRangeInterval(scope)) {
 			domainAxis.setFixedAutoRange(getXRangeInterval(scope));
 			domainAxis.setAutoRangeMinimumSize(getXRangeInterval(scope));
 			domainAxis.setAutoRange(true);
-
 		}
 		if (this.getUseXRangeMinMax(scope)) {
 			double max = getXRangeMax(scope);
 			double min = getXRangeMin(scope);
-			// See issue #588
 			if (max - min > 0) {
 				domainAxis.setRange(min, max);
 			} else {
 				domainAxis.setAutoRange(true);
 			}
-
 		}
 		if ((getUseXMin(scope) || getUseXMax(scope)) && !getUseXRangeMinMax(scope)) {
 			applyXSingleBounds(scope, domainAxis);
 		}
-		Color tc = IColor.toAWTColor(tickColor);
 		if (this.getXTickLineVisible(scope)) {
 			((XYPlot) this.chart.getPlot()).setDomainGridlinePaint(tc);
 			if (getXTickUnit(scope) > 0) {
@@ -586,16 +538,20 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 			} else {
 				((XYPlot) this.chart.getPlot()).setDomainGridlinesVisible(getGridLinesVisible());
 			}
-
 		} else {
 			((XYPlot) this.chart.getPlot()).setDomainGridlinesVisible(false);
-
 		}
+		if (getXLabel(scope) != null && !getXLabel(scope).isEmpty()) { domainAxis.setLabel(getXLabel(scope)); }
+		if (!this.getXTickValueVisible(scope)) {
+			domainAxis.setTickMarksVisible(false);
+			domainAxis.setTickLabelsVisible(false);
+		}
+	}
 
+	private void configureYAxis(final IScope scope, final NumberAxis rangeAxis, final Color tc) {
 		if (!getUseYRangeInterval(scope) && !getUseYRangeMinMax(scope) && !getUseYMin(scope) && !getUseYMax(scope)) {
 			rangeAxis.setAutoRange(true);
 		}
-
 		if (this.getUseYRangeInterval(scope)) {
 			rangeAxis.setFixedAutoRange(getYRangeInterval(scope));
 			rangeAxis.setAutoRangeMinimumSize(getYRangeInterval(scope));
@@ -604,13 +560,11 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 		if (this.getUseYRangeMinMax(scope)) {
 			double max = getYRangeMax(scope);
 			double min = getYRangeMin(scope);
-			// See issue #588
 			if (max - min > 0) {
 				rangeAxis.setRange(min, max);
 			} else {
 				rangeAxis.setAutoRange(true);
 			}
-
 		}
 		if ((getUseYMin(scope) || getUseYMax(scope)) && !getUseYRangeMinMax(scope)) {
 			applyYSingleBounds(scope, rangeAxis);
@@ -623,59 +577,96 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 			} else {
 				((XYPlot) this.chart.getPlot()).setRangeGridlinesVisible(getGridLinesVisible());
 			}
-
 		} else {
 			((XYPlot) this.chart.getPlot()).setRangeGridlinesVisible(false);
-
 		}
+		if (getYLabel(scope) != null && !getYLabel(scope).isEmpty()) { rangeAxis.setLabel(getYLabel(scope)); }
+	}
 
-		if (secondaxis) {
-			if (!getUseY2RangeInterval(scope) && !getUseY2RangeMinMax(scope)) { range2Axis.setAutoRange(true); }
-
-			if (this.getUseY2RangeInterval(scope)) {
-				range2Axis.setFixedAutoRange(getY2RangeInterval(scope));
-				range2Axis.setAutoRangeMinimumSize(getY2RangeInterval(scope));
+	private void configureY2Axis(final IScope scope, final NumberAxis range2Axis, final Color tc) {
+		if (!getUseY2RangeInterval(scope) && !getUseY2RangeMinMax(scope)) { range2Axis.setAutoRange(true); }
+		if (this.getUseY2RangeInterval(scope)) {
+			range2Axis.setFixedAutoRange(getY2RangeInterval(scope));
+			range2Axis.setAutoRangeMinimumSize(getY2RangeInterval(scope));
+			range2Axis.setAutoRange(true);
+		}
+		if (this.getUseY2RangeMinMax(scope)) {
+			double max = getY2RangeMax(scope);
+			double min = getY2RangeMin(scope);
+			if (max - min > 0) {
+				range2Axis.setRange(min, max);
+			} else {
 				range2Axis.setAutoRange(true);
 			}
-			if (this.getUseY2RangeMinMax(scope)) {
-				double max = getY2RangeMax(scope);
-				double min = getY2RangeMin(scope);
-				// See issue #588
-				if (max - min > 0) {
-					range2Axis.setRange(min, max);
-				} else {
-					range2Axis.setAutoRange(true);
-				}
-
-			}
-			if (this.getYTickLineVisible(scope)) {
-				((XYPlot) this.chart.getPlot()).setRangeGridlinePaint(tc);
-				if (getY2TickUnit(scope) > 0) {
-					range2Axis.setTickUnit(new NumberTickUnit(getY2TickUnit(scope)));
-					((XYPlot) this.chart.getPlot()).setRangeGridlinesVisible(true);
-				} else {
-					((XYPlot) this.chart.getPlot()).setRangeGridlinesVisible(getGridLinesVisible());
-				}
-
-			} else {
-				((XYPlot) this.chart.getPlot()).setRangeGridlinesVisible(false);
-
-			}
-
 		}
-
-		if (getXLabel(scope) != null && !getXLabel(scope).isEmpty()) { domainAxis.setLabel(getXLabel(scope)); }
-		if (getYLabel(scope) != null && !getYLabel(scope).isEmpty()) { rangeAxis.setLabel(getYLabel(scope)); }
-		if (secondaxis && getY2Label(scope) != null && !getY2Label(scope).isEmpty()) {
+		if (this.getYTickLineVisible(scope)) {
+			((XYPlot) this.chart.getPlot()).setRangeGridlinePaint(tc);
+			if (getY2TickUnit(scope) > 0) {
+				range2Axis.setTickUnit(new NumberTickUnit(getY2TickUnit(scope)));
+				((XYPlot) this.chart.getPlot()).setRangeGridlinesVisible(true);
+			} else {
+				((XYPlot) this.chart.getPlot()).setRangeGridlinesVisible(getGridLinesVisible());
+			}
+		} else {
+			((XYPlot) this.chart.getPlot()).setRangeGridlinesVisible(false);
+		}
+		if (getY2Label(scope) != null && !getY2Label(scope).isEmpty()) {
 			range2Axis.setLabel(getY2Label(scope));
 		}
-		if ("none".equals(this.series_label_position)) { this.chart.getLegend().setVisible(false); }
-		if (!this.getXTickValueVisible(scope)) {
-			domainAxis.setTickMarksVisible(false);
-			domainAxis.setTickLabelsVisible(false);
+	}
 
+	@Override
+	public void resetAxes(final IScope scope) {
+		XYPlot plot = (XYPlot) this.chart.getPlot();
+		NumberAxis domainAxis = (NumberAxis) plot.getDomainAxis();
+		NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+		NumberAxis range2Axis = rangeAxis;
+		boolean secondaxis = false;
+		if (getUseSecondYAxis(scope)) {
+			secondaxis = true;
+			range2Axis = (NumberAxis) plot.getRangeAxis(1);
+			if (range2Axis == null) {
+				final NumberAxis secondAxis = new NumberAxis("");
+				plot.setRangeAxis(1, secondAxis);
+				range2Axis = (NumberAxis) plot.getRangeAxis(1);
+				range2Axis = formatYAxis(scope, range2Axis, true);
+				plot.setRangeAxis(1, range2Axis);
+			} else {
+				formatYAxis(scope, range2Axis, true);
+			}
 		}
 
+		if (getX_LogScale(scope)) {
+			final LogarithmicAxis logAxis = new LogarithmicAxis(domainAxis.getLabel());
+			logAxis.setAllowNegativesFlag(true);
+			plot.setDomainAxis(logAxis);
+			domainAxis = logAxis;
+		}
+		if (getY_LogScale(scope)) {
+			LogarithmicAxis logAxis = new LogarithmicAxis(rangeAxis.getLabel());
+			logAxis.setAllowNegativesFlag(true);
+			logAxis = (LogarithmicAxis) formatYAxis(scope, logAxis, false);
+			plot.setRangeAxis(logAxis);
+			rangeAxis = logAxis;
+		} else {
+			formatYAxis(scope, rangeAxis, false);
+		}
+		if (secondaxis && getY2_LogScale(scope)) {
+			LogarithmicAxis logAxis = new LogarithmicAxis(range2Axis.getLabel());
+			logAxis.setAllowNegativesFlag(true);
+			logAxis = (LogarithmicAxis) formatYAxis(scope, logAxis, true);
+			plot.setRangeAxis(1, logAxis);
+			range2Axis = logAxis;
+		}
+
+		Color tc = IColor.toAWTColor(tickColor);
+		configureXAxis(scope, domainAxis, tc);
+		configureYAxis(scope, rangeAxis, tc);
+		if (secondaxis) {
+			configureY2Axis(scope, range2Axis, tc);
+		}
+
+		if ("none".equals(this.series_label_position)) { this.chart.getLegend().setVisible(false); }
 	}
 
 	@Override
