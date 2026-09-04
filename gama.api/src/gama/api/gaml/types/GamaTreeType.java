@@ -46,7 +46,7 @@ public class GamaTreeType extends GamaContainerType<ITree> {
 	@Override
 	public ITree cast(final IScope scope, final Object obj, final Object param, final IType keyType,
 			final IType contentsType, final boolean copy) throws GamaRuntimeException {
-		return GamaTreeFactory.castToTree(scope, obj, param, contentsType, copy);
+		return GamaTreeFactory.castToTree(scope, obj, param, copy);
 	}
 
 	@Override

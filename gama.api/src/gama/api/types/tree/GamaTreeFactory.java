@@ -146,23 +146,4 @@ public class GamaTreeFactory {
 		return tree;
 	}
 
-	/**
-	 * Casts an object to ITree with explicit content type.
-	 *
-	 * @param scope
-	 *            execution scope
-	 * @param obj
-	 *            object to cast
-	 * @param param
-	 *            optional param
-	 * @param contentType
-	 *            type of tree content
-	 * @param copy
-	 *            whether to copy
-	 * @return ITree representation
-	 */
-	public static ITree castToTree(final IScope scope, final Object obj, final Object param, final IType contentType,
-			final boolean copy) {
-		return castToTree(scope, obj, param, copy);
-	}
 }
