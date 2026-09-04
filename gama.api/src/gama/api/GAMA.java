@@ -1071,6 +1071,7 @@ public class GAMA {
 	 */
 	public static void desynchronizeFrontmostExperiment() {
 		isSynchronized = false;
+		getGui().updateSynchronizedState();
 	}
 
 	/**
@@ -1085,6 +1086,7 @@ public class GAMA {
 	 */
 	public static void synchronizeFrontmostExperiment() {
 		isSynchronized = true;
+		getGui().updateSynchronizedState();
 	}
 
 	// ==================================================================================

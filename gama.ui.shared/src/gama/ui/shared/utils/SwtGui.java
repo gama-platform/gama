@@ -399,6 +399,16 @@ public class SwtGui implements IGui {
 	@Override
 	public IModelsManager getModelsManager() { return WorkbenchHelper.getService(IModelsManager.class); }
 
+	@Override
+	public void updateSynchronizedState() {
+		WorkbenchHelper.asyncRun(() -> {
+			ICommandService hs = WorkbenchHelper.getService(ICommandService.class);
+			if (hs != null) {
+				hs.refreshElements("gama.application.commands.SynchronizeExperiment", null);
+			}
+		});
+	}
+
 	/**
 	 * Update parameters.
 	 *
@@ -498,8 +508,7 @@ public class SwtGui implements IGui {
 		pendingArrange = () -> {
 			WorkbenchHelper.getWindow().updateActionBars();
 			// To solve issue #3697
-			ICommandService hs = WorkbenchHelper.getService(ICommandService.class);
-			hs.refreshElements("gama.ui.application.commands.SynchronizeExperiment", null);
+			updateSynchronizedState();
 			WorkbenchHelper.getPage().setEditorAreaVisible(showEditors);
 			getConsole().toggleConsoleViews(exp.getAgent(), showConsoles == null || showConsoles);
 			if (showNavigator != null && !showNavigator) { hideView(IGui.NAVIGATOR_VIEW_ID); }
