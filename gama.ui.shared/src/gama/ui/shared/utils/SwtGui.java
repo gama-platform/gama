@@ -508,10 +508,7 @@ public class SwtGui implements IGui {
 		pendingArrange = () -> {
 			WorkbenchHelper.getWindow().updateActionBars();
 			// To solve issue #3697
-			ICommandService hs = WorkbenchHelper.getService(ICommandService.class);
-			if (hs != null) {
-				hs.refreshElements("gama.application.commands.SynchronizeExperiment", null);
-			}
+			updateSynchronizedState();
 			WorkbenchHelper.getPage().setEditorAreaVisible(showEditors);
 			getConsole().toggleConsoleViews(exp.getAgent(), showConsoles == null || showConsoles);
 			if (showNavigator != null && !showNavigator) { hideView(IGui.NAVIGATOR_VIEW_ID); }
