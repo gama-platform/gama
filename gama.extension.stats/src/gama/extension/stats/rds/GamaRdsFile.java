@@ -79,6 +79,9 @@ public class GamaRdsFile extends GamaFile<IContainer, Object> {
 			Object converted = RdsGamaConverter.toGamaObject(scope, sexp);
 			if (converted instanceof IContainer container) {
 				setBuffer(container);
+			} else {
+				throw GamaRuntimeException.error(
+						"RDS file does not contain a GAMA container value: " + file.getAbsolutePath(), scope);
 			}
 		} catch (IOException e) {
 			throw GamaRuntimeException.create(e, scope);
