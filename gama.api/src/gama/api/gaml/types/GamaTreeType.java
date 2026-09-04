@@ -30,7 +30,6 @@ import gama.api.utils.collections.GamaTree;
 		kind = ISymbolKind.REGULAR,
 		concept = { IConcept.TYPE, IConcept.CONTAINER },
 		doc = @doc ("Specialized container representing a hierarchical tree structure of nodes."))
-@SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamaTreeType extends GamaContainerType<ITree> {
 
 	/**
@@ -44,8 +43,8 @@ public class GamaTreeType extends GamaContainerType<ITree> {
 	}
 
 	@Override
-	public ITree cast(final IScope scope, final Object obj, final Object param, final IType keyType,
-			final IType contentsType, final boolean copy) throws GamaRuntimeException {
+	public ITree cast(final IScope scope, final Object obj, final Object param, final boolean copy)
+			throws GamaRuntimeException {
 		return GamaTreeFactory.castToTree(scope, obj, param, copy);
 	}
 

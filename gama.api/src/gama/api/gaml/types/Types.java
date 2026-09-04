@@ -193,58 +193,47 @@ public class Types {
 	 * @return the IType instance, or a type looked up by string ID if not found in the fast switch.
 	 */
 	public static IType get(final int type) {
-		// use cache first
-		switch (type) {
-			case IType.INT:
-				return INT;
-			case IType.FLOAT:
-				return FLOAT;
-			case IType.BOOL:
-				return BOOL;
-			case IType.COLOR:
-				return COLOR;
-			case IType.DATE:
-				return DATE;
-			case IType.STRING:
-				return STRING;
-			case IType.POINT:
-				return POINT;
-			case IType.GEOMETRY:
-				return GEOMETRY;
-			case IType.TOPOLOGY:
-				return TOPOLOGY;
-			case IType.LIST:
-				return LIST;
-			case IType.MAP:
-				return MAP;
-			case IType.GRAPH:
-				return GRAPH;
-			case IType.TREE:
-				return TREE;
-			case IType.FILE:
-				return FILE;
-			case IType.PAIR:
-				return PAIR;
-			case IType.AGENT:
-				return AGENT;
-			case IType.PATH:
-				return PATH;
-			case IType.MATRIX:
-				return MATRIX;
-			case IType.CONTAINER:
-				return CONTAINER;
-			case IType.SPECIES:
-				return SPECIES;
-			case IType.SKILL:
-				return SKILL;
-			case IType.ACTION:
-				return ACTION;
-			case IType.TYPE:
-				return TYPE;
-			case IType.OBJECT:
-				return OBJECT;
-		}
+		final IType basic = getBasicType(type);
+		if (basic != null) return basic;
+		final IType containerOrSpecial = getContainerOrSpecialType(type);
+		if (containerOrSpecial != null) return containerOrSpecial;
 		return BUILT_IN_TYPES.get(String.valueOf(type));
+	}
+
+	private static IType getBasicType(final int type) {
+		switch (type) {
+			case IType.INT: return INT;
+			case IType.FLOAT: return FLOAT;
+			case IType.BOOL: return BOOL;
+			case IType.COLOR: return COLOR;
+			case IType.DATE: return DATE;
+			case IType.STRING: return STRING;
+			case IType.POINT: return POINT;
+			case IType.GEOMETRY: return GEOMETRY;
+			case IType.TOPOLOGY: return TOPOLOGY;
+			default: return null;
+		}
+	}
+
+	private static IType getContainerOrSpecialType(final int type) {
+		switch (type) {
+			case IType.LIST: return LIST;
+			case IType.MAP: return MAP;
+			case IType.GRAPH: return GRAPH;
+			case IType.TREE: return TREE;
+			case IType.FILE: return FILE;
+			case IType.PAIR: return PAIR;
+			case IType.AGENT: return AGENT;
+			case IType.PATH: return PATH;
+			case IType.MATRIX: return MATRIX;
+			case IType.CONTAINER: return CONTAINER;
+			case IType.SPECIES: return SPECIES;
+			case IType.SKILL: return SKILL;
+			case IType.ACTION: return ACTION;
+			case IType.TYPE: return TYPE;
+			case IType.OBJECT: return OBJECT;
+			default: return null;
+		}
 	}
 
 	/**
