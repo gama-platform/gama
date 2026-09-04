@@ -383,7 +383,7 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 			for (final ISimulationAgent agent : new ArrayList<>(pop.getRunningSimulations())) {
 				agent.step();
 				ParametersSet ps = simToParameter.get(agent);
-				currentSolution = new ParametersSet(ps);
+				if (ps != null) { currentSolution = new ParametersSet(ps); }
 
 				// test the condition first in case it is paused
 				final boolean stopConditionMet = dead
@@ -470,13 +470,15 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 
 		if (pop == null) return outputs;
 
-		currentSolution = new ParametersSet(sol);
 		fitnessValues.clear();
-		// The values present in the solution are passed to the parameters of
-		// the experiment
-		for (final Map.Entry<String, Object> entry : sol.entrySet()) {
-			final IParameter p = getSpecies().getExplorableParameters().get(entry.getKey());
-			if (p != null) { p.setValue(getScope(), entry.getValue()); }
+		if (sol != null) {
+			currentSolution = new ParametersSet(sol);
+			// The values present in the solution are passed to the parameters of
+			// the experiment
+			for (final Map.Entry<String, Object> entry : sol.entrySet()) {
+				final IParameter p = getSpecies().getExplorableParameters().get(entry.getKey());
+				if (p != null) { p.setValue(getScope(), entry.getValue()); }
+			}
 		}
 
 		// We update the parameters (parameter to explore)
