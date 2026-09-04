@@ -498,12 +498,12 @@ public class GamaTree<T> implements ITree<T> {
 	}
 
 	@Override
-	public void removeIndex(final IScope scope, final Object index) {
-		if (index instanceof GamaNode node) {
-			if (node.equals(root)) {
+public void removeIndex(final IScope scope, final Object index) {
+		if (index instanceof GamaNode<?> node) {
+			if (node == root) {
 				dispose();
 			} else if (node.getParent() != null) {
-				node.getParent().getChildren().remove(node);
+				node.getParent().getChildren().removeIf(n -> n == node);
 			}
 		}
 	}
