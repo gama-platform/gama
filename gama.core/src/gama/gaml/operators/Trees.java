@@ -22,6 +22,7 @@ import gama.annotations.support.ITypeProvider;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.graph.NodeToAdd;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
 import gama.api.types.tree.GamaTreeFactory;
@@ -57,30 +58,8 @@ public class Trees {
 	@test ("tree('root').root.data = 'root'")
 	public static ITree tree(final IScope scope, final Object rootData) {
 		if (rootData instanceof GamaNode node) return GamaTreeFactory.create(node);
+		if (rootData instanceof NodeToAdd nodeToAdd) return GamaTreeFactory.create(nodeToAdd.object());
 		return GamaTreeFactory.create(rootData);
-	}
-
-	/**
-	 * Node wrapper.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param data
-	 *            the data
-	 * @return the gama node
-	 */
-	@operator (
-			value = "node",
-			category = { IOperatorCategory.CONTAINER },
-			concept = { IConcept.CONTAINER })
-	@doc (
-			value = "creates an unattached tree node wrapping the given payload.",
-			examples = @example (
-					value = "node(\"a\")",
-					equals = "a node with data 'a'"))
-	@test ("node('a').data = 'a'")
-	public static GamaNode node(final IScope scope, final Object data) {
-		return new GamaNode<>(data);
 	}
 
 	/**
@@ -307,6 +286,7 @@ public class Trees {
 	public static GamaNode addChild(final IScope scope, final GamaNode parent, final Object child) {
 		if (parent == null) return null;
 		if (child instanceof GamaNode childNode) return parent.addChild(childNode);
+		if (child instanceof NodeToAdd nodeToAdd) return parent.addChild(nodeToAdd.object());
 		return parent.addChild(child);
 	}
 

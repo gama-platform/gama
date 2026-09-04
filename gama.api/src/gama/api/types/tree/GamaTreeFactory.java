@@ -13,6 +13,7 @@ import java.util.Map;
 
 import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.graph.NodeToAdd;
 import gama.api.types.list.IList;
 import gama.api.types.map.IMap;
 import gama.api.utils.collections.GamaNode;
@@ -78,6 +79,7 @@ public class GamaTreeFactory {
 		if (obj == null) return create();
 		if (obj instanceof ITree tree) return copy ? (ITree) tree.copy(scope) : tree;
 		if (obj instanceof GamaNode node) return create(node);
+		if (obj instanceof NodeToAdd nodeToAdd) return create(nodeToAdd.object());
 		if (obj instanceof IMap map) return createFromMap(map);
 		if (obj instanceof IList list) return createFromList(list);
 		return create(obj);
@@ -109,13 +111,12 @@ public class GamaTreeFactory {
 	 * Finds an existing node with parentObj or creates one.
 	 */
 	private static GamaNode findOrCreateParentNode(final GamaTree tree, final Object parentObj) {
-		final GamaNode existingNode = tree.getNodeWithData(parentObj);
+		final Object parentData = parentObj instanceof NodeToAdd nta ? nta.object() : parentObj;
+		final GamaNode existingNode = tree.getNodeWithData(parentData);
 		if (existingNode != null) return existingNode;
 
-		if (tree.getRoot() == null) {
-			return tree.setRoot(parentObj);
-		}
-		return tree.getRoot().addChild(parentObj);
+		if (tree.getRoot() == null) return tree.setRoot(parentData);
+		return tree.getRoot().addChild(parentData);
 	}
 
 	/**
@@ -123,9 +124,11 @@ public class GamaTreeFactory {
 	 */
 	private static void addChildrenToParent(final GamaNode parentNode, final Object childObj) {
 		if (childObj == null) return;
-		if (childObj instanceof Iterable children) {
+		if (childObj instanceof NodeToAdd nodeToAdd) {
+			parentNode.addChild(nodeToAdd.object());
+		} else if (childObj instanceof Iterable children) {
 			for (final Object child : children) {
-				parentNode.addChild(child);
+				addChildrenToParent(parentNode, child);
 			}
 		} else {
 			parentNode.addChild(childObj);
@@ -139,11 +142,34 @@ public class GamaTreeFactory {
 		final GamaTree tree = create();
 		if (list.isEmpty()) return tree;
 
-		GamaNode current = tree.setRoot(list.get(0));
+		final Object first = list.get(0);
+		final Object firstData = first instanceof NodeToAdd nta ? nta.object() : first;
+		GamaNode current = tree.setRoot(firstData);
 		for (int i = 1; i < list.size(); i++) {
-			current = current.addChild(list.get(i));
+			final Object elem = list.get(i);
+			final Object elemData = elem instanceof NodeToAdd nta ? nta.object() : elem;
+			current = current.addChild(elemData);
 		}
 		return tree;
 	}
 
+	/**
+	 * Casts an object to ITree with explicit content type.
+	 *
+	 * @param scope
+	 *            execution scope
+	 * @param obj
+	 *            object to cast
+	 * @param param
+	 *            optional param
+	 * @param contentType
+	 *            type of tree content
+	 * @param copy
+	 *            whether to copy
+	 * @return ITree representation
+	 */
+	public static ITree castToTree(final IScope scope, final Object obj, final Object param, final IType contentType,
+			final boolean copy) {
+		return castToTree(scope, obj, param, copy);
+	}
 }
