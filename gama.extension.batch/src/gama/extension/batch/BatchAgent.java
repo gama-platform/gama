@@ -454,6 +454,48 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 	}
 
 	/**
+	 * Applies explorable parameters from the given solution set.
+	 *
+	 * @param sol the parameter set
+	 */
+	private void applySolutionParameters(final ParametersSet sol) {
+		if (sol == null) return;
+		for (final Map.Entry<String, Object> entry : sol.entrySet()) {
+			final IParameter p = getSpecies().getExplorableParameters().get(entry.getKey());
+			if (p != null) { p.setValue(getScope(), entry.getValue()); }
+		}
+	}
+
+	/**
+	 * Process a finished simulation in single parameter set mode.
+	 *
+	 * @param sim the simulation agent
+	 * @param outputs the accumulated outputs map
+	 */
+	private void processFinishedSimulation(final ISimulationAgent sim, final Map<String, List<Object>> outputs) {
+		getSimulationPopulation().unscheduleSimulation(sim);
+		Map<String, Object> out = manageOutputAndCloseSimulation(sim, currentSolution, true, simDispose);
+		out.forEach((out_vars, obj) -> outputs.computeIfAbsent(out_vars, k -> GamaListFactory.create()).add(obj));
+	}
+
+	/**
+	 * Evaluates fitness when the exploration algorithm is fitness-based.
+	 *
+	 * @param outputs the outputs map
+	 */
+	private void evaluateFitnessIfNecessary(final Map<String, List<Object>> outputs) {
+		if (!getExplorationAlgorithm().isFitnessBased()) return;
+		AOptimizationAlgorithm oAlgo = (AOptimizationAlgorithm) getExplorationAlgorithm();
+		final short fitnessCombination = oAlgo.getCombination();
+		lastSolution = currentSolution;
+		lastFitness = fitnessCombination == AOptimizationAlgorithm.C_MAX ? Collections.max(fitnessValues)
+				: fitnessCombination == AOptimizationAlgorithm.C_MIN ? Collections.min(fitnessValues)
+				: fitnessValues.stream().mapToDouble(d -> d).average().orElse(Double.NaN);
+		outputs.put(IKeyword.FITNESS, GamaListFactory.createWithoutCasting(Types.FLOAT, lastFitness));
+		oAlgo.updateBestFitness(lastSolution, lastFitness);
+	}
+
+	/**
 	 * Launch simulations with solution.
 	 *
 	 * @param sol
@@ -464,7 +506,6 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 	 */
 	public Map<String, List<Object>> launchSimulationsWithSingleParametersSet(final ParametersSet sol)
 			throws GamaRuntimeException {
-		// We first reset the currentSolution and the fitness values
 		final SimulationPopulation pop = getSimulationPopulation();
 		Map<String, List<Object>> outputs = GamaMapFactory.create();
 
@@ -472,17 +513,9 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 
 		currentSolution = new ParametersSet(sol);
 		fitnessValues.clear();
-		// The values present in the solution are passed to the parameters of
-		// the experiment
-		for (final Map.Entry<String, Object> entry : sol.entrySet()) {
-			final IParameter p = getSpecies().getExplorableParameters().get(entry.getKey());
-			if (p != null) { p.setValue(getScope(), entry.getValue()); }
-		}
+		applySolutionParameters(sol);
 
-		// We update the parameters (parameter to explore)
 		getScope().getGui().updateParameters(false);
-
-		// We then create a number of simulations with the same solution
 
 		int numberOfCores = pop.getMaxNumberOfConcurrentSimulations();
 		if (numberOfCores == 0) { numberOfCores = 1; }
@@ -497,69 +530,27 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 				if (repeatIndex == getSeeds().length || dead) { break; }
 			}
 			while (pop.hasScheduledSimulations() && !dead) {
-				for (final ISimulationAgent sim :  new ArrayList<>(pop.getRunningSimulations())) {
-					// cycles += " " + simulation.getClock().getCycle();
-					// test the condition first in case it is paused
+				for (final ISimulationAgent sim : new ArrayList<>(pop.getRunningSimulations())) {
 					sim.step();
 					final boolean stopConditionMet =
 							dead || Cast.asBool(sim.getScope(), sim.getScope().evaluate(stopCondition, sim).getValue());
-					final boolean mustStop = stopConditionMet || sim.dead();
-					// AD -- removed because it would prevent simulations from running if 'do pause' was called in the
-					// experiment
-					// || agent.getScope().isPaused();
-					if (mustStop) {
-						pop.unscheduleSimulation(sim);
-						Map<String, Object> out =
-								manageOutputAndCloseSimulation(sim, currentSolution, true, simDispose);
-						out.forEach((out_vars, obj) -> {
-							if (!outputs.containsKey(out_vars)) { outputs.put(out_vars, GamaListFactory.create()); }
-							outputs.get(out_vars).add(obj);
-						});
+					if (stopConditionMet || sim.dead()) {
+						processFinishedSimulation(sim, outputs);
 					}
 				}
-				// We inform the status line
 				if (!dead) { informStatus(pop, repeatIndex); }
-
-				// We then verify that the front scheduler has not been paused
 				while (getSpecies().getController().isPaused() && !dead) { THREADS.WAIT(10); }
 			}
-
 		}
 
-		// When the simulations are finished, we give a chance to the outputs of
-		// the experiment and the experiment
-		// agent itself to "step" once, effectively emulating what the front
-		// scheduler should do. The simulations are
-		// still "alive" at this stage (even if they are not scheduled anymore),
-		// which allows to retrieve information from them
 		super.step(getScope());
-
-		// If the agent is dead, we return immediately
 		if (dead) return outputs;
-		// We reset the experiment agent to erase traces of the current
-		// simulations if any
 		this.reset();
 
-		if (getExplorationAlgorithm().isFitnessBased()) {
-			// We then return the combination (average, min or max) of the different
-			// fitness values computed by the
-			// different simulation.
-			AOptimizationAlgorithm oAlgo = (AOptimizationAlgorithm) getExplorationAlgorithm();
-			final short fitnessCombination = oAlgo.getCombination();
-			lastSolution = currentSolution;
-			lastFitness = fitnessCombination == AOptimizationAlgorithm.C_MAX ? Collections.max(fitnessValues)
-					: fitnessCombination == AOptimizationAlgorithm.C_MIN ? Collections.min(fitnessValues)
-					: fitnessValues.stream().mapToDouble(d -> d).average().orElse(Double.NaN);
-			outputs.put(IKeyword.FITNESS, GamaListFactory.createWithoutCasting(Types.FLOAT, lastFitness));
-			// we update the best solution found so far
-			oAlgo.updateBestFitness(lastSolution, lastFitness);
-		}
-
-		// At last, we update the parameters (last fitness and best fitness)
+		evaluateFitnessIfNecessary(outputs);
 		getScope().getGui().updateParameters(false);
 
 		return outputs;
-
 	}
 
 	/**
