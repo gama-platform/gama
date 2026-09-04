@@ -433,12 +433,12 @@ public class GamaTree<T> implements ITree<T> {
 	// ToGet & ToSet
 
 	@Override
-	public GamaNode<T> get(final IScope scope, final GamaNode<T> index) throws GamaRuntimeException {
-		return index;
+	public T get(final IScope scope, final GamaNode<T> index) throws GamaRuntimeException {
+		return index != null ? index.getData() : null;
 	}
 
 	@Override
-	public GamaNode<T> getFromIndicesList(final IScope scope, final IList<GamaNode<T>> indices) throws GamaRuntimeException {
+	public T getFromIndicesList(final IScope scope, final IList<GamaNode<T>> indices) throws GamaRuntimeException {
 		if (indices == null || indices.isEmpty()) return null;
 		return get(scope, indices.get(0));
 	}
