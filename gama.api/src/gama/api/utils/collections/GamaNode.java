@@ -15,13 +15,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import gama.api.types.graph.GraphObjectToAdd;
+
 /**
  * The Class GamaNode.
  *
  * @param <T>
  *            the generic type
  */
-public class GamaNode<T> {
+public class GamaNode<T> implements GraphObjectToAdd {
 
 	/** The default weight. */
 	public static Integer DEFAULT_WEIGHT = null;
@@ -165,6 +167,11 @@ public class GamaNode<T> {
 	 * @return the data
 	 */
 	public T getData() { return this.data; }
+
+	@Override
+	public Object object() {
+		return getData();
+	}
 
 	/**
 	 * Sets the data.
