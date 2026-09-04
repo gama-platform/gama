@@ -367,11 +367,11 @@ public class GamaTree<T> implements ITree<T> {
 	}
 
 	@Override
-	public boolean containsKey(final IScope scope, final Object o) throws GamaRuntimeException {
-		if (root == null || !(o instanceof GamaNode node)) return false;
+public boolean containsKey(final IScope scope, final Object o) throws GamaRuntimeException {
+		if (root == null || !(o instanceof GamaNode<?> node)) return false;
 		final boolean[] found = new boolean[1];
 		visit(Order.PRE_ORDER, n -> {
-			if (n.equals(node)) found[0] = true;
+			if (!found[0] && n == node) { found[0] = true; }
 		});
 		return found[0];
 	}
