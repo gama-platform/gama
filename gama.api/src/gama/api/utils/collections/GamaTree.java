@@ -29,11 +29,11 @@ import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
 import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
-import gama.api.types.matrix.GamaMatrixFactory;
 import gama.api.types.matrix.IMatrix;
 import gama.api.types.misc.IContainer;
 import gama.api.types.tree.ITree;
-import gama.api.utils.RANDOM;
+import gama.api.utils.json.IJson;
+import gama.api.utils.json.IJsonValue;
 
 /**
  * The Class GamaTree.
@@ -291,6 +291,18 @@ public class GamaTree<T> implements ITree<T> {
 		traversalResult.put(node, depth);
 	}
 
+	// IValue & IJsonable methods
+
+	@Override
+	public String stringValue(final IScope scope) {
+		return toString();
+	}
+
+	@Override
+	public IJsonValue serializeToJson(final IJson json) {
+		return json.typedObject(Types.TREE, "root", root != null ? root.getData() : null);
+	}
+
 	// IContainer methods
 
 	@Override
@@ -326,14 +338,12 @@ public class GamaTree<T> implements ITree<T> {
 
 	@Override
 	public IMatrix<?> matrixValue(final IScope scope, final IType<?> contentType, final boolean copy) {
-		final IList<T> values = listValue(scope, contentType, false);
-		return GamaMatrixFactory.create(scope, values);
+		return listValue(scope, contentType, false).matrixValue(scope, contentType, copy);
 	}
 
 	@Override
 	public IMatrix<?> matrixValue(final IScope scope, final IType<?> contentType, final IPoint size, final boolean copy) {
-		final IList<T> values = listValue(scope, contentType, false);
-		return GamaMatrixFactory.create(scope, values, size);
+		return listValue(scope, contentType, false).matrixValue(scope, contentType, size, copy);
 	}
 
 	@Override
@@ -367,11 +377,11 @@ public class GamaTree<T> implements ITree<T> {
 	}
 
 	@Override
-public boolean containsKey(final IScope scope, final Object o) throws GamaRuntimeException {
-		if (root == null || !(o instanceof GamaNode<?> node)) return false;
+	public boolean containsKey(final IScope scope, final Object o) throws GamaRuntimeException {
+		if (root == null || !(o instanceof GamaNode node)) return false;
 		final boolean[] found = new boolean[1];
 		visit(Order.PRE_ORDER, n -> {
-			if (!found[0] && n == node) { found[0] = true; }
+			if (n.equals(node)) found[0] = true;
 		});
 		return found[0];
 	}
@@ -417,18 +427,18 @@ public boolean containsKey(final IScope scope, final Object o) throws GamaRuntim
 	public T anyValue(final IScope scope) {
 		final IList<T> all = listValue(scope, Types.NO_TYPE, false);
 		if (all.isEmpty()) return null;
-		return RANDOM.opOneOf(scope, all);
+		return all.anyValue(scope);
 	}
 
 	// ToGet & ToSet
 
 	@Override
-	public T get(final IScope scope, final GamaNode<T> index) throws GamaRuntimeException {
-		return index != null ? index.getData() : null;
+	public GamaNode<T> get(final IScope scope, final GamaNode<T> index) throws GamaRuntimeException {
+		return index;
 	}
 
 	@Override
-	public T getFromIndicesList(final IScope scope, final IList<GamaNode<T>> indices) throws GamaRuntimeException {
+	public GamaNode<T> getFromIndicesList(final IScope scope, final IList<GamaNode<T>> indices) throws GamaRuntimeException {
 		if (indices == null || indices.isEmpty()) return null;
 		return get(scope, indices.get(0));
 	}
@@ -498,12 +508,12 @@ public boolean containsKey(final IScope scope, final Object o) throws GamaRuntim
 	}
 
 	@Override
-public void removeIndex(final IScope scope, final Object index) {
-		if (index instanceof GamaNode<?> node) {
-			if (node == root) {
+	public void removeIndex(final IScope scope, final Object index) {
+		if (index instanceof GamaNode node) {
+			if (node.equals(root)) {
 				dispose();
 			} else if (node.getParent() != null) {
-				node.getParent().getChildren().removeIf(n -> n == node);
+				node.getParent().getChildren().remove(node);
 			}
 		}
 	}
