@@ -383,7 +383,7 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 			for (final ISimulationAgent agent : new ArrayList<>(pop.getRunningSimulations())) {
 				agent.step();
 				ParametersSet ps = simToParameter.get(agent);
-				if (ps != null) { currentSolution = new ParametersSet(ps); }
+				currentSolution = new ParametersSet(ps);
 
 				// test the condition first in case it is paused
 				final boolean stopConditionMet = dead
