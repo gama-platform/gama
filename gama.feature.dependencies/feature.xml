@@ -261,9 +261,6 @@
          id="org.eclipse.emf.edit"
          version="0.0.0"/>
 
-   <plugin
-         id="org.junit"
-         version="0.0.0"/>
 
    <plugin
          id="org.eclipse.osgi"
