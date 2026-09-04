@@ -1063,6 +1063,9 @@ public interface IKeyword {
 	/** The trace. */
 	String TRACE = "trace";
 
+	/** The tree. */
+	String TREE = "tree";
+
 	/** The transparency. */
 	String TRANSPARENCY = "transparency";
 

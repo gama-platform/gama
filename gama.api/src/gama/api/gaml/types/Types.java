@@ -94,7 +94,7 @@ public class Types {
 	public static GamaFieldType FIELD;
 
 	/** Static references to common container types. */
-	public static IContainerType LIST, MATRIX, MAP, GRAPH, FILE, PAIR, CONTAINER, SPECIES;
+	public static IContainerType LIST, MATRIX, MAP, GRAPH, FILE, PAIR, CONTAINER, SPECIES, TREE;
 
 	/** A thread-safe cache mapping Java classes to their corresponding GAML type names. */
 	private static final Map<Class, String> CLASSES_TYPES_CORRESPONDANCE = new ConcurrentHashMap<>();
@@ -180,6 +180,9 @@ public class Types {
 			case IType.GRAPH:
 				GRAPH = (IContainerType) instance;
 				break;
+			case IType.TREE:
+				TREE = (IContainerType) instance;
+				break;
 			case IType.FILE:
 				FILE = (IContainerType) instance;
 				break;
@@ -257,6 +260,8 @@ public class Types {
 				return MAP;
 			case IType.GRAPH:
 				return GRAPH;
+			case IType.TREE:
+				return TREE;
 			case IType.FILE:
 				return FILE;
 			case IType.PAIR:

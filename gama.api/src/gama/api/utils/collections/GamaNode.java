@@ -88,6 +88,39 @@ public class GamaNode<T> {
 	}
 
 	/**
+	 * Checks if this node is a leaf (no children).
+	 *
+	 * @return true if leaf
+	 */
+	public boolean isLeaf() {
+		return !hasChildren();
+	}
+
+	/**
+	 * Checks if this node is the root (no parent).
+	 *
+	 * @return true if root
+	 */
+	public boolean isRoot() {
+		return parent == null;
+	}
+
+	/**
+	 * Calculates the depth of this node from the root.
+	 *
+	 * @return depth (0 for root)
+	 */
+	public int getDepth() {
+		int d = 0;
+		GamaNode<T> curr = parent;
+		while (curr != null) {
+			d++;
+			curr = curr.getParent();
+		}
+		return d;
+	}
+
+	/**
 	 * Adds the child.
 	 *
 	 * @param child
