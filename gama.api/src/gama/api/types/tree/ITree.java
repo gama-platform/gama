@@ -21,7 +21,7 @@ import gama.api.utils.collections.GamaNode;
  *            the element type stored in the tree nodes
  */
 public interface ITree<T> extends IContainer.Modifiable<GamaNode<T>, T, GamaNode<T>, T>,
-		IContainer.Addressable<GamaNode<T>, T, GamaNode<T>, GamaNode<T>> {
+		IContainer.Addressable<GamaNode<T>, T, GamaNode<T>, T> {
 
 	/**
 	 * Gets the root node.
