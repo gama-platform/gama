@@ -183,7 +183,19 @@ public class RdsGamaConverter {
 			return map;
 		}
 
-		private static IList<Object> convertAtomicVector(final Vector vec) {
+		/**
+		 * Converts an atomic R vector back to a GAMA value.
+		 * <p>
+		 * Length-1 vectors are intentionally unwrapped to the single scalar value so
+		 * that values exported as scalars (for example map entries) round-trip as
+		 * scalars instead of one-element lists. This does mean that genuine
+		 * single-element atomic vectors lose their list-like wrapper on import, which
+		 * is the accepted trade-off for preserving scalar round-trips.
+		 * </p>
+		 */
+		private static Object convertAtomicVector(final Vector vec) {
+			if (vec.length() == 1) return extractVectorElement(vec, 0);
+
 			IList<Object> list = GamaListFactory.create();
 			for (int i = 0; i < vec.length(); i++) {
 				list.add(extractVectorElement(vec, i));
