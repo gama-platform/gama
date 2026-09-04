@@ -106,6 +106,9 @@ public abstract class ChartOutput implements IChart {
 	/** The y tick value visible. */
 	boolean y_tick_value_visible = true;
 
+	/** The y2 tick value visible. */
+	boolean y2_tick_value_visible = true;
+
 	/** The x tick line visible. */
 	boolean x_tick_line_visible = true;
 
@@ -172,11 +175,16 @@ public abstract class ChartOutput implements IChart {
 	/** The series label position. */
 	protected String series_label_position = IKeyword.DEFAULT;
 
-/** The legend orientation. */
-protected String legend_orientation = "default";
-/** Sets the legend orientation. */
-public void setLegendOrientation(final IScope scope, final String orient) { legend_orientation = orient; }
-
+/** The legend orientation. */
+
+protected String legend_orientation = "default";
+
+/** Sets the legend orientation. */
+
+public void setLegendOrientation(final IScope scope, final String orient) { legend_orientation = orient; }
+
+
+
 	/** The series label anchor. */
 	protected IPoint series_label_anchor = GamaPointFactory.create(1, 1);
 
@@ -1553,6 +1561,31 @@ public void setLegendOrientation(final IScope scope, final String orient) { lege
 
 		return y_tick_value_visible;
 		// return false;
+	}
+
+	/**
+	 * Sets the Y2 tick value visible.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param asBool
+	 *            the as bool
+	 */
+	public void setY2TickValueVisible(final IScope scope, final Boolean asBool) {
+
+		y2_tick_value_visible = asBool;
+	}
+
+	/**
+	 * Gets the y2 tick value visible.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the y2 tick value visible
+	 */
+	public boolean getY2TickValueVisible(final IScope scope) {
+
+		return y2_tick_value_visible;
 	}
 
 	/**

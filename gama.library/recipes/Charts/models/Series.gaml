@@ -125,6 +125,13 @@ experiment "Different series" type: gui
 			}
 		}
 
+		display "double axes y2 tick values hidden" type: 2d {
+			chart "double Y axes (y2 ticks hidden)" y_label: "axis 1" y2_label: "axis 2" y2_tick_values_visible: false {
+				data "cos" value: cos(100 * cycle) color: #red;
+				data "cycle" value: cycle color: #green use_second_y_axis: true;
+			}
+		}
+
 	}
 
 }
