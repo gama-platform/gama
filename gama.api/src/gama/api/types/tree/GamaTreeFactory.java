@@ -12,7 +12,6 @@ package gama.api.types.tree;
 import java.util.Map;
 
 import gama.api.gaml.types.IType;
-import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.IList;
 import gama.api.types.map.IMap;
@@ -22,6 +21,7 @@ import gama.api.utils.collections.GamaTree;
 /**
  * Factory for creating and casting ITree instances.
  */
+@SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamaTreeFactory {
 
 	/**
@@ -74,56 +74,76 @@ public class GamaTreeFactory {
 	 *            whether to copy
 	 * @return ITree representation
 	 */
-	@SuppressWarnings ({ "unchecked", "rawtypes" })
 	public static ITree castToTree(final IScope scope, final Object obj, final Object param, final boolean copy) {
 		if (obj == null) return create();
-		if (obj instanceof ITree tree) {
-			return copy ? (ITree) tree.copy(scope) : tree;
-		}
-		if (obj instanceof GamaNode node) {
-			return create(node);
-		}
-		if (obj instanceof IMap map) {
-			final GamaTree tree = create();
-			if (!map.isEmpty()) {
-				// build tree from map: key = parent, value = children list or child
-				for (final Object entryObj : map.entrySet()) {
-					final Map.Entry entry = (Map.Entry) entryObj;
-					final Object parentObj = entry.getKey();
-					final Object childObj = entry.getValue();
-
-					GamaNode parentNode = tree.getNodeWithData(parentObj);
-					if (parentNode == null) {
-						if (tree.getRoot() == null) {
-							parentNode = tree.setRoot(parentObj);
-						} else {
-							parentNode = tree.getRoot().addChild(parentObj);
-						}
-					}
-
-					if (childObj instanceof java.lang.Iterable children) {
-						for (final Object child : children) {
-							parentNode.addChild(child);
-						}
-					} else if (childObj != null) {
-						parentNode.addChild(childObj);
-					}
-				}
-			}
-			return tree;
-		}
-		if (obj instanceof IList list) {
-			final GamaTree tree = create();
-			if (!list.isEmpty()) {
-				GamaNode current = tree.setRoot(list.get(0));
-				for (int i = 1; i < list.size(); i++) {
-					current = current.addChild(list.get(i));
-				}
-			}
-			return tree;
-		}
-		// Fallback: single root object
+		if (obj instanceof ITree tree) return copy ? (ITree) tree.copy(scope) : tree;
+		if (obj instanceof GamaNode node) return create(node);
+		if (obj instanceof IMap map) return createFromMap(map);
+		if (obj instanceof IList list) return createFromList(list);
 		return create(obj);
+	}
+
+	/**
+	 * Creates a tree from a map (parent -> child/children).
+	 */
+	private static ITree createFromMap(final IMap map) {
+		final GamaTree tree = create();
+		if (map.isEmpty()) return tree;
+
+		for (final Object entryObj : map.entrySet()) {
+			final Map.Entry entry = (Map.Entry) entryObj;
+			addMapEntryToTree(tree, entry.getKey(), entry.getValue());
+		}
+		return tree;
+	}
+
+	/**
+	 * Adds a parent-child map entry to the tree.
+	 */
+	private static void addMapEntryToTree(final GamaTree tree, final Object parentObj, final Object childObj) {
+		final GamaNode parentNode = findOrCreateParentNode(tree, parentObj);
+		addChildrenToParent(parentNode, childObj);
+	}
+
+	/**
+	 * Finds an existing node with parentObj or creates one.
+	 */
+	private static GamaNode findOrCreateParentNode(final GamaTree tree, final Object parentObj) {
+		final GamaNode existingNode = tree.getNodeWithData(parentObj);
+		if (existingNode != null) return existingNode;
+
+		if (tree.getRoot() == null) {
+			return tree.setRoot(parentObj);
+		}
+		return tree.getRoot().addChild(parentObj);
+	}
+
+	/**
+	 * Adds child objects to a parent node.
+	 */
+	private static void addChildrenToParent(final GamaNode parentNode, final Object childObj) {
+		if (childObj == null) return;
+		if (childObj instanceof Iterable children) {
+			for (final Object child : children) {
+				parentNode.addChild(child);
+			}
+		} else {
+			parentNode.addChild(childObj);
+		}
+	}
+
+	/**
+	 * Creates a tree from a list as a chain of nodes.
+	 */
+	private static ITree createFromList(final IList list) {
+		final GamaTree tree = create();
+		if (list.isEmpty()) return tree;
+
+		GamaNode current = tree.setRoot(list.get(0));
+		for (int i = 1; i < list.size(); i++) {
+			current = current.addChild(list.get(i));
+		}
+		return tree;
 	}
 
 	/**

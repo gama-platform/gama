@@ -9,18 +9,16 @@
  ********************************************************************************************************/
 package gama.gaml.operators;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.operator;
 import gama.annotations.test;
-import gama.annotations.usage;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.annotations.support.ITypeProvider;
-import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
@@ -29,8 +27,6 @@ import gama.api.types.list.IList;
 import gama.api.types.tree.GamaTreeFactory;
 import gama.api.types.tree.ITree;
 import gama.api.utils.collections.GamaNode;
-import gama.api.utils.collections.GamaTree;
-import gama.api.utils.collections.GamaTree.Order;
 
 /**
  * GAML operators for tree containers and tree nodes.
@@ -60,9 +56,7 @@ public class Trees {
 					equals = "a tree with root 'root'"))
 	@test ("tree('root').root.data = 'root'")
 	public static ITree tree(final IScope scope, final Object rootData) {
-		if (rootData instanceof GamaNode node) {
-			return GamaTreeFactory.create(node);
-		}
+		if (rootData instanceof GamaNode node) return GamaTreeFactory.create(node);
 		return GamaTreeFactory.create(rootData);
 	}
 
@@ -168,8 +162,8 @@ public class Trees {
 	 *
 	 * @param scope
 	 *            the scope
-	 * @param node
-	 *            the node
+	 * @param target
+	 *            the node or tree
 	 * @return children list
 	 */
 	@operator (
@@ -184,14 +178,9 @@ public class Trees {
 					equals = "[node('c1'), node('c2')]"))
 	@test ("length(children_of(root_of(as_tree(['p'::['c1', 'c2']])))) = 2")
 	public static IList childrenOf(final IScope scope, final Object target) {
-		if (target instanceof ITree tree) {
-			if (tree.getRoot() == null) return GamaListFactory.create();
-			return GamaListFactory.wrap(Types.NO_TYPE, tree.getRoot().getChildren());
-		}
-		if (target instanceof GamaNode node) {
-			return GamaListFactory.wrap(Types.NO_TYPE, node.getChildren());
-		}
-		return GamaListFactory.create();
+		final List<GamaNode> children = getInitialChildren(target);
+		if (children.isEmpty()) return GamaListFactory.create();
+		return GamaListFactory.wrap(Types.NO_TYPE, children);
 	}
 
 	/**
@@ -269,18 +258,22 @@ public class Trees {
 					equals = "all descendant nodes"))
 	public static IList descendantsOf(final IScope scope, final Object target) {
 		final IList descendants = GamaListFactory.create();
-		if (target instanceof ITree tree) {
-			if (tree.getRoot() != null) {
-				for (final GamaNode child : tree.getRoot().getChildren()) {
-					collectDescendants(child, descendants);
-				}
-			}
-		} else if (target instanceof GamaNode node) {
-			for (final GamaNode child : (List<GamaNode>) node.getChildren()) {
-				collectDescendants(child, descendants);
-			}
+		final List<GamaNode> startNodes = getInitialChildren(target);
+		for (final GamaNode child : startNodes) {
+			collectDescendants(child, descendants);
 		}
 		return descendants;
+	}
+
+	private static List<GamaNode> getInitialChildren(final Object target) {
+		if (target instanceof ITree tree) {
+			final GamaNode root = tree.getRoot();
+			return root != null ? root.getChildren() : Collections.emptyList();
+		}
+		if (target instanceof GamaNode node) {
+			return node.getChildren();
+		}
+		return Collections.emptyList();
 	}
 
 	private static void collectDescendants(final GamaNode node, final IList list) {
@@ -313,9 +306,7 @@ public class Trees {
 	@test ("add_child(root_of(tree('r')), 'c').data = 'c'")
 	public static GamaNode addChild(final IScope scope, final GamaNode parent, final Object child) {
 		if (parent == null) return null;
-		if (child instanceof GamaNode childNode) {
-			return parent.addChild(childNode);
-		}
+		if (child instanceof GamaNode childNode) return parent.addChild(childNode);
 		return parent.addChild(child);
 	}
 
@@ -340,12 +331,8 @@ public class Trees {
 					equals = "1"))
 	@test ("height_of(tree('r')) = 1")
 	public static int depthOf(final IScope scope, final Object target) {
-		if (target instanceof ITree tree) {
-			return tree.getDepth();
-		}
-		if (target instanceof GamaNode node) {
-			return node.getDepth();
-		}
+		if (target instanceof ITree tree) return tree.getDepth();
+		if (target instanceof GamaNode node) return node.getDepth();
 		return 0;
 	}
 
