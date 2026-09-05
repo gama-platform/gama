@@ -512,8 +512,8 @@ public class GamaTree<T> implements ITree<T> {
 		if (index instanceof GamaNode node) {
 			if (node.equals(root)) {
 				dispose();
-			} else if (node.getParent() != null) {
-				node.getParent().getChildren().remove(node);
+			} else {
+				node.detach();
 			}
 		}
 	}

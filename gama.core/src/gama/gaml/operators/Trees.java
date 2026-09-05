@@ -14,6 +14,7 @@ import java.util.List;
 
 import gama.annotations.doc;
 import gama.annotations.example;
+import gama.annotations.no_test;
 import gama.annotations.operator;
 import gama.annotations.test;
 import gama.annotations.support.IConcept;
@@ -54,7 +55,8 @@ public class Trees {
 			value = "creates a tree with the given operand as the root payload.",
 			examples = @example (
 					value = "tree(\"root\")",
-					equals = "a tree with root 'root'"))
+					equals = "a tree with root 'root'",
+					isExecutable = false))
 	@test ("tree('root').root.data = 'root'")
 	public static ITree tree(final IScope scope, final Object rootData) {
 		if (rootData instanceof GamaNode node) return GamaTreeFactory.create(node);
@@ -81,7 +83,8 @@ public class Trees {
 			value = "casts a container or object into a tree.",
 			examples = @example (
 					value = "as_tree(['parent'::['child1', 'child2']])",
-					equals = "a tree with root 'parent' and children 'child1', 'child2'"))
+					equals = "a tree with root 'parent' and children 'child1', 'child2'",
+					isExecutable = false))
 	@test ("as_tree(['parent'::['child1', 'child2']]).length = 3")
 	public static ITree asTree(final IScope scope, final Object obj) {
 		return GamaTreeFactory.castToTree(scope, obj, null, false);
@@ -104,7 +107,8 @@ public class Trees {
 			value = "returns the root node of the tree.",
 			examples = @example (
 					value = "root_of(tree(\"a\"))",
-					equals = "node('a')"))
+					equals = "node('a')",
+					isExecutable = false))
 	@test ("root_of(tree('a')).data = 'a'")
 	public static GamaNode rootOf(final IScope scope, final ITree tree) {
 		if (tree == null) return null;
@@ -129,7 +133,8 @@ public class Trees {
 			value = "returns the list of leaf nodes of the tree.",
 			examples = @example (
 					value = "leaves_of(as_tree(['root'::['c1', 'c2']]))",
-					equals = "[node('c1'), node('c2')]"))
+					equals = "[node('c1'), node('c2')]",
+					isExecutable = false))
 	@test ("length(leaves_of(as_tree(['root'::['c1', 'c2']]))) = 2")
 	public static IList leavesOf(final IScope scope, final ITree tree) {
 		if (tree == null) return GamaListFactory.create();
@@ -154,7 +159,8 @@ public class Trees {
 			value = "returns the list of children nodes of the given node or tree root.",
 			examples = @example (
 					value = "children_of(root_of(as_tree(['p'::['c1', 'c2']])))",
-					equals = "[node('c1'), node('c2')]"))
+					equals = "[node('c1'), node('c2')]",
+					isExecutable = false))
 	@test ("length(children_of(root_of(as_tree(['p'::['c1', 'c2']])))) = 2")
 	public static IList childrenOf(final IScope scope, final Object target) {
 		final List<GamaNode> children = getInitialChildren(target);
@@ -179,7 +185,8 @@ public class Trees {
 			value = "returns the parent node of the given node.",
 			examples = @example (
 					value = "parent_of(children_of(tree('r'))[0])",
-					equals = "node('r')"))
+					equals = "node('r')",
+					isExecutable = false))
 	@test ("parent_of(root_of(tree('r'))) = nil")
 	public static GamaNode parentOf(final IScope scope, final GamaNode node) {
 		if (node == null) return null;
@@ -204,7 +211,9 @@ public class Trees {
 			value = "returns the list of ancestor nodes of the given node up to the root.",
 			examples = @example (
 					value = "ancestors_of(leaf_node)",
-					equals = "[parent, root]"))
+					equals = "[parent, root]",
+					isExecutable = false))
+	@no_test
 	public static IList ancestorsOf(final IScope scope, final GamaNode node) {
 		final IList ancestors = GamaListFactory.create();
 		if (node == null) return ancestors;
@@ -234,7 +243,9 @@ public class Trees {
 			value = "returns the list of all descendant nodes of the given node or tree.",
 			examples = @example (
 					value = "descendants_of(root_node)",
-					equals = "all descendant nodes"))
+					equals = "all descendant nodes",
+					isExecutable = false))
+	@no_test
 	public static IList descendantsOf(final IScope scope, final Object target) {
 		final IList descendants = GamaListFactory.create();
 		final List<GamaNode> startNodes = getInitialChildren(target);
@@ -281,7 +292,8 @@ public class Trees {
 			value = "adds a child (data payload or node) to the parent node.",
 			examples = @example (
 					value = "add_child(root_node, 'child')",
-					equals = "the created child node"))
+					equals = "the created child node",
+					isExecutable = false))
 	@test ("add_child(root_of(tree('r')), 'c').data = 'c'")
 	public static GamaNode addChild(final IScope scope, final GamaNode parent, final Object child) {
 		if (parent == null) return null;
@@ -291,29 +303,55 @@ public class Trees {
 	}
 
 	/**
-	 * Depth or height.
+	 * Height of tree.
 	 *
 	 * @param scope
 	 *            the scope
-	 * @param target
-	 *            the node or tree
-	 * @return int depth
+	 * @param tree
+	 *            the tree
+	 * @return int height
 	 */
 	@operator (
-			value = { "depth_of", "height_of" },
+			value = "height_of",
 			type = IType.INT,
 			category = { IOperatorCategory.CONTAINER },
 			concept = { IConcept.CONTAINER })
 	@doc (
-			value = "returns the depth of the node (distance from root) or height of the tree.",
+			value = "returns the height (max depth) of the tree.",
 			examples = @example (
 					value = "height_of(tree('r'))",
-					equals = "1"))
+					equals = "1",
+					isExecutable = false))
 	@test ("height_of(tree('r')) = 1")
-	public static int depthOf(final IScope scope, final Object target) {
-		if (target instanceof ITree tree) return tree.getDepth();
-		if (target instanceof GamaNode node) return node.getDepth();
-		return 0;
+	public static int heightOf(final IScope scope, final ITree tree) {
+		if (tree == null) return 0;
+		return tree.getDepth();
+	}
+
+	/**
+	 * Depth of node.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param node
+	 *            the node
+	 * @return int depth
+	 */
+	@operator (
+			value = "depth_of",
+			type = IType.INT,
+			category = { IOperatorCategory.CONTAINER },
+			concept = { IConcept.CONTAINER })
+	@doc (
+			value = "returns the depth of the node (distance from the root, root = 0).",
+			examples = @example (
+					value = "depth_of(root_of(tree('r')))",
+					equals = "0",
+					isExecutable = false))
+	@test ("depth_of(root_of(tree('r'))) = 0")
+	public static int depthOf(final IScope scope, final GamaNode node) {
+		if (node == null) return 0;
+		return node.getDepth();
 	}
 
 	/**
@@ -334,7 +372,8 @@ public class Trees {
 			value = "returns true if the node is a leaf (has no children).",
 			examples = @example (
 					value = "is_leaf(root_of(tree('r')))",
-					equals = "true"))
+					equals = "true",
+					isExecutable = false))
 	@test ("is_leaf(root_of(tree('r'))) = true")
 	public static boolean isLeaf(final IScope scope, final GamaNode node) {
 		if (node == null) return false;
@@ -359,7 +398,8 @@ public class Trees {
 			value = "returns true if the node is the root of a tree (has no parent).",
 			examples = @example (
 					value = "is_root(root_of(tree('r')))",
-					equals = "true"))
+					equals = "true",
+					isExecutable = false))
 	@test ("is_root(root_of(tree('r'))) = true")
 	public static boolean isRoot(final IScope scope, final GamaNode node) {
 		if (node == null) return false;
@@ -386,7 +426,9 @@ public class Trees {
 			value = "removes the given node from the tree.",
 			examples = @example (
 					value = "remove_node_from(child_node, my_tree)",
-					equals = "the updated tree"))
+					equals = "the updated tree",
+					isExecutable = false))
+	@no_test
 	public static ITree removeNodeFrom(final IScope scope, final GamaNode node, final ITree tree) {
 		if (tree != null && node != null) {
 			tree.removeIndex(scope, node);

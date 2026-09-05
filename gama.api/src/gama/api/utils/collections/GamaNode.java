@@ -267,13 +267,23 @@ public class GamaNode<T> implements GraphObjectToAdd {
 	public void setWeight(final Integer w) { weight = w; }
 
 	/**
+	 * Detaches this node from its parent.
+	 */
+	public void detach() {
+		if (parent != null) {
+			parent.removeChild(this);
+			parent = null;
+		}
+	}
+
+	/**
 	 * Attach to.
 	 *
 	 * @param node
 	 *            the node
 	 */
 	public void attachTo(final GamaNode<T> node) {
-		if (parent != null) { parent.removeChild(this); }
+		detach();
 		node.addChild(this);
 
 	}
