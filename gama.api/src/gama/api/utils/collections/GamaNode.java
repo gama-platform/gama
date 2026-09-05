@@ -15,13 +15,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import gama.annotations.getter;
+import gama.api.types.graph.GraphObjectToAdd;
+
 /**
  * The Class GamaNode.
  *
  * @param <T>
  *            the generic type
  */
-public class GamaNode<T> {
+public class GamaNode<T> implements GraphObjectToAdd {
 
 	/** The default weight. */
 	public static Integer DEFAULT_WEIGHT = null;
@@ -88,6 +91,39 @@ public class GamaNode<T> {
 	}
 
 	/**
+	 * Checks if this node is a leaf (no children).
+	 *
+	 * @return true if leaf
+	 */
+	public boolean isLeaf() {
+		return !hasChildren();
+	}
+
+	/**
+	 * Checks if this node is the root (no parent).
+	 *
+	 * @return true if root
+	 */
+	public boolean isRoot() {
+		return parent == null;
+	}
+
+	/**
+	 * Calculates the depth of this node from the root.
+	 *
+	 * @return depth (0 for root)
+	 */
+	public int getDepth() {
+		int d = 0;
+		GamaNode<T> curr = parent;
+		while (curr != null) {
+			d++;
+			curr = curr.getParent();
+		}
+		return d;
+	}
+
+	/**
 	 * Adds the child.
 	 *
 	 * @param child
@@ -131,7 +167,13 @@ public class GamaNode<T> {
 	 *
 	 * @return the data
 	 */
+	@getter("data")
 	public T getData() { return this.data; }
+
+	@Override
+	public Object object() {
+		return getData();
+	}
 
 	/**
 	 * Sets the data.
@@ -227,13 +269,23 @@ public class GamaNode<T> {
 	public void setWeight(final Integer w) { weight = w; }
 
 	/**
+	 * Detaches this node from its parent.
+	 */
+	public void detach() {
+		if (parent != null) {
+			parent.removeChild(this);
+			parent = null;
+		}
+	}
+
+	/**
 	 * Attach to.
 	 *
 	 * @param node
 	 *            the node
 	 */
 	public void attachTo(final GamaNode<T> node) {
-		if (parent != null) { parent.removeChild(this); }
+		detach();
 		node.addChild(this);
 
 	}
