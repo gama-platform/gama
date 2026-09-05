@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import gama.annotations.getter;
 import gama.api.types.graph.GraphObjectToAdd;
 
 /**
@@ -166,6 +167,7 @@ public class GamaNode<T> implements GraphObjectToAdd {
 	 *
 	 * @return the data
 	 */
+	@getter("data")
 	public T getData() { return this.data; }
 
 	@Override

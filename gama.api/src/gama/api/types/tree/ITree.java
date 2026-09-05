@@ -9,6 +9,7 @@
  ********************************************************************************************************/
 package gama.api.types.tree;
 
+import gama.annotations.getter;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.IList;
 import gama.api.types.misc.IContainer;
@@ -28,6 +29,7 @@ public interface ITree<T> extends IContainer.Modifiable<GamaNode<T>, T, GamaNode
 	 *
 	 * @return the root node
 	 */
+	@getter("root")
 	GamaNode<T> getRoot();
 
 	/**
