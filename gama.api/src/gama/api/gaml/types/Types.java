@@ -94,7 +94,7 @@ public class Types {
 	public static GamaFieldType FIELD;
 
 	/** Static references to common container types. */
-	public static IContainerType LIST, MATRIX, MAP, GRAPH, FILE, PAIR, CONTAINER, SPECIES;
+	public static IContainerType LIST, MATRIX, MAP, GRAPH, FILE, PAIR, CONTAINER, SPECIES, TREE;
 
 	/** A thread-safe cache mapping Java classes to their corresponding GAML type names. */
 	private static final Map<Class, String> CLASSES_TYPES_CORRESPONDANCE = new ConcurrentHashMap<>();
@@ -143,83 +143,45 @@ public class Types {
 	 *            the type instance to cache (must be a built-in type)
 	 */
 	public static void cache(final IType instance) {
+		if (cachePrimitivesAndBasicTypes(instance)) return;
+		cacheContainerAndSpecialTypes(instance);
+	}
+
+	private static boolean cachePrimitivesAndBasicTypes(final IType instance) {
 		switch (instance.id()) {
-			case IType.INT:
-				INT = (GamaIntegerType) instance;
-				break;
-			case IType.FLOAT:
-				FLOAT = (GamaFloatType) instance;
-				break;
-			case IType.BOOL:
-				BOOL = (GamaBoolType) instance;
-				break;
-			case IType.COLOR:
-				COLOR = (GamaColorType) instance;
-				break;
-			case IType.DATE:
-				DATE = instance;
-				break;
-			case IType.STRING:
-				STRING = (GamaStringType) instance;
-				break;
-			case IType.POINT:
-				POINT = (GamaPointType) instance;
-				break;
-			case IType.GEOMETRY:
-				GEOMETRY = (GamaGeometryType) instance;
-				break;
-			case IType.TOPOLOGY:
-				TOPOLOGY = (GamaTopologyType) instance;
-				break;
-			case IType.LIST:
-				LIST = (IContainerType) instance;
-				break;
-			case IType.MAP:
-				MAP = (GamaMapType) instance;
-				break;
-			case IType.GRAPH:
-				GRAPH = (IContainerType) instance;
-				break;
-			case IType.FILE:
-				FILE = (IContainerType) instance;
-				break;
-			case IType.PAIR:
-				PAIR = (IContainerType) instance;
-				break;
-			case IType.AGENT:
-				AGENT = instance;
-				break;
-			case IType.PATH:
-				PATH = instance;
-				break;
-			case IType.MATRIX:
-				MATRIX = (GamaMatrixType) instance;
-				break;
-			case IType.CONTAINER:
-				CONTAINER = (IContainerType) instance;
-				break;
-			case IType.SPECIES:
-				SPECIES = (IContainerType) instance;
-				break;
-			case IType.FONT:
-				FONT = instance;
-				break;
-			case IType.SKILL:
-				SKILL = instance;
-				break;
-			case IType.TYPE:
-				TYPE = instance;
-				break;
-			case IType.ACTION:
-				ACTION = instance;
-				break;
-			case IType.FIELD:
-				FIELD = (GamaFieldType) instance;
-				break;
-			case IType.OBJECT:
-				OBJECT = (GamaGenericObjectType) instance;
-				break;
-			default:
+			case IType.INT: INT = (GamaIntegerType) instance; return true;
+			case IType.FLOAT: FLOAT = (GamaFloatType) instance; return true;
+			case IType.BOOL: BOOL = (GamaBoolType) instance; return true;
+			case IType.COLOR: COLOR = (GamaColorType) instance; return true;
+			case IType.DATE: DATE = instance; return true;
+			case IType.STRING: STRING = (GamaStringType) instance; return true;
+			case IType.POINT: POINT = (GamaPointType) instance; return true;
+			case IType.GEOMETRY: GEOMETRY = (GamaGeometryType) instance; return true;
+			case IType.TOPOLOGY: TOPOLOGY = (GamaTopologyType) instance; return true;
+			default: return false;
+		}
+	}
+
+	private static void cacheContainerAndSpecialTypes(final IType instance) {
+		switch (instance.id()) {
+			case IType.LIST: LIST = (IContainerType) instance; break;
+			case IType.MAP: MAP = (GamaMapType) instance; break;
+			case IType.GRAPH: GRAPH = (IContainerType) instance; break;
+			case IType.TREE: TREE = (IContainerType) instance; break;
+			case IType.FILE: FILE = (IContainerType) instance; break;
+			case IType.PAIR: PAIR = (IContainerType) instance; break;
+			case IType.MATRIX: MATRIX = (GamaMatrixType) instance; break;
+			case IType.CONTAINER: CONTAINER = (IContainerType) instance; break;
+			case IType.SPECIES: SPECIES = (IContainerType) instance; break;
+			case IType.AGENT: AGENT = instance; break;
+			case IType.PATH: PATH = instance; break;
+			case IType.FONT: FONT = instance; break;
+			case IType.SKILL: SKILL = instance; break;
+			case IType.TYPE: TYPE = instance; break;
+			case IType.ACTION: ACTION = instance; break;
+			case IType.FIELD: FIELD = (GamaFieldType) instance; break;
+			case IType.OBJECT: OBJECT = (GamaGenericObjectType) instance; break;
+			default: break;
 		}
 	}
 
@@ -231,56 +193,47 @@ public class Types {
 	 * @return the IType instance, or a type looked up by string ID if not found in the fast switch.
 	 */
 	public static IType get(final int type) {
-		// use cache first
-		switch (type) {
-			case IType.INT:
-				return INT;
-			case IType.FLOAT:
-				return FLOAT;
-			case IType.BOOL:
-				return BOOL;
-			case IType.COLOR:
-				return COLOR;
-			case IType.DATE:
-				return DATE;
-			case IType.STRING:
-				return STRING;
-			case IType.POINT:
-				return POINT;
-			case IType.GEOMETRY:
-				return GEOMETRY;
-			case IType.TOPOLOGY:
-				return TOPOLOGY;
-			case IType.LIST:
-				return LIST;
-			case IType.MAP:
-				return MAP;
-			case IType.GRAPH:
-				return GRAPH;
-			case IType.FILE:
-				return FILE;
-			case IType.PAIR:
-				return PAIR;
-			case IType.AGENT:
-				return AGENT;
-			case IType.PATH:
-				return PATH;
-			case IType.MATRIX:
-				return MATRIX;
-			case IType.CONTAINER:
-				return CONTAINER;
-			case IType.SPECIES:
-				return SPECIES;
-			case IType.SKILL:
-				return SKILL;
-			case IType.ACTION:
-				return ACTION;
-			case IType.TYPE:
-				return TYPE;
-			case IType.OBJECT:
-				return OBJECT;
-		}
+		final IType basic = getBasicType(type);
+		if (basic != null) return basic;
+		final IType containerOrSpecial = getContainerOrSpecialType(type);
+		if (containerOrSpecial != null) return containerOrSpecial;
 		return BUILT_IN_TYPES.get(String.valueOf(type));
+	}
+
+	private static IType getBasicType(final int type) {
+		switch (type) {
+			case IType.INT: return INT;
+			case IType.FLOAT: return FLOAT;
+			case IType.BOOL: return BOOL;
+			case IType.COLOR: return COLOR;
+			case IType.DATE: return DATE;
+			case IType.STRING: return STRING;
+			case IType.POINT: return POINT;
+			case IType.GEOMETRY: return GEOMETRY;
+			case IType.TOPOLOGY: return TOPOLOGY;
+			default: return null;
+		}
+	}
+
+	private static IType getContainerOrSpecialType(final int type) {
+		switch (type) {
+			case IType.LIST: return LIST;
+			case IType.MAP: return MAP;
+			case IType.GRAPH: return GRAPH;
+			case IType.TREE: return TREE;
+			case IType.FILE: return FILE;
+			case IType.PAIR: return PAIR;
+			case IType.AGENT: return AGENT;
+			case IType.PATH: return PATH;
+			case IType.MATRIX: return MATRIX;
+			case IType.CONTAINER: return CONTAINER;
+			case IType.SPECIES: return SPECIES;
+			case IType.SKILL: return SKILL;
+			case IType.ACTION: return ACTION;
+			case IType.TYPE: return TYPE;
+			case IType.OBJECT: return OBJECT;
+			default: return null;
+		}
 	}
 
 	/**

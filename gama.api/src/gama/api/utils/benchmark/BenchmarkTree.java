@@ -32,7 +32,7 @@ public class BenchmarkTree extends GamaTree<IBenchmarkable> {
 	 */
 	public BenchmarkTree(final IModelDescription model, final IExperimentDescription focusedExperiment) {
 		setRoot(new GamaNode<>(model, 0));
-		build(model, focusedExperiment, getRoot(), 1);
+		build(model, focusedExperiment, getRootNode(), 1);
 	}
 
 	/**
