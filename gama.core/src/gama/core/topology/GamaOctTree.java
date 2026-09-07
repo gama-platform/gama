@@ -114,7 +114,7 @@ public class GamaOctTree implements ISpatialIndex {
 	/**
 	 * The root node of the octree. It covers the entire simulation envelope.
 	 */
-	final OctNode root;
+	volatile OctNode root;
 
 	/**
 	 * The maximum number of agents that a single {@link OctNode} may hold before it is split into eight children.
@@ -429,13 +429,142 @@ public class GamaOctTree implements ISpatialIndex {
 	 * @param agent
 	 *            the agent to insert; {@code null} is silently ignored
 	 */
+	private boolean isCovered(final IEnvelope env) {
+		if (env == null) return true;
+		if (env.isNull()) return true;
+		return root.bounds.covers(env);
+	}
+
+	private synchronized void ensureBoundsCover(final IEnvelope env) {
+		if (isCovered(env)) return;
+		while (!root.bounds.covers(env)) {
+			if (!expandRootStep(env)) break;
+		}
+	}
+
+	private boolean expandRootStep(final IEnvelope env) {
+		final IEnvelope b = root.bounds;
+		final double w = b.getWidth();
+		final double h = b.getHeight();
+		final double d = b.getDepth();
+
+		if (w <= 0) {
+			recreateDegenerateRoot(env, b);
+			return false;
+		}
+		if (h <= 0) {
+			recreateDegenerateRoot(env, b);
+			return false;
+		}
+		if (d <= 0) {
+			recreateDegenerateRoot(env, b);
+			return false;
+		}
+
+		expandRootBounds(env, b, w, h, d);
+		return true;
+	}
+
+	private void recreateDegenerateRoot(final IEnvelope env, final IEnvelope b) {
+		final OctNode oldRoot = root;
+		final double minX = Math.min(b.getMinX(), env.getMinX());
+		final double maxX = Math.max(b.getMaxX(), env.getMaxX());
+		final double minY = Math.min(b.getMinY(), env.getMinY());
+		final double maxY = Math.max(b.getMaxY(), env.getMaxY());
+		final double minZ = Math.min(b.getMinZ(), env.getMinZ());
+		final double maxZ = Math.max(b.getMaxZ(), env.getMaxZ());
+		final OctNode newRoot = new OctNode(GamaEnvelopeFactory.of(minX, maxX, minY, maxY, minZ, maxZ));
+
+		migrateSubtree(oldRoot, newRoot);
+		root = newRoot;
+	}
+
+	private void migrateSubtree(final OctNode node, final OctNode target) {
+		if (node == null) return;
+		node.objects.forEach((a, e) -> {
+			if (a != null && !a.dead() && e != null) {
+				if (e instanceof IPoint) {
+					target.add((IPoint) e, a);
+				} else {
+					target.add((IEnvelope) e, a);
+				}
+			}
+		});
+		if (node.nwf != null) {
+			migrateSubtree(node.nwf, target);
+			migrateSubtree(node.nef, target);
+			migrateSubtree(node.swf, target);
+			migrateSubtree(node.sef, target);
+			migrateSubtree(node.nwb, target);
+			migrateSubtree(node.neb, target);
+			migrateSubtree(node.swb, target);
+			migrateSubtree(node.seb, target);
+		}
+	}
+
+	private void expandRootBounds(final IEnvelope env, final IEnvelope b, final double w, final double h, final double d) {
+		final IEnvelope newEnv = computeExpandedEnvelope3D(env, b, w, h, d);
+		final int oldOctant = computeOldOctant(env, b);
+		final OctNode newRoot = new OctNode(newEnv);
+
+		populateNewRootChildren(newRoot, oldOctant);
+		root = newRoot;
+	}
+
+	private IEnvelope computeExpandedEnvelope3D(final IEnvelope env, final IEnvelope b, final double w, final double h, final double d) {
+		double minX = b.getMinX();
+		double maxX = b.getMaxX();
+		double minY = b.getMinY();
+		double maxY = b.getMaxY();
+		double minZ = b.getMinZ();
+		double maxZ = b.getMaxZ();
+
+		if (env.getMinX() < b.getMinX()) minX -= w; else maxX += w;
+		if (env.getMinY() < b.getMinY()) minY -= h; else maxY += h;
+		if (env.getMinZ() < b.getMinZ()) minZ -= d; else maxZ += d;
+
+		return GamaEnvelopeFactory.of(minX, maxX, minY, maxY, minZ, maxZ);
+	}
+
+	private int computeOldOctant(final IEnvelope env, final IEnvelope b) {
+		int octant = 0;
+		if (env.getMinZ() < b.getMinZ()) octant |= 4;
+		if (env.getMinY() < b.getMinY()) octant |= 2;
+		if (env.getMinX() < b.getMinX()) octant |= 1;
+		return octant;
+	}
+
+	private void populateNewRootChildren(final OctNode newRoot, final int oldOctant) {
+		final IEnvelope env = newRoot.bounds;
+		final double minX = env.getMinX();
+		final double maxX = env.getMaxX();
+		final double minY = env.getMinY();
+		final double maxY = env.getMaxY();
+		final double minZ = env.getMinZ();
+		final double maxZ = env.getMaxZ();
+		final double hx = newRoot.halfx;
+		final double hy = newRoot.halfy;
+		final double hz = newRoot.halfz;
+
+		newRoot.nwf = oldOctant == 0 ? root : new OctNode(GamaEnvelopeFactory.of(minX, hx, minY, hy, minZ, hz));
+		newRoot.nef = oldOctant == 1 ? root : new OctNode(GamaEnvelopeFactory.of(hx, maxX, minY, hy, minZ, hz));
+		newRoot.swf = oldOctant == 2 ? root : new OctNode(GamaEnvelopeFactory.of(minX, hx, hy, maxY, minZ, hz));
+		newRoot.sef = oldOctant == 3 ? root : new OctNode(GamaEnvelopeFactory.of(hx, maxX, hy, maxY, minZ, hz));
+		newRoot.nwb = oldOctant == 4 ? root : new OctNode(GamaEnvelopeFactory.of(minX, hx, minY, hy, hz, maxZ));
+		newRoot.neb = oldOctant == 5 ? root : new OctNode(GamaEnvelopeFactory.of(hx, maxX, minY, hy, hz, maxZ));
+		newRoot.swb = oldOctant == 6 ? root : new OctNode(GamaEnvelopeFactory.of(minX, hx, hy, maxY, hz, maxZ));
+		newRoot.seb = oldOctant == 7 ? root : new OctNode(GamaEnvelopeFactory.of(hx, maxX, hy, maxY, hz, maxZ));
+	}
+
 	@Override
 	public void insert(final IAgent agent) {
 		if (agent == null) return;
+		final IEnvelope env = agent.getEnvelope();
+		ensureBoundsCover(env);
 		if (agent.isPoint()) {
 			root.add(agent.getLocation(), agent);
 		} else {
-			root.add(agent.getEnvelope(), agent);
+			root.add(env, agent);
 		}
 	}
 

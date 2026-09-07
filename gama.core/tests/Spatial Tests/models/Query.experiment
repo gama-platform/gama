@@ -170,6 +170,20 @@ experiment QueryTests type: test {
 		}
 		assert agents_overlapping = [dummy(8)];
 	}
+
+	test "overlapping_outside_world" {
+		dummy out_dummy;
+		create dummy returns: created_ag {
+			location <- {-20, -20};
+		}
+		out_dummy <- created_ag[0];
+
+		list<dummy> agents_overlapping;
+		using topology(world) {
+			agents_overlapping <- dummy overlapping (circle(5) at_location {-20, -20});
+		}
+		assert agents_overlapping contains out_dummy;
+	}
 	
 } 
 
