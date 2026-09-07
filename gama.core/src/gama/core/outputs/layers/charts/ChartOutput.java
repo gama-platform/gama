@@ -1352,6 +1352,27 @@ public abstract class ChartOutput implements IChart {
 	}
 
 	/**
+	 * Sets the legend orientation.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param asString
+	 *            the as string
+	 */
+	public void setLegendOrientation(final IScope scope, final String asString) {
+		legend_orientation = asString;
+	}
+
+	/**
+	 * Gets the legend orientation.
+	 *
+	 * @return the legend orientation
+	 */
+	public String getLegendOrientation() {
+		return legend_orientation;
+	}
+
+	/**
 	 * Sets the style.
 	 *
 	 * @param scope

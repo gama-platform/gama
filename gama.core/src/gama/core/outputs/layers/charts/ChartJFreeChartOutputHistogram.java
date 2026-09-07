@@ -423,7 +423,11 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 
 		if (this.useSubAxis) {
 			for (final String serieid : chartdataset.getDataSeriesIds(scope)) {
-				((SubCategoryAxis) domainAxis).addSubCategory(serieid);
+				final ChartDataSeries ds = chartdataset.getDataSeries(scope, serieid);
+				final String legLabel = ds != null && ds.getSerieLegend(scope) != null ? ds.getSerieLegend(scope).toString() : "";
+				if (!legLabel.isEmpty()) {
+					((SubCategoryAxis) domainAxis).addSubCategory(legLabel);
+				}
 			}
 
 		}

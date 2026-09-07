@@ -102,6 +102,7 @@ public class ChartDataSourceList extends ChartDataSource {
 		final Object legObj = legendExp.value(scope);
 		if (legObj instanceof Boolean b && !b) return null;
 		if (legObj instanceof IList l) return GamaListFactory.castToList(scope, l);
+		if (legObj != null) return GamaListFactory.create(scope, Types.STRING, Cast.asString(scope, legObj));
 		return null;
 	}
 
