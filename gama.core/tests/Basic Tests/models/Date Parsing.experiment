@@ -45,6 +45,22 @@ experiment DateParsingTest type: test {
 		assert date4.year = 2025 and date4.month = 1 and date4.day = 15;
 		date date5 <- date(['15.01.2025', 'dd.MM.yyyy']);
 		assert date5.year = 2025 and date5.month = 1 and date5.day = 15;
+
+		// Test 8: Antiquity / Negative year dates
+		date neg_date1 <- date([-1000, 1, 1]);
+		assert neg_date1.year = -1000 and neg_date1.month = 1 and neg_date1.day = 1;
+		assert string(neg_date1, 'yyyy-MM-dd') = '-1000-01-01';
+
+		date neg_date2 <- date("-1000-01-01");
+		assert neg_date2.year = -1000 and neg_date2.month = 1 and neg_date2.day = 1;
+
+		date neg_date3 <- date("-100-01-01");
+		assert neg_date3.year = -100 and neg_date3.month = 1 and neg_date3.day = 1;
+
+		date zero_date <- date([0, 1, 1]);
+		date sub_date <- zero_date subtract_years 1;
+		assert sub_date.year = -1;
+		assert string(sub_date, 'yyyy-MM-dd') = '-0001-01-01';
 	}
 	
 }

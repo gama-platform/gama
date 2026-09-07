@@ -343,7 +343,7 @@ public class SimulationClock implements IClock {
 			try {
 				IDate d = getCurrentDate();
 				final String date = outputAsDuration ? Dates.asDuration(getStartingDate(), d)
-						: d.toString("yyyy-MM-dd HH:mm:ss", "en");
+						: d.toString("uuuu-MM-dd HH:mm:ss", "en");
 				sb.append("[").append(date).append("]");
 			} catch (final DateTimeException e) {}
 		}
