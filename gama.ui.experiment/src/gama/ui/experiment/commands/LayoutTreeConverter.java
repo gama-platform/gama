@@ -127,7 +127,7 @@ public class LayoutTreeConverter {
 	 */
 	static GamaTree<String> buildStackTree(final GamaTree<String> result, final int[] indices) {
 		if (indices.length == 0) return result;
-		final GamaNode<String> root = result.getRoot().addChild(STACK);
+		final GamaNode<String> root = result.getRootNode().addChild(STACK);
 		IntStreamEx.of(indices).forEach(i -> root.addChild(valueOf(i), 5000));
 		return result;
 	}
@@ -143,7 +143,7 @@ public class LayoutTreeConverter {
 	 */
 	static GamaTree<String> buildGridTree(final GamaTree<String> result, final int[] indices) {
 		if (indices.length == 0) return result;
-		final GamaNode<String> initialSash = result.getRoot().addChild(HORIZONTAL);
+		final GamaNode<String> initialSash = result.getRootNode().addChild(HORIZONTAL);
 		final List<GamaNode<String>> placeholders = new ArrayList<>();
 		buildPlaceholders(initialSash, placeholders, indices.length);
 		int i = 0;
@@ -186,7 +186,7 @@ public class LayoutTreeConverter {
 	 */
 	static GamaTree<String> buildHorizontalOrVerticalTree(final GamaTree<String> result, final int[] indices,
 			final boolean horizon) {
-		final GamaNode<String> sashNode = result.getRoot().addChild(horizon ? HORIZONTAL : VERTICAL);
+		final GamaNode<String> sashNode = result.getRootNode().addChild(horizon ? HORIZONTAL : VERTICAL);
 		IntStreamEx.of(indices).forEach(i -> sashNode.addChild(valueOf(i), 5000));
 		return result;
 	}
@@ -210,7 +210,7 @@ public class LayoutTreeConverter {
 		if (displayStack == null) return null;
 		final GamaTree<String> tree = newLayoutTree();
 		final Set<MPlaceholder> holderSet = new HashSet<>(holders);
-		save(displayStack.getParent(), holderSet, tree.getRoot(), null);
+		save(displayStack.getParent(), holderSet, tree.getRootNode(), null);
 		return tree;
 	}
 
