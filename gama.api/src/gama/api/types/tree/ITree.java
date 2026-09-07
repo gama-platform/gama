@@ -9,7 +9,6 @@
  ********************************************************************************************************/
 package gama.api.types.tree;
 
-import gama.annotations.getter;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.IList;
 import gama.api.types.misc.IContainer;
@@ -18,88 +17,162 @@ import gama.api.utils.collections.GamaNode;
 /**
  * Main interface for tree structures in GAMA.
  *
- * @param <T>
- *            the element type stored in the tree nodes
+ * @param <V>
+ *            the element payload type stored in the tree
  */
-public interface ITree<T> extends IContainer.Modifiable<GamaNode<T>, T, GamaNode<T>, T>,
-		IContainer.Addressable<GamaNode<T>, T, GamaNode<T>, T> {
+public interface ITree<V> extends IContainer.Modifiable<V, V, V, V>, IContainer.Addressable<V, V, V, V> {
 
 	/**
-	 * Gets the root node.
+	 * Gets the root payload element.
+	 *
+	 * @return the root element
+	 */
+	V getRoot();
+
+	/**
+	 * Gets the internal root node.
 	 *
 	 * @return the root node
 	 */
-	@getter("root")
-	GamaNode<T> getRoot();
+	GamaNode<V> getRootNode();
 
 	/**
-	 * Sets the root node.
-	 *
-	 * @param root
-	 *            the new root node
-	 */
-	void setRoot(GamaNode<T> root);
-
-	/**
-	 * Sets the root data.
+	 * Sets the root element payload.
 	 *
 	 * @param data
 	 *            the data for the root
 	 * @return the created root node
 	 */
-	GamaNode<T> setRoot(T data);
+	GamaNode<V> setRoot(V data);
 
 	/**
-	 * Gets all nodes in traversal order.
+	 * Sets the internal root node.
+	 *
+	 * @param root
+	 *            the root node
+	 */
+	void setRoot(GamaNode<V> root);
+
+	/**
+	 * Gets all payload elements in pre-order traversal.
 	 *
 	 * @param scope
 	 *            the current execution scope
-	 * @return list of nodes
+	 * @return list of elements
 	 */
-	IList<GamaNode<T>> getNodes(IScope scope);
+	IList<V> getNodes(IScope scope);
 
 	/**
-	 * Gets all leaf nodes.
+	 * Gets all leaf elements.
 	 *
 	 * @param scope
 	 *            the current execution scope
-	 * @return list of leaf nodes
+	 * @return list of leaf elements
 	 */
-	IList<GamaNode<T>> getLeaves(IScope scope);
+	IList<V> getLeaves(IScope scope);
 
 	/**
-	 * Gets the depth/height of the tree.
+	 * Gets the height (maximum depth) of the tree.
 	 *
-	 * @return the tree depth
+	 * @return tree depth
 	 */
 	int getDepth();
 
 	/**
-	 * Gets the children of a given node.
+	 * Gets the depth of a specific element (distance from root).
+	 *
+	 * @param element
+	 *            the element
+	 * @return depth (0 for root)
+	 */
+	int getDepthOf(V element);
+
+	/**
+	 * Gets children elements of a given element.
 	 *
 	 * @param scope
-	 *            the current execution scope
-	 * @param node
-	 *            the node
-	 * @return list of children nodes
+	 *            execution scope
+	 * @param element
+	 *            parent element
+	 * @return list of children elements
 	 */
-	IList<GamaNode<T>> getChildrenOf(IScope scope, GamaNode<T> node);
+	IList<V> getChildrenOf(IScope scope, V element);
 
 	/**
-	 * Gets the parent of a given node.
+	 * Gets the parent element of a given element.
 	 *
-	 * @param node
-	 *            the node
-	 * @return parent node or null if root
+	 * @param element
+	 *            child element
+	 * @return parent element or null
 	 */
-	GamaNode<T> getParentOf(GamaNode<T> node);
+	V getParentOf(V element);
 
 	/**
-	 * Finds the first node containing the given payload value.
+	 * Gets ancestor elements of a given element up to the root.
+	 *
+	 * @param scope
+	 *            execution scope
+	 * @param element
+	 *            element
+	 * @return list of ancestors
+	 */
+	IList<V> getAncestorsOf(IScope scope, V element);
+
+	/**
+	 * Gets descendant elements of a given element.
+	 *
+	 * @param scope
+	 *            execution scope
+	 * @param element
+	 *            element
+	 * @return list of descendants
+	 */
+	IList<V> getDescendantsOf(IScope scope, V element);
+
+	/**
+	 * Adds a child element to a parent element in the tree.
+	 *
+	 * @param parent
+	 *            parent element
+	 * @param child
+	 *            child element
+	 * @return true if added
+	 */
+	boolean addChild(V parent, V child);
+
+	/**
+	 * Removes an element and its subtree from the tree.
+	 *
+	 * @param element
+	 *            element to remove
+	 * @return true if removed
+	 */
+	boolean removeNode(V element);
+
+	/**
+	 * Checks if an element is a leaf.
+	 *
+	 * @param element
+	 *            element
+	 * @return true if leaf
+	 */
+	boolean isLeaf(V element);
+
+	/**
+	 * Checks if an element is the root.
+	 *
+	 * @param element
+	 *            element
+	 * @return true if root
+	 */
+	boolean isRoot(V element);
+
+	/**
+	 * Finds the internal node containing the given payload value.
 	 *
 	 * @param value
-	 *            the value
-	 * @return the node or null if not found
+	 *            the payload value
+	 * @return internal node or null
 	 */
-	GamaNode<T> getNodeWithData(Object value);
+	GamaNode<V> getNodeWithData(Object value);
 }

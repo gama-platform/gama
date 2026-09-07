@@ -85,31 +85,39 @@ public class GamaTree<T> implements ITree<T> {
 		POST_ORDER
 	}
 
-	/** The root. */
+	/** The root node. */
 	private GamaNode<T> root;
 
 	/**
-	 * Gets the root.
+	 * Gets the root element payload.
 	 *
-	 * @return the root
+	 * @return the root element payload
 	 */
 	@Override
-	public GamaNode<T> getRoot() { return this.root; }
+	public T getRoot() { return this.root != null ? this.root.getData() : null; }
 
 	/**
-	 * Sets the root.
+	 * Gets the internal root node.
+	 *
+	 * @return root node
+	 */
+	@Override
+	public GamaNode<T> getRootNode() { return this.root; }
+
+	/**
+	 * Sets the root node.
 	 *
 	 * @param root
-	 *            the new root
+	 *            the new root node
 	 */
 	@Override
 	public void setRoot(final GamaNode<T> root) { this.root = root; }
 
 	/**
-	 * Sets the root.
+	 * Sets the root payload.
 	 *
 	 * @param data
-	 *            the new root
+	 *            the data for the root
 	 */
 	@Override
 	public GamaNode<T> setRoot(final T data) {
@@ -117,12 +125,12 @@ public class GamaTree<T> implements ITree<T> {
 	}
 
 	/**
-	 * Sets the root.
+	 * Sets the root payload with weight.
 	 *
 	 * @param root
-	 *            the root
+	 *            root payload
 	 * @param weight
-	 *            the weight
+	 *            weight
 	 * @return the gama node
 	 */
 	public GamaNode<T> setRoot(final T root, final Integer weight) {
@@ -132,7 +140,7 @@ public class GamaTree<T> implements ITree<T> {
 	}
 
 	/**
-	 * Visits the tree in the order defined. No pruning is done.
+	 * Visits the tree in the order defined.
 	 *
 	 * @param traversalOrder
 	 * @param visitor
@@ -146,11 +154,6 @@ public class GamaTree<T> implements ITree<T> {
 
 	/**
 	 * Visit pre order.
-	 *
-	 * @param node
-	 *            the node
-	 * @param visitor
-	 *            the visitor
 	 */
 	public void visitPreOrder(final GamaNode<T> node, final Consumer<GamaNode<T>> visitor) {
 		visitor.accept(node);
@@ -159,11 +162,6 @@ public class GamaTree<T> implements ITree<T> {
 
 	/**
 	 * Visit post order.
-	 *
-	 * @param node
-	 *            the node
-	 * @param visitor
-	 *            the visitor
 	 */
 	public void visitPostOrder(final GamaNode<T> node, final Consumer<GamaNode<T>> visitor) {
 		for (final GamaNode<T> child : node.getChildren()) { visitPostOrder(child, visitor); }
@@ -171,11 +169,7 @@ public class GamaTree<T> implements ITree<T> {
 	}
 
 	/**
-	 * List.
-	 *
-	 * @param traversalOrder
-	 *            the traversal order
-	 * @return the list
+	 * List of nodes.
 	 */
 	public List<GamaNode<T>> list(final Order traversalOrder) {
 		if (root == null) return Collections.EMPTY_LIST;
@@ -185,20 +179,20 @@ public class GamaTree<T> implements ITree<T> {
 	}
 
 	@Override
-	public IList<GamaNode<T>> getNodes(final IScope scope) {
-		final IList<GamaNode<T>> nodeList = GamaListFactory.create();
+	public IList<T> getNodes(final IScope scope) {
+		final IList<T> nodeList = GamaListFactory.create();
 		if (root != null) {
-			visit(Order.PRE_ORDER, nodeList::add);
+			visit(Order.PRE_ORDER, n -> nodeList.add(n.getData()));
 		}
 		return nodeList;
 	}
 
 	@Override
-	public IList<GamaNode<T>> getLeaves(final IScope scope) {
-		final IList<GamaNode<T>> leaves = GamaListFactory.create();
+	public IList<T> getLeaves(final IScope scope) {
+		final IList<T> leaves = GamaListFactory.create();
 		if (root != null) {
 			visit(Order.PRE_ORDER, n -> {
-				if (!n.hasChildren()) { leaves.add(n); }
+				if (!n.hasChildren()) { leaves.add(n.getData()); }
 			});
 		}
 		return leaves;
@@ -220,15 +214,99 @@ public class GamaTree<T> implements ITree<T> {
 	}
 
 	@Override
-	public IList<GamaNode<T>> getChildrenOf(final IScope scope, final GamaNode<T> node) {
-		if (node == null) return GamaListFactory.create();
-		return GamaListFactory.wrap(Types.NO_TYPE, node.getChildren());
+	public int getDepthOf(final T element) {
+		final GamaNode<T> node = getNodeWithData(element);
+		return node != null ? node.getDepth() : 0;
 	}
 
 	@Override
-	public GamaNode<T> getParentOf(final GamaNode<T> node) {
-		if (node == null) return null;
-		return node.getParent();
+	public IList<T> getChildrenOf(final IScope scope, final T element) {
+		final GamaNode<T> node = element != null ? getNodeWithData(element) : root;
+		if (node == null) return GamaListFactory.create();
+		final IList<T> children = GamaListFactory.create();
+		for (final GamaNode<T> child : node.getChildren()) {
+			children.add(child.getData());
+		}
+		return children;
+	}
+
+	@Override
+	public T getParentOf(final T element) {
+		final GamaNode<T> node = getNodeWithData(element);
+		if (node == null || node.getParent() == null) return null;
+		return node.getParent().getData();
+	}
+
+	@Override
+	public IList<T> getAncestorsOf(final IScope scope, final T element) {
+		final IList<T> ancestors = GamaListFactory.create();
+		GamaNode<T> node = getNodeWithData(element);
+		if (node == null) return ancestors;
+		GamaNode<T> curr = node.getParent();
+		while (curr != null) {
+			ancestors.add(curr.getData());
+			curr = curr.getParent();
+		}
+		return ancestors;
+	}
+
+	@Override
+	public IList<T> getDescendantsOf(final IScope scope, final T element) {
+		final IList<T> descendants = GamaListFactory.create();
+		final GamaNode<T> node = element != null ? getNodeWithData(element) : root;
+		if (node == null) return descendants;
+		for (final GamaNode<T> child : node.getChildren()) {
+			collectDescendantPayloads(child, descendants);
+		}
+		return descendants;
+	}
+
+	private void collectDescendantPayloads(final GamaNode<T> node, final IList<T> list) {
+		list.add(node.getData());
+		for (final GamaNode<T> child : node.getChildren()) {
+			collectDescendantPayloads(child, list);
+		}
+	}
+
+	@Override
+	public boolean addChild(final T parent, final T child) {
+		if (root == null) {
+			setRoot(parent != null ? parent : child);
+			if (parent != null && !Objects.equals(parent, child)) {
+				root.addChild(child);
+			}
+			return true;
+		}
+		final GamaNode<T> parentNode = parent != null ? getNodeWithData(parent) : root;
+		if (parentNode != null) {
+			parentNode.addChild(child);
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public boolean removeNode(final T element) {
+		final GamaNode<T> node = getNodeWithData(element);
+		if (node == null) return false;
+		if (node.equals(root)) {
+			dispose();
+		} else {
+			node.detach();
+		}
+		return true;
+	}
+
+	@Override
+	public boolean isLeaf(final T element) {
+		final GamaNode<T> node = getNodeWithData(element);
+		return node != null && node.isLeaf();
+	}
+
+	@Override
+	public boolean isRoot(final T element) {
+		final GamaNode<T> node = getNodeWithData(element);
+		return node != null && node.isRoot();
 	}
 
 	@Override
@@ -245,10 +323,6 @@ public class GamaTree<T> implements ITree<T> {
 
 	/**
 	 * Map by depth.
-	 *
-	 * @param traversalOrder
-	 *            the traversal order
-	 * @return the map
 	 */
 	public Map<GamaNode<T>, Integer> mapByDepth(final Order traversalOrder) {
 		if (root == null) return Collections.EMPTY_MAP;
@@ -259,32 +333,12 @@ public class GamaTree<T> implements ITree<T> {
 		return returnMap;
 	}
 
-	/**
-	 * Map pre order with depth.
-	 *
-	 * @param node
-	 *            the node
-	 * @param traversalResult
-	 *            the traversal result
-	 * @param depth
-	 *            the depth
-	 */
 	private void mapPreOrderWithDepth(final GamaNode<T> node, final Map<GamaNode<T>, Integer> traversalResult,
 			final int depth) {
 		traversalResult.put(node, depth);
 		for (final GamaNode<T> child : node.getChildren()) { mapPreOrderWithDepth(child, traversalResult, depth + 1); }
 	}
 
-	/**
-	 * Map post order with depth.
-	 *
-	 * @param node
-	 *            the node
-	 * @param traversalResult
-	 *            the traversal result
-	 * @param depth
-	 *            the depth
-	 */
 	private void mapPostOrderWithDepth(final GamaNode<T> node, final Map<GamaNode<T>, Integer> traversalResult,
 			final int depth) {
 		for (final GamaNode<T> child : node.getChildren()) { mapPostOrderWithDepth(child, traversalResult, depth + 1); }
@@ -306,7 +360,7 @@ public class GamaTree<T> implements ITree<T> {
 	// IContainer methods
 
 	@Override
-	public IContainer<GamaNode<T>, T> copy(final IScope scope) throws GamaRuntimeException {
+	public IContainer<T, T> copy(final IScope scope) throws GamaRuntimeException {
 		final GamaTree<T> newTree = new GamaTree<>();
 		if (root != null) {
 			newTree.setRoot(copyNode(root));
@@ -370,31 +424,24 @@ public class GamaTree<T> implements ITree<T> {
 	@Override
 	public boolean contains(final IScope scope, final Object o) throws GamaRuntimeException {
 		if (root == null || o == null) return false;
-		if (o instanceof GamaNode node) {
-			return containsKey(scope, node);
-		}
 		return getNodeWithData(o) != null;
 	}
 
 	@Override
 	public boolean containsKey(final IScope scope, final Object o) throws GamaRuntimeException {
-		if (root == null || !(o instanceof GamaNode node)) return false;
-		final boolean[] found = new boolean[1];
-		visit(Order.PRE_ORDER, n -> {
-			if (n.equals(node)) found[0] = true;
-		});
-		return found[0];
+		if (root == null || o == null) return false;
+		return getNodeWithData(o) != null;
 	}
 
 	@Override
 	public T firstValue(final IScope scope) throws GamaRuntimeException {
-		return root != null ? root.getData() : null;
+		return getRoot();
 	}
 
 	@Override
 	public T lastValue(final IScope scope) throws GamaRuntimeException {
-		final IList<GamaNode<T>> leaves = getLeaves(scope);
-		return leaves.isEmpty() ? null : leaves.get(leaves.size() - 1).getData();
+		final IList<T> leaves = getLeaves(scope);
+		return leaves.isEmpty() ? null : leaves.get(leaves.size() - 1);
 	}
 
 	@Override
@@ -433,12 +480,13 @@ public class GamaTree<T> implements ITree<T> {
 	// ToGet & ToSet
 
 	@Override
-	public T get(final IScope scope, final GamaNode<T> index) throws GamaRuntimeException {
-		return index != null ? index.getData() : null;
+	public T get(final IScope scope, final T index) throws GamaRuntimeException {
+		final GamaNode<T> node = getNodeWithData(index);
+		return node != null ? node.getData() : null;
 	}
 
 	@Override
-	public T getFromIndicesList(final IScope scope, final IList<GamaNode<T>> indices) throws GamaRuntimeException {
+	public T getFromIndicesList(final IScope scope, final IList<T> indices) throws GamaRuntimeException {
 		if (indices == null || indices.isEmpty()) return null;
 		return get(scope, indices.get(0));
 	}
@@ -454,9 +502,7 @@ public class GamaTree<T> implements ITree<T> {
 
 	@Override
 	public void addValueAtIndex(final IScope scope, final Object index, final T value) {
-		if (index instanceof GamaNode parentNode) {
-			parentNode.addChild(value);
-		} else if (index != null) {
+		if (index != null) {
 			final GamaNode target = getNodeWithData(index);
 			if (target != null) {
 				target.addChild(value);
@@ -470,9 +516,7 @@ public class GamaTree<T> implements ITree<T> {
 
 	@Override
 	public void setValueAtIndex(final IScope scope, final Object index, final T value) {
-		if (index instanceof GamaNode node) {
-			node.setData(value);
-		} else if (index != null) {
+		if (index != null) {
 			final GamaNode target = getNodeWithData(index);
 			if (target != null) {
 				target.setData(value);
@@ -497,25 +541,12 @@ public class GamaTree<T> implements ITree<T> {
 
 	@Override
 	public void removeValue(final IScope scope, final Object value) {
-		if (value instanceof GamaNode node) {
-			removeIndex(scope, node);
-		} else if (value != null) {
-			final GamaNode target = getNodeWithData(value);
-			if (target != null) {
-				removeIndex(scope, target);
-			}
-		}
+		removeNode((T) value);
 	}
 
 	@Override
 	public void removeIndex(final IScope scope, final Object index) {
-		if (index instanceof GamaNode node) {
-			if (node.equals(root)) {
-				dispose();
-			} else {
-				node.detach();
-			}
-		}
+		removeNode((T) index);
 	}
 
 	@Override

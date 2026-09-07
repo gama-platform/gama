@@ -9,9 +9,6 @@
  ********************************************************************************************************/
 package gama.gaml.operators;
 
-import java.util.Collections;
-import java.util.List;
-
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
@@ -21,7 +18,6 @@ import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.annotations.support.ITypeProvider;
 import gama.api.gaml.types.IType;
-import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.graph.NodeToAdd;
 import gama.api.types.list.GamaListFactory;
@@ -31,13 +27,13 @@ import gama.api.types.tree.ITree;
 import gama.api.utils.collections.GamaNode;
 
 /**
- * GAML operators for tree containers and tree nodes.
+ * GAML operators for tree containers.
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class Trees {
 
 	/**
-	 * Tree from root.
+	 * Tree from root payload.
 	 *
 	 * @param scope
 	 *            the scope
@@ -57,7 +53,7 @@ public class Trees {
 					value = "tree(\"root\")",
 					equals = "a tree with root 'root'",
 					isExecutable = false))
-	@test ("tree('root').root.data = 'root'")
+	@test ("tree('root').root = 'root'")
 	public static ITree tree(final IScope scope, final Object rootData) {
 		if (rootData instanceof GamaNode node) return GamaTreeFactory.create(node);
 		if (rootData instanceof NodeToAdd nodeToAdd) return GamaTreeFactory.create(nodeToAdd.object());
@@ -97,20 +93,21 @@ public class Trees {
 	 *            the scope
 	 * @param tree
 	 *            the tree
-	 * @return the root node
+	 * @return the root element
 	 */
 	@operator (
 			value = "root_of",
+			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
 			category = { IOperatorCategory.CONTAINER },
 			concept = { IConcept.CONTAINER })
 	@doc (
-			value = "returns the root node of the tree.",
+			value = "returns the root payload element of the tree.",
 			examples = @example (
 					value = "root_of(tree(\"a\"))",
-					equals = "node('a')",
+					equals = "'a'",
 					isExecutable = false))
-	@test ("root_of(tree('a')).data = 'a'")
-	public static GamaNode rootOf(final IScope scope, final ITree tree) {
+	@test ("root_of(tree('a')) = 'a'")
+	public static Object rootOf(final IScope scope, final ITree tree) {
 		if (tree == null) return null;
 		return tree.getRoot();
 	}
@@ -122,18 +119,19 @@ public class Trees {
 	 *            the scope
 	 * @param tree
 	 *            the tree
-	 * @return the leaf nodes
+	 * @return the leaf elements
 	 */
 	@operator (
 			value = "leaves_of",
 			type = IType.LIST,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
 			category = { IOperatorCategory.CONTAINER },
 			concept = { IConcept.CONTAINER })
 	@doc (
-			value = "returns the list of leaf nodes of the tree.",
+			value = "returns the list of leaf elements of the tree.",
 			examples = @example (
 					value = "leaves_of(as_tree(['root'::['c1', 'c2']]))",
-					equals = "[node('c1'), node('c2')]",
+					equals = "['c1', 'c2']",
 					isExecutable = false))
 	@test ("length(leaves_of(as_tree(['root'::['c1', 'c2']]))) = 2")
 	public static IList leavesOf(final IScope scope, final ITree tree) {
@@ -142,164 +140,152 @@ public class Trees {
 	}
 
 	/**
-	 * Children of node.
+	 * Children of parent element in tree.
 	 *
 	 * @param scope
 	 *            the scope
-	 * @param target
-	 *            the node or tree
-	 * @return children list
+	 * @param tree
+	 *            the tree
+	 * @param parent
+	 *            parent element
+	 * @return list of children
 	 */
 	@operator (
 			value = "children_of",
 			type = IType.LIST,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
 			category = { IOperatorCategory.CONTAINER },
 			concept = { IConcept.CONTAINER })
 	@doc (
-			value = "returns the list of children nodes of the given node or tree root.",
+			value = "returns the list of children elements of the given parent in the tree.",
 			examples = @example (
-					value = "children_of(root_of(as_tree(['p'::['c1', 'c2']])))",
-					equals = "[node('c1'), node('c2')]",
+					value = "children_of(as_tree(['p'::['c1', 'c2']]), 'p')",
+					equals = "['c1', 'c2']",
 					isExecutable = false))
-	@test ("length(children_of(root_of(as_tree(['p'::['c1', 'c2']])))) = 2")
-	public static IList childrenOf(final IScope scope, final Object target) {
-		final List<GamaNode> children = getInitialChildren(target);
-		if (children.isEmpty()) return GamaListFactory.create();
-		return GamaListFactory.wrap(Types.NO_TYPE, children);
+	@test ("length(children_of(as_tree(['p'::['c1', 'c2']]), 'p')) = 2")
+	public static IList childrenOf(final IScope scope, final ITree tree, final Object parent) {
+		if (tree == null) return GamaListFactory.create();
+		return tree.getChildrenOf(scope, parent);
 	}
 
 	/**
-	 * Parent of node.
+	 * Parent of child element in tree.
 	 *
 	 * @param scope
 	 *            the scope
-	 * @param node
-	 *            the node
-	 * @return parent node
+	 * @param tree
+	 *            the tree
+	 * @param child
+	 *            child element
+	 * @return parent element
 	 */
 	@operator (
 			value = "parent_of",
+			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
 			category = { IOperatorCategory.CONTAINER },
 			concept = { IConcept.CONTAINER })
 	@doc (
-			value = "returns the parent node of the given node.",
+			value = "returns the parent element of the given child element in the tree.",
 			examples = @example (
-					value = "parent_of(children_of(tree('r'))[0])",
-					equals = "node('r')",
+					value = "parent_of(as_tree(['p'::['c1', 'c2']]), 'c1')",
+					equals = "'p'",
 					isExecutable = false))
-	@test ("parent_of(root_of(tree('r'))) = nil")
-	public static GamaNode parentOf(final IScope scope, final GamaNode node) {
-		if (node == null) return null;
-		return node.getParent();
+	@test ("parent_of(as_tree(['p'::['c1', 'c2']]), 'c1') = 'p'")
+	public static Object parentOf(final IScope scope, final ITree tree, final Object child) {
+		if (tree == null) return null;
+		return tree.getParentOf(child);
 	}
 
 	/**
-	 * Ancestors of node.
+	 * Ancestors of element in tree.
 	 *
 	 * @param scope
 	 *            the scope
-	 * @param node
-	 *            the node
+	 * @param tree
+	 *            the tree
+	 * @param element
+	 *            the element
 	 * @return list of ancestors
 	 */
 	@operator (
 			value = "ancestors_of",
 			type = IType.LIST,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
 			category = { IOperatorCategory.CONTAINER },
 			concept = { IConcept.CONTAINER })
 	@doc (
-			value = "returns the list of ancestor nodes of the given node up to the root.",
+			value = "returns the list of ancestor elements of the given element up to the root.",
 			examples = @example (
-					value = "ancestors_of(leaf_node)",
+					value = "ancestors_of(my_tree, leaf_elem)",
 					equals = "[parent, root]",
 					isExecutable = false))
 	@no_test
-	public static IList ancestorsOf(final IScope scope, final GamaNode node) {
-		final IList ancestors = GamaListFactory.create();
-		if (node == null) return ancestors;
-		GamaNode curr = node.getParent();
-		while (curr != null) {
-			ancestors.add(curr);
-			curr = curr.getParent();
-		}
-		return ancestors;
+	public static IList ancestorsOf(final IScope scope, final ITree tree, final Object element) {
+		if (tree == null) return GamaListFactory.create();
+		return tree.getAncestorsOf(scope, element);
 	}
 
 	/**
-	 * Descendants of node or tree.
+	 * Descendants of element in tree.
 	 *
 	 * @param scope
 	 *            the scope
-	 * @param target
-	 *            the node or tree
+	 * @param tree
+	 *            the tree
+	 * @param element
+	 *            the element
 	 * @return list of descendants
 	 */
 	@operator (
 			value = "descendants_of",
 			type = IType.LIST,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
 			category = { IOperatorCategory.CONTAINER },
 			concept = { IConcept.CONTAINER })
 	@doc (
-			value = "returns the list of all descendant nodes of the given node or tree.",
+			value = "returns the list of all descendant elements of the given element in the tree.",
 			examples = @example (
-					value = "descendants_of(root_node)",
-					equals = "all descendant nodes",
+					value = "descendants_of(my_tree, root_elem)",
+					equals = "all descendant elements",
 					isExecutable = false))
 	@no_test
-	public static IList descendantsOf(final IScope scope, final Object target) {
-		final IList descendants = GamaListFactory.create();
-		final List<GamaNode> startNodes = getInitialChildren(target);
-		for (final GamaNode child : startNodes) {
-			collectDescendants(child, descendants);
-		}
-		return descendants;
-	}
-
-	private static List<GamaNode> getInitialChildren(final Object target) {
-		if (target instanceof ITree tree) {
-			final GamaNode root = tree.getRoot();
-			return root != null ? root.getChildren() : Collections.emptyList();
-		}
-		if (target instanceof GamaNode node) {
-			return node.getChildren();
-		}
-		return Collections.emptyList();
-	}
-
-	private static void collectDescendants(final GamaNode node, final IList list) {
-		list.add(node);
-		for (final GamaNode child : (List<GamaNode>) node.getChildren()) {
-			collectDescendants(child, list);
-		}
+	public static IList descendantsOf(final IScope scope, final ITree tree, final Object element) {
+		if (tree == null) return GamaListFactory.create();
+		return tree.getDescendantsOf(scope, element);
 	}
 
 	/**
-	 * Add child to parent node.
+	 * Add child to parent in tree.
 	 *
 	 * @param scope
 	 *            the scope
+	 * @param tree
+	 *            the tree
 	 * @param parent
-	 *            the parent node
+	 *            parent element
 	 * @param child
-	 *            the child data or node
-	 * @return the child node
+	 *            child element
+	 * @return the updated tree
 	 */
 	@operator (
 			value = "add_child",
+			type = IType.TREE,
 			category = { IOperatorCategory.CONTAINER },
 			concept = { IConcept.CONTAINER })
 	@doc (
-			value = "adds a child (data payload or node) to the parent node.",
+			value = "adds a child element to the parent element in the tree.",
 			examples = @example (
-					value = "add_child(root_node, 'child')",
-					equals = "the created child node",
+					value = "add_child(tree('r'), 'r', 'c')",
+					equals = "tree with root 'r' and child 'c'",
 					isExecutable = false))
-	@test ("add_child(root_of(tree('r')), 'c').data = 'c'")
-	public static GamaNode addChild(final IScope scope, final GamaNode parent, final Object child) {
-		if (parent == null) return null;
-		if (child instanceof GamaNode childNode) return parent.addChild(childNode);
-		if (child instanceof NodeToAdd nodeToAdd) return parent.addChild(nodeToAdd.object());
-		return parent.addChild(child);
+	@test ("children_of(add_child(tree('r'), 'r', 'c'), 'r')[0] = 'c'")
+	public static ITree addChild(final IScope scope, final ITree tree, final Object parent, final Object child) {
+		if (tree != null) {
+			final Object parentObj = parent instanceof NodeToAdd nta ? nta.object() : parent;
+			final Object childObj = child instanceof NodeToAdd nta ? nta.object() : child;
+			tree.addChild(parentObj, childObj);
+		}
+		return tree;
 	}
 
 	/**
@@ -317,7 +303,7 @@ public class Trees {
 			category = { IOperatorCategory.CONTAINER },
 			concept = { IConcept.CONTAINER })
 	@doc (
-			value = "returns the height (max depth) of the tree.",
+			value = "returns the height (maximum depth) of the tree.",
 			examples = @example (
 					value = "height_of(tree('r'))",
 					equals = "1",
@@ -329,12 +315,14 @@ public class Trees {
 	}
 
 	/**
-	 * Depth of node.
+	 * Depth of element in tree.
 	 *
 	 * @param scope
 	 *            the scope
-	 * @param node
-	 *            the node
+	 * @param tree
+	 *            the tree
+	 * @param element
+	 *            the element
 	 * @return int depth
 	 */
 	@operator (
@@ -343,15 +331,15 @@ public class Trees {
 			category = { IOperatorCategory.CONTAINER },
 			concept = { IConcept.CONTAINER })
 	@doc (
-			value = "returns the depth of the node (distance from the root, root = 0).",
+			value = "returns the depth of the element (distance from the root, root = 0) in the tree.",
 			examples = @example (
-					value = "depth_of(root_of(tree('r')))",
+					value = "depth_of(tree('r'), 'r')",
 					equals = "0",
 					isExecutable = false))
-	@test ("depth_of(root_of(tree('r'))) = 0")
-	public static int depthOf(final IScope scope, final GamaNode node) {
-		if (node == null) return 0;
-		return node.getDepth();
+	@test ("depth_of(tree('r'), 'r') = 0")
+	public static int depthOf(final IScope scope, final ITree tree, final Object element) {
+		if (tree == null) return 0;
+		return tree.getDepthOf(element);
 	}
 
 	/**
@@ -359,8 +347,10 @@ public class Trees {
 	 *
 	 * @param scope
 	 *            the scope
-	 * @param node
-	 *            the node
+	 * @param tree
+	 *            the tree
+	 * @param element
+	 *            the element
 	 * @return boolean
 	 */
 	@operator (
@@ -369,15 +359,15 @@ public class Trees {
 			category = { IOperatorCategory.CONTAINER },
 			concept = { IConcept.CONTAINER })
 	@doc (
-			value = "returns true if the node is a leaf (has no children).",
+			value = "returns true if the element in the tree is a leaf (has no children).",
 			examples = @example (
-					value = "is_leaf(root_of(tree('r')))",
+					value = "is_leaf(tree('r'), 'r')",
 					equals = "true",
 					isExecutable = false))
-	@test ("is_leaf(root_of(tree('r'))) = true")
-	public static boolean isLeaf(final IScope scope, final GamaNode node) {
-		if (node == null) return false;
-		return node.isLeaf();
+	@test ("is_leaf(tree('r'), 'r') = true")
+	public static boolean isLeaf(final IScope scope, final ITree tree, final Object element) {
+		if (tree == null) return false;
+		return tree.isLeaf(element);
 	}
 
 	/**
@@ -385,8 +375,10 @@ public class Trees {
 	 *
 	 * @param scope
 	 *            the scope
-	 * @param node
-	 *            the node
+	 * @param tree
+	 *            the tree
+	 * @param element
+	 *            the element
 	 * @return boolean
 	 */
 	@operator (
@@ -395,24 +387,24 @@ public class Trees {
 			category = { IOperatorCategory.CONTAINER },
 			concept = { IConcept.CONTAINER })
 	@doc (
-			value = "returns true if the node is the root of a tree (has no parent).",
+			value = "returns true if the element in the tree is the root.",
 			examples = @example (
-					value = "is_root(root_of(tree('r')))",
+					value = "is_root(tree('r'), 'r')",
 					equals = "true",
 					isExecutable = false))
-	@test ("is_root(root_of(tree('r'))) = true")
-	public static boolean isRoot(final IScope scope, final GamaNode node) {
-		if (node == null) return false;
-		return node.isRoot();
+	@test ("is_root(tree('r'), 'r') = true")
+	public static boolean isRoot(final IScope scope, final ITree tree, final Object element) {
+		if (tree == null) return false;
+		return tree.isRoot(element);
 	}
 
 	/**
-	 * Removes node from tree.
+	 * Removes node element from tree.
 	 *
 	 * @param scope
 	 *            the scope
-	 * @param node
-	 *            the node to remove
+	 * @param element
+	 *            element to remove
 	 * @param tree
 	 *            the tree
 	 * @return the tree
@@ -423,15 +415,16 @@ public class Trees {
 			category = { IOperatorCategory.CONTAINER },
 			concept = { IConcept.CONTAINER })
 	@doc (
-			value = "removes the given node from the tree.",
+			value = "removes the given element and its subtree from the tree.",
 			examples = @example (
-					value = "remove_node_from(child_node, my_tree)",
+					value = "remove_node_from('child', my_tree)",
 					equals = "the updated tree",
 					isExecutable = false))
 	@no_test
-	public static ITree removeNodeFrom(final IScope scope, final GamaNode node, final ITree tree) {
-		if (tree != null && node != null) {
-			tree.removeIndex(scope, node);
+	public static ITree removeNodeFrom(final IScope scope, final Object element, final ITree tree) {
+		if (tree != null && element != null) {
+			final Object elemObj = element instanceof NodeToAdd nta ? nta.object() : element;
+			tree.removeNode(elemObj);
 		}
 		return tree;
 	}
