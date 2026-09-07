@@ -115,8 +115,8 @@ public class GamaTreeFactory {
 		final GamaNode existingNode = tree.getNodeWithData(parentData);
 		if (existingNode != null) return existingNode;
 
-		if (tree.getRoot() == null) return tree.setRoot(parentData);
-		return tree.getRoot().addChild(parentData);
+		if (tree.getRootNode() == null) return tree.setRoot(parentData);
+		return tree.getRootNode().addChild(parentData);
 	}
 
 	/**
