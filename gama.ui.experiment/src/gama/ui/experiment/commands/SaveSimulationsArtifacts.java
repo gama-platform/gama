@@ -35,7 +35,33 @@ public class SaveSimulationsArtifacts extends AbstractHandler implements IElemen
 
 	@Override
 	public Object execute(final ExecutionEvent event) throws ExecutionException {
+		boolean areThereAnyArtifactsToSave;
 
+		// safely check if there are artifacts to save
+		try {
+			areThereAnyArtifactsToSave = StartupModelHelper.getInstance().areThereAnyArtifactsToSave();
+		} catch (IOException e){
+			System.out.println("An error occured while checking simulation artifacts to save : ");
+			e.printStackTrace();
+			GAMA.getGui().getDialogFactory().error("An error occured while checking simulation artifacts to save.");
+			return null;
+		}
+
+		// if no artifacts to save, exit with info popup
+		if (! areThereAnyArtifactsToSave)
+		{
+			new Thread(() -> {
+				System.out.println("No new artifacts worth saving have been found.");
+
+				GAMA.getGui()
+					.getDialogFactory()
+						.inform("No new artifacts worth saving have been found.");
+			}).start();
+
+			return null;
+		}
+
+		// there are artifacts to save
 		final SaveSimulationsArtifactsDialog dialog = new SaveSimulationsArtifactsDialog();
 		final int result = dialog.open();
 
@@ -45,34 +71,23 @@ public class SaveSimulationsArtifacts extends AbstractHandler implements IElemen
 		new Thread(() -> {
 			try
 			{
-				if(StartupModelHelper.getInstance().areThereAnyArtifactsToSave())
-				{	
-					final Path outputParentDirectory = Path.of(dialog.getOutputPath());
-					final String outputDirectoryName = dialog.getOutputDirectoryName();
-					final boolean openFileExplorer = dialog.getOpenFileExplorer(); 
+				final Path outputParentDirectory = Path.of(dialog.getOutputPath());
+				final String outputDirectoryName = dialog.getOutputDirectoryName();
+				final boolean openFileExplorer = dialog.getOpenFileExplorer(); 
 
-					final Path targetSavePath = outputParentDirectory.resolve(outputDirectoryName);
+				final Path targetSavePath = outputParentDirectory.resolve(outputDirectoryName);
 
-					StartupModelHelper.getInstance().saveSimulationArtifacts(targetSavePath);
-					System.out.println("Simulation artifacts saved successfully.");
-					
-					if(Desktop.isDesktopSupported() && openFileExplorer)
-					{
-						Desktop desktop = Desktop.getDesktop();
-						try {
-							desktop.open(targetSavePath.toFile());
-						} catch (IOException ioe) {
-							ioe.printStackTrace();
-						}
+				StartupModelHelper.getInstance().saveSimulationArtifacts(targetSavePath);
+				System.out.println("Simulation artifacts saved successfully.");
+				
+				if(Desktop.isDesktopSupported() && openFileExplorer)
+				{
+					Desktop desktop = Desktop.getDesktop();
+					try {
+						desktop.open(targetSavePath.toFile());
+					} catch (Exception exception) {
+						exception.printStackTrace();
 					}
-				} else {
-					
-					System.out.println("No new artifacts worth saving have been found.");
-					
-					if(Desktop.isDesktopSupported())
-						GAMA.getGui()
-							.getDialogFactory()
-								.inform("No new artifacts worth saving have been found.");
 				}
 
 			} catch (IOException e) {
@@ -81,7 +96,6 @@ public class SaveSimulationsArtifacts extends AbstractHandler implements IElemen
 				GAMA.getGui().getDialogFactory().error("An error occured while saving simulation artifacts.");
 			}
 		}).start();
-		
 
 		return null;
 	}
