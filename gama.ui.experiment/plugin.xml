@@ -264,7 +264,7 @@
                   icon="platform:/plugin/gama.ui.shared/icons_svg/light/status/status.download.svg"
                   label="Save Simulation Data"
                   style="push"
-                  tooltip="Save the data of the previously ran simulations, in the desired directory.">
+                  tooltip="Save the data of the previously run simulations, in the desired directory.">
                <visibleWhen
                      checkEnabled="false">
                   <and>
@@ -774,7 +774,7 @@
                   icon="platform:/plugin/gama.ui.shared/icons_svg/light/status/status.download.svg"
                   label="Save Simulation Data"
                   style="push"
-                  tooltip="Save the data of the previously ran simulations, in the desired directory.">
+                  tooltip="Save the data of the previously run simulations, in the desired directory.">
                <visibleWhen
                      checkEnabled="false">
                   <and>

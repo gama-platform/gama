@@ -181,7 +181,9 @@ public class ExportModelDialog extends TitleAreaDialog {
         outputFileName = txtOutputFileName.getText().trim();
         selectedExperiments = new ArrayList<String>();
         includeJdk = includeJdkButton.getSelection();
-        oneFile = oneFileButton.getSelection();
+
+        if (! SystemInfo.isMac())
+            oneFile = oneFileButton.getSelection();
 
         for(int i=0 ; i < availableExperiments.length ; i++)
         {

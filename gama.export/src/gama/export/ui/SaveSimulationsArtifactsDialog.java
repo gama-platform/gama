@@ -64,7 +64,7 @@ public class SaveSimulationsArtifactsDialog extends TitleAreaDialog {
         lblOptions.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1));
 
         openFileExplorerButton = new Button(container, SWT.CHECK);
-        openFileExplorerButton.setText("Open file explorer after saving ?");
+        openFileExplorerButton.setText("Open file explorer after saving");
         openFileExplorerButton.setSelection(this.openFileExplorer);
         openFileExplorerButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 3, 1));
     }
