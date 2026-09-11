@@ -35,7 +35,7 @@ public class ExportHelper
 
     private static final String embeddedWorkspaceName = "Embedded_Workspace";
 
-    public static Path resolveEmbeddedPath(Path path)
+    public static Path toAbsoluteFromAppRootPath(Path path)
     {
         if (!path.isAbsolute())
             path = Path.of(ExportActivator.appRootPathStr,path.toString());
@@ -43,7 +43,7 @@ public class ExportHelper
         return path;
     }
 
-    public static String resolveEmbeddedPath(String pathStr)
+    public static String toAbsoluteFromAppRootPath(String pathStr)
     {
         Path path = Path.of(pathStr);
 
@@ -53,9 +53,28 @@ public class ExportHelper
         return path.toString();
     }
 
-    public static String resolveEmbeddedWorkspacePath(String pathStr)
+    public static Path toAbsoluteFromEclipsePath(Path path)
     {
-        return Path.of(ExportActivator.appRootPathStr,embeddedWorkspaceName,pathStr).toString();
+        if (!path.isAbsolute())
+            path = Path.of(ExportActivator.eclipsePathStr,path.toString());
+
+        return path;
+    }
+
+    public static String toAbsoluteFromEclipsePath(String pathStr)
+    {
+        Path path = Path.of(pathStr);
+
+        if (!path.isAbsolute())
+            path = Path.of(ExportActivator.eclipsePathStr,pathStr);
+
+        return path.toString();
+    }
+
+
+    public static String toAbsoluteFromEmbeddedWorkspacePath(String pathStr)
+    {
+        return Path.of(ExportActivator.eclipsePathStr,embeddedWorkspaceName,pathStr).toString();
     }
 
     public static String getEmbeddedWorkspaceName() {

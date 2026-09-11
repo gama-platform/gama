@@ -165,7 +165,10 @@ public class ExportModelDialog extends TitleAreaDialog {
         lblPath.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1));
 
         txtOutputFileName = new Text(container, SWT.BORDER);
-        txtOutputFileName.setText("launcher.zip");
+        if(SystemInfo.isMac())
+            txtOutputFileName.setText("launcher.app.zip");
+        else
+            txtOutputFileName.setText("launcher.zip");
         GridData gdText = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
         txtOutputFileName.setLayoutData(gdText);
     }

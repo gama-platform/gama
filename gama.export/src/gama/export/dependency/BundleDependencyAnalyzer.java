@@ -191,7 +191,7 @@ public class BundleDependencyAnalyzer {
         if (bundle == null)
             return null;
         else
-            return Path.of(ExportHelper.resolveEmbeddedPath(bundle.getLocation().replaceAll(".*file:","")));
+            return Path.of(ExportHelper.toAbsoluteFromEclipsePath(bundle.getLocation().replaceAll(".*file:","")));
     }
 
     /**

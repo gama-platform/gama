@@ -539,7 +539,7 @@ public class WorkspaceManager implements IWorkspaceManager {
 		String lastUsedWs = null;
 
 		if (instanceLoc.isSet()) {
-			lastUsedWs = ExportHelper.resolveEmbeddedPath(instanceLoc.getURL().getFile());
+			lastUsedWs = ExportHelper.toAbsoluteFromEclipsePath(instanceLoc.getURL().getFile());
 			final String ret = checkWorkspaceDirectory(lastUsedWs, false, false, false);
 			if (ret != null) {
 				GAMA.getGui().getDialogFactory().error("The workspace provided cannot be used. Please change it");
@@ -548,7 +548,7 @@ public class WorkspaceManager implements IWorkspaceManager {
 			}
 		} else {
 			remember = isRememberWorkspace();
-			lastUsedWs = ExportHelper.resolveEmbeddedPath(getLastSetWorkspaceDirectory());
+			lastUsedWs = ExportHelper.toAbsoluteFromEclipsePath(getLastSetWorkspaceDirectory());
 			// A "remember" flag without a stored path is meaningless.
 			if (remember && (lastUsedWs == null || lastUsedWs.isEmpty())) { remember = false; }
 			if (remember) {

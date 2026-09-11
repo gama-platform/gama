@@ -18,11 +18,19 @@ public class ExportActivator implements BundleActivator {
 
 	public static String appRootPathStr = null;
 
+	public static String eclipsePathStr = null;
+
     @Override
     public void start(BundleContext context) throws Exception {
       
-        appRootPathStr = System.getProperty("eclipse.home.location");
-        appRootPathStr = appRootPathStr.replaceAll("file:", "");
+        eclipsePathStr = System.getProperty("eclipse.home.location");
+        eclipsePathStr = eclipsePathStr.replaceAll("file:", "");
+
+        appRootPathStr = eclipsePathStr;
+
+        if (SystemInfo.isMac())
+            appRootPathStr = Path.of(appRootPathStr)
+                .getParent().getParent().toString();
 
         if(SystemInfo.isWindows())
         {

@@ -85,13 +85,15 @@ public class GamaZipBuilder {
 
     private static final String embeddedWorkspaceName = ExportHelper.getEmbeddedWorkspaceName();
 
-    private static final Path embeddedJdkPath = Path.of("jdk");
-
     private static final Path appRootPath = Path.of(ExportActivator.appRootPathStr);
-    
-    private static final Path pluginsPath = appRootPath.resolve("plugins");
 
-    private static final Path dropinsPath = appRootPath.resolve("dropins");
+    private static final Path eclipsePath = Path.of(ExportActivator.eclipsePathStr);
+
+    private static final String embeddedWorkspacePathStr = appRootPath.relativize(eclipsePath.resolve(embeddedWorkspaceName)).toString();
+    
+    private static final Path pluginsPath = eclipsePath.resolve("plugins");
+
+    private static final Path dropinsPath = eclipsePath.resolve("dropins");
 
     private static final Path tmpDirectoryPath = Path.of(System.getProperty("java.io.tmpdir"),"gama.export.tmp");
 
@@ -122,6 +124,9 @@ public class GamaZipBuilder {
     private boolean isOneFileExport = false;
 
     private static Path jdkPath = null; 
+
+    private static Path embeddedJdkPath = Path.of("jdk");
+
     /**
      * Data files referenced by the exported models, as absolute, normalized
      * paths. Those that live outside the exported project are rerouted into the
@@ -130,15 +135,15 @@ public class GamaZipBuilder {
      */
     private Set<String> dataFiles = null;
 
-    private static Set<Path> dontZipPaths = new HashSet<Path>(Set.of(
-        Path.of(appRootPath.toString(),"configuration","org.eclipse.equinox.app"),
-        Path.of(appRootPath.toString(),"configuration","org.eclipse.equinox.launcher"),
-        Path.of(appRootPath.toString(),"configuration","org.eclipse.osgi"),
-        Path.of(appRootPath.toString(),"configuration","org.eclipse.core.runtime"),
-        Path.of(appRootPath.toString(),"configuration","org.eclipse.e4.ui.css.swt.theme"),
-        Path.of(appRootPath.toString(),"configuration",".settings"),
-        Path.of(appRootPath.toString(),"jdk"),
-        Path.of(appRootPath.toString(),"Gama.ini")
+    private Set<Path> dontZipPaths = new HashSet<Path>(Set.of(
+        Path.of(eclipsePath.toString(),"configuration","org.eclipse.equinox.app"),
+        Path.of(eclipsePath.toString(),"configuration","org.eclipse.equinox.launcher"),
+        Path.of(eclipsePath.toString(),"configuration","org.eclipse.osgi"),
+        Path.of(eclipsePath.toString(),"configuration","org.eclipse.core.runtime"),
+        Path.of(eclipsePath.toString(),"configuration","org.eclipse.e4.ui.css.swt.theme"),
+        Path.of(eclipsePath.toString(),"configuration",".settings"),
+        Path.of(eclipsePath.toString(),"jdk"),
+        Path.of(eclipsePath.toString(),"Gama.ini")
     ));
 
     public static void deleteDirectory(Path pathToBeDeleted) {
@@ -208,14 +213,25 @@ public class GamaZipBuilder {
                 if (index > 0)
                     GamaZipBuilder.jdkPath = Path.of(javaHome.substring(index));
             }
-            else
+            else 
                 GamaZipBuilder.jdkPath = Path.of(javaHome);
+
+            if(SystemInfo.isMac())
+            {
+                GamaZipBuilder.jdkPath = GamaZipBuilder.jdkPath.getParent().getParent();
+                GamaZipBuilder.embeddedJdkPath = Path.of("./Contents/MacOS").resolve(GamaZipBuilder.embeddedJdkPath);
+            }
+
         }
 
         this.targetProject = targetProject;
 
         this.targetProjectPathStr = targetProject.getLocation().toOSString();
         this.targetWorkspacePathStr = targetProject.getWorkspace().getRoot().getLocation().toOSString();
+
+        // library projects will keep returning the current workspace 
+        if (!targetProjectPathStr.startsWith(targetWorkspacePathStr))
+            this.targetWorkspacePathStr = Path.of(targetProjectPathStr).getParent().toString();
 
         this.targetModelRelativePathStr = targetModelRelativePathStr; 
         this.targetExperiment = targetExperiment;
@@ -224,7 +240,7 @@ public class GamaZipBuilder {
         this.isOneFileExport = isOneFileExport;
 
         if(isOneFileExport && SystemInfo.isWindows())
-            dontZipPaths.add(Path.of(appRootPath.toString(),"Gamac.exe"));
+            dontZipPaths.add(eclipsePath.resolve("Gamac.exe"));
 
         // expanding necessary plugins based on needed plugins (GamlProperties doesn't expand the dependency tree)
         neededGamaPluginsPath = BundleDependencyAnalyzer.getMinimalGamaPluginSet(neededGamaPlugins);
@@ -250,7 +266,7 @@ public class GamaZipBuilder {
                 ) 
                 {
                     if (Files.isDirectory(path))
-                        GamaZipBuilder.dontZipPaths.add(path);
+                        dontZipPaths.add(path);
 
                     return false;
                 }
@@ -311,14 +327,19 @@ public class GamaZipBuilder {
             ZipHelper.renameEntry(GamaZipBuilder.gamaUiApplicationJarTmpPath,"splash.png","old_splash.png");
             ZipHelper.renameEntry(GamaZipBuilder.gamaUiApplicationJarTmpPath,"splash_simulation_launcher.png","splash.png");
 
-            archive.addEntry(GamaZipBuilder.gamaUiApplicationJarTmpPath,Path.of("plugins",GamaZipBuilder.gamaUiApplicationPluginFileName).toString());
+            archive.addEntry(
+                GamaZipBuilder.gamaUiApplicationJarTmpPath, 
+                appRootPath.relativize(
+                    pluginsPath.resolve(GamaZipBuilder.gamaUiApplicationPluginFileName)
+                ).toString()
+            );
 
             /////////////////////////////////////
             // Applying the needed preferences //
             /////////////////////////////////////
 
             // switching to non global preferences
-            Files.copy(appRootPath.resolve("Gama.ini"),GamaZipBuilder.gamaIniTmpPath);
+            Files.copy(eclipsePath.resolve("Gama.ini"),GamaZipBuilder.gamaIniTmpPath);
             String gamaIniContent = Files.readString(GamaZipBuilder.gamaIniTmpPath); 
 
             // use embedded preferences
@@ -345,7 +366,7 @@ public class GamaZipBuilder {
                 if(SystemInfo.isLinux())
                     javaBinaryPathStr = "./jdk/bin/java";
                 if(SystemInfo.isMac())
-                    javaBinaryPathStr = "./jdk/Contents/Home/bin/java/";
+                    javaBinaryPathStr = "./jdk/Contents/Home/bin/java";
 
                 if(gamaIniContent.contains("-vm\n"))
                     gamaIniContent.replaceAll("^-vm\n.*\n","-vm\n" + javaBinaryPathStr + "\n");
@@ -357,7 +378,7 @@ public class GamaZipBuilder {
 
             // Replace existing files/directories if needed
             // Create a new entry inside the ZIP archive
-            archive.addEntry(GamaZipBuilder.gamaIniTmpPath,Path.of("Gama.ini").toString());
+            archive.addEntry(GamaZipBuilder.gamaIniTmpPath,appRootPath.relativize(eclipsePath.resolve("Gama.ini")).toString());
 
             // creating / updating preferences
             JREPreferenceStore store = new JREPreferenceStore(Preferences.userRoot().node(GamaPreferenceStore.NODE_NAME));
@@ -387,7 +408,15 @@ public class GamaZipBuilder {
             store.putInStore("pref_default_experiment",defaultExperimentPreferenceOld);
             store.putInStore("pref_errors_in_editor",errorsInEditorPreferenceOld);
 
-            archive.addEntry(GamaZipBuilder.gamaPrefsTmpPath,Path.of("configuration",".settings","gama.prefs").toString());
+            archive.addEntry(
+                GamaZipBuilder.gamaPrefsTmpPath,
+                appRootPath.relativize(
+                    eclipsePath
+                        .resolve("configuration")
+                        .resolve(".settings")
+                        .resolve("gama.prefs")
+                ).toString()
+            );
 
             ////////////////////////////////////
             // Embedding the target workspace //
@@ -488,7 +517,9 @@ public class GamaZipBuilder {
                         {
                             final String currentFileName = filePath.getFileName().toString();
                             final boolean isGaml = currentFileName.toLowerCase().endsWith(".gaml");
-                            String entryName = filePath.toString().replace(targetWorkspacePathStr,GamaZipBuilder.embeddedWorkspaceName);
+                            String entryName = filePath.toString().replace(
+                                targetWorkspacePathStr,
+                                GamaZipBuilder.embeddedWorkspacePathStr);
 
                             // Rewrite, in every GAML file, the paths of the data
                             // files that have been rerouted into the include dir.
@@ -518,7 +549,7 @@ public class GamaZipBuilder {
             ////////////////////////////////////////////////////////////
 
             for (final Map.Entry<Path, String> entry : externalDataFiles.entrySet()) {
-                final String zipArchiveEntryPathStr = Path.of(GamaZipBuilder.embeddedWorkspaceName, projectName, "includes",
+                final String zipArchiveEntryPathStr = Path.of(GamaZipBuilder.embeddedWorkspacePathStr, projectName, "includes",
                         entry.getValue()).toString();
 
                 archive.addEntry(entry.getKey(),zipArchiveEntryPathStr);
@@ -534,7 +565,7 @@ public class GamaZipBuilder {
             {
                 // preserve the link virtual path /Embedded_Workspace/projectName/path/to/link
                 String entryName = 
-                        GamaZipBuilder.embeddedWorkspaceName 
+                        GamaZipBuilder.embeddedWorkspacePathStr 
                         + File.separator + projectName 
                         + File.separator + virtualPathStr;
 
@@ -543,10 +574,10 @@ public class GamaZipBuilder {
             }
             
             // WORKSPACE_IDENTIFIER
-            archive.addEntryFromString("",GamaZipBuilder.embeddedWorkspaceName + File.separator + IWorkspaceManager.WORKSPACE_IDENTIFIER);
+            archive.addEntryFromString("",GamaZipBuilder.embeddedWorkspacePathStr + File.separator + IWorkspaceManager.WORKSPACE_IDENTIFIER);
 
             //WORKSPACE MODEL IDENTIFIER
-            archive.addEntryFromString("",GamaZipBuilder.embeddedWorkspaceName + File.separator + GAMA.getWorkspaceManager().getModelIdentifier());
+            archive.addEntryFromString("",GamaZipBuilder.embeddedWorkspacePathStr + File.separator + GAMA.getWorkspaceManager().getModelIdentifier());
 
             /////////////////////////
             // Embedding the JDK   //
@@ -556,7 +587,7 @@ public class GamaZipBuilder {
             {
                 GAMA.getGui().getStatus().setStatus("Exporting the JDK", IStatusMessage.COMPILE_ICON,
                         GamaColorFactory.get(200, 200, 200));
-                // Walk the appRootPath tree stream
+                // walk the jdk files tree stream
                 try (Stream<Path> stream = Files.walk(jdkPath)) {
                     stream.forEach(sourcePath -> {
                         try {
@@ -581,7 +612,17 @@ public class GamaZipBuilder {
                 }                
             }
 
+            if(SystemInfo.isMac())
+                archive.addEntryFromString(
+                    """
+                    MacOS Gatekeeper may prevent you from executing this application.\n
+                    To bypass it, open a terminal and type 'xattr -cr ' then enter this 
+                    application's path or drag and drop it's icon in the terminal. Press 
+                    enter and start the application.
+                    """,
+                    "./troubleshoot.txt");
         }
+
 
         if(isOneFileExport) {
 

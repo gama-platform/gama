@@ -202,11 +202,11 @@ public class StartupModelHelper
             if (specificModelPathStr == null) {
                 filePathStr = GamaPreferences.Interface.CORE_DEFAULT_MODEL.getValue().getPath(null);
             } else {
-                filePathStr = ExportHelper.resolveEmbeddedWorkspacePath(specificModelPathStr);
+                filePathStr = ExportHelper.toAbsoluteFromEmbeddedWorkspacePath(specificModelPathStr);
             }
 
 
-			file = new GenericFile(ExportHelper.resolveEmbeddedPath(filePathStr));
+			file = new GenericFile(ExportHelper.toAbsoluteFromEclipsePath(filePathStr));
 
             if (file != null && file.exists(null)) {
 

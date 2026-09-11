@@ -85,7 +85,7 @@ public class SaveSimulationsArtifactsDialog extends TitleAreaDialog {
 
         btnBrowse.addListener(SWT.Selection, event -> {
             DirectoryDialog dialog = new DirectoryDialog(getShell());
-            dialog.setText("Select the folder where the simulation data will be saved");
+            dialog.setText("Select the directory where the simulation data will be saved");
             dialog.setMessage("Select a target path");
             String selectedDirectory = dialog.open();
             if (selectedDirectory != null) {
@@ -96,7 +96,7 @@ public class SaveSimulationsArtifactsDialog extends TitleAreaDialog {
 
     private void createDirectoryNameSection(Composite container) {
         CLabel lblPath = new CLabel(container, SWT.NONE);
-        lblPath.setText("Save as : ");
+        lblPath.setText("Name of the output directory : ");
         lblPath.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1));
 
         txtOutputDirectoryName = new Text(container, SWT.BORDER);
