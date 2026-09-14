@@ -45,7 +45,7 @@ global torus: true {
 		sample_car <- one_of(car);
 		ask sample_car {
 			color <- #red;
-			icon <- voit_red_image_file;
+			icon_file <- voit_red_image_file;
 		}
 	}
 }
@@ -64,12 +64,12 @@ species car skills: [moving] {
 	float speed_limit;
 	float speed_min;
 	rgb color;
-	image_file icon;
+	image_file icon_file;
 	pavement my_pavement;
 	
 	init {
 		color <- #blue;
-		icon <- voit_image_file;
+		icon_file <- voit_image_file;
 		speed <- 0.1 +rnd(0.9);
 		speed_limit <- 1.0;
 		speed_min <- 0.0;
@@ -104,7 +104,7 @@ species car skills: [moving] {
 	}
 	
 	aspect icon {
-		draw icon at: location size: 3 rotate: heading ;
+		draw icon_file at: location size: 3 rotate: heading ;
 	}	
 }
 
