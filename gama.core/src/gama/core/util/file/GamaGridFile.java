@@ -474,36 +474,51 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 
 	@Override
 	protected void flushBuffer(final IScope scope, final Facets facets) throws GamaRuntimeException {
-		if (!writable) { setWritable(scope, true); }
-		if (coverage == null) {
-			createCoverage(scope);
-			if (coverage == null && (ascData != null || getBuffer() != null)) {
-				createCoverage(scope, getField(scope));
-			}
-		}
+		setWritable(scope, true);
+		ensureCoverage(scope);
 		if (coverage == null) return;
+
 		GridCoverageWriter writer = null;
 		try {
-			final File f = getFile(scope);
-			f.setWritable(true);
-
-			if (isTiff(scope)) {
-				final GeoTiffFormat format = new GeoTiffFormat();
-				writer = format.getWriter(f);
-			} else {
-				writer = new ArcGridWriter(f);
-			}
+			final File file = prepareOutputFile(scope);
+			writer = createGridWriter(scope, file);
 			writer.write(coverage, (GeneralParameterValue[]) null);
 		} catch (final IOException e) {
 			throw GamaRuntimeException.create(e, scope);
 		} finally {
-			if (writer != null) {
-				try {
-					writer.dispose();
-				} catch (final Exception ignored) {}
-			}
+			disposeWriter(writer);
 			ProjectionFactory.saveTargetCRSAsPRJFile(scope, getFile(scope).getAbsolutePath());
 		}
+	}
+
+	private void ensureCoverage(final IScope scope) {
+		if (coverage != null) return;
+		createCoverage(scope);
+		if (coverage == null && hasFallbackData()) {
+			createCoverage(scope, getField(scope));
+		}
+	}
+
+	private boolean hasFallbackData() {
+		return ascData != null || getBuffer() != null;
+	}
+
+	private File prepareOutputFile(final IScope scope) {
+		final File file = getFile(scope);
+		file.setWritable(true);
+		return file;
+	}
+
+	private GridCoverageWriter createGridWriter(final IScope scope, final File file) throws IOException {
+		if (isTiff(scope)) return new GeoTiffFormat().getWriter(file);
+		return new ArcGridWriter(file);
+	}
+
+	private void disposeWriter(final GridCoverageWriter writer) {
+		if (writer == null) return;
+		try {
+			writer.dispose();
+		} catch (final Exception ignored) {}
 	}
 
 	/**
