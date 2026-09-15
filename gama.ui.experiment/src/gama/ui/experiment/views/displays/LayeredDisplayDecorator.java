@@ -200,6 +200,22 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	}
 
 	/**
+	 * Returns whether the specified composite is non-null and not disposed.
+	 */
+	private static boolean isValid(final Composite composite) {
+		return composite != null && !composite.isDisposed();
+	}
+
+	/**
+	 * Safely layout the composite if valid.
+	 */
+	private static void safeLayout(final Composite composite) {
+		if (isValid(composite)) {
+			composite.layout(true, true);
+		}
+	}
+
+	/**
 	 * Performs exit full screen logic.
 	 */
 	private void performExitFullScreen() {
@@ -207,33 +223,23 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 		fs.setImage(GamaIcon.named(DISPLAY_FULLSCREEN_ENTER).image());
 		fs.setToolTipText(STRINGS.PAD("Enter fullscreen", 25) + "ESC");
 		toggleFullScreen = enterFullScreen;
-		// Toolbar
 		if (!toolbar.isDisposed()) {
 			toolbar.wipe(SWT.LEFT, true);
-			if (normalParentOfToolbar != null && !normalParentOfToolbar.isDisposed()) {
+			if (isValid(normalParentOfToolbar)) {
 				toolbar.setParent(normalParentOfToolbar);
 				normalParentOfToolbar.requestLayout();
 			}
 		}
 		runExperimentItem = null;
-		Composite targetParent = normalParentOfFullScreenControl;
-		if (targetParent == null || targetParent.isDisposed()) {
-			targetParent = view.getParentComposite();
-		}
-		if (targetParent != null && !targetParent.isDisposed()) {
+		Composite targetParent = isValid(normalParentOfFullScreenControl) ? normalParentOfFullScreenControl : view.getParentComposite();
+		if (isValid(targetParent)) {
 			view.getCentralPanel().setParent(targetParent);
 		}
 		createOverlay();
 		destroyFullScreenShell();
-		if (targetParent != null && !targetParent.isDisposed()) {
-			targetParent.layout(true, true);
-		}
-		if (view.getParentComposite() != null && !view.getParentComposite().isDisposed()) {
-			view.getParentComposite().layout(true, true);
-		}
-		if (view.getCentralPanel() != null && !view.getCentralPanel().isDisposed()) {
-			view.getCentralPanel().layout(true, true);
-		}
+		safeLayout(targetParent);
+		safeLayout(view.getParentComposite());
+		safeLayout(view.getCentralPanel());
 		if (view.getDisplaySurface() != null) {
 			view.getDisplaySurface().updateDisplay(true);
 		}
@@ -251,9 +257,9 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 		fs.setToolTipText(STRINGS.PAD("Exit fullscreen", 25) + "ESC");
 		toggleFullScreen = exitFullScreen;
 		Composite curParent = view.getCentralPanel().getParent();
-		if (curParent != null && !curParent.isDisposed() && curParent != fullScreenShell) {
+		if (isValid(curParent) && curParent != fullScreenShell) {
 			normalParentOfFullScreenControl = curParent;
-		} else if (normalParentOfFullScreenControl == null || normalParentOfFullScreenControl.isDisposed()) {
+		} else if (!isValid(normalParentOfFullScreenControl)) {
 			normalParentOfFullScreenControl = view.getParentComposite();
 		}
 		view.getCentralPanel().setParent(fullScreenShell);
@@ -264,7 +270,6 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 		if (view.getDisplaySurface() != null) {
 			view.getDisplaySurface().updateDisplay(true);
 		}
-		// Toolbar
 		if (!toolbar.isDisposed()) {
 			toolbar.wipe(SWT.LEFT, true);
 			addFullscreenToolbarCommands();
