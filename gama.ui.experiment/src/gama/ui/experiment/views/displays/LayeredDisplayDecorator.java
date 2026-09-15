@@ -207,6 +207,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 				createOverlay();
 				normalParentOfFullScreenControl.requestLayout();
 				destroyFullScreenShell();
+				view.showCanvas();
 			});
 		} else {
 			WorkbenchHelper.asyncRun(() -> {
@@ -229,6 +230,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 				fullScreenShell.setVisible(true);
 				lastFullScreenEnterTime = System.currentTimeMillis();
 				createOverlay();
+				view.showCanvas();
 				// Toolbar
 				if (!toolbar.isDisposed()) {
 					toolbar.wipe(SWT.LEFT, true);
@@ -255,6 +257,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 				// Seems like a bad idea to steal the focus manually (in relation to
 				// https://github.com/gama-platform/gama/issues/994). Disabled only for macOS in case
 				if (!SystemInfo.isMac()) { view.focusCanvas(); }
+				view.showCanvas();
 			} finally {
 				inFullScreenTransition = false;
 			}
