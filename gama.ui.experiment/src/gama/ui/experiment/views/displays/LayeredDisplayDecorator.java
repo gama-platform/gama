@@ -191,86 +191,110 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 		if (inFullScreenTransition) return;
 		inFullScreenTransition = true;
 		if (isFullScreen()) {
-			WorkbenchHelper.asyncRun(() -> {
-				DEBUG.OUT("Is already full screen: exiting");
-				fs.setImage(GamaIcon.named(DISPLAY_FULLSCREEN_ENTER).image());
-				fs.setToolTipText(STRINGS.PAD("Enter fullscreen", 25) + "ESC");
-				toggleFullScreen = enterFullScreen;
-				// Toolbar
-				if (!toolbar.isDisposed()) {
-					toolbar.wipe(SWT.LEFT, true);
-					toolbar.setParent(normalParentOfToolbar);
-					normalParentOfToolbar.requestLayout();
-				}
-				runExperimentItem = null;
-				view.getCentralPanel().setParent(normalParentOfFullScreenControl);
-				createOverlay();
-				destroyFullScreenShell();
-				if (normalParentOfFullScreenControl != null && !normalParentOfFullScreenControl.isDisposed()) {
-					normalParentOfFullScreenControl.layout(true, true);
-				}
-				if (view.getCentralPanel() != null && !view.getCentralPanel().isDisposed()) {
-					view.getCentralPanel().layout(true, true);
-				}
-				if (view.getDisplaySurface() != null) {
-					view.getDisplaySurface().updateDisplay(true);
-				}
-			});
+			WorkbenchHelper.asyncRun(this::performExitFullScreen);
 		} else {
-			WorkbenchHelper.asyncRun(() -> {
-				DEBUG.OUT("Is not full screen: entering");
-				fullScreenShell = createFullScreenShell();
-				if (fullScreenShell == null) return;
-				// Activate AFTER setting fullScreenShell so that ok() sees isFullScreen()=true
-				// and the overlayListener.partActivated UIJob is not queued. Previously, activate()
-				// was called before createFullScreenShell(), meaning isFullScreen() was still false
-				// when partActivated fired — causing an extra showCanvas UIJob that could race with
-				// (and undo) the fullscreen transition when called during decorateDisplays().
-				// Activation removed for the moment on macOS as it does not seem necessary.
-				if (!SystemInfo.isMac()) { ViewsHelper.activate(view); }
-				fs.setImage(GamaIcon.named(DISPLAY_FULLSCREEN_EXIT).image());
-				fs.setToolTipText(STRINGS.PAD("Exit fullscreen", 25) + "ESC");
-				toggleFullScreen = exitFullScreen;
-				normalParentOfFullScreenControl = view.getCentralPanel().getParent();
-				view.getCentralPanel().setParent(fullScreenShell);
-				fullScreenShell.layout(true, true);
-				fullScreenShell.setVisible(true);
-				lastFullScreenEnterTime = System.currentTimeMillis();
-				createOverlay();
-				if (view.getDisplaySurface() != null) {
-					view.getDisplaySurface().updateDisplay(true);
-				}
-				// Toolbar
-				if (!toolbar.isDisposed()) {
-					toolbar.wipe(SWT.LEFT, true);
-					addFullscreenToolbarCommands();
-					normalParentOfToolbar = toolbar.getParent();
-					toolbar.setParent(fullScreenShell);
-				}
-			});
+			WorkbenchHelper.asyncRun(this::performEnterFullScreen);
 		}
 		// Last actions to do, after which we mark the transition as passed
-		WorkbenchHelper.asyncRun(() -> {
-			try {
-				if (!toolbar.isDisposed()) {
-					toolbar.wipe(SWT.RIGHT, true);
-					GamaToolbarFactory.buildToolbar(view, toolbar);
-					toolbar.requestLayout();
-				}
-				if (overlay.isVisible()) {
-					WorkbenchHelper.runInUI("Display overlay", 50, m -> {
-						toggleOverlay();
-						toggleOverlay();
-					});
-				}
-				// Seems like a bad idea to steal the focus manually (in relation to
-				// https://github.com/gama-platform/gama/issues/994). Disabled only for macOS in case
-				if (!SystemInfo.isMac()) { view.focusCanvas(); }
-			} finally {
-				inFullScreenTransition = false;
-			}
-		});
+		WorkbenchHelper.asyncRun(this::finalizeFullScreenTransition);
+	}
 
+	/**
+	 * Performs exit full screen logic.
+	 */
+	private void performExitFullScreen() {
+		DEBUG.OUT("Is already full screen: exiting");
+		fs.setImage(GamaIcon.named(DISPLAY_FULLSCREEN_ENTER).image());
+		fs.setToolTipText(STRINGS.PAD("Enter fullscreen", 25) + "ESC");
+		toggleFullScreen = enterFullScreen;
+		// Toolbar
+		if (!toolbar.isDisposed()) {
+			toolbar.wipe(SWT.LEFT, true);
+			if (normalParentOfToolbar != null && !normalParentOfToolbar.isDisposed()) {
+				toolbar.setParent(normalParentOfToolbar);
+				normalParentOfToolbar.requestLayout();
+			}
+		}
+		runExperimentItem = null;
+		Composite targetParent = normalParentOfFullScreenControl;
+		if (targetParent == null || targetParent.isDisposed()) {
+			targetParent = view.getParentComposite();
+		}
+		if (targetParent != null && !targetParent.isDisposed()) {
+			view.getCentralPanel().setParent(targetParent);
+		}
+		createOverlay();
+		destroyFullScreenShell();
+		if (targetParent != null && !targetParent.isDisposed()) {
+			targetParent.layout(true, true);
+		}
+		if (view.getParentComposite() != null && !view.getParentComposite().isDisposed()) {
+			view.getParentComposite().layout(true, true);
+		}
+		if (view.getCentralPanel() != null && !view.getCentralPanel().isDisposed()) {
+			view.getCentralPanel().layout(true, true);
+		}
+		if (view.getDisplaySurface() != null) {
+			view.getDisplaySurface().updateDisplay(true);
+		}
+	}
+
+	/**
+	 * Performs enter full screen logic.
+	 */
+	private void performEnterFullScreen() {
+		DEBUG.OUT("Is not full screen: entering");
+		fullScreenShell = createFullScreenShell();
+		if (fullScreenShell == null) return;
+		if (!SystemInfo.isMac()) { ViewsHelper.activate(view); }
+		fs.setImage(GamaIcon.named(DISPLAY_FULLSCREEN_EXIT).image());
+		fs.setToolTipText(STRINGS.PAD("Exit fullscreen", 25) + "ESC");
+		toggleFullScreen = exitFullScreen;
+		Composite curParent = view.getCentralPanel().getParent();
+		if (curParent != null && !curParent.isDisposed() && curParent != fullScreenShell) {
+			normalParentOfFullScreenControl = curParent;
+		} else if (normalParentOfFullScreenControl == null || normalParentOfFullScreenControl.isDisposed()) {
+			normalParentOfFullScreenControl = view.getParentComposite();
+		}
+		view.getCentralPanel().setParent(fullScreenShell);
+		fullScreenShell.layout(true, true);
+		fullScreenShell.setVisible(true);
+		lastFullScreenEnterTime = System.currentTimeMillis();
+		createOverlay();
+		if (view.getDisplaySurface() != null) {
+			view.getDisplaySurface().updateDisplay(true);
+		}
+		// Toolbar
+		if (!toolbar.isDisposed()) {
+			toolbar.wipe(SWT.LEFT, true);
+			addFullscreenToolbarCommands();
+			if (toolbar.getParent() != fullScreenShell) {
+				normalParentOfToolbar = toolbar.getParent();
+				toolbar.setParent(fullScreenShell);
+			}
+		}
+	}
+
+	/**
+	 * Finalizes full screen transition.
+	 */
+	private void finalizeFullScreenTransition() {
+		try {
+			if (!toolbar.isDisposed()) {
+				toolbar.wipe(SWT.RIGHT, true);
+				GamaToolbarFactory.buildToolbar(view, toolbar);
+				toolbar.requestLayout();
+			}
+			if (overlay.isVisible()) {
+				WorkbenchHelper.runInUI("Display overlay", 50, m -> {
+					toggleOverlay();
+					toggleOverlay();
+				});
+			}
+			if (!SystemInfo.isMac()) { view.focusCanvas(); }
+		} finally {
+			inFullScreenTransition = false;
+		}
 	}
 
 	/**
@@ -502,10 +526,6 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 				toggleFullScreen.toItem(sub);
 			}
 			toggleOverlay.toItem(sub);
-			GamaMenu.action(sub,
-					STRINGS.PAD("Toggle toolbar ", 25) + GamaKeyBindings.format(GamaKeyBindings.COMMAND, 'T'),
-					t -> toggleToolbar(),
-					this.isFullScreen() ? "display/toolbar.fullscreen" : "display/toolbar.regular");
 			GamaColorMenu.addColorSubmenuTo(sub, STRINGS.PAD("Background", 25), c -> {
 				view.getDisplaySurface().getData().setBackgroundColor(c);
 				view.getDisplaySurface().updateDisplay(true);
