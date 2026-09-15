@@ -474,22 +474,51 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 
 	@Override
 	protected void flushBuffer(final IScope scope, final Facets facets) throws GamaRuntimeException {
-		if (!writable || coverage == null) return;
-		try {
-			final File f = getFile(scope);
-			f.setWritable(true);
-			GridCoverageWriter writer;
+		setWritable(scope, true);
+		ensureCoverage(scope);
+		if (coverage == null) return;
 
-			if (isTiff(scope)) {
-				final GeoTiffFormat format = new GeoTiffFormat();
-				writer = format.getWriter(f);
-			} else {
-				writer = new ArcGridWriter(f);
-			}
+		GridCoverageWriter writer = null;
+		try {
+			final File file = prepareOutputFile(scope);
+			writer = createGridWriter(scope, file);
 			writer.write(coverage, (GeneralParameterValue[]) null);
 		} catch (final IOException e) {
 			throw GamaRuntimeException.create(e, scope);
+		} finally {
+			disposeWriter(writer);
+			ProjectionFactory.saveTargetCRSAsPRJFile(scope, getFile(scope).getAbsolutePath());
 		}
+	}
+
+	private void ensureCoverage(final IScope scope) {
+		if (coverage != null) return;
+		createCoverage(scope);
+		if (coverage == null && hasFallbackData()) {
+			createCoverage(scope, getField(scope));
+		}
+	}
+
+	private boolean hasFallbackData() {
+		return ascData != null || getBuffer() != null;
+	}
+
+	private File prepareOutputFile(final IScope scope) {
+		final File file = getFile(scope);
+		file.setWritable(true);
+		return file;
+	}
+
+	private GridCoverageWriter createGridWriter(final IScope scope, final File file) throws IOException {
+		if (isTiff(scope)) return new GeoTiffFormat().getWriter(file);
+		return new ArcGridWriter(file);
+	}
+
+	private void disposeWriter(final GridCoverageWriter writer) {
+		if (writer == null) return;
+		try {
+			writer.dispose();
+		} catch (final Exception ignored) {}
 	}
 
 	/**
@@ -972,7 +1001,8 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 
 	@Override
 	public void save(final IScope scope, final Facets parameters) {
-
+		setWritable(scope, true);
+		super.save(scope, parameters == null ? new Facets() : parameters);
 	}
 
 }
