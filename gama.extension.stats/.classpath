@@ -2,6 +2,20 @@
 <classpath>
 	<classpathentry exported="true" kind="lib" path="libs/moeaframework 5.1/moeaframework-5.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/colt 2.1.4/colt-2.1.4.jar" sourcepath="libs/colt 2.1.4/colt-2.1.4-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/renjin 3.5-beta76/rdatautil-1.0.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/renjin 3.5-beta76/renjin-core-3.5-beta76.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/renjin 3.5-beta76/renjin-appl-3.5-beta76.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/renjin 3.5-beta76/renjin-asm-5.0.4b.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/renjin 3.5-beta76/renjin-blas-3.5-beta76.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/renjin 3.5-beta76/renjin-common-3.5-beta76.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/renjin 3.5-beta76/renjin-guava-28.0b.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/renjin 3.5-beta76/renjin-lapack-3.5-beta76.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/renjin 3.5-beta76/renjin-nmath-3.5-beta76.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/renjin 3.5-beta76/gcc-bridge-runtime-3.5-beta76.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/renjin 3.5-beta76/commons-math-2.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/renjin 3.5-beta76/commons-vfs2-2.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/renjin 3.5-beta76/commons-compress-1.18.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/renjin 3.5-beta76/xz-1.8.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-25">
 		<attributes>
 			<attribute name="module" value="true"/>
