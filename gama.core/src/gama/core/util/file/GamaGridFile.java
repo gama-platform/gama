@@ -474,11 +474,18 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 
 	@Override
 	protected void flushBuffer(final IScope scope, final Facets facets) throws GamaRuntimeException {
-		if (!writable || coverage == null) return;
+		if (!writable) { setWritable(scope, true); }
+		if (coverage == null) {
+			createCoverage(scope);
+			if (coverage == null && (ascData != null || getBuffer() != null)) {
+				createCoverage(scope, getField(scope));
+			}
+		}
+		if (coverage == null) return;
+		GridCoverageWriter writer = null;
 		try {
 			final File f = getFile(scope);
 			f.setWritable(true);
-			GridCoverageWriter writer;
 
 			if (isTiff(scope)) {
 				final GeoTiffFormat format = new GeoTiffFormat();
@@ -489,6 +496,13 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 			writer.write(coverage, (GeneralParameterValue[]) null);
 		} catch (final IOException e) {
 			throw GamaRuntimeException.create(e, scope);
+		} finally {
+			if (writer != null) {
+				try {
+					writer.dispose();
+				} catch (final Exception ignored) {}
+			}
+			ProjectionFactory.saveTargetCRSAsPRJFile(scope, getFile(scope).getAbsolutePath());
 		}
 	}
 
@@ -972,7 +986,8 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 
 	@Override
 	public void save(final IScope scope, final Facets parameters) {
-
+		setWritable(scope, true);
+		super.save(scope, parameters == null ? new Facets() : parameters);
 	}
 
 }
