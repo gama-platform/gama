@@ -231,6 +231,7 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 			newr.setSeriesVisibleInLegend(myrow, false);
 			return;
 		}
+		newr.setSeriesVisibleInLegend(myrow, true);
 		newr.setLegendItemLabelGenerator((dataset, series) -> {
 			String id = (String) dataset.getRowKey(series);
 			ChartDataSeries ds = getChartdataset().getDataSeries(scope, id);
@@ -422,10 +423,19 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 		if (getXLabel(scope) != null && !getXLabel(scope).isEmpty()) { pp.getDomainAxis().setLabel(getXLabel(scope)); }
 
 		if (this.useSubAxis) {
+			boolean hasSubCategories = false;
 			for (final String serieid : chartdataset.getDataSeriesIds(scope)) {
-				((SubCategoryAxis) domainAxis).addSubCategory(serieid);
+				ChartDataSeries ds = chartdataset.getDataSeries(scope, serieid);
+				String leg = ds != null && ds.getSerieLegend(scope) != null ? ds.getSerieLegend(scope).toString() : "";
+				if (StringUtils.isNotBlank(leg)) {
+					((SubCategoryAxis) domainAxis).addSubCategory(leg);
+					hasSubCategories = true;
+				}
 			}
-
+			if (!hasSubCategories) {
+				pp.setDomainAxis(new CategoryAxis(pp.getDomainAxis().getLabel()));
+				this.useSubAxis = false;
+			}
 		}
 		if (!this.getYTickLineVisible(scope)) { pp.setDomainGridlinesVisible(false); }
 
@@ -451,6 +461,9 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 	public void resetDomainAxis(final IScope scope) {
 
 		final CategoryPlot pp = (CategoryPlot) chart.getPlot();
+		if ("none".equals(this.series_label_position)) {
+			this.useSubAxis = false;
+		}
 		if (this.useSubAxis) {
 			final SubCategoryAxis newAxis = new SubCategoryAxis(pp.getDomainAxis().getLabel());
 			pp.setDomainAxis(newAxis);
@@ -542,11 +555,14 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 				break;
 			}
 		}
-		if (XAXIS.equals(this.series_label_position)) { this.useSubAxis = true; }
+		if ("none".equals(this.series_label_position)) {
+			this.useSubAxis = false;
+		} else if (XAXIS.equals(this.series_label_position)) {
+			this.useSubAxis = true;
+		}
 
-		if (!"legend".equals(this.series_label_position)) {
+		if (!"legend".equals(this.series_label_position) && chart.getLegend() != null) {
 			chart.getLegend().setVisible(false);
-			// legend is useless, but I find it nice anyway... Could put back...
 		}
 		this.resetDomainAxis(scope);
 		Color ac = IColor.toAWTColor(axesColor);
