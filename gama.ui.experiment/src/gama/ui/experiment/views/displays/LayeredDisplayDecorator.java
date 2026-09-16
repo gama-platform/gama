@@ -43,6 +43,7 @@ import gama.api.ui.displays.IDisplayData.DisplayDataListener;
 import gama.api.utils.interfaces.IDisposable;
 import gama.dev.DEBUG;
 import gama.dev.STRINGS;
+import gama.ui.experiment.commands.ArrangeDisplayViews;
 import gama.ui.experiment.controls.SimulationSpeedContributionItem;
 import gama.ui.shared.bindings.GamaKeyBindings;
 import gama.ui.shared.menus.GamaColorMenu;
@@ -245,18 +246,6 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	}
 
 	/**
-	 * Layouts all ancestor composites starting from the specified composite up to the Shell.
-	 */
-	private static void relayoutAncestors(final Composite start) {
-		Composite p = start;
-		while (p != null && !p.isDisposed()) {
-			p.layout(true, true);
-			if (p instanceof Shell) break;
-			p = p.getParent();
-		}
-	}
-
-	/**
 	 * Performs exit full screen logic.
 	 */
 	private void performExitFullScreen() {
@@ -272,7 +261,8 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 		}
 		createOverlay();
 		destroyFullScreenShell();
-		relayoutAncestors(targetParent);
+		ViewsHelper.bringToFront(view);
+		ArrangeDisplayViews.execute(0);
 		safeLayout(view.getCentralPanel());
 		refreshDisplayCanvas();
 	}
