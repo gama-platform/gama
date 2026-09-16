@@ -448,6 +448,8 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	 */
 	public boolean isFullScreen() { return fullScreenShell != null; }
 
+	public boolean isInFullScreenTransition() { return inFullScreenTransition; }
+
 	/**
 	 * Returns {@code true} if fullscreen was entered within the last 500 ms. Used by
 	 * {@link gama.ui.shared.utils.ViewsHelper#toggleFullScreenMode(IGamaView.Display)} to suppress the synthetic

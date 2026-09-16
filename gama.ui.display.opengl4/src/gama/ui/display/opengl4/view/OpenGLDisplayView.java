@@ -138,7 +138,7 @@ public class OpenGLDisplayView extends LayeredDisplayView {
 		final boolean firstShow = canvas.consumeNativePeerJustCreated();
 		deferredMultiListener.ensureInstalled();
 		// Prevents JOGL views to move over Java2D views created before (needed on both macOS and Windows)
-		if (!wasVisible && (isFullScreen() || !firstShow && !restoringAfterLaunchOverlay)
+		if (!wasVisible && !isInFullScreenTransition() && !isFullScreen() && !firstShow && !restoringAfterLaunchOverlay
 				&& (SystemInfo.isMac() || SystemInfo.isWindows())) {
 			canvas.reparentWindow();
 		}
