@@ -519,7 +519,7 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 
 		IExpression expression = getFacet(IKeyword.TYPE);
 
-		chartOutput = ChartJFreeChartOutput.createChartOutput(scope, getName(), expression);
+		chartOutput = ChartOutputFactory.createChartOutput(scope, getName(), expression);
 
 		expression = getFacet(IKeyword.STYLE);
 		if (expression != null) { chartOutput.setStyle(scope, Cast.asString(scope, expression.value(scope))); }
