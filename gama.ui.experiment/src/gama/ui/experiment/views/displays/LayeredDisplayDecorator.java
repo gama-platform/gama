@@ -476,8 +476,9 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 		if (ViewsHelper.registerFullScreenView(monitorId1, view)) {
 			final Shell shell = new Shell(WorkbenchHelper.getDisplay(), SWT.NO_TRIM | SWT.ON_TOP);
 			shell.setBounds(bounds);
-			// For DEBUG purposes only:
-			// fullScreenShell.setBounds(new Rectangle(0, 0, bounds.width / 2, bounds.height / 2));
+			if (view.getOutput() != null && view.getOutput().getData() != null) {
+				shell.setBackground(GamaColors.get(view.getOutput().getData().getBackground()).color());
+			}
 			shell.setLayout(shellLayout());
 			return shell;
 		}

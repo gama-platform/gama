@@ -651,6 +651,7 @@ public class LaunchingOverlay {
 				continue;
 			}
 			display.showCanvas();
+			display.getDisplaySurface().updateDisplay(true);
 		}
 	}
 
