@@ -294,12 +294,7 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 		}
 	}
 
-	@Override
-	public void initChart_post_data_init(final IScope scope) {
-		super.initChart_post_data_init(scope);
-		if (chart == null) return;
-		final CategoryPlot pp = (CategoryPlot) chart.getPlot();
-
+	private void resolveSeriesLabelPosition() {
 		final String sty = getStyle();
 		this.useSubAxis = false;
 
@@ -325,11 +320,9 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 		} else if (XAXIS.equals(properties.getSeriesLabelPosition())) {
 			this.useSubAxis = true;
 		}
+	}
 
-		if (!"legend".equals(properties.getSeriesLabelPosition()) && chart.getLegend() != null) {
-			chart.getLegend().setVisible(false);
-		}
-		this.resetDomainAxis(scope);
+	private void formatPlotAxes(final CategoryPlot pp, final IScope scope) {
 		Color ac = properties.getAxesColor() == null ? null : IColor.toAWTColor(properties.getAxesColor());
 		pp.setDomainGridlinePaint(ac);
 		pp.setRangeGridlinePaint(ac);
@@ -361,6 +354,21 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 				sca.setSubLabelPaint(tc);
 			}
 		}
+	}
+
+	@Override
+	public void initChart_post_data_init(final IScope scope) {
+		super.initChart_post_data_init(scope);
+		if (chart == null) return;
+		final CategoryPlot pp = (CategoryPlot) chart.getPlot();
+
+		resolveSeriesLabelPosition();
+
+		if (!"legend".equals(properties.getSeriesLabelPosition()) && chart.getLegend() != null) {
+			chart.getLegend().setVisible(false);
+		}
+		this.resetDomainAxis(scope);
+		formatPlotAxes(pp, scope);
 	}
 
 }

@@ -144,18 +144,8 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 
 	protected void initRenderer(final IScope scope) {}
 
-	@Override
-	public void initChart(final IScope scope, final String chartname) {
-		super.initChart(scope, chartname);
-		if (chart == null) return;
-
-		initRenderer(scope);
-		final Plot plot = chart.getPlot();
-		chart.addProgressListener(this);
-		chart.setBorderVisible(false);
-		plot.setOutlineVisible(false);
+	private void configureChartTitle() {
 		chart.setTitle(this.getName());
-
 		if (chart.getTitle() != null) {
 			chart.getTitle().setVisible(properties.isTitleVisible());
 			chart.getTitle().setFont(properties.getTitleFont());
@@ -163,7 +153,10 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 				chart.getTitle().setPaint(IColor.toAWTColor(properties.getTextColor()));
 			}
 		}
+	}
 
+	private void configureChartBackgrounds() {
+		Plot plot = chart.getPlot();
 		if (properties.getBackgroundColor() == null) {
 			plot.setBackgroundPaint(null);
 			chart.setBackgroundPaint(null);
@@ -176,20 +169,36 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 			chart.setBorderPaint(bg);
 			if (chart.getLegend() != null) { chart.getLegend().setBackgroundPaint(bg); }
 		}
+	}
 
-		if (chart.getLegend() != null) {
-			LegendTitle legend = chart.getLegend();
-			legend.setItemFont(properties.getLegendFont());
-			legend.setFrame(BlockBorder.NONE);
-			legend.setPosition(RectangleEdge.BOTTOM);
+	private void configureChartLegend(final IScope scope) {
+		if (chart.getLegend() == null) return;
+		LegendTitle legend = chart.getLegend();
+		legend.setItemFont(properties.getLegendFont());
+		legend.setFrame(BlockBorder.NONE);
+		legend.setPosition(RectangleEdge.BOTTOM);
 
-			configureLegendPosition(legend, plot, scope);
-			configureLegendOrientation(legend);
+		configureLegendPosition(legend, chart.getPlot(), scope);
+		configureLegendOrientation(legend);
 
-			if (properties.getTextColor() != null) {
-				legend.setItemPaint(IColor.toAWTColor(properties.getTextColor()));
-			}
+		if (properties.getTextColor() != null) {
+			legend.setItemPaint(IColor.toAWTColor(properties.getTextColor()));
 		}
+	}
+
+	@Override
+	public void initChart(final IScope scope, final String chartname) {
+		super.initChart(scope, chartname);
+		if (chart == null) return;
+
+		initRenderer(scope);
+		chart.addProgressListener(this);
+		chart.setBorderVisible(false);
+		chart.getPlot().setOutlineVisible(false);
+
+		configureChartTitle();
+		configureChartBackgrounds();
+		configureChartLegend(scope);
 	}
 
 	protected void configureLegendPosition(final LegendTitle legend, final Plot plot, final IScope scope) {
