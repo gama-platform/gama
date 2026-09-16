@@ -416,7 +416,8 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 		}
 
 		final IType leftType = left.getGamlType();
-		final IType eachType = leftType.isContainer() ? leftType.getContentType() : leftType;
+		final IType eachType = "dataframe".equals(leftType.getName()) ? Types.MAP
+				: leftType.isContainer() ? leftType.getContentType() : leftType;
 		context.pushIteratorContext(new EachExpression(argName, eachType));
 
 		try {

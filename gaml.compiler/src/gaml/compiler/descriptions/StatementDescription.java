@@ -321,6 +321,8 @@ public class StatementDescription extends SymbolDescription implements IStatemen
 				// If of type pair, find the common supertype of key and contents
 				if (Types.PAIR.isAssignableFrom(expr.getGamlType())) {
 					t = GamaType.findCommonType(expr.getGamlType().getContentType(), expr.getGamlType().getKeyType());
+				} else if ("dataframe".equals(expr.getGamlType().getName())) {
+					t = Types.MAP;
 				} else {
 					t = expr.getGamlType().getContentType();
 				}
