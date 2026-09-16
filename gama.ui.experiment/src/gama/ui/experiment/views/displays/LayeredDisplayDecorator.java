@@ -235,18 +235,6 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	}
 
 	/**
-	 * Layouts all ancestor composites starting from the specified composite up to the Shell.
-	 */
-	private static void relayoutAncestors(final Composite start) {
-		Composite p = start;
-		while (p != null && !p.isDisposed()) {
-			p.layout(true, true);
-			if (p instanceof Shell) break;
-			p = p.getParent();
-		}
-	}
-
-	/**
 	 * Refreshes the display canvas and triggers a display surface update.
 	 */
 	private void refreshDisplayCanvas() {
@@ -271,8 +259,10 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 			view.getCentralPanel().setParent(targetParent);
 		}
 		createOverlay();
+		if (isValid(targetParent)) {
+			targetParent.requestLayout();
+		}
 		destroyFullScreenShell();
-		relayoutAncestors(targetParent);
 		safeLayout(view.getCentralPanel());
 		refreshDisplayCanvas();
 	}
@@ -319,7 +309,6 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 		fullScreenShell.setVisible(true);
 		lastFullScreenEnterTime = System.currentTimeMillis();
 		createOverlay();
-		refreshDisplayCanvas();
 		setupFullscreenToolbar();
 	}
 
@@ -448,8 +437,6 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	 */
 	public boolean isFullScreen() { return fullScreenShell != null; }
 
-	public boolean isInFullScreenTransition() { return inFullScreenTransition; }
-
 	/**
 	 * Returns {@code true} if fullscreen was entered within the last 500 ms. Used by
 	 * {@link gama.ui.shared.utils.ViewsHelper#toggleFullScreenMode(IGamaView.Display)} to suppress the synthetic
@@ -476,9 +463,8 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 		if (ViewsHelper.registerFullScreenView(monitorId1, view)) {
 			final Shell shell = new Shell(WorkbenchHelper.getDisplay(), SWT.NO_TRIM | SWT.ON_TOP);
 			shell.setBounds(bounds);
-			if (view.getOutput() != null && view.getOutput().getData() != null) {
-				shell.setBackground(GamaColors.get(view.getOutput().getData().getBackground()).color());
-			}
+			// For DEBUG purposes only:
+			// fullScreenShell.setBounds(new Rectangle(0, 0, bounds.width / 2, bounds.height / 2));
 			shell.setLayout(shellLayout());
 			return shell;
 		}
