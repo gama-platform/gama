@@ -216,6 +216,47 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	}
 
 	/**
+	 * Determines the composite to restore as parent when exiting fullscreen.
+	 */
+	private Composite determineNormalParent() {
+		return isValid(normalParentOfFullScreenControl) ? normalParentOfFullScreenControl : view.getParentComposite();
+	}
+
+	/**
+	 * Restores the toolbar to its normal parent.
+	 */
+	private void restoreToolbarParent() {
+		if (toolbar.isDisposed()) return;
+		toolbar.wipe(SWT.LEFT, true);
+		if (isValid(normalParentOfToolbar)) {
+			toolbar.setParent(normalParentOfToolbar);
+			normalParentOfToolbar.requestLayout();
+		}
+	}
+
+	/**
+	 * Layouts all ancestor composites starting from the specified composite up to the Shell.
+	 */
+	private static void relayoutAncestors(final Composite start) {
+		Composite p = start;
+		while (p != null && !p.isDisposed()) {
+			p.layout(true, true);
+			if (p instanceof Shell) break;
+			p = p.getParent();
+		}
+	}
+
+	/**
+	 * Refreshes the display canvas and triggers a display surface update.
+	 */
+	private void refreshDisplayCanvas() {
+		view.showCanvas();
+		if (view.getDisplaySurface() != null) {
+			view.getDisplaySurface().updateDisplay(true);
+		}
+	}
+
+	/**
 	 * Performs exit full screen logic.
 	 */
 	private void performExitFullScreen() {
@@ -223,32 +264,41 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 		fs.setImage(GamaIcon.named(DISPLAY_FULLSCREEN_ENTER).image());
 		fs.setToolTipText(STRINGS.PAD("Enter fullscreen", 25) + "ESC");
 		toggleFullScreen = enterFullScreen;
-		if (!toolbar.isDisposed()) {
-			toolbar.wipe(SWT.LEFT, true);
-			if (isValid(normalParentOfToolbar)) {
-				toolbar.setParent(normalParentOfToolbar);
-				normalParentOfToolbar.requestLayout();
-			}
-		}
+		restoreToolbarParent();
 		runExperimentItem = null;
-		Composite targetParent = isValid(normalParentOfFullScreenControl) ? normalParentOfFullScreenControl : view.getParentComposite();
+		Composite targetParent = determineNormalParent();
 		if (isValid(targetParent)) {
 			view.getCentralPanel().setParent(targetParent);
 		}
 		createOverlay();
 		destroyFullScreenShell();
-		if (isValid(targetParent)) {
-			Composite p = targetParent;
-			while (p != null && !p.isDisposed()) {
-				p.layout(true, true);
-				if (p instanceof Shell) break;
-				p = p.getParent();
-			}
-		}
+		relayoutAncestors(targetParent);
 		safeLayout(view.getCentralPanel());
-		view.showCanvas();
-		if (view.getDisplaySurface() != null) {
-			view.getDisplaySurface().updateDisplay(true);
+		refreshDisplayCanvas();
+	}
+
+	/**
+	 * Updates normalParentOfFullScreenControl before entering fullscreen.
+	 */
+	private void updateNormalParentOfFullScreenControl() {
+		Composite curParent = view.getCentralPanel().getParent();
+		if (isValid(curParent) && curParent != fullScreenShell) {
+			normalParentOfFullScreenControl = curParent;
+		} else if (!isValid(normalParentOfFullScreenControl)) {
+			normalParentOfFullScreenControl = view.getParentComposite();
+		}
+	}
+
+	/**
+	 * Configures the toolbar for fullscreen mode.
+	 */
+	private void setupFullscreenToolbar() {
+		if (toolbar.isDisposed()) return;
+		toolbar.wipe(SWT.LEFT, true);
+		addFullscreenToolbarCommands();
+		if (toolbar.getParent() != fullScreenShell) {
+			normalParentOfToolbar = toolbar.getParent();
+			toolbar.setParent(fullScreenShell);
 		}
 	}
 
@@ -263,29 +313,14 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 		fs.setImage(GamaIcon.named(DISPLAY_FULLSCREEN_EXIT).image());
 		fs.setToolTipText(STRINGS.PAD("Exit fullscreen", 25) + "ESC");
 		toggleFullScreen = exitFullScreen;
-		Composite curParent = view.getCentralPanel().getParent();
-		if (isValid(curParent) && curParent != fullScreenShell) {
-			normalParentOfFullScreenControl = curParent;
-		} else if (!isValid(normalParentOfFullScreenControl)) {
-			normalParentOfFullScreenControl = view.getParentComposite();
-		}
+		updateNormalParentOfFullScreenControl();
 		view.getCentralPanel().setParent(fullScreenShell);
 		fullScreenShell.layout(true, true);
 		fullScreenShell.setVisible(true);
 		lastFullScreenEnterTime = System.currentTimeMillis();
 		createOverlay();
-		view.showCanvas();
-		if (view.getDisplaySurface() != null) {
-			view.getDisplaySurface().updateDisplay(true);
-		}
-		if (!toolbar.isDisposed()) {
-			toolbar.wipe(SWT.LEFT, true);
-			addFullscreenToolbarCommands();
-			if (toolbar.getParent() != fullScreenShell) {
-				normalParentOfToolbar = toolbar.getParent();
-				toolbar.setParent(fullScreenShell);
-			}
-		}
+		refreshDisplayCanvas();
+		setupFullscreenToolbar();
 	}
 
 	/**
@@ -308,12 +343,6 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 		} finally {
 			inFullScreenTransition = false;
 		}
-	}
-	}
-
-	}
-		});
-
 	}
 
 	/**
