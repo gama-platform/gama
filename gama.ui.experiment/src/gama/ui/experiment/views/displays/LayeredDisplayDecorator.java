@@ -43,7 +43,6 @@ import gama.api.ui.displays.IDisplayData.DisplayDataListener;
 import gama.api.utils.interfaces.IDisposable;
 import gama.dev.DEBUG;
 import gama.dev.STRINGS;
-import gama.ui.experiment.commands.ArrangeDisplayViews;
 import gama.ui.experiment.controls.SimulationSpeedContributionItem;
 import gama.ui.shared.bindings.GamaKeyBindings;
 import gama.ui.shared.menus.GamaColorMenu;
@@ -246,6 +245,18 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	}
 
 	/**
+	 * Layouts all ancestor composites starting from the specified composite up to the Shell.
+	 */
+	private static void relayoutAncestors(final Composite start) {
+		Composite p = start;
+		while (p != null && !p.isDisposed()) {
+			p.layout(true, true);
+			if (p instanceof Shell) break;
+			p = p.getParent();
+		}
+	}
+
+	/**
 	 * Performs exit full screen logic.
 	 */
 	private void performExitFullScreen() {
@@ -253,6 +264,9 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 		fs.setImage(GamaIcon.named(DISPLAY_FULLSCREEN_ENTER).image());
 		fs.setToolTipText(STRINGS.PAD("Enter fullscreen", 25) + "ESC");
 		toggleFullScreen = enterFullScreen;
+		if (view.getOutput() != null && view.getOutput().getData() != null) {
+			view.getOutput().getData().setFullScreen(-1);
+		}
 		restoreToolbarParent();
 		runExperimentItem = null;
 		Composite targetParent = determineNormalParent();
@@ -261,8 +275,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 		}
 		createOverlay();
 		destroyFullScreenShell();
-		ViewsHelper.bringToFront(view);
-		ArrangeDisplayViews.execute(0);
+		relayoutAncestors(targetParent);
 		safeLayout(view.getCentralPanel());
 		refreshDisplayCanvas();
 	}
@@ -475,18 +488,15 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	 * Destroy full screen shell.
 	 */
 	private void destroyFullScreenShell() {
-		if (fullScreenShell == null || fullScreenShell.isDisposed()) return;
+		if (fullScreenShell == null) return;
 		DEBUG.OUT("Destroying full screen shell");
-		WorkbenchHelper.run(() -> {
-			if (!fullScreenShell.isDisposed()) {
-				fullScreenShell.close();
-				fullScreenShell.dispose();
-				fullScreenShell = null;
-			}
-			ViewsHelper.unregisterFullScreenView(view);
-			ViewsHelper.activate(view);
-		});
-
+		if (!fullScreenShell.isDisposed()) {
+			fullScreenShell.close();
+			fullScreenShell.dispose();
+		}
+		fullScreenShell = null;
+		ViewsHelper.unregisterFullScreenView(view);
+		ViewsHelper.activate(view);
 	}
 
 	/**
