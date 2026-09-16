@@ -310,27 +310,32 @@ public class StatementDescription extends SymbolDescription implements IStatemen
 	 * @return the i type
 	 */
 	private IType inferType() {
-		IType t = NO_TYPE;
-		// If the type is not defined, we try to infer it from the facets only if the flag is not set (see #385)
-		if (hasFacet(VALUE)) {
-			final IExpression value = getFacetExpr(VALUE);
-			if (value != null) { t = value.getGamlType(); }
-		} else if (hasFacet(OVER)) {
-			final IExpression expr = getFacetExpr(OVER);
-			if (expr != null) {
-				// If of type pair, find the common supertype of key and contents
-				if (Types.PAIR.isAssignableFrom(expr.getGamlType())) {
-					t = GamaType.findCommonType(expr.getGamlType().getContentType(), expr.getGamlType().getKeyType());
-				} else if ("dataframe".equals(expr.getGamlType().getName())) {
-					t = Types.MAP;
-				} else {
-					t = expr.getGamlType().getContentType();
-				}
-			}
-		} else if (hasFacet(FROM) && hasFacet(IKeyword.TO)) {
-			t = GamaType.findCommonType(getFacetExpr(FROM), getFacetExpr(IKeyword.TO), getFacetExpr(IKeyword.STEP));
+		if (hasFacet(VALUE)) return inferTypeFromValue();
+		if (hasFacet(OVER)) return inferTypeFromOver();
+		if (hasFacet(FROM) && hasFacet(IKeyword.TO)) return inferTypeFromRange();
+		return NO_TYPE;
+	}
+
+	private IType inferTypeFromValue() {
+		final IExpression value = getFacetExpr(VALUE);
+		return value != null ? value.getGamlType() : NO_TYPE;
+	}
+
+	private IType inferTypeFromOver() {
+		final IExpression expr = getFacetExpr(OVER);
+		if (expr == null) return NO_TYPE;
+		final IType exprType = expr.getGamlType();
+		if (Types.PAIR.isAssignableFrom(exprType)) {
+			return GamaType.findCommonType(exprType.getContentType(), exprType.getKeyType());
 		}
-		return t;
+		if ("dataframe".equals(exprType.getName())) {
+			return Types.MAP;
+		}
+		return exprType.getContentType();
+	}
+
+	private IType inferTypeFromRange() {
+		return GamaType.findCommonType(getFacetExpr(FROM), getFacetExpr(IKeyword.TO), getFacetExpr(IKeyword.STEP));
 	}
 
 	/**
