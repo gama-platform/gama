@@ -75,6 +75,7 @@ import gama.api.utils.geometry.GamaEnvelopeFactory;
 import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.interfaces.IFieldMatrixProvider;
 import gama.core.topology.gis.GamaCRS;
+import gama.core.topology.gis.ProjectionFactory;
 import gama.core.util.matrix.GamaFloatMatrix;
 
 /**
@@ -474,22 +475,84 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 
 	@Override
 	protected void flushBuffer(final IScope scope, final Facets facets) throws GamaRuntimeException {
-		if (!writable || coverage == null) return;
-		try {
-			final File f = getFile(scope);
-			f.setWritable(true);
-			GridCoverageWriter writer;
+		setWritable(scope, true);
+		ensureCoverage(scope);
+		if (coverage == null) return;
 
-			if (isTiff(scope)) {
-				final GeoTiffFormat format = new GeoTiffFormat();
-				writer = format.getWriter(f);
-			} else {
-				writer = new ArcGridWriter(f);
-			}
+		GridCoverageWriter writer = null;
+		try {
+			final File file = prepareOutputFile(scope);
+			writer = createGridWriter(scope, file);
 			writer.write(coverage, (GeneralParameterValue[]) null);
 		} catch (final IOException e) {
 			throw GamaRuntimeException.create(e, scope);
+		} finally {
+			disposeWriter(writer);
+			ProjectionFactory.saveTargetCRSAsPRJFile(scope, getFile(scope).getAbsolutePath());
 		}
+	}
+
+	/**
+	 * Ensure coverage.
+	 *
+	 * @param scope
+	 *            the scope
+	 */
+	private void ensureCoverage(final IScope scope) {
+		if (coverage != null) return;
+		createCoverage(scope);
+		if (coverage == null && hasFallbackData()) { createCoverage(scope, getField(scope)); }
+	}
+
+	/**
+	 * Checks for fallback data.
+	 *
+	 * @return true, if successful
+	 */
+	private boolean hasFallbackData() {
+		return ascData != null || getBuffer() != null;
+	}
+
+	/**
+	 * Prepare output file.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the file
+	 */
+	private File prepareOutputFile(final IScope scope) {
+		final File file = getFile(scope);
+		file.setWritable(true);
+		return file;
+	}
+
+	/**
+	 * Creates the grid writer.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param file
+	 *            the file
+	 * @return the grid coverage writer
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
+	 */
+	private GridCoverageWriter createGridWriter(final IScope scope, final File file) throws IOException {
+		if (isTiff(scope)) return new GeoTiffFormat().getWriter(file);
+		return new ArcGridWriter(file);
+	}
+
+	/**
+	 * Dispose writer.
+	 *
+	 * @param writer
+	 *            the writer
+	 */
+	private void disposeWriter(final GridCoverageWriter writer) {
+		if (writer == null) return;
+		try {
+			writer.dispose();
+		} catch (final Exception ignored) {}
 	}
 
 	/**
@@ -972,7 +1035,8 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 
 	@Override
 	public void save(final IScope scope, final Facets parameters) {
-
+		setWritable(scope, true);
+		super.save(scope, parameters == null ? new Facets() : parameters);
 	}
 
 }
