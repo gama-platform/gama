@@ -330,7 +330,9 @@ public class Containers {
 	 * @return the supplier
 	 */
 	public static Supplier<IList> listLike(final IContainer c) {
-		return GamaListFactory.getSupplier(c == null ? Types.NO_TYPE : c.getGamlType().getContentType());
+		if (c == null) return GamaListFactory.getSupplier(Types.NO_TYPE);
+		final IType ct = "dataframe".equals(c.getGamlType().getName()) ? Types.MAP : c.getGamlType().getContentType();
+		return GamaListFactory.getSupplier(ct);
 	}
 
 	/**
@@ -2740,8 +2742,9 @@ public class Containers {
 	@test ("[1,2,3,4,5,6,7,8] where (each > 3) = [4, 5, 6, 7, 8] ")
 	@test ("matrix([1, 2, 3], [4, 5, 6]) where (each > 2) = [4, 5, 3, 6] ")
 	public static IList where(final IScope scope, final String eachName, final IContainer c, final IExpression filter) {
+		final IType ct = "dataframe".equals(c.getGamlType().getName()) ? Types.MAP : c.getGamlType().getContentType();
 		return (IList) stream(scope, c).filter(buildPredicateWithEach(scope, eachName, filter))
-				.toCollection(listLike(c));
+				.toCollection(listOf(ct));
 	}
 
 	/**
