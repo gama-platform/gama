@@ -101,7 +101,10 @@ public class ChartDataSourceList extends ChartDataSource {
 	private IList<?> extractLegends(final IScope scope) {
 		if (legendExp == null) return null;
 		final Object legObj = legendExp.value(scope);
-		if (legObj instanceof Boolean b && !b) return null;
+		if (legObj instanceof Boolean b) {
+			if (!b) return null;
+			return GamaListFactory.create(scope, Types.STRING);
+		}
 		if (legObj instanceof String s) return GamaListFactory.create(scope, Types.STRING, s);
 		if (legObj instanceof IList l) return GamaListFactory.castToList(scope, l);
 		return null;
@@ -109,6 +112,7 @@ public class ChartDataSourceList extends ChartDataSource {
 
 	private String getLegendLabel(final IScope scope, final IList<?> legends, final int index) {
 		if (legends == null) return "";
+		if (legends.isEmpty()) return "Series " + (index + 1);
 		if (index >= legends.size()) return "";
 		final Object val = legends.get(index);
 		if (val == null) return "";

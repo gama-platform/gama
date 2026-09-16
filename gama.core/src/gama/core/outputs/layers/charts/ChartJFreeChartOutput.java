@@ -274,11 +274,20 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 		}
 	}
 
-	private void configureLegendOrientation(final LegendTitle legend) {
+	protected void configureLegendOrientation(final LegendTitle legend) {
+		if (legend == null) return;
 		if ("vertical".equalsIgnoreCase(legend_orientation)) {
 			legend.getItemContainer().setArrangement(new org.jfree.chart.block.ColumnArrangement());
 		} else if ("horizontal".equalsIgnoreCase(legend_orientation)) {
 			legend.getItemContainer().setArrangement(new org.jfree.chart.block.FlowArrangement());
+		}
+	}
+
+	@Override
+	public void setLegendOrientation(final IScope scope, final String orient) {
+		super.setLegendOrientation(scope, orient);
+		if (chart != null && chart.getLegend() != null) {
+			configureLegendOrientation(chart.getLegend());
 		}
 	}
 

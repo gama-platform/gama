@@ -231,6 +231,7 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 			newr.setSeriesVisibleInLegend(myrow, false);
 			return;
 		}
+		newr.setSeriesVisibleInLegend(myrow, true);
 		newr.setLegendItemLabelGenerator((dataset, series) -> {
 			String id = (String) dataset.getRowKey(series);
 			ChartDataSeries ds = getChartdataset().getDataSeries(scope, id);
@@ -368,34 +369,52 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 
 	}
 
-	@Override
-	public void resetAxes(final IScope scope) {
-		final CategoryPlot pp = (CategoryPlot) this.chart.getPlot();
-		NumberAxis rangeAxis = (NumberAxis) ((CategoryPlot) this.chart.getPlot()).getRangeAxis();
-		if (getY_LogScale(scope)) {
-			final LogarithmicAxis logAxis = new LogarithmicAxis(rangeAxis.getLabel());
-			logAxis.setAllowNegativesFlag(true);
-			((CategoryPlot) this.chart.getPlot()).setRangeAxis(logAxis);
-			rangeAxis = logAxis;
-		}
-
+	private void configureHistogramRangeAxisBounds(final IScope scope, final NumberAxis rangeAxis) {
 		if (!useyrangeinterval && !useyrangeminmax && !useymin && !useymax) { rangeAxis.setAutoRange(true); }
 
 		if (this.useyrangeinterval) {
 			rangeAxis.setFixedAutoRange(yrangeinterval);
 			rangeAxis.setAutoRangeMinimumSize(yrangeinterval);
 			rangeAxis.setAutoRange(true);
-
 		}
 		if (this.useyrangeminmax) {
 			rangeAxis.setRange(yrangemin, yrangemax);
-
 		}
 		if ((useymin || useymax) && !useyrangeminmax) { applyYSingleBounds(scope, rangeAxis); }
+	}
 
+	private void updateSubAxisCategories(final IScope scope, final CategoryPlot pp, final CategoryAxis domainAxis) {
+		if (!this.useSubAxis) return;
+		boolean hasSubCategories = false;
+		for (final String serieid : chartdataset.getDataSeriesIds(scope)) {
+			ChartDataSeries ds = chartdataset.getDataSeries(scope, serieid);
+			String leg = ds != null && ds.getSerieLegend(scope) != null ? ds.getSerieLegend(scope).toString() : "";
+			if (StringUtils.isNotBlank(leg)) {
+				((SubCategoryAxis) domainAxis).addSubCategory(leg);
+				hasSubCategories = true;
+			}
+		}
+		if (!hasSubCategories) {
+			pp.setDomainAxis(new CategoryAxis(pp.getDomainAxis().getLabel()));
+			this.useSubAxis = false;
+		}
+	}
+
+	@Override
+	public void resetAxes(final IScope scope) {
+		final CategoryPlot pp = (CategoryPlot) this.chart.getPlot();
+		NumberAxis rangeAxis = (NumberAxis) pp.getRangeAxis();
+		if (getY_LogScale(scope)) {
+			final LogarithmicAxis logAxis = new LogarithmicAxis(rangeAxis.getLabel());
+			logAxis.setAllowNegativesFlag(true);
+			pp.setRangeAxis(logAxis);
+			rangeAxis = logAxis;
+		}
+
+		configureHistogramRangeAxisBounds(scope, rangeAxis);
 		resetDomainAxis(scope);
 
-		final CategoryAxis domainAxis = ((CategoryPlot) this.chart.getPlot()).getDomainAxis();
+		final CategoryAxis domainAxis = pp.getDomainAxis();
 		Color ac = IColor.toAWTColor(axesColor);
 		pp.setDomainGridlinePaint(ac);
 		pp.setRangeGridlinePaint(ac);
@@ -416,28 +435,21 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 		if (getYLabel(scope) != null && !getYLabel(scope).isEmpty()) { pp.getRangeAxis().setLabel(getYLabel(scope)); }
 		if ("yaxis".equals(this.series_label_position)) {
 			pp.getRangeAxis().setLabel(this.getChartdataset().getDataSeriesIds(scope).iterator().next());
-			chart.getLegend().setVisible(false);
+			if (chart.getLegend() != null) { chart.getLegend().setVisible(false); }
 		}
 
 		if (getXLabel(scope) != null && !getXLabel(scope).isEmpty()) { pp.getDomainAxis().setLabel(getXLabel(scope)); }
 
-		if (this.useSubAxis) {
-			for (final String serieid : chartdataset.getDataSeriesIds(scope)) {
-				((SubCategoryAxis) domainAxis).addSubCategory(serieid);
-			}
-
-		}
-		if (!this.getYTickLineVisible(scope)) { pp.setDomainGridlinesVisible(false); }
+		updateSubAxisCategories(scope, pp, domainAxis);
 
 		if (!this.getYTickLineVisible(scope)) {
+			pp.setDomainGridlinesVisible(false);
 			pp.setRangeCrosshairVisible(false);
-
 		}
 
 		if (!this.getYTickValueVisible(scope)) {
 			pp.getRangeAxis().setTickMarksVisible(false);
 			pp.getRangeAxis().setTickLabelsVisible(false);
-
 		}
 
 	}
@@ -451,6 +463,9 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 	public void resetDomainAxis(final IScope scope) {
 
 		final CategoryPlot pp = (CategoryPlot) chart.getPlot();
+		if ("none".equals(this.series_label_position)) {
+			this.useSubAxis = false;
+		}
 		if (this.useSubAxis) {
 			final SubCategoryAxis newAxis = new SubCategoryAxis(pp.getDomainAxis().getLabel());
 			pp.setDomainAxis(newAxis);
@@ -542,11 +557,14 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 				break;
 			}
 		}
-		if (XAXIS.equals(this.series_label_position)) { this.useSubAxis = true; }
+		if ("none".equals(this.series_label_position)) {
+			this.useSubAxis = false;
+		} else if (XAXIS.equals(this.series_label_position)) {
+			this.useSubAxis = true;
+		}
 
-		if (!"legend".equals(this.series_label_position)) {
+		if (!"legend".equals(this.series_label_position) && chart.getLegend() != null) {
 			chart.getLegend().setVisible(false);
-			// legend is useless, but I find it nice anyway... Could put back...
 		}
 		this.resetDomainAxis(scope);
 		Color ac = IColor.toAWTColor(axesColor);
