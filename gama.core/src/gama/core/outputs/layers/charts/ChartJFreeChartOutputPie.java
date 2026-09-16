@@ -88,10 +88,10 @@ public class ChartJFreeChartOutputPie extends ChartJFreeChartOutput {
 	}
 
 	protected void resetRenderer(final IScope scope, final String serieid) {
+		if (chart == null) return;
 		final ChartDataSeries myserie = this.getChartdataset().getDataSeries(scope, serieid);
-		if (myserie != null && myserie.getMycolor() != null && chart != null) {
-			((PiePlot<?>) this.chart.getPlot()).setSectionPaint(serieid, IColor.toAWTColor(myserie.getMycolor()));
-		}
+		if (myserie == null || myserie.getMycolor() == null) return;
+		((PiePlot<?>) this.chart.getPlot()).setSectionPaint(serieid, IColor.toAWTColor(myserie.getMycolor()));
 	}
 
 	@Override

@@ -90,10 +90,10 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 	}
 
 	double getScale(final String serie, final int col) {
-		if (markerScale.containsKey(serie) && col >= 0 && col < markerScale.get(serie).size()) {
-			return markerScale.get(serie).get(col);
-		}
-		return 1;
+		ArrayList<Double> scales = markerScale.get(serie);
+		if (scales == null) return 1;
+		if (col < 0 || col >= scales.size()) return 1;
+		return scales.get(col);
 	}
 
 	HashMap<String, ArrayList<Double>> markerScale = new HashMap<>();

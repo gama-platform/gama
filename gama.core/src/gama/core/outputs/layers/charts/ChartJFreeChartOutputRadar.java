@@ -128,7 +128,8 @@ public class ChartJFreeChartOutputRadar extends ChartJFreeChartOutput {
 
 	@Override
 	public void resetAxes(final IScope scope) {
-		if ("none".equals(properties.getSeriesLabelPosition()) && chart != null && chart.getLegend() != null) {
+		if (chart == null || chart.getLegend() == null) return;
+		if ("none".equals(properties.getSeriesLabelPosition())) {
 			this.chart.getLegend().setVisible(false);
 		}
 	}

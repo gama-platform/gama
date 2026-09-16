@@ -22,9 +22,6 @@ import gama.api.types.geometry.IPoint;
  */
 public class ChartProperties {
 
-	/**
-	 * Font configuration specification wrapper.
-	 */
 	public static class FontSpec {
 		private String face;
 		private int size;
@@ -45,9 +42,6 @@ public class ChartProperties {
 		public void setStyle(final int style) { this.style = style; }
 	}
 
-	/**
-	 * Axis range and boundary configuration wrapper.
-	 */
 	public static class AxisRange {
 		private double interval;
 		private double min;
@@ -81,9 +75,6 @@ public class ChartProperties {
 		public double getBoundMax() { return boundMax; }
 	}
 
-	/**
-	 * Axis visibility and tick line options wrapper.
-	 */
 	public static class AxisVisibility {
 		private boolean tickValueVisible = true;
 		private boolean tickLineVisible = true;
@@ -95,6 +86,89 @@ public class ChartProperties {
 		public void setTickLineVisible(final boolean v) { this.tickLineVisible = v; }
 		public boolean isLogscale() { return logscale; }
 		public void setLogscale(final boolean v) { this.logscale = v; }
+	}
+
+	public static class ChartLabels {
+		private String xLabel = null;
+		private String yLabel = null;
+		private String y2Label = null;
+
+		public String getXLabel() { return xLabel; }
+		public void setXLabel(final String label) { this.xLabel = label; }
+		public String getYLabel() { return yLabel; }
+		public void setYLabel(final String label) { this.yLabel = label; }
+		public String getY2Label() { return y2Label; }
+		public void setY2Label(final String label) { this.y2Label = label; }
+	}
+
+	public static class ColorPalette {
+		private IColor backgroundColor = GamaColorFactory.WHITE;
+		private IColor axesColor = GamaColorFactory.BLACK;
+		private IColor labelBackgroundColor = null;
+		private IColor labelTextColor = null;
+		private IColor textColor = null;
+		private IColor tickColor = null;
+
+		public IColor getBackgroundColor() { return backgroundColor; }
+		public void setBackgroundColor(final IColor color) { this.backgroundColor = color; }
+		public IColor getAxesColor() { return axesColor; }
+		public void setAxesColor(final IColor color) { this.axesColor = color; }
+		public IColor getLabelBackgroundColor() { return labelBackgroundColor; }
+		public void setLabelBackgroundColor(final IColor color) { this.labelBackgroundColor = color; }
+		public IColor getLabelTextColor() { return labelTextColor; }
+		public void setLabelTextColor(final IColor color) { this.labelTextColor = color; }
+		public IColor getTextColor() { return textColor; }
+		public void setTextColor(final IColor color) { this.textColor = color; }
+		public IColor getTickColor() { return tickColor; }
+		public void setTickColor(final IColor color) { this.tickColor = color; }
+	}
+
+	public static class LegendOptions {
+		private String seriesLabelPosition = IKeyword.DEFAULT;
+		private String legendOrientation = "default";
+		private IPoint seriesLabelAnchor = GamaPointFactory.create(1, 1);
+
+		public String getSeriesLabelPosition() { return seriesLabelPosition; }
+		public void setSeriesLabelPosition(final String pos) { this.seriesLabelPosition = pos; }
+		public String getLegendOrientation() { return legendOrientation; }
+		public void setLegendOrientation(final String orient) { this.legendOrientation = orient; }
+		public IPoint getSeriesLabelAnchor() { return seriesLabelAnchor; }
+		public void setSeriesLabelAnchor(final IPoint anchor) { this.seriesLabelAnchor = anchor; }
+	}
+
+	public static class TickUnits {
+		private double xTickUnit = -1;
+		private double yTickUnit = -1;
+		private double y2TickUnit = -1;
+
+		public double getXTickUnit() { return xTickUnit; }
+		public void setXTickUnit(final double unit) { this.xTickUnit = unit; }
+		public double getYTickUnit() { return yTickUnit; }
+		public void setYTickUnit(final double unit) { this.yTickUnit = unit; }
+		public double getY2TickUnit() { return y2TickUnit; }
+		public void setY2TickUnit(final double unit) { this.y2TickUnit = unit; }
+	}
+
+	public static class DisplayOptions {
+		private boolean reverseAxes = false;
+		private boolean useSecondYAxis = false;
+		private boolean titleVisible = true;
+		private boolean gridLinesVisible = true;
+		private String style = IKeyword.DEFAULT;
+		private double gap = -1;
+
+		public boolean isReverseAxes() { return reverseAxes; }
+		public void setReverseAxes(final boolean reverse) { this.reverseAxes = reverse; }
+		public boolean isUseSecondYAxis() { return useSecondYAxis; }
+		public void setUseSecondYAxis(final boolean useSecond) { this.useSecondYAxis = useSecond; }
+		public boolean isTitleVisible() { return titleVisible; }
+		public void setTitleVisible(final boolean visible) { this.titleVisible = visible; }
+		public boolean isGridLinesVisible() { return gridLinesVisible; }
+		public void setGridLinesVisible(final boolean visible) { this.gridLinesVisible = visible; }
+		public String getStyle() { return style; }
+		public void setStyle(final String style) { this.style = style; }
+		public double getGap() { return gap; }
+		public void setGap(final double gap) { this.gap = gap; }
 	}
 
 	// Component Objects
@@ -111,36 +185,11 @@ public class ChartProperties {
 	private final AxisVisibility yAxisVis = new AxisVisibility();
 	private final AxisVisibility y2AxisVis = new AxisVisibility();
 
-	// Labels
-	private String xLabel = null;
-	private String yLabel = null;
-	private String y2Label = null;
-
-	// Global display options
-	private boolean reverseAxes = false;
-	private boolean useSecondYAxis = false;
-	private boolean titleVisible = true;
-	private boolean gridLinesVisible = true;
-
-	// Colors
-	private IColor backgroundColor = GamaColorFactory.WHITE;
-	private IColor axesColor = GamaColorFactory.BLACK;
-	private IColor labelBackgroundColor = null;
-	private IColor labelTextColor = null;
-	private IColor textColor = null;
-	private IColor tickColor = null;
-
-	// Layout and legend
-	private String seriesLabelPosition = IKeyword.DEFAULT;
-	private String legendOrientation = "default";
-	private IPoint seriesLabelAnchor = GamaPointFactory.create(1, 1);
-	private String style = IKeyword.DEFAULT;
-	private double gap = -1;
-
-	// Tick units
-	private double xTickUnit = -1;
-	private double yTickUnit = -1;
-	private double y2TickUnit = -1;
+	private final ChartLabels labels = new ChartLabels();
+	private final ColorPalette palette = new ColorPalette();
+	private final LegendOptions legendOpts = new LegendOptions();
+	private final TickUnits tickUnits = new TickUnits();
+	private final DisplayOptions displayOpts = new DisplayOptions();
 
 	// Font getters
 	public Font getTickFont() { return tickFontSpec.getFont(); }
@@ -161,19 +210,25 @@ public class ChartProperties {
 	public AxisVisibility getYAxisVis() { return yAxisVis; }
 	public AxisVisibility getY2AxisVis() { return y2AxisVis; }
 
+	public ChartLabels getLabels() { return labels; }
+	public ColorPalette getPalette() { return palette; }
+	public LegendOptions getLegendOpts() { return legendOpts; }
+	public TickUnits getTickUnits() { return tickUnits; }
+	public DisplayOptions getDisplayOpts() { return displayOpts; }
+
 	// Delegated property getters/setters
 
-	public String getXLabel() { return xLabel; }
-	public void setXLabel(final String label) { this.xLabel = label; }
+	public String getXLabel() { return labels.getXLabel(); }
+	public void setXLabel(final String label) { labels.setXLabel(label); }
 
-	public String getYLabel() { return yLabel; }
-	public void setYLabel(final String label) { this.yLabel = label; }
+	public String getYLabel() { return labels.getYLabel(); }
+	public void setYLabel(final String label) { labels.setYLabel(label); }
 
-	public String getY2Label() { return y2Label; }
-	public void setY2Label(final String label) { this.y2Label = label; }
+	public String getY2Label() { return labels.getY2Label(); }
+	public void setY2Label(final String label) { labels.setY2Label(label); }
 
-	public boolean isReverseAxes() { return reverseAxes; }
-	public void setReverseAxes(final boolean reverse) { this.reverseAxes = reverse; }
+	public boolean isReverseAxes() { return displayOpts.isReverseAxes(); }
+	public void setReverseAxes(final boolean reverse) { displayOpts.setReverseAxes(reverse); }
 
 	public boolean isXLogscale() { return xAxisVis.isLogscale(); }
 	public void setXLogscale(final boolean logscale) { xAxisVis.setLogscale(logscale); }
@@ -184,11 +239,11 @@ public class ChartProperties {
 	public boolean isY2Logscale() { return y2AxisVis.isLogscale(); }
 	public void setY2Logscale(final boolean logscale) { y2AxisVis.setLogscale(logscale); }
 
-	public boolean isUseSecondYAxis() { return useSecondYAxis; }
-	public void setUseSecondYAxis(final boolean useSecond) { this.useSecondYAxis = useSecond; }
+	public boolean isUseSecondYAxis() { return displayOpts.isUseSecondYAxis(); }
+	public void setUseSecondYAxis(final boolean useSecond) { displayOpts.setUseSecondYAxis(useSecond); }
 
-	public boolean isTitleVisible() { return titleVisible; }
-	public void setTitleVisible(final boolean visible) { this.titleVisible = visible; }
+	public boolean isTitleVisible() { return displayOpts.isTitleVisible(); }
+	public void setTitleVisible(final boolean visible) { displayOpts.setTitleVisible(visible); }
 
 	public boolean isXTickValueVisible() { return xAxisVis.isTickValueVisible(); }
 	public void setXTickValueVisible(final boolean visible) { xAxisVis.setTickValueVisible(visible); }
@@ -205,26 +260,26 @@ public class ChartProperties {
 	public boolean isYTickLineVisible() { return yAxisVis.isTickLineVisible(); }
 	public void setYTickLineVisible(final boolean visible) { yAxisVis.setTickLineVisible(visible); }
 
-	public boolean isGridLinesVisible() { return gridLinesVisible; }
-	public void setGridLinesVisible(final boolean visible) { this.gridLinesVisible = visible; }
+	public boolean isGridLinesVisible() { return displayOpts.isGridLinesVisible(); }
+	public void setGridLinesVisible(final boolean visible) { displayOpts.setGridLinesVisible(visible); }
 
-	public IColor getBackgroundColor() { return backgroundColor; }
-	public void setBackgroundColor(final IColor color) { this.backgroundColor = color; }
+	public IColor getBackgroundColor() { return palette.getBackgroundColor(); }
+	public void setBackgroundColor(final IColor color) { palette.setBackgroundColor(color); }
 
-	public IColor getAxesColor() { return axesColor; }
-	public void setAxesColor(final IColor color) { this.axesColor = color; }
+	public IColor getAxesColor() { return palette.getAxesColor(); }
+	public void setAxesColor(final IColor color) { palette.setAxesColor(color); }
 
-	public IColor getLabelBackgroundColor() { return labelBackgroundColor; }
-	public void setLabelBackgroundColor(final IColor color) { this.labelBackgroundColor = color; }
+	public IColor getLabelBackgroundColor() { return palette.getLabelBackgroundColor(); }
+	public void setLabelBackgroundColor(final IColor color) { palette.setLabelBackgroundColor(color); }
 
-	public IColor getLabelTextColor() { return labelTextColor; }
-	public void setLabelTextColor(final IColor color) { this.labelTextColor = color; }
+	public IColor getLabelTextColor() { return palette.getLabelTextColor(); }
+	public void setLabelTextColor(final IColor color) { palette.setLabelTextColor(color); }
 
-	public IColor getTextColor() { return textColor; }
-	public void setTextColor(final IColor color) { this.textColor = color; }
+	public IColor getTextColor() { return palette.getTextColor(); }
+	public void setTextColor(final IColor color) { palette.setTextColor(color); }
 
-	public IColor getTickColor() { return tickColor; }
-	public void setTickColor(final IColor color) { this.tickColor = color; }
+	public IColor getTickColor() { return palette.getTickColor(); }
+	public void setTickColor(final IColor color) { palette.setTickColor(color); }
 
 	public String getTickFontFace() { return tickFontSpec.getFace(); }
 	public void setTickFontFace(final String fontFace) { tickFontSpec.setFace(fontFace); }
@@ -262,20 +317,20 @@ public class ChartProperties {
 	public int getTitleFontStyle() { return titleFontSpec.getStyle(); }
 	public void setTitleFontStyle(final int fontStyle) { titleFontSpec.setStyle(fontStyle); }
 
-	public String getSeriesLabelPosition() { return seriesLabelPosition; }
-	public void setSeriesLabelPosition(final String pos) { this.seriesLabelPosition = pos; }
+	public String getSeriesLabelPosition() { return legendOpts.getSeriesLabelPosition(); }
+	public void setSeriesLabelPosition(final String pos) { legendOpts.setSeriesLabelPosition(pos); }
 
-	public String getLegendOrientation() { return legendOrientation; }
-	public void setLegendOrientation(final String orient) { this.legendOrientation = orient; }
+	public String getLegendOrientation() { return legendOpts.getLegendOrientation(); }
+	public void setLegendOrientation(final String orient) { legendOpts.setLegendOrientation(orient); }
 
-	public IPoint getSeriesLabelAnchor() { return seriesLabelAnchor; }
-	public void setSeriesLabelAnchor(final IPoint anchor) { this.seriesLabelAnchor = anchor; }
+	public IPoint getSeriesLabelAnchor() { return legendOpts.getSeriesLabelAnchor(); }
+	public void setSeriesLabelAnchor(final IPoint anchor) { legendOpts.setSeriesLabelAnchor(anchor); }
 
-	public String getStyle() { return style; }
-	public void setStyle(final String style) { this.style = style; }
+	public String getStyle() { return displayOpts.getStyle(); }
+	public void setStyle(final String style) { displayOpts.setStyle(style); }
 
-	public double getGap() { return gap; }
-	public void setGap(final double gap) { this.gap = gap; }
+	public double getGap() { return displayOpts.getGap(); }
+	public void setGap(final double gap) { displayOpts.setGap(gap); }
 
 	public double getXRangeInterval() { return xRange.getInterval(); }
 	public void setXRangeInterval(final double val) { xRange.setInterval(val); }
@@ -320,13 +375,13 @@ public class ChartProperties {
 	public double getY2RangeMin() { return y2Range.getMin(); }
 	public double getY2RangeMax() { return y2Range.getMax(); }
 
-	public double getXTickUnit() { return xTickUnit; }
-	public void setXTickUnit(final double unit) { this.xTickUnit = unit; }
+	public double getXTickUnit() { return tickUnits.getXTickUnit(); }
+	public void setXTickUnit(final double unit) { tickUnits.setXTickUnit(unit); }
 
-	public double getYTickUnit() { return yTickUnit; }
-	public void setYTickUnit(final double unit) { this.yTickUnit = unit; }
+	public double getYTickUnit() { return tickUnits.getYTickUnit(); }
+	public void setYTickUnit(final double unit) { tickUnits.setYTickUnit(unit); }
 
-	public double getY2TickUnit() { return y2TickUnit; }
-	public void setY2TickUnit(final double unit) { this.y2TickUnit = unit; }
+	public double getY2TickUnit() { return tickUnits.getY2TickUnit(); }
+	public void setY2TickUnit(final double unit) { tickUnits.setY2TickUnit(unit); }
 
 }
