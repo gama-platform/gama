@@ -29,6 +29,7 @@ import org.jfree.chart.entity.XYItemEntity;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.AbstractRenderer;
+import org.jfree.chart.renderer.category.AbstractCategoryItemRenderer;
 import org.jfree.chart.renderer.category.BoxAndWhiskerRenderer;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.general.PieDataset;
@@ -140,6 +141,20 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 		return new BoxAndWhiskerRenderer();
 	}
 
+	private void configureLegend(final AbstractCategoryItemRenderer newr, final ChartDataSeries myserie, final int myrow, final IScope scope) {
+		final String legStr = myserie.getSerieLegend(scope) == null ? "" : myserie.getSerieLegend(scope).toString();
+		if (StringUtils.isBlank(legStr)) {
+			newr.setSeriesVisibleInLegend(myrow, false);
+			return;
+		}
+		newr.setSeriesVisibleInLegend(myrow, true);
+		newr.setLegendItemLabelGenerator((dataset, series) -> {
+			String id = (String) dataset.getRowKey(series);
+			ChartDataSeries ds = getChartdataset().getDataSeries(scope, id);
+			return ds != null && ds.getSerieLegend(scope) != null ? ds.getSerieLegend(scope).toString() : id;
+		});
+	}
+
 	/**
 	 * Reset renderer.
 	 *
@@ -159,7 +174,7 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 		} else {
 			final int myrow = idPosition.get(serieid);
 			if (myserie.getMycolor() != null) { newr.setSeriesPaint(myrow, IColor.toAWTColor(myserie.getMycolor())); }
-
+			configureLegend(newr, myserie, myrow, scope);
 		}
 
 	}
@@ -299,10 +314,19 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 		if (getXLabel(scope) != null && !getXLabel(scope).isEmpty()) { pp.getDomainAxis().setLabel(getXLabel(scope)); }
 
 		if (this.useSubAxis) {
+			boolean hasSubCategories = false;
 			for (final String serieid : chartdataset.getDataSeriesIds(scope)) {
-				((SubCategoryAxis) domainAxis).addSubCategory(serieid);
+				ChartDataSeries ds = chartdataset.getDataSeries(scope, serieid);
+				String leg = ds != null && ds.getSerieLegend(scope) != null ? ds.getSerieLegend(scope).toString() : "";
+				if (StringUtils.isNotBlank(leg)) {
+					((SubCategoryAxis) domainAxis).addSubCategory(leg);
+					hasSubCategories = true;
+				}
 			}
-
+			if (!hasSubCategories) {
+				pp.setDomainAxis(new CategoryAxis(pp.getDomainAxis().getLabel()));
+				this.useSubAxis = false;
+			}
 		}
 		if (!this.getYTickLineVisible(scope)) { pp.setDomainGridlinesVisible(false); }
 
@@ -328,6 +352,9 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 	public void resetDomainAxis(final IScope scope) {
 
 		final CategoryPlot pp = (CategoryPlot) chart.getPlot();
+		if ("none".equals(this.series_label_position)) {
+			this.useSubAxis = false;
+		}
 		if (this.useSubAxis) {
 			final SubCategoryAxis newAxis = new SubCategoryAxis(pp.getDomainAxis().getLabel());
 			pp.setDomainAxis(newAxis);
@@ -401,11 +428,14 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 			}
 		}
 
-		if (XAXIS.equals(this.series_label_position)) { this.useSubAxis = true; }
+		if ("none".equals(this.series_label_position)) {
+			this.useSubAxis = false;
+		} else if (XAXIS.equals(this.series_label_position)) {
+			this.useSubAxis = true;
+		}
 
-		if (!"legend".equals(this.series_label_position)) {
+		if (!"legend".equals(this.series_label_position) && chart.getLegend() != null) {
 			chart.getLegend().setVisible(false);
-			// legend is useless, but I find it nice anyway... Could put back...
 		}
 		this.resetDomainAxis(scope);
 		Color ac = axesColor == null ? null : IColor.toAWTColor(axesColor);
