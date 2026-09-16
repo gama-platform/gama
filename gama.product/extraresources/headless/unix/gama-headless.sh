@@ -130,15 +130,15 @@ if ! $java -cp "${pluginPath}"/org.eclipse.equinox.launcher*.jar \
     if [ $workspaceCreate -eq 1 ]; then
         # create workspace in output folder
         echo "GAMA encountered an error and crashed, please check again your command..."
-        rm -fr workspaceRootPath $pathWorkspace
+        rm -fr "$pathWorkspace"
     else
         echo "Error in you command, here's the log :"
-        cat $pathWorkspace/.metadata/.log
+        cat "$pathWorkspace"/.metadata/.log
     fi
     exit 1
 else
     if [ $workspaceCreate -eq 1 ]; then
         # create workspace in output folder
-        rm -fr workspaceRootPath $pathWorkspace
+        rm -fr "$pathWorkspace"
     fi
 fi
