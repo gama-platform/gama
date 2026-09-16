@@ -237,9 +237,16 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 		}
 		createOverlay();
 		destroyFullScreenShell();
-		safeLayout(targetParent);
-		safeLayout(view.getParentComposite());
+		if (isValid(targetParent)) {
+			Composite p = targetParent;
+			while (p != null && !p.isDisposed()) {
+				p.layout(true, true);
+				if (p instanceof Shell) break;
+				p = p.getParent();
+			}
+		}
 		safeLayout(view.getCentralPanel());
+		view.showCanvas();
 		if (view.getDisplaySurface() != null) {
 			view.getDisplaySurface().updateDisplay(true);
 		}
@@ -267,6 +274,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 		fullScreenShell.setVisible(true);
 		lastFullScreenEnterTime = System.currentTimeMillis();
 		createOverlay();
+		view.showCanvas();
 		if (view.getDisplaySurface() != null) {
 			view.getDisplaySurface().updateDisplay(true);
 		}
@@ -300,6 +308,12 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 		} finally {
 			inFullScreenTransition = false;
 		}
+	}
+	}
+
+	}
+		});
+
 	}
 
 	/**
@@ -531,6 +545,10 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 				toggleFullScreen.toItem(sub);
 			}
 			toggleOverlay.toItem(sub);
+			GamaMenu.action(sub,
+					STRINGS.PAD("Toggle toolbar ", 25) + GamaKeyBindings.format(GamaKeyBindings.COMMAND, 'T'),
+					t -> toggleToolbar(),
+					this.isFullScreen() ? "display/toolbar.fullscreen" : "display/toolbar.regular");
 			GamaColorMenu.addColorSubmenuTo(sub, STRINGS.PAD("Background", 25), c -> {
 				view.getDisplaySurface().getData().setBackgroundColor(c);
 				view.getDisplaySurface().updateDisplay(true);
