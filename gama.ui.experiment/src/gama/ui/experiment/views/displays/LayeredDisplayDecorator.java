@@ -245,6 +245,18 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	}
 
 	/**
+	 * Layouts all ancestor composites starting from the specified composite up to the Shell.
+	 */
+	private static void relayoutAncestors(final Composite start) {
+		Composite p = start;
+		while (p != null && !p.isDisposed()) {
+			p.layout(true, true);
+			if (p instanceof Shell) break;
+			p = p.getParent();
+		}
+	}
+
+	/**
 	 * Performs exit full screen logic.
 	 */
 	private void performExitFullScreen() {
@@ -259,10 +271,8 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 			view.getCentralPanel().setParent(targetParent);
 		}
 		createOverlay();
-		if (isValid(targetParent)) {
-			targetParent.requestLayout();
-		}
 		destroyFullScreenShell();
+		relayoutAncestors(targetParent);
 		safeLayout(view.getCentralPanel());
 		refreshDisplayCanvas();
 	}
