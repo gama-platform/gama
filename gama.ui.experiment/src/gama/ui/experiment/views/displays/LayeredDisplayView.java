@@ -430,10 +430,6 @@ public abstract class LayeredDisplayView extends GamaViewPart
 	@Override
 	public boolean isFullScreen() { return decorator.isFullScreen(); }
 
-	public boolean isInFullScreenTransition() {
-		return decorator != null && decorator.isInFullScreenTransition();
-	}
-
 	@Override
 	public boolean fullScreenEnteredRecently() {
 		return decorator.fullScreenEnteredRecently();

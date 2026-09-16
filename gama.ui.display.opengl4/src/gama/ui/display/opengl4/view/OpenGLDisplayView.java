@@ -124,15 +124,6 @@ public class OpenGLDisplayView extends LayeredDisplayView {
 	}
 
 	/**
-	 * Determines whether the GL window needs reparenting to maintain proper Z-ordering over Java2D views.
-	 */
-	private boolean shouldReparentWindow(final boolean wasVisible, final boolean firstShow, final boolean restoring) {
-		if (wasVisible || isInFullScreenTransition() || isFullScreen()) return false;
-		if (firstShow || restoring) return false;
-		return SystemInfo.isMac() || SystemInfo.isWindows();
-	}
-
-	/**
 	 * Show canvas.
 	 */
 	@Override
@@ -146,7 +137,9 @@ public class OpenGLDisplayView extends LayeredDisplayView {
 		canvas.startAnimator();
 		final boolean firstShow = canvas.consumeNativePeerJustCreated();
 		deferredMultiListener.ensureInstalled();
-		if (shouldReparentWindow(wasVisible, firstShow, restoringAfterLaunchOverlay)) {
+		// Prevents JOGL views to move over Java2D views created before (needed on both macOS and Windows)
+		if (!wasVisible && (isFullScreen() || !firstShow && !restoringAfterLaunchOverlay)
+				&& (SystemInfo.isMac() || SystemInfo.isWindows())) {
 			canvas.reparentWindow();
 		}
 		getDisplaySurface().renderer.onCanvasShown();
