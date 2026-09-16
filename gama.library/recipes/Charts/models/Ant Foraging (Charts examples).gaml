@@ -193,7 +193,7 @@ experiment "Experiment" type: gui {
 			series_label_position: legend 
 			style:stack
 			{
-				datalist ["empty","carry"] accumulate_values:true
+				datalist legend: ["empty","carry"] accumulate_values:true
 				value:[(ant count (!each.hasFood)),(ant count (each.hasFood))]  thickness: 0.5 marker: false
 				color:colors;				
 			}
@@ -202,7 +202,7 @@ experiment "Experiment" type: gui {
 		display CentroidPosition  type: 2d toolbar: false {
 			chart "Positions and History of centroid and size by state" type:scatter title_font: title_font  label_font: chart_font tick_font: chart_font legend_font: chart_font tick_line_color: #white color: #black
 			{
-				datalist ["avg-carry","avg-empty"]
+				datalist legend: ["avg-carry","avg-empty"]
 					value:[mean((ant where (each.hasFood)) collect each.location),
 								mean((ant where (!each.hasFood)) collect each.location)]
 					marker_size: [(ant count (each.hasFood))/20,(ant count (!each.hasFood))/20]
@@ -222,14 +222,14 @@ experiment "Experiment" type: gui {
 			chart "Distribution of the X positions"   size: {0.65,0.3} position: {0.05, 0} type:histogram  title_font: title_font  label_font: chart_font tick_font: chart_font legend_font: chart_font
 			x_tick_line_visible: false y_tick_line_visible: false flat: false
 			{
-				datalist (distribution_of(ant collect each.location.x,10,0,100) at "legend")
+				datalist legend: (distribution_of(ant collect each.location.x,10,0,100) at "legend")
 					value:(distribution_of(ant collect each.location.x,10,0,100) at "values") color: colors;
 			}
 			chart "Distribution of the Y positions"   size: {0.3,0.7} position: {0.7, 0.28} type:histogram  title_font: title_font  label_font: chart_font tick_font: chart_font legend_font: chart_font
 			reverse_axes:true x_tick_line_visible: false y_tick_line_visible: false flat: false
 			
 			{
-				datalist reverse(distribution_of(ant collect each.location.x,10,0,100) at "legend")
+				datalist legend: reverse(distribution_of(ant collect each.location.x,10,0,100) at "legend")
 					value:reverse(distribution_of(ant collect each.location.x,10,0,100) at "values") color: reverse(colors);
 			}
 
@@ -247,7 +247,7 @@ experiment "Experiment" type: gui {
 			chart "Distribution of the X positions"   size: {0.92,0.3} position: {0, 0} type:histogram  title_font: title_font  label_font: chart_font tick_font: chart_font legend_font: chart_font
 			
 			{
-				datalist (distribution_of(ant collect each.location.x,10,0,100) at "legend")
+				datalist legend: (distribution_of(ant collect each.location.x,10,0,100) at "legend")
 					value:(distribution_of(ant collect each.location.x,10,0,100) at "values") color: reverse(colors);
 			}
 			chart "Distribution of the X positions- heatmap"   size: {1.0,0.7} position: {0, 0.3} type:heatmap  title_font: title_font label_font: chart_font tick_font: chart_font legend_font: chart_font

@@ -488,15 +488,18 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	 * Destroy full screen shell.
 	 */
 	private void destroyFullScreenShell() {
-		if (fullScreenShell == null) return;
+		if (fullScreenShell == null || fullScreenShell.isDisposed()) return;
 		DEBUG.OUT("Destroying full screen shell");
-		if (!fullScreenShell.isDisposed()) {
-			fullScreenShell.close();
-			fullScreenShell.dispose();
-		}
-		fullScreenShell = null;
-		ViewsHelper.unregisterFullScreenView(view);
-		ViewsHelper.activate(view);
+		WorkbenchHelper.run(() -> {
+			if (!fullScreenShell.isDisposed()) {
+				fullScreenShell.close();
+				fullScreenShell.dispose();
+				fullScreenShell = null;
+			}
+			ViewsHelper.unregisterFullScreenView(view);
+			ViewsHelper.activate(view);
+		});
+
 	}
 
 	/**

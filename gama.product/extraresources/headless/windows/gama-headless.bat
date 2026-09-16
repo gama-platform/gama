@@ -33,7 +33,7 @@ GOTO TOP
 echo ******************************************************************
 echo * GAMA version 0.0.0-SNAPSHOT                                         *
 echo * http://gama-platform.org                                       *
-echo * (c) 2007-2025 UMI 209 UMMISCO IRD/SU and Partners              *
+echo * (c) 2007-2026 UMI 209 UMMISCO IRD/SU and Partners              *
 echo ******************************************************************
 
 set FILENAME="..\plugins\"

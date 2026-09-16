@@ -293,6 +293,7 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 			newr.setSeriesVisibleInLegend(0, false);
 			return;
 		}
+		newr.setSeriesVisibleInLegend(0, true);
 		newr.setLegendItemLabelGenerator((dataset, series) -> {
 			String id = (String) dataset.getSeriesKey(series);
 			ChartDataSeries ds = getChartdataset().getDataSeries(scope, id);
