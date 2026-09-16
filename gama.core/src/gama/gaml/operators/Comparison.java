@@ -339,7 +339,7 @@ public class Comparison {
 			category = { IOperatorCategory.COMPARISON, IOperatorCategory.MATRIX },
 			concept = {})
 	@doc (value = "Returns a binary matrix where each element is 1.0 if the corresponding matrix element is strictly greater than the scalar integer, and 0.0 otherwise.")
-	@test ("matrix([[1,2],[3,4]]) > 2 = matrix([[0.0,0.0],[1.0,1.0]])")
+	@test ("(matrix([[1,2],[3,4]]) > 2) = matrix([[0.0,0.0],[1.0,1.0]])")
 	public static IMatrix greater(final IScope scope, final IMatrix a, final Integer b) {
 		return greater(scope, a, b.doubleValue());
 	}
@@ -372,7 +372,7 @@ public class Comparison {
 			category = { IOperatorCategory.COMPARISON, IOperatorCategory.MATRIX },
 			concept = {})
 	@doc (value = "Returns a binary matrix where each element is 1.0 if the corresponding matrix element is strictly less than the scalar integer, and 0.0 otherwise.")
-	@test ("matrix([[1,2],[3,4]]) < 3 = matrix([[1.0,1.0],[0.0,0.0]])")
+	@test ("(matrix([[1,2],[3,4]]) < 3) = matrix([[1.0,1.0],[0.0,0.0]])")
 	public static IMatrix less(final IScope scope, final IMatrix a, final Integer b) {
 		return less(scope, a, b.doubleValue());
 	}
@@ -405,7 +405,7 @@ public class Comparison {
 			category = { IOperatorCategory.COMPARISON, IOperatorCategory.MATRIX },
 			concept = {})
 	@doc (value = "Returns a binary matrix where each element is 1.0 if the corresponding matrix element is equal to the scalar integer, and 0.0 otherwise.")
-	@test ("matrix([[1,2],[3,4]]) = 2 = matrix([[0.0,1.0],[0.0,0.0]])")
+	@test ("(matrix([[1,2],[3,4]]) = 2) = matrix([[0.0,1.0],[0.0,0.0]])")
 	public static IMatrix equal(final IScope scope, final IMatrix a, final Integer b) {
 		return equal(scope, a, b.doubleValue());
 	}

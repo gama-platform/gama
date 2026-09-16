@@ -64,11 +64,11 @@ public class GamaDataFrameType extends GamaContainerType<IDataFrame> {
 	public IType<?> getKeyType() { return Types.STRING; }
 
 	@Override
-	public IType<?> getContentType() { return Types.LIST; }
+	public IType<?> getContentType() { return Types.MAP; }
 
 	@Override
 	public IType<?> contentsTypeIfCasting(final IExpression exp) {
-		return Types.LIST;
+		return Types.MAP;
 	}
 
 	@Override
