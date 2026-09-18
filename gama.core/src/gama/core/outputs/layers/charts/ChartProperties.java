@@ -16,10 +16,11 @@ import gama.api.types.color.GamaColorFactory;
 import gama.api.types.color.IColor;
 import gama.api.types.geometry.GamaPointFactory;
 import gama.api.types.geometry.IPoint;
+import gama.api.utils.prefs.GamaPreferences;
 
 /**
  * Encapsulates style, font, color, label, and axis configuration properties for GAMA charts.
- * Configured with modern visual defaults (clean sans-serif typography, dark charcoal text, subtle grid lines).
+ * Initialized from GamaPreferences.Displays user preference defaults.
  */
 public class ChartProperties {
 
@@ -103,12 +104,11 @@ public class ChartProperties {
 	}
 
 	public static class ColorPalette {
-		// Modern color defaults: clean white background, dark charcoal text (#2C3E50), light grey axes/grid (#E0E0E0)
-		private IColor backgroundColor = GamaColorFactory.WHITE;
-		private IColor axesColor = GamaColorFactory.get(210, 215, 220);
+		private IColor backgroundColor = GamaPreferences.Displays.CHART_BACKGROUND_COLOR.getValue();
+		private IColor axesColor = GamaPreferences.Displays.CHART_GRID_COLOR.getValue();
 		private IColor labelBackgroundColor = null;
-		private IColor labelTextColor = GamaColorFactory.get(44, 62, 80);
-		private IColor textColor = GamaColorFactory.get(44, 62, 80);
+		private IColor labelTextColor = GamaPreferences.Displays.CHART_TEXT_COLOR.getValue();
+		private IColor textColor = GamaPreferences.Displays.CHART_TEXT_COLOR.getValue();
 		private IColor tickColor = GamaColorFactory.get(100, 110, 120);
 
 		public IColor getBackgroundColor() { return backgroundColor; }
@@ -173,11 +173,11 @@ public class ChartProperties {
 		public void setGap(final double gap) { this.gap = gap; }
 	}
 
-	// Component Objects with Modern Typography Defaults (SansSerif throughout)
+	// Component Objects initialized from GamaPreferences.Displays
 	private final FontSpec tickFontSpec = new FontSpec(Font.SANS_SERIF, 9, Font.PLAIN);
-	private final FontSpec labelFontSpec = new FontSpec(Font.SANS_SERIF, 11, Font.PLAIN);
+	private final FontSpec labelFontSpec = new FontSpec(GamaPreferences.Displays.CHART_LABEL_FONT.getValue(), GamaPreferences.Displays.CHART_LABEL_FONT_SIZE.getValue(), Font.PLAIN);
 	private final FontSpec legendFontSpec = new FontSpec(Font.SANS_SERIF, 10, Font.PLAIN);
-	private final FontSpec titleFontSpec = new FontSpec(Font.SANS_SERIF, 14, Font.BOLD);
+	private final FontSpec titleFontSpec = new FontSpec(GamaPreferences.Displays.CHART_TITLE_FONT.getValue(), GamaPreferences.Displays.CHART_TITLE_FONT_SIZE.getValue(), Font.BOLD);
 
 	private final AxisRange xRange = new AxisRange();
 	private final AxisRange yRange = new AxisRange();

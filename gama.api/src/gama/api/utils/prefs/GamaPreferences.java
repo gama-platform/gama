@@ -856,6 +856,37 @@ public class GamaPreferences {
 				"Graphical resolution of the charts in OpenGL (from 0, small and fast, to 1, best but consuming lots of resources)",
 				0.8, IType.FLOAT, true).in(Experimental.NAME, Experimental.GRAPHICAL).between(0.1, 1.0);
 
+		/** Group name for chart preferences. */
+		public static final String CHARTS_GROUP = "Default Chart Properties";
+
+		/** Chart default title font face. */
+		public static final Pref<String> CHART_TITLE_FONT = create("pref_chart_title_font",
+				"Default chart title font face", Font.SANS_SERIF, IType.STRING, true).in(NAME, CHARTS_GROUP);
+
+		/** Chart default title font size. */
+		public static final Pref<Integer> CHART_TITLE_FONT_SIZE = create("pref_chart_title_font_size",
+				"Default chart title font size", 14, IType.INT, true).in(NAME, CHARTS_GROUP).between(8, 36);
+
+		/** Chart default label font face. */
+		public static final Pref<String> CHART_LABEL_FONT = create("pref_chart_label_font",
+				"Default chart label font face", Font.SANS_SERIF, IType.STRING, true).in(NAME, CHARTS_GROUP);
+
+		/** Chart default label font size. */
+		public static final Pref<Integer> CHART_LABEL_FONT_SIZE = create("pref_chart_label_font_size",
+				"Default chart label font size", 11, IType.INT, true).in(NAME, CHARTS_GROUP).between(6, 24);
+
+		/** Chart default background color. */
+		public static final Pref<IColor> CHART_BACKGROUND_COLOR = create("pref_chart_background_color",
+				"Default chart background color", () -> GamaColorFactory.get("white"), IType.COLOR, true).in(NAME, CHARTS_GROUP);
+
+		/** Chart default text color. */
+		public static final Pref<IColor> CHART_TEXT_COLOR = create("pref_chart_text_color",
+				"Default chart text color", () -> GamaColorFactory.get(44, 62, 80), IType.COLOR, true).in(NAME, CHARTS_GROUP);
+
+		/** Chart default axes & grid line color. */
+		public static final Pref<IColor> CHART_GRID_COLOR = create("pref_chart_grid_color",
+				"Default chart axes and gridlines color", () -> GamaColorFactory.get(210, 215, 220), IType.COLOR, true).in(NAME, CHARTS_GROUP);
+
 		/** The name of the "Default Rendering Properties" group within the Displays tab. */
 		public static final String DRAWING = "Default Rendering Properties";
 
