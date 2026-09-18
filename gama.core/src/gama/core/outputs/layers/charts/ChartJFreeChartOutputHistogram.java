@@ -82,10 +82,11 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 		jfreedataset.add(0, new DefaultCategoryDataset());
 		PlotOrientation orientation = properties.isReverseAxes() ? PlotOrientation.HORIZONTAL : PlotOrientation.VERTICAL;
 		String style = properties.getStyle();
+		CategoryDataset dataset = (CategoryDataset) jfreedataset.get(0);
 		if (IKeyword.THREE_D.equals(style) || !IKeyword.STACK.equals(style)) {
-			chart = ChartFactory.createBarChart(getName(), null, null, null, orientation, true, true, false);
+			chart = ChartFactory.createBarChart(getName(), null, null, dataset, orientation, true, true, false);
 		} else {
-			chart = ChartFactory.createStackedBarChart(getName(), null, null, null, orientation, true, true, false);
+			chart = ChartFactory.createStackedBarChart(getName(), null, null, dataset, orientation, true, true, false);
 		}
 	}
 
@@ -184,10 +185,10 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 	protected void createNewSerie(final IScope scope, final String serieid) {
 		if (!idPosition.containsKey(serieid) && chart != null) {
 			final CategoryPlot plot = (CategoryPlot) this.chart.getPlot();
-			final DefaultCategoryDataset firstdataset = (DefaultCategoryDataset) plot.getDataset();
+			final DefaultCategoryDataset firstdataset = (DefaultCategoryDataset) jfreedataset.get(0);
 			if (nbseries == 0) {
 				plot.setDataset(0, firstdataset);
-				plot.setRenderer(nbseries, (CategoryItemRenderer) getOrCreateRenderer(scope, serieid));
+				plot.setRenderer(0, (CategoryItemRenderer) getOrCreateRenderer(scope, serieid));
 			}
 			nbseries++;
 			idPosition.put(serieid, nbseries - 1);
