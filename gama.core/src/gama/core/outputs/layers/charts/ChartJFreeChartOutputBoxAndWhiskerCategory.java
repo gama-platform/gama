@@ -156,22 +156,28 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 		if (!cValues.isEmpty()) {
 			final NumberAxis rangeAxis = (NumberAxis) ((CategoryPlot) this.chart.getPlot()).getRangeAxis();
 			rangeAxis.setAutoRange(false);
-			for (int i = 0; i < cValues.size(); i++) {
-				if (properties.isYLogscale()) {
-					final double val = yValues.get(i);
-					if (val <= 0) throw GamaRuntimeException.warning("Log scale with <=0 value:" + val, scope);
-					serie.add(new BoxAndWhiskerItem(yValues.get(i), sValues.get(i), dataserie.xerrvaluesmin.get(i),
-							dataserie.xerrvaluesmax.get(i), dataserie.yerrvaluesmin.get(i),
-							dataserie.yerrvaluesmax.get(i), null, null, null), serieid, cValues.get(i));
-				} else {
-					serie.add(new BoxAndWhiskerItem(yValues.get(i),
-							sValues.size() > i ? sValues.get(i) : yValues.get(i),
-							dataserie.xerrvaluesmin.size() > i ? dataserie.xerrvaluesmin.get(i) : yValues.get(i),
-							dataserie.xerrvaluesmax.size() > i ? dataserie.xerrvaluesmax.get(i) : yValues.get(i),
-							dataserie.yerrvaluesmin.size() > i ? dataserie.yerrvaluesmin.get(i) : yValues.get(i),
-							dataserie.yerrvaluesmax.size() > i ? dataserie.yerrvaluesmax.get(i) : yValues.get(i), null,
-							null, null), serieid, cValues.get(i));
+			boolean oldNotify = serie.getNotify();
+			serie.setNotify(false);
+			try {
+				for (int i = 0; i < cValues.size(); i++) {
+					if (properties.isYLogscale()) {
+						final double val = yValues.get(i);
+						if (val <= 0) throw GamaRuntimeException.warning("Log scale with <=0 value:" + val, scope);
+						serie.add(new BoxAndWhiskerItem(yValues.get(i), sValues.get(i), dataserie.xerrvaluesmin.get(i),
+								dataserie.xerrvaluesmax.get(i), dataserie.yerrvaluesmin.get(i),
+								dataserie.yerrvaluesmax.get(i), null, null, null), serieid, cValues.get(i));
+					} else {
+						serie.add(new BoxAndWhiskerItem(yValues.get(i),
+								sValues.size() > i ? sValues.get(i) : yValues.get(i),
+								dataserie.xerrvaluesmin.size() > i ? dataserie.xerrvaluesmin.get(i) : yValues.get(i),
+								dataserie.xerrvaluesmax.size() > i ? dataserie.xerrvaluesmax.get(i) : yValues.get(i),
+								dataserie.yerrvaluesmin.size() > i ? dataserie.yerrvaluesmin.get(i) : yValues.get(i),
+								dataserie.yerrvaluesmax.size() > i ? dataserie.yerrvaluesmax.get(i) : yValues.get(i), null,
+								null, null), serieid, cValues.get(i));
+					}
 				}
+			} finally {
+				serie.setNotify(oldNotify);
 			}
 		}
 

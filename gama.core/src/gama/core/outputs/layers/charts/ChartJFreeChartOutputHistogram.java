@@ -216,12 +216,20 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 		if (!cValues.isEmpty()) {
 			final NumberAxis rangeAxis = (NumberAxis) ((CategoryPlot) this.chart.getPlot()).getRangeAxis();
 			rangeAxis.setAutoRange(false);
-			for (int i = 0; i < cValues.size(); i++) {
-				if (properties.isYLogscale()) {
-					final double val = yValues.get(i);
-					if (val <= 0) throw GamaRuntimeException.warning("Log scale with <=0 value:" + val, scope);
+			boolean oldNotify = serie.getNotify();
+			serie.setNotify(false);
+			try {
+				int total = cValues.size();
+				int stride = total > 3000 ? total / 2000 : 1;
+				for (int i = 0; i < total; i += stride) {
+					if (properties.isYLogscale()) {
+						final double val = yValues.get(i);
+						if (val <= 0) throw GamaRuntimeException.warning("Log scale with <=0 value:" + val, scope);
+					}
+					serie.addValue(yValues.get(i), serieid, cValues.get(i));
 				}
-				serie.addValue(yValues.get(i), serieid, cValues.get(i));
+			} finally {
+				serie.setNotify(oldNotify);
 			}
 		}
 		this.resetRenderer(scope, serieid);
