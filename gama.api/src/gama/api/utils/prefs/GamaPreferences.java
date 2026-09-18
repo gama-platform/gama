@@ -155,42 +155,42 @@ public class GamaPreferences {
 	/**
 	 * A palette of 12 high-contrast vivid colors for clear visual distinction between data series and simulations.
 	 */
-	public static final Supplier<IColor>[] VIVID_COLORS = new Supplier[] {
-			() -> GamaColorFactory.get(31, 120, 180), () -> GamaColorFactory.get(51, 160, 44),
-			() -> GamaColorFactory.get(227, 26, 28), () -> GamaColorFactory.get(255, 127, 0),
-			() -> GamaColorFactory.get(106, 61, 154), () -> GamaColorFactory.get(255, 215, 0),
-			() -> GamaColorFactory.get(0, 128, 128), () -> GamaColorFactory.get(216, 27, 96),
-			() -> GamaColorFactory.get(112, 173, 71), () -> GamaColorFactory.get(0, 151, 167),
-			() -> GamaColorFactory.get(255, 111, 97), () -> GamaColorFactory.get(69, 90, 100) };
+	public static final Supplier<IColor>[] VIVID_COLORS =
+			new Supplier[] { () -> GamaColorFactory.get(31, 120, 180), () -> GamaColorFactory.get(51, 160, 44),
+					() -> GamaColorFactory.get(227, 26, 28), () -> GamaColorFactory.get(255, 127, 0),
+					() -> GamaColorFactory.get(106, 61, 154), () -> GamaColorFactory.get(255, 215, 0),
+					() -> GamaColorFactory.get(0, 128, 128), () -> GamaColorFactory.get(216, 27, 96),
+					() -> GamaColorFactory.get(112, 173, 71), () -> GamaColorFactory.get(0, 151, 167),
+					() -> GamaColorFactory.get(255, 111, 97), () -> GamaColorFactory.get(69, 90, 100) };
 
 	/**
 	 * A palette of 10 classic data visualization colors (Tableau 10).
 	 */
-	public static final Supplier<IColor>[] TABLEAU_COLORS = new Supplier[] {
-			() -> GamaColorFactory.get(31, 119, 180), () -> GamaColorFactory.get(255, 127, 14),
-			() -> GamaColorFactory.get(44, 160, 44), () -> GamaColorFactory.get(214, 39, 40),
-			() -> GamaColorFactory.get(148, 103, 189), () -> GamaColorFactory.get(140, 86, 75),
-			() -> GamaColorFactory.get(227, 119, 194), () -> GamaColorFactory.get(127, 127, 127),
-			() -> GamaColorFactory.get(188, 189, 34), () -> GamaColorFactory.get(23, 190, 207) };
+	public static final Supplier<IColor>[] TABLEAU_COLORS =
+			new Supplier[] { () -> GamaColorFactory.get(31, 119, 180), () -> GamaColorFactory.get(255, 127, 14),
+					() -> GamaColorFactory.get(44, 160, 44), () -> GamaColorFactory.get(214, 39, 40),
+					() -> GamaColorFactory.get(148, 103, 189), () -> GamaColorFactory.get(140, 86, 75),
+					() -> GamaColorFactory.get(227, 119, 194), () -> GamaColorFactory.get(127, 127, 127),
+					() -> GamaColorFactory.get(188, 189, 34), () -> GamaColorFactory.get(23, 190, 207) };
 
 	/**
 	 * A palette of 8 vibrant neon colors.
 	 */
-	public static final Supplier<IColor>[] NEON_COLORS = new Supplier[] {
-			() -> GamaColorFactory.get(0, 240, 255), () -> GamaColorFactory.get(57, 255, 20),
-			() -> GamaColorFactory.get(255, 0, 127), () -> GamaColorFactory.get(255, 230, 0),
-			() -> GamaColorFactory.get(157, 0, 255), () -> GamaColorFactory.get(255, 69, 0),
-			() -> GamaColorFactory.get(0, 236, 225), () -> GamaColorFactory.get(191, 255, 0) };
+	public static final Supplier<IColor>[] NEON_COLORS =
+			new Supplier[] { () -> GamaColorFactory.get(0, 240, 255), () -> GamaColorFactory.get(57, 255, 20),
+					() -> GamaColorFactory.get(255, 0, 127), () -> GamaColorFactory.get(255, 230, 0),
+					() -> GamaColorFactory.get(157, 0, 255), () -> GamaColorFactory.get(255, 69, 0),
+					() -> GamaColorFactory.get(0, 236, 225), () -> GamaColorFactory.get(191, 255, 0) };
 
 	/**
 	 * A palette of 10 soft pastel colors.
 	 */
-	public static final Supplier<IColor>[] PASTEL_COLORS = new Supplier[] {
-			() -> GamaColorFactory.get(166, 206, 227), () -> GamaColorFactory.get(178, 223, 138),
-			() -> GamaColorFactory.get(251, 154, 153), () -> GamaColorFactory.get(253, 191, 111),
-			() -> GamaColorFactory.get(202, 178, 214), () -> GamaColorFactory.get(255, 242, 174),
-			() -> GamaColorFactory.get(128, 203, 196), () -> GamaColorFactory.get(244, 143, 177),
-			() -> GamaColorFactory.get(206, 147, 216), () -> GamaColorFactory.get(230, 238, 156) };
+	public static final Supplier<IColor>[] PASTEL_COLORS =
+			new Supplier[] { () -> GamaColorFactory.get(166, 206, 227), () -> GamaColorFactory.get(178, 223, 138),
+					() -> GamaColorFactory.get(251, 154, 153), () -> GamaColorFactory.get(253, 191, 111),
+					() -> GamaColorFactory.get(202, 178, 214), () -> GamaColorFactory.get(255, 242, 174),
+					() -> GamaColorFactory.get(128, 203, 196), () -> GamaColorFactory.get(244, 143, 177),
+					() -> GamaColorFactory.get(206, 147, 216), () -> GamaColorFactory.get(230, 238, 156) };
 
 	/**
 	 * The preference key used to retrieve the default buffering strategy applied to the GAML {@code save} statement.
@@ -427,8 +427,8 @@ public class GamaPreferences {
 		/**
 		 * Switches the active simulation color scheme to the named scheme and rebuilds the {@link #SIMULATION_COLORS}
 		 * palette. Supported scheme names include {@link #VIVID}, {@link #TABLEAU}, {@link #NEON}, {@link #PASTEL},
-		 * {@link #DIVERGING}, {@link #BASIC}, {@link #QUALITATIVE}, and {@link #PIVOT}.
-		 * Legacy names or unknown schemes delegate to {@link #setPivot(IColor)}.
+		 * {@link #DIVERGING}, {@link #BASIC}, {@link #QUALITATIVE}, and {@link #PIVOT}. Legacy names or unknown schemes
+		 * delegate to {@link #setPivot(IColor)}.
 		 *
 		 * @param scheme
 		 *            the name of the color scheme to activate; may be {@code null}
@@ -457,7 +457,9 @@ public class GamaPreferences {
 				}
 				if (scheme.startsWith("Diverging") || DIVERGING.equals(scheme)) {
 					SIMULATION_COLORS = new IColor[DIVERGING_COLORS.length];
-					for (int i = 0; i < DIVERGING_COLORS.length; i++) { SIMULATION_COLORS[i] = DIVERGING_COLORS[i].get(); }
+					for (int i = 0; i < DIVERGING_COLORS.length; i++) {
+						SIMULATION_COLORS[i] = DIVERGING_COLORS[i].get();
+					}
 					return;
 				}
 				if (scheme.startsWith("Basic") || BASIC.equals(scheme)) {
@@ -467,20 +469,37 @@ public class GamaPreferences {
 				}
 				if (scheme.startsWith("Qualitative") || QUALITATIVE.equals(scheme)) {
 					SIMULATION_COLORS = new IColor[QUALITATIVE_COLORS.length];
-					for (int i = 0; i < QUALITATIVE_COLORS.length; i++) { SIMULATION_COLORS[i] = QUALITATIVE_COLORS[i].get(); }
+					for (int i = 0; i < QUALITATIVE_COLORS.length; i++) {
+						SIMULATION_COLORS[i] = QUALITATIVE_COLORS[i].get();
+					}
 					return;
 				}
 			}
 			setPivot(CORE_PIVOT_COLOR.getValue());
 		}
 
+		/** The Constant VIVID. */
 		static final String VIVID = "Vivid (12 distinct colors)";
+
+		/** The Constant TABLEAU. */
 		static final String TABLEAU = "Tableau 10 (10 distinct colors)";
+
+		/** The Constant NEON. */
 		static final String NEON = "Neon (8 vibrant colors)";
+
+		/** The Constant PASTEL. */
 		static final String PASTEL = "Pastel (10 soft colors)";
+
+		/** The Constant DIVERGING. */
 		static final String DIVERGING = "Diverging (11 colors - ColorBrewer)";
+
+		/** The Constant BASIC. */
 		static final String BASIC = "Basic (5 colors)";
+
+		/** The Constant QUALITATIVE. */
 		static final String QUALITATIVE = "Qualitative (9 colors - ColorBrewer)";
+
+		/** The Constant PIVOT. */
 		static final String PIVOT = "Based on pivot color (9 colors)";
 
 		/**
@@ -488,8 +507,8 @@ public class GamaPreferences {
 		 */
 		public static final Pref<String> CORE_SIMULATION_COLOR =
 				create("pref_simulation_colors", "Default color scheme for simulations in UI", VIVID, IType.STRING,
-						true).among(VIVID, TABLEAU, NEON, PASTEL, QUALITATIVE, DIVERGING, BASIC, PIVOT).in(NAME, SIMULATIONS)
-								.onChange(Interface::setColorScheme);
+						true).among(VIVID, TABLEAU, NEON, PASTEL, QUALITATIVE, DIVERGING, BASIC, PIVOT)
+								.in(NAME, SIMULATIONS).onChange(Interface::setColorScheme);
 
 		/**
 		 * The pivot (center) color used when the active scheme is {@link #PIVOT}. Changing this preference
@@ -827,11 +846,11 @@ public class GamaPreferences {
 		public static final Pref<Boolean> CORE_SERVER_CONSOLE =
 				create("pref_server_console", "Send console outputs to clients", true, IType.BOOL, true)
 						.in(Network.NAME, Network.SERVER);
-		
+
 		/** The maximum number of simultaneous commands an experiment can accept through GAMA server. */
-		public static final Pref<Integer> CORE_SERVER_COMMAND_QUEUE_SIZE =
-				create("pref_server_command_queue_size", "Maximum number of simultaneous commands an experiment can accept through GAMA server.", 50, IType.INT, true)
-						.in(Network.NAME, Network.SERVER);
+		public static final Pref<Integer> CORE_SERVER_COMMAND_QUEUE_SIZE = create("pref_server_command_queue_size",
+				"Maximum number of simultaneous commands an experiment can accept through GAMA server.", 50, IType.INT,
+				true).in(Network.NAME, Network.SERVER);
 	}
 
 	/**
@@ -846,6 +865,9 @@ public class GamaPreferences {
 
 		/** The name of the group governing general display view presentation and behavior. */
 		public static final String PRESENTATION = "Presentation and Behavior of Graphical Display Views";
+
+		/** Group name for chart preferences. */
+		public static final String CHARTS_GROUP = "Default Chart Properties";
 
 		/** The ordered list of available display view layout names. */
 		public static final List<String> LAYOUTS = Arrays.asList("None", "Stacked", "Split", "Horizontal", "Vertical");
@@ -872,9 +894,8 @@ public class GamaPreferences {
 		 * Whether chart displays should continue to refresh even while the Modeling perspective is active (i.e., not
 		 * the simulation perspective).
 		 */
-		public static final Pref<Boolean> CHART_PERSPECTIVE =
-				create("pref_chart_continue_drawing", "Continue to draw charts when in Modeling perspective", true,
-						IType.BOOL, true).in(NAME, PRESENTATION);
+		public static final Pref<Boolean> CHART_PERSPECTIVE = create("pref_chart_continue_drawing",
+				"Continue to draw charts when in Modeling perspective", true, IType.BOOL, true).in(NAME, CHARTS_GROUP);
 
 		/**
 		 * Whether to use a faster but potentially incomplete snapshot mechanism. Fast snapshots may be incorrect if the
@@ -912,79 +933,105 @@ public class GamaPreferences {
 				"Graphical resolution of the charts in OpenGL (from 0, small and fast, to 1, best but consuming lots of resources)",
 				0.8, IType.FLOAT, true).in(Experimental.NAME, Experimental.GRAPHICAL).between(0.1, 1.0);
 
-		/** Group name for chart preferences. */
-		public static final String CHARTS_GROUP = "Default Chart Properties";
-
 		/** Chart default title font face. */
-		public static final Pref<String> CHART_TITLE_FONT = create("pref_chart_title_font",
-				"Default chart title font face", Font.SANS_SERIF, IType.STRING, true).in(NAME, CHARTS_GROUP);
+		public static final Pref<String> CHART_TITLE_FONT =
+				create("pref_chart_title_font", "Default chart title font face", Font.SANS_SERIF, IType.STRING, true)
+						.in(NAME, CHARTS_GROUP);
 
 		/** Chart default title font size. */
-		public static final Pref<Integer> CHART_TITLE_FONT_SIZE = create("pref_chart_title_font_size",
-				"Default chart title font size", 14, IType.INT, true).in(NAME, CHARTS_GROUP).between(8, 36);
+		public static final Pref<Integer> CHART_TITLE_FONT_SIZE =
+				create("pref_chart_title_font_size", "Default chart title font size", 14, IType.INT, true)
+						.in(NAME, CHARTS_GROUP).between(8, 36);
 
 		/** Chart default label font face. */
-		public static final Pref<String> CHART_LABEL_FONT = create("pref_chart_label_font",
-				"Default chart label font face", Font.SANS_SERIF, IType.STRING, true).in(NAME, CHARTS_GROUP);
+		public static final Pref<String> CHART_LABEL_FONT =
+				create("pref_chart_label_font", "Default chart label font face", Font.SANS_SERIF, IType.STRING, true)
+						.in(NAME, CHARTS_GROUP);
 
 		/** Chart default label font size. */
-		public static final Pref<Integer> CHART_LABEL_FONT_SIZE = create("pref_chart_label_font_size",
-				"Default chart label font size", 11, IType.INT, true).in(NAME, CHARTS_GROUP).between(6, 24);
+		public static final Pref<Integer> CHART_LABEL_FONT_SIZE =
+				create("pref_chart_label_font_size", "Default chart label font size", 11, IType.INT, true)
+						.in(NAME, CHARTS_GROUP).between(6, 24);
 
 		/** Whether chart background color follows default display background color. */
-		public static final Pref<Boolean> CHART_MATCH_DISPLAY_BACKGROUND = create("pref_chart_match_display_bg",
-				"Chart background follows default display background", true, IType.BOOL, true)
-						.in(NAME, CHARTS_GROUP).deactivates("pref_chart_background_color");
+		public static final Pref<Boolean> CHART_MATCH_DISPLAY_BACKGROUND =
+				create("pref_chart_match_display_bg", "Chart background follows default display background", true,
+						IType.BOOL, true).in(NAME, CHARTS_GROUP).deactivates("pref_chart_background_color");
 
 		/** Custom default background color for charts (when not matching display background). */
-		public static final Pref<IColor> CHART_BACKGROUND_COLOR = create("pref_chart_background_color",
-				"Custom default chart background color", () -> GamaColorFactory.get("white"), IType.COLOR, true).in(NAME, CHARTS_GROUP);
+		public static final Pref<IColor> CHART_BACKGROUND_COLOR =
+				create("pref_chart_background_color", "Custom default chart background color",
+						() -> GamaColorFactory.get("white"), IType.COLOR, true).in(NAME, CHARTS_GROUP);
 
 		/** Chart default text color. */
-		public static final Pref<IColor> CHART_TEXT_COLOR = create("pref_chart_text_color",
-				"Default chart text color", () -> GamaColorFactory.get(44, 62, 80), IType.COLOR, true).in(NAME, CHARTS_GROUP);
+		public static final Pref<IColor> CHART_TEXT_COLOR = create("pref_chart_text_color", "Default chart text color",
+				() -> GamaColorFactory.get(44, 62, 80), IType.COLOR, true).in(NAME, CHARTS_GROUP);
 
 		/** Chart default axes & grid line color. */
-		public static final Pref<IColor> CHART_GRID_COLOR = create("pref_chart_grid_color",
-				"Default chart axes and gridlines color", () -> GamaColorFactory.get(210, 215, 220), IType.COLOR, true).in(NAME, CHARTS_GROUP);
+		public static final Pref<IColor> CHART_GRID_COLOR =
+				create("pref_chart_grid_color", "Default chart axes and gridlines color",
+						() -> GamaColorFactory.get(210, 215, 220), IType.COLOR, true).in(NAME, CHARTS_GROUP);
 
 		/** Whether chart grid lines are visible by default. */
-		public static final Pref<Boolean> CHART_GRID_LINES = create("pref_chart_show_gridlines",
-				"Display grid lines on charts", true, IType.BOOL, true).in(NAME, CHARTS_GROUP);
+		public static final Pref<Boolean> CHART_GRID_LINES =
+				create("pref_chart_show_gridlines", "Display grid lines on charts", true, IType.BOOL, true).in(NAME,
+						CHARTS_GROUP);
 
 		/** Default thickness of series lines on charts. */
-		public static final Pref<Double> CHART_LINE_THICKNESS = create("pref_chart_line_thickness",
-				"Default thickness of series lines", 2.0, IType.FLOAT, true).in(NAME, CHARTS_GROUP).between(0.5, 10.0);
+		public static final Pref<Double> CHART_LINE_THICKNESS =
+				create("pref_chart_line_thickness", "Default thickness of series lines", 2.0, IType.FLOAT, true)
+						.in(NAME, CHARTS_GROUP).between(0.5, 10.0);
 
-		@Deprecated
-		public static final Pref<Double> CHART_LINE_WIDTH = CHART_LINE_THICKNESS;
+		/** The Constant CHART_LINE_WIDTH. */
+		@Deprecated public static final Pref<Double> CHART_LINE_WIDTH = CHART_LINE_THICKNESS;
 
+		/** The Constant CHART_PALETTE_VIVID. */
 		public static final String CHART_PALETTE_VIVID = "Vivid (12 distinct colors)";
+
+		/** The Constant CHART_PALETTE_TABLEAU. */
 		public static final String CHART_PALETTE_TABLEAU = "Tableau 10 (10 distinct colors)";
+
+		/** The Constant CHART_PALETTE_NEON. */
 		public static final String CHART_PALETTE_NEON = "Neon (8 vibrant colors)";
+
+		/** The Constant CHART_PALETTE_PASTEL. */
 		public static final String CHART_PALETTE_PASTEL = "Pastel (10 soft colors)";
+
+		/** The Constant CHART_PALETTE_QUALITATIVE. */
 		public static final String CHART_PALETTE_QUALITATIVE = "Qualitative (9 colors - ColorBrewer)";
+
+		/** The Constant CHART_PALETTE_DIVERGING. */
 		public static final String CHART_PALETTE_DIVERGING = "Diverging (11 colors - ColorBrewer)";
+
+		/** The Constant CHART_PALETTE_BASIC. */
 		public static final String CHART_PALETTE_BASIC = "Basic (5 colors)";
+
+		/** The Constant CHART_PALETTE_PIVOT. */
 		public static final String CHART_PALETTE_PIVOT = "Based on pivot color (9 colors)";
+
+		/** The Constant CHART_PALETTE_RANDOM. */
 		public static final String CHART_PALETTE_RANDOM = "Random";
 
 		/** Default color palette scheme for chart series. */
 		public static final Pref<String> CHART_COLOR_PALETTE = create("pref_chart_color_palette",
 				"Default color palette for chart series", CHART_PALETTE_VIVID, IType.STRING, true)
-						.in(NAME, CHARTS_GROUP).among(CHART_PALETTE_VIVID, CHART_PALETTE_TABLEAU, CHART_PALETTE_NEON, CHART_PALETTE_PASTEL, CHART_PALETTE_QUALITATIVE, CHART_PALETTE_DIVERGING, CHART_PALETTE_BASIC, CHART_PALETTE_PIVOT, CHART_PALETTE_RANDOM);
+						.in(NAME, CHARTS_GROUP).among(CHART_PALETTE_VIVID, CHART_PALETTE_TABLEAU, CHART_PALETTE_NEON,
+								CHART_PALETTE_PASTEL, CHART_PALETTE_QUALITATIVE, CHART_PALETTE_DIVERGING,
+								CHART_PALETTE_BASIC, CHART_PALETTE_PIVOT, CHART_PALETTE_RANDOM);
 
 		/** Pivot color used when the chart color scheme is 'Based on pivot color'. */
-		public static final Pref<IColor> CHART_PIVOT_COLOR = create("pref_chart_pivot_color",
-				"Pivot color when using 'Based on pivot color' scheme", () -> GamaColorFactory.get(31, 120, 180), IType.COLOR, true).in(NAME, CHARTS_GROUP);
+		public static final Pref<IColor> CHART_PIVOT_COLOR =
+				create("pref_chart_pivot_color", "Pivot color when using 'Based on pivot color' scheme",
+						() -> GamaColorFactory.get(31, 120, 180), IType.COLOR, true).in(NAME, CHARTS_GROUP);
 
 		/** Whether data markers are displayed on chart series by default. */
-		public static final Pref<Boolean> CHART_SHOW_MARKERS = create("pref_chart_show_markers",
-				"Display markers on chart series", true, IType.BOOL, true).in(NAME, CHARTS_GROUP);
+		public static final Pref<Boolean> CHART_SHOW_MARKERS =
+				create("pref_chart_show_markers", "Display markers on chart series", true, IType.BOOL, true).in(NAME,
+						CHARTS_GROUP);
 
 		/** Default line/series style for chart series. */
-		public static final Pref<String> CHART_SERIES_STYLE = create("pref_chart_series_style",
-				"Default style for chart series", "line", IType.STRING, true)
+		public static final Pref<String> CHART_SERIES_STYLE =
+				create("pref_chart_series_style", "Default style for chart series", "line", IType.STRING, true)
 						.in(NAME, CHARTS_GROUP).among("line", "spline", "step", "dot", "area", "bar");
 
 		/** The name of the "Default Rendering Properties" group within the Displays tab. */
@@ -1005,7 +1052,7 @@ public class GamaPreferences {
 		/** The Constant CORE_BACKGROUND. */
 		public static final Pref<IColor> CORE_BACKGROUND =
 				create("pref_display_background_color", "Default background color ('background' facet of 'display')",
-						() -> GamaColorFactory.get("white"), IType.COLOR, true).in(NAME, DRAWING);
+						() -> GamaColorFactory.get("white"), IType.COLOR, true).in(NAME, PRESENTATION);
 
 		/** The default highlight color used when an agent is highlighted in a display. */
 		public static final Pref<IColor> CORE_HIGHLIGHT =
