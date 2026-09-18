@@ -421,6 +421,7 @@ public class ChartDataSource implements IChartDataSource {
 		if (IKeyword.DEFAULT.equals(style) || style == null) {
 			String dsStyle = this.getDataset() != null ? this.getDataset().getStyle(scope) : null;
 			if (dsStyle == null || IKeyword.DEFAULT.equals(dsStyle)) {
+				if (isByCategory()) return IKeyword.BAR;
 				return GamaPreferences.Displays.CHART_SERIES_STYLE.getValue();
 			}
 			return dsStyle;

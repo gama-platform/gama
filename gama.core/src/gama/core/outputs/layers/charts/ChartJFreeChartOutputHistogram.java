@@ -112,7 +112,8 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 
 	@Override
 	protected AbstractRenderer createRenderer(final IScope scope, final String serieid) {
-		final String style = this.getChartdataset().getDataSeries(scope, serieid).getStyle(scope);
+		ChartDataSeries series = this.getChartdataset().getDataSeries(scope, serieid);
+		final String style = series != null ? series.getStyle(scope) : IKeyword.BAR;
 		return switch (style) {
 			case IKeyword.STACK -> new StackedBarRenderer();
 			case IKeyword.DOT -> new ScatterRenderer();
