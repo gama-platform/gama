@@ -251,14 +251,20 @@ public class ChartJFreeChartOutputHeatmap extends ChartJFreeChartOutput {
 			domainAxis.setTickMarksVisible(properties.isXTickValueVisible());
 			rangeAxis.setTickLabelsVisible(properties.isYTickValueVisible());
 			rangeAxis.setTickMarksVisible(properties.isYTickValueVisible());
-			for (int i = 0; i < xValues.size(); i++) {
-				if (xValues.get(i) > domainAxis.getUpperBound() && !properties.isUseXRangeInterval() && !properties.isUseXRangeMinMax()) {
-					domainAxis.setRange(-0.5, yValues.get(i) + 0.5);
+			boolean oldNotify = serie.getNotify();
+			serie.setNotify(false);
+			try {
+				for (int i = 0; i < xValues.size(); i++) {
+					if (xValues.get(i) > domainAxis.getUpperBound() && !properties.isUseXRangeInterval() && !properties.isUseXRangeMinMax()) {
+						domainAxis.setRange(-0.5, yValues.get(i) + 0.5);
+					}
+					if (yValues.get(i) > rangeAxis.getUpperBound() && !properties.isUseYRangeInterval() && !properties.isUseYRangeMinMax()) {
+						rangeAxis.setRange(-0.5, yValues.get(i) + 0.5);
+					}
+					serie.update(yValues.get(i).intValue(), xValues.get(i).intValue(), sValues.get(i).doubleValue());
 				}
-				if (yValues.get(i) > rangeAxis.getUpperBound() && !properties.isUseYRangeInterval() && !properties.isUseYRangeMinMax()) {
-					rangeAxis.setRange(-0.5, yValues.get(i) + 0.5);
-				}
-				serie.update(yValues.get(i).intValue(), xValues.get(i).intValue(), sValues.get(i).doubleValue());
+			} finally {
+				serie.setNotify(oldNotify);
 			}
 		}
 		this.resetRenderer(scope, serieid);
