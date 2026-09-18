@@ -150,8 +150,8 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 		if (serie.getRowKeys().contains(serieid)) { serie.removeRow(serieid); }
 
 		final ArrayList<String> cValues = dataserie.getCValues(scope);
-		final ArrayList<Double> yValues = dataserie.getYValues(scope);
-		final ArrayList<Double> sValues = dataserie.getSValues(scope);
+		final DoubleList yValues = dataserie.getYValues(scope);
+		final DoubleList sValues = dataserie.getSValues(scope);
 
 		if (!cValues.isEmpty()) {
 			final NumberAxis rangeAxis = (NumberAxis) ((CategoryPlot) this.chart.getPlot()).getRangeAxis();

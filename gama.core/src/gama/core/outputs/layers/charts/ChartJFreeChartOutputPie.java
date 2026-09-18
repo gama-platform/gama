@@ -130,7 +130,7 @@ public class ChartJFreeChartOutputPie extends ChartJFreeChartOutput {
 		if (dataserie == null || jfreedataset.isEmpty()) return;
 		@SuppressWarnings("unchecked")
 		final DefaultPieDataset<String> serie = (DefaultPieDataset<String>) jfreedataset.get(0);
-		final ArrayList<Double> yValues = dataserie.getYValues(scope);
+		final DoubleList yValues = dataserie.getYValues(scope);
 
 		if (!yValues.isEmpty()) {
 			boolean oldNotify = serie.getNotify();

@@ -114,7 +114,7 @@ public class ChartJFreeChartOutputRadar extends ChartJFreeChartOutput {
 		final DefaultCategoryDataset serie = (DefaultCategoryDataset) jfreedataset.get(0);
 		if (serie.getRowKeys().contains(serieid)) { serie.removeRow(serieid); }
 		final ArrayList<String> cValues = dataserie.getCValues(scope);
-		final ArrayList<Double> yValues = dataserie.getYValues(scope);
+		final DoubleList yValues = dataserie.getYValues(scope);
 
 		if (!cValues.isEmpty()) {
 			int deb = 0;

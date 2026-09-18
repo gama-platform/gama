@@ -33,26 +33,26 @@ public class ChartDataSeries {
 	final ArrayList<String> cvalues = new ArrayList<>(); // for categories
 
 	/** The xvalues. */
-	final ArrayList<Double> xvalues = new ArrayList<>(); // for xy charts
+	final DoubleList xvalues = new DoubleList(); // for xy charts
 
 	/** The yvalues. */
-	final ArrayList<Double> yvalues = new ArrayList<>();
+	final DoubleList yvalues = new DoubleList();
 
 	/** The svalues. */
-	final ArrayList<Double> svalues = new ArrayList<>(); // for marker sizes or
+	final DoubleList svalues = new DoubleList(); // for marker sizes or
 
 	/** The xerrvaluesmax. */
 	// 3d charts
-	final ArrayList<Double> xerrvaluesmax = new ArrayList<>();
+	final DoubleList xerrvaluesmax = new DoubleList();
 
 	/** The yerrvaluesmax. */
-	final ArrayList<Double> yerrvaluesmax = new ArrayList<>();
+	final DoubleList yerrvaluesmax = new DoubleList();
 
 	/** The xerrvaluesmin. */
-	final ArrayList<Double> xerrvaluesmin = new ArrayList<>();
+	final DoubleList xerrvaluesmin = new DoubleList();
 
 	/** The yerrvaluesmin. */
-	final ArrayList<Double> yerrvaluesmin = new ArrayList<>();
+	final DoubleList yerrvaluesmin = new DoubleList();
 
 	/** The mymedcolor. */
 	IColor mycolor, mymincolor, mymedcolor;
@@ -77,7 +77,7 @@ public class ChartDataSeries {
 	final ArrayList<String> oldcvalues = new ArrayList<>(); // for categories
 
 	/** The oldxvalues. */
-	final ArrayList<Double> oldxvalues = new ArrayList<>(); // for xy charts
+	final DoubleList oldxvalues = new DoubleList(); // for xy charts
 
 	/** The index of this series in the parent chart dataset. */
 	private int seriesIndex = -1;
@@ -86,10 +86,10 @@ public class ChartDataSeries {
 	public void setSeriesIndex(final int index) { this.seriesIndex = index; }
 
 	/** The oldyvalues. */
-	final ArrayList<Double> oldyvalues = new ArrayList<>();
+	final DoubleList oldyvalues = new DoubleList();
 
 	/** The oldsvalues. */
-	final ArrayList<Double> oldsvalues = new ArrayList<>(); // for marker sizes
+	final DoubleList oldsvalues = new DoubleList(); // for marker sizes
 
 	/**
 	 * Checks if is ongoing update.
@@ -305,7 +305,7 @@ public class ChartDataSeries {
 	 *            the scope
 	 * @return the x values
 	 */
-	public ArrayList<Double> getXValues(final IScope scope) {
+	public DoubleList getXValues(final IScope scope) {
 
 		if (isOngoing_update()) return oldxvalues;
 		return xvalues;
@@ -318,7 +318,7 @@ public class ChartDataSeries {
 	 *            the scope
 	 * @return the y values
 	 */
-	public ArrayList<Double> getYValues(final IScope scope) {
+	public DoubleList getYValues(final IScope scope) {
 
 		if (isOngoing_update()) return oldyvalues;
 		return yvalues;
@@ -331,7 +331,7 @@ public class ChartDataSeries {
 	 *            the scope
 	 * @return the s values
 	 */
-	public ArrayList<Double> getSValues(final IScope scope) {
+	public DoubleList getSValues(final IScope scope) {
 
 		if (isOngoing_update()) return oldsvalues;
 		return svalues;
@@ -446,7 +446,7 @@ public class ChartDataSeries {
 		if (barvalues == null || !barvalues.containsKey(ChartDataStatement.MARKERSIZE)) return;
 		final Object o = getlistvalue(scope, barvalues, ChartDataStatement.MARKERSIZE, listvalue);
 		if (o == null) return;
-		if (svalues.size() > xvalues.size()) { svalues.remove(svalues.get(svalues.size() - 1)); }
+		if (svalues.size() > xvalues.size()) { svalues.removeLast(); }
 		svalues.add(ChartDataSource.asDouble(scope, o));
 	}
 
@@ -701,13 +701,12 @@ public void addcbwvalue(final IScope scope, final String dx, final double dmean,
 	 * @param mylist
 	 *            the mylist
 	 */
-	private void savelistd(final IScope scope, final ChartHistory history, final ArrayList<Double> mylist) {
+	private void savelistd(final IScope scope, final ChartHistory history, final DoubleList mylist) {
 		if (mylist.size() == 0) {
 			history.append(",");
 			return;
 		}
-		for (Double element : mylist) { history.append(ChartDataSource.asDouble(scope, element).floatValue() + ","); }
-
+		for (int i = 0; i < mylist.size(); i++) { history.append((float) mylist.get(i) + ","); }
 	}
 
 	/**

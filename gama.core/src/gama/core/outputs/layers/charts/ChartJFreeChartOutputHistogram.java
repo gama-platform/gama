@@ -205,7 +205,7 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 	private void populateCategoryDataset(final IScope scope, final String serieid, final ChartDataSeries dataserie) {
 		final DefaultCategoryDataset serie = (DefaultCategoryDataset) jfreedataset.get(0);
 		final ArrayList<String> cValues = dataserie.getCValues(scope);
-		final ArrayList<Double> yValues = dataserie.getYValues(scope);
+		final DoubleList yValues = dataserie.getYValues(scope);
 		boolean oldNotify = serie.getNotify();
 		serie.setNotify(false);
 		try {

@@ -58,14 +58,14 @@ public class ChartDataSet {
 
 	/** The X series values. */
 	// datasets
-	final ArrayList<Double> XSeriesValues = new ArrayList<>(); // for series
+	final DoubleList XSeriesValues = new DoubleList(); // for series
 
 	/** The Ycategories. */
 	final ArrayList<String> Ycategories = new ArrayList<>(); // for Y categories
 
 	/** The Y series values. */
 	// datasets
-	final ArrayList<Double> YSeriesValues = new ArrayList<>(); // for 3d series
+	final DoubleList YSeriesValues = new DoubleList(); // for 3d series
 
 	/** The serie creation date. */
 	final LinkedHashMap<String, Integer> serieCreationDate = new LinkedHashMap<>();
@@ -217,14 +217,14 @@ public class ChartDataSet {
 	 *
 	 * @return the x series values
 	 */
-	public ArrayList<Double> getXSeriesValues() { return XSeriesValues; }
+	public DoubleList getXSeriesValues() { return XSeriesValues; }
 
 	/**
 	 * Gets the y series values.
 	 *
 	 * @return the y series values
 	 */
-	public ArrayList<Double> getYSeriesValues() { return YSeriesValues; }
+	public DoubleList getYSeriesValues() { return YSeriesValues; }
 
 	/**
 	 * Sets the x series values.
@@ -232,7 +232,7 @@ public class ChartDataSet {
 	 * @param xSeriesValues
 	 *            the new x series values
 	 */
-	public void setXSeriesValues(final ArrayList<Double> xSeriesValues) {
+	public void setXSeriesValues(final DoubleList xSeriesValues) {
 		XSeriesValues.clear();
 		XSeriesValues.addAll(xSeriesValues);
 	}
@@ -495,14 +495,14 @@ public class ChartDataSet {
 		}
 		for (final ChartDataSource source : sourcestoadd) { this.addDataSource(source); }
 		if (this.getXSeriesValues().size() > 0) {
-			final ArrayList<Double> ser = this.getXSeriesValues();
+			final DoubleList ser = this.getXSeriesValues();
 			for (int i = 0; i < this.getXSeriesValues().size(); i++) {
 				if (ser.get(i) == chartCycle - 1) { this.commonXindex = i; }
 			}
 
 		}
 		if (this.getYSeriesValues().size() > 0) {
-			final ArrayList<Double> sery = this.getYSeriesValues();
+			final DoubleList sery = this.getYSeriesValues();
 			for (int i = 0; i < this.getYSeriesValues().size(); i++) {
 				if (sery.get(i) == chartCycle - 1) { this.commonYindex = i; }
 			}
