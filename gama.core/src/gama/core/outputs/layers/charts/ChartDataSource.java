@@ -36,28 +36,25 @@ import gama.api.utils.prefs.GamaPreferences;
 public class ChartDataSource implements IChartDataSource {
 
 	private boolean hasExtraValues() {
-		if (useYErrValues || useXErrValues || useYMinMaxValues) return true;
-		return useSize || useColorExp;
+		if (useYErrValues || useXErrValues) return true;
+		if (useYMinMaxValues || useSize) return true;
+		return useColorExp;
+	}
+
+	private static void addValue(final IScope scope, final Map<String, Object> map, final boolean flag, final String key, final IExpression exp) {
+		if (flag && exp != null) {
+			map.put(key, exp.value(scope));
+		}
 	}
 
 	protected Map<String, Object> computeBarValues(final IScope scope) {
 		if (!hasExtraValues()) return null;
 		final Map<String, Object> barvalues = new HashMap<>(4);
-		if (useYErrValues && valueyerr != null) {
-			barvalues.put(ChartDataStatement.YERR_VALUES, valueyerr.value(scope));
-		}
-		if (useXErrValues && valuexerr != null) {
-			barvalues.put(ChartDataStatement.XERR_VALUES, valuexerr.value(scope));
-		}
-		if (useYMinMaxValues && valueyminmax != null) {
-			barvalues.put(ChartDataStatement.XERR_VALUES, valueyminmax.value(scope));
-		}
-		if (useSize && sizeexp != null) {
-			barvalues.put(ChartDataStatement.MARKERSIZE, sizeexp.value(scope));
-		}
-		if (useColorExp && colorexp != null) {
-			barvalues.put(IKeyword.COLOR, colorexp.value(scope));
-		}
+		addValue(scope, barvalues, useYErrValues, ChartDataStatement.YERR_VALUES, valueyerr);
+		addValue(scope, barvalues, useXErrValues, ChartDataStatement.XERR_VALUES, valuexerr);
+		addValue(scope, barvalues, useYMinMaxValues, ChartDataStatement.XERR_VALUES, valueyminmax);
+		addValue(scope, barvalues, useSize, ChartDataStatement.MARKERSIZE, sizeexp);
+		addValue(scope, barvalues, useColorExp, IKeyword.COLOR, colorexp);
 		return barvalues;
 	}
 
