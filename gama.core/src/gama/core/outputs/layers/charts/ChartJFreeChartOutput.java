@@ -78,6 +78,14 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 	protected final HashMap<String, AbstractRenderer> rendererSet = new HashMap<>();
 	protected int nbseries = 0;
 
+	private static final java.util.concurrent.ConcurrentHashMap<Float, java.awt.BasicStroke> STROKE_CACHE =
+			new java.util.concurrent.ConcurrentHashMap<>();
+
+	public static java.awt.BasicStroke getStroke(final float thickness) {
+		return STROKE_CACHE.computeIfAbsent(thickness,
+				t -> new java.awt.BasicStroke(t, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND));
+	}
+
 	public ChartJFreeChartOutput(final IScope scope, final String name, final IExpression typeexp) {
 		super(scope, name, typeexp);
 	}
