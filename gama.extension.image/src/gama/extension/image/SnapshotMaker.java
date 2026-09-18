@@ -17,12 +17,9 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.Robot;
-import java.awt.geom.Rectangle2D;
 import java.io.File;
 
 import javax.imageio.ImageIO;
-
-import org.jfree.chart.JFreeChart;
 
 import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
@@ -180,11 +177,11 @@ public class SnapshotMaker implements ISnapshotMaker {
 		if (chart == null) return null;
 		IChart co = chart.getChart();
 		if (co == null) return null;
-		// DEBUG.OUT("Chart is rendered on " + width + " " + height);
+		java.awt.image.BufferedImage img = co.getImage(width, height, true);
+		if (img == null) return null;
 		GamaImage im = GamaImage.ofDimensions(width, height, true);
-		JFreeChart jfc = co.getJFChart();
 		Graphics2D g2 = im.createGraphics();
-		jfc.draw(g2, new Rectangle2D.Float(0, 0, width, height));
+		g2.drawImage(img, 0, 0, null);
 		g2.dispose();
 		return im;
 	}

@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
  * ChartJFreeChartOutputScatter.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform (v.2025-03).
+ * platform.
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -62,75 +62,26 @@ import gama.api.ui.displays.IChartDataSource;
 import gama.api.ui.displays.IDisplaySurface;
 
 /**
- * The Class ChartJFreeChartOutputScatter.
+ * JFreeChart output implementation for Scatter, Series, and XY charts.
  */
 public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 
-	static {
-		// DEBUG.OFF();
-	}
-
-	/**
-	 * The Class myXYErrorRenderer.
-	 */
 	public class CustomXYErrorRenderer extends XYErrorRenderer {
-
-		/** The myoutput. */
-		ChartJFreeChartOutputScatter myoutput;
-
-		/** The myid. */
-		String myid;
-
-		/** The use size. */
-		boolean useSize;
-
-		/** The transform. */
-		AffineTransform transform = new AffineTransform();
-
-		/**
-		 * Checks if is use size.
-		 *
-		 * @return true, if is use size
-		 */
-		public boolean isUseSize() { return useSize; }
-
-		/**
-		 * Sets the use size.
-		 *
-		 * @param scope
-		 *            the scope
-		 * @param useSize
-		 *            the use size
-		 */
-		public void setUseSize(final IScope scope, final boolean useSize) {
-			this.useSize = useSize;
-
-		}
-
-		/**
-		 * Sets the myid.
-		 *
-		 * @param myid
-		 *            the new myid
-		 */
-		public void setMyid(final String myid) { this.myid = myid; }
-
-		/** The Constant serialVersionUID. */
 		private static final long serialVersionUID = 1L;
 
-		/**
-		 * Sets the output.
-		 *
-		 * @param output
-		 *            the new output
-		 */
-		public void setOutput(final ChartJFreeChartOutput output) {
-			myoutput = (ChartJFreeChartOutputScatter) output;
-		}
+		ChartJFreeChartOutputScatter myoutput;
+		String myid;
+		boolean useSize;
+		AffineTransform transform = new AffineTransform();
+
+		public boolean isUseSize() { return useSize; }
+		public void setUseSize(final IScope scope, final boolean useSize) { this.useSize = useSize; }
+		public void setMyid(final String myid) { this.myid = myid; }
+		public void setOutput(final ChartJFreeChartOutput output) { myoutput = (ChartJFreeChartOutputScatter) output; }
 
 		@Override
 		public Shape getItemShape(final int row, final int col) {
-			if (isUseSize()) {
+			if (isUseSize() && myoutput != null) {
 				transform.setToScale(myoutput.getScale(myid, col), myoutput.getScale(myid, col));
 				return transform.createTransformedShape(super.getItemShape(row, col));
 			}
@@ -138,33 +89,15 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 		}
 	}
 
-	/**
-	 * Gets the scale.
-	 *
-	 * @param serie
-	 *            the serie
-	 * @param col
-	 *            the col
-	 * @return the scale
-	 */
 	double getScale(final String serie, final int col) {
-		if (markerScale.containsKey(serie)) return markerScale.get(serie).get(col);
-		return 1;
+		ArrayList<Double> scales = markerScale.get(serie);
+		if (scales == null) return 1;
+		if (col < 0 || col >= scales.size()) return 1;
+		return scales.get(col);
 	}
 
-	/** The Marker scale. */
 	HashMap<String, ArrayList<Double>> markerScale = new HashMap<>();
 
-	/**
-	 * Instantiates a new chart J free chart output scatter.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param name
-	 *            the name
-	 * @param typeexp
-	 *            the typeexp
-	 */
 	public ChartJFreeChartOutputScatter(final IScope scope, final String name, final IExpression typeexp) {
 		super(scope, name, typeexp);
 	}
@@ -174,120 +107,79 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 		super.createChart(scope);
 
 		jfreedataset.add(0, new XYIntervalSeriesCollection());
-		PlotOrientation orientation = PlotOrientation.VERTICAL;
-		if (reverse_axes) { orientation = PlotOrientation.HORIZONTAL; }
+		PlotOrientation orientation = properties.isReverseAxes() ? PlotOrientation.HORIZONTAL : PlotOrientation.VERTICAL;
 
 		switch (type) {
-			case SERIES_CHART, XY_CHART, SCATTER_CHART:
-				chart = ChartFactory.createXYLineChart(getName(), "", "",
-						(XYIntervalSeriesCollection) jfreedataset.get(0), orientation, true, false, false);
-				break;
-			case BOX_WHISKER_CHART: {
+			case SERIES_CHART, XY_CHART, SCATTER_CHART -> chart = ChartFactory.createXYLineChart(getName(), "", "",
+					(XYIntervalSeriesCollection) jfreedataset.get(0), orientation, true, false, false);
+			case BOX_WHISKER_CHART -> {
 				chart = ChartFactory.createBoxAndWhiskerChart(getName(), "Time", "Value",
 						(BoxAndWhiskerCategoryDataset) jfreedataset.get(0), true);
 				chart.setBackgroundPaint(new Color(249, 231, 236));
-
-				break;
 			}
-			default:
-
+			default -> {}
 		}
-
 	}
 
 	@Override
 	public void setDefaultPropertiesFromType(final IScope scope, final IChartDataSource source, final int type_val) {
-
 		switch (type_val) {
-			case IChartDataSource.DATA_TYPE_LIST_DOUBLE_N, IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_N, IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_12, IChartDataSource.DATA_TYPE_LIST_POINT, IChartDataSource.DATA_TYPE_MATRIX_DOUBLE: {
+			case IChartDataSource.DATA_TYPE_LIST_DOUBLE_N, IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_N, IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_12, IChartDataSource.DATA_TYPE_LIST_POINT, IChartDataSource.DATA_TYPE_MATRIX_DOUBLE -> {
 				source.setCumulative(scope, false);
 				source.setUseSize(scope, false);
-				break;
 			}
-			case IChartDataSource.DATA_TYPE_LIST_DOUBLE_3: {
+			case IChartDataSource.DATA_TYPE_LIST_DOUBLE_3 -> {
 				source.setCumulative(scope, true);
 				source.setUseSize(scope, true);
-				break;
-
 			}
-			case IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_3: {
+			case IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_3 -> {
 				source.setCumulative(scope, false);
 				source.setUseSize(scope, true);
-				break;
-
 			}
-			default: {
+			default -> {
 				source.setCumulative(scope, true);
 				source.setUseSize(scope, false);
 			}
 		}
-
 	}
 
 	@Override
 	public void initdataset() {
 		super.initdataset();
 		switch (type) {
-			case ChartOutput.SERIES_CHART:
+			case ChartOutput.SERIES_CHART -> {
 				chartdataset.setCommonXSeries(true);
 				chartdataset.setByCategory(false);
-				break;
-			case ChartOutput.XY_CHART, ChartOutput.SCATTER_CHART:
+			}
+			case ChartOutput.XY_CHART, ChartOutput.SCATTER_CHART -> {
 				chartdataset.setCommonXSeries(false);
 				chartdataset.setByCategory(false);
-				break;
-			default:
+			}
+			default -> {}
 		}
 	}
 
 	@Override
 	protected AbstractRenderer createRenderer(final IScope scope, final String serieid) {
 		final String theStyle = this.getChartdataset().getDataSeries(scope, serieid).getStyle(scope);
-		AbstractRenderer newr;
-		switch (theStyle) {
-			case IKeyword.SPLINE: {
-				newr = new XYSplineRenderer();
-				break;
+		return switch (theStyle) {
+			case IKeyword.SPLINE -> new XYSplineRenderer();
+			case IKeyword.STEP -> new XYStepRenderer();
+			case IKeyword.DOT -> new XYShapeRenderer();
+			case IKeyword.WHISKER -> new XYBoxAndWhiskerRenderer();
+			case IKeyword.AREA -> new XYAreaRenderer();
+			case IKeyword.BAR -> new XYBarRenderer();
+			case IKeyword.THREE_D -> new XYLineAndShapeRenderer();
+			default -> {
+				CustomXYErrorRenderer errRenderer = new CustomXYErrorRenderer();
+				errRenderer.setMyid(serieid);
+				errRenderer.setOutput(this);
+				yield errRenderer;
 			}
-			case IKeyword.STEP: {
-				newr = new XYStepRenderer();
-				break;
-			}
-			case IKeyword.DOT: {
-				newr = new XYShapeRenderer();
-				break;
-			}
-			case IKeyword.WHISKER: {
-				newr = new XYBoxAndWhiskerRenderer();
-				break;
-			}
-			case IKeyword.AREA: {
-				newr = new XYAreaRenderer();
-				break;
-			}
-			case IKeyword.BAR: {
-				newr = new XYBarRenderer();
-				break;
-			}
-			case IKeyword.THREE_D: {
-				newr = new XYLineAndShapeRenderer();
-				break;
-			}
-			case IKeyword.STACK, IKeyword.RING, IKeyword.EXPLODED:
-			default: {
-				// newr = new FastXYItemRenderer();
-				newr = new CustomXYErrorRenderer();
-				((CustomXYErrorRenderer) newr).setMyid(serieid);
-				((CustomXYErrorRenderer) newr).setOutput(this);
-				break;
-
-			}
-		}
-		return newr;
+		};
 	}
 
-	private void configureLegend(final AbstractXYItemRenderer newr, final ChartDataSeries myserie,
-			final IScope scope) {
+	private void configureLegend(final AbstractXYItemRenderer newr, final ChartDataSeries myserie, final IScope scope) {
 		final String legStr = myserie.getSerieLegend(scope) == null ? "" : myserie.getSerieLegend(scope).toString();
 		if (StringUtils.isBlank(legStr)) {
 			newr.setSeriesVisibleInLegend(0, false);
@@ -301,26 +193,20 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 		});
 	}
 
-	private void configureErrorRenderer(final CustomXYErrorRenderer xy, final ChartDataSeries myserie,
-			final IScope scope) {
+	private void configureErrorRenderer(final CustomXYErrorRenderer xy, final ChartDataSeries myserie, final IScope scope) {
 		xy.setDrawYError(myserie.isUseYErrValues());
 		xy.setDrawXError(myserie.isUseXErrValues());
 		if (myserie.getMysource().isUseSize()) { xy.setUseSize(scope, true); }
 	}
 
-	/**
-	 * Reset renderer.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param serieid
-	 *            the serieid
-	 */
 	protected void resetRenderer(final IScope scope, final String serieid) {
+		if (chart == null) return;
 		final AbstractXYItemRenderer newr = (AbstractXYItemRenderer) this.getOrCreateRenderer(scope, serieid);
 		newr.setDefaultCreateEntities(true);
 
 		final ChartDataSeries myserie = this.getChartdataset().getDataSeries(scope, serieid);
+		if (myserie == null) return;
+
 		configureLegend(newr, myserie, scope);
 
 		if (newr instanceof XYLineAndShapeRenderer xy) {
@@ -335,23 +221,26 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 
 		if (myserie.getMycolor() != null) { newr.setSeriesPaint(0, IColor.toAWTColor(myserie.getMycolor())); }
 
-		newr.setSeriesStroke(0,
-				new BasicStroke(Cast.asFloat(scope, myserie.getLineThickness().value(scope)).floatValue()));
+		float thickness = Cast.asFloat(scope, myserie.getLineThickness().value(scope)).floatValue();
+		newr.setSeriesStroke(0, new BasicStroke(thickness, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 
 		if (newr instanceof CustomXYErrorRenderer xy) {
 			configureErrorRenderer(xy, myserie, scope);
 		}
 
-		if (myserie.getMysource().getUniqueMarkerName() != null) {
-			setSerieMarkerShape(scope, myserie.getName(), myserie.getMysource().getUniqueMarkerName());
+		String markerShape = myserie.getMysource().getUniqueMarkerName();
+		if (markerShape == null && myserie.getMysource().useMarker) {
+			markerShape = "default";
 		}
-
+		if (markerShape != null) {
+			setSerieMarkerShape(scope, myserie.getName(), markerShape);
+		}
 	}
 
 	@Override
 	protected void clearDataSet(final IScope scope) {
-
 		super.clearDataSet(scope);
+		if (chart == null) return;
 		final XYPlot plot = (XYPlot) this.chart.getPlot();
 		for (int i = plot.getDatasetCount() - 1; i >= 1; i--) {
 			plot.setDataset(i, null);
@@ -363,420 +252,339 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 		plot.setDataset((XYIntervalSeriesCollection) jfreedataset.get(0));
 		plot.setRenderer(0, null);
 		idPosition.clear();
+		rendererSet.clear();
+		markerScale.clear();
 	}
 
 	@Override
 	protected void createNewSerie(final IScope scope, final String serieid) {
-
-		final ChartDataSeries dataserie = chartdataset.getDataSeries(scope, serieid);
+		if (chart == null) return;
 		final XYIntervalSeries serie = new XYIntervalSeries(serieid, false, true);
 		final XYPlot plot = (XYPlot) this.chart.getPlot();
-
 		final XYIntervalSeriesCollection firstdataset = (XYIntervalSeriesCollection) plot.getDataset();
 
 		if (!idPosition.containsKey(serieid)) {
-
 			if (firstdataset.getSeriesCount() == 0) {
 				firstdataset.addSeries(serie);
 				plot.setDataset(0, firstdataset);
-
 			} else {
-
 				final XYIntervalSeriesCollection newdataset = new XYIntervalSeriesCollection();
 				newdataset.addSeries(serie);
 				jfreedataset.add(newdataset);
 				plot.setDataset(jfreedataset.size() - 1, newdataset);
-
 			}
 			plot.setRenderer(jfreedataset.size() - 1, (XYItemRenderer) getOrCreateRenderer(scope, serieid));
 			idPosition.put(serieid, jfreedataset.size() - 1);
-			// DEBUG.LOG("new serie"+serieid+" at
-			// "+IdPosition.get(serieid)+" fdsize "+plot.getSeriesCount()+" jfds
-			// "+jfreedataset.size()+" datasc "+plot.getDatasetCount());
-
 		}
+	}
+
+	private XYIntervalDataItem buildIntervalDataItem(final ChartDataSeries dataserie, final double xVal, final double yVal, final int i) {
+		if (dataserie.isUseYErrValues()) {
+			if (dataserie.isUseXErrValues()) {
+				return new XYIntervalDataItem(xVal, dataserie.xerrvaluesmin.get(i), dataserie.xerrvaluesmax.get(i),
+						yVal, dataserie.yerrvaluesmin.get(i), dataserie.yerrvaluesmax.get(i));
+			}
+			return new XYIntervalDataItem(xVal, xVal, xVal, yVal, dataserie.yerrvaluesmin.get(i), dataserie.yerrvaluesmax.get(i));
+		}
+		if (dataserie.isUseXErrValues()) {
+			return new XYIntervalDataItem(xVal, dataserie.xerrvaluesmin.get(i), dataserie.xerrvaluesmax.get(i), yVal, yVal, yVal);
+		}
+		return new XYIntervalDataItem(xVal, xVal, xVal, yVal, yVal, yVal);
 	}
 
 	@SuppressWarnings ("unchecked")
 	@Override
 	protected void resetSerie(final IScope scope, final String serieid) {
-
+		if (chart == null) return;
 		final ChartDataSeries dataserie = chartdataset.getDataSeries(scope, serieid);
-		final XYIntervalSeries serie =
-				((XYIntervalSeriesCollection) jfreedataset.get(idPosition.get(dataserie.getSerieId(scope))))
-						.getSeries(0);
+		if (dataserie == null || !idPosition.containsKey(dataserie.getSerieId(scope))) return;
+
+		final XYIntervalSeries serie = ((XYIntervalSeriesCollection) jfreedataset.get(idPosition.get(dataserie.getSerieId(scope)))).getSeries(0);
 		serie.clear();
 		final ArrayList<Double> xValues = dataserie.getXValues(scope);
 		final ArrayList<Double> yValues = dataserie.getYValues(scope);
 		final ArrayList<Double> sValues = dataserie.getSValues(scope);
-		boolean secondaxis = false;
-		if (dataserie.getMysource().getUseSecondYAxis(scope)) {
-			secondaxis = true;
-			this.setUseSecondYAxis(scope, true);
-
-		}
+		boolean secondaxis = dataserie.getMysource().getUseSecondYAxis(scope);
+		if (secondaxis) { this.setUseSecondYAxis(scope, true); }
 
 		if (!xValues.isEmpty()) {
 			final NumberAxis domainAxis = (NumberAxis) ((XYPlot) this.chart.getPlot()).getDomainAxis();
 			final NumberAxis rangeAxis = (NumberAxis) ((XYPlot) this.chart.getPlot()).getRangeAxis(0);
 			final int ids = idPosition.get(dataserie.getSerieId(scope));
-			if (secondaxis) {
-				// rangeAxis = (NumberAxis) ((XYPlot) this.chart.getPlot()).getRangeAxis(1);
-				// ((XYPlot) this.chart.getPlot()).setRangeAxis(IdPosition.get(dataserie.getSerieId(scope)),rangeAxis);
-				// ((XYPlot) this.chart.getPlot()).setRangeAxis(IdPosition.get(dataserie.getSerieId(scope)),rangeAxis);
-				((XYPlot) this.chart.getPlot()).mapDatasetToRangeAxis(ids, 1);
-			} else {
-				// ((XYPlot) this.chart.getPlot()).setRangeAxis(IdPosition.get(dataserie.getSerieId(scope)),rangeAxis);
-				((XYPlot) this.chart.getPlot()).mapDatasetToRangeAxis(ids, 0);
-
-			}
+			((XYPlot) this.chart.getPlot()).mapDatasetToRangeAxis(ids, secondaxis ? 1 : 0);
 			domainAxis.setAutoRange(false);
 			rangeAxis.setAutoRange(false);
-			// domainAxis.setRange(Math.min((double)(Collections.min(XValues)),0),
-			// Math.max(Collections.max(XValues),Collections.min(XValues)+1));
-			// rangeAxis.setRange(Math.min((double)(Collections.min(YValues)),0),
-			// Math.max(Collections.max(YValues),Collections.min(YValues)+1));
-			XYIntervalDataItem newval;
-			for (int i = 0; i < xValues.size(); i++) {
-				if (dataserie.isUseYErrValues()) {
-					if (dataserie.isUseXErrValues()) {
-						newval = new XYIntervalDataItem(xValues.get(i), dataserie.xerrvaluesmin.get(i),
-								dataserie.xerrvaluesmax.get(i), yValues.get(i), dataserie.yerrvaluesmin.get(i),
-								dataserie.yerrvaluesmax.get(i));
-						// serie.add(XValues.get(i),dataserie.xerrvaluesmin.get(i),dataserie.xerrvaluesmax.get(i),YValues.get(i),dataserie.yerrvaluesmin.get(i),dataserie.yerrvaluesmax.get(i));
-					} else {
-						newval = new XYIntervalDataItem(xValues.get(i), xValues.get(i), xValues.get(i), yValues.get(i),
-								dataserie.yerrvaluesmin.get(i), dataserie.yerrvaluesmax.get(i));
-						// serie.add(XValues.get(i),XValues.get(i),XValues.get(i),YValues.get(i),dataserie.yerrvaluesmin.get(i),dataserie.yerrvaluesmax.get(i));
-					}
-
-				} else if (dataserie.isUseXErrValues()) {
-					newval = new XYIntervalDataItem(xValues.get(i), dataserie.xerrvaluesmin.get(i),
-							dataserie.xerrvaluesmax.get(i), yValues.get(i), yValues.get(i), yValues.get(i));
-					// serie.add(XValues.get(i),dataserie.xerrvaluesmin.get(i),dataserie.xerrvaluesmax.get(i),YValues.get(i),YValues.get(i),YValues.get(i));
-				} else {
-					newval = new XYIntervalDataItem(xValues.get(i), xValues.get(i), xValues.get(i), yValues.get(i),
-							yValues.get(i), yValues.get(i));
-					// serie.add(XValues.get(i),XValues.get(i),XValues.get(i),YValues.get(i),YValues.get(i),YValues.get(i));
+			boolean oldNotify = serie.getNotify();
+			serie.setNotify(false);
+			try {
+				int total = xValues.size();
+				int stride = total > 3000 ? total / 2000 : 1;
+				for (int i = 0; i < total; i += stride) {
+					serie.add(buildIntervalDataItem(dataserie, xValues.get(i), yValues.get(i), i), false);
 				}
-				serie.add(newval, false);
+				if (stride > 1 && (total - 1) % stride != 0) {
+					int last = total - 1;
+					serie.add(buildIntervalDataItem(dataserie, xValues.get(last), yValues.get(last), last), false);
+				}
+			} finally {
+				serie.setNotify(oldNotify);
 			}
-			// domainAxis.setAutoRange(true);
-			// rangeAxis.setAutoRange(true);
 		}
-		// resetAutorange(scope);
 		if (!sValues.isEmpty()) {
 			markerScale.remove(serieid);
-			final ArrayList<Double> nscale = (ArrayList<Double>) sValues.clone();
-			markerScale.put(serieid, nscale);
-
+			markerScale.put(serieid, (ArrayList<Double>) sValues.clone());
 		}
-
 		this.resetRenderer(scope, serieid);
-
 	}
 
-	/**
-	 * Format Y axis.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param axis
-	 *            the axis
-	 * @return the number axis
-	 */
 	public NumberAxis formatYAxis(final IScope scope, final NumberAxis axis) {
 		return formatYAxis(scope, axis, false);
 	}
 
 	public NumberAxis formatYAxis(final IScope scope, final NumberAxis axis, final boolean isSecondAxis) {
-		Color ac = IColor.toAWTColor(axesColor);
+		if (axis == null) return axis;
+		Color ac = IColor.toAWTColor(properties.getAxesColor());
 		axis.setAxisLinePaint(ac);
-		axis.setTickLabelFont(getTickFont());
-		axis.setLabelFont(getLabelFont());
-		if (textColor != null) {
-			Color tc = IColor.toAWTColor(textColor);
+		axis.setTickLabelFont(properties.getTickFont());
+		axis.setLabelFont(properties.getLabelFont());
+		if (properties.getTextColor() != null) {
+			Color tc = IColor.toAWTColor(properties.getTextColor());
 			axis.setLabelPaint(tc);
 			axis.setTickLabelPaint(tc);
 		}
 		boolean visible = isSecondAxis ? this.getY2TickValueVisible(scope) : this.getYTickValueVisible(scope);
-		if (!visible) {
-			axis.setTickMarksVisible(false);
-			axis.setTickLabelsVisible(false);
-		} else {
-			axis.setTickMarksVisible(true);
-			axis.setTickLabelsVisible(true);
-		}
+		axis.setTickMarksVisible(visible);
+		axis.setTickLabelsVisible(visible);
 		return axis;
 	}
 
 	private void configureXAxis(final IScope scope, final NumberAxis domainAxis, final Color tc) {
-		if (!getUseXRangeInterval(scope) && !getUseXRangeMinMax(scope) && !getUseXMin(scope) && !getUseXMax(scope)) {
+		if (!properties.isUseXRangeInterval() && !properties.isUseXRangeMinMax() && !properties.isUseXMin() && !properties.isUseXMax()) {
 			domainAxis.setAutoRange(true);
 		}
-		if (this.getUseXRangeInterval(scope)) {
-			domainAxis.setFixedAutoRange(getXRangeInterval(scope));
-			domainAxis.setAutoRangeMinimumSize(getXRangeInterval(scope));
+		if (properties.isUseXRangeInterval()) {
+			domainAxis.setFixedAutoRange(properties.getXRangeInterval());
+			domainAxis.setAutoRangeMinimumSize(properties.getXRangeInterval());
 			domainAxis.setAutoRange(true);
 		}
-		if (this.getUseXRangeMinMax(scope)) {
-			double max = getXRangeMax(scope);
-			double min = getXRangeMin(scope);
-			if (max - min > 0) {
-				domainAxis.setRange(min, max);
-			} else {
-				domainAxis.setAutoRange(true);
-			}
+		if (properties.isUseXRangeMinMax()) {
+			double max = properties.getXRangeMax();
+			double min = properties.getXRangeMin();
+			if (max - min > 0) { domainAxis.setRange(min, max); } else { domainAxis.setAutoRange(true); }
 		}
-		if ((getUseXMin(scope) || getUseXMax(scope)) && !getUseXRangeMinMax(scope)) {
+		if ((properties.isUseXMin() || properties.isUseXMax()) && !properties.isUseXRangeMinMax()) {
 			applyXSingleBounds(scope, domainAxis);
 		}
-		if (this.getXTickLineVisible(scope)) {
-			((XYPlot) this.chart.getPlot()).setDomainGridlinePaint(tc);
-			if (getXTickUnit(scope) > 0) {
-				domainAxis.setTickUnit(new NumberTickUnit(getXTickUnit(scope)));
+		if (properties.isXTickLineVisible()) {
+			if (tc != null) ((XYPlot) this.chart.getPlot()).setDomainGridlinePaint(tc);
+			if (properties.getXTickUnit() > 0) {
+				domainAxis.setTickUnit(new NumberTickUnit(properties.getXTickUnit()));
 				((XYPlot) this.chart.getPlot()).setDomainGridlinesVisible(true);
 			} else {
-				((XYPlot) this.chart.getPlot()).setDomainGridlinesVisible(getGridLinesVisible());
+				((XYPlot) this.chart.getPlot()).setDomainGridlinesVisible(properties.isGridLinesVisible());
 			}
 		} else {
 			((XYPlot) this.chart.getPlot()).setDomainGridlinesVisible(false);
 		}
-		if (getXLabel(scope) != null && !getXLabel(scope).isEmpty()) { domainAxis.setLabel(getXLabel(scope)); }
-		if (!this.getXTickValueVisible(scope)) {
+		if (properties.getXLabel() != null && !properties.getXLabel().isEmpty()) { domainAxis.setLabel(properties.getXLabel()); }
+		if (!properties.isXTickValueVisible()) {
 			domainAxis.setTickMarksVisible(false);
 			domainAxis.setTickLabelsVisible(false);
 		}
 	}
 
 	private void configureYAxis(final IScope scope, final NumberAxis rangeAxis, final Color tc) {
-		if (!getUseYRangeInterval(scope) && !getUseYRangeMinMax(scope) && !getUseYMin(scope) && !getUseYMax(scope)) {
+		if (!properties.isUseYRangeInterval() && !properties.isUseYRangeMinMax() && !properties.isUseYMin() && !properties.isUseYMax()) {
 			rangeAxis.setAutoRange(true);
 		}
-		if (this.getUseYRangeInterval(scope)) {
-			rangeAxis.setFixedAutoRange(getYRangeInterval(scope));
-			rangeAxis.setAutoRangeMinimumSize(getYRangeInterval(scope));
+		if (properties.isUseYRangeInterval()) {
+			rangeAxis.setFixedAutoRange(properties.getYRangeInterval());
+			rangeAxis.setAutoRangeMinimumSize(properties.getYRangeInterval());
 			rangeAxis.setAutoRange(true);
 		}
-		if (this.getUseYRangeMinMax(scope)) {
-			double max = getYRangeMax(scope);
-			double min = getYRangeMin(scope);
-			if (max - min > 0) {
-				rangeAxis.setRange(min, max);
-			} else {
-				rangeAxis.setAutoRange(true);
-			}
+		if (properties.isUseYRangeMinMax()) {
+			double max = properties.getYRangeMax();
+			double min = properties.getYRangeMin();
+			if (max - min > 0) { rangeAxis.setRange(min, max); } else { rangeAxis.setAutoRange(true); }
 		}
-		if ((getUseYMin(scope) || getUseYMax(scope)) && !getUseYRangeMinMax(scope)) {
+		if ((properties.isUseYMin() || properties.isUseYMax()) && !properties.isUseYRangeMinMax()) {
 			applyYSingleBounds(scope, rangeAxis);
 		}
-		if (this.getYTickLineVisible(scope)) {
-			((XYPlot) this.chart.getPlot()).setRangeGridlinePaint(tc);
-			if (getYTickUnit(scope) > 0) {
-				rangeAxis.setTickUnit(new NumberTickUnit(getYTickUnit(scope)));
+		if (properties.isYTickLineVisible()) {
+			if (tc != null) ((XYPlot) this.chart.getPlot()).setRangeGridlinePaint(tc);
+			if (properties.getYTickUnit() > 0) {
+				rangeAxis.setTickUnit(new NumberTickUnit(properties.getYTickUnit()));
 				((XYPlot) this.chart.getPlot()).setRangeGridlinesVisible(true);
 			} else {
-				((XYPlot) this.chart.getPlot()).setRangeGridlinesVisible(getGridLinesVisible());
+				((XYPlot) this.chart.getPlot()).setRangeGridlinesVisible(properties.isGridLinesVisible());
 			}
 		} else {
 			((XYPlot) this.chart.getPlot()).setRangeGridlinesVisible(false);
 		}
-		if (getYLabel(scope) != null && !getYLabel(scope).isEmpty()) { rangeAxis.setLabel(getYLabel(scope)); }
+		if (properties.getYLabel() != null && !properties.getYLabel().isEmpty()) { rangeAxis.setLabel(properties.getYLabel()); }
 	}
 
 	private void configureY2Axis(final IScope scope, final NumberAxis range2Axis, final Color tc) {
-		if (!getUseY2RangeInterval(scope) && !getUseY2RangeMinMax(scope)) { range2Axis.setAutoRange(true); }
-		if (this.getUseY2RangeInterval(scope)) {
-			range2Axis.setFixedAutoRange(getY2RangeInterval(scope));
-			range2Axis.setAutoRangeMinimumSize(getY2RangeInterval(scope));
+		if (!properties.isUseY2RangeInterval() && !properties.isUseY2RangeMinMax()) { range2Axis.setAutoRange(true); }
+		if (properties.isUseY2RangeInterval()) {
+			range2Axis.setFixedAutoRange(properties.getY2RangeInterval());
+			range2Axis.setAutoRangeMinimumSize(properties.getY2RangeInterval());
 			range2Axis.setAutoRange(true);
 		}
-		if (this.getUseY2RangeMinMax(scope)) {
-			double max = getY2RangeMax(scope);
-			double min = getY2RangeMin(scope);
-			if (max - min > 0) {
-				range2Axis.setRange(min, max);
-			} else {
-				range2Axis.setAutoRange(true);
-			}
+		if (properties.isUseY2RangeMinMax()) {
+			double max = properties.getY2RangeMax();
+			double min = properties.getY2RangeMin();
+			if (max - min > 0) { range2Axis.setRange(min, max); } else { range2Axis.setAutoRange(true); }
 		}
-		if (this.getYTickLineVisible(scope)) {
-			((XYPlot) this.chart.getPlot()).setRangeGridlinePaint(tc);
-			if (getY2TickUnit(scope) > 0) {
-				range2Axis.setTickUnit(new NumberTickUnit(getY2TickUnit(scope)));
+		if (properties.isYTickLineVisible()) {
+			if (tc != null) ((XYPlot) this.chart.getPlot()).setRangeGridlinePaint(tc);
+			if (properties.getY2TickUnit() > 0) {
+				range2Axis.setTickUnit(new NumberTickUnit(properties.getY2TickUnit()));
 				((XYPlot) this.chart.getPlot()).setRangeGridlinesVisible(true);
 			} else {
-				((XYPlot) this.chart.getPlot()).setRangeGridlinesVisible(getGridLinesVisible());
+				((XYPlot) this.chart.getPlot()).setRangeGridlinesVisible(properties.isGridLinesVisible());
 			}
 		} else {
 			((XYPlot) this.chart.getPlot()).setRangeGridlinesVisible(false);
 		}
-		if (getY2Label(scope) != null && !getY2Label(scope).isEmpty()) {
-			range2Axis.setLabel(getY2Label(scope));
+		if (properties.getY2Label() != null && !properties.getY2Label().isEmpty()) {
+			range2Axis.setLabel(properties.getY2Label());
 		}
 	}
 
 	@Override
 	public void resetAxes(final IScope scope) {
+		if (chart == null) return;
 		XYPlot plot = (XYPlot) this.chart.getPlot();
 		NumberAxis domainAxis = (NumberAxis) plot.getDomainAxis();
 		NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
 		NumberAxis range2Axis = rangeAxis;
-		boolean secondaxis = false;
-		if (getUseSecondYAxis(scope)) {
-			secondaxis = true;
+		boolean secondaxis = properties.isUseSecondYAxis();
+
+		if (secondaxis) {
 			range2Axis = (NumberAxis) plot.getRangeAxis(1);
 			if (range2Axis == null) {
-				final NumberAxis secondAxis = new NumberAxis("");
-				plot.setRangeAxis(1, secondAxis);
-				range2Axis = (NumberAxis) plot.getRangeAxis(1);
-				range2Axis = formatYAxis(scope, range2Axis, true);
+				range2Axis = new NumberAxis("");
 				plot.setRangeAxis(1, range2Axis);
-			} else {
-				formatYAxis(scope, range2Axis, true);
 			}
+			formatYAxis(scope, range2Axis, true);
 		}
 
-		if (getX_LogScale(scope)) {
-			final LogarithmicAxis logAxis = new LogarithmicAxis(domainAxis.getLabel());
+		if (properties.isXLogscale()) {
+			LogarithmicAxis logAxis = new LogarithmicAxis(domainAxis.getLabel());
 			logAxis.setAllowNegativesFlag(true);
 			plot.setDomainAxis(logAxis);
 			domainAxis = logAxis;
 		}
-		if (getY_LogScale(scope)) {
+		if (properties.isYLogscale()) {
 			LogarithmicAxis logAxis = new LogarithmicAxis(rangeAxis.getLabel());
 			logAxis.setAllowNegativesFlag(true);
-			logAxis = (LogarithmicAxis) formatYAxis(scope, logAxis, false);
+			formatYAxis(scope, logAxis, false);
 			plot.setRangeAxis(logAxis);
 			rangeAxis = logAxis;
 		} else {
 			formatYAxis(scope, rangeAxis, false);
 		}
-		if (secondaxis && getY2_LogScale(scope)) {
+		if (secondaxis && properties.isY2Logscale()) {
 			LogarithmicAxis logAxis = new LogarithmicAxis(range2Axis.getLabel());
 			logAxis.setAllowNegativesFlag(true);
-			logAxis = (LogarithmicAxis) formatYAxis(scope, logAxis, true);
+			formatYAxis(scope, logAxis, true);
 			plot.setRangeAxis(1, logAxis);
 			range2Axis = logAxis;
 		}
 
-		Color tc = IColor.toAWTColor(tickColor);
+		Color tc = properties.getTickColor() != null ? IColor.toAWTColor(properties.getTickColor()) : null;
 		configureXAxis(scope, domainAxis, tc);
 		configureYAxis(scope, rangeAxis, tc);
-		if (secondaxis) {
-			configureY2Axis(scope, range2Axis, tc);
-		}
+		if (secondaxis) { configureY2Axis(scope, range2Axis, tc); }
 
-		if ("none".equals(this.series_label_position)) { this.chart.getLegend().setVisible(false); }
+		if ("none".equals(properties.getSeriesLabelPosition()) && this.chart.getLegend() != null) {
+			this.chart.getLegend().setVisible(false);
+		}
 	}
 
 	@Override
 	public void setSerieMarkerShape(final IScope scope, final String serieid, final String markershape) {
+		if (markershape == null) return;
 		final AbstractXYItemRenderer newr = (AbstractXYItemRenderer) this.getOrCreateRenderer(scope, serieid);
-		if (newr instanceof XYLineAndShapeRenderer) {
-			final XYLineAndShapeRenderer serierenderer = (XYLineAndShapeRenderer) getOrCreateRenderer(scope, serieid);
-			if (markershape != null) {
-				if (ChartDataStatement.MARKER_EMPTY.equals(markershape)) {
-					serierenderer.setSeriesShapesVisible(0, false);
-				} else {
-					Shape myshape = switch (markershape) {
-						case ChartDataStatement.MARKER_CIRCLE -> defaultmarkers[1];
-						case ChartDataStatement.MARKER_UP_TRIANGLE -> defaultmarkers[2];
-						case ChartDataStatement.MARKER_DIAMOND -> defaultmarkers[3];
-						case ChartDataStatement.MARKER_HOR_RECTANGLE -> defaultmarkers[4];
-						case ChartDataStatement.MARKER_DOWN_TRIANGLE -> defaultmarkers[5];
-						case ChartDataStatement.MARKER_HOR_ELLIPSE -> defaultmarkers[6];
-						case ChartDataStatement.MARKER_RIGHT_TRIANGLE -> defaultmarkers[7];
-						case ChartDataStatement.MARKER_VERT_RECTANGLE -> defaultmarkers[8];
-						case ChartDataStatement.MARKER_LEFT_TRIANGLE -> defaultmarkers[9];
-						default -> defaultmarkers[0];
-					};
-					serierenderer.setSeriesShape(0, myshape);
+		int seriesIndex = idPosition.getOrDefault(serieid, 0);
+		Shape baseShape = ChartDataStatement.MARKER_EMPTY.equals(markershape) ? null : switch (markershape) {
+			case ChartDataStatement.MARKER_CIRCLE -> defaultmarkers[1];
+			case ChartDataStatement.MARKER_UP_TRIANGLE -> defaultmarkers[2];
+			case ChartDataStatement.MARKER_DIAMOND -> defaultmarkers[3];
+			case ChartDataStatement.MARKER_HOR_RECTANGLE -> defaultmarkers[4];
+			case ChartDataStatement.MARKER_DOWN_TRIANGLE -> defaultmarkers[5];
+			case ChartDataStatement.MARKER_HOR_ELLIPSE -> defaultmarkers[6];
+			case ChartDataStatement.MARKER_RIGHT_TRIANGLE -> defaultmarkers[7];
+			case ChartDataStatement.MARKER_VERT_RECTANGLE -> defaultmarkers[8];
+			case ChartDataStatement.MARKER_LEFT_TRIANGLE -> defaultmarkers[9];
+			case "default" -> defaultmarkers[seriesIndex % defaultmarkers.length];
+			default -> defaultmarkers[0];
+		};
 
+		Shape myshape = baseShape;
+		if (myshape != null && getChartdataset() != null) {
+			ChartDataSeries myserie = getChartdataset().getDataSeries(scope, serieid);
+			if (myserie != null && !myserie.getMysource().isUseSize()) {
+				float thickness = Cast.asFloat(scope, myserie.getLineThickness().value(scope)).floatValue();
+				if (thickness > 1.0f) {
+					double scaleFactor = thickness * 1.25;
+					AffineTransform at = AffineTransform.getScaleInstance(scaleFactor, scaleFactor);
+					myshape = at.createTransformedShape(baseShape);
 				}
 			}
-
-		} else if (newr instanceof XYShapeRenderer) {
-			final XYShapeRenderer serierenderer = (XYShapeRenderer) getOrCreateRenderer(scope, serieid);
-			if (markershape != null) {
-				if (ChartDataStatement.MARKER_EMPTY.equals(markershape)) {
-					serierenderer.setSeriesShape(0, null);
-				} else {
-					Shape myshape = switch (markershape) {
-						case ChartDataStatement.MARKER_CIRCLE -> defaultmarkers[1];
-						case ChartDataStatement.MARKER_UP_TRIANGLE -> defaultmarkers[2];
-						case ChartDataStatement.MARKER_DIAMOND -> defaultmarkers[3];
-						case ChartDataStatement.MARKER_HOR_RECTANGLE -> defaultmarkers[4];
-						case ChartDataStatement.MARKER_DOWN_TRIANGLE -> defaultmarkers[5];
-						case ChartDataStatement.MARKER_HOR_ELLIPSE -> defaultmarkers[6];
-						case ChartDataStatement.MARKER_RIGHT_TRIANGLE -> defaultmarkers[7];
-						case ChartDataStatement.MARKER_VERT_RECTANGLE -> defaultmarkers[8];
-						case ChartDataStatement.MARKER_LEFT_TRIANGLE -> defaultmarkers[9];
-						default -> defaultmarkers[0];
-					};
-					serierenderer.setSeriesShape(0, myshape);
-
-				}
-			}
-
 		}
 
+		if (newr instanceof XYLineAndShapeRenderer serierenderer) {
+			if (myshape == null) {
+				serierenderer.setSeriesShapesVisible(0, false);
+			} else {
+				serierenderer.setSeriesShape(0, myshape);
+			}
+		} else if (newr instanceof XYShapeRenderer serierenderer) {
+			if (myshape != null) {
+				serierenderer.setSeriesShape(0, myshape);
+			}
+		}
 	}
 
 	@Override
 	public void setUseSize(final IScope scope, final String name, final boolean b) {
-
 		final AbstractXYItemRenderer newr = (AbstractXYItemRenderer) this.getOrCreateRenderer(scope, name);
 		if (newr instanceof CustomXYErrorRenderer xy) { xy.setUseSize(scope, b); }
-
 	}
 
 	@Override
 	protected void initRenderer(final IScope scope) {
+		if (chart == null) return;
 		final XYPlot plot = (XYPlot) this.chart.getPlot();
 		defaultrenderer = new CustomXYErrorRenderer();
 		plot.setRenderer((CustomXYErrorRenderer) defaultrenderer);
-
-	}
-
-	@Override
-	public void setUseXSource(final IScope scope, final IExpression expval) {
-		// if there is something to do to use custom X axis
-
 	}
 
 	@Override
 	public void setUseXLabels(final IScope scope, final IExpression expval) {
-		// if there is something to do to use custom X axis
+		if (chart == null) return;
 		final XYPlot pp = (XYPlot) chart.getPlot();
-
 		((NumberAxis) pp.getDomainAxis()).setNumberFormatOverride(new NumberFormat() {
-
 			@Override
 			public StringBuffer format(final double number, final StringBuffer toAppendTo, final FieldPosition pos) {
 				final int ind = chartdataset.XSeriesValues.indexOf(number);
-				if (ind >= 0) return new StringBuffer("" + chartdataset.Xcategories.get(ind));
+				if (ind >= 0 && ind < chartdataset.Xcategories.size()) return new StringBuffer(chartdataset.Xcategories.get(ind));
 				return new StringBuffer();
-
 			}
-
 			@Override
-			public StringBuffer format(final long number, final StringBuffer toAppendTo, final FieldPosition pos) {
-				return new StringBuffer("n" + number);
-			}
-
+			public StringBuffer format(final long number, final StringBuffer toAppendTo, final FieldPosition pos) { return new StringBuffer("n" + number); }
 			@Override
-			public Number parse(final String source, final ParsePosition parsePosition) {
-				return null;
-			}
+			public Number parse(final String source, final ParsePosition parsePosition) { return null; }
 		});
-
 	}
 
 	@Override
 	public void initChart(final IScope scope, final String chartname) {
 		super.initChart(scope, chartname);
-		Color ac = IColor.toAWTColor(axesColor);
+		if (chart == null) return;
+		Color ac = IColor.toAWTColor(properties.getAxesColor());
 		final XYPlot pp = (XYPlot) chart.getPlot();
 		pp.setDomainGridlinePaint(ac);
 		pp.setRangeGridlinePaint(ac);
@@ -787,10 +595,10 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 		pp.setRangeCrosshairVisible(false);
 
 		pp.getDomainAxis().setAxisLinePaint(ac);
-		pp.getDomainAxis().setTickLabelFont(getTickFont());
-		pp.getDomainAxis().setLabelFont(getLabelFont());
-		if (textColor != null) {
-			Color tc = IColor.toAWTColor(textColor);
+		pp.getDomainAxis().setTickLabelFont(properties.getTickFont());
+		pp.getDomainAxis().setLabelFont(properties.getLabelFont());
+		if (properties.getTextColor() != null) {
+			Color tc = IColor.toAWTColor(properties.getTextColor());
 			pp.getDomainAxis().setLabelPaint(tc);
 			pp.getDomainAxis().setTickLabelPaint(tc);
 		}
@@ -798,70 +606,19 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 		NumberAxis axis = (NumberAxis) pp.getRangeAxis();
 		axis = formatYAxis(scope, axis);
 		pp.setRangeAxis(axis);
-		if (ytickunit > 0) {
-			((NumberAxis) pp.getRangeAxis()).setTickUnit(new NumberTickUnit(ytickunit));
+		if (properties.getYTickUnit() > 0) {
+			((NumberAxis) pp.getRangeAxis()).setTickUnit(new NumberTickUnit(properties.getYTickUnit()));
 			pp.setRangeGridlinesVisible(true);
 		} else {
-			pp.setRangeGridlinesVisible(getGridLinesVisible());
+			pp.setRangeGridlinesVisible(properties.isGridLinesVisible());
 		}
 
-		// resetAutorange(scope);
-
-		if (type == ChartOutput.SERIES_CHART && xlabel == null) { xlabel = "time"; }
-		if (!this.getXTickValueVisible(scope)) {
+		if (type == ChartOutput.SERIES_CHART && properties.getXLabel() == null) { properties.setXLabel("time"); }
+		if (!properties.isXTickValueVisible()) {
 			pp.getDomainAxis().setTickMarksVisible(false);
 			pp.getDomainAxis().setTickLabelsVisible(false);
-
-		}
-
-	}
-
-	@Override
-	public void getModelCoordinatesInfo(final int xOnScreen, final int yOnScreen, final IDisplaySurface g,
-			final Point positionInPixels, final StringBuilder sb) {
-		final int x = xOnScreen - positionInPixels.x;
-		final int y = yOnScreen - positionInPixels.y;
-		final ChartEntity entity = info.getEntityCollection().getEntity(x, y);
-		switch (entity) {
-			case XYItemEntity xy -> {
-				final XYDataset data = xy.getDataset();
-				final int index = xy.getItem();
-				final int series = xy.getSeriesIndex();
-				final double xx = data.getXValue(series, index);
-				final double yy = data.getYValue(series, index);
-				final XYPlot plot = (XYPlot) getJFChart().getPlot();
-				final ValueAxis xAxis = plot.getDomainAxis(series);
-				final ValueAxis yAxis = plot.getRangeAxis(series);
-				final boolean xInt = xx % 1 == 0;
-				final boolean yInt = yy % 1 == 0;
-				String xTitle = xAxis.getLabel();
-				if (StringUtils.isBlank(xTitle)) { xTitle = "X"; }
-				String yTitle = yAxis.getLabel();
-				if (StringUtils.isBlank(yTitle)) { yTitle = "Y"; }
-				sb.append(xTitle).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
-				sb.append(" | ").append(yTitle).append(" ").append(yInt ? (int) yy : String.format("%.2f", yy));
-				return;
-			}
-			case PieSectionEntity ps -> {
-				final String title = ps.getSectionKey().toString();
-				final PieDataset<?> data = ps.getDataset();
-				final int index = ps.getSectionIndex();
-				final double xx = data.getValue(index).doubleValue();
-				final boolean xInt = xx % 1 == 0;
-				sb.append(title).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
-			}
-			case CategoryItemEntity ci -> {
-				final Comparable<?> columnKey = ci.getColumnKey();
-				final String title = columnKey.toString();
-				final CategoryDataset data = ci.getDataset();
-				final Comparable<?> rowKey = ci.getRowKey();
-				final double xx = data.getValue(rowKey, columnKey).doubleValue();
-				final boolean xInt = xx % 1 == 0;
-				sb.append(title).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
-			}
-			case null, default -> {
-			}
 		}
 	}
+
 
 }

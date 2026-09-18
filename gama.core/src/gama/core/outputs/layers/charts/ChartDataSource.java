@@ -27,6 +27,7 @@ import gama.api.types.list.IList;
 import gama.api.types.matrix.GamaMatrixFactory;
 import gama.api.types.matrix.IMatrix;
 import gama.api.ui.displays.IChartDataSource;
+import gama.api.utils.prefs.GamaPreferences;
 
 /**
  * The Class ChartDataSource.
@@ -81,7 +82,7 @@ public class ChartDataSource implements IChartDataSource {
 	boolean forceCumulativeY = false;
 
 	/** The use marker. */
-	boolean useMarker = true;
+	boolean useMarker = GamaPreferences.Displays.CHART_SHOW_MARKERS.getValue();
 
 	/** The fill marker. */
 	boolean fillMarker = true;
@@ -114,7 +115,7 @@ public class ChartDataSource implements IChartDataSource {
 	boolean isBoxAndWhiskerData = false;
 
 	/** The line thickness. */
-	IExpression lineThickness = GAML.getExpressionFactory().createConst(1.0, Types.FLOAT);
+	IExpression lineThickness = GAML.getExpressionFactory().createConst(GamaPreferences.Displays.CHART_LINE_THICKNESS.getValue(), Types.FLOAT);
 
 	/**
 	 * Clone me.
@@ -417,7 +418,13 @@ public class ChartDataSource implements IChartDataSource {
 	 * @return the style
 	 */
 	public String getStyle(final IScope scope) {
-		if (IKeyword.DEFAULT.equals(style)) return this.getDataset().getStyle(scope);
+		if (IKeyword.DEFAULT.equals(style) || style == null) {
+			String dsStyle = this.getDataset() != null ? this.getDataset().getStyle(scope) : null;
+			if (dsStyle == null || IKeyword.DEFAULT.equals(dsStyle)) {
+				return GamaPreferences.Displays.CHART_SERIES_STYLE.getValue();
+			}
+			return dsStyle;
+		}
 		return style;
 	}
 

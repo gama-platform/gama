@@ -507,8 +507,6 @@ Export-Package: au.com.objectix.jgridshift,
  org.geotools.filter.identity,
  org.geotools.filter.spatial,
  org.geotools.filter.temporal,
- org.geotools.filter.text.cql2,
- org.geotools.filter.text.ecql,
  org.geotools.filter.visitor,
  org.geotools.gce.arcgrid,
  org.geotools.gce.geotiff,
@@ -937,7 +935,6 @@ Bundle-ClassPath: .,
  libs/jts 1.20.0/jts-core-1.20.0.jar,
  libs/jts 1.20.0/jts-io-common-1.20.0.jar,
  libs/math3 3.6.1/commons-math3-3.6.1.jar,
- libs/streamex 0.8.4/streamex-0.8.4.jar,
- libs/geotools 33.4/gt-cql-33.4.jar
+ libs/streamex 0.8.4/streamex-0.8.4.jar
 Bundle-RequiredExecutionEnvironment: JavaSE-25
 Automatic-Module-Name: gama.dependencies

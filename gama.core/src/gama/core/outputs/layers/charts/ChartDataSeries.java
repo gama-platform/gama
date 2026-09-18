@@ -78,6 +78,12 @@ public class ChartDataSeries {
 	/** The oldxvalues. */
 	final ArrayList<Double> oldxvalues = new ArrayList<>(); // for xy charts
 
+	/** The index of this series in the parent chart dataset. */
+	private int seriesIndex = -1;
+
+	public int getSeriesIndex() { return seriesIndex; }
+	public void setSeriesIndex(final int index) { this.seriesIndex = index; }
+
 	/** The oldyvalues. */
 	final ArrayList<Double> oldyvalues = new ArrayList<>();
 
@@ -524,6 +530,10 @@ public class ChartDataSeries {
 
 			}
 
+		}
+		if (this.mycolor == null) {
+			int idx = this.seriesIndex >= 0 ? this.seriesIndex : (mydataset != null ? mydataset.getDataSeriesIds(scope).size() - 1 : 0);
+			this.setMycolor(ChartProperties.getDefaultSeriesColor(scope, Math.max(0, idx)));
 		}
 	}
 

@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
  * ChartJFreeChartOutputBoxAndWhiskerCategory.java, in gama.core, is part of the source code of the GAMA modeling and
- * simulation platform (v.2025-03).
+ * simulation platform.
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -11,7 +11,6 @@
 package gama.core.outputs.layers.charts;
 
 import java.awt.Color;
-import java.awt.Point;
 import java.util.ArrayList;
 
 import org.apache.commons.lang3.StringUtils;
@@ -21,22 +20,13 @@ import org.jfree.chart.axis.LogarithmicAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.NumberTickUnit;
 import org.jfree.chart.axis.SubCategoryAxis;
-import org.jfree.chart.axis.ValueAxis;
-import org.jfree.chart.entity.CategoryItemEntity;
-import org.jfree.chart.entity.ChartEntity;
-import org.jfree.chart.entity.PieSectionEntity;
-import org.jfree.chart.entity.XYItemEntity;
 import org.jfree.chart.plot.CategoryPlot;
-import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.AbstractRenderer;
 import org.jfree.chart.renderer.category.AbstractCategoryItemRenderer;
 import org.jfree.chart.renderer.category.BoxAndWhiskerRenderer;
-import org.jfree.data.category.CategoryDataset;
-import org.jfree.data.general.PieDataset;
 import org.jfree.data.statistics.BoxAndWhiskerCategoryDataset;
 import org.jfree.data.statistics.BoxAndWhiskerItem;
 import org.jfree.data.statistics.DefaultBoxAndWhiskerCategoryDataset;
-import org.jfree.data.xy.XYDataset;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
@@ -44,67 +34,26 @@ import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.color.IColor;
 import gama.api.ui.displays.IChartDataSource;
-import gama.api.ui.displays.IDisplaySurface;
 
 /**
- * The Class ChartJFreeChartOutputHistogram.
+ * JFreeChart implementation for Box and Whisker category charts.
  */
 public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartOutput {
 
-	/** The Constant XAXIS. */
 	private static final String XAXIS = "xaxis";
+	private boolean useSubAxis = false;
+	private boolean useMainAxisLabel = true;
 
-	/** The use sub axis. */
-	boolean useSubAxis = false;
-
-	/** The use main axis label. */
-	boolean useMainAxisLabel = true;
-
-	/**
-	 * Enable flat look.
-	 *
-	 * @param flat
-	 *            the flat
-	 */
-	// public static void enableFlatLook(final boolean flat) {
-	// /*
-	// * if (flat) { BoxAndWhiskerRenderer.setDefaultBarPainter(new StandardBarPainter());
-	// * BoxAndWhiskerRenderer.setDefaultShadowsVisible(false); } else {
-	// * BoxAndWhiskerRenderer.setDefaultBarPainter(new GradientBarPainter());
-	// * BoxAndWhiskerRenderer.setDefaultShadowsVisible(true); }
-	// */
-	// }
-	//
-	// static {
-	// enableFlatLook(GamaPreferences.Displays.CHART_FLAT.getValue());
-	// GamaPreferences.Displays.CHART_FLAT.onChange(ChartJFreeChartOutputBoxAndWhiskerCategory::enableFlatLook);
-	// }
-
-	/**
-	 * Instantiates a new chart J free chart output box and whisker category.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param name
-	 *            the name
-	 * @param typeexp
-	 *            the typeexp
-	 */
-	public ChartJFreeChartOutputBoxAndWhiskerCategory(final IScope scope, final String name,
-			final IExpression typeexp) {
+	public ChartJFreeChartOutputBoxAndWhiskerCategory(final IScope scope, final String name, final IExpression typeexp) {
 		super(scope, name, typeexp);
-		// TODO Auto-generated constructor stub
-
 	}
 
 	@Override
 	public void createChart(final IScope scope) {
 		super.createChart(scope);
 		jfreedataset.add(0, new DefaultBoxAndWhiskerCategoryDataset());
-
 		chart = ChartFactory.createBoxAndWhiskerChart(getName(), null, null,
 				(BoxAndWhiskerCategoryDataset) jfreedataset.get(0), true);
-
 	}
 
 	@Override
@@ -116,28 +65,14 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 
 	@Override
 	public void setDefaultPropertiesFromType(final IScope scope, final IChartDataSource source, final int type_val) {
-
-		source.setUseXErrValues(false);
 		source.setUseXErrValues(false);
 		source.setisBoxAndWhiskerData(true);
-		switch (type_val) {
-			case IChartDataSource.DATA_TYPE_LIST_DOUBLE_N, IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_N, IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_12, IChartDataSource.DATA_TYPE_LIST_POINT, IChartDataSource.DATA_TYPE_MATRIX_DOUBLE, IChartDataSource.DATA_TYPE_LIST_DOUBLE_3, IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_3: {
-				source.setCumulative(scope, false);
-				source.setUseSize(scope, false);
-				break;
-
-			}
-			default: {
-				source.setCumulative(scope, false); // never cumulative by default
-				source.setUseSize(scope, false);
-			}
-		}
-
+		source.setCumulative(scope, false);
+		source.setUseSize(scope, false);
 	}
 
 	@Override
 	protected AbstractRenderer createRenderer(final IScope scope, final String serieid) {
-		// final String style = this.getChartdataset().getDataSeries(scope, serieid).getStyle(scope);
 		return new BoxAndWhiskerRenderer();
 	}
 
@@ -155,40 +90,27 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 		});
 	}
 
-	/**
-	 * Reset renderer.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param serieid
-	 *            the serieid
-	 */
 	protected void resetRenderer(final IScope scope, final String serieid) {
-
+		if (chart == null) return;
 		final CategoryPlot plot = (CategoryPlot) this.chart.getPlot();
 		final BoxAndWhiskerRenderer newr = (BoxAndWhiskerRenderer) plot.getRenderer();
-
 		final ChartDataSeries myserie = this.getChartdataset().getDataSeries(scope, serieid);
-		if (!idPosition.containsKey(serieid)) {
-			// DEBUG.LOG("pb!!!");
-		} else {
-			final int myrow = idPosition.get(serieid);
-			if (myserie.getMycolor() != null) { newr.setSeriesPaint(myrow, IColor.toAWTColor(myserie.getMycolor())); }
-			configureLegend(newr, myserie, myrow, scope);
-		}
+		if (!idPosition.containsKey(serieid) || myserie == null) return;
 
+		final int myrow = idPosition.get(serieid);
+		if (myserie.getMycolor() != null) { newr.setSeriesPaint(myrow, IColor.toAWTColor(myserie.getMycolor())); }
+		configureLegend(newr, myserie, myrow, scope);
 	}
 
 	@Override
 	protected void clearDataSet(final IScope scope) {
-
 		super.clearDataSet(scope);
+		if (chart == null) return;
 		final CategoryPlot plot = (CategoryPlot) this.chart.getPlot();
 		for (int i = plot.getDatasetCount() - 1; i >= 1; i--) {
 			plot.setDataset(i, null);
 			plot.setRenderer(i, null);
 		}
-		// ((BoxAndWhiskerCategoryDataset) jfreedataset.get(0)).clear();
 		jfreedataset.clear();
 		jfreedataset.add(0, new DefaultBoxAndWhiskerCategoryDataset());
 		plot.setDataset((BoxAndWhiskerCategoryDataset) jfreedataset.get(0));
@@ -199,10 +121,8 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 
 	@Override
 	protected void createNewSerie(final IScope scope, final String serieid) {
-		if (!idPosition.containsKey(serieid)) {
-
+		if (!idPosition.containsKey(serieid) && chart != null) {
 			final CategoryPlot plot = (CategoryPlot) this.chart.getPlot();
-
 			final BoxAndWhiskerCategoryDataset firstdataset = (BoxAndWhiskerCategoryDataset) plot.getDataset();
 
 			if (nbseries == 0) {
@@ -212,37 +132,37 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 			nbseries++;
 			idPosition.put(serieid, nbseries - 1);
 		}
-
 	}
 
 	@Override
 	public void removeSerie(final IScope scope, final String serieid) {
-
 		super.removeSerie(scope, serieid);
 		this.clearDataSet(scope);
 	}
 
 	@Override
 	protected void resetSerie(final IScope scope, final String serieid) {
-
+		if (chart == null || jfreedataset.isEmpty()) return;
 		final ChartDataSeries dataserie = chartdataset.getDataSeries(scope, serieid);
+		if (dataserie == null) return;
+
 		final DefaultBoxAndWhiskerCategoryDataset serie = (DefaultBoxAndWhiskerCategoryDataset) jfreedataset.get(0);
 		if (serie.getRowKeys().contains(serieid)) { serie.removeRow(serieid); }
-		// final ArrayList<Double> XValues = dataserie.getXValues(scope);
+
 		final ArrayList<String> cValues = dataserie.getCValues(scope);
 		final ArrayList<Double> yValues = dataserie.getYValues(scope);
 		final ArrayList<Double> sValues = dataserie.getSValues(scope);
+
 		if (!cValues.isEmpty()) {
 			final NumberAxis rangeAxis = (NumberAxis) ((CategoryPlot) this.chart.getPlot()).getRangeAxis();
 			rangeAxis.setAutoRange(false);
 			for (int i = 0; i < cValues.size(); i++) {
-				if (getY_LogScale(scope)) {
+				if (properties.isYLogscale()) {
 					final double val = yValues.get(i);
 					if (val <= 0) throw GamaRuntimeException.warning("Log scale with <=0 value:" + val, scope);
 					serie.add(new BoxAndWhiskerItem(yValues.get(i), sValues.get(i), dataserie.xerrvaluesmin.get(i),
 							dataserie.xerrvaluesmax.get(i), dataserie.yerrvaluesmin.get(i),
 							dataserie.yerrvaluesmax.get(i), null, null, null), serieid, cValues.get(i));
-
 				} else {
 					serie.add(new BoxAndWhiskerItem(yValues.get(i),
 							sValues.size() > i ? sValues.get(i) : yValues.get(i),
@@ -251,283 +171,184 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 							dataserie.yerrvaluesmin.size() > i ? dataserie.yerrvaluesmin.get(i) : yValues.get(i),
 							dataserie.yerrvaluesmax.size() > i ? dataserie.yerrvaluesmax.get(i) : yValues.get(i), null,
 							null, null), serieid, cValues.get(i));
-
 				}
 			}
 		}
 
 		this.resetRenderer(scope, serieid);
+	}
 
+	private NumberAxis setupCategoryRangeAxis(final CategoryPlot pp) {
+		NumberAxis rangeAxis = (NumberAxis) pp.getRangeAxis();
+		if (properties.isYLogscale()) {
+			final LogarithmicAxis logAxis = new LogarithmicAxis(rangeAxis.getLabel());
+			logAxis.setAllowNegativesFlag(true);
+			pp.setRangeAxis(logAxis);
+			rangeAxis = logAxis;
+		}
+		if (properties.isUseYRangeInterval()) {
+			rangeAxis.setFixedAutoRange(properties.getYRangeInterval());
+			rangeAxis.setAutoRangeMinimumSize(properties.getYRangeInterval());
+			rangeAxis.setAutoRange(true);
+		} else if (properties.isUseYRangeMinMax()) {
+			rangeAxis.setRange(properties.getYRangeMin(), properties.getYRangeMax());
+		} else if (!properties.isUseYMin() && !properties.isUseYMax()) {
+			rangeAxis.setAutoRange(true);
+		}
+		return rangeAxis;
+	}
+
+	private void applyCategoryAxisStyles(final CategoryPlot pp, final NumberAxis rangeAxis, final IScope scope) {
+		Color ac = properties.getAxesColor() == null ? null : IColor.toAWTColor(properties.getAxesColor());
+		pp.setDomainGridlinePaint(ac);
+		pp.setRangeGridlinePaint(ac);
+		pp.setRangeCrosshairVisible(properties.isYTickLineVisible());
+
+		rangeAxis.setAxisLinePaint(ac);
+		rangeAxis.setLabelFont(properties.getLabelFont());
+		rangeAxis.setTickLabelFont(properties.getTickFont());
+
+		if (properties.getTextColor() != null) {
+			Color tc = IColor.toAWTColor(properties.getTextColor());
+			rangeAxis.setLabelPaint(tc);
+			rangeAxis.setTickLabelPaint(tc);
+		}
+		if (properties.getYTickUnit() > 0) {
+			rangeAxis.setTickUnit(new NumberTickUnit(properties.getYTickUnit()));
+		}
+		if (properties.getYLabel() != null && !properties.getYLabel().isEmpty()) {
+			rangeAxis.setLabel(properties.getYLabel());
+		}
+		if (!properties.isYTickValueVisible()) {
+			rangeAxis.setTickMarksVisible(false);
+			rangeAxis.setTickLabelsVisible(false);
+		}
+	}
+
+	private void updateSubCategories(final CategoryPlot pp, final CategoryAxis domainAxis, final IScope scope) {
+		if (!this.useSubAxis || !(domainAxis instanceof SubCategoryAxis subAxis)) return;
+		boolean hasSubCategories = false;
+		for (final String serieid : chartdataset.getDataSeriesIds(scope)) {
+			ChartDataSeries ds = chartdataset.getDataSeries(scope, serieid);
+			String leg = ds != null && ds.getSerieLegend(scope) != null ? ds.getSerieLegend(scope).toString() : "";
+			if (StringUtils.isNotBlank(leg)) {
+				subAxis.addSubCategory(leg);
+				hasSubCategories = true;
+			}
+		}
+		if (!hasSubCategories) {
+			pp.setDomainAxis(new CategoryAxis(pp.getDomainAxis().getLabel()));
+			this.useSubAxis = false;
+		}
 	}
 
 	@Override
 	public void resetAxes(final IScope scope) {
+		if (chart == null) return;
 		final CategoryPlot pp = (CategoryPlot) this.chart.getPlot();
-		NumberAxis rangeAxis = (NumberAxis) ((CategoryPlot) this.chart.getPlot()).getRangeAxis();
-		if (getY_LogScale(scope)) {
-			final LogarithmicAxis logAxis = new LogarithmicAxis(rangeAxis.getLabel());
-			logAxis.setAllowNegativesFlag(true);
-			((CategoryPlot) this.chart.getPlot()).setRangeAxis(logAxis);
-			rangeAxis = logAxis;
+		NumberAxis rangeAxis = setupCategoryRangeAxis(pp);
+		if ((properties.isUseYMin() || properties.isUseYMax()) && !properties.isUseYRangeMinMax()) {
+			applyYSingleBounds(scope, rangeAxis);
 		}
-
-		if (!useyrangeinterval && !useyrangeminmax && !useymin && !useymax) { rangeAxis.setAutoRange(true); }
-
-		if (this.useyrangeinterval) {
-			rangeAxis.setFixedAutoRange(yrangeinterval);
-			rangeAxis.setAutoRangeMinimumSize(yrangeinterval);
-			rangeAxis.setAutoRange(true);
-
-		}
-		if (this.useyrangeminmax) {
-			rangeAxis.setRange(yrangemin, yrangemax);
-
-		}
-		if ((useymin || useymax) && !useyrangeminmax) { applyYSingleBounds(scope, rangeAxis); }
 
 		resetDomainAxis(scope);
-
-		final CategoryAxis domainAxis = ((CategoryPlot) this.chart.getPlot()).getDomainAxis();
-		Color ac = axesColor == null ? null : IColor.toAWTColor(axesColor);
-		pp.setDomainGridlinePaint(ac);
-		pp.setRangeGridlinePaint(ac);
-		pp.setRangeCrosshairVisible(true);
-
-		pp.getRangeAxis().setAxisLinePaint(ac);
-		pp.getRangeAxis().setLabelFont(getLabelFont());
-		pp.getRangeAxis().setTickLabelFont(getTickFont());
-		if (textColor != null) {
-			Color tc = IColor.toAWTColor(textColor);
-			pp.getRangeAxis().setLabelPaint(tc);
-			pp.getRangeAxis().setTickLabelPaint(tc);
-		}
-		if (getYTickUnit(scope) > 0) {
-			((NumberAxis) pp.getRangeAxis()).setTickUnit(new NumberTickUnit(getYTickUnit(scope)));
-		}
-
-		if (getYLabel(scope) != null && !getYLabel(scope).isEmpty()) { pp.getRangeAxis().setLabel(getYLabel(scope)); }
-		if ("yaxis".equals(this.series_label_position)) {
-			pp.getRangeAxis().setLabel(this.getChartdataset().getDataSeriesIds(scope).iterator().next());
-			chart.getLegend().setVisible(false);
-		}
-
-		if (getXLabel(scope) != null && !getXLabel(scope).isEmpty()) { pp.getDomainAxis().setLabel(getXLabel(scope)); }
-
-		if (this.useSubAxis) {
-			boolean hasSubCategories = false;
-			for (final String serieid : chartdataset.getDataSeriesIds(scope)) {
-				ChartDataSeries ds = chartdataset.getDataSeries(scope, serieid);
-				String leg = ds != null && ds.getSerieLegend(scope) != null ? ds.getSerieLegend(scope).toString() : "";
-				if (StringUtils.isNotBlank(leg)) {
-					((SubCategoryAxis) domainAxis).addSubCategory(leg);
-					hasSubCategories = true;
-				}
-			}
-			if (!hasSubCategories) {
-				pp.setDomainAxis(new CategoryAxis(pp.getDomainAxis().getLabel()));
-				this.useSubAxis = false;
-			}
-		}
-		if (!this.getYTickLineVisible(scope)) { pp.setDomainGridlinesVisible(false); }
-
-		if (!this.getYTickLineVisible(scope)) {
-			pp.setRangeCrosshairVisible(false);
-
-		}
-
-		if (!this.getYTickValueVisible(scope)) {
-			pp.getRangeAxis().setTickMarksVisible(false);
-			pp.getRangeAxis().setTickLabelsVisible(false);
-
-		}
-
+		applyCategoryAxisStyles(pp, rangeAxis, scope);
+		updateSubCategories(pp, pp.getDomainAxis(), scope);
 	}
 
-	/**
-	 * Reset domain axis.
-	 *
-	 * @param scope
-	 *            the scope
-	 */
 	public void resetDomainAxis(final IScope scope) {
-
+		if (chart == null) return;
 		final CategoryPlot pp = (CategoryPlot) chart.getPlot();
-		if ("none".equals(this.series_label_position)) {
-			this.useSubAxis = false;
-		}
+		if ("none".equals(properties.getSeriesLabelPosition())) { this.useSubAxis = false; }
 		if (this.useSubAxis) {
-			final SubCategoryAxis newAxis = new SubCategoryAxis(pp.getDomainAxis().getLabel());
-			pp.setDomainAxis(newAxis);
+			pp.setDomainAxis(new SubCategoryAxis(pp.getDomainAxis().getLabel()));
 		}
-		Color ac = axesColor == null ? null : IColor.toAWTColor(axesColor);
-		pp.getDomainAxis().setAxisLinePaint(ac);
-		pp.getDomainAxis().setTickLabelFont(getTickFont());
-		pp.getDomainAxis().setLabelFont(getLabelFont());
-		if (textColor != null) {
-			Color tc = IColor.toAWTColor(textColor);
-			pp.getDomainAxis().setLabelPaint(tc);
-			pp.getDomainAxis().setTickLabelPaint(tc);
-			if (XAXIS.equals(this.series_label_position)) {
-				((SubCategoryAxis) pp.getDomainAxis()).setSubLabelPaint(tc);
+		Color ac = properties.getAxesColor() == null ? null : IColor.toAWTColor(properties.getAxesColor());
+		CategoryAxis domainAxis = pp.getDomainAxis();
+		domainAxis.setAxisLinePaint(ac);
+		domainAxis.setTickLabelFont(properties.getTickFont());
+		domainAxis.setLabelFont(properties.getLabelFont());
+
+		if (properties.getTextColor() != null) {
+			Color tc = IColor.toAWTColor(properties.getTextColor());
+			domainAxis.setLabelPaint(tc);
+			domainAxis.setTickLabelPaint(tc);
+			if (XAXIS.equals(properties.getSeriesLabelPosition()) && domainAxis instanceof SubCategoryAxis sca) {
+				sca.setSubLabelPaint(tc);
 			}
 		}
 
-		if (gap > 0) {
-
-			pp.getDomainAxis().setCategoryMargin(gap);
-			pp.getDomainAxis().setUpperMargin(gap);
-			pp.getDomainAxis().setLowerMargin(gap);
+		if (properties.getGap() > 0) {
+			domainAxis.setCategoryMargin(properties.getGap());
+			domainAxis.setUpperMargin(properties.getGap());
+			domainAxis.setLowerMargin(properties.getGap());
 		}
 
-		if (this.useSubAxis && !this.useMainAxisLabel) { pp.getDomainAxis().setTickLabelsVisible(false); }
-		if (!this.getYTickLineVisible(scope)) { pp.setDomainGridlinesVisible(false); }
-
-		if (!this.getYTickLineVisible(scope)) {
-			pp.setRangeCrosshairVisible(false);
-
-		}
-
-		if (!this.getYTickValueVisible(scope)) {
-			pp.getRangeAxis().setTickMarksVisible(false);
-			pp.getRangeAxis().setTickLabelsVisible(false);
-
-		}
-		if (!this.getXTickValueVisible(scope)) {
-			pp.getDomainAxis().setTickMarksVisible(false);
-			pp.getDomainAxis().setTickLabelsVisible(false);
-
-		}
-
+		if (this.useSubAxis && !this.useMainAxisLabel) { domainAxis.setTickLabelsVisible(false); }
+		if (!properties.isYTickLineVisible()) { pp.setDomainGridlinesVisible(false); }
+		if (!properties.isXTickValueVisible()) { domainAxis.setTickMarksVisible(false); domainAxis.setTickLabelsVisible(false); }
 	}
 
-	@Override
-	public void initChart_post_data_init(final IScope scope) {
-
-		super.initChart_post_data_init(scope);
-		final CategoryPlot pp = (CategoryPlot) chart.getPlot();
-
+	private void resolveSeriesLabelPosition() {
 		final String sty = getStyle();
 		this.useSubAxis = false;
 
 		if (IKeyword.STACK.equals(sty)) {
-			if (XAXIS.equals(this.series_label_position)) { this.series_label_position = IKeyword.DEFAULT; }
-			if (IKeyword.DEFAULT.equals(this.series_label_position)) { this.series_label_position = IKeyword.LEGEND; }
-		} else if ("default".equals(this.series_label_position)) {
-			if (!this.getChartdataset().getSources().isEmpty()) {
-				final ChartDataSource onesource = this.getChartdataset().getSources().get(0);
-				if (onesource.isCumulative()) {
-					this.series_label_position = "legend";
-				} else {
-					this.series_label_position = XAXIS;
-					useMainAxisLabel = false;
-				}
-
+			if (XAXIS.equals(properties.getSeriesLabelPosition())) { properties.setSeriesLabelPosition(IKeyword.DEFAULT); }
+			if (IKeyword.DEFAULT.equals(properties.getSeriesLabelPosition())) { properties.setSeriesLabelPosition(IKeyword.LEGEND); }
+		} else if ("default".equals(properties.getSeriesLabelPosition())) {
+			if (!this.getChartdataset().getSources().isEmpty() && !this.getChartdataset().getSources().get(0).isCumulative()) {
+				properties.setSeriesLabelPosition(XAXIS);
+				useMainAxisLabel = false;
 			} else {
-				this.series_label_position = "legend";
-
+				properties.setSeriesLabelPosition("legend");
 			}
 		}
 
-		if ("none".equals(this.series_label_position)) {
-			this.useSubAxis = false;
-		} else if (XAXIS.equals(this.series_label_position)) {
-			this.useSubAxis = true;
-		}
+		this.useSubAxis = XAXIS.equals(properties.getSeriesLabelPosition());
+	}
 
-		if (!"legend".equals(this.series_label_position) && chart.getLegend() != null) {
+	private void formatPlotAxes(final CategoryPlot pp, final IScope scope) {
+		Color ac = properties.getAxesColor() == null ? null : IColor.toAWTColor(properties.getAxesColor());
+		pp.setDomainGridlinePaint(ac);
+		pp.setRangeGridlinePaint(ac);
+		if (!properties.isXTickLineVisible()) { pp.setDomainGridlinesVisible(false); }
+		if (!properties.isYTickLineVisible()) { pp.setRangeGridlinesVisible(false); }
+		pp.setRangeCrosshairVisible(true);
+
+		NumberAxis rangeAxis = (NumberAxis) pp.getRangeAxis();
+		rangeAxis.setAxisLinePaint(ac);
+		rangeAxis.setLabelFont(properties.getLabelFont());
+		rangeAxis.setTickLabelFont(properties.getTickFont());
+
+		if (properties.getTextColor() != null) {
+			Color tc = IColor.toAWTColor(properties.getTextColor());
+			rangeAxis.setLabelPaint(tc);
+			rangeAxis.setTickLabelPaint(tc);
+			pp.getDomainAxis().setLabelPaint(tc);
+			pp.getDomainAxis().setTickLabelPaint(tc);
+			if (XAXIS.equals(properties.getSeriesLabelPosition()) && pp.getDomainAxis() instanceof SubCategoryAxis sca) {
+				sca.setSubLabelPaint(tc);
+			}
+		}
+		if (properties.getYTickUnit() > 0) { rangeAxis.setTickUnit(new NumberTickUnit(properties.getYTickUnit())); }
+		if (properties.getYLabel() != null && !properties.getYLabel().isEmpty()) { rangeAxis.setLabel(properties.getYLabel()); }
+		if (properties.getXLabel() != null && !properties.getXLabel().isEmpty()) { pp.getDomainAxis().setLabel(properties.getXLabel()); }
+	}
+
+	@Override
+	public void initChart_post_data_init(final IScope scope) {
+		super.initChart_post_data_init(scope);
+		if (chart == null) return;
+		final CategoryPlot pp = (CategoryPlot) chart.getPlot();
+
+		resolveSeriesLabelPosition();
+
+		if (!"legend".equals(properties.getSeriesLabelPosition()) && chart.getLegend() != null) {
 			chart.getLegend().setVisible(false);
 		}
 		this.resetDomainAxis(scope);
-		Color ac = axesColor == null ? null : IColor.toAWTColor(axesColor);
-		pp.setDomainGridlinePaint(ac);
-		pp.setRangeGridlinePaint(ac);
-		if (!this.getXTickLineVisible(scope)) { pp.setDomainGridlinesVisible(false); }
-		if (!this.getYTickLineVisible(scope)) { pp.setRangeGridlinesVisible(false); }
-		pp.setRangeCrosshairVisible(true);
-		pp.getRangeAxis().setAxisLinePaint(ac);
-		pp.getRangeAxis().setLabelFont(getLabelFont());
-		pp.getRangeAxis().setTickLabelFont(getTickFont());
-		if (textColor != null) {
-			Color tc = IColor.toAWTColor(textColor);
-			pp.getRangeAxis().setLabelPaint(tc);
-			pp.getRangeAxis().setTickLabelPaint(tc);
-		}
-		if (ytickunit > 0) { ((NumberAxis) pp.getRangeAxis()).setTickUnit(new NumberTickUnit(ytickunit)); }
-
-		if (ylabel != null && !ylabel.isEmpty()) { pp.getRangeAxis().setLabel(ylabel); }
-		if ("yaxis".equals(this.series_label_position)) {
-			pp.getRangeAxis().setLabel(this.getChartdataset().getDataSeriesIds(scope).iterator().next());
-			chart.getLegend().setVisible(false);
-		}
-
-		if (xlabel != null && !xlabel.isEmpty()) { pp.getDomainAxis().setLabel(xlabel); }
-		if (textColor != null) {
-			Color tc = IColor.toAWTColor(textColor);
-			pp.getDomainAxis().setLabelPaint(tc);
-			pp.getDomainAxis().setTickLabelPaint(tc);
-			if (XAXIS.equals(this.series_label_position)) {
-				((SubCategoryAxis) pp.getDomainAxis()).setSubLabelPaint(tc);
-			}
-		}
-	}
-
-	@Override
-	protected void initRenderer(final IScope scope) {
-		// final CategoryPlot pp = (CategoryPlot) chart.getPlot();
-		// final BarRenderer renderer = (BarRenderer) pp.getRenderer();
-
-		// CategoryPlot plot = (CategoryPlot)this.chart.getPlot();
-		// defaultrenderer = new BarRenderer();
-		// plot.setRenderer((BarRenderer)defaultrenderer);
-
-	}
-
-	@Override
-	public void getModelCoordinatesInfo(final int xOnScreen, final int yOnScreen, final IDisplaySurface g,
-			final Point positionInPixels, final StringBuilder sb) {
-		final int x = xOnScreen - positionInPixels.x;
-		final int y = yOnScreen - positionInPixels.y;
-		final ChartEntity entity = info.getEntityCollection().getEntity(x, y);
-		// getChart().handleClick(x, y, info);
-		switch (entity) {
-			case XYItemEntity xyie -> {
-				final XYDataset data = xyie.getDataset();
-				final int index = xyie.getItem();
-				final int series = xyie.getSeriesIndex();
-				final double xx = data.getXValue(series, index);
-				final double yy = data.getYValue(series, index);
-				final XYPlot plot = (XYPlot) getJFChart().getPlot();
-				final ValueAxis xAxis = plot.getDomainAxis(series);
-				final ValueAxis yAxis = plot.getRangeAxis(series);
-				final boolean xInt = xx % 1 == 0;
-				final boolean yInt = yy % 1 == 0;
-				String xTitle = xAxis.getLabel();
-				if (StringUtils.isBlank(xTitle)) { xTitle = "X"; }
-				String yTitle = yAxis.getLabel();
-				if (StringUtils.isBlank(yTitle)) { yTitle = "Y"; }
-				sb.append(xTitle).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
-				sb.append(" | ").append(yTitle).append(" ").append(yInt ? (int) yy : String.format("%.2f", yy));
-			}
-			case PieSectionEntity pie -> {
-				final String title = pie.getSectionKey().toString();
-				final PieDataset data = pie.getDataset();
-				final int index = pie.getSectionIndex();
-				final double xx = data.getValue(index).doubleValue();
-				final boolean xInt = xx % 1 == 0;
-				sb.append(title).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
-			}
-			case CategoryItemEntity cie -> {
-				final Comparable<?> columnKey = cie.getColumnKey();
-				final String title = columnKey.toString();
-				final CategoryDataset data = cie.getDataset();
-				final Comparable<?> rowKey = cie.getRowKey();
-				final double xx = data.getValue(rowKey, columnKey).doubleValue();
-				final boolean xInt = xx % 1 == 0;
-				sb.append(title).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
-			}
-			case null, default -> {
-			}
-		}
+		formatPlotAxes(pp, scope);
 	}
 
 }

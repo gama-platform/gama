@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * ChartJFreeChartOutputRadar.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform (v.2025-03).
+ * ChartJFreeChartOutputRadar.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform.
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -11,51 +10,33 @@
 package gama.core.outputs.layers.charts;
 
 import java.awt.Color;
-import java.awt.Point;
 import java.util.ArrayList;
 
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.entity.CategoryItemEntity;
-import org.jfree.chart.entity.ChartEntity;
 import org.jfree.chart.plot.SpiderWebPlot;
 import org.jfree.chart.renderer.AbstractRenderer;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
-import org.jfree.data.general.Dataset;
 
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.color.IColor;
 import gama.api.ui.displays.IChartDataSource;
-import gama.api.ui.displays.IDisplaySurface;
 
 /**
- * The Class ChartJFreeChartOutputRadar.
+ * JFreeChart implementation for Radar / SpiderWeb charts.
  */
 public class ChartJFreeChartOutputRadar extends ChartJFreeChartOutput {
 
-	/**
-	 * Instantiates a new chart J free chart output radar.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param name
-	 *            the name
-	 * @param typeexp
-	 *            the typeexp
-	 */
 	public ChartJFreeChartOutputRadar(final IScope scope, final String name, final IExpression typeexp) {
 		super(scope, name, typeexp);
-		// TODO Auto-generated constructor stub
-
 	}
 
 	@Override
 	public void createChart(final IScope scope) {
 		super.createChart(scope);
-		final SpiderWebPlot plot = new SpiderWebPlot((CategoryDataset) createDataset(scope));
+		final SpiderWebPlot plot = new SpiderWebPlot(new DefaultCategoryDataset());
 		chart = new JFreeChart(getName(), null, plot, true);
-
 	}
 
 	@Override
@@ -67,29 +48,8 @@ public class ChartJFreeChartOutputRadar extends ChartJFreeChartOutput {
 
 	@Override
 	public void setDefaultPropertiesFromType(final IScope scope, final IChartDataSource source, final int type_val) {
-
-		switch (type_val) {
-			case IChartDataSource.DATA_TYPE_LIST_DOUBLE_N, IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_N, IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_12, IChartDataSource.DATA_TYPE_LIST_POINT, IChartDataSource.DATA_TYPE_MATRIX_DOUBLE, IChartDataSource.DATA_TYPE_LIST_DOUBLE_3, IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_3 -> {
-				source.setCumulative(scope, false); // never cumulative by default
-				source.setUseSize(scope, false);
-			}
-			default -> {
-				source.setCumulative(scope, false); // never cumulative by default
-				source.setUseSize(scope, false);
-			}
-		}
-
-	}
-
-	/**
-	 * Creates the dataset.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @return the dataset
-	 */
-	Dataset createDataset(final IScope scope) {
-		return new DefaultCategoryDataset();
+		source.setCumulative(scope, false);
+		source.setUseSize(scope, false);
 	}
 
 	@Override
@@ -97,220 +57,103 @@ public class ChartJFreeChartOutputRadar extends ChartJFreeChartOutput {
 		return null;
 	}
 
-	/**
-	 * Reset renderer.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param serieid
-	 *            the serieid
-	 */
 	protected void resetRenderer(final IScope scope, final String serieid) {
+		if (chart == null) return;
 		final SpiderWebPlot plot = (SpiderWebPlot) this.chart.getPlot();
 		if (plot.getMaxValue() <= 0.0) { plot.setMaxValue(1.0); }
 		final ChartDataSeries myserie = this.getChartdataset().getDataSeries(scope, serieid);
-		if (!idPosition.containsKey(serieid)) {
-			// DEBUG.LOG("pb!!!");
-		} else {
+		if (myserie != null && idPosition.containsKey(serieid)) {
 			final int myrow = idPosition.get(serieid);
-			if (myserie.getMycolor() != null) { plot.setSeriesPaint(myrow, IColor.toAWTColor(myserie.getMycolor())); }
-
-			if ("onchart".equals(series_label_position)) {
-				//// newr.setBaseItemLabelGenerator(new LabelGenerator());
-				// ItemLabelPosition itemlabelposition = new
-				//// ItemLabelPosition(ItemLabelAnchor.OUTSIDE12, TextAnchor.BOTTOM_CENTER);
-				// newr.setBasePositiveItemLabelPosition(itemlabelposition);
-				// newr.setBaseNegativeItemLabelPosition(itemlabelposition);
-				// newr.setBaseItemLabelsVisible(true);
+			if (myserie.getMycolor() != null) {
+				plot.setSeriesPaint(myrow, IColor.toAWTColor(myserie.getMycolor()));
 			}
-
 		}
-
 	}
 
 	@Override
 	protected void clearDataSet(final IScope scope) {
-
 		super.clearDataSet(scope);
+		if (chart == null) return;
 		final SpiderWebPlot plot = (SpiderWebPlot) this.chart.getPlot();
-		for (int i = plot.getDataset().getRowCount() - 1; i >= 1; i--) {
-			// plot.setDataset(i, null);
-			// plot.setRenderer(i, null);
-		}
-		if (jfreedataset.size() > 0) { ((DefaultCategoryDataset) jfreedataset.get(0)).clear(); }
+		if (!jfreedataset.isEmpty()) { ((DefaultCategoryDataset) jfreedataset.get(0)).clear(); }
 		jfreedataset.clear();
-		jfreedataset.add(0, new DefaultCategoryDataset());
-		plot.setDataset((DefaultCategoryDataset) jfreedataset.get(0));
+		DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+		jfreedataset.add(0, dataset);
+		plot.setDataset(dataset);
 		idPosition.clear();
 		nbseries = 0;
 	}
 
 	@Override
 	protected void createNewSerie(final IScope scope, final String serieid) {
-		// final ChartDataSeries dataserie = chartdataset.getDataSeries(scope,
-		// serieid);
-		// final XYIntervalSeries serie = new
-		// XYIntervalSeries(dataserie.getSerieLegend(scope), false, true);
-		if (!idPosition.containsKey(serieid)) {
-
+		if (!idPosition.containsKey(serieid) && chart != null) {
 			final SpiderWebPlot plot = (SpiderWebPlot) this.chart.getPlot();
-
 			final DefaultCategoryDataset firstdataset = (DefaultCategoryDataset) plot.getDataset();
-
 			if (nbseries == 0) {
 				plot.setDataset(firstdataset);
-
-			} else {
-
-				// DefaultCategoryDataset newdataset=new DefaultCategoryDataset();
-				// jfreedataset.add(newdataset);
-				// plot.setDataset(jfreedataset.size()-1, newdataset);
-				// plot.setDataset(nbseries, firstdataset);
-
 			}
 			nbseries++;
-			// plot.setRenderer(nbseries-1,
-			// (CategoryItemRenderer)getOrCreateRenderer(scope,serieid));
 			idPosition.put(serieid, nbseries - 1);
 		}
-		// DEBUG.LOG("new serie"+serieid+" at
-		// "+IdPosition.get(serieid)+" fdsize "+plot.getCategories().size()+"
-		// jfds "+jfreedataset.size()+" datasc "+plot.getDatasetCount()+" nbse
-		// "+nbseries);
-
 	}
 
 	@Override
 	public void removeSerie(final IScope scope, final String serieid) {
-
 		super.removeSerie(scope, serieid);
 		this.clearDataSet(scope);
 	}
 
 	@Override
 	protected void resetSerie(final IScope scope, final String serieid) {
-
-		chart.getPlot();
+		if (chart == null || jfreedataset.isEmpty()) return;
 		final ChartDataSeries dataserie = chartdataset.getDataSeries(scope, serieid);
-		// DefaultCategoryDataset serie=((DefaultCategoryDataset)
-		// jfreedataset.get(IdPosition.get(dataserie.getSerieId(scope))));
+		if (dataserie == null) return;
+
 		final DefaultCategoryDataset serie = (DefaultCategoryDataset) jfreedataset.get(0);
 		if (serie.getRowKeys().contains(serieid)) { serie.removeRow(serieid); }
-		final ArrayList<String> CValues = dataserie.getCValues(scope);
-		final ArrayList<Double> YValues = dataserie.getYValues(scope);
-		final ArrayList<Double> SValues = dataserie.getSValues(scope);
-		if (CValues.size() > 0) {
+		final ArrayList<String> cValues = dataserie.getCValues(scope);
+		final ArrayList<Double> yValues = dataserie.getYValues(scope);
+
+		if (!cValues.isEmpty()) {
 			int deb = 0;
-			if (this.usexrangeinterval && CValues.size() > this.xrangeinterval) {
-				deb = CValues.size() - (int) this.xrangeinterval;
+			if (properties.isUseXRangeInterval() && cValues.size() > properties.getXRangeInterval()) {
+				deb = cValues.size() - (int) properties.getXRangeInterval();
 			}
-			for (int i = deb; i < CValues.size(); i++) {
-				serie.addValue(YValues.get(i), serieid, CValues.get(i - deb));
-				// ((ExtendedCategoryAxis)domainAxis).addSubLabel(CValues.get(i),
-				// serieid);;
+			for (int i = deb; i < cValues.size(); i++) {
+				serie.addValue(yValues.get(i), serieid, cValues.get(i - deb));
 			}
 		}
-		if (SValues.size() > 0) {
-			// what to do with Z values??
-
-		}
-
 		this.resetRenderer(scope, serieid);
-
 	}
 
 	@Override
 	public void resetAxes(final IScope scope) {
-		if ("none".equals(series_label_position)) { this.chart.getLegend().setVisible(false); }
-
-	}
-
-	/**
-	 * Reset domain axis.
-	 *
-	 * @param scope
-	 *            the scope
-	 */
-	private void resetDomainAxis(final IScope scope) {
-
-		chart.getPlot();
-
-	}
-
-	@Override
-	public void initChart(final IScope scope, final String chartname) {
-		super.initChart(scope, chartname);
-		chart.getPlot();
-
+		if (chart == null || chart.getLegend() == null) return;
+		if ("none".equals(properties.getSeriesLabelPosition())) {
+			this.chart.getLegend().setVisible(false);
+		}
 	}
 
 	@Override
 	public void initChart_post_data_init(final IScope scope) {
-
 		super.initChart_post_data_init(scope);
+		if (chart == null) return;
 		final SpiderWebPlot pp = (SpiderWebPlot) chart.getPlot();
 
-		// final String sty = getStyle();
-		// this.useSubAxis=false;
-		// switch (sty) {
-		// default: {
-		if ("default".equals(series_label_position)) { this.series_label_position = "legend"; }
-		// break;
-		// }
-		// }
-		if ("xaxis".equals(series_label_position)) {
-			// this.useSubAxis=true;
-		}
-
-		if (!"legend".equals(series_label_position)) {
-			chart.getLegend().setVisible(false);
-			// legend is useless, but I find it nice anyway... Could put back...
-		}
-		this.resetDomainAxis(scope);
-		Color ac = axesColor == null ? null : IColor.toAWTColor(axesColor);
+		Color ac = properties.getAxesColor() == null ? null : IColor.toAWTColor(properties.getAxesColor());
 		pp.setAxisLinePaint(ac);
+		pp.setLabelFont(properties.getLabelFont());
+		if (properties.getTextColor() != null) { pp.setLabelPaint(IColor.toAWTColor(properties.getTextColor())); }
 
-		pp.setLabelFont(getLabelFont());
-		if (textColor != null) { pp.setLabelPaint(IColor.toAWTColor(textColor)); }
-
-		// if (ylabel != null && ylabel != "") {}
-		if ("yaxis".equals(series_label_position)) {
-			// pp.getRangeAxis().setLabel(this.getChartdataset().getDataSeriesIds(scope).iterator().next());
-			chart.getLegend().setVisible(false);
-		}
-		chart.getLegend().setVisible(true);
-
-		if (xlabel != null && !"".equals(xlabel)) {
-			// pp.getDomainAxis().setLabel(xlabel);
+		if (chart.getLegend() != null) {
+			chart.getLegend().setVisible(!"none".equals(properties.getSeriesLabelPosition()));
 		}
 
-		if ("none".equals(series_label_position)) { pp.setLabelPaint(IColor.toAWTColor(this.backgroundColor)); }
-		if (this.useyrangeinterval) {
-			((SpiderWebPlot) chart.getPlot()).setMaxValue(this.yrangeinterval);
-		} else if (this.useyrangeminmax) { ((SpiderWebPlot) chart.getPlot()).setMaxValue(this.yrangemax); }
-	}
-
-	@Override
-	protected void initRenderer(final IScope scope) {
-
-	}
-
-	@Override
-	public void getModelCoordinatesInfo(final int xOnScreen, final int yOnScreen, final IDisplaySurface g,
-			final Point positionInPixels, final StringBuilder sb) {
-		final int x = xOnScreen - positionInPixels.x;
-		final int y = yOnScreen - positionInPixels.y;
-		final ChartEntity entity = info.getEntityCollection().getEntity(x, y);
-		// getChart().handleClick(x, y, info);
-
-		final Comparable<?> columnKey = ((CategoryItemEntity) entity).getColumnKey();
-		final String title = columnKey.toString();
-		final CategoryDataset data = ((CategoryItemEntity) entity).getDataset();
-		final Comparable<?> rowKey = ((CategoryItemEntity) entity).getRowKey();
-		final double xx = data.getValue(rowKey, columnKey).doubleValue();
-		final boolean xInt = xx % 1 == 0;
-		sb.append(title).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
-
+		if (properties.isUseYRangeInterval()) {
+			pp.setMaxValue(properties.getYRangeInterval());
+		} else if (properties.isUseYRangeMinMax()) {
+			pp.setMaxValue(properties.getYRangeMax());
+		}
 	}
 
 }

@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * ChartJFreeChartOutput.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * (v.2025-03).
+ * ChartJFreeChartOutput.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform.
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -13,6 +12,8 @@ package gama.core.outputs.layers.charts;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -20,10 +21,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jfree.chart.ChartRenderingInfo;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.annotations.XYTitleAnnotation;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.block.BlockBorder;
+import org.jfree.chart.entity.CategoryItemEntity;
+import org.jfree.chart.entity.ChartEntity;
+import org.jfree.chart.entity.PieSectionEntity;
+import org.jfree.chart.entity.XYItemEntity;
 import org.jfree.chart.event.ChartProgressEvent;
 import org.jfree.chart.event.ChartProgressListener;
 import org.jfree.chart.plot.Plot;
@@ -35,91 +43,51 @@ import org.jfree.chart.ui.HorizontalAlignment;
 import org.jfree.chart.ui.RectangleAnchor;
 import org.jfree.chart.ui.RectangleEdge;
 import org.jfree.chart.ui.VerticalAlignment;
+import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.general.Dataset;
-import org.jfree.chart.axis.NumberAxis;
+import org.jfree.data.general.PieDataset;
+import org.jfree.data.xy.XYDataset;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.color.IColor;
+import gama.api.ui.displays.IDisplaySurface;
 import gama.core.outputs.display.AbstractDisplayGraphics;
 import gama.gaml.operators.Colors;
 
 /**
- * The Class ChartJFreeChartOutput.
+ * Base JFreeChart implementation of ChartOutput.
  */
 public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressListener {
 
-	/** The lock. */
-	Object lock = new Object();
+	protected final Object lock = new Object();
+	public static final Shape[] defaultmarkers = org.jfree.chart.plot.DefaultDrawingSupplier.createStandardSeriesShapes();
 
-	/** The Constant defaultmarkers. */
-	public static final Shape[] defaultmarkers =
-			org.jfree.chart.plot.DefaultDrawingSupplier.createStandardSeriesShapes();
+	protected boolean oldAntiAlias;
+	public final ChartRenderingInfo info = new ChartRenderingInfo();
+	protected final List<Dataset> jfreedataset = new ArrayList<>();
+	protected JFreeChart chart = null;
 
-	/** The old anti alias. */
-	boolean oldAntiAlias;
+	protected final Rectangle2D area = new Rectangle2D.Double();
+	protected BufferedImage frontImage, backImage;
+	protected AbstractRenderer defaultrenderer;
 
-	/** The info. */
-	final public ChartRenderingInfo info;
+	protected final HashMap<String, Integer> idPosition = new HashMap<>();
+	protected final HashMap<String, AbstractRenderer> rendererSet = new HashMap<>();
+	protected int nbseries = 0;
 
-	/** The jfreedataset. */
-	final List<Dataset> jfreedataset = new ArrayList<>();
-
-	/** The chart. */
-	JFreeChart chart = null;
-
-	/** The area. */
-	final Rectangle2D area = new Rectangle2D.Double();
-
-	/** The cache. */
-	BufferedImage frontImage, backImage;
-
-	/** The defaultrenderer. */
-	AbstractRenderer defaultrenderer;
-
-	/** The Id position. */
-	final HashMap<String, Integer> idPosition = new HashMap<>();
-
-	/** The renderer set. */
-	final HashMap<String, AbstractRenderer> rendererSet = new HashMap<>();
-
-	/** The nbseries. */
-	int nbseries = 0;
-
-	/**
-	 * Instantiates a new chart J free chart output.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param name
-	 *            the name
-	 * @param typeexp
-	 *            the typeexp
-	 */
 	public ChartJFreeChartOutput(final IScope scope, final String name, final IExpression typeexp) {
 		super(scope, name, typeexp);
-		info = new ChartRenderingInfo();
 	}
 
 	/**
-	 * Creates the chart output.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param name
-	 *            the name
-	 * @param typeexp
-	 *            the typeexp
-	 * @return the chart J free chart output
+	 * Factory method to instantiate specific JFreeChart chart output based on type.
 	 */
-	public static ChartJFreeChartOutput createChartOutput(final IScope scope, final String name,
-			final IExpression typeexp) {
-
-		final IExpression string1 = typeexp;
-		if (string1 != null) {
-			final String t = Cast.asString(scope, string1.value(scope));
+	public static ChartJFreeChartOutput createChartOutput(final IScope scope, final String name, final IExpression typeexp) {
+		if (typeexp != null) {
+			final String t = Cast.asString(scope, typeexp.value(scope));
 			return switch (t) {
 				case IKeyword.HISTOGRAM -> new ChartJFreeChartOutputHistogram(scope, name, typeexp);
 				case IKeyword.PIE -> new ChartJFreeChartOutputPie(scope, name, typeexp);
@@ -133,32 +101,34 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 	}
 
 	@Override
+	public Object getNativeChart() {
+		return chart;
+	}
+
+	@Override
 	public BufferedImage getImage(final int sizeX, final int sizeY, final boolean antiAlias) {
+		if (chart == null) return null;
 		adjustImage(sizeX, sizeY, antiAlias);
 
 		final Graphics2D g2D = backImage.createGraphics();
 		try {
-
+			if (antiAlias) {
+				g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+				g2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+				g2D.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+				g2D.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+			}
 			synchronized (lock) {
 				chart.draw(g2D, area, info);
 			}
 		} catch (IndexOutOfBoundsException | IllegalArgumentException | NullPointerException e) {
-			// Do nothing. See #1605
-			// e.printStackTrace();
-			// Should we force redrawing in case of error ? See #3442
+			// Ignore transient render errors during dataset updates
 		} finally {
 			g2D.dispose();
 		}
 		return frontImage;
-
 	}
 
-	/**
-	 * Chart progress.
-	 *
-	 * @param event
-	 *            the event
-	 */
 	@Override
 	public void chartProgress(final ChartProgressEvent event) {
 		if (event.getType() == ChartProgressEvent.DRAWING_FINISHED) {
@@ -170,16 +140,6 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 		}
 	}
 
-	/**
-	 * Adjust image.
-	 *
-	 * @param sizeX
-	 *            the size X
-	 * @param sizeY
-	 *            the size Y
-	 * @param antiAlias
-	 *            the anti alias
-	 */
 	private void adjustImage(final int sizeX, final int sizeY, final boolean antiAlias) {
 		if (antiAlias != oldAntiAlias) {
 			oldAntiAlias = antiAlias;
@@ -194,91 +154,116 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 	}
 
 	@Override
+	public void setBackgroundColorValue(final IScope scope, final IColor color) {
+		super.setBackgroundColorValue(scope, color);
+		if (chart != null) {
+			configureChartBackgrounds();
+		}
+	}
+
+	@Override
+	public void updateOutput(final IScope scope) {
+		if (chart != null) {
+			configureChartBackgrounds();
+		}
+		super.updateOutput(scope);
+	}
+
+	@Override
 	public void step(final IScope scope) {
 		synchronized (lock) {
 			super.step(scope);
 		}
 	}
 
-	/**
-	 * Inits the renderer.
-	 *
-	 * @param scope
-	 *            the scope
-	 */
 	protected void initRenderer(final IScope scope) {}
 
-	@Override
-	public void initChart(final IScope scope, final String chartname) {
-		super.initChart(scope, chartname);
-
-		initRenderer(scope);
-		final Plot plot = chart.getPlot();
-		chart.addProgressListener(this);
-		chart.setBorderVisible(false);
-		plot.setOutlineVisible(false);
+	private void configureChartTitle() {
 		chart.setTitle(this.getName());
-		chart.getTitle().setVisible(true);
-		chart.getTitle().setFont(getTitleFont());
-		if (!this.getTitleVisible(scope)) { chart.getTitle().setVisible(false); }
-		if (textColor != null) { chart.getTitle().setPaint(IColor.toAWTColor(textColor)); }
+		if (chart.getTitle() != null) {
+			chart.getTitle().setVisible(properties.isTitleVisible());
+			chart.getTitle().setFont(properties.getTitleFont());
+			if (properties.getTextColor() != null) {
+				chart.getTitle().setPaint(IColor.toAWTColor(properties.getTextColor()));
+			}
+		}
+	}
 
-		if (backgroundColor == null) {
+	private void configureChartBackgrounds() {
+		Plot plot = chart.getPlot();
+		if (properties.getBackgroundColor() == null) {
 			plot.setBackgroundPaint(null);
 			chart.setBackgroundPaint(null);
 			chart.setBorderPaint(null);
 			if (chart.getLegend() != null) { chart.getLegend().setBackgroundPaint(null); }
 		} else {
-			final Color bg = IColor.toAWTColor(backgroundColor);
+			final Color bg = IColor.toAWTColor(properties.getBackgroundColor());
 			chart.setBackgroundPaint(bg);
 			plot.setBackgroundPaint(bg);
 			chart.setBorderPaint(bg);
 			if (chart.getLegend() != null) { chart.getLegend().setBackgroundPaint(bg); }
 		}
-		if (chart.getLegend() != null) {
-			LegendTitle legend = chart.getLegend();
-			legend.setItemFont(getLegendFont());
-			legend.setFrame(BlockBorder.NONE);
-			legend.setPosition(RectangleEdge.BOTTOM);
-
-			configureLegendPosition(legend, plot, scope);
-			configureLegendOrientation(legend);
-
-			if (textColor != null) { legend.setItemPaint(IColor.toAWTColor(textColor)); }
-		}
-
 	}
 
-	private void configureLegendPosition(final LegendTitle legend, final Plot plot, final IScope scope) {
-		switch (series_label_position) {
+	private void configureChartLegend(final IScope scope) {
+		if (chart.getLegend() == null) return;
+		LegendTitle legend = chart.getLegend();
+		legend.setItemFont(properties.getLegendFont());
+		legend.setFrame(BlockBorder.NONE);
+		legend.setPosition(RectangleEdge.BOTTOM);
+
+		configureLegendPosition(legend, chart.getPlot(), scope);
+		configureLegendOrientation(legend);
+
+		if (properties.getTextColor() != null) {
+			legend.setItemPaint(IColor.toAWTColor(properties.getTextColor()));
+		}
+	}
+
+	@Override
+	public void initChart(final IScope scope, final String chartname) {
+		super.initChart(scope, chartname);
+		if (chart == null) return;
+
+		initRenderer(scope);
+		chart.addProgressListener(this);
+		chart.setBorderVisible(false);
+		chart.getPlot().setOutlineVisible(false);
+
+		configureChartTitle();
+		configureChartBackgrounds();
+		configureChartLegend(scope);
+	}
+
+	protected void configureLegendPosition(final LegendTitle legend, final Plot plot, final IScope scope) {
+		switch (properties.getSeriesLabelPosition()) {
 			case IKeyword.LEFT -> legend.setPosition(RectangleEdge.LEFT);
 			case IKeyword.RIGHT -> legend.setPosition(RectangleEdge.RIGHT);
 			case IKeyword.TOP -> legend.setPosition(RectangleEdge.TOP);
 			case "none" -> legend.setVisible(false);
 			case "onchart" -> {
 				if (plot instanceof XYPlot p) {
-					double x = series_label_anchor.getX() / 2 + 0.25;
-					double y = series_label_anchor.getY() / 2 + 0.25;
+					double x = properties.getSeriesLabelAnchor().getX() / 2 + 0.25;
+					double y = properties.getSeriesLabelAnchor().getY() / 2 + 0.25;
 					XYTitleAnnotation ta = new XYTitleAnnotation(x, y, legend, RectangleAnchor.CENTER);
 					ta.setMaxWidth(0.5);
 					ta.setMaxHeight(0.5);
 					legend.setHorizontalAlignment(HorizontalAlignment.CENTER);
 					legend.setVerticalAlignment(VerticalAlignment.CENTER);
-					legend.setBackgroundPaint(IColor.toAWTColor(Colors.rgb(scope, backgroundColor, 0.5)));
+					legend.setBackgroundPaint(IColor.toAWTColor(Colors.rgb(scope, properties.getBackgroundColor(), 0.5)));
 					p.addAnnotation(ta);
 					chart.removeLegend();
 				}
 			}
-			default -> {
-			}
+			default -> {}
 		}
 	}
 
 	protected void configureLegendOrientation(final LegendTitle legend) {
 		if (legend == null) return;
-		if ("vertical".equalsIgnoreCase(legend_orientation)) {
+		if ("vertical".equalsIgnoreCase(properties.getLegendOrientation())) {
 			legend.getItemContainer().setArrangement(new org.jfree.chart.block.ColumnArrangement());
-		} else if ("horizontal".equalsIgnoreCase(legend_orientation)) {
+		} else if ("horizontal".equalsIgnoreCase(properties.getLegendOrientation())) {
 			legend.getItemContainer().setArrangement(new org.jfree.chart.block.FlowArrangement());
 		}
 	}
@@ -291,103 +276,87 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 		}
 	}
 
-	/**
-	 * Gets the or create renderer.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param serieid
-	 *            the serieid
-	 * @return the or create renderer
-	 */
 	AbstractRenderer getOrCreateRenderer(final IScope scope, final String serieid) {
 		if (rendererSet.containsKey(serieid)) return rendererSet.get(serieid);
 		final AbstractRenderer newrenderer = createRenderer(scope, serieid);
 		rendererSet.put(serieid, newrenderer);
 		return newrenderer;
-
 	}
 
-	/**
-	 * Creates the renderer.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param serieid
-	 *            the serieid
-	 * @return the abstract renderer
-	 */
 	protected AbstractRenderer createRenderer(final IScope scope, final String serieid) {
 		return new XYErrorRenderer();
 	}
 
-	/**
-	 * Gets the label font.
-	 *
-	 * @return the label font
-	 */
-	Font getLabelFont() { return new Font(labelFontFace, labelFontStyle, labelFontSize); }
+	Font getLabelFont() { return properties.getLabelFont(); }
+	Font getTickFont() { return properties.getTickFont(); }
+	Font getLegendFont() { return properties.getLegendFont(); }
+	Font getTitleFont() { return properties.getTitleFont(); }
 
-	/**
-	 * Gets the tick font.
-	 *
-	 * @return the tick font
-	 */
-	Font getTickFont() { return new Font(tickFontFace, tickFontStyle, tickFontSize); }
-
-	/**
-	 * Gets the legend font.
-	 *
-	 * @return the legend font
-	 */
-	Font getLegendFont() { return new Font(legendFontFace, legendFontStyle, legendFontSize); }
-
-	/**
-	 * Gets the title font.
-	 *
-	 * @return the title font
-	 */
-	Font getTitleFont() { return new Font(titleFontFace, titleFontStyle, titleFontSize); }
-
-	@Override
-	public JFreeChart getJFChart() { return chart; }
-
-	/**
-	 * Applies x_min and/or x_max single-bound constraints to the given domain axis. First triggers auto-range to
-	 * compute bounds from data, then clamps whichever bound was specified by the user. Only called when
-	 * {@link #usexrangeminmax} is not set and at least one of {@link #usexmin} / {@link #usexmax} is true.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param axis
-	 *            the numeric domain axis to constrain
-	 */
 	protected void applyXSingleBounds(final IScope scope, final NumberAxis axis) {
+		if (axis == null) return;
 		axis.setAutoRange(true);
 		double autoMin = axis.getRange().getLowerBound();
 		double autoMax = axis.getRange().getUpperBound();
-		double newMin = usexmin ? xmin_val : autoMin;
-		double newMax = usexmax ? xmax_val : autoMax;
+		double newMin = properties.isUseXMin() ? properties.getXMinVal() : autoMin;
+		double newMax = properties.isUseXMax() ? properties.getXMaxVal() : autoMax;
 		if (newMax > newMin) { axis.setRange(newMin, newMax); }
 	}
 
-	/**
-	 * Applies y_min and/or y_max single-bound constraints to the given range axis. First triggers auto-range to
-	 * compute bounds from data, then clamps whichever bound was specified by the user. Only called when
-	 * {@link #useyrangeminmax} is not set and at least one of {@link #useymin} / {@link #useymax} is true.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param axis
-	 *            the numeric range axis to constrain
-	 */
 	protected void applyYSingleBounds(final IScope scope, final NumberAxis axis) {
+		if (axis == null) return;
 		axis.setAutoRange(true);
 		double autoMin = axis.getRange().getLowerBound();
 		double autoMax = axis.getRange().getUpperBound();
-		double newMin = useymin ? ymin_val : autoMin;
-		double newMax = useymax ? ymax_val : autoMax;
+		double newMin = properties.isUseYMin() ? properties.getYMinVal() : autoMin;
+		double newMax = properties.isUseYMax() ? properties.getYMaxVal() : autoMax;
 		if (newMax > newMin) { axis.setRange(newMin, newMax); }
+	}
+
+	@Override
+	public void getModelCoordinatesInfo(final int xOnScreen, final int yOnScreen, final IDisplaySurface g,
+			final Point positionInPixels, final StringBuilder sb) {
+		if (info == null || info.getEntityCollection() == null) return;
+		final int x = xOnScreen - positionInPixels.x;
+		final int y = yOnScreen - positionInPixels.y;
+		final ChartEntity entity = info.getEntityCollection().getEntity(x, y);
+		switch (entity) {
+			case XYItemEntity xy -> {
+				final XYDataset data = xy.getDataset();
+				final int index = xy.getItem();
+				final int series = xy.getSeriesIndex();
+				final double xx = data.getXValue(series, index);
+				final double yy = data.getYValue(series, index);
+				final XYPlot plot = (XYPlot) getJFChart().getPlot();
+				final ValueAxis xAxis = plot.getDomainAxis(series);
+				final ValueAxis yAxis = plot.getRangeAxis(series);
+				final boolean xInt = xx % 1 == 0;
+				final boolean yInt = yy % 1 == 0;
+				String xTitle = xAxis != null ? xAxis.getLabel() : "X";
+				if (StringUtils.isBlank(xTitle)) { xTitle = "X"; }
+				String yTitle = yAxis != null ? yAxis.getLabel() : "Y";
+				if (StringUtils.isBlank(yTitle)) { yTitle = "Y"; }
+				sb.append(xTitle).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
+				sb.append(" | ").append(yTitle).append(" ").append(yInt ? (int) yy : String.format("%.2f", yy));
+			}
+			case PieSectionEntity ps -> {
+				final String title = ps.getSectionKey().toString();
+				final PieDataset<?> data = ps.getDataset();
+				final int index = ps.getSectionIndex();
+				final double xx = data.getValue(index).doubleValue();
+				final boolean xInt = xx % 1 == 0;
+				sb.append(title).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
+			}
+			case CategoryItemEntity ci -> {
+				final Comparable<?> columnKey = ci.getColumnKey();
+				final String title = columnKey.toString();
+				final CategoryDataset data = ci.getDataset();
+				final Comparable<?> rowKey = ci.getRowKey();
+				final double xx = data.getValue(rowKey, columnKey).doubleValue();
+				final boolean xInt = xx % 1 == 0;
+				sb.append(title).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
+			}
+			case null, default -> {}
+		}
 	}
 
 	@Override
