@@ -895,10 +895,20 @@ public class GamaPreferences {
 		public static final Pref<Double> CHART_LINE_WIDTH = create("pref_chart_line_width",
 				"Default width of series lines", 2.0, IType.FLOAT, true).in(NAME, CHARTS_GROUP).between(0.5, 10.0);
 
+		public static final String CHART_PALETTE_QUALITATIVE = "Qualitative (9 distinct colors - ColorBrewer)";
+		public static final String CHART_PALETTE_DIVERGING = "Diverging (11 colors - ColorBrewer)";
+		public static final String CHART_PALETTE_BASIC = "Basic (5 colors)";
+		public static final String CHART_PALETTE_PIVOT = "Based on pivot color (9 colors)";
+		public static final String CHART_PALETTE_RANDOM = "Random";
+
 		/** Default color palette scheme for chart series. */
 		public static final Pref<String> CHART_COLOR_PALETTE = create("pref_chart_color_palette",
-				"Default color palette for chart series", "Qualitative (ColorBrewer)", IType.STRING, true)
-						.in(NAME, CHARTS_GROUP).among("Qualitative (ColorBrewer)", "Diverging (ColorBrewer)", "Basic", "Random");
+				"Default color palette for chart series", CHART_PALETTE_QUALITATIVE, IType.STRING, true)
+						.in(NAME, CHARTS_GROUP).among(CHART_PALETTE_QUALITATIVE, CHART_PALETTE_DIVERGING, CHART_PALETTE_BASIC, CHART_PALETTE_PIVOT, CHART_PALETTE_RANDOM);
+
+		/** Pivot color used when the chart color scheme is 'Based on pivot color'. */
+		public static final Pref<IColor> CHART_PIVOT_COLOR = create("pref_chart_pivot_color",
+				"Pivot color when using 'Based on pivot color' scheme", () -> GamaColorFactory.get(31, 120, 180), IType.COLOR, true).in(NAME, CHARTS_GROUP);
 
 		/** Whether data markers are displayed on chart series by default. */
 		public static final Pref<Boolean> CHART_SHOW_MARKERS = create("pref_chart_show_markers",

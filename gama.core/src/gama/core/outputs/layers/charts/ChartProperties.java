@@ -181,13 +181,29 @@ public class ChartProperties {
 	public static IColor getDefaultSeriesColor(final IScope scope, final int index) {
 		String palette = GamaPreferences.Displays.CHART_COLOR_PALETTE.getValue();
 		int idx = Math.max(0, index);
-		if ("Diverging (ColorBrewer)".equals(palette) && GamaPreferences.DIVERGING_COLORS.length > 0) {
+		if (GamaPreferences.Displays.CHART_PALETTE_DIVERGING.equals(palette) && GamaPreferences.DIVERGING_COLORS.length > 0) {
 			return GamaPreferences.DIVERGING_COLORS[idx % GamaPreferences.DIVERGING_COLORS.length].get();
 		}
-		if ("Basic".equals(palette) && GamaPreferences.BASIC_COLORS.length > 0) {
+		if (GamaPreferences.Displays.CHART_PALETTE_BASIC.equals(palette) && GamaPreferences.BASIC_COLORS.length > 0) {
 			return GamaPreferences.BASIC_COLORS[idx % GamaPreferences.BASIC_COLORS.length].get();
 		}
-		if ("Random".equals(palette) && scope != null) {
+		if (GamaPreferences.Displays.CHART_PALETTE_PIVOT.equals(palette)) {
+			IColor c = GamaPreferences.Displays.CHART_PIVOT_COLOR.getValue();
+			if (c == null) { c = GamaColorFactory.get(31, 120, 180); }
+			IColor[] ramp = new IColor[] {
+				c.darker().darker().darker().darker(),
+				c.darker().darker().darker(),
+				c.darker().darker(),
+				c.darker(),
+				c,
+				c.brighter(),
+				c.brighter().brighter(),
+				c.brighter().brighter().brighter(),
+				c.brighter().brighter().brighter().brighter()
+			};
+			return ramp[idx % ramp.length];
+		}
+		if (GamaPreferences.Displays.CHART_PALETTE_RANDOM.equals(palette) && scope != null) {
 			return GamaColorFactory.createWithRGBA(Random.opRnd(scope, 255), Random.opRnd(scope, 255), Random.opRnd(scope, 255), 255);
 		}
 		if (GamaPreferences.QUALITATIVE_COLORS.length > 0) {
