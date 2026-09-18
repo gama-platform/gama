@@ -105,11 +105,11 @@ public class ChartProperties {
 	public static class ColorPalette {
 		// Modern color defaults: clean white background, dark charcoal text (#2C3E50), light grey axes/grid (#E0E0E0)
 		private IColor backgroundColor = GamaColorFactory.WHITE;
-		private IColor axesColor = GamaColorFactory.create(210, 215, 220);
+		private IColor axesColor = GamaColorFactory.get(210, 215, 220);
 		private IColor labelBackgroundColor = null;
-		private IColor labelTextColor = GamaColorFactory.create(44, 62, 80);
-		private IColor textColor = GamaColorFactory.create(44, 62, 80);
-		private IColor tickColor = GamaColorFactory.create(100, 110, 120);
+		private IColor labelTextColor = GamaColorFactory.get(44, 62, 80);
+		private IColor textColor = GamaColorFactory.get(44, 62, 80);
+		private IColor tickColor = GamaColorFactory.get(100, 110, 120);
 
 		public IColor getBackgroundColor() { return backgroundColor; }
 		public void setBackgroundColor(final IColor color) { this.backgroundColor = color; }

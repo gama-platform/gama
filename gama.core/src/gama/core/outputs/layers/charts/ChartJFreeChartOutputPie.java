@@ -94,15 +94,16 @@ public class ChartJFreeChartOutputPie extends ChartJFreeChartOutput {
 		((PiePlot<?>) this.chart.getPlot()).setSectionPaint(serieid, IColor.toAWTColor(myserie.getMycolor()));
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	protected void clearDataSet(final IScope scope) {
 		super.clearDataSet(scope);
 		if (chart == null) return;
-		final PiePlot<?> plot = (PiePlot<?>) this.chart.getPlot();
+		final PiePlot plot = (PiePlot) this.chart.getPlot();
 		jfreedataset.clear();
 		DefaultPieDataset<String> dd = new DefaultPieDataset<>();
 		jfreedataset.add(0, dd);
-		plot.setDataset(dd);
+		plot.setDataset((PieDataset) dd);
 		idPosition.clear();
 		nbseries = 0;
 	}
