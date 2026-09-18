@@ -422,7 +422,71 @@ public class ChartDataSeries {
 	 * @param listvalue
 	 *            the listvalue
 	 */
-	public void addcbwvalue(final IScope scope, final String dx, final double dmean, final double dmed,
+		private void processColorValues(final IScope scope, final Map barvalues, final int listvalue) {
+		if (barvalues == null || !barvalues.containsKey(IKeyword.COLOR)) return;
+		final Object o = getlistvalue(scope, barvalues, IKeyword.COLOR, listvalue);
+		if (o == null) return;
+		if (o instanceof IList ol) {
+			if (ol.size() == 1) { this.setMycolor(GamaColorFactory.castToColor(scope, ol.get(0))); }
+			if (ol.size() == 2) {
+				this.setMycolor(GamaColorFactory.castToColor(scope, ol.get(1)));
+				this.setMyMincolor(GamaColorFactory.castToColor(scope, ol.get(0)));
+			}
+			if (ol.size() > 2) {
+				this.setMyMincolor(GamaColorFactory.castToColor(scope, ol.get(0)));
+				this.setMyMedcolor(GamaColorFactory.castToColor(scope, ol.get(1)));
+				this.setMycolor(GamaColorFactory.castToColor(scope, ol.get(2)));
+			}
+		} else {
+			this.setMycolor(GamaColorFactory.castToColor(scope, o));
+		}
+	}
+
+	private void processMarkerSizeValues(final IScope scope, final Map barvalues, final int listvalue) {
+		if (barvalues == null || !barvalues.containsKey(ChartDataStatement.MARKERSIZE)) return;
+		final Object o = getlistvalue(scope, barvalues, ChartDataStatement.MARKERSIZE, listvalue);
+		if (o == null) return;
+		if (svalues.size() > xvalues.size()) { svalues.remove(svalues.get(svalues.size() - 1)); }
+		svalues.add(ChartDataSource.asDouble(scope, o));
+	}
+
+	private void processYErrorValues(final IScope scope, final Map barvalues, final double dy, final int listvalue) {
+		if (!this.isUseYErrValues() || barvalues == null) return;
+		final Object o = getlistvalue(scope, barvalues, ChartDataStatement.YERR_VALUES, listvalue);
+		if (o == null) return;
+		if (o instanceof IList ol) {
+			if (ol.size() > 1) {
+				this.yerrvaluesmin.add(ChartDataSource.asDouble(scope, ol.get(0)));
+				this.yerrvaluesmax.add(ChartDataSource.asDouble(scope, ol.get(1)));
+			} else {
+				this.yerrvaluesmin.add(dy - ChartDataSource.asDouble(scope, ol.get(0)));
+				this.yerrvaluesmax.add(dy + ChartDataSource.asDouble(scope, ol.get(0)));
+			}
+		} else {
+			this.yerrvaluesmin.add(dy - ChartDataSource.asDouble(scope, o));
+			this.yerrvaluesmax.add(dy + ChartDataSource.asDouble(scope, o));
+		}
+	}
+
+	private void processXErrorValues(final IScope scope, final Map barvalues, final double dx, final int listvalue) {
+		if (!this.isUseXErrValues() || barvalues == null) return;
+		final Object o = getlistvalue(scope, barvalues, ChartDataStatement.XERR_VALUES, listvalue);
+		if (o == null) return;
+		if (o instanceof IList ol) {
+			if (ol.size() > 1) {
+				this.xerrvaluesmin.add(ChartDataSource.asDouble(scope, ol.get(0)));
+				this.xerrvaluesmax.add(ChartDataSource.asDouble(scope, ol.get(1)));
+			} else {
+				this.xerrvaluesmin.add(dx - ChartDataSource.asDouble(scope, ol.get(0)));
+				this.xerrvaluesmax.add(dx + ChartDataSource.asDouble(scope, ol.get(0)));
+			}
+		} else {
+			this.xerrvaluesmin.add(dx - ChartDataSource.asDouble(scope, o));
+			this.xerrvaluesmax.add(dx + ChartDataSource.asDouble(scope, o));
+		}
+	}
+
+public void addcbwvalue(final IScope scope, final String dx, final double dmean, final double dmed,
 			final double d25, final double d75, final double dmin, final double dmax, final int date,
 			final Map barvalues, final int listvalue) {
 
@@ -544,90 +608,15 @@ public class ChartDataSeries {
 	 * @param listvalue
 	 *            the listvalue
 	 */
-	public void addxyvalue(final IScope scope, final double dx, final double dy, final int date,
+		public void addxyvalue(final IScope scope, final double dx, final double dy, final int date,
 			final Map barvalues, final int listvalue) {
-
 		xvalues.add(dx);
 		yvalues.add(dy);
-
 		initColor(scope, barvalues, listvalue);
-		// if (barvalues != null && barvalues.containsKey(IKeyword.COLOR)) {
-		// final Object o = getlistvalue(scope, barvalues, IKeyword.COLOR, listvalue);
-		// if (o != null) {
-		// if (o instanceof IList) {
-		// final IList ol = GamaListFactory.createFrom(scope, o);
-		// if (ol.size() == 1) { this.setMycolor(GamaColorFactory.createFrom(scope, ol.get(0))); }
-		// if (ol.size() == 2) {
-		// this.setMycolor(GamaColorFactory.createFrom(scope, ol.get(1)));
-		// this.setMyMincolor(GamaColorFactory.createFrom(scope, ol.get(0)));
-		// }
-		// if (ol.size() > 2) {
-		// this.setMyMincolor(GamaColorFactory.createFrom(scope, ol.get(0)));
-		// this.setMyMedcolor(GamaColorFactory.createFrom(scope, ol.get(1)));
-		// this.setMycolor(GamaColorFactory.createFrom(scope, ol.get(2)));
-		// }
-		// } else {
-		// final GamaColor col = GamaColorFactory.createFrom(scope, o);
-		// this.setMycolor(col);
-		//
-		// }
-		//
-		// }
-		//
-		// }
-		if (barvalues != null && barvalues.containsKey(ChartDataStatement.MARKERSIZE)) {
-			final Object o = getlistvalue(scope, barvalues, ChartDataStatement.MARKERSIZE, listvalue);
-			if (o != null) {
-				if (svalues.size() > xvalues.size()) { svalues.remove(svalues.get(svalues.size() - 1)); }
-				svalues.add(ChartDataSource.asDouble(scope, o));
-			}
-
-		}
-		if (this.isUseYErrValues()) {
-			final Object o = getlistvalue(scope, barvalues, ChartDataStatement.YERR_VALUES, listvalue);
-			if (o != null) {
-				if (o instanceof IList) {
-					final IList ol = GamaListFactory.castToList(scope, o);
-					if (ol.size() > 1) {
-						this.yerrvaluesmin.add(ChartDataSource.asDouble(scope, ol.get(0)));
-						this.yerrvaluesmax.add(ChartDataSource.asDouble(scope, ol.get(1)));
-
-					} else {
-						this.yerrvaluesmin.add(dy - ChartDataSource.asDouble(scope, ol.get(0)));
-						this.yerrvaluesmax.add(dy + ChartDataSource.asDouble(scope, ol.get(0)));
-					}
-				} else {
-					this.yerrvaluesmin.add(dy - ChartDataSource.asDouble(scope, o));
-					this.yerrvaluesmax.add(dy + ChartDataSource.asDouble(scope, o));
-
-				}
-			}
-
-		}
-		if (this.isUseXErrValues()) {
-			final Object o = getlistvalue(scope, barvalues, ChartDataStatement.XERR_VALUES, listvalue);
-			if (o != null) {
-				if (o instanceof IList) {
-					final IList ol = GamaListFactory.castToList(scope, o);
-					if (ol.size() > 1) {
-						this.xerrvaluesmin.add(ChartDataSource.asDouble(scope, ol.get(0)));
-						this.xerrvaluesmax.add(ChartDataSource.asDouble(scope, ol.get(1)));
-
-					} else {
-						this.xerrvaluesmin.add(dx - ChartDataSource.asDouble(scope, ol.get(0)));
-						this.xerrvaluesmax.add(dx + ChartDataSource.asDouble(scope, ol.get(0)));
-					}
-				} else {
-					this.xerrvaluesmin.add(dx - ChartDataSource.asDouble(scope, o));
-					this.xerrvaluesmax.add(dx + ChartDataSource.asDouble(scope, o));
-
-				}
-			}
-
-		}
-
+		processMarkerSizeValues(scope, barvalues, listvalue);
+		processYErrorValues(scope, barvalues, dy, listvalue);
+		processXErrorValues(scope, barvalues, dx, listvalue);
 		this.getDataset().serieToUpdateBefore.put(this.getName(), date);
-
 	}
 
 	/**
@@ -672,65 +661,14 @@ public class ChartDataSeries {
 	 * @param listvalue
 	 *            the listvalue
 	 */
-	public void addcyvalue(final IScope scope, final String dx, final double dy, final int date,
+		public void addcyvalue(final IScope scope, final String dx, final double dy, final int date,
 			final Map barvalues, final int listvalue) {
 		cvalues.add(dx);
 		yvalues.add(dy);
-		if (barvalues != null && barvalues.containsKey(IKeyword.COLOR)) {
-			final Object o = getlistvalue(scope, barvalues, IKeyword.COLOR, listvalue);
-			if (o != null) {
-				if (o instanceof IList) {
-					final IList ol = GamaListFactory.castToList(scope, o);
-					if (ol.size() == 1) { this.setMycolor(GamaColorFactory.castToColor(scope, ol.get(0))); }
-					if (ol.size() == 2) {
-						this.setMycolor(GamaColorFactory.castToColor(scope, ol.get(1)));
-						this.setMyMincolor(GamaColorFactory.castToColor(scope, ol.get(0)));
-					}
-					if (ol.size() > 2) {
-						this.setMyMincolor(GamaColorFactory.castToColor(scope, ol.get(0)));
-						this.setMyMedcolor(GamaColorFactory.castToColor(scope, ol.get(1)));
-						this.setMycolor(GamaColorFactory.castToColor(scope, ol.get(2)));
-					}
-				} else {
-					final IColor col = GamaColorFactory.castToColor(scope, o);
-					this.setMycolor(col);
-
-				}
-			}
-
-		}
-		if (barvalues != null && barvalues.containsKey(ChartDataStatement.MARKERSIZE)) {
-			final Object o = getlistvalue(scope, barvalues, ChartDataStatement.MARKERSIZE, listvalue);
-			if (o != null) {
-				if (svalues.size() > xvalues.size()) { svalues.remove(svalues.get(svalues.size() - 1)); }
-				svalues.add(ChartDataSource.asDouble(scope, o));
-			}
-
-		}
-		if (this.isUseYErrValues()) {
-			final Object o = getlistvalue(scope, barvalues, ChartDataStatement.YERR_VALUES, listvalue);
-			if (o != null) {
-				if (o instanceof IList) {
-					final IList ol = GamaListFactory.castToList(scope, o);
-					if (ol.size() > 1) {
-						this.yerrvaluesmin.add(ChartDataSource.asDouble(scope, ol.get(0)));
-						this.yerrvaluesmax.add(ChartDataSource.asDouble(scope, ol.get(1)));
-
-					} else {
-						this.yerrvaluesmin.add(dy - ChartDataSource.asDouble(scope, ol.get(0)));
-						this.yerrvaluesmax.add(dy + ChartDataSource.asDouble(scope, ol.get(0)));
-					}
-				} else {
-					this.yerrvaluesmin.add(dy - ChartDataSource.asDouble(scope, o));
-					this.yerrvaluesmax.add(dy + ChartDataSource.asDouble(scope, o));
-
-				}
-			}
-
-		}
-
+		processColorValues(scope, barvalues, listvalue);
+		processMarkerSizeValues(scope, barvalues, listvalue);
+		processYErrorValues(scope, barvalues, dy, listvalue);
 		this.getDataset().serieToUpdateBefore.put(this.getName(), date);
-
 	}
 
 	/**

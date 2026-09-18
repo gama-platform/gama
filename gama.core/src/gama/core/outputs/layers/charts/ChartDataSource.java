@@ -35,10 +35,13 @@ import gama.api.utils.prefs.GamaPreferences;
 @SuppressWarnings ({ "rawtypes" })
 public class ChartDataSource implements IChartDataSource {
 
+	private boolean hasExtraValues() {
+		if (useYErrValues || useXErrValues || useYMinMaxValues) return true;
+		return useSize || useColorExp;
+	}
+
 	protected Map<String, Object> computeBarValues(final IScope scope) {
-		if (!useYErrValues && !useXErrValues && !useYMinMaxValues && !useSize && !useColorExp) {
-			return null;
-		}
+		if (!hasExtraValues()) return null;
 		final Map<String, Object> barvalues = new HashMap<>(4);
 		if (useYErrValues && valueyerr != null) {
 			barvalues.put(ChartDataStatement.YERR_VALUES, valueyerr.value(scope));
