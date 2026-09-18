@@ -133,7 +133,13 @@ public class ChartJFreeChartOutputPie extends ChartJFreeChartOutput {
 		final ArrayList<Double> yValues = dataserie.getYValues(scope);
 
 		if (!yValues.isEmpty()) {
-			serie.setValue(serieid, yValues.get(yValues.size() - 1));
+			boolean oldNotify = serie.getNotify();
+			serie.setNotify(false);
+			try {
+				serie.setValue(serieid, yValues.get(yValues.size() - 1));
+			} finally {
+				serie.setNotify(oldNotify);
+			}
 		}
 		this.resetRenderer(scope, serieid);
 	}
