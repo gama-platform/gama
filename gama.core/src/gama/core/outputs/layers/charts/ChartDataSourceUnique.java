@@ -77,33 +77,14 @@ public class ChartDataSourceUnique extends ChartDataSource {
 		legend = stval;
 	}
 
-	@Override
+		@Override
 	public void updatevalues(final IScope scope, final int chartCycle) {
 		super.updatevalues(scope, chartCycle);
-		Object o = null;
-		Map<String, Object> barvalues = null;
-		if (this.isUseYErrValues()) {
-			if (barvalues == null) barvalues = new HashMap<>(4);
-			barvalues.put(ChartDataStatement.YERR_VALUES, getValueyerr().value(scope));
+		if (getValue() == null) return;
+		final Object o = getValue().value(scope);
+		if (o != null) {
+			updateseriewithvalue(scope, getMyserie(), o, chartCycle, computeBarValues(scope), -1);
 		}
-		if (this.isUseXErrValues()) {
-			if (barvalues == null) barvalues = new HashMap<>(4);
-			barvalues.put(ChartDataStatement.XERR_VALUES, getValueyerr().value(scope));
-		}
-		if (this.isUseYMinMaxValues()) {
-			if (barvalues == null) barvalues = new HashMap<>(4);
-			barvalues.put(ChartDataStatement.XERR_VALUES, getValuexerr().value(scope));
-		}
-		if (this.isUseSizeExp()) {
-			if (barvalues == null) barvalues = new HashMap<>(4);
-			barvalues.put(ChartDataStatement.MARKERSIZE, getSizeexp().value(scope));
-		}
-		if (this.isUseColorExp()) {
-			if (barvalues == null) barvalues = new HashMap<>(4);
-			barvalues.put(IKeyword.COLOR, getColorexp().value(scope));
-		}
-		if (getValue() != null) { o = getValue().value(scope); }
-		if (o != null) { updateseriewithvalue(scope, getMyserie(), o, chartCycle, barvalues, -1); }
 	}
 
 	/**

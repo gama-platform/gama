@@ -69,55 +69,21 @@ public class ChartDataSourceList extends ChartDataSource {
 		legendExp = expval;
 	}
 
-	@Override
+		@Override
 	public void updatevalues(final IScope scope, final int chartCycle) {
 		super.updatevalues(scope, chartCycle);
-		Object o = null;
-		// final Object oname = this.getNameExp();
-		Map<String, Object> barvalues = null;
-		if (this.isUseYErrValues()) {
-			if (barvalues == null) barvalues = new HashMap<>(4);
-			barvalues.put(ChartDataStatement.YERR_VALUES, this.getValueyerr().value(scope));
-		}
-		if (this.isUseXErrValues()) {
-			if (barvalues == null) barvalues = new HashMap<>(4);
-			barvalues.put(ChartDataStatement.XERR_VALUES, this.getValuexerr().value(scope));
-		}
-		if (this.isUseYMinMaxValues()) {
-			if (barvalues == null) barvalues = new HashMap<>(4);
-			barvalues.put(ChartDataStatement.XERR_VALUES, this.getValuexerr().value(scope));
-		}
-		if (this.isUseSizeExp()) {
-			if (barvalues == null) barvalues = new HashMap<>(4);
-			barvalues.put(ChartDataStatement.MARKERSIZE, this.getSizeexp().value(scope));
-		}
-		if (this.isUseColorExp()) {
-			if (barvalues == null) barvalues = new HashMap<>(4);
-			barvalues.put(IKeyword.COLOR, this.getColorexp().value(scope));
-		}
-
-		// TODO check same length and list
-
 		updateserielist(scope, chartCycle);
-
-		// int type_val = this.DATA_TYPE_NULL;
-		if (getValue() != null) { o = getValue().value(scope); }
-		// type_val = get_data_type(scope, o);
-
-		if (o instanceof IList) {
-			final IList<?> lval = GamaListFactory.castToList(scope, o);
-
-			if (lval.size() > 0) {
-				for (int i = 0; i < lval.size(); i++) {
-					final Object no = lval.get(i);
-					if (no != null) {
-						updateseriewithvalue(scope, mySeries.get(currentSeriesNames.get(i)), no, chartCycle, barvalues,
-								i);
-					}
+		if (getValue() == null) return;
+		final Object o = getValue().value(scope);
+		if (o instanceof IList<?> lval && !lval.isEmpty()) {
+			final Map<String, Object> barvalues = computeBarValues(scope);
+			for (int i = 0; i < lval.size(); i++) {
+				final Object no = lval.get(i);
+				if (no != null) {
+					updateseriewithvalue(scope, mySeries.get(currentSeriesNames.get(i)), no, chartCycle, barvalues, i);
 				}
 			}
 		}
-
 	}
 
 	private IList<?> extractLegends(final IScope scope) {

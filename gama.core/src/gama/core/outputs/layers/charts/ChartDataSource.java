@@ -35,6 +35,30 @@ import gama.api.utils.prefs.GamaPreferences;
 @SuppressWarnings ({ "rawtypes" })
 public class ChartDataSource implements IChartDataSource {
 
+	protected Map<String, Object> computeBarValues(final IScope scope) {
+		if (!useYErrValues && !useXErrValues && !useYMinMaxValues && !useSize && !useColorExp) {
+			return null;
+		}
+		final Map<String, Object> barvalues = new HashMap<>(4);
+		if (useYErrValues && valueyerr != null) {
+			barvalues.put(ChartDataStatement.YERR_VALUES, valueyerr.value(scope));
+		}
+		if (useXErrValues && valuexerr != null) {
+			barvalues.put(ChartDataStatement.XERR_VALUES, valuexerr.value(scope));
+		}
+		if (useYMinMaxValues && valueyminmax != null) {
+			barvalues.put(ChartDataStatement.XERR_VALUES, valueyminmax.value(scope));
+		}
+		if (useSize && sizeexp != null) {
+			barvalues.put(ChartDataStatement.MARKERSIZE, sizeexp.value(scope));
+		}
+		if (useColorExp && colorexp != null) {
+			barvalues.put(IKeyword.COLOR, colorexp.value(scope));
+		}
+		return barvalues;
+	}
+
+
 	public static double asDouble(final IScope scope, final Object o) {
 		if (o instanceof Number n) return n.doubleValue();
 		return Cast.asFloat(scope, o);
