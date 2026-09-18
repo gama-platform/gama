@@ -202,8 +202,10 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 		this.clearDataSet(scope);
 	}
 
-	private void populateCategoryDataset(final IScope scope, final DefaultCategoryDataset serie, final String serieid,
-			final ArrayList<String> cValues, final ArrayList<Double> yValues) {
+	private void populateCategoryDataset(final IScope scope, final String serieid, final ChartDataSeries dataserie) {
+		final DefaultCategoryDataset serie = (DefaultCategoryDataset) jfreedataset.get(0);
+		final ArrayList<String> cValues = dataserie.getCValues(scope);
+		final ArrayList<Double> yValues = dataserie.getYValues(scope);
 		boolean oldNotify = serie.getNotify();
 		serie.setNotify(false);
 		try {
@@ -228,13 +230,11 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 
 		final DefaultCategoryDataset serie = (DefaultCategoryDataset) jfreedataset.get(0);
 		if (serie.getRowKeys().contains(serieid)) { serie.removeRow(serieid); }
-		final ArrayList<String> cValues = dataserie.getCValues(scope);
-		final ArrayList<Double> yValues = dataserie.getYValues(scope);
 
-		if (!cValues.isEmpty()) {
+		if (!dataserie.getCValues(scope).isEmpty()) {
 			final NumberAxis rangeAxis = (NumberAxis) ((CategoryPlot) this.chart.getPlot()).getRangeAxis();
 			rangeAxis.setAutoRange(false);
-			populateCategoryDataset(scope, serie, serieid, cValues, yValues);
+			populateCategoryDataset(scope, serieid, dataserie);
 		}
 		this.resetRenderer(scope, serieid);
 	}
