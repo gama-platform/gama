@@ -106,6 +106,7 @@ public class ChartProperties {
 	}
 
 	public static class ColorPalette {
+		private gama.api.ui.IOutput hostDisplayOutput = null;
 		private IColor backgroundColor = null;
 		private IColor axesColor = GamaPreferences.Displays.CHART_GRID_COLOR.getValue();
 		private IColor labelBackgroundColor = null;
@@ -113,9 +114,15 @@ public class ChartProperties {
 		private IColor textColor = GamaPreferences.Displays.CHART_TEXT_COLOR.getValue();
 		private IColor tickColor = GamaColorFactory.get(100, 110, 120);
 
+		public void setHostDisplayOutput(final gama.api.ui.IOutput host) { this.hostDisplayOutput = host; }
+
 		public IColor getBackgroundColor() {
 			if (backgroundColor != null) return backgroundColor;
 			if (GamaPreferences.Displays.CHART_MATCH_DISPLAY_BACKGROUND.getValue()) {
+				if (hostDisplayOutput != null && hostDisplayOutput.getData() != null) {
+					IColor bg = hostDisplayOutput.getData().getBackgroundColor();
+					if (bg != null) return bg;
+				}
 				return GamaPreferences.Displays.CORE_BACKGROUND.getValue();
 			}
 			return GamaPreferences.Displays.CHART_BACKGROUND_COLOR.getValue();
@@ -271,6 +278,7 @@ public class ChartProperties {
 
 	public ChartLabels getLabels() { return labels; }
 	public ColorPalette getPalette() { return palette; }
+	public void setHostDisplayOutput(final gama.api.ui.IOutput host) { palette.setHostDisplayOutput(host); }
 	public LegendOptions getLegendOpts() { return legendOpts; }
 	public TickUnits getTickUnits() { return tickUnits; }
 	public DisplayOptions getDisplayOpts() { return displayOpts; }

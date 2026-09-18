@@ -20,6 +20,7 @@ import gama.api.kernel.simulation.IClock;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.color.IColor;
 import gama.api.types.geometry.IPoint;
+import gama.api.ui.IOutput;
 import gama.api.ui.displays.IChart;
 import gama.api.ui.displays.IChartDataSource;
 import gama.api.ui.displays.IDisplaySurface;
@@ -43,7 +44,14 @@ public abstract class ChartOutput implements IChart {
 	protected String chname = "";
 	protected int type = SERIES_CHART;
 	protected ChartDataSet chartdataset;
+	protected IOutput hostDisplayOutput;
 	protected final ChartProperties properties = new ChartProperties();
+
+	public IOutput getHostDisplayOutput() { return hostDisplayOutput; }
+	public void setHostDisplayOutput(final IOutput output) {
+		this.hostDisplayOutput = output;
+		properties.setHostDisplayOutput(output);
+	}
 
 	/**
 	 * Instantiates a new chart output.

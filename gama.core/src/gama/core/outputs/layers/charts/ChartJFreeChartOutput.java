@@ -147,6 +147,22 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 	}
 
 	@Override
+	public void setBackgroundColorValue(final IScope scope, final IColor color) {
+		super.setBackgroundColorValue(scope, color);
+		if (chart != null) {
+			configureChartBackgrounds();
+		}
+	}
+
+	@Override
+	public void updateOutput(final IScope scope) {
+		if (chart != null) {
+			configureChartBackgrounds();
+		}
+		super.updateOutput(scope);
+	}
+
+	@Override
 	public void step(final IScope scope) {
 		synchronized (lock) {
 			super.step(scope);
