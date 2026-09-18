@@ -285,12 +285,10 @@ public class GamaQuadTree implements ISpatialIndex {
 		try {
 			final Collection<IAgent> result = findIntersects(scope, source, env, f);
 			if (result.isEmpty()) return GamaListFactory.create();
-			// 2D inline distance filter: avoids IShape dispatch + Z arithmetic when both source and candidate are points
+			// 2D inline distance filter: avoids IShape dispatch + Z arithmetic for point sources
 			if (source.isPoint()) {
 				final double sx = source.getLocation().getX(), sy = source.getLocation().getY();
-				result.removeIf(each -> (each.isPoint()
-						? dist2D(sx, sy, each.getLocation().getX(), each.getLocation().getY())
-						: source.euclidianDistanceTo(each)) > dist);
+				result.removeIf(each -> dist2D(sx, sy, each.getLocation().getX(), each.getLocation().getY()) > dist);
 			} else {
 				result.removeIf(each -> source.euclidianDistanceTo(each) > dist);
 			}
@@ -313,9 +311,7 @@ public class GamaQuadTree implements ISpatialIndex {
 			if (source.isPoint()) {
 				final double sx = source.getLocation().getX(), sy = source.getLocation().getY();
 				final Ordering<IShape> ord = Ordering.natural()
-						.onResultOf(a -> a.isPoint()
-								? dist2D(sx, sy, a.getLocation().getX(), a.getLocation().getY())
-								: source.euclidianDistanceTo(a));
+						.onResultOf(a -> dist2D(sx, sy, a.getLocation().getX(), a.getLocation().getY()));
 				return ord.leastOf(in_square, number);
 			}
 			final Ordering<IShape> ordering =
@@ -337,9 +333,7 @@ public class GamaQuadTree implements ISpatialIndex {
 			if (source.isPoint()) {
 				final double sx = source.getLocation().getX(), sy = source.getLocation().getY();
 				for (final IAgent a : in_square) {
-					final double dd = a.isPoint()
-							? dist2D(sx, sy, a.getLocation().getX(), a.getLocation().getY())
-							: source.euclidianDistanceTo(a);
+					final double dd = dist2D(sx, sy, a.getLocation().getX(), a.getLocation().getY());
 					if (dd < min_distance) { min_distance = dd; min_agent = a; }
 				}
 			} else {

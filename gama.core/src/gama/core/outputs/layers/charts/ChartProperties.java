@@ -19,6 +19,7 @@ import gama.api.types.geometry.IPoint;
 
 /**
  * Encapsulates style, font, color, label, and axis configuration properties for GAMA charts.
+ * Configured with modern visual defaults (clean sans-serif typography, dark charcoal text, subtle grid lines).
  */
 public class ChartProperties {
 
@@ -102,12 +103,13 @@ public class ChartProperties {
 	}
 
 	public static class ColorPalette {
+		// Modern color defaults: clean white background, dark charcoal text (#2C3E50), light grey axes/grid (#E0E0E0)
 		private IColor backgroundColor = GamaColorFactory.WHITE;
-		private IColor axesColor = GamaColorFactory.BLACK;
+		private IColor axesColor = GamaColorFactory.create(210, 215, 220);
 		private IColor labelBackgroundColor = null;
-		private IColor labelTextColor = null;
-		private IColor textColor = null;
-		private IColor tickColor = null;
+		private IColor labelTextColor = GamaColorFactory.create(44, 62, 80);
+		private IColor textColor = GamaColorFactory.create(44, 62, 80);
+		private IColor tickColor = GamaColorFactory.create(100, 110, 120);
 
 		public IColor getBackgroundColor() { return backgroundColor; }
 		public void setBackgroundColor(final IColor color) { this.backgroundColor = color; }
@@ -171,11 +173,11 @@ public class ChartProperties {
 		public void setGap(final double gap) { this.gap = gap; }
 	}
 
-	// Component Objects
-	private final FontSpec tickFontSpec = new FontSpec(Font.SANS_SERIF, 10, Font.PLAIN);
-	private final FontSpec labelFontSpec = new FontSpec(Font.SANS_SERIF, 12, Font.BOLD);
-	private final FontSpec legendFontSpec = new FontSpec(Font.SANS_SERIF, 10, Font.ITALIC);
-	private final FontSpec titleFontSpec = new FontSpec(Font.SERIF, 14, Font.BOLD);
+	// Component Objects with Modern Typography Defaults (SansSerif throughout)
+	private final FontSpec tickFontSpec = new FontSpec(Font.SANS_SERIF, 9, Font.PLAIN);
+	private final FontSpec labelFontSpec = new FontSpec(Font.SANS_SERIF, 11, Font.PLAIN);
+	private final FontSpec legendFontSpec = new FontSpec(Font.SANS_SERIF, 10, Font.PLAIN);
+	private final FontSpec titleFontSpec = new FontSpec(Font.SANS_SERIF, 14, Font.BOLD);
 
 	private final AxisRange xRange = new AxisRange();
 	private final AxisRange yRange = new AxisRange();
