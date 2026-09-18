@@ -26,8 +26,8 @@ import one.util.streamex.StreamEx;
  * The primary concrete implementation of {@link IList} for the GAMA platform.
  * 
  * <p>
- * {@code GamaList} extends {@link ArrayList} to provide a type-safe, GAML-integrated list implementation. It tracks
- * its content type through an {@link IContainerType} and ensures proper type handling for all operations.
+ * {@code GamaList} extends {@link ArrayList} to provide a type-safe, GAML-integrated list implementation. It tracks its
+ * content type through an {@link IContainerType} and ensures proper type handling for all operations.
  * </p>
  * 
  * <h2>Key Features</h2>
@@ -155,6 +155,7 @@ public class GamaList<E> extends ArrayList<E> implements IList<E> {
 			if (copy) return this.cloneWithContentType(contentsType);
 			// See #385 : if we do not copy, but the contents types are different, we create a wrapper in order to not
 			// duplicate the collection
+			if (contentsType == Types.NO_TYPE) return this;
 			if (!contentsType.equals(myContentsType)) return GamaListFactory.wrap(contentsType, this);
 			return this;
 		}
