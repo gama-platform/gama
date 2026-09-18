@@ -1,18 +1,23 @@
 /*******************************************************************************************************
  *
- * Distribution.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * Distribution.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.extension.stats;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
 
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
@@ -23,12 +28,6 @@ import gama.api.types.list.IList;
 import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
 import gama.api.types.misc.IContainer;
-import gama.annotations.doc;
-import gama.annotations.example;
-import gama.annotations.no_test;
-import gama.annotations.operator;
-import gama.annotations.support.IConcept;
-import gama.annotations.support.IOperatorCategory;
 import gama.gaml.operators.Maths;
 
 /**
@@ -40,15 +39,24 @@ public class Distribution {
 	/**
 	 * Compute distrib 2 d.
 	 *
-	 * @param scope the scope
-	 * @param lvaluex the lvaluex
-	 * @param lvaluey the lvaluey
-	 * @param nbBarresx the nb barresx
-	 * @param vminx the vminx
-	 * @param vmaxx the vmaxx
-	 * @param nbBarresy the nb barresy
-	 * @param vminy the vminy
-	 * @param vmaxy the vmaxy
+	 * @param scope
+	 *            the scope
+	 * @param lvaluex
+	 *            the lvaluex
+	 * @param lvaluey
+	 *            the lvaluey
+	 * @param nbBarresx
+	 *            the nb barresx
+	 * @param vminx
+	 *            the vminx
+	 * @param vmaxx
+	 *            the vmaxx
+	 * @param nbBarresy
+	 *            the nb barresy
+	 * @param vminy
+	 *            the vminy
+	 * @param vmaxy
+	 *            the vmaxy
 	 * @return the i map
 	 */
 	public static IMap computeDistrib2d(final IScope scope, final IList lvaluex, final IList lvaluey,
@@ -65,31 +73,22 @@ public class Distribution {
 		final String[] distribLegendx = new String[nbBarresx];
 		final String[] distribLegendy = new String[nbBarresy];
 
-		double newminIntx = 0;
-		double deuxpuissancekx = 0;
-		double newminInty = 0;
-		double deuxpuissanceky = 0;
-
 		// x
 
-		for (int i = 0; i < len; i++) {
-			doublelistorx[i] = Cast.asFloat(scope, lvaluex.get(i));
-		}
+		for (int i = 0; i < len; i++) { doublelistorx[i] = Cast.asFloat(scope, lvaluex.get(i)); }
 
-		deuxpuissancekx = (vmaxx - vminx) / nbBarresx;
-		newminIntx = vminx;
+		double deuxpuissancekx = (vmaxx - vminx) / nbBarresx;
+		double newminIntx = vminx;
 
 		distribParamsx[0] = 0;
 		distribParamsx[1] = 0;
 
 		// y
 
-		for (int i = 0; i < len; i++) {
-			doublelistory[i] = Cast.asFloat(scope, lvaluey.get(i));
-		}
+		for (int i = 0; i < len; i++) { doublelistory[i] = Cast.asFloat(scope, lvaluey.get(i)); }
 
-		deuxpuissanceky = (vmaxy - vminy) / nbBarresy;
-		newminInty = vminy;
+		double deuxpuissanceky = (vmaxy - vminy) / nbBarresy;
+		double newminInty = vminy;
 
 		distribParamsy[0] = 0;
 		distribParamsy[1] = 0;
@@ -117,21 +116,13 @@ public class Distribution {
 			distribLegendy[i] = "[" + postval + ":" + preval + "]";
 		}
 
-		for (int i = 0; i < nbBarresx; i++) {
-			for (int j = 0; j < nbBarresy; j++) {
-				distribInts[i][j] = 0;
-			}
-		}
+		for (int i = 0; i < nbBarresx; i++) { for (int j = 0; j < nbBarresy; j++) { distribInts[i][j] = 0; } }
 		int nx, ny;
 		for (int k = 0; k < len; k++) {
 			nx = 0;
 			ny = 0;
-			while (thresholdsx[nx + 1] < doublelistorx[k] && nx + 2 < nbBarresx) {
-				nx++;
-			}
-			while (thresholdsy[ny + 1] < doublelistory[k] && ny + 2 < nbBarresy) {
-				ny++;
-			}
+			while (thresholdsx[nx + 1] < doublelistorx[k] && nx + 2 < nbBarresx) { nx++; }
+			while (thresholdsy[ny + 1] < doublelistory[k] && ny + 2 < nbBarresy) { ny++; }
 			distribInts[nx][ny]++;
 		}
 
@@ -162,11 +153,16 @@ public class Distribution {
 	/**
 	 * Compute distrib 2 d.
 	 *
-	 * @param scope the scope
-	 * @param lvaluex the lvaluex
-	 * @param lvaluey the lvaluey
-	 * @param nbBarresx the nb barresx
-	 * @param nbBarresy the nb barresy
+	 * @param scope
+	 *            the scope
+	 * @param lvaluex
+	 *            the lvaluex
+	 * @param lvaluey
+	 *            the lvaluey
+	 * @param nbBarresx
+	 *            the nb barresx
+	 * @param nbBarresy
+	 *            the nb barresy
 	 * @return the i map
 	 */
 	public static IMap computeDistrib2d(final IScope scope, final IList lvaluex, final IList lvaluey,
@@ -321,21 +317,13 @@ public class Distribution {
 			distribLegendy[i] = "[" + postval + ":" + preval + "]";
 		}
 
-		for (int i = 0; i < nbBarresx; i++) {
-			for (int j = 0; j < nbBarresy; j++) {
-				distribInts[i][j] = 0;
-			}
-		}
+		for (int i = 0; i < nbBarresx; i++) { for (int j = 0; j < nbBarresy; j++) { distribInts[i][j] = 0; } }
 		int nx, ny;
 		for (int k = 0; k < len; k++) {
 			nx = 0;
 			ny = 0;
-			while (thresholdsx[nx + 1] < doublelistorx[k] && nx + 2 < nbBarresx) {
-				nx++;
-			}
-			while (thresholdsy[ny + 1] < doublelistory[k] && ny + 2 < nbBarresy) {
-				ny++;
-			}
+			while (thresholdsx[nx + 1] < doublelistorx[k] && nx + 2 < nbBarresx) { nx++; }
+			while (thresholdsy[ny + 1] < doublelistory[k] && ny + 2 < nbBarresy) { ny++; }
 			distribInts[nx][ny]++;
 		}
 
@@ -366,13 +354,19 @@ public class Distribution {
 	/**
 	 * Distribution 2 d of.
 	 *
-	 * @param scope the scope
-	 * @param valuesx the valuesx
-	 * @param valuesy the valuesy
-	 * @param nbbarsx the nbbarsx
-	 * @param nbbarsy the nbbarsy
+	 * @param scope
+	 *            the scope
+	 * @param valuesx
+	 *            the valuesx
+	 * @param valuesy
+	 *            the valuesy
+	 * @param nbbarsx
+	 *            the nbbarsx
+	 * @param nbbarsy
+	 *            the nbbarsy
 	 * @return the i map
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	@operator (
 			value = { "distribution2d_of" },
@@ -394,18 +388,16 @@ public class Distribution {
 	public static IMap Distribution2dOf(final IScope scope, final IContainer valuesx, final IContainer valuesy,
 			final Integer nbbarsx, final Integer nbbarsy) throws GamaRuntimeException {
 
-		if (valuesx == null) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
+		if (valuesx == null) return GamaMapFactory.create(Types.STRING, Types.LIST);
 		final IList lvaluex = GamaListFactory.castToList(scope, valuesx);
-		if (lvaluex.length(scope) < 1) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
+		if (lvaluex.length(scope) < 1) return GamaMapFactory.create(Types.STRING, Types.LIST);
 
-		int nbBarresx = 10;
-		nbBarresx = nbbarsx.intValue();
+		int nbBarresx = nbbarsx.intValue();
 
 		final IList lvaluey = GamaListFactory.castToList(scope, valuesy);
-		if (lvaluey.length(scope) < 1) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
+		if (lvaluey.length(scope) < 1) return GamaMapFactory.create(Types.STRING, Types.LIST);
 
-		int nbBarresy = 10;
-		nbBarresy = nbbarsy.intValue();
+		int nbBarresy = nbbarsy.intValue();
 
 		return computeDistrib2d(scope, lvaluex, lvaluey, nbBarresx, nbBarresy);
 
@@ -414,17 +406,27 @@ public class Distribution {
 	/**
 	 * Distribution 2 d of.
 	 *
-	 * @param scope the scope
-	 * @param valuesx the valuesx
-	 * @param valuesy the valuesy
-	 * @param nbbarsx the nbbarsx
-	 * @param startvaluex the startvaluex
-	 * @param endvaluex the endvaluex
-	 * @param nbbarsy the nbbarsy
-	 * @param startvaluey the startvaluey
-	 * @param endvaluey the endvaluey
+	 * @param scope
+	 *            the scope
+	 * @param valuesx
+	 *            the valuesx
+	 * @param valuesy
+	 *            the valuesy
+	 * @param nbbarsx
+	 *            the nbbarsx
+	 * @param startvaluex
+	 *            the startvaluex
+	 * @param endvaluex
+	 *            the endvaluex
+	 * @param nbbarsy
+	 *            the nbbarsy
+	 * @param startvaluey
+	 *            the startvaluey
+	 * @param endvaluey
+	 *            the endvaluey
 	 * @return the i map
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	@operator (
 			value = { "distribution2d_of" },
@@ -447,26 +449,20 @@ public class Distribution {
 			final Integer nbbarsx, final Double startvaluex, final Double endvaluex, final Integer nbbarsy,
 			final Double startvaluey, final Double endvaluey) throws GamaRuntimeException {
 
-		if (valuesx == null) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
+		if (valuesx == null) return GamaMapFactory.create(Types.STRING, Types.LIST);
 		final IList lvaluex = GamaListFactory.castToList(scope, valuesx);
-		if (lvaluex.length(scope) < 1) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
+		if (lvaluex.length(scope) < 1) return GamaMapFactory.create(Types.STRING, Types.LIST);
 
-		int nbBarresx = 10;
-		nbBarresx = nbbarsx.intValue();
+		int nbBarresx = nbbarsx.intValue();
 
 		final IList lvaluey = GamaListFactory.castToList(scope, valuesy);
-		if (lvaluey.length(scope) < 1) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
+		if (lvaluey.length(scope) < 1) return GamaMapFactory.create(Types.STRING, Types.LIST);
 
-		int nbBarresy = 10;
-		nbBarresy = nbbarsy.intValue();
-		double vminx = 0.0d;
-		vminx = startvaluex.doubleValue();
-		double vmaxx = 1.0d;
-		vmaxx = endvaluex.doubleValue();
-		double vminy = 0.0d;
-		vminy = startvaluey.doubleValue();
-		double vmaxy = 1.0d;
-		vmaxy = endvaluey.doubleValue();
+		int nbBarresy = nbbarsy.intValue();
+		double vminx = startvaluex.doubleValue();
+		double vmaxx = endvaluex.doubleValue();
+		double vminy = startvaluey.doubleValue();
+		double vmaxy = endvaluey.doubleValue();
 
 		return computeDistrib2d(scope, lvaluex, lvaluey, nbBarresx, vminx, vmaxx, nbBarresy, vminy, vmaxy);
 
@@ -475,11 +471,15 @@ public class Distribution {
 	/**
 	 * Distribution 2 d of.
 	 *
-	 * @param scope the scope
-	 * @param valuesx the valuesx
-	 * @param valuesy the valuesy
+	 * @param scope
+	 *            the scope
+	 * @param valuesx
+	 *            the valuesx
+	 * @param valuesy
+	 *            the valuesy
 	 * @return the i map
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	@operator (
 			value = { "distribution2d_of" },
@@ -502,11 +502,11 @@ public class Distribution {
 	public static IMap Distribution2dOf(final IScope scope, final IContainer valuesx, final IContainer valuesy)
 			throws GamaRuntimeException {
 
-		if (valuesx == null) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
+		if (valuesx == null) return GamaMapFactory.create(Types.STRING, Types.LIST);
 		final IList lvaluex = GamaListFactory.castToList(scope, valuesx);
-		if (lvaluex.length(scope) < 1) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
+		if (lvaluex.length(scope) < 1) return GamaMapFactory.create(Types.STRING, Types.LIST);
 		final IList lvaluey = GamaListFactory.castToList(scope, valuesy);
-		if (lvaluey.length(scope) < 1) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
+		if (lvaluey.length(scope) < 1) return GamaMapFactory.create(Types.STRING, Types.LIST);
 
 		final int nbBarres = 10;
 
@@ -517,9 +517,12 @@ public class Distribution {
 	/**
 	 * Compute distrib.
 	 *
-	 * @param scope the scope
-	 * @param lvalue the lvalue
-	 * @param nbBarres the nb barres
+	 * @param scope
+	 *            the scope
+	 * @param lvalue
+	 *            the lvalue
+	 * @param nbBarres
+	 *            the nb barres
 	 * @return the i map
 	 */
 	public static IMap computeDistrib(final IScope scope, final IList lvalue, final int nbBarres) {
@@ -529,9 +532,7 @@ public class Distribution {
 		final int[] distribParams = new int[2];
 		final String[] distribLegend = new String[nbBarres];
 
-		for (int i = 0; i < lvalue.length(scope); i++) {
-			doublelist[i] = Cast.asFloat(scope, lvalue.get(i));
-		}
+		for (int i = 0; i < lvalue.length(scope); i++) { doublelist[i] = Cast.asFloat(scope, lvalue.get(i)); }
 		Arrays.sort(doublelist);
 		final double min = doublelist[0];
 		final double max = doublelist[len - 1];
@@ -593,13 +594,9 @@ public class Distribution {
 		int nba = 0;
 		int nbaprec = 0;
 		for (int i = 0; i < nbBarres; i++) {
-			if (i != 0) {
-				preval = preval + deuxpuissancek;
-			}
+			if (i != 0) { preval = preval + deuxpuissancek; }
 			postval = preval + deuxpuissancek;
-			while (nba < len && doublelist[nba] < postval) {
-				nba++;
-			}
+			while (nba < len && doublelist[nba] < postval) { nba++; }
 
 			distribInts[i] = nba - nbaprec;
 			nbaprec = nba;
@@ -624,11 +621,16 @@ public class Distribution {
 	/**
 	 * Compute distrib.
 	 *
-	 * @param scope the scope
-	 * @param lvalue the lvalue
-	 * @param nbBarres the nb barres
-	 * @param vmin the vmin
-	 * @param vmax the vmax
+	 * @param scope
+	 *            the scope
+	 * @param lvalue
+	 *            the lvalue
+	 * @param nbBarres
+	 *            the nb barres
+	 * @param vmin
+	 *            the vmin
+	 * @param vmax
+	 *            the vmax
 	 * @return the i map
 	 */
 	public static IMap computeDistrib(final IScope scope, final IList lvalue, final int nbBarres, final double vmin,
@@ -643,9 +645,7 @@ public class Distribution {
 		final double deuxpuissancek = (vmax - vmin) / nbBarres;
 		final double newminInt = vmin;
 
-		for (int i = 0; i < lvalue.length(scope); i++) {
-			doublelist[i] = Cast.asFloat(scope, lvalue.get(i));
-		}
+		for (int i = 0; i < lvalue.length(scope); i++) { doublelist[i] = Cast.asFloat(scope, lvalue.get(i)); }
 		Arrays.sort(doublelist);
 
 		final int scale = BigDecimal.valueOf(deuxpuissancek).scale();
@@ -655,13 +655,9 @@ public class Distribution {
 		int nba = 0;
 		int nbaprec = 0;
 		for (int i = 0; i < nbBarres; i++) {
-			if (i != 0) {
-				preval = preval + deuxpuissancek;
-			}
+			if (i != 0) { preval = preval + deuxpuissancek; }
 			postval = preval + deuxpuissancek;
-			while (nba < len && doublelist[nba] < postval) {
-				nba++;
-			}
+			while (nba < len && doublelist[nba] < postval) { nba++; }
 
 			distribInts[i] = nba - nbaprec;
 			nbaprec = nba;
@@ -687,11 +683,15 @@ public class Distribution {
 	/**
 	 * Distribution of.
 	 *
-	 * @param scope the scope
-	 * @param values the values
-	 * @param nbbars the nbbars
+	 * @param scope
+	 *            the scope
+	 * @param values
+	 *            the values
+	 * @param nbbars
+	 *            the nbbars
 	 * @return the i map
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	@operator (
 			value = { "distribution_of" },
@@ -713,24 +713,23 @@ public class Distribution {
 	public static IMap DistributionOf(final IScope scope, final IContainer values, final Integer nbbars)
 			throws GamaRuntimeException {
 
-		if (values == null) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
+		if (values == null) return GamaMapFactory.create(Types.STRING, Types.LIST);
 		final IList lvalue = GamaListFactory.castToList(scope, values);
-		if (lvalue.length(scope) < 1) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
-
-		int nbBarres = 10;
-		nbBarres = nbbars.intValue();
-
-		return computeDistrib(scope, lvalue, nbBarres);
+		if (lvalue.length(scope) < 1) return GamaMapFactory.create(Types.STRING, Types.LIST);
+		return computeDistrib(scope, lvalue, nbbars);
 
 	}
 
 	/**
 	 * Distribution of.
 	 *
-	 * @param scope the scope
-	 * @param values the values
+	 * @param scope
+	 *            the scope
+	 * @param values
+	 *            the values
 	 * @return the i map
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	@operator (
 			value = { "distribution_of" },
@@ -752,9 +751,9 @@ public class Distribution {
 	@no_test
 	public static IMap DistributionOf(final IScope scope, final IContainer values) throws GamaRuntimeException {
 
-		if (values == null) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
+		if (values == null) return GamaMapFactory.create(Types.STRING, Types.LIST);
 		final IList lvalue = GamaListFactory.castToList(scope, values);
-		if (lvalue.length(scope) < 1) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
+		if (lvalue.length(scope) < 1) return GamaMapFactory.create(Types.STRING, Types.LIST);
 
 		final int nbBarres = 10;
 
@@ -765,13 +764,19 @@ public class Distribution {
 	/**
 	 * Distribution of.
 	 *
-	 * @param scope the scope
-	 * @param values the values
-	 * @param nbbars the nbbars
-	 * @param startvalue the startvalue
-	 * @param endvalue the endvalue
+	 * @param scope
+	 *            the scope
+	 * @param values
+	 *            the values
+	 * @param nbbars
+	 *            the nbbars
+	 * @param startvalue
+	 *            the startvalue
+	 * @param endvalue
+	 *            the endvalue
 	 * @return the i map
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	@operator (
 			value = { "distribution_of" },
@@ -794,16 +799,13 @@ public class Distribution {
 	public static IMap DistributionOf(final IScope scope, final IContainer values, final Integer nbbars,
 			final Double startvalue, final Double endvalue) throws GamaRuntimeException {
 
-		if (values == null) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
+		if (values == null) return GamaMapFactory.create(Types.STRING, Types.LIST);
 		final IList lvalue = GamaListFactory.castToList(scope, values);
-		if (lvalue.length(scope) < 1) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
+		if (lvalue.length(scope) < 1) return GamaMapFactory.create(Types.STRING, Types.LIST);
 
-		int nbBarres = 10;
-		nbBarres = nbbars.intValue();
-		double vmin = 0.0d;
-		vmin = startvalue.doubleValue();
-		double vmax = 1.0d;
-		vmax = endvalue.doubleValue();
+		int nbBarres = nbbars.intValue();
+		double vmin = startvalue.doubleValue();
+		double vmax = endvalue.doubleValue();
 
 		return computeDistrib(scope, lvalue, nbBarres, vmin, vmax);
 
