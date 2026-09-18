@@ -7,7 +7,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.core.outputs.layers.charts;
+package gama.extension.stats;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
