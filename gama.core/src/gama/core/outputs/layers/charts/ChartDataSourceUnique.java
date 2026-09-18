@@ -113,6 +113,7 @@ public class ChartDataSourceUnique extends ChartDataSource {
 		myserie.setDataset(getDataset());
 		inferDatasetProperties(scope, myserie);
 		myserie.setName(legend);
+		getDataset().addNewSerie(legend, myserie, 0);
 		mySeries.put(legend, myserie);
 	}
 

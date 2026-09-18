@@ -900,6 +900,15 @@ public class GamaPreferences {
 				"Default color palette for chart series", "Qualitative (ColorBrewer)", IType.STRING, true)
 						.in(NAME, CHARTS_GROUP).among("Qualitative (ColorBrewer)", "Diverging (ColorBrewer)", "Basic", "Random");
 
+		/** Whether data markers are displayed on chart series by default. */
+		public static final Pref<Boolean> CHART_SHOW_MARKERS = create("pref_chart_show_markers",
+				"Display markers on chart series", true, IType.BOOL, true).in(NAME, CHARTS_GROUP);
+
+		/** Default line/series style for chart series. */
+		public static final Pref<String> CHART_SERIES_STYLE = create("pref_chart_series_style",
+				"Default style for chart series", "line", IType.STRING, true)
+						.in(NAME, CHARTS_GROUP).among("line", "spline", "step", "dot", "area", "bar");
+
 		/** The name of the "Default Rendering Properties" group within the Displays tab. */
 		public static final String DRAWING = "Default Rendering Properties";
 

@@ -47,6 +47,9 @@ public class ChartDataSet {
 	/** The series. */
 	private final LinkedHashMap<String, ChartDataSeries> series = new LinkedHashMap<>();
 
+	/** Sequential series index counter for color palette assignment. */
+	private int seriesCounter = 0;
+
 	/** The deleted series. */
 	final LinkedHashMap<String, ChartDataSeries> deletedseries = new LinkedHashMap<>();
 
@@ -355,19 +358,17 @@ public class ChartDataSet {
 	 *            the date
 	 */
 	public void addNewSerie(final String id, final ChartDataSeries serie, final int date) {
-		if (series.containsKey(id)) {
-			// Series name already present, should do something.... Don't change
-			// creation date?
-			series.put(id, serie);
-		} else {
+		if (!series.containsKey(id)) {
+			if (serie != null && serie.getSeriesIndex() < 0) {
+				serie.setSeriesIndex(seriesCounter++);
+			}
 			series.put(id, serie);
 			serieCreationDate.put(id, date);
-
+		} else {
+			series.put(id, serie);
 		}
-		// serieCreationDate.put(id, date);
 		serieToUpdateBefore.put(id, date);
 		serieRemovalDate.put(id, -1);
-
 	}
 
 	/**
