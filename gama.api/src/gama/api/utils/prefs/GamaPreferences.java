@@ -952,9 +952,12 @@ public class GamaPreferences {
 		public static final Pref<Boolean> CHART_GRID_LINES = create("pref_chart_show_gridlines",
 				"Display grid lines on charts", true, IType.BOOL, true).in(NAME, CHARTS_GROUP);
 
-		/** Default width of series lines on charts. */
-		public static final Pref<Double> CHART_LINE_WIDTH = create("pref_chart_line_width",
-				"Default width of series lines", 2.0, IType.FLOAT, true).in(NAME, CHARTS_GROUP).between(0.5, 10.0);
+		/** Default thickness of series lines on charts. */
+		public static final Pref<Double> CHART_LINE_THICKNESS = create("pref_chart_line_thickness",
+				"Default thickness of series lines", 2.0, IType.FLOAT, true).in(NAME, CHARTS_GROUP).between(0.5, 10.0);
+
+		@Deprecated
+		public static final Pref<Double> CHART_LINE_WIDTH = CHART_LINE_THICKNESS;
 
 		public static final String CHART_PALETTE_VIVID = "Vivid (12 distinct colors)";
 		public static final String CHART_PALETTE_TABLEAU = "Tableau 10 (10 distinct colors)";

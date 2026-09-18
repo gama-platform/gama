@@ -227,8 +227,12 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 			configureErrorRenderer(xy, myserie, scope);
 		}
 
-		if (myserie.getMysource().getUniqueMarkerName() != null) {
-			setSerieMarkerShape(scope, myserie.getName(), myserie.getMysource().getUniqueMarkerName());
+		String markerShape = myserie.getMysource().getUniqueMarkerName();
+		if (markerShape == null && myserie.getMysource().useMarker) {
+			markerShape = "default";
+		}
+		if (markerShape != null) {
+			setSerieMarkerShape(scope, myserie.getName(), markerShape);
 		}
 	}
 
@@ -488,7 +492,8 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 	public void setSerieMarkerShape(final IScope scope, final String serieid, final String markershape) {
 		if (markershape == null) return;
 		final AbstractXYItemRenderer newr = (AbstractXYItemRenderer) this.getOrCreateRenderer(scope, serieid);
-		Shape myshape = ChartDataStatement.MARKER_EMPTY.equals(markershape) ? null : switch (markershape) {
+		int seriesIndex = idPosition.getOrDefault(serieid, 0);
+		Shape baseShape = ChartDataStatement.MARKER_EMPTY.equals(markershape) ? null : switch (markershape) {
 			case ChartDataStatement.MARKER_CIRCLE -> defaultmarkers[1];
 			case ChartDataStatement.MARKER_UP_TRIANGLE -> defaultmarkers[2];
 			case ChartDataStatement.MARKER_DIAMOND -> defaultmarkers[3];
@@ -498,8 +503,22 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 			case ChartDataStatement.MARKER_RIGHT_TRIANGLE -> defaultmarkers[7];
 			case ChartDataStatement.MARKER_VERT_RECTANGLE -> defaultmarkers[8];
 			case ChartDataStatement.MARKER_LEFT_TRIANGLE -> defaultmarkers[9];
+			case "default" -> defaultmarkers[seriesIndex % defaultmarkers.length];
 			default -> defaultmarkers[0];
 		};
+
+		Shape myshape = baseShape;
+		if (myshape != null && getChartdataset() != null) {
+			ChartDataSeries myserie = getChartdataset().getDataSeries(scope, serieid);
+			if (myserie != null && !myserie.getMysource().isUseSize()) {
+				float thickness = Cast.asFloat(scope, myserie.getLineThickness().value(scope)).floatValue();
+				if (thickness > 1.0f) {
+					double scaleFactor = thickness * 1.25;
+					AffineTransform at = AffineTransform.getScaleInstance(scaleFactor, scaleFactor);
+					myshape = at.createTransformedShape(baseShape);
+				}
+			}
+		}
 
 		if (newr instanceof XYLineAndShapeRenderer serierenderer) {
 			if (myshape == null) {
@@ -508,7 +527,9 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 				serierenderer.setSeriesShape(0, myshape);
 			}
 		} else if (newr instanceof XYShapeRenderer serierenderer) {
-			serierenderer.setSeriesShape(0, myshape);
+			if (myshape != null) {
+				serierenderer.setSeriesShape(0, myshape);
+			}
 		}
 	}
 

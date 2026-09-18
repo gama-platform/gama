@@ -115,7 +115,7 @@ public class ChartDataSource implements IChartDataSource {
 	boolean isBoxAndWhiskerData = false;
 
 	/** The line thickness. */
-	IExpression lineThickness = GAML.getExpressionFactory().createConst(GamaPreferences.Displays.CHART_LINE_WIDTH.getValue(), Types.FLOAT);
+	IExpression lineThickness = GAML.getExpressionFactory().createConst(GamaPreferences.Displays.CHART_LINE_THICKNESS.getValue(), Types.FLOAT);
 
 	/**
 	 * Clone me.
