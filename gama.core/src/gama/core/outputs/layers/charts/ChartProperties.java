@@ -106,14 +106,20 @@ public class ChartProperties {
 	}
 
 	public static class ColorPalette {
-		private IColor backgroundColor = GamaPreferences.Displays.CHART_BACKGROUND_COLOR.getValue();
+		private IColor backgroundColor = null;
 		private IColor axesColor = GamaPreferences.Displays.CHART_GRID_COLOR.getValue();
 		private IColor labelBackgroundColor = null;
 		private IColor labelTextColor = GamaPreferences.Displays.CHART_TEXT_COLOR.getValue();
 		private IColor textColor = GamaPreferences.Displays.CHART_TEXT_COLOR.getValue();
 		private IColor tickColor = GamaColorFactory.get(100, 110, 120);
 
-		public IColor getBackgroundColor() { return backgroundColor; }
+		public IColor getBackgroundColor() {
+			if (backgroundColor != null) return backgroundColor;
+			if (GamaPreferences.Displays.CHART_MATCH_DISPLAY_BACKGROUND.getValue()) {
+				return GamaPreferences.Displays.CORE_BACKGROUND.getValue();
+			}
+			return GamaPreferences.Displays.CHART_BACKGROUND_COLOR.getValue();
+		}
 		public void setBackgroundColor(final IColor color) { this.backgroundColor = color; }
 		public IColor getAxesColor() { return axesColor; }
 		public void setAxesColor(final IColor color) { this.axesColor = color; }

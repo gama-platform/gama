@@ -919,9 +919,14 @@ public class GamaPreferences {
 		public static final Pref<Integer> CHART_LABEL_FONT_SIZE = create("pref_chart_label_font_size",
 				"Default chart label font size", 11, IType.INT, true).in(NAME, CHARTS_GROUP).between(6, 24);
 
-		/** Chart default background color. */
+		/** Whether chart background color follows default display background color. */
+		public static final Pref<Boolean> CHART_MATCH_DISPLAY_BACKGROUND = create("pref_chart_match_display_bg",
+				"Chart background follows default display background", true, IType.BOOL, true)
+						.in(NAME, CHARTS_GROUP).deactivates("pref_chart_background_color");
+
+		/** Custom default background color for charts (when not matching display background). */
 		public static final Pref<IColor> CHART_BACKGROUND_COLOR = create("pref_chart_background_color",
-				"Default chart background color", () -> GamaColorFactory.get("white"), IType.COLOR, true).in(NAME, CHARTS_GROUP);
+				"Custom default chart background color", () -> GamaColorFactory.get("white"), IType.COLOR, true).in(NAME, CHARTS_GROUP);
 
 		/** Chart default text color. */
 		public static final Pref<IColor> CHART_TEXT_COLOR = create("pref_chart_text_color",
