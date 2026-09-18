@@ -153,6 +153,46 @@ public class GamaPreferences {
 			() -> GamaColorFactory.get(1, 102, 94), () -> GamaColorFactory.get(0, 60, 48) };
 
 	/**
+	 * A palette of 12 high-contrast vivid colors for clear visual distinction between data series and simulations.
+	 */
+	public static final Supplier<IColor>[] VIVID_COLORS = new Supplier[] {
+			() -> GamaColorFactory.get(31, 120, 180), () -> GamaColorFactory.get(51, 160, 44),
+			() -> GamaColorFactory.get(227, 26, 28), () -> GamaColorFactory.get(255, 127, 0),
+			() -> GamaColorFactory.get(106, 61, 154), () -> GamaColorFactory.get(255, 215, 0),
+			() -> GamaColorFactory.get(0, 128, 128), () -> GamaColorFactory.get(216, 27, 96),
+			() -> GamaColorFactory.get(112, 173, 71), () -> GamaColorFactory.get(0, 151, 167),
+			() -> GamaColorFactory.get(255, 111, 97), () -> GamaColorFactory.get(69, 90, 100) };
+
+	/**
+	 * A palette of 10 classic data visualization colors (Tableau 10).
+	 */
+	public static final Supplier<IColor>[] TABLEAU_COLORS = new Supplier[] {
+			() -> GamaColorFactory.get(31, 119, 180), () -> GamaColorFactory.get(255, 127, 14),
+			() -> GamaColorFactory.get(44, 160, 44), () -> GamaColorFactory.get(214, 39, 40),
+			() -> GamaColorFactory.get(148, 103, 189), () -> GamaColorFactory.get(140, 86, 75),
+			() -> GamaColorFactory.get(227, 119, 194), () -> GamaColorFactory.get(127, 127, 127),
+			() -> GamaColorFactory.get(188, 189, 34), () -> GamaColorFactory.get(23, 190, 207) };
+
+	/**
+	 * A palette of 8 vibrant neon colors.
+	 */
+	public static final Supplier<IColor>[] NEON_COLORS = new Supplier[] {
+			() -> GamaColorFactory.get(0, 240, 255), () -> GamaColorFactory.get(57, 255, 20),
+			() -> GamaColorFactory.get(255, 0, 127), () -> GamaColorFactory.get(255, 230, 0),
+			() -> GamaColorFactory.get(157, 0, 255), () -> GamaColorFactory.get(255, 69, 0),
+			() -> GamaColorFactory.get(0, 236, 225), () -> GamaColorFactory.get(191, 255, 0) };
+
+	/**
+	 * A palette of 10 soft pastel colors.
+	 */
+	public static final Supplier<IColor>[] PASTEL_COLORS = new Supplier[] {
+			() -> GamaColorFactory.get(166, 206, 227), () -> GamaColorFactory.get(178, 223, 138),
+			() -> GamaColorFactory.get(251, 154, 153), () -> GamaColorFactory.get(253, 191, 111),
+			() -> GamaColorFactory.get(202, 178, 214), () -> GamaColorFactory.get(255, 242, 174),
+			() -> GamaColorFactory.get(128, 203, 196), () -> GamaColorFactory.get(244, 143, 177),
+			() -> GamaColorFactory.get(206, 147, 216), () -> GamaColorFactory.get(230, 238, 156) };
+
+	/**
 	 * The preference key used to retrieve the default buffering strategy applied to the GAML {@code save} statement.
 	 * The actual {@link Pref} is declared in {@link Experimental#DEFAULT_SAVE_BUFFERING_STRATEGY}.
 	 */
@@ -390,49 +430,53 @@ public class GamaPreferences {
 		 */
 		public static void setColorScheme(final String scheme) {
 			switch (scheme) {
-				case DIVERGING:
+				case VIVID -> {
+					SIMULATION_COLORS = new IColor[VIVID_COLORS.length];
+					for (int i = 0; i < VIVID_COLORS.length; i++) { SIMULATION_COLORS[i] = VIVID_COLORS[i].get(); }
+				}
+				case TABLEAU -> {
+					SIMULATION_COLORS = new IColor[TABLEAU_COLORS.length];
+					for (int i = 0; i < TABLEAU_COLORS.length; i++) { SIMULATION_COLORS[i] = TABLEAU_COLORS[i].get(); }
+				}
+				case NEON -> {
+					SIMULATION_COLORS = new IColor[NEON_COLORS.length];
+					for (int i = 0; i < NEON_COLORS.length; i++) { SIMULATION_COLORS[i] = NEON_COLORS[i].get(); }
+				}
+				case PASTEL -> {
+					SIMULATION_COLORS = new IColor[PASTEL_COLORS.length];
+					for (int i = 0; i < PASTEL_COLORS.length; i++) { SIMULATION_COLORS[i] = PASTEL_COLORS[i].get(); }
+				}
+				case DIVERGING -> {
 					SIMULATION_COLORS = new IColor[DIVERGING_COLORS.length];
-					for (int i = 0; i < DIVERGING_COLORS.length; i++) {
-						SIMULATION_COLORS[i] = DIVERGING_COLORS[i].get();
-					}
-					break;
-				case BASIC:
+					for (int i = 0; i < DIVERGING_COLORS.length; i++) { SIMULATION_COLORS[i] = DIVERGING_COLORS[i].get(); }
+				}
+				case BASIC -> {
 					SIMULATION_COLORS = new IColor[BASIC_COLORS.length];
 					for (int i = 0; i < BASIC_COLORS.length; i++) { SIMULATION_COLORS[i] = BASIC_COLORS[i].get(); }
-					break;
-				case QUALITATIVE:
+				}
+				case QUALITATIVE -> {
 					SIMULATION_COLORS = new IColor[QUALITATIVE_COLORS.length];
-					for (int i = 0; i < QUALITATIVE_COLORS.length; i++) {
-						SIMULATION_COLORS[i] = QUALITATIVE_COLORS[i].get();
-					}
-					break;
-				case null:
-				default:
-					setPivot(CORE_PIVOT_COLOR.getValue());
-					break;
+					for (int i = 0; i < QUALITATIVE_COLORS.length; i++) { SIMULATION_COLORS[i] = QUALITATIVE_COLORS[i].get(); }
+				}
+				case null, default -> setPivot(CORE_PIVOT_COLOR.getValue());
 			}
 		}
 
-		/** The display label for the 11-color diverging color scheme in the preferences UI. */
-		static final String DIVERGING = "Diverging (11 colors)";
-
-		/** The display label for the 5-color basic color scheme in the preferences UI. */
+		static final String VIVID = "Vivid (12 distinct colors)";
+		static final String TABLEAU = "Tableau 10 (10 distinct colors)";
+		static final String NEON = "Neon (8 vibrant colors)";
+		static final String PASTEL = "Pastel (10 soft colors)";
+		static final String DIVERGING = "Diverging (11 colors - ColorBrewer)";
 		static final String BASIC = "Basic (5 colors)";
-
-		/** The display label for the 9-color qualitative color scheme in the preferences UI. */
-		static final String QUALITATIVE = "Qualitative (9 colors)";
-
-		/** The display label for the pivot-based 9-color scheme in the preferences UI. */
+		static final String QUALITATIVE = "Qualitative (9 colors - ColorBrewer)";
 		static final String PIVOT = "Based on pivot color (9 colors)";
 
 		/**
-		 * The default color scheme used for distinguishing simulations in the UI. One of {@link #BASIC},
-		 * {@link #DIVERGING}, {@link #QUALITATIVE}, or {@link #PIVOT}. Changing this preference automatically calls
-		 * {@link Interface#setColorScheme(String)} to rebuild the color palette.
+		 * The default color scheme used for distinguishing simulations in the UI.
 		 */
 		public static final Pref<String> CORE_SIMULATION_COLOR =
-				create("pref_simulation_colors", "Default color scheme for simulations in UI", DIVERGING, IType.STRING,
-						true).among(BASIC, DIVERGING, QUALITATIVE, PIVOT).in(NAME, SIMULATIONS)
+				create("pref_simulation_colors", "Default color scheme for simulations in UI", VIVID, IType.STRING,
+						true).among(VIVID, TABLEAU, NEON, PASTEL, QUALITATIVE, DIVERGING, BASIC, PIVOT).in(NAME, SIMULATIONS)
 								.onChange(Interface::setColorScheme);
 
 		/**
@@ -895,7 +939,11 @@ public class GamaPreferences {
 		public static final Pref<Double> CHART_LINE_WIDTH = create("pref_chart_line_width",
 				"Default width of series lines", 2.0, IType.FLOAT, true).in(NAME, CHARTS_GROUP).between(0.5, 10.0);
 
-		public static final String CHART_PALETTE_QUALITATIVE = "Qualitative (9 distinct colors - ColorBrewer)";
+		public static final String CHART_PALETTE_VIVID = "Vivid (12 distinct colors)";
+		public static final String CHART_PALETTE_TABLEAU = "Tableau 10 (10 distinct colors)";
+		public static final String CHART_PALETTE_NEON = "Neon (8 vibrant colors)";
+		public static final String CHART_PALETTE_PASTEL = "Pastel (10 soft colors)";
+		public static final String CHART_PALETTE_QUALITATIVE = "Qualitative (9 colors - ColorBrewer)";
 		public static final String CHART_PALETTE_DIVERGING = "Diverging (11 colors - ColorBrewer)";
 		public static final String CHART_PALETTE_BASIC = "Basic (5 colors)";
 		public static final String CHART_PALETTE_PIVOT = "Based on pivot color (9 colors)";
@@ -903,8 +951,8 @@ public class GamaPreferences {
 
 		/** Default color palette scheme for chart series. */
 		public static final Pref<String> CHART_COLOR_PALETTE = create("pref_chart_color_palette",
-				"Default color palette for chart series", CHART_PALETTE_QUALITATIVE, IType.STRING, true)
-						.in(NAME, CHARTS_GROUP).among(CHART_PALETTE_QUALITATIVE, CHART_PALETTE_DIVERGING, CHART_PALETTE_BASIC, CHART_PALETTE_PIVOT, CHART_PALETTE_RANDOM);
+				"Default color palette for chart series", CHART_PALETTE_VIVID, IType.STRING, true)
+						.in(NAME, CHARTS_GROUP).among(CHART_PALETTE_VIVID, CHART_PALETTE_TABLEAU, CHART_PALETTE_NEON, CHART_PALETTE_PASTEL, CHART_PALETTE_QUALITATIVE, CHART_PALETTE_DIVERGING, CHART_PALETTE_BASIC, CHART_PALETTE_PIVOT, CHART_PALETTE_RANDOM);
 
 		/** Pivot color used when the chart color scheme is 'Based on pivot color'. */
 		public static final Pref<IColor> CHART_PIVOT_COLOR = create("pref_chart_pivot_color",

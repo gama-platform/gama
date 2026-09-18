@@ -181,6 +181,18 @@ public class ChartProperties {
 	public static IColor getDefaultSeriesColor(final IScope scope, final int index) {
 		String palette = GamaPreferences.Displays.CHART_COLOR_PALETTE.getValue();
 		int idx = Math.max(0, index);
+		if (GamaPreferences.Displays.CHART_PALETTE_VIVID.equals(palette) && GamaPreferences.VIVID_COLORS.length > 0) {
+			return GamaPreferences.VIVID_COLORS[idx % GamaPreferences.VIVID_COLORS.length].get();
+		}
+		if (GamaPreferences.Displays.CHART_PALETTE_TABLEAU.equals(palette) && GamaPreferences.TABLEAU_COLORS.length > 0) {
+			return GamaPreferences.TABLEAU_COLORS[idx % GamaPreferences.TABLEAU_COLORS.length].get();
+		}
+		if (GamaPreferences.Displays.CHART_PALETTE_NEON.equals(palette) && GamaPreferences.NEON_COLORS.length > 0) {
+			return GamaPreferences.NEON_COLORS[idx % GamaPreferences.NEON_COLORS.length].get();
+		}
+		if (GamaPreferences.Displays.CHART_PALETTE_PASTEL.equals(palette) && GamaPreferences.PASTEL_COLORS.length > 0) {
+			return GamaPreferences.PASTEL_COLORS[idx % GamaPreferences.PASTEL_COLORS.length].get();
+		}
 		if (GamaPreferences.Displays.CHART_PALETTE_DIVERGING.equals(palette) && GamaPreferences.DIVERGING_COLORS.length > 0) {
 			return GamaPreferences.DIVERGING_COLORS[idx % GamaPreferences.DIVERGING_COLORS.length].get();
 		}
