@@ -90,13 +90,13 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 	}
 
 	double getScale(final String serie, final int col) {
-		ArrayList<Double> scales = markerScale.get(serie);
+		DoubleList scales = markerScale.get(serie);
 		if (scales == null) return 1;
 		if (col < 0 || col >= scales.size()) return 1;
 		return scales.get(col);
 	}
 
-	HashMap<String, ArrayList<Double>> markerScale = new HashMap<>();
+	HashMap<String, DoubleList> markerScale = new HashMap<>();
 
 	public ChartJFreeChartOutputScatter(final IScope scope, final String name, final IExpression typeexp) {
 		super(scope, name, typeexp);
@@ -222,7 +222,7 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 		if (myserie.getMycolor() != null) { newr.setSeriesPaint(0, IColor.toAWTColor(myserie.getMycolor())); }
 
 		float thickness = Cast.asFloat(scope, myserie.getLineThickness().value(scope)).floatValue();
-		newr.setSeriesStroke(0, new BasicStroke(thickness, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+		newr.setSeriesStroke(0, getStroke(thickness));
 
 		if (newr instanceof CustomXYErrorRenderer xy) {
 			configureErrorRenderer(xy, myserie, scope);
@@ -301,9 +301,9 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 
 		final XYIntervalSeries serie = ((XYIntervalSeriesCollection) jfreedataset.get(idPosition.get(dataserie.getSerieId(scope)))).getSeries(0);
 		serie.clear();
-		final ArrayList<Double> xValues = dataserie.getXValues(scope);
-		final ArrayList<Double> yValues = dataserie.getYValues(scope);
-		final ArrayList<Double> sValues = dataserie.getSValues(scope);
+		final DoubleList xValues = dataserie.getXValues(scope);
+		final DoubleList yValues = dataserie.getYValues(scope);
+		final DoubleList sValues = dataserie.getSValues(scope);
 		boolean secondaxis = dataserie.getMysource().getUseSecondYAxis(scope);
 		if (secondaxis) { this.setUseSecondYAxis(scope, true); }
 
@@ -332,7 +332,7 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 		}
 		if (!sValues.isEmpty()) {
 			markerScale.remove(serieid);
-			markerScale.put(serieid, (ArrayList<Double>) sValues.clone());
+			markerScale.put(serieid, sValues.clone());
 		}
 		this.resetRenderer(scope, serieid);
 	}

@@ -14,7 +14,6 @@ import java.text.FieldPosition;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
 import java.util.ArrayList;
-import java.util.Collections;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.axis.AxisLocation;
@@ -136,8 +135,8 @@ public class ChartJFreeChartOutputHeatmap extends ChartJFreeChartOutput {
 
 		if (myserie.getMycolor() != null) { newr.setSeriesPaint(0, IColor.toAWTColor(myserie.getMycolor())); }
 		if (!myserie.getSValues(scope).isEmpty()) {
-			final double maxval = Collections.max(myserie.getSValues(scope));
-			final double minval = Collections.min(myserie.getSValues(scope));
+			final double maxval = myserie.getSValues(scope).max();
+			final double minval = myserie.getSValues(scope).min();
 			Color cdeb = myserie.getMyMincolor() != null ? IColor.toAWTColor(myserie.getMyMincolor()) : new Color(0, 0, 0, 0);
 			Color cend = myserie.getMycolor() != null ? IColor.toAWTColor(myserie.getMycolor()) : new Color(0.9f, 0.9f, 0.9f, 1.0f);
 
@@ -229,9 +228,9 @@ public class ChartJFreeChartOutputHeatmap extends ChartJFreeChartOutput {
 		if (dataserie == null || chart == null) return;
 
 		final MatrixSeries serie = ((MatrixSeriesCollection) jfreedataset.get(idPosition.get(dataserie.getSerieId(scope)))).getSeries(0);
-		final ArrayList<Double> xValues = dataserie.getXValues(scope);
-		final ArrayList<Double> yValues = dataserie.getYValues(scope);
-		final ArrayList<Double> sValues = dataserie.getSValues(scope);
+		final DoubleList xValues = dataserie.getXValues(scope);
+		final DoubleList yValues = dataserie.getYValues(scope);
+		final DoubleList sValues = dataserie.getSValues(scope);
 		final NumberAxis domainAxis = (NumberAxis) ((XYPlot) this.chart.getPlot()).getDomainAxis();
 		final NumberAxis rangeAxis = (NumberAxis) ((XYPlot) this.chart.getPlot()).getRangeAxis();
 
@@ -251,14 +250,20 @@ public class ChartJFreeChartOutputHeatmap extends ChartJFreeChartOutput {
 			domainAxis.setTickMarksVisible(properties.isXTickValueVisible());
 			rangeAxis.setTickLabelsVisible(properties.isYTickValueVisible());
 			rangeAxis.setTickMarksVisible(properties.isYTickValueVisible());
-			for (int i = 0; i < xValues.size(); i++) {
-				if (xValues.get(i) > domainAxis.getUpperBound() && !properties.isUseXRangeInterval() && !properties.isUseXRangeMinMax()) {
-					domainAxis.setRange(-0.5, yValues.get(i) + 0.5);
+			boolean oldNotify = serie.getNotify();
+			serie.setNotify(false);
+			try {
+				for (int i = 0; i < xValues.size(); i++) {
+					if (xValues.get(i) > domainAxis.getUpperBound() && !properties.isUseXRangeInterval() && !properties.isUseXRangeMinMax()) {
+						domainAxis.setRange(-0.5, yValues.get(i) + 0.5);
+					}
+					if (yValues.get(i) > rangeAxis.getUpperBound() && !properties.isUseYRangeInterval() && !properties.isUseYRangeMinMax()) {
+						rangeAxis.setRange(-0.5, yValues.get(i) + 0.5);
+					}
+					serie.update((int) yValues.get(i), (int) xValues.get(i), sValues.get(i));
 				}
-				if (yValues.get(i) > rangeAxis.getUpperBound() && !properties.isUseYRangeInterval() && !properties.isUseYRangeMinMax()) {
-					rangeAxis.setRange(-0.5, yValues.get(i) + 0.5);
-				}
-				serie.update(yValues.get(i).intValue(), xValues.get(i).intValue(), sValues.get(i).doubleValue());
+			} finally {
+				serie.setNotify(oldNotify);
 			}
 		}
 		this.resetRenderer(scope, serieid);

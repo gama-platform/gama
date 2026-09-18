@@ -6,7 +6,7 @@
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.outputs.layers.charts;
 
@@ -37,6 +37,107 @@ import gama.gaml.operators.Maths;
 @SuppressWarnings ({ "rawtypes" })
 public class Distribution {
 
+	private static class ExponentialBinsResult {
+		final double newminInt;
+		final double step;
+		final int twoExponent;
+		final int startMultiplier;
+
+		ExponentialBinsResult(final double newminInt, final double step, final int twoExponent, final int startMultiplier) {
+			this.newminInt = newminInt;
+			this.step = step;
+			this.twoExponent = twoExponent;
+			this.startMultiplier = startMultiplier;
+		}
+	}
+
+	private static ExponentialBinsResult computeExponentialBins(final double[] doublelist, final int nbBarres) {
+		final double[] sortedList = doublelist.clone();
+		Arrays.sort(sortedList);
+		final double min = sortedList[0];
+		final double max = sortedList[sortedList.length - 1];
+
+		if (min == max) {
+			return new ExponentialBinsResult(min, Math.pow(2, 0), 0, (int) min);
+		}
+
+		final float minInt = (float) min;
+		final float maxInt = (float) max;
+		double N = Math.log10((maxInt - minInt) / (double) (nbBarres - 1)) / Math.log10(2);
+		int twoExponent = (int) N;
+		double step = Math.pow(2, twoExponent);
+		double newminInt = step * (int) (minInt / step);
+		int startMultiplier = (int) (minInt / step);
+
+		if (newminInt > min) {
+			newminInt = step * (int) (minInt / step - 1);
+			startMultiplier = (int) (minInt / step - 1);
+		}
+		if (newminInt + nbBarres * step <= max) {
+			N = N + 1;
+			twoExponent = (int) N;
+			step = Math.pow(2, twoExponent);
+			newminInt = step * (int) (minInt / step);
+			startMultiplier = (int) (minInt / step);
+			if (newminInt > min) {
+				newminInt = step * (int) (minInt / step - 1);
+				startMultiplier = (int) (minInt / step - 1);
+			}
+		}
+
+		return new ExponentialBinsResult(newminInt, step, twoExponent, startMultiplier);
+	}
+
+	private static double[] buildThresholdsAndLegend(final double minVal, final double step, final int nbBarres, final String[] legend) {
+		final double[] thresholds = new double[nbBarres + 1];
+		double preval = minVal;
+		double postval = 0;
+		for (int i = 0; i < nbBarres; i++) {
+			thresholds[i] = preval;
+			postval = preval;
+			preval = preval + step;
+			legend[i] = "[" + postval + ":" + preval + "]";
+		}
+		return thresholds;
+	}
+
+	private static int[][] populate2dDistribution(final int nbBarresx, final int nbBarresy, final int len,
+			final double[] doublelistorx, final double[] doublelistory,
+			final double[] thresholdsx, final double[] thresholdsy) {
+		final int[][] distribInts = new int[nbBarresx][nbBarresy];
+		int nx, ny;
+		for (int k = 0; k < len; k++) {
+			nx = 0;
+			ny = 0;
+			while (thresholdsx[nx + 1] < doublelistorx[k] && nx + 2 < nbBarresx) {
+				nx++;
+			}
+			while (thresholdsy[ny + 1] < doublelistory[k] && ny + 2 < nbBarresy) {
+				ny++;
+			}
+			distribInts[nx][ny]++;
+		}
+		return distribInts;
+	}
+
+	private static IMap<String, Object> build2dResult(final IScope scope, final int nbBarresx, final int[][] distribInts,
+			final int[] distribParamsx, final String[] distribLegendx,
+			final int[] distribParamsy, final String[] distribLegendy) {
+		final IList[] mytlist = new IList[nbBarresx];
+		for (int i = 0; i < nbBarresx; i++) {
+			mytlist[i] = GamaListFactory.create(scope, Types.INT, distribInts[i]);
+		}
+		final IList vallist = GamaListFactory.create(scope, Types.LIST, mytlist);
+
+		final IMap<String, Object> result = GamaMapFactory.create(Types.STRING, Types.NO_TYPE);
+		result.addValueAtIndex(scope, "values", vallist);
+		result.addValueAtIndex(scope, "legendx", GamaListFactory.create(scope, Types.STRING, distribLegendx));
+		result.addValueAtIndex(scope, "parlistx", GamaListFactory.create(scope, Types.INT, distribParamsx));
+		result.addValueAtIndex(scope, "legendy", GamaListFactory.create(scope, Types.STRING, distribLegendy));
+		result.addValueAtIndex(scope, "parlisty", GamaListFactory.create(scope, Types.INT, distribParamsy));
+		return result;
+	}
+
 	/**
 	 * Compute distrib 2 d.
 	 *
@@ -59,104 +160,23 @@ public class Distribution {
 		len = Math.min(len, leny);
 		final double[] doublelistorx = new double[len];
 		final double[] doublelistory = new double[len];
-		final int[][] distribInts = new int[nbBarresx][nbBarresy];
-		final int[] distribParamsx = new int[2];
-		final int[] distribParamsy = new int[2];
 		final String[] distribLegendx = new String[nbBarresx];
 		final String[] distribLegendy = new String[nbBarresy];
 
-		double newminIntx = 0;
-		double deuxpuissancekx = 0;
-		double newminInty = 0;
-		double deuxpuissanceky = 0;
-
-		// x
-
 		for (int i = 0; i < len; i++) {
 			doublelistorx[i] = Cast.asFloat(scope, lvaluex.get(i));
-		}
-
-		deuxpuissancekx = (vmaxx - vminx) / nbBarresx;
-		newminIntx = vminx;
-
-		distribParamsx[0] = 0;
-		distribParamsx[1] = 0;
-
-		// y
-
-		for (int i = 0; i < len; i++) {
 			doublelistory[i] = Cast.asFloat(scope, lvaluey.get(i));
 		}
 
-		deuxpuissanceky = (vmaxy - vminy) / nbBarresy;
-		newminInty = vminy;
+		final double stepx = (vmaxx - vminx) / nbBarresx;
+		final double stepy = (vmaxy - vminy) / nbBarresy;
 
-		distribParamsy[0] = 0;
-		distribParamsy[1] = 0;
+		final double[] thresholdsx = buildThresholdsAndLegend(vminx, stepx, nbBarresx, distribLegendx);
+		final double[] thresholdsy = buildThresholdsAndLegend(vminy, stepy, nbBarresy, distribLegendy);
 
-		final double[] thresholdsx = new double[nbBarresx + 1];
-		final double[] thresholdsy = new double[nbBarresy + 1];
+		final int[][] distribInts = populate2dDistribution(nbBarresx, nbBarresy, len, doublelistorx, doublelistory, thresholdsx, thresholdsy);
 
-		double preval = newminIntx;
-		double postval = 0;
-
-		for (int i = 0; i < nbBarresx; i++) {
-			thresholdsx[i] = preval;
-			postval = preval;
-			preval = preval + deuxpuissancekx;
-			distribLegendx[i] = "[" + postval + ":" + preval + "]";
-		}
-
-		preval = newminInty;
-		postval = 0;
-
-		for (int i = 0; i < nbBarresy; i++) {
-			thresholdsy[i] = preval;
-			postval = preval;
-			preval = preval + deuxpuissanceky;
-			distribLegendy[i] = "[" + postval + ":" + preval + "]";
-		}
-
-		for (int i = 0; i < nbBarresx; i++) {
-			for (int j = 0; j < nbBarresy; j++) {
-				distribInts[i][j] = 0;
-			}
-		}
-		int nx, ny;
-		for (int k = 0; k < len; k++) {
-			nx = 0;
-			ny = 0;
-			while (thresholdsx[nx + 1] < doublelistorx[k] && nx + 2 < nbBarresx) {
-				nx++;
-			}
-			while (thresholdsy[ny + 1] < doublelistory[k] && ny + 2 < nbBarresy) {
-				ny++;
-			}
-			distribInts[nx][ny]++;
-		}
-
-		final IList[] mytlist = new IList[nbBarresx];
-		for (int i = 0; i < nbBarresx; i++) {
-			final IList vallists = GamaListFactory.create(scope, Types.INT, distribInts[i]);
-			// DEBUG.LOG("add "+distribInts[i]);
-			mytlist[i] = vallists;
-		}
-		// DEBUG.LOG("fin " + mytlist);
-		final IList vallist = GamaListFactory.create(scope, Types.LIST, mytlist);
-
-		final IMap<String, Object> result = GamaMapFactory.create(Types.STRING, Types.NO_TYPE);
-		final IList parlist = GamaListFactory.create(scope, Types.INT, distribParamsx);
-		final IList leglist = GamaListFactory.create(scope, Types.STRING, distribLegendx);
-		final IList parlisty = GamaListFactory.create(scope, Types.INT, distribParamsy);
-		final IList leglisty = GamaListFactory.create(scope, Types.STRING, distribLegendy);
-		result.addValueAtIndex(scope, "values", vallist);
-		result.addValueAtIndex(scope, "legendx", leglist);
-		result.addValueAtIndex(scope, "parlistx", parlist);
-		result.addValueAtIndex(scope, "legendy", leglisty);
-		result.addValueAtIndex(scope, "parlisty", parlisty);
-
-		return result;
-
+		return build2dResult(scope, nbBarresx, distribInts, new int[] { 0, 0 }, distribLegendx, new int[] { 0, 0 }, distribLegendy);
 	}
 
 	/**
@@ -174,193 +194,27 @@ public class Distribution {
 		int len = lvaluex.length(scope);
 		final int leny = lvaluey.length(scope);
 		len = Math.min(len, leny);
-		final double[] doublelistx = new double[len];
-		final double[] doublelisty = new double[len];
 		final double[] doublelistorx = new double[len];
 		final double[] doublelistory = new double[len];
-		final int[][] distribInts = new int[nbBarresx][nbBarresy];
-		final int[] distribParamsx = new int[2];
-		final int[] distribParamsy = new int[2];
 		final String[] distribLegendx = new String[nbBarresx];
 		final String[] distribLegendy = new String[nbBarresy];
 
-		double newminIntx = 0;
-		double deuxpuissancekx = 0;
-		double newminInty = 0;
-		double deuxpuissanceky = 0;
-
-		// x
-
 		for (int i = 0; i < len; i++) {
-			doublelistx[i] = Cast.asFloat(scope, lvaluex.get(i));
 			doublelistorx[i] = Cast.asFloat(scope, lvaluex.get(i));
-		}
-		Arrays.sort(doublelistx);
-		double min = doublelistx[0];
-		double max = doublelistx[len - 1];
-		int twoExponent = 0;
-		int startMultiplier = 0;
-
-		if (min == max) {
-			twoExponent = 0;
-			startMultiplier = (int) min;
-			deuxpuissancekx = (float) Math.pow(2, twoExponent);
-			newminIntx = (int) min;
-
-		}
-
-		else {
-
-			final double intermin = min;
-			final double intermax = max;
-
-			final float minInt = (float) intermin;
-			final float maxInt = (float) intermax;
-			double N = Math.log10((maxInt - minInt) / (double) (nbBarresx - 1)) / Math.log10(2);
-			// DEBUG.LOG("Ncalc: maxmin: "+maxInt+"/"+minInt+" N "+N);
-			twoExponent = (int) N;
-			deuxpuissancekx = (float) Math.pow(2, twoExponent);
-			newminIntx = deuxpuissancekx * (int) (minInt / deuxpuissancekx);
-			startMultiplier = (int) (minInt / deuxpuissancekx);
-			if (newminIntx > min) {
-				newminIntx = deuxpuissancekx * (int) (minInt / deuxpuissancekx - 1);
-				startMultiplier = (int) (minInt / deuxpuissancekx - 1);
-			}
-			if (newminIntx + nbBarresx * deuxpuissancekx <= max) {
-				N = N + 1;
-				twoExponent = (int) N;
-				deuxpuissancekx = (float) Math.pow(2, twoExponent);
-				newminIntx = deuxpuissancekx * (int) (minInt / deuxpuissancekx);
-				startMultiplier = (int) (minInt / deuxpuissancekx);
-				if (newminIntx > min) {
-					newminIntx = deuxpuissancekx * (int) (minInt / deuxpuissancekx - 1);
-					startMultiplier = (int) (minInt / deuxpuissancekx - 1);
-				}
-			}
-
-		}
-
-		distribParamsx[0] = twoExponent;
-		distribParamsx[1] = startMultiplier;
-
-		// y
-
-		for (int i = 0; i < len; i++) {
-			doublelisty[i] = Cast.asFloat(scope, lvaluey.get(i));
 			doublelistory[i] = Cast.asFloat(scope, lvaluey.get(i));
 		}
-		Arrays.sort(doublelisty);
-		min = doublelisty[0];
-		max = doublelisty[len - 1];
-		twoExponent = 0;
-		startMultiplier = 0;
 
-		if (min == max) {
-			twoExponent = 0;
-			startMultiplier = (int) min;
-			deuxpuissanceky = (float) Math.pow(2, twoExponent);
-			newminInty = (int) min;
+		final ExponentialBinsResult resX = computeExponentialBins(doublelistorx, nbBarresx);
+		final ExponentialBinsResult resY = computeExponentialBins(doublelistory, nbBarresy);
 
-		}
+		final double[] thresholdsx = buildThresholdsAndLegend(resX.newminInt, resX.step, nbBarresx, distribLegendx);
+		final double[] thresholdsy = buildThresholdsAndLegend(resY.newminInt, resY.step, nbBarresy, distribLegendy);
 
-		else {
+		final int[][] distribInts = populate2dDistribution(nbBarresx, nbBarresy, len, doublelistorx, doublelistory, thresholdsx, thresholdsy);
 
-			final double intermin = min;
-			final double intermax = max;
-
-			final float minInt = (float) intermin;
-			final float maxInt = (float) intermax;
-			double N = Math.log10((maxInt - minInt) / (double) (nbBarresy - 1)) / Math.log10(2);
-			// DEBUG.LOG("Ncalc: maxmin: " + maxInt + "/" + minInt + "
-			// N " + N);
-			twoExponent = (int) N;
-			deuxpuissanceky = (float) Math.pow(2, twoExponent);
-			newminInty = deuxpuissanceky * (int) (minInt / deuxpuissanceky);
-			startMultiplier = (int) (minInt / deuxpuissanceky);
-			if (newminInty > min) {
-				newminInty = deuxpuissanceky * (int) (minInt / deuxpuissanceky - 1);
-				startMultiplier = (int) (minInt / deuxpuissanceky - 1);
-			}
-			if (newminInty + nbBarresy * deuxpuissanceky <= max) {
-				N = N + 1;
-				twoExponent = (int) N;
-				deuxpuissanceky = (float) Math.pow(2, twoExponent);
-				newminInty = deuxpuissanceky * (int) (minInt / deuxpuissanceky);
-				startMultiplier = (int) (minInt / deuxpuissanceky);
-				if (newminInty > min) {
-					newminInty = deuxpuissanceky * (int) (minInt / deuxpuissanceky - 1);
-					startMultiplier = (int) (minInt / deuxpuissanceky - 1);
-				}
-			}
-
-		}
-
-		distribParamsy[0] = twoExponent;
-		distribParamsy[1] = startMultiplier;
-
-		final double[] thresholdsx = new double[nbBarresx + 1];
-		final double[] thresholdsy = new double[nbBarresy + 1];
-
-		double preval = newminIntx;
-		double postval = 0;
-
-		for (int i = 0; i < nbBarresx; i++) {
-			thresholdsx[i] = preval;
-			postval = preval;
-			preval = preval + deuxpuissancekx;
-			distribLegendx[i] = "[" + postval + ":" + preval + "]";
-		}
-
-		preval = newminInty;
-		postval = 0;
-
-		for (int i = 0; i < nbBarresy; i++) {
-			thresholdsy[i] = preval;
-			postval = preval;
-			preval = preval + deuxpuissanceky;
-			distribLegendy[i] = "[" + postval + ":" + preval + "]";
-		}
-
-		for (int i = 0; i < nbBarresx; i++) {
-			for (int j = 0; j < nbBarresy; j++) {
-				distribInts[i][j] = 0;
-			}
-		}
-		int nx, ny;
-		for (int k = 0; k < len; k++) {
-			nx = 0;
-			ny = 0;
-			while (thresholdsx[nx + 1] < doublelistorx[k] && nx + 2 < nbBarresx) {
-				nx++;
-			}
-			while (thresholdsy[ny + 1] < doublelistory[k] && ny + 2 < nbBarresy) {
-				ny++;
-			}
-			distribInts[nx][ny]++;
-		}
-
-		final IList[] mytlist = new IList[nbBarresx];
-		for (int i = 0; i < nbBarresx; i++) {
-			final IList vallists = GamaListFactory.create(scope, Types.INT, distribInts[i]);
-			// DEBUG.LOG("add "+distribInts[i]);
-			mytlist[i] = vallists;
-		}
-		// DEBUG.LOG("fin "+mytlist);
-		final IList vallist = GamaListFactory.create(scope, Types.LIST, mytlist);
-
-		final IMap<String, Object> result = GamaMapFactory.create(Types.STRING, Types.NO_TYPE);
-		final IList parlist = GamaListFactory.create(scope, Types.INT, distribParamsx);
-		final IList leglist = GamaListFactory.create(scope, Types.STRING, distribLegendx);
-		final IList parlisty = GamaListFactory.create(scope, Types.INT, distribParamsy);
-		final IList leglisty = GamaListFactory.create(scope, Types.STRING, distribLegendy);
-		result.addValueAtIndex(scope, "values", vallist);
-		result.addValueAtIndex(scope, "legendx", leglist);
-		result.addValueAtIndex(scope, "parlistx", parlist);
-		result.addValueAtIndex(scope, "legendy", leglisty);
-		result.addValueAtIndex(scope, "parlisty", parlisty);
-
-		return result;
-
+		return build2dResult(scope, nbBarresx, distribInts,
+				new int[] { resX.twoExponent, resX.startMultiplier }, distribLegendx,
+				new int[] { resY.twoExponent, resY.startMultiplier }, distribLegendy);
 	}
 
 	/**
@@ -377,7 +231,6 @@ public class Distribution {
 	@operator (
 			value = { "distribution2d_of" },
 			can_be_const = false,
-			// index_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
 			index_type = IType.STRING,
 			content_type = IType.LIST,
 			category = { IOperatorCategory.STATISTICAL },
@@ -429,7 +282,6 @@ public class Distribution {
 	@operator (
 			value = { "distribution2d_of" },
 			can_be_const = false,
-			// index_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
 			index_type = IType.STRING,
 			content_type = IType.LIST,
 			category = { IOperatorCategory.STATISTICAL },
@@ -484,7 +336,6 @@ public class Distribution {
 	@operator (
 			value = { "distribution2d_of" },
 			can_be_const = false,
-			// index_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
 			index_type = IType.STRING,
 			content_type = IType.LIST,
 			category = { IOperatorCategory.STATISTICAL },
@@ -552,22 +403,15 @@ public class Distribution {
 		else {
 
 			final double intermin = min;
-			/*
-			 * if (min < 0) { intermin = intermin - 1; }
-			 */
-			// double intermax = max + 1;
 			final double intermax = max;
 
 			final float minInt = (float) intermin;
 			final float maxInt = (float) intermax;
 			double N = Math.log10((maxInt - minInt) / (double) (nbBarres - 1)) / Math.log10(2);
-			// DEBUG.LOG("Ncalc: maxmin: " + maxInt + "/" + minInt + " N " + N);
 			twoExponent = (int) N;
 			deuxpuissancek = (float) Math.pow(2, twoExponent);
 			newminInt = deuxpuissancek * (int) (minInt / deuxpuissancek);
 			startMultiplier = (int) (minInt / deuxpuissancek);
-			// DEBUG.LOG("Min "+min+" newmin "+newminInt+" startmult
-			// "+startMultiplier);
 			if (newminInt > min) {
 				newminInt = deuxpuissancek * (int) (minInt / deuxpuissancek - 1);
 				startMultiplier = (int) (minInt / deuxpuissancek - 1);
@@ -583,8 +427,6 @@ public class Distribution {
 					startMultiplier = (int) (minInt / deuxpuissancek - 1);
 				}
 			}
-			// DEBUG.LOG(" "+maxInt+"/"+minInt+" N "+N+ " twoexp
-			// "+twoExponent+" maxv "+(newminInt+nbBarres*deuxpuissancek));
 
 		}
 
@@ -696,7 +538,6 @@ public class Distribution {
 	@operator (
 			value = { "distribution_of" },
 			can_be_const = false,
-			// index_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
 			index_type = IType.STRING,
 			content_type = IType.LIST,
 			category = { IOperatorCategory.STATISTICAL },
@@ -735,7 +576,6 @@ public class Distribution {
 	@operator (
 			value = { "distribution_of" },
 			can_be_const = false,
-			// index_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
 			index_type = IType.STRING,
 			content_type = IType.LIST,
 			category = { IOperatorCategory.STATISTICAL },
@@ -776,7 +616,6 @@ public class Distribution {
 	@operator (
 			value = { "distribution_of" },
 			can_be_const = false,
-			// index_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
 			index_type = IType.STRING,
 			content_type = IType.LIST,
 			category = { IOperatorCategory.STATISTICAL },

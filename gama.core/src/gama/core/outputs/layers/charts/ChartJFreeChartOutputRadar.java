@@ -35,7 +35,9 @@ public class ChartJFreeChartOutputRadar extends ChartJFreeChartOutput {
 	@Override
 	public void createChart(final IScope scope) {
 		super.createChart(scope);
-		final SpiderWebPlot plot = new SpiderWebPlot(new DefaultCategoryDataset());
+		DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+		jfreedataset.add(0, dataset);
+		final SpiderWebPlot plot = new SpiderWebPlot(dataset);
 		chart = new JFreeChart(getName(), null, plot, true);
 	}
 
@@ -112,15 +114,21 @@ public class ChartJFreeChartOutputRadar extends ChartJFreeChartOutput {
 		final DefaultCategoryDataset serie = (DefaultCategoryDataset) jfreedataset.get(0);
 		if (serie.getRowKeys().contains(serieid)) { serie.removeRow(serieid); }
 		final ArrayList<String> cValues = dataserie.getCValues(scope);
-		final ArrayList<Double> yValues = dataserie.getYValues(scope);
+		final DoubleList yValues = dataserie.getYValues(scope);
 
 		if (!cValues.isEmpty()) {
 			int deb = 0;
 			if (properties.isUseXRangeInterval() && cValues.size() > properties.getXRangeInterval()) {
 				deb = cValues.size() - (int) properties.getXRangeInterval();
 			}
-			for (int i = deb; i < cValues.size(); i++) {
-				serie.addValue(yValues.get(i), serieid, cValues.get(i - deb));
+			boolean oldNotify = serie.getNotify();
+			serie.setNotify(false);
+			try {
+				for (int i = deb; i < cValues.size(); i++) {
+					serie.addValue(yValues.get(i), serieid, cValues.get(i - deb));
+				}
+			} finally {
+				serie.setNotify(oldNotify);
 			}
 		}
 		this.resetRenderer(scope, serieid);

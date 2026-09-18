@@ -12,6 +12,7 @@ package gama.core.outputs.layers.charts;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.gaml.expressions.IExpression;
@@ -30,6 +31,14 @@ public class ChartDataSourceList extends ChartDataSource {
 
 	/** The currentseries. */
 	ArrayList<String> currentSeriesNames;
+	private final ArrayList<String> cachedSeriesIds = new ArrayList<>();
+
+	private String getSeriesId(final int index) {
+		while (cachedSeriesIds.size() <= index) {
+			cachedSeriesIds.add("dl_" + System.identityHashCode(this) + "_" + cachedSeriesIds.size());
+		}
+		return cachedSeriesIds.get(index);
+	}
 
 	/** The legend exp. */
 	IExpression legendExp;
@@ -60,42 +69,21 @@ public class ChartDataSourceList extends ChartDataSource {
 		legendExp = expval;
 	}
 
-	@Override
+		@Override
 	public void updatevalues(final IScope scope, final int chartCycle) {
 		super.updatevalues(scope, chartCycle);
-		Object o = null;
-		// final Object oname = this.getNameExp();
-		final HashMap<String, Object> barvalues = new HashMap<>();
-		if (this.isUseYErrValues()) { barvalues.put(ChartDataStatement.YERR_VALUES, this.getValueyerr().value(scope)); }
-		if (this.isUseXErrValues()) { barvalues.put(ChartDataStatement.XERR_VALUES, this.getValuexerr().value(scope)); }
-		if (this.isUseYMinMaxValues()) {
-			barvalues.put(ChartDataStatement.XERR_VALUES, this.getValuexerr().value(scope));
-		}
-		if (this.isUseSizeExp()) { barvalues.put(ChartDataStatement.MARKERSIZE, this.getSizeexp().value(scope)); }
-		if (this.isUseColorExp()) { barvalues.put(IKeyword.COLOR, this.getColorexp().value(scope)); }
-
-		// TODO check same length and list
-
 		updateserielist(scope, chartCycle);
-
-		// int type_val = this.DATA_TYPE_NULL;
-		if (getValue() != null) { o = getValue().value(scope); }
-		// type_val = get_data_type(scope, o);
-
-		if (o instanceof IList) {
-			final IList<?> lval = GamaListFactory.castToList(scope, o);
-
-			if (lval.size() > 0) {
-				for (int i = 0; i < lval.size(); i++) {
-					final Object no = lval.get(i);
-					if (no != null) {
-						updateseriewithvalue(scope, mySeries.get(currentSeriesNames.get(i)), no, chartCycle, barvalues,
-								i);
-					}
+		if (getValue() == null) return;
+		final Object o = getValue().value(scope);
+		if (o instanceof IList<?> lval && !lval.isEmpty()) {
+			final Map<String, Object> barvalues = computeBarValues(scope);
+			for (int i = 0; i < lval.size(); i++) {
+				final Object no = lval.get(i);
+				if (no != null) {
+					updateseriewithvalue(scope, mySeries.get(currentSeriesNames.get(i)), no, chartCycle, barvalues, i);
 				}
 			}
 		}
-
 	}
 
 	private IList<?> extractLegends(final IScope scope) {
@@ -137,7 +125,7 @@ public class ChartDataSourceList extends ChartDataSource {
 		currentSeriesNames = new ArrayList<>();
 
 		for (int i = 0; i < targetSize; i++) {
-			String serieId = "dl_" + this.hashCode() + "_" + i;
+			String serieId = getSeriesId(i);
 			currentSeriesNames.add(serieId);
 
 			String legendStr = getLegendLabel(scope, legends, i);

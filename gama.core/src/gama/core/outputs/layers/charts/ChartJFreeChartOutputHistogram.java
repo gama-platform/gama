@@ -82,10 +82,11 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 		jfreedataset.add(0, new DefaultCategoryDataset());
 		PlotOrientation orientation = properties.isReverseAxes() ? PlotOrientation.HORIZONTAL : PlotOrientation.VERTICAL;
 		String style = properties.getStyle();
+		CategoryDataset dataset = (CategoryDataset) jfreedataset.get(0);
 		if (IKeyword.THREE_D.equals(style) || !IKeyword.STACK.equals(style)) {
-			chart = ChartFactory.createBarChart(getName(), null, null, null, orientation, true, true, false);
+			chart = ChartFactory.createBarChart(getName(), null, null, dataset, orientation, true, true, false);
 		} else {
-			chart = ChartFactory.createStackedBarChart(getName(), null, null, null, orientation, true, true, false);
+			chart = ChartFactory.createStackedBarChart(getName(), null, null, dataset, orientation, true, true, false);
 		}
 	}
 
@@ -111,7 +112,8 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 
 	@Override
 	protected AbstractRenderer createRenderer(final IScope scope, final String serieid) {
-		final String style = this.getChartdataset().getDataSeries(scope, serieid).getStyle(scope);
+		ChartDataSeries series = this.getChartdataset().getDataSeries(scope, serieid);
+		final String style = series != null ? series.getStyle(scope) : IKeyword.BAR;
 		return switch (style) {
 			case IKeyword.STACK -> new StackedBarRenderer();
 			case IKeyword.DOT -> new ScatterRenderer();
@@ -184,10 +186,10 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 	protected void createNewSerie(final IScope scope, final String serieid) {
 		if (!idPosition.containsKey(serieid) && chart != null) {
 			final CategoryPlot plot = (CategoryPlot) this.chart.getPlot();
-			final DefaultCategoryDataset firstdataset = (DefaultCategoryDataset) plot.getDataset();
+			final DefaultCategoryDataset firstdataset = (DefaultCategoryDataset) jfreedataset.get(0);
 			if (nbseries == 0) {
 				plot.setDataset(0, firstdataset);
-				plot.setRenderer(nbseries, (CategoryItemRenderer) getOrCreateRenderer(scope, serieid));
+				plot.setRenderer(0, (CategoryItemRenderer) getOrCreateRenderer(scope, serieid));
 			}
 			nbseries++;
 			idPosition.put(serieid, nbseries - 1);
@@ -200,6 +202,26 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 		this.clearDataSet(scope);
 	}
 
+	private void populateCategoryDataset(final IScope scope, final String serieid, final ChartDataSeries dataserie) {
+		final DefaultCategoryDataset serie = (DefaultCategoryDataset) jfreedataset.get(0);
+		final ArrayList<String> cValues = dataserie.getCValues(scope);
+		final DoubleList yValues = dataserie.getYValues(scope);
+		boolean oldNotify = serie.getNotify();
+		serie.setNotify(false);
+		try {
+			int total = cValues.size();
+			int stride = total > 3000 ? total / 2000 : 1;
+			for (int i = 0; i < total; i += stride) {
+				if (properties.isYLogscale() && yValues.get(i) <= 0) {
+					throw GamaRuntimeException.warning("Log scale with <=0 value:" + yValues.get(i), scope);
+				}
+				serie.addValue(yValues.get(i), serieid, cValues.get(i));
+			}
+		} finally {
+			serie.setNotify(oldNotify);
+		}
+	}
+
 	@Override
 	protected void resetSerie(final IScope scope, final String serieid) {
 		if (chart == null || jfreedataset.isEmpty()) return;
@@ -208,19 +230,11 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 
 		final DefaultCategoryDataset serie = (DefaultCategoryDataset) jfreedataset.get(0);
 		if (serie.getRowKeys().contains(serieid)) { serie.removeRow(serieid); }
-		final ArrayList<String> cValues = dataserie.getCValues(scope);
-		final ArrayList<Double> yValues = dataserie.getYValues(scope);
 
-		if (!cValues.isEmpty()) {
+		if (!dataserie.getCValues(scope).isEmpty()) {
 			final NumberAxis rangeAxis = (NumberAxis) ((CategoryPlot) this.chart.getPlot()).getRangeAxis();
 			rangeAxis.setAutoRange(false);
-			for (int i = 0; i < cValues.size(); i++) {
-				if (properties.isYLogscale()) {
-					final double val = yValues.get(i);
-					if (val <= 0) throw GamaRuntimeException.warning("Log scale with <=0 value:" + val, scope);
-				}
-				serie.addValue(yValues.get(i), serieid, cValues.get(i));
-			}
+			populateCategoryDataset(scope, serieid, dataserie);
 		}
 		this.resetRenderer(scope, serieid);
 	}

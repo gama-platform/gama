@@ -11,6 +11,7 @@
 package gama.core.outputs.layers.charts;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.gaml.GAML;
@@ -76,18 +77,14 @@ public class ChartDataSourceUnique extends ChartDataSource {
 		legend = stval;
 	}
 
-	@Override
+		@Override
 	public void updatevalues(final IScope scope, final int chartCycle) {
 		super.updatevalues(scope, chartCycle);
-		Object o = null;
-		final HashMap<String, Object> barvalues = new HashMap<>();
-		if (this.isUseYErrValues()) { barvalues.put(ChartDataStatement.YERR_VALUES, getValueyerr().value(scope)); }
-		if (this.isUseXErrValues()) { barvalues.put(ChartDataStatement.XERR_VALUES, getValueyerr().value(scope)); }
-		if (this.isUseYMinMaxValues()) { barvalues.put(ChartDataStatement.XERR_VALUES, getValuexerr().value(scope)); }
-		if (this.isUseSizeExp()) { barvalues.put(ChartDataStatement.MARKERSIZE, getSizeexp().value(scope)); }
-		if (this.isUseColorExp()) { barvalues.put(IKeyword.COLOR, getColorexp().value(scope)); }
-		if (getValue() != null) { o = getValue().value(scope); }
-		if (o != null) { updateseriewithvalue(scope, getMyserie(), o, chartCycle, barvalues, -1); }
+		if (getValue() == null) return;
+		final Object o = getValue().value(scope);
+		if (o != null) {
+			updateseriewithvalue(scope, getMyserie(), o, chartCycle, computeBarValues(scope), -1);
+		}
 	}
 
 	/**

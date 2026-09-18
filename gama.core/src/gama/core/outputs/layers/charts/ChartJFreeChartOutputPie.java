@@ -36,13 +36,16 @@ public class ChartJFreeChartOutputPie extends ChartJFreeChartOutput {
 	@Override
 	public void createChart(final IScope scope) {
 		super.createChart(scope);
+		jfreedataset.add(0, new DefaultPieDataset<String>());
+		@SuppressWarnings("unchecked")
+		DefaultPieDataset<String> pieDataset = (DefaultPieDataset<String>) jfreedataset.get(0);
 		String style = properties.getStyle();
 		if (IKeyword.THREE_D.equals(style)) {
-			chart = ChartFactory.createPieChart3D(getName(), null, false, true, false);
+			chart = ChartFactory.createPieChart3D(getName(), pieDataset, false, true, false);
 		} else if (IKeyword.RING.equals(style)) {
-			chart = ChartFactory.createRingChart(getName(), null, false, true, false);
+			chart = ChartFactory.createRingChart(getName(), pieDataset, false, true, false);
 		} else {
-			chart = ChartFactory.createPieChart(getName(), null, false, true, false);
+			chart = ChartFactory.createPieChart(getName(), pieDataset, false, true, false);
 		}
 	}
 
@@ -127,10 +130,16 @@ public class ChartJFreeChartOutputPie extends ChartJFreeChartOutput {
 		if (dataserie == null || jfreedataset.isEmpty()) return;
 		@SuppressWarnings("unchecked")
 		final DefaultPieDataset<String> serie = (DefaultPieDataset<String>) jfreedataset.get(0);
-		final ArrayList<Double> yValues = dataserie.getYValues(scope);
+		final DoubleList yValues = dataserie.getYValues(scope);
 
 		if (!yValues.isEmpty()) {
-			serie.setValue(serieid, yValues.get(yValues.size() - 1));
+			boolean oldNotify = serie.getNotify();
+			serie.setNotify(false);
+			try {
+				serie.setValue(serieid, yValues.get(yValues.size() - 1));
+			} finally {
+				serie.setNotify(oldNotify);
+			}
 		}
 		this.resetRenderer(scope, serieid);
 	}
