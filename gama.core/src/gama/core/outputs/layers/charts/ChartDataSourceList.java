@@ -12,6 +12,7 @@ package gama.core.outputs.layers.charts;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.gaml.expressions.IExpression;
@@ -30,6 +31,14 @@ public class ChartDataSourceList extends ChartDataSource {
 
 	/** The currentseries. */
 	ArrayList<String> currentSeriesNames;
+	private final ArrayList<String> cachedSeriesIds = new ArrayList<>();
+
+	private String getSeriesId(final int index) {
+		while (cachedSeriesIds.size() <= index) {
+			cachedSeriesIds.add("dl_" + System.identityHashCode(this) + "_" + cachedSeriesIds.size());
+		}
+		return cachedSeriesIds.get(index);
+	}
 
 	/** The legend exp. */
 	IExpression legendExp;
@@ -65,14 +74,27 @@ public class ChartDataSourceList extends ChartDataSource {
 		super.updatevalues(scope, chartCycle);
 		Object o = null;
 		// final Object oname = this.getNameExp();
-		final HashMap<String, Object> barvalues = new HashMap<>();
-		if (this.isUseYErrValues()) { barvalues.put(ChartDataStatement.YERR_VALUES, this.getValueyerr().value(scope)); }
-		if (this.isUseXErrValues()) { barvalues.put(ChartDataStatement.XERR_VALUES, this.getValuexerr().value(scope)); }
-		if (this.isUseYMinMaxValues()) {
+		Map<String, Object> barvalues = null;
+		if (this.isUseYErrValues()) {
+			if (barvalues == null) barvalues = new HashMap<>(4);
+			barvalues.put(ChartDataStatement.YERR_VALUES, this.getValueyerr().value(scope));
+		}
+		if (this.isUseXErrValues()) {
+			if (barvalues == null) barvalues = new HashMap<>(4);
 			barvalues.put(ChartDataStatement.XERR_VALUES, this.getValuexerr().value(scope));
 		}
-		if (this.isUseSizeExp()) { barvalues.put(ChartDataStatement.MARKERSIZE, this.getSizeexp().value(scope)); }
-		if (this.isUseColorExp()) { barvalues.put(IKeyword.COLOR, this.getColorexp().value(scope)); }
+		if (this.isUseYMinMaxValues()) {
+			if (barvalues == null) barvalues = new HashMap<>(4);
+			barvalues.put(ChartDataStatement.XERR_VALUES, this.getValuexerr().value(scope));
+		}
+		if (this.isUseSizeExp()) {
+			if (barvalues == null) barvalues = new HashMap<>(4);
+			barvalues.put(ChartDataStatement.MARKERSIZE, this.getSizeexp().value(scope));
+		}
+		if (this.isUseColorExp()) {
+			if (barvalues == null) barvalues = new HashMap<>(4);
+			barvalues.put(IKeyword.COLOR, this.getColorexp().value(scope));
+		}
 
 		// TODO check same length and list
 
@@ -137,7 +159,7 @@ public class ChartDataSourceList extends ChartDataSource {
 		currentSeriesNames = new ArrayList<>();
 
 		for (int i = 0; i < targetSize; i++) {
-			String serieId = "dl_" + this.hashCode() + "_" + i;
+			String serieId = getSeriesId(i);
 			currentSeriesNames.add(serieId);
 
 			String legendStr = getLegendLabel(scope, legends, i);

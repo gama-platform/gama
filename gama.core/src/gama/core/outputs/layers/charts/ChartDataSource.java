@@ -35,6 +35,12 @@ import gama.api.utils.prefs.GamaPreferences;
 @SuppressWarnings ({ "rawtypes" })
 public class ChartDataSource implements IChartDataSource {
 
+	public static double asDouble(final IScope scope, final Object o) {
+		if (o instanceof Number n) return n.doubleValue();
+		return Cast.asFloat(scope, o);
+	}
+
+
 	/** The value. */
 	IExpression value;
 
@@ -496,7 +502,7 @@ public class ChartDataSource implements IChartDataSource {
 	}
 
 	// void updateseriewithvalue(final IScope scope, final ChartDataSeries myserie, final IExpression expr,
-	// final int chartCycle, final HashMap barvalues, final int listvalue) {
+	// final int chartCycle, final Map<String, Object> barvalues, final int listvalue) {
 	// final int type_val = this.computeTypeOfData(scope, expr);
 	/**
 	 * Updateseriewithvalue.
@@ -516,7 +522,7 @@ public class ChartDataSource implements IChartDataSource {
 	 */
 	// final Object o = expr.value(scope);
 	void updateseriewithvalue(final IScope scope, final ChartDataSeries myserie, final Object newValue,
-			final int chartCycle, final HashMap barvalues, final int listvalue) {
+			final int chartCycle, final Map<String, Object> barvalues, final int listvalue) {
 		final int type_val = this.get_data_type(scope, newValue);
 		// could move into outputs object... would be (a little) less complex.
 		// But less factorisation...
@@ -550,11 +556,11 @@ public class ChartDataSource implements IChartDataSource {
 							} else if (lvalue.length(scope) == 1) {
 								myserie.addxyvalue(scope,
 										getDataset().getXSeriesValues().get(getDataset().getCommonXIndex()),
-										Cast.asFloat(scope, lvalue.get(0)), chartCycle, barvalues, listvalue);
+										asDouble(scope, lvalue.get(0)), chartCycle, barvalues, listvalue);
 							} else {
 								myserie.addxysvalue(scope,
 										getDataset().getXSeriesValues().get(getDataset().getCommonXIndex()),
-										Cast.asFloat(scope, lvalue.get(0)), Cast.asFloat(scope, lvalue.get(1)),
+										asDouble(scope, lvalue.get(0)), asDouble(scope, lvalue.get(1)),
 										chartCycle, barvalues, listvalue);
 							}
 							break;
@@ -566,7 +572,7 @@ public class ChartDataSource implements IChartDataSource {
 						}
 						case IChartDataSource.DATA_TYPE_DOUBLE:
 						default: {
-							final Double dvalue = Cast.asFloat(scope, newValue);
+							final Double dvalue = asDouble(scope, newValue);
 							myserie.addxyvalue(scope,
 									getDataset().getXSeriesValues().get(getDataset().getCommonXIndex()), dvalue,
 									chartCycle, barvalues, listvalue);
@@ -600,7 +606,7 @@ public class ChartDataSource implements IChartDataSource {
 										getDataset().updateXValues(scope, chartCycle, l1value.size());
 									}
 									myserie.addxyvalue(scope, getDataset().getXSeriesValues().get(n1),
-											Cast.asFloat(scope, o2), chartCycle, barvalues, listvalue);
+											asDouble(scope, o2), chartCycle, barvalues, listvalue);
 								}
 							}
 							break;
@@ -619,12 +625,12 @@ public class ChartDataSource implements IChartDataSource {
 									final IList lvalue = GamaListFactory.castToList(scope, o2);
 									if (lvalue.length(scope) == 1) {
 										myserie.addxyvalue(scope, getDataset().getXSeriesValues().get(n1),
-												Cast.asFloat(scope, lvalue.get(0)), chartCycle, barvalues, listvalue);
+												asDouble(scope, lvalue.get(0)), chartCycle, barvalues, listvalue);
 
 									}
 									if (lvalue.length(scope) > 1) {
 										myserie.addxysvalue(scope, getDataset().getXSeriesValues().get(n1),
-												Cast.asFloat(scope, lvalue.get(0)), Cast.asFloat(scope, lvalue.get(1)),
+												asDouble(scope, lvalue.get(0)), asDouble(scope, lvalue.get(1)),
 												chartCycle, barvalues, listvalue);
 									}
 
@@ -639,7 +645,7 @@ public class ChartDataSource implements IChartDataSource {
 						}
 						case IChartDataSource.DATA_TYPE_DOUBLE:
 						default: {
-							final Double dvalue = Cast.asFloat(scope, newValue);
+							final Double dvalue = asDouble(scope, newValue);
 							myserie.addxyvalue(
 									scope, /* getDataset().getXSeriesValues().get(0) */ getDataset().getXSeriesValues()
 											.get(getDataset().getCommonXIndex()),
@@ -676,12 +682,12 @@ public class ChartDataSource implements IChartDataSource {
 
 							}
 							if (lvalue.length(scope) == 2) {
-								myserie.addxyvalue(scope, Cast.asFloat(scope, lvalue.get(0)),
-										Cast.asFloat(scope, lvalue.get(1)), chartCycle, barvalues, listvalue);
+								myserie.addxyvalue(scope, asDouble(scope, lvalue.get(0)),
+										asDouble(scope, lvalue.get(1)), chartCycle, barvalues, listvalue);
 							}
 							if (lvalue.length(scope) > 2) {
-								myserie.addxysvalue(scope, Cast.asFloat(scope, lvalue.get(0)),
-										Cast.asFloat(scope, lvalue.get(1)), Cast.asFloat(scope, lvalue.get(2)),
+								myserie.addxysvalue(scope, asDouble(scope, lvalue.get(0)),
+										asDouble(scope, lvalue.get(1)), asDouble(scope, lvalue.get(2)),
 										chartCycle, barvalues, listvalue);
 							}
 							break;
@@ -693,7 +699,7 @@ public class ChartDataSource implements IChartDataSource {
 						}
 						case IChartDataSource.DATA_TYPE_DOUBLE:
 						default: {
-							final Double dvalue = Cast.asFloat(scope, newValue);
+							final Double dvalue = asDouble(scope, newValue);
 							myserie.addxyvalue(scope,
 									getDataset().getXSeriesValues().get(getDataset().getCommonXIndex()), dvalue,
 									chartCycle, barvalues, listvalue);
@@ -721,12 +727,12 @@ public class ChartDataSource implements IChartDataSource {
 
 							}
 							if (lvalue.length(scope) == 2) {
-								myserie.addxyvalue(scope, Cast.asFloat(scope, lvalue.get(0)),
-										Cast.asFloat(scope, lvalue.get(1)), chartCycle, barvalues, listvalue);
+								myserie.addxyvalue(scope, asDouble(scope, lvalue.get(0)),
+										asDouble(scope, lvalue.get(1)), chartCycle, barvalues, listvalue);
 							}
 							if (lvalue.length(scope) > 2) {
-								myserie.addxysvalue(scope, Cast.asFloat(scope, lvalue.get(0)),
-										Cast.asFloat(scope, lvalue.get(1)), Cast.asFloat(scope, lvalue.get(2)),
+								myserie.addxysvalue(scope, asDouble(scope, lvalue.get(0)),
+										asDouble(scope, lvalue.get(1)), asDouble(scope, lvalue.get(2)),
 										chartCycle, barvalues, listvalue);
 							}
 							break;
@@ -743,12 +749,12 @@ public class ChartDataSource implements IChartDataSource {
 
 								}
 								if (lvalue.length(scope) == 2) {
-									myserie.addxyvalue(scope, Cast.asFloat(scope, lvalue.get(0)),
-											Cast.asFloat(scope, lvalue.get(1)), chartCycle, barvalues, listvalue);
+									myserie.addxyvalue(scope, asDouble(scope, lvalue.get(0)),
+											asDouble(scope, lvalue.get(1)), chartCycle, barvalues, listvalue);
 								}
 								if (lvalue.length(scope) > 2) {
-									myserie.addxysvalue(scope, Cast.asFloat(scope, lvalue.get(0)),
-											Cast.asFloat(scope, lvalue.get(1)), Cast.asFloat(scope, lvalue.get(2)),
+									myserie.addxysvalue(scope, asDouble(scope, lvalue.get(0)),
+											asDouble(scope, lvalue.get(1)), asDouble(scope, lvalue.get(2)),
 											chartCycle, barvalues, listvalue);
 								}
 
@@ -762,7 +768,7 @@ public class ChartDataSource implements IChartDataSource {
 						}
 						case IChartDataSource.DATA_TYPE_DOUBLE:
 						default: {
-							final Double dvalue = Cast.asFloat(scope, newValue);
+							final Double dvalue = asDouble(scope, newValue);
 							myserie.addxyvalue(scope,
 									getDataset().getXSeriesValues().get(getDataset().getCommonXIndex()), dvalue,
 									chartCycle, barvalues, listvalue);
@@ -799,18 +805,18 @@ public class ChartDataSource implements IChartDataSource {
 							}
 							if (lvalue.length(scope) == 1) {
 								myserie.addcyvalue(scope, getDataset().getLastCategories(scope),
-										Cast.asFloat(scope, lvalue.get(0)), chartCycle, barvalues, listvalue);
+										asDouble(scope, lvalue.get(0)), chartCycle, barvalues, listvalue);
 							}
 							if (lvalue.length(scope) > 1 && (lvalue.length(scope) < 6 || !this.isBoxAndWhiskerData())) {
 								myserie.addcysvalue(scope, getDataset().getLastCategories(scope),
-										Cast.asFloat(scope, lvalue.get(0)), Cast.asFloat(scope, lvalue.get(1)),
+										asDouble(scope, lvalue.get(0)), asDouble(scope, lvalue.get(1)),
 										chartCycle, barvalues, listvalue);
 							}
 							if (lvalue.length(scope) > 5 && this.isBoxAndWhiskerData()) {
 								myserie.addcbwvalue(scope, getDataset().getLastCategories(scope),
-										Cast.asFloat(scope, lvalue.get(0)), Cast.asFloat(scope, lvalue.get(1)),
-										Cast.asFloat(scope, lvalue.get(2)), Cast.asFloat(scope, lvalue.get(3)),
-										Cast.asFloat(scope, lvalue.get(4)), Cast.asFloat(scope, lvalue.get(5)),
+										asDouble(scope, lvalue.get(0)), asDouble(scope, lvalue.get(1)),
+										asDouble(scope, lvalue.get(2)), asDouble(scope, lvalue.get(3)),
+										asDouble(scope, lvalue.get(4)), asDouble(scope, lvalue.get(5)),
 										chartCycle, barvalues, listvalue);
 							}
 							break;
@@ -822,7 +828,7 @@ public class ChartDataSource implements IChartDataSource {
 						}
 						case IChartDataSource.DATA_TYPE_DOUBLE:
 						default: {
-							final Double dvalue = Cast.asFloat(scope, newValue);
+							final Double dvalue = asDouble(scope, newValue);
 							myserie.addcyvalue(scope, getDataset().getLastCategories(scope), dvalue, chartCycle,
 									barvalues, listvalue);
 
@@ -849,7 +855,7 @@ public class ChartDataSource implements IChartDataSource {
 							for (int n1 = 0; n1 < l1value.size(); n1++) {
 								final Object o2 = l1value.get(n1);
 								myserie.addcyvalue(scope, getDataset().getCategories(scope, n1),
-										Cast.asFloat(scope, o2), chartCycle, barvalues, listvalue);
+										asDouble(scope, o2), chartCycle, barvalues, listvalue);
 							}
 							break;
 
@@ -864,20 +870,20 @@ public class ChartDataSource implements IChartDataSource {
 								final IList lvalue = GamaListFactory.castToList(scope, o2);
 								if (lvalue.length(scope) == 1) {
 									myserie.addcyvalue(scope, getDataset().getCategories(scope, n1),
-											Cast.asFloat(scope, lvalue.get(0)), chartCycle, barvalues, listvalue);
+											asDouble(scope, lvalue.get(0)), chartCycle, barvalues, listvalue);
 
 								}
 								if (lvalue.length(scope) > 1
 										&& (lvalue.length(scope) < 6 || !this.isBoxAndWhiskerData())) {
 									myserie.addcysvalue(scope, getDataset().getCategories(scope, n1),
-											Cast.asFloat(scope, lvalue.get(0)), Cast.asFloat(scope, lvalue.get(1)),
+											asDouble(scope, lvalue.get(0)), asDouble(scope, lvalue.get(1)),
 											chartCycle, barvalues, listvalue);
 								}
 								if (lvalue.length(scope) > 5 && this.isBoxAndWhiskerData()) {
 									myserie.addcbwvalue(scope, getDataset().getCategories(scope, n1),
-											Cast.asFloat(scope, lvalue.get(0)), Cast.asFloat(scope, lvalue.get(1)),
-											Cast.asFloat(scope, lvalue.get(2)), Cast.asFloat(scope, lvalue.get(3)),
-											Cast.asFloat(scope, lvalue.get(4)), Cast.asFloat(scope, lvalue.get(5)),
+											asDouble(scope, lvalue.get(0)), asDouble(scope, lvalue.get(1)),
+											asDouble(scope, lvalue.get(2)), asDouble(scope, lvalue.get(3)),
+											asDouble(scope, lvalue.get(4)), asDouble(scope, lvalue.get(5)),
 											chartCycle, barvalues, listvalue);
 								}
 
@@ -891,7 +897,7 @@ public class ChartDataSource implements IChartDataSource {
 						}
 						case IChartDataSource.DATA_TYPE_DOUBLE:
 						default: {
-							final Double dvalue = Cast.asFloat(scope, newValue);
+							final Double dvalue = asDouble(scope, newValue);
 							myserie.addcyvalue(scope, getDataset().getCategories(scope, 0), dvalue, chartCycle,
 									barvalues, listvalue);
 							break;
@@ -927,7 +933,7 @@ public class ChartDataSource implements IChartDataSource {
 							getDataset().updateXValues(scope, chartCycle, l1value.size());
 						}
 						myserie.addxysvalue(scope, getDataset().getXSeriesValues().get(n1),
-								getDataset().getCurrentCommonYValue(), Cast.asFloat(scope, o2), chartCycle, barvalues,
+								getDataset().getCurrentCommonYValue(), asDouble(scope, o2), chartCycle, barvalues,
 								listvalue);
 					}
 					break;
@@ -949,7 +955,7 @@ public class ChartDataSource implements IChartDataSource {
 								getDataset().updateYValues(scope, chartCycle, lvalue.size());
 							}
 							myserie.addxysvalue(scope, getDataset().getXSeriesValues().get(n1),
-									getDataset().getYSeriesValues().get(n2), Cast.asFloat(scope, lvalue.get(n2)),
+									getDataset().getYSeriesValues().get(n2), asDouble(scope, lvalue.get(n2)),
 									chartCycle, barvalues, listvalue);
 
 						}
@@ -964,7 +970,7 @@ public class ChartDataSource implements IChartDataSource {
 				}
 				case IChartDataSource.DATA_TYPE_DOUBLE:
 				default: {
-					final Double dvalue = Cast.asFloat(scope, newValue);
+					final Double dvalue = asDouble(scope, newValue);
 					myserie.addxysvalue(scope, getDataset().getXSeriesValues().get(0),
 							getDataset().getYSeriesValues().get(0), dvalue, chartCycle, barvalues, listvalue);
 					break;

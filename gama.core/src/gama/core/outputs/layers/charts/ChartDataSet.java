@@ -614,11 +614,11 @@ public class ChartDataSet {
 	 * @param chartCycle
 	 *            the chart cycle
 	 */
-	private void addCommonYValue(final IScope scope, final Double chartCycle) {
-
+	private void addCommonYValue(final IScope scope, final double chartCycle) {
 		YSeriesValues.add(chartCycle);
-		Ycategories.add("" + chartCycle);
-
+		if (byCategory) {
+			Ycategories.add(String.valueOf(chartCycle));
+		}
 	}
 
 	/**
@@ -766,11 +766,11 @@ public class ChartDataSet {
 	 * @param chartCycle
 	 *            the chart cycle
 	 */
-	private void addCommonXValue(final IScope scope, final Double chartCycle) {
-
+	private void addCommonXValue(final IScope scope, final double chartCycle) {
 		XSeriesValues.add(chartCycle);
-		Xcategories.add("" + chartCycle);
-
+		if (byCategory) {
+			Xcategories.add(String.valueOf(chartCycle));
+		}
 	}
 
 	/**
