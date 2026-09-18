@@ -221,7 +221,8 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 
 		if (myserie.getMycolor() != null) { newr.setSeriesPaint(0, IColor.toAWTColor(myserie.getMycolor())); }
 
-		newr.setSeriesStroke(0, new BasicStroke(Cast.asFloat(scope, myserie.getLineThickness().value(scope)).floatValue()));
+		float thickness = Cast.asFloat(scope, myserie.getLineThickness().value(scope)).floatValue();
+		newr.setSeriesStroke(0, new BasicStroke(thickness, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 
 		if (newr instanceof CustomXYErrorRenderer xy) {
 			configureErrorRenderer(xy, myserie, scope);
@@ -251,6 +252,8 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 		plot.setDataset((XYIntervalSeriesCollection) jfreedataset.get(0));
 		plot.setRenderer(0, null);
 		idPosition.clear();
+		rendererSet.clear();
+		markerScale.clear();
 	}
 
 	@Override
@@ -311,8 +314,20 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 			((XYPlot) this.chart.getPlot()).mapDatasetToRangeAxis(ids, secondaxis ? 1 : 0);
 			domainAxis.setAutoRange(false);
 			rangeAxis.setAutoRange(false);
-			for (int i = 0; i < xValues.size(); i++) {
-				serie.add(buildIntervalDataItem(dataserie, xValues.get(i), yValues.get(i), i), false);
+			boolean oldNotify = serie.getNotify();
+			serie.setNotify(false);
+			try {
+				int total = xValues.size();
+				int stride = total > 3000 ? total / 2000 : 1;
+				for (int i = 0; i < total; i += stride) {
+					serie.add(buildIntervalDataItem(dataserie, xValues.get(i), yValues.get(i), i), false);
+				}
+				if (stride > 1 && (total - 1) % stride != 0) {
+					int last = total - 1;
+					serie.add(buildIntervalDataItem(dataserie, xValues.get(last), yValues.get(last), last), false);
+				}
+			} finally {
+				serie.setNotify(oldNotify);
 			}
 		}
 		if (!sValues.isEmpty()) {
