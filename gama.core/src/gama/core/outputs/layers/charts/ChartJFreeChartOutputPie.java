@@ -17,6 +17,7 @@ import org.jfree.chart.plot.PiePlot;
 import org.jfree.chart.renderer.AbstractRenderer;
 import org.jfree.chart.renderer.DefaultPolarItemRenderer;
 import org.jfree.data.general.DefaultPieDataset;
+import org.jfree.data.general.PieDataset;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.gaml.expressions.IExpression;
@@ -29,16 +30,6 @@ import gama.api.ui.displays.IChartDataSource;
  */
 public class ChartJFreeChartOutputPie extends ChartJFreeChartOutput {
 
-	/**
-	 * Instantiates a new chart J free chart output pie.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param name
-	 *            the name
-	 * @param typeexp
-	 *            the typeexp
-	 */
 	public ChartJFreeChartOutputPie(final IScope scope, final String name, final IExpression typeexp) {
 		super(scope, name, typeexp);
 	}
@@ -80,13 +71,9 @@ public class ChartJFreeChartOutputPie extends ChartJFreeChartOutput {
 
 		if (!"none".equals(properties.getSeriesLabelPosition())) {
 			pp.setLabelGenerator(new StandardPieSectionLabelGenerator("{0} = {1} ({2})"));
-			if (properties.getAxesColor() != null) {
-				pp.setLabelLinkPaint(IColor.toAWTColor(properties.getAxesColor()));
-			}
+			if (properties.getAxesColor() != null) { pp.setLabelLinkPaint(IColor.toAWTColor(properties.getAxesColor())); }
 			pp.setLabelFont(properties.getTickFont());
-			if (properties.getLabelTextColor() != null) {
-				pp.setLabelPaint(IColor.toAWTColor(properties.getLabelTextColor()));
-			}
+			if (properties.getLabelTextColor() != null) { pp.setLabelPaint(IColor.toAWTColor(properties.getLabelTextColor())); }
 			if (properties.getLabelBackgroundColor() != null) {
 				pp.setLabelBackgroundPaint(IColor.toAWTColor(properties.getLabelBackgroundColor()));
 			}
@@ -101,14 +88,6 @@ public class ChartJFreeChartOutputPie extends ChartJFreeChartOutput {
 		return new DefaultPolarItemRenderer();
 	}
 
-	/**
-	 * Reset renderer.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param serieid
-	 *            the serieid
-	 */
 	protected void resetRenderer(final IScope scope, final String serieid) {
 		if (chart == null) return;
 		final ChartDataSeries myserie = this.getChartdataset().getDataSeries(scope, serieid);
@@ -116,7 +95,7 @@ public class ChartJFreeChartOutputPie extends ChartJFreeChartOutput {
 		((PiePlot<?>) this.chart.getPlot()).setSectionPaint(serieid, IColor.toAWTColor(myserie.getMycolor()));
 	}
 
-	@SuppressWarnings ({ "rawtypes", "unchecked" })
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	protected void clearDataSet(final IScope scope) {
 		super.clearDataSet(scope);
@@ -125,7 +104,7 @@ public class ChartJFreeChartOutputPie extends ChartJFreeChartOutput {
 		jfreedataset.clear();
 		DefaultPieDataset<String> dd = new DefaultPieDataset<>();
 		jfreedataset.add(0, dd);
-		plot.setDataset(dd);
+		plot.setDataset((PieDataset) dd);
 		idPosition.clear();
 		nbseries = 0;
 	}
@@ -133,10 +112,13 @@ public class ChartJFreeChartOutputPie extends ChartJFreeChartOutput {
 	@Override
 	protected void createNewSerie(final IScope scope, final String serieid) {
 		if (!idPosition.containsKey(serieid)) {
-			@SuppressWarnings ("unchecked") final PiePlot<String> plot = (PiePlot<String>) this.chart.getPlot();
+			@SuppressWarnings("unchecked")
+			final PiePlot<String> plot = (PiePlot<String>) this.chart.getPlot();
 			nbseries++;
 			idPosition.put(serieid, nbseries - 1);
-			if (IKeyword.EXPLODED.equals(getStyle())) { plot.setExplodePercent(serieid, 0.20); }
+			if (IKeyword.EXPLODED.equals(getStyle())) {
+				plot.setExplodePercent(serieid, 0.20);
+			}
 		}
 	}
 
@@ -144,11 +126,13 @@ public class ChartJFreeChartOutputPie extends ChartJFreeChartOutput {
 	protected void resetSerie(final IScope scope, final String serieid) {
 		final ChartDataSeries dataserie = chartdataset.getDataSeries(scope, serieid);
 		if (dataserie == null || jfreedataset.isEmpty()) return;
-		@SuppressWarnings ("unchecked") final DefaultPieDataset<String> serie =
-				(DefaultPieDataset<String>) jfreedataset.get(0);
+		@SuppressWarnings("unchecked")
+		final DefaultPieDataset<String> serie = (DefaultPieDataset<String>) jfreedataset.get(0);
 		final ArrayList<Double> yValues = dataserie.getYValues(scope);
 
-		if (!yValues.isEmpty()) { serie.setValue(serieid, yValues.get(yValues.size() - 1)); }
+		if (!yValues.isEmpty()) {
+			serie.setValue(serieid, yValues.get(yValues.size() - 1));
+		}
 		this.resetRenderer(scope, serieid);
 	}
 
