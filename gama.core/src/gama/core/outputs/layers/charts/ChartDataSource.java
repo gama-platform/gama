@@ -27,6 +27,7 @@ import gama.api.types.list.IList;
 import gama.api.types.matrix.GamaMatrixFactory;
 import gama.api.types.matrix.IMatrix;
 import gama.api.ui.displays.IChartDataSource;
+import gama.api.utils.prefs.GamaPreferences;
 
 /**
  * The Class ChartDataSource.
@@ -114,7 +115,7 @@ public class ChartDataSource implements IChartDataSource {
 	boolean isBoxAndWhiskerData = false;
 
 	/** The line thickness. */
-	IExpression lineThickness = GAML.getExpressionFactory().createConst(1.0, Types.FLOAT);
+	IExpression lineThickness = GAML.getExpressionFactory().createConst(GamaPreferences.Displays.CHART_LINE_WIDTH.getValue(), Types.FLOAT);
 
 	/**
 	 * Clone me.

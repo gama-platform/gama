@@ -584,50 +584,5 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 		}
 	}
 
-	@Override
-	public void getModelCoordinatesInfo(final int xOnScreen, final int yOnScreen, final IDisplaySurface g,
-			final Point positionInPixels, final StringBuilder sb) {
-		final int x = xOnScreen - positionInPixels.x;
-		final int y = yOnScreen - positionInPixels.y;
-		final ChartEntity entity = info.getEntityCollection().getEntity(x, y);
-		switch (entity) {
-			case XYItemEntity xy -> {
-				final XYDataset data = xy.getDataset();
-				final int index = xy.getItem();
-				final int series = xy.getSeriesIndex();
-				final double xx = data.getXValue(series, index);
-				final double yy = data.getYValue(series, index);
-				final XYPlot plot = (XYPlot) getJFChart().getPlot();
-				final ValueAxis xAxis = plot.getDomainAxis(series);
-				final ValueAxis yAxis = plot.getRangeAxis(series);
-				final boolean xInt = xx % 1 == 0;
-				final boolean yInt = yy % 1 == 0;
-				String xTitle = xAxis.getLabel();
-				if (StringUtils.isBlank(xTitle)) { xTitle = "X"; }
-				String yTitle = yAxis.getLabel();
-				if (StringUtils.isBlank(yTitle)) { yTitle = "Y"; }
-				sb.append(xTitle).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
-				sb.append(" | ").append(yTitle).append(" ").append(yInt ? (int) yy : String.format("%.2f", yy));
-			}
-			case PieSectionEntity ps -> {
-				final String title = ps.getSectionKey().toString();
-				final PieDataset<?> data = ps.getDataset();
-				final int index = ps.getSectionIndex();
-				final double xx = data.getValue(index).doubleValue();
-				final boolean xInt = xx % 1 == 0;
-				sb.append(title).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
-			}
-			case CategoryItemEntity ci -> {
-				final Comparable<?> columnKey = ci.getColumnKey();
-				final String title = columnKey.toString();
-				final CategoryDataset data = ci.getDataset();
-				final Comparable<?> rowKey = ci.getRowKey();
-				final double xx = data.getValue(rowKey, columnKey).doubleValue();
-				final boolean xInt = xx % 1 == 0;
-				sb.append(title).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
-			}
-			case null, default -> {}
-		}
-	}
 
 }

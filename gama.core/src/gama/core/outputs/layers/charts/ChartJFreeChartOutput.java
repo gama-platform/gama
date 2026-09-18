@@ -12,6 +12,7 @@ package gama.core.outputs.layers.charts;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -19,11 +20,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jfree.chart.ChartRenderingInfo;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.annotations.XYTitleAnnotation;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.block.BlockBorder;
+import org.jfree.chart.entity.CategoryItemEntity;
+import org.jfree.chart.entity.ChartEntity;
+import org.jfree.chart.entity.PieSectionEntity;
+import org.jfree.chart.entity.XYItemEntity;
 import org.jfree.chart.event.ChartProgressEvent;
 import org.jfree.chart.event.ChartProgressListener;
 import org.jfree.chart.plot.Plot;
@@ -35,13 +42,17 @@ import org.jfree.chart.ui.HorizontalAlignment;
 import org.jfree.chart.ui.RectangleAnchor;
 import org.jfree.chart.ui.RectangleEdge;
 import org.jfree.chart.ui.VerticalAlignment;
+import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.general.Dataset;
+import org.jfree.data.general.PieDataset;
+import org.jfree.data.xy.XYDataset;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.color.IColor;
+import gama.api.ui.displays.IDisplaySurface;
 import gama.core.outputs.display.AbstractDisplayGraphics;
 import gama.gaml.operators.Colors;
 
@@ -276,6 +287,53 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 		double newMin = properties.isUseYMin() ? properties.getYMinVal() : autoMin;
 		double newMax = properties.isUseYMax() ? properties.getYMaxVal() : autoMax;
 		if (newMax > newMin) { axis.setRange(newMin, newMax); }
+	}
+
+	@Override
+	public void getModelCoordinatesInfo(final int xOnScreen, final int yOnScreen, final IDisplaySurface g,
+			final Point positionInPixels, final StringBuilder sb) {
+		if (info == null || info.getEntityCollection() == null) return;
+		final int x = xOnScreen - positionInPixels.x;
+		final int y = yOnScreen - positionInPixels.y;
+		final ChartEntity entity = info.getEntityCollection().getEntity(x, y);
+		switch (entity) {
+			case XYItemEntity xy -> {
+				final XYDataset data = xy.getDataset();
+				final int index = xy.getItem();
+				final int series = xy.getSeriesIndex();
+				final double xx = data.getXValue(series, index);
+				final double yy = data.getYValue(series, index);
+				final XYPlot plot = (XYPlot) getJFChart().getPlot();
+				final ValueAxis xAxis = plot.getDomainAxis(series);
+				final ValueAxis yAxis = plot.getRangeAxis(series);
+				final boolean xInt = xx % 1 == 0;
+				final boolean yInt = yy % 1 == 0;
+				String xTitle = xAxis != null ? xAxis.getLabel() : "X";
+				if (StringUtils.isBlank(xTitle)) { xTitle = "X"; }
+				String yTitle = yAxis != null ? yAxis.getLabel() : "Y";
+				if (StringUtils.isBlank(yTitle)) { yTitle = "Y"; }
+				sb.append(xTitle).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
+				sb.append(" | ").append(yTitle).append(" ").append(yInt ? (int) yy : String.format("%.2f", yy));
+			}
+			case PieSectionEntity ps -> {
+				final String title = ps.getSectionKey().toString();
+				final PieDataset<?> data = ps.getDataset();
+				final int index = ps.getSectionIndex();
+				final double xx = data.getValue(index).doubleValue();
+				final boolean xInt = xx % 1 == 0;
+				sb.append(title).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
+			}
+			case CategoryItemEntity ci -> {
+				final Comparable<?> columnKey = ci.getColumnKey();
+				final String title = columnKey.toString();
+				final CategoryDataset data = ci.getDataset();
+				final Comparable<?> rowKey = ci.getRowKey();
+				final double xx = data.getValue(rowKey, columnKey).doubleValue();
+				final boolean xInt = xx % 1 == 0;
+				sb.append(title).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
+			}
+			case null, default -> {}
+		}
 	}
 
 	@Override

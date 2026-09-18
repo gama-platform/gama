@@ -16,7 +16,9 @@ import gama.api.types.color.GamaColorFactory;
 import gama.api.types.color.IColor;
 import gama.api.types.geometry.GamaPointFactory;
 import gama.api.types.geometry.IPoint;
+import gama.api.runtime.scope.IScope;
 import gama.api.utils.prefs.GamaPreferences;
+import gama.gaml.operators.Random;
 
 /**
  * Encapsulates style, font, color, label, and axis configuration properties for GAMA charts.
@@ -155,7 +157,7 @@ public class ChartProperties {
 		private boolean reverseAxes = false;
 		private boolean useSecondYAxis = false;
 		private boolean titleVisible = true;
-		private boolean gridLinesVisible = true;
+		private boolean gridLinesVisible = GamaPreferences.Displays.CHART_GRID_LINES.getValue();
 		private String style = IKeyword.DEFAULT;
 		private double gap = -1;
 
@@ -171,6 +173,27 @@ public class ChartProperties {
 		public void setStyle(final String style) { this.style = style; }
 		public double getGap() { return gap; }
 		public void setGap(final double gap) { this.gap = gap; }
+	}
+
+	/**
+	 * Returns default series color based on the selected ColorBrewer palette preference.
+	 */
+	public static IColor getDefaultSeriesColor(final IScope scope, final int index) {
+		String palette = GamaPreferences.Displays.CHART_COLOR_PALETTE.getValue();
+		int idx = Math.max(0, index);
+		if ("Diverging (ColorBrewer)".equals(palette) && GamaPreferences.DIVERGING_COLORS.length > 0) {
+			return GamaPreferences.DIVERGING_COLORS[idx % GamaPreferences.DIVERGING_COLORS.length].get();
+		}
+		if ("Basic".equals(palette) && GamaPreferences.BASIC_COLORS.length > 0) {
+			return GamaPreferences.BASIC_COLORS[idx % GamaPreferences.BASIC_COLORS.length].get();
+		}
+		if ("Random".equals(palette) && scope != null) {
+			return GamaColorFactory.createWithRGBA(Random.opRnd(scope, 255), Random.opRnd(scope, 255), Random.opRnd(scope, 255), 255);
+		}
+		if (GamaPreferences.QUALITATIVE_COLORS.length > 0) {
+			return GamaPreferences.QUALITATIVE_COLORS[idx % GamaPreferences.QUALITATIVE_COLORS.length].get();
+		}
+		return GamaColorFactory.get("blue");
 	}
 
 	// Component Objects initialized from GamaPreferences.Displays

@@ -525,6 +525,10 @@ public class ChartDataSeries {
 			}
 
 		}
+		if (this.mycolor == null) {
+			int seriesIndex = mydataset != null ? mydataset.getDataSeriesIds(scope).size() - 1 : 0;
+			this.setMycolor(ChartProperties.getDefaultSeriesColor(scope, Math.max(0, seriesIndex)));
+		}
 	}
 
 	/**

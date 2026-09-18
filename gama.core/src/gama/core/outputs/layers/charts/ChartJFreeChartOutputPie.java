@@ -17,7 +17,6 @@ import org.jfree.chart.plot.PiePlot;
 import org.jfree.chart.renderer.AbstractRenderer;
 import org.jfree.chart.renderer.DefaultPolarItemRenderer;
 import org.jfree.data.general.DefaultPieDataset;
-import org.jfree.data.general.PieDataset;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.gaml.expressions.IExpression;
@@ -95,23 +94,23 @@ public class ChartJFreeChartOutputPie extends ChartJFreeChartOutput {
 		((PiePlot<?>) this.chart.getPlot()).setSectionPaint(serieid, IColor.toAWTColor(myserie.getMycolor()));
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	protected void clearDataSet(final IScope scope) {
 		super.clearDataSet(scope);
 		if (chart == null) return;
-		final PiePlot plot = (PiePlot) this.chart.getPlot();
+		@SuppressWarnings("unchecked")
+		final PiePlot<String> plot = (PiePlot<String>) this.chart.getPlot();
 		jfreedataset.clear();
 		DefaultPieDataset<String> dd = new DefaultPieDataset<>();
 		jfreedataset.add(0, dd);
-		plot.setDataset((PieDataset) dd);
+		plot.setDataset(dd);
 		idPosition.clear();
 		nbseries = 0;
 	}
 
 	@Override
 	protected void createNewSerie(final IScope scope, final String serieid) {
-		if (!idPosition.containsKey(serieid)) {
+		if (!idPosition.containsKey(serieid) && chart != null) {
 			@SuppressWarnings("unchecked")
 			final PiePlot<String> plot = (PiePlot<String>) this.chart.getPlot();
 			nbseries++;

@@ -887,6 +887,19 @@ public class GamaPreferences {
 		public static final Pref<IColor> CHART_GRID_COLOR = create("pref_chart_grid_color",
 				"Default chart axes and gridlines color", () -> GamaColorFactory.get(210, 215, 220), IType.COLOR, true).in(NAME, CHARTS_GROUP);
 
+		/** Whether chart grid lines are visible by default. */
+		public static final Pref<Boolean> CHART_GRID_LINES = create("pref_chart_show_gridlines",
+				"Display grid lines on charts", true, IType.BOOL, true).in(NAME, CHARTS_GROUP);
+
+		/** Default width of series lines on charts. */
+		public static final Pref<Double> CHART_LINE_WIDTH = create("pref_chart_line_width",
+				"Default width of series lines", 2.0, IType.FLOAT, true).in(NAME, CHARTS_GROUP).between(0.5, 10.0);
+
+		/** Default color palette scheme for chart series. */
+		public static final Pref<String> CHART_COLOR_PALETTE = create("pref_chart_color_palette",
+				"Default color palette for chart series", "Qualitative (ColorBrewer)", IType.STRING, true)
+						.in(NAME, CHARTS_GROUP).among("Qualitative (ColorBrewer)", "Diverging (ColorBrewer)", "Basic", "Random");
+
 		/** The name of the "Default Rendering Properties" group within the Displays tab. */
 		public static final String DRAWING = "Default Rendering Properties";
 
