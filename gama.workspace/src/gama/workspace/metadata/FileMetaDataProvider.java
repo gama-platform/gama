@@ -209,7 +209,6 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 			put("sbx", "Query data");
 			put("qix", "Query data");
 			put("qpj", "QGis project");
-			put("qmd", "QGis metadata");
 			put("fix", "Feature index");
 			put("cpg", "Character set codepage");
 			put("qml", "Style information");
