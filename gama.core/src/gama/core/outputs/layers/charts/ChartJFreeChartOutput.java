@@ -119,7 +119,7 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 				g2D.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 			}
 			synchronized (lock) {
-				chart.draw(g2D, area, info);
+				chart.draw(g2D, area, null);
 			}
 		} catch (IndexOutOfBoundsException | IllegalArgumentException | NullPointerException e) {
 			// Ignore transient render errors during dataset updates
@@ -164,9 +164,16 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 	@Override
 	public void updateOutput(final IScope scope) {
 		if (chart != null) {
+			chart.setNotify(false);
 			configureChartBackgrounds();
 		}
-		super.updateOutput(scope);
+		try {
+			super.updateOutput(scope);
+		} finally {
+			if (chart != null) {
+				chart.setNotify(true);
+			}
+		}
 	}
 
 	@Override
