@@ -222,7 +222,7 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 		if (myserie.getMycolor() != null) { newr.setSeriesPaint(0, IColor.toAWTColor(myserie.getMycolor())); }
 
 		float thickness = Cast.asFloat(scope, myserie.getLineThickness().value(scope)).floatValue();
-		newr.setSeriesStroke(0, new BasicStroke(thickness, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+		newr.setSeriesStroke(0, getStroke(thickness));
 
 		if (newr instanceof CustomXYErrorRenderer xy) {
 			configureErrorRenderer(xy, myserie, scope);
