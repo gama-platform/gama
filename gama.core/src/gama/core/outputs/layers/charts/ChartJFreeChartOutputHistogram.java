@@ -202,6 +202,24 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 		this.clearDataSet(scope);
 	}
 
+	private void populateCategoryDataset(final IScope scope, final DefaultCategoryDataset serie, final String serieid,
+			final ArrayList<String> cValues, final ArrayList<Double> yValues) {
+		boolean oldNotify = serie.getNotify();
+		serie.setNotify(false);
+		try {
+			int total = cValues.size();
+			int stride = total > 3000 ? total / 2000 : 1;
+			for (int i = 0; i < total; i += stride) {
+				if (properties.isYLogscale() && yValues.get(i) <= 0) {
+					throw GamaRuntimeException.warning("Log scale with <=0 value:" + yValues.get(i), scope);
+				}
+				serie.addValue(yValues.get(i), serieid, cValues.get(i));
+			}
+		} finally {
+			serie.setNotify(oldNotify);
+		}
+	}
+
 	@Override
 	protected void resetSerie(final IScope scope, final String serieid) {
 		if (chart == null || jfreedataset.isEmpty()) return;
@@ -216,21 +234,7 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 		if (!cValues.isEmpty()) {
 			final NumberAxis rangeAxis = (NumberAxis) ((CategoryPlot) this.chart.getPlot()).getRangeAxis();
 			rangeAxis.setAutoRange(false);
-			boolean oldNotify = serie.getNotify();
-			serie.setNotify(false);
-			try {
-				int total = cValues.size();
-				int stride = total > 3000 ? total / 2000 : 1;
-				for (int i = 0; i < total; i += stride) {
-					if (properties.isYLogscale()) {
-						final double val = yValues.get(i);
-						if (val <= 0) throw GamaRuntimeException.warning("Log scale with <=0 value:" + val, scope);
-					}
-					serie.addValue(yValues.get(i), serieid, cValues.get(i));
-				}
-			} finally {
-				serie.setNotify(oldNotify);
-			}
+			populateCategoryDataset(scope, serie, serieid, cValues, yValues);
 		}
 		this.resetRenderer(scope, serieid);
 	}
