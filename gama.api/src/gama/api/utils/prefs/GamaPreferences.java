@@ -392,17 +392,17 @@ public class GamaPreferences {
 		 *            the pivot (central) color of the generated ramp; must not be {@code null}
 		 */
 		static void setPivot(final IColor c) {
-			if (!PIVOT.equals(CORE_SIMULATION_COLOR.getValue())) return;
+			IColor pivot = c != null ? c : GamaColorFactory.get(64, 224, 208);
 			SIMULATION_COLORS = new IColor[9];
-			SIMULATION_COLORS[0] = c.darker().darker().darker().darker();
-			SIMULATION_COLORS[1] = c.darker().darker().darker();
-			SIMULATION_COLORS[2] = c.darker().darker();
-			SIMULATION_COLORS[3] = c.darker();
-			SIMULATION_COLORS[4] = c;
-			SIMULATION_COLORS[5] = c.brighter();
-			SIMULATION_COLORS[6] = c.brighter().brighter();
-			SIMULATION_COLORS[7] = c.brighter().brighter().brighter();
-			SIMULATION_COLORS[8] = c.brighter().brighter().brighter().brighter();
+			SIMULATION_COLORS[0] = pivot.darker().darker().darker().darker();
+			SIMULATION_COLORS[1] = pivot.darker().darker().darker();
+			SIMULATION_COLORS[2] = pivot.darker().darker();
+			SIMULATION_COLORS[3] = pivot.darker();
+			SIMULATION_COLORS[4] = pivot;
+			SIMULATION_COLORS[5] = pivot.brighter();
+			SIMULATION_COLORS[6] = pivot.brighter().brighter();
+			SIMULATION_COLORS[7] = pivot.brighter().brighter().brighter();
+			SIMULATION_COLORS[8] = pivot.brighter().brighter().brighter().brighter();
 		}
 
 		/**
@@ -415,51 +415,63 @@ public class GamaPreferences {
 		 * @return the {@link IColor} assigned to that simulation in the active color scheme; never {@code null}
 		 */
 		public static IColor getColorForSimulation(final int index) {
-			if (SIMULATION_COLORS == null) { setColorScheme(CORE_SIMULATION_COLOR.getValue()); }
-			return SIMULATION_COLORS[index % SIMULATION_COLORS.length];
+			if (SIMULATION_COLORS == null || SIMULATION_COLORS.length == 0) {
+				setColorScheme(CORE_SIMULATION_COLOR.getValue());
+				if (SIMULATION_COLORS == null || SIMULATION_COLORS.length == 0) {
+					setPivot(CORE_PIVOT_COLOR.getValue());
+				}
+			}
+			return SIMULATION_COLORS[Math.abs(index) % SIMULATION_COLORS.length];
 		}
 
 		/**
 		 * Switches the active simulation color scheme to the named scheme and rebuilds the {@link #SIMULATION_COLORS}
-		 * palette. Recognized scheme names are {@link #DIVERGING}, {@link #BASIC}, {@link #QUALITATIVE}, and
-		 * {@link #PIVOT}. Any unknown or {@code null} scheme is treated as {@link #PIVOT} and delegates to
-		 * {@link #setPivot(IColor)} using the current value of {@link #CORE_PIVOT_COLOR}.
+		 * palette. Supported scheme names include {@link #VIVID}, {@link #TABLEAU}, {@link #NEON}, {@link #PASTEL},
+		 * {@link #DIVERGING}, {@link #BASIC}, {@link #QUALITATIVE}, and {@link #PIVOT}.
+		 * Legacy names or unknown schemes delegate to {@link #setPivot(IColor)}.
 		 *
 		 * @param scheme
 		 *            the name of the color scheme to activate; may be {@code null}
 		 */
 		public static void setColorScheme(final String scheme) {
-			switch (scheme) {
-				case VIVID -> {
+			if (scheme != null) {
+				if (scheme.startsWith("Vivid") || VIVID.equals(scheme)) {
 					SIMULATION_COLORS = new IColor[VIVID_COLORS.length];
 					for (int i = 0; i < VIVID_COLORS.length; i++) { SIMULATION_COLORS[i] = VIVID_COLORS[i].get(); }
+					return;
 				}
-				case TABLEAU -> {
+				if (scheme.startsWith("Tableau") || TABLEAU.equals(scheme)) {
 					SIMULATION_COLORS = new IColor[TABLEAU_COLORS.length];
 					for (int i = 0; i < TABLEAU_COLORS.length; i++) { SIMULATION_COLORS[i] = TABLEAU_COLORS[i].get(); }
+					return;
 				}
-				case NEON -> {
+				if (scheme.startsWith("Neon") || NEON.equals(scheme)) {
 					SIMULATION_COLORS = new IColor[NEON_COLORS.length];
 					for (int i = 0; i < NEON_COLORS.length; i++) { SIMULATION_COLORS[i] = NEON_COLORS[i].get(); }
+					return;
 				}
-				case PASTEL -> {
+				if (scheme.startsWith("Pastel") || PASTEL.equals(scheme)) {
 					SIMULATION_COLORS = new IColor[PASTEL_COLORS.length];
 					for (int i = 0; i < PASTEL_COLORS.length; i++) { SIMULATION_COLORS[i] = PASTEL_COLORS[i].get(); }
+					return;
 				}
-				case DIVERGING -> {
+				if (scheme.startsWith("Diverging") || DIVERGING.equals(scheme)) {
 					SIMULATION_COLORS = new IColor[DIVERGING_COLORS.length];
 					for (int i = 0; i < DIVERGING_COLORS.length; i++) { SIMULATION_COLORS[i] = DIVERGING_COLORS[i].get(); }
+					return;
 				}
-				case BASIC -> {
+				if (scheme.startsWith("Basic") || BASIC.equals(scheme)) {
 					SIMULATION_COLORS = new IColor[BASIC_COLORS.length];
 					for (int i = 0; i < BASIC_COLORS.length; i++) { SIMULATION_COLORS[i] = BASIC_COLORS[i].get(); }
+					return;
 				}
-				case QUALITATIVE -> {
+				if (scheme.startsWith("Qualitative") || QUALITATIVE.equals(scheme)) {
 					SIMULATION_COLORS = new IColor[QUALITATIVE_COLORS.length];
 					for (int i = 0; i < QUALITATIVE_COLORS.length; i++) { SIMULATION_COLORS[i] = QUALITATIVE_COLORS[i].get(); }
+					return;
 				}
-				case null, default -> setPivot(CORE_PIVOT_COLOR.getValue());
 			}
+			setPivot(CORE_PIVOT_COLOR.getValue());
 		}
 
 		static final String VIVID = "Vivid (12 distinct colors)";
