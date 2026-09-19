@@ -21,7 +21,7 @@ import gama.extension.serialize.IGamaObjectOutput;
  *
  * @author GitHub Copilot
  */
-public class GamaMessageSerialiser extends FSTIndividualSerialiser<GamaMessage> {
+public class GamaMessageSerialiser extends EclipseIndividualSerialiser<GamaMessage> {
 
 	/**
 	 * Serialises the given GamaMessage instance to the FST output stream.
@@ -55,6 +55,7 @@ public class GamaMessageSerialiser extends FSTIndividualSerialiser<GamaMessage> 
 	 * @throws Exception
 	 *             if an error occurs during deserialisation
 	 */
+	@Override
 	@Override
 	public GamaMessage deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		Object sender = in.readObject();

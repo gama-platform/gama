@@ -21,7 +21,7 @@ import gama.extension.serialize.IGamaObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IScopeSerialiser extends FSTIndividualSerialiser<IScope> {
+class IScopeSerialiser extends EclipseIndividualSerialiser<IScope> {
 
 	/**
 	 * Serialises the scope's name.
@@ -49,6 +49,7 @@ class IScopeSerialiser extends FSTIndividualSerialiser<IScope> {
 	 * @throws Exception
 	 *             if deserialisation fails
 	 */
+	@Override
 	@Override
 	public IScope deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		String name = in.readStringUTF();

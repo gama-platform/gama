@@ -23,7 +23,7 @@ import gama.extension.serialize.IGamaObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class ITypeSerialiser extends FSTIndividualSerialiser<IType> {
+class ITypeSerialiser extends EclipseIndividualSerialiser<IType> {
 
 	/**
 	 * Serialises the GAML type name. For compound types, also writes the key and content types.
@@ -57,6 +57,7 @@ class ITypeSerialiser extends FSTIndividualSerialiser<IType> {
 	 *             if deserialisation fails
 	 */
 	@SuppressWarnings ("rawtypes")
+	@Override
 	@Override
 	public IType deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		String name = in.readStringUTF();

@@ -22,7 +22,7 @@ import gama.extension.serialize.IGamaObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class AgentReferenceSerialiser extends FSTIndividualSerialiser<AgentReference> {
+class AgentReferenceSerialiser extends EclipseIndividualSerialiser<AgentReference> {
 
 	/**
 	 * Serialises the species path array and the index path array of the agent reference.
@@ -51,6 +51,7 @@ class AgentReferenceSerialiser extends FSTIndividualSerialiser<AgentReference> {
 	 * @throws Exception
 	 *             if deserialisation fails
 	 */
+	@Override
 	@Override
 	public AgentReference deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		return AgentReference.of((String[]) in.readObject(), (Integer[]) in.readObject());

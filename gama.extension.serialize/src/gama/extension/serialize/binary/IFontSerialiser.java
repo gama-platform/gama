@@ -23,7 +23,7 @@ import gama.extension.serialize.IGamaObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IFontSerialiser extends FSTIndividualSerialiser<IFont> {
+class IFontSerialiser extends EclipseIndividualSerialiser<IFont> {
 
 	/**
 	 * Serialises the font name, style, and size.
@@ -54,6 +54,7 @@ class IFontSerialiser extends FSTIndividualSerialiser<IFont> {
 	 * @throws Exception
 	 *             if deserialisation fails
 	 */
+	@Override
 	@Override
 	public IFont deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		return GamaFontFactory.createFont(in.readStringUTF(), in.readInt(), in.readInt());

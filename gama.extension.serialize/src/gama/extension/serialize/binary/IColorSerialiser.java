@@ -24,7 +24,7 @@ import gama.extension.serialize.IGamaObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IColorSerialiser extends FSTIndividualSerialiser<IColor> {
+class IColorSerialiser extends EclipseIndividualSerialiser<IColor> {
 
 	/**
 	 * Returns {@code false}: objects are not registered for FST back-reference tracking.
@@ -67,6 +67,7 @@ class IColorSerialiser extends FSTIndividualSerialiser<IColor> {
 	 *             if deserialisation fails
 	 */
 	@SuppressWarnings ("unchecked")
+	@Override
 	@Override
 	public IColor deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		// Use in.read() (readIntByte) instead of in.readInt() (readFInt): writeFByte writes a raw single byte,

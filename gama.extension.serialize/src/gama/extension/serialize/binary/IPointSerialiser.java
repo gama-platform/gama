@@ -23,7 +23,7 @@ import gama.extension.serialize.IGamaObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IPointSerialiser extends FSTIndividualSerialiser<IPoint> {
+class IPointSerialiser extends EclipseIndividualSerialiser<IPoint> {
 
 	/**
 	 * Returns {@code false}: points are not registered for FST back-reference tracking.
@@ -67,6 +67,7 @@ class IPointSerialiser extends FSTIndividualSerialiser<IPoint> {
 	 * @throws Exception
 	 *             if deserialisation fails
 	 */
+	@Override
 	@Override
 	public IPoint deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		double x = in.readDouble();

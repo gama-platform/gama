@@ -26,7 +26,7 @@ import gama.extension.serialize.IGamaObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class SerialisedGridSerialiser extends FSTIndividualSerialiser<SerialisedGrid> {
+class SerialisedGridSerialiser extends EclipseIndividualSerialiser<SerialisedGrid> {
 
 	/**
 	 * Serialises the species name, the list of agents, and the grid matrix.
@@ -57,6 +57,7 @@ class SerialisedGridSerialiser extends FSTIndividualSerialiser<SerialisedGrid> {
 	 *             if deserialisation fails
 	 */
 	@SuppressWarnings ("unchecked")
+	@Override
 	@Override
 	public SerialisedGrid deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		return new SerialisedGrid(in.readStringUTF(), (List<ISerialisedAgent>) in.readObject(),

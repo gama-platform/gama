@@ -28,7 +28,7 @@ import gama.extension.serialize.IGamaObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IListSerialiser extends FSTIndividualSerialiser<IList> {
+class IListSerialiser extends EclipseIndividualSerialiser<IList> {
 
 	/**
 	 * Returns {@code false}: lists are not registered for FST back-reference tracking.
@@ -42,7 +42,7 @@ class IListSerialiser extends FSTIndividualSerialiser<IList> {
 
 	/**
 	 * Serialises the list's content type, size, and all elements. Each element is written as an object via
-	 * {@link gama.extension.serialize.fst.FSTObjectOutput#writeObject}.
+	 * {@link gama.extension.serialize.IGamaObjectOutput#writeObject}.
 	 *
 	 * @param out
 	 *            the FST output stream
@@ -77,6 +77,7 @@ class IListSerialiser extends FSTIndividualSerialiser<IList> {
 	 *             if deserialisation fails
 	 */
 	@SuppressWarnings ({ "unchecked", "rawtypes" })
+	@Override
 	@Override
 	public IList deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		IType c = (IType) in.readObject();

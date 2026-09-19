@@ -26,11 +26,11 @@ import gama.extension.serialize.IGamaObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IMapSerialiser extends FSTIndividualSerialiser<IMap> {
+class IMapSerialiser extends EclipseIndividualSerialiser<IMap> {
 
 	/**
 	 * Serialises the map's key type, content type, ordering flag, size, and all key-value pairs. Each key and value is
-	 * written as an object via {@link gama.extension.serialize.fst.FSTObjectOutput#writeObject}.
+	 * written as an object via {@link gama.extension.serialize.IGamaObjectOutput#writeObject}.
 	 *
 	 * @param out
 	 *            the FST output stream
@@ -68,6 +68,7 @@ class IMapSerialiser extends FSTIndividualSerialiser<IMap> {
 	 *             if deserialisation fails
 	 */
 	@SuppressWarnings ({ "unchecked", "rawtypes" })
+	@Override
 	@Override
 	public IMap deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		IType k = (IType) in.readObject();

@@ -25,7 +25,7 @@ import gama.extension.serialize.IGamaObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class CoordinateSequenceFactorySerialiser extends FSTIndividualSerialiser<CoordinateSequenceFactory> {
+class CoordinateSequenceFactorySerialiser extends EclipseIndividualSerialiser<CoordinateSequenceFactory> {
 
 	/**
 	 * Marker string written to the stream to identify the coordinate sequence factory placeholder.
@@ -59,6 +59,7 @@ class CoordinateSequenceFactorySerialiser extends FSTIndividualSerialiser<Coordi
 	 * @throws Exception
 	 *             if deserialisation fails
 	 */
+	@Override
 	@Override
 	public CoordinateSequenceFactory deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		in.readStringUTF();

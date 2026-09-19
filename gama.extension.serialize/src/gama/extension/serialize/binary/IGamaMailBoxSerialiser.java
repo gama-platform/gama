@@ -24,7 +24,7 @@ import gama.extension.serialize.IGamaObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IGamaMailBoxSerialiser extends FSTIndividualSerialiser<GamaMailbox> {
+class IGamaMailBoxSerialiser extends EclipseIndividualSerialiser<GamaMailbox> {
 
 	static {
 		DEBUG.ON();
@@ -75,6 +75,7 @@ class IGamaMailBoxSerialiser extends FSTIndividualSerialiser<GamaMailbox> {
 	 *             if deserialisation fails
 	 */
 	@SuppressWarnings ("unchecked")
+	@Override
 	@Override
 	public GamaMailbox deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		DEBUG.OUT("deserialize GamaMailbox ");

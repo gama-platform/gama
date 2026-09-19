@@ -27,7 +27,7 @@ import gama.extension.serialize.IGamaObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IAgentSerialiser extends FSTIndividualSerialiser<IAgent> {
+class IAgentSerialiser extends EclipseIndividualSerialiser<IAgent> {
 
 	/**
 	 * Returns {@code false}: agents are not registered for FST back-reference tracking.
@@ -78,6 +78,7 @@ class IAgentSerialiser extends FSTIndividualSerialiser<IAgent> {
 	 * @throws Exception
 	 *             if deserialisation fails
 	 */
+	@Override
 	@Override
 	public IAgent deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		boolean isRef = in.readBoolean();

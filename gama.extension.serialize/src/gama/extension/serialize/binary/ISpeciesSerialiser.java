@@ -22,7 +22,7 @@ import gama.extension.serialize.IGamaObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class ISpeciesSerialiser extends FSTIndividualSerialiser<ISpecies> {
+class ISpeciesSerialiser extends EclipseIndividualSerialiser<ISpecies> {
 
 	/**
 	 * Serialises the species name.
@@ -50,6 +50,7 @@ class ISpeciesSerialiser extends FSTIndividualSerialiser<ISpecies> {
 	 * @throws Exception
 	 *             if deserialisation fails
 	 */
+	@Override
 	@Override
 	public ISpecies deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		String name = in.readStringUTF();
