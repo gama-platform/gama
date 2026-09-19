@@ -31,7 +31,6 @@ public class EclipseObjectOutput implements IGamaObjectOutput {
 
 	@Override
 	public void write(byte[] b, int off, int len) throws IOException {
-		// Not directly supported, but can copy array segment
 		byte[] copy = new byte[len];
 		System.arraycopy(b, off, copy, 0, len);
 		persistenceStore.dataOut().writeByteArray(copy);
@@ -96,12 +95,10 @@ public class EclipseObjectOutput implements IGamaObjectOutput {
 
 	@Override
 	public void flush() throws IOException {
-		// Not applicable
 	}
 
 	@Override
 	public void close() throws IOException {
-		// Not applicable
 	}
 
 	@Override
@@ -117,5 +114,4 @@ public class EclipseObjectOutput implements IGamaObjectOutput {
 	public void writeObject(Object toWrite, Class<?> clazz) throws IOException {
 		persistenceStore.store(toWrite);
 	}
-
 }

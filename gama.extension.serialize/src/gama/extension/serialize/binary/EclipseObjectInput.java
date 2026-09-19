@@ -43,7 +43,7 @@ public class EclipseObjectInput implements IGamaObjectInput {
 
 	@Override
 	public long skip(long n) throws IOException {
-		return 0; // Not strictly supported for object streams
+		return 0;
 	}
 
 	@Override
@@ -53,7 +53,6 @@ public class EclipseObjectInput implements IGamaObjectInput {
 
 	@Override
 	public void close() throws IOException {
-		// Not applicable
 	}
 
 	@Override
@@ -123,7 +122,7 @@ public class EclipseObjectInput implements IGamaObjectInput {
 
 	@Override
 	public String readLine() throws IOException {
-		return null; // Deprecated and unsupported
+		return null;
 	}
 
 	@Override
@@ -144,5 +143,4 @@ public class EclipseObjectInput implements IGamaObjectInput {
 	public Object readObject(Class<?> clazz) throws Exception {
 		return persistenceLoad.load();
 	}
-
 }
