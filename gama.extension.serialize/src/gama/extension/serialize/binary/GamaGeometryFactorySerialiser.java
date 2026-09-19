@@ -24,7 +24,7 @@ import gama.extension.serialize.IGamaObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class GamaGeometryFactorySerialiser extends FSTIndividualSerialiser<GamaGeometryFactory> {
+class GamaGeometryFactorySerialiser extends EclipseIndividualSerialiser<GamaGeometryFactory> {
 
 	/**
 	 * Marker string written to the stream to identify the geometry factory placeholder.
@@ -57,6 +57,7 @@ class GamaGeometryFactorySerialiser extends FSTIndividualSerialiser<GamaGeometry
 	 * @throws Exception
 	 *             if deserialisation fails
 	 */
+	@Override
 	@Override
 	public GamaGeometryFactory deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		in.readStringUTF();

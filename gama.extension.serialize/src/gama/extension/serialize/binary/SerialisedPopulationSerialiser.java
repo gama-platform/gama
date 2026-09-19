@@ -25,7 +25,7 @@ import gama.extension.serialize.IGamaObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class SerialisedPopulationSerialiser extends FSTIndividualSerialiser<SerialisedPopulation> {
+class SerialisedPopulationSerialiser extends EclipseIndividualSerialiser<SerialisedPopulation> {
 
 	/**
 	 * Serialises the species name and the list of serialised agents.
@@ -55,6 +55,7 @@ class SerialisedPopulationSerialiser extends FSTIndividualSerialiser<SerialisedP
 	 *             if deserialisation fails
 	 */
 	@SuppressWarnings ("unchecked")
+	@Override
 	@Override
 	public SerialisedPopulation deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		return new SerialisedPopulation(in.readStringUTF(), (List<ISerialisedAgent>) in.readObject());

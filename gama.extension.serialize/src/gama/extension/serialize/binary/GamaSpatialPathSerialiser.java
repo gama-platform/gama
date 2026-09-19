@@ -58,7 +58,7 @@ import gama.extension.serialize.IGamaObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 8 avril 2026
  */
-class GamaSpatialPathSerialiser extends FSTIndividualSerialiser<GamaSpatialPath> {
+class GamaSpatialPathSerialiser extends EclipseIndividualSerialiser<GamaSpatialPath> {
 
 	/**
 	 * Returns {@code false}: spatial paths are not registered for FST back-reference tracking.
@@ -107,6 +107,7 @@ class GamaSpatialPathSerialiser extends FSTIndividualSerialiser<GamaSpatialPath>
 	 *             if deserialisation fails
 	 */
 	@SuppressWarnings ("unchecked")
+	@Override
 	@Override
 	public GamaSpatialPath deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		final GamaSpatialGraph graph = (GamaSpatialGraph) in.readObject();

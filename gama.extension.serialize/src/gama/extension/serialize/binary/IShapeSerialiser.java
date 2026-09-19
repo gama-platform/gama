@@ -27,7 +27,7 @@ import gama.extension.serialize.IGamaObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IShapeSerialiser extends FSTIndividualSerialiser<IShape> {
+class IShapeSerialiser extends EclipseIndividualSerialiser<IShape> {
 
 	/**
 	 * Returns {@code false}: shapes are not registered for FST back-reference tracking.
@@ -71,6 +71,7 @@ class IShapeSerialiser extends FSTIndividualSerialiser<IShape> {
 	 * @throws Exception
 	 *             if deserialisation fails
 	 */
+	@Override
 	@Override
 	public IShape deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		double d = in.readDouble();

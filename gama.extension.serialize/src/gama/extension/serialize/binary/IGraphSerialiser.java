@@ -46,7 +46,7 @@ import gama.extension.serialize.IGamaObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 8 avril 2026
  */
-public class IGraphSerialiser extends FSTIndividualSerialiser<IGraph> {
+public class IGraphSerialiser extends EclipseIndividualSerialiser<IGraph> {
 
 	/**
 	 * Returns {@code false}: graphs are not registered for FST back-reference tracking.
@@ -105,6 +105,7 @@ public class IGraphSerialiser extends FSTIndividualSerialiser<IGraph> {
 	 *             if deserialisation fails
 	 */
 	@SuppressWarnings ({ "unchecked", "rawtypes" })
+	@Override
 	@Override
 	public IGraph deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		// --- metadata ---

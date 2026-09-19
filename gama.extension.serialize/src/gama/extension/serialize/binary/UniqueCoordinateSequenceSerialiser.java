@@ -22,7 +22,7 @@ import gama.extension.serialize.IGamaObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class UniqueCoordinateSequenceSerialiser extends FSTIndividualSerialiser<UniqueCoordinateSequence> {
+class UniqueCoordinateSequenceSerialiser extends EclipseIndividualSerialiser<UniqueCoordinateSequence> {
 
 	/**
 	 * Serialises the x, y, and z values of the single coordinate at index 0.
@@ -52,6 +52,7 @@ class UniqueCoordinateSequenceSerialiser extends FSTIndividualSerialiser<UniqueC
 	 * @throws Exception
 	 *             if deserialisation fails
 	 */
+	@Override
 	@Override
 	public UniqueCoordinateSequence deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		return new UniqueCoordinateSequence(in.readDouble(), in.readDouble(), in.readDouble());

@@ -95,7 +95,7 @@ public class BinarySerialisation implements ISerialisationConstants {
 	 * @param ser
 	 *            the ser
 	 */
-	public static <T> void registerSerialiser(final Class<T> clazz, final FSTIndividualSerialiser<T> ser) {
+	public static <T> void registerSerialiser(final Class<T> clazz, final EclipseIndividualSerialiser<T> ser) {
 		PROCESSOR.register(clazz, ser);
 	}
 
