@@ -25,6 +25,11 @@ import gama.extension.serialize.IGamaObjectOutput;
  */
 class ITypeSerialiser extends EclipseIndividualSerialiser<IType> {
 
+	public ITypeSerialiser() {
+		super(IType.class);
+	}
+
+
 	/**
 	 * Serialises the GAML type name. For compound types, also writes the key and content types.
 	 *

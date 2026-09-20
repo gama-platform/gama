@@ -24,6 +24,11 @@ import gama.extension.serialize.IGamaObjectOutput;
  */
 class ISpeciesSerialiser extends EclipseIndividualSerialiser<ISpecies> {
 
+	public ISpeciesSerialiser() {
+		super(ISpecies.class);
+	}
+
+
 	/**
 	 * Serialises the species name.
 	 *

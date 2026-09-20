@@ -26,6 +26,11 @@ import gama.extension.serialize.IGamaObjectOutput;
  */
 class GamaCoordinateSequenceSerialiser extends EclipseIndividualSerialiser<GamaCoordinateSequence> {
 
+	public GamaCoordinateSequenceSerialiser() {
+		super(GamaCoordinateSequence.class);
+	}
+
+
 	/**
 	 * Serialises the x, y, and z values of the single coordinate at index 0.
 	 *

@@ -60,6 +60,11 @@ import gama.extension.serialize.IGamaObjectOutput;
  */
 class GamaSpatialPathSerialiser extends EclipseIndividualSerialiser<GamaSpatialPath> {
 
+	public GamaSpatialPathSerialiser() {
+		super(GamaSpatialPath.class);
+	}
+
+
 	/**
 	 * Returns {@code false}: spatial paths are not registered for FST back-reference tracking.
 	 *

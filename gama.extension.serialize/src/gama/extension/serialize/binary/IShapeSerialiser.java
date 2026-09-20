@@ -29,6 +29,11 @@ import gama.extension.serialize.IGamaObjectOutput;
  */
 class IShapeSerialiser extends EclipseIndividualSerialiser<IShape> {
 
+	public IShapeSerialiser() {
+		super(IShape.class);
+	}
+
+
 	/**
 	 * Returns {@code false}: shapes are not registered for FST back-reference tracking.
 	 *

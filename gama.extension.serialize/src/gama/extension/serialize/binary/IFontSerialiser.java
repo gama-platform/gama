@@ -25,6 +25,11 @@ import gama.extension.serialize.IGamaObjectOutput;
  */
 class IFontSerialiser extends EclipseIndividualSerialiser<IFont> {
 
+	public IFontSerialiser() {
+		super(IFont.class);
+	}
+
+
 	/**
 	 * Serialises the font name, style, and size.
 	 *

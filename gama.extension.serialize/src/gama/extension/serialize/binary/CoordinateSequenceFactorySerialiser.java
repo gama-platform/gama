@@ -27,6 +27,11 @@ import gama.extension.serialize.IGamaObjectOutput;
  */
 class CoordinateSequenceFactorySerialiser extends EclipseIndividualSerialiser<CoordinateSequenceFactory> {
 
+	public CoordinateSequenceFactorySerialiser() {
+		super(CoordinateSequenceFactory.class);
+	}
+
+
 	/**
 	 * Marker string written to the stream to identify the coordinate sequence factory placeholder.
 	 */

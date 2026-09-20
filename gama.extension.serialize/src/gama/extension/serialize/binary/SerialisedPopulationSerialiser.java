@@ -27,6 +27,11 @@ import gama.extension.serialize.IGamaObjectOutput;
  */
 class SerialisedPopulationSerialiser extends EclipseIndividualSerialiser<SerialisedPopulation> {
 
+	public SerialisedPopulationSerialiser() {
+		super(SerialisedPopulation.class);
+	}
+
+
 	/**
 	 * Serialises the species name and the list of serialised agents.
 	 *

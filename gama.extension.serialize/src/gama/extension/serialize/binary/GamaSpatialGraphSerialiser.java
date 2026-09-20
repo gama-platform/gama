@@ -58,6 +58,11 @@ import gama.extension.serialize.IGamaObjectOutput;
  */
 class GamaSpatialGraphSerialiser extends EclipseIndividualSerialiser<GamaSpatialGraph> {
 
+	public GamaSpatialGraphSerialiser() {
+		super(GamaSpatialGraph.class);
+	}
+
+
 	/**
 	 * Returns {@code false}: spatial graphs are not registered for FST back-reference tracking.
 	 *

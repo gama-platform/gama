@@ -26,6 +26,11 @@ import gama.extension.serialize.IGamaObjectOutput;
  */
 class IColorSerialiser extends EclipseIndividualSerialiser<IColor> {
 
+	public IColorSerialiser() {
+		super(IColor.class);
+	}
+
+
 	/**
 	 * Returns {@code false}: objects are not registered for FST back-reference tracking.
 	 *

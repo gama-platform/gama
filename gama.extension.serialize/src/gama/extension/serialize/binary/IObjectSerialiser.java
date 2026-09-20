@@ -28,6 +28,11 @@ import gama.extension.serialize.IGamaObjectOutput;
  */
 class IObjectSerialiser extends EclipseIndividualSerialiser<IObject> {
 
+	public IObjectSerialiser() {
+		super(IObject.class);
+	}
+
+
 	/**
 	 * Returns {@code false}: objects are not registered for FST back-reference tracking.
 	 *

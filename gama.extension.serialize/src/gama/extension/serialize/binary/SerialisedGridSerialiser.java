@@ -28,6 +28,11 @@ import gama.extension.serialize.IGamaObjectOutput;
  */
 class SerialisedGridSerialiser extends EclipseIndividualSerialiser<SerialisedGrid> {
 
+	public SerialisedGridSerialiser() {
+		super(SerialisedGrid.class);
+	}
+
+
 	/**
 	 * Serialises the species name, the list of agents, and the grid matrix.
 	 *

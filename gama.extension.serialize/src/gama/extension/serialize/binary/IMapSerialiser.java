@@ -28,6 +28,11 @@ import gama.extension.serialize.IGamaObjectOutput;
  */
 class IMapSerialiser extends EclipseIndividualSerialiser<IMap> {
 
+	public IMapSerialiser() {
+		super(IMap.class);
+	}
+
+
 	/**
 	 * Serialises the map's key type, content type, ordering flag, size, and all key-value pairs. Each key and value is
 	 * written as an object via {@link gama.extension.serialize.IGamaObjectOutput#writeObject}.

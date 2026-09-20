@@ -26,6 +26,11 @@ import gama.extension.serialize.IGamaObjectOutput;
  */
 class GamaGeometryFactorySerialiser extends EclipseIndividualSerialiser<GamaGeometryFactory> {
 
+	public GamaGeometryFactorySerialiser() {
+		super(GamaGeometryFactory.class);
+	}
+
+
 	/**
 	 * Marker string written to the stream to identify the geometry factory placeholder.
 	 */

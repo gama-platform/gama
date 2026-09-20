@@ -24,6 +24,11 @@ import gama.extension.serialize.IGamaObjectOutput;
  */
 class IClassSerialiser extends EclipseIndividualSerialiser<IClass> {
 
+	public IClassSerialiser() {
+		super(IClass.class);
+	}
+
+
 	/**
 	 * Serialises the class name.
 	 *

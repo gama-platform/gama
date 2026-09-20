@@ -25,6 +25,11 @@ import gama.extension.serialize.IGamaObjectOutput;
  */
 class IPointSerialiser extends EclipseIndividualSerialiser<IPoint> {
 
+	public IPointSerialiser() {
+		super(IPoint.class);
+	}
+
+
 	/**
 	 * Returns {@code false}: points are not registered for FST back-reference tracking.
 	 *

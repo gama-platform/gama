@@ -24,6 +24,11 @@ import gama.extension.serialize.IGamaObjectOutput;
  */
 class AgentReferenceSerialiser extends EclipseIndividualSerialiser<AgentReference> {
 
+	public AgentReferenceSerialiser() {
+		super(AgentReference.class);
+	}
+
+
 	/**
 	 * Serialises the species path array and the index path array of the agent reference.
 	 *

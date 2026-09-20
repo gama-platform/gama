@@ -30,6 +30,11 @@ import gama.extension.serialize.IGamaObjectOutput;
  */
 class IListSerialiser extends EclipseIndividualSerialiser<IList> {
 
+	public IListSerialiser() {
+		super(IList.class);
+	}
+
+
 	/**
 	 * Returns {@code false}: lists are not registered for FST back-reference tracking.
 	 *

@@ -27,6 +27,11 @@ import gama.extension.serialize.IGamaObjectOutput;
  */
 class SerialisedAgentSerialiser extends EclipseIndividualSerialiser<SerialisedAgent> {
 
+	public SerialisedAgentSerialiser() {
+		super(SerialisedAgent.class);
+	}
+
+
 	/**
 	 * Serialises the agent's index, species name, attribute map, and inner population map.
 	 *

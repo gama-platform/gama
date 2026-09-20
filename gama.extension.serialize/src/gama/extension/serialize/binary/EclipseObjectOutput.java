@@ -2,15 +2,15 @@ package gama.extension.serialize.binary;
 
 import java.io.IOException;
 
-import org.eclipse.serializer.persistence.types.PersistenceStore;
+import org.eclipse.serializer.persistence.types.PersistenceStorer;
 
 import gama.extension.serialize.IGamaObjectOutput;
 
 public class EclipseObjectOutput implements IGamaObjectOutput {
 
-	private final PersistenceStore persistenceStore;
+	private final PersistenceStorer persistenceStore;
 
-	public EclipseObjectOutput(PersistenceStore persistenceStore) {
+	public EclipseObjectOutput(PersistenceStorer persistenceStore) {
 		this.persistenceStore = persistenceStore;
 	}
 

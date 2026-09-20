@@ -29,6 +29,11 @@ import gama.extension.serialize.IGamaObjectOutput;
  */
 class IAgentSerialiser extends EclipseIndividualSerialiser<IAgent> {
 
+	public IAgentSerialiser() {
+		super(IAgent.class);
+	}
+
+
 	/**
 	 * Returns {@code false}: agents are not registered for FST back-reference tracking.
 	 *

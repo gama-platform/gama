@@ -23,6 +23,11 @@ import gama.extension.serialize.IGamaObjectOutput;
  */
 class IScopeSerialiser extends EclipseIndividualSerialiser<IScope> {
 
+	public IScopeSerialiser() {
+		super(IScope.class);
+	}
+
+
 	/**
 	 * Serialises the scope's name.
 	 *

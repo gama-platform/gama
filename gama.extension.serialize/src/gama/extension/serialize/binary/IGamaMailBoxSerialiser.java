@@ -26,6 +26,11 @@ import gama.extension.serialize.IGamaObjectOutput;
  */
 class IGamaMailBoxSerialiser extends EclipseIndividualSerialiser<GamaMailbox> {
 
+	public IGamaMailBoxSerialiser() {
+		super(GamaMailbox.class);
+	}
+
+
 	static {
 		DEBUG.ON();
 	}

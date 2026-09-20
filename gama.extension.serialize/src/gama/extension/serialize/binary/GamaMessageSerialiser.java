@@ -23,6 +23,16 @@ import gama.extension.serialize.IGamaObjectOutput;
  */
 public class GamaMessageSerialiser extends EclipseIndividualSerialiser<GamaMessage> {
 
+	public GamaMessageSerialiser() {
+		super(GamaMessage.class);
+	}
+
+
+	public GamaMessageSerialiser() {
+		super(GamaMessage.class);
+	}
+
+
 	/**
 	 * Serialises the given GamaMessage instance to the FST output stream.
 	 *
