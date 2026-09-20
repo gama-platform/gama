@@ -143,4 +143,14 @@ public class EclipseObjectInput implements IGamaObjectInput {
 	public Object readObject(Class<?> clazz) throws Exception {
 		return persistenceLoad.load();
 	}
+
+	@Override
+	public String readStringAsc() throws IOException {
+		return readStringUTF();
+	}
+
+	@Override
+	public int readFInt() throws IOException {
+		return readInt();
+	}
 }
