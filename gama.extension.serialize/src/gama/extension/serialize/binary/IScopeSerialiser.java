@@ -50,7 +50,6 @@ class IScopeSerialiser extends EclipseIndividualSerialiser<IScope> {
 	 *             if deserialisation fails
 	 */
 	@Override
-	@Override
 	public IScope deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		String name = in.readStringUTF();
 		return scope.copy(name);

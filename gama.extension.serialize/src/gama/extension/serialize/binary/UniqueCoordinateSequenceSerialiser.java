@@ -53,7 +53,6 @@ class UniqueCoordinateSequenceSerialiser extends EclipseIndividualSerialiser<Uni
 	 *             if deserialisation fails
 	 */
 	@Override
-	@Override
 	public UniqueCoordinateSequence deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		return new UniqueCoordinateSequence(in.readDouble(), in.readDouble(), in.readDouble());
 	}

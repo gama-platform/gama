@@ -122,7 +122,6 @@ class GamaSpatialGraphSerialiser extends EclipseIndividualSerialiser<GamaSpatial
 	 */
 	@SuppressWarnings ("unchecked")
 	@Override
-	@Override
 	public GamaSpatialGraph deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		// --- metadata ---
 		IType nodeType = (IType) in.readObject();

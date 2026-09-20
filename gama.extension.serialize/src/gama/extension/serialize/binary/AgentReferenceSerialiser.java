@@ -52,7 +52,6 @@ class AgentReferenceSerialiser extends EclipseIndividualSerialiser<AgentReferenc
 	 *             if deserialisation fails
 	 */
 	@Override
-	@Override
 	public AgentReference deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		return AgentReference.of((String[]) in.readObject(), (Integer[]) in.readObject());
 	}

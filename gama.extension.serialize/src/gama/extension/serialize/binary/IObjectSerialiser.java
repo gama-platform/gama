@@ -68,7 +68,6 @@ class IObjectSerialiser extends EclipseIndividualSerialiser<IObject> {
 	 */
 	@SuppressWarnings ("unchecked")
 	@Override
-	@Override
 	public IObject deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		String speciesName = in.readStringUTF();
 		Map<String, Object> attributes = (Map<String, Object>) in.readObject();

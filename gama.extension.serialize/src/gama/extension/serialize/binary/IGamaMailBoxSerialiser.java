@@ -76,7 +76,6 @@ class IGamaMailBoxSerialiser extends EclipseIndividualSerialiser<GamaMailbox> {
 	 */
 	@SuppressWarnings ("unchecked")
 	@Override
-	@Override
 	public GamaMailbox deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		DEBUG.OUT("deserialize GamaMailbox ");
 		final int size = in.readInt();

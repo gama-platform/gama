@@ -58,7 +58,6 @@ class SerialisedAgentSerialiser extends EclipseIndividualSerialiser<SerialisedAg
 	 */
 	@SuppressWarnings ("unchecked")
 	@Override
-	@Override
 	public SerialisedAgent deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		return new SerialisedAgent(in.readInt(), in.readStringUTF(), (Map<String, Object>) in.readObject(),
 				(Map<String, ISerialisedPopulation>) in.readObject());

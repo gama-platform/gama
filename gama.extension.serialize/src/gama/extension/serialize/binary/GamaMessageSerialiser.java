@@ -56,7 +56,6 @@ public class GamaMessageSerialiser extends EclipseIndividualSerialiser<GamaMessa
 	 *             if an error occurs during deserialisation
 	 */
 	@Override
-	@Override
 	public GamaMessage deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		Object sender = in.readObject();
 		Object receivers = in.readObject();

@@ -55,7 +55,6 @@ class IFontSerialiser extends EclipseIndividualSerialiser<IFont> {
 	 *             if deserialisation fails
 	 */
 	@Override
-	@Override
 	public IFont deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		return GamaFontFactory.createFont(in.readStringUTF(), in.readInt(), in.readInt());
 	}

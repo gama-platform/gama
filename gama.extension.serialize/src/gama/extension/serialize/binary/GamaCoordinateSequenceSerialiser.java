@@ -53,7 +53,6 @@ class GamaCoordinateSequenceSerialiser extends EclipseIndividualSerialiser<GamaC
 	 *             if deserialisation fails
 	 */
 	@Override
-	@Override
 	public GamaCoordinateSequence deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		IPoint[] points = (IPoint[]) in.readObject();
 		return (GamaCoordinateSequence) GamaCoordinateSequenceFactory.create(points);

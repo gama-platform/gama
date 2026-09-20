@@ -58,7 +58,6 @@ class GamaGeometryFactorySerialiser extends EclipseIndividualSerialiser<GamaGeom
 	 *             if deserialisation fails
 	 */
 	@Override
-	@Override
 	public GamaGeometryFactory deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		in.readStringUTF();
 		return GeometryUtils.getGeometryFactory();

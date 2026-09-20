@@ -58,7 +58,6 @@ class ITypeSerialiser extends EclipseIndividualSerialiser<IType> {
 	 */
 	@SuppressWarnings ("rawtypes")
 	@Override
-	@Override
 	public IType deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		String name = in.readStringUTF();
 		IType type = scope.getType(name);

@@ -68,7 +68,6 @@ class IColorSerialiser extends EclipseIndividualSerialiser<IColor> {
 	 */
 	@SuppressWarnings ("unchecked")
 	@Override
-	@Override
 	public IColor deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		// Use in.read() (readIntByte) instead of in.readInt() (readFInt): writeFByte writes a raw single byte,
 		// so readIntByte correctly returns the unsigned value 0-255, whereas readFInt interprets byte 0xFF (-1)

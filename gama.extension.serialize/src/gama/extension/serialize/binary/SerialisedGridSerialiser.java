@@ -58,7 +58,6 @@ class SerialisedGridSerialiser extends EclipseIndividualSerialiser<SerialisedGri
 	 */
 	@SuppressWarnings ("unchecked")
 	@Override
-	@Override
 	public SerialisedGrid deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		return new SerialisedGrid(in.readStringUTF(), (List<ISerialisedAgent>) in.readObject(),
 				(IGrid) in.readObject());

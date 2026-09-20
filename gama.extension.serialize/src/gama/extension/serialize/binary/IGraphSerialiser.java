@@ -106,7 +106,6 @@ public class IGraphSerialiser extends EclipseIndividualSerialiser<IGraph> {
 	 */
 	@SuppressWarnings ({ "unchecked", "rawtypes" })
 	@Override
-	@Override
 	public IGraph deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		// --- metadata ---
 		IType nodeType = (IType) in.readObject();

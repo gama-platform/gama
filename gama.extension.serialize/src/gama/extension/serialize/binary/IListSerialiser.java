@@ -16,7 +16,6 @@ import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
-import gama.dev.DEBUG;
 import gama.extension.serialize.IGamaObjectInput;
 import gama.extension.serialize.IGamaObjectOutput;
 
@@ -77,7 +76,6 @@ class IListSerialiser extends EclipseIndividualSerialiser<IList> {
 	 *             if deserialisation fails
 	 */
 	@SuppressWarnings ({ "unchecked", "rawtypes" })
-	@Override
 	@Override
 	public IList deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		IType c = (IType) in.readObject();

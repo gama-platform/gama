@@ -51,7 +51,6 @@ class ISpeciesSerialiser extends EclipseIndividualSerialiser<ISpecies> {
 	 *             if deserialisation fails
 	 */
 	@Override
-	@Override
 	public ISpecies deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		String name = in.readStringUTF();
 		return scope.getModel().getSpecies(name);

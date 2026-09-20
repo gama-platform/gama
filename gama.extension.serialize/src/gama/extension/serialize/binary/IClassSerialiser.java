@@ -51,7 +51,6 @@ class IClassSerialiser extends EclipseIndividualSerialiser<IClass> {
 	 *             if deserialisation fails
 	 */
 	@Override
-	@Override
 	public IClass deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		String name = in.readStringUTF();
 		return scope.getModel().getClass(name);

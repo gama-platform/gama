@@ -69,7 +69,6 @@ class IMapSerialiser extends EclipseIndividualSerialiser<IMap> {
 	 */
 	@SuppressWarnings ({ "unchecked", "rawtypes" })
 	@Override
-	@Override
 	public IMap deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		IType k = (IType) in.readObject();
 		IType c = (IType) in.readObject();

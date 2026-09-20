@@ -108,7 +108,6 @@ class GamaSpatialPathSerialiser extends EclipseIndividualSerialiser<GamaSpatialP
 	 */
 	@SuppressWarnings ("unchecked")
 	@Override
-	@Override
 	public GamaSpatialPath deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		final GamaSpatialGraph graph = (GamaSpatialGraph) in.readObject();
 		final IShape source = (IShape) in.readObject();

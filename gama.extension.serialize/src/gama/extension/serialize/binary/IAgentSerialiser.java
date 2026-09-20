@@ -79,7 +79,6 @@ class IAgentSerialiser extends EclipseIndividualSerialiser<IAgent> {
 	 *             if deserialisation fails
 	 */
 	@Override
-	@Override
 	public IAgent deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		boolean isRef = in.readBoolean();
 		if (isRef) {

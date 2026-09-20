@@ -56,7 +56,6 @@ class SerialisedPopulationSerialiser extends EclipseIndividualSerialiser<Seriali
 	 */
 	@SuppressWarnings ("unchecked")
 	@Override
-	@Override
 	public SerialisedPopulation deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		return new SerialisedPopulation(in.readStringUTF(), (List<ISerialisedAgent>) in.readObject());
 	}

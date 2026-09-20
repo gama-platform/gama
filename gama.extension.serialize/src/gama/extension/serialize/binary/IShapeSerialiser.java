@@ -72,7 +72,6 @@ class IShapeSerialiser extends EclipseIndividualSerialiser<IShape> {
 	 *             if deserialisation fails
 	 */
 	@Override
-	@Override
 	public IShape deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		double d = in.readDouble();
 		IShape.Type t = IShape.Type.values()[in.readInt()];

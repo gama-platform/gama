@@ -68,7 +68,6 @@ class IPointSerialiser extends EclipseIndividualSerialiser<IPoint> {
 	 *             if deserialisation fails
 	 */
 	@Override
-	@Override
 	public IPoint deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		double x = in.readDouble();
 		double y = in.readDouble();

@@ -60,7 +60,6 @@ class CoordinateSequenceFactorySerialiser extends EclipseIndividualSerialiser<Co
 	 *             if deserialisation fails
 	 */
 	@Override
-	@Override
 	public CoordinateSequenceFactory deserialise(final IScope scope, final IGamaObjectInput in) throws Exception {
 		in.readStringUTF();
 		return GeometryUtils.getGeometryFactory().getCoordinateSequenceFactory();

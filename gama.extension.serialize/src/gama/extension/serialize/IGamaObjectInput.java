@@ -6,8 +6,6 @@ package gama.extension.serialize;
 import java.io.IOException;
 import java.io.ObjectInput;
 
-import gama.extension.serialize.fst.FSTClazzInfo;
-
 /**
  *
  */
