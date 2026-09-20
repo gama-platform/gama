@@ -10,9 +10,6 @@
  ********************************************************************************************************/
 package gama.extension.serialize.binary;
 
-import org.eclipse.serializer.persistence.types.TypeHandler;
-import org.eclipse.serializer.persistence.types.PersistenceStore;
-import org.eclipse.serializer.persistence.types.PersistenceLoad;
 import org.eclipse.serializer.persistence.types.PersistenceReferenceLoader;
 
 import gama.api.runtime.scope.IScope;
@@ -53,16 +50,34 @@ public abstract class EclipseIndividualSerialiser<T> implements TypeHandler<T> {
 		return true;
 	}
 
+	/**
+	 * Handles references.
+	 *
+	 * @return true, if successful
+	 */
 	@Override
 	public boolean handlesReferences() {
 		return shouldRegister();
 	}
 
+	/**
+	 * Checks for persisted references.
+	 *
+	 * @return true, if successful
+	 */
 	@Override
 	public boolean hasPersistedReferences() {
 		return handlesReferences();
 	}
 
+	/**
+	 * Store.
+	 *
+	 * @param persistenceStore
+	 *            the persistence store
+	 * @param t
+	 *            the t
+	 */
 	@Override
 	public void store(PersistenceStore persistenceStore, T t) {
 		try {
@@ -73,6 +88,15 @@ public abstract class EclipseIndividualSerialiser<T> implements TypeHandler<T> {
 		}
 	}
 
+	/**
+	 * Creates the.
+	 *
+	 * @param persistenceLoad
+	 *            the persistence load
+	 * @param persistenceReferenceLoader
+	 *            the persistence reference loader
+	 * @return the t
+	 */
 	@Override
 	public T create(PersistenceLoad persistenceLoad, PersistenceReferenceLoader persistenceReferenceLoader) {
 		try {
@@ -84,8 +108,19 @@ public abstract class EclipseIndividualSerialiser<T> implements TypeHandler<T> {
 		}
 	}
 
+	/**
+	 * Update state.
+	 *
+	 * @param persistenceLoad
+	 *            the persistence load
+	 * @param persistenceReferenceLoader
+	 *            the persistence reference loader
+	 * @param t
+	 *            the t
+	 */
 	@Override
-	public void updateState(PersistenceLoad persistenceLoad, PersistenceReferenceLoader persistenceReferenceLoader, T t) {
+	public void updateState(PersistenceLoad persistenceLoad, PersistenceReferenceLoader persistenceReferenceLoader,
+			T t) {
 		// Used for resolving self-references or lazy load state update if needed.
 	}
 
