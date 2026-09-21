@@ -12,6 +12,8 @@ package gama.extension.serialize.binary;
 
 import java.io.IOException;
 
+import org.eclipse.serializer.persistence.types.PersistenceStorer;
+
 import gama.extension.serialize.IGamaObjectOutput;
 
 /**
@@ -28,84 +30,84 @@ public class EclipseObjectOutput implements IGamaObjectOutput {
 	 * @param persistenceStore
 	 *            the persistence store
 	 */
-	public EclipseObjectOutput(PersistenceStorer persistenceStore) {
+	public EclipseObjectOutput(final PersistenceStorer persistenceStore) {
 		this.persistenceStore = persistenceStore;
 	}
 
 	@Override
-	public void writeObject(Object obj) throws IOException {
+	public void writeObject(final Object obj) throws IOException {
 		persistenceStore.store(obj);
 	}
 
 	@Override
-	public void write(int b) throws IOException {
+	public void write(final int b) throws IOException {
 		persistenceStore.dataOut().writeByte((byte) b);
 	}
 
 	@Override
-	public void write(byte[] b) throws IOException {
+	public void write(final byte[] b) throws IOException {
 		persistenceStore.dataOut().writeByteArray(b);
 	}
 
 	@Override
-	public void write(byte[] b, int off, int len) throws IOException {
+	public void write(final byte[] b, final int off, final int len) throws IOException {
 		byte[] copy = new byte[len];
 		System.arraycopy(b, off, copy, 0, len);
 		persistenceStore.dataOut().writeByteArray(copy);
 	}
 
 	@Override
-	public void writeBoolean(boolean v) throws IOException {
+	public void writeBoolean(final boolean v) throws IOException {
 		persistenceStore.dataOut().writeBoolean(v);
 	}
 
 	@Override
-	public void writeByte(int v) throws IOException {
+	public void writeByte(final int v) throws IOException {
 		persistenceStore.dataOut().writeByte((byte) v);
 	}
 
 	@Override
-	public void writeShort(int v) throws IOException {
+	public void writeShort(final int v) throws IOException {
 		persistenceStore.dataOut().writeShort((short) v);
 	}
 
 	@Override
-	public void writeChar(int v) throws IOException {
+	public void writeChar(final int v) throws IOException {
 		persistenceStore.dataOut().writeChar((char) v);
 	}
 
 	@Override
-	public void writeInt(int v) throws IOException {
+	public void writeInt(final int v) throws IOException {
 		persistenceStore.dataOut().writeInt(v);
 	}
 
 	@Override
-	public void writeLong(long v) throws IOException {
+	public void writeLong(final long v) throws IOException {
 		persistenceStore.dataOut().writeLong(v);
 	}
 
 	@Override
-	public void writeFloat(float v) throws IOException {
+	public void writeFloat(final float v) throws IOException {
 		persistenceStore.dataOut().writeFloat(v);
 	}
 
 	@Override
-	public void writeDouble(double v) throws IOException {
+	public void writeDouble(final double v) throws IOException {
 		persistenceStore.dataOut().writeDouble(v);
 	}
 
 	@Override
-	public void writeBytes(String s) throws IOException {
+	public void writeBytes(final String s) throws IOException {
 		persistenceStore.dataOut().writeByteArray(s.getBytes());
 	}
 
 	@Override
-	public void writeChars(String s) throws IOException {
+	public void writeChars(final String s) throws IOException {
 		for (int i = 0; i < s.length(); i++) { persistenceStore.dataOut().writeChar(s.charAt(i)); }
 	}
 
 	@Override
-	public void writeUTF(String s) throws IOException {
+	public void writeUTF(final String s) throws IOException {
 		writeStringUTF(s);
 	}
 
@@ -116,7 +118,7 @@ public class EclipseObjectOutput implements IGamaObjectOutput {
 	public void close() throws IOException {}
 
 	@Override
-	public void writeStringUTF(String str) throws IOException {
+	public void writeStringUTF(final String str) throws IOException {
 		if (str == null) {
 			persistenceStore.store(null);
 		} else {
@@ -135,7 +137,7 @@ public class EclipseObjectOutput implements IGamaObjectOutput {
 	 *             Signals that an I/O exception has occurred.
 	 */
 	@Override
-	public void writeObject(Object toWrite, Class<?> clazz) throws IOException {
+	public void writeObject(final Object toWrite, final Class<?> clazz) throws IOException {
 		persistenceStore.store(toWrite);
 	}
 }

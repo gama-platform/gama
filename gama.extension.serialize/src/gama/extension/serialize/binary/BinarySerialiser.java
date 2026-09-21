@@ -10,6 +10,8 @@
  ********************************************************************************************************/
 package gama.extension.serialize.binary;
 
+import org.eclipse.serializer.Serializer;
+import org.eclipse.serializer.SerializerFoundation;
 import org.locationtech.jts.geom.CoordinateSequenceFactory;
 
 import gama.api.constants.ISerialisationConstants;
