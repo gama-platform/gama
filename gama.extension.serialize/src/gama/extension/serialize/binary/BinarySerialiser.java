@@ -39,17 +39,13 @@ import gama.core.util.messaging.GamaMailbox;
 import gama.core.util.messaging.GamaMessage;
 import gama.core.util.path.GamaSpatialPath;
 
-import org.eclipse.serializer.Serializer;
-import org.eclipse.serializer.SerializerFoundation;
-
 /**
- * The Class BinarySerialiser. Provides common initialisation for Eclipse Serializer configurations and coordinates binary
- * serialisation and deserialisation of GAMA objects and agents.
+ * The Class BinarySerialiser. Provides common initialisation for Eclipse Serializer configurations and coordinates
+ * binary serialisation and deserialisation of GAMA objects and agents.
  *
  * <p>
  * Each supported GAMA type is handled by a dedicated {@link EclipseIndividualSerialiser} subclass registered via
- * {@link #registerSerialisers()}. This class is not thread-safe and must not be shared across
- * simulations.
+ * {@link #registerSerialisers()}. This class is not thread-safe and must not be shared across simulations.
  * </p>
  */
 public class BinarySerialiser implements ISerialisationConstants {
@@ -71,8 +67,7 @@ public class BinarySerialiser implements ISerialisationConstants {
 	IScope scope;
 
 	/**
-	 * Constructs a new {@code BinarySerialiser} and initialises its configuration with all registered type
-	 * serialisers.
+	 * Constructs a new {@code BinarySerialiser} and initialises its configuration with all registered type serialisers.
 	 */
 	public BinarySerialiser() {
 		foundation = SerializerFoundation.New();
@@ -142,8 +137,8 @@ public class BinarySerialiser implements ISerialisationConstants {
 	}
 
 	/**
-	 * Registers all individual type serialisers with the given Eclipse Serializer configuration. Each GAMA type handled by this
-	 * serialiser has its own dedicated {@link EclipseIndividualSerialiser} subclass instantiated here.
+	 * Registers all individual type serialisers with the given Eclipse Serializer configuration. Each GAMA type handled
+	 * by this serialiser has its own dedicated {@link EclipseIndividualSerialiser} subclass instantiated here.
 	 */
 	@SuppressWarnings ("rawtypes")
 	protected void registerSerialisers() {

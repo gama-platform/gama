@@ -1,15 +1,33 @@
+/*******************************************************************************************************
+ *
+ * EclipseObjectOutput.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
+ *
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
 package gama.extension.serialize.binary;
 
 import java.io.IOException;
 
-import org.eclipse.serializer.persistence.types.PersistenceStorer;
-
 import gama.extension.serialize.IGamaObjectOutput;
 
+/**
+ * The Class EclipseObjectOutput.
+ */
 public class EclipseObjectOutput implements IGamaObjectOutput {
 
+	/** The persistence store. */
 	private final PersistenceStorer persistenceStore;
 
+	/**
+	 * Instantiates a new eclipse object output.
+	 *
+	 * @param persistenceStore
+	 *            the persistence store
+	 */
 	public EclipseObjectOutput(PersistenceStorer persistenceStore) {
 		this.persistenceStore = persistenceStore;
 	}
@@ -83,9 +101,7 @@ public class EclipseObjectOutput implements IGamaObjectOutput {
 
 	@Override
 	public void writeChars(String s) throws IOException {
-		for (int i = 0; i < s.length(); i++) {
-			persistenceStore.dataOut().writeChar(s.charAt(i));
-		}
+		for (int i = 0; i < s.length(); i++) { persistenceStore.dataOut().writeChar(s.charAt(i)); }
 	}
 
 	@Override
@@ -94,12 +110,10 @@ public class EclipseObjectOutput implements IGamaObjectOutput {
 	}
 
 	@Override
-	public void flush() throws IOException {
-	}
+	public void flush() throws IOException {}
 
 	@Override
-	public void close() throws IOException {
-	}
+	public void close() throws IOException {}
 
 	@Override
 	public void writeStringUTF(String str) throws IOException {
@@ -110,6 +124,16 @@ public class EclipseObjectOutput implements IGamaObjectOutput {
 		}
 	}
 
+	/**
+	 * Write object.
+	 *
+	 * @param toWrite
+	 *            the to write
+	 * @param clazz
+	 *            the clazz
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
+	 */
 	@Override
 	public void writeObject(Object toWrite, Class<?> clazz) throws IOException {
 		persistenceStore.store(toWrite);
