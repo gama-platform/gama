@@ -48,12 +48,15 @@ import gama.extension.serialize.IGamaObjectOutput;
  */
 public class IGraphSerialiser extends EclipseIndividualSerialiser<IGraph> {
 
-	/**
-	 * Instantiates a new i graph serialiser.
-	 */
 	public IGraphSerialiser() {
 		super(IGraph.class);
 	}
+
+
+	public IGraphSerialiser() {
+		super(IGraph.class);
+	}
+
 
 	/**
 	 * Returns {@code false}: graphs are not registered for FST back-reference tracking.
