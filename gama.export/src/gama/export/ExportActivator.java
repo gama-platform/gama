@@ -26,21 +26,22 @@ public class ExportActivator implements BundleActivator {
         eclipsePathStr = System.getProperty("eclipse.home.location");
         eclipsePathStr = eclipsePathStr.replaceAll("file:", "");
 
+        if(SystemInfo.isWindows())
+        {
+            int index = 0;
+            while (eclipsePathStr.charAt(index) == '\\' || eclipsePathStr.charAt(index) == '/')
+                index++;
+            
+            if (index > 0)
+                eclipsePathStr = eclipsePathStr.substring(index);
+        }
+
         appRootPathStr = eclipsePathStr;
 
         if (SystemInfo.isMac())
             appRootPathStr = Path.of(appRootPathStr)
                 .getParent().getParent().toString();
 
-        if(SystemInfo.isWindows())
-        {
-            int index = 0;
-            while (appRootPathStr.charAt(index) == '\\' || appRootPathStr.charAt(index) == '/')
-                index++;
-            
-            if (index > 0)
-                appRootPathStr = appRootPathStr.substring(index);
-        }
 
         // System.out.println("IS WINDOWS : " + SystemInfo.isWindows());
         // System.out.println("INDEX : " + index);
