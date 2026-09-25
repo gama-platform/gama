@@ -286,12 +286,13 @@ public class GamaQuadTree implements ISpatialIndex {
 			final Collection<IAgent> result = findIntersects(scope, source, env, f);
 			if (result.isEmpty()) return GamaListFactory.create();
 			// 2D inline distance filter: avoids IShape dispatch + Z arithmetic for point sources
-			if (source.isPoint()) {
+			/*if (source.isPoint()) {
 				final double sx = source.getLocation().getX(), sy = source.getLocation().getY();
 				result.removeIf(each -> dist2D(sx, sy, each.getLocation().getX(), each.getLocation().getY()) > dist);
 			} else {
 				result.removeIf(each -> source.euclidianDistanceTo(each) > dist);
-			}
+			}*/
+			result.removeIf(each -> source.euclidianDistanceTo(each) > dist);
 			return result;
 		} finally {
 			env.dispose();
@@ -308,12 +309,12 @@ public class GamaQuadTree implements ISpatialIndex {
 			if (in_square.isEmpty()) return GamaListFactory.create();
 			if (in_square.size() <= number) return in_square;
 			// Ordering by 2D distance for point sources
-			if (source.isPoint()) {
+			/*if (source.isPoint()) {
 				final double sx = source.getLocation().getX(), sy = source.getLocation().getY();
 				final Ordering<IShape> ord = Ordering.natural()
 						.onResultOf(a -> dist2D(sx, sy, a.getLocation().getX(), a.getLocation().getY()));
 				return ord.leastOf(in_square, number);
-			}
+			}*/
 			final Ordering<IShape> ordering =
 					Ordering.natural().onResultOf(input -> source.euclidianDistanceTo(input));
 			return ordering.leastOf(in_square, number);
@@ -330,17 +331,10 @@ public class GamaQuadTree implements ISpatialIndex {
 			if (in_square.isEmpty()) return null;
 			double min_distance = dist;
 			IAgent min_agent = null;
-			if (source.isPoint()) {
-				final double sx = source.getLocation().getX(), sy = source.getLocation().getY();
-				for (final IAgent a : in_square) {
-					final double dd = dist2D(sx, sy, a.getLocation().getX(), a.getLocation().getY());
-					if (dd < min_distance) { min_distance = dd; min_agent = a; }
-				}
-			} else {
-				for (final IAgent a : in_square) {
-					final double dd = source.euclidianDistanceTo(a);
-					if (dd < min_distance) { min_distance = dd; min_agent = a; }
-				}
+			//[PT] fixes issue #1117 by removing the "optimization" for points that computes the distance from the centroid of 'a'
+			for (final IAgent a : in_square) {
+				final double dd = a.euclidianDistanceTo(source);
+				if (dd < min_distance) { min_distance = dd; min_agent = a; }
 			}
 			return min_agent;
 		} finally {
