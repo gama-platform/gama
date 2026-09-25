@@ -41,6 +41,7 @@ import gama.api.types.list.IList;
 import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
 import gama.api.types.misc.IContainer;
+import gama.core.population.MetaPopulation;
 import gama.core.topology.graph.GraphTopology;
 import gama.gaml.operators.Maths;
 import gama.gaml.operators.Random;
@@ -126,7 +127,7 @@ import gama.gaml.skills.MovingSkill;
 				doc = @doc ("Value of k in the SFM model: force counteracting body compression")),
 		@variable (
 				name = "kappa_SFM",
-				type = IType.FLOAT,
+			 type = IType.FLOAT,
 				init = "400",
 				doc = @doc ("Value of kappa in the SFM model: friction counteracting body compression")),
 		@variable (
@@ -206,7 +207,20 @@ import gama.gaml.skills.MovingSkill;
 				name = "tolerance_waypoint",
 				type = IType.FLOAT,
 				init = "1.0",
-				doc = @doc ("distance to a waypoint (in meters) to consider that an agent is arrived at the waypoint"))
+				doc = @doc ("distance to a waypoint (in meters) to consider that an agent is arrived at the waypoint")),
+		@variable (
+				name = "path_deviation",
+				type = IType.FLOAT,
+				init = "0.0",
+				doc = @doc ("Deviation intensity (0.0-1.0) for shortest-path alteration. The value determines a fixed number of "
+						+ "intermediate vertices on the shortest path to alter: round(path_deviation * nb_intermediate_vertices). "
+						+ "0.0 means shortest path unchanged.")),
+		@variable (
+				name = "path_deviation_radius",
+				type = IType.FLOAT,
+				init = "30.0",
+				doc = @doc ("Search radius (in model units) around each selected shortest-path pivot to sample candidate via nodes. "
+						+ "Candidates are constrained to avoid shortest-path vertices and to stay reasonably closer to the endpoint."))
 
 })
 public class PedestrianSkill extends MovingSkill {
@@ -313,6 +327,13 @@ public class PedestrianSkill extends MovingSkill {
 
 	/** The Constant WALK_TO. */
 	public final static String WALK_TO = "walk_to";
+
+	/** The Constant PATH_DEVIATION. */
+	public final static String PATH_DEVIATION = "path_deviation";
+
+	/** The Constant PATH_DEVIATION_RADIUS. */
+	public final static String PATH_DEVIATION_RADIUS = "path_deviation_radius";
+
 	// ---------- VARIABLES GETTER AND SETTER ------------- //
 
 	/** The Constant TARGETS. */
@@ -1030,6 +1051,63 @@ public class PedestrianSkill extends MovingSkill {
 	// ----------------------------------- //
 
 	/**
+	 * Gets the path deviation.
+	 *
+	 * @param agent the agent
+	 * @return the path deviation factor (0.0 = no deviation, 1.0 = maximum deviation)
+	 */
+	@getter (PATH_DEVIATION)
+	public Double getPathDeviation(final IAgent agent) {
+		return (Double) agent.getAttribute(PATH_DEVIATION);
+	}
+
+	/**
+	 * Sets the path deviation.
+	 *
+	 * @param agent the agent
+	 * @param val   the deviation value, clamped to [0.0, 1.0]
+	 */
+	@setter (PATH_DEVIATION)
+	public void setPathDeviation(final IAgent agent, final Double val) {
+		agent.setAttribute(PATH_DEVIATION, Math.max(0.0, Math.min(1.0, val)));
+	}
+
+	/**
+	 * Gets the path deviation radius.
+	 *
+	 * @param agent the agent
+	 * @return the radius used to search alternative via nodes around pivots
+	 */
+	@getter (PATH_DEVIATION_RADIUS)
+	public Double getPathDeviationRadius(final IAgent agent) {
+		return (Double) agent.getAttribute(PATH_DEVIATION_RADIUS);
+	}
+
+	/**
+	 * Sets the path deviation radius.
+	 *
+	 * @param agent the agent
+	 * @param val   the radius; clamped to >= 0
+	 */
+	@setter (PATH_DEVIATION_RADIUS)
+	public void setPathDeviationRadius(final IAgent agent, final Double val) {
+		agent.setAttribute(PATH_DEVIATION_RADIUS, Math.max(0.0, val));
+	}
+
+	/**
+	 * Returns a merged container of agents for a species list using MetaPopulation.
+	 */
+	@SuppressWarnings ("unchecked")
+	private IContainer<Integer, IAgent> getAgentsContainerFromSpecies(final IList<ISpecies> species) {
+		if (species == null || species.isEmpty()) return GamaListFactory.create(Types.AGENT);
+		final MetaPopulation meta = new MetaPopulation();
+		for (ISpecies s : species) {
+			meta.addPopulationSet(s);
+		}
+		return (IContainer<Integer, IAgent>) meta;
+	}
+
+	/**
 	 * Prim walk to.
 	 *
 	 * @param scope
@@ -1065,29 +1143,8 @@ public class PedestrianSkill extends MovingSkill {
 			final Object obj = scope.getArg(IKeyword.BOUNDS, IType.NONE);
 			bounds = GamaShapeFactory.castToShape(scope, obj, false);
 		}
-		IList<ISpecies> speciesList = getObstacleSpecies(agent);
-		IContainer<Integer, IAgent> obstacles = null;
-		if (speciesList.size() == 1) {
-			obstacles = speciesList.get(0);
-		} else {
-			obstacles = GamaListFactory.create(Types.AGENT);
-			for (ISpecies species : speciesList) {
-
-				((IList<IAgent>) obstacles).addAll(GamaListFactory.castToList(scope, species));
-			}
-		}
-
-		speciesList = getPedestrianSpecies(agent);
-		IContainer<Integer, IAgent> pedestrians = null;
-		if (speciesList.size() == 1) {
-			pedestrians = speciesList.get(0);
-		} else {
-			pedestrians = GamaListFactory.create(Types.AGENT);
-			for (ISpecies species : speciesList) {
-
-				((IList<IAgent>) pedestrians).addAll(GamaListFactory.castToList(scope, species));
-			}
-		}
+		final IContainer<Integer, IAgent> obstacles = getAgentsContainerFromSpecies(getObstacleSpecies(agent));
+		final IContainer<Integer, IAgent> pedestrians = getAgentsContainerFromSpecies(getPedestrianSpecies(agent));
 
 		IPoint currentTarget = goal.getLocation();
 		double maxDist = computeDistance(scope, agent);
@@ -1112,8 +1169,8 @@ public class PedestrianSkill extends MovingSkill {
 	 * @return
 	 */
 	public double walkWithForceModel(final IScope scope, final IAgent agent, final IShape currentTarget,
-			final boolean avoidOther, final IShape bounds, final IContainer<Integer, ?> pedestrianList,
-			final IContainer<Integer, ?> obstaclesList, final double maxDist) {
+			final boolean avoidOther, final IShape bounds, final IContainer<Integer, IAgent> pedestrianList,
+			final IContainer<Integer, IAgent> obstaclesList, final double maxDist) {
 		IPoint location = getLocation(agent).copy(scope);
 		IPoint target = currentTarget.isPoint() ? currentTarget.getLocation()
 				: SpatialPunctal._closest_point_to(location, currentTarget);
@@ -1201,7 +1258,7 @@ public class PedestrianSkill extends MovingSkill {
 	@SuppressWarnings ("unchecked")
 	public IPoint avoidSFMSimple(final IScope scope, final IAgent agent, final IPoint location,
 			final IPoint currentTarget, final double distPercepPedestrian, final double distPercepObstacle,
-			final IContainer pedestriansList, final IContainer obstaclesList) {
+			final IContainer<Integer,IAgent> pedestriansList, final IContainer<Integer,IAgent> obstaclesList) {
 		IMap<IShape, IPoint> forcesMap = GamaMapFactory.create();
 
 		IPoint current_velocity = getVelocity(agent).copy(scope);
@@ -1210,8 +1267,8 @@ public class PedestrianSkill extends MovingSkill {
 		IList<IAgent> obstacles = GamaListFactory.create(Types.AGENT);
 		IList<IAgent> pedestrians = GamaListFactory.create(Types.AGENT);
 
-		pedestrians.addAll(SpatialQueries.at_distance(scope, pedestriansList, distPercepPedestrian));
-		obstacles.addAll(SpatialQueries.at_distance(scope, obstaclesList, distPercepObstacle));
+		pedestrians.addAll((IList<IAgent>)SpatialQueries.at_distance(scope, pedestriansList, distPercepPedestrian));
+		obstacles.addAll((IList<IAgent>)SpatialQueries.at_distance(scope, obstaclesList, distPercepObstacle));
 
 		pedestrians.remove(agent);
 		pedestrians.removeIf(IAgent::dead);
@@ -1285,8 +1342,8 @@ public class PedestrianSkill extends MovingSkill {
 	 */
 	@SuppressWarnings ("unchecked")
 	public IPoint avoidSFM(final IScope scope, final IAgent agent, final IPoint location, final IPoint currentTarget,
-			final double distPercepPedestrian, final double distPercepObstacle, final IContainer pedestriansList,
-			final IContainer obstaclesList) {
+			final double distPercepPedestrian, final double distPercepObstacle,
+			final IContainer<Integer, IAgent> pedestriansList, final IContainer<Integer, IAgent> obstaclesList) {
 		IPoint current_velocity = getVelocity(agent).copy(scope);
 		double BWall = getBObstSFM(agent);
 		double Bpedestrian = getB_SFM(agent);
@@ -1298,8 +1355,8 @@ public class PedestrianSkill extends MovingSkill {
 		IList<IAgent> obstacles = GamaListFactory.create(Types.AGENT);
 		IList<IAgent> pedestrians = GamaListFactory.create(Types.AGENT);
 
-		obstacles.addAll(SpatialQueries.at_distance(scope, obstaclesList, distPercepObstacle));
-		pedestrians.addAll(SpatialQueries.at_distance(scope, pedestriansList, distPercepPedestrian));
+		obstacles.addAll((IList<IAgent>) SpatialQueries.at_distance(scope, obstaclesList, distPercepObstacle));
+		pedestrians.addAll((IList<IAgent>) SpatialQueries.at_distance(scope, pedestriansList, distPercepPedestrian));
 
 		obstacles.remove(agent);
 		obstacles.removeIf(IAgent::dead);
@@ -1424,56 +1481,153 @@ public class PedestrianSkill extends MovingSkill {
 		final boolean useGeometryTarget = getUseGeometryTarget(agent);
 		IShape target = (IShape) scope.getArg("target", IType.GEOMETRY);
 		IShape source = agent.getLocation();
+		final GraphTopology topology = (GraphTopology) graph.getTopology(scope);
 
-		IPath thePath = ((GraphTopology) graph.getTopology(scope)).pathBetween(scope, source, target);
-		// If there is no path between source and target ...
-		if (thePath == null) return thePath;
-		IMap<IShape, IShape> roadTarget = GamaMapFactory.create();
-		IList<IShape> targets = GamaListFactory.create();
-		IList<IShape> segments = thePath.getEdgeGeometry();
+		// First compute shortest path (base path).
+		IPath direct = topology.pathBetween(scope, source, target);
+		if (direct == null) return null;
 
-		for (int i = 0; i < segments.size(); i++) {
-			IShape cSeg = segments.get(i);
-			IShape cRoad = thePath.getRealObject(cSeg);
-			IMap<IAgent, IShape> map = PedestrianRoadSkill.getConnectedSegmentsIntersection((IAgent) cRoad);
+		// Build the ordered list of IPath legs to follow.
+		// path_deviation controls how many shortest-path pivots are altered.
+		// path_deviation_radius controls where alternative via nodes are searched.
+		final IList<IPath> pathLegs = GamaListFactory.create();
+		final double pathDeviation = getPathDeviation(agent);
+		final double pathDeviationRadius = getPathDeviationRadius(agent);
+		boolean detouring = false;
 
-			IShape geom = null, cRoadNext = null, geomNext = null;
-			if (useGeometryTarget) {
-				geom = PedestrianRoadSkill.getFreeSpace(cRoad.getAgent());
-				if (i < segments.size() - 1) {
-					cRoadNext = thePath.getRealObject(segments.get(i + 1));
-					geomNext = PedestrianRoadSkill.getFreeSpace(cRoadNext.getAgent());
+		if (pathDeviation > 0.0 && pathDeviationRadius > 0.0) {
+			final IList<?> vertices = graph.getVertices();
+			if (vertices != null && vertices.size() > 2) {
+				final IList<IPoint> shortestPoints = GamaListFactory.create();
+				final IList<IShape> shortestSegments = direct.getEdgeGeometry();
+				for (int i = 0; i < shortestSegments.size(); i++) {
+					IList<IPoint> pts = shortestSegments.get(i).getPoints();
+					if (pts == null || pts.isEmpty()) { continue; }
+					if (i == 0) { shortestPoints.add(pts.get(0)); }
+					shortestPoints.add(pts.get(pts.size() - 1));
 				}
-			}
 
-			IList<IPoint> points = cSeg.getPoints();
-			for (int j = 1; j < points.size(); j++) {
-				IPoint pt = points.get(j);
+				if (shortestPoints.size() > 2) {
+					final IList<IPoint> pivots = GamaListFactory.create();
+					for (int i = 1; i < shortestPoints.size() - 1; i++) {
+						pivots.add(shortestPoints.get(i));
+					}
+					final int nbToAlter = Math.min(pivots.size(),
+							Math.max(0, (int) Math.round(scope.getRandom().between(0.0, pathDeviation) * pivots.size())));
 
-				// if (PedestrianRoadSkill.getRoadStatus(scope, cRoad) == PedestrianRoadSkill.SIMPLE_STATUS) {
-				// cTarget = pt;
-				// } else {
-				IShape cTarget = pt;
-				// if (cTarget == null) { cTarget = pt; } //TODO:why ?
-				// }
-				if (useGeometryTarget) {
-					cTarget = null;
-					if (geomNext != null) {
-						if (map != null && map.contains(scope, cRoadNext)) {
+					if (nbToAlter > 0) {
+						final IList<Integer> selectedPivotIndexes = GamaListFactory.create(Types.INT);
+						while (selectedPivotIndexes.size() < nbToAlter) {
+							final Integer randomIndex = scope.getRandom().between(0, pivots.size() - 1);
+							if (!selectedPivotIndexes.contains(randomIndex)) { selectedPivotIndexes.add(randomIndex); }
+						}
 
-							cTarget = map.get(cRoadNext);
-						} else {
+						final IList<Integer> orderedPivotIndexes = GamaListFactory.create(Types.INT);
+						orderedPivotIndexes.addAll(selectedPivotIndexes);
+						orderedPivotIndexes.sort(Integer::compareTo);
 
-							cTarget = SpatialOperators.inter(scope, geom, geomNext);
+						final IList<IPoint> shortestPathLocations = shortestPoints.copy(scope);
+						
+						final IList<IShape> viaNodes = GamaListFactory.create(Types.GEOMETRY);
+						for (Integer idx : orderedPivotIndexes) {
+							IPoint pivot = pivots.get(idx);
+							double pivotDistToTarget = pivot.euclidianDistanceTo(target.getLocation());
+							IShape selectedVia = null;
+
+							for (int attempt = 0; attempt < 12; attempt++) {
+								IShape candidate = (IShape) vertices.get(scope.getRandom().between(0, vertices.size() - 1));
+								IPoint cLoc = candidate.getLocation();
+
+								if (shortestPathLocations.contains(cLoc)) { continue; }
+								if (cLoc.euclidianDistanceTo(pivot) > pathDeviationRadius) { continue; }
+								if (cLoc.euclidianDistanceTo(target.getLocation()) > pivotDistToTarget + pathDeviationRadius * 0.5) {
+									continue;
+								}
+
+								IPath check = topology.pathBetween(scope, pivot, candidate);
+								if (check == null || check.getEdgeGeometry().isEmpty()) { continue; }
+								selectedVia = candidate;
+								break;
+							}
+
+							if (selectedVia != null) { viaNodes.add(selectedVia); }
+						}
+
+						if (!viaNodes.isEmpty()) {
+							IShape prev = source;
+							boolean chainOk = true;
+							for (IShape via : viaNodes) {
+								IPath leg = topology.pathBetween(scope, prev, via);
+								if (leg == null || leg.getEdgeGeometry().isEmpty()) { chainOk = false; break; }
+								pathLegs.add(leg);
+								prev = via;
+							}
+							if (chainOk) {
+								IPath lastLeg = topology.pathBetween(scope, prev, target);
+								if (lastLeg != null && !lastLeg.getEdgeGeometry().isEmpty()) {
+									pathLegs.add(lastLeg);
+									detouring = true;
+								} else {
+									pathLegs.clear();
+								}
+							} else {
+								pathLegs.clear();
+							}
 						}
 					}
-					if (cTarget == null) { cTarget = pt; }
 				}
-				targets.add(cTarget);
-
-				roadTarget.put(cTarget, cRoad);
 			}
 		}
+
+		// Fallback: direct shortest path
+		if (!detouring) {
+			pathLegs.add(direct);
+		}
+
+		// thePath (stored on agent) is always the first leg
+		IPath thePath = pathLegs.get(0);
+
+		// Build targets + roadTarget by processing all legs in order
+		IMap<IShape, IShape> roadTarget = GamaMapFactory.create();
+		IList<IShape> targets = GamaListFactory.create();
+
+		for (IPath currentLegPath : pathLegs) {
+			IList<IShape> segments = currentLegPath.getEdgeGeometry();
+			for (int i = 0; i < segments.size(); i++) {
+				IShape cSeg = segments.get(i);
+				IShape cRoad = currentLegPath.getRealObject(cSeg);
+				IMap<IAgent, IShape> map = PedestrianRoadSkill.getConnectedSegmentsIntersection((IAgent) cRoad);
+
+				IShape geom = null, cRoadNext = null, geomNext = null;
+				if (useGeometryTarget) {
+					geom = PedestrianRoadSkill.getFreeSpace(cRoad.getAgent());
+					if (i < segments.size() - 1) {
+						cRoadNext = currentLegPath.getRealObject(segments.get(i + 1));
+						geomNext = PedestrianRoadSkill.getFreeSpace(cRoadNext.getAgent());
+					}
+				}
+
+				IList<IPoint> points = cSeg.getPoints();
+				for (int j = 1; j < points.size(); j++) {
+					IPoint pt = points.get(j);
+					IShape cTarget = pt;
+					if (useGeometryTarget) {
+						cTarget = null;
+						if (geomNext != null) {
+							if (map != null && map.contains(scope, cRoadNext)) {
+								cTarget = map.get(cRoadNext);
+							} else {
+								cTarget = SpatialOperators.inter(scope, geom, geomNext);
+							}
+						}
+						if (cTarget == null) { cTarget = pt; }
+					}
+					targets.add(cTarget);
+					roadTarget.put(cTarget, cRoad);
+				}
+			}
+		}
+
 		IShape targ = targets.get(0);
 		IAgent road = (IAgent) roadTarget.get(targ);
 		if (road != null) { PedestrianRoadSkill.register(scope, road, agent); }
@@ -1578,20 +1732,9 @@ public class PedestrianSkill extends MovingSkill {
 
 			}
 
-			IContainer<Integer, ?> pedestrians =
-					road == null ? GamaListFactory.create() : PedestrianRoadSkill.getCloseAgents(road);
-			IList<ISpecies> speciesList = getObstacleSpecies(agent);
-			IContainer obstacles = null;
-
-			// AD : recreating these lists everytime is really terrible. Better use MetaPopulations
-			if (speciesList.size() == 1) {
-				obstacles = speciesList.get(0);
-			} else {
-				obstacles = GamaListFactory.create(Types.AGENT);
-				for (ISpecies species : speciesList) {
-					((IList<IAgent>) obstacles).addAll(GamaListFactory.castToList(scope, species));
-				}
-			}
+			IContainer<Integer, IAgent> pedestrians =
+					road == null ? GamaListFactory.create(Types.AGENT) : PedestrianRoadSkill.getCloseAgents(road);
+			IContainer<Integer, IAgent> obstacles = getAgentsContainerFromSpecies(getObstacleSpecies(agent));
 
 			IPoint prevLoc = location.copy(scope);
 			walkWithForceModel(scope, agent, currentTarget, avoidOther, bounds, pedestrians, obstacles, maxDist);
