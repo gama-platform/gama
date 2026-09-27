@@ -39,6 +39,7 @@
 -Dswt.autoScale=exact
 -Declipse.e4.inject.javax.disabled=true
 -Djts.relate=ng
+--add-opens=java.base/java.lang.invoke=ALL-UNNAMED
 --add-exports=java.base/java.lang=ALL-UNNAMED --add-exports=java.desktop/sun.awt=ALL-UNNAMED
 --add-exports=java.desktop/sun.java2d=ALL-UNNAMED --add-exports=java.desktop/sun.java2d.loops=ALL-UNNAMED
 --add-exports=java.desktop/sun.awt.image=ALL-UNNAMED --add-exports=java.base/java.math=ALL-UNNAMED

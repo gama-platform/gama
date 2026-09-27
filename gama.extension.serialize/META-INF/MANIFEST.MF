@@ -5,14 +5,11 @@ Bundle-SymbolicName: gama.extension.serialize;singleton:=true
 Bundle-Version: 0.0.0.qualifier
 Require-Bundle: gama.core,
  gama.dependencies
-Bundle-ClassPath: .
-Export-Package: gama.extension.serialize,
+Bundle-ClassPath: .,
+ libs/fory-core-1.7.4.jar
+Export-Package: .,
+ gama.extension.serialize,
  gama.extension.serialize.binary,
- gama.extension.serialize.fst,
- gama.extension.serialize.fst.annotations,
- gama.extension.serialize.fst.coders,
- gama.extension.serialize.fst.serializers,
- gama.extension.serialize.fst.util,
  gama.extension.serialize.gaml
 Import-Package: org.osgi.framework;version="1.10.0"
 Bundle-ActivationPolicy: lazy

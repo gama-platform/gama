@@ -17,11 +17,6 @@ Export-Package:
  org.eclipse.paho.client.mqttv3.persist
 Import-Package: gama.extension.serialize,
  gama.extension.serialize.binary,
- gama.extension.serialize.fst,
- gama.extension.serialize.fst.annotations,
- gama.extension.serialize.fst.coders,
- gama.extension.serialize.fst.serializers,
- gama.extension.serialize.fst.util,
  gama.extension.serialize.gaml,
  org.java_websocket.handshake
 Require-Bundle: gama.core,
