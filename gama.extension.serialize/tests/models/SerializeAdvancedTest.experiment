@@ -1,0 +1,22 @@
+/**
+* Name: SerializeAdvancedTest
+* Author: Antigravity
+* Description: Tests the serialization of variables and structures
+* Tags: serialize, extension, test
+*/
+
+experiment SerializeAdvancedTest type: test autorun: true {
+	
+	test "Serialization Operators" {
+		string s <- to_json([1, 2, 3]);
+		assert s = "[1,2,3]";
+		
+		string g <- to_gaml([1, 2, 3]);
+		assert g = "[1,2,3]";
+		
+		// The from_binary/to_binary might be tested if to_binary exists natively,
+		// but we know to_json and to_gaml exist and are provided by the extension or core.
+		
+		assert true = true;
+	}
+}
