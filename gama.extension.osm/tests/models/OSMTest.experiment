@@ -1,0 +1,31 @@
+/**
+* Name: OSMTest
+* Description: Tests the OSM file type contributed by the osm extension. 'is_osm' only inspects
+*   the extension of the path it is given, it does not read the file.
+* Tags: osm, extension, test
+*/
+
+experiment OSMTest type: test autorun: true {
+
+	test "is_osm recognises the osm extensions" {
+		assert is_osm("city.osm") = true;
+		assert is_osm("/data/city.pbf") = true;
+	}
+
+	test "is_osm rejects other extensions" {
+		assert is_osm("city.shp") = false;
+		assert is_osm("city.txt") = false;
+		assert is_osm("no_extension_at_all") = false;
+	}
+
+	test "Reading a missing osm file raises an error" {
+		bool failed <- false;
+		try {
+			osm_file f <- osm_file("does_not_exist.osm");
+			list content <- f.contents;
+		} catch {
+			failed <- true;
+		}
+		assert failed;
+	}
+}
