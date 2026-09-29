@@ -127,7 +127,7 @@ import gama.gaml.skills.MovingSkill;
 				doc = @doc ("Value of k in the SFM model: force counteracting body compression")),
 		@variable (
 				name = "kappa_SFM",
-			 type = IType.FLOAT,
+				type = IType.FLOAT,
 				init = "400",
 				doc = @doc ("Value of kappa in the SFM model: friction counteracting body compression")),
 		@variable (
@@ -207,7 +207,7 @@ import gama.gaml.skills.MovingSkill;
 				name = "tolerance_waypoint",
 				type = IType.FLOAT,
 				init = "1.0",
-				doc = @doc ("distance to a waypoint (in meters) to consider that an agent is arrived at the waypoint")),
+				doc = @doc ("maximum distance from a waypoint (in meters) to consider that an agent is arrived at the waypoint")),
 		@variable (
 				name = "path_deviation",
 				type = IType.FLOAT,
