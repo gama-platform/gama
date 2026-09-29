@@ -1,0 +1,72 @@
+/**
+* Name: DataFrameAdvancedTest
+* Description: Integration tests for the dataframe extension: the 'dataframe' type in GAML
+*   declarations, and chains of operators applied to it.
+* Tags: dataframe, extension, test
+*/
+
+experiment DataFrameAdvancedTest type: test autorun: true {
+
+	test "A dataframe can be held in a typed variable" {
+		dataframe df <- dataframe_with(["name", "age"], [["Alice", 30], ["Bob", 25]]);
+		assert df != nil;
+		assert df.rows = 2;
+		assert df.keys = ["name", "age"];
+	}
+
+	test "Rows and columns can be read back" {
+		dataframe df <- dataframe_with(["name", "age"], [["Alice", 30], ["Bob", 25]]);
+
+		assert (df row_at 0) = ["Alice", 30];
+		assert (df row_at 1) = ["Bob", 25];
+		assert (df column_at "name") = ["Alice", "Bob"];
+		assert (df column_at 1) = [30, 25];
+		assert cell(df, 1, "name") = "Bob";
+		assert iloc(df, 0) = ["Alice", 30];
+		assert iloc(df, -1) = ["Bob", 25];
+		assert iloc(df, 1, 0) = "Bob";
+		assert rows_list(df) = [["Alice", 30], ["Bob", 25]];
+		assert columns_list(df) = [["Alice", "Bob"], [30, 25]];
+	}
+
+	test "Adding a column leaves the original dataframe untouched" {
+		dataframe df <- dataframe_with(["name"], [["Alice"], ["Bob"]]);
+		dataframe df2 <- add_column(df, "score", 0);
+
+		assert df2.keys = ["name", "score"];
+		assert cell(df2, 0, "score") = 0;
+		assert cell(df2, 1, "score") = 0;
+		// the operator is not destructive
+		assert df.keys = ["name"];
+	}
+
+	test "Filtering keeps only the matching rows" {
+		dataframe df <- dataframe_with(["name", "city"],
+			[["Alice", "Paris"], ["Bob", "Lyon"], ["Eve", "Paris"]]);
+
+		dataframe parisians <- filter(df, "city", "Paris");
+		assert parisians.rows = 2;
+		assert (parisians column_at "name") = ["Alice", "Eve"];
+
+		dataframe nobody <- filter(df, "city", "Berlin");
+		assert nobody.rows = 0;
+	}
+
+	test "Operators can be chained" {
+		dataframe df <- dataframe_with(["id", "city"],
+			[[1, "Paris"], [2, "Lyon"], [3, "Paris"]]);
+
+		dataframe chained <- select_columns(filter(df, "city", "Paris"), ["id"]);
+		assert chained.keys = ["id"];
+		assert chained.rows = 2;
+		assert (chained column_at "id") = [1, 3];
+	}
+
+	test "Concatenation adds rows" {
+		dataframe a <- dataframe_with(["a", "b"], [[1, 2]]);
+		dataframe b <- dataframe_with(["a", "b"], [[3, 4], [5, 6]]);
+
+		assert (a + b).rows = 3;
+		assert (a + [7, 8]).rows = 2;
+	}
+}
