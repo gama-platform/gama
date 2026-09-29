@@ -131,7 +131,7 @@ public class ArrangeDisplayViews extends AbstractHandler {
 			case GamaTree t -> execute(t, null);
 			case GamaNode n -> {
 				final GamaTree<String> tree = LayoutTreeConverter.newLayoutTree();
-				n.attachTo(tree.getRoot());
+				n.attachTo(tree.getRootNode());
 				execute(tree, null);
 			}
 			case null, default -> {
@@ -180,7 +180,7 @@ public class ArrangeDisplayViews extends AbstractHandler {
 			final List<MPlaceholder> holders =
 					preCollectedHolders != null ? preCollectedHolders : collectAndPrepareDisplayViews();
 			DEBUG.OUT("[ArrangeDisplayViews] " + holders.size() + " display(s) to arrange");
-			if (tree != null && tree.getRoot().hasChildren()) {
+			if (tree != null && tree.getRootNode() != null && tree.getRootNode().hasChildren()) {
 				layoutDisplays(tree, holders);
 			} else {
 				final MPartStack displayStack = getDisplaysPlaceholder();
@@ -233,7 +233,7 @@ public class ArrangeDisplayViews extends AbstractHandler {
 	 *            the holders
 	 */
 	private static void layoutDisplays(final GamaTree<String> tree, final List<MPlaceholder> holders) {
-		GamaNode<String> child = tree.getRoot().getChildren().get(0);
+		GamaNode<String> child = tree.getRootNode().getChildren().get(0);
 		if (child.getWeight() == null) { child.setWeight(5000); }
 		final MPartStack displayStack = getDisplaysPlaceholder();
 		if (displayStack == null) return;

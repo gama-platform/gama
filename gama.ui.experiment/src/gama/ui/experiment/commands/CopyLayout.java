@@ -31,7 +31,7 @@ public class CopyLayout extends AbstractHandler {
 	public Object execute(final ExecutionEvent event) throws ExecutionException {
 		final GamaTree<String> tree = convertCurrentLayout(collectAndPrepareDisplayViews());
 		if (tree == null) return this;
-		final GamaNode<String> firstSash = tree.getRoot().getChildren().get(0);
+		final GamaNode<String> firstSash = tree.getRootNode().getChildren().get(0);
 		firstSash.setWeight(null);
 		final StringBuilder sb = new StringBuilder();
 		sb.append(" layout " + firstSash);

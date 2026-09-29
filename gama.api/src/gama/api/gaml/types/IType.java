@@ -207,6 +207,9 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	/** Type ID for the anova type (statistical analysis of variance). */
 	int ANOVA = 34;
 
+	/** Type ID for the tree type (hierarchical tree structures). */
+	int TREE = 35;
+
 	// ==================== Type ID Ranges ====================
 
 	/**
