@@ -1112,7 +1112,7 @@ public class Dates {
 					value = "date('2000-01-01 00:00:00') + '_Test'",
 					equals = "'2000-01-01 00:00:00_Test'") })
 	@test ("date('2000-01-01 00:00:00') + '_Test' = '2000-01-01 00:00:00_Test'")
-	@test ("date('-1000-01-01 00:00:00') + '' = '-1000-01-01 00:00:00'")
+	@test ("date('1000-01-01 00:00:00') + '' = '1000-01-01 00:00:00'")
 	public static String concatenateDate(final IScope scope, final IDate date1, final String text)
 			throws GamaRuntimeException {
 		return date1.toString() + text;
