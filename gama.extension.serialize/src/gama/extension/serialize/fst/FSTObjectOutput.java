@@ -24,12 +24,12 @@ import java.util.Map;
 
 import gama.api.gaml.types.IType;
 import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.serialization.IGamaObjectOutput;
 import gama.api.types.geometry.IShape;
 import gama.api.types.list.IList;
 import gama.api.utils.geometry.GamaGeometryFactory;
 import gama.api.utils.geometry.UniqueCoordinateSequence;
 import gama.dev.DEBUG;
-import gama.extension.serialize.IGamaObjectOutput;
 import gama.extension.serialize.fst.FSTClazzInfo.FSTFieldInfo;
 import gama.extension.serialize.fst.util.FSTUtil;
 
@@ -194,7 +194,7 @@ public class FSTObjectOutput implements IGamaObjectOutput {
 		getCodec().ensureFree(bytes);
 	}
 
-	/////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////
 	//
 	// ObjectOutput interface impl
 	//
@@ -277,7 +277,7 @@ public class FSTObjectOutput implements IGamaObjectOutput {
 
 	//
 	// .. end interface impl
-	////////////////////////////////////////////////////
+	//////////////////////////////////////////////////
 
 	/**
 	 * Write object.
@@ -404,7 +404,7 @@ public class FSTObjectOutput implements IGamaObjectOutput {
 		int startPosition = 0;
 		try {
 			if (toWrite == null) {
-				getCodec().writeTag(NULL, null, 0, toWrite, this);
+				getCodec().writeTag(FSTSerialisationConstants.NULL, null, 0, toWrite, this);
 				return null;
 			}
 			startPosition = getCodec().getWritten();
@@ -416,7 +416,7 @@ public class FSTObjectOutput implements IGamaObjectOutput {
 					for (int i = 0; i < oneOf.length; i++) {
 						String s = oneOf[i];
 						if (s.equals(toWrite)) {
-							getCodec().writeTag(ONE_OF, oneOf, i, toWrite, this);
+							getCodec().writeTag(FSTSerialisationConstants.ONE_OF, oneOf, i, toWrite, this);
 							getCodec().writeFByte(i);
 							return null;
 						}
@@ -424,23 +424,23 @@ public class FSTObjectOutput implements IGamaObjectOutput {
 				}
 				// shortpath
 				if (!dontShare && writeHandleIfApplicable(toWrite, stringInfo)) return stringInfo;
-				getCodec().writeTag(STRING, toWrite, 0, toWrite, this);
+				getCodec().writeTag(FSTSerialisationConstants.STRING, toWrite, 0, toWrite, this);
 				getCodec().writeStringUTF((String) toWrite);
 				return null;
 			}
 			if (clazz == Integer.class) {
-				getCodec().writeTag(BIG_INT, null, 0, toWrite, this);
+				getCodec().writeTag(FSTSerialisationConstants.BIG_INT, null, 0, toWrite, this);
 				getCodec().writeFInt(((Integer) toWrite).intValue());
 				return null;
 			}
 			if (clazz == Long.class) {
-				getCodec().writeTag(BIG_LONG, null, 0, toWrite, this);
+				getCodec().writeTag(FSTSerialisationConstants.BIG_LONG, null, 0, toWrite, this);
 				getCodec().writeFLong(((Long) toWrite).longValue());
 				return null;
 			}
 			if (clazz == Boolean.class) {
-				getCodec().writeTag(((Boolean) toWrite).booleanValue() ? BIG_BOOLEAN_TRUE : BIG_BOOLEAN_FALSE, null, 0,
-						toWrite, this);
+				getCodec().writeTag(((Boolean) toWrite).booleanValue() ? FSTSerialisationConstants.BIG_BOOLEAN_TRUE
+						: FSTSerialisationConstants.BIG_BOOLEAN_FALSE, null, 0, toWrite, this);
 				return null;
 			}
 			if (referencee.getType() != null && referencee.getType().isEnum() || toWrite instanceof Enum)
@@ -455,7 +455,8 @@ public class FSTObjectOutput implements IGamaObjectOutput {
 				if (writeHandleIfApplicable(toWrite, serializationInfo)) return serializationInfo;
 			}
 			if (clazz.isArray()) {
-				if (getCodec().writeTag(ARRAY, toWrite, 0, toWrite, this)) return serializationInfo; // some codecs
+				if (getCodec().writeTag(FSTSerialisationConstants.ARRAY, toWrite, 0, toWrite, this))
+					return serializationInfo; // some codecs
 				// handle
 				// primitive
 				// arrays like
@@ -534,7 +535,7 @@ public class FSTObjectOutput implements IGamaObjectOutput {
 	 */
 	protected FSTClazzInfo writeEnum(final FSTClazzInfo.FSTFieldInfo referencee, final Object toWrite)
 			throws IOException {
-		if (!getCodec().writeTag(ENUM, toWrite, 0, toWrite, this)) {
+		if (!getCodec().writeTag(FSTSerialisationConstants.ENUM, toWrite, 0, toWrite, this)) {
 			boolean isEnumClass = toWrite.getClass().isEnum();
 			if (isEnumClass) {
 				FSTClazzInfo fstClazzInfo = getFstClazzInfo(referencee, toWrite.getClass());
@@ -576,7 +577,9 @@ public class FSTObjectOutput implements IGamaObjectOutput {
 		if (handle >= 0) {
 			final boolean isIdentical = tmp[0] == 0; // objects.getReadRegisteredObject(handle) == toWrite;
 			if (isIdentical) {
-				if (!getCodec().writeTag(HANDLE, null, handle, toWrite, this)) { getCodec().writeFInt(handle); }
+				if (!getCodec().writeTag(FSTSerialisationConstants.HANDLE, null, handle, toWrite, this)) {
+					getCodec().writeFInt(handle);
+				}
 				return true;
 			}
 		}
@@ -772,7 +775,7 @@ public class FSTObjectOutput implements IGamaObjectOutput {
 					// object
 					Object subObject = subInfo.getObjectValue(toWrite);
 					if (subObject == null) {
-						getCodec().writeTag(NULL, null, 0, toWrite, this);
+						getCodec().writeTag(FSTSerialisationConstants.NULL, null, 0, toWrite, this);
 					} else {
 						writeObjectWithContext(subInfo, subObject);
 					}
@@ -782,7 +785,7 @@ public class FSTObjectOutput implements IGamaObjectOutput {
 					// object
 					Object subObject = subInfo.getObjectValue(toWrite);
 					if (subObject == null) {
-						getCodec().writeTag(NULL, null, 0, toWrite, this);
+						getCodec().writeTag(FSTSerialisationConstants.NULL, null, 0, toWrite, this);
 					} else {
 						DEBUG.LOG("Writing object field: " + subInfo.getName() + " for object: " + toWrite);
 						if ("point".equals(subInfo.getName()) && toWrite instanceof UniqueCoordinateSequence) {
@@ -881,7 +884,7 @@ public class FSTObjectOutput implements IGamaObjectOutput {
 	protected boolean writeObjectHeader(final FSTClazzInfo clsInfo, final FSTClazzInfo.FSTFieldInfo referencee,
 			final Object toWrite) throws IOException {
 		if (toWrite.getClass() == referencee.getType() && !clsInfo.useCompatibleMode())
-			return getCodec().writeTag(TYPED, clsInfo, 0, toWrite, this);
+			return getCodec().writeTag(FSTSerialisationConstants.TYPED, clsInfo, 0, toWrite, this);
 		final Class[] possibleClasses = referencee.getPossibleClasses();
 		if (possibleClasses != null) {
 			final int length = possibleClasses.length;
@@ -893,7 +896,7 @@ public class FSTObjectOutput implements IGamaObjectOutput {
 				}
 			}
 		}
-		if (!getCodec().writeTag(OBJECT, clsInfo, 0, toWrite, this)) {
+		if (!getCodec().writeTag(FSTSerialisationConstants.OBJECT, clsInfo, 0, toWrite, this)) {
 			getCodec().writeClass(clsInfo);
 			return false;
 		}
@@ -950,9 +953,9 @@ public class FSTObjectOutput implements IGamaObjectOutput {
 				boolean needsWrite = true;
 				if (getCodec().isTagMultiDimSubArrays()) {
 					if (subArr == null) {
-						needsWrite = !getCodec().writeTag(NULL, null, 0, null, this);
+						needsWrite = !getCodec().writeTag(FSTSerialisationConstants.NULL, null, 0, null, this);
 					} else {
-						needsWrite = !getCodec().writeTag(ARRAY, subArr, 0, subArr, this);
+						needsWrite = !getCodec().writeTag(FSTSerialisationConstants.ARRAY, subArr, 0, subArr, this);
 					}
 				}
 				if (needsWrite) {
@@ -1052,7 +1055,7 @@ public class FSTObjectOutput implements IGamaObjectOutput {
 
 			@Override
 			protected void writeObjectOverride(final Object obj) throws IOException {
-				getCodec().writeFByte(SPECIAL_COMPATIBILITY_OBJECT_TAG);
+				getCodec().writeFByte(FSTSerialisationConstants.SPECIAL_COMPATIBILITY_OBJECT_TAG);
 				FSTObjectOutput.this.writeObjectInternal(obj, null, referencee.getPossibleClasses());
 			}
 

@@ -17,7 +17,7 @@ package gama.extension.serialize.fst;
 
 import java.io.IOException;
 
-import gama.extension.serialize.IGamaObjectInput;
+import gama.api.kernel.serialization.IGamaObjectInput;
 
 /**
  * Created with IntelliJ IDEA.

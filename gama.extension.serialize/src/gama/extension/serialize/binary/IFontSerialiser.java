@@ -10,13 +10,13 @@
  ********************************************************************************************************/
 package gama.extension.serialize.binary;
 
+import gama.api.kernel.serialization.IGamaObjectInput;
+import gama.api.kernel.serialization.IGamaObjectOutput;
+import gama.api.kernel.serialization.IGamaObjectSerializer;
+import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.font.GamaFontFactory;
 import gama.api.types.font.IFont;
-import gama.extension.serialize.IGamaObjectInput;
-import gama.extension.serialize.IGamaObjectOutput;
-import gama.extension.serialize.IGamaObjectSerializer;
-import gama.extension.serialize.binary.AbstractBinarySerializer.TransientSerializationContext;
 
 /**
  * FST binarySerialiser for {@link IFont} instances. Persists the font name, AWT style integer, and point size. On

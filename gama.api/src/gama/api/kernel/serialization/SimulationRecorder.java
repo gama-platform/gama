@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * SimulationSerialiser.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and
+ * SimulationRecorder.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and
  * simulation platform (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.extension.serialize.binary;
+package gama.api.kernel.serialization;
 
 import java.util.LinkedList;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,38 +16,36 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import gama.api.constants.ISerialisationConstants;
 import gama.api.exceptions.GamaRuntimeException;
-import gama.api.kernel.serialization.SerialisedAgent;
-import gama.api.kernel.simulation.IExperimentRecorder;
+import gama.api.kernel.serialization.SimulationHistory.SimulationHistoryNode;
+import gama.api.kernel.simulation.ISimulationRecorder;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.dev.DEBUG;
-import gama.extension.serialize.binary.SimulationHistory.SimulationHistoryNode;
 
 /**
- * The Class SimulationSerialiser. Used to record, store, and retrieve simulation states.
+ * The Class SimulationRecorder. Used to record, store, and retrieve simulation states.
  *
  * <p>
- * <b>Thread safety:</b> {@link #record(ISimulationAgent)} and {@link #restore(ISimulationAgent)} may be
- * called from different threads (the scheduler thread and the UI step-back thread respectively). A
- * per-simulation {@link ReentrantLock}, stored in {@link #simulationLocks}, ensures that the two
- * operations are mutually exclusive for the same simulation while allowing parallelism across different
- * simulations.
+ * <b>Thread safety:</b> {@link #record(ISimulationAgent)} and {@link #restore(ISimulationAgent)} may be called from
+ * different threads (the scheduler thread and the UI step-back thread respectively). A per-simulation
+ * {@link ReentrantLock}, stored in {@link #simulationLocks}, ensures that the two operations are mutually exclusive for
+ * the same simulation while allowing parallelism across different simulations.
  * </p>
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 8 août 2023
  */
-public class SimulationSerialiser implements IExperimentRecorder, ISerialisationConstants {
+public class SimulationRecorder implements ISimulationRecorder, ISerialisationConstants {
 
 	static {
 		DEBUG.OFF();
 	}
 
 	/** The processor. */
-	final AbstractBinarySerializer processor = new FSTBinarySerialiser();
+	final AbstractBinarySerializer processor = BinarySerialisation.createNewBinarySerializer();
 
 	/**
-	 * Per-simulation locks. Allows {@link #record} and {@link #restore} to be mutually exclusive for the
-	 * same simulation without blocking operations on unrelated simulations. Entries are lazily created via
+	 * Per-simulation locks. Allows {@link #record} and {@link #restore} to be mutually exclusive for the same
+	 * simulation without blocking operations on unrelated simulations. Entries are lazily created via
 	 * {@link ConcurrentHashMap#computeIfAbsent}.
 	 */
 	private final ConcurrentHashMap<ISimulationAgent, ReentrantLock> simulationLocks = new ConcurrentHashMap<>();

@@ -8,12 +8,12 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.extension.serialize.binary;
+package gama.api.kernel.serialization;
 
 import java.util.LinkedList;
 
+import gama.api.kernel.serialization.SimulationHistory.SimulationHistoryNode;
 import gama.dev.DEBUG;
-import gama.extension.serialize.binary.SimulationHistory.SimulationHistoryNode;
 
 /**
  * The Class SimulationHistory.
@@ -31,7 +31,7 @@ public class SimulationHistory extends LinkedList<SimulationHistoryNode> {
 
 	/**
 	 * Pushes a recorded state on top of the history. Synchronous, so that it stays covered by the per-simulation lock
-	 * held by {@link SimulationSerialiser#record} and {@link SimulationSerialiser#restore}.
+	 * held by {@link SimulationRecorder#record} and {@link SimulationRecorder#restore}.
 	 *
 	 * @param state
 	 *            the serialised simulation state

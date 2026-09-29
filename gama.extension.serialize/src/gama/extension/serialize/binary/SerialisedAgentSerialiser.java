@@ -12,13 +12,13 @@ package gama.extension.serialize.binary;
 
 import java.util.Map;
 
+import gama.api.kernel.serialization.IGamaObjectInput;
+import gama.api.kernel.serialization.IGamaObjectOutput;
+import gama.api.kernel.serialization.IGamaObjectSerializer;
 import gama.api.kernel.serialization.ISerialisedPopulation;
 import gama.api.kernel.serialization.SerialisedAgent;
+import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
 import gama.api.runtime.scope.IScope;
-import gama.extension.serialize.IGamaObjectInput;
-import gama.extension.serialize.IGamaObjectOutput;
-import gama.extension.serialize.IGamaObjectSerializer;
-import gama.extension.serialize.binary.AbstractBinarySerializer.TransientSerializationContext;
 
 /**
  * FST binarySerialiser for {@link SerialisedAgent} instances. Persists the agent's integer index, species name,

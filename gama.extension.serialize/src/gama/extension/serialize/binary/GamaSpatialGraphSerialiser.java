@@ -11,13 +11,13 @@
 package gama.extension.serialize.binary;
 
 import gama.api.gaml.types.IType;
+import gama.api.kernel.serialization.IGamaObjectInput;
+import gama.api.kernel.serialization.IGamaObjectOutput;
+import gama.api.kernel.serialization.IGamaObjectSerializer;
+import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.IShape;
 import gama.core.topology.graph.GamaSpatialGraph;
-import gama.extension.serialize.IGamaObjectInput;
-import gama.extension.serialize.IGamaObjectOutput;
-import gama.extension.serialize.IGamaObjectSerializer;
-import gama.extension.serialize.binary.AbstractBinarySerializer.TransientSerializationContext;
 
 /**
  * FST binarySerialiser for {@link GamaSpatialGraph} instances.

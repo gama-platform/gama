@@ -13,13 +13,13 @@ package gama.extension.serialize.binary;
 import java.io.IOException;
 
 import gama.api.gaml.types.IType;
+import gama.api.kernel.serialization.IGamaObjectInput;
+import gama.api.kernel.serialization.IGamaObjectOutput;
+import gama.api.kernel.serialization.IGamaObjectSerializer;
+import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
-import gama.extension.serialize.IGamaObjectInput;
-import gama.extension.serialize.IGamaObjectOutput;
-import gama.extension.serialize.IGamaObjectSerializer;
-import gama.extension.serialize.binary.AbstractBinarySerializer.TransientSerializationContext;
 
 /**
  * FST binarySerialiser for {@link IList} instances. Persists the content type, element count, and all elements in

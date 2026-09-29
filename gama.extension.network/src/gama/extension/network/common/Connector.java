@@ -19,10 +19,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantLock;
 
 import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.serialization.BinarySerialisation;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.message.IMessage;
 import gama.extension.network.skills.INetworkSkill;
-import gama.extension.serialize.BinarySerialisation;
 
 /**
  * The Class Connector.

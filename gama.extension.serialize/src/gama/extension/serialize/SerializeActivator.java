@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * SerializeActivator.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and simulation platform
- * (v.2025-03).
+ * SerializeActivator.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -12,9 +12,9 @@ package gama.extension.serialize;
 
 import org.osgi.framework.BundleContext;
 
-import gama.api.GAMA;
+import gama.api.kernel.serialization.BinarySerialisation;
 import gama.dependencies.GamaBundleActivator;
-import gama.extension.serialize.binary.SimulationSerialiser;
+import gama.extension.serialize.binary.FSTBinarySerialiser;
 
 /**
  * The Class SerializeActivator.
@@ -34,7 +34,7 @@ public class SerializeActivator extends GamaBundleActivator {
 	 */
 	@Override
 	public void initialize(final BundleContext context) {
-		GAMA.setRecorderClass(SimulationSerialiser.class);
+		BinarySerialisation.setBinarySerializerClass(FSTBinarySerialiser.class);
 	}
 
 }

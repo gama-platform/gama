@@ -12,7 +12,7 @@ package gama.extension.serialize.fst;
 
 import java.util.HashMap;
 
-import gama.extension.serialize.IGamaObjectInput;
+import gama.api.kernel.serialization.IGamaObjectInput;
 
 /**
  * Created with IntelliJ IDEA. User: ruedi Date: 10.11.12 Time: 15:04

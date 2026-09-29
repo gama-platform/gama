@@ -1,11 +1,10 @@
 /**
  *
  */
-package gama.extension.serialize.binary;
+package gama.api.kernel.serialization;
 
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.agent.IAgent;
-import gama.api.kernel.serialization.SerialisedAgent;
 import gama.api.runtime.scope.IScope;
 
 /**
@@ -132,7 +131,7 @@ public abstract class AbstractBinarySerializer {
 	 *            the input
 	 * @return the object
 	 */
-	abstract Object fromByteArrayToObject(final byte[] input);
+	protected abstract Object fromByteArrayToObject(final byte[] input);
 
 	/**
 	 * From object to byte array.
@@ -141,7 +140,7 @@ public abstract class AbstractBinarySerializer {
 	 *            the obj
 	 * @return the byte[]
 	 */
-	abstract byte[] fromObjectToByteArray(Object obj);
+	protected abstract byte[] fromObjectToByteArray(Object obj);
 
 	/**
 	 * @return

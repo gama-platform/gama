@@ -12,7 +12,8 @@ package gama.extension.serialize.binary;
 
 import java.io.IOException;
 
-import gama.extension.serialize.IGamaObjectSerializer;
+import gama.api.kernel.serialization.AbstractBinarySerializer;
+import gama.api.kernel.serialization.IGamaObjectSerializer;
 import gama.extension.serialize.fst.FSTBasicObjectSerializer;
 import gama.extension.serialize.fst.FSTClazzInfo;
 import gama.extension.serialize.fst.FSTClazzInfo.FSTFieldInfo;

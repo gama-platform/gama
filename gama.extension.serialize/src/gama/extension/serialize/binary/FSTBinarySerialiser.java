@@ -18,6 +18,8 @@ import gama.api.kernel.agent.AgentReference;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.object.IClass;
 import gama.api.kernel.object.IObject;
+import gama.api.kernel.serialization.AbstractBinarySerializer;
+import gama.api.kernel.serialization.IGamaObjectSerializer;
 import gama.api.kernel.serialization.SerialisedAgent;
 import gama.api.kernel.serialization.SerialisedGrid;
 import gama.api.kernel.serialization.SerialisedPopulation;
@@ -37,7 +39,6 @@ import gama.core.topology.graph.GamaSpatialGraph;
 import gama.core.util.messaging.GamaMailbox;
 import gama.core.util.messaging.GamaMessage;
 import gama.core.util.path.GamaSpatialPath;
-import gama.extension.serialize.IGamaObjectSerializer;
 import gama.extension.serialize.fst.FSTConfiguration;
 
 /**
@@ -107,12 +108,12 @@ public class FSTBinarySerialiser extends AbstractBinarySerializer implements ISe
 	}
 
 	@Override
-	Object fromByteArrayToObject(final byte[] input) {
+	protected Object fromByteArrayToObject(final byte[] input) {
 		return fst.asObject(input);
 	}
 
 	@Override
-	byte[] fromObjectToByteArray(final Object obj) {
+	protected byte[] fromObjectToByteArray(final Object obj) {
 		return fst.asByteArray(obj);
 	}
 

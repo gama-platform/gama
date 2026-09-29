@@ -1,10 +1,10 @@
 /**
  *
  */
-package gama.extension.serialize;
+package gama.api.kernel.serialization;
 
+import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
 import gama.api.runtime.scope.IScope;
-import gama.extension.serialize.binary.AbstractBinarySerializer.TransientSerializationContext;
 
 /**
  *
