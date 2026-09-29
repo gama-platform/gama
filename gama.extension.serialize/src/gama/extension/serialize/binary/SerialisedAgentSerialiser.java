@@ -15,9 +15,10 @@ import java.util.Map;
 import gama.api.kernel.serialization.ISerialisedPopulation;
 import gama.api.kernel.serialization.SerialisedAgent;
 import gama.api.runtime.scope.IScope;
-import gama.extension.serialize.GamaObjectSerializer;
 import gama.extension.serialize.IGamaObjectInput;
 import gama.extension.serialize.IGamaObjectOutput;
+import gama.extension.serialize.IGamaObjectSerializer;
+import gama.extension.serialize.binary.AbstractBinarySerializer.TransientSerializationContext;
 
 /**
  * FST binarySerialiser for {@link SerialisedAgent} instances. Persists the agent's integer index, species name,
@@ -26,7 +27,7 @@ import gama.extension.serialize.IGamaObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class SerialisedAgentSerialiser implements GamaObjectSerializer<SerialisedAgent> {
+class SerialisedAgentSerialiser implements IGamaObjectSerializer<SerialisedAgent> {
 
 	/**
 	 * Serialises the agent's index, species name, attribute map, and inner population map.
@@ -39,7 +40,8 @@ class SerialisedAgentSerialiser implements GamaObjectSerializer<SerialisedAgent>
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final IGamaObjectOutput out, final SerialisedAgent o) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final SerialisedAgent o, final TransientSerializationContext context)
+			throws Exception {
 		out.writeInt(o.index());
 		out.writeStringUTF(o.species());
 		out.writeObject(o.attributes());

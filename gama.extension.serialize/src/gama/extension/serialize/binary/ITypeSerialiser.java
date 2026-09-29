@@ -13,9 +13,10 @@ package gama.extension.serialize.binary;
 import gama.api.gaml.types.GamaType;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
-import gama.extension.serialize.GamaObjectSerializer;
 import gama.extension.serialize.IGamaObjectInput;
 import gama.extension.serialize.IGamaObjectOutput;
+import gama.extension.serialize.IGamaObjectSerializer;
+import gama.extension.serialize.binary.AbstractBinarySerializer.TransientSerializationContext;
 
 /**
  * FST binarySerialiser for {@link IType} instances. Serialises the GAML type name. For compound types (e.g.
@@ -24,7 +25,7 @@ import gama.extension.serialize.IGamaObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class ITypeSerialiser implements GamaObjectSerializer<IType> {
+class ITypeSerialiser implements IGamaObjectSerializer<IType> {
 
 	/**
 	 * Serialises the GAML type name. For compound types, also writes the key and content types.
@@ -37,7 +38,8 @@ class ITypeSerialiser implements GamaObjectSerializer<IType> {
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final IGamaObjectOutput out, final IType toWrite) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final IType toWrite, final TransientSerializationContext context)
+			throws Exception {
 		out.writeStringUTF(toWrite.getGamlType().getName());
 		if (toWrite.isCompoundType()) {
 			out.writeObject(toWrite.getKeyType());

@@ -12,9 +12,10 @@ package gama.extension.serialize.binary;
 
 import gama.api.kernel.object.IClass;
 import gama.api.runtime.scope.IScope;
-import gama.extension.serialize.GamaObjectSerializer;
 import gama.extension.serialize.IGamaObjectInput;
 import gama.extension.serialize.IGamaObjectOutput;
+import gama.extension.serialize.IGamaObjectSerializer;
+import gama.extension.serialize.binary.AbstractBinarySerializer.TransientSerializationContext;
 
 /**
  * FST binarySerialiser for {@link IClass} instances. Only the class name is persisted. On deserialisation, the class is
@@ -23,7 +24,7 @@ import gama.extension.serialize.IGamaObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IClassSerialiser implements GamaObjectSerializer<IClass> {
+class IClassSerialiser implements IGamaObjectSerializer<IClass> {
 
 	/**
 	 * Serialises the class name.
@@ -36,7 +37,8 @@ class IClassSerialiser implements GamaObjectSerializer<IClass> {
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final IGamaObjectOutput out, final IClass o) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final IClass o, final TransientSerializationContext context)
+			throws Exception {
 		out.writeStringUTF(o.getName());
 	}
 

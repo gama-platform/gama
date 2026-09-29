@@ -13,9 +13,10 @@ package gama.extension.serialize.binary;
 import gama.api.runtime.scope.IScope;
 import gama.core.util.messaging.GamaMailbox;
 import gama.dev.DEBUG;
-import gama.extension.serialize.GamaObjectSerializer;
 import gama.extension.serialize.IGamaObjectInput;
 import gama.extension.serialize.IGamaObjectOutput;
+import gama.extension.serialize.IGamaObjectSerializer;
+import gama.extension.serialize.binary.AbstractBinarySerializer.TransientSerializationContext;
 
 /**
  * FST binarySerialiser for {@link IObject} instances. Serialises the species name and the full attribute map of the
@@ -25,7 +26,7 @@ import gama.extension.serialize.IGamaObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IGamaMailBoxSerialiser implements GamaObjectSerializer<GamaMailbox> {
+class IGamaMailBoxSerialiser implements IGamaObjectSerializer<GamaMailbox> {
 
 	static {
 		DEBUG.ON();
@@ -52,7 +53,8 @@ class IGamaMailBoxSerialiser implements GamaObjectSerializer<GamaMailbox> {
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final IGamaObjectOutput out, final GamaMailbox o) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final GamaMailbox o, final TransientSerializationContext context)
+			throws Exception {
 		DEBUG.OUT("serialize GamaMailbox ");
 		out.writeInt(o.size());
 		DEBUG.OUT("GamaMailbox size " + o.size());

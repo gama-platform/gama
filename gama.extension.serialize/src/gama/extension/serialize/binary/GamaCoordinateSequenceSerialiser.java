@@ -14,9 +14,10 @@ import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.IPoint;
 import gama.api.utils.geometry.GamaCoordinateSequence;
 import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
-import gama.extension.serialize.GamaObjectSerializer;
 import gama.extension.serialize.IGamaObjectInput;
 import gama.extension.serialize.IGamaObjectOutput;
+import gama.extension.serialize.IGamaObjectSerializer;
+import gama.extension.serialize.binary.AbstractBinarySerializer.TransientSerializationContext;
 
 /**
  * FST binarySerialiser for {@link UniqueCoordinateSequence} instances. A {@code UniqueCoordinateSequence} holds exactly
@@ -25,7 +26,7 @@ import gama.extension.serialize.IGamaObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class GamaCoordinateSequenceSerialiser implements GamaObjectSerializer<GamaCoordinateSequence> {
+class GamaCoordinateSequenceSerialiser implements IGamaObjectSerializer<GamaCoordinateSequence> {
 
 	/**
 	 * Serialises the x, y, and z values of the single coordinate at index 0.
@@ -38,7 +39,8 @@ class GamaCoordinateSequenceSerialiser implements GamaObjectSerializer<GamaCoord
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final IGamaObjectOutput out, final GamaCoordinateSequence o) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final GamaCoordinateSequence o,
+			final TransientSerializationContext context) throws Exception {
 		out.writeObject(o.toPointsArray());
 	}
 

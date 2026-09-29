@@ -24,7 +24,7 @@ import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.files.SaveOptions;
-import gama.extension.serialize.binary.BinarySerialisation;
+import gama.extension.serialize.BinarySerialisation;
 
 /**
  * The Class SimulationSaveDelegate.

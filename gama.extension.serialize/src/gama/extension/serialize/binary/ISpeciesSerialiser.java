@@ -12,9 +12,10 @@ package gama.extension.serialize.binary;
 
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
-import gama.extension.serialize.GamaObjectSerializer;
 import gama.extension.serialize.IGamaObjectInput;
 import gama.extension.serialize.IGamaObjectOutput;
+import gama.extension.serialize.IGamaObjectSerializer;
+import gama.extension.serialize.binary.AbstractBinarySerializer.TransientSerializationContext;
 
 /**
  * FST binarySerialiser for {@link ISpecies} instances. Only the species name is persisted. On deserialisation, the
@@ -23,7 +24,7 @@ import gama.extension.serialize.IGamaObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class ISpeciesSerialiser implements GamaObjectSerializer<ISpecies> {
+class ISpeciesSerialiser implements IGamaObjectSerializer<ISpecies> {
 
 	/**
 	 * Serialises the species name.
@@ -36,7 +37,8 @@ class ISpeciesSerialiser implements GamaObjectSerializer<ISpecies> {
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final IGamaObjectOutput out, final ISpecies o) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final ISpecies o, final TransientSerializationContext context)
+			throws Exception {
 		out.writeStringUTF(o.getName());
 	}
 

@@ -43,7 +43,7 @@ public class SimulationSerialiser implements IExperimentRecorder, ISerialisation
 	}
 
 	/** The processor. */
-	final BinarySerialiser processor = new BinarySerialiser();
+	final AbstractBinarySerializer processor = new FSTBinarySerialiser();
 
 	/**
 	 * Per-simulation locks. Allows {@link #record} and {@link #restore} to be mutually exclusive for the

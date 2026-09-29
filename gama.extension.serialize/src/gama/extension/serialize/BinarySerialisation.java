@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.extension.serialize.binary;
+package gama.extension.serialize;
 
 import static gama.api.utils.files.FileUtils.constructAbsoluteFilePath;
 import static java.nio.file.Files.readAllBytes;
@@ -29,6 +29,8 @@ import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.serialization.SerialisedAgent;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.runtime.scope.IScope;
+import gama.extension.serialize.binary.AbstractBinarySerializer;
+import gama.extension.serialize.binary.FSTBinarySerialiser;
 
 /**
  * The Class BinarySerialisationReader.
@@ -39,7 +41,7 @@ import gama.api.runtime.scope.IScope;
 public class BinarySerialisation implements ISerialisationConstants {
 
 	/** The processor. */
-	private static BinarySerialiser PROCESSOR = new BinarySerialiser();
+	private static AbstractBinarySerializer PROCESSOR = new FSTBinarySerialiser();
 
 	/**
 	 * Creates an object or an agent from a file.
@@ -83,20 +85,6 @@ public class BinarySerialisation implements ISerialisationConstants {
 				throw GamaRuntimeException.create(ex, scope);
 			}
 		}
-	}
-
-	/**
-	 * Register binarySerialiser.
-	 *
-	 * @param <T>
-	 *            the generic type
-	 * @param clazz
-	 *            the clazz
-	 * @param ser
-	 *            the ser
-	 */
-	public static <T> void registerSerialiser(final Class<T> clazz, final FSTGamaIndividualSerialiser<T> ser) {
-		PROCESSOR.register(clazz, ser);
 	}
 
 	/**

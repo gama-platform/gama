@@ -31,7 +31,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.utils.StringUtils;
 import gama.api.utils.json.IJsonValue;
 import gama.dev.DEBUG;
-import gama.extension.serialize.binary.BinarySerialisation;
+import gama.extension.serialize.BinarySerialisation;
 import gama.gaml.statements.save.GeoJSonSaver;
 
 /**

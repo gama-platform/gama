@@ -17,9 +17,10 @@ import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
 import gama.core.topology.graph.GamaSpatialGraph;
 import gama.core.util.path.GamaSpatialPath;
-import gama.extension.serialize.GamaObjectSerializer;
 import gama.extension.serialize.IGamaObjectInput;
 import gama.extension.serialize.IGamaObjectOutput;
+import gama.extension.serialize.IGamaObjectSerializer;
+import gama.extension.serialize.binary.AbstractBinarySerializer.TransientSerializationContext;
 
 /**
  * FST binarySerialiser for {@link GamaSpatialPath} instances.
@@ -59,7 +60,7 @@ import gama.extension.serialize.IGamaObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 8 avril 2026
  */
-class GamaSpatialPathSerialiser implements GamaObjectSerializer<GamaSpatialPath> {
+class GamaSpatialPathSerialiser implements IGamaObjectSerializer<GamaSpatialPath> {
 
 	/**
 	 * Returns {@code false}: spatial paths are not registered for FST back-reference tracking.
@@ -84,7 +85,8 @@ class GamaSpatialPathSerialiser implements GamaObjectSerializer<GamaSpatialPath>
 	 */
 	@SuppressWarnings ("unchecked")
 	@Override
-	public void serialise(final IGamaObjectOutput out, final GamaSpatialPath p) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final GamaSpatialPath p, final TransientSerializationContext context)
+			throws Exception {
 		out.writeObject(p.getGraph()); // GamaSpatialGraph or null
 		out.writeObject(p.getStartVertex()); // source IShape
 		out.writeObject(p.getEndVertex()); // target IShape

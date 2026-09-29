@@ -16,9 +16,10 @@ import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
-import gama.extension.serialize.GamaObjectSerializer;
 import gama.extension.serialize.IGamaObjectInput;
 import gama.extension.serialize.IGamaObjectOutput;
+import gama.extension.serialize.IGamaObjectSerializer;
+import gama.extension.serialize.binary.AbstractBinarySerializer.TransientSerializationContext;
 
 /**
  * FST binarySerialiser for {@link IList} instances. Persists the content type, element count, and all elements in
@@ -28,7 +29,7 @@ import gama.extension.serialize.IGamaObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IListSerialiser implements GamaObjectSerializer<IList> {
+class IListSerialiser implements IGamaObjectSerializer<IList> {
 
 	/**
 	 * Returns {@code false}: lists are not registered for FST back-reference tracking.
@@ -53,7 +54,8 @@ class IListSerialiser implements GamaObjectSerializer<IList> {
 	 */
 	@SuppressWarnings ("unchecked")
 	@Override
-	public void serialise(final IGamaObjectOutput out, final IList o) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final IList o, final TransientSerializationContext context)
+			throws Exception {
 		out.writeObject(o.getGamlType().getContentType());
 		out.writeInt(o.size());
 		o.forEach(v -> {

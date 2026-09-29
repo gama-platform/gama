@@ -12,9 +12,10 @@ package gama.extension.serialize.binary;
 
 import gama.api.kernel.agent.AgentReference;
 import gama.api.runtime.scope.IScope;
-import gama.extension.serialize.GamaObjectSerializer;
 import gama.extension.serialize.IGamaObjectInput;
 import gama.extension.serialize.IGamaObjectOutput;
+import gama.extension.serialize.IGamaObjectSerializer;
+import gama.extension.serialize.binary.AbstractBinarySerializer.TransientSerializationContext;
 
 /**
  * FST binarySerialiser for {@link AgentReference} instances. Serialises the species path (a {@code String[]} array) and
@@ -24,7 +25,7 @@ import gama.extension.serialize.IGamaObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class AgentReferenceSerialiser implements GamaObjectSerializer<AgentReference> {
+class AgentReferenceSerialiser implements IGamaObjectSerializer<AgentReference> {
 
 	/**
 	 * Serialises the species path array and the index path array of the agent reference.
@@ -37,7 +38,8 @@ class AgentReferenceSerialiser implements GamaObjectSerializer<AgentReference> {
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final IGamaObjectOutput out, final AgentReference o) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final AgentReference o, final TransientSerializationContext context)
+			throws Exception {
 		out.writeObject(o.species());
 		out.writeObject(o.index());
 	}

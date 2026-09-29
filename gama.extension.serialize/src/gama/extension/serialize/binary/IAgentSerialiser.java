@@ -14,9 +14,10 @@ import gama.api.kernel.agent.AgentReference;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.serialization.SerialisedAgent;
 import gama.api.runtime.scope.IScope;
-import gama.extension.serialize.GamaObjectSerializer;
 import gama.extension.serialize.IGamaObjectInput;
 import gama.extension.serialize.IGamaObjectOutput;
+import gama.extension.serialize.IGamaObjectSerializer;
+import gama.extension.serialize.binary.AbstractBinarySerializer.TransientSerializationContext;
 
 /**
  * FST binarySerialiser for {@link IAgent} instances. Uses a nesting-depth strategy tracked via the owning
@@ -28,7 +29,7 @@ import gama.extension.serialize.IGamaObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IAgentSerialiser implements GamaObjectSerializer<IAgent> {
+class IAgentSerialiser implements IGamaObjectSerializer<IAgent> {
 
 	/**
 	 * Returns {@code false}: agents are not registered for FST back-reference tracking.
@@ -55,15 +56,19 @@ class IAgentSerialiser implements GamaObjectSerializer<IAgent> {
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final IGamaObjectOutput out, final IAgent o) throws Exception {
-		if (binarySerialiser.inAgent) {
+	public void serialise(final IGamaObjectOutput out, final IAgent o, final TransientSerializationContext context)
+			throws Exception {
+		if (context.isInAgent()) {
 			out.writeBoolean(true); // isRef
 			out.writeObject(AgentReference.of(o));
 		} else {
-			binarySerialiser.inAgent = true;
-			out.writeBoolean(false); // isRef
-			out.writeObject(SerialisedAgent.of(o, true));
-			binarySerialiser.inAgent = false;
+			try {
+				context.setInAgent(true);
+				out.writeBoolean(false); // isRef
+				out.writeObject(SerialisedAgent.of(o, true));
+			} finally {
+				context.setInAgent(false);
+			}
 		}
 	}
 

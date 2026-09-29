@@ -16,9 +16,10 @@ import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.GamaShapeFactory;
 import gama.api.types.geometry.IShape;
 import gama.api.types.geometry.IShape.Type;
-import gama.extension.serialize.GamaObjectSerializer;
 import gama.extension.serialize.IGamaObjectInput;
 import gama.extension.serialize.IGamaObjectOutput;
+import gama.extension.serialize.IGamaObjectSerializer;
+import gama.extension.serialize.binary.AbstractBinarySerializer.TransientSerializationContext;
 
 /**
  * FST binarySerialiser for {@link IShape} instances. Serialises the depth value, the geometrical type ordinal, and the
@@ -28,7 +29,7 @@ import gama.extension.serialize.IGamaObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IShapeSerialiser implements GamaObjectSerializer<IShape> {
+class IShapeSerialiser implements IGamaObjectSerializer<IShape> {
 
 	/**
 	 * Returns {@code false}: shapes are not registered for FST back-reference tracking.
@@ -52,7 +53,8 @@ class IShapeSerialiser implements GamaObjectSerializer<IShape> {
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final IGamaObjectOutput out, final IShape toWrite) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final IShape toWrite, final TransientSerializationContext context)
+			throws Exception {
 		Double d = toWrite.getDepth();
 		IShape.Type t = toWrite.getGeometricalType();
 		out.writeDouble(d == null ? 0d : d);

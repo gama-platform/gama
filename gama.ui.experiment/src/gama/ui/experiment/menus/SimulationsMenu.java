@@ -23,7 +23,7 @@ import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.core.experiment.parameters.ParametersSet;
-import gama.extension.serialize.binary.BinarySerialisation;
+import gama.extension.serialize.BinarySerialisation;
 import gama.ui.experiment.commands.ArrangeDisplayViews;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.utils.WorkbenchHelper;

@@ -15,9 +15,10 @@ import java.util.Map;
 import gama.api.kernel.object.IClass;
 import gama.api.kernel.object.IObject;
 import gama.api.runtime.scope.IScope;
-import gama.extension.serialize.GamaObjectSerializer;
 import gama.extension.serialize.IGamaObjectInput;
 import gama.extension.serialize.IGamaObjectOutput;
+import gama.extension.serialize.IGamaObjectSerializer;
+import gama.extension.serialize.binary.AbstractBinarySerializer.TransientSerializationContext;
 
 /**
  * FST binarySerialiser for {@link IObject} instances. Serialises the species name and the full attribute map of the
@@ -27,7 +28,7 @@ import gama.extension.serialize.IGamaObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IObjectSerialiser implements GamaObjectSerializer<IObject> {
+class IObjectSerialiser implements IGamaObjectSerializer<IObject> {
 
 	/**
 	 * Returns {@code false}: objects are not registered for FST back-reference tracking.
@@ -50,7 +51,8 @@ class IObjectSerialiser implements GamaObjectSerializer<IObject> {
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final IGamaObjectOutput out, final IObject o) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final IObject o, final TransientSerializationContext context)
+			throws Exception {
 		out.writeStringUTF(o.getSpeciesName());
 		out.writeObject(o.getAttributes(true));
 	}

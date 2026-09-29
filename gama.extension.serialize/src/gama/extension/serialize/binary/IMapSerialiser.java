@@ -16,9 +16,10 @@ import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
-import gama.extension.serialize.GamaObjectSerializer;
 import gama.extension.serialize.IGamaObjectInput;
 import gama.extension.serialize.IGamaObjectOutput;
+import gama.extension.serialize.IGamaObjectSerializer;
+import gama.extension.serialize.binary.AbstractBinarySerializer.TransientSerializationContext;
 
 /**
  * FST binarySerialiser for {@link IMap} instances. Persists the key type, content type, ordering flag, entry count, and
@@ -27,7 +28,7 @@ import gama.extension.serialize.IGamaObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IMapSerialiser implements GamaObjectSerializer<IMap> {
+class IMapSerialiser implements IGamaObjectSerializer<IMap> {
 
 	/**
 	 * Serialises the map's key type, content type, ordering flag, size, and all key-value pairs. Each key and value is
@@ -42,7 +43,8 @@ class IMapSerialiser implements GamaObjectSerializer<IMap> {
 	 */
 	@SuppressWarnings ("unchecked")
 	@Override
-	public void serialise(final IGamaObjectOutput out, final IMap o) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final IMap o, final TransientSerializationContext context)
+			throws Exception {
 		out.writeObject(o.getGamlType().getKeyType());
 		out.writeObject(o.getGamlType().getContentType());
 		out.writeBoolean(o.isOrdered());

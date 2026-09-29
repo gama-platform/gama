@@ -4,15 +4,17 @@
 package gama.extension.serialize;
 
 import gama.api.runtime.scope.IScope;
+import gama.extension.serialize.binary.AbstractBinarySerializer.TransientSerializationContext;
 
 /**
  *
  */
-public interface GamaObjectSerializer<T> {
+public interface IGamaObjectSerializer<T> {
 
 	/**
-	 * Serialises the given object to the FST output stream. The default implementation does nothing; subclasses should
-	 * override this method.
+	 * @param isInAgent
+	 *            TODO Serialises the given object to the FST output stream. The default implementation does nothing;
+	 *            subclasses should override this method.
 	 *
 	 * @param out
 	 *            the FST output stream
@@ -21,7 +23,8 @@ public interface GamaObjectSerializer<T> {
 	 * @throws Exception
 	 *             if serialisation fails
 	 */
-	void serialise(final IGamaObjectOutput out, final T toWrite) throws Exception;
+	void serialise(final IGamaObjectOutput out, final T toWrite, TransientSerializationContext context)
+			throws Exception;
 
 	/**
 	 * Deserialises an object from the FST input stream using the given simulation scope.

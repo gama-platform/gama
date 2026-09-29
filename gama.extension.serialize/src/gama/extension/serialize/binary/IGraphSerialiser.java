@@ -14,9 +14,10 @@ import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.graph.IGraph;
 import gama.core.util.graph.GamaGraph;
-import gama.extension.serialize.GamaObjectSerializer;
 import gama.extension.serialize.IGamaObjectInput;
 import gama.extension.serialize.IGamaObjectOutput;
+import gama.extension.serialize.IGamaObjectSerializer;
+import gama.extension.serialize.binary.AbstractBinarySerializer.TransientSerializationContext;
 
 /**
  * FST binarySerialiser for {@link IGraph} instances.
@@ -47,7 +48,7 @@ import gama.extension.serialize.IGamaObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 8 avril 2026
  */
-public class IGraphSerialiser implements GamaObjectSerializer<IGraph> {
+public class IGraphSerialiser implements IGamaObjectSerializer<IGraph> {
 
 	/**
 	 * Returns {@code false}: graphs are not registered for FST back-reference tracking.
@@ -72,7 +73,8 @@ public class IGraphSerialiser implements GamaObjectSerializer<IGraph> {
 	 */
 	@SuppressWarnings ("unchecked")
 	@Override
-	public void serialise(final IGamaObjectOutput out, final IGraph g) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final IGraph g, final TransientSerializationContext context)
+			throws Exception {
 		// --- metadata ---
 		out.writeObject(g.getGamlType().getKeyType());
 		out.writeObject(g.getGamlType().getContentType());

@@ -13,9 +13,10 @@ package gama.extension.serialize.binary;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.font.GamaFontFactory;
 import gama.api.types.font.IFont;
-import gama.extension.serialize.GamaObjectSerializer;
 import gama.extension.serialize.IGamaObjectInput;
 import gama.extension.serialize.IGamaObjectOutput;
+import gama.extension.serialize.IGamaObjectSerializer;
+import gama.extension.serialize.binary.AbstractBinarySerializer.TransientSerializationContext;
 
 /**
  * FST binarySerialiser for {@link IFont} instances. Persists the font name, AWT style integer, and point size. On
@@ -24,7 +25,7 @@ import gama.extension.serialize.IGamaObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IFontSerialiser implements GamaObjectSerializer<IFont> {
+class IFontSerialiser implements IGamaObjectSerializer<IFont> {
 
 	/**
 	 * Serialises the font name, style, and size.
@@ -37,7 +38,8 @@ class IFontSerialiser implements GamaObjectSerializer<IFont> {
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final IGamaObjectOutput out, final IFont o) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final IFont o, final TransientSerializationContext context)
+			throws Exception {
 		out.writeStringUTF(o.getName());
 		out.writeInt(o.getStyle());
 		out.writeInt(o.getSize());

@@ -12,7 +12,7 @@ package gama.extension.serialize.binary;
 
 import java.io.IOException;
 
-import gama.extension.serialize.GamaObjectSerializer;
+import gama.extension.serialize.IGamaObjectSerializer;
 import gama.extension.serialize.fst.FSTBasicObjectSerializer;
 import gama.extension.serialize.fst.FSTClazzInfo;
 import gama.extension.serialize.fst.FSTClazzInfo.FSTFieldInfo;
@@ -20,9 +20,9 @@ import gama.extension.serialize.fst.FSTObjectInput;
 import gama.extension.serialize.fst.FSTObjectOutput;
 
 /**
- * Abstract base class for FST-based individual serialisers used within {@link BinarySerialiser}. Each subclass is
+ * Abstract base class for FST-based individual serialisers used within {@link FSTBinarySerialiser}. Each subclass is
  * responsible for serialising and deserialising a single specific GAMA type. Instances hold a reference to their owning
- * {@link BinarySerialiser} to access the current simulation scope and shared serialisation state (such as the
+ * {@link FSTBinarySerialiser} to access the current simulation scope and shared serialisation state (such as the
  * {@code inAgent} flag).
  *
  * <p>
@@ -35,16 +35,16 @@ import gama.extension.serialize.fst.FSTObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-public abstract class FSTGamaIndividualSerialiser<T> extends FSTBasicObjectSerializer {
+public class FSTGamaIndividualSerialiser<T> extends FSTBasicObjectSerializer {
 
 	/**
-	 * The owning {@link BinarySerialiser}, providing access to the current simulation scope and shared serialisation
+	 * The owning {@link FSTBinarySerialiser}, providing access to the current simulation scope and shared serialisation
 	 * state.
 	 */
-	protected BinarySerialiser binarySerialiser;
+	protected AbstractBinarySerializer binarySerializer;
 
 	/** The gama serializer. */
-	protected final GamaObjectSerializer<T> gamaSerializer;
+	protected final IGamaObjectSerializer<T> gamaSerializer;
 
 	/**
 	 * Instantiates a new FST individual binarySerialiser.
@@ -52,17 +52,19 @@ public abstract class FSTGamaIndividualSerialiser<T> extends FSTBasicObjectSeria
 	 * @param gamaSerializer
 	 *            the gama serializer
 	 */
-	public FSTGamaIndividualSerialiser(final GamaObjectSerializer<T> gamaSerializer) {
+	public FSTGamaIndividualSerialiser(final IGamaObjectSerializer<T> gamaSerializer) {
 		this.gamaSerializer = gamaSerializer;
 	}
 
 	/**
-	 * Constructs a new {@code FSTGamaIndividualSerialiser} bound to the given {@link BinarySerialiser}.
+	 * Constructs a new {@code FSTGamaIndividualSerialiser} bound to the given {@link FSTBinarySerialiser}.
 	 *
 	 * @param binarySerialiser
 	 *            the owning binary binarySerialiser; must not be {@code null}
 	 */
-	public void setBinarySerialiser(final BinarySerialiser serialiser) { this.binarySerialiser = serialiser; }
+	public void setBinarySerialiser(final AbstractBinarySerializer serialiser) {
+		this.binarySerializer = serialiser;
+	}
 
 	/**
 	 * Returns whether the deserialised object should be registered with the FST input stream for back-reference
@@ -77,7 +79,7 @@ public abstract class FSTGamaIndividualSerialiser<T> extends FSTBasicObjectSeria
 
 	/**
 	 * Instantiates an object by reading it from the FST input stream. Delegates to
-	 * {@link #deserialise(IScope, FSTObjectInput)} using the scope from the owning {@link BinarySerialiser}, then
+	 * {@link #deserialise(IScope, FSTObjectInput)} using the scope from the owning {@link FSTBinarySerialiser}, then
 	 * optionally registers the result.
 	 *
 	 * @param objectClass
@@ -98,7 +100,7 @@ public abstract class FSTGamaIndividualSerialiser<T> extends FSTBasicObjectSeria
 	@Override
 	public final T instantiate(final Class objectClass, final FSTObjectInput in, final FSTClazzInfo serializationInfo,
 			final FSTFieldInfo referencee, final int streamPosition) throws Exception {
-		T result = gamaSerializer.deserialise(binarySerialiser.scope, in);
+		T result = gamaSerializer.deserialise(binarySerializer.getContext().getScope(), in);
 		if (shouldRegister()) { in.registerObject(result, streamPosition, serializationInfo, referencee); }
 		return result;
 	}
@@ -125,7 +127,7 @@ public abstract class FSTGamaIndividualSerialiser<T> extends FSTBasicObjectSeria
 	public void writeObject(final FSTObjectOutput out, final Object toWrite, final FSTClazzInfo clzInfo,
 			final FSTFieldInfo referencedBy, final int streamPosition) throws IOException {
 		try {
-			gamaSerializer.serialise(out, (T) toWrite);
+			gamaSerializer.serialise(out, (T) toWrite, binarySerializer.getContext());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

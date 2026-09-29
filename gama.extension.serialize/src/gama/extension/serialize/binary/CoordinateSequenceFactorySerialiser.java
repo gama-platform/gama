@@ -14,9 +14,10 @@ import org.locationtech.jts.geom.CoordinateSequenceFactory;
 
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.geometry.GeometryUtils;
-import gama.extension.serialize.GamaObjectSerializer;
 import gama.extension.serialize.IGamaObjectInput;
 import gama.extension.serialize.IGamaObjectOutput;
+import gama.extension.serialize.IGamaObjectSerializer;
+import gama.extension.serialize.binary.AbstractBinarySerializer.TransientSerializationContext;
 
 /**
  * FST binarySerialiser for {@link CoordinateSequenceFactory} instances. The factory is a singleton obtained from the
@@ -26,7 +27,7 @@ import gama.extension.serialize.IGamaObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class CoordinateSequenceFactorySerialiser implements GamaObjectSerializer<CoordinateSequenceFactory> {
+class CoordinateSequenceFactorySerialiser implements IGamaObjectSerializer<CoordinateSequenceFactory> {
 
 	/**
 	 * Marker string written to the stream to identify the coordinate sequence factory placeholder.
@@ -44,7 +45,8 @@ class CoordinateSequenceFactorySerialiser implements GamaObjectSerializer<Coordi
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final IGamaObjectOutput out, final CoordinateSequenceFactory o) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final CoordinateSequenceFactory o,
+			final TransientSerializationContext context) throws Exception {
 		out.writeStringUTF(MARKER);
 	}
 
