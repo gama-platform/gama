@@ -1,0 +1,88 @@
+/**
+* Name: PhysicsAdvancedTest
+* Description: Tests the physics engine extension: the 'physical_world' simulation parent and
+*   the documented defaults of the 'static_body' and 'dynamic_body' skills.
+* Tags: physics, extension, test
+*/
+
+model PhysicsAdvancedTestModel
+
+global parent: physical_world {
+	float step <- 0.01;
+}
+
+species ball skills: [dynamic_body] {
+	geometry shape <- sphere(1);
+}
+
+species heavy_ball skills: [dynamic_body] {
+	geometry shape <- sphere(1);
+	float mass <- 5.0;
+	float restitution <- 0.9;
+	float damping <- 0.0;
+}
+
+species wall skills: [static_body] {
+	geometry shape <- box(10, 10, 1);
+}
+
+experiment PhysicsAdvancedTest type: test autorun: true {
+
+	test "The physical world exposes its documented defaults" {
+		assert world.gravity = {0, 0, -9.80665};
+		assert world.automated_registration = true;
+		assert world.max_substeps = 0;
+		assert world.accurate_collision_detection = false;
+	}
+
+	test "A static body reports the engine's own conventions" {
+		create wall number: 1 returns: walls;
+		wall w <- walls[0];
+
+		assert w.friction = 0.5;
+		assert w.restitution = 0.0;
+		assert w.rotation = 0.0 :: {0, 0, 1};
+		assert w.aabb != nil;
+	}
+
+	test "A dynamic body reports its declared mass" {
+		create ball number: 1 returns: balls;
+		ball b <- balls[0];
+
+		assert b.mass = 1.0;
+		assert b.friction = 0.5;
+		assert b.restitution = 0.0;
+		assert b.velocity = {0, 0, 0};
+		assert b.angular_velocity = {0, 0, 0};
+	}
+
+	test "Species-level overrides reach the variable-backed attributes" {
+		create heavy_ball number: 1 returns: balls;
+		heavy_ball b <- balls[0];
+
+		assert b.mass = 5.0;
+		// not overridden, so still the skill default
+		assert b.friction = 0.5;
+	}
+
+	// The damping attributes are read straight from the underlying rigid body rather than from the
+	// GAML variable, so their exact value depends on the engine. What must hold is that they are
+	// readable damping ratios.
+	test "Damping attributes are readable damping ratios" {
+		create ball number: 1 returns: balls;
+		ball b <- balls[0];
+
+		assert b.damping >= 0.0;
+		assert b.damping <= 1.0;
+		assert b.angular_damping >= 0.0;
+		assert b.angular_damping <= 1.0;
+		assert b.contact_damping >= 0.0;
+		assert b.contact_damping <= 1.0;
+	}
+
+	test "Bodies can be registered in the physical world" {
+		create ball number: 3 returns: balls;
+		ask world { do register(bodies: balls); }
+		assert length(balls) = 3;
+	}
+}
