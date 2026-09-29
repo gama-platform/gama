@@ -1,0 +1,87 @@
+/**
+* Name: TrafficAdvancedTest
+* Description: Tests the driving skills of the traffic extension: the documented defaults of
+*   the 'driving', 'road_skill' and 'intersection_skill' attributes, and road registration.
+* Tags: traffic, extension, test
+*/
+
+model TrafficAdvancedTestModel
+
+species intersection skills: [intersection_skill] { }
+
+species road skills: [road_skill] { }
+
+species vehicle skills: [driving] { }
+
+species tuned_vehicle skills: [driving] {
+	float max_speed <- 10.0;
+	float vehicle_length <- 3.0;
+	float min_safety_distance <- 2.0;
+}
+
+experiment TrafficAdvancedTest type: test autorun: true {
+
+	test "Documented defaults of the driving skill" {
+		create vehicle number: 1 returns: cars;
+		vehicle v <- cars[0];
+
+		assert v.speed = 0.0;
+		assert v.acceleration = 0.0;
+		assert v.current_index = 0;
+		assert v.lowest_lane = 0;
+		assert v.num_lanes_occupied = 1;
+		assert v.vehicle_length = 0.0;
+		assert v.speed_coeff = 1.0;
+		assert v.max_speed = 50.0;
+		assert v.safety_distance_coeff = 1.0;
+		assert v.min_safety_distance = 0.5;
+		assert v.time_headway = 1.5;
+		assert v.max_acceleration = 0.3;
+		assert v.max_deceleration = 3.0;
+		assert v.delta_idm = 4.0;
+		assert v.politeness_factor = 0.5;
+	}
+
+	test "A vehicle starts on no road and with no path" {
+		create vehicle number: 1 returns: cars;
+		vehicle v <- cars[0];
+
+		assert v.current_road = nil;
+		assert v.next_road = nil;
+		assert v.current_path = nil;
+		assert v.current_target = nil;
+		assert v.final_target = nil;
+	}
+
+	test "Species-level overrides win over the skill defaults" {
+		create tuned_vehicle number: 1 returns: cars;
+		tuned_vehicle v <- cars[0];
+
+		assert v.max_speed = 10.0;
+		assert v.vehicle_length = 3.0;
+		assert v.min_safety_distance = 2.0;
+		// not overridden, so still the skill default
+		assert v.speed_coeff = 1.0;
+	}
+
+	test "Documented defaults of the road skill" {
+		create road number: 1 returns: roads;
+		road r <- roads[0];
+
+		assert r.num_lanes = 2;
+		assert r.maxspeed = 50 #km / #h;
+		assert r.linked_road = nil;
+		assert empty(r.all_agents);
+	}
+
+	test "Documented defaults of the intersection skill" {
+		create intersection number: 1 returns: nodes;
+		intersection n <- nodes[0];
+
+		assert empty(n.roads_in);
+		assert empty(n.roads_out);
+		assert empty(n.priority_roads);
+		assert n.stop != nil;
+		assert n.block != nil;
+	}
+}
