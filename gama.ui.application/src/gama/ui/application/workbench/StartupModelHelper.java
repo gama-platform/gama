@@ -14,6 +14,10 @@ import java.io.IOException;
 import java.lang.Iterable;
 import java.time.Instant;
 
+import org.eclipse.emf.common.util.URI;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.core.runtime.Platform;
@@ -196,29 +200,32 @@ public class StartupModelHelper
     {
         if(model == null)
         {
-            IGamaFile<?, ?> file;
             String filePathStr;
             
             if (specificModelPathStr == null) {
-                filePathStr = GamaPreferences.Interface.CORE_DEFAULT_MODEL.getValue().getPath(null);
+                filePathStr = GamaPreferences.Interface.CORE_DEFAULT_MODEL.getValue()
+                        .getPath(null);
             } else {
-                filePathStr = ExportHelper.toAbsoluteFromEmbeddedWorkspacePath(specificModelPathStr);
+                filePathStr = specificModelPathStr;
             }
 
+            
+            if(filePathStr.startsWith("/"))
+                filePathStr = filePathStr.substring(1);
 
-			file = new GenericFile(ExportHelper.toAbsoluteFromEclipsePath(filePathStr));
-
-            if (file != null && file.exists(null)) {
 
 				while (GAMA.getRegularGui() == null) {
 					THREADS.WAIT(100, Thread.currentThread().getName() + ": waiting for the GUI to become available");
 				}
 
-				final URI uri = file.getURIRelativeToWorkspace();
+				// final URI uri = file.getURIRelativeToWorkspace();
 				final List<GamlCompilationError> errors = new ArrayList<GamlCompilationError>();
 
-				model = getBuilder().compile(uri,errors);
-			}
+				model = getBuilder().compile(
+                    URI.createPlatformResourceURI(
+						filePathStr,true),
+                        errors
+                );
         }
 
         return model;

@@ -1,8 +1,13 @@
 package gaml.compiler.ui.editor.toolbar;
 
 import java.nio.file.Path;
+import java.nio.file.Files;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.stream.StreamSupport;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -10,12 +15,15 @@ import java.awt.Desktop;
 import java.io.IOException;
 
 
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 
 import gama.api.GAMA;
@@ -68,21 +76,88 @@ public class ExportExperimentSelectionListener implements Selector {
 
 		final GamlProperties metaProperties = new GamlProperties();
 
+		final Set<IModelSpecies> alreadyProcessedModels = new HashSet<IModelSpecies>(); 
+
+		List<IFile> modelFiles = new LinkedList<IFile>();
+		modelFiles.add(file);
+
+		String[] experimentNames = null;
+
+		final Map<IProject,Set<String>> dataFiles = new HashMap<IProject,Set<String>>();
+
+		final List<IProject> projects = new LinkedList<IProject>();
+
+		Set<String> plugins = new HashSet<String>();
 
 		try {
-			final IModelSpecies model = GamlModelBuilder.getInstance().compile(file.getLocation().toFile(),null,metaProperties);
-			GamlFileInfo fileInfo = new GamlFileInfo(file);
-			final Path modelFileParent = Path.of(file.getLocation().toOSString()).getParent();
-			final Set<String> dataFiles = new HashSet<>();
-			for (final String use : fileInfo.getUses()) {
-				dataFiles.add(modelFileParent.resolve(use).normalize().toString());
+			boolean isTargetModel = true;
+
+			while (! modelFiles.isEmpty())
+			{
+				List<IFile> modelFilesToProcess = new LinkedList<IFile>();
+
+				for (IFile modelFile : modelFiles)
+				{
+					final IModelSpecies model = GamlModelBuilder
+						.getInstance()
+							.compile(URI.createPlatformResourceURI(
+								modelFile.getProject().getName() + "/" 
+								+ modelFile.getProjectRelativePath().toString(),true)
+							,null);
+
+					if (alreadyProcessedModels.contains(model))
+						continue;
+
+					alreadyProcessedModels.add(model);
+					if (! projects.contains(modelFile.getProject()))
+						projects.add(modelFile.getProject());
+
+
+					model.getDescription().collectMetaInformation(metaProperties);
+
+					GamlFileInfo fileInfo = new GamlFileInfo(modelFile);
+					final Path modelFileParent = Path.of(modelFile.getLocation().toOSString()).getParent();
+					
+					final Set<String> thisProjectDataFiles = dataFiles.getOrDefault(modelFile.getProject(),new HashSet<String>());
+
+					for (final String use : fileInfo.getUses()) {
+
+						thisProjectDataFiles.add(modelFileParent.resolve(use).normalize().toString());
+					}
+
+					plugins.addAll(metaProperties.get(GamlProperties.PLUGINS));
+					
+					if(isTargetModel)
+						experimentNames = StreamSupport.stream(model.getExperiments().spliterator(),false)
+							.map(experiment -> experiment.getDescription().getName())
+							.toArray(String[]::new);
+
+					for (final String importedModelUriStr : fileInfo.getImports())
+					{
+						IPath importedModelPath;
+
+						if(importedModelUriStr.startsWith("/resource"))
+							importedModelPath = org.eclipse.core.runtime.Path.fromOSString(
+								URI.createPlatformResourceURI(importedModelUriStr.substring(9),false)
+									.toPlatformString(true)
+								);
+						else
+							importedModelPath = modelFile.getFullPath()
+								.removeLastSegments(1)
+								.append(URI.decode(importedModelUriStr));
+					
+						IFile importedModelFile = ResourcesPlugin.getWorkspace().getRoot()
+												.getFile(importedModelPath);
+
+						modelFilesToProcess.add(importedModelFile);	
+					}
+
+				}
+
+				modelFiles = modelFilesToProcess;
+				isTargetModel = false;
 			}
 
-			Set<String> plugins = metaProperties.get(GamlProperties.PLUGINS);
-
-			final String[] experimentNames = StreamSupport.stream(model.getExperiments().spliterator(),false)
-				.map(experiment -> experiment.getDescription().getName())
-				.toArray(String[]::new);
 				
 			final ExportModelDialog dialog = new ExportModelDialog(experimentNames);
 
@@ -105,7 +180,7 @@ public class ExportExperimentSelectionListener implements Selector {
 
 			final GamaZipBuilder ziper = new GamaZipBuilder(
 				plugins,
-				file.getProject(),
+				projects,
 				relativeModelPathStr,
 				targetExperiments,
 				dataFiles,

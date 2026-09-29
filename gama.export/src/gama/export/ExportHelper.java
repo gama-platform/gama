@@ -35,6 +35,11 @@ public class ExportHelper
 
     private static final String embeddedWorkspaceName = "Embedded_Workspace";
 
+    public static Path toEmbeddedWorkspaceRelativePath(String pathStr) {
+        return Path.of(ExportActivator.eclipsePathStr,embeddedWorkspaceName)
+            .relativize(Path.of(pathStr));
+    }
+
     public static Path toAbsoluteFromAppRootPath(Path path)
     {
         if (!path.isAbsolute())

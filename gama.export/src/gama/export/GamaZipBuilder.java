@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.StandardCopyOption;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.Comparator;
@@ -109,14 +110,12 @@ public class GamaZipBuilder {
 
     private static final Set<String> shapeFileExtensionsSet = new HashSet<String>(Set.of(".shx",".dbf",".prj",".sbn",".sbx",".xml"));
 
-    private IProject targetProject = null;
+    private List<IProject> targetProjects = null;
     
     private String targetModelRelativePathStr = null;
 
-    private String targetProjectPathStr = null;
-
-    private String targetWorkspacePathStr = null;
-
+    private Path targetWorkspacePath = null;
+    
     private String targetExperiment = null;
 
     private boolean zipWithJdk = false;
@@ -133,7 +132,7 @@ public class GamaZipBuilder {
      * project's <code>include</code> directory and the path is rewritten in
      * every GAML file that references them.
      */
-    private Set<String> dataFiles = null;
+    private Map<IProject,Set<String>> dataFiles = null;
 
     private Set<Path> dontZipPaths = new HashSet<Path>(Set.of(
         Path.of(eclipsePath.toString(),"configuration","org.eclipse.equinox.app"),
@@ -189,10 +188,10 @@ public class GamaZipBuilder {
 
     public GamaZipBuilder(
         final Set<String> plugins,
-        final IProject targetProject,
+        final List<IProject> targetProjects,
         final String targetModelRelativePathStr,
         final String targetExperiment,
-        final Set<String> dataFiles,
+        final Map<IProject,Set<String>> dataFiles,
         final boolean zipWithJdk,
         final boolean isOneFileExport)
     {
@@ -210,7 +209,7 @@ public class GamaZipBuilder {
                 while(javaHome.charAt(index) == '\\' || javaHome.charAt(index) == '/')
                     index++;
                 
-                if (index > 0)
+                if (index >= 0)
                     GamaZipBuilder.jdkPath = Path.of(javaHome.substring(index));
             }
             else 
@@ -224,14 +223,10 @@ public class GamaZipBuilder {
 
         }
 
-        this.targetProject = targetProject;
+        this.targetProjects = targetProjects;
 
-        this.targetProjectPathStr = targetProject.getLocation().toOSString();
-        this.targetWorkspacePathStr = targetProject.getWorkspace().getRoot().getLocation().toOSString();
-
-        // library projects will keep returning the current workspace 
-        if (!targetProjectPathStr.startsWith(targetWorkspacePathStr))
-            this.targetWorkspacePathStr = Path.of(targetProjectPathStr).getParent().toString();
+        this.targetWorkspacePath = Path.of(
+            targetProjects.get(0).getWorkspace().getRoot().getLocation().toOSString());
 
         this.targetModelRelativePathStr = targetModelRelativePathStr; 
         this.targetExperiment = targetExperiment;
@@ -395,7 +390,7 @@ public class GamaZipBuilder {
             store.putInStore("pref_workspace_path",GamaZipBuilder.embeddedWorkspaceName);
             store.putInStore("pref_workspace_remember",true);
             store.putInStore("pref_startup_model",true);
-            store.putInStore("pref_default_model",GamaZipBuilder.embeddedWorkspaceName + targetModelRelativePathStr);
+            store.putInStore("pref_default_model",targetModelRelativePathStr);
             store.putInStore("pref_default_experiment",targetExperiment);
             store.putInStore("pref_errors_in_editor",false);
             
@@ -419,11 +414,8 @@ public class GamaZipBuilder {
             );
 
             ////////////////////////////////////
-            // Embedding the target workspace //
+            // Embedding the target projects  //
             ////////////////////////////////////
-
-            Path targetProjectPath = Path.of(targetProjectPathStr);
-            // String targetWorkspacePathStr = targetProjectPath.getParent().toString();
 
             ////////////////////////////////////////////////////////////////////
             // Computing the data files that lie outside the exported project //
@@ -431,102 +423,188 @@ public class GamaZipBuilder {
             // Their path is rewritten in every GAML file that references     //
             // them during the project walk below.                            //
             ////////////////////////////////////////////////////////////////////
+            for (final IProject project : this.targetProjects) {
+                Path projectPath = Path.of(project.getLocation().toOSString());
+                final Path includeDir = projectPath.resolve("includes");
+                final String projectName = projectPath.getFileName().toString();
+                final Map<Path, String> externalDataFiles = new LinkedHashMap<>();
+                final Set<String> usedIncludeNames = new HashSet<>();
 
-            final Path includeDir = targetProjectPath.resolve("includes");
-            final String projectName = targetProjectPath.getFileName().toString();
-            final Map<Path, String> externalDataFiles = new LinkedHashMap<>();
-            final Set<String> usedIncludeNames = new HashSet<>();
+                if (! dataFiles.isEmpty() && dataFiles.keySet().contains(project)) {
+                    for (final String dataFile : dataFiles.get(project)) {
 
-            if (dataFiles != null) {
-                for (final String dataFile : dataFiles) {
-                    if (dataFile == null || dataFile.isBlank()) {
-                        continue;
-                    }
-                    final Path resolved = Path.of(dataFile).normalize();
-                    // Already inside the exported project: it is embedded by the
-                    // project walk below, no rerouting needed.
-                    if (resolved.startsWith(targetProjectPath)) {
-                        continue;
-                    }
-                    // Already scheduled for embedding (referenced by several models)
-                    if (externalDataFiles.containsKey(resolved)) {
-                        continue;
-                    }
-                    if (!Files.exists(resolved)) {
-                        System.err.println("Export: data file not found, skipping: " + resolved);
-                        continue;
-                    }
-                    final String fileName = resolved.getFileName().toString();
-                    String uniqueName = fileName;
-                    int counter = 1;
-                    while (!usedIncludeNames.add(uniqueName)) {
-                        final int dot = fileName.lastIndexOf('.');
-                        if (dot > 0) {
-                            uniqueName = fileName.substring(0, dot) + "_" + counter + fileName.substring(dot);
-                        } else {
-                            uniqueName = fileName + "_" + counter;
+                        if (dataFile == null || dataFile.isBlank()) {
+                            continue;
                         }
-                        counter++;
-                    }
-                    externalDataFiles.put(resolved, uniqueName);
+                        final Path resolved = Path.of(dataFile).normalize();
+                        // Already inside the exported project: it is embedded by the
+                        // project walk below, no rerouting needed.
+                        if (resolved.startsWith(projectPath)) {
+                            continue;
+                        }
+                        // Already scheduled for embedding (referenced by several models)
+                        if (externalDataFiles.containsKey(resolved)) {
+                            continue;
+                        }
+                        if (!Files.exists(resolved)) {
+                            System.err.println("Export: data file not found, skipping: " + resolved);
+                            continue;
+                        }
+                        final String fileName = resolved.getFileName().toString();
+                        String uniqueName = fileName;
+                        int counter = 1;
+                        while (!usedIncludeNames.add(uniqueName)) {
+                            final int dot = fileName.lastIndexOf('.');
+                            if (dot > 0) {
+                                uniqueName = fileName.substring(0, dot) + "_" + counter + fileName.substring(dot);
+                            } else {
+                                uniqueName = fileName + "_" + counter;
+                            }
+                            counter++;
+                        }
+                        externalDataFiles.put(resolved, uniqueName);
 
-                    // .shp files may require additionnal files.
-                    if(fileName.endsWith(".shp"))
-                    {
-                        String filePrefix = fileName.replace(".shp","");
-                        String uniquePrefix = uniqueName.replace(".shp","");
-                        try (Stream<Path> stream = Files.walk(resolved.getParent())) {
-                            stream.forEach(filePath -> { 
-                                final String currentFileName = filePath.getFileName().toString();
-                                final int lastDotIndex = currentFileName.lastIndexOf('.');
-
-                                if (lastDotIndex < 0)
-                                    return;
-
-                                final String currentFilePrefix = currentFileName.substring(0, lastDotIndex);
-                                final String currentFileExtension = currentFileName.substring(lastDotIndex);
-
-                                if (
-                                    ! externalDataFiles.containsKey(filePath)
-                                    && ! Files.isDirectory(filePath) 
-                                    && currentFilePrefix.equals(filePrefix)
-                                    && shapeFileExtensionsSet.contains(currentFileExtension)
-                                )
-                                    externalDataFiles.put(filePath, currentFileName.replace(filePrefix,uniquePrefix));
-                            });
-                            
-                        } catch (IOException exception) 
+                        // .shp files may require additionnal files.
+                        if(fileName.endsWith(".shp"))
                         {
-                            exception.printStackTrace();
+                            String filePrefix = fileName.replace(".shp","");
+                            String uniquePrefix = uniqueName.replace(".shp","");
+                            try (Stream<Path> stream = Files.walk(resolved.getParent())) {
+                                stream.forEach(filePath -> { 
+                                    final String currentFileName = filePath.getFileName().toString();
+                                    final int lastDotIndex = currentFileName.lastIndexOf('.');
+
+                                    if (lastDotIndex < 0)
+                                        return;
+
+                                    final String currentFilePrefix = currentFileName.substring(0, lastDotIndex);
+                                    final String currentFileExtension = currentFileName.substring(lastDotIndex);
+
+                                    if (
+                                        ! externalDataFiles.containsKey(filePath)
+                                        && ! Files.isDirectory(filePath) 
+                                        && currentFilePrefix.equals(filePrefix)
+                                        && shapeFileExtensionsSet.contains(currentFileExtension)
+                                    )
+                                        externalDataFiles.put(filePath, currentFileName.replace(filePrefix,uniquePrefix));
+                                });
+                                
+                            } catch (IOException exception) 
+                            {
+                                exception.printStackTrace();
+                            }
                         }
                     }
                 }
+
+                externalDataFiles.keySet()
+                    .forEach(key -> 
+                        System.out.println("Found external ressource : " 
+                        + key + " mapped to includes/" + externalDataFiles.get(key)));
+
+                //////////////////////////////////
+                // Actual embedding of projects //
+                //////////////////////////////////
+
+                try (Stream<Path> stream = Files.walk(projectPath)) {
+                    stream.forEach(filePath -> {
+                        
+                        try 
+                        {
+                            if(! Files.isDirectory(filePath))
+                            {
+                                final String currentFileName = filePath.getFileName().toString();
+                                final boolean isGaml = currentFileName.toLowerCase().endsWith(".gaml");
+                                String entryName;
+
+                                // User project
+                                if(filePath.startsWith(targetWorkspacePath))
+                                    entryName = filePath.toString().replace(
+                                        projectPath.getParent().toString(),
+                                        GamaZipBuilder.embeddedWorkspacePathStr);
+                                // library project -> preserve path instead of rewriting metadatas
+                                else
+                                    entryName = eclipsePath
+                                        .relativize(filePath).toString();                                   
+
+                                // Rewrite, in every GAML file, the paths of the data
+                                // files that have been rerouted into the include dir.
+                                if (isGaml && !externalDataFiles.isEmpty())
+                                    addEntryAndUpdateGamlImports(filePath,includeDir,externalDataFiles,entryName,archive);
+                                else
+                                    archive.addEntry(filePath,entryName);
+                            }
+                        } 
+                        catch (IOException e)
+                        {
+                            throw new RuntimeException("Failed to copy: " + filePath, e);
+                        }
+                    });
+                    
+                } catch (RuntimeException e) {
+                    // Unwrap IOException from the stream loop
+                    if (e.getCause() instanceof IOException) {
+                        throw (IOException) e.getCause();
+                    }
+                    throw e;
+                }
+
+                ////////////////////////////////////////////////////////////
+                // Embedding the external data files into the project's   //
+                // "include" directory so they travel with the export.    //
+                ////////////////////////////////////////////////////////////
+
+                for (final Map.Entry<Path, String> entry : externalDataFiles.entrySet()) {
+                    final String zipArchiveEntryPathStr = Path.of(GamaZipBuilder.embeddedWorkspacePathStr, projectName, "includes",
+                            entry.getValue()).toString();
+
+                    archive.addEntry(entry.getKey(),zipArchiveEntryPathStr);
+                }
+
+                ////////////////////////////////////////
+                // Resolving the project linked files //
+                ////////////////////////////////////////
+
+                final Map<String,Path> linkedFilesMap = ExportHelper.resolveLinks(projectPath.resolve(".project"),project);
+                
+                for (String virtualPathStr : linkedFilesMap.keySet())
+                {
+                    // preserve the link virtual path /Embedded_Workspace/projectName/path/to/link
+                    String entryName = 
+                            GamaZipBuilder.embeddedWorkspacePathStr 
+                            + File.separator + projectName 
+                            + File.separator + virtualPathStr;
+
+                    // but write the actual content of the file designed by the link
+                    addEntryAndUpdateGamlImports(linkedFilesMap.get(virtualPathStr),includeDir,externalDataFiles,entryName, archive);
+                }
             }
 
-            externalDataFiles.keySet()
-                .forEach(key -> 
-                    System.out.println("Found external ressource : " 
-                    + key + " mapped to includes/" + externalDataFiles.get(key)));
+            /////////////////////////////
+            // copy resources metadata //
+            /////////////////////////////
 
-            try (Stream<Path> stream = Files.walk(targetProjectPath)) {
+            final Path projectResourcesMetadataPath = targetWorkspacePath
+                .resolve(".metadata")
+                .resolve(".plugins")
+                .resolve("org.eclipse.core.resources");
+
+            Path embeddedWorkspacePath = Path.of(embeddedWorkspacePathStr);
+
+            // WORKSPACE RESOURCE METADATA
+            try (Stream<Path> stream = Files.walk(projectResourcesMetadataPath)) {
                 stream.forEach(filePath -> {
-                    
                     try 
                     {
-                        if(! Files.isDirectory(filePath))
-                        {
-                            final String currentFileName = filePath.getFileName().toString();
-                            final boolean isGaml = currentFileName.toLowerCase().endsWith(".gaml");
-                            String entryName = filePath.toString().replace(
-                                targetWorkspacePathStr,
-                                GamaZipBuilder.embeddedWorkspacePathStr);
+                        Path relativeFilePath = targetWorkspacePath.relativize(filePath);
 
-                            // Rewrite, in every GAML file, the paths of the data
-                            // files that have been rerouted into the include dir.
-                            if (isGaml && !externalDataFiles.isEmpty())
-                                addEntryAndUpdateGamlImports(filePath,includeDir,externalDataFiles,entryName,archive);
-                            else
-                                archive.addEntry(filePath,entryName);
+                        if(! Files.isDirectory(filePath) 
+                            && ! relativeFilePath.startsWith(".history"))
+                        {
+                            String entryName = embeddedWorkspacePath
+                                .resolve(relativeFilePath).toString();
+
+                            archive.addEntry(filePath,entryName);
                         }
                     } 
                     catch (IOException e)
@@ -541,36 +619,6 @@ public class GamaZipBuilder {
                     throw (IOException) e.getCause();
                 }
                 throw e;
-            }
-
-            ////////////////////////////////////////////////////////////
-            // Embedding the external data files into the project's   //
-            // "include" directory so they travel with the export.    //
-            ////////////////////////////////////////////////////////////
-
-            for (final Map.Entry<Path, String> entry : externalDataFiles.entrySet()) {
-                final String zipArchiveEntryPathStr = Path.of(GamaZipBuilder.embeddedWorkspacePathStr, projectName, "includes",
-                        entry.getValue()).toString();
-
-                archive.addEntry(entry.getKey(),zipArchiveEntryPathStr);
-            }
-
-            ////////////////////////////////////////
-            // Resolving the project linked files //
-            ////////////////////////////////////////
-
-            final Map<String,Path> linkedFilesMap = ExportHelper.resolveLinks(targetProjectPath.resolve(".project"),targetProject);
-            
-            for (String virtualPathStr : linkedFilesMap.keySet())
-            {
-                // preserve the link virtual path /Embedded_Workspace/projectName/path/to/link
-                String entryName = 
-                        GamaZipBuilder.embeddedWorkspacePathStr 
-                        + File.separator + projectName 
-                        + File.separator + virtualPathStr;
-
-                // but write the actual content of the file designed by the link
-                addEntryAndUpdateGamlImports(linkedFilesMap.get(virtualPathStr),includeDir,externalDataFiles,entryName, archive);
             }
             
             // WORKSPACE_IDENTIFIER
