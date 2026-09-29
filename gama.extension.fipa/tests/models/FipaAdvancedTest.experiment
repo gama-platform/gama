@@ -1,0 +1,102 @@
+/**
+* Name: FipaAdvancedTest
+* Description: Tests FIPA ACL communication. Incoming messages are read through the
+*   per-performative lists provided by the 'fipa' skill (requests, cfps, informs, ...),
+*   which is the only way a GAML model can discriminate performatives.
+* Tags: fipa, extension, test
+*/
+
+model FipaAdvancedTestModel
+
+species communicator skills: [fipa] {
+	bool has_agreed <- false;
+	bool has_informed <- false;
+	bool has_proposed <- false;
+	bool has_accepted <- false;
+
+	// In the fipa_request protocol a request is first agreed to, and only then informed
+	reflex answer_requests {
+		loop msg over: copy(requests) {
+			do agree message: msg contents: ['ok'];
+			has_agreed <- true;
+			do inform message: msg contents: ['done'];
+			has_informed <- true;
+		}
+	}
+
+	reflex answer_cfps {
+		loop msg over: copy(cfps) {
+			do propose message: msg contents: [100.0];
+			has_proposed <- true;
+		}
+	}
+
+	reflex answer_proposes {
+		loop msg over: copy(proposes) {
+			do accept_proposal message: msg contents: ['deal'];
+			has_accepted <- true;
+		}
+	}
+}
+
+experiment FipaAdvancedTest type: test autorun: true {
+
+	test "A request is delivered, agreed to, then informed" {
+		create communicator number: 2 returns: talkers;
+		communicator a1 <- talkers[0];
+		communicator a2 <- talkers[1];
+
+		ask a1 {
+			do start_conversation (to: [a2], protocol: 'fipa-request', performative: 'request', contents: ['task']);
+		}
+
+		// a2 sees exactly one request, and nothing else
+		assert length(a2.requests) = 1;
+		assert length(a2.informs) = 0;
+		assert empty(a1.requests);
+
+		// letting a2 run its reflexes makes it answer
+		ask a2 { do _step_; }
+		assert a2.has_agreed;
+		assert a2.has_informed;
+
+		// a1 now holds both answers
+		assert length(a1.agrees) = 1;
+		assert length(a1.informs) = 1;
+		assert length(a1.requests) = 0;
+	}
+
+	test "A contract-net call for proposal is answered with a proposal" {
+		create communicator number: 2 returns: talkers;
+		communicator a1 <- talkers[0];
+		communicator a2 <- talkers[1];
+
+		ask a1 {
+			do start_conversation (to: [a2], protocol: 'fipa-contract-net', performative: 'cfp', contents: ['job']);
+		}
+		assert length(a2.cfps) = 1;
+
+		ask a2 { do _step_; }
+		assert a2.has_proposed;
+		assert length(a1.proposes) = 1;
+
+		ask a1 { do _step_; }
+		assert a1.has_accepted;
+		assert length(a2.accept_proposals) = 1;
+	}
+
+	test "An inform sent with no protocol reaches the mailbox" {
+		create communicator number: 2 returns: talkers;
+		communicator a1 <- talkers[0];
+		communicator a2 <- talkers[1];
+
+		ask a1 {
+			do start_conversation (to: [a2], protocol: 'no-protocol', performative: 'inform', contents: ['info']);
+		}
+
+		assert length(a2.informs) = 1;
+		assert length(a2.mailbox) = 1;
+		assert a2.mailbox[0].sender = a1;
+		assert a2.mailbox[0].contents = ['info'];
+	}
+}
