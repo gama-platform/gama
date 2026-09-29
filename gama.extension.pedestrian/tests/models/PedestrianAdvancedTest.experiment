@@ -1,0 +1,77 @@
+/**
+* Name: PedestrianAdvancedTest
+* Description: Tests the 'pedestrian' skill: the documented default values of its social-force
+*   model attributes, the assignability of its species lists, and the 'walk' action.
+* Tags: pedestrian, extension, test
+*/
+
+model PedestrianAdvancedTestModel
+
+species obstacle { }
+
+species ped_agent skills: [pedestrian] {
+	float speed <- 5.0;
+}
+
+experiment PedestrianAdvancedTest type: test autorun: true {
+
+	test "Documented defaults of the social-force attributes" {
+		create ped_agent number: 1 returns: walkers;
+		ped_agent ag <- walkers[0];
+
+		assert ag.shoulder_length = 0.45;
+		assert ag.minimal_distance = 0.0;
+		assert ag.pedestrian_consideration_distance = 2.0;
+		assert ag.obstacle_consideration_distance = 2.0;
+		assert ag.proba_detour = 0.1;
+
+		assert ag.A_pedestrians_SFM = 4.5;
+		assert ag.A_obstacles_SFM = 4.5;
+		assert ag.B_pedestrians_SFM = 2.0;
+		assert ag.B_obstacles_SFM = 2.0;
+
+		assert ag.avoid_other = true;
+		assert ag.pedestrian_model = 'simple';
+	}
+
+	test "Documented defaults of the waypoint attributes" {
+		create ped_agent number: 1 returns: walkers;
+		ped_agent ag <- walkers[0];
+
+		assert ag.velocity = {0, 0, 0};
+		assert ag.current_index = 0;
+		assert ag.tolerance_waypoint = 1.0;
+		assert ag.use_geometry_waypoint = false;
+		assert ag.final_waypoint = nil;
+		assert ag.current_waypoint = nil;
+		assert empty(ag.waypoints);
+	}
+
+	test "The considered species lists can be set" {
+		create ped_agent number: 1 returns: walkers;
+		ped_agent ag <- walkers[0];
+
+		assert empty(ag.pedestrian_species);
+		assert empty(ag.obstacle_species);
+
+		ask ag {
+			pedestrian_species <- [ped_agent];
+			obstacle_species <- [obstacle];
+		}
+
+		assert length(ag.pedestrian_species) = 1;
+		assert length(ag.obstacle_species) = 1;
+	}
+
+	test "Walking with no waypoint leaves the pedestrian where it is" {
+		create ped_agent number: 1 returns: walkers;
+		ped_agent ag <- walkers[0];
+		ask ag { location <- {10, 10}; }
+		point before <- ag.location;
+
+		ask ag { do walk; }
+
+		assert ag.current_waypoint = nil;
+		assert ag.location = before;
+	}
+}
