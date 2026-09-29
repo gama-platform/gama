@@ -1,0 +1,35 @@
+/**
+* Name: MathsAdvancedTest
+* Author: Antigravity
+* Description: Tests advanced maths extension operators like truncated and density distributions
+* Tags: maths, random, advanced, test
+*/
+
+experiment MathsAdvancedTest type: test autorun: true {
+	
+	test "Advanced Distribution Operators" {
+		float lnorm_trunc <- lognormal_trunc_rnd(2.0, 3.0, 0.0, 5.0);
+		assert lnorm_trunc >= 0.0;
+		assert lnorm_trunc <= 5.0;
+		
+		float w_trunc <- weibull_trunc_rnd(2.0, 3.0, 0.0, 5.0);
+		assert w_trunc >= 0.0;
+		assert w_trunc <= 5.0;
+		
+		float g_trunc <- gamma_trunc_rnd(2.0, 3.0, 0.0, 5.0);
+		assert g_trunc >= 0.0;
+		assert g_trunc <= 5.0;
+		
+		float w_den <- weibull_density(2.0, 3.0, 1.0);
+		assert w_den >= 0.0;
+		
+		float exp_den <- exp_density(2.0, 1.0);
+		assert exp_den >= 0.0;
+		
+		float logn_den <- lognormal_density(2.0, 3.0, 1.0);
+		assert logn_den >= 0.0;
+		
+		float g_den <- gamma_density(2.0, 3.0, 1.0);
+		assert g_den >= 0.0;
+	}
+}
