@@ -16,17 +16,18 @@ import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
+import gama.extension.serialize.GamaObjectSerializer;
 import gama.extension.serialize.IGamaObjectInput;
 import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link IMap} instances. Persists the key type, content type, ordering flag, entry count, and all
- * key-value pairs. The map is reconstructed via {@link GamaMapFactory#create(IType, IType, boolean)}.
+ * FST binarySerialiser for {@link IMap} instances. Persists the key type, content type, ordering flag, entry count, and
+ * all key-value pairs. The map is reconstructed via {@link GamaMapFactory#create(IType, IType, boolean)}.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IMapSerialiser extends FSTIndividualSerialiser<IMap> {
+class IMapSerialiser implements GamaObjectSerializer<IMap> {
 
 	/**
 	 * Serialises the map's key type, content type, ordering flag, size, and all key-value pairs. Each key and value is

@@ -16,18 +16,19 @@ import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.GamaShapeFactory;
 import gama.api.types.geometry.IShape;
 import gama.api.types.geometry.IShape.Type;
+import gama.extension.serialize.GamaObjectSerializer;
 import gama.extension.serialize.IGamaObjectInput;
 import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link IShape} instances. Serialises the depth value, the geometrical type ordinal, and the
- * underlying JTS {@link Geometry}. Objects deserialised by this serialiser are not registered for back-reference
+ * FST binarySerialiser for {@link IShape} instances. Serialises the depth value, the geometrical type ordinal, and the
+ * underlying JTS {@link Geometry}. Objects deserialised by this binarySerialiser are not registered for back-reference
  * tracking.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IShapeSerialiser extends FSTIndividualSerialiser<IShape> {
+class IShapeSerialiser implements GamaObjectSerializer<IShape> {
 
 	/**
 	 * Returns {@code false}: shapes are not registered for FST back-reference tracking.
@@ -35,7 +36,7 @@ class IShapeSerialiser extends FSTIndividualSerialiser<IShape> {
 	 * @return {@code false}
 	 */
 	@Override
-	protected boolean shouldRegister() {
+	public boolean shouldRegister() {
 		return false;
 	}
 

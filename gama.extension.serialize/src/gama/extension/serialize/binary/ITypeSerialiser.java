@@ -13,17 +13,18 @@ package gama.extension.serialize.binary;
 import gama.api.gaml.types.GamaType;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
+import gama.extension.serialize.GamaObjectSerializer;
 import gama.extension.serialize.IGamaObjectInput;
 import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link IType} instances. Serialises the GAML type name. For compound types (e.g.
+ * FST binarySerialiser for {@link IType} instances. Serialises the GAML type name. For compound types (e.g.
  * {@code map<string, int>}), also serialises the key and content types recursively.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class ITypeSerialiser extends FSTIndividualSerialiser<IType> {
+class ITypeSerialiser implements GamaObjectSerializer<IType> {
 
 	/**
 	 * Serialises the GAML type name. For compound types, also writes the key and content types.

@@ -14,18 +14,19 @@ import org.locationtech.jts.geom.CoordinateSequenceFactory;
 
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.geometry.GeometryUtils;
+import gama.extension.serialize.GamaObjectSerializer;
 import gama.extension.serialize.IGamaObjectInput;
 import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link CoordinateSequenceFactory} instances. The factory is a singleton obtained from the global
- * geometry factory. Serialisation writes a fixed marker string ({@value #MARKER}); deserialisation always returns the
- * singleton via {@link GeometryUtils#getGeometryFactory()}.
+ * FST binarySerialiser for {@link CoordinateSequenceFactory} instances. The factory is a singleton obtained from the
+ * global geometry factory. Serialisation writes a fixed marker string ({@value #MARKER}); deserialisation always
+ * returns the singleton via {@link GeometryUtils#getGeometryFactory()}.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class CoordinateSequenceFactorySerialiser extends FSTIndividualSerialiser<CoordinateSequenceFactory> {
+class CoordinateSequenceFactorySerialiser implements GamaObjectSerializer<CoordinateSequenceFactory> {
 
 	/**
 	 * Marker string written to the stream to identify the coordinate sequence factory placeholder.

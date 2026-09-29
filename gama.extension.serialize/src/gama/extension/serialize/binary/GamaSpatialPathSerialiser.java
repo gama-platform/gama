@@ -17,18 +17,19 @@ import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
 import gama.core.topology.graph.GamaSpatialGraph;
 import gama.core.util.path.GamaSpatialPath;
+import gama.extension.serialize.GamaObjectSerializer;
 import gama.extension.serialize.IGamaObjectInput;
 import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link GamaSpatialPath} instances.
+ * FST binarySerialiser for {@link GamaSpatialPath} instances.
  *
  * <p>
  * A {@link GamaSpatialPath} stores several computed fields ({@code segments}, {@code threeD}, {@code realObjects},
- * {@code shape}) that are fully derived from the structural data. This serialiser therefore persists only the minimal
- * structural state required to reconstruct the path: the underlying spatial graph (which may be {@code null}), the
- * source and target vertices, the ordered list of graph edges, and the stored weight. All derived fields are recomputed
- * by the appropriate {@link GamaSpatialPath} constructor during deserialisation.
+ * {@code shape}) that are fully derived from the structural data. This binarySerialiser therefore persists only the
+ * minimal structural state required to reconstruct the path: the underlying spatial graph (which may be {@code null}),
+ * the source and target vertices, the ordered list of graph edges, and the stored weight. All derived fields are
+ * recomputed by the appropriate {@link GamaSpatialPath} constructor during deserialisation.
  * </p>
  *
  * <p>
@@ -52,13 +53,13 @@ import gama.extension.serialize.IGamaObjectOutput;
  * </p>
  *
  * <p>
- * Objects deserialised by this serialiser are not registered for FST back-reference tracking.
+ * Objects deserialised by this binarySerialiser are not registered for FST back-reference tracking.
  * </p>
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 8 avril 2026
  */
-class GamaSpatialPathSerialiser extends FSTIndividualSerialiser<GamaSpatialPath> {
+class GamaSpatialPathSerialiser implements GamaObjectSerializer<GamaSpatialPath> {
 
 	/**
 	 * Returns {@code false}: spatial paths are not registered for FST back-reference tracking.
@@ -66,7 +67,7 @@ class GamaSpatialPathSerialiser extends FSTIndividualSerialiser<GamaSpatialPath>
 	 * @return {@code false}
 	 */
 	@Override
-	protected boolean shouldRegister() {
+	public boolean shouldRegister() {
 		return false;
 	}
 

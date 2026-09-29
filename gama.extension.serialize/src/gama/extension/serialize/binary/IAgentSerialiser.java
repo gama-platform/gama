@@ -14,20 +14,21 @@ import gama.api.kernel.agent.AgentReference;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.serialization.SerialisedAgent;
 import gama.api.runtime.scope.IScope;
+import gama.extension.serialize.GamaObjectSerializer;
 import gama.extension.serialize.IGamaObjectInput;
 import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link IAgent} instances. Uses a nesting-depth strategy tracked via the owning serialiser's
- * {@code inAgent} flag: the outermost agent is written as a full {@link SerialisedAgent}, while any nested agent
- * encountered during that serialisation is written as a lightweight {@link AgentReference}. On deserialisation, the
- * boolean flag distinguishes the two cases. Objects deserialised by this serialiser are not registered for
- * back-reference tracking.
+ * FST binarySerialiser for {@link IAgent} instances. Uses a nesting-depth strategy tracked via the owning
+ * binarySerialiser's {@code inAgent} flag: the outermost agent is written as a full {@link SerialisedAgent}, while any
+ * nested agent encountered during that serialisation is written as a lightweight {@link AgentReference}. On
+ * deserialisation, the boolean flag distinguishes the two cases. Objects deserialised by this binarySerialiser are not
+ * registered for back-reference tracking.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IAgentSerialiser extends FSTIndividualSerialiser<IAgent> {
+class IAgentSerialiser implements GamaObjectSerializer<IAgent> {
 
 	/**
 	 * Returns {@code false}: agents are not registered for FST back-reference tracking.
@@ -35,15 +36,16 @@ class IAgentSerialiser extends FSTIndividualSerialiser<IAgent> {
 	 * @return {@code false}
 	 */
 	@Override
-	protected boolean shouldRegister() {
+	public boolean shouldRegister() {
 		return false;
 	}
 
 	/**
-	 * Serialises an agent. If the serialiser is already inside an agent serialisation (i.e. {@code serialiser.inAgent}
-	 * is {@code true}), the agent is written as an {@link AgentReference} (a boolean {@code true} followed by the
-	 * reference). Otherwise, it is written as a full {@link SerialisedAgent} (a boolean {@code false} followed by the
-	 * agent data), and the {@code inAgent} flag is set for the duration to detect further nesting.
+	 * Serialises an agent. If the binarySerialiser is already inside an agent serialisation (i.e.
+	 * {@code binarySerialiser.inAgent} is {@code true}), the agent is written as an {@link AgentReference} (a boolean
+	 * {@code true} followed by the reference). Otherwise, it is written as a full {@link SerialisedAgent} (a boolean
+	 * {@code false} followed by the agent data), and the {@code inAgent} flag is set for the duration to detect further
+	 * nesting.
 	 *
 	 * @param out
 	 *            the FST output stream
@@ -54,14 +56,14 @@ class IAgentSerialiser extends FSTIndividualSerialiser<IAgent> {
 	 */
 	@Override
 	public void serialise(final IGamaObjectOutput out, final IAgent o) throws Exception {
-		if (serialiser.inAgent) {
+		if (binarySerialiser.inAgent) {
 			out.writeBoolean(true); // isRef
 			out.writeObject(AgentReference.of(o));
 		} else {
-			serialiser.inAgent = true;
+			binarySerialiser.inAgent = true;
 			out.writeBoolean(false); // isRef
 			out.writeObject(SerialisedAgent.of(o, true));
-			serialiser.inAgent = false;
+			binarySerialiser.inAgent = false;
 		}
 	}
 

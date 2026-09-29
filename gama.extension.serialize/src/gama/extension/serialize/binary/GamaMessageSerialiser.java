@@ -13,15 +13,16 @@ package gama.extension.serialize.binary;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.message.GamaMessageFactory;
 import gama.core.util.messaging.GamaMessage;
+import gama.extension.serialize.GamaObjectSerializer;
 import gama.extension.serialize.IGamaObjectInput;
 import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link GamaMessage} instances.
+ * FST binarySerialiser for {@link GamaMessage} instances.
  *
  * @author GitHub Copilot
  */
-public class GamaMessageSerialiser extends FSTIndividualSerialiser<GamaMessage> {
+public class GamaMessageSerialiser implements GamaObjectSerializer<GamaMessage> {
 
 	/**
 	 * Serialises the given GamaMessage instance to the FST output stream.

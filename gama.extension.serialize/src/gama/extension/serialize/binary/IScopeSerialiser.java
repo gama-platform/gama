@@ -11,17 +11,18 @@
 package gama.extension.serialize.binary;
 
 import gama.api.runtime.scope.IScope;
+import gama.extension.serialize.GamaObjectSerializer;
 import gama.extension.serialize.IGamaObjectInput;
 import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link IScope} instances. Only the scope's name is persisted. On deserialisation, a named copy of
- * the current simulation scope is returned via {@link IScope#copy(String)}.
+ * FST binarySerialiser for {@link IScope} instances. Only the scope's name is persisted. On deserialisation, a named
+ * copy of the current simulation scope is returned via {@link IScope#copy(String)}.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IScopeSerialiser extends FSTIndividualSerialiser<IScope> {
+class IScopeSerialiser implements GamaObjectSerializer<IScope> {
 
 	/**
 	 * Serialises the scope's name.

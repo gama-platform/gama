@@ -15,17 +15,18 @@ import java.util.Map;
 import gama.api.kernel.serialization.ISerialisedPopulation;
 import gama.api.kernel.serialization.SerialisedAgent;
 import gama.api.runtime.scope.IScope;
+import gama.extension.serialize.GamaObjectSerializer;
 import gama.extension.serialize.IGamaObjectInput;
 import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link SerialisedAgent} instances. Persists the agent's integer index, species name, attribute
- * map, and inner population map.
+ * FST binarySerialiser for {@link SerialisedAgent} instances. Persists the agent's integer index, species name,
+ * attribute map, and inner population map.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class SerialisedAgentSerialiser extends FSTIndividualSerialiser<SerialisedAgent> {
+class SerialisedAgentSerialiser implements GamaObjectSerializer<SerialisedAgent> {
 
 	/**
 	 * Serialises the agent's index, species name, attribute map, and inner population map.

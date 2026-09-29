@@ -45,7 +45,7 @@ import gama.extension.serialize.fst.FSTConfiguration;
  * serialisation and deserialisation of GAMA objects and agents.
  *
  * <p>
- * Each supported GAMA type is handled by a dedicated {@link FSTIndividualSerialiser} subclass registered via
+ * Each supported GAMA type is handled by a dedicated {@link FSTGamaIndividualSerialiser} subclass registered via
  * {@link #registerSerialisers(FSTConfiguration)}. This class is not thread-safe and must not be shared across
  * simulations.
  * </p>
@@ -61,7 +61,7 @@ public class BinarySerialiser implements ISerialisationConstants {
 	FSTConfiguration fst;
 
 	/**
-	 * Flag indicating whether the serialiser is currently inside an agent serialisation. Used by
+	 * Flag indicating whether the binarySerialiser is currently inside an agent serialisation. Used by
 	 * {@link IAgentSerialiser} to detect nesting and write references instead of full agents.
 	 */
 	boolean inAgent;
@@ -148,7 +148,7 @@ public class BinarySerialiser implements ISerialisationConstants {
 
 	/**
 	 * Registers all individual type serialisers with the given FST configuration. Each GAMA type handled by this
-	 * serialiser has its own dedicated {@link FSTIndividualSerialiser} subclass instantiated here.
+	 * binarySerialiser has its own dedicated {@link FSTGamaIndividualSerialiser} subclass instantiated here.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @date 5 août 2023
@@ -183,20 +183,20 @@ public class BinarySerialiser implements ISerialisationConstants {
 	}
 
 	/**
-	 * Registers a single type serialiser with the given FST configuration.
+	 * Registers a single type binarySerialiser with the given FST configuration.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @param <T>
-	 *            the type handled by the serialiser
+	 *            the type handled by the binarySerialiser
 	 * @param conf
 	 *            the FST configuration to register with
 	 * @param clazz
 	 *            the class of the type to register
 	 * @param ser
-	 *            the serialiser to use for instances of {@code clazz}
+	 *            the binarySerialiser to use for instances of {@code clazz}
 	 * @date 5 août 2023
 	 */
-	public <T> void register(final Class<T> clazz, final FSTIndividualSerialiser<T> ser) {
+	public <T> void register(final Class<T> clazz, final FSTGamaIndividualSerialiser<T> ser) {
 		fst.registerSerializer(clazz, ser, true);
 		ser.setBinarySerialiser(this);
 	}

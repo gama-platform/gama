@@ -16,17 +16,18 @@ import gama.api.kernel.serialization.ISerialisedAgent;
 import gama.api.kernel.serialization.SerialisedGrid;
 import gama.api.kernel.topology.IGrid;
 import gama.api.runtime.scope.IScope;
+import gama.extension.serialize.GamaObjectSerializer;
 import gama.extension.serialize.IGamaObjectInput;
 import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link SerialisedGrid} instances. Persists the species name, the list of serialised agents, and
- * the underlying {@link IGrid} matrix.
+ * FST binarySerialiser for {@link SerialisedGrid} instances. Persists the species name, the list of serialised agents,
+ * and the underlying {@link IGrid} matrix.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class SerialisedGridSerialiser extends FSTIndividualSerialiser<SerialisedGrid> {
+class SerialisedGridSerialiser implements GamaObjectSerializer<SerialisedGrid> {
 
 	/**
 	 * Serialises the species name, the list of agents, and the grid matrix.

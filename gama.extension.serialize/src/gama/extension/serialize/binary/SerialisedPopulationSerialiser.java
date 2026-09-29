@@ -15,17 +15,18 @@ import java.util.List;
 import gama.api.kernel.serialization.ISerialisedAgent;
 import gama.api.kernel.serialization.SerialisedPopulation;
 import gama.api.runtime.scope.IScope;
+import gama.extension.serialize.GamaObjectSerializer;
 import gama.extension.serialize.IGamaObjectInput;
 import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link SerialisedPopulation} instances. Persists the species name and the ordered list of
+ * FST binarySerialiser for {@link SerialisedPopulation} instances. Persists the species name and the ordered list of
  * serialised agents belonging to the population.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class SerialisedPopulationSerialiser extends FSTIndividualSerialiser<SerialisedPopulation> {
+class SerialisedPopulationSerialiser implements GamaObjectSerializer<SerialisedPopulation> {
 
 	/**
 	 * Serialises the species name and the list of serialised agents.

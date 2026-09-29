@@ -13,17 +13,19 @@ package gama.extension.serialize.binary;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.GamaPointFactory;
 import gama.api.types.geometry.IPoint;
+import gama.extension.serialize.GamaObjectSerializer;
 import gama.extension.serialize.IGamaObjectInput;
 import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link IPoint} instances. Serialises the x, y, and z coordinates, handling {@link Double#NaN} z
- * values via a boolean flag. Objects deserialised by this serialiser are not registered for back-reference tracking.
+ * FST binarySerialiser for {@link IPoint} instances. Serialises the x, y, and z coordinates, handling
+ * {@link Double#NaN} z values via a boolean flag. Objects deserialised by this binarySerialiser are not registered for
+ * back-reference tracking.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IPointSerialiser extends FSTIndividualSerialiser<IPoint> {
+class IPointSerialiser implements GamaObjectSerializer<IPoint> {
 
 	/**
 	 * Returns {@code false}: points are not registered for FST back-reference tracking.
@@ -31,7 +33,7 @@ class IPointSerialiser extends FSTIndividualSerialiser<IPoint> {
 	 * @return {@code false}
 	 */
 	@Override
-	protected boolean shouldRegister() {
+	public boolean shouldRegister() {
 		return false;
 	}
 

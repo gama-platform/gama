@@ -13,17 +13,18 @@ package gama.extension.serialize.binary;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.font.GamaFontFactory;
 import gama.api.types.font.IFont;
+import gama.extension.serialize.GamaObjectSerializer;
 import gama.extension.serialize.IGamaObjectInput;
 import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link IFont} instances. Persists the font name, AWT style integer, and point size. On
+ * FST binarySerialiser for {@link IFont} instances. Persists the font name, AWT style integer, and point size. On
  * deserialisation, the font is recreated via {@link GamaFontFactory#createFont(String, int, int)}.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IFontSerialiser extends FSTIndividualSerialiser<IFont> {
+class IFontSerialiser implements GamaObjectSerializer<IFont> {
 
 	/**
 	 * Serialises the font name, style, and size.

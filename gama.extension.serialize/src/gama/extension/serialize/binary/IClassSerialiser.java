@@ -12,17 +12,18 @@ package gama.extension.serialize.binary;
 
 import gama.api.kernel.object.IClass;
 import gama.api.runtime.scope.IScope;
+import gama.extension.serialize.GamaObjectSerializer;
 import gama.extension.serialize.IGamaObjectInput;
 import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link IClass} instances. Only the class name is persisted. On deserialisation, the class is
+ * FST binarySerialiser for {@link IClass} instances. Only the class name is persisted. On deserialisation, the class is
  * looked up in the current simulation model by name.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IClassSerialiser extends FSTIndividualSerialiser<IClass> {
+class IClassSerialiser implements GamaObjectSerializer<IClass> {
 
 	/**
 	 * Serialises the class name.

@@ -12,17 +12,19 @@ package gama.extension.serialize.binary;
 
 import gama.api.kernel.agent.AgentReference;
 import gama.api.runtime.scope.IScope;
+import gama.extension.serialize.GamaObjectSerializer;
 import gama.extension.serialize.IGamaObjectInput;
 import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link AgentReference} instances. Serialises the species path (a {@code String[]} array) and the
- * index path (an {@code Integer[]} array) that together identify the referenced agent within the simulation hierarchy.
+ * FST binarySerialiser for {@link AgentReference} instances. Serialises the species path (a {@code String[]} array) and
+ * the index path (an {@code Integer[]} array) that together identify the referenced agent within the simulation
+ * hierarchy.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class AgentReferenceSerialiser extends FSTIndividualSerialiser<AgentReference> {
+class AgentReferenceSerialiser implements GamaObjectSerializer<AgentReference> {
 
 	/**
 	 * Serialises the species path array and the index path array of the agent reference.

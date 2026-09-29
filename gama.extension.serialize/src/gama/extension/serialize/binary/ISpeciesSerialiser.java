@@ -12,17 +12,18 @@ package gama.extension.serialize.binary;
 
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
+import gama.extension.serialize.GamaObjectSerializer;
 import gama.extension.serialize.IGamaObjectInput;
 import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link ISpecies} instances. Only the species name is persisted. On deserialisation, the species is
- * looked up in the current simulation model by name.
+ * FST binarySerialiser for {@link ISpecies} instances. Only the species name is persisted. On deserialisation, the
+ * species is looked up in the current simulation model by name.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class ISpeciesSerialiser extends FSTIndividualSerialiser<ISpecies> {
+class ISpeciesSerialiser implements GamaObjectSerializer<ISpecies> {
 
 	/**
 	 * Serialises the species name.

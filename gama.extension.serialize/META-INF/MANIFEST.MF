@@ -18,7 +18,6 @@ Export-Package: .,
  gama.extension.serialize.fst.serializers,
  gama.extension.serialize.fst.util,
  gama.extension.serialize.gaml
- gama.extension.serialize.gaml
 Import-Package: org.osgi.framework;version="1.10.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-25
