@@ -1,0 +1,70 @@
+/**
+* Name: ImageAdvancedTest
+* Description: Tests the operators contributed by the image extension. Transformations are
+*   applied to in-memory images (the 'image' type), which is what these operators accept.
+* Tags: image, extension, test
+*/
+
+experiment ImageAdvancedTest type: test autorun: true {
+
+	test "Image creation and dimensions" {
+		image blank <- image(4, 4);
+		assert blank != nil;
+		assert blank.width = 4;
+		assert blank.height = 4;
+
+		image colored <- image(8, 2, #red);
+		assert colored.width = 8;
+		assert colored.height = 2;
+	}
+
+	test "Colour transformations keep the dimensions" {
+		image img <- image(4, 4, #red);
+
+		image gray <- grayscale(img);
+		assert gray != nil;
+		assert gray.width = 4;
+		assert gray.height = 4;
+
+		image drk <- darker(img, 0.5);
+		assert drk != nil;
+		assert drk.width = 4;
+
+		image brt <- brighter(img);
+		assert brt != nil;
+		assert brt.width = 4;
+
+		image tinted <- img tinted_with #blue;
+		assert tinted != nil;
+		assert tinted.width = 4;
+	}
+
+	test "Convolution filters keep the dimensions" {
+		image img <- image(4, 4, #red);
+
+		image blur <- blurred(img);
+		assert blur != nil;
+		assert blur.width = 4;
+
+		image sharp <- sharpened(img);
+		assert sharp != nil;
+		assert sharp.width = 4;
+	}
+
+	test "Flipping keeps the dimensions" {
+		image img <- image(8, 2, #green);
+
+		image flipped <- horizontal_flip(img);
+		assert flipped != nil;
+		assert flipped.width = 8;
+		assert flipped.height = 2;
+	}
+
+	test "Rotating by a quarter turn swaps the dimensions" {
+		image img <- image(8, 2, #green);
+		image rotated <- img rotated_by 90.0;
+		assert rotated != nil;
+		assert rotated.width = 2;
+		assert rotated.height = 8;
+	}
+}
