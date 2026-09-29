@@ -1,0 +1,72 @@
+/**
+* Name: DynamicGraphTest
+* Author: Antigravity
+* Description: Tests the dynamic manipulation of graphs at runtime
+* Tags: graph, dynamic, test
+*/
+
+model DynamicGraphTestModel
+
+species node_agent {}
+
+experiment DynamicGraphTest type: test autorun: true {
+	
+	test "Dynamic Graph Modification" {
+		graph g <- as_edge_graph([]); // Empty graph
+		
+		assert length(g.vertices) = 0;
+		
+		create node_agent number: 3 returns: nodes;
+		node_agent n1 <- nodes[0];
+		node_agent n2 <- nodes[1];
+		node_agent n3 <- nodes[2];
+		
+		// Add nodes manually
+		g <- g add_node n1;
+		g <- g add_node n2;
+		g <- g add_node n3;
+		
+		assert length(g.vertices) = 3;
+		
+		// Add edges manually
+		g <- g add_edge (n1::n2);
+		g <- g add_edge (n2::n3);
+		
+		assert length(g.edges) = 2;
+	}
+	
+	test "Dynamic Edge and Node Removal" {
+		create node_agent number: 4 returns: nodes;
+		node_agent n1 <- nodes[0];
+		node_agent n2 <- nodes[1];
+		node_agent n3 <- nodes[2];
+		node_agent n4 <- nodes[3];
+		
+		graph g <- as_edge_graph([n1::n2, n2::n3, n3::n4, n4::n1]);
+		
+		assert length(g.vertices) = 4;
+		assert length(g.edges) = 4;
+		
+		g <- n3 remove_node_from g;
+		assert length(g.vertices) = 3;
+		assert length(g.edges) = 2; // Edges connected to n3 are also removed
+	}
+	
+	test "Spatial Graph Creation" {
+		point p1 <- {0, 0};
+		point p2 <- {10, 10};
+		
+		// the two points are ~14.14 apart, so a 5.0 tolerance links nothing
+		graph far <- as_intersection_graph([p1, p2], 5.0);
+		assert length(far.vertices) = 2;
+		assert length(far.edges) = 0;
+
+		// a 20.0 tolerance does link them
+		graph near <- as_intersection_graph([p1, p2], 20.0);
+		assert length(near.vertices) = 2;
+		assert length(near.edges) = 1;
+
+		float edge_weight <- weight_of(near, near.edges[0]);
+		assert edge_weight > 0.0;
+	}
+}

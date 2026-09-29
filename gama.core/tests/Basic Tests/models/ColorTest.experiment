@@ -1,0 +1,48 @@
+/**
+* Name: ColorTest
+* Author: Antigravity
+* Description: Tests common properties of colors
+* Tags: color, test
+*/
+
+experiment ColorTest type: test autorun: true {
+	
+	test "Color Creation and Properties" {
+		rgb c1 <- rgb(255, 0, 0);
+		rgb c2 <- rgb(0, 255, 0, 128); // with alpha
+		rgb c3 <- #blue; // predefined color
+		
+		assert c1.red = 255;
+		assert c1.green = 0;
+		assert c1.blue = 0;
+		assert c1.alpha = 255; // default alpha
+		
+		assert c2.alpha = 128;
+		
+		assert c3.red = 0;
+		assert c3.green = 0;
+		assert c3.blue = 255;
+	}
+	
+	test "Color Operations" {
+		rgb c1 <- rgb(100, 100, 100);
+		rgb c2 <- rgb(50, 50, 50);
+		
+		// Blending (addition/subtraction of RGB usually not standard, let's use blend if available)
+		assert blend(rgb(255, 0, 0), rgb(0, 0, 255), 0.5) = rgb(127, 0, 127);
+		
+		// Color grayscale conversion
+		assert rgb(255, 0, 0).brighter.red = 255;
+		assert rgb(100, 100, 100).darker != rgb(100, 100, 100);
+	}
+	
+	test "Color Equality" {
+		assert rgb(255, 0, 0) = #red;
+		// the named colours follow the CSS palette
+		assert rgb(0, 128, 0) = #green;
+		assert rgb(0, 255, 0) = #lime;
+		assert rgb(0, 0, 255) = #blue;
+		assert rgb(255, 255, 255) = #white;
+		assert rgb(0, 0, 0) = #black;
+	}
+}

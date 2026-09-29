@@ -1,0 +1,64 @@
+/**
+* Name: RandomTest
+* Author: Antigravity
+* Description: Tests random number generation (RNG) and distributions
+* Tags: random, math, test
+*/
+
+experiment RandomTest type: test autorun: true {
+	
+	test "RNG Reproducibility with Seed" {
+		// Set seed for deterministic randomness
+		seed <- 42.0;
+		
+		int first_rnd <- rnd(100);
+		int second_rnd <- rnd(100);
+		
+		// Reset seed to the same value
+		seed <- 42.0;
+		
+		int third_rnd <- rnd(100);
+		int fourth_rnd <- rnd(100);
+		
+		assert first_rnd = third_rnd;
+		assert second_rnd = fourth_rnd;
+	}
+	
+	test "Random Selection and Booleans (flip)" {
+		seed <- 123.45;
+		
+		// flip(1.0) is always true, flip(0.0) is always false
+		assert flip(1.0) = true;
+		assert flip(0.0) = false;
+		
+		// rnd_choice with maps
+		map<string, float> choices <- ["A"::0.8, "B"::0.2];
+		string result <- rnd_choice(choices);
+		assert (result = "A" or result = "B");
+	}
+	
+	test "Distributions" {
+		seed <- 12345.0;
+		
+		// Bounds for distributions
+		float gauss_val <- gauss(0.0, 1.0); // mean 0, std dev 1
+		float poisson_val <- poisson(5.0); // lambda 5
+		float trunc_gauss <- truncated_gauss(5.0, 2.0, 0.0, 10.0); // trunc between 0 and 10
+		
+		assert poisson_val >= 0; // Poisson is always >= 0
+		assert trunc_gauss >= 0.0 and trunc_gauss <= 10.0;
+	}
+	
+	test "Random on Collections" {
+		seed <- 12.3;
+		
+		list<int> l1 <- [1, 2, 3, 4, 5];
+		
+		int choice <- any(l1);
+		assert l1 contains choice = true;
+		
+		list<int> shuffled <- shuffle(l1);
+		assert length(shuffled) = length(l1);
+		assert shuffled contains_all l1 = true;
+	}
+}

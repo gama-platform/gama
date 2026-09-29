@@ -1,0 +1,68 @@
+/**
+* Name: TaskArchitectureTest
+* Author: Antigravity
+* Description: Tests the task-based control architecture
+* Tags: task, architecture, test
+*/
+
+model TaskArchitectureTestModel
+
+species task_agent control: weighted_tasks {
+	int counter <- 0;
+	bool task1_run <- false;
+	bool task2_run <- false;
+	
+	task task1 weight: 1.0 {
+		task1_run <- true;
+		counter <- counter + 1;
+	}
+	
+	task task2 weight: 2.0 {
+		task2_run <- true;
+		counter <- counter + 2;
+	}
+}
+
+experiment TaskArchitectureTest type: test autorun: true {
+	
+	test "Task Execution by Weight" {
+		create task_agent number: 1 returns: created_agents;
+		task_agent ag <- created_agents[0];
+		
+		assert ag.task1_run = false;
+		assert ag.task2_run = false;
+		
+		// Run a step
+		ask ag { do _step_; }
+		
+		// task2 has higher weight (2.0 vs 1.0), so it should be executed exclusively
+		// Wait, task-based architecture executes the task with the highest weight
+		assert ag.task2_run = true;
+		assert ag.task1_run = false;
+		assert ag.counter = 2;
+	}
+}
+
+species prob_task_agent control: probabilistic_tasks {
+	int run_count <- 0;
+	
+	task task_certain weight: 1.0 {
+		run_count <- run_count + 1;
+	}
+	task task_never weight: 0.0 {
+		run_count <- run_count - 100;
+	}
+}
+
+experiment ProbabilisticTasksTest type: test autorun: true {
+	
+	test "Probabilistic Task Execution" {
+		create prob_task_agent number: 1 returns: created_agents;
+		prob_task_agent ag <- created_agents[0];
+		
+		ask ag { do _step_; }
+		
+		// Since one task has weight 1.0 and the other 0.0, the first one is always chosen
+		assert ag.run_count = 1;
+	}
+}

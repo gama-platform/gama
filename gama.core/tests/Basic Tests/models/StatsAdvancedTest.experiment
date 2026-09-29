@@ -1,0 +1,65 @@
+/**
+* Name: StatsAdvancedTest
+* Author: Antigravity
+* Description: Tests advanced statistical operators and mathematical distributions
+* Tags: statistics, math, distribution, test
+*/
+
+experiment StatsAdvancedTest type: test autorun: true {
+	
+	test "Aggregation Operators" {
+		list<int> data <- [1, 2, 3, 4, 5];
+		
+		assert sum(data) = 15;
+		assert product(data) = 120;
+		assert mean(data) = 3.0;
+		assert min(data) = 1;
+		assert max(data) = 5;
+		
+		// Map/Reduce style aggregations
+		assert (data max_of (each * 10)) = 50;
+		assert (data min_of (each * 10)) = 10;
+		
+		assert (data mean_of (each * 2)) = 6.0;
+	}
+	
+	test "Advanced Distributions" {
+		// Log-Normal
+		float ln_val <- lognormal_rnd(0.0, 1.0); // usually >= 0
+		assert ln_val >= 0.0;
+		
+		// Exponential
+		float exp_val <- exp_rnd(1.0);
+		assert exp_val >= 0.0;
+		
+		// Gamma
+		float gamma_val <- gamma_rnd(2.0, 2.0);
+		assert gamma_val >= 0.0;
+		
+		// Weibull
+		float wb_val <- weibull_rnd(1.0, 1.5);
+		assert wb_val >= 0.0;
+		
+		// Binomial
+		int binom_val <- binomial(10, 0.5);
+		assert binom_val >= 0;
+		assert binom_val <= 10;
+		
+		// Truncated Gauss
+		float tgauss <- truncated_gauss([0.0, 1.0]); 
+		float g2 <- gauss(0.0, 1.0); 
+		assert g2 != nil;
+	}
+	
+	test "List Manipulation and Accumulation" {
+		list<int> l1 <- [1, 2, 3];
+		list<int> l2 <- [4, 5, 6];
+		
+		list<int> interleaved <- interleave([l1, l2]);
+		assert interleaved = [1, 4, 2, 5, 3, 6];
+		
+		// Accumulate acts like flat_map in other languages
+		list<int> accumulated <- l1 accumulate ([each, each * 2]);
+		assert accumulated = [1, 2, 2, 4, 3, 6];
+	}
+}

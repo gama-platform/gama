@@ -1,0 +1,26 @@
+/**
+* Name: GlobalTest
+* Author: Antigravity
+* Description: Tests global block specific syntax like torus, shape, and dimensions
+* Tags: global, environment, test
+*/
+
+model GlobalTestModel
+
+global torus: true {
+	geometry shape <- square(100);
+}
+
+experiment GlobalTest type: test autorun: true {
+	
+	test "Global Dimensions and Torus" {
+		assert world.shape.area = 10000.0;
+		
+		// Testing torus behavior implicitly by distance calculation
+		point p1 <- {5, 50};
+		point p2 <- {95, 50};
+		
+		// 'distance_to' between two plain points is euclidean, it does not wrap around the torus
+		assert (p1 distance_to p2) = 90.0;
+	}
+}

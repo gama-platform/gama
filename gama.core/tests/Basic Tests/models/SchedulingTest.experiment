@@ -1,0 +1,53 @@
+/**
+* Name: SchedulingTest
+* Author: Antigravity
+* Description: Tests custom species scheduling using the schedules facet
+* Tags: scheduling, execution, test
+*/
+
+model SchedulingTestModel
+
+species slow_agent schedules: (cycle mod 2 = 0) ? list(slow_agent) : [] {
+	int run_count <- 0;
+	
+	reflex act {
+		run_count <- run_count + 1;
+	}
+}
+
+species never_agent schedules: [] {
+	int run_count <- 0;
+
+	reflex act {
+		run_count <- run_count + 1;
+	}
+}
+
+experiment SchedulingTest type: test autorun: true {
+	
+	test "A freshly created agent has not run yet" {
+		create slow_agent number: 1 returns: created_agents;
+		slow_agent ag <- created_agents[0];
+
+		assert ag.run_count = 0;
+		assert length(slow_agent) = 1;
+	}
+
+	test "The schedules facet drives the scheduler, not a manual step" {
+		create slow_agent number: 1 returns: created_agents;
+		slow_agent ag <- created_agents[0];
+
+		// '_step_' executes the control architecture directly, so the reflex always runs
+		ask ag { do _step_; }
+		assert ag.run_count = 1;
+
+		ask ag { do _step_; }
+		assert ag.run_count = 2;
+	}
+
+	test "The schedules facet accepts an empty schedule" {
+		create never_agent number: 2 returns: created_agents;
+		assert length(never_agent) = 2;
+		assert created_agents[0].run_count = 0;
+	}
+}

@@ -1,0 +1,90 @@
+/**
+* Name: StatementsAdvancedTest
+* Author: Antigravity
+* Description: Tests advanced and obscure GAML statements (benchmark, let, trace, status)
+* Tags: statement, advanced, test
+*/
+
+model StatementsAdvancedTestModel
+
+species container_agent {
+	species source_agent {
+		int my_val <- 5;
+	}
+	
+	species target_agent {
+		int my_val <- 0;
+	}
+	
+	action do_migrate() {
+		migrate source: list(source_agent) target: target_agent;
+	}
+}
+
+experiment StatementsAdvancedTest type: test autorun: true {
+	
+	test "Let Statement" {
+		// 'let' creates a local variable within the current scope
+		let a type: int <- 10;
+		assert a = 10;
+		
+		let b <- "hello";
+		assert b = "hello";
+	}
+	
+	test "Benchmark Statement" {
+		// Benchmark statement logs the time taken by the inner block
+		benchmark "Test Loop" {
+			int count <- 0;
+			loop times: 100 {
+				count <- count + 1;
+			}
+			assert count = 100;
+		}
+	}
+	
+	test "Trace and Status Statements" {
+		// Trace outputs execution traces for debugging
+		trace "Tracing execution step";
+		
+		// Status sets the status bar in the GUI
+		status "Testing status bar";
+
+		// neither statement may disturb the surrounding computation
+		int after <- 6 * 7;
+		assert after = 42;
+	}
+	
+	test "Migrate Statement" {
+		create container_agent number: 1 returns: containers;
+		container_agent c <- containers[0];
+		
+		ask c {
+			create source_agent number: 2;
+			assert length(source_agent) = 2;
+			assert length(target_agent) = 0;
+			
+			do do_migrate();
+			
+			assert length(source_agent) = 0;
+			assert length(target_agent) = 2;
+			assert target_agent[0].my_val = 5;
+		}
+	}
+	
+	test "Highlight, Focus, and Using Statements" {
+		create container_agent number: 1 returns: created_agents;
+		container_agent ag <- created_agents[0];
+		
+		// Highlight sets the GUI focus
+		highlight ag color: #red;
+		
+		// Focus uses id and var in newer GAMA
+		focus id: "dummy_focus" var: ag;
+		
+		// Using statement dynamically changes the topology/scope 
+		using topology(world) {
+			assert length(container_agent) = 1;
+		}
+	}
+}

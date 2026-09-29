@@ -1,0 +1,26 @@
+/**
+* Name: DynamicEvaluationTest
+* Author: Antigravity
+* Description: Tests the dynamic GAML evaluation operators
+* Tags: eval, dynamic, test
+*/
+
+experiment DynamicEvaluationTest type: test autorun: true {
+	
+	test "Eval GAML Expression" {
+		string expr <- "10 + 20";
+		
+		// The eval_gaml operator takes a string and evaluates it as GAML
+		// Note: The return type of eval_gaml is `unknown`, so we explicitly cast it or compare it.
+		int result <- int(eval_gaml(expr));
+		
+		assert result = 30;
+		
+		// Evaluating complex expressions
+		string expr2 <- "[1, 2, 3] collect (each * 2)";
+		list<int> l_result <- list<int>(eval_gaml(expr2));
+		
+		assert length(l_result) = 3;
+		assert l_result[1] = 4;
+	}
+}

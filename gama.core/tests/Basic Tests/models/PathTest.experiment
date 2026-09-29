@@ -1,0 +1,41 @@
+/**
+* Name: PathTest
+* Description: Tests the path data type and graph routing.
+*   The graph is deliberately built inside each test rather than in 'global init': a failure in
+*   the global init makes the whole model disappear from the test report instead of being reported.
+* Tags: path, graph, topology, test
+*/
+
+experiment PathTest type: test autorun: true {
+
+	test "A graph can be built from a map of edges" {
+		graph g <- as_edge_graph(["a"::"b", "b"::"c", "c"::"d", "a"::"d"]);
+		assert g != nil;
+		assert length(g.vertices) = 4;
+		assert length(g.edges) = 4;
+	}
+
+	test "Graph Path Calculations" {
+		graph g <- as_edge_graph(["a"::"b", "b"::"c", "c"::"d", "a"::"d"]);
+
+		path p <- path_between(g, "a", "c");
+		assert p != nil;
+		assert p.source = "a";
+		assert p.target = "c";
+		assert length(p.edges) = 2;
+
+		path p2 <- path_between(g, "a", "d");
+		assert p2 != nil;
+		assert length(p2.edges) = 1;
+	}
+
+	test "Path Properties" {
+		graph g <- as_edge_graph(["a"::"b", "b"::"c", "c"::"d", "a"::"d"]);
+
+		path p <- path_between(g, "a", "c");
+		assert length(p.vertices) = 3;
+		assert p.vertices[0] = "a";
+		assert p.vertices[2] = "c";
+		assert p.weight > 0;
+	}
+}

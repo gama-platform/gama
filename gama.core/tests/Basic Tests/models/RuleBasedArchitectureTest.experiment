@@ -1,0 +1,43 @@
+/**
+* Name: RuleBasedArchitectureTest
+* Author: Antigravity
+* Description: Tests the rule-based agent architecture
+* Tags: rule, architecture, test
+*/
+
+model RuleBasedArchitectureTestModel
+
+species rule_agent control: rules {
+	int step_count <- 0;
+	bool rule1_executed <- false;
+	
+	// A rule is executed if its condition is true
+	rule rule1 when: step_count = 0 {
+		rule1_executed <- true;
+		step_count <- step_count + 1;
+	}
+	
+	rule rule2 when: step_count > 0 {
+		step_count <- step_count + 1;
+	}
+}
+
+experiment RuleBasedArchitectureTest type: test autorun: true {
+	
+	test "Rule Execution" {
+		create rule_agent number: 1 returns: created_agents;
+		rule_agent ag <- created_agents[0];
+		
+		assert ag.rule1_executed = false;
+		assert ag.step_count = 0;
+		
+		ask ag { do _step_; }
+		
+		assert ag.rule1_executed = true;
+		assert ag.step_count = 1;
+		
+		ask ag { do _step_; }
+		
+		assert ag.step_count = 2;
+	}
+}

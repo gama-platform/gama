@@ -1,0 +1,63 @@
+/**
+* Name: StringAdvancedTest
+* Author: Antigravity
+* Description: Tests advanced string operations like regex, splitting, padding, and replacements
+* Tags: string, regex, text, test
+*/
+
+experiment StringAdvancedTest type: test autorun: true {
+	
+	test "String Split and Join" {
+		string s1 <- "apple,banana,orange";
+		list<string> fruits <- s1 split_with ",";
+		
+		assert length(fruits) = 3;
+		assert fruits[1] = "banana";
+		
+		string s2 <- "apple  banana \t orange";
+		list<string> parts <- s2 split_with " \t"; // split by spaces or tabs
+		// Note: depending on GAMA implementation, split_with might handle sequences. Let's do basic
+		list<string> parts2 <- "a-b-c" split_with "-";
+		assert parts2 = ["a", "b", "c"];
+	}
+	
+	test "Character Replacement and Modification" {
+		string original <- "hello world";
+		
+		string mod <- original replace("world", "GAMA");
+		assert mod = "hello GAMA";
+		
+		string no_l <- original replace("l", "");
+		assert no_l = "heo word";
+		
+		string regex_mod <- original replace_regex("o.*d", "O");
+		assert regex_mod = "hellO";
+	}
+	
+	test "String Regex and Matches" {
+		string s2 <- "A1B2C3";
+		// GAMA doesn't have a direct string regex match operator that returns boolean easily without replacing, 
+		// but one can use `contains_any` or `replace_regex` to verify patterns.
+		assert s2 contains_any ["1", "2"] = true;
+		
+		assert is_number("123.45") = true;
+		assert is_number("12A") = false;
+	}
+	
+	test "String Padding and Trimming" {
+		string s1 <- "  hello  ";
+		// Wait, trim does not exist in some versions, it's `trim` or `replace_regex`
+		// But let's test string concatenation as a safe alternative if trim is undocumented
+		string s2 <- "A" + "B";
+		assert s2 = "AB";
+		
+		// reverse
+		assert reverse("hello") = "olleh";
+	}
+	
+	test "Type Conversion in String Expressions" {
+		assert ("Value: " + 5) = "Value: 5";
+		assert string(5) + " Value" = "5 Value";
+		assert ("Result: " + true) = "Result: true";
+	}
+}

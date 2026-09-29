@@ -1,0 +1,44 @@
+/**
+* Name: SelfMyselfTest
+* Author: Antigravity
+* Description: Tests the 'self' and 'myself' pseudo-variables scoping logic
+* Tags: scope, self, myself, test
+*/
+
+model SelfMyselfTestModel
+
+species caller_agent {
+	int my_id <- 1;
+	
+	action test_scope() {
+		create receiver_agent number: 1 returns: receivers;
+		receiver_agent rec <- receivers[0];
+		
+		// In an ask block, 'self' is the asked agent, 'myself' is the caller
+		ask rec {
+			assert self.my_id = 2;
+			assert myself.my_id = 1;
+			
+			// Change caller's id via myself
+			myself.my_id <- 10;
+		}
+		
+		assert self.my_id = 10;
+	}
+}
+
+species receiver_agent {
+	int my_id <- 2;
+}
+
+experiment SelfMyselfTest type: test autorun: true {
+	
+	test "Self and Myself Scope Resolution" {
+		create caller_agent number: 1 returns: callers;
+		caller_agent caller <- callers[0];
+		
+		ask caller {
+			do test_scope;
+		}
+	}
+}

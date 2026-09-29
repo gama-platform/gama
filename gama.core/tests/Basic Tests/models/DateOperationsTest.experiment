@@ -1,0 +1,49 @@
+/**
+* Name: DateOperationsTest
+* Author: Antigravity
+* Description: Tests date and time mathematical operators
+* Tags: date, time, test
+*/
+
+experiment DateOperationsTest type: test autorun: true {
+	
+	test "Date Construction and Properties" {
+		// ISO date parsing
+		date d1 <- date("2026-09-16T15:00:00");
+		assert d1.year = 2026;
+		assert d1.month = 9;
+		assert d1.day = 16;
+		assert d1.hour = 15;
+		assert d1.minute = 0;
+		assert d1.second = 0;
+	}
+	
+	test "Date Arithmetic" {
+		date d1 <- date("2026-09-16T15:00:00");
+		
+		// Addition of seconds
+		date d2 <- d1 + 3600; // Adding 1 hour
+		assert d2.hour = 16;
+		
+		// Subtraction of dates yields float duration in seconds
+		float duration <- d2 - d1;
+		assert duration = 3600.0;
+		
+		// Date manipulation using GAMA constants (#h = hour, #d = day)
+		date d3 <- d1 + 1#d;
+		assert d3.day = 17;
+		
+		date d4 <- d1 - 2#h;
+		assert d4.hour = 13;
+	}
+	
+	test "Date Comparisons" {
+		date d1 <- date("2026-09-16T15:00:00");
+		date d2 <- date("2026-09-16T16:00:00");
+		
+		assert d1 < d2;
+		assert d1 <= d1;
+		assert d2 > d1;
+		assert d1 != d2;
+	}
+}

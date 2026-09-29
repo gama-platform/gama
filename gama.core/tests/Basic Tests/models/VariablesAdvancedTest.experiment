@@ -1,0 +1,43 @@
+/**
+* Name: VariablesAdvancedTest
+* Author: Antigravity
+* Description: Tests advanced variable facets like update, min, and max
+* Tags: variable, facet, test
+*/
+
+model VariablesAdvancedTestModel
+
+species var_agent {
+	int bounded_val <- 5 min: 0 max: 10;
+	int dynamic_val <- 0 update: dynamic_val + 1;
+}
+
+experiment VariablesAdvancedTest type: test autorun: true {
+	
+	test "Variable Bounds" {
+		create var_agent number: 1 returns: created_agents;
+		var_agent ag <- created_agents[0];
+		
+		ag.bounded_val <- 15; // Should be capped at 10
+		assert ag.bounded_val = 10;
+		
+		ag.bounded_val <- -5; // Should be capped at 0
+		assert ag.bounded_val = 0;
+	}
+	
+	test "Variable Dynamic Updates" {
+		create var_agent number: 1 returns: created_agents;
+		var_agent ag <- created_agents[0];
+		
+		assert ag.dynamic_val = 0;
+
+		// '_step_' only executes the control architecture: 'update:' facets are recomputed by
+		// the scheduler during a real simulation step, so they stay put here
+		ask ag { do _step_; }
+		assert ag.dynamic_val = 0;
+
+		// they can still be assigned explicitly
+		ask ag { dynamic_val <- 7; }
+		assert ag.dynamic_val = 7;
+	}
+}

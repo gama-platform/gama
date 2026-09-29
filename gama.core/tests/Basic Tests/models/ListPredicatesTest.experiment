@@ -1,0 +1,39 @@
+/**
+* Name: ListPredicatesTest
+* Author: Antigravity
+* Description: Tests advanced predicate operators on collections
+* Tags: list, collection, predicate, test
+*/
+
+experiment ListPredicatesTest type: test autorun: true {
+	
+	test "Predicate Logic Matches" {
+		list<int> numbers <- [1, 2, 3, 4, 5];
+		
+		bool all_pos <- numbers all_match (each > 0);
+		assert all_pos = true;
+		
+		bool all_large <- numbers all_match (each > 3);
+		assert (numbers contains 3) = true;
+		assert !empty(numbers where (each > 3)) = true;
+		assert length(numbers where (each > 3)) = 2;
+		
+		bool none_neg <- numbers none_matches (each < 0);
+		assert none_neg = true;
+		
+		int count_even <- numbers count (each mod 2 = 0);
+		assert count_even = 2; // 2 and 4
+	}
+	
+	test "Index Extractors" {
+		list<string> words <- ["apple", "banana", "cherry"];
+		
+		int idx_banana <- words index_of "banana";
+		assert idx_banana = 1;
+		
+		// last_index_of
+		list<int> duplicates <- [10, 20, 10, 30];
+		assert (duplicates index_of 10) = 0;
+		assert (duplicates last_index_of 10) = 2;
+	}
+}
