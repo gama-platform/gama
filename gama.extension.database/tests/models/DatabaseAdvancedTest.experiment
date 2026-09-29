@@ -1,0 +1,62 @@
+/**
+* Name: DatabaseAdvancedTest
+* Description: Tests the SQLSKILL of the database extension without requiring a live server:
+*   connection attempts that cannot succeed must report failure rather than throw.
+* Tags: sql, database, extension, test
+*/
+
+model DatabaseAdvancedTestModel
+
+species sql_agent skills: [SQLSKILL] { }
+
+experiment DatabaseAdvancedTest type: test autorun: true {
+
+	test "An unsupported dbtype makes testConnection return false" {
+		create sql_agent number: 1 returns: dbs;
+		sql_agent ag <- dbs[0];
+
+		bool ok <- ag.testConnection(params: ["dbtype"::"definitely_not_a_dbms", "database"::"whatever"]);
+		assert ok = false;
+	}
+
+	test "An unreachable sqlite file makes testConnection return false" {
+		create sql_agent number: 1 returns: dbs;
+		sql_agent ag <- dbs[0];
+
+		bool ok <- ag.testConnection(params: [
+			"dbtype"::"sqlite",
+			"database"::"/this/path/does/not/exist/nowhere.db"
+		]);
+		assert ok = false;
+	}
+
+	test "Statements against an unreachable database raise an error" {
+		create sql_agent number: 1 returns: dbs;
+		sql_agent ag <- dbs[0];
+		map<string, string> params <- ["dbtype"::"definitely_not_a_dbms", "database"::"whatever"];
+
+		bool update_failed <- false;
+		try {
+			ask ag { do executeUpdate params: params updateComm: "UPDATE t SET v = 1"; }
+		} catch {
+			update_failed <- true;
+		}
+		assert update_failed;
+
+		bool select_failed <- false;
+		try {
+			ask ag { list r <- select(params: params, select: "SELECT * FROM t"); }
+		} catch {
+			select_failed <- true;
+		}
+		assert select_failed;
+
+		bool insert_failed <- false;
+		try {
+			ask ag { do insert params: params into: "t" data: [1, 2, 3]; }
+		} catch {
+			insert_failed <- true;
+		}
+		assert insert_failed;
+	}
+}
