@@ -1,0 +1,31 @@
+/**
+* Name: GMLTest
+* Description: Tests the GML file type contributed by the gml extension. 'is_gml' only inspects
+*   the extension of the path it is given, it does not read the file.
+* Tags: gml, extension, test
+*/
+
+experiment GMLTest type: test autorun: true {
+
+	test "is_gml recognises the gml extension" {
+		assert is_gml("anything.gml") = true;
+		assert is_gml("/some/where/else/data.gml") = true;
+	}
+
+	test "is_gml rejects other extensions" {
+		assert is_gml("anything.txt") = false;
+		assert is_gml("anything.shp") = false;
+		assert is_gml("no_extension_at_all") = false;
+	}
+
+	test "Reading a missing gml file raises an error" {
+		bool failed <- false;
+		try {
+			gml_file f <- gml_file("does_not_exist.gml");
+			list content <- f.contents;
+		} catch {
+			failed <- true;
+		}
+		assert failed;
+	}
+}
