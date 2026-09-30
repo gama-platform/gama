@@ -855,8 +855,11 @@ public class GamlExpressionFactory implements IExpressionFactory {
 				for (final Map.Entry<Signature, IArtefact.Operator> entry : ops.entrySet()) {
 					final Signature s = entry.getKey();
 					// If varArg signature matches, wrap all args in a list and retry
-					if (varArg.matchesDesiredSignature(s))
+					if (varArg.matchesDesiredSignature(s)) {
+						context.info("Arguments to '" + op + "' will be automatically wrapped in a list",
+								IGamlIssue.VARARG_RULE, eObject);
 						return createOperator(op, context, eObject, createList(args));
+					}
 				}
 				// No match found even with varArg - emit error
 				return emitError(op, context, eObject, args);
