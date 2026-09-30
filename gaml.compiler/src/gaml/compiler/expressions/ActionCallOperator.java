@@ -194,21 +194,23 @@ public class ActionCallOperator implements IOperator {
 	}
 
 	/**
-	 * Returns a scope-resolved copy of the arguments for this call.
+	 * Evaluates the arguments for this call in the caller's scope.
 	 *
 	 * <p>
 	 * A fresh copy is produced on every call because argument expressions may contain dynamic references (e.g. local
-	 * variables) that must be re-evaluated against the current scope. See issues #2943 and #2922, as well as the
-	 * multiple-parallel-simulations case.
+	 * variables) that must be re-evaluated against the current scope. Evaluating them before the action target is
+	 * pushed also ensures references such as {@code myself.attribute} use the caller's context rather than the
+	 * callee's. See issues #2943 and #2922, as well as the multiple-parallel-simulations case.
 	 * </p>
 	 *
 	 * @param scope
 	 *            the current execution scope
-	 * @return resolved {@link Arguments}, or {@code null} when this action accepts no arguments
+	 *
+	 * @return evaluated {@link Arguments}, or {@code null} when this action accepts no arguments
 	 */
 	public Arguments getRuntimeArgs(final IScope scope) {
 		if (parameters == null) return null;
-		return parameters.resolveAgainst(scope);
+		return parameters.evaluateAgainst(scope);
 	}
 
 	@Override

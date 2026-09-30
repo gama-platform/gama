@@ -119,6 +119,23 @@ public class Arguments extends Facets {
 	}
 
 	/**
+	 * Evaluates all argument expressions in the given scope and returns them as constant expressions.
+	 *
+	 * @param scope
+	 *            the scope in which the argument expressions should be evaluated
+	 * @return a new argument list containing the evaluated values
+	 */
+	public Arguments evaluateAgainst(final IScope scope) {
+		final Arguments result = new Arguments();
+		result.setCaller(caller.get());
+		forEach((s, e) -> {
+			final IExpression exp = getExpr(s);
+			if (exp != null) { result.put(s, GAML.getExpressionDescriptionFactory().createConstant(exp.value(scope))); }
+		});
+		return result;
+	}
+
+	/**
 	 * Puts an argument and maintains key insertion order.
 	 *
 	 * @param s
