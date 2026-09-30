@@ -1240,9 +1240,9 @@ ruleS_ActionCall returns [EObject current=null]
 		(
 			(
 				{
-					newCompositeNode(grammarAccess.getS_ActionCallAccess().getTargetPrimaryParserRuleCall_0_0());
+					newCompositeNode(grammarAccess.getS_ActionCallAccess().getTargetActionCallTargetParserRuleCall_0_0());
 				}
-				lv_target_0_0=rulePrimary
+				lv_target_0_0=ruleActionCallTarget
 				{
 					if ($current==null) {
 						$current = createModelElementForParent(grammarAccess.getS_ActionCallRule());
@@ -1251,7 +1251,7 @@ ruleS_ActionCall returns [EObject current=null]
 						$current,
 						"target",
 						lv_target_0_0,
-						"gaml.compiler.Gaml.Primary");
+						"gaml.compiler.Gaml.ActionCallTarget");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -5111,6 +5111,79 @@ ruleAccess returns [EObject current=null]
 					)
 				)
 			)
+		)*
+	)
+;
+
+// Entry rule entryRuleActionCallTarget
+entryRuleActionCallTarget returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getActionCallTargetRule()); }
+	iv_ruleActionCallTarget=ruleActionCallTarget
+	{ $current=$iv_ruleActionCallTarget.current; }
+	EOF;
+
+// Rule ActionCallTarget
+ruleActionCallTarget returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		{
+			newCompositeNode(grammarAccess.getActionCallTargetAccess().getPrimaryParserRuleCall_0());
+		}
+		this_Primary_0=rulePrimary
+		{
+			$current = $this_Primary_0.current;
+			afterParserOrEnumRuleCall();
+		}
+		(
+			(
+				{
+					$current = forceCreateModelElementAndSet(
+						grammarAccess.getActionCallTargetAccess().getAccessLeftAction_1_0(),
+						$current);
+				}
+			)
+			(
+				(
+					lv_op_2_0='['
+					{
+						newLeafNode(lv_op_2_0, grammarAccess.getActionCallTargetAccess().getOpLeftSquareBracketKeyword_1_1_0());
+					}
+					{
+						if ($current==null) {
+							$current = createModelElement(grammarAccess.getActionCallTargetRule());
+						}
+						setWithLastConsumed($current, "op", lv_op_2_0, "[");
+					}
+				)
+			)
+			(
+				(
+					{
+						newCompositeNode(grammarAccess.getActionCallTargetAccess().getRightExpressionListParserRuleCall_1_2_0());
+					}
+					lv_right_3_0=ruleExpressionList
+					{
+						if ($current==null) {
+							$current = createModelElementForParent(grammarAccess.getActionCallTargetRule());
+						}
+						set(
+							$current,
+							"right",
+							lv_right_3_0,
+							"gaml.compiler.Gaml.ExpressionList");
+						afterParserOrEnumRuleCall();
+					}
+				)
+			)?
+			otherlv_4=']'
+			{
+				newLeafNode(otherlv_4, grammarAccess.getActionCallTargetAccess().getRightSquareBracketKeyword_1_3());
+			}
 		)*
 	)
 ;
