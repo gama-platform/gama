@@ -14,6 +14,7 @@ package gaml.compiler.expressions;
 import static com.google.common.collect.Iterables.any;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -824,6 +825,10 @@ public class GamlExpressionFactory implements IExpressionFactory {
 		if (!ops.containsKey(userSignature)) {
 			final Signature originalUserSignature = userSignature;
 			int bestDistance = Integer.MAX_VALUE; // Track smallest type conversion distance
+			
+			// Candidates may share the same bestDistance but only the first one will actually be retained.
+			// We gather the others to report the ambiguity
+			List<Signature> equallyDistantCandidates = null;
 
 			// Browse all the entries of the operators with this name to find best match
 			// The algorithm finds the signature requiring minimal type conversions
@@ -838,15 +843,25 @@ public class GamlExpressionFactory implements IExpressionFactory {
 						// Perfect match found - use it immediately (no conversions needed)
 						userSignature = formalParametersSignature;
 						bestDistance = 0;
+						equallyDistantCandidates = null;
 						break;
 					}
 					if (dist < bestDistance) {
 						// Found a better match (fewer conversions) - remember it
 						bestDistance = dist;
 						userSignature = formalParametersSignature;
+						equallyDistantCandidates = new ArrayList<>();
+						equallyDistantCandidates.add(formalParametersSignature);
+					} else if (dist == bestDistance && equallyDistantCandidates != null) {
+						// As good as the one retained: which of the two wins depends on the iteration
+						// order of the registry, so the modeller should be told
+						equallyDistantCandidates.add(formalParametersSignature);
 					}
 				}
 			}
+
+			warnIfAmbiguous(op, context, eObject, args, originalUserSignature, userSignature, bestDistance,
+					equallyDistantCandidates);
 
 			if (bestDistance == Integer.MAX_VALUE) {
 				// No matching signature found - try varArg as last resort
@@ -885,6 +900,61 @@ public class GamlExpressionFactory implements IExpressionFactory {
 			}
 		}
 		return operator;
+	}
+
+	/**
+	 * Warns when an operator has been chosen arbitrarily among several equally plausible definitions.
+	 *
+	 * <p>
+	 * Several definitions of the same operator can end up at  the same distance from the call.
+	 * The resolution arbitrarily keeps the first of them, and since the registry is a hash map, that first one depends on an order nobody controls but that is fixed per build. 
+	 * This makes the resulting failure puzzling: at runtime and systematically, cast exceptions with unrelated types may appear inside of operators that otherwise are completely accepted by the compiler.
+	 * </p>
+	 *
+	 * <p>
+	 * The warning is broad and triggers as soon as two operators are tied for valid signature.
+	 * </p>
+	 *
+	 * @param op
+	 *            the name of the operator
+	 * @param context
+	 *            the compilation context the warning is attached to
+	 * @param eObject
+	 *            the source object, used to locate the warning in the editor
+	 * @param args
+	 *            the argument expressions
+	 * @param userSignature
+	 *            the signature built from the arguments
+	 * @param chosen
+	 *            the definition that was retained
+	 * @param bestDistance
+	 *            the distance of the retained definition
+	 * @param candidates
+	 *            the definitions sharing that distance, or null when there was no competition
+	 */
+	private void warnIfAmbiguous(final String op, final IDescription context, final EObject eObject,
+			final IExpression[] args, final Signature userSignature, final Signature chosen, final int bestDistance,
+			final List<Signature> candidates) {
+		if (context == null || candidates == null || candidates.size() < 2 || bestDistance <= 0) return;
+//		// Uncomment to only warn if there's an untyped operand
+//		boolean untypedOperand = false;
+//		for (int i = 0; i < args.length; i++) {
+//			if (userSignature.get(i) == Types.NO_TYPE) {
+//				untypedOperand = true;
+//				break;
+//			}
+//		}
+//		if (!untypedOperand) return;
+		final StringBuilder others = new StringBuilder();
+		for (final Signature candidate : candidates) {
+			if (candidate.equals(chosen)) { continue; }
+			if (others.length() > 0) { others.append(", "); }
+			others.append(candidate.toString().replaceFirst("types? ", ""));
+		}
+		context.warning("The operand " + userSignature + " match several definitions of '" + op
+				+ "' equally well. The one for " + chosen.toString().replaceFirst("types? ", "") + " has been chosen over " + others
+				+ ". Cast the untyped operands to the intended types to make the choice explicit.",
+				IGamlIssue.SHOULD_CAST, eObject);
 	}
 
 	/**
