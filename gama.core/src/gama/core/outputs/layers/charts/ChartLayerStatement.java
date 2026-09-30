@@ -519,7 +519,8 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 
 		IExpression expression = getFacet(IKeyword.TYPE);
 
-		chartOutput = ChartJFreeChartOutput.createChartOutput(scope, getName(), expression);
+		chartOutput = ChartOutputFactory.createChartOutput(scope, getName(), expression);
+		chartOutput.setHostDisplayOutput(getDisplayOutput());
 
 		expression = getFacet(IKeyword.STYLE);
 		if (expression != null) { chartOutput.setStyle(scope, Cast.asString(scope, expression.value(scope))); }
@@ -767,10 +768,12 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 		if (color != null) { colorvalue = GamaColorFactory.castToColor(scope, color.value(scope)); }
 		chartOutput.setColorValue(scope, colorvalue);
 
-		colorvalue = GamaColorFactory.WHITE;
 		color = getFacet(IKeyword.BACKGROUND);
-		if (color != null) { colorvalue = GamaColorFactory.castToColor(scope, color.value(scope)); }
-		chartOutput.setBackgroundColorValue(scope, colorvalue);
+		if (color != null) {
+			chartOutput.setBackgroundColorValue(scope, GamaColorFactory.castToColor(scope, color.value(scope)));
+		} else {
+			chartOutput.setBackgroundColorValue(scope, null);
+		}
 
 		color = getFacet(LABELTEXTCOLOR);
 		if (color != null) {
