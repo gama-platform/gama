@@ -11,7 +11,6 @@
 package gaml.compiler.expressions;
 
 import static gama.api.exceptions.GamaRuntimeException.error;
-import static gama.api.exceptions.GamaRuntimeException.warning;
 
 import gama.api.GAMA;
 import gama.api.compilation.artefacts.IArtefact;
@@ -122,7 +121,10 @@ public class ActionCallOperator implements IOperator {
 		// the executer is not available. Can happen in rare cases (like the one in Issue #3493).
 		if (executer == null) {
 			GAMA.reportError(scope,
-					warning(getName() + " is not available in the context of " + scope.getAgent(), scope), false);
+					error("Action '" + getName() + "' is not available in the context of " + scope.getAgent()
+							+ ". Check that it is defined for this agent; actions defined in 'global' must be called "
+							+ "on the simulation (e.g. ask simulation { do " + getName() + "(); }).", scope),
+					false);
 		}
 		return executer;
 	}
