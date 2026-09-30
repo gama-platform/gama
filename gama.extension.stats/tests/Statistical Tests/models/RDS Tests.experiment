@@ -1,0 +1,46 @@
+experiment "RDS Tests" type: test {
+
+	test "RDS Matrix Export and Import" {
+		matrix m <- matrix([[1.0, 2.0], [3.0, 4.0]]);
+		save m to: "test_matrix.rds" type: "rds";
+
+		file f <- rds_file("test_matrix.rds");
+		matrix m2 <- matrix(f);
+		assert m2.rows = 2;
+		assert m2.columns = 2;
+		assert m2[0, 0] = 1.0;
+		assert m2[1, 1] = 4.0;
+	}
+
+	test "RDS Dataframe Export and Import" {
+		dataframe df <- dataframe_with(["col1", "col2"], [[10, "a"], [20, "b"]]);
+		save df to: "test_df.rds" type: "rds";
+
+		file f <- rds_file("test_df.rds");
+		dataframe df2 <- dataframe(f);
+		assert df2.rows = 2;
+		assert df2.columns = 2;
+		assert df2.keys = ["col1", "col2"];
+	}
+
+	test "RDS List Export and Import" {
+		list<int> l <- [10, 20, 30];
+		save l to: "test_list.rds" type: "rds";
+
+		file f <- rds_file("test_list.rds");
+		list l2 <- list(f);
+		assert length(l2) = 3;
+		assert l2[0] = 10;
+		assert l2[2] = 30;
+	}
+
+	test "RDS Map Export and Import" {
+		map<string, int> m <- ["a"::1, "b"::2];
+		save m to: "test_map.rds" type: "rds";
+
+		file f <- rds_file("test_map.rds");
+		map m2 <- map(f);
+		assert m2["a"] = 1;
+		assert m2["b"] = 2;
+	}
+}

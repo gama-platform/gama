@@ -4,5 +4,11 @@
    <extension
          point="gaml.extension">
    </extension>
-
+   <extension
+         point="gama.save">
+      <implementation
+            class="gama.extension.stats.rds.RDSSaver"
+            description="Saves data in R RDS format">
+      </implementation>
+   </extension>
 </plugin>
