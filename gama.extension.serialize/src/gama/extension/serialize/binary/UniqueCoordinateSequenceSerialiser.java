@@ -10,21 +10,21 @@
  ********************************************************************************************************/
 package gama.extension.serialize.binary;
 
+import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
 import gama.api.kernel.serialization.IGamaObjectInput;
 import gama.api.kernel.serialization.IGamaObjectOutput;
 import gama.api.kernel.serialization.IGamaObjectSerializer;
-import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.geometry.UniqueCoordinateSequence;
 
 /**
- * FST binarySerialiser for {@link UniqueCoordinateSequence} instances. A {@code UniqueCoordinateSequence} holds exactly
- * one coordinate; serialisation persists its x, y, and z components at index 0.
+ * binarySerialiser for {@link UniqueCoordinateSequence} instances. A {@code UniqueCoordinateSequence} holds exactly one
+ * coordinate; serialisation persists its x, y, and z components at index 0.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class UniqueCoordinateSequenceSerialiser implements IGamaObjectSerializer<UniqueCoordinateSequence> {
+public class UniqueCoordinateSequenceSerialiser implements IGamaObjectSerializer<UniqueCoordinateSequence> {
 
 	/**
 	 * Serialises the x, y, and z values of the single coordinate at index 0.

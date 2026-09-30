@@ -19,7 +19,7 @@ import gama.api.types.message.GamaMessageFactory;
 import gama.core.util.messaging.GamaMessage;
 
 /**
- * FST binarySerialiser for {@link GamaMessage} instances.
+ * Binary serialiser for {@link GamaMessage} instances.
  *
  * @author GitHub Copilot
  */

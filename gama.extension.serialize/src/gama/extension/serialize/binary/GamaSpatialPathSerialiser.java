@@ -11,10 +11,10 @@
 package gama.extension.serialize.binary;
 
 import gama.api.gaml.types.Types;
+import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
 import gama.api.kernel.serialization.IGamaObjectInput;
 import gama.api.kernel.serialization.IGamaObjectOutput;
 import gama.api.kernel.serialization.IGamaObjectSerializer;
-import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.IShape;
 import gama.api.types.list.GamaListFactory;
@@ -23,7 +23,7 @@ import gama.core.topology.graph.GamaSpatialGraph;
 import gama.core.util.path.GamaSpatialPath;
 
 /**
- * FST binarySerialiser for {@link GamaSpatialPath} instances.
+ * Binary serialiser for {@link GamaSpatialPath} instances.
  *
  * <p>
  * A {@link GamaSpatialPath} stores several computed fields ({@code segments}, {@code threeD}, {@code realObjects},
@@ -60,7 +60,7 @@ import gama.core.util.path.GamaSpatialPath;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 8 avril 2026
  */
-class GamaSpatialPathSerialiser implements IGamaObjectSerializer<GamaSpatialPath> {
+public class GamaSpatialPathSerialiser implements IGamaObjectSerializer<GamaSpatialPath> {
 
 	/**
 	 * Returns {@code false}: spatial paths are not registered for FST back-reference tracking.
@@ -85,8 +85,8 @@ class GamaSpatialPathSerialiser implements IGamaObjectSerializer<GamaSpatialPath
 	 */
 	@SuppressWarnings ("unchecked")
 	@Override
-	public void serialise(final IGamaObjectOutput out, final GamaSpatialPath p, final TransientSerializationContext context)
-			throws Exception {
+	public void serialise(final IGamaObjectOutput out, final GamaSpatialPath p,
+			final TransientSerializationContext context) throws Exception {
 		out.writeObject(p.getGraph()); // GamaSpatialGraph or null
 		out.writeObject(p.getStartVertex()); // source IShape
 		out.writeObject(p.getEndVertex()); // target IShape

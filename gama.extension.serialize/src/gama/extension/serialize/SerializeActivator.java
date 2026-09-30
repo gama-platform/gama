@@ -14,7 +14,7 @@ import org.osgi.framework.BundleContext;
 
 import gama.api.kernel.serialization.BinarySerialisation;
 import gama.dependencies.GamaBundleActivator;
-import gama.extension.serialize.binary.FSTBinarySerialiser;
+import gama.extension.serialize.fst.FSTBinarySerialiser;
 
 /**
  * The Class SerializeActivator.

@@ -10,23 +10,23 @@
  ********************************************************************************************************/
 package gama.extension.serialize.binary;
 
+import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
 import gama.api.kernel.serialization.IGamaObjectInput;
 import gama.api.kernel.serialization.IGamaObjectOutput;
 import gama.api.kernel.serialization.IGamaObjectSerializer;
-import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.color.GamaColorFactory;
 import gama.api.types.color.IColor;
 
 /**
- * FST binarySerialiser for {@link IObject} instances. Serialises the species name and the full attribute map of the
+ * Binary serialiser for {@link IObject} instances. Serialises the species name and the full attribute map of the
  * object. On deserialisation, the species class is looked up in the model and a new instance is created. Objects
  * deserialised by this binarySerialiser are not registered for back-reference tracking.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IColorSerialiser implements IGamaObjectSerializer<IColor> {
+public class IColorSerialiser implements IGamaObjectSerializer<IColor> {
 
 	/**
 	 * Returns {@code false}: objects are not registered for FST back-reference tracking.

@@ -20,7 +20,7 @@ import gama.api.types.graph.IGraph;
 import gama.core.util.graph.GamaGraph;
 
 /**
- * FST binarySerialiser for {@link IGraph} instances.
+ * Binary serialiser for {@link IGraph} instances.
  *
  * <p>
  * Persists the graph's structural metadata (vertex type, edge type, directed flag) followed by all vertices with their

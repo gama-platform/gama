@@ -14,21 +14,21 @@ import java.util.Map;
 
 import gama.api.kernel.object.IClass;
 import gama.api.kernel.object.IObject;
+import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
 import gama.api.kernel.serialization.IGamaObjectInput;
 import gama.api.kernel.serialization.IGamaObjectOutput;
 import gama.api.kernel.serialization.IGamaObjectSerializer;
-import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
 import gama.api.runtime.scope.IScope;
 
 /**
- * FST binarySerialiser for {@link IObject} instances. Serialises the species name and the full attribute map of the
+ * Binary serialiser for {@link IObject} instances. Serialises the species name and the full attribute map of the
  * object. On deserialisation, the species class is looked up in the model and a new instance is created. Objects
  * deserialised by this binarySerialiser are not registered for back-reference tracking.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IObjectSerialiser implements IGamaObjectSerializer<IObject> {
+public class IObjectSerialiser implements IGamaObjectSerializer<IObject> {
 
 	/**
 	 * Returns {@code false}: objects are not registered for FST back-reference tracking.

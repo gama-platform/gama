@@ -10,20 +10,20 @@
  ********************************************************************************************************/
 package gama.extension.serialize.binary;
 
+import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
 import gama.api.kernel.serialization.IGamaObjectInput;
 import gama.api.kernel.serialization.IGamaObjectOutput;
 import gama.api.kernel.serialization.IGamaObjectSerializer;
-import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
 import gama.api.runtime.scope.IScope;
 
 /**
- * FST binarySerialiser for {@link IScope} instances. Only the scope's name is persisted. On deserialisation, a named
+ * Binary serialiser for {@link IScope} instances. Only the scope's name is persisted. On deserialisation, a named
  * copy of the current simulation scope is returned via {@link IScope#copy(String)}.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IScopeSerialiser implements IGamaObjectSerializer<IScope> {
+public class IScopeSerialiser implements IGamaObjectSerializer<IScope> {
 
 	/**
 	 * Serialises the scope's name.
@@ -36,8 +36,8 @@ class IScopeSerialiser implements IGamaObjectSerializer<IScope> {
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final IGamaObjectOutput out, final IScope toWrite, final TransientSerializationContext context)
-			throws Exception {
+	public void serialise(final IGamaObjectOutput out, final IScope toWrite,
+			final TransientSerializationContext context) throws Exception {
 		out.writeStringUTF(toWrite.getName());
 	}
 

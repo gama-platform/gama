@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.extension.serialize.binary;
+package gama.extension.serialize.fst;
 
 import org.locationtech.jts.geom.CoordinateSequenceFactory;
 
@@ -39,7 +39,31 @@ import gama.core.topology.graph.GamaSpatialGraph;
 import gama.core.util.messaging.GamaMailbox;
 import gama.core.util.messaging.GamaMessage;
 import gama.core.util.path.GamaSpatialPath;
-import gama.extension.serialize.fst.FSTConfiguration;
+import gama.extension.serialize.binary.AgentReferenceSerialiser;
+import gama.extension.serialize.binary.CoordinateSequenceFactorySerialiser;
+import gama.extension.serialize.binary.GamaCoordinateSequenceSerialiser;
+import gama.extension.serialize.binary.GamaGeometryFactorySerialiser;
+import gama.extension.serialize.binary.GamaMessageSerialiser;
+import gama.extension.serialize.binary.GamaSpatialGraphSerialiser;
+import gama.extension.serialize.binary.GamaSpatialPathSerialiser;
+import gama.extension.serialize.binary.IAgentSerialiser;
+import gama.extension.serialize.binary.IClassSerialiser;
+import gama.extension.serialize.binary.IColorSerialiser;
+import gama.extension.serialize.binary.IFontSerialiser;
+import gama.extension.serialize.binary.IGamaMailBoxSerialiser;
+import gama.extension.serialize.binary.IGraphSerialiser;
+import gama.extension.serialize.binary.IListSerialiser;
+import gama.extension.serialize.binary.IMapSerialiser;
+import gama.extension.serialize.binary.IObjectSerialiser;
+import gama.extension.serialize.binary.IPointSerialiser;
+import gama.extension.serialize.binary.IScopeSerialiser;
+import gama.extension.serialize.binary.IShapeSerialiser;
+import gama.extension.serialize.binary.ISpeciesSerialiser;
+import gama.extension.serialize.binary.ITypeSerialiser;
+import gama.extension.serialize.binary.SerialisedAgentSerialiser;
+import gama.extension.serialize.binary.SerialisedGridSerialiser;
+import gama.extension.serialize.binary.SerialisedPopulationSerialiser;
+import gama.extension.serialize.binary.UniqueCoordinateSequenceSerialiser;
 
 /**
  * The Class FSTBinarySerialiser. Provides common initialisation for FST configurations and coordinates binary
@@ -104,7 +128,7 @@ public class FSTBinarySerialiser extends AbstractBinarySerializer implements ISe
 	private <T> void register(final Class<T> class1, final IGamaObjectSerializer<T> serializer) {
 		final FSTGamaIndividualSerialiser<T> ser = new FSTGamaIndividualSerialiser<>(serializer);
 		fst.registerSerializer(class1, ser, true);
-		ser.setBinarySerialiser(this);
+		ser.setSerializationContext(getContext());
 	}
 
 	@Override

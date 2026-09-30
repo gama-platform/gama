@@ -11,16 +11,16 @@
 package gama.extension.serialize.binary;
 
 import gama.api.gaml.types.IType;
+import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
 import gama.api.kernel.serialization.IGamaObjectInput;
 import gama.api.kernel.serialization.IGamaObjectOutput;
 import gama.api.kernel.serialization.IGamaObjectSerializer;
-import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.IShape;
 import gama.core.topology.graph.GamaSpatialGraph;
 
 /**
- * FST binarySerialiser for {@link GamaSpatialGraph} instances.
+ * Binary serialiser for {@link GamaSpatialGraph} instances.
  *
  * <p>
  * Extends the generic graph serialisation with the two fields that are specific to {@link GamaSpatialGraph}: the snap
@@ -58,7 +58,7 @@ import gama.core.topology.graph.GamaSpatialGraph;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 8 avril 2026
  */
-class GamaSpatialGraphSerialiser implements IGamaObjectSerializer<GamaSpatialGraph> {
+public class GamaSpatialGraphSerialiser implements IGamaObjectSerializer<GamaSpatialGraph> {
 
 	/**
 	 * Returns {@code false}: spatial graphs are not registered for FST back-reference tracking.
@@ -82,8 +82,8 @@ class GamaSpatialGraphSerialiser implements IGamaObjectSerializer<GamaSpatialGra
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final IGamaObjectOutput out, final GamaSpatialGraph g, final TransientSerializationContext context)
-			throws Exception {
+	public void serialise(final IGamaObjectOutput out, final GamaSpatialGraph g,
+			final TransientSerializationContext context) throws Exception {
 		// --- metadata ---
 		out.writeObject(g.getGamlType().getKeyType());
 		out.writeObject(g.getGamlType().getContentType());

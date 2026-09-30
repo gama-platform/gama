@@ -12,15 +12,15 @@ package gama.extension.serialize.binary;
 
 import gama.api.kernel.agent.AgentReference;
 import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
 import gama.api.kernel.serialization.IGamaObjectInput;
 import gama.api.kernel.serialization.IGamaObjectOutput;
 import gama.api.kernel.serialization.IGamaObjectSerializer;
 import gama.api.kernel.serialization.SerialisedAgent;
-import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
 import gama.api.runtime.scope.IScope;
 
 /**
- * FST binarySerialiser for {@link IAgent} instances. Uses a nesting-depth strategy tracked via the owning
+ * Binary serialiser for {@link IAgent} instances. Uses a nesting-depth strategy tracked via the owning
  * binarySerialiser's {@code inAgent} flag: the outermost agent is written as a full {@link SerialisedAgent}, while any
  * nested agent encountered during that serialisation is written as a lightweight {@link AgentReference}. On
  * deserialisation, the boolean flag distinguishes the two cases. Objects deserialised by this binarySerialiser are not
@@ -29,7 +29,7 @@ import gama.api.runtime.scope.IScope;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IAgentSerialiser implements IGamaObjectSerializer<IAgent> {
+public class IAgentSerialiser implements IGamaObjectSerializer<IAgent> {
 
 	/**
 	 * Returns {@code false}: agents are not registered for FST back-reference tracking.

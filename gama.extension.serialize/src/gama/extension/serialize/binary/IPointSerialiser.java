@@ -10,23 +10,23 @@
  ********************************************************************************************************/
 package gama.extension.serialize.binary;
 
+import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
 import gama.api.kernel.serialization.IGamaObjectInput;
 import gama.api.kernel.serialization.IGamaObjectOutput;
 import gama.api.kernel.serialization.IGamaObjectSerializer;
-import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.GamaPointFactory;
 import gama.api.types.geometry.IPoint;
 
 /**
- * FST binarySerialiser for {@link IPoint} instances. Serialises the x, y, and z coordinates, handling
+ * Binary serialiser for {@link IPoint} instances. Serialises the x, y, and z coordinates, handling
  * {@link Double#NaN} z values via a boolean flag. Objects deserialised by this binarySerialiser are not registered for
  * back-reference tracking.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IPointSerialiser implements IGamaObjectSerializer<IPoint> {
+public class IPointSerialiser implements IGamaObjectSerializer<IPoint> {
 
 	/**
 	 * Returns {@code false}: points are not registered for FST back-reference tracking.
@@ -50,8 +50,8 @@ class IPointSerialiser implements IGamaObjectSerializer<IPoint> {
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final IGamaObjectOutput out, final IPoint toWrite, final TransientSerializationContext context)
-			throws Exception {
+	public void serialise(final IGamaObjectOutput out, final IPoint toWrite,
+			final TransientSerializationContext context) throws Exception {
 		out.writeDouble(toWrite.getX());
 		out.writeDouble(toWrite.getY());
 		double z = toWrite.getZ();

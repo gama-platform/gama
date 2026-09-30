@@ -10,23 +10,23 @@
  ********************************************************************************************************/
 package gama.extension.serialize.binary;
 
+import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
 import gama.api.kernel.serialization.IGamaObjectInput;
 import gama.api.kernel.serialization.IGamaObjectOutput;
 import gama.api.kernel.serialization.IGamaObjectSerializer;
-import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.geometry.GamaGeometryFactory;
 import gama.api.utils.geometry.GeometryUtils;
 
 /**
- * FST binarySerialiser for {@link GamaGeometryFactory} instances. The factory is a singleton; serialisation writes a
+ * Binary serialiser for {@link GamaGeometryFactory} instances. The factory is a singleton; serialisation writes a
  * fixed marker string ({@value #MARKER}) and deserialisation always returns the global singleton via
  * {@link GeometryUtils#getGeometryFactory()}.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class GamaGeometryFactorySerialiser implements IGamaObjectSerializer<GamaGeometryFactory> {
+public class GamaGeometryFactorySerialiser implements IGamaObjectSerializer<GamaGeometryFactory> {
 
 	/**
 	 * Marker string written to the stream to identify the geometry factory placeholder.

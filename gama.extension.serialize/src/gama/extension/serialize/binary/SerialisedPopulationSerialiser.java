@@ -12,22 +12,22 @@ package gama.extension.serialize.binary;
 
 import java.util.List;
 
+import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
 import gama.api.kernel.serialization.IGamaObjectInput;
 import gama.api.kernel.serialization.IGamaObjectOutput;
 import gama.api.kernel.serialization.IGamaObjectSerializer;
 import gama.api.kernel.serialization.ISerialisedAgent;
 import gama.api.kernel.serialization.SerialisedPopulation;
-import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
 import gama.api.runtime.scope.IScope;
 
 /**
- * FST binarySerialiser for {@link SerialisedPopulation} instances. Persists the species name and the ordered list of
+ * Binary serialiser for {@link SerialisedPopulation} instances. Persists the species name and the ordered list of
  * serialised agents belonging to the population.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class SerialisedPopulationSerialiser implements IGamaObjectSerializer<SerialisedPopulation> {
+public class SerialisedPopulationSerialiser implements IGamaObjectSerializer<SerialisedPopulation> {
 
 	/**
 	 * Serialises the species name and the list of serialised agents.
