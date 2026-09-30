@@ -231,9 +231,10 @@ public class Assert implements gama.annotations.constants.IKeyword {
 			final IExpression value, final IType assignedType) {
 		// AD: 6/9/13 special case for int and float (see Issue 590) and for
 		// empty lists and maps
-		if ((value != GAML.getExpressionFactory().getNil()
-				&& !assignedType.getGamlType().isTranslatableInto(receiverType.getGamlType())
-				|| Types.intFloatCase(receiverType, assignedType))
+		final boolean isUnknownCast = assignedType == Types.NO_TYPE && receiverType != Types.NO_TYPE;
+		if (value != GAML.getExpressionFactory().getNil()
+				&& (isUnknownCast || !assignedType.getGamlType().isTranslatableInto(receiverType.getGamlType())
+						|| Types.intFloatCase(receiverType, assignedType))
 				&& !Types.isEmptyContainerCase(receiverType, value)) {
 			final EObject target = assigned.getTarget();
 			final String msg =
