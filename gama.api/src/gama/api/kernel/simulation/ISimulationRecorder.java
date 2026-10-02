@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * IExperimentRecorder.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * ISimulationRecorder.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -103,7 +103,7 @@ package gama.api.kernel.simulation;
  * 
  * <pre>
  * <code>
- * public class SimpleRecorder implements IExperimentRecorder {
+ * public class SimpleRecorder implements ISimulationRecorder {
  *     private final Deque&lt;SimulationSnapshot&gt; snapshots = new LinkedList&lt;&gt;();
  *     private final int maxSnapshots = 100;
  *     
@@ -179,7 +179,7 @@ package gama.api.kernel.simulation;
  * <pre>
  * <code>
  * if (experiment.isRecord()) {
- *     IExperimentRecorder recorder = experiment.getRecorder();
+ *     ISimulationRecorder recorder = experiment.getRecorder();
  *     recorder.record(simulation);
  * }
  * </code>
@@ -219,7 +219,7 @@ package gama.api.kernel.simulation;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 8 août 2023
  */
-public interface IExperimentRecorder {
+public interface ISimulationRecorder {
 
 	/**
 	 * Record.

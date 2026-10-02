@@ -12,22 +12,24 @@ package gama.extension.serialize.binary;
 
 import org.locationtech.jts.geom.Geometry;
 
+import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
+import gama.api.kernel.serialization.IGamaObjectInput;
+import gama.api.kernel.serialization.IGamaObjectOutput;
+import gama.api.kernel.serialization.IGamaObjectSerializer;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.GamaShapeFactory;
 import gama.api.types.geometry.IShape;
 import gama.api.types.geometry.IShape.Type;
-import gama.extension.serialize.IGamaObjectInput;
-import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link IShape} instances. Serialises the depth value, the geometrical type ordinal, and the
- * underlying JTS {@link Geometry}. Objects deserialised by this serialiser are not registered for back-reference
+ * Binary serialiser for {@link IShape} instances. Serialises the depth value, the geometrical type ordinal, and the
+ * underlying JTS {@link Geometry}. Objects deserialised by this binarySerialiser are not registered for back-reference
  * tracking.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IShapeSerialiser extends FSTIndividualSerialiser<IShape> {
+public class IShapeSerialiser implements IGamaObjectSerializer<IShape> {
 
 	/**
 	 * Returns {@code false}: shapes are not registered for FST back-reference tracking.
@@ -35,7 +37,7 @@ class IShapeSerialiser extends FSTIndividualSerialiser<IShape> {
 	 * @return {@code false}
 	 */
 	@Override
-	protected boolean shouldRegister() {
+	public boolean shouldRegister() {
 		return false;
 	}
 
@@ -51,7 +53,8 @@ class IShapeSerialiser extends FSTIndividualSerialiser<IShape> {
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final IGamaObjectOutput out, final IShape toWrite) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final IShape toWrite,
+			final TransientSerializationContext context) throws Exception {
 		Double d = toWrite.getDepth();
 		IShape.Type t = toWrite.getGeometricalType();
 		out.writeDouble(d == null ? 0d : d);

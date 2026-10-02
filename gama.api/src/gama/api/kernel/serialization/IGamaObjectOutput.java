@@ -1,7 +1,7 @@
 /**
  *
  */
-package gama.extension.serialize;
+package gama.api.kernel.serialization;
 
 import java.io.IOException;
 import java.io.ObjectOutput;
@@ -11,38 +11,8 @@ import java.io.ObjectOutput;
  */
 public interface IGamaObjectOutput extends ObjectOutput {
 
-	/** The Constant SPECIAL_COMPATIBILITY_OBJECT_TAG. */
-	byte SPECIAL_COMPATIBILITY_OBJECT_TAG = -19; // see issue 52
-	/** The Constant ONE_OF. */
-	byte ONE_OF = -18;
-	/** The Constant BIG_BOOLEAN_FALSE. */
-	byte BIG_BOOLEAN_FALSE = -17;
-	/** The Constant BIG_BOOLEAN_TRUE. */
-	byte BIG_BOOLEAN_TRUE = -16;
-	/** The Constant BIG_LONG. */
-	byte BIG_LONG = -10;
-	/** The Constant BIG_INT. */
-	byte BIG_INT = -9;
-	/** The Constant DIRECT_ARRAY_OBJECT. */
-	byte DIRECT_ARRAY_OBJECT = -8;
-	/** The Constant HANDLE. */
-	byte HANDLE = -7;
-	/** The Constant ENUM. */
-	byte ENUM = -6;
-	/** The Constant ARRAY. */
-	byte ARRAY = -5;
-	/** The Constant STRING. */
-	byte STRING = -4;
-	/** The Constant TYPED. */
-	byte TYPED = -3; // var class == object written class
-	/** The Constant DIRECT_OBJECT. */
-	byte DIRECT_OBJECT = -2;
-	/** The Constant NULL. */
-	byte NULL = -1;
-	/** The Constant OBJECT. */
-	byte OBJECT = 0;
-
-	////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////
+	@Override
 	void writeObject(Object obj) throws IOException;
 
 	/**
@@ -53,6 +23,7 @@ public interface IGamaObjectOutput extends ObjectOutput {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
+	@Override
 	void write(int b) throws IOException;
 
 	/**
@@ -63,6 +34,7 @@ public interface IGamaObjectOutput extends ObjectOutput {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
+	@Override
 	void write(byte[] b) throws IOException;
 
 	/**
@@ -77,6 +49,7 @@ public interface IGamaObjectOutput extends ObjectOutput {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
+	@Override
 	void write(byte[] b, int off, int len) throws IOException;
 
 	/**
@@ -87,6 +60,7 @@ public interface IGamaObjectOutput extends ObjectOutput {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
+	@Override
 	void writeBoolean(boolean v) throws IOException;
 
 	/**
@@ -97,6 +71,7 @@ public interface IGamaObjectOutput extends ObjectOutput {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
+	@Override
 	void writeByte(int v) throws IOException;
 
 	/**
@@ -107,6 +82,7 @@ public interface IGamaObjectOutput extends ObjectOutput {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
+	@Override
 	void writeShort(int v) throws IOException;
 
 	/**
@@ -117,6 +93,7 @@ public interface IGamaObjectOutput extends ObjectOutput {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
+	@Override
 	void writeChar(int v) throws IOException;
 
 	/**
@@ -127,6 +104,7 @@ public interface IGamaObjectOutput extends ObjectOutput {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
+	@Override
 	void writeInt(int v) throws IOException;
 
 	/**
@@ -137,6 +115,7 @@ public interface IGamaObjectOutput extends ObjectOutput {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
+	@Override
 	void writeLong(long v) throws IOException;
 
 	/**
@@ -147,6 +126,7 @@ public interface IGamaObjectOutput extends ObjectOutput {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
+	@Override
 	void writeFloat(float v) throws IOException;
 
 	/**
@@ -157,6 +137,7 @@ public interface IGamaObjectOutput extends ObjectOutput {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
+	@Override
 	void writeDouble(double v) throws IOException;
 
 	/**
@@ -167,6 +148,7 @@ public interface IGamaObjectOutput extends ObjectOutput {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
+	@Override
 	void writeBytes(String s) throws IOException;
 
 	/**
@@ -177,6 +159,7 @@ public interface IGamaObjectOutput extends ObjectOutput {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
+	@Override
 	void writeChars(String s) throws IOException;
 
 	/**
@@ -187,11 +170,12 @@ public interface IGamaObjectOutput extends ObjectOutput {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
+	@Override
 	void writeUTF(String s) throws IOException;
 
 	//
 	// .. end interface impl
-	///////////////////////////////////////////////////
+	//////////////////////////////////////////////////
 
 	/**
 	 * Write object.

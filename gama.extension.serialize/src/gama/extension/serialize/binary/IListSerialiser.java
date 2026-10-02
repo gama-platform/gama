@@ -13,22 +13,23 @@ package gama.extension.serialize.binary;
 import java.io.IOException;
 
 import gama.api.gaml.types.IType;
+import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
+import gama.api.kernel.serialization.IGamaObjectInput;
+import gama.api.kernel.serialization.IGamaObjectOutput;
+import gama.api.kernel.serialization.IGamaObjectSerializer;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
-import gama.dev.DEBUG;
-import gama.extension.serialize.IGamaObjectInput;
-import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link IList} instances. Persists the content type, element count, and all elements in order. The
- * list is reconstructed via {@link GamaListFactory#create(IType)}. Objects deserialised by this serialiser are not
- * registered for back-reference tracking.
+ * Binary serialiser for {@link IList} instances. Persists the content type, element count, and all elements in
+ * order. The list is reconstructed via {@link GamaListFactory#create(IType)}. Objects deserialised by this
+ * binarySerialiser are not registered for back-reference tracking.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IListSerialiser extends FSTIndividualSerialiser<IList> {
+public class IListSerialiser implements IGamaObjectSerializer<IList> {
 
 	/**
 	 * Returns {@code false}: lists are not registered for FST back-reference tracking.
@@ -36,7 +37,7 @@ class IListSerialiser extends FSTIndividualSerialiser<IList> {
 	 * @return {@code false}
 	 */
 	@Override
-	protected boolean shouldRegister() {
+	public boolean shouldRegister() {
 		return false;
 	}
 
@@ -53,7 +54,8 @@ class IListSerialiser extends FSTIndividualSerialiser<IList> {
 	 */
 	@SuppressWarnings ("unchecked")
 	@Override
-	public void serialise(final IGamaObjectOutput out, final IList o) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final IList o, final TransientSerializationContext context)
+			throws Exception {
 		out.writeObject(o.getGamlType().getContentType());
 		out.writeInt(o.size());
 		o.forEach(v -> {

@@ -1,12 +1,10 @@
 /**
  *
  */
-package gama.extension.serialize;
+package gama.api.kernel.serialization;
 
 import java.io.IOException;
 import java.io.ObjectInput;
-
-import gama.extension.serialize.fst.FSTClazzInfo;
 
 /**
  *
@@ -264,19 +262,6 @@ public interface IGamaObjectInput extends ObjectInput {
 	 * @throws IOException
 	 */
 	String readStringAsc() throws IOException;
-
-	/**
-	 * Read class.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @return the FST clazz info
-	 * @throws IOException
-	 *             Signals that an I/O exception has occurred.
-	 * @throws ClassNotFoundException
-	 *             the class not found exception
-	 * @date 29 sept. 2023
-	 */
-	FSTClazzInfo readClass() throws IOException, ClassNotFoundException;
 
 	/**
 	 * Read F int.

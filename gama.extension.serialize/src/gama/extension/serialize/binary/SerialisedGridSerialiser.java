@@ -12,21 +12,23 @@ package gama.extension.serialize.binary;
 
 import java.util.List;
 
+import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
+import gama.api.kernel.serialization.IGamaObjectInput;
+import gama.api.kernel.serialization.IGamaObjectOutput;
+import gama.api.kernel.serialization.IGamaObjectSerializer;
 import gama.api.kernel.serialization.ISerialisedAgent;
 import gama.api.kernel.serialization.SerialisedGrid;
 import gama.api.kernel.topology.IGrid;
 import gama.api.runtime.scope.IScope;
-import gama.extension.serialize.IGamaObjectInput;
-import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link SerialisedGrid} instances. Persists the species name, the list of serialised agents, and
- * the underlying {@link IGrid} matrix.
+ * Binary serialiser for {@link SerialisedGrid} instances. Persists the species name, the list of serialised agents,
+ * and the underlying {@link IGrid} matrix.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class SerialisedGridSerialiser extends FSTIndividualSerialiser<SerialisedGrid> {
+public class SerialisedGridSerialiser implements IGamaObjectSerializer<SerialisedGrid> {
 
 	/**
 	 * Serialises the species name, the list of agents, and the grid matrix.
@@ -39,7 +41,8 @@ class SerialisedGridSerialiser extends FSTIndividualSerialiser<SerialisedGrid> {
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final IGamaObjectOutput out, final SerialisedGrid o) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final SerialisedGrid o,
+			final TransientSerializationContext context) throws Exception {
 		out.writeStringUTF(o.speciesName());
 		out.writeObject(o.agents());
 		out.writeObject(o.matrix());

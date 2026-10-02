@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * FSTIndividualSerialiser.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and
+ * FSTGamaIndividualSerialiser.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and
  * simulation platform (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -8,24 +8,19 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.extension.serialize.binary;
+package gama.extension.serialize.fst;
 
 import java.io.IOException;
 
-import gama.api.runtime.scope.IScope;
-import gama.extension.serialize.IGamaObjectInput;
-import gama.extension.serialize.IGamaObjectOutput;
-import gama.extension.serialize.fst.FSTBasicObjectSerializer;
-import gama.extension.serialize.fst.FSTClazzInfo;
+import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
+import gama.api.kernel.serialization.IGamaObjectSerializer;
 import gama.extension.serialize.fst.FSTClazzInfo.FSTFieldInfo;
-import gama.extension.serialize.fst.FSTObjectInput;
-import gama.extension.serialize.fst.FSTObjectOutput;
 
 /**
- * Abstract base class for FST-based individual serialisers used within {@link BinarySerialiser}. Each subclass is
- * responsible for serialising and deserialising a single specific GAMA type. Instances hold a reference to their owning
- * {@link BinarySerialiser} to access the current simulation scope and shared serialisation state (such as the
- * {@code inAgent} flag).
+ * Base class for FST-based individual serialisers used within {@link FSTBinarySerialiser}. Wraps an
+ * IGamaObjectSerializer responsible for serialising and deserialising a single specific GAMA type. Instances hold a
+ * reference to a {@link TransientSerializationContext} to access the current simulation scope and shared serialisation
+ * state (i.e. {@code inAgent} flag).
  *
  * <p>
  * Subclasses must implement {@link #deserialise(IScope, FSTObjectInput)} and may optionally override
@@ -37,21 +32,33 @@ import gama.extension.serialize.fst.FSTObjectOutput;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-public abstract class FSTIndividualSerialiser<T> extends FSTBasicObjectSerializer {
+public class FSTGamaIndividualSerialiser<T> extends FSTBasicObjectSerializer {
 
 	/**
-	 * The owning {@link BinarySerialiser}, providing access to the current simulation scope and shared serialisation
+	 * The owning {@link FSTBinarySerialiser}, providing access to the current simulation scope and shared serialisation
 	 * state.
 	 */
-	protected BinarySerialiser serialiser;
+	protected TransientSerializationContext serializationContext;
+
+	/** The gama serializer. */
+	protected final IGamaObjectSerializer<T> gamaSerializer;
 
 	/**
-	 * Constructs a new {@code FSTIndividualSerialiser} bound to the given {@link BinarySerialiser}.
+	 * Instantiates a new FST individual binarySerialiser.
 	 *
-	 * @param serialiser
-	 *            the owning binary serialiser; must not be {@code null}
+	 * @param gamaSerializer
+	 *            the gama serializer
 	 */
-	public void setBinarySerialiser(final BinarySerialiser serialiser) { this.serialiser = serialiser; }
+	public FSTGamaIndividualSerialiser(final IGamaObjectSerializer<T> gamaSerializer) {
+		this.gamaSerializer = gamaSerializer;
+	}
+
+	/**
+	 * @param context
+	 */
+	public void setSerializationContext(final TransientSerializationContext context) {
+		serializationContext = context;
+	}
 
 	/**
 	 * Returns whether the deserialised object should be registered with the FST input stream for back-reference
@@ -66,7 +73,7 @@ public abstract class FSTIndividualSerialiser<T> extends FSTBasicObjectSerialize
 
 	/**
 	 * Instantiates an object by reading it from the FST input stream. Delegates to
-	 * {@link #deserialise(IScope, FSTObjectInput)} using the scope from the owning {@link BinarySerialiser}, then
+	 * {@link #deserialise(IScope, FSTObjectInput)} using the scope from the owning {@link FSTBinarySerialiser}, then
 	 * optionally registers the result.
 	 *
 	 * @param objectClass
@@ -87,7 +94,7 @@ public abstract class FSTIndividualSerialiser<T> extends FSTBasicObjectSerialize
 	@Override
 	public final T instantiate(final Class objectClass, final FSTObjectInput in, final FSTClazzInfo serializationInfo,
 			final FSTFieldInfo referencee, final int streamPosition) throws Exception {
-		T result = deserialise(serialiser.scope, in);
+		T result = gamaSerializer.deserialise(serializationContext.getScope(), in);
 		if (shouldRegister()) { in.registerObject(result, streamPosition, serializationInfo, referencee); }
 		return result;
 	}
@@ -114,36 +121,10 @@ public abstract class FSTIndividualSerialiser<T> extends FSTBasicObjectSerialize
 	public void writeObject(final FSTObjectOutput out, final Object toWrite, final FSTClazzInfo clzInfo,
 			final FSTFieldInfo referencedBy, final int streamPosition) throws IOException {
 		try {
-			serialise(out, (T) toWrite);
+			gamaSerializer.serialise(out, (T) toWrite, serializationContext);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-
-	/**
-	 * Serialises the given object to the FST output stream. The default implementation does nothing; subclasses should
-	 * override this method.
-	 *
-	 * @param out
-	 *            the FST output stream
-	 * @param toWrite
-	 *            the object to serialise
-	 * @throws Exception
-	 *             if serialisation fails
-	 */
-	public void serialise(final IGamaObjectOutput out, final T toWrite) throws Exception {}
-
-	/**
-	 * Deserialises an object from the FST input stream using the given simulation scope.
-	 *
-	 * @param scope
-	 *            the current GAMA simulation scope
-	 * @param in
-	 *            the FST input stream
-	 * @return the deserialised object of type {@code T}
-	 * @throws Exception
-	 *             if deserialisation fails
-	 */
-	public abstract T deserialise(IScope scope, IGamaObjectInput in) throws Exception;
 
 }

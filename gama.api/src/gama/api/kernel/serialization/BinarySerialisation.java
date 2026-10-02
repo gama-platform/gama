@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.extension.serialize.binary;
+package gama.api.kernel.serialization;
 
 import static gama.api.utils.files.FileUtils.constructAbsoluteFilePath;
 import static java.nio.file.Files.readAllBytes;
@@ -19,6 +19,7 @@ import static java.nio.file.StandardOpenOption.WRITE;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -26,7 +27,6 @@ import gama.api.GAMA;
 import gama.api.constants.ISerialisationConstants;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.agent.IAgent;
-import gama.api.kernel.serialization.SerialisedAgent;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.runtime.scope.IScope;
 
@@ -39,7 +39,36 @@ import gama.api.runtime.scope.IScope;
 public class BinarySerialisation implements ISerialisationConstants {
 
 	/** The processor. */
-	private static BinarySerialiser PROCESSOR = new BinarySerialiser();
+	private static Class<? extends AbstractBinarySerializer> BINARY_SERIALIZER_CLASS;
+
+	/** The default binary serializer. */
+	private static AbstractBinarySerializer DEFAULT_BINARY_SERIALIZER;
+
+	/**
+	 * Sets the binary serializer.
+	 *
+	 * @param serializer
+	 *            the new binary serializer
+	 */
+	public static void setBinarySerializerClass(final Class<? extends AbstractBinarySerializer> clazz) {
+		BINARY_SERIALIZER_CLASS = clazz;
+		DEFAULT_BINARY_SERIALIZER = createNewBinarySerializer();
+	}
+
+	/**
+	 * Creates the new binary serializer.
+	 *
+	 * @return the abstract binary serializer
+	 */
+	public static AbstractBinarySerializer createNewBinarySerializer() {
+		if (BINARY_SERIALIZER_CLASS != null) {
+			try {
+				return BINARY_SERIALIZER_CLASS.getConstructor().newInstance();
+			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+					| InvocationTargetException | NoSuchMethodException e) {}
+		}
+		return null;
+	}
 
 	/**
 	 * Creates an object or an agent from a file.
@@ -86,20 +115,6 @@ public class BinarySerialisation implements ISerialisationConstants {
 	}
 
 	/**
-	 * Register serialiser.
-	 *
-	 * @param <T>
-	 *            the generic type
-	 * @param clazz
-	 *            the clazz
-	 * @param ser
-	 *            the ser
-	 */
-	public static <T> void registerSerialiser(final Class<T> clazz, final FSTIndividualSerialiser<T> ser) {
-		PROCESSOR.register(clazz, ser);
-	}
-
-	/**
 	 * Creates the from bytes.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
@@ -111,7 +126,7 @@ public class BinarySerialisation implements ISerialisationConstants {
 	 * @date 31 oct. 2023
 	 */
 	public static Object createFromBytes(final IScope scope, final byte[] bytes) {
-		return PROCESSOR.createObjectFromBytes(scope, bytes);
+		return DEFAULT_BINARY_SERIALIZER.createObjectFromBytes(scope, bytes);
 	}
 
 	/**
@@ -165,7 +180,7 @@ public class BinarySerialisation implements ISerialisationConstants {
 	 * @date 8 août 2023
 	 */
 	public static void restoreFromBytes(final IAgent sim, final byte[] bytes) {
-		PROCESSOR.restoreAgentFromBytes(sim, bytes);
+		DEFAULT_BINARY_SERIALIZER.restoreAgentFromBytes(sim, bytes);
 	}
 
 	/**
@@ -220,7 +235,7 @@ public class BinarySerialisation implements ISerialisationConstants {
 	 * @date 21 août 2023
 	 */
 	public static final byte[] saveToBytes(final IScope scope, final Object object) {
-		return PROCESSOR.saveObjectToBytes(scope, object);
+		return DEFAULT_BINARY_SERIALIZER.saveObjectToBytes(scope, object);
 	}
 
 	/**

@@ -27,11 +27,11 @@ import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.serialization.BinarySerialisation;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.StringUtils;
 import gama.api.utils.json.IJsonValue;
 import gama.dev.DEBUG;
-import gama.extension.serialize.binary.BinarySerialisation;
 import gama.gaml.statements.save.GeoJSonSaver;
 
 /**

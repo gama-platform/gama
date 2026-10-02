@@ -13,20 +13,22 @@ package gama.extension.serialize.binary;
 import java.io.IOException;
 
 import gama.api.gaml.types.IType;
+import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
+import gama.api.kernel.serialization.IGamaObjectInput;
+import gama.api.kernel.serialization.IGamaObjectOutput;
+import gama.api.kernel.serialization.IGamaObjectSerializer;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
-import gama.extension.serialize.IGamaObjectInput;
-import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link IMap} instances. Persists the key type, content type, ordering flag, entry count, and all
- * key-value pairs. The map is reconstructed via {@link GamaMapFactory#create(IType, IType, boolean)}.
+ * Binary serialiser for {@link IMap} instances. Persists the key type, content type, ordering flag, entry count, and
+ * all key-value pairs. The map is reconstructed via {@link GamaMapFactory#create(IType, IType, boolean)}.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IMapSerialiser extends FSTIndividualSerialiser<IMap> {
+public class IMapSerialiser implements IGamaObjectSerializer<IMap> {
 
 	/**
 	 * Serialises the map's key type, content type, ordering flag, size, and all key-value pairs. Each key and value is
@@ -41,7 +43,8 @@ class IMapSerialiser extends FSTIndividualSerialiser<IMap> {
 	 */
 	@SuppressWarnings ("unchecked")
 	@Override
-	public void serialise(final IGamaObjectOutput out, final IMap o) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final IMap o, final TransientSerializationContext context)
+			throws Exception {
 		out.writeObject(o.getGamlType().getKeyType());
 		out.writeObject(o.getGamlType().getContentType());
 		out.writeBoolean(o.isOrdered());
