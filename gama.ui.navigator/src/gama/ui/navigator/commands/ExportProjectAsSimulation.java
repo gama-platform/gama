@@ -146,6 +146,8 @@ public class ExportProjectAsSimulation extends AbstractHandler {
 					for (final String use : fileInfo.getUses()) {
 						thisProjectDataFiles.add(modelFileParent.resolve(use).normalize().toString());
 					}
+
+					dataFiles.put(modelFile.getProject(),thisProjectDataFiles);
 					
 					for (final String importedModelUriStr : fileInfo.getImports())
 					{

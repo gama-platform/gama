@@ -450,6 +450,7 @@ public class GamaZipBuilder {
                             System.err.println("Export: data file not found, skipping: " + resolved);
                             continue;
                         }
+
                         final String fileName = resolved.getFileName().toString();
                         String uniqueName = fileName;
                         int counter = 1;
@@ -511,7 +512,9 @@ public class GamaZipBuilder {
                         
                         try 
                         {
-                            if(! Files.isDirectory(filePath))
+                            if(! Files.isDirectory(filePath) 
+                               && ! filePath.equals(projectPath.resolve(".project"))
+                            )
                             {
                                 final String currentFileName = filePath.getFileName().toString();
                                 final boolean isGaml = currentFileName.toLowerCase().endsWith(".gaml");
@@ -578,6 +581,14 @@ public class GamaZipBuilder {
                     // but write the actual content of the file designed by the link
                     addEntryAndUpdateGamlImports(linkedFilesMap.get(virtualPathStr),includeDir,externalDataFiles,entryName, archive);
                 }
+
+                // adding the corrected .project file to the archive
+                String projectMetadataFileContent = Files.readString(projectPath.resolve(".project"), StandardCharsets.UTF_8);
+
+                archive.addEntryFromString(
+                    projectMetadataFileContent.replaceAll("(?s)<linkedResources>.*</linkedResources>",""),
+                    embeddedWorkspacePathStr + File.separator + projectName + File.separator + ".project"
+                );
             }
 
             /////////////////////////////
@@ -598,8 +609,15 @@ public class GamaZipBuilder {
                     {
                         Path relativeFilePath = targetWorkspacePath.relativize(filePath);
 
-                        if(! Files.isDirectory(filePath) 
-                            && ! relativeFilePath.startsWith(".history"))
+                        // .history, .projects, .root or .safetable
+                        
+                        String subMetadataName = relativeFilePath.getNameCount() >= 4 ?
+                            relativeFilePath.getName(3).toString() : "";
+
+                        if( ! Files.isDirectory(filePath) 
+                            && ! subMetadataName.equals(".history")
+                            && ! subMetadataName.equals(".projects")
+                        )
                         {
                             String entryName = embeddedWorkspacePath
                                 .resolve(relativeFilePath).toString();

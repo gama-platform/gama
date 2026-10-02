@@ -125,6 +125,8 @@ public class ExportExperimentSelectionListener implements Selector {
 						thisProjectDataFiles.add(modelFileParent.resolve(use).normalize().toString());
 					}
 
+					dataFiles.put(modelFile.getProject(),thisProjectDataFiles);
+
 					plugins.addAll(metaProperties.get(GamlProperties.PLUGINS));
 					
 					if(isTargetModel)
