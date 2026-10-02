@@ -2286,10 +2286,10 @@ public class InternalGamlLexer extends Lexer {
         try {
             int _type = RULE_KEYWORD;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalGaml.g:14913:14: ( ( 'each' | 'self' | 'myself' | 'nil' | 'super' ) )
-            // InternalGaml.g:14913:16: ( 'each' | 'self' | 'myself' | 'nil' | 'super' )
+            // InternalGaml.g:15134:14: ( ( 'each' | 'self' | 'myself' | 'nil' | 'super' ) )
+            // InternalGaml.g:15134:16: ( 'each' | 'self' | 'myself' | 'nil' | 'super' )
             {
-            // InternalGaml.g:14913:16: ( 'each' | 'self' | 'myself' | 'nil' | 'super' )
+            // InternalGaml.g:15134:16: ( 'each' | 'self' | 'myself' | 'nil' | 'super' )
             int alt1=5;
             switch ( input.LA(1) ) {
             case 'e':
@@ -2334,7 +2334,7 @@ public class InternalGamlLexer extends Lexer {
 
             switch (alt1) {
                 case 1 :
-                    // InternalGaml.g:14913:17: 'each'
+                    // InternalGaml.g:15134:17: 'each'
                     {
                     match("each"); 
 
@@ -2342,7 +2342,7 @@ public class InternalGamlLexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // InternalGaml.g:14913:24: 'self'
+                    // InternalGaml.g:15134:24: 'self'
                     {
                     match("self"); 
 
@@ -2350,7 +2350,7 @@ public class InternalGamlLexer extends Lexer {
                     }
                     break;
                 case 3 :
-                    // InternalGaml.g:14913:31: 'myself'
+                    // InternalGaml.g:15134:31: 'myself'
                     {
                     match("myself"); 
 
@@ -2358,7 +2358,7 @@ public class InternalGamlLexer extends Lexer {
                     }
                     break;
                 case 4 :
-                    // InternalGaml.g:14913:40: 'nil'
+                    // InternalGaml.g:15134:40: 'nil'
                     {
                     match("nil"); 
 
@@ -2366,7 +2366,7 @@ public class InternalGamlLexer extends Lexer {
                     }
                     break;
                 case 5 :
-                    // InternalGaml.g:14913:46: 'super'
+                    // InternalGaml.g:15134:46: 'super'
                     {
                     match("super"); 
 
@@ -2392,10 +2392,10 @@ public class InternalGamlLexer extends Lexer {
         try {
             int _type = RULE_INTEGER;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalGaml.g:14915:14: ( ( '0' | '1' .. '9' ( '0' .. '9' )* ) )
-            // InternalGaml.g:14915:16: ( '0' | '1' .. '9' ( '0' .. '9' )* )
+            // InternalGaml.g:15136:14: ( ( '0' | '1' .. '9' ( '0' .. '9' )* ) )
+            // InternalGaml.g:15136:16: ( '0' | '1' .. '9' ( '0' .. '9' )* )
             {
-            // InternalGaml.g:14915:16: ( '0' | '1' .. '9' ( '0' .. '9' )* )
+            // InternalGaml.g:15136:16: ( '0' | '1' .. '9' ( '0' .. '9' )* )
             int alt3=2;
             int LA3_0 = input.LA(1);
 
@@ -2413,17 +2413,17 @@ public class InternalGamlLexer extends Lexer {
             }
             switch (alt3) {
                 case 1 :
-                    // InternalGaml.g:14915:17: '0'
+                    // InternalGaml.g:15136:17: '0'
                     {
                     match('0'); 
 
                     }
                     break;
                 case 2 :
-                    // InternalGaml.g:14915:21: '1' .. '9' ( '0' .. '9' )*
+                    // InternalGaml.g:15136:21: '1' .. '9' ( '0' .. '9' )*
                     {
                     matchRange('1','9'); 
-                    // InternalGaml.g:14915:30: ( '0' .. '9' )*
+                    // InternalGaml.g:15136:30: ( '0' .. '9' )*
                     loop2:
                     do {
                         int alt2=2;
@@ -2436,7 +2436,7 @@ public class InternalGamlLexer extends Lexer {
 
                         switch (alt2) {
                     	case 1 :
-                    	    // InternalGaml.g:14915:31: '0' .. '9'
+                    	    // InternalGaml.g:15136:31: '0' .. '9'
                     	    {
                     	    matchRange('0','9'); 
 
@@ -2470,10 +2470,10 @@ public class InternalGamlLexer extends Lexer {
         try {
             int _type = RULE_DOUBLE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalGaml.g:14917:13: ( ( '0' | '1' .. '9' ( '0' .. '9' )* ) ( '.' ( '0' .. '9' )+ ( ( 'E' | 'e' ) ( '+' | '-' )? ( '0' .. '9' )+ )? | ( 'E' | 'e' ) ( '+' | '-' )? ( '0' .. '9' )+ ) )
-            // InternalGaml.g:14917:15: ( '0' | '1' .. '9' ( '0' .. '9' )* ) ( '.' ( '0' .. '9' )+ ( ( 'E' | 'e' ) ( '+' | '-' )? ( '0' .. '9' )+ )? | ( 'E' | 'e' ) ( '+' | '-' )? ( '0' .. '9' )+ )
+            // InternalGaml.g:15138:13: ( ( '0' | '1' .. '9' ( '0' .. '9' )* ) ( '.' ( '0' .. '9' )+ ( ( 'E' | 'e' ) ( '+' | '-' )? ( '0' .. '9' )+ )? | ( 'E' | 'e' ) ( '+' | '-' )? ( '0' .. '9' )+ ) )
+            // InternalGaml.g:15138:15: ( '0' | '1' .. '9' ( '0' .. '9' )* ) ( '.' ( '0' .. '9' )+ ( ( 'E' | 'e' ) ( '+' | '-' )? ( '0' .. '9' )+ )? | ( 'E' | 'e' ) ( '+' | '-' )? ( '0' .. '9' )+ )
             {
-            // InternalGaml.g:14917:15: ( '0' | '1' .. '9' ( '0' .. '9' )* )
+            // InternalGaml.g:15138:15: ( '0' | '1' .. '9' ( '0' .. '9' )* )
             int alt5=2;
             int LA5_0 = input.LA(1);
 
@@ -2491,17 +2491,17 @@ public class InternalGamlLexer extends Lexer {
             }
             switch (alt5) {
                 case 1 :
-                    // InternalGaml.g:14917:16: '0'
+                    // InternalGaml.g:15138:16: '0'
                     {
                     match('0'); 
 
                     }
                     break;
                 case 2 :
-                    // InternalGaml.g:14917:20: '1' .. '9' ( '0' .. '9' )*
+                    // InternalGaml.g:15138:20: '1' .. '9' ( '0' .. '9' )*
                     {
                     matchRange('1','9'); 
-                    // InternalGaml.g:14917:29: ( '0' .. '9' )*
+                    // InternalGaml.g:15138:29: ( '0' .. '9' )*
                     loop4:
                     do {
                         int alt4=2;
@@ -2514,7 +2514,7 @@ public class InternalGamlLexer extends Lexer {
 
                         switch (alt4) {
                     	case 1 :
-                    	    // InternalGaml.g:14917:30: '0' .. '9'
+                    	    // InternalGaml.g:15138:30: '0' .. '9'
                     	    {
                     	    matchRange('0','9'); 
 
@@ -2532,7 +2532,7 @@ public class InternalGamlLexer extends Lexer {
 
             }
 
-            // InternalGaml.g:14917:42: ( '.' ( '0' .. '9' )+ ( ( 'E' | 'e' ) ( '+' | '-' )? ( '0' .. '9' )+ )? | ( 'E' | 'e' ) ( '+' | '-' )? ( '0' .. '9' )+ )
+            // InternalGaml.g:15138:42: ( '.' ( '0' .. '9' )+ ( ( 'E' | 'e' ) ( '+' | '-' )? ( '0' .. '9' )+ )? | ( 'E' | 'e' ) ( '+' | '-' )? ( '0' .. '9' )+ )
             int alt12=2;
             int LA12_0 = input.LA(1);
 
@@ -2550,10 +2550,10 @@ public class InternalGamlLexer extends Lexer {
             }
             switch (alt12) {
                 case 1 :
-                    // InternalGaml.g:14917:43: '.' ( '0' .. '9' )+ ( ( 'E' | 'e' ) ( '+' | '-' )? ( '0' .. '9' )+ )?
+                    // InternalGaml.g:15138:43: '.' ( '0' .. '9' )+ ( ( 'E' | 'e' ) ( '+' | '-' )? ( '0' .. '9' )+ )?
                     {
                     match('.'); 
-                    // InternalGaml.g:14917:47: ( '0' .. '9' )+
+                    // InternalGaml.g:15138:47: ( '0' .. '9' )+
                     int cnt6=0;
                     loop6:
                     do {
@@ -2567,7 +2567,7 @@ public class InternalGamlLexer extends Lexer {
 
                         switch (alt6) {
                     	case 1 :
-                    	    // InternalGaml.g:14917:48: '0' .. '9'
+                    	    // InternalGaml.g:15138:48: '0' .. '9'
                     	    {
                     	    matchRange('0','9'); 
 
@@ -2583,7 +2583,7 @@ public class InternalGamlLexer extends Lexer {
                         cnt6++;
                     } while (true);
 
-                    // InternalGaml.g:14917:59: ( ( 'E' | 'e' ) ( '+' | '-' )? ( '0' .. '9' )+ )?
+                    // InternalGaml.g:15138:59: ( ( 'E' | 'e' ) ( '+' | '-' )? ( '0' .. '9' )+ )?
                     int alt9=2;
                     int LA9_0 = input.LA(1);
 
@@ -2592,7 +2592,7 @@ public class InternalGamlLexer extends Lexer {
                     }
                     switch (alt9) {
                         case 1 :
-                            // InternalGaml.g:14917:60: ( 'E' | 'e' ) ( '+' | '-' )? ( '0' .. '9' )+
+                            // InternalGaml.g:15138:60: ( 'E' | 'e' ) ( '+' | '-' )? ( '0' .. '9' )+
                             {
                             if ( input.LA(1)=='E'||input.LA(1)=='e' ) {
                                 input.consume();
@@ -2603,7 +2603,7 @@ public class InternalGamlLexer extends Lexer {
                                 recover(mse);
                                 throw mse;}
 
-                            // InternalGaml.g:14917:70: ( '+' | '-' )?
+                            // InternalGaml.g:15138:70: ( '+' | '-' )?
                             int alt7=2;
                             int LA7_0 = input.LA(1);
 
@@ -2629,7 +2629,7 @@ public class InternalGamlLexer extends Lexer {
 
                             }
 
-                            // InternalGaml.g:14917:81: ( '0' .. '9' )+
+                            // InternalGaml.g:15138:81: ( '0' .. '9' )+
                             int cnt8=0;
                             loop8:
                             do {
@@ -2643,7 +2643,7 @@ public class InternalGamlLexer extends Lexer {
 
                                 switch (alt8) {
                             	case 1 :
-                            	    // InternalGaml.g:14917:82: '0' .. '9'
+                            	    // InternalGaml.g:15138:82: '0' .. '9'
                             	    {
                             	    matchRange('0','9'); 
 
@@ -2669,7 +2669,7 @@ public class InternalGamlLexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // InternalGaml.g:14917:95: ( 'E' | 'e' ) ( '+' | '-' )? ( '0' .. '9' )+
+                    // InternalGaml.g:15138:95: ( 'E' | 'e' ) ( '+' | '-' )? ( '0' .. '9' )+
                     {
                     if ( input.LA(1)=='E'||input.LA(1)=='e' ) {
                         input.consume();
@@ -2680,7 +2680,7 @@ public class InternalGamlLexer extends Lexer {
                         recover(mse);
                         throw mse;}
 
-                    // InternalGaml.g:14917:105: ( '+' | '-' )?
+                    // InternalGaml.g:15138:105: ( '+' | '-' )?
                     int alt10=2;
                     int LA10_0 = input.LA(1);
 
@@ -2706,7 +2706,7 @@ public class InternalGamlLexer extends Lexer {
 
                     }
 
-                    // InternalGaml.g:14917:116: ( '0' .. '9' )+
+                    // InternalGaml.g:15138:116: ( '0' .. '9' )+
                     int cnt11=0;
                     loop11:
                     do {
@@ -2720,7 +2720,7 @@ public class InternalGamlLexer extends Lexer {
 
                         switch (alt11) {
                     	case 1 :
-                    	    // InternalGaml.g:14917:117: '0' .. '9'
+                    	    // InternalGaml.g:15138:117: '0' .. '9'
                     	    {
                     	    matchRange('0','9'); 
 
@@ -2758,10 +2758,10 @@ public class InternalGamlLexer extends Lexer {
         try {
             int _type = RULE_BOOLEAN;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalGaml.g:14919:14: ( ( 'true' | 'false' ) )
-            // InternalGaml.g:14919:16: ( 'true' | 'false' )
+            // InternalGaml.g:15140:14: ( ( 'true' | 'false' ) )
+            // InternalGaml.g:15140:16: ( 'true' | 'false' )
             {
-            // InternalGaml.g:14919:16: ( 'true' | 'false' )
+            // InternalGaml.g:15140:16: ( 'true' | 'false' )
             int alt13=2;
             int LA13_0 = input.LA(1);
 
@@ -2779,7 +2779,7 @@ public class InternalGamlLexer extends Lexer {
             }
             switch (alt13) {
                 case 1 :
-                    // InternalGaml.g:14919:17: 'true'
+                    // InternalGaml.g:15140:17: 'true'
                     {
                     match("true"); 
 
@@ -2787,7 +2787,7 @@ public class InternalGamlLexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // InternalGaml.g:14919:24: 'false'
+                    // InternalGaml.g:15140:24: 'false'
                     {
                     match("false"); 
 
@@ -2813,10 +2813,10 @@ public class InternalGamlLexer extends Lexer {
         try {
             int _type = RULE_ID;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalGaml.g:14921:9: ( ( '2d' | '3d' | '2D' | '3D' | ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '$' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '$' | '0' .. '9' )* ) )
-            // InternalGaml.g:14921:11: ( '2d' | '3d' | '2D' | '3D' | ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '$' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '$' | '0' .. '9' )* )
+            // InternalGaml.g:15142:9: ( ( '2d' | '3d' | '2D' | '3D' | ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '$' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '$' | '0' .. '9' )* ) )
+            // InternalGaml.g:15142:11: ( '2d' | '3d' | '2D' | '3D' | ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '$' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '$' | '0' .. '9' )* )
             {
-            // InternalGaml.g:14921:11: ( '2d' | '3d' | '2D' | '3D' | ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '$' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '$' | '0' .. '9' )* )
+            // InternalGaml.g:15142:11: ( '2d' | '3d' | '2D' | '3D' | ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '$' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '$' | '0' .. '9' )* )
             int alt15=5;
             switch ( input.LA(1) ) {
             case '2':
@@ -2922,7 +2922,7 @@ public class InternalGamlLexer extends Lexer {
 
             switch (alt15) {
                 case 1 :
-                    // InternalGaml.g:14921:12: '2d'
+                    // InternalGaml.g:15142:12: '2d'
                     {
                     match("2d"); 
 
@@ -2930,7 +2930,7 @@ public class InternalGamlLexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // InternalGaml.g:14921:17: '3d'
+                    // InternalGaml.g:15142:17: '3d'
                     {
                     match("3d"); 
 
@@ -2938,7 +2938,7 @@ public class InternalGamlLexer extends Lexer {
                     }
                     break;
                 case 3 :
-                    // InternalGaml.g:14921:22: '2D'
+                    // InternalGaml.g:15142:22: '2D'
                     {
                     match("2D"); 
 
@@ -2946,7 +2946,7 @@ public class InternalGamlLexer extends Lexer {
                     }
                     break;
                 case 4 :
-                    // InternalGaml.g:14921:27: '3D'
+                    // InternalGaml.g:15142:27: '3D'
                     {
                     match("3D"); 
 
@@ -2954,7 +2954,7 @@ public class InternalGamlLexer extends Lexer {
                     }
                     break;
                 case 5 :
-                    // InternalGaml.g:14921:32: ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '$' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '$' | '0' .. '9' )*
+                    // InternalGaml.g:15142:32: ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '$' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '$' | '0' .. '9' )*
                     {
                     if ( input.LA(1)=='$'||(input.LA(1)>='A' && input.LA(1)<='Z')||input.LA(1)=='_'||(input.LA(1)>='a' && input.LA(1)<='z') ) {
                         input.consume();
@@ -2965,7 +2965,7 @@ public class InternalGamlLexer extends Lexer {
                         recover(mse);
                         throw mse;}
 
-                    // InternalGaml.g:14921:60: ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '$' | '0' .. '9' )*
+                    // InternalGaml.g:15142:60: ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '$' | '0' .. '9' )*
                     loop14:
                     do {
                         int alt14=2;
@@ -3020,10 +3020,10 @@ public class InternalGamlLexer extends Lexer {
         try {
             int _type = RULE_STRING;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalGaml.g:14923:13: ( ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' ) )
-            // InternalGaml.g:14923:15: ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
+            // InternalGaml.g:15144:13: ( ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' ) )
+            // InternalGaml.g:15144:15: ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
             {
-            // InternalGaml.g:14923:15: ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
+            // InternalGaml.g:15144:15: ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
             int alt18=2;
             int LA18_0 = input.LA(1);
 
@@ -3041,10 +3041,10 @@ public class InternalGamlLexer extends Lexer {
             }
             switch (alt18) {
                 case 1 :
-                    // InternalGaml.g:14923:16: '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"'
+                    // InternalGaml.g:15144:16: '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"'
                     {
                     match('\"'); 
-                    // InternalGaml.g:14923:20: ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )*
+                    // InternalGaml.g:15144:20: ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )*
                     loop16:
                     do {
                         int alt16=3;
@@ -3060,7 +3060,7 @@ public class InternalGamlLexer extends Lexer {
 
                         switch (alt16) {
                     	case 1 :
-                    	    // InternalGaml.g:14923:21: '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\\\' )
+                    	    // InternalGaml.g:15144:21: '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\\\' )
                     	    {
                     	    match('\\'); 
                     	    if ( input.LA(1)=='\"'||input.LA(1)=='\\'||input.LA(1)=='b'||input.LA(1)=='f'||input.LA(1)=='n'||input.LA(1)=='r'||(input.LA(1)>='t' && input.LA(1)<='u') ) {
@@ -3076,7 +3076,7 @@ public class InternalGamlLexer extends Lexer {
                     	    }
                     	    break;
                     	case 2 :
-                    	    // InternalGaml.g:14923:61: ~ ( ( '\\\\' | '\"' ) )
+                    	    // InternalGaml.g:15144:61: ~ ( ( '\\\\' | '\"' ) )
                     	    {
                     	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='!')||(input.LA(1)>='#' && input.LA(1)<='[')||(input.LA(1)>=']' && input.LA(1)<='\uFFFF') ) {
                     	        input.consume();
@@ -3101,10 +3101,10 @@ public class InternalGamlLexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // InternalGaml.g:14923:81: '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\''
+                    // InternalGaml.g:15144:81: '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\''
                     {
                     match('\''); 
-                    // InternalGaml.g:14923:86: ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )*
+                    // InternalGaml.g:15144:86: ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )*
                     loop17:
                     do {
                         int alt17=3;
@@ -3120,7 +3120,7 @@ public class InternalGamlLexer extends Lexer {
 
                         switch (alt17) {
                     	case 1 :
-                    	    // InternalGaml.g:14923:87: '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\\'' | '\\\\' )
+                    	    // InternalGaml.g:15144:87: '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\\'' | '\\\\' )
                     	    {
                     	    match('\\'); 
                     	    if ( input.LA(1)=='\''||input.LA(1)=='\\'||input.LA(1)=='b'||input.LA(1)=='f'||input.LA(1)=='n'||input.LA(1)=='r'||(input.LA(1)>='t' && input.LA(1)<='u') ) {
@@ -3136,7 +3136,7 @@ public class InternalGamlLexer extends Lexer {
                     	    }
                     	    break;
                     	case 2 :
-                    	    // InternalGaml.g:14923:128: ~ ( ( '\\\\' | '\\'' ) )
+                    	    // InternalGaml.g:15144:128: ~ ( ( '\\\\' | '\\'' ) )
                     	    {
                     	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='&')||(input.LA(1)>='(' && input.LA(1)<='[')||(input.LA(1)>=']' && input.LA(1)<='\uFFFF') ) {
                     	        input.consume();
@@ -3179,12 +3179,12 @@ public class InternalGamlLexer extends Lexer {
         try {
             int _type = RULE_ML_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalGaml.g:14925:17: ( '/*' ( options {greedy=false; } : . )* '*/' )
-            // InternalGaml.g:14925:19: '/*' ( options {greedy=false; } : . )* '*/'
+            // InternalGaml.g:15146:17: ( '/*' ( options {greedy=false; } : . )* '*/' )
+            // InternalGaml.g:15146:19: '/*' ( options {greedy=false; } : . )* '*/'
             {
             match("/*"); 
 
-            // InternalGaml.g:14925:24: ( options {greedy=false; } : . )*
+            // InternalGaml.g:15146:24: ( options {greedy=false; } : . )*
             loop19:
             do {
                 int alt19=2;
@@ -3209,7 +3209,7 @@ public class InternalGamlLexer extends Lexer {
 
                 switch (alt19) {
             	case 1 :
-            	    // InternalGaml.g:14925:52: .
+            	    // InternalGaml.g:15146:52: .
             	    {
             	    matchAny(); 
 
@@ -3239,12 +3239,12 @@ public class InternalGamlLexer extends Lexer {
         try {
             int _type = RULE_SL_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalGaml.g:14927:17: ( '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )? )
-            // InternalGaml.g:14927:19: '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )?
+            // InternalGaml.g:15148:17: ( '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )? )
+            // InternalGaml.g:15148:19: '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )?
             {
             match("//"); 
 
-            // InternalGaml.g:14927:24: (~ ( ( '\\n' | '\\r' ) ) )*
+            // InternalGaml.g:15148:24: (~ ( ( '\\n' | '\\r' ) ) )*
             loop20:
             do {
                 int alt20=2;
@@ -3257,7 +3257,7 @@ public class InternalGamlLexer extends Lexer {
 
                 switch (alt20) {
             	case 1 :
-            	    // InternalGaml.g:14927:24: ~ ( ( '\\n' | '\\r' ) )
+            	    // InternalGaml.g:15148:24: ~ ( ( '\\n' | '\\r' ) )
             	    {
             	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='\t')||(input.LA(1)>='\u000B' && input.LA(1)<='\f')||(input.LA(1)>='\u000E' && input.LA(1)<='\uFFFF') ) {
             	        input.consume();
@@ -3277,7 +3277,7 @@ public class InternalGamlLexer extends Lexer {
                 }
             } while (true);
 
-            // InternalGaml.g:14927:40: ( ( '\\r' )? '\\n' )?
+            // InternalGaml.g:15148:40: ( ( '\\r' )? '\\n' )?
             int alt22=2;
             int LA22_0 = input.LA(1);
 
@@ -3286,9 +3286,9 @@ public class InternalGamlLexer extends Lexer {
             }
             switch (alt22) {
                 case 1 :
-                    // InternalGaml.g:14927:41: ( '\\r' )? '\\n'
+                    // InternalGaml.g:15148:41: ( '\\r' )? '\\n'
                     {
-                    // InternalGaml.g:14927:41: ( '\\r' )?
+                    // InternalGaml.g:15148:41: ( '\\r' )?
                     int alt21=2;
                     int LA21_0 = input.LA(1);
 
@@ -3297,7 +3297,7 @@ public class InternalGamlLexer extends Lexer {
                     }
                     switch (alt21) {
                         case 1 :
-                            // InternalGaml.g:14927:41: '\\r'
+                            // InternalGaml.g:15148:41: '\\r'
                             {
                             match('\r'); 
 
@@ -3329,10 +3329,10 @@ public class InternalGamlLexer extends Lexer {
         try {
             int _type = RULE_WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalGaml.g:14929:9: ( ( ' ' | '\\t' | '\\r' | '\\n' | '\\u00A0' | '\\u1680' | '\\u2000' .. '\\u200A' | '\\u2028' | '\\u2029' | '\\u202F' | '\\u205F' | '\\u3000' )+ )
-            // InternalGaml.g:14929:11: ( ' ' | '\\t' | '\\r' | '\\n' | '\\u00A0' | '\\u1680' | '\\u2000' .. '\\u200A' | '\\u2028' | '\\u2029' | '\\u202F' | '\\u205F' | '\\u3000' )+
+            // InternalGaml.g:15150:9: ( ( ' ' | '\\t' | '\\r' | '\\n' | '\\u00A0' | '\\u1680' | '\\u2000' .. '\\u200A' | '\\u2028' | '\\u2029' | '\\u202F' | '\\u205F' | '\\u3000' )+ )
+            // InternalGaml.g:15150:11: ( ' ' | '\\t' | '\\r' | '\\n' | '\\u00A0' | '\\u1680' | '\\u2000' .. '\\u200A' | '\\u2028' | '\\u2029' | '\\u202F' | '\\u205F' | '\\u3000' )+
             {
-            // InternalGaml.g:14929:11: ( ' ' | '\\t' | '\\r' | '\\n' | '\\u00A0' | '\\u1680' | '\\u2000' .. '\\u200A' | '\\u2028' | '\\u2029' | '\\u202F' | '\\u205F' | '\\u3000' )+
+            // InternalGaml.g:15150:11: ( ' ' | '\\t' | '\\r' | '\\n' | '\\u00A0' | '\\u1680' | '\\u2000' .. '\\u200A' | '\\u2028' | '\\u2029' | '\\u202F' | '\\u205F' | '\\u3000' )+
             int cnt23=0;
             loop23:
             do {
@@ -3386,8 +3386,8 @@ public class InternalGamlLexer extends Lexer {
         try {
             int _type = RULE_ANY_OTHER;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalGaml.g:14931:16: ( . )
-            // InternalGaml.g:14931:18: .
+            // InternalGaml.g:15152:16: ( . )
+            // InternalGaml.g:15152:18: .
             {
             matchAny(); 
 

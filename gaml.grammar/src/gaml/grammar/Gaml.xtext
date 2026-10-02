@@ -123,8 +123,7 @@ S_Do:
 	
 	
 S_ActionCall returns S_Do: 
-	target=Primary key='.' expr=Function ';'
-;
+	target=ActionCallTarget key='.' expr=Function ';';
 
 // Example: loop i from: 1 to: 5 { ... }
 S_Loop:
@@ -376,6 +375,10 @@ Unary returns Expression:
 // Field/array access. Example: my_list[0] or my_agent.name
 Access returns Expression:
 	Primary ({Access.left=current} ((op='[' right=ExpressionList? ']') | (op='.' right=(Primary))))*;
+	
+// To allow ll[0].action()
+ActionCallTarget returns Expression:
+	Primary ({Access.left=current} op='[' right=ExpressionList? ']')*;
 
 // Base expressions
 Primary returns Expression:

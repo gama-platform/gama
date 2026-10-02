@@ -86,8 +86,42 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 		if (epackage == GamlPackage.eINSTANCE)
 			switch (semanticObject.eClass().getClassifierID()) {
 			case GamlPackage.ACCESS:
-				sequence_Access(context, (Access) semanticObject); 
-				return; 
+				if (rule == grammarAccess.getExpressionRule()
+						|| rule == grammarAccess.getBinaryOperatorRule()
+						|| rule == grammarAccess.getPairRule()
+						|| action == grammarAccess.getPairAccess().getBinaryOperatorLeftAction_1_0()
+						|| rule == grammarAccess.getIfRule()
+						|| action == grammarAccess.getIfAccess().getIfLeftAction_1_0()
+						|| rule == grammarAccess.getOrRule()
+						|| action == grammarAccess.getOrAccess().getBinaryOperatorLeftAction_1_0()
+						|| rule == grammarAccess.getAndRule()
+						|| action == grammarAccess.getAndAccess().getBinaryOperatorLeftAction_1_0()
+						|| rule == grammarAccess.getCastRule()
+						|| action == grammarAccess.getCastAccess().getBinaryOperatorLeftAction_1_0_0()
+						|| rule == grammarAccess.getComparisonRule()
+						|| action == grammarAccess.getComparisonAccess().getBinaryOperatorLeftAction_1_0_0()
+						|| rule == grammarAccess.getAdditionRule()
+						|| action == grammarAccess.getAdditionAccess().getBinaryOperatorLeftAction_1_0_0()
+						|| rule == grammarAccess.getMultiplicationRule()
+						|| action == grammarAccess.getMultiplicationAccess().getBinaryOperatorLeftAction_1_0_0()
+						|| rule == grammarAccess.getPowerRule()
+						|| action == grammarAccess.getPowerAccess().getBinaryOperatorLeftAction_1_0_0()
+						|| rule == grammarAccess.getBinaryRule()
+						|| action == grammarAccess.getBinaryAccess().getBinaryOperatorLeftAction_1_0_0()
+						|| rule == grammarAccess.getUnitRule()
+						|| action == grammarAccess.getUnitAccess().getUnitLeftAction_1_0_0()
+						|| rule == grammarAccess.getUnaryRule()
+						|| rule == grammarAccess.getAccessRule()
+						|| action == grammarAccess.getAccessAccess().getAccessLeftAction_1_0()) {
+					sequence_Access(context, (Access) semanticObject); 
+					return; 
+				}
+				else if (rule == grammarAccess.getActionCallTargetRule()
+						|| action == grammarAccess.getActionCallTargetAccess().getAccessLeftAction_1_0()) {
+					sequence_ActionCallTarget(context, (Access) semanticObject); 
+					return; 
+				}
+				else break;
 			case GamlPackage.ACTION_FAKE_DEFINITION:
 				sequence_ActionFakeDefinition(context, (ActionFakeDefinition) semanticObject); 
 				return; 
@@ -444,6 +478,21 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * </pre>
 	 */
 	protected void sequence_ActionArguments_FacetsAndBlock_S_Method(ISerializationContext context, S_Method semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
+	 *     ActionCallTarget returns Access
+	 *     ActionCallTarget.Access_1_0 returns Access
+	 *
+	 * Constraint:
+	 *     (left=ActionCallTarget_Access_1_0 op='[' right=ExpressionList?)
+	 * </pre>
+	 */
+	protected void sequence_ActionCallTarget(ISerializationContext context, Access semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
 	}
 	
@@ -933,6 +982,8 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Unary returns ExpressionList
 	 *     Access returns ExpressionList
 	 *     Access.Access_1_0 returns ExpressionList
+	 *     ActionCallTarget returns ExpressionList
+	 *     ActionCallTarget.Access_1_0 returns ExpressionList
 	 *     Primary returns ExpressionList
 	 *     ExpressionList returns ExpressionList
 	 *
@@ -1112,6 +1163,8 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Unary returns Function
 	 *     Access returns Function
 	 *     Access.Access_1_0 returns Function
+	 *     ActionCallTarget returns Function
+	 *     ActionCallTarget.Access_1_0 returns Function
 	 *     Primary returns Function
 	 *     AbstractRef returns Function
 	 *     Function returns Function
@@ -1277,6 +1330,8 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Unary returns Array
 	 *     Access returns Array
 	 *     Access.Access_1_0 returns Array
+	 *     ActionCallTarget returns Array
+	 *     ActionCallTarget.Access_1_0 returns Array
 	 *     Primary returns Array
 	 *
 	 * Constraint:
@@ -1318,6 +1373,8 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Unary returns Point
 	 *     Access returns Point
 	 *     Access.Access_1_0 returns Point
+	 *     ActionCallTarget returns Point
+	 *     ActionCallTarget.Access_1_0 returns Point
 	 *     Primary returns Point
 	 *
 	 * Constraint:
@@ -1335,7 +1392,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     S_ActionCall returns S_Do
 	 *
 	 * Constraint:
-	 *     (target=Primary key='.' expr=Function)
+	 *     (target=ActionCallTarget key='.' expr=Function)
 	 * </pre>
 	 */
 	protected void sequence_S_ActionCall(ISerializationContext context, S_Do semanticObject) {
@@ -1348,7 +1405,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.STATEMENT__EXPR));
 		}
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getS_ActionCallAccess().getTargetPrimaryParserRuleCall_0_0(), semanticObject.getTarget());
+		feeder.accept(grammarAccess.getS_ActionCallAccess().getTargetActionCallTargetParserRuleCall_0_0(), semanticObject.getTarget());
 		feeder.accept(grammarAccess.getS_ActionCallAccess().getKeyFullStopKeyword_1_0(), semanticObject.getKey());
 		feeder.accept(grammarAccess.getS_ActionCallAccess().getExprFunctionParserRuleCall_2_0(), semanticObject.getExpr());
 		feeder.finish();
@@ -1361,7 +1418,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Statement returns S_Do
 	 *
 	 * Constraint:
-	 *     (((key='do' | key='invoke') expr=AbstractRef facets+=Facet*) | (target=Primary key='.' expr=Function))
+	 *     (((key='do' | key='invoke') expr=AbstractRef facets+=Facet*) | (target=ActionCallTarget key='.' expr=Function))
 	 * </pre>
 	 */
 	protected void sequence_S_ActionCall_S_Do(ISerializationContext context, S_Do semanticObject) {
@@ -1700,6 +1757,8 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Unary returns StringLiteral
 	 *     Access returns StringLiteral
 	 *     Access.Access_1_0 returns StringLiteral
+	 *     ActionCallTarget returns StringLiteral
+	 *     ActionCallTarget.Access_1_0 returns StringLiteral
 	 *     Primary returns StringLiteral
 	 *     TerminalExpression returns StringLiteral
 	 *     StringLiteral returns StringLiteral
@@ -1749,6 +1808,8 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Unary returns BooleanLiteral
 	 *     Access returns BooleanLiteral
 	 *     Access.Access_1_0 returns BooleanLiteral
+	 *     ActionCallTarget returns BooleanLiteral
+	 *     ActionCallTarget.Access_1_0 returns BooleanLiteral
 	 *     Primary returns BooleanLiteral
 	 *     TerminalExpression returns BooleanLiteral
 	 *
@@ -1797,6 +1858,8 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Unary returns DoubleLiteral
 	 *     Access returns DoubleLiteral
 	 *     Access.Access_1_0 returns DoubleLiteral
+	 *     ActionCallTarget returns DoubleLiteral
+	 *     ActionCallTarget.Access_1_0 returns DoubleLiteral
 	 *     Primary returns DoubleLiteral
 	 *     TerminalExpression returns DoubleLiteral
 	 *
@@ -1845,6 +1908,8 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Unary returns IntLiteral
 	 *     Access returns IntLiteral
 	 *     Access.Access_1_0 returns IntLiteral
+	 *     ActionCallTarget returns IntLiteral
+	 *     ActionCallTarget.Access_1_0 returns IntLiteral
 	 *     Primary returns IntLiteral
 	 *     TerminalExpression returns IntLiteral
 	 *
@@ -1893,6 +1958,8 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Unary returns ReservedLiteral
 	 *     Access returns ReservedLiteral
 	 *     Access.Access_1_0 returns ReservedLiteral
+	 *     ActionCallTarget returns ReservedLiteral
+	 *     ActionCallTarget.Access_1_0 returns ReservedLiteral
 	 *     Primary returns ReservedLiteral
 	 *     TerminalExpression returns ReservedLiteral
 	 *
@@ -2141,6 +2208,8 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Unary returns VariableRef
 	 *     Access returns VariableRef
 	 *     Access.Access_1_0 returns VariableRef
+	 *     ActionCallTarget returns VariableRef
+	 *     ActionCallTarget.Access_1_0 returns VariableRef
 	 *     Primary returns VariableRef
 	 *     AbstractRef returns VariableRef
 	 *     VariableRef returns VariableRef
