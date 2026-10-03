@@ -28,6 +28,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import gama.annotations.doc;
+import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.type;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
@@ -132,6 +134,19 @@ import gama.dev.DEBUG;
 		kind = ISymbolKind.NUMBER,
 		concept = { IConcept.TYPE, IConcept.DATE, IConcept.TIME },
 		doc = { @doc ("GAML objects that represent a date") })
+@tests ({
+		@test ("date time1 <- date(['07:39:59', 'HH:mm:ss']); time1.hour = 7 and time1.minute = 39 and time1.second = 59"),
+		@test ("date date1 <- date(['15/01/2025', 'dd/MM/yyyy']); date1.day = 15 and date1.month = 1 and date1.year = 2025"),
+		@test ("date datetime1 <- date(['15/01/2025 14:30:45', 'dd/MM/yyyy HH:mm:ss']); datetime1.day = 15 and datetime1.month = 1 and datetime1.year = 2025"),
+		@test ("date datetime1_time <- date(['15/01/2025 14:30:45', 'dd/MM/yyyy HH:mm:ss']); datetime1_time.hour = 14 and datetime1_time.minute = 30 and datetime1_time.second = 45"),
+		@test ("date date2 <- date(['15/01/2025', 'dd/MM/yyyy', 'fr']); date2.day = 15 and date2.month = 1 and date2.year = 2025"),
+		@test ("date date3 <- date([2025, 1, 15, 10, 30, 0]); date3.year = 2025 and date3.month = 1 and date3.day = 15"),
+		@test ("date date3_time <- date([2025, 1, 15, 10, 30, 0]); date3_time.hour = 10 and date3_time.minute = 30 and date3_time.second = 0"),
+		@test ("date time2 <- date(['14:30', 'HH:mm']); time2.hour = 14 and time2.minute = 30"),
+		@test ("date time3 <- date(['03:45 PM', 'hh:mm a']); time3.hour = 15 and time3.minute = 45"),
+		@test ("date date4 <- date(['2025-01-15', 'yyyy-MM-dd']); date4.year = 2025 and date4.month = 1 and date4.day = 15"),
+		@test ("date date5 <- date(['15.01.2025', 'dd.MM.yyyy']); date5.year = 2025 and date5.month = 1 and date5.day = 15")
+})
 public class GamaDateType extends GamaType<IDate> {
 
 	/** Pattern for model-specific date format with placeholders like %Y, %M, %D, etc. */
