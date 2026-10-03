@@ -1,0 +1,173 @@
+/**
+* Name: ContainerAndStringRobustnessTest
+* Description: Feeds lists, maps, matrices, strings and casts with absurd values (out of range indexes, negative
+* 	counts, empty or ragged containers, invalid patterns, huge numbers). An invalid input may be rejected, but
+* 	with a GAML error and not with an internal Java exception; when it is accepted, the result must make sense
+* Tags: robustness, list, matrix, string, cast, test
+*/
+
+experiment ContainerAndStringRobustnessTest type: test autorun: true {
+
+	list<int> numbers <- [1, 2, 3];
+
+	bool handled(string problem) {
+		return problem = nil ? true : !(problem contains "Java error");
+	}
+
+	test "Accessing a list out of its bounds raises a proper error" {
+		string problem <- nil;
+		try { int i <- numbers[5]; } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+
+		problem <- nil;
+		try { int i <- numbers[-1]; } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+
+		problem <- nil;
+		try { int i <- numbers at 5; } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+	}
+
+	test "Accessing a matrix out of its bounds raises a proper error" {
+		matrix<int> m <- matrix([[1, 2], [3, 4]]);
+		string problem <- nil;
+		try { int i <- m[5, 5]; } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+
+		problem <- nil;
+		try { int i <- m[-1, 0]; } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+	}
+
+	test "Negative or excessive counts" {
+		assert empty(first(-1, numbers));
+		assert empty(last(-2, numbers));
+		assert first(10, numbers) = numbers;
+		assert length(5 among numbers) = 3;
+		assert empty(list_with(-1, 0));
+		assert empty(list_with(0, 0));
+		assert numbers copy_between (2, 1) = [];
+		assert numbers copy_between (-5, 50) = numbers;
+
+		string problem <- nil;
+		try { list<int> picked <- -1 among numbers; } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+	}
+
+	test "Ranges with absurd steps" {
+		assert range(-3) = [0, -1, -2, -3];
+		assert range(3, 3) = [3];
+		string problem <- nil;
+		try { list<int> r <- range(0, 10, -1); } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+		problem <- nil;
+		try { list<int> r <- range(0, 10, 0); } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+	}
+
+	test "Empty containers" {
+		assert one_of([]) = nil;
+		assert min([]) = nil;
+		assert max([]) = nil;
+		assert empty(shuffle([]));
+		assert empty(reverse([]));
+		assert [] index_of 1 = -1;
+		// the sum of nothing is either 0 or a proper error
+		string problem <- nil;
+		float total <- 0.0;
+		try { total <- sum([]); } catch { problem <- #current_error; }
+		assert handled(problem);
+		assert problem != nil or total = 0.0;
+	}
+
+	test "nil inside containers" {
+		assert numbers + nil = [1, 2, 3, nil];
+		assert numbers - nil = numbers;
+		assert not (numbers contains nil);
+		assert numbers index_of nil = -1;
+		assert remove_duplicates([nil, nil, 1]) = [nil, 1];
+		map<string, int> m <- ["a"::1];
+		assert m["missing"] = nil;
+		assert m[nil] = nil;
+		assert empty(list(nil));
+		assert empty(map(nil));
+	}
+
+	test "A ragged list of lists cannot become a matrix silently" {
+		string problem <- nil;
+		try { matrix<int> m <- matrix([[1, 2], [3]]); } catch { problem <- #current_error; }
+		assert handled(problem);
+	}
+
+	test "Matrices with absurd dimensions" {
+		string problem <- nil;
+		matrix<int> empty_matrix <- nil;
+		matrix<int> negative_matrix <- nil;
+		try {
+			empty_matrix <- {0, 0} matrix_with 1;
+			negative_matrix <- {-1, 2} matrix_with 1;
+		} catch { problem <- #current_error; }
+		assert handled(problem);
+		assert problem != nil or (empty_matrix.rows * empty_matrix.columns = 0 and negative_matrix.columns >= 0);
+	}
+
+	test "Strings accessed out of their bounds" {
+		assert "hello" at 10 = "";
+		assert "hello" at -1 = "";
+		assert copy_between("hello", 3, 1) = "";
+		assert copy_between("hello", -5, 50) = "hello";
+		assert first("") = "";
+		assert last("") = "";
+		assert reverse("") = "";
+		assert "" split_with "," = [];
+		assert "hello" split_with "" = ["hello"];
+	}
+
+	test "Invalid regular expressions raise a proper error" {
+		string problem <- nil;
+		try { string s <- replace_regex("abc", "[", "x"); } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+		problem <- nil;
+		list<string> matches <- [];
+		try { matches <- "abc" regex_matches "("; } catch { problem <- #current_error; }
+		assert handled(problem);
+	}
+
+	test "Rounding to a negative precision" {
+		string problem <- nil;
+		float rounded <- 0.0;
+		try { rounded <- 1234.5678 with_precision -2; } catch { problem <- #current_error; }
+		assert handled(problem);
+		// either rejected, or rounded to the hundreds
+		assert problem != nil or rounded = 1200.0;
+	}
+
+	test "Casting absurd strings to numbers" {
+		// too big for an int: saturated
+		assert int("9999999999999") = #max_int;
+		assert not is_finite(float("1e400"));
+		assert int("") = 0;
+		assert float("  ") = 0.0;
+		assert int(nil) = 0;
+		assert float(nil) = 0.0;
+	}
+
+	test "Characters out of the unicode range" {
+		string problem <- nil;
+		string c <- "";
+		try { c <- char(-1); } catch { problem <- #current_error; }
+		assert handled(problem);
+		problem <- nil;
+		try { c <- char(1114112); } catch { problem <- #current_error; }
+		assert handled(problem);
+	}
+}

@@ -1,7 +1,9 @@
 /**
 * Name: BatchAdvancedTest
 * Author: Antigravity
-* Description: Tests the batch experimentation directives
+* Description: Declares batch experiments using the exploration methods (exhaustive, genetic, annealing, tabu).
+*   A batch experiment cannot be run by the test runner, which only executes experiments of type 'test': this
+*   file is a compilation check, done when the tests are validated ('-validate'), and contains no assertion
 * Tags: batch, extension, test
 */
 model BatchAdvancedTestModel

@@ -1,0 +1,200 @@
+/**
+* Name: TrigonometryAndArithmeticTest
+* Description: Tests the trigonometric operators (in degrees and in radians), the integer arithmetic
+* 	(div, mod, fact, even), the powers and logarithms, and the rounding operators
+* Tags: math, trigonometry, arithmetic, test
+*/
+
+experiment TrigonometryAndArithmeticTest type: test autorun: true {
+
+	test "Trigonometric operators work in degrees" {
+		assert sin(0) = 0.0;
+		assert sin(30) = 0.5;
+		assert sin(90) = 1.0;
+		assert sin(-90) = -1.0;
+		assert cos(0) = 1.0;
+		assert cos(60) = 0.5;
+		assert cos(180) = -1.0;
+		assert cos(360) = 1.0;
+		assert tan(0) = 0.0;
+		assert tan(45) = 1.0;
+		// the tangent of 90 is not infinite, but a very big number
+		assert is_finite(tan(90));
+		assert tan(90) > 1.0E15;
+	}
+
+	test "Inverse trigonometric operators return degrees" {
+		assert acos(1) = 0.0;
+		assert acos(0.5) = 60.0;
+		assert acos(0) = 90.0;
+		assert acos(-1) = 180.0;
+		assert asin(0) = 0.0;
+		assert asin(0.5) = 30.0;
+		assert asin(1) = 90.0;
+		assert asin(-1) = -90.0;
+		assert atan(0) = 0.0;
+		assert atan(1) = 45.0;
+		assert atan(-1) = -45.0;
+
+		// they invert the direct operators
+		assert asin(sin(25)) = 25.0;
+		assert acos(cos(25)) = 25.0;
+		assert atan(tan(25)) = 25.0;
+
+		// outside of [-1, 1] the result is not a number
+		assert not is_number(acos(2));
+		assert not is_number(asin(-2));
+	}
+
+	test "atan2 gives the angle of a vector" {
+		// the first operand is y, the second is x
+		assert atan2(0, 1) = 0.0;
+		assert atan2(1, 1) = 45.0;
+		assert atan2(1, 0) = 90.0;
+		assert atan2(0, -1) = 180.0;
+		assert atan2(-1, 0) = -90.0;
+		assert atan2(0, 0) = 0.0;
+	}
+
+	test "Trigonometric operators in radians" {
+		assert sin_rad(0) = 0.0;
+		assert sin_rad(#pi / 2) = 1.0;
+		assert cos_rad(0) = 1.0;
+		assert cos_rad(#pi) = -1.0;
+		assert tan_rad(#pi / 4) = 1.0;
+		assert atan2_rad(1, 1) = #pi / 4;
+
+		// both families agree once the angle is converted
+		assert sin_rad(30 * #to_rad) = sin(30);
+		assert cos_rad(60 * #to_rad) = cos(60);
+	}
+
+	test "Hyperbolic tangent and hypotenuse" {
+		assert tanh(0) = 0.0;
+		assert tanh(100) = 1.0;
+		assert tanh(-100) = -1.0;
+		assert tanh(1) > 0.76 and tanh(1) < 0.77;
+
+		// hypot(x1, x2, y1, y2) is the distance between (x1, y1) and (x2, y2)
+		assert hypot(0, 3, 0, 4) = 5.0;
+		assert hypot(1, 4, 1, 5) = 5.0;
+		assert hypot(2, 2, 7, 7) = 0.0;
+	}
+
+	test "Integer division and modulo" {
+		assert 5 div 3 = 1;
+		assert 6 div 3 = 2;
+		assert -5 div 3 = -1;
+		assert 5.5 div 2 = 2;
+		assert (5 div 3) is int;
+
+		assert 5 mod 3 = 2;
+		assert 6 mod 3 = 0;
+		// the result takes the sign of the left operand
+		assert -5 mod 3 = -2;
+		assert 5 mod -3 = 2;
+
+		// '/' always yields a float
+		assert 7 / 2 = 3.5;
+		assert 6 / 3 = 2.0;
+		assert (6 / 3) is float;
+
+		// a number is rebuilt from its quotient and remainder
+		assert (17 div 5) * 5 + 17 mod 5 = 17;
+	}
+
+	test "Parity, sign and factorial" {
+		assert even(0);
+		assert even(4);
+		assert even(-2);
+		assert not even(3);
+		assert not even(-1);
+
+		assert signum(-12.8) = -1;
+		assert signum(0.0) = 0;
+		assert signum(3) = 1;
+
+		assert fact(0) = 1.0;
+		assert fact(1) = 1.0;
+		assert fact(5) = 120.0;
+		assert fact(10) = 3628800.0;
+		// too big for an int, the result is a float
+		assert fact(20) = 2.43290200817664E18;
+		assert fact(-1) = 0.0;
+	}
+
+	test "Powers, roots and logarithms" {
+		assert 2 ^ 10 = 1024.0;
+		assert 2 ^ 0 = 1.0;
+		assert 2 ^ -1 = 0.5;
+		assert 0 ^ 0 = 1.0;
+		assert (2 ^ 10) is float;
+		assert 2.0 ^ 0.5 = sqrt(2);
+		assert sqrt(0) = 0.0;
+		assert sqrt(16) = 4.0;
+		assert sqrt(2) * sqrt(2) = 2.0;
+		// a fractional power of a negative number is not a number
+		assert not is_number((-8) ^ (1 / 3));
+
+		assert exp(0) = 1.0;
+		assert ln(1) = 0.0;
+		assert ln(exp(3)) = 3.0;
+		// 'log' is the decimal logarithm
+		assert log(1) = 0.0;
+		assert log(100) = 2.0;
+		assert log(1000) = 3.0;
+	}
+
+	test "Rounding" {
+		assert round(2.4) = 2;
+		// halves are rounded away from zero
+		assert round(2.5) = 3;
+		assert round(-2.5) = -3;
+		assert round(0.4999) = 0;
+
+		assert floor(4.7) = 4;
+		assert floor(-4.7) = -5;
+		assert ceil(4.1) = 5;
+		assert ceil(-4.7) = -4;
+		assert ceiling(4.1) = ceil(4.1);
+
+		// casting to int truncates towards zero
+		assert int(3.99) = 3;
+		assert int(-3.99) = -3;
+
+		assert 3.14159 with_precision 3 = 3.142;
+		assert 3.14159 with_precision 0 = 3.0;
+		assert 2.5 with_precision 0 = 3.0;
+	}
+
+	test "Minimum, maximum and intervals" {
+		assert min(3, 5) = 3;
+		assert max(3, 5) = 5;
+		assert min(3.5, 2) = 2;
+		assert max(-1, -2) = -1;
+		assert abs(-3) = 3;
+		assert abs(-3.5) = 3.5;
+		assert abs(3) = 3;
+
+		// an empty container has neither a minimum nor a maximum
+		assert min([]) = nil;
+		assert max([]) = nil;
+
+		// 'between' excludes both bounds
+		assert 3 between (1, 5);
+		assert not (1 between (1, 5));
+		assert not (5 between (1, 5));
+		assert 1.5 between (1.0, 5.0);
+		assert not (1.0 between (1.0, 5.0));
+	}
+
+	test "Numbers written in strings and in scientific notation" {
+		assert 1e3 = 1000.0;
+		assert 1.5e-3 = 0.0015;
+		assert float("1e3") = 1000.0;
+		assert int(" 12 ") = 12;
+		// a string that is not a number is cast to 0
+		assert int("abc") = 0;
+		assert float("abc") = 0.0;
+	}
+}

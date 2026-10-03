@@ -1,0 +1,157 @@
+/**
+* Name: FontAndColorRobustnessTest
+* Description: Feeds fonts and colors with absurd values (negative, null, infinite, not a number, out of range).
+* 	An invalid input may be rejected, but with a GAML error and not with an internal Java exception; when it is
+* 	accepted, the result must make sense (a font has a strictly positive size, color components stay in range...)
+* Tags: robustness, font, color, test
+*/
+
+experiment FontAndColorRobustnessTest type: test autorun: true {
+
+	/** True if there was no error, or if the error is a proper GAML one rather than a leaked Java exception */
+	bool handled(string problem) {
+		return problem = nil ? true : !(problem contains "Java error");
+	}
+
+	test "A font cannot have a negative size" {
+		string problem <- nil;
+		float size <- 1.0;
+		try { size <- font("Arial", -5).size; } catch { problem <- #current_error; }
+		assert handled(problem);
+		assert problem != nil or size > 0;
+	}
+
+	test "A font cannot have a null size" {
+		string problem <- nil;
+		float size <- 1.0;
+		try { size <- font("Arial", 0).size; } catch { problem <- #current_error; }
+		assert handled(problem);
+		assert problem != nil or size > 0;
+	}
+
+	test "A font cannot have an infinite size" {
+		string problem <- nil;
+		float size <- 1.0;
+		try { size <- font("Arial", #infinity).size; } catch { problem <- #current_error; }
+		assert handled(problem);
+		assert problem != nil;
+	}
+
+	test "A font cannot have a size that is not a number" {
+		string problem <- nil;
+		float size <- 1.0;
+		try { size <- font("Arial", #nan).size; } catch { problem <- #current_error; }
+		assert handled(problem);
+		assert problem != nil or size > 0;
+	}
+
+	test "A fractional font size is rounded" {
+		float size <- font("Arial", 12.7).size;
+		assert size >= 12 and size <= 13;
+	}
+
+	test "Unknown font names and styles fall back to valid values" {
+		string problem <- nil;
+		font unknown_family <- nil;
+		font odd_style <- nil;
+		try {
+			unknown_family <- font("this font surely does not exist", 12);
+			odd_style <- font("Arial", 12, 99);
+		} catch { problem <- #current_error; }
+		assert handled(problem);
+		assert unknown_family != nil;
+		assert unknown_family.size = 12;
+		assert [#plain, #bold, #italic, #bold + #italic] contains odd_style.style;
+	}
+
+	test "Color components are clamped" {
+		assert rgb(-1, -1, -1) = #black;
+		assert rgb(256, 300, 1000) = #white;
+		assert rgb(0, 0, 0, -1).alpha = 0;
+		assert rgb(0, 0, 0, 999).alpha = 255;
+		assert rgb(0, 0, 0, 2.5).alpha = 255;
+		assert rgb(0, 0, 0, -0.5).alpha = 0;
+		assert (#red with_alpha 5.0).alpha = 255;
+		assert (#red with_alpha -1.0).alpha = 0;
+	}
+
+	test "Color components that are not numbers are handled" {
+		string problem <- nil;
+		rgb result <- #white;
+		try { result <- rgb(#nan, 0, 0); } catch { problem <- #current_error; }
+		assert handled(problem);
+		assert problem != nil or (result.red >= 0 and result.red <= 255);
+	}
+
+	test "Invalid color names are rejected" {
+		string problem <- nil;
+		try { rgb c <- rgb("not a color"); } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+		problem <- nil;
+		try { rgb c <- rgb("#GGGGGG"); } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+	}
+
+	test "A short hexadecimal color is either expanded or rejected" {
+		string problem <- nil;
+		rgb result <- nil;
+		try { result <- rgb("#FFF"); } catch { problem <- #current_error; }
+		assert handled(problem);
+		// '#FFF' is the CSS shorthand of white
+		assert problem != nil or result = #white;
+	}
+
+	test "A list of components that is too short is rejected" {
+		string problem <- nil;
+		rgb result <- nil;
+		try { result <- rgb([1, 2]); } catch { problem <- #current_error; }
+		assert handled(problem);
+		assert problem != nil or (result.red = 1 and result.green = 2 and result.alpha = 255);
+		// extra components are ignored
+		assert rgb([1, 2, 3, 4, 5]) = rgb(1, 2, 3, 4);
+	}
+
+	test "Blending ratios out of [0, 1] are clamped" {
+		assert blend(#red, #blue, 5.0) = #red;
+		assert blend(#red, #blue, -1.0) = #blue;
+		string problem <- nil;
+		rgb result <- nil;
+		try { result <- blend(#red, #blue, #nan); } catch { problem <- #current_error; }
+		assert handled(problem);
+		// blending two opaque colors cannot give a transparent one
+		assert problem != nil or result.alpha = 255;
+	}
+
+	test "Dividing a color by zero raises a proper error" {
+		string problem <- nil;
+		try { rgb c <- #red / 0; } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+	}
+
+	test "Multiplying a color by absurd factors keeps it valid" {
+		assert #red * -1 = #black;
+		rgb boosted <- #red * #infinity;
+		assert boosted.red = 255;
+		assert boosted.green = 0;
+	}
+
+	test "Random colors with absurd bounds stay valid" {
+		assert rnd_color(-5) = #black;
+		rgb bright <- rnd_color(1000);
+		assert bright.red <= 255 and bright.green <= 255 and bright.blue <= 255;
+		// reversed bounds
+		rgb between_bounds <- rnd_color(200, 100);
+		assert between_bounds.red >= 100 and between_bounds.red <= 200;
+	}
+
+	test "Palettes with absurd sizes" {
+		assert empty(brewer_colors("Reds", -1));
+		string problem <- nil;
+		try { list<rgb> too_many <- brewer_colors("Reds", 1000); } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+	}
+}

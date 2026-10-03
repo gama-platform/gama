@@ -32,4 +32,80 @@ experiment MathsAdvancedTest type: test autorun: true {
 		float g_den <- gamma_density(2.0, 3.0, 1.0);
 		assert g_den >= 0.0;
 	}
+
+	test "Densities are null outside of the support of the distribution" {
+		assert weibull_density(-1.0, 3.0, 1.0) = 0.0;
+		assert exp_density(-1.0, 1.0) = 0.0;
+		assert lognormal_density(-1.0, 3.0, 1.0) = 0.0;
+		assert gamma_density(-1.0, 3.0, 1.0) = 0.0;
+		// the second operand of the exponential density is the mean of the distribution (the inverse of its
+		// rate): the density at 0 is 1 / mean
+		assert exp_density(0.0, 2.0) = 0.5;
+		assert exp_density(1.0, 1.0) = exp(-1.0);
+		assert exp_density(1.0, 2.0) = 0.5 * exp(-0.5);
+	}
+
+	test "Determinant, trace and eigenvalues" {
+		matrix<float> diagonal <- matrix([[2.0, 0.0], [0.0, 3.0]]);
+		matrix<float> full <- matrix([[1.0, 2.0], [3.0, 4.0]]);
+		assert det(diagonal) = 6.0;
+		assert det(full) = -2.0;
+		assert determinant(full) = det(full);
+		assert trace(full) = 5.0;
+		assert trace(diagonal) = 5.0;
+
+		// the eigenvalues of a diagonal matrix are its diagonal
+		list<float> diagonal_eigenvalues <- eigenvalues(diagonal);
+		assert length(diagonal_eigenvalues) = 2;
+		assert diagonal_eigenvalues contains_all [2.0, 3.0];
+
+		// their sum is the trace and their product the determinant
+		list<float> full_eigenvalues <- eigenvalues(full);
+		assert sum(full_eigenvalues) with_precision 9 = trace(full);
+		assert (full_eigenvalues[0] * full_eigenvalues[1]) with_precision 9 = det(full);
+	}
+
+	test "Inverse and matrix product" {
+		matrix<float> diagonal <- matrix([[2.0, 0.0], [0.0, 3.0]]);
+		matrix<float> full <- matrix([[1.0, 2.0], [3.0, 4.0]]);
+		matrix<float> identity <- matrix([[1.0, 0.0], [0.0, 1.0]]);
+
+		matrix<float> inverted <- inverse(diagonal);
+		assert inverted[0, 0] = 0.5;
+		assert inverted[1, 1] with_precision 6 = 0.333333;
+		assert inverted[1, 0] = 0.0;
+
+		// '.' is the matrix product, '*' multiplies cell by cell
+		assert full . inverse(full) = identity;
+		assert full . identity = full;
+		assert (full . full)[0, 0] = 7.0;
+		assert (full * full)[0, 0] = 1.0;
+		assert (full * full)[1, 1] = 16.0;
+		assert (full / full) = matrix([[1.0, 1.0], [1.0, 1.0]]);
+		assert (full - full) = matrix([[0.0, 0.0], [0.0, 0.0]]);
+		assert transpose(transpose(full)) = full;
+	}
+
+	// NB: lognormal_trunc_rnd, weibull_trunc_rnd and gamma_trunc_rnd never return when both bounds are equal,
+	// which is why this case cannot be part of the tests
+
+	test "Appending matrices horizontally" {
+		matrix<float> first_matrix <- matrix([[1.0, 2.0], [3.0, 4.0]]);
+		matrix<float> second_matrix <- matrix([[5.0, 6.0], [7.0, 8.0]]);
+		matrix<float> side_by_side <- append_horizontally(first_matrix, second_matrix);
+		assert side_by_side.columns = 4;
+		assert side_by_side.rows = 2;
+		assert side_by_side column_at 2 = [5.0, 6.0];
+		assert side_by_side row_at 0 = [1.0, 3.0, 5.0, 7.0];
+	}
+
+	test "Appending matrices" {
+		matrix<float> first_matrix <- matrix([[1.0, 2.0], [3.0, 4.0]]);
+		matrix<float> second_matrix <- matrix([[5.0, 6.0], [7.0, 8.0]]);
+		matrix<float> stacked <- append_vertically(first_matrix, second_matrix);
+		assert stacked.columns = 2;
+		assert stacked.rows = 4;
+		assert stacked column_at 0 = [1.0, 2.0, 5.0, 6.0];
+		assert stacked column_at 1 = [3.0, 4.0, 7.0, 8.0];
+	}
 }

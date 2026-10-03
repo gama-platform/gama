@@ -15,8 +15,9 @@ experiment StringAdvancedTest type: test autorun: true {
 		assert fruits[1] = "banana";
 		
 		string s2 <- "apple  banana \t orange";
-		list<string> parts <- s2 split_with " \t"; // split by spaces or tabs
-		// Note: depending on GAMA implementation, split_with might handle sequences. Let's do basic
+		// every character of the right operand is a delimiter, and consecutive delimiters are merged
+		list<string> parts <- s2 split_with " \t";
+		assert parts = ["apple", "banana", "orange"];
 		list<string> parts2 <- "a-b-c" split_with "-";
 		assert parts2 = ["a", "b", "c"];
 	}
@@ -42,19 +43,20 @@ experiment StringAdvancedTest type: test autorun: true {
 		
 		assert is_number("123.45") = true;
 		assert is_number("12A") = false;
+		assert is_number("12 apples") = false;
 	}
 	
-	test "String Padding and Trimming" {
-		string s1 <- "  hello  ";
-		// Wait, trim does not exist in some versions, it's `trim` or `replace_regex`
-		// But let's test string concatenation as a safe alternative if trim is undocumented
-		string s2 <- "A" + "B";
-		assert s2 = "AB";
-		
-		// reverse
+	test "String Trimming and Reversal" {
+		assert trim("  hello  ") = "hello";
+		assert trim("hello") = "hello";
+		assert trim(" \t hello world \n") = "hello world";
+		assert trim("   ") = "";
+
 		assert reverse("hello") = "olleh";
+		assert reverse("") = "";
+		assert reverse(reverse("hello")) = "hello";
 	}
-	
+
 	test "Type Conversion in String Expressions" {
 		assert ("Value: " + 5) = "Value: 5";
 		assert string(5) + " Value" = "5 Value";

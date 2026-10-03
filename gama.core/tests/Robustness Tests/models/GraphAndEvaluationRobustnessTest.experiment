@@ -1,0 +1,102 @@
+/**
+* Name: GraphAndEvaluationRobustnessTest
+* Description: Feeds graphs with absurd values (empty graphs, unknown vertices, absurd sizes) and the dynamic
+* 	evaluation of GAML and JSON with invalid code. An invalid input may be rejected, but with a GAML error and not
+* 	with an internal Java exception; when it is accepted, the result must make sense
+* Tags: robustness, graph, eval, json, test
+*/
+
+experiment GraphAndEvaluationRobustnessTest type: test autorun: true {
+
+	bool handled(string problem) {
+		return problem = nil ? true : !(problem contains "Java error");
+	}
+
+	test "An empty graph" {
+		graph empty_graph <- graph([]);
+		assert empty(empty_graph.vertices);
+		assert empty(connected_components_of(empty_graph));
+		assert nb_cycles(empty_graph) = 0;
+		assert empty(betweenness_centrality(empty_graph));
+		assert empty(main_connected_component(empty_graph).vertices);
+		assert empty(as_edge_graph([]).vertices);
+		// the indexes of an empty graph are numbers
+		assert is_number(alpha_index(empty_graph));
+		assert is_number(beta_index(empty_graph));
+		assert is_number(gamma_index(empty_graph));
+	}
+
+	test "A path between vertices that are not in the graph" {
+		string problem <- nil;
+		path p <- nil;
+		try { p <- path_between(graph([]), "a", "b"); } catch { problem <- #current_error; }
+		assert handled(problem);
+		assert problem != nil or p = nil or empty(p.edges);
+	}
+
+	test "Querying a vertex that is not in the graph" {
+		graph g <- as_edge_graph([line([{0, 0}, {10, 0}])]);
+		assert g degree_of {999, 999} = 0;
+		assert empty(g neighbors_of {999, 999});
+		string problem <- nil;
+		try { path p <- path_between(g, nil, nil); } catch { problem <- #current_error; }
+		assert handled(problem);
+	}
+
+	test "Generating graphs of absurd sizes" {
+		assert empty(generate_complete_graph(0, false).vertices);
+		string problem <- nil;
+		graph g <- nil;
+		try { g <- generate_complete_graph(-1, false); } catch { problem <- #current_error; }
+		assert handled(problem);
+		assert problem != nil or empty(g.vertices);
+	}
+
+	test "Building a graph from nil" {
+		string problem <- nil;
+		try { graph g <- as_edge_graph(nil); } catch { problem <- #current_error; }
+		assert handled(problem);
+	}
+
+	test "Evaluating invalid GAML code raises a proper error" {
+		string problem <- nil;
+		try { unknown u <- eval_gaml("1 +"); } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+		problem <- nil;
+		try { unknown u <- eval_gaml("this is not gaml"); } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+		problem <- nil;
+		try { unknown u <- eval_gaml(""); } catch { problem <- #current_error; }
+		assert handled(problem);
+	}
+
+	test "Reading invalid JSON raises a proper error" {
+		string problem <- nil;
+		try { unknown u <- from_json(""); } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+		problem <- nil;
+		try { unknown u <- from_json("{"); } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+		problem <- nil;
+		try { unknown u <- from_json("[1, 2"); } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+	}
+
+	test "Reading files that do not exist raises a proper error" {
+		string problem <- nil;
+		try { list<string> lines <- text_file("").contents; } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+		problem <- nil;
+		try { unknown contents <- csv_file("does_not_exist.csv").contents; } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+		assert not file_exists("");
+		assert not file_exists(nil);
+	}
+}

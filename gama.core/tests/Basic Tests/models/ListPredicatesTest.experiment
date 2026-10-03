@@ -14,6 +14,7 @@ experiment ListPredicatesTest type: test autorun: true {
 		assert all_pos = true;
 		
 		bool all_large <- numbers all_match (each > 3);
+		assert all_large = false;
 		assert (numbers contains 3) = true;
 		assert !empty(numbers where (each > 3)) = true;
 		assert length(numbers where (each > 3)) = 2;

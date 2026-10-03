@@ -1,0 +1,122 @@
+/**
+* Name: RandomRobustnessTest
+* Description: Feeds the random operators with absurd parameters (negative, null, infinite, not a number,
+* 	reversed bounds, empty weights). An invalid input may be rejected, but with a GAML error and not with an
+* 	internal Java exception; when it is accepted, the drawn value must be a number within the possible range
+* Tags: robustness, random, distribution, test
+*/
+
+experiment RandomRobustnessTest type: test autorun: true {
+
+	bool handled(string problem) {
+		return problem = nil ? true : !(problem contains "Java error");
+	}
+
+	test "Negative and null upper bounds" {
+		seed <- 1.0;
+		int drawn <- rnd(-5);
+		assert drawn >= -5 and drawn <= 0;
+		assert rnd(0) = 0;
+		float drawn_float <- rnd(-5.0);
+		assert drawn_float >= -5.0 and drawn_float <= 0.0;
+	}
+
+	test "Reversed bounds" {
+		seed <- 1.0;
+		int drawn <- rnd(5, 1);
+		assert drawn >= 1 and drawn <= 5;
+		float gaussian <- truncated_gauss(0, 1, 5, -5);
+		assert gaussian >= -5 and gaussian <= 5;
+	}
+
+	test "A null or negative step" {
+		string problem <- nil;
+		try { int drawn <- rnd(1, 5, 0); } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+		problem <- nil;
+		int drawn <- 0;
+		try { drawn <- rnd(1, 5, -1); } catch { problem <- #current_error; }
+		assert handled(problem);
+		assert problem != nil or (drawn >= 1 and drawn <= 5);
+	}
+
+	test "An infinite upper bound" {
+		string problem <- nil;
+		float drawn <- 0.0;
+		try { drawn <- rnd(#infinity); } catch { problem <- #current_error; }
+		assert handled(problem);
+		assert problem != nil or is_finite(drawn);
+	}
+
+	test "An upper bound that is not a number" {
+		string problem <- nil;
+		float drawn <- 0.0;
+		try { drawn <- rnd(#nan); } catch { problem <- #current_error; }
+		assert handled(problem);
+		assert problem != nil or is_number(drawn);
+	}
+
+	test "Probabilities out of [0, 1] are clamped" {
+		assert flip(2.0);
+		assert not flip(-1.0);
+		string problem <- nil;
+		try { bool b <- flip(#nan); } catch { problem <- #current_error; }
+		assert handled(problem);
+	}
+
+	test "Invalid parameters of the binomial and Poisson distributions" {
+		string problem <- nil;
+		try { int drawn <- binomial(-1, 0.5); } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+		problem <- nil;
+		try { int drawn <- binomial(10, 2.0); } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+		// a negative mean cannot give a negative count
+		assert poisson(-1.0) >= 0;
+		assert poisson(0.0) = 0;
+	}
+
+	test "Invalid rates of the exponential distribution" {
+		string problem <- nil;
+		try { float drawn <- exp_rnd(0.0); } catch { problem <- #current_error; }
+		assert handled(problem);
+		problem <- nil;
+		try { float drawn <- exp_rnd(-1.0); } catch { problem <- #current_error; }
+		assert handled(problem);
+	}
+
+	test "A negative standard deviation" {
+		string problem <- nil;
+		float drawn <- 0.0;
+		try { drawn <- gauss(0, -1); } catch { problem <- #current_error; }
+		assert handled(problem);
+		assert problem != nil or is_number(drawn);
+	}
+
+	test "Weighted choices without any positive weight" {
+		string problem <- nil;
+		int index <- 0;
+		try { index <- rnd_choice([0.0, 0.0]); } catch { problem <- #current_error; }
+		assert handled(problem);
+		// either rejected, or one of the two indexes
+		assert problem != nil or (index >= 0 and index <= 1);
+
+		problem <- nil;
+		try { index <- rnd_choice([]); } catch { problem <- #current_error; }
+		// there is nothing to choose from
+		assert problem != nil;
+		assert handled(problem);
+	}
+
+	test "Negative weights are never chosen" {
+		seed <- 1.0;
+		list<int> choices <- [];
+		loop times: 50 {
+			choices <+ rnd_choice([-1.0, 2.0]);
+		}
+		assert choices all_match (each = 1);
+	}
+}

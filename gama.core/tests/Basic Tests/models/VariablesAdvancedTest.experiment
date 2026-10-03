@@ -28,16 +28,31 @@ experiment VariablesAdvancedTest type: test autorun: true {
 	test "Variable Dynamic Updates" {
 		create var_agent number: 1 returns: created_agents;
 		var_agent ag <- created_agents[0];
-		
 		assert ag.dynamic_val = 0;
 
-		// '_step_' only executes the control architecture: 'update:' facets are recomputed by
-		// the scheduler during a real simulation step, so they stay put here
+		// '_step_' only executes the behaviours of the agent: the 'update' facet is not evaluated
 		ask ag { do _step_; }
 		assert ag.dynamic_val = 0;
 
-		// they can still be assigned explicitly
+		// it is evaluated when the agent is stepped by the simulation
+		ask simulation { do _step_; }
+		assert ag.dynamic_val = 1;
+		ask simulation { do _step_; }
+		assert ag.dynamic_val = 2;
+
+		// an explicit assignment is taken as the new base value
 		ask ag { dynamic_val <- 7; }
-		assert ag.dynamic_val = 7;
+		ask simulation { do _step_; }
+		assert ag.dynamic_val = 8;
+	}
+
+	test "Bounds apply to updates too" {
+		create var_agent number: 1 returns: created_agents;
+		var_agent ag <- created_agents[0];
+		ag.bounded_val <- 9;
+		ask ag { bounded_val <- bounded_val + 5; }
+		assert ag.bounded_val = 10;
+		ask ag { bounded_val <- bounded_val - 50; }
+		assert ag.bounded_val = 0;
 	}
 }

@@ -6,18 +6,37 @@
 * Tags: path, graph, topology, test
 */
 
+model PathTestModel
+
 experiment PathTest type: test autorun: true {
 
-	test "A graph can be built from a map of edges" {
-		graph g <- as_edge_graph(["a"::"b", "b"::"c", "c"::"d", "a"::"d"]);
+	/**
+	 * A square a-b-c-d, plus nothing else:
+	 * 	a - b
+	 * 	|   |
+	 * 	d - c
+	 * 'as_edge_graph' is meant for geometries, a graph of plain values is built edge by edge
+	 */
+	graph square_graph {
+		graph g <- graph([]);
+		g <- g add_edge ("a"::"b");
+		g <- g add_edge ("b"::"c");
+		g <- g add_edge ("c"::"d");
+		g <- g add_edge ("a"::"d");
+		return g;
+	}
+
+	test "A graph can be built edge by edge" {
+		graph g <- square_graph();
 		assert g != nil;
 		assert length(g.vertices) = 4;
 		assert length(g.edges) = 4;
+		assert g.vertices contains_all ["a", "b", "c", "d"];
+		assert g.edges contains ("a"::"b");
 	}
 
 	test "Graph Path Calculations" {
-		graph g <- as_edge_graph(["a"::"b", "b"::"c", "c"::"d", "a"::"d"]);
-
+		graph g <- square_graph();
 		path p <- path_between(g, "a", "c");
 		assert p != nil;
 		assert p.source = "a";
@@ -27,15 +46,36 @@ experiment PathTest type: test autorun: true {
 		path p2 <- path_between(g, "a", "d");
 		assert p2 != nil;
 		assert length(p2.edges) = 1;
+		assert p2.edges[0] = ("a"::"d");
 	}
 
 	test "Path Properties" {
-		graph g <- as_edge_graph(["a"::"b", "b"::"c", "c"::"d", "a"::"d"]);
-
+		graph g <- square_graph();
 		path p <- path_between(g, "a", "c");
 		assert length(p.vertices) = 3;
 		assert p.vertices[0] = "a";
 		assert p.vertices[2] = "c";
-		assert p.weight > 0;
+		// both routes have the same length, the intermediate vertex is one of the two other corners
+		assert ["b", "d"] contains p.vertices[1];
+		// each edge weighs 1 by default
+		assert p.weight = 2.0;
+	}
+
+	test "A path follows the direction of the edges of a directed graph" {
+		graph g <- directed(square_graph());
+		assert length(path_between(g, "a", "c").edges) = 2;
+		// nothing leads back to a
+		assert empty(path_between(g, "d", "a").edges);
+		assert empty(path_between(g, "c", "a").edges);
+	}
+
+	test "Building an edge graph from plain values raises an error" {
+		bool failed <- false;
+		try {
+			graph g <- as_edge_graph(["a"::"b"]);
+		} catch {
+			failed <- true;
+		}
+		assert failed;
 	}
 }

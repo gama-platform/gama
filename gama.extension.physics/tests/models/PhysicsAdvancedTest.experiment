@@ -85,4 +85,77 @@ experiment PhysicsAdvancedTest type: test autorun: true {
 		ask world { do register(bodies: balls); }
 		assert length(balls) = 3;
 	}
+
+	// The physical world only advances when the simulation itself is stepped by its scheduler, which cannot be
+	// done from a test: what follows checks what is applied to the bodies, not their trajectories
+
+	test "An impulse changes the velocity in proportion to the mass" {
+		create ball number: 1 returns: balls;
+		create heavy_ball number: 1 returns: heavy_balls;
+		ball light <- balls[0];
+		heavy_ball heavy <- heavy_balls[0];
+		ask light { do apply(impulse: {10, 0, 0}); }
+		ask heavy { do apply(impulse: {10, 0, 0}); }
+		// velocity = impulse / mass
+		assert light.velocity = {10, 0, 0};
+		assert heavy.velocity = {2, 0, 0};
+
+		// impulses add up
+		ask light { do apply(impulse: {0, 5, 0}); }
+		assert light.velocity = {10, 5, 0};
+		ask light { do apply(impulse: {-10, -5, 0}); }
+		assert light.velocity = {0, 0, 0};
+	}
+
+	test "A force has no immediate effect on the velocity" {
+		create ball number: 1 returns: balls;
+		ball b <- balls[0];
+		ask b { do apply(force: {10, 0, 0}); }
+		// forces are integrated by the engine when the world steps
+		assert b.velocity = {0, 0, 0};
+	}
+
+	test "Velocities can be set directly" {
+		create ball number: 1 returns: balls;
+		ball b <- balls[0];
+		ask b {
+			velocity <- {0, 0, 5};
+			angular_velocity <- {1, 2, 3};
+		}
+		assert b.velocity = {0, 0, 5};
+		assert b.angular_velocity = {1, 2, 3};
+		// setting a velocity does not move the body by itself
+		point before <- b.location;
+		ask b { velocity <- {100, 100, 100}; }
+		assert b.location = before;
+	}
+
+	test "Body properties can be changed after creation" {
+		create ball number: 1 returns: balls;
+		ball b <- balls[0];
+		ask b {
+			friction <- 0.9;
+			restitution <- 0.4;
+			mass <- 7.0;
+		}
+		// the engine stores them in single precision
+		assert b.friction with_precision 5 = 0.9;
+		assert b.restitution with_precision 5 = 0.4;
+		assert b.mass with_precision 5 = 7.0;
+
+		// the new mass is taken into account by the next impulse
+		ask b { do apply(impulse: {7, 0, 0}); }
+		assert b.velocity.x with_precision 5 = 1.0;
+	}
+
+	test "The bounding box of a body surrounds its shape" {
+		create ball number: 1 returns: balls;
+		ball b <- balls[0];
+		ask b { location <- {50, 50, 50}; }
+		// a sphere of radius 1
+		assert b.aabb.width with_precision 5 = 2.0;
+		assert b.aabb.height with_precision 5 = 2.0;
+		assert b.aabb.location.x with_precision 5 = 50.0;
+		assert b.aabb.location.y with_precision 5 = 50.0;
+	}
 }

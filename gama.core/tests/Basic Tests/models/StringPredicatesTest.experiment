@@ -1,0 +1,156 @@
+/**
+* Name: StringPredicatesTest
+* Description: Tests the predicates on the nature of a string (is_alpha, is_digit...), the search operators
+* 	(starts_with, index_of, regex_matches...), the tokenizers, the case conversions and the compression
+* Tags: string, regex, test
+*/
+
+experiment StringPredicatesTest type: test autorun: true {
+
+	test "Character classes" {
+		assert is_alpha("abc");
+		assert not is_alpha("abc1");
+		assert not is_alpha("a b");
+		assert not is_alpha("");
+
+		assert is_alphanum("abc1");
+		assert not is_alphanum("abc-1");
+
+		assert is_digit("123");
+		assert not is_digit("12.3");
+		assert not is_digit("12a");
+
+		assert is_ascii("abc");
+		assert not is_ascii("é");
+
+		assert is_whitespace("  \t");
+		assert not is_whitespace(" a ");
+	}
+
+	test "Letter case" {
+		assert is_lower("abc");
+		assert not is_lower("aBc");
+		assert is_upper("ABC");
+		assert not is_upper("ABc");
+
+		assert upper_case("Abc") = "ABC";
+		assert lower_case("AbC") = "abc";
+		assert is_upper(upper_case("mixed Case"));
+		assert is_lower(lower_case("MIXEDcase"));
+
+		// only the first letter is capitalized
+		assert capitalize("hello world") = "Hello world";
+		assert capitalize("Hello") = "Hello";
+		assert capitalize("") = "";
+
+		// comparisons are case sensitive
+		assert "abc" != "ABC";
+		assert lower_case("ABC") = "abc";
+	}
+
+	test "Prefixes, suffixes and containment" {
+		assert "hello world" starts_with "hello";
+		assert not ("hello world" starts_with "world");
+		assert "hello world" ends_with "world";
+		assert not ("hello world" ends_with "hello");
+		assert "hello" starts_with "";
+		assert "hello" starts_with "hello";
+
+		assert "hello" contains "ell";
+		assert not ("hello" contains "xyz");
+		assert "hello" contains_all ["he", "lo"];
+		assert not ("hello" contains_all ["he", "xx"]);
+		assert "hello" contains_any ["xx", "lo"];
+		assert not ("hello" contains_any ["xx", "yy"]);
+		assert "abc" in ["abc", "d"];
+	}
+
+	test "Positions and extraction" {
+		assert length("hello") = 5;
+		assert length("") = 0;
+		assert empty("");
+		assert not empty(" ");
+
+		assert "hello" index_of "l" = 2;
+		assert "hello" last_index_of "l" = 3;
+		assert "hello" index_of "z" = -1;
+		assert "hello" last_index_of "z" = -1;
+
+		assert "hello" at 0 = "h";
+		assert "hello" at 1 = "e";
+		assert first("hello") = "h";
+		assert last("hello") = "o";
+		// the end index is excluded
+		assert copy_between("hello world", 2, 5) = "llo";
+		assert copy_between("hello world", 0, 5) = "hello";
+		assert char(65) = "A";
+	}
+
+	test "Ordering" {
+		assert "a" < "b";
+		assert "abc" < "abd";
+		assert "abc" <= "abc";
+		assert "b" > "a";
+		assert "b" >= "b";
+		// upper case letters come before lower case ones
+		assert "B" < "a";
+		assert (["pear", "apple", "fig"] sort_by each) = ["apple", "fig", "pear"];
+	}
+
+	test "Regular expressions" {
+		// 'regex_matches' returns every match of the pattern
+		assert "hello" regex_matches "h.*o" = ["hello"];
+		assert "hello" regex_matches "h.l" = ["hel"];
+		assert "a1b22c333" regex_matches "[0-9]+" = ["1", "22", "333"];
+		assert empty("Hello" regex_matches "hello");
+
+		assert "été" replace_regex ("é", "e") = "ete";
+		// groups can be used in the replacement
+		assert "hello world" replace_regex ("(\\w+) (\\w+)", "$2 $1") = "world hello";
+		assert "a1b22c333" replace_regex ("[0-9]+", "#") = "a#b#c#";
+	}
+
+	test "Replacements" {
+		assert "hello world hello" replace ("hello", "bye") = "bye world bye";
+		assert "hello world hello" replace_first ("hello", "bye") = "bye world hello";
+		assert "hello" replace ("z", "y") = "hello";
+		assert "hello" replace ("l", "") = "heo";
+	}
+
+	test "Tokenizers" {
+		// each character of the right operand is a delimiter
+		assert "a,b;c" tokenize ",;" = ["a", "b", "c"];
+		assert "one two  three" tokenize " " = ["one", "two", "three"];
+		assert "a,b;c" split_with ",;" = ["a", "b", "c"];
+		assert "hello world" split_with " " = ["hello", "world"];
+		// no delimiter, no split
+		assert "hello" split_with "," = ["hello"];
+		// with a regular expression
+		assert "a1b22c333" tokenize_regex "[0-9]+" = ["a", "b", "c"];
+	}
+
+	test "Concatenation" {
+		assert "a" + "b" = "ab";
+		assert concatenate(["a", "b", "c"]) = "abc";
+		// any value concatenated to a string is converted
+		assert "hello" + 1 + true + 2.5 = "hello1true2.5";
+		assert "12" + 3 = "123";
+		assert "list " + [1, 2] = "list [1,2]";
+	}
+
+	test "Indentation" {
+		// every line is shifted by the given number of tabulations
+		assert "hello" indented_by 0 = "hello";
+		assert "hello" indented_by 2 = "\t\thello";
+		assert "a\nb" indented_by 1 = "\ta\n\tb";
+	}
+
+	test "Compression" {
+		string original <- "hello hello hello hello hello hello hello hello";
+		string compressed <- compress(original);
+		assert compressed != original;
+		assert decompress(compressed) = original;
+		assert uncompress(compressed) = original;
+		assert decompress(compress("")) = "";
+	}
+}

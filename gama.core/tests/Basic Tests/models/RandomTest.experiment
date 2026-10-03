@@ -45,6 +45,10 @@ experiment RandomTest type: test autorun: true {
 		float poisson_val <- poisson(5.0); // lambda 5
 		float trunc_gauss <- truncated_gauss(5.0, 2.0, 0.0, 10.0); // trunc between 0 and 10
 		
+		assert is_number(gauss_val);
+		assert is_finite(gauss_val);
+		// a null standard deviation always yields the mean
+		assert gauss(5.0, 0.0) = 5.0;
 		assert poisson_val >= 0; // Poisson is always >= 0
 		assert trunc_gauss >= 0.0 and trunc_gauss <= 10.0;
 	}

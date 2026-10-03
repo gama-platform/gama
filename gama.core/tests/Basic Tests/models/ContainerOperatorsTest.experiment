@@ -1,0 +1,202 @@
+/**
+* Name: ContainerOperatorsTest
+* Description: Tests the operators on containers that are not covered by the other list, map and matrix tests:
+* 	searches, quantifiers, set operations, ranges, grouping and indexing, statistics and matrix slicing
+* Tags: list, map, matrix, container, test
+*/
+
+experiment ContainerOperatorsTest type: test autorun: true {
+
+	list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6];
+
+	test "Searching for elements" {
+		assert numbers all_indexes_of 1 = [1, 3];
+		assert empty(numbers all_indexes_of 7);
+		assert numbers first_with (each > 3) = 4;
+		assert numbers last_with (each > 3) = 6;
+		assert numbers first_with (each > 100) = nil;
+		assert numbers with_max_of (each mod 5) = 4;
+		assert numbers with_min_of (each mod 5) = 5;
+		assert numbers count (each = 1) = 2;
+	}
+
+	test "First and last elements" {
+		assert first(numbers) = 3;
+		assert last(numbers) = 6;
+		assert first(3, numbers) = [3, 1, 4];
+		assert last(3, numbers) = [9, 2, 6];
+		assert first([]) = nil;
+		assert last([]) = nil;
+		// the end index is excluded
+		assert numbers copy_between (1, 3) = [1, 4];
+		assert reverse(numbers) = [6, 2, 9, 5, 1, 4, 1, 3];
+	}
+
+	test "Quantifiers" {
+		assert numbers all_match (each > 0);
+		assert not (numbers all_match (each > 1));
+		assert numbers none_matches (each > 10);
+		assert not (numbers none_matches (each > 8));
+		assert numbers one_matches (each = 9);
+		assert not (numbers one_matches (each = 7));
+
+		// the '_verify' family are synonyms
+		assert numbers all_verify (each > 0);
+		assert numbers none_verifies (each > 10);
+		assert numbers one_verifies (each = 9);
+
+		// on an empty list, 'all' holds and 'one' does not
+		list<int> nothing <- [];
+		assert nothing all_match (each > 0);
+		assert nothing none_matches (each > 0);
+		assert not (nothing one_matches (each > 0));
+	}
+
+	test "Duplicates and set operations" {
+		assert distinct(numbers) = [3, 1, 4, 5, 9, 2, 6];
+		assert remove_duplicates(numbers) = distinct(numbers);
+		assert [1, 2] union [2, 3] = [1, 2, 3];
+		assert [1, 2, 3] inter [2, 3, 4] = [2, 3];
+		assert empty([1, 2] inter [3, 4]);
+
+		assert numbers contains_all [9, 2];
+		assert not (numbers contains_all [9, 7]);
+		assert numbers contains_any [100, 2];
+		assert not (numbers contains_any [100, 200]);
+	}
+
+	test "Adding and removing" {
+		assert numbers + 7 = [3, 1, 4, 1, 5, 9, 2, 6, 7];
+		assert numbers + [7, 8] = [3, 1, 4, 1, 5, 9, 2, 6, 7, 8];
+		// removing a value only removes its first occurrence
+		assert numbers - 1 = [3, 4, 1, 5, 9, 2, 6];
+		// removing a list removes every occurrence of its elements
+		assert numbers - [1, 5] = [3, 4, 9, 2, 6];
+		// the operators do not modify their operands
+		assert length(numbers) = 8;
+	}
+
+	test "Flattening nested lists" {
+		assert flatten([[1, 2], [3, 4]]) = [1, 2, 3, 4];
+		assert flatten([[1, 2], [3, [4, 5]]]) = [1, 2, 3, 4, 5];
+		assert flatten([]) = [];
+	}
+
+	test "Ranges and generated lists" {
+		// both bounds are included
+		assert range(5) = [0, 1, 2, 3, 4, 5];
+		assert range(2, 5) = [2, 3, 4, 5];
+		assert range(0, 10, 5) = [0, 5, 10];
+		assert range(5, 0) = [5, 4, 3, 2, 1, 0];
+		assert list_with(3, 0) = [0, 0, 0];
+		assert interleave([[1, 2], [10, 20]]) = [1, 10, 2, 20];
+		assert cartesian_product([[1, 2], ["a", "b"]]) = [[1, "a"], [1, "b"], [2, "a"], [2, "b"]];
+	}
+
+	test "Random picks stay within the container" {
+		list<int> picked <- 3 among numbers;
+		assert length(picked) = 3;
+		assert numbers contains_all picked;
+		assert numbers contains one_of(numbers);
+		assert one_of([7]) = 7;
+		assert any([]) = nil;
+		assert length(shuffle(numbers)) = length(numbers);
+	}
+
+	test "Sorting, grouping and indexing" {
+		assert (numbers sort_by each) = [1, 1, 2, 3, 4, 5, 6, 9];
+		assert (numbers sort_by (-each)) = [9, 6, 5, 4, 3, 2, 1, 1];
+
+		map<bool, list<int>> by_parity <- numbers group_by even(each);
+		assert by_parity[true] = [4, 2, 6];
+		assert by_parity[false] = [3, 1, 1, 5, 9];
+
+		// with duplicated keys, the last element wins
+		map<int, int> by_double <- numbers index_by (each * 2);
+		assert by_double[18] = 9;
+		assert by_double[2] = 1;
+		assert length(by_double) = 7;
+
+		map<int, int> doubles <- numbers as_map (each::each * 2);
+		assert doubles[9] = 18;
+		assert doubles[3] = 6;
+
+		assert create_map(["a", "b"], [1, 2]) = ["a"::1, "b"::2];
+		list<pair<int, string>> numbered <- enumerate(["a", "b"]);
+		assert numbered[0] = (0::"a");
+		assert numbered[1] = (1::"b");
+	}
+
+	test "Aggregations" {
+		assert sum(numbers) = 31;
+		assert mean(numbers) = 3.875;
+		assert median(numbers) = 3;
+		assert min(numbers) = 1;
+		assert max(numbers) = 9;
+		assert product([1, 2, 3, 4]) = 24.0;
+		assert variance(numbers) = 6.609375;
+		assert standard_deviation(numbers) = sqrt(variance(numbers));
+
+		assert numbers max_of (each * 2) = 18;
+		assert numbers min_of (each * 2) = 2;
+		assert numbers sum_of (each * 2) = 62;
+		assert numbers mean_of (each * 1.0) = 3.875;
+	}
+
+	test "Map lookups" {
+		map<string, int> scores <- ["a"::1, "b"::2];
+		assert scores contains_key "a";
+		assert not (scores contains_key "z");
+		assert scores contains_value 2;
+		assert not (scores contains_value 3);
+		// on a map, 'index_of' gives the key of a value
+		assert scores index_of 2 = "b";
+		assert scores.pairs[1] = ("b"::2);
+		assert scores["z"] = nil;
+		// a list cast to a map is indexed by its own values
+		map<int, int> from_list <- map([1, 2, 3]);
+		assert from_list.keys = [1, 2, 3];
+		assert from_list.values = [1, 2, 3];
+	}
+
+	test "Matrix rows and columns" {
+		// each inner list is a column: 2 columns and 3 rows
+		matrix<int> m <- matrix([[1, 2, 3], [4, 5, 6]]);
+		assert m.columns = 2;
+		assert m.rows = 3;
+		assert m column_at 0 = [1, 2, 3];
+		assert m column_at 1 = [4, 5, 6];
+		assert m row_at 0 = [1, 4];
+		assert m row_at 2 = [3, 6];
+		assert columns_list(m) = [[1, 2, 3], [4, 5, 6]];
+		assert rows_list(m) = [[1, 4], [2, 5], [3, 6]];
+		// a matrix is read row by row when cast to a list
+		assert list(m) = [1, 4, 2, 5, 3, 6];
+		// cells are addressed by column then row
+		assert m[1, 0] = 4;
+		assert m at {1, 0} = 4;
+		assert m contains 5;
+		assert not (m contains 7);
+		assert m index_of 5 = {1, 1};
+	}
+
+	test "Matrix transformations" {
+		matrix<int> m <- matrix([[1, 2, 3], [4, 5, 6]]);
+		matrix<int> t <- transpose(m);
+		assert t.columns = 3;
+		assert t.rows = 2;
+		assert t[2, 0] = m[0, 2];
+		assert transpose(t) = m;
+
+		assert (m + 1)[0, 0] = 2;
+		assert (m * 2)[1, 2] = 12;
+
+		matrix<int> filled <- matrix_with({2, 2}, 7);
+		assert list(filled) = [7, 7, 7, 7];
+
+		// a list fills a matrix row by row
+		matrix<int> from_list <- [1, 2, 3, 4] as_matrix {2, 2};
+		assert from_list row_at 0 = [1, 2];
+		assert from_list row_at 1 = [3, 4];
+	}
+}

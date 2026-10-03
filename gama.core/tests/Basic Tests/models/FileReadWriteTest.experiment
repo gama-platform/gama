@@ -26,6 +26,10 @@ experiment FileReadWriteTest type: test autorun: true {
 		// Check file existence
 		assert file_exists("test_output.txt") = true;
 		assert file_exists("non_existent_file.txt") = false;
+
+		// do not leave the file behind
+		assert delete_file("test_output.txt");
+		assert file_exists("test_output.txt") = false;
 	}
 	
 	test "Save and Read CSV File" {
@@ -41,5 +45,9 @@ experiment FileReadWriteTest type: test autorun: true {
 		assert loaded_mat.columns = 2;
 		assert loaded_mat[0, 0] = 1;
 		assert loaded_mat[1, 1] = 4;
+
+		// do not leave the file behind
+		assert delete_file("test_output.csv");
+		assert file_exists("test_output.csv") = false;
 	}
 }

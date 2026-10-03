@@ -1,0 +1,251 @@
+/**
+* Name: UnitsAndNamedConstantsTest
+* Description: Tests the units (lengths, durations, weights, volumes, surfaces) and the named constants
+* 	that are not numeric limits (dates, font styles, anchors, graph algorithms, layouts...)
+* Tags: constant, unit, test
+*/
+
+experiment UnitsAndNamedConstantsTest type: test autorun: true {
+
+	test "Length units are expressed in meters" {
+		assert #m = 1.0;
+		assert #m is float;
+		assert #km = 1000.0;
+		assert #dm = 0.1;
+		assert #cm = 0.01;
+		assert #mm = 0.001;
+		assert #micrometer = 1.0E-6;
+		assert #nm = 1.0E-9;
+
+		assert #inch = 0.0254;
+		assert #foot = 0.3048;
+		assert #yard = 0.9144;
+		assert #mile = 1609.344;
+		assert 12 #inch = #foot;
+		assert 3 #foot = #yard;
+		assert 1760 #yard = #mile;
+	}
+
+	test "Length units have alternative names" {
+		assert #meter = #m;
+		assert #meters = #m;
+		assert #kilometer = #km;
+		assert #kilometers = #km;
+		assert #centimeter = #cm;
+		assert #decimeter = #dm;
+		assert #milimeter = #mm;
+		assert #nanometer = #nm;
+		assert #miles = #mile;
+		assert #yards = #yard;
+		assert #inches = #inch;
+		assert #feet = #foot;
+		assert #ft = #foot;
+	}
+
+	test "Duration units are expressed in seconds" {
+		assert #sec = 1.0;
+		assert #msec = 0.001;
+		assert #minute = 60.0;
+		assert #h = 3600.0;
+		assert #day = 86400.0;
+		assert #week = 604800.0;
+		assert 7 #day = #week;
+		assert 24 #h = #day;
+		assert 1000 #msec = #sec;
+
+		// months and years depend on the current date of the model
+		assert #month / #day >= 28;
+		assert #month / #day <= 31;
+		assert #year / #day >= 365;
+		assert #year / #day <= 366;
+	}
+
+	test "Duration units have alternative names" {
+		assert #s = #sec;
+		assert #second = #sec;
+		assert #seconds = #sec;
+		assert #mn = #minute;
+		assert #minutes = #minute;
+		assert #hour = #h;
+		assert #hours = #h;
+		assert #d = #day;
+		assert #days = #day;
+		assert #weeks = #week;
+		assert #months = #month;
+		assert #y = #year;
+		assert #years = #year;
+		assert #ms = #msec;
+		assert #millisecond = #msec;
+		assert #milliseconds = #msec;
+	}
+
+	test "The cycle unit counts simulation cycles" {
+		assert #cycle = 1;
+		assert #cycles = 1;
+		assert #cycle is int;
+		assert 10 #cycles = 10;
+	}
+
+	test "Weight units are expressed in kilograms" {
+		assert #kg = 1.0;
+		assert #gram = 0.001;
+		assert #ton = 1000.0;
+		assert #pound = 0.45359237;
+		assert #ounce = 0.028349523125;
+		assert 16 #ounce = #pound;
+		assert 14 #pound = #stone;
+		assert 2000 #pound = #shortton;
+		assert 2240 #pound = #longton;
+
+		assert #kilo = #kg;
+		assert #kilogram = #kg;
+		assert #grams = #gram;
+		assert #tons = #ton;
+		assert #lb = #pound;
+		assert #oz = #ounce;
+		assert #st = #stone;
+	}
+
+	test "Volume units are expressed in cubic meters" {
+		assert #m3 = 1.0;
+		assert #l = 0.001;
+		assert #dl = 0.0001;
+		assert #cl = 0.00001;
+		assert #hl = 0.1;
+		assert 1000 #l = #m3;
+		assert 100 #cl = #l;
+		assert 10 #dl = #l;
+		assert 100 #l = #hl;
+		assert #liter = #l;
+		assert #dm3 = #l;
+	}
+
+	test "Surface units are expressed in square meters" {
+		assert #m2 = 1.0;
+		assert #sqin = #inch * #inch;
+		assert #sqft = #foot * #foot;
+		assert #sqmi = #mile * #mile;
+		assert #square_inch = #sqin;
+		assert #square_foot = #sqft;
+		assert #square_mile = #sqmi;
+		assert 144 #sqin = #sqft;
+	}
+
+	test "Units combine with numbers and with each other" {
+		// a number followed by a unit is a product
+		assert 2 #km = 2000.0;
+		assert 2.5 #km = 2500.0;
+		assert 1 #h + 30 #mn = 5400.0;
+		assert #cm + #mm = 0.011;
+
+		// speeds are lengths divided by durations
+		assert 36 #km / #h = 10.0;
+		assert 10 #m / #s = 10.0;
+
+		// units convert values both ways
+		float distance <- 5 #mile;
+		assert distance / #km = 8.04672;
+		float duration <- 90 #mn;
+		assert duration / #h = 1.5;
+	}
+
+	test "Date constants" {
+		assert #epoch is date;
+		assert #now is date;
+		assert #now > #epoch;
+		assert milliseconds_between(#epoch, #epoch) = 0.0;
+
+		// the predefined date formats
+		assert #iso_local = "ISO_LOCAL_DATE_TIME";
+		assert #iso_zoned = "ISO_ZONED_DATE_TIME";
+		assert #iso_offset = "ISO_OFFSET_DATE_TIME";
+		assert #custom = "CUSTOM";
+	}
+
+	test "Font styles" {
+		assert #plain = 0;
+		assert #bold = 1;
+		assert #italic = 2;
+		// styles are combined by adding them
+		assert #bold + #italic = 3;
+		assert font("Arial", 12, #plain).style = #plain;
+		assert font("Arial", 12, #bold + #italic).style = 3;
+	}
+
+	test "Anchors are points in the unit square" {
+		assert #center = {0.5, 0.5};
+		assert #top_left = {0.0, 1.0};
+		assert #top_center = {0.5, 1.0};
+		assert #top_right = {1.0, 1.0};
+		assert #left_center = {0.0, 0.5};
+		assert #right_center = {1.0, 0.5};
+		assert #bottom_left = {0.0, 0.0};
+		assert #bottom_center = {0.5, 0.0};
+		assert #bottom_right = {1.0, 0.0};
+		assert #center is point;
+	}
+
+	test "Shortest path algorithms" {
+		assert #Dijkstra = "Dijkstra";
+		assert #BidirectionalDijkstra = "BidirectionalDijkstra";
+		assert #AStar = "AStar";
+		assert #NBAStar = "NBAStar";
+		assert #NBAStarApprox = "NBAStarApprox";
+		assert #FloydWarshall = "FloydWarshall";
+		assert #BellmannFord = "BellmannFord";
+		assert #DeltaStepping = "DeltaStepping";
+		assert #CHBidirectionalDijkstra = "CHBidirectionalDijkstra";
+		assert #TransitNodeRouting = "TransitNodeRouting";
+
+		// they all find the same shortest path
+		graph g <- as_edge_graph([{0, 0}::{10, 0}, {10, 0}::{10, 10}, {0, 0}::{0, 10}, {0, 10}::{10, 10}, {0, 0}::{10, 10}]);
+		// (asserts are only taken into account directly inside a test, hence the list of failures)
+		list<string> wrong_algorithms <- [];
+		loop algo over: [#Dijkstra, #BidirectionalDijkstra, #AStar, #NBAStar, #NBAStarApprox, #FloydWarshall, #BellmannFord, #DeltaStepping, #CHBidirectionalDijkstra, #TransitNodeRouting] {
+			graph g2 <- g with_shortest_path_algorithm algo;
+			path p <- path_between(g2, {0, 0}, {10, 10});
+			if (p = nil or length(p.edges) != 1) {
+				wrong_algorithms <+ algo;
+			}
+		}
+		assert empty(wrong_algorithms);
+	}
+
+	test "K shortest paths algorithms" {
+		assert #Yen = "Yen";
+		assert #Bhandari = "Bhandari";
+		assert #Eppstein = "Eppstein";
+		assert #Suurballe = "Suurballe";
+	}
+
+	test "Layout and display constants" {
+		assert #none = 0;
+		assert #stack = 1;
+		assert #split = 2;
+		assert #horizontal = 3;
+		assert #vertical = 4;
+
+		// buffer end cap styles
+		assert #round = 1;
+		assert #flat = 2;
+		assert #square = 3;
+
+		// without a display, the display-related constants keep their neutral values
+		assert #zoom = 1.0;
+		assert #pixels = 1.0;
+		assert #fullscreen = false;
+		assert #hidpi = false;
+		assert #user_location is point;
+	}
+
+	test "The current error is available in a catch block" {
+		string caught_message <- nil;
+		try {
+			error "something went wrong";
+		} catch {
+			caught_message <- #current_error;
+		}
+		assert caught_message != nil;
+		assert caught_message contains "something went wrong";
+	}
+}

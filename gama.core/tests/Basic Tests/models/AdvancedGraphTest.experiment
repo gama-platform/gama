@@ -34,12 +34,17 @@ experiment AdvancedGraphTest type: test autorun: true {
 		assert length(g.vertices) = 5;
 		assert length(g.edges) = 4;
 		
-		// Since it's directed by default? No, as_edge_graph might be undirected or directed.
-		// A triangle a-b-c-a will have alpha index, etc.
-		assert alpha_index(g) != nil;
-		assert beta_index(g) != nil;
-		assert gamma_index(g) != nil;
-		assert connectivity_index(g) != nil;
+		// with v = 5 vertices, e = 4 edges and p = 2 connected components:
+		// one independent cycle (the triangle): e - v + p
+		assert nb_cycles(g) = 1;
+		// alpha = cycles / (2v - 5)
+		assert alpha_index(g) = 0.2;
+		// beta = e / v
+		assert beta_index(g) = 0.8;
+		// gamma = e / (2v - 5)
+		assert gamma_index(g) = 0.8;
+		// connectivity = (v - p) / e
+		assert connectivity_index(g) = 0.75;
 	}
 	
 	test "Graph Parsing" {

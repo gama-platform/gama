@@ -28,4 +28,22 @@ experiment GMLTest type: test autorun: true {
 		}
 		assert failed;
 	}
+
+	// '../includes/road.gml' is a copy of the sample used by the GML models of the library
+
+	test "The features of a gml file can be read" {
+		string problem <- nil;
+		list<geometry> roads <- [];
+		try {
+			gml_file source <- gml_file("../includes/road.gml");
+			roads <- source.contents;
+		} catch {
+			problem <- #current_error;
+		}
+		assert problem = nil;
+		assert not empty(roads);
+		assert roads all_match (each.perimeter > 0.0);
+		// the attributes of the features are read too
+		assert roads all_match (each get "RDLNTYPE" != nil);
+	}
 }

@@ -59,4 +59,109 @@ experiment DatabaseAdvancedTest type: test autorun: true {
 		}
 		assert insert_failed;
 	}
+
+	// The tests below work on a real SQLite database: an empty file is a valid empty database. It is created
+	// next to the model and removed at the end of each test
+
+	string database_file <- "database_test_tmp.db";
+
+	map<string, string> new_database() {
+		save "" to: database_file format: "text";
+		return ["dbtype"::"sqlite", "database"::database_file];
+	}
+
+	test "An existing sqlite file can be connected to" {
+		create sql_agent number: 1 returns: dbs;
+		map<string, string> params <- new_database();
+		bool connected <- dbs[0].testConnection(params: params);
+		assert connected;
+		assert delete_file(database_file);
+	}
+
+	test "Rows that are inserted can be selected" {
+		create sql_agent number: 1 returns: dbs;
+		sql_agent ag <- dbs[0];
+		map<string, string> params <- new_database();
+		list<map<string, unknown>> everyone <- [];
+		list<map<string, unknown>> total <- [];
+		ask ag {
+			do executeUpdate params: params updateComm: "CREATE TABLE people (id INTEGER PRIMARY KEY, name TEXT, age INTEGER, score REAL)";
+			do insert params: params into: "people" data: [1, "Alice", 30, 1.5];
+			do insert params: params into: "people" data: [2, "Bob", 25, 0.0];
+			everyone <- select(params: params, select: "SELECT * FROM people ORDER BY id");
+			total <- select(params: params, select: "SELECT COUNT(*) AS n FROM people");
+		}
+		// each row is a map indexed by the names of the columns, in upper case
+		assert length(everyone) = 2;
+		assert everyone[0]["ID"] = 1;
+		assert everyone[0]["NAME"] = "Alice";
+		assert everyone[0]["AGE"] = 30;
+		assert everyone[0]["SCORE"] = 1.5;
+		assert everyone[1]["NAME"] = "Bob";
+		assert total[0]["N"] = 2;
+		assert delete_file(database_file);
+	}
+
+	test "Statements accept parameters" {
+		create sql_agent number: 1 returns: dbs;
+		sql_agent ag <- dbs[0];
+		map<string, string> params <- new_database();
+		list<map<string, unknown>> adults <- [];
+		ask ag {
+			do executeUpdate params: params updateComm: "CREATE TABLE people (id INTEGER PRIMARY KEY, name TEXT, age INTEGER)";
+			do executeUpdate params: params updateComm: "INSERT INTO people (id, name, age) VALUES (?, ?, ?)" values: [1, "Alice", 30];
+			do executeUpdate params: params updateComm: "INSERT INTO people (id, name, age) VALUES (?, ?, ?)" values: [2, "Bob", 25];
+			do executeUpdate params: params updateComm: "INSERT INTO people (id, name, age) VALUES (?, ?, ?)" values: [3, "Eve", 12];
+			adults <- select(params: params, select: "SELECT name FROM people WHERE age > ? ORDER BY id", values: [18]);
+		}
+		assert adults collect each["NAME"] = ["Alice", "Bob"];
+		assert delete_file(database_file);
+	}
+
+	test "Rows can be updated and deleted" {
+		create sql_agent number: 1 returns: dbs;
+		sql_agent ag <- dbs[0];
+		map<string, string> params <- new_database();
+		list<map<string, unknown>> after_update <- [];
+		list<map<string, unknown>> after_delete <- [];
+		ask ag {
+			do executeUpdate params: params updateComm: "CREATE TABLE people (id INTEGER PRIMARY KEY, name TEXT, age INTEGER)";
+			do insert params: params into: "people" data: [1, "Alice", 30];
+			do insert params: params into: "people" data: [2, "Bob", 25];
+			do executeUpdate params: params updateComm: "UPDATE people SET age = 31 WHERE name = 'Alice'";
+			after_update <- select(params: params, select: "SELECT age FROM people WHERE name = 'Alice'");
+			do executeUpdate params: params updateComm: "DELETE FROM people WHERE id = 2";
+			after_delete <- select(params: params, select: "SELECT name FROM people");
+		}
+		assert after_update[0]["AGE"] = 31;
+		assert after_delete collect each["NAME"] = ["Alice"];
+		assert delete_file(database_file);
+	}
+
+	test "A select with no match returns an empty list" {
+		create sql_agent number: 1 returns: dbs;
+		sql_agent ag <- dbs[0];
+		map<string, string> params <- new_database();
+		list<map<string, unknown>> nobody <- [];
+		ask ag {
+			do executeUpdate params: params updateComm: "CREATE TABLE people (id INTEGER PRIMARY KEY, name TEXT)";
+			nobody <- select(params: params, select: "SELECT * FROM people");
+		}
+		assert empty(nobody);
+		assert delete_file(database_file);
+	}
+
+	test "An invalid statement raises an error" {
+		create sql_agent number: 1 returns: dbs;
+		sql_agent ag <- dbs[0];
+		map<string, string> params <- new_database();
+		bool failed <- false;
+		try {
+			ask ag { list rows <- select(params: params, select: "SELECT * FROM a_table_that_does_not_exist"); }
+		} catch {
+			failed <- true;
+		}
+		assert failed;
+		assert delete_file(database_file);
+	}
 }

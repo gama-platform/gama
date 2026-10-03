@@ -46,9 +46,13 @@ experiment StatsAdvancedTest type: test autorun: true {
 		assert binom_val <= 10;
 		
 		// Truncated Gauss
-		float tgauss <- truncated_gauss([0.0, 1.0]); 
-		float g2 <- gauss(0.0, 1.0); 
-		assert g2 != nil;
+		// with a list, the operands are the mean and the half-width of the interval
+		float tgauss <- truncated_gauss([0.0, 1.0]);
+		assert tgauss >= -1.0;
+		assert tgauss <= 1.0;
+		float g2 <- gauss(0.0, 1.0);
+		assert is_number(g2);
+		assert is_finite(g2);
 	}
 	
 	test "List Manipulation and Accumulation" {

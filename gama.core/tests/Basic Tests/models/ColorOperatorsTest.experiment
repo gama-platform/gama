@@ -1,0 +1,135 @@
+/**
+* Name: ColorOperatorsTest
+* Description: Tests the arithmetic on colors, their transparency, the HSB color space, the blending and
+* 	grayscale conversions, and the palettes
+* Tags: color, rgb, hsb, palette, test
+*/
+
+experiment ColorOperatorsTest type: test autorun: true {
+
+	rgb grey_100 <- rgb(100, 100, 100);
+	// a field cannot be read directly on a color constant: '#red.alpha' is not valid
+	rgb pure_red <- #red;
+	rgb pure_white <- #white;
+	rgb pure_black <- #black;
+	rgb fully_transparent <- #transparent;
+
+	test "Building colors" {
+		assert rgb("red") = #red;
+		assert rgb("#FF0000") = #red;
+		assert rgb([255, 0, 0]) = #red;
+		assert rgb([255, 0, 0, 100]) = rgb(255, 0, 0, 100);
+		assert string(#red) = "red";
+		// components are clamped to [0, 255]
+		assert rgb(300, -5, 0) = #red;
+		assert rgb(1, 2, 3).red = 1;
+		assert rgb(1, 2, 3).green = 2;
+		assert rgb(1, 2, 3).blue = 3;
+		// a color can be cast to the list of its components
+		assert list(rgb(1, 2, 3, 4)) = [1, 2, 3, 4];
+	}
+
+	test "Color arithmetic" {
+		// component by component
+		assert rgb(255, 0, 0) + rgb(0, 255, 0) = #yellow;
+		assert grey_100 - rgb(50, 60, 70) = rgb(50, 40, 30);
+		// with a number, applied to every component
+		assert grey_100 + 50 = rgb(150, 150, 150);
+		assert grey_100 - 50 = rgb(50, 50, 50);
+		assert grey_100 * 2 = rgb(200, 200, 200);
+		assert grey_100 / 2 = rgb(50, 50, 50);
+		// the results are clamped
+		assert grey_100 * 3 = #white;
+		assert grey_100 - 200 = #black;
+		assert #white + #white = #white;
+	}
+
+	test "Transparency" {
+		assert pure_red.alpha = 255;
+		assert rgb(200, 100, 50, 128).alpha = 128;
+		// an int alpha is in [0, 255], a float one in [0, 1]
+		assert rgb(#red, 128).alpha = 128;
+		assert rgb(#red, 0.5).alpha = 127;
+		assert (#red with_alpha 0.5).alpha = 127;
+		assert (#red with_alpha 1.0).alpha = 255;
+		assert (#red with_alpha 0.0).alpha = 0;
+		// only the transparency changes
+		assert (#red with_alpha 0.5).red = 255;
+		// two colors that differ by their alpha are different
+		assert rgb(#red, 128) != #red;
+		assert fully_transparent.alpha = 0;
+	}
+
+	test "HSB color space" {
+		assert hsb(0.0, 1.0, 1.0) = #red;
+		assert hsb(0.5, 1.0, 1.0) = #cyan;
+		// no saturation gives a grey, no brightness gives black
+		assert hsb(0.0, 0.0, 1.0) = #white;
+		assert hsb(0.3, 1.0, 0.0) = #black;
+		assert hsb(0.0, 1.0, 1.0, 0.5).alpha = 127;
+
+		assert to_hsb(#red) = [0.0, 1.0, 1.0];
+		assert to_hsb(#white) = [0.0, 0.0, 1.0];
+		assert to_hsb(#black) = [0.0, 0.0, 0.0];
+		list<float> blue_hsb <- to_hsb(#blue);
+		assert blue_hsb[0] with_precision 3 = 0.667;
+
+		// a color survives the round trip
+		list<float> orange_hsb <- to_hsb(#orange);
+		assert hsb(orange_hsb[0], orange_hsb[1], orange_hsb[2]) = #orange;
+	}
+
+	test "Blending" {
+		// by default, half of each
+		assert blend(#red, #blue) = rgb(127, 0, 127);
+		// the ratio is the weight of the first color
+		assert blend(#red, #blue, 1.0) = #red;
+		assert blend(#red, #blue, 0.0) = #blue;
+		assert blend(#red, #blue, 0.25) = rgb(63, 0, 191);
+		assert blend(#red, #red, 0.3) = #red;
+	}
+
+	test "Brightness and grayscale" {
+		assert grey_100.brighter = rgb(142, 142, 142);
+		assert grey_100.darker = rgb(70, 70, 70);
+		assert pure_white.brighter = #white;
+		assert pure_black.darker = #black;
+
+		rgb grey_red <- grayscale(#red);
+		assert grey_red.red = grey_red.green and grey_red.green = grey_red.blue;
+		assert grey_red = rgb(76, 76, 76);
+		assert grayscale(#white) = #white;
+		assert grayscale(#black) = #black;
+		// greys are left untouched
+		assert grayscale(grey_100) = grey_100;
+	}
+
+	test "Random colors stay within their bounds" {
+		assert rnd_color(0) = #black;
+		rgb bounded <- rnd_color(100, 200);
+		assert bounded.red >= 100 and bounded.red <= 200;
+		assert bounded.green >= 100 and bounded.green <= 200;
+		assert bounded.blue >= 100 and bounded.blue <= 200;
+		assert rnd_color(255).alpha = 255;
+	}
+
+	test "Palettes" {
+		list<string> names <- brewer_palettes(3);
+		assert not empty(names);
+		assert names contains "Reds";
+
+		list<rgb> reds <- brewer_colors("Reds", 5);
+		assert length(reds) = 5;
+		assert reds[0] = rgb(255, 245, 240);
+		// sequential palettes go from light to dark
+		assert reds[0].green > reds[4].green;
+		assert length(brewer_colors("Reds")) >= 5;
+
+		assert length(palette([#red, #green, #blue])) = 3;
+		assert palette([#red, #blue])[0] = #red;
+		// a scale associates values to colors
+		map<float, rgb> color_scale <- scale([#red::0.0, #blue::1.0]);
+		assert color_scale[0.0] = #red;
+		assert color_scale[1.0] = #blue;
+	}
+}

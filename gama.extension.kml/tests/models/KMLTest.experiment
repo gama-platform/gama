@@ -36,4 +36,21 @@ experiment KMLTest type: test autorun: true {
 		}
 		assert failed;
 	}
+
+	test "A kml export manager can be saved to a file" {
+		string problem <- nil;
+		try {
+			ask world {
+				kml_export <- kml_export add_geometry (circle(5) at_location {10, 10}, 2.0, #black, #red);
+				save kml_export to: "kml_test_tmp.kml" format: "kml";
+			}
+		} catch {
+			problem <- #current_error;
+		}
+		assert problem = nil;
+		assert file_exists("kml_test_tmp.kml");
+		string written <- concatenate(text_file("kml_test_tmp.kml").contents);
+		assert written contains "Placemark";
+		assert delete_file("kml_test_tmp.kml");
+	}
 }

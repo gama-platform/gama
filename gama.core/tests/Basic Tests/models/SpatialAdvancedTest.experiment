@@ -34,13 +34,13 @@ experiment SpatialAdvancedTest type: test autorun: true {
 		// Create a self-intersecting polygon (bowtie)
 		geometry bowtie <- polygon([{0, 0}, {10, 10}, {0, 10}, {10, 0}]);
 		
-		// Bowtie area might be zero or calculated oddly due to self intersection
-		// Let's use clean
 		geometry cleaned <- clean(bowtie);
-		// Clean should split it into two valid triangles or fix intersections
+		// the self-intersecting ring has no usable area, the cleaned geometry does
+		assert bowtie.area = 0.0;
 		assert cleaned != nil;
+		assert cleaned.area > 0.0;
 	}
-	
+
 	test "Spatial Casting" {
 		// From list of points to geometry
 		geometry l1 <- line([{0,0}, {10,10}]);
@@ -68,9 +68,9 @@ experiment SpatialAdvancedTest type: test autorun: true {
 		assert trans.location = {10, 10};
 		
 		geometry scaled <- rect scaled_by 2.0;
-		assert scaled.area = 200.0; // Wait, scaled by 2 scales both width and height, area * 4
-		// Wait, some scale algorithms scale by 2.0 globally so area is * 4
-		// Let's assert it's just > 50
-		assert scaled.area > 50.0;
+		// both dimensions are doubled, so the area is multiplied by 4
+		assert scaled.area = 200.0;
+		assert scaled.width = 20.0;
+		assert scaled.height = 10.0;
 	}
 }

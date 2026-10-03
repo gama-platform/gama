@@ -1,0 +1,253 @@
+/**
+* Name: GraphOperatorsTest
+* Description: Tests the operators that inspect a graph (degrees, neighbours, incident edges), compare directed
+* 	and undirected graphs, weight the edges, measure centralities, cluster and generate graphs
+* Tags: graph, network, test
+*/
+
+model GraphOperatorsTestModel
+
+species node_agent { }
+
+species edge_agent { }
+
+experiment GraphOperatorsTest type: test autorun: true {
+
+	/**
+	 * A triangle a - b - c with a tail c - d. A graph of plain values is undirected until stated otherwise
+	 */
+	graph value_triangle {
+		graph g <- graph([]);
+		g <- g add_edge ("a"::"b");
+		g <- g add_edge ("b"::"c");
+		g <- g add_edge ("c"::"a");
+		g <- g add_edge ("c"::"d");
+		return g;
+	}
+
+	/**
+	 * The same, with oriented edges: a -> b -> c -> a, plus c -> d.
+	 * 'directed' modifies its operand, hence the new graph built for the occasion
+	 */
+	graph directed_triangle {
+		return directed(value_triangle());
+	}
+
+	/**
+	 * A graph built from segments is spatial and undirected: a triangle with a tail attached to {10, 10}
+	 */
+	graph spatial_triangle {
+		return as_edge_graph([line([{0, 0}, {10, 0}]), line([{10, 0}, {10, 10}]), line([{10, 10}, {0, 0}]), line([{10, 10}, {20, 10}])]);
+	}
+
+	test "Vertices and edges" {
+		graph g <- spatial_triangle();
+		assert length(g.vertices) = 4;
+		assert length(g.edges) = 4;
+		assert g contains_vertex {0, 0};
+		assert not (g contains_vertex {5, 5});
+		assert g contains_edge (g.edges[0]);
+		assert g contains_edge ({0, 0}::{10, 0});
+		assert not (g contains_edge ({0, 0}::{20, 10}));
+		// the extremities of an edge
+		assert g source_of (g.edges[0]) = {0, 0};
+		assert g target_of (g.edges[0]) = {10, 0};
+	}
+
+	test "A map of segments keeps one edge per source" {
+		// '[a::b, a::c]' is a map literal: the second pair replaces the first one
+		graph g <- as_edge_graph([{0, 0}::{10, 0}, {10, 10}::{0, 0}, {10, 10}::{20, 10}]);
+		assert length(g.edges) = 2;
+	}
+
+	test "Degrees and neighbours in an undirected graph" {
+		graph g <- spatial_triangle();
+		assert g degree_of {10, 10} = 3;
+		assert g degree_of {20, 10} = 1;
+		// every edge is both entering and leaving
+		assert g in_degree_of {10, 10} = 3;
+		assert g out_degree_of {10, 10} = 3;
+		assert length(g in_edges_of {10, 10}) = 3;
+		assert length(g out_edges_of {10, 10}) = 3;
+
+		list neighbours <- g neighbors_of {10, 10};
+		assert length(neighbours) = 3;
+		assert neighbours contains_all [{10, 0}, {0, 0}, {20, 10}];
+		assert (g neighbors_of {20, 10}) = [{10, 10}];
+
+		graph values <- value_triangle();
+		assert values in_degree_of "c" = 3;
+		assert values out_degree_of "c" = 3;
+		assert (values successors_of "c") contains_all ["a", "b", "d"];
+		assert (values predecessors_of "c") contains_all ["a", "b", "d"];
+	}
+
+	test "Degrees and neighbours in a directed graph" {
+		graph g <- directed_triangle();
+		assert g degree_of "c" = 3;
+		assert g in_degree_of "c" = 1;
+		assert g out_degree_of "c" = 2;
+		assert g degree_of "d" = 1;
+		assert g out_degree_of "d" = 0;
+
+		assert g predecessors_of "c" = ["b"];
+		assert g successors_of "c" = ["a", "d"];
+		assert empty(g successors_of "d");
+		// the neighbours do not depend on the direction
+		list neighbours <- g neighbors_of "c";
+		assert length(neighbours) = 3;
+		assert neighbours contains_all ["a", "b", "d"];
+	}
+
+	test "Paths follow the direction of the edges of a directed graph" {
+		graph g <- directed_triangle();
+		assert length((g path_between ("a", "d")).edges) = 3;
+		// nothing leaves d
+		assert empty((g path_between ("d", "a")).edges);
+
+		graph both_ways <- value_triangle();
+		assert length((both_ways path_between ("d", "a")).edges) = 2;
+		assert length((both_ways path_between ("a", "d")).edges) = 2;
+
+		// 'undirected' cancels 'directed'
+		graph back <- undirected(directed_triangle());
+		assert length((back path_between ("d", "a")).edges) = 2;
+	}
+
+	test "directed and undirected modify the graph they are applied to" {
+		graph g <- value_triangle();
+		graph same <- directed(g);
+		assert g in_degree_of "c" = 1;
+		assert same in_degree_of "c" = 1;
+		graph again <- undirected(g);
+		assert g in_degree_of "c" = 3;
+	}
+
+	test "Edge weights" {
+		graph g <- directed_triangle();
+		// every edge weighs 1 by default
+		assert g weight_of ("a"::"b") = 1.0;
+		assert (g path_between ("a", "d")).weight = 3.0;
+
+		graph heavy <- g with_weights (g.edges as_map (each::2.0));
+		assert heavy weight_of ("a"::"b") = 2.0;
+		assert (heavy path_between ("a", "d")).weight = 6.0;
+
+		// the weights drive the choice of the shortest path
+		graph square_graph <- as_edge_graph([line([{0, 0}, {10, 0}]), line([{10, 0}, {10, 10}]), line([{0, 0}, {0, 10}]), line([{0, 10}, {10, 10}])]);
+		list<geometry> square_edges <- list<geometry>(square_graph.edges);
+		geometry top_edge <- square_edges first_with (each.points contains_all [{0, 0}, {10, 0}]);
+		graph penalised <- square_graph with_weights [top_edge::100.0];
+		path detour <- penalised path_between ({0, 0}, {10, 10});
+		assert length(detour.edges) = 2;
+		assert not (detour.edges contains top_edge);
+		assert detour.vertices contains {0, 10};
+	}
+
+	test "Connected components" {
+		graph g <- as_edge_graph([line([{0, 0}, {10, 0}]), line([{10, 0}, {10, 10}]), line([{50, 50}, {60, 50}])]);
+		assert length(connected_components_of(g)) = 2;
+		assert length(main_connected_component(g).vertices) = 3;
+		assert length(main_connected_component(g).edges) = 2;
+		assert length(connected_components_of(spatial_triangle())) = 1;
+		assert length(connected_components_of(directed_triangle())) = 1;
+	}
+
+	test "Cycles and centralities" {
+		graph g <- directed_triangle();
+		assert nb_cycles(g) = 1;
+		assert nb_cycles(value_triangle()) = 1;
+		assert nb_cycles(as_edge_graph([line([{0, 0}, {10, 0}]), line([{10, 0}, {10, 10}])])) = 0;
+
+		// the number of shortest paths going through each vertex: no path goes through d, a dead end
+		map<string, int> centrality <- betweenness_centrality(g);
+		assert length(centrality) = 4;
+		assert centrality["d"] = 0;
+		assert centrality["c"] = 3;
+		assert centrality["a"] = 3;
+		assert centrality["b"] = 2;
+		assert length(edge_betweenness(g)) = 4;
+
+		// the triangle is the biggest set of vertices all linked to each other
+		list<list> cliques <- maximal_cliques_of(value_triangle());
+		assert length(cliques) = 2;
+		list<list> biggest <- biggest_cliques_of(value_triangle());
+		assert length(biggest) = 1;
+		assert length(biggest[0]) = 3;
+		assert biggest[0] contains_all ["a", "b", "c"];
+	}
+
+	test "Maximum flow" {
+		graph g <- directed_triangle();
+		map flow <- max_flow_between(g, "a", "d");
+		// the only way from a to d goes through b and c
+		assert flow["a"::"b"] = 1.0;
+		assert flow["b"::"c"] = 1.0;
+		assert flow["c"::"d"] = 1.0;
+		assert flow["c"::"a"] = 0.0;
+	}
+
+	test "Clustering" {
+		// removing the bridge c - d separates d from the triangle
+		list<list> clusters <- girvan_newman_clustering(value_triangle(), 2);
+		assert length(clusters) = 2;
+		assert clusters sum_of length(each) = 4;
+		list triangle_cluster <- clusters first_with (length(each) = 3);
+		assert triangle_cluster contains_all ["a", "b", "c"];
+		assert (clusters first_with (length(each) = 1)) = ["d"];
+	}
+
+	test "Clustering a spatial graph" {
+		graph two_parts <- as_edge_graph([line([{0, 0}, {10, 0}]), line([{10, 0}, {10, 10}]), line([{50, 50}, {60, 50}]), line([{60, 50}, {60, 60}])]);
+		list<list> by_spanning_tree <- k_spanning_tree_clustering(two_parts, 2);
+		assert length(by_spanning_tree) = 2;
+		assert by_spanning_tree all_match (length(each) = 3);
+		list<list> by_propagation <- label_propagation_clustering(two_parts, 10);
+		assert length(by_propagation) = 2;
+	}
+
+	test "Clustering a graph of values" {
+		assert length(k_spanning_tree_clustering(value_triangle(), 2)) = 2;
+		assert length(label_propagation_clustering(value_triangle(), 10)) >= 1;
+	}
+
+	test "K shortest paths" {
+		graph square_graph <- as_edge_graph([line([{0, 0}, {10, 0}]), line([{10, 0}, {10, 10}]), line([{0, 0}, {0, 10}]), line([{0, 10}, {10, 10}])]);
+		list<path> two_ways <- paths_between(square_graph, {0, 0}::{10, 10}, 2);
+		assert length(two_ways) = 2;
+		assert two_ways all_match (length(each.edges) = 2);
+		// on a graph of values too
+		list<path> value_paths <- paths_between(value_triangle(), "a"::"d", 2);
+		assert not empty(value_paths);
+	}
+
+	test "Generated graphs have the requested size" {
+		// a complete graph of n vertices has n (n - 1) / 2 edges
+		graph complete <- generate_complete_graph(5, false);
+		assert length(complete.vertices) = 5;
+		assert length(complete.edges) = 10;
+
+		graph random_graph <- generate_random_graph(10, 15, true, node_agent, edge_agent);
+		assert length(random_graph.vertices) = 10;
+		assert length(random_graph.edges) = 15;
+
+		graph scale_free <- generate_barabasi_albert(3, 2, 10, false, node_agent, edge_agent);
+		assert length(scale_free.vertices) = 10;
+
+		// without rewiring, a small world graph is a regular ring: each vertex is linked to its 2 neighbours
+		graph ring <- generate_watts_strogatz(10, 0.0, 2, false, node_agent, edge_agent);
+		assert length(ring.vertices) = 10;
+		assert length(ring.edges) = 10;
+		assert ring.vertices all_match (ring degree_of each = 2);
+	}
+
+	test "Layouts keep the structure of the graph" {
+		graph g <- spatial_triangle();
+		graph circular <- layout_circle(g, square(100) at_location {50, 50}, false);
+		assert length(circular.vertices) = 4;
+		assert length(circular.edges) = 4;
+		graph gridded <- layout_grid(spatial_triangle(), square(100) at_location {50, 50}, 0.5);
+		assert length(gridded.vertices) = 4;
+		assert length(gridded.edges) = 4;
+	}
+}

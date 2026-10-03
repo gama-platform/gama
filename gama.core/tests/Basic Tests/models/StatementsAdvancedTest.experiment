@@ -33,16 +33,24 @@ experiment StatementsAdvancedTest type: test autorun: true {
 	}
 	
 	test "Benchmark Statement" {
-		// Benchmark statement logs the time taken by the inner block
+		// Benchmark statement logs the time taken by the inner block, which is executed normally.
+		// Asserts are only taken into account directly inside a test, hence the variable declared outside
+		int count <- 0;
 		benchmark "Test Loop" {
-			int count <- 0;
 			loop times: 100 {
 				count <- count + 1;
 			}
-			assert count = 100;
 		}
+		assert count = 100;
+
+		// the block can be repeated
+		int repeated <- 0;
+		benchmark "Repeated" repeat: 5 {
+			repeated <- repeated + 1;
+		}
+		assert repeated = 5;
 	}
-	
+
 	test "Trace and Status Statements" {
 		// Trace outputs execution traces for debugging
 		trace "Tracing execution step";
@@ -58,33 +66,38 @@ experiment StatementsAdvancedTest type: test autorun: true {
 	test "Migrate Statement" {
 		create container_agent number: 1 returns: containers;
 		container_agent c <- containers[0];
-		
+
 		ask c {
 			create source_agent number: 2;
-			assert length(source_agent) = 2;
-			assert length(target_agent) = 0;
-			
-			do do_migrate();
-			
-			assert length(source_agent) = 0;
-			assert length(target_agent) = 2;
-			assert target_agent[0].my_val = 5;
 		}
+		assert length(c.source_agent) = 2;
+		assert length(c.target_agent) = 0;
+
+		ask c {
+			do do_migrate();
+		}
+		assert length(c.source_agent) = 0;
+		assert length(c.target_agent) = 2;
+		// the attributes are kept by the migrated agents
+		assert c.target_agent[0].my_val = 5;
 	}
-	
+
 	test "Highlight, Focus, and Using Statements" {
 		create container_agent number: 1 returns: created_agents;
 		container_agent ag <- created_agents[0];
-		
+
 		// Highlight sets the GUI focus
 		highlight ag color: #red;
-		
+
 		// Focus uses id and var in newer GAMA
 		focus id: "dummy_focus" var: ag;
-		
-		// Using statement dynamically changes the topology/scope 
+
+		// Using statement dynamically changes the topology/scope
+		int seen_in_world_topology <- 0;
 		using topology(world) {
-			assert length(container_agent) = 1;
+			seen_in_world_topology <- length(container_agent);
 		}
+		assert seen_in_world_topology = length(container_agent);
+		assert seen_in_world_topology >= 1;
 	}
 }
