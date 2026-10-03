@@ -105,54 +105,52 @@ import one.util.streamex.StreamEx;
 /**
  * Provides all graph operators for the GAML language in the GAMA modeling and simulation platform.
  *
- * <p>This class is the primary container for graph-related operators, organized into the following
- * functional families:</p>
+ * <p>
+ * This class is the primary container for graph-related operators, organized into the following functional families:
+ * </p>
  *
  * <ul>
- *   <li><strong>Construction:</strong> {@code as_edge_graph}, {@code as_distance_graph},
- *       {@code as_intersection_graph}, {@code directed}, {@code undirected},
- *       {@code generate_barabasi_albert}, {@code generate_watts_strogatz},
- *       {@code generate_random_graph}, {@code generate_complete_graph},
- *       {@code spatial_graph}, {@code grid_cells_to_graph}</li>
- *   <li><strong>Topology (layout):</strong> {@code layout_circle}, {@code layout_grid},
- *       {@code layout_force}, {@code layout_force_FR}, {@code layout_force_FR_indexed}
- *       (require a rendering context &mdash; marked {@code @no_test})</li>
- *   <li><strong>Structure queries:</strong> {@code contains_vertex}, {@code contains_edge},
- *       {@code connected_components_of}, {@code main_connected_component},
- *       {@code successors_of}, {@code predecessors_of}, {@code neighbors_of},
- *       {@code in_degree_of}, {@code out_degree_of}, {@code degree_of},
- *       {@code in_edges_of}, {@code out_edges_of}, {@code edge_between}</li>
- *   <li><strong>Edge/weight queries:</strong> {@code weight_of}, {@code source_of},
- *       {@code target_of}, {@code edge}, {@code node}, {@code edge_betweenness}</li>
- *   <li><strong>Pathfinding:</strong> {@code path_between}, {@code paths_between},
- *       {@code max_flow_between}, {@code all_pairs_shortest_path},
- *       {@code load_shortest_paths}, {@code use_cache}, {@code as_path}</li>
- *   <li><strong>Graph metrics:</strong> {@code betweenness_centrality},
- *       {@code alpha_index}, {@code beta_index}, {@code gamma_index},
- *       {@code connectivity_index}, {@code nb_cycles}, {@code strahler}</li>
- *   <li><strong>Clustering:</strong> {@code girvan_newman_clustering},
- *       {@code k_spanning_tree_clustering}, {@code label_propagation_clustering},
- *       {@code maximal_cliques_of}, {@code biggest_cliques_of}</li>
- *   <li><strong>Maximum flow:</strong> {@code max_flow_between}</li>
- *   <li><strong>Modification:</strong> {@code add_node}, {@code remove_node_from},
- *       {@code add_edge}, {@code rewire_n}, {@code with_weights},
- *       {@code with_shortest_path_algorithm}, {@code with_k_shortest_path_algorithm}</li>
+ * <li><strong>Construction:</strong> {@code as_edge_graph}, {@code as_distance_graph}, {@code as_intersection_graph},
+ * {@code directed}, {@code undirected}, {@code generate_barabasi_albert}, {@code generate_watts_strogatz},
+ * {@code generate_random_graph}, {@code generate_complete_graph}, {@code spatial_graph},
+ * {@code grid_cells_to_graph}</li>
+ * <li><strong>Topology (layout):</strong> {@code layout_circle}, {@code layout_grid}, {@code layout_force},
+ * {@code layout_force_FR}, {@code layout_force_FR_indexed} (require a rendering context &mdash; marked
+ * {@code @no_test})</li>
+ * <li><strong>Structure queries:</strong> {@code contains_vertex}, {@code contains_edge},
+ * {@code connected_components_of}, {@code main_connected_component}, {@code successors_of}, {@code predecessors_of},
+ * {@code neighbors_of}, {@code in_degree_of}, {@code out_degree_of}, {@code degree_of}, {@code in_edges_of},
+ * {@code out_edges_of}, {@code edge_between}</li>
+ * <li><strong>Edge/weight queries:</strong> {@code weight_of}, {@code source_of}, {@code target_of}, {@code edge},
+ * {@code node}, {@code edge_betweenness}</li>
+ * <li><strong>Pathfinding:</strong> {@code path_between}, {@code paths_between}, {@code max_flow_between},
+ * {@code all_pairs_shortest_path}, {@code load_shortest_paths}, {@code use_cache}, {@code as_path}</li>
+ * <li><strong>Graph metrics:</strong> {@code betweenness_centrality}, {@code alpha_index}, {@code beta_index},
+ * {@code gamma_index}, {@code connectivity_index}, {@code nb_cycles}, {@code strahler}</li>
+ * <li><strong>Clustering:</strong> {@code girvan_newman_clustering}, {@code k_spanning_tree_clustering},
+ * {@code label_propagation_clustering}, {@code maximal_cliques_of}, {@code biggest_cliques_of}</li>
+ * <li><strong>Maximum flow:</strong> {@code max_flow_between}</li>
+ * <li><strong>Modification:</strong> {@code add_node}, {@code remove_node_from}, {@code add_edge}, {@code rewire_n},
+ * {@code with_weights}, {@code with_shortest_path_algorithm}, {@code with_k_shortest_path_algorithm}</li>
  * </ul>
  *
- * <p><strong>Important behavioural notes:</strong></p>
+ * <p>
+ * <strong>Important behavioural notes:</strong>
+ * </p>
  * <ul>
- *   <li>The directed/undirected distinction affects successor/predecessor vs. neighbor queries:
- *       on an undirected graph {@code successors_of} and {@code predecessors_of} are both
- *       equivalent to {@code neighbors_of}.</li>
- *   <li>Path operators ({@code path_between}, {@code paths_between}, etc.) return
- *       {@code nil} when no path exists between two nodes in a disconnected graph or when
- *       either node is not in the graph.</li>
- *   <li>Layout operators ({@code layout_circle}, {@code layout_grid}, {@code layout_force},
- *       {@code layout_force_FR}, {@code layout_force_FR_indexed}) modify vertex locations and
- *       require a spatial/rendering context — they are therefore marked {@code @no_test}.</li>
+ * <li>The directed/undirected distinction affects successor/predecessor vs. neighbor queries: on an undirected graph
+ * {@code successors_of} and {@code predecessors_of} are both equivalent to {@code neighbors_of}.</li>
+ * <li>Path operators ({@code path_between}, {@code paths_between}, etc.) return {@code nil} when no path exists between
+ * two nodes in a disconnected graph or when either node is not in the graph.</li>
+ * <li>Layout operators ({@code layout_circle}, {@code layout_grid}, {@code layout_force}, {@code layout_force_FR},
+ * {@code layout_force_FR_indexed}) modify vertex locations and require a spatial/rendering context — they are therefore
+ * marked {@code @no_test}.</li>
  * </ul>
  *
- * <p><strong>Typical usage in GAML:</strong></p>
+ * <p>
+ * <strong>Typical usage in GAML:</strong>
+ * </p>
+ *
  * <pre>{@code
  * // Build a graph from a map of point pairs
  * graph<geometry,geometry> my_graph <- as_edge_graph([{0,0}::{10,0}, {10,0}::{10,10}]);
@@ -730,8 +728,7 @@ public class Graphs {
 							value = "graphFromMap in_degree_of (node(3))",
 							equals = "2",
 							test = false) },
-			special_cases = {
-					"Returns 0 for an isolated vertex (a vertex with no incoming edges).",
+			special_cases = { "Returns 0 for an isolated vertex (a vertex with no incoming edges).",
 					"On an undirected graph, both in_degree_of and out_degree_of return the total degree of the vertex (number of incident edges).",
 					"Returns 0 if the vertex is not present in the graph." },
 			see = { "out_degree_of", "degree_of" })
@@ -805,8 +802,7 @@ public class Graphs {
 							value = "graphFromMap out_degree_of (node(3))",
 							equals = "4",
 							test = false) },
-			special_cases = {
-					"Returns 0 for an isolated vertex (a vertex with no outgoing edges).",
+			special_cases = { "Returns 0 for an isolated vertex (a vertex with no outgoing edges).",
 					"On an undirected graph, both out_degree_of and in_degree_of return the total degree of the vertex (number of incident edges).",
 					"Returns 0 if the vertex is not present in the graph." },
 			see = { "in_degree_of", "degree_of" })
@@ -1013,8 +1009,7 @@ public class Graphs {
 							value = "maximal_cliques_of (my_graph)",
 							equals = "the list of all the maximal cliques as list",
 							test = false) },
-			special_cases = {
-					"On an empty graph (no vertices), returns an empty list.",
+			special_cases = { "On an empty graph (no vertices), returns an empty list.",
 					"Every isolated vertex (degree 0) is itself a clique of size 1 and will appear as a singleton list in the result." },
 			see = { "biggest_cliques_of" })
 	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
@@ -1350,8 +1345,7 @@ public class Graphs {
 							value = "graphFromMap neighbors_of node({12,45})",
 							equals = "[{1.0,5.0},{34.0,56.0}]",
 							isExecutable = false) },
-			special_cases = {
-					"Returns an empty list for an isolated vertex (a vertex with no incident edges).",
+			special_cases = { "Returns an empty list for an isolated vertex (a vertex with no incident edges).",
 					"Returns an empty list if the vertex is not present in the graph.",
 					"On a directed graph, returns all vertices connected by any edge (both incoming and outgoing), i.e. the union of predecessors and successors." },
 			see = { "predecessors_of", "successors_of" })
@@ -1394,8 +1388,7 @@ public class Graphs {
 							value = "graphEpidemio predecessors_of node({34,56})",
 							equals = "[{12;45}]",
 							test = false) },
-			special_cases = {
-					"Returns an empty list for a vertex with no incoming edges (in-degree 0).",
+			special_cases = { "Returns an empty list for a vertex with no incoming edges (in-degree 0).",
 					"Returns an empty list if the vertex is not present in the graph.",
 					"On an undirected graph, predecessors_of is equivalent to neighbors_of (all adjacent vertices are returned)." },
 			see = { "neighbors_of", "successors_of" })
@@ -1434,8 +1427,7 @@ public class Graphs {
 					@example (
 							value = "graphEpidemio successors_of node({34,56})",
 							equals = "[]") },
-			special_cases = {
-					"Returns an empty list for a vertex with no outgoing edges (out-degree 0).",
+			special_cases = { "Returns an empty list for a vertex with no outgoing edges (out-degree 0).",
 					"Returns an empty list if the vertex is not present in the graph.",
 					"On an undirected graph, successors_of is equivalent to neighbors_of (all adjacent vertices are returned)." },
 			see = { "predecessors_of", "neighbors_of" })
@@ -1472,7 +1464,6 @@ public class Graphs {
 							value = "as_edge_graph([line([{1,5},{12,45}]),line([{12,45},{34,56}])])",
 							equals = "a graph with two edges and three vertices",
 							test = false) }),
-			returns = "A graph<vertexType, edgeType> built from the input edges, with vertices derived from edge endpoints; the exact types are inferred from the inputs.",
 			see = { "as_intersection_graph", "as_distance_graph" })
 	@test (" graph<geometry,geometry> comp <- as_edge_graph([line([{1,5},{12,45}]),line([{12,45},{34,56}])]); "
 			+ " ( ({1,5} in comp.vertices) and  ({12,45} in comp.vertices) and  ({34,56} in comp.vertices) ) ")
@@ -1863,7 +1854,8 @@ public class Graphs {
 			index_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
 			category = { IOperatorCategory.GRAPH },
 			concept = { IConcept.GRAPH, IConcept.GEOMETRY, IConcept.POINT })
-	@doc (value = "Creates a spatial graph out of an arbitrary graph. If the argument is already a spatial graph, returns it unchanged. If it contains geometrical nodes or edges, they are kept unchanged",
+	@doc (
+			value = "Creates a spatial graph out of an arbitrary graph. If the argument is already a spatial graph, returns it unchanged. If it contains geometrical nodes or edges, they are kept unchanged",
 			returns = "A spatial graph<geometry, geometry>.")
 	@no_test
 	public static ISpatialGraph as_spatial_graph(final IScope scope, final IGraph graph) {
@@ -2642,9 +2634,8 @@ public class Graphs {
 	@no_test
 	public static IGraph indexedFRLayout(final IScope scope, final IGraph graph, final IShape bounds,
 			final double theta, final double normalizationFactor, final int maxIteration) throws GamaRuntimeException {
-        if (theta < 0d || theta > 1d) {
-            throw GamaRuntimeException.error("Theta parameter should be between 0 and 1 (included)", scope);
-        }
+		if (theta < 0d || theta > 1d)
+			throw GamaRuntimeException.error("Theta parameter should be between 0 and 1 (included)", scope);
 
 		final IndexedFRLayoutAlgorithm2D sim = new IndexedFRLayoutAlgorithm2D(maxIteration, theta, normalizationFactor,
 				scope.getSimulation().getRandomGenerator().getGenerator());
@@ -4194,7 +4185,8 @@ public class Graphs {
 	 */
 	@operator (
 			value = "girvan_newman_clustering",
-			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			content_type = IType.LIST,
+			content_type_content_type = ITypeProvider.KEY_TYPE_AT_INDEX + 1,
 			category = { IOperatorCategory.GRAPH })
 	@doc (
 			value = "The Girvan�Newman algorithm is a hierarchical method used to detect communities. It detects communities by progressively removing edges from the original network."
@@ -4229,7 +4221,8 @@ public class Graphs {
 	 */
 	@operator (
 			value = "k_spanning_tree_clustering",
-			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			content_type = IType.LIST,
+			content_type_content_type = ITypeProvider.KEY_TYPE_AT_INDEX + 1,
 			category = { IOperatorCategory.GRAPH })
 	@doc (
 			value = """
@@ -4267,7 +4260,8 @@ public class Graphs {
 	 */
 	@operator (
 			value = "label_propagation_clustering",
-			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			content_type = IType.LIST,
+			content_type_content_type = ITypeProvider.KEY_TYPE_AT_INDEX + 1,
 			category = { IOperatorCategory.GRAPH })
 	@doc (
 			value = """

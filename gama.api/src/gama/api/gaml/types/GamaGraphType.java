@@ -18,6 +18,7 @@ import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.graph.GamaGraphFactory;
 import gama.api.types.graph.IGraph;
+import gama.api.types.graph.ISpatialGraph;
 
 /**
  * Type representing graphs in GAML - specialized containers composed of vertices (nodes) and edges.
@@ -81,7 +82,7 @@ import gama.api.types.graph.IGraph;
 @type (
 		name = IKeyword.GRAPH,
 		id = IType.GRAPH,
-		wraps = { IGraph.class },
+		wraps = { IGraph.class, ISpatialGraph.class },
 		kind = ISymbolKind.REGULAR,
 		concept = { IConcept.TYPE, IConcept.GRAPH },
 		doc = @doc ("Special type of container composed of edges and vertices"))
