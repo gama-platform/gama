@@ -683,7 +683,7 @@ public class Graphs {
 	 */
 	@operator (
 			value = "edge_between",
-			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
 			category = { IOperatorCategory.GRAPH, IConcept.EDGE })
 	@doc (
 			value = "returns the edge linking two nodes",
@@ -700,6 +700,39 @@ public class Graphs {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
 		if (graph.containsVertex(verticePair.key()) && graph.containsVertex(verticePair.value()))
 			return graph.getEdge(verticePair.key(), verticePair.value());
+		return null;
+	}
+
+	/**
+	 * Edge between.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param graph
+	 *            the graph
+	 * @param verticePair
+	 *            the vertice pair
+	 * @return the object
+	 */
+	@operator (
+			value = "edge_between",
+			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.GRAPH, IConcept.EDGE })
+	@doc (
+			value = "returns the edge linking two nodes",
+			examples = { @example (
+					value = "graphFromMap edge_between (node1,node2)",
+					equals = "edge1",
+					isExecutable = false) },
+			see = { "out_edges_of", "in_edges_of" })
+	@test ("""
+			graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),\
+			edge({80,35}, {40,60}),edge({80,35}, {10,5}), node ({50,50})]));\r
+			(g edge_between ({10,5},{20,3})) = g.edges[0]""")
+	public static Object edgeBetween(final IScope scope, final IGraph graph, final Object vertex1,
+			final Object vertex2) {
+		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
+		if (graph.containsVertex(vertex1) && graph.containsVertex(vertex2)) return graph.getEdge(vertex1, vertex2);
 		return null;
 	}
 
