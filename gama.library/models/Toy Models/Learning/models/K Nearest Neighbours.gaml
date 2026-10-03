@@ -27,7 +27,7 @@ model KNearestNeighbors
 global {
 
 	map<unknown, unknown> store;
-	list<rgb> colour <- [#red, #blue, #green, #yellow, #purple, #orange, #pink, #magenta, #cyan];
+	list<rgb> colours <- [#red, #blue, #green, #yellow, #purple, #orange, #pink, #magenta, #cyan];
     int init_amount <- 10;
     int nb_group <- 2;
     float radius <- 10.0;
@@ -36,7 +36,7 @@ global {
 		loop i from: 0 to: nb_group - 1{
 			special_point center;
 			create special_point{
-				color <- colour[i];
+				color <- colours[i];
 				center <- self;
 			}
 			geometry around <- circle(radius, center.location) intersection world.shape;
