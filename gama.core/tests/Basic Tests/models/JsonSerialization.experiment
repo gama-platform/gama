@@ -200,7 +200,7 @@ experiment SerializationTest type:test {
 		gama.pref_json_infinity_as_string <- true;
 		bool exception <- false;
 		try{
-			map m <- from_json('{"x":Infinity}');	
+			map m <- map(from_json('{"x":Infinity}'));	
 		}catch{
 			write "Expected json parser exception: " + #current_error;
 			exception <- true;
@@ -211,7 +211,7 @@ experiment SerializationTest type:test {
 		gama.pref_json_nan_as_string <- true;
 		bool exception <- false;
 		try{
-			map m <- from_json('{"x":NaN}');	
+			map m <- map(from_json('{"x":NaN}'));	
 		}catch{
 			write "Expected json parser exception: " + #current_error;
 			exception <- true;

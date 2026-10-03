@@ -24,7 +24,7 @@ global{
 	float step <- 1.0 ;
 	bool with_viz <- false;
 
-	list methods<-["Euler", "ThreeEighthes","Midpoint", "Gill", "Luther", "rk4", "dp853", "AdamsBashforth", "AdamsMoulton","DormandPrince54", "GraggBulirschStoer", "HighamHall54"];
+	list<string> methods<-["Euler", "ThreeEighthes","Midpoint", "Gill", "Luther", "rk4", "dp853", "AdamsBashforth", "AdamsMoulton","DormandPrince54", "GraggBulirschStoer", "HighamHall54"];
 	list<rgb> color_list<-list<rgb>(brewer_colors("Paired"));
 
 // model parameters
