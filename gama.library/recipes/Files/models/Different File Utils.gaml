@@ -35,7 +35,7 @@ global {
 		
 		write "folder exists ok: " + folder_exist_ok;
 		
-		file current_folder <- folder(".");
+		directory current_folder <- folder(".");
 		
 		write "folder the model is in: "+current_folder;
 		

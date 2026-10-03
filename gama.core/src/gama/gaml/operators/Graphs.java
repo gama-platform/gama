@@ -683,7 +683,7 @@ public class Graphs {
 	 */
 	@operator (
 			value = "edge_between",
-			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
 			category = { IOperatorCategory.GRAPH, IConcept.EDGE })
 	@doc (
 			value = "returns the edge linking two nodes",
@@ -700,6 +700,39 @@ public class Graphs {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
 		if (graph.containsVertex(verticePair.key()) && graph.containsVertex(verticePair.value()))
 			return graph.getEdge(verticePair.key(), verticePair.value());
+		return null;
+	}
+
+	/**
+	 * Edge between.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param graph
+	 *            the graph
+	 * @param verticePair
+	 *            the vertice pair
+	 * @return the object
+	 */
+	@operator (
+			value = "edge_between",
+			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.GRAPH, IConcept.EDGE })
+	@doc (
+			value = "returns the edge linking two nodes",
+			examples = { @example (
+					value = "graphFromMap edge_between (node1,node2)",
+					equals = "edge1",
+					isExecutable = false) },
+			see = { "out_edges_of", "in_edges_of" })
+	@test ("""
+			graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),\
+			edge({80,35}, {40,60}),edge({80,35}, {10,5}), node ({50,50})]));\r
+			(g edge_between ({10,5},{20,3})) = g.edges[0]""")
+	public static Object edgeBetween(final IScope scope, final IGraph graph, final Object vertex1,
+			final Object vertex2) {
+		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
+		if (graph.containsVertex(vertex1) && graph.containsVertex(vertex2)) return graph.getEdge(vertex1, vertex2);
 		return null;
 	}
 
@@ -1455,9 +1488,11 @@ public class Graphs {
 			category = { IOperatorCategory.GRAPH },
 			concept = { IConcept.GRAPH, IConcept.CAST, IConcept.MAP, IConcept.LIST, IConcept.EDGE })
 	@doc (
-			value = "creates a graph from the list/map of edges given as operand",
+			value = """
+					creates a graph from the list/map of edges given as operand. A graph<vertexType, edgeType>. \
+					For a list of spatial edges, vertices are derived from their endpoints and the input edge objects are used as graph edges; \
+					the exact types are inferred from the input.""",
 			masterDoc = true,
-			returns = "A graph<vertexType, edgeType>. For a list of spatial edges, vertices are derived from their endpoints and the input edge objects are used as graph edges; the exact types are inferred from the input.",
 			usages = @usage (
 					value = "if the operand is a list, the graph will be built with elements of the list as edges",
 					examples = { @example (
@@ -1498,8 +1533,8 @@ public class Graphs {
 			category = { IOperatorCategory.GRAPH },
 			concept = {})
 	@doc (
-			value = "creates a graph from a list of vertices (left-hand operand). An edge is created between each pair of vertices with an intersection (with a given tolerance).",
-			returns = "A graph whose vertices have the input container's content type and whose edges are geometries, or agents of the supplied edge species when one is specified.",
+			value = "creates a graph from a list of vertices (left-hand operand). An edge is created between each pair of vertices with an intersection (with a given tolerance). "
+					+ "Returns a graph whose vertices have the input container's content type and whose edges are geometries, or agents of the supplied edge species when one is specified.",
 			see = { "as_distance_graph", "as_edge_graph" })
 	@no_test
 	public static IGraph spatialFromVertices(final IScope scope, final IContainer vertices, final Double tolerance,
@@ -1635,9 +1670,9 @@ public class Graphs {
 			category = { IOperatorCategory.GRAPH },
 			concept = { IConcept.GRAPH, IConcept.NODE, IConcept.CAST })
 	@doc (
-			value = "creates a graph from a list of vertices (left-hand operand). An edge is created between each pair of vertices with an intersection (with a given tolerance).",
+			value = "creates a graph from a list of vertices (left-hand operand). An edge is created between each pair of vertices with an intersection (with a given tolerance). "
+					+ "Returns a graph whose vertices have the input container's content type and whose edges are geometries, or agents of the supplied edge species when one is specified.",
 			comment = "as_intersection_graph is more efficient for a list of geometries (but less accurate) than as_distance_graph.",
-			returns = "A graph whose vertices have the input container's content type and whose edges are geometries, or agents of the supplied edge species when one is specified.",
 			examples = @example (
 					value = "list(ant) as_intersection_graph 0.5",
 					isExecutable = false),
@@ -1730,8 +1765,8 @@ public class Graphs {
 	@doc (
 			value = "creates a graph from a list of vertices (left-hand operand). An edge is created between each pair of vertices close enough (less than a distance, right-hand operand).",
 			masterDoc = true,
-			comment = "as_distance_graph is more efficient for a list of points than as_intersection_graph.",
-			returns = "A graph whose vertices have the input container's content type and whose edges are geometries, or agents of the supplied edge species when one is specified.",
+			comment = "as_distance_graph is more efficient for a list of points than as_intersection_graph. "
+					+ "Return a graph whose vertices have the input container's content type and whose edges are geometries, or agents of the supplied edge species when one is specified.",
 			examples = @example (
 					value = "list(ant) as_distance_graph 3.0",
 					isExecutable = false),
@@ -1767,8 +1802,8 @@ public class Graphs {
 			category = { IOperatorCategory.GRAPH },
 			concept = {})
 	@doc (
-			value = "creates an undirected graph from a list of vertices (left-hand operand). An edge is created between each pair of vertices close enough (less than a distance, right-hand operand).",
-			returns = "A graph whose vertices have the input container's content type and whose edges are agents of the supplied edge species.",
+			value = "creates an undirected graph from a list of vertices (left-hand operand). An edge is created between each pair of vertices close enough (less than a distance, right-hand operand). "
+					+ "Returns a graph whose vertices have the input container's content type and whose edges are agents of the supplied edge species.",
 			see = { "as_intersection_graph", "as_edge_graph" })
 	@no_test
 	public static IGraph spatialDistanceGraph(final IScope scope, final IContainer vertices, final Double distance,
@@ -2351,7 +2386,7 @@ public class Graphs {
 	@operator (
 			value = "paths_between",
 			type = IType.LIST,
-			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			content_type = IType.PATH,
 			category = { IOperatorCategory.GRAPH, IOperatorCategory.PATH },
 			concept = { IConcept.GRAPH })
 	@doc (

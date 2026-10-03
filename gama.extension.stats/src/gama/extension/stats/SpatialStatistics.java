@@ -57,11 +57,12 @@ public class SpatialStatistics {
 	 */
 	@operator (
 			value = { "k_nearest_neighbors" },
-			content_type = ITypeProvider.TYPE_AT_INDEX + 1,
+			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
+			// content_type = ITypeProvider.TYPE_AT_INDEX + 1,
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_STATISTICAL, IOperatorCategory.STATISTICAL },
 			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.AGENT_LOCATION, IConcept.STATISTIC })
 	@doc (
-			value = "This operator allows user to find the attribute of an agent basing on its k-nearest agents",
+			value = "This operator allows user to find the attribute of an agent based on its k-nearest neighboring agents",
 			comment = """
 					In order to use this operator, users have to create a map which map the agents with\
 					 one of their attributes (for example color or size,..). In the example below, \
@@ -209,123 +210,121 @@ public class SpatialStatistics {
 					isExecutable = false) },
 			see = { "simple_clustering_by_distance" })
 	@no_test (Reason.IMPOSSIBLE_TO_TEST)
-	public static IList hierarchicalClusteringe(final IScope scope, final IContainer<?, IAgent> agents, final Double distance) {
-	    final int nb = agents.length(scope);
-	    
-	    // We use NO_TYPE so the list can hold both IAgent (leaves) and IList (branches)
-	    final IList<Object> groups = GamaListFactory.create(Types.NO_TYPE);
+	public static IList hierarchicalClusteringe(final IScope scope, final IContainer<?, IAgent> agents,
+			final Double distance) {
+		final int nb = agents.length(scope);
 
-	    if (nb == 0) return groups;
+		// We use NO_TYPE so the list can hold both IAgent (leaves) and IList (branches)
+		final IList<Object> groups = GamaListFactory.create(Types.NO_TYPE);
 
-	    // 1. Initial state: Each agent starts as its own root node (a leaf)
-	    for (final IAgent ag : agents.iterable(scope)) {
-	        groups.add(ag);
-	    }
+		if (nb == 0) return groups;
 
-	    if (nb <= 1) return groups;
+		// 1. Initial state: Each agent starts as its own root node (a leaf)
+		for (final IAgent ag : agents.iterable(scope)) { groups.add(ag); }
 
-	    // 2. Symmetric Map to store distances
-	    final Map<Object, Map<Object, Double>> distances = new HashMap<>();
-	    
-	    double distMin = Double.MAX_VALUE;
-	    Object minG1 = null;
-	    Object minG2 = null;
+		if (nb <= 1) return groups;
 
-	    // 3. Calculate ALL initial distances
-	    for (int i = 0; i < nb - 1; i++) {
-	        final IAgent a = (IAgent) groups.get(i);
-	        for (int j = i + 1; j < nb; j++) {
-	            final IAgent b = (IAgent) groups.get(j);
-	            
-	            final double dist = scope.getTopology().distanceBetween(scope, a, b);
-	            
-	            // Store all distances symmetrically
-	            distances.computeIfAbsent(a, k -> new HashMap<>()).put(b, dist);
-	            distances.computeIfAbsent(b, k -> new HashMap<>()).put(a, dist);
-	            
-	            if (dist < distMin) {
-	                distMin = dist;
-	                minG1 = a;
-	                minG2 = b;
-	            }
-	        }
-	    }
+		// 2. Symmetric Map to store distances
+		final Map<Object, Map<Object, Double>> distances = new HashMap<>();
 
-	    // 4. Agglomerative clustering loop 
-	    // MODIFICATION: We stop if there is only 1 group left OR if the closest pair is further than 'distance'
-	    while (groups.size() > 1 && minG1 != null && minG2 != null && distMin <= distance) {
+		double distMin = Double.MAX_VALUE;
+		Object minG1 = null;
+		Object minG2 = null;
 
-	        // CREATE A NESTED LIST (The Dendrogram Node)
-	        // It strictly contains exactly 2 elements (Binary Tree)
-	        final IList<Object> mergedGroup = GamaListFactory.create(Types.NO_TYPE);
-	        mergedGroup.add(minG1);
-	        mergedGroup.add(minG2);
-	        
-	        // Remove the two merged components from the main list
-	        groups.remove(minG1);
-	        groups.remove(minG2);
-	        
-	        Map<Object, Double> newMergedDistances = new HashMap<>();
-	        
-	        // Update distances between the new group and all remaining groups
-	        for (final Object otherGroup : groups) {
-	            double d1 = Double.MAX_VALUE;
-	            double d2 = Double.MAX_VALUE;
-	            
-	            if (distances.containsKey(minG1) && distances.get(minG1).containsKey(otherGroup)) {
-	                d1 = distances.get(minG1).get(otherGroup);
-	            }
-	            if (distances.containsKey(minG2) && distances.get(minG2).containsKey(otherGroup)) {
-	                d2 = distances.get(minG2).get(otherGroup);
-	            }
-	            
-	            // Single Linkage: min distance
-	            final double dMerge = Math.min(d1, d2);
-	            
-	            newMergedDistances.put(otherGroup, dMerge);
-	            distances.computeIfAbsent(otherGroup, k -> new HashMap<>()).put(mergedGroup, dMerge);
-	            
-	            // Clean up old references
-	            if (distances.containsKey(otherGroup)) {
-	                distances.get(otherGroup).remove(minG1);
-	                distances.get(otherGroup).remove(minG2);
-	            }
-	        }
-	        
-	        distances.put(mergedGroup, newMergedDistances);
-	        distances.remove(minG1);
-	        distances.remove(minG2);
-	        
-	        // Add the new branch to the main list
-	        groups.add(mergedGroup);
+		// 3. Calculate ALL initial distances
+		for (int i = 0; i < nb - 1; i++) {
+			final IAgent a = (IAgent) groups.get(i);
+			for (int j = i + 1; j < nb; j++) {
+				final IAgent b = (IAgent) groups.get(j);
 
-	        // 5. Find the next optimal pair to merge in the whole matrix
-	        distMin = Double.MAX_VALUE;
-	        minG1 = null;
-	        minG2 = null;
-	        
-	        for (Map.Entry<Object, Map<Object, Double>> entry1 : distances.entrySet()) {
-	            Object gA = entry1.getKey();
-	            for (Map.Entry<Object, Double> entry2 : entry1.getValue().entrySet()) {
-	                Object gB = entry2.getKey();
-	                double d = entry2.getValue();
-	                
-	                // Keep the shortest distance
-	                if (d < distMin) {
-	                    distMin = d;
-	                    minG1 = gA;
-	                    minG2 = gB;
-	                }
-	            }
-	        }
-	    }
+				final double dist = scope.getTopology().distanceBetween(scope, a, b);
 
-	    // At the end, 'groups' contains the remaining clusters (or individuals) that are further apart than the distance threshold.
-	    return groups;
+				// Store all distances symmetrically
+				distances.computeIfAbsent(a, k -> new HashMap<>()).put(b, dist);
+				distances.computeIfAbsent(b, k -> new HashMap<>()).put(a, dist);
+
+				if (dist < distMin) {
+					distMin = dist;
+					minG1 = a;
+					minG2 = b;
+				}
+			}
+		}
+
+		// 4. Agglomerative clustering loop
+		// MODIFICATION: We stop if there is only 1 group left OR if the closest pair is further than 'distance'
+		while (groups.size() > 1 && minG1 != null && minG2 != null && distMin <= distance) {
+
+			// CREATE A NESTED LIST (The Dendrogram Node)
+			// It strictly contains exactly 2 elements (Binary Tree)
+			final IList<Object> mergedGroup = GamaListFactory.create(Types.NO_TYPE);
+			mergedGroup.add(minG1);
+			mergedGroup.add(minG2);
+
+			// Remove the two merged components from the main list
+			groups.remove(minG1);
+			groups.remove(minG2);
+
+			Map<Object, Double> newMergedDistances = new HashMap<>();
+
+			// Update distances between the new group and all remaining groups
+			for (final Object otherGroup : groups) {
+				double d1 = Double.MAX_VALUE;
+				double d2 = Double.MAX_VALUE;
+
+				if (distances.containsKey(minG1) && distances.get(minG1).containsKey(otherGroup)) {
+					d1 = distances.get(minG1).get(otherGroup);
+				}
+				if (distances.containsKey(minG2) && distances.get(minG2).containsKey(otherGroup)) {
+					d2 = distances.get(minG2).get(otherGroup);
+				}
+
+				// Single Linkage: min distance
+				final double dMerge = Math.min(d1, d2);
+
+				newMergedDistances.put(otherGroup, dMerge);
+				distances.computeIfAbsent(otherGroup, k -> new HashMap<>()).put(mergedGroup, dMerge);
+
+				// Clean up old references
+				if (distances.containsKey(otherGroup)) {
+					distances.get(otherGroup).remove(minG1);
+					distances.get(otherGroup).remove(minG2);
+				}
+			}
+
+			distances.put(mergedGroup, newMergedDistances);
+			distances.remove(minG1);
+			distances.remove(minG2);
+
+			// Add the new branch to the main list
+			groups.add(mergedGroup);
+
+			// 5. Find the next optimal pair to merge in the whole matrix
+			distMin = Double.MAX_VALUE;
+			minG1 = null;
+			minG2 = null;
+
+			for (Map.Entry<Object, Map<Object, Double>> entry1 : distances.entrySet()) {
+				Object gA = entry1.getKey();
+				for (Map.Entry<Object, Double> entry2 : entry1.getValue().entrySet()) {
+					Object gB = entry2.getKey();
+					double d = entry2.getValue();
+
+					// Keep the shortest distance
+					if (d < distMin) {
+						distMin = d;
+						minG1 = gA;
+						minG2 = gB;
+					}
+				}
+			}
+		}
+
+		// At the end, 'groups' contains the remaining clusters (or individuals) that are further apart than the
+		// distance threshold.
+		return groups;
 	}
 
-	
-	
 	/**
 	 * Prim IDW.
 	 *

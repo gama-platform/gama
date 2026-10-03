@@ -16,7 +16,7 @@ global {
 	int max_iteration <- 100;
 	list<list<node_agent>> clusters;
 	init {
-		graph the_graph <- generate_watts_strogatz(20, 0.01, 4, true,node_agent, edge_agent);	
+		graph<node_agent, edge_agent> the_graph <- generate_watts_strogatz(20, 0.01, 4, true,node_agent, edge_agent);	
 		the_graph <- layout_force(the_graph, world.shape,0.5,0.5,100);
 		clusters <- girvan_newman_clustering(the_graph, k);
 			
