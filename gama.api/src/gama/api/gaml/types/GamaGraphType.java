@@ -39,11 +39,13 @@ import gama.api.types.graph.IGraph;
  *
  * <h2>Type Parameters:</h2>
  * <p>
- * Graphs have two type parameters:
+ * Graphs have two type parameters, {@code graph<vertexType, edgeType>}:
  * <ul>
- * <li>Vertex type - the type of nodes in the graph</li>
- * <li>Edge type - the type of edges connecting vertices</li>
+ * <li>Vertex type - the type of nodes in the graph; it is the graph container's key type</li>
+ * <li>Edge type - the type of edge objects; it is the graph container's content/value type</li>
  * </ul>
+ * Edge lookup is addressed by a pair of vertices (source, target), and returns the edge or edges joining them; this
+ * endpoint pair is not the edge value itself.
  * </p>
  *
  * <h2>Usage Examples:</h2>
