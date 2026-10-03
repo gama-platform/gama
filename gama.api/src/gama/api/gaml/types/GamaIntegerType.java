@@ -11,6 +11,8 @@
 package gama.api.gaml.types;
 
 import gama.annotations.doc;
+import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.type;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
@@ -47,6 +49,14 @@ import gama.api.types.misc.IValue;
 		kind = ISymbolKind.NUMBER,
 		concept = { IConcept.TYPE },
 		doc = @doc ("Type of integer numbers"))
+@tests ({
+		@test ("0 is int"),
+		@test ("1000000000 is int"),
+		@test ("(100 * 100) is int"),
+		@test ("int(100.0) is int"),
+		@test ("int(\"223\") is int"),
+		@test ("int(\"223.3\") is int")
+})
 public class GamaIntegerType extends GamaType<Integer> {
 
 	/**

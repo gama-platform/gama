@@ -46,6 +46,7 @@ import gama.annotations.example;
 import gama.annotations.no_test;
 import gama.annotations.operator;
 import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.usage;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
@@ -2378,7 +2379,12 @@ public class Stats {
 			examples = { @example (
 					value = "glm(matrix([[1.0,2.0,3.0,4.0],[2.0,3.0,4.0,2.0]]))",
 					isExecutable = false) })
-	@test ("glm(matrix([[1.0,2.0,3.0,4.0],[2.0,3.0,4.0,2.0],[5.0,1.0,3.0,5.0],[3.0,4.0,5.0,1.0]])).parameters collect (each with_precision 5) = [0.5,2.5,0.0,-1.5]")
+	@tests ({
+			@test (value = "matrix<float> data0 <- matrix([[1.0, 2.0, 3.0, 4.0], [2.0, 3.0, 4.0, 2.0], [5.0, 1.0, 3.0, 5.0], [3.0, 4.0, 5.0, 1.0]]); regression result0 <- glm(data0); (result0.parameters[0] with_precision 5) = 0.5"),
+			@test (value = "matrix<float> data1 <- matrix([[1.0, 2.0, 3.0, 4.0], [2.0, 3.0, 4.0, 2.0], [5.0, 1.0, 3.0, 5.0], [3.0, 4.0, 5.0, 1.0]]); regression result1 <- glm(data1); (result1.parameters[1] with_precision 5) = 2.5"),
+			@test (value = "matrix<float> data2 <- matrix([[1.0, 2.0, 3.0, 4.0], [2.0, 3.0, 4.0, 2.0], [5.0, 1.0, 3.0, 5.0], [3.0, 4.0, 5.0, 1.0]]); regression result2 <- glm(data2); (result2.parameters[2] with_precision 5) = 0.0"),
+			@test (value = "matrix<float> data3 <- matrix([[1.0, 2.0, 3.0, 4.0], [2.0, 3.0, 4.0, 2.0], [5.0, 1.0, 3.0, 5.0], [3.0, 4.0, 5.0, 1.0]]); regression result3 <- glm(data3); (result3.parameters[3] with_precision 5) = -1.5")
+	})
 	public static GamaRegression opGlm(final IScope scope, final IMatrix data) throws GamaRuntimeException {
 		return opRegression(scope, data);
 	}
@@ -2426,7 +2432,10 @@ public class Stats {
 			examples = { @example (
 					value = "anova([[6.0, 8.0, 4.0, 5.0, 3.0, 4.0], [8.0, 12.0, 9.0, 11.0, 6.0, 8.0], [13.0, 9.0, 11.0, 8.0, 7.0, 12.0]])",
 					isExecutable = false) })
-	@test ("(anova([[6.0, 8.0, 4.0, 5.0, 3.0, 4.0], [8.0, 12.0, 9.0, 11.0, 6.0, 8.0], [13.0, 9.0, 11.0, 8.0, 7.0, 12.0]]).f_stat with_precision 2) = 9.26")
+	@tests ({
+			@test ("(anova([[6.0, 8.0, 4.0, 5.0, 3.0, 4.0], [8.0, 12.0, 9.0, 11.0, 6.0, 8.0], [13.0, 9.0, 11.0, 8.0, 7.0, 12.0]]).f_stat with_precision 2) = 9.26"),
+			@test ("(anova([[6.0, 8.0, 4.0, 5.0, 3.0, 4.0], [8.0, 12.0, 9.0, 11.0, 6.0, 8.0], [13.0, 9.0, 11.0, 8.0, 7.0, 12.0]]).p_value with_precision 3) = 0.002")
+	})
 	public static GamaAnova anova(final IScope scope, final IList<IList<?>> data) {
 		return new GamaAnova(scope, data);
 	}
@@ -2454,7 +2463,11 @@ public class Stats {
 			examples = { @example (
 					value = "multi_anova([1.0, 2.0, 5.0, 6.0], ['a', 'a', 'b', 'b'], ['x', 'y', 'x', 'y'])",
 					isExecutable = false) })
-	@test ("(float(multi_anova([10.0, 11.0, 20.0, 21.0, 30.0, 31.0, 40.0, 41.0, 100.0, 101.0, 200.0, 201.0], ['a', 'a', 'a', 'a', 'b', 'b', 'b', 'b', 'c', 'c', 'c', 'c'], ['x', 'x', 'y', 'y', 'x', 'x', 'y', 'y', 'x', 'x', 'y', 'y']).p_values['A']) < 0.05)")
+	@tests ({
+			@test ("(float(multi_anova([10.0, 11.0, 20.0, 21.0, 30.0, 31.0, 40.0, 41.0, 100.0, 101.0, 200.0, 201.0], ['a', 'a', 'a', 'a', 'b', 'b', 'b', 'b', 'c', 'c', 'c', 'c'], ['x', 'x', 'y', 'y', 'x', 'x', 'y', 'y', 'x', 'x', 'y', 'y']).p_values['A']) < 0.05"),
+			@test ("multi_anova([10.0, 11.0, 20.0, 21.0, 30.0, 31.0, 40.0, 41.0, 100.0, 101.0, 200.0, 201.0], ['a', 'a', 'a', 'a', 'b', 'b', 'b', 'b', 'c', 'c', 'c', 'c'], ['x', 'x', 'y', 'y', 'x', 'x', 'y', 'y', 'x', 'x', 'y', 'y']).p_values['B'] < 0.05"),
+			@test ("multi_anova([10.0, 11.0, 20.0, 21.0, 30.0, 31.0, 40.0, 41.0, 100.0, 101.0, 200.0, 201.0], ['a', 'a', 'a', 'a', 'b', 'b', 'b', 'b', 'c', 'c', 'c', 'c'], ['x', 'x', 'y', 'y', 'x', 'x', 'y', 'y', 'x', 'x', 'y', 'y']).p_values['A:B'] < 0.05")
+	})
 	public static GamaAnova multiAnova(final IScope scope, final IList<Double> y, final IList<?> factorA,
 			final IList<?> factorB) {
 		if (y.size() != factorA.size() || y.size() != factorB.size())
@@ -2576,7 +2589,10 @@ public class Stats {
 			examples = { @example (
 					value = "hsic([1.0, 2.0, 3.0], [1.0, 2.0, 3.0])",
 					isExecutable = false) })
-	@test ("hsic([1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0, 4.0, 5.0]) > hsic([1.0, 2.0, 3.0, 4.0, 5.0], [5.0, 1.0, 4.0, 2.0, 3.0])")
+	@tests ({
+			@test ("hsic([1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0, 4.0, 5.0]) > hsic([1.0, 2.0, 3.0, 4.0, 5.0], [5.0, 1.0, 4.0, 2.0, 3.0])"),
+			@test ("hsic([1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0, 4.0, 5.0]) <= 1.0")
+	})
 	public static Double opHSIC(final IScope scope, final IList<Double> x, final IList<Double> y) {
 		if (x.size() != y.size()) throw GamaRuntimeException.error("Input lists must have the same size", scope);
 		double[] xData = new double[x.size()];
@@ -2664,7 +2680,10 @@ public class Stats {
 			concept = { IConcept.STATISTIC })
 	@doc (
 			value = "Return the list of rolling coefficient of variance according to the number of observations, </br> i.e. value at index i is the coefficient of variance for the first i observations.")
-	@no_test
+	@tests ({
+			@test (value = "list<float> data_vc_length <- [0.1, 0.2, 0.3, 0.3, 0.3, 0.3]; list<float> lvc_length <- rolling_vc(data_vc_length); length(lvc_length) = length(data_vc_length) - 1", name = "Rolling coefficient of variation length"),
+			@test (value = "list<float> data_vc_value <- [0.1, 0.2, 0.3, 0.3, 0.3, 0.3]; list<float> lvc_value <- rolling_vc(data_vc_value); abs(last(lvc_value) - (standard_deviation(data_vc_value) / mean(data_vc_value))) < 1e-10", name = "Rolling coefficient of variation value")
+	})
 	public static IList<Double> rollingVC(final IScope scope, final IList<Double> data) {
 		IList<Double> mean = meanList(data, scope);
 		IList<Double> std = standardevList(mean, data, scope);
@@ -2682,7 +2701,10 @@ public class Stats {
 			concept = { IConcept.STATISTIC })
 	@doc (
 			value = "Return the list of standard error according to the number of observations, </br> i.e. value at index i is the standard error for the first i observations.")
-	@no_test
+	@tests ({
+			@test (value = "list<float> data_se_length <- [0.1, 0.2, 0.3, 0.3, 0.3, 0.3]; list<float> lse_length <- rolling_se(data_se_length); length(lse_length) = length(data_se_length) - 1", name = "Rolling standard error length"),
+			@test (value = "list<float> data_se_value <- [0.1, 0.2, 0.3, 0.3, 0.3, 0.3]; list<float> lse_value <- rolling_se(data_se_value); abs(last(lse_value) - (standard_deviation(data_se_value) / sqrt(length(data_se_value)))) < 1e-10", name = "Rolling standard error value")
+	})
 	public static IList<Double> rollingSE(final IScope scope, final IList<Double> data) {
 		IList<Double> mean = meanList(data, scope);
 		IList<Double> std = standardevList(mean, data, scope);
@@ -2697,10 +2719,12 @@ public class Stats {
 			can_be_const = true,
 			category = { IOperatorCategory.STATISTICAL },
 			concept = { IConcept.STATISTIC })
+	@tests ({
+			@test (value = "list<float> data <- [0.1, 0.2, 0.3, 0.3, 0.3, 0.3]; list data_mult <- range(50) accumulate (data); int nbrep_01 <- power_test(data_mult, 0.95, 0.80, 0.01); int nbrep_10 <- power_test(data_mult, 0.95, 0.80, 0.1); nbrep_10 < nbrep_01", name = "Power test sensitivity")
+	})
 	@doc (
 			value = "Return the number of observation to satisfy power test given a critical effect size, tAlpha and tBeta."
 					+ "</br>see reference: https://rseri.me/publication/b016/B016.pdf (accessible as of 04/2026).")
-	@no_test
 	public static Integer powerTestCSE(final IScope scope, final IList<Double> data, final double tAlpha,
 			final double tBeta, final double criticalEffectSize) {
 		IList<Double> dSample = data.stream().mapToDouble(v -> Cast.asFloat(scope, v)).boxed()

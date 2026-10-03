@@ -13,6 +13,7 @@ import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.operator;
 import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
@@ -95,11 +96,16 @@ public class Maths {
 									value = "2 ^ 3",
 									equals = "8.0") }) },
 			see = { "*", "sqrt" })
-	@test ("8^0 = 1.0")
-	@test ("2^2 = 4.0")
-	@test ("0^0 = 1.0")
-	@test ("(-2)^2 = 4.0")
-	@test ("2^1 = 2.0")
+	@tests ({
+			@test ("8^0 = 1.0"),
+			@test ("2^2 = 4.0"),
+			@test ("0^0 = 1.0"),
+			@test ("(-2)^2 = 4.0"),
+			@test ("2^1 = 2.0"),
+			@test ("10 ^ 0 = 1"),
+			@test ("10 ^ 1 = 10"),
+			@test ("(100 ^ 2) = 10000")
+	})
 	public static Double pow(final Integer a, final Integer b) {
 		return Math.pow(a, b);
 	}
@@ -324,10 +330,14 @@ public class Maths {
 					examples = { @example (
 							value = "abs (200 * -1 + 0.5)",
 							equals = "199.5") }) })
-	@test ("abs(1.9) = 1.9")
-	@test ("abs(-2.0) = 2.0")
-	@test ("abs(0.0) = 0.0")
-	@test ("abs(-0.0) = 0.0")
+	@tests ({
+			@test ("abs(1.9) = 1.9"),
+			@test ("abs(-2.0) = 2.0"),
+			@test ("abs(0.0) = 0.0"),
+			@test ("abs(-0.0) = 0.0"),
+			@test ("abs(-0.5) = 0.5"),
+			@test ("abs(-7.0) = 7")
+	})
 	public static Double abs(final Double rv) {
 		if (Double.isInfinite(rv)) return Double.POSITIVE_INFINITY;
 		return Math.abs(rv);
@@ -390,10 +400,14 @@ public class Maths {
 							@example (
 									value = "abs (10)",
 									equals = "10") }) })
-	@test ("abs(1) = 1")
-	@test ("abs(-2) = 2")
-	@test ("abs(0) = 0")
-	@test ("abs(-0) = 0")
+	@tests ({
+			@test ("abs(1) = 1"),
+			@test ("abs(-2) = 2"),
+			@test ("abs(0) = 0"),
+			@test ("abs(-0) = 0"),
+			@test ("abs(-100) = 100"),
+			@test ("abs(-7) = 7")
+	})
 	public static Integer abs(final Integer rv) {
 		int a = rv.intValue();
 		return (a ^ a >> 31) - (a >> 31);
@@ -1450,13 +1464,17 @@ public class Maths {
 							value = "round(-0.51)",
 							equals = "-1") },
 			see = { "int", "with_precision" })
-	@test ("round(0.51) = 1")
-	@test ("round(0.5) = 1")
-	@test ("round(-0.5) = -1")
-	@test ("round(-0.51) = -1")
-	@test ("round(0.0) = 0")
-	@test ("round(-2.3) = -2")
-	@test ("round(2.7) = 3")
+	@tests ({
+			@test ("round(0.51) = 1"),
+			@test ("round(0.5) = 1"),
+			@test ("round(-0.5) = -1"),
+			@test ("round(-0.51) = -1"),
+			@test ("round(0.0) = 0"),
+			@test ("round(-2.3) = -2"),
+			@test ("round(2.7) = 3"),
+			@test ("round(100.5) = 101"),
+			@test ("round(100.4) = 100")
+	})
 	public static Integer round(final Double v) {
 		int i;
 		if (v >= 0) {
@@ -1603,9 +1621,12 @@ public class Maths {
 							equals = "0.6") }) },
 			special_cases = "if the right-hand operand is equal to zero, raises a \"Division by zero\" exception",
 			see = { IKeyword.PLUS, IKeyword.MINUS, IKeyword.MULTIPLY })
-	@test ("0/1=0")
-	@test ("is_error(1/0)")
-	@test ("3/5=0.6")
+	@tests ({
+			@test ("0/1=0"),
+			@test ("is_error(1/0)"),
+			@test ("3/5=0.6"),
+			@test ("!((100 / 100) is int)")
+	})
 	public static Double opDivide(final IScope scope, final Integer a, final Integer b) throws GamaRuntimeException {
 		if (b == null || b == 0) throw GamaRuntimeException.error("Division by zero", scope);
 		return a.doubleValue() / b.doubleValue();
@@ -1721,6 +1742,9 @@ public class Maths {
 							value = "1 * 1",
 							equals = "1")),
 			see = { IKeyword.PLUS, IKeyword.MINUS, IKeyword.DIVIDE })
+	@tests ({
+			@test ("-1 * 100 = -100")
+	})
 	public static Integer opTimes(final Integer a, final Integer b) {
 		return a * b;
 	}
@@ -1893,6 +1917,9 @@ public class Maths {
 							value = "1 + 1",
 							equals = "2") }) },
 			see = { IKeyword.MINUS, IKeyword.MULTIPLY, IKeyword.DIVIDE })
+	@tests ({
+			@test ("(100 + 100) = 200")
+	})
 	public static Integer opPlus(final Integer a, final Integer b) {
 		return a + b;
 	}
@@ -2385,11 +2412,14 @@ public class Maths {
 							value = "floor(-4.7)",
 							equals = "-5") },
 			see = { "ceil", "round" })
-	@test ("floor(3.5) = 3")
-	@test ("floor(-4.7) = -5")
-	@test ("floor(3.0) = 3")
-	@test ("floor(-2.0) = -2")
-	@test ("floor(0.0) = 0")
+	@tests ({
+			@test ("floor(3.5) = 3"),
+			@test ("floor(-4.7) = -5"),
+			@test ("floor(3.0) = 3"),
+			@test ("floor(-2.0) = -2"),
+			@test ("floor(0.0) = 0"),
+			@test ("floor(100.5) = 100")
+	})
 	public static final int floor(final double x) {
 		// This method is a *lot* faster than using (int)Math.floor(x)
 		int xi = (int) x;
@@ -2422,11 +2452,14 @@ public class Maths {
 							value = "ceil(-4.7)",
 							equals = "-4.0") },
 			see = { "floor", "round" })
-	@test ("ceil(3.5) = 4")
-	@test ("ceil(-4.7) = -4")
-	@test ("ceil(3.0) = 3")
-	@test ("ceil(-2.0) = -2")
-	@test ("ceil(0.0) = 0")
+	@tests ({
+			@test ("ceil(3.5) = 4"),
+			@test ("ceil(-4.7) = -4"),
+			@test ("ceil(3.0) = 3"),
+			@test ("ceil(-2.0) = -2"),
+			@test ("ceil(0.0) = 0"),
+			@test ("ceil(100.5) = 101")
+	})
 	public static final int ceil(final double d) {
 		return (int) Math.ceil(d);
 	}
@@ -2466,11 +2499,15 @@ public class Maths {
 							value = "7 mod 3",
 							equals = "1") },
 			see = "div")
-	@test ("40 mod 3 = 1")
-	@test ("7 mod 3 = 1")
-	@test ("6 mod 3 = 0")
-	@test ("(-7) mod 3 = -1")
-	@test ("is_error(5 mod 0)")
+	@tests ({
+			@test ("40 mod 3 = 1"),
+			@test ("7 mod 3 = 1"),
+			@test ("6 mod 3 = 0"),
+			@test ("(-7) mod 3 = -1"),
+			@test ("is_error(5 mod 0)"),
+			@test ("mod(100, 11) = 1"),
+			@test ("45 mod 10 = 5")
+	})
 	public static Integer opMod(final IScope scope, final Integer a, final Integer b) {
 		if (b == 0) {
 			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("Division by zero", scope), false);
@@ -2514,11 +2551,14 @@ public class Maths {
 							value = "7 div 2",
 							equals = "3") },
 			see = "mod")
-	@test ("40 div 3 = 13")
-	@test ("7 div 2 = 3")
-	@test ("(-7) div 2 = -3")
-	@test ("6 div 3 = 2")
-	@test ("is_error(5 div 0)")
+	@tests ({
+			@test ("40 div 3 = 13"),
+			@test ("7 div 2 = 3"),
+			@test ("(-7) div 2 = -3"),
+			@test ("6 div 3 = 2"),
+			@test ("is_error(5 div 0)"),
+			@test ("45 div 10 = 4")
+	})
 	public static Integer div(final IScope scope, final Integer a, final Integer b) throws GamaRuntimeException {
 		if (b == 0) throw GamaRuntimeException.error("Division by zero", scope);
 		return a / b;
@@ -2604,6 +2644,9 @@ public class Maths {
 			examples = @example (
 					value = "40.1 div 4.5",
 					equals = "8"))
+	@tests ({
+			@test ("div(100.0, 10.0) = 10")
+	})
 	public static Integer div(final IScope scope, final Double a, final Double b) throws GamaRuntimeException {
 		if (b.equals(0.0)) throw GamaRuntimeException.error("Division by zero", scope);
 		return (int) (a / b);
@@ -2813,6 +2856,11 @@ public class Maths {
 					@example (
 							value = "is_number(#nan)",
 							equals = "false") })
+	@tests ({
+			@test ("is_number(100)"),
+			@test ("is_number(#max_int)"),
+			@test ("is_number(#min_int)")
+	})
 	public static Boolean is_number(final Double d) {
 		return !Double.isNaN(d);
 	}
@@ -2837,6 +2885,9 @@ public class Maths {
 					@example (
 							value = "is_finite(#infinity)",
 							equals = "false") })
+	@tests ({
+			@test ("is_finite(100)")
+	})
 	public static Boolean is_finite(final Double d) {
 		return !Double.isInfinite(d);
 	}

@@ -10,6 +10,8 @@
 package gama.api.gaml.types;
 
 import gama.annotations.doc;
+import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.type;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
@@ -48,6 +50,9 @@ import gama.api.types.misc.IValue;
 		kind = ISymbolKind.NUMBER,
 		doc = { @doc ("Represents floating point numbers (equivalent to Double in Java)") },
 		concept = { IConcept.TYPE })
+@tests ({
+		@test ("100.0 is float")
+})
 public class GamaFloatType extends GamaType<Double> {
 
 	/**

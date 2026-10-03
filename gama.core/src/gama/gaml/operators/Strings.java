@@ -24,6 +24,7 @@ import gama.annotations.example;
 import gama.annotations.no_test;
 import gama.annotations.operator;
 import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
@@ -148,11 +149,15 @@ public class Strings {
 							value = "\"hello \" + \"World\"",
 							equals = "\"hello World\"")))
 
-	@test ("'a'+'b'='ab'")
-	@test ("''+'' = ''")
-	@test ("string a <- 'a'; a + '' = a")
-	@test ("'hello' + '' = 'hello'")
-	@test ("'' + 'world' = 'world'")
+	@tests ({
+			@test ("'a'+'b'='ab'"),
+			@test ("''+'' = ''"),
+			@test ("string a <- 'a'; a + '' = a"),
+			@test ("'hello' + '' = 'hello'"),
+			@test ("'' + 'world' = 'world'"),
+			@test ("char(49) + \"_annees\" != \"10_annees\""),
+			@test ("char(49) + \"_annees\" = \"1_annees\"")
+	})
 	public static String opPlus(final String a, final String b) {
 		return a + b;
 	}
@@ -340,11 +345,15 @@ public class Strings {
 			examples = @example (
 					value = " 'bc' in 'abcded'",
 					equals = "true"))
-	@test ("'bc' in 'abcd'")
-	@test ("'' in 'abc'")
-	@test ("'abc' in 'abc'")
-	@test ("!('BC' in 'abcd')")
-	@test ("!('xyz' in 'abcd')")
+	@tests ({
+			@test ("'bc' in 'abcd'"),
+			@test ("'' in 'abc'"),
+			@test ("'abc' in 'abc'"),
+			@test ("!('BC' in 'abcd')"),
+			@test ("!('xyz' in 'abcd')"),
+			@test ("\"ce\" in \"abcede\" = true"),
+			@test ("\"ac\" in \"abcede\" = false")
+	})
 	public static Boolean opIn(final String pattern, final String target) {
 		return target.contains(pattern);
 	}
@@ -382,9 +391,13 @@ public class Strings {
 			examples = @example (
 					value = "'abcded' contains 'bc'",
 					equals = "true"))
-	@test ("'abcd' contains 'bc'")
-	@test ("'abcd' contains ''")
-	@test ("!('abcd' contains 'xyz')")
+	@tests ({
+			@test ("'abcd' contains 'bc'"),
+			@test ("'abcd' contains ''"),
+			@test ("!('abcd' contains 'xyz')"),
+			@test ("'abcded' contains 'bd' = false"),
+			@test ("'abcded' contains 'cd' = true")
+	})
 	public static Boolean opContains(final String target, final String pattern) {
 		return opIn(pattern, target);
 	}
@@ -421,9 +434,12 @@ public class Strings {
 			examples = @example (
 					value = "\"abcabcabc\" contains_any [\"ca\",\"xy\"]",
 					equals = "true"))
-	@test ("'abc' contains_any ['a', 'z']")
-	@test ("!('abc' contains_any ['x','y','z'])")
-	@test ("!('abc' contains_any [])")
+	@tests ({
+			@test ("'abc' contains_any ['a', 'z']"),
+			@test ("!('abc' contains_any ['x','y','z'])"),
+			@test ("!('abc' contains_any [])"),
+			@test ("'abcabcabc' contains_any ['ca', \"gh\"] = true")
+	})
 	public static Boolean opContainsAny(final String target, final IList l) {
 		for (final Object o : l) { if (o instanceof String && opContains(target, (String) o)) return true; }
 		return false;
@@ -463,9 +479,13 @@ public class Strings {
 					examples = @example (
 							value = "\"abcabcabc\" contains_all [\"ca\",\"xy\"]",
 							equals = "false")))
-	@test ("'abcabcabc' contains_all ['ab', 'bc']")
-	@test ("!('abc' contains_all ['ab','xyz'])")
-	@test ("'abc' contains_all []")
+	@tests ({
+			@test ("'abcabcabc' contains_all ['ab', 'bc']"),
+			@test ("!('abc' contains_all ['ab','xyz'])"),
+			@test ("'abc' contains_all []"),
+			@test ("\"abcabcabc\" contains_all [\"ca\", \"xy\"] = false"),
+			@test ("\"abcabcabc\" contains_all [\"ca\", \"ab\"] = true")
+	})
 	public static Boolean opContainsAll(final String target, final IList l) {
 		for (final Object o : l) { if (!(o instanceof String) || !opContains(target, (String) o)) return false; }
 		return true;
@@ -561,9 +581,15 @@ public class Strings {
 					examples = @example (
 							value = "\"abcabcabc\" index_of \"ca\"",
 							equals = "2")))
-	@test ("'abcabcabc' index_of 'ca' = 2")
-	@test ("'abcabcabc' index_of 'x' = -1")
-	@test ("'abcabcabc' index_of '' = 0")
+	@tests ({
+			@test ("'abcabcabc' index_of 'ca' = 2"),
+			@test ("'abcabcabc' index_of 'x' = -1"),
+			@test ("'abcabcabc' index_of '' = 0"),
+			@test ("\"abcgrbd\" index_of \"bd\" = 5"),
+			@test ("\"abcgr\" index_of \"g\" = 3"),
+			@test ("(\"abgrbdcghbd\" index_of \"bd\") = 4"),
+			@test ("(\"abcgrbc\" index_of \"bc\") = 1")
+	})
 	public static Integer opIndexOf(final String target, final String pattern) {
 		return target.indexOf(pattern);
 	}
@@ -598,8 +624,13 @@ public class Strings {
 					examples = @example (
 							value = "\"abcabcabc\" last_index_of \"ca\"",
 							equals = "5")))
-	@test ("'abcabcabc' last_index_of 'x' = -1")
-	@test ("'abcabcabc' last_index_of 'ca' = 5")
+	@tests ({
+			@test ("'abcabcabc' last_index_of 'x' = -1"),
+			@test ("'abcabcabc' last_index_of 'ca' = 5"),
+			@test ("\"abcgrbd\" last_index_of \"bd\" = 5"),
+			@test ("(\"abgrbdcghbd\" last_index_of \"bd\") = 9"),
+			@test ("(\"abcgrbc\" last_index_of \"bc\") = 5")
+	})
 	public static Integer opLastIndexOf(final String target, final String pattern) {
 		return target.lastIndexOf(pattern);
 	}
@@ -636,6 +667,10 @@ public class Strings {
 			examples = @example (
 					value = "copy_between(\"abcabcabc\", 2,6)",
 					equals = "\"cabc\""))
+	@tests ({
+			@test ("copy_between(\"abcabcabc\", 2, 6) != \"cabca\""),
+			@test ("copy_between(\"abcabcabc\", 2, 6) = \"cabc\"")
+	})
 	public static String opCopy(final String target, final Integer beginIndex, final Integer endIndex) {
 		final int bIndex = beginIndex < 0 ? 0 : beginIndex;
 		final int eIndex = endIndex > target.length() ? target.length() : endIndex;
@@ -929,10 +964,16 @@ public class Strings {
 					@example (
 							value = "is_number(\"#12FA\")",
 							equals = "true") })
-	@test ("is_number('42')")
-	@test ("is_number('3.14')")
-	@test ("!is_number('abc')")
-	@test ("!is_number('')")
+	@tests ({
+			@test ("is_number('42')"),
+			@test ("is_number('3.14')"),
+			@test ("!is_number('abc')"),
+			@test ("!is_number('')"),
+			@test ("is_number(\"123.56\") = true"),
+			@test ("is_number(\"test\") = false"),
+			@test ("is_number(\"123,56\") = false"),
+			@test ("is_number(\"-123.56\") = true")
+	})
 	public static Boolean isGamaNumber(final String s) {
 		return StringUtils.isGamaNumber(s);
 	}
@@ -998,6 +1039,10 @@ public class Strings {
 					examples = @example (
 							value = "empty ('abced')",
 							equals = "false")))
+	@tests ({
+			@test ("empty('abced') = false"),
+			@test ("empty(\"\") = true")
+	})
 	static public Boolean isEmpty(final String s) {
 		return s != null && s.isEmpty();
 	}
@@ -1028,6 +1073,9 @@ public class Strings {
 					examples = @example (
 							value = "first ('abce')",
 							equals = "'a'")))
+	@tests ({
+			@test ("first(\"ghaj\") = \"g\"")
+	})
 	static public String first(final String s) {
 		if (s == null || s.isEmpty()) return "";
 		return String.valueOf(s.charAt(0));
@@ -1059,6 +1107,9 @@ public class Strings {
 					examples = @example (
 							value = "last ('abce')",
 							equals = "'e'")))
+	@tests ({
+			@test ("last(\"ghaj\") = \"j\"")
+	})
 	static public String last(final String s) {
 		if (s == null || s.isEmpty()) return "";
 		return String.valueOf(s.charAt(s.length() - 1));
@@ -1090,8 +1141,11 @@ public class Strings {
 					examples = @example (
 							value = "length (\"I am an agent\")",
 							equals = "13")))
-	@test ("length('') = 0")
-	@test ("length('abc') = 3")
+	@tests ({
+			@test ("length('') = 0"),
+			@test ("length('abc') = 3"),
+			@test ("length(\"to be or not to be\") = 18")
+	})
 	static public Integer length(final String s) {
 		if (s == null) return 0;
 		return s.length();
@@ -1249,8 +1303,11 @@ public class Strings {
 					value = "lower_case(\"Abc\")",
 					equals = "'abc'"),
 			see = { "upper_case" })
-	@test ("lower_case('') = ''")
-	@test ("lower_case('HELLO') = 'hello'")
+	@tests ({
+			@test ("lower_case('') = ''"),
+			@test ("lower_case('HELLO') = 'hello'"),
+			@test ("lower_case(\"HjkLM\") = \"hjklm\"")
+	})
 	static public String toLowerCase(final String s) {
 		if (s == null) return s;
 		return s.toLowerCase();
@@ -1282,8 +1339,11 @@ public class Strings {
 					value = "upper_case(\"Abc\")",
 					equals = "'ABC'"),
 			see = { "lower_case" })
-	@test ("upper_case('') = ''")
-	@test ("upper_case('hello') = 'HELLO'")
+	@tests ({
+			@test ("upper_case('') = ''"),
+			@test ("upper_case('hello') = 'HELLO'"),
+			@test ("upper_case(\"GaMa\") = \"GAMA\"")
+	})
 	static public String toUpperCase(final String s) {
 		if (s == null) return s;
 		return s.toUpperCase();

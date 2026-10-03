@@ -18,6 +18,7 @@ import gama.annotations.example;
 import gama.annotations.no_test;
 import gama.annotations.operator;
 import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.annotations.support.ITypeProvider;
@@ -232,13 +233,31 @@ public class SerialisationOperators {
 			can_be_const = true,
 			category = { IOperatorCategory.CASTING },
 			concept = { IConcept.SERIALIZE })
-	@test ("from_binary(to_binary(25+5)) = 30")
-	@test ("from_binary(to_binary([1,2,4])) = [1,2,4]")
+	@tests ({
+			@test ("from_binary(to_binary(25+5)) = 30"),
+			@test ("from_binary(to_binary([1,2,4])) = [1,2,4]"),
+			@test ("from_binary(to_binary(1)) = 1"),
+			@test ("from_binary(to_binary(1.2)) = 1.2"),
+			@test ("from_binary(to_binary(\"\")) = \"\""),
+			@test ("from_binary(to_binary(\"abcd\")) = \"abcd\""),
+			@test ("from_binary(to_binary([])) = []"),
+			@test ("from_binary(to_binary([1, \"a\", false])) = [1, \"a\", false]"),
+			@test ("from_binary(to_binary([[1, 2, 3], [4, 5, 6]])) = [[1, 2, 3], [4, 5, 6]]"),
+			@test ("from_binary(to_binary(nil)) = nil"),
+			@test ("map my_var <- [\"x\"::\"abc\", \"y\"::#red, \"z\"::123, \"123\"::10.2, \"a\"::false]; from_binary(to_binary(my_var)) = my_var"),
+			@test ("map my_roundtrip <- [\"x\"::\"abc\", \"y\"::#red, \"z\"::123, \"123\"::10.2, \"a\"::false, \"e\"::[1,2,3]]; from_binary(to_binary(my_roundtrip)) = my_roundtrip"),
+			@test ("from_binary(to_binary(#infinity)) = #infinity"),
+			@test ("from_binary(to_binary(map(['x'::#infinity]))) = map(['x'::#infinity])"),
+			@test ("from_binary(to_binary(-#infinity)) = -#infinity"),
+			@test ("from_binary(to_binary(map(['x'::-#infinity]))) = map(['x'::-#infinity])"),
+			@test ("from_binary(to_binary(#nan)) = #nan"),
+			@test ("from_binary(to_binary(map([\"x\"::#nan]))) = map([\"x\"::#nan])"),
+			@test ("from_binary(to_binary('')) = ''")
+	})
 	@doc (
 			value = "Deserializes an object precedently serialized using `serialize` or `to_binary`."
 					+ "It is safer to deserialize agents or simulations with the 'restore' or 'create' statements rather than with this operator.",
 			see = { "from_gaml", "from_json" })
-	@no_test
 	public static Object unserialize(final IScope scope, final String s) {
 		return BinarySerialisation.createFromString(scope, s);
 	}
