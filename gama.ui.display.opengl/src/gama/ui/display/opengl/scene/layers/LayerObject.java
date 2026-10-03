@@ -133,8 +133,13 @@ public class LayerObject {
 		 * @return the abstract object[]
 		 */
 		/** Cached backing array — reallocated only when the list size changes. */
-		private AbstractObject[] cachedArray = new AbstractObject[0];
+		private AbstractObject[] cachedArray = {};
 
+		/**
+		 * As array.
+		 *
+		 * @return the abstract object[]
+		 */
 		public AbstractObject[] asArray() {
 			final int n = size();
 			if (cachedArray.length != n) { cachedArray = toArray(new AbstractObject[n]); }
@@ -287,7 +292,15 @@ public class LayerObject {
 		} else if (isAnimated) {
 			drawAllObjects(gl, false);
 		} else {
-			if (openGLListIndex == null) { openGLListIndex = gl.compileAsList(() -> drawAllObjects(gl, false)); }
+			if (openGLListIndex == null) {
+				for (final AbstractObject object : currentList.asArray()) {
+					if (!object.areTexturesAvailable(gl)) {
+						drawAllObjects(gl, false);
+						return;
+					}
+				}
+				openGLListIndex = gl.compileAsList(() -> drawAllObjects(gl, false));
+			}
 			gl.drawList(openGLListIndex);
 		}
 	}

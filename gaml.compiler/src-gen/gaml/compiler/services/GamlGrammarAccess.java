@@ -700,7 +700,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.S_ActionCall");
 		private final Group cGroup = (Group)rule.eContents().get(1);
 		private final Assignment cTargetAssignment_0 = (Assignment)cGroup.eContents().get(0);
-		private final RuleCall cTargetPrimaryParserRuleCall_0_0 = (RuleCall)cTargetAssignment_0.eContents().get(0);
+		private final RuleCall cTargetActionCallTargetParserRuleCall_0_0 = (RuleCall)cTargetAssignment_0.eContents().get(0);
 		private final Assignment cKeyAssignment_1 = (Assignment)cGroup.eContents().get(1);
 		private final Keyword cKeyFullStopKeyword_1_0 = (Keyword)cKeyAssignment_1.eContents().get(0);
 		private final Assignment cExprAssignment_2 = (Assignment)cGroup.eContents().get(2);
@@ -708,18 +708,17 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final Keyword cSemicolonKeyword_3 = (Keyword)cGroup.eContents().get(3);
 		
 		//S_ActionCall returns S_Do:
-		//    target=Primary key='.' expr=Function ';'
-		//;
+		//    target=ActionCallTarget key='.' expr=Function ';';
 		@Override public ParserRule getRule() { return rule; }
 		
-		//target=Primary key='.' expr=Function ';'
+		//target=ActionCallTarget key='.' expr=Function ';'
 		public Group getGroup() { return cGroup; }
 		
-		//target=Primary
+		//target=ActionCallTarget
 		public Assignment getTargetAssignment_0() { return cTargetAssignment_0; }
 		
-		//Primary
-		public RuleCall getTargetPrimaryParserRuleCall_0_0() { return cTargetPrimaryParserRuleCall_0_0; }
+		//ActionCallTarget
+		public RuleCall getTargetActionCallTargetParserRuleCall_0_0() { return cTargetActionCallTargetParserRuleCall_0_0; }
 		
 		//key='.'
 		public Assignment getKeyAssignment_1() { return cKeyAssignment_1; }
@@ -2977,6 +2976,50 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//(Primary)
 		public RuleCall getRightPrimaryParserRuleCall_1_1_1_1_0() { return cRightPrimaryParserRuleCall_1_1_1_1_0; }
 	}
+	public class ActionCallTargetElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.ActionCallTarget");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cPrimaryParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
+		private final Action cAccessLeftAction_1_0 = (Action)cGroup_1.eContents().get(0);
+		private final Assignment cOpAssignment_1_1 = (Assignment)cGroup_1.eContents().get(1);
+		private final Keyword cOpLeftSquareBracketKeyword_1_1_0 = (Keyword)cOpAssignment_1_1.eContents().get(0);
+		private final Assignment cRightAssignment_1_2 = (Assignment)cGroup_1.eContents().get(2);
+		private final RuleCall cRightExpressionListParserRuleCall_1_2_0 = (RuleCall)cRightAssignment_1_2.eContents().get(0);
+		private final Keyword cRightSquareBracketKeyword_1_3 = (Keyword)cGroup_1.eContents().get(3);
+		
+		//// To allow ll[0].action()
+		//ActionCallTarget returns Expression:
+		//    Primary ({Access.left=current} op='[' right=ExpressionList? ']')*;
+		@Override public ParserRule getRule() { return rule; }
+		
+		//Primary ({Access.left=current} op='[' right=ExpressionList? ']')*
+		public Group getGroup() { return cGroup; }
+		
+		//Primary
+		public RuleCall getPrimaryParserRuleCall_0() { return cPrimaryParserRuleCall_0; }
+		
+		//({Access.left=current} op='[' right=ExpressionList? ']')*
+		public Group getGroup_1() { return cGroup_1; }
+		
+		//{Access.left=current}
+		public Action getAccessLeftAction_1_0() { return cAccessLeftAction_1_0; }
+		
+		//op='['
+		public Assignment getOpAssignment_1_1() { return cOpAssignment_1_1; }
+		
+		//'['
+		public Keyword getOpLeftSquareBracketKeyword_1_1_0() { return cOpLeftSquareBracketKeyword_1_1_0; }
+		
+		//right=ExpressionList?
+		public Assignment getRightAssignment_1_2() { return cRightAssignment_1_2; }
+		
+		//ExpressionList
+		public RuleCall getRightExpressionListParserRuleCall_1_2_0() { return cRightExpressionListParserRuleCall_1_2_0; }
+		
+		//']'
+		public Keyword getRightSquareBracketKeyword_1_3() { return cRightSquareBracketKeyword_1_3; }
+	}
 	public class PrimaryElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.Primary");
 		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
@@ -4078,6 +4121,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	private final UnitElements pUnit;
 	private final UnaryElements pUnary;
 	private final AccessElements pAccess;
+	private final ActionCallTargetElements pActionCallTarget;
 	private final PrimaryElements pPrimary;
 	private final AbstractRefElements pAbstractRef;
 	private final FunctionElements pFunction;
@@ -4190,6 +4234,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		this.pUnit = new UnitElements();
 		this.pUnary = new UnaryElements();
 		this.pAccess = new AccessElements();
+		this.pActionCallTarget = new ActionCallTargetElements();
 		this.pPrimary = new PrimaryElements();
 		this.pAbstractRef = new AbstractRefElements();
 		this.pFunction = new FunctionElements();
@@ -4473,8 +4518,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	}
 	
 	//S_ActionCall returns S_Do:
-	//    target=Primary key='.' expr=Function ';'
-	//;
+	//    target=ActionCallTarget key='.' expr=Function ';';
 	public S_ActionCallElements getS_ActionCallAccess() {
 		return pS_ActionCall;
 	}
@@ -5110,6 +5154,17 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	
 	public ParserRule getAccessRule() {
 		return getAccessAccess().getRule();
+	}
+	
+	//// To allow ll[0].action()
+	//ActionCallTarget returns Expression:
+	//    Primary ({Access.left=current} op='[' right=ExpressionList? ']')*;
+	public ActionCallTargetElements getActionCallTargetAccess() {
+		return pActionCallTarget;
+	}
+	
+	public ParserRule getActionCallTargetRule() {
+		return getActionCallTargetAccess().getRule();
 	}
 	
 	//// Base expressions
