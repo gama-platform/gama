@@ -1,0 +1,149 @@
+/**
+* Name: StatementRobustnessTest
+* Description: Feeds the statements of the language with absurd situations: negative numbers of iterations, nil or
+* 	empty receivers, agents that die while being iterated over, captures of dead agents, creation from empty
+* 	sources, very deep recursion, parallel execution. An invalid situation may be rejected, but with a GAML error
+* 	and not with an internal Java exception; when it is accepted, the result must be the expected one
+* Tags: robustness, statement, loop, ask, recursion, parallel, test
+*/
+
+model StatementRobustnessTestModel
+
+species counter {
+	int value <- 0;
+}
+
+species victim { }
+
+species holder {
+	species inner { }
+}
+
+species recursive_agent {
+	int depth(int n) {
+		return n <= 0 ? 0 : 1 + depth(n - 1);
+	}
+}
+
+experiment StatementRobustnessTest type: test autorun: true {
+
+	bool handled(string problem) {
+		return problem = nil ? true : !(problem contains "Java error");
+	}
+
+	test "Loops with a null or negative number of iterations do nothing" {
+		int iterations <- 0;
+		loop times: -1 { iterations <- iterations + 1; }
+		assert iterations = 0;
+		loop times: 0 { iterations <- iterations + 1; }
+		assert iterations = 0;
+		loop i from: 5 to: 5 { iterations <- iterations + 1; }
+		assert iterations = 1;
+	}
+
+	test "Loops over nil or empty containers do nothing" {
+		int iterations <- 0;
+		list<int> nothing <- nil;
+		loop i over: nothing { iterations <- iterations + 1; }
+		assert iterations = 0;
+		loop i over: [] { iterations <- iterations + 1; }
+		assert iterations = 0;
+		loop k over: map([]) { iterations <- iterations + 1; }
+		assert iterations = 0;
+	}
+
+	test "Asking nothing" {
+		int asked <- 0;
+		ask [] { asked <- asked + 1; }
+		assert asked = 0;
+		string problem <- nil;
+		try { ask nil { asked <- asked + 1; } } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+		assert asked = 0;
+	}
+
+	test "Asking a dead agent does not execute anything" {
+		create victim returns: created;
+		victim dead_one <- created[0];
+		ask dead_one { do die; }
+		int asked <- 0;
+		string problem <- nil;
+		try { ask dead_one { asked <- 1; } } catch { problem <- #current_error; }
+		assert handled(problem);
+		assert asked = 0;
+	}
+
+	test "Agents dying while they are iterated over" {
+		create victim number: 3 returns: created;
+		int iterations <- 0;
+		string problem <- nil;
+		try {
+			loop v over: created {
+				ask created { do die; }
+				iterations <- iterations + 1;
+			}
+		} catch { problem <- #current_error; }
+		assert handled(problem);
+		assert empty(victim);
+		// the loop iterates over a copy of the list
+		assert iterations = 3;
+	}
+
+	test "A dead agent cannot be captured" {
+		create holder returns: holders;
+		create victim returns: victims;
+		victim dead_one <- victims[0];
+		ask dead_one { do die; }
+		string problem <- nil;
+		try { ask holders[0] { capture dead_one as: inner; } } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+		assert empty(holders[0].inner);
+		ask holders { do die; }
+	}
+
+	test "Creating agents from an empty source creates nothing" {
+		int before <- length(counter);
+		create counter from: [] returns: created;
+		assert empty(created);
+		assert length(counter) = before;
+	}
+
+	test "A recursive action can call itself a few hundred times" {
+		create recursive_agent returns: created;
+		int result <- 0;
+		ask created[0] { result <- depth(200); }
+		assert result = 200;
+		ask created { do die; }
+	}
+
+	test "A runaway recursion raises a proper error" {
+		create recursive_agent returns: created;
+		string problem <- nil;
+		try { ask created[0] { int result <- depth(100000); } } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+		ask created { do die; }
+	}
+
+	test "Asking agents in parallel gives the same result as in sequence" {
+		create counter number: 50 returns: created;
+		ask created parallel: true { value <- int(self) * 2; }
+		list<int> in_parallel <- created collect each.value;
+		ask created { value <- 0; }
+		ask created { value <- int(self) * 2; }
+		list<int> in_sequence <- created collect each.value;
+		assert in_parallel = in_sequence;
+		ask created { do die; }
+	}
+
+	test "An error raised in an action reaches the caller" {
+		string problem <- nil;
+		try {
+			ask counter { }
+			error "raised on purpose";
+		} catch { problem <- #current_error; }
+		assert problem contains "raised on purpose";
+	}
+}

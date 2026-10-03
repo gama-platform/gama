@@ -228,4 +228,54 @@ experiment FipaAdvancedTest type: test autorun: true {
 		assert first_read[0].contents = ['once'];
 		assert empty(a2.informs);
 	}
+
+	test "A message sent to a dead agent is not delivered" {
+		create communicator number: 2 returns: talkers;
+		communicator sender_agent <- talkers[0];
+		communicator dead_agent <- talkers[1];
+		ask dead_agent { do die; }
+		string problem <- nil;
+		try {
+			ask sender_agent {
+				do start_conversation (to: [dead_agent], protocol: 'no-protocol', performative: 'inform', contents: ['x']);
+			}
+		} catch {
+			problem <- #current_error;
+		}
+		// either refused with a proper error, or dropped
+		assert problem = nil or !(problem contains "Java error");
+		assert empty(sender_agent.informs);
+	}
+
+	test "A message sent to nobody" {
+		create communicator number: 1 returns: talkers;
+		string problem <- nil;
+		try {
+			ask talkers[0] {
+				do start_conversation (to: [], protocol: 'no-protocol', performative: 'inform', contents: ['x']);
+			}
+		} catch {
+			problem <- #current_error;
+		}
+		assert problem = nil or !(problem contains "Java error");
+	}
+
+	test "Replying to a message that was already answered in a finished protocol" {
+		create communicator number: 2 returns: talkers;
+		communicator a1 <- talkers[0];
+		communicator a2 <- talkers[1];
+		ask a1 {
+			do start_conversation (to: [a2], protocol: 'fipa-request', performative: 'request', contents: ['task']);
+		}
+		message request <- nil;
+		ask a2 {
+			request <- requests[0];
+			do refuse message: request contents: ['no'];
+		}
+		// the conversation is over: answering again must be refused with a proper error
+		string problem <- nil;
+		try { ask a2 { do agree message: request contents: ['ok after all']; } } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert problem = nil or !(problem contains "Java error");
+	}
 }

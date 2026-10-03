@@ -223,4 +223,49 @@ experiment TrafficAdvancedTest type: test autorun: true {
 		assert car.speed <= 2.0;
 		do clear_network;
 	}
+
+	test "Driving without a path raises a proper error" {
+		list<intersection> nodes <- build_network();
+		create vehicle with: [location::nodes[0].location, max_speed::10.0, vehicle_length::2.0] returns: cars;
+		string problem <- nil;
+		try { ask cars[0] { do drive; } } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert !(problem contains "Java error");
+		do clear_network;
+	}
+
+	test "A path to the starting point" {
+		list<intersection> nodes <- build_network();
+		graph network <- as_driving_graph(road, intersection);
+		create vehicle with: [location::nodes[0].location, max_speed::10.0, vehicle_length::2.0] returns: cars;
+		string problem <- nil;
+		path route <- nil;
+		try { ask cars[0] { route <- compute_path(graph: network, target: nodes[0]); } } catch { problem <- #current_error; }
+		assert problem = nil or !(problem contains "Java error");
+		do clear_network;
+	}
+
+	test "A vehicle behind another one keeps its distance" {
+		list<intersection> nodes <- build_network();
+		graph network <- as_driving_graph(road, intersection);
+		create vehicle with: [location::nodes[0].location, max_speed::10.0, vehicle_length::2.0] returns: leaders;
+		vehicle leader <- leaders[0];
+		ask leader { path route <- compute_path(graph: network, target: nodes[2]); }
+		loop times: 10 { ask leader { do drive; } }
+		create vehicle with: [location::nodes[0].location, max_speed::10.0, vehicle_length::2.0] returns: followers;
+		vehicle follower <- followers[0];
+		ask follower { path route <- compute_path(graph: network, target: nodes[2]); }
+		list<float> gaps <- [];
+		loop times: 10 {
+			ask follower { do drive; }
+			ask leader { do drive; }
+			if (leader.current_road = follower.current_road) {
+				gaps <+ leader.location distance_to follower.location;
+			}
+		}
+		assert not empty(gaps);
+		// they never overlap
+		assert gaps all_match (each >= leader.vehicle_length);
+		do clear_network;
+	}
 }
