@@ -15,9 +15,9 @@ global {
 	
 	string type <- "graphml" among: ["graphml", "gml","dot", "dimacs", "gexf", "tsplib", "graph6"]; 
 	
-	map loc_nodes;
+	map<string, point> loc_nodes;
 	
-	graph g;
+	graph<string, string> g;
 	init {
 		do importation();
 	}
@@ -66,12 +66,12 @@ experiment import_graph type: gui {
 			graphics "graph " {
 				
 				loop v over: g.vertices {
-					draw circle(1) at: point(loc_nodes[v]) color: #red border: #black;
+					draw circle(1) at: loc_nodes[v] color: #red border: #black;
 				}
 				loop e over: g.edges {
 					string s <- g source_of e;
 					string t <- g target_of e;
-					draw line([point(loc_nodes[s]),  point(loc_nodes[t])]) color: #black end_arrow: 1.0;
+					draw line([loc_nodes[s],  loc_nodes[t]]) color: #black end_arrow: 1.0;
 				}
 			}
 		}
