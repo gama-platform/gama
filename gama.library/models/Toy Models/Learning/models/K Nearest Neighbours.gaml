@@ -26,7 +26,7 @@ model KNearestNeighbors
 
 global {
 
-	map<unknown, unknown> store;
+	map<special_point, rgb> store;
 	list<rgb> colours <- [#red, #blue, #green, #yellow, #purple, #orange, #pink, #magenta, #cyan];
     int init_amount <- 10;
     int nb_group <- 2;
