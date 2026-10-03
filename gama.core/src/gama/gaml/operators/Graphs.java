@@ -2353,7 +2353,7 @@ public class Graphs {
 	@operator (
 			value = "paths_between",
 			type = IType.LIST,
-			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			content_type = IType.PATH,
 			category = { IOperatorCategory.GRAPH, IOperatorCategory.PATH },
 			concept = { IConcept.GRAPH })
 	@doc (
