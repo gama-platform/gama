@@ -1,18 +1,23 @@
 /*******************************************************************************************************
  *
- * Distribution.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * Distribution.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.core.outputs.layers.charts;
+package gama.extension.stats;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
 
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
@@ -23,12 +28,6 @@ import gama.api.types.list.IList;
 import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
 import gama.api.types.misc.IContainer;
-import gama.annotations.doc;
-import gama.annotations.example;
-import gama.annotations.no_test;
-import gama.annotations.operator;
-import gama.annotations.support.IConcept;
-import gama.annotations.support.IOperatorCategory;
 import gama.gaml.operators.Maths;
 
 /**
@@ -37,13 +36,37 @@ import gama.gaml.operators.Maths;
 @SuppressWarnings ({ "rawtypes" })
 public class Distribution {
 
+	/**
+	 * The Class ExponentialBinsResult.
+	 */
 	private static class ExponentialBinsResult {
+
+		/** The newmin int. */
 		final double newminInt;
+
+		/** The step. */
 		final double step;
+
+		/** The two exponent. */
 		final int twoExponent;
+
+		/** The start multiplier. */
 		final int startMultiplier;
 
-		ExponentialBinsResult(final double newminInt, final double step, final int twoExponent, final int startMultiplier) {
+		/**
+		 * Instantiates a new exponential bins result.
+		 *
+		 * @param newminInt
+		 *            the newmin int
+		 * @param step
+		 *            the step
+		 * @param twoExponent
+		 *            the two exponent
+		 * @param startMultiplier
+		 *            the start multiplier
+		 */
+		ExponentialBinsResult(final double newminInt, final double step, final int twoExponent,
+				final int startMultiplier) {
 			this.newminInt = newminInt;
 			this.step = step;
 			this.twoExponent = twoExponent;
@@ -51,15 +74,22 @@ public class Distribution {
 		}
 	}
 
+	/**
+	 * Compute exponential bins.
+	 *
+	 * @param doublelist
+	 *            the doublelist
+	 * @param nbBarres
+	 *            the nb barres
+	 * @return the exponential bins result
+	 */
 	private static ExponentialBinsResult computeExponentialBins(final double[] doublelist, final int nbBarres) {
 		final double[] sortedList = doublelist.clone();
 		Arrays.sort(sortedList);
 		final double min = sortedList[0];
 		final double max = sortedList[sortedList.length - 1];
 
-		if (min == max) {
-			return new ExponentialBinsResult(min, Math.pow(2, 0), 0, (int) min);
-		}
+		if (min == max) return new ExponentialBinsResult(min, Math.pow(2, 0), 0, (int) min);
 
 		final float minInt = (float) min;
 		final float maxInt = (float) max;
@@ -88,7 +118,21 @@ public class Distribution {
 		return new ExponentialBinsResult(newminInt, step, twoExponent, startMultiplier);
 	}
 
-	private static double[] buildThresholdsAndLegend(final double minVal, final double step, final int nbBarres, final String[] legend) {
+	/**
+	 * Builds the thresholds and legend.
+	 *
+	 * @param minVal
+	 *            the min val
+	 * @param step
+	 *            the step
+	 * @param nbBarres
+	 *            the nb barres
+	 * @param legend
+	 *            the legend
+	 * @return the double[]
+	 */
+	private static double[] buildThresholdsAndLegend(final double minVal, final double step, final int nbBarres,
+			final String[] legend) {
 		final double[] thresholds = new double[nbBarres + 1];
 		double preval = minVal;
 		double postval = 0;
@@ -101,32 +145,64 @@ public class Distribution {
 		return thresholds;
 	}
 
+	/**
+	 * Populate 2 d distribution.
+	 *
+	 * @param nbBarresx
+	 *            the nb barresx
+	 * @param nbBarresy
+	 *            the nb barresy
+	 * @param len
+	 *            the len
+	 * @param doublelistorx
+	 *            the doublelistorx
+	 * @param doublelistory
+	 *            the doublelistory
+	 * @param thresholdsx
+	 *            the thresholdsx
+	 * @param thresholdsy
+	 *            the thresholdsy
+	 * @return the int[][]
+	 */
 	private static int[][] populate2dDistribution(final int nbBarresx, final int nbBarresy, final int len,
-			final double[] doublelistorx, final double[] doublelistory,
-			final double[] thresholdsx, final double[] thresholdsy) {
+			final double[] doublelistorx, final double[] doublelistory, final double[] thresholdsx,
+			final double[] thresholdsy) {
 		final int[][] distribInts = new int[nbBarresx][nbBarresy];
 		int nx, ny;
 		for (int k = 0; k < len; k++) {
 			nx = 0;
 			ny = 0;
-			while (thresholdsx[nx + 1] < doublelistorx[k] && nx + 2 < nbBarresx) {
-				nx++;
-			}
-			while (thresholdsy[ny + 1] < doublelistory[k] && ny + 2 < nbBarresy) {
-				ny++;
-			}
+			while (thresholdsx[nx + 1] < doublelistorx[k] && nx + 2 < nbBarresx) { nx++; }
+			while (thresholdsy[ny + 1] < doublelistory[k] && ny + 2 < nbBarresy) { ny++; }
 			distribInts[nx][ny]++;
 		}
 		return distribInts;
 	}
 
-	private static IMap<String, Object> build2dResult(final IScope scope, final int nbBarresx, final int[][] distribInts,
-			final int[] distribParamsx, final String[] distribLegendx,
+	/**
+	 * Builds the 2 d result.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param nbBarresx
+	 *            the nb barresx
+	 * @param distribInts
+	 *            the distrib ints
+	 * @param distribParamsx
+	 *            the distrib paramsx
+	 * @param distribLegendx
+	 *            the distrib legendx
+	 * @param distribParamsy
+	 *            the distrib paramsy
+	 * @param distribLegendy
+	 *            the distrib legendy
+	 * @return the i map
+	 */
+	private static IMap<String, Object> build2dResult(final IScope scope, final int nbBarresx,
+			final int[][] distribInts, final int[] distribParamsx, final String[] distribLegendx,
 			final int[] distribParamsy, final String[] distribLegendy) {
 		final IList[] mytlist = new IList[nbBarresx];
-		for (int i = 0; i < nbBarresx; i++) {
-			mytlist[i] = GamaListFactory.create(scope, Types.INT, distribInts[i]);
-		}
+		for (int i = 0; i < nbBarresx; i++) { mytlist[i] = GamaListFactory.create(scope, Types.INT, distribInts[i]); }
 		final IList vallist = GamaListFactory.create(scope, Types.LIST, mytlist);
 
 		final IMap<String, Object> result = GamaMapFactory.create(Types.STRING, Types.NO_TYPE);
@@ -141,15 +217,24 @@ public class Distribution {
 	/**
 	 * Compute distrib 2 d.
 	 *
-	 * @param scope the scope
-	 * @param lvaluex the lvaluex
-	 * @param lvaluey the lvaluey
-	 * @param nbBarresx the nb barresx
-	 * @param vminx the vminx
-	 * @param vmaxx the vmaxx
-	 * @param nbBarresy the nb barresy
-	 * @param vminy the vminy
-	 * @param vmaxy the vmaxy
+	 * @param scope
+	 *            the scope
+	 * @param lvaluex
+	 *            the lvaluex
+	 * @param lvaluey
+	 *            the lvaluey
+	 * @param nbBarresx
+	 *            the nb barresx
+	 * @param vminx
+	 *            the vminx
+	 * @param vmaxx
+	 *            the vmaxx
+	 * @param nbBarresy
+	 *            the nb barresy
+	 * @param vminy
+	 *            the vminy
+	 * @param vmaxy
+	 *            the vmaxy
 	 * @return the i map
 	 */
 	public static IMap computeDistrib2d(final IScope scope, final IList lvaluex, final IList lvaluey,
@@ -174,19 +259,26 @@ public class Distribution {
 		final double[] thresholdsx = buildThresholdsAndLegend(vminx, stepx, nbBarresx, distribLegendx);
 		final double[] thresholdsy = buildThresholdsAndLegend(vminy, stepy, nbBarresy, distribLegendy);
 
-		final int[][] distribInts = populate2dDistribution(nbBarresx, nbBarresy, len, doublelistorx, doublelistory, thresholdsx, thresholdsy);
+		final int[][] distribInts = populate2dDistribution(nbBarresx, nbBarresy, len, doublelistorx, doublelistory,
+				thresholdsx, thresholdsy);
 
-		return build2dResult(scope, nbBarresx, distribInts, new int[] { 0, 0 }, distribLegendx, new int[] { 0, 0 }, distribLegendy);
+		return build2dResult(scope, nbBarresx, distribInts, new int[] { 0, 0 }, distribLegendx, new int[] { 0, 0 },
+				distribLegendy);
 	}
 
 	/**
 	 * Compute distrib 2 d.
 	 *
-	 * @param scope the scope
-	 * @param lvaluex the lvaluex
-	 * @param lvaluey the lvaluey
-	 * @param nbBarresx the nb barresx
-	 * @param nbBarresy the nb barresy
+	 * @param scope
+	 *            the scope
+	 * @param lvaluex
+	 *            the lvaluex
+	 * @param lvaluey
+	 *            the lvaluey
+	 * @param nbBarresx
+	 *            the nb barresx
+	 * @param nbBarresy
+	 *            the nb barresy
 	 * @return the i map
 	 */
 	public static IMap computeDistrib2d(final IScope scope, final IList lvaluex, final IList lvaluey,
@@ -210,23 +302,29 @@ public class Distribution {
 		final double[] thresholdsx = buildThresholdsAndLegend(resX.newminInt, resX.step, nbBarresx, distribLegendx);
 		final double[] thresholdsy = buildThresholdsAndLegend(resY.newminInt, resY.step, nbBarresy, distribLegendy);
 
-		final int[][] distribInts = populate2dDistribution(nbBarresx, nbBarresy, len, doublelistorx, doublelistory, thresholdsx, thresholdsy);
+		final int[][] distribInts = populate2dDistribution(nbBarresx, nbBarresy, len, doublelistorx, doublelistory,
+				thresholdsx, thresholdsy);
 
-		return build2dResult(scope, nbBarresx, distribInts,
-				new int[] { resX.twoExponent, resX.startMultiplier }, distribLegendx,
-				new int[] { resY.twoExponent, resY.startMultiplier }, distribLegendy);
+		return build2dResult(scope, nbBarresx, distribInts, new int[] { resX.twoExponent, resX.startMultiplier },
+				distribLegendx, new int[] { resY.twoExponent, resY.startMultiplier }, distribLegendy);
 	}
 
 	/**
 	 * Distribution 2 d of.
 	 *
-	 * @param scope the scope
-	 * @param valuesx the valuesx
-	 * @param valuesy the valuesy
-	 * @param nbbarsx the nbbarsx
-	 * @param nbbarsy the nbbarsy
+	 * @param scope
+	 *            the scope
+	 * @param valuesx
+	 *            the valuesx
+	 * @param valuesy
+	 *            the valuesy
+	 * @param nbbarsx
+	 *            the nbbarsx
+	 * @param nbbarsy
+	 *            the nbbarsy
 	 * @return the i map
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	@operator (
 			value = { "distribution2d_of" },
@@ -236,7 +334,7 @@ public class Distribution {
 			category = { IOperatorCategory.STATISTICAL },
 			concept = { IConcept.STATISTIC, IConcept.CHART })
 	@doc (
-			value = "Discretize two lists of values into n bins (computes the bins from a numerical variable into n (default 10) bins. Returns a distribution map with the values (values key), the interval legends (legend key), the distribution parameters (params keys, for cumulative charts).",
+			value = "Discretize two lists of values into n bins (computes the bins from a numerical variable into n (default 10) bins. Returns a distribution map with the values (values key), the interval legends (legend key), the distribution parameters (parlist key, for cumulative charts).",
 			comment = "",
 			examples = { @example (
 					value = "distribution2d_of([1,1,2,12.5],10)",
@@ -247,18 +345,16 @@ public class Distribution {
 	public static IMap Distribution2dOf(final IScope scope, final IContainer valuesx, final IContainer valuesy,
 			final Integer nbbarsx, final Integer nbbarsy) throws GamaRuntimeException {
 
-		if (valuesx == null) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
+		if (valuesx == null) return GamaMapFactory.create(Types.STRING, Types.LIST);
 		final IList lvaluex = GamaListFactory.castToList(scope, valuesx);
-		if (lvaluex.length(scope) < 1) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
+		if (lvaluex.length(scope) < 1) return GamaMapFactory.create(Types.STRING, Types.LIST);
 
-		int nbBarresx = 10;
-		nbBarresx = nbbarsx.intValue();
+		int nbBarresx = nbbarsx.intValue();
 
 		final IList lvaluey = GamaListFactory.castToList(scope, valuesy);
-		if (lvaluey.length(scope) < 1) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
+		if (lvaluey.length(scope) < 1) return GamaMapFactory.create(Types.STRING, Types.LIST);
 
-		int nbBarresy = 10;
-		nbBarresy = nbbarsy.intValue();
+		int nbBarresy = nbbarsy.intValue();
 
 		return computeDistrib2d(scope, lvaluex, lvaluey, nbBarresx, nbBarresy);
 
@@ -267,17 +363,27 @@ public class Distribution {
 	/**
 	 * Distribution 2 d of.
 	 *
-	 * @param scope the scope
-	 * @param valuesx the valuesx
-	 * @param valuesy the valuesy
-	 * @param nbbarsx the nbbarsx
-	 * @param startvaluex the startvaluex
-	 * @param endvaluex the endvaluex
-	 * @param nbbarsy the nbbarsy
-	 * @param startvaluey the startvaluey
-	 * @param endvaluey the endvaluey
+	 * @param scope
+	 *            the scope
+	 * @param valuesx
+	 *            the valuesx
+	 * @param valuesy
+	 *            the valuesy
+	 * @param nbbarsx
+	 *            the nbbarsx
+	 * @param startvaluex
+	 *            the startvaluex
+	 * @param endvaluex
+	 *            the endvaluex
+	 * @param nbbarsy
+	 *            the nbbarsy
+	 * @param startvaluey
+	 *            the startvaluey
+	 * @param endvaluey
+	 *            the endvaluey
 	 * @return the i map
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	@operator (
 			value = { "distribution2d_of" },
@@ -287,7 +393,7 @@ public class Distribution {
 			category = { IOperatorCategory.STATISTICAL },
 			concept = { IConcept.STATISTIC, IConcept.CHART })
 	@doc (
-			value = "Discretize two lists of values into n bins (computes the bins from a numerical variable into n (default 10) bins. Returns a distribution map with the values (values key), the interval legends (legend key), the distribution parameters (params keys, for cumulative charts).",
+			value = "Discretize two lists of values into n bins (computes the bins from a numerical variable into n (default 10) bins. Returns a distribution map with the values (values key), the interval legends (legend key), the distribution parameters (parlist key, for cumulative charts).",
 			comment = "",
 			examples = { @example (
 					value = "distribution2d_of([1,1,2,12.5],10)",
@@ -299,26 +405,20 @@ public class Distribution {
 			final Integer nbbarsx, final Double startvaluex, final Double endvaluex, final Integer nbbarsy,
 			final Double startvaluey, final Double endvaluey) throws GamaRuntimeException {
 
-		if (valuesx == null) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
+		if (valuesx == null) return GamaMapFactory.create(Types.STRING, Types.LIST);
 		final IList lvaluex = GamaListFactory.castToList(scope, valuesx);
-		if (lvaluex.length(scope) < 1) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
+		if (lvaluex.length(scope) < 1) return GamaMapFactory.create(Types.STRING, Types.LIST);
 
-		int nbBarresx = 10;
-		nbBarresx = nbbarsx.intValue();
+		int nbBarresx = nbbarsx.intValue();
 
 		final IList lvaluey = GamaListFactory.castToList(scope, valuesy);
-		if (lvaluey.length(scope) < 1) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
+		if (lvaluey.length(scope) < 1) return GamaMapFactory.create(Types.STRING, Types.LIST);
 
-		int nbBarresy = 10;
-		nbBarresy = nbbarsy.intValue();
-		double vminx = 0.0d;
-		vminx = startvaluex.doubleValue();
-		double vmaxx = 1.0d;
-		vmaxx = endvaluex.doubleValue();
-		double vminy = 0.0d;
-		vminy = startvaluey.doubleValue();
-		double vmaxy = 1.0d;
-		vmaxy = endvaluey.doubleValue();
+		int nbBarresy = nbbarsy.intValue();
+		double vminx = startvaluex.doubleValue();
+		double vmaxx = endvaluex.doubleValue();
+		double vminy = startvaluey.doubleValue();
+		double vmaxy = endvaluey.doubleValue();
 
 		return computeDistrib2d(scope, lvaluex, lvaluey, nbBarresx, vminx, vmaxx, nbBarresy, vminy, vmaxy);
 
@@ -327,11 +427,15 @@ public class Distribution {
 	/**
 	 * Distribution 2 d of.
 	 *
-	 * @param scope the scope
-	 * @param valuesx the valuesx
-	 * @param valuesy the valuesy
+	 * @param scope
+	 *            the scope
+	 * @param valuesx
+	 *            the valuesx
+	 * @param valuesy
+	 *            the valuesy
 	 * @return the i map
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	@operator (
 			value = { "distribution2d_of" },
@@ -341,7 +445,7 @@ public class Distribution {
 			category = { IOperatorCategory.STATISTICAL },
 			concept = { IConcept.STATISTIC, IConcept.CHART })
 	@doc (
-			value = "Discretize two lists of values into n bins (computes the bins from a numerical variable into n (default 10) bins. Returns a distribution map with the values (values key), the interval legends (legend key), the distribution parameters (params keys, for cumulative charts). Parameters can be (list), (list, nbbins) or (list,nbbins,valmin,valmax)",
+			value = "Discretize two lists of values into n bins (computes the bins from a numerical variable into n (default 10) bins. Returns a distribution map with the values (values key), the interval legends (legend key), the distribution parameters (parlist key, for cumulative charts). Parameters can be (list), (list, nbbins) or (list,nbbins,valmin,valmax)",
 			masterDoc = true,
 			comment = "",
 			examples = { @example (
@@ -353,11 +457,11 @@ public class Distribution {
 	public static IMap Distribution2dOf(final IScope scope, final IContainer valuesx, final IContainer valuesy)
 			throws GamaRuntimeException {
 
-		if (valuesx == null) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
+		if (valuesx == null) return GamaMapFactory.create(Types.STRING, Types.LIST);
 		final IList lvaluex = GamaListFactory.castToList(scope, valuesx);
-		if (lvaluex.length(scope) < 1) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
+		if (lvaluex.length(scope) < 1) return GamaMapFactory.create(Types.STRING, Types.LIST);
 		final IList lvaluey = GamaListFactory.castToList(scope, valuesy);
-		if (lvaluey.length(scope) < 1) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
+		if (lvaluey.length(scope) < 1) return GamaMapFactory.create(Types.STRING, Types.LIST);
 
 		final int nbBarres = 10;
 
@@ -368,9 +472,12 @@ public class Distribution {
 	/**
 	 * Compute distrib.
 	 *
-	 * @param scope the scope
-	 * @param lvalue the lvalue
-	 * @param nbBarres the nb barres
+	 * @param scope
+	 *            the scope
+	 * @param lvalue
+	 *            the lvalue
+	 * @param nbBarres
+	 *            the nb barres
 	 * @return the i map
 	 */
 	public static IMap computeDistrib(final IScope scope, final IList lvalue, final int nbBarres) {
@@ -380,9 +487,7 @@ public class Distribution {
 		final int[] distribParams = new int[2];
 		final String[] distribLegend = new String[nbBarres];
 
-		for (int i = 0; i < lvalue.length(scope); i++) {
-			doublelist[i] = Cast.asFloat(scope, lvalue.get(i));
-		}
+		for (int i = 0; i < lvalue.length(scope); i++) { doublelist[i] = Cast.asFloat(scope, lvalue.get(i)); }
 		Arrays.sort(doublelist);
 		final double min = doublelist[0];
 		final double max = doublelist[len - 1];
@@ -435,13 +540,9 @@ public class Distribution {
 		int nba = 0;
 		int nbaprec = 0;
 		for (int i = 0; i < nbBarres; i++) {
-			if (i != 0) {
-				preval = preval + deuxpuissancek;
-			}
+			if (i != 0) { preval = preval + deuxpuissancek; }
 			postval = preval + deuxpuissancek;
-			while (nba < len && doublelist[nba] < postval) {
-				nba++;
-			}
+			while (nba < len && doublelist[nba] < postval) { nba++; }
 
 			distribInts[i] = nba - nbaprec;
 			nbaprec = nba;
@@ -466,11 +567,16 @@ public class Distribution {
 	/**
 	 * Compute distrib.
 	 *
-	 * @param scope the scope
-	 * @param lvalue the lvalue
-	 * @param nbBarres the nb barres
-	 * @param vmin the vmin
-	 * @param vmax the vmax
+	 * @param scope
+	 *            the scope
+	 * @param lvalue
+	 *            the lvalue
+	 * @param nbBarres
+	 *            the nb barres
+	 * @param vmin
+	 *            the vmin
+	 * @param vmax
+	 *            the vmax
 	 * @return the i map
 	 */
 	public static IMap computeDistrib(final IScope scope, final IList lvalue, final int nbBarres, final double vmin,
@@ -485,9 +591,7 @@ public class Distribution {
 		final double deuxpuissancek = (vmax - vmin) / nbBarres;
 		final double newminInt = vmin;
 
-		for (int i = 0; i < lvalue.length(scope); i++) {
-			doublelist[i] = Cast.asFloat(scope, lvalue.get(i));
-		}
+		for (int i = 0; i < lvalue.length(scope); i++) { doublelist[i] = Cast.asFloat(scope, lvalue.get(i)); }
 		Arrays.sort(doublelist);
 
 		final int scale = BigDecimal.valueOf(deuxpuissancek).scale();
@@ -497,13 +601,9 @@ public class Distribution {
 		int nba = 0;
 		int nbaprec = 0;
 		for (int i = 0; i < nbBarres; i++) {
-			if (i != 0) {
-				preval = preval + deuxpuissancek;
-			}
+			if (i != 0) { preval = preval + deuxpuissancek; }
 			postval = preval + deuxpuissancek;
-			while (nba < len && doublelist[nba] < postval) {
-				nba++;
-			}
+			while (nba < len && doublelist[nba] < postval) { nba++; }
 
 			distribInts[i] = nba - nbaprec;
 			nbaprec = nba;
@@ -529,11 +629,15 @@ public class Distribution {
 	/**
 	 * Distribution of.
 	 *
-	 * @param scope the scope
-	 * @param values the values
-	 * @param nbbars the nbbars
+	 * @param scope
+	 *            the scope
+	 * @param values
+	 *            the values
+	 * @param nbbars
+	 *            the nbbars
 	 * @return the i map
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	@operator (
 			value = { "distribution_of" },
@@ -543,7 +647,7 @@ public class Distribution {
 			category = { IOperatorCategory.STATISTICAL },
 			concept = { IConcept.STATISTIC, IConcept.CHART })
 	@doc (
-			value = "Discretize a list of values into n bins (computes the bins from a numerical variable into n (default 10) bins. Returns a distribution map with the values (values key), the interval legends (legend key), the distribution parameters (params keys, for cumulative charts).",
+			value = "Discretize a list of values into n bins (computes the bins from a numerical variable into n (default 10) bins. Returns a distribution map with the values (values key), the interval legends (legend key), the distribution parameters (parlist key, for cumulative charts).",
 			comment = "",
 			examples = { @example (
 					value = "distribution_of([1,1,2,12.5],10)",
@@ -554,12 +658,11 @@ public class Distribution {
 	public static IMap DistributionOf(final IScope scope, final IContainer values, final Integer nbbars)
 			throws GamaRuntimeException {
 
-		if (values == null) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
+		if (values == null) return GamaMapFactory.create(Types.STRING, Types.LIST);
 		final IList lvalue = GamaListFactory.castToList(scope, values);
-		if (lvalue.length(scope) < 1) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
+		if (lvalue.length(scope) < 1) return GamaMapFactory.create(Types.STRING, Types.LIST);
 
-		int nbBarres = 10;
-		nbBarres = nbbars.intValue();
+		int nbBarres = nbbars.intValue();
 
 		return computeDistrib(scope, lvalue, nbBarres);
 
@@ -568,10 +671,13 @@ public class Distribution {
 	/**
 	 * Distribution of.
 	 *
-	 * @param scope the scope
-	 * @param values the values
+	 * @param scope
+	 *            the scope
+	 * @param values
+	 *            the values
 	 * @return the i map
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	@operator (
 			value = { "distribution_of" },
@@ -581,7 +687,7 @@ public class Distribution {
 			category = { IOperatorCategory.STATISTICAL },
 			concept = { IConcept.STATISTIC, IConcept.CHART })
 	@doc (
-			value = "Discretize a list of values into n bins (computes the bins from a numerical variable into n (default 10) bins. Returns a distribution map with the values (values key), the interval legends (legend key), the distribution parameters (params keys, for cumulative charts). Parameters can be (list), (list, nbbins) or (list,nbbins,valmin,valmax)",
+			value = "Discretize a list of values into n bins (computes the bins from a numerical variable into n (default 10) bins. Returns a distribution map with the values (values key), the interval legends (legend key), the distribution parameters (parlist key, for cumulative charts). Parameters can be (list), (list, nbbins) or (list,nbbins,valmin,valmax)",
 			masterDoc = true,
 			comment = "",
 			examples = { @example (
@@ -592,9 +698,9 @@ public class Distribution {
 	@no_test
 	public static IMap DistributionOf(final IScope scope, final IContainer values) throws GamaRuntimeException {
 
-		if (values == null) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
+		if (values == null) return GamaMapFactory.create(Types.STRING, Types.LIST);
 		final IList lvalue = GamaListFactory.castToList(scope, values);
-		if (lvalue.length(scope) < 1) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
+		if (lvalue.length(scope) < 1) return GamaMapFactory.create(Types.STRING, Types.LIST);
 
 		final int nbBarres = 10;
 
@@ -605,13 +711,19 @@ public class Distribution {
 	/**
 	 * Distribution of.
 	 *
-	 * @param scope the scope
-	 * @param values the values
-	 * @param nbbars the nbbars
-	 * @param startvalue the startvalue
-	 * @param endvalue the endvalue
+	 * @param scope
+	 *            the scope
+	 * @param values
+	 *            the values
+	 * @param nbbars
+	 *            the nbbars
+	 * @param startvalue
+	 *            the startvalue
+	 * @param endvalue
+	 *            the endvalue
 	 * @return the i map
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	@operator (
 			value = { "distribution_of" },
@@ -621,7 +733,7 @@ public class Distribution {
 			category = { IOperatorCategory.STATISTICAL },
 			concept = { IConcept.STATISTIC, IConcept.CHART })
 	@doc (
-			value = "Discretize a list of values into n bins (computes the bins from a numerical variable into n (default 10) bins. Returns a distribution map with the values (values key), the interval legends (legend key), the distribution parameters (params keys, for cumulative charts).",
+			value = "Discretize a list of values into n bins (computes the bins from a numerical variable into n (default 10) bins. Returns a distribution map with the values (values key), the interval legends (legend key), the distribution parameters (parlist key, for cumulative charts).",
 			masterDoc = false,
 			comment = "",
 			examples = { @example (
@@ -633,16 +745,13 @@ public class Distribution {
 	public static IMap DistributionOf(final IScope scope, final IContainer values, final Integer nbbars,
 			final Double startvalue, final Double endvalue) throws GamaRuntimeException {
 
-		if (values == null) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
+		if (values == null) return GamaMapFactory.create(Types.STRING, Types.LIST);
 		final IList lvalue = GamaListFactory.castToList(scope, values);
-		if (lvalue.length(scope) < 1) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
+		if (lvalue.length(scope) < 1) return GamaMapFactory.create(Types.STRING, Types.LIST);
 
-		int nbBarres = 10;
-		nbBarres = nbbars.intValue();
-		double vmin = 0.0d;
-		vmin = startvalue.doubleValue();
-		double vmax = 1.0d;
-		vmax = endvalue.doubleValue();
+		int nbBarres = nbbars.intValue();
+		double vmin = startvalue.doubleValue();
+		double vmax = endvalue.doubleValue();
 
 		return computeDistrib(scope, lvalue, nbBarres, vmin, vmax);
 
