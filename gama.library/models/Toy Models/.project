@@ -14,5 +14,6 @@
 	<natures>
 		<nature>org.eclipse.xtext.ui.shared.xtextNature</nature>
 		<nature>gama.workspace.gamaNature</nature>
+		<nature>gama.workspace.builtinNature</nature>
 	</natures>
 </projectDescription>
