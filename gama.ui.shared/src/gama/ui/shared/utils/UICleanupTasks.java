@@ -191,6 +191,12 @@ public class UICleanupTasks {
 		/** The dark prefix uri. */
 		static final URI DARK_SEGMENT = URI.createPlatformPluginURI("gama.ui.shared/icons_svg/dark/", true);
 
+		/** Legacy icon paths can remain in an Eclipse workbench model saved before the SVG migration. */
+		static final URI LEGACY_LIGHT_SEGMENT = URI.createPlatformPluginURI("gama.ui.shared/icons/light/", true);
+
+		/** The legacy dark icon path. */
+		static final URI LEGACY_DARK_SEGMENT = URI.createPlatformPluginURI("gama.ui.shared/icons/dark/", true);
+
 		static {
 			// DEBUG.OUT(LIGHT_SEGMENT + " <-> " + DARK_SEGMENT);
 		}
@@ -198,6 +204,16 @@ public class UICleanupTasks {
 		@Override
 		public ImageDescriptor imageDescriptorFromURI(final URI path) {
 			// DEBUG.OUT("Requesting image at " + path);
+			if (isPrefix(LEGACY_LIGHT_SEGMENT, path)) {
+				return imageDescriptorFromURI(
+						path.replacePrefix(LEGACY_LIGHT_SEGMENT, LIGHT_SEGMENT).trimFileExtension()
+								.appendFileExtension("svg"));
+			}
+			if (isPrefix(LEGACY_DARK_SEGMENT, path)) {
+				return imageDescriptorFromURI(
+						path.replacePrefix(LEGACY_DARK_SEGMENT, LIGHT_SEGMENT).trimFileExtension()
+								.appendFileExtension("svg"));
+			}
 			if (isPrefix(LIGHT_SEGMENT, path)) {
 				String pathToIcon = path.deresolve(LIGHT_SEGMENT).toString().replace(".svg", "");
 				boolean isDisabled = pathToIcon.endsWith("_disabled");
