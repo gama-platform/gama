@@ -450,15 +450,11 @@ public class WorkspaceModelsManager {
 		}
 		final Multimap<Bundle, String> pluginsWithTutorials = GamaBundleLoader.getPluginsWithTutorials();
 		for (final Bundle plugin : pluginsWithTutorials.keySet()) {
-			for (final String entry : pluginsWithTutorials.get(plugin)) {
-				linkModelsToWorkspace(plugin, entry, false);
-			}
+			for (final String entry : pluginsWithTutorials.get(plugin)) { linkModelsToWorkspace(plugin, entry, false); }
 		}
 		final Multimap<Bundle, String> pluginsWithRecipes = GamaBundleLoader.getPluginsWithRecipes();
 		for (final Bundle plugin : pluginsWithRecipes.keySet()) {
-			for (final String entry : pluginsWithRecipes.get(plugin)) {
-				linkModelsToWorkspace(plugin, entry, false);
-			}
+			for (final String entry : pluginsWithRecipes.get(plugin)) { linkModelsToWorkspace(plugin, entry, false); }
 		}
 		// If the directory is not empty, we should maybe try to recreate the projects (if they do not exist...)
 		try (DirectoryStream<java.nio.file.Path> paths = Files.newDirectoryStream(
@@ -597,7 +593,8 @@ public class WorkspaceModelsManager {
 			protected void execute(final IProgressMonitor monitor) throws CoreException {
 				final SubMonitor m = SubMonitor.convert(monitor, "Creating or updating " + name, 2000);
 				final IProject project = GAMA.getWorkspaceManager().getRoot().getProject(name);
-				if (!project.exists()) {
+				final boolean created = !project.exists();
+				if (created) {
 					final IProjectDescription desc =
 							GAMA.getWorkspaceManager().getWorkspace().newProjectDescription(name);
 					project.create(desc, m.split(1000));
@@ -605,7 +602,7 @@ public class WorkspaceModelsManager {
 				if (monitor.isCanceled()) throw new OperationCanceledException();
 				project.open(IResource.BACKGROUND_REFRESH, m.split(1000));
 				projectHandle[0] = project;
-				setValuesProjectDescription(project, false, false, false, null);
+				if (created) { setValuesProjectDescription(project, false, false, false, null); }
 			}
 		};
 		try {
