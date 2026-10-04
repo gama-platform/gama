@@ -219,6 +219,15 @@ public class ActionCallOperator implements IOperator {
 	public boolean isConst() { return false; }
 
 	@Override
+	public boolean isAllowedInParameters() { return false; }
+
+	@Override
+	public String getParameterRestrictionReason() { return """
+			Action calls cannot be used to initialize experiment parameters. Parameter defaults are evaluated before \
+			a simulation is created, so the action has no simulation context. Use a simulation-independent \
+			expression or redeclare the parameter in the experiment."""; }
+
+	@Override
 	public String getTitle() {
 		final StringBuilder sb = new StringBuilder(50);
 		sb.append("action ").append(getName()).append(" defined in species ");
