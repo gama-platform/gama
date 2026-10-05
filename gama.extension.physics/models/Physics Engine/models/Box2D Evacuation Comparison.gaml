@@ -19,51 +19,45 @@ global parent: physical_world {
 	geometry shape <- rectangle(room_width, room_height);
 
 	bool pillar_in_front <- false;
-	float door_width <- 10.0;
-	float pillar_size <- 6.0;
-	float pillar_distance_from_door <- 9.0;
-	float walking_speed <- 4.0;
-	float pedestrian_avoidance_distance <- 3.5;
-	float obstacle_avoidance_distance <- 6.0;
+	float door_width <- 2.0;
+	float pillar_diameter <- 4.0;
+	float pillar_distance_from_door <- 10.0;
+	int people_per_room <- 400;
+	float walking_speed <- 8.0;
+	float pedestrian_avoidance_distance <- 3.0;
+	float obstacle_avoidance_distance <- 4.0;
+	geometry exit_goal <- line([{room_width + 2, room_height / 2 - 0.2},
+		{room_width + 2, room_height / 2 + 0.2}]);
 
 	init {
-		geometry horizontal_wall <- box(room_width + 2, 2, 1);
-		geometry vertical_wall <- box(2, room_height + 2, 1);
-		geometry half_door_wall <- box(2, (room_height - door_width) / 2, 1);
-		create obstacle from: [
-			horizontal_wall at_location {room_width / 2, 0},
-			horizontal_wall at_location {room_width / 2, room_height},
-			vertical_wall at_location {0, room_height / 2},
-			half_door_wall at_location {room_width, (room_height - door_width) / 4},
-			half_door_wall at_location {room_width, room_height - (room_height - door_width) / 4}
-		];
 
 		if (pillar_in_front) {
 			create obstacle {
-				shape <- box(pillar_size, pillar_size, 1);
+				shape <- circle(pillar_diameter);
 				location <- {room_width - pillar_distance_from_door, room_height / 2};
 			}
 		}
 
-		loop x from: 10 to: 26 step: 4 {
-			loop y from: 11 to: 59 step: 6 {
-				create pedestrian {
-					location <- {x, y};
-					pillar_side <- (int(self) mod 2) = 0 ? -1 : 1;
-					exit_target <- {room_width + 6, room_height / 2};
-					if (pillar_in_front) {
-						route_step <- 0;
-						first_waypoint <- {room_width - pillar_distance_from_door - pillar_size / 2 - 4,
-							room_height / 2 + pillar_side * (pillar_size / 2 + 3)};
-						second_waypoint <- {room_width - pillar_distance_from_door + pillar_size / 2 + 4,
-							first_waypoint.y};
-						current_target <- first_waypoint;
-					} else {
-						route_step <- 2;
-						current_target <- exit_target;
-					}
-					preferred_speed <- walking_speed;
+		loop i from: 0 to: people_per_room - 1 {
+			float spawn_radius <- rnd(0.45, 0.55);
+			point spawn_location <- {0, 0};
+			bool valid_spawn <- false;
+			loop while: not valid_spawn {
+				spawn_location <- {rnd(spawn_radius + 1.0, room_width - spawn_radius - 1.0),
+					rnd(spawn_radius + 1.0, room_height - spawn_radius - 1.0)};
+				valid_spawn <- empty(pedestrian where
+					(each.location distance_to spawn_location < each.radius + spawn_radius + 0.2));
+				if (pillar_in_front) {
+					point pillar_location <- {room_width - pillar_distance_from_door, room_height / 2};
+					valid_spawn <- valid_spawn
+						and spawn_location distance_to pillar_location >= pillar_diameter / 2 + spawn_radius + 0.5;
 				}
+			}
+			create pedestrian {
+				location <- spawn_location;
+				radius <- spawn_radius;
+				preferred_speed <- walking_speed * rnd(0.6, 1.4);
+				detour_side <- location.y >= room_height / 2 ? 1 : -1;
 			}
 		}
 	}
@@ -78,56 +72,60 @@ species obstacle skills: [static_body] {
 }
 
 species pedestrian skills: [dynamic_body] {
-	int pillar_side;
-	int route_step <- 2;
+	int detour_side <- 1;
 	int stalled_cycles <- 0;
-	int escape_side <- 1;
+	int cycles_since_side_switch <- 0;
 	float preferred_speed;
-	float previous_target_distance <- -1.0;
-	point exit_target;
-	point first_waypoint;
-	point second_waypoint;
-	point current_target;
-	float radius <- 0.7;
-	geometry shape <- circle(radius * 2);
+	float previous_x <- -1.0;
+	float previous_y <- -1.0;
+	float radius <- rnd(0.45, 0.55);
+	geometry shape <- circle(radius *  rnd(0.8, 2.0));
 	float mass <- 1.0;
-	float friction <- 0.3;
+	float friction <- 0.05;
 	float restitution <- 0.0;
 	float damping <- 0.0;
 	float angular_damping <- 1.0;
 	rgb color <- rgb(133, 177, 205);
 
 	reflex evacuate {
-		if (route_step = 2 and location.x >= room_width and abs(location.y - room_height / 2) <= door_width / 2) {
+		if (location.x >= room_width + radius
+				and abs(location.y - room_height / 2) <= door_width / 2 - radius) {
 			do die();
-			route_step <- 3;
-		} else if (location distance_to current_target < 1.0) {
-			if (route_step = 0) {
-				route_step <- 1;
-				current_target <- second_waypoint;
-				previous_target_distance <- -1.0;
-				stalled_cycles <- 0;
-				escape_side <- pillar_side;
-			} else if (route_step = 1) {
-				route_step <- 2;
-				current_target <- exit_target;
-				previous_target_distance <- -1.0;
-				stalled_cycles <- 0;
-				escape_side <- pillar_side;
-			}
-		}
+		} else {
+			point exit_target <- (exit_goal closest_points_with location)[0];
+			float safe_pillar_radius <- pillar_diameter / 2 + radius + 1.5;
+			float pillar_x <- room_width - pillar_distance_from_door;
+			bool needs_pillar_bypass <- pillar_in_front
+				and abs(location.y - room_height / 2) < safe_pillar_radius
+				and location.x < pillar_x + safe_pillar_radius;
 
-		if (route_step < 3) {
-			point desired_direction <- current_target - location;
+			if (previous_x >= 0 and norm({location.x - previous_x, location.y - previous_y}) < 0.025) {
+				stalled_cycles <- stalled_cycles + 1;
+				cycles_since_side_switch <- cycles_since_side_switch + 1;
+			} else {
+				stalled_cycles <- 0;
+				cycles_since_side_switch <- 0;
+			}
+			previous_x <- location.x;
+			previous_y <- location.y;
+			if (cycles_since_side_switch >= 20) {
+				detour_side <- -detour_side;
+				cycles_since_side_switch <- 0;
+			}
+			color <- stalled_cycles >= 8 ? rgb(226, 126, 91) : rgb(133, 177, 205);
+
+			point target <- exit_target;
+			if (needs_pillar_bypass) {
+				target <- {pillar_x, room_height / 2 + detour_side * safe_pillar_radius};
+				if (location.x >= pillar_x and abs(location.y - room_height / 2) >= safe_pillar_radius - 0.5) {
+					target <- exit_target;
+				}
+			} else if (stalled_cycles >= 8) {
+				target <- {location.x, location.y + detour_side * pedestrian_avoidance_distance};
+			}
+			point desired_direction <- target - location;
 			float target_distance <- norm(desired_direction);
 			if (target_distance > 0) {
-				if (previous_target_distance >= 0 and previous_target_distance - target_distance < 0.02) {
-					stalled_cycles <- stalled_cycles + 1;
-				} else {
-					stalled_cycles <- 0;
-					escape_side <- pillar_side;
-				}
-				previous_target_distance <- target_distance;
 				desired_direction <- desired_direction / target_distance;
 				point avoidance <- {0, 0};
 
@@ -141,7 +139,8 @@ species pedestrian skills: [dynamic_body] {
 					}
 				}
 
-				list<obstacle> nearby_obstacles <- obstacle where (each distance_to location < obstacle_avoidance_distance);
+				list<obstacle> nearby_obstacles <- obstacle
+					where (each distance_to location < obstacle_avoidance_distance);
 				loop other over: nearby_obstacles {
 					point closest <- (other.shape.contour closest_points_with location)[0];
 					point away <- location - closest;
@@ -153,14 +152,13 @@ species pedestrian skills: [dynamic_body] {
 					}
 				}
 
-				point direction <- desired_direction + avoidance * 1.5;
-				if (stalled_cycles >= 8) {
-					if (stalled_cycles mod 16 = 0) {
-						escape_side <- -escape_side;
-					}
-					point escape_direction <- {-desired_direction.y, desired_direction.x};
-					direction <- desired_direction * 1.5 + escape_direction * escape_side * 5.0;
+				point lateral_avoidance <- avoidance
+					- desired_direction * (avoidance.x * desired_direction.x + avoidance.y * desired_direction.y);
+				float lateral_strength <- norm(lateral_avoidance);
+				if (lateral_strength > 1.0) {
+					lateral_avoidance <- lateral_avoidance / lateral_strength;
 				}
+				point direction <- desired_direction * 4.0 + lateral_avoidance;
 				float direction_length <- norm(direction);
 				if (direction_length > 0) {
 					velocity <- {direction.x / direction_length * preferred_speed,
@@ -185,6 +183,7 @@ experiment "Box2D Evacuation Comparison" type: gui {
 	}
 
 	parameter "Walking speed" var: walking_speed min: 1.0 max: 8.0;
+	parameter "People per room" var: people_per_room min: 50 max: 600;
 	parameter "Pedestrian avoidance distance" var: pedestrian_avoidance_distance min: 1.0 max: 10.0;
 	parameter "Obstacle avoidance distance" var: obstacle_avoidance_distance min: 1.0 max: 15.0;
 
@@ -192,15 +191,18 @@ experiment "Box2D Evacuation Comparison" type: gui {
 		layout #split;
 		display "Evacuation" type: 2d axes: false background: rgb(248, 246, 240) {
 			graphics "Door" {
-				draw line([{room_width, (room_height - door_width) / 2}, {room_width, (room_height + door_width) / 2}])
-					color: rgb(90, 155, 125) width: 3;
+				draw line([{room_width + 0.2, room_height / 2},
+					{room_width + 1.6, room_height / 2}])
+					color: rgb(90, 155, 125) width: 2 end_arrow: 1;
 				if (pillar_in_front) {
-					draw ("Pillar in front of exit: " + length(pedestrian) + " remaining")
-						at: {room_width / 2, room_height - 4}
+					draw ("Pillar in front of exit: " + length(pedestrian) + " remaining, "
+						+ length(pedestrian where (each.stalled_cycles >= 8)) + " stuck")
+						at: {room_width / 2, room_height - 4} anchor: #center
 						color: rgb(90, 100, 105) font: font("SansSerif", 14, #bold);
 				} else {
-					draw ("No pillar: " + length(pedestrian) + " remaining")
-						at: {room_width / 2, room_height - 4}
+					draw ("No pillar: " + length(pedestrian) + " remaining, "
+						+ length(pedestrian where (each.stalled_cycles >= 8)) + " stuck")
+						at: {room_width / 2, room_height - 4} anchor: #center
 						color: rgb(90, 100, 105) font: font("SansSerif", 14, #bold);
 				}
 			}
