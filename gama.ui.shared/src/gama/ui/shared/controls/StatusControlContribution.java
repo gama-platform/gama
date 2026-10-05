@@ -187,8 +187,8 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 				Object jobProperty = job.getProperty(IStatusMessage.JOB_KEY);
 				boolean isView = IStatusMessage.VIEW_JOB.equals(jobProperty);
 				WorkbenchHelper.asyncRun(() -> {
-					historyPopup.addStatus(StatusMessageFactory.CUSTOM(name + " (finished)", StatusType.REGULAR,
-							isView ? IStatusMessage.VIEW_ICON : IStatusMessage.SYSTEM_ICON, null));
+					historyPopup.addFinishedStatus(name, StatusMessageFactory.CUSTOM(name + " (finished)",
+							StatusType.REGULAR, isView ? IStatusMessage.VIEW_ICON : IStatusMessage.SYSTEM_ICON, null));
 					if (historyPopup.isVisible()) { historyPopup.display(); }
 					idleJob.cancel();
 					idleJob.schedule();
