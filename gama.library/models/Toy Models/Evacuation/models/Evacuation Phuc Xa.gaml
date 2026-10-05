@@ -11,6 +11,7 @@
 
 model Mainxp
 
+
 global schedules: people_ordered{
 	
 	shape_file buildings_shape_file <- shape_file("../includes/PhucXa/buildings.shp");
