@@ -32,72 +32,50 @@
 
    <plugin
          id="gama.extension.database"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="gama.extension.geopackage"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="gama.extension.fipa"
-         download-size="0"
-         install-size="0"
          version="0.0.0"/>
 
    <plugin
          id="gama.extension.traffic"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="gama.extension.bdi"
-         download-size="0"
-         install-size="0"
          version="0.0.0"/>
 
    <plugin
          id="gama.extension.batch"
-         download-size="0"
-         install-size="0"
          version="0.0.0"/>
 
    <plugin
          id="gama.extension.maths"
-         download-size="0"
-         install-size="0"
          version="0.0.0"/>
 
    <plugin
          id="gama.extension.network"
-         download-size="0"
-         install-size="0"
          version="0.0.0"/>
 
    <plugin
          id="gama.extension.serialize"
-         download-size="0"
-         install-size="0"
          version="0.0.0"/>
 
    <plugin
          id="gama.extension.physics"
-         download-size="0"
-         install-size="0"
          version="0.0.0"/>
 
    <plugin
          id="gama.extension.pedestrian"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
+
+   <plugin
+         id="gama.extension.gml"
+         version="0.0.0"/>
 
 </feature>

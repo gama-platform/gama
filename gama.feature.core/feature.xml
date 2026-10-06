@@ -114,4 +114,8 @@
          id="gama.dev"
          version="0.0.0"/>
 
+   <plugin
+         id="gama.extension.geopackage"
+         version="0.0.0"/>
+
 </feature>
