@@ -29,7 +29,7 @@ species bug skills: [moving] {
     }
     
     //Display the bug with a color that represent the value of the attribute
-    aspect attribute{
+    aspect attribute_display{
       draw sphere(2) color: color;
       color <- hsb(attribute/nbClass,1.0,1.0);
     }

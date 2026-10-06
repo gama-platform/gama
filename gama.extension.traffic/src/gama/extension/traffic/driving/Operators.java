@@ -43,6 +43,7 @@ public class Operators {
 	)
 	@doc(
 		value = "creates a graph from the list/map of edges given as operand and connect the node to the edge", 
+		returns = "A graph<nodeType, roadType>, using the supplied node agents as vertices and road agents as edges.",
 		examples = {
 			@example(
 				value = "as_driving_graph(road, node)  --:  build a graph while using the road agents as edges and the node agents as nodes",

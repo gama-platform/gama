@@ -121,6 +121,26 @@ public abstract class AbstractObject<T, ATT extends IDrawingAttributes> implemen
 	}
 
 	/**
+	 * Loads this object's textures and reports whether all image textures are available.
+	 *
+	 * @param gl
+	 *            the OpenGL context
+	 * @return true if every image texture is available
+	 */
+	public boolean areTexturesAvailable(final OpenGL gl) {
+		if (textures == null) return true;
+		final var objectTextures = getAttributes().getTextures();
+		if (objectTextures == null) return true;
+		for (int i = 0; i < textures.length && i < objectTextures.size(); i++) {
+			final Object texture = objectTextures.get(i);
+			if ((texture instanceof IImageProvider || texture instanceof BufferedImage)
+					&& getTexture(gl, i) == OpenGL.NO_TEXTURE)
+				return false;
+		}
+		return true;
+	}
+
+	/**
 	 * Checks if is animated.
 	 *
 	 * @return true, if is animated

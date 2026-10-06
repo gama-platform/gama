@@ -18,6 +18,7 @@ import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.graph.GamaGraphFactory;
 import gama.api.types.graph.IGraph;
+import gama.api.types.graph.ISpatialGraph;
 
 /**
  * Type representing graphs in GAML - specialized containers composed of vertices (nodes) and edges.
@@ -39,11 +40,13 @@ import gama.api.types.graph.IGraph;
  *
  * <h2>Type Parameters:</h2>
  * <p>
- * Graphs have two type parameters:
+ * Graphs have two type parameters, {@code graph<vertexType, edgeType>}:
  * <ul>
- * <li>Vertex type - the type of nodes in the graph</li>
- * <li>Edge type - the type of edges connecting vertices</li>
+ * <li>Vertex type - the type of nodes in the graph; it is the graph container's key type</li>
+ * <li>Edge type - the type of edge objects; it is the graph container's content/value type</li>
  * </ul>
+ * Edge lookup is addressed by a pair of vertices (source, target), and returns the edge or edges joining them; this
+ * endpoint pair is not the edge value itself.
  * </p>
  *
  * <h2>Usage Examples:</h2>
@@ -79,7 +82,7 @@ import gama.api.types.graph.IGraph;
 @type (
 		name = IKeyword.GRAPH,
 		id = IType.GRAPH,
-		wraps = { IGraph.class },
+		wraps = { IGraph.class, ISpatialGraph.class },
 		kind = ISymbolKind.REGULAR,
 		concept = { IConcept.TYPE, IConcept.GRAPH },
 		doc = @doc ("Special type of container composed of edges and vertices"))

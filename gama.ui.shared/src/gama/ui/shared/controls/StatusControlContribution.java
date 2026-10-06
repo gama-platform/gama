@@ -74,6 +74,13 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 	/** The Constant WIDTH. */
 	private final static int WIDTH = 300;
 
+	/** Jobs that are implementation details rather than user-visible tasks. */
+	private static final Set<String> USELESS_JOBS = Set.of("Win32 refresh daemon", "Animation start",
+			"Decoration Calculation", "Update Capability Enablement for Natures", "Status refresh",
+			"Update for Decoration Completion", "Change cursor", "Searching for local changes", "Hooking to commands",
+			"Update Job", "Check for workspace changes", "Refreshing view", "Mark Occurrences", "XtextReconcilerJob",
+			"Xtext validation", "Searching for markers", "Idle");
+
 	/** The instance. */
 	static StatusControlContribution INSTANCE;
 
@@ -96,7 +103,7 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 		public IStatus runInUIThread(final IProgressMonitor monitor) {
 			if (label == null || label.isDisposed()) return Status.CANCEL_STATUS;
 			label.setImageWithoutRecomputingSize(GamaIcon.named(IStatusMessage.IDLE_ICON).image());
-			label.setTextWithoutRecomputingSize("Idle");
+			label.setTextWithoutRecomputingSize(getRunningTaskSummary());
 			return Status.OK_STATUS;
 		}
 	};
@@ -158,64 +165,34 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 		});
 		Job.getJobManager().addJobChangeListener(new JobChangeAdapter() {
 
-			final Set<String> uselessJobs = Set.of("Win32 refresh daemon", "Animation start", "Decoration Calculation",
-					"Update Capability Enablement for Natures", "Status refresh", "Update for Decoration Completion",
-					"Change cursor", "Searching for local changes", "Hooking to commands", "Update Job",
-					"Check for workspace changes", "Refreshing view", "Mark Occurrences", "XtextReconcilerJob",
-					"Xtext validation", "Searching for markers", "Idle");
-
 			@Override
 			public void aboutToRun(final IJobChangeEvent event) {
 				Job job = event.getJob();
 				if (WorkbenchHelper.getWorkbench().isClosing()) return;
 				String name = job.getName() == null ? "" : job.getName().strip();
-				if (uselessJobs.contains(name)) return;
-				// DEBUG.OUT("Name " + job.getName() + " - Group " +
-				// job.getJobGroup() + " - Rule " + job.getRule()
-				// + " - Priority " + jobPriority(job.getPriority()));
+				if (!isUserVisibleJob(job, name)) return;
 				Object jobProperty = job.getProperty(IStatusMessage.JOB_KEY);
-				if (IStatusMessage.INTERNAL_STATUS_REFRESH_JOB.equals(jobProperty)) return;
 				boolean isView = IStatusMessage.VIEW_JOB.equals(jobProperty);
 				// if (isView ? !showViewEvents : !showSystemEvents) {}
 				WorkbenchHelper.asyncRun(() -> updateWith(StatusMessageFactory.CUSTOM(name, StatusType.REGULAR,
 						isView ? IStatusMessage.VIEW_ICON : IStatusMessage.SYSTEM_ICON, null)));
 			}
 
-			// private boolean intersect(final String s1, final String s2) {
-			// if (s1 == null) return s2 == null;
-			// if (s2 == null) return false;
-			// return s1.contains(s2) || s2.contains(s1);
-			// }
-
 			@Override
 			public void done(final IJobChangeEvent event) {
-				// if (WorkbenchHelper.getWorkbench().isClosing() ||
-				// event.getJob() instanceof StatusRefresher) return;
-				// String message = event.getJob().getName();
-				// if (intersect(label.getText(), message)) {
-				// WorkbenchHelper.asyncRun(() ->
-				// updateWith(StatusMessage.IDLE()));
-				// }
-				// else {
-				// WorkbenchHelper
-				// .asyncRun(() ->
-				// updateWith(StatusMessage.END(event.getJob().getName() + "
-				// (ended)")));
-				// }
-				// DEBUG.OUT("Job finished : " + event.getJob().toString() + "
-				// with priority "
-				// + jobPriority(event.getJob().getPriority()));
-			}
-
-			private String jobPriority(final int p) {
-				return switch (p) {
-					case Job.INTERACTIVE -> "INTERACTIVE";
-					case Job.BUILD -> "BUILD";
-					case Job.DECORATE -> "DECORATE";
-					case Job.LONG -> "LONG";
-					case Job.SHORT -> "SHORT";
-					default -> "NONE";
-				};
+				Job job = event.getJob();
+				if (WorkbenchHelper.getWorkbench().isClosing()) return;
+				String name = job.getName() == null ? "" : job.getName().strip();
+				if (!isUserVisibleJob(job, name)) return;
+				Object jobProperty = job.getProperty(IStatusMessage.JOB_KEY);
+				boolean isView = IStatusMessage.VIEW_JOB.equals(jobProperty);
+				WorkbenchHelper.asyncRun(() -> {
+					historyPopup.addFinishedStatus(name, StatusMessageFactory.CUSTOM(name + " (finished)",
+							StatusType.REGULAR, isView ? IStatusMessage.VIEW_ICON : IStatusMessage.SYSTEM_ICON, null));
+					if (historyPopup.isVisible()) { historyPopup.display(); }
+					idleJob.cancel();
+					idleJob.schedule();
+				});
 			}
 
 			@Override
@@ -246,6 +223,22 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 		//
 		// });
 		return compo;
+	}
+
+	private static boolean isUserVisibleJob(final Job job, final String name) {
+		return !USELESS_JOBS.contains(name)
+				&& !IStatusMessage.INTERNAL_STATUS_REFRESH_JOB.equals(job.getProperty(IStatusMessage.JOB_KEY));
+	}
+
+	private String getRunningTaskSummary() {
+		int runningTasks = 0;
+		for (Job job : Job.getJobManager().find(null)) {
+			if (job.getState() == Job.RUNNING) {
+				String name = job.getName() == null ? "" : job.getName().strip();
+				if (isUserVisibleJob(job, name)) { runningTasks++; }
+			}
+		}
+		return runningTasks == 0 ? "Idle" : runningTasks + (runningTasks == 1 ? " task running" : " tasks running");
 	}
 
 	@Override

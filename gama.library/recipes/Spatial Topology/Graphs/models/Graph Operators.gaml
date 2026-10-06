@@ -48,7 +48,7 @@ global {
 species people {
 	float centrality;
 	rgb centrality_color;
-	aspect centrality{
+	aspect{
 		draw circle(1) color: centrality_color;
 		
 	}
@@ -62,7 +62,7 @@ experiment graphoperators type: gui {
 					draw edge + (0.1+ec[edge]/500) color: #yellow border: #black;
 				}
  			}
- 			species people aspect: centrality;
+ 			species people;
 		}
 	}
 }

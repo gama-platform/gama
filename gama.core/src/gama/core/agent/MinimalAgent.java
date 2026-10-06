@@ -764,7 +764,8 @@ public class MinimalAgent implements IAgent, Comparable<IAgent> {
 	}
 
 	/**
-	 * Copy.
+	 * Copy. Agents cannot be copied; calling copy on an agent returns the agent itself. To duplicate an agent, use the
+	 * {@code create} statement instead (e.g. {@code create species_of(agent) from: agent;}).
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @param scope

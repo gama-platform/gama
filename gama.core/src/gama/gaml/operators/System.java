@@ -29,6 +29,7 @@ import gama.annotations.example;
 import gama.annotations.no_test;
 import gama.annotations.operator;
 import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
@@ -153,9 +154,12 @@ public class System {
 			special_cases = {
 					"is_error evaluates the expression in a try-catch manner; if an error is raised, it returns true without propagating the error.",
 					"is_error(1/0) = true (integer division by zero is an error in GAML)." })
-	@test ("!is_error(1.0 = 1)")
-	@test ("is_error(1/0)")
-	@test ("!is_error(1/1)")
+	@tests ({
+			@test ("!is_error(1.0 = 1)"),
+			@test ("is_error(1/0)"),
+			@test ("!is_error(1/1)"),
+			@test ("is_error(10 / 0)")
+	})
 	public static Boolean is_error(final IScope scope, final IExpression expr) {
 		try {
 			expr.value(scope);
@@ -580,7 +584,8 @@ public class System {
 			value = "returns a copy of the operand.",
 			returns = "a deep copy of the operand.",
 			special_cases = { "copy(nil) returns nil.",
-					"The copy is independent of the original; modifying one does not affect the other." })
+					"The copy is independent of the original for all operand types except agents; modifying one does not affect the other.",
+					"Agents cannot be copied: copy(agent) returns the agent itself. To duplicate an agent, use the create statement instead (e.g. create species_of(agent) from: agent;)." })
 	@no_test
 	public static Object opCopy(final IScope scope, final Object o) throws GamaRuntimeException {
 		if (o instanceof IValue) return ((IValue) o).copy(scope);

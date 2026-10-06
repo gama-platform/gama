@@ -517,7 +517,7 @@ public abstract class GamaExecutorService {
 	 */
 	public static boolean shouldRunAllSimulationsInParallel(final IExperimentAgent experiment) {
 		boolean pref = CONCURRENCY_SIMULATIONS_ALL.getValue();
-		return experiment == null ? pref : pref || experiment.isHeadless() && experiment.getSpecies().isBatch();
+		return experiment == null ? pref : experiment.getSpecies().isBatch() && (pref || experiment.isHeadless());
 	}
 
 }

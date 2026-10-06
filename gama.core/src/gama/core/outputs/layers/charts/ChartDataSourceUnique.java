@@ -11,6 +11,7 @@
 package gama.core.outputs.layers.charts;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.gaml.GAML;
@@ -33,8 +34,7 @@ public class ChartDataSourceUnique extends ChartDataSource {
 	@Override
 	public boolean cloneMe(final IScope scope, final int chartCycle, final ChartDataSource source) {
 		final boolean res = super.cloneMe(scope, chartCycle, source);
-		final IColor col =
-				GamaColorFactory.createWithRGBA(Random.opRnd(scope, 255), Random.opRnd(scope, 255), Random.opRnd(scope, 255), 255);
+		final IColor col = ChartProperties.getDefaultSeriesColor(scope, chartCycle);
 		final IExpression ncol = GAML.getExpressionFactory().createConst(col, Types.COLOR);
 		this.colorexp = ncol;
 		final String previousname = ((ChartDataSourceUnique) source).legend;
@@ -77,18 +77,14 @@ public class ChartDataSourceUnique extends ChartDataSource {
 		legend = stval;
 	}
 
-	@Override
+		@Override
 	public void updatevalues(final IScope scope, final int chartCycle) {
 		super.updatevalues(scope, chartCycle);
-		Object o = null;
-		final HashMap<String, Object> barvalues = new HashMap<>();
-		if (this.isUseYErrValues()) { barvalues.put(ChartDataStatement.YERR_VALUES, getValueyerr().value(scope)); }
-		if (this.isUseXErrValues()) { barvalues.put(ChartDataStatement.XERR_VALUES, getValueyerr().value(scope)); }
-		if (this.isUseYMinMaxValues()) { barvalues.put(ChartDataStatement.XERR_VALUES, getValuexerr().value(scope)); }
-		if (this.isUseSizeExp()) { barvalues.put(ChartDataStatement.MARKERSIZE, getSizeexp().value(scope)); }
-		if (this.isUseColorExp()) { barvalues.put(IKeyword.COLOR, getColorexp().value(scope)); }
-		if (getValue() != null) { o = getValue().value(scope); }
-		if (o != null) { updateseriewithvalue(scope, getMyserie(), o, chartCycle, barvalues, -1); }
+		if (getValue() == null) return;
+		final Object o = getValue().value(scope);
+		if (o != null) {
+			updateseriewithvalue(scope, getMyserie(), o, chartCycle, computeBarValues(scope), -1);
+		}
 	}
 
 	/**
@@ -114,6 +110,7 @@ public class ChartDataSourceUnique extends ChartDataSource {
 		myserie.setDataset(getDataset());
 		inferDatasetProperties(scope, myserie);
 		myserie.setName(legend);
+		getDataset().addNewSerie(legend, myserie, 0);
 		mySeries.put(legend, myserie);
 	}
 

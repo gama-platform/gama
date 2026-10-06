@@ -81,29 +81,33 @@ public class Box2DBodyWrapper extends AbstractBodyWrapper<World, Body, Shape, Ve
 		def = new BodyDef();
 		fixtureDef = new FixtureDef();
 		IBody previous = (IBody) agent.getAttribute(BODY);
+		def.type = isStatic ? BodyType.STATIC : BodyType.DYNAMIC;
+		def.allowSleep = false;
+		def.userData = this;
+		def.bullet = true;
 		if (previous != null) {
 			IPoint pointTransfer = GamaPointFactory.create();
-			def.type = isStatic ? BodyType.STATIC : BodyType.DYNAMIC;
 			def.angularDamping = previous.getAngularDamping();
-			def.angularVelocity = toBox2D(previous.getAngularVelocity(pointTransfer).norm());
+			def.angularVelocity = toBox2D(previous.getAngularVelocity(pointTransfer).getZ());
 			def.linearDamping = previous.getLinearDamping();
 			toVector(previous.getLinearVelocity(pointTransfer), def.linearVelocity);
-			def.allowSleep = false;
-			def.userData = this;
-			def.bullet = true;
 		}
 		Body newBody = world.createBody(def);
+		fixtureDef.density = 1f;
+		fixtureDef.shape = shape;
 		if (previous != null) {
-			fixtureDef.density = 1f;
 			fixtureDef.friction = previous.getFriction();
 			fixtureDef.restitution = previous.getRestitution();
-			fixtureDef.shape = shape;
-			fixtureDef.isSensor = false;
 		}
 		newBody.createFixture(fixtureDef);
 		ms = new MassData();
-		if (previous != null) { ms.mass = previous.getMass(); }
-		newBody.setMassData(ms);
+		newBody.getMassData(ms);
+		if (previous != null && !isStatic) {
+			float initialMass = ms.mass;
+			ms.mass = previous.getMass();
+			if (initialMass > 0) { ms.I *= ms.mass / initialMass; }
+			newBody.setMassData(ms);
+		}
 		return newBody;
 	}
 
@@ -130,8 +134,9 @@ public class Box2DBodyWrapper extends AbstractBodyWrapper<World, Body, Shape, Ve
 
 	@Override
 	public IPoint getAngularVelocity(final IPoint v) {
-		v.setLocation(0, 0, body.getAngularVelocity());
-		return v;
+		IPoint result = v == null ? GamaPointFactory.create() : v;
+		result.setLocation(0, 0, body.getAngularVelocity());
+		return result;
 	}
 
 	@Override

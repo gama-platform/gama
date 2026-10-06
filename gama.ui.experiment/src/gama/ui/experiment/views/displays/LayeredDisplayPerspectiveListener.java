@@ -9,6 +9,7 @@ import org.eclipse.ui.IWorkbenchPage;
 
 import gama.api.runtime.SystemInfo;
 import gama.api.ui.displays.IDisplaySurface;
+import gama.api.ui.IOutput;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.ui.application.workbench.PerspectiveHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
@@ -39,12 +40,15 @@ final class LayeredDisplayPerspectiveListener implements IPerspectiveListener {
 
 	@Override
 	public void perspectiveActivated(final IWorkbenchPage page, final IPerspectiveDescriptor perspective) {
+		final IOutput output = decorator.view.getOutput();
+		final boolean continueDrawing = output != null && (output.containsChart()
+				? GamaPreferences.Displays.CHART_PERSPECTIVE.getValue()
+				: GamaPreferences.Displays.CORE_DISPLAY_PERSPECTIVE.getValue());
 
 		if (PerspectiveHelper.PERSPECTIVE_MODELING_ID.equals(perspective.getId())) {
-			if (decorator.view.getOutput() != null && decorator.view.getDisplaySurface() != null
-					&& !GamaPreferences.Displays.CORE_DISPLAY_PERSPECTIVE.getValue()) {
-				previousState = decorator.view.getOutput().isPaused();
-				decorator.view.getOutput().setPaused(true);
+			if (output != null && decorator.view.getDisplaySurface() != null && !continueDrawing) {
+				previousState = output.isPaused();
+				output.setPaused(true);
 			}
 			// Seems necessary in addition to the IPartListener
 			WorkbenchHelper.asyncRun(() -> {
@@ -57,9 +61,8 @@ final class LayeredDisplayPerspectiveListener implements IPerspectiveListener {
 				final IDisplaySurface ds = decorator.view.getDisplaySurface();
 				if (ds != null) { ds.updateDisplay(true); }
 			}
-			if (!GamaPreferences.Displays.CORE_DISPLAY_PERSPECTIVE.getValue() && decorator.view.getOutput() != null
-					&& decorator.view.getDisplaySurface() != null) {
-				decorator.view.getOutput().setPaused(previousState);
+			if (!continueDrawing && output != null && decorator.view.getDisplaySurface() != null) {
+				output.setPaused(previousState);
 			}
 			// Necessary in addition to the IPartListener as there is no way to distinguish between the wrong
 			// "hidden" event and the good one when there are no tabs.

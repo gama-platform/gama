@@ -33,6 +33,10 @@ public class Box2DPhysicalWorld extends AbstractPhysicalWorld<World, Shape, Vec2
 	/** The target. */
 	static float TARGET = 10;
 
+	private static final int VELOCITY_ITERATIONS = 8;
+
+	private static final int POSITION_ITERATIONS = 3;
+
 	/**
 	 * Instantiates a new box 2 D physical world.
 	 *
@@ -114,8 +118,11 @@ public class Box2DPhysicalWorld extends AbstractPhysicalWorld<World, Shape, Vec2
 
 	@Override
 	protected void updateEngine(final Double timeStep, final int maxSubSteps) {
-		int steps = maxSubSteps == 0 ? 1 : maxSubSteps;
-		getWorld().step(timeStep.floatValue(), steps, steps);
+		int steps = Math.max(1, maxSubSteps);
+		float subStep = timeStep.floatValue() / steps;
+		for (int i = 0; i < steps; i++) {
+			getWorld().step(subStep, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
+		}
 	}
 
 	@Override

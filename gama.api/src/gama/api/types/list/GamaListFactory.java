@@ -10,7 +10,6 @@
  ********************************************************************************************************/
 package gama.api.types.list;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -463,11 +462,14 @@ public class GamaListFactory {
 	public static IList create(final IScope scope, final IType contentType, final int[] ints) {
 		final IList list = create(contentType, ints == null ? 0 : ints.length);
 		if (ints == null) return list;
-		if (!FLAGS.CAST_CONTAINER_CONTENTS) {
-			list.addAll(Arrays.asList(ints));
-			return list;
+		boolean cast = FLAGS.CAST_CONTAINER_CONTENTS;
+		for (final int o : ints) {
+			if (cast) {
+				castAndAdd(scope, list, o);
+			} else {
+				list.add(o);
+			}
 		}
-		for (final int o : ints) { castAndAdd(scope, list, o); }
 		return list;
 	}
 
@@ -529,11 +531,14 @@ public class GamaListFactory {
 	public static IList create(final IScope scope, final IType contentType, final double[] doubles) {
 		final IList list = create(contentType, doubles == null ? 0 : doubles.length);
 		if (doubles == null) return list;
-		if (!FLAGS.CAST_CONTAINER_CONTENTS) {
-			list.addAll(Arrays.asList(doubles));
-			return list;
+		boolean cast = FLAGS.CAST_CONTAINER_CONTENTS;
+		for (final double o : doubles) {
+			if (cast) {
+				castAndAdd(scope, list, o);
+			} else {
+				list.add(o);
+			}
 		}
-		for (final double o : doubles) { castAndAdd(scope, list, o); }
 		return list;
 	}
 

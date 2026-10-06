@@ -696,6 +696,11 @@ public interface IGui {
 	default void updateParameters(final boolean refreshValues) {}
 
 	/**
+	 * Updates the synchronized experiment state in UI.
+	 */
+	default void updateSynchronizedState() {}
+
+	/**
 	 * Gets the server commands.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
