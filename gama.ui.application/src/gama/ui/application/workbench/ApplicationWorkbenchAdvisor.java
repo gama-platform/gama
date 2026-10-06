@@ -287,7 +287,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 			   && StartupModelHelper.getInstance().areThereAnyArtifactsToSave()
 			   && GAMA.getGui()
 				.getDialogFactory()
-					.question("New simulation artifacts have been found.","Do you want to save them ?")
+					.question("Warning","New simulation artifacts have been found. Do you want to save them ?")
 			)
 			{
 				IHandlerService handlerService =

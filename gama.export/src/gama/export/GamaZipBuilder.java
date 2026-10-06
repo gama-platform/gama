@@ -126,6 +126,18 @@ public class GamaZipBuilder {
 
     private static Path embeddedJdkPath = Path.of("jdk");
 
+    private int progress = 0;
+
+    public synchronized void incrementProgress() {
+        progress++;
+    }
+
+    public synchronized int getProgress() {
+        int newProgress = progress;
+        progress = 0;
+        return newProgress;
+    }
+
     /**
      * Data files referenced by the exported models, as absolute, normalized
      * paths. Those that live outside the exported project are rerouted into the
@@ -275,7 +287,7 @@ public class GamaZipBuilder {
 
     public void zip(String outputPathStr) throws IOException
     {
-        GAMA.getGui().getStatus().setStatus("Exporting the simulation", IStatusMessage.COMPILE_ICON,
+        GAMA.getGui().getStatus().setStatus("Exporting the project", IStatusMessage.COMPILE_ICON,
                 GamaColorFactory.get(200, 200, 200));
 
         final Path outputPath = Path.of(outputPathStr);
@@ -298,7 +310,9 @@ public class GamaZipBuilder {
                 stream.forEach(sourcePath -> {
                     try {
                         archive.addEntry(sourcePath,appRootPath.relativize(sourcePath).toString());
-                        
+
+                        incrementProgress();
+
                         // Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
                     } catch (IOException e) {
                         throw new RuntimeException("Failed to copy: " + sourcePath, e);
@@ -662,6 +676,7 @@ public class GamaZipBuilder {
                                 archive.addEntry(sourcePath,GamaZipBuilder.embeddedJdkPath
                                     .resolve(jdkPath.relativize(sourcePath)).toString()
                                 );
+                                incrementProgress();
                             }
                             
                             // Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);

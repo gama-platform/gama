@@ -14,6 +14,12 @@ import java.time.format.DateTimeFormatter;
 import java.awt.Desktop;
 import java.io.IOException;
 
+import org.eclipse.jface.dialogs.ProgressIndicator;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.swt.events.SelectionEvent;
@@ -21,6 +27,8 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -49,12 +57,22 @@ public class ExportExperimentSelectionListener implements Selector {
 	/** The state. */
 	GamlEditorState state;
 
+	private boolean exportIsDone = false;
+
 	/**
 	 *
 	 */
 	public ExportExperimentSelectionListener(final GamlEditor editor, final GamlEditorState state) {
 		this.editor = editor;
 		this.state = state;
+	}
+
+	private synchronized boolean getExportIsDone() {
+		return exportIsDone;
+	}
+
+	private synchronized void setExportIsDoneToTrue() {
+		exportIsDone = true;
 	}
 
 	/**
@@ -180,6 +198,47 @@ public class ExportExperimentSelectionListener implements Selector {
 
 			final Path outputPath = Path.of(dialog.getOutputPath(),dialog.getOutputFileName());
 
+			// handling the progressbar
+			Display display = Display.getDefault();
+
+			if (display == null || display.isDisposed())
+				return;
+
+			Shell shell = new Shell(display, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
+			shell.setText("information");
+			shell.setSize(350, 120);
+			shell.setLayout(new GridLayout(1, false));
+
+			Label statusLabel = new Label(shell, SWT.NONE);
+			statusLabel.setText("The export is being created.");
+
+			ProgressIndicator progressIndicator = new ProgressIndicator(shell, SWT.NONE);
+			progressIndicator.setLayoutData(new org.eclipse.swt.layout.GridData(SWT.FILL, SWT.CENTER, true, false));
+
+			Shell workbenchShell = null;
+			if (PlatformUI.isWorkbenchRunning()) {
+				IWorkbenchWindow activeWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+				if (activeWindow != null) {
+					workbenchShell = activeWindow.getShell();
+				}
+			}
+
+			// position the progress indicator relative to the main window
+			if (workbenchShell != null && !workbenchShell.isDisposed()) {
+				int x = workbenchShell.getLocation().x + (workbenchShell.getSize().x - shell.getSize().x) / 2;
+				int y = workbenchShell.getLocation().y + (workbenchShell.getSize().y - shell.getSize().y) / 2;
+				shell.setLocation(x, y);
+			}
+
+
+			int totalWork = 1526;
+
+			if (zipWithJdk)
+				totalWork += 582;
+
+			progressIndicator.beginTask(totalWork);
+			shell.open();
+
 			final GamaZipBuilder ziper = new GamaZipBuilder(
 				plugins,
 				projects,
@@ -192,6 +251,7 @@ public class ExportExperimentSelectionListener implements Selector {
 			new Thread(() -> {
 				try {
 					ziper.zip(outputPath.toString());
+					setExportIsDoneToTrue();
 					System.out.println("Model exported successfully");
 					if(
 						Desktop.isDesktopSupported()
@@ -210,11 +270,24 @@ public class ExportExperimentSelectionListener implements Selector {
 					}
 					
 				} catch (Exception exception) {
+					setExportIsDoneToTrue();
 					System.err.println("Exception raised while cloning GAMA :\n" + exception);
 					exception.printStackTrace();
 					GAMA.getGui().getDialogFactory().error("An error occured while exporting the model.");
 				}
 			}).start();
+
+			while(!getExportIsDone())
+			{
+				Thread.sleep(100);
+				int progress = ziper.getProgress();
+				System.out.println("progress : " + progress + ", done : " + exportIsDone);
+				progressIndicator.worked(progress);
+				while (display.readAndDispatch()) {
+						// Fixes the frozen window by clearing out pending render events
+				}
+			}
+			shell.close();
 
 		} catch (Throwable t) {
             t.printStackTrace();
