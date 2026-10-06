@@ -74,7 +74,7 @@ import gama.api.runtime.scope.IScope;
 						name = IKeyword.LEGEND,
 						type = { IType.LIST, IType.BOOL, IType.STRING, IType.NONE },
 						optional = true,
-						doc = @doc ("the series labels: a list of strings (can be a variable with dynamic names), or false to hide the legend. Use nil/whitespace to hide individual labels without removing their values; duplicate labels remain separate series.")),
+						doc = @doc ("Series legend labels: a string labels the first series; a list provides one label per series. Use true for default series names, false or nil to hide all series labels, or nil/whitespace list elements to hide individual labels.")),
 				@facet (
 						name = ChartDataStatement.MARKER,
 						type = IType.BOOL,

@@ -1,29 +1,29 @@
 /**
 * Name: Chart legend regression
-* Description: Manual regression coverage for hidden, partial, duplicate and dynamically changing chart legends.
+* Description: Manual regression coverage for hidden, sparse and vertically oriented histogram labels.
 * Tags: test, chart, legend
 */
 
 model chart_legend_regression
 
-global {
-	list<float> values <- [1, 2, 3, 4];
-
-	reflex vary_bin_count {
-		values <- cycle mod 2 = 0 ? [1, 2, 3, 4] : [1, 2];
-	}
-}
-
 experiment "Chart legend regression" type: gui {
+	init {
+		gama.pref_cast_container_contents <- true;
+	}
 	output {
 		display "Legend cases" {
-			chart "No legend" type: histogram series_label_position: legend {
-				datalist value: (rnd(1) = 0) ? [1, 2] : [1, 2, 3, 4] legend: false;
+			chart "No legend" type: histogram {
+				datalist [1, 2, 3, 4] legend: false;
 			}
-			chart "Partial and duplicate labels" type: histogram series_label_position: legend
-				legend_orientation: vertical {
-				datalist value: values
-					legend: (length(values) = 2) ? [nil, " "] : [nil, " ", "duplicate", "duplicate"];
+			chart "Nil legend" type: histogram {
+				datalist [1, 2, 3, 4] legend: nil;
+			}
+			chart "Sparse labels" type: histogram {
+				datalist range(0, 256)
+					legend: range(0, 256) collect (each mod 15 = 0 ? string(each) : nil);
+			}
+			chart "Vertical legend" type: histogram legend_orientation: vertical {
+				datalist [1, 2, 3, 4] legend: ["first", "second", "third", "fourth"];
 			}
 		}
 	}

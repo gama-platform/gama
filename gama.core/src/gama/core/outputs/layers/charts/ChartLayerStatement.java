@@ -259,7 +259,7 @@ import gama.core.outputs.layers.AbstractLayerStatement;
 						type = IType.ID,
 						values = { "default", "horizontal", "vertical" },
 						optional = true,
-						doc = @doc ("Orientation of the legend: default, horizontal or vertical.")),
+						doc = @doc ("Orientation of the legend: default, horizontal or vertical. When explicitly set with the default series_label_position, uses the chart legend instead of the histogram's default x-axis labels.")),
 				@facet (
 						name = ANCHOR,
 						type = IType.POINT,
