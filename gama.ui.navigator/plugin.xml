@@ -37,6 +37,10 @@
                      </objectState>
                      <objectState
                            name="contentTypeId"
+                           value="gama.geopackage.type">
+                     </objectState>
+                     <objectState
+                           name="contentTypeId"
                            value="gama.csv.file.type">
                      </objectState>
                      <objectState
