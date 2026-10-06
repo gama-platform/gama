@@ -1,4 +1,4 @@
-package gaml.grammar.transition;
+package gaml.compiler.transition;
 
 /**
  * {@link IFileTransformer} that removes the outermost curly braces surrounding

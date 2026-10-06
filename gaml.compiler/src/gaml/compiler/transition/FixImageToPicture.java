@@ -1,4 +1,4 @@
-package gaml.grammar.transition;
+package gaml.compiler.transition;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;

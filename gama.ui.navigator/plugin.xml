@@ -350,6 +350,28 @@
             </visibleWhen>
          </command>
          <command
+               commandId="gama.navigator.convert2026"
+               icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/file.move.svg"
+               label="Convert to GAMA 2026 syntax..."
+               style="push">
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="selection">
+                  <iterate
+                        ifEmpty="false"
+                        operator="and">
+                     <adapt
+                           type="org.eclipse.core.resources.IResource">
+                        <test
+                              property="gama.navigator.needsConversion">
+                        </test>
+                     </adapt>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </command>
+         <command
                commandId="org.eclipse.ui.file.properties"
                icon="platform:/plugin/gama.ui.shared/icons_svg/light/generic/action.properties.svg"
                label="Properties"
@@ -893,6 +915,11 @@ type="java.lang.Object">
              id="gama.navigator.reveal"
              name="Reveal in Workspace">
        </command>
+       <command
+             categoryId="gama.category"
+             id="gama.navigator.convert2026"
+             name="Convert to GAMA 2026 syntax...">
+       </command>
     </extension>
     <extension
           point="org.eclipse.ui.handlers">
@@ -912,5 +939,31 @@ type="java.lang.Object">
              </with>
           </enabledWhen>
        </handler>
+       <handler
+             class="gama.ui.navigator.commands.ConvertToGama2026Handler"
+             commandId="gama.navigator.convert2026">
+          <enabledWhen>
+             <with
+                   variable="selection">
+                <iterate
+                      ifEmpty="false"
+                      operator="and">
+                   <adapt
+                         type="org.eclipse.core.resources.IResource">
+                   </adapt>
+                </iterate>
+             </with>
+          </enabledWhen>
+       </handler>
+    </extension>
+    <extension
+          point="org.eclipse.core.expressions.propertyTesters">
+       <propertyTester
+             class="gama.ui.navigator.commands.NeedsConversionTester"
+             id="gama.navigator.needsConversionTester"
+             namespace="gama.navigator"
+             properties="needsConversion"
+             type="org.eclipse.core.resources.IResource">
+       </propertyTester>
     </extension>
 </plugin>

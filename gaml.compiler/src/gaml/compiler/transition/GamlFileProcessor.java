@@ -1,4 +1,4 @@
-package gaml.grammar.transition;
+package gaml.compiler.transition;
 
 import java.io.IOException;
 import java.nio.charset.MalformedInputException;
@@ -84,7 +84,7 @@ Additional transformers can be registered at any time via
  * 
  * 
  * <pre>
- *   java gaml.grammar.transition.GamlFileProcessor &lt;root&gt; [--dry-run]
+ *   java gaml.compiler.transition.GamlFileProcessor &lt;root&gt; [--dry-run]
  * </pre>
 
 *
@@ -284,6 +284,66 @@ public class GamlFileProcessor {
 	}
 
 	/**
+	 * Silently checks whether at least one transformer would change the given file.
+	 *
+	 * @param path
+	 *             the file to check; must not be {@code null}
+	 * @return {@code true} if the file is a candidate file and would be modified; {@code false} otherwise (including
+	 *         on read errors)
+	 */
+	public boolean needsConversion(final Path path) {
+		final String name = path.getFileName().toString();
+		if (extensions.stream().noneMatch(name::endsWith)) return false;
+		try {
+			final String original = Files.readString(path, StandardCharsets.UTF_8);
+			String content = original;
+			for (final IFileTransformer transformer : transformers) { content = transformer.transform(content); }
+			return !content.equals(original);
+		} catch (final IOException | RuntimeException e) {
+			return false;
+		}
+	}
+
+	/**
+	 * Silently checks whether at least one candidate file under {@code root} would be modified, stopping at the first
+	 * one found. Hidden directories are skipped.
+	 *
+	 * @param root
+	 *             the directory to search; must not be {@code null}
+	 * @param fileTest
+	 *             the predicate used to test each candidate file (allows callers to add caching)
+	 * @return {@code true} if a file needing conversion was found
+	 */
+	public boolean hasFilesToConvert(final Path root, final java.util.function.Predicate<Path> fileTest)
+			throws IOException {
+		final boolean[] found = { false };
+		Files.walkFileTree(root, new SimpleFileVisitor<Path>() {
+
+			@Override
+			public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) {
+				return dir.getFileName() != null && dir.getFileName().toString().startsWith(".")
+						? FileVisitResult.SKIP_SUBTREE : FileVisitResult.CONTINUE;
+			}
+
+			@Override
+			public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) {
+				final String name = file.getFileName().toString();
+				if (extensions.stream().anyMatch(name::endsWith) && fileTest.test(file)) {
+					found[0] = true;
+					return FileVisitResult.TERMINATE;
+				}
+				return FileVisitResult.CONTINUE;
+			}
+
+			@Override
+			public FileVisitResult visitFileFailed(final Path file, final IOException exc) {
+				return FileVisitResult.CONTINUE;
+			}
+		});
+		return found[0];
+	}
+
+	/**
 	 * Recursively walk {@code root} and process every file whose name ends with
 	 * one of the configured {@link #extensions}.
 	 *
@@ -407,7 +467,7 @@ public class GamlFileProcessor {
 	 * </p>
 	 * 
 	 * <pre>
-	 *   java gaml.grammar.transition.GamlFileProcessor &lt;root&gt; [--dry-run]
+	 *   java gaml.compiler.transition.GamlFileProcessor &lt;root&gt; [--dry-run]
 	 * </pre>
 	 *
 	 * <p>

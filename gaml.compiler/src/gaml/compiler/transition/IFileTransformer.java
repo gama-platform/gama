@@ -1,4 +1,4 @@
-package gaml.grammar.transition;
+package gaml.compiler.transition;
 
 /**
  * A functional interface for GAML source file content transformers.

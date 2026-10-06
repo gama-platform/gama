@@ -1,4 +1,4 @@
-package gaml.grammar.transition;
+package gaml.compiler.transition;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
