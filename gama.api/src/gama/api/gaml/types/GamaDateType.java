@@ -20,9 +20,7 @@ import static java.time.temporal.ChronoField.YEAR;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.SignStyle;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -52,7 +50,7 @@ import gama.dev.DEBUG;
  * durations, and scheduling. It integrates with Java's modern time API (java.time) and supports multiple date formats,
  * time zones, and temporal arithmetic.
  * </p>
- * 
+ *
  * <h2>Key Features:</h2>
  * <ul>
  * <li>Calendar dates with year, month, day, hour, minute, second precision</li>
@@ -63,7 +61,7 @@ import gama.dev.DEBUG;
  * <li>ISO 8601 support for serialization</li>
  * <li>Customizable date formatting patterns</li>
  * </ul>
- * 
+ *
  * <h2>Date Formats:</h2>
  * <p>
  * GAMA supports multiple date format patterns for parsing and formatting:
@@ -73,41 +71,41 @@ import gama.dev.DEBUG;
  * <li>Pattern symbols: %Y (year), %M (month), %D (day), %h (hour), %m (minute), %s (second), etc.</li>
  * </ul>
  * </p>
- * 
+ *
  * <h2>Usage Examples:</h2>
- * 
+ *
  * <pre>
  * {@code
  * // Create from simulation time
  * date current_date <- current_date();
- * 
+ *
  * // Create from components
  * date specific_date <- date([2024, 3, 15, 14, 30, 0]);  // March 15, 2024, 14:30:00
- * 
+ *
  * // Parse from string
  * date parsed <- date("2024-03-15 14:30:00");
- * 
+ *
  * // With custom format
  * date custom <- date("15/03/2024", "%D/%M/%Y");
- * 
+ *
  * // Temporal arithmetic
  * date tomorrow <- current_date + 1#day;
  * date next_week <- current_date + 7#days;
- * 
+ *
  * // Extract components
  * int year <- my_date.year;
  * int month <- my_date.month;
  * int day <- my_date.day;
- * 
+ *
  * // Compare dates
  * bool is_after <- date1 > date2;
  * float time_diff <- date2 - date1;  // Duration in seconds
- * 
+ *
  * // Format to string
  * string formatted <- string(my_date, "%Y-%M-%D");
  * }
  * </pre>
- * 
+ *
  * <h2>Preferences:</h2>
  * <p>
  * The date type behavior can be customized through preferences:
@@ -118,7 +116,7 @@ import gama.dev.DEBUG;
  * <li>Custom formatter - user-defined format pattern</li>
  * </ul>
  * </p>
- * 
+ *
  * @author Patrick Tallandier
  * @see GamaType
  * @see gama.api.types.date.IDate
@@ -145,8 +143,7 @@ import gama.dev.DEBUG;
 		@test ("date time2 <- date(['14:30', 'HH:mm']); time2.hour = 14 and time2.minute = 30"),
 		@test ("date time3 <- date(['03:45 PM', 'hh:mm a']); time3.hour = 15 and time3.minute = 45"),
 		@test ("date date4 <- date(['2025-01-15', 'yyyy-MM-dd']); date4.year = 2025 and date4.month = 1 and date4.day = 15"),
-		@test ("date date5 <- date(['15.01.2025', 'dd.MM.yyyy']); date5.year = 2025 and date5.month = 1 and date5.day = 15")
-})
+		@test ("date date5 <- date(['15.01.2025', 'dd.MM.yyyy']); date5.year = 2025 and date5.month = 1 and date5.day = 15") })
 public class GamaDateType extends GamaType<IDate> {
 
 	/** Pattern for model-specific date format with placeholders like %Y, %M, %D, etc. */
@@ -165,8 +162,7 @@ public class GamaDateType extends GamaType<IDate> {
 	/**
 	 * Preference for the default time step of models.
 	 * <p>
-	 * This defines the default duration (in seconds) by which simulation time advances each step. Defaults to 1
-	 * second.
+	 * This defines the default duration (in seconds) by which simulation time advances each step. Defaults to 1 second.
 	 * </p>
 	 */
 	public final static Pref<Double> DATES_TIME_STEP =
@@ -226,7 +222,7 @@ public class GamaDateType extends GamaType<IDate> {
 		FORMATTERS.put(GamlCoreUnits.ISO_LOCAL_KEY, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 		FORMATTERS.put(GamlCoreUnits.ISO_OFFSET_KEY, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 		FORMATTERS.put(GamlCoreUnits.ISO_ZONED_KEY, DateTimeFormatter.ISO_ZONED_DATE_TIME);
-		FORMATTERS.put(GamlCoreUnits.CUSTOM_KEY, DateTimeFormatter.ofPattern(DATES_CUSTOM_FORMATTER.getValue()));
+		FORMATTERS.put(GamlCoreUnits.CUSTOM_KEY, getFormatter(DATES_CUSTOM_FORMATTER.getValue(), null));
 		FORMATTERS.put(DEFAULT_KEY, FORMATTERS.get(GamlCoreUnits.CUSTOM_KEY));
 	}
 
@@ -249,7 +245,7 @@ public class GamaDateType extends GamaType<IDate> {
 
 	/**
 	 * Constructs a new date type.
-	 * 
+	 *
 	 * @param typesManager
 	 *            the types manager responsible for type resolution and management
 	 */
@@ -269,7 +265,7 @@ public class GamaDateType extends GamaType<IDate> {
 	 * </ul>
 	 * The param argument can specify a custom date format pattern for string parsing.
 	 * </p>
-	 * 
+	 *
 	 * @param scope
 	 *            the current execution scope
 	 * @param obj
@@ -294,7 +290,7 @@ public class GamaDateType extends GamaType<IDate> {
 	 * <p>
 	 * The default date is null, as there is no meaningful default date value.
 	 * </p>
-	 * 
+	 *
 	 * @return null
 	 */
 	@Override
@@ -305,7 +301,7 @@ public class GamaDateType extends GamaType<IDate> {
 	 * <p>
 	 * Dates are numeric values (represented internally as float milliseconds), so their content type is float.
 	 * </p>
-	 * 
+	 *
 	 * @return the float type
 	 */
 	@Override
@@ -316,7 +312,7 @@ public class GamaDateType extends GamaType<IDate> {
 	 * <p>
 	 * Dates cannot be constant as they may depend on simulation time or dynamic values.
 	 * </p>
-	 * 
+	 *
 	 * @return false, dates are not constant
 	 */
 	@Override
@@ -329,7 +325,7 @@ public class GamaDateType extends GamaType<IDate> {
 	 * <p>
 	 * Dates are compound as they contain multiple components (year, month, day, hour, minute, second).
 	 * </p>
-	 * 
+	 *
 	 * @return true, dates are compound types
 	 */
 	@Override
@@ -340,7 +336,7 @@ public class GamaDateType extends GamaType<IDate> {
 	 * <p>
 	 * The JSON map should contain an "iso" field with an ISO 8601 formatted date string.
 	 * </p>
-	 * 
+	 *
 	 * @param scope
 	 *            the current execution scope
 	 * @param map2
@@ -357,7 +353,7 @@ public class GamaDateType extends GamaType<IDate> {
 	 * <p>
 	 * Supports common locale codes (us, fr, en, de, it, jp, uk) and arbitrary locale strings.
 	 * </p>
-	 * 
+	 *
 	 * @param l
 	 *            the locale string (e.g., "us", "fr", "en")
 	 * @return the corresponding Locale, or default locale if l is null
@@ -379,7 +375,7 @@ public class GamaDateType extends GamaType<IDate> {
 
 	/**
 	 * Creates a unique key for formatter caching based on pattern and locale.
-	 * 
+	 *
 	 * @param p
 	 *            the pattern string
 	 * @param locale
@@ -402,7 +398,7 @@ public class GamaDateType extends GamaType<IDate> {
 	 * <li>GAMA model patterns - patterns using %Y, %M, %D, etc. placeholders</li>
 	 * </ul>
 	 * </p>
-	 * 
+	 *
 	 * <h3>GAMA Pattern Symbols:</h3>
 	 * <ul>
 	 * <li>%Y - 4-digit year (e.g., 2024)</li>
@@ -415,7 +411,7 @@ public class GamaDateType extends GamaType<IDate> {
 	 * <li>%s - 2-digit second (00-59)</li>
 	 * <li>%z - time zone ID</li>
 	 * </ul>
-	 * 
+	 *
 	 * @param p
 	 *            the pattern string (Java or GAMA format)
 	 * @param locale
@@ -423,62 +419,107 @@ public class GamaDateType extends GamaType<IDate> {
 	 * @return the DateTimeFormatter for the pattern and locale
 	 */
 	public static DateTimeFormatter getFormatter(final String p, final String locale) {
-
-		final String pattern = p;
-		// Can happen during initialization
+		final String pattern = useProlepticYear(p);
 		if (FORMATTERS == null || FORMATTERS.isEmpty()) return DateTimeFormatter.ofPattern(GamaDateType.DEFAULT_FORMAT);
 		if (pattern == null) return FORMATTERS.get(GamaDateType.DEFAULT_KEY);
-		final DateTimeFormatter formatter = FORMATTERS.get(getFormatterKey(pattern, locale));
-		if (formatter != null) return formatter;
-		if (!pattern.contains("%")) {
-			try {
-				final DateTimeFormatterBuilder df = new DateTimeFormatterBuilder();
-				final DateTimeFormatter result =
-						df.parseCaseInsensitive().appendPattern(pattern).toFormatter(getLocale(locale));
-				FORMATTERS.put(getFormatterKey(pattern, locale), result);
-				return result;
-			} catch (final IllegalArgumentException e) {
-				GAMA.reportAndThrowIfNeeded(GAMA.getRuntimeScope(),
-						GamaRuntimeException.create(e, GAMA.getRuntimeScope()), false);
-				return FORMATTERS.get(GamaDateType.DEFAULT_KEY);
+
+		final String key = getFormatterKey(pattern, locale);
+		final DateTimeFormatter cached = FORMATTERS.get(key);
+		if (cached != null) return cached;
+
+		final Locale loc = getLocale(locale);
+		final DateTimeFormatter formatter =
+				pattern.contains("%") ? buildModelFormatter(pattern, loc) : buildJavaFormatter(pattern, loc);
+
+		if (formatter == null) return FORMATTERS.get(GamaDateType.DEFAULT_KEY);
+
+		FORMATTERS.put(key, formatter);
+		return formatter;
+	}
+
+	/**
+	 * Builds the java formatter.
+	 *
+	 * @param pattern
+	 *            the pattern
+	 * @param loc
+	 *            the loc
+	 * @return the date time formatter
+	 */
+	private static DateTimeFormatter buildJavaFormatter(final String pattern, final Locale loc) {
+		try {
+			return new DateTimeFormatterBuilder().parseCaseInsensitive().appendPattern(pattern).toFormatter(loc);
+		} catch (final IllegalArgumentException e) {
+			GAMA.reportAndThrowIfNeeded(GAMA.getRuntimeScope(), GamaRuntimeException.create(e, GAMA.getRuntimeScope()),
+					false);
+			return null;
+		}
+	}
+
+	private static String useProlepticYear(final String pattern) {
+		if (pattern == null || !pattern.contains("y")) return pattern;
+		final StringBuilder result = new StringBuilder(pattern.length());
+		boolean quoted = false;
+		for (int i = 0; i < pattern.length(); i++) {
+			final char symbol = pattern.charAt(i);
+			if (symbol == '\'') {
+				result.append(symbol);
+				if (i + 1 < pattern.length() && pattern.charAt(i + 1) == '\'') {
+					result.append(pattern.charAt(++i));
+				} else {
+					quoted = !quoted;
+				}
+			} else {
+				result.append(symbol == 'y' && !quoted ? 'u' : symbol);
 			}
 		}
+		return result.toString();
+	}
+
+	/**
+	 * Builds the model formatter.
+	 *
+	 * @param pattern
+	 *            the pattern
+	 * @param loc
+	 *            the loc
+	 * @return the date time formatter
+	 */
+	private static DateTimeFormatter buildModelFormatter(final String pattern, final Locale loc) {
 		final DateTimeFormatterBuilder df = new DateTimeFormatterBuilder();
 		df.parseCaseInsensitive();
-		final List<String> dateList = new ArrayList<>();
 		final Matcher m = model_pattern.matcher(pattern);
-		int i = 0;
+		int last = 0;
 		while (m.find()) {
-			final String tmp = m.group();
-			if (i != m.start()) { dateList.add(pattern.substring(i, m.start())); }
-			dateList.add(tmp);
-			i = m.end();
+			if (last != m.start()) { df.appendLiteral(pattern.substring(last, m.start())); }
+			appendModelSymbol(df, m.group().charAt(1));
+			last = m.end();
 		}
-		if (i != pattern.length()) { dateList.add(pattern.substring(i)); }
-		for (i = 0; i < dateList.size(); i++) {
-			final String s = dateList.get(i);
-			if (s.charAt(0) == '%' && s.length() == 2) {
-				final Character c = s.charAt(1);
-				switch (c) {
-					case 'Y' -> df.appendValue(YEAR, 4, 10, SignStyle.EXCEEDS_PAD);
-					case 'M' -> df.appendValue(MONTH_OF_YEAR, 2);
-					case 'N' -> df.appendText(MONTH_OF_YEAR);
-					case 'D' -> df.appendValue(DAY_OF_MONTH, 2);
-					case 'E' -> df.appendText(DAY_OF_WEEK);
-					case 'h' -> df.appendValue(HOUR_OF_DAY, 2);
-					case 'm' -> df.appendValue(MINUTE_OF_HOUR, 2);
-					case 's' -> df.appendValue(SECOND_OF_MINUTE, 2);
-					case 'z' -> df.appendZoneOrOffsetId();
-					default -> df.appendLiteral(s);
-				}
+		if (last != pattern.length()) { df.appendLiteral(pattern.substring(last)); }
+		return df.toFormatter(loc);
+	}
 
-			} else {
-				df.appendLiteral(s);
-			}
+	/**
+	 * Append model symbol.
+	 *
+	 * @param df
+	 *            the df
+	 * @param symbol
+	 *            the symbol
+	 */
+	private static void appendModelSymbol(final DateTimeFormatterBuilder df, final char symbol) {
+		switch (symbol) {
+			case 'Y' -> df.appendValue(YEAR, 4, 10, SignStyle.EXCEEDS_PAD);
+			case 'M' -> df.appendValue(MONTH_OF_YEAR, 2);
+			case 'N' -> df.appendText(MONTH_OF_YEAR);
+			case 'D' -> df.appendValue(DAY_OF_MONTH, 2);
+			case 'E' -> df.appendText(DAY_OF_WEEK);
+			case 'h' -> df.appendValue(HOUR_OF_DAY, 2);
+			case 'm' -> df.appendValue(MINUTE_OF_HOUR, 2);
+			case 's' -> df.appendValue(SECOND_OF_MINUTE, 2);
+			case 'z' -> df.appendZoneOrOffsetId();
+			default -> df.appendLiteral("%" + symbol);
 		}
-		final DateTimeFormatter result = df.toFormatter(getLocale(locale));
-		FORMATTERS.put(getFormatterKey(pattern, locale), result);
-		return result;
 	}
 
 }
