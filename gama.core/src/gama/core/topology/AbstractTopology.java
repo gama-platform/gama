@@ -627,7 +627,7 @@ public abstract class AbstractTopology implements ITopology {
 		boolean covered = relation == SpatialRelation.INSIDE;
 		// insertAgents(scope, f);
 		if (!isTorus()) {
-			final IEnvelope envelope = source.getEnvelope().intersection(environment.getEnvelope());
+			final IEnvelope envelope = source.getEnvelope();
 			try {
 				final Collection<IAgent> shapes = getSpatialIndex().allInEnvelope(scope, source, envelope, f, covered);
 				final PreparedGeometry pg = pgFact.create(source.getInnerGeometry());
