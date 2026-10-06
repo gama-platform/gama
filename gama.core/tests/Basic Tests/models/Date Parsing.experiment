@@ -56,6 +56,7 @@ experiment DateParsingTest type: test {
 
 		date neg_date3 <- date("-100-01-01");
 		assert neg_date3.year = -100 and neg_date3.month = 1 and neg_date3.day = 1;
+		assert string(neg_date3) = "-100-01-01 00:00:00"; 
 
 		date zero_date <- date([0, 1, 1]);
 		date sub_date <- zero_date subtract_years 1;
