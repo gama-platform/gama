@@ -288,18 +288,10 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 
 	private void updateSubCategories(final CategoryPlot pp, final CategoryAxis domainAxis, final IScope scope) {
 		if (!this.useSubAxis || !(domainAxis instanceof SubCategoryAxis subAxis)) return;
-		boolean hasSubCategories = false;
 		for (final String serieid : chartdataset.getDataSeriesIds(scope)) {
 			ChartDataSeries ds = chartdataset.getDataSeries(scope, serieid);
 			String leg = ds != null && ds.getSerieLegend(scope) != null ? ds.getSerieLegend(scope).toString() : "";
-			if (StringUtils.isNotBlank(leg)) {
-				subAxis.addSubCategory(leg);
-				hasSubCategories = true;
-			}
-		}
-		if (!hasSubCategories) {
-			pp.setDomainAxis(new CategoryAxis(pp.getDomainAxis().getLabel()));
-			this.useSubAxis = false;
+			subAxis.addSubCategory(leg);
 		}
 	}
 
@@ -345,7 +337,7 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 			domainAxis.setLowerMargin(properties.getGap());
 		}
 
-		if (this.useSubAxis && !this.useMainAxisLabel) { domainAxis.setTickLabelsVisible(false); }
+		if (!this.useMainAxisLabel) { domainAxis.setTickLabelsVisible(false); }
 		if (!properties.isYTickLineVisible()) { pp.setDomainGridlinesVisible(false); }
 		if (!properties.isXTickValueVisible()) { domainAxis.setTickMarksVisible(false); domainAxis.setTickLabelsVisible(false); }
 	}
@@ -357,7 +349,10 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 			if (XAXIS.equals(properties.getSeriesLabelPosition())) { properties.setSeriesLabelPosition("default"); }
 			if ("default".equals(properties.getSeriesLabelPosition())) { properties.setSeriesLabelPosition("legend"); }
 		} else if ("default".equals(properties.getSeriesLabelPosition())) {
-			if (!chartdataset.getSources().isEmpty() && !chartdataset.getSources().get(0).isCumulative()) {
+			if (!"default".equals(properties.getLegendOrientation())) {
+				properties.setSeriesLabelPosition("legend");
+				useMainAxisLabel = false;
+			} else if (!chartdataset.getSources().isEmpty() && !chartdataset.getSources().get(0).isCumulative()) {
 				properties.setSeriesLabelPosition(XAXIS);
 				useMainAxisLabel = false;
 			} else {
