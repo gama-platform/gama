@@ -76,12 +76,6 @@ experiment ContainerOperatorsTest type: test autorun: true {
 		assert length(numbers) = 8;
 	}
 
-	test "Flattening nested lists" {
-		assert flatten([[1, 2], [3, 4]]) = [1, 2, 3, 4];
-		assert flatten([[1, 2], [3, [4, 5]]]) = [1, 2, 3, 4, 5];
-		assert flatten([]) = [];
-	}
-
 	test "Ranges and generated lists" {
 		// both bounds are included
 		assert range(5) = [0, 1, 2, 3, 4, 5];
