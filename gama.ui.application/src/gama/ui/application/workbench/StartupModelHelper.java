@@ -67,7 +67,7 @@ public class StartupModelHelper
         experiment = GamaPreferences.Interface.CORE_DEFAULT_EXPERIMENT.getValue();
         boolean experimentHasBeenPicked = true;
 
-        if(experiment.contains(SEPARATOR) || experiment.contains(CONTEXTUAL_SEPARATOR))
+        if(experiment.contains(SEPARATOR) || experiment.contains("@"))
             experimentHasBeenPicked = pickExperiment();
 
         if (!experimentHasBeenPicked)

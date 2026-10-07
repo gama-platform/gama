@@ -211,20 +211,33 @@ public class ExportProjectAsSimulation extends AbstractHandler {
 
 			final boolean zipWithJdk = dialog.getIncludeJdk();
 			final boolean oneFile = dialog.getOneFile();
-
-			String[] formattedtargetExperiments;
+	
+			String[] formattedtargetExperiments = dialog.getSelectedExperiments();
+			
 			if (exportFromProject)
-				// "prey_predator from model testmodel" becomes "prey_predator@testmodel"
-				formattedtargetExperiments = Arrays.stream(dialog.getSelectedExperiments()).map(label -> {
-					int lastIndex = label.lastIndexOf(contextualSeparator);
+			{
+				if(formattedtargetExperiments.length == 1)
+				{
+					// fallback to single model export
+					int lastIndex = formattedtargetExperiments[0].lastIndexOf(contextualSeparator);
+					relativeModelPath = 
+						formattedtargetExperiments[0]
+							.substring(lastIndex + contextualSeparator.length());
 
-					if ((lastIndex) == -1)
-						return "";
-		
-					return label.substring(0,lastIndex) + "@" + label.substring(lastIndex + contextualSeparator.length());
-				}).toArray(String[]::new);
-			else
-				formattedtargetExperiments = dialog.getSelectedExperiments();
+					formattedtargetExperiments[0] = formattedtargetExperiments[0].substring(0,lastIndex);
+				} else
+					// "prey_predator from model testmodel" becomes "prey_predator@testmodel"
+					formattedtargetExperiments = Arrays.stream(dialog.getSelectedExperiments()).map(label -> {
+						int lastIndex = label.lastIndexOf(contextualSeparator);
+
+						if ((lastIndex) == -1)
+							return "";
+			
+						return label.substring(0,lastIndex) + "@" + label.substring(lastIndex + contextualSeparator.length());
+					}).toArray(String[]::new);
+			}
+			// else
+			// 	formattedtargetExperiments = dialog.getSelectedExperiments();
 
 
 			// adding experiments separators
