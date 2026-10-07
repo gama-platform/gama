@@ -31,6 +31,15 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.CoreException;
 
+import org.eclipse.jface.dialogs.ProgressIndicator;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
+
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.IProject;
@@ -56,15 +65,23 @@ import gama.export.ExportHelper;
  */
 public class ExportProjectAsSimulation extends AbstractHandler {
 
-	private final static String contextualSeparator = "    from model    ";
+    private static final String contextualSeparator = "    from model    ";
+
+	private boolean exportIsDone = false;
+
+	private synchronized boolean getExportIsDone() {
+		return exportIsDone;
+	}
+
+	private synchronized void setExportIsDoneToTrue() {
+		exportIsDone = true;
+	}
 
 	/**
 	 * Process container.
 	 *
 	 * @param container
 	 *            the container
-	 * @throws CoreException
-	 *             the core exception
 	 */
 	public static void getModelsFromProject(final IContainer container, final List<IFile> list) throws CoreException {
 		IResource[] members = container.members();
@@ -78,26 +95,33 @@ public class ExportProjectAsSimulation extends AbstractHandler {
 		}
 	}
 
-	@Override
-	public Object execute(final ExecutionEvent event) throws ExecutionException {
-
-		IProject project = ExportHelper.getProjectFromEvent(event);
-
-		if (project == null)
-			return null;
-
+	/**
+	 * Orchestrates all the export logic and ui
+	 * from the set of exported model files
+	 * 
+	 * @param modeilFiles
+	 *            List<IFile> of the models to be exported
+	 */
+	public void export(List<IFile> modelFiles)
+    {
 		final Set<String> plugins = new HashSet<String>(); 
-		
+
 		final List<String> experimentNames = new ArrayList<String>(); 
+
 		final Map<IProject,Set<String>> dataFiles = new HashMap<IProject,Set<String>>();
+
 		final Set<IModelSpecies> alreadyProcessedModels = new HashSet<IModelSpecies>();
+
 		final List<IProject> projects = new LinkedList<IProject>();
 
-		try {
-			List<IFile> modelFiles = new LinkedList<IFile>();
-			getModelsFromProject(project,modelFiles);
+        final boolean exportFromProject =  modelFiles.size() != 1;
 
+		String relativeModelPath = "";
 
+		if (! exportFromProject)
+			relativeModelPath = modelFiles.get(0).getFullPath().toOSString();
+
+        try {
 			boolean isModelFromTargetProject = true;
 			while (! modelFiles.isEmpty())
 			{
@@ -107,7 +131,6 @@ public class ExportProjectAsSimulation extends AbstractHandler {
 				{
 					final GamlProperties metaProperties = new GamlProperties();
 
-					// final IModelSpecies model = GamlModelBuilder.getInstance().compile(modelFile.getLocation().toFile(),null,metaProperties);
 					final IModelSpecies model = GamlModelBuilder
 						.getInstance()
 							.compile(URI.createPlatformResourceURI(
@@ -132,7 +155,11 @@ public class ExportProjectAsSimulation extends AbstractHandler {
 							StreamSupport.stream(
 								model.getExperiments().spliterator(),false
 							)
-							.map(experiment -> experiment.getDescription().getName() + contextualSeparator + modelFile.getFullPath().toOSString())
+							.map(exportFromProject ? 
+								experiment -> experiment.getDescription().getName() 
+											  + contextualSeparator 
+											  + modelFile.getFullPath().toOSString()
+								: experiment -> experiment.getDescription().getName())
 							.toList()
 						);
 
@@ -178,30 +205,76 @@ public class ExportProjectAsSimulation extends AbstractHandler {
 			final int result = dialog.open();
         
 			if (result != IDialogConstants.OK_ID)
-				return null;
+				return;
 
 			final Path outputPath = Path.of(dialog.getOutputPath(),dialog.getOutputFileName());
 
 			final boolean zipWithJdk = dialog.getIncludeJdk();
 			final boolean oneFile = dialog.getOneFile();
 
-			// "prey_predator from model testmodel" becomes "prey_predator@testmodel"
-			final String[] formattedtargetExperiments = Arrays.stream(dialog.getSelectedExperiments()).map(label -> {
-				int lastIndex = label.lastIndexOf(contextualSeparator);
+			String[] formattedtargetExperiments;
+			if (exportFromProject)
+				// "prey_predator from model testmodel" becomes "prey_predator@testmodel"
+				formattedtargetExperiments = Arrays.stream(dialog.getSelectedExperiments()).map(label -> {
+					int lastIndex = label.lastIndexOf(contextualSeparator);
 
-				if ((lastIndex) == -1)
-					return "";
-	
-				return label.substring(0,lastIndex) + "@" + label.substring(lastIndex + contextualSeparator.length());
-			}).toArray(String[]::new);
+					if ((lastIndex) == -1)
+						return "";
+		
+					return label.substring(0,lastIndex) + "@" + label.substring(lastIndex + contextualSeparator.length());
+				}).toArray(String[]::new);
+			else
+				formattedtargetExperiments = dialog.getSelectedExperiments();
+
 
 			// adding experiments separators
 			final String targetExperiments = String.join("#",formattedtargetExperiments);
 
+			// handling the progressbar
+			Display display = Display.getDefault();
+
+			if (display == null || display.isDisposed())
+				return;
+
+			Shell shell = new Shell(display, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
+			shell.setText("information");
+			shell.setSize(350, 120);
+			shell.setLayout(new GridLayout(1, false));
+
+			Label statusLabel = new Label(shell, SWT.NONE);
+			statusLabel.setText("The export is being created.");
+
+			ProgressIndicator progressIndicator = new ProgressIndicator(shell, SWT.NONE);
+			progressIndicator.setLayoutData(new org.eclipse.swt.layout.GridData(SWT.FILL, SWT.CENTER, true, false));
+
+			Shell workbenchShell = null;
+			if (PlatformUI.isWorkbenchRunning()) {
+				IWorkbenchWindow activeWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+				if (activeWindow != null) {
+					workbenchShell = activeWindow.getShell();
+				}
+			}
+
+			// position the progress indicator relative to the main window
+			if (workbenchShell != null && !workbenchShell.isDisposed()) {
+				int x = workbenchShell.getLocation().x + (workbenchShell.getSize().x - shell.getSize().x) / 2;
+				int y = workbenchShell.getLocation().y + (workbenchShell.getSize().y - shell.getSize().y) / 2;
+				shell.setLocation(x, y);
+			}
+
+
+			int totalWork = 1526;
+
+			if (zipWithJdk)
+				totalWork += 582;
+
+			progressIndicator.beginTask(totalWork);
+			shell.open();
+
 			final GamaZipBuilder ziper = new GamaZipBuilder(
 				plugins,
 				projects,
-				"",
+				relativeModelPath,
 				targetExperiments,
 				dataFiles,
 				zipWithJdk,
@@ -210,6 +283,7 @@ public class ExportProjectAsSimulation extends AbstractHandler {
 			new Thread(() -> {
 				try { 
 					ziper.zip(outputPath.toString());
+					setExportIsDoneToTrue();
 					System.out.println("Model exported successfully");
 					if(
 						Desktop.isDesktopSupported()
@@ -228,15 +302,56 @@ public class ExportProjectAsSimulation extends AbstractHandler {
 					}
 
 				} catch (Exception exception) {
+					setExportIsDoneToTrue();
 					System.err.println("Exception raised while cloning GAMA :\n" + exception);
 					exception.printStackTrace();
-					GAMA.getGui().getDialogFactory().error("An error occured while exporting the model.");
+					String message = "An error occured while exporting the ";
+					message = message + (exportFromProject ? "project." : "model.");
+					GAMA.getGui().getDialogFactory().error(message);
 				}
 			}).start();
+
+			int workDone = 0;
+			while(!getExportIsDone())
+			{
+				Thread.sleep(100);
+				int progress = ziper.getProgress();
+				if (progress > 0)
+				{
+					progressIndicator.worked(progress);
+					workDone += progress;
+					System.out.println("copied files : " + workDone + "/" + totalWork);
+				}
+				while (display.readAndDispatch()) {
+						// Fixes the frozen window by clearing out pending render events
+				}
+			}
+			shell.close();
 
 		} catch (Throwable t) {
             t.printStackTrace();
         }
+    }
+
+	@Override
+	public Object execute(final ExecutionEvent event) throws ExecutionException {
+
+		IProject project = ExportHelper.getProjectFromEvent(event);
+
+		if (project == null)
+			return null;
+
+		List<IFile> modelFiles = new LinkedList<IFile>();
+		try {
+			getModelsFromProject(project,modelFiles);
+		} catch (Throwable t) {
+			t.printStackTrace();
+			GAMA.getGui()
+				.getDialogFactory()
+					.error("An error occured while resolving the models of the target project.");
+		}
+		
+		export(modelFiles);
 
 		return null;
 	}
