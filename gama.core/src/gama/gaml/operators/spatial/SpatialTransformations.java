@@ -54,6 +54,7 @@ import gama.api.types.geometry.IShape;
 import gama.api.types.graph.IGraph;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
+import gama.api.types.matrix.GamaMatrixFactory;
 import gama.api.types.matrix.IMatrix;
 import gama.api.types.misc.IContainer;
 import gama.api.types.pair.GamaPairFactory;
@@ -450,11 +451,245 @@ public class SpatialTransformations {
 					value = "self rotated_by 45",
 					equals = "the geometry resulting from a 45 degrees rotation to the geometry of the agent applying the operator.",
 					test = false) },
-			see = { "transformed_by", "translated_by" })
+			usages = @usage ("rotated_by is equivalent to transformed_by with a matrix built by rotation_matrix: geometry rotated_by a is equivalent to geometry transformed_by rotation_matrix(a)."),
+			see = { "transformed_by", "translated_by", "rotation_matrix" })
 	@test ("(( square(5) rotated_by 45).width with_precision 2 = 7.07)")
 	public static IShape rotated_by(final IScope scope, final IShape g1, final Double angle) {
 		if (g1 == null) return null;
 		return GamaShapeFactory.createFrom(g1).withRotation(new AxisAngle(angle));
+	}
+
+	private static final double[][] H_FLIP = { { -1, 0, 0, 0 }, { 0, 1, 0, 0 }, { 0, 0, 1, 0 }, { 0, 0, 0, 1 } };
+
+	private static final double[][] V_FLIP = { { 1, 0, 0, 0 }, { 0, -1, 0, 0 }, { 0, 0, 1, 0 }, { 0, 0, 0, 1 } };
+
+	/**
+	 * Applies a 4x4 homogeneous matrix to a copy of the shape, around the center of its bounding box (the translation part
+	 * of the matrix is then applied). The predefined properties of the shape (depth, 3D type: sphere, cone, etc.) are
+	 * kept, adapted to the transformation, or lost when the transformation is not compatible with them (shear).
+	 */
+	private static IShape applyMatrix(final IShape g, final double[][] m) {
+		if (g == null) return null;
+		final IShape result = GamaShapeFactory.createFrom(g);
+		final Geometry geom = result.getInnerGeometry();
+		// the copy of a geometry shares its user data (depth, type) with the original
+		geom.setUserData(null);
+		result.copyShapeAttributesFrom(g);
+		final IEnvelope env = g.getEnvelope();
+		final double px = (env.getMinX() + env.getMaxX()) / 2, py = (env.getMinY() + env.getMaxY()) / 2;
+		final double pz = Double.isNaN(g.getLocation().getZ()) ? 0 : g.getLocation().getZ();
+		geom.apply((final Coordinate c) -> {
+			final double x = c.x - px, y = c.y - py, z = (Double.isNaN(c.z) ? 0 : c.z) - pz;
+			final double nx = m[0][0] * x + m[0][1] * y + m[0][2] * z + m[0][3] + px;
+			final double ny = m[1][0] * x + m[1][1] * y + m[1][2] * z + m[1][3] + py;
+			final double nz = m[2][0] * x + m[2][1] * y + m[2][2] * z + m[2][3] + pz;
+			c.x = nx;
+			c.y = ny;
+			if (!Double.isNaN(c.z) || nz != 0) { c.z = nz; }
+		});
+		geom.geometryChanged();
+		final Double depth = g.getDepth();
+		if (depth != null) {
+			final double zScale = Math.sqrt(m[0][2] * m[0][2] + m[1][2] * m[1][2] + m[2][2] * m[2][2]);
+			result.setDepth(depth * zScale * (m[2][2] < 0 ? -1 : 1));
+		}
+		if (isShear(m)) { result.losePredefinedProperty(); }
+		return result;
+	}
+
+	private static boolean isShear(final double[][] m) {
+		for (int i = 0; i < 3; i++) {
+			for (int j = i + 1; j < 3; j++) {
+				double dot = 0, ni = 0, nj = 0;
+				for (int k = 0; k < 3; k++) {
+					dot += m[k][i] * m[k][j];
+					ni += m[k][i] * m[k][i];
+					nj += m[k][j] * m[k][j];
+				}
+				if (Math.abs(dot) > 1e-9 * Math.sqrt(ni * nj)) return true;
+			}
+		}
+		return false;
+	}
+
+	private static double[][] toHomogeneous(final IScope scope, final IMatrix<?> matrix) {
+		final int n = matrix.getRows(scope);
+		if (n != matrix.getCols(scope) || n < 2 || n > 4) throw GamaRuntimeException.error(
+				"A transformation matrix must be a 2x2, 3x3 (2D homogeneous) or 4x4 (3D homogeneous) matrix", scope);
+		final double[][] m = { { 1, 0, 0, 0 }, { 0, 1, 0, 0 }, { 0, 0, 1, 0 }, { 0, 0, 0, 1 } };
+		for (int r = 0; r < n; r++) {
+			for (int c = 0; c < n; c++) {
+				final Object o = matrix.get(scope, c, r);
+				if (!(o instanceof Number)) throw GamaRuntimeException
+						.error("A transformation matrix must only contain numbers", scope);
+				final double v = ((Number) o).doubleValue();
+				if (n == 3 && (r == 2 || c == 2)) {
+					// 3x3 matrices are 2D homogeneous: [a b tx; c d ty; 0 0 1]
+					if (r < 2) { m[r][3] = v; }
+				} else {
+					m[r][c] = v;
+				}
+			}
+		}
+		return m;
+	}
+
+	private static IMatrix<Double> fill(final IScope scope, final double[][] m) {
+		final IMatrix<Double> result = GamaMatrixFactory.createFloatMatrix(m.length, m.length);
+		for (int r = 0; r < m.length; r++) {
+			for (int c = 0; c < m.length; c++) { result.set(scope, c, r, m[r][c]); }
+		}
+		return result;
+	}
+
+	@operator (
+			value = "rotation_matrix",
+			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_TRANSFORMATIONS },
+			concept = { IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_TRANSFORMATION })
+	@doc (
+			value = "A 3x3 (2D homogeneous) matrix representing a rotation by the operand angle (in degrees) around the z axis. "
+					+ "It can be used with transformed_by. geometry transformed_by rotation_matrix(a) is equivalent to geometry rotated_by a.",
+			examples = { @example (
+					value = "square(10) transformed_by rotation_matrix(45)",
+					equals = "the same geometry as square(10) rotated_by 45",
+					test = false) },
+			see = { "transformed_by", "rotated_by", "scale_matrix" })
+	@no_test
+	public static IMatrix<Double> rotation_matrix(final IScope scope, final Double angle) {
+		return rotation_matrix(scope, angle, null);
+	}
+
+	@operator (
+			value = "rotation_matrix",
+			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_TRANSFORMATIONS },
+			concept = { IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_TRANSFORMATION })
+	@doc (
+			value = "A 4x4 (3D homogeneous) matrix representing a rotation by the first operand angle (in degrees) around the "
+					+ "axis (vector) given by the second operand. It can be used with transformed_by. "
+					+ "geometry transformed_by rotation_matrix(a, v) is equivalent to geometry rotated_by (a::v).",
+			examples = { @example (
+					value = "pyramid(10) transformed_by rotation_matrix(45, {1,0,0})",
+					equals = "the same geometry as pyramid(10) rotated_by (45::{1,0,0})",
+					test = false) },
+			see = { "transformed_by", "rotated_by", "scale_matrix" })
+	@no_test
+	public static IMatrix<Double> rotation_matrix(final IScope scope, final Double angle, final IPoint axis) {
+		return fill(scope, rotationArray(angle, axis));
+	}
+
+	/** Same orientation convention as rotated_by (the y axis points downwards in GAMA). */
+	private static double[][] rotationArray(final Double angle, final IPoint axis) {
+		final double[][] m = { { 1, 0, 0, 0 }, { 0, 1, 0, 0 }, { 0, 0, 1, 0 }, { 0, 0, 0, 1 } };
+		final AxisAngle aa = new AxisAngle(axis, angle == null ? 0 : angle);
+		final double norm = Math.sqrt(aa.axis().getX() * aa.axis().getX() + aa.axis().getY() * aa.axis().getY()
+				+ aa.axis().getZ() * aa.axis().getZ());
+		if (norm > 0) {
+			final double x = aa.axis().getX() / norm, y = aa.axis().getY() / norm, z = aa.axis().getZ() / norm;
+			final double rad = -Math.toRadians(aa.getAngle()), c = Math.cos(rad), s = Math.sin(rad), t = 1 - c;
+			m[0][0] = t * x * x + c;
+			m[0][1] = t * x * y - s * z;
+			m[0][2] = t * x * z + s * y;
+			m[1][0] = t * x * y + s * z;
+			m[1][1] = t * y * y + c;
+			m[1][2] = t * y * z - s * x;
+			m[2][0] = t * x * z - s * y;
+			m[2][1] = t * y * z + s * x;
+			m[2][2] = t * z * z + c;
+		}
+		return m;
+	}
+
+	@operator (
+			value = "scale_matrix",
+			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_TRANSFORMATIONS },
+			concept = { IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_TRANSFORMATION })
+	@doc (
+			value = "A 3x3 (2D homogeneous) matrix representing a uniform scaling by the operand coefficient. "
+					+ "It can be used with transformed_by. geometry transformed_by scale_matrix(k) is equivalent to geometry scaled_by k.",
+			examples = { @example (
+					value = "circle(10) transformed_by scale_matrix(2)",
+					equals = "the same geometry as circle(10) scaled_by 2",
+					test = false) },
+			see = { "transformed_by", "scaled_by", "rotation_matrix" })
+	@no_test
+	public static IMatrix<Double> scale_matrix(final IScope scope, final Double coefficient) {
+		final double k = coefficient == null ? 1 : coefficient;
+		return fill(scope, new double[][] { { k, 0, 0 }, { 0, k, 0 }, { 0, 0, 1 } });
+	}
+
+	@operator (
+			value = "scale_matrix",
+			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_TRANSFORMATIONS },
+			concept = { IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_TRANSFORMATION })
+	@doc (
+			value = "A 4x4 (3D homogeneous) matrix representing a scaling by the operand point coefficients along the x, y and z axes "
+					+ "(a negative coefficient produces a flip). It can be used with transformed_by. "
+					+ "geometry transformed_by scale_matrix({kx,ky,kz}) is equivalent to geometry scaled_by {kx,ky,kz}.",
+			examples = { @example (
+					value = "box(10) transformed_by scale_matrix({2,1,0.5})",
+					equals = "the same geometry as box(10) scaled_by {2,1,0.5}",
+					test = false) },
+			see = { "transformed_by", "scaled_by", "rotation_matrix" })
+	@no_test
+	public static IMatrix<Double> scale_matrix(final IScope scope, final IPoint coefficients) {
+		final double x = coefficients == null ? 1 : coefficients.getX(), y = coefficients == null ? 1 : coefficients.getY(),
+				z = coefficients == null || Double.isNaN(coefficients.getZ()) ? 1 : coefficients.getZ();
+		return fill(scope, new double[][] { { x, 0, 0, 0 }, { 0, y, 0, 0 }, { 0, 0, z, 0 }, { 0, 0, 0, 1 } });
+	}
+
+	@operator (
+			value = "transformed_by",
+			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_TRANSFORMATIONS },
+			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_TRANSFORMATION })
+	@doc (
+			value = "A geometry resulting from the application of a transformation matrix to the left-hand operand "
+					+ "(geometry, agent, point). The matrix can be a 2x2 (linear, in x and y), a 3x3 (2D homogeneous: "
+					+ "[a b tx; c d ty; 0 0 1]) or a 4x4 (3D homogeneous) matrix. The transformation is applied around the "
+					+ "center of the bounding box of the geometry, which is preserved unless the matrix includes a translation. Rotations, "
+					+ "flips and scalings keep the predefined 3D properties (sphere, cone, cube, etc.) of the geometry, "
+					+ "which are lost for shear transformations.",
+			examples = { @example (
+					value = "square(10) transformed_by matrix([[-1,0],[0,1]])",
+					equals = "the horizontal mirror image of the square",
+					test = false) },
+			see = { "horizontal_flip", "vertical_flip", "rotation_matrix", "scale_matrix", "rotated_by", "scaled_by",
+					"translated_by" })
+	@no_test
+	public static IShape transformed_by(final IScope scope, final IShape g, final IMatrix<?> matrix) {
+		if (g == null) return null;
+		return applyMatrix(g, toHomogeneous(scope, matrix));
+	}
+
+	@operator (
+			value = "horizontal_flip",
+			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_TRANSFORMATIONS },
+			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_TRANSFORMATION })
+	@doc (
+			value = "A geometry resulting from the mirroring of the operand (geometry, agent, point) along its vertical central axis (left becomes right). The location of the geometry is preserved.",
+			examples = { @example (
+					value = "horizontal_flip(polyline([{0,0},{10,0},{10,5}]))",
+					equals = "a polyline from {10,0} to {0,0} to {0,5}",
+					test = false) },
+			see = { "vertical_flip", "rotated_by" })
+	@test ("horizontal_flip(polyline([{0,0},{10,0},{10,5}])).points[0] = {10,0}")
+	public static IShape horizontal_flip(final IScope scope, final IShape g) {
+		return applyMatrix(g, H_FLIP);
+	}
+
+	@operator (
+			value = "vertical_flip",
+			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_TRANSFORMATIONS },
+			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_TRANSFORMATION })
+	@doc (
+			value = "A geometry resulting from the mirroring of the operand (geometry, agent, point) along its horizontal central axis (top becomes bottom). The location of the geometry is preserved.",
+			examples = { @example (
+					value = "vertical_flip(polyline([{0,0},{10,0},{10,5}]))",
+					equals = "a polyline from {0,5} to {10,5} to {10,0}",
+					test = false) },
+			see = { "horizontal_flip", "rotated_by" })
+	@test ("vertical_flip(polyline([{0,0},{10,0},{10,5}])).points[0] = {0,5}")
+	public static IShape vertical_flip(final IScope scope, final IShape g) {
+		return applyMatrix(g, V_FLIP);
 	}
 
 	/**

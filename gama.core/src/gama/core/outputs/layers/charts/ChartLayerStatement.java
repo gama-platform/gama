@@ -259,7 +259,7 @@ import gama.core.outputs.layers.AbstractLayerStatement;
 						type = IType.ID,
 						values = { "default", "horizontal", "vertical" },
 						optional = true,
-						doc = @doc ("Orientation of the legend: default, horizontal or vertical.")),
+						doc = @doc ("Orientation of the legend: default, horizontal or vertical. When explicitly set with the default series_label_position, uses the chart legend instead of the histogram's default x-axis labels.")),
 				@facet (
 						name = ANCHOR,
 						type = IType.POINT,
@@ -280,6 +280,11 @@ import gama.core.outputs.layers.AbstractLayerStatement;
 						type = IType.BOOL,
 						optional = true,
 						doc = @doc ("Whether or not to keep the values in memory (in order to produce a csv file, for instance). The default value is true")),
+				@facet (
+						name = ChartLayerStatement.INCLUDE_INIT,
+						type = IType.BOOL,
+						optional = true,
+						doc = @doc ("Whether or not to record the chart data during initialization. The default value is true")),
 				@facet (
 						name = ChartLayerStatement.TICKFONTFACE,
 						type = { IType.STRING, IType.FONT },
@@ -379,6 +384,9 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 	/** The Constant MEMORIZE. */
 	public static final String MEMORIZE = "memorize";
 
+	/** The Constant INCLUDE_INIT. */
+	public static final String INCLUDE_INIT = "include_init";
+
 	/** The Constant SERIES_LABEL_POSITION. */
 	public static final String SERIES_LABEL_POSITION = "series_label_position";
 
@@ -467,6 +475,9 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 
 	/** The chartoutput. */
 	private ChartOutput chartOutput = null;
+
+	/** Whether the initial step done by the output manager must be skipped (include_init: false). */
+	private boolean skipInitialStep;
 
 	// private HashMap<String,Object> chartParameters=new
 	// HashMap<String,Object>();
@@ -583,6 +594,8 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 		for (final IStatement s : dataDeclaration.getCommands()) { scope.execute(s); }
 		chartdataset = (ChartDataSet) scope.getVarValue(ChartLayerStatement.CHARTDATASET);
 		chartOutput.initChart_post_data_init(scope);
+		// The output manager runs an initial _step right after init: it is skipped if include_init is false
+		skipInitialStep = !getFacetValue(scope, INCLUDE_INIT, true);
 		chartOutput.updateOutput(scope);
 
 		// Legend position and anchor
@@ -801,6 +814,10 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 
 	@Override
 	public boolean _step(final IScope scope) throws GamaRuntimeException {
+		if (skipInitialStep) {
+			skipInitialStep = false;
+			return true;
+		}
 		updateValues(scope);
 
 		chartOutput.step(scope);

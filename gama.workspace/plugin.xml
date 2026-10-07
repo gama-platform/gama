@@ -100,6 +100,12 @@
             priority="high">
       </content-type>
       <content-type
+            file-extensions="gpkg,GPKG"
+            id="gama.geopackage.type"
+            name="GeoPackage"
+            priority="high">
+      </content-type>
+      <content-type
             default-charset="UTF-8"
             file-extensions="qml,QML,cpg,CPG,prj,shx,dbf,xml,sbn,sbx,qix,qpj,fix,PRJ,SHX,DBF,XML,SBN,SBX,QIX,QPJ,FIX,gfs,GFS,xsd,XSD"
             id="gama.shapefile.support.type"

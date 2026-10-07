@@ -94,7 +94,7 @@ global
 				if (t != nil)
 				{
 					i1 <+ t;
-					list s <- rrr[i].shape split_at t;
+					list<geometry> s <- rrr[i].shape split_at t;
 					if (length(s) > 1)
 					{
 						rrr[i].shape <- s[0];

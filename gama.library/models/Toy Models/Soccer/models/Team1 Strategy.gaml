@@ -25,7 +25,8 @@ species player_intelligentTeam parent:base_player {
 	// status : the current status of the player (can be useful to build the model)
 	// influence_area : the area of interest of the player. By default, this area is a circle 15m diameter centered in the player location.
 	
-	float position_mark <- 0.0 update: location.y - 20*number_of_ennemy_player_in_range + self.distance_to_closest_ennemy_player;	
+	float position_mark <- 0.0 update: ((team.position = "back") ? location.y : 120 - location.y) - 20*number_of_ennemy_player_in_range + self.distance_to_closest_ennemy_player;	
+	base_player current_mark <- nil; // the opponent currently marked, kept until he leaves the influence area
 	string role; // a value between "defense", "mid" and "attack".
 	string wing; // a value between "left", "center" and "right".
 	geometry influence_area <- circle(15,init_pos);
@@ -91,10 +92,17 @@ species player_intelligentTeam parent:base_player {
 		}
 		else {
 			// if there is an ennemy player in the influence area, mark the player.
-			if ( length(self.ennemy_team.players where (each intersects influence_area)) != 0 ) {
-				base_player marked_player <- first(1 among (self.ennemy_team.players where (each intersects influence_area)));
-				status <- getStatus("mark player "+marked_player);
-				do mark_player( marked_player );
+			if (current_mark = nil or !(current_mark intersects influence_area)) {
+				list<base_player> candidates <- self.ennemy_team.players where (each intersects influence_area);
+				if (empty(candidates)) {
+					current_mark <- nil;
+				} else {
+					current_mark <- one_of(candidates);
+				}
+			}
+			if (current_mark != nil) {
+				status <- getStatus("mark player "+current_mark);
+				do mark_player( current_mark );
 			}
 			// if there is no ennemy player in the influence area, stay in influence area.
 			else {

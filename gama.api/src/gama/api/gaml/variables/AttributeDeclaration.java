@@ -421,9 +421,10 @@ public class AttributeDeclaration extends Symbol implements IVariable {
 		 *            the cd
 		 */
 		public void assertCanBeParameter(final IVariableDescription cd) {
+			IVariableDescription targetedVar = null;
 			if (PARAMETER.equals(cd.getKeyword()) /* facets.equals(KEYWORD, PARAMETER) */) {
 				final String varName = cd.getLitteral(VAR);
-				IVariableDescription targetedVar = cd.getModelDescription().getAttribute(varName);
+				targetedVar = cd.getModelDescription().getAttribute(varName);
 
 				if (targetedVar == null) {
 					// AD 07/21 : Adds the possibility for experiment variables to become parameters
@@ -504,6 +505,7 @@ public class AttributeDeclaration extends Symbol implements IVariable {
 				}
 
 			}
+			if (foundInit == null && targetedVar != null) { foundInit = targetedVar.getFacetExpr(INIT); }
 
 			final IExpression init = foundInit;
 
@@ -515,11 +517,13 @@ public class AttributeDeclaration extends Symbol implements IVariable {
 			}
 			// Cf. #3493 && #3622
 			for (String f : IVariableDescription.INIT_DEPENDENCIES_FACETS) {
-				IExpression initExpr = cd.getFacetExpr(f);
+				IExpression initExpr = INIT.equals(f) ? init : cd.getFacetExpr(f);
 				if (initExpr != null && !initExpr.isAllowedInParameters()) {
-					cd.error(initExpr.serializeToGaml(true)
-							+ " cannot be used in the context of experiments. Please use a constant expression or redeclare this parameter in the experiments",
-							IGamlIssue.WRONG_CONTEXT, f);
+					final String restrictionReason = getParameterRestrictionReason(initExpr);
+					final String message = restrictionReason == null ? initExpr.serializeToGaml(true)
+							+ " cannot be used in the context of experiments. Please use a constant expression or redeclare this parameter in the experiments"
+							: initExpr.serializeToGaml(true) + ": " + restrictionReason;
+					cd.error(message, IGamlIssue.WRONG_CONTEXT, f);
 				}
 			}
 
@@ -528,6 +532,22 @@ public class AttributeDeclaration extends Symbol implements IVariable {
 				cd.error(p + "cannot have an 'update' or 'function' facet", IGamlIssue.REMOVE_VALUE);
 			}
 
+		}
+
+		/**
+		 * Gets the parameter restriction reason.
+		 *
+		 * @param expression
+		 *            the expression
+		 * @return the parameter restriction reason
+		 */
+		private String getParameterRestrictionReason(final IExpression expression) {
+			final String[] reason = new String[1];
+			expression.findAny(e -> {
+				reason[0] = e.getParameterRestrictionReason();
+				return reason[0] != null;
+			});
+			return reason[0];
 		}
 
 	}

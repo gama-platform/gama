@@ -13,6 +13,7 @@ package gama.workspace.manager;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -330,12 +331,12 @@ public class WorkspaceModelsManager {
 	}
 
 	/**
-	 * Creates an unclassified models project and adds the given file as a linked resource. Handles file conflicts by
-	 * creating unique names when necessary.
+	 * Creates an unclassified models project and adds the given file as a copy or linked resource. Handles file
+	 * conflicts by creating unique names when necessary.
 	 *
 	 * @param location
 	 *            the location of the file to add
-	 * @return the IFile representing the linked resource, or null if creation failed
+	 * @return the IFile representing the imported resource, or null if creation failed
 	 */
 	IFile createUnclassifiedModelsProjectAndAdd(final IPath location) {
 		if (location == null) {
@@ -345,6 +346,9 @@ public class WorkspaceModelsManager {
 
 		IFile targetFile = null;
 		try {
+			final boolean createLink = !GAMA.getGui().getDialogFactory().question("Import model",
+					"Copy '" + location.lastSegment()
+							+ "' into the project? Choose Yes to copy it, or No to keep it at its current location as a link.");
 			final IFolder modelFolder = createUnclassifiedModelsProject(location);
 			if (modelFolder == null) {
 				DEBUG.ERR("Failed to create or get models folder");
@@ -357,7 +361,7 @@ public class WorkspaceModelsManager {
 			if (targetFile.exists()) {
 				if (targetFile.isLinked()) {
 					final IPath existingPath = targetFile.getLocation();
-					if (location.equals(existingPath)) {
+					if (location.equals(existingPath) && createLink) {
 						// File already linked to the same location
 						DEBUG.OUT("File already linked to same location: " + location);
 						return targetFile;
@@ -367,13 +371,19 @@ public class WorkspaceModelsManager {
 				targetFile = createUniqueFileFrom(targetFile, modelFolder);
 			}
 
-			// Create the linked resource
-			targetFile.createLink(location, IResource.NONE, null);
-			DEBUG.OUT("Successfully created linked resource: " + targetFile.getFullPath());
+			if (createLink) {
+				targetFile.createLink(location, IResource.NONE, null);
+				DEBUG.OUT("Successfully created linked resource: " + targetFile.getFullPath());
+			} else {
+				try (InputStream input = Files.newInputStream(location.toFile().toPath())) {
+					targetFile.create(input, IResource.NONE, null);
+				}
+				DEBUG.OUT("Successfully copied file into workspace: " + targetFile.getFullPath());
+			}
 
 			return targetFile;
 
-		} catch (final CoreException e) {
+		} catch (final CoreException | IOException e) {
 			final String fileName =
 					targetFile != null ? targetFile.getFullPath().lastSegment() : location.lastSegment();
 			final String message = "Failed to create file " + fileName + ": " + e.getMessage();
@@ -450,15 +460,11 @@ public class WorkspaceModelsManager {
 		}
 		final Multimap<Bundle, String> pluginsWithTutorials = GamaBundleLoader.getPluginsWithTutorials();
 		for (final Bundle plugin : pluginsWithTutorials.keySet()) {
-			for (final String entry : pluginsWithTutorials.get(plugin)) {
-				linkModelsToWorkspace(plugin, entry, false);
-			}
+			for (final String entry : pluginsWithTutorials.get(plugin)) { linkModelsToWorkspace(plugin, entry, false); }
 		}
 		final Multimap<Bundle, String> pluginsWithRecipes = GamaBundleLoader.getPluginsWithRecipes();
 		for (final Bundle plugin : pluginsWithRecipes.keySet()) {
-			for (final String entry : pluginsWithRecipes.get(plugin)) {
-				linkModelsToWorkspace(plugin, entry, false);
-			}
+			for (final String entry : pluginsWithRecipes.get(plugin)) { linkModelsToWorkspace(plugin, entry, false); }
 		}
 		// If the directory is not empty, we should maybe try to recreate the projects (if they do not exist...)
 		try (DirectoryStream<java.nio.file.Path> paths = Files.newDirectoryStream(
@@ -597,7 +603,8 @@ public class WorkspaceModelsManager {
 			protected void execute(final IProgressMonitor monitor) throws CoreException {
 				final SubMonitor m = SubMonitor.convert(monitor, "Creating or updating " + name, 2000);
 				final IProject project = GAMA.getWorkspaceManager().getRoot().getProject(name);
-				if (!project.exists()) {
+				final boolean created = !project.exists();
+				if (created) {
 					final IProjectDescription desc =
 							GAMA.getWorkspaceManager().getWorkspace().newProjectDescription(name);
 					project.create(desc, m.split(1000));
@@ -605,7 +612,7 @@ public class WorkspaceModelsManager {
 				if (monitor.isCanceled()) throw new OperationCanceledException();
 				project.open(IResource.BACKGROUND_REFRESH, m.split(1000));
 				projectHandle[0] = project;
-				setValuesProjectDescription(project, false, false, false, null);
+				if (created) { setValuesProjectDescription(project, false, false, false, null); }
 			}
 		};
 		try {

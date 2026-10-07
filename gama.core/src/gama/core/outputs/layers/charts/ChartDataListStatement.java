@@ -10,13 +10,6 @@
  ********************************************************************************************************/
 package gama.core.outputs.layers.charts;
 
-import gama.api.compilation.descriptions.IDescription;
-import gama.api.exceptions.GamaRuntimeException;
-import gama.api.gaml.expressions.IExpression;
-import gama.api.gaml.statements.AbstractStatement;
-import gama.api.gaml.types.Cast;
-import gama.api.gaml.types.IType;
-import gama.api.runtime.scope.IScope;
 import gama.annotations.doc;
 import gama.annotations.facet;
 import gama.annotations.facets;
@@ -25,6 +18,13 @@ import gama.annotations.symbol;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.statements.AbstractStatement;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.runtime.scope.IScope;
 
 /**
  * The Class ChartDataListStatement.
@@ -74,7 +74,7 @@ import gama.annotations.support.ISymbolKind;
 						name = IKeyword.LEGEND,
 						type = { IType.LIST, IType.BOOL, IType.STRING, IType.NONE },
 						optional = true,
-						doc = @doc ("the name of the series: a list of strings (can be a variable with dynamic names), or false to hide the legend. Use nil/whitespace for individual points to hide them from legend.")),
+						doc = @doc ("Series legend labels: a string labels the first series; a list provides one label per series. Use true for default series names, false or nil to hide all series labels, or nil/whitespace list elements to hide individual labels.")),
 				@facet (
 						name = ChartDataStatement.MARKER,
 						type = IType.BOOL,

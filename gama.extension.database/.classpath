@@ -4,7 +4,6 @@
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/postgresql-42.2.19.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/commons-dbcp-1.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/commons-pool-1.5.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-geopkg-33.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-jdbc-33.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-jdbc-mysql-33.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/mysql-connector-j-9.1.0.jar"/>

@@ -80,7 +80,7 @@ import one.util.streamex.StreamEx;
  * <li><strong>Lists:</strong> KeyType=Integer, ordered sequences indexed from 0</li>
  * <li><strong>Maps:</strong> KeyType=any, unordered key-value associations</li>
  * <li><strong>Matrices:</strong> KeyType=IPoint, 2D grids indexed by {column, row}</li>
- * <li><strong>Graphs:</strong> KeyType=node, ValueType=edge (or vice versa)</li>
+ * <li><strong>Graphs:</strong> KeyType=vertex (node), ValueType=edge; edge lookup uses a pair of endpoint vertices</li>
  * <li><strong>Populations:</strong> KeyType=Integer/String, ValueType=IAgent</li>
  * <li><strong>Files:</strong> Delegate to their content container</li>
  * <li><strong>Pairs:</strong> KeyType=key type, ValueType=value type (single entry)</li>

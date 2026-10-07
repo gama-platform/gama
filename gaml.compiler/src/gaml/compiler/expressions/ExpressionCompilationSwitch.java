@@ -51,6 +51,7 @@ import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.descriptions.IVarDescriptionProvider;
+import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.factories.IExpressionDescriptionFactory;
 import gama.api.compilation.factories.IExpressionFactory;
 import gama.api.compilation.validation.IValidationContext;
@@ -68,7 +69,6 @@ import gama.api.gaml.types.Types;
 import gama.api.utils.collections.Collector;
 import gaml.compiler.EGaml;
 import gaml.compiler.descriptions.DoDescription;
-import gaml.compiler.descriptions.ExperimentDescription;
 import gaml.compiler.descriptions.ModelDescription;
 import gaml.compiler.descriptions.PlatformSpeciesDescription;
 import gaml.compiler.gaml.Access;
@@ -202,6 +202,11 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 		// Handle species casting
 		if (isSpeciesName(op))
 			return FACTORY.createAs(context.getContext(), expr, getSpeciesContext(op).getSpeciesExpr());
+
+		// Prefer a matching unary operator over a same-named field (e.g. envelope(geometry)).
+		if (FACTORY.hasOperator(op, new Signature(expr))) {
+			return FACTORY.createOperator(op, context.getContext(), e, expr);
+		}
 
 		// Check for field getter
 		final IArtefact proto = expr.getGamlType().getGetter(op);
@@ -1107,6 +1112,8 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 		if (result != null) return result;
 		result = tryActionCall(op, object);
 		if (result != null) return result;
+		result = tryFunctionAttributeCall(op, object);
+		if (result != null) return result;
 		final List<Expression> args = EGAML.getExprsOf(object.getRight());
 		return switch (args.size()) {
 			case 0 -> {
@@ -1118,6 +1125,23 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 			default -> FACTORY.createOperator(op, context.getContext(), object,
 					toArray(transform(args, this::compile), IExpression.class));
 		};
+	}
+
+	/**
+	 * Try function attribute call.
+	 *
+	 * @param name
+	 *            the name
+	 * @param object
+	 *            the object
+	 * @return the i expression
+	 */
+	private IExpression tryFunctionAttributeCall(final String name, final Function object) {
+		final ITypeDescription species = context.getContext().getTypeContext();
+		if (species == null) return null;
+		final IVariableDescription variable = species.getAttribute(name);
+		if (variable == null || !variable.isFunction() || !EGAML.getExprsOf(object.getRight()).isEmpty()) return null;
+		return caseVar(name, object.getLeft());
 	}
 
 	/**
@@ -1191,17 +1215,15 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 	 * @return the i expression
 	 */
 	private IExpression tryActionCall(final String op, final Function object) {
-		ITypeDescription species = context.getContext().getTypeContext();
-		if (species == null) return null;
+		final IDescription callerContext = context.getContext();
+		ITypeDescription species = callerContext.getTypeContext();
 		final boolean isSuper = context.getContext() instanceof DoDescription st && st.isSuperInvocation();
-		IActionDescription action = isSuper ? species.getParent() == null ? null : species.getParent().getAction(op)
+		IActionDescription action = species == null ? null
+				: isSuper ? species.getParent() == null ? null : species.getParent().getAction(op)
 				: species.getAction(op);
-		if (action == null) {
-			if (species instanceof ExperimentDescription && context.getContext().isIn(IKeyword.OUTPUT)) {
-				species = species.getModelDescription();
-			}
-			action = isSuper ? species.getParent() == null ? null : species.getParent().getAction(op)
-					: species.getAction(op);
+		if (action == null && !isSuper) {
+			final ITypeDescription model = callerContext.getModelDescription();
+			if (model != null && model != species) { action = model.getAction(op); }
 		}
 		if (action == null) return null;
 		final ExpressionList params = object.getRight();

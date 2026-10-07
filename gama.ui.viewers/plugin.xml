@@ -59,6 +59,17 @@
          </contentTypeBinding>
       </editor>
       <editor
+            class="gama.ui.viewers.gis.GeoPackageViewer"
+            default="true"
+            extensions="gpkg,GPKG"
+            icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/files/file.shape.svg"
+            id="gama.ui.application.geopackage.viewer"
+            name="GeoPackage Viewer">
+         <contentTypeBinding
+               contentTypeId="gama.geopackage.type">
+         </contentTypeBinding>
+      </editor>
+      <editor
             class="gama.ui.viewers.gis.OSMFileViewer"
             default="true"
             extensions="gz,osm,pbf,bz2"

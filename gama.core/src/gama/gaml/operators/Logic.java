@@ -15,6 +15,7 @@ import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.operator;
 import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.annotations.support.ITypeProvider;
@@ -181,10 +182,12 @@ public class Logic {
 					@example (
 							value = "true xor false",
 							equals = "true") })
-	@test ("xor(true,false)")
-	@test ("xor(false,true)")
-	@test ("!xor(false,false)")
-	@test ("!xor(true,true)")
+	@tests ({
+			@test ("xor(true,false)"),
+			@test ("xor(false,true)"),
+			@test ("!xor(false,false)"),
+			@test ("!xor(true,true)")
+	})
 	public static Boolean xor(final IScope scope, final Boolean left, final Boolean right) throws GamaRuntimeException {
 		return !Objects.equals(left, right);
 	}
@@ -233,10 +236,13 @@ public class Logic {
 					@example (" int a <- 3 ; int b <- 4; int c <- 7;"), @example (
 							value = "((a+b) = c ) or ((a+b) > c )",
 							equals = "true") })
-	@test ("false or false = false")
-	@test ("false or true")
-	@test ("true or false")
-	@test ("true or true")
+	@tests ({
+			@test ("false or false = false"),
+			@test ("false or true"),
+			@test ("true or false"),
+			@test ("(true or false) = true"),
+			@test ("true or true")
+	})
 	public static Boolean or(final IScope scope, final Boolean left, final IExpression right)
 			throws GamaRuntimeException {
 		return left != null && left || right != null && Cast.asBool(scope, right.value(scope));
@@ -286,10 +292,13 @@ public class Logic {
 					@example (" int a <- 3 ; int b <- 4; int c <- 7;"), @example (
 							value = "((a+b) = c ) and ((a+b) > c )",
 							equals = "false") })
-	@test ("true and true")
-	@test ("!(true and false)")
-	@test ("!(false and true)")
-	@test ("!(false and false)")
+	@tests ({
+			@test ("true and true"),
+			@test ("(true and false) = false"),
+			@test ("!(true and false)"),
+			@test ("!(false and true)"),
+			@test ("!(false and false)")
+	})
 	public static Boolean and(final IScope scope, final Boolean left, final IExpression right)
 			throws GamaRuntimeException {
 		return left != null && left && right != null && Cast.asBool(scope, right.value(scope));
@@ -408,10 +417,12 @@ public class Logic {
 							value = "not(false)",
 							equals = "true") },
 			see = { "bool", "and", "or" })
-	@test ("!(true) = false")
-	@test ("!(false) = true")
-	@test ("not(true) = false")
-	@test ("not(false) = true")
+	@tests ({
+			@test ("!(true) = false"),
+			@test ("!(false) = true"),
+			@test ("not(true) = false"),
+			@test ("not(false) = true")
+	})
 	public static Boolean not(final Boolean b) {
 		return !b;
 	}
@@ -458,10 +469,14 @@ public class Logic {
 							equals = "'no'"),
 					@example ("rgb col <- (flip(0.3) ? #red : (flip(0.9) ? #blue : #green));") },
 			see = ":")
-	@test ("(1 > 0 ? 'yes' : 'no') = 'yes'")
-	@test ("(1 < 0 ? 'yes' : 'no') = 'no'")
-	@test ("(true ? 1 : 2) = 1")
-	@test ("(false ? 1 : 2) = 2")
+	@tests ({
+			@test ("(1 > 0 ? 'yes' : 'no') = 'yes'"),
+			@test ("(1 < 0 ? 'yes' : 'no') = 'no'"),
+			@test ("true ? true : false"),
+			@test ("(false ? true : false) = false"),
+			@test ("(true ? 1 : 2) = 1"),
+			@test ("(false ? 1 : 2) = 2")
+	})
 	public static Object iff(final IScope scope, final Boolean left, final IExpression right)
 			throws GamaRuntimeException {
 		final IOperator expr = (IOperator) right;

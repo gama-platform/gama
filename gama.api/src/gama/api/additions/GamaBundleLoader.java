@@ -16,9 +16,13 @@ import static gama.dev.DEBUG.TIMER_WITH_EXCEPTIONS;
 import java.awt.Toolkit;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
@@ -29,6 +33,9 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.InvalidRegistryObjectException;
 import org.eclipse.core.runtime.Platform;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.wiring.BundleRevision;
+import org.osgi.framework.wiring.BundleWire;
+import org.osgi.framework.wiring.BundleWiring;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
@@ -335,7 +342,7 @@ public class GamaBundleLoader {
 			}
 			// We then build the other extensions to the language
 			CompletableFuture.runAsync(() -> {
-				for (final Bundle addition : GAMA_PLUGINS) {
+				for (final Bundle addition : orderByBundleDependencies(GAMA_PLUGINS)) {
 					CURRENT_PLUGIN_NAME = addition.getSymbolicName();
 					try {
 						loadGamlExtensions(addition);
@@ -900,5 +907,56 @@ public class GamaBundleLoader {
 	 * @return true, if is diagram editor loaded
 	 */
 	public static boolean isDiagramEditorLoaded() { return Platform.getBundle(GAMA_DIAGRAM_EDITOR_PLUGIN) != null; }
+
+	/**
+	 * Orders extension bundles from their resolved OSGi bundle wires so that any GAML additions contributed by a
+	 * required bundle are registered first. Unrelated bundles retain their discovery order.
+	 */
+	private static List<Bundle> orderByBundleDependencies(final List<Bundle> bundles) {
+		final Set<Bundle> candidates = new LinkedHashSet<>(bundles);
+		final Map<Bundle, Integer> discoveryOrder = new HashMap<>();
+		final Map<Bundle, Integer> dependencyCounts = new HashMap<>();
+		final Map<Bundle, Set<Bundle>> dependents = new HashMap<>();
+		for (int i = 0; i < bundles.size(); i++) {
+			final Bundle bundle = bundles.get(i);
+			discoveryOrder.put(bundle, i);
+			dependencyCounts.put(bundle, 0);
+			dependents.put(bundle, new HashSet<>());
+		}
+		for (final Bundle bundle : bundles) {
+			final BundleWiring wiring = bundle.adapt(BundleWiring.class);
+			if (wiring == null) {
+				DEBUG.ERR("Cannot inspect bundle dependencies for " + bundle.getSymbolicName()
+						+ "; no dependency constraints will be applied to its GAML extension order.");
+				continue;
+			}
+			for (final BundleWire wire : wiring.getRequiredWires(BundleRevision.BUNDLE_NAMESPACE)) {
+				final Bundle provider = wire.getProviderWiring().getBundle();
+				if (provider != bundle && candidates.contains(provider) && dependents.get(provider).add(bundle)) {
+					dependencyCounts.compute(bundle, (key, count) -> count + 1);
+				}
+			}
+		}
+		final PriorityQueue<Bundle> ready = new PriorityQueue<>(Comparator.comparingInt(discoveryOrder::get));
+		dependencyCounts.forEach((bundle, count) -> { if (count == 0) { ready.add(bundle); } });
+		final List<Bundle> ordered = new ArrayList<>(bundles.size());
+		while (!ready.isEmpty()) {
+			final Bundle provider = ready.remove();
+			ordered.add(provider);
+			for (final Bundle dependent : dependents.get(provider)) {
+				final int remaining = dependencyCounts.compute(dependent, (key, count) -> count - 1);
+				if (remaining == 0) { ready.add(dependent); }
+			}
+		}
+		if (ordered.size() < bundles.size()) {
+			final Set<Bundle> orderedSet = new HashSet<>(ordered);
+			final List<String> unresolved = bundles.stream().filter(bundle -> !orderedSet.contains(bundle))
+					.map(Bundle::getSymbolicName).toList();
+			DEBUG.ERR("Cannot fully order GAML extension bundles because of cyclic bundle dependencies: "
+					+ String.join(", ", unresolved) + ". Retaining their discovered order.");
+			for (final Bundle bundle : bundles) { if (!orderedSet.contains(bundle)) { ordered.add(bundle); } }
+		}
+		return ordered;
+	}
 
 }

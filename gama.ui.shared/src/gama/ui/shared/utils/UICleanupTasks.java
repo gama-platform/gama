@@ -13,6 +13,7 @@ package gama.ui.shared.utils;
 import static java.util.Map.entry;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -91,10 +92,11 @@ public class UICleanupTasks {
 	 * @return true, if is prefix
 	 */
 	public static boolean isPrefix(final URI prefix, final URI uri) {
-		// Ensure prefix is treated as a directory if it doesn't have a trailing separator
-		URI folderPrefix = prefix.hasTrailingPathSeparator() ? prefix : prefix.appendSegment("");
-		URI relative = uri.deresolve(folderPrefix);
-		return relative.isRelative() && !relative.toString().startsWith("..");
+		String prefixString = prefix.toString();
+		String uriString = uri.toString();
+		return uriString.startsWith(prefixString)
+				&& (prefixString.endsWith("/") || uriString.length() == prefixString.length()
+						|| uriString.charAt(prefixString.length()) == '/');
 	}
 
 	/** The Constant RES_UTIL. */
@@ -191,13 +193,65 @@ public class UICleanupTasks {
 		/** The dark prefix uri. */
 		static final URI DARK_SEGMENT = URI.createPlatformPluginURI("gama.ui.shared/icons_svg/dark/", true);
 
+		/** Legacy icon paths can remain in an Eclipse workbench model saved before the SVG migration. */
+		static final URI LEGACY_LIGHT_SEGMENT = URI.createPlatformPluginURI("gama.ui.shared/icons/light/", true);
+
+		/** The legacy dark icon path. */
+		static final URI LEGACY_DARK_SEGMENT = URI.createPlatformPluginURI("gama.ui.shared/icons/dark/", true);
+
 		static {
 			// DEBUG.OUT(LIGHT_SEGMENT + " <-> " + DARK_SEGMENT);
+		}
+
+		private URI replaceUriPrefix(final URI path, final URI oldPrefix, final URI newPrefix) {
+			String pathString = path.toString();
+			String oldPrefixString = oldPrefix.toString();
+			if (!pathString.startsWith(oldPrefixString)) return null;
+			return URI.createURI(newPrefix.toString() + pathString.substring(oldPrefixString.length()));
+		}
+
+		private boolean hasLegacyIcon(URI candidate) {
+			URI segment = isPrefix(DARK_SEGMENT, candidate) ? DARK_SEGMENT : LIGHT_SEGMENT;
+			String iconName = candidate.deresolve(segment).toString().replace(".svg", "");
+			if (iconName.endsWith("_disabled")) {
+				iconName = iconName.substring(0, iconName.length() - "_disabled".length());
+			}
+			URL iconURL = GamaIcon.computeURL(iconName);
+			return iconURL != null && !iconURL.equals(GamaIcon.computeURL(IGamaIcons.MISSING));
+		}
+
+		private URI resolveLegacySvgUri(final URI path) {
+			if (isPrefix(LEGACY_LIGHT_SEGMENT, path)) {
+				URI candidate = replaceUriPrefix(path, LEGACY_LIGHT_SEGMENT, LIGHT_SEGMENT);
+				if (candidate == null) return null;
+				candidate = candidate.trimFileExtension().appendFileExtension("svg");
+				return hasLegacyIcon(candidate) ? candidate : null;
+			}
+			if (isPrefix(LEGACY_DARK_SEGMENT, path)) {
+				URI candidate = replaceUriPrefix(path, LEGACY_DARK_SEGMENT, DARK_SEGMENT);
+				if (candidate == null) return null;
+				candidate = candidate.trimFileExtension().appendFileExtension("svg");
+				return hasLegacyIcon(candidate) ? candidate : null;
+			}
+			return null;
 		}
 
 		@Override
 		public ImageDescriptor imageDescriptorFromURI(final URI path) {
 			// DEBUG.OUT("Requesting image at " + path);
+			URI legacy = resolveLegacySvgUri(path);
+			if (legacy != null) {
+				URI segment = isPrefix(DARK_SEGMENT, legacy) ? DARK_SEGMENT : LIGHT_SEGMENT;
+				String pathToIcon = legacy.deresolve(segment).toString();
+				boolean isDisabled = pathToIcon.endsWith("_disabled.svg");
+				if (isDisabled) { pathToIcon = pathToIcon.substring(0, pathToIcon.length() - "_disabled.svg".length()); }
+				else { pathToIcon = pathToIcon.replace(".svg", ""); }
+				GamaIcon icon = GamaIcon.named(pathToIcon);
+				if (icon != null) {
+					if (isDisabled) return icon.disabledDescriptor();
+					return icon.descriptor();
+				}
+			}
 			if (isPrefix(LIGHT_SEGMENT, path)) {
 				String pathToIcon = path.deresolve(LIGHT_SEGMENT).toString().replace(".svg", "");
 				boolean isDisabled = pathToIcon.endsWith("_disabled");
@@ -205,8 +259,10 @@ public class UICleanupTasks {
 				// DEBUG.OUT("Resolved icon id: " + pathToIcon);
 				GamaIcon icon = GamaIcon.named(pathToIcon);
 				if (icon == null) {
-					if (ThemeHelper.isDark())
-						return super.imageDescriptorFromURI(path.replacePrefix(LIGHT_SEGMENT, DARK_SEGMENT));
+					if (ThemeHelper.isDark()) {
+						URI darkPath = replaceUriPrefix(path, LIGHT_SEGMENT, DARK_SEGMENT);
+						if (darkPath != null) return super.imageDescriptorFromURI(darkPath);
+					}
 					return super.imageDescriptorFromURI(path);
 				}
 				// DEBUG.OUT("Found Gama icon for " + pathToIcon + ", isDisabled=" + isDisabled);

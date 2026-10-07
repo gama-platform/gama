@@ -148,6 +148,7 @@
 		<module>../gama.extension.network</module>
 		<module>../gama.extension.physics</module>
 		<module>../gama.extension.database</module>
+		<module>../gama.extension.geopackage</module>
 		<module>../gama.extension.serialize</module>
 		<module>../gama.extension.pedestrian</module>
 

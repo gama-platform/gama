@@ -330,67 +330,47 @@ public class GamaDateFactory {
 	private static Temporal parse(final IScope scope, final String original, final DateTimeFormatter df) {
 		if (original == null || original.isEmpty() || "now".equals(original))
 			return LocalDateTime.now(GamaDateFactory.DEFAULT_ZONE);
-		Temporal result = null;
 
-		if (df != null) {
-			try {
-				final TemporalAccessor ta = df.parse(original);
-				if (ta instanceof Temporal tmp) return tmp;
-				if (!ta.isSupported(ChronoField.YEAR) && !ta.isSupported(ChronoField.MONTH_OF_YEAR)
-						&& !ta.isSupported(ChronoField.DAY_OF_MONTH) && ta.isSupported(ChronoField.HOUR_OF_DAY))
-					return LocalTime.from(ta);
-				if (!ta.isSupported(ChronoField.HOUR_OF_DAY) && !ta.isSupported(ChronoField.MINUTE_OF_HOUR)
-						&& !ta.isSupported(ChronoField.SECOND_OF_MINUTE))
-					return LocalDate.from(ta);
-				return LocalDateTime.from(ta);
-			} catch (final DateTimeParseException e) {
-				e.printStackTrace();
-			}
-			GAMA.reportAndThrowIfNeeded(scope,
-					GamaRuntimeException.warning(
-							THE_DATE + original + " can not correctly be parsed by the pattern provided", scope),
-					false);
-			return parse(scope, original, null);
+		if (df != null) return parseWithFormatter(scope, original, df);
+
+		return parseIsoString(scope, original);
+	}
+
+	private static Temporal parseWithFormatter(final IScope scope, final String original, final DateTimeFormatter df) {
+		try {
+			final TemporalAccessor ta = df.parse(original);
+			if (ta instanceof Temporal tmp) return tmp;
+			if (isTimeOnly(ta)) return LocalTime.from(ta);
+			if (isDateOnly(ta)) return LocalDate.from(ta);
+			return LocalDateTime.from(ta);
+		} catch (final DateTimeParseException e) {
+			e.printStackTrace();
 		}
+		GAMA.reportAndThrowIfNeeded(scope,
+				GamaRuntimeException.warning(
+						THE_DATE + original + " can not correctly be parsed by the pattern provided", scope),
+				false);
+		return parse(scope, original, null);
+	}
 
+	private static boolean isTimeOnly(final TemporalAccessor ta) {
+		final boolean hasDate = ta.isSupported(ChronoField.YEAR)
+				|| ta.isSupported(ChronoField.MONTH_OF_YEAR)
+				|| ta.isSupported(ChronoField.DAY_OF_MONTH);
+		return !hasDate && ta.isSupported(ChronoField.HOUR_OF_DAY);
+	}
+
+	private static boolean isDateOnly(final TemporalAccessor ta) {
+		final boolean hasTime = ta.isSupported(ChronoField.HOUR_OF_DAY)
+				|| ta.isSupported(ChronoField.MINUTE_OF_HOUR)
+				|| ta.isSupported(ChronoField.SECOND_OF_MINUTE);
+		return !hasTime;
+	}
+
+	private static Temporal parseIsoString(final IScope scope, final String original) {
 		String dateStr;
 		try {
-			// We first make sure all date fields have the correct length and
-			// the string is correctly formatted
-			String string = original;
-			if (!original.contains("T") && original.contains(" ")) {
-				string = StringUtils.replaceOnce(original, " ", "T");
-			}
-			final String[] base = string.split("T");
-			final String[] date = base[0].split("-");
-			String other;
-			if (base.length == 1) {
-				other = "00:00:00";
-			} else {
-				other = base[1];
-			}
-			String year, month, day;
-			if (date.length == 1) {
-				// ISO basic date format
-				year = date[0].substring(0, 4);
-				month = date[0].substring(4, 6);
-				day = date[0].substring(6, 8);
-			} else if (date.length >= 4 && date[0].isEmpty()) {
-				// Negative year: "-1000-01-01" splits to ["", "1000", "01", "01"]
-				// Pad the numeric portion to at least 4 digits for ISO compliance
-				final String numericPart = date[1];
-				year = "-" + "0".repeat(Math.max(0, 4 - numericPart.length())) + numericPart;
-				month = date[2];
-				day = date[3];
-			} else {
-				year = date[0];
-				month = date[1];
-				day = date[2];
-			}
-			if (year.length() == 2 && !year.startsWith("-")) { year = "20" + year; }
-			if (month.length() == 1) { month = '0' + month; }
-			if (day.length() == 1) { day = '0' + day; }
-			dateStr = year + "-" + month + "-" + day + "T" + other;
+			dateStr = formatIsoDateString(original, scope);
 		} catch (final Exception e1) {
 			throw GamaRuntimeException.error(
 					THE_DATE + original + " is not correctly formatted. Please refer to the ISO date/time format",
@@ -398,21 +378,72 @@ public class GamaDateFactory {
 		}
 
 		try {
-			result = LocalDateTime.parse(dateStr);
+			return LocalDateTime.parse(dateStr);
 		} catch (final DateTimeParseException e) {
 			try {
-				result = OffsetDateTime.parse(dateStr);
+				return OffsetDateTime.parse(dateStr);
 			} catch (final DateTimeParseException e2) {
 				try {
-					result = ZonedDateTime.parse(dateStr);
+					return ZonedDateTime.parse(dateStr);
 				} catch (final DateTimeParseException e3) {
 					throw GamaRuntimeException.error(THE_DATE + original
 							+ " is not correctly formatted. Please refer to the ISO date/time format", scope);
 				}
 			}
 		}
+	}
 
-		return result;
+	private static String formatIsoDateString(final String original, final IScope scope) {
+		final String string = original.contains(" ") && !original.contains("T")
+				? StringUtils.replaceOnce(original, " ", "T")
+				: original;
+		final String[] base = string.split("T");
+		final String other = base.length == 1 ? "00:00:00" : base[1];
+		final String[] dateParts = base[0].split("-");
+
+		final boolean negativeYear = dateParts[0].isEmpty();
+		final int yearIndex = negativeYear ? 1 : 0;
+		if (dateParts.length <= yearIndex) {
+			throw GamaRuntimeException.error(
+					THE_DATE + original + " is not correctly formatted. Please refer to the ISO date/time format",
+					scope);
+		}
+
+		final String year = extractIsoYear(dateParts, yearIndex, negativeYear);
+		final String month = extractIsoMonth(dateParts, yearIndex, negativeYear);
+		final String day = extractIsoDay(dateParts, yearIndex, negativeYear);
+
+		return year + "-" + month + "-" + day + "T" + other;
+	}
+
+	private static String extractIsoYear(final String[] dateParts, final int yearIndex, final boolean negativeYear) {
+		final String numericPart = dateParts[yearIndex];
+		if (negativeYear) return "-" + "0".repeat(Math.max(0, 4 - numericPart.length())) + numericPart;
+		if (numericPart.length() >= 8 && dateParts.length == 1) return numericPart.substring(0, 4);
+		if (numericPart.length() == 2) return "20" + numericPart;
+		return numericPart;
+	}
+
+	private static String extractIsoMonth(final String[] dateParts, final int yearIndex, final boolean negativeYear) {
+		String month = "01";
+		final String numericPart = dateParts[yearIndex];
+		if (!negativeYear && numericPart.length() >= 8 && dateParts.length == 1) {
+			month = numericPart.substring(4, 6);
+		} else if (dateParts.length > yearIndex + 1) {
+			month = dateParts[yearIndex + 1];
+		}
+		return month.length() == 1 ? "0" + month : month;
+	}
+
+	private static String extractIsoDay(final String[] dateParts, final int yearIndex, final boolean negativeYear) {
+		String day = "01";
+		final String numericPart = dateParts[yearIndex];
+		if (!negativeYear && numericPart.length() >= 8 && dateParts.length == 1) {
+			day = numericPart.substring(6, 8);
+		} else if (dateParts.length > yearIndex + 2) {
+			day = dateParts[yearIndex + 2];
+		}
+		return day.length() == 1 ? "0" + day : day;
 	}
 
 }

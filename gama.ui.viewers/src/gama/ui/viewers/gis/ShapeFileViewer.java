@@ -202,8 +202,7 @@ public class ShapeFileViewer extends GISFileViewer {
 			}
 			case POLYGON: {
 				final PolygonSymbolizer sym = SLD.polySymbolizer(fts);
-				final Stroke s = new StyleBuilder().createStroke(color);
-				sym.setStroke(s);
+				if (sym != null) { sym.setStroke(new StyleBuilder().createStroke(color)); }
 				break;
 			}
 			case POINT:
@@ -290,8 +289,7 @@ public class ShapeFileViewer extends GISFileViewer {
 	public void setFillColor(final Color color, final Mode mode, final FeatureTypeStyle fts) {
 		if (mode == Mode.POLYGON) {
 			final PolygonSymbolizer sym = SLD.polySymbolizer(fts);
-			final Fill s = new StyleBuilder().createFill(color);
-			sym.setFill(s);
+			if (sym != null) { sym.setFill(new StyleBuilder().createFill(color)); }
 		} else if (mode == Mode.POINT || mode == Mode.ALL) { // default to
 			// handling as
 			// Point

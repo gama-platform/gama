@@ -412,4 +412,9 @@ public class StatusHistoryPopUpMenu extends PopupDialog {
 		events.add(gc);
 	}
 
+	public void addFinishedStatus(final String taskName, final IStatusMessage finishedStatus) {
+		events.removeIf(event -> taskName.equals(event.message()));
+		addStatus(finishedStatus);
+	}
+
 }

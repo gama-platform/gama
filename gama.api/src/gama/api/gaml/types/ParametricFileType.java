@@ -557,7 +557,7 @@ public class ParametricFileType extends ParametricType {
 			for (final variable v : allVars) {
 				if (v.name().equals(prototype.getName())) {
 					if (v.doc().length > 0) {
-						sb.set("Accessible fields: ", v.name(), new GamlConstantDocumentation(v.doc()[0].value()));
+						sb.set("Accessible fields: ", v.name(), prototype.getDocumentation());
 					}
 					break;
 				}

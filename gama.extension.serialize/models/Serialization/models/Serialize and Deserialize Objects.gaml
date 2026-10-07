@@ -25,7 +25,7 @@ global {
 			write "deserialized: " + deserialize(s);
 		}
 		
-		list objects2 <- deserialize(serialize(objects));
+		list objects2 <- list(deserialize(serialize(objects)));
 		write objects2;
 	
 		assert objects = objects2;

@@ -280,7 +280,7 @@ public class PedestrianRoadSkill extends Skill {
 	 * @return the close agents
 	 */
 	public static IList<IAgent> getCloseAgents(final IAgent agent) {
-		IList<IAgent> agents = GamaListFactory.create();
+		IList<IAgent> agents = GamaListFactory.create(Types.AGENT);
 		agents.addAll(getAgentsOn(agent));
 		for (IAgent ag : getLinkedPedestrianRoads(agent)) { agents.addAll(getAgentsOn(ag)); }
 		return agents;

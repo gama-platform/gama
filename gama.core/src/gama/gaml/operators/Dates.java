@@ -30,6 +30,7 @@ import gama.annotations.no_test;
 import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
 import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
@@ -167,9 +168,12 @@ public class Dates {
 					examples = { @example (
 							value = "date('2000-01-02') - date('2000-01-01')",
 							equals = "86400") }))
-	@test ("date('2000-01-02') - date('2000-01-01') = 86400.0")
-	@test ("date('2000-01-01') - date('2000-01-01') = 0.0")
-	@test ("date('2000-01-01') - date('2000-01-02') = -86400.0")
+	@tests ({
+			@test ("date('2000-01-02') - date('2000-01-01') = 86400.0"),
+			@test ("date('2000-01-01') - date('2000-01-01') = 0.0"),
+			@test ("date('2000-01-01') - date('2000-01-02') = -86400.0"),
+			@test ("date('2000-01-02') - date('2000-01-01') = 86400#s")
+	})
 
 	public static double minusDate(final IScope scope, final IDate date1, final IDate date2)
 			throws GamaRuntimeException {
@@ -1116,7 +1120,10 @@ public class Dates {
 					value = "date('2000-01-01 00:00:00') + '_Test'",
 					equals = "'2000-01-01 00:00:00_Test'") })
 	@test ("date('2000-01-01 00:00:00') + '_Test' = '2000-01-01 00:00:00_Test'")
-	@test ("date('1000-01-01 00:00:00') + '' = '1000-01-01 00:00:00'")
+	@test ("date('-1000-01-01 00:00:00') + '' = '-1000-01-01 00:00:00'")
+	@test ("date([-100, 1, 2]) + '' = '-0100-01-02 00:00:00'")
+	@test ("date([-1000, 1, 1]) + '' = '-1000-01-01 00:00:00'")
+	@test ("(date([0, 1, 1]) subtract_years 1) + '' = '-0001-01-01 00:00:00'")
 	public static String concatenateDate(final IScope scope, final IDate date1, final String text)
 			throws GamaRuntimeException {
 		return date1.toString() + text;
@@ -2195,7 +2202,6 @@ public class Dates {
 					examples = @example (
 							value = "date den <- date(\"1999-12-30\", 'yyyy-MM-dd');",
 							test = false)))
-	@no_test
 	public static IDate date(final IScope scope, final String value, final String pattern) {
 		return GamaDateFactory.createWith(scope, value, pattern);
 	}
@@ -2277,9 +2283,11 @@ public class Dates {
 					examples = @example (
 							value = "string(#now, 'yyyy-MM-dd')",
 							isExecutable = false)))
-	@test ("string(date('2000-01-02'),'yyyy-MM-dd') = '2000-01-02'")
-	@test ("string(date('2000-01-31'),'yyyy-MM-dd') = '2000-01-31'")
-	@test ("string(date('2000-01-02'),'yyyy-MM-dd') = '2000-01-02'")
+	@tests ({
+			@test ("string(date('2000-01-02'),'yyyy-MM-dd') = '2000-01-02'"),
+			@test ("string(date('2000-01-31'),'yyyy-MM-dd') = '2000-01-31'"),
+			@test ("string(date('2000-01-02'),'yyyy-MM-dd') = '2000-01-02'")
+	})
 	public static String format(final IDate time, final String pattern) {
 		return format(time, pattern, null);
 	}
@@ -2320,7 +2328,10 @@ public class Dates {
 					examples = @example (
 							value = "string(#now, 'yyyy-MM-dd', 'en')",
 							isExecutable = false)))
-	@test ("string(date('2000-01-02'),'yyyy-MMMM-dd','en') = '2000-January-02'")
+	@tests ({
+			@test ("string(date('2000-01-02'),'yyyy-MMMM-dd','en') = '2000-January-02'"),
+			@test ("string(date('2000-01-02'), 'yyyy-MM-dd', 'en') = '2000-01-02'")
+	})
 
 	public static String format(final IDate time, final String pattern, final String locale) {
 		return time.toString(pattern, locale);

@@ -62,30 +62,69 @@ import gama.gaml.operators.Colors;
  */
 public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressListener {
 
+	/** The lock. */
 	protected final Object lock = new Object();
-	public static final Shape[] defaultmarkers = org.jfree.chart.plot.DefaultDrawingSupplier.createStandardSeriesShapes();
 
+	/** The Constant defaultmarkers. */
+	public static final Shape[] defaultmarkers =
+			org.jfree.chart.plot.DefaultDrawingSupplier.createStandardSeriesShapes();
+
+	/** The old anti alias. */
 	protected boolean oldAntiAlias;
+
+	/** The info. */
 	public final ChartRenderingInfo info = new ChartRenderingInfo();
+
+	/** The jfreedataset. */
 	protected final List<Dataset> jfreedataset = new ArrayList<>();
+
+	/** The chart. */
 	protected JFreeChart chart = null;
 
+	/** The area. */
 	protected final Rectangle2D area = new Rectangle2D.Double();
+
+	/** The back image. */
 	protected BufferedImage frontImage, backImage;
+
+	/** The defaultrenderer. */
 	protected AbstractRenderer defaultrenderer;
 
+	/** The id position. */
 	protected final HashMap<String, Integer> idPosition = new HashMap<>();
+
+	/** The renderer set. */
 	protected final HashMap<String, AbstractRenderer> rendererSet = new HashMap<>();
+
+	/** The nbseries. */
 	protected int nbseries = 0;
 
+	/** The Constant STROKE_CACHE. */
 	private static final java.util.concurrent.ConcurrentHashMap<Float, java.awt.BasicStroke> STROKE_CACHE =
 			new java.util.concurrent.ConcurrentHashMap<>();
 
+	/**
+	 * Gets the stroke.
+	 *
+	 * @param thickness
+	 *            the thickness
+	 * @return the stroke
+	 */
 	public static java.awt.BasicStroke getStroke(final float thickness) {
 		return STROKE_CACHE.computeIfAbsent(thickness,
 				t -> new java.awt.BasicStroke(t, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND));
 	}
 
+	/**
+	 * Instantiates a new chart J free chart output.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param name
+	 *            the name
+	 * @param typeexp
+	 *            the typeexp
+	 */
 	public ChartJFreeChartOutput(final IScope scope, final String name, final IExpression typeexp) {
 		super(scope, name, typeexp);
 	}
@@ -93,7 +132,8 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 	/**
 	 * Factory method to instantiate specific JFreeChart chart output based on type.
 	 */
-	public static ChartJFreeChartOutput createChartOutput(final IScope scope, final String name, final IExpression typeexp) {
+	public static ChartJFreeChartOutput createChartOutput(final IScope scope, final String name,
+			final IExpression typeexp) {
 		if (typeexp != null) {
 			final String t = Cast.asString(scope, typeexp.value(scope));
 			return switch (t) {
@@ -109,9 +149,7 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 	}
 
 	@Override
-	public Object getNativeChart() {
-		return chart;
-	}
+	public Object getNativeChart() { return chart; }
 
 	@Override
 	public BufferedImage getImage(final int sizeX, final int sizeY, final boolean antiAlias) {
@@ -148,6 +186,16 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 		}
 	}
 
+	/**
+	 * Adjust image.
+	 *
+	 * @param sizeX
+	 *            the size X
+	 * @param sizeY
+	 *            the size Y
+	 * @param antiAlias
+	 *            the anti alias
+	 */
 	private void adjustImage(final int sizeX, final int sizeY, final boolean antiAlias) {
 		if (antiAlias != oldAntiAlias) {
 			oldAntiAlias = antiAlias;
@@ -164,9 +212,7 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 	@Override
 	public void setBackgroundColorValue(final IScope scope, final IColor color) {
 		super.setBackgroundColorValue(scope, color);
-		if (chart != null) {
-			configureChartBackgrounds();
-		}
+		if (chart != null) { configureChartBackgrounds(); }
 	}
 
 	@Override
@@ -177,10 +223,9 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 		}
 		try {
 			super.updateOutput(scope);
+			updateLegendVisibility(scope);
 		} finally {
-			if (chart != null) {
-				chart.setNotify(true);
-			}
+			if (chart != null) { chart.setNotify(true); }
 		}
 	}
 
@@ -191,8 +236,17 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 		}
 	}
 
+	/**
+	 * Inits the renderer.
+	 *
+	 * @param scope
+	 *            the scope
+	 */
 	protected void initRenderer(final IScope scope) {}
 
+	/**
+	 * Configure chart title.
+	 */
 	private void configureChartTitle() {
 		chart.setTitle(this.getName());
 		if (chart.getTitle() != null) {
@@ -204,6 +258,9 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 		}
 	}
 
+	/**
+	 * Configure chart backgrounds.
+	 */
 	private void configureChartBackgrounds() {
 		Plot plot = chart.getPlot();
 		if (properties.getBackgroundColor() == null) {
@@ -220,6 +277,12 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 		}
 	}
 
+	/**
+	 * Configure chart legend.
+	 *
+	 * @param scope
+	 *            the scope
+	 */
 	private void configureChartLegend(final IScope scope) {
 		if (chart.getLegend() == null) return;
 		LegendTitle legend = chart.getLegend();
@@ -230,9 +293,7 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 		configureLegendPosition(legend, chart.getPlot(), scope);
 		configureLegendOrientation(legend);
 
-		if (properties.getTextColor() != null) {
-			legend.setItemPaint(IColor.toAWTColor(properties.getTextColor()));
-		}
+		if (properties.getTextColor() != null) { legend.setItemPaint(IColor.toAWTColor(properties.getTextColor())); }
 	}
 
 	@Override
@@ -250,6 +311,16 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 		configureChartLegend(scope);
 	}
 
+	/**
+	 * Configure legend position.
+	 *
+	 * @param legend
+	 *            the legend
+	 * @param plot
+	 *            the plot
+	 * @param scope
+	 *            the scope
+	 */
 	protected void configureLegendPosition(final LegendTitle legend, final Plot plot, final IScope scope) {
 		switch (properties.getSeriesLabelPosition()) {
 			case IKeyword.LEFT -> legend.setPosition(RectangleEdge.LEFT);
@@ -265,15 +336,23 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 					ta.setMaxHeight(0.5);
 					legend.setHorizontalAlignment(HorizontalAlignment.CENTER);
 					legend.setVerticalAlignment(VerticalAlignment.CENTER);
-					legend.setBackgroundPaint(IColor.toAWTColor(Colors.rgb(scope, properties.getBackgroundColor(), 0.5)));
+					legend.setBackgroundPaint(
+							IColor.toAWTColor(Colors.rgb(scope, properties.getBackgroundColor(), 0.5)));
 					p.addAnnotation(ta);
 					chart.removeLegend();
 				}
 			}
-			default -> {}
+			default -> {
+			}
 		}
 	}
 
+	/**
+	 * Configure legend orientation.
+	 *
+	 * @param legend
+	 *            the legend
+	 */
 	protected void configureLegendOrientation(final LegendTitle legend) {
 		if (legend == null) return;
 		if ("vertical".equalsIgnoreCase(properties.getLegendOrientation())) {
@@ -286,11 +365,46 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 	@Override
 	public void setLegendOrientation(final IScope scope, final String orient) {
 		super.setLegendOrientation(scope, orient);
-		if (chart != null && chart.getLegend() != null) {
-			configureLegendOrientation(chart.getLegend());
-		}
+		if (chart != null && chart.getLegend() != null) { configureLegendOrientation(chart.getLegend()); }
 	}
 
+	/**
+	 * Update legend visibility.
+	 *
+	 * @param scope
+	 *            the scope
+	 */
+	private void updateLegendVisibility(final IScope scope) {
+		if (chart == null || chartdataset == null || chart.getLegend() == null) return;
+
+		final String position = properties.getSeriesLabelPosition();
+		if ("none".equals(position) || "xaxis".equals(position) || "yaxis".equals(position)) {
+			chart.getLegend().setVisible(false);
+			return;
+		}
+
+		for (final String serieid : chartdataset.getDataSeriesIds(scope)) {
+			final ChartDataSeries serie = chartdataset.getDataSeries(scope, serieid);
+			if (serie != null) {
+				final Comparable label = serie.getSerieLegend(scope);
+				if (label != null && StringUtils.isNotBlank(label.toString())) {
+					chart.getLegend().setVisible(true);
+					return;
+				}
+			}
+		}
+		chart.getLegend().setVisible(false);
+	}
+
+	/**
+	 * Gets the or create renderer.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param serieid
+	 *            the serieid
+	 * @return the or create renderer
+	 */
 	AbstractRenderer getOrCreateRenderer(final IScope scope, final String serieid) {
 		if (rendererSet.containsKey(serieid)) return rendererSet.get(serieid);
 		final AbstractRenderer newrenderer = createRenderer(scope, serieid);
@@ -298,15 +412,55 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 		return newrenderer;
 	}
 
+	/**
+	 * Creates the renderer.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param serieid
+	 *            the serieid
+	 * @return the abstract renderer
+	 */
 	protected AbstractRenderer createRenderer(final IScope scope, final String serieid) {
 		return new XYErrorRenderer();
 	}
 
+	/**
+	 * Gets the label font.
+	 *
+	 * @return the label font
+	 */
 	Font getLabelFont() { return properties.getLabelFont(); }
+
+	/**
+	 * Gets the tick font.
+	 *
+	 * @return the tick font
+	 */
 	Font getTickFont() { return properties.getTickFont(); }
+
+	/**
+	 * Gets the legend font.
+	 *
+	 * @return the legend font
+	 */
 	Font getLegendFont() { return properties.getLegendFont(); }
+
+	/**
+	 * Gets the title font.
+	 *
+	 * @return the title font
+	 */
 	Font getTitleFont() { return properties.getTitleFont(); }
 
+	/**
+	 * Apply X single bounds.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param axis
+	 *            the axis
+	 */
 	protected void applyXSingleBounds(final IScope scope, final NumberAxis axis) {
 		if (axis == null) return;
 		axis.setAutoRange(true);
@@ -317,6 +471,14 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 		if (newMax > newMin) { axis.setRange(newMin, newMax); }
 	}
 
+	/**
+	 * Apply Y single bounds.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param axis
+	 *            the axis
+	 */
 	protected void applyYSingleBounds(final IScope scope, final NumberAxis axis) {
 		if (axis == null) return;
 		axis.setAutoRange(true);
@@ -370,7 +532,8 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 				final boolean xInt = xx % 1 == 0;
 				sb.append(title).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
 			}
-			case null, default -> {}
+			case null, default -> {
+			}
 		}
 	}
 

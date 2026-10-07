@@ -45,7 +45,7 @@ public class MatrixEditor extends ExpressionBasedEditor<IMatrix<?>> {
 	public void applyEdit() {
 
 		final MatrixEditorDialog d = new MatrixEditorDialog(getScope(), WorkbenchHelper.getShell(), currentValue);
-		if (d.open() == IDialogConstants.OK_ID) { modifyValue(d.getMatrix()); }
+		if (d.open() == IDialogConstants.OK_ID) { modifyAndDisplayValue(d.getMatrix()); }
 
 	}
 

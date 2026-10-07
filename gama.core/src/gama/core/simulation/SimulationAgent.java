@@ -20,6 +20,7 @@ import java.util.Map.Entry;
 import org.locationtech.jts.geom.Geometry;
 
 import gama.annotations.action;
+import gama.annotations.arg;
 import gama.annotations.doc;
 import gama.annotations.getter;
 import gama.annotations.setter;
@@ -704,6 +705,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	 *            the scope
 	 * @return the object
 	 */
+	@Override
 	@action (
 			name = "pause",
 			doc = @doc ("Allows to pause the current simulation **ACTUALLY EXPERIMENT FOR THE MOMENT**. It can be resumed with the manual intervention of the user or the 'resume' action."))
@@ -718,12 +720,43 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	}
 
 	/**
+	 * Prim sleep.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the object
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
+	@action (
+			name = "sleep",
+			args = { @arg (
+					name = "duration",
+					type = IType.FLOAT,
+					doc = @doc ("Duration to wait in machine time. The default unit is seconds; explicit units such as `10#ms` are supported.")) },
+			doc = @doc (
+					value = "Waits for the specified duration by blocking the current execution thread. Ex: ask simulation {do sleep (duration: 1#s);}"))
+	public final Object primSleep(final IScope scope) throws GamaRuntimeException {
+		final double duration = scope.getFloatArg("duration");
+		if (!Double.isFinite(duration) || duration < 0 || duration > Long.MAX_VALUE / 1000d) throw GamaRuntimeException
+				.error("The sleep duration must be a finite, non-negative value within range", scope);
+		try {
+			Thread.sleep(Math.round(duration * 1000));
+		} catch (final InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw GamaRuntimeException.error("The sleep action was interrupted", scope);
+		}
+		return null;
+	}
+
+	/**
 	 * Resume.
 	 *
 	 * @param scope
 	 *            the scope
 	 * @return the object
 	 */
+	@Override
 	@action (
 			name = "resume",
 			doc = @doc ("Allows to resume the current simulation **ACTUALLY EXPERIMENT FOR THE MOMENT**. It can then be paused with the manual intervention of the user or the 'pause' action."))
@@ -780,8 +813,9 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 		outputs.forEach((oName, output) -> {
 			String keyName, newOutputName;
 			if (!scheduled) {
-				keyName = output.getTitle() + "#" + this.getSpecies().getDescription().getModelDescription().getMicroAlias()
-						+ "#" + this.getExperiment().getSpecies().getName() + "#" + this.getExperiment().getIndex();
+				keyName = output.getTitle() + "#"
+						+ this.getSpecies().getDescription().getModelDescription().getMicroAlias() + "#"
+						+ this.getExperiment().getSpecies().getName() + "#" + this.getExperiment().getIndex();
 				newOutputName = keyName;
 			} else {
 				final String postfix = buildPostfix();
