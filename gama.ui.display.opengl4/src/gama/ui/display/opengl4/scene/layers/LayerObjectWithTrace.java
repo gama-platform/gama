@@ -12,6 +12,8 @@ package gama.ui.display.opengl4.scene.layers;
 
 import java.util.LinkedList;
 
+import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
+
 import gama.api.ui.layers.ILayer;
 import gama.ui.display.opengl4.OpenGL;
 import gama.ui.display.opengl4.renderer.IOpenGLRenderer;
@@ -60,7 +62,12 @@ public class LayerObjectWithTrace extends LayerObject {
 		double alpha1 = 0d;
 		for (final Trace list : traces) {
 			alpha1 = delta == 0d ? this.alpha : this.alpha * (alpha1 + delta);
-			drawObjects(gl, list, alpha1, picking);
+			gl.push(GLMatrixFunc.GL_MODELVIEW);
+			try {
+				drawObjects(gl, list, alpha1, picking);
+			} finally {
+				gl.pop(GLMatrixFunc.GL_MODELVIEW);
+			}
 		}
 	}
 
