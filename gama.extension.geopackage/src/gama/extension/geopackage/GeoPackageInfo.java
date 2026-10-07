@@ -16,7 +16,6 @@ import java.net.URI;
 
 import org.eclipse.core.resources.IFile;
 import org.geotools.api.data.DataStore;
-import org.geotools.api.data.DataStoreFinder;
 import org.geotools.api.data.Query;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
@@ -58,10 +57,14 @@ public class GeoPackageInfo extends AbstractFileMetaData {
 		}
 	}
 
+	static {
+		org.geotools.util.factory.GeoTools.addClassLoader(org.geotools.geopkg.GeoPkgDataStoreFactory.class.getClassLoader());
+	}
+
 	private void read(final File file) {
 		DataStore store = null;
 		try {
-			store = DataStoreFinder.getDataStore(java.util.Map.of("dbtype", "geopkg", "database", file));
+			store = new org.geotools.geopkg.GeoPkgDataStoreFactory().createDataStore(java.util.Map.of("dbtype", "geopkg", "database", file));
 			if (store == null) throw new IOException("No GeoPackage data store is available");
 			final String[] layers = store.getTypeNames();
 			layerCount = layers.length;

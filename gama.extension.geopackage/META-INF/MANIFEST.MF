@@ -3,7 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Name: GAMA GeoPackage Extension
 Bundle-SymbolicName: gama.extension.geopackage;singleton:=true
 Bundle-Version: 0.0.0.qualifier
-Export-Package: org.geotools.geopkg,
+Export-Package: gama.extension.geopackage,
+ org.geotools.geopkg,
  org.geotools.geopkg.geom,
  org.geotools.geopkg.mosaic,
  org.geotools.geopkg.wps,

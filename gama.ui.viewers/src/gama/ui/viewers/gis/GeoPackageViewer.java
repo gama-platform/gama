@@ -14,7 +14,6 @@ import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.swt.SWT;
@@ -28,7 +27,6 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.FileEditorInput;
 import org.geotools.api.data.DataStore;
-import org.geotools.api.data.DataStoreFinder;
 import org.geotools.api.feature.type.AttributeDescriptor;
 import org.geotools.api.feature.type.GeometryType;
 import org.geotools.api.style.FeatureTypeStyle;
@@ -41,6 +39,7 @@ import org.geotools.styling.SLD;
 
 import gama.api.GAMA;
 import gama.api.types.color.IColor;
+import gama.extension.geopackage.GeoPackageStores;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.GamaColors;
@@ -55,9 +54,16 @@ import gama.ui.viewers.gis.geotools.styling.Utils;
  */
 public class GeoPackageViewer extends ShapeFileViewer {
 
+	/** The data store. */
 	private DataStore dataStore;
-	private String[] layerNames = new String[0];
+
+	/** The layer names. */
+	private String[] layerNames = {};
+
+	/** The selected layer. */
 	private String selectedLayer;
+
+	/** The status button. */
 	private FlatButton statusButton;
 
 	@Override
@@ -70,11 +76,10 @@ public class GeoPackageViewer extends ShapeFileViewer {
 		pathStr = geoPackage.getAbsolutePath();
 
 		try {
-			final Map<String, Object> parameters = Map.of("dbtype", "geopkg", "database", geoPackage);
-			dataStore = DataStoreFinder.getDataStore(parameters);
-			if (dataStore == null) { throw new IOException("No GeoPackage data store is available"); }
+			dataStore = GeoPackageStores.open(geoPackage);
+			if (dataStore == null) throw new IOException("No GeoPackage data store is available");
 			layerNames = dataStore.getTypeNames();
-			if (layerNames.length == 0) { throw new IOException("GeoPackage contains no feature layers"); }
+			if (layerNames.length == 0) throw new IOException("GeoPackage contains no feature layers");
 			content = new MapContent();
 			selectLayer(layerNames[0]);
 			setPartName(path.lastSegment());
@@ -88,6 +93,14 @@ public class GeoPackageViewer extends ShapeFileViewer {
 		}
 	}
 
+	/**
+	 * Select layer.
+	 *
+	 * @param layerName
+	 *            the layer name
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
+	 */
 	private void selectLayer(final String layerName) throws IOException {
 		final var nextFeatureSource = dataStore.getFeatureSource(layerName);
 		final var nextStyle = Utils.createStyle2(nextFeatureSource);
@@ -99,7 +112,7 @@ public class GeoPackageViewer extends ShapeFileViewer {
 			setFillColor(IColor.toAWTColor(PreferencesHelper.SHAPEFILE_VIEWER_FILL.getValue()), nextMode, nextFts);
 			setStrokeColor(IColor.toAWTColor(PreferencesHelper.SHAPEFILE_VIEWER_LINE_COLOR.getValue()), nextMode,
 					nextFts);
-			((StyleLayer) nextLayer).setStyle(nextStyle);
+			nextLayer.setStyle(nextStyle);
 		}
 		if (layer != null) { content.removeLayer(layer); }
 		selectedLayer = layerName;
@@ -158,10 +171,10 @@ public class GeoPackageViewer extends ShapeFileViewer {
 				GamaMenu.separate(menu, "Bounds");
 				try {
 					final ReferencedEnvelope bounds = featureSource.getBounds();
-					addInfo(menu, "upper corner", bounds.getUpperCorner().getOrdinate(0) + " "
-							+ bounds.getUpperCorner().getOrdinate(1));
-					addInfo(menu, "lower corner", bounds.getLowerCorner().getOrdinate(0) + " "
-							+ bounds.getLowerCorner().getOrdinate(1));
+					addInfo(menu, "upper corner",
+							bounds.getUpperCorner().getOrdinate(0) + " " + bounds.getUpperCorner().getOrdinate(1));
+					addInfo(menu, "lower corner",
+							bounds.getLowerCorner().getOrdinate(0) + " " + bounds.getLowerCorner().getOrdinate(1));
 					addInfo(menu, "dimensions", bounds.getWidth() + " x " + bounds.getHeight());
 					final var crs = featureSource.getSchema().getCoordinateReferenceSystem();
 					addInfo(menu, "coordinate reference system", crs == null ? "Unknown" : CRS.toSRS(crs));
@@ -185,15 +198,18 @@ public class GeoPackageViewer extends ShapeFileViewer {
 		});
 	}
 
+	/**
+	 * Update status.
+	 */
 	private void updateStatus() {
 		if (statusButton == null || statusButton.isDisposed() || featureSource == null) return;
-		String summary = selectedLayer;
+		StringBuilder summary = new StringBuilder().append(selectedLayer);
 		try {
-			summary += " | " + featureSource.getFeatures().size() + " features";
+			summary.append(" | ").append(featureSource.getFeatures().size()).append(" features");
 		} catch (final IOException e) {
-			summary += " | Unable to read feature count";
+			summary.append(" | Unable to read feature count");
 		}
-		statusButton.setText(summary);
+		statusButton.setText(summary.toString());
 	}
 
 	@Override

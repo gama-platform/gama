@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * GamaGeoPackageFile.java, in gama.extension.geopackage, is part of the source code of the GAMA modeling and
- * simulation platform (v.2025-03).
+ * GamaGeoPackageFile.java, in gama.extension.geopackage, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.geotools.api.data.DataStore;
-import org.geotools.api.data.DataStoreFinder;
 import org.geotools.api.data.Query;
 import org.geotools.api.data.SimpleFeatureSource;
 import org.geotools.api.feature.type.AttributeDescriptor;
@@ -27,8 +26,8 @@ import org.geotools.util.factory.Hints;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.file;
-import gama.annotations.support.IConcept;
 import gama.annotations.test;
+import gama.annotations.support.IConcept;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
@@ -53,8 +52,15 @@ import gama.core.util.file.GamaGisFile;
 @test ("is_geopackage(\"features.gpkg\") and is_geopackage(\"features.GPKG\") and !is_geopackage(\"features.shp\")")
 public class GamaGeoPackageFile extends GamaGisFile {
 
+	static {
+		// GeoTools discovers GeoPackage extensions through SPI, which needs this bundle's class loader in OSGi
+		org.geotools.util.factory.GeoTools.addClassLoader(org.geotools.geopkg.GeoPkgDataStoreFactory.class.getClassLoader());
+	}
+
+	/** The layer name. */
 	private final String layerName;
 
+	/** The feature collection. */
 	private SimpleFeatureCollection featureCollection;
 
 	/**
@@ -101,9 +107,8 @@ public class GamaGeoPackageFile extends GamaGisFile {
 		try {
 			for (final AttributeDescriptor descriptor : store.getFeatureSource(resolveLayerName(store, scope))
 					.getSchema().getAttributeDescriptors()) {
-				attributes.put(descriptor.getName().getLocalPart(),
-						descriptor.getType() instanceof GeometryType ? "geometry"
-								: Types.get(descriptor.getType().getBinding()).toString());
+				attributes.put(descriptor.getName().getLocalPart(), descriptor.getType() instanceof GeometryType
+						? "geometry" : Types.get(descriptor.getType().getBinding()).toString());
 			}
 		} catch (final IOException e) {
 			throw GamaRuntimeException.create(e, scope);
@@ -139,35 +144,46 @@ public class GamaGeoPackageFile extends GamaGisFile {
 		featureCollection = null;
 	}
 
+	/**
+	 * Gets the data store.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the data store
+	 */
 	private DataStore getDataStore(final IScope scope) {
 		final Map<String, Object> parameters = new HashMap<>();
 		parameters.put("dbtype", "geopkg");
 		parameters.put("database", getFile(scope));
 		try {
-			final DataStore store = DataStoreFinder.getDataStore(parameters);
-			if (store == null) {
-				throw GamaRuntimeException.error("Unable to open GeoPackage " + getPath(scope), scope);
-			}
+			final DataStore store = new org.geotools.geopkg.GeoPkgDataStoreFactory().createDataStore(parameters);
+			if (store == null) throw GamaRuntimeException.error("Unable to open GeoPackage " + getPath(scope), scope);
 			return store;
 		} catch (final IOException e) {
 			throw GamaRuntimeException.create(e, scope);
 		}
 	}
 
+	/**
+	 * Resolve layer name.
+	 *
+	 * @param store
+	 *            the store
+	 * @param scope
+	 *            the scope
+	 * @return the string
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
+	 */
 	private String resolveLayerName(final DataStore store, final IScope scope) throws IOException {
 		final String[] layerNames = store.getTypeNames();
 		if (layerName != null && !layerName.isBlank()) {
-			for (final String availableLayer : layerNames) {
-				if (layerName.equals(availableLayer)) return layerName;
-			}
-			throw GamaRuntimeException.error(
-					"GeoPackage layer '" + layerName + "' was not found. Available layers: "
-							+ String.join(", ", layerNames),
-					scope);
+			for (final String availableLayer : layerNames) { if (layerName.equals(availableLayer)) return layerName; }
+			throw GamaRuntimeException.error("GeoPackage layer '" + layerName + "' was not found. Available layers: "
+					+ String.join(", ", layerNames), scope);
 		}
-		if (layerNames.length == 0) {
+		if (layerNames.length == 0)
 			throw GamaRuntimeException.error("GeoPackage " + getPath(scope) + " contains no feature layers", scope);
-		}
 		return layerNames[0];
 	}
 }
