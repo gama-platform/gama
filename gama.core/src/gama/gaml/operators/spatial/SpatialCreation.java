@@ -2500,4 +2500,41 @@ public class SpatialCreation {
 			env.dispose();
 		}
 	}
+
+	/**
+	 * Envelope with an explicit depth.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param obj
+	 *            the object from which the envelope is computed
+	 * @param depth
+	 *            the depth (size along the z axis) of the resulting box
+	 * @return the i shape
+	 */
+	@operator (
+			value = "envelope",
+			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SHAPE },
+			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.THREED })
+	@doc (
+			value = "A 3D geometry that represents the box that surrounds the geometries or the surface described by the first argument (see the envelope operator with one argument), and whose depth (extent along the z axis) is given by the second argument. The x and y extents are those of the envelope of the first argument. This operator allows to define a 3D world from a georeferenced (2D) data source, which is required, for instance, to use the moving3D skill in such a world.",
+			examples = { @example (
+					value = "geometry shape <- envelope(road_shapefile, 100.0);",
+					isExecutable = false),
+					@example (
+							value = "envelope(square(10), 5.0).depth",
+							equals = "5.0",
+							returnType = "float",
+							test = false) })
+	public static IShape envelope(final IScope scope, final Object obj, final Double depth) {
+		if (depth == null || depth < 0)
+			throw GamaRuntimeException.error("The depth of an envelope must be a positive number", scope);
+		IEnvelope env = GamaEnvelopeFactory.of(GamaEnvelopeFactory.castToEnvelope(scope, obj));
+		try {
+			if (env.isNull()) { env = GamaEnvelopeFactory.of(0, 100, 0, 100, 0, 100); }
+			return GamaShapeFactory.buildBox(env.getWidth(), env.getHeight(), depth, env.center());
+		} finally {
+			env.dispose();
+		}
+	}
 }

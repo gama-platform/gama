@@ -379,7 +379,9 @@ public abstract class AbstractTopology implements ITopology {
 			if (z > environment.getGeometry().getDepth()) return null;
 			return point;
 		}
-		throw GamaRuntimeException.error("The environment must be a 3D environment (e.g shape <- cube(100)).", scope);
+		throw GamaRuntimeException.error(
+				"The environment must be a 3D environment (e.g shape <- cube(100), or shape <- envelope(my_shapefile, 100.0) to give a depth to a georeferenced world).",
+				scope);
 
 	}
 
