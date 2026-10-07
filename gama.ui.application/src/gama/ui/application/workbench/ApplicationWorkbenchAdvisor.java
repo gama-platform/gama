@@ -337,6 +337,22 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
 	}
 
+	/**
+	 * disables the workspace saving by rerouting the responsible
+	 * function from IDEWorkbenchAdvisor to nothing, 
+	 * if the SIMULATION_ONLY flag is true.
+	 * 
+	 * It prevents a crash after closing the exported app, which
+	 * is caused by the partial metadatas of the embedded workspace.
+	 * 
+	 * This workaround is much simpler than cleaning the metadatas
+	 */
+	@Override
+	protected void disconnectFromWorkspace() {
+		if(! FLAGS.SIMULATION_ONLY)
+			super.disconnectFromWorkspace();
+	}
+
 	@Override
 	public void postShutdown() {
 		try {
