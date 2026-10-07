@@ -15,6 +15,8 @@ import static gama.api.exceptions.GamaRuntimeException.create;
 import static gama.api.exceptions.GamaRuntimeException.warning;
 import static org.apache.commons.lang3.StringUtils.splitByWholeSeparatorPreserveAllTokens;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -551,9 +553,13 @@ public class GamaShapeFile extends GamaGisFile {
 	@Override
 	protected SimpleFeatureCollection getFeatureCollection(final IScope scope) {
 		try {
+			final File file = getFile(scope);
+			if (!file.exists()) { throw new FileNotFoundException("Shapefile not found: " + file.getAbsolutePath()); }
 
 			// if (store == null) { store = getDataStoreOld(getFile(scope).toURI().toURL()); }
-			final SimpleFeatureSource source = getDataStore(getFile(scope).toURI().toURL()).getFeatureSource();
+			final FileDataStore store = getDataStore(file.toURI().toURL());
+			if (store == null) { throw new IOException("Unable to open shapefile: " + file.getAbsolutePath()); }
+			final SimpleFeatureSource source = store.getFeatureSource();
 			// AD See Issue #3094. This constitutes a workaround
 			Query query = new Query();
 			// if (!with3D) { query.setHints(new Hints(Hints.FEATURE_2D, true)); }
