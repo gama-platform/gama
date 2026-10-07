@@ -12,6 +12,12 @@ experiment "Chart legend regression" type: gui {
 	}
 	output {
 		display "Legend cases" {
+			chart "Initial data enabled by default" type: histogram {
+				datalist [1, 2, 3, 4] legend: "initial values";
+			}
+			chart "Initial data disabled" type: histogram include_init: false {
+				datalist [1, 2, 3, 4] legend: "after first cycle";
+			}
 			chart "No legend" type: histogram {
 				datalist [1, 2, 3, 4] legend: false;
 			}
