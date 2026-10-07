@@ -14,6 +14,7 @@ import org.dflib.jdbc.connector.JdbcConnector;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
 import gama.annotations.test;
 import gama.annotations.usage;
@@ -83,6 +84,7 @@ public class DataFrameOperators {
 	/**
 	 * Loads a whole database table into a dataframe via JDBC.
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "load_table",
 			can_be_const = false,
@@ -110,6 +112,7 @@ public class DataFrameOperators {
 	/**
 	 * Loads the result of a SQL query into a dataframe via JDBC.
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "load_sql",
 			can_be_const = false,
@@ -140,6 +143,7 @@ public class DataFrameOperators {
 	/**
 	 * Saves a dataframe to a database table via JDBC.
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "save_table",
 			can_be_const = false,

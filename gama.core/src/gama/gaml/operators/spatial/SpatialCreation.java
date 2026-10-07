@@ -18,6 +18,7 @@ import org.locationtech.jts.geom.Coordinate;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
 import gama.annotations.test;
 import gama.annotations.usage;
@@ -384,6 +385,7 @@ public class SpatialCreation {
 	 *            the scope
 	 * @return the i shape
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "elliptical_arc",
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SHAPE },
@@ -1503,6 +1505,7 @@ public class SpatialCreation {
 	 *            the p 2
 	 * @return the i shape
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = { "curve" },
 			expected_content_type = { IType.POINT, IType.GEOMETRY, IType.AGENT },
@@ -1558,6 +1561,7 @@ public class SpatialCreation {
 	 *            the nb points
 	 * @return the i shape
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = { "curve" },
 			expected_content_type = { IType.POINT, IType.GEOMETRY, IType.AGENT },
@@ -1611,6 +1615,7 @@ public class SpatialCreation {
 	 *            the p 3
 	 * @return the i shape
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = { "curve" },
 			expected_content_type = { IType.POINT, IType.GEOMETRY, IType.AGENT },
@@ -1660,6 +1665,7 @@ public class SpatialCreation {
 	 *            the coefficient
 	 * @return the i shape
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = { "curve" },
 			expected_content_type = { IType.POINT, IType.GEOMETRY, IType.AGENT },
@@ -1711,6 +1717,7 @@ public class SpatialCreation {
 	 *            the right
 	 * @return the i shape
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = { "curve" },
 			expected_content_type = { IType.POINT, IType.GEOMETRY, IType.AGENT },
@@ -1767,6 +1774,7 @@ public class SpatialCreation {
 	 *            the nb points
 	 * @return the i shape
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = { "curve" },
 			expected_content_type = { IType.POINT, IType.GEOMETRY, IType.AGENT },
@@ -1815,6 +1823,7 @@ public class SpatialCreation {
 	 *            the scope
 	 * @return the i shape
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = { "curve" },
 			expected_content_type = { IType.POINT, IType.GEOMETRY, IType.AGENT },
@@ -1869,6 +1878,7 @@ public class SpatialCreation {
 	 *            the scope
 	 * @return the i shape
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = { "curve" },
 			expected_content_type = { IType.POINT, IType.GEOMETRY, IType.AGENT },
@@ -1920,6 +1930,7 @@ public class SpatialCreation {
 	 *            the scope
 	 * @return the i shape
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = { "curve" },
 			expected_content_type = { IType.POINT, IType.GEOMETRY, IType.AGENT },
@@ -1964,6 +1975,7 @@ public class SpatialCreation {
 	 *            the scope
 	 * @return the i shape
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = { "curve" },
 			expected_content_type = { IType.POINT, IType.GEOMETRY, IType.AGENT },
@@ -2010,6 +2022,7 @@ public class SpatialCreation {
 	 *            the scope
 	 * @return the i shape
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = { "curve" },
 			expected_content_type = { IType.POINT, IType.GEOMETRY, IType.AGENT },

@@ -31,6 +31,7 @@ import org.apache.commons.io.FilenameUtils;
 
 import gama.annotations.doc;
 import gama.annotations.no_test;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
@@ -744,6 +745,7 @@ public class Stochanalysis {
 	 *            the scope
 	 * @return the string
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "stochanalysis",
 			type = IType.STRING,

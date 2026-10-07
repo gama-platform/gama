@@ -17,6 +17,7 @@ import org.apache.commons.math3.distribution.WeibullDistribution;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
 import gama.annotations.test;
 import gama.annotations.usage;
@@ -166,6 +167,7 @@ public class Random2 {
 	 * @return the double
 	 * @throws GamaRuntimeException the gama runtime exception
 	 */
+	@no_fuzz_test ("never returns when both bounds are equal")
 	@operator (
 			value = "lognormal_trunc_rnd",
 			can_be_const = false,
@@ -202,6 +204,7 @@ public class Random2 {
 	 * @return the double
 	 * @throws GamaRuntimeException the gama runtime exception
 	 */
+	@no_fuzz_test ("never returns when both bounds are equal")
 	@operator (
 			value = "lognormal_trunc_rnd",
 			can_be_const = false,
@@ -245,6 +248,7 @@ public class Random2 {
 	 * @return the double
 	 * @throws GamaRuntimeException the gama runtime exception
 	 */
+	@no_fuzz_test ("never returns when both bounds are equal")
 	@operator (
 			value = "weibull_trunc_rnd",
 			can_be_const = false,
@@ -281,6 +285,7 @@ public class Random2 {
 	 * @return the double
 	 * @throws GamaRuntimeException the gama runtime exception
 	 */
+	@no_fuzz_test ("never returns when both bounds are equal")
 	@operator (
 			value = "weibull_trunc_rnd",
 			can_be_const = false,
@@ -324,6 +329,7 @@ public class Random2 {
 	 * @return the double
 	 * @throws GamaRuntimeException the gama runtime exception
 	 */
+	@no_fuzz_test ("never returns when both bounds are equal")
 	@operator (
 			value = "gamma_trunc_rnd",
 			can_be_const = false,
@@ -360,6 +366,7 @@ public class Random2 {
 	 * @return the double
 	 * @throws GamaRuntimeException the gama runtime exception
 	 */
+	@no_fuzz_test ("never returns when both bounds are equal")
 	@operator (
 			value = "gamma_trunc_rnd",
 			can_be_const = false,

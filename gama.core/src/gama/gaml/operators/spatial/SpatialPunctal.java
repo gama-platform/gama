@@ -20,6 +20,7 @@ import org.locationtech.jts.operation.distance.DistanceOp;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
 import gama.annotations.test;
 import gama.annotations.usage;
@@ -136,6 +137,7 @@ public class SpatialPunctal {
 	 *            the distance
 	 * @return the i list
 	 */
+	@no_fuzz_test ("exhausts the memory with a null or negative distance")
 	@operator (
 			value = { "points_on" },
 			type = IType.LIST,
@@ -208,6 +210,7 @@ public class SpatialPunctal {
 	 *            the distance
 	 * @return the i list
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = { "points_at" },
 			content_type = IType.POINT,

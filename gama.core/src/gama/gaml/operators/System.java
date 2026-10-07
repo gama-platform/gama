@@ -27,6 +27,7 @@ import org.eclipse.core.runtime.Platform;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
 import gama.annotations.test;
 import gama.annotations.usage;
@@ -214,6 +215,7 @@ public class System {
 	 *            the timeout
 	 * @return the boolean
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "is_reachable",
 			can_be_const = true,
@@ -259,6 +261,7 @@ public class System {
 	 *            the source
 	 * @return the boolean
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "play_sound",
 			can_be_const = true,
@@ -306,6 +309,7 @@ public class System {
 	 *            the timeout
 	 * @return the boolean
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "is_reachable",
 			concept = IConcept.TEST)
@@ -342,6 +346,7 @@ public class System {
 	 *            the s
 	 * @return the string
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "command",
 			category = { IOperatorCategory.SYSTEM },
@@ -377,6 +382,7 @@ public class System {
 	 *            the directory
 	 * @return the string
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "command",
 			category = { IOperatorCategory.SYSTEM },
@@ -414,6 +420,7 @@ public class System {
 	 *            the environment
 	 * @return the string
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "command",
 			category = { IOperatorCategory.SYSTEM },
@@ -612,6 +619,7 @@ public class System {
 	 * @return the i map
 	 */
 	@SuppressWarnings ("unchecked")
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = IKeyword.USER_INPUT_DIALOG,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -648,6 +656,7 @@ public class System {
 	 *            the parameters
 	 * @return the i map
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = IKeyword.USER_INPUT_DIALOG,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -679,6 +688,7 @@ public class System {
 	 * @return the i map
 	 */
 	@SuppressWarnings ("unchecked")
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = IKeyword.USER_INPUT_DIALOG,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -713,6 +723,7 @@ public class System {
 	 *            the color
 	 * @return the i map
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = IKeyword.USER_INPUT_DIALOG,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -748,6 +759,7 @@ public class System {
 	 * @return the i map
 	 */
 	@SuppressWarnings ("unchecked")
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = IKeyword.USER_INPUT_DIALOG,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -781,6 +793,7 @@ public class System {
 	 *            the pages
 	 * @return the i map
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = IKeyword.WIZARD,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -821,6 +834,7 @@ public class System {
 	 *            the pages
 	 * @return the i map
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = IKeyword.WIZARD,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -863,6 +877,7 @@ public class System {
 	 *            the font
 	 * @return the i map
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = IKeyword.WIZARD_PAGE,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -906,6 +921,7 @@ public class System {
 	 *            the parameters
 	 * @return the i map
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = IKeyword.WIZARD_PAGE,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -948,6 +964,7 @@ public class System {
 	 *            the message
 	 * @return the boolean
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = IKeyword.USER_CONFIRM,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -985,6 +1002,7 @@ public class System {
 	 *            the type
 	 * @return the i parameter
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			can_be_const = false,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -1019,6 +1037,7 @@ public class System {
 	 *            the init
 	 * @return the i parameter
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			can_be_const = false,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -1061,6 +1080,7 @@ public class System {
 	 *            the max
 	 * @return the i parameter
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			can_be_const = false,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -1109,6 +1129,7 @@ public class System {
 	 *            the step
 	 * @return the i parameter
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			can_be_const = false,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -1164,6 +1185,7 @@ public class System {
 	 *            the max
 	 * @return the i parameter
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			can_be_const = false,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -1212,6 +1234,7 @@ public class System {
 	 *            the step
 	 * @return the i parameter
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			can_be_const = false,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -1248,6 +1271,7 @@ public class System {
 	 *            the init
 	 * @return the i parameter
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			can_be_const = false,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -1282,6 +1306,7 @@ public class System {
 	 *            the init
 	 * @return the i parameter
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			can_be_const = false,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -1324,6 +1349,7 @@ public class System {
 	 *            the init
 	 * @return the i parameter
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			can_be_const = false,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -1363,6 +1389,7 @@ public class System {
 	 *            the init
 	 * @return the i parameter
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			can_be_const = false,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -1397,6 +1424,7 @@ public class System {
 	 *            the init
 	 * @return the i parameter
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			can_be_const = false,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -1439,6 +1467,7 @@ public class System {
 	 *            the among
 	 * @return the i parameter
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			can_be_const = false,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -1470,6 +1499,7 @@ public class System {
 	 *            the text
 	 * @return the boolean
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "copy_to_clipboard",
 			can_be_const = false,
@@ -1492,6 +1522,7 @@ public class System {
 	 *            the type
 	 * @return the boolean
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "copy_from_clipboard",
 			can_be_const = false,

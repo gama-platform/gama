@@ -32,6 +32,7 @@ import javax.imageio.ImageIO;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
@@ -71,6 +72,7 @@ public class ImageOperators implements ImageConstants {
 	 *            the display name
 	 * @return the gama image
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "snapshot",
 			can_be_const = false)
@@ -106,6 +108,7 @@ public class ImageOperators implements ImageConstants {
 	 *            the display name
 	 * @return the gama image
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "snapshot",
 			can_be_const = false)
@@ -143,6 +146,7 @@ public class ImageOperators implements ImageConstants {
 	 *            the display name
 	 * @return the gama image
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "snapshot",
 			can_be_const = false)
@@ -201,6 +205,7 @@ public class ImageOperators implements ImageConstants {
 	 *            the format
 	 * @return the gama image
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "send_image_to_websocket",
 			can_be_const = false)
@@ -223,6 +228,7 @@ public class ImageOperators implements ImageConstants {
 	 *            the image
 	 * @return the gama image
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "send_image_to_websocket",
 			can_be_const = false)
@@ -800,6 +806,7 @@ public class ImageOperators implements ImageConstants {
 	 *            the image
 	 * @return the boolean
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "copy_to_clipboard",
 			can_be_const = false,

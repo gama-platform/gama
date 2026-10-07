@@ -46,6 +46,7 @@ import org.locationtech.jts.geom.Coordinate;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
 import gama.annotations.test;
 import gama.annotations.usage;
@@ -1946,6 +1947,7 @@ public class Graphs {
 	 *            the use cache
 	 * @return the i graph
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "use_cache",
 			category = { IOperatorCategory.GRAPH, IOperatorCategory.PATH },
@@ -2221,6 +2223,7 @@ public class Graphs {
 	 *            the count
 	 * @return the i graph
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "rewire_n",
 			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
@@ -2446,6 +2449,7 @@ public class Graphs {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "load_shortest_paths",
 			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
@@ -2516,6 +2520,7 @@ public class Graphs {
 	 *            the criterion
 	 * @return the i graph
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "layout_force",
 			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
@@ -2555,6 +2560,7 @@ public class Graphs {
 	 *            the max iteration
 	 * @return the i graph
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "layout_force_FR",
 			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
@@ -2681,6 +2687,7 @@ public class Graphs {
 	 *            the max iteration
 	 * @return the i graph
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "layout_force",
 			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
@@ -2751,6 +2758,7 @@ public class Graphs {
 	 *            the coeff sq
 	 * @return the i graph
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "layout_grid",
 			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
@@ -3823,6 +3831,7 @@ public class Graphs {
 	 *            the edges species
 	 * @return the i graph
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "generate_random_graph",
 			concept = {})
@@ -3879,6 +3888,7 @@ public class Graphs {
 	 *            the node species
 	 * @return the i graph
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "generate_random_graph",
 			concept = {})
@@ -3922,6 +3932,7 @@ public class Graphs {
 	 *            the directed
 	 * @return the i graph
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "generate_random_graph",
 			concept = {})
@@ -3951,6 +3962,7 @@ public class Graphs {
 
 	/******************************/
 
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "generate_complete_graph",
 			concept = {})
@@ -3997,6 +4009,7 @@ public class Graphs {
 	 *            the nodes
 	 * @return the i graph
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "generate_complete_graph",
 			concept = {})
@@ -4034,6 +4047,7 @@ public class Graphs {
 	 *            the edges species
 	 * @return the i graph
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "generate_complete_graph",
 			concept = {})
@@ -4084,6 +4098,7 @@ public class Graphs {
 	 *            the node species
 	 * @return the i graph
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "generate_complete_graph",
 			concept = {})
@@ -4122,6 +4137,7 @@ public class Graphs {
 	 *            the directed
 	 * @return the i graph
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "generate_complete_graph",
 			concept = {})

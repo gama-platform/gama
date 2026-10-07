@@ -44,6 +44,7 @@ import cern.jet.stat.Probability;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
 import gama.annotations.test;
 import gama.annotations.usage;
@@ -3116,6 +3117,7 @@ public class Stats {
 	 * @param df
 	 * @return
 	 */
+	@no_fuzz_test ("never returns for some probabilities, e.g. student_t_inverse(0.05, 10)")
 	@operator (
 			value = "student_t_inverse",
 			can_be_const = true,

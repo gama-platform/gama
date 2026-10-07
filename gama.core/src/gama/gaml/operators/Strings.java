@@ -22,6 +22,7 @@ import java.util.regex.PatternSyntaxException;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
 import gama.annotations.test;
 import gama.annotations.usage;
@@ -1179,6 +1180,7 @@ public class Strings {
 	 *            the nb
 	 * @return the string
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "indented_by",
 			can_be_const = true,
@@ -1556,6 +1558,7 @@ public class Strings {
 	/**
 	 * String with.
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "string_with",
 			can_be_const = true,
@@ -1595,6 +1598,7 @@ public class Strings {
 	 *            the str
 	 * @return the string
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = { "compress", "zip" },
 			can_be_const = true,
@@ -1631,6 +1635,7 @@ public class Strings {
 	 *            the str
 	 * @return the string
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = { "uncompress", "decompress", "unzip" },
 			can_be_const = true,

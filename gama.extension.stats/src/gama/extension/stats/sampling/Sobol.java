@@ -29,6 +29,7 @@ import org.moeaframework.util.sequence.Saltelli;
 
 import gama.annotations.doc;
 import gama.annotations.no_test;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
@@ -601,6 +602,7 @@ public final class Sobol {
 	 *            number of parameters in the model
 	 * @return
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "sobol_analysis",
 			type = IType.STRING,

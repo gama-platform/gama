@@ -11,6 +11,7 @@ package gama.gaml.operators;
 
 import gama.annotations.doc;
 import gama.annotations.example;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
 import gama.annotations.test;
 import gama.annotations.usage;
@@ -962,6 +963,7 @@ public class Maths {
 	 *            the n
 	 * @return the double
 	 */
+	@no_fuzz_test ("never returns with #max_int")
 	@operator (
 			value = "fact",
 			can_be_const = true,

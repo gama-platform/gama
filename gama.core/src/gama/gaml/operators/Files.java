@@ -28,6 +28,7 @@ import org.apache.commons.compress.utils.IOUtils;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
 import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
@@ -310,6 +311,7 @@ public class Files {
 	 *            the source
 	 * @return true, if successful
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "delete_file",
 			can_be_const = false,
@@ -339,6 +341,7 @@ public class Files {
 	 *            the source
 	 * @return true, if successful
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "rename_file",
 			can_be_const = false,
@@ -368,6 +371,7 @@ public class Files {
 	 *            the source
 	 * @return true, if successful
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "copy_file",
 			can_be_const = false,
@@ -429,6 +433,7 @@ public class Files {
 	 *            the destination
 	 * @return true, if successful
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "copy_file",
 			can_be_const = false,
@@ -471,6 +476,7 @@ public class Files {
 	 *            the destination
 	 * @return true, if successful
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "unzip",
 			can_be_const = false,
@@ -507,6 +513,7 @@ public class Files {
 	 *            the destination
 	 * @return true, if successful
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "zip",
 			can_be_const = false,
@@ -649,6 +656,7 @@ public class Files {
 	 *            the writable
 	 * @return the i gama file
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "writable",
 			category = IOperatorCategory.FILE,
@@ -785,6 +793,7 @@ public class Files {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = { "new_folder" },
 			index_type = IType.INT,
@@ -813,6 +822,7 @@ public class Files {
 	 * @return true if everything went well, false if there was a problem while flushing
 	 * @throws GamaRuntimeException
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = { "flush_all_files" },
 			category = IOperatorCategory.FILE,

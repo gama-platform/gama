@@ -35,6 +35,7 @@ import org.locationtech.jts.util.AssertionFailedException;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
 import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
@@ -500,6 +501,7 @@ public class SpatialOperators {
 	 *            the prec
 	 * @return the i shape
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "masked_by",
 			category = { IOperatorCategory.SPATIAL },
@@ -659,6 +661,7 @@ public class SpatialOperators {
 	 *            the obstacles
 	 * @return the i shape
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "masked_by",
 			category = { IOperatorCategory.SPATIAL },

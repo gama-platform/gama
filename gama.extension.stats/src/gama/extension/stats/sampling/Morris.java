@@ -28,6 +28,7 @@ import org.apache.commons.io.FilenameUtils;
 
 import gama.annotations.doc;
 import gama.annotations.no_test;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
@@ -427,6 +428,7 @@ public final class Morris {
 	 * @return the result of a morris analysis
 	 *
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "morris_analysis",
 			type = IType.STRING,

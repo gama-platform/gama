@@ -12,6 +12,7 @@ package gama.gaml.operators;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
 import gama.annotations.test;
 import gama.annotations.usage;
@@ -420,6 +421,7 @@ public class Random {
 	 *            the mean
 	 * @return the integer
 	 */
+	@no_fuzz_test ("never returns with an infinite mean")
 	@operator (
 			value = "poisson",
 			category = { IOperatorCategory.RANDOM },
@@ -1003,6 +1005,7 @@ public class Random {
 	 *            the replacement
 	 * @return the i list
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "sample",
 			type = ITypeProvider.TYPE_AT_INDEX + 1,
@@ -1051,6 +1054,7 @@ public class Random {
 	 *            the weights
 	 * @return the i list
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "sample",
 			type = ITypeProvider.TYPE_AT_INDEX + 1,

@@ -35,6 +35,7 @@ import com.google.common.collect.Sets;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
 import gama.annotations.test;
 import gama.annotations.usage;
@@ -373,6 +374,7 @@ public class Containers {
 		 *            the end
 		 * @return the i list
 		 */
+		@no_fuzz_test ("exhausts the memory with the bounds of int, e.g. range(#max_int)")
 		@operator (
 				value = IKeyword.RANGE,
 				content_type = IType.INT,
@@ -410,6 +412,7 @@ public class Containers {
 		 *            the end
 		 * @return the i list
 		 */
+		@no_fuzz_test ("never returns or exhausts the memory with the bounds of int, e.g. to(2, #max_int)")
 		@operator (
 				value = { IKeyword.RANGE, "to" },
 				content_type = IType.INT,
@@ -449,6 +452,7 @@ public class Containers {
 		 *            the step
 		 * @return the i list
 		 */
+		@no_fuzz_test ("exhausts the memory with the bounds of int, e.g. range(#max_int)")
 		@operator (
 				value = IKeyword.RANGE,
 				content_type = IType.INT,
@@ -1085,6 +1089,7 @@ public class Containers {
 	 *            the key
 	 * @return the object
 	 */
+	@no_fuzz_test ("the type of the index is checked at compile time: calls with arbitrary indexes are not valid GAML")
 	@operator (
 			value = { IKeyword.AT, "@" },
 			can_be_const = true,

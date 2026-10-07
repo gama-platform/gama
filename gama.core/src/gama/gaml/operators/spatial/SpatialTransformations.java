@@ -33,6 +33,7 @@ import org.locationtech.jts.simplify.DouglasPeuckerSimplifier;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
 import gama.annotations.test;
 import gama.annotations.usage;
@@ -234,6 +235,7 @@ public class SpatialTransformations {
 	 *            the number of segments
 	 * @return the i shape
 	 */
+	@no_fuzz_test ("never returns with an infinite distance")
 	@operator (
 			value = { IKeyword.PLUS, "buffer", "enlarged_by" },
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_TRANSFORMATIONS },
@@ -269,6 +271,7 @@ public class SpatialTransformations {
 	 *            the end cap
 	 * @return the i shape
 	 */
+	@no_fuzz_test ("never returns with an infinite distance")
 	@operator (
 			value = { IKeyword.PLUS, "buffer", "enlarged_by" },
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_TRANSFORMATIONS },
@@ -306,6 +309,7 @@ public class SpatialTransformations {
 	 *            the is single sided
 	 * @return the i shape
 	 */
+	@no_fuzz_test ("never returns with an infinite distance")
 	@operator (
 			value = { IKeyword.PLUS, "buffer", "enlarged_by" },
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_TRANSFORMATIONS },
@@ -341,6 +345,7 @@ public class SpatialTransformations {
 	 *            the is single sided
 	 * @return the i shape
 	 */
+	@no_fuzz_test ("never returns with an infinite distance")
 	@operator (
 			value = { IKeyword.PLUS, "buffer", "enlarged_by" },
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_TRANSFORMATIONS },
@@ -374,6 +379,7 @@ public class SpatialTransformations {
 	 *            the size
 	 * @return the i shape
 	 */
+	@no_fuzz_test ("never returns with an infinite distance")
 	@operator (
 			value = { IKeyword.PLUS, "buffer", "enlarged_by" },
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_TRANSFORMATIONS },
@@ -1248,6 +1254,7 @@ public class SpatialTransformations {
 	 *            the overlaps
 	 * @return the i list
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with a null or negative size")
 	@operator (
 			value = "to_squares",
 			type = IType.LIST,
@@ -1280,6 +1287,7 @@ public class SpatialTransformations {
 	 *            the overlaps
 	 * @return the i list
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with a null or negative size")
 	@operator (
 			value = "to_squares",
 			type = IType.LIST,
@@ -1314,6 +1322,7 @@ public class SpatialTransformations {
 	 *            the precision
 	 * @return the i list
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with a null or negative size")
 	@operator (
 			value = "to_squares",
 			type = IType.LIST,
@@ -1346,6 +1355,7 @@ public class SpatialTransformations {
 	 *            the overlaps
 	 * @return the i list
 	 */
+	@no_fuzz_test ("exhausts the memory with a null size")
 	@operator (
 			value = "to_rectangles",
 			content_type = IType.GEOMETRY,
@@ -1380,6 +1390,7 @@ public class SpatialTransformations {
 	 *            the overlaps
 	 * @return the i list
 	 */
+	@no_fuzz_test ("exhausts the memory with a null size")
 	@operator (
 			value = "to_rectangles",
 			type = IType.LIST,
@@ -1414,6 +1425,7 @@ public class SpatialTransformations {
 	 *            the dimension
 	 * @return the i list
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with a null or negative size")
 	@operator (
 			value = { "split_geometry", "to_squares" },
 			content_type = IType.GEOMETRY,
@@ -1443,6 +1455,7 @@ public class SpatialTransformations {
 	 *            the dimension
 	 * @return the i list
 	 */
+	@no_fuzz_test ("exhausts the memory with a null size")
 	@operator (
 			value = { "split_geometry", "to_rectangles" },
 			content_type = IType.GEOMETRY,
@@ -1473,6 +1486,7 @@ public class SpatialTransformations {
 	 *            the nb rows
 	 * @return the i list
 	 */
+	@no_fuzz_test ("exhausts the memory with a null size")
 	@operator (
 			value = { "split_geometry", "to_rectangles" },
 			content_type = IType.GEOMETRY,

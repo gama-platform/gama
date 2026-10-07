@@ -27,6 +27,7 @@ import org.geotools.filter.ConstantExpression;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
 import gama.annotations.test;
 import gama.annotations.usage;
@@ -470,6 +471,7 @@ public class Dates {
 	 *            the end
 	 * @return the i list
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with the bounds of int, e.g. to(2, #max_int)")
 	@operator (
 			value = "to",
 			category = { IOperatorCategory.DATE },
@@ -628,6 +630,7 @@ public class Dates {
 	 *            the date
 	 * @return true, if successful
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with the bounds of int, e.g. to(2, #max_int)")
 	@operator (
 			value = { "until", "to" },
 			category = { IOperatorCategory.DATE },
@@ -766,6 +769,7 @@ public class Dates {
 	 *            the date
 	 * @return true, if successful
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with the bounds of int, e.g. to(2, #max_int)")
 	@operator (
 			value = { "until", "to" },
 			doc = @doc ("Returns true if the first operand is true and the current date is equal to or situated before the second operand"),
