@@ -10,8 +10,6 @@
  ********************************************************************************************************/
 package gaml.compiler.expressions;
 
-import gama.annotations.variable;
-import gama.annotations.vars;
 import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.documentation.GamlRegularDocumentation;
@@ -63,16 +61,7 @@ public class TypeFieldExpression extends UnaryOperator {
 	public IGamlDocumentation getDocumentation() {
 		final StringBuilder sb = new StringBuilder(200);
 		if (child != null) { sb.append("Defined on objects of type " + child.getGamlType().getName()); }
-		final vars annot = prototype.getJavaBase().getAnnotation(vars.class);
-		if (annot != null) {
-			final variable[] allVars = annot.value();
-			for (final variable v : allVars) {
-				if (v.name().equals(getName()) && v.doc().length > 0) {
-					sb.append("<br/>");
-					sb.append(v.doc()[0].value());
-				}
-			}
-		}
+		sb.append("<br/>").append(prototype.getDocumentation().toString());
 		return new GamlRegularDocumentation(sb);
 	}
 

@@ -996,6 +996,13 @@ public class GamlExpressionFactory implements IExpressionFactory {
 		// Validate that artefact is an operator and passes validation rules
 		if (artefact instanceof OperatorArtefact proto
 				&& proto.getValidator().validate(context, currentEObject, exprs)) {
+			if (proto.isVarOrField() && context != null) {
+				final String deprecationMessage = proto.getDeprecated();
+				if (deprecationMessage != null) {
+					context.warning(proto.getName() + " is deprecated: " + deprecationMessage, IGamlIssue.DEPRECATED,
+							currentEObject);
+				}
+			}
 			// Choose operator implementation based on number of arguments
 			switch (proto.getSignature().size()) {
 				case 1:

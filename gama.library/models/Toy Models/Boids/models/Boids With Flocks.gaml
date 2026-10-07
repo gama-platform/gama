@@ -123,7 +123,7 @@ species flock skills: [moving] {
 		float step_distance <- speed * step;
 		float dx <- step_distance * (cos(direction_to_nearest_ball));
 		float dy <- step_distance * (sin(direction_to_nearest_ball));
-		geometry envelope <- shape.envelope;
+		geometry envelope <- envelope(shape);
 		float min_y <- (envelope.points with_min_of (each.y)).y;
 		float min_x <- (envelope.points with_min_of (each.x)).x;
 		float max_x <- (envelope.points with_max_of (each.x)).x;

@@ -203,6 +203,11 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 		if (isSpeciesName(op))
 			return FACTORY.createAs(context.getContext(), expr, getSpeciesContext(op).getSpeciesExpr());
 
+		// Prefer a matching unary operator over a same-named field (e.g. envelope(geometry)).
+		if (FACTORY.hasOperator(op, new Signature(expr))) {
+			return FACTORY.createOperator(op, context.getContext(), e, expr);
+		}
+
 		// Check for field getter
 		final IArtefact proto = expr.getGamlType().getGetter(op);
 		if (proto != null) {

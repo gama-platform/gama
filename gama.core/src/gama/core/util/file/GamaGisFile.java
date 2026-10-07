@@ -47,6 +47,7 @@ import gama.api.utils.geometry.GeometryUtils;
 import gama.api.utils.geometry.ICoordinates;
 import gama.api.utils.geometry.IEnvelope;
 import gama.core.geometry.GamaGisGeometry;
+import gama.core.geometry.GamaShape;
 import gama.core.topology.gis.GamaCRS;
 import gama.core.topology.gis.ProjectionFactory;
 
@@ -341,7 +342,10 @@ public abstract class GamaGisFile extends GamaGeometryFile {
 
 	@Override
 	protected IShape buildGeometry(final IScope scope) {
-		return GamaShapeFactory.geometriesToGeometry(scope, getBuffer());
+		final IShape result = GamaShapeFactory.geometriesToGeometry(scope, getBuffer());
+		// Makes geometry(file).envelope consistent with envelope(file)
+		if (result instanceof GamaShape gs) { gs.setSourceEnvelope(computeEnvelope(scope)); }
+		return result;
 	}
 
 	/**
