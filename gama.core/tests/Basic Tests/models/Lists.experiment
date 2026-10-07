@@ -18,6 +18,21 @@ experiment Lists  type:test {
 	init {
 		rng <- "mersenne";	
 	}
+
+	test empty_matrices {
+		matrix<int> empty <- matrix<int>([]);
+		matrix<int> nested_empty <- matrix<int>([[]]);
+		matrix<int> multiple_empty <- matrix<int>([[], []]);
+
+		assert empty.columns = 0;
+		assert empty.rows = 0;
+		assert nested_empty.columns = 0;
+		assert nested_empty.rows = 0;
+		assert multiple_empty.columns = 0;
+		assert multiple_empty.rows = 0;
+		assert empty = nested_empty;
+		assert nested_empty = multiple_empty;
+	}
 	
 	test accessing_tests{	
 		seed <- 0.0327;
