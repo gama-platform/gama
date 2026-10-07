@@ -31,6 +31,7 @@ import org.geotools.api.data.Query;
 import org.geotools.api.data.SimpleFeatureSource;
 import org.geotools.api.feature.type.AttributeDescriptor;
 import org.geotools.api.feature.type.GeometryType;
+import org.geotools.data.collection.ListFeatureCollection;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.files.ShpFiles;
 import org.geotools.data.shapefile.shp.ShapefileReader;
@@ -423,6 +424,9 @@ public class GamaShapeFile extends GamaGisFile {
 	/** The attributes. */
 	private Map<String, String> attributes = null;
 
+	/** The materialized feature collection. */
+	private SimpleFeatureCollection featureCollection;
+
 	@Override
 	public IList<String> getAttributes(final IScope scope) {
 		if (attributes == null) {
@@ -552,12 +556,14 @@ public class GamaShapeFile extends GamaGisFile {
 
 	@Override
 	protected SimpleFeatureCollection getFeatureCollection(final IScope scope) {
+		if (featureCollection != null) return featureCollection;
+		FileDataStore store = null;
 		try {
 			final File file = getFile(scope);
 			if (!file.exists()) { throw new FileNotFoundException("Shapefile not found: " + file.getAbsolutePath()); }
 
 			// if (store == null) { store = getDataStoreOld(getFile(scope).toURI().toURL()); }
-			final FileDataStore store = getDataStore(file.toURI().toURL());
+			store = getDataStore(file.toURI().toURL());
 			if (store == null) { throw new IOException("Unable to open shapefile: " + file.getAbsolutePath()); }
 			final SimpleFeatureSource source = store.getFeatureSource();
 			// AD See Issue #3094. This constitutes a workaround
@@ -567,12 +573,14 @@ public class GamaShapeFile extends GamaGisFile {
 					GamaCoordinateSequenceFactory.getJTSCoordinateSequenceFactory());
 			query.getHints().put(Hints.JTS_GEOMETRY_FACTORY, GeometryUtils.getGeometryFactory());
 			// AD
-			SimpleFeatureCollection collection = source.getFeatures(query);
-			if (source.getDataStore() != null) { source.getDataStore().dispose(); }
-			return collection;
+			featureCollection = new ListFeatureCollection(source.getFeatures(query));
+			return featureCollection;
 
 		} catch (IOException e) {
 			throw create(e, scope);
+		} finally {
+			// GeoTools may return a lazy collection, so materialize it before disposing the datastore.
+			if (store != null) { store.dispose(); }
 		}
 	}
 
@@ -581,6 +589,13 @@ public class GamaShapeFile extends GamaGisFile {
 		// This line deactivated because of issue #3525
 		// if (getBuffer() == null) return getFeatureCollection(scope).size();
 		return super.length(scope);
+	}
+
+	@Override
+	public void invalidateContents() {
+		super.invalidateContents();
+		featureCollection = null;
+		attributes = null;
 	}
 
 }
