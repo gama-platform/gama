@@ -271,10 +271,11 @@ public class GamaJoint implements IJointDefinition {
 		com.jme3.math.Quaternion rotA = a.getPhysicsRotation(new com.jme3.math.Quaternion());
 		com.jme3.math.Quaternion rotB = b.getPhysicsRotation(new com.jme3.math.Quaternion());
 		com.jme3.math.Vector3f pointA = a.getPhysicsLocation(new com.jme3.math.Vector3f())
-				.add(rotA.mult(frameA.getTranslation()));
+				.add(rotA.toRotationMatrix().mult(frameA.getTranslation(), new com.jme3.math.Vector3f()));
 		com.jme3.math.Vector3f pointB = b.getPhysicsLocation(new com.jme3.math.Vector3f())
-				.add(rotB.mult(frameB.getTranslation()));
-		com.jme3.math.Vector3f axis = rotA.mult(frameA.getRotation()).mult(com.jme3.math.Vector3f.UNIT_X);
+				.add(rotB.toRotationMatrix().mult(frameB.getTranslation(), new com.jme3.math.Vector3f()));
+		com.jme3.math.Vector3f axis = rotA.mult(frameA.getRotation()).toRotationMatrix()
+				.mult(com.jme3.math.Vector3f.UNIT_X, new com.jme3.math.Vector3f());
 		return pointB.subtract(pointA).dot(axis);
 	}
 

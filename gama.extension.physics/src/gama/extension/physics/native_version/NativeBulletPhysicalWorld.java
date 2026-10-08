@@ -366,6 +366,6 @@ public class NativeBulletPhysicalWorld extends AbstractPhysicalWorld<PhysicsSpac
 		Matrix3f worldBasis = new Matrix3f();
 		worldBasis.fromAxes(worldAxis, second, third);
 		Matrix3f inverseRotation = body.getPhysicsRotation(new Quaternion()).inverse().toRotationMatrix();
-		return inverseRotation.mult(worldBasis);
+		return inverseRotation.mult(worldBasis, new Matrix3f());
 	}
 }
