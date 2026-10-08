@@ -82,11 +82,25 @@ public class SerialisationOperators {
 							equals = " 1 as node",
 							isExecutable = false) },
 			see = {})
-	@test ("to_gaml(true) = 'true'")
-	@test ("to_gaml(5::34) = '5::34'")
-	@test ("to_gaml([1,5,9,3]) = '[1,5,9,3]'")
-	@test ("to_gaml(['a'::345, 'b'::13, 'c'::12]) = \"map([\'a\'::345,\'b\'::13,\'c\'::12])\"")
-	@test ("to_gaml([[3,5,7,9],[2,4,6,8]]) = '[[3,5,7,9],[2,4,6,8]]'")
+	@tests ({
+			@test ("to_gaml(true) = 'true'"),
+			@test ("to_gaml(5::34) = '5::34'"),
+			@test ("to_gaml([1,5,9,3]) = '[1,5,9,3]'"),
+			@test ("to_gaml(['a'::345, 'b'::13, 'c'::12]) = \"map([\'a\'::345,\'b\'::13,\'c\'::12])\""),
+			@test ("to_gaml([[3,5,7,9],[2,4,6,8]]) = '[[3,5,7,9],[2,4,6,8]]'"),
+			@test ("to_gaml(#infinity) = \"#infinity\""),
+			@test ("to_gaml(#nan) = \"#nan\""),
+			@test ("to_gaml(12) = \"12\""),
+			@test ("to_gaml(3.5) = \"3.5\""),
+			@test ("to_gaml(true) = \"true\""),
+			@test ("to_gaml(nil) = \"nil\""),
+			@test ("to_gaml(\"text\") = \"'text'\""),
+			@test ("to_gaml([\"a\"::1]) = \"map(['a'::1])\""),
+			@test ("to_gaml(1::2) = \"1::2\""),
+			@test ("to_gaml({1, 2}) = \"{1.0,2.0,0.0}\""),
+			@test ("to_gaml(#red) = \"#red\""),
+			@test ("to_gaml(matrix([[1, 2], [3, 4]])) = \"matrix<int>([[1,2],[3,4]])\"")
+	})
 	public static String toGaml(final Object val) {
 		return StringUtils.toGaml(val, false);
 	}
@@ -186,6 +200,27 @@ public class SerialisationOperators {
 					This choice allows to manage cross references between agents""",
 			see = { "serialize", "to_gaml" })
 	@no_test
+	@tests ({
+			@test ("to_json(1) = \"1\""),
+			@test ("to_json(1.2) = \"1.2\""),
+			@test ("to_json(\"\") = '\"\"'"),
+			@test ("to_json(\"abcd\") = '\"abcd\"'"),
+			@test ("to_json([]) = \"[]\""),
+			@test ("to_json([1,\"a\",false]) = '[1,\"a\",false]'"),
+			@test ("to_json([[1,2,3],[4,5,6]]) = '[[1,2,3],[4,5,6]]'"),
+			@test ("to_json(nil) = 'null'"),
+			@test ("map my_var <- [ \"x\"::\"abc\", \"y\"::#red, \"z\"::123, \"123\"::10.2, \"a\"::false ]; to_json(my_var) = '{\"x\":\"abc\",\"y\":{\"gaml_type\":\"rgb\",\"red\":255,\"green\":0,\"blue\":0,\"alpha\":255},\"z\":123,\"123\":10.2,\"a\":false}'"),
+			@test ("to_json(3.5) = \"3.5\""),
+			@test ("to_json(true) = \"true\""),
+			@test ("to_json(nil) = \"null\""),
+			@test ("to_json(\"text\") = '\"text\"'"),
+			@test ("to_json([1, [2, [3]]]) = \"[1,[2,[3]]]\""),
+			@test ("to_json([\"a\"::1, \"b\"::[1, 2]]) = '{\"a\":1,\"b\":[1,2]}'"),
+			// GAML types with no JSON equivalent are tagged with their type
+			@test ("to_json({1, 2, 3}) = '{\"gaml_type\":\"point\",\"x\":1.0,\"y\":2.0,\"z\":3.0}'"),
+			@test ("to_json(#red) = '{\"gaml_type\":\"rgb\",\"red\":255,\"green\":0,\"blue\":0,\"alpha\":255}'"),
+			@test ("to_json(1::2) = '{\"gaml_type\":\"pair<int, int>\",\"key\":1,\"value\":2}'")
+	})
 	public static String toJson(final IScope scope, final Object obj) {
 		return toJson(scope, obj, false);
 	}
@@ -252,7 +287,16 @@ public class SerialisationOperators {
 			@test ("from_binary(to_binary(map(['x'::-#infinity]))) = map(['x'::-#infinity])"),
 			@test ("from_binary(to_binary(#nan)) = #nan"),
 			@test ("from_binary(to_binary(map([\"x\"::#nan]))) = map([\"x\"::#nan])"),
-			@test ("from_binary(to_binary('')) = ''")
+			@test ("from_binary(to_binary('')) = ''"),
+			@test ("from_binary(to_binary(12)) = 12"),
+			@test ("from_binary(to_binary(\"text\")) = \"text\""),
+			@test ("from_binary(to_binary([1, \"a\", 2.5, true])) = [1, \"a\", 2.5, true]"),
+			@test ("from_binary(to_binary([\"k\"::{1, 2}, \"c\"::#red])) = [\"k\"::{1, 2}, \"c\"::#red]"),
+			@test ("from_binary(to_binary(matrix([[1, 2], [3, 4]]))) = matrix([[1, 2], [3, 4]])"),
+			@test ("from_binary(to_binary(date(\"2026-01-02T03:04:05\"))) = date(\"2026-01-02T03:04:05\")"),
+			@test ("deserialize(serialize(3.5)) = 3.5"),
+			@test ("deserialize(serialize([1, 2, 3])) = [1, 2, 3]"),
+			@test ("deserialize(serialize([\"k\"::[1, 2]])) = [\"k\"::[1, 2]]")
 	})
 	@doc (
 			value = "Deserializes an object precedently serialized using `serialize` or `to_binary`."
@@ -285,6 +329,35 @@ public class SerialisationOperators {
 			value = "Deserializes an object precedently serialized using 'to_json' (or an arbitrary json string obtained elsewhere). Agents and populations are not supported yet (i.e. they will return maps)",
 			see = { "from_gaml", "from_binary" })
 	@no_test
+	@tests ({
+			@test ("from_json(\"1\") = 1"),
+			@test ("from_json(\"1.2\") = 1.2"),
+			@test ("from_json('\"\"') = \"\""),
+			@test ("from_json('\"abcd\"') = \"abcd\""),
+			@test ("from_json('[]') = []"),
+			@test ("from_json('[1,\"a\",false]') = [1,\"a\",false]"),
+			@test ("from_json('[[1,2,3],[4,5,6]]') = [[1,2,3],[4,5,6]]"),
+			@test ("from_json(\"null\") = nil"),
+			@test ("map my_var <- [ \"x\"::\"abc\", \"y\"::#red, \"z\"::123, \"123\"::10.2, \"a\"::false ]; from_json('{\"x\":\"abc\",\"y\":{\"gaml_type\":\"rgb\",\"red\":255,\"green\":0,\"blue\":0,\"alpha\":255},\"z\":123,\"123\":10.2,\"a\":false}') = my_var"),
+			@test ("map my_var2 <- [\"x\"::\"abc\",\"y\"::#red,\"z\"::123,\"123\"::10.2,\"a\"::false, \"e\"::[1,2,3]]; from_json(to_json(my_var2)) = my_var2"),
+			@test ("from_json(\"3\") = 3"),
+			@test ("from_json('\"text\"') = \"text\""),
+			@test ("from_json(\"[]\") = []"),
+			@test ("from_json('[1, \"a\", 2.5, true, null]') = [1, \"a\", 2.5, true, nil]"),
+			@test ("map<string, unknown> parsed <- from_json('{\"a\": 1.5, \"b\": \"s\", \"c\": true, \"d\": null, \"e\": {\"f\": [1, 2]}}'); parsed[\"a\"] = 1.5"),
+			@test ("map<string, unknown> parsed2 <- from_json('{\"a\": 1.5, \"b\": \"s\", \"c\": true, \"d\": null, \"e\": {\"f\": [1, 2]}}'); parsed2[\"b\"] = \"s\""),
+			@test ("map<string, unknown> parsed3 <- from_json('{\"a\": 1.5, \"b\": \"s\", \"c\": true, \"d\": null, \"e\": {\"f\": [1, 2]}}'); parsed3[\"c\"] = true"),
+			@test ("map<string, unknown> parsed4 <- from_json('{\"a\": 1.5, \"b\": \"s\", \"c\": true, \"d\": null, \"e\": {\"f\": [1, 2]}}'); parsed4[\"d\"] = nil"),
+			@test ("map<string, unknown> parsed5 <- from_json('{\"a\": 1.5, \"b\": \"s\", \"c\": true, \"d\": null, \"e\": {\"f\": [1, 2]}}'); map(parsed5[\"e\"])[\"f\"] = [1, 2]"),
+			@test ("from_json(to_json([1, [2, [3]]])) = [1, [2, [3]]]"),
+			@test ("from_json(to_json([\"a\"::1, \"b\"::[1, 2]])) = [\"a\"::1, \"b\"::[1, 2]]"),
+			@test ("from_json(to_json({1, 2, 3})) = {1, 2, 3}"),
+			@test ("from_json(to_json(#red)) = #red"),
+			@test ("from_json(to_json(1::2)) = 1::2"),
+			@test ("from_json(to_json(matrix([[1, 2], [3, 4]]))) = matrix([[1, 2], [3, 4]])"),
+			@test ("from_json(to_json(date(\"2026-01-02T03:04:05\"))) = date(\"2026-01-02T03:04:05\")"),
+			@test ("from_json(to_json([\"k\"::{1, 2}])) = [\"k\"::{1, 2}]")
+	})
 	public static Object fromJson(final IScope scope, final String s) {
 		return GAMA.getJsonEncoder().parse(s).toGamlValue(scope);
 	}
@@ -308,6 +381,26 @@ public class SerialisationOperators {
 			examples = { @example (
 					value = "eval_gaml(\"2+3\")",
 					equals = "5") })
+	@tests ({
+			@test ("string expr <- \"10 + 20\"; int result <- int(eval_gaml(expr)); result = 30"),
+			@test ("string expr2 <- \"[1, 2, 3] collect (each * 2)\"; list<int> l_result <- list<int>(eval_gaml(expr2)); length(l_result) = 3"),
+			@test ("string expr22 <- \"[1, 2, 3] collect (each * 2)\"; list<int> l_result2 <- list<int>(eval_gaml(expr22)); l_result2[1] = 4"),
+			@test ("from_gaml(to_gaml(\"it's\")) = \"it's\""),
+			@test ("from_gaml(\"12\") = 12"),
+			@test ("from_gaml(\"[1, 2] + [3]\") = [1, 2, 3]"),
+			@test ("from_gaml(\"3 * 4\") = 12"),
+			@test ("from_gaml(\"'a' + 'b'\") = \"ab\""),
+			@test ("from_gaml(to_gaml(12)) = 12"),
+			@test ("from_gaml(to_gaml(3.5)) = 3.5"),
+			@test ("from_gaml(to_gaml(\"text\")) = \"text\""),
+			@test ("from_gaml(to_gaml([1, 2, 3])) = [1, 2, 3]"),
+			@test ("from_gaml(to_gaml([\"a\"::1, \"b\"::2])) = [\"a\"::1, \"b\"::2]"),
+			@test ("from_gaml(to_gaml(1::2)) = 1::2"),
+			@test ("from_gaml(to_gaml({1, 2, 3})) = {1, 2, 3}"),
+			@test ("from_gaml(to_gaml(#red)) = #red"),
+			@test ("from_gaml(to_gaml(matrix([[1, 2], [3, 4]]))) = matrix([[1, 2], [3, 4]])"),
+			@test ("from_gaml(to_gaml(date(\"2026-01-02T03:04:05\"))) = date(\"2026-01-02T03:04:05\")")
+	})
 	public static Object opEvalGaml(final IScope scope, final String gaml) {
 		final IAgent agent = scope.getAgent();
 		final IDescription d = agent.getSpecies().getDescription();
