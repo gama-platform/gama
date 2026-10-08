@@ -1,8 +1,12 @@
 /**
 * Name: Drive Random
-* Description: Vehicles driving randomly in a road graph
 * Author: Duc Pham
-* Tags: gis, shapefile, graph, agent_movement, skill, transport
+* Description: Demonstrates vehicles navigating randomly on a GIS road network using the driving skill.
+*   Instead of following a planned route, each vehicle picks a random next road at every intersection,
+*   creating diffuse traffic flow. Lane discipline, speed limits, and car-following behaviour are still
+*   enforced by the skill. Useful for modelling background traffic or exploring the road network without
+*   a destination. Imports the shared Traffic base model.
+* Tags: driving_skill, GIS, shapefile, graph, agent_movement, skill, transport, random, road_network
 */
 
 model DriveRandom
@@ -39,8 +43,8 @@ global {
 			}
 		}
 		
-		create intersection from: shp_nodes
-				with: [is_traffic_signal::(read("type") = "traffic_signals")] {
+		create intersection(is_traffic_signal:(read("type") = "traffic_signals")) from: shp_nodes
+				 {
 			time_to_change <- traffic_light_interval;
 		}
 		
@@ -51,7 +55,7 @@ global {
 		non_deadend_nodes <- intersection where !empty(each.roads_out);
 		// Initialize the traffic lights
 		ask intersection {
-			do initialize;
+			do initialize();
 		}
 		
 		create motorbike_random number: num_motorbikes;
@@ -68,12 +72,12 @@ species vehicle_random parent: base_vehicle {
 
 	// Move the vehicle to a random node when it reaches a deadend
 	reflex relocate when: next_road = nil and distance_to_current_target = 0.0 {
-		do unregister;
+		do unregister();
 		location <- one_of(non_deadend_nodes).location;
 	}
 	
 	reflex commute {
-		do drive_random graph: road_graph;
+		do drive_random (graph: road_graph);
 	}
 }
 
@@ -116,12 +120,12 @@ experiment ring type: gui {
 
 	parameter 'Traffic light interval' var:traffic_light_interval;
 	
-	action _init_{ 
-		create simulation with:[
-			map_name::"ring",
-			num_cars::50,
-			num_motorbikes::100
-		];
+	action _init_(){ 
+		create simulation (
+			map_name:"ring",
+			num_cars:50,
+			num_motorbikes:100
+		);
 	}
 
 	output synchronized: true {
@@ -136,12 +140,12 @@ experiment ring type: gui {
 
 
 experiment city type: gui {
-	action _init_{
-		create simulation with:[
-			map_name::"rouen",
-			num_cars::100,
-			num_motorbikes::200
-		];
+	action _init_(){
+		create simulation (
+			map_name:"rouen",
+			num_cars:100,
+			num_motorbikes:200
+		);
 	}
 
 	output synchronized: true {

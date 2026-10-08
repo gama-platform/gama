@@ -1,8 +1,11 @@
 /**
-* Name: Mix Drive City
-* Description: Vehicles driving in a road graph
-* Author: Duc Pham and Patrick Taillandier
-* Tags: gis, shapefile, graph, agent_movement, skill, transport
+* Name: Simple Intersection
+* Author: Duc Pham, Patrick Taillandier
+* Description: Demonstrates intersection management in the driving skill. A synthetic environment with
+*   a single intersection is used to test traffic-light cycles and right-of-way rules. Vehicles approach
+*   the intersection from multiple directions; a traffic-light species controls flow. Shows how to create
+*   intersection agents that manage vehicle priority, implement signal phases, and handle turning movements.
+* Tags: driving_skill, GIS, shapefile, graph, agent_movement, skill, transport, intersection, traffic_light
 */
 
 model simple_intersection
@@ -28,19 +31,19 @@ global {
 	graph road_network;
 	
 	init {
-		create intersection with: (location: {10,size_environment/2});
-		create intersection with: (location: {size_environment/2,size_environment/2});
-		create intersection with: (location: {size_environment / 2 + 30,size_environment/2}, is_traffic_signal: true);
-		create intersection with: (location: {size_environment - 10,size_environment/2});
+		create intersection(location: {10,size_environment/2});
+		create intersection(location: {size_environment/2,size_environment/2});
+		create intersection(location: {size_environment / 2 + 30,size_environment/2}, is_traffic_signal: true);
+		create intersection(location: {size_environment - 10,size_environment/2});
 	
-		create intersection with: (location: {size_environment/2, 10});
-		create intersection with: (location: {size_environment/2,size_environment - 10});
+		create intersection(location: {size_environment/2, 10});
+		create intersection(location: {size_environment/2,size_environment - 10});
 		
-		create road with:(num_lanes:1, maxspeed: 50#km/#h, shape:line([intersection[0],intersection[1]]));
-		create road with:(num_lanes:1, maxspeed: 50#km/#h, shape:line([intersection[1],intersection[2]]));
-		create road with:(num_lanes:1, maxspeed: 50#km/#h, shape:line([intersection[2],intersection[3]]));
-		create road with:(num_lanes:1, maxspeed: 50#km/#h, shape:line([intersection[4],intersection[1]]));
-		create road with:(num_lanes:1, maxspeed: 50#km/#h, shape:line([intersection[1],intersection[5]]));
+		create road(num_lanes:1, maxspeed: 50#km/#h, shape:line([intersection[0],intersection[1]]));
+		create road(num_lanes:1, maxspeed: 50#km/#h, shape:line([intersection[1],intersection[2]]));
+		create road(num_lanes:1, maxspeed: 50#km/#h, shape:line([intersection[2],intersection[3]]));
+		create road(num_lanes:1, maxspeed: 50#km/#h, shape:line([intersection[4],intersection[1]]));
+		create road(num_lanes:1, maxspeed: 50#km/#h, shape:line([intersection[1],intersection[5]]));
 		
 	
 		//build the graph from the roads and intersections
@@ -48,14 +51,14 @@ global {
 		
 		//for traffic light, initialize their counter value (synchronization of traffic lights)
 		ask intersection where each.is_traffic_signal {
-			do initialize;
+			do initialize();
 		}
 		
 	}
 	
 	reflex add_car {
-		create car with: (location: intersection[0].location, target: intersection[3]);
-		create car with: (location: intersection[4].location, target: intersection[5]);
+		create car (location: intersection[0].location, target: intersection[3]);
+		create car (location: intersection[4].location, target: intersection[5]);
 	}
 }
 
@@ -86,17 +89,17 @@ species intersection skills: [intersection_skill] {
 	rgb color <- #yellow;
 
 	//initialize the traffic light
-	action initialize {
-		do compute_crossing;
+	action initialize() {
+		do compute_crossing();
 		stop << [];
 		if (flip(0.5)) {
-			do to_green;
+			do to_green();
 		} else {
-			do to_red;
+			do to_red();
 		}
 	}
 
-	action compute_crossing {
+	action compute_crossing() {
 		if (length(roads_in) >= 2) {
 			road rd0 <- road(roads_in[0]);
 			list<point> pts <- rd0.shape.points;
@@ -119,14 +122,14 @@ species intersection skills: [intersection_skill] {
 	}
 
 	//shift the traffic light to green
-	action to_green {
+	action to_green() {
 		stop[0] <- ways2;
 		color <- #green;
 		is_green <- true;
 	}
 
 	//shift the traffic light to red
-	action to_red {
+	action to_red() {
 		stop[0] <- ways1;
 		color <- #red;
 		is_green <- false;
@@ -138,9 +141,9 @@ species intersection skills: [intersection_skill] {
 		if (counter >= time_to_change) {
 			counter <- 0.0;
 			if is_green {
-				do to_red;
+				do to_red();
 			} else {
-				do to_green;
+				do to_green();
 			}
 		}
 	}
@@ -174,21 +177,21 @@ species car skills: [driving] {
 	}
 	//choose a random target and compute the path to it
 	reflex choose_path when: final_target = nil {
-		do compute_path graph: road_network target: target; 
+		do compute_path (graph: road_network, target: target); 
 	}
 	reflex move when: final_target != nil {
-		do drive;
+		do drive();
 		//if arrived at target, kill it and create a new car
 		if (final_target = nil) {
-			do unregister;
-			do die;
+			do unregister();
+			do die();
 		}
 	}
 	
 	// Just use for display purpose
 	// Shifts the position of the vehicle perpendicularly to the road,
 	// in order to visualize different lanes
-	point compute_position {
+	point compute_position() {
 		if (current_road != nil) {
 			float dist <- (road(current_road).num_lanes - lowest_lane -
 				mean(range(num_lanes_occupied - 1)) - 0.5) * lane_width;

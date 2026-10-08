@@ -7,6 +7,8 @@ import gaml.compiler.gaml.ActionArguments;
 import gaml.compiler.gaml.ArgumentDefinition;
 import gaml.compiler.gaml.GamlPackage;
 
+import gaml.compiler.serializer.GamlEObjectImpl;
+
 import java.util.Collection;
 
 import org.eclipse.emf.common.notify.NotificationChain;
@@ -15,8 +17,6 @@ import org.eclipse.emf.common.util.EList;
 
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.InternalEObject;
-
-import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
 
 import org.eclipse.emf.ecore.util.EObjectContainmentEList;
 import org.eclipse.emf.ecore.util.InternalEList;
@@ -34,7 +34,7 @@ import org.eclipse.emf.ecore.util.InternalEList;
  *
  * @generated
  */
-public class ActionArgumentsImpl extends MinimalEObjectImpl.Container implements ActionArguments
+public class ActionArgumentsImpl extends GamlEObjectImpl implements ActionArguments
 {
   /**
    * The cached value of the '{@link #getArgs() <em>Args</em>}' containment reference list.

@@ -20,9 +20,9 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
+import gama.api.GAMA;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
 import gama.dev.DEBUG;
 import gama.extension.network.common.Connector;
 import gama.extension.network.common.GamaNetworkException;

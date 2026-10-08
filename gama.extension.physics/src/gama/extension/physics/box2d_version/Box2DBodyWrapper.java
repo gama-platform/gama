@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * Box2DBodyWrapper.java, in gaml.extensions.physics, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * Box2DBodyWrapper.java, in gama.extension.physics, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -21,16 +21,17 @@ import org.jbox2d.dynamics.BodyType;
 import org.jbox2d.dynamics.FixtureDef;
 import org.jbox2d.dynamics.World;
 
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.util.GamaPair;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.pair.GamaPairFactory;
 import gama.dev.DEBUG;
 import gama.extension.physics.common.AbstractBodyWrapper;
 import gama.extension.physics.common.IBody;
 import gama.extension.physics.gaml.PhysicalSimulationAgent;
-import gama.gaml.types.GamaGeometryType;
-import gama.gaml.types.Types;
 
 /**
  * The Class Box2DBodyWrapper.
@@ -80,29 +81,33 @@ public class Box2DBodyWrapper extends AbstractBodyWrapper<World, Body, Shape, Ve
 		def = new BodyDef();
 		fixtureDef = new FixtureDef();
 		IBody previous = (IBody) agent.getAttribute(BODY);
+		def.type = isStatic ? BodyType.STATIC : BodyType.DYNAMIC;
+		def.allowSleep = false;
+		def.userData = this;
+		def.bullet = true;
 		if (previous != null) {
-			GamaPoint pointTransfer = new GamaPoint();
-			def.type = isStatic ? BodyType.STATIC : BodyType.DYNAMIC;
+			IPoint pointTransfer = GamaPointFactory.create();
 			def.angularDamping = previous.getAngularDamping();
-			def.angularVelocity = toBox2D(previous.getAngularVelocity(pointTransfer).norm());
+			def.angularVelocity = toBox2D(previous.getAngularVelocity(pointTransfer).getZ());
 			def.linearDamping = previous.getLinearDamping();
 			toVector(previous.getLinearVelocity(pointTransfer), def.linearVelocity);
-			def.allowSleep = false;
-			def.userData = this;
-			def.bullet = true;
 		}
 		Body newBody = world.createBody(def);
+		fixtureDef.density = 1f;
+		fixtureDef.shape = shape;
 		if (previous != null) {
-			fixtureDef.setDensity(1f);
-			fixtureDef.setFriction(previous.getFriction());
-			fixtureDef.setRestitution(previous.getRestitution());
-			fixtureDef.setShape(shape);
-			fixtureDef.setSensor(false);
+			fixtureDef.friction = previous.getFriction();
+			fixtureDef.restitution = previous.getRestitution();
 		}
 		newBody.createFixture(fixtureDef);
 		ms = new MassData();
-		if (previous != null) { ms.mass = previous.getMass(); }
-		newBody.setMassData(ms);
+		newBody.getMassData(ms);
+		if (previous != null && !isStatic) {
+			float initialMass = ms.mass;
+			ms.mass = previous.getMass();
+			if (initialMass > 0) { ms.I *= ms.mass / initialMass; }
+			newBody.setMassData(ms);
+		}
 		return newBody;
 	}
 
@@ -128,13 +133,14 @@ public class Box2DBodyWrapper extends AbstractBodyWrapper<World, Body, Shape, Ve
 	}
 
 	@Override
-	public GamaPoint getAngularVelocity(final GamaPoint v) {
-		v.setLocation(0, 0, body.getAngularVelocity());
-		return v;
+	public IPoint getAngularVelocity(final IPoint v) {
+		IPoint result = v == null ? GamaPointFactory.create() : v;
+		result.setLocation(0, 0, body.getAngularVelocity());
+		return result;
 	}
 
 	@Override
-	public GamaPoint getLinearVelocity(final GamaPoint v) {
+	public IPoint getLinearVelocity(final IPoint v) {
 		return toGamaPoint(body.getLinearVelocity(), v);
 	}
 
@@ -142,7 +148,7 @@ public class Box2DBodyWrapper extends AbstractBodyWrapper<World, Body, Shape, Ve
 	public IShape getAABB() {
 		AABB aabb = body.getFixtureList().getAABB(0);
 		Vec2 v = aabb.getExtents();
-		return GamaGeometryType.buildRectangle(toGama(v.x * 2), toGama(v.y * 2), toGamaPoint(body.getPosition()));
+		return GamaShapeFactory.buildRectangle(toGama(v.x * 2), toGama(v.y * 2), toGamaPoint(body.getPosition()));
 	}
 
 	@Override
@@ -186,19 +192,19 @@ public class Box2DBodyWrapper extends AbstractBodyWrapper<World, Body, Shape, Ve
 	}
 
 	@Override
-	public void setAngularVelocity(final GamaPoint angularVelocity) {
-		body.setAngularVelocity(toBox2D(angularVelocity.z));
+	public void setAngularVelocity(final IPoint angularVelocity) {
+		body.setAngularVelocity(toBox2D(angularVelocity.getZ()));
 	}
 
 	@Override
-	public void setLinearVelocity(final GamaPoint linearVelocity) {
-		GamaPoint current = new GamaPoint();
+	public void setLinearVelocity(final IPoint linearVelocity) {
+		IPoint current = GamaPointFactory.create();
 		getLinearVelocity(current);
 		if (!linearVelocity.equals2D(current, TOLERANCE)) { body.setLinearVelocity(toVector(linearVelocity)); }
 	}
 
 	@Override
-	public void setLocation(final GamaPoint loc) {
+	public void setLocation(final IPoint loc) {
 		body.setTransform(toVector(loc), body.getAngle());
 	}
 
@@ -209,31 +215,28 @@ public class Box2DBodyWrapper extends AbstractBodyWrapper<World, Body, Shape, Ve
 	}
 
 	@Override
-	public void applyImpulse(final GamaPoint impulse) {
-		body.applyLinearImpulse(toVector(impulse), body.getLocalCenter(), true);
+	public void applyImpulse(final IPoint impulse) {
+		body.applyLinearImpulse(toVector(impulse), body.getLocalCenter());
 	}
 
 	@Override
-	public void applyTorque(final GamaPoint torque) {
+	public void applyTorque(final IPoint torque) {
 		body.applyTorque(toBox2D(torque.norm()));
 	}
 
 	@Override
-	public void applyForce(final GamaPoint force) {
+	public void applyForce(final IPoint force) {
 		body.applyForceToCenter(toVector(force));
 	}
 
 	@Override
+	@SuppressWarnings ("unchecked")
 	public void transferLocationAndRotationToAgent() {
 		Vec2 vectorTransfer = body.getPosition();
 		agent.setLocation(toGamaPoint(vectorTransfer));
 		Rot bodyRotation = body.getTransform().q;
-		@SuppressWarnings ("unchecked") var rot = (GamaPair<Double, GamaPoint>) agent.getAttribute(ROTATION);
-		if (rot == null) {
-			rot = new GamaPair<>(0d, new GamaPoint(0, 0, 1), Types.FLOAT, Types.POINT);
-			agent.setAttribute(ROTATION, rot);
-		}
-		rot.key = Math.toDegrees(bodyRotation.getAngle());
+		agent.setAttribute(ROTATION, GamaPairFactory.createWith(Math.toDegrees(bodyRotation.getAngle()),
+				GamaPointFactory.create(0, 0, 1), Types.FLOAT, Types.POINT));
 	}
 
 	@Override

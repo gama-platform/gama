@@ -42,13 +42,22 @@ public interface GamlFactory extends EFactory
   StandaloneBlock createStandaloneBlock();
 
   /**
-   * Returns a new object of class '<em>String Evaluator</em>'.
+   * Returns a new object of class '<em>Standalone Expression</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return a new object of class '<em>String Evaluator</em>'.
+   * @return a new object of class '<em>Standalone Expression</em>'.
    * @generated
    */
-  StringEvaluator createStringEvaluator();
+  StandaloneExpression createStandaloneExpression();
+
+  /**
+   * Returns a new object of class '<em>Standalone Experiment</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Standalone Experiment</em>'.
+   * @generated
+   */
+  StandaloneExperiment createStandaloneExperiment();
 
   /**
    * Returns a new object of class '<em>Model</em>'.
@@ -58,15 +67,6 @@ public interface GamlFactory extends EFactory
    * @generated
    */
   Model createModel();
-
-  /**
-   * Returns a new object of class '<em>Block</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>Block</em>'.
-   * @generated
-   */
-  Block createBlock();
 
   /**
    * Returns a new object of class '<em>Import</em>'.
@@ -87,22 +87,22 @@ public interface GamlFactory extends EFactory
   Pragma createPragma();
 
   /**
-   * Returns a new object of class '<em>Experiment File Structure</em>'.
+   * Returns a new object of class '<em>Facets And Block</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return a new object of class '<em>Experiment File Structure</em>'.
+   * @return a new object of class '<em>Facets And Block</em>'.
    * @generated
    */
-  ExperimentFileStructure createExperimentFileStructure();
+  FacetsAndBlock createFacetsAndBlock();
 
   /**
-   * Returns a new object of class '<em>Headless Experiment</em>'.
+   * Returns a new object of class '<em>Action Arguments</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return a new object of class '<em>Headless Experiment</em>'.
+   * @return a new object of class '<em>Action Arguments</em>'.
    * @generated
    */
-  HeadlessExperiment createHeadlessExperiment();
+  ActionArguments createActionArguments();
 
   /**
    * Returns a new object of class '<em>Statement</em>'.
@@ -177,13 +177,13 @@ public interface GamlFactory extends EFactory
   S_Try createS_Try();
 
   /**
-   * Returns a new object of class '<em>SOther</em>'.
+   * Returns a new object of class '<em>SSwitch</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return a new object of class '<em>SOther</em>'.
+   * @return a new object of class '<em>SSwitch</em>'.
    * @generated
    */
-  S_Other createS_Other();
+  S_Switch createS_Switch();
 
   /**
    * Returns a new object of class '<em>SReturn</em>'.
@@ -195,13 +195,22 @@ public interface GamlFactory extends EFactory
   S_Return createS_Return();
 
   /**
-   * Returns a new object of class '<em>SDeclaration</em>'.
+   * Returns a new object of class '<em>SDefinition</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return a new object of class '<em>SDeclaration</em>'.
+   * @return a new object of class '<em>SDefinition</em>'.
    * @generated
    */
-  S_Declaration createS_Declaration();
+  S_Definition createS_Definition();
+
+  /**
+   * Returns a new object of class '<em>SCallable</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>SCallable</em>'.
+   * @generated
+   */
+  S_Callable createS_Callable();
 
   /**
    * Returns a new object of class '<em>SReflex</em>'.
@@ -213,15 +222,6 @@ public interface GamlFactory extends EFactory
   S_Reflex createS_Reflex();
 
   /**
-   * Returns a new object of class '<em>SDefinition</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>SDefinition</em>'.
-   * @generated
-   */
-  S_Definition createS_Definition();
-
-  /**
    * Returns a new object of class '<em>SAssignment</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -229,24 +229,6 @@ public interface GamlFactory extends EFactory
    * @generated
    */
   S_Assignment createS_Assignment();
-
-  /**
-   * Returns a new object of class '<em>SDirect Assignment</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>SDirect Assignment</em>'.
-   * @generated
-   */
-  S_DirectAssignment createS_DirectAssignment();
-
-  /**
-   * Returns a new object of class '<em>SSet</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>SSet</em>'.
-   * @generated
-   */
-  S_Set createS_Set();
 
   /**
    * Returns a new object of class '<em>SEquations</em>'.
@@ -276,33 +258,6 @@ public interface GamlFactory extends EFactory
   S_Display createS_Display();
 
   /**
-   * Returns a new object of class '<em>species Or Grid Display Statement</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>species Or Grid Display Statement</em>'.
-   * @generated
-   */
-  speciesOrGridDisplayStatement createspeciesOrGridDisplayStatement();
-
-  /**
-   * Returns a new object of class '<em>image Display Statement</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>image Display Statement</em>'.
-   * @generated
-   */
-  imageDisplayStatement createimageDisplayStatement();
-
-  /**
-   * Returns a new object of class '<em>Action Arguments</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>Action Arguments</em>'.
-   * @generated
-   */
-  ActionArguments createActionArguments();
-
-  /**
    * Returns a new object of class '<em>Argument Definition</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -321,6 +276,15 @@ public interface GamlFactory extends EFactory
   Facet createFacet();
 
   /**
+   * Returns a new object of class '<em>Block</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Block</em>'.
+   * @generated
+   */
+  Block createBlock();
+
+  /**
    * Returns a new object of class '<em>Expression</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -328,15 +292,6 @@ public interface GamlFactory extends EFactory
    * @generated
    */
   Expression createExpression();
-
-  /**
-   * Returns a new object of class '<em>Argument Pair</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>Argument Pair</em>'.
-   * @generated
-   */
-  ArgumentPair createArgumentPair();
 
   /**
    * Returns a new object of class '<em>Expression List</em>'.
@@ -393,15 +348,6 @@ public interface GamlFactory extends EFactory
   TypeDefinition createTypeDefinition();
 
   /**
-   * Returns a new object of class '<em>Var Definition</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>Var Definition</em>'.
-   * @generated
-   */
-  VarDefinition createVarDefinition();
-
-  /**
    * Returns a new object of class '<em>Action Definition</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -409,6 +355,15 @@ public interface GamlFactory extends EFactory
    * @generated
    */
   ActionDefinition createActionDefinition();
+
+  /**
+   * Returns a new object of class '<em>Var Definition</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Var Definition</em>'.
+   * @generated
+   */
+  VarDefinition createVarDefinition();
 
   /**
    * Returns a new object of class '<em>Unit Fake Definition</em>'.
@@ -483,6 +438,15 @@ public interface GamlFactory extends EFactory
   StringLiteral createStringLiteral();
 
   /**
+   * Returns a new object of class '<em>SMethod</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>SMethod</em>'.
+   * @generated
+   */
+  S_Method createS_Method();
+
+  /**
    * Returns a new object of class '<em>SAction</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -490,15 +454,6 @@ public interface GamlFactory extends EFactory
    * @generated
    */
   S_Action createS_Action();
-
-  /**
-   * Returns a new object of class '<em>SVar</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>SVar</em>'.
-   * @generated
-   */
-  S_Var createS_Var();
 
   /**
    * Returns a new object of class '<em>Binary Operator</em>'.
@@ -591,15 +546,6 @@ public interface GamlFactory extends EFactory
   UnitName createUnitName();
 
   /**
-   * Returns a new object of class '<em>Type Ref</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>Type Ref</em>'.
-   * @generated
-   */
-  TypeRef createTypeRef();
-
-  /**
    * Returns a new object of class '<em>Skill Ref</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -625,6 +571,15 @@ public interface GamlFactory extends EFactory
    * @generated
    */
   EquationRef createEquationRef();
+
+  /**
+   * Returns a new object of class '<em>Type Ref</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Type Ref</em>'.
+   * @generated
+   */
+  TypeRef createTypeRef();
 
   /**
    * Returns a new object of class '<em>Int Literal</em>'.

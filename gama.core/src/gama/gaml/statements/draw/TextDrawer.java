@@ -11,15 +11,16 @@ package gama.gaml.statements.draw;
 
 import java.awt.geom.Rectangle2D;
 
-import gama.core.common.geometry.Scaling3D;
-import gama.core.common.interfaces.IDrawDelegate;
-import gama.core.runtime.IScope;
-import gama.core.runtime.IScope.IGraphicsScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.api.additions.delegates.IDrawDelegate;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.displays.DrawingData;
+import gama.api.ui.displays.IGraphicsScope;
+import gama.api.utils.geometry.Scaling3D;
 
 /**
  * The Class TextExecuter.

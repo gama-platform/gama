@@ -39,7 +39,6 @@
       <import plugin="org.eclipse.core.expressions"/>
       <import plugin="org.eclipse.ui.workbench"/>
       <import plugin="org.eclipse.e4.core.services"/>
-      <import plugin="org.eclipse.osgi.services"/>
       <import plugin="org.eclipse.e4.core.contexts"/>
       <import plugin="org.eclipse.e4.ui.css.swt.theme"/>
       <import plugin="org.eclipse.e4.ui.css.swt" version="0.13.1100" match="greaterOrEqual"/>
@@ -61,14 +60,10 @@
 
    <plugin
          id="gama.ui.application"
-         download-size="0"
-         install-size="0"
          version="0.0.0"/>
 
    <plugin
          id="gama.ui.shared"
-         download-size="0"
-         install-size="0"
          version="0.0.0"/>
 
 </feature>

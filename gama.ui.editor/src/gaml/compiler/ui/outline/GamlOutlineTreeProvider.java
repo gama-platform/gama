@@ -3,7 +3,7 @@
  * GamlOutlineTreeProvider.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -17,20 +17,19 @@ import org.eclipse.xtext.ui.editor.outline.impl.BackgroundOutlineTreeProvider;
 
 import com.google.inject.Inject;
 
-import gama.annotations.precompiler.ISymbolKind;
-import gama.core.common.interfaces.IKeyword;
-import gama.gaml.descriptions.SymbolProto;
-import gama.gaml.factories.DescriptionFactory;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.ISymbolKind;
+import gama.api.additions.registries.ArtefactRegistry;
+import gama.api.compilation.artefacts.IArtefact;
+import gaml.compiler.EGaml;
 import gaml.compiler.gaml.Block;
-import gaml.compiler.gaml.EGaml;
-import gaml.compiler.gaml.ExperimentFileStructure;
-import gaml.compiler.gaml.HeadlessExperiment;
 import gaml.compiler.gaml.Model;
 import gaml.compiler.gaml.S_Action;
 import gaml.compiler.gaml.S_Definition;
 import gaml.compiler.gaml.S_Experiment;
 import gaml.compiler.gaml.S_Global;
 import gaml.compiler.gaml.S_Species;
+import gaml.compiler.gaml.StandaloneExperiment;
 import gaml.compiler.gaml.Statement;
 import gaml.compiler.gaml.util.GamlSwitch;
 import gaml.compiler.ui.labeling.GamlLabelProvider;
@@ -53,9 +52,9 @@ public class GamlOutlineTreeProvider extends BackgroundOutlineTreeProvider {
 			new GamlSwitch<>() {
 
 				@Override
-				public Object caseModel(final Model stm) {
+				public Object caseModel(final Model stm1) {
 
-					Block block = stm.getBlock();
+					Block block = stm1.getBlock();
 					if (block != null) {
 						for (final Statement s : EGaml.getInstance().getStatementsOf(block)) {
 							if (s instanceof S_Global) {
@@ -70,25 +69,20 @@ public class GamlOutlineTreeProvider extends BackgroundOutlineTreeProvider {
 				}
 
 				@Override
-				public Object caseExperimentFileStructure(final ExperimentFileStructure stm) {
-					return caseHeadlessExperiment(stm.getExp());
-				}
-
-				@Override
-				public Object caseS_Experiment(final S_Experiment stm) {
-					ownCreateChildren(parentNode, stm.getBlock(), true);
+				public Object caseS_Experiment(final S_Experiment stm1) {
+					ownCreateChildren(parentNode, stm1.getBlock(), true);
 					return FOUND;
 				}
 
 				@Override
-				public Object caseHeadlessExperiment(final HeadlessExperiment stm) {
-					ownCreateChildren(parentNode, stm.getBlock(), true);
+				public Object caseStandaloneExperiment(final StandaloneExperiment stm1) {
+					ownCreateChildren(parentNode, stm1.getBlock(), true);
 					return FOUND;
 				}
 
 				@Override
-				public Object caseS_Species(final S_Species stm) {
-					ownCreateChildren(parentNode, stm.getBlock(), true);
+				public Object caseS_Species(final S_Species stm1) {
+					ownCreateChildren(parentNode, stm1.getBlock(), true);
 					return FOUND;
 				}
 
@@ -174,7 +168,7 @@ public class GamlOutlineTreeProvider extends BackgroundOutlineTreeProvider {
 		final String key = EGaml.getInstance().getKeyOf(s);
 		if (IKeyword.ACTION.equals(key)) return false;
 		// if (s.getBlock() != null && s.getBlock().getFunction() == null) { return false; }
-		final SymbolProto p = DescriptionFactory.getStatementProto(key);
+		final IArtefact.Symbol p = ArtefactRegistry.getStatementArtefact(key);
 		if (p != null && p.getKind() == ISymbolKind.BATCH_METHOD) return false;
 		return true;
 	}
@@ -190,7 +184,7 @@ public class GamlOutlineTreeProvider extends BackgroundOutlineTreeProvider {
 		if (!(s instanceof S_Definition)) return false;
 		if (s instanceof S_Action) return true;
 		final String key = EGaml.getInstance().getKeyOf(s);
-		final SymbolProto p = DescriptionFactory.getStatementProto(key);
+		final IArtefact.Symbol p = ArtefactRegistry.getStatementArtefact(key);
 		if (p != null && p.isTopLevel()) return false;
 		if (s.getKey() == null) return true;
 		return false;

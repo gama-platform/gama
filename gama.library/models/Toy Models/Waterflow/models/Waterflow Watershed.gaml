@@ -1,11 +1,13 @@
 /***
-* Name: Water flow with watershed
+* Name: Waterflow Watershed
 * Author: Benoit Gaudou
-* Description: A model inspired by the SWAT model to make flow the water in a water basin using sub watershed.
-* 	The water flows from the upstream watersheds to the downstream watershed. The water basin gets water only from the rain.
-* 	To better vizualise the water flow, rain is uniform on the basin and occurs only every 20 steps.
-* 	During the other steps, there is no water input in the basin.
-* Tags: shapefile, gis, gui, hydrology, water flow
+* Description: A watershed hydrology model inspired by the SWAT (Soil and Water Assessment Tool) framework.
+*   The watershed is subdivided into sub-watershed polygons loaded from a shapefile. Water accumulates in
+*   each sub-watershed from rainfall and flows downstream to adjacent sub-watersheds according to their
+*   topographic order. To better visualize the flow dynamics, rainfall is uniform and occurs only every
+*   20 steps; the remaining steps show pure drainage. This model demonstrates how shapefile-based polygonal
+*   spatial units can represent hydrological catchments and their upstream-downstream connectivity.
+* Tags: shapefile, gis, gui, hydrology, water_flow, watershed, SWAT, catchment, rainfall
 ***/
 
 
@@ -18,17 +20,17 @@ global {
 	float rain <- rnd(10.0) update: every(20#cycle) ? rnd(10.0) : 0.0;
 	
 	init {
-		create watershed from: watershed_shape_file with: [id_watershed::int(read("ID_ZH")), id_watershed_outlet::int(read("ID_ND_EXUT")),order::int(read("order"))];
+		create watershed(id_watershed:int(read("ID_ZH")), id_watershed_outlet:int(read("ID_ND_EXUT")),order:int(read("order")))  from: watershed_shape_file ;
 		
 		ask watershed {
-			do init_watershed;
+			do init_watershed();
 			write "" + int(self) + " " + length(shape.points) + " points";
 		}
 	}
 	
 	reflex water_floaw {
 		ask reverse(watershed sort_by(each.order)) {
-			do model_hydro;
+			do model_hydro();
 		}
 	}
 }
@@ -42,12 +44,12 @@ species watershed schedules: [] {
 
 	float volume_watershed ;
 
-	action init_watershed {
+	action init_watershed() {
 		// Find ZH in the upstream 
 		watershed_upstream <- watershed where(each.id_watershed_outlet = id_watershed);
 	}
 		
-	action model_hydro {	
+	action model_hydro() {	
 		volume_watershed <- 0.7 * rain * self.shape.area  + (watershed_upstream sum_of(each.volume_watershed));	
 	}	
 

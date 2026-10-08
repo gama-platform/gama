@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Gama KML Extension
+Bundle-SymbolicName: gama.extension.kml;singleton:=true
+Bundle-Version: 0.0.0.qualifier
+Export-Package: gama.extension.kml
+Bundle-Vendor: UMMISCO
+Require-Bundle: gama.core,
+ gama.dependencies,
+ org.eclipse.core.resources;bundle-version="[3.23.0,4.0.0)",
+ org.eclipse.core.runtime;bundle-version="3.34.200"
+Bundle-ClassPath: .,
+ libs/jak 3.0.11/javaapiforkml-3.0.11.jar
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-25
+Automatic-Module-Name: gama.extension.kml
+

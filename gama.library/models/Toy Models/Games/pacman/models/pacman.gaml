@@ -1,8 +1,12 @@
 /**
-* Name: pacman
-* Based on the internal empty template. 
-* Author: Loris
-* Tags: 
+* Name: Pac-Man
+* Author: Loris Henry
+* Description: A GAMA implementation of the classic Pac-Man arcade game. The player controls Pac-Man to eat
+*   dots scattered across a maze while being chased by ghosts. Pac-Man can eat power pellets to temporarily
+*   reverse the roles and eat ghosts. The maze is defined as a grid, with wall cells and navigable corridors.
+*   Ghost agents use pathfinding to track or scatter based on their current state. This model demonstrates
+*   complex user interaction, AI-driven agent behavior, grid-based navigation, and game state management in GAMA.
+* Tags: game, user_interaction, grid, pathfinding, ghost, pacman, arcade, gui
 */
 
 
@@ -38,16 +42,16 @@ global {
 	
 	float progression <- 5.0;
 	
-	float pacman_speed{
+	float pacman_speed(){
 		return 3 + 5 *(1-exp(-level/progression));
 	}
 //	list<float> ghost_speed <- [2.10, 2.40, 3.60];
-	float ghost_speed{
+	float ghost_speed(){
 		return pacman_speed() * (0.3 * (1 - exp(-level/progression)) + 0.7);
 	}
 	//list<rgb> color_levels <- [#blue, #mediumpurple, #teal];
 	
-	rgb color_level{
+	rgb color_level(){
 		return hsb( (level mod 360)/360.0 * 20, 0.25,0.75);
 	}
 	
@@ -76,14 +80,14 @@ global {
 		return ret + string(scr);
 	}
 	
-	action game_over {
+	action game_over() {
 		do pause;
 		end_of_game <- true;
 	}
 	
 
 	
-	action init_a {
+	action init_a() {
 		has_started <- false;
 		time_a <- 0.0;
 		
@@ -336,7 +340,7 @@ grid cell height:19 width:17 neighbors:4{
 	bool has_superpower <- false;
 	
 	
-	list<cell> custom_neighbors {
+	list<cell> custom_neighbors() {
 		list<cell> res;
 		if grid_y = 0 {
 			res << nil;
@@ -503,10 +507,10 @@ species ghost skills:[moving]{
 		if target = location {
 			target <- any([cell[7,8], cell[8,8], cell[9,8]] - cell closest_to self).location;
 		}
-		do goto target:target on:the_graph2;
+		do goto (target:target,on:the_graph2);
 	}
 	reflex move when:can_move and not (mode="frightened"){
-		do goto target:target on:the_graph;
+		do goto (target:target, on:the_graph);
 	}
 	reflex move_frightened when:can_move and mode="frightened" {
 		if flip(step) {
@@ -514,7 +518,7 @@ species ghost skills:[moving]{
 		target <- any(cell).location;
 		
 		}
-		do goto target:target on:the_graph;
+		do goto (target:target,on:the_graph);
 		if pac[0].my_cell = cell closest_to self {
 			world.score <- world.score + kill_unit;
 			location <- cell[8,8].location;

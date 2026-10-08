@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * AgentLayerStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,35 +13,36 @@ package gama.core.outputs.layers;
 import java.util.ArrayList;
 import java.util.List;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.outputs.LayeredDisplayOutput;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.annotations.validator;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IDescriptionValidator;
+import gama.api.compilation.descriptions.IStatementDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
+import gama.api.constants.IGamlIssue;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.GAML;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.expressions.IExpressionDescription;
+import gama.api.gaml.statements.IStatement;
+import gama.api.gaml.symbols.ISymbol;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.runtime.IExecutable;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.IOutput;
 import gama.core.outputs.layers.AgentLayerStatement.AgentLayerValidator;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.compilation.IDescriptionValidator;
-import gama.gaml.compilation.ISymbol;
-import gama.gaml.compilation.annotations.validator;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.IExpressionDescription;
-import gama.gaml.descriptions.SpeciesDescription;
-import gama.gaml.descriptions.StatementDescription;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.factories.DescriptionFactory;
-import gama.gaml.interfaces.IGamlIssue;
-import gama.gaml.operators.Cast;
 import gama.gaml.statements.AspectStatement;
-import gama.gaml.statements.IExecutable;
-import gama.gaml.statements.IStatement;
-import gama.gaml.types.IType;
+import gaml.compiler.descriptions.SpeciesDescription;
 
 /**
  * Written by drogoul Modified on 9 nov. 2009
@@ -158,29 +159,28 @@ public class AgentLayerStatement extends AbstractLayerStatement {
 	/**
 	 * The Class AgentLayerValidator.
 	 */
-	public static class AgentLayerValidator implements IDescriptionValidator<StatementDescription> {
+	public static class AgentLayerValidator implements IDescriptionValidator<IStatementDescription> {
 
 		/**
 		 * Method validate()
 		 *
-		 * @see gama.gaml.compilation.IDescriptionValidator#validate(gama.gaml.descriptions.IDescription)
+		 * @see gama.api.compilation.descriptions.IDescriptionValidator#validate(gama.api.compilation.descriptions.IDescription)
 		 */
 		@Override
-		public void validate(final StatementDescription description) {
+		public void validate(final IStatementDescription description) {
 			// Should be broken down in subclasses
 			IExpressionDescription ed = description.getFacet(VALUE);
-			SpeciesDescription target = null;
 			if (ed == null || ed.getExpression() == null) return;
-			target = ed.getExpression().getGamlType().getContentType().getSpecies();
-			if (target == null) // Already caught by the type checking
+			ITypeDescription target = ed.getExpression().getGamlType().getContentType().getSpecies();
+			if (!(target instanceof SpeciesDescription sd)) // Already caught by the type checking
 				return;
 			ed = description.getFacet(ASPECT);
 			if (ed != null) {
 				final String a = description.getLitteral(ASPECT);
-				if (target.getAspect(a) != null) {
+				if (sd.getAspect(a) != null) {
 					ed.compileAsLabel();
 				} else if (a != null && !DEFAULT.equals(a)) {
-					description.error(a + " is not the name of an aspect of " + target.getName(), IGamlIssue.GENERAL,
+					description.error(a + " is not the name of an aspect of " + sd.getName(), IGamlIssue.GENERAL,
 							description.getFacet(ASPECT).getTarget());
 				}
 
@@ -229,7 +229,7 @@ public class AgentLayerStatement extends AbstractLayerStatement {
 	}
 
 	@Override
-	public LayerType getType(final LayeredDisplayOutput output) {
+	public LayerType getType(final IOutput o) {
 		return LayerType.AGENTS;
 	}
 
@@ -292,7 +292,7 @@ public class AgentLayerStatement extends AbstractLayerStatement {
 		if (!aspectStatements.isEmpty()) {
 			constantAspectName = "inline";
 			final IDescription d =
-					DescriptionFactory.create(IKeyword.ASPECT, getDescription(), IKeyword.NAME, "inline");
+					GAML.getDescriptionFactory().create(IKeyword.ASPECT, getDescription(), IKeyword.NAME, "inline");
 			aspect = new AspectStatement(d);
 			((AspectStatement) aspect).setChildren(aspectStatements);
 		}

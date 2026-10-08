@@ -3,7 +3,7 @@ package gama.extension.database.utils.sql.postgres;
 import java.util.HashMap;
 import java.util.Map;
 
-import gama.core.runtime.IScope;
+import gama.api.runtime.scope.IScope;
 import gama.extension.database.utils.sql.ISqlConnector;
 import gama.extension.database.utils.sql.SqlConnection;
 

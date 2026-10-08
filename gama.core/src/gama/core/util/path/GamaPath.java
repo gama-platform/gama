@@ -11,21 +11,22 @@ package gama.core.util.path;
 
 import org.jgrapht.GraphPath;
 
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.IShape;
-import gama.core.metamodel.topology.ITopology;
-import gama.core.metamodel.topology.graph.GamaSpatialGraph;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
-import gama.core.util.IList;
-import gama.core.util.IMap;
-import gama.core.util.file.json.Json;
-import gama.core.util.file.json.JsonValue;
-import gama.core.util.graph.IGraph;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IShape;
+import gama.api.types.graph.IGraph;
+import gama.api.types.graph.IPath;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.IMap;
+import gama.api.types.topology.ITopology;
+import gama.api.utils.json.IJson;
+import gama.api.utils.json.IJsonValue;
+import gama.core.topology.graph.GamaSpatialGraph;
 
 // If build from a list of points, creates the corresponding geometry
 // If build from a spatial graph, creates a geometry from the edges
@@ -44,7 +45,7 @@ import gama.gaml.types.Types;
 public class GamaPath<V, E, G extends IGraph<V, E>> implements Comparable, GraphPath<V, E>, IPath<V, E, G> {
 
 	@Override
-	public JsonValue serializeToJson(final Json json) {
+	public IJsonValue serializeToJson(final IJson json) {
 		return json.typedObject(getGamlType(), "source", source, "target", target, "edges", json.array(edges), "weight",
 				weight).add("graph", graph).add("graphVersion", graphVersion);
 	}
@@ -68,8 +69,7 @@ public class GamaPath<V, E, G extends IGraph<V, E>> implements Comparable, Graph
 	/**
 	 * Instantiates a new gama path.
 	 */
-	// FIXME virer le constructeur par d�faut... used for the inheritance...
-	public GamaPath() {}
+	protected GamaPath() {}
 
 	@Override
 	public IType getGamlType() { return Types.PATH; }
@@ -210,6 +210,7 @@ public class GamaPath<V, E, G extends IGraph<V, E>> implements Comparable, Graph
 	 * @param weight
 	 *            the new weight
 	 */
+	@Override
 	public void setWeight(final double weight) { this.weight = weight; }
 
 	@Override
@@ -234,7 +235,7 @@ public class GamaPath<V, E, G extends IGraph<V, E>> implements Comparable, Graph
 
 	@Override
 	public IList<V> getVertexList() {
-		if (graph == null) return GamaListFactory.EMPTY_LIST;
+		if (graph == null) return GamaListFactory.getEmptyList();
 		return GamaListFactory.<V> wrap(getGamlType().getKeyType(), GraphPath.super.getVertexList());
 	}
 
@@ -306,7 +307,7 @@ public class GamaPath<V, E, G extends IGraph<V, E>> implements Comparable, Graph
 
 	@Override
 	public ITopology getTopology(final IScope scope) {
-		return graph instanceof GamaSpatialGraph ? ((GamaSpatialGraph) graph).getTopology(scope) : null;
+		return graph instanceof GamaSpatialGraph g ? g.getTopology(scope) : null;
 	}
 
 	@Override

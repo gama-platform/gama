@@ -1,30 +1,68 @@
 /*******************************************************************************************************
  *
- * Maths.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * Maths.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.gaml.operators;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ITypeProvider;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.test;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.matrix.IMatrix;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.tests;
+import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.annotations.support.ITypeProvider;
+import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.matrix.GamaMatrixFactory;
+import gama.api.types.matrix.IField;
+import gama.api.types.matrix.IMatrix;
+import gama.api.utils.MathUtils;
+import gama.core.util.matrix.GamaFloatMatrix;
 
 /**
- * The Class GamaMath.
+ * Provides all mathematical and arithmetic operators for the GAML language.
+ *
+ * <p>
+ * This class covers the following operator families:
+ * </p>
+ * <ul>
+ * <li><b>Arithmetic:</b> {@code +}, {@code -}, {@code *}, {@code /}, {@code ^}, {@code mod}, {@code div}</li>
+ * <li><b>Absolute/Sign:</b> {@code abs}, unary {@code -}</li>
+ * <li><b>Rounding:</b> {@code round}, {@code floor}, {@code ceil}, {@code truncated}, {@code with_precision}</li>
+ * <li><b>Trigonometry (degrees):</b> {@code sin}, {@code cos}, {@code tan}, {@code asin}, {@code acos}, {@code atan},
+ * {@code atan2}</li>
+ * <li><b>Trigonometry (radians):</b> {@code sin_rad}, {@code cos_rad}, {@code tan_rad}</li>
+ * <li><b>Hyperbolic:</b> {@code tanh}</li>
+ * <li><b>Exponential/Logarithm:</b> {@code exp}, {@code ln}, {@code log}, {@code sqrt}, {@code ^}</li>
+ * <li><b>Combinatorics:</b> {@code fact}, {@code even}</li>
+ * <li><b>Extrema:</b> {@code min}, {@code max}</li>
+ * <li><b>Predicates:</b> {@code is_number}, {@code is_finite}, {@code is_infinite}</li>
+ * <li><b>Matrix arithmetic:</b> scalar–matrix multiplication and addition</li>
+ * </ul>
+ *
+ * <p>
+ * <b>Angle convention:</b> unless the operator name ends in {@code _rad}, all trigonometric arguments and results are
+ * in <em>decimal degrees</em>.
+ * </p>
+ *
+ * <p>
+ * <b>Domain errors:</b> operators like {@code sqrt}, {@code ln}, and {@code log} report a runtime warning (via
+ * {@link gama.api.GAMA#reportAndThrowIfNeeded}) when called with out-of-domain values and return {@code NaN} or throw
+ * an exception depending on the error-handling policy of the current scope.
+ * </p>
+ *
+ * @author Alexis Drogoul
+ * @see Comparison
+ * @see Random
  */
 @SuppressWarnings ({ "rawtypes" })
 public class Maths {
@@ -46,6 +84,11 @@ public class Maths {
 	@doc (
 			value = "Returns the value (always a float) of the left operand raised to the power of the right operand.",
 			masterDoc = true,
+			returns = "a {@code float}.",
+			special_cases = {
+					"If the right-hand operand is 0, returns 1.0 regardless of the left operand (including 0^0 = 1.0).",
+					"If the right-hand operand is 1, returns the left-hand operand cast to float.",
+					"If the left operand is negative and the right operand is a non-integer float (e.g. -4^0.5), returns NaN." },
 			usages = { @usage ("if the right-hand operand is equal to 0, returns 1"),
 					@usage ("if it is equal to 1, returns the left-hand operand."), @usage (
 							value = "Various examples of power",
@@ -53,10 +96,18 @@ public class Maths {
 									value = "2 ^ 3",
 									equals = "8.0") }) },
 			see = { "*", "sqrt" })
-	@test ("8^0 = 1.0")
-	@test ("2^2 = 4.0")
+	@tests ({
+			@test ("8^0 = 1.0"),
+			@test ("2^2 = 4.0"),
+			@test ("0^0 = 1.0"),
+			@test ("(-2)^2 = 4.0"),
+			@test ("2^1 = 2.0"),
+			@test ("10 ^ 0 = 1"),
+			@test ("10 ^ 1 = 10"),
+			@test ("(100 ^ 2) = 10000")
+	})
 	public static Double pow(final Integer a, final Integer b) {
-		return pow(a.doubleValue(), b.doubleValue());
+		return Math.pow(a, b);
 	}
 
 	/**
@@ -132,6 +183,131 @@ public class Maths {
 		return Math.pow(a, b);
 	}
 
+	/**
+	 * Pow.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param a
+	 *            the a
+	 * @param b
+	 *            the b
+	 * @return the i matrix
+	 */
+	@operator (
+			value = { "^" },
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.ARITHMETIC, IOperatorCategory.MATRIX },
+			concept = { IConcept.MATH, IConcept.ARITHMETIC, IConcept.MATRIX })
+	@doc (
+			value = "Returns the element-wise power of the matrix.",
+			examples = { @example (
+					value = "matrix([[1, 2], [3, 4]]) ^ 2",
+					equals = "matrix([[1.0, 4.0], [9.0, 16.0]])") })
+	@test ("matrix([[1, 2], [3, 4]]) ^ 2 = matrix([[1.0, 4.0], [9.0, 16.0]])")
+	public static IMatrix pow(final IScope scope, final IMatrix a, final Integer b) {
+		return pow(scope, a, b.doubleValue());
+	}
+
+	/**
+	 * Pow.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param a
+	 *            the a
+	 * @param b
+	 *            the b
+	 * @return the i matrix
+	 */
+	@operator (
+			value = { "^" },
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.ARITHMETIC, IOperatorCategory.MATRIX },
+			concept = {})
+	@doc (
+			value = "Returns the element-wise power of the matrix.",
+			examples = { @example (
+					value = "matrix([[1, 2], [3, 4]]) ^ 2.0",
+					equals = "matrix([[1.0, 4.0], [9.0, 16.0]])") })
+	@test ("matrix([[1, 2], [3, 4]]) ^ 2.0 = matrix([[1.0, 4.0], [9.0, 16.0]])")
+	public static IMatrix pow(final IScope scope, final IMatrix a, final Double b) {
+		final GamaFloatMatrix mat = GamaFloatMatrix.from(scope, a);
+		final GamaFloatMatrix nm =
+				(GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(mat.getCols(scope), mat.getRows(scope));
+		final double[] m = mat.getMatrix();
+		int i = 0;
+		int upperBound = GamaFloatMatrix.SPECIES.loopBound(m.length);
+		for (; i < upperBound; i += GamaFloatMatrix.SPECIES.length()) {
+			jdk.incubator.vector.DoubleVector va =
+					jdk.incubator.vector.DoubleVector.fromArray(GamaFloatMatrix.SPECIES, m, i);
+			va.pow(b).intoArray(nm.getMatrix(), i);
+		}
+		for (; i < m.length; i++) { nm.getMatrix()[i] = Math.pow(m[i], b); }
+		return nm;
+	}
+
+	/**
+	 * Convolve.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param a
+	 *            the a
+	 * @param kernel
+	 *            the kernel
+	 * @return the i matrix
+	 */
+	@operator (
+			value = { "convolution", "convolve" },
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.ARITHMETIC, IOperatorCategory.MATRIX },
+			concept = { IConcept.MATH, IConcept.ARITHMETIC, IConcept.MATRIX })
+	@doc (
+			value = "Returns the 2D convolution of the first matrix (e.g. grid values) using the second matrix as the convolution kernel. Useful for fast grid neighborhood computations.",
+			examples = { @example (
+					value = "matrix([[1, 2, 1], [3, 4, 1], [1, 1, 1]]) convolution matrix([[0, 1, 0], [1, -4, 1], [0, 1, 0]])",
+					equals = "matrix([[-1, 2, -1], [1, -7, 0], [1, 2, 1]])") })
+	public static IMatrix convolve(final IScope scope, final IMatrix a, final IMatrix kernel) {
+		final GamaFloatMatrix matA = GamaFloatMatrix.from(scope, a);
+		final GamaFloatMatrix k = GamaFloatMatrix.from(scope, kernel);
+
+		int rowsA = matA.getRows(scope);
+		int colsA = matA.getCols(scope);
+		int rowsK = k.getRows(scope);
+		int colsK = k.getCols(scope);
+
+		final GamaFloatMatrix result = (GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(colsA, rowsA);
+
+		int padRow = rowsK / 2;
+		int padCol = colsK / 2;
+
+		double[] arrayA = matA.getMatrix();
+		double[] arrayK = k.getMatrix();
+		double[] arrayRes = result.getMatrix();
+
+		for (int r = 0; r < rowsA; r++) {
+			for (int c = 0; c < colsA; c++) {
+				double sum = 0.0;
+				for (int kr = 0; kr < rowsK; kr++) {
+					for (int kc = 0; kc < colsK; kc++) {
+						int rr = r + kr - padRow;
+						int cc = c + kc - padCol;
+						if (rr >= 0 && rr < rowsA && cc >= 0 && cc < colsA) {
+							sum += arrayA[rr * colsA + cc] * arrayK[kr * colsK + kc];
+						}
+					}
+				}
+				arrayRes[r * colsA + c] = sum;
+			}
+		}
+
+		return result;
+	}
+
 	// ==== Operators
 
 	/**
@@ -154,12 +330,52 @@ public class Maths {
 					examples = { @example (
 							value = "abs (200 * -1 + 0.5)",
 							equals = "199.5") }) })
-	@test ("abs(1.9) = 1.9")
-	@test ("abs(-2.0) = 2.0")
-	@test ("abs(0.0) = 0.0")
-	@test ("abs(-0.0) = 0.0")
+	@tests ({
+			@test ("abs(1.9) = 1.9"),
+			@test ("abs(-2.0) = 2.0"),
+			@test ("abs(0.0) = 0.0"),
+			@test ("abs(-0.0) = 0.0"),
+			@test ("abs(-0.5) = 0.5"),
+			@test ("abs(-7.0) = 7")
+	})
 	public static Double abs(final Double rv) {
+		if (Double.isInfinite(rv)) return Double.POSITIVE_INFINITY;
 		return Math.abs(rv);
+	}
+
+	/**
+	 * Abs.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param a
+	 *            the a
+	 * @return the i matrix
+	 */
+	@operator (
+			value = "abs",
+			can_be_const = true,
+			category = { IOperatorCategory.ARITHMETIC, IOperatorCategory.MATRIX },
+			concept = { IConcept.MATH, IConcept.ARITHMETIC, IConcept.MATRIX })
+	@doc (
+			value = "Returns a new matrix containing the absolute value of each element.",
+			examples = { @example (
+					value = "abs(matrix([[-1, 2], [-3, -4]]))",
+					equals = "matrix([[1.0, 2.0], [3.0, 4.0]])") })
+	public static IMatrix abs(final IScope scope, final IMatrix a) {
+		final GamaFloatMatrix mat = GamaFloatMatrix.from(scope, a);
+		final GamaFloatMatrix nm =
+				(GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(mat.getCols(scope), mat.getRows(scope));
+		final double[] m = mat.getMatrix();
+		int i = 0;
+		int upperBound = GamaFloatMatrix.SPECIES.loopBound(m.length);
+		for (; i < upperBound; i += GamaFloatMatrix.SPECIES.length()) {
+			jdk.incubator.vector.DoubleVector va =
+					jdk.incubator.vector.DoubleVector.fromArray(GamaFloatMatrix.SPECIES, m, i);
+			va.abs().intoArray(nm.getMatrix(), i);
+		}
+		for (; i < m.length; i++) { nm.getMatrix()[i] = Math.abs(m[i]); }
+		return nm;
 	}
 
 	/**
@@ -184,10 +400,14 @@ public class Maths {
 							@example (
 									value = "abs (10)",
 									equals = "10") }) })
-	@test ("abs(1) = 1")
-	@test ("abs(-2) = 2")
-	@test ("abs(0) = 0")
-	@test ("abs(-0) = 0")
+	@tests ({
+			@test ("abs(1) = 1"),
+			@test ("abs(-2) = 2"),
+			@test ("abs(0) = 0"),
+			@test ("abs(-0) = 0"),
+			@test ("abs(-100) = 100"),
+			@test ("abs(-7) = 7")
+	})
 	public static Integer abs(final Integer rv) {
 		int a = rv.intValue();
 		return (a ^ a >> 31) - (a >> 31);
@@ -236,7 +456,8 @@ public class Maths {
 			category = { IOperatorCategory.ARITHMETIC },
 			concept = {})
 	@doc (
-			value = "the arccos of the operand ")
+			value = "the arccos of the operand (result in decimal degrees in [0, 180])",
+			special_cases = { "if the operand is outside of [-1,1], returns NaN." })
 	@test ("acos(0) = 90.0")
 	@test ("acos(-1) = 180.0")
 	@test ("acos(1) = 0.0")
@@ -343,7 +564,8 @@ public class Maths {
 			category = { IOperatorCategory.ARITHMETIC },
 			concept = {})
 	@doc (
-			value = "the arctan of the operand")
+			value = "the arctan of the operand (result in decimal degrees in [-90, 90]).",
+			returns = "a {@code float} in [-90, 90].")
 	@test ("atan(0) = 0.0")
 	@test ("atan(-1) = -45.0")
 	@test ("atan(1) = 45.0")
@@ -365,12 +587,18 @@ public class Maths {
 	@doc (
 			value = "Returns the value (in the interval [-1,1]) of the hyperbolic tangent of the operand (which can be any real number, expressed in decimal degrees).",
 			masterDoc = true,
+			returns = "a {@code float} in [-1.0, 1.0].",
+			special_cases = { "tanh(0) = 0.0",
+					"As the operand tends to +∞, tanh approaches 1.0; as it tends to -∞, it approaches -1.0." },
 			examples = { @example (
 					value = "tanh(0)",
 					equals = "0.0"),
 					@example (
 							value = "tanh(100)",
 							equals = "1.0") })
+	@test ("tanh(0.0) = 0.0")
+	@test ("tanh(100.0) = 1.0")
+	@test ("tanh(-100.0) = -1.0")
 	public static Double tanh(final Double rv) {
 		return Math.tanh(rv);
 	}
@@ -388,9 +616,11 @@ public class Maths {
 			category = { IOperatorCategory.ARITHMETIC },
 			concept = {})
 	@doc (
-			value = "the hyperbolic tangent of the operand (which has to be expressed in decimal degrees).")
+			value = "the hyperbolic tangent of the operand (which has to be expressed in decimal degrees).",
+			returns = "a {@code float} in [-1.0, 1.0].")
 	@test ("tanh(100) = 1.0")
 	@test ("tanh(0) = 0.0")
+	@test ("tanh(-100) = -1.0")
 	public static Double tanh(final Integer rv) {
 		return Math.tanh(rv);
 	}
@@ -489,6 +719,7 @@ public class Maths {
 	@doc (
 			value = "Returns the value (in [-1,1]) of the cosinus of the operand (in decimal degrees).  The argument is casted to an int before being evaluated.",
 			masterDoc = true,
+			returns = "a {@code float} in [-1.0, 1.0].",
 			special_cases = "Operand values out of the range [0-359] are normalized.",
 			examples = { @example (
 					value = "cos (0.0)",
@@ -500,8 +731,45 @@ public class Maths {
 							value = "cos(-720.0)",
 							equals = "1.0") },
 			see = { "sin", "tan" })
+	@test ("cos(0.0) = 1.0")
+	@test ("cos(90.0) with_precision 10 = 0.0")
+	@test ("cos(180.0) = -1.0")
+	@test ("cos(360.0) = 1.0")
+	@test ("cos(-180.0) = -1.0")
 	public static Double cos(final Double rv) {
 		return Math.cos(rv * toRad);
+	}
+
+	/**
+	 * Cos.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param a
+	 *            the a
+	 * @return the i matrix
+	 */
+	@operator (
+			value = "cos",
+			can_be_const = true,
+			category = { IOperatorCategory.ARITHMETIC, IOperatorCategory.MATRIX },
+			concept = { IConcept.MATH, IConcept.ARITHMETIC, IConcept.MATRIX })
+	@doc (
+			value = "Returns a new matrix where the cosine function is applied to each element (element values are assumed to be in degrees).")
+	public static IMatrix cos(final IScope scope, final IMatrix a) {
+		final GamaFloatMatrix mat = GamaFloatMatrix.from(scope, a);
+		final GamaFloatMatrix nm =
+				(GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(mat.getCols(scope), mat.getRows(scope));
+		final double[] m = mat.getMatrix();
+		int i = 0;
+		int upperBound = GamaFloatMatrix.SPECIES.loopBound(m.length);
+		for (; i < upperBound; i += GamaFloatMatrix.SPECIES.length()) {
+			jdk.incubator.vector.DoubleVector va =
+					jdk.incubator.vector.DoubleVector.fromArray(GamaFloatMatrix.SPECIES, m, i);
+			va.mul(toRad).lanewise(jdk.incubator.vector.VectorOperators.COS).intoArray(nm.getMatrix(), i);
+		}
+		for (; i < m.length; i++) { nm.getMatrix()[i] = Math.cos(m[i] * toRad); }
+		return nm;
 	}
 
 	/**
@@ -517,7 +785,7 @@ public class Maths {
 			category = { IOperatorCategory.ARITHMETIC },
 			concept = {})
 	@doc (
-			value = "the cosinus of the operand.",
+			value = "the cosinus of the operand in decimal degrees.",
 			examples = { @example (
 					value = "cos (0)",
 					equals = "1.0"),
@@ -548,13 +816,51 @@ public class Maths {
 	@doc (
 			value = "Returns the value (in [-1,1]) of the sinus of the operand (in decimal degrees). The argument is casted to an int before being evaluated.",
 			masterDoc = true,
+			returns = "a {@code float} in [-1.0, 1.0].",
 			usages = @usage ("Operand values out of the range [0-359] are normalized."),
 			examples = { @example (
 					value = "sin(360) with_precision 10 with_precision 10",
 					equals = "0.0") },
 			see = { "cos", "tan" })
+	@test ("sin(0.0) = 0.0")
+	@test ("sin(90.0) = 1.0")
+	@test ("sin(-90.0) = -1.0")
+	@test ("sin(180.0) with_precision 10 = 0.0")
+	@test ("sin(270.0) = -1.0")
 	public static Double sin(final Double rv) {
 		return Math.sin(rv * toRad);
+	}
+
+	/**
+	 * Sin.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param a
+	 *            the a
+	 * @return the i matrix
+	 */
+	@operator (
+			value = "sin",
+			can_be_const = true,
+			category = { IOperatorCategory.ARITHMETIC, IOperatorCategory.MATRIX },
+			concept = { IConcept.MATH, IConcept.ARITHMETIC, IConcept.MATRIX })
+	@doc (
+			value = "Returns a new matrix where the sine function is applied to each element (element values are assumed to be in degrees).")
+	public static IMatrix sin(final IScope scope, final IMatrix a) {
+		final GamaFloatMatrix mat = GamaFloatMatrix.from(scope, a);
+		final GamaFloatMatrix nm =
+				(GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(mat.getCols(scope), mat.getRows(scope));
+		final double[] m = mat.getMatrix();
+		int i = 0;
+		int upperBound = GamaFloatMatrix.SPECIES.loopBound(m.length);
+		for (; i < upperBound; i += GamaFloatMatrix.SPECIES.length()) {
+			jdk.incubator.vector.DoubleVector va =
+					jdk.incubator.vector.DoubleVector.fromArray(GamaFloatMatrix.SPECIES, m, i);
+			va.mul(toRad).lanewise(jdk.incubator.vector.VectorOperators.SIN).intoArray(nm.getMatrix(), i);
+		}
+		for (; i < m.length; i++) { nm.getMatrix()[i] = Math.sin(m[i] * toRad); }
+		return nm;
 	}
 
 	/**
@@ -646,6 +952,7 @@ public class Maths {
 			concept = { IConcept.MATH, IConcept.ARITHMETIC })
 	@doc (
 			value = "Returns true if the operand is even and false if it is odd.",
+			returns = "a {@code bool}.",
 			usages = { @usage (
 					value = "if the operand is equal to 0, it returns true."),
 					@usage (
@@ -656,6 +963,11 @@ public class Maths {
 					@example (
 							value = "even(-12)",
 							equals = "true") })
+	@test ("even(0)")
+	@test ("even(2)")
+	@test ("even(-4)")
+	@test ("!even(1)")
+	@test ("!even(-3)")
 	public static Boolean even(final Integer rv) {
 		return (rv.intValue() & 1) == 0;
 	}
@@ -675,12 +987,19 @@ public class Maths {
 	@doc (
 			value = "Returns Euler's number e raised to the power of the operand.",
 			masterDoc = true,
+			returns = "a positive {@code float}. The result is always > 0.",
+			special_cases = { "exp(0) = 1.0", "exp(1) = e ≈ 2.718281828459045",
+					"For negative operands, returns a small positive value approaching 0." },
 			usages = @usage (
 					value = "the operand is casted to a float before being evaluated."),
 			examples = @example (
 					value = "exp (0.0)",
 					equals = "1.0"),
 			see = "ln")
+	@test ("exp(0.0) = 1.0")
+	@test ("exp(1.0) with_precision 5 = 2.71828")
+	@test ("exp(-1.0) = 1.0 / exp(1.0)")
+	@test ("ln(exp(1.0)) with_precision 10 = 1.0")
 	public static Double exp(final Double rv) {
 		return Math.exp(rv);
 	}
@@ -705,6 +1024,32 @@ public class Maths {
 	}
 
 	/**
+	 * Exp.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param a
+	 *            the a
+	 * @return the i matrix
+	 */
+	@operator (
+			value = "exp",
+			can_be_const = true,
+			category = { IOperatorCategory.ARITHMETIC, IOperatorCategory.MATRIX },
+			concept = { IConcept.MATH, IConcept.ARITHMETIC, IConcept.MATRIX })
+	@doc (
+			value = "Returns a new matrix where Euler's number e is raised to the power of each element.")
+	public static IMatrix exp(final IScope scope, final IMatrix a) {
+		final GamaFloatMatrix mat = GamaFloatMatrix.from(scope, a);
+		final GamaFloatMatrix nm =
+				(GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(mat.getCols(scope), mat.getRows(scope));
+		final double[] m = mat.getMatrix();
+		for (int i = 0; i < m.length; i++) { nm.getMatrix()[i] = Math.exp(m[i]); }
+
+		return nm;
+	}
+
+	/**
 	 * Fact.
 	 *
 	 * @param n
@@ -718,10 +1063,25 @@ public class Maths {
 			concept = { IConcept.MATH, IConcept.ARITHMETIC })
 	@doc (
 			value = "Returns the factorial of the operand.",
+			returns = "a non-negative {@code float}. fact(0) = 1.0.",
+			special_cases = { "If the operand is 0, returns 1.0 (by convention: 0! = 1).",
+					"If the operand is negative, returns 0.0.",
+					"For large values (e.g. n > 170), the result overflows to Infinity." },
 			usages = @usage ("if the operand is less than 0, fact returns 0."),
-			examples = @example (
+			examples = { @example (
 					value = "fact(4)",
-					equals = "24"))
+					equals = "24"),
+					@example (
+							value = "fact(0)",
+							equals = "1.0"),
+					@example (
+							value = "fact(-1)",
+							equals = "0.0") })
+	@test ("fact(0) = 1.0")
+	@test ("fact(1) = 1.0")
+	@test ("fact(4) = 24.0")
+	@test ("fact(-1) = 0.0")
+	@test ("fact(10) = 3628800.0")
 	public static Double fact(final Integer n) {
 		if (n < 0) return 0.0;
 		double product = 1;
@@ -746,15 +1106,25 @@ public class Maths {
 	@doc (
 			value = "Returns the natural logarithm (base e) of the operand.",
 			masterDoc = true,
+			returns = "a {@code float}. Returns -∞ if the operand equals 0 in strict Java math; "
+					+ "in GAMA a warning is issued and -∞ may be returned depending on the error policy.",
+			special_cases = { "ln(1) = 0.0", "ln(e) = 1.0",
+					"If the operand is 0 or negative, a runtime warning is raised." },
 			usages = @usage (
 					value = "an exception is raised if the operand is less than zero."),
 			examples = @example (
 					value = "ln(exp(1))",
 					equals = "1.0"),
 			see = "exp")
+	@test ("ln(1.0) = 0.0")
+	@test ("ln(exp(1.0)) with_precision 10 = 1.0")
+	@test ("ln(exp(3.0)) with_precision 5 = 3.0")
 	public static Double ln(final IScope scope, final Double x) {
-		if (x <= 0) GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.warning("The ln operator cannot accept negative or null inputs", scope), false);
-		// return Double.MAX_VALUE; // A compromise...
+		if (x <= 0) {
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.warning("The ln operator cannot accept negative or null inputs", scope),
+					false);
+		}
 		return Math.log(x);
 	}
 
@@ -773,13 +1143,24 @@ public class Maths {
 			category = { IOperatorCategory.ARITHMETIC },
 			concept = {})
 	@doc (
-			value = "returns the natural logarithm (base e) of the operand.",
-			examples = @example (
+			value = "Returns the natural logarithm (base e) of the integer operand.",
+			returns = "a {@code float}.",
+			special_cases = { "If the operand is 0 or negative, a runtime warning is raised." },
+			examples = { @example (
 					value = "ln(1)",
-					equals = "0.0"))
+					equals = "0.0"),
+					@example (
+							value = "ln(10)",
+							equals = "2.302585092994046",
+							test = false) })
+	@test ("ln(1) = 0.0")
+	@test ("ln(10) with_precision 5 = 2.30259")
 	public static Double ln(final IScope scope, final Integer x) {
-		if (x <= 0) GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.warning("The ln operator cannot accept negative or null inputs", scope), false);
-		// return Double.MAX_VALUE; // A compromise...
+		if (x <= 0) {
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.warning("The ln operator cannot accept negative or null inputs", scope),
+					false);
+		}
 		return Math.log(x);
 	}
 
@@ -800,14 +1181,28 @@ public class Maths {
 	@doc (
 			value = "Returns the logarithm (base 10) of the operand.",
 			masterDoc = true,
+			returns = "a {@code float}. log(1) = 0.0, log(10) = 1.0, log(100) = 2.0.",
+			special_cases = { "log(1) = 0.0", "If the operand is 0 or negative, a runtime warning is raised." },
 			usages = @usage ("an exception is raised if the operand is equals or less than zero."),
-			examples = @example (
+			examples = { @example (
 					value = "log(10)",
 					equals = "1.0"),
+					@example (
+							value = "log(1)",
+							equals = "0.0"),
+					@example (
+							value = "log(100)",
+							equals = "2.0") },
 			see = "ln")
+	@test ("log(10.0) = 1.0")
+	@test ("log(1.0) = 0.0")
+	@test ("log(100.0) = 2.0")
 	public static Double log(final IScope scope, final Double x) {
-		if (x <= 0) GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope), false);
-		// return Double.MAX_VALUE; // A compromise...
+		if (x <= 0) {
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope),
+					false);
+		}
 		return Math.log10(x.doubleValue());
 	}
 
@@ -826,33 +1221,80 @@ public class Maths {
 			category = { IOperatorCategory.ARITHMETIC },
 			concept = {})
 	@doc (
-			value = "returns the logarithm (base 10) of the operand.",
-			examples = @example (
+			value = "Returns the logarithm (base 10) of the integer operand.",
+			returns = "a {@code float}.",
+			special_cases = { "If the operand is 0 or negative, a runtime warning is raised." },
+			examples = { @example (
 					value = "log(1)",
-					equals = "0.0"))
+					equals = "0.0"),
+					@example (
+							value = "log(10)",
+							equals = "1.0") })
+	@test ("log(1) = 0.0")
+	@test ("log(10) = 1.0")
+	@test ("log(100) = 2.0")
 	public static Double log(final IScope scope, final Integer x) {
-		if (x <= 0) GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope), false);
-		// return Double.MAX_VALUE; // A compromise...
+		if (x <= 0) {
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope),
+					false);
+		}
 		return Math.log10(x);
 	}
 
-	
+	/**
+	 * Log.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param x
+	 *            the x
+	 * @param b
+	 *            the b
+	 * @return the double
+	 */
 	@operator (
 			value = "log",
 			can_be_const = true,
 			category = { IOperatorCategory.ARITHMETIC },
 			concept = {})
 	@doc (
-			value = "returns the logarithm in base b of the operand.",
-			examples = @example (
+			value = "Returns the logarithm in base {@code b} of the integer operand {@code x}.",
+			returns = "a {@code float}.",
+			special_cases = { "If x is 0 or negative, a runtime warning is raised.",
+					"If b equals 1, the result is ±Infinity (undefined)." },
+			examples = { @example (
 					value = "log(100, 100)",
-					equals = "1.0"))
+					equals = "1.0"),
+					@example (
+							value = "log(8, 2)",
+							equals = "3.0"),
+					@example (
+							value = "log(1, 10)",
+							equals = "0.0") })
+	@test ("log(100, 100) = 1.0")
+	@test ("log(8, 2) with_precision 10 = 3.0")
+	@test ("log(1, 10) = 0.0")
 	public static Double log(final IScope scope, final Integer x, final Integer b) {
-		if (x <= 0) GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope), false);
-		// return Double.MAX_VALUE; // A compromise...
-		return Math.log(x)/Math.log(b);
+		if (x <= 0) {
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope),
+					false);
+		}
+		return Math.log(x) / Math.log(b);
 	}
-	
+
+	/**
+	 * Log.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param x
+	 *            the x
+	 * @param b
+	 *            the b
+	 * @return the double
+	 */
 	@operator (
 			value = "log",
 			can_be_const = true,
@@ -864,11 +1306,25 @@ public class Maths {
 					value = "log(100, 100.0)",
 					equals = "1.0"))
 	public static Double log(final IScope scope, final Integer x, final Double b) {
-		if (x <= 0) GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope), false);
-		// return Double.MAX_VALUE; // A compromise...
-		return Math.log(x)/Math.log(b);
+		if (x <= 0) {
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope),
+					false);
+		}
+		return Math.log(x) / Math.log(b);
 	}
-	
+
+	/**
+	 * Log.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param x
+	 *            the x
+	 * @param b
+	 *            the b
+	 * @return the double
+	 */
 	@operator (
 			value = "log",
 			can_be_const = true,
@@ -880,12 +1336,25 @@ public class Maths {
 					value = "log(100.0, 100.0)",
 					equals = "1.0"))
 	public static Double log(final IScope scope, final Double x, final Double b) {
-		if (x <= 0) GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope), false);
-		// return Double.MAX_VALUE; // A compromise...
-		return Math.log(x)/Math.log(b);
+		if (x <= 0) {
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope),
+					false);
+		}
+		return Math.log(x) / Math.log(b);
 	}
-	
-	
+
+	/**
+	 * Log.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param x
+	 *            the x
+	 * @param b
+	 *            the b
+	 * @return the double
+	 */
 	@operator (
 			value = "log",
 			can_be_const = true,
@@ -897,12 +1366,14 @@ public class Maths {
 					value = "log(100.0, 100)",
 					equals = "1.0"))
 	public static Double log(final IScope scope, final Double x, final Integer b) {
-		if (x <= 0) GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope), false);
-		// return Double.MAX_VALUE; // A compromise...
-		return Math.log(x)/Math.log(b);
+		if (x <= 0) {
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope),
+					false);
+		}
+		return Math.log(x) / Math.log(b);
 	}
-	
-	
+
 	/**
 	 * Negate.
 	 *
@@ -916,9 +1387,22 @@ public class Maths {
 			category = { IOperatorCategory.ARITHMETIC },
 			concept = { IConcept.MATH, IConcept.ARITHMETIC })
 	@doc (
-			value = "If it is used as a unary operator, it returns the opposite of the operand.",
-			masterDoc = true)
+			value = "If it is used as a unary operator, it returns the arithmetic negation (opposite) of the operand.",
+			masterDoc = true,
+			returns = "a {@code float} whose value is {@code -operand}.",
+			special_cases = { "-0.0 = 0.0 (IEEE 754 negative zero is equal to zero)." },
+			examples = { @example (
+					value = "-(3.5)",
+					equals = "-3.5"),
+					@example (
+							value = "-(-3.5)",
+							equals = "3.5"),
+					@example (
+							value = "-(0.0)",
+							equals = "0.0") })
 	@test ("-(-90.0) = 90.0")
+	@test ("-(3.5) = -3.5")
+	@test ("-(0.0) = 0.0")
 	public static Double negate(final Double x) {
 		return -x;
 	}
@@ -936,10 +1420,18 @@ public class Maths {
 			category = { IOperatorCategory.ARITHMETIC },
 			concept = {})
 	@doc (
-			value = "Returns the opposite of the operand.",
-			examples = @example (
+			value = "Returns the opposite of the integer operand.",
+			returns = "an {@code int} equal to {@code -operand}.",
+			special_cases = { "Negating Integer.MIN_VALUE overflows to Integer.MIN_VALUE." },
+			examples = { @example (
 					value = "- (-56)",
-					equals = "56"))
+					equals = "56"),
+					@example (
+							value = "-(0)",
+							equals = "0") })
+	@test ("-(-56) = 56")
+	@test ("-(0) = 0")
+	@test ("-(5) = -5")
 	public static Integer negate(final Integer x) {
 		return -x;
 	}
@@ -957,8 +1449,11 @@ public class Maths {
 			category = { IOperatorCategory.ARITHMETIC },
 			concept = { IConcept.MATH, IConcept.ARITHMETIC })
 	@doc (
-			value = "Returns the rounded value of the operand.",
+			value = "Returns the nearest integer value of the operand, rounding half-up (away from zero for negative values).",
 			masterDoc = true,
+			returns = "an {@code int}.",
+			special_cases = { "round(0.5) = 1 (half-up convention).",
+					"round(-0.5) = -1 (half-away-from-zero: -0.5 rounds down to -1).", "round(0.0) = 0." },
 			examples = { @example (
 					value = "round (0.51)",
 					equals = "1"),
@@ -969,6 +1464,17 @@ public class Maths {
 							value = "round(-0.51)",
 							equals = "-1") },
 			see = { "int", "with_precision" })
+	@tests ({
+			@test ("round(0.51) = 1"),
+			@test ("round(0.5) = 1"),
+			@test ("round(-0.5) = -1"),
+			@test ("round(-0.51) = -1"),
+			@test ("round(0.0) = 0"),
+			@test ("round(-2.3) = -2"),
+			@test ("round(2.7) = 3"),
+			@test ("round(100.5) = 101"),
+			@test ("round(100.4) = 100")
+	})
 	public static Integer round(final Double v) {
 		int i;
 		if (v >= 0) {
@@ -992,8 +1498,12 @@ public class Maths {
 			category = { IOperatorCategory.ARITHMETIC },
 			concept = {})
 	@doc (
-			special_cases = "if the operand is an int, round returns it")
-	@test ("round (100) = 100")
+			value = "Returns the operand unchanged (integers are already rounded by definition).",
+			returns = "an {@code int} equal to the operand.",
+			special_cases = "if the operand is an int, round returns it unchanged.")
+	@test ("round(100) = 100")
+	@test ("round(0) = 0")
+	@test ("round(-5) = -5")
 
 	public static Integer round(final Integer v) {
 		return v;
@@ -1018,13 +1528,30 @@ public class Maths {
 	@doc (
 			value = "Returns the square root of the operand.",
 			masterDoc = true,
+			returns = "a non-negative {@code float}.",
+			special_cases = { "sqrt(0) = 0.0", "sqrt(1) = 1.0",
+					"If the operand is negative, a runtime exception is raised." },
 			usages = @usage (
 					value = "if the operand is negative, an exception is raised"),
-			examples = @example (
+			examples = { @example (
 					value = "sqrt(4)",
-					equals = "2.0"))
+					equals = "2.0"),
+					@example (
+							value = "sqrt(0)",
+							equals = "0.0"),
+					@example (
+							value = "sqrt(2)",
+							equals = "1.4142135623730951") })
+	@test ("sqrt(4) = 2.0")
+	@test ("sqrt(0) = 0.0")
+	@test ("sqrt(1) = 1.0")
+	@test ("sqrt(9) = 3.0")
+	@test ("is_error(sqrt(-1))")
 	public static Double sqrt(final IScope scope, final Integer v) throws GamaRuntimeException {
-		if (v < 0) throw GamaRuntimeException.warning("The sqrt operator cannot accept negative inputs", scope);
+		if (v < 0) {
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.error("The sqrt operator cannot accept negative inputs", scope), true);
+		}
 		return Math.sqrt(v);
 	}
 
@@ -1045,12 +1572,24 @@ public class Maths {
 			category = { IOperatorCategory.ARITHMETIC },
 			concept = {})
 	@doc (
-			value = "Returns the square root of the operand.",
-			examples = @example (
-					value = "sqrt(4)",
-					equals = "2.0"))
+			value = "Returns the square root of the float operand.",
+			returns = "a non-negative {@code float}.",
+			special_cases = { "sqrt(0.0) = 0.0", "If the operand is negative, a runtime exception is raised." },
+			examples = { @example (
+					value = "sqrt(4.0)",
+					equals = "2.0"),
+					@example (
+							value = "sqrt(0.0)",
+							equals = "0.0") })
+	@test ("sqrt(4.0) = 2.0")
+	@test ("sqrt(0.0) = 0.0")
+	@test ("sqrt(1.0) = 1.0")
+	@test ("is_error(sqrt(-1.0))")
 	public static Double sqrt(final IScope scope, final Double v) throws GamaRuntimeException {
-		if (v < 0) throw GamaRuntimeException.warning("The sqrt operator cannot accept negative inputs", scope);
+		if (v < 0) {
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.error("The sqrt operator cannot accept negative inputs", scope), true);
+		}
 		return Math.sqrt(v);
 	}
 
@@ -1082,11 +1621,14 @@ public class Maths {
 							equals = "0.6") }) },
 			special_cases = "if the right-hand operand is equal to zero, raises a \"Division by zero\" exception",
 			see = { IKeyword.PLUS, IKeyword.MINUS, IKeyword.MULTIPLY })
-	@test ("0/1=0")
-	@test ("is_error(1/0)")
-	@test ("3/5=0.6")
+	@tests ({
+			@test ("0/1=0"),
+			@test ("is_error(1/0)"),
+			@test ("3/5=0.6"),
+			@test ("!((100 / 100) is int)")
+	})
 	public static Double opDivide(final IScope scope, final Integer a, final Integer b) throws GamaRuntimeException {
-		if (b == 0) throw GamaRuntimeException.error("Division by zero", scope);
+		if (b == null || b == 0) throw GamaRuntimeException.error("Division by zero", scope);
 		return a.doubleValue() / b.doubleValue();
 	}
 
@@ -1115,7 +1657,7 @@ public class Maths {
 	@test ("is_error(1.5/0)")
 	@test ("0.0/5=0.0")
 	public static Double opDivide(final IScope scope, final Double a, final Integer b) throws GamaRuntimeException {
-		if (b == 0) throw GamaRuntimeException.error("Division by zero", scope);
+		if (b == null || b == 0) throw GamaRuntimeException.error("Division by zero", scope);
 		return a / b.doubleValue();
 	}
 
@@ -1144,7 +1686,7 @@ public class Maths {
 	@test ("is_error(1.5/0.0)")
 	@test ("0.0/1.0=0.0")
 	public static Double opDivide(final IScope scope, final Double a, final Double b) throws GamaRuntimeException {
-		if (b.equals(0.0)) throw GamaRuntimeException.error("Division by zero", scope);
+		if (b == null || b == 0.0) throw GamaRuntimeException.error("Division by zero", scope);
 		return a / b;
 	}
 
@@ -1173,7 +1715,7 @@ public class Maths {
 	@test ("is_error(2/0.0)")
 	@test ("0/0.3=0.0")
 	public static Double opDivide(final IScope scope, final Integer a, final Double b) throws GamaRuntimeException {
-		if (b.equals(0.0)) throw GamaRuntimeException.error("Division by zero", scope);
+		if (b == null || b == 0.0) throw GamaRuntimeException.error("Division by zero", scope);
 		return a.doubleValue() / b.doubleValue();
 	}
 
@@ -1200,6 +1742,9 @@ public class Maths {
 							value = "1 * 1",
 							equals = "1")),
 			see = { IKeyword.PLUS, IKeyword.MINUS, IKeyword.DIVIDE })
+	@tests ({
+			@test ("-1 * 100 = -100")
+	})
 	public static Integer opTimes(final Integer a, final Integer b) {
 		return a * b;
 	}
@@ -1310,6 +1855,31 @@ public class Maths {
 	 *            the a
 	 * @param b
 	 *            the b
+	 * @return the i field
+	 */
+	@operator (
+			value = IKeyword.MULTIPLY,
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
+			category = { IOperatorCategory.ARITHMETIC },
+			concept = {})
+	@doc (
+			usages = { @usage (
+					value = "if one operand is a matrix and the other a number (float or int), performs a normal arithmetic product of the number with each element of the matrix (results are float if the number is a float.",
+					examples = { @example (
+							value = "2 * matrix([[2,5],[3,4]])",
+							equals = "matrix([[4,10],[6,8]])") }) })
+	public static IField opTimes(final Integer a, final IField b) {
+		return b.times(a);
+	}
+
+	/**
+	 * Op times.
+	 *
+	 * @param a
+	 *            the a
+	 * @param b
+	 *            the b
 	 * @return the i matrix
 	 */
 	@operator (
@@ -1347,6 +1917,9 @@ public class Maths {
 							value = "1 + 1",
 							equals = "2") }) },
 			see = { IKeyword.MINUS, IKeyword.MULTIPLY, IKeyword.DIVIDE })
+	@tests ({
+			@test ("(100 + 100) = 200")
+	})
 	public static Integer opPlus(final Integer a, final Integer b) {
 		return a + b;
 	}
@@ -1430,19 +2003,134 @@ public class Maths {
 	 *            the b
 	 * @return the i matrix
 	 */
+	/**
+	 * Op plus.
+	 *
+	 * @param a
+	 *            the a
+	 * @param b
+	 *            the b
+	 * @return the i matrix
+	 */
 	@operator (
 			value = IKeyword.PLUS,
 			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.MATRIX },
+			concept = { IConcept.MATRIX })
+	@doc (
+			value = "Returns the element-wise addition of two matrices.",
+			examples = { @example (
+					value = "matrix([[1, 2], [3, 4]]) + matrix([[1, 2], [3, 4]])",
+					equals = "matrix([[2, 4], [6, 8]])") })
+	@test ("matrix([[1, 2], [3, 4]]) + matrix([[1, 2], [3, 4]]) = matrix([[2, 4], [6, 8]])")
+	public static IMatrix opPlus(final IScope scope, final IMatrix a, final IMatrix b) {
+		return a.plus(scope, b);
+	}
+
+	/**
+	 * Op minus.
+	 *
+	 * @param a
+	 *            the a
+	 * @param b
+	 *            the b
+	 * @return the i matrix
+	 */
+	@operator (
+			value = IKeyword.MINUS,
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.MATRIX },
+			concept = { IConcept.MATRIX })
+	@doc (
+			value = "Returns the element-wise subtraction of two matrices.",
+			examples = { @example (
+					value = "matrix([[1, 2], [3, 4]]) - matrix([[1, 2], [3, 4]])",
+					equals = "matrix([[0, 0], [0, 0]])") })
+	@test ("matrix([[1, 2], [3, 4]]) - matrix([[1, 2], [3, 4]]) = matrix([[0, 0], [0, 0]])")
+	public static IMatrix opMinus(final IScope scope, final IMatrix a, final IMatrix b) {
+		return a.minus(scope, b);
+	}
+
+	/**
+	 * Op times.
+	 *
+	 * @param a
+	 *            the a
+	 * @param b
+	 *            the b
+	 * @return the i matrix
+	 */
+	@operator (
+			value = IKeyword.MULTIPLY,
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.MATRIX },
+			concept = { IConcept.MATRIX })
+	@doc (
+			value = "Returns the element-wise multiplication (Hadamard product) of two matrices. For matrix multiplication, use the `.` operator.",
+			examples = { @example (
+					value = "matrix([[1, 2], [3, 4]]) * matrix([[1, 2], [3, 4]])",
+					equals = "matrix([[1, 4], [9, 16]])") })
+	@test ("matrix([[1, 2], [3, 4]]) * matrix([[1, 2], [3, 4]]) = matrix([[1, 4], [9, 16]])")
+	public static IMatrix opTimes(final IScope scope, final IMatrix a, final IMatrix b) {
+		return a.times(scope, b);
+	}
+
+	/**
+	 * Op divide.
+	 *
+	 * @param a
+	 *            the a
+	 * @param b
+	 *            the b
+	 * @return the i matrix
+	 */
+	@operator (
+			value = IKeyword.DIVIDE,
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.MATRIX },
+			concept = { IConcept.MATRIX })
+	@doc (
+			value = "Returns the element-wise division of two matrices.",
+			examples = { @example (
+					value = "matrix([[1, 2], [3, 4]]) / matrix([[1, 2], [3, 4]])",
+					equals = "matrix([[1, 1], [1, 1]])") })
+	@test ("matrix([[1, 2], [3, 4]]) / matrix([[1, 2], [3, 4]]) = matrix([[1.0, 1.0], [1.0, 1.0]])")
+	public static IMatrix opDivide(final IScope scope, final IMatrix a, final IMatrix b) {
+		return a.divides(scope, b);
+	}
+
+	/**
+	 * Op plus.
+	 *
+	 * @param a
+	 *            the a
+	 * @param b
+	 *            the b
+	 * @return the i matrix
+	 */
+	@operator (
+
+			value = IKeyword.PLUS,
+
+			can_be_const = true,
+
 			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
+
 			category = { IOperatorCategory.ARITHMETIC },
+
 			concept = {})
+
 	@doc (
 			usages = { @usage (
 					value = "if one operand is a matrix and the other a number (float or int), performs a normal arithmetic sum of the number with each element of the matrix (results are float if the number is a float.",
 					examples = { @example (
 							value = "3.5 + matrix([[2,5],[3,4]])",
 							equals = "matrix([[5.5,8.5],[6.5,7.5]])") }) })
-	// TODO check update
+	@test ("3 + matrix([[2,5],[3,4]]) = matrix([[5,8],[6,7]])")
 	public static IMatrix opPlus(final Integer a, final IMatrix b) {
 		return b.plus(a);
 	}
@@ -1467,6 +2155,7 @@ public class Maths {
 			examples = {},
 			see = "/")
 	@test ("1.0 + matrix([[5.5,8.5],[6.5,7.5]]) = matrix([[6.5,9.5],[7.5,8.5]])")
+	@test ("3.5 + matrix([[2,5],[3,4]]) = matrix([[5.5,8.5],[6.5,7.5]])")
 	public static IMatrix opPlus(final Double a, final IMatrix b) {
 		return b.plus(a);
 	}
@@ -1692,8 +2381,7 @@ public class Maths {
 							equals = "123.00") },
 			see = "round")
 	public static double round(final Double v, final Integer precision) {
-		final long t = TENS[precision]; // contains powers of ten.
-		return (double) (long) (v > 0 ? v * t + 0.5 : v * t - 0.5) / t;
+		return MathUtils.round(v, precision);
 	}
 
 	/**
@@ -1710,6 +2398,10 @@ public class Maths {
 			concept = { IConcept.MATH, IConcept.ARITHMETIC })
 	@doc (
 			value = "Maps the operand to the largest previous following integer, i.e. the largest integer not greater than x.",
+			returns = "an {@code int} (the floor value of the operand).",
+			special_cases = {
+					"For negative non-integer values, floor rounds towards negative infinity: floor(-4.7) = -5.",
+					"For exact integers, floor returns the integer itself: floor(3.0) = 3." },
 			examples = { @example (
 					value = "floor(3)",
 					equals = "3"),
@@ -1720,6 +2412,14 @@ public class Maths {
 							value = "floor(-4.7)",
 							equals = "-5") },
 			see = { "ceil", "round" })
+	@tests ({
+			@test ("floor(3.5) = 3"),
+			@test ("floor(-4.7) = -5"),
+			@test ("floor(3.0) = 3"),
+			@test ("floor(-2.0) = -2"),
+			@test ("floor(0.0) = 0"),
+			@test ("floor(100.5) = 100")
+	})
 	public static final int floor(final double x) {
 		// This method is a *lot* faster than using (int)Math.floor(x)
 		int xi = (int) x;
@@ -1734,11 +2434,14 @@ public class Maths {
 	 * @return the double
 	 */
 	@operator (
-			value = "ceil",
+			value = { "ceil", "ceiling" },
 			can_be_const = true,
 			concept = { IConcept.MATH, IConcept.ARITHMETIC })
 	@doc (
 			value = "Maps the operand to the smallest following integer, i.e. the smallest integer not less than x.",
+			returns = "an {@code int} (the ceiling value of the operand).",
+			special_cases = { "For negative non-integer values, ceil rounds towards zero: ceil(-4.7) = -4.",
+					"For exact integers, ceil returns the integer itself: ceil(3.0) = 3." },
 			examples = { @example (
 					value = "ceil(3)",
 					equals = "3.0"),
@@ -1749,8 +2452,16 @@ public class Maths {
 							value = "ceil(-4.7)",
 							equals = "-4.0") },
 			see = { "floor", "round" })
-	public static final double ceil(final double d) {
-		return Math.ceil(d);
+	@tests ({
+			@test ("ceil(3.5) = 4"),
+			@test ("ceil(-4.7) = -4"),
+			@test ("ceil(3.0) = 3"),
+			@test ("ceil(-2.0) = -2"),
+			@test ("ceil(0.0) = 0"),
+			@test ("ceil(100.5) = 101")
+	})
+	public static final int ceil(final double d) {
+		return (int) Math.ceil(d);
 	}
 
 	/**
@@ -1771,15 +2482,36 @@ public class Maths {
 			concept = { IConcept.MATH, IConcept.ARITHMETIC })
 	@doc (
 			value = "Returns the remainder of the integer division of the left-hand operand by the right-hand operand.",
+			returns = "an {@code int}. The sign of the result matches the sign of the dividend (Java semantics).",
+			special_cases = { "For a negative dividend, the result is negative: (-7) mod 3 = -1.",
+					"If the right-hand operand is equal to zero, a runtime exception is raised." },
 			usages = { @usage (
 					value = "if operands are float, they are truncated"),
 					@usage (
 							value = "if the right-hand operand is equal to zero, raises an exception.") },
 			examples = { @example (
 					value = "40 mod 3",
-					equals = "1") },
+					equals = "1"),
+					@example (
+							value = "(-7) mod 3",
+							equals = "-1"),
+					@example (
+							value = "7 mod 3",
+							equals = "1") },
 			see = "div")
+	@tests ({
+			@test ("40 mod 3 = 1"),
+			@test ("7 mod 3 = 1"),
+			@test ("6 mod 3 = 0"),
+			@test ("(-7) mod 3 = -1"),
+			@test ("is_error(5 mod 0)"),
+			@test ("mod(100, 11) = 1"),
+			@test ("45 mod 10 = 5")
+	})
 	public static Integer opMod(final IScope scope, final Integer a, final Integer b) {
+		if (b == 0) {
+			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("Division by zero", scope), false);
+		}
 		return a % b;
 	}
 
@@ -1802,14 +2534,31 @@ public class Maths {
 			category = { IOperatorCategory.ARITHMETIC },
 			concept = { IConcept.MATH, IConcept.ARITHMETIC })
 	@doc (
-			value = "Returns the truncation of the division of the left-hand operand by the right-hand operand.",
+			value = "Returns the truncated integer division of the left-hand operand by the right-hand operand.",
 			masterDoc = true,
+			returns = "an {@code int}. The result is truncated towards zero (Java semantics).",
+			special_cases = { "For a negative dividend or divisor, truncation is towards zero: (-7) div 2 = -3.",
+					"If the right-hand operand is equal to zero, a runtime exception is raised." },
 			usages = @usage (
 					value = "if the right-hand operand is equal to zero, raises an exception."),
-			examples = @example (
+			examples = { @example (
 					value = "40 div 3",
 					equals = "13"),
+					@example (
+							value = "(-7) div 2",
+							equals = "-3"),
+					@example (
+							value = "7 div 2",
+							equals = "3") },
 			see = "mod")
+	@tests ({
+			@test ("40 div 3 = 13"),
+			@test ("7 div 2 = 3"),
+			@test ("(-7) div 2 = -3"),
+			@test ("6 div 3 = 2"),
+			@test ("is_error(5 div 0)"),
+			@test ("45 div 10 = 4")
+	})
 	public static Integer div(final IScope scope, final Integer a, final Integer b) throws GamaRuntimeException {
 		if (b == 0) throw GamaRuntimeException.error("Division by zero", scope);
 		return a / b;
@@ -1895,6 +2644,9 @@ public class Maths {
 			examples = @example (
 					value = "40.1 div 4.5",
 					equals = "8"))
+	@tests ({
+			@test ("div(100.0, 10.0) = 10")
+	})
 	public static Integer div(final IScope scope, final Double a, final Double b) throws GamaRuntimeException {
 		if (b.equals(0.0)) throw GamaRuntimeException.error("Division by zero", scope);
 		return (int) (a / b);
@@ -1924,13 +2676,6 @@ public class Maths {
 	/** Constant field toRad. */
 	public static final double toRad = Math.PI / 180d;
 
-	/** The Constant TENS. */
-	public static final long[] TENS = new long[100];
-
-	static {
-		for (int i = 0; i < TENS.length; i++) { TENS[i] = (long) Math.pow(10, i); }
-	}
-
 	/**
 	 * Atan 2.
 	 *
@@ -1949,7 +2694,7 @@ public class Maths {
 			value = "the atan2 value of the two operands.",
 			comment = "The function atan2 is the arctangent function with two arguments. The purpose of using two arguments instead of one is to gather information on the signs of the inputs in order to return the appropriate quadrant of the computed angle, which is not possible for the single-argument arctangent function. Beware: the first argument is y and the second is x",
 			masterDoc = true,
-			examples = {@example (
+			examples = { @example (
 					value = "atan2 (0,0)",
 					equals = "0.0"),
 					@example (
@@ -1975,11 +2720,58 @@ public class Maths {
 							equals = "-45.0"),
 					@example (
 							value = "atan2 (-1,-1)",
-							equals = "-135.0"),
-			},
-			see = { "atan", "acos", "asin" })
+							equals = "-135.0"), },
+			see = { "atan", "acos", "asin", "atan2_rad" })
 	public static double atan2(final double y, final double x) {
 		return Math.atan2(y, x) * toDeg;
+	}
+
+	/**
+	 * Atan 2 rad.
+	 *
+	 * @param y
+	 *            the y
+	 * @param x
+	 *            the x
+	 * @return the double
+	 */
+	@operator (
+			value = "atan2_rad",
+			can_be_const = true,
+			category = { IOperatorCategory.ARITHMETIC },
+			concept = { IConcept.MATH, IConcept.ARITHMETIC })
+	@doc (
+			value = "the atan2 value of the two operands, expressed in radians.",
+			examples = { @example (
+					value = "atan2 (0,0)",
+					equals = "0.0"),
+					@example (
+							value = "atan2 (0,1)",
+							equals = "0.0"),
+					@example (
+							value = "atan2 (0,-1)",
+							equals = "#pi"),
+					@example (
+							value = "atan2 (1,0)",
+							equals = "#pi/2"),
+					@example (
+							value = "atan2 (1,1)",
+							equals = "#pi/4"),
+					@example (
+							value = "atan2 (1,-1)",
+							equals = "3*#pi/4"),
+					@example (
+							value = "atan2 (-1,0)",
+							equals = "-#pi/2"),
+					@example (
+							value = "atan2 (-1,1)",
+							equals = "-#pi/4"),
+					@example (
+							value = "atan2 (-1,-1)",
+							equals = "-3*#pi/4"), },
+			see = { "atan2", "cos_rad", "sin_rad", "tan_rad" })
+	public static double atan2_rad(final double y, final double x) {
+		return Math.atan2(y, x);
 	}
 
 	/**
@@ -2038,10 +2830,7 @@ public class Maths {
 					value = "hypot(0,1,0,1)",
 					equals = "sqrt(2)"))
 	public static double hypot(final IScope scope, final double x1, final double x2, final double y1, final double y2) {
-		// return Math.hypot(x2 - x1, y2 - y1); VERY SLOW !
-		final double dx = x2 - x1;
-		final double dy = y2 - y1;
-		return sqrt(scope, dx * dx + dy * dy);
+		return Math.hypot(x2 - x1, y2 - y1);
 	}
 
 	/**
@@ -2067,6 +2856,11 @@ public class Maths {
 					@example (
 							value = "is_number(#nan)",
 							equals = "false") })
+	@tests ({
+			@test ("is_number(100)"),
+			@test ("is_number(#max_int)"),
+			@test ("is_number(#min_int)")
+	})
 	public static Boolean is_number(final Double d) {
 		return !Double.isNaN(d);
 	}
@@ -2091,6 +2885,9 @@ public class Maths {
 					@example (
 							value = "is_finite(#infinity)",
 							equals = "false") })
+	@tests ({
+			@test ("is_finite(100)")
+	})
 	public static Boolean is_finite(final Double d) {
 		return !Double.isInfinite(d);
 	}

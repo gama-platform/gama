@@ -1,8 +1,12 @@
 /**
-* Name: URLImageImport
-* Author: Drogoul
-* Description: Shows how to load an image from an URL (from the Gama website) and save it locally (the saved version is a shuffled version of the original one)
-* Tags: image, load_file
+* Name: URL Image Import
+* Author: Alexis Drogoul
+* Description: Shows how to load an image directly from a URL in GAMA. The 'image_file' operator accepts both
+*   local file paths and HTTP/HTTPS URLs, downloading the image on the fly. This allows models to use up-to-date
+*   remote images — such as satellite tiles, webcam snapshots, or web-hosted icons — without bundling them locally.
+*   The model also demonstrates how to manipulate image pixel data as a matrix: it loads the GAMA platform logo
+*   from GitHub, shuffles its pixels, and saves the shuffled result as a local PNG file.
+* Tags: image, load_file, url, web, http, download, pixel, matrix, png
 */
 model URLImageImport
 
@@ -22,10 +26,10 @@ global {
 experiment urlImage {
 	output {
 		display 'Original' background: #white {
-			image im ;
+			picture im ;
 		}
 		display 'Shuffled_copy' background: #white {
-			image  shuffled_copy;
+			picture  shuffled_copy;
 		}
 
 	}

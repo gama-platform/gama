@@ -22,19 +22,24 @@ species soccer_game {
 	
 	init {
 		// create the entities ball and the 2 goals
-		create ball_sp with:[location::world.location] returns:var_ball;
+		create ball_sp (location:world.location) returns:var_ball;
 		ball <- first(var_ball);
-		create goal_sp with:[location::{world.location.x,120},position::"front"] returns:var_goal1;
+		create goal_sp (location:{world.location.x,120},position:"front") returns:var_goal1;
 		front_goal <- first(var_goal1);
-		create goal_sp with:[location::{world.location.x,0},position::"back"] returns:var_goal2;
+		create goal_sp (location:{world.location.x,0},position:"back") returns:var_goal2;
 		back_goal <- first(var_goal2);
 	}
 	
-	action reinit_phase {
+	action reinit_phase() {
 		// this action is called when a goal has been scored : the players are placed with their initial position, and the ball is reset to the center
 		ask players {
+			do loose_ball();
 			location <- init_pos;
 			previous_pos <- init_pos;
+			inactivity_time <- 0;
+		}
+		ask teams {
+			called_player <- nil;
 		}
 		ball.location <- world.location;
 		ball.speed <- 0.0;
@@ -49,7 +54,11 @@ species base_player skills:[moving] {
 	float speed_without_ball;
 	float speed_with_ball;
 	point previous_pos; // used to apply inertia
+	float hesitation <- 0.1; // probability of not reacting during a cycle when the player is not directly involved in the ball action
+	int marking_side <- 1; // side (left/right) on which the player stands when marking
 	bool displacement_effectued<-false update:false; // we can apply only one displacement by step !
+	// cycles during which the player cannot (re)take the ball after kicking it or losing it; avoids immediate re-catch loops
+	int inactivity_time <- 0 update:(inactivity_time <= 0) ? 0 : inactivity_time - 1;
 	
 	// ATTRIBUTE USEFUL TO BE READ IN THE TEAM STRATEGY FILE (READ ONLY !)
 	base_team team;
@@ -95,8 +104,12 @@ species base_player skills:[moving] {
 		init_pos <- location;
 		previous_pos <- location;
 		possess_ball <- false;
-		speed_with_ball <- 0.4;
-		speed_without_ball <- 0.5;
+		// each player has his own pace, reaction time and marking side, to avoid synchronized, robotic movements
+		float pace <- 0.85 + rnd(0.3);
+		speed_with_ball <- 0.4 * pace;
+		speed_without_ball <- 0.5 * pace;
+		hesitation <- 0.05 + rnd(0.1);
+		marking_side <- flip(0.5) ? 1 : -1;
 	}
 	
 	// ACTIONS ////////////////////////////////////////////////////
@@ -104,8 +117,21 @@ species base_player skills:[moving] {
 	// ACTIONS TO CALL FROM THE STRATEGY FILE
 	// action to run to a particular position
 	action run_to(point target) {
+		point real_target <- target;
+		// a player who is not entitled to the ball never aims beyond the offside line, otherwise he oscillates around it
+		if (!possess_ball and self != team.called_player) {
+			if (team.position = "back" and target.y > team.offside_pos - 1) {
+				real_target <- {target.x, team.offside_pos - 1};
+			} else if (team.position = "front" and target.y < team.offside_pos + 1) {
+				real_target <- {target.x, team.offside_pos + 1};
+			}
+		}
+		if (!possess_ball and self != team.called_player) {
+			// small noise on the destination, so that players never converge on the exact same point
+			real_target <- real_target + {gauss(0.0, 0.7), gauss(0.0, 0.7)};
+		}
 		if (!displacement_effectued) {
-				do goto target:target speed:current_speed;
+				do goto (target:real_target, speed:current_speed);
 			if (possess_ball) {
 				ball.location <- location;
 			}
@@ -117,7 +143,7 @@ species base_player skills:[moving] {
 	}
 	
 	// action to run to the ball
-	action run_to_ball {
+	action run_to_ball() {
 		point targetPos;
 		if (ball.ball_direction intersects circle(1)) {
 			targetPos <- ball.location;
@@ -129,63 +155,73 @@ species base_player skills:[moving] {
 	}
 	
 	// action to run to the ennemy goal
-	action run_to_ennemy_goal {
+	action run_to_ennemy_goal() {
 		do run_to( ennemy_goal.location );
 	}
 	
 	// action to run to its own goal
-	action run_to_own_goal {
+	action run_to_own_goal() {
 		do run_to( own_goal.location );
 	}
 	
 	// action to mark a player
 	action mark_player (base_player player) {
-		float rnd_area <- 4.0; // the player will choose a position in a square of rnd_area m.
-		point pos <- (team.position = "front") ? {player.location.x,player.location.y-rnd_area/2} : {player.location.x,player.location.y+rnd_area/2};
-		do run_to( {pos.x-rnd_area/2+rnd(rnd_area),pos.y-rnd_area/2+rnd(rnd_area)} );
+		float marking_distance <- 3.0 + rnd(1.5);
+		float side_offset <- marking_side * (1.0 + rnd(1.5));
+		// the marker stands between the marked player and his own goal (front team defends y=120, back team y=0);
+		// standing on the other side makes two players marking each other cross and swap sides forever
+		point target <- (team.position = "front")
+			? {player.location.x+side_offset,player.location.y+marking_distance}
+			: {player.location.x+side_offset,player.location.y-marking_distance};
+		do run_to(target);
 	}
 	
 	// action ot shoot the ball to the ennemy goal
-	action shoot {
-		do loose_ball;
+	action shoot() {
+		do loose_ball();
+		ball.shoot_target <- ennemy_goal.location;
+		ball.shoot_speed <- 3.0;
 		ask ball {
-			do shooted speed_atr:3.0 target_position:myself.ennemy_goal.location;
+			do shooted (speed_atr:shoot_speed, target_position:shoot_target);
 		}
 	}
 	
 	// action to pass the ball to an ally
 	action pass_the_ball (base_player target_player) {
-		do loose_ball;
+		do loose_ball();
+		ball.shoot_target <- target_player.location;
+		ball.shoot_speed <- target_player.distance_to_ball/15;
 		ask ball {
-			do shooted target_position:target_player.location speed_atr:target_player.distance_to_ball/15;
+			do shooted (target_position:shoot_target, speed_atr:shoot_speed);
 		}
 		team.called_player <- target_player;
 	}
 	
 	// action to pass the ball to an ally
 	action pass_the_ball_ahead (base_player target_player,float number_of_meter_ahead) {
-		do loose_ball;
+		do loose_ball();
+		float offset <- (team.position = "back") ? number_of_meter_ahead : -number_of_meter_ahead;
+		ball.shoot_target <- {target_player.location.x,target_player.location.y+offset};
+		ball.shoot_speed <- target_player.distance_to_ball/15;
 		ask ball {
-			float offset <- ((myself.team.position = "back") ? number_of_meter_ahead : -number_of_meter_ahead);
-			point target_point <- {target_player.location.x,target_player.location.y+offset};
-			do shooted target_position:target_point speed_atr:target_player.distance_to_ball/15;
+			do shooted (target_position:shoot_target, speed_atr:shoot_speed);
 		}
 		team.called_player <- target_player;
 	}
 	
 	// ACTION AUTOMATICALLY CALLED IN THE BASE CLASSE
 	// try to take the ball if it is close enough
-	action try_to_take_ball {
+	action try_to_take_ball() {
 		// if no player has the ball
 		if (!team.possess_ball and !ennemy_team.possess_ball) {
 			// if the player is the one called (result of a pass)
 			if (team.called_player = self) {
-				do take_ball;
+				do take_ball();
 			}
 			// if the player is not the one called (interception of the ball), probability to catch the ball inversly proportionnal with the speed of the ball
 			else {
 				if (flip(1/(1+2*ball.speed))) {
-					do take_ball;
+					do take_ball();
 				}
 			}
 		}
@@ -193,16 +229,16 @@ species base_player skills:[moving] {
 		else if (ennemy_team.possess_ball) {
 			// try to catch the ball from the other player
 			if flip(recuperation_ability) {
-				do take_ball;
+				do take_ball();
 			}
 		}
 	}
 	
 	// action of taking the ball
-	action take_ball {
+	action take_ball() {
 		if (ennemy_team.possess_ball) {
 			ask ennemy_team.player_with_ball {
-				do loose_ball;
+				do loose_ball();
 			}
 		}
 		possess_ball <- true;
@@ -214,14 +250,17 @@ species base_player skills:[moving] {
 	}
 	
 	// action of loosing the ball
-	action loose_ball {
+	action loose_ball() {
+		if (possess_ball) {
+			inactivity_time <- 10;
+		}
 		possess_ball <- false;
 		team.player_with_ball <- nil;
 		team.possess_ball <- false;
 	}
 	
 	// apply the inertia
-	action apply_inertia {
+	action apply_inertia() {
 		point prev_pos <- location;
 		point inertia_vect <- {(location.x-previous_pos.x)*0.7,(location.y-previous_pos.y)*0.7};
 		float max_inertia <- current_speed;
@@ -265,7 +304,7 @@ species base_player skills:[moving] {
 	
 	// The update function, calls the adequate behavior
 	reflex update when:cycle>1 {
-		do apply_inertia;
+		do apply_inertia();
 		// verify if it is a non-offside position
 		if ( (((team.position = "back") and (location.y > team.offside_pos))
 			or ((team.position = "front") and (location.y < team.offside_pos))) 
@@ -276,27 +315,26 @@ species base_player skills:[moving] {
 			do run_to(target_pos);
 			status <- "offside position !";
 		}
-		else if ((distance_to_ball < 2) and !possess_ball) {
-			do try_to_take_ball;
+		else if ((distance_to_ball < 2) and !possess_ball and inactivity_time = 0) {
+			do try_to_take_ball();
+		}
+		else if (!possess_ball and self != team.called_player and self != team.closest_player_to_ball and flip(hesitation)) {
+			status <- "hesitating";
 		}
 		else if (game.team_possession = team) {
-			do offensive_behavior;
+			do offensive_behavior();
 		}
 		else {
-			do defensive_behavior;
+			do defensive_behavior();
 		}
 	}
 	
 	// defensive behavior, need to be redefined in the strategy file.
 	// this action is called when the last player who was holding the ball was a player of the ennemy team
-	action defensive_behavior virtual:true {
-		
-	}
+	action defensive_behavior() virtual:true;
 	// defensive behavior, need to be redefined in the strategy file.
 	// this action is called when the last player who was holding the ball was a player of this team
-	action offensive_behavior virtual:true {
-		
-	}
+	action offensive_behavior() virtual:true;
 	
 	
 	// ASPECT ////////////////////////////////////////////////////////
@@ -337,6 +375,8 @@ species base_team {
 species ball_sp skills:[moving] {
 	// The ball agent.
 	float speed <- 0.0;
+	point shoot_target;
+	float shoot_speed;
 	geometry ball_direction; // the direction of the ball is used to be followed by the player
 	reflex update {
 		speed <- speed*0.95;
@@ -347,26 +387,26 @@ species ball_sp skills:[moving] {
 			future_speed <- future_speed*0.9;
 		}
 		ball_direction <- line([location,tmpPos]);
-		do wander amplitude:1.0;
+		do wander (amplitude:1.0);
 		
 		// anticipation of the ball position to detect a goal
 		if ((location.y+sin(heading)*speed) > 120) {
 			write "back team scores a goal !!";
 			ask first(soccer_game) {
-				do reinit_phase;
+				do reinit_phase();
 			}
 		}
 		if ((location.y+sin(heading)*speed) < 0) {
 			write "front team scores a goal !!";
 			ask first(soccer_game) {
-				do reinit_phase;
+				do reinit_phase();
 			}
 		}
 	}
 	action shooted (point target_position, float speed_atr) {
 		// action called when a player shoots the ball
 		speed <- speed_atr;
-		do goto target:target_position;
+		do goto (target:target_position);
 	}
 	
 	aspect ball {
@@ -378,7 +418,7 @@ species goal_sp {
 	string position; // can be "front" or "back".
 	
 	init {
-		create goal_keeper with:[position::position];
+		create goal_keeper (position:position);
 	}
 	
 	aspect goal {
@@ -396,6 +436,9 @@ species goal_keeper {
 		if (ball distance_to self < 2) {
 			if (flip(1/(1+2*ball.speed))) {
 				first(soccer_game).team_possession <- first(first(soccer_game).teams where (each.position = position));
+				ask (first(soccer_game).players where each.possess_ball) {
+					do loose_ball();
+				}
 				ask ball {
 					do shooted ({30+rnd(30),60},5.0);
 				}
@@ -407,10 +450,10 @@ species goal_keeper {
 		location <- {45,(position="front") ? 117 : 3};
 	}
 	
-	action offensive_behavior {
+	action offensive_behavior() {
 	}
 	
-	action defensive_behavior {
+	action defensive_behavior() {
 	}
 	
 	aspect goal_keeper {

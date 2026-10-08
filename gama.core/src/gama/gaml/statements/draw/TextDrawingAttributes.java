@@ -1,21 +1,22 @@
 /*******************************************************************************************************
  *
  * TextDrawingAttributes.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.gaml.statements.draw;
 
-import gama.core.common.geometry.AxisAngle;
-import gama.core.common.geometry.Scaling3D;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.metamodel.shape.IShape.Type;
-import gama.core.util.GamaColor;
-import gama.core.util.GamaFont;
+import gama.api.types.color.IColor;
+import gama.api.types.font.IFont;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape.Type;
+import gama.api.ui.layers.IDrawingAttributes.Flag;
+import gama.api.utils.geometry.AxisAngle;
+import gama.api.utils.geometry.Scaling3D;
 
 /**
  * The Class TextDrawingAttributes.
@@ -24,10 +25,10 @@ import gama.core.util.GamaFont;
 public class TextDrawingAttributes extends DrawingAttributes implements Cloneable {
 
 	/** The font. */
-	private GamaFont font;
+	private IFont font;
 
 	/** The anchor. */
-	public GamaPoint anchor;
+	public IPoint anchor;
 
 	/** The precision. */
 	public Double precision;
@@ -44,8 +45,8 @@ public class TextDrawingAttributes extends DrawingAttributes implements Cloneabl
 	 * @param color
 	 *            the color
 	 */
-	public TextDrawingAttributes(final Scaling3D size, final AxisAngle rotation, final GamaPoint location,
-			final GamaColor color) {
+	public TextDrawingAttributes(final Scaling3D size, final AxisAngle rotation, final IPoint location,
+			final IColor color) {
 		super(size, rotation, location, color, null, null);
 		setFlag(Flag.Perspective, true); // by default
 		setType(Type.POLYGON);
@@ -62,7 +63,7 @@ public class TextDrawingAttributes extends DrawingAttributes implements Cloneabl
 	}
 
 	@Override
-	public GamaColor getColor() {
+	public IColor getColor() {
 		if (isEmpty() && fill == null && border != null) return border;
 		return super.getColor();
 	}
@@ -73,10 +74,10 @@ public class TextDrawingAttributes extends DrawingAttributes implements Cloneabl
 	 * @param anchor
 	 *            the new anchor
 	 */
-	public void setAnchor(final GamaPoint anchor) { this.anchor = anchor; }
+	public void setAnchor(final IPoint anchor) { this.anchor = anchor; }
 
 	@Override
-	public GamaPoint getAnchor() {
+	public IPoint getAnchor() {
 		if (anchor == null) return super.getAnchor();
 		return anchor;
 	}
@@ -86,7 +87,8 @@ public class TextDrawingAttributes extends DrawingAttributes implements Cloneabl
 	 *
 	 * @return the font
 	 */
-	public GamaFont getFont() { return font; }
+	@Override
+	public IFont getFont() { return font; }
 
 	/**
 	 * Sets the font.
@@ -94,14 +96,7 @@ public class TextDrawingAttributes extends DrawingAttributes implements Cloneabl
 	 * @param font
 	 *            the new font
 	 */
-	public void setFont(final GamaFont font) { this.font = font; }
-
-	/**
-	 * Checks if is perspective.
-	 *
-	 * @return true, if is perspective
-	 */
-	public boolean isPerspective() { return isSet(Flag.Perspective); }
+	public void setFont(final IFont font) { this.font = font; }
 
 	@Override
 	public Double getDepth() { return depth == null ? 0d : depth; }
@@ -113,7 +108,8 @@ public class TextDrawingAttributes extends DrawingAttributes implements Cloneabl
 	 *            the p
 	 * @return the text drawing attributes
 	 */
-	public TextDrawingAttributes copyTranslatedBy(final GamaPoint p) {
+	@Override
+	public TextDrawingAttributes copyTranslatedBy(final IPoint p) {
 		try {
 			TextDrawingAttributes clone = (TextDrawingAttributes) this.clone();
 			clone.setLocation(getLocation().plus(p));

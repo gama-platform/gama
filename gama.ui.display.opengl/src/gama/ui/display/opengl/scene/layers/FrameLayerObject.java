@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * FrameLayerObject.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,13 +12,14 @@ package gama.ui.display.opengl.scene.layers;
 
 import java.util.List;
 
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.util.GamaColor;
+import gama.api.kernel.agent.IAgent;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IShape;
 import gama.gaml.statements.draw.DrawingAttributes;
 import gama.gaml.statements.draw.ShapeDrawingAttributes;
-import gama.gaml.types.GamaGeometryType;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.display.opengl.scene.AbstractObject;
 import gama.ui.display.opengl.scene.geometry.GeometryObject;
@@ -29,7 +30,7 @@ import gama.ui.display.opengl.scene.geometry.GeometryObject;
 public class FrameLayerObject extends StaticLayerObject.World {
 
 	/** The Constant FRAME. */
-	private static final GamaColor FRAME = GamaColor.get(150, 150, 150, 255);
+	private static final IColor FRAME = GamaColorFactory.createWithRGBA(150, 150, 150, 255);
 
 	/**
 	 * Instantiates a new frame layer object.
@@ -45,7 +46,7 @@ public class FrameLayerObject extends StaticLayerObject.World {
 	public void fillWithObjects(final List<AbstractObject<?, ?>> list) {
 		final double w = renderer.getData().getEnvWidth();
 		final double h = renderer.getData().getEnvHeight();
-		final IShape g = GamaGeometryType.buildRectangle(w, h, new GamaPoint(w / 2, h / 2));
+		final IShape g = GamaShapeFactory.buildRectangle(w, h, GamaPointFactory.create(w / 2, h / 2));
 		final DrawingAttributes drawingAttr = new ShapeDrawingAttributes(g, (IAgent) null, null, FRAME);
 		// drawingAttr.setLighting(false);
 		final GeometryObject geomObj = new GeometryObject(g.getInnerGeometry(), drawingAttr);

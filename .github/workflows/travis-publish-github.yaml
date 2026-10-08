@@ -3,21 +3,20 @@ name: "[./.github/workflows/travis-publish-github.yaml]"
 on:
   workflow_call:
     inputs:
-      RELEASE_VERSION: 
+      RELEASE_VERSION:
         required: true
-        default: 2025.03.0 
+        default: 2025.03.0
         type: string
-      IS_STABLE_RELEASE: 
+      IS_STABLE_RELEASE:
         required: true
-        default: false 
+        default: false
         type: boolean
-      COMMIT_SHA: 
-        required: true 
+      COMMIT_SHA:
+        required: true
         type: string
     secrets:
       BOT_TOKEN:
         required: true
-
 
 run-name: Publishing ${{ inputs.tag }} to Github Release
 
@@ -26,7 +25,7 @@ jobs:
     name: Publish archives to Github Releases
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       # Get zip archives
       - uses: actions/download-artifact@v4
@@ -36,7 +35,7 @@ jobs:
       # Get Mac dmg signed archives
       - uses: actions/download-artifact@v4
         with:
-          #name: gama-mac-signed
+          # name: gama-mac-signed
           path: ${{ github.workspace }}
           pattern: gama-mac-signed-*
           merge-multiple: true
@@ -44,7 +43,7 @@ jobs:
       # Get Linux deb archive
       - uses: actions/download-artifact@v4
         with:
-          #name: gama-linux-deb
+          # name: gama-linux-deb
           path: ${{ github.workspace }}
           pattern: gama-linux-deb-*
           merge-multiple: true
@@ -52,7 +51,7 @@ jobs:
       # Get Windows exe
       - uses: actions/download-artifact@v4
         with:
-          #name: gama-windows-exe
+          # name: gama-windows-exe
           path: ${{ github.workspace }}
           pattern: gama-windows-exe-*
           merge-multiple: true
@@ -64,57 +63,14 @@ jobs:
           # Debug
           ls -lah ${{ github.workspace }}
 
-      - name: Setup new release data and rename files accordingly 
+      - name: Setup new release data and rename files accordingly
         id: setup_new_release_data
-        run: |
-          date=$(date +'%d/%m/%y %R')
-          echo "date=$date" >> "$GITHUB_OUTPUT"
-
-          # Add naming file depending on if current file is pre-release or not
-          fileNameExtension=""
-          if [[ "${{ inputs.IS_STABLE_RELEASE }}" == "false" ]]; then
-            timestamp="$(echo $date | cut -d' ' -f1 | sed 's|/|.|g')"
-
-            fileNameExtension=_${timestamp}_${{ inputs.COMMIT_SHA }}
-          fi
-            
-          mkdir ${{ runner.temp }}/files
-          mv *.zip *.deb *.dmg *.exe ${{ runner.temp }}/files
-          cd ${{ runner.temp }}/files
-
-          # Windows
-          for file in *.exe *win32*.zip; do
-            if [[ "$(echo $file | awk -F'_' '{print $NF}')" == *"withJDK"* ]]; then
-              mv -v "$file" "GAMA_${{ inputs.RELEASE_VERSION }}_Windows_with_JDK${fileNameExtension}.$(echo $file | awk -F'.' '{print $NF}')"
-            else
-              mv -v "$file" "GAMA_${{ inputs.RELEASE_VERSION }}_Windows${fileNameExtension}.$(echo $file | awk -F'.' '{print $NF}')"
-            fi
-          done
-
-          # Mac
-          for file in *.dmg; do
-            prefix="${fileNameExtension}.dmg"
-            if [[ "$(echo $file | awk -F'_' '{print $NF}')" == *"withJDK"* ]]; then
-              prefix="_with_JDK${prefix}"
-            fi
-
-            if [[ "$file" == *"aarch64"* ]]; then
-              prefix="_M1${prefix}"
-            fi
-            
-            prefix="GAMA_${{ inputs.RELEASE_VERSION }}_MacOS${prefix}"
-
-            mv -v $file $prefix
-          done
-
-          # Linux
-          for file in *.deb gama-platform*.zip; do
-            if [[ "$(echo $file | awk -F'_' '{print $1}')" == *"jdk"* ]]; then
-              mv -v "$file" "GAMA_${{ inputs.RELEASE_VERSION }}_Linux_with_JDK${fileNameExtension}.$(echo $file | awk -F'.' '{print $NF}')"
-            else
-              mv -v "$file" "GAMA_${{ inputs.RELEASE_VERSION }}_Linux${fileNameExtension}.$(echo $file | awk -F'.' '{print $NF}')"
-            fi
-          done
+        run: bash $GITHUB_WORKSPACE/travis/publish-github.sh
+        env:
+          TEMP: ${{ runner.temp }}
+          IS_STABLE_RELEASE: ${{ inputs.IS_STABLE_RELEASE }}
+          COMMIT_SHA: ${{ inputs.COMMIT_SHA }}
+          RELEASE_VERSION: ${{ inputs.RELEASE_VERSION }}
 
       - name: Create checksum file
         run: |
@@ -134,13 +90,13 @@ jobs:
           cat checksum.txt
 
       - name: Delete old release
-        uses: cb80/delrel@v0.16.0
+        uses: cb80/delrel@v0.19.0
         with:
           tag: ${{ inputs.RELEASE_VERSION }}
           token: ${{ secrets.BOT_TOKEN }}
-      
+
       - name: Create/Update tag
-        uses: rickstaa/action-create-tag@v1.6.3
+        uses: rickstaa/action-create-tag@v1.7.2
         with:
           tag: ${{ inputs.RELEASE_VERSION }}
           force_push_tag: true
@@ -160,7 +116,6 @@ jobs:
           generate_release_notes: true
           files: ${{ runner.temp }}/files/*
           fail_on_unmatched_files: true
-          #token: ${{ secrets.BOT_TOKEN }}
 
       - name: Publish stable to Github
         uses: softprops/action-gh-release@v2
@@ -176,4 +131,3 @@ jobs:
           generate_release_notes: true
           files: ${{ runner.temp }}/files/*
           fail_on_unmatched_files: true
-          #token: ${{ secrets.BOT_TOKEN }}

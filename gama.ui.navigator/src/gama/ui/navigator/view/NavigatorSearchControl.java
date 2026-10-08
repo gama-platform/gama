@@ -3,7 +3,7 @@
  * NavigatorSearchControl.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -33,7 +33,7 @@ import org.eclipse.ui.navigator.CommonViewer;
 import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.swt.IFocusService;
 
-import gama.core.runtime.PlatformHelper;
+import gama.api.runtime.SystemInfo;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.navigator.view.contents.ResourceManager;
 import gama.ui.navigator.view.contents.VirtualContent;
@@ -192,7 +192,7 @@ public class NavigatorSearchControl {
 
 		Composite parent = toolbar;
 		Color c = parent.getBackground();
-		if (PlatformHelper.isWindows()) {
+		if (SystemInfo.isWindows()) {
 			parent = new Composite(toolbar, SWT.NONE);
 			final GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
 			data.heightHint = 24;

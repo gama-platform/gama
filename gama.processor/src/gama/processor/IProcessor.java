@@ -1,12 +1,11 @@
 /*******************************************************************************************************
  *
- * IProcessor.java, in gama.processor, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * IProcessor.java, in gama.processor, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.processor;
 
@@ -26,7 +25,8 @@ public interface IProcessor<T extends Annotation> {
 	/**
 	 * Process.
 	 *
-	 * @param context the context
+	 * @param context
+	 *            the context
 	 */
 	default void process(final ProcessorContext context) {}
 
@@ -35,26 +35,22 @@ public interface IProcessor<T extends Annotation> {
 	 *
 	 * @return the initialization method name
 	 */
-	/*
-	 * Returns the name of the initialization method in which the elements will be written
-	 *
-	 * @return a string or null if no output to Java
-	 */
-	default String getInitializationMethodName() {
-		return null;
-	}
+		/*
+		 * Returns the name of the initialization method in which the elements will be written
+		 *
+		 * @return a string or null if no output to Java
+		 */
+	default String getInitializationMethodName() { return null; }
 
 	/**
 	 * Gets the exceptions.
 	 *
 	 * @return the exceptions
 	 */
-	/*
-	 * The exceptions that should decorate the initialization method
-	 */
-	default String getExceptions() {
-		return "";
-	}
+		/*
+		 * The exceptions that should decorate the initialization method
+		 */
+	default String getExceptions() { return ""; }
 
 	/**
 	 * Output to java.
@@ -82,18 +78,23 @@ public interface IProcessor<T extends Annotation> {
 	/**
 	 * Serialize.
 	 *
-	 * @param context the context
-	 * @param elements the elements
-	 * @param sb the sb
+	 * @param context
+	 *            the context
+	 * @param elements
+	 *            the elements
+	 * @param sb
+	 *            the sb
 	 */
-	void serialize(ProcessorContext context, Collection<StringBuilder> elements, StringBuilder sb);
+	void serialize(Collection<StringBuilder> elements, StringBuilder sb);
 
 	/**
 	 * Write java body.
 	 *
-	 * @param sb the sb
-	 * @param context the context
+	 * @param sb
+	 *            the sb
+	 * @param context
+	 *            the context
 	 */
-	void writeJavaBody(StringBuilder sb, ProcessorContext context);
+	void writeJavaBody(StringBuilder sb);
 
 }

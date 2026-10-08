@@ -1,0 +1,12 @@
+/**
+* Name: antcomodel
+* Experiment file for ant model. Used by "Comodel Example (Mixed Behaviors).gaml"
+* Author: lugrosjean
+* Tags: 
+*/
+
+experiment antcomodel model:'../../../Toy Models/Ants (Foraging and Sorting)/models/Ant Foraging.gaml' type:gui {
+	parameter 'Number:' var: ants_number <- 100 unit: 'ants' category: 'Environment and Population';
+	parameter 'Grid dimension:' var: gridsize <- 100 unit: '(number of rows and columns)' category: 'Environment and Population';
+	parameter 'Number of food depots:' var: number_of_food_places <- 5 min: 1 category: 'Environment and Population';
+}

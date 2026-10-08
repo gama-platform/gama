@@ -3,7 +3,7 @@
  * DisplayOverlay.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -33,10 +33,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPartSite;
 
-import gama.core.common.geometry.Envelope3D;
-import gama.core.common.interfaces.IDisplaySurface;
+import gama.api.GAMA;
+import gama.api.ui.displays.IDisplaySurface;
+import gama.api.utils.geometry.IEnvelope;
 import gama.core.outputs.LayeredDisplayOutput;
-import gama.core.runtime.GAMA;
 import gama.dev.DEBUG;
 import gama.gaml.operators.Maths;
 import gama.ui.shared.resources.GamaColors;
@@ -155,7 +155,7 @@ public class DisplayOverlay {
 	}
 
 	static {
-		DEBUG.OFF();
+		DEBUG.ON();
 	}
 
 	/** The right. */
@@ -450,10 +450,19 @@ public class DisplayOverlay {
 	public void display() {
 		// We first verify that the popup is still ok
 		if (!isVisible() || popup.isDisposed()) return;
+		final long t0 = System.currentTimeMillis();
+		DEBUG.OUT("[DisplayOverlay.display] START thread=" + Thread.currentThread().getName());
 		update();
+		final long t1 = System.currentTimeMillis();
 		relocate();
+		final long t2 = System.currentTimeMillis();
 		resize();
-		if (!popup.isVisible()) { popup.setVisible(true); }
+		final long t3 = System.currentTimeMillis();
+		final boolean wasVisible = popup.isVisible();
+		if (!wasVisible) { popup.setVisible(true); }
+		DEBUG.OUT("[DisplayOverlay.display] update=" + (t1 - t0) + "ms relocate=" + (t2 - t1) + "ms resize="
+				+ (t3 - t2) + "ms setVisible=" + (System.currentTimeMillis() - t3) + "ms (wasVisible=" + wasVisible
+				+ ") total=" + (System.currentTimeMillis() - t0) + "ms");
 	}
 
 	/**
@@ -616,7 +625,7 @@ public class DisplayOverlay {
 		}
 		sb.append("Zoom ").append(zl).append("%");
 		if (view.isOpenGL()) {
-			final Envelope3D roi = ((IDisplaySurface.OpenGL) surface).getROIDimensions();
+			final IEnvelope roi = ((IDisplaySurface.OpenGL) surface).getROIDimensions();
 			if (roi != null) {
 				sb.append(" ROI [");
 				sb.append(Maths.round(roi.getWidth(), 2));

@@ -1,8 +1,11 @@
 /**
-* Name: MQTT_PING_PONG
-* Author: Nicolas Marilleau and Arnaud Grignard
-* Description: The simple PING PONG model based on MQTT protocol.
-* Tags: Network, MQTT
+* Name: Simple Ping-Pong (MQTT)
+* Author: Nicolas Marilleau, Arnaud Grignard
+* Description: The simplest network model in GAMA: two agents exchange 'ping' and 'pong' messages via
+*   MQTT. One agent sends 'ping'; the other receives it and replies 'pong'; the first receives 'pong' and
+*   sends 'ping' again. Uses a public free MQTT broker (broker.mqtt.cool:1883) — requires internet access.
+*   This is the entry point for all MQTT-based network communication in GAMA.
+* Tags: network, MQTT, messaging, ping_pong, protocol, communication
 */
 
 /**
@@ -21,13 +24,13 @@ global {
 		write "The default broket is for test only, limit the number of connections otherwise connection will be refused." color: #red;
 		write "To connect to your local/remote server, change the parameters of the connect statement" color: #blue;
 		//create Ping agent
-		create PING_PONG with: [name:: "ping", dest::"pong"] {
-			do connect with_name: name;
+		create PING_PONG(name: "ping", dest:"pong") {
+			do connect(with_name: name);
 		}
 		//create Pong agent
-		create PING_PONG with: [name:: "pong", dest::"ping"] {
-			do connect with_name: name;
-			do send to: dest contents: "This message is sent by " + name + " to " + dest;
+		create PING_PONG(name: "pong", dest:"ping") {
+			do connect(with_name: name);
+			do send(to: dest, contents: "This message is sent by " + name + " to " + dest);
 		}
 		//default ActiveMQ MQTT login is "admin", the password is "admin" and the port is 1883
 		//do connect to:"localhost" with_name:name login:"admin" password:"admin" port: 1883;
@@ -45,7 +48,7 @@ species PING_PONG skills: [network] {
 			//display the message 
 			write name + " fecth this message: " + mess.contents;
 			//send a message
-			do send to: dest contents: "This message is sent by " + name + " to " + dest;
+			do send(to: dest, contents: "This message is sent by " + name + " to " + dest);
 		}
 	}
 

@@ -1,0 +1,188 @@
+/*******************************************************************************************************
+ *
+ * IExperimentController.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
+ *
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
+package gama.api.kernel.simulation;
+
+import java.io.Closeable;
+
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.kernel.species.IExperimentSpecies;
+import gama.api.runtime.scope.IExecutionResult;
+import gama.api.utils.interfaces.IDisposable;
+
+/**
+ * Class IExperimentController.
+ *
+ * @author drogoul
+ * @since 6 déc. 2015
+ *
+ */
+public interface IExperimentController extends IDisposable, Closeable {
+
+	/**
+	 * The Enum ExperimentCommand.
+	 *
+	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+	 * @date 24 oct. 2023
+	 */
+	record ExperimentCommand(ExperimentCommandTypes type, int quantity) {}
+	
+	enum ExperimentCommandTypes {
+		_OPEN(),
+		_START(),
+		_STEP(),
+		_PAUSE(),
+		_RELOAD(),
+		_BACK(),
+		_CLOSE();
+		
+	}
+	
+	// Keeping static instances for the non-parameterable commands to avoid useless allocations
+	/** The open. */
+	public static ExperimentCommand _OPEN_CMD = new ExperimentCommand(ExperimentCommandTypes._OPEN, 0);
+	
+	/** The start. */
+	public static final ExperimentCommand _START_CMD = new ExperimentCommand(ExperimentCommandTypes._START, 0);
+		
+	/** The pause. */
+	public static final ExperimentCommand _PAUSE_CMD = new ExperimentCommand(ExperimentCommandTypes._PAUSE, 0);
+	
+	/** The reload. */
+	public static final ExperimentCommand _RELOAD_CMD = new ExperimentCommand(ExperimentCommandTypes._RELOAD, 0);
+
+	/** The close. */
+	public static final ExperimentCommand _CLOSE_CMD = new ExperimentCommand(ExperimentCommandTypes._CLOSE, 0);
+
+
+	/**
+	 * Gets the experiment.
+	 *
+	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+	 * @return the experiment
+	 * @date 24 oct. 2023
+	 */
+	IExperimentSpecies getExperiment();
+
+	/**
+	 * Checks if is disposing.
+	 *
+	 * @return true, if is disposing
+	 */
+	default boolean isDisposing() { return false; }
+
+	/**
+	 * Checks if is paused.
+	 *
+	 * @return true, if is paused
+	 */
+	default boolean isPaused() { return false; }
+
+	/**
+	 * Schedule.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param agent
+	 *            the agent
+	 */
+	default IExecutionResult schedule(final IExperimentAgent agent) { return IExecutionResult.PASSED;}
+
+	/**
+	 * Process open.
+	 *
+	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+	 * @param andWait
+	 *            the and wait
+	 * @date 23 oct. 2023
+	 */
+	boolean processOpen(final boolean andWait);
+
+	/**
+	 * Process pause.
+	 *
+	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+	 * @param andWait
+	 *            the and wait
+	 * @date 23 oct. 2023
+	 */
+	boolean processPause(final boolean andWait);
+
+	/**
+	 * Process reload.
+	 *
+	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+	 * @param andWait
+	 *            the and wait
+	 * @date 23 oct. 2023
+	 */
+	boolean processReload(final boolean andWait);
+
+	/**
+	 * Process step.
+	 *
+	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+	 * @param andWait
+	 *            the and wait
+	 * @date 23 oct. 2023
+	 */
+	boolean processStep(final int nbSteps, final boolean andWait);
+
+	/**
+	 * Returns and clears the runtime error raised during the last execution (step, open or reload), if any. GAML
+	 * runtime errors do not propagate out of these calls, so this is the only way for a caller that waited for the
+	 * execution to know that it did not run cleanly. Clearing on read keeps an error from leaking into the next one.
+	 *
+	 * @return the error raised during the last execution, or {@code null} if it ran without one
+	 */
+	default GamaRuntimeException consumeLastRuntimeError() { return null; }
+
+	/**
+	 * Process back.
+	 *
+	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+	 * @param andWait
+	 *            the and wait
+	 * @date 23 oct. 2023
+	 */
+	boolean processBack(final int nbSteps, final boolean andWait);
+
+	/**
+	 * Process start pause.
+	 *
+	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+	 * @param andWait
+	 *            the and wait
+	 * @date 24 oct. 2023
+	 */
+	default boolean processStartPause(final boolean andWait) {
+		return isPaused() ? processStart(andWait) : processPause(andWait);
+	}
+
+	/**
+	 * Process start.
+	 *
+	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+	 * @param andWait
+	 *            the and wait
+	 * @date 24 oct. 2023
+	 */
+	boolean processStart(final boolean andWait);
+
+	/**
+	 * Close.Getting rid of the IO execption inherited from Closeable
+	 *
+	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+	 * @date 25 oct. 2023
+	 */
+	@Override
+	void close();
+
+}

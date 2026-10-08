@@ -12,14 +12,14 @@ package gama.headless.command;
 
 import java.io.File;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.core.kernel.experiment.IExperimentAgent;
-import gama.core.runtime.IScope;
-import gama.gaml.types.IType;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.runtime.scope.IScope;
+import gama.annotations.doc;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
 import gama.headless.core.Experiment;
 
 /**
@@ -124,7 +124,7 @@ public class SubModel {
 		//
 		// final long lseed = seed;
 		//
-		// IModel mdl = null;
+		// IModelSpecies mdl = null;
 		// try {
 		// mdl = HeadlessSimulationLoader.loadModel(new File(modelPath));
 		// } catch (final IOException e) {

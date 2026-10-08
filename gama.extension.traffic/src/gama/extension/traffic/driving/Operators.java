@@ -10,16 +10,16 @@
  ********************************************************************************************************/
 package gama.extension.traffic.driving;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ITypeProvider;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.core.metamodel.topology.graph.GamaSpatialGraph;
-import gama.core.runtime.IScope;
-import gama.core.util.IContainer;
-import gama.core.util.graph.IGraph;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ITypeProvider;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.graph.IGraph;
+import gama.api.types.misc.IContainer;
+import gama.core.topology.graph.GamaSpatialGraph;
 
 /**
  * The Class Operators.
@@ -43,6 +43,7 @@ public class Operators {
 	)
 	@doc(
 		value = "creates a graph from the list/map of edges given as operand and connect the node to the edge", 
+		returns = "A graph<nodeType, roadType>, using the supplied node agents as vertices and road agents as edges.",
 		examples = {
 			@example(
 				value = "as_driving_graph(road, node)  --:  build a graph while using the road agents as edges and the node agents as nodes",

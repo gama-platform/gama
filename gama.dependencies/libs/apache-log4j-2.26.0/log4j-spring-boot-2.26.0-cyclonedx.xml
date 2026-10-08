@@ -1,0 +1,623 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bom serialNumber="urn:uuid:920639c4-1948-3fe9-9610-171000f9c87b" version="1" xmlns="http://cyclonedx.org/schema/bom/1.6">
+  <metadata>
+    <lifecycles>
+      <lifecycle>
+        <phase>build</phase>
+      </lifecycle>
+    </lifecycles>
+    <tools>
+      <components>
+        <component type="library">
+          <author>OWASP Foundation</author>
+          <group>org.cyclonedx</group>
+          <name>cyclonedx-maven-plugin</name>
+          <version>2.9.1</version>
+          <description>CycloneDX Maven plugin</description>
+          <hashes>
+            <hash alg="MD5">9c7a565cf28cce58557d0c621c5ea4b1</hash>
+            <hash alg="SHA-1">be882d5a22050bfa9d19090b1420c188617d0e1c</hash>
+            <hash alg="SHA-256">698e0f37184a5b28c245c4065fd036dfce253b52f82fbb7113d81d36326cc249</hash>
+            <hash alg="SHA-512">c0f0b11026858166f872a2eb54719492e5cecaa0bc9cd6b30b3ecb4a174eed220f4a1b5829d18d6734128e778d3cb3db7ffed177c92866133129cb29081814a0</hash>
+            <hash alg="SHA-384">d80964707dfe5caca8c70521d5066f57589304c0a657e6fbc7c0614ea0fc7b3b3dbe7778361eee0f54ba111e9cb0ffcb</hash>
+            <hash alg="SHA3-384">80bc3a275d9514bc457461ff52a72add8c7ecbbc01d8912efce57139016c544ee776981851be0a58fa977ab4221f703f</hash>
+            <hash alg="SHA3-256">142317d6f245390f4fd2d0c100b16281b8dfc5c0c2cff86943bdcc97039cb699</hash>
+            <hash alg="SHA3-512">af0fb9137c90b65d1a07f72e4d51ae509956cdb8800f35c961b037cdda1fe4a14ce3b496cef71ba85f1621affcfe29cd42704ae4191ff0b090a9602087c8997b</hash>
+          </hashes>
+        </component>
+      </components>
+    </tools>
+    <component type="library" bom-ref="pkg:maven/org.apache.logging.log4j/log4j-spring-boot@2.26.0?type=jar">
+      <publisher>The Apache Software Foundation</publisher>
+      <group>org.apache.logging.log4j</group>
+      <name>log4j-spring-boot</name>
+      <version>2.26.0</version>
+      <description>Apache Log4j Spring Boot Support</description>
+      <licenses>
+        <license>
+          <id>Apache-2.0</id>
+          <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+      </licenses>
+      <purl>pkg:maven/org.apache.logging.log4j/log4j-spring-boot@2.26.0?type=jar</purl>
+      <externalReferences>
+        <reference type="vulnerability-assertion">
+          <url>https://logging.apache.org/cyclonedx/vdr.xml</url>
+        </reference>
+        <reference type="website">
+          <url>https://logging.apache.org/log4j/2.x/</url>
+        </reference>
+        <reference type="build-system">
+          <url>https://github.com/apache/logging-log4j2/actions</url>
+        </reference>
+        <reference type="distribution">
+          <url>https://logging.apache.org/log4j/2.x/download.html</url>
+        </reference>
+        <reference type="distribution-intake">
+          <url>https://repository.apache.org/service/local/staging/deploy/maven2</url>
+        </reference>
+        <reference type="issue-tracker">
+          <url>https://github.com/apache/logging-log4j2/issues</url>
+        </reference>
+        <reference type="mailing-list">
+          <url>https://lists.apache.org/list.html?log4j-user@logging.apache.org</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://github.com/apache/logging-log4j2</url>
+        </reference>
+      </externalReferences>
+    </component>
+    <properties>
+      <property name="maven.goal">makeBom</property>
+      <property name="maven.scopes">compile,provided,runtime,system</property>
+      <property name="cdx:reproducible">enabled</property>
+    </properties>
+  </metadata>
+  <components>
+    <component type="library" bom-ref="pkg:maven/org.apache.logging.log4j/log4j-api@2.26.0?type=jar">
+      <publisher>The Apache Software Foundation</publisher>
+      <group>org.apache.logging.log4j</group>
+      <name>log4j-api</name>
+      <version>2.26.0</version>
+      <description>The logging API of the Log4j project.
+    Library and application code can log through this API.
+    It contains a simple built-in implementation (`SimpleLogger`) for trivial use cases.
+    Production applications are recommended to use Log4j API in combination with a fully-fledged implementation, such as Log4j Core.</description>
+      <scope>required</scope>
+      <hashes>
+        <hash alg="MD5">564bc06e0f03e37193227b698acaa257</hash>
+        <hash alg="SHA-1">ad52af0ecf054a7e3f275a2e180ee06d9c490951</hash>
+        <hash alg="SHA-256">820de7bbaf430eaf2e3e5ccb92f23e2085797c5ac4d4f7fc6c8b660fbefa1dbc</hash>
+        <hash alg="SHA-512">86516750d5a43428b977da45d403718e903451bf0b9401ba306a35f001e812b8366c73978fbf6c628a93949d9386e3a21661f85672291111e5397e94ca1cc78f</hash>
+        <hash alg="SHA-384">38a1a06a9b91897874fb819aac8bac78ef13b95f45b3609b088b91d55f6f239dc289effa4a34ee5c7fa429b7b3f8e33c</hash>
+        <hash alg="SHA3-384">2ad01149db7b1f6c7bb62aa6a73ef788a81fc56708572266d71a04f572e63a204d92bef6bfdb048428fb4ab8bbe807ff</hash>
+        <hash alg="SHA3-256">807293030006b30b48c5f1a6782aef28fad96ca4c832ab8b8e02afa3504bf06e</hash>
+        <hash alg="SHA3-512">cfcb02091445750620fbe455c197f041cada377bd38fae245824fa85fdaa8921c4a85877072b918f89d5cd57dd3e433af8e8d77d78ac76a5f6060eff0cc31bbe</hash>
+      </hashes>
+      <licenses>
+        <license>
+          <id>Apache-2.0</id>
+          <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+      </licenses>
+      <purl>pkg:maven/org.apache.logging.log4j/log4j-api@2.26.0?type=jar</purl>
+      <externalReferences>
+        <reference type="website">
+          <url>https://logging.apache.org/log4j/2.x/</url>
+        </reference>
+        <reference type="build-system">
+          <url>https://github.com/apache/logging-log4j2/actions</url>
+        </reference>
+        <reference type="issue-tracker">
+          <url>https://github.com/apache/logging-log4j2/issues</url>
+        </reference>
+        <reference type="mailing-list">
+          <url>https://lists.apache.org/list.html?log4j-user@logging.apache.org</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://github.com/apache/logging-log4j2</url>
+        </reference>
+      </externalReferences>
+    </component>
+    <component type="library" bom-ref="pkg:maven/org.apache.logging.log4j/log4j-core@2.26.0?type=jar">
+      <publisher>The Apache Software Foundation</publisher>
+      <group>org.apache.logging.log4j</group>
+      <name>log4j-core</name>
+      <version>2.26.0</version>
+      <description>A versatile, industrial-grade, and reference implementation of the Log4j API.
+    It bundles a rich set of components to assist various use cases:
+    Appenders targeting files, network sockets, databases, SMTP servers;
+    Layouts that can render CSV, HTML, JSON, Syslog, etc. formatted outputs;
+    Filters that can be configured using log event rates, regular expressions, scripts, time, etc.
+    It contains several extension points to introduce custom components, if needed.</description>
+      <scope>required</scope>
+      <hashes>
+        <hash alg="MD5">6f35a16e514ca6d13938be57d107d139</hash>
+        <hash alg="SHA-1">d267ca60b27ddb075e0b4e75e7875859717bf85f</hash>
+        <hash alg="SHA-256">406bb3132c47a5d322e5c571feb0787ca84496469f346eb51f1ef2ee45499902</hash>
+        <hash alg="SHA-512">9523b574308be31c741252d2f789fb81d01d9526eaa3e94f25136f1044149ac235fef379514b1cc43611ca68f5e2d8400256886b49f4ef2686582c96b8679792</hash>
+        <hash alg="SHA-384">2d620584a1661268207947798616fca384d56cb472c1f32646b7f8c7b0178e21f1dabc5d578cef26eff02e9c46f64ac8</hash>
+        <hash alg="SHA3-384">2d89d99ad26ae43ffa3c8efdb3ec6af11b235b8ea4cc7f309e8c4963517b072932e7911ad6ba199a241c0405f49411b7</hash>
+        <hash alg="SHA3-256">f911a2eaa22ed4ceef5f6d06bc3f35f15531ae3403efe60e2281f449e7edbbae</hash>
+        <hash alg="SHA3-512">1db55d5fd1c23b75280061f1e799db69673a385fa65d86c0db1b1fbf3e463fb4c909ebe7fac8ca0cae61d3ec95d33d8acc48f1a6f62608b999393f82e56fca13</hash>
+      </hashes>
+      <licenses>
+        <license>
+          <id>Apache-2.0</id>
+          <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+      </licenses>
+      <purl>pkg:maven/org.apache.logging.log4j/log4j-core@2.26.0?type=jar</purl>
+      <externalReferences>
+        <reference type="website">
+          <url>https://logging.apache.org/log4j/2.x/</url>
+        </reference>
+        <reference type="build-system">
+          <url>https://github.com/apache/logging-log4j2/actions</url>
+        </reference>
+        <reference type="issue-tracker">
+          <url>https://github.com/apache/logging-log4j2/issues</url>
+        </reference>
+        <reference type="mailing-list">
+          <url>https://lists.apache.org/list.html?log4j-user@logging.apache.org</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://github.com/apache/logging-log4j2</url>
+        </reference>
+      </externalReferences>
+    </component>
+    <component type="library" bom-ref="pkg:maven/org.springframework.boot/spring-boot@2.7.18?type=jar">
+      <publisher>VMware, Inc.</publisher>
+      <group>org.springframework.boot</group>
+      <name>spring-boot</name>
+      <version>2.7.18</version>
+      <description>Spring Boot</description>
+      <scope>required</scope>
+      <hashes>
+        <hash alg="MD5">0941c83c25204150f8bd73ae66c63fd1</hash>
+        <hash alg="SHA-1">f6dbdd8da7c2bded63dff9b1f48d01a4923f20a0</hash>
+        <hash alg="SHA-256">530f4e0fdfeb3a0e2b3a369d15cdea38fbdc1696f8b030c35a6ad65c27524950</hash>
+        <hash alg="SHA-512">ff249cbcb7f240e6a03367ceb40a38aeb3584f79f62dc1e4713d6c024cd18c7870b370494f48aeb3b6f6dcaccf23057b5d5cba62eafba9128794f847c83a22be</hash>
+        <hash alg="SHA-384">4cc8d00c03f85861c0f6fb5680c19771f7efba7cddfbe70bbccf8a510fad2bacd712658c3d9ef082903b3591a1acd41a</hash>
+        <hash alg="SHA3-384">e0c92b1e87cb796b1c4f7215900b09926997995a2d716113194453167afa3fa6e9080d70b5a46255771d768a7a8b0929</hash>
+        <hash alg="SHA3-256">a28d520293ac7bc6f04ed1b79818773b26e51fe954d3d3afee43bef4a91fe0c5</hash>
+        <hash alg="SHA3-512">5c64fcb9758bc62a2c56f6067ff6e25eff045c83edd9c31ede00d928146c95d17da733b31a59a5f9b199224db26ae1e9008248bc39ecaa55ef770290c389db3e</hash>
+      </hashes>
+      <licenses>
+        <license>
+          <id>Apache-2.0</id>
+        </license>
+      </licenses>
+      <purl>pkg:maven/org.springframework.boot/spring-boot@2.7.18?type=jar</purl>
+      <externalReferences>
+        <reference type="website">
+          <url>https://spring.io/projects/spring-boot</url>
+        </reference>
+        <reference type="issue-tracker">
+          <url>https://github.com/spring-projects/spring-boot/issues</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://github.com/spring-projects/spring-boot</url>
+        </reference>
+      </externalReferences>
+    </component>
+    <component type="library" bom-ref="pkg:maven/org.springframework/spring-context@5.3.39?type=jar">
+      <publisher>Spring IO</publisher>
+      <group>org.springframework</group>
+      <name>spring-context</name>
+      <version>5.3.39</version>
+      <description>Spring Context</description>
+      <scope>required</scope>
+      <hashes>
+        <hash alg="MD5">167e95de6f9de58b1ffff09990237021</hash>
+        <hash alg="SHA-1">286538ca4b3890192d63c88fdd1616adde17dc0e</hash>
+        <hash alg="SHA-256">9e644fc33bece9a9cb82538167a1b9640ae7b7d80252e893d89b8926a2f81633</hash>
+        <hash alg="SHA-512">22325bb605dd8cac8cb45f5c9dc0dd87014a09bed374d7f34100a2fd7c77005a9800eb18cb1c59c3f84e213f06eccbfcceb82e0fdb99259d4c6418511a8bad81</hash>
+        <hash alg="SHA-384">1248b95d26f7799c4390e8d8ddc26fae9d0fd17ec0e3a98c447c9eb1619816930fc90bf5438fa2e2e8f0cfcbb08ec3de</hash>
+        <hash alg="SHA3-384">a26c04c0036e4b756de5c6d16938eb9b484a7926ff823156cebc9a8424d16e97923089e0d86c85837eb42be79f53a8f5</hash>
+        <hash alg="SHA3-256">479e6199950aeb48fe2d1cded67adad5c64d4deb6878d6a304d942039e108fc3</hash>
+        <hash alg="SHA3-512">ea603c614a23362d94d0493de1291fb5fd7136628d7c3be40ea5fa712a199be615114e8bb716657796f58e3c9d34a18a4b3fa83001520c25dc1fa8b50175b1a8</hash>
+      </hashes>
+      <licenses>
+        <license>
+          <id>Apache-2.0</id>
+        </license>
+      </licenses>
+      <purl>pkg:maven/org.springframework/spring-context@5.3.39?type=jar</purl>
+      <externalReferences>
+        <reference type="website">
+          <url>https://github.com/spring-projects/spring-framework</url>
+        </reference>
+        <reference type="issue-tracker">
+          <url>https://github.com/spring-projects/spring-framework/issues</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://github.com/spring-projects/spring-framework</url>
+        </reference>
+      </externalReferences>
+    </component>
+    <component type="library" bom-ref="pkg:maven/org.springframework/spring-aop@5.3.39?type=jar">
+      <publisher>Spring IO</publisher>
+      <group>org.springframework</group>
+      <name>spring-aop</name>
+      <version>5.3.39</version>
+      <description>Spring AOP</description>
+      <scope>required</scope>
+      <hashes>
+        <hash alg="MD5">47ef8946ec3f2f76f83cda172b9fd964</hash>
+        <hash alg="SHA-1">3af1f0d73ec1e031c7083c848342989f413ca275</hash>
+        <hash alg="SHA-256">aa706e4f749982c0bae5fa637433c44c24f0fff5d16dc41deea6d30c3dfa7c85</hash>
+        <hash alg="SHA-512">12d230913f57fd97476681016b70c411d2d2557c3aad6a1c86541563ab977786f29aa5277126e15efc1337d33a7e6fecc05debb32857bfa1f48c9943d9936205</hash>
+        <hash alg="SHA-384">0533114467204ef925a88d4ab82bb8ae6cb8a7225d0dbd32ffb078912ca74b2fcbab04a4e2dfaa32b5488b154eb770a7</hash>
+        <hash alg="SHA3-384">081665850a0db9cfaa3fe38ce89973ee2c3b81df85f361aba997e2a482d1b679a166f7322217a8629e295dd3b591736e</hash>
+        <hash alg="SHA3-256">81dd17093016a3dce398bbc7cf29ab5923936a86565de1f8e22c09e7a7e5cdad</hash>
+        <hash alg="SHA3-512">c7fb45772885a0c058e35e02231ab3e008810123f1ea889c97ee8f622a863b746f125f197ab1d353a1d982941f686f4ee793dcb291088b77cd6a442e4baccb3e</hash>
+      </hashes>
+      <licenses>
+        <license>
+          <id>Apache-2.0</id>
+        </license>
+      </licenses>
+      <purl>pkg:maven/org.springframework/spring-aop@5.3.39?type=jar</purl>
+      <externalReferences>
+        <reference type="website">
+          <url>https://github.com/spring-projects/spring-framework</url>
+        </reference>
+        <reference type="issue-tracker">
+          <url>https://github.com/spring-projects/spring-framework/issues</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://github.com/spring-projects/spring-framework</url>
+        </reference>
+      </externalReferences>
+    </component>
+    <component type="library" bom-ref="pkg:maven/org.springframework/spring-beans@5.3.39?type=jar">
+      <publisher>Spring IO</publisher>
+      <group>org.springframework</group>
+      <name>spring-beans</name>
+      <version>5.3.39</version>
+      <description>Spring Beans</description>
+      <scope>required</scope>
+      <hashes>
+        <hash alg="MD5">c2f99040fb8b0bc98515c87b968227d3</hash>
+        <hash alg="SHA-1">87770ce736cbd777c07866cbc8a06b879765e3c8</hash>
+        <hash alg="SHA-256">b6697a5d8facb81aa75e5a46d959d4256da9ce3b40d33f3b5bbd42a8b1ed5722</hash>
+        <hash alg="SHA-512">53321d3395e51b2d0b6948adff4cce81a7a712c89af92ce27ad98a44e34bfb4efa0e617b951c0468deb0baafa258eaf61507982a6774d3d832593d129c93f3ce</hash>
+        <hash alg="SHA-384">a4791a32da2ac30322814781da25680f019ef36e179461e6aee54e6f771081f1c61c673542b9e881d190988ecd98b5f6</hash>
+        <hash alg="SHA3-384">3456cce03968d9d9a730b52e79c67615640e4d740d173fed9ddf98760fd2af7d28704df6ff0aa9e2935c17ca3704385c</hash>
+        <hash alg="SHA3-256">c229d89e276b29a0fdda42fac26d7a0e526a994be452cdfff22bb03a504bf9cc</hash>
+        <hash alg="SHA3-512">08d43059f6948f7cda0c6d344d09d8e035289e51f2ba824c19e4b3f0f0714af836e8feb163b578ccfe97a9cd744b42d8382b4ed3020ba367c032e5bc768226ad</hash>
+      </hashes>
+      <licenses>
+        <license>
+          <id>Apache-2.0</id>
+        </license>
+      </licenses>
+      <purl>pkg:maven/org.springframework/spring-beans@5.3.39?type=jar</purl>
+      <externalReferences>
+        <reference type="website">
+          <url>https://github.com/spring-projects/spring-framework</url>
+        </reference>
+        <reference type="issue-tracker">
+          <url>https://github.com/spring-projects/spring-framework/issues</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://github.com/spring-projects/spring-framework</url>
+        </reference>
+      </externalReferences>
+    </component>
+    <component type="library" bom-ref="pkg:maven/org.springframework/spring-expression@5.3.39?type=jar">
+      <publisher>Spring IO</publisher>
+      <group>org.springframework</group>
+      <name>spring-expression</name>
+      <version>5.3.39</version>
+      <description>Spring Expression Language (SpEL)</description>
+      <scope>required</scope>
+      <hashes>
+        <hash alg="MD5">41198683f2d488b4b2038b7d8e4b6d81</hash>
+        <hash alg="SHA-1">25cf07399eb7ac3fc13888b20dc4d67124ec75bd</hash>
+        <hash alg="SHA-256">d5337774d889fcdc9c08b0c8b8aaa1018d4c95b9b441db0118f7ae4d328f2810</hash>
+        <hash alg="SHA-512">51ac6798959c99d98507a8c0912a93c872f27f44e0a2ebb7bf1d35ccc88c5569c7a07dea47d9d740d5b019a03ac2c9f03aefc94afb98fe2a3258ae0bf14c04e4</hash>
+        <hash alg="SHA-384">f5996023c209e7b9befad9a09347733ec2527f1a19e00c8145fc87dcc04ed340f466ec165c7632b9973d83488148e370</hash>
+        <hash alg="SHA3-384">ae6c0ebff1148eb5d28d8ee3aa678daf96cac5a39e7ca1e537305d60d8d08bc5a4ad005581b6ac82e2a93c3b6ca334d7</hash>
+        <hash alg="SHA3-256">c8b1f84a895c6c5ff2f67bc811eb33e871ccbdadb3699fe724537aa80121ee45</hash>
+        <hash alg="SHA3-512">49e2ee35d868318d5b50c3952ad6fcac7d0dda8786fcfe95663c24eaf8fdcbc20d761ab2931565a10c930ad91a5c25e81b370f1dfd190492e7fbc45729edc001</hash>
+      </hashes>
+      <licenses>
+        <license>
+          <id>Apache-2.0</id>
+        </license>
+      </licenses>
+      <purl>pkg:maven/org.springframework/spring-expression@5.3.39?type=jar</purl>
+      <externalReferences>
+        <reference type="website">
+          <url>https://github.com/spring-projects/spring-framework</url>
+        </reference>
+        <reference type="issue-tracker">
+          <url>https://github.com/spring-projects/spring-framework/issues</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://github.com/spring-projects/spring-framework</url>
+        </reference>
+      </externalReferences>
+    </component>
+    <component type="library" bom-ref="pkg:maven/org.springframework/spring-core@5.3.39?type=jar">
+      <publisher>Spring IO</publisher>
+      <group>org.springframework</group>
+      <name>spring-core</name>
+      <version>5.3.39</version>
+      <description>Spring Core</description>
+      <scope>required</scope>
+      <hashes>
+        <hash alg="MD5">632d2a8c30962a69273775968c052651</hash>
+        <hash alg="SHA-1">d2bff2eedf27b51d6ef9a2fc892aaff5b7a768dd</hash>
+        <hash alg="SHA-256">3a1ddcf05420a9181bd9cacb6062a3edc493e14d555961ad50e1a6360eb1e75f</hash>
+        <hash alg="SHA-512">2629ed79a0a3cfe7e467ac1a10f6d0d93f8ebdf9fe79bf67d99e5797e4efdb6bb1fd54ef882676b2175beea14079ca5ac6d8218c94134a66bd544d83fc8dc2b5</hash>
+        <hash alg="SHA-384">a58090e8a07cc13429b116c1d786269f3b1a1b16a63ce4711648e8f4e5c0b076e970dae2ee1e08fd1cb01158161b1bb8</hash>
+        <hash alg="SHA3-384">43f84a96b238a4492e08dd79e4450ccaad4c4f3f8adb45f16632593de313cf88905546f892e29989d8553512006e7680</hash>
+        <hash alg="SHA3-256">99cb56d841b5920987b296da3af76ae51d80f4f78b56da4b127e9187793461da</hash>
+        <hash alg="SHA3-512">74b21906fe06a990b8f910032c735af31c78cbf322452aa43b8a9bba22ceedaa0e6ad51e1f006b9c075b79654e3298c086adc6a9036601f01b5e4eab6ae899db</hash>
+      </hashes>
+      <licenses>
+        <license>
+          <id>Apache-2.0</id>
+        </license>
+      </licenses>
+      <purl>pkg:maven/org.springframework/spring-core@5.3.39?type=jar</purl>
+      <externalReferences>
+        <reference type="website">
+          <url>https://github.com/spring-projects/spring-framework</url>
+        </reference>
+        <reference type="issue-tracker">
+          <url>https://github.com/spring-projects/spring-framework/issues</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://github.com/spring-projects/spring-framework</url>
+        </reference>
+      </externalReferences>
+    </component>
+    <component type="library" bom-ref="pkg:maven/biz.aQute.bnd/biz.aQute.bnd.annotation@7.1.0?type=jar">
+      <publisher>Bndtools</publisher>
+      <group>biz.aQute.bnd</group>
+      <name>biz.aQute.bnd.annotation</name>
+      <version>7.1.0</version>
+      <description>bnd Annotations Library</description>
+      <scope>required</scope>
+      <hashes>
+        <hash alg="MD5">664c398da304527f42ab13a0f8036025</hash>
+        <hash alg="SHA-1">2f2be18c936d08cf46ea6cfa0043f34afdf38705</hash>
+        <hash alg="SHA-256">f69c2de3a695c113d125ac8053c92a680a3ce9d02ea25845095cf2d4626a7663</hash>
+        <hash alg="SHA-512">b29e68403ff0b0cd0efacf23a466390b922ef464f79b49c25518864839a1cd86329ace0a7214c6f0ce99056019d857301994bbb71dea0c35dd94511edd789ca4</hash>
+        <hash alg="SHA-384">71a5290b7cde52d3cae668492cfb368c6955a176dd7442a93e0f26f2258806c56b45869436ad9f336ad3f7a316b45838</hash>
+        <hash alg="SHA3-384">84c2757373413bfaedba04dc84329bf01b26c02a417d87674842f147a05e4001ed154efecc0f43d4473b8a7ba5175296</hash>
+        <hash alg="SHA3-256">f3cd557e7b9b6f8996ea1006cce7d4b007fbd3b1fc27b62dacdece5e38988d9e</hash>
+        <hash alg="SHA3-512">2059f5cb86d9d1b71479d2217107584fb0ff880f064a2cae0dd916d840e660314aaa746d4e6451c15ae56a500bc4e18191b40662ee4eda52aa3b0c33ea82c94b</hash>
+      </hashes>
+      <licenses>
+        <license>
+          <name>(Apache-2.0 OR EPL-2.0)</name>
+          <url>https://opensource.org/licenses/Apache-2.0,https://opensource.org/licenses/EPL-2.0</url>
+        </license>
+      </licenses>
+      <purl>pkg:maven/biz.aQute.bnd/biz.aQute.bnd.annotation@7.1.0?type=jar</purl>
+      <externalReferences>
+        <reference type="website">
+          <url>https://bnd.bndtools.org/</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://github.com/bndtools/bnd</url>
+        </reference>
+      </externalReferences>
+    </component>
+    <component type="library" bom-ref="pkg:maven/org.osgi/org.osgi.resource@1.0.0?type=jar">
+      <publisher>OSGi Alliance</publisher>
+      <group>org.osgi</group>
+      <name>org.osgi.resource</name>
+      <version>1.0.0</version>
+      <description>OSGi Companion Code for org.osgi.resource Version 1.0.0.</description>
+      <scope>required</scope>
+      <hashes>
+        <hash alg="MD5">7d857a4203e2996fab0cf070133e43df</hash>
+        <hash alg="SHA-1">343c88949132984b3f2d4175a72c40b77dc65619</hash>
+        <hash alg="SHA-256">81fc50f1f1d38a4af28e131907d4afe213249aab05060484edca0e60c4af9b4a</hash>
+        <hash alg="SHA-512">4e798790856f83f50832db80bfab64dfceeff1c509d7dde43e74a9f9192ea7a7d5ea77b9b1e81291fa6ba3dcef5ab8fa791ca8093a72a08d7ca6f6499e13e506</hash>
+        <hash alg="SHA-384">73038c395166552b64b6b5469bd8056584f48d19b5762df2e8bd2770405ed8f6071e397a87d9a7ed39f8c2e0e8ab85b2</hash>
+        <hash alg="SHA3-384">e06c8a460b3bf06d6cb22237aeffa6afd2eadd9461096c67b768a14603ad8aaa88f891d03cf0a273a99d86906c1c8eb3</hash>
+        <hash alg="SHA3-256">1097cfd20e80ce368fd828a23ad7c32a202cebd92106f6ebb88ba55ca74349ee</hash>
+        <hash alg="SHA3-512">d7b710e1e0484badb875f326c602c90df6705df48b0f057320919a5255d3ecbddd7053eabc68787480a70aebd7e553e9f51728112e1fa0846c849366b7e8d69b</hash>
+      </hashes>
+      <licenses>
+        <license>
+          <id>Apache-2.0</id>
+        </license>
+      </licenses>
+      <purl>pkg:maven/org.osgi/org.osgi.resource@1.0.0?type=jar</purl>
+      <externalReferences>
+        <reference type="website">
+          <url>http://www.osgi.org/</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://osgi.org/git/build.git</url>
+        </reference>
+      </externalReferences>
+    </component>
+    <component type="library" bom-ref="pkg:maven/org.osgi/org.osgi.service.serviceloader@1.0.0?type=jar">
+      <publisher>OSGi Alliance</publisher>
+      <group>org.osgi</group>
+      <name>org.osgi.service.serviceloader</name>
+      <version>1.0.0</version>
+      <description>OSGi Companion Code for org.osgi.service.serviceloader Version 1.0.0.</description>
+      <scope>required</scope>
+      <hashes>
+        <hash alg="MD5">4943f0102a6d893c4dd77f369a5f0537</hash>
+        <hash alg="SHA-1">3728ff37909c6a3c1870b3e851342d9f2bd3cc63</hash>
+        <hash alg="SHA-256">8f876ce2a9aa4e95b1f1952950255103e2487425050a654f3285447ba601c154</hash>
+        <hash alg="SHA-512">a7def4cb7a8ed992645faa80a780e0b30bd39c1587b5bcb65fe170d10842d0d880c2849edd50c64807fe0e4b9cc0051337d1b161d0d390465d9e63a762861c49</hash>
+        <hash alg="SHA-384">1e480694b8a541da4cd1e044d3f3ea3cd55152515ac022b80d865b6654242506c2138daabb4e71c30d36b12b9aaf676d</hash>
+        <hash alg="SHA3-384">7f076af200ae9c2bd9f235b949aee01a1a758c8aac10fee8b98ec2497197d2029117d5627eb0eabd9b42979eb1baa009</hash>
+        <hash alg="SHA3-256">83b1dce69c4c899176eb6e368e434ecb77dfed7c436530b8c5d08b9b6f2430aa</hash>
+        <hash alg="SHA3-512">5debde53a7ead231dcd907467d59728f59cae4eb3b967c19808f78890bd97d2f04657cad9c093e88f9818338b0b3b38a57c66400ebcff61fbb26d18e9f7bf8ed</hash>
+      </hashes>
+      <licenses>
+        <license>
+          <id>Apache-2.0</id>
+        </license>
+      </licenses>
+      <purl>pkg:maven/org.osgi/org.osgi.service.serviceloader@1.0.0?type=jar</purl>
+      <externalReferences>
+        <reference type="website">
+          <url>http://www.osgi.org/</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://osgi.org/git/build.git</url>
+        </reference>
+      </externalReferences>
+    </component>
+    <component type="library" bom-ref="pkg:maven/com.google.errorprone/error_prone_annotations@2.38.0?type=jar">
+      <publisher>Google LLC</publisher>
+      <group>com.google.errorprone</group>
+      <name>error_prone_annotations</name>
+      <version>2.38.0</version>
+      <description>Error Prone is a static analysis tool for Java that catches common programming mistakes at compile-time.</description>
+      <scope>required</scope>
+      <hashes>
+        <hash alg="MD5">912f8206614000252841d89cb0461895</hash>
+        <hash alg="SHA-1">fc0ae991433e8590ba51cd558421478318a74c8c</hash>
+        <hash alg="SHA-256">6661d5335090a5fc61dd869d2095bc6c1e2156e3aa47a6e4ababdf64c99a7889</hash>
+        <hash alg="SHA-512">b13fdb7e06ec1f12ea1d63b0ff942c239e4decb391d736a1f7d46c9aa9e2744e9391be4398a02a78d551a96969622e65b75bbd31e5bf67a5938716765f451f3a</hash>
+        <hash alg="SHA-384">47be5289bf8ca3f9dfe2d22e4baf6defc71dabb5476f878a240412e336d77d81148b2f79ffc0702079e48bd67ad7fd22</hash>
+        <hash alg="SHA3-384">53f3f57b51ea34afd38e1270fbe08dfcf1e2dcfb50f4ac9369bb625febb75611c9e5d8bb09f4dfcb504b5d0b9ac47443</hash>
+        <hash alg="SHA3-256">02eaa5431cda49a9e702cac4ad8051d88397e1d5219a0ef65673dae8eaf9c70d</hash>
+        <hash alg="SHA3-512">0307dfc76cae6d539d93649ef3ccb85937d62f6f74be212e8a05ae1cc892f3b63a5c03cd6f61ace9f5dbd0f8dfb0baf086eaf3cd10bbefd22640966d00686dac</hash>
+      </hashes>
+      <licenses>
+        <license>
+          <id>Apache-2.0</id>
+        </license>
+      </licenses>
+      <purl>pkg:maven/com.google.errorprone/error_prone_annotations@2.38.0?type=jar</purl>
+      <externalReferences>
+        <reference type="website">
+          <url>https://errorprone.info/error_prone_annotations</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://github.com/google/error-prone/error_prone_annotations</url>
+        </reference>
+      </externalReferences>
+    </component>
+    <component type="library" bom-ref="pkg:maven/org.osgi/org.osgi.annotation.bundle@2.0.0?type=jar">
+      <publisher>Eclipse Foundation</publisher>
+      <group>org.osgi</group>
+      <name>org.osgi.annotation.bundle</name>
+      <version>2.0.0</version>
+      <description>OSGi Companion Code for org.osgi.annotation.bundle Version 2.0.0</description>
+      <scope>required</scope>
+      <hashes>
+        <hash alg="MD5">19115314a0ce4cfb711a811dcc0be0a3</hash>
+        <hash alg="SHA-1">f5c2cd6e670c3c5d440d3003efd5ef2ead5c68eb</hash>
+        <hash alg="SHA-256">b9c9546ec5be3ebc2e85ba4919150ad76d64594805282fc895133a47d264a7ae</hash>
+        <hash alg="SHA-512">f16b8983240ba3c08d6bc78e2eae92e89eb528f32a705961d90b463def0a5ed1ba08cc3d0be38b5dcfb946c6f759df772e122fb769e58e8c20aa79a489a1fd21</hash>
+        <hash alg="SHA-384">88217b7d3a2d9a0a3f005162b95d68ba2bd29629688b2c32e93e4587d89fe6bd468f5c62ef422ebf2b609d402e62ff56</hash>
+        <hash alg="SHA3-384">c7ee64dd3e235d900d01d8629b82245303d34a006e1edcd2571ef736d9c6256dcb718be326ad4909cb6d2cea26118ea9</hash>
+        <hash alg="SHA3-256">9adcacb036caf30d17a13fcd5952a35e011678b1dbfabafdff73dba065ace8a3</hash>
+        <hash alg="SHA3-512">76bec6bb2cdbc8da043760a7aedd51203c8d70b740c9b8de0ba6b0cf9ad991a58059566e7f62dee30606f32d267b2596d5bd5e885c73e336ae7fff6cf7f970db</hash>
+      </hashes>
+      <licenses>
+        <license>
+          <id>Apache-2.0</id>
+          <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+      </licenses>
+      <purl>pkg:maven/org.osgi/org.osgi.annotation.bundle@2.0.0?type=jar</purl>
+      <externalReferences>
+        <reference type="website">
+          <url>https://docs.osgi.org/</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://github.com/osgi/osgi</url>
+        </reference>
+      </externalReferences>
+    </component>
+    <component type="library" bom-ref="pkg:maven/org.osgi/org.osgi.annotation.versioning@1.1.2?type=jar">
+      <publisher>Eclipse Foundation</publisher>
+      <group>org.osgi</group>
+      <name>org.osgi.annotation.versioning</name>
+      <version>1.1.2</version>
+      <description>OSGi Companion Code for org.osgi.annotation.versioning Version 1.1.2</description>
+      <scope>required</scope>
+      <hashes>
+        <hash alg="MD5">a61b3b8d09c85ad296c61e21bf77ec70</hash>
+        <hash alg="SHA-1">dc3cd4ec96c0b3c5459fe00694bd73a816ecf93e</hash>
+        <hash alg="SHA-256">f51f235e80df8ffbc30ef1b557b6ea38a696632d675404ec117e952978b8b863</hash>
+        <hash alg="SHA-512">a4c612bec624a168f25f0923d51925bbc914686673eeebd5b2442998b876f05855e2b0a6e6e9aca4a6533ed3156b0d24f94c3e508ee9778e1b2e469be318afa3</hash>
+        <hash alg="SHA-384">68a2046f083a2e77304622a56d07c0e73ba88534af4a87b5428cebf8b638c40ce21bbac089a8b5520ad488c946b633ea</hash>
+        <hash alg="SHA3-384">930734f6979650191d51cd8bf1f9ab4548d307950735aa98e2dbda7aecc19b49d01a3b968824f6df2ffafce65e122c60</hash>
+        <hash alg="SHA3-256">513392d0e8ddd873d04c5cf4f402a9cfe094413832bb859fe37b70fd0512dd12</hash>
+        <hash alg="SHA3-512">3d2bd7d2eb784a9fab4b09c42adb0722363079235340f1915bb82a99f1c5e616ee8f3dc34d2c90b941d2651dcb4f393c7fea3e23b579456a696604148d10f22b</hash>
+      </hashes>
+      <licenses>
+        <license>
+          <id>Apache-2.0</id>
+          <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+      </licenses>
+      <purl>pkg:maven/org.osgi/org.osgi.annotation.versioning@1.1.2?type=jar</purl>
+      <externalReferences>
+        <reference type="website">
+          <url>https://docs.osgi.org/</url>
+        </reference>
+        <reference type="vcs">
+          <url>https://github.com/osgi/osgi</url>
+        </reference>
+      </externalReferences>
+    </component>
+  </components>
+  <dependencies>
+    <dependency ref="pkg:maven/org.apache.logging.log4j/log4j-spring-boot@2.26.0?type=jar">
+      <dependency ref="pkg:maven/org.apache.logging.log4j/log4j-api@2.26.0?type=jar"/>
+      <dependency ref="pkg:maven/org.apache.logging.log4j/log4j-core@2.26.0?type=jar"/>
+      <dependency ref="pkg:maven/org.springframework.boot/spring-boot@2.7.18?type=jar"/>
+      <dependency ref="pkg:maven/org.springframework/spring-core@5.3.39?type=jar"/>
+      <dependency ref="pkg:maven/biz.aQute.bnd/biz.aQute.bnd.annotation@7.1.0?type=jar"/>
+      <dependency ref="pkg:maven/com.google.errorprone/error_prone_annotations@2.38.0?type=jar"/>
+      <dependency ref="pkg:maven/org.osgi/org.osgi.annotation.bundle@2.0.0?type=jar"/>
+      <dependency ref="pkg:maven/org.osgi/org.osgi.annotation.versioning@1.1.2?type=jar"/>
+    </dependency>
+    <dependency ref="pkg:maven/org.apache.logging.log4j/log4j-api@2.26.0?type=jar"/>
+    <dependency ref="pkg:maven/org.apache.logging.log4j/log4j-core@2.26.0?type=jar">
+      <dependency ref="pkg:maven/org.apache.logging.log4j/log4j-api@2.26.0?type=jar"/>
+    </dependency>
+    <dependency ref="pkg:maven/org.springframework.boot/spring-boot@2.7.18?type=jar">
+      <dependency ref="pkg:maven/org.springframework/spring-core@5.3.39?type=jar"/>
+      <dependency ref="pkg:maven/org.springframework/spring-context@5.3.39?type=jar"/>
+    </dependency>
+    <dependency ref="pkg:maven/org.springframework/spring-core@5.3.39?type=jar"/>
+    <dependency ref="pkg:maven/org.springframework/spring-context@5.3.39?type=jar">
+      <dependency ref="pkg:maven/org.springframework/spring-aop@5.3.39?type=jar"/>
+      <dependency ref="pkg:maven/org.springframework/spring-beans@5.3.39?type=jar"/>
+      <dependency ref="pkg:maven/org.springframework/spring-core@5.3.39?type=jar"/>
+      <dependency ref="pkg:maven/org.springframework/spring-expression@5.3.39?type=jar"/>
+    </dependency>
+    <dependency ref="pkg:maven/org.springframework/spring-aop@5.3.39?type=jar">
+      <dependency ref="pkg:maven/org.springframework/spring-beans@5.3.39?type=jar"/>
+      <dependency ref="pkg:maven/org.springframework/spring-core@5.3.39?type=jar"/>
+    </dependency>
+    <dependency ref="pkg:maven/org.springframework/spring-beans@5.3.39?type=jar">
+      <dependency ref="pkg:maven/org.springframework/spring-core@5.3.39?type=jar"/>
+    </dependency>
+    <dependency ref="pkg:maven/org.springframework/spring-expression@5.3.39?type=jar">
+      <dependency ref="pkg:maven/org.springframework/spring-core@5.3.39?type=jar"/>
+    </dependency>
+    <dependency ref="pkg:maven/biz.aQute.bnd/biz.aQute.bnd.annotation@7.1.0?type=jar">
+      <dependency ref="pkg:maven/org.osgi/org.osgi.resource@1.0.0?type=jar"/>
+      <dependency ref="pkg:maven/org.osgi/org.osgi.service.serviceloader@1.0.0?type=jar"/>
+    </dependency>
+    <dependency ref="pkg:maven/org.osgi/org.osgi.resource@1.0.0?type=jar"/>
+    <dependency ref="pkg:maven/org.osgi/org.osgi.service.serviceloader@1.0.0?type=jar"/>
+    <dependency ref="pkg:maven/com.google.errorprone/error_prone_annotations@2.38.0?type=jar"/>
+    <dependency ref="pkg:maven/org.osgi/org.osgi.annotation.bundle@2.0.0?type=jar">
+      <dependency ref="pkg:maven/org.osgi/org.osgi.annotation.versioning@1.1.2?type=jar"/>
+    </dependency>
+    <dependency ref="pkg:maven/org.osgi/org.osgi.annotation.versioning@1.1.2?type=jar"/>
+  </dependencies>
+</bom>

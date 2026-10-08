@@ -26,7 +26,7 @@
 	<repositories>
 		<repository>
 			<id>eclipse-swt</id>
-			<url>https://download.eclipse.org/releases/2025-03/</url>
+			<url>https://download.eclipse.org/releases/2026-03/</url>
 			<layout>p2</layout>
 			<releases>
 				<enabled>true</enabled>
@@ -122,15 +122,24 @@
 		<!--
 			Core modules
 		-->
+		<module>../gama.dev</module>
 		<module>../gama.dependencies</module>
+		<module>../gama.api</module>
 		<module>../gama.core</module>
+		<module>../gama.workspace</module>
 		<module>../gaml.compiler</module>
 
 		<!--
 			GAML language extensions modules
 		-->
 		<module>../gama.extension.bdi</module>
+		<module>../gama.extension.batch</module>
 		<module>../gama.extension.fipa</module>
+		<module>../gama.extension.osm</module>
+		<module>../gama.extension.dxf</module>
+		<module>../gama.extension.kml</module>		
+		<module>../gama.extension.gml</module>
+		<module>../gama.extension.dataframe</module>
 		<module>../gama.extension.sound</module>
 		<module>../gama.extension.stats</module>
 		<module>../gama.extension.maths</module>
@@ -139,6 +148,7 @@
 		<module>../gama.extension.network</module>
 		<module>../gama.extension.physics</module>
 		<module>../gama.extension.database</module>
+		<module>../gama.extension.geopackage</module>
 		<module>../gama.extension.serialize</module>
 		<module>../gama.extension.pedestrian</module>
 
@@ -152,6 +162,7 @@
 		<module>../gama.ui.experiment</module>
 		<module>../gama.ui.application</module>
 		<module>../gama.ui.display.opengl</module>
+		<module>../gama.ui.display.opengl4</module>
 		<module>../gama.ui.display.java2d</module>
 
 		<!--
@@ -180,10 +191,7 @@
 		<module>../gama.feature.extension.stats</module>
 		<module>../gama.feature.extension.image</module>
 
-		<!-- Can be automatically published by uncommenting
-		However, it's prefered to keep it separated and executed
-		with the script travis/deploy-p2.sh
-		<module>../gama.p2site</module> -->
+		<module>../gama.p2site</module>
 
 		<module>../gama.product</module>
 		
@@ -192,8 +200,8 @@
 	<properties>
 		<project.version>0.0.0-SNAPSHOT</project.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<tycho.version>4.0.11</tycho.version>
-		<jdk.version>21</jdk.version>
+		<tycho.version>5.0.2</tycho.version>
+		<jdk.version>25</jdk.version>
 		<codehaus.wagon.version>2.0.2</codehaus.wagon.version>
 		<wagon.version>3.5.3</wagon.version>
 		<maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
@@ -219,6 +227,11 @@
 				<groupId>org.apache.maven.wagon</groupId>
 				<artifactId>wagon-ssh</artifactId>
 				<version>${wagon.version}</version>
+			</extension>
+			<extension>
+				<groupId>org.apache.maven.extensions</groupId>
+				<artifactId>maven-build-cache-extension</artifactId>
+				<version>1.2.2</version>
 			</extension>
 		</extensions>
 
@@ -285,7 +298,7 @@
 					<source>${jdk.version}</source>
 					<target>${jdk.version}</target>
 					<annotationProcessors>
-						<annotationProcessor>msi.gama.precompiler.GamaProcessor</annotationProcessor>
+						<annotationProcessor>gama.processor.GamaProcessor</annotationProcessor>
 					</annotationProcessors>
 					<executionEnvironment>JavaSE-${jdk.version}</executionEnvironment>
 				</configuration>
@@ -311,11 +324,6 @@
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.jdt.ui</id>
-							<removeAll />
-						</filter>
-						<filter>
-							<type>eclipse-plugin</type>
-							<id>org.eclipse.debug.ui</id>
 							<removeAll />
 						</filter>
 						<filter>
@@ -472,7 +480,7 @@
 			<plugin>
 				<groupId>com.github.spotbugs</groupId>
 				<artifactId>spotbugs-maven-plugin</artifactId>
-				<version>4.9.3.0</version>
+				<version>4.10.2.0</version>
 				<configuration>
 					<xmlOutput>true</xmlOutput>
 					<failOnError>false</failOnError>
@@ -485,6 +493,12 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-dependency-plugin</artifactId>
+				</plugin>
+
+				<plugin>
+					<groupId>org.eclipse.tycho</groupId>
+					<artifactId>tycho-versions-plugin</artifactId>
+					<version>${tycho.version}</version>
 				</plugin>
 
 				<plugin>
@@ -570,6 +584,31 @@
 							</pluginExecutions>
 						</lifecycleMappingMetadata>
 					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>build-helper-maven-plugin</artifactId>
+					<version>3.5.0</version>
+					<executions>
+						<execution>
+							<id>attach-local-artifacts</id>
+							<phase>package</phase>
+							<goals>
+								<goal>attach-artifact</goal>
+							</goals>
+							<configuration>
+								<artifacts>
+									<artifact>
+										<file>
+											${project.build.directory}/local-artifacts.properties
+										</file>
+										<type>properties</type>
+										<classifier>local-artifacts</classifier>
+									</artifact>
+								</artifacts>
+							</configuration>
+						</execution>
+					</executions>
 				</plugin>
 			</plugins>
 		</pluginManagement>

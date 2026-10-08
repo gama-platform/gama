@@ -1,14 +1,13 @@
 /**
-* Name: Trafic Group (R2D2) MAPS7 - LWR Model
-* Author: A. Banos, N. Corson, C. Pivano, L. Rajaonarivo, P. Taillandier
-* Description: The LWR model was proposed by Lighthill and Whitham (1955) and by Richards (1956). 
-* It describes the trafic at a global level considering the speed, concentration and flows without taking into account the individual behavior af vehicles. 
-* Speed, concentration and flow are the three components of the LWR model. 
-* This models reproduces flow of traffic and congestion in specific conditions (homogeneous traffic), 
-* going from one equilibrium state to another (see the fundamental diagramm of traffic, which gives flow according to concentration).
-* 
-* In this model, a road is divided into sections and we arbitrarily give to the middle section a lower speed and critical concentration.
-* Tags: transport
+* Name: LWR Traffic Flow Model
+* Author: A. Banos, N. Corson, C. Pivano, L. Rajaonarivo, Patrick Taillandier
+* Description: An implementation of the Lighthill-Whitham-Richards (LWR) macroscopic traffic flow model,
+*   originally proposed by Lighthill & Whitham (1955) and Richards (1956). Unlike microscopic agent-based
+*   models, the LWR model describes traffic at the aggregate level using three interrelated variables: speed,
+*   concentration (density), and flow (vehicles/hour). The model divides a road into sections and uses the
+*   fundamental diagram of traffic to compute flows from concentrations. A middle section is given reduced
+*   speed and critical concentration to simulate a bottleneck, producing congestion that propagates upstream.
+* Tags: transport, traffic, LWR, macroscopic, flow, congestion, equation, road
 */
 
 
@@ -22,8 +21,8 @@ global {
 	
 	geometry shape <- rectangle (road_size, 200 #m) ; 	// The world is a rectangle with a length equals to the size of the road and a height of 200m
 		
-	float time_step <- 1.0 ; 							// Time step 
-	int nb_sections <- 10 ; 							// Number of sections of the road
+	float time_step <- 1.0 min: 0.1; 							// Time step 
+	int nb_sections <- 10 min: 3; 							// Number of sections of the road
 	float section_size <- road_size / nb_sections ; 	// Size of a section
 	
 	float car_size <- 4 #m ;									// Size of a car
@@ -34,7 +33,7 @@ global {
 	   		// Creation of the nb_sections sections which compose the road. 
 	   		
 		   loop i from: 0 to: (nb_sections - 1){
-		   	  create section with: [shape:: line([{i * section_size , 100},{(i +1) * section_size , 100}])];
+		   	  create section (shape: line([{i * section_size , 100},{(i +1) * section_size , 100}]));
 		   }
 		   	
 		   	// For each section, as we need to have information concerning the previous and the next one, we define which section is the previous and which is the next.
@@ -127,7 +126,7 @@ global {
 	// When there is less than one car left on the road, the simulation stops.
 	
 	reflex stop_simulation when: sum(section collect each.current_concentration) < 1.0 {
-		do pause;
+		do pause();
 	}
 }
 
@@ -150,10 +149,12 @@ species section {
 	section previous ;
 	section next ;
 	
+	rgb color <- #gray;
+	
 	// The width of a section depends on its concentration.
 	
 	aspect shape_section {
-		draw shape + (10 + 15 * ln (current_concentration + 1)) color: #gray + 128*current_concentration;		
+		draw shape + (20 + 15 * ln (current_concentration + 1)) color: color;		
 	} 
 
 }
@@ -184,31 +185,19 @@ experiment TraficGroup type: gui {
 				
 		display Concentrations  type: 2d {
 			chart "Concentrations" type: series  {
-				data 'Section 0' value: section[0].current_concentration color: #gray marker: false ;				
-				data 'Section 1' value: section[1].current_concentration color: #gray marker: false;
-				data 'Section 2' value: section[2].current_concentration color: #gray marker: false;
-				data 'Section 3' value: section[3].current_concentration color: #gray marker: false;				
-				data 'Section 4' value: section[int(nb_sections/2 - 1 ) ].current_concentration color: #red marker: false;
-				data 'Section 5' value: section[int(nb_sections/2)].current_concentration color: #green marker: false;
-				data 'Section 6' value: section[6].current_concentration color: #gray marker: false;				
-				data 'Section 7' value: section[7].current_concentration color: #gray marker: false;
-				data 'Section 8' value: section[8].current_concentration color: #gray marker: false;
-				data 'Section 9' value: section[9].current_concentration color: #gray marker: false;
+				loop i from: 0 to: length(section) -1 {
+					data 'Section '+i value: section[i].current_concentration color: section[i].color marker: false ;		
 				}
+						
 			}
+		}
 			
 			display Flows  type: 2d {
 			    chart "Flows" type: series  {
-				data 'Section 0' value: section[0].current_flow color: #gray marker: false;				
-				data 'Section 1' value: section[1].current_flow color: #gray marker: false;
-				data 'Section 2' value: section[2].current_flow color: #gray marker: false;
-				data 'Section 3' value: section[3].current_flow color: #gray marker: false;				
-				data 'Section 4' value: section[int(nb_sections/2 - 1)].current_flow color: #red marker: false;
-				data 'Section 5' value: section[int(nb_sections/2)].current_flow color: #green marker: false;
-				data 'Section 6' value: section[6].current_flow color: #gray marker: false;				
-				data 'Section 7' value: section[7].current_flow color: #gray marker: false;
-				data 'Section 8' value: section[8].current_flow color: #gray marker: false;
-				data 'Section 9' value: section[9].current_flow color: #gray marker: false;
+			    	loop i from: 0 to: length(section) -1 {
+						data 'Section '+i value: section[i].current_flow color: section[i].color marker: false ;		
+			   		}
+			
 				}
 			}
 	}

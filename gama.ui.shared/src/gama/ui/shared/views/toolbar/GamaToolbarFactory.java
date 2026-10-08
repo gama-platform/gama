@@ -155,7 +155,7 @@ public class GamaToolbarFactory {
 	 */
 	public static Composite createToolbarComposite(final Composite composite) {
 		final Composite toolbarComposite = new Composite(composite, SWT.None);
-		final GridData toolbarCompositeData2 = new GridData(SWT.FILL, SWT.FILL, true, false);
+		final GridData toolbarCompositeData2 = new GridData(SWT.FILL, SWT.TOP, true, false);
 		toolbarComposite.setLayoutData(toolbarCompositeData2);
 		final GridLayout layout = new GridLayout(1, false);
 		layout.verticalSpacing = 0;
@@ -204,8 +204,7 @@ public class GamaToolbarFactory {
 	 * @return the grid data
 	 */
 	public static GridData layoutDataForToolbar() {
-		final GridData data = new GridData(SWT.FILL, SWT.FILL, true, false);
-		data.minimumHeight = TOOLBAR_HEIGHT;
+		final GridData data = new GridData(SWT.FILL, SWT.TOP, true, false);
 		data.minimumWidth = TOOLBAR_HEIGHT * 2;
 		return data;
 	}

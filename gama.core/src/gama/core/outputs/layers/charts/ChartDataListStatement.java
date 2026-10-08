@@ -1,30 +1,30 @@
 /*******************************************************************************************************
  *
- * ChartDataListStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * ChartDataListStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.outputs.layers.charts;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
-import gama.gaml.statements.AbstractStatement;
-import gama.gaml.types.IType;
+import gama.annotations.doc;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.statements.AbstractStatement;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.runtime.scope.IScope;
 
 /**
  * The Class ChartDataListStatement.
@@ -72,9 +72,9 @@ import gama.gaml.types.IType;
 						doc = @doc ("the marker sizes to display. Can be a list of numbers (same size for each marker of the series) or a list of list (different sizes by point)")),
 				@facet (
 						name = IKeyword.LEGEND,
-						type = IType.LIST,
+						type = { IType.LIST, IType.BOOL, IType.STRING, IType.NONE },
 						optional = true,
-						doc = @doc ("the name of the series: a list of strings (can be a variable with dynamic names)")),
+						doc = @doc ("Series legend labels: a string labels the first series; a list provides one label per series. Use true for default series names, false or nil to hide all series labels, or nil/whitespace list elements to hide individual labels.")),
 				@facet (
 						name = ChartDataStatement.MARKER,
 						type = IType.BOOL,
@@ -108,9 +108,9 @@ import gama.gaml.types.IType;
 						doc = @doc ("Marker filled (true) or not (false), same for all series.")),
 				@facet (
 						name = IKeyword.COLOR,
-						type = IType.LIST,
+						type = { IType.LIST, IType.COLOR, IType.CONTAINER, IType.NONE },
 						optional = true,
-						doc = @doc ("list of colors, for heatmaps can be a list of [minColor,maxColor] or [minColor,medColor,maxColor]")),
+						doc = @doc ("a single color or list of colors. If a list of colors smaller than the list of values is provided, colors will cycle. For heatmaps can be a list of [minColor,maxColor] or [minColor,medColor,maxColor]")),
 				@facet (
 						name = ChartDataStatement.THICKNESS,
 						type = IType.FLOAT,
@@ -120,11 +120,11 @@ import gama.gaml.types.IType;
 						name = IKeyword.STYLE,
 						type = IType.ID,
 						values = { IKeyword.LINE, /* IKeyword.WHISKER, */ IKeyword.AREA, IKeyword.BAR, IKeyword.DOT,
-								IKeyword.STEP, IKeyword.SPLINE, IKeyword.STACK, IKeyword.THREE_D,
-								IKeyword.RING, IKeyword.EXPLODED },
+								IKeyword.STEP, IKeyword.SPLINE, IKeyword.STACK, IKeyword.THREE_D, IKeyword.RING,
+								IKeyword.EXPLODED },
 						optional = true,
 						doc = @doc ("Style for the serie (if not the default one sepecified on chart statement)")) },
-		omissible = IKeyword.LEGEND)
+		omissible = IKeyword.VALUE)
 public class ChartDataListStatement extends AbstractStatement {
 
 	/**
@@ -146,15 +146,13 @@ public class ChartDataListStatement extends AbstractStatement {
 			throws GamaRuntimeException {
 
 		final ChartDataSourceList data = new ChartDataSourceList();
-
-		// IExpression string1 = getFacet(IKeyword.TYPE);
-
 		data.setDataset(scope, graphdataset);
 
 		String stval = getLiteral(IKeyword.STYLE);
 		if (stval != null) { data.setStyle(scope, stval); }
 
-		IExpression expval = getFacet(IKeyword.LEGEND).resolveAgainst(scope);
+		IExpression expval = getFacet(IKeyword.LEGEND);
+		if (expval != null) { expval = expval.resolveAgainst(scope); }
 		data.setNameExp(scope, expval);
 
 		expval = getFacet(IKeyword.VALUE).resolveAgainst(scope);
@@ -164,7 +162,6 @@ public class ChartDataListStatement extends AbstractStatement {
 		if (expval != null) {
 			expval = expval.resolveAgainst(scope);
 			data.setYErrValueExp(scope, expval);
-
 		}
 
 		expval = getFacet(ChartDataStatement.XERR_VALUES);

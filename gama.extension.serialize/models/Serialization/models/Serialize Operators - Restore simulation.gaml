@@ -1,8 +1,11 @@
 /**
-* Name: Model1
+* Name: Serialize Operators - Restore Simulation
 * Author: Benoit Gaudou
-* Description: Loads a simulation from a file
-* Tags: serialization, load_file
+* Description: Demonstrates restoring a simulation from a binary file previously saved by 'Serialize
+*   Operators - Save simulation in file and serialize'. Uses the 'serialize' and 'deserialize' operators
+*   to reconstruct the complete simulation state (global variables, agent populations, and their attribute
+*   values) from a serialized binary snapshot. Run the save model first to generate the file.
+* Tags: serialization, restore, load_file, binary, snapshot, simulation, deserialize
 */
 
 model Serialization

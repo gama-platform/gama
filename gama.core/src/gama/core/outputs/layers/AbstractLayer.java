@@ -1,19 +1,25 @@
 /*******************************************************************************************************
  *
  * AbstractLayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.outputs.layers;
 
-import gama.core.common.interfaces.IGraphics;
-import gama.core.common.interfaces.ILayer;
-import gama.core.runtime.IScope.IGraphicsScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.ui.displays.IGraphics;
+import gama.api.ui.displays.IGraphicsScope;
+import gama.api.ui.layers.ILayer;
+import gama.api.ui.layers.ILayerData;
+import gama.api.ui.layers.ILayerStatement;
 import gama.dev.DEBUG;
 
 /**
@@ -148,5 +154,10 @@ public abstract class AbstractLayer implements ILayer {
 
 	@Override
 	public final void setName(final String name) { this.name = name; }
+
+	@Override
+	public IList<? extends IAgent> getAgentsForMenu(final IScope scope) {
+		return GamaListFactory.getEmptyList(); // by default
+	}
 
 }

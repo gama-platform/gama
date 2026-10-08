@@ -1,13 +1,13 @@
 /**
- *  Firefighters
- *  Author: Mathieu Bourgais
- *  Description: A simple model to show how the BDI architectures and its tools work (perceive, rule, etc). It's the model of a helicopter that fights fires.
- * the Chopper agent has a general desire to patrol. As it is the only thing he wants at the beginning, it is its initial intention (what it is doing). 
- * To patrol, it wanders around (its plan to patrol). When it perceives a fire, it stores this information (it has a new belief about the existence of this fire), 
- * and it has a new desire (it wants the fire to be extinct). When it sees a fire, the Patrol intention is put on hold and a new intention is selected (to put out the fire). 
- * To achieve this intention, the plan has two steps, i.e. two new (sub)desires: go to the fire and put water on the fire. And so on.
- *  Tags: simple_bdi, perception, rule, plan, predicate
- */
+* Name: Firefighters BDI
+* Author: Mathieu Bourgais
+* Description: A BDI model of a helicopter fighting forest fires. The Chopper agent starts with a desire to
+*   patrol (wander around). When it perceives a fire it stores the location as a new belief and adopts a new
+*   desire to extinguish it, suspending the patrol intention. The extinguish plan has two sub-intentions:
+*   fly to the fire and drop water on it. Uses GIS data (shapefiles for roads and escape routes in Rouen).
+*   Demonstrates perception, belief updates, rule-triggered desires, and hierarchical plan execution.
+* Tags: simple_bdi, perception, rule, plan, predicate, belief, desire, intention, firefighter, gis
+*/
 
 model Firefighters
 
@@ -27,7 +27,7 @@ global {
 	}
 	
 	reflex stop when: length(fireArea) = 0 {
-		do pause;
+		do pause();
 	}
 }
 
@@ -77,7 +77,7 @@ species firefighter skills: [moving] control: simple_bdi{
 	
 	//The plan to do when the intention is to patrol.
 	plan patrolling intention:patrol_desire{
-		do wander amplitude: 30.0 speed: 2.0;
+		do wander (amplitude: 30.0, speed: 2.0);
 	}
 	 
 	//The plan that is executed when the agent got the intention of extinguish a fire.
@@ -90,7 +90,7 @@ species firefighter skills: [moving] control: simple_bdi{
 					 waterValue <- waterValue - 1.0;
 					 current_fire.size <-  current_fire.size - 1;
 					 if ( current_fire.size <= 0) {
-						ask  current_fire {do die;}
+						ask  current_fire {do die();}
 						do remove_belief(get_current_intention().predicate);
 						do remove_intention(get_current_intention().predicate, true);
 						do add_desire(patrol_desire,1.0);

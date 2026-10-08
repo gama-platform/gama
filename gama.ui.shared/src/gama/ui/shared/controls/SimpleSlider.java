@@ -40,7 +40,7 @@ import gama.ui.shared.resources.GamaColors;
 /**
  * The Class SimpleSlider.
  */
-public class SimpleSlider extends Composite /* implements IPopupProvider */ {
+public class SimpleSlider extends Composite {
 
 	static {
 		DEBUG.OFF();

@@ -17,7 +17,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Control;
 
-import gama.core.runtime.GAMA;
+import gama.api.GAMA;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.views.toolbar.Selector;
 import gaml.compiler.ui.editor.GamlEditor;
@@ -64,7 +64,7 @@ public class OpenImportedErrorSelectionListener implements Selector {
 
 							@Override
 							public void widgetSelected(final SelectionEvent e1) {
-								GAMA.getGui().editModel(msgs.get(s));
+								GAMA.getGui().getModelsManager().editModel(msgs.get(s));
 							}
 
 						}, null);

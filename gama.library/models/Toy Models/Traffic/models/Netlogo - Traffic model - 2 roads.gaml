@@ -1,15 +1,13 @@
 /***
-* Name: NetlogoTrafficmodel2
+* Name: Traffic Model - 2 Roads (NetLogo Variation)
 * Author: Benoit Gaudou
-* Description: This model is a variation of the "Netlogo - Traffic model - 1 road.gaml" in order to be able 
-*     to visualise the impacts of parameters on the congestion and compare 2 scenarios of acceleration-deceleration. 
-*     It is based on the Netlogo model "Traffic model".
-*     Wilensky, U. (1997). NetLogo Traffic Basic model. http://ccl.northwestern.edu/netlogo/models/TrafficBasic. 
-*     Center for Connected Learning and Computer-Based Modeling, Northwestern University, Evanston, IL.
-*  It has been implemented with the Netlogo platform:
-*     Wilensky, U. (1999). NetLogo. http://ccl.northwestern.edu/netlogo/. 
-*     Center for Connected Learning and Computer-Based Modeling, Northwestern University, Evanston, IL.
-* Tags: traffic, transport, congestion, netlogo
+* Description: A two-lane variation of the NetLogo Traffic Basic model reimplementation. Two parallel circular
+*   roads run with different acceleration and deceleration parameters, allowing direct comparison of how driver
+*   behavior differences affect congestion patterns. The model is useful for exploring how even slight parameter
+*   changes in individual driving behavior can produce very different macro-level traffic flow outcomes. Both
+*   roads run simultaneously, and their congestion metrics are displayed side by side.
+*   Based on: Wilensky, U. (1997). NetLogo Traffic Basic model (Northwestern University).
+* Tags: traffic, transport, congestion, netlogo, comparison, emergence, two_roads
 ***/
 
 model NetlogoTrafficmodel
@@ -63,7 +61,7 @@ global torus: true {
 				location <- my_pavement.location;
 				type <- t;
 			} else {
-				do die;
+				do die();
 			}
 			heading <- 0.0;
 		}
@@ -75,7 +73,7 @@ global torus: true {
 		car a_car <- one_of(cars);
 		ask a_car {
 			color <- col;
-			icon <- _icon;
+			icon_file <- _icon;
 		}	
 		return a_car;	
 	}
@@ -99,13 +97,13 @@ species car skills: [moving] {
 	float acceleration;
 	float deceleration;
 	rgb color;
-	image_file icon;
+	image_file icon_file;
 	pavement my_pavement;
 	int type;
 	
 	init {
 		color <- #blue;
-		icon <- voit_image_file;
+		icon_file <- voit_image_file;
 		speed <- 0.1 +rnd(0.9);
 		speed_limit <- 1.0;
 		speed_min <- 0.0;
@@ -121,17 +119,17 @@ species car skills: [moving] {
 		if(car_ahead != nil) {
 			do slow_down(car_ahead);
 		} else {
-			do speed_up;
+			do speed_up();
 		}
 		
-		do move heading: heading;
+		do move (heading: heading);
 	}
 
 	action slow_down(car car_ahead) {
 		speed <- max(speed_min, car_ahead.speed - ((type=1)?deceleration1:deceleration2)) ;
 	}
 	
-	action speed_up {
+	action speed_up() {
 		speed <- min(speed + ((type=1)?acceleration1:acceleration2), speed_limit);
 	}
 
@@ -140,7 +138,7 @@ species car skills: [moving] {
 	}
 	
 	aspect icon {
-		draw icon at: location size: 3 rotate: heading ;
+		draw icon_file at: location size: 3 rotate: heading ;
 	}	
 }
 

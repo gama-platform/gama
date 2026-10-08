@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * NewExperimentWizardPage.java, in gama.ui.navigator.view, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * NewExperimentWizardPage.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.navigator.wizards;
 
@@ -14,7 +14,6 @@ import java.util.Arrays;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.window.Window;
@@ -27,6 +26,8 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.FilteredResourcesSelectionDialog;
+
+import gama.api.GAMA;
 
 /**
  * The "New" wizard page allows setting the container for the new file as well as the file name. The page will only
@@ -134,7 +135,7 @@ public class NewExperimentWizardPage extends AbstractNewModelWizardPage {
 	 * @throws CoreException
 	 */
 	void handleBrowse() {
-		final IContainer p = ResourcesPlugin.getWorkspace().getRoot();
+		final IContainer p = GAMA.getWorkspaceManager().getRoot();
 		dialog = new FilteredResourcesSelectionDialog(getShell(), false, p, IResource.FILE);
 		dialog.setInitialPattern("*.gaml");
 		dialog.setTitle("Choose a gaml model in project " + p.getName());

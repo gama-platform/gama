@@ -3,7 +3,7 @@
  * OpenGLDisplayView.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,11 +13,12 @@ package gama.ui.display.opengl.view;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
-import gama.core.common.interfaces.IDisposable;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.PlatformHelper;
+import gama.api.GAMA;
+import gama.api.runtime.SystemInfo;
+import gama.api.utils.interfaces.IDisposable;
 import gama.dev.DEBUG;
 import gama.ui.experiment.views.displays.LayeredDisplayView;
+import gama.ui.shared.utils.LaunchingOverlay;
 
 /**
  * Class OpenGLLayeredDisplayView.
@@ -27,6 +28,31 @@ import gama.ui.experiment.views.displays.LayeredDisplayView;
  *
  */
 public class OpenGLDisplayView extends LayeredDisplayView {
+
+	/**
+	 * Lazily installs NEWT listeners once the native OpenGL window has actually been created.
+	 */
+	private final class DeferredMultiListener implements IDisposable {
+
+		private IDisposable delegate;
+
+		void ensureInstalled() {
+			if (delegate != null || getGLCanvas().getNEWTWindow() == null) return;
+			delegate = new NEWTLayeredDisplayMultiListener(decorator, getDisplaySurface(), getGLCanvas().getNEWTWindow());
+		}
+
+		@Override
+		public void dispose() {
+			if (delegate != null) { delegate.dispose(); }
+			delegate = null;
+		}
+	}
+
+	/** The deferred input listener wrapper. */
+	private final DeferredMultiListener deferredMultiListener = new DeferredMultiListener();
+
+	/** Indicates that the native canvas is currently hidden by the launch overlay. */
+	private boolean hiddenForLaunchOverlay;
 
 	{
 		DEBUG.OFF();
@@ -43,6 +69,7 @@ public class OpenGLDisplayView extends LayeredDisplayView {
 		final SWTOpenGLDisplaySurface surface =
 				(SWTOpenGLDisplaySurface) GAMA.getGui().createDisplaySurfaceFor(getOutput(), parent);
 		surfaceComposite = surface.renderer.getCanvas();
+		LaunchingOverlay.suppressNativeDisplayIfLaunching(this);
 		// synchronizer.setSurface(getDisplaySurface());
 		surface.outputReloaded();
 		return surfaceComposite;
@@ -83,7 +110,7 @@ public class OpenGLDisplayView extends LayeredDisplayView {
 	// */
 	@Override
 	public IDisposable getMultiListener() {
-		return new NEWTLayeredDisplayMultiListener(decorator, getDisplaySurface(), getGLCanvas().getNEWTWindow());
+		return deferredMultiListener;
 	}
 
 	/**
@@ -91,6 +118,8 @@ public class OpenGLDisplayView extends LayeredDisplayView {
 	 */
 	@Override
 	public void hideCanvas() {
+		hiddenForLaunchOverlay |= LaunchingOverlay.isLaunchOverlayVisible();
+		getGLCanvas().pauseAnimator();
 		getGLCanvas().setVisible(false);
 	}
 
@@ -99,9 +128,21 @@ public class OpenGLDisplayView extends LayeredDisplayView {
 	 */
 	@Override
 	public void showCanvas() {
-		getGLCanvas().setVisible(true);
-		// Maybe only necessary on macOS ? Prevents JOGL views to move over Java2D views created before
-		if (PlatformHelper.isMac()) { getGLCanvas().reparentWindow(); }
+		if (LaunchingOverlay.suppressNativeDisplayIfLaunching(this)) return;
+		final GamaGLCanvas canvas = getGLCanvas();
+		final boolean wasVisible = canvas.getVisibleStatus();
+		final boolean restoringAfterLaunchOverlay = hiddenForLaunchOverlay && !LaunchingOverlay.isLaunchOverlayVisible();
+		hiddenForLaunchOverlay = false;
+		canvas.setVisible(true);
+		canvas.startAnimator();
+		final boolean firstShow = canvas.consumeNativePeerJustCreated();
+		deferredMultiListener.ensureInstalled();
+		// Prevents JOGL views to move over Java2D views created before (needed on both macOS and Windows)
+		if (!wasVisible && (isFullScreen() || !firstShow && !restoringAfterLaunchOverlay)
+				&& (SystemInfo.isMac() || SystemInfo.isWindows())) {
+			canvas.reparentWindow();
+		}
+		getDisplaySurface().renderer.onCanvasShown();
 	}
 
 	/**
@@ -144,9 +185,12 @@ public class OpenGLDisplayView extends LayeredDisplayView {
 
 	@Override
 	public void setFocus() {
-		Control c = this.getSurfaceComposite();
-		if (c != null && !c.isDisposed() && !c.isFocusControl()) {
-			c.setFocus(); // Necessary ?
-		}
+		// Temporarily disabled as the focus on the GLCanvas was stealing away all possibility of interaction with the
+		// view. See several issues related to this, including probably
+		// https://github.com/gama-platform/gama/issues/1055 and https://github.com/gama-platform/gama/issues/994
+		// GamaGLCanvas c = this.getGLCanvas();
+		// if (c != null && !c.isDisposed() && !c.isFocusControl()) {
+		// // c.setFocus(); // Necessary ?
+		// }
 	}
 }

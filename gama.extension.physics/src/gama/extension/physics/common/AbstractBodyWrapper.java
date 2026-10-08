@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.extension.physics.common;
 
-import gama.core.metamodel.agent.IAgent;
+import gama.api.kernel.agent.IAgent;
 
 /**
  * The Class AbstractBodyWrapper.

@@ -3,7 +3,7 @@
  * XmlTextSegment.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -24,13 +24,13 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.ui.internal.forms.widgets.Locator;
 import org.eclipse.ui.internal.forms.widgets.SelectionData;
 
-import gama.core.util.GamaFont;
+import gama.api.types.font.IFont;
 import gama.ui.shared.resources.GamaFonts;
 
 /**
  * @version 1.0
  */
-public class XmlTextSegment extends XmlParagraphSegment implements IXmlFontUser {
+public class XmlTextSegment extends XmlParagraphSegment {
 
 	/** The text. */
 	private String text;
@@ -178,7 +178,7 @@ public class XmlTextSegment extends XmlParagraphSegment implements IXmlFontUser 
 	 *            the wrap allowed
 	 */
 	public XmlTextSegment(final String text, final boolean bold, final boolean italic, final boolean wrapAllowed,
-			final GamaFont font) {
+			final IFont font) {
 		super(font);
 		this.text = cleanup(text);
 		this.wrapAllowed = wrapAllowed;
@@ -189,14 +189,14 @@ public class XmlTextSegment extends XmlParagraphSegment implements IXmlFontUser 
 	/**
 	 * Cleanup.
 	 *
-	 * @param text
+	 * @param text1
 	 *            the text
 	 * @return the string
 	 */
-	private String cleanup(final String text) {
+	private String cleanup(final String text1) {
 		StringBuilder buf = new StringBuilder();
-		for (int i = 0; i < text.length(); i++) {
-			char c = text.charAt(i);
+		for (int i = 0; i < text1.length(); i++) {
+			char c = text1.charAt(i);
 			if (c == '\n' || c == '\r' || c == '\f') {
 				if (i > 0) { buf.append(' '); }
 			} else {
@@ -545,11 +545,11 @@ public class XmlTextSegment extends XmlParagraphSegment implements IXmlFontUser 
 		// paint area rectangles of the segment
 		for (AreaRectangle areaRectangle : areaRectangles) {
 			Rectangle rect = areaRectangle.rect;
-			String text = areaRectangle.getText();
-			Point extent = gc.textExtent(text);
+			String text1 = areaRectangle.getText();
+			Point extent = gc.textExtent(text1);
 			int textX = rect.x + (isSelectable() ? 1 : 0);
 			int lineY = rect.y + lineHeight - descent + 1;
-			paintString(gc, text, extent.x, textX, rect.y, lineY, selData, rect, hover, rollover, repaintRegion);
+			paintString(gc, text1, extent.x, textX, rect.y, lineY, selData, rect, hover, rollover, repaintRegion);
 		}
 	}
 
@@ -568,9 +568,9 @@ public class XmlTextSegment extends XmlParagraphSegment implements IXmlFontUser 
 		gc.setFont(bold ? GamaFonts.inBold(getFont()) : italic ? GamaFonts.inItalic(getFont()) : getFont());
 		for (AreaRectangle areaRectangle : areaRectangles) {
 			Rectangle rect = areaRectangle.rect;
-			String text = areaRectangle.getText();
-			Point extent = gc.textExtent(text);
-			computeSelection(gc, text, extent.x, selData, rect);
+			String text1 = areaRectangle.getText();
+			Point extent = gc.textExtent(text1);
+			computeSelection(gc, text1, extent.x, selData, rect);
 		}
 	}
 

@@ -1,21 +1,20 @@
 /*******************************************************************************************************
  *
- * ResourceDrawer.java, in gama.ui.display.opengl, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * ResourceDrawer.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.display.opengl.scene.resources;
 
-import java.awt.Color;
-
-import gama.core.common.geometry.AxisAngle;
-import gama.core.common.geometry.Envelope3D;
-import gama.core.common.geometry.Scaling3D;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.IPoint;
+import gama.api.utils.geometry.AxisAngle;
+import gama.api.utils.geometry.IEnvelope;
+import gama.api.utils.geometry.Scaling3D;
 import gama.core.util.file.GamaGeometryFile;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.scene.ObjectDrawer;
@@ -28,7 +27,8 @@ public class ResourceDrawer extends ObjectDrawer<ResourceObject> {
 	/**
 	 * Instantiates a new resource drawer.
 	 *
-	 * @param gl the gl
+	 * @param gl
+	 *            the gl
 	 */
 	public ResourceDrawer(final OpenGL gl) {
 		super(gl);
@@ -44,27 +44,30 @@ public class ResourceDrawer extends ObjectDrawer<ResourceObject> {
 		final AxisAngle rotation = object.getAttributes().getRotation();
 		final AxisAngle initRotation = object.getObject().getInitRotation();
 		if (rotation == null && initRotation == null) return false;
-		final GamaPoint loc = object.getAttributes().getLocation();
+		final IPoint loc = object.getAttributes().getLocation();
+		double lx = loc.getX();
+		double ly = loc.getY();
+		double lz = loc.getZ();
 		try {
-			gl.translateBy(loc.x, -loc.y, loc.z);
+			gl.translateBy(lx, -ly, lz);
 			if (rotation != null) {
-				final GamaPoint axis = rotation.getAxis();
+				final IPoint axis = rotation.getAxis();
 				// AD Change to a negative rotation to fix Issue #1514
-				gl.rotateBy(-rotation.getAngle(), axis.x, axis.y, axis.z);
+				gl.rotateBy(-rotation.getAngle(), axis.getX(), axis.getY(), axis.getZ());
 			}
 			if (initRotation != null) {
-				final GamaPoint initAxis = initRotation.axis;
+				final IPoint initAxis = initRotation.getAxis();
 				// AD Change to a negative rotation to fix Issue #1514
-				gl.rotateBy(-initRotation.angle, initAxis.x, initAxis.y, initAxis.z);
+				gl.rotateBy(-initRotation.getAngle(), initAxis.getX(), initAxis.getY(), initAxis.getZ());
 			}
 		} finally {
-			gl.translateBy(-loc.x, loc.y, -loc.z);
+			gl.translateBy(-lx, ly, -lz);
 		}
 		return true;
 	}
 
 	@Override
-	protected boolean isDrawing2D(final Scaling3D size, final Envelope3D env, final ResourceObject object) {
+	protected boolean isDrawing2D(final Scaling3D size, final IEnvelope env, final ResourceObject object) {
 		return super.isDrawing2D(size, env, object) || object.getObject().is2D();
 	}
 
@@ -80,7 +83,7 @@ public class ResourceDrawer extends ObjectDrawer<ResourceObject> {
 				applyScaling(object);
 			}
 			final boolean solid = object.isFilled() || gl.isTextured();
-			final Color border = !solid && object.getAttributes().getBorder() == null
+			final IColor border = !solid && object.getAttributes().getBorder() == null
 					? object.getAttributes().getColor() : object.getAttributes().getBorder();
 			final GamaGeometryFile file = object.getObject();
 			if (file != null) { gl.drawCachedGeometry(file, border); }

@@ -3,7 +3,7 @@
  * LayeredDisplayMultiListener.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and
  * simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,9 +16,9 @@ import java.util.Set;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.PlatformHelper;
+import gama.api.GAMA;
+import gama.api.runtime.SystemInfo;
+import gama.api.ui.displays.IDisplaySurface;
 import gama.dev.DEBUG;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.WorkaroundForIssue1353;
@@ -145,9 +145,8 @@ public class LayeredDisplayMultiListener {
 			suppressNextEnter = false;
 			return;
 		}
-		if (modifier) return;
-
 		setMousePosition(x, y);
+		if (modifier) return;
 		if (button > 0) return;
 		final long currentTime = System.currentTimeMillis();
 		if (currentTime - lastEnterTime < 100 && lastEnterPosition.x == x && lastEnterPosition.y == y) return;
@@ -209,6 +208,8 @@ public class LayeredDisplayMultiListener {
 	 */
 	public void mouseMove(final int x, final int y, final boolean modifier) {
 		WorkbenchHelper.asyncRun(view.displayOverlay);
+		// Always track the mouse position, even when modifier keys are held
+		setMousePosition(x, y);
 		if (modifier) return;
 		// DEBUG.LOG("Mouse moving on " + view.view.getPartName() + " at (" + x + "," + y + ")");
 		if (mouseIsDown) {
@@ -224,11 +225,9 @@ public class LayeredDisplayMultiListener {
 			// dragged, the environment follows the mouse so the #user_location
 			// technically does not change, but approximations are not likely to
 			// break anything.
-			setMousePosition(x, y);
 
 			surface.dispatchMouseEvent(SWT.DragDetect, x, y);
 		} else {
-			setMousePosition(x, y);
 			surface.dispatchMouseEvent(SWT.MouseMove, x, y);
 		}
 
@@ -253,7 +252,7 @@ public class LayeredDisplayMultiListener {
 			inMenu = false;
 			return;
 		}
-		if (modifier || PlatformHelper.isWindows() && button == 3) // mouseDown(...)
+		if (modifier || SystemInfo.isWindows() && button == 3) // mouseDown(...)
 			// event
 			// *before* the menuDetected(..) one.
 			// No need to patch mouseUp(...) right now
@@ -279,8 +278,9 @@ public class LayeredDisplayMultiListener {
 		// In case the mouse has moved (for example on a menu)
 		if (!mouseIsDown) return;
 		setMousePosition(x, y);
-		if (modifier) return;
+		// Always reset mouseIsDown so it cannot get stuck at true when modifier keys are held during mouse release
 		mouseIsDown = false;
+		if (modifier) return;
 		if (!view.isFullScreen() && WorkaroundForIssue1353.isInstalled()) { WorkaroundForIssue1353.showShell(); }
 		surface.dispatchMouseEvent(SWT.MouseUp, x, y);
 	}
@@ -315,7 +315,11 @@ public class LayeredDisplayMultiListener {
 	/**
 	 * Focus gained.
 	 */
-	public void focusGained() {}
+	public void focusGained() {
+		// Reset menu state when the display regains focus so that inMenu cannot get stuck at true
+		// (e.g. after a context menu was dismissed without clicking on the canvas)
+		inMenu = false;
+	}
 
 	/**
 	 * Focus lost.
@@ -323,6 +327,8 @@ public class LayeredDisplayMultiListener {
 	public void focusLost() {
 		pressedCharacters.clear();
 		pressedSpecialCharacters.clear();
+		// Reset mouseIsDown when focus is lost to prevent it getting stuck if the button is released while canvas lacks focus
+		mouseIsDown = false;
 	}
 
 	/**

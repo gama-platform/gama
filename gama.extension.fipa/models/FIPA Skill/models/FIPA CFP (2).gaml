@@ -1,31 +1,12 @@
 /**
-* Name: FIPA Contract Net (2)
-* Author:
-* Description: This model demonstrates a use-case of the FIPA Contract Net interaction protocol. 
-* 
-* 
-* One initiator sends a 'cfp' message to 5 participants.
-* 
-* The first participant (participant0) replies with a refuse message.
-* 
-* Four participants (participant1, participant2, participant3, participant4) reply with four propose messages.
-* 
-* 
-* When the initiator receives the propose messages, it proceeds as follows:
-* 
-* The initiator replies to participant1 with a reject_proposal message.
-* 
-* The initiator replies to participant2, participant3, participant4 with three accept_proposal messages respectively.
-* 
-* 
-* When participant2, participant3 and participant4 receive the accept_proposal messages from the initiator, they proceed as follows:
-* 
-* Participant2 replies with a failure message.
-* 
-* Participant3 replies with an inform_done message.
-* 
-* Participant4 replies with an inform_result message.
-* Tags: fipa
+* Name: FIPA Contract Net (2) - Full Negotiation Cycle
+* Author: Gama Development Team
+* Description: A complete demonstration of the FIPA Contract Net protocol with 5 participants. One Initiator
+*   sends a 'cfp' to all. Participant0 refuses. Participants 1-4 propose. The Initiator rejects participant1,
+*   accepts participants 2-4. Participant2 replies with 'failure'; participant3 with 'inform_done'; participant4
+*   with 'inform_result'. Covers all branches of the CFP state machine: refuse, propose, reject_proposal,
+*   accept_proposal, failure, inform_done, inform_result.
+* Tags: fipa, cfp, contract_net, protocol, negotiation, propose, accept, reject, multi_agent
 */
 
 model cfp_cfp_2
@@ -68,7 +49,7 @@ species initiator skills: [fipa] {
 	reflex send_cfp_to_participants when: (time = 1) {
 		
 		write '(Time ' + time + '): ' + name + ' sends a cfp message to all participants';
-		do start_conversation to: list(participant) protocol: 'fipa-contract-net' performative: 'cfp' contents: ['Go swimming'] ;
+		do start_conversation(to: list(participant), protocol: 'fipa-contract-net', performative: 'cfp', contents: ['Go swimming']) ;
 	}
 	
 	reflex receive_refuse_messages when: !empty(refuses) {
@@ -87,10 +68,10 @@ species initiator skills: [fipa] {
 			
 			if (p.sender = reject_proposal_participant) {
 				write '\t' + name + ' sends a reject_proposal message to ' + p.sender;
-				do reject_proposal message: p contents: ['Not interested in your proposal'] ;
+				do reject_proposal(message: p, contents: ['Not interested in your proposal']) ;
 			} else {
 				write '\t' + name + ' sends a accept_proposal message to ' + p.sender;
-				do accept_proposal message: p contents: ['Interesting proposal. Go do it'] ;
+				do accept_proposal(message: p, contents: ['Interesting proposal. Go do it']) ;
 			}
 		}
 	}
@@ -118,12 +99,12 @@ species participant skills: [fipa] {
 		
 		if (self = refuser) {
 			write '\t' + name + ' sends a refuse message to ' + agent(proposalFromInitiator.sender).name;
-			do refuse message: proposalFromInitiator contents: ['I am busy today'] ;
+			do refuse(message: proposalFromInitiator, contents: ['I am busy today']) ;
 		}
 		
 		if (self in proposers) {
 			write '\t' + name + ' sends a propose message to ' + agent(proposalFromInitiator.sender).name;
-			do propose message: proposalFromInitiator contents: ['Ok. That sound interesting'] ;
+			do propose(message: proposalFromInitiator, contents: ['Ok. That sound interesting']) ;
 		}
 	}
 	
@@ -138,17 +119,17 @@ species participant skills: [fipa] {
 		
 		if (self = failure_participant) {
 			write '\t' + name + ' sends a failure message to ' + agent(a.sender).name;
-			do failure message: a contents: ['Failure'] ;
+			do failure(message: a, contents: ['Failure']) ;
 		}
 		
 		if (self = inform_done_participant) {
 			write '\t' + name + ' sends an inform_done message to ' + agent(a.sender).name;
-			do inform message: a contents: ['Inform done'] ;
+			do inform(message: a, contents: ['Inform done']) ;
 		}
 		
 		if (self = inform_result_participant) {
 			write '\t' + name + ' sends an inform_result message to ' + agent(a.sender).name;
-			do inform message: a contents: ['Inform result'] ;
+			do inform(message: a, contents: ['Inform result']) ;
 		}
 	}
 }

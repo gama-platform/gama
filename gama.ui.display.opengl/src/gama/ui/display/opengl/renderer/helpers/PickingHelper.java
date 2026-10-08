@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * PickingHelper.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -18,8 +18,8 @@ import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 import com.jogamp.opengl.glu.GLU;
 
+import gama.api.ui.layers.IDrawingAttributes;
 import gama.dev.DEBUG;
-import gama.gaml.statements.draw.DrawingAttributes;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 
@@ -119,7 +119,7 @@ public class PickingHelper extends AbstractRendererHelper {
 	 * @param attributes
 	 *            the attributes
 	 */
-	public void tryPick(final DrawingAttributes attributes) {
+	public void tryPick(final IDrawingAttributes attributes) {
 		// DEBUG.OUT("Entering tryPick");
 		try {
 			attributes.markSelected(pickedIndex);
@@ -187,8 +187,8 @@ public class PickingHelper extends AbstractRendererHelper {
 			 * method restrict the area where openGL will drawing objects
 			 *
 			 */
-			glu.gluPickMatrix(camera.getMousePosition().x, viewport[3] - camera.getMousePosition().y, 4, 4, viewport,
-					0);
+			glu.gluPickMatrix(camera.getMousePosition().getX(), viewport[3] - camera.getMousePosition().getY(), 4, 4,
+					viewport, 0);
 		} catch (Throwable e) {
 			DEBUG.ERR("in beginPicking", e);
 		} finally {

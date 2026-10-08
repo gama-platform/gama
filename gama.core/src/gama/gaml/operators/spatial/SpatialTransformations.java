@@ -3,7 +3,7 @@
  * SpatialTransformations.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,8 +13,11 @@ package gama.gaml.operators.spatial;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
 
+import org.geotools.geometry.jts.JTS;
+import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.MultiPolygon;
@@ -27,42 +30,70 @@ import org.locationtech.jts.operation.buffer.BufferParameters;
 import org.locationtech.jts.precision.GeometryPrecisionReducer;
 import org.locationtech.jts.simplify.DouglasPeuckerSimplifier;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.test;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ITypeProvider;
-import gama.annotations.precompiler.Reason;
-import gama.core.common.geometry.AxisAngle;
-import gama.core.common.geometry.Envelope3D;
-import gama.core.common.geometry.GeometryUtils;
-import gama.core.common.geometry.Rotation3D;
-import gama.core.common.geometry.Scaling3D;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.metamodel.shape.GamaShapeFactory;
-import gama.core.metamodel.shape.IShape;
-import gama.core.metamodel.topology.grid.GamaSpatialMatrix;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
-import gama.core.util.GamaPair;
-import gama.core.util.IContainer;
-import gama.core.util.IList;
-import gama.core.util.graph.IGraph;
-import gama.core.util.matrix.IMatrix;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.annotations.support.ITypeProvider;
+import gama.annotations.support.Reason;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.GamaType;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.graph.IGraph;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.matrix.GamaMatrixFactory;
+import gama.api.types.matrix.IMatrix;
+import gama.api.types.misc.IContainer;
+import gama.api.types.pair.GamaPairFactory;
+import gama.api.types.pair.IPair;
+import gama.api.utils.geometry.AxisAngle;
+import gama.api.utils.geometry.GeometryUtils;
+import gama.api.utils.geometry.IEnvelope;
+import gama.api.utils.geometry.Rotation3D;
+import gama.api.utils.geometry.Scaling3D;
+import gama.core.topology.grid.GamaSpatialMatrix;
 import gama.gaml.operators.Containers;
 import gama.gaml.operators.Graphs;
-import gama.gaml.types.GamaType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
- * The Class Transformations.
+ * Provides GAML spatial transformation operators that alter or reinterpret an existing geometry.
+ *
+ * <p>Operators exposed by this class include:
+ * <ul>
+ *   <li><b>Scaling:</b> {@code *} / {@code scaled_by}, {@code scaled_to}</li>
+ *   <li><b>Buffering:</b> {@code +} / {@code buffer} / {@code enlarged_by},
+ *       {@code -} / {@code reduced_by}</li>
+ *   <li><b>Rotation:</b> {@code rotated_by}, {@code rotation_composition},
+ *       {@code inverse_rotation}, {@code normalized_rotation}</li>
+ *   <li><b>Translation:</b> {@code translated_by}, {@code at_location}</li>
+ *   <li><b>Affine / general:</b> {@code transformed_by}</li>
+ *   <li><b>Topology:</b> {@code convex_hull}, {@code simplification},
+ *       {@code triangulate}, {@code skeletonize}, {@code to_GAMA_CRS},
+ *       {@code to_rectangles}, {@code split_lines}, {@code voronoi}</li>
+ * </ul>
+ *
+ * <p>Usage example:
+ * <pre>{@code
+ * geometry big   <- circle(5) + 3;         // buffer by 3 m
+ * geometry small <- square(10) - 2;        // erode by 2 m
+ * geometry rot   <- square(5) rotated_by 45;
+ * geometry hull  <- convex_hull(my_polygon);
+ * }</pre>
+ *
+ * @author Alexis Drogoul, Patrick Taillandier, Arnaud Grignard and others (UMI UMMISCO IRD/SU)
+ * @see IShape
  */
 public class SpatialTransformations {
 
@@ -156,7 +187,7 @@ public class SpatialTransformations {
 			g <- g * {5, 5, 5};\
 			float v2 <- g.area * g.height;  \
 			v1 < v2""")
-	public static IShape scaled_by(final IScope scope, final IShape g, final GamaPoint coefficients) {
+	public static IShape scaled_by(final IScope scope, final IShape g, final IPoint coefficients) {
 		return GamaShapeFactory.createFrom(g).withScaling(Scaling3D.of(coefficients), false);
 	}
 
@@ -187,7 +218,7 @@ public class SpatialTransformations {
 			g <- g scaled_to {20,20};\
 			float v2 <- g.area * g.height;  \
 			v1 < v2""")
-	public static IShape scaled_to(final IScope scope, final IShape g, final GamaPoint bounds) {
+	public static IShape scaled_to(final IScope scope, final IShape g, final IPoint bounds) {
 		return GamaShapeFactory.createFrom(g).withScaling(Scaling3D.of(bounds), true);
 	}
 
@@ -354,7 +385,10 @@ public class SpatialTransformations {
 					examples = { @example (
 							value = "circle(5) + 5",
 							equals = "circle(10)",
-							test = false) }) })
+							test = false) }) },
+			special_cases = {
+					"A buffer distance of 0.0 returns a copy of the original geometry (no expansion).",
+					"A negative distance erodes the geometry (equivalent to reduced_by); very small geometries may collapse to an empty result." })
 	@test ("(circle(5) + 5).height with_precision 1 = 20.0")
 	@test ("(circle(5) + 5).location with_precision 9 = (circle(10)).location with_precision 9")
 	public static IShape enlarged_by(final IScope scope, final IShape g, final Double size) {
@@ -411,11 +445,245 @@ public class SpatialTransformations {
 					value = "self rotated_by 45",
 					equals = "the geometry resulting from a 45 degrees rotation to the geometry of the agent applying the operator.",
 					test = false) },
-			see = { "transformed_by", "translated_by" })
+			usages = @usage ("rotated_by is equivalent to transformed_by with a matrix built by rotation_matrix: geometry rotated_by a is equivalent to geometry transformed_by rotation_matrix(a)."),
+			see = { "transformed_by", "translated_by", "rotation_matrix" })
 	@test ("(( square(5) rotated_by 45).width with_precision 2 = 7.07)")
 	public static IShape rotated_by(final IScope scope, final IShape g1, final Double angle) {
 		if (g1 == null) return null;
 		return GamaShapeFactory.createFrom(g1).withRotation(new AxisAngle(angle));
+	}
+
+	private static final double[][] H_FLIP = { { -1, 0, 0, 0 }, { 0, 1, 0, 0 }, { 0, 0, 1, 0 }, { 0, 0, 0, 1 } };
+
+	private static final double[][] V_FLIP = { { 1, 0, 0, 0 }, { 0, -1, 0, 0 }, { 0, 0, 1, 0 }, { 0, 0, 0, 1 } };
+
+	/**
+	 * Applies a 4x4 homogeneous matrix to a copy of the shape, around the center of its bounding box (the translation part
+	 * of the matrix is then applied). The predefined properties of the shape (depth, 3D type: sphere, cone, etc.) are
+	 * kept, adapted to the transformation, or lost when the transformation is not compatible with them (shear).
+	 */
+	private static IShape applyMatrix(final IShape g, final double[][] m) {
+		if (g == null) return null;
+		final IShape result = GamaShapeFactory.createFrom(g);
+		final Geometry geom = result.getInnerGeometry();
+		// the copy of a geometry shares its user data (depth, type) with the original
+		geom.setUserData(null);
+		result.copyShapeAttributesFrom(g);
+		final IEnvelope env = g.getEnvelope();
+		final double px = (env.getMinX() + env.getMaxX()) / 2, py = (env.getMinY() + env.getMaxY()) / 2;
+		final double pz = Double.isNaN(g.getLocation().getZ()) ? 0 : g.getLocation().getZ();
+		geom.apply((final Coordinate c) -> {
+			final double x = c.x - px, y = c.y - py, z = (Double.isNaN(c.z) ? 0 : c.z) - pz;
+			final double nx = m[0][0] * x + m[0][1] * y + m[0][2] * z + m[0][3] + px;
+			final double ny = m[1][0] * x + m[1][1] * y + m[1][2] * z + m[1][3] + py;
+			final double nz = m[2][0] * x + m[2][1] * y + m[2][2] * z + m[2][3] + pz;
+			c.x = nx;
+			c.y = ny;
+			if (!Double.isNaN(c.z) || nz != 0) { c.z = nz; }
+		});
+		geom.geometryChanged();
+		final Double depth = g.getDepth();
+		if (depth != null) {
+			final double zScale = Math.sqrt(m[0][2] * m[0][2] + m[1][2] * m[1][2] + m[2][2] * m[2][2]);
+			result.setDepth(depth * zScale * (m[2][2] < 0 ? -1 : 1));
+		}
+		if (isShear(m)) { result.losePredefinedProperty(); }
+		return result;
+	}
+
+	private static boolean isShear(final double[][] m) {
+		for (int i = 0; i < 3; i++) {
+			for (int j = i + 1; j < 3; j++) {
+				double dot = 0, ni = 0, nj = 0;
+				for (int k = 0; k < 3; k++) {
+					dot += m[k][i] * m[k][j];
+					ni += m[k][i] * m[k][i];
+					nj += m[k][j] * m[k][j];
+				}
+				if (Math.abs(dot) > 1e-9 * Math.sqrt(ni * nj)) return true;
+			}
+		}
+		return false;
+	}
+
+	private static double[][] toHomogeneous(final IScope scope, final IMatrix<?> matrix) {
+		final int n = matrix.getRows(scope);
+		if (n != matrix.getCols(scope) || n < 2 || n > 4) throw GamaRuntimeException.error(
+				"A transformation matrix must be a 2x2, 3x3 (2D homogeneous) or 4x4 (3D homogeneous) matrix", scope);
+		final double[][] m = { { 1, 0, 0, 0 }, { 0, 1, 0, 0 }, { 0, 0, 1, 0 }, { 0, 0, 0, 1 } };
+		for (int r = 0; r < n; r++) {
+			for (int c = 0; c < n; c++) {
+				final Object o = matrix.get(scope, c, r);
+				if (!(o instanceof Number)) throw GamaRuntimeException
+						.error("A transformation matrix must only contain numbers", scope);
+				final double v = ((Number) o).doubleValue();
+				if (n == 3 && (r == 2 || c == 2)) {
+					// 3x3 matrices are 2D homogeneous: [a b tx; c d ty; 0 0 1]
+					if (r < 2) { m[r][3] = v; }
+				} else {
+					m[r][c] = v;
+				}
+			}
+		}
+		return m;
+	}
+
+	private static IMatrix<Double> fill(final IScope scope, final double[][] m) {
+		final IMatrix<Double> result = GamaMatrixFactory.createFloatMatrix(m.length, m.length);
+		for (int r = 0; r < m.length; r++) {
+			for (int c = 0; c < m.length; c++) { result.set(scope, c, r, m[r][c]); }
+		}
+		return result;
+	}
+
+	@operator (
+			value = "rotation_matrix",
+			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_TRANSFORMATIONS },
+			concept = { IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_TRANSFORMATION })
+	@doc (
+			value = "A 3x3 (2D homogeneous) matrix representing a rotation by the operand angle (in degrees) around the z axis. "
+					+ "It can be used with transformed_by. geometry transformed_by rotation_matrix(a) is equivalent to geometry rotated_by a.",
+			examples = { @example (
+					value = "square(10) transformed_by rotation_matrix(45)",
+					equals = "the same geometry as square(10) rotated_by 45",
+					test = false) },
+			see = { "transformed_by", "rotated_by", "scale_matrix" })
+	@no_test
+	public static IMatrix<Double> rotation_matrix(final IScope scope, final Double angle) {
+		return rotation_matrix(scope, angle, null);
+	}
+
+	@operator (
+			value = "rotation_matrix",
+			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_TRANSFORMATIONS },
+			concept = { IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_TRANSFORMATION })
+	@doc (
+			value = "A 4x4 (3D homogeneous) matrix representing a rotation by the first operand angle (in degrees) around the "
+					+ "axis (vector) given by the second operand. It can be used with transformed_by. "
+					+ "geometry transformed_by rotation_matrix(a, v) is equivalent to geometry rotated_by (a::v).",
+			examples = { @example (
+					value = "pyramid(10) transformed_by rotation_matrix(45, {1,0,0})",
+					equals = "the same geometry as pyramid(10) rotated_by (45::{1,0,0})",
+					test = false) },
+			see = { "transformed_by", "rotated_by", "scale_matrix" })
+	@no_test
+	public static IMatrix<Double> rotation_matrix(final IScope scope, final Double angle, final IPoint axis) {
+		return fill(scope, rotationArray(angle, axis));
+	}
+
+	/** Same orientation convention as rotated_by (the y axis points downwards in GAMA). */
+	private static double[][] rotationArray(final Double angle, final IPoint axis) {
+		final double[][] m = { { 1, 0, 0, 0 }, { 0, 1, 0, 0 }, { 0, 0, 1, 0 }, { 0, 0, 0, 1 } };
+		final AxisAngle aa = new AxisAngle(axis, angle == null ? 0 : angle);
+		final double norm = Math.sqrt(aa.axis().getX() * aa.axis().getX() + aa.axis().getY() * aa.axis().getY()
+				+ aa.axis().getZ() * aa.axis().getZ());
+		if (norm > 0) {
+			final double x = aa.axis().getX() / norm, y = aa.axis().getY() / norm, z = aa.axis().getZ() / norm;
+			final double rad = -Math.toRadians(aa.getAngle()), c = Math.cos(rad), s = Math.sin(rad), t = 1 - c;
+			m[0][0] = t * x * x + c;
+			m[0][1] = t * x * y - s * z;
+			m[0][2] = t * x * z + s * y;
+			m[1][0] = t * x * y + s * z;
+			m[1][1] = t * y * y + c;
+			m[1][2] = t * y * z - s * x;
+			m[2][0] = t * x * z - s * y;
+			m[2][1] = t * y * z + s * x;
+			m[2][2] = t * z * z + c;
+		}
+		return m;
+	}
+
+	@operator (
+			value = "scale_matrix",
+			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_TRANSFORMATIONS },
+			concept = { IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_TRANSFORMATION })
+	@doc (
+			value = "A 3x3 (2D homogeneous) matrix representing a uniform scaling by the operand coefficient. "
+					+ "It can be used with transformed_by. geometry transformed_by scale_matrix(k) is equivalent to geometry scaled_by k.",
+			examples = { @example (
+					value = "circle(10) transformed_by scale_matrix(2)",
+					equals = "the same geometry as circle(10) scaled_by 2",
+					test = false) },
+			see = { "transformed_by", "scaled_by", "rotation_matrix" })
+	@no_test
+	public static IMatrix<Double> scale_matrix(final IScope scope, final Double coefficient) {
+		final double k = coefficient == null ? 1 : coefficient;
+		return fill(scope, new double[][] { { k, 0, 0 }, { 0, k, 0 }, { 0, 0, 1 } });
+	}
+
+	@operator (
+			value = "scale_matrix",
+			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_TRANSFORMATIONS },
+			concept = { IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_TRANSFORMATION })
+	@doc (
+			value = "A 4x4 (3D homogeneous) matrix representing a scaling by the operand point coefficients along the x, y and z axes "
+					+ "(a negative coefficient produces a flip). It can be used with transformed_by. "
+					+ "geometry transformed_by scale_matrix({kx,ky,kz}) is equivalent to geometry scaled_by {kx,ky,kz}.",
+			examples = { @example (
+					value = "box(10) transformed_by scale_matrix({2,1,0.5})",
+					equals = "the same geometry as box(10) scaled_by {2,1,0.5}",
+					test = false) },
+			see = { "transformed_by", "scaled_by", "rotation_matrix" })
+	@no_test
+	public static IMatrix<Double> scale_matrix(final IScope scope, final IPoint coefficients) {
+		final double x = coefficients == null ? 1 : coefficients.getX(), y = coefficients == null ? 1 : coefficients.getY(),
+				z = coefficients == null || Double.isNaN(coefficients.getZ()) ? 1 : coefficients.getZ();
+		return fill(scope, new double[][] { { x, 0, 0, 0 }, { 0, y, 0, 0 }, { 0, 0, z, 0 }, { 0, 0, 0, 1 } });
+	}
+
+	@operator (
+			value = "transformed_by",
+			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_TRANSFORMATIONS },
+			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_TRANSFORMATION })
+	@doc (
+			value = "A geometry resulting from the application of a transformation matrix to the left-hand operand "
+					+ "(geometry, agent, point). The matrix can be a 2x2 (linear, in x and y), a 3x3 (2D homogeneous: "
+					+ "[a b tx; c d ty; 0 0 1]) or a 4x4 (3D homogeneous) matrix. The transformation is applied around the "
+					+ "center of the bounding box of the geometry, which is preserved unless the matrix includes a translation. Rotations, "
+					+ "flips and scalings keep the predefined 3D properties (sphere, cone, cube, etc.) of the geometry, "
+					+ "which are lost for shear transformations.",
+			examples = { @example (
+					value = "square(10) transformed_by matrix([[-1,0],[0,1]])",
+					equals = "the horizontal mirror image of the square",
+					test = false) },
+			see = { "horizontal_flip", "vertical_flip", "rotation_matrix", "scale_matrix", "rotated_by", "scaled_by",
+					"translated_by" })
+	@no_test
+	public static IShape transformed_by(final IScope scope, final IShape g, final IMatrix<?> matrix) {
+		if (g == null) return null;
+		return applyMatrix(g, toHomogeneous(scope, matrix));
+	}
+
+	@operator (
+			value = "horizontal_flip",
+			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_TRANSFORMATIONS },
+			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_TRANSFORMATION })
+	@doc (
+			value = "A geometry resulting from the mirroring of the operand (geometry, agent, point) along its vertical central axis (left becomes right). The location of the geometry is preserved.",
+			examples = { @example (
+					value = "horizontal_flip(polyline([{0,0},{10,0},{10,5}]))",
+					equals = "a polyline from {10,0} to {0,0} to {0,5}",
+					test = false) },
+			see = { "vertical_flip", "rotated_by" })
+	@test ("horizontal_flip(polyline([{0,0},{10,0},{10,5}])).points[0] = {10,0}")
+	public static IShape horizontal_flip(final IScope scope, final IShape g) {
+		return applyMatrix(g, H_FLIP);
+	}
+
+	@operator (
+			value = "vertical_flip",
+			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_TRANSFORMATIONS },
+			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_TRANSFORMATION })
+	@doc (
+			value = "A geometry resulting from the mirroring of the operand (geometry, agent, point) along its horizontal central axis (top becomes bottom). The location of the geometry is preserved.",
+			examples = { @example (
+					value = "vertical_flip(polyline([{0,0},{10,0},{10,5}]))",
+					equals = "a polyline from {0,5} to {10,5} to {10,0}",
+					test = false) },
+			see = { "horizontal_flip", "rotated_by" })
+	@test ("vertical_flip(polyline([{0,0},{10,0},{10,5}])).points[0] = {0,5}")
+	public static IShape vertical_flip(final IScope scope, final IShape g) {
+		return applyMatrix(g, V_FLIP);
 	}
 
 	/**
@@ -440,9 +708,8 @@ public class SpatialTransformations {
 					test = false) },
 			see = { "rotation_composition, normalized_rotation" })
 	@test ("inverse_rotation(38.0::{1,1,1}) = (-38.0::{1,1,1})")
-	public static GamaPair<Double, GamaPoint> inverse_rotation(final IScope scope,
-			final GamaPair<Double, GamaPoint> rotation) {
-		return new GamaPair(-rotation.key, rotation.value, Types.FLOAT, Types.POINT);
+	public static IPair<Double, IPoint> inverse_rotation(final IScope scope, final IPair<Double, IPoint> rotation) {
+		return GamaPairFactory.createWith(-rotation.key(), rotation.value(), Types.FLOAT, Types.POINT);
 	}
 
 	/**
@@ -470,15 +737,15 @@ public class SpatialTransformations {
 					test = false) },
 			see = { "rotation_composition, inverse_rotation" })
 	@test ("normalized_rotation(-38::{1,1,1})=(38.0::{-0.5773502691896258,-0.5773502691896258,-0.5773502691896258})")
-	public static GamaPair<Double, GamaPoint> normalized_rotation(final IScope scope, final GamaPair rotation) {
-		final GamaPair<Double, GamaPoint> rot = (GamaPair<Double, GamaPoint>) GamaType
-				.from(Types.PAIR, Types.FLOAT, Types.POINT).cast(scope, rotation, null, false);
-		final GamaPoint axis = rot.getValue();
-		final double norm = Math.sqrt(axis.x * axis.x + axis.y * axis.y + axis.z * axis.z);
-		axis.x = Math.signum(rot.getKey()) * axis.x / norm;
-		axis.y = Math.signum(rot.getKey()) * axis.y / norm;
-		axis.z = Math.signum(rot.getKey()) * axis.z / norm;
-		return new GamaPair(Math.signum(rot.getKey()) * rot.getKey(), axis, Types.FLOAT, Types.POINT);
+	public static IPair<Double, IPoint> normalized_rotation(final IScope scope, final IPair rotation) {
+		final IPair<Double, IPoint> rot = (IPair<Double, IPoint>) GamaType.from(Types.PAIR, Types.FLOAT, Types.POINT)
+				.cast(scope, rotation, null, false);
+		final IPoint axis = rot.value();
+
+		final double norm = axis.norm();
+		final double signum = Math.signum(rot.key());
+		axis.setLocation(signum * axis.getX() / norm, signum * axis.getY() / norm, signum * axis.getZ() / norm);
+		return GamaPairFactory.createWith(signum * rot.key(), axis, Types.FLOAT, Types.POINT);
 	}
 
 	/**
@@ -498,32 +765,36 @@ public class SpatialTransformations {
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_TRANSFORMATIONS },
 			concept = { IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_TRANSFORMATION })
 	@doc (
-			value = "The rotation resulting from the composition of the rotations in the list, from left to right. Angles are in degrees.",
+			value = "The rotation resulting from the composition of the rotations in the list. Rotations will be applied in the order of the list: if R=[R1,...,Rn], Rx = Rn...R1x. Angles are in degrees.",
 			masterDoc = true,
 			examples = { @example (
 					value = "rotation_composition([38.0::{1,1,1},90.0::{1,0,0}])",
-					equals = "115.22128507898108::{0.9491582126366207,0.31479943993669307,-0.0}",
+					equals = "115.22128507898105::{0.9491582126366207,0.31479943993669307,-0.0}",
 					test = false) },
 			see = { "inverse_rotation" })
-	// public static GamaPair<Double, GamaPoint> rotation_composition(final IScope scope,
-	// final GamaList<GamaPair<Double, GamaPoint>> rotation_list) {
-	// Rotation3D rotation = new Rotation3D(new GamaPoint(1, 0, 0), 0.0);
-	// for (GamaPair<Double, GamaPoint> rot : rotation_list) {
+	// public static IPair<Double, IPoint> rotation_composition(final IScope scope,
+	// final GamaList<IPair<Double, IPoint>> rotation_list) {
+	// Rotation3D rotation = new Rotation3D(GamaPointFactory.create(1, 0, 0), 0.0);
+	// for (IPair<Double, IPoint> rot : rotation_list) {
 	// rotation = rotation.applyTo(new Rotation3D(rot.value, 2 * Math.PI / 360 * rot.key));
 	// }
-	// return new GamaPair(180 / Math.PI * rotation.getAngle(), rotation.getAxis(), Types.FLOAT, Types.POINT);
+	// return new IPair(180 / Math.PI * rotation.getAngle(), rotation.getAxis(), Types.FLOAT, Types.POINT);
 	// }
-	@test ("normalized_rotation(rotation_composition(38.0::{1,1,1},90.0::{1,0,0}))=normalized_rotation(115.22128507898108::{0.9491582126366207,0.31479943993669307,-0.0})")
-	public static GamaPair<Double, GamaPoint> rotation_composition(final IScope scope,
-			final IList<GamaPair> rotation_list) {
-		Rotation3D rotation = new Rotation3D(new GamaPoint(1, 0, 0), 0.0);
-		for (final GamaPair element : rotation_list) {
-			final GamaPair<Double, GamaPoint> rot = (GamaPair<Double, GamaPoint>) GamaType
+	@test ("normalized_rotation(rotation_composition(38.0::{1,1,1},90.0::{1,0,0}))=normalized_rotation(115.22128507898105::{0.9491582126366207,0.0,0.31479943993669307})")
+	public static IPair<Double, IPoint> rotation_composition(final IScope scope, final IList<IPair> rotation_list) {
+		// Precompute the degree-to-radians factor to avoid recomputing it per iteration
+		final double DEG_TO_RAD = Math.PI / 180.0;
+		Rotation3D rotation = new Rotation3D(GamaPointFactory.create(1, 0, 0), 0.0);
+		for (final IPair element : rotation_list) {
+			final IPair<Double, IPoint> rot = (IPair<Double, IPoint>) GamaType
 					.from(Types.PAIR, Types.FLOAT, Types.POINT).cast(scope, element, null, false);
-			rotation = rotation.applyTo(new Rotation3D(rot.value, 2 * Math.PI / 360 * rot.key));
+			rotation = rotation.applyTo(new Rotation3D(rot.value(), DEG_TO_RAD * rot.key()));
 		}
-		return new GamaPair(180 / Math.PI * rotation.getAngle(), rotation.getAxis(), Types.FLOAT, Types.POINT);
+		return GamaPairFactory.createWith(180 / Math.PI * rotation.getAngle(), rotation.getAxis(), Types.FLOAT,
+				Types.POINT);
 	}
+	
+	
 
 	/**
 	 * Rotated by.
@@ -553,10 +824,9 @@ public class SpatialTransformations {
 					test = false) },
 			see = { "transformed_by", "translated_by" })
 	@no_test
-	public static IShape rotated_by(final IScope scope, final IShape g1, final Double rotation,
-			final GamaPoint vector) {
+	public static IShape rotated_by(final IScope scope, final IShape g1, final Double rotation, final IPoint vector) {
 		if (g1 == null) return null;
-		if (vector.x == 0d && vector.y == 0d && vector.z == 0d) return g1;
+		if (vector.getX() == 0d && vector.getY() == 0d && vector.getZ() == 0d) return g1;
 		return GamaShapeFactory.createFrom(g1).withRotation(new AxisAngle(vector, rotation))
 				.withLocation(g1.getLocation());
 	}
@@ -581,12 +851,12 @@ public class SpatialTransformations {
 					@usage ("When used  with a  point and  a pair angle::point, it returns a point resulting from the application of the right-hand rotation operand (angles in degree)"
 							+ " to the left-hand operand point") })
 	@no_test
-	public static GamaPoint rotated_by(final IScope scope, final GamaPoint p1, final GamaPair rotation) {
+	public static IPoint rotated_by(final IScope scope, final IPoint p1, final IPair rotation) {
 		if (p1 == null) return null;
-		final GamaPair<Double, GamaPoint> rot = (GamaPair<Double, GamaPoint>) GamaType
-				.from(Types.PAIR, Types.FLOAT, Types.POINT).cast(scope, rotation, null, false);
-		final GamaPoint p2 = new GamaPoint(p1);
-		new Rotation3D(rot.getValue(), 2 * Math.PI / 360 * rot.getKey()).applyTo(p2);
+		final IPair<Double, IPoint> rot = (IPair<Double, IPoint>) GamaType.from(Types.PAIR, Types.FLOAT, Types.POINT)
+				.cast(scope, rotation, null, false);
+		final IPoint p2 = GamaPointFactory.create(p1);
+		new Rotation3D(rot.value(), Math.PI / 180.0 * rot.key()).applyTo(p2);
 		return p2;
 	}
 
@@ -613,11 +883,11 @@ public class SpatialTransformations {
 					test = false) },
 			see = { "transformed_by", "translated_by" })
 	@no_test
-	public static IShape rotated_by(final IScope scope, final IShape g1, final GamaPair rotation) {
-		final GamaPair<Double, GamaPoint> rot = (GamaPair<Double, GamaPoint>) GamaType
-				.from(Types.PAIR, Types.FLOAT, Types.POINT).cast(scope, rotation, null, false);
+	public static IShape rotated_by(final IScope scope, final IShape g1, final IPair rotation) {
+		final IPair<Double, IPoint> rot = (IPair<Double, IPoint>) GamaType.from(Types.PAIR, Types.FLOAT, Types.POINT)
+				.cast(scope, rotation, null, false);
 		if (g1 == null || rot == null) return null;
-		return GamaShapeFactory.createFrom(g1).withRotation(new AxisAngle(rot.getValue(), rot.getKey()))
+		return GamaShapeFactory.createFrom(g1).withRotation(new AxisAngle(rot.value(), rot.key()))
 				.withLocation(g1.getLocation());
 	}
 
@@ -670,9 +940,9 @@ public class SpatialTransformations {
 					test = false) },
 			see = { "rotated_by", "translated_by" })
 	@no_test
-	public static IShape transformed_by(final IScope scope, final IShape g, final GamaPoint p) {
+	public static IShape transformed_by(final IScope scope, final IShape g, final IPoint p) {
 		if (g == null) return null;
-		return scaled_by(scope, rotated_by(scope, g, p.x), p.y);
+		return scaled_by(scope, rotated_by(scope, g, p.getX()), p.getY());
 	}
 
 	/**
@@ -695,10 +965,9 @@ public class SpatialTransformations {
 					test = false) },
 			see = { "rotated_by", "transformed_by" })
 	@no_test
-	public static IShape translated_by(final IScope scope, final IShape g, final GamaPoint p)
-			throws GamaRuntimeException {
+	public static IShape translated_by(final IScope scope, final IShape g, final IPoint p) throws GamaRuntimeException {
 		if (g == null) return null;
-		return at_location(scope, g, gama.gaml.operators.Points.add(g.getLocation(), p));
+		return at_location(scope, g, g.getLocation().plus(p));
 	}
 
 	/**
@@ -729,8 +998,7 @@ public class SpatialTransformations {
 							value = " (box({10, 10 , 5}) at_location point(50,50,0)).location.x",
 							equals = "50.0",
 							returnType = "float") })
-	public static IShape at_location(final IScope scope, final IShape g, final GamaPoint p)
-			throws GamaRuntimeException {
+	public static IShape at_location(final IScope scope, final IShape g, final IPoint p) throws GamaRuntimeException {
 		if (g == null) return null;
 		return GamaShapeFactory.createFrom(g).withLocation(p);
 	}
@@ -763,18 +1031,17 @@ public class SpatialTransformations {
 	public static IShape without_holes(final IScope scope, final IShape g) {
 		if (g == null) return null;
 		final Geometry geom = g.getInnerGeometry();
+		final org.locationtech.jts.geom.GeometryFactory gf = GeometryUtils.getGeometryFactory();
 		Geometry result = geom;
-		if (geom instanceof Polygon) {
-			result = GeometryUtils.GEOMETRY_FACTORY.createPolygon(GeometryUtils.GEOMETRY_FACTORY
-					.createLinearRing(((Polygon) geom).getExteriorRing().getCoordinates()), null);
+		if (geom instanceof Polygon poly) {
+			result = gf.createPolygon(gf.createLinearRing(poly.getExteriorRing().getCoordinates()), null);
 		} else if (geom instanceof MultiPolygon mp) {
 			final Polygon[] polys = new Polygon[mp.getNumGeometries()];
-			for (int i = 0; i < mp.getNumGeometries(); i++) {
+			for (int i = 0; i < polys.length; i++) {
 				final Polygon p = (Polygon) mp.getGeometryN(i);
-				polys[i] = GeometryUtils.GEOMETRY_FACTORY.createPolygon(
-						GeometryUtils.GEOMETRY_FACTORY.createLinearRing(p.getExteriorRing().getCoordinates()), null);
+				polys[i] = gf.createPolygon(gf.createLinearRing(p.getExteriorRing().getCoordinates()), null);
 			}
-			result = GeometryUtils.GEOMETRY_FACTORY.createMultiPolygon(polys);
+			result = gf.createMultiPolygon(polys);
 		}
 		return GamaShapeFactory.createFrom(result).withAttributesOf(g);
 	}
@@ -803,8 +1070,8 @@ public class SpatialTransformations {
 	@no_test
 	public static IList<IShape> skeletonize(final IScope scope, final IShape g, final Double clippingTolerance,
 			final Double triangulationTolerance) {
-		final List<LineString> netw = GeometryUtils.squeletisation(scope, g.getInnerGeometry(), triangulationTolerance,
-				clippingTolerance, false);
+		final List<LineString> netw =
+				squeletisation(scope, g.getInnerGeometry(), triangulationTolerance, clippingTolerance, false);
 		final IList<IShape> geoms = GamaListFactory.create(Types.GEOMETRY);
 		for (final LineString ls : netw) { geoms.add(GamaShapeFactory.createFrom(ls)); }
 		return geoms;
@@ -836,8 +1103,8 @@ public class SpatialTransformations {
 	@no_test
 	public static IList<IShape> skeletonize(final IScope scope, final IShape g, final Double clippingTolerance,
 			final Double triangulationTolerance, final boolean approxiClipping) {
-		final List<LineString> netw = GeometryUtils.squeletisation(scope, g.getInnerGeometry(), triangulationTolerance,
-				clippingTolerance, approxiClipping);
+		final List<LineString> netw =
+				squeletisation(scope, g.getInnerGeometry(), triangulationTolerance, clippingTolerance, approxiClipping);
 		final IList<IShape> geoms = GamaListFactory.create(Types.GEOMETRY);
 		for (final LineString ls : netw) { geoms.add(GamaShapeFactory.createFrom(ls)); }
 		return geoms;
@@ -863,8 +1130,7 @@ public class SpatialTransformations {
 			usages = { @usage ("It can be used with 1 additional float operand: the tolerance for the clipping.") })
 	@no_test
 	public static IList<IShape> skeletonize(final IScope scope, final IShape g, final Double clippingTolerance) {
-		final List<LineString> netw =
-				GeometryUtils.squeletisation(scope, g.getInnerGeometry(), 0.0, clippingTolerance, false);
+		final List<LineString> netw = squeletisation(scope, g.getInnerGeometry(), 0.0, clippingTolerance, false);
 		final IList<IShape> geoms = GamaListFactory.create(Types.GEOMETRY);
 		for (final LineString ls : netw) { geoms.add(GamaShapeFactory.createFrom(ls)); }
 		return geoms;
@@ -893,10 +1159,50 @@ public class SpatialTransformations {
 					test = false) })
 	@test (" // applies only to a square \n " + "length(skeletonize(square(5))) = 1")
 	public static IList<IShape> skeletonize(final IScope scope, final IShape g) {
-		final List<LineString> netw = GeometryUtils.squeletisation(scope, g.getInnerGeometry(), 0.0, 0.0, false);
+		final List<LineString> netw = squeletisation(scope, g.getInnerGeometry(), 0.0, 0.0, false);
 		final IList<IShape> geoms = GamaListFactory.create(Types.GEOMETRY);
 		for (final LineString ls : netw) { geoms.add(GamaShapeFactory.createFrom(ls)); }
 		return geoms;
+	}
+
+	/**
+	 * Squeletisation.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param geom
+	 *            the geom
+	 * @param toleranceTriangulation
+	 *            the tolerance triangulation
+	 * @param toleranceClip
+	 *            the tolerance clip
+	 * @param approxClipping
+	 *            the approx clipping
+	 * @return the list
+	 */
+	private static List<LineString> squeletisation(final IScope scope, final Geometry geom,
+			final double toleranceTriangulation, final double toleranceClip, final boolean approxClipping) {
+		final List<LineString> network = new ArrayList<>();
+		final IList polys =
+				GeometryUtils.triangulation(scope, geom, toleranceTriangulation, toleranceClip, approxClipping);
+		final IGraph graph = Graphs.spatialLineIntersectionTriangle(scope, polys);
+		final IList<IList> ccs = Graphs.connectedComponentOf(scope, graph);
+		for (final IList cc : ccs) {
+			if (cc.size() > 2) {
+				for (final Object o : cc) {
+					final IShape node = (IShape) o;
+					final Coordinate[] coordsArr = GeometryUtils.extractPoints(node,
+							new LinkedHashSet<>(Graphs.neighborsOf(scope, graph, node)));
+					if (coordsArr != null) {
+						network.add(GeometryUtils.getGeometryFactory().createLineString(coordsArr));
+					}
+				}
+			} else if (cc.size() == 2) {
+				final Coordinate[] coordsArr = GeometryUtils.extractPoints((IShape) cc.get(0), (IShape) cc.get(1));
+				network.add(GeometryUtils.getGeometryFactory().createLineString(coordsArr));
+			}
+		}
+		return network;
 	}
 
 	/**
@@ -1100,7 +1406,7 @@ public class SpatialTransformations {
 					equals = "the list of geometries corresponding to the Voronoi Diagram built from the list of points.",
 					test = false) })
 	@no_test
-	public static IList<IShape> vornoi(final IScope scope, final IList<GamaPoint> pts) {
+	public static IList<IShape> vornoi(final IScope scope, final IList<IPoint> pts) {
 		if (pts == null) return null;
 		return GeometryUtils.voronoi(scope, pts);
 	}
@@ -1128,7 +1434,7 @@ public class SpatialTransformations {
 					equals = "the list of geometries corresponding to the Voronoi Diagram built from the list of points with a square of 300m side size as clip.",
 					test = false) })
 	@no_test
-	public static IList<IShape> vornoi(final IScope scope, final IList<GamaPoint> pts, final IShape clip) {
+	public static IList<IShape> vornoi(final IScope scope, final IList<IPoint> pts, final IShape clip) {
 		if (pts == null) return null;
 		return GeometryUtils.voronoi(scope, pts, clip);
 	}
@@ -1160,7 +1466,8 @@ public class SpatialTransformations {
 	public static IShape smooth(final IScope scope, final IShape geometry, final Double fit) {
 		if (geometry == null) return null;
 		final double param = fit == null ? 0d : fit < 0 ? 0d : fit > 1 ? 1d : fit;
-		return GeometryUtils.smooth(geometry.getInnerGeometry(), param);
+		return GamaShapeFactory
+				.createFrom(JTS.smooth(geometry.getInnerGeometry(), param, GeometryUtils.getGeometryFactory()));
 	}
 
 	/**
@@ -1287,10 +1594,10 @@ public class SpatialTransformations {
 					equals = "the list of rectangles of size {10.0, 15.0} corresponding to the discretization into rectangles of the geometry of the agent applying the operator. The rectangles overlapping the border of the geometry are kept",
 					test = false) })
 	@no_test
-	public static IList<IShape> to_rectangle(final IScope scope, final IShape geom, final GamaPoint dimension,
+	public static IList<IShape> to_rectangle(final IScope scope, final IShape geom, final IPoint dimension,
 			final boolean overlaps) {
 		if (geom == null || geom.getInnerGeometry().getArea() <= 0) return GamaListFactory.create(Types.GEOMETRY);
-		return GeometryUtils.discretization(geom.getInnerGeometry(), dimension.x, dimension.y, overlaps);
+		return GeometryUtils.discretization(geom.getInnerGeometry(), dimension.getX(), dimension.getY(), overlaps);
 	}
 
 	/**
@@ -1324,7 +1631,7 @@ public class SpatialTransformations {
 	public static IList<IShape> to_rectangle(final IScope scope, final IShape geom, final int nbCols, final int nbRows,
 			final boolean overlaps) {
 		if (geom == null || geom.getInnerGeometry().getArea() <= 0) return GamaListFactory.create(Types.GEOMETRY);
-		final Envelope3D envelope = geom.getEnvelope();
+		final IEnvelope envelope = geom.getEnvelope();
 		final double x_size = envelope.getWidth() / nbCols;
 		final double y_size = envelope.getHeight() / nbRows;
 
@@ -1357,7 +1664,7 @@ public class SpatialTransformations {
 	@test ("length(square(10.0) split_geometry(3)) = 16")
 	public static IList<IShape> toSquares(final IScope scope, final IShape geom, final Double dimension) {
 		if (geom == null || geom.getInnerGeometry().getArea() <= 0) return GamaListFactory.create(Types.GEOMETRY);
-		return GeometryUtils.geometryDecomposition(geom, dimension, dimension);
+		return geometryDecomposition(geom, dimension, dimension);
 	}
 
 	/**
@@ -1383,9 +1690,9 @@ public class SpatialTransformations {
 					equals = "the list of the geometries corresponding to the decomposition of the geometry by rectangles of size 10.0, 15.0",
 					test = false) })
 	@test ("length(square(10.0) split_geometry({2,3})) = 20")
-	public static IList<IShape> toRectangle(final IScope scope, final IShape geom, final GamaPoint dimension) {
+	public static IList<IShape> toRectangle(final IScope scope, final IShape geom, final IPoint dimension) {
 		if (geom == null || geom.getInnerGeometry().getArea() <= 0) return GamaListFactory.create(Types.GEOMETRY);
-		return GeometryUtils.geometryDecomposition(geom, dimension.x, dimension.y);
+		return geometryDecomposition(geom, dimension.getX(), dimension.getY());
 	}
 
 	/**
@@ -1416,11 +1723,41 @@ public class SpatialTransformations {
 	public static IList<IShape> to_rectangle(final IScope scope, final IShape geom, final int nbCols,
 			final int nbRows) {
 		if (geom == null || geom.getInnerGeometry().getArea() <= 0) return GamaListFactory.create(Types.GEOMETRY);
-		final Envelope3D envelope = geom.getEnvelope();
+		final IEnvelope envelope = geom.getEnvelope();
 		final double x_size = envelope.getWidth() / nbCols;
 		final double y_size = envelope.getHeight() / nbRows;
 
-		return GeometryUtils.geometryDecomposition(geom, x_size, y_size);
+		return geometryDecomposition(geom, x_size, y_size);
+	}
+
+	/**
+	 * Geometry decomposition.
+	 *
+	 * @param geom
+	 *            the geom
+	 * @param x_size
+	 *            the x size
+	 * @param y_size
+	 *            the y size
+	 * @return the i list
+	 */
+	private static IList<IShape> geometryDecomposition(final IShape geom, final double x_size, final double y_size) {
+		final IList<IShape> geoms = GamaListFactory.create(Types.GEOMETRY);
+		final double zVal = geom.getLocation().getZ();
+		final IList<IShape> rects = GeometryUtils.discretization(geom.getInnerGeometry(), x_size, y_size, true);
+		for (final IShape shape : rects) {
+			final Geometry gg = GeometryUtils.robustIntersection(shape.getInnerGeometry(), geom.getInnerGeometry());
+			if (gg != null && !gg.isEmpty()) {
+				final IShape sp = GamaShapeFactory.createFrom(gg);
+				final IPoint[] pts = GeometryUtils.getPointsOf(sp);
+				for (int i = 0; i < pts.length; i++) {
+					final IPoint gp = pts[i];
+					if (zVal != gp.getZ()) { SpatialThreeD.set_z(null, sp, i, zVal); }
+				}
+				geoms.add(sp);
+			}
+		}
+		return geoms;
 	}
 
 	/**
@@ -1487,8 +1824,73 @@ public class SpatialTransformations {
 					test = false) },
 			see = { "as_4_grid", "as_grid" })
 	@no_test (Reason.IMPOSSIBLE_TO_TEST)
-	public static IList<IShape> as_hexagonal_grid(final IShape ls, final GamaPoint param) {
-		return GeometryUtils.hexagonalGridFromGeom(ls, (int) param.x, (int) param.y);
+	public static IList<IShape> as_hexagonal_grid(final IShape ls, final IPoint param) {
+		final int nbRows = (int) param.getX();
+		final int nbColumns = (int) param.getY();
+		final IEnvelope env = ls.getEnvelope();
+		final double widthEnv = env.getWidth();
+		final double heightEnv = env.getHeight();
+		double xmin = env.getMinX();
+		double ymin = env.getMinY();
+		final double widthHex = widthEnv / (nbColumns * 0.75 + 0.25);
+		final double heightHex = heightEnv / nbRows;
+		final IList<IShape> geoms = GamaListFactory.create(Types.GEOMETRY);
+		xmin += widthHex / 2.0;
+		ymin += heightHex / 2.0;
+		for (int l1 = 0; l1 < nbRows; l1++) {
+			for (int c = 0; c < nbColumns; c = c + 2) {
+				final IShape poly = GamaShapeFactory.buildHexagon(widthHex, heightHex,
+						GamaPointFactory.create(xmin + c * widthHex * 0.75, ymin + l1 * heightHex, 0));
+				if (ls.covers(poly)) { geoms.add(poly); }
+			}
+		}
+		for (int l = 0; l < nbRows; l++) {
+			for (int c1 = 1; c1 < nbColumns; c1 = c1 + 2) {
+				final IShape poly1 = GamaShapeFactory.buildHexagon(widthHex, heightHex,
+						GamaPointFactory.create(xmin + c1 * widthHex * 0.75, ymin + (l + 0.5) * heightHex, 0));
+				if (ls.covers(poly1)) { geoms.add(poly1); }
+			}
+		}
+		return geoms;
+	}
+
+	/**
+	 * Hexagonal grid from geom.
+	 *
+	 * @param geom
+	 *            the geom
+	 * @param nbRows
+	 *            the nb rows
+	 * @param nbColumns
+	 *            the nb columns
+	 * @return the i list
+	 */
+	public static IList<IShape> hexagonalGridFromGeom(final IShape geom, final int nbRows, final int nbColumns) {
+		final IEnvelope env = geom.getEnvelope();
+		final double widthEnv = env.getWidth();
+		final double heightEnv = env.getHeight();
+		double xmin = env.getMinX();
+		double ymin = env.getMinY();
+		final double widthHex = widthEnv / (nbColumns * 0.75 + 0.25);
+		final double heightHex = heightEnv / nbRows;
+		final IList<IShape> geoms = GamaListFactory.create(Types.GEOMETRY);
+		xmin += widthHex / 2.0;
+		ymin += heightHex / 2.0;
+		for (int l = 0; l < nbRows; l++) {
+			for (int c = 0; c < nbColumns; c = c + 2) {
+				final IShape poly = GamaShapeFactory.buildHexagon(widthHex, heightHex,
+						GamaPointFactory.create(xmin + c * widthHex * 0.75, ymin + l * heightHex, 0));
+				if (geom.covers(poly)) { geoms.add(poly); }
+			}
+		}
+		for (int l = 0; l < nbRows; l++) {
+			for (int c = 1; c < nbColumns; c = c + 2) {
+				final IShape poly = GamaShapeFactory.buildHexagon(widthHex, heightHex,
+						GamaPointFactory.create(xmin + c * widthHex * 0.75, ymin + (l + 0.5) * heightHex, 0));
+				if (geom.covers(poly)) { geoms.add(poly); }
+			}
+		}
+		return geoms;
 	}
 
 	/**
@@ -1518,9 +1920,9 @@ public class SpatialTransformations {
 					test = false) },
 			see = { "as_4_grid", "as_hexagonal_grid" })
 	@no_test
-	public static IMatrix as_grid(final IScope scope, final IShape g, final GamaPoint dim) throws GamaRuntimeException {
+	public static IMatrix as_grid(final IScope scope, final IShape g, final IPoint dim) throws GamaRuntimeException {
 		// cols, rows
-		return new GamaSpatialMatrix(scope, g, (int) dim.x, (int) dim.y, false, false, false, false, "");
+		return new GamaSpatialMatrix(scope, g, (int) dim.getX(), (int) dim.getY(), false, false, false, false, "");
 	}
 
 	/**
@@ -1550,10 +1952,9 @@ public class SpatialTransformations {
 					test = false) },
 			see = { "as_grid", "as_hexagonal_grid" })
 	@no_test
-	public static IMatrix as_4_grid(final IScope scope, final IShape g, final GamaPoint dim)
-			throws GamaRuntimeException {
+	public static IMatrix as_4_grid(final IScope scope, final IShape g, final IPoint dim) throws GamaRuntimeException {
 		// cols, rows
-		return new GamaSpatialMatrix(scope, g, (int) dim.x, (int) dim.y, false, true, false, false, "");
+		return new GamaSpatialMatrix(scope, g, (int) dim.getX(), (int) dim.getY(), false, true, false, false, "");
 	}
 
 	/**
@@ -1628,9 +2029,9 @@ public class SpatialTransformations {
 				accu += rates.get(i);
 				translatedRates.add(accu / sum);
 			}
-			final IList<GamaPoint> pts = SpatialPunctal.points_along(geom, translatedRates);
+			final IList<IPoint> pts = SpatialPunctal.points_along(geom, translatedRates);
 			IShape g = geom.copy(scope);
-			for (final GamaPoint pt : pts) {
+			for (final IPoint pt : pts) {
 				final IList<IShape> shapes = SpatialOperators.split_at(g, pt);
 				nwGeoms.add(shapes.get(0));
 				g = shapes.get(1);
@@ -1643,7 +2044,8 @@ public class SpatialTransformations {
 			} else {
 				comp = (o1, o2) -> Double.compare(o1.getLocation().getY(), o2.getLocation().getY());
 			}
-			ArrayList<IShape> listSq = new ArrayList(toSquares(scope, geom, dimension).stream().sorted(comp).toList());
+			ArrayList<IShape> listSq =
+					new ArrayList<>(toSquares(scope, geom, dimension).stream().sorted(comp).toList());
 			final Double sum = (Double) Containers.sum(scope, rates);
 			final int totalNumber = listSq.size();
 			for (final Double rate : rates) {
@@ -1711,7 +2113,7 @@ public class SpatialTransformations {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	@operator (
+	@operator ( 
 			value = "split_lines",
 			content_type = IType.GEOMETRY,
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_TRANSFORMATIONS },
@@ -1727,85 +2129,20 @@ public class SpatialTransformations {
 	public static IList<IShape> split_lines(final IScope scope, final IContainer<?, IShape> geoms,
 			final boolean readAttributes) throws GamaRuntimeException {
 		if (geoms.isEmpty(scope)) return GamaListFactory.create(Types.GEOMETRY);
-		if (!readAttributes) return split_lines(scope, geoms);
-		boolean change = true;
-		IList<IShape> lines = GamaListFactory.create(Types.GEOMETRY);
-		lines.addAll((Collection<? extends IShape>) geoms);
-		final IList<IShape> split_lines = GamaListFactory.create(Types.GEOMETRY);
-		while (change) {
-			change = false;
-			final IList<IShape> lines2 = GamaListFactory.createWithoutCasting(Types.GEOMETRY, lines);
-			for (final IShape l : lines) {
-				lines2.remove(l);
-				if (!l.getInnerGeometry().isSimple()) {
-					final IList<IShape> segments = GamaListFactory.create(Types.GEOMETRY);
-					for (int i = 0; i < l.getPoints().size() - 1; i++) {
-						final IList<IShape> points = GamaListFactory.create(Types.POINT);
-						points.add(l.getPoints().get(i));
-						points.add(l.getPoints().get(i + 1));
-						segments.add(SpatialCreation.line(scope, points));
-					}
-					final IShape line = SpatialOperators.union(scope, segments);
-					final Geometry nodedLineStrings = line.getInnerGeometry();
-
-					for (int i = 0, n = nodedLineStrings.getNumGeometries(); i < n; i++) {
-						final Geometry g = nodedLineStrings.getGeometryN(i);
-						if (g instanceof LineString) {
-							final IShape gS = GamaShapeFactory.createFrom(g);
-							gS.copyAttributesOf(l);
-							lines2.add(GamaShapeFactory.createFrom(g));
-						}
-					}
-					change = true;
-
-					lines = lines2;
-					break;
-				}
-				final IShape gg =
-						SpatialTransformations.enlarged_by(scope, l, Math.min(0.001, l.getPerimeter() / 1000.0), 10);
-
-				final List<IShape> ls = gg == null ? GamaListFactory.create()
-						: (List<IShape>) SpatialQueries.overlapping(scope, lines2, gg);
-				if (!ls.isEmpty()) {
-					final GamaPoint pto = l.getPoints().firstValue(scope);
-					final GamaPoint ptd = l.getPoints().lastValue(scope);
-					@SuppressWarnings ("null") final PreparedGeometry pg =
-							PreparedGeometryFactory.prepare(gg.getInnerGeometry());
-					for (final IShape l2 : ls) {
-						if (pg.covers(l2.getInnerGeometry()) || pg.coveredBy(l2.getInnerGeometry())) { continue; }
-						final IShape it = SpatialOperators.inter(scope, l, l2);
-
-						if (it == null || it.getPerimeter() > 0.0) { continue; }
-						if (!it.getLocation().equals(pto) || !it.getLocation().equals(ptd)) {
-							final GamaPoint pt = it.getPoints().firstValue(scope);
-							final IList<IShape> res1 = SpatialOperators.split_at(l2, pt);
-							res1.removeIf(a -> a.getPerimeter() == 0.0);
-							final IList<IShape> res2 = SpatialOperators.split_at(l, pt);
-							res2.removeIf(a -> a.getPerimeter() == 0.0);
-							if (res1.size() > 1 || res2.size() > 1) {
-								change = true;
-								lines2.addAll(res1);
-								lines2.addAll(res2);
-								lines2.remove(l2);
-								break;
-							}
-						}
-					}
-					if (change) {
-						lines = lines2;
-						break;
-					}
-				}
-				split_lines.add(l);
+		IList<IShape> lines = split_lines(scope, geoms);
+		if (readAttributes) { 
+			for (IShape l : geoms.listValue(scope,Types.GEOMETRY, false)) {
+				IShape s = SpatialTransformations.enlarged_by(scope, l, 0.01);
+				IList<? extends IShape> ls = SpatialQueries.inside(scope, lines, s); 
+				for (IShape l2 : ls.listValue(scope,Types.GEOMETRY, false)) {
+					l2.copyAttributesOf(l);
+				}	
 			}
-
 		}
-
-		return split_lines;
+		return lines;
 	}
-
 	/**
-	 * Clean.
+	 * Clean. 
 	 *
 	 * @param scope
 	 *            the scope
@@ -1835,7 +2172,7 @@ public class SpatialTransformations {
 			final int nb = mp.getNumGeometries();
 			final Polygon[] polys = new Polygon[nb];
 			for (int i = 0; i < nb; i++) { polys[i] = (Polygon) GeometryUtils.cleanGeometry(mp.getGeometryN(i)); }
-			return GamaShapeFactory.createFrom(GeometryUtils.GEOMETRY_FACTORY.createMultiPolygon(polys))
+			return GamaShapeFactory.createFrom(GeometryUtils.getGeometryFactory().createMultiPolygon(polys))
 					.withAttributesOf(g);
 		}
 		return g.copy(scope);
@@ -1881,7 +2218,7 @@ public class SpatialTransformations {
 		if (polylines == null || polylines.isEmpty()) return polylines;
 		final IList<IShape> geoms = polylines.copy(scope);
 		geoms.removeIf(a -> !a.getGeometry().isLine());
-		if (geoms.isEmpty()) return GamaListFactory.EMPTY_LIST;
+		if (geoms.isEmpty()) return GamaListFactory.getEmptyList();
 
 		IList<IShape> results = GamaListFactory.create();
 
@@ -1891,14 +2228,14 @@ public class SpatialTransformations {
 
 			while (modif) {
 				for (final IShape geom : geomsTmp) {
-					final GamaPoint ptF = geom.getPoints().firstValue(scope);
+					final IPoint ptF = geom.getPoints().firstValue(scope);
 					modif = connectLine(scope, ptF, geom, true, geoms, results, tolerance);
 					if (modif) {
 						geomsTmp = GamaListFactory.create();
 						geomsTmp.addAll(geoms);
 						break;
 					}
-					final GamaPoint ptL = geom.getPoints().lastValue(scope);
+					final IPoint ptL = geom.getPoints().lastValue(scope);
 					modif = connectLine(scope, ptL, geom, false, geoms, results, tolerance);
 					if (modif) {
 						geomsTmp = GamaListFactory.create();
@@ -1947,7 +2284,7 @@ public class SpatialTransformations {
 	 *            the tolerance
 	 * @return true, if successful
 	 */
-	private static boolean connectLine(final IScope scope, final GamaPoint pt, final IShape shape, final boolean first,
+	private static boolean connectLine(final IScope scope, final IPoint pt, final IShape shape, final boolean first,
 			final IList<IShape> geoms, final IList<IShape> results, final double tolerance) {
 		final IList<IShape> tot = geoms.copy(scope);
 		tot.addAll(results);
@@ -1955,16 +2292,16 @@ public class SpatialTransformations {
 		final IShape closest = SpatialQueries.closest_to(scope, tot, pt);
 		if (closest == null || closest.intersects(shape)) return false;
 		if (closest.euclidianDistanceTo(pt) <= tolerance) {
-			final GamaPoint fp = closest.getPoints().firstValue(scope);
+			final IPoint fp = closest.getPoints().firstValue(scope);
 			if (pt.equals3D(fp)) return false;
-			final GamaPoint lp = closest.getPoints().lastValue(scope);
+			final IPoint lp = closest.getPoints().lastValue(scope);
 			if (pt.equals3D(lp)) return false;
 			if (pt.euclidianDistanceTo(fp) <= tolerance) {
 				modifyPoint(scope, shape, fp, first);
 				return false;
 			}
 			if (pt.euclidianDistanceTo(lp) > tolerance) {
-				final GamaPoint ptS = SpatialPunctal.closest_points_with(pt, closest).get(1);
+				final IPoint ptS = SpatialPunctal.closest_points_with(pt, closest).get(1);
 				modifyPoint(scope, shape, ptS, first);
 				final IList<IShape> spliL = SpatialOperators.split_at(closest, ptS);
 				if (results.contains(closest)) {
@@ -1980,6 +2317,7 @@ public class SpatialTransformations {
 		}
 		return false;
 	}
+	
 
 	/**
 	 * Modify point.
@@ -1993,17 +2331,21 @@ public class SpatialTransformations {
 	 * @param first
 	 *            the first
 	 */
-	/*
-	 * if (first) {g <- line([pt] + (g.points - first(g.points)));} else {g <- line((g.points - last(g.points)) +
-	 * [pt]);} return g;
-	 */
-	private static void modifyPoint(final IScope scope, final IShape shape, final GamaPoint pt, final boolean first) {
-		if (first) {
-			shape.getInnerGeometry().getCoordinates()[0] = pt;
-		} else {
-			shape.getInnerGeometry().getCoordinates()[shape.getInnerGeometry().getCoordinates().length - 1] = pt;
-		}
-		shape.getInnerGeometry().geometryChanged();
+	
+	private static void modifyPoint(final IScope scope, final IShape shape, final IPoint pt, final boolean first) {
+	    // 1. Get the array of coordinates from the geometry
+	    final org.locationtech.jts.geom.Coordinate[] coords = shape.getInnerGeometry().getCoordinates();
+	    
+	    // 2. Target the correct index (either the first or the last point)
+	    final int index = first ? 0 : coords.length - 1;
+	    
+	    // 3. Directly modify the attributes of the existing Coordinate object in memory!
+	    coords[index].x = pt.getX();
+	    coords[index].y = pt.getY();
+	    coords[index].z = pt.getZ(); // Useful if your graph has elevation/3D coordinates
+	    
+	    // 4. Notify JTS that the internal coordinates have changed so it can update its bounding box
+	    shape.getInnerGeometry().geometryChanged();
 	}
 
 	/**

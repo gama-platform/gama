@@ -4,7 +4,7 @@
    <extension
          point="gama.display">
       <implementation
-            class="gama.extension.image.ImageDisplaySurface"
+            class="gama.extension.image.display.ImageDisplaySurface"
             keyword="image">
       </implementation>
    </extension>
@@ -20,7 +20,7 @@
    <extension
          point="gama.draw">
       <implementation
-            class="gama.extension.image.ImageDrawer">
+            class="gama.extension.image.display.ImageDrawer">
       </implementation>
    </extension>
    <extension
@@ -28,6 +28,33 @@
       <implementation
             class="gama.extension.image.ImageConstantSupplier">
       </implementation>
+   </extension>
+   <extension
+         point="gama.metadata">
+               <implementation
+                     class="gama.extension.image.ImageInfo"
+                     content_type="gama.images.file.type">
+               </implementation>
+               <implementation
+                     class="gama.extension.image.svg.SVGInfo"
+                     content_type="gama.svg.file.type">
+               </implementation>
+   </extension>
+   <extension
+         point="org.eclipse.core.contenttype.contentTypes">
+      <content-type
+            file-extensions="PNG,png,GIF,gif,JPEG,jpeg,JPG,jpg,BMP,bmp,ICO,ico,TIFF,tiff,TIF,tif,ASC,asc,PGM,pgm"
+            id="gama.images.file.type"
+            name="Image"
+            priority="high">
+      </content-type>
+      <content-type
+            default-charset="UTF-8"
+            file-extensions="svg,SVG"
+            id="gama.svg.file.type"
+            name="SVG File"
+            priority="high">
+      </content-type>
    </extension>
 
 </plugin> 

@@ -10,13 +10,13 @@
  ********************************************************************************************************/
 package gama.extension.serialize.gaml;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.file;
-import gama.annotations.precompiler.IConcept;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.types.IType;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.runtime.scope.IScope;
+import gama.annotations.doc;
+import gama.annotations.file;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
 
 /**
  * The Class GamaSavedSimulationFile.

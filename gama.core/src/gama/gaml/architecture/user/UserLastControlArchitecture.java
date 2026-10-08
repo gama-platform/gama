@@ -10,12 +10,12 @@
  ********************************************************************************************************/
 package gama.gaml.architecture.user;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.skill;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.annotations.doc;
+import gama.annotations.skill;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.runtime.scope.IScope;
 
 /**
  * The Class UserLastControlArchitecture.

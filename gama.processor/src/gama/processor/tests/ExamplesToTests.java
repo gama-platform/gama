@@ -34,7 +34,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
-import gama.annotations.precompiler.doc.utils.XMLElements;
+import gama.annotations.constants.XMLElements;
 import gama.processor.Constants;
 import gama.processor.GamaProcessor;
 import gama.processor.ProcessorContext;

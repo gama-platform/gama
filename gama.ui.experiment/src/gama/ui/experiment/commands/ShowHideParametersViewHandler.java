@@ -14,8 +14,8 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 
-import gama.core.common.interfaces.IGui;
-import gama.core.runtime.GAMA;
+import gama.api.GAMA;
+import gama.api.ui.IGui;
 import gama.ui.shared.utils.ViewsHelper;
 
 /**

@@ -3,9 +3,8 @@ name: "[./.github/workflows/travis-packaging-jdk.yaml]"
 on:
   workflow_call:
     inputs:
-      RELEASE_VERSION: 
+      RELEASE_VERSION:
         required: true
-        default: 2024.03.0 
         type: string
       jdk_embedded_version:
         type: string
@@ -17,7 +16,7 @@ on:
         required: true
 
 jobs:
-  add-jdk: 
+  add-jdk:
     runs-on: ubuntu-latest
     steps:
 
@@ -37,7 +36,7 @@ jobs:
         run: |
           # Convert to zip archives
           find . -name "gama.application-*.tar.gz" -print -exec bash -c 'tar xzf {} && zip -9 -r -q $(basename \{} .tar.gz).zip $(tar --exclude="*/*" -tf {}) && rm -fr $(tar tf {}) {} && echo "Compressed and convert {} to zip"' \;
-          
+
       - name: Make zip file
         shell: bash
         run: |
@@ -60,11 +59,13 @@ jobs:
           # Windows Family
           mv ${{ github.workspace }}/travis/extraresources/installer/windows/* ${{ github.workspace }}
           # Debian Family
-          mv gama.application-linux.gtk.x86_64.zip gama-platform_${{ inputs.RELEASE_VERSION }}-1_amd64.zip
-          mv gama.application-linux.gtk.x86_64_withJDK.zip gama-platform-jdk_${{ inputs.RELEASE_VERSION }}-1_amd64.zip
+          mv gama.application-linux.gtk.x86_64.zip gama-platform_${RELEASE_VERSION}-1_amd64.zip
+          mv gama.application-linux.gtk.x86_64_withJDK.zip gama-platform-jdk_${RELEASE_VERSION}-1_amd64.zip
           cd ${{ github.workspace }}/travis/extraresources/installer/unix && zip -r ${{ github.workspace }}/extraresources-unix.zip .
+        env:
+          RELEASE_VERSION: ${{ inputs.RELEASE_VERSION }}
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: gama-mac-unsigned
           path: |
@@ -73,14 +74,14 @@ jobs:
             ./what2sign.sh
             ./entitlements.plist
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: gama-linux
           path: |
             ./gama-platform*amd64.zip
             ./extraresources-unix.zip
-      
-      - uses: actions/upload-artifact@v4
+
+      - uses: actions/upload-artifact@v6
         with:
           name: gama-windows
           path: |
@@ -89,7 +90,7 @@ jobs:
             ./windows_installer_script.iss
             ./LICENSE
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: gama-zip-builds
           path: |

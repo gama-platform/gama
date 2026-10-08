@@ -3,10 +3,11 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Network
 Bundle-SymbolicName: gama.extension.network;singleton:=true
 Bundle-Version: 0.0.0.qualifier
-Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-RequiredExecutionEnvironment: JavaSE-25
 Export-Package: 
  com.fazecast.jSerialComm,
  gama.extension.network.common,
+ gama.extension.network.common.socket,
  gama.extension.network.mqtt,
  gama.extension.network.skills,
  gama.extension.network.tcp,
@@ -14,14 +15,21 @@ Export-Package:
  gama.extension.network.websocket,
  org.eclipse.paho.client.mqttv3,
  org.eclipse.paho.client.mqttv3.persist
-Import-Package: org.java_websocket.handshake
+Import-Package: gama.extension.serialize,
+ gama.extension.serialize.binary,
+ gama.extension.serialize.fst,
+ gama.extension.serialize.fst.annotations,
+ gama.extension.serialize.fst.coders,
+ gama.extension.serialize.fst.serializers,
+ gama.extension.serialize.fst.util,
+ gama.extension.serialize.gaml,
+ org.java_websocket.handshake
 Require-Bundle: gama.core,
  gama.extension.serialize,
  gama.dependencies
 Bundle-ClassPath: .,
- ext/arduino.jar,
- ext/jSerialComm-2.9.3.jar,
- ext/org.eclipse.paho.client.mqttv3-1.2.5.jar
+ libs/jSerialComm 2.11.4/jSerialComm-2.11.4.jar,
+ libs/Paho 1.2.5/org.eclipse.paho.client.mqttv3-1.2.5.jar
 Bundle-ActivationPolicy: lazy
 Automatic-Module-Name: gama.extension.network
  

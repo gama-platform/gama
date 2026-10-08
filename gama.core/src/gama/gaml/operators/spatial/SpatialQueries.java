@@ -3,7 +3,7 @@
  * SpatialQueries.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,34 +15,63 @@ import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
 
 import com.google.common.collect.Ordering;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ITypeProvider;
-import gama.annotations.precompiler.Reason;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.IShape;
-import gama.core.metamodel.topology.AbstractTopology;
-import gama.core.metamodel.topology.ITopology;
-import gama.core.metamodel.topology.filter.Different;
-import gama.core.metamodel.topology.filter.IAgentFilter;
-import gama.core.metamodel.topology.filter.In;
-import gama.core.runtime.IScope;
-import gama.core.util.Collector;
-import gama.core.util.GamaListFactory;
-import gama.core.util.IContainer;
-import gama.core.util.IList;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.annotations.support.ITypeProvider;
+import gama.annotations.support.Reason;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.misc.IContainer;
+import gama.api.types.topology.ITopology;
+import gama.api.utils.interfaces.IAgentFilter;
+import gama.core.topology.AbstractTopology;
+import gama.core.topology.filter.Different;
+import gama.core.topology.filter.In;
 
 /**
- * The Class Queries.
+ * Provides GAML spatial query operators for finding agents by proximity, containment, and overlap.
+ * All queries are resolved through the current simulation {@link gama.api.types.topology.ITopology},
+ * enabling efficient spatial indexing on both continuous and grid/graph topologies.
+ * <p>
+ * Operator families provided:
+ * <ul>
+ *   <li><b>Neighborhood</b>: {@code neighbors_of}, {@code neighbors_at}, {@code agents_at_distance},
+ *       {@code at_distance} — find agents within a given distance.</li>
+ *   <li><b>Closest / Farthest</b>: {@code closest_to}, {@code farthest_to},
+ *       {@code agent_closest_to}, {@code agent_farthest_to} — find the nearest or most distant
+ *       agent or geometry.</li>
+ *   <li><b>Containment</b>: {@code inside}, {@code agents_inside} — find agents covered by a
+ *       reference geometry.</li>
+ *   <li><b>Overlap</b>: {@code overlapping}, {@code agents_overlapping},
+ *       {@code agents_partially_overlapping} — find agents that intersect or partially intersect
+ *       a reference geometry.</li>
+ *   <li><b>Other spatial relations</b>: {@code covering}, {@code agents_covering},
+ *       {@code crossing}, {@code agents_crossing}, {@code touching}, {@code agents_touching} —
+ *       find agents satisfying specific DE-9IM predicates.</li>
+ * </ul>
+ * <p>
+ * Because all queries depend on an active simulation topology, they are annotated with
+ * {@code @no_test} (topology-dependent operations require an active simulation and are already
+ * covered in the GAMA Spatial test models).
+ * <p>
+ * Uses JTS (Java Topology Suite) {@code PreparedGeometry} optimisations internally for batch
+ * containment and overlap queries.
+ *
+ * @author Alexis Drogoul, Patrick Taillandier, Arnaud Grignard
+ * @see gama.api.types.geometry.IShape
+ * @see gama.api.types.topology.ITopology
  */
 public class SpatialQueries {
 
@@ -66,6 +95,8 @@ public class SpatialQueries {
 	@doc (
 			value = "a list, containing all the agents of the same species than the argument (if it is an agent) located at a distance inferior or equal to 1 to the right-hand operand agent considering the left-hand operand topology.",
 			masterDoc = true,
+			usages = { @usage ("Returns an empty list if no neighbors are found within the default distance of 1."),
+					@usage ("The calling agent itself is excluded from the results.") },
 			examples = { @example (
 					value = "topology(self) neighbors_of self",
 					equals = "returns all the agents located at a distance lower or equal to 1 to the agent applying the operator considering its topology.",
@@ -99,17 +130,18 @@ public class SpatialQueries {
 			concept = {})
 	/* TODO, expected_content_type = { IType.FLOAT, IType.INT } */
 	@doc (
-			usages = @usage (
+			usages = { @usage (
 					value = "a list, containing all the agents of the same species than the left argument (if it is an agent) located at a distance inferior or equal to the third argument to the second argument (agent, geometry or point) considering the first operand topology.",
 					examples = { @example (
 							value = "neighbors_of (topology(self), self,10)",
 							equals = "all the agents located at a distance lower or equal to 10 to the agent applying the operator considering its topology.",
-							test = false) }))
+							test = false) }),
+					@usage ("Returns an empty list if no neighbors are found within the specified distance."),
+					@usage ("The calling agent itself is excluded from the results when the second argument is an agent.") })
 	@no_test // already done in Spatial tests Models
 	public static IList neighbors_of(final IScope scope, final ITopology t, final IShape agent, final Double distance) {
-		return _neighbors(scope,
-				agent instanceof IAgent ? In.list(scope, ((IAgent) agent).getPopulation()) : Different.with(), agent,
-				distance, t);
+		return _neighbors(scope, agent instanceof IAgent i ? In.list(scope, i.getPopulation()) : Different.with(),
+				agent, distance, t);
 		// TODO We could compute a filter based on the population if it is
 		// an agent
 	}
@@ -184,7 +216,10 @@ public class SpatialQueries {
 	public static IList<? extends IShape> at_distance(final IScope scope, final IContainer<?, ? extends IShape> list,
 			final Double distance) {
 		final IType contentType = list.getGamlType().getContentType();
-		if (contentType.isAgentType()) return _neighbors(scope, In.list(scope, list), scope.getAgent(), distance);
+		if (contentType.isAgentType()) {
+			IList<IAgent> agents = _neighbors(scope, In.list(scope, list), scope.getAgent(), distance);
+			return agents;
+		}
 		if (contentType == Types.GEOMETRY) return geomAtDistance(scope, list, distance);
 		return GamaListFactory.create();
 	}
@@ -204,10 +239,10 @@ public class SpatialQueries {
 			final Double distance) {
 		final IShape ag = scope.getAgent();
 		final IList<IShape> geoms = GamaListFactory.create(Types.GEOMETRY);
-		for (final Object shape : list.listValue(scope, Types.GEOMETRY, false)) {
-			if (!(shape instanceof IShape)) { continue; }
-			if (scope.getTopology().distanceBetween(scope, ag, (IShape) shape) <= distance) {
-				geoms.add((IShape) shape);
+		for (final IShape shape : list.iterable(scope)) {
+			if (shape == null) { continue; }
+			if (scope.getTopology().distanceBetween(scope, ag, shape) <= distance) {
+				geoms.add(shape);
 			}
 		}
 		return geoms;
@@ -231,7 +266,7 @@ public class SpatialQueries {
 		final IType contentType = list.getGamlType().getContentType();
 		if (contentType.isAgentType()) return _gather(scope, In.list(scope, list), source, relation);
 		if (Types.GEOMETRY.isAssignableFrom(contentType)) return geomsRelated(scope, list, source, relation);
-		return GamaListFactory.EMPTY_LIST;
+		return GamaListFactory.getEmptyList();
 	}
 
 	/**
@@ -459,12 +494,11 @@ public class SpatialQueries {
 	public static IList<? extends IShape> geomsRelated(final IScope scope, final IContainer<?, ? extends IShape> list,
 			final IShape source, final ITopology.SpatialRelation relation) {
 		final IList<IShape> geoms = GamaListFactory.create(Types.GEOMETRY);
-		PreparedGeometryFactory pgFact = new PreparedGeometryFactory();
-		PreparedGeometry pg = pgFact.create(source.getInnerGeometry());
-		for (final Object shape : list.listValue(scope, Types.GEOMETRY, false)) {
-			if (!(shape instanceof IShape)) { continue; }
-			if (AbstractTopology.accept(pg, ((IShape) shape).getInnerGeometry(), relation)) {
-				geoms.add((IShape) shape);
+		final PreparedGeometry pg = PreparedGeometryFactory.prepare(source.getInnerGeometry());
+		for (final IShape shape : list.iterable(scope)) {
+			if (shape == null) { continue; }
+			if (AbstractTopology.accept(pg, shape.getInnerGeometry(), relation)) {
+				geoms.add(shape);
 			}
 		}
 		return geoms;
@@ -490,6 +524,8 @@ public class SpatialQueries {
 	@doc (
 			value = "An agent or a geometry among the left-operand list of agents, species or meta-population (addition of species), the closest to the operand (casted as a geometry).",
 			comment = "the distance is computed in the topology of the calling agent (the agent in which this operator is used), with the distance algorithm specific to the topology.",
+			usages = { @usage ("Returns nil if the container is empty or if the container itself is nil."),
+					@usage ("If multiple agents are equidistant from the source, one is returned non-deterministically.") },
 			examples = { @example (
 					value = "[ag1, ag2, ag3] closest_to(self)",
 					equals = "return the closest agent among ag1, ag2 and ag3 to the agent applying the operator.",
@@ -542,13 +578,13 @@ public class SpatialQueries {
 			see = { "neighbors_at", "neighbors_of", "inside", "overlapping", "agents_overlapping", "agents_inside",
 					"agent_closest_to" })
 	@no_test // already done in Spatial tests Models
-	public static IList<IShape> closest_to(final IScope scope, final IContainer<?, ? extends IShape> list,
+	public static IList<? extends IShape> closest_to(final IScope scope, final IContainer<?, ? extends IShape> list,
 			final IShape source, final int number) {
-		if (list == null || list.isEmpty(scope)) return GamaListFactory.EMPTY_LIST;
+		if (list == null || list.isEmpty(scope)) return GamaListFactory.getEmptyList();
 		final IType contentType = list.getGamlType().getContentType();
-		if (contentType.isAgentType()) return (IList) _closest(scope, In.list(scope, list), source, number);
+		if (contentType.isAgentType()) return _closest(scope, In.list(scope, list), source, number);
 		if (list.getGamlType().getContentType().isTranslatableInto(Types.GEOMETRY))
-			return geomClostestTo(scope, list, source, number);
+			return geomClosestTo(scope, list, source, number);
 		return GamaListFactory.create(contentType);
 	}
 
@@ -606,11 +642,11 @@ public class SpatialQueries {
 			final IShape source) {
 		IShape shp = null;
 		double distMin = Double.MAX_VALUE;
-		for (final Object shape : list.listValue(scope, Types.GEOMETRY, false)) {
-			if (!(shape instanceof IShape)) { continue; }
-			final double dist = scope.getTopology().distanceBetween(scope, source, (IShape) shape);
+		for (final IShape shape : list.iterable(scope)) {
+			if (shape == null) { continue; }
+			final double dist = scope.getTopology().distanceBetween(scope, source, shape);
 			if (dist < distMin) {
-				shp = (IShape) shape;
+				shp = shape;
 				distMin = dist;
 			}
 		}
@@ -630,7 +666,7 @@ public class SpatialQueries {
 	 *            the number
 	 * @return the collection
 	 */
-	public static IList<IShape> geomClostestTo(final IScope scope, final IContainer<?, ? extends IShape> list,
+	public static IList<IShape> geomClosestTo(final IScope scope, final IContainer<?, ? extends IShape> list,
 			final IShape source, final int number) {
 		final IList<?> objects = list.listValue(scope, Types.GEOMETRY, true);
 		objects.removeIf(a -> !(a instanceof IShape));
@@ -656,11 +692,11 @@ public class SpatialQueries {
 			final IShape source) {
 		IShape shp = null;
 		double distMax = Double.MIN_VALUE;
-		for (final Object shape : list.listValue(scope, Types.GEOMETRY, false)) {
-			if (!(shape instanceof IShape)) { continue; }
-			final double dist = scope.getTopology().distanceBetween(scope, source, (IShape) shape);
+		for (final IShape shape : list.iterable(scope)) {
+			if (shape == null) { continue; }
+			final double dist = scope.getTopology().distanceBetween(scope, source, shape);
 			if (dist > distMax) {
-				shp = (IShape) shape;
+				shp = shape;
 				distMax = dist;
 			}
 		}
@@ -877,6 +913,8 @@ public class SpatialQueries {
 					IConcept.AGENT_LOCATION })
 	@doc (
 			value = "A list of agents overlapping the operand (casted as a geometry).",
+			usages = { @usage ("Returns an empty list if no agents overlap the given shape."),
+					@usage ("The agent itself may be included in the results depending on the topology configuration.") },
 			examples = { @example (
 					value = "agents_overlapping(self)",
 					equals = "the agents that overlap the shape of the agent applying the operator.",
@@ -933,10 +971,10 @@ public class SpatialQueries {
 	 */
 	private static IList<IAgent> _gather(final IScope scope, final IAgentFilter filter, final Object source,
 			final ITopology.SpatialRelation relation) {
-		if (filter == null || source == null) return GamaListFactory.EMPTY_LIST;
+		if (filter == null || source == null) return GamaListFactory.getEmptyList();
 		final IType type = filter.getSpecies() == null ? Types.AGENT : scope.getType(filter.getSpecies().getName());
-		return GamaListFactory.wrap(type,
-				scope.getTopology().getAgentsIn(scope, Cast.asGeometry(scope, source, false), filter, relation));
+		return GamaListFactory.wrap(type, scope.getTopology().getAgentsIn(scope,
+				GamaShapeFactory.castToShape(scope, source, false), filter, relation));
 	}
 
 	/**
@@ -954,7 +992,7 @@ public class SpatialQueries {
 		if (filter == null || source == null) return null;
 		ITopology topology = scope.getTopology();
 		if (topology == null) return null;
-		return topology.getAgentClosestTo(scope, Cast.asGeometry(scope, source, false), filter);
+		return topology.getAgentClosestTo(scope, GamaShapeFactory.castToShape(scope, source, false), filter);
 	}
 
 	/**
@@ -974,8 +1012,8 @@ public class SpatialQueries {
 			final int number) {
 		if (filter == null || source == null) return null;
 		final IType type = filter.getSpecies() == null ? Types.AGENT : scope.getType(filter.getSpecies().getName());
-		return GamaListFactory.wrap(type,
-				scope.getTopology().getAgentClosestTo(scope, Cast.asGeometry(scope, source, false), filter, number));
+		return GamaListFactory.wrap(type, scope.getTopology().getAgentClosestTo(scope,
+				GamaShapeFactory.castToShape(scope, source, false), filter, number));
 	}
 
 	/**
@@ -991,7 +1029,8 @@ public class SpatialQueries {
 	 */
 	private static IAgent _farthest(final IScope scope, final IAgentFilter filter, final Object source) {
 		if (filter == null || source == null) return null;
-		return scope.getTopology().getAgentFarthestTo(scope, Cast.asGeometry(scope, source, false), filter);
+		return scope.getTopology().getAgentFarthestTo(scope, GamaShapeFactory.castToShape(scope, source, false),
+				filter);
 	}
 
 	/**
@@ -1029,10 +1068,10 @@ public class SpatialQueries {
 	 */
 	static IList<IAgent> _neighbors(final IScope scope, final IAgentFilter filter, final Object source,
 			final Object distance, final ITopology t) {
-		if (filter == null || source == null) return GamaListFactory.EMPTY_LIST;
+		if (filter == null || source == null) return GamaListFactory.getEmptyList();
 		final IType type = filter.getSpecies() == null ? Types.AGENT : scope.getType(filter.getSpecies().getName());
-		return GamaListFactory.wrap(type,
-				t.getNeighborsOf(scope, Cast.asGeometry(scope, source, false), Cast.asFloat(scope, distance), filter));
+		return GamaListFactory.wrap(type, t.getNeighborsOf(scope, GamaShapeFactory.castToShape(scope, source, false),
+				Cast.asFloat(scope, distance), filter));
 	}
 
 }

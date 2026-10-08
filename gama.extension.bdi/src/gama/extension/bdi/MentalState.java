@@ -12,18 +12,18 @@ package gama.extension.bdi;
 
 import java.util.List;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.getter;
-import gama.annotations.precompiler.GamlAnnotations.variable;
-import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.core.common.interfaces.IValue;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.file.json.Json;
-import gama.core.util.file.json.JsonValue;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.annotations.doc;
+import gama.annotations.getter;
+import gama.annotations.variable;
+import gama.annotations.vars;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.misc.IValue;
+import gama.api.utils.json.IJson;
+import gama.api.utils.json.IJsonValue;
 
 /**
  * The Class MentalState.
@@ -65,7 +65,7 @@ public class MentalState implements IValue {
 	
 	
 	@Override
-	public JsonValue serializeToJson(final Json json) {
+	public IJsonValue serializeToJson(final IJson json) {
 		return json
 				.typedObject(getGamlType(), "modality", modality, SimpleBdiArchitecture.MENTAL_STATE, mental, SimpleBdiArchitecture.PREDICATE,
 						predicate == null ? null : predicate.getName(), "emotion", emo == null ? null : emo.name)

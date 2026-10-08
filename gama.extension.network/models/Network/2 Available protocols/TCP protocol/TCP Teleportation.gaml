@@ -1,10 +1,11 @@
 /**
-* Name: Pong Teleportation
+* Name: TCP Teleportation
 * Author: Nicolas Marilleau
-* Description: This model show how to send complex data (as an agent) by using list or map. In this multi-simulation, the space is distributed 
-* on 3 (nb_simul) simulation running in parallel. Each simulation manage local space and agent moving in this local space. When an agent go inside a 
-* buffer zone, it is teleported to the next simulation (remove from the first and created inside the next one).
-* Tags: Network, TCP, multi-simulation
+* Description: Demonstrates agent teleportation across multiple simulation instances using TCP. The space
+*   is divided across 3 parallel simulations; each manages a local region. When an agent reaches a buffer
+*   zone boundary, it is serialized and sent via TCP to the adjacent simulation, then recreated there. This
+*   pattern implements a distributed spatial simulation without a shared global topology.
+* Tags: network, TCP, multi_simulation, teleportation, distributed, socket, agent, protocol
 */
 model PongTeleportation
 
@@ -20,8 +21,8 @@ global {
 			myColor <- rnd_color(255);
 		}
 
-		create Buffer with: [zone::0];
-		create Buffer with: [zone::1];
+		create Buffer(zone:0);
+		create Buffer(zone:1);
 	}
 
 }
@@ -41,11 +42,11 @@ species Buffer skills: [network] {
 		}
 
 		if (simulation_id = 0) {
-			do connect to: "localhost" with_name: name protocol: "tcp_server" port: 3001;
-			do join_group with_name: "server_group";
+			do connect(to: "localhost", with_name: name, protocol: "tcp_server", port: 3001);
+			do join_group(with_name: "server_group");
 		} else {
-			do connect to: "localhost" with_name: name protocol: "tcp_client" port: 3001;
-			do join_group with_name: "buffer";
+			do connect(to: "localhost", with_name: name, protocol: "tcp_client", port: 3001);
+			do join_group(with_name: "buffer");
 			write "my name " + name + " " + next_agent;
 		}
 
@@ -57,12 +58,12 @@ species Buffer skills: [network] {
 			write "send agent";
 			map<string, unknown> msg <- map(["name"::ping.name, "mcolor"::ping.myColor, "location"::(ping.location - {self.location.x, 0})]);
 			string smsg <- serialize(msg);
-			do send to: next_agent contents: msg;
+			do send(to: next_agent, contents: msg);
 			ask ping {
-				do die;
+				do die();
 			}
 
-		}
+		} 
 
 	}
 
@@ -78,7 +79,7 @@ species Buffer skills: [network] {
 		loop while: has_more_message() {
 			message msg <- fetch_message();
 			map<string, unknown> details <- map(msg.contents);
-			create Pong with: [name:: details["name"], myColor::details["mcolor"], location::details["location"]] {
+			create Pong(name: details["name"], myColor:details["mcolor"], location:details["location"]) {
 				write "received agent";
 				location <- {myself.location.x, location.y};
 				last_zone <- myself.zone;
@@ -117,7 +118,7 @@ experiment start {
 		simulation_id <- 0;
 		seed <- 1.0;
 		loop i from: 1 to: nb_simul - 1 {
-			create simulation with: [simulation_id::i, seed::1 + i, numberOfSimulation::nb_simul];
+			create simulation(simulation_id:i, seed:1 + i, numberOfSimulation:nb_simul);
 		}
 
 	}

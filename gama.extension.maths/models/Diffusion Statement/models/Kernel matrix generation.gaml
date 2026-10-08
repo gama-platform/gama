@@ -1,10 +1,12 @@
 /**
-* Name: Generate diffusion matrix with parameters
+* Name: Kernel Matrix Generation
 * Author: Julien Mazars
-* Description: This model shows how to create a diffusion matrix by using the 4 parameters variation, proportion, radius and min-value. 
-*     Manipulate the parameters to see in real time the result. The number displayed in each cells are the ratio of the initial signal 
-*     diffused at the end of a step.
-* Tags: diffusion, math, matrix
+* Description: An interactive tool for designing diffusion kernel matrices. Four parameters control the
+*   shape of the kernel: 'variation' (how fast values drop off from the center), 'proportion' (overall
+*   scaling), 'radius' (spatial extent of the kernel), and 'min_value' (floor for edge cells). Each cell
+*   of the resulting kernel displays its numeric value in real time as parameters are changed via sliders.
+*   The kernel values represent the fraction of a signal diffused to each neighbor per step.
+* Tags: diffusion, math, matrix, kernel, interactive, visualization, parameter
 */
 
 model kernelmatrixgeneration
@@ -94,7 +96,7 @@ grid cells height:cell_max_size width:cell_max_size {
 			// display each cell as a square. The color is linked to the value of the diffused variable.
 			draw square(size_cell) color:hsb(value,1.0,1.0) border:#black at:pos;
 			// display the ratio in each square.
-			draw string(value) at: pos + {-size_cell/3,0,2} color: #black font: font("Helvetica", size_cell * #zoom * 2/3, #bold) perspective:true;
+			draw string(value) at: pos + {-size_cell/3,0,2} color: #black font: font("Helvetica", int(size_cell * #zoom * 2/3), #bold) perspective:true;
 		}
 	}
 }

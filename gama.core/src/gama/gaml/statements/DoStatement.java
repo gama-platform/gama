@@ -2,277 +2,288 @@
  *
  * DoStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.gaml.statements;
 
-import java.util.Set;
-
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.ExecutionResult;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.compilation.annotations.serializer;
-import gama.gaml.descriptions.DoDescription;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.IExpressionDescription;
-import gama.gaml.descriptions.SpeciesDescription;
-import gama.gaml.descriptions.SymbolDescription;
-import gama.gaml.descriptions.SymbolSerializer.StatementSerializer;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.factories.DescriptionFactory;
-import gama.gaml.operators.Strings;
-import gama.gaml.species.ISpecies;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.annotations.serializer;
+import gama.api.compilation.IInternalFacets;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.serialization.StatementSerializer;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.expressions.IExpressionDescription;
+import gama.api.gaml.statements.AbstractStatementSequence;
+import gama.api.gaml.types.IType;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.StringUtils;
 import gama.gaml.statements.DoStatement.DoSerializer;
-import gama.gaml.types.IType;
 
 /**
- * Written by drogoul Modified on 7 févr. 2010
+ * Implements the {@code do} / {@code invoke} / {@code .} statement, which allows an agent to execute an action or
+ * primitive at runtime.
  *
- * @todo Description
+ * <h2>Preferred syntax</h2>
+ * <p>
+ * The recommended way to call an action is the <em>dot-notation</em>:
+ * {@code target.action_name(arg1: val1, arg2: val2)} (or simply {@code target.action_name()} when no arguments are
+ * needed). When an agent calls one of its own actions it can use the {@code do} statement with the functional form:
+ * {@code do action_name(arg1: val1, arg2: val2);}. Both forms produce exactly the same compiled representation.
+ * </p>
  *
+ * <h2>Execution model</h2>
+ * <p>
+ * All syntactic forms are normalised at parse time (see
+ * {@link gaml.compiler.parsing.GamlSyntacticConverter#processDo}) and compiled at validation time (see
+ * {@link gaml.compiler.descriptions.DoDescription#validate()}) into a single
+ * {@link gaml.compiler.expressions.ActionCallOperator} expression stored in the
+ * {@link IInternalFacets#INTERNAL_FUNCTION} facet. At runtime, {@link #privateExecuteIn(IScope)} simply evaluates that
+ * expression via {@code function.value(scope)}, so all lookup, dispatch and argument-passing logic lives in
+ * {@link gaml.compiler.expressions.ActionCallOperator}.
+ * </p>
+ *
+ * <h2>Thread safety</h2>
+ * <p>
+ * All fields of this class are either {@code final} or encapsulated inside an
+ * {@link gaml.compiler.expressions.ActionCallOperator} that is itself thread-safe. No additional synchronisation is
+ * needed here.
+ * </p>
+ *
+ * <p>
+ * Originally written by drogoul, modified on 7 févr. 2010.
+ * </p>
  */
 @symbol (
-		name = { IKeyword.DO, IKeyword.INVOKE },
+		name = { IKeyword.DO, IKeyword.INVOKE, IKeyword._DOT },
 		kind = ISymbolKind.SINGLE_STATEMENT,
 		with_sequence = true,
 		with_scope = false,
 		concept = { IConcept.ACTION },
-		with_args = true)
+		with_args = false)
 @inside (
 		kinds = { ISymbolKind.BEHAVIOR, ISymbolKind.SEQUENCE_STATEMENT, ISymbolKind.LAYER },
 		symbols = IKeyword.CHART)
 @facets (
 		value = { @facet (
-				name = IKeyword.WITH,
-				type = IType.MAP,
-				of = IType.NONE,
-				index = IType.STRING,
+				name = IInternalFacets.INTERNAL_FUNCTION,
+				type = IType.NONE,
 				optional = true,
-				doc = @doc (
-						value = "a map expression containing the parameters of the action",
-						deprecated = "Use the imperative (with facets) or functional (with comma separated values inside parentheses, optionally prefixed by the argument name) form to pass the arguments")),
+				internal = true),
 				@facet (
-						name = IKeyword.RETURNS,
-						type = IType.NEW_TEMP_ID,
-						optional = true,
-						doc = @doc ("Specifies the name of the temporary variable that will contain the result.")),
-				@facet (
-						name = IKeyword.ACTION,
-						type = IType.ID,
-						optional = false,
-						doc = @doc ("the name of an action or a primitive")),
-				@facet (
-						name = IKeyword.INTERNAL_FUNCTION,
+						name = IInternalFacets.INTERNAL_TARGET,
 						type = IType.NONE,
+						optional = true,
+						internal = true),
+				@facet (
+						name = IInternalFacets.INTERNAL_NAME,
+						type = IType.LABEL,
 						optional = true,
 						internal = true), },
 		omissible = IKeyword.ACTION)
 @doc (
-		value = "Allows the agent to execute an action or a primitive.  For a list of primitives available in every species, see this [BuiltIn161 page]; for the list of primitives defined by the different skills, see this [Skills161 page]. Finally, see this [Species161 page] to know how to declare custom actions.",
+		value = "Executes an action or primitive belonging to the calling agent or to another agent. "
+				+ "The functional form `do action_name(arg: value, ...)` is mandatory for the `do` statement; "
+				+ "the dot-notation `target.action_name(arg: value, ...)` is the preferred form when calling actions on other agents or when the result must be captured, and will progressively become the norm. "
+				+ "For built-in primitives see the BuiltIn and Skills pages; for custom actions see the Species page.",
 		usages = { @usage (
-				value = "The simple syntax (when the action does not expect any argument and the result is not to be kept) is:",
-				examples = { @example (
-						value = "do name_of_action_or_primitive;",
-						isExecutable = false) }),
+				value = "Calling an action with no arguments — `do` form (self) and dot-notation (any target):",
+				examples = @example (
+						value = """
+								do my_action();                         // calls my_action on self, result discarded
+								some_agent.my_action();                 // calls my_action on another agent
+								int result <- some_agent.my_action();   // captures the returned value""",
+						isExecutable = false)),
 				@usage (
-						value = "In case the action expects one or more arguments to be passed, they are defined by using facets (enclosed tags or a map are now deprecated):",
-						examples = { @example (
-								value = "do name_of_action_or_primitive arg1: expression1 arg2: expression2;",
-								isExecutable = false) }),
+						value = "Passing arguments — arguments are always passed in the functional form `(arg: value, ...)`:",
+						examples = @example (
+								value = """
+										do my_action(arg1: expression1, arg2: expression2);
+										int result <- some_agent.my_action(arg1: expression1, arg2: expression2);""",
+								isExecutable = false)),
 				@usage (
-						value = "In case the result of the action needs to be made available to the agent, the action can be called with the agent calling the action (`self` when the agent itself calls the action) instead of `do`; the result should be assigned to a temporary variable:",
-						examples = { @example (
-								value = "type_returned_by_action result <- self name_of_action_or_primitive [];",
-								isExecutable = false) }),
+						value = "Tolerated (but not preferred) facet-based form — arguments can still be provided as inline facets on the `do` statement:",
+						examples = @example (
+								value = "do my_action arg1: expression1 arg2: expression2;",
+								isExecutable = false)),
 				@usage (
-						value = "In case of an action expecting arguments and returning a value, the following syntax is used:",
-						examples = { @example (
-								value = "type_returned_by_action result <- self name_of_action_or_primitive [arg1::expression1, arg2::expression2];",
-								isExecutable = false) }),
-				@usage (
-						value = "Deprecated uses: following uses of the `do` statement (still accepted) are now deprecated:",
-						examples = { @example (
-								value = "// Simple syntax: "),
-								@example (
-										value = "do action: name_of_action_or_primitive;",
-										isExecutable = false),
-								@example (""), @example (
-										value = "// In case the result of the action needs to be made available to the agent, the `returns` keyword can be defined; the result will then be referred to by the temporary variable declared in this attribute:"),
-								@example (
-										value = "do name_of_action_or_primitive returns: result;",
-										isExecutable = false),
-								@example (
-										value = "do name_of_action_or_primitive arg1: expression1 arg2: expression2 returns: result;",
-										isExecutable = false),
-								@example (
-										value = "type_returned_by_action result <- name_of_action_or_primitive(self, [arg1::expression1, arg2::expression2]);",
-										isExecutable = false),
-								@example (""), @example (
-										value = "// In case the result of the action needs to be made available to the agent"),
-								@example (
-										value = "let result <- name_of_action_or_primitive(self, []);",
-										isExecutable = false),
-								@example (""), @example (
-										value = "// In case the action expects one or more arguments to be passed, they can also be defined by using enclosed `arg` statements, or the `with` facet with a map of parameters:"),
-								@example (
-										value = "do name_of_action_or_primitive with: [arg1::expression1, arg2::expression2];",
-										isExecutable = false),
-								@example (
-										value = "",
-										isExecutable = false),
-								@example (
-										value = "or",
-										isExecutable = false),
-								@example (
-										value = "",
-										isExecutable = false),
-								@example (
-										value = "do name_of_action_or_primitive {",
-										isExecutable = false),
-								@example (
-										value = "     arg arg1 value: expression1;",
-										isExecutable = false),
-								@example (
-										value = "     arg arg2 value: expression2;",
-										isExecutable = false),
-								@example (
-										value = "     ...",
-										isExecutable = false),
-								@example (
-										value = "}",
-										isExecutable = false) }) })
+						value = "Deprecated forms — no longer accepted, listed here for migration purposes only:",
+						examples = @example (
+								value = """
+										do action: my_action;                                    // explicit 'action:' facet
+										do my_action returns: result;                            // 'returns:' no longer exists
+										do my_action with: [arg1::expression1];                  // 'with:' no longer works
+										do my_action { arg arg1 value: expression1; }            // 'arg' sub-statements removed
+										let result <- my_action(self, [arg1::expression1]);      // 'let' no longer exists
+										type result <- my_action(self, []);                      // old operator call form""",
+								isExecutable = false)) })
 @serializer (DoSerializer.class)
-public class DoStatement extends AbstractStatementSequence implements IStatement.WithArgs {
+public class DoStatement extends AbstractStatementSequence {
 
 	/**
-	 * The Class DoSerializer.
+	 * Serialiser for {@code do} / {@code invoke} statements.
+	 *
+	 * <p>
+	 * Serialises argument names and values from child arg descriptions. Only the facets listed in
+	 * {@link ArtefactRegistry#DO_FACETS} are serialised; internal housekeeping facets (e.g.
+	 * {@link IInternalFacets#INTERNAL_FUNCTION}) are excluded.
+	 * </p>
 	 */
 	public static class DoSerializer extends StatementSerializer {
 
+		/**
+		 * Serialises a single argument facet.
+		 *
+		 * <p>
+		 * Positional arguments (whose name is a number) are serialised as bare values; named arguments are serialised
+		 * as {@code name:value} pairs.
+		 * </p>
+		 *
+		 * @param desc
+		 *            the enclosing statement description
+		 * @param arg
+		 *            the argument description
+		 * @param sb
+		 *            the buffer to append to
+		 * @param includingBuiltIn
+		 *            whether to include built-in symbols
+		 */
 		@Override
 		protected void serializeArg(final IDescription desc, final IDescription arg, final StringBuilder sb,
 				final boolean includingBuiltIn) {
 			final String name = arg.getName();
 			final IExpressionDescription value = arg.getFacet(VALUE);
-			if (Strings.isGamaNumber(name)) {
+			if (StringUtils.isGamaNumber(name)) {
 				sb.append(value.serializeToGaml(includingBuiltIn));
 			} else {
 				sb.append(name).append(":").append(value.serializeToGaml(includingBuiltIn));
 			}
-
 		}
 
+		/**
+		 * Serialises the arguments of the action call from the compiled
+		 * {@link gaml.compiler.expressions.ActionCallOperator} stored in the
+		 * {@link IInternalFacets#INTERNAL_FUNCTION} facet.
+		 *
+		 * <p>
+		 * Falls back to the super-class implementation (which uses {@code passedArgs} or formal arg children) only when
+		 * no compiled expression is available (e.g. during partial compilation).
+		 * </p>
+		 *
+		 * @param s
+		 *            the statement description
+		 * @param sb
+		 *            the buffer to append to
+		 * @param includingBuiltIn
+		 *            whether to include built-in symbols
+		 */
 		@Override
-		protected String serializeFacetValue(final SymbolDescription s, final String key,
-				final boolean includingBuiltIn) {
-			if (!DO_FACETS.contains(key)) return null;
-			return super.serializeFacetValue(s, key, includingBuiltIn);
+		protected void serializeArgs(final IDescription s, final StringBuilder sb, final boolean includingBuiltIn) {
+			final IExpressionDescription functionFacet = s.getFacet(IInternalFacets.INTERNAL_FUNCTION);
+			if (functionFacet != null) {
+				final IExpression compiled = functionFacet.getExpression();
+				if (compiled instanceof gaml.compiler.expressions.ActionCallOperator aco) {
+					final StringBuilder argsBuf = new StringBuilder();
+					aco.argsToGaml(argsBuf, includingBuiltIn);
+					if (argsBuf.length() > 0) { sb.append("(").append(argsBuf).append(")"); }
+					return;
+				}
+			}
+			// Fallback: no compiled expression available
+			super.serializeArgs(s, sb, includingBuiltIn);
 		}
 
+		/**
+		 * Serialises a single facet value, returning {@code null} for internal/housekeeping facets that should not
+		 * appear in the serialised output.
+		 *
+		 * @param s
+		 *            the enclosing statement description
+		 * @param key
+		 *            the facet name
+		 * @param includingBuiltIn
+		 *            whether to include built-in symbols
+		 * @return the serialised facet value, or {@code null} to skip this facet
+		 */
+		@Override
+		public String serializeFacetValue(final IDescription s, final String key, final boolean includingBuiltIn) {
+			return null;
+		}
 	}
 
-	/** The args. */
-	Arguments args;
-
-	/** The target species. */
-	final String targetSpecies;
-
-	/** The function. */
-	final IExpression function, returns;
-
-	/** The Constant DO_FACETS. */
-	public static final Set<String> DO_FACETS = DescriptionFactory.getAllowedFacetsFor(IKeyword.DO, IKeyword.INVOKE);
+	/**
+	 * The compiled action-call expression. After validation this is always an
+	 * {@link gaml.compiler.expressions.ActionCallOperator} that encapsulates the target agent expression, the
+	 * action description, and the compiled arguments. {@link #privateExecuteIn(IScope)} simply evaluates this
+	 * expression.
+	 *
+	 * <p>
+	 * Immutable after construction (set in the constructor from the description's {@code INTERNAL_FUNCTION} facet).
+	 * </p>
+	 */
+	final IExpression function;
 
 	/**
-	 * Instantiates a new do statement.
+	 * Constructs a {@code DoStatement} from its compile-time description.
+	 *
+	 * <p>
+	 * The compiled {@link gaml.compiler.expressions.ActionCallOperator} produced during validation is retrieved
+	 * from the {@link IInternalFacets#INTERNAL_FUNCTION} facet and stored as {@link #function}.
+	 * </p>
 	 *
 	 * @param desc
-	 *            the desc
+	 *            the compile-time description; must not be {@code null}
 	 */
 	public DoStatement(final IDescription desc) {
 		super(desc);
-		if (((DoDescription) desc).isSuperInvocation()) {
-			final SpeciesDescription s = desc.getSpeciesContext().getParent();
-			targetSpecies = s.getName();
-		} else {
-			targetSpecies = null;
-		}
-		function = getFacet(IKeyword.INTERNAL_FUNCTION);
-		returns = getFacet(IKeyword.RETURNS);
-		setName(getLiteral(IKeyword.ACTION));
+		function = getFacet(IInternalFacets.INTERNAL_FUNCTION);
+		setName(function != null ? function.getName() : getLiteral(IInternalFacets.INTERNAL_NAME));
 	}
 
-	@Override
-	public void enterScope(final IScope scope) {
-		super.enterScope(scope);
-	}
-
-	@Override
-	public void setFormalArgs(final Arguments args) { this.args = args; }
+	// -------------------------------------------------------------------------
+	// Execution
+	// -------------------------------------------------------------------------
 
 	/**
-	 * Gets the runtime args.
+	 * Executes the action call by evaluating the compiled {@link gaml.compiler.expressions.ActionCallOperator}.
+	 *
+	 * <p>
+	 * The operator resolves the target agent, locates the action in the appropriate species or class, and passes the
+	 * compiled arguments — all in a single {@code value(scope)} call. No additional species lookup or argument
+	 * resolution is required here.
+	 * </p>
 	 *
 	 * @param scope
-	 *            the scope
-	 * @return the runtime args
+	 *            the current execution scope
+	 * @return the value returned by the action, or {@code null} when the action returns nothing or {@link #function} is
+	 *         {@code null}
+	 * @throws GamaRuntimeException
+	 *             if the action throws a runtime error
 	 */
-	public Arguments getRuntimeArgs(final IScope scope) {
-		if (args == null) return null;
-		// Dynamic arguments necessary (see #2943, #2922, plus issue with multiple parallel simulations)
-		return args.resolveAgainst(scope);
+	@Override
+	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
+		if (function == null) return null;
+		return function.value(scope);
 	}
 
 	/**
-	 * Returns the species on which to find the action. If a species target (desc) exists, then it is a super invocation
-	 * and we have to find the corresponding action. Otherwise, we return the species of the agent
+	 * Disposes of this statement by delegating to the superclass. The {@link #function} expression is managed
+	 * externally (as part of the species description) and is not disposed here.
 	 */
-	private ISpecies getContext(final IScope scope) {
-		return targetSpecies != null ? scope.getModel().getSpecies(targetSpecies) : scope.getAgent().getSpecies();
-	}
-
-	@Override
-	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
-		final ISpecies species = getContext(scope);
-		if (species == null)
-			throw GamaRuntimeException.error("Impossible to find a species to execute " + getName(), scope);
-		final IStatement.WithArgs executer = species.getAction(name);
-		Object result = null;
-		if (executer != null) {
-			final ExecutionResult er = scope.execute(executer, getRuntimeArgs(scope));
-			result = er.getValue();
-		} else if (function != null) {
-			result = function.value(scope);
-		} else
-			throw GamaRuntimeException.error("Impossible to find action " + getName() + " in " + species.getName(),
-					scope);
-		if (returns != null) {
-			String var = returns.literalValue();
-			scope.addVarWithValue(var, result);
-		}
-		return result;
-	}
-
-	@Override
-	public void setRuntimeArgs(final IScope scope, final Arguments args) {}
-
 	@Override
 	public void dispose() {
-		if (args != null) { args.dispose(); }
-		args = null;
 		super.dispose();
 	}
 

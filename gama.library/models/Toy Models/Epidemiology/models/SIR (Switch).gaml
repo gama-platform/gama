@@ -1,10 +1,13 @@
 /**
-* Name: SIR_switch
-* Author: tri and hqnghi 
-* Description: A model which show how to implement ODE system, IBM model, and to switch 
-* 	from one to another using a threshold. Another interesting point seen in this model is the 
-* 	the minimization of the execution time by reducing the number of agents to compute infections.
-* Tags: equation, math, grid
+* Name: SIR (Switch)
+* Author: Tri Nguyen-Huu, Huynh Quang Nghi
+* Description: Demonstrates dynamic switching between an ODE-based SIR model and an individual-based (IBM) SIR
+*   model within the same simulation. When the infected population is large, the ODE system is used for
+*   efficiency. When the number of infected agents drops below a threshold, the model switches to individual
+*   agents for accuracy near the extinction boundary. This hybrid approach optimizes both computational
+*   performance and epidemiological accuracy. The model also minimizes execution time by reducing the agents
+*   that need to compute new infections each step.
+* Tags: equation, math, grid, SIR, epidemiology, hybrid, ODE, IBM, switch, optimization
 */
 model SIR_switch
 
@@ -75,7 +78,7 @@ global {
 		
 		//Ask to the model to initialize itself according to the value initialized
 		ask current_model {
-			do initialize;
+			do initialize();
 		}
 		
 		//Create the SIR maths with ODE to compare
@@ -124,11 +127,11 @@ species switch_model schedules: [] {
 				self.I <- current_model.I;
 				self.R <- current_model.R;
 				self.N <- current_model.N;
-				do initialize;
+				do initialize();
 			}
 
 			ask current_model {
-				do remove_model;
+				do remove_model();
 			}
 
 			current_model <- first(IBM_model);
@@ -144,11 +147,11 @@ species switch_model schedules: [] {
 				self.I <- current_model.I;
 				self.R <- current_model.R;
 				self.N <- current_model.N;
-				do initialize;
+				do initialize();
 			}
 
 			ask current_model {
-				do remove_model;
+				do remove_model();
 			}
 
 			current_model <- first(Math_model);
@@ -165,11 +168,11 @@ species SIR_model schedules: [] {
 	int N;
 	string model_type <- 'none';
 	
-	action remove_model {
-		do die;
+	action remove_model() {
+		do die();
 	}
 
-	action initialize ;
+	action initialize() ;
 
 }
 
@@ -178,7 +181,7 @@ species IBM_model schedules: [] parent: SIR_model {
 	string model_type <- 'IBM';
 	
 	//Action to initialize the Model with SIR compartiments
-	action initialize {
+	action initialize() {
 		
 		write 'Initializing IBM model with S=' + round(S) + ', I=' + round(I) + ', R=' + round(R) + '\n';
 		//Creation of the host agents
@@ -202,25 +205,25 @@ species IBM_model schedules: [] parent: SIR_model {
 			is_immune <- true;
 			color <- rgb(52,152,219);
 		}
-		do count;
+		do count();
 	}
 
 	reflex count {
-		do count;
+		do count();
 	}
 	//Action to update the different compartiments
-	action count {
+	action count() {
 		S <- float(Host count (each.is_susceptible));
 		I <- float(Host count (each.is_infected));
 		R <- float(Host count (each.is_immune));
 	}
 	//Action to remove the model and kill all the agents it contains
-	action remove_model {
+	action remove_model() {
 		ask Host {
-			do die;
+			do die();
 		}
 
-		do die;
+		do die();
 	}
 
 }
@@ -230,7 +233,7 @@ species Math_model schedules: [] parent: SIR_model {
 	string model_type <- 'Maths';
 	float t;
 	
-	action initialize {
+	action initialize() {
 		write 'Initializing Maths model with S=' + S + ', I=' + I + ', R=' + R + '\n';
 	}
 

@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * GamaServer.java, in gama.network, is part of the source code of the GAMA modeling and simulation platform .
+ * GamaServer.java, in gama.extension.network, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -63,7 +64,7 @@ public class GamaServer extends WebSocketServer {
 	 *             the unknown host exception
 	 * @date 26 oct. 2023
 	 */
-	public GamaServer(final int port, final ServerService agt) throws UnknownHostException {
+	public GamaServer(final int port, final ServerService agt) {
 		super(new InetSocketAddress(port));
 		myService = agt;
 	}

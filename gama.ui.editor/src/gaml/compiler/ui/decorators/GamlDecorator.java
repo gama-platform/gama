@@ -21,7 +21,7 @@ import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ILightweightLabelDecorator;
 
-import gama.core.common.GamlFileExtension;
+import gama.api.constants.GamlFileExtension;
 import gama.ui.navigator.view.contents.VirtualContent;
 
 /**

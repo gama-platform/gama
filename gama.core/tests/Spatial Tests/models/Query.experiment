@@ -24,16 +24,16 @@ grid cell width: 10 height: 10 neighbors: 4 {
 
 global {
 	init {
-		create dummy with: [location :: {5,5}];
-		create dummy with: [location :: {8,9}];
-		create dummy with: [location :: {14,6}];
-		create dummy with: [location :: {35,55}];
-		create dummy with: [location :: {25,75}];
-		create dummy with: [location :: {56,80}];
-		create dummy with: [location :: {10,70}];
-		create dummy with: [location :: {80,8}];
-		create dummy with: [location :: {34,78}];
-		create dummy with: [location :: {67,32}];
+		create dummy(location : {5,5});
+		create dummy(location : {8,9});
+		create dummy(location : {14,6});
+		create dummy(location : {35,55});
+		create dummy(location : {25,75});
+		create dummy(location : {56,80});
+		create dummy(location : {10,70});
+		create dummy(location : {80,8});
+		create dummy(location : {34,78});
+		create dummy(location : {67,32});
 		ask dummy(8) {color<-#red;}
 		ask cell(40) {color<-#red;}
 	}
@@ -44,7 +44,6 @@ experiment QueryTests type: test {
 		using topology(world) {
 			closest_dummy <- dummy closest_to dummy(8);
 		}
-		write closest_dummy;
 		assert closest_dummy = dummy(4);
 		using topology(cell) {
 			closest_dummy <- dummy closest_to dummy(8);
@@ -66,7 +65,6 @@ experiment QueryTests type: test {
 		using topology(world) {
 			cl <-  topology(cell(73)) neighbors_of cell(73);
 		}
-		write cl contains_all [cell(72),cell(83),cell(63),cell(74)] ;
 		assert cl contains_all [cell(72),cell(83),cell(63),cell(74)];
 	} 
 	
@@ -75,7 +73,6 @@ experiment QueryTests type: test {
 		using topology(world) {
 			cl <-  (agent_closest_to (dummy(8)));
 		}
-		write cl;
 		assert cl = cell(73);
 	}
 	
@@ -172,6 +169,20 @@ experiment QueryTests type: test {
 			agents_overlapping <- dummy overlapping cell(73);
 		}
 		assert agents_overlapping = [dummy(8)];
+	}
+
+	test "overlapping_outside_world" {
+		dummy out_dummy;
+		create dummy returns: created_ag {
+			location <- {-20, -20};
+		}
+		out_dummy <- created_ag[0];
+
+		list<dummy> agents_overlapping;
+		using topology(world) {
+			agents_overlapping <- dummy overlapping (circle(5) at_location {-20, -20});
+		}
+		assert agents_overlapping contains out_dummy;
 	}
 	
 } 

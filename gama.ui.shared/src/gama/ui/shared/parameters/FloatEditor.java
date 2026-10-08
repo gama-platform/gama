@@ -14,12 +14,12 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
 
-import gama.core.kernel.experiment.IParameter;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.symbols.IParameter;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
 import gama.ui.shared.interfaces.EditorListener;
 
 /**
@@ -49,25 +49,26 @@ public class FloatEditor extends NumberEditor<Double> {
 	 */
 	FloatEditor(final IAgent agent, final IParameter param, final boolean canBeNull, final EditorListener<Double> l) {
 		super(agent, param, l, canBeNull);
-		computeFormatterParameters();
+		computeFormatterParameters(0d);
 	}
 
 	/**
 	 * Compute formatter parameters.
 	 */
-	protected void computeFormatterParameters() {
+	protected void computeFormatterParameters(final Double value) {
+		final int valueChars = String.valueOf(value).length();
 		final int minChars = String.valueOf(Cast.asInt(getScope(), getMinValue())).length();
 		final int maxChars = String.valueOf(Cast.asInt(getScope(), getMaxValue())).length();
-		nbInts = Math.max(minChars, maxChars);
+		nbInts = Math.max(valueChars, Math.max(minChars, maxChars));
 		formatter.setMaximumIntegerDigits(nbInts);
 		formatter.setMinimumIntegerDigits(nbInts);
 		String s = String.valueOf(getStepValue());
 		s = s.contains(".") ? s.replaceAll("0*$", "").replaceAll("\\.$", "") : s;
 		final String[] segments = s.split("\\.");
 		if (segments.length > 1) {
-			nbFracs = segments[1].length();
+			nbFracs = segments[1].length() + 1;
 		} else {
-			nbFracs = 1;
+			nbFracs = 2;
 		}
 		formatter.setMaximumFractionDigits(nbFracs);
 		formatter.setMinimumFractionDigits(nbFracs);
@@ -97,8 +98,16 @@ public class FloatEditor extends NumberEditor<Double> {
 
 	@Override
 	protected Double normalizeValues() throws GamaRuntimeException {
-		final Double valueToConsider = getOriginalValue() == null ? 0.0 : Cast.asFloat(getScope(), getOriginalValue());
-		currentValue = getOriginalValue() == null ? null : valueToConsider;
+		final Object orig = getOriginalValue() == null && param != null ? param.value(getScope()) : getOriginalValue();
+
+		if (acceptNull && orig == null) {
+			setOriginalValue(null);
+			currentValue = null;
+			return null;
+		}
+		final Double valueToConsider = orig == null ? 0.0 : Cast.asFloat(getScope(), orig);
+		if (getOriginalValue() == null) { setOriginalValue(valueToConsider); }
+		currentValue = valueToConsider;
 		return valueToConsider;
 	}
 
@@ -123,14 +132,16 @@ public class FloatEditor extends NumberEditor<Double> {
 	protected void updateToolbar() {
 		super.updateToolbar();
 		editorToolbar.enable(PLUS,
-				param.isDefined() && (getMaxValue() == null || applyPlus() < Cast.asFloat(getScope(), getMaxValue())));
+				param.isDefined() && (getMaxValue() == null || applyPlus() <= Cast.asFloat(getScope(), getMaxValue())));
+
 		editorToolbar.enable(MINUS,
-				param.isDefined() && (getMinValue() == null || applyMinus() > Cast.asFloat(getScope(), getMinValue())));
+				param.isDefined() && (getMinValue() == null || applyMinus() >= Cast.asFloat(getScope(), getMinValue())));
+
 	}
 
 	@Override
 	public boolean formatsValue() {
-		return true;
+		return false;
 	}
 
 	/**
@@ -141,7 +152,8 @@ public class FloatEditor extends NumberEditor<Double> {
 	 * @return the string
 	 */
 	@Override
-	public String valueFormatted(final Object value) {
+	public String valueFormatted(final Double value) {
+		computeFormatterParameters(value);
 		return formatter.format(value == null ? 0 : value);
 	}
 }

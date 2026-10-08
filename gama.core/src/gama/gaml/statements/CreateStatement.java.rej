@@ -1,0 +1,12 @@
+@@ -382,6 +382,9 @@
+ 		}
+- if (s == null) throw GamaRuntimeException.error("No population of " + species.serializeToGaml(false)
+-+ " is accessible in the context of " + executor + ".", scope);
++if (s == null) {
++            System.out.println("DEBUG ALL SPECIES: " + scope.getModel().getAllSpecies().keySet());
++            throw GamaRuntimeException.error("No population of " + species.serializeToGaml(false)
+++ " is accessible in the context of " + executor + ".", scope);
++        }
+ 		IPopulation pop = executor.getPopulationFor(s);
+ 
+ 

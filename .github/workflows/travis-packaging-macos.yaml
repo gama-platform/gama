@@ -29,22 +29,22 @@ jobs:
       - name: Calculate what Jar to sign
         run: |
           bash what2sign.sh
-          echo "\nPrint `needToSign.txt` :"
+          echo "\nPrint 'needToSign.txt' :"
           cat needToSign.txt
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: gama-mac-what2sign
           path: |
             ./needToSign.txt
 
   #
-  #   __  __          _____    ____   _____ 
+  #   __  __          _____    ____   _____
   # |  \/  |   /\   / ____|  / __ \ / ____|
-  # | \  / |  /  \ | |      | |  | | (___  
-  # | |\/| | / /\ \| |      | |  | |\___ \ 
+  # | \  / |  /  \ | |      | |  | | (___
+  # | |\/| | / /\ \| |      | |  | |\___ \
   # | |  | |/ ____ \ |____  | |__| |____) |
-  # |_|  |_/_/    \_\_____|  \____/|_____/ 
+  # |_|  |_/_/    \_\_____|  \____/|_____/
   #
 
   macOS-signing:
@@ -54,15 +54,13 @@ jobs:
       matrix:
         zipName: [gama.application-macosx.cocoa.x86_64, gama.application-macosx.cocoa.x86_64_withJDK, gama.application-macosx.cocoa.aarch64, gama.application-macosx.cocoa.aarch64_withJDK]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Prepare vm
         shell: bash
         run: |
           # Enforce JAVA version
           export JAVA_HOME=$JAVA_HOME_21_X64
-          # Change XCode version 
-          sudo xcode-select -s '/Applications/Xcode_15.0.1.app/Contents/Developer'
           # Else
           mkdir -p ${{ github.workspace }}/artifacts/work
 
@@ -78,7 +76,7 @@ jobs:
 
       - name: Create Keychain
         uses: apple-actions/import-codesign-certs@v3
-        with: 
+        with:
           p12-file-base64: ${{ secrets.MACOS_CERTIFICATE }}
           p12-password: ${{ secrets.MACOS_CERTIFICATE_PWD }}
           keychain: "build"
@@ -86,7 +84,7 @@ jobs:
 
       - name: Sign Application
         shell: bash
-        env: 
+        env:
           working_directory: ${{ github.workspace }}/artifacts/work
           # Variables
           MACOS_DEV_ID: ${{ secrets.MACOS_DEV_ID }}
@@ -102,7 +100,7 @@ jobs:
           bash ${{ github.workspace }}/artifacts/mac-sign.sh
           echo "=== End signing ==="
           echo "=== Entitlements ==="
-          wget https://raw.githubusercontent.com/gama-platform/gama/2024-06/gama.product/extraresources/entitlements.plist && plutil -convert xml1 ./entitlements.plist && plutil -lint ./entitlements.plist
+          wget https://raw.githubusercontent.com/gama-platform/gama/main/gama.product/extraresources/entitlements.plist && plutil -convert xml1 ./entitlements.plist && plutil -lint ./entitlements.plist
           codesign --entitlements "./entitlements.plist" --timestamp --options=runtime --force -s "$MACOS_DEV_ID" -v ./Gama.app/Contents/MacOS/Gama
 
       - name: Get tools to create ✨beautiful✨ DMG
@@ -112,7 +110,7 @@ jobs:
 
       - name: Packaging and Signing DMG
         shell: bash
-        env: 
+        env:
           working_directory: ${{ github.workspace }}/artifacts/work
           # Variables
           MACOS_DEV_ID: ${{ secrets.MACOS_DEV_ID }}
@@ -134,14 +132,21 @@ jobs:
           # Notarize dmg - Based on : https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution/customizing_the_notarization_workflow#3087734
           echo "=== Notarize ==="
           xcrun -v notarytool store-credentials "AC_PASSWORD" --apple-id "$NOTARY_APPLE_ID" --team-id "$NOTARY_TEAM_ID" --password "$NOTARY_PASSWORD"
-          xcrun -v notarytool submit ./${{ matrix.zipName }}.dmg --keychain-profile "AC_PASSWORD" --wait
+          xcrun -v notarytool submit ./${{ matrix.zipName }}.dmg --keychain-profile "AC_PASSWORD" --wait 2>&1 | tee notarize_output.txt
+          NOTARIZE_ID=$(grep -m1 '  id:' notarize_output.txt | awk '{print $2}')
+          NOTARIZE_STATUS=$(grep 'status:' notarize_output.txt | tail -1 | awk '{print $2}')
+          if [ "$NOTARIZE_STATUS" != "Accepted" ]; then
+            echo "=== Notarization Log ==="
+            xcrun notarytool log "$NOTARIZE_ID" --keychain-profile "AC_PASSWORD"
+            exit 1
+          fi
           echo "=== Staple DMG ==="
           xcrun -v stapler staple ./${{ matrix.zipName }}.dmg
 
-      - uses: actions/upload-artifact@v4
-        env: 
+      - uses: actions/upload-artifact@v6
+        env:
           working_directory: ${{ github.workspace }}/artifacts/work
         with:
           name: gama-mac-signed-${{ matrix.zipName }}
           path: ./${{ matrix.zipName }}.dmg
-          if-no-files-found: error # 'warn' or 'ignore' are also available, defaults to `warn` 
+          if-no-files-found: error  # 'warn' or 'ignore' are also available, defaults to `warn`

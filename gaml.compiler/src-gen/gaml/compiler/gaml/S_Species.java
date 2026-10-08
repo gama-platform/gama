@@ -14,6 +14,6 @@ package gaml.compiler.gaml;
  * @model
  * @generated
  */
-public interface S_Species extends Statement, S_Declaration, TypeDefinition
+public interface S_Species extends Statement, FacetsAndBlock, TypeDefinition, VarDefinition
 {
 } // S_Species

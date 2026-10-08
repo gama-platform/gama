@@ -3,19 +3,19 @@
  * MonitorDisplayer.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.ui.shared.parameters;
 
-import static gama.core.runtime.GAMA.getRuntimeScope;
-import static gama.core.runtime.GAMA.reportError;
-import static gama.core.util.GamaListFactory.wrap;
+import static gama.api.GAMA.getRuntimeScope;
+import static gama.api.GAMA.reportError;
+import static gama.api.gaml.types.Types.NO_TYPE;
+import static gama.api.types.list.GamaListFactory.wrap;
 import static gama.gaml.operators.System.enterValue;
 import static gama.gaml.operators.System.userInputDialog;
-import static gama.gaml.types.Types.NO_TYPE;
 import static gama.ui.shared.menus.GamaMenu.action;
 import static gama.ui.shared.menus.GamaMenu.separate;
 
@@ -29,17 +29,17 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 
-import gama.core.common.interfaces.IValue;
-import gama.core.kernel.experiment.InputParameter;
-import gama.core.metamodel.agent.IAgent;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
+import gama.api.types.misc.IValue;
+import gama.core.experiment.parameters.InputParameter;
 import gama.core.outputs.MonitorOutput;
 import gama.core.outputs.ValuedDisplayOutputFactory;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.IGamaColors;
@@ -112,8 +112,8 @@ public class MonitorDisplayer extends AbstractStatementEditor<MonitorOutput> {
 			separate(m);
 			action(m, "Copy value", ex -> {
 				final Object v = getStatement().getLastValue();
-				WorkbenchHelper.copy(
-						v == null ? "nil" : v instanceof IValue ? ((IValue) v).serializeToGaml(true) : v.toString());
+				WorkbenchHelper
+						.copy(v == null ? "nil" : v instanceof IValue i ? i.serializeToGaml(true) : v.toString());
 			});
 			final IExpression exp = getStatement().getValue();
 			final IType<?> type = exp == null ? Types.NO_TYPE : exp.getGamlType();
@@ -171,7 +171,7 @@ public class MonitorDisplayer extends AbstractStatementEditor<MonitorOutput> {
 
 	@Override
 	protected void applyEdit() {
-		GamaColor color = getStatement().getColor(getScope());
+		IColor color = getStatement().getColor(getScope());
 		if (color == null) { color = IGamaColors.NEUTRAL.gamaColor(); }
 		Map<String, Object> init = userInputDialog(getScope(), "Edit monitor",
 				wrap(NO_TYPE,
@@ -182,7 +182,7 @@ public class MonitorDisplayer extends AbstractStatementEditor<MonitorOutput> {
 									public boolean isExpression() { return true; }
 								})));
 		getStatement().setName((String) init.get("Title"));
-		getStatement().setColor((GamaColor) init.get("Color"));
+		getStatement().setColor((IColor) init.get("Color"));
 		textBox.setColor(GamaColors.get(getStatement().getColor(getScope())));
 		getStatement().setNewExpression((IExpression) init.get("Expression"));
 		updateWithValueOfParameter(false, false);

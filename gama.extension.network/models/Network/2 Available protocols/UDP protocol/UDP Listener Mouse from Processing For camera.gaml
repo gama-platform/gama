@@ -1,10 +1,11 @@
 /**
-* Name: UDP Listener Mouse from Processing For camera.gaml
-* Author: Arnaud Grignard, Benoit Gaudou & Nicolas Marilleau
-* Description: A server is run and waits for messages that transmit coordinates of the camera.
-* 			   The model library provides an example of such an external application:
-* 				UDPMouseLocationSender / UDPMouseLocationSender.pde
-* Tags: Network, Socket, UDP
+* Name: UDP Listener - Mouse from Processing (Camera Control)
+* Author: Arnaud Grignard, Benoit Gaudou, Nicolas Marilleau
+* Description: Like 'UDP Listener - Mouse from Processing' but maps the received XY coordinates to the
+*   3D display camera position/target rather than to an agent location. This allows an external Processing
+*   sketch to control the GAMA camera in real time, enabling remote camera navigation for presentations
+*   or interactive 3D exploration of simulation results.
+* Tags: network, UDP, socket, listener, Processing, camera, 3d, interactive, real_time, communication
 */
 model SocketUDP_Server_Mouse_Listener_For_Camera
 
@@ -17,7 +18,7 @@ global skills: [network] {
 		write "After having launched this model, run the program UDPMouseLocationSender / UDPMouseLocationSender.pde with Processing 3. ";
 		write "Processing 3 can be found here: https://processing.org/";
 		write "Run the GAMA simulation, move on Processing and move the mouse on the gray small screen and observe the camera in GAMA" color: #red;
-		do connect to: url protocol: "udp_server" port: port size_packet: 1024;
+		do connect(to: url, protocol: "udp_server", port: port, size_packet: 1024);
 		create observedAgents number: 10;
 	}
 

@@ -1,8 +1,12 @@
 /**
-* Name: Save to Geotiff
+* Name: Save to GeoTIFF
 * Author: Patrick Taillandier
-* Description: This is a model that shows how to save a grid inside a Geotiff File to reuse it later or to keep it.
-* Tags: save_file, tiff, grid
+* Description: Shows how to export a GAMA grid as a georeferenced GeoTIFF raster file. GeoTIFF is a standard
+*   format for raster geographic data that embeds spatial reference information (coordinate system, cell size,
+*   and origin) directly in the file. The exported file can be reloaded in subsequent GAMA simulations, or
+*   opened and analyzed in external GIS software such as QGIS, ArcGIS, GRASS, or processed with tools like GDAL.
+*   The 'save' statement with 'format: "geotiff"' handles the conversion automatically.
+* Tags: save_file, tiff, geotiff, grid, raster, export, gis
 */
 
 model SavetoGeotiff

@@ -1,9 +1,8 @@
 /*******************************************************************************************************
  *
- * ChartDataSet.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * ChartDataSet.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,19 +14,20 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map.Entry;
-
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.util.FileUtils;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IList;
-import gama.dev.DEBUG;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
-import gama.gaml.operators.Files;
-import gama.gaml.operators.Strings;
-
 import java.util.Set;
+
+import gama.annotations.constants.IKeyword;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.ui.displays.IChart;
+import gama.api.utils.StringUtils;
+import gama.api.utils.files.FileUtils;
+import gama.dev.DEBUG;
+import gama.gaml.operators.Files;
 
 /**
  * The Class ChartDataSet.
@@ -45,7 +45,10 @@ public class ChartDataSet {
 	final ArrayList<ChartDataSource> sources = new ArrayList<>();
 
 	/** The series. */
-	final LinkedHashMap<String, ChartDataSeries> series = new LinkedHashMap<>();
+	private final LinkedHashMap<String, ChartDataSeries> series = new LinkedHashMap<>();
+
+	/** Sequential series index counter for color palette assignment. */
+	private int seriesCounter = 0;
 
 	/** The deleted series. */
 	final LinkedHashMap<String, ChartDataSeries> deletedseries = new LinkedHashMap<>();
@@ -55,14 +58,14 @@ public class ChartDataSet {
 
 	/** The X series values. */
 	// datasets
-	final ArrayList<Double> XSeriesValues = new ArrayList<>(); // for series
+	final DoubleList XSeriesValues = new DoubleList(); // for series
 
 	/** The Ycategories. */
 	final ArrayList<String> Ycategories = new ArrayList<>(); // for Y categories
 
 	/** The Y series values. */
 	// datasets
-	final ArrayList<Double> YSeriesValues = new ArrayList<>(); // for 3d series
+	final DoubleList YSeriesValues = new DoubleList(); // for 3d series
 
 	/** The serie creation date. */
 	final LinkedHashMap<String, Integer> serieCreationDate = new LinkedHashMap<>();
@@ -94,7 +97,7 @@ public class ChartDataSet {
 	final LinkedHashMap<String, Integer> serieToUpdateBefore = new LinkedHashMap<>();
 
 	/** The mainoutput. */
-	ChartOutput mainoutput;
+	IChart mainoutput;
 
 	/** The reset all before. */
 	int resetAllBefore = 0;
@@ -214,14 +217,14 @@ public class ChartDataSet {
 	 *
 	 * @return the x series values
 	 */
-	public ArrayList<Double> getXSeriesValues() { return XSeriesValues; }
+	public DoubleList getXSeriesValues() { return XSeriesValues; }
 
 	/**
 	 * Gets the y series values.
 	 *
 	 * @return the y series values
 	 */
-	public ArrayList<Double> getYSeriesValues() { return YSeriesValues; }
+	public DoubleList getYSeriesValues() { return YSeriesValues; }
 
 	/**
 	 * Sets the x series values.
@@ -229,7 +232,7 @@ public class ChartDataSet {
 	 * @param xSeriesValues
 	 *            the new x series values
 	 */
-	public void setXSeriesValues(final ArrayList<Double> xSeriesValues) {
+	public void setXSeriesValues(final DoubleList xSeriesValues) {
 		XSeriesValues.clear();
 		XSeriesValues.addAll(xSeriesValues);
 	}
@@ -331,7 +334,7 @@ public class ChartDataSet {
 	 *
 	 * @return the output
 	 */
-	public ChartOutput getOutput() { return mainoutput; }
+	public IChart getOutput() { return mainoutput; }
 
 	/**
 	 * Sets the output.
@@ -355,19 +358,17 @@ public class ChartDataSet {
 	 *            the date
 	 */
 	public void addNewSerie(final String id, final ChartDataSeries serie, final int date) {
-		if (series.containsKey(id)) {
-			// Series name already present, should do something.... Don't change
-			// creation date?
-			series.put(id, serie);
-		} else {
+		if (!series.containsKey(id)) {
+			if (serie != null && serie.getSeriesIndex() < 0) {
+				serie.setSeriesIndex(seriesCounter++);
+			}
 			series.put(id, serie);
 			serieCreationDate.put(id, date);
-
+		} else {
+			series.put(id, serie);
 		}
-		// serieCreationDate.put(id, date);
 		serieToUpdateBefore.put(id, date);
 		serieRemovalDate.put(id, -1);
-
 	}
 
 	/**
@@ -434,7 +435,6 @@ public class ChartDataSet {
 	 * @return the data series
 	 */
 	public ChartDataSeries getDataSeries(final IScope scope, final String serieid) {
-
 		return series.get(serieid);
 	}
 
@@ -478,7 +478,6 @@ public class ChartDataSet {
 		final ArrayList<ChartDataSource> sourcestoadd = new ArrayList<>();
 		for (final ChartDataSource source : sources) {
 			if (source.isCumulative() || source.isCumulativeY) {
-
 				final ChartDataSource newsource = source.getClone(scope, chartCycle);
 				newsource.createInitialSeries(scope);
 				sourcestoremove.add(source);
@@ -496,14 +495,14 @@ public class ChartDataSet {
 		}
 		for (final ChartDataSource source : sourcestoadd) { this.addDataSource(source); }
 		if (this.getXSeriesValues().size() > 0) {
-			final ArrayList<Double> ser = this.getXSeriesValues();
+			final DoubleList ser = this.getXSeriesValues();
 			for (int i = 0; i < this.getXSeriesValues().size(); i++) {
 				if (ser.get(i) == chartCycle - 1) { this.commonXindex = i; }
 			}
 
 		}
 		if (this.getYSeriesValues().size() > 0) {
-			final ArrayList<Double> sery = this.getYSeriesValues();
+			final DoubleList sery = this.getYSeriesValues();
 			for (int i = 0; i < this.getYSeriesValues().size(); i++) {
 				if (sery.get(i) == chartCycle - 1) { this.commonYindex = i; }
 			}
@@ -535,7 +534,7 @@ public class ChartDataSet {
 			source.updatevalues(scope, chartCycle);
 			if (keepHistory) { source.savehistory(scope, history); }
 		}
-		if (keepHistory) { history.append(Strings.LN); }
+		if (keepHistory) { history.append(StringUtils.LN); }
 	}
 
 	/**
@@ -615,11 +614,11 @@ public class ChartDataSet {
 	 * @param chartCycle
 	 *            the chart cycle
 	 */
-	private void addCommonYValue(final IScope scope, final Double chartCycle) {
-
+	private void addCommonYValue(final IScope scope, final double chartCycle) {
 		YSeriesValues.add(chartCycle);
-		Ycategories.add("" + chartCycle);
-
+		if (byCategory) {
+			Ycategories.add(String.valueOf(chartCycle));
+		}
 	}
 
 	/**
@@ -669,8 +668,8 @@ public class ChartDataSet {
 			}
 
 			if (xval instanceof IList) {
-				final IList<?> xv2 = Cast.asList(scope, xval);
-				final IList<?> xl2 = Cast.asList(scope, xlab);
+				final IList<?> xv2 = GamaListFactory.castToList(scope, xval);
+				final IList<?> xl2 = GamaListFactory.castToList(scope, xlab);
 
 				if (this.useXSource && xv2.size() > 0 && xv2.get(0) instanceof Number) {
 					XSeriesValues.clear();
@@ -767,11 +766,11 @@ public class ChartDataSet {
 	 * @param chartCycle
 	 *            the chart cycle
 	 */
-	private void addCommonXValue(final IScope scope, final Double chartCycle) {
-
+	private void addCommonXValue(final IScope scope, final double chartCycle) {
 		XSeriesValues.add(chartCycle);
-		Xcategories.add("" + chartCycle);
-
+		if (byCategory) {
+			Xcategories.add(String.valueOf(chartCycle));
+		}
 	}
 
 	/**
@@ -929,6 +928,16 @@ public class ChartDataSet {
 			}
 		}
 
+	}
+
+	/**
+	 * @param scope
+	 * @param element
+	 */
+	public void addSerieAtTheEnd(final IScope scope, final String element) {
+		ChartDataSeries serie = getDataSeries(scope, element);
+		this.series.remove(element);
+		this.series.put(element, serie);
 	}
 
 }

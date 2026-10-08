@@ -5,7 +5,7 @@
 [![Github Releases](https://img.shields.io/github/release/gama-platform/gama.svg)](https://github.com/gama-platform/gama/releases)
 [![Documentation](https://img.shields.io/badge/documentation-web-brightgreen.svg)](https://gama-platform.github.io)
 
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=gama-platform_new.gama&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=gama-platform_new.gama)
+
 [![CodeScene general](https://codescene.io/images/analyzed-by-codescene-badge.svg)](https://codescene.io/projects/51964)
 [![CodeScene Average Code Health](https://codescene.io/projects/51964/status-badges/average-code-health)](https://codescene.io/projects/51964)
 

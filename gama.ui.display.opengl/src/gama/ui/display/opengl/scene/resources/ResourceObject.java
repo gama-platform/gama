@@ -1,32 +1,34 @@
 /*******************************************************************************************************
  *
- * ResourceObject.java, in gama.ui.display.opengl, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * ResourceObject.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.display.opengl.scene.resources;
 
+import gama.api.ui.layers.IDrawingAttributes;
+import gama.api.ui.layers.IDrawingAttributes.DrawerType;
 import gama.core.util.file.GamaGeometryFile;
-import gama.gaml.statements.draw.DrawingAttributes;
-import gama.gaml.statements.draw.DrawingAttributes.DrawerType;
 import gama.ui.display.opengl.scene.AbstractObject;
 
 /**
  * The Class ResourceObject.
  */
-public class ResourceObject extends AbstractObject<GamaGeometryFile, DrawingAttributes> {
+public class ResourceObject extends AbstractObject<GamaGeometryFile, IDrawingAttributes> {
 
 	/**
 	 * Instantiates a new resource object.
 	 *
-	 * @param file the file
-	 * @param attributes the attributes
+	 * @param file
+	 *            the file
+	 * @param attributes
+	 *            the attributes
 	 */
-	public ResourceObject(final GamaGeometryFile file, final DrawingAttributes attributes) {
+	public ResourceObject(final GamaGeometryFile file, final IDrawingAttributes attributes) {
 		super(file, attributes, DrawerType.RESOURCE);
 	}
 

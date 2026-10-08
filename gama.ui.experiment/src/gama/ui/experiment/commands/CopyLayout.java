@@ -17,8 +17,8 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 
-import gama.core.util.tree.GamaNode;
-import gama.core.util.tree.GamaTree;
+import gama.api.utils.collections.GamaNode;
+import gama.api.utils.collections.GamaTree;
 import gama.ui.application.workbench.PerspectiveHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
 

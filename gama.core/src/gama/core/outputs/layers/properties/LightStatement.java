@@ -1,36 +1,37 @@
 /*******************************************************************************************************
  *
  * LightStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.outputs.layers.properties;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.outputs.LayeredDisplayOutput;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.annotations.validator;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IStatementDescription;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.expressions.IExpressionDescription;
+import gama.api.gaml.types.IType;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.IOutput;
+import gama.api.ui.layers.ILightDefinition;
 import gama.core.outputs.layers.AbstractLayerStatement;
 import gama.core.outputs.layers.properties.LightStatement.LightStatementValidator;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.compilation.annotations.validator;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.IExpressionDescription;
-import gama.gaml.descriptions.StatementDescription;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.types.IType;
 
 /**
  * The Class LightStatement.
@@ -49,10 +50,11 @@ import gama.gaml.types.IType;
 				name = IKeyword.NAME,
 				type = IType.STRING,
 				optional = false,
-				doc = @doc ("The name of the light source, must be unique (otherwise the last definition prevails). "
-						+ "Will be used to populate a menu where light sources can be easily turned on and off. Special names can be used:"
-						+ "Using the special constant #ambient will allow to redefine or control the ambient light intensity and presence"
-						+ "Using the special constant #default will replace the default directional light of the surrounding display")),
+				doc = @doc ("""
+						The name of the light source, must be unique (otherwise the last definition prevails). \
+						Will be used to populate a menu where light sources can be easily turned on and off. Special names can be used:\
+						Using the special constant #ambient will allow to redefine or control the ambient light intensity and presence\
+						Using the special constant #default will replace the default directional light of the surrounding display""")),
 				@facet (
 						name = IKeyword.LOCATION,
 						type = IType.POINT,
@@ -98,7 +100,7 @@ import gama.gaml.types.IType;
 						name = IKeyword.INTENSITY,
 						type = { IType.INT, IType.COLOR },
 						optional = true,
-						doc = @doc ("an int / rgb / rgba value to specify either the color+intensity of the light or simply its intensity. (default value if not specified can be set in the Preferences. If not, it is equal to: (160,160,160,255) ).")),
+						doc = @doc ("an int / rgb / rgba value to specify either the color+intensity of the light or simply its intensity. (default value if not specified can be set in the __PREFS__. If not, it is equal to: (160,160,160,255) ).")),
 				@facet (
 						name = "show",
 						type = { IType.BOOL },
@@ -110,11 +112,12 @@ import gama.gaml.types.IType;
 						optional = true,
 						doc = @doc ("specify if the parameters of the light need to be updated every cycle or treated as constants. (default value : true).")) })
 @doc (
-		value = "`light` allows to define diffusion lights in your 3D display. They must be given a name, which will help track them in the UI. Two names have however special meanings: #ambient, "
-				+ "which designates the ambient luminosity and color of the scene (with a default intensity of (160,160,160,255) or the value set in the Preferences) and #default, "
-				+ "which designates the default directional light applied to a scene (with a default medium intensity of (160,160,160,255) or the value set in the Preferences in the direction given by (0.5,0.5,1)). Redefining a light named #ambient or #regular "
-				+ "will then modify these default lights (for example changing their color or deactivating them). To be more precise, and given all the default values of the facets, the existence of these two lights is effectively equivalent to redefining:"
-				+ "light #ambient intensity: gama.pref_display_light_intensity; light #default type: #direction intensity: gama.pref_display_light_intensity direction: {0.5,0.5,-1};",
+		value = """
+				`light` allows to define diffusion lights in your 3D display. They must be given a name, which will help track them in the UI. Two names have however special meanings: #ambient, \
+				which designates the ambient luminosity and color of the scene (with a default intensity of (160,160,160,255) or the value set in the Preferences) and #default, \
+				which designates the default directional light applied to a scene (with a default medium intensity of (160,160,160,255) or the value set in the Preferences in the direction given by (0.5,0.5,1)). Redefining a light named #ambient or #regular \
+				will then modify these default lights (for example changing their color or deactivating them). To be more precise, and given all the default values of the facets, the existence of these two lights is effectively equivalent to redefining:\
+				light #ambient intensity: gama.pref_display_light_intensity; light #default type: #direction intensity: gama.pref_display_light_intensity direction: {0.5,0.5,-1};""",
 		usages = { @usage (
 				value = "The general syntax is:",
 				examples = { @example (
@@ -138,10 +141,10 @@ public class LightStatement extends AbstractLayerStatement {
 		/**
 		 * Method validate()
 		 *
-		 * @see gama.gaml.compilation.IDescriptionValidator#validate(gama.gaml.descriptions.IDescription)
+		 * @see gama.api.compilation.descriptions.IDescriptionValidator#validate(gama.api.compilation.descriptions.IDescription)
 		 */
 		@Override
-		public void validate(final StatementDescription desc) {
+		public void validate(final IStatementDescription desc) {
 			super.validate(desc);
 
 			final IExpressionDescription position = desc.getFacet(IKeyword.LOCATION);
@@ -222,7 +225,7 @@ public class LightStatement extends AbstractLayerStatement {
 	 * @return the type
 	 */
 	@Override
-	public LayerType getType(final LayeredDisplayOutput output) {
+	public LayerType getType(final IOutput output) {
 		return LayerType.LIGHT;
 	}
 

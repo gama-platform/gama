@@ -1,21 +1,12 @@
 /**
- * Name: FIPA Request (4)
- * Author:
- * Description: This model demonstrates a usecase of the FIPA Request interaction protocol. 
- * (Please see http://www.fipa.org/specs/fipa00026/index.html for the detail description of this protocol).
- * 
- * 
- * The Initiator agent begins the 'fipa-request' conversation/intaction protocol by sending a 'request' 
- * message to the Participant agent with 'go sleeping' as content.
- * 
- * On receiving a 'request' message, the Participant agent replies with an 'inform' message. 
- * According to the specification of the FIPA Requestion interaction protocol, the next possible messages 
- * after receiving a 'request' message are either 'refuse' message or 'agree' message. 
- * Hence replying with an 'inform' message upon receiving a 'request' message violates the protocol specification. 
- * GAMA will hence raise a GamaRuntimeException. 
- * A conversation is automatically ended in case of GamaRuntimeException raised. Hence this conversation ends.
- * Tags: fipa
- */
+* Name: FIPA Request (4) - Protocol Violation
+* Author: Gama Development Team
+* Description: Demonstrates the FIPA Request protocol — protocol violation variant. The Initiator sends a
+*   'request'. The Participant replies directly with 'inform' (skipping the required 'agree'/'refuse'), which
+*   violates the specification. GAMA raises a GamaRuntimeException and automatically ends the conversation.
+*   Use this model to understand how GAMA enforces FIPA protocol conformance.
+* Tags: fipa, request, inform, protocol_violation, exception, multi_agent, interaction
+*/
 model fipa_request_4
 
 global {
@@ -38,7 +29,7 @@ species Initiator skills: [fipa] {
 	
 	reflex send_request when: (time = 1) {
 		write 'send message';
-		do start_conversation to: [p] protocol: 'fipa-request' performative: 'request' contents: ['go sleeping'] ;
+		do start_conversation(to: [p], protocol: 'fipa-request', performative: 'request', contents: ['go sleeping']) ;
 	}
 	
 	reflex read_refuse_message when: !(empty(refuses)) {
@@ -59,7 +50,7 @@ species Participant skills: [fipa] {
 		
 		
 		write 'A GamaRuntimeException is raised to inform that the message\'s performative doesn\'t respect the \'request\' interaction protocol\' specification';
-		do inform message: (requests at 0) contents: ['I don\'t want'] ; // Attention: note that GAMA will raise an exception because an 'inform' message is not appropriate here.
+		do inform(message: (requests at 0), contents: ['I don\'t want']) ; // Attention: note that GAMA will raise an exception because an 'inform' message is not appropriate here.
 	}
 }
 

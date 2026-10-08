@@ -1,8 +1,12 @@
 /**
-* Name: Save to Ascii
+* Name: Save to ASC
 * Author: Patrick Taillandier
-* Description: This is a model that shows how to save a grid inside a ASCII File to reuse it later or to keep it.
-* Tags: save_file, asc, grid
+* Description: Shows how to save grid data to an ESRI ASCII raster file (.asc) for reuse in later simulations or
+*   in external GIS tools. The ESRI ASCII format is a simple text-based raster format that stores the grid dimensions,
+*   cell size, and origin coordinates as a header, followed by one numeric value per cell. In GAMA, the 'save'
+*   statement can write grid data directly to this format by specifying a grid species or a field variable.
+*   The resulting file can be reloaded in subsequent GAMA models or in GIS software such as QGIS or ArcGIS.
+* Tags: save_file, asc, grid, raster, export, esri
 */
 
 model SavetoAsc

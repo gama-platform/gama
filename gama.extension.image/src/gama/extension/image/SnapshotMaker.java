@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * SnapshotMaker.java, in gama.extension.image, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * SnapshotMaker.java, in gama.extension.image, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -17,23 +17,20 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.Robot;
-import java.awt.geom.Rectangle2D;
 import java.io.File;
 
 import javax.imageio.ImageIO;
 
-import org.jfree.chart.JFreeChart;
-
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.ISnapshotMaker;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.common.util.FileUtils;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.outputs.layers.charts.ChartLayer;
-import gama.core.outputs.layers.charts.ChartOutput;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IPoint;
+import gama.api.ui.displays.IChart;
+import gama.api.ui.displays.IDisplaySurface;
+import gama.api.ui.layers.ILayer;
+import gama.api.ui.layers.ISnapshotMaker;
+import gama.api.utils.files.FileUtils;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
 import gama.gaml.operators.Files;
 
@@ -72,7 +69,7 @@ public class SnapshotMaker implements ISnapshotMaker {
 	 *            the composite
 	 */
 	@Override
-	public void takeAndSaveSnapshot(final IDisplaySurface surface, final GamaPoint customDimensions) {
+	public void takeAndSaveSnapshot(final IDisplaySurface surface, final IPoint customDimensions) {
 
 		if (surface == null) return;
 		final IScope scope = surface.getScope();
@@ -134,16 +131,16 @@ public class SnapshotMaker implements ISnapshotMaker {
 	 * @return the buffered image
 	 */
 	@Override
-	public GamaImage captureImage(final IDisplaySurface surface, final GamaPoint customDimensions) {
+	public GamaImage captureImage(final IDisplaySurface surface, final IPoint customDimensions) {
 		DEBUG.OUT("Entring image capture at cycle " + surface.getScope().getClock().getCycle());
 		// final LayeredDisplayData data = surface.getData();
 		GamaImage image = null;
-		// GamaPoint p = data.getImageDimension();
+		// IPoint p = data.getImageDimension();
 		Rectangle composite = surface.getBoundsForRobotSnapshot();
-		final int width =
-				customDimensions == null || customDimensions.x <= 0 ? composite.width : (int) customDimensions.x;
-		final int height =
-				customDimensions == null || customDimensions.y <= 0 ? composite.height : (int) customDimensions.y;
+		final int width = customDimensions == null || customDimensions.getX() <= 0 ? composite.width
+				: (int) customDimensions.getX();
+		final int height = customDimensions == null || customDimensions.getY() <= 0 ? composite.height
+				: (int) customDimensions.getY();
 
 		if (GamaPreferences.Displays.DISPLAY_FAST_SNAPSHOT.getValue() && robot != null) {
 			try {
@@ -176,15 +173,15 @@ public class SnapshotMaker implements ISnapshotMaker {
 	 *            the height
 	 * @return the gama image
 	 */
-	private GamaImage takeSnapshotOfChart(final ChartLayer chart, final int width, final int height) {
+	private GamaImage takeSnapshotOfChart(final ILayer.Chart chart, final int width, final int height) {
 		if (chart == null) return null;
-		ChartOutput co = chart.getChart();
+		IChart co = chart.getChart();
 		if (co == null) return null;
-		DEBUG.OUT("Chart is rendered on " + width + " " + height);
+		java.awt.image.BufferedImage img = co.getImage(width, height, true);
+		if (img == null) return null;
 		GamaImage im = GamaImage.ofDimensions(width, height, true);
-		JFreeChart jfc = co.getJFChart();
 		Graphics2D g2 = im.createGraphics();
-		jfc.draw(g2, new Rectangle2D.Float(0, 0, width, height));
+		g2.drawImage(img, 0, 0, null);
 		g2.dispose();
 		return im;
 	}
@@ -241,19 +238,19 @@ public class SnapshotMaker implements ISnapshotMaker {
 		}
 	}
 
-	/** The instance. */
-
-	private static SnapshotMaker instance;
+	/** Initialization-on-demand holder for the singleton instance. */
+	private static final class InstanceHolder {
+		/** The single instance, created exactly once by the class loader. */
+		static final SnapshotMaker INSTANCE = new SnapshotMaker();
+	}
 
 	/**
 	 * Gets the single instance of SnapshotMaker.
 	 *
 	 * @return single instance of SnapshotMaker
 	 */
-	public static synchronized SnapshotMaker getInstance() {
-		if (instance == null) { instance = new SnapshotMaker(); }
-
-		return instance;
+	public static SnapshotMaker getInstance() {
+		return InstanceHolder.INSTANCE;
 	}
 
 	/**

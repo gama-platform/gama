@@ -3,27 +3,28 @@
  * MeshLayerData.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.outputs.layers;
 
-import java.awt.Color;
-
-import gama.core.common.interfaces.IGraphics;
-import gama.core.common.interfaces.IImageProvider;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
-import gama.core.util.matrix.IField;
-import gama.core.util.matrix.IMatrix;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.GamaFieldType;
-import gama.gaml.types.Types;
+import gama.annotations.constants.IKeyword;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.matrix.GamaMatrixFactory;
+import gama.api.types.matrix.IField;
+import gama.api.types.matrix.IMatrix;
+import gama.api.ui.displays.IGraphics;
+import gama.api.ui.layers.ILayerStatement;
+import gama.api.utils.interfaces.IImageProvider;
 
 /**
  * The Class MeshLayerData.
@@ -31,7 +32,7 @@ import gama.gaml.types.Types;
 public class MeshLayerData extends LayerData {
 
 	/** The default line color. */
-	static GamaColor defaultLineColor = GamaColor.get(Color.black);
+	static IColor defaultLineColor = GamaColorFactory.BLACK;
 
 	/** The should compute values. */
 	boolean shouldComputeValues = true;
@@ -43,7 +44,7 @@ public class MeshLayerData extends LayerData {
 	IField values;
 
 	/** The line. */
-	final Attribute<GamaColor> line;
+	final Attribute<IColor> line;
 
 	/** The texture. */
 	final Attribute<IImageProvider> texture;
@@ -79,7 +80,7 @@ public class MeshLayerData extends LayerData {
 	final Attribute<Double> above;
 
 	/** The dim. */
-	private final GamaPoint dim = new GamaPoint();
+	private final IPoint dim = GamaPointFactory.create();
 
 	/**
 	 * Instantiates a new mesh layer data.
@@ -94,9 +95,9 @@ public class MeshLayerData extends LayerData {
 		super(def);
 		size = create(IKeyword.SIZE, (scope, exp) -> {
 			Object result = exp.value(scope);
-			if (result instanceof Number) return new GamaPoint(1, 1, ((Number) result).doubleValue());
-			return Cast.asPoint(scope, result);
-		}, Types.POINT, new GamaPoint(1, 1, 1));
+			if (result instanceof Number) return GamaPointFactory.create(1, 1, ((Number) result).doubleValue());
+			return GamaPointFactory.castToPoint(scope, result);
+		}, Types.POINT, GamaPointFactory.create(1, 1, 1));
 		line = create(IKeyword.BORDER, Types.COLOR, null);
 		elevation = create(IKeyword.SOURCE, (scope, exp) -> {
 			if (exp != null) return buildValues(scope, exp.value(scope));
@@ -105,7 +106,7 @@ public class MeshLayerData extends LayerData {
 		triangulation = create(IKeyword.TRIANGULATION, Types.BOOL, false);
 		smooth = create(IKeyword.SMOOTH, (scope, exp) -> {
 			final Object result = exp.value(scope);
-			return result instanceof Boolean ? (Boolean) result ? 1 : 0 : Cast.asInt(scope, result);
+			return result instanceof Boolean b ? b ? 1 : 0 : Cast.asInt(scope, result);
 		}, Types.INT, 0);
 		grayscale = create(IKeyword.GRAYSCALE, Types.BOOL, false);
 		wireframe = create(IKeyword.WIREFRAME, Types.BOOL, false);
@@ -142,7 +143,7 @@ public class MeshLayerData extends LayerData {
 	 */
 	private IField buildValues(final IScope scope, final Object from) {
 		if (values == null || shouldComputeValues) {
-			values = GamaFieldType.buildField(scope, from);
+			values = GamaMatrixFactory.castToField(scope, from);
 			dim.setLocation(values.getCols(scope), values.getRows(scope), 0);
 		}
 		return values;
@@ -190,13 +191,14 @@ public class MeshLayerData extends LayerData {
 	 *
 	 * @return the line color
 	 */
-	public GamaColor getLineColor() { return line.get() == null && wireframe.get() ? defaultLineColor : line.get(); }
+	public IColor getLineColor() { return line.get() == null && wireframe.get() ? defaultLineColor : line.get(); }
 
 	/**
 	 * Draw lines.
 	 *
 	 * @return true, if successful
 	 */
+	@Override
 	public boolean drawLines() {
 		return line.get() != null || wireframe.get();
 	}
@@ -206,7 +208,7 @@ public class MeshLayerData extends LayerData {
 	 *
 	 * @return the dimension
 	 */
-	public GamaPoint getDimension() { return dim; }
+	public IPoint getDimension() { return dim; }
 
 	/**
 	 * Gets the elevation matrix.

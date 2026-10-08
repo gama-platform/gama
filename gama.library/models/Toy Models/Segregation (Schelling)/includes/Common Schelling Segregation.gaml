@@ -37,7 +37,7 @@ global {
 	list<base> all_people;  
 	
 	//Action to write the description of the model in the console
-	action description {
+	action description() {
 		write 		"Description. \n"
 				+ 	"Thomas Schelling model of residential segregation is a classic study of the effects of local decisions on global dynamics. Agents with mild preferences for same-type neighbors, but without preferences for segregated neighborhoods, can wind up producing complete segregation.\n"
 				+	"In this model, agents populate a grid with a given *density*. They are in two different states : happy when the percentage of same-color neighbours is above their *desired percentage of similarity*; unhappy otherwise. In the latter case, they change their location randomly until they find a neighbourhood that fits their desire. \n"
@@ -46,18 +46,18 @@ global {
 	//Initialization of the model
 	init {
 		//Write the description of the model 
-		do description;
+		do description();
 		//Initialization of the places
-		do initialize_places;
+		do initialize_places();
 		//Computation of the number of people according to the density of people
 		number_of_people <- int( length (all_places) * density_of_people);
 		//Initialization of the people
-		do initialize_people;
+		do initialize_people();
 	}
 	//Action to initialize places defined in the subclasses
-	action initialize_places virtual: true;
+	action initialize_places() virtual: true;
 	//Action to initialize people in the subclasses
-	action initialize_people virtual: true;
+	action initialize_people() virtual: true;
 }
 
 //Species base representing the people agents

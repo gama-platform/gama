@@ -1,9 +1,12 @@
 /**
-* Name: Uniform diffusion
+* Name: Uniform Diffusion (Grid)
 * Author: Benoit Gaudou
-* Description: This model is used to show how a diffusion works with a uniform matrix of diffusion in a grid. The cell at the center of the grid emit a pheromon at each step, which is spread 
-*     through the grid thanks to the diffusion mechanism. Without passing a diffusion matrix, the default diffusion matrix is a uniform matrix 3x3, with value 1/nb_neighbors.
-* Tags: diffusion, matrix, math, elevation
+* Description: Demonstrates uniform (isotropic) diffusion on a grid using the 'diffuse' statement. A cell
+*   at the center emits pheromone each step; it spreads outward through the grid using the default uniform
+*   3×3 diffusion matrix (value 1/nb_neighbors for each neighbor). The pheromone concentration is rendered
+*   as a 3D elevation map (each cell's height = pheromone level). This is the simplest diffusion model and
+*   the starting point before exploring anisotropic or masked diffusion.
+* Tags: diffusion, matrix, math, grid, pheromone, elevation, 3d
 */
 
 model uniform_diffusion

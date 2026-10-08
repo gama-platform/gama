@@ -1,9 +1,12 @@
 /**
-* Name:  Agents from Database in PostGIS
+* Name: Agents from Database in PostGIS
 * Author: Benoit Gaudou
-* Description:  This model does SQL query commands and create agents using the results
-* Tags: database
-  */
+* Description: Step 3 of the PostGIS spatial database workflow. Executes a spatial SQL SELECT query against
+*   the PostGIS database and instantiates GAMA agents from each row result. Agent geometries are loaded
+*   directly from the PostGIS geometry column and transformed to GAMA's coordinate system. Demonstrates how
+*   to populate georeferenced agent populations from a PostGIS spatial database.
+* Tags: database, SQL, PostGIS, PostgreSQL, spatial, geometry, agents, create, GIS, select
+*/
 
 model DB2agentPOSTGIS 
 
@@ -35,8 +38,7 @@ global {
 		write "";		
 		
 		create DB_accessor {
-			create buildings from: select(PARAMS, QUERY)
-							 with:[ nature::"type", shape::"geom"];
+			create buildings( nature:"type", shape:"geom") from: select(PARAMS, QUERY);
 		 }
 		 write "Buildings created: "+length(buildings) ;
 	}

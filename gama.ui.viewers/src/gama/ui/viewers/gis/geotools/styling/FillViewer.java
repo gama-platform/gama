@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * FillViewer.java, in gama.ui.shared.viewers, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * FillViewer.java, in gama.ui.viewers, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.viewers.gis.geotools.styling;
 
@@ -22,7 +22,7 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.geotools.styling.Fill;
+import org.geotools.api.style.Fill;
 import org.geotools.styling.SLD;
 import org.geotools.styling.StyleBuilder;
 
@@ -67,19 +67,19 @@ public class FillViewer {
 
 	/** The enabled. */
 	boolean enabled;
-	
+
 	/** The color. */
 	Color color;
-	
+
 	/** The opacity. */
 	double opacity;
 
 	/** The on. */
 	Button on;
-	
+
 	/** The chooser. */
 	StolenColorEditor chooser;
-	
+
 	/** The percent. */
 	Combo percent;
 
@@ -91,22 +91,23 @@ public class FillViewer {
 		@Override
 		public void widgetSelected(final SelectionEvent e) {
 			sync(e);
-		};
+		}
 
 		@Override
 		public void widgetDefaultSelected(final SelectionEvent e) {
 			sync(e);
-		};
+		}
 
 		@Override
 		public void modifyText(final ModifyEvent e) {
 			sync(SimpleConfigurator.selectionEvent(e));
-		};
+		}
 
 		/**
 		 * Sync.
 		 *
-		 * @param selectionEvent the selection event
+		 * @param selectionEvent
+		 *            the selection event
 		 */
 		private void sync(final SelectionEvent selectionEvent) {
 			try {
@@ -119,9 +120,7 @@ public class FillViewer {
 						FillViewer.this.opacity = Double.parseDouble(ptext) / 100.0;
 					} else {
 						FillViewer.this.opacity = Double.parseDouble(ptext);
-						if (FillViewer.this.opacity > 1) {
-							FillViewer.this.opacity /= 100.0;
-						}
+						if (FillViewer.this.opacity > 1) { FillViewer.this.opacity /= 100.0; }
 					}
 				} catch (final NumberFormatException nan) {
 					// well lets just leave opacity alone
@@ -136,11 +135,11 @@ public class FillViewer {
 			}
 		}
 
-	};
+	}
 
 	/** The sync. */
 	Listener sync = new Listener();
-	
+
 	/** The listener. */
 	private SelectionListener listener;
 
@@ -159,7 +158,7 @@ public class FillViewer {
 	 * @param event
 	 */
 	protected void fire(final SelectionEvent event) {
-		if (this.listener == null) { return; }
+		if (this.listener == null) return;
 		this.listener.widgetSelected(event);
 	}
 
@@ -179,7 +178,7 @@ public class FillViewer {
 		this.chooser = new StolenColorEditor(part, this.sync);
 
 		this.percent = new Combo(part, SWT.DROP_DOWN);
-		this.percent.setItems(new String[] { "0%", "25%", "50%", "75%", "100%" }); //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+		this.percent.setItems("0%", "25%", "50%", "75%", "100%"); //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
 		this.percent.setTextLimit(4);
 		this.percent.addKeyListener(kListener);
 		this.percent.setToolTipText("Fill opacity");
@@ -194,15 +193,16 @@ public class FillViewer {
 	 * @return Fill defined by this model
 	 */
 	public Fill getFill(final StyleBuilder build) {
-		if (!this.enabled) { return null; }
-		if (!Double.isNaN(this.opacity)) { return build.createFill(this.color, this.opacity); }
+		if (!this.enabled) return null;
+		if (!Double.isNaN(this.opacity)) return build.createFill(this.color, this.opacity);
 		return build.createFill(this.color);
 	}
 
 	/**
 	 * Listen.
 	 *
-	 * @param listen the listen
+	 * @param listen
+	 *            the listen
 	 */
 	void listen(final boolean listen) {
 		if (listen) {

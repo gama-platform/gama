@@ -1,8 +1,11 @@
 /**
-* Name: BaseModel
-* Based on the internal empty template. 
-* Author: A. Drogoul
-* Tags: 
+* Name: Base Model (Serialization)
+* Author: Alexis Drogoul
+* Description: The base road-network model imported by the serialization demonstration models. Defines
+*   roads, people, and a weighted-graph topology loaded from GIS shapefiles. Not intended to be run
+*   directly — it exists as a shared foundation for 'Backward Experiment Formats', 'Create Simulation
+*   From File', and the 'Serialize Operators' models so they all exercise the same underlying simulation.
+* Tags: serialization, base_model, road_network, graph, agent_movement, import
 */
 
 
@@ -84,7 +87,7 @@ species people skills: [moving] {
 			path_to_follow <- path_between(road_network with_weights roads_knowledge, location,the_target);
 		}
 		//the agent follows the path it computed but with the real weights of the graph
-		do follow path:path_to_follow speed: 5.0 move_weights: roads_weight;
+		do follow(path:path_to_follow, speed: 5.0, move_weights: roads_weight);
 	}
 		
 	aspect base {

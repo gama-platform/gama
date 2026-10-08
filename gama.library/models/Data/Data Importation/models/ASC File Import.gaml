@@ -1,8 +1,12 @@
 /**
-* Name: ESRI ASCII to grid model
-* Author:  Patrick Taillandier
-* Description: Model which shows how to initialize a grid using a ESRI ASCII file
-* Tags: grid, load_file, asc
+* Name: ASC File Import
+* Author: Patrick Taillandier
+* Description: Shows how to initialize a GAMA grid using an ESRI ASCII raster file (.asc). The grid_file operator
+*   loads the ASC file and automatically infers the grid dimensions, cell size, and geographic extent. Each cell
+*   of the grid is initialized with the numeric value from the corresponding raster pixel, which can represent
+*   elevation, land use categories, habitat suitability, or any other continuous or categorical spatial data.
+*   The world geometry is set to the envelope of the loaded file, ensuring correct spatial alignment.
+* Tags: grid, load_file, asc, raster, gis, initialization, spatial
 */
 
 model ascimport

@@ -20,8 +20,8 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 
-import gama.gaml.compilation.GamlIdiomsProvider;
-import gama.gaml.interfaces.IGamlDescription;
+import gama.api.compilation.descriptions.IGamlDescription;
+import gama.api.compilation.documentation.GamlIdiomsProvider;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.utils.WorkbenchHelper;

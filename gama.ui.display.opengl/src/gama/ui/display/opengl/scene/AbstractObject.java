@@ -1,10 +1,10 @@
 
 /*******************************************************************************************************
  *
- * AbstractObject.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * AbstractObject.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,11 +14,11 @@ package gama.ui.display.opengl.scene;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
 
-import gama.core.common.interfaces.IDisposable;
-import gama.core.common.interfaces.IImageProvider;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.gaml.statements.draw.DrawingAttributes;
-import gama.gaml.statements.draw.DrawingAttributes.DrawerType;
+import gama.api.types.geometry.IPoint;
+import gama.api.ui.layers.IDrawingAttributes;
+import gama.api.ui.layers.IDrawingAttributes.DrawerType;
+import gama.api.utils.interfaces.IDisposable;
+import gama.api.utils.interfaces.IImageProvider;
 import gama.ui.display.opengl.OpenGL;
 
 /**
@@ -29,7 +29,7 @@ import gama.ui.display.opengl.OpenGL;
  * @param <ATT>
  *            the generic type
  */
-public abstract class AbstractObject<T, ATT extends DrawingAttributes> implements IDisposable {
+public abstract class AbstractObject<T, ATT extends IDrawingAttributes> implements IDisposable {
 
 	/** The attributes. */
 	private final ATT attributes;
@@ -113,11 +113,31 @@ public abstract class AbstractObject<T, ATT extends DrawingAttributes> implement
 			} catch (final IndexOutOfBoundsException e) {// do nothing. Can arrive in the new shader architecture
 			}
 			if (obj instanceof IImageProvider im) {
-				final DrawingAttributes fd = getAttributes();
+				final IDrawingAttributes fd = getAttributes();
 				textures[order] = gl.getTextureId(im, fd.useCache());
 			} else if (obj instanceof BufferedImage im) { textures[order] = gl.getTextureId(im); }
 		}
 		return textures[order];
+	}
+
+	/**
+	 * Loads this object's textures and reports whether all image textures are available.
+	 *
+	 * @param gl
+	 *            the OpenGL context
+	 * @return true if every image texture is available
+	 */
+	public boolean areTexturesAvailable(final OpenGL gl) {
+		if (textures == null) return true;
+		final var objectTextures = getAttributes().getTextures();
+		if (objectTextures == null) return true;
+		for (int i = 0; i < textures.length && i < objectTextures.size(); i++) {
+			final Object texture = objectTextures.get(i);
+			if ((texture instanceof IImageProvider || texture instanceof BufferedImage)
+					&& getTexture(gl, i) == OpenGL.NO_TEXTURE)
+				return false;
+		}
+		return true;
 	}
 
 	/**
@@ -155,7 +175,7 @@ public abstract class AbstractObject<T, ATT extends DrawingAttributes> implement
 	 *            the p
 	 * @return the translation into
 	 */
-	public void getTranslationInto(final GamaPoint p) {
+	public void getTranslationInto(final IPoint p) {
 		final var explicitLocation = getAttributes().getLocation();
 		if (explicitLocation == null) {
 			p.setLocation(0, 0, 0);
@@ -171,7 +191,7 @@ public abstract class AbstractObject<T, ATT extends DrawingAttributes> implement
 	 *            the p
 	 * @return the translation for rotation into
 	 */
-	public void getTranslationForRotationInto(final GamaPoint p) {
+	public void getTranslationForRotationInto(final IPoint p) {
 		getTranslationInto(p);
 	}
 
@@ -182,7 +202,7 @@ public abstract class AbstractObject<T, ATT extends DrawingAttributes> implement
 	 *            the p
 	 * @return the translation for scaling into
 	 */
-	public void getTranslationForScalingInto(final GamaPoint p) {
+	public void getTranslationForScalingInto(final IPoint p) {
 		p.setLocation(0, 0, 0);
 	}
 

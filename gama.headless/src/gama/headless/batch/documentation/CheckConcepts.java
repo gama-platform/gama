@@ -1,12 +1,11 @@
 /*******************************************************************************************************
  *
- * CheckConcepts.java, in gama.headless, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * CheckConcepts.java, in gama.headless, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.headless.batch.documentation;
 
@@ -26,6 +25,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import gama.annotations.constants.IKeyword;
+
 /**
  * The Class CheckConcepts.
  */
@@ -35,8 +36,10 @@ public class CheckConcepts {
 	/**
 	 * Execute for A website part.
 	 *
-	 * @param path the path
-	 * @param websitePart the website part
+	 * @param path
+	 *            the path
+	 * @param websitePart
+	 *            the website part
 	 */
 	private static void executeForAWebsitePart(final String path, final String websitePart) {
 		final ArrayList<File> listFiles = new ArrayList<>();
@@ -64,7 +67,8 @@ public class CheckConcepts {
 	/**
 	 * Browse keywords.
 	 *
-	 * @param path the path
+	 * @param path
+	 *            the path
 	 */
 	private static void browseKeywords(final String path) {
 		try {
@@ -80,13 +84,11 @@ public class CheckConcepts {
 				final Node nNode = nList.item(temp);
 				final Element eElement = (Element) nNode;
 				final String category = eElement.getElementsByTagName("category").item(0).getTextContent();
-				final String conceptName = eElement.getElementsByTagName("name").item(0).getTextContent();
-				if ("concept".equals(category)) {
-					if (ConceptManager.conceptIsPossibleToAdd(conceptName)) {
-						for (int i = 0; i < eElement.getElementsByTagName("associatedKeyword").getLength(); i++) {
-							ConceptManager.addOccurrenceOfConcept(conceptName,
-									ConceptManager.WebsitePart.GAML_REFERENCES.toString());
-						}
+				final String conceptName = eElement.getElementsByTagName(IKeyword.NAME).item(0).getTextContent();
+				if ("concept".equals(category) && ConceptManager.conceptIsPossibleToAdd(conceptName)) {
+					for (int i = 0; i < eElement.getElementsByTagName("associatedKeyword").getLength(); i++) {
+						ConceptManager.addOccurrenceOfConcept(conceptName,
+								ConceptManager.WebsitePart.GAML_REFERENCES.toString());
 					}
 				}
 			}
@@ -98,11 +100,13 @@ public class CheckConcepts {
 	/**
 	 * Write report.
 	 *
-	 * @param file the file
-	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @param file
+	 *            the file
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
 	 */
 	private static void writeReport(final String file) throws IOException {
-		String result = "";
+		StringBuilder result = new StringBuilder();
 
 		// read the file
 		try (final InputStream fis = java.nio.file.Files.newInputStream(new File(file).toPath());
@@ -112,21 +116,21 @@ public class CheckConcepts {
 
 			while ((line = br.readLine()) != null) {
 				if (line.contains("__________________________________")) {
-					result += line + "\n";
+					result.append(line).append("\n");
 					break;
 				}
-				result += line + "\n";
+				result.append(line).append("\n");
 			}
 		}
-		result += "\n\n";
+		result.append("\n\n");
 
 		// add the statistics
-		result += ConceptManager.getExtendedStatistics();
+		result.append(ConceptManager.getExtendedStatistics());
 
 		// write the file
 		final File outputFile = new File(file);
 		try (final OutputStream fileOut = java.nio.file.Files.newOutputStream(outputFile.toPath())) {
-			fileOut.write(result.getBytes());
+			fileOut.write(result.toString().getBytes());
 		}
 	}
 }

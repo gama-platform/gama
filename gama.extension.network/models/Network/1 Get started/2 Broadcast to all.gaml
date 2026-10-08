@@ -1,8 +1,10 @@
 /**
-* Name: broad cast to all agents
+* Name: Broadcast to All Agents (MQTT)
 * Author: Nicolas Marilleau
-* Description: It is a simple model showing few agents that broadcast a message to others.
-* Tags: Network, MQTT
+* Description: Shows how agents can broadcast messages to all connected subscribers via MQTT. Multiple
+*   agents subscribe to a shared topic; one agent publishes a message that all others receive simultaneously.
+*   Demonstrates the publish-subscribe (pub/sub) pattern that is central to MQTT-based communication in GAMA.
+* Tags: network, MQTT, broadcast, publish_subscribe, messaging, communication
 */
 
 /**
@@ -24,7 +26,7 @@ global {
 	//create Ping agent
 		create People number: nb_agents {
 		// The name attribute of each agent being unique, we use it as an id in the connection to the server	
-			do connect with_name: name;
+			do connect(with_name: name);
 			//default ActiveMQ MQTT login is "admin", the password is "admin" and the port is 1883
 			// do connect to:"localhost" with_name:name login:"admin" password:"admin" port: 1883;
 		}
@@ -48,7 +50,7 @@ species People skills: [network] {
 	reflex send when: is_sender {
 	//send a message to all agents (even him). "ALL" is the built in group 
 	//for which each agent participates. 
-		do send to: "ALL" contents: "This message is sent by " + name + " to All";
+		do send(to: "ALL", contents: "This message is sent by " + name + " to All");
 	}
 
 }

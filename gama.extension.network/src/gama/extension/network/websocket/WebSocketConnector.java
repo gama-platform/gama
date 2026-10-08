@@ -13,8 +13,8 @@ package gama.extension.network.websocket;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.IScope;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
 import gama.extension.network.common.CommandMessage;
 import gama.extension.network.common.CommandMessage.CommandType;
 import gama.extension.network.common.Connector;

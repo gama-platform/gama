@@ -14,7 +14,7 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 
-import gama.core.runtime.GAMA;
+import gama.api.GAMA;
 
 /**
  * The Class OpenGamaWebsiteHandler.

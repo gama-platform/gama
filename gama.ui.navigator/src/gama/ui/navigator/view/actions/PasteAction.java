@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * PasteAction.java, in gama.ui.navigator.view, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * PasteAction.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.navigator.view.actions;
 
@@ -19,7 +19,6 @@ import java.util.List;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -34,9 +33,10 @@ import org.eclipse.ui.actions.SelectionListenerAction;
 import org.eclipse.ui.internal.navigator.resources.plugin.WorkbenchNavigatorMessages;
 import org.eclipse.ui.part.ResourceTransfer;
 
-import gama.ui.application.workspace.WorkspaceModelsManager;
+import gama.api.GAMA;
 import gama.ui.navigator.view.contents.UserProjectsFolder;
 import gama.ui.shared.utils.WorkbenchHelper;
+import gama.workspace.manager.WorkspaceModelsManager;
 
 /**
  * Standard action for pasting resources on the clipboard to the selected resource's location.
@@ -89,11 +89,11 @@ public class PasteAction extends SelectionListenerAction {
 		final List<? extends IResource> selectedResources = getSelectedResources();
 		for (final IResource resource : selectedResources) {
 			if (resource instanceof IProject && !((IProject) resource).isOpen())
-				return ResourcesPlugin.getWorkspace().getRoot();
+				return GAMA.getWorkspaceManager().getRoot();
 			if (resource.getType() == IResource.FILE) return resource.getParent();
 			return (IContainer) resource;
 		}
-		return ResourcesPlugin.getWorkspace().getRoot();
+		return GAMA.getWorkspaceManager().getRoot();
 	}
 
 	/**
@@ -116,7 +116,7 @@ public class PasteAction extends SelectionListenerAction {
 	@Override
 	protected List<?> getSelectedNonResources() {
 		final List<?> result = new ArrayList<>(super.getSelectedNonResources());
-		result.removeIf(o -> o instanceof UserProjectsFolder);
+		result.removeIf(UserProjectsFolder.class::isInstance);
 		return result;
 	}
 
@@ -130,14 +130,15 @@ public class PasteAction extends SelectionListenerAction {
 		final List<?> ss = getStructuredSelection().toList();
 		final boolean hasUser = hasUser(ss);
 		final List<IResource> result = new ArrayList<>(super.getSelectedResources());
-		if (hasUser) { result.add(ResourcesPlugin.getWorkspace().getRoot()); }
+		if (hasUser) { result.add(GAMA.getWorkspaceManager().getRoot()); }
 		return result;
 	}
 
 	/**
 	 * Checks for user.
 	 *
-	 * @param ss the ss
+	 * @param ss
+	 *            the ss
 	 * @return true, if successful
 	 */
 	private boolean hasUser(final List<?> ss) {
@@ -183,7 +184,7 @@ public class PasteAction extends SelectionListenerAction {
 		if (fileData != null) {
 			// enablement should ensure that we always have access to a container
 			final IContainer container = getTarget();
-			if (container == ResourcesPlugin.getWorkspace().getRoot()) {
+			if (container == GAMA.getWorkspaceManager().getRoot()) {
 				handlePaste(fileData);
 				return;
 			}
@@ -245,7 +246,7 @@ public class PasteAction extends SelectionListenerAction {
 		final List<? extends IResource> selectedResources = getSelectedResources();
 		if (selectedResources.size() > 1) {
 			for (final IResource resource : selectedResources) {
-				if ((resource.getType() != IResource.FILE) || !targetResource.equals(resource.getParent())) return false;
+				if (resource.getType() != IResource.FILE || !targetResource.equals(resource.getParent())) return false;
 			}
 		}
 		if (resourceData != null) {
@@ -269,7 +270,8 @@ public class PasteAction extends SelectionListenerAction {
 	/**
 	 * Handle paste.
 	 *
-	 * @param selection the selection
+	 * @param selection
+	 *            the selection
 	 */
 	public static void handlePaste(final String[] selection) {
 		for (final String name : selection) {
@@ -299,7 +301,7 @@ public class PasteAction extends SelectionListenerAction {
 					}
 					// RefreshHandler.run(container);
 				} catch (final CoreException e) {
-					
+
 					e.printStackTrace();
 				}
 			} else {
@@ -310,7 +312,7 @@ public class PasteAction extends SelectionListenerAction {
 					op.copyFiles(new String[] { name }, container);
 					// RefreshHandler.run(container);
 				} catch (final CoreException e) {
-					
+
 					e.printStackTrace();
 				}
 			}

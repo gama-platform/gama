@@ -1,8 +1,12 @@
 /**
-* Name: GraphImportation
-* Author: P. Taillandier
-* Description:  Shows how to load diverse graph files. 
-* Tags: Graph, File
+* Name: Graph Importation
+* Author: Patrick Taillandier
+* Description: Demonstrates how to load graph files from various standard formats into GAMA. Supported formats
+*   include GraphML, GML, DOT (Graphviz), DIMACS, GEXF (Gephi Exchange), TSPLIB, and Graph6. A parameter
+*   lets the user interactively switch between formats to compare the loaded results. After loading, the graph
+*   nodes are positioned according to the coordinates stored in the file (when available), and the graph topology
+*   is displayed. This model is a useful reference for integrating externally constructed networks into GAMA simulations.
+* Tags: graph, file, graphml, gml, dot, gexf, import, load_file, network, topology
 */
 
 model GraphImportation
@@ -11,16 +15,16 @@ global {
 	
 	string type <- "graphml" among: ["graphml", "gml","dot", "dimacs", "gexf", "tsplib", "graph6"]; 
 	
-	map loc_nodes;
+	map<string, point> loc_nodes;
 	
-	graph g;
+	graph<string, string> g;
 	init {
-		do importation;
+		do importation();
 	}
 	reflex reimport {
-		do importation;
+		do importation();
 	}
-	action importation {
+	action importation() {
 		
 		switch type {
 			match "graphml" {
@@ -62,12 +66,12 @@ experiment import_graph type: gui {
 			graphics "graph " {
 				
 				loop v over: g.vertices {
-					draw circle(1) at: point(loc_nodes[v]) color: #red border: #black;
+					draw circle(1) at: loc_nodes[v] color: #red border: #black;
 				}
 				loop e over: g.edges {
 					string s <- g source_of e;
 					string t <- g target_of e;
-					draw line([point(loc_nodes[s]),  point(loc_nodes[t])]) color: #black end_arrow: 1.0;
+					draw line([loc_nodes[s],  loc_nodes[t]]) color: #black end_arrow: 1.0;
 				}
 			}
 		}

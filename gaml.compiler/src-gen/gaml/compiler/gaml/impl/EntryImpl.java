@@ -6,9 +6,9 @@ package gaml.compiler.gaml.impl;
 import gaml.compiler.gaml.Entry;
 import gaml.compiler.gaml.GamlPackage;
 
-import org.eclipse.emf.ecore.EClass;
+import gaml.compiler.serializer.GamlEObjectImpl;
 
-import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
+import org.eclipse.emf.ecore.EClass;
 
 /**
  * <!-- begin-user-doc -->
@@ -17,7 +17,7 @@ import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
  *
  * @generated
  */
-public class EntryImpl extends MinimalEObjectImpl.Container implements Entry
+public class EntryImpl extends GamlEObjectImpl implements Entry
 {
   /**
    * <!-- begin-user-doc -->

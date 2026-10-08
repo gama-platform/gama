@@ -1,8 +1,11 @@
 /**
-* Name: HelloWorldBDI
+* Name: Hello World BDI
 * Author: Patrick Taillandier
-* Description: Minimal model
-* Tags: simple_bdi, plan, predicate, desire
+* Description: The minimal BDI model in GAMA. A single agent uses the 'simple_bdi' control architecture.
+*   It has one desire (say hello) and one plan to fulfil it (print a message). This is the entry point for
+*   understanding how Beliefs, Desires and Intentions are declared and activated in GAML. Ideal first model
+*   before studying GoldMiner_BDI or the full tutorial series.
+* Tags: simple_bdi, plan, predicate, desire, belief, intention, architecture
 */
 
 model HelloWorldBDI

@@ -1,8 +1,11 @@
 /***
-* Name: BDItutorial2
+* Name: BDI Tutorial - Step 2 - Gold Miner BDI Behaviors
 * Author: Mathieu Bourgais
-* Description: Description of gold miner behaviors using BDI architecture
-* Tags: BDI, plan, intention
+* Description: Second step of the BDI Gold Miner tutorial. Adds BDI logic to the miner: desires (find gold,
+*   extract gold, sell gold), plans (wander, go to mine, mine gold, go to market, sell), and perception rules
+*   that convert sensory observations into beliefs. Miners now fully exploit the simple_bdi architecture to
+*   autonomously find, extract, and sell gold nuggets. This is the core BDI step of the tutorial.
+* Tags: simple_bdi, BDI, plan, intention, belief, desire, tutorial, gold_miner, architecture
 ***/
 
 model BDItutorial2
@@ -35,7 +38,7 @@ global {
     }
     
     reflex end_simulation when: sum(gold_mine collect each.quantity) = 0 and empty(miner where each.has_belief(has_gold)){
-        do pause;
+        do pause();
         ask miner {
 			write name + " : " +gold_sold;
 		}
@@ -80,7 +83,7 @@ species miner skills: [moving] control:simple_bdi {
     
         
     plan lets_wander intention: find_gold  {
-        do wander;
+        do wander();
     }
     
     plan get_gold intention: has_gold  {
@@ -88,7 +91,7 @@ species miner skills: [moving] control:simple_bdi {
             do add_subintention(get_current_intention(),choose_gold_mine, true);
             do current_intention_on_hold();
         } else {
-            do goto target: target ;
+            do goto (target: target) ;
             if (target = location)  {
                 gold_mine current_mine<- gold_mine first_with (target = each.location);
                 if current_mine.quantity > 0 {
@@ -115,7 +118,7 @@ species miner skills: [moving] control:simple_bdi {
     }
     
     plan return_to_base intention: sell_gold {
-        do goto target: the_market ;
+        do goto (target: the_market) ;
         if (the_market.location = location)  {
             do remove_belief(has_gold);
             do remove_intention(sell_gold, true);

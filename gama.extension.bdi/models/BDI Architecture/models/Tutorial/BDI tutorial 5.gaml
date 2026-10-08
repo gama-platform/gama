@@ -1,8 +1,12 @@
 /***
-* Name: BDItutorial5
+* Name: BDI Tutorial - Step 5 - Norms, Obligations and Enforcement
 * Author: Mathieu Bourgais
-* Description: Addition of norms, obligation, and enforcement
-* Tags: norm, obligation, enforcement
+* Description: Fifth and final step of the BDI Gold Miner tutorial. Adds normative reasoning: miners are
+*   subject to social norms (e.g., must not steal from occupied mines) and obligations (e.g., must pay taxes
+*   at the market). An enforcer agent monitors compliance and sanctions violations. Miners can obey, violate,
+*   or strategically comply with norms depending on their emotional state and risk assessment. This is the
+*   reference model for the normative and institutional extensions of the simple_bdi architecture in GAMA.
+* Tags: simple_bdi, norm, obligation, enforcement, sanction, tutorial, gold_miner, BDI, institutional
 ***/
 
 model BDItutorial5
@@ -70,7 +74,7 @@ global {
 	}
 	
 	reflex end_simulation when: sum(gold_mine collect each.quantity) = 0 and empty(miner where each.has_belief(has_gold)){
-		do pause;
+		do pause();
 		ask miner {
 			write name + " : " +gold_sold;
 		}
@@ -133,7 +137,7 @@ species policeman skills: [moving] control:simple_bdi {
 	}
 	
 	plan patrol intention: patroling {
-		do wander;
+		do wander();
 	}
 	
 	aspect base {
@@ -169,7 +173,7 @@ species miner skills: [moving] control:simple_bdi {
 	float threshold_norm <- 0.5;
 	
 	init {
-		do add_desire(find_gold);
+		self.add_desire(find_gold);
 	}
 	
 	perceive target: self {
@@ -211,7 +215,7 @@ species miner skills: [moving] control:simple_bdi {
 	
 	plan lets_wander intention:find_gold finished_when: has_desire(has_gold)
 	{
-		do wander;
+		do wander();
 	}
 	
 	norm doing_job obligation:has_gold finished_when: has_belief(has_gold) threshold:threshold_obligation{
@@ -219,7 +223,7 @@ species miner skills: [moving] control:simple_bdi {
 			do add_subintention(get_current_intention(),choose_gold_mine, true);
 			do current_intention_on_hold();
 		} else {
-			do goto target: target ;
+			do goto (target: target) ;
 			if (target = location)  {
 				gold_mine current_mine<- gold_mine first_with (target = each.location);
 				if current_mine.quantity > 0 {
@@ -240,7 +244,7 @@ species miner skills: [moving] control:simple_bdi {
 			do add_subintention(get_current_intention(),choose_gold_mine, true);
 			do current_intention_on_hold();
 		} else {
-			do goto target: target ;
+			do goto (target: target) ;
 			if (target = location)  {
 				gold_mine current_mine<- gold_mine first_with (target = each.location);
 				if current_mine.quantity > 0 {
@@ -274,7 +278,7 @@ species miner skills: [moving] control:simple_bdi {
 	}
 	
 	plan return_to_base intention: sell_gold when: has_belief(has_gold){
-		do goto target: the_market ;
+		do goto (target: the_market) ;
 		if (the_market.location = location)  {
 			do remove_belief(has_gold);
 			do remove_intention(sell_gold, true);

@@ -1,10 +1,11 @@
 /**
-* Name: UDP Listener Mouse from Processing.gaml
-* Author: Arnaud Grignard, Benoit Gaudou  & Nicolas Marilleau
-* Description: A server is run and waits for messages that transmit coordinates of the agent.
-* 			   The model library provides an example of such an external application:
-* 				UDPMouseLocationSender / UDPMouseLocationSender.pde
-* Tags: Network, Socket, UDP
+* Name: UDP Listener - Mouse from Processing
+* Author: Arnaud Grignard, Benoit Gaudou, Nicolas Marilleau
+* Description: A UDP receiver model that listens for mouse coordinate messages sent by an external
+*   Processing sketch (UDPMouseLocationSender). The received XY coordinates are used to move an agent
+*   in the GAMA display in real time. Demonstrates how GAMA can receive streaming input from an external
+*   application via UDP, enabling interactive or hardware-coupled simulations.
+* Tags: network, UDP, socket, listener, Processing, mouse, interactive, real_time, communication
 */
 
 model SocketUDP_Server_Mouse_Listener
@@ -20,7 +21,7 @@ global {
 		write "Run the GAMA simulation, move the mouse on the gray small screen of Processing 3 and observe the move of the agent in GAMA" color: #red;
 		
 		create NetworkingAgent number: 1 {
-		   do connect to: url protocol: "udp_server" port: port ;
+		   do connect(to: url, protocol: "udp_server", port: port) ;
 		}		
 	} 
 }

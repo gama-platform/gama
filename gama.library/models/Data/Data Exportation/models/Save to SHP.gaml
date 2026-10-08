@@ -1,8 +1,12 @@
 /**
 * Name: Save to Shapefile
 * Author: Patrick Taillandier
-* Description: This is a model that shows how to save agents inside a Shapefile to reuse it later or to keep it.
-* Tags: save_file, shapefile
+* Description: Demonstrates how to export agent geometries and attributes to an ESRI Shapefile (.shp) for reuse in
+*   subsequent simulations or in external GIS tools such as QGIS and ArcGIS. Shapefiles are one of the most widely
+*   used vector GIS formats and support point, line, and polygon geometries together with a dBASE attribute table.
+*   The model creates a set of building agents with random positions and shapes, then saves them to a shapefile.
+*   The exported file can be reloaded in a subsequent GAMA run using the 'shape_file' operator.
+* Tags: save_file, shapefile, shp, gis, export, geometry, vector
 */
 
 model Savetoshapefile

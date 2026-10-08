@@ -12,11 +12,11 @@ package gama.ui.shared.parameters;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 
-import gama.core.kernel.experiment.IParameter;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.util.matrix.IMatrix;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.api.gaml.symbols.IParameter;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.types.matrix.IMatrix;
 import gama.ui.shared.interfaces.EditorListener;
 import gama.ui.shared.utils.WorkbenchHelper;
 
@@ -45,7 +45,7 @@ public class MatrixEditor extends ExpressionBasedEditor<IMatrix<?>> {
 	public void applyEdit() {
 
 		final MatrixEditorDialog d = new MatrixEditorDialog(getScope(), WorkbenchHelper.getShell(), currentValue);
-		if (d.open() == IDialogConstants.OK_ID) { modifyValue(d.getMatrix()); }
+		if (d.open() == IDialogConstants.OK_ID) { modifyAndDisplayValue(d.getMatrix()); }
 
 	}
 

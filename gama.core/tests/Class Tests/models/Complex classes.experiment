@@ -1,0 +1,85 @@
+/**
+* Name: Complexclasses
+* Based on the internal empty template.
+* Author: Baptiste Lesquoy
+* Tags: Class, Object, Test
+*/
+
+
+model Complexclasses
+
+/* Insert your model definition here */
+
+// TODO: double inheritance
+// TODO: access to grid/species
+
+// This is just to validate that the compiler is able to handle interdependencies between classes
+class A {
+	B b;
+	A a;
+}
+
+class B {
+	A a;
+}
+
+class Node {
+	list<Node> children;
+
+	pair<Node,int> getDeepestChild(){
+		int maxDepth <- 0;
+		Node deepestChild <- self;
+		loop child over:children{
+			pair<Node, int> res <- child.getDeepestChild();
+			if res.value + 1 > maxDepth{
+				maxDepth <- res.value + 1;
+				deepestChild <- res.key;
+			}
+		}
+		return pair<Node,int>(deepestChild, maxDepth);
+	}
+
+	action add_child(Node n){
+		add n to:children;
+	}
+
+	action add_children(list<Node> nodes){
+		children <- children + nodes;
+	}
+}
+
+
+experiment "Complex classes" type:test{
+
+	test recursiveAlgorithm{
+		Node root <- Node();
+		root.add_children(list_with(3, Node()));
+		write root.children[1];
+		Node n <- root.children[1];
+		n.add_children(list_with(4, Node()));
+		Node n2 <- n.children[3];
+		Node deepest <- Node();
+		n2.add_child(deepest);
+		assert root.getDeepestChild() = pair<Node,int>(deepest, 3);
+	}
+
+	test selfReference{
+		A a <- A();
+		assert a.a = nil;
+		a.a <- a;
+		assert a.a = a;
+	}
+
+	test interdependantClasses {
+		A a <- A();
+		B b <- B(a:a);
+		a.b <- b;
+		assert a != b;
+		assert a.a = nil;
+		assert a.b = b;
+		assert b.a = a;
+	}
+
+
+
+}

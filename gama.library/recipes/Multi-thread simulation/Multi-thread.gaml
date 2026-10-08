@@ -1,0 +1,48 @@
+/**
+* Name: Multi-Thread Simulation
+* Author: Patrick Taillandier
+* Description: Shows how to enable multi-threaded agent execution in GAMA. The 'parallel' facet on a species
+*   or reflex declaration instructs GAMA to execute that block across multiple CPU threads simultaneously.
+*   This can significantly speed up models with many independent agents performing expensive computations.
+*   The model creates a large number of simple agents and compares single-threaded vs. multi-threaded
+*   execution to illustrate the performance benefits and the caveats (non-deterministic execution order).
+* Tags: multi_thread, parallel, performance, concurrency, simulation
+*/
+
+model multithread
+
+global {
+	init {
+		create simple_agent number: 10;
+		
+		//parallelize the computation ask by the agent
+		ask simple_agent parallel: true {
+			var1 <- exp(-size);
+		}
+	}
+}
+
+species simple_agent parallel: true{
+	int size <- rnd(1,10) update: size + (flip(0.5) ? 1 : 0);
+	float var1;
+	reflex behavior {
+		var1 <- exp(-size);
+		write string(cycle) + ":" +name + "->" + var1;
+	}
+}
+
+grid cell width: 5 height: 5 parallel: true {
+	float val <- rnd(1.0) max: 1.0;
+	
+	reflex behavior {
+		val <- val + rnd(0.002) - 0.0009;
+		color <- rgb(int((1.0 - val)*255),int((1.0 - val)*255),int((1.0 - val)*255));
+	}
+}
+experiment multithread type: gui {
+	output {
+		display map type:2d antialias:false{
+			grid cell border: #black;
+		}
+	}
+}

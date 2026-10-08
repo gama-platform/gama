@@ -18,6 +18,21 @@ experiment Lists  type:test {
 	init {
 		rng <- "mersenne";	
 	}
+
+	test empty_matrices {
+		matrix<int> empty <- matrix<int>([]);
+		matrix<int> nested_empty <- matrix<int>([[]]);
+		matrix<int> multiple_empty <- matrix<int>([[], []]);
+
+		assert empty.columns = 0;
+		assert empty.rows = 0;
+		assert nested_empty.columns = 0;
+		assert nested_empty.rows = 0;
+		assert multiple_empty.columns = 0;
+		assert multiple_empty.rows = 0;
+		assert empty = nested_empty;
+		assert nested_empty = multiple_empty;
+	}
 	
 	test accessing_tests{	
 		seed <- 0.0327;
@@ -33,8 +48,10 @@ experiment Lists  type:test {
 		assert mean(l1) = 5.5;
 		assert max(l1) = 10;
 		assert min(l1) = 1;
+		
 		assert any(l1) = 2; // tested with this seed, just for reference
 		assert 3 among l2 = ['this','of','list']; // same as above
+		
 		assert l1 contains 1 = true;
 		assert l1 contains_all [1,4,6] = true;
 		assert l1 contains_all [1,4,6, 14] = false;
@@ -64,7 +81,7 @@ experiment Lists  type:test {
 		assert l2 max_of (length(each)) = length('strings'); 
 		assert copy_between(l2,1,3) = ['is', 'a'];
 		assert copy_between(l2, 1, length(l2) - 1) = ['is','a','list', 'of'];
-		assert l2 as_map (length(each)::"new"+each) = map([4::'newthis',2::'newis',1::'newa',7::'newstrings']);
+		assert l2 as_map (length(each)::"new"+each) = map([4::'newlist',2::'newof',1::'newa',7::'newstrings']);
 		assert l2[1::3] = ['is', 'a'];
 	}
 	
@@ -250,7 +267,7 @@ experiment Lists  type:test {
 		assert l2 = ['dummy0','dummy1','dummy2','dummy3','dummy4'];
 
 		// Powerful filter expressions can be built by combining the various 'iterator' operators
-		let l3 <- list<string>(my_agents where even(int(each))) collect ("Agent " + each + " has an even id");
+		list<string> l3 <- list<string>(my_agents where even(int(each))) collect ("Agent " + each + " has an even id");
 		assert l3 = ['Agent dummy(0) has an even id','Agent dummy(2) has an even id','Agent dummy(4) has an even id'];
 	}
 	

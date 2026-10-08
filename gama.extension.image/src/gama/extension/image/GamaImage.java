@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamaImage.java, in gama.extension.image, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamaImage.java, in gama.extension.image, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -18,25 +18,24 @@ import java.awt.image.DataBufferInt;
 import java.awt.image.PixelGrabber;
 import java.awt.image.WritableRaster;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.getter;
-import gama.annotations.precompiler.GamlAnnotations.variable;
-import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.core.common.interfaces.IAsset;
-import gama.core.common.interfaces.IImageProvider;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.IValue;
-import gama.core.metamodel.topology.grid.GamaSpatialMatrix;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IList;
-import gama.core.util.file.IFieldMatrixProvider;
-import gama.core.util.file.json.Json;
-import gama.core.util.file.json.JsonValue;
-import gama.core.util.matrix.GamaField;
+import gama.annotations.doc;
+import gama.annotations.getter;
+import gama.annotations.variable;
+import gama.annotations.vars;
+import gama.annotations.constants.IKeyword;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.list.IList;
+import gama.api.types.matrix.IField;
+import gama.api.types.misc.IValue;
+import gama.api.utils.interfaces.IFieldMatrixProvider;
+import gama.api.utils.interfaces.IImageProvider;
+import gama.api.utils.json.IJson;
+import gama.api.utils.json.IJsonValue;
+import gama.core.topology.grid.GamaSpatialMatrix;
 import gama.core.util.matrix.GamaIntMatrix;
-import gama.core.util.matrix.IField;
-import gama.gaml.types.IType;
 
 /**
  * Class GamaImage. A simple wrapper on a BufferedImage of type TYPE_INT_ARGB
@@ -57,7 +56,7 @@ import gama.gaml.types.IType;
 				name = IKeyword.WIDTH,
 				type = IType.INT,
 				doc = { @doc ("Returns the width (in pixels) of this image") }) })
-public class GamaImage extends BufferedImage implements IImageProvider, IAsset, IFieldMatrixProvider, IValue {
+public class GamaImage extends BufferedImage implements IImageProvider, IFieldMatrixProvider, IValue {
 
 	/** The id. */
 	String id;
@@ -177,29 +176,36 @@ public class GamaImage extends BufferedImage implements IImageProvider, IAsset, 
 	 *            the f
 	 * @return the gama image
 	 */
-	public static GamaImage from(final IScope scope, final GamaField field) {
-		final int cols = field.numCols;
-		final int rows = field.numRows;
+	public static GamaImage from(final IScope scope, final IField field) {
+		final int cols = field.getCols(scope);
+		final int rows = field.getRows(scope);
 		final GamaImage image = new GamaImage(cols, rows, TYPE_INT_RGB, "field" + System.currentTimeMillis());
+		final int[] imageData = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
 		if (field.getBandsNumber(scope) > 1) {
 			IList<? extends IField> bands = field.getBands(scope);
+			final double[] redBand = bands.get(1).getFieldData(scope);
+			final double[] greenBand = bands.get(2).getFieldData(scope);
+			final double[] blueBand = bands.get(3).getFieldData(scope);
 			// boolean hasAlpha = bands.size() > 4;
 			for (int row = 0; row < rows; row++) {
+				final int sourceOffset = row * cols;
+				final int targetOffset = (rows - 1 - row) * cols;
 				for (int col = 0; col < cols; col++) {
-					double r = bands.get(1).get(scope, col, row);
-					double g = bands.get(2).get(scope, col, row);
-					double b = bands.get(3).get(scope, col, row);
-					image.setRGB(col, rows - 1 - row, 0x00000000 | (int) r << 16 | (int) g << 8 | (int) b);
+					final int index = sourceOffset + col;
+					imageData[targetOffset + col] =
+							0x00000000 | (int) redBand[index] << 16 | (int) greenBand[index] << 8 | (int) blueBand[index];
 				}
 			}
 		} else {
-			double[] minmax = field.getMinMax();
-			double range = minmax[1] - minmax[0];
+			final double[] minmax = field.getMinMax();
+			final double range = minmax[1] - minmax[0];
+			final double[] values = field.getFieldData(scope);
 			for (int row = 0; row < rows; row++) {
+				final int sourceOffset = row * cols;
+				final int targetOffset = (rows - 1 - row) * cols;
 				for (int col = 0; col < cols; col++) {
-					double v = field.get(scope, col, row);
-					double vRef = (v - minmax[0]) / range;
-					image.setRGB(col, rows - 1 - row, grayDoubleToRGB(vRef));
+					final double vRef = (values[sourceOffset + col] - minmax[0]) / range;
+					imageData[targetOffset + col] = grayDoubleToRGB(vRef);
 				}
 			}
 		}
@@ -374,9 +380,12 @@ public class GamaImage extends BufferedImage implements IImageProvider, IAsset, 
 	}
 
 	@Override
-	public JsonValue serializeToJson(final Json json) {
-		return json.typedObject(getGamlType(), "width", getWidth(), "height", getHeight(), "type", getType(), "pixels",
+	public IJsonValue serializeToJson(final IJson json) {
+		return json.typedObject(getGamlType(), "width", getWidth(), "height", getHeight(), IKeyword.TYPE, getType(), "pixels",
 				ImageOperators.matrix(null, this));
 	}
+
+	@Override
+	public IType<?> getGamlType() { return Types.get(IKeyword.IMAGE); }
 
 }

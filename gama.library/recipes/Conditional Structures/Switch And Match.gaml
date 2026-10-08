@@ -1,0 +1,114 @@
+/***
+* Name: Switch And Match
+* Author: Kevin Chapuis
+* Description: Shows several ways to use the 'switch ... match' statement in GAML. The switch statement is used to
+*   select one among several alternatives based on the value of an expression. The 'match' clause tests for exact
+*   equality, 'match_one' tests for membership in a list, and 'match_between' tests for range membership.
+*   This model implements a simple rock-paper-scissors game to demonstrate the switch construct in a concrete scenario.
+* Tags: switch, match, match_one, condition, control, game
+* 
+***/
+
+model switchmatch
+ 
+global {
+	string my_play; // parameter:true init:"ROCK" among:RPS;
+
+	
+	image paper <- image("img/paper.png");
+	image rock <- image("img/rock.png");
+	image scissor <- image("img/scissors.png");
+	
+	image my_image <- paper;
+	image bot_image <- paper;
+
+	string the_result;
+	
+	int win_sign;
+	
+	init {
+		create rps_bot(strategy:[1,1,1]);
+	}
+	
+	/*
+	 * The argument to match can be constructed from any instruction. Switch statement
+	 * accept 3 types of match: (1) match to test the equality (2) match_one for at least one equality
+	 * (2) match_between for a test on a range of numerical value
+	 */
+	reflex play {
+		ask rps_bot {do bot_play();}
+		switch first(rps_bot).bp+"vs"+my_play {
+			match_one ["ROCKvsPAPER", "PAPERvsSCISSORS", "SCISSORSvsROCK"] {
+				win_sign <- 1;
+			}
+			match_one ["ROCKvsSCISSORS", "PAPERvsROCK", "SCISSORSvsPAPER"] {
+				win_sign <- -1;
+			}
+			default {
+				win_sign <- 0;
+			} 
+		}
+		bot_image <- (rps_image(first(rps_bot).bp));
+		my_image <- (rps_image(my_play));
+		write rps_result(win_sign);
+	}
+	
+	/*
+	 * Switch statement can be used with any type of data like int, string, agent. 
+	 * The match will be tested using the main expression type (here is int)
+	 */
+	string rps_result(int res) {
+		switch res {
+			match_between [-#infinity,-1] {
+				return "You loose";
+			} 
+			match_one [1,2,3,4,5] {
+				return "You win";
+			}
+			match 0 {
+				return "Draw";
+			}
+		}
+	}
+	
+	image rps_image(string play) {
+		switch play {
+			match "ROCK" {
+				return rock;
+			}
+			match "PAPER" {
+				return paper;
+			}
+			match "SCISSORS" {
+				return scissor;
+			}
+		}
+	}
+	
+}
+ 
+species rps_bot {
+	
+	list<float> strategy;
+	
+	string bp;
+	
+	action bot_play() {
+		bp <- ["ROCK","PAPER","SCISSORS"][rnd_choice(strategy)];
+	}
+	
+}
+
+experiment "Rock Paper Scissors" type:gui {
+	parameter "My play" var:my_play among:["ROCK","PAPER","SCISSORS"] init:any(["ROCK","PAPER","SCISSORS"]);
+	output {
+		display my_display type:3d{
+			picture my_image size:point(0.2) position:{10,40} refresh:true;
+			graphics res {
+				draw (win_sign = 0 ? "=" : (win_sign < 0 ? "<" : ">")) at:{47,52} font:font("Digit",50,#bold) color:#black;
+			}
+			picture bot_image size:point(0.2) position:{70,40} refresh:true;
+		}
+	}
+}
+

@@ -1,51 +1,49 @@
 /*******************************************************************************************************
  *
  * MonitorOutput.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.outputs;
 
-import java.awt.Color;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.util.List;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.core.common.interfaces.IGui;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.IValue;
-import gama.core.common.interfaces.ItemList;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.common.util.FileUtils;
-import gama.core.kernel.experiment.IExperimentDisplayable;
-import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
-import gama.core.util.GamaListFactory;
-import gama.core.util.file.csv.CsvWriter;
-import gama.gaml.compilation.GAML;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.factories.DescriptionFactory;
-import gama.gaml.operators.Cast;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.GAMA;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.GAML;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.simulation.ITopLevelAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.misc.IValue;
+import gama.api.ui.IExperimentDisplayable;
+import gama.api.ui.IGui;
+import gama.api.ui.IItemList;
+import gama.api.utils.csv.CsvWriter;
+import gama.api.utils.files.FileUtils;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.gaml.operators.Files;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * The Class MonitorOutput.
@@ -97,10 +95,10 @@ public class MonitorOutput extends AbstractValuedDisplayOutput implements IExper
 	protected IExpression colorExpression = null;
 
 	/** The color. */
-	protected GamaColor color = null;
+	protected IColor color = null;
 
 	/** The constant color. */
-	protected GamaColor constantColor = null;
+	protected IColor constantColor = null;
 
 	/** The history. */
 	protected List<Object> history;
@@ -133,7 +131,7 @@ public class MonitorOutput extends AbstractValuedDisplayOutput implements IExper
 			if (sim != null) {
 				constantColor = sim.getColor();
 			} else {
-				constantColor = GamaColor.get(Color.gray);
+				constantColor = GamaColorFactory.GRAY;
 			}
 		}
 	}
@@ -144,7 +142,7 @@ public class MonitorOutput extends AbstractValuedDisplayOutput implements IExper
 	 * @param gamaColor
 	 *            the new color
 	 */
-	public void setColor(final GamaColor gamaColor) {
+	public void setColor(final IColor gamaColor) {
 		color = gamaColor;
 		constantColor = gamaColor;
 		colorExpression = GAML.getExpressionFactory().createConst(gamaColor, Types.COLOR);
@@ -161,8 +159,8 @@ public class MonitorOutput extends AbstractValuedDisplayOutput implements IExper
 	 *            the expr
 	 */
 	public MonitorOutput(final IScope scope, final String name, final String expr) {
-		super(DescriptionFactory.create(IKeyword.MONITOR, IKeyword.VALUE, expr == null ? "" : expr, IKeyword.NAME,
-				name == null ? expr : name));
+		super(GAML.getDescriptionFactory().create(IKeyword.MONITOR, IKeyword.VALUE, expr == null ? "" : expr,
+				IKeyword.NAME, name == null ? expr : name));
 		shouldBeInitialized = true;
 		setScope(scope.copy("in monitor '" + name + "'"));
 		setNewExpressionText(expr);
@@ -210,13 +208,13 @@ public class MonitorOutput extends AbstractValuedDisplayOutput implements IExper
 					lastValue = getValue().value(getScope());
 					if (history != null) { history.add(lastValue); }
 				} catch (final GamaRuntimeException e) {
-					lastValue = ItemList.ERROR_CODE + e.getMessage();
+					lastValue = IItemList.ERROR_CODE + e.getMessage();
 				}
 			} else {
 				lastValue = null;
 			}
 			if (constantColor == null && colorExpression != null) {
-				color = Cast.asColor(scope, colorExpression.value(scope));
+				color = GamaColorFactory.castToColor(scope, colorExpression.value(scope));
 			}
 		} finally {
 			scope.setCurrentSymbol(null);
@@ -230,7 +228,7 @@ public class MonitorOutput extends AbstractValuedDisplayOutput implements IExper
 	 * @return the color
 	 */
 	@Override
-	public GamaColor getColor(final IScope scope) {
+	public IColor getColor(final IScope scope) {
 
 		return constantColor == null ? color : constantColor;
 	}
@@ -294,7 +292,7 @@ public class MonitorOutput extends AbstractValuedDisplayOutput implements IExper
 		final StringBuilder sb = new StringBuilder(100);
 		sb.append(getName()).append(": ");
 		final Object v = getLastValue();
-		sb.append(v == null ? "nil" : v instanceof IValue ? ((IValue) v).serializeToGaml(true) : v.toString());
+		sb.append(v == null ? "nil" : v instanceof IValue i ? i.serializeToGaml(true) : v.toString());
 		if (isPaused()) { sb.append(" (paused)"); }
 		return sb.toString();
 

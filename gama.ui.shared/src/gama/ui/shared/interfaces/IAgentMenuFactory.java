@@ -14,7 +14,7 @@ import java.util.Collection;
 
 import org.eclipse.swt.widgets.Menu;
 
-import gama.core.metamodel.agent.IAgent;
+import gama.api.kernel.agent.IAgent;
 import gama.ui.shared.menus.MenuAction;
 
 /**

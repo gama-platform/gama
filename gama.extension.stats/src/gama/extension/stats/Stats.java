@@ -3,7 +3,7 @@
  * Stats.java, in gama.extension.stats, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,13 +12,15 @@ package gama.extension.stats;
 
 import static gama.gaml.operators.Containers.collect;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.function.Function;
 
-import org.apache.commons.compress.utils.FileNameUtils;
+import org.apache.commons.math3.distribution.FDistribution;
+import org.apache.commons.math3.distribution.TDistribution;
 import org.apache.commons.math3.ml.clustering.CentroidCluster;
 import org.apache.commons.math3.ml.clustering.Cluster;
 import org.apache.commons.math3.ml.clustering.DBSCANClusterer;
@@ -28,7 +30,9 @@ import org.apache.commons.math3.ml.distance.EuclideanDistance;
 import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.stat.descriptive.moment.Kurtosis;
 import org.apache.commons.math3.stat.descriptive.moment.Skewness;
+import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 import org.apache.commons.math3.stat.inference.TTest;
+import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 
 import com.google.common.collect.Ordering;
 
@@ -37,39 +41,41 @@ import cern.jet.math.Arithmetic;
 import cern.jet.stat.Descriptive;
 import cern.jet.stat.Gamma;
 import cern.jet.stat.Probability;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.test;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ITypeProvider;
-import gama.core.common.util.FileUtils;
-import gama.core.common.util.StringUtils;
-import gama.core.kernel.batch.exploration.morris.Morris;
-import gama.core.kernel.batch.exploration.sobol.Sobol;
-import gama.core.kernel.batch.exploration.stochanalysis.Stochanalysis;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.Collector;
-import gama.core.util.GamaColor;
-import gama.core.util.GamaListFactory;
-import gama.core.util.GamaMapFactory;
-import gama.core.util.IContainer;
-import gama.core.util.IList;
-import gama.core.util.IMap;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.tests;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.annotations.support.ITypeProvider;
+import gama.api.annotations.validator;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.api.types.matrix.IMatrix;
+import gama.api.types.misc.IContainer;
+import gama.api.utils.StringUtils;
+import gama.api.utils.collections.Collector;
 import gama.core.util.matrix.GamaField;
-import gama.core.util.matrix.GamaMatrix;
-import gama.gaml.compilation.annotations.validator;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
+import gama.extension.stats.analysis.GamaAnova;
+import gama.extension.stats.analysis.GamaRegression;
+import gama.extension.stats.analysis.HSIC;
 import gama.gaml.operators.Containers;
 import gama.gaml.operators.Containers.ComparableValidator;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * Written by drogoul Modified on 15 janv. 2011
@@ -151,7 +157,7 @@ public class Stats {
 		}
 
 		/**
-		 * The arithemthic mean of an n-element set is the sum of all the elements divided by n. The arithmetic mean is
+		 * The arithmetic mean of an n-element set is the sum of all the elements divided by n. The arithmetic mean is
 		 * often referred to simply as the "mean" or "average" of a data set.
 		 *
 		 * @see #getGeometricMean()
@@ -605,9 +611,7 @@ public class Stats {
 	 *
 	 * @param scope
 	 * @param data1
-	 * @param standardDev1
 	 * @param data2
-	 * @param stanardDev2
 	 * @return
 	 */
 	@operator (
@@ -618,23 +622,127 @@ public class Stats {
 			category = { IOperatorCategory.STATISTICAL },
 			concept = { IConcept.STATISTIC })
 	@doc (
-			value = "Returns the correlation of two data sequences (having the same size)",
+			value = "Returns the Pearson correlation of two data sequences (having the same size)",
 			comment = "",
 			examples = { @example (
-					value = "correlation([1,2,1,3,1,2], [1,2,1,3,1,2]) with_precision(4)",
-					equals = "1.2"),
+					value = "correlation([1,2,1,3,1,2], [1,2,1,3,1,2])",
+					equals = "1.0"),
 					@example (
 							value = "correlation([13,2,1,4,1,2], [1,2,1,3,1,2]) with_precision(2)",
 							equals = "-0.21") })
 	public static Double opCorrelation(final IScope scope, final IContainer data1, final IContainer data2) {
-
-		// TODO input parameters validation
-
+		if ((data1.length(scope) != data2.length(scope)) || (data1.length(scope) == 0)) return 0.0;
 		final double standardDev1 = Stats.opStandardDeviation(scope, data1);
 		final double standardDev2 = Stats.opStandardDeviation(scope, data2);
-
+		if (standardDev1 == 0 || standardDev2 == 0) return 0.0;
 		return Descriptive.correlation(toDoubleArrayList(scope, data1), standardDev1, toDoubleArrayList(scope, data2),
 				standardDev2);
+	}
+
+	/**
+	 * Returns the Spearman's rank correlation of two data sequences.
+	 *
+	 * @param scope
+	 * @param data1
+	 * @param data2
+	 * @return
+	 */
+	@operator (
+			value = "spearman_correlation",
+			can_be_const = true,
+			type = IType.FLOAT,
+			expected_content_type = { IType.INT, IType.FLOAT },
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = "Returns the Spearman's rank correlation of two data sequences (having the same size)",
+			comment = "Computes Pearson correlation on the ranks of the data.",
+			examples = { @example (
+					value = "spearman_correlation([1,2,3,4,5], [5,4,3,2,1])",
+					equals = "-1.0") })
+	@test ("(spearman_correlation([1, 2, 3, 4, 5], [1, 2, 3, 4, 5]) ) = 1.0")
+	public static Double opSpearmanCorrelation(final IScope scope, final IContainer data1, final IContainer data2) {
+		if (data1.length(scope) != data2.length(scope)) return 0.0;
+		int n = data1.length(scope);
+		if (n <= 1) return 1.0;
+
+		double[] r1 = computeRanks(scope, data1);
+		double[] r2 = computeRanks(scope, data2);
+
+		double sumD2 = 0;
+		for (int i = 0; i < n; i++) {
+			double d = r1[i] - r2[i];
+			sumD2 += d * d;
+		}
+
+		// If no ties, we can use the simplified formula for better precision
+		boolean hasTies = false;
+		for (int i = 0; i < n - 1; i++) {
+			if (r1[i] % 1 != 0 || r2[i] % 1 != 0) {
+				hasTies = true;
+				break;
+			}
+		}
+		// Actually checking for duplicate ranks is more reliable
+		if (!hasTies) {
+			double[] s1 = r1.clone();
+			double[] s2 = r2.clone();
+			Arrays.sort(s1);
+			Arrays.sort(s2);
+			for (int i = 0; i < n - 1; i++) {
+				if (s1[i] == s1[i + 1] || s2[i] == s2[i + 1]) {
+					hasTies = true;
+					break;
+				}
+			}
+		}
+
+		if (!hasTies) return 1.0 - 6.0 * sumD2 / (n * (Math.pow(n, 2) - 1));
+
+		// General formula (Pearson correlation of ranks)
+		double avgR = (n + 1) / 2.0;
+		double num = 0;
+		double den1 = 0;
+		double den2 = 0;
+		for (int i = 0; i < n; i++) {
+			num += (r1[i] - avgR) * (r2[i] - avgR);
+			den1 += Math.pow(r1[i] - avgR, 2);
+			den2 += Math.pow(r2[i] - avgR, 2);
+		}
+		if (den1 == 0 || den2 == 0) return 0.0;
+		return num / Math.sqrt(den1 * den2);
+	}
+
+	/**
+	 * Compute ranks.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param data
+	 *            the data
+	 * @return the double[]
+	 */
+	private static double[] computeRanks(final IScope scope, final IContainer data) {
+		int n = data.length(scope);
+		double[] vals = new double[n];
+		Integer[] idx = new Integer[n];
+		int count = 0;
+		for (Object o : data.iterable(scope)) {
+			vals[count] = Cast.asFloat(scope, o);
+			idx[count] = count;
+			count++;
+		}
+		Arrays.sort(idx, (a, b) -> Double.compare(vals[a], vals[b]));
+
+		double[] ranks = new double[n];
+		for (int i = 0; i < n; i++) {
+			int j = i;
+			while (j < n - 1 && vals[idx[j]] == vals[idx[j + 1]]) { j++; }
+			double rank = (i + j + 2) / 2.0;
+			for (int k = i; k <= j; k++) { ranks[idx[k]] = rank; }
+			i = j;
+		}
+		return ranks;
 	}
 
 	/**
@@ -1616,13 +1724,13 @@ public class Stats {
 	public static Object opMax(final IScope scope, final IContainer l) {
 		if (l instanceof GamaField) return ((GamaField) l).getMinMax()[1];
 		Number maxNum = null;
-		GamaPoint maxPoint = null;
+		IPoint maxPoint = null;
 		for (final Object o : l.iterable(scope)) {
-			if (o instanceof GamaPoint && maxNum == null) {
-				if (maxPoint == null || ((GamaPoint) o).compareTo(maxPoint) > 0) { maxPoint = (GamaPoint) o; }
-			} else if (o instanceof Number && maxPoint == null
-					&& (maxNum == null || ((Number) o).doubleValue() > maxNum.doubleValue())) {
-				maxNum = (Number) o;
+			if (o instanceof IPoint ip && maxNum == null) {
+				if (maxPoint == null || ip.compareTo(maxPoint) > 0) { maxPoint = ip; }
+			} else if (o instanceof Number n && maxPoint == null
+					&& (maxNum == null || n.doubleValue() > maxNum.doubleValue())) {
+				maxNum = n;
 			} else {
 				final Double d = Cast.asFloat(scope, o);
 				if (maxNum == null || d > maxNum.doubleValue()) { maxNum = d; }
@@ -1701,25 +1809,26 @@ public class Stats {
 				final DataSet y = new DataSet();
 				final DataSet z = new DataSet();
 				for (final Object o : values.iterable(scope)) {
-					final GamaPoint p = (GamaPoint) o;
+					final IPoint p = (IPoint) o;
 					x.addValue(p.getX());
 					y.addValue(p.getY());
 					z.addValue(p.getZ());
 				}
-				if (x.getSize() == 0) return new GamaPoint(0, 0, 0);
-				return new GamaPoint(x.getMedian(), y.getMedian(), z.getMedian());
+				if (x.getSize() == 0) return GamaPointFactory.create(0, 0, 0);
+				return GamaPointFactory.create(x.getMedian(), y.getMedian(), z.getMedian());
 			case IType.COLOR:
 				final DataSet r = new DataSet();
 				final DataSet g = new DataSet();
 				final DataSet b = new DataSet();
 				for (final Object o : values.iterable(scope)) {
-					final GamaColor p = (GamaColor) o;
-					r.addValue(p.getRed());
-					g.addValue(p.getGreen());
-					b.addValue(p.getBlue());
+					final IColor p = (IColor) o;
+					r.addValue(p.red());
+					g.addValue(p.green());
+					b.addValue(p.blue());
 				}
-				if (r.getSize() == 0) return GamaColor.get(0, 0, 0, 0);
-				return GamaColor.get((int) r.getMedian(), (int) g.getMedian(), (int) b.getMedian(), 0);
+				if (r.getSize() == 0) return GamaColorFactory.createWithRGBA(0, 0, 0, 0);
+				return GamaColorFactory.createWithRGBA((int) r.getMedian(), (int) g.getMedian(), (int) b.getMedian(),
+						0);
 			default:
 				final DataSet d = new DataSet();
 				for (final Object o : values.iterable(scope)) { d.addValue(Cast.asFloat(scope, o)); }
@@ -1783,13 +1892,13 @@ public class Stats {
 	public static Object opMin(final IScope scope, final IContainer l) {
 		if (l instanceof GamaField) return ((GamaField) l).getMinMax()[0];
 		Number minNum = null;
-		GamaPoint minPoint = null;
+		IPoint minPoint = null;
 		for (final Object o : l.iterable(scope)) {
-			if (o instanceof GamaPoint && minNum == null) {
-				if (minPoint == null || ((GamaPoint) o).compareTo(minPoint) < 0) { minPoint = (GamaPoint) o; }
-			} else if (o instanceof Number && minPoint == null
-					&& (minNum == null || ((Number) o).doubleValue() < minNum.doubleValue())) {
-				minNum = (Number) o;
+			if (o instanceof IPoint ip && minNum == null) {
+				if (minPoint == null || ip.compareTo(minPoint) < 0) { minPoint = ip; }
+			} else if (o instanceof Number n && minPoint == null
+					&& (minNum == null || n.doubleValue() < minNum.doubleValue())) {
+				minNum = n;
 			} else {
 				final Double d = Cast.asFloat(scope, o);
 				if (minNum == null || d < minNum.doubleValue()) { minNum = d; }
@@ -2009,12 +2118,11 @@ public class Stats {
 		final DataSet x = new DataSet();
 		DataSet y = null, z = null;
 		for (final Object o : l.iterable(scope)) {
-			if (o instanceof GamaPoint) {
+			if (o instanceof final IPoint p) {
 				if (y == null) {
 					y = new DataSet();
 					z = new DataSet();
 				}
-				final GamaPoint p = (GamaPoint) o;
 				x.addValue(p.getX());
 				y.addValue(p.getY());
 				z.addValue(p.getZ());
@@ -2024,10 +2132,10 @@ public class Stats {
 		}
 		if (x.getSize() == 0) {
 			if (y == null) return 0.0;
-			return new GamaPoint(0, 0, 0);
+			return GamaPointFactory.create(0, 0, 0);
 		}
 		if (y == null) return x.getProduct();
-		return new GamaPoint(x.getProduct(), y.getProduct(), z.getProduct());
+		return GamaPointFactory.create(x.getProduct(), y.getProduct(), z.getProduct());
 	}
 
 	/**
@@ -2249,12 +2357,46 @@ public class Stats {
 					value = "build(matrix([[1.0,2.0,3.0,4.0],[2.0,3.0,4.0,2.0]]))",
 					isExecutable = false) })
 	@test ("build(matrix([[1.0,2.0,3.0,4.0],[2.0,3.0,4.0,2.0],[5.0,1.0,3.0,5.0],[3.0,4.0,5.0,1.0]])).parameters collect (each with_precision 5) = [0.5,2.5,0.0,-1.5]")
-	public static GamaRegression opRegression(final IScope scope, final GamaMatrix data) throws GamaRuntimeException {
+	public static GamaRegression opRegression(final IScope scope, final IMatrix data) throws GamaRuntimeException {
 		try {
 			return new GamaRegression(scope, data);
 		} catch (final Exception e) {
 			throw GamaRuntimeException.error("The build operator is not usable for these data", scope);
 		}
+	}
+
+	/**
+	 * Builds a Generalized Linear Model (currently using OLS).
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param data
+	 *            the data
+	 * @return the gama regression
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
+	@operator (
+			value = "glm",
+			can_be_const = false,
+			type = IType.REGRESSION,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC, IConcept.REGRESSION })
+	@doc (
+			value = "Returns a Generalized Linear Model (GLM) built from the matrix data. Currently implemented using Ordinary Least Squares (OLS).",
+			examples = { @example (
+					value = "glm(matrix([[1.0,2.0,3.0,4.0],[2.0,3.0,4.0,2.0]]))",
+					isExecutable = false) })
+	@tests ({ @test (
+			value = "matrix<float> data0 <- matrix([[1.0, 2.0, 3.0, 4.0], [2.0, 3.0, 4.0, 2.0], [5.0, 1.0, 3.0, 5.0], [3.0, 4.0, 5.0, 1.0]]); regression result0 <- glm(data0); (result0.parameters[0] with_precision 5) = 0.5"),
+			@test (
+					value = "matrix<float> data1 <- matrix([[1.0, 2.0, 3.0, 4.0], [2.0, 3.0, 4.0, 2.0], [5.0, 1.0, 3.0, 5.0], [3.0, 4.0, 5.0, 1.0]]); regression result1 <- glm(data1); (result1.parameters[1] with_precision 5) = 2.5"),
+			@test (
+					value = "matrix<float> data2 <- matrix([[1.0, 2.0, 3.0, 4.0], [2.0, 3.0, 4.0, 2.0], [5.0, 1.0, 3.0, 5.0], [3.0, 4.0, 5.0, 1.0]]); regression result2 <- glm(data2); (result2.parameters[2] with_precision 5) = 0.0"),
+			@test (
+					value = "matrix<float> data3 <- matrix([[1.0, 2.0, 3.0, 4.0], [2.0, 3.0, 4.0, 2.0], [5.0, 1.0, 3.0, 5.0], [3.0, 4.0, 5.0, 1.0]]); regression result3 <- glm(data3); (result3.parameters[3] with_precision 5) = -1.5") })
+	public static GamaRegression opGlm(final IScope scope, final IMatrix data) throws GamaRuntimeException {
+		return opRegression(scope, data);
 	}
 
 	/**
@@ -2282,6 +2424,250 @@ public class Stats {
 	}
 
 	/**
+	 * Perform a one-way ANOVA test on a list of groups.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param data
+	 *            the data (list of lists of numbers)
+	 * @return the anova result
+	 */
+	@operator (
+			value = "anova",
+			type = IType.ANOVA,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = "Performs a one-way ANOVA test on a list of groups of data. Each group is a list of numbers.",
+			examples = { @example (
+					value = "anova([[6.0, 8.0, 4.0, 5.0, 3.0, 4.0], [8.0, 12.0, 9.0, 11.0, 6.0, 8.0], [13.0, 9.0, 11.0, 8.0, 7.0, 12.0]])",
+					isExecutable = false) })
+	@tests ({
+			@test ("(anova([[6.0, 8.0, 4.0, 5.0, 3.0, 4.0], [8.0, 12.0, 9.0, 11.0, 6.0, 8.0], [13.0, 9.0, 11.0, 8.0, 7.0, 12.0]]).f_stat with_precision 2) = 9.26"),
+			@test ("(anova([[6.0, 8.0, 4.0, 5.0, 3.0, 4.0], [8.0, 12.0, 9.0, 11.0, 6.0, 8.0], [13.0, 9.0, 11.0, 8.0, 7.0, 12.0]]).p_value with_precision 3) = 0.002") })
+	public static GamaAnova anova(final IScope scope, final IList<IList<?>> data) {
+		return new GamaAnova(scope, data);
+	}
+
+	/**
+	 * Performs a two-way ANOVA test with interactions using Type III Sum of Squares.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param y
+	 *            the response variable
+	 * @param factorA
+	 *            the first factor
+	 * @param factorB
+	 *            the second factor
+	 * @return the anova result
+	 */
+	@operator (
+			value = "multi_anova",
+			type = IType.ANOVA,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = "Performs a two-way ANOVA test with interactions on a response variable and two factors. Uses Type III Sum of Squares (orthogonal to order).",
+			examples = { @example (
+					value = "multi_anova([1.0, 2.0, 5.0, 6.0], ['a', 'a', 'b', 'b'], ['x', 'y', 'x', 'y'])",
+					isExecutable = false) })
+	@tests ({
+			@test ("float(multi_anova([10.0, 11.0, 20.0, 21.0, 30.0, 31.0, 40.0, 41.0, 100.0, 101.0, 200.0, 201.0], ['a', 'a', 'a', 'a', 'b', 'b', 'b', 'b', 'c', 'c', 'c', 'c'], ['x', 'x', 'y', 'y', 'x', 'x', 'y', 'y', 'x', 'x', 'y', 'y']).p_values['A']) < 0.05"),
+			@test ("multi_anova([10.0, 11.0, 20.0, 21.0, 30.0, 31.0, 40.0, 41.0, 100.0, 101.0, 200.0, 201.0], ['a', 'a', 'a', 'a', 'b', 'b', 'b', 'b', 'c', 'c', 'c', 'c'], ['x', 'x', 'y', 'y', 'x', 'x', 'y', 'y', 'x', 'x', 'y', 'y']).p_values['B'] < 0.05"),
+			@test ("multi_anova([10.0, 11.0, 20.0, 21.0, 30.0, 31.0, 40.0, 41.0, 100.0, 101.0, 200.0, 201.0], ['a', 'a', 'a', 'a', 'b', 'b', 'b', 'b', 'c', 'c', 'c', 'c'], ['x', 'x', 'y', 'y', 'x', 'x', 'y', 'y', 'x', 'x', 'y', 'y']).p_values['A:B'] < 0.05") })
+	public static GamaAnova multiAnova(final IScope scope, final IList<Double> y, final IList<?> factorA,
+			final IList<?> factorB) {
+		if (y.size() != factorA.size() || y.size() != factorB.size())
+			throw GamaRuntimeException.error("All input lists must have the same size", scope);
+
+		double[] yData = new double[y.size()];
+		for (int i = 0; i < y.size(); i++) { yData[i] = y.get(i); }
+
+		// Identify levels
+		List<Object> levelsA = new ArrayList<>(new LinkedHashSet<>(factorA));
+		List<Object> levelsB = new ArrayList<>(new LinkedHashSet<>(factorB));
+
+		try {
+			// Type III Sum of Squares requires Effect Coding (sum-to-zero)
+			// Model Full: y ~ A + B + A:B
+			int dfA = levelsA.size() - 1;
+			int dfB = levelsB.size() - 1;
+			int dfInter = dfA * dfB;
+			int nbCols = dfA + dfB + dfInter;
+			double[][] xFull = new double[y.size()][nbCols];
+
+			for (int i = 0; i < y.size(); i++) {
+				int idxA = levelsA.indexOf(factorA.get(i));
+				int idxB = levelsB.indexOf(factorB.get(i));
+				// Factor A effect coding
+				if (idxA < dfA) {
+					if (idxA >= 0) { xFull[i][idxA] = 1.0; }
+				} else {
+					for (int j = 0; j < dfA; j++) { xFull[i][j] = -1.0; }
+				}
+				// Factor B effect coding
+				if (idxB < dfB) {
+					if (idxB >= 0) { xFull[i][dfA + idxB] = 1.0; }
+				} else {
+					for (int j = 0; j < dfB; j++) { xFull[i][dfA + j] = -1.0; }
+				}
+				// Interaction effect coding
+				for (int rowA = 0; rowA < dfA; rowA++) {
+					for (int colB = 0; colB < dfB; colB++) {
+						xFull[i][dfA + dfB + rowA * dfB + colB] = xFull[i][rowA] * xFull[i][dfA + colB];
+					}
+				}
+			}
+
+			OLSMultipleLinearRegression reg = new OLSMultipleLinearRegression();
+			reg.newSampleData(yData, xFull);
+			double rssFull = reg.calculateResidualSumOfSquares();
+			int dfError = y.size() - (1 + nbCols);
+			double msError = dfError > 0 ? rssFull / dfError : 0.0;
+
+			GamaAnova result = new GamaAnova();
+			if (dfError <= 0 || msError <= 0) {
+				result.addEffect("A", 1.0, 0.0);
+				result.addEffect("B", 1.0, 0.0);
+				result.addEffect("A:B", 1.0, 0.0);
+				return result;
+			}
+
+			// SS(A | B, A:B)
+			double[][] xNoA = new double[y.size()][dfB + dfInter];
+			for (int i = 0; i < y.size(); i++) { System.arraycopy(xFull[i], dfA, xNoA[i], 0, dfB + dfInter); }
+			reg.newSampleData(yData, xNoA);
+			double ssA = reg.calculateResidualSumOfSquares() - rssFull;
+
+			// SS(B | A, A:B)
+			double[][] xNoB = new double[y.size()][dfA + dfInter];
+			for (int i = 0; i < y.size(); i++) {
+				System.arraycopy(xFull[i], 0, xNoB[i], 0, dfA);
+				System.arraycopy(xFull[i], dfA + dfB, xNoB[i], dfA, dfInter);
+			}
+			reg.newSampleData(yData, xNoB);
+			double ssB = reg.calculateResidualSumOfSquares() - rssFull;
+
+			// SS(A:B | A, B)
+			double[][] xNoInter = new double[y.size()][dfA + dfB];
+			for (int i = 0; i < y.size(); i++) { System.arraycopy(xFull[i], 0, xNoInter[i], 0, dfA + dfB); }
+			reg.newSampleData(yData, xNoInter);
+			double ssInter = reg.calculateResidualSumOfSquares() - rssFull;
+
+			result.addEffect("A", computeP(ssA / dfA, msError, dfA, dfError), ssA / dfA / msError);
+			result.addEffect("B", computeP(ssB / dfB, msError, dfB, dfError), ssB / dfB / msError);
+			result.addEffect("A:B", computeP(ssInter / dfInter, msError, dfInter, dfError),
+					ssInter / dfInter / msError);
+
+			return result;
+		} catch (Exception e) {
+			throw GamaRuntimeException.error("Failed to perform multi_anova (Type III).", scope);
+		}
+	}
+
+	/**
+	 * Computes the Hilbert-Schmidt Independence Criterion (HSIC) between two variables.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param x
+	 *            the first variable
+	 * @param y
+	 *            the second variable
+	 * @return the HSIC value
+	 */
+	/**
+	 * Computes the normalized Hilbert-Schmidt Independence Criterion (HSIC) between two variables.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param x
+	 *            the first variable
+	 * @param y
+	 *            the second variable
+	 * @return the normalized HSIC value (bounded 0-1)
+	 */
+	@operator (
+			value = "hsic",
+			type = IType.FLOAT,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = "Computes the normalized Hilbert-Schmidt Independence Criterion (HSIC) between two variables. HSIC is a kernel-based statistic to test the independence of two variables. Returns a value between 0 and 1, where 0 indicates independence.",
+			examples = { @example (
+					value = "hsic([1.0, 2.0, 3.0], [1.0, 2.0, 3.0])",
+					isExecutable = false) })
+	@tests ({
+			@test ("hsic([1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0, 4.0, 5.0]) > hsic([1.0, 2.0, 3.0, 4.0, 5.0], [5.0, 1.0, 4.0, 2.0, 3.0])"),
+			@test ("hsic([1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0, 4.0, 5.0]) <= 1.0") })
+	public static Double opHSIC(final IScope scope, final IList<Double> x, final IList<Double> y) {
+		if (x.size() != y.size()) throw GamaRuntimeException.error("Input lists must have the same size", scope);
+		double[] xData = new double[x.size()];
+		double[] yData = new double[y.size()];
+		for (int i = 0; i < x.size(); i++) {
+			xData[i] = x.get(i);
+			yData[i] = y.get(i);
+		}
+		return HSIC.computeNormalizedHSIC(xData, yData);
+	}
+
+	/**
+	 * Computes the p-value for the HSIC independence test between two variables using permutations.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param x
+	 *            the first variable
+	 * @param y
+	 *            the second variable
+	 * @param permutations
+	 *            the number of permutations
+	 * @return the p-value
+	 */
+	@operator (
+			value = "hsic_p_value",
+			type = IType.FLOAT,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = "Computes the p-value for the HSIC independence test between two variables using a permutation test. A small p-value (< 0.05) indicates strong evidence of dependence.",
+			examples = { @example (
+					value = "hsic_p_value([1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0, 4.0, 5.0], 100)",
+					isExecutable = false) })
+	@test ("hsic_p_value([1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0, 4.0, 5.0], 100) < 0.05")
+	public static Double opHSICPValue(final IScope scope, final IList<Double> x, final IList<Double> y,
+			final Integer permutations) {
+		if (x.size() != y.size()) throw GamaRuntimeException.error("Input lists must have the same size", scope);
+		double[] xData = new double[x.size()];
+		double[] yData = new double[y.size()];
+		for (int i = 0; i < x.size(); i++) {
+			xData[i] = x.get(i);
+			yData[i] = y.get(i);
+		}
+		return HSIC.computePValue(xData, yData, permutations);
+	}
+
+	/**
+	 * Compute P.
+	 *
+	 * @param msEffect
+	 *            the ms effect
+	 * @param msError
+	 *            the ms error
+	 * @param dfEffect
+	 *            the df effect
+	 * @param dfError
+	 *            the df error
+	 * @return the double
+	 */
+	private static double computeP(final double msEffect, final double msError, final int dfEffect, final int dfError) {
+		double f = msEffect / msError;
+		FDistribution fDist = new FDistribution(dfEffect, dfError);
+		return 1.0 - fDist.cumulativeProbability(f);
+	}
+
+	/**
 	 * Compute the residuals for the regression
 	 *
 	 * @param scope
@@ -2306,91 +2692,172 @@ public class Stats {
 	}
 
 	/**
+	 * Rolling VC.
 	 *
-	 * @param scope
-	 * @param path
-	 *            path of the input csv file
-	 * @param report_path
-	 *            path to save the sobol_report.txt file
-	 * @param nb_parameters
-	 *            number of parameters in the model
-	 * @return
-	 */
-	@operator (
-			value = "sobolAnalysis",
-			type = IType.STRING,
-			can_be_const = true,
-			category = { IOperatorCategory.STATISTICAL },
-			concept = { IConcept.STATISTIC },
-			expected_content_type = { IType.STRING, IType.INT })
-	@doc (
-			value = "Return a string containing the Report of the sobol analysis for the corresponding .csv file and save this report in a txt/csv file.")
-	@no_test
-	public static String sobolAnalysis(final IScope scope, final String path, final String report_path,
-			final int nb_parameters) {
-		final File f = new File(FileUtils.constructAbsoluteFilePath(scope, path, false));
-		final File f_report = new File(FileUtils.constructAbsoluteFilePath(scope, report_path, false));
-		Sobol sob = new Sobol(f, nb_parameters, scope);
-		sob.evaluate();
-		sob.saveResult(f_report);
-		return sob.buildReportString(FileNameUtils.getExtension(f_report.getPath()));
-	}
-
-	/**
-	 * Add by Tom Return the morris analysis
-	 *
-	 * @param scope
-	 * @param path
-	 *            : path to csv file
-	 * @param nb_levels
-	 *            : the number of level
-	 * @param id_firstOutput
-	 *            : the id of the first output
-	 * @return the result of a morris analysis based on data in a CSV file
-	 *
-	 */
-	@operator (
-			value = "morrisAnalysis",
-			type = IType.STRING,
-			can_be_const = true,
-			category = { IOperatorCategory.STATISTICAL },
-			concept = { IConcept.STATISTIC },
-			expected_content_type = { IType.STRING, IType.INT })
-	@doc (
-			value = "Return a string containing the Report of the morris analysis for the corresponding CSV file")
-	@no_test
-	public static String morrisAnalysis(final IScope scope, final String path, final int nb_levels,
-			final int nb_parameters) {
-
-		final File f = new File(FileUtils.constructAbsoluteFilePath(scope, path, false));
-		Morris momo = new Morris(f, nb_parameters, nb_levels, scope);
-		momo.evaluate();
-		return momo.buildReportString(FileNameUtils.getExtension(path));
-
-	}
-
-	/**
-	 * Stochanalyse.
-	 *
-	 * @param replicat
-	 *            the replicat
-	 * @param threshold
-	 *            the threshold
-	 * @param path
-	 *            the path
-	 * @param id_firstOutput
-	 *            the id first output
 	 * @param scope
 	 *            the scope
-	 * @return the string
+	 * @param data
+	 *            the data
+	 * @return the i list
 	 */
-	public static String stochanalyse(final int replicat, final int threshold, final String path,
-			final int id_firstOutput, final IScope scope) {
-		String new_path = scope.getExperiment().getWorkingPath() + "/" + path;
-		// Stochanalysis sto = new Stochanalysis();
-		return Stochanalysis.stochasticityAnalysis_From_CSV(replicat, threshold, new_path, id_firstOutput, scope);
-
+	@operator (
+			value = "rolling_vc",
+			type = IType.LIST,
+			content_type = IType.FLOAT,
+			can_be_const = true,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = "Return the list of rolling coefficient of variance according to the number of observations, </br> i.e. value at index i is the coefficient of variance for the first i observations.")
+	@tests ({ @test (
+			value = "list<float> data_vc_length <- [0.1, 0.2, 0.3, 0.3, 0.3, 0.3]; list<float> lvc_length <- rolling_vc(data_vc_length); length(lvc_length) = length(data_vc_length) - 1",
+			name = "Rolling coefficient of variation length"),
+			@test (
+					value = "list<float> data_vc_value <- [0.1, 0.2, 0.3, 0.3, 0.3, 0.3]; list<float> lvc_value <- rolling_vc(data_vc_value); abs(last(lvc_value) - (standard_deviation(data_vc_value) / mean(data_vc_value))) < 1e-10",
+					name = "Rolling coefficient of variation value") })
+	public static IList<Double> rollingVC(final IScope scope, final IList<Double> data) {
+		IList<Double> mean = meanList(data, scope);
+		IList<Double> std = standardevList(mean, data, scope);
+		IList<Double> cv = GamaListFactory.create(Types.FLOAT);
+		for (int i = 1; i < mean.size(); i++) { cv.add(std.get(i) / mean.get(i)); }
+		return cv;
 	}
+
+	/**
+	 * Rolling SE.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param data
+	 *            the data
+	 * @return the i list
+	 */
+	@operator (
+			value = "rolling_se",
+			type = IType.LIST,
+			content_type = IType.FLOAT,
+			can_be_const = true,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = "Return the list of standard error according to the number of observations, </br> i.e. value at index i is the standard error for the first i observations.")
+	@tests ({ @test (
+			value = "list<float> data_se_length <- [0.1, 0.2, 0.3, 0.3, 0.3, 0.3]; list<float> lse_length <- rolling_se(data_se_length); length(lse_length) = length(data_se_length) - 1",
+			name = "Rolling standard error length"),
+			@test (
+					value = "list<float> data_se_value <- [0.1, 0.2, 0.3, 0.3, 0.3, 0.3]; list<float> lse_value <- rolling_se(data_se_value); abs(last(lse_value) - (standard_deviation(data_se_value) / sqrt(length(data_se_value)))) < 1e-10",
+					name = "Rolling standard error value") })
+	public static IList<Double> rollingSE(final IScope scope, final IList<Double> data) {
+		IList<Double> mean = meanList(data, scope);
+		IList<Double> std = standardevList(mean, data, scope);
+		IList<Double> se = GamaListFactory.create(Types.FLOAT);
+		for (int i = 1; i < std.size(); i++) { se.add(std.get(i) / Math.sqrt(i + 1)); }
+		return se;
+	}
+
+	/**
+	 * Power test CSE.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param data
+	 *            the data
+	 * @param tAlpha
+	 *            the t alpha
+	 * @param tBeta
+	 *            the t beta
+	 * @param criticalEffectSize
+	 *            the critical effect size
+	 * @return the integer
+	 */
+	@operator (
+			value = "power_test",
+			type = IType.INT,
+			can_be_const = true,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@tests ({ @test (
+			value = "list<float> data <- [0.1, 0.2, 0.3, 0.3, 0.3, 0.3]; list data_mult <- range(50) accumulate (data); int nbrep_01 <- power_test(data_mult, 0.95, 0.80, 0.01); int nbrep_10 <- power_test(data_mult, 0.95, 0.80, 0.1); nbrep_10 < nbrep_01",
+			name = "Power test sensitivity") })
+	@doc (
+			value = "Return the number of observation to satisfy power test given a critical effect size, tAlpha and tBeta."
+					+ "</br>see reference: https://rseri.me/publication/b016/B016.pdf (accessible as of 04/2026).")
+	public static Integer powerTestCSE(final IScope scope, final IList<Double> data, final double tAlpha,
+			final double tBeta, final double criticalEffectSize) {
+		IList<Double> dSample =
+				data.stream().mapToDouble(v -> Cast.asFloat(scope, v)).boxed().collect(GamaListFactory.toGamaList());
+		double mean = dSample.stream().mapToDouble(v -> v).average().orElse(0.0);
+
+		IList<Double> currentES = GamaListFactory.create(Types.FLOAT);
+		// Starting from worst case deviation
+		currentES.add(Collections.min(dSample));
+		currentES.add(Collections.max(dSample));
+		dSample.removeAll(currentES);
+		// Sort according to deviation from the mean
+		List<Double> sortedRemaining = dSample.stream()
+				.sorted((v1, v2) -> (v1.equals(v2) ? 0 : Math.abs(v1 - mean) > Math.abs(v2 - mean) ? -1 : 1)).toList();
+		for (Double n_incr : sortedRemaining) {
+			currentES.add(n_incr);
+			TDistribution td = new TDistribution(currentES.size() - 1);
+			double std = new StandardDeviation().evaluate(currentES.stream().mapToDouble(v -> v).toArray());
+			double thresh = 2 * Math.pow(std / (criticalEffectSize * mean), 2)
+					* Math.pow(td.inverseCumulativeProbability(tAlpha) + td.inverseCumulativeProbability(tBeta), 2);
+			if (currentES.size() >= thresh) return currentES.size();
+		}
+		return data.size();
+	}
+
+	// ************ UTILITIES ************ //
+
+	/**
+	 * Compute the mean of a List of object
+	 *
+	 * @param val
+	 *            : List of value (data of each replicates)
+	 * @param scope
+	 * @return return the mean for each number of replicates
+	 */
+	private static IList<Double> meanList(final IList<Double> val, final IScope scope) {
+		IList<Double> mean = GamaListFactory.create(Types.FLOAT);
+		double tmp_mean = 0;
+		for (int i = 0; i < val.size(); i++) {
+			double tmp_val = Cast.asFloat(scope, val.get(i));
+			tmp_mean = tmp_mean + tmp_val;
+			mean.add(tmp_mean / (i + 1));
+		}
+		return mean;
+	}
+
+	/**
+	 * Compute the Standard Deviation of a list
+	 *
+	 * @param mean
+	 *            : the mean for each number of replicates
+	 * @param val
+	 *            : List of value (data of each replicates)
+	 * @param scope
+	 * @return return the standard deviation for each number of replicates (Always 0 for 1).
+	 */
+	private static IList<Double> standardevList(final IList<Double> mean, final IList<Double> val, final IScope scope) {
+		IList<Double> STD = GamaListFactory.create(Types.FLOAT);
+		for (int i = 0; i < mean.size(); i++) {
+			if (i == 0) {
+				STD.add(0.0);
+			} else {
+				double m = mean.get(i);
+				double sumDiffSq = 0;
+				for (int y = 0; y <= i; y++) {
+					double tmp_val = Cast.asFloat(scope, val.get(y));
+					sumDiffSq += Math.pow(tmp_val - m, 2);
+				}
+				// GAMA's standard_deviation operator uses population variance (divide by N)
+				STD.add(Math.sqrt(sumDiffSq / (i + 1)));
+			}
+		}
+		return STD;
+	}
+
+	// ****************************************** //
 
 	/**
 	 *
@@ -2423,71 +2890,6 @@ public class Stats {
 
 		return Descriptive.rms(size, sumOfSquares);
 	}
-
-	// /**
-	// *
-	// *
-	// * @param scope
-	// * @param moment3
-	// * @param standardDeviation
-	// * @return
-	// */
-	// @operator (
-	// value = { "skew", "skewness" },
-	// can_be_const = true,
-	// type = IType.FLOAT,
-	// category = { IOperatorCategory.STATISTICAL },
-	// concept = { IConcept.STATISTIC })
-	// @doc (
-	// value = "Returns the skew of a data sequence when the 3rd moment has already been computed.",
-	// comment = "In R moment(c(1, 3, 5, 6, 9, 11, 12, 13), order=3,center=TRUE) is -10.125 and
-	// sd(c(1,3,5,6,9,11,12,13)) = 4.407785"
-	// + "The value of the skewness tested here is different because there are different types of estimator"
-	// + "Joanes and Gill (1998) discuss three methods for estimating skewness:"
-	// + "Type 1: g_1 = m_3 / m_2^(3/2). This is the typical definition used in many older textbooks."
-	// + "Type 2: G_1 = g_1 * sqrt(n(n-1)) / (n-2). Used in SAS and SPSS."
-	// + "Type 3: b_1 = m_3 / s^3 = g_1 ((n-1)/n)^(3/2). Used in MINITAB and BMDP."
-	// + "In R skewness(c(1, 3, 5, 6, 9, 11, 12, 13),type=3) is -0.1182316",
-	// examples = { @example (
-	// value = "skew(-10.125,4.407785) with_precision(2)",
-	// equals = "-0.12") })
-	// public static Double opSkew(final IScope scope, final Double moment3, final Double standardDeviation) {
-	//
-	// // TODO input parameters validation
-	//
-	// return Descriptive.skew(moment3, standardDeviation);
-	// }
-
-	// /**
-	// *
-	// *
-	// * @param scope
-	// * @param data
-	// * @param mean
-	// * @param standardDeviation
-	// * @return
-	// */
-	// @operator (
-	// value = "skew",
-	// can_be_const = true,
-	// type = IType.FLOAT,
-	// category = { IOperatorCategory.STATISTICAL },
-	// concept = { IConcept.STATISTIC })
-	// @doc (
-	// value = "Returns the skew of a data sequence, which is moment(data,3,mean) / standardDeviation3",
-	// comment = "",
-	// examples = { @example (
-	// value = "skew([1,3,5,6,9,11,12,13]) with_precision(2)",
-	// equals = "-0.14") })
-	// public static Double opSkew(final IScope scope, final IContainer data) {
-	//
-	// // TODO input parameters validation
-	//
-	// final double mean = (Double) Containers.opMean(scope, data);
-	// final double standardDeviation = Stats.opStandardDeviation(scope, data);
-	//
-	// return Descriptive.skew(toDoubleArrayList(scope, data), mean, standardDeviation);
-	// }
 
 	/**
 	 * Skewness.
@@ -3097,8 +3499,8 @@ public class Stats {
 	@validator (ComparableValidator.class)
 	public static Object opMinOf(final IScope scope, final String eachName, final IContainer c,
 			final IExpression filter) {
-		return Containers.stream(scope, c).map(Containers.with(scope, eachName, filter)).minBy(Function.identity())
-				.orElse(null);
+		return Containers.stream(scope, c).map(Containers.buildFunctionWithEach(scope, eachName, filter))
+				.minBy(Function.identity()).orElse(null);
 	}
 
 	/**
@@ -3146,8 +3548,8 @@ public class Stats {
 	@validator (ComparableValidator.class)
 	public static Object opMaxOf(final IScope scope, final String eachName, final IContainer c,
 			final IExpression filter) {
-		return Containers.stream(scope, c).map(Containers.with(scope, eachName, filter)).maxBy(Function.identity())
-				.orElse(null);
+		return Containers.stream(scope, c).map(Containers.buildFunctionWithEach(scope, eachName, filter))
+				.maxBy(Function.identity()).orElse(null);
 	}
 
 }

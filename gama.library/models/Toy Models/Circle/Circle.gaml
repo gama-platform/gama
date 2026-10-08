@@ -1,9 +1,12 @@
 /**
 * Name: Circle
-* Author: 
-* Description: This model shows the movement of cells trying to do a circle shape with themselves 
-* 	considering the other cells. The second experiment shows a bigger circle using more cell agents.
-* Tags: skill
+* Author: Gama Development Team
+* Description: A self-organization model where cell agents arrange themselves into a circle through local
+*   interactions. Each cell tries to maintain an ideal distance from a central point (the radius) and repels
+*   cells that come too close. Without any global coordination, the agents converge to a circular formation
+*   through purely local rules. The model has two experiments: a default experiment with 50 agents forming a
+*   small circle, and a second experiment with more agents forming a larger ring, demonstrating scalability.
+* Tags: skill, self_organization, emergence, circle, formation, collective
 */
 model circle_model
 
@@ -47,7 +50,7 @@ species cell skills: [moving] {
 	//Reflex to make the cell agent fo to the center, calling the derivated action move
 	reflex go_to_center {
 		heading <- (((self distance_to center) > radius_of_circle) ? self towards center : (self towards center) - 180);
-		do move speed: speed; 
+		do move (speed: speed); 
 	}
 	//Reflex to flee of the other cells agents, which will help to design the circle shape
 	reflex flee_others {
@@ -55,7 +58,7 @@ species cell skills: [moving] {
 		if close != nil {
 			heading <- (self towards close) - 180;
 			float dist <- self distance_to close;
-			do move speed: dist / repulsion_strength heading: heading;
+			do move (speed: dist / repulsion_strength, heading: heading);
 		}
 	}
 	

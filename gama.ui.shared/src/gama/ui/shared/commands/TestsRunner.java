@@ -3,7 +3,7 @@
  * TestsRunner.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -17,19 +17,18 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.jobs.Job;
 
-import gama.core.common.interfaces.IGui;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.gaml.statements.test.CompoundSummary;
-import gama.gaml.statements.test.TestExperimentSummary;
+import gama.api.GAMA;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.IGui;
+import gama.api.utils.prefs.GamaPreferences;
+import gama.api.utils.tests.CompoundSummary;
+import gama.api.utils.tests.TestExperimentSummary;
 import gama.ui.shared.access.ModelsFinder;
 import gama.ui.shared.utils.SwtGui;
-import gama.ui.shared.utils.WorkbenchHelper;
+import gama.workspace.nature.GamaNatures;
 
 /**
  * The Class TestsRunner.
@@ -62,7 +61,7 @@ public class TestsRunner {
 		Job.createSystem("All tests", m -> {
 			for (final IFile file : testFiles) {
 				gui.displayTestsProgress(scope, i[0]++, size);
-				final List<TestExperimentSummary> list = gui.runHeadlessTests(file);
+				final List<TestExperimentSummary> list = gui.getModelsManager().runHeadlessTests(file);
 				if (list != null) { LAST_RUN.addSummaries(list); }
 			}
 			gui.displayTestsResults(scope, LAST_RUN);
@@ -80,7 +79,7 @@ public class TestsRunner {
 	 */
 	private static List<IFile> findTestModels() throws CoreException {
 		final List<IFile> result = new ArrayList<>();
-		final IWorkspaceRoot w = ResourcesPlugin.getWorkspace().getRoot();
+		final IWorkspaceRoot w = GAMA.getWorkspaceManager().getRoot();
 		for (final IProject p : w.getProjects()) {
 			if (isInteresting(p)) { result.addAll(ModelsFinder.getAllGamaFilesInProject(p)); }
 		}
@@ -100,10 +99,10 @@ public class TestsRunner {
 	private static boolean isInteresting(final IProject p) throws CoreException {
 		if (p == null || !p.exists() || !p.isAccessible()) return false;
 		// If it is contained in one of the built-in tests projects, return true
-		if (p.getDescription().hasNature(WorkbenchHelper.TEST_NATURE)) return true;
+		if (p.getDescription().hasNature(GamaNatures.TEST_NATURE)) return true;
 		if (GamaPreferences.Runtime.USER_TESTS.getValue()) {
 			// If it is not in user defined projects, return false
-			if (p.getDescription().hasNature(WorkbenchHelper.BUILTIN_NATURE)) return false;
+			if (p.getDescription().hasNature(GamaNatures.BUILTIN_NATURE)) return false;
 			// We try to find in the project a folder called 'tests'
 			final IResource r = p.findMember("tests");
 			if (r != null && r.exists() && r.isAccessible() && r.getType() == IResource.FOLDER) return true;

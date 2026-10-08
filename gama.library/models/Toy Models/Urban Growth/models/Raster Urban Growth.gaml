@@ -1,10 +1,13 @@
 /**
-* Name: Cellular Automaton Based Urban Growth
-* Author: Truong Chi Quang, Patrick Taillandier, Benoit Gaudou & Alexis Drogoul
-* Description: model based on the one proposed by (Raimbault et al., 2014): 
-* At each simulation step the nb_plots_to_build empty plots with the highest constructability are built 
-* The constructability is computed from 3 criteria: the density of construction in the neighborhood, the distance to a road, the distance to the city center (using the road network). 
-* Tags: gis, shapefile, grid, graph
+* Name: Raster Urban Growth (Cellular Automaton)
+* Author: Truong Chi Quang, Patrick Taillandier, Benoit Gaudou, Alexis Drogoul
+* Description: A cellular automaton model of urban growth inspired by Raimbault et al. (2014). At each step,
+*   the N empty plots with the highest 'constructability' score are developed. Constructability is computed
+*   from three spatial criteria: the density of already-built cells in the neighborhood, the distance to the
+*   nearest road, and the distance to the city center (measured along the road network). The model uses real
+*   GIS data and raster grids to represent the urban fabric, road network, and city center, producing realistic
+*   patterns of suburban expansion.
+* Tags: gis, shapefile, grid, graph, urban_growth, cellular_automaton, constructability, land_use
 */
 
 model raster3
@@ -13,7 +16,7 @@ model raster3
 global
 { 
 	//File for the ascii grid
-	file asc_grid <- grid_file("../includes/cantho_1999_v6.asc");
+	grid_file asc_grid <- grid_file("../includes/cantho_1999_v6.asc");
 	//Shapefile for the road
 	file road_shapefile <- shape_file("../includes/roads15_3.shp");
 	//Shapefile for the city
@@ -53,17 +56,17 @@ global
 		
 		//Each road has to compute its distance from the city center
 		ask roads {
-			do compute_cc_dist;
+			do compute_cc_dist();
 		}
 		//Compute the city distance for each plot
 		ask empty_plots {
-			do compute_distances;
+			do compute_distances();
 		}
 		//Normalization of the distance
-		do normalize_distances;
+		do normalize_distances();
 	}
 	//Action to normalize the distance
-	action normalize_distances {
+	action normalize_distances() {
 		//Maximum distance from the road of all the plots
 		float max_road_dist <- empty_plots max_of each.dist_route;
 		//Maximum distance from the city center for all the plots
@@ -87,7 +90,7 @@ global
 		//Build on each empty plot having the highest constructability
 		ask ordered_plots
 		{
-			do build;
+			do build();
 		}
 	}	
 }
@@ -102,7 +105,7 @@ species roads
 {
 	float dist_cv;
 	//Action to compute the city center distance for the road
-	action compute_cc_dist {
+	action compute_cc_dist() {
 		using topology(roads_network)
 		{
 			dist_cv <- self distance_to first(city_center);
@@ -124,20 +127,18 @@ grid plot file: asc_grid use_individual_shapes: false use_regular_agents: false 
 	float constructability;
 	
 	//Action to compute all the distances for the cell
-	action compute_distances
-	{
+	action compute_distances() {
 		roads route_pp <- roads closest_to self;
 		dist_route <- (self distance_to route_pp) using topology(world);
 		dist_cv <- dist_route + route_pp.dist_cv;
 	}
 	//Action to build on the cell
-	action build
-	{
+	action build() {
 		grid_value <- 1.0;
 		color <- plot_colors[1];
 	}
 	//Action to compute the constructability of the plot cell
-	float compute_constructability
+	float compute_constructability()
 	{
 		//Get all the neighbours plots
 		list<plot> voisins <- (self neighbors_at density_radius);

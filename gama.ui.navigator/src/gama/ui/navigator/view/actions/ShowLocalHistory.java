@@ -28,8 +28,8 @@ import org.eclipse.team.ui.history.IHistoryView;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.WorkspaceAction;
 
+import gama.api.GAMA;
 import gama.ui.navigator.view.contents.ResourceManager;
-import gama.ui.shared.dialogs.Messages;
 import gama.ui.shared.utils.WorkbenchHelper;
 
 /**
@@ -75,7 +75,7 @@ public class ShowLocalHistory extends WorkspaceAction {
 				WorkbenchHelper.asyncRun(r);
 			});
 		} catch (final InvocationTargetException exception) {
-			Messages.error(TeamUIMessages.ShowLocalHistory_1);
+			GAMA.getGui().getDialogFactory().error(TeamUIMessages.ShowLocalHistory_1);
 		} catch (final InterruptedException exception) {}
 	}
 
@@ -113,11 +113,13 @@ public class ShowLocalHistory extends WorkspaceAction {
 		try {
 			if (file != null) { states = file.getHistory(null); }
 		} catch (final CoreException ex) {
-			Messages.error(ex.getMessage());
+			GAMA.getGui().getDialogFactory().error(ex.getMessage());
 			return null;
 		}
 
-		if (states == null || states.length <= 0) { Messages.tell(TeamUIMessages.ShowLocalHistory_0); }
+		if (states == null || states.length <= 0) {
+			GAMA.getGui().getDialogFactory().inform(TeamUIMessages.ShowLocalHistory_0);
+		}
 		return states;
 	}
 

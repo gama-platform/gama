@@ -1,9 +1,12 @@
 /**
 * Name: Boids
-* Author: 
-* Description: This model shows the movement of boids following a goal, and creating a flock. 
-* The experiment the boids in 3D and allows users to move the goal.
-* Tags: gui, skill
+* Author: Gama Development Team
+* Description: An implementation of Craig Reynolds' Boids flocking algorithm. Each boid agent follows three
+*   simple local rules: separation (avoid crowding neighbors), alignment (steer towards the average heading of
+*   neighbors), and cohesion (steer towards the average position of neighbors). Despite these simple rules,
+*   complex flocking behavior emerges at the group level. A goal agent can be moved interactively to steer
+*   the whole flock. The experiment runs in 3D and allows users to adjust boid parameters in real time.
+* Tags: gui, skill, boids, flocking, emergence, collective_behavior, 3d, Reynolds
 */
 
 model boids 
@@ -37,9 +40,9 @@ global {
 	int ymax <- (width_and_height_of_environment - bounds);   
 	
 	//Action to move the goal to the mouse location
-	action move_goal {
+	action move_goal() {
 		ask first(boids_goal) {
-			do goto target: #user_location speed: 30.0;
+			do goto(target: #user_location, speed: 30.0);
 		}
 	}
 	
@@ -65,7 +68,7 @@ species boids_goal skills: [moving] {
 	
 	//If the mouse is not used, then the goal just wander
 	reflex wander {  
-		do  wander amplitude: 45.0 speed: 20.0;  
+		do  wander(amplitude: 45.0, speed: 20.0);  
 	}
 	
 	aspect default {
@@ -112,13 +115,13 @@ species boids skills: [moving] {
 		point acc <- {0,0};
 		list<obstacle> nearby_obstacles <- (obstacle overlapping (circle (range)) );
 		loop obs over: nearby_obstacles {
-			acc <- acc - ((location of obs) - my (location));
+			acc <- acc - ((location of obs) -  location);
 		}
 		velocity <- velocity + acc; 
 	}
 	
 	//action to represent the bounding of the environment considering the velocity of the boid
-	action bounding {
+	action bounding() {
 		if  (location.x) < xmin {
 			velocity <- velocity + {bounds,0};
 		} else if (location.x) > xmax {
@@ -141,19 +144,19 @@ species boids skills: [moving] {
 	}
 	
 	//Action to move the agent  
-	action do_move {  
+	action do_move() {  
 		if (((velocity.x) as int) = 0) and (((velocity.y) as int) = 0) {
 			velocity <- {(rnd(4)) -2, (rnd(4)) - 2};
 		}
 		point old_location <- copy(location);
-		do goto target: location + velocity;
+		do goto (target: location + velocity);
 		velocity <- location - old_location;
 	}
 	
 	//Reflex to apply the movement by calling the do_move action
 	reflex movement {
-		do do_move;
-		do bounding;
+		do do_move();
+		do bounding();
 	}
 	
 	aspect image {
@@ -180,10 +183,10 @@ species obstacle skills: [moving] {
 		//Will make the agent go to a boid with a 50% probability
 		if flip(0.5)  
 		{ 
-			do goto target: one_of(boids);
+			do goto (target: one_of(boids));
 		} 
 		else{ 
-			do wander amplitude: 360.0;   
+			do wander (amplitude: 360.0);   
 		}
 	}
 	aspect default {
@@ -214,7 +217,7 @@ experiment "Basic" type: gui {
 
 	output synchronized: true {
 		display Sky type: 3d axes:false{ 
-			image '../images/sky.jpg' refresh: false;
+			picture '../images/sky.jpg' refresh: false;
 			species boids aspect: image;
 			species boids_goal;
 			species obstacle;
@@ -255,12 +258,12 @@ experiment "Interactive" type: gui autorun: true{
 
 	output synchronized: true {
 		display Sky  background: #blue type: 3d fullscreen: 0 toolbar: false axes:false{ 
-			image '../images/sky.jpg' refresh: false;
+			picture '../images/sky.jpg' refresh: false;
 			species boids aspect: image trace: 10 fading: true ;
 			species boids_goal;
 			species obstacle;
 			//Event to call the action move_goal in global if the mouse move within the experiment
-			event #mouse_move {ask simulation {do move_goal;}}
+			event #mouse_move {ask simulation {do move_goal();}}
 		}
 
 	}

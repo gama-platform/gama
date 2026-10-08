@@ -19,8 +19,8 @@ import org.jbox2d.dynamics.joints.JointDef;
 import org.jbox2d.dynamics.joints.PrismaticJointDef;
 import org.jbox2d.dynamics.joints.RevoluteJointDef;
 
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.api.kernel.agent.IAgent;
+import gama.api.types.geometry.IPoint;
 import gama.extension.physics.common.AbstractPhysicalWorld;
 import gama.extension.physics.common.IBody;
 import gama.extension.physics.common.IJointDefinition;
@@ -37,6 +37,10 @@ public class Box2DPhysicalWorld extends AbstractPhysicalWorld<World, Shape, Vec2
 
 	/** The target. */
 	static float TARGET = 10;
+
+	private static final int VELOCITY_ITERATIONS = 8;
+
+	private static final int POSITION_ITERATIONS = 3;
 
 	/**
 	 * Instantiates a new box 2 D physical world.
@@ -68,7 +72,7 @@ public class Box2DPhysicalWorld extends AbstractPhysicalWorld<World, Shape, Vec2
 	public void setCCD(final boolean ccd) {}
 
 	@Override
-	public void setGravity(final GamaPoint gravity) {
+	public void setGravity(final IPoint gravity) {
 		if (world != null) { world.setGravity(toVector(gravity)); }
 	}
 
@@ -97,7 +101,7 @@ public class Box2DPhysicalWorld extends AbstractPhysicalWorld<World, Shape, Vec2
 
 	@Override
 	protected World createWorld() {
-		GamaPoint p = simulation.getGravity(simulation.getScope());
+		IPoint p = simulation.getGravity(simulation.getScope());
 		World result = new World(toVector(p));
 		result.setAutoClearForces(true);
 		result.setContactListener(contactListener);
@@ -119,8 +123,11 @@ public class Box2DPhysicalWorld extends AbstractPhysicalWorld<World, Shape, Vec2
 
 	@Override
 	protected void updateEngine(final Double timeStep, final int maxSubSteps) {
-		int steps = maxSubSteps == 0 ? 1 : maxSubSteps;
-		getWorld().step(timeStep.floatValue(), steps, steps);
+		int steps = Math.max(1, maxSubSteps);
+		float subStep = timeStep.floatValue() / steps;
+		for (int i = 0; i < steps; i++) {
+			getWorld().step(subStep, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
+		}
 	}
 
 	@Override

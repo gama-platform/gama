@@ -6,7 +6,6 @@ package gaml.compiler.gaml.impl;
 import gaml.compiler.gaml.ActionDefinition;
 import gaml.compiler.gaml.GamlDefinition;
 import gaml.compiler.gaml.GamlPackage;
-import gaml.compiler.gaml.S_Declaration;
 import gaml.compiler.gaml.S_Species;
 import gaml.compiler.gaml.TypeDefinition;
 import gaml.compiler.gaml.VarDefinition;
@@ -180,20 +179,6 @@ public class S_SpeciesImpl extends StatementImpl implements S_Species
         default: return -1;
       }
     }
-    if (baseClass == VarDefinition.class)
-    {
-      switch (derivedFeatureID)
-      {
-        default: return -1;
-      }
-    }
-    if (baseClass == S_Declaration.class)
-    {
-      switch (derivedFeatureID)
-      {
-        default: return -1;
-      }
-    }
     if (baseClass == ActionDefinition.class)
     {
       switch (derivedFeatureID)
@@ -202,6 +187,13 @@ public class S_SpeciesImpl extends StatementImpl implements S_Species
       }
     }
     if (baseClass == TypeDefinition.class)
+    {
+      switch (derivedFeatureID)
+      {
+        default: return -1;
+      }
+    }
+    if (baseClass == VarDefinition.class)
     {
       switch (derivedFeatureID)
       {
@@ -227,20 +219,6 @@ public class S_SpeciesImpl extends StatementImpl implements S_Species
         default: return -1;
       }
     }
-    if (baseClass == VarDefinition.class)
-    {
-      switch (baseFeatureID)
-      {
-        default: return -1;
-      }
-    }
-    if (baseClass == S_Declaration.class)
-    {
-      switch (baseFeatureID)
-      {
-        default: return -1;
-      }
-    }
     if (baseClass == ActionDefinition.class)
     {
       switch (baseFeatureID)
@@ -249,6 +227,13 @@ public class S_SpeciesImpl extends StatementImpl implements S_Species
       }
     }
     if (baseClass == TypeDefinition.class)
+    {
+      switch (baseFeatureID)
+      {
+        default: return -1;
+      }
+    }
+    if (baseClass == VarDefinition.class)
     {
       switch (baseFeatureID)
       {

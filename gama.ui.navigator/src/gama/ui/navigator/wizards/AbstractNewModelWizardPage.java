@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * AbstractNewModelWizardPage.java, in gama.ui.navigator.view, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * AbstractNewModelWizardPage.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.navigator.wizards;
 
@@ -18,7 +18,6 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.viewers.ISelection;
@@ -37,6 +36,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.ContainerSelectionDialog;
 
+import gama.api.GAMA;
 import gama.ui.navigator.view.contents.ResourceManager;
 import gama.ui.shared.utils.WorkbenchHelper;
 
@@ -47,17 +47,18 @@ public abstract class AbstractNewModelWizardPage extends WizardPage {
 
 	/** The selection. */
 	protected final ISelection selection;
-	
+
 	/** The name text. */
 	protected Text containerText, fileText, authorText, nameText;
-	
+
 	/** The template path. */
 	protected String templatePath;
 
 	/**
 	 * Instantiates a new abstract new model wizard page.
 	 *
-	 * @param selection the selection
+	 * @param selection
+	 *            the selection
 	 */
 	protected AbstractNewModelWizardPage(final ISelection selection) {
 		super("wizardPage");
@@ -65,9 +66,7 @@ public abstract class AbstractNewModelWizardPage extends WizardPage {
 	}
 
 	/** Gets the container name of the new file */
-	public String getContainerName() {
-		return containerText.getText();
-	}
+	public String getContainerName() { return containerText.getText(); }
 
 	/**
 	 * Gets the template type.
@@ -77,9 +76,7 @@ public abstract class AbstractNewModelWizardPage extends WizardPage {
 	public abstract String getTemplateType();
 
 	/** Gets the file name of the new file */
-	public String getFileName() {
-		return fileText.getText();
-	}
+	public String getFileName() { return fileText.getText(); }
 
 	@Override
 	public void setVisible(final boolean b) {
@@ -89,14 +86,10 @@ public abstract class AbstractNewModelWizardPage extends WizardPage {
 	}
 
 	/** Gets the author of the new file */
-	public String getAuthor() {
-		return authorText.getText();
-	}
+	public String getAuthor() { return authorText.getText(); }
 
 	/** Gets the model name of the new file */
-	public String getModelName() {
-		return nameText.getText();
-	}
+	public String getModelName() { return nameText.getText(); }
 
 	/**
 	 * Return the computer full name. <br>
@@ -119,7 +112,7 @@ public abstract class AbstractNewModelWizardPage extends WizardPage {
 	 */
 	protected void handleContainerBrowse() {
 		final ContainerSelectionDialog dialog = new ContainerSelectionDialog(getShell(),
-				ResourcesPlugin.getWorkspace().getRoot(), false, "Select a project or a folder");
+				GAMA.getWorkspaceManager().getRoot(), false, "Select a project or a folder");
 		if (dialog.open() == Window.OK) {
 			final Object[] result = dialog.getResult();
 			if (result.length == 1) { containerText.setText(((Path) result[0]).toString()); }
@@ -129,7 +122,8 @@ public abstract class AbstractNewModelWizardPage extends WizardPage {
 	/**
 	 * Update status.
 	 *
-	 * @param message the message
+	 * @param message
+	 *            the message
 	 */
 	protected void updateStatus(final String message) {
 		setErrorMessage(message);
@@ -156,7 +150,7 @@ public abstract class AbstractNewModelWizardPage extends WizardPage {
 	 * @return the initial file name
 	 */
 	protected String getInitialFileName() {
-		final IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(new Path(getContainerName()));
+		final IResource resource = GAMA.getWorkspaceManager().getRoot().findMember(new Path(getContainerName()));
 		if (resource instanceof IContainer) {
 			IFile modelfile = null;
 			int i = 0;
@@ -171,7 +165,8 @@ public abstract class AbstractNewModelWizardPage extends WizardPage {
 	/**
 	 * Gets the initial model file name.
 	 *
-	 * @param i the i
+	 * @param i
+	 *            the i
 	 * @return the initial model file name
 	 */
 	protected String getInitialModelFileName(final int i) {
@@ -185,9 +180,7 @@ public abstract class AbstractNewModelWizardPage extends WizardPage {
 	 *
 	 * @return the default file body
 	 */
-	protected String getDefaultFileBody() {
-		return "New " + gamlType();
-	}
+	protected String getDefaultFileBody() { return "New " + gamlType(); }
 
 	/**
 	 * Find container.
@@ -202,10 +195,8 @@ public abstract class AbstractNewModelWizardPage extends WizardPage {
 		IResource r = ResourceManager.getResource(obj);
 		if (r == null) return null;
 		if (r instanceof IProject) { r = ((IProject) r).getFolder(getInnerDefaultFolder()); }
-		if (r instanceof IContainer)
-			return (IContainer) r;
-		else
-			return r.getParent();
+		if (r instanceof IContainer) return (IContainer) r;
+		return r.getParent();
 	}
 
 	/**
@@ -213,15 +204,15 @@ public abstract class AbstractNewModelWizardPage extends WizardPage {
 	 *
 	 * @return the inner default folder
 	 */
-	protected String getInnerDefaultFolder() {
-		return "models";
-	}
+	protected String getInnerDefaultFolder() { return "models"; }
 
 	/**
 	 * Creates the label.
 	 *
-	 * @param c the c
-	 * @param t the t
+	 * @param c
+	 *            the c
+	 * @param t
+	 *            the t
 	 * @return the label
 	 */
 	Label createLabel(final Composite c, final String t) {
@@ -238,7 +229,8 @@ public abstract class AbstractNewModelWizardPage extends WizardPage {
 	/**
 	 * Creates the author section.
 	 *
-	 * @param container the container
+	 * @param container
+	 *            the container
 	 */
 	public void createAuthorSection(final Composite container) {
 		// final GridData gd;
@@ -254,7 +246,8 @@ public abstract class AbstractNewModelWizardPage extends WizardPage {
 	/**
 	 * Creates the container section.
 	 *
-	 * @param container the container
+	 * @param container
+	 *            the container
 	 */
 	public void createContainerSection(final Composite container) {
 		GridLayout layout = new GridLayout();
@@ -287,7 +280,8 @@ public abstract class AbstractNewModelWizardPage extends WizardPage {
 	/**
 	 * Creates the name section.
 	 *
-	 * @param container the container
+	 * @param container
+	 *            the container
 	 */
 	public void createNameSection(final Composite container) {
 		createLabel(container, gamlType() + " name:");
@@ -300,8 +294,10 @@ public abstract class AbstractNewModelWizardPage extends WizardPage {
 	/**
 	 * Apply grid data.
 	 *
-	 * @param c the c
-	 * @param hSpan the h span
+	 * @param c
+	 *            the c
+	 * @param hSpan
+	 *            the h span
 	 */
 	void applyGridData(final Control c, final int hSpan) {
 		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).span(hSpan, 1)
@@ -311,7 +307,8 @@ public abstract class AbstractNewModelWizardPage extends WizardPage {
 	/**
 	 * Creates the file name section.
 	 *
-	 * @param container the container
+	 * @param container
+	 *            the container
 	 */
 	public void createFileNameSection(final Composite container) {
 		createLabel(container, "&File name:");
@@ -365,7 +362,7 @@ public abstract class AbstractNewModelWizardPage extends WizardPage {
 			return;
 		}
 
-		final IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(new Path(getContainerName()));
+		final IResource resource = GAMA.getWorkspaceManager().getRoot().findMember(new Path(getContainerName()));
 		if (resource instanceof IContainer) {
 			final IFile modelfile = ((IContainer) resource).getFile(new Path(fileName));
 			if (modelfile.exists()) {
@@ -406,7 +403,5 @@ public abstract class AbstractNewModelWizardPage extends WizardPage {
 	 *
 	 * @return the template path
 	 */
-	public String getTemplatePath() {
-		return templatePath;
-	}
+	public String getTemplatePath() { return templatePath; }
 }

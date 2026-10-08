@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * UniversalContactAddedListener.java, in gaml.extensions.physics, is part of the source code of the GAMA
- * modeling and simulation platform .
+ * UniversalContactAddedListener.java, in gama.extension.physics, is part of the source code of the GAMA modeling and
+ * simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -18,13 +18,11 @@ import org.jbox2d.dynamics.contacts.Contact;
 import com.bulletphysics.ContactAddedCallback;
 import com.bulletphysics.collision.dispatch.CollisionObject;
 import com.bulletphysics.collision.narrowphase.ManifoldPoint;
-import com.bulletphysics.dynamics.RigidBody;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.jme3.bullet.collision.PhysicsCollisionEvent;
 import com.jme3.bullet.collision.PhysicsCollisionListener;
 import com.jme3.bullet.collision.PhysicsCollisionObject;
-import com.jme3.bullet.objects.PhysicsRigidBody;
 
 import gama.dev.DEBUG;
 
@@ -36,7 +34,8 @@ import gama.dev.DEBUG;
  *
  * @see UniversalContactAddedEvent
  */
-public class UniversalContactAddedListener implements ContactAddedCallback, PhysicsCollisionListener, ContactListener {
+public class UniversalContactAddedListener extends ContactAddedCallback
+		implements PhysicsCollisionListener, ContactListener {
 
 	static {
 		DEBUG.OFF();
@@ -77,15 +76,13 @@ public class UniversalContactAddedListener implements ContactAddedCallback, Phys
 	 */
 	public void onContactProcessed(final PhysicsCollisionObject pcoA, final PhysicsCollisionObject pcoB,
 			final long pointId) {
-		addContactBetween((IBody) ((PhysicsRigidBody) pcoA).getUserObject(),
-				(IBody) ((PhysicsRigidBody) pcoB).getUserObject());
+		addContactBetween((IBody) pcoA.getUserObject(), (IBody) pcoB.getUserObject());
 	}
 
 	@Override
 	public boolean contactAdded(final ManifoldPoint cp, final CollisionObject colObj0, final int partId0,
 			final int index0, final CollisionObject colObj1, final int partId1, final int index1) {
-		addContactBetween((IBody) ((RigidBody) colObj0).getUserPointer(),
-				(IBody) ((RigidBody) colObj1).getUserPointer());
+		addContactBetween((IBody) colObj0.getUserPointer(), (IBody) colObj1.getUserPointer());
 		return true;
 	}
 

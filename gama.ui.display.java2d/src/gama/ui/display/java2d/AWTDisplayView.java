@@ -13,7 +13,7 @@ package gama.ui.display.java2d;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 
-import gama.core.common.interfaces.IDisposable;
+import gama.api.utils.interfaces.IDisposable;
 import gama.dev.DEBUG;
 import gama.ui.display.java2d.swing.SwingControl;
 import gama.ui.experiment.views.displays.LayeredDisplayView;
@@ -77,10 +77,8 @@ public class AWTDisplayView extends LayeredDisplayView {
 	@Override
 	public void ownCreatePartControl(final Composite c) {
 		super.ownCreatePartControl(c);
-		if (getOutput().getData().fullScreen() > -1) {
-			new Thread(() -> { WorkbenchHelper.runInUI("Expand " + this.getTitle(), 1000, m -> toggleFullScreen()); })
-					.start();
-		}
+		// Fullscreen is now handled by ArrangeDisplayViews.decorateDisplays() which runs while
+		// the launching overlay covers the window, so the display appears fullscreen immediately.
 	}
 
 	@Override

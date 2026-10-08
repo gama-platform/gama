@@ -10,6 +10,8 @@
  ********************************************************************************************************/
 package gama.gaml.statements.draw;
 
+import gama.api.ui.layers.IMeshColorProvider;
+
 /**
  * The Class GrayscaleMeshColorProvider.
  */

@@ -12,32 +12,33 @@ package gama.gaml.statements;
 
 import java.util.List;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.agent.IMacroAgent;
-import gama.core.metamodel.agent.ISerialisedAgent;
-import gama.core.metamodel.population.IPopulation;
-import gama.core.runtime.FlowStatus;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
-import gama.core.util.IContainer;
-import gama.core.util.IList;
-import gama.gaml.compilation.ISymbol;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.species.ISpecies;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.statements.AbstractStatementSequence;
+import gama.api.gaml.symbols.ISymbol;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.agent.IMacroAgent;
+import gama.api.kernel.agent.IPopulation;
+import gama.api.kernel.serialization.ISerialisedAgent;
+import gama.api.kernel.species.ISpecies;
+import gama.api.runtime.scope.FlowStatus;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.misc.IContainer;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
 
 /**
  * The Class ReleaseStatement.
@@ -144,8 +145,15 @@ public class ReleaseStatement extends AbstractStatementSequence {
 	/** The return string. */
 	private final String returnString;
 
-	/** The sequence. */
-	private RemoteSequence sequence = null;
+	/**
+	 * The sequence of statements to execute on each released agent.
+	 *
+	 * <p><b>Thread-safety:</b> declared {@code volatile} so that the single write performed by
+	 * {@link #setChildren(Iterable)} during construction is guaranteed to be visible to all threads
+	 * that subsequently call {@link #privateExecuteIn(IScope)}, even when those threads belong to
+	 * different parallel simulations sharing this statement instance.</p>
+	 */
+	private volatile RemoteSequence sequence = null;
 
 	/**
 	 * Instantiates a new release statement.

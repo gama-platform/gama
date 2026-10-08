@@ -1,8 +1,11 @@
 /**
-* Name: HTTPGET
-* Based on the internal empty template. 
-* Author: benoitgaudou
-* Tags: network, web service, HTTP
+* Name: HTTP POST
+* Author: Benoit Gaudou
+* Description: Demonstrates how to make HTTP POST requests from a GAMA model. Sends data (e.g., simulation
+*   results or agent states) to a Flask web server. A companion Python Flask script is provided in the
+*   scripts/HTTP folder to run a local receiver. Shows how to set request headers, encode the POST body,
+*   and read the server response. Useful for pushing simulation outputs to web dashboards or microservices.
+* Tags: network, HTTP, POST, REST, web_service, protocol, communication, API, Flask
 */
 
 /*
@@ -18,7 +21,7 @@ global {
 	
 	init {
 		create NetworkingAgent number: 1 {
-		   do connect to: url protocol: "http" port: port raw: true;
+		   do connect(to: url, protocol: "http", port: port, raw: true);
 		}		
 	} 
 
@@ -29,10 +32,10 @@ species NetworkingAgent skills:[network] {
 	reflex send when:  cycle = 0 {
 		write "sending message ";
 		
-		do send to: "/test" contents: ["POST",to_json(["toto"::34,"titi"::world]), ["Content-Type"::"application/json"] ];
+		do send(to: "/test", contents: ["POST",to_json(["toto"::34,"titi"::world]), ["Content-Type"::"application/json"] ]);
 		
-// 		do send to: "/api/user/" contents: ["POST","raw-query-param", ["Content-Type"::"text/plain"] ];		
-//		do send to: "/api/user/" contents: ["DELETE"];
+// 		do send(to: "/api/user/", contents: ["POST","raw-query-param", ["Content-Type"::"text/plain"] ]);		
+//		do send(to: "/api/user/", contents: ["DELETE"]);
 	}
 
 	reflex get_message {

@@ -1,8 +1,11 @@
 /***
-* Name: pedestrian_complex_environment
+* Name: Complex Environment - Walk
 * Author: Patrick Taillandier
-* Description: show how to use the pedestrian skill for complex envorinment - require to generate pedestrian paths before - see model "Generate Pedestrian path.gaml" 
-* Tags: pedestrian, gis, shapefile, graph, agent_movement, skill, transport
+* Description: Demonstrates the pedestrian skill for navigation in a complex built environment with walls
+*   and obstacles. Pedestrians use pre-generated pedestrian paths (computed by 'Generate pedestrian paths')
+*   to find their way around walls. The 'walk' action navigates agents along the free-space graph while
+*   avoiding obstacles. Requires running 'Generate pedestrian paths.gaml' first to produce the path files.
+* Tags: pedestrian, gis, shapefile, graph, agent_movement, skill, transport, obstacle, navigation
 ***/
 
 model pedestrian_complex_environment
@@ -28,7 +31,7 @@ global {
 	float P_proba_detour <- 0.5;
 	bool P_avoid_other <- true;
 	float P_obstacle_consideration_distance <- 3.0;
-	float P_pedestrian_consideration_distance <- 3.0;
+	float P_pedestrian_consideration_distance <- 10.0;
 	float P_tolerance_target <- 0.1;
 	bool P_use_geometry_target <- true;
 	
@@ -47,7 +50,10 @@ global {
 	float P_lambda_SFM_simple <- 2.0 ;
 	float P_gama_SFM_simple <- 0.35 ;
 	float P_relaxion_SFM_simple <- 0.54 ;
-	float P_A_pedestrian_SFM_simple <-4.5;
+	float P_A_pedestrian_SFM_simple <- 15.0;
+	
+	float P_path_deviation <- 0.02;
+	float P_path_deviation_radius <- 5#m;
 	
 	float step <- 0.1;
 	int nb_people <- 250;
@@ -55,18 +61,18 @@ global {
 	geometry open_area ;
 	
 	init {
+		
 		open_area <- first(open_area_shape_file.contents);
 		create wall from:wall_shapefile;
 		create pedestrian_path from: pedestrian_paths_shape_file {
-			list<geometry> fs <- free_spaces_shape_file overlapping self;
-			free_space <- fs first_with (each covers shape); 
+			free_space <- free_spaces_shape_file[int(self)]; 
 		}
 		
 
 		network <- as_edge_graph(pedestrian_path);
 		
 		ask pedestrian_path {
-			do build_intersection_areas pedestrian_graph: network;
+			do build_intersection_areas (pedestrian_graph: network);
 		}
 	
 		create people number:nb_people{
@@ -83,7 +89,8 @@ global {
 			obstacle_species<-[wall];
 			
 			pedestrian_model <- P_model_type;
-			
+			path_deviation <- P_path_deviation;
+			path_deviation_radius <- P_path_deviation_radius;
 		
 			if (pedestrian_model = "simple") {
 				A_pedestrians_SFM <- P_A_pedestrian_SFM_simple;
@@ -107,7 +114,7 @@ global {
 	}
 	
 	reflex stop when: empty(people) {
-		do pause;
+		do pause();
 	}
 	
 }
@@ -143,9 +150,9 @@ species people skills: [pedestrian]{
 
 	reflex move  {
 		if (final_waypoint = nil) {
-			do compute_virtual_path pedestrian_graph:network target: any_location_in(open_area) ;
+			do compute_virtual_path (pedestrian_graph:network, target: any_location_in(open_area)) ;
 		}
-		do walk ;
+		do walk() ;
 	}	
 	
 	aspect default {
@@ -190,6 +197,9 @@ experiment normal_sim type: gui {
 	parameter "P pedestrian_consideration_distance" var:P_pedestrian_consideration_distance;
 	parameter "P tolerance_target" var:P_tolerance_target;
 	parameter "P use_geometry_target" var:P_use_geometry_target;
+	
+	parameter "P path deviation" var:P_path_deviation min:0.0 max:1.0;
+	parameter "P path deviation radius" var:P_path_deviation_radius min:2#m max:50#m;
 
 
 	parameter "P model_type" var:P_model_type among: ["simple", "advanced"]; 

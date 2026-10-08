@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * System.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * System.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -24,40 +24,75 @@ import javax.sound.sampled.Clip;
 
 import org.eclipse.core.runtime.Platform;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ITypeProvider;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.test;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.IValue;
-import gama.core.common.util.FileUtils;
-import gama.core.kernel.experiment.IParameter;
-import gama.core.kernel.experiment.InputParameter;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
-import gama.core.util.GamaFont;
-import gama.core.util.GamaListFactory;
-import gama.core.util.GamaMapFactory;
-import gama.core.util.IList;
-import gama.core.util.IMap;
-import gama.gaml.descriptions.ActionDescription;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.types.GamaType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.tests;
+import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.annotations.support.ITypeProvider;
+import gama.api.compilation.descriptions.IActionDescription;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.symbols.IParameter;
+import gama.api.gaml.types.GamaType;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.object.IObject;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
+import gama.api.types.font.IFont;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.api.types.misc.IValue;
+import gama.api.utils.StringUtils;
+import gama.api.utils.files.FileUtils;
+import gama.core.experiment.parameters.InputParameter;
 
 /**
- * Written by drogoul Modified on 10 d�c. 2010
+ * Provides GAML system-level and introspection operators for the GAMA modeling and simulation
+ * platform. The operators defined here cover the following families:
  *
- * @todo Description
+ * <ul>
+ *   <li><b>Agent lifecycle:</b> {@code dead}, {@code copy} — query agent liveness and create
+ *       deep copies of GAML values. The related operators {@code pause} and {@code halt} are
+ *       defined elsewhere in the GAML kernel.</li>
+ *   <li><b>Type introspection:</b> {@code type_of}, {@code species_of}, {@code is_skill},
+ *       {@code is_number} — operators that inspect the runtime type or species of a value, or
+ *       test whether a string names a numeric type. These operators are defined in the GAML
+ *       type-system and casting utilities.</li>
+ *   <li><b>String / value conversion:</b> {@code string}, {@code int}, {@code float},
+ *       {@code bool} casts and {@code eval_gaml} — convert values between GAML types or
+ *       evaluate a GAML expression supplied as a string at runtime. Defined in the GAML
+ *       casting operators.</li>
+ *   <li><b>Error handling:</b> {@code is_error}, {@code is_warning} — wrap any GAML
+ *       sub-expression and return whether its evaluation raised a runtime error or warning,
+ *       without propagating the exception to the caller.</li>
+ *   <li><b>I/O &amp; simulation control:</b> {@code user_input_dialog}, {@code user_confirm},
+ *       {@code wizard}, {@code wizard_page}, {@code enter}, {@code choose}, {@code command}
+ *       — open interactive dialogs to collect user input during a running experiment, or
+ *       execute a system shell command and capture its output.</li>
+ *   <li><b>Networking:</b> {@code is_reachable} — probe whether a remote host:port is
+ *       reachable within a given timeout (milliseconds).</li>
+ *   <li><b>Miscellaneous:</b> {@code play_sound}, {@code copy_to_clipboard},
+ *       {@code copy_from_clipboard} — audio playback and system clipboard integration.
+ *       {@code file_exists} and {@code copy_between} (which delegates to
+ *       {@link gama.gaml.operators.Strings}) are defined in related operator classes.</li>
+ * </ul>
  *
+ * <p><b>Note on automated tests:</b> Many operators in this class are annotated with
+ * {@code @no_test} because they require an active simulation, a running experiment, or a
+ * graphical UI context that cannot be provided by the automated unit-test harness.</p>
+ *
+ * @author drogoul
+ * @see gama.gaml.operators.Strings
+ * @see gama.gaml.operators.Cast
  */
 public class System {
 
@@ -86,11 +121,16 @@ public class System {
 			concept = { IConcept.SYSTEM, IConcept.SPECIES })
 	@doc (
 			value = "true if the agent is dead (or null), false otherwise.",
+			returns = "a {@code bool}: {@code true} if the agent is dead or nil, {@code false} otherwise.",
+			special_cases = { "dead(nil) returns true.",
+					"dead(simulation) returns false when called during a running simulation." },
 			examples = @example (
 					value = "dead(agent_A)",
 					equals = "true or false",
 					isExecutable = false))
-	@test ("dead(simulation) = false")
+	@test ("dead(nil)")
+	@test ("dead(agent(nil))")
+	@test ("not(dead(simulation))")
 	public static Boolean opDead(final IScope scope, final IAgent a) {
 		return a == null || a.dead();
 	}
@@ -108,14 +148,24 @@ public class System {
 			value = "is_error",
 			can_be_const = true,
 			concept = IConcept.TEST)
-	@doc ("Returns whether or not the argument raises an error when evaluated")
-	@test ("is_error(1.0 = 1) = false")
+	@doc (
+			value = "Returns whether or not the argument raises an error when evaluated",
+			returns = "a {@code bool}: {@code true} if evaluating the expression raised a runtime error.",
+			special_cases = {
+					"is_error evaluates the expression in a try-catch manner; if an error is raised, it returns true without propagating the error.",
+					"is_error(1/0) = true (integer division by zero is an error in GAML)." })
+	@tests ({
+			@test ("!is_error(1.0 = 1)"),
+			@test ("is_error(1/0)"),
+			@test ("!is_error(1/1)"),
+			@test ("is_error(10 / 0)")
+	})
 	public static Boolean is_error(final IScope scope, final IExpression expr) {
 		try {
 			expr.value(scope);
 		} catch (final GamaRuntimeException e) {
 			return !e.isWarning();
-		} catch (final Exception e1) {}
+		} catch (final Exception e1) {return true;}
 		return false;
 	}
 
@@ -132,7 +182,9 @@ public class System {
 			value = "is_warning",
 			can_be_const = true,
 			concept = IConcept.TEST)
-	@doc ("Returns whether or not the argument raises a warning when evaluated")
+	@doc (
+			value = "Returns whether or not the argument raises a warning when evaluated",
+			returns = "a {@code bool}: {@code true} if evaluating the expression produced a runtime warning.")
 	@test ("is_warning(1.0 = 1) = false")
 	public static Boolean is_warning(final IScope scope, final IExpression expr) {
 		try {
@@ -172,6 +224,10 @@ public class System {
 			concept = IConcept.TEST)
 	@doc (
 			value = "Returns whether or not the given web address is reachable or not before a time_out time in milliseconds",
+			returns = "a {@code bool}: {@code true} if a TCP connection to the given host and port can be established within the timeout; {@code false} otherwise.",
+			special_cases = {
+					"A timeout value in milliseconds is passed as the third argument to limit the connection attempt.",
+					"Returns false if the host is unreachable, the port is closed, or the DNS lookup fails." },
 			examples = { @example (
 					value = "write sample(is_reachable(\"www.google.com\", 200));",
 					isExecutable = false) })
@@ -258,7 +314,11 @@ public class System {
 			value = "is_reachable",
 			concept = IConcept.TEST)
 	@doc (
-			value = "Returns whether or not the given web address is reachable or not before a time_out time in milliseconds",
+			value = "Returns whether or not the given web address is reachable or not before a time_out time in milliseconds. Uses port 80 (HTTP) by default.",
+			returns = "a {@code bool}: {@code true} if a TCP connection to the given host on port 80 can be established within the timeout; {@code false} otherwise.",
+			special_cases = {
+					"Uses port 80 (HTTP) by default for the TCP connection check.",
+					"Returns false if the host is unreachable, the port is closed, or the DNS lookup fails." },
 			examples = { @example (
 					value = "write sample(is_reachable(\"www.google.com\", 200));",
 					isExecutable = false) })
@@ -387,7 +447,7 @@ public class System {
 			try (BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
 				final int returnValue = p.waitFor();
 				String line = "";
-				while ((line = reader.readLine()) != null) { output.append(line + Strings.LN); }
+				while ((line = reader.readLine()) != null) { output.append(line + StringUtils.LN); }
 
 				if (returnValue != 0)
 					throw GamaRuntimeException.error("Error in console command." + output.toString(), scope);
@@ -434,11 +494,11 @@ public class System {
 			category = { IOperatorCategory.SYSTEM },
 			concept = { IConcept.SYSTEM, IConcept.ATTRIBUTE })
 	@doc (
-			value = "It has two different uses: it can be the dot product between 2 matrices or return an evaluation of the expression (right-hand operand) in the scope the given agent.",
+			value = "The dot operator can be the dot product between 2 matrices or return the value of the expression (right-hand operand) in the scope of the left-hand agent or object.",
 			masterDoc = true,
 			special_cases = "if the agent is nil or dead, throws an exception",
 			usages = @usage (
-					value = "if the left operand is an agent, it evaluates of the expression (right-hand operand) in the scope the given agent",
+					value = "if the left operand is an agent, the right hand expression is evaluated in the scope of that agent",
 					examples = { @example (
 							value = "agent1.location",
 							equals = "the location of the agent agent1",
@@ -464,16 +524,44 @@ public class System {
 	}
 
 	/**
-	 * Op copy.
+	 * Op get value.
 	 *
 	 * @param scope
 	 *            the scope
-	 * @param o
-	 *            the o
+	 * @param a
+	 *            the a
+	 * @param s
+	 *            the s
 	 * @return the object
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
+	@operator (
+			value = { IKeyword._DOT, IKeyword.OF },
+			type = ITypeProvider.TYPE_AT_INDEX + 2,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
+			index_type = ITypeProvider.KEY_TYPE_AT_INDEX + 2,
+			category = { IOperatorCategory.SYSTEM },
+			concept = { IConcept.SYSTEM, IConcept.ATTRIBUTE })
+	@doc (
+			value = "The dot operator can be the dot product between 2 matrices or return the value of the expression (right-hand operand) in the scope of the left-hand agent or object.",
+			masterDoc = true,
+			special_cases = "if the agent is nil or dead, throws an exception",
+			usages = @usage (
+					value = "if the left operand is an agent, the right hand expression is evaluated in the scope of that agent",
+					examples = { @example (
+							value = "object1.var1",
+							equals = "the value of the variable var1 of the object object1",
+							isExecutable = false),
+					// @example (value = "map(nil).keys", raises = "exception", isTestOnly = false)
+					}))
+	@no_test
+	public static Object opGetValue(final IScope scope, final IObject a, final IExpression s)
+			throws GamaRuntimeException {
+		if (a == null && !scope.interrupted()) throw GamaRuntimeException
+				.warning("Cannot evaluate " + s.serializeToGaml(false) + " as the target object is nil", scope);
+		return scope.evaluate(s, a).getValue();
+	}
 
 	/**
 	 * Op copy.
@@ -493,7 +581,11 @@ public class System {
 			category = { IOperatorCategory.SYSTEM },
 			concept = { IConcept.SYSTEM })
 	@doc (
-			value = "returns a copy of the operand.")
+			value = "returns a copy of the operand.",
+			returns = "a deep copy of the operand.",
+			special_cases = { "copy(nil) returns nil.",
+					"The copy is independent of the original for all operand types except agents; modifying one does not affect the other.",
+					"Agents cannot be copied: copy(agent) returns the agent itself. To duplicate an agent, use the create statement instead (e.g. create species_of(agent) from: agent;)." })
 	@no_test
 	public static Object opCopy(final IScope scope, final Object o) throws GamaRuntimeException {
 		if (o instanceof IValue) return ((IValue) o).copy(scope);
@@ -604,12 +696,11 @@ public class System {
 							isExecutable = false) })
 	@no_test
 	public static IMap<String, Object> userInputDialog(final IScope scope, final String title, final IList parameters,
-			final GamaFont font) {
+			final IFont font) {
 		parameters.removeIf(p -> !(p instanceof IParameter));
 		return GamaMapFactory.createWithoutCasting(Types.STRING, Types.NO_TYPE,
 				scope.getGui().openUserInputDialog(scope, title, parameters, font, null, true));
 	}
-	
 
 	/**
 	 * User input dialog.
@@ -639,10 +730,9 @@ public class System {
 							isExecutable = false) })
 	@no_test
 	public static IMap<String, Object> userInputDialog(final IScope scope, final String title, final IList parameters,
-			final GamaFont font, final GamaColor color) {
+			final IFont font, final IColor color) {
 		return userInputDialog(scope, title, parameters, font, color, true);
 	}
-
 
 	/**
 	 * User input dialog.
@@ -676,12 +766,11 @@ public class System {
 							isExecutable = false) })
 	@no_test
 	public static IMap<String, Object> userInputDialog(final IScope scope, final String title, final IList parameters,
-			final GamaFont font, final GamaColor color, final Boolean showTitle) {
+			final IFont font, final IColor color, final Boolean showTitle) {
 		parameters.removeIf(p -> !(p instanceof IParameter));
 		return GamaMapFactory.createWithoutCasting(Types.STRING, Types.NO_TYPE,
 				scope.getGui().openUserInputDialog(scope, title, parameters, font, color, showTitle));
 	}
-
 
 	/**
 	 * Open wizard.
@@ -709,7 +798,7 @@ public class System {
 	@no_test
 
 	public static IMap<String, IMap<String, Object>> openWizard(final IScope scope, final String title,
-			final ActionDescription finish, final IList<IMap<String, Object>> pages) {
+			final IActionDescription finish, final IList<IMap<String, Object>> pages) {
 		return scope.getGui().openWizard(scope, title, finish, pages);
 	}
 
@@ -789,7 +878,7 @@ public class System {
 					isExecutable = false) })
 	@no_test
 	public static IMap<String, Object> wizardPage(final String title, final String description, final IList parameters,
-			final GamaFont font) {
+			final IFont font) {
 		IMap<String, Object> results = GamaMapFactory.create();
 		results.put(IKeyword.TITLE, title);
 		results.put(IKeyword.DESCRIPTION, description);
@@ -874,7 +963,7 @@ public class System {
 			{ @example ("bool confirm <- user_confirm(\"Confirm\",\"Please confirm\");") })
 	@no_test
 	public static Boolean userConfirmDialog(final IScope scope, final String title, final String message) {
-		return scope.getGui().openUserInputDialogConfirm(scope, title, message);
+		return scope.getGui().getDialogFactory().confirm(scope, title, message);
 	}
 
 	/**
@@ -1420,6 +1509,5 @@ public class System {
 	public static Object copyFromClipboard(final IScope scope, final IType type) {
 		return type.copyFromClipboard(scope);
 	}
-
 
 }

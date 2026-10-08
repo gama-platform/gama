@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * SaveImageAsDialog.java, in gama.ui.shared.viewers, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * SaveImageAsDialog.java, in gama.ui.viewers, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.viewers.image;
 
@@ -66,7 +66,8 @@ class SaveImageAsDialog extends SaveAsDialog2 {
 	/**
 	 * Instantiates a new save image as dialog.
 	 *
-	 * @param parentShell the parent shell
+	 * @param parentShell
+	 *            the parent shell
 	 */
 	public SaveImageAsDialog(final Shell parentShell) {
 		super(parentShell);
@@ -104,9 +105,7 @@ class SaveImageAsDialog extends SaveAsDialog2 {
 
 		// initialize the imageType drop-down
 		// TODO: filter by what's actually going to work when saving
-		for (final String element : IMAGE_LABELS) {
-			imageTypeCombo.add(element);
-		}
+		for (final String element : IMAGE_LABELS) { imageTypeCombo.add(element); }
 		if (initialImageTypeIndex >= 0 && initialImageTypeIndex < IMAGE_TYPES.length) {
 			imageTypeCombo.select(initialImageTypeIndex);
 			selectedImageTypeIndex = initialImageTypeIndex;
@@ -185,8 +184,7 @@ class SaveImageAsDialog extends SaveAsDialog2 {
 	public int getSaveAsImageType() {
 		if (selectedImageTypeIndex >= 0 && selectedImageTypeIndex < IMAGE_TYPES.length)
 			return IMAGE_TYPES[selectedImageTypeIndex];
-		else
-			return IMAGE_TYPES[0];
+		return IMAGE_TYPES[0];
 	}
 
 	/**
@@ -195,7 +193,6 @@ class SaveImageAsDialog extends SaveAsDialog2 {
 	public String getSaveAsImageExt() {
 		if (selectedImageTypeIndex >= 0 && selectedImageTypeIndex < IMAGE_TYPES.length)
 			return IMAGE_EXTS[selectedImageTypeIndex];
-		else
-			return IMAGE_EXTS[0];
+		return IMAGE_EXTS[0];
 	}
 }

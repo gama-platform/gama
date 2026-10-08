@@ -15,7 +15,7 @@ import org.eclipse.emf.ecore.EClass;
  *
  * @generated
  */
-public class S_ActionImpl extends S_DefinitionImpl implements S_Action
+public class S_ActionImpl extends S_CallableImpl implements S_Action
 {
   /**
    * <!-- begin-user-doc -->

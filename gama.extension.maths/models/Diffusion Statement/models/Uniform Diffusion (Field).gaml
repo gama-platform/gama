@@ -1,9 +1,12 @@
 /**
-* Name: Uniform diffusion
+* Name: Uniform Diffusion (Field)
 * Author: Benoit Gaudou
-* Description: This model is used to show how a diffusion works with a uniform matrix of diffusion in a grid. The cell at the center of the grid emit a pheromon at each step, which is spread 
-*     through the grid thanks to the diffusion mechanism. Without passing a diffusion matrix, the default diffusion matrix is a uniform matrix 3x3, with value 1/nb_neighbors.
-* Tags: diffusion, matrix, math, elevation
+* Description: Demonstrates uniform (isotropic) diffusion on a GAMA field (continuous raster) using the
+*   'diffuse' statement. Identical in logic to 'Uniform Diffusion (Grid)' but uses the field type instead
+*   of a grid species, offering better performance for large spatial extents. A central cell emits pheromone
+*   each step; it spreads through the field using the default uniform diffusion matrix. The field values
+*   are rendered as a colored gradient.
+* Tags: diffusion, matrix, math, field, pheromone, elevation, gradient, performance
 */
 
 model uniform_diffusion
@@ -14,7 +17,6 @@ global {
 
 	// Initialize the emiter cell as the cell at the center of the word
 	reflex new_Value {
-		
 		cells[any_point_in(circle(25))] <- (100);
 	}
 	reflex diff {

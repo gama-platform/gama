@@ -1,9 +1,8 @@
 /*******************************************************************************************************
  *
- * ShapeDrawer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * ShapeDrawer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,31 +11,33 @@ package gama.gaml.statements.draw;
 
 import java.awt.geom.Rectangle2D;
 
-import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.operation.buffer.BufferParameters;
 
-import gama.core.common.geometry.AxisAngle;
-import gama.core.common.geometry.Envelope3D;
-import gama.core.common.geometry.GeometryUtils;
-import gama.core.common.geometry.ICoordinates;
-import gama.core.common.geometry.Scaling3D;
-import gama.core.common.interfaces.IDrawDelegate;
-import gama.core.common.interfaces.IImageProvider;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IScope;
-import gama.core.runtime.IScope.IGraphicsScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.runtime.exceptions.GamaRuntimeException.GamaRuntimeFileException;
-import gama.core.util.file.IGamaFile;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.GamaFileType;
-import gama.gaml.types.GamaGeometryType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.api.additions.delegates.IDrawDelegate;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.exceptions.GamaRuntimeFileException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.GamaFileType;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.file.IGamaFile;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.ui.displays.DrawingData;
+import gama.api.ui.displays.IGraphicsScope;
+import gama.api.ui.layers.IDrawingAttributes;
+import gama.api.utils.geometry.AxisAngle;
+import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
+import gama.api.utils.geometry.GeometryUtils;
+import gama.api.utils.geometry.ICoordinates;
+import gama.api.utils.geometry.IEnvelope;
+import gama.api.utils.geometry.Scaling3D;
+import gama.api.utils.interfaces.IImageProvider;
+import gama.api.utils.prefs.GamaPreferences;
 
 /**
  * The Class ShapeExecuter.
@@ -59,34 +60,49 @@ public class ShapeDrawer implements IDrawDelegate {
 	@Override
 	public Rectangle2D executeOn(final IGraphicsScope scope, final DrawingData data, final IExpression... items)
 			throws GamaRuntimeException {
-		final IShape shape = Cast.asGeometry(scope, items[0].value(scope), false);
+		final IShape shape = GamaShapeFactory.castToShape(scope, items[0].value(scope), false);
 		if (shape == null) return null;
-		final DrawingAttributes attributes = computeAttributes(scope, data, shape);
+		final IDrawingAttributes attributes = computeAttributes(scope, data, shape);
 		Geometry gg = shape.getInnerGeometry();
 		if (gg == null) return null;
-		final ICoordinates ic = GeometryUtils.getContourCoordinates(gg);
+
+		// Early visibility culling: skip all transform work for shapes outside the visible region
+		if (GamaPreferences.Displays.DISPLAY_ONLY_VISIBLE.getValue() && !scope.getExperiment().isHeadless()) {
+			final IEnvelope e = shape.getEnvelope();
+			try {
+				final IEnvelope visible = scope.getGraphics().getVisibleRegion();
+				if (visible != null && !visible.intersects(e)) return null;
+			} finally {
+				e.dispose();
+			}
+		}
+
+		final ICoordinates ic = GamaCoordinateSequenceFactory.pointsOf(gg);
 		ic.ensureClockwiseness();
 
 		// If the graphics is 2D, we pre-translate and pre-rotate the geometry
 		if (scope.getGraphics().is2D()) {
-			/** The center. */
-			final GamaPoint center = ic.getCenter();
+			final IPoint center = ic.getCenter();
 			final AxisAngle rot = attributes.getRotation();
-			final GamaPoint location = attributes.getLocation();
-			if (rot != null || location != null) {
+			final IPoint location = attributes.getLocation();
+			if (rot != null) {
 				// Do this instead of copy() or clone() to avoid the exception quoted in #3602
 				// Seems to work...
 				gg = gg.buffer(0.0, BufferParameters.DEFAULT_QUADRANT_SEGMENTS, BufferParameters.CAP_FLAT);
+				// Negate the angle to match the OpenGL renderer behavior, which also negates it (see ObjectDrawer#applyRotation)
+				GeometryUtils.rotate(gg, center, new AxisAngle(rot.getAxis(), -rot.getAngle()));
 			}
-			GeometryUtils.rotate(gg, center, rot);
 			if (location != null) {
 				if (gg.getNumPoints() == 1) {
-					gg = GeometryUtils.GEOMETRY_FACTORY.createPoint(location);
+					gg = GeometryUtils.getGeometryFactory().createPoint(location.toCoordinate());
 				} else {
+					// Copy only if not already copied by the rotation branch above
+					if (rot == null) {
+						gg = gg.buffer(0.0, BufferParameters.DEFAULT_QUADRANT_SEGMENTS, BufferParameters.CAP_FLAT);
+					}
 					GeometryUtils.translate(gg, center, location);
 				}
 			}
-			// gg.geometryChanged();
 		}
 		// Items is of length 3 , but let's verify anyway
 		if (items.length > 1) {
@@ -100,17 +116,6 @@ public class ShapeDrawer implements IDrawDelegate {
 		if (withTorus != gg) {
 			gg = withTorus;
 			attributes.setType(IShape.Type.NULL);
-		}
-
-		// XXX EXPERIMENTAL See Issue #1521
-		if (GamaPreferences.Displays.DISPLAY_ONLY_VISIBLE.getValue() && !scope.getExperiment().isHeadless()) {
-			final Envelope3D e = shape.getEnvelope();
-			try {
-				final Envelope visible = scope.getGraphics().getVisibleRegion();
-				if (visible != null && !visible.intersects(e)) return null;
-			} finally {
-				e.dispose();
-			}
 		}
 
 		// The textures are computed as well in advance
@@ -130,7 +135,7 @@ public class ShapeDrawer implements IDrawDelegate {
 	 *            the shape
 	 * @return the drawing attributes
 	 */
-	DrawingAttributes computeAttributes(final IScope scope, final DrawingData data, final IShape shape) {
+	IDrawingAttributes computeAttributes(final IScope scope, final DrawingData data, final IShape shape) {
 		Double depth = data.depth.get();
 		if (depth == null) { depth = shape.getDepth(); }
 		return new ShapeDrawingAttributes(Scaling3D.of(data.size.get()), depth, data.rotation.get(), data.getLocation(),
@@ -144,7 +149,7 @@ public class ShapeDrawer implements IDrawDelegate {
 	 * @param attributes
 	 */
 	@SuppressWarnings ({ "unchecked", "rawtypes" })
-	private void addTextures(final IScope scope, final DrawingAttributes attributes) {
+	private void addTextures(final IScope scope, final IDrawingAttributes attributes) {
 		if (attributes.getTextures() == null) return;
 		attributes.getTextures().replaceAll(s -> {
 			IImageProvider image = null;
@@ -197,30 +202,31 @@ public class ShapeDrawer implements IDrawDelegate {
 	private Geometry addArrows(final IScope scope, final Geometry g1, final IExpression beginArrow,
 			final IExpression endArrow, final Boolean fill) {
 		if (g1 == null) return g1;
-		final GamaPoint[] points = GeometryUtils.getPointsOf(g1);
+		// if (!(g1 instanceof org.locationtech.jts.geom.Lineal)) return g1;
+		final IPoint[] points = GeometryUtils.getPointsOf(g1);
 		final int size = points.length;
 		if (size < 2) return g1;
 		Geometry end = null, begin = null;
 		if (endArrow != null) {
 			final double width = Cast.asFloat(scope, endArrow.value(scope));
 			if (width > 0) {
-				end = GamaGeometryType.buildArrow(points[size - 2], points[size - 1], width, width + width / 3, fill)
+				end = GamaShapeFactory.buildArrow(points[size - 2], points[size - 1], width, width + width / 3, fill)
 						.getInnerGeometry();
 			}
 		}
 		if (beginArrow != null) {
 			final double width = Cast.asFloat(scope, beginArrow.value(scope));
 			if (width > 0) {
-				begin = GamaGeometryType.buildArrow(points[1], points[0], width, width + width / 3, fill)
+				begin = GamaShapeFactory.buildArrow(points[1], points[0], width, width + width / 3, fill)
 						.getInnerGeometry();
 			}
 		}
 		if (end == null) {
 			if (begin == null) return g1;
-			return GeometryUtils.GEOMETRY_FACTORY.createCollection(g1, begin);
+			return GeometryUtils.getGeometryFactory().createCollection(g1, begin);
 		}
-		if (begin == null) return GeometryUtils.GEOMETRY_FACTORY.createCollection(g1, end);
-		return g1;
+		if (begin == null) return GeometryUtils.getGeometryFactory().createCollection(g1, end);
+		return GeometryUtils.getGeometryFactory().createCollection(g1, end, begin);
 	}
 
 	/**

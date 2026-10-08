@@ -1,8 +1,11 @@
 /**
-* Name: Dynamic of the vegetation (grid)
-* Author:
-* Description: Second part of the tutorial : Predator Prey
-* Tags: grid
+* Name: Backward Experiment Seed
+* Author: Gama Development Team
+* Description: A companion model to 'Backward Experiment Formats' demonstrating how the random seed is
+*   managed in backward (record/replay) experiments. Uses a simple prey model to show that replaying a
+*   recorded simulation with the same seed reproduces identical results, while a different seed diverges.
+*   Illustrates GAMA's experiment recording infrastructure for reproducibility and scenario analysis.
+* Tags: serialization, record, backward, seed, reproducibility, experiment, replay
 */
 
 model prey_predator

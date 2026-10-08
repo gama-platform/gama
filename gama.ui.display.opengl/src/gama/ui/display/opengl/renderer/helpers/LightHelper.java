@@ -3,7 +3,7 @@
  * LightHelper.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,16 +12,17 @@ package gama.ui.display.opengl.renderer.helpers;
 
 import static com.jogamp.opengl.fixedfunc.GLLightingFunc.GL_LIGHT0;
 
-import java.awt.Color;
-
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GL2ES1;
 import com.jogamp.opengl.fixedfunc.GLLightingFunc;
 import com.jogamp.opengl.util.gl2.GLUT;
 
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.outputs.layers.properties.ILightDefinition;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.ui.layers.ILightDefinition;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 
@@ -49,8 +50,8 @@ public class LightHelper extends AbstractRendererHelper {
 	 *            the ambient light value
 	 */
 	public void setAmbientLight(final ILightDefinition light) {
-		Color c = !light.isActive() ? Color.black : light.getIntensity();
-		final float[] array = { c.getRed() / 255.0f, c.getGreen() / 255.0f, c.getBlue() / 255.0f, 1.0f };
+		IColor c = !light.isActive() ? GamaColorFactory.BLACK : light.getIntensity();
+		final float[] array = { c.red() / 255.0f, c.green() / 255.0f, c.blue() / 255.0f, 1.0f };
 		getGL().glLightModelfv(GL2ES1.GL_LIGHT_MODEL_AMBIENT, array, 0);
 	}
 
@@ -81,17 +82,16 @@ public class LightHelper extends AbstractRendererHelper {
 			int id = GL_LIGHT0 + light.getId();
 			if (light.isActive()) {
 				String type = light.getType();
-				Color c = light.getIntensity();
+				IColor c = light.getIntensity();
 				gl.glEnable(id);
-				final float[] color =
-						{ c.getRed() / 255.0f, c.getGreen() / 255.0f, c.getBlue() / 255.0f, c.getAlpha() / 255.0f };
+				final float[] color = { c.red() / 255.0f, c.green() / 255.0f, c.blue() / 255.0f, c.alpha() / 255.0f };
 				openGL.getGL().glLightfv(id, GLLightingFunc.GL_DIFFUSE, color, 0);
 				float[] lightPosition;
 				if (ILightDefinition.direction.equals(type)) {
-					GamaPoint p = light.getDirection();
+					IPoint p = light.getDirection();
 					lightPosition = new float[] { -(float) p.getX(), (float) p.getY(), -(float) p.getZ(), 0 };
 				} else {
-					GamaPoint p = light.getLocation();
+					IPoint p = light.getLocation();
 					lightPosition = new float[] { (float) p.getX(), -(float) p.getY(), (float) p.getZ(), 1 };
 				}
 				gl.glLightfv(id, GLLightingFunc.GL_POSITION, lightPosition, 0);
@@ -106,8 +106,8 @@ public class LightHelper extends AbstractRendererHelper {
 				}
 				// Get and set spot properties (if the light is a spot light)
 				if (ILightDefinition.spot.equals(type)) {
-					GamaPoint p = light.getDirection();
-					float[] spotLight = { (float) p.x, -(float) p.y, (float) p.z, 0 };
+					IPoint p = light.getDirection();
+					float[] spotLight = { (float) p.getX(), -(float) p.getY(), (float) p.getZ(), 0 };
 					gl.glLightfv(id, GLLightingFunc.GL_SPOT_DIRECTION, spotLight, 0);
 					final double spotAngle = light.getAngle();
 					gl.glLightf(id, GLLightingFunc.GL_SPOT_CUTOFF, (float) spotAngle);
@@ -126,13 +126,13 @@ public class LightHelper extends AbstractRendererHelper {
 	}
 
 	/** The Constant UP_VECTOR. */
-	private final static GamaPoint UP_VECTOR_PLUS_Y = new GamaPoint.Immutable(0, 1, 0);
+	private final static IPoint UP_VECTOR_PLUS_Y = GamaPointFactory.createImmutable(0, 1, 0);
 
 	/** The Constant UP_VECTOR_MINUS_Z. */
-	private final static GamaPoint UP_VECTOR_MINUS_Z = new GamaPoint.Immutable(0, 0, -1);
+	private final static IPoint UP_VECTOR_MINUS_Z = GamaPointFactory.createImmutable(0, 0, -1);
 
 	/** The Constant UP_VECTOR_PLUS_Z. */
-	private final static GamaPoint UP_VECTOR_PLUS_Z = new GamaPoint.Immutable(0, 0, 1);
+	private final static IPoint UP_VECTOR_PLUS_Z = GamaPointFactory.createImmutable(0, 0, 1);
 
 	/** The Constant arrow. */
 	// private final static GamaShape SPOT = ((GamaShape) buildCone3D(2, 1, GamaPoint.Immutable.NULL_POINT))
@@ -159,12 +159,12 @@ public class LightHelper extends AbstractRendererHelper {
 
 		// save the current color to re-set it at the end of this
 		// part
-		final Color currentColor = openGL.swapCurrentColor(light.getIntensity());
+		final IColor currentColor = openGL.swapCurrentColor(light.getIntensity());
 		// change the current color to the light color (the
 		// representation of the color will have the same color as
 		// the light in itself)
 		final GLUT glut = new GLUT();
-		GamaPoint dir = light.getDirection().normalized();
+		IPoint dir = light.getDirection().normalized();
 		final String type = light.getType();
 		if (ILightDefinition.point.equals(type)) {
 			openGL.pushMatrix();
@@ -174,29 +174,28 @@ public class LightHelper extends AbstractRendererHelper {
 		} else if (ILightDefinition.spot.equals(type)) {
 			openGL.pushMatrix();
 			// Desired direction. It seems that y and z need to be negated, but not x. Not completely sure why.
-			dir = new GamaPoint(dir.x, -dir.y, -dir.z);
+			dir = GamaPointFactory.create(dir.getX(), -dir.getY(), -dir.getZ());
 			double coneRadius = Math.sin(Math.toRadians(light.getAngle())) * size;
 			openGL.translateBy(pos[0], pos[1], pos[2]);
 			if (dir.norm() > 1e-6) {
-				GamaPoint rotationAxis = UP_VECTOR_PLUS_Z.crossProductWith(dir);
+				IPoint rotationAxis = UP_VECTOR_PLUS_Z.crossProductWith(dir);
 				double rotationAngle = Math.acos(dir.dotProductWith(UP_VECTOR_PLUS_Z));
-				if (rotationAxis.x != 0 || rotationAxis.y != 0) {
-					openGL.rotateBy(-Math.toDegrees(rotationAngle), rotationAxis.x, rotationAxis.y, rotationAxis.z);
+				if (rotationAxis.getX() != 0 || rotationAxis.getY() != 0) {
+					openGL.rotateBy(-Math.toDegrees(rotationAngle), rotationAxis.getX(), rotationAxis.getY(),
+							rotationAxis.getZ());
 				}
 			}
 			glut.glutSolidCone(coneRadius, size, 16, 16);
 			openGL.popMatrix();
-		} else
-
-		{
+		} else {
 			// draw direction light : a line and an sphere at the end of the line.
 			final int maxI = 3;
 			final int maxJ = 3;
 			for (int i = 0; i < maxI; i++) {
 				for (int j = 0; j < maxJ; j++) {
 					final double[] beginPoint = { i * worldWidth / maxI, -j * worldHeight / maxJ, size * 10 };
-					final double[] endPoint = { i * worldWidth / maxI + dir.x * size * 3,
-							-(j * worldHeight / maxJ) - dir.y * size * 3, size * 10 + dir.z * size * 3 };
+					final double[] endPoint = { i * worldWidth / maxI + dir.getX() * size * 3,
+							-(j * worldHeight / maxJ) - dir.getY() * size * 3, size * 10 + dir.getZ() * size * 3 };
 					// draw the lines
 					openGL.beginDrawing(GL.GL_LINES);
 					openGL.drawVertex(0, beginPoint[0], beginPoint[1], beginPoint[2]);

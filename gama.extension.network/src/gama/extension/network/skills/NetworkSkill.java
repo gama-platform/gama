@@ -3,7 +3,7 @@
  * NetworkSkill.java, in gama.extension.network, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -17,23 +17,27 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import gama.annotations.precompiler.GamlAnnotations.action;
-import gama.annotations.precompiler.GamlAnnotations.arg;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.skill;
-import gama.annotations.precompiler.GamlAnnotations.variable;
-import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.annotations.precompiler.IConcept;
-import gama.core.messaging.GamaMailbox;
-import gama.core.messaging.GamaMessage;
-import gama.core.messaging.MessagingSkill;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
-import gama.core.util.IList;
+import gama.annotations.action;
+import gama.annotations.arg;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.skill;
+import gama.annotations.variable;
+import gama.annotations.vars;
+import gama.annotations.support.IConcept;
+import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.agent.IPopulation;
+import gama.api.kernel.agent.IPopulation.Listener;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.message.IMessage;
+import gama.core.util.messaging.GamaMailbox;
+import gama.core.util.messaging.GamaMessage;
+import gama.core.util.messaging.MessagingSkill;
 import gama.dev.DEBUG;
 import gama.extension.network.common.ConnectorMessage;
 import gama.extension.network.common.IConnector;
@@ -43,8 +47,6 @@ import gama.extension.network.serial.ArduinoConnector;
 import gama.extension.network.tcp.TCPConnector;
 import gama.extension.network.udp.UDPConnector;
 import gama.extension.network.websocket.WebSocketConnector;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.IType;
 
 /**
  * The Class NetworkSkill.
@@ -78,6 +80,48 @@ public class NetworkSkill extends MessagingSkill {
 
 	/** The Constant REGISTRED_SERVER. */
 	final static String REGISTERED_SERVER = "registered_servers";
+
+	/**
+	 * The listener interface for receiving network events. The class that is interested in processing a network event
+	 * implements this interface, and the object created with that class is registered with a component using the
+	 * component's <code>addNetworkListener</code> method. When the network event occurs, that object's appropriate
+	 * method is invoked.
+	 *
+	 * @see NetworkEvent
+	 */
+	class NetworkListener implements Listener {
+
+		@Override
+		public void notifyPopulationCleared(final IScope scope, final IPopulation<? extends IAgent> pop) {
+			// do nothing
+		}
+
+		@Override
+		public void notifyAgentsRemoved(final IScope sc, final IPopulation<? extends IAgent> pop,
+				final Collection<? extends IAgent> agents) {
+			// for(IAgent ag : agents) {
+			// disconnect(ag.getScope());
+			// }
+		}
+
+		@Override
+		public void notifyAgentsAdded(final IScope scope, final IPopulation<? extends IAgent> pop,
+				final Collection<? extends IAgent> agents) {
+			// do nothing
+		}
+
+		@Override
+		public void notifyAgentRemoved(final IScope sc, final IPopulation<? extends IAgent> pop, final IAgent agent) {
+			// do nothing
+			disconnect(agent.getScope());
+		}
+
+		@Override
+		public void notifyAgentAdded(final IScope scope, final IPopulation<? extends IAgent> pop, final IAgent agent) {
+			// do nothing
+
+		}
+	}
 
 	/**
 	 * System exec.
@@ -204,6 +248,8 @@ public class NetworkSkill extends MessagingSkill {
 		// Fix to Issue #2618
 		final String serverKey = createServerKey(serverURL, port);
 
+		if (scope.getAgent() != null) { scope.getAgent().getPopulation().addListener(new NetworkListener()); }
+
 		final Map<String, IConnector> myConnectors = this.getRegisteredServers(scope);
 		IConnector connector = myConnectors.get(serverKey);
 		if (connector == null) {
@@ -324,21 +370,29 @@ public class NetworkSkill extends MessagingSkill {
 			doc = @doc (
 					value = "Disconnects from all the servers previously connected to. Will return true if everything went well, false in case of an error."))
 	public Boolean disconnect(final IScope scope) {
-		final Map<String, IConnector> connectors = this.getRegisteredServers(scope);
+		final Map<String, IConnector> connectors = getRegisteredServers(scope);
+		final IAgent agent = scope.getAgent();
+		List<String> serverList = (List<String>) agent.getAttribute(INetworkSkill.NET_AGENT_SERVER);
+
 		boolean no_problem = true;
-		var to_remove = new ArrayList<String>();
-		for (var entry : connectors.entrySet()) {
+		var connector_to_remove = new ArrayList<String>();
+		for (var server : serverList) {
 			try {
-				var connector = entry.getValue();
+				var connector = connectors.get(server);
 				connector.close(scope);
-				connector.leaveTheGroup(scope.getAgent(), REGISTERED_AGENTS);
-				to_remove.add(entry.getKey());
+				connector.leaveTheGroup(agent, REGISTERED_AGENTS);
+				connector_to_remove.add(server);
 			} catch (Exception ex) {
 				no_problem = false;
 			}
 		}
 
-		for (var connector : to_remove) { connectors.remove(connector); }
+		// removes all closed connections from the registered servers and NET_AGENT_SERVER list
+		for (var serverKey : connector_to_remove) {
+			connectors.remove(serverKey);
+			serverList.remove(serverKey);
+		}
+		agent.setAttribute(INetworkSkill.NET_AGENT_SERVER, serverList);
 
 		return no_problem;
 
@@ -374,10 +428,10 @@ public class NetworkSkill extends MessagingSkill {
 								message mess <- fetch_message();
 								write message.contents;
 							}""") }))
-	public GamaMessage fetchMessage(final IScope scope) {
+	public IMessage fetchMessage(final IScope scope) {
 		final IAgent agent = scope.getAgent();
 		final GamaMailbox<GamaMessage> box = getMailbox(scope, agent);
-		GamaMessage msg = null;
+		IMessage msg = null;
 		if (!box.isEmpty()) {
 			msg = box.get(0);
 			box.remove(0);
@@ -450,7 +504,7 @@ public class NetworkSkill extends MessagingSkill {
 	 */
 	@SuppressWarnings ("unchecked")
 	private IList<String> getGroups(final IScope scope, final IAgent agent) {
-		IList<String> groups = Cast.asList(scope, agent.getAttribute(INetworkSkill.NET_AGENT_GROUPS));
+		IList<String> groups = GamaListFactory.castToList(scope, agent.getAttribute(INetworkSkill.NET_AGENT_GROUPS));
 		if (groups == null) {
 			groups = GamaListFactory.create();
 			agent.setAttribute(INetworkSkill.NET_AGENT_GROUPS, groups);
@@ -508,7 +562,7 @@ public class NetworkSkill extends MessagingSkill {
 
 	@SuppressWarnings ({ "unchecked", "rawtypes" })
 	@Override
-	protected void effectiveSend(final IScope scope, final GamaMessage message, final Object receiver) {
+	protected void effectiveSend(final IScope scope, final IMessage message, final Object receiver) {
 		if (receiver instanceof IList) {
 			for (final Object o : ((IList) receiver).iterable(scope)) { effectiveSend(scope, message.copy(scope), o); }
 		}
@@ -545,8 +599,8 @@ public class NetworkSkill extends MessagingSkill {
 		for (final IConnector connection : getRegisteredServers(scope).values()) {
 			final Map<IAgent, LinkedList<ConnectorMessage>> messages = connection.fetchAllMessages();
 			for (final IAgent agt : messages.keySet()) {
-				@SuppressWarnings ("unchecked") final GamaMailbox<GamaMessage> mailbox =
-						(GamaMailbox<GamaMessage>) agt.getAttribute(MAILBOX_ATTRIBUTE);
+				@SuppressWarnings ("unchecked") final GamaMailbox<IMessage> mailbox =
+						(GamaMailbox<IMessage>) agt.getAttribute(MAILBOX_ATTRIBUTE);
 
 				// to be check....
 				/*

@@ -1,10 +1,12 @@
 /**
-* Name: continuous_move
+* Name: Continuous Move Evacuation
 * Author: Patrick Taillandier
-* Description: A 3D model which show how to represent an evacuation system with 
-* 	obstacles, cohesion factor and velocity. The people are placed randomly and have 
-* 	to escape by going to a target point
-* Tags: 3d, shapefile, gis, agent_movement, skill
+* Description: A 3D evacuation model showing how people move continuously through a building environment with
+*   obstacles. Agents are placed randomly and must navigate to a single exit point, avoiding building obstacles
+*   using a repulsion-based steering mechanism. Parameters control the cohesion factor (tendency to stay close
+*   to other agents) and the maximum turn angle per step. The 3D display provides a realistic perspective on
+*   crowd dynamics during an evacuation.
+* Tags: 3d, shapefile, gis, agent_movement, skill, evacuation, steering, obstacle_avoidance
 */
 model continuous_move 
 global { 
@@ -66,7 +68,7 @@ species people skills:[moving]{
 	//Reflex to kill the agent when it has evacuated the area
 	reflex end when: location distance_to target_loc <= 2 * people_size{
 		write name + " is arrived";
-		do die;
+		do die();
 	}
 	//Reflex to compute the velocity of the agent considering the cohesion factor
 	reflex follow_goal  {
@@ -92,7 +94,7 @@ species people skills:[moving]{
 	//Reflex to move the agent considering its location, target and velocity
 	reflex move {
 		point old_location <- copy(location);
-		do goto target: location + velocity ;
+		do goto (target: location + velocity );
 		if not(self overlaps free_space ) {
 			location <- ((location closest_points_with free_space)[1]);
 		}

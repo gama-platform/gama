@@ -19,8 +19,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Widget;
 import org.eclipse.ui.navigator.CommonViewer;
 
-import gama.core.common.IStatusMessage;
-import gama.core.runtime.GAMA;
+import gama.api.GAMA;
+import gama.api.ui.IStatusMessage;
 import gama.dev.DEBUG;
 import gama.ui.navigator.view.contents.NavigatorRoot;
 import gama.ui.navigator.view.contents.TopLevelFolder;

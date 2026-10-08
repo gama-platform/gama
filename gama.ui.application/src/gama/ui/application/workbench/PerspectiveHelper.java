@@ -32,9 +32,10 @@ import org.eclipse.ui.internal.WorkbenchWindow;
 import org.eclipse.ui.internal.registry.PerspectiveDescriptor;
 import org.eclipse.ui.internal.registry.PerspectiveRegistry;
 
-import gama.core.common.interfaces.IGui;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.kernel.model.IModel;
+import gama.api.GAMA;
+import gama.api.kernel.species.IModelSpecies;
+import gama.api.ui.IGui;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
 
 /**
@@ -76,7 +77,7 @@ public class PerspectiveHelper {
 	 * @return true, if successful
 	 */
 	static boolean matches(final String id) {
-		return !PerspectiveHelper.PERSPECTIVE_SIMULATION_ID.equals(id) && id.contains(PERSPECTIVE_SIMULATION_FRAGMENT);
+		return !PERSPECTIVE_SIMULATION_ID.equals(id) && id.contains(PERSPECTIVE_SIMULATION_FRAGMENT);
 	}
 
 	/**
@@ -166,7 +167,8 @@ public class PerspectiveHelper {
 	 */
 	public static final boolean openModelingPerspective(final boolean immediately, final boolean memorizeEditors) {
 		// AD 08/18: turn off autosave to prevent workspace corruption
-		return openPerspective(PERSPECTIVE_MODELING_ID, immediately, false, memorizeEditors);
+		// AD 04/26: turn off immediately to prevent locking
+		return openPerspective(PERSPECTIVE_MODELING_ID, false, false, memorizeEditors);
 	}
 
 	/**
@@ -192,13 +194,11 @@ public class PerspectiveHelper {
 	 *            the show
 	 */
 	public static void showBottomTray(final WorkbenchWindow window, final Boolean show) {
-
 		final MUIElement trimStatus = getTrimStatus(window);
 		if (trimStatus != null) {
 			// toggle statusbar visibility
 			trimStatus.setVisible(show);
 		}
-
 	}
 
 	/**
@@ -216,7 +216,6 @@ public class PerspectiveHelper {
 		}
 		if (activePage == null) return false;
 		final IWorkbenchPage page = activePage;
-		final WorkbenchWindow window = (WorkbenchWindow) page.getWorkbenchWindow();
 		if (page.getPerspective().equals(currentSimulationPerspective)) return true;
 		Display.getDefault().asyncExec(() -> {
 			memorizeActiveEditor(page);
@@ -231,6 +230,7 @@ public class PerspectiveHelper {
 			} catch (final Exception e) {
 				DEBUG.OUT("Error in setPerspective():" + e.getMessage());
 			}
+			final WorkbenchWindow window = (WorkbenchWindow) page.getWorkbenchWindow();
 			final Boolean showControls = keepControls();
 			if (showControls != null) { window.setCoolBarVisible(showControls); }
 			final Boolean keepTray = keepTray();
@@ -250,7 +250,7 @@ public class PerspectiveHelper {
 	 *            the experiment name
 	 * @return true, if successful
 	 */
-	public static final boolean openSimulationPerspective(final IModel model, final String experimentName) {
+	public static final boolean openSimulationPerspective(final IModelSpecies model, final String experimentName) {
 		if (model == null) return false;
 		final String name = getNewPerspectiveName(model.getName(), experimentName);
 		return openPerspective(name, true, false, true);
@@ -321,57 +321,59 @@ public class PerspectiveHelper {
 		if (perspectiveId == null) return false;
 		if (perspectiveId.equals(currentPerspectiveId)) return true;
 		IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-		// } catch (final Exception e) {
-		// try {
-		// page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().openPage(perspectiveId, null);
-		// } catch (final Exception e1) {
-		// e1.printStackTrace();
-		// }
-		// e.printStackTrace();
-		// }
 		if (page == null) return false;
-
 		if (GamaPreferences.Modeling.EDITOR_PERSPECTIVE_SAVE.getValue()) { page.saveAllEditors(false); }
-
 		if (memorizeEditors) { memorizeActiveEditor(page); }
-
 		final IPerspectiveDescriptor oldDescriptor = page.getPerspective();
 		final IPerspectiveDescriptor descriptor = findOrBuildPerspectiveWithId(perspectiveId);
 		final WorkbenchWindow window = (WorkbenchWindow) page.getWorkbenchWindow();
 
 		final Runnable r = () -> {
-			// if (PlatformHelper.isMac() && !isSimulationPerspective(perspectiveId)) {
-			// List<IGamaView.Display> displays = StreamEx.of(page.getViewReferences()).map(a -> a.getView(false))
-			// .select(IGamaView.Display.class).toList();
-			// if (displays.size() > 0) { page.activate((IWorkbenchPart) displays.get(0)); }
-			// }
 			try {
+				try {
+					page.setPerspective(descriptor);
+				} catch (final NullPointerException e) {
+					DEBUG.LOG(
+							"NPE in WorkbenchPage.setPerspective(). See Issue #1602. Working around the bug in e4...");
+					page.setPerspective(descriptor);
+				} catch (final Throwable t) {
+					DEBUG.LOG("Error in WorkbenchPage.setPerspective(): " + t.getMessage());
+				}
+				activateAutoSave(withAutoSave);
 
-				page.setPerspective(descriptor);
-			} catch (final NullPointerException e) {
-				DEBUG.ERR("NPE in WorkbenchPage.setPerspective(). See Issue #1602. Working around the bug in e4...");
-				page.setPerspective(descriptor);
+				currentPerspectiveId = perspectiveId;
+				if (isSimulationPerspective(perspectiveId) && !descriptor.equals(currentSimulationPerspective)) {
+					// Early activation or deactivation of editors based on the global preference
+					page.setEditorAreaVisible(!GamaPreferences.Modeling.EDITOR_PERSPECTIVE_HIDE.getValue());
+					// Destroy the previous simulation perspective exactly once, using the full
+					// cleanup path that also disposes the descriptor and removes the stale E4
+					// model element. The previous code first closed/deleted oldDescriptor here
+					// and then called deleteCurrentSimulationPerspective(), which duplicated the
+					// deletion during simulation-to-simulation switches and could leave the UI in
+					// an inconsistent state after a failed launch.
+					if (currentSimulationPerspective != null) {
+						deleteCurrentSimulationPerspective();
+					} else if (isSimulationPerspective(oldDescriptor.getId()) && oldDescriptor instanceof SimulationPerspectiveDescriptor oldSimulation
+							&& !descriptor.equals(oldSimulation)) {
+						page.closePerspective(oldSimulation, false, false);
+						getPerspectiveRegistry().deletePerspective(oldSimulation);
+						oldSimulation.dispose();
+						deletePerspectiveFromApplication(oldSimulation);
+					}
+					currentSimulationPerspective = (SimulationPerspectiveDescriptor) descriptor;
+				}
+				applyActiveEditor(page);
+				if (isSimulationPerspective(perspectiveId)) {
+					final Boolean showControls = keepControls();
+					if (showControls != null) { window.setCoolBarVisible(showControls); }
+					final Boolean keepTray = keepTray();
+					if (keepTray != null) { showBottomTray(window, keepTray); }
+				}
+			} finally {
+				// Delegate overlay creation to the GUI service so that the concrete
+				// implementation (SwtGui) can use the correct theme-aware icon and FlatButton.
+				if (isSimulationPerspective(perspectiveId)) { GAMA.getGui().showLaunchingOverlay(perspectiveId); }
 			}
-			activateAutoSave(withAutoSave);
-			if (isSimulationPerspective(currentPerspectiveId) && isSimulationPerspective(perspectiveId)) {
-				DEBUG.OUT("Destroying perspective " + oldDescriptor.getId());
-				page.closePerspective(oldDescriptor, false, false);
-				getPerspectiveRegistry().deletePerspective(oldDescriptor);
-			}
-
-			currentPerspectiveId = perspectiveId;
-			if (isSimulationPerspective(perspectiveId) && !descriptor.equals(currentSimulationPerspective)) {
-				// Early activation or deactivation of editors based on the global preference
-				page.setEditorAreaVisible(!GamaPreferences.Modeling.EDITOR_PERSPECTIVE_HIDE.getValue());
-				deleteCurrentSimulationPerspective();
-				currentSimulationPerspective = (SimulationPerspectiveDescriptor) descriptor;
-			}
-			applyActiveEditor(page);
-			final Boolean showControls = keepControls();
-			if (showControls != null) { window.setCoolBarVisible(showControls); }
-			final Boolean keepTray = keepTray();
-			if (keepTray != null) { showBottomTray(window, keepTray); }
-			// DEBUG.OUT("Perspective " + perspectiveId + " opened ");
 		};
 		if (immediately) {
 			Display.getDefault().syncExec(r);
@@ -390,12 +392,7 @@ public class PerspectiveHelper {
 	private static void applyActiveEditor(final IWorkbenchPage page) {
 		if (activeEditor == null) return;
 		final IEditorPart part = page.findEditor(activeEditor);
-		if (part != null) {
-			page.activate(part);
-			// DEBUG.OUT("Applying memorized editor to " + page.getPerspective().getId() + " = " +
-			// activeEditor.getName());
-			// page.bringToTop(part);
-		}
+		if (part != null) { page.activate(part); }
 
 	}
 
@@ -591,6 +588,33 @@ public class PerspectiveHelper {
 		final IPerspectiveDescriptor d = getActivePerspective();
 		if (d instanceof SimulationPerspectiveDescriptor) return (SimulationPerspectiveDescriptor) d;
 		return null;
+	}
+
+	/**
+	 * Pre-warms the {@link SimulationPerspectiveDescriptor} infrastructure.
+	 *
+	 * <p>
+	 * On first use, {@link #findOrBuildPerspectiveWithId(String)} constructs a {@link SimulationPerspectiveDescriptor}
+	 * for the requested id and injects it into Eclipse's {@link PerspectiveRegistry} via reflection. This method
+	 * triggers that path once at startup, using a throw-away dummy id, so that the real first experiment launch does
+	 * not pay the class-loading and reflection cost.
+	 * </p>
+	 *
+	 * <p>
+	 * The dummy descriptor is left in the registry and will be cleaned up by {@link #cleanPerspectives()} on the next
+	 * startup, exactly like stale real simulation descriptors.
+	 * </p>
+	 */
+	public static void prewarmPerspective() {
+		try {
+			// Touch ThemeHelper — triggers the CSS-engine theme detection (slow on first call)
+			ThemeHelper.isDark();
+			final String dummyId = getNewPerspectiveName("__prewarm__", "__prewarm__");
+			findOrBuildPerspectiveWithId(dummyId);
+			DEBUG.OUT("PerspectiveHelper: simulation-perspective infrastructure pre-warmed");
+		} catch (final Exception e) {
+			DEBUG.ERR("PerspectiveHelper: prewarmPerspective failed - " + e.getMessage());
+		}
 	}
 
 }

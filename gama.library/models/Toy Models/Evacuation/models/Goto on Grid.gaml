@@ -1,9 +1,12 @@
 /**
-* Name: evacuationgoto
+* Name: Goto on Grid Evacuation
 * Author: Patrick Taillandier
-* Description: A 3D model with walls and exit, and people agents trying to evacuate 
-* 	from the area to a exit location, avoiding the walls with a discretized space by a grid
-* Tags: 3d, shapefile, gis, agent_movement, skill, grid
+* Description: A 3D evacuation model where people navigate around walls to reach an exit, using a grid to
+*   discretize the navigable space. The 'goto' action guides each agent toward the exit while the grid-based
+*   pathfinding avoids wall obstacles. Unlike a continuous-space approach, the discretized grid provides a
+*   simpler but computationally efficient way to handle obstacle avoidance. The model loads wall and exit
+*   geometries from shapefiles and builds the navigable grid accordingly.
+* Tags: 3d, shapefile, gis, agent_movement, skill, grid, evacuation, pathfinding, goto
 */
 
 model evacuationgoto
@@ -69,10 +72,10 @@ species people skills: [moving]{
 	//Reflex to move the agent 
 	reflex move {
 		//Make the agent move only on cell without walls
-		do goto target: target speed: 1.0 on: (cell where not each.is_wall) recompute_path: false;
+		do goto (target: target, speed: 1.0, on: (cell where not each.is_wall), recompute_path: false);
 		//If the agent is close enough to the exit, it dies
 		if (self distance_to target) < 2.0 {
-			do die;
+			do die();
 		}
 	}
 	aspect default {
@@ -84,7 +87,7 @@ experiment evacuationgoto type: gui {
 	float minimum_cycle_duration <- 0.04; 
 	output {
 		display map type: 3d axes:false{
-			image "../images/floor.jpg";
+			picture "../images/floor.jpg";
 			species wall refresh: false;
 			species exit refresh: false;
 			species people;

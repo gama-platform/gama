@@ -17,13 +17,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
-import gama.core.util.IContainer;
-import gama.core.util.IList;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.misc.IContainer;
 import gama.dev.DEBUG;
 import gama.extension.pedestrian.skills.PedestrianRoadSkill;
 import gama.gaml.operators.spatial.SpatialCreation;
@@ -31,7 +32,6 @@ import gama.gaml.operators.spatial.SpatialOperators;
 import gama.gaml.operators.spatial.SpatialPunctal;
 import gama.gaml.operators.spatial.SpatialQueries;
 import gama.gaml.operators.spatial.SpatialTransformations;
-import gama.gaml.types.Types;
 
 /**
  * The Class PedestrianNetwork.
@@ -213,7 +213,7 @@ public class PedestrianNetwork {
 
 		IShape areaTmp = SpatialTransformations.reduced_by(scope, area, valDistForOpenArea);
 		if (areaTmp != null) {
-			List<GamaPoint> pts = GamaListFactory.create(Types.GEOMETRY);
+			List<IPoint> pts = GamaListFactory.create(Types.GEOMETRY);
 			for (IShape g : areaTmp.getGeometries()) {
 				if (g == null || g.getArea() == 0) { continue; }
 				long nbPoints = Math.round(g.getArea() * valDensityOpenArea);
@@ -226,7 +226,7 @@ public class PedestrianNetwork {
 					for (IShape sq : squares) { pts.add(sq.getCentroid()); }
 				}
 			}
-			for (GamaPoint pt : pts) {
+			for (IPoint pt : pts) {
 				area = SpatialOperators.minus(scope, area, SpatialTransformations.enlarged_by(scope, pt, 0.01, 5));
 			}
 		}

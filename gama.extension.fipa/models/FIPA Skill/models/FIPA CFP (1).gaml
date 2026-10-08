@@ -1,10 +1,12 @@
 /**
-* Name: FIPA Contract Net
-* Author:
-* Description: This model demonstrates a use-case of the FIPA Contract Net interaction protocol. 
-* One initiator sends a 'cfp' message to other participants. 
-* All participants reply with a 'refuse' messages which end the interaction protocol.
-* Tags: fipa
+* Name: FIPA Contract Net (1) - All Refuse
+* Author: Gama Development Team
+* Description: Demonstrates the FIPA Contract Net (CFP) interaction protocol — variant where all participants
+*   refuse. One Initiator sends a 'cfp' (call for proposals) message to multiple Participant agents. All
+*   Participants reply with 'refuse', ending the protocol. The Initiator receives all refusals and the
+*   conversation terminates. This is the simplest CFP scenario and serves as the base case before the full
+*   negotiation cycle shown in FIPA CFP (2).
+* Tags: fipa, cfp, contract_net, protocol, negotiation, refuse, multi_agent
 */
 
 model cfp_cfp_1
@@ -25,7 +27,7 @@ species initiator skills: [fipa] {
 	reflex send_cfp_to_participants when: (time = 1) {
 		
 		write '(Time ' + time + '): ' + name + ' sends a cfp message to all participants';
-		do start_conversation to: list(participant) protocol: 'fipa-contract-net' performative: 'cfp' contents: ['Go swimming'];
+		do start_conversation(to: list(participant), protocol: 'fipa-contract-net', performative: 'cfp', contents: ['Go swimming']);
 	}
 	
 	reflex receive_refuse_messages when: !empty(refuses) {
@@ -43,7 +45,7 @@ species participant skills: [fipa] {
 		
 		message proposalFromInitiator <- cfps[0];
 		write '(Time ' + time + '): ' + name + ' receives a cfp message from ' + agent(proposalFromInitiator.sender).name + ' and replies with a refuse message';
-		do refuse message: proposalFromInitiator contents: ['I am busy today'] ;
+		do refuse(message: proposalFromInitiator, contents: ['I am busy today']) ;
 		
 	}
 }

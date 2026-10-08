@@ -1,0 +1,65 @@
+////
+    Licensed to the Apache Software Foundation (ASF) under one or more
+    contributor license agreements.  See the NOTICE file distributed with
+    this work for additional information regarding copyright ownership.
+    The ASF licenses this file to You under the Apache License, Version 2.0
+    (the "License"); you may not use this file except in compliance with
+    the License.  You may obtain a copy of the License at
+
+         https://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+////
+
+[#release-notes-2-26-0]
+== 2.26.0
+
+Release date:: 2026-05-02
+
+This minor release delivers all the fixes in the `[2.25.0, 2.25.4]` version range, plus some new fixes, and several other improvements and features.
+
+
+[#release-notes-2-26-0-added]
+=== Added
+
+* Add a new `ConfigurationFactory::getConfiguration` method accepting multiple `URI`s (https://github.com/apache/logging-log4j2/issues/3775[3775], https://github.com/apache/logging-log4j2/pull/3921[3921])
+* Add and export `org.apache.logging.log4j.core.pattern.NamedInstantPattern` enabling users to programmatically access named date & time patterns supported by Pattern Layout (https://github.com/apache/logging-log4j2/pull/3789[3789])
+* Add `log4j.plugin.processor.minAllowedMessageKind` annotation processor option to `PluginProcessor` to filter diagnostic messages by severity. This allows builds that treat compiler notes as errors (e.g. Maven with `-Werror`) to suppress informational notes emitted during normal plugin processing. (https://github.com/apache/logging-log4j2/discussions/3380[3380], https://github.com/apache/logging-log4j2/pull/4063[4063])
+* Add missing setters to `Rfc5424LayoutBuilder`
+
+[#release-notes-2-26-0-changed]
+=== Changed
+
+* Ensure scripts in the global `Scripts` element have explicit names by throwing a `ConfigurationException` for unnamed ones. (https://github.com/apache/logging-log4j2/issues/3176[3176])
+* Simplify file manager registry factory methods (https://github.com/apache/logging-log4j2/pull/3968[3968])
+
+[#release-notes-2-26-0-deprecated]
+=== Deprecated
+
+* Deprecated withers in builder classes in favor of setters. This change improves API consistency with Log4j Core 3 and helps users adapt to the upcoming changes. (https://github.com/apache/logging-log4j2/issues/3750[3750])
+
+[#release-notes-2-26-0-fixed]
+=== Fixed
+
+* Fix script resolution failure when the `Scripts` element is placed after a `ScriptRef` in the configuration. (https://github.com/apache/logging-log4j2/issues/3336[3336])
+* Fix `ArrayIndexOutOfBoundsException` thrown by `ThrowableStackTraceRenderer` when the stack trace is modified concurrently (https://github.com/apache/logging-log4j2/issues/3940[3940], https://github.com/apache/logging-log4j2/pull/3955[3955])
+* Fix `SLF4JLogger.atFatal()` returning `atLevel(Level.TRACE)` instead of `atLevel(Level.FATAL)`. This was causing `FATAL`-level log events to be silently discarded when using the fluent API through the `log4j-to-slf4j` bridge. (https://github.com/apache/logging-log4j2/issues/4068[4068], https://github.com/apache/logging-log4j2/pull/4089[4089])
+* Fix Javadoc references across module boundaries (i.e., cross-references) (https://github.com/apache/logging-log4j2/issues/4099[4099], https://github.com/apache/logging-log4j2/pull/4100[4100])
+* Fix header write in `RollingRandomAccessFileManager` that was being incorrectly skipped if `append=true` and the file didn't exist before
+* Fix a properties file configuration regression caused by not referenced loggers, appenders, and filters (https://github.com/apache/logging-log4j2/issues/4036[4036], https://github.com/apache/logging-log4j2/pull/4069[4069])
+
+[#release-notes-2-26-0-removed]
+=== Removed
+
+* Remove the `jvmrunargs` lookup. (https://github.com/apache/logging-log4j2/pull/3874[3874])
+
+[#release-notes-2-26-0-updated]
+=== Updated
+
+* Update `org.junit:junit-bom` to version `5.13.4` (https://github.com/apache/logging-log4j2/pull/3850[3850])
+* Update `org.mongodb:bson` to version `5.6.1` (https://github.com/apache/logging-log4j2/pull/3961[3961])
+* Update `org.xerial.snappy:snappy-java` to version `1.1.10.8` (https://github.com/apache/logging-log4j2/pull/3841[3841])

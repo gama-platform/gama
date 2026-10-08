@@ -3,7 +3,7 @@
  * AutoStartup.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -20,9 +20,11 @@ import org.eclipse.ui.IStartup;
 import org.eclipse.ui.internal.editors.text.EditorsPlugin;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.util.GamaColor;
-import gama.core.util.GamaFont;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.font.GamaFontFactory;
+import gama.api.types.font.IFont;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
 import gama.ui.shared.access.HeapControl;
 
@@ -40,12 +42,12 @@ public class AutoStartup implements IStartup {
 	 *
 	 * @return the default background
 	 */
-	private static GamaColor getDefaultBackground() {
+	private static IColor getDefaultBackground() {
 		EditorsPlugin.getDefault().getPreferenceStore()
 				.setValue(AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND_SYSTEM_DEFAULT, false);
 		final RGB rgb = PreferenceConverter.getColor(EditorsPlugin.getDefault().getPreferenceStore(),
 				AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND);
-		return GamaColor.get(rgb.red, rgb.green, rgb.blue);
+		return GamaColorFactory.get(rgb.red, rgb.green, rgb.blue);
 	}
 
 	/**
@@ -53,9 +55,9 @@ public class AutoStartup implements IStartup {
 	 *
 	 * @return the default font data
 	 */
-	public static GamaFont getDefaultFontData() {
+	public static IFont getDefaultFontData() {
 		final FontData fd = PreferenceConverter.getFontData(EditorsPlugin.getDefault().getPreferenceStore(), TEXT_FONT);
-		return new GamaFont(fd.getName(), fd.getStyle(), fd.getHeight());
+		return GamaFontFactory.createFont(fd.getName(), fd.getStyle(), fd.getHeight());
 	}
 
 	@Override
@@ -69,7 +71,7 @@ public class AutoStartup implements IStartup {
 			} catch (final Exception e) {}
 		});
 		GamaPreferences.Modeling.EDITOR_BACKGROUND_COLOR.init(AutoStartup::getDefaultBackground).onChange(c -> {
-			final RGB rgb = new RGB(c.getRed(), c.getGreen(), c.getBlue());
+			final RGB rgb = new RGB(c.red(), c.green(), c.blue());
 			PreferenceConverter.setValue(EditorsPlugin.getDefault().getPreferenceStore(),
 					AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND, rgb);
 			// GamaPreferences.Modeling.OPERATORS_MENU_SORT

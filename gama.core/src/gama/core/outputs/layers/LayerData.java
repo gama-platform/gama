@@ -1,40 +1,41 @@
 /*******************************************************************************************************
  *
- * LayerData.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * LayerData.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.outputs.layers;
 
-import static gama.core.common.interfaces.IKeyword.FADING;
-import static gama.core.common.interfaces.IKeyword.POSITION;
-import static gama.core.common.interfaces.IKeyword.REFRESH;
-import static gama.core.common.interfaces.IKeyword.ROTATE;
-import static gama.core.common.interfaces.IKeyword.SELECTABLE;
-import static gama.core.common.interfaces.IKeyword.SIZE;
-import static gama.core.common.interfaces.IKeyword.TRACE;
-import static gama.core.common.interfaces.IKeyword.TRANSPARENCY;
-import static gama.core.common.interfaces.IKeyword.VISIBLE;
-import static gama.gaml.types.Types.BOOL;
-import static gama.gaml.types.Types.FLOAT;
-import static gama.gaml.types.Types.INT;
-import static gama.gaml.types.Types.POINT;
+import static gama.annotations.constants.IKeyword.FADING;
+import static gama.annotations.constants.IKeyword.POSITION;
+import static gama.annotations.constants.IKeyword.REFRESH;
+import static gama.annotations.constants.IKeyword.ROTATE;
+import static gama.annotations.constants.IKeyword.SELECTABLE;
+import static gama.annotations.constants.IKeyword.SIZE;
+import static gama.annotations.constants.IKeyword.TRACE;
+import static gama.annotations.constants.IKeyword.TRANSPARENCY;
+import static gama.annotations.constants.IKeyword.VISIBLE;
+import static gama.api.gaml.types.Types.BOOL;
+import static gama.api.gaml.types.Types.FLOAT;
+import static gama.api.gaml.types.Types.INT;
+import static gama.api.gaml.types.Types.POINT;
 
 import java.awt.Point;
 
-import org.locationtech.jts.geom.Envelope;
-
-import gama.core.common.interfaces.IGraphics;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.expressions.units.PixelUnitExpression;
-import gama.gaml.operators.Cast;
-import gama.gaml.statements.draw.AttributeHolder;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.ui.displays.IGraphics;
+import gama.api.ui.layers.ILayerData;
+import gama.api.ui.layers.ILayerStatement;
+import gama.api.utils.AttributeHolder;
+import gama.api.utils.geometry.IEnvelope;
 
 /**
  * Written by drogoul Modified on 16 nov. 2010
@@ -58,16 +59,16 @@ public class LayerData extends AttributeHolder implements ILayerData {
 	boolean positionIsInPixels, sizeIsInPixels;
 
 	/** The visible region. */
-	Envelope visibleRegion;
+	IEnvelope visibleRegion;
 
 	/** The rotation. */
 	final Attribute<Double> rotation;
 
 	/** The size. */
-	Attribute<GamaPoint> size;
+	Attribute<IPoint> size;
 
 	/** The position. */
-	Attribute<GamaPoint> position;
+	Attribute<IPoint> position;
 
 	/** The refresh. */
 	final Attribute<Boolean> refresh;
@@ -101,11 +102,11 @@ public class LayerData extends AttributeHolder implements ILayerData {
 	public LayerData(final ILayerStatement def) throws GamaRuntimeException {
 		super(def);
 		final IExpression sizeExp = def.getFacet(SIZE);
-		sizeIsInPixels = sizeExp != null && sizeExp.findAny(p -> p instanceof PixelUnitExpression);
-		size = create(SIZE, sizeExp, POINT, new GamaPoint(1, 1, 1));
+		sizeIsInPixels = sizeExp != null && sizeExp.containsPixels();
+		size = create(SIZE, sizeExp, POINT, GamaPointFactory.create(1, 1, 1));
 		final IExpression posExp = def.getFacet(POSITION);
-		positionIsInPixels = posExp != null && posExp.findAny(p -> p instanceof PixelUnitExpression);
-		position = create(POSITION, posExp, POINT, new GamaPoint());
+		positionIsInPixels = posExp != null && posExp.containsPixels();
+		position = create(POSITION, posExp, POINT, GamaPointFactory.create());
 		refresh = create(REFRESH, def.getRefreshFacet(), BOOL, true);
 		fading = create(FADING, BOOL, false);
 		visible = create(VISIBLE, BOOL, true);
@@ -133,24 +134,24 @@ public class LayerData extends AttributeHolder implements ILayerData {
 	}
 
 	@Override
-	public void setSize(final GamaPoint p) {
+	public void setSize(final IPoint p) {
 		setSize(p.getX(), p.getY(), p.getZ());
 	}
 
 	@Override
 	public void setSize(final double width, final double height, final double depth) {
-		size = create(SIZE, new GamaPoint(width, height, depth));
+		size = create(SIZE, GamaPointFactory.create(width, height, depth));
 		sizeIsInPixels = false;
 	}
 
 	@Override
-	public void setPosition(final GamaPoint p) {
+	public void setPosition(final IPoint p) {
 		setPosition(p.getX(), p.getY(), p.getZ());
 	}
 
 	@Override
 	public void setPosition(final double x, final double y, final double z) {
-		position = create(POSITION, new GamaPoint(x, y, z));
+		position = create(POSITION, GamaPointFactory.create(x, y, z));
 		positionIsInPixels = false;
 	}
 
@@ -160,13 +161,13 @@ public class LayerData extends AttributeHolder implements ILayerData {
 	}
 
 	@Override
-	public GamaPoint getPosition() {
+	public IPoint getPosition() {
 		// DEBUG.OUT("Position.z = " + position.get().z);
 		return position.get();
 	}
 
 	@Override
-	public GamaPoint getSize() { return size.get(); }
+	public IPoint getSize() { return size.get(); }
 
 	@Override
 	public Boolean getRefresh() { return refresh.get(); }
@@ -177,7 +178,7 @@ public class LayerData extends AttributeHolder implements ILayerData {
 	/**
 	 * Method getTrace()
 	 *
-	 * @see gama.core.outputs.layers.ILayerData#getTrace()
+	 * @see gama.api.ui.layers.ILayerData#getTrace()
 	 */
 	@Override
 	public Integer getTrace() { return trace.get(); }
@@ -188,7 +189,7 @@ public class LayerData extends AttributeHolder implements ILayerData {
 	/**
 	 * Method getFading()
 	 *
-	 * @see gama.core.outputs.layers.ILayerData#getFading()
+	 * @see gama.api.ui.layers.ILayerData#getFading()
 	 */
 	@Override
 	public Boolean getFading() { return fading.get(); }
@@ -220,7 +221,7 @@ public class LayerData extends AttributeHolder implements ILayerData {
 		final double xRatio = g.getxRatioBetweenPixelsAndModelUnits();
 		final double yRatio = g.getyRatioBetweenPixelsAndModelUnits();
 
-		GamaPoint point = getPosition();
+		IPoint point = getPosition();
 		// Computation of x
 		final double x = point.getX();
 
@@ -267,10 +268,10 @@ public class LayerData extends AttributeHolder implements ILayerData {
 	}
 
 	@Override
-	public void setVisibleRegion(final Envelope e) { visibleRegion = e; }
+	public void setVisibleRegion(final IEnvelope e) { visibleRegion = e; }
 
 	@Override
-	public Envelope getVisibleRegion() { return visibleRegion; }
+	public IEnvelope getVisibleRegion() { return visibleRegion; }
 
 	/**
 	 * Checks if is visible.

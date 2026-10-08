@@ -11,8 +11,8 @@
 package gama.headless.job;
 
 
-import gama.core.common.interfaces.IKeyword;
-import gama.gaml.descriptions.IDescription;
+import gama.annotations.constants.IKeyword;
+import gama.api.compilation.descriptions.IDescription;
 
 /**
  * The Class Output.

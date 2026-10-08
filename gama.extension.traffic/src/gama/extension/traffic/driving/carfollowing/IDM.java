@@ -19,8 +19,8 @@ import static gama.extension.traffic.driving.DrivingSkill.getSpeed;
 import static gama.extension.traffic.driving.DrivingSkill.getSpeedCoeff;
 import static gama.extension.traffic.driving.DrivingSkill.getTimeHeadway;
 
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.IScope;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
 import gama.extension.traffic.driving.RoadSkill;
 
 /**

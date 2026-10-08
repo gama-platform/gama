@@ -2,7 +2,7 @@ package gama.extension.database.utils.sql;
 
 import java.util.Map;
 
-import gama.core.runtime.IScope;
+import gama.api.runtime.scope.IScope;
 
 public interface ISqlConnector {
 	SqlConnection connection(final IScope scope, final String venderName, final String url, final String port, final String dbName,

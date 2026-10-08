@@ -12,10 +12,10 @@ package gama.gaml.statements.draw;
 
 import java.util.List;
 
-import gama.core.runtime.GAMA;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.matrix.GamaField;
-import gama.core.util.matrix.IField;
+import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.types.matrix.IField;
+import gama.api.ui.layers.IMeshColorProvider;
 
 /**
  * An implementation of the color provider that picks a color using the index of the cell being drawn in the R, G, and B
@@ -38,7 +38,7 @@ public class BandsBasedMeshColorProvider implements IMeshColorProvider {
 	 * @param bands
 	 *            the bands
 	 */
-	public BandsBasedMeshColorProvider(final List<GamaField> bands) {
+	public BandsBasedMeshColorProvider(final List<IField> bands) {
 		if (bands.size() < 4)
 			throw GamaRuntimeException.error("Number of bands should be at least 3 ", GAMA.getRuntimeScope());
 		boolean hasAlpha = bands.size() > 4;

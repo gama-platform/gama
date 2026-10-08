@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * ResetModelingPerspective.java, in gama.ui.shared.experiment, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * ResetModelingPerspective.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.experiment.commands;
 
@@ -14,8 +14,7 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 
-import gama.ui.application.Application;
-import gama.ui.shared.dialogs.Messages;
+import gama.api.GAMA;
 import gama.ui.shared.utils.WorkbenchHelper;
 
 /**
@@ -25,10 +24,10 @@ public class ResetModelingPerspective extends AbstractHandler {
 
 	@Override
 	public Object execute(final ExecutionEvent event) throws ExecutionException {
-		final boolean result = Messages.confirm("Reset modeling perspective",
+		final boolean result = GAMA.getGui().getDialogFactory().confirm("Reset modeling perspective",
 				"Resetting the modeling perspective will lose memory of the current editors, navigator state and restart GAMA in a pristine state. Do you want to proceed ?");
 		if (result) {
-			Application.clearWorkspace(true);
+			GAMA.getWorkspaceManager().clearWorkspace(true);
 			// removeWorkbenchXMI();
 			WorkbenchHelper.getWorkbench().restart();
 		}

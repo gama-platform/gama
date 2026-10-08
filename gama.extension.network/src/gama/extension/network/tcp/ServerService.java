@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * ServerService.java, in gama.network, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * ServerService.java, in gama.extension.network, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -21,8 +21,9 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 
-import gama.core.metamodel.agent.IAgent;
-import gama.core.util.IList;
+import gama.api.kernel.agent.IAgent;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
 import gama.dev.DEBUG;
 import gama.extension.network.common.IConnector;
 import gama.extension.network.common.MessageFactory;
@@ -31,7 +32,6 @@ import gama.extension.network.common.socket.AbstractProtocol;
 import gama.extension.network.common.socket.IListener;
 import gama.extension.network.common.socket.SocketService;
 import gama.extension.network.skills.INetworkSkill;
-import gama.gaml.operators.Cast;
 
 /**
  * The Class ServerService.
@@ -56,13 +56,15 @@ public class ServerService extends Thread implements SocketService, IListener {
 	/** The sender. */
 	protected PrintWriter sender;
 
-
 	/** The connector. */
 	protected IConnector connector;
 
-	public IConnector getConnector() {
-		return connector;
-	}
+	/**
+	 * Gets the connector.
+	 *
+	 * @return the connector
+	 */
+	public IConnector getConnector() { return connector; }
 
 	/**
 	 * Instantiates a new server service.
@@ -100,7 +102,7 @@ public class ServerService extends Thread implements SocketService, IListener {
 		this.start();
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings ("unchecked")
 	@Override
 	public void run() {
 		while (this.isAlive) {
@@ -113,13 +115,14 @@ public class ServerService extends Thread implements SocketService, IListener {
 					this.interrupt();
 					return;
 				}
-				
+
 				final Socket clientSocket = this.serverSocket.accept();
 				final String socketStr = clientSocket.toString();
 				DEBUG.OUT(clientSocket + " connected");
 
 				if (!clientSocket.isClosed() && !clientSocket.isInputShutdown()) {
-					final IList<String> list_net_agents = Cast.asList(myAgent.getScope(), myAgent.getAttribute(INetworkSkill.NET_AGENT_GROUPS));
+					final IList<String> list_net_agents = GamaListFactory.castToList(myAgent.getScope(),
+							myAgent.getAttribute(INetworkSkill.NET_AGENT_GROUPS));
 					if (list_net_agents != null && !list_net_agents.contains(socketStr)) {
 						list_net_agents.addValue(myAgent.getScope(), socketStr);
 						myAgent.setAttribute(INetworkSkill.NET_AGENT_GROUPS, list_net_agents);
@@ -145,7 +148,7 @@ public class ServerService extends Thread implements SocketService, IListener {
 			myAgent.setAttribute(TCPConnector._TCP_SERVER + serverSocket.getLocalPort(), null);
 			serverSocket.close();
 		} catch (final Exception e) {
-			
+
 			e.printStackTrace();
 		}
 	}
@@ -173,28 +176,27 @@ public class ServerService extends Thread implements SocketService, IListener {
 
 		String message = msg;
 		if (cliThread == null || cliThread.socket == null || !isOnline()) return;
-	
+
 		sender = new PrintWriter(new BufferedWriter(new OutputStreamWriter(cliThread.socket.getOutputStream())), true);
 
-		//If raw connection we do not append an end of line nor escape anything
+		// If raw connection we do not append an end of line nor escape anything
 		if (connector.isRaw()) {
 			sender.print(message);
-			sender.flush();
-		}
-		else {
+		} else {
 
 			message = message.replace("\n", "@n@");
 			message = message.replace("\b\r", "@b@@r@");
-			//TODO: do we really need to append a '\n' while we already use println and the printwriter is in auto flush ?
+			// TODO: do we really need to append a '\n' while we already use println and the printwriter is in auto
+			// flush ?
 			sender.println(message);// +"\n"
-			sender.flush();
 		}
+		sender.flush();
 
 	}
 
 	@Override
 	public void sendMessage(final String msg) throws IOException {
-		//TODO: why is this empty  if it's normal delete
+		// TODO: why is this empty if it's normal delete
 		// String message = msg;
 		// if (currentSocket == null || !isOnline()) return;
 		// message = message.replace("\n", "@n@");
@@ -210,7 +212,7 @@ public class ServerService extends Thread implements SocketService, IListener {
 
 	@Override
 	public void receivedMessage(final String sender, final String message) {
-		
+
 		final MessageType mte = MessageFactory.identifyMessageType(message);
 		if (MessageType.COMMAND_MESSAGE.equals(mte)) {
 			((TCPConnector) connector).extractAndApplyCommand(sender, message);
@@ -222,37 +224,31 @@ public class ServerService extends Thread implements SocketService, IListener {
 
 	@Override
 	public void onOpen(final AbstractProtocol conn) {
-		
 
 	}
 
 	@Override
 	public void onClose(final AbstractProtocol conn, final int code, final String reason, final boolean remote) {
-		
 
 	}
 
 	@Override
 	public void onMessage(final AbstractProtocol conn, final String message) {
-		
 
 	}
 
 	@Override
 	public void onMessage(final AbstractProtocol conn, final ByteBuffer message) {
-		
 
 	}
 
 	@Override
 	public void onError(final AbstractProtocol conn, final Exception ex) {
-		
 
 	}
 
 	@Override
 	public void onStart() {
-		
 
 	}
 }

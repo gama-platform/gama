@@ -1,8 +1,10 @@
 /**
-* Name: MQTT_Receiver
-* Author: Nicolas Marilleau and Arnaud Grignard
-* Description: The simple receiver model based on MQTT protocol.
-* Tags: Network, MQTT
+* Name: MQTT Receive Agent Example
+* Author: Nicolas Marilleau, Arnaud Grignard
+* Description: Like 'MQTT Receive Example' but the 'network' skill is applied to the global species.
+*   The global agent subscribes to a topic and listens using 'fetch'. Pair with 'MQTT Send Agent Example'
+*   or any external MQTT publisher. Demonstrates the 'global skills:[network]' receiver pattern.
+* Tags: network, MQTT, receive, fetch, skill, global, subscribe, messaging, protocol, communication
 */
 
 model MQTT_Receiver
@@ -17,10 +19,11 @@ global skills:[network] {
 		 * It is a free and unsecure server.
 		 * Using YOUR server is thus adviced. You can download free solution such as ActiveMQ (http://activemq.apache.org) 
 		 */
-		do connect  with_name:"receiver";
+		do connect(with_name:"receiver");
 		
 		// default ActiveMQ MQTT login is "admin", the password is "admin" and the port is 1883
-		// do connect to:"localhost" with_name: "receiver" login:"admin" password:"admin" port: 1883;
+		// do connect(to:"localhost", with_name:"receiver", login:"admin", password:"admin", port: 1883);
+		// do connect(to:"localhost", with_name:"receiver", port: 1883);
 	}
 	reflex receiveAgent when:has_more_message(){
 		// write "fetch agent on the network";

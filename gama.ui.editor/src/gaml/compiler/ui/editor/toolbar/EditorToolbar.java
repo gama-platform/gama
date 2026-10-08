@@ -3,7 +3,7 @@
  * EditorToolbar.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -32,12 +32,11 @@ import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 
-import gama.core.common.interfaces.IGui;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.common.preferences.Pref;
-import gama.core.runtime.PlatformHelper;
+import gama.api.additions.GamaBundleLoader;
+import gama.api.runtime.SystemInfo;
+import gama.api.ui.IGui;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
-import gama.gaml.compilation.kernel.GamaBundleLoader;
 import gama.ui.shared.bindings.GamaKeyBindings;
 import gama.ui.shared.bindings.GamaKeyBindings.PluggableBinding;
 import gama.ui.shared.menus.GamaMenu;
@@ -66,7 +65,7 @@ public class EditorToolbar {
 		if (command != null) { command.setHandler(null); }
 		command = WorkbenchHelper.getCommand("org.eclipse.ui.edit.text.zoomOut");
 		if (command != null) { command.setHandler(null); }
-		if (PlatformHelper.isMac()) {
+		if (SystemInfo.isMac()) {
 			GamaKeyBindings.plug(new PluggableBinding(SWT.MOD1 | SWT.SHIFT, '=') {
 				// +
 				@Override
@@ -122,9 +121,6 @@ public class EditorToolbar {
 
 	/** The editor. */
 	final GamlEditor editor;
-
-	/** The mark pref. */
-	public Pref<Boolean> markPref;
 
 	/** The searching. */
 	volatile boolean searching;
@@ -183,10 +179,10 @@ public class EditorToolbar {
 							event -> {
 								editor.zoomOut();
 							}).toItem(mainMenu).setAccelerator(SWT.MOD1 | '-');
-					GamaMenu.separate(mainMenu);
+					separate();
 					addPresentationItems(mainMenu, -1);
 					addManagementItems(mainMenu, -1);
-					GamaMenu.separate(mainMenu);
+					separate();
 					final IViewPart part = WorkbenchHelper.getPage().findView(IGui.OUTLINE_VIEW_ID);
 					String title = part == null ? "Show outline" : "Hide outline";
 					Selector command = part == null ? e -> showView(IGui.OUTLINE_VIEW_ID)
@@ -202,6 +198,20 @@ public class EditorToolbar {
 					command = map == null ? e -> showView(IGui.MINIMAP_VIEW_ID)
 							: e -> WorkbenchHelper.getPage().hideView(map);
 					GamaCommand.build("editor/command.navigation", title, null, command).toItem(mainMenu);
+					separate();
+					check("Surround selection using { [ ( \\", GamaPreferences.Modeling.CORE_SURROUND_SELECTED);
+					check("Close quotes '...' ", GamaPreferences.Modeling.CORE_CLOSE_QUOTE);
+					check("Close double quotes \"...\" ", GamaPreferences.Modeling.CORE_CLOSE_DOUBLE);
+					check("Close brackets [...] ", GamaPreferences.Modeling.CORE_CLOSE_SQUARE);
+					check("Close curly brackets {...} ", GamaPreferences.Modeling.CORE_CLOSE_CURLY);
+					check("Close parentheses (...) ", GamaPreferences.Modeling.CORE_CLOSE_PARENTHESES);
+					separate();
+					check("Formatting on save", GamaPreferences.Modeling.EDITOR_CLEAN_UP);
+					check("Mark occurences", GamaPreferences.Modeling.EDITOR_MARK_OCCURRENCES);
+					check("Inline markers", GamaPreferences.Modeling.EDITOR_MINING);
+					separate();
+					check("Use a menu for experiments", GamaPreferences.Modeling.EDITOR_EXPERIMENT_MENU,
+							e1 -> editor.updateToolbar());
 				}
 
 			};
@@ -243,7 +253,6 @@ public class EditorToolbar {
 		if (menuItem.getMenu() != null) { menuItem.getMenu().dispose(); }
 		menuItem.setMenu(menu);
 		menu.addListener(SWT.Show, e -> {
-			markPref = GamaPreferences.get("pref_editor_mark_occurrences", Boolean.class);
 			for (final MenuItem item : menu.getItems()) { item.dispose(); }
 			createLineToggle(menu);
 			createFoldingToggle(menu);
@@ -365,7 +374,7 @@ public class EditorToolbar {
 	 */
 	public void createMarkToggle(final Menu menu) {
 		final MenuItem mark = new MenuItem(menu, SWT.PUSH);
-		boolean selected = markPref.getValue();
+		boolean selected = GamaPreferences.Modeling.EDITOR_MARK_OCCURRENCES.getValue();
 		mark.setText(selected ? " Do not mark symbols occurences" : " Mark occurences of symbols");
 		// mark.setSelection(markPref.getValue());
 		mark.setImage(GamaIcon.named("editor/toggle.mark").image());
@@ -374,7 +383,7 @@ public class EditorToolbar {
 
 			@Override
 			public void widgetSelected(final SelectionEvent e) {
-				markPref.set(mark.getSelection()).save();
+				GamaPreferences.Modeling.EDITOR_MARK_OCCURRENCES.set(mark.getSelection()).save();
 			}
 		});
 

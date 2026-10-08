@@ -3,7 +3,7 @@
  * SimulationOutputManager.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,27 +13,28 @@ package gama.core.outputs;
 import java.util.HashMap;
 import java.util.Map;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.core.common.IStatusMessage;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.GAMA;
+import gama.api.annotations.validator;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IDescriptionValidator;
+import gama.api.constants.IGamlIssue;
+import gama.api.gaml.GAML;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.IOutput;
+import gama.api.ui.IStatusMessage;
 import gama.core.outputs.SimulationOutputManager.SimulationOutputValidator;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.gaml.compilation.IDescriptionValidator;
-import gama.gaml.compilation.annotations.validator;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.factories.DescriptionFactory;
-import gama.gaml.interfaces.IGamlIssue;
-import gama.gaml.types.IType;
 
 /**
  * The Class OutputManager.
@@ -132,7 +133,7 @@ public class SimulationOutputManager extends AbstractOutputManager {
 	 * @return the simulation output manager
 	 */
 	public static SimulationOutputManager createEmpty() {
-		return new SimulationOutputManager(DescriptionFactory.create(IKeyword.OUTPUT, (String[]) null));
+		return new SimulationOutputManager(GAML.getDescriptionFactory().create(IKeyword.OUTPUT, (String[]) null));
 	}
 
 	/**
@@ -162,7 +163,7 @@ public class SimulationOutputManager extends AbstractOutputManager {
 	 * @param agent
 	 *            the agent
 	 */
-	public void updateDisplayOutputsName(final SimulationAgent agent) {
+	public void updateDisplayOutputsName(final ISimulationAgent agent) {
 		for (final IOutput out : this) { GAMA.getGui().updateViewTitle(out, agent); }
 	}
 

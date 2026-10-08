@@ -1,10 +1,12 @@
 /**
-* Name: SIR_split_in_agents
-* Author: hqnghi 
-* Description: This model illustrates the possibility to split an equation system into several agents. 
-*       All the equations are solved together thanks to the `simultaneously` facet of the equation statement. 
-*       We also compare the split model with the simple SIR one. 
-* Tags: equation, math
+* Name: SIR (Split in Agents)
+* Author: Huynh Quang Nghi
+* Description: Demonstrates how an ODE-based SIR model can be split across multiple agents, with each agent
+*   maintaining a portion of the equations. All equations from different agents are solved together as a coupled
+*   system using the 'simultaneously' facet of the 'equation' statement — this ensures that ODEs defined in
+*   different agents are treated as a single system with a consistent numerical integration step. The model
+*   also compares this split approach against a standard single-agent ODE SIR model to verify equivalence.
+* Tags: equation, math, SIR, epidemiology, ODE, multi_agent, simultaneously
 */
 
 model SIR_split_in_agents

@@ -18,7 +18,7 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 
-import gama.core.common.util.FileUtils;
+import gama.api.utils.files.FileUtils;
 import gama.ui.shared.resources.GamaIcon;
 
 /**

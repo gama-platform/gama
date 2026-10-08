@@ -15,11 +15,11 @@ import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
 import javax.sound.midi.Synthesizer;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.skill;
+import gama.annotations.doc;
+import gama.annotations.skill;
+import gama.annotations.support.IConcept;
+import gama.api.kernel.skill.Skill;
 import gama.dev.DEBUG;
-import gama.gaml.skills.Skill;
 
 /**
  * The Class PlayMusicSkill.

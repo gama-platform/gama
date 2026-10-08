@@ -20,8 +20,8 @@ if [ -d "${headlessPath}/../jdk" ]; then
 else
   javaVersion=$(java -version 2>&1 | head -n 1 | cut -d "\"" -f 2)
   # Check if good Java version before everything
-  if [[ ${javaVersion:2} == 21 ]]; then
-    echo "You should use Java 21 to run GAMA"
+  if [[ $(echo "$javaVersion" | cut -d '.' -f 1) -lt 25 ]]; then
+    echo "You should use Java 25 to run GAMA"
     echo "Found you using version : $javaVersion"
     exit 1
   fi
@@ -76,7 +76,7 @@ function read_from_ini {
 echo "******************************************************************"
 echo "* GAMA version 0.0.0-SNAPSHOT                                         *"
 echo "* http://gama-platform.org                                       *"
-echo "* (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners                *"
+echo "* (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners                *"
 echo "******************************************************************"
 
 # Create Workspace
@@ -91,7 +91,7 @@ if [[ -z $userWorkspace ]]; then
       # create workspace in output folder
       workspaceRootPath="${args: -1}"
       if [ ! -d "$workspaceRootPath" ]; then
-          mkdir $workspaceRootPath
+          mkdir "$workspaceRootPath"
       fi
     fi
 
@@ -126,7 +126,7 @@ if ! $java -cp "${pluginPath}"/org.eclipse.equinox.launcher*.jar \
     if [ $workspaceCreate -eq 1 ]; then
         # create workspace in output folder
         echo "GAMA encountered an error and crashed, please check again your command..."
-        rm -fr workspaceRootPath $pathWorkspace
+        rm -fr "$workspaceRootPath" "$pathWorkspace"
     else
         echo "Error in you command, here's the log :"
         cat $pathWorkspace/.metadata/.log
@@ -135,6 +135,6 @@ if ! $java -cp "${pluginPath}"/org.eclipse.equinox.launcher*.jar \
 else
     if [ $workspaceCreate -eq 1 ]; then
         # create workspace in output folder
-        rm -fr workspaceRootPath $pathWorkspace
+        rm -fr "$workspaceRootPath" "$pathWorkspace"
     fi
 fi

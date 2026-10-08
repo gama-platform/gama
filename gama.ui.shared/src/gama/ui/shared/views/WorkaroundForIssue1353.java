@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * WorkaroundForIssue1353.java, in gama.ui.shared.shared, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * WorkaroundForIssue1353.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.shared.views;
 
@@ -15,7 +15,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPartReference;
 
-import gama.core.runtime.PlatformHelper;
+import gama.api.runtime.SystemInfo;
 import gama.dev.DEBUG;
 import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.utils.WorkbenchHelper;
@@ -34,13 +34,10 @@ public class WorkaroundForIssue1353 {
 	}
 
 	/**
-	 * The listener interface for receiving part events.
-	 * The class that is interested in processing a part
-	 * event implements this interface, and the object created
-	 * with that class is registered with a component using the
-	 * component's <code>addPartListener<code> method. When
-	 * the part event occurs, that object's appropriate
-	 * method is invoked.
+	 * The listener interface for receiving part events. The class that is interested in processing a part event
+	 * implements this interface, and the object created with that class is registered with a component using the
+	 * component's <code>addPartListener<code> method. When the part event occurs, that object's appropriate method is
+	 * invoked.
 	 *
 	 * @see PartEvent
 	 */
@@ -55,7 +52,7 @@ public class WorkaroundForIssue1353 {
 
 	/** The shell. */
 	private static Shell shell;
-	
+
 	/** The Constant listener. */
 	private static final PartListener listener = new PartListener();
 
@@ -101,7 +98,7 @@ public class WorkaroundForIssue1353 {
 	 * Install.
 	 */
 	public static void install() {
-		if (!PlatformHelper.isMac() || (shell != null)) return;
+		if (!SystemInfo.isMac() || shell != null) return;
 		DEBUG.OUT(WorkaroundForIssue1353.class.getSimpleName() + " installed");
 		WorkbenchHelper.run(() -> {
 			createShell();

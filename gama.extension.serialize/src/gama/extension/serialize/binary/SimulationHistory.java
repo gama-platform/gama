@@ -11,8 +11,6 @@
 package gama.extension.serialize.binary;
 
 import java.util.LinkedList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import gama.dev.DEBUG;
 import gama.extension.serialize.binary.SimulationHistory.SimulationHistoryNode;
@@ -31,11 +29,17 @@ public class SimulationHistory extends LinkedList<SimulationHistoryNode> {
 		DEBUG.OFF();
 	}
 
-	/** The executor. */
-	final ExecutorService executor = Executors.newCachedThreadPool();
-
+	/**
+	 * Pushes a recorded state on top of the history. Synchronous, so that it stays covered by the per-simulation lock
+	 * held by {@link SimulationSerialiser#record} and {@link SimulationSerialiser#restore}.
+	 *
+	 * @param state
+	 *            the serialised simulation state
+	 * @param cycle
+	 *            the cycle this state corresponds to
+	 */
 	public void push(final byte[] state, final int cycle) {
-		executor.execute(() -> { push(new SimulationHistoryNode(state, cycle)); });
+		push(new SimulationHistoryNode(state, cycle));
 	}
 
 }

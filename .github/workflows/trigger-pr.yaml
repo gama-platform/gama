@@ -6,7 +6,16 @@ name: "Pull Request validation"
 on:
   # Triggers the workflow on pull request events
   pull_request:
-  workflow_dispatch: # For manual trigger
+  workflow_dispatch:  # For manual trigger
+    inputs:
+      USE_DEPENDENCY_CACHE:
+        type: boolean
+        default: true
+        required: true
+      USE_BUILD_CACHE:
+        type: boolean
+        default: false
+        required: true
 
 jobs:
   compiling-gama-base:
@@ -18,7 +27,9 @@ jobs:
       get_all_archives_for_release: false
       RUN_SPOTBUGS: true
       SPOTBUGS_OUTPUT_ARTIFACT_NAME: "result-spotbugs-base"
-      CHECKOUT_BRANCH: "2024-06"
+      CHECKOUT_BRANCH: "main"
+      USE_BUILD_CACHE: ${{ inputs.USE_BUILD_CACHE || github.event_name == 'pull_request' }}
+      USE_DEPENDENCY_CACHE: ${{ inputs.USE_DEPENDENCY_CACHE || github.event_name == 'pull_request' }}
 
   compiling-gama-pr:
     if: "! github.event.pull_request.draft || github.event_name == 'workflow_dispatch'"
@@ -29,6 +40,8 @@ jobs:
       get_all_archives_for_release: false
       RUN_SPOTBUGS: true
       SPOTBUGS_OUTPUT_ARTIFACT_NAME: "result-spotbugs-pr"
+      USE_BUILD_CACHE: ${{ inputs.USE_BUILD_CACHE || github.event_name == 'pull_request'}}
+      USE_DEPENDENCY_CACHE: ${{ inputs.USE_DEPENDENCY_CACHE || github.event_name == 'pull_request'}}
 
   testing-gama-pr:
     name: Testing built GAMA
@@ -40,7 +53,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [compiling-gama-base, compiling-gama-pr]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Get Spotbugs result from base branch
         uses: actions/download-artifact@v4
@@ -59,12 +72,12 @@ jobs:
           python3 -m pip install lxml
           python3 $GITHUB_WORKSPACE/travis/get_spotbugs_xml_diff.py -n $GITHUB_WORKSPACE/pull-request/spotbugsXml.xml -o $GITHUB_WORKSPACE/main/spotbugsXml.xml -d $GITHUB_WORKSPACE/final-report-spotbugsXml.xml
 
-      - uses: lcollins/spotbugs-github-action@v3.0.0
+      - uses: lcollins/spotbugs-github-action@v3.2.0
         with:
           path: ${{ github.workspace }}/final-report-spotbugsXml.xml
           fail-on-violation: true
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: final-report-spotbugs
           if-no-files-found: error

@@ -1,20 +1,20 @@
 /*******************************************************************************************************
  *
- * IBody.java, in gaml.extensions.physics, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * IBody.java, in gama.extension.physics, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.extension.physics.common;
 
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.gaml.descriptions.SpeciesDescription;
-import gama.gaml.species.ISpecies;
+import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.species.ISpecies;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
 
 /**
  * The Interface IBody.
@@ -74,7 +74,7 @@ public interface IBody<WorldType, BodyType, ShapeType, VectorType> extends IPhys
 	 */
 	default boolean noContactNotificationWanted(final IAgent agent) {
 		ISpecies species = agent.getSpecies();
-		SpeciesDescription desc = species.getDescription();
+		ISpeciesDescription desc = species.getDescription();
 		return desc.getAction(CONTACT_ADDED).isBuiltIn() && desc.getAction(CONTACT_REMOVED).isBuiltIn();
 	}
 
@@ -133,7 +133,7 @@ public interface IBody<WorldType, BodyType, ShapeType, VectorType> extends IPhys
 	 *            the v
 	 * @return the angular velocity
 	 */
-	GamaPoint getAngularVelocity(GamaPoint v);
+	IPoint getAngularVelocity(IPoint v);
 
 	/**
 	 * Gets the linear velocity.
@@ -142,7 +142,7 @@ public interface IBody<WorldType, BodyType, ShapeType, VectorType> extends IPhys
 	 *            the v
 	 * @return the linear velocity
 	 */
-	GamaPoint getLinearVelocity(GamaPoint v);
+	IPoint getLinearVelocity(IPoint v);
 
 	/**
 	 * Gets the aabb.
@@ -211,7 +211,7 @@ public interface IBody<WorldType, BodyType, ShapeType, VectorType> extends IPhys
 	 * @param angularVelocity
 	 *            the new angular velocity
 	 */
-	void setAngularVelocity(GamaPoint angularVelocity);
+	void setAngularVelocity(IPoint angularVelocity);
 
 	/**
 	 * Sets the linear velocity.
@@ -219,7 +219,7 @@ public interface IBody<WorldType, BodyType, ShapeType, VectorType> extends IPhys
 	 * @param linearVelocity
 	 *            the new linear velocity
 	 */
-	void setLinearVelocity(GamaPoint linearVelocity);
+	void setLinearVelocity(IPoint linearVelocity);
 
 	/**
 	 * Sets the location.
@@ -227,7 +227,7 @@ public interface IBody<WorldType, BodyType, ShapeType, VectorType> extends IPhys
 	 * @param loc
 	 *            the new location
 	 */
-	void setLocation(GamaPoint loc);
+	void setLocation(IPoint loc);
 
 	/**
 	 * Changes the collision shape of the body to match with the shape of the agent
@@ -246,7 +246,7 @@ public interface IBody<WorldType, BodyType, ShapeType, VectorType> extends IPhys
 	 * @param impulse
 	 *            the impulse
 	 */
-	void applyImpulse(GamaPoint impulse);
+	void applyImpulse(IPoint impulse);
 
 	/**
 	 * Apply torque.
@@ -254,7 +254,7 @@ public interface IBody<WorldType, BodyType, ShapeType, VectorType> extends IPhys
 	 * @param torque
 	 *            the torque
 	 */
-	void applyTorque(GamaPoint torque);
+	void applyTorque(IPoint torque);
 
 	/**
 	 * Apply force.
@@ -262,7 +262,7 @@ public interface IBody<WorldType, BodyType, ShapeType, VectorType> extends IPhys
 	 * @param force
 	 *            the force
 	 */
-	void applyForce(GamaPoint force);
+	void applyForce(IPoint force);
 
 	/**
 	 * Checks if is no notification.

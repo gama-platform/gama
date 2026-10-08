@@ -16,18 +16,18 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.sqlite.SQLiteConfig;
 
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
-import gama.core.util.IList;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
 import gama.dev.DEBUG;
 import gama.extension.database.utils.sql.SqlConnection;
 import gama.extension.database.utils.sql.SqlUtils;
+import gama.extension.dataframe.IDataFrame;
 
 /**
  * The Class SqliteConnection.
@@ -103,7 +103,7 @@ public class SqliteConnection extends SqlConnection {
 		// convert Geometry in SQL to Geometry type in GeoTool
 
 		final IList<IList<Object>> repRequest =
-				GamaListFactory.create(gama.gaml.types.Types.LIST.of(gama.gaml.types.Types.LIST));
+				GamaListFactory.create(gama.api.gaml.types.Types.LIST.of(gama.api.gaml.types.Types.LIST));
 		try {
 			final List<Integer> geoColumn = getGeometryColumns(rsmd);
 			final int nbCol = rsmd.getColumnCount();
@@ -284,30 +284,16 @@ public class SqliteConnection extends SqlConnection {
 		final int numberOfColumns = columns.size();
 		final IList<Object> columnType = GamaListFactory.create();
 		final String sqlStr = "PRAGMA table_info(" + tableName + ");";
-		final IList<? super IList<? super IList>> result = selectDB(scope, conn, sqlStr);
-		final IList<? extends IList<Object>> data = (IList<? extends IList<Object>>) result.get(2);
-
-		try (final Statement st = conn.createStatement()) {
-			// st.executeQuery(sqlStr);
-			final int numRows = data.size();
-			for (int i = 0; i < numberOfColumns; i++) {
-				final String colName = ((String) columns.get(i)).trim();
-				for (int j = 0; j < numRows; ++j) {
-					final IList<Object> row = data.get(j);
-					final String name = ((String) row.get(1)).trim();
-					final String type = ((String) row.get(2)).trim();
-					if (colName.equalsIgnoreCase(name)) {
-						if (BLOB.equalsIgnoreCase(type) || "GEOMETRY".equalsIgnoreCase(type)
-								|| "POINT".equalsIgnoreCase(type) || "LINESTRING".equalsIgnoreCase(type)
-								|| "POLYGON".equalsIgnoreCase(type) || "MULTIPOINT".equalsIgnoreCase(type)
-								|| "MULTILINESTRING".equalsIgnoreCase(type) || "MULTIPOLYGON".equalsIgnoreCase(type)
-								|| "GEOMETRYCOLLECTION".equalsIgnoreCase(type)) {
-							columnType.add(GEOMETRYTYPE);
-						} else {
-							columnType.add(type);
-						}
-
-					}
+		// PRAGMA table_info returns one row per column with fields: cid, name, type, notnull, dflt_value, pk
+		final IDataFrame result = selectDB(scope, conn, sqlStr);
+		final int numRows = result.getRows();
+		for (int i = 0; i < numberOfColumns; i++) {
+			final String colName = ((String) columns.get(i)).trim();
+			for (int j = 0; j < numRows; ++j) {
+				final String name = ((String) result.iloc(scope, j, 1)).trim();
+				if (colName.equalsIgnoreCase(name)) {
+					final String type = ((String) result.iloc(scope, j, 2)).trim();
+					columnType.add(isGeometryType(type) ? GEOMETRYTYPE : type);
 				}
 			}
 		}

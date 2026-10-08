@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * JobListFactory.java, in gama.headless, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -17,15 +17,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import gama.core.common.interfaces.IKeyword;
-import gama.core.kernel.experiment.IExperimentPlan;
-import gama.core.kernel.model.IModel;
-import gama.gaml.compilation.GAML;
-import gama.gaml.compilation.GamaCompilationFailedException;
-import gama.gaml.descriptions.ExperimentDescription;
-import gama.gaml.types.Types;
+import gama.annotations.constants.IKeyword;
+import gama.api.compilation.descriptions.IExperimentDescription;
+import gama.api.exceptions.GamaCompilationFailedException;
+import gama.api.gaml.GAML;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.species.IExperimentSpecies;
+import gama.api.kernel.species.IModelSpecies;
 import gama.headless.core.GamaHeadlessException;
-import gaml.compiler.gaml.validation.GamlModelBuilder;
+import gaml.compiler.validation.GamlModelBuilder;
 
 /**
  * The Class JobPlan.
@@ -50,14 +50,14 @@ public class JobListFactory {
 	 */
 	public static List<IExperimentJob> constructAllJobs(final String modelPath, final long[] seeds,
 			final long finalStep, final Integer numberOfCores) throws IOException, GamaCompilationFailedException {
-		IModel model = GamlModelBuilder.getDefaultInstance().compile(new File(modelPath), null, null);
+		IModelSpecies model = GamlModelBuilder.getInstance().compile(new File(modelPath), null, null);
 		Map<JobPlanExperimentID, IExperimentJob> originalJobs = new LinkedHashMap<>();
 		if (numberOfCores != null && numberOfCores > 0) {
-			for (IExperimentPlan exp : model.getExperiments()) {
+			for (IExperimentSpecies exp : model.getExperiments()) {
 				exp.setConcurrency(GAML.getExpressionFactory().createConst(numberOfCores, Types.INT));
 			}
 		}
-		for (final ExperimentDescription expD : model.getDescription().getExperiments()) {
+		for (final IExperimentDescription expD : model.getDescription().getExperiments()) {
 			if (!IKeyword.BATCH.equals(expD.getLitteral(IKeyword.TYPE))) {
 				final IExperimentJob tj = ExperimentJob.loadAndBuildJob(expD, model.getFilePath(), model);
 				// TODO AD Why 12 ??

@@ -35,23 +35,24 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.map.Layer;
-import org.geotools.styling.FeatureTypeStyle;
-import org.geotools.styling.Fill;
-import org.geotools.styling.Graphic;
-import org.geotools.styling.LabelPlacement;
-import org.geotools.styling.LineSymbolizer;
-import org.geotools.styling.PointSymbolizer;
-import org.geotools.styling.PolygonSymbolizer;
-import org.geotools.styling.Rule;
 import org.geotools.styling.SLD;
-import org.geotools.styling.Stroke;
-import org.geotools.styling.Style;
 import org.geotools.styling.StyleBuilder;
-import org.geotools.styling.Symbolizer;
-import org.geotools.styling.TextSymbolizer;
-import org.opengis.feature.simple.SimpleFeatureType;
+import org.geotools.api.data.SimpleFeatureSource;
+import org.geotools.api.feature.simple.SimpleFeatureType;
+import org.geotools.api.style.FeatureTypeStyle;
+import org.geotools.api.style.Fill;
+import org.geotools.api.style.Graphic;
+import org.geotools.api.style.LabelPlacement;
+import org.geotools.api.style.LineSymbolizer;
+import org.geotools.api.style.PointSymbolizer;
+import org.geotools.api.style.PolygonSymbolizer;
+import org.geotools.api.style.Rule;
+import org.geotools.api.style.Fill;
+import org.geotools.api.style.Stroke;
+import org.geotools.api.style.Style;
+import org.geotools.api.style.Symbolizer;
+import org.geotools.api.style.TextSymbolizer;
 
 /**
  * Defines a "simple" StyleConfigurator for working with SLD documents.
@@ -300,7 +301,7 @@ public class SimpleConfigurator extends Dialog {
 		final SimpleFeatureType schema = featureCollection.getSchema();
 
 		Stroke stroke = null;
-		Fill fill = null;
+		Fill fill = null; 
 		Graphic graphic = null;
 		TextSymbolizer text = null;
 		LabelPlacement placement = null;

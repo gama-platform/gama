@@ -21,8 +21,8 @@ import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.runtime.GAMA;
+import gama.api.GAMA;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.ui.experiment.views.ErrorView;
 import gama.ui.shared.utils.ViewsHelper;
 

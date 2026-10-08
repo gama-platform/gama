@@ -7,6 +7,8 @@ import gaml.compiler.gaml.Block;
 import gaml.compiler.gaml.GamlPackage;
 import gaml.compiler.gaml.Statement;
 
+import gaml.compiler.serializer.GamlEObjectImpl;
+
 import java.util.Collection;
 
 import org.eclipse.emf.common.notify.NotificationChain;
@@ -15,8 +17,6 @@ import org.eclipse.emf.common.util.EList;
 
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.InternalEObject;
-
-import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
 
 import org.eclipse.emf.ecore.util.EObjectContainmentEList;
 import org.eclipse.emf.ecore.util.InternalEList;
@@ -34,7 +34,7 @@ import org.eclipse.emf.ecore.util.InternalEList;
  *
  * @generated
  */
-public class BlockImpl extends MinimalEObjectImpl.Container implements Block
+public class BlockImpl extends GamlEObjectImpl implements Block
 {
   /**
    * The cached value of the '{@link #getStatements() <em>Statements</em>}' containment reference list.

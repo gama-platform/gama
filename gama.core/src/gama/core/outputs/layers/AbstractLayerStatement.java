@@ -1,32 +1,33 @@
 /*******************************************************************************************************
  *
  * AbstractLayerStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.outputs.layers;
 
-import com.google.common.primitives.Ints;
+import com.google.common.primitives.Longs;
 
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.outputs.IOutput;
-import gama.core.outputs.LayeredDisplayData;
+import gama.annotations.inside;
+import gama.annotations.constants.IKeyword;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IDescriptionValidator;
+import gama.api.compilation.descriptions.IStatementDescription;
+import gama.api.constants.IGamlIssue;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.symbols.ISymbol;
+import gama.api.gaml.symbols.Symbol;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.IOutput;
+import gama.api.ui.displays.IDisplayData;
+import gama.api.ui.layers.ILayerStatement;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.core.outputs.LayeredDisplayOutput;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.compilation.IDescriptionValidator;
-import gama.gaml.compilation.ISymbol;
-import gama.gaml.compilation.Symbol;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.StatementDescription;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.interfaces.IGamlIssue;
 import one.util.streamex.StreamEx;
 
 /**
@@ -44,7 +45,7 @@ public abstract class AbstractLayerStatement extends Symbol implements ILayerSta
 	/**
 	 * The Class SpeciesLayerValidator.
 	 */
-	public static class OpenGLSpecificLayerValidator implements IDescriptionValidator<StatementDescription> {
+	public static class OpenGLSpecificLayerValidator implements IDescriptionValidator<IStatementDescription> {
 
 		/**
 		 * Warn if not open GL.
@@ -52,7 +53,7 @@ public abstract class AbstractLayerStatement extends Symbol implements ILayerSta
 		 * @param description
 		 *            the description
 		 */
-		void warnIfNotOpenGL(final StatementDescription layer) {
+		void warnIfNotOpenGL(final IStatementDescription layer) {
 			IDescription d = layer.getEnclosingDescription();
 			if (!isOpenGL(d)) {
 				layer.warning(layer.getKeyword() + " layers can only be used in OpenGL displays",
@@ -74,7 +75,7 @@ public abstract class AbstractLayerStatement extends Symbol implements ILayerSta
 
 			if (type != null) return IKeyword._3D.equals(type) || IKeyword.OPENGL.equals(type);
 			final String parent = display.getLitteral(PARENT);
-			final boolean isOpenGLDefault = !IKeyword._2D.equals(GamaPreferences.Displays.CORE_DISPLAY.getValue());
+			final boolean isOpenGLDefault = !GamaPreferences.Displays.CORE_DISPLAY.getValue();
 			if (parent == null) return isOpenGLDefault;
 			display = StreamEx.of(display.getEnclosingDescription().getChildrenWithKeyword(DISPLAY).iterator())
 					.findFirst(dspl -> dspl.getName().equals(parent)).get();
@@ -83,7 +84,7 @@ public abstract class AbstractLayerStatement extends Symbol implements ILayerSta
 		}
 
 		@Override
-		public void validate(final StatementDescription description) {
+		public void validate(final IStatementDescription description) {
 			warnIfNotOpenGL(description);
 		}
 
@@ -97,6 +98,7 @@ public abstract class AbstractLayerStatement extends Symbol implements ILayerSta
 	 *
 	 * @return true, if is to create
 	 */
+	@Override
 	public boolean isToCreate() { return true; }
 
 	/**
@@ -117,7 +119,7 @@ public abstract class AbstractLayerStatement extends Symbol implements ILayerSta
 
 	@Override
 	public int compareTo(final ILayerStatement o) {
-		return Ints.compare(getOrder(), o.getOrder());
+		return Longs.compare(getOrder(), o.getOrder());
 	}
 
 	@Override
@@ -149,7 +151,7 @@ public abstract class AbstractLayerStatement extends Symbol implements ILayerSta
 	 *
 	 * @return the layered display data
 	 */
-	public LayeredDisplayData getLayeredDisplayData() {
+	public IDisplayData getLayeredDisplayData() {
 		if (output == null) return null;
 		return output.getData();
 	}

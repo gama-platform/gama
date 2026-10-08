@@ -20,9 +20,9 @@ import org.eclipse.ui.AbstractSourceProvider;
 import org.eclipse.ui.ISources;
 import org.eclipse.ui.services.IServiceLocator;
 
-import gama.core.kernel.experiment.IExperimentPlan;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IExperimentStateListener;
+import gama.api.GAMA;
+import gama.api.kernel.simulation.IExperimentStateListener;
+import gama.api.kernel.species.IExperimentSpecies;
 import gama.ui.shared.utils.WorkbenchHelper;
 
 /**
@@ -66,7 +66,7 @@ public class ExperimentStateProvider extends AbstractSourceProvider implements I
      * IExperimentStateListener.State)
      */
     @Override
-    public void updateStateTo(final IExperimentPlan exp, final State newState) {
+    public void updateStateTo(final IExperimentSpecies exp, final State newState) {
 	String state = newState.name();
 	if (!Objects.equals(states.get(EXPERIMENT_RUNNING_STATE), state)) {
 	    states.put(EXPERIMENT_RUNNING_STATE, state);

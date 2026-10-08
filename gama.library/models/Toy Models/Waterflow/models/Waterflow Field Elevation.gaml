@@ -1,18 +1,13 @@
 /***
-* Name: Waterflowgridelevation
-* Author: ben
-* Description: 
-* Tags: water, dem, grid
-***/
-
-/***
-* Name: Water flow in a river represented by two fields (one for the terrain, one for the flow)
-* Author: Benoit Gaudou & Alexis Drogoul
-* Description: In this model, the space is discretised using two fields, the 'river' being a set of cells, each of them with an elevation.
-* 	The data comes from a DEM (Digital Elevation Model) file.
-* 	The upstream cells (i.e. the source cells) and the downstream cells (i.e. the drain cells) are determined automatically ('up' and 'down' of the cells with an altitude < 0)
-* 	At each step, the cells in the flow field transmits a part of their water to their neighbor cells that are lower (their height is computed taken into account their elevation and height of water. 
-* Tags: grid, gui, hydrology, water flow, DEM
+* Name: Waterflow Field Elevation
+* Author: Benoit Gaudou, Alexis Drogoul
+* Description: A water flow model where the terrain and water are each represented as a separate GAMA field.
+*   A 'terrain' field stores the elevation data loaded from a DEM (Digital Elevation Model) raster file.
+*   A 'flow' field of the same dimensions stores the current water height in each cell. At each step, water
+*   flows from cells with higher total height (elevation + water) to lower neighboring cells. Source cells
+*   (upstream, negative altitude) receive new water every step; drain cells (downstream) remove water.
+*   This field-based approach is more efficient than a grid-species approach for large terrain datasets.
+* Tags: grid, gui, hydrology, water_flow, dem, field, elevation, raster
 ***/
 model WaterOnFields
 
@@ -75,7 +70,7 @@ global {
 
 
 	float height (point c) {
-		return h[c] + flow[c];
+		return h[c] + flow[c]; 
 	}
 
 	//Reflex to flow the water according to the altitude and the obstacle

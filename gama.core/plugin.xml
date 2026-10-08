@@ -1,16 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-   <extension-point id="gaml.grammar.addition" name="Addition to the grammar of GAML" schema="schema/gaml.grammar.addition.exsd"/>
-   <extension-point id="gama.display" name="Implementations of IDisplaySurface" schema="schema/gama.display.exsd"/>
-   <extension-point id="gama.create" name="Implementations of ICreateDelegate" schema="schema/gama.create.exsd"/>
-   <extension-point id="gama.save" name="Implementations of ISaveDelegate" schema="schema/gama.save.exsd"/>
-   <extension-point id="gama.draw" name="Implementations of IDrawDelegate" schema="schema/gama.draw.exsd"/>
-   <extension-point id="gama.event_layer" name="Implementations of IEventLayerDelegate" schema="schema/gama.event_layer.exsd"/>
-   <extension-point id="gaml.extension" name="Additions to the GAML language" schema="schema/gaml.extension.exsd"/>
-   <extension-point id="gama.models" name="Allow plugins to add sample models to GAMA" schema="schema/gama.models.exsd"/>
-   <extension-point id="gama.experiment" name="Implementations of IExperimentAgent" schema="schema/gama.experiment.exsd"/>
-   <extension-point id="gama.constants" name="Implementations of IConstantsSupplier" schema="schema/gama.constants.exsd"/>
    <extension
          point="gama.create">
       <implementation
@@ -35,12 +25,8 @@
    <extension
          point="gama.experiment">
       <implementation
-            class="gama.core.kernel.experiment.ExperimentAgent"
+            class="gama.core.experiment.ExperimentAgent"
             keyword="gui">
-      </implementation>
-      <implementation
-            class="gama.core.kernel.experiment.BatchAgent"
-            keyword="batch">
       </implementation>
    </extension>
    <extension
@@ -54,13 +40,6 @@
       <implementation
             class="gama.core.outputs.layers.KeyboardEventLayerDelegate">
       </implementation>
-   </extension>
-   <extension
-         point="org.eclipse.core.resources.variableResolvers">
-      <variableResolver
-            class="gama.core.util.file.CacheLocationProvider"
-            variable="CACHE_LOC">
-      </variableResolver>
    </extension>
    <extension
          point="gama.save">
@@ -83,10 +62,6 @@
       <implementation
             class="gama.gaml.statements.save.GraphSaver"
             description="Saves graphs in different formats (from JGraphT)">
-      </implementation>
-      <implementation
-            class="gama.gaml.statements.save.KmlSaver"
-            description="Saves .kml or .kmz files">
       </implementation>
       <implementation
             class="gama.gaml.statements.save.ShapeSaver"
@@ -121,10 +96,19 @@
       </implementation>
    </extension>
    <extension
-         point="gama.constants">
+         point="gama.metadata">
       <implementation
-            class="gama.gaml.constants.CoreConstantsSupplier">
+            class="gama.core.util.json.JSONInfo"
+            content_type="gama.json.file.type">
       </implementation>
+               <implementation
+                     class="gama.core.util.file.CSVInfo"
+                     content_type="gama.csv.file.type">
+               </implementation>
+               <implementation
+                     class="gama.core.util.file.ShapeInfo"
+                     content_type="gama.shapefile.type">
+               </implementation>
    </extension>
 
 </plugin>

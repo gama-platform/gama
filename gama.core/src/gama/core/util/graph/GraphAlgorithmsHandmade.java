@@ -10,9 +10,10 @@
  ********************************************************************************************************/
 package gama.core.util.graph;
 
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IList;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.graph.IGraph;
+import gama.api.types.list.IList;
 
 /**
  * Contains various handmade algorithms. Algorithms mainly based on external

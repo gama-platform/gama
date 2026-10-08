@@ -27,7 +27,7 @@ import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.FileEditorInput;
 
-import gama.core.common.interfaces.IGamaView;
+import gama.api.ui.IGamaView;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.WebHelper;
 import gama.ui.shared.views.toolbar.GamaToolbar2;

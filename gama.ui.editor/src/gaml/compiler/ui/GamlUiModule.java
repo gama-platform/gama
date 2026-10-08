@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * GamlUiModule.java, in gama.ui.editor, is part of the source code of the
- * GAMA modeling and simulation platform (v.2025-03).
+ * GamlUiModule.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
  * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gaml.compiler.ui;
 
@@ -35,6 +35,7 @@ import org.eclipse.xtext.service.DispatchingProvider;
 import org.eclipse.xtext.service.SingletonBinding;
 import org.eclipse.xtext.ui.IImageHelper;
 import org.eclipse.xtext.ui.IImageHelper.IImageDescriptorHelper;
+import org.eclipse.xtext.ui.editor.DirtyStateEditorSupport;
 import org.eclipse.xtext.ui.editor.IXtextEditorCallback;
 import org.eclipse.xtext.ui.editor.XtextEditor;
 import org.eclipse.xtext.ui.editor.XtextSourceViewer;
@@ -62,19 +63,20 @@ import com.google.inject.Binder;
 import com.google.inject.Provider;
 import com.google.inject.name.Names;
 
-import gama.core.common.interfaces.IGamlLabelProvider;
+import gama.api.compilation.IModelsManager;
+import gama.api.compilation.ast.IGamlLabelProvider;
 import gama.dev.DEBUG;
-import gama.ui.shared.interfaces.IModelRunner;
-import gaml.compiler.gaml.parsing.GamlSyntaxErrorMessageProvider;
-import gaml.compiler.gaml.resource.GamlEncodingProvider;
 import gaml.compiler.ide.contentassist.antlr.GamlParser;
+import gaml.compiler.parsing.GamlSyntaxErrorMessageProvider;
+import gaml.compiler.resource.GamlEncodingProvider;
 import gaml.compiler.ui.contentassist.GamlTemplateProposalProvider;
 import gaml.compiler.ui.decorators.GamlImageHelper;
 import gaml.compiler.ui.decorators.GamlMarkerUpdater;
 import gaml.compiler.ui.editor.GamaAutoEditStrategyProvider;
+import gaml.compiler.ui.editor.GamaSourceViewerConfiguration;
 import gaml.compiler.ui.editor.GamaSourceViewerFactory;
+import gaml.compiler.ui.editor.GamlDirtyStateSupport;
 import gaml.compiler.ui.editor.GamlEditor;
-import gaml.compiler.ui.editor.GamlEditor.GamaSourceViewerConfiguration;
 import gaml.compiler.ui.editor.GamlEditorTickUpdater;
 import gaml.compiler.ui.editor.GamlHyperlinkDetector;
 import gaml.compiler.ui.editor.GamlMarkOccurrenceActionContributor;
@@ -93,7 +95,7 @@ import gaml.compiler.ui.outline.GamlOutlinePage;
 import gaml.compiler.ui.outline.GamlSortOutlineContribution;
 import gaml.compiler.ui.templates.GamlTemplateStore;
 import gaml.compiler.ui.utils.GamlSyncUtil;
-import gaml.compiler.ui.utils.ModelRunner;
+import gaml.compiler.ui.utils.ModelsManager;
 
 /**
  * Use this class to register components to be used within the IDE.
@@ -127,12 +129,13 @@ public class GamlUiModule extends gaml.compiler.ui.AbstractGamlUiModule {
 				.to(InternalGamlLexer.class);
 		binder.bind(IResourceLoader.class).toProvider(ResourceLoaderProviders.getParallelLoader());
 		binder.bind(IResourceClusteringPolicy.class).to(DynamicResourceClusteringPolicy.class);
-		binder.bind(IModelRunner.class).to(ModelRunner.class);
+		binder.bind(IModelsManager.class).to(ModelsManager.class);
 		// binder.bind(XtextDocumentProvider.class).to(XtextDocumentProvider.class);
 		binder.bind(IMarkerUpdater.class).to(GamlMarkerUpdater.class);
 		binder.bind(IGamlLabelProvider.class).to(GamlLabelProvider.class);
 		binder.bind(XtextElementLinks.class).to(GamlElementLinks.class);
 		binder.bind(SyncUtil.class).to(GamlSyncUtil.class);
+		binder.bind(DirtyStateEditorSupport.class).to(GamlDirtyStateSupport.class);
 		// binder.bind(IHighlightingConfiguration.class).to(GamlHighlightingConfiguration.class).asEagerSingleton();
 		DEBUG.OUT("Initialization of GAML XText UI module finished");
 	}

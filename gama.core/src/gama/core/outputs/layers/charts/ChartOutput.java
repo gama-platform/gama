@@ -1,58 +1,58 @@
 /*******************************************************************************************************
  *
- * ChartOutput.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
+ * ChartOutput.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform.
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.outputs.layers.charts;
 
-import java.awt.Color;
-import java.awt.Font;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.util.LinkedHashMap;
 
-import org.jfree.chart.JFreeChart;
-
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.kernel.simulation.SimulationClock;
-import gama.core.runtime.IScope;
-import gama.core.util.GamaColor;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
+import gama.annotations.constants.IKeyword;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.kernel.simulation.IClock;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.IPoint;
+import gama.api.ui.IOutput;
+import gama.api.ui.displays.IChart;
+import gama.api.ui.displays.IChartDataSource;
+import gama.api.ui.displays.IDisplaySurface;
 
 /**
- * The Class ChartOutput.
+ * Abstract base class for GAMA chart outputs, managing lifecycle, dataset updates, and properties.
  */
-public abstract class ChartOutput {
+public abstract class ChartOutput implements IChart {
 
 	/** The Constant SERIES_CHART. */
-	static final int SERIES_CHART = 0;
+	public static final int SERIES_CHART = 0;
 
 	/** The Constant HISTOGRAM_CHART. */
-	static final int HISTOGRAM_CHART = 1;
+	public static final int HISTOGRAM_CHART = 1;
 
 	/** The Constant PIE_CHART. */
-	static final int PIE_CHART = 2;
+	public static final int PIE_CHART = 2;
 
 	/** The Constant XY_CHART. */
-	static final int XY_CHART = 3;
+	public static final int XY_CHART = 3;
 
 	/** The Constant BOX_WHISKER_CHART. */
-	static final int BOX_WHISKER_CHART = 4;
+	public static final int BOX_WHISKER_CHART = 4;
 
 	/** The Constant SCATTER_CHART. */
-	static final int SCATTER_CHART = 5;
+	public static final int SCATTER_CHART = 5;
 
 	/** The Constant RADAR_CHART. */
-	static final int RADAR_CHART = 6;
+	public static final int RADAR_CHART = 6;
 
 	/** The Constant HEATMAP_CHART. */
-	static final int HEATMAP_CHART = 7;
+	public static final int HEATMAP_CHART = 7;
 
 	/** The last update cycle. */
 	public int lastUpdateCycle = -1;
@@ -61,189 +61,58 @@ public abstract class ChartOutput {
 	public boolean ismyfirststep = true;
 
 	/** The chname. */
-	String chname = "";
-
-	/** The xlabel. */
-	String xlabel = null;
-
-	/** The ylabel. */
-	String ylabel = null;
-
-	/** The y 2 label. */
-	String y2label = null;
-
-	/** The chartdataset. */
-	ChartDataSet chartdataset;
+	protected String chname = "";
 
 	/** The type. */
-	int type = SERIES_CHART;
+	protected int type = SERIES_CHART;
 
-	/** The reverse axes. */
-	boolean reverse_axes = false;
+	/** The chartdataset. */
+	protected ChartDataSet chartdataset;
 
-	/** The x logscale. */
-	boolean x_logscale = false;
+	/** The host display output. */
+	protected IOutput hostDisplayOutput;
 
-	/** The y logscale. */
-	boolean y_logscale = false;
-
-	/** The y 2 logscale. */
-	boolean y2_logscale = false;
-
-	/** The use second y axis. */
-	boolean use_second_y_axis = false;
-
-	/** The title visible. */
-	boolean title_visible = true;
-
-	/** The x tick value visible. */
-	boolean x_tick_value_visible = true;
-
-	/** The y tick value visible. */
-	boolean y_tick_value_visible = true;
-
-	/** The x tick line visible. */
-	boolean x_tick_line_visible = true;
-
-	/** The y tick line visible. */
-	boolean y_tick_line_visible = true;
-
-	/** The grid lines visible. */
-	boolean grid_lines_visible = true;
-
-	/** The background color. */
-	Color backgroundColor = GamaColor.WHITE;
-
-	/** The axes color. */
-	Color axesColor = null;
-
-	/** The background color. */
-	Color labelBackgroundColor = null;
-
-	/** The background color. */
-	Color labelTextColor = null;
-
-	/** The text color. */
-	Color textColor = null;
-
-	/** The tick color. */
-	Color tickColor = null;
-
-	/** The tick font face. */
-	String tickFontFace = Font.SANS_SERIF;
-
-	/** The tick font size. */
-	int tickFontSize = 10;
-
-	/** The tick font style. */
-	int tickFontStyle = Font.PLAIN;
-
-	/** The label font face. */
-	String labelFontFace = Font.SANS_SERIF;
-
-	/** The label font size. */
-	int labelFontSize = 12;
-
-	/** The label font style. */
-	int labelFontStyle = Font.BOLD;
-
-	/** The legend font face. */
-	String legendFontFace = Font.SANS_SERIF;
-
-	/** The legend font size. */
-	int legendFontSize = 10;
-
-	/** The legend font style. */
-	int legendFontStyle = Font.ITALIC;
-
-	/** The title font face. */
-	String titleFontFace = Font.SERIF;
-
-	/** The title font size. */
-	int titleFontSize = 14;
-
-	/** The title font style. */
-	int titleFontStyle = Font.BOLD;
-
-	/** The series label position. */
-	String series_label_position = "default";
-
-	/** The style. */
-	String style = IKeyword.DEFAULT;
-
-	/** The gap. */
-	double gap = -1; // only used in bar charts? copied the code, don't
-	// understand how to use it...
-
-	/** The xrangemax. */
-	double xrangeinterval, xrangemin, xrangemax;
-
-	/** The usexrangeminmax. */
-	boolean usexrangeinterval = false, usexrangeminmax = false;
-
-	/** The yrangemax. */
-	double yrangeinterval, yrangemin, yrangemax;
-
-	/** The useyrangeminmax. */
-	boolean useyrangeinterval = false, useyrangeminmax = false;
-
-	/** The y 2 rangemax. */
-	double y2rangeinterval, y2rangemin, y2rangemax;
-
-	/** The usey 2 rangeminmax. */
-	boolean usey2rangeinterval = false, usey2rangeminmax = false;
-
-	/** The xtickunit. */
-	double xtickunit = -1;
-
-	/** The ytickunit. */
-	double ytickunit = -1;
-
-	/** The y 2 tickunit. */
-	double y2tickunit = -1;
-
-	// copy from previous dataLayerStatement
-
-	// static String chartFolder = "charts";
-
-	// final Map<String, Integer> expressions_index = new HashMap<>();
-	// static String xAxisName = "'time'";
-
-	// HashMap<String,Object> chartParameters=new HashMap<String,Object>();
+	/** The properties. */
+	protected final ChartProperties properties = new ChartProperties();
 
 	/**
-	 * Gets the image.
+	 * Gets the host display output.
 	 *
-	 * @param sizeX
-	 *            the size X
-	 * @param sizeY
-	 *            the size Y
-	 * @param antiAlias
-	 *            the anti alias
-	 * @return the image
+	 * @return the host display output
 	 */
-	public abstract BufferedImage getImage(final int sizeX, final int sizeY, final boolean antiAlias);
+	public IOutput getHostDisplayOutput() { return hostDisplayOutput; }
+
+	/**
+	 * Sets the host display output.
+	 *
+	 * @param output
+	 *            the new host display output
+	 */
+	public void setHostDisplayOutput(final IOutput.Display output) {
+		this.hostDisplayOutput = output;
+		properties.setHostDisplayOutput(output);
+	}
 
 	/**
 	 * Instantiates a new chart output.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param name
-	 *            the name
-	 * @param typeexp
-	 *            the typeexp
 	 */
 	public ChartOutput(final IScope scope, final String name, final IExpression typeexp) {
 		final String t = typeexp == null ? IKeyword.SERIES : Cast.asString(scope, typeexp.value(scope));
-		// TODO: heatmap is not taken into account here and it will be
-		// considered as a XY_CHART, is that normal ?
 		type = IKeyword.SERIES.equals(t) ? SERIES_CHART : IKeyword.HISTOGRAM.equals(t) ? HISTOGRAM_CHART
 				: IKeyword.RADAR.equals(t) ? RADAR_CHART : IKeyword.PIE.equals(t) ? PIE_CHART
 				: IKeyword.BOX_WHISKER.equals(t) ? BOX_WHISKER_CHART : IKeyword.SCATTER.equals(t) ? SCATTER_CHART
 				: XY_CHART;
-		axesColor = GamaColor.get(Color.black);
 	}
+
+	/**
+	 * Gets the properties.
+	 *
+	 * @return the properties
+	 */
+	public ChartProperties getProperties() { return properties; }
+
+	@Override
+	public abstract BufferedImage getImage(final int sizeX, final int sizeY, final boolean antiAlias);
 
 	/**
 	 * Gets the chart cycle.
@@ -258,7 +127,7 @@ public abstract class ChartOutput {
 			return 0;
 		}
 		if (scope != null) {
-			SimulationClock clock = scope.getClock();
+			IClock clock = scope.getClock();
 			if (clock != null) return clock.getCycle() + 1;
 		}
 		return 0;
@@ -271,16 +140,14 @@ public abstract class ChartOutput {
 	 *            the scope
 	 */
 	public void step(final IScope scope) {
-		chartdataset.updatedataset(scope, getChartCycle(scope));
+		if (chartdataset != null) { chartdataset.updatedataset(scope, getChartCycle(scope)); }
 		updateOutput(scope);
 	}
 
 	/**
 	 * Initdataset.
 	 */
-	public void initdataset() {
-
-	}
+	public void initdataset() {}
 
 	/**
 	 * Update output.
@@ -289,12 +156,12 @@ public abstract class ChartOutput {
 	 *            the scope
 	 */
 	public void updateOutput(final IScope scope) {
+		if (chartdataset == null) return;
 		if (chartdataset.doResetAll(scope, lastUpdateCycle)) {
 			clearDataSet(scope);
 			for (final String serieid : chartdataset.getDataSeriesIds(scope)) { createNewSerie(scope, serieid); }
 			preResetSeries(scope);
 			for (final String serieid : chartdataset.getDataSeriesIds(scope)) { this.resetSerie(scope, serieid); }
-
 		} else {
 			final LinkedHashMap<String, Integer> toremove = chartdataset.getSerieRemovalDate();
 			for (final String serieid : toremove.keySet()) {
@@ -312,14 +179,10 @@ public abstract class ChartOutput {
 			}
 			preResetSeries(scope);
 			for (final String serieid : chartdataset.getDataSeriesIds(scope)) { this.resetSerie(scope, serieid); }
-
 		}
 		resetAxes(scope);
-		SimulationClock clock = scope.getClock();
-		if (clock != null) {
-			lastUpdateCycle = clock.getCycle();
-			// DEBUG.LOG("output last update:" + lastUpdateCycle);
-		}
+		IClock clock = scope.getClock();
+		if (clock != null) { lastUpdateCycle = clock.getCycle(); }
 	}
 
 	/**
@@ -328,9 +191,7 @@ public abstract class ChartOutput {
 	 * @param scope
 	 *            the scope
 	 */
-	public void preResetSeries(final IScope scope) {
-
-	}
+	public void preResetSeries(final IScope scope) {}
 
 	/**
 	 * Reset axes.
@@ -338,10 +199,7 @@ public abstract class ChartOutput {
 	 * @param scope
 	 *            the scope
 	 */
-	public void resetAxes(final IScope scope) {
-		// Update axes
-
-	}
+	public void resetAxes(final IScope scope) {}
 
 	/**
 	 * Removes the serie.
@@ -351,9 +209,7 @@ public abstract class ChartOutput {
 	 * @param serieid
 	 *            the serieid
 	 */
-	public void removeSerie(final IScope scope, final String serieid) {
-
-	}
+	public void removeSerie(final IScope scope, final String serieid) {}
 
 	/**
 	 * Reset serie.
@@ -363,9 +219,7 @@ public abstract class ChartOutput {
 	 * @param serieid
 	 *            the serieid
 	 */
-	protected void resetSerie(final IScope scope, final String serieid) {
-
-	}
+	protected void resetSerie(final IScope scope, final String serieid) {}
 
 	/**
 	 * Clear data set.
@@ -373,9 +227,7 @@ public abstract class ChartOutput {
 	 * @param scope
 	 *            the scope
 	 */
-	protected void clearDataSet(final IScope scope) {
-
-	}
+	protected void clearDataSet(final IScope scope) {}
 
 	/**
 	 * Creates the new serie.
@@ -385,9 +237,7 @@ public abstract class ChartOutput {
 	 * @param serieid
 	 *            the serieid
 	 */
-	protected void createNewSerie(final IScope scope, final String serieid) {
-
-	}
+	protected void createNewSerie(final IScope scope, final String serieid) {}
 
 	/**
 	 * Sets the use X source.
@@ -397,9 +247,7 @@ public abstract class ChartOutput {
 	 * @param expval
 	 *            the expval
 	 */
-	public void setUseXSource(final IScope scope, final IExpression expval) {
-		// if there is something to do to use custom X axis
-	}
+	public void setUseXSource(final IScope scope, final IExpression expval) {}
 
 	/**
 	 * Sets the use X labels.
@@ -409,9 +257,7 @@ public abstract class ChartOutput {
 	 * @param expval
 	 *            the expval
 	 */
-	public void setUseXLabels(final IScope scope, final IExpression expval) {
-		// if there is something to do to use custom X axis
-	}
+	public void setUseXLabels(final IScope scope, final IExpression expval) {}
 
 	/**
 	 * Sets the use Y labels.
@@ -421,9 +267,7 @@ public abstract class ChartOutput {
 	 * @param expval
 	 *            the expval
 	 */
-	public void setUseYLabels(final IScope scope, final IExpression expval) {
-		// if there is something to do to use custom X axis
-	}
+	public void setUseYLabels(final IScope scope, final IExpression expval) {}
 
 	/**
 	 * Inits the chart.
@@ -435,7 +279,6 @@ public abstract class ChartOutput {
 	 */
 	public void initChart(final IScope scope, final String chartname) {
 		chname = chartname;
-
 	}
 
 	/**
@@ -461,7 +304,7 @@ public abstract class ChartOutput {
 	 */
 	public void setChartdataset(final ChartDataSet chartdataset) {
 		this.chartdataset = chartdataset;
-		chartdataset.setOutput(this);
+		if (chartdataset != null) { chartdataset.setOutput(this); }
 	}
 
 	/**
@@ -476,7 +319,9 @@ public abstract class ChartOutput {
 	 *
 	 * @return the style
 	 */
-	public String getStyle() { return style; }
+	public String getStyle() { return properties.getStyle(); }
+
+	// Delegated property configuration
 
 	/**
 	 * Sets the axes color value.
@@ -486,9 +331,8 @@ public abstract class ChartOutput {
 	 * @param color
 	 *            the color
 	 */
-	public void setAxesColorValue(final IScope scope, final GamaColor color) {
-		axesColor = color;
-
+	public void setAxesColorValue(final IScope scope, final IColor color) {
+		properties.setAxesColor(color);
 	}
 
 	/**
@@ -499,9 +343,8 @@ public abstract class ChartOutput {
 	 * @param color
 	 *            the color
 	 */
-	public void setTickColorValue(final IScope scope, final GamaColor color) {
-		tickColor = color;
-
+	public void setTickColorValue(final IScope scope, final IColor color) {
+		properties.setTickColor(color);
 	}
 
 	/**
@@ -512,9 +355,8 @@ public abstract class ChartOutput {
 	 * @param color
 	 *            the color
 	 */
-	public void setBackgroundColorValue(final IScope scope, final GamaColor color) {
-		backgroundColor = color;
-
+	public void setBackgroundColorValue(final IScope scope, final IColor color) {
+		properties.setBackgroundColor(color);
 	}
 
 	/**
@@ -525,8 +367,8 @@ public abstract class ChartOutput {
 	 * @param color
 	 *            the color
 	 */
-	public void setLabelTextColorValue(final IScope scope, final GamaColor color) {
-		labelTextColor = color;
+	public void setLabelTextColorValue(final IScope scope, final IColor color) {
+		properties.setLabelTextColor(color);
 	}
 
 	/**
@@ -537,8 +379,8 @@ public abstract class ChartOutput {
 	 * @param color
 	 *            the color
 	 */
-	public void setLabelBackgroundColorValue(final IScope scope, final GamaColor color) {
-		labelBackgroundColor = color;
+	public void setLabelBackgroundColorValue(final IScope scope, final IColor color) {
+		properties.setLabelBackgroundColor(color);
 	}
 
 	/**
@@ -549,9 +391,8 @@ public abstract class ChartOutput {
 	 * @param color
 	 *            the color
 	 */
-	public void setColorValue(final IScope scope, final GamaColor color) {
-		textColor = color;
-
+	public void setColorValue(final IScope scope, final IColor color) {
+		properties.setTextColor(color);
 	}
 
 	/**
@@ -563,7 +404,7 @@ public abstract class ChartOutput {
 	 *            the value
 	 */
 	public void setTickFontFace(final IScope scope, final String value) {
-		if (value != null) { tickFontFace = value; }
+		properties.setTickFontFace(value);
 	}
 
 	/**
@@ -575,7 +416,7 @@ public abstract class ChartOutput {
 	 *            the value
 	 */
 	public void setLabelFontFace(final IScope scope, final String value) {
-		if (value != null) { labelFontFace = value; }
+		properties.setLabelFontFace(value);
 	}
 
 	/**
@@ -587,7 +428,7 @@ public abstract class ChartOutput {
 	 *            the value
 	 */
 	public void setLegendFontFace(final IScope scope, final String value) {
-		if (value != null) { legendFontFace = value; }
+		properties.setLegendFontFace(value);
 	}
 
 	/**
@@ -599,7 +440,7 @@ public abstract class ChartOutput {
 	 *            the value
 	 */
 	public void setTitleFontFace(final IScope scope, final String value) {
-		if (value != null) { titleFontFace = value; }
+		properties.setTitleFontFace(value);
 	}
 
 	/**
@@ -611,7 +452,7 @@ public abstract class ChartOutput {
 	 *            the value
 	 */
 	public void setTickFontSize(final IScope scope, final int value) {
-		tickFontSize = value;
+		properties.setTickFontSize(value);
 	}
 
 	/**
@@ -623,7 +464,7 @@ public abstract class ChartOutput {
 	 *            the value
 	 */
 	public void setLabelFontSize(final IScope scope, final int value) {
-		labelFontSize = value;
+		properties.setLabelFontSize(value);
 	}
 
 	/**
@@ -635,7 +476,7 @@ public abstract class ChartOutput {
 	 *            the value
 	 */
 	public void setLegendFontSize(final IScope scope, final int value) {
-		legendFontSize = value;
+		properties.setLegendFontSize(value);
 	}
 
 	/**
@@ -647,7 +488,7 @@ public abstract class ChartOutput {
 	 *            the value
 	 */
 	public void setTitleFontSize(final IScope scope, final int value) {
-		titleFontSize = value;
+		properties.setTitleFontSize(value);
 	}
 
 	/**
@@ -659,7 +500,7 @@ public abstract class ChartOutput {
 	 *            the value
 	 */
 	public void setTickFontStyle(final IScope scope, final int value) {
-		tickFontStyle = value;
+		properties.setTickFontStyle(value);
 	}
 
 	/**
@@ -671,7 +512,7 @@ public abstract class ChartOutput {
 	 *            the value
 	 */
 	public void setLabelFontStyle(final IScope scope, final int value) {
-		labelFontStyle = value;
+		properties.setLabelFontStyle(value);
 	}
 
 	/**
@@ -683,7 +524,7 @@ public abstract class ChartOutput {
 	 *            the value
 	 */
 	public void setLegendFontStyle(final IScope scope, final int value) {
-		legendFontStyle = value;
+		properties.setLegendFontStyle(value);
 	}
 
 	/**
@@ -695,7 +536,7 @@ public abstract class ChartOutput {
 	 *            the value
 	 */
 	public void setTitleFontStyle(final IScope scope, final int value) {
-		titleFontStyle = value;
+		properties.setTitleFontStyle(value);
 	}
 
 	/**
@@ -707,8 +548,7 @@ public abstract class ChartOutput {
 	 *            the as string
 	 */
 	public void setXLabel(final IScope scope, final String asString) {
-		xlabel = asString;
-
+		properties.setXLabel(asString);
 	}
 
 	/**
@@ -719,8 +559,7 @@ public abstract class ChartOutput {
 	 * @return the x label
 	 */
 	public String getXLabel(final IScope scope) {
-		return xlabel;
-
+		return properties.getXLabel();
 	}
 
 	/**
@@ -732,8 +571,7 @@ public abstract class ChartOutput {
 	 *            the as string
 	 */
 	public void setYLabel(final IScope scope, final String asString) {
-		ylabel = asString;
-
+		properties.setYLabel(asString);
 	}
 
 	/**
@@ -744,8 +582,7 @@ public abstract class ChartOutput {
 	 * @return the y label
 	 */
 	public String getYLabel(final IScope scope) {
-		return ylabel;
-
+		return properties.getYLabel();
 	}
 
 	/**
@@ -757,8 +594,7 @@ public abstract class ChartOutput {
 	 *            the as string
 	 */
 	public void setY2Label(final IScope scope, final String asString) {
-		y2label = asString;
-
+		properties.setY2Label(asString);
 	}
 
 	/**
@@ -769,8 +605,7 @@ public abstract class ChartOutput {
 	 * @return the y 2 label
 	 */
 	public String getY2Label(final IScope scope) {
-		return y2label;
-
+		return properties.getY2Label();
 	}
 
 	/**
@@ -781,7 +616,7 @@ public abstract class ChartOutput {
 	 * @return the use X range interval
 	 */
 	public boolean getUseXRangeInterval(final IScope scope) {
-		return usexrangeinterval;
+		return properties.isUseXRangeInterval();
 	}
 
 	/**
@@ -792,7 +627,7 @@ public abstract class ChartOutput {
 	 * @return the use X range min max
 	 */
 	public boolean getUseXRangeMinMax(final IScope scope) {
-		return usexrangeminmax;
+		return properties.isUseXRangeMinMax();
 	}
 
 	/**
@@ -803,7 +638,7 @@ public abstract class ChartOutput {
 	 * @return the use Y range interval
 	 */
 	public boolean getUseYRangeInterval(final IScope scope) {
-		return useyrangeinterval;
+		return properties.isUseYRangeInterval();
 	}
 
 	/**
@@ -814,7 +649,7 @@ public abstract class ChartOutput {
 	 * @return the use Y range min max
 	 */
 	public boolean getUseYRangeMinMax(final IScope scope) {
-		return useyrangeminmax;
+		return properties.isUseYRangeMinMax();
 	}
 
 	/**
@@ -825,7 +660,7 @@ public abstract class ChartOutput {
 	 * @return the use Y 2 range interval
 	 */
 	public boolean getUseY2RangeInterval(final IScope scope) {
-		return usey2rangeinterval;
+		return properties.isUseY2RangeInterval();
 	}
 
 	/**
@@ -836,7 +671,7 @@ public abstract class ChartOutput {
 	 * @return the use Y 2 range min max
 	 */
 	public boolean getUseY2RangeMinMax(final IScope scope) {
-		return usey2rangeminmax;
+		return properties.isUseY2RangeMinMax();
 	}
 
 	/**
@@ -848,9 +683,7 @@ public abstract class ChartOutput {
 	 *            the double value
 	 */
 	public void setXRangeInterval(final IScope scope, final double doubleValue) {
-		this.usexrangeinterval = true;
-		this.xrangeinterval = doubleValue;
-
+		properties.setXRangeInterval(doubleValue);
 	}
 
 	/**
@@ -861,8 +694,7 @@ public abstract class ChartOutput {
 	 * @return the x range interval
 	 */
 	public double getXRangeInterval(final IScope scope) {
-		return xrangeinterval;
-
+		return properties.getXRangeInterval();
 	}
 
 	/**
@@ -876,10 +708,7 @@ public abstract class ChartOutput {
 	 *            the max value
 	 */
 	public void setXRangeMinMax(final IScope scope, final double minValue, final double maxValue) {
-		this.usexrangeminmax = true;
-		this.xrangemin = minValue;
-		this.xrangemax = maxValue;
-
+		properties.setXRangeMinMax(minValue, maxValue);
 	}
 
 	/**
@@ -890,8 +719,7 @@ public abstract class ChartOutput {
 	 * @return the x range min
 	 */
 	public double getXRangeMin(final IScope scope) {
-		return xrangemin;
-
+		return properties.getXRangeMin();
 	}
 
 	/**
@@ -902,8 +730,75 @@ public abstract class ChartOutput {
 	 * @return the x range max
 	 */
 	public double getXRangeMax(final IScope scope) {
-		return xrangemax;
+		return properties.getXRangeMax();
+	}
 
+	/**
+	 * Gets the use X min.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the use X min
+	 */
+	public boolean getUseXMin(final IScope scope) {
+		return properties.isUseXMin();
+	}
+
+	/**
+	 * Gets the use X max.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the use X max
+	 */
+	public boolean getUseXMax(final IScope scope) {
+		return properties.isUseXMax();
+	}
+
+	/**
+	 * Sets the X min.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param value
+	 *            the value
+	 */
+	public void setXMin(final IScope scope, final double value) {
+		properties.setXMin(value);
+	}
+
+	/**
+	 * Sets the X max.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param value
+	 *            the value
+	 */
+	public void setXMax(final IScope scope, final double value) {
+		properties.setXMax(value);
+	}
+
+	/**
+	 * Gets the x min.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the x min
+	 */
+	public double getXMin(final IScope scope) {
+		return properties.getXMinVal();
+	}
+
+	/**
+	 * Gets the x max.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the x max
+	 */
+	public double getXMax(final IScope scope) {
+		return properties.getXMaxVal();
 	}
 
 	/**
@@ -914,7 +809,7 @@ public abstract class ChartOutput {
 	 * @return the y range interval
 	 */
 	public double getYRangeInterval(final IScope scope) {
-		return this.yrangeinterval;
+		return properties.getYRangeInterval();
 	}
 
 	/**
@@ -926,9 +821,7 @@ public abstract class ChartOutput {
 	 *            the double value
 	 */
 	public void setYRangeInterval(final IScope scope, final double doubleValue) {
-		this.useyrangeinterval = true;
-		this.yrangeinterval = doubleValue;
-
+		properties.setYRangeInterval(doubleValue);
 	}
 
 	/**
@@ -942,10 +835,7 @@ public abstract class ChartOutput {
 	 *            the max value
 	 */
 	public void setYRangeMinMax(final IScope scope, final double minValue, final double maxValue) {
-		this.useyrangeminmax = true;
-		this.yrangemin = minValue;
-		this.yrangemax = maxValue;
-
+		properties.setYRangeMinMax(minValue, maxValue);
 	}
 
 	/**
@@ -956,8 +846,7 @@ public abstract class ChartOutput {
 	 * @return the y range min
 	 */
 	public double getYRangeMin(final IScope scope) {
-		return yrangemin;
-
+		return properties.getYRangeMin();
 	}
 
 	/**
@@ -968,8 +857,75 @@ public abstract class ChartOutput {
 	 * @return the y range max
 	 */
 	public double getYRangeMax(final IScope scope) {
-		return yrangemax;
+		return properties.getYRangeMax();
+	}
 
+	/**
+	 * Gets the use Y min.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the use Y min
+	 */
+	public boolean getUseYMin(final IScope scope) {
+		return properties.isUseYMin();
+	}
+
+	/**
+	 * Gets the use Y max.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the use Y max
+	 */
+	public boolean getUseYMax(final IScope scope) {
+		return properties.isUseYMax();
+	}
+
+	/**
+	 * Sets the Y min.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param value
+	 *            the value
+	 */
+	public void setYMin(final IScope scope, final double value) {
+		properties.setYMin(value);
+	}
+
+	/**
+	 * Sets the Y max.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param value
+	 *            the value
+	 */
+	public void setYMax(final IScope scope, final double value) {
+		properties.setYMax(value);
+	}
+
+	/**
+	 * Gets the y min.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the y min
+	 */
+	public double getYMin(final IScope scope) {
+		return properties.getYMinVal();
+	}
+
+	/**
+	 * Gets the y max.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the y max
+	 */
+	public double getYMax(final IScope scope) {
+		return properties.getYMaxVal();
 	}
 
 	/**
@@ -980,7 +936,7 @@ public abstract class ChartOutput {
 	 * @return the y 2 range interval
 	 */
 	public double getY2RangeInterval(final IScope scope) {
-		return this.y2rangeinterval;
+		return properties.getY2RangeInterval();
 	}
 
 	/**
@@ -992,9 +948,7 @@ public abstract class ChartOutput {
 	 *            the double value
 	 */
 	public void setY2RangeInterval(final IScope scope, final double doubleValue) {
-		this.usey2rangeinterval = true;
-		this.y2rangeinterval = doubleValue;
-
+		properties.setY2RangeInterval(doubleValue);
 	}
 
 	/**
@@ -1008,10 +962,7 @@ public abstract class ChartOutput {
 	 *            the max value
 	 */
 	public void setY2RangeMinMax(final IScope scope, final double minValue, final double maxValue) {
-		this.usey2rangeminmax = true;
-		this.y2rangemin = minValue;
-		this.y2rangemax = maxValue;
-
+		properties.setY2RangeMinMax(minValue, maxValue);
 	}
 
 	/**
@@ -1022,8 +973,7 @@ public abstract class ChartOutput {
 	 * @return the y 2 range min
 	 */
 	public double getY2RangeMin(final IScope scope) {
-		return y2rangemin;
-
+		return properties.getY2RangeMin();
 	}
 
 	/**
@@ -1034,8 +984,7 @@ public abstract class ChartOutput {
 	 * @return the y 2 range max
 	 */
 	public double getY2RangeMax(final IScope scope) {
-		return y2rangemax;
-
+		return properties.getY2RangeMax();
 	}
 
 	/**
@@ -1047,8 +996,7 @@ public abstract class ChartOutput {
 	 *            the r
 	 */
 	public void setXTickUnit(final IScope scope, final double r) {
-		this.xtickunit = r;
-
+		properties.setXTickUnit(r);
 	}
 
 	/**
@@ -1059,8 +1007,7 @@ public abstract class ChartOutput {
 	 * @return the x tick unit
 	 */
 	public double getXTickUnit(final IScope scope) {
-		return xtickunit;
-
+		return properties.getXTickUnit();
 	}
 
 	/**
@@ -1072,8 +1019,7 @@ public abstract class ChartOutput {
 	 *            the r
 	 */
 	public void setYTickUnit(final IScope scope, final double r) {
-		this.ytickunit = r;
-
+		properties.setYTickUnit(r);
 	}
 
 	/**
@@ -1084,8 +1030,7 @@ public abstract class ChartOutput {
 	 * @return the y tick unit
 	 */
 	public double getYTickUnit(final IScope scope) {
-		return ytickunit;
-
+		return properties.getYTickUnit();
 	}
 
 	/**
@@ -1097,8 +1042,7 @@ public abstract class ChartOutput {
 	 *            the r
 	 */
 	public void setY2TickUnit(final IScope scope, final double r) {
-		this.y2tickunit = r;
-
+		properties.setY2TickUnit(r);
 	}
 
 	/**
@@ -1109,8 +1053,7 @@ public abstract class ChartOutput {
 	 * @return the y 2 tick unit
 	 */
 	public double getY2TickUnit(final IScope scope) {
-		return y2tickunit;
-
+		return properties.getY2TickUnit();
 	}
 
 	/**
@@ -1122,15 +1065,8 @@ public abstract class ChartOutput {
 	 *            the range
 	 */
 	public void setGap(final IScope scope, final double range) {
-		this.gap = range;
+		properties.setGap(range);
 	}
-
-	/**
-	 * Gets the JF chart.
-	 *
-	 * @return the JF chart
-	 */
-	public JFreeChart getJFChart() { return null; }
 
 	/**
 	 * Sets the serie marker shape.
@@ -1142,23 +1078,10 @@ public abstract class ChartOutput {
 	 * @param markershape
 	 *            the markershape
 	 */
-	public void setSerieMarkerShape(final IScope scope, final String serieid, final String markershape) {
+	public void setSerieMarkerShape(final IScope scope, final String serieid, final String markershape) {}
 
-	}
-
-	/**
-	 * Sets the default properties from type.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param source
-	 *            the source
-	 * @param type_val
-	 *            the type val
-	 */
-	public void setDefaultPropertiesFromType(final IScope scope, final ChartDataSource source, final int type_val) {
-
-	}
+	@Override
+	public void setDefaultPropertiesFromType(final IScope scope, final IChartDataSource source, final int type_val) {}
 
 	/**
 	 * Sets the use size.
@@ -1170,9 +1093,7 @@ public abstract class ChartOutput {
 	 * @param b
 	 *            the b
 	 */
-	public void setUseSize(final IScope scope, final String name, final boolean b) {
-
-	}
+	public void setUseSize(final IScope scope, final String name, final boolean b) {}
 
 	/**
 	 * Sets the series label position.
@@ -1183,8 +1104,7 @@ public abstract class ChartOutput {
 	 *            the as string
 	 */
 	public void setSeriesLabelPosition(final IScope scope, final String asString) {
-		series_label_position = asString;
-
+		properties.setSeriesLabelPosition(asString);
 	}
 
 	/**
@@ -1196,8 +1116,7 @@ public abstract class ChartOutput {
 	 *            the as string
 	 */
 	public void setStyle(final IScope scope, final String asString) {
-		style = asString;
-
+		properties.setStyle(asString);
 	}
 
 	/**
@@ -1206,25 +1125,9 @@ public abstract class ChartOutput {
 	 * @param scope
 	 *            the scope
 	 */
-	public void initChart_post_data_init(final IScope scope) {
+	public void initChart_post_data_init(final IScope scope) {}
 
-	}
-
-	/**
-	 * Gets the model coordinates info.
-	 *
-	 * @param xOnScreen
-	 *            the x on screen
-	 * @param yOnScreen
-	 *            the y on screen
-	 * @param g
-	 *            the g
-	 * @param positionInPixels
-	 *            the position in pixels
-	 * @param sb
-	 *            the sb
-	 * @return the model coordinates info
-	 */
+	@Override
 	public void getModelCoordinatesInfo(final int xOnScreen, final int yOnScreen, final IDisplaySurface g,
 			final Point positionInPixels, final StringBuilder sb) {}
 
@@ -1237,7 +1140,7 @@ public abstract class ChartOutput {
 	 *            the as bool
 	 */
 	public void setReverseAxis(final IScope scope, final Boolean asBool) {
-		reverse_axes = asBool;
+		properties.setReverseAxes(asBool);
 	}
 
 	/**
@@ -1249,7 +1152,7 @@ public abstract class ChartOutput {
 	 *            the as bool
 	 */
 	public void setX_LogScale(final IScope scope, final Boolean asBool) {
-		x_logscale = asBool;
+		properties.setXLogscale(asBool);
 	}
 
 	/**
@@ -1261,7 +1164,7 @@ public abstract class ChartOutput {
 	 *            the as bool
 	 */
 	public void setY_LogScale(final IScope scope, final Boolean asBool) {
-		y_logscale = asBool;
+		properties.setYLogscale(asBool);
 	}
 
 	/**
@@ -1272,7 +1175,7 @@ public abstract class ChartOutput {
 	 * @return the x log scale
 	 */
 	public boolean getX_LogScale(final IScope scope) {
-		return x_logscale;
+		return properties.isXLogscale();
 	}
 
 	/**
@@ -1283,7 +1186,7 @@ public abstract class ChartOutput {
 	 * @return the y log scale
 	 */
 	public boolean getY_LogScale(final IScope scope) {
-		return y_logscale;
+		return properties.isYLogscale();
 	}
 
 	/**
@@ -1295,7 +1198,7 @@ public abstract class ChartOutput {
 	 *            the as bool
 	 */
 	public void setY2_LogScale(final IScope scope, final Boolean asBool) {
-		y2_logscale = asBool;
+		properties.setY2Logscale(asBool);
 	}
 
 	/**
@@ -1306,8 +1209,7 @@ public abstract class ChartOutput {
 	 * @return the y 2 log scale
 	 */
 	public boolean getY2_LogScale(final IScope scope) {
-
-		return y2_logscale;
+		return properties.isY2Logscale();
 	}
 
 	/**
@@ -1319,8 +1221,7 @@ public abstract class ChartOutput {
 	 *            the as bool
 	 */
 	public void setUseSecondYAxis(final IScope scope, final Boolean asBool) {
-
-		use_second_y_axis = asBool;
+		properties.setUseSecondYAxis(asBool);
 	}
 
 	/**
@@ -1331,9 +1232,7 @@ public abstract class ChartOutput {
 	 * @return the use second Y axis
 	 */
 	public boolean getUseSecondYAxis(final IScope scope) {
-
-		return use_second_y_axis;
-		// return false;
+		return properties.isUseSecondYAxis();
 	}
 
 	/**
@@ -1345,8 +1244,7 @@ public abstract class ChartOutput {
 	 *            the as bool
 	 */
 	public void setXTickValueVisible(final IScope scope, final Boolean asBool) {
-
-		x_tick_value_visible = asBool;
+		properties.setXTickValueVisible(asBool);
 	}
 
 	/**
@@ -1357,9 +1255,7 @@ public abstract class ChartOutput {
 	 * @return the x tick value visible
 	 */
 	public boolean getXTickValueVisible(final IScope scope) {
-
-		return x_tick_value_visible;
-		// return false;
+		return properties.isXTickValueVisible();
 	}
 
 	/**
@@ -1371,8 +1267,7 @@ public abstract class ChartOutput {
 	 *            the as bool
 	 */
 	public void setYTickValueVisible(final IScope scope, final Boolean asBool) {
-
-		y_tick_value_visible = asBool;
+		properties.setYTickValueVisible(asBool);
 	}
 
 	/**
@@ -1383,9 +1278,30 @@ public abstract class ChartOutput {
 	 * @return the y tick value visible
 	 */
 	public boolean getYTickValueVisible(final IScope scope) {
+		return properties.isYTickValueVisible();
+	}
 
-		return y_tick_value_visible;
-		// return false;
+	/**
+	 * Sets the Y 2 tick value visible.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param asBool
+	 *            the as bool
+	 */
+	public void setY2TickValueVisible(final IScope scope, final Boolean asBool) {
+		properties.setY2TickValueVisible(asBool);
+	}
+
+	/**
+	 * Gets the y 2 tick value visible.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the y 2 tick value visible
+	 */
+	public boolean getY2TickValueVisible(final IScope scope) {
+		return properties.isY2TickValueVisible();
 	}
 
 	/**
@@ -1397,8 +1313,7 @@ public abstract class ChartOutput {
 	 *            the as bool
 	 */
 	public void setTitleVisible(final IScope scope, final Boolean asBool) {
-
-		title_visible = asBool;
+		properties.setTitleVisible(asBool);
 	}
 
 	/**
@@ -1409,9 +1324,7 @@ public abstract class ChartOutput {
 	 * @return the title visible
 	 */
 	public boolean getTitleVisible(final IScope scope) {
-
-		return title_visible;
-		// return false;
+		return properties.isTitleVisible();
 	}
 
 	/**
@@ -1423,8 +1336,7 @@ public abstract class ChartOutput {
 	 *            the as bool
 	 */
 	public void setXTickLineVisible(final IScope scope, final Boolean asBool) {
-
-		x_tick_line_visible = asBool;
+		properties.setXTickLineVisible(asBool);
 	}
 
 	/**
@@ -1435,9 +1347,7 @@ public abstract class ChartOutput {
 	 * @return the x tick line visible
 	 */
 	public boolean getXTickLineVisible(final IScope scope) {
-
-		return x_tick_line_visible;
-		// return false;
+		return properties.isXTickLineVisible();
 	}
 
 	/**
@@ -1449,23 +1359,8 @@ public abstract class ChartOutput {
 	 *            the as bool
 	 */
 	public void setYTickLineVisible(final IScope scope, final Boolean asBool) {
-
-		y_tick_line_visible = asBool;
+		properties.setYTickLineVisible(asBool);
 	}
-
-	/**
-	 * Sets the grid lines visible.
-	 */
-	public void setGridLinesVisible(final IScope scope, final Boolean visible) {
-		this.grid_lines_visible = visible;
-	}
-
-	/**
-	 * Gets the grid lines visible.
-	 *
-	 * @return the grid lines visible
-	 */
-	public boolean getGridLinesVisible() { return grid_lines_visible; }
 
 	/**
 	 * Gets the y tick line visible.
@@ -1475,10 +1370,27 @@ public abstract class ChartOutput {
 	 * @return the y tick line visible
 	 */
 	public boolean getYTickLineVisible(final IScope scope) {
-
-		return y_tick_line_visible;
-		// return false;
+		return properties.isYTickLineVisible();
 	}
+
+	/**
+	 * Sets the grid lines visible.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param visible
+	 *            the visible
+	 */
+	public void setGridLinesVisible(final IScope scope, final Boolean visible) {
+		properties.setGridLinesVisible(visible);
+	}
+
+	/**
+	 * Gets the grid lines visible.
+	 *
+	 * @return the grid lines visible
+	 */
+	public boolean getGridLinesVisible() { return properties.isGridLinesVisible(); }
 
 	/**
 	 * Dispose.
@@ -1487,5 +1399,29 @@ public abstract class ChartOutput {
 	 *            the scope
 	 */
 	public void dispose(final IScope scope) {}
+
+	/**
+	 * Sets the series label anchor.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param pt
+	 *            the pt
+	 */
+	public void setSeriesLabelAnchor(final IScope scope, final IPoint pt) {
+		properties.setSeriesLabelAnchor(pt);
+	}
+
+	/**
+	 * Sets the legend orientation.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param orient
+	 *            the orient
+	 */
+	public void setLegendOrientation(final IScope scope, final String orient) {
+		properties.setLegendOrientation(orient);
+	}
 
 }

@@ -1,13 +1,13 @@
 /**
- *  GoldBdi
- *  Author: Philippe Caillou, Mathieu Bourgais, Patrick Taillandier
- *  Description: A simple model that uses the simple_bdi architecture. In this model, the Miner agent has a general desire to  find gold. 
- * As it is the only thing it wants at the beginning, it is its initial intention (what it is currently doing). To  find gold, it wanders around (its plan is to wander). 
- * When it perceives some gold nuggets, it stores this information (it has a new belief about the existence and location of this gold nugget), 
- * and it adopts a new desire (it wants to extract the gold). When it perceives a gold nugget, the intention to  find gold is put on hold and a new intention is selected (to extract gold).
- * To achieve this intention, the plan has two steps, i.e. two new (sub)intentions: to choose a gold nugget to extract (among its known gold nuggets) and to go and take it. And so on.
- *  Tags: simple_bdi, perception, rule, plan, predicate
- */
+* Name: Gold Miner BDI
+* Author: Philippe Caillou, Mathieu Bourgais, Patrick Taillandier
+* Description: A classic BDI demonstration model. A Miner agent has a general desire to find gold nuggets.
+*   It wanders until it perceives a nugget (updating its beliefs), then switches intention to extract it,
+*   using sub-intentions (choose nugget, go to it, pick it up). The model illustrates the full BDI cycle:
+*   perception creating beliefs, rules triggering new desires, and plans decomposing intentions into steps.
+*   It is the reference model for the 'simple_bdi' architecture in GAMA.
+* Tags: simple_bdi, perception, rule, plan, predicate, belief, desire, intention, architecture, gold_miner
+*/
 
 model GoldBdi
 
@@ -26,7 +26,7 @@ global {
 	}
 	
 	reflex stop when:length(gold)=0{
-		do pause;
+		do pause();
 	}
 }
 
@@ -87,7 +87,7 @@ species miner skills: [moving] control:simple_bdi {
 	// plan that has for goal to fulfill the wander desire	
 	plan letsWander intention:wander 
 	{
-		do wander amplitude: 60.0;
+		do wander (amplitude: 60.0);
 	}
 	
 	//plan that has for goal to fulfill the get gold desire
@@ -98,14 +98,14 @@ species miner skills: [moving] control:simple_bdi {
 			do add_subintention(get_current_intention(),define_gold_target, true);
 			do current_intention_on_hold();
 		} else {
-			do goto target: target ;
+			do goto (target: target) ;
 			
 			//if the agent reach its location, it updates it takes the gold, updates its belief base, and remove its intention to get gold
 			if (target = location)  {
 				gold current_gold <- gold first_with (target = each.location);
 				if current_gold != nil {
 				 	do add_belief(has_gold);
-					ask current_gold {do die;}	
+					ask current_gold {do die();}	
 				}
 				do remove_belief(new_predicate("location_gold", ["location_value"::target]));
 				target <- nil;
@@ -127,7 +127,7 @@ species miner skills: [moving] control:simple_bdi {
 	
 	////plan that has for goal to fulfill the return to base desire
 	plan return_to_base intention: return_base {
-		do goto target: the_base ;
+		do goto (target: the_base) ;
 		if (the_base.location = location)  {
 			do remove_belief(has_gold);
 			do remove_intention(return_base, true);

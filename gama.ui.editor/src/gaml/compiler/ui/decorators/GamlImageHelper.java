@@ -21,6 +21,7 @@ import com.google.common.collect.Maps;
 import com.google.inject.Singleton;
 
 import gama.ui.shared.resources.GamaIcon;
+import gama.ui.shared.resources.IGamaIcons;
 
 /**
  * The class GamlImageHelper.
@@ -35,9 +36,6 @@ public class GamlImageHelper implements IImageHelper, IImageDescriptorHelper {
 	/** The Constant UNKNOWN_DESC. */
 	private static final ImageDescriptor UNKNOWN_DESC = GamaIcon.named(GamaIcon.MISSING).descriptor();
 
-	/** The Constant UNKNOWN_DESC. */
-	private static final Image UNKNOWN_IMG = GamaIcon.named(GamaIcon.MISSING).image();
-
 	/** The registry. */
 	private final Map<ImageDescriptor, Image> registry = Maps.newHashMapWithExpectedSize(10);
 
@@ -46,7 +44,7 @@ public class GamlImageHelper implements IImageHelper, IImageDescriptorHelper {
 	 */
 	@Override
 	public ImageDescriptor getImageDescriptor(final String name) {
-		String code = GamaIcon.GAML_PATH + name.replace(".png", "");
+		String code = IGamaIcons.GAML_PATH + name.replace(".png", "");
 		return GamaIcon.exist(code) ? GamaIcon.named(code).descriptor() : UNKNOWN_DESC;
 
 	}
@@ -70,8 +68,8 @@ public class GamlImageHelper implements IImageHelper, IImageDescriptorHelper {
 	 */
 	@Override
 	public Image getImage(final String name) {
-		String code = GamaIcon.GAML_PATH + name.replace(".png", "");
-		return GamaIcon.exist(code) ? GamaIcon.named(code).image() : UNKNOWN_IMG;
+		String code = IGamaIcons.GAML_PATH + name.replace(".png", "");
+		return GamaIcon.exist(code) ? GamaIcon.named(code).image() : GamaIcon.named(IGamaIcons.MISSING).image();
 	}
 
 	/**

@@ -1,16 +1,14 @@
 /*******************************************************************************************************
  *
- * UDPConnector.java, in gama.network, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * UDPConnector.java, in gama.network, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.extension.network.udp;
 
-import java.net.BindException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -18,16 +16,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import gama.core.messaging.GamaMessage;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IList;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.list.IList;
+import gama.api.types.message.IMessage;
 import gama.extension.network.common.Connector;
 import gama.extension.network.common.ConnectorMessage;
 import gama.extension.network.common.GamaNetworkException;
 import gama.extension.network.common.socket.SocketService;
-import gama.gaml.operators.Cast;
 
 /**
  * The Class UDPConnector.
@@ -122,7 +120,7 @@ public class UDPConnector extends Connector {
 	}
 
 	@Override
-	public void send(final IAgent sender, final String receiver, final GamaMessage content) {
+	public void send(final IAgent sender, final String receiver, final IMessage content) {
 		this.sendMessage(sender, receiver, (String) content.getContents(sender.getScope()));
 	}
 

@@ -1,8 +1,11 @@
 /**
-* Name: broadcast to a group of agents
+* Name: Broadcast to a Group of Agents (MQTT)
 * Author: Nicolas Marilleau
-* Description: It is a simple model showing an agent (a teacher called Victoria) that broadcast a message to students.
-* Tags: Network, MQTT
+* Description: Demonstrates selective group broadcast via MQTT using topic-based filtering. A teacher agent
+*   (Victoria) publishes a message to a specific group topic; only student agents subscribed to that topic
+*   receive it. Other agents on different topics are unaffected. Shows how MQTT topic hierarchies can
+*   implement group communication patterns in GAMA multi-agent simulations.
+* Tags: network, MQTT, broadcast, group, topic, publish_subscribe, messaging, communication
 */
 
 /**
@@ -21,18 +24,18 @@ global {
 		write "The default broket is for test only, limit the number of connections otherwise connection will be refused." color: #red;
 		write "To connect to your local/remote server, change the parameters of the connect statement" color: #blue;		
 		
-		create Teacher with: [name:: "Victoria"] {
-			do connect with_name: name;
+		create Teacher(name: "Victoria") {
+			do connect(with_name: name);
 			//default ActiveMQ MQTT login is "admin", the password is "admin" and the port is 1883
 			//do connect to:"localhost" with_name:name login:"admin" password:"admin" port: 1883;
 		}
 
 		create Student number: nb_student {
 		// The name attribute of each agent being unique, we use it as an id in the connection to the server	
-			do connect with_name: name;
+			do connect(with_name: name);
 
 			// Define here the groups of agents. An agent could join or leave several group.
-			do join_group with_name: "students";
+			do join_group(with_name: "students");
 			//default ActiveMQ MQTT login is "admin", the password is "admin" and the port is 1883
 			//do connect to:"localhost" with_name:name login:"admin" password:"admin" port: 1883;
 		}
@@ -58,7 +61,7 @@ species Teacher skills: [network] {
 
 	reflex send {
 	//send a message
-		do send to: "students" contents: "chapter " + cycle;
+		do send(to: "students", contents: "chapter " + cycle);
 	}
 
 }

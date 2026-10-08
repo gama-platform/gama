@@ -1,8 +1,12 @@
 /**
-* Name: Save to Geotiff
+* Name: Save to PNG
 * Author: Patrick Taillandier
-* Description: This is a model that shows how to save a grid inside a georefrenced png file to reuse it later or to keep it.
-* Tags: save_file, png, grid
+* Description: Shows how to export a GAMA grid as a georeferenced PNG image file. Unlike a plain PNG, the
+*   georeferenced version embeds a world file (.pgw) alongside the image so that the pixel coordinates can
+*   be mapped back to geographic coordinates. The model classifies grid cells based on whether buildings overlap
+*   them, assigns colors accordingly, and saves the result. The output can be reloaded in GAMA or opened in
+*   external GIS tools that support world files.
+* Tags: save_file, png, grid, raster, export, image, georeferenced
 */
 
 model SavetoGeotiff

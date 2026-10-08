@@ -1,10 +1,13 @@
 
 
 /**
-* Name: CastingImages
-* Shows how to cast Images from and to popular formats 
+* Name: Casting Images
 * Author: Alexis Drogoul
-* Tags: 
+* Description: Shows how to cast image values to and from popular formats in GAMA. Demonstrates conversion
+*   between the 'image' type and other GAMA types: casting a matrix to an image, casting an image to a matrix
+*   of colors, and casting strings (file paths) to images. This is the reference for type conversion involving
+*   the image type.
+* Tags: image, cast, matrix, color, type_conversion, load_file
 */
 
 
@@ -24,11 +27,11 @@ experiment Show {
 	output {
 		layout #split;
 		display im type: 3d {
-			image im;
+			picture im;
 		}
 		
 		display mat {
-			image mat;
+			picture mat;
 		}
 		
 		display field type: 3d {

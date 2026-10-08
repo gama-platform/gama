@@ -1,13 +1,13 @@
 /***
-* Name: NetlogoTrafficmodel
-* Author: Benoit Gaudou (for the reimplementation), Wilensky, U. (for the original model)
-* Description: This model is a reimplementation of the Netlogo model "Traffic model"
-*     Wilensky, U. (1997). NetLogo Traffic Basic model. http://ccl.northwestern.edu/netlogo/models/TrafficBasic. 
-*     Center for Connected Learning and Computer-Based Modeling, Northwestern University, Evanston, IL.
-*  It has been implemented with the Netlogo platform:
-*     Wilensky, U. (1999). NetLogo. http://ccl.northwestern.edu/netlogo/. 
-*     Center for Connected Learning and Computer-Based Modeling, Northwestern University, Evanston, IL.
-* Tags: traffic, transport, congestion, netlogo
+* Name: Traffic Model - 1 Road (NetLogo Reimplementation)
+* Author: Benoit Gaudou (reimplementation), Wilensky, U. (original NetLogo model)
+* Description: A GAMA reimplementation of the NetLogo Traffic Basic model (Wilensky, 1997). Cars drive on a
+*   single circular road (torus environment) at varying speeds. Each car accelerates up to a maximum speed
+*   but must decelerate when it gets too close to the car in front. Despite no global coordination, traffic
+*   jams emerge spontaneously from these local rules — a well-known real-world phenomenon. The model is a
+*   classic example of emergent congestion and demonstrates the equivalence of NetLogo and GAMA implementations.
+*   Original: http://ccl.northwestern.edu/netlogo/models/TrafficBasic (Northwestern University)
+* Tags: traffic, transport, congestion, netlogo, emergence, circular_road, car
 ***/
 
 model NetlogoTrafficmodel
@@ -37,7 +37,7 @@ global torus: true {
 				my_pavement <- free_pavement;
 				location <- my_pavement.location;
 			} else {
-				do die;
+				do die();
 			}
 			heading <- 0.0;
 		}
@@ -45,7 +45,7 @@ global torus: true {
 		sample_car <- one_of(car);
 		ask sample_car {
 			color <- #red;
-			icon <- voit_red_image_file;
+			icon_file <- voit_red_image_file;
 		}
 	}
 }
@@ -64,12 +64,12 @@ species car skills: [moving] {
 	float speed_limit;
 	float speed_min;
 	rgb color;
-	image_file icon;
+	image_file icon_file;
 	pavement my_pavement;
 	
 	init {
 		color <- #blue;
-		icon <- voit_image_file;
+		icon_file <- voit_image_file;
 		speed <- 0.1 +rnd(0.9);
 		speed_limit <- 1.0;
 		speed_min <- 0.0;
@@ -85,17 +85,17 @@ species car skills: [moving] {
 		if(car_ahead != nil) {
 			do slow_down(car_ahead);
 		} else {
-			do speed_up;
+			do speed_up();
 		}
 		
-		do move heading: heading;
+		do move (heading: heading);
 	}
 
 	action slow_down(car car_ahead) {
 		speed <- max(speed_min, car_ahead.speed - deceleration) ;
 	}
 	
-	action speed_up {
+	action speed_up() {
 		speed <- min(speed + acceleration, speed_limit);
 	}
 
@@ -104,7 +104,7 @@ species car skills: [moving] {
 	}
 	
 	aspect icon {
-		draw icon at: location size: 3 rotate: heading ;
+		draw icon_file at: location size: 3 rotate: heading ;
 	}	
 }
 

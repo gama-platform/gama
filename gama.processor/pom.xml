@@ -26,8 +26,8 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<tycho.version>4.0.11</tycho.version>
-		<jdk.version>21</jdk.version>
+		<tycho.version>5.0.2</tycho.version>
+		<jdk.version>25</jdk.version>
 		<codehaus.wagon.version>2.0.2</codehaus.wagon.version>
 		<wagon.version>3.5.3</wagon.version>
 		<maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
@@ -138,6 +138,11 @@
 				<artifactId>wagon-ssh</artifactId>
 				<version>${wagon.version}</version>
 			</extension>
+			<extension>
+				<groupId>org.apache.maven.extensions</groupId>
+				<artifactId>maven-build-cache-extension</artifactId>
+				<version>1.2.2</version>
+			</extension>
 		</extensions>
 
 		<!-- <plugins combine.self="override"> -->
@@ -198,11 +203,36 @@
 			<plugin>
 				<groupId>com.github.spotbugs</groupId>
 				<artifactId>spotbugs-maven-plugin</artifactId>
-				<version>4.9.3.0</version>
+				<version>4.10.2.0</version>
 				<configuration>
 					<xmlOutput>true</xmlOutput>
 					<failOnError>false</failOnError>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>3.5.0</version>
+				<executions>
+					<execution>
+						<id>attach-local-artifacts</id>
+						<phase>package</phase>
+						<goals>
+							<goal>attach-artifact</goal>
+						</goals>
+						<configuration>
+							<artifacts>
+								<artifact>
+									<file>
+										${project.build.directory}/local-artifacts.properties
+									</file>
+									<type>properties</type>
+									<classifier>local-artifacts</classifier>
+								</artifact>
+							</artifacts>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

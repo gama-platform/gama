@@ -1,11 +1,13 @@
 /**
 * Name: Hydrological Model
 * Author: Patrick Taillandier
-* Description: A model showing how to represent a flooding system with dykes and buildings. It uses 
-* 	a grid to discretize space, and has a 3D display. The water can flow from one cell to another considering 
-* 	the height of the cells, and the water pressure. It is also possible to delete dyke by clicking on one of them 
-* 	in the display.
-* Tags: shapefile, gis, grid, 3d, gui, hydrology
+* Description: A flood simulation model showing how water spreads across a terrain with dykes and buildings.
+*   Space is discretized as a grid where each cell has an elevation and a water level. Water flows from
+*   higher cells to lower neighbors based on hydrostatic pressure differences. Buildings are obstacles that
+*   block water flow; dykes act as barriers that can be interactively destroyed by clicking on them in the
+*   3D display. The model loads real GIS data (elevation grid, building and dyke shapefiles) and visualizes
+*   the flood propagation in 3D, making it the primary GAMA reference for agent-based hydrological simulation.
+* Tags: shapefile, gis, grid, 3d, gui, hydrology, flood, dyke, water_flow, elevation, pressure
 */
 
 model hydro
@@ -41,30 +43,30 @@ global {
    
    init {
    	 //Initialization of the cells
-      do init_cells;
+     self.init_cells();
      //Initialization of the water cells
-      do init_water;
+     self.init_water();
      //Initialization of the river cells
      river_cells <- cell where (each.is_river);
      //Initialization of the drain cells
       drain_cells <- cell where (each.is_drain);
-     //Initialization of the obstacles (buildings and dykes)
-      do init_obstacles;
+      //Initialization of the obstacles (buildings and dykes)
+      self.init_obstacles();
       //Set the height of each cell
       ask cell {
          obstacle_height <- compute_highest_obstacle();
-         do update_color;
+         self.update_color();
       }
    }
    //Action to initialize the altitude value of the cell according to the dem file
-   action init_cells {
+   action init_cells() {
       ask cell  {
          altitude <- grid_value;
          neighbour_cells <- (self neighbors_at 1) ;
       }
    }
    //action to initialize the water cells according to the river shape file and the drain
-   action init_water {
+   action init_water() {
       geometry river <- geometry(river_shapefile);
       ask cell overlapping river  {
          water_height <- 10.0;
@@ -73,14 +75,14 @@ global {
       }
    }
    //initialization of the obstacles (the buildings and the dykes)
-   action init_obstacles{
+   action init_obstacles(){
       create buildings from: buildings_shapefile  {
-         do update_cells;
+         self.update_cells();
       }
       create dyke from: dykes_shapefile;
       ask dyke  {
           shape <-  shape + dyke_width;
-            do update_cells;
+           self.update_cells();
       }
    }
    //Reflex to add water among the water cells
@@ -94,13 +96,13 @@ global {
    reflex flowing {
       ask (cell sort_by ((each.altitude + each.water_height + each.obstacle_height))) {
       	already <- false;
-         do flow;
+         self.flow();
       }
    }
    //Reflex to update the color of the cell
    reflex update_cell_color {
       ask cell  {
-         do update_color;
+      	 self.update_color();
       }
    }
    //Reflex for the drain cells to drain water
@@ -112,7 +114,7 @@ global {
    
 }
 //Species which represent the obstacle
-   species obstacle  {
+   species obstacle virtual: true {
    	  //height of the obstacle
       float height min: 0.0;
       //Color of the obstacle
@@ -126,7 +128,7 @@ global {
       list<cell> cells_neighbours;
       
       //Action to compute the water pressure
-      float compute_water_pressure {
+      float compute_water_pressure() {
       	//If the obstacle doesn't have height, then there will be no pressure
          if (height = 0.0) {
             return 0.0;
@@ -139,7 +141,7 @@ global {
       }
       
       //Action to update the cells
-      action update_cells {
+      action update_cells() {
       	//All the cells concerned by the obstacle are the ones overlapping the obstacle
          cells_concerned <- (cell overlapping self);
         	ask cells_concerned {
@@ -156,7 +158,9 @@ global {
             water_pressure <- compute_water_pressure();
          } else {water_pressure <- 0.0;}
       }
-      action compute_height;
+      action compute_height() {
+      	
+      }
       aspect geometry {
          int val <- int( 255 * water_pressure);
          color <- rgb(val,255-val,0);
@@ -164,10 +168,10 @@ global {
       }
    }
    //Species buildings which is derivated from obstacle
-   species buildings parent: obstacle schedules: [] {
+   species buildings parent: obstacle schedules: []   {
    	 //The building has a height randomly chosed between 2 and 10
       float height <- 2.0 + rnd(8);
-   }
+   } 
    //Species dyke which is derivated from obstacle
    species dyke parent: obstacle {
    	
@@ -175,14 +179,14 @@ global {
        int breaking_threshold <- 24;
       
       //Action to represent the break of the dyke
-       action break{
+       action break(){
          ask cells_concerned  {
             do update_after_destruction(myself);
          }
-         do die;
+         self.die();
       }
       //Action to compute the height of the dyke as the dyke_height without the mean height of the cells it overlaps
-      action compute_height
+      action compute_height()
        {
       	   height <- dyke_height - mean(cells_concerned collect (each.altitude));
       
@@ -193,7 +197,7 @@ global {
       	if (water_pressure = 1.0) {
       		counter_wp <- counter_wp + 1;
       		if (counter_wp > breaking_threshold) {
-      			do break;
+      			self.break();
       		}
       	} else {
       		counter_wp <- 0;
@@ -223,7 +227,7 @@ global {
       bool already <- false;
       
       //Action to compute the highest obstacle among the obstacles
-      float compute_highest_obstacle {
+      float compute_highest_obstacle() {
          if (empty(obstacles))
          {
             return 0.0; 
@@ -232,7 +236,7 @@ global {
          }
       }
       //Action to flow the water 
-      action flow {
+      action flow (){
       	//if the height of the water is higher than 0 then, it can flow among the neighbour cells
          if (water_height > 0) {
          	//We get all the cells already done
@@ -259,7 +263,7 @@ global {
          already <- true;
       }  
       //Update the color of the cell
-      action update_color { 
+      action update_color() { 
          int val_water <- 0;
          val_water <- max([0, min([255, int(255 * (1 - (water_height / 12.0)))])]) ;  
          color <- rgb([val_water, val_water, 255]);

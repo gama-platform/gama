@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * CleanBuildCommand.java, in gama.ui.shared.modeling, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * CleanBuildCommand.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,11 +16,11 @@ import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.commands.IHandlerListener;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
-import gaml.compiler.gaml.indexer.GamlResourceIndexer;
+import gama.api.GAMA;
+import gaml.compiler.indexer.GamlResourceIndexer;
 
 /**
  * The Class CleanBuildCommand.
@@ -36,7 +36,7 @@ public class CleanBuildCommand implements IHandler {
 	@Override
 	public Object execute(final ExecutionEvent event) throws ExecutionException {
 
-		final IWorkspace workspace = ResourcesPlugin.getWorkspace();
+		final IWorkspace workspace = GAMA.getWorkspaceManager().getWorkspace();
 		try {
 			GamlResourceIndexer.eraseIndex();
 			workspace.build(IncrementalProjectBuilder.CLEAN_BUILD, new NullProgressMonitor());

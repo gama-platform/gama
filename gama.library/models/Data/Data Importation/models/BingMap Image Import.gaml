@@ -1,8 +1,12 @@
 /**
-* Name: BingMapImageImport
+* Name: Bing Map Image Import
 * Author: Alexis Drogoul
-* Description: Demonstrates how to load a image from BingMap https://docs.microsoft.com/en-us/bingmaps/rest-services/imagery/get-a-static-map and how to refresh it
-* Tags: data_loading, displays, user_input, on_change
+* Description: Demonstrates how to load a static map image from the Bing Maps REST API and use it as a background
+*   layer in a GAMA display. The Bing Maps Static Map API (https://docs.microsoft.com/en-us/bingmaps/rest-services/imagery/get-a-static-map)
+*   returns satellite or road-map images for a specified geographic area. This model also shows how to dynamically
+*   reload the image when the user changes the destination, illustrating the 'on_change' pattern for reactive
+*   parameter updates. A valid Bing Maps API key is required to use this model.
+* Tags: data_loading, image, background, bing, map, web, api, on_change, display
 */
 @no_warning
 model BingMapImageImport
@@ -24,7 +28,7 @@ global
 	int current_zoom <- 15;
 	string current_lat_lon <- "48.8566140,2.3522219";
 	
-	action load_map
+	action load_map()
 	{ 
 		map	answers <- user_input_dialog("Address can be a pair lat,lon (e.g; '48.8566140,2.3522219')", [enter(lat_lon_title,current_lat_lon),enter(zoom_title,current_zoom)]);
 		current_zoom <- max(min(20,int(answers[zoom_title])),1);
@@ -37,21 +41,21 @@ global
  
 	init
 	{
-		do load_map;
+		do load_map();
 	}
 
 }
 
 experiment Display
 {
-	user_command "Change destination" category: "Bing service" {ask simulation {do load_map;}}
+	user_command "Change destination" category: "Bing service" {ask simulation {do load_map();}}
 
 	 
 	output
 	{
 		display "Bing Map" type: 3d axes:false
 		{
-			image static_map_request refresh:true;
+			picture static_map_request refresh:true;
 		}
 
 	}

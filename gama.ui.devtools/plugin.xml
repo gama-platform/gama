@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <!-- ============================================================ -->
+   <!-- Commands                                                      -->
+   <!-- ============================================================ -->
+   <extension point="org.eclipse.ui.commands">
+      <category
+            id="gama.ui.devtools.category"
+            name="GAMA Dev Tools">
+      </category>
+      <command
+            categoryId="gama.ui.devtools.category"
+            id="gama.ui.devtools.command.newPlugin"
+            name="New GAMA Plugin...">
+      </command>
+      <command
+            categoryId="gama.ui.devtools.category"
+            id="gama.ui.devtools.command.newSkill"
+            name="New GAMA Skill...">
+      </command>
+      <command
+            categoryId="gama.ui.devtools.category"
+            id="gama.ui.devtools.command.newOperator"
+            name="New GAMA Operator...">
+      </command>
+      <command
+            categoryId="gama.ui.devtools.category"
+            id="gama.ui.devtools.command.newAction"
+            name="New GAMA Action...">
+      </command>
+      <command
+            categoryId="gama.ui.devtools.category"
+            id="gama.ui.devtools.command.reallyRefresh"
+            name="Really Refresh Workspace">
+      </command>
+   </extension>
+
+   <!-- ============================================================ -->
+   <!-- Handlers                                                      -->
+   <!-- ============================================================ -->
+   <extension point="org.eclipse.ui.handlers">
+      <handler
+            class="gama.ui.devtools.handlers.NewGamaPluginHandler"
+            commandId="gama.ui.devtools.command.newPlugin">
+      </handler>
+      <handler
+            class="gama.ui.devtools.handlers.NewGamaSkillHandler"
+            commandId="gama.ui.devtools.command.newSkill">
+      </handler>
+      <handler
+            class="gama.ui.devtools.handlers.NewGamaOperatorHandler"
+            commandId="gama.ui.devtools.command.newOperator">
+      </handler>
+      <handler
+            class="gama.ui.devtools.handlers.NewGamaActionHandler"
+            commandId="gama.ui.devtools.command.newAction">
+      </handler>
+      <handler
+            class="gama.ui.devtools.handlers.ReallyRefreshHandler"
+            commandId="gama.ui.devtools.command.reallyRefresh">
+      </handler>
+   </extension>
+
+   <!-- ============================================================ -->
+   <!-- Menu contributions                                            -->
+   <!-- ============================================================ -->
+   <extension point="org.eclipse.ui.menus">
+
+      <!-- Top-level "GAMA Dev Tools" menu in the menu bar -->
+      <menuContribution locationURI="menu:org.eclipse.ui.main.menu?after=additions">
+         <menu
+               id="gama.ui.devtools.menu"
+               label="GAMA Dev Tools"
+               mnemonic="G">
+            <command
+                  commandId="gama.ui.devtools.command.newPlugin"
+                  label="New GAMA Plugin..."
+                  style="push">
+            </command>
+            <separator name="sep1" visible="true"/>
+            <command
+                  commandId="gama.ui.devtools.command.newSkill"
+                  label="New GAMA Skill..."
+                  style="push">
+            </command>
+            <command
+                  commandId="gama.ui.devtools.command.newOperator"
+                  label="New GAMA Operator..."
+                  style="push">
+            </command>
+            <command
+                  commandId="gama.ui.devtools.command.newAction"
+                  label="New GAMA Action..."
+                  style="push">
+            </command>
+            <separator name="sep2" visible="true"/>
+            <command
+                  commandId="gama.ui.devtools.command.reallyRefresh"
+                  label="Really Refresh Workspace"
+                  style="push">
+            </command>
+         </menu>
+      </menuContribution>
+
+      <!-- Context menu entry in Project/Package Explorer -->
+      <menuContribution locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu?after=additions">
+         <command
+               commandId="gama.ui.devtools.command.reallyRefresh"
+               label="Really Refresh (GAMA)"
+               style="push">
+         </command>
+      </menuContribution>
+
+   </extension>
+
+   <!-- ============================================================ -->
+   <!-- New Wizards                                                   -->
+   <!-- ============================================================ -->
+   <extension point="org.eclipse.ui.newWizards">
+      <category
+            id="gama.ui.devtools.wizards"
+            name="GAMA Dev Tools">
+      </category>
+      <wizard
+            category="gama.ui.devtools.wizards"
+            class="gama.ui.devtools.wizards.NewGamaPluginWizard"
+            id="gama.ui.devtools.wizard.newPlugin"
+            name="GAMA Plugin"
+            icon="icons/gama_plugin.png">
+         <description>Creates a new complete GAMA plugin project with all required structure, annotation processor wiring, and a companion feature project.</description>
+      </wizard>
+      <wizard
+            category="gama.ui.devtools.wizards"
+            class="gama.ui.devtools.wizards.NewGamaSkillWizard"
+            id="gama.ui.devtools.wizard.newSkill"
+            name="GAMA Skill"
+            icon="icons/gama_skill.png">
+         <description>Creates a new GAMA Skill class with the @skill annotation boilerplate.</description>
+      </wizard>
+      <wizard
+            category="gama.ui.devtools.wizards"
+            class="gama.ui.devtools.wizards.NewGamaOperatorWizard"
+            id="gama.ui.devtools.wizard.newOperator"
+            name="GAMA Operator"
+            icon="icons/gama_operator.png">
+         <description>Creates a new GAMA Operator class with the @operator annotation boilerplate.</description>
+      </wizard>
+      <wizard
+            category="gama.ui.devtools.wizards"
+            class="gama.ui.devtools.wizards.NewGamaActionWizard"
+            id="gama.ui.devtools.wizard.newAction"
+            name="GAMA Action"
+            icon="icons/gama_action.png">
+         <description>Creates a new GAMA Action method stub with the @action annotation boilerplate.</description>
+      </wizard>
+   </extension>
+
+   <!-- ============================================================ -->
+   <!-- Preference Pages                                              -->
+   <!-- ============================================================ -->
+   <extension point="org.eclipse.ui.preferencePages">
+      <page
+            class="gama.ui.devtools.preferences.GamaDevToolsPreferencePage"
+            id="gama.ui.devtools.preferences"
+            name="GAMA Dev Tools">
+      </page>
+   </extension>
+
+</plugin>

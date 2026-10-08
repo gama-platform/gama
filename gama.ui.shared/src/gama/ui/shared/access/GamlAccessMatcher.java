@@ -11,6 +11,7 @@
 
 package gama.ui.shared.access;
 
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -18,8 +19,8 @@ import java.util.regex.PatternSyntaxException;
 import org.eclipse.ui.internal.quickaccess.CamelUtil;
 import org.eclipse.ui.quickaccess.QuickAccessElement;
 
-import gama.gaml.compilation.GamlIdiomsProvider;
-import gama.gaml.interfaces.IGamlDescription;
+import gama.api.compilation.descriptions.IGamlDescription;
+import gama.api.compilation.documentation.GamlIdiomsProvider;
 
 /**
  * QuickAccessMatch contains the logic to check whether a given {@link QuickAccessElement} matches a input user request.
@@ -132,14 +133,18 @@ public final class GamlAccessMatcher {
 	 * @noreference This method is not intended to be referenced by clients.
 	 */
 	public GamlAccessEntry match(final String filter, final GamlIdiomsProvider providerForMatching) {
-		String matchLabel = element.getName();
+		final String matchLabel = element.getName();
+		final String title = element.getTitle();
+		final String normalizedFilter = filter.toLowerCase(Locale.ROOT);
+		final String matchLabelLowerCase = matchLabel.toLowerCase(Locale.ROOT);
+		final String titleLowerCase = title.toLowerCase(Locale.ROOT);
 		// first occurrence of filter
-		int index = matchLabel.toLowerCase().indexOf(filter);
+		int index = matchLabelLowerCase.indexOf(normalizedFilter);
 		if (index != -1) {
-			index = element.getTitle().toLowerCase().indexOf(filter);
+			index = titleLowerCase.indexOf(normalizedFilter);
 			if (index != -1) { // match actual label
-				int quality = matchLabel.toLowerCase().equals(filter) ? GamlAccessEntry.MATCH_PERFECT
-						: matchLabel.toLowerCase().startsWith(filter) ? GamlAccessEntry.MATCH_EXCELLENT
+				int quality = matchLabelLowerCase.equals(normalizedFilter) ? GamlAccessEntry.MATCH_PERFECT
+						: matchLabelLowerCase.startsWith(normalizedFilter) ? GamlAccessEntry.MATCH_EXCELLENT
 						: GamlAccessEntry.MATCH_GOOD;
 				return new GamlAccessEntry(element, providerForMatching,
 						new int[][] { { index, index + filter.length() - 1 } }, EMPTY_INDICES, quality);
@@ -160,9 +165,8 @@ public final class GamlAccessMatcher {
 		// if matches, return an entry
 		if (m.matches()) {
 			// and highlight match on the label only
-			String label = element.getTitle();
-			if (!matchLabel.equals(label)) {
-				m = p.matcher(element.getTitle());
+			if (!matchLabel.equals(title)) {
+				m = p.matcher(title);
 				if (!m.matches()) return new GamlAccessEntry(element, providerForMatching, EMPTY_INDICES, EMPTY_INDICES,
 						GamlAccessEntry.MATCH_GOOD);
 			}
@@ -178,14 +182,16 @@ public final class GamlAccessMatcher {
 			return new GamlAccessEntry(element, providerForMatching, indices, EMPTY_INDICES, quality);
 		}
 		//
-		String combinedMatchLabel = providerForMatching.getSearchCategory() + " " + element.getName(); //$NON-NLS-1$
-		String combinedLabel = providerForMatching.getSearchCategory() + " " + element.getTitle(); //$NON-NLS-1$
-		index = combinedMatchLabel.toLowerCase().indexOf(filter);
+		final String searchCategory = providerForMatching.getSearchCategory();
+		final String combinedMatchLabel = searchCategory + " " + matchLabel; //$NON-NLS-1$
+		final String combinedLabel = searchCategory + " " + title; //$NON-NLS-1$
+		final String combinedMatchLabelLowerCase = combinedMatchLabel.toLowerCase(Locale.ROOT);
+		final String combinedLabelLowerCase = combinedLabel.toLowerCase(Locale.ROOT);
+		index = combinedMatchLabelLowerCase.indexOf(normalizedFilter);
 		if (index != -1) { // match
-			index = combinedLabel.toLowerCase().indexOf(filter);
+			index = combinedLabelLowerCase.indexOf(normalizedFilter);
 			if (index != -1) { // compute highlight on label
-				int lengthOfElementMatch =
-						index + filter.length() - providerForMatching.getSearchCategory().length() - 1;
+				int lengthOfElementMatch = index + filter.length() - searchCategory.length() - 1;
 				if (lengthOfElementMatch > 0) return new GamlAccessEntry(element, providerForMatching,
 						new int[][] { { 0, lengthOfElementMatch - 1 } },
 						new int[][] { { index, index + filter.length() - 1 } }, GamlAccessEntry.MATCH_GOOD);
@@ -196,7 +202,7 @@ public final class GamlAccessMatcher {
 					GamlAccessEntry.MATCH_PARTIAL);
 		}
 		//
-		String camelCase = CamelUtil.getCamelCase(element.getName()); // use actual label for camelcase
+		String camelCase = CamelUtil.getCamelCase(matchLabel); // use actual label for camelcase
 		index = camelCase.indexOf(filter);
 		if (index != -1) {
 			int[][] indices = CamelUtil.getCamelCaseIndices(matchLabel, index, filter.length());
@@ -206,15 +212,15 @@ public final class GamlAccessMatcher {
 		String combinedCamelCase = CamelUtil.getCamelCase(combinedLabel);
 		index = combinedCamelCase.indexOf(filter);
 		if (index != -1) {
-			String providerCamelCase = CamelUtil.getCamelCase(providerForMatching.getSearchCategory());
+			String providerCamelCase = CamelUtil.getCamelCase(searchCategory);
 			int lengthOfElementMatch = index + filter.length() - providerCamelCase.length();
 			if (lengthOfElementMatch > 0) return new GamlAccessEntry(element, providerForMatching,
 					CamelUtil.getCamelCaseIndices(matchLabel, 0, lengthOfElementMatch),
-					CamelUtil.getCamelCaseIndices(providerForMatching.getSearchCategory(), index,
+					CamelUtil.getCamelCaseIndices(searchCategory, index,
 							filter.length() - lengthOfElementMatch),
 					GamlAccessEntry.MATCH_GOOD);
 			return new GamlAccessEntry(element, providerForMatching, EMPTY_INDICES,
-					CamelUtil.getCamelCaseIndices(providerForMatching.getSearchCategory(), index, filter.length()),
+					CamelUtil.getCamelCaseIndices(searchCategory, index, filter.length()),
 					GamlAccessEntry.MATCH_GOOD);
 		}
 		return null;

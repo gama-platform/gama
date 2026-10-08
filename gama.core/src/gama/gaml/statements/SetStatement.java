@@ -1,40 +1,40 @@
 /*******************************************************************************************************
  *
- * SetStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * SetStatement.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.gaml.statements;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.util.StringUtils;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.compilation.GAML;
-import gama.gaml.compilation.IDescriptionValidator;
-import gama.gaml.compilation.annotations.serializer;
-import gama.gaml.compilation.annotations.validator;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.IExpressionDescription;
-import gama.gaml.descriptions.ModelDescription;
-import gama.gaml.descriptions.SymbolDescription;
-import gama.gaml.descriptions.SymbolSerializer;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.expressions.IVarExpression;
+import gama.annotations.doc;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.annotations.serializer;
+import gama.api.annotations.validator;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IDescriptionValidator;
+import gama.api.compilation.descriptions.IModelDescription;
+import gama.api.compilation.serialization.ISymbolSerializer;
+import gama.api.compilation.validation.Assert;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.GAML;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.expressions.IExpressionDescription;
+import gama.api.gaml.expressions.IVarExpression;
+import gama.api.gaml.statements.AbstractStatement;
+import gama.api.gaml.types.IType;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.StringUtils;
 import gama.gaml.statements.SetStatement.AssignmentSerializer;
 import gama.gaml.statements.SetStatement.AssignmentValidator;
-import gama.gaml.types.IType;
 
 /**
  * Written by drogoul Modified on 6 févr. 2010
@@ -44,14 +44,11 @@ import gama.gaml.types.IType;
  */
 
 @facets (
-		value = { /*
-					 * @facet(name = IKeyword.VAR, type = IType.NONE, optional = true),
-					 */
-				@facet (
-						name = IKeyword.NAME,
-						type = IType.NONE,
-						optional = false,
-						doc = @doc ("the name of an existing variable or attribute to be modified")),
+		value = { @facet (
+				name = IKeyword.NAME,
+				type = IType.NONE,
+				optional = false,
+				doc = @doc ("the name of an existing variable or attribute to be modified")),
 				@facet (
 						name = IKeyword.VALUE,
 						type = { IType.NONE },
@@ -75,10 +72,20 @@ public class SetStatement extends AbstractStatement {
 	/**
 	 * The Class AssignmentSerializer.
 	 */
-	public static class AssignmentSerializer extends SymbolSerializer<SymbolDescription> {
+	public static class AssignmentSerializer implements ISymbolSerializer {
 
+		/**
+		 * Serialize.
+		 *
+		 * @param desc
+		 *            the desc
+		 * @param sb
+		 *            the sb
+		 * @param includingBuiltIn
+		 *            the including built in
+		 */
 		@Override
-		protected void serialize(final SymbolDescription desc, final StringBuilder sb, final boolean includingBuiltIn) {
+		public void serialize(final IDescription desc, final StringBuilder sb, final boolean includingBuiltIn) {
 			if (desc == null) return;
 			final IExpressionDescription ed = desc.getFacet(VALUE);
 			if (ed == null) return;
@@ -100,7 +107,7 @@ public class SetStatement extends AbstractStatement {
 		/**
 		 * Method validate()
 		 *
-		 * @see gama.gaml.compilation.IDescriptionValidator#validate(gama.gaml.descriptions.IDescription)
+		 * @see gama.api.compilation.descriptions.IDescriptionValidator#validate(gama.api.compilation.descriptions.IDescription)
 		 */
 		@Override
 		public void validate(final IDescription cd) {
@@ -123,7 +130,7 @@ public class SetStatement extends AbstractStatement {
 						+ " is a constant or a function and cannot be assigned a value.", IKeyword.NAME);
 			}
 
-			if (IKeyword.SHAPE.equals(var.getName()) && cd.getSpeciesContext() instanceof ModelDescription) {
+			if (IKeyword.SHAPE.equals(var.getName()) && cd.getTypeContext() instanceof IModelDescription) {
 				cd.warning(
 						"Dynamically changing the shape of the world can lead to unexpected results. It is advised to redefine the attribute instead (e.g. 'geometry shape <- "
 								+ (assigned == null ? "..." : assigned.serializeToGaml(false)) + "')",

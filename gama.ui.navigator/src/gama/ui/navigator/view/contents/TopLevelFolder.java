@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * TopLevelFolder.java, in gama.ui.navigator.view, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * TopLevelFolder.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -18,18 +18,17 @@ import java.net.URL;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.swt.graphics.Image;
 
-import gama.gaml.compilation.kernel.GamaBundleLoader;
+import gama.api.GAMA;
+import gama.api.additions.GamaBundleLoader;
+import gama.ui.shared.resources.GamaColors.GamaUIColor;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.resources.IGamaIcons;
-import gama.ui.shared.resources.GamaColors.GamaUIColor;
 import one.util.streamex.StreamEx;
 
 /**
@@ -43,19 +42,28 @@ public class TopLevelFolder extends VirtualContent<NavigatorRoot> implements IGa
 
 	/**
 	 * The Enum Location.
+	 *
+	 * <p>
+	 * Describes where a project physically lives so that closed projects (whose description cannot be read) can be
+	 * assigned to the correct virtual folder.
+	 * </p>
 	 */
 	public enum Location {
 
-		/** The Core models. */
+		/** The Core models – projects inside the {@code gama.library} bundle's {@code models/} directory. */
 		CoreModels,
-		/** The Plugins. */
+		/** The Plugins – projects inside any non-core bundle's {@code models/} directory. */
 		Plugins,
-		/** The Other. */
+		/** The Other – user-created projects outside any known plugin layout. */
 		Other,
-		/** The Unknown. */
+		/** The Unknown – could not be determined. */
 		Unknown,
-		/** The Tests. */
-		Tests
+		/** The Tests – projects inside a {@code tests/} or {@code gaml/tests/} directory. */
+		Tests,
+		/** Tutorials – projects inside a {@code tutorials/} directory of any plugin bundle. */
+		Tutorials,
+		/** Recipes – projects inside a {@code recipes/} directory of any plugin bundle. */
+		Recipes
 	}
 
 	/** The children. */
@@ -92,7 +100,7 @@ public class TopLevelFolder extends VirtualContent<NavigatorRoot> implements IGa
 	 * Initialize children.
 	 */
 	public void initializeChildren() {
-		children = StreamEx.of(ResourcesPlugin.getWorkspace().getRoot().getProjects()).filter(this::privateAccepts)
+		children = StreamEx.of(GAMA.getWorkspaceManager().getRoot().getProjects()).filter(this::privateAccepts)
 				.map(p -> (WrappedProject) getManager().wrap(this, p)).toArray(WrappedProject.class);
 	}
 
@@ -113,7 +121,7 @@ public class TopLevelFolder extends VirtualContent<NavigatorRoot> implements IGa
 	public int findMaxProblemSeverity() {
 		var severity = NO_PROBLEM;
 		for (final WrappedProject p : children) {
-			final var s = p.findMaxProblemSeverity();
+			final int s = p.findMaxProblemSeverity();
 			if (s > severity) { severity = s; }
 			if (severity == IMarker.SEVERITY_ERROR) { break; }
 		}
@@ -137,6 +145,26 @@ public class TopLevelFolder extends VirtualContent<NavigatorRoot> implements IGa
 	}
 
 	/**
+	 * Checks if the location matches special layout categories like Tutorials or Recipes.
+	 */
+	private Location checkSpecialLayouts(final IPath location) {
+		final String path = location.toString();
+		if (path.contains("/" + GamaBundleLoader.REGULAR_TUTORIALS_LAYOUT + "/")) return Location.Tutorials;
+		if (path.contains("/" + GamaBundleLoader.REGULAR_RECIPES_LAYOUT + "/")) return Location.Recipes;
+		return null;
+	}
+
+	/**
+	 * Resolves the core models folder path normalized with forward slashes.
+	 */
+	private String getCoreModelsPath() throws Exception {
+		final URL oldUrl = new URL("platform:/plugin/" + GamaBundleLoader.CORE_MODELS.getSymbolicName() + "/");
+		final URL newUrl = FileLocator.toFileURL(oldUrl);
+		final URI uri = new URI(newUrl.getProtocol(), newUrl.getPath(), null).normalize();
+		return new java.io.File(uri).getAbsolutePath().replace('\\', '/');
+	}
+
+	/**
 	 * Estimate location.
 	 *
 	 * @param location
@@ -144,35 +172,40 @@ public class TopLevelFolder extends VirtualContent<NavigatorRoot> implements IGa
 	 * @return the location
 	 */
 	protected Location estimateLocation(final IPath location) {
+		if (location == null) return Location.Unknown;
+		final Location special = checkSpecialLayouts(location);
+		if (special != null) return special;
+
 		try {
-			final var old_url = new URL("platform:/plugin/" + GamaBundleLoader.CORE_MODELS.getSymbolicName() + "/");
-			final var new_url = FileLocator.toFileURL(old_url);
-			// windows URL formating
-			final var resolvedURI = new URI(new_url.getProtocol(), new_url.getPath(), null).normalize();
-			final var urlRep = resolvedURI.toURL();
-			final var osString = location.toOSString();
-			final var isTest = osString.contains(GamaBundleLoader.REGULAR_TESTS_LAYOUT);
-			if (!isTest && osString.startsWith(urlRep.getPath())) return Location.CoreModels;
-			if (osString
-					.startsWith(urlRep.getPath().replace(GamaBundleLoader.CORE_MODELS.getSymbolicName() + "/", ""))) {
-				if (isTest) return Location.Tests;
-				return Location.Plugins;
+			final String corePath = getCoreModelsPath();
+			final String projectPath = location.toFile().getAbsolutePath().replace('\\', '/');
+			final boolean isTest = location.toString().contains("/" + GamaBundleLoader.REGULAR_TESTS_LAYOUT);
+
+			if (!isTest && projectPath.startsWith(corePath)) return Location.CoreModels;
+
+			final String parentPath = new java.io.File(corePath).getParent().replace('\\', '/');
+			if (parentPath != null && projectPath.startsWith(parentPath)) {
+				return isTest ? Location.Tests : Location.Plugins;
 			}
-			return Location.Other;
-		} catch (final IOException | URISyntaxException e) {
-			e.printStackTrace();
+		} catch (final Exception e) {
 			return Location.Unknown;
 		}
+		return Location.Other;
 	}
 
 	/**
 	 * Accepts.
 	 *
+	 * <p>
+	 * Returns {@code true} if the given project description belongs to this virtual folder. Subclasses may override
+	 * this method to perform custom nature-matching logic (e.g., accepting multiple natures).
+	 * </p>
+	 *
 	 * @param desc
-	 *            the desc
-	 * @return true, if successful
+	 *            the project description to test
+	 * @return {@code true} if the project should appear in this folder
 	 */
-	public final boolean accepts(final IProjectDescription desc) {
+	public boolean accepts(final IProjectDescription desc) {
 		if (nature != null) return desc.hasNature(nature);
 		return desc.getNatureIds().length < 3;
 	}

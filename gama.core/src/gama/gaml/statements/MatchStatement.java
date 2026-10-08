@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * MatchStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
+ * MatchStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,25 +13,27 @@ package gama.gaml.statements;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IContainer;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.statements.AbstractStatementSequence;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.misc.IContainer;
 
 /**
  * IfPrototype.
@@ -207,14 +210,13 @@ public class MatchStatement extends AbstractStatementSequence {
 		public boolean matches(final IScope scope, final Object switchValue) throws GamaRuntimeException {
 			final Object val = getValue(scope);
 			if (val instanceof IContainer) return ((IContainer) val).contains(scope, switchValue);
-			return Cast.asList(scope, val).contains(switchValue);
+			return GamaListFactory.castToList(scope, val).contains(switchValue);
 		}
 
 		@Override
 		public void acceptValue() {
 			super.acceptValue();
-			if (constantValue != null && !(constantValue instanceof IContainer)
-					&& !(constantValue instanceof GamaPoint)) {
+			if (constantValue != null && !(constantValue instanceof IContainer) && !(constantValue instanceof IPoint)) {
 				constantValue = Types.LIST.cast(null, constantValue, null, false);
 			}
 		}
@@ -222,22 +224,34 @@ public class MatchStatement extends AbstractStatementSequence {
 
 	/**
 	 * The Class MatchRegex.
+	 *
+	 * <p><b>Performance:</b> when the pattern expression is a compile-time constant, the
+	 * {@link Pattern} is compiled once inside {@link #acceptValue()} and reused on every call to
+	 * {@link #matches(IScope, Object)}, avoiding the cost of {@link Pattern#compile} on every
+	 * switch evaluation. When the pattern is dynamic (non-constant) the {@code Pattern} is
+	 * compiled on each invocation as before.</p>
 	 */
 	class MatchRegex extends MatchExecuter {
 
+		/**
+		 * The pre-compiled pattern, non-null only when the value expression is a constant.
+		 * Reused on every call to {@link #matches(IScope, Object)} to avoid repeated compilation.
+		 */
+		private Pattern compiledPattern;
+
 		@Override
 		public boolean matches(final IScope scope, final Object switchValue) throws GamaRuntimeException {
-			final Object val = getValue(scope);
-			if (!(switchValue instanceof String)) throw GamaRuntimeException.error(
+			if (!(switchValue instanceof String target)) throw GamaRuntimeException.error(
 					"Can only match strings against a regular expression. " + switchValue + " is not a string", scope);
-			if (!(val instanceof String)) throw GamaRuntimeException
+			// Fast path: use the pre-compiled pattern for constant patterns.
+			if (compiledPattern != null) { return compiledPattern.matcher(target).find(); }
+			// Dynamic path: compile on every call.
+			final Object val = getValue(scope);
+			if (!(val instanceof String pattern)) throw GamaRuntimeException
 					.error("Can only match strings against a regular expression. " + val + " is not a string", scope);
-			String target = (String) switchValue;
-			String pattern = (String) val;
 			if (pattern.isEmpty()) return false;
 			try {
-				Pattern p = Pattern.compile(pattern);
-				return p.matcher(target).find();
+				return Pattern.compile(pattern).matcher(target).find();
 			} catch (PatternSyntaxException e) {
 				return target.contains(pattern);
 			}
@@ -248,6 +262,16 @@ public class MatchStatement extends AbstractStatementSequence {
 			super.acceptValue();
 			if (constantValue != null && !(constantValue instanceof String)) {
 				constantValue = Types.STRING.cast(null, constantValue, null, false);
+			}
+			// Pre-compile the pattern when the value is a constant non-empty string.
+			if (constantValue instanceof String pattern && !pattern.isEmpty()) {
+				try {
+					compiledPattern = Pattern.compile(pattern);
+				} catch (PatternSyntaxException e) {
+					// Invalid regex at compile time: leave compiledPattern null so that the
+					// dynamic path (which falls back to String.contains) is used at runtime.
+					compiledPattern = null;
+				}
 			}
 		}
 	}
@@ -262,9 +286,9 @@ public class MatchStatement extends AbstractStatementSequence {
 			if (!(switchValue instanceof Number)) throw GamaRuntimeException
 					.error("Can only match if a number is in an interval. " + switchValue + " is not a number", scope);
 			Object val = value.value(scope);
-			if (!(val instanceof GamaPoint)) { val = Cast.asPoint(scope, val); }
-			final double min = ((GamaPoint) val).getX();
-			final double max = ((GamaPoint) val).getY();
+			if (!(val instanceof IPoint)) { val = GamaPointFactory.castToPoint(scope, val); }
+			final double min = ((IPoint) val).getX();
+			final double max = ((IPoint) val).getY();
 			final double in = ((Number) switchValue).doubleValue();
 			return in >= min && in <= max;
 		}
@@ -275,7 +299,7 @@ public class MatchStatement extends AbstractStatementSequence {
 		@Override
 		public void acceptValue() {
 			super.acceptValue();
-			if (constantValue != null && !(constantValue instanceof GamaPoint)) {
+			if (constantValue != null && !(constantValue instanceof IPoint)) {
 				constantValue = Types.POINT.cast(null, constantValue, null, false);
 			}
 

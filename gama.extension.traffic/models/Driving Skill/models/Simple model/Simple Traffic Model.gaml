@@ -1,8 +1,12 @@
 /**
-* Name: Traffic
-* Description: define species for traffic simulation
-* Author: Patrick Taillandier & Duc Pham
-* Tags: driving skill, graph, agent_movement, skill, transport
+* Name: Simple Traffic Model
+* Author: Patrick Taillandier, Duc Pham
+* Description: The entry-point model for GAMA's driving skill. Vehicles (cars) are placed on a GIS road
+*   network loaded from shapefiles (nodes and roads for Rouen, France). Each vehicle uses the 'driving'
+*   skill to navigate from a random origin to a random destination, obeying lane discipline, speed limits,
+*   and basic car-following behaviour. This is the simplest possible driving-skill demonstration before
+*   moving to the more elaborate advanced models (intersections, random driving, path following).
+* Tags: driving_skill, graph, agent_movement, skill, transport, road_network, GIS, car_following
 */
 
 model simple_traffic_model
@@ -30,7 +34,7 @@ global {
 		
 		road_network <- as_driving_graph(road, intersection);
 		
-		create vehicle number: 1000 with: (location: one_of(intersection).location);
+		create vehicle (location: one_of(intersection).location) number: 1000 ;
 	}
 
 }
@@ -55,11 +59,11 @@ species vehicle skills: [driving] {
 
 	reflex select_next_path when: current_path = nil {
 		// A path that forms a cycle
-		do compute_path graph: road_network target: one_of(intersection);
+		do compute_path (graph: road_network, target: one_of(intersection));
 	}
 	
 	reflex commute when: current_path != nil {
-		do drive;
+		do drive();
 	}
 	aspect base {
 		draw triangle(5.0) color: color rotate: heading + 90 border: #black;

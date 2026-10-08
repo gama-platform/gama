@@ -3,7 +3,7 @@
  * WebHelper.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -19,7 +19,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.ui.IEditorInput;
@@ -29,9 +28,10 @@ import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.internal.part.NullEditorInput;
 import org.eclipse.ui.part.FileEditorInput;
 
-import gama.core.common.interfaces.IGamaView.Html;
-import gama.core.common.interfaces.IGui;
-import gama.core.common.preferences.GamaPreferences;
+import gama.api.GAMA;
+import gama.api.ui.IGamaView.Html;
+import gama.api.ui.IGui;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.ui.application.workbench.IWebHelper;
 
 /**
@@ -82,7 +82,7 @@ public class WebHelper implements IWebHelper {
 	 */
 	public static void openWelcomePage() {
 		// get the workspace
-		final var workspace = ResourcesPlugin.getWorkspace();
+		final var workspace = GAMA.getWorkspaceManager().getWorkspace();
 
 		// create the path to the file
 		final IPath location = new Path(getWelcomePageURL().getPath());
@@ -116,8 +116,7 @@ public class WebHelper implements IWebHelper {
 	public static void showWeb2Editor(final URL url) {
 
 		// get the workspace
-		final var workspace = ResourcesPlugin.getWorkspace();
-
+		final var workspace = GAMA.getWorkspaceManager().getWorkspace();
 		// create the path to the file
 		final IPath location = new Path(url.getPath());
 

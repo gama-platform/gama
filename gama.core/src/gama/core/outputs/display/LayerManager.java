@@ -2,7 +2,7 @@
  *
  * LayerManager.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,31 +16,28 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IGraphics;
-import gama.core.common.interfaces.ILayer;
-import gama.core.common.interfaces.ILayerManager;
-import gama.core.metamodel.shape.IShape;
-import gama.core.outputs.LayeredDisplayOutput;
-import gama.core.outputs.layers.AbstractLayerStatement;
+import gama.api.GAMA;
+import gama.api.additions.delegates.IEventLayerDelegate;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.types.geometry.IShape;
+import gama.api.ui.IOutput;
+import gama.api.ui.displays.IDisplaySurface;
+import gama.api.ui.displays.IGraphics;
+import gama.api.ui.displays.IGraphicsScope;
+import gama.api.ui.layers.ILayer;
+import gama.api.ui.layers.ILayerManager;
+import gama.api.ui.layers.ILayerStatement;
 import gama.core.outputs.layers.AgentLayer;
 import gama.core.outputs.layers.EventLayer;
-import gama.core.outputs.layers.EventLayerStatement;
 import gama.core.outputs.layers.GisLayer;
 import gama.core.outputs.layers.GraphicLayer;
-import gama.core.outputs.layers.HexagonalGridLayer;
 import gama.core.outputs.layers.GridLayer;
-import gama.core.outputs.layers.ILayerStatement;
+import gama.core.outputs.layers.HexagonalGridLayer;
 import gama.core.outputs.layers.ImageLayer;
-import gama.core.outputs.layers.KeyboardEventLayerDelegate;
 import gama.core.outputs.layers.MeshLayer;
-import gama.core.outputs.layers.MouseEventLayerDelegate;
 import gama.core.outputs.layers.OverlayLayer;
 import gama.core.outputs.layers.SpeciesLayer;
 import gama.core.outputs.layers.charts.ChartLayer;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope.IGraphicsScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
 
 /**
  * Written by drogoul Modified on 23 janv. 2011
@@ -59,7 +56,7 @@ public class LayerManager implements ILayerManager {
 	 *            the layer
 	 * @return the i layer
 	 */
-	public static ILayer createLayer(final LayeredDisplayOutput output, final ILayerStatement layer) {
+	public static ILayer createLayer(final IOutput.Display output, final ILayerStatement layer) {
 		return switch (layer.getType(output)) {
 			case GRID -> new GridLayer(layer);
 			case AGENTS -> new AgentLayer(layer);
@@ -80,7 +77,7 @@ public class LayerManager implements ILayerManager {
 	private final ILayer[] layers;
 
 	/** The event layers. */
-	private final Map<String, EventLayerStatement> eventLayers = new HashMap<>();
+	private final Map<String, ILayerStatement.Event> eventLayers = new HashMap<>();
 
 	/** The surface. */
 	final IDisplaySurface surface;
@@ -96,12 +93,12 @@ public class LayerManager implements ILayerManager {
 	 * @param output
 	 *            the output
 	 */
-	public LayerManager(final IDisplaySurface surface, final LayeredDisplayOutput output) {
+	public LayerManager(final IDisplaySurface surface, final IOutput.Display output) {
 		this.surface = surface;
 		OverlayLayer overlay = null;
 		final List<ILayer> layers = new ArrayList<>();
-		for (final AbstractLayerStatement layer : output.getLayers()) {
-			if (layer instanceof EventLayerStatement el) { eventLayers.put(el.getName(), el); }
+		for (final ILayerStatement layer : output.getLayers()) {
+			if (layer instanceof ILayerStatement.Event el) { eventLayers.put(el.getTrigger(), el); }
 			if (layer.isToCreate()) {
 				final ILayer result = createLayer(output, layer);
 				if (result instanceof OverlayLayer) {
@@ -131,7 +128,7 @@ public class LayerManager implements ILayerManager {
 	/**
 	 * Method focusOn()
 	 *
-	 * @see gama.core.common.interfaces.ILayerManager#focusOn(gama.core.metamodel.shape.IShape)
+	 * @see gama.api.ui.layers.ILayerManager#focusOn(gama.api.types.geometry.IShape)
 	 */
 	@Override
 	public Rectangle2D focusOn(final IShape geometry, final IDisplaySurface s) {
@@ -216,7 +213,7 @@ public class LayerManager implements ILayerManager {
 	/**
 	 * Allows the layers to do some cleansing when the output of the display changes
 	 *
-	 * @see gama.core.common.interfaces.ILayerManager#outputChanged()
+	 * @see gama.api.ui.layers.ILayerManager#outputChanged()
 	 */
 	@Override
 	public void outputChanged() {
@@ -249,12 +246,12 @@ public class LayerManager implements ILayerManager {
 
 	@Override
 	public boolean hasMouseMenuEventLayer() {
-		return eventLayers.containsKey(MouseEventLayerDelegate.MOUSE_MENU);
+		return eventLayers.containsKey(IEventLayerDelegate.MOUSE_MENU);
 	}
 
 	@Override
 	public boolean hasEscEventLayer() {
-		return eventLayers.containsKey(KeyboardEventLayerDelegate.KEY_ESC);
+		return eventLayers.containsKey(IEventLayerDelegate.KEY_ESC);
 	}
 
 	/**
@@ -264,10 +261,10 @@ public class LayerManager implements ILayerManager {
 	 */
 	@Override
 	public boolean hasArrowEventLayer() {
-		return eventLayers.containsKey(KeyboardEventLayerDelegate.ARROW_DOWN)
-				|| eventLayers.containsKey(KeyboardEventLayerDelegate.ARROW_UP)
-				|| eventLayers.containsKey(KeyboardEventLayerDelegate.ARROW_RIGHT)
-				|| eventLayers.containsKey(KeyboardEventLayerDelegate.ARROW_LEFT);
+		return eventLayers.containsKey(IEventLayerDelegate.ARROW_DOWN)
+				|| eventLayers.containsKey(IEventLayerDelegate.ARROW_UP)
+				|| eventLayers.containsKey(IEventLayerDelegate.ARROW_RIGHT)
+				|| eventLayers.containsKey(IEventLayerDelegate.ARROW_LEFT);
 	}
 
 	@Override
@@ -282,7 +279,7 @@ public class LayerManager implements ILayerManager {
 	}
 
 	@Override
-	public ChartLayer getOnlyChart() {
+	public ILayer.Chart getOnlyChart() {
 		ChartLayer result = null;
 		for (final ILayer i : layers) {
 			if (i instanceof ChartLayer cl) {

@@ -5,12 +5,9 @@ Bundle-SymbolicName: gama.ui.shared;singleton:=true
 Bundle-Vendor: UMMISCO
 Eclipse-BundleShape: dir
 Bundle-Version: 0.0.0.qualifier
-Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-RequiredExecutionEnvironment: JavaSE-25
 Bundle-ActivationPolicy: lazy
-Require-Bundle: org.eclipse.swt,
- org.eclipse.jface,
- org.eclipse.ui.workbench,
- org.eclipse.core.runtime,
+Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.ide,
  org.eclipse.ui,
  gama.core,
@@ -20,15 +17,14 @@ Require-Bundle: org.eclipse.swt,
  gama.dependencies,
  org.eclipse.ui.console,
  org.eclipse.jface.text,
- gama.annotations,
  org.eclipse.ui.forms,
- org.eclipse.ui.editors,
  org.eclipse.e4.ui.model.workbench,
  org.eclipse.e4.core.contexts,
- org.eclipse.core.expressions,
  org.eclipse.ui.navigator,
- gama.extension.image,
- org.eclipse.e4.ui.workbench
+ org.eclipse.e4.ui.workbench,
+ org.eclipse.equinox.common;bundle-version="[3.20.0,4.0.0)",
+ org.eclipse.equinox.registry;bundle-version="[3.12.0,4.0.0)",
+ gama.workspace
 Export-Package: gama.ui.shared,
  gama.ui.shared.access,
  gama.ui.shared.bindings,
@@ -44,5 +40,9 @@ Export-Package: gama.ui.shared,
  gama.ui.shared.utils,
  gama.ui.shared.views,
  gama.ui.shared.views.toolbar
-Bundle-Activator: gama.ui.shared.Activator
+Bundle-Activator: gama.ui.shared.UIActivator
 Automatic-Module-Name: gama.ui.shared 
+Import-Package: gama.workspace.manager,
+ gama.workspace.nature,
+ gama.workspace.status,
+ org.eclipse.e4.ui.internal.workbench.swt

@@ -3,7 +3,7 @@
  * XmlLiParagraph.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -18,12 +18,12 @@ import org.eclipse.ui.internal.forms.widgets.IHyperlinkSegment;
 import org.eclipse.ui.internal.forms.widgets.Locator;
 import org.eclipse.ui.internal.forms.widgets.SelectionData;
 
-import gama.core.util.GamaFont;
+import gama.api.types.font.IFont;
 
 /**
  * The Class XmlLiParagraph.
  */
-public class XmlLiParagraph extends XmlParagraph implements IXmlFontUser {
+public class XmlLiParagraph extends XmlParagraph {
 
 	/** The Constant CIRCLE. */
 	public static final int CIRCLE = 1;
@@ -58,7 +58,7 @@ public class XmlLiParagraph extends XmlParagraph implements IXmlFontUser {
 	/**
 	 * Constructor for BulletParagraph.
 	 */
-	public XmlLiParagraph(final boolean addVerticalSpace, final GamaFont font) {
+	public XmlLiParagraph(final boolean addVerticalSpace, final IFont font) {
 		super(addVerticalSpace, font);
 	}
 

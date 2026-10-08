@@ -1,8 +1,12 @@
 /***
-* Name: MondrianGenerator
-* Author: ben
-* Description: Model generating displays inspired by the "Composition II en rouge, bleu et jaune" of Piet Mondrian (1930)
-* Tags: art, Mondrian, generator
+* Name: Mondrian Generator
+* Author: Gama Development Team
+* Description: Generates visual compositions inspired by Piet Mondrian's "Composition II in Red, Blue and Yellow"
+*   (1930). The model procedurally creates a grid of rectangles divided by black lines, filled with primary
+*   colors (red, blue, yellow) and white, mimicking the characteristic style of Mondrian's neo-plastic period.
+*   Parameters control the maximum number of squares, lines, and columns, allowing users to generate an
+*   infinite variety of Mondrian-like compositions with different proportions and color distributions.
+* Tags: art, mondrian, generator, procedural, visualization, geometry, color
 ***/
 
 model MondrianGeneratorComposition
@@ -21,20 +25,20 @@ global {
 	
 	
 	init {
-		do new_paint;
+		do new_paint();
 	}
 	
 	reflex repaint {
-		do new_paint;
+		do new_paint();
 	}
 	
 	// The action that first cleans the previous painting, then generates a new one. 
-	action new_paint {
+	action new_paint() {
 		float x_max <- world.shape.width;
 		float y_max <- world.shape.height;
 		
-		ask lines {do die;}
-		ask squares {do die;}		
+		ask lines {do die();}
+		ask squares {do die();}		
 		
 		create lines number: nb_lines {
 			float x <- rnd(x_max);
@@ -42,7 +46,7 @@ global {
 			horizontal <- false;
 			
 			if( !empty( (lines where !each.horizontal) overlapping self)) {
-				do die;
+				do die();
 			}		
 		}
 		
@@ -52,7 +56,7 @@ global {
 			horizontal <- true;		
 			
 			if( !empty( (lines where each.horizontal) overlapping self)) {
-				do die;
+				do die();
 			}				
 		}
 		
@@ -75,7 +79,7 @@ global {
 			
 			loop s over: over_squares {
 				if(s covers shape) {
-					do die;
+					do die();
 				}
 				shape <- shape - s;
 			}

@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * ImageSaver.java, in gama.extension.image, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * ImageSaver.java, in gama.extension.image, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -23,20 +22,18 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.Sets;
 
-import gama.core.metamodel.topology.grid.GridPopulation;
-import gama.core.metamodel.topology.projection.IProjection;
-import gama.core.metamodel.topology.projection.ProjectionFactory;
-import gama.core.runtime.IScope;
-import gama.core.util.GamaColor;
-import gama.core.util.matrix.GamaField;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
-import gama.gaml.operators.Maths;
-import gama.gaml.species.ISpecies;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.species.ISpecies;
+import gama.api.kernel.topology.IProjection;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.matrix.IField;
+import gama.api.utils.files.SaveOptions;
+import gama.core.topology.gis.ProjectionFactory;
+import gama.core.topology.grid.GridPopulation;
 import gama.gaml.statements.save.AbstractSaver;
-import gama.gaml.statements.save.SaveOptions;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * The Class ImageSaver.
@@ -59,23 +56,22 @@ public class ImageSaver extends AbstractSaver {
 	 *             Signals that an I/O exception has occurred.
 	 */
 	@Override
-	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions options) throws IOException {
+	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions options)
+			throws IOException {
 		File f = file;
 		String path = f.getAbsolutePath();
-		String t = "image".equals(options.type) ? "png" : "jpeg".equals(options.type) ? "jpg" : options.type;
+		String t = "image".equals(options.type()) ? "png" : "jpeg".equals(options.type()) ? "jpg" : options.type();
 		if ("image".equals(t)) { t = "png"; }
 		if ("jpeg".equals(t)) { t = "jpg"; }
 		if (!path.contains("." + t)) {
 			path += "." + t;
 			f = new File(path);
 		}
-		
-		if (f.exists() && !f.delete()) {
-			return; 
-		}
+
+		if (f.exists() && !f.delete()) return;
 		Object v = item.value(scope);
 		boolean saved = false;
-		if (v instanceof GamaField gf) {
+		if (v instanceof IField gf) {
 			saveField(scope, gf, f, t);
 			ProjectionFactory.saveTargetCRSAsPRJFile(scope, f.getAbsolutePath());
 			saved = true;
@@ -147,10 +143,10 @@ public class ImageSaver extends AbstractSaver {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
-	private void saveField(final IScope scope, final GamaField field, final File f, final String t) throws IOException {
+	private void saveField(final IScope scope, final IField field, final File f, final String t) throws IOException {
 		if (field.isEmpty(scope)) return;
-		final int cols = field.numCols;
-		final int rows = field.numRows;
+		final int cols = field.getCols(scope);
+		final int rows = field.getRows(scope);
 		IProjection worldProjection = scope.getSimulation().getProjectionFactory().getWorld();
 		double x = worldProjection == null ? 0 : worldProjection.getProjectedEnvelope().getMinX();
 		double y = worldProjection == null ? 0 : worldProjection.getProjectedEnvelope().getMinY();
@@ -165,12 +161,21 @@ public class ImageSaver extends AbstractSaver {
 			fw.write(cw + "\n0.0\n0.0\n" + ch + "\n" + x + "\n" + y);
 		}
 		final BufferedImage image = new BufferedImage(cols, rows, BufferedImage.TYPE_INT_RGB);
-		double[] minmaxVal = field.getMinMax();
+		final int[] imageData = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
+		final double[] minmaxVal = field.getMinMax();
+		final double[] values = field.getFieldData(scope);
+		final double range = minmaxVal[1] - minmaxVal[0];
+		final double min = minmaxVal[0];
+		final double invRange = range == 0 ? 0 : 255d / range;
 		for (int row = 0; row < rows; row++) {
+			final int sourceOffset = row * cols;
+			final int targetOffset = (rows - 1 - row) * cols;
 			for (int col = 0; col < cols; col++) {
-				double v = field.get(scope, col, row);
-				int vRef = Maths.round((v - minmaxVal[0]) / (minmaxVal[1] - minmaxVal[0]) * 255);
-				image.setRGB(col, rows - 1 - row, GamaColor.get(vRef, vRef, vRef).getRGB());
+				int gray = range == 0 ? 0 : (int) Math.round((values[sourceOffset + col] - min) * invRange);
+				if (gray < 0) {
+					gray = 0;
+				} else if (gray > 255) { gray = 255; }
+				imageData[targetOffset + col] = 0x010101 * gray;
 			}
 		}
 		ImageIO.write(image, t, f);

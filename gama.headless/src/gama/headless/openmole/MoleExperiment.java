@@ -1,20 +1,20 @@
 /*******************************************************************************************************
  *
  * MoleExperiment.java, in gama.headless, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.headless.openmole;
 
-import gama.core.kernel.model.IModel;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.expressions.IExpressionFactory;
-import gama.gaml.types.Types;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.GAML;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.species.IModelSpecies;
 import gama.headless.core.Experiment;
 
 /**
@@ -28,7 +28,7 @@ public class MoleExperiment extends Experiment implements IMoleExperiment {
 	 * @param mdl
 	 *            the mdl
 	 */
-	MoleExperiment(final IModel mdl) {
+	MoleExperiment(final IModelSpecies mdl) {
 		super(mdl);
 	}
 
@@ -51,7 +51,7 @@ public class MoleExperiment extends Experiment implements IMoleExperiment {
 	public void play(final String exp, final int finalStep) {
 		IExpression endCondition = this.compileExpression(exp);
 		if (exp == null || "".equals(exp)) {
-			endCondition = IExpressionFactory.FALSE_EXPR;
+			endCondition = GAML.getExpressionFactory().getFalse();
 		} else {
 			endCondition = this.compileExpression(exp);
 		}

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GamlActionProvider.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation
- * platform (v.1.9.3).
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -18,10 +18,10 @@ import org.eclipse.ui.actions.SelectionListenerAction;
 import org.eclipse.ui.navigator.CommonActionProvider;
 import org.eclipse.ui.navigator.ICommonActionExtensionSite;
 
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.common.util.FileUtils;
-import gama.core.runtime.GAMA;
-import gama.core.util.file.IGamaFile;
+import gama.api.GAMA;
+import gama.api.types.file.IGamaFile;
+import gama.api.utils.files.FileUtils;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.gaml.operators.Files;
 import gama.ui.navigator.view.contents.WrappedExperimentContent;
 import gama.ui.navigator.view.contents.WrappedSyntacticContent;
@@ -64,7 +64,7 @@ public class GamlActionProvider extends CommonActionProvider {
 		revealAction = new SelectionListenerAction("Reveal...") {
 			@Override
 			public void run() {
-				GAMA.getGui().editModel(selection.getElement().getElement());
+				GAMA.getGui().getModelsManager().editModel(selection.getElement().getElement());
 			}
 		};
 		revealAction.setId("reveal.item");

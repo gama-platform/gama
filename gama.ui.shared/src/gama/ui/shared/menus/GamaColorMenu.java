@@ -3,14 +3,14 @@
  * GamaColorMenu.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.ui.shared.menus;
 
-import static gama.core.util.GamaColor.colors;
+import static gama.api.types.color.GamaColorFactory.NAME_REGISTRY;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,7 +30,8 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 
-import gama.core.util.GamaColor;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.PreferencesHelper;
@@ -105,18 +106,19 @@ public class GamaColorMenu extends GamaMenu {
 	private static Integer reverse = null;
 
 	/** The by RGB. */
-	public static final Comparator<String> byRGB = (a, b) -> getReverse() * colors.get(a).compareTo(colors.get(b));
+	public static final Comparator<String> byRGB =
+			(a, b) -> getReverse() * GamaColorFactory.get(a).compareTo(GamaColorFactory.get(b));
 
 	/** The by brightness. */
 	public static final Comparator<String> byBrightness =
-			(a, b) -> getReverse() * colors.get(a).compareBrightnessTo(colors.get(b));
+			(a, b) -> getReverse() * GamaColorFactory.get(a).compareBrightnessTo(GamaColorFactory.get(b));
 
 	/** The by name. */
 	public static final Comparator<String> byName = (a, b) -> getReverse() * a.compareTo(b);
 
 	/** The by luminescence. */
 	public static final Comparator<String> byLuminescence =
-			(a, b) -> getReverse() * GamaColor.colors.get(a).compareTo(GamaColor.colors.get(b));
+			(a, b) -> getReverse() * GamaColorFactory.get(a).compareTo(GamaColorFactory.get(b));
 
 	/** The color comp. */
 	public static Comparator colorComp = null;
@@ -192,7 +194,7 @@ public class GamaColorMenu extends GamaMenu {
 		check(sortMenu, SORT_NAMES[2], colorComp == byBrightness, chooseSort).setData(byBrightness);
 		check(sortMenu, SORT_NAMES[3], colorComp == byLuminescence, chooseSort).setData(byLuminescence);
 		sep();
-		final List<String> names = new ArrayList(GamaColor.colors.keySet());
+		final List<String> names = new ArrayList(NAME_REGISTRY.keySet());
 		Collections.sort(names, colorComp);
 		Menu subMenu = mainMenu;
 		for (int i = 0; i < names.size(); i++) {
@@ -202,7 +204,7 @@ public class GamaColorMenu extends GamaMenu {
 				subMenu = sub(current.replace("#", "") + " to " + following);
 			}
 			final MenuItem item = action(subMenu, "#" + current, defaultListener);
-			final GamaColor color = GamaColor.colors.get(current);
+			final IColor color = GamaColorFactory.get(current);
 			item.setImage(GamaIcon.ofColor(color).image());
 		}
 
@@ -218,13 +220,13 @@ public class GamaColorMenu extends GamaMenu {
 	 * @param selector
 	 *            the selector
 	 */
-	public static void addColorSubmenuTo(final Menu menu, final String text, final Consumer<GamaColor> selector) {
-		Menu subMenu = sub(menu, text, text, (IGamaIcons.REFERENCE_COLORS));
-		final List<String> names = new ArrayList(GamaColor.colors.keySet());
+	public static void addColorSubmenuTo(final Menu menu, final String text, final Consumer<IColor> selector) {
+		Menu subMenu = sub(menu, text, text, IGamaIcons.REFERENCE_COLORS);
+		final List<String> names = new ArrayList(NAME_REGISTRY.keySet());
 		Collections.sort(names, colorComp);
 		for (final String current : names) {
-			final GamaColor color = GamaColor.colors.get(current);
-			final MenuItem item = action(subMenu, "#" + current, t -> selector.accept(GamaColor.colors.get(current)));
+			final IColor color = GamaColorFactory.get(current);
+			final MenuItem item = action(subMenu, "#" + current, t -> selector.accept(color));
 			item.setImage(GamaIcon.ofColor(color).image());
 		}
 	}

@@ -10,9 +10,9 @@
  ********************************************************************************************************/
 package gama.ui.shared.interfaces;
 
-import gama.core.common.interfaces.IScoped;
-import gama.core.kernel.experiment.IParameter;
-import gama.gaml.types.IType;
+import gama.api.gaml.symbols.IParameter;
+import gama.api.gaml.types.IType;
+import gama.api.runtime.scope.IScoped;
 import gama.ui.shared.parameters.EditorsGroup;
 
 /**

@@ -1,19 +1,30 @@
 /*******************************************************************************************************
  *
  * SceneHelper.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.ui.display.opengl.renderer.helpers;
 
+/*******************************************************************************************************
+ *
+ * SceneHelper.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
+ *
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.locks.ReentrantLock;
 
-import gama.core.common.interfaces.ILayer;
+import gama.api.ui.layers.ILayer;
 import gama.dev.DEBUG;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
@@ -46,6 +57,9 @@ public class SceneHelper extends AbstractRendererHelper {
 
 	/** The garbage. */
 	private final Queue<ModelScene> garbage = new ConcurrentLinkedQueue<>();
+
+	/** Serializes scene updates with invalidation and forced redraws. */
+	private final ReentrantLock sceneUpdateLock = new ReentrantLock();
 
 	/**
 	 * Instantiates a new scene helper.
@@ -80,23 +94,28 @@ public class SceneHelper extends AbstractRendererHelper {
 	 * @return true, if successful
 	 */
 	public boolean beginUpdatingScene() {
-		// If we are syncrhonized with the simulation and a backScene exists, we
-		// wait until it has been updated (put to null at the end of
-		// endUpdatingScene)
-		// TODO AD Is it still necessary ?
-		// while (GAMA.isSynchronized() && backScene != null) {
-		// if (!THREADS.WAIT(20, "Internal synchronisation of ModelScene")) return false;
-		// }
-		// If we are not synchronized (or if the wait is over), we verify that
-		// backScene is null and create a new one
-		if (backScene != null) { // We should also prevent the draw to happen by skipping everything
-			// if it the case ?
-			return false;
+		if (!sceneUpdateLock.tryLock()) return false;
+		boolean keepLock = false;
+		try {
+			// If we are syncrhonized with the simulation and a backScene exists, we
+			// wait until it has been updated (put to null at the end of
+			// endUpdatingScene)
+			// TODO AD Is it still necessary ?
+			// while (GAMA.isSynchronized() && backScene != null) {
+			// if (!THREADS.WAIT(20, "Internal synchronisation of ModelScene")) return false;
+			// }
+			// If we are not synchronized (or if the wait is over), we verify that
+			// backScene is null and create a new one
+			if (backScene != null) // if it the case ?
+				return false;
+			backScene = createSceneFrom(staticScene);
+			// We prepare it for drawing
+			backScene.beginDrawingLayers();
+			keepLock = true;
+			return true;
+		} finally {
+			if (!keepLock) { sceneUpdateLock.unlock(); }
 		}
-		backScene = createSceneFrom(staticScene);
-		// We prepare it for drawing
-		backScene.beginDrawingLayers();
-		return true;
 	}
 
 	/**
@@ -105,7 +124,7 @@ public class SceneHelper extends AbstractRendererHelper {
 	 * @return true, if is not ready to update
 	 */
 	public boolean isNotReadyToUpdate() {
-		if (frontScene != null && !frontScene.rendered()) { return true; }
+		if (frontScene != null && !frontScene.rendered()) return true;
 		return false;
 	}
 
@@ -113,35 +132,52 @@ public class SceneHelper extends AbstractRendererHelper {
 	 * End updating scene.
 	 */
 	public void endUpdatingScene() {
-		// If there is no scene to update, it means it has been cancelled by
-		// another thread (hiding/showing layers, most probably) so we just skip
-		// this step
-		if (backScene == null) { return; }
-		// We ask the backScene to stop updating
-		backScene.endDrawingLayers();
-		// We create the static scene from it if it does not exist yet or if it
-		// has been discarded
-		if (hasStructurallyChanged()) { discardStaticScene(); }
-		if (staticScene == null) {
-			// DEBUG.LOG("Creating static scene from scene " +
-			// backScene.getId());
-			staticScene = createSceneFrom(backScene);
-		}
-		// If there is another frontScene, we discard it (will be disposed of
-		// later)
-		if (frontScene != null) {
-			if (!frontScene.rendered()) {
-				garbage.add(backScene);
-				backScene = null;
-				return;
+		try {
+			// If there is no scene to update, it means it has been cancelled by
+			// another thread (hiding/showing layers, most probably) so we just skip
+			// this step
+			if (backScene == null) return;
+			// We ask the backScene to stop updating
+			backScene.endDrawingLayers();
+			// We create the static scene from it if it does not exist yet or if it
+			// has been discarded
+			if (hasStructurallyChanged()) { discardStaticScene(); }
+			if (staticScene == null) {
+				// DEBUG.LOG("Creating static scene from scene " +
+				// backScene.getId());
+				staticScene = createSceneFrom(backScene);
 			}
-			garbage.add(frontScene);
+			// If there is another frontScene, we discard it (will be disposed of
+			// later)
+			if (frontScene != null) {
+				if (!frontScene.rendered()) {
+					garbage.add(backScene);
+					backScene = null;
+					return;
+				}
+				garbage.add(frontScene);
 
+			}
+			// We switch the scenes
+			frontScene = backScene;
+			// ... and clear the backScene
+			backScene = null;
+		} finally {
+			sceneUpdateLock.unlock();
 		}
-		// We switch the scenes
-		frontScene = backScene;
-		// ... and clear the backScene
-		backScene = null;
+	}
+
+	/**
+	 * Forces layers to be redrawn without allowing the invalidation to discard an in-progress scene update.
+	 */
+	public boolean forceRedrawingLayers() {
+		if (!sceneUpdateLock.tryLock()) return false;
+		try {
+			getSurface().getManager().forceRedrawingLayers();
+			return true;
+		} finally {
+			sceneUpdateLock.unlock();
+		}
 	}
 
 	/**
@@ -192,7 +228,7 @@ public class SceneHelper extends AbstractRendererHelper {
 	 */
 	public void garbageCollect(final OpenGL gl) {
 		int size = garbage.size();
-		if (size == 0) { return; }
+		if (size == 0) return;
 		final ModelScene[] scenes = garbage.toArray(new ModelScene[size]);
 		garbage.clear();
 		for (final ModelScene scene : scenes) {
@@ -220,11 +256,23 @@ public class SceneHelper extends AbstractRendererHelper {
 	 * invalidated.
 	 */
 	public void layersChanged() {
-		discardStaticScene();
-		if (backScene != null) {
-			garbage.add(backScene);
-			backScene = null;
+		sceneUpdateLock.lock();
+		try {
+			discardStaticScene();
+			if (backScene != null) {
+				garbage.add(backScene);
+				backScene = null;
+			}
+		} finally {
+			sceneUpdateLock.unlock();
 		}
+	}
+
+	/**
+	 * Invalidates cached scenes after a size change so overlay and static layers are rebuilt with the new dimensions.
+	 */
+	public void reshape() {
+		layersChanged();
 	}
 
 	/**
@@ -243,6 +291,10 @@ public class SceneHelper extends AbstractRendererHelper {
 	 */
 	public void draw() {
 		final OpenGL gl = getOpenGL();
+
+		// AD Fix: Check if scene is ready before attempting to draw to avoid NullPointerException
+		if (!isReady()) return;
+
 		// Do some garbage collecting in model scenes
 		garbageCollect(gl);
 		// if picking, we draw a first pass to pick the color

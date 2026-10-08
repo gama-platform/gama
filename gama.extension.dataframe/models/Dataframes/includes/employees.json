@@ -1,0 +1,10 @@
+[
+  { "name": "Alice",   "age": 32, "department": "Engineering", "city": "Paris",     "salary": 55000 },
+  { "name": "Bob",     "age": 41, "department": "Marketing",   "city": "Lyon",      "salary": 48000 },
+  { "name": "Charlie", "age": 28, "department": "Engineering", "city": "Paris",     "salary": 51000 },
+  { "name": "Diana",   "age": 36, "department": "Sales",       "city": "Marseille", "salary": 52000 },
+  { "name": "Eve",     "age": 45, "department": "Engineering", "city": "Toulouse",  "salary": 61000 },
+  { "name": "Frank",   "age": 30, "department": "Marketing",   "city": "Paris",     "salary": 47000 },
+  { "name": "Grace",   "age": 39, "department": "Sales",       "city": "Lyon",      "salary": 53000 },
+  { "name": "Heidi",   "age": 27, "department": "Engineering", "city": "Marseille", "salary": 49000 }
+]

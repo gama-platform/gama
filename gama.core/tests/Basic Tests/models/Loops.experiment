@@ -15,7 +15,7 @@ species dummy {
 experiment loop_over type:test{
 	
 	test loop_over_list_int {
-		let l <- [1,2,3,4];
+		list<int> l <- [1,2,3,4];
 		int sum <- 0;
 		loop v over:l{
 			sum <- sum + v;
@@ -33,11 +33,10 @@ experiment loop_over type:test{
 	
 	test loop_over_species {
 		int i <- 1;
-		create dummy number:4{
+		create dummy number:4 {
 			value <- i;
 			i <- i + 1;
 		}
-		
 		int sum <- 0;
 		loop d over:dummy{
 			sum <- sum + d.value;
@@ -75,7 +74,7 @@ experiment loop_over type:test{
 	}
 	
 	test loop_over_list_int_break {
-		let l <- [1,2,3,4];
+		list<int> l <- [1,2,3,4];
 		int sum <- 0;
 		loop v over:l{
 			sum <- sum + v;
@@ -346,16 +345,93 @@ experiment loop_from_to type:test{
 		}
 		assert iterations = 1;
 	}
-	
-		test loop_from_to_equal_float{
+
+	test loop_from_to_equal_float {
 		int iterations <- 0;
 		loop i from: 1.0 to: 1.0 {
 			iterations <- iterations+1;
 		}
 		assert iterations = 1;
 	}
-	
-	
+
+	test loop_from_to_equal_int_negative_step {
+		int my_from <- 1;
+		int iterations <- 0;
+		loop i from: my_from to: 1 step: -1 {
+			iterations <- iterations + 1;
+			if iterations > 1 { break; }
+		}
+		assert iterations = 1;
+	}
+
+	test loop_from_to_equal_float_negative_step {
+		float my_from <- 1.0;
+		int iterations <- 0;
+		loop i from: my_from to: 1.0 step: -1.0 {
+			iterations <- iterations + 1;
+			if iterations > 1 { break; }
+		}
+		assert iterations = 1;
+	}
+
+	// Tests for from == to using variable expressions (issue #1109)
+	test loop_from_to_equal_int_variable_from {
+		int my_from <- 1;
+		int iterations <- 0;
+		loop i from: my_from to: 1 {
+			iterations <- iterations + 1;
+		}
+		assert iterations = 1;
+	}
+
+	test loop_from_to_equal_int_variable_to {
+		int my_to <- 1;
+		int iterations <- 0;
+		loop i from: 1 to: my_to {
+			iterations <- iterations + 1;
+		}
+		assert iterations = 1;
+	}
+
+	test loop_from_to_equal_int_both_variables {
+		int my_from <- 5;
+		int my_to <- 5;
+		int iterations <- 0;
+		loop i from: my_from to: my_to {
+			iterations <- iterations + 1;
+		}
+		assert iterations = 1;
+	}
+
+	test loop_from_to_equal_float_variable_from {
+		float my_from <- 1.0;
+		int iterations <- 0;
+		loop i from: my_from to: 1.0 {
+			iterations <- iterations + 1;
+		}
+		assert iterations = 1;
+	}
+
+	// The exact scenario from issue #1109: changing my_from from 5 to 1 should give 1 iteration
+	test loop_from_to_variable_decreasing_to_equal {
+		int my_from <- 1;
+		int sum <- 0;
+		loop i from: my_from to: 1 {
+			sum <- sum + i;
+		}
+		assert sum = 1;
+	}
+
+	test loop_from_to_variable_sum {
+		int my_from <- 5;
+		int sum <- 0;
+		loop i from: my_from to: 1 {
+			sum <- sum + i;
+		}
+		assert sum = 15;
+	}
+
+
 }
 
 
@@ -445,7 +521,6 @@ experiment loop_while type:test{
 	}
 	
 }
-
 
 
 

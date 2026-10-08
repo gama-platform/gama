@@ -19,7 +19,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.emf.common.util.URI;
 
-import gama.core.common.GamlFileExtension;
+import gama.api.constants.GamlFileExtension;
 
 /**
  * The Class ModelsFinder.

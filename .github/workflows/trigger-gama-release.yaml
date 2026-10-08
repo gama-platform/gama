@@ -12,14 +12,49 @@ on:
         description: "The tag of the release to publish (YYYY.MM.0)"
         type: string
         required: true
-        default: 2025.05.0
+        default: 2026.08.0
       jdk:
         description: "Choose a JDK version to embed inside GAMA release"
         type: string
         required: true
-        default: 21.0.7+6
-      releaseGithubOnly:
-        description: "Release only on Github (not on Microsoft Stores, else) ?"
+        default: 25.0.4+7
+      releaseGithub:
+        description: "[Release] On Github (uncheck == no) ?"
+        type: boolean
+        required: true
+        default: false
+      releaseDocker:
+        description: "[Release] On Docker (uncheck == no) ?"
+        type: boolean
+        required: true
+        default: false
+      releaseMicrosoft:
+        description: "[Release] On Microsoft Store (uncheck == no) ?"
+        type: boolean
+        required: true
+        default: false
+      releaseLinuxPpa:
+        description: "[Release] On Linux PPA (uncheck == no) ?"
+        type: boolean
+        required: true
+        default: false
+      releaseNpmGaml:
+        description: "[Release] Create new GAML syntax highlighting plugin (JS plugin, uncheck == no) ?"
+        type: boolean
+        required: true
+        default: false
+      skipTests:
+        description: "[Test] Skip all test workflows ?"
+        type: boolean
+        required: true
+        default: false
+      USE_BUILD_CACHE:
+        description: "[DEBUG] Use build cache ?"
+        type: boolean
+        required: true
+        default: false
+      USE_DEPENDENCY_CACHE:
+        description: "[DEBUG] Use dependency cache ?"
         type: boolean
         required: true
         default: false
@@ -36,6 +71,9 @@ jobs:
       new_release_tag: ${{ inputs.tag }}
       jdk_embedded_version: ${{ inputs.jdk }}
       IS_STABLE_RELEASE: ${{ inputs.IS_STABLE_RELEASE }}
+      GITHUB_ONLY: ${{ inputs.releaseGithub }}
+      USE_BUILD_CACHE: ${{ inputs.USE_BUILD_CACHE }}
+      USE_DEPENDENCY_CACHE: ${{ inputs.USE_DEPENDENCY_CACHE }}
     secrets:
       GAMA_KEYSTORE_BASE64: ${{ secrets.GAMA_KEYSTORE_BASE64 }}
       GAMA_KEYSTORE_STOREPASS: ${{ secrets.GAMA_KEYSTORE_STOREPASS }}
@@ -49,22 +87,32 @@ jobs:
     outputs:
       commit: ${{ steps.commit.outputs.commit }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: "temurin"
+          java-version: "25"
+          java-package: jdk
 
       - name: Prepare travis-script
         id: commit
         run: |
           chmod +x ${{ github.workspace }}/travis/*
           # Overkill, but will catch every extraresources files to bump version there too
-          bash ${{ github.workspace }}/travis/bumpGamaVersion.sh ${{ inputs.tag }} ${{ inputs.IS_STABLE_RELEASE }}
+          bash ${{ github.workspace }}/travis/bumpGamaVersion.sh "${TAG}" "${IS_STABLE_RELEASE}"
           #
           mv ${{ github.workspace }}/gama.product/extraresources ${{ github.workspace }}/travis
           mv ${{ github.workspace }}/LICENSE ${{ github.workspace }}/travis
 
           commit=$(git rev-parse --short=7 HEAD)
           echo "commit=$commit" >> "$GITHUB_OUTPUT"
+        env:
+          TAG: ${{ inputs.tag }}
+          IS_STABLE_RELEASE: ${{ inputs.IS_STABLE_RELEASE }}
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: travis-scripts
           if-no-files-found: error
@@ -89,6 +137,7 @@ jobs:
     with:
       RELEASE_VERSION: ${{ inputs.tag }}
       jdk_embedded_version: ${{ inputs.jdk }}
+      SKIP_TESTS: ${{ inputs.skipTests }}
     secrets:
       # === MacOS needs ===
       MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
@@ -119,6 +168,10 @@ jobs:
       RELEASE_VERSION: ${{ inputs.tag }}
       IS_STABLE_RELEASE: ${{ inputs.IS_STABLE_RELEASE }}
       COMMIT_SHA: ${{needs.travis-scripts.outputs.commit}}
-      RELEASE_GITHUB_ONLY: ${{ inputs.releaseGithubOnly }}
+      RELEASE_GITHUB: ${{ inputs.releaseGithub }}
+      RELEASE_DOCKER: ${{ inputs.releaseDocker }}
+      RELEASE_MICROSOFT: ${{ inputs.releaseMicrosoft }}
+      RELEASE_LINUX_PPA: ${{ inputs.releaseLinuxPpa }}
+      RELEASE_NPM_GAML: ${{ inputs.releaseNpmGaml }}
     secrets:
       BOT_TOKEN: ${{ secrets.BOT_TOKEN }}

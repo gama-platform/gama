@@ -1,10 +1,13 @@
-/**-
-* Name: City Evacuation
-* Author: Mathieu Bourgais & Patrick Taillandier
-* Description:  Example model concerning the  use of the simpleBDI plug-in  with emotions. 
-* A technological accident is simulated in one of the buildings of the city center.
-
-* Tags: simple_bdi, emotion, evacuation
+/**
+* Name: City Escape BDI with Emotions
+* Author: Mathieu Bourgais, Patrick Taillandier
+* Description: A BDI evacuation model enriched with the emotion module of the simple_bdi architecture.
+*   A technological accident occurs in a city-center building. Residents perceive the danger, form beliefs
+*   about its location, and must decide whether to evacuate along available escape routes. Emotions (fear,
+*   satisfaction) influence agent decision-making: a highly frightened agent evacuates faster; satisfaction
+*   decreases the urgency to move. Uses real GIS data for roads and escape paths in Rouen. This is the
+*   reference model for the emotion extension of the simple_bdi architecture.
+* Tags: simple_bdi, emotion, evacuation, gis, perception, belief, desire, plan, architecture
 */
  
 model City_Evacuation
@@ -57,7 +60,7 @@ global {
 	}
 	
 	reflex stop_sim when: empty(people) {
-		do pause;
+		do pause();
 	}
 }
  
@@ -92,7 +95,7 @@ species people skills: [moving] control: simple_bdi{
 		focus id:"catastrophe" is_uncertain: true;
 		ask myself {
 			if(fearful){
-				do to_escape_mode;
+				do to_escape_mode();
 			}else{
 				color<-#green;
 			}
@@ -104,7 +107,7 @@ species people skills: [moving] control: simple_bdi{
 		focus id:"catastrophe";
 		ask myself{
 			if(not escape_mode){
-				do to_escape_mode;
+				do to_escape_mode();
 			}
 		}
 	}
@@ -136,7 +139,7 @@ species people skills: [moving] control: simple_bdi{
 		if (target = nil) {
 			target <- any_location_in(one_of(road));
 		} else {
-			do goto target: target on: road_network move_weights: current_weights recompute_path: false;
+			do goto (target: target, on: road_network, move_weights: current_weights, recompute_path: false);
 			if (target = location)  {
 				target <- nil;
 				noTarget<-true;
@@ -153,9 +156,9 @@ species people skills: [moving] control: simple_bdi{
 			noTarget <- false;
 		}
 		else  {
-			do goto target: target on: road_network move_weights: current_weights recompute_path: false;
+			do goto (target: target, on: road_network, move_weights: current_weights, recompute_path: false);
 			if (target = location)  {
-				do die;
+				do die();
 			}		
 		}
 	}	
@@ -168,14 +171,14 @@ species people skills: [moving] control: simple_bdi{
 			noTarget <- false;
 		}
 		else  {
-			do goto target: target on: road_network move_weights: current_weights recompute_path: false;
+			do goto (target: target, on: road_network, move_weights: current_weights, recompute_path: false);
 			if (target = location)  {
-				do die;
+				do die();
 			}		
 		}
 	}
 	
-	action to_escape_mode {
+	action to_escape_mode() {
 		escape_mode <- true;
 		color <- #darkred;
 		target <- nil;	

@@ -1,0 +1,8 @@
+--- .classpath
++++ .classpath
+@@ -10,5 +10,6 @@
+	<classpathentry kind="lib" path="libs/jogl 2.6.0/jogl-all.jar"/>
+	<classpathentry kind="lib" path="libs/jogl 2.6.0/gluegen-rt.jar"/>
++	<classpathentry kind="lib" path="libs/joml-1.10.5.jar"/>
+	<classpathentry kind="output" path="bin"/>
+ </classpath>

@@ -1,0 +1,16 @@
+@@ -277,6 +277,7 @@
+ 		if (mm != null) {
+ 			// hqnghi try to put micro-model as a property of model
+ 			// model.setMicroModels(mm);
++mm.forEach((k, v) -> v.setAlias(k));
+ 			model.addChildren(mm.values());
+ 		}
+ 		// end-hqnghi
+@@ -293,7 +293,6 @@
+ 		// hqnghi build micro-models as types
+ 		if (mm != null) {
+ 			mm.forEach((k, v) -> {
+- -v.setAlias(k);
+ 				model.getTypesManager().addSpeciesTypeAs(v, k);
+ 				v.visitAllSpecies(entry -> {
+ 					if (entry != v) {

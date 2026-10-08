@@ -12,8 +12,8 @@ package gama.extension.maths.ode.utils.solver;
 
 import org.apache.commons.math3.ode.nonstiff.GillIntegrator;
 
-import gama.core.util.IList;
-import gama.core.util.IMap;
+import gama.api.types.list.IList;
+import gama.api.types.map.IMap;
 
 /**
  * The Class GillSolver.

@@ -1,3 +1,13 @@
+/*******************************************************************************************************
+ *
+ * SpatialCreation.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
+ *
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
 package gama.gaml.operators.spatial;
 
 import java.util.ArrayList;
@@ -5,37 +15,73 @@ import java.util.List;
 
 import org.locationtech.jts.geom.Coordinate;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.test;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.core.common.geometry.Envelope3D;
-import gama.core.common.geometry.GeometryUtils;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.metamodel.shape.GamaShapeFactory;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
-import gama.core.util.IContainer;
-import gama.core.util.IList;
-import gama.gaml.compilation.annotations.depends_on;
-import gama.gaml.operators.Cast;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.api.annotations.depends_on;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.misc.IContainer;
+import gama.api.utils.geometry.GamaEnvelopeFactory;
+import gama.api.utils.geometry.GeometryUtils;
+import gama.api.utils.geometry.IEnvelope;
 import gama.gaml.operators.Maths;
-import gama.gaml.types.GamaGeometryType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
- * The Class Creation.
+ * Provides all geometry construction operators for the GAML language.
+ *
+ * <p>This class exposes the following shape-creation operators (among others):
+ * {@code circle}, {@code square}, {@code rectangle}, {@code triangle}, {@code ellipse},
+ * {@code cone}, {@code hexagon}, {@code polygon}, {@code polyline} / {@code line},
+ * {@code plan} / {@code polyplan}, {@code cylinder}, {@code box}, {@code sphere},
+ * {@code teapot}, {@code link}, {@code curve} (Bézier), {@code arc},
+ * {@code squircle}, {@code cross}, {@code geometry_collection}, {@code polyhedron}.
+ *
+ * <p><b>Location default:</b> operators that depend on the current agent location
+ * (e.g. {@code circle}, {@code square}, {@code rectangle}) default to the calling
+ * agent's location, or to {@code {0,0,0}} when no agent is available.
+ *
+ * <p><b>Degenerate inputs:</b> a radius (or side size) ≤ 0 passed to {@code circle}
+ * or {@code sphere} returns a <em>point</em> geometry instead of a proper shape.
+ *
+ * <p>Usage example:
+ * <pre>{@code
+ * geometry myCircle <- circle(10);
+ * geometry myRect   <- rectangle(20, 10);
+ * geometry myPoly   <- polygon([{0,0},{0,10},{10,10},{10,0}]);
+ * geometry myLine   <- line([{0,0},{5,5},{10,0}]);
+ * }</pre>
+ *
+ * @author Alexis Drogoul, Patrick Taillandier, Arnaud Grignard and others (UMI UMMISCO IRD/SU)
+ * @see IShape
+ * @see GamaShapeFactory
  */
 public class SpatialCreation {
+
+	/**
+	 * Circle.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param radius
+	 *            the radius
+	 * @return the i shape
+	 */
 
 	/**
 	 * Circle.
@@ -55,6 +101,9 @@ public class SpatialCreation {
 			masterDoc = true,
 			usages = { @usage (
 					value = "returns a point if the radius operand is lower or equal to 0.") },
+			special_cases = {
+					"A radius ≤ 0 returns a point geometry at the agent's current location (or {0,0,0}).",
+					"The center is the location of the calling agent by default; use circle(r, pt) to specify an explicit center." },
 			comment = "the center of the circle is by default the location of the current agent in which has been called this operator.",
 			examples = { @example (
 					value = "circle(10)",
@@ -64,11 +113,11 @@ public class SpatialCreation {
 					"triangle" })
 	@no_test // (comment="See Creation.experiment in test models : {Circle tests with tolerance}")
 	public static IShape circle(final IScope scope, final Double radius) {
-		GamaPoint location;
+		IPoint location;
 		final IAgent a = scope.getAgent();
-		location = a != null ? a.getLocation() : new GamaPoint(0, 0);
+		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		if (radius <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildCircle(radius, location);
+		return GamaShapeFactory.buildCircle(radius, location);
 	}
 
 	/**
@@ -80,6 +129,16 @@ public class SpatialCreation {
 	 *            the radius
 	 * @param position
 	 *            the position
+	 * @return the i shape
+	 */
+
+	/**
+	 * Circle.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param radius
+	 *            the radius
 	 * @return the i shape
 	 */
 	@operator (
@@ -97,12 +156,23 @@ public class SpatialCreation {
 			see = { "around", "cone", "line", "link", "norm", "point", "polygon", "polyline", "rectangle", "square",
 					"triangle" })
 	@no_test
-	public static IShape circle(final IScope scope, final Double radius, final GamaPoint position) {
-		GamaPoint location;
-		location = position;
+	public static IShape circle(final IScope scope, final Double radius, final IPoint position) {
+		IPoint location = position;
 		if (radius <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildCircle(radius, location);
+		return GamaShapeFactory.buildCircle(radius, location);
 	}
+
+	/**
+	 * Ellipse.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param xRadius
+	 *            the x radius
+	 * @param yRadius
+	 *            the y radius
+	 * @return the i shape
+	 */
 
 	/**
 	 * Ellipse.
@@ -132,12 +202,24 @@ public class SpatialCreation {
 					"circle", "squircle", "triangle" })
 	@no_test // (comment="See Creation.experiment in test models : {Ellipse tests}")
 	public static IShape ellipse(final IScope scope, final Double xRadius, final Double yRadius) {
-		GamaPoint location;
+		IPoint location;
 		final IAgent a = scope.getAgent();
-		location = a != null ? a.getLocation() : new GamaPoint(0, 0);
+		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		if (xRadius <= 0 && yRadius <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildEllipse(xRadius, yRadius, location);
+		return GamaShapeFactory.buildEllipse(xRadius, yRadius, location);
 	}
+
+	/**
+	 * Squicle.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param xRadius
+	 *            the x radius
+	 * @param power
+	 *            the power
+	 * @return the i shape
+	 */
 
 	/**
 	 * Squicle.
@@ -167,12 +249,26 @@ public class SpatialCreation {
 					"rectangle", "square", "circle", "ellipse", "triangle" })
 	@no_test // Because who cares "du cul"
 	public static IShape squicle(final IScope scope, final Double xRadius, final Double power) {
-		GamaPoint location;
+		IPoint location;
 		final IAgent a = scope.getAgent();
-		location = a != null ? a.getLocation() : new GamaPoint(0, 0);
+		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		if (xRadius <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildSquircle(xRadius, power, location);
+		return GamaShapeFactory.buildSquircle(xRadius, power, location);
 	}
+
+	/**
+	 * Arc.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param xRadius
+	 *            the x radius
+	 * @param heading
+	 *            the heading
+	 * @param amplitude
+	 *            the amplitude
+	 * @return the i shape
+	 */
 
 	/**
 	 * Arc.
@@ -204,10 +300,25 @@ public class SpatialCreation {
 			see = { "around", "cone", "line", "link", "norm", "point", "polygon", "polyline", "super_ellipse",
 					"rectangle", "square", "circle", "ellipse", "triangle" })
 	@no_test // (comment="See Creation.experiment in test models : {Arc tests}")
-	public static IShape arc(final IScope scope, final Double xRadius, final Double heading,
-			final Double amplitude) {
+	public static IShape arc(final IScope scope, final Double xRadius, final Double heading, final Double amplitude) {
 		return arc(scope, xRadius, heading, amplitude, true);
 	}
+
+	/**
+	 * Arc.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param xRadius
+	 *            the x radius
+	 * @param heading
+	 *            the heading
+	 * @param amplitude
+	 *            the amplitude
+	 * @param filled
+	 *            the filled
+	 * @return the i shape
+	 */
 
 	/**
 	 * Arc.
@@ -243,11 +354,11 @@ public class SpatialCreation {
 	@no_test // (comment="See Creation.experiment in test models : {Arc tests}")
 	public static IShape arc(final IScope scope, final Double xRadius, final Double heading, final Double amplitude,
 			final boolean filled) {
-		GamaPoint location;
+		IPoint location;
 		final IAgent a = scope.getAgent();
-		location = a != null ? a.getLocation() : new GamaPoint(0, 0);
+		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		if (xRadius <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildArc(xRadius * 2, heading, amplitude, filled, location);
+		return GamaShapeFactory.buildArc(xRadius * 2, heading, amplitude, filled, location);
 	}
 
 	/**
@@ -265,6 +376,14 @@ public class SpatialCreation {
 	 *            the n pts
 	 * @return the i shape
 	 */
+
+	/**
+	 * Elliptical arc.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the i shape
+	 */
 	@operator (
 			value = "elliptical_arc",
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SHAPE },
@@ -275,11 +394,11 @@ public class SpatialCreation {
 					value = "elliptical_arc({0,0},{10,10},5.0, 20)",
 					equals = "a geometry from {0,0} to {10,10} considering a radius of 5.0 built using 20 points",
 					test = false) },
-			see = { "arc", "around", "cone", "line", "link", "norm", "point", "polygon", "polyline",
-					"super_ellipse", "rectangle", "square", "circle", "ellipse", "triangle" })
+			see = { "arc", "around", "cone", "line", "link", "norm", "point", "polygon", "polyline", "super_ellipse",
+					"rectangle", "square", "circle", "ellipse", "triangle" })
 	@no_test // (comment="See Creation.experiment in test models : {Arc tests}")
 
-	public static IShape ellipticalArc(final IScope scope, final GamaPoint pt1, final GamaPoint pt2, final double h,
+	public static IShape ellipticalArc(final IScope scope, final IPoint pt1, final IPoint pt2, final double h,
 			final int nPts) {
 		double xRadius = pt1.distance(pt2) / 2.0;
 		double yRadius = h;
@@ -290,12 +409,27 @@ public class SpatialCreation {
 			double ang = i * (Math.PI / nPts);
 			double x = xRadius * Math.cos(ang);
 			double y = yRadius * Math.sin(ang);
-			pts[iPt++] = new Coordinate(x, y);
+			// Interpolate z value between pt1.z and pt2.z based on position along the arc
+			double t = (double) i / (nPts - 1); // Normalized position from 0 to 1
+			double z = pt1.getZ() + t * (pt2.getZ() - pt1.getZ());
+			pts[iPt++] = new Coordinate(x, y, z);
 		}
-		IShape shape = GamaShapeFactory.createFrom(GeometryUtils.GEOMETRY_FACTORY.createLineString(pts));
+		IShape shape = GamaShapeFactory.createFrom(GeometryUtils.getGeometryFactory().createLineString(pts));
 		shape = SpatialTransformations.rotated_by(scope, shape, SpatialRelations.towards(scope, pt2, pt1));
 		return SpatialTransformations.translated_by(scope, shape, pt1.minus(shape.getPoints().firstValue(scope)));
 	}
+
+	/**
+	 * Cross.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param xRadius
+	 *            the x radius
+	 * @param width
+	 *            the width
+	 * @return the i shape
+	 */
 
 	/**
 	 * Cross.
@@ -323,12 +457,22 @@ public class SpatialCreation {
 					"rectangle", "square", "circle", "ellipse", "triangle" })
 	@no_test
 	public static IShape cross(final IScope scope, final Double xRadius, final Double width) {
-		GamaPoint location;
+		IPoint location;
 		final IAgent a = scope.getAgent();
-		location = a != null ? a.getLocation() : new GamaPoint(0, 0);
+		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		if (xRadius <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildCross(xRadius, width, location);
+		return GamaShapeFactory.buildCross(xRadius, width, location);
 	}
+
+	/**
+	 * Cross.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param xRadius
+	 *            the x radius
+	 * @return the i shape
+	 */
 
 	/**
 	 * Cross.
@@ -353,12 +497,24 @@ public class SpatialCreation {
 					"rectangle", "square", "circle", "ellipse", "triangle" })
 	@no_test
 	public static IShape cross(final IScope scope, final Double xRadius) {
-		GamaPoint location;
+		IPoint location;
 		final IAgent a = scope.getAgent();
-		location = a != null ? a.getLocation() : new GamaPoint(0, 0);
+		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		if (xRadius <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildCross(xRadius, null, location);
+		return GamaShapeFactory.buildCross(xRadius, null, location);
 	}
+
+	/**
+	 * Cylinder.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param radius
+	 *            the radius
+	 * @param depth
+	 *            the depth
+	 * @return the i shape
+	 */
 
 	/**
 	 * Cylinder.
@@ -388,12 +544,22 @@ public class SpatialCreation {
 					"triangle" })
 	@no_test // (comment="Dummy init in test models > Creation.experiment")
 	public static IShape cylinder(final IScope scope, final Double radius, final Double depth) {
-		GamaPoint location;
+		IPoint location;
 		final IAgent a = scope.getAgent();
-		location = a != null ? a.getLocation() : new GamaPoint(0, 0);
+		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		if (radius <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildCylinder(radius, depth, location);
+		return GamaShapeFactory.buildCylinder(radius, depth, location);
 	}
+
+	/**
+	 * Sphere.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param radius
+	 *            the radius
+	 * @return the i shape
+	 */
 
 	/**
 	 * Sphere.
@@ -421,12 +587,22 @@ public class SpatialCreation {
 					"triangle" })
 	@no_test // (comment="Dummy init in test models > Creation.experiment")
 	public static IShape sphere(final IScope scope, final Double radius) {
-		GamaPoint location;
+		IPoint location;
 		final IAgent a = scope.getAgent();
-		location = a != null ? a.getLocation() : new GamaPoint(0, 0);
+		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		if (radius <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildSphere(radius, location);
+		return GamaShapeFactory.buildSphere(radius, location);
 	}
+
+	/**
+	 * Teapot.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param size
+	 *            the size
+	 * @return the i shape
+	 */
 
 	/**
 	 * Teapot.
@@ -453,12 +629,24 @@ public class SpatialCreation {
 					"triangle" })
 	@no_test // (comment="Dummy init in test models > Creation.experiment")
 	public static IShape teapot(final IScope scope, final Double size) {
-		GamaPoint location;
+		IPoint location;
 		final IAgent a = scope.getAgent();
-		location = a != null ? a.getLocation() : new GamaPoint(0, 0);
+		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		if (size <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildTeapot(size, location);
+		return GamaShapeFactory.buildTeapot(size, location);
 	}
+
+	/**
+	 * Cone.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param p1
+	 *            the p 1
+	 * @param p2
+	 *            the p 2
+	 * @return the i shape
+	 */
 
 	/**
 	 * Cone.
@@ -484,8 +672,8 @@ public class SpatialCreation {
 					value = "cone(0, 45)",
 					equals = "a geometry as a cone with min angle is 0 and max angle is 45.",
 					test = false) },
-			see = { "around", "circle", "line", "link", "norm", "point", "polygon", "polyline", "rectangle",
-					"square", "triangle" })
+			see = { "around", "circle", "line", "link", "norm", "point", "polygon", "polyline", "rectangle", "square",
+					"triangle" })
 	@no_test // no idea how to test a cone
 	@depends_on (IKeyword.SHAPE)
 	public static IShape cone(final IScope scope, final Integer p1, final Integer p2) {
@@ -493,21 +681,21 @@ public class SpatialCreation {
 		final Double min_angle = Maths.checkHeading(p1);
 		final Double max_angle = Maths.checkHeading(p2);
 		final IAgent a = scope.getAgent();
-		final GamaPoint origin = a.getLocation() == null ? new GamaPoint(0, 0) : a.getLocation();
+		final IPoint origin = a.getLocation() == null ? GamaPointFactory.create(0, 0) : a.getLocation();
 		final double originx = origin.getX();
 		final double originy = origin.getY();
 		final double worldWidth = scope.getTopology().getWidth();// -
-																	// originx;
+		// originx;
 		final double worldHeight = scope.getTopology().getHeight();// -
 																	// originy;
 		final double max = Math.max(worldWidth, worldHeight);
 		final double min_point_x = originx + Maths.cos(min_angle) * max;
 		final double min_point_y = originy + Maths.sin(min_angle) * max;
-		final GamaPoint minPoint = new GamaPoint(min_point_x, min_point_y);
+		final IPoint minPoint = GamaPointFactory.create(min_point_x, min_point_y);
 
 		final double max_point_x = originx + Maths.cos(max_angle) * max;
 		final double max_point_y = originy + Maths.sin(max_angle) * max;
-		final GamaPoint maxPoint = new GamaPoint(max_point_x, max_point_y);
+		final IPoint maxPoint = GamaPointFactory.create(max_point_x, max_point_y);
 
 		return polygon(scope, GamaListFactory.wrap(Types.POINT, origin, minPoint, maxPoint));
 	}
@@ -521,6 +709,14 @@ public class SpatialCreation {
 	 *            the p
 	 * @return the i shape
 	 */
+
+	/**
+	 * Cone.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the i shape
+	 */
 	@operator (
 			value = "cone",
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SHAPE },
@@ -531,13 +727,25 @@ public class SpatialCreation {
 					value = "cone({0, 45})",
 					equals = "a geometry as a cone with min angle is 0 and max angle is 45.",
 					test = false) },
-			see = { "around", "circle", "line", "link", "norm", "point", "polygon", "polyline", "rectangle",
-					"square", "triangle" })
+			see = { "around", "circle", "line", "link", "norm", "point", "polygon", "polyline", "rectangle", "square",
+					"triangle" })
 	@no_test // no idea how to test a cone
-	public static IShape cone(final IScope scope, final GamaPoint p) {
+	public static IShape cone(final IScope scope, final IPoint p) {
 		if (p == null) return null;
-		return cone(scope, (int) p.x, (int) p.y);
+		return cone(scope, (int) p.getX(), (int) p.getY());
 	}
+
+	/**
+	 * Cone 3 D.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param radius
+	 *            the radius
+	 * @param height
+	 *            the height
+	 * @return the i shape
+	 */
 
 	/**
 	 * Cone 3 D.
@@ -566,12 +774,22 @@ public class SpatialCreation {
 					"triangle" })
 	@no_test
 	public static IShape cone3D(final IScope scope, final Double radius, final Double height) {
-		GamaPoint location;
+		IPoint location;
 		final IAgent a = scope.getAgent();
-		location = a != null ? a.getLocation() : new GamaPoint(0, 0);
+		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		if (radius <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildCone3D(radius, height, location);
+		return GamaShapeFactory.buildCone3D(radius, height, location);
 	}
+
+	/**
+	 * Square.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param side_size
+	 *            the side size
+	 * @return the i shape
+	 */
 
 	/**
 	 * Square.
@@ -590,6 +808,8 @@ public class SpatialCreation {
 			value = "A square geometry which side size is equal to the operand.",
 			usages = { @usage (
 					value = "returns nil if the operand is nil.") },
+			special_cases = {
+					"A side length ≤ 0 returns a point geometry at the agent's current location (or {0,0,0})." },
 			comment = "the centre of the square is by default the location of the current agent in which has been called this operator.",
 			examples = { @example (
 					value = "square(10)",
@@ -603,12 +823,22 @@ public class SpatialCreation {
 					"triangle" })
 	@test ("square(10).area = 100")
 	public static IShape square(final IScope scope, final Double side_size) {
-		GamaPoint location;
+		IPoint location;
 		final IAgent a = scope.getAgent();
-		location = a != null ? a.getLocation() : new GamaPoint(0, 0);
+		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		if (side_size <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildSquare(side_size, location);
+		return GamaShapeFactory.buildSquare(side_size, location);
 	}
+
+	/**
+	 * Cube.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param side_size
+	 *            the side size
+	 * @return the i shape
+	 */
 
 	/**
 	 * Cube.
@@ -636,11 +866,11 @@ public class SpatialCreation {
 					"triangle" })
 	@test ("cube(10).volume = 1000")
 	public static IShape cube(final IScope scope, final Double side_size) {
-		GamaPoint location;
+		IPoint location;
 		final IAgent a = scope.getAgent();
-		location = a != null ? a.getLocation() : new GamaPoint(0, 0);
+		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		if (side_size <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildCube(side_size, location);
+		return GamaShapeFactory.buildCube(side_size, location);
 	}
 
 	/**
@@ -650,6 +880,14 @@ public class SpatialCreation {
 	 *            the scope
 	 * @param p
 	 *            the p
+	 * @return the i shape
+	 */
+
+	/**
+	 * Rectangle.
+	 *
+	 * @param scope
+	 *            the scope
 	 * @return the i shape
 	 */
 	@operator (
@@ -666,12 +904,24 @@ public class SpatialCreation {
 			see = { "around", "circle", "cone", "line", "link", "norm", "point", "polygon", "polyline", "square",
 					"triangle" })
 	@test ("rectangle({10, 5}).area = 50.0")
-	public static IShape rectangle(final IScope scope, final GamaPoint p) {
-		GamaPoint location;
+	public static IShape rectangle(final IScope scope, final IPoint p) {
+		IPoint location;
 		final IAgent a = scope.getAgent();
-		location = a != null ? a.getLocation() : new GamaPoint(0, 0);
-		return GamaGeometryType.buildRectangle(p.x, p.y, location);
+		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
+		return GamaShapeFactory.buildRectangle(p.getX(), p.getY(), location);
 	}
+
+	/**
+	 * Rectangle.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param x
+	 *            the x
+	 * @param y
+	 *            the y
+	 * @return the i shape
+	 */
 
 	/**
 	 * Rectangle.
@@ -693,6 +943,8 @@ public class SpatialCreation {
 			masterDoc = true,
 			usages = { @usage (
 					value = "returns nil if the operand is nil.") },
+			special_cases = {
+					"If either dimension is ≤ 0, the resulting geometry degenerates (width or height of 0 produces a line; both ≤ 0 produces a point)." },
 			comment = "the center of the rectangle is by default the location of the current agent in which has been called this operator.",
 			examples = { @example (
 					value = "rectangle(10, 5)",
@@ -702,10 +954,10 @@ public class SpatialCreation {
 					"triangle" })
 	@test ("rectangle(10, 5).area = 50.0")
 	public static IShape rectangle(final IScope scope, final double x, final double y) {
-		GamaPoint location;
+		IPoint location;
 		final IAgent a = scope.getAgent();
-		location = a != null ? a.getLocation() : new GamaPoint(0, 0);
-		return GamaGeometryType.buildRectangle(x, y, location);
+		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
+		return GamaShapeFactory.buildRectangle(x, y, location);
 	}
 
 	/**
@@ -717,6 +969,14 @@ public class SpatialCreation {
 	 *            the upper left corner
 	 * @param lowerRightCorner
 	 *            the lower right corner
+	 * @return the i shape
+	 */
+
+	/**
+	 * Rectangle.
+	 *
+	 * @param scope
+	 *            the scope
 	 * @return the i shape
 	 */
 	@operator (
@@ -732,15 +992,15 @@ public class SpatialCreation {
 			see = { "around", "circle", "cone", "line", "link", "norm", "point", "polygon", "polyline", "square",
 					"triangle" })
 	@test ("rectangle({0.0,0.0}, {10.0,10.0}).area = 100.0")
-	public static IShape rectangle(final IScope scope, final GamaPoint upperLeftCorner,
-			final GamaPoint lowerRightCorner) {
-		GamaPoint location;
-		final double width = Math.abs(upperLeftCorner.x - lowerRightCorner.x);
-		final double height = Math.abs(upperLeftCorner.y - lowerRightCorner.y);
-		final GamaPoint realTopLeftCorner = new GamaPoint(Math.min(upperLeftCorner.x, lowerRightCorner.x),
-				Math.min(upperLeftCorner.y, lowerRightCorner.y));
-		location = new GamaPoint(realTopLeftCorner.x + width / 2, realTopLeftCorner.y + height / 2);
-		return GamaGeometryType.buildRectangle(width, height, location);
+	public static IShape rectangle(final IScope scope, final IPoint upperLeftCorner, final IPoint lowerRightCorner) {
+		IPoint location;
+		final double width = Math.abs(upperLeftCorner.getX() - lowerRightCorner.getX());
+		final double height = Math.abs(upperLeftCorner.getY() - lowerRightCorner.getY());
+		final IPoint realTopLeftCorner =
+				GamaPointFactory.create(Math.min(upperLeftCorner.getX(), lowerRightCorner.getX()),
+						Math.min(upperLeftCorner.getY(), lowerRightCorner.getY()));
+		location = GamaPointFactory.create(realTopLeftCorner.getX() + width / 2, realTopLeftCorner.getY() + height / 2);
+		return GamaShapeFactory.buildRectangle(width, height, location);
 	}
 
 	/**
@@ -750,6 +1010,14 @@ public class SpatialCreation {
 	 *            the scope
 	 * @param p
 	 *            the p
+	 * @return the i shape
+	 */
+
+	/**
+	 * Box.
+	 *
+	 * @param scope
+	 *            the scope
 	 * @return the i shape
 	 */
 	@operator (
@@ -772,12 +1040,26 @@ public class SpatialCreation {
 							returnType = "float") },
 			see = { "around", "circle", "sphere", "cone", "line", "link", "norm", "point", "polygon", "polyline",
 					"square", "cube", "triangle" })
-	public static IShape box(final IScope scope, final GamaPoint p) {
-		GamaPoint location;
+	public static IShape box(final IScope scope, final IPoint p) {
+		IPoint location;
 		final IAgent a = scope.getAgent();
-		location = a != null ? a.getLocation() : new GamaPoint(0, 0);
-		return GamaGeometryType.buildBox(p.x, p.y, p.z, location);
+		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
+		return GamaShapeFactory.buildBox(p.getX(), p.getY(), p.getZ(), location);
 	}
+
+	/**
+	 * Box.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param x
+	 *            the x
+	 * @param y
+	 *            the y
+	 * @param z
+	 *            the z
+	 * @return the i shape
+	 */
 
 	/**
 	 * Box.
@@ -809,11 +1091,21 @@ public class SpatialCreation {
 					"square", "cube", "triangle" })
 	@test ("box(10,5,5).volume = 250")
 	public static IShape box(final IScope scope, final double x, final double y, final double z) {
-		GamaPoint location;
+		IPoint location;
 		final IAgent a = scope.getAgent();
-		location = a != null ? a.getLocation() : new GamaPoint(0, 0);
-		return GamaGeometryType.buildBox(x, y, z, location);
+		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
+		return GamaShapeFactory.buildBox(x, y, z, location);
 	}
+
+	/**
+	 * Triangle.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param side_size
+	 *            the side size
+	 * @return the i shape
+	 */
 
 	/**
 	 * Triangle.
@@ -840,12 +1132,24 @@ public class SpatialCreation {
 					"square" })
 	@no_test
 	public static IShape triangle(final IScope scope, final Double side_size) {
-		GamaPoint location;
+		IPoint location;
 		final IAgent a = scope.getAgent();
-		location = a != null ? a.getLocation() : new GamaPoint(0, 0);
+		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		if (side_size <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildTriangle(side_size, location);
+		return GamaShapeFactory.buildTriangle(side_size, location);
 	}
+
+	/**
+	 * Triangle.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param base
+	 *            the base
+	 * @param height
+	 *            the height
+	 * @return the i shape
+	 */
 
 	/**
 	 * Triangle.
@@ -874,12 +1178,22 @@ public class SpatialCreation {
 					"square" })
 	@no_test
 	public static IShape triangle(final IScope scope, final Double base, final Double height) {
-		GamaPoint location;
+		IPoint location;
 		final IAgent a = scope.getAgent();
-		location = a != null ? a.getLocation() : new GamaPoint(0, 0);
+		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		if (base <= 0 || height <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildTriangle(base, height, location);
+		return GamaShapeFactory.buildTriangle(base, height, location);
 	}
+
+	/**
+	 * Pyramid.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param side_size
+	 *            the side size
+	 * @return the i shape
+	 */
 
 	/**
 	 * Pyramid.
@@ -907,12 +1221,22 @@ public class SpatialCreation {
 					"square" })
 	@no_test
 	public static IShape pyramid(final IScope scope, final Double side_size) {
-		GamaPoint location;
+		IPoint location;
 		final IAgent a = scope.getAgent();
-		location = a != null ? a.getLocation() : new GamaPoint(0, 0);
+		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		if (side_size <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildPyramid(side_size, location);
+		return GamaShapeFactory.buildPyramid(side_size, location);
 	}
+
+	/**
+	 * Hexagon.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param size
+	 *            the size
+	 * @return the i shape
+	 */
 
 	/**
 	 * Hexagon.
@@ -940,11 +1264,11 @@ public class SpatialCreation {
 					"triangle" })
 	@no_test
 	public static IShape hexagon(final IScope scope, final Double size) {
-		GamaPoint location;
+		IPoint location;
 		final IAgent a = scope.getAgent();
-		location = a != null ? a.getLocation() : new GamaPoint(0, 0);
+		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		if (size <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildHexagon(size, location);
+		return GamaShapeFactory.buildHexagon(size, location);
 	}
 
 	/**
@@ -954,6 +1278,14 @@ public class SpatialCreation {
 	 *            the scope
 	 * @param size
 	 *            the size
+	 * @return the i shape
+	 */
+
+	/**
+	 * Hexagon.
+	 *
+	 * @param scope
+	 *            the scope
 	 * @return the i shape
 	 */
 	@operator (
@@ -969,15 +1301,27 @@ public class SpatialCreation {
 			see = { "around", "circle", "cone", "line", "link", "norm", "point", "polygon", "polyline", "rectangle",
 					"triangle" })
 	@no_test
-	public static IShape hexagon(final IScope scope, final GamaPoint size) {
-		GamaPoint location;
+	public static IShape hexagon(final IScope scope, final IPoint size) {
+		IPoint location;
 		final IAgent a = scope.getAgent();
-		location = a != null ? a.getLocation() : new GamaPoint(0, 0);
-		final Double width = size.x;
-		final Double height = size.y;
+		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
+		final Double width = size.getX();
+		final Double height = size.getY();
 		if (width <= 0 || height <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildHexagon(width, height, location);
+		return GamaShapeFactory.buildHexagon(width, height, location);
 	}
+
+	/**
+	 * Hexagon.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param width
+	 *            the width
+	 * @param height
+	 *            the height
+	 * @return the i shape
+	 */
 
 	/**
 	 * Hexagon.
@@ -1004,13 +1348,22 @@ public class SpatialCreation {
 					"triangle" })
 	@no_test
 	public static IShape hexagon(final IScope scope, final Double width, final Double height) {
-		GamaPoint location;
+		IPoint location;
 		final IAgent a = scope.getAgent();
-		location = a != null ? a.getLocation() : new GamaPoint(0, 0);
-		if (width == null || height == null || width <= 0 || height <= 0)
-			return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildHexagon(width, height, location);
+		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
+		if (width == null || height == null || width <= 0 || height <= 0) return GamaShapeFactory.createFrom(location);
+		return GamaShapeFactory.buildHexagon(width, height, location);
 	}
+
+	/**
+	 * Polygon.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param points
+	 *            the points
+	 * @return the i shape
+	 */
 
 	/**
 	 * Polygon.
@@ -1034,6 +1387,10 @@ public class SpatialCreation {
 							value = "if the operand is composed of a single point, returns a point geometry"),
 					@usage (
 							value = "if the operand is composed of 2 points, returns a polyline geometry.") },
+			special_cases = {
+					"An empty list returns a point at {0,0,0}.",
+					"A list with fewer than 3 distinct points may return a line or a point geometry.",
+					"Duplicate consecutive points are removed before the polygon is built." },
 			examples = { @example (
 					value = "polygon([{0,0}, {0,10}, {10,10}, {10,0}])",
 					equals = "a polygon geometry composed of the 4 points.",
@@ -1050,17 +1407,29 @@ public class SpatialCreation {
 					"triangle" })
 	@no_test
 	public static IShape polygon(final IScope scope, final IContainer<?, ? extends IShape> points) {
-		if (points == null || points.isEmpty(scope)) return GamaShapeFactory.createFrom(new GamaPoint(0, 0));
+		if (points == null || points.isEmpty(scope)) return GamaShapeFactory.createFrom(GamaPointFactory.create(0, 0));
 		// final IList<IShape> shapes = points.listValue(scope); Now
 		// replaced by a copy of the list (see Issue 740)
 		final IList<IShape> shapes = GamaListFactory.create(scope, Types.GEOMETRY, points);
 		final int size = shapes.length(scope);
 		final IShape first = shapes.firstValue(scope);
-		if (size == 1) return GamaGeometryType.createPoint(first);
-		if (size == 2) return GamaGeometryType.buildLine(first, shapes.lastValue(scope));
+		if (size == 1) return GamaShapeFactory.buildPoint(first);
+		if (size == 2) return GamaShapeFactory.buildLine(first, shapes.lastValue(scope));
 		if (!first.equals(shapes.lastValue(scope))) { shapes.add(first); }
-		return GamaGeometryType.buildPolygon(shapes);
+		return GamaShapeFactory.buildPolygon(shapes);
 	}
+
+	/**
+	 * Polyhedron.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param points
+	 *            the points
+	 * @param depth
+	 *            the depth
+	 * @return the i shape
+	 */
 
 	/**
 	 * Polyhedron.
@@ -1094,17 +1463,17 @@ public class SpatialCreation {
 					"triangle" })
 	@no_test
 	public static IShape polyhedron(final IScope scope, final IContainer<?, IShape> points, final Double depth) {
-		if (points == null || points.isEmpty(scope)) return GamaShapeFactory.createFrom(new GamaPoint(0, 0));
+		if (points == null || points.isEmpty(scope)) return GamaShapeFactory.createFrom(GamaPointFactory.create(0, 0));
 		// final IList<IShape> shapes = points.listValue(scope); Now
 		// replaced by a copy of the list (see Issue 740)
 		final IList<IShape> shapes = GamaListFactory.create(scope, Types.POINT, points);
 		final int size = shapes.length(scope);
 		final IShape first = shapes.firstValue(scope);
-		if (size == 1) return GamaGeometryType.createPoint(first);
+		if (size == 1) return GamaShapeFactory.buildPoint(first);
 		final IShape last = shapes.lastValue(scope);
-		if (size == 2) return GamaGeometryType.buildLine(first, last);
+		if (size == 2) return GamaShapeFactory.buildLine(first, last);
 		if (!first.equals(last)) { shapes.add(first); }
-		return GamaGeometryType.buildPolyhedron(shapes, depth);
+		return GamaShapeFactory.buildPolyhedron(shapes, depth);
 	}
 
 	/**
@@ -1120,29 +1489,42 @@ public class SpatialCreation {
 	 *            the p2
 	 * @return the i shape
 	 */
+
+	/**
+	 * Bezier curve.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param p0
+	 *            the p 0
+	 * @param p1
+	 *            the p 1
+	 * @param p2
+	 *            the p 2
+	 * @return the i shape
+	 */
 	@operator (
 			value = { "curve" },
 			expected_content_type = { IType.POINT, IType.GEOMETRY, IType.AGENT },
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SHAPE },
 			concept = { IConcept.SHAPE, IConcept.GEOMETRY, IConcept.POINT })
 	@doc (
-			value = "The operator computes a Bezier curve geometry between the given operators, with 10 or a given number of points, and from left to rigth or right to left.",
+			value = "The operator computes a Bezier curve geometry corresponding to control points provided in arguments, with a given number of points (default = 10).",
 			masterDoc = true,
 			usages = { @usage (
 					value = "if one  of the operand is nil, returns nil"),
 					@usage (
-							value = "When used with 3 points, it computes a quadratic Bezier curve geometry built from the three given points and composed of 10 points.",
+							value = "When used with 3 points in argument, it computes a quadratic Bezier curve geometry with these three control points. It is composed of the default number of points.",
 							examples = { @example (
 									value = "curve({0,0}, {0,10}, {10,10})",
-									equals = "a quadratic Bezier curve geometry composed of 10 points from p0 to p2.",
+									equals = "a quadratic Bezier curve geometry composed of 10 points, with control points p0, p1 and p2.",
 									test = false) }) },
-			see = { "around", "circle", "cone", "link", "norm", "point", "polygone", "rectangle", "square",
-					"triangle", "line" })
+			see = { "around", "circle", "cone", "link", "norm", "point", "polygone", "rectangle", "square", "triangle",
+					"line" })
 	@no_test
-	public static IShape bezierCurve(final IScope scope, final GamaPoint p0, final GamaPoint p1,
-			final GamaPoint p2) {
+	public static IShape bezierCurve(final IScope scope, final IPoint p0, final IPoint p1, final IPoint p2) {
 		if (p0 == null || p1 == null || p2 == null) return null;
-		return GamaGeometryType.buildPolyline(quadraticBezierCurve(p0, p1, p2, 10));
+		return GamaShapeFactory.buildPolyline(quadraticBezierCurve(p0, p1, p2, 10));
 	}
 
 	/**
@@ -1160,26 +1542,42 @@ public class SpatialCreation {
 	 *            the nb points
 	 * @return the i shape
 	 */
+
+	/**
+	 * Bezier curve.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param p0
+	 *            the p 0
+	 * @param p1
+	 *            the p 1
+	 * @param p2
+	 *            the p 2
+	 * @param nbPoints
+	 *            the nb points
+	 * @return the i shape
+	 */
 	@operator (
 			value = { "curve" },
 			expected_content_type = { IType.POINT, IType.GEOMETRY, IType.AGENT },
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SHAPE },
 			concept = {})
 	@doc (
-			value = "A quadratic Bezier curve geometry built from the three given points composed of a given numnber of points.",
+			value = "A quadratic Bezier curve geometry built from the three given points and composed of a given number of points.",
 			usages = { @usage (
-					value = "When used with 3 points and an integer, it  computes a quadratic Bezier curve geometry built from the three given points. If the last operand (number of points) is inferior to 2, returns nil",
+					value = "When used with 3 points p0, p1, p2 and an integer n, it  computes a n-points quadratic Bezier curve geometry built from control points p0, p1, p2. If n is inferior to 2, returns nil.",
 					examples = { @example (
 							value = "curve({0,0}, {0,10}, {10,10}, 20)",
-							equals = "a quadratic Bezier curve geometry composed of 20 points from p0 to p2.",
+							equals = "a quadratic Bezier curve geometry composed of 20 points with control points p0, p1 and p2.",
 							test = false) }) },
-			see = { "around", "circle", "cone", "link", "norm", "point", "polygone", "rectangle", "square",
-					"triangle", "line" })
+			see = { "around", "circle", "cone", "link", "norm", "point", "polygone", "rectangle", "square", "triangle",
+					"line" })
 	@no_test
-	public static IShape bezierCurve(final IScope scope, final GamaPoint p0, final GamaPoint p1, final GamaPoint p2,
+	public static IShape bezierCurve(final IScope scope, final IPoint p0, final IPoint p1, final IPoint p2,
 			final int nbPoints) {
 		if (p0 == null || p1 == null || p2 == null || nbPoints < 2) return null;
-		return GamaGeometryType.buildPolyline(quadraticBezierCurve(p0, p1, p2, nbPoints));
+		return GamaShapeFactory.buildPolyline(quadraticBezierCurve(p0, p1, p2, nbPoints));
 	}
 
 	/**
@@ -1197,27 +1595,57 @@ public class SpatialCreation {
 	 *            the p3
 	 * @return the i shape
 	 */
+
+	/**
+	 * Bezier curve.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param p0
+	 *            the p 0
+	 * @param p1
+	 *            the p 1
+	 * @param p2
+	 *            the p 2
+	 * @param p3
+	 *            the p 3
+	 * @return the i shape
+	 */
 	@operator (
 			value = { "curve" },
 			expected_content_type = { IType.POINT, IType.GEOMETRY, IType.AGENT },
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SHAPE },
 			concept = {})
 	@doc (
-			value = "A cubic Bezier curve geometry built from the four given points composed of 10 points.",
+			value = "A cubic Bezier curve geometry built with four control points and composed of 10 points.",
 			usages = { @usage (
-					value = "When used with 4 points, it computes, it computes a cubic Bezier curve geometry built from the four given points and composed of 10 points. ",
+					value = "When used with 4 points, it computes a cubic Bezier curve geometry built with the four given control points and composed of 10 points.",
 					examples = { @example (
 							value = "curve({0,0}, {0,10}, {10,10})",
-							equals = "a cubic Bezier curve geometry composed of 10 points from p0 to p3.",
+							equals = "a cubic Bezier curve geometry composed of 10 points with control points p0, ..., p3.",
 							test = false) }) },
-			see = { "around", "circle", "cone", "link", "norm", "point", "polygone", "rectangle", "square",
-					"triangle", "line" })
+			see = { "around", "circle", "cone", "link", "norm", "point", "polygone", "rectangle", "square", "triangle",
+					"line" })
 	@no_test
-	public static IShape bezierCurve(final IScope scope, final GamaPoint p0, final GamaPoint p1, final GamaPoint p2,
-			final GamaPoint p3) {
+	public static IShape bezierCurve(final IScope scope, final IPoint p0, final IPoint p1, final IPoint p2,
+			final IPoint p3) {
 		if (p0 == null || p1 == null || p2 == null || p3 == null) return null;
-		return GamaGeometryType.buildPolyline(cubicBezierCurve(p0, p1, p2, p3, 10));
+		return GamaShapeFactory.buildPolyline(cubicBezierCurve(p0, p1, p2, p3, 10));
 	}
+
+	/**
+	 * Bezier curve.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param P0
+	 *            the p0
+	 * @param P1
+	 *            the p1
+	 * @param coefficient
+	 *            the coefficient
+	 * @return the i shape
+	 */
 
 	/**
 	 * Bezier curve.
@@ -1245,11 +1673,10 @@ public class SpatialCreation {
 							value = "curve({0,0},{10,10}, 0.5)",
 							equals = "a cubic Bezier curve geometry composed of 10 points from p0 to p1.",
 							test = false) }) },
-			see = { "around", "circle", "cone", "link", "norm", "point", "polygone", "rectangle", "square",
-					"triangle", "line" })
+			see = { "around", "circle", "cone", "link", "norm", "point", "polygone", "rectangle", "square", "triangle",
+					"line" })
 	@no_test
-	public static IShape bezierCurve(final IScope scope, final GamaPoint P0, final GamaPoint P1,
-			final Double coefficient) {
+	public static IShape bezierCurve(final IScope scope, final IPoint P0, final IPoint P1, final Double coefficient) {
 		return bezierCurve(scope, P0, P1, coefficient, true, 10, 0.5);
 	}
 
@@ -1262,6 +1689,22 @@ public class SpatialCreation {
 	 *            the p0
 	 * @param p1
 	 *            the p1
+	 * @param coefficient
+	 *            the coefficient
+	 * @param right
+	 *            the right
+	 * @return the i shape
+	 */
+
+	/**
+	 * Bezier curve.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param p0
+	 *            the p 0
+	 * @param p1
+	 *            the p 1
 	 * @param coefficient
 	 *            the coefficient
 	 * @param right
@@ -1281,11 +1724,11 @@ public class SpatialCreation {
 							value = "curve({0,0},{10,10}, 0.5, false)",
 							equals = "a cubic Bezier curve geometry composed of 10 points from p0 to p1 at the left side.",
 							test = false) }) },
-			see = { "around", "circle", "cone", "link", "norm", "point", "polygone", "rectangle", "square",
-					"triangle", "line" })
+			see = { "around", "circle", "cone", "link", "norm", "point", "polygone", "rectangle", "square", "triangle",
+					"line" })
 	@no_test
-	public static IShape bezierCurve(final IScope scope, final GamaPoint p0, final GamaPoint p1,
-			final Double coefficient, final boolean right) {
+	public static IShape bezierCurve(final IScope scope, final IPoint p0, final IPoint p1, final Double coefficient,
+			final boolean right) {
 		return bezierCurve(scope, p0, p1, coefficient, right, 10, 0.5);
 	}
 
@@ -1298,6 +1741,24 @@ public class SpatialCreation {
 	 *            the p0
 	 * @param p1
 	 *            the p1
+	 * @param coefficient
+	 *            the coefficient
+	 * @param right
+	 *            the right
+	 * @param nbPoints
+	 *            the nb points
+	 * @return the i shape
+	 */
+
+	/**
+	 * Bezier curve.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param p0
+	 *            the p 0
+	 * @param p1
+	 *            the p 1
 	 * @param coefficient
 	 *            the coefficient
 	 * @param right
@@ -1319,11 +1780,11 @@ public class SpatialCreation {
 							value = "curve({0,0},{10,10}, 0.5, false, 100)",
 							equals = "a cubic Bezier curve geometry composed of 100 points from p0 to p1 at the right side.",
 							test = false) }) },
-			see = { "around", "circle", "cone", "link", "norm", "point", "polygone", "rectangle", "square",
-					"triangle", "line" })
+			see = { "around", "circle", "cone", "link", "norm", "point", "polygone", "rectangle", "square", "triangle",
+					"line" })
 	@no_test
-	public static IShape bezierCurve(final IScope scope, final GamaPoint p0, final GamaPoint p1,
-			final Double coefficient, final boolean right, final int nbPoints) {
+	public static IShape bezierCurve(final IScope scope, final IPoint p0, final IPoint p1, final Double coefficient,
+			final boolean right, final int nbPoints) {
 		return bezierCurve(scope, p0, p1, coefficient, right, nbPoints, 0.5);
 	}
 
@@ -1346,6 +1807,14 @@ public class SpatialCreation {
 	 *            the proportion
 	 * @return the i shape
 	 */
+
+	/**
+	 * Bezier curve.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the i shape
+	 */
 	@operator (
 			value = { "curve" },
 			expected_content_type = { IType.POINT, IType.GEOMETRY, IType.AGENT },
@@ -1359,18 +1828,17 @@ public class SpatialCreation {
 							value = "curve({0,0},{10,10}, 0.5, false, 100, 0.8)",
 							equals = "a cubic Bezier curve geometry composed of 100 points from p0 to p1 at the right side.",
 							test = false) }) },
-			see = { "around", "circle", "cone", "link", "norm", "point", "polygone", "rectangle", "square",
-					"triangle", "line" })
+			see = { "around", "circle", "cone", "link", "norm", "point", "polygone", "rectangle", "square", "triangle",
+					"line" })
 	@no_test
-	public static IShape bezierCurve(final IScope scope, final GamaPoint p0, final GamaPoint p1,
-			final Double coefficient, final boolean right, final int nbPoints, final double proportion) {
+	public static IShape bezierCurve(final IScope scope, final IPoint p0, final IPoint p1, final Double coefficient,
+			final boolean right, final int nbPoints, final double proportion) {
 		if (p0 == null || p1 == null) return null;
-		GamaPoint p01 = new GamaPoint(p0.x + (p1.x - p0.x) * proportion, p0.y + (p1.y - p0.y) * proportion,
-				p0.z + (p1.z - p0.z) * proportion);
+		IPoint p01 = p0.plus(p1.minus(p0).times(proportion));
 		final double val = coefficient * p0.euclidianDistanceTo(p1);
 		final double heading = SpatialRelations.towards(scope, p0, p1);
-		p01 = new GamaPoint(p01.x + Maths.cos(heading + 90 * (right ? 1.0 : -1.0)) * val,
-				p01.y + Maths.sin(heading + 90 * (right ? 1.0 : -1.0)) * val, p01.z);
+		p01 = GamaPointFactory.create(p01.getX() + Maths.cos(heading + 90 * (right ? 1.0 : -1.0)) * val,
+				p01.getY() + Maths.sin(heading + 90 * (right ? 1.0 : -1.0)) * val, p01.getZ());
 		return bezierCurve(scope, p0, p01, p1, nbPoints);
 	}
 
@@ -1393,6 +1861,14 @@ public class SpatialCreation {
 	 *            the angle
 	 * @return the i shape
 	 */
+
+	/**
+	 * Bezier curve.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the i shape
+	 */
 	@operator (
 			value = { "curve" },
 			expected_content_type = { IType.POINT, IType.GEOMETRY, IType.AGENT },
@@ -1406,19 +1882,17 @@ public class SpatialCreation {
 							value = "curve({0,0},{10,10}, 0.5, 100, 0.8, 90)",
 							equals = "a cubic Bezier curve geometry composed of 100 points from p0 to p1 at the right side.",
 							test = false) }) },
-			see = { "around", "circle", "cone", "link", "norm", "point", "polygone", "rectangle", "square",
-					"triangle", "line" })
+			see = { "around", "circle", "cone", "link", "norm", "point", "polygone", "rectangle", "square", "triangle",
+					"line" })
 	@no_test
-	public static IShape bezierCurve(final IScope scope, final GamaPoint p0, final GamaPoint p1,
-			final Double coefficient, final int nbPoints, final double proportion, final double angle) {
+	public static IShape bezierCurve(final IScope scope, final IPoint p0, final IPoint p1, final Double coefficient,
+			final int nbPoints, final double proportion, final double angle) {
 		if (p0 == null || p1 == null) return null;
 		IShape shape = bezierCurve(scope, p0, p1, coefficient, false, nbPoints, proportion);
-		shape = SpatialTransformations.rotated_by(scope, shape, angle,
-				new GamaPoint(p0.x - p1.x, p0.y - p1.y, p0.z - p1.z));
+		shape = SpatialTransformations.rotated_by(scope, shape, -angle, p0.minus(p1));
 		if (shape == null) return null;
-		final GamaPoint newPt0 = shape.getPoints().get(0);
-		return SpatialTransformations.translated_by(scope, shape,
-				new GamaPoint(p0.x - newPt0.x, p0.y - newPt0.y, p0.z - newPt0.z));
+		final IPoint newPt0 = shape.getPoints().get(0);
+		return SpatialTransformations.translated_by(scope, shape, p0.minus(newPt0));
 	}
 
 	/**
@@ -1438,6 +1912,14 @@ public class SpatialCreation {
 	 *            the angle
 	 * @return the i shape
 	 */
+
+	/**
+	 * Bezier curve.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the i shape
+	 */
 	@operator (
 			value = { "curve" },
 			expected_content_type = { IType.POINT, IType.GEOMETRY, IType.AGENT },
@@ -1451,11 +1933,11 @@ public class SpatialCreation {
 							value = "curve({0,0},{10,10}, 0.5, 100, 90)",
 							equals = "a cubic Bezier curve geometry composed of 100 points from p0 to p1 at the right side.",
 							test = false) }) },
-			see = { "around", "circle", "cone", "link", "norm", "point", "polygone", "rectangle", "square",
-					"triangle", "line" })
+			see = { "around", "circle", "cone", "link", "norm", "point", "polygone", "rectangle", "square", "triangle",
+					"line" })
 	@no_test
-	public static IShape bezierCurve(final IScope scope, final GamaPoint p0, final GamaPoint p1,
-			final Double coefficient, final int nbPoints, final double angle) {
+	public static IShape bezierCurve(final IScope scope, final IPoint p0, final IPoint p1, final Double coefficient,
+			final int nbPoints, final double angle) {
 		return bezierCurve(scope, p0, p1, coefficient, nbPoints, 0.5, angle);
 	}
 
@@ -1474,6 +1956,14 @@ public class SpatialCreation {
 	 *            the angle
 	 * @return the i shape
 	 */
+
+	/**
+	 * Bezier curve.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the i shape
+	 */
 	@operator (
 			value = { "curve" },
 			expected_content_type = { IType.POINT, IType.GEOMETRY, IType.AGENT },
@@ -1487,11 +1977,11 @@ public class SpatialCreation {
 							value = "curve({0,0},{10,10}, 0.5, 90)",
 							equals = "a cubic Bezier curve geometry composed of 100 points from p0 to p1 at the right side.",
 							test = false) }) },
-			see = { "around", "circle", "cone", "link", "norm", "point", "polygone", "rectangle", "square",
-					"triangle", "line" })
+			see = { "around", "circle", "cone", "link", "norm", "point", "polygone", "rectangle", "square", "triangle",
+					"line" })
 	@no_test
-	public static IShape bezierCurve(final IScope scope, final GamaPoint p0, final GamaPoint p1,
-			final Double coefficient, final double angle) {
+	public static IShape bezierCurve(final IScope scope, final IPoint p0, final IPoint p1, final Double coefficient,
+			final double angle) {
 		return bezierCurve(scope, p0, p1, coefficient, 10, 0.5, angle);
 	}
 
@@ -1512,6 +2002,14 @@ public class SpatialCreation {
 	 *            the nb points
 	 * @return the i shape
 	 */
+
+	/**
+	 * Bezier curve.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the i shape
+	 */
 	@operator (
 			value = { "curve" },
 			expected_content_type = { IType.POINT, IType.GEOMETRY, IType.AGENT },
@@ -1525,13 +2023,13 @@ public class SpatialCreation {
 							value = "curve({0,0}, {0,10}, {10,10})",
 							equals = "a cubic Bezier curve geometry composed of 10 points from p0 to p3.",
 							test = false) }) },
-			see = { "around", "circle", "cone", "link", "norm", "point", "polygone", "rectangle", "square",
-					"triangle", "line" })
+			see = { "around", "circle", "cone", "link", "norm", "point", "polygone", "rectangle", "square", "triangle",
+					"line" })
 	@no_test
-	public static IShape bezierCurve(final IScope scope, final GamaPoint p0, final GamaPoint p1, final GamaPoint p2,
-			final GamaPoint p3, final int nbPoints) {
+	public static IShape bezierCurve(final IScope scope, final IPoint p0, final IPoint p1, final IPoint p2,
+			final IPoint p3, final int nbPoints) {
 		if (p0 == null || p1 == null || p2 == null || p3 == null || nbPoints < 2) return null;
-		return GamaGeometryType.buildPolyline(cubicBezierCurve(p0, p1, p2, p3, nbPoints));
+		return GamaShapeFactory.buildPolyline(cubicBezierCurve(p0, p1, p2, p3, nbPoints));
 	}
 
 	/**
@@ -1547,14 +2045,16 @@ public class SpatialCreation {
 	 *            the nb points
 	 * @return the list
 	 */
-	private static List<IShape> quadraticBezierCurve(final GamaPoint p0, final GamaPoint p1, final GamaPoint p2,
+	private static List<IShape> quadraticBezierCurve(final IPoint p0, final IPoint p1, final IPoint p2,
 			final int nbPoints) {
-		final List<IShape> points = new ArrayList<>();
+		final List<IShape> points = new ArrayList<>(nbPoints);
+		final double denom = nbPoints - 1;
 		for (int i = 0; i < nbPoints; i++) {
-			final double x = quadraticBezier(p0.x, p1.x, p2.x, (double) i / (nbPoints - 1));
-			final double y = quadraticBezier(p0.y, p1.y, p2.y, (double) i / (nbPoints - 1));
-			final double z = quadraticBezier(p0.z, p1.z, p2.z, (double) i / (nbPoints - 1));
-			points.add(new GamaPoint(x, y, z));
+			final double t = i / denom;
+			final double x = quadraticBezier(p0.getX(), p1.getX(), p2.getX(), t);
+			final double y = quadraticBezier(p0.getY(), p1.getY(), p2.getY(), t);
+			final double z = quadraticBezier(p0.getZ(), p1.getZ(), p2.getZ(), t);
+			points.add(GamaPointFactory.create(x, y, z));
 		}
 		return points;
 	}
@@ -1574,14 +2074,16 @@ public class SpatialCreation {
 	 *            the nb points
 	 * @return the list
 	 */
-	private static List<IShape> cubicBezierCurve(final GamaPoint p0, final GamaPoint p1, final GamaPoint p2,
-			final GamaPoint p3, final int nbPoints) {
-		final List<IShape> points = new ArrayList<>();
+	private static List<IShape> cubicBezierCurve(final IPoint p0, final IPoint p1, final IPoint p2, final IPoint p3,
+			final int nbPoints) {
+		final List<IShape> points = new ArrayList<>(nbPoints);
+		final double denom = nbPoints - 1;
 		for (int i = 0; i < nbPoints; i++) {
-			final double x = cubicBezier(p0.x, p1.x, p2.x, p3.x, (double) i / (nbPoints - 1));
-			final double y = cubicBezier(p0.y, p1.y, p2.y, p3.y, (double) i / (nbPoints - 1));
-			final double z = cubicBezier(p0.z, p1.z, p2.z, p3.z, (double) i / (nbPoints - 1));
-			points.add(new GamaPoint(x, y, z));
+			final double t = i / denom;
+			final double x = cubicBezier(p0.getX(), p1.getX(), p2.getX(), p3.getX(), t);
+			final double y = cubicBezier(p0.getY(), p1.getY(), p2.getY(), p3.getY(), t);
+			final double z = cubicBezier(p0.getZ(), p1.getZ(), p2.getZ(), p3.getZ(), t);
+			points.add(GamaPointFactory.create(x, y, z));
 		}
 		return points;
 	}
@@ -1620,9 +2122,21 @@ public class SpatialCreation {
 	 */
 	private static double cubicBezier(final double v0, final double v1, final double v2, final double v3,
 			final double t) {
-		return Math.pow(1 - t, 3) * v0 + 3 * (1 - t) * (1 - t) * t * v1 + 3 * (1 - t) * t * t * v2
-				+ Math.pow(t, 3) * v3;
+		final double mt = 1.0 - t;
+		final double mt2 = mt * mt;
+		final double t2 = t * t;
+		return mt2 * mt * v0 + 3.0 * mt2 * t * v1 + 3.0 * mt * t2 * v2 + t2 * t * v3;
 	}
+
+	/**
+	 * Line.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param points
+	 *            the points
+	 * @return the i shape
+	 */
 
 	/**
 	 * Line.
@@ -1645,6 +2159,9 @@ public class SpatialCreation {
 					value = "if the points list operand is nil, returns the point geometry {0,0}"),
 					@usage (
 							value = "if the points list operand is composed of a single point, returns a point geometry.") },
+			special_cases = {
+					"An empty list returns the point geometry {0,0,0}.",
+					"A single-point list returns a degenerate point geometry (not a line)." },
 			examples = { @example (
 					value = "polyline([{0,0}, {0,10}, {10,10}])",
 					equals = "a polyline geometry composed of the 3 points.",
@@ -1661,14 +2178,24 @@ public class SpatialCreation {
 					"triangle" })
 	@test ("points_along(line({0,0},{0,10}),[0.5])[0] = point({0,5})")
 	public static IShape line(final IScope scope, final IContainer<?, IShape> points) {
-		if (points == null || points.isEmpty(scope)) return GamaShapeFactory.createFrom(new GamaPoint(0, 0));
+		if (points == null || points.isEmpty(scope)) return GamaShapeFactory.createFrom(GamaPointFactory.create(0, 0));
 		final IList<IShape> shapes = points.listValue(scope, Types.NO_TYPE, false);
 		final int size = shapes.length(scope);
 		final IShape first = shapes.firstValue(scope);
-		if (size == 1) return GamaGeometryType.createPoint(first);
-		if (size == 2) return GamaGeometryType.buildLine(first, points.lastValue(scope));
-		return GamaGeometryType.buildPolyline(shapes);
+		if (size == 1) return GamaShapeFactory.buildPoint(first);
+		if (size == 2) return GamaShapeFactory.buildLine(first, points.lastValue(scope));
+		return GamaShapeFactory.buildPolyline(shapes);
 	}
+
+	/**
+	 * Geometry collection.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param geometries
+	 *            the geometries
+	 * @return the i shape
+	 */
 
 	/**
 	 * Geometry collection.
@@ -1693,19 +2220,31 @@ public class SpatialCreation {
 					value = "geometry_collection([{0,0}, {0,10}, {10,10}, {10,0}])",
 					equals = "a geometry composed of the 4 points (multi-point).",
 					test = false) },
-			see = { "around", "circle", "cone", "link", "norm", "point", "polygone", "rectangle", "square",
-					"triangle", "line" })
+			see = { "around", "circle", "cone", "link", "norm", "point", "polygone", "rectangle", "square", "triangle",
+					"line" })
 	@no_test
 	public static IShape geometryCollection(final IScope scope, final IContainer<?, IShape> geometries) {
 		if (geometries == null || geometries.isEmpty(scope))
-			return GamaShapeFactory.createFrom(new GamaPoint(0, 0));
+			return GamaShapeFactory.createFrom(GamaPointFactory.create(0, 0));
 		final IList<IShape> shapes = geometries.listValue(scope, Types.NO_TYPE, false);
 		final int size = shapes.length(scope);
 		final IShape first = shapes.firstValue(scope);
 		if (size == 1) return first.copy(scope);
 
-		return GamaGeometryType.buildMultiGeometry(shapes);
+		return GamaShapeFactory.buildMultiGeometry(shapes);
 	}
+
+	/**
+	 * Line.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param points
+	 *            the points
+	 * @param radius
+	 *            the radius
+	 * @return the i shape
+	 */
 
 	/**
 	 * Line.
@@ -1734,14 +2273,26 @@ public class SpatialCreation {
 					"triangle" })
 	@no_test
 	public static IShape line(final IScope scope, final IContainer<?, IShape> points, final double radius) {
-		if (points == null || points.isEmpty(scope)) return GamaShapeFactory.createFrom(new GamaPoint(0, 0));
+		if (points == null || points.isEmpty(scope)) return GamaShapeFactory.createFrom(GamaPointFactory.create(0, 0));
 		final IList<IShape> shapes = points.listValue(scope, Types.NO_TYPE, false);
 		final int size = shapes.length(scope);
 		final IShape first = shapes.firstValue(scope);
-		if (size == 1) return GamaGeometryType.createPoint(first);
-		if (size == 2) return GamaGeometryType.buildLineCylinder(first, points.lastValue(scope), radius);
-		return GamaGeometryType.buildPolylineCylinder(shapes, radius);
+		if (size == 1) return GamaShapeFactory.buildPoint(first);
+		if (size == 2) return GamaShapeFactory.buildLineCylinder(first, points.lastValue(scope), radius);
+		return GamaShapeFactory.buildPolylineCylinder(shapes, radius);
 	}
+
+	/**
+	 * Plan.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param points
+	 *            the points
+	 * @param depth
+	 *            the depth
+	 * @return the i shape
+	 */
 
 	/**
 	 * Plan.
@@ -1772,14 +2323,28 @@ public class SpatialCreation {
 					"triangle" })
 	@no_test
 	public static IShape plan(final IScope scope, final IContainer<?, IShape> points, final Double depth) {
-		if (points == null || points.isEmpty(scope)) return GamaShapeFactory.createFrom(new GamaPoint(0, 0));
+		if (points == null || points.isEmpty(scope)) return GamaShapeFactory.createFrom(GamaPointFactory.create(0, 0));
 		final IList<IShape> shapes = points.listValue(scope, Types.NO_TYPE, false);
 		final int size = shapes.length(scope);
 		final IShape first = shapes.firstValue(scope);
-		if (size == 1) return GamaGeometryType.createPoint(first);
-		if (size == 2) return GamaGeometryType.buildPlan(first, shapes.lastValue(scope), depth);
-		return GamaGeometryType.buildPolyplan(shapes, depth);
+		if (size == 1) return GamaShapeFactory.buildPoint(first);
+		if (size == 2) return GamaShapeFactory.buildPlan(first, shapes.lastValue(scope), depth);
+		return GamaShapeFactory.buildPolyplan(shapes, depth);
 	}
+
+	/**
+	 * Link.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param source
+	 *            the source
+	 * @param target
+	 *            the target
+	 * @return the i shape
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
 
 	/**
 	 * Link.
@@ -1807,18 +2372,32 @@ public class SpatialCreation {
 					value = "link (geom1,geom2)",
 					equals = "a link geometry between geom1 and geom2.",
 					isExecutable = false) },
-			see = { "around", "circle", "cone", "line", "norm", "point", "polygon", "polyline", "rectangle",
-					"square", "triangle" })
+			see = { "around", "circle", "cone", "line", "norm", "point", "polygon", "polyline", "rectangle", "square",
+					"triangle" })
 	@no_test
 	public static IShape link(final IScope scope, final IShape source, final IShape target)
 			throws GamaRuntimeException {
 		if (source == null) {
-			if (target == null) return new GamaPoint(0, 0);
-			return GamaGeometryType.createPoint(target.getLocation());
+			if (target == null) return GamaPointFactory.create(0, 0);
+			return GamaShapeFactory.buildPoint(target.getLocation());
 		}
-		if (target == null) return GamaGeometryType.createPoint(source.getLocation());
-		return GamaGeometryType.buildLink(scope, source, target);
+		if (target == null) return GamaShapeFactory.buildPoint(source.getLocation());
+		return GamaShapeFactory.buildLink(scope, source, target);
 	}
+
+	/**
+	 * Around.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param width
+	 *            the width
+	 * @param toBeCastedIntoGeometry
+	 *            the to be casted into geometry
+	 * @return the i shape
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
 
 	/**
 	 * Around.
@@ -1850,7 +2429,7 @@ public class SpatialCreation {
 	@no_test
 	public static IShape around(final IScope scope, final Double width, final Object toBeCastedIntoGeometry)
 			throws GamaRuntimeException {
-		final IShape g = Cast.asGeometry(scope, toBeCastedIntoGeometry, false);
+		final IShape g = GamaShapeFactory.castToShape(scope, toBeCastedIntoGeometry, false);
 		if (g == null) return circle(scope, width);
 		return SpatialOperators.minus(scope, SpatialTransformations.enlarged_by(scope, g, width), g);
 	}
@@ -1860,10 +2439,20 @@ public class SpatialCreation {
 	 *
 	 * @doc(value =
 	 * "A rectangular 3D geometry that represents the rectangle that surrounds the geometries or the surface described by the arguments. More general than geometry(arguments).envelope, as it allows to pass int, double, point, image files, shape files, asc files, or any list combining these arguments, in which case the envelope will be correctly expanded. If an envelope cannot be determined from the arguments, a default one of dimensions (0,100, 0, 100, 0, 100) is returned"
-	 * ) public static IShape envelope(final IScope scope, final Object obj) { Envelope3D env = new
-	 * Envelope3D(GeometryUtils.computeEnvelopeFrom(scope, obj)); if ( env.isNull() ) { env = new Envelope3D(0, 100,
+	 * ) public static IShape envelope(final IScope scope, final Object obj) { GamaEnvelope env = new
+	 * GamaEnvelope(GeometryUtils.computeEnvelopeFrom(scope, obj)); if ( env.isNull() ) { env = new GamaEnvelope(0, 100,
 	 * 0, 100, 0, 100); } final IShape shape = GamaGeometryType.buildBox(env.getWidth(), env.getHeight(),
-	 * env.getDepth(), new GamaPoint(env.centre())); return shape; }
+	 * env.getDepth(), GamaPointFactory.create(env.centre())); return shape; }
+	 */
+
+	/**
+	 * Envelope.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param obj
+	 *            the obj
+	 * @return the i shape
 	 */
 
 	/**
@@ -1903,10 +2492,47 @@ public class SpatialCreation {
 
 	)
 	public static IShape envelope(final IScope scope, final Object obj) {
-		Envelope3D env = Envelope3D.of(GeometryUtils.computeEnvelopeFrom(scope, obj));
+		IEnvelope env = GamaEnvelopeFactory.of(GamaEnvelopeFactory.castToEnvelope(scope, obj));
 		try {
-			if (env.isNull()) { env = Envelope3D.of(0, 100, 0, 100, 0, 100); }
-			return GamaGeometryType.buildBox(env.getWidth(), env.getHeight(), env.getDepth(), env.centre());
+			if (env.isNull()) { env = GamaEnvelopeFactory.of(0, 100, 0, 100, 0, 100); }
+			return GamaShapeFactory.buildBox(env.getWidth(), env.getHeight(), env.getDepth(), env.center());
+		} finally {
+			env.dispose();
+		}
+	}
+
+	/**
+	 * Envelope with an explicit depth.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param obj
+	 *            the object from which the envelope is computed
+	 * @param depth
+	 *            the depth (size along the z axis) of the resulting box
+	 * @return the i shape
+	 */
+	@operator (
+			value = "envelope",
+			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SHAPE },
+			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.THREED })
+	@doc (
+			value = "A 3D geometry that represents the box that surrounds the geometries or the surface described by the first argument (see the envelope operator with one argument), and whose depth (extent along the z axis) is given by the second argument. The x and y extents are those of the envelope of the first argument. This operator allows to define a 3D world from a georeferenced (2D) data source, which is required, for instance, to use the moving3D skill in such a world.",
+			examples = { @example (
+					value = "geometry shape <- envelope(road_shapefile, 100.0);",
+					isExecutable = false),
+					@example (
+							value = "envelope(square(10), 5.0).depth",
+							equals = "5.0",
+							returnType = "float",
+							test = false) })
+	public static IShape envelope(final IScope scope, final Object obj, final Double depth) {
+		if (depth == null || depth < 0)
+			throw GamaRuntimeException.error("The depth of an envelope must be a positive number", scope);
+		IEnvelope env = GamaEnvelopeFactory.of(GamaEnvelopeFactory.castToEnvelope(scope, obj));
+		try {
+			if (env.isNull()) { env = GamaEnvelopeFactory.of(0, 100, 0, 100, 0, 100); }
+			return GamaShapeFactory.buildBox(env.getWidth(), env.getHeight(), depth, env.center());
 		} finally {
 			env.dispose();
 		}

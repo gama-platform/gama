@@ -1,24 +1,24 @@
 /*******************************************************************************************************
  *
- * OverlayLayer.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * OverlayLayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.outputs.layers;
 
 import java.awt.geom.Rectangle2D;
 
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IGraphics;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IScope.IGraphicsScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.annotations.constants.IKeyword;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.kernel.agent.IAgent;
+import gama.api.types.geometry.IShape;
+import gama.api.ui.displays.IDisplaySurface;
+import gama.api.ui.displays.IGraphics;
+import gama.api.ui.displays.IGraphicsScope;
+import gama.api.ui.layers.ILayerStatement;
 
 /**
  * Class OverlayLayer.
@@ -32,7 +32,8 @@ public class OverlayLayer extends GraphicLayer {
 	/**
 	 * Instantiates a new overlay layer.
 	 *
-	 * @param layer the layer
+	 * @param layer
+	 *            the layer
 	 */
 	public OverlayLayer(final ILayerStatement layer) {
 		super(layer);
@@ -68,6 +69,11 @@ public class OverlayLayer extends GraphicLayer {
 	@Override
 	public boolean isProvidingCoordinates() {
 		return false; // by default
+	}
+
+	@Override
+	public boolean stayProportional() {
+		return false;
 	}
 
 	@Override

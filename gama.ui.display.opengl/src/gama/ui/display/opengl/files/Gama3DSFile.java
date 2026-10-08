@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * Gama3DSFile.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -19,21 +19,21 @@ import java.util.List;
 
 import org.locationtech.jts.geom.Geometry;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.file;
-import gama.core.common.geometry.GeometryUtils;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.metamodel.shape.GamaShapeFactory;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IScope;
-import gama.core.util.GamaListFactory;
-import gama.core.util.IList;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.file;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.utils.geometry.GeometryUtils;
 import gama.core.util.file.Gama3DGeometryFile;
 import gama.dev.DEBUG;
-import gama.gaml.types.GamaGeometryType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  *
@@ -73,7 +73,7 @@ public class Gama3DSFile extends Gama3DGeometryFile {
 	class Obj {
 
 		/** The verts. */
-		public GamaPoint verts[] = null;
+		public IPoint verts[] = null;
 
 		/** The faces. */
 		public List<Geometry> faces;
@@ -150,7 +150,7 @@ public class Gama3DSFile extends Gama3DGeometryFile {
 			DEBUG.ERR("Error:  File IO error in: Closing File");
 		}
 		for (final Obj obj : objects) {
-			final Geometry g = GeometryUtils.GEOMETRY_FACTORY.buildGeometry(obj.faces);
+			final Geometry g = GeometryUtils.getGeometryFactory().buildGeometry(obj.faces);
 			getBuffer().add(GamaShapeFactory.createFrom(g));
 		}
 
@@ -177,31 +177,27 @@ public class Gama3DSFile extends Gama3DGeometryFile {
 			while (previousChunk.bytesRead < previousChunk.length) {
 				readChunkHeader(currentChunk);
 				switch (currentChunk.id) {
-					case VERSION:
-						currentChunk.bytesRead += 4;
-						break;
-
-					case EDITOR:
+					case VERSION -> currentChunk.bytesRead += 4;
+					case EDITOR -> {
 						final Chunk tempChunk = new Chunk();
 						readChunkHeader(tempChunk);
 						buffer = new byte[tempChunk.length - tempChunk.bytesRead];
 						tempChunk.bytesRead += dataInputStream.read(buffer, 0, tempChunk.length - tempChunk.bytesRead);
 						currentChunk.bytesRead += tempChunk.bytesRead;
 						processNextChunk(currentChunk);
-						break;
-
-					case OBJECT:
+					}
+					case OBJECT -> {
 						final Obj obj = new Obj();
 						objects.add(obj);
 						processNextObjectChunk(obj, currentChunk);
-						break;
-
-					default:
+					}
+					default -> {
 						buffer = new byte[currentChunk.length - currentChunk.bytesRead];
 						currentChunk.bytesRead +=
 								dataInputStream.read(buffer, 0, currentChunk.length - currentChunk.bytesRead);
-						break;
+					}
 				}
+				;
 				previousChunk.bytesRead += currentChunk.bytesRead;
 			}
 		} catch (final IOException e) {
@@ -253,24 +249,16 @@ public class Gama3DSFile extends Gama3DGeometryFile {
 				readChunkHeader(currentChunk);
 
 				switch (currentChunk.id) {
-					case OBJECT_MESH:
-						processNextObjectChunk(object, currentChunk);
-						break;
-
-					case OBJECT_VERTICES:
-						readVertices(object, currentChunk);
-						break;
-
-					case OBJECT_FACES:
-						readFaceList(object, currentChunk);
-						break;
-
-					default:
+					case OBJECT_MESH -> processNextObjectChunk(object, currentChunk);
+					case OBJECT_VERTICES -> readVertices(object, currentChunk);
+					case OBJECT_FACES -> readFaceList(object, currentChunk);
+					default -> {
 						buffer = new byte[currentChunk.length - currentChunk.bytesRead];
 						currentChunk.bytesRead +=
 								dataInputStream.read(buffer, 0, currentChunk.length - currentChunk.bytesRead);
-						break;
+					}
 				}
+				;
 				previousChunk.bytesRead += currentChunk.bytesRead;
 			}
 		} catch (final IOException e) {
@@ -294,10 +282,10 @@ public class Gama3DSFile extends Gama3DGeometryFile {
 			final int numOfVerts = swap(dataInputStream.readShort());
 			previousChunk.bytesRead += 2;
 
-			object.verts = new GamaPoint[numOfVerts];
+			object.verts = new IPoint[numOfVerts];
 			for (int i = 0; i < numOfVerts; i++) {
-				object.verts[i] = new GamaPoint(swap(dataInputStream.readFloat()), swap(dataInputStream.readFloat()),
-						swap(dataInputStream.readFloat()));
+				object.verts[i] = GamaPointFactory.create(swap(dataInputStream.readFloat()),
+						swap(dataInputStream.readFloat()), swap(dataInputStream.readFloat()));
 
 				previousChunk.bytesRead += 12;
 			}
@@ -327,7 +315,7 @@ public class Gama3DSFile extends Gama3DGeometryFile {
 				points.add(object.verts[swap(dataInputStream.readShort())]);
 				points.add(object.verts[swap(dataInputStream.readShort())]);
 				points.add(object.verts[swap(dataInputStream.readShort())]);
-				final IShape face = GamaGeometryType.buildPolygon(points);
+				final IShape face = GamaShapeFactory.buildPolygon(points);
 				object.faces.add(face.getInnerGeometry());
 
 				// Read in the extra face info

@@ -3,7 +3,7 @@
  * SwingControl.java, in gama.ui.display.java2d, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -27,7 +27,7 @@ import org.eclipse.ui.IWorkbenchPartReference;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 
-import gama.core.runtime.PlatformHelper;
+import gama.api.runtime.SystemInfo;
 import gama.dev.DEBUG;
 import gama.ui.display.java2d.AWTDisplayView;
 import gama.ui.display.java2d.Java2DDisplaySurface;
@@ -39,7 +39,7 @@ import gama.ui.shared.utils.WorkbenchHelper;
 public abstract class SwingControl extends Composite {
 
 	static {
-		DEBUG.OFF();
+		DEBUG.ON();
 	}
 
 	/**
@@ -57,9 +57,9 @@ public abstract class SwingControl extends Composite {
 	 */
 	public static Composite create(final Composite parent, final AWTDisplayView view,
 			final Java2DDisplaySurface surface, final int style) {
-		if (PlatformHelper.isLinux()) { return new SwingControlLinux(parent, view, surface, style); }
-		if (PlatformHelper.isWindows()) { return new SwingControlWin(parent, view, surface, style); }
-		if (PlatformHelper.isMac()) { return new SwingControlMac(parent, view, surface, style); }
+		if (SystemInfo.isLinux()) return new SwingControlLinux(parent, view, surface, style);
+		if (SystemInfo.isWindows()) return new SwingControlWin(parent, view, surface, style);
+		if (SystemInfo.isMac()) return new SwingControlMac(parent, view, surface, style);
 		return null;
 	}
 
@@ -81,6 +81,10 @@ public abstract class SwingControl extends Composite {
 	/** The visible. */
 	volatile boolean visible = false;
 
+	/**
+	 * Removes the all references.
+	 */
+	@SuppressWarnings ("restriction")
 	protected void removeAllReferences() {
 		surface = null;
 		frame = null;
@@ -112,16 +116,11 @@ public abstract class SwingControl extends Composite {
 
 			@Override
 			public void partHidden(final IWorkbenchPartReference partRef) {
-				if (partRef.getPart(false).equals(view)) {
-					// DEBUG.OUT("Hidden event received for " +
-					// view.getTitle());
-					visible = false;
-				}
+				if (partRef.getPart(false).equals(view)) { visible = false; }
 			}
 
 			@Override
 			public void partVisible(final IWorkbenchPartReference partRef) {
-				// DEBUG.OUT("Visible event received for " + view.getTitle());
 				if (partRef.getPart(false).equals(view)) { visible = true; }
 			}
 		};
@@ -143,15 +142,10 @@ public abstract class SwingControl extends Composite {
 		try {
 			result = super.isFocusControl();
 		} catch (final Exception e) {
-			// Nothing. Eliminates annoying exceptions when closing Java2D
-			// displays.
-			// However, it denotes that some listeners are still active while
-			// they should have been disposed a while
-			// ago. Therefore contributing to issue #489 (Memory leak in Java2D
-			// displays). The only solution is to
-			// remove the listeners from Display (as SWT_AWT does not do it
-			// correctly)
-
+			// Nothing. Eliminates annoying exceptions when closing Java2D displays. However, it denotes that some
+			// listeners are still active while they should have been disposed a while ago. Therefore contributing to
+			// issue #489 (Memory leak in Java2D displays). The only solution is to remove the listeners from Display
+			// (as SWT_AWT does not do it correctly)
 		}
 		return result;
 	}
@@ -180,7 +174,7 @@ public abstract class SwingControl extends Composite {
 			Listener listener = listeners[i];
 			if (listener != null && listener.getClass().getName().contains("SWT_AWT")) {
 				method.invoke(table, i);
-				DEBUG.OUT("Removed " + listener.getClass().getName());
+				// DEBUG.OUT("Removed " + listener.getClass().getName());
 			}
 		}
 	}
@@ -196,7 +190,9 @@ public abstract class SwingControl extends Composite {
 	 */
 	@Override
 	public final void setBounds(final int x, final int y, final int width, final int height) {
-		// DEBUG.OUT("-- SwingControl bounds set to " + x + " " + y + " | " + width + " " + height);
+		// DEBUG.OUT("[SwingControl.setBounds] " + (surface != null ? surface.getName() : "null")
+		// + " x=" + x + " y=" + y + " w=" + width + " h=" + height
+		// + " thread=" + Thread.currentThread().getName());
 		populate();
 		// See Issue #3426
 		super.setBounds(x, y, width, height);

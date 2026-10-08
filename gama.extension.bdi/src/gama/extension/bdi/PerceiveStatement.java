@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * PerceiveStatement.java, in gama.extension.bdi, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * PerceiveStatement.java, in gama.extension.bdi, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,35 +13,35 @@ package gama.extension.bdi;
 
 import java.util.Iterator;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaShape;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.ExecutionResult;
-import gama.core.runtime.IScope;
-import gama.core.runtime.concurrent.GamaExecutorService;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
-import gama.core.util.IContainer;
-import gama.core.util.IList;
-import gama.gaml.compilation.ISymbol;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.statements.AbstractStatementSequence;
+import gama.api.gaml.symbols.ISymbol;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.GamaExecutorService;
+import gama.api.runtime.scope.IExecutionResult;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.misc.IContainer;
 import gama.gaml.operators.spatial.SpatialQueries;
-import gama.gaml.statements.AbstractStatementSequence;
 import gama.gaml.statements.RemoteSequence;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * The Class PerceiveStatement.
@@ -202,56 +202,44 @@ public class PerceiveStatement extends AbstractStatementSequence {
 
 	@Override
 	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
-		
-		if (_when != null && ! Cast.asBool(scope, _when.value(scope))){
+
+		if (_when != null && !Cast.asBool(scope, _when.value(scope))
+				|| emotion != null && !BdiUtils.hasEmotion(scope, (Emotion) emotion.value(scope)))
 			return null;
-		}
-		if (emotion != null && !BdiUtils.hasEmotion(scope, (Emotion) emotion.value(scope))) {
+		if (threshold != null && (emotion == null || BdiUtils.getEmotion(scope,
+				(Emotion) emotion.value(scope)).intensity < (double) threshold.value(scope)))
 			return null;
-		}
-		if (threshold != null && (emotion == null || BdiUtils.getEmotion(scope,(Emotion) emotion.value(scope)).intensity < (double) threshold.value(scope))) {
-			return null;
-		}
-		
-		
+
 		final Object obj = target.value(scope);
 		Object inArg = null;
 		final IAgent ag = scope.getAgent();
-		if (_in != null) { 
-			inArg = _in.value(scope); 
-		}
+		if (_in != null) { inArg = _in.value(scope); }
 
 		if (inArg instanceof Number n) {
 			IList temp = GamaListFactory.create();
 			final double dist = Cast.asFloat(scope, n);
 			if (obj instanceof IContainer container) {
 				temp = SpatialQueries.at_distance(scope, container, Cast.asFloat(scope, inArg));
-			} else if (obj instanceof IAgent agent && ag.euclidianDistanceTo(agent) <= dist) {
-				temp.add(obj);
-			}
+			} else if (obj instanceof IAgent agent && ag.euclidianDistanceTo(agent) <= dist) { temp.add(obj); }
 			GamaExecutorService.execute(scope, sequence, temp.listValue(scope, Types.AGENT, false), null);
 			return this;
 
 		}
-		if (inArg instanceof gama.gaml.types.GamaGeometryType || inArg instanceof GamaShape) {
+		if (inArg instanceof gama.api.gaml.types.GamaGeometryType || inArg instanceof IShape) {
 			IList temp = GamaListFactory.create();
-			final IShape geom = Cast.asGeometry(scope, inArg);
+			final IShape geom = GamaShapeFactory.castToShape(scope, inArg, false);
 			if (obj instanceof IContainer container) {
 				temp = SpatialQueries.overlapping(scope, container, geom);
-			} else if (obj instanceof IAgent agent && geom.intersects(agent)) { 
-				temp.add(obj); 
-			}
+			} else if (obj instanceof IAgent agent && geom.intersects(agent)) { temp.add(obj); }
 			GamaExecutorService.execute(scope, sequence, temp.listValue(scope, Types.AGENT, false), null);
 			return this;
 		}
-		ExecutionResult result = null;
-		final Iterator<IAgent> runners =	obj instanceof IContainer c 
-										? c.iterable(scope).iterator()
-										: obj instanceof IAgent agent ? transformAgentToList(agent, scope) : null;
+		IExecutionResult result = null;
+		final Iterator<? extends IAgent> runners = obj instanceof IContainer c ? c.iterable(scope).iterator()
+				: obj instanceof IAgent agent ? transformAgentToList(agent, scope) : null;
 		if (runners != null) {
-			while (		runners.hasNext()
-					&& (result = scope.execute(sequence, runners.next(), null)).passed()) {
-				
+			while (runners.hasNext() && (result = scope.execute(sequence, runners.next(), null)).passed()) {
+
 			}
 		}
 		if (result != null) return result.getValue();
@@ -269,10 +257,10 @@ public class PerceiveStatement extends AbstractStatementSequence {
 	 *            the scope
 	 * @return the iterator
 	 */
-	Iterator<IAgent> transformAgentToList(final IAgent temp, final IScope scope) {
+	Iterator<? extends IAgent> transformAgentToList(final IAgent temp, final IScope scope) {
 		final IList<IAgent> tempList = GamaListFactory.create();
 		tempList.add(temp);
-		return ((IContainer) tempList).iterable(scope).iterator();
+		return tempList.iterable(scope).iterator();
 	}
 
 	/**

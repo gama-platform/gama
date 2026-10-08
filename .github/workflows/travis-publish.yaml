@@ -14,7 +14,23 @@ on:
         required: true
         default: false
         type: boolean
-      RELEASE_GITHUB_ONLY:
+      RELEASE_GITHUB:
+        required: true
+        default: false
+        type: boolean
+      RELEASE_DOCKER:
+        required: true
+        default: false
+        type: boolean
+      RELEASE_MICROSOFT:
+        required: true
+        default: false
+        type: boolean
+      RELEASE_LINUX_PPA:
+        required: true
+        default: false
+        type: boolean
+      RELEASE_NPM_GAML:
         required: true
         default: false
         type: boolean
@@ -24,6 +40,7 @@ on:
 
 jobs:
   publish-github:
+    if: "${{ inputs.RELEASE_GITHUB == true }}"
     name: Embedding JDK in GAMA
     uses: ./.github/workflows/travis-publish-github.yaml
     with:
@@ -34,12 +51,15 @@ jobs:
       BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
 
   publishing-third-party:
-    if: "${{ inputs.RELEASE_GITHUB_ONLY == false }}"
     needs: publish-github
     name: Publish archives to 3rd parties
     uses: ./.github/workflows/travis-publish-third-party.yaml
     with:
       tag: ${{ inputs.RELEASE_VERSION }}
       IS_STABLE_RELEASE: ${{ inputs.IS_STABLE_RELEASE }}
+      RELEASE_DOCKER: ${{ inputs.RELEASE_DOCKER }}
+      RELEASE_MICROSOFT: ${{ inputs.RELEASE_MICROSOFT }}
+      RELEASE_LINUX_PPA: ${{ inputs.RELEASE_LINUX_PPA }}
+      RELEASE_NPM_GAML: ${{ inputs.RELEASE_NPM_GAML }}
     secrets:
       BOT_TOKEN: ${{ secrets.BOT_TOKEN }}

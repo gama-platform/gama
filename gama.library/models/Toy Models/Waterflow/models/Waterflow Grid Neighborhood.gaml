@@ -1,12 +1,13 @@
 /***
-* Name: Water flow in a river represented by a set of cells
-* Author: Benoit Gaudou and Patrick Taillandier
-* Description: In this model, the space is discretised using a grid. Thus the river is a set of cells. 
-* 	The data comes from a raster image.
-* 	The upstream cells (i.e. the source cells) are chosen by the modeler.
-* 	Initialy, an order is computed by neighborhood to make the water flows from the source cells, all over the river.
-* 	At each step, the cells transmits a part of their water to their downstream cells (the neighbor cells with a greater order number).
-* Tags: grid, gui, hydrology, water flow
+* Name: Waterflow Grid Neighborhood
+* Author: Benoit Gaudou, Patrick Taillandier
+* Description: A simplified water flow model where the river topology is represented by a grid whose flow
+*   order is pre-computed from neighborhood relationships. The river cells are loaded from a raster image.
+*   Before the simulation starts, each cell is assigned a flow order number by propagating downstream from
+*   the source cells, ensuring water always moves from lower-order to higher-order cells. At each step,
+*   cells pass water to their downstream neighbors according to this precomputed order. This model is
+*   computationally efficient because the expensive topology computation happens only once at initialization.
+* Tags: grid, gui, hydrology, water_flow, raster, neighborhood, topology, precomputation
 ***/
 
 model Waterflowgridneighborhood

@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * FileFolderSorter.java, in gama.ui.navigator.view, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * FileFolderSorter.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.navigator.view;
 
@@ -39,7 +39,8 @@ public class FileFolderSorter extends ViewerComparator {
 	/**
 	 * Instantiates a new file folder sorter.
 	 *
-	 * @param collator the collator
+	 * @param collator
+	 *            the collator
 	 */
 	public FileFolderSorter(final Collator collator) { // NO_UCD (unused code)
 		super(collator);
@@ -47,8 +48,8 @@ public class FileFolderSorter extends ViewerComparator {
 
 	@Override
 	public int category(final Object element) {
-		if (element instanceof WrappedContainer) { return 0; }
-		if (element instanceof IFile) { return 1; }
+		if (element instanceof WrappedContainer) return 0;
+		if (element instanceof IFile) return 1;
 		return 2;
 	}
 
@@ -57,40 +58,40 @@ public class FileFolderSorter extends ViewerComparator {
 		final int cat1 = category(e1);
 		final int cat2 = category(e2);
 
-		if (cat1 != cat2) { return cat1 - cat2; }
+		if (cat1 != cat2) return cat1 - cat2;
 		if (BY_DATE) {
 			final Long date1 = getDate(e1);
 			final Long date2 = getDate(e2);
 			return date2.compareTo(date1);
-		} else {
-			final String name1 = getLabel(viewer, e1);
-			final String name2 = getLabel(viewer, e2);
-
-			// use the comparator to compare the strings
-			return getComparator().compare(name1, name2);
 		}
+		final String name1 = getLabel(viewer, e1);
+		final String name2 = getLabel(viewer, e2);
+
+		// use the comparator to compare the strings
+		return getComparator().compare(name1, name2);
+
 	}
 
 	/**
 	 * Gets the date.
 	 *
-	 * @param e the e
+	 * @param e
+	 *            the e
 	 * @return the date
 	 */
 	private Long getDate(final Object e) {
 		final IResource r = ResourceManager.getResource(e);
-		if (r != null) {
-			return r.getLocalTimeStamp();
-		} else {
-			return Long.MAX_VALUE;
-		}
+		if (r != null) return r.getLocalTimeStamp();
+		return Long.MAX_VALUE;
 	}
 
 	/**
 	 * Gets the label.
 	 *
-	 * @param viewer the viewer
-	 * @param e1 the e 1
+	 * @param viewer
+	 *            the viewer
+	 * @param e1
+	 *            the e 1
 	 * @return the label
 	 */
 	private String getLabel(final Viewer viewer, final Object e1) {
@@ -99,8 +100,7 @@ public class FileFolderSorter extends ViewerComparator {
 			name1 = e1.toString();
 		} else {
 			final IBaseLabelProvider prov = ((ContentViewer) viewer).getLabelProvider();
-			if (prov instanceof ILabelProvider) {
-				final ILabelProvider lprov = (ILabelProvider) prov;
+			if (prov instanceof final ILabelProvider lprov) {
 				name1 = lprov.getText(e1);
 			} else {
 				name1 = e1.toString();

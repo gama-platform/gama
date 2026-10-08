@@ -1,9 +1,11 @@
 /**
-* Name: Anisotropic diffusion (Toroidal)
+* Name: Anisotropic Diffusion (Toroidal)
 * Author: Benoit Gaudou
-* Description: This model is used to show how to construct an anisotropic diffusion through a grid. The cell at the center of the grid emit a pheromon at each step, which is spread 
-*     through the grid thanks to the diffusion mechanism, using a particular matrix of diffusion, in a toroidal world.
-* Tags: diffusion, matrix, math, elevation
+* Description: Demonstrates anisotropic diffusion on a toroidal (wrap-around) grid. The same directional
+*   diffusion kernel as the simple anisotropic model is applied, but the world edges wrap so that pheromone
+*   diffusing off one side re-enters from the opposite side. Useful for modelling periodic environments
+*   such as atmospheric or oceanic circulation patterns.
+* Tags: diffusion, matrix, math, grid, anisotropic, toroidal, torus, pheromone, elevation
 */
 
 model anisotropic_diffusion_torus

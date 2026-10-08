@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * AbstractStatementEditor.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * AbstractStatementEditor.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,12 +15,12 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 
-import gama.core.common.interfaces.IColored;
-import gama.core.kernel.experiment.InputParameter;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
-import gama.gaml.interfaces.INamed;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
+import gama.api.utils.interfaces.IColored;
+import gama.api.utils.interfaces.INamed;
+import gama.core.experiment.parameters.InputParameter;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.interfaces.EditorListener;
 import gama.ui.shared.resources.GamaColors;
@@ -71,7 +71,7 @@ public abstract class AbstractStatementEditor<T extends INamed & IColored> exten
 
 	@Override
 	Color getEditorControlBackground() {
-		GamaColor color = getStatement().getColor(getScope());
+		IColor color = getStatement().getColor(getScope());
 		return color == null ? super.getEditorControlBackground() : GamaColors.get(color).color();
 	}
 

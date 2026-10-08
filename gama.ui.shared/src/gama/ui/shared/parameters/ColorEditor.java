@@ -3,14 +3,12 @@
  * ColorEditor.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.ui.shared.parameters;
-
-import java.awt.Color;
 
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -20,11 +18,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.MenuItem;
 
-import gama.core.kernel.experiment.IParameter;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.util.GamaColor;
-import gama.gaml.types.GamaColorType;
-import gama.gaml.types.Types;
+import gama.api.gaml.symbols.IParameter;
+import gama.api.gaml.types.GamaColorType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.interfaces.EditorListener;
 import gama.ui.shared.menus.GamaColorMenu;
@@ -36,10 +35,10 @@ import gama.ui.shared.resources.IGamaColors;
 /**
  * The Class ColorEditor.
  */
-public class ColorEditor extends AbstractEditor<Color> {
+public class ColorEditor extends AbstractEditor<IColor> {
 
 	/** The runnable. */
-	final IColorRunnable runnable = (r, g, b) -> modifyAndDisplayValue(GamaColor.get(r, g, b, 255));
+	final IColorRunnable runnable = (r, g, b) -> modifyAndDisplayValue(GamaColorFactory.createWithRGBA(r, g, b, 255));
 
 	/** The listener. */
 	final SelectionListener listener = new SelectionAdapter() {
@@ -53,7 +52,7 @@ public class ColorEditor extends AbstractEditor<Color> {
 		public void widgetSelected(final SelectionEvent e) {
 			final MenuItem i = (MenuItem) e.widget;
 			final String color = i.getText().replace("#", "");
-			final GamaColor c = GamaColor.colors.get(color);
+			final IColor c = GamaColorFactory.get(color);
 			if (c == null) return;
 			modifyAndDisplayValue(c);
 		}
@@ -75,7 +74,7 @@ public class ColorEditor extends AbstractEditor<Color> {
 	 * @param l
 	 *            the l
 	 */
-	ColorEditor(final IAgent agent, final IParameter param, final EditorListener<Color> l) {
+	ColorEditor(final IAgent agent, final IParameter param, final EditorListener<IColor> l) {
 		super(agent, param, l);
 	}
 
@@ -95,8 +94,7 @@ public class ColorEditor extends AbstractEditor<Color> {
 	@Override
 	protected void displayParameterValue() {
 		internalModification = true;
-		final GamaUIColor color =
-				GamaColors.get(currentValue == null ? GamaColor.get(0) : (java.awt.Color) currentValue);
+		final GamaUIColor color = GamaColors.get(currentValue == null ? GamaColorFactory.BLACK : currentValue);
 		edit.setTextWithoutRecomputingSize(color.toString());
 		edit.setColor(color);
 		internalModification = false;
@@ -107,8 +105,7 @@ public class ColorEditor extends AbstractEditor<Color> {
 
 	@Override
 	protected void applyEdit() {
-		final java.awt.Color color = currentValue;
-		final RGB rgb = new RGB(color.getRed(), color.getGreen(), color.getBlue());
+		final RGB rgb = new RGB(currentValue.red(), currentValue.green(), currentValue.blue());
 		GamaColorMenu.openView(runnable, rgb);
 	}
 

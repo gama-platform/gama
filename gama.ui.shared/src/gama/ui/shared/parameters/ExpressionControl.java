@@ -3,7 +3,7 @@
  * ExpressionControl.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -30,17 +30,17 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 
-import gama.core.common.util.StringUtils;
-import gama.core.kernel.simulation.SimulationAgent;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.compilation.GAML;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.types.GamaStringType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.GAML;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.GamaStringType;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.StringUtils;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.views.toolbar.GamaToolbarFactory;
@@ -173,7 +173,8 @@ public class ExpressionControl implements /* IPopupProvider, */SelectionListener
 			var s = text.getText();
 			if (expectedType == Types.STRING && !StringUtils.isGamaString(s)) { s = StringUtils.toGamlString(s); }
 			// AD: Fix for Issue 1042
-			if (agent != null && (agent.getScope().interrupted() || agent.dead()) && agent instanceof SimulationAgent) {
+			if (agent != null && (agent.getScope().interrupted() || agent.dead())
+					&& agent instanceof ISimulationAgent) {
 				agent = agent.getScope().getExperiment();
 				if (agent == null) { agent = GAMA.getRuntimeScope().getExperiment(); }
 			}

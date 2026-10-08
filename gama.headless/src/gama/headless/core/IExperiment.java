@@ -1,20 +1,21 @@
 /*******************************************************************************************************
  *
  * IExperiment.java, in gama.headless, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.headless.core;
 
-import gama.core.kernel.experiment.IExperimentPlan;
-import gama.core.kernel.model.IModel;
-import gama.core.kernel.simulation.SimulationAgent;
-import gama.core.util.IList;
-import gama.gaml.expressions.IExpression;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.kernel.species.IExperimentSpecies;
+import gama.api.kernel.species.IModelSpecies;
+import gama.api.runtime.scope.IExecutionResult;
+import gama.api.types.list.IList;
 import gama.headless.server.GamaServerExperimentJob;
 
 /**
@@ -27,21 +28,21 @@ public interface IExperiment {
 	 *
 	 * @return the model
 	 */
-	IModel getModel();
+	IModelSpecies getModel();
 
 	/**
 	 * Gets the experiment plan.
 	 *
 	 * @return the experiment plan
 	 */
-	IExperimentPlan getExperimentPlan();
+	IExperimentSpecies getExperimentPlan();
 
 	/**
 	 * Gets the simulation.
 	 *
 	 * @return the simulation
 	 */
-	SimulationAgent getSimulation();
+	ISimulationAgent getSimulation();
 
 	/**
 	 * Setup.
@@ -62,7 +63,7 @@ public interface IExperiment {
 	 *            the seed
 	 * @param manualExperimentJob
 	 */
-	void setup(final String experimentName, final double seed, final IList params,
+	IExecutionResult setup(final String experimentName, final double seed, final IList params,
 			GamaServerExperimentJob manualExperimentJob);
 
 	/**

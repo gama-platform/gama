@@ -5,27 +5,21 @@ Bundle-SymbolicName: gama.ui.display.opengl;singleton:=true
 Bundle-Version: 0.0.0.qualifier
 Require-Bundle: gama.dependencies,
  gama.core,
- org.eclipse.core.runtime,
- org.eclipse.swt,
  org.eclipse.ui,
  gama.ui.shared,
- gama.ui.experiment,
- gama.ui.application,
- com.google.guava,
- gama.annotations
+ gama.ui.experiment
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: gama.ui.display.opengl.OpenGLActivator
 Bundle-ClassPath: .,
- lib/gluegen-rt.jar,
- lib/gluegen-rt-natives-linux-amd64.jar,
- lib/gluegen-rt-natives-macosx-universal.jar,
- lib/gluegen-rt-natives-windows-amd64.jar,
- lib/jogl-all.jar,
- lib/jogl-all-natives-linux-amd64.jar,
- lib/jogl-all-natives-macosx-universal.jar,
- lib/jogl-all-natives-windows-amd64.jar
+ libs/jogl 2.6.0/gluegen-rt.jar,
+ libs/jogl 2.6.0/gluegen-rt-natives-linux-amd64.jar,
+ libs/jogl 2.6.0/gluegen-rt-natives-macosx-universal.jar,
+ libs/jogl 2.6.0/gluegen-rt-natives-windows-amd64.jar,
+ libs/jogl 2.6.0/jogl-all.jar,
+ libs/jogl 2.6.0/jogl-all-natives-linux-amd64.jar,
+ libs/jogl 2.6.0/jogl-all-natives-macosx-universal.jar,
+ libs/jogl 2.6.0/jogl-all-natives-windows-amd64.jar
 Import-Package: gama.extension.image,
- org.jfree.chart,
  org.locationtech.jts.geom
 Export-Package: 
  com.jogamp.common,
@@ -46,6 +40,8 @@ Export-Package:
  com.jogamp.graph.curve.tess,
  com.jogamp.graph.font,
  com.jogamp.graph.geom,
+ com.jogamp.math,
+ com.jogamp.math.util,
  com.jogamp.nativewindow,
  com.jogamp.nativewindow.awt,
  com.jogamp.nativewindow.egl,
@@ -72,8 +68,6 @@ Export-Package:
  com.jogamp.opengl.glu,
  com.jogamp.opengl.glu.gl2,
  com.jogamp.opengl.glu.gl2es1,
- com.jogamp.opengl.math,
- com.jogamp.opengl.math.geom,
  com.jogamp.opengl.swt,
  com.jogamp.opengl.util,
  com.jogamp.opengl.util.av,
@@ -113,9 +107,7 @@ Export-Package:
  jogamp.graph.font.typecast.ot,
  jogamp.graph.font.typecast.ot.mac,
  jogamp.graph.font.typecast.ot.table,
- jogamp.graph.font.typecast.t2,
  jogamp.graph.font.typecast.tt.engine,
- jogamp.graph.geom.plane,
  jogamp.nativetag.common.linux.amd64,
  jogamp.nativetag.common.macosx.universal,
  jogamp.nativetag.common.windows.amd64,
@@ -162,7 +154,6 @@ Export-Package:
  jogamp.opengl.glu.tessellator,
  jogamp.opengl.macosx.cgl,
  jogamp.opengl.macosx.cgl.awt,
- jogamp.opengl.openal.av,
  jogamp.opengl.util,
  jogamp.opengl.util.av,
  jogamp.opengl.util.av.impl,
@@ -176,5 +167,5 @@ Export-Package:
  jogamp.opengl.windows.wgl.awt,
  jogamp.opengl.x11.glx
 Bundle-Vendor: UMMISCO
-Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-RequiredExecutionEnvironment: JavaSE-25
 Automatic-Module-Name: gama.ui.display.opengl

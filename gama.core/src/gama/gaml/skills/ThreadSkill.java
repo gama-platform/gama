@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * ThreadSkill.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * ThreadSkill.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -15,20 +14,21 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.GamlAnnotations.action;
-import gama.annotations.precompiler.GamlAnnotations.arg;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.skill;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.IScope;
-import gama.core.runtime.concurrent.GamaExecutorService;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.species.ISpecies;
-import gama.gaml.statements.IStatement;
-import gama.gaml.types.IType;
+import gama.annotations.action;
+import gama.annotations.arg;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.skill;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.statements.IStatement;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.skill.Skill;
+import gama.api.kernel.species.ISpecies;
+import gama.api.runtime.GamaExecutorService;
+import gama.api.runtime.scope.IScope;
 
 /**
  * ThreadSkill : This class is intended to define the minimal set of behaviours required from an agent that is able to
@@ -143,8 +143,8 @@ public class ThreadSkill extends Skill {
 					value = "A virtual action, which contains what to execute in the thread. It needs to be redefined in the species that implement the `thread` skill"),
 			name = ACTION_NAME,
 			virtual = true)
-	public Object primExternalFactorOnRemainingTime(final IScope scope) throws GamaRuntimeException {
-		return null;
+	public void threadAction(final IScope scope) throws GamaRuntimeException {
+		// return null;
 	}
 
 	/**

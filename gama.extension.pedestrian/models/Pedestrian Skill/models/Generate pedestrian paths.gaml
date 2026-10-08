@@ -1,8 +1,11 @@
 /***
-* Name: generate_pedestrian_path
+* Name: Generate Pedestrian Paths
 * Author: Patrick Taillandier
-* Description: Show how to create pedestrian path and associated free space
-* Tags: * Tags: pedestrian, gis, shapefile, graph, agent_movement, skill, transport
+* Description: A preprocessing model that generates the pedestrian path network and free-space polygons
+*   required by 'Complex environment - walk.gaml'. Loads wall shapefiles, computes the navigable free
+*   space using Voronoi decomposition of the obstacle boundaries, then saves the resulting path graph and
+*   free-space polygons to shapefiles. Run this model once before running the complex environment model.
+* Tags: pedestrian, gis, shapefile, graph, agent_movement, skill, transport, preprocessing, voronoi
 ***/
 
 model generate_pedestrian_path
@@ -27,6 +30,8 @@ global {
 	float tol_triangulation <- 0.1; //tolerance for the triangulation 
 	float min_dist_obstacles_filtering <- 0.0;// minimal distance to obstacles to keep a path (float; if 0.0, no filtering), 
 	
+	float min_distance_free_space <- 2.0;
+	float max_distance_free_space <- 10.0;
 	
 	geometry open_area ;
 	
@@ -37,8 +42,11 @@ global {
 		}
 		list<geometry> generated_lines <- generate_pedestrian_network([],[open_area],add_points_open_area,random_densification,min_dist_open_area,density_open_area,clean_network,tol_cliping,tol_triangulation,min_dist_obstacles_filtering,simplification_dist);
 		
-		create pedestrian_path from: generated_lines  {
-			do initialize bounds:[open_area] distance: min(10.0,(wall closest_to self) distance_to self) masked_by: [wall] distance_extremity: 1.0;
+		create pedestrian_path from: generated_lines {
+			do initialize (bounds:[open_area], distance: max(min_distance_free_space, min(max_distance_free_space,(wall closest_to self) distance_to self)), masked_by: [wall] ,distance_extremity: 1.0);
+			if (free_space = nil or free_space.area = 0) {
+				free_space <- shape +min_distance_free_space;
+			}
 		}
 		save pedestrian_path to: "../includes/pedestrian paths.shp" format:"shp";
 		save open_area to: "../includes/open area.shp" format:"shp";

@@ -1,13 +1,13 @@
 /***
-* Name: MASKmeansInteractive
+* Name: K-Means Interactive
 * Author: Jean-Daniel Zucker
-* Description: Model which shows how to use the event layer to place points and initial centroids
-* to see the impact of choosing. 
-* CHOOSE the experiment SelectPoints2Cluster
-* Click on the dot on the right palette to then click on the left display
-* so as to position points. Then click on the cross on the right palette (to position centroids). Then
-* drop a few centroids. Their number is the number of clusters searched for.
-* Then start to iterate on the simulation one at a time ak-means and see the kmeans algorithm.
+* Description: An interactive extension of the K-Means Clustering model that lets users place data points and
+*   initial centroid positions manually using the event layer and mouse clicks. To use: select the dot palette
+*   item on the right panel and click on the left display to place data points. Then switch to the cross palette
+*   item and click to place initial centroids — their count determines the number of clusters. Finally, run
+*   the simulation step by step to observe the K-means algorithm converging to cluster assignments. The impact
+*   of initial centroid placement on the final result can be explored interactively.
+* Tags: machine_learning, clustering, k_means, interactive, user_interaction, event, algorithm
 ***/
 
 model MASKmeansInteractive
@@ -31,7 +31,7 @@ global {
 	
 	reflex pauseAtConvergence when: converged { }
 	
-	action activate_act {
+	action activate_act() {
 		button selected_but <- first(button overlapping (circle(1) at_location #user_location));
 		if(selected_but != nil) {
 			ask selected_but {
@@ -51,7 +51,7 @@ global {
 	// No need to register the type of action as the simulation is supposed to run fast, so that 
 	// the user doesnt have the time, in one step, to click two times and change the action type in-between.
 	// See issue #3626 on GAMA platform Github
-	action register_click {
+	action register_click() {
 		clicks << #user_location;
 	}
 	
@@ -68,11 +68,11 @@ global {
 		//write agents;
 		switch action_type {
 			match 0 {
-				create datapoints with:(location : the_location);
+				create datapoints (location : the_location);
 			}
 			
 			match 1 {
-				create centroids with:(location : the_location);
+				create centroids (location : the_location);
 				int K <- length(centroids);
 		  		loop i from:0 to: K-1 { ask centroids[i] { color_kmeans  <- hsb(i/K,1,1); }}
 		   }
@@ -92,7 +92,7 @@ global {
 								color_kmeans <- rgb(225,225,225) ;
 							}
 						}
-						do die;
+						do die();
 					}
 				}
 				
@@ -124,7 +124,7 @@ experiment SelectPoints2Cluster2D type: gui autorun: true{
 		layout horizontal([0.0::8000,1::2000]) tabs:true;
 		
 		display map type:2d {
-			event #mouse_down {ask simulation {do register_click;}}
+			event #mouse_down {ask simulation {do register_click();}}
 			species datapoints aspect: kmeans_aspect2D transparency:0.5;
 			species centroids aspect: kmeans_aspect2D;
 			graphics "Full target"
@@ -137,9 +137,9 @@ experiment SelectPoints2Cluster2D type: gui autorun: true{
 			}
 		}
 		//display the action buttons
-		display action_buton background:#white name:"Tools panel" type:2d	{
+		display action_buton background:#white title:"Tools panel" type:2d	{
 			species button aspect:normal ;
-			event #mouse_down {ask simulation {do activate_act;}}   
+			event #mouse_down {ask simulation {do activate_act();}}   
 		}
 
 	}
