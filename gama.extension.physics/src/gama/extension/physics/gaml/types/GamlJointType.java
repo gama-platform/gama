@@ -28,7 +28,7 @@ import gama.extension.physics.gaml.GamaJoint;
  */
 @type (
 		name = "joint",
-		id = IType.TYPE + 1234,
+		id = IType.BEGINNING_OF_CUSTOM_TYPES + 1234,
 		wraps = { GamaJoint.class },
 		doc = @doc ("A type representing a physical joint in the simulation."))
 public class GamlJointType extends GamaType<GamaJoint> {
