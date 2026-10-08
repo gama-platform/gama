@@ -18,6 +18,7 @@ import java.util.StringTokenizer;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.file;
+import gama.annotations.test;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
@@ -42,10 +43,12 @@ import gama.dev.DEBUG;
  */
 @file (
 		name = "obj",
-		extensions = { "obj", "OBJ" },
+		extensions = { "obj" },
 		buffer_type = IType.LIST,
 		buffer_content = IType.GEOMETRY,
 		doc = @doc ("'.obj' files are files containing 3D geometries. The internal representation is a list of one geometry"))
+@test ("is_obj(\"features.obj\")")
+@test ("is_obj(\"features.OBJ\")")
 public class GamaObjFile extends Gama3DGeometryFile {
 
 	/** The set of vertex. */
