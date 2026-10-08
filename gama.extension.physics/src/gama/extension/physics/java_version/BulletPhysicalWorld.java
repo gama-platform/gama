@@ -14,7 +14,9 @@ import javax.vecmath.Matrix3f;
 import javax.vecmath.Vector3f;
 
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.bulletphysics.BulletGlobals;
 import com.bulletphysics.collision.broadphase.BroadphaseInterface;
@@ -63,6 +65,10 @@ public class BulletPhysicalWorld extends AbstractPhysicalWorld<DiscreteDynamicsW
 	 */
 	private final List<BulletBodyWrapper> dynamicBodies = new ArrayList<>();
 
+	private final Map<IAgent, List<TypedConstraint>> jointsByAgent = new IdentityHashMap<>();
+
+	private final Map<TypedConstraint, IAgent[]> jointBodies = new IdentityHashMap<>();
+
 	/**
 	 * Instantiates a new bullet physical world.
 	 *
@@ -105,10 +111,21 @@ public class BulletPhysicalWorld extends AbstractPhysicalWorld<DiscreteDynamicsW
 	@Override
 	public void unregisterAgent(final IAgent agent) {
 		BulletBodyWrapper b = (BulletBodyWrapper) agent.getAttribute(BODY);
+		removeJointsOf(agent);
 		getWorld().removeRigidBody(b.getBody());
 		dynamicBodies.remove(b);
 	}
 
+	private void removeJointsOf(final IAgent agent) {
+		List<TypedConstraint> constraints = jointsByAgent.get(agent);
+		if (constraints == null) return;
+		for (TypedConstraint constraint : new ArrayList<>(constraints)) { removeJoint(constraint); }
+	}
+
+	/**
+	 * Rebuilds bodies whose shapes changed. Joints attached to those bodies are removed and must be recreated
+	 * explicitly.
+	 */
 	@Override
 	public void updateAgentsShape() {
 		// We update the agents
@@ -161,6 +178,8 @@ public class BulletPhysicalWorld extends AbstractPhysicalWorld<DiscreteDynamicsW
 			world = null;
 		}
 		dynamicBodies.clear();
+		jointsByAgent.clear();
+		jointBodies.clear();
 		BulletGlobals.cleanCurrentThread();
 	}
 
@@ -186,6 +205,11 @@ public class BulletPhysicalWorld extends AbstractPhysicalWorld<DiscreteDynamicsW
 	public Object createJoint(IJointDefinition jointDefinition) {
 		TypedConstraint constraint = convertToBulletConstraint(jointDefinition);
 		getWorld().addConstraint(constraint, true);
+		IAgent agentA = (IAgent) jointDefinition.getBodyA();
+		IAgent agentB = (IAgent) jointDefinition.getBodyB();
+		jointsByAgent.computeIfAbsent(agentA, key -> new ArrayList<>()).add(constraint);
+		jointsByAgent.computeIfAbsent(agentB, key -> new ArrayList<>()).add(constraint);
+		jointBodies.put(constraint, new IAgent[] { agentA, agentB });
 		return constraint;
 	}
 
@@ -265,7 +289,20 @@ public class BulletPhysicalWorld extends AbstractPhysicalWorld<DiscreteDynamicsW
 
 	@Override
 	public void destroyJoint(final Object joint) {
-		if (joint instanceof TypedConstraint constraint && world != null) { world.removeConstraint(constraint); }
+		if (joint instanceof TypedConstraint constraint) { removeJoint(constraint); }
+	}
+
+	private void removeJoint(final TypedConstraint constraint) {
+		if (world != null) { world.removeConstraint(constraint); }
+		IAgent[] agents = jointBodies.remove(constraint);
+		if (agents == null) return;
+		for (IAgent agent : agents) {
+			List<TypedConstraint> constraints = jointsByAgent.get(agent);
+			if (constraints != null) {
+				constraints.remove(constraint);
+				if (constraints.isEmpty()) { jointsByAgent.remove(agent); }
+			}
+		}
 	}
 
 	private Vector3f toLocalPoint(final RigidBody body, final Vector3f worldPoint) {
