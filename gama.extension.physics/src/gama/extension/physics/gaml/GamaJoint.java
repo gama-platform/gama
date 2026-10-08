@@ -136,9 +136,11 @@ public class GamaJoint implements IJointDefinition {
 		this.maxMotorForce = maxMotorForce;
 	}
 
-	@getter ("type")
 	@Override
 	public JointType getJointType() { return type; }
+
+	@getter ("type")
+	public String getType() { return type.name().toLowerCase(java.util.Locale.ROOT); }
 
 	@getter ("bodyA")
 	@Override

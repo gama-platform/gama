@@ -1,7 +1,7 @@
 /**
  * A two-link robotic arm driven by Box2D revolute-joint motors.
  */
-model Box2D Articulated Arm
+model Box2D_Articulated_Arm
 
 global parent: physical_world {
 	string library <- "box2D";

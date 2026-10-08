@@ -53,7 +53,7 @@ import gama.extension.physics.native_version.NativeBulletPhysicalWorld;
  * <ul>
  * <li>Supports 2D and 3D physics simulations using different libraries.</li>
  * <li>Allows registration and management of agents with physical properties.</li>
- * <li>Provides actions and operators to create and manipulate physical joints (e.g., hinge, slider, distance).</li>
+ * <li>Provides operators to create and manipulate physical joints (e.g., hinge, slider, ball-and-socket).</li>
  * <li>Enables customization of simulation parameters such as gravity, collision detection, and substeps.</li>
  * </ul>
  *
