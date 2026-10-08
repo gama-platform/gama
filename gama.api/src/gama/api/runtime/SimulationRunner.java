@@ -210,8 +210,9 @@ public class SimulationRunner implements ISimulationRunner {
 			boolean over = false;
 			while (!over && !shutdown && runnables.get(agent) == this) {
 				try {
-					while (a.isPaused.getAsBoolean() && !a.isOver.test(agent) && !shutdown) { THREADS.WAIT(10); }
-					if (!a.isOver.test(agent) && !shutdown) { agent.step(); }
+					while (runnables.get(agent) == this && a.isPaused.getAsBoolean() && !a.isOver.test(agent)
+							&& !shutdown) { THREADS.WAIT(10); }
+					if (runnables.get(agent) == this && !a.isOver.test(agent) && !shutdown) { agent.step(); }
 				} catch (Throwable tg) {
 					EXCEPTION_HANDLER.uncaughtException(Thread.currentThread(), tg);
 				}
