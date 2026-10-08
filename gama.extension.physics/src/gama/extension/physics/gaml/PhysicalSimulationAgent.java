@@ -261,6 +261,7 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 	 * @param agent
 	 */
 	public void updateAgent(final IScope scope, final IAgent agent) {
+		destroyJointsOf(agent);
 		getGateway().updateAgentShape(agent);
 	}
 
