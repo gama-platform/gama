@@ -215,7 +215,11 @@ public class SimulationRunner implements ISimulationRunner {
 				} catch (Throwable tg) {
 					EXCEPTION_HANDLER.uncaughtException(Thread.currentThread(), tg);
 				}
+try {
 				over = agent.dead() || a.isOver.test(agent);
+			} catch (final Throwable tg) {
+				EXCEPTION_HANDLER.uncaughtException(Thread.currentThread(), tg);
+				over = true;
 			}
 			if (!shutdown && runnables.get(agent) == this) { a.onOver.accept(agent); }
 		}
