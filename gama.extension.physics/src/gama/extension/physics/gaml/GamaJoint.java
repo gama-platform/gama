@@ -221,6 +221,11 @@ public class GamaJoint implements IJointDefinition {
 		destroyed = true;
 	}
 
+	/**
+	 * Checks if is whether the joint has been removed from the physical world.
+	 *
+	 * @return the whether the joint has been removed from the physical world
+	 */
 	@getter ("destroyed")
 	public boolean isDestroyed() { return destroyed; }
 
@@ -231,56 +236,78 @@ public class GamaJoint implements IJointDefinition {
 	@getter ("angle")
 	public double getAngle() {
 		if (destroyed || joint == null) return 0d;
-		if (joint instanceof org.jbox2d.dynamics.joints.RevoluteJoint revolute) return revolute.getJointAngle();
-		if (joint instanceof com.bulletphysics.dynamics.constraintsolver.HingeConstraint hinge)
-			return hinge.getHingeAngle();
-		if (joint instanceof com.jme3.bullet.joints.HingeJoint hinge) return hinge.getHingeAngle();
-		return 0d;
+		return switch (joint) {
+			case org.jbox2d.dynamics.joints.RevoluteJoint revolute -> revolute.getJointAngle();
+			case com.bulletphysics.dynamics.constraintsolver.HingeConstraint hinge -> hinge.getHingeAngle();
+			case com.jme3.bullet.joints.HingeJoint hinge -> hinge.getHingeAngle();
+			case null, default -> 0d;
+		};
 	}
 
 	/**
-	 * Gets the current translation of the joint along its axis, in world units (slider and wheel joints). Returns 0
-	 * for joints without a translational degree of freedom.
+	 * Gets the current translation of the joint along its axis, in world units (slider and wheel joints). Returns 0 for
+	 * joints without a translational degree of freedom.
 	 */
 	@getter ("translation")
 	public double getTranslation() {
 		if (destroyed || joint == null) return 0d;
-		if (joint instanceof org.jbox2d.dynamics.joints.PrismaticJoint prismatic)
-			return fromBox2D(prismatic.getBodyA(), prismatic.getJointTranslation());
-		if (joint instanceof org.jbox2d.dynamics.joints.WheelJoint wheel)
-			return fromBox2D(wheel.getBodyA(), wheel.getJointTranslation());
-		if (joint instanceof com.bulletphysics.dynamics.constraintsolver.SliderConstraint slider)
-			return slider.getLinearPos();
-		if (joint instanceof com.jme3.bullet.joints.SliderJoint slider) return nativeSliderTranslation(slider);
-		return 0d;
+		return switch (joint) {
+			case org.jbox2d.dynamics.joints.PrismaticJoint prismatic -> fromBox2D(prismatic.getBodyA(), prismatic.getJointTranslation());
+			case org.jbox2d.dynamics.joints.WheelJoint wheel -> fromBox2D(wheel.getBodyA(), wheel.getJointTranslation());
+			case com.bulletphysics.dynamics.constraintsolver.SliderConstraint slider -> slider.getLinearPos();
+			case com.jme3.bullet.joints.SliderJoint slider -> nativeSliderTranslation(slider);
+			case null, default -> 0d;
+		};
 	}
 
+	/**
+	 * From box 2 D.
+	 *
+	 * @param body
+	 *            the body
+	 * @param value
+	 *            the value
+	 * @return the double
+	 */
 	private static double fromBox2D(final org.jbox2d.dynamics.Body body, final double value) {
 		return body.getUserData() instanceof gama.extension.physics.box2d_version.IBox2DPhysicalEntity box2d
 				? box2d.toGama((float) value) : value;
 	}
 
+	/**
+	 * Native slider translation.
+	 *
+	 * @param slider
+	 *            the slider
+	 * @return the double
+	 */
 	private static double nativeSliderTranslation(final com.jme3.bullet.joints.SliderJoint slider) {
 		if (!(slider.getBodyA() instanceof com.jme3.bullet.objects.PhysicsRigidBody a)
 				|| !(slider.getBodyB() instanceof com.jme3.bullet.objects.PhysicsRigidBody b))
 			return 0d;
-		com.jme3.math.Transform frameA = slider.getFrameTransform(com.jme3.bullet.joints.JointEnd.A,
-				new com.jme3.math.Transform());
-		com.jme3.math.Transform frameB = slider.getFrameTransform(com.jme3.bullet.joints.JointEnd.B,
-				new com.jme3.math.Transform());
+		com.jme3.math.Transform frameA =
+				slider.getFrameTransform(com.jme3.bullet.joints.JointEnd.A, new com.jme3.math.Transform());
+		com.jme3.math.Transform frameB =
+				slider.getFrameTransform(com.jme3.bullet.joints.JointEnd.B, new com.jme3.math.Transform());
 		com.jme3.math.Quaternion rotA = a.getPhysicsRotation(new com.jme3.math.Quaternion());
 		com.jme3.math.Quaternion rotB = b.getPhysicsRotation(new com.jme3.math.Quaternion());
 		com.jme3.math.Vector3f pointA = a.getPhysicsLocation(new com.jme3.math.Vector3f())
-				.add(rotA.mult(frameA.getTranslation()));
+				.add(rotA.toRotationMatrix().mult(frameA.getTranslation(), new com.jme3.math.Vector3f()));
 		com.jme3.math.Vector3f pointB = b.getPhysicsLocation(new com.jme3.math.Vector3f())
-				.add(rotB.mult(frameB.getTranslation()));
-		com.jme3.math.Vector3f axis = rotA.mult(frameA.getRotation()).mult(com.jme3.math.Vector3f.UNIT_X);
+				.add(rotB.toRotationMatrix().mult(frameB.getTranslation(), new com.jme3.math.Vector3f()));
+		com.jme3.math.Vector3f axis = rotA.mult(frameA.getRotation()).toRotationMatrix()
+				.mult(com.jme3.math.Vector3f.UNIT_X, new com.jme3.math.Vector3f());
 		return pointB.subtract(pointA).dot(axis);
 	}
 
 	@Override
 	public JointType getJointType() { return type; }
 
+	/**
+	 * Gets the type.
+	 *
+	 * @return the type
+	 */
 	@getter ("type")
 	public String getType() { return type.name().toLowerCase(java.util.Locale.ROOT); }
 
@@ -309,46 +336,59 @@ public class GamaJoint implements IJointDefinition {
 	public double getUpperLimit() { return upperLimit; }
 
 	@Override
-	public boolean hasLimits() { return hasLimits; }
+	public boolean hasLimits() {
+		return hasLimits;
+	}
 
 	@getter ("motorSpeed")
 	@Override
 	public double getMotorSpeed() { return motorSpeed; }
 
+	/**
+	 * Sets the motor speed.
+	 *
+	 * @param speed
+	 *            the new motor speed
+	 */
 	@setter ("motorSpeed")
 	public void setMotorSpeed(final Double speed) {
-		if (speed != null && !Double.isFinite(speed)) {
+		if (speed != null && !Double.isFinite(speed))
 			throw new IllegalArgumentException("Joint motor speed must be finite");
-		}
 		motorSpeed = speed == null ? 0d : speed;
 		if (joint == null || destroyed) return;
-		if (joint instanceof org.jbox2d.dynamics.joints.RevoluteJoint revolute) {
-			revolute.enableMotor(maxMotorForce > 0);
-			revolute.setMotorSpeed((float) motorSpeed);
-			revolute.setMaxMotorTorque((float) maxMotorForce);
-		} else if (joint instanceof org.jbox2d.dynamics.joints.PrismaticJoint prismatic) {
-			prismatic.enableMotor(maxMotorForce > 0);
-			Object wrapper = prismatic.getBodyA().getUserData();
-			float motorTarget = wrapper instanceof gama.extension.physics.box2d_version.IBox2DPhysicalEntity box2d
-					? box2d.toBox2D(motorSpeed) : (float) motorSpeed;
-			prismatic.setMotorSpeed(motorTarget);
-			prismatic.setMaxMotorForce((float) maxMotorForce);
-		} else if (joint instanceof org.jbox2d.dynamics.joints.WheelJoint wheel) {
-			wheel.enableMotor(maxMotorForce > 0);
-			wheel.setMotorSpeed((float) motorSpeed);
-			wheel.setMaxMotorTorque((float) maxMotorForce);
-		} else if (joint instanceof com.bulletphysics.dynamics.constraintsolver.HingeConstraint hinge) {
-			hinge.enableAngularMotor(maxMotorForce > 0, (float) motorSpeed, (float) maxMotorForce);
-		} else if (joint instanceof com.bulletphysics.dynamics.constraintsolver.SliderConstraint slider) {
-			slider.setPoweredLinMotor(maxMotorForce > 0);
-			slider.setTargetLinMotorVelocity((float) motorSpeed);
-			slider.setMaxLinMotorForce((float) maxMotorForce);
-		} else if (joint instanceof com.jme3.bullet.joints.HingeJoint hinge) {
-			hinge.enableMotor(maxMotorForce > 0, (float) motorSpeed, (float) maxMotorForce);
-		} else if (joint instanceof com.jme3.bullet.joints.SliderJoint slider) {
-			slider.setPoweredLinMotor(maxMotorForce > 0);
-			slider.setTargetLinMotorVelocity((float) motorSpeed);
-			slider.setMaxLinMotorForce((float) maxMotorForce);
+		switch (joint) {
+			case org.jbox2d.dynamics.joints.RevoluteJoint revolute -> {
+				revolute.enableMotor(maxMotorForce > 0);
+				revolute.setMotorSpeed((float) motorSpeed);
+				revolute.setMaxMotorTorque((float) maxMotorForce);
+			}
+			case org.jbox2d.dynamics.joints.PrismaticJoint prismatic -> {
+				prismatic.enableMotor(maxMotorForce > 0);
+				Object wrapper = prismatic.getBodyA().getUserData();
+				float motorTarget = wrapper instanceof gama.extension.physics.box2d_version.IBox2DPhysicalEntity box2d
+						? box2d.toBox2D(motorSpeed) : (float) motorSpeed;
+				prismatic.setMotorSpeed(motorTarget);
+				prismatic.setMaxMotorForce((float) maxMotorForce);
+			}
+			case org.jbox2d.dynamics.joints.WheelJoint wheel -> {
+				wheel.enableMotor(maxMotorForce > 0);
+				wheel.setMotorSpeed((float) motorSpeed);
+				wheel.setMaxMotorTorque((float) maxMotorForce);
+			}
+			case com.bulletphysics.dynamics.constraintsolver.HingeConstraint hinge -> hinge.enableAngularMotor(maxMotorForce > 0, (float) motorSpeed, (float) maxMotorForce);
+			case com.bulletphysics.dynamics.constraintsolver.SliderConstraint slider -> {
+				slider.setPoweredLinMotor(maxMotorForce > 0);
+				slider.setTargetLinMotorVelocity((float) motorSpeed);
+				slider.setMaxLinMotorForce((float) maxMotorForce);
+			}
+			case com.jme3.bullet.joints.HingeJoint hinge -> hinge.enableMotor(maxMotorForce > 0, (float) motorSpeed, (float) maxMotorForce);
+			case com.jme3.bullet.joints.SliderJoint slider -> {
+				slider.setPoweredLinMotor(maxMotorForce > 0);
+				slider.setTargetLinMotorVelocity((float) motorSpeed);
+				slider.setMaxLinMotorForce((float) maxMotorForce);
+			}
+			case null, default -> {
+			}
 		}
 	}
 
@@ -356,11 +396,16 @@ public class GamaJoint implements IJointDefinition {
 	@Override
 	public double getMaxMotorForce() { return maxMotorForce; }
 
+	/**
+	 * Sets the max motor force.
+	 *
+	 * @param force
+	 *            the new max motor force
+	 */
 	@setter ("maxMotorForce")
 	public void setMaxMotorForce(final Double force) {
-		if (force != null && (!Double.isFinite(force) || force < 0)) {
+		if (force != null && (!Double.isFinite(force) || force < 0))
 			throw new IllegalArgumentException("Joint motor force must be finite and non-negative");
-		}
 		maxMotorForce = force == null ? 0d : Math.max(0, force);
 		setMotorSpeed(motorSpeed);
 	}
@@ -380,8 +425,7 @@ public class GamaJoint implements IJointDefinition {
 	@Override
 	public String toString() {
 		return "GamaJoint{" + "type=" + type + ", bodyA=" + bodyA + ", bodyB=" + bodyB + ", anchor=" + anchor
-				+ ", axis=" + axis
-				+ ", lowerLimit=" + lowerLimit + ", upperLimit=" + upperLimit + ", motorSpeed=" + motorSpeed
-				+ ", maxMotorForce=" + maxMotorForce + '}';
+				+ ", axis=" + axis + ", lowerLimit=" + lowerLimit + ", upperLimit=" + upperLimit + ", motorSpeed="
+				+ motorSpeed + ", maxMotorForce=" + maxMotorForce + '}';
 	}
 }
