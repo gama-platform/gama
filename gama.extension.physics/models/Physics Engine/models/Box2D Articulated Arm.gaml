@@ -21,7 +21,7 @@ global parent: physical_world {
 			location <- index = 0 ? {75, 50} : {125, 50};
 		}
 
-		shoulder_joint <- create_hinge_joint(arm_base, arm_link[0], {50, 50}, -1.2, 1.2, 0.0, 80.0);
+		shoulder_joint <- create_hinge_joint(arm_base[0], arm_link[0], {50, 50}, -1.2, 1.2, 0.0, 80.0);
 		elbow_joint <- create_hinge_joint(arm_link[0], arm_link[1], {100, 50}, -1.2, 1.2, 0.0, 45.0);
 	}
 
