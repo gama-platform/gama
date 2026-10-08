@@ -17,12 +17,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.runtime.GamaExecutorService.Caller;
 import gama.dev.DEBUG;
+import gama.dev.THREADS;
 
 /**
  * Default implementation of {@link ISimulationRunner} for managing concurrent simulation execution.
@@ -169,51 +173,111 @@ public class SimulationRunner implements ISimulationRunner {
 	 */
 	@Override
 	public void remove(final ISimulationAgent agent) {
-		if (runnables.remove(agent) != null) { activeCount.decrementAndGet(); }
+		final Thread t = runnables.remove(agent);
+		if (t == null) return;
+		// Autonomous simulations have already been taken out of the count
+		if (!(t instanceof SimulationThread st) || st.autonomy == null) { activeCount.decrementAndGet(); }
+		// A thread idling on the semaphore would otherwise never terminate (see issues #198 and #282)
+		if (t instanceof SimulationThread st && st.waiting) { st.interrupt(); }
+	}
+
+	/** A dedicated thread running the steps of one simulation, which can be woken up when it is removed. */
+	private final class SimulationThread extends Thread {
+
+		/** The agent. */
+		private final ISimulationAgent agent;
+
+		/** True while the thread is idle, waiting for the permission to step. */
+		volatile boolean waiting;
+
+		/** Set when the simulation must run on its own, without synchronization. */
+		volatile Autonomy autonomy;
+
+		/**
+		 * Instantiates a new simulation thread.
+		 *
+		 * @param agent
+		 *            the agent
+		 */
+		SimulationThread(final ISimulationAgent agent) {
+			super("Thread of " + agent.getName());
+			this.agent = agent;
+			setDaemon(true);
+		}
+
+		/** Steps the simulation as fast as possible until it is over. */
+		private void runFreely(final Autonomy a) {
+			boolean over = false;
+			while (!over && !shutdown && runnables.get(agent) == this) {
+				try {
+					while (a.isPaused.getAsBoolean() && !a.isOver.test(agent) && !shutdown) { THREADS.WAIT(10); }
+					if (!a.isOver.test(agent) && !shutdown) { agent.step(); }
+				} catch (Throwable tg) {
+					EXCEPTION_HANDLER.uncaughtException(Thread.currentThread(), tg);
+				}
+				over = agent.dead() || a.isOver.test(agent);
+			}
+			if (!shutdown && runnables.get(agent) == this) { a.onOver.accept(agent); }
+		}
+
+		@Override
+		public void run() {
+			while (!shutdown && !agent.dead() && runnables.get(agent) == this) {
+				waiting = true;
+				final boolean acquired = autonomy != null || simulationsSemaphore.acquire();
+				waiting = false;
+				if (autonomy != null) {
+					Thread.interrupted();
+					runFreely(autonomy);
+					return;
+				}
+				if (!acquired) { break; }
+				// Recheck after waking up: dispose() may have released the permit just to
+				// unblock this thread for shutdown — we must not step a dead/cleared runner.
+				if (shutdown || agent.dead()) { break; }
+				try {
+					agent.step();
+				} catch (Throwable tg) {
+					EXCEPTION_HANDLER.uncaughtException(Thread.currentThread(), tg);
+				} finally {
+					// Released whatever the outcome: a step that throws still consumed the permit granted by
+					// step(), which would otherwise wait for it forever.
+					experimentSemaphore.release();
+				}
+			}
+		}
+	}
+
+	/** The way an autonomous simulation is run. */
+	private record Autonomy(Predicate<ISimulationAgent> isOver, BooleanSupplier isPaused,
+			Consumer<ISimulationAgent> onOver) {}
+
+	@Override
+	public void runAutonomously(final ISimulationAgent agent, final Predicate<ISimulationAgent> isOver,
+			final BooleanSupplier isPaused, final Consumer<ISimulationAgent> onOver) {
+		if (!(runnables.get(agent) instanceof SimulationThread st)) return;
+		// The simulation does not take part in the synchronized steps anymore
+		activeCount.decrementAndGet();
+		st.autonomy = new Autonomy(isOver, isPaused, onOver);
+		// The thread is idle (or about to be) on the semaphore: wake it up so that it notices its new mode
+		st.interrupt();
 	}
 
 	/**
-	 * Adds a simulation agent to the runner and starts its dedicated execution thread.
-	 *
-	 * <p>
-	 * Creates a new thread for the simulation that will:
-	 * </p>
-	 * <ol>
-	 * <li>Wait for a permit from simulationsSemaphore</li>
-	 * <li>Execute the simulation's step</li>
-	 * <li>Release a permit to experimentSemaphore</li>
-	 * <li>Repeat until the simulation dies or the runner shuts down</li>
-	 * </ol>
+	 * Adds a simulation agent to the runner and starts its dedicated execution thread, which waits for a permit,
+	 * steps the simulation, signals the experiment, and repeats until the simulation dies, is removed or the runner
+	 * shuts down.
 	 *
 	 * @param agent
 	 *            the simulation agent to add
 	 */
 	@Override
 	public void add(final ISimulationAgent agent) {
-		Thread t = new Thread("Thread of " + agent.getName()) {
-			@Override
-			public void run() {
-				while (!shutdown && !agent.dead()) {
-					// DEBUG.OUT("Waiting for " + agent);
-					if (!simulationsSemaphore.acquire()) { break; }
-					// Recheck after waking up: dispose() may have released the permit just to
-					// unblock this thread for shutdown — we must not step a dead/cleared runner.
-					if (shutdown || agent.dead()) { break; }
-					try {
-						agent.step();
-					} catch (Throwable tg) {
-						EXCEPTION_HANDLER.uncaughtException(Thread.currentThread(), tg);
-					} finally {
-						// Released whatever the outcome: a step that throws still consumed the permit granted by
-						// step(), which would otherwise wait for it forever.
-						experimentSemaphore.release();
-					}
-				}
-			}
-		};
-		t.start();
+		final Thread t = new SimulationThread(agent);
+		// Registered before starting, as the thread checks that it is still registered
 		runnables.put(agent, t);
 		activeCount.incrementAndGet();
+		t.start();
 	}
 
 	/**
@@ -236,6 +300,8 @@ public class SimulationRunner implements ISimulationRunner {
 	@Override
 	public void step() {
 		// DEBUG.OUT("Releasing to all simulations");
+		// Dead simulations never consume permits: counting them would block the experiment forever
+		for (final ISimulationAgent sim : runnables.keySet()) { if (sim.dead()) { remove(sim); } }
 		int nb = activeCount.get();
 		simulationsSemaphore.release(nb);
 		// If the experiment thread is interrupted while waiting, abort the step.

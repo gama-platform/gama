@@ -157,7 +157,6 @@ public class GeneralSynchronizer {
 			semaphore.acquire();
 			return true;
 		} catch (InterruptedException e) {
-			e.printStackTrace();
 			Thread.currentThread().interrupt();
 			return false;
 		}
@@ -218,7 +217,6 @@ public class GeneralSynchronizer {
 			semaphore.acquire(n);
 			return true;
 		} catch (InterruptedException e) {
-			e.printStackTrace();
 			Thread.currentThread().interrupt();
 			return false;
 		}

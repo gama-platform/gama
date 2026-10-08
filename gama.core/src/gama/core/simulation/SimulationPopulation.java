@@ -14,6 +14,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
@@ -279,6 +282,24 @@ public class SimulationPopulation extends GamaPopulation<ISimulationAgent> imple
 	 */
 	public void unscheduleSimulation(final ISimulationAgent sim) {
 		runner.remove(sim);
+	}
+
+	/**
+	 * Lets a scheduled simulation run on its own thread, not synchronized with the other simulations, until it is
+	 * over.
+	 *
+	 * @param sim
+	 *            a scheduled simulation
+	 * @param isOver
+	 *            tells when the simulation must stop
+	 * @param isPaused
+	 *            tells if the simulation should wait before its next step
+	 * @param onOver
+	 *            called (from the simulation's thread) when the simulation is over
+	 */
+	public void runAutonomously(final ISimulationAgent sim, final Predicate<ISimulationAgent> isOver,
+			final BooleanSupplier isPaused, final Consumer<ISimulationAgent> onOver) {
+		runner.runAutonomously(sim, isOver, isPaused, onOver);
 	}
 
 	/**
