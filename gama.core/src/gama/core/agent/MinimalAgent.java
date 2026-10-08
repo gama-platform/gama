@@ -211,6 +211,9 @@ public class MinimalAgent implements IAgent, Comparable<IAgent> {
 	@Override
 	public IPoint setLocation(final IScope scope, final IPoint point) {
 		if (point == null || dead() || this.getSpecies().isGrid()) return getLocation();
+		if (!Double.isFinite(point.getX() + point.getY() + (Double.isNaN(point.getZ()) ? 0 : point.getZ())))
+			throw GamaRuntimeException.error("Invalid location " + point + " for " + getName()
+					+ ": coordinates must be finite numbers (not #nan or infinite)", scope);
 		IPoint newLocation = point.copy(scope);
 		final ITopology topology = getTopology();
 		if (topology == null) return getLocation();
