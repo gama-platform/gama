@@ -10,7 +10,9 @@
  ********************************************************************************************************/
 package gama.extension.physics.gaml;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import gama.annotations.action;
 import gama.annotations.arg;
@@ -231,7 +233,24 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 	 *            the agent
 	 */
 	private void unregisterAgent(final IScope scope, final IAgent agent) {
+		destroyJointsOf(agent);
 		if (registeredAgents.remove(agent)) { getGateway().unregisterAgent(agent); }
+	}
+
+	/** The joints created in this world and not yet destroyed. */
+	private final List<GamaJoint> joints = new ArrayList<>();
+
+	private void destroyJointsOf(final IAgent agent) {
+		for (GamaJoint joint : new ArrayList<>(joints)) {
+			if (joint.getBodyA() == agent || joint.getBodyB() == agent) { destroyJointInternal(joint); }
+		}
+	}
+
+	private void destroyJointInternal(final GamaJoint joint) {
+		if (joint.isDestroyed()) return;
+		joint.markDestroyed();
+		joints.remove(joint);
+		if (gateway != null) { gateway.destroyJoint(joint.getJoint()); }
 	}
 
 	/**
@@ -529,9 +548,91 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 				GamaPointFactory.create(0, 0, 1), null, null, 0d, 0d);
 	}
 
+	@operator (
+			doc = @doc ("Creates and adds a fixed (weld) joint at the supplied world-space anchor."),
+			value = "create_fixed_joint")
+	public GamaJoint createFixedJoint(final IScope scope, final Object bodyA, final Object bodyB,
+			final IPoint anchor) {
+		return createJoint(scope, IJointDefinition.JointType.FIXED, bodyA, bodyB, anchor,
+				GamaPointFactory.create(0, 0, 1), null, null, 0d, 0d);
+	}
+
+	@operator (
+			doc = @doc ("Creates and adds a distance (spring) joint between two world-space anchors, with a spring frequency (Hz, 0 = rigid) and damping ratio. Box2D only."),
+			value = "create_distance_joint")
+	public GamaJoint createDistanceJoint(final IScope scope, final Object bodyA, final Object bodyB,
+			final IPoint anchorA, final IPoint anchorB, final double frequency, final double damping) {
+		return createJoint(scope, IJointDefinition.JointType.DISTANCE, bodyA, bodyB, anchorA,
+				GamaPointFactory.create(0, 0, 1), null, null, 0d, 0d, anchorB, frequency, damping, 0d, 0d);
+	}
+
+	@operator (
+			doc = @doc ("Creates and adds a rope joint keeping two world-space anchors at most maxLength apart. Box2D only."),
+			value = "create_rope_joint")
+	public GamaJoint createRopeJoint(final IScope scope, final Object bodyA, final Object bodyB,
+			final IPoint anchorA, final IPoint anchorB, final double maxLength) {
+		return createJoint(scope, IJointDefinition.JointType.ROPE, bodyA, bodyB, anchorA,
+				GamaPointFactory.create(0, 0, 1), 0d, maxLength, 0d, 0d, anchorB, 0d, 0d, 0d, 0d);
+	}
+
+	@operator (
+			doc = @doc ("Creates and adds a cone-twist joint (ragdoll shoulder) at the anchor, around the axis, with swing and twist limits in radians. Bullet engines only."),
+			value = "create_cone_twist_joint")
+	public GamaJoint createConeTwistJoint(final IScope scope, final Object bodyA, final Object bodyB,
+			final IPoint anchor, final IPoint axis, final double swingLimit, final double twistLimit) {
+		return createJoint(scope, IJointDefinition.JointType.CONE_TWIST, bodyA, bodyB, anchor, axis, null, null, 0d,
+				0d, null, 0d, 0d, swingLimit, twistLimit);
+	}
+
+	@operator (
+			doc = @doc ("Creates and adds a wheel joint (suspension + rotation) at the anchor along the axis, with suspension frequency/damping and a motor. Box2D only."),
+			value = "create_wheel_joint")
+	public GamaJoint createWheelJoint(final IScope scope, final Object bodyA, final Object bodyB,
+			final IPoint anchor, final IPoint axis, final double frequency, final double damping,
+			final double motorSpeed, final double maxMotorTorque) {
+		return createJoint(scope, IJointDefinition.JointType.WHEEL, bodyA, bodyB, anchor, axis, null, null,
+				motorSpeed, maxMotorTorque, null, frequency, damping, 0d, 0d);
+	}
+
+	@operator (
+			doc = @doc ("Destroys a joint, removing it from the physical world."),
+			value = "destroy_joint")
+	public boolean destroyJoint(final IScope scope, final GamaJoint joint) {
+		if (joint == null) return false;
+		destroyJointInternal(joint);
+		return true;
+	}
+
 	private GamaJoint createJoint(final IScope scope, final IJointDefinition.JointType type, final Object bodyA,
 			final Object bodyB, final IPoint anchor, final IPoint axis, final Double lowerLimit,
 			final Double upperLimit, final Double motorSpeed, final Double maxMotorForce) {
+		return createJoint(scope, type, bodyA, bodyB, anchor, axis, lowerLimit, upperLimit, motorSpeed,
+				maxMotorForce, null, 0d, 0d, 0d, 0d);
+	}
+
+	private GamaJoint createJoint(final IScope scope, final IJointDefinition.JointType type, final Object bodyA,
+			final Object bodyB, final IPoint anchor, final IPoint axis, final Double lowerLimit,
+			final Double upperLimit, final Double motorSpeed, final Double maxMotorForce, final IPoint secondAnchor,
+			final double frequency, final double damping, final double swingLimit, final double twistLimit) {
+		if (secondAnchor != null && !(Double.isFinite(secondAnchor.getX()) && Double.isFinite(secondAnchor.getY())
+				&& Double.isFinite(secondAnchor.getZ()))) {
+			throw GamaRuntimeException.error("Joint anchors must have finite coordinates", scope);
+		}
+		if (!Double.isFinite(frequency) || frequency < 0 || !Double.isFinite(damping) || damping < 0) {
+			throw GamaRuntimeException.error("Joint frequency and damping must be finite and non-negative", scope);
+		}
+		if (!Double.isFinite(swingLimit) || !Double.isFinite(twistLimit) || swingLimit < 0 || twistLimit < 0
+				|| type == IJointDefinition.JointType.CONE_TWIST && swingLimit == 0) {
+			throw GamaRuntimeException.error("Cone-twist limits must be finite angles; the swing limit must be positive",
+					scope);
+		}
+		if (type == IJointDefinition.JointType.ROPE && (upperLimit == null || upperLimit <= 0)) {
+			throw GamaRuntimeException.error("The maximum length of a rope joint must be positive", scope);
+		}
+		if ((type == IJointDefinition.JointType.DISTANCE || type == IJointDefinition.JointType.ROPE)
+				&& secondAnchor == null) {
+			throw GamaRuntimeException.error("Distance and rope joints require two anchors", scope);
+		}
 		if (anchor == null) throw GamaRuntimeException.error("A joint anchor is required", scope);
 		if (!Double.isFinite(anchor.getX()) || !Double.isFinite(anchor.getY()) || !Double.isFinite(anchor.getZ())) {
 			throw GamaRuntimeException.error("Joint anchors must have finite coordinates", scope);
@@ -565,10 +666,13 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 		double speed = motorSpeed == null ? 0d : motorSpeed;
 		double force = maxMotorForce == null ? 0d : maxMotorForce;
 		GamaJoint definition = new GamaJoint(null, type, agentA, agentB, anchor, axis, lower, upper, hasLimits, speed,
-				force);
+				force).withParameters(secondAnchor, frequency, damping, swingLimit, twistLimit);
 		try {
 			Object engineJoint = getGateway().createJoint(definition);
-			return new GamaJoint(engineJoint, type, agentA, agentB, anchor, axis, lower, upper, hasLimits, speed, force);
+			GamaJoint result = new GamaJoint(engineJoint, type, agentA, agentB, anchor, axis, lower, upper, hasLimits,
+					speed, force).withParameters(secondAnchor, frequency, damping, swingLimit, twistLimit);
+			joints.add(result);
+			return result;
 		} catch (IllegalArgumentException e) {
 			throw GamaRuntimeException.error(e.getMessage(), scope);
 		}
@@ -586,6 +690,7 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 	@Override
 	public void dispose() {
 		getGateway().dispose();
+		joints.clear();
 		registeredAgents.clear();
 		super.dispose();
 	}

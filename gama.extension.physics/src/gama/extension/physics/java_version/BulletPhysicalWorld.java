@@ -10,6 +10,7 @@
  ********************************************************************************************************/
 package gama.extension.physics.java_version;
 
+import javax.vecmath.Matrix3f;
 import javax.vecmath.Vector3f;
 
 import java.util.ArrayList;
@@ -26,6 +27,8 @@ import com.bulletphysics.collision.narrowphase.PersistentManifold;
 import com.bulletphysics.collision.shapes.CollisionShape;
 import com.bulletphysics.dynamics.DiscreteDynamicsWorld;
 import com.bulletphysics.dynamics.RigidBody;
+import com.bulletphysics.dynamics.constraintsolver.ConeTwistConstraint;
+import com.bulletphysics.dynamics.constraintsolver.Generic6DofConstraint;
 import com.bulletphysics.dynamics.constraintsolver.HingeConstraint;
 import com.bulletphysics.dynamics.constraintsolver.Point2PointConstraint;
 import com.bulletphysics.dynamics.constraintsolver.SequentialImpulseConstraintSolver;
@@ -221,8 +224,8 @@ public class BulletPhysicalWorld extends AbstractPhysicalWorld<DiscreteDynamicsW
 				Vector3f axis = toVector(jointDefinition.getAxis());
 				if (axis.lengthSquared() == 0) throw new IllegalArgumentException("Joint axis must be non-zero");
 				axis.normalize();
-				Transform frameA = sliderFrame(pivotA, toLocalAxis(first, axis));
-				Transform frameB = sliderFrame(pivotB, toLocalAxis(second, axis));
+				Transform frameA = jointFrame(first, pivotA, axis);
+				Transform frameB = jointFrame(second, pivotB, axis);
 				SliderConstraint slider = new SliderConstraint(first, second, frameA, frameB, true);
 				if (jointDefinition.hasLimits()) {
 					slider.setLowerLinLimit((float) jointDefinition.getLowerLimit());
@@ -234,9 +237,35 @@ public class BulletPhysicalWorld extends AbstractPhysicalWorld<DiscreteDynamicsW
 				result = slider;
 			}
 			case BALL_AND_SOCKET -> result = new Point2PointConstraint(first, second, pivotA, pivotB);
-			default -> throw new IllegalArgumentException("Unsupported joint type: " + jointDefinition.getJointType());
+			case FIXED -> {
+				Vector3f axis = new Vector3f(0, 0, 1);
+				Generic6DofConstraint fixed = new Generic6DofConstraint(first, second,
+						jointFrame(first, pivotA, axis), jointFrame(second, pivotB, axis), true);
+				fixed.setLinearLowerLimit(new Vector3f());
+				fixed.setLinearUpperLimit(new Vector3f());
+				fixed.setAngularLowerLimit(new Vector3f());
+				fixed.setAngularUpperLimit(new Vector3f());
+				result = fixed;
+			}
+			case CONE_TWIST -> {
+				Vector3f axis = toVector(jointDefinition.getAxis());
+				if (axis.lengthSquared() == 0) throw new IllegalArgumentException("Joint axis must be non-zero");
+				axis.normalize();
+				ConeTwistConstraint cone = new ConeTwistConstraint(first, second, jointFrame(first, pivotA, axis),
+						jointFrame(second, pivotB, axis));
+				cone.setLimit((float) jointDefinition.getSwingLimit(), (float) jointDefinition.getSwingLimit(),
+						(float) jointDefinition.getTwistLimit());
+				result = cone;
+			}
+			default -> throw new IllegalArgumentException(
+					"Joint type " + jointDefinition.getJointType() + " is not supported by the jBullet library");
 		}
 		return result;
+	}
+
+	@Override
+	public void destroyJoint(final Object joint) {
+		if (joint instanceof TypedConstraint constraint && world != null) { world.removeConstraint(constraint); }
 	}
 
 	private Vector3f toLocalPoint(final RigidBody body, final Vector3f worldPoint) {
@@ -256,20 +285,28 @@ public class BulletPhysicalWorld extends AbstractPhysicalWorld<DiscreteDynamicsW
 		return result;
 	}
 
-	private Transform sliderFrame(final Vector3f pivot, final Vector3f axis) {
-		Vector3f reference = Math.abs(axis.z) < 0.9f ? new Vector3f(0, 0, 1) : new Vector3f(0, 1, 0);
+	/**
+	 * Builds a constraint frame in the local space of the body. The frame is derived from a single world-space basis,
+	 * so the frames of both bodies coincide in the world at creation time (no initial twist offset).
+	 */
+	private Transform jointFrame(final RigidBody body, final Vector3f pivot, final Vector3f worldAxis) {
+		Vector3f reference = Math.abs(worldAxis.z) < 0.9f ? new Vector3f(0, 0, 1) : new Vector3f(0, 1, 0);
 		Vector3f second = new Vector3f();
-		second.cross(reference, axis);
+		second.cross(reference, worldAxis);
 		second.normalize();
 		Vector3f third = new Vector3f();
-		third.cross(axis, second);
+		third.cross(worldAxis, second);
 		third.normalize();
+		Matrix3f worldBasis = new Matrix3f();
+		worldBasis.setColumn(0, worldAxis);
+		worldBasis.setColumn(1, second);
+		worldBasis.setColumn(2, third);
+		Matrix3f inverseRotation = new Matrix3f(body.getCenterOfMassTransform(new Transform()).basis);
+		inverseRotation.transpose();
 		Transform frame = new Transform();
 		frame.setIdentity();
 		frame.origin.set(pivot);
-		frame.basis.setColumn(0, axis);
-		frame.basis.setColumn(1, second);
-		frame.basis.setColumn(2, third);
+		frame.basis.mul(inverseRotation, worldBasis);
 		return frame;
 	}
 }

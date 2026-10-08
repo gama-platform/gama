@@ -10,7 +10,7 @@ public interface IJointDefinition {
     /**
      * Enum for the type of joint.
      */
-    enum JointType { HINGE, SLIDER, BALL_AND_SOCKET }
+    enum JointType { HINGE, SLIDER, BALL_AND_SOCKET, FIXED, DISTANCE, ROPE, CONE_TWIST, WHEEL }
 
     /**
      * Gets the type of the joint.
@@ -81,4 +81,40 @@ public interface IJointDefinition {
      * @return the maximum motor force
      */
     double getMaxMotorForce();
+
+    /**
+     * Gets the anchor on the second body (world coordinates). Only distinct from the first anchor for distance and
+     * rope joints.
+     *
+     * @return the second anchor point
+     */
+    default IPoint getSecondAnchorPoint() { return getAnchorPoint(); }
+
+    /**
+     * Gets the spring frequency in Hz (distance, wheel and fixed joints). A value of 0 means a rigid joint.
+     *
+     * @return the frequency
+     */
+    default double getFrequency() { return 0; }
+
+    /**
+     * Gets the spring damping ratio (distance, wheel and fixed joints).
+     *
+     * @return the damping ratio
+     */
+    default double getDamping() { return 0; }
+
+    /**
+     * Gets the cone-twist swing limit (half-angle of the cone, in radians).
+     *
+     * @return the swing limit
+     */
+    default double getSwingLimit() { return 0; }
+
+    /**
+     * Gets the cone-twist twist limit (in radians).
+     *
+     * @return the twist limit
+     */
+    default double getTwistLimit() { return 0; }
 }

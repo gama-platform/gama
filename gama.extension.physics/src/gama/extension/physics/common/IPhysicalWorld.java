@@ -103,4 +103,11 @@ public interface IPhysicalWorld<WorldType, ShapeType, VectorType> extends IPhysi
 	 * @return the created joint object
 	 */
 	Object createJoint(IJointDefinition jointDefinition);
+
+	/**
+	 * Removes a joint previously created with {@link #createJoint(IJointDefinition)} from the physical world.
+	 *
+	 * @param joint the engine joint object
+	 */
+	void destroyJoint(Object joint);
 }

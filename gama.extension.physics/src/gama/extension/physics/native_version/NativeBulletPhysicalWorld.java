@@ -18,8 +18,10 @@ import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.PersistentManifolds;
 import com.jme3.bullet.collision.PhysicsCollisionObject;
 import com.jme3.bullet.collision.shapes.CollisionShape;
+import com.jme3.bullet.joints.ConeJoint;
 import com.jme3.bullet.joints.HingeJoint;
 import com.jme3.bullet.joints.Point2PointJoint;
+import com.jme3.bullet.joints.SixDofJoint;
 import com.jme3.bullet.objects.PhysicsRigidBody;
 import com.jme3.bullet.joints.SliderJoint;
 import com.jme3.math.Matrix3f;
@@ -302,10 +304,8 @@ public class NativeBulletPhysicalWorld extends AbstractPhysicalWorld<PhysicsSpac
 				Vector3f axis = toVector(jointDefinition.getAxis());
 				if (axis.lengthSquared() == 0) throw new IllegalArgumentException("Joint axis must be non-zero");
 				axis = axis.normalize();
-				Vector3f axisA = toLocalAxis(first, axis);
-				Vector3f axisB = toLocalAxis(second, axis);
 				SliderJoint slider = new SliderJoint(first, second, pivotA, pivotB,
-						sliderFrame(axisA), sliderFrame(axisB), true);
+						jointFrame(first, axis), jointFrame(second, axis), true);
 				if (jointDefinition.hasLimits()) {
 					slider.setLowerLinLimit((float) jointDefinition.getLowerLimit());
 					slider.setUpperLinLimit((float) jointDefinition.getUpperLimit());
@@ -318,8 +318,34 @@ public class NativeBulletPhysicalWorld extends AbstractPhysicalWorld<PhysicsSpac
 			case BALL_AND_SOCKET -> {
 				return new Point2PointJoint(first, second, pivotA, pivotB);
 			}
-			default -> throw new IllegalArgumentException("Unsupported joint type: " + jointDefinition.getJointType());
+			case FIXED -> {
+				Vector3f axis = new Vector3f(0, 0, 1);
+				SixDofJoint fixed = new SixDofJoint(first, second, pivotA, pivotB, jointFrame(first, axis),
+						jointFrame(second, axis), true);
+				fixed.setLinearLowerLimit(new Vector3f());
+				fixed.setLinearUpperLimit(new Vector3f());
+				fixed.setAngularLowerLimit(new Vector3f());
+				fixed.setAngularUpperLimit(new Vector3f());
+				return fixed;
+			}
+			case CONE_TWIST -> {
+				Vector3f axis = toVector(jointDefinition.getAxis());
+				if (axis.lengthSquared() == 0) throw new IllegalArgumentException("Joint axis must be non-zero");
+				axis = axis.normalize();
+				ConeJoint cone = new ConeJoint(first, second, pivotA, pivotB, jointFrame(first, axis),
+						jointFrame(second, axis));
+				cone.setLimit((float) jointDefinition.getSwingLimit(), (float) jointDefinition.getSwingLimit(),
+						(float) jointDefinition.getTwistLimit());
+				return cone;
+			}
+			default -> throw new IllegalArgumentException("Joint type " + jointDefinition.getJointType()
+					+ " is not supported by the native Bullet library");
 		}
+	}
+
+	@Override
+	public void destroyJoint(final Object joint) {
+		if (joint instanceof PhysicsJoint physicsJoint && world != null) { world.removeJoint(physicsJoint); }
 	}
 
 	private Vector3f toLocalPoint(final PhysicsRigidBody body, final Vector3f worldPoint) {
@@ -333,12 +359,13 @@ public class NativeBulletPhysicalWorld extends AbstractPhysicalWorld<PhysicsSpac
 		return result.normalize();
 	}
 
-	private Matrix3f sliderFrame(final Vector3f axis) {
-		Vector3f reference = Math.abs(axis.z) < 0.9f ? new Vector3f(0, 0, 1) : new Vector3f(0, 1, 0);
-		Vector3f second = reference.cross(axis).normalize();
-		Vector3f third = axis.cross(second).normalize();
-		Matrix3f result = new Matrix3f();
-		result.fromAxes(axis, second, third);
-		return result;
+	private Matrix3f jointFrame(final PhysicsRigidBody body, final Vector3f worldAxis) {
+		Vector3f reference = Math.abs(worldAxis.z) < 0.9f ? new Vector3f(0, 0, 1) : new Vector3f(0, 1, 0);
+		Vector3f second = reference.cross(worldAxis).normalize();
+		Vector3f third = worldAxis.cross(second).normalize();
+		Matrix3f worldBasis = new Matrix3f();
+		worldBasis.fromAxes(worldAxis, second, third);
+		Matrix3f inverseRotation = body.getPhysicsRotation(new Quaternion()).inverse().toRotationMatrix();
+		return inverseRotation.mult(worldBasis);
 	}
 }

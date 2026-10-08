@@ -26,7 +26,7 @@ import gama.extension.physics.common.IJointDefinition;
 @vars ({ @variable (
 		name = "type",
 		type = IType.STRING,
-		doc = @doc ("The type of the joint: hinge, slider, or ball_and_socket.")),
+		doc = @doc ("The type of the joint: hinge, slider, ball_and_socket, fixed, distance, rope, cone_twist or wheel.")),
 		@variable (
 				name = "bodyA",
 				type = IType.NONE,
@@ -58,7 +58,35 @@ import gama.extension.physics.common.IJointDefinition;
 		@variable (
 				name = "maxMotorForce",
 				type = IType.FLOAT,
-				doc = @doc ("The maximum motor force/torque (or motor impulse in Bullet). A positive value enables the motor.")) })
+				doc = @doc ("The maximum motor force/torque (or motor impulse in Bullet). A positive value enables the motor.")),
+		@variable (
+				name = "frequency",
+				type = IType.FLOAT,
+				doc = @doc ("The spring frequency in Hz of distance, wheel and fixed joints (0 means rigid).")),
+		@variable (
+				name = "damping",
+				type = IType.FLOAT,
+				doc = @doc ("The spring damping ratio of distance, wheel and fixed joints.")),
+		@variable (
+				name = "swingLimit",
+				type = IType.FLOAT,
+				doc = @doc ("The swing limit (half-angle of the cone, in radians) of a cone_twist joint.")),
+		@variable (
+				name = "twistLimit",
+				type = IType.FLOAT,
+				doc = @doc ("The twist limit (in radians) of a cone_twist joint.")),
+		@variable (
+				name = "angle",
+				type = IType.FLOAT,
+				doc = @doc ("The current angle of the joint in radians (hinges). 0 for joints without a rotational degree of freedom.")),
+		@variable (
+				name = "translation",
+				type = IType.FLOAT,
+				doc = @doc ("The current translation of the joint along its axis, in world units (sliders and wheels). 0 for joints without a translational degree of freedom.")),
+		@variable (
+				name = "destroyed",
+				type = IType.BOOL,
+				doc = @doc ("Whether the joint has been removed from the physical world.")) })
 public class GamaJoint implements IJointDefinition {
 
 	/** The joint. */
@@ -136,6 +164,120 @@ public class GamaJoint implements IJointDefinition {
 		this.maxMotorForce = maxMotorForce;
 	}
 
+	/** The anchor on the second body (distance and rope joints). */
+	private IPoint secondAnchor;
+
+	/** The spring frequency (Hz). */
+	private double frequency;
+
+	/** The spring damping ratio. */
+	private double damping;
+
+	/** The cone-twist swing limit. */
+	private double swingLimit;
+
+	/** The cone-twist twist limit. */
+	private double twistLimit;
+
+	/** Whether the joint has been removed from the physical world. */
+	private boolean destroyed;
+
+	/**
+	 * Sets the parameters that only apply to some joint types.
+	 *
+	 * @return this joint
+	 */
+	public GamaJoint withParameters(final IPoint secondAnchor, final double frequency, final double damping,
+			final double swingLimit, final double twistLimit) {
+		this.secondAnchor = secondAnchor == null ? null : GamaPointFactory.create(secondAnchor);
+		this.frequency = frequency;
+		this.damping = damping;
+		this.swingLimit = swingLimit;
+		this.twistLimit = twistLimit;
+		return this;
+	}
+
+	@Override
+	public IPoint getSecondAnchorPoint() { return secondAnchor == null ? anchor : secondAnchor; }
+
+	@getter ("frequency")
+	@Override
+	public double getFrequency() { return frequency; }
+
+	@getter ("damping")
+	@Override
+	public double getDamping() { return damping; }
+
+	@getter ("swingLimit")
+	@Override
+	public double getSwingLimit() { return swingLimit; }
+
+	@getter ("twistLimit")
+	@Override
+	public double getTwistLimit() { return twistLimit; }
+
+	/** Marks this joint as removed from the physical world. */
+	public void markDestroyed() {
+		destroyed = true;
+	}
+
+	@getter ("destroyed")
+	public boolean isDestroyed() { return destroyed; }
+
+	/**
+	 * Gets the current angle of the joint, in radians (hinge and revolute-like joints). Returns 0 for joints without a
+	 * rotational degree of freedom.
+	 */
+	@getter ("angle")
+	public double getAngle() {
+		if (destroyed || joint == null) return 0d;
+		if (joint instanceof org.jbox2d.dynamics.joints.RevoluteJoint revolute) return revolute.getJointAngle();
+		if (joint instanceof com.bulletphysics.dynamics.constraintsolver.HingeConstraint hinge)
+			return hinge.getHingeAngle();
+		if (joint instanceof com.jme3.bullet.joints.HingeJoint hinge) return hinge.getHingeAngle();
+		return 0d;
+	}
+
+	/**
+	 * Gets the current translation of the joint along its axis, in world units (slider and wheel joints). Returns 0
+	 * for joints without a translational degree of freedom.
+	 */
+	@getter ("translation")
+	public double getTranslation() {
+		if (destroyed || joint == null) return 0d;
+		if (joint instanceof org.jbox2d.dynamics.joints.PrismaticJoint prismatic)
+			return fromBox2D(prismatic.getBodyA(), prismatic.getJointTranslation());
+		if (joint instanceof org.jbox2d.dynamics.joints.WheelJoint wheel)
+			return fromBox2D(wheel.getBodyA(), wheel.getJointTranslation());
+		if (joint instanceof com.bulletphysics.dynamics.constraintsolver.SliderConstraint slider)
+			return slider.getLinearPos();
+		if (joint instanceof com.jme3.bullet.joints.SliderJoint slider) return nativeSliderTranslation(slider);
+		return 0d;
+	}
+
+	private static double fromBox2D(final org.jbox2d.dynamics.Body body, final double value) {
+		return body.getUserData() instanceof gama.extension.physics.box2d_version.IBox2DPhysicalEntity box2d
+				? box2d.toGama((float) value) : value;
+	}
+
+	private static double nativeSliderTranslation(final com.jme3.bullet.joints.SliderJoint slider) {
+		if (!(slider.getBodyA() instanceof com.jme3.bullet.objects.PhysicsRigidBody a)
+				|| !(slider.getBodyB() instanceof com.jme3.bullet.objects.PhysicsRigidBody b))
+			return 0d;
+		com.jme3.math.Transform frameA = slider.getFrameTransform(com.jme3.bullet.joints.JointEnd.A,
+				new com.jme3.math.Transform());
+		com.jme3.math.Transform frameB = slider.getFrameTransform(com.jme3.bullet.joints.JointEnd.B,
+				new com.jme3.math.Transform());
+		com.jme3.math.Quaternion rotA = a.getPhysicsRotation(new com.jme3.math.Quaternion());
+		com.jme3.math.Quaternion rotB = b.getPhysicsRotation(new com.jme3.math.Quaternion());
+		com.jme3.math.Vector3f pointA = a.getPhysicsLocation(new com.jme3.math.Vector3f())
+				.add(rotA.mult(frameA.getTranslation()));
+		com.jme3.math.Vector3f pointB = b.getPhysicsLocation(new com.jme3.math.Vector3f())
+				.add(rotB.mult(frameB.getTranslation()));
+		com.jme3.math.Vector3f axis = rotA.mult(frameA.getRotation()).mult(com.jme3.math.Vector3f.UNIT_X);
+		return pointB.subtract(pointA).dot(axis);
+	}
+
 	@Override
 	public JointType getJointType() { return type; }
 
@@ -179,7 +321,7 @@ public class GamaJoint implements IJointDefinition {
 			throw new IllegalArgumentException("Joint motor speed must be finite");
 		}
 		motorSpeed = speed == null ? 0d : speed;
-		if (joint == null) return;
+		if (joint == null || destroyed) return;
 		if (joint instanceof org.jbox2d.dynamics.joints.RevoluteJoint revolute) {
 			revolute.enableMotor(maxMotorForce > 0);
 			revolute.setMotorSpeed((float) motorSpeed);
