@@ -36,6 +36,7 @@ import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.GamaType;
 import gama.api.gaml.types.IContainerType;
 import gama.api.gaml.types.IType;
+import gama.api.types.map.IMap;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.runtime.GamaExecutorService;
@@ -760,6 +761,8 @@ public class GamaListFactory {
 			case IDate gd -> gd.listValue(scope, contentsType);
 			// Explicitly set copy to true if we deal with a population
 			case IPopulation ip -> ip.listValue(scope, contentsType, true);
+			case IMap<?, ?> m when contentsType.id() == IType.PAIR -> copy ? create(scope, contentsType, m.getPairs())
+					: m.getPairs();
 			case IContainer ic -> ic.listValue(scope, contentsType, copy);
 			case Collection coll -> create(scope, contentsType, coll);
 			case IColor c -> create(scope, contentsType, new int[] { c.red(), c.green(), c.blue(), c.alpha() });
