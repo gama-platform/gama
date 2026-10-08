@@ -153,6 +153,12 @@ public class TestStatement extends AbstractStatementSequence implements IStateme
 						break;
 					}
 
+				} catch (final RuntimeException e) {
+					// A statement that throws a Java exception instead of a GAML error only aborts this test:
+					// uncaught, it would end the whole experiment and its other tests would not be reported
+					getSummary().setState(TestState.ABORTED);
+					getSummary().setError(GamaRuntimeException.create(e, scope).getMessage());
+					break;
 				}
 			}
 		} finally {

@@ -162,7 +162,15 @@ public class ModelLibraryTester extends AbstractModelLibraryRunner {
 				}
 			}
 		} catch (final Exception ex) {
-			DEBUG.OUT(ex.getMessage());
+			// The experiment stopped before producing its summary: it is counted as aborted rather than ignored
+			System.setOut(original);
+			DEBUG.OUT("----------------------------------------------------------------");
+			DEBUG.OUT("aborted: " + p.getFile() + " stopped on an exception");
+			DEBUG.OUT("----------------------------------------------------------------");
+			DEBUG.OUT("error: " + ex.getMessage());
+			DEBUG.OUT("");
+			count[0]++;
+			code[0]++;
 		}
 
 	}
