@@ -16,6 +16,7 @@ import gama.annotations.example;
 import gama.annotations.getter;
 import gama.annotations.operator;
 import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.variable;
 import gama.annotations.vars;
 import gama.annotations.constants.IKeyword;
@@ -198,6 +199,9 @@ public interface IMatrix<T> extends IContainer.Modifiable<IPoint, T, IPoint, T>,
 					value = "rows_list(matrix([[\"el11\",\"el12\",\"el13\"],[\"el21\",\"el22\",\"el23\"],[\"el31\",\"el32\",\"el33\"]]))",
 					equals = "[[\"el11\",\"el21\",\"el31\"],[\"el12\",\"el22\",\"el32\"],[\"el13\",\"el23\",\"el33\"]]") },
 			see = "columns_list")
+	@tests ({
+			@test ("matrix<int> m <- matrix([[1, 2, 3], [4, 5, 6]]); rows_list(m) = [[1, 4], [2, 5], [3, 6]]")
+	})
 	IList<IList<T>> getRowsList();
 
 	/**
@@ -218,6 +222,9 @@ public interface IMatrix<T> extends IContainer.Modifiable<IPoint, T, IPoint, T>,
 					value = "columns_list(matrix([[\"el11\",\"el12\",\"el13\"],[\"el21\",\"el22\",\"el23\"],[\"el31\",\"el32\",\"el33\"]]))",
 					equals = "[[\"el11\",\"el12\",\"el13\"],[\"el21\",\"el22\",\"el23\"],[\"el31\",\"el32\",\"el33\"]]") },
 			see = "rows_list")
+	@tests ({
+			@test ("matrix<int> m <- matrix([[1, 2, 3], [4, 5, 6]]); columns_list(m) = [[1, 2, 3], [4, 5, 6]]")
+	})
 	IList<IList<T>> getColumnsList();
 
 	/**
@@ -261,6 +268,10 @@ public interface IMatrix<T> extends IContainer.Modifiable<IPoint, T, IPoint, T>,
 					value = "matrix([[\"el11\",\"el12\",\"el13\"],[\"el21\",\"el22\",\"el23\"],[\"el31\",\"el32\",\"el33\"]]) row_at 2",
 					equals = "[\"el13\",\"el23\",\"el33\"]") },
 			see = { "column_at", "columns_list" })
+	@tests ({
+			@test ("matrix<int> m <- matrix([[1, 2, 3], [4, 5, 6]]); m row_at 0 = [1, 4]"),
+			@test ("matrix<int> m2 <- matrix([[1, 2, 3], [4, 5, 6]]); m2 row_at 2 = [3, 6]")
+	})
 	IList<T> getRow(Integer num_line);
 
 	/**
@@ -282,6 +293,10 @@ public interface IMatrix<T> extends IContainer.Modifiable<IPoint, T, IPoint, T>,
 					value = "matrix([[\"el11\",\"el12\",\"el13\"],[\"el21\",\"el22\",\"el23\"],[\"el31\",\"el32\",\"el33\"]]) column_at 2",
 					equals = "[\"el31\",\"el32\",\"el33\"]") },
 			see = { "row_at", "rows_list" })
+	@tests ({
+			@test ("matrix<int> m <- matrix([[1, 2, 3], [4, 5, 6]]); m column_at 0 = [1, 2, 3]"),
+			@test ("matrix<int> m2 <- matrix([[1, 2, 3], [4, 5, 6]]); m2 column_at 1 = [4, 5, 6]")
+	})
 	IList<T> getColumn(Integer num_line);
 
 	/**

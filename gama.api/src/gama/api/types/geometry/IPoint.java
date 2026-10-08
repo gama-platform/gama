@@ -16,6 +16,7 @@ import gama.annotations.example;
 import gama.annotations.getter;
 import gama.annotations.operator;
 import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.usage;
 import gama.annotations.variable;
 import gama.annotations.vars;
@@ -486,8 +487,13 @@ public interface IPoint extends IShape, IIntersectable, Cloneable, Comparable<Co
 							@example (
 									value = "{2, 4} * 2.5",
 									equals = "{5.0, 10.0}") }))
-	@test ("{2,5} * 4 = {8,20}")
-	@test ("{2,5} * 0 = {0,0}")
+	@tests ({
+			@test ("{2,5} * 4 = {8,20}"),
+			@test ("{2,5} * 0 = {0,0}"),
+			@test ("matrix<int> m1 <- matrix([[1, 1], [1, 1]]); matrix<int> m_scale <- m1 * 5; m_scale[0, 0] = 5"),
+			@test ("point p1 <- {1, 2, 3}; p1 * 2 = {2, 4, 6}"),
+			@test ("#red * -1 = #black")
+	})
 	default IPoint times(final Integer i) {
 		return times(i.doubleValue());
 	}
@@ -514,7 +520,10 @@ public interface IPoint extends IShape, IIntersectable, Cloneable, Comparable<Co
 							@example (
 									value = "{2,5} / 4",
 									equals = "{0.5,1.25}") }))
-	@test ("{5, 7.5} / 2.5 = {2,3}")
+	@tests ({
+			@test ("{5, 7.5} / 2.5 = {2,3}"),
+			@test ("point p2 <- {4, 5, 6}; p2 / 2.0 = {2.0, 2.5, 3.0}")
+	})
 	IPoint dividedBy(double d);
 
 	/**
@@ -531,8 +540,12 @@ public interface IPoint extends IShape, IIntersectable, Cloneable, Comparable<Co
 			concept = {})
 	@doc (
 			value = "Returns a point with coordinates divided by the number")
-	@test ("{2,5} / 4 = {0.5,1.25}")
-	@test ("is_error({2,5} / 0)")
+	@tests ({
+			@test ("{2,5} / 4 = {0.5,1.25}"),
+			@test ("is_error({2,5} / 0)"),
+			@test ("matrix<int> m2 <- matrix([[2, 2], [2, 2]]); matrix<float> m_div <- m2 / 2; m_div[0, 0] = 1.0"),
+			@test ("point p2 <- {4, 5, 6}; p2 / 2 = {2.0, 2.5, 3.0}")
+	})
 	default IPoint dividedBy(final Integer i) {
 		return dividedBy(i.doubleValue());
 	}
@@ -556,6 +569,10 @@ public interface IPoint extends IShape, IIntersectable, Cloneable, Comparable<Co
 					examples = @example (
 							value = "{1, 2} - {4, 5}",
 							equals = "{-3.0, -3.0}")))
+	@tests ({
+			@test ("point p1 <- {1, 2, 3}; point p2 <- {4, 5, 6}; p1 - p2 = {-3, -3, -3}"),
+			@test ("geometry(nil) -  {10,10} = nil")
+	})
 	IPoint minus(IPoint other);
 
 	/**
@@ -614,7 +631,11 @@ public interface IPoint extends IShape, IIntersectable, Cloneable, Comparable<Co
 			examples = { @example (
 					value = "{2.0,3.0,4.0} - 1",
 					equals = "{1.0,2.0,3.0}") })
-	@test ("{2.0,3.0,4.0} - 1 = {1.0,2.0,3.0}")
+	@tests ({
+			@test ("{2.0,3.0,4.0} - 1 = {1.0,2.0,3.0}"),
+			// removing a value only removes its first occurrence
+			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; numbers - 1 = [3, 4, 1, 5, 9, 2, 6]")
+	})
 	default IPoint minus(final Integer i) {
 		return minus(i.doubleValue());
 	}
@@ -638,10 +659,13 @@ public interface IPoint extends IShape, IIntersectable, Cloneable, Comparable<Co
 					examples = @example (
 							value = "{1, 2} + {4, 5}",
 							equals = "{5.0, 7.0}")))
-	@test ("{1, 2} + {4, 5} = {5,7}")
-	@test (
+	@tests ({
+			@test ("{1, 2} + {4, 5} = {5,7}"),
+			@test (
 			value = "point p <- {1, 2}; p + {0, 0} = p",
-			warning = true)
+			warning = true),
+			@test ("point p1 <- {1, 2, 3}; point p2 <- {4, 5, 6}; p1 + p2 = {5, 7, 9}")
+	})
 	IPoint plus(IPoint other);
 
 	/**
@@ -697,6 +721,13 @@ public interface IPoint extends IShape, IIntersectable, Cloneable, Comparable<Co
 			examples = { @example (
 					value = "{1, 2} + 4",
 					equals = "{5.0, 6.0,4.0}") })
+	@tests ({
+			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; numbers + 7 = [3, 1, 4, 1, 5, 9, 2, 6, 7]"),
+			@test ("(\"Value: \" + 5) = \"Value: 5\""),
+			// any value concatenated to a string is converted
+			@test ("\"hello\" + 1 + true + 2.5 = \"hello1true2.5\""),
+			@test ("\"12\" + 3 = \"123\"")
+	})
 	default IPoint plus(final Integer i) {
 		return plus(i.doubleValue());
 	}
