@@ -1,6 +1,6 @@
 package gama.extension.physics.common;
 
-import gama.core.metamodel.shape.GamaPoint;
+import gama.api.types.geometry.IPoint;
 
 /**
  * Interface representing a generic joint definition for physics engines.
@@ -38,14 +38,14 @@ public interface IJointDefinition {
      *
      * @return the anchor point
      */
-    GamaPoint getAnchorPoint();
+    IPoint getAnchorPoint();
 
     /**
      * Gets the joint axis in world coordinates.
      *
      * @return the joint axis
      */
-    GamaPoint getAxis();
+    IPoint getAxis();
 
     /**
      * Gets the lower limit of the joint, if applicable.

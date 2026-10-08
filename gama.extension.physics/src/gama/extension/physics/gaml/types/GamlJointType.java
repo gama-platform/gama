@@ -10,12 +10,14 @@
  ********************************************************************************************************/
 package gama.extension.physics.gaml.types;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.type;
-import gama.core.runtime.IScope;
+import gama.annotations.doc;
+import gama.annotations.type;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.GamaType;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.ITypesManager;
+import gama.api.runtime.scope.IScope;
 import gama.extension.physics.gaml.GamaJoint;
-import gama.gaml.types.GamaType;
-import gama.gaml.types.IType;
 
 /**
  * A GAML type that wraps the GamaJoint class, exposing its properties and methods to GAML.
@@ -30,6 +32,10 @@ import gama.gaml.types.IType;
 		wraps = { GamaJoint.class },
 		doc = @doc ("A type representing a physical joint in the simulation."))
 public class GamlJointType extends GamaType<GamaJoint> {
+
+	public GamlJointType(final ITypesManager typesManager) {
+		super(typesManager);
+	}
 
 	/**
 	 * Can cast to const.

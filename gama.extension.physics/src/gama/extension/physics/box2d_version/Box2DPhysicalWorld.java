@@ -182,7 +182,7 @@ public class Box2DPhysicalWorld extends AbstractPhysicalWorld<World, Shape, Vec2
 				RevoluteJointDef definition = new RevoluteJointDef();
 				definition.initialize(first, second, anchor);
 				if (jointDefinition.getJointType() == IJointDefinition.JointType.HINGE) {
-					GamaPoint axis = jointDefinition.getAxis();
+					IPoint axis = jointDefinition.getAxis();
 					if (axis == null || Math.abs(axis.getX()) > 1e-6 || Math.abs(axis.getY()) > 1e-6
 							|| axis.getZ() <= 0) {
 						throw new IllegalArgumentException("Box2D hinge axes must point along positive Z");
@@ -201,7 +201,7 @@ public class Box2DPhysicalWorld extends AbstractPhysicalWorld<World, Shape, Vec2
 				return definition;
 			}
 			case SLIDER -> {
-				GamaPoint gamaAxis = jointDefinition.getAxis();
+				IPoint gamaAxis = jointDefinition.getAxis();
 				if (gamaAxis == null || gamaAxis.getX() == 0 && gamaAxis.getY() == 0
 						|| Math.abs(gamaAxis.getZ()) > 1e-6) {
 					throw new IllegalArgumentException("Box2D slider axes must be non-zero and lie in the XY plane");

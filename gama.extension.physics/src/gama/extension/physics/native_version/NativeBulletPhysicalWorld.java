@@ -288,7 +288,7 @@ public class NativeBulletPhysicalWorld extends AbstractPhysicalWorld<PhysicsSpac
 			case HINGE -> {
 				Vector3f axis = toVector(jointDefinition.getAxis());
 				if (axis.lengthSquared() == 0) throw new IllegalArgumentException("Joint axis must be non-zero");
-				axis.normalizeLocal();
+				axis = axis.normalize();
 				HingeJoint hinge = new HingeJoint(first, second, pivotA, pivotB,
 						toLocalAxis(first, axis), toLocalAxis(second, axis));
 				if (jointDefinition.hasLimits()) {
@@ -301,7 +301,7 @@ public class NativeBulletPhysicalWorld extends AbstractPhysicalWorld<PhysicsSpac
 			case SLIDER -> {
 				Vector3f axis = toVector(jointDefinition.getAxis());
 				if (axis.lengthSquared() == 0) throw new IllegalArgumentException("Joint axis must be non-zero");
-				axis.normalizeLocal();
+				axis = axis.normalize();
 				Vector3f axisA = toLocalAxis(first, axis);
 				Vector3f axisB = toLocalAxis(second, axis);
 				SliderJoint slider = new SliderJoint(first, second, pivotA, pivotB,
@@ -324,18 +324,19 @@ public class NativeBulletPhysicalWorld extends AbstractPhysicalWorld<PhysicsSpac
 
 	private Vector3f toLocalPoint(final PhysicsRigidBody body, final Vector3f worldPoint) {
 		Vector3f offset = worldPoint.subtract(body.getPhysicsLocation(new Vector3f()));
-		return body.getPhysicsRotation(new Quaternion()).inverse().mult(offset);
+		return body.getPhysicsRotation(new Quaternion()).inverse().toRotationMatrix().mult(offset, new Vector3f());
 	}
 
 	private Vector3f toLocalAxis(final PhysicsRigidBody body, final Vector3f worldAxis) {
-		Vector3f result = body.getPhysicsRotation(new Quaternion()).inverse().mult(worldAxis);
-		return result.normalizeLocal();
+		Vector3f result = body.getPhysicsRotation(new Quaternion()).inverse().toRotationMatrix().mult(worldAxis,
+				new Vector3f());
+		return result.normalize();
 	}
 
 	private Matrix3f sliderFrame(final Vector3f axis) {
 		Vector3f reference = Math.abs(axis.z) < 0.9f ? new Vector3f(0, 0, 1) : new Vector3f(0, 1, 0);
-		Vector3f second = reference.cross(axis).normalizeLocal();
-		Vector3f third = axis.cross(second).normalizeLocal();
+		Vector3f second = reference.cross(axis).normalize();
+		Vector3f third = axis.cross(second).normalize();
 		Matrix3f result = new Matrix3f();
 		result.fromAxes(axis, second, third);
 		return result;

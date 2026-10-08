@@ -10,14 +10,15 @@
  ********************************************************************************************************/
 package gama.extension.physics.gaml;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.getter;
-import gama.annotations.precompiler.GamlAnnotations.setter;
-import gama.annotations.precompiler.GamlAnnotations.variable;
-import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.annotations.doc;
+import gama.annotations.getter;
+import gama.annotations.setter;
+import gama.annotations.variable;
+import gama.annotations.vars;
+import gama.api.gaml.types.IType;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
 import gama.extension.physics.common.IJointDefinition;
-import gama.gaml.types.IType;
 
 /**
  * A wrapper class for joints created in the physical world.
@@ -73,10 +74,10 @@ public class GamaJoint implements IJointDefinition {
 	private final Object bodyB;
 
 	/** The anchor. */
-	private final GamaPoint anchor;
+	private final IPoint anchor;
 
 	/** The axis. */
-	private final GamaPoint axis;
+	private final IPoint axis;
 
 	/** The lower limit. */
 	private final double lowerLimit;
@@ -120,14 +121,14 @@ public class GamaJoint implements IJointDefinition {
 	 *            the maximum motor force of the joint, if applicable
 	 */
 	public GamaJoint(final Object joint, final JointType type, final Object bodyA, final Object bodyB,
-			final GamaPoint anchor, final GamaPoint axis, final double lowerLimit, final double upperLimit,
+			final IPoint anchor, final IPoint axis, final double lowerLimit, final double upperLimit,
 			final boolean hasLimits, final double motorSpeed, final double maxMotorForce) {
 		this.joint = joint;
 		this.type = type;
 		this.bodyA = bodyA;
 		this.bodyB = bodyB;
-		this.anchor = anchor == null ? new GamaPoint() : new GamaPoint(anchor);
-		this.axis = axis == null ? new GamaPoint(0, 0, 1) : new GamaPoint(axis);
+		this.anchor = anchor == null ? GamaPointFactory.create() : GamaPointFactory.create(anchor);
+		this.axis = axis == null ? GamaPointFactory.create(0, 0, 1) : GamaPointFactory.create(axis);
 		this.lowerLimit = lowerLimit;
 		this.upperLimit = upperLimit;
 		this.hasLimits = hasLimits;
@@ -149,11 +150,11 @@ public class GamaJoint implements IJointDefinition {
 
 	@getter ("anchor")
 	@Override
-	public GamaPoint getAnchorPoint() { return anchor; }
+	public IPoint getAnchorPoint() { return anchor; }
 
 	@getter ("axis")
 	@Override
-	public GamaPoint getAxis() { return axis; }
+	public IPoint getAxis() { return axis; }
 
 	@getter ("lowerLimit")
 	@Override
