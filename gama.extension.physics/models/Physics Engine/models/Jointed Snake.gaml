@@ -1,7 +1,7 @@
 /**
  * A simple articulated chain driven by hinge motors.
  */
-model Jointed Snake
+model Jointed_Snake
 
 global parent: physical_world {
 	string library <- "bullet";
