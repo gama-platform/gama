@@ -16,7 +16,12 @@ import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.PersistentManifolds;
 import com.jme3.bullet.collision.PhysicsCollisionObject;
 import com.jme3.bullet.collision.shapes.CollisionShape;
+import com.jme3.bullet.joints.HingeJoint;
+import com.jme3.bullet.joints.Point2PointJoint;
 import com.jme3.bullet.objects.PhysicsRigidBody;
+import com.jme3.bullet.joints.SliderJoint;
+import com.jme3.math.Matrix3f;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.bullet.joints.PhysicsJoint;
 
@@ -240,13 +245,83 @@ public class NativeBulletPhysicalWorld extends AbstractPhysicalWorld<PhysicsSpac
 	@Override
 	public Object createJoint(IJointDefinition jointDefinition) {
 		PhysicsJoint joint = convertToNativeBulletJoint(jointDefinition);
-		world.addJoint(joint);
+		if (joint instanceof com.jme3.bullet.joints.Constraint constraint) {
+			constraint.setCollisionBetweenLinkedBodies(false);
+		}
+		getWorld().addJoint(joint);
 		return joint;
 	}
 
 	private PhysicsJoint convertToNativeBulletJoint(IJointDefinition jointDefinition) {
-		// Conversion logic for native Bullet joints
-		// Example: Create a HingeJoint, SliderJoint, etc., based on jointDefinition
-		return null; // Placeholder
+		if (!(jointDefinition.getBodyA() instanceof IAgent agentA)
+				|| !(jointDefinition.getBodyB() instanceof IAgent agentB)) {
+			throw new IllegalArgumentException("Joint bodies must be agents with physical body skills");
+		}
+		Object bodyA = agentA.getAttribute(BODY);
+		Object bodyB = agentB.getAttribute(BODY);
+		if (!(bodyA instanceof NativeBulletBodyWrapper wrapperA)
+				|| !(bodyB instanceof NativeBulletBodyWrapper wrapperB)) {
+			throw new IllegalArgumentException("Both joint bodies must be registered in the physical world");
+		}
+		PhysicsRigidBody first = wrapperA.getBody();
+		PhysicsRigidBody second = wrapperB.getBody();
+		Vector3f anchor = toVector(jointDefinition.getAnchorPoint());
+		Vector3f pivotA = toLocalPoint(first, anchor);
+		Vector3f pivotB = toLocalPoint(second, anchor);
+		switch (jointDefinition.getJointType()) {
+			case HINGE -> {
+				Vector3f axis = toVector(jointDefinition.getAxis());
+				if (axis.lengthSquared() == 0) throw new IllegalArgumentException("Joint axis must be non-zero");
+				axis.normalizeLocal();
+				HingeJoint hinge = new HingeJoint(first, second, pivotA, pivotB,
+						toLocalAxis(first, axis), toLocalAxis(second, axis));
+				if (jointDefinition.hasLimits()) {
+					hinge.setLimit((float) jointDefinition.getLowerLimit(), (float) jointDefinition.getUpperLimit());
+				}
+				hinge.enableMotor(jointDefinition.getMaxMotorForce() > 0,
+						(float) jointDefinition.getMotorSpeed(), (float) jointDefinition.getMaxMotorForce());
+				return hinge;
+			}
+			case SLIDER -> {
+				Vector3f axis = toVector(jointDefinition.getAxis());
+				if (axis.lengthSquared() == 0) throw new IllegalArgumentException("Joint axis must be non-zero");
+				axis.normalizeLocal();
+				Vector3f axisA = toLocalAxis(first, axis);
+				Vector3f axisB = toLocalAxis(second, axis);
+				SliderJoint slider = new SliderJoint(first, second, pivotA, pivotB,
+						sliderFrame(axisA), sliderFrame(axisB), true);
+				if (jointDefinition.hasLimits()) {
+					slider.setLowerLinLimit((float) jointDefinition.getLowerLimit());
+					slider.setUpperLinLimit((float) jointDefinition.getUpperLimit());
+				}
+				slider.setPoweredLinMotor(jointDefinition.getMaxMotorForce() > 0);
+				slider.setTargetLinMotorVelocity((float) jointDefinition.getMotorSpeed());
+				slider.setMaxLinMotorForce((float) jointDefinition.getMaxMotorForce());
+				return slider;
+			}
+			case BALL_AND_SOCKET -> {
+				return new Point2PointJoint(first, second, pivotA, pivotB);
+			}
+			default -> throw new IllegalArgumentException("Unsupported joint type: " + jointDefinition.getJointType());
+		}
+	}
+
+	private Vector3f toLocalPoint(final PhysicsRigidBody body, final Vector3f worldPoint) {
+		Vector3f offset = worldPoint.subtract(body.getPhysicsLocation(new Vector3f()));
+		return body.getPhysicsRotation(new Quaternion()).inverse().mult(offset);
+	}
+
+	private Vector3f toLocalAxis(final PhysicsRigidBody body, final Vector3f worldAxis) {
+		Vector3f result = body.getPhysicsRotation(new Quaternion()).inverse().mult(worldAxis);
+		return result.normalizeLocal();
+	}
+
+	private Matrix3f sliderFrame(final Vector3f axis) {
+		Vector3f reference = Math.abs(axis.z) < 0.9f ? new Vector3f(0, 0, 1) : new Vector3f(0, 1, 0);
+		Vector3f second = reference.cross(axis).normalizeLocal();
+		Vector3f third = axis.cross(second).normalizeLocal();
+		Matrix3f result = new Matrix3f();
+		result.fromAxes(axis, second, third);
+		return result;
 	}
 }

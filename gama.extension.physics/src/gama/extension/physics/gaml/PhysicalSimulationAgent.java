@@ -85,7 +85,7 @@ import gama.gaml.types.IType;
  * <ul>
  * <li><b>Hinge Joint</b>: Rotational joint with optional limits and motor.</li>
  * <li><b>Slider Joint</b>: Linear joint with optional limits.</li>
- * <li><b>Distance Joint</b>: Maintains a fixed distance between two bodies.</li>
+ * <li><b>Ball-and-socket Joint</b>: Keeps two bodies attached at a shared anchor while allowing rotation.</li>
  * </ul>
  *
  * @see IPhysicalWorld
@@ -428,7 +428,7 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 	}
 
 	/**
-	 * Creates the hinge joint.
+	 * Creates and adds a hinge joint.
 	 *
 	 * @param scope
 	 *            the scope
@@ -449,19 +449,27 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 	 * @return the gama joint
 	 */
 	@operator (
-			doc = @doc ("Creates a hinge joint in the physical world."),
+			doc = @doc ("Creates and adds a hinge joint around the world Z axis. Limits are angles in radians; motor speed is radians per second. A positive maximum motor force enables the motor."),
 			value = "create_hinge_joint")
 	public GamaJoint createHingeJoint(final IScope scope, final Object bodyA, final Object bodyB,
 			final GamaPoint anchor, final Double lowerLimit, final Double upperLimit, final Double motorSpeed,
 			final Double maxMotorForce) {
-		IJointDefinition.JointType type = IJointDefinition.JointType.HINGE;
-		return new GamaJoint(null, type, bodyA, bodyB, anchor, lowerLimit != null ? lowerLimit : 0.0,
-				upperLimit != null ? upperLimit : 0.0, motorSpeed != null ? motorSpeed : 0.0,
-				maxMotorForce != null ? maxMotorForce : 0.0);
+		return createJoint(scope, IJointDefinition.JointType.HINGE, bodyA, bodyB, anchor, new GamaPoint(0, 0, 1),
+				lowerLimit, upperLimit, motorSpeed, maxMotorForce);
+	}
+
+	@operator (
+			doc = @doc ("Creates and adds a hinge joint around the supplied world-space axis. Limits are in radians and motor speed is radians per second."),
+			value = "create_hinge_joint_with_axis")
+	public GamaJoint createHingeJointWithAxis(final IScope scope, final Object bodyA, final Object bodyB,
+			final GamaPoint anchor, final GamaPoint axis, final Double lowerLimit, final Double upperLimit,
+			final Double motorSpeed, final Double maxMotorForce) {
+		return createJoint(scope, IJointDefinition.JointType.HINGE, bodyA, bodyB, anchor, axis, lowerLimit,
+				upperLimit, motorSpeed, maxMotorForce);
 	}
 
 	/**
-	 * Creates the slider joint.
+	 * Creates and adds a slider joint along the world-space x axis.
 	 *
 	 * @param scope
 	 *            the scope
@@ -478,17 +486,26 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 	 * @return the gama joint
 	 */
 	@operator (
-			doc = @doc ("Creates a slider joint in the physical world."),
+			doc = @doc ("Creates and adds a slider joint along the world-space x axis. Limits are distances."),
 			value = "create_slider_joint")
 	public GamaJoint createSliderJoint(final IScope scope, final Object bodyA, final Object bodyB,
 			final GamaPoint anchor, final Double lowerLimit, final Double upperLimit) {
-		IJointDefinition.JointType type = IJointDefinition.JointType.SLIDER;
-		return new GamaJoint(null, type, bodyA, bodyB, anchor, lowerLimit != null ? lowerLimit : 0.0,
-				upperLimit != null ? upperLimit : 0.0, 0.0, 0.0);
+		return createJoint(scope, IJointDefinition.JointType.SLIDER, bodyA, bodyB, anchor, new GamaPoint(1, 0, 0),
+				lowerLimit, upperLimit, 0d, 0d);
+	}
+
+	@operator (
+			doc = @doc ("Creates and adds a slider joint along the supplied world-space axis. Limits are distances."),
+			value = "create_slider_joint_with_axis")
+	public GamaJoint createSliderJointWithAxis(final IScope scope, final Object bodyA, final Object bodyB,
+			final GamaPoint anchor, final GamaPoint axis, final Double lowerLimit, final Double upperLimit,
+			final Double motorSpeed, final Double maxMotorForce) {
+		return createJoint(scope, IJointDefinition.JointType.SLIDER, bodyA, bodyB, anchor, axis, lowerLimit,
+				upperLimit, motorSpeed, maxMotorForce);
 	}
 
 	/**
-	 * Creates the distance joint.
+	 * Creates and adds a ball-and-socket joint.
 	 *
 	 * @param scope
 	 *            the scope
@@ -501,12 +518,66 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 	 * @return the gama joint
 	 */
 	@operator (
-			doc = @doc ("Creates a distance joint in the physical world."),
-			value = "create_distance_joint")
-	public GamaJoint createDistanceJoint(final IScope scope, final Object bodyA, final Object bodyB,
+			doc = @doc ("Creates and adds a ball-and-socket joint at the supplied world-space anchor."),
+			value = "create_ball_and_socket_joint")
+	public GamaJoint createBallAndSocketJoint(final IScope scope, final Object bodyA, final Object bodyB,
 			final GamaPoint anchor) {
-		IJointDefinition.JointType type = IJointDefinition.JointType.DISTANCE;
-		return new GamaJoint(null, type, bodyA, bodyB, anchor, 0.0, 0.0, 0.0, 0.0);
+		return createJoint(scope, IJointDefinition.JointType.BALL_AND_SOCKET, bodyA, bodyB, anchor,
+				new GamaPoint(0, 0, 1), null, null, 0d, 0d);
+	}
+
+	private GamaJoint createJoint(final IScope scope, final IJointDefinition.JointType type, final Object bodyA,
+			final Object bodyB, final GamaPoint anchor, final GamaPoint axis, final Double lowerLimit,
+			final Double upperLimit, final Double motorSpeed, final Double maxMotorForce) {
+		if (anchor == null) throw GamaRuntimeException.error("A joint anchor is required", scope);
+		if (!Double.isFinite(anchor.getX()) || !Double.isFinite(anchor.getY()) || !Double.isFinite(anchor.getZ())) {
+			throw GamaRuntimeException.error("Joint anchors must have finite coordinates", scope);
+		}
+		if ((lowerLimit == null) != (upperLimit == null) || lowerLimit != null && lowerLimit > upperLimit) {
+			throw GamaRuntimeException.error("Joint limits must be supplied as an ordered lower/upper pair", scope);
+		}
+		if (lowerLimit != null && (!Double.isFinite(lowerLimit) || !Double.isFinite(upperLimit))) {
+			throw GamaRuntimeException.error("Joint limits must be finite", scope);
+		}
+		if (axis == null || !Double.isFinite(axis.norm()) || axis.norm() == 0) {
+			throw GamaRuntimeException.error("Joint axis must be a non-zero point", scope);
+		}
+		if (motorSpeed != null && !Double.isFinite(motorSpeed)
+				|| maxMotorForce != null && (!Double.isFinite(maxMotorForce) || maxMotorForce < 0)) {
+			throw GamaRuntimeException.error("Joint motor speed and force must be finite; force cannot be negative",
+					scope);
+		}
+		IAgent agentA = validateJointBody(scope, bodyA);
+		IAgent agentB = validateJointBody(scope, bodyB);
+		if (agentA == agentB) throw GamaRuntimeException.error("A joint must connect two different agents", scope);
+		if (!registeredAgents.contains(agentA)) { registerAgent(scope, agentA); }
+		if (!registeredAgents.contains(agentB)) { registerAgent(scope, agentB); }
+		if (!(agentA.getAttribute(BODY) instanceof gama.extension.physics.common.IBody)
+				|| !(agentB.getAttribute(BODY) instanceof gama.extension.physics.common.IBody)) {
+			throw GamaRuntimeException.error("Joint bodies must be registered in the physical world", scope);
+		}
+		boolean hasLimits = lowerLimit != null;
+		double lower = hasLimits ? lowerLimit : 0d;
+		double upper = hasLimits ? upperLimit : 0d;
+		double speed = motorSpeed == null ? 0d : motorSpeed;
+		double force = maxMotorForce == null ? 0d : maxMotorForce;
+		GamaJoint definition = new GamaJoint(null, type, agentA, agentB, anchor, axis, lower, upper, hasLimits, speed,
+				force);
+		try {
+			Object engineJoint = getGateway().createJoint(definition);
+			return new GamaJoint(engineJoint, type, agentA, agentB, anchor, axis, lower, upper, hasLimits, speed, force);
+		} catch (IllegalArgumentException e) {
+			throw GamaRuntimeException.error(e.getMessage(), scope);
+		}
+	}
+
+	private IAgent validateJointBody(final IScope scope, final Object body) {
+		if (!(body instanceof IAgent agent)
+				|| !(agent.getSpecies().implementsSkill(DYNAMIC_BODY) || agent.getSpecies().implementsSkill(STATIC_BODY))) {
+			throw GamaRuntimeException.error("Joint bodies must be agents with the dynamic_body or static_body skill",
+					scope);
+		}
+		return agent;
 	}
 
 	@Override

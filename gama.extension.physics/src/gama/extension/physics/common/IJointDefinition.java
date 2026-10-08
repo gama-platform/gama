@@ -10,13 +10,7 @@ public interface IJointDefinition {
     /**
      * Enum for the type of joint.
      */
-    enum JointType {
-        HINGE,
-        SLIDER,
-        DISTANCE,
-        FIXED,
-        BALL_AND_SOCKET
-    }
+    enum JointType { HINGE, SLIDER, BALL_AND_SOCKET }
 
     /**
      * Gets the type of the joint.
@@ -47,6 +41,13 @@ public interface IJointDefinition {
     GamaPoint getAnchorPoint();
 
     /**
+     * Gets the joint axis in world coordinates.
+     *
+     * @return the joint axis
+     */
+    GamaPoint getAxis();
+
+    /**
      * Gets the lower limit of the joint, if applicable.
      *
      * @return the lower limit
@@ -59,6 +60,13 @@ public interface IJointDefinition {
      * @return the upper limit
      */
     double getUpperLimit();
+
+    /**
+     * Whether this joint has lower and upper limits.
+     *
+     * @return true when limits are enabled
+     */
+    boolean hasLimits();
 
     /**
      * Gets the motor speed for the joint, if applicable.

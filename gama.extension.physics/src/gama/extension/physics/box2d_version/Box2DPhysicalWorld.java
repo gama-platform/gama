@@ -14,9 +14,10 @@ import org.jbox2d.collision.shapes.Shape;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.World;
-import org.jbox2d.dynamics.joints.DistanceJointDef;
 import org.jbox2d.dynamics.joints.Joint;
 import org.jbox2d.dynamics.joints.JointDef;
+import org.jbox2d.dynamics.joints.PrismaticJointDef;
+import org.jbox2d.dynamics.joints.RevoluteJointDef;
 
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaPoint;
@@ -146,7 +147,7 @@ public class Box2DPhysicalWorld extends AbstractPhysicalWorld<World, Shape, Vec2
 	@Override
 	public Object createJoint(final IJointDefinition jointDefinition) {
 		JointDef jointDef = convertToBox2DJointDef(jointDefinition);
-		return world.createJoint(jointDef);
+		return getWorld().createJoint(jointDef);
 	}
 
 	/**
@@ -157,8 +158,64 @@ public class Box2DPhysicalWorld extends AbstractPhysicalWorld<World, Shape, Vec2
 	 * @return the joint def
 	 */
 	private JointDef convertToBox2DJointDef(final IJointDefinition jointDefinition) {
-		// Conversion logic for Box2D joint definitions
-		// Example: Create a DistanceJointDef, RevoluteJointDef, etc., based on jointDefinition
-		return new DistanceJointDef(); // Placeholder
+		if (!(jointDefinition.getBodyA() instanceof IAgent agentA)
+				|| !(jointDefinition.getBodyB() instanceof IAgent agentB)) {
+			throw new IllegalArgumentException("Joint bodies must be agents with physical body skills");
+		}
+		Object bodyA = agentA.getAttribute(BODY);
+		Object bodyB = agentB.getAttribute(BODY);
+		if (!(bodyA instanceof Box2DBodyWrapper wrapperA) || !(bodyB instanceof Box2DBodyWrapper wrapperB)) {
+			throw new IllegalArgumentException("Both joint bodies must be registered in the physical world");
+		}
+		Body first = wrapperA.getBody();
+		Body second = wrapperB.getBody();
+		Vec2 anchor = toVector(jointDefinition.getAnchorPoint());
+		switch (jointDefinition.getJointType()) {
+			case HINGE, BALL_AND_SOCKET -> {
+				RevoluteJointDef definition = new RevoluteJointDef();
+				definition.initialize(first, second, anchor);
+				if (jointDefinition.getJointType() == IJointDefinition.JointType.HINGE) {
+					GamaPoint axis = jointDefinition.getAxis();
+					if (axis == null || Math.abs(axis.getX()) > 1e-6 || Math.abs(axis.getY()) > 1e-6
+							|| axis.getZ() <= 0) {
+						throw new IllegalArgumentException("Box2D hinge axes must point along positive Z");
+					}
+					if (jointDefinition.hasLimits()) {
+						definition.enableLimit = true;
+						definition.lowerAngle = (float) jointDefinition.getLowerLimit();
+						definition.upperAngle = (float) jointDefinition.getUpperLimit();
+					}
+					if (jointDefinition.getMaxMotorForce() > 0) {
+						definition.enableMotor = true;
+						definition.motorSpeed = (float) jointDefinition.getMotorSpeed();
+						definition.maxMotorTorque = (float) jointDefinition.getMaxMotorForce();
+					}
+				}
+				return definition;
+			}
+			case SLIDER -> {
+				GamaPoint gamaAxis = jointDefinition.getAxis();
+				if (gamaAxis == null || gamaAxis.getX() == 0 && gamaAxis.getY() == 0
+						|| Math.abs(gamaAxis.getZ()) > 1e-6) {
+					throw new IllegalArgumentException("Box2D slider axes must be non-zero and lie in the XY plane");
+				}
+				Vec2 axis = new Vec2((float) gamaAxis.getX(), (float) gamaAxis.getY());
+				axis.normalize();
+				PrismaticJointDef definition = new PrismaticJointDef();
+				definition.initialize(first, second, anchor, axis);
+				if (jointDefinition.hasLimits()) {
+					definition.enableLimit = true;
+					definition.lowerTranslation = toBox2D(jointDefinition.getLowerLimit());
+					definition.upperTranslation = toBox2D(jointDefinition.getUpperLimit());
+				}
+				if (jointDefinition.getMaxMotorForce() > 0) {
+					definition.enableMotor = true;
+					definition.motorSpeed = toBox2D(jointDefinition.getMotorSpeed());
+					definition.maxMotorForce = (float) jointDefinition.getMaxMotorForce();
+				}
+				return definition;
+			}
+			default -> throw new IllegalArgumentException("Unsupported joint type: " + jointDefinition.getJointType());
+		}
 	}
 }
