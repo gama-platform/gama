@@ -341,19 +341,12 @@ try {
 	public Set<ISimulationAgent> getStepable() { return runnables.keySet(); }
 
 	/**
-	 * Returns the number of active simulation threads.
-	 *
-	 * <p>
-	 * Uses a dedicated {@link AtomicInteger} counter maintained by {@link #add(ISimulationAgent)} and
-	 * {@link #remove(ISimulationAgent)} rather than calling {@code ConcurrentHashMap.size()} (which is O(n)) on
-	 * every simulation cycle. The atomic counter also ensures that concurrent calls to {@code add}, {@code remove},
-	 * and {@link #step()} always observe a consistent count.
-	 * </p>
+	 * Returns the number of simulation threads currently registered with this runner.
 	 *
 	 * @return the count of simulations currently registered
 	 */
 	@Override
-	public int getActiveThreads() { return activeCount.get(); }
+	public int getActiveThreads() { return runnables.size(); }
 
 	/**
 	 * Checks whether this runner has any active simulations.
@@ -362,7 +355,7 @@ try {
 	 */
 	@Override
 	public boolean hasSimulations() {
-		return activeCount.get() > 0;
+		return !runnables.isEmpty();
 	}
 
 }
