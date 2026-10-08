@@ -55,7 +55,8 @@ import gama.extension.physics.native_version.NativeBulletPhysicalWorld;
  * <ul>
  * <li>Supports 2D and 3D physics simulations using different libraries.</li>
  * <li>Allows registration and management of agents with physical properties.</li>
- * <li>Provides operators to create and manipulate physical joints (e.g., hinge, slider, ball-and-socket).</li>
+ * <li>Provides operators to create and manipulate physical joints (e.g., hinge, slider, ball-and-socket).</li>
+
  * <li>Enables customization of simulation parameters such as gravity, collision detection, and substeps.</li>
  * </ul>
  *
@@ -67,7 +68,7 @@ import gama.extension.physics.native_version.NativeBulletPhysicalWorld;
  * // Example: Registering agents in the physical world
  * do register([agent1, agent2]);
  *
- * // Example: Creating a hinge joint
+ * joint hinge <- create_hinge_joint(bodyA, bodyB, anchor, lowerLimit, upperLimit, motorSpeed, maxMotorForce);
  * GamaJoint hinge = create_hinge_joint(bodyA, bodyB, anchor, lowerLimit, upperLimit, motorSpeed, maxMotorForce);
  * </pre>
  *
