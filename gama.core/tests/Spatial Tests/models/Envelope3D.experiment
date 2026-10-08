@@ -36,9 +36,7 @@ experiment "Envelope3D Test" type: test autorun: true {
 	}
 
 	test "Envelope with negative depth raises an error" {
-		assert_error {
-			geometry e <- envelope(source, -1.0);
-		};
+		assert is_error(envelope(source, -1.0));
 	}
 
 	test "World has a depth" {
