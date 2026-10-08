@@ -437,6 +437,10 @@ public class GamaOctTree implements ISpatialIndex {
 
 	private synchronized void ensureBoundsCover(final IEnvelope env) {
 		if (isCovered(env)) return;
+		// NaN or infinite coordinates can never be covered: expanding would loop forever (see Issue 1249)
+		if (!Double.isFinite(env.getMinX() + env.getMaxX() + env.getMinY() + env.getMaxY() + env.getMinZ()
+				+ env.getMaxZ()))
+			return;
 		while (!root.bounds.covers(env)) {
 			if (!expandRootStep(env)) break;
 		}

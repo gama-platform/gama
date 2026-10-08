@@ -211,12 +211,19 @@ public class GamaQuadTree implements ISpatialIndex {
 	private boolean isCovered(final IEnvelope env) {
 		if (env == null) return true;
 		if (env.isNull()) return true;
-		return root.bounds.covers(env);
+		return covers2D(root.bounds, env);
+	}
+
+	// The quadtree is 2D only: the z extent must not be taken into account (see Issue 1248)
+	private static boolean covers2D(final IEnvelope b, final IEnvelope env) {
+		return env.getMinX() >= b.getMinX() && env.getMaxX() <= b.getMaxX() && env.getMinY() >= b.getMinY()
+				&& env.getMaxY() <= b.getMaxY();
 	}
 
 	private synchronized void ensureBoundsCover(final IEnvelope env) {
 		if (isCovered(env)) return;
-		while (!root.bounds.covers(env)) {
+		if (!Double.isFinite(env.getMinX() + env.getMaxX() + env.getMinY() + env.getMaxY())) return;
+		while (!covers2D(root.bounds, env)) {
 			if (!expandRootStep(env)) break;
 		}
 	}

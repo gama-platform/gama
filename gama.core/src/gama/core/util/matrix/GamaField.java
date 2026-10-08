@@ -114,6 +114,7 @@ public class GamaField extends GamaFloatMatrix implements IField {
 		this.noDataValue = noDataValue;
 		numCols = cols;
 		numRows = rows;
+		normalizeEmptyDimensions();
 		bands.add(this);
 	}
 
