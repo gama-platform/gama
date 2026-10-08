@@ -30,13 +30,13 @@ import gama.dev.THREADS;
 
 /**
  * Default implementation of {@link ISimulationRunner} for managing concurrent simulation execution.
- * 
+ *
  * <p>
- * SimulationRunner coordinates the parallel execution of multiple simulation agents within a GAMA experiment. It uses
- * a thread-per-simulation model where each simulation runs in its own dedicated thread, synchronized by semaphores to
+ * SimulationRunner coordinates the parallel execution of multiple simulation agents within a GAMA experiment. It uses a
+ * thread-per-simulation model where each simulation runs in its own dedicated thread, synchronized by semaphores to
  * ensure coordinated stepping.
  * </p>
- * 
+ *
  * <p>
  * Architecture:
  * </p>
@@ -52,11 +52,11 @@ import gama.dev.THREADS;
  * complete</li>
  * <li>Concurrency level is determined by experiment configuration and preferences</li>
  * </ul>
- * 
+ *
  * <p>
  * Execution flow:
  * </p>
- * 
+ *
  * <pre>
  * 1. Experiment calls step()
  * 2. step() releases N permits to simulationsSemaphore (N = number of simulations)
@@ -65,27 +65,27 @@ import gama.dev.THREADS;
  * 5. step() acquires N permits from experimentSemaphore (blocks until all done)
  * 6. step() returns to experiment, all simulations synchronized
  * </pre>
- * 
+ *
  * <p>
  * Usage example (typically internal):
  * </p>
- * 
+ *
  * <pre>
  * IPopulation simPop = experiment.getSimulationPopulation();
  * SimulationRunner runner = SimulationRunner.of(simPop);
- * 
+ *
  * // Add simulations
  * runner.add(simulation1);
  * runner.add(simulation2);
- * 
+ *
  * // Run synchronized steps
  * while (!stopped) {
  * 	runner.step(); // All simulations execute one step
  * }
- * 
+ *
  * runner.dispose();
  * </pre>
- * 
+ *
  * @see ISimulationRunner
  * @see GeneralSynchronizer
  * @see ISimulationAgent
@@ -104,7 +104,7 @@ public class SimulationRunner implements ISimulationRunner {
 
 	/** Synchronizer signaling to the experiment when simulations complete their step. */
 	final GeneralSynchronizer experimentSemaphore = GeneralSynchronizer.withInitialPermits(0);
-	
+
 	/** The concurrency level (number of simulations that can run concurrently). */
 	final int concurrency;
 
@@ -122,7 +122,7 @@ public class SimulationRunner implements ISimulationRunner {
 
 	/**
 	 * Creates a SimulationRunner configured for the given simulation population.
-	 * 
+	 *
 	 * <p>
 	 * The concurrency level is determined based on:
 	 * </p>
@@ -130,7 +130,7 @@ public class SimulationRunner implements ISimulationRunner {
 	 * <li>For headless non-batch experiments: concurrency = 1 (sequential)</li>
 	 * <li>Otherwise: determined by experiment's concurrency expression and preferences</li>
 	 * </ul>
-	 * 
+	 *
 	 * @param pop
 	 *            the simulation population whose simulations will be managed
 	 * @return a new SimulationRunner configured appropriately for the experiment type
@@ -148,7 +148,7 @@ public class SimulationRunner implements ISimulationRunner {
 
 	/**
 	 * Constructs a new SimulationRunner with the specified concurrency level.
-	 * 
+	 *
 	 * @param concurrency
 	 *            the maximum number of simulations that can execute concurrently (typically 1 for sequential or number
 	 *            of CPU cores for parallel)
@@ -211,18 +211,21 @@ public class SimulationRunner implements ISimulationRunner {
 			while (!over && !shutdown && runnables.get(agent) == this) {
 				try {
 					while (runnables.get(agent) == this && a.isPaused.getAsBoolean() && !a.isOver.test(agent)
-							&& !shutdown) { THREADS.WAIT(10); }
+							&& !shutdown) {
+						THREADS.WAIT(10);
+					}
 					if (runnables.get(agent) == this && !a.isOver.test(agent) && !shutdown) { agent.step(); }
 				} catch (Throwable tg) {
 					EXCEPTION_HANDLER.uncaughtException(Thread.currentThread(), tg);
 				}
-try {
-				over = agent.dead() || a.isOver.test(agent);
-			} catch (final Throwable tg) {
-				EXCEPTION_HANDLER.uncaughtException(Thread.currentThread(), tg);
-				over = true;
+				try {
+					over = agent.dead() || a.isOver.test(agent);
+				} catch (final Throwable tg) {
+					EXCEPTION_HANDLER.uncaughtException(Thread.currentThread(), tg);
+					over = true;
+				}
+				if (!shutdown && runnables.get(agent) == this) { a.onOver.accept(agent); }
 			}
-			if (!shutdown && runnables.get(agent) == this) { a.onOver.accept(agent); }
 		}
 
 		@Override
@@ -236,10 +239,9 @@ try {
 					runFreely(autonomy);
 					return;
 				}
-				if (!acquired) { break; }
 				// Recheck after waking up: dispose() may have released the permit just to
 				// unblock this thread for shutdown — we must not step a dead/cleared runner.
-				if (shutdown || agent.dead()) { break; }
+				if (!acquired || shutdown || agent.dead()) { break; }
 				try {
 					agent.step();
 				} catch (Throwable tg) {
@@ -269,9 +271,9 @@ try {
 	}
 
 	/**
-	 * Adds a simulation agent to the runner and starts its dedicated execution thread, which waits for a permit,
-	 * steps the simulation, signals the experiment, and repeats until the simulation dies, is removed or the runner
-	 * shuts down.
+	 * Adds a simulation agent to the runner and starts its dedicated execution thread, which waits for a permit, steps
+	 * the simulation, signals the experiment, and repeats until the simulation dies, is removed or the runner shuts
+	 * down.
 	 *
 	 * @param agent
 	 *            the simulation agent to add
@@ -298,8 +300,8 @@ try {
 	 * (in which case the interrupt flag is left set for the caller to detect)</li>
 	 * </ol>
 	 * <p>
-	 * This provides the synchronization needed for coordinated multi-simulation execution where all simulations
-	 * advance together through simulation time.
+	 * This provides the synchronization needed for coordinated multi-simulation execution where all simulations advance
+	 * together through simulation time.
 	 * </p>
 	 */
 	@Override
@@ -334,7 +336,7 @@ try {
 
 	/**
 	 * Returns the set of simulation agents currently managed by this runner.
-	 * 
+	 *
 	 * @return the set of active simulation agents
 	 */
 	@Override
