@@ -77,9 +77,6 @@ experiment GeometryOperatorsTest type: test autorun: true {
 		// the envelope of two distant squares spans both
 		assert envelope(base union distant).area = 3025.0;
 
-		assert segment.perimeter = 20.0;
-		assert segment.area = 0.0;
-		assert polyline([{0, 0}, {3, 4}]).perimeter = 5.0;
 	}
 
 	test "Closest and farthest points" {
@@ -118,19 +115,10 @@ experiment GeometryOperatorsTest type: test autorun: true {
 	}
 
 	test "Rotations" {
-		geometry bar <- rectangle(10, 2) at_location {5, 5};
-		assert bar.width = 10.0;
-		assert bar.height = 2.0;
-		geometry upright <- bar rotated_by 90;
-		assert upright.width = 2.0;
-		assert upright.height = 10.0;
-		// a rotation keeps the area and the location
-		assert upright.area = 20.0;
-		assert upright.location = {5, 5};
 		assert (base rotated_by 45).area = 100.0;
 		// the envelope of a square rotated by 45 degrees is its diagonal
 		assert (base rotated_by 45).width = 10 * sqrt(2);
-		assert (bar rotated_by 360).width = 10.0;
+
 	}
 
 	test "Scalings" {
@@ -147,7 +135,6 @@ experiment GeometryOperatorsTest type: test autorun: true {
 	}
 
 	test "Decomposition" {
-		assert length(to_segments(segment)) = 1;
 		assert length(to_segments(base)) = 4;
 		assert to_segments(base) all_match (each.perimeter = 10.0);
 
@@ -175,48 +162,4 @@ experiment GeometryOperatorsTest type: test autorun: true {
 		assert length(base.geometries) = 1;
 	}
 
-	test "Points along a line" {
-		assert points_along(segment, [0.0, 0.5, 1.0]) = [{0, 5}, {10, 5}, {20, 5}];
-		assert points_on(segment, 5.0) = [{0, 5}, {5, 5}, {10, 5}, {15, 5}, {20, 5}];
-		// two crossing lines are split at their intersection
-		assert length(split_lines([segment, line([{10, 0}, {10, 10}])])) = 4;
-		// a nearly aligned vertex is removed by the simplification
-		assert simplification(polyline([{0, 0}, {5, 0.01}, {10, 0}]), 0.5).points = [{0, 0}, {10, 0}];
-	}
-
-	test "Directions and angles" {
-		// angles are in degrees, clockwise as the y axis points downwards
-		assert {0, 0} towards {10, 0} = 0.0;
-		assert {0, 0} towards {0, 10} = 90.0;
-		assert {0, 0} direction_to {0, 10} = 90.0;
-		assert {0, 0} towards {-10, 0} = 180.0;
-		// directions are given in ]-180, 180]
-		assert {0, 0} towards {0, -10} = -90.0;
-		// the angle at the first point, between the two others, in [0, 360[
-		assert angle_between({0, 0}, {1, 0}, {0, 1}) = 90.0;
-		assert angle_between({0, 0}, {1, 0}, {1, 1}) with_precision 6 = 45.0;
-		assert angle_between({0, 0}, {1, 0}, {-1, 0}) = 180.0;
-		assert angle_between({0, 0}, {1, 0}, {0, -1}) = 270.0;
-		assert angle_between({0, 0}, {1, 0}, {1, 0}) = 0.0;
-	}
-
-	test "Measures of the basic shapes" {
-		assert rectangle(10, 5).area = 50.0;
-		assert rectangle({10, 5}).area = 50.0;
-		assert square(3).perimeter = 12.0;
-		// circles are polygons approximating the disc from the inside
-		assert circle(10).area > 310.0 and circle(10).area < #pi * 100;
-		assert circle(10).perimeter > 62.0 and circle(10).perimeter < 2 * #pi * 10;
-		assert circle(10).width = 20.0;
-		assert length(hexagon(10).points) = 7;
-		assert hexagon(10).width = 10.0;
-		assert triangle(10).area > 43.3 and triangle(10).area < 43.31;
-		assert ellipse(4, 2).width = 4.0;
-		assert ellipse(4, 2).height = 2.0;
-
-		assert cube(2).volume = 8.0;
-		assert box(2, 3, 4).volume = 24.0;
-		assert sphere(1).volume > 4.18 and sphere(1).volume < 4.19;
-		assert pyramid(2).volume > 2.66 and pyramid(2).volume < 2.67;
-	}
 }

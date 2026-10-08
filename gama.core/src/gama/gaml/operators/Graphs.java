@@ -49,6 +49,7 @@ import gama.annotations.no_test;
 import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
 import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
@@ -619,6 +620,9 @@ public class Graphs {
 					"Returns 1.0 if the element is neither an edge nor a vertex of the graph (fall-through default).",
 					"In an unweighted graph, all edge and vertex weights default to 1.0 (the fixed internal default value).",
 					"If the graph is a localized (spatial) graph, the default edge weight is the geometric distance between the two endpoint vertices." })
+	@tests ({
+			@test ("point p1 <- {0, 0}; point p2 <- {10, 10}; graph near <- as_intersection_graph([p1, p2], 20.0); float edge_weight <- weight_of(near, near.edges[0]); edge_weight > 0.0")
+	})
 	public static Double weightOf(final IScope scope, final IGraph graph, final Object edge) {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
 		if (edge instanceof GraphObjectToAdd) {
@@ -908,10 +912,14 @@ public class Graphs {
 							equals = "the list of all the components as list",
 							test = false) },
 			see = { "alpha_index", "connectivity_index", "nb_cycles" })
-	@test ("""
+	@tests ({
+			@test ("""
 			graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r
 			 list comp <- connected_components_of(g); \
-			 length(comp) = 1""")
+			 length(comp) = 1"""),
+			@test ("graph empty_graph <- graph([]); empty(connected_components_of(empty_graph))"),
+			@test ("graph g2 <- as_edge_graph([line([{0, 0}, {10, 0}]), line([{10, 0}, {10, 10}]), line([{50, 50}, {60, 50}])]); length(connected_components_of(g2)) = 2")
+	})
 	public static IList<IList> connectedComponentOf(final IScope scope, final IGraph graph) {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
 
@@ -996,8 +1004,13 @@ public class Graphs {
 					equals = "the sub-graph corresponding to the main connected components of the graph",
 					test = false) },
 			see = { "connected_components_of" })
-	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
-			+ " length(main_connected_component(g)) = 5")
+	@tests ({
+			@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
+			+ " length(main_connected_component(g)) = 5"),
+			@test ("graph empty_graph <- graph([]); empty(main_connected_component(empty_graph).vertices)"),
+			@test ("graph g2 <- as_edge_graph([line([{0, 0}, {10, 0}]), line([{10, 0}, {10, 10}]), line([{50, 50}, {60, 50}])]); length(main_connected_component(g2).vertices) = 3"),
+			@test ("graph g3 <- as_edge_graph([line([{0, 0}, {10, 0}]), line([{10, 0}, {10, 10}]), line([{50, 50}, {60, 50}])]); length(main_connected_component(g3).edges) = 2")
+	})
 	public static IGraph reduceToMainconnectedComponentOf(final IScope scope, final IGraph graph) {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
 
@@ -1120,8 +1133,12 @@ public class Graphs {
 							equals = "the number of cycles in the graph",
 							test = false) },
 			see = { "alpha_index", "beta_index", "gamma_index", "connectivity_index" })
-	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
-			+ " nb_cycles(g) = 1 ")
+	@tests ({
+			@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
+			+ " nb_cycles(g) = 1 "),
+			@test ("graph empty_graph <- graph([]); nb_cycles(empty_graph) = 0"),
+			@test ("nb_cycles(as_edge_graph([line([{0, 0}, {10, 0}]), line([{10, 0}, {10, 10}])])) = 0")
+	})
 	public static int nbCycles(final IScope scope, final IGraph graph) {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
 		final int S = graph.vertexSet().size();
@@ -1153,8 +1170,12 @@ public class Graphs {
 							equals = "the alpha index of the graph",
 							test = false) },
 			see = { "beta_index", "gamma_index", "nb_cycles", "connectivity_index" })
-	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
-			+ " alpha_index(g) = 0.2 ")
+	@tests ({
+			@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
+			+ " alpha_index(g) = 0.2 "),
+			// the indexes of an empty graph are numbers
+			@test ("graph empty_graph <- graph([]); is_number(alpha_index(empty_graph))")
+	})
 	public static double alphaIndex(final IScope scope, final IGraph graph) {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
 		final int S = graph.vertexSet().size();
@@ -1183,8 +1204,11 @@ public class Graphs {
 							equals = "the beta index of the graph",
 							test = false) },
 			see = { "alpha_index", "gamma_index", "nb_cycles", "connectivity_index" })
-	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
-			+ " beta_index(g) = 1.0 ")
+	@tests ({
+			@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
+			+ " beta_index(g) = 1.0 "),
+			@test ("graph empty_graph <- graph([]); is_number(beta_index(empty_graph))")
+	})
 	public static double betaIndex(final IScope scope, final IGraph graph) {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
 		return (graph.edgeSet().size() + 0.0) / graph.vertexSet().size();
@@ -1212,8 +1236,11 @@ public class Graphs {
 							equals = "the gamma index of the graph",
 							test = false) },
 			see = { "alpha_index", "beta_index", "nb_cycles", "connectivity_index" })
-	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
-			+ " gamma_index(g) = 1.0 ")
+	@tests ({
+			@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
+			+ " gamma_index(g) = 1.0 "),
+			@test ("graph empty_graph <- graph([]); is_number(gamma_index(empty_graph))")
+	})
 	public static double gammaIndex(final IScope scope, final IGraph graph) {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
 		return graph.edgeSet().size() / (2.0 * graph.vertexSet().size() - 5);
@@ -1278,8 +1305,11 @@ public class Graphs {
 					"Returns 0 for every vertex with degree 0 (isolated vertex), since no shortest path passes through it.",
 					"On a graph with a single vertex and no edges, returns a map with that vertex mapped to 0." },
 			see = {})
-	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
-			+ " betweenness_centrality(g) = [{10.0,5.0,0.0}::5,{20.0,3.0,0.0}::0,{30.0,30.0,0.0}::2,{80.0,35.0,0.0}::4,{40.0,60.0,0.0}::0] ")
+	@tests ({
+			@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
+			+ " betweenness_centrality(g) = [{10.0,5.0,0.0}::5,{20.0,3.0,0.0}::0,{30.0,30.0,0.0}::2,{80.0,35.0,0.0}::4,{40.0,60.0,0.0}::0] "),
+			@test ("graph empty_graph <- graph([]); empty(betweenness_centrality(empty_graph))")
+	})
 	public static IMap betweennessCentrality(final IScope scope, final IGraph graph) {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
 
@@ -1501,8 +1531,12 @@ public class Graphs {
 							equals = "a graph with two edges and three vertices",
 							test = false) }),
 			see = { "as_intersection_graph", "as_distance_graph" })
-	@test (" graph<geometry,geometry> comp <- as_edge_graph([line([{1,5},{12,45}]),line([{12,45},{34,56}])]); "
-			+ " ( ({1,5} in comp.vertices) and  ({12,45} in comp.vertices) and  ({34,56} in comp.vertices) ) ")
+	@tests ({
+			@test (" graph<geometry,geometry> comp <- as_edge_graph([line([{1,5},{12,45}]),line([{12,45},{34,56}])]); "
+			+ " ( ({1,5} in comp.vertices) and  ({12,45} in comp.vertices) and  ({34,56} in comp.vertices) ) "),
+			@test ("empty(as_edge_graph([]).vertices)"),
+			@test ("graph g <- as_edge_graph([{0, 0}::{10, 0}, {10, 10}::{0, 0}, {10, 10}::{20, 10}]); length(g.edges) = 2")
+	})
 	public static IGraph spatialFromEdges(final IScope scope, final IContainer edges) {
 
 		final IGraph createdGraph = new GamaSpatialGraph(edges, true, false, false, null, null, scope, Types.GEOMETRY,
@@ -1679,6 +1713,12 @@ public class Graphs {
 					isExecutable = false),
 			see = { "as_distance_graph", "as_edge_graph" })
 	@no_test
+	@tests ({
+			@test ("point p1 <- {0, 0}; point p2 <- {10, 10}; graph far <- as_intersection_graph([p1, p2], 5.0); length(far.vertices) = 2"),
+			@test ("point p12 <- {0, 0}; point p22 <- {10, 10}; graph far2 <- as_intersection_graph([p12, p22], 5.0); length(far2.edges) = 0"),
+			@test ("point p13 <- {0, 0}; point p23 <- {10, 10}; graph near <- as_intersection_graph([p13, p23], 20.0); length(near.vertices) = 2"),
+			@test ("point p14 <- {0, 0}; point p24 <- {10, 10}; graph near2 <- as_intersection_graph([p14, p24], 20.0); length(near2.edges) = 1")
+	})
 	public static IGraph spatialFromVertices(final IScope scope, final IContainer vertices, final Double tolerance) {
 		final IGraph createdGraph =
 				new GamaSpatialGraph(vertices, false, false, true, new IntersectionRelation(tolerance), null, scope,
@@ -2398,7 +2438,8 @@ public class Graphs {
 					value = "paths_between(my_graph, ag1:: ag2, 2)",
 					equals = "the 2 shortest paths (ordered by length) between ag1 and ag2",
 					isExecutable = false) })
-	@test ("""
+	@tests ({
+			@test ("""
 			graph<geometry, geometry> g <- directed(as_edge_graph([
 										edge({10,5}, {20,3}),
 										edge({10,5}, {30,30}),
@@ -2411,7 +2452,10 @@ public class Graphs {
 										]));
 			   length((paths_between(g, {10,5}:: {80,35}, 2))) = 2
 
-			""")
+			"""),
+			@test ("graph square_graph <- as_edge_graph([line([{0, 0}, {10, 0}]), line([{10, 0}, {10, 10}]), line([{0, 0}, {0, 10}]), line([{0, 10}, {10, 10}])]); list<path> two_ways <- paths_between(square_graph, {0, 0}::{10, 10}, 2); length(two_ways) = 2"),
+			@test ("graph square_graph2 <- as_edge_graph([line([{0, 0}, {10, 0}]), line([{10, 0}, {10, 10}]), line([{0, 0}, {0, 10}]), line([{0, 10}, {10, 10}])]); list<path> two_ways2 <- paths_between(square_graph2, {0, 0}::{10, 10}, 2); two_ways2 all_match (length(each.edges) = 2)")
+	})
 	public static IList<IPath> kPathsBetween(final IScope scope, final IGraphEventProvider graph, final IPair sourTarg,
 			final int k) throws GamaRuntimeException {
 
@@ -4218,6 +4262,10 @@ public class Graphs {
 									isExecutable = false) }) },
 			see = { "generate_barabasi_albert", "generate_watts_strogatz" })
 	@no_test
+	@tests ({
+			@test ("graph complete <- generate_complete_graph(5, false); length(complete.vertices) = 5"),
+			@test ("graph complete2 <- generate_complete_graph(5, false); length(complete2.edges) = 10")
+	})
 	public static IGraph generateGraphComplete(final IScope scope, final int nbNodes, final Boolean directed) {
 		return generateGraphComplete(scope, nbNodes, directed, (ISpecies) null, (ISpecies) null);
 
@@ -4282,6 +4330,10 @@ public class Graphs {
 					 clusters.\
 					It returns a list of list of vertices and takes as operand the graph and the number of clusters""")
 	@no_test
+	@tests ({
+			@test ("graph two_parts <- as_edge_graph([line([{0, 0}, {10, 0}]), line([{10, 0}, {10, 10}]), line([{50, 50}, {60, 50}]), line([{60, 50}, {60, 60}])]); list<list> by_spanning_tree <- k_spanning_tree_clustering(two_parts, 2); length(by_spanning_tree) = 2"),
+			@test ("graph two_parts2 <- as_edge_graph([line([{0, 0}, {10, 0}]), line([{10, 0}, {10, 10}]), line([{50, 50}, {60, 50}]), line([{60, 50}, {60, 60}])]); list<list> by_spanning_tree2 <- k_spanning_tree_clustering(two_parts2, 2); by_spanning_tree2 all_match (length(each) = 3)")
+	})
 	public static IList KSpanningTreeClusteringAfl(final IScope scope, final IGraph graph, final int numCLusters) {
 		if (graph.getVertices().isEmpty() || graph.getEdges().isEmpty()) {
 			IList<IGraph> emptyL = GamaListFactory.create(Types.GRAPH);
@@ -4321,6 +4373,9 @@ public class Graphs {
 					 * community structures in large-scale networks. Physical review E, 76(3), 036106.\
 					It returns a list of list of vertices and takes as operand the graph and maximal number of iteration""")
 	@no_test
+	@tests ({
+			@test ("graph two_parts <- as_edge_graph([line([{0, 0}, {10, 0}]), line([{10, 0}, {10, 10}]), line([{50, 50}, {60, 50}]), line([{60, 50}, {60, 60}])]); list<list> by_propagation <- label_propagation_clustering(two_parts, 10); length(by_propagation) = 2")
+	})
 	public static IList labelPropagationClusteringAgl(final IScope scope, final IGraph graph, final int maxIteration) {
 		if (graph.getVertices().isEmpty() || graph.getEdges().isEmpty()) {
 			IList<IGraph> emptyL = GamaListFactory.create(Types.GRAPH);

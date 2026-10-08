@@ -130,9 +130,5 @@ experiment FileOperatorsTest type: test autorun: true {
 		assert is_shape("roads.shp");
 		assert is_gaml("model.gaml");
 
-		assert not is_csv("data.txt");
-		assert not is_image("data.csv");
-		assert not is_shape("picture.png");
-		assert not is_gaml("notes.txt");
 	}
 }

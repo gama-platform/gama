@@ -15,6 +15,7 @@ import gama.annotations.example;
 import gama.annotations.no_test;
 import gama.annotations.operator;
 import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.usage;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
@@ -90,6 +91,15 @@ public class SpatialRelations {
 					isExecutable = false) },
 			see = { "distance_between", "distance_to", "direction_between", "path_between", "path_to" })
 	@no_test // Test already done in Spatial tests models
+	@tests ({
+			// angles are in degrees, clockwise as the y axis points downwards
+			@test ("{0, 0} towards {10, 0} = 0.0"),
+			@test ("{0, 0} towards {0, 10} = 90.0"),
+			@test ("{0, 0} direction_to {0, 10} = 90.0"),
+			@test ("{0, 0} towards {-10, 0} = 180.0"),
+			// directions are given in ]-180, 180]
+			@test ("{0, 0} towards {0, -10} = -90.0")
+	})
 	public static Double towards(final IScope scope, final IShape agent, final IShape target) {
 		return scope.getTopology().directionInDegreesTo(scope, agent, target);
 	}
@@ -235,6 +245,11 @@ public class SpatialRelations {
 					isExecutable = false) },
 			see = { "towards", "direction_to", "distance_between", "direction_between", "path_to", "distance_to" })
 	@no_test // test already done in Spatial tests models
+	@tests ({
+			@test ("graph square_graph <- as_edge_graph([line([{0, 0}, {10, 0}]), line([{10, 0}, {10, 10}]), line([{0, 0}, {0, 10}]), line([{0, 10}, {10, 10}])]); list<geometry> square_edges <- list<geometry>(square_graph.edges); geometry top_edge <- square_edges first_with (each.points contains_all [{0, 0}, {10, 0}]); graph penalised <- square_graph with_weights [top_edge::100.0]; path detour <- penalised path_between ({0, 0}, {10, 10}); length(detour.edges) = 2"),
+			@test ("graph square_graph2 <- as_edge_graph([line([{0, 0}, {10, 0}]), line([{10, 0}, {10, 10}]), line([{0, 0}, {0, 10}]), line([{0, 10}, {10, 10}])]); list<geometry> square_edges2 <- list<geometry>(square_graph2.edges); geometry top_edge2 <- square_edges2 first_with (each.points contains_all [{0, 0}, {10, 0}]); graph penalised2 <- square_graph2 with_weights [top_edge2::100.0]; path detour2 <- penalised2 path_between ({0, 0}, {10, 10}); not (detour2.edges contains top_edge2)"),
+			@test ("graph square_graph3 <- as_edge_graph([line([{0, 0}, {10, 0}]), line([{10, 0}, {10, 10}]), line([{0, 0}, {0, 10}]), line([{0, 10}, {10, 10}])]); list<geometry> square_edges3 <- list<geometry>(square_graph3.edges); geometry top_edge3 <- square_edges3 first_with (each.points contains_all [{0, 0}, {10, 0}]); graph penalised3 <- square_graph3 with_weights [top_edge3::100.0]; path detour3 <- penalised3 path_between ({0, 0}, {10, 10}); detour3.vertices contains {0, 10}")
+	})
 	public static IPath path_between(final IScope scope, final ITopology topo, final IContainer<?, IShape> nodes)
 			throws GamaRuntimeException {
 		if (nodes.isEmpty(scope)) return null;
@@ -475,7 +490,14 @@ public class SpatialRelations {
 			value = "An Euclidean distance between two points.")
 	// No documentation because it is same same as the previous one (but
 	// optimized for points?)
-	@test (" {20,20} distance_to {30,30} = 14.142135623730951")
+	@tests ({
+			@test (" {20,20} distance_to {30,30} = 14.142135623730951"),
+			// Distance is typically distance_to, but let's check basic Euclidean math
+			@test ("point p1 <- {0, 0}; point p2 <- {3, 4}; p1 distance_to p2 = 5"),
+			@test ("point p12 <- {0, 0}; point p22 <- {3, 4}; p22 distance_to p12 = 5"),
+			// 'distance_to' between two plain points is euclidean, it does not wrap around the torus
+			@test ("point p13 <- {5, 50}; point p23 <- {95, 50}; (p13 distance_to p23) = 90.0")
+	})
 	public static Double distance_to(final IScope scope, final IPoint source, final IPoint target) {
 		return scope.getTopology().distanceBetween(scope, source, target);
 	}

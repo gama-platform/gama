@@ -1030,10 +1030,15 @@ public class Comparison {
 							value = "0.0 = 0.0",
 							equals = "true") },
 			see = { GT, LT, GTE, LTE, "!=" })
-	@test ("4.5 = 4.5")
-	@test ("!(4.5 = 4.7)")
-	@test ("0.0 = 0.0")
-	@test ("1.0 = 1.0")
+	@tests ({
+			@test ("4.5 = 4.5"),
+			@test ("!(4.5 = 4.7)"),
+			@test ("0.0 = 0.0"),
+			@test ("1.0 = 1.0"),
+			@test ("10.0 = 10.0"),
+			@test ("1e3 = 1000.0"),
+			@test ("1.5e-3 = 0.0015")
+	})
 	public static Boolean equal(final Double a, final Double b) {
 		if (a == b) return true;
 		if (a == null || b == null) return false;
@@ -1195,9 +1200,12 @@ public class Comparison {
 							value = "0.0 != 0.0",
 							equals = "false") },
 			see = { EQUALS, GT, LT, GTE, LTE })
-	@test ("!(3.0 != 3.0)")
-	@test ("4.0 != 4.7")
-	@test ("!(0.0 != 0.0)")
+	@tests ({
+			@test ("!(3.0 != 3.0)"),
+			@test ("4.0 != 4.7"),
+			@test ("!(0.0 != 0.0)"),
+			@test ("10.0 != 10.1")
+	})
 	public static Boolean different(final Double a, final Double b) {
 		if (a == null) return b != null;
 		if (b == null) return false;
@@ -1581,7 +1589,9 @@ public class Comparison {
 			@test ("\"abc\" != \"bde\""),
 			@test ("false != true"),
 			@test ("[3,4] != [4,3]"),
-			@test ("[3,4] != [9]")
+			@test ("[3,4] != [9]"),
+			// comparisons are case sensitive
+			@test ("\"abc\" != \"ABC\"")
 	})
 	public static Boolean different(final Object a, final Object b) {
 		return a == null ? b != null : !a.equals(b);

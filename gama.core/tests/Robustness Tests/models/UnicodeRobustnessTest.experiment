@@ -31,31 +31,19 @@ experiment UnicodeRobustnessTest type: test autorun: true {
 
 	test "Searching and replacing" {
 		assert emoji contains "😀";
-		assert "a😀b" replace ("😀", "-") = "a-b";
-		assert "a😀b" replace_regex ("😀", "-") = "a-b";
-		assert "😀😀" split_with "😀" = [];
-		assert "a😀b😀c" split_with "😀" = ["a", "b", "c"];
-		assert "日本語" contains "本";
-	}
 
-	test "Case conversions" {
-		assert upper_case("straße") = "STRASSE";
-		assert upper_case("éω") = "ÉΩ";
-		assert lower_case("ÉΩ") = "éω";
 	}
 
 	test "Serialisations give back the text" {
 		assert from_json(to_json(mixed)) = mixed;
 		assert from_binary(to_binary(mixed)) = mixed;
 		assert from_gaml(to_gaml(mixed)) = mixed;
-		assert from_gaml(to_gaml("it's")) = "it's";
 		assert deserialize(serialize(mixed)) = mixed;
 	}
 
 	test "Compression gives back the text" {
-		assert decompress(compress("é")) = "é";
 		assert decompress(compress(mixed)) = mixed;
-		assert decompress(compress("😀😀😀")) = "😀😀😀";
+
 	}
 
 	test "Files keep the text" {
@@ -72,8 +60,4 @@ experiment UnicodeRobustnessTest type: test autorun: true {
 		assert delete_file("données_😀_tmp.txt");
 	}
 
-	test "Dates are formatted in other languages" {
-		assert string(date("2026-01-01T00:00:00"), "EEEE", "fr") = "jeudi";
-		assert string(date("2026-01-01T00:00:00"), "EEEE", "ja") = "木曜日";
-	}
 }

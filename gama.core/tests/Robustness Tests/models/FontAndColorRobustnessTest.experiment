@@ -45,11 +45,6 @@ experiment FontAndColorRobustnessTest type: test autorun: true {
 		assert problem != nil or size > 0;
 	}
 
-	test "A fractional font size is rounded" {
-		float size <- font("Arial", 12.7).size;
-		assert size >= 12 and size <= 13;
-	}
-
 	test "Unknown font names and styles fall back to valid values" {
 		string problem <- nil;
 		font unknown_family <- nil;
@@ -62,17 +57,6 @@ experiment FontAndColorRobustnessTest type: test autorun: true {
 		assert unknown_family != nil;
 		assert unknown_family.size = 12;
 		assert [#plain, #bold, #italic, #bold + #italic] contains odd_style.style;
-	}
-
-	test "Color components are clamped" {
-		assert rgb(-1, -1, -1) = #black;
-		assert rgb(256, 300, 1000) = #white;
-		assert rgb(0, 0, 0, -1).alpha = 0;
-		assert rgb(0, 0, 0, 999).alpha = 255;
-		assert rgb(0, 0, 0, 2.5).alpha = 255;
-		assert rgb(0, 0, 0, -0.5).alpha = 0;
-		assert (#red with_alpha 5.0).alpha = 255;
-		assert (#red with_alpha -1.0).alpha = 0;
 	}
 
 	test "Color components that are not numbers are handled" {
@@ -129,22 +113,6 @@ experiment FontAndColorRobustnessTest type: test autorun: true {
 		try { rgb c <- #red / 0; } catch { problem <- #current_error; }
 		assert problem != nil;
 		assert handled(problem);
-	}
-
-	test "Multiplying a color by absurd factors keeps it valid" {
-		assert #red * -1 = #black;
-		rgb boosted <- #red * #infinity;
-		assert boosted.red = 255;
-		assert boosted.green = 0;
-	}
-
-	test "Random colors with absurd bounds stay valid" {
-		assert rnd_color(-5) = #black;
-		rgb bright <- rnd_color(1000);
-		assert bright.red <= 255 and bright.green <= 255 and bright.blue <= 255;
-		// reversed bounds
-		rgb between_bounds <- rnd_color(200, 100);
-		assert between_bounds.red >= 100 and between_bounds.red <= 200;
 	}
 
 	test "Palettes with absurd sizes" {

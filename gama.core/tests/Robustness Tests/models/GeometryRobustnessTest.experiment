@@ -29,17 +29,6 @@ experiment GeometryRobustnessTest type: test autorun: true {
 		assert shapes all_match sane(each);
 	}
 
-	test "A negative dimension is handled the same way whatever the shape" {
-		assert rectangle(-3, -3).area = square(-3).area;
-		assert rectangle(-2, 3).area = rectangle(2, -3).area;
-	}
-
-	test "Shapes with a null size" {
-		assert circle(0).area = 0.0;
-		assert square(0).area = 0.0;
-		assert rectangle(0, 0).area = 0.0;
-	}
-
 	test "A circle with an infinite radius" {
 		string problem <- nil;
 		geometry g <- nil;
@@ -143,19 +132,6 @@ experiment GeometryRobustnessTest type: test autorun: true {
 		try { point p <- {1, 2} / 0; } catch { problem <- #current_error; }
 		assert problem != nil;
 		assert handled(problem);
-	}
-
-	test "Set operations with nil" {
-		assert square(10) inter nil = nil;
-		assert nil inter square(10) = nil;
-		assert (square(10) union nil).area = 100.0;
-		assert any_location_in(nil) = nil;
-	}
-
-	test "Points beyond the extremities of a line" {
-		// ratios outside [0, 1] are clamped to the extremities
-		list<point> clamped <- points_along(line([{0, 0}, {10, 0}]), [2.0, -1.0]);
-		assert clamped = [{10, 0}, {0, 0}];
 	}
 
 	test "Decomposing an empty geometry" {

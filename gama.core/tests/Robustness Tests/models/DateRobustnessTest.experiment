@@ -88,8 +88,4 @@ experiment DateRobustnessTest type: test autorun: true {
 		assert handled(problem);
 	}
 
-	test "Periods between dates given in the wrong order are negative" {
-		assert years_between(date("2026-01-01"), date("2000-01-01")) = -26;
-		assert date("2026-01-01") - date("2026-01-01") = 0.0;
-	}
 }

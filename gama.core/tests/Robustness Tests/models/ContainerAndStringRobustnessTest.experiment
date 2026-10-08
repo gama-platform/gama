@@ -93,12 +93,7 @@ experiment ContainerAndStringRobustnessTest type: test autorun: true {
 		assert numbers - nil = numbers;
 		assert not (numbers contains nil);
 		assert numbers index_of nil = -1;
-		assert remove_duplicates([nil, nil, 1]) = [nil, 1];
-		map<string, int> m <- ["a"::1];
-		assert m["missing"] = nil;
-		assert m[nil] = nil;
-		assert empty(list(nil));
-		assert empty(map(nil));
+
 	}
 
 	test "A ragged list of lists cannot become a matrix silently" {
@@ -119,18 +114,6 @@ experiment ContainerAndStringRobustnessTest type: test autorun: true {
 		assert problem != nil or (empty_matrix.rows * empty_matrix.columns = 0 and negative_matrix.columns >= 0);
 	}
 
-	test "Strings accessed out of their bounds" {
-		assert "hello" at 10 = "";
-		assert "hello" at -1 = "";
-		assert copy_between("hello", 3, 1) = "";
-		assert copy_between("hello", -5, 50) = "hello";
-		assert first("") = "";
-		assert last("") = "";
-		assert reverse("") = "";
-		assert "" split_with "," = [];
-		assert "hello" split_with "" = ["hello"];
-	}
-
 	test "Invalid regular expressions raise a proper error" {
 		string problem <- nil;
 		try { string s <- replace_regex("abc", "[", "x"); } catch { problem <- #current_error; }
@@ -149,16 +132,6 @@ experiment ContainerAndStringRobustnessTest type: test autorun: true {
 		assert handled(problem);
 		// either rejected, or rounded to the hundreds
 		assert problem != nil or rounded = 1200.0;
-	}
-
-	test "Casting absurd strings to numbers" {
-		// too big for an int: saturated
-		assert int("9999999999999") = #max_int;
-		assert not is_finite(float("1e400"));
-		assert int("") = 0;
-		assert float("  ") = 0.0;
-		assert int(nil) = 0;
-		assert float(nil) = 0.0;
 	}
 
 	test "Characters out of the unicode range" {

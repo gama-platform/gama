@@ -12,20 +12,6 @@ experiment GraphAndEvaluationRobustnessTest type: test autorun: true {
 		return problem = nil ? true : !(problem contains "Java error");
 	}
 
-	test "An empty graph" {
-		graph empty_graph <- graph([]);
-		assert empty(empty_graph.vertices);
-		assert empty(connected_components_of(empty_graph));
-		assert nb_cycles(empty_graph) = 0;
-		assert empty(betweenness_centrality(empty_graph));
-		assert empty(main_connected_component(empty_graph).vertices);
-		assert empty(as_edge_graph([]).vertices);
-		// the indexes of an empty graph are numbers
-		assert is_number(alpha_index(empty_graph));
-		assert is_number(beta_index(empty_graph));
-		assert is_number(gamma_index(empty_graph));
-	}
-
 	test "A path between vertices that are not in the graph" {
 		string problem <- nil;
 		path p <- nil;

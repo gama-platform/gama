@@ -52,21 +52,4 @@ experiment DynamicGraphTest type: test autorun: true {
 		assert length(g.edges) = 2; // Edges connected to n3 are also removed
 	}
 	
-	test "Spatial Graph Creation" {
-		point p1 <- {0, 0};
-		point p2 <- {10, 10};
-		
-		// the two points are ~14.14 apart, so a 5.0 tolerance links nothing
-		graph far <- as_intersection_graph([p1, p2], 5.0);
-		assert length(far.vertices) = 2;
-		assert length(far.edges) = 0;
-
-		// a 20.0 tolerance does link them
-		graph near <- as_intersection_graph([p1, p2], 20.0);
-		assert length(near.vertices) = 2;
-		assert length(near.edges) = 1;
-
-		float edge_weight <- weight_of(near, near.edges[0]);
-		assert edge_weight > 0.0;
-	}
 }

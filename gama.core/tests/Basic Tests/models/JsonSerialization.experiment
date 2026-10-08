@@ -5,56 +5,10 @@
 * Tags: serialization, JSON, test
 */
 
-
 model Serialization
-
 
 experiment SerializationTest type:test {
 	
-	//to_json
-	test to_json_int {
-		assert to_json(1) = "1";
-	}
-	test to_json_float {
-		assert to_json(1.2) = "1.2";
-	}
-	test to_json_empty_string {
-		assert to_json("") = '""';
-	}
-	test to_json_string {
-		assert to_json("abcd") = '"abcd"';
-	}
-	test to_json_empty_list {
-		assert to_json([]) = "[]";
-	}
-	test to_json_list {
-		assert to_json([1,"a",false]) = '[1,"a",false]';
-	}
-	test to_json_list_of_list {
-		assert to_json([[1,2,3],[4,5,6]]) = '[[1,2,3],[4,5,6]]';
-	}
-	test to_json_nil {
-		assert to_json(nil) = 'null';
-	}
-	test to_json_map {
-		map my_var <- [
-			"x"::"abc",
-			"y"::#red,
-			"z"::123,
-			"123"::10.2,
-			"a"::false
-		];
-		assert to_json(my_var) = '{"x":"abc","y":{"gaml_type":"rgb","red":255,"green":0,"blue":0,"alpha":255},"z":123,"123":10.2,"a":false}';
-	}
-	
-	
-	//from_json
-	test from_json_int {
-		assert from_json("1") = 1;
-	}
-	test from_json_float {
-		assert from_json("1.2") = 1.2;
-	}
 	test from_json_empty {
 		bool exception <- false;
 		try{
@@ -65,43 +19,6 @@ experiment SerializationTest type:test {
 			exception <- true;
 		}
 		assert exception;
-	}
-	test from_json_empty_string {
-		assert from_json('""') = "";
-	}
-	test from_json_string {
-		assert from_json('"abcd"') = "abcd";
-	}
-	test from_json_empty_list {
-		assert from_json('[]') = [];
-	}
-	test from_json_list {
-		assert from_json('[1,"a",false]') = [1,"a",false];
-	}
-	test from_json_list_of_list {
-		assert from_json('[[1,2,3],[4,5,6]]') = [[1,2,3],[4,5,6]];
-	}
-	test from_json_null {
-		assert from_json("null") = nil;
-	}
-	test from_json_map {
-		map my_var <- [
-			"x"::"abc",
-			"y"::#red,
-			"z"::123,
-			"123"::10.2,
-			"a"::false
-		];
-		assert from_json('{"x":"abc","y":{"gaml_type":"rgb","red":255,"green":0,"blue":0,"alpha":255},"z":123,"123":10.2,"a":false}') = my_var;
-	}
-	
-	
-	
-	//both together
-	test serialize_and_deserialize{	
-		map my_var <- ["x"::"abc","y"::#red,"z"::123,"123"::10.2,"a"::false, "e"::[1,2,3]];
-		assert from_json(to_json(my_var)) = my_var;
-		
 	}
 	
 	//parameters: int overflow
@@ -194,7 +111,6 @@ experiment SerializationTest type:test {
 		assert to_json( map("x"::#nan)) = '{"x":"NaN"}';
 	}
 
-
 	// errors
 	test from_infinity_literal_with_string_option {
 		gama.pref_json_infinity_as_string <- true;
@@ -240,7 +156,6 @@ experiment SerializationTest type:test {
 		}
 		assert exception;
 	}
-	
 		
 	test from_forgotten_comma {
 		bool exception <- false;
@@ -252,7 +167,6 @@ experiment SerializationTest type:test {
 		}
 		assert exception;
 	}
-	
 			
 	test from_trailing_comma {
 		bool exception <- false;

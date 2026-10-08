@@ -37,6 +37,8 @@ import gama.annotations.example;
 import gama.annotations.no_test;
 import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
@@ -107,6 +109,9 @@ public class SpatialOperators {
 					value = "square(10) inter circle(5)",
 					equals = "circle(5)") },
 			see = { "union", "+", "-" })
+	@tests ({
+			@test ("{10,10} inter geometry(nil) = nil")
+	})
 	public static IShape inter(final IScope scope, final IShape g1, final IShape g2) {
 		if (g2 == null || g1 == null) return null;
 		if (g2.isPoint() && g1.covers(g2.getLocation())) return g2.copy(scope);
@@ -143,6 +148,9 @@ public class SpatialOperators {
 							equals = "a geometry corresponding to union between geom1 and geom2",
 							isExecutable = false)))
 	@no_test // test already done in Spatial tests Models
+	@tests ({
+			@test ("{10,10} union geometry(nil) = {10,10}")
+	})
 	public static IShape union(final IScope scope, final IShape g1, final IShape g2) {
 		if (g1 == null) {
 			if (g2 == null) return null;
@@ -183,6 +191,9 @@ public class SpatialOperators {
 					equals = "a geometry corresponding to union between geom1, geom2 and geom3",
 					isExecutable = false) })
 	@no_test // test already done in Spatial tests Models
+	@tests ({
+			@test ("union([line([{0,10},{20,10}]) , line([{20,10},{30,10}])]).perimeter = 30.0")
+	})
 	public static IShape union(final IScope scope, final IContainer<?, IShape> elements) {
 		try {
 			return GamaShapeFactory.castToShape(scope, elements, false);
@@ -214,6 +225,9 @@ public class SpatialOperators {
 							equals = "a geometry corresponding to difference between geom1 and geom2",
 							isExecutable = false)))
 	@no_test // test already done in Spatial tests Models
+	@tests ({
+			@test ("geometry({10,10}) - geometry(nil) = {10,10}")
+	})
 	public static IShape minus(final IScope scope, final IShape g1, final IShape g2) {
 		if (g1 == null || g2 == null || g1.getInnerGeometry() == null || g2.getInnerGeometry() == null) return g1;
 		final Geometry res = difference(g1.getInnerGeometry(), g2.getInnerGeometry());
@@ -334,6 +348,16 @@ public class SpatialOperators {
 					value = "polygon([{10,10},{10,20},{20,20}]) add_point {20,10}",
 					returnType = "geometry",
 					equals = "polygon([{10,10},{10,20},{20,20},{20,10}])") })
+	@tests ({
+			@test ("(geometry(nil) add_point {20,20}) = nil"),
+			@test ("({10,10} add_point point(nil)) = {10,10}"),
+			@test ("({10,10} add_point {20,20}) = line([{10,10},{20,20}])"),
+			@test ("(line([{10,10},{20,20}]) add_point {30,30}) = line([{10,10},{20,20},{30,30}])"),
+			@test ("(line([{10,10},{20,20},{30,30}]) add_point {0,0}) = line([{0,0},{10,10},{20,20},{30,30}])"),
+			@test ("(line([{10,10},{20,20},{30,30}]) add_point {25,22}) = line([{10,10},{20,20},{25,22},{30,30}])"),
+			@test ("((square(10) at_location {50,50}) add_point {50,35}) = polygon([{45,55}, {55,55}, {55,45}, {50,35},{45,45}])"),
+			@test ("((square(10) at_location {50,50}) add_point {50,50}) = polygon([{45,55}, {50,50}, {55,55},{55,45},{45,45}])")
+	})
 	public static IShape add_point(final IScope scope, final IShape g, final IPoint p) {
 		if (p == null || g == null) return g;
 		final Coordinate point = p.toCoordinate();
@@ -695,6 +719,9 @@ public class SpatialOperators {
 			examples = { @example (
 					value = "polyline([{1,2},{4,6}]) split_at {7,6}",
 					equals = "[polyline([{1.0,2.0},{7.0,6.0}]), polyline([{7.0,6.0},{4.0,6.0}])]") })
+	@tests ({
+			@test ("(line([{0,0},{100,0}]) split_at {50,0}) = [line([{0,0},{50,0}]), line([{50,0},{100,0}])]")
+	})
 	public static IList<IShape> split_at(final IShape geom, final IPoint pt) {
 		final IList<IShape> lines = GamaListFactory.create(Types.GEOMETRY);
 		List<Geometry> geoms = null;

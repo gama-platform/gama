@@ -159,7 +159,8 @@ public class System {
 			@test ("!is_error(1.0 = 1)"),
 			@test ("is_error(1/0)"),
 			@test ("!is_error(1/1)"),
-			@test ("is_error(10 / 0)")
+			@test ("is_error(10 / 0)"),
+			@test ("is_error(date(\"not a date\"))")
 	})
 	public static Boolean is_error(final IScope scope, final IExpression expr) {
 		try {

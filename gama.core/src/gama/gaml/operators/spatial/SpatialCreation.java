@@ -21,6 +21,7 @@ import gama.annotations.no_test;
 import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
 import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
@@ -113,6 +114,13 @@ public class SpatialCreation {
 			see = { "around", "cone", "line", "link", "norm", "point", "polygon", "polyline", "rectangle", "square",
 					"triangle" })
 	@no_test // (comment="See Creation.experiment in test models : {Circle tests with tolerance}")
+	@tests ({
+			@test ("circle(0).area = 0.0"),
+			// circles are polygons approximating the disc from the inside
+			@test ("circle(10).area > 310.0 and circle(10).area < #pi * 100"),
+			@test ("circle(10).perimeter > 62.0 and circle(10).perimeter < 2 * #pi * 10"),
+			@test ("circle(10).width = 20.0")
+	})
 	public static IShape circle(final IScope scope, final Double radius) {
 		IPoint location;
 		final IAgent a = scope.getAgent();
@@ -202,6 +210,10 @@ public class SpatialCreation {
 			see = { "around", "cone", "line", "link", "norm", "point", "polygon", "polyline", "rectangle", "square",
 					"circle", "squircle", "triangle" })
 	@no_test // (comment="See Creation.experiment in test models : {Ellipse tests}")
+	@tests ({
+			@test ("ellipse(4, 2).width = 4.0"),
+			@test ("ellipse(4, 2).height = 2.0")
+	})
 	public static IShape ellipse(final IScope scope, final Double xRadius, final Double yRadius) {
 		IPoint location;
 		final IAgent a = scope.getAgent();
@@ -588,6 +600,9 @@ public class SpatialCreation {
 			see = { "around", "cone", "line", "link", "norm", "point", "polygon", "polyline", "rectangle", "square",
 					"triangle" })
 	@no_test // (comment="Dummy init in test models > Creation.experiment")
+	@tests ({
+			@test ("sphere(1).volume > 4.18 and sphere(1).volume < 4.19")
+	})
 	public static IShape sphere(final IScope scope, final Double radius) {
 		IPoint location;
 		final IAgent a = scope.getAgent();
@@ -823,7 +838,16 @@ public class SpatialCreation {
 							returnType = "float") },
 			see = { "around", "circle", "cone", "line", "link", "norm", "point", "polygon", "polyline", "rectangle",
 					"triangle" })
-	@test ("square(10).area = 100")
+	@tests ({
+			@test ("square(10).area = 100"),
+			@test ("geometry negative_buf <- square(10) - 2.0; negative_buf.area < 100.0"),
+			@test ("square(0).area = 0.0"),
+			@test ("square(10) inter nil = nil"),
+			@test ("(square(10) union nil).area = 100.0"),
+			@test ("square(3).perimeter = 12.0"),
+			@test ("(square(10) - {10,10}).area = 100.0"),
+			@test ("((square(10) at_location {0,0}) - (square(10) at_location {5,0})) = polygon ([{-5,5},{0,5},{0,-5},{-5,-5}])")
+	})
 	public static IShape square(final IScope scope, final Double side_size) {
 		IPoint location;
 		final IAgent a = scope.getAgent();
@@ -866,7 +890,10 @@ public class SpatialCreation {
 					test = false) },
 			see = { "around", "circle", "cone", "line", "link", "norm", "point", "polygon", "polyline", "rectangle",
 					"triangle" })
-	@test ("cube(10).volume = 1000")
+	@tests ({
+			@test ("cube(10).volume = 1000"),
+			@test ("cube(2).volume = 8.0")
+	})
 	public static IShape cube(final IScope scope, final Double side_size) {
 		IPoint location;
 		final IAgent a = scope.getAgent();
@@ -954,7 +981,15 @@ public class SpatialCreation {
 					test = false) },
 			see = { "around", "circle", "cone", "line", "link", "norm", "point", "polygon", "polyline", "square",
 					"triangle" })
-	@test ("rectangle(10, 5).area = 50.0")
+	@tests ({
+			@test ("rectangle(10, 5).area = 50.0"),
+			@test ("geometry rect <- rectangle(10, 5); rect.area = 50.0"),
+			@test ("rectangle(-3, -3).area = square(-3).area"),
+			@test ("rectangle(-2, 3).area = rectangle(2, -3).area"),
+			@test ("rectangle(0, 0).area = 0.0"),
+			@test ("geometry bar <- rectangle(10, 2) at_location {5, 5}; bar.width = 10.0"),
+			@test ("geometry bar2 <- rectangle(10, 2) at_location {5, 5}; bar2.height = 2.0")
+	})
 	public static IShape rectangle(final IScope scope, final double x, final double y) {
 		IPoint location;
 		final IAgent a = scope.getAgent();
@@ -1091,7 +1126,10 @@ public class SpatialCreation {
 					test = false) },
 			see = { "around", "circle", "sphere", "cone", "line", "link", "norm", "point", "polygon", "polyline",
 					"square", "cube", "triangle" })
-	@test ("box(10,5,5).volume = 250")
+	@tests ({
+			@test ("box(10,5,5).volume = 250"),
+			@test ("box(2, 3, 4).volume = 24.0")
+	})
 	public static IShape box(final IScope scope, final double x, final double y, final double z) {
 		IPoint location;
 		final IAgent a = scope.getAgent();
@@ -1133,6 +1171,10 @@ public class SpatialCreation {
 			see = { "around", "circle", "cone", "line", "link", "norm", "point", "polygon", "polyline", "rectangle",
 					"square" })
 	@no_test
+	@tests ({
+			@test ("geometry tri <- triangle(10); tri.area > 0"),
+			@test ("triangle(10).area > 43.3 and triangle(10).area < 43.31")
+	})
 	public static IShape triangle(final IScope scope, final Double side_size) {
 		IPoint location;
 		final IAgent a = scope.getAgent();
@@ -1222,6 +1264,9 @@ public class SpatialCreation {
 			see = { "around", "circle", "cone", "line", "link", "norm", "point", "polygon", "polyline", "rectangle",
 					"square" })
 	@no_test
+	@tests ({
+			@test ("pyramid(2).volume > 2.66 and pyramid(2).volume < 2.67")
+	})
 	public static IShape pyramid(final IScope scope, final Double side_size) {
 		IPoint location;
 		final IAgent a = scope.getAgent();
@@ -1265,6 +1310,10 @@ public class SpatialCreation {
 			see = { "around", "circle", "cone", "line", "link", "norm", "point", "polygon", "polyline", "rectangle",
 					"triangle" })
 	@no_test
+	@tests ({
+			@test ("length(hexagon(10).points) = 7"),
+			@test ("hexagon(10).width = 10.0")
+	})
 	public static IShape hexagon(final IScope scope, final Double size) {
 		IPoint location;
 		final IAgent a = scope.getAgent();
@@ -1408,6 +1457,11 @@ public class SpatialCreation {
 			see = { "around", "circle", "cone", "line", "link", "norm", "point", "polyline", "rectangle", "square",
 					"triangle" })
 	@no_test
+	@tests ({
+			// the self-intersecting ring has no usable area, the cleaned geometry does
+			@test ("geometry bowtie <- polygon([{0, 0}, {10, 10}, {0, 10}, {10, 0}]); bowtie.area = 0.0"),
+			@test ("geometry p1 <- polygon([{0,0}, {10,10}, {0, 10}]); p1.area = 50.0")
+	})
 	public static IShape polygon(final IScope scope, final IContainer<?, ? extends IShape> points) {
 		if (points == null || points.isEmpty(scope)) return GamaShapeFactory.createFrom(GamaPointFactory.create(0, 0));
 		// final IList<IShape> shapes = points.listValue(scope); Now
@@ -2189,7 +2243,21 @@ public class SpatialCreation {
 							returnType = "string"), },
 			see = { "around", "circle", "cone", "link", "norm", "point", "polygone", "rectangle", "square",
 					"triangle" })
-	@test ("points_along(line({0,0},{0,10}),[0.5])[0] = point({0,5})")
+	@tests ({
+			@test ("points_along(line({0,0},{0,10}),[0.5])[0] = point({0,5})"),
+			@test ("geometry l1 <- line([{0,0}, {10,10}]); l1 != nil"),
+			// sqrt(200) = 14.14
+			@test ("geometry l12 <- line([{0,0}, {10,10}]); l12.perimeter > 14.0"),
+			@test ("list<point> clamped <- points_along(line([{0, 0}, {10, 0}]), [2.0, -1.0]); clamped = [{10, 0}, {0, 0}]"),
+			@test ("geometry segment <- line([{0, 5}, {20, 5}]); segment.perimeter = 20.0"),
+			@test ("geometry segment2 <- line([{0, 5}, {20, 5}]); segment2.area = 0.0"),
+			@test ("polyline([{0, 0}, {3, 4}]).perimeter = 5.0"),
+			@test ("geometry segment3 <- line([{0, 5}, {20, 5}]); points_along(segment3, [0.0, 0.5, 1.0]) = [{0, 5}, {10, 5}, {20, 5}]"),
+			@test ("geometry segment4 <- line([{0, 5}, {20, 5}]); points_on(segment4, 5.0) = [{0, 5}, {5, 5}, {10, 5}, {15, 5}, {20, 5}]"),
+			// two crossing lines are split at their intersection
+			@test ("geometry segment5 <- line([{0, 5}, {20, 5}]); length(split_lines([segment5, line([{10, 0}, {10, 10}])])) = 4"),
+			@test ("length((line([{0,10},{20,10}]) - line([{10,0},{10,25}])).geometries) = 2")
+	})
 	public static IShape line(final IScope scope, final IContainer<?, IShape> points) {
 		if (points == null || points.isEmpty(scope)) return GamaShapeFactory.createFrom(GamaPointFactory.create(0, 0));
 		final IList<IShape> shapes = points.listValue(scope, Types.NO_TYPE, false);

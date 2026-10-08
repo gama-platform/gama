@@ -15,6 +15,7 @@ import gama.annotations.no_test;
 import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
 import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
@@ -252,9 +253,13 @@ public class Random {
 					test = false) },
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "rnd", "skew_gauss",
 					"weibull_rnd", "gamma_trunc_rnd", "weibull_trunc_rnd", "lognormal_trunc_rnd" })
-	@test ("seed <- 1.0; TGauss({0,0.3}) = 0.10073201959421514")
-	@test ("seed <- 1.0; TGauss({0,0.3}) >= -0.3")
-	@test ("seed <- 1.0; TGauss({0,0.3}) <= 0.3")
+	@tests ({
+			@test ("seed <- 1.0; TGauss({0,0.3}) = 0.10073201959421514"),
+			@test ("seed <- 1.0; TGauss({0,0.3}) >= -0.3"),
+			@test ("seed <- 1.0; TGauss({0,0.3}) <= 0.3"),
+			@test ("float trunc_gauss <- truncated_gauss(5.0, 2.0, 0.0, 10.0); trunc_gauss >= 0.0 and trunc_gauss <= 10.0"),
+			@test ("float gaussian <- truncated_gauss(0, 1, 5, -5); gaussian >= -5 and gaussian <= 5")
+	})
 	public static Double opTGauss(final IScope scope, final IPoint p) {
 		return opTGauss(scope, GamaListFactory.wrap(Types.FLOAT, p.getX(), p.getY()));
 	}
@@ -284,7 +289,11 @@ public class Random {
 					equals = "0.5") },
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "rnd", "skew_gauss",
 					"weibull_rnd", "gamma_trunc_rnd", "weibull_trunc_rnd", "lognormal_trunc_rnd" })
-	@test ("seed <- 1.0; truncated_gauss ([0.5, 0.2]) = 0.5671546797294768")
+	@tests ({
+			@test ("seed <- 1.0; truncated_gauss ([0.5, 0.2]) = 0.5671546797294768"),
+			@test ("float tgauss <- truncated_gauss([0.0, 1.0]); tgauss >= -1.0"),
+			@test ("float tgauss2 <- truncated_gauss([0.0, 1.0]); tgauss2 <= 1.0")
+	})
 	public static Double opTGauss(final IScope scope, final IList list) {
 		if (list.size() < 2) return 0d;
 		final double mean = Cast.asFloat(scope, list.get(0));
@@ -369,7 +378,15 @@ public class Random {
 					test = false) },
 			see = { "binomial", "gamma_rnd", "lognormal_rnd", "poisson", "rnd", "skew_gauss", "truncated_gauss",
 					"weibull_rnd" })
-	@test ("seed <- 1.0; gauss(0.5, 0.2) = 0.6343093594589535")
+	@tests ({
+			@test ("seed <- 1.0; gauss(0.5, 0.2) = 0.6343093594589535"),
+			@test ("float gauss_val <- gauss(0.0, 1.0); is_number(gauss_val)"),
+			@test ("float gauss_val2 <- gauss(0.0, 1.0); is_finite(gauss_val2)"),
+			// a null standard deviation always yields the mean
+			@test ("gauss(5.0, 0.0) = 5.0"),
+			@test ("float g2 <- gauss(0.0, 1.0); is_number(g2)"),
+			@test ("float g22 <- gauss(0.0, 1.0); is_finite(g22)")
+	})
 	public static Double opGauss(final IScope scope, final double mean, final double sd) {
 		return RANDOM(scope).createGaussian(mean, sd);
 	}
@@ -437,8 +454,12 @@ public class Random {
 					test = false) },
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "rnd", "skew_gauss", "truncated_gauss",
 					"weibull_rnd" })
-	@test ("seed <- 1.0; poisson(3.5) = 6")
-	@test ("seed <- 1.0; poisson(0.0) = 0")
+	@tests ({
+			@test ("seed <- 1.0; poisson(3.5) = 6"),
+			@test ("seed <- 1.0; poisson(0.0) = 0"),
+			// Poisson is always >= 0
+			@test ("float poisson_val <- poisson(5.0); poisson_val >= 0")
+	})
 	public static Integer opPoisson(final IScope scope, final Double mean) {
 		if (mean == null || mean <= 0.0) return 0;
 		IRandom ru = RANDOM(scope);
@@ -477,14 +498,18 @@ public class Random {
 					test = false) },
 			see = { "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "rnd", "skew_gauss", "truncated_gauss",
 					"weibull_rnd" })
-	@test ("seed <- 1.0; binomial(15,0.6) = 9")
-	@test ("binomial(15,0) = 0")
-	@test ("binomial(15,1) = 15")
-	@test ("binomial(0,1) = 0")
-	@test ("binomial(0,0.9) = 0")
-	@test ("seed <- 1.0; binomial(0, 0.5) = 0")
-	@test ("seed <- 1.0; binomial(10, 0.0) = 0")
-	@test ("seed <- 1.0; binomial(10, 1.0) = 10")
+	@tests ({
+			@test ("seed <- 1.0; binomial(15,0.6) = 9"),
+			@test ("binomial(15,0) = 0"),
+			@test ("binomial(15,1) = 15"),
+			@test ("binomial(0,1) = 0"),
+			@test ("binomial(0,0.9) = 0"),
+			@test ("seed <- 1.0; binomial(0, 0.5) = 0"),
+			@test ("seed <- 1.0; binomial(10, 0.0) = 0"),
+			@test ("seed <- 1.0; binomial(10, 1.0) = 10"),
+			@test ("int binom_val <- binomial(10, 0.5); binom_val >= 0"),
+			@test ("int binom_val2 <- binomial(10, 0.5); binom_val2 <= 10")
+	})
 	public static Integer opBinomial(final IScope scope, final Integer n, final Double p) {
 		double value = p;
 
@@ -557,9 +582,14 @@ public class Random {
 					equals = "[14,12,13] (for example)",
 					test = false) },
 			see = { "reverse" })
-	@test ("seed <- 1.0; shuffle ([12, 13, 14]) = [12,13,14]")
-	@test ("shuffle([]) = []")
-	@test ("length(shuffle([1,2,3])) = 3")
+	@tests ({
+			@test ("seed <- 1.0; shuffle ([12, 13, 14]) = [12,13,14]"),
+			@test ("shuffle([]) = []"),
+			@test ("length(shuffle([1,2,3])) = 3"),
+			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; length(shuffle(numbers)) = length(numbers)"),
+			@test ("list<int> l1 <- [1, 2, 3, 4, 5]; list<int> shuffled <- shuffle(l1); length(shuffled) = length(l1)"),
+			@test ("list<int> l12 <- [1, 2, 3, 4, 5]; list<int> shuffled2 <- shuffle(l12); shuffled2 contains_all l12 = true")
+	})
 	public static IList opShuffle(final IScope scope, final IContainer target) {
 		if (target == null || target.isEmpty(scope))
 			return GamaListFactory.create(target == null ? Types.NO_TYPE : target.getGamlType().getContentType());
@@ -658,9 +688,15 @@ public class Random {
 					test = false) },
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "skew_gauss", "truncated_gauss",
 					"weibull_rnd" })
-	@test ("seed <- 1.0; rnd(10) = 8")
-	@test ("seed <- 1.0; rnd(0) = 0")
-	@test ("seed <- 42.0; int r1 <- rnd(100); seed <- 42.0; int r2 <- rnd(100); r1 = r2")
+	@tests ({
+			@test ("seed <- 1.0; rnd(10) = 8"),
+			@test ("seed <- 1.0; rnd(0) = 0"),
+			@test ("seed <- 42.0; int r1 <- rnd(100); seed <- 42.0; int r2 <- rnd(100); r1 = r2"),
+			@test ("int first_rnd <- rnd(100); int third_rnd <- rnd(100); first_rnd = third_rnd"),
+			@test ("int second_rnd <- rnd(100); int fourth_rnd <- rnd(100); second_rnd = fourth_rnd"),
+			@test ("int drawn <- rnd(-5); drawn >= -5 and drawn <= 0"),
+			@test ("rnd(0) = 0")
+	})
 	public static Integer opRnd(final IScope scope, final Integer max) {
 		return opRnd(scope, 0, max);
 	}
@@ -689,7 +725,10 @@ public class Random {
 					test = false) },
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "skew_gauss", "truncated_gauss",
 					"weibull_rnd" })
-	@test ("seed <- 1.0; rnd(1,5) = 4")
+	@tests ({
+			@test ("seed <- 1.0; rnd(1,5) = 4"),
+			@test ("int drawn <- rnd(5, 1); drawn >= 1 and drawn <= 5")
+	})
 	public static Integer opRnd(final IScope scope, final Integer min, final Integer max) {
 		final IRandom r = RANDOM(scope);
 		return r.between(min, max);
@@ -902,8 +941,11 @@ public class Random {
 					test = false) },
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "skew_gauss", "truncated_gauss",
 					"weibull_rnd" })
-	@test (" seed <- 1.0; rnd(100) = 78")
-	@test ("seed <- 1.0; rnd(0.0) = 0.0")
+	@tests ({
+			@test (" seed <- 1.0; rnd(100) = 78"),
+			@test ("seed <- 1.0; rnd(0.0) = 0.0"),
+			@test ("float drawn_float <- rnd(-5.0); drawn_float >= -5.0 and drawn_float <= 0.0")
+	})
 	public static Double opRnd(final IScope scope, final Double max) {
 		return opRnd(scope, 0.0, max);
 	}
@@ -931,9 +973,14 @@ public class Random {
 					equals = "2/3 chances to return true.",
 					test = false) },
 			see = { "rnd" })
-	@test ("flip(0) = false and flip(1) = true")
-	@test ("!flip(0.0)")
-	@test ("flip(1.0)")
+	@tests ({
+			@test ("flip(0) = false and flip(1) = true"),
+			@test ("!flip(0.0)"),
+			@test ("flip(1.0)"),
+			// flip(1.0) is always true, flip(0.0) is always false
+			@test ("flip(1.0) = true"),
+			@test ("flip(0.0) = false")
+	})
 	public static Boolean opFlip(final IScope scope, final Double probability) {
 		return probability > RANDOM(scope).between(0., 1.);
 	}
@@ -987,7 +1034,10 @@ public class Random {
 					equals = "2/10 chances to return \"toto\", 5/10 chances to return \"tata\", 3/10 chances to return \"tonton\"",
 					test = false) },
 			see = { "rnd" })
-	@test ("seed <- 1.0; rnd_choice([\"toto\"::0.2,\"tata\"::0.5,\"tonton\"::0.3]) = \"tonton\"")
+	@tests ({
+			@test ("seed <- 1.0; rnd_choice([\"toto\"::0.2,\"tata\"::0.5,\"tonton\"::0.3]) = \"tonton\""),
+			@test ("map<string, float> choices <- [\"A\"::0.8, \"B\"::0.2]; string result <- rnd_choice(choices); (result = \"A\" or result = \"B\")")
+	})
 	public static <T> T opRndCoice(final IScope scope, final IMap<T, ? extends Number> distribution) {
 		return RANDOM(scope).choiceIn(distribution);
 	}

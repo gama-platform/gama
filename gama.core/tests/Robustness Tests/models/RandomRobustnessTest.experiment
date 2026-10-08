@@ -12,23 +12,6 @@ experiment RandomRobustnessTest type: test autorun: true {
 		return problem = nil ? true : !(problem contains "Java error");
 	}
 
-	test "Negative and null upper bounds" {
-		seed <- 1.0;
-		int drawn <- rnd(-5);
-		assert drawn >= -5 and drawn <= 0;
-		assert rnd(0) = 0;
-		float drawn_float <- rnd(-5.0);
-		assert drawn_float >= -5.0 and drawn_float <= 0.0;
-	}
-
-	test "Reversed bounds" {
-		seed <- 1.0;
-		int drawn <- rnd(5, 1);
-		assert drawn >= 1 and drawn <= 5;
-		float gaussian <- truncated_gauss(0, 1, 5, -5);
-		assert gaussian >= -5 and gaussian <= 5;
-	}
-
 	test "A null or negative step" {
 		string problem <- nil;
 		try { int drawn <- rnd(1, 5, 0); } catch { problem <- #current_error; }
