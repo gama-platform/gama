@@ -23,6 +23,8 @@ import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
 import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.usage;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
@@ -80,6 +82,11 @@ public class MapComparison {
 					@example (
 							value = "kappa([1,1,1,1,5],[1,1,1,1,5],[1,3,5])",
 							equals = "1.0"), })
+	@tests ({
+			// identical classifications agree perfectly
+			@test ("kappa([1, 2, 1, 2], [1, 2, 1, 2], [1, 2]) = 1.0"),
+			@test ("kappa([1, 2, 1, 2], [1, 2, 2, 2], [1, 2]) = 0.5")
+	})
 	public static double kappa(final IScope scope, final IList<Object> vals1, final IList<Object> vals2,
 			final IList<Object> categories) {
 		return kappa(scope, vals1, vals2, categories, null);
@@ -1087,6 +1094,10 @@ public class MapComparison {
 			examples = { @example (
 					value = "percent_absolute_deviation([200,300,150,150,200],[250,250,100,200,200])",
 					equals = "20.0") })
+	@tests ({
+			@test ("percent_absolute_deviation([200.0, 300.0], [200.0, 300.0]) = 0.0"),
+			@test ("percent_absolute_deviation([200.0, 300.0], [190.0, 330.0]) = 8.0")
+	})
 	public static double percentAbsoluteDeviation(final IScope scope, final IList<Double> vals1,
 			final IList<Double> vals2) {
 		if (vals1 == null || vals2 == null) return 1;

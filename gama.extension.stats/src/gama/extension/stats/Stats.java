@@ -388,6 +388,9 @@ public class Stats {
 					@example (
 							value = "auto_correlation([1,0,1,0,1,0],1)",
 							equals = "-1") })
+	@tests ({
+			@test ("list<float> series <- [1.0, 2.0, 3.0, 4.0, 5.0]; auto_correlation(series, 1) = 0.5")
+	})
 	public static Double opAutoCorrelation(final IScope scope, final IContainer data, final Integer lag) {
 
 		// TODO input parameters validation
@@ -450,6 +453,11 @@ public class Stats {
 					value = "binomial_coeff(10,2)",
 					equals = "45") })
 
+	@tests ({
+			@test ("binomial_coeff(5, 2) = 10.0"),
+			@test ("binomial_coeff(5, 0) = 1.0"),
+			@test ("binomial_coeff(5, 5) = 1.0")
+	})
 	public static Double opBinomialCoeff(final IScope scope, final Integer n, final Integer k) {
 
 		// Returns "n choose k" as a double. Note the "integerization" of
@@ -484,6 +492,9 @@ public class Stats {
 					value = "binomial_complemented(10,5,0.5) with_precision(2)",
 					equals = "0.38") })
 
+	@tests ({
+			@test ("binomial_complemented(10, 5, 0.5) with_precision 2 = 0.38")
+	})
 	public static Double opBinomialComplemented(final IScope scope, final Integer n, final Integer k, final Double p) {
 
 		// Returns the sum of the terms k+1 through n of the Binomial
@@ -519,6 +530,12 @@ public class Stats {
 					value = "binomial_sum(5,10,0.5) with_precision(2)",
 					equals = "0.62") })
 
+	@tests ({
+			// the probability of at most 2 successes out of 5 fair trials
+			@test ("binomial_sum(2, 5, 0.5) = 0.5"),
+			@test ("pbinom(2, 5, 0.5) = binomial_sum(2, 5, 0.5)"),
+			@test ("binomial_sum(5, 5, 0.5) = 1.0")
+	})
 	public static Double opBinomialSum(final IScope scope, final Integer k, final Integer n, final Double p) {
 
 		// Returns the sum of the terms 0 through k of the Binomial
@@ -556,6 +573,12 @@ public class Stats {
 
 	)
 
+	@tests ({
+			@test ("chi_square(3.0, 2) with_precision 6 = 0.77687"),
+			@test ("pchisq(3.0, 2) = chi_square(3.0, 2)"),
+			// the complement is the upper tail
+			@test ("chi_square(3.0, 2) + chi_square_complemented(3.0, 2) = 1.0")
+	})
 	public static Double opChiSquare(final IScope scope, final Double x, final Double df) {
 
 		// Returns the area under the left hand tail (from 0 to x) of the
@@ -631,6 +654,18 @@ public class Stats {
 					@example (
 							value = "correlation([13,2,1,4,1,2], [1,2,1,3,1,2]) with_precision(2)",
 							equals = "-0.21") })
+	@tests ({
+			// the sign of the correlation tells whether the series vary together
+			@test ("list<float> series <- [1.0, 2.0, 3.0, 4.0, 5.0]; list<float> doubled <- [2.0, 4.0, 6.0, 8.0, 10.0]; correlation(series, doubled) > 0"),
+			@test ("list<float> series2 <- [1.0, 2.0, 3.0, 4.0, 5.0]; list<float> doubled2 <- [2.0, 4.0, 6.0, 8.0, 10.0]; correlation(series2, reverse(doubled2)) < 0"),
+			@test ("list<float> series3 <- [1.0, 2.0, 3.0, 4.0, 5.0]; list<float> doubled3 <- [2.0, 4.0, 6.0, 8.0, 10.0]; correlation(series3, doubled3) = -correlation(series3, reverse(doubled3))"),
+			// a Pearson correlation lies in [-1, 1]
+			@test ("list<float> series4 <- [1.0, 2.0, 3.0, 4.0, 5.0]; list<float> doubled4 <- [2.0, 4.0, 6.0, 8.0, 10.0]; correlation(series4, doubled4) = 1.0"),
+			@test ("list<float> series5 <- [1.0, 2.0, 3.0, 4.0, 5.0]; list<float> doubled5 <- [2.0, 4.0, 6.0, 8.0, 10.0]; correlation(series5, reverse(doubled5)) = -1.0"),
+			// the examples of the documentation
+			@test ("correlation([1, 2, 1, 3, 1, 2], [1, 2, 1, 3, 1, 2]) = 1.0"),
+			@test ("correlation([13, 2, 1, 4, 1, 2], [1, 2, 1, 3, 1, 2]) with_precision 2 = -0.21")
+	})
 	public static Double opCorrelation(final IScope scope, final IContainer data1, final IContainer data2) {
 		if ((data1.length(scope) != data2.length(scope)) || (data1.length(scope) == 0)) return 0.0;
 		final double standardDev1 = Stats.opStandardDeviation(scope, data1);
@@ -767,6 +802,12 @@ public class Stats {
 			examples = { @example (
 					value = "covariance([13,2,1,4,1,2], [1,2,1,3,1,2]) with_precision(2)",
 					equals = "-0.67") })
+	@tests ({
+			@test ("list<float> series <- [1.0, 2.0, 3.0, 4.0, 5.0]; list<float> doubled <- [2.0, 4.0, 6.0, 8.0, 10.0]; covariance(series, doubled) = 5.0"),
+			@test ("list<float> series2 <- [1.0, 2.0, 3.0, 4.0, 5.0]; list<float> doubled2 <- [2.0, 4.0, 6.0, 8.0, 10.0]; covariance(series2, reverse(doubled2)) = -5.0"),
+			@test ("list<float> series3 <- [1.0, 2.0, 3.0, 4.0, 5.0]; covariance(series3, [3.0, 3.0, 3.0, 3.0, 3.0]) = 0.0"),
+			@test ("list<float> data1 <- [1.0, 2.0, 3.0, 4.0, 5.0]; list<float> data2 <- [2.0, 4.0, 6.0, 8.0, 10.0]; float cov <- covariance(data1, data2); cov > 0.0")
+	})
 	public static Double opCovariance(final IScope scope, final IContainer data1, final IContainer data2) {
 
 		// TODO input parameters validation
@@ -808,6 +849,13 @@ public class Stats {
 			examples = { @example (
 					value = "dbscan ([[2,4,5], [3,8,2], [1,1,3], [4,3,4]],10,2)",
 					equals = "[[0,1,2,3]]") })
+	@tests ({
+			@test ("list<list<float>> instances <- [[1.0, 1.0], [1.1, 1.0], [10.0, 10.0], [10.1, 10.0]]; list<list<int>> by_dbscan <- dbscan(instances, 1.0, 1); length(by_dbscan) = 2"),
+			@test ("list<list<float>> instances2 <- [[1.0, 1.0], [1.1, 1.0], [10.0, 10.0], [10.1, 10.0]]; list<list<int>> by_dbscan2 <- dbscan(instances2, 1.0, 1); by_dbscan2 contains [0, 1]"),
+			@test ("list<list<float>> instances3 <- [[1.0, 1.0], [1.1, 1.0], [10.0, 10.0], [10.1, 10.0]]; list<list<int>> by_dbscan3 <- dbscan(instances3, 1.0, 1); by_dbscan3 contains [2, 3]"),
+			// with a wide enough neighbourhood, everything is in the same cluster
+			@test ("list<list<float>> instances4 <- [[1.0, 1.0], [1.1, 1.0], [10.0, 10.0], [10.1, 10.0]]; length(dbscan(instances4, 100.0, 1)) = 1")
+	})
 	public static IList<IList> opDBScan(final IScope scope, final IList data, final Double eps, final Integer minPts)
 			throws GamaRuntimeException {
 		final IList<Integer> remainingData = GamaListFactory.create(Types.INT);
@@ -861,6 +909,9 @@ public class Stats {
 			examples = { @example (
 					value = "durbin_watson([13,2,1,4,1,2]) with_precision(4)",
 					equals = "0.7231") })
+	@tests ({
+			@test ("list<float> series <- [1.0, 2.0, 3.0, 4.0, 5.0]; durbin_watson(series) > 0.07 and durbin_watson(series) < 0.08")
+	})
 	public static Double opDurbinWatson(final IScope scope, final IContainer data) {
 
 		// TODO input parameters validation
@@ -892,6 +943,12 @@ public class Stats {
 			examples = { @example (
 					value = "dtw([32.0,5.0,1.0,3.0],[1.0,10.0,5.0,1.0])",
 					equals = "38.0") })
+	@tests ({
+			// dynamic time warping: a distance between two series
+			@test ("list<float> series <- [1.0, 2.0, 3.0, 4.0, 5.0]; dtw(series, series) = 0.0"),
+			@test ("list<float> series2 <- [1.0, 2.0, 3.0, 4.0, 5.0]; list<float> doubled <- [2.0, 4.0, 6.0, 8.0, 10.0]; dtw(series2, doubled) = 11.0"),
+			@test ("list<float> series3 <- [1.0, 2.0, 3.0, 4.0, 5.0]; list<float> doubled2 <- [2.0, 4.0, 6.0, 8.0, 10.0]; dtw(doubled2, series3) = dtw(series3, doubled2)")
+	})
 	public static Double opDynamicTimeWarping(final IScope scope, final IList vals1, final IList vals2)
 			throws GamaRuntimeException {
 		final int n1 = vals1.size();
@@ -1021,6 +1078,13 @@ public class Stats {
 					value = "[1, 2, 3, 3, 4, 4, 5, 3, 3, 4] frequency_of each",
 					equals = "map([1::1,2::1,3::4,4::3,5::1])") })
 
+	@tests ({
+			@test ("list<float> series <- [1.0, 2.0, 3.0, 4.0, 5.0]; map<bool, int> above_two <- frequency_of(series, each > 2); above_two[true] = 3"),
+			@test ("list<float> series2 <- [1.0, 2.0, 3.0, 4.0, 5.0]; map<bool, int> above_two2 <- frequency_of(series2, each > 2); above_two2[false] = 2"),
+			@test ("map<int, int> occurrences <- [1, 1, 2, 3] frequency_of each; occurrences[1] = 2"),
+			@test ("map<int, int> occurrences2 <- [1, 1, 2, 3] frequency_of each; occurrences2[2] = 1"),
+			@test ("map<int, int> occurrences3 <- [1, 1, 2, 3] frequency_of each; occurrences3[3] = 1")
+	})
 	public static IMap opFrequencyOf(final IScope scope, final String eachName, final IContainer original,
 			final IExpression filter) throws GamaRuntimeException {
 		if (original == null) return GamaMapFactory.create(Types.NO_TYPE, Types.INT);
@@ -1058,6 +1122,12 @@ public class Stats {
 					equals = "24.0") }
 
 	)
+	@tests ({
+			// gamma(n) is the factorial of n - 1
+			@test ("gamma(5.0) = 24.0"),
+			@test ("gamma(1.0) = 1.0"),
+			@test ("gamma(0.5) = sqrt(#pi)")
+	})
 	public static Double opGamma(final IScope scope, final Double x) {
 
 		// Returns the value of the Gamma function at x.
@@ -1094,6 +1164,11 @@ public class Stats {
 					value = "gamma_distribution(2,3,0.9) with_precision(3)",
 					equals = "0.269") })
 
+	@tests ({
+			@test ("gamma_distribution(1.0, 1.0, 1.0) = incomplete_gamma(1.0, 1.0)"),
+			@test ("pgamma(1.0, 1.0, 1.0) = gamma_distribution(1.0, 1.0, 1.0)"),
+			@test ("gamma_distribution(1.0, 1.0, 1.0) + gamma_distribution_complemented(1.0, 1.0, 1.0) = 1.0")
+	})
 	public static Double opGamma(final IScope scope, final Double a, final Double b, final Double x) {
 
 		// Returns the integral from zero to x of the gamma probability
@@ -1284,6 +1359,11 @@ public class Stats {
 					value = "geometric_mean ([4.5, 3.5, 5.5, 7.0])",
 					equals = "4.962326343467649") },
 			see = { "mean", "median", "harmonic_mean" })
+	@tests ({
+			@test ("geometric_mean([1.0, 4.0, 16.0]) = 4.0"),
+			// 5th root of 120 is ~2.6
+			@test ("list<float> data1 <- [1.0, 2.0, 3.0, 4.0, 5.0]; float geo <- geometric_mean(data1); geo > 2.0")
+	})
 	public static Double opGeometricMean(final IScope scope, final IContainer values) {
 		final DataSet d = toDataSet(scope, values);
 		return d.getGeometricMean();
@@ -1310,7 +1390,14 @@ public class Stats {
 							equals = "the gini index computed i.e. 0.2857143",
 							test = false) }) })
 
-	@test ("(gini([1.0, 0.5, 2.0]) with_precision 4) = 0.2857")
+	@tests ({
+			@test ("(gini([1.0, 0.5, 2.0]) with_precision 4) = 0.2857"),
+			// everyone has the same share
+			@test ("gini([1.0, 1.0, 1.0]) = 0.0"),
+			// one has everything
+			@test ("gini([0.0, 0.0, 10.0]) with_precision 4 = 0.6667"),
+			@test ("gini([1.0, 2.0, 3.0]) > 0.0 and gini([1.0, 2.0, 3.0]) < gini([0.0, 0.0, 10.0])")
+	})
 
 	public static double opGini(final IScope scope, final IList<Double> vals) {
 		final int N = vals.size();
@@ -1353,6 +1440,10 @@ public class Stats {
 					value = "harmonic_mean ([4.5, 3.5, 5.5, 7.0])",
 					equals = "4.804159445407279") },
 			see = { "mean", "median", "geometric_mean" })
+	@tests ({
+			@test ("harmonic_mean([1.0, 1.0, 1.0]) = 1.0"),
+			@test ("list<float> data1 <- [1.0, 2.0, 3.0, 4.0, 5.0]; float harm <- harmonic_mean(data1); harm > 1.0")
+	})
 	public static Double opHarmonicMean(final IScope scope, final IContainer values) {
 		final DataSet d = toDataSet(scope, values);
 		return d.getHarmonicMean();
@@ -1380,6 +1471,9 @@ public class Stats {
 					value = "incomplete_beta(2,3,0.9) with_precision(3)",
 					equals = "0.996") })
 
+	@tests ({
+			@test ("incomplete_beta(1.0, 1.0, 0.5) = 0.5")
+	})
 	public static Double opIncompleteBeta(final IScope scope, final Double a, final Double b, final Double x) {
 
 		// Returns the regularized integral of the beta function with
@@ -1415,6 +1509,10 @@ public class Stats {
 
 			})
 
+	@tests ({
+			@test ("incomplete_gamma(1.0, 1.0) with_precision 6 = 0.632121"),
+			@test ("incomplete_gamma(1.0, 1.0) + incomplete_gamma_complement(1.0, 1.0) = 1.0")
+	})
 	public static Double opIncompleteGamma(final IScope scope, final Double a, final Double x) {
 
 		// Returns the regularized integral of the Gamma function with
@@ -1491,6 +1589,11 @@ public class Stats {
 					examples = { @example (
 							value = "kmeans ([[2,4,5], [3,8,2], [1,1,3], [4,3,4]],2)",
 							equals = "[[0,2,3],[1]]") }) })
+	@tests ({
+			@test ("list<list<float>> instances <- [[1.0, 1.0], [1.1, 1.0], [10.0, 10.0], [10.1, 10.0]]; list<list<int>> by_kmeans <- kmeans(instances, 2); length(by_kmeans) = 2"),
+			@test ("list<list<float>> instances2 <- [[1.0, 1.0], [1.1, 1.0], [10.0, 10.0], [10.1, 10.0]]; list<list<int>> by_kmeans2 <- kmeans(instances2, 2); by_kmeans2 contains [0, 1]"),
+			@test ("list<list<float>> instances3 <- [[1.0, 1.0], [1.1, 1.0], [10.0, 10.0], [10.1, 10.0]]; list<list<int>> by_kmeans3 <- kmeans(instances3, 2); by_kmeans3 contains [2, 3]")
+	})
 	public static IList<IList> opKMeans(final IScope scope, final IList data, final Integer k)
 			throws GamaRuntimeException {
 		return opKMeans(scope, data, k, -1);
@@ -1636,6 +1739,11 @@ public class Stats {
 					@example (
 							value = "kurtosis([13,2,1,4,1,2]) with_precision(4)",
 							equals = "4.8083") })
+	@tests ({
+			// the kurtosis is given in excess of the one of the normal distribution
+			@test ("list<float> series <- [1.0, 2.0, 3.0, 4.0, 5.0]; kurtosis(series) with_precision 6 = -1.2"),
+			@test ("list<float> spread <- [2.0, 4.0, 4.0, 4.0, 5.0, 5.0, 7.0, 9.0]; kurtosis(spread) > 0.94 and kurtosis(spread) < 0.95")
+	})
 	public static Double opKurtosis(final IScope scope, final IList data) throws GamaRuntimeException {
 		final Kurtosis k = new Kurtosis();
 		final double[] values = new double[data.length(scope)];
@@ -1663,6 +1771,10 @@ public class Stats {
 					value = "log_gamma(0.6) with_precision(4)",
 					equals = "0.3982") })
 
+	@tests ({
+			@test ("log_gamma(5.0) = ln(24.0)"),
+			@test ("lgamma(5.0) = log_gamma(5.0)")
+	})
 	public static Double opLogGamma(final IScope scope, final Double x) {
 
 		// Returns the log of the value of the Gamma function at x.
@@ -1722,6 +1834,18 @@ public class Stats {
 					@usage ("if it is a matrix of another type, max returns the maximum of the elements "
 							+ "transformed into float") },
 			see = { "min" })
+	@tests ({
+			// they are the bounds of any other int
+			@test ("max([#max_int, 0, #min_int]) = #max_int"),
+			@test ("max([#infinity, #max_float]) = #infinity"),
+			@test ("list<float> l <- [3.0, #nan, 1.0]; max(l) = 3.0"),
+			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; max(numbers) = 9"),
+			@test ("max([3.5, 4.0, 1.0]) = 4.0"),
+			@test ("list<int> data <- [1, 2, 3, 4, 5]; max(data) = 5"),
+			@test ("max(3, 5) = 5"),
+			@test ("max(-1, -2) = -1"),
+			@test ("max([]) = nil")
+	})
 	public static Object opMax(final IScope scope, final IContainer l) {
 		if (l instanceof GamaField) return ((GamaField) l).getMinMax()[1];
 		Number maxNum = null;
@@ -1764,6 +1888,9 @@ public class Stats {
 					value = "mean_deviation ([4.5, 3.5, 5.5, 7.0])",
 					equals = "1.125") },
 			see = { "mean", "standard_deviation" })
+	@tests ({
+			@test ("list<float> spread <- [2.0, 4.0, 4.0, 4.0, 5.0, 5.0, 7.0, 9.0]; mean_deviation(spread) = 1.5")
+	})
 	public static Double opMeanDeviation(final IScope scope, final IContainer values) {
 		final DataSet d = toDataSet(scope, values);
 		return d.getMeanDeviation();
@@ -1794,6 +1921,13 @@ public class Stats {
 					value = "median ([4.5, 3.5, 5.5, 3.4, 7.0])",
 					equals = "4.5") },
 			see = { "mean" })
+	@tests ({
+			@test ("list<float> series <- [1.0, 2.0, 3.0, 4.0, 5.0]; median(series) = 3.0"),
+			// with an even number of values, the median is the mean of the two central ones
+			@test ("median([1.0, 2.0, 3.0, 4.0]) = 2.5"),
+			@test ("median([5.0, 1.0, 3.0]) = 3.0"),
+			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; median(numbers) = 3")
+	})
 	public static Object opMedian(final IScope scope, final IContainer values) {
 
 		final IType contentType = values.getGamlType().getContentType();
@@ -1890,6 +2024,20 @@ public class Stats {
 							value = "if it is a matrix of another type, min returns the minimum of the elements"
 									+ " transformed into float") },
 			see = { "max" })
+	@tests ({
+			@test ("min([#max_int, 0, #min_int]) = #min_int"),
+			@test ("min([-#infinity, #min_int]) = -#infinity"),
+			// min and max ignore it
+			@test ("list<float> l <- [3.0, #nan, 1.0]; min(l) = 1.0"),
+			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; min(numbers) = 1"),
+			// Min and max
+			@test ("min([3.5, 4.0, 1.0]) = 1.0"),
+			@test ("list<int> data <- [1, 2, 3, 4, 5]; min(data) = 1"),
+			@test ("min(3, 5) = 3"),
+			@test ("min(3.5, 2) = 2"),
+			// an empty container has neither a minimum nor a maximum
+			@test ("min([]) = nil")
+	})
 	public static Object opMin(final IScope scope, final IContainer l) {
 		if (l instanceof GamaField) return ((GamaField) l).getMinMax()[0];
 		Number minNum = null;
@@ -1959,6 +2107,13 @@ public class Stats {
 					value = "normal_area(0.9,0,1) with_precision(3)",
 					equals = "0.816") })
 
+	@tests ({
+			// half of the values are below the mean
+			@test ("pnorm(0.0, 0.0, 1.0) = 0.5"),
+			@test ("pnorm(10.0, 10.0, 3.0) = 0.5"),
+			@test ("pnorm(1.96, 0.0, 1.0) with_precision 3 = 0.975"),
+			@test ("normal_area(0.0, 0.0, 1.0) = pnorm(0.0, 0.0, 1.0)")
+	})
 	public static Double opNormalArea(final IScope scope, final Double x, final Double mean, final Double sd) {
 
 		// Returns the area to the left of x in the normal distribution
@@ -1992,6 +2147,13 @@ public class Stats {
 					value = "(normal_density(2,1,1)*100) with_precision 2",
 					equals = "24.2") })
 
+	@tests ({
+			// the density is maximal at the mean
+			@test ("normal_density(0.0, 0.0, 1.0) with_precision 6 = 0.398942"),
+			@test ("dnorm(0.0, 0.0, 1.0) = normal_density(0.0, 0.0, 1.0)"),
+			@test ("normal_density(1.0, 0.0, 1.0) < normal_density(0.0, 0.0, 1.0)"),
+			@test ("normal_density(-1.0, 0.0, 1.0) = normal_density(1.0, 0.0, 1.0)")
+	})
 	public static Double opNormalDensity(final IScope scope, final Double x, final Double mean, final Double sd) {
 
 		// Returns the probability of x in the normal distribution with the
@@ -2023,6 +2185,12 @@ public class Stats {
 			examples = { @example (
 					value = "normal_inverse(0.98,0,1) with_precision(2)",
 					equals = "2.05") })
+	@tests ({
+			// the inverse gives back the value
+			@test ("normal_inverse(0.5, 0.0, 1.0) = 0.0"),
+			@test ("normal_inverse(0.975, 0.0, 1.0) with_precision 2 = 1.96"),
+			@test ("normal_inverse(pnorm(0.7, 0.0, 1.0), 0.0, 1.0) with_precision 6 = 0.7")
+	})
 	public static Double opNormalInverse(final IScope scope, final Double area, final Double mean, final Double sd) {
 
 		// Returns the x in the normal distribution with the given mean and
@@ -2061,7 +2229,12 @@ public class Stats {
 			examples = { @example (
 					value = "predict(my_regression, [1,2,3])",
 					isExecutable = false) })
-	@test ("predict(build(matrix([[1.0,2.0,3.0,4.0],[2.0,3.0,4.0,2.0]])),[1,2,3,2] ) = 2.1818181818181817")
+	@tests ({
+			@test ("predict(build(matrix([[1.0,2.0,3.0,4.0],[2.0,3.0,4.0,2.0]])),[1,2,3,2] ) = 2.1818181818181817"),
+			@test ("regression fitted <- build(matrix([[1.0, 2.0, 3.0, 4.0], [2.0, 4.0, 6.0, 8.0]])); predict(fitted, [5.0]) with_precision 6 = 2.5"),
+			@test ("regression fitted2 <- build(matrix([[1.0, 2.0, 3.0, 4.0], [2.0, 4.0, 6.0, 8.0]])); predict(fitted2, [10.0]) with_precision 6 = 5.0"),
+			@test ("regression fitted3 <- build(matrix([[1.0, 2.0, 3.0, 4.0], [2.0, 4.0, 6.0, 8.0]])); predict(fitted3, [0.0]) with_precision 6 = 0.0")
+	})
 	public static Double opPredict(final IScope scope, final GamaRegression regression, final IList instance) {
 		return regression.predict(scope, instance);
 	}
@@ -2115,6 +2288,11 @@ public class Stats {
 							value = "if it is a matrix of other types: mul transforms all elements into float and "
 									+ "multiplies them") },
 			see = { "sum" })
+	@tests ({
+			@test ("list<float> series <- [1.0, 2.0, 3.0, 4.0, 5.0]; mul(series) = 120.0"),
+			@test ("product([1, 2, 3, 4]) = 24.0"),
+			@test ("list<int> data <- [1, 2, 3, 4, 5]; product(data) = 120")
+	})
 	public static Object opProduct(final IScope scope, final IContainer l) {
 		final DataSet x = new DataSet();
 		DataSet y = null, z = null;
@@ -2269,6 +2447,12 @@ public class Stats {
 			examples = { @example (
 					value = "quantile([1,3,5,6,9,11,12,13,19,21,22,32,35,36,45,44,55,68,79,80,81,88,90,91,92,100], 0.5)",
 					equals = "35.5") })
+	@tests ({
+			@test ("list<float> series <- [1.0, 2.0, 3.0, 4.0, 5.0]; quantile(series, 0.5) = 3.0"),
+			@test ("list<float> series2 <- [1.0, 2.0, 3.0, 4.0, 5.0]; quantile(series2, 0.25) = 2.0"),
+			@test ("list<float> series3 <- [1.0, 2.0, 3.0, 4.0, 5.0]; quantile(series3, 0.0) = 1.0"),
+			@test ("list<float> series4 <- [1.0, 2.0, 3.0, 4.0, 5.0]; quantile(series4, 1.0) = 5.0")
+	})
 	public static Double opQuantile(final IScope scope, final IContainer data, final Double phi) {
 
 		// TODO input parameters validation
@@ -2297,6 +2481,11 @@ public class Stats {
 			examples = { @example (
 					value = "quantile_inverse([1,3,5,6,9,11,12,13,19,21,22,32,35,36,45,44,55,68,79,80,81,88,90,91,92,100], 35.5) with_precision(2)",
 					equals = "0.52") })
+	@tests ({
+			// the proportion of values that are lower or equal
+			@test ("list<float> series <- [1.0, 2.0, 3.0, 4.0, 5.0]; quantile_inverse(series, 3.0) = 0.6"),
+			@test ("list<float> series2 <- [1.0, 2.0, 3.0, 4.0, 5.0]; quantile_inverse(series2, 5.0) = 1.0")
+	})
 	public static Double opQuantileInverse(final IScope scope, final IContainer data, final Double element) {
 
 		// TODO input parameters validation
@@ -2325,6 +2514,9 @@ public class Stats {
 			examples = { @example (
 					value = "rank_interpolated([1,3,5,6,9,11,12,13,19,21,22,32,35,36,45,44,55,68,79,80,81,88,90,91,92,100], 35)",
 					equals = "13.0") })
+	@tests ({
+			@test ("list<float> series <- [1.0, 2.0, 3.0, 4.0, 5.0]; rank_interpolated(series, 3.0) = 3.0")
+	})
 	public static Double opRankInterpolated(final IScope scope, final IContainer data, final Double element) {
 
 		// TODO input parameters validation
@@ -2885,6 +3077,10 @@ public class Stats {
 					@example (" list<float> squares <- data_sequence collect (each*each); "), @example (
 							value = " rms(length(data_sequence),sum(squares)) with_precision(4) ",
 							equals = "7.5829") })
+	@tests ({
+			// the root mean square: sqrt(sum of squares / size)
+			@test ("rms(5, 55.0) = sqrt(11.0)")
+	})
 	public static Double opRms(final IScope scope, final Integer size, final Double sumOfSquares) {
 
 		// TODO input parameters validation
@@ -2915,6 +3111,12 @@ public class Stats {
 			examples = { @example (
 					value = "skewness ([1,2,3,4,5])",
 					equals = "0.0") })
+	@tests ({
+			// a symmetric series is not skewed
+			@test ("list<float> series <- [1.0, 2.0, 3.0, 4.0, 5.0]; skewness(series) = 0.0"),
+			@test ("list<float> spread <- [2.0, 4.0, 4.0, 4.0, 5.0, 5.0, 7.0, 9.0]; skewness(spread) > 0.81 and skewness(spread) < 0.82"),
+			@test ("list<float> spread2 <- [2.0, 4.0, 4.0, 4.0, 5.0, 5.0, 7.0, 9.0]; skew(spread2) = skewness(spread2)")
+	})
 	public static Double opSkewness(final IScope scope, final IList data) throws GamaRuntimeException {
 		final Skewness sk = new Skewness();
 		final double[] values = new double[data.length(scope)];
@@ -2985,6 +3187,9 @@ public class Stats {
 					value = "split_in(li,3)",
 					equals = "[[1.0,3.1,5.2,6.0,9.2,11.1,12.0,13.0],[19.9],[35.9,40.0]]") })
 
+	@tests ({
+			@test ("list<float> spread_values <- [1.0, 3.1, 5.2, 6.0, 9.2, 11.1, 12.0, 13.0, 19.9, 35.9, 40.0]; split_in(spread_values, 3) = [[1.0, 3.1, 5.2, 6.0, 9.2, 11.1, 12.0, 13.0], [19.9], [35.9, 40.0]]")
+	})
 	public static <T extends Number> IList<IList<T>> opSplitIn(final IScope scope, final IList<T> list, final int nb) {
 		return opSplitIn(scope, list, nb, true);
 	}
@@ -3021,6 +3226,9 @@ public class Stats {
 					value = "split_in(l,3, true)",
 					equals = "[[1.0,3.1,5.2,6.0,9.2,11.1,12.0,13.0],[19.9],[35.9,40.0]]") })
 
+	@tests ({
+			@test ("list<float> spread_values <- [1.0, 3.1, 5.2, 6.0, 9.2, 11.1, 12.0, 13.0, 19.9, 35.9, 40.0]; split_in(spread_values, 3, true) = [[1.0, 3.1, 5.2, 6.0, 9.2, 11.1, 12.0, 13.0], [19.9], [35.9, 40.0]]")
+	})
 	public static <T extends Number> IList<IList<T>> opSplitIn(final IScope scope, final IList<T> list, final int nb,
 			final boolean strict) {
 		if (nb <= 1) {
@@ -3063,6 +3271,11 @@ public class Stats {
 			examples = { @example ("list<float> li <- [1.0,3.1,5.2,6.0,9.2,11.1,12.0,13.0,19.9,35.9,40.0];"), @example (
 					value = "split_using(li,[1.0,3.0,4.2])",
 					equals = "[[],[1.0],[3.1],[5.2,6.0,9.2,11.1,12.0,13.0,19.9,35.9,40.0]]") })
+	@tests ({
+			// the values are split at the given thresholds
+			@test ("list<float> series <- [1.0, 2.0, 3.0, 4.0, 5.0]; split_using(series, [2.5]) = [[1.0, 2.0], [3.0, 4.0, 5.0]]"),
+			@test ("list<float> series2 <- [1.0, 2.0, 3.0, 4.0, 5.0]; split_using(series2, [1.5, 3.5]) = [[1.0], [2.0, 3.0], [4.0, 5.0]]")
+	})
 	public static <T extends Number> IList<IList<T>> opSplitUsing(final IScope scope, final IList<T> list,
 			final IList<? extends Comparable> stops) {
 		return opSplitUsing(scope, list, stops, true);
@@ -3318,6 +3531,11 @@ public class Stats {
 					value = "variance ([4.5, 3.5, 5.5, 7.0])",
 					equals = "1.671875") },
 			see = { "mean", "median" })
+	@tests ({
+			@test ("list<float> spread <- [2.0, 4.0, 4.0, 4.0, 5.0, 5.0, 7.0, 9.0]; standard_deviation(spread) = 2.0"),
+			@test ("list<float> series <- [1.0, 2.0, 3.0, 4.0, 5.0]; standard_deviation(series) = sqrt(variance(series))"),
+			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; standard_deviation(numbers) = sqrt(variance(numbers))")
+	})
 	public static Double opVariance(final IScope scope, final IContainer values) {
 		final DataSet d = toDataSet(scope, values);
 		return d.getVariance();
@@ -3346,6 +3564,13 @@ public class Stats {
 					value = "int(variance(4,16,84))",
 					equals = "5",
 					returnType = "int") })
+	@tests ({
+			// the variance is the one of the population, not of a sample
+			@test ("list<float> spread <- [2.0, 4.0, 4.0, 4.0, 5.0, 5.0, 7.0, 9.0]; variance(spread) = 4.0"),
+			@test ("variance([3.0, 3.0, 3.0]) = 0.0"),
+			@test ("list<float> series <- [1.0, 2.0, 3.0, 4.0, 5.0]; variance(series) = 2.0"),
+			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; variance(numbers) = 6.609375")
+	})
 	public static Double opVariance(final IScope scope, final Integer size, final Double sum,
 			final Double numOfSquares) {
 
@@ -3449,9 +3674,13 @@ public class Stats {
 					value = "[1,2] mean_of (each * 10 )",
 					equals = "15") },
 			see = { "min_of", "max_of", "sum_of", "product_of" })
-	@test ("[1,2] mean_of (each * 10 ) = 15")
-	@test ("[1,2] mean_of (each * 10 ) = 15")
-	@test ("[1,2] mean_of (each * 10 ) = 15")
+	@tests ({
+			@test ("[1,2] mean_of (each * 10 ) = 15"),
+			@test ("[1,2] mean_of (each * 10 ) = 15"),
+			@test ("[1,2] mean_of (each * 10 ) = 15"),
+			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; numbers mean_of (each * 1.0) = 3.875"),
+			@test ("list<int> data <- [1, 2, 3, 4, 5]; (data mean_of (each * 2)) = 6.0")
+	})
 	public static Object opMeanOf(final IScope scope, final String eachName, final IContainer container,
 			final IExpression filter) {
 		return Containers.opMean(scope, collect(scope, eachName, container, filter));
@@ -3497,7 +3726,11 @@ public class Stats {
 							equals = "4",
 							isExecutable = false) },
 			see = { "max_of" })
-	@test ("[1,2,4,3,5,7,6,8] min_of (each * 100 ) = 100")
+	@tests ({
+			@test ("[1,2,4,3,5,7,6,8] min_of (each * 100 ) = 100"),
+			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; numbers min_of (each * 2) = 2"),
+			@test ("list<int> data <- [1, 2, 3, 4, 5]; (data min_of (each * 10)) = 10")
+	})
 	@validator (ComparableValidator.class)
 	public static Object opMinOf(final IScope scope, final String eachName, final IContainer c,
 			final IExpression filter) {
@@ -3546,7 +3779,12 @@ public class Stats {
 							equals = "96",
 							isExecutable = false) },
 			see = { "min_of" })
-	@test ("[1,2,4,3,5,7,6,8] max_of (each * 100 ) = 800")
+	@tests ({
+			@test ("[1,2,4,3,5,7,6,8] max_of (each * 100 ) = 800"),
+			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; numbers max_of (each * 2) = 18"),
+			// Map/Reduce style aggregations
+			@test ("list<int> data <- [1, 2, 3, 4, 5]; (data max_of (each * 10)) = 50")
+	})
 	@validator (ComparableValidator.class)
 	public static Object opMaxOf(final IScope scope, final String eachName, final IContainer c,
 			final IExpression filter) {

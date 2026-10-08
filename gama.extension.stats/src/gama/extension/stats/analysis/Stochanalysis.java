@@ -33,6 +33,8 @@ import gama.annotations.doc;
 import gama.annotations.no_test;
 import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.api.GAMA;
@@ -755,6 +757,10 @@ public class Stochanalysis {
 	@doc (
 			value = "Return the result of the stochasticity analysis for the corresponding data (path, map or matrix)")
 	@no_test
+	@tests ({
+			@test ("list stable_p <- [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]; list stable_o <- [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]; map stoch_data <- [\"p1\":: stable_p, \"out\":: stable_o]; stochanalysis(10, 0.1, stoch_data, 1) != ''"),
+			@test ("map stoch2d <- [ \"p1\":: [0.1, 0.1, 0.1, 0.1, 0.1, 0.2, 0.2, 0.2, 0.2, 0.2], \"p2\":: [0.5, 0.5, 0.5, 0.5, 0.5, 0.6, 0.6, 0.6, 0.6, 0.6], \"out\":: [1.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0, 2.0] ]; stochanalysis(10, 0.1, stoch2d, 2) != ''")
+	})
 	public static String stochanalysis(final IScope scope, final int replicat, final double threshold, final Object data,
 			final int nb_parameters) {
 

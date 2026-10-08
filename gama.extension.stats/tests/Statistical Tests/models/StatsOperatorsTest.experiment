@@ -15,198 +15,24 @@ experiment StatsOperatorsTest type: test autorun: true {
 
 	test "Central tendency" {
 		assert mean(series) = 3.0;
-		assert median(series) = 3.0;
-		// with an even number of values, the median is the mean of the two central ones
-		assert median([1.0, 2.0, 3.0, 4.0]) = 2.5;
-		assert median([5.0, 1.0, 3.0]) = 3.0;
 		assert mean(spread) = 5.0;
-		assert mul(series) = 120.0;
-		assert geometric_mean([1.0, 4.0, 16.0]) = 4.0;
-		assert harmonic_mean([1.0, 1.0, 1.0]) = 1.0;
-	}
 
-	test "Dispersion" {
-		// the variance is the one of the population, not of a sample
-		assert variance(spread) = 4.0;
-		assert standard_deviation(spread) = 2.0;
-		assert mean_deviation(spread) = 1.5;
-		assert variance([3.0, 3.0, 3.0]) = 0.0;
-		assert standard_deviation(series) = sqrt(variance(series));
-		assert variance(series) = 2.0;
-	}
-
-	test "Shape of a distribution" {
-		// a symmetric series is not skewed
-		assert skewness(series) = 0.0;
-		assert skewness(spread) > 0.81 and skewness(spread) < 0.82;
-		assert skew(spread) = skewness(spread);
-		// the kurtosis is given in excess of the one of the normal distribution
-		assert kurtosis(series) with_precision 6 = -1.2;
-		assert kurtosis(spread) > 0.94 and kurtosis(spread) < 0.95;
-	}
-
-	test "Quantiles" {
-		assert quantile(series, 0.5) = 3.0;
-		assert quantile(series, 0.25) = 2.0;
-		assert quantile(series, 0.0) = 1.0;
-		assert quantile(series, 1.0) = 5.0;
-		// the proportion of values that are lower or equal
-		assert quantile_inverse(series, 3.0) = 0.6;
-		assert quantile_inverse(series, 5.0) = 1.0;
-		assert rank_interpolated(series, 3.0) = 3.0;
-	}
-
-	test "Frequencies and splits" {
-		map<bool, int> above_two <- frequency_of(series, each > 2);
-		assert above_two[true] = 3;
-		assert above_two[false] = 2;
-		map<int, int> occurrences <- [1, 1, 2, 3] frequency_of each;
-		assert occurrences[1] = 2;
-		assert occurrences[2] = 1;
-		assert occurrences[3] = 1;
-
-		// the values are split at the given thresholds
-		assert split_using(series, [2.5]) = [[1.0, 2.0], [3.0, 4.0, 5.0]];
-		assert split_using(series, [1.5, 3.5]) = [[1.0], [2.0, 3.0], [4.0, 5.0]];
-		// 'split_in' cuts the range of the values in intervals of equal width (example of the documentation)
-		list<float> spread_values <- [1.0, 3.1, 5.2, 6.0, 9.2, 11.1, 12.0, 13.0, 19.9, 35.9, 40.0];
-		assert split_in(spread_values, 3) = [[1.0, 3.1, 5.2, 6.0, 9.2, 11.1, 12.0, 13.0], [19.9], [35.9, 40.0]];
-		assert split_in(spread_values, 3, true) = [[1.0, 3.1, 5.2, 6.0, 9.2, 11.1, 12.0, 13.0], [19.9], [35.9, 40.0]];
-	}
-
-	test "Relations between two series" {
-		assert covariance(series, doubled) = 5.0;
-		assert covariance(series, reverse(doubled)) = -5.0;
-		assert covariance(series, [3.0, 3.0, 3.0, 3.0, 3.0]) = 0.0;
-		// the sign of the correlation tells whether the series vary together
-		assert correlation(series, doubled) > 0;
-		assert correlation(series, reverse(doubled)) < 0;
-		assert correlation(series, doubled) = -correlation(series, reverse(doubled));
-		// a Pearson correlation lies in [-1, 1]
-		assert correlation(series, doubled) = 1.0;
-		assert correlation(series, reverse(doubled)) = -1.0;
-		// the examples of the documentation
-		assert correlation([1, 2, 1, 3, 1, 2], [1, 2, 1, 3, 1, 2]) = 1.0;
-		assert correlation([13, 2, 1, 4, 1, 2], [1, 2, 1, 3, 1, 2]) with_precision 2 = -0.21;
-
-		// dynamic time warping: a distance between two series
-		assert dtw(series, series) = 0.0;
-		assert dtw(series, doubled) = 11.0;
-		assert dtw(doubled, series) = dtw(series, doubled);
-	}
-
-	test "Agreement between classifications" {
-		// identical classifications agree perfectly
-		assert kappa([1, 2, 1, 2], [1, 2, 1, 2], [1, 2]) = 1.0;
-		assert kappa([1, 2, 1, 2], [1, 2, 2, 2], [1, 2]) = 0.5;
-		assert percent_absolute_deviation([200.0, 300.0], [200.0, 300.0]) = 0.0;
-		assert percent_absolute_deviation([200.0, 300.0], [190.0, 330.0]) = 8.0;
-	}
-
-	test "Inequality" {
-		// everyone has the same share
-		assert gini([1.0, 1.0, 1.0]) = 0.0;
-		// one has everything
-		assert gini([0.0, 0.0, 10.0]) with_precision 4 = 0.6667;
-		assert gini([1.0, 2.0, 3.0]) > 0.0 and gini([1.0, 2.0, 3.0]) < gini([0.0, 0.0, 10.0]);
-	}
-
-	test "Normal distribution" {
-		// the density is maximal at the mean
-		assert normal_density(0.0, 0.0, 1.0) with_precision 6 = 0.398942;
-		assert dnorm(0.0, 0.0, 1.0) = normal_density(0.0, 0.0, 1.0);
-		assert normal_density(1.0, 0.0, 1.0) < normal_density(0.0, 0.0, 1.0);
-		assert normal_density(-1.0, 0.0, 1.0) = normal_density(1.0, 0.0, 1.0);
-
-		// half of the values are below the mean
-		assert pnorm(0.0, 0.0, 1.0) = 0.5;
-		assert pnorm(10.0, 10.0, 3.0) = 0.5;
-		assert pnorm(1.96, 0.0, 1.0) with_precision 3 = 0.975;
-		assert normal_area(0.0, 0.0, 1.0) = pnorm(0.0, 0.0, 1.0);
-
-		// the inverse gives back the value
-		assert normal_inverse(0.5, 0.0, 1.0) = 0.0;
-		assert normal_inverse(0.975, 0.0, 1.0) with_precision 2 = 1.96;
-		assert normal_inverse(pnorm(0.7, 0.0, 1.0), 0.0, 1.0) with_precision 6 = 0.7;
 	}
 
 	test "Chi-square, Student and binomial distributions" {
-		assert chi_square(3.0, 2) with_precision 6 = 0.77687;
-		assert pchisq(3.0, 2) = chi_square(3.0, 2);
-		// the complement is the upper tail
-		assert chi_square(3.0, 2) + chi_square_complemented(3.0, 2) = 1.0;
 
 		// Student's distribution is symmetric
 		assert student_area(0.0, 5) = 0.5;
 		assert student_area(1.0, 5) > 0.5;
 		assert student_area(1.0, 5) + student_area(-1.0, 5) = 1.0;
-
-		assert binomial_coeff(5, 2) = 10.0;
-		assert binomial_coeff(5, 0) = 1.0;
-		assert binomial_coeff(5, 5) = 1.0;
-		// the probability of at most 2 successes out of 5 fair trials
-		assert binomial_sum(2, 5, 0.5) = 0.5;
-		assert pbinom(2, 5, 0.5) = binomial_sum(2, 5, 0.5);
-		assert binomial_sum(5, 5, 0.5) = 1.0;
-		assert binomial_complemented(10, 5, 0.5) with_precision 2 = 0.38;
 		assert student_t_inverse(0.9, 3) with_precision 2 = 1.64;
 		// NB: student_t_inverse(0.05, 10) never returns, which is why it cannot be part of this test
 	}
 
-	test "Gamma and beta functions" {
-		// gamma(n) is the factorial of n - 1
-		assert gamma(5.0) = 24.0;
-		assert gamma(1.0) = 1.0;
-		assert gamma(0.5) = sqrt(#pi);
-		assert log_gamma(5.0) = ln(24.0);
-		assert lgamma(5.0) = log_gamma(5.0);
-
-		assert incomplete_gamma(1.0, 1.0) with_precision 6 = 0.632121;
-		assert incomplete_gamma(1.0, 1.0) + incomplete_gamma_complement(1.0, 1.0) = 1.0;
-		assert gamma_distribution(1.0, 1.0, 1.0) = incomplete_gamma(1.0, 1.0);
-		assert pgamma(1.0, 1.0, 1.0) = gamma_distribution(1.0, 1.0, 1.0);
-		assert gamma_distribution(1.0, 1.0, 1.0) + gamma_distribution_complemented(1.0, 1.0, 1.0) = 1.0;
-		assert incomplete_beta(1.0, 1.0, 0.5) = 0.5;
-	}
-
 	test "Series analysis" {
-		assert auto_correlation(series, 1) = 0.5;
-		assert durbin_watson(series) > 0.07 and durbin_watson(series) < 0.08;
-		// the root mean square: sqrt(sum of squares / size)
-		assert rms(5, 55.0) = sqrt(11.0);
 		assert t_test(series, doubled) > 0.1 and t_test(series, doubled) < 0.11;
 		// two identical samples cannot be told apart
 		assert t_test(series, series) = 1.0;
 	}
 
-	test "Clustering separates distant groups" {
-		list<list<float>> instances <- [[1.0, 1.0], [1.1, 1.0], [10.0, 10.0], [10.1, 10.0]];
-		// the clusters are given as lists of indexes
-		list<list<int>> by_kmeans <- kmeans(instances, 2);
-		assert length(by_kmeans) = 2;
-		assert by_kmeans contains [0, 1];
-		assert by_kmeans contains [2, 3];
-
-		list<list<int>> by_dbscan <- dbscan(instances, 1.0, 1);
-		assert length(by_dbscan) = 2;
-		assert by_dbscan contains [0, 1];
-		assert by_dbscan contains [2, 3];
-
-		// with a wide enough neighbourhood, everything is in the same cluster
-		assert length(dbscan(instances, 100.0, 1)) = 1;
-	}
-
-	test "Linear regression" {
-		// each row is an observation: the value to explain first, then the explanatory variable: y = x / 2
-		regression fitted <- build(matrix([[1.0, 2.0, 3.0, 4.0], [2.0, 4.0, 6.0, 8.0]]));
-		assert predict(fitted, [5.0]) with_precision 6 = 2.5;
-		assert predict(fitted, [10.0]) with_precision 6 = 5.0;
-		assert predict(fitted, [0.0]) with_precision 6 = 0.0;
-	}
-
-	test "Spatial interpolation" {
-		// halfway between two known points, the value is their mean
-		map<point, float> interpolated <- IDW([{0, 0}], [{1, 0}::10.0, {-1, 0}::20.0], 2);
-		assert interpolated[{0, 0}] = 15.0;
-	}
 }
