@@ -199,7 +199,7 @@ public class Box2DPhysicalWorld extends AbstractPhysicalWorld<World, Shape, Vec2
 						|| Math.abs(gamaAxis.getZ()) > 1e-6) {
 					throw new IllegalArgumentException("Box2D slider axes must be non-zero and lie in the XY plane");
 				}
-				Vec2 axis = new Vec2((float) gamaAxis.getX(), (float) gamaAxis.getY());
+				Vec2 axis = toVector(gamaAxis);
 				axis.normalize();
 				PrismaticJointDef definition = new PrismaticJointDef();
 				definition.initialize(first, second, anchor, axis);
