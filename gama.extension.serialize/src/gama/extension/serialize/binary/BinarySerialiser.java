@@ -25,6 +25,7 @@ import gama.api.kernel.serialization.SerialisedPopulation;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.color.IColor;
+import gama.api.types.date.IDate;
 import gama.api.types.font.IFont;
 import gama.api.types.geometry.IPoint;
 import gama.api.types.geometry.IShape;
@@ -179,6 +180,7 @@ public class BinarySerialiser implements ISerialisationConstants {
 		register(UniqueCoordinateSequence.class, new UniqueCoordinateSequenceSerialiser());
 		register(GamaCoordinateSequence.class, new GamaCoordinateSequenceSerialiser());
 		register(IColor.class, new IColorSerialiser());
+		register(IDate.class, new IDateSerialiser());
 		register(GamaMailbox.class, new IGamaMailBoxSerialiser());
 	}
 
