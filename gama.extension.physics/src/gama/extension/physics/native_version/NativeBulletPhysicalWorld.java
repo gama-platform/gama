@@ -289,6 +289,9 @@ public class NativeBulletPhysicalWorld extends AbstractPhysicalWorld<PhysicsSpac
 			throw new IllegalArgumentException("Both joint bodies must be registered in the physical world");
 		PhysicsRigidBody first = wrapperA.getBody();
 		PhysicsRigidBody second = wrapperB.getBody();
+		// Make sure the bodies are where their agents are before computing the local pivots
+		wrapperA.setLocation(agentA.getLocation());
+		wrapperB.setLocation(agentB.getLocation());
 		Vector3f anchor = toVector(jointDefinition.getAnchorPoint());
 		Vector3f pivotA = toLocalPoint(first, anchor);
 		Vector3f pivotB = toLocalPoint(second, anchor);

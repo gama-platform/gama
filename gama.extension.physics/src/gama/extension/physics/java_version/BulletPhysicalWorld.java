@@ -225,6 +225,9 @@ public class BulletPhysicalWorld extends AbstractPhysicalWorld<DiscreteDynamicsW
 		}
 		RigidBody first = wrapperA.getBody();
 		RigidBody second = wrapperB.getBody();
+		// Make sure the bodies are where their agents are before computing the local pivots
+		wrapperA.setLocation(agentA.getLocation());
+		wrapperB.setLocation(agentB.getLocation());
 		Vector3f anchor = toVector(jointDefinition.getAnchorPoint());
 		Vector3f pivotA = toLocalPoint(first, anchor);
 		Vector3f pivotB = toLocalPoint(second, anchor);
