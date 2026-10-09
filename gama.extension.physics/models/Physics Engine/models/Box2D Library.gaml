@@ -71,6 +71,10 @@ global parent: physical_world {
 species wall skills: [static_body] {
 	float restitution <- wall_restitution;
 	float friction <- 0.1;
+
+	aspect default {
+		draw shape color: rgb(211, 205, 194) border: rgb(156, 151, 142);
+	}
 }
 
 species ball skills: [dynamic_body, moving] {
@@ -99,13 +103,24 @@ experiment "Disturbance" type: gui {
 
 	output {
 		layout #split;
-		display "Restitution" type: 3d antialias: true axes: false {
-
-			species ball {
-				draw shape color: color;
-				draw line(location, location + velocity) color: #black end_arrow: 1 width: 1;
+		display "Restitution" type: 2d axes: false background: rgb(248, 246, 240) {
+			graphics grid {
+				loop v from: 0 to: size step: 25 {
+					draw line([{v, 0}, {v, size}]) color: rgb(224, 219, 210) width: 1;
+					draw line([{0, v}, {size, v}]) color: rgb(224, 219, 210) width: 1;
+				}
 			}
-
+			species wall;
+			species ball {
+				draw shape color: color border: rgb(82, 101, 111);
+				draw line([location, location + velocity]) color: rgb(153, 83, 96) end_arrow: 1 width: 1;
+			}
+			overlay position: {5, 5} size: {240 #px, 70 #px} background: rgb(248, 246, 240) transparency: 0.1 border: rgb(156, 151, 142) {
+				draw "BOX2D PARTICLES" at: {10 #px, 16 #px} color: rgb(112, 111, 103) font: font("SansSerif", 10, #bold);
+				draw "Ball restitution : " + ball_restitution + "  Wall : " + wall_restitution at: {10 #px, 34 #px} color: rgb(64, 104, 132);
+				draw "Red arrow = velocity" at: {10 #px, 50 #px} color: rgb(153, 83, 96);
+				draw "Big balls return to their start position" at: {10 #px, 64 #px} color: rgb(112, 111, 103);
+			}
 		}
 
 	}

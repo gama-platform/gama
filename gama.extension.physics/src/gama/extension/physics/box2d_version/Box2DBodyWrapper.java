@@ -153,9 +153,13 @@ public class Box2DBodyWrapper extends AbstractBodyWrapper<World, Body, Shape, Ve
 
 	@Override
 	public void setMass(final Double mass) {
+		float initialMass = ms.mass;
 		ms.mass = mass.floatValue();
+		// Keep the moment of inertia proportional to the new mass (same density assumption used when a body is
+		// recreated in createAndInitializeBody), otherwise a body explicitly assigned a mass ends up with an
+		// inconsistent (too small) rotational inertia, making it spin far too easily under torque/motor forces.
+		if (initialMass > 0) { ms.I *= ms.mass / initialMass; }
 		body.setMassData(ms);
-
 	}
 
 	@Override
