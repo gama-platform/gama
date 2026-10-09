@@ -237,7 +237,7 @@ public class GamaJoint implements IJointDefinition {
 	public double getAngle() {
 		if (destroyed || joint == null) return 0d;
 		return switch (joint) {
-			case org.jbox2d.dynamics.joints.RevoluteJoint revolute -> revolute.getJointAngle();
+			case org.jbox2d.dynamics.joints.RevoluteJoint revolute -> -revolute.getJointAngle();
 			case com.bulletphysics.dynamics.constraintsolver.HingeConstraint hinge -> hinge.getHingeAngle();
 			case com.jme3.bullet.joints.HingeJoint hinge -> hinge.getHingeAngle();
 			case null, default -> 0d;
@@ -359,7 +359,7 @@ public class GamaJoint implements IJointDefinition {
 		switch (joint) {
 			case org.jbox2d.dynamics.joints.RevoluteJoint revolute -> {
 				revolute.enableMotor(maxMotorForce > 0);
-				revolute.setMotorSpeed((float) motorSpeed);
+				revolute.setMotorSpeed((float) -motorSpeed);
 				revolute.setMaxMotorTorque((float) maxMotorForce);
 			}
 			case org.jbox2d.dynamics.joints.PrismaticJoint prismatic -> {
@@ -372,7 +372,7 @@ public class GamaJoint implements IJointDefinition {
 			}
 			case org.jbox2d.dynamics.joints.WheelJoint wheel -> {
 				wheel.enableMotor(maxMotorForce > 0);
-				wheel.setMotorSpeed((float) motorSpeed);
+				wheel.setMotorSpeed((float) -motorSpeed);
 				wheel.setMaxMotorTorque((float) maxMotorForce);
 			}
 			case com.bulletphysics.dynamics.constraintsolver.HingeConstraint hinge -> hinge.enableAngularMotor(maxMotorForce > 0, (float) motorSpeed, (float) maxMotorForce);

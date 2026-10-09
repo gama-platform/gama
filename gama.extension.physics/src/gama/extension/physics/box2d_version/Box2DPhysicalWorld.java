@@ -198,12 +198,12 @@ public class Box2DPhysicalWorld extends AbstractPhysicalWorld<World, Shape, Vec2
 					}
 					if (jointDefinition.hasLimits()) {
 						definition.enableLimit = true;
-						definition.lowerAngle = (float) jointDefinition.getLowerLimit();
-						definition.upperAngle = (float) jointDefinition.getUpperLimit();
+						definition.lowerAngle = (float) -jointDefinition.getUpperLimit();
+						definition.upperAngle = (float) -jointDefinition.getLowerLimit();
 					}
 					if (jointDefinition.getMaxMotorForce() > 0) {
 						definition.enableMotor = true;
-						definition.motorSpeed = (float) jointDefinition.getMotorSpeed();
+						definition.motorSpeed = (float) -jointDefinition.getMotorSpeed();
 						definition.maxMotorTorque = (float) jointDefinition.getMaxMotorForce();
 					}
 				}
@@ -275,7 +275,7 @@ public class Box2DPhysicalWorld extends AbstractPhysicalWorld<World, Shape, Vec2
 				definition.dampingRatio = (float) jointDefinition.getDamping();
 				if (jointDefinition.getMaxMotorForce() > 0) {
 					definition.enableMotor = true;
-					definition.motorSpeed = (float) jointDefinition.getMotorSpeed();
+					definition.motorSpeed = (float) -jointDefinition.getMotorSpeed();
 					definition.maxMotorTorque = (float) jointDefinition.getMaxMotorForce();
 				}
 				return definition;
