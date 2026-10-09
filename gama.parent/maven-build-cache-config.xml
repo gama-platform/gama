@@ -41,6 +41,7 @@
         <include recursive="true" glob="*">files</include>
         <include recursive="true" glob="*">recipes</include>
         <include recursive="true" glob="*">tutorials</include>
+        <include recursive="true" glob="*">binaries</include>
       </includes>
     </global>
   </input>

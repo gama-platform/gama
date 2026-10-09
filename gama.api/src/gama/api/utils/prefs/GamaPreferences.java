@@ -12,6 +12,7 @@ package gama.api.utils.prefs;
 
 import static gama.api.types.color.GamaColorFactory.LIGHT_GRAY;
 
+import java.io.File;
 import java.awt.Font;
 import java.util.ArrayList;
 import java.util.Arrays;

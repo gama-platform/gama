@@ -34,10 +34,12 @@ import org.eclipse.ui.internal.ide.application.DelayedEventsProcessor;
 import gama.api.GAMA;
 import gama.api.runtime.IWorkspaceManager;
 import gama.api.runtime.SystemInfo;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.api.utils.files.BufferingUtils;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 import gama.ui.application.workbench.ApplicationWorkbenchAdvisor;
+import gama.ui.application.workbench.StartupModelHelper;
 import gama.workspace.manager.WorkspaceModelsManager;
 
 /** This class controls all aspects of the application's execution */
@@ -111,6 +113,10 @@ public class Application implements IApplication {
 		});
 		final Display display = configureDisplay();
 		Object check = Display.getCurrent().syncCall(() -> GAMA.getWorkspaceManager().checkWorkspace());
+
+		if (!EXIT_OK.equals(check) && GamaPreferences.Interface.CORE_STARTUP_MODEL.getValue())
+			check = StartupModelHelper.getInstance().initialize();
+
 		if (!EXIT_OK.equals(check)) {
 			try {
 				createProcessor(display);

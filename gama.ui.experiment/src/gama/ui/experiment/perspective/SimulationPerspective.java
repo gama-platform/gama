@@ -16,6 +16,7 @@ import org.eclipse.ui.IPerspectiveFactory;
 import org.eclipse.ui.IPlaceholderFolderLayout;
 
 import gama.api.ui.IGui;
+import gama.dev.FLAGS;
 
 /**
  * The Class SimulationPerspective.
@@ -34,7 +35,10 @@ public class SimulationPerspective implements IPerspectiveFactory {
 
 		final IFolderLayout navigAndParam = layout.createFolder("navigAndParam", IPageLayout.LEFT, 0.3f, editor);
 		navigAndParam.addView(IGui.PARAMETER_VIEW_ID);
-		navigAndParam.addView(IGui.NAVIGATOR_VIEW_ID);
+
+		if (!FLAGS.SIMULATION_ONLY) 
+			navigAndParam.addView(IGui.NAVIGATOR_VIEW_ID);
+		
 		navigAndParam.addPlaceholder(IGui.ERROR_VIEW_ID);
 		navigAndParam.addPlaceholder(IGui.TEST_VIEW_ID);
 

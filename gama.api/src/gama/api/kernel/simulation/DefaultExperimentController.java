@@ -18,6 +18,7 @@ import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
 import gama.api.ui.IStatusMessage;
 import gama.dev.DEBUG;
+import gama.dev.FLAGS;
 
 /**
  * Default controller for GUI-based experiment execution in GAMA.
@@ -317,7 +318,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 					paused = true;
 					currentScope.getGui().getStatus().waitStatus("Reloading...", IStatusMessage.SIMULATION_ICON,
 							() -> {
-								currentScope.getGui().showLaunchingOverlay(experiment.getName());
+								currentScope.getGui().showLaunchingOverlay(experiment.getName(),!FLAGS.SIMULATION_ONLY);
 								experiment.reload();
 							});
 					if (wasRunning) return processUserCommand(_START_CMD);

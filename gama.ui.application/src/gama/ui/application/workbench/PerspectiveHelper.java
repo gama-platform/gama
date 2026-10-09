@@ -37,6 +37,7 @@ import gama.api.kernel.species.IModelSpecies;
 import gama.api.ui.IGui;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
+import gama.dev.FLAGS;
 
 /**
  * The Class PerspectiveHelper.
@@ -168,7 +169,10 @@ public class PerspectiveHelper {
 	public static final boolean openModelingPerspective(final boolean immediately, final boolean memorizeEditors) {
 		// AD 08/18: turn off autosave to prevent workspace corruption
 		// AD 04/26: turn off immediately to prevent locking
-		return openPerspective(PERSPECTIVE_MODELING_ID, false, false, memorizeEditors);
+		if(FLAGS.SIMULATION_ONLY)
+			return true;
+		else
+			return openPerspective(PERSPECTIVE_MODELING_ID, false, false, memorizeEditors);
 	}
 
 	/**
@@ -353,7 +357,7 @@ public class PerspectiveHelper {
 					// an inconsistent state after a failed launch.
 					if (currentSimulationPerspective != null) {
 						deleteCurrentSimulationPerspective();
-					} else if (isSimulationPerspective(oldDescriptor.getId()) && oldDescriptor instanceof SimulationPerspectiveDescriptor oldSimulation
+					} else if (oldDescriptor != null && isSimulationPerspective(oldDescriptor.getId()) && oldDescriptor instanceof SimulationPerspectiveDescriptor oldSimulation
 							&& !descriptor.equals(oldSimulation)) {
 						page.closePerspective(oldSimulation, false, false);
 						getPerspectiveRegistry().deletePerspective(oldSimulation);
@@ -372,7 +376,7 @@ public class PerspectiveHelper {
 			} finally {
 				// Delegate overlay creation to the GUI service so that the concrete
 				// implementation (SwtGui) can use the correct theme-aware icon and FlatButton.
-				if (isSimulationPerspective(perspectiveId)) { GAMA.getGui().showLaunchingOverlay(perspectiveId); }
+				if (isSimulationPerspective(perspectiveId)) { GAMA.getGui().showLaunchingOverlay(perspectiveId,!FLAGS.SIMULATION_ONLY); }
 			}
 		};
 		if (immediately) {

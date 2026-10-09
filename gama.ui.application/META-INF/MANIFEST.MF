@@ -16,10 +16,13 @@ Require-Bundle: gama.workspace,
  org.eclipse.e4.ui.workbench.renderers.swt,
  org.eclipse.e4.ui.workbench.swt,
  org.eclipse.e4.ui.css.core,
+ org.eclipse.emf.common,
  org.osgi.service.event,
  gama.api,
  gama.dependencies,
- gama.core
+ gama.core,
+ gama.export,
+ gaml.compiler
 Bundle-Vendor: UMMISCO
 Bundle-Version: 0.0.0.qualifier
 Bundle-ManifestVersion: 2

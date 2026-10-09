@@ -10,6 +10,10 @@
  ********************************************************************************************************/
 package gama.ui.application.workbench;
 
+import java.util.List;
+import java.util.ArrayList;
+import java.nio.file.Path;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -28,7 +32,22 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.internal.PluginActionBuilder;
 import org.eclipse.ui.internal.ide.application.IDEWorkbenchAdvisor;
 import org.osgi.service.prefs.BackingStoreException;
+import org.eclipse.ui.keys.IBindingService;	
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.internal.keys.BindingService;
+import org.eclipse.ui.keys.IBindingService;
+import org.eclipse.jface.bindings.Binding;
+import org.eclipse.jface.bindings.keys.KeySequence;
+import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.internal.WorkbenchWindow;
+import org.eclipse.ui.application.ActionBarAdvisor;
+import org.eclipse.ui.application.IActionBarConfigurer;
+import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.jface.dialogs.IDialogConstants;
 
+import gama.export.ui.SaveSimulationsArtifactsDialog;
 import gama.api.GAMA;
 import gama.api.additions.delegates.IEventLayerDelegate;
 import gama.api.additions.registries.GamaAdditionRegistry;
@@ -36,19 +55,24 @@ import gama.api.runtime.GamaExecutorService;
 import gama.api.runtime.SystemInfo;
 import gama.api.types.file.IGamaFile;
 import gama.api.ui.IGui;
+import gama.gaml.operators.Files;
 import gama.api.utils.files.FileUtils;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
+import gama.dev.FLAGS;
 import gama.ui.application.Application;
 import gama.ui.application.server.GamaGuiWebSocketServer;
 import gama.workspace.manager.WorkspaceModelsManager;
 import gama.workspace.nature.GamaNatures;
+import gama.export.ExportHelper;
+import gama.ui.application.workbench.StartupModelHelper;
+
 
 /**
  * The Class ApplicationWorkbenchAdvisor.
  */
 public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
-
+	static
 	{
 		DEBUG.OFF();
 	}
@@ -112,8 +136,9 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 			if (args[0].contains("--launcher.defaultAction")) { i += 2; }
 			if (i < args.length) {
 				String exp = args[i];
-				if (!exp.endsWith(".gamr")) {
-					WorkspaceModelsManager.instance.openModelPassedAsArgument(args[args.length - 1]);
+				String modelPath = args[args.length - 1];
+				if (!exp.endsWith(".gamr") && modelPath.endsWith(".gaml")) {
+					WorkspaceModelsManager.instance.openModelPassedAsArgument(modelPath);
 					return;
 				}
 				for (final IEventLayerDelegate delegate : GamaAdditionRegistry.getEventLayerDelegates()) {
@@ -122,20 +147,68 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 					}
 				}
 			}
-
 		}
 
-		if (GamaPreferences.Interface.CORE_STARTUP_MODEL.getValue()) {
-			IGamaFile<?, ?> file = GamaPreferences.Interface.CORE_DEFAULT_MODEL.getValue();
-			if (file != null && file.exists(null)) {
-				StringBuilder name = new StringBuilder().append(file.getPath(null));
-				String exp = GamaPreferences.Interface.CORE_DEFAULT_EXPERIMENT.getValue();
-				if (exp != null && !exp.isBlank()) { name.append("#").append(exp); }
-				WorkspaceModelsManager.instance.openModelPassedAsArgument(name.toString());
-			}
-
+		// Disable Ctrl+N (opens new wizard menu) if simulation mode
+		if (FLAGS.SIMULATION_ONLY)
+		{
+			IBindingService service = (IBindingService) PlatformUI.getWorkbench().getService(IBindingService.class);
+			
+			if (service instanceof BindingService) {
+				BindingService bindingService = (BindingService) service;
+				
+				try {
+					KeySequence ctrlN = KeySequence.getInstance("M1+N");
+					Binding[] currentBindings = bindingService.getBindings();
+					
+					// Create a list or array excluding the Ctrl+N binding
+					List<Binding> newBindingsList = new ArrayList<>();
+					
+					for (Binding binding : currentBindings) {
+						if (!ctrlN.equals(binding.getTriggerSequence())) {
+							newBindingsList.add(binding);
+						}
+					}
+					
+					// Update the binding manager with the filtered list
+					Binding[] newBindingsArray = newBindingsList.toArray(new Binding[0]);
+					bindingService.getBindingManager().setBindings(newBindingsArray);
+					
+					// Force Eclipse to refresh the system shortcuts
+					bindingService.savePreferences(bindingService.getActiveScheme(), newBindingsArray);
+					
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}	
 		}
 
+        if (FLAGS.SIMULATION_ONLY) {
+			
+            // IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+            for(IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
+
+            if (window instanceof WorkbenchWindow) {
+                IMenuManager menuBarManager = ((WorkbenchWindow) window).getMenuBarManager();
+                IContributionItem[] items = menuBarManager.getItems();
+                
+                for (IContributionItem item : items) {
+                    String id = item.getId();
+                    // Match the default Eclipse legacy menu IDs
+					// System.out.println(id);
+                    if ("file".equals(id) || "edit".equals(id) || "org.eclipse.search.menu".equals(id)) {
+                        item.setVisible(false);
+                    }
+                }
+                // Force the top navigation bar to redraw its layout
+                menuBarManager.update(true);
+            }
+        }}
+
+		// handle startup model mode
+		if (GamaPreferences.Interface.CORE_STARTUP_MODEL.getValue())
+			StartupModelHelper.getInstance().startSimulation();
+			
 	}
 
 	/** Qualifier of the workspace-scoped preference node holding the Wayland-warning dismissal flag. */
@@ -274,16 +347,74 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 	@Override
 	public boolean preShutdown() {
 		try {
+			if(FLAGS.SIMULATION_ONLY
+			   && StartupModelHelper.getInstance().areThereAnyArtifactsToSave()
+			   && GAMA.getGui()
+				.getDialogFactory()
+					.question("Warning","New simulation artifacts have been found. Do you want to save them ?")
+			)
+			{
+				IHandlerService handlerService =
+					(IHandlerService) PlatformUI.getWorkbench()
+						.getService(IHandlerService.class);
+
+				if (handlerService != null) {
+					try {
+						handlerService.executeCommand(
+							"gama.application.commands.SaveSimulationsArtifacts",
+							null
+						);
+
+					} catch (Exception exception) {
+						exception.printStackTrace();
+					}
+				}
+			// 	final SaveSimulationsArtifactsDialog dialog = new SaveSimulationsArtifactsDialog();
+			// 	final int result = dialog.open();
+				
+			// 	if (result == IDialogConstants.OK_ID)
+			// 	{
+			// 		Path outputParentDirectory = Path.of(dialog.getOutputPath());
+			// 		String outputDirectoryName = dialog.getOutputDirectoryName();
+
+			// 		Path targetSavePath = outputParentDirectory.resolve(outputDirectoryName);
+			// 		try {
+			// 			StartupModelHelper.getInstance().saveSimulationArtifacts(targetSavePath);
+			// 		} catch (final Exception exception) {
+			// 			System.out.println("An error occured while saving simulation artifacts : ");
+			// 			exception.printStackTrace();
+			// 			GAMA.getGui().getDialogFactory().error("An error occured while saving simulation artifacts.");
+			// 		}
+			// 	}
+			}			
+
 			GAMA.closeAllExperiments(true, true);
 			PerspectiveHelper.deleteCurrentSimulationPerspective();
 			// So that they are not saved to the workbench.xmi file
 			PerspectiveHelper.cleanPerspectives();
+
 		} catch (final Exception e) {
 			e.printStackTrace();
 		}
 
 		return super.preShutdown();
 
+	}
+
+	/**
+	 * disables the workspace saving by rerouting the responsible
+	 * function from IDEWorkbenchAdvisor to nothing, 
+	 * if the SIMULATION_ONLY flag is true.
+	 * 
+	 * It prevents a crash after closing the exported app, which
+	 * is caused by the partial metadatas of the embedded workspace.
+	 * 
+	 * This workaround is much simpler than cleaning the metadatas
+	 */
+	@Override
+	protected void disconnectFromWorkspace() {
+		if(! FLAGS.SIMULATION_ONLY)
+			super.disconnectFromWorkspace();
 	}
 
 	@Override

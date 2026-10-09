@@ -22,7 +22,7 @@ package gama.dev;
  *
  * DEFAULTS: -Denable_debug=true -Denable_logging=true -Duse_old_animator=true -Duse_old_sync_strategy=false
  * -Duse_global_preference_store=true -Duse_precise_autoscale=false -Dread_only=false -Duse_old_tabs=true
- * -Duse_legacy_drawers=false -Duse_delayed_resize=false
+ * -Duse_legacy_drawers=false -Duse_delayed_resize=false -Dsimulation_only
  *
  *
  * @author A. Drogoul Aug. 2021
@@ -88,5 +88,11 @@ public class FLAGS {
 	 * The Constant CAST_CONTAINER_CONTENTS.
 	 */
 	public static boolean CAST_CONTAINER_CONTENTS = get("cast_container_contents", true);
+
+		/**
+	 * Disables editing features. Must be used along with the following preferences set :
+	 * pref_workspace_remember, pref_workspace_path, pref_startup_model, pref_default_model, pref_default_experiment
+	 */
+	public static final boolean SIMULATION_ONLY = get("simulation_only", false);
 
 }

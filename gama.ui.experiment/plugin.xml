@@ -234,6 +234,47 @@
                      <reference
                            definitionId="isSimulationExisting">
                      </reference>
+                     <not>
+                        <systemTest property="simulation_only" value="true"/>
+                     </not>
+                  </and>
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="gama.application.commands.SelectExperiment"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.project.svg"
+                  label="Select Experiment"
+                  style="push"
+                  tooltip="Select another experiment to run.">
+               <visibleWhen
+                     checkEnabled="false">
+                  <and>
+                     <reference
+                           definitionId="isInSimulationPerspective">
+                     </reference>
+                     <reference
+                           definitionId="isSimulationExisting">
+                     </reference>
+                     <systemTest property="simulation_only" value="true"/>
+                  </and>
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="gama.application.commands.SaveSimulationsArtifacts"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/status/status.download.svg"
+                  label="Save Simulation Data"
+                  style="push"
+                  tooltip="Save the data of the previously run simulations, in the desired directory.">
+               <visibleWhen
+                     checkEnabled="false">
+                  <and>
+                     <reference
+                           definitionId="isInSimulationPerspective">
+                     </reference>
+                     <reference
+                           definitionId="isSimulationExisting">
+                     </reference>
+                     <systemTest property="simulation_only" value="true"/>
                   </and>
                </visibleWhen>
             </command>
@@ -448,11 +489,16 @@
                   tooltip="Open modeling perspective">
                <visibleWhen
                      checkEnabled="false">
-                  <not>
-                     <reference
-                           definitionId="isInModelingPerspective">
-                     </reference>
-                  </not>
+                  <and>
+                        <not>
+                        <reference
+                              definitionId="isInModelingPerspective">
+                        </reference>
+                        </not>
+                        <not>
+                              <systemTest property="simulation_only" value="true"/>
+                        </not>
+                  </and>
                </visibleWhen>
             </command>
             <command
@@ -508,6 +554,12 @@
                   label="Hide/Show Editor Area"
                   style="push"
                   tooltip="Hide or show the editors">
+               <visibleWhen
+                     checkEnabled="false">
+                        <not>
+                              <systemTest property="simulation_only" value="true"/>
+                        </not>
+               </visibleWhen>                  
             </command>
          </menu>
       </menuContribution>
@@ -523,11 +575,16 @@
                   tooltip="Open modeling perspective">
                <visibleWhen
                      checkEnabled="false">
-                  <not>
-                     <reference
-                           definitionId="isInModelingPerspective">
-                     </reference>
-                  </not>
+                  <and>
+                        <not>
+                              <systemTest property="simulation_only" value="true"/>
+                        </not>
+                        <not>
+                              <reference
+                                    definitionId="isInModelingPerspective">
+                              </reference>
+                        </not>
+                  </and>
                </visibleWhen>
             </command>
             <command
@@ -687,6 +744,47 @@
                      <reference
                            definitionId="isSimulationExisting">
                      </reference>
+                     <not>
+                     <systemTest property="simulation_only" value="true"/>
+                     </not>
+                  </and>
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="gama.application.commands.SelectExperiment"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.project.svg"
+                  label="Select Another Experiment"
+                  style="push"
+                  tooltip="Select another experiment to run.">
+               <visibleWhen
+                     checkEnabled="false">
+                  <and>
+                     <reference
+                           definitionId="isInSimulationPerspective">
+                     </reference>
+                     <reference
+                           definitionId="isSimulationExisting">
+                     </reference>
+                     <systemTest property="simulation_only" value="true"/>
+                  </and>
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="gama.application.commands.SaveSimulationsArtifacts"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/status/status.download.svg"
+                  label="Save Simulation Data"
+                  style="push"
+                  tooltip="Save the data of the previously run simulations, in the desired directory.">
+               <visibleWhen
+                     checkEnabled="false">
+                  <and>
+                     <reference
+                           definitionId="isInSimulationPerspective">
+                     </reference>
+                     <reference
+                           definitionId="isSimulationExisting">
+                     </reference>
+                     <systemTest property="simulation_only" value="true"/>
                   </and>
                </visibleWhen>
             </command>
@@ -797,9 +895,38 @@
             class="gama.ui.experiment.commands.CancelRun"
             commandId="gama.application.commands.Cancel">
          <activeWhen>
-            <reference
-                  definitionId="isInSimulationPerspective">
-            </reference>
+            <and>
+                  <reference
+                        definitionId="isInSimulationPerspective">
+                  </reference>
+                  <not>
+                        <systemTest property="simulation_only" value="true"/>
+                  </not>
+            </and>
+         </activeWhen>
+      </handler>
+      <handler
+            class="gama.ui.experiment.commands.SaveSimulationsArtifacts"
+            commandId="gama.application.commands.SaveSimulationsArtifacts">
+         <activeWhen>
+            <and>
+                  <reference
+                        definitionId="isInSimulationPerspective">
+                  </reference>
+                  <systemTest property="simulation_only" value="true"/>
+            </and>
+         </activeWhen>
+      </handler>
+      <handler
+            class="gama.ui.experiment.commands.SelectExperiment"
+            commandId="gama.application.commands.SelectExperiment">
+         <activeWhen>
+            <and>
+                  <reference
+                        definitionId="isInSimulationPerspective">
+                  </reference>
+                  <systemTest property="simulation_only" value="true"/>
+            </and>
          </activeWhen>
       </handler>
       <handler
@@ -818,14 +945,19 @@
             class="gama.ui.shared.commands.SwitchToModeling"
             commandId="gama.application.goto.modeling">
          <activeWhen>
-            <or>
-               <reference
-                     definitionId="isSimulationReady">
-               </reference>
-               <reference
-                     definitionId="isSimulationFinished">
-               </reference>
-            </or>
+            <and>
+                  <or>
+                  <reference
+                        definitionId="isSimulationReady">
+                  </reference>
+                  <reference
+                        definitionId="isSimulationFinished">
+                  </reference>
+                  </or>
+                  <not>
+                        <systemTest property="simulation_only" value="true"/>
+                  </not>
+            </and>
          </activeWhen>
       </handler>
       <handler
@@ -1205,6 +1337,12 @@
             defaultHandler="gama.ui.experiment.commands.HideShowEditors"
             id="gama.ui.hideShowEditors"
             name="Hide/Show Editors">
+            <visibleWhen
+                  checkEnabled="false">
+                  <not>
+                        <systemTest property="simulation_only" value="true"/>
+                  </not>
+            </visibleWhen>    
       </command>
       <command
             id="gama.ui.experiment.toolbar.simulation.menu"

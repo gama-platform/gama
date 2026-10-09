@@ -242,18 +242,36 @@
                icon="platform:/plugin/gama.ui.shared/icons_svg/light/generic/menu.update.svg"
                label="Check for Updates"
                style="push">
+               <visibleWhen
+                     checkEnabled="false">
+                        <not>
+                              <systemTest property="simulation_only" value="true"/>
+                        </not>
+               </visibleWhen>    
          </command>
          <command
                commandId="gama.ui.install"
                icon="platform:/plugin/gama.ui.shared/icons_svg/light/generic/menu.install.svg"
                label="Install new Plugins..."
                style="push">
+               <visibleWhen
+                     checkEnabled="false">
+                        <not>
+                              <systemTest property="simulation_only" value="true"/>
+                        </not>
+               </visibleWhen>    
          </command>
          <command 
                commandId="gama.ui.details"
                icon="platform:/plugin/gama.ui.shared/icons_svg/light/generic/menu.details.svg"
                label="Installation Details"
                style="push">
+            <visibleWhen
+                  checkEnabled="false">
+                  <not>
+                        <systemTest property="simulation_only" value="true"/>
+                  </not>
+            </visibleWhen> 
          </command>
          <separator
                name="gama.ui.shared.separator1"
@@ -280,12 +298,17 @@
                style="push">
             <visibleWhen
                   checkEnabled="false">
+               <and>
                <not>
                   <systemTest
                         property="osgi.os"
                         value="macosx">
                   </systemTest>
                </not>
+               <not>
+                  <systemTest property="simulation_only" value="true"/>
+               </not>
+               </and>   
             </visibleWhen>
          </command>
          <command
@@ -312,6 +335,12 @@
             defaultHandler="gama.ui.shared.commands.DetailsHandler"
             id="gama.ui.details"
             name="Installation details">
+            <visibleWhen
+                  checkEnabled="false">
+                  <not>
+                        <systemTest property="simulation_only" value="true"/>
+                  </not>
+            </visibleWhen> 
       </command>
       <command
             categoryId="gama.category"
@@ -324,12 +353,24 @@
             defaultHandler="gama.ui.shared.commands.InstallHandler"
             id="gama.ui.install"
             name="Install new plugins...">
+            <visibleWhen
+                  checkEnabled="false">
+                  <not>
+                        <systemTest property="simulation_only" value="true"/>
+                  </not>
+            </visibleWhen>    
       </command>
       <command
             categoryId="gama.category"
             defaultHandler="gama.ui.shared.commands.UpdateHandler"
             id="gama.ui.update"
             name="Check for updates">
+            <visibleWhen
+                  checkEnabled="false">
+                  <not>
+                        <systemTest property="simulation_only" value="true"/>
+                  </not>
+            </visibleWhen>    
       </command>
       <command
             categoryId="gama.category"
@@ -344,6 +385,7 @@
             class="gama.ui.shared.commands.PreferencesHandler"
             commandId="org.eclipse.ui.window.preferences">
          <activeWhen>
+            <and>
             <or>
                <reference
                      definitionId="isInModelingPerspective">
@@ -352,6 +394,10 @@
                      definitionId="isInSimulationPerspective">
                </reference>
             </or>
+            <not>
+                  <systemTest property="simulation_only" value="true"/>
+            </not> 
+            </and>
          </activeWhen>
       </handler>
    </extension>
