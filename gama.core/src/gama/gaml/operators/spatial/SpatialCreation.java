@@ -826,7 +826,8 @@ public class SpatialCreation {
 			usages = { @usage (
 					value = "returns nil if the operand is nil.") },
 			special_cases = {
-					"A side length ≤ 0 returns a point geometry at the agent's current location (or {0,0,0})." },
+					"A negative side length gives the same square as its absolute value.",
+					"A side length of 0 returns a point geometry at the agent's current location (or {0,0,0})." },
 			comment = "the centre of the square is by default the location of the current agent in which has been called this operator.",
 			examples = { @example (
 					value = "square(10)",
@@ -842,6 +843,9 @@ public class SpatialCreation {
 			@test ("square(10).area = 100"),
 			@test ("geometry negative_buf <- square(10) - 2.0; negative_buf.area < 100.0"),
 			@test ("square(0).area = 0.0"),
+			// negative sizes are accepted, and give the same square as their absolute values
+			@test ("square(-3).area = square(3).area"),
+			@test ("square(-3).area = rectangle(-3, -3).area"),
 			@test ("square(10) inter nil = nil"),
 			@test ("(square(10) union nil).area = 100.0"),
 			@test ("square(3).perimeter = 12.0"),
@@ -852,8 +856,9 @@ public class SpatialCreation {
 		IPoint location;
 		final IAgent a = scope.getAgent();
 		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
-		if (side_size <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaShapeFactory.buildSquare(side_size, location);
+		if (side_size == 0) return GamaShapeFactory.createFrom(location);
+		// a negative size gives the same square as its absolute value, like 'rectangle'
+		return GamaShapeFactory.buildSquare(Math.abs(side_size), location);
 	}
 
 	/**
@@ -973,7 +978,7 @@ public class SpatialCreation {
 			usages = { @usage (
 					value = "returns nil if the operand is nil.") },
 			special_cases = {
-					"If either dimension is ≤ 0, the resulting geometry degenerates (width or height of 0 produces a line; both ≤ 0 produces a point)." },
+					"A negative dimension gives the same rectangle as its absolute value. If either dimension is 0, the resulting geometry degenerates and its area is 0." },
 			comment = "the center of the rectangle is by default the location of the current agent in which has been called this operator.",
 			examples = { @example (
 					value = "rectangle(10, 5)",
@@ -984,7 +989,8 @@ public class SpatialCreation {
 	@tests ({
 			@test ("rectangle(10, 5).area = 50.0"),
 			@test ("geometry rect <- rectangle(10, 5); rect.area = 50.0"),
-			@test ("rectangle(-3, -3).area = square(-3).area"),
+			// negative dimensions are accepted, and give the same rectangle as their absolute values
+			@test ("rectangle(-3, -3).area = rectangle(3, 3).area"),
 			@test ("rectangle(-2, 3).area = rectangle(2, -3).area"),
 			@test ("rectangle(0, 0).area = 0.0"),
 			@test ("geometry bar <- rectangle(10, 2) at_location {5, 5}; bar.width = 10.0"),
