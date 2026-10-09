@@ -251,13 +251,17 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 		if (typeInfo != null) {
 			IType kt = fromTypeRef((TypeRef) typeInfo.getFirst());
 			IType ct = fromTypeRef((TypeRef) typeInfo.getSecond());
+			// With a single parameter ('list<int>'), it denotes the type of the contents. An explicit 'unknown'
+			// given as second parameter ('map<string, unknown>') must not be mistaken for an absent one: the first
+			// parameter would become the type of the contents, which would then be cast to it
+			final boolean singleParameter = typeInfo.getSecond() == null;
 
-			if (ct == null || ct == Types.NO_TYPE) {
+			if (singleParameter) {
 				ct = kt;
 				kt = null;
 			}
 
-			if (ct != null && ct != Types.NO_TYPE) { contentType = ct; }
+			if (ct != null && (ct != Types.NO_TYPE || !singleParameter)) { contentType = ct; }
 			if (kt != null && kt != Types.NO_TYPE) { keyType = kt; }
 		}
 
