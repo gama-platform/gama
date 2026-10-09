@@ -77,7 +77,7 @@ public class HeapControl {
 	    Runtime runtime = Runtime.getRuntime();
 	    long totalMem = convertToMeg(runtime.totalMemory());
 	    GAMA.getGui().getStatus().informStatus(
-		    "Memory freed (" + (totalMem - convertToMeg(runtime.freeMemory())) + "M used on " + totalMem + "M)",
+		    "Memory after garbage collection: " + (totalMem - convertToMeg(runtime.freeMemory())) + "M used on " + totalMem + "M",
 		    IStatusMessage.MEMORY_ICON);
 	});
 	GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(false, false).indent(16, 0).applyTo(bar);
