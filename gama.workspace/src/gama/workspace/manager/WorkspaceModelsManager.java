@@ -60,6 +60,7 @@ import gama.api.GAMA;
 import gama.api.additions.GamaBundleLoader;
 import gama.dev.DEBUG;
 import gama.dev.THREADS;
+import gama.dev.FLAGS;
 import gama.workspace.nature.GamaNatures;
 
 /**
@@ -429,6 +430,9 @@ public class WorkspaceModelsManager {
 	 * Link sample models to workspace.
 	 */
 	public void linkSampleModelsToWorkspace() {
+
+		if (FLAGS.SIMULATION_ONLY)
+			return;
 
 		final WorkspaceJob job = new WorkspaceJob("Updating the Built-in Models Library") {
 

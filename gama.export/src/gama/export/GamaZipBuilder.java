@@ -398,6 +398,8 @@ public class GamaZipBuilder {
             String defaultModelPreferenceOld = store.getInStore("pref_default_model","Enter Path");
             String defaultExperimentPreferenceOld = store.getInStore("pref_default_experiment","");
             String errorsInEditorPreferenceOld = store.getInStore("pref_errors_in_editor","true");
+            String askOutdatedPreferenceOld = store.getInStore("pref_ask_outdated","true");
+            String askRebuildPreferenceOld = store.getInStore("pref_ask_rebuild","true");
 
             //pref error display
             // show errors in editor
@@ -407,6 +409,8 @@ public class GamaZipBuilder {
             store.putInStore("pref_default_model",targetModelRelativePathStr);
             store.putInStore("pref_default_experiment",targetExperiment);
             store.putInStore("pref_errors_in_editor",false);
+            store.putInStore("pref_ask_outdated",false);
+            store.putInStore("pref_ask_rebuild",false);
             
             store.saveToProperties(GamaZipBuilder.gamaPrefsTmpPath.toString());
 
@@ -416,6 +420,8 @@ public class GamaZipBuilder {
             store.putInStore("pref_default_model",defaultModelPreferenceOld);
             store.putInStore("pref_default_experiment",defaultExperimentPreferenceOld);
             store.putInStore("pref_errors_in_editor",errorsInEditorPreferenceOld);
+            store.putInStore("pref_ask_outdated",askOutdatedPreferenceOld);
+            store.putInStore("pref_ask_rebuild",askRebuildPreferenceOld);
 
             archive.addEntry(
                 GamaZipBuilder.gamaPrefsTmpPath,
@@ -612,8 +618,11 @@ public class GamaZipBuilder {
             // WORKSPACE_IDENTIFIER
             archive.addEntryFromString("",GamaZipBuilder.embeddedWorkspacePathStr + File.separator + IWorkspaceManager.WORKSPACE_IDENTIFIER);
 
-            //WORKSPACE MODEL IDENTIFIER
+            // WORKSPACE MODEL IDENTIFIER
             archive.addEntryFromString("",GamaZipBuilder.embeddedWorkspacePathStr + File.separator + GAMA.getWorkspaceManager().getModelIdentifier());
+            
+            // WORKSPACE REBUILT METADATA FILE
+            archive.addEntryFromString("",GamaZipBuilder.embeddedWorkspacePathStr + File.separator + ".rebuild");
 
             /////////////////////////
             // Embedding the JDK   //

@@ -36,6 +36,7 @@ import gama.api.GAMA;
 import gama.api.runtime.IWorkspaceManager;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
+import gama.dev.FLAGS;
 import gama.workspace.WorkspaceActivator;
 import gama.export.ExportHelper;
 
@@ -293,7 +294,7 @@ public class WorkspaceManager implements IWorkspaceManager {
 			File[] files = workspaceDir.listFiles((FileFilter) file -> ".rebuild".equals(file.getName()));
 			boolean rebuild = false;
 			if (files != null && files.length == 1) {
-				if (files[0].exists()) { files[0].delete(); }
+				if (!FLAGS.SIMULATION_ONLY && files[0].exists()) { files[0].delete(); }
 				rebuild = true;
 			}
 
@@ -554,9 +555,9 @@ public class WorkspaceManager implements IWorkspaceManager {
 			if (remember) {
 				final String ret = checkWorkspaceDirectory(lastUsedWs, false, false, false);
 				if (ret != null) {
-					remember = "models".equals(ret) && askBeforeUsingOutdatedWorkspace()
-							&& GAMA.getGui().getDialogFactory().question("Different version of the models library",
-									"The workspace contains a different version of the models library. Do you want GAMA to proceed and update it ?");
+					remember = "models".equals(ret) && (!askBeforeUsingOutdatedWorkspace()
+							|| GAMA.getGui().getDialogFactory().question("Different version of the models library",
+									"The workspace contains a different version of the models library. Do you want GAMA to proceed and update it ?"));
 					if (remember) { clearWorkspace(true); }
 				}
 			}
