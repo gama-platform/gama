@@ -19,6 +19,7 @@ import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
@@ -39,6 +40,9 @@ public class HeapControl {
     static {
 	DEBUG.OFF();
     }
+
+    /** Refresh period of the memory label, in ms. */
+    private static final int REFRESH_DELAY = 2000;
 
     /** The item. */
     ToolItem item;
@@ -62,21 +66,33 @@ public class HeapControl {
 		.equalWidth(false).applyTo(composite);
 	GamaToolbarSimple bar = new GamaToolbarSimple(composite, SWT.NONE);
 	bar.space(16);
-	bar.button("editor/command.find", null, "Search GAML reference", e -> {
+	ToolItem find = bar.button("editor/command.find", null, "Search GAML reference", e -> {
 	    final GamlAccessContents2 quickAccessDialog = new GamlAccessContents2();
 	    quickAccessDialog.open();
 	});
+	find.setText("FIND...");
 	item = bar.button("generic/garbage.collect", "", "", e -> {
+	    System.gc();
+	    updateLabel(bar);
 	    Runtime runtime = Runtime.getRuntime();
 	    long totalMem = convertToMeg(runtime.totalMemory());
-	    System.gc();
-	    totalMem = convertToMeg(runtime.totalMemory());
 	    GAMA.getGui().getStatus().informStatus(
-		    "Compact memory (" + (totalMem - convertToMeg(runtime.freeMemory())) + "M on " + totalMem + "M)",
+		    "Memory freed (" + (totalMem - convertToMeg(runtime.freeMemory())) + "M used on " + totalMem + "M)",
 		    IStatusMessage.MEMORY_ICON);
 	});
 	GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(false, false).indent(16, 0).applyTo(bar);
 	bar.addListener(SWT.MouseEnter, e -> updateToolTip());
+	updateLabel(bar);
+	final Display display = parent.getDisplay();
+	display.timerExec(REFRESH_DELAY, new Runnable() {
+
+	    @Override
+	    public void run() {
+		if (bar.isDisposed()) return;
+		updateLabel(bar);
+		display.timerExec(REFRESH_DELAY, this);
+	    }
+	});
 
 	new StatusControlContribution().fill(bar, 0);
 	parent.requestLayout();
@@ -102,9 +118,25 @@ public class HeapControl {
      */
     protected void updateToolTip() {
 	Runtime runtime = Runtime.getRuntime();
-	long totalMem = convertToMeg(runtime.totalMemory());
-	item.setToolTipText(
-		"Memory used: " + (totalMem - convertToMeg(runtime.freeMemory())) + "M on " + totalMem + "M");
+	long maxMem = convertToMeg(runtime.maxMemory());
+	long usedMem = convertToMeg(runtime.totalMemory() - runtime.freeMemory());
+	item.setToolTipText("Memory used: " + usedMem + "M over " + maxMem + "M. Click to free unused memory.");
+    }
+
+    /**
+     * Updates the "MEM xx%" label (used heap over maximum heap) and colors it according to the load.
+     */
+    private void updateLabel(final GamaToolbarSimple bar) {
+	if (item == null || item.isDisposed()) return;
+	Runtime runtime = Runtime.getRuntime();
+	int percent = (int) Math.round(100d * (runtime.totalMemory() - runtime.freeMemory()) / runtime.maxMemory());
+	String text = "MEM " + percent + "%";
+	if (!text.equals(item.getText())) {
+	    item.setText(text);
+	    bar.requestLayout();
+	    bar.getParent().requestLayout();
+	}
+	updateToolTip();
     }
 
     /**
