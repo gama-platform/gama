@@ -22,6 +22,11 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.core.runtime.Platform;
 import com.google.inject.Injector;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.runtime.CoreException;
 
 import gama.api.GAMA;
 import gama.api.compilation.GamlCompilationError;
@@ -64,6 +69,45 @@ public class StartupModelHelper
 
     public Object initialize()
     {
+        //////////////////////////////////////////////////
+        // Resolving projects in the embedded workspace //
+        //////////////////////////////////////////////////
+
+        IWorkspace workspace = ResourcesPlugin.getWorkspace();
+        IWorkspaceRoot root = workspace.getRoot();
+
+        try (Stream<Path> stream = 
+            Files.walk(Path.of(ExportHelper.toAbsoluteFromEmbeddedWorkspacePath("")),1))
+        {
+            stream.forEach(filePath -> {
+                try {
+                    Path projectMetadataFilePath = filePath.resolve(".project");
+
+                    if(! Files.exists(projectMetadataFilePath) || Files.isDirectory(projectMetadataFilePath))
+                        return;
+                    
+                    IPath projectFilePath = 
+                        new org.eclipse.core.runtime.Path(projectMetadataFilePath.toString());
+
+                    IProjectDescription description = workspace.loadProjectDescription(projectFilePath);
+
+                    IProject project = root.getProject(description.getName());
+
+                    if (!project.exists()) {
+                        project.create(description, null);
+                    }
+                    if (!project.isOpen()) {
+                        project.open(null);
+                    }
+
+                } catch (CoreException ce) {
+                    ce.printStackTrace();
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         experiment = GamaPreferences.Interface.CORE_DEFAULT_EXPERIMENT.getValue();
         boolean experimentHasBeenPicked = true;
 

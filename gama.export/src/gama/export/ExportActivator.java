@@ -16,9 +16,9 @@ import gama.dev.FLAGS;
 
 public class ExportActivator implements BundleActivator {
 
-	public static String appRootPathStr = null;
+	protected static String appRootPathStr = null;
 
-	public static String eclipsePathStr = null;
+	protected static String eclipsePathStr = null;
 
     @Override
     public void start(BundleContext context) throws Exception {
@@ -43,14 +43,6 @@ public class ExportActivator implements BundleActivator {
                 .getParent().getParent().toString();
 
 
-        // System.out.println("IS WINDOWS : " + SystemInfo.isWindows());
-        // System.out.println("INDEX : " + index);
-        // System.out.println("COMPARISION FIRST CHAR : " + (appRootPathStr.charAt(index) == '\\'));
-        // int charValue = (int) appRootPathStr.charAt(index);
-        // System.out.println("FIRST CHAR ORD : " + charValue);
-        // System.out.println("ECLIPSE HOME LOCATION : " + System.getProperty("eclipse.home.location"));
-        // System.out.println("APP ROOT PATH : " + appRootPathStr);
-        // System.out.println("APP ROOT PATH SUBSTRING : " + appRootPathStr.substring(1));
     }
 
     @Override

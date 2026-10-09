@@ -534,15 +534,9 @@ public class GamaZipBuilder {
                                 final boolean isGaml = currentFileName.toLowerCase().endsWith(".gaml");
                                 String entryName;
 
-                                // User project
-                                if(filePath.startsWith(targetWorkspacePath))
-                                    entryName = filePath.toString().replace(
-                                        projectPath.getParent().toString(),
-                                        GamaZipBuilder.embeddedWorkspacePathStr);
-                                // library project -> preserve path instead of rewriting metadatas
-                                else
-                                    entryName = eclipsePath
-                                        .relativize(filePath).toString();                                   
+                                entryName = filePath.toString().replace(
+                                    projectPath.getParent().toString(),
+                                    GamaZipBuilder.embeddedWorkspacePathStr);
 
                                 // Rewrite, in every GAML file, the paths of the data
                                 // files that have been rerouted into the include dir.
@@ -596,61 +590,23 @@ public class GamaZipBuilder {
                     addEntryAndUpdateGamlImports(linkedFilesMap.get(virtualPathStr),includeDir,externalDataFiles,entryName, archive);
                 }
 
-                // adding the corrected .project file to the archive
-                String projectMetadataFileContent = Files.readString(projectPath.resolve(".project"), StandardCharsets.UTF_8);
+                ///////////////////////////////////////////////////////
+                // adding the corrected .project file to the archive //
+                ///////////////////////////////////////////////////////
 
+                String projectMetadataFileContent = Files.readString(projectPath.resolve(".project"), StandardCharsets.UTF_8);
+                String projectMetadataFileEntryName;
+
+                projectMetadataFileEntryName = embeddedWorkspacePathStr 
+                            + File.separator 
+                            + projectName 
+                            + File.separator 
+                            + ".project";
+                                
                 archive.addEntryFromString(
                     projectMetadataFileContent.replaceAll("(?s)<linkedResources>.*</linkedResources>",""),
-                    embeddedWorkspacePathStr + File.separator + projectName + File.separator + ".project"
+                    projectMetadataFileEntryName
                 );
-            }
-
-            /////////////////////////////
-            // copy resources metadata //
-            /////////////////////////////
-
-            final Path projectResourcesMetadataPath = targetWorkspacePath
-                .resolve(".metadata")
-                .resolve(".plugins")
-                .resolve("org.eclipse.core.resources");
-
-            Path embeddedWorkspacePath = Path.of(embeddedWorkspacePathStr);
-
-            // WORKSPACE RESOURCE METADATA
-            try (Stream<Path> stream = Files.walk(projectResourcesMetadataPath)) {
-                stream.forEach(filePath -> {
-                    try 
-                    {
-                        Path relativeFilePath = targetWorkspacePath.relativize(filePath);
-
-                        // .history, .projects, .root or .safetable
-                        
-                        String subMetadataName = relativeFilePath.getNameCount() >= 4 ?
-                            relativeFilePath.getName(3).toString() : "";
-
-                        if( ! Files.isDirectory(filePath) 
-                            && ! subMetadataName.equals(".history")
-                            && ! subMetadataName.equals(".projects")
-                        )
-                        {
-                            String entryName = embeddedWorkspacePath
-                                .resolve(relativeFilePath).toString();
-
-                            archive.addEntry(filePath,entryName);
-                        }
-                    } 
-                    catch (IOException e)
-                    {
-                        throw new RuntimeException("Failed to copy: " + filePath, e);
-                    }
-                });
-                
-            } catch (RuntimeException e) {
-                // Unwrap IOException from the stream loop
-                if (e.getCause() instanceof IOException) {
-                    throw (IOException) e.getCause();
-                }
-                throw e;
             }
             
             // WORKSPACE_IDENTIFIER
