@@ -12,9 +12,7 @@ package gama.extension.serialize;
 
 import org.osgi.framework.BundleContext;
 
-import gama.api.kernel.serialization.BinarySerialisation;
 import gama.dependencies.GamaBundleActivator;
-import gama.extension.serialize.fst.FSTBinarySerialiser;
 
 /**
  * The Class SerializeActivator.
@@ -34,7 +32,7 @@ public class SerializeActivator extends GamaBundleActivator {
 	 */
 	@Override
 	public void initialize(final BundleContext context) {
-		BinarySerialisation.setBinarySerializerClass(FSTBinarySerialiser.class);
+		SerializationPreferences.apply();
 	}
 
 }
