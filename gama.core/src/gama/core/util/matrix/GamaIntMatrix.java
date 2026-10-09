@@ -361,15 +361,20 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	@Override
 	public boolean equals(final Object m) {
 		if (this == m) return true;
+		// a matrix of floats that holds the same values is equal to this one
+		if (m instanceof GamaFloatMatrix floats) return floats.equals(this);
 		if (!(m instanceof GamaIntMatrix mat)) return false;
-		return Arrays.equals(this.matrix, mat.matrix);
+		return numCols == mat.numCols && numRows == mat.numRows && Arrays.equals(this.matrix, mat.matrix);
 	}
 
 	// TODO Remove to improve performances if necessary
 	//
 	@Override
 	public int hashCode() {
-		return Arrays.hashCode(matrix);
+		// computed as for a matrix of floats, which can be equal to this one
+		int result = 1;
+		for (final int element : matrix) { result = 31 * result + Double.hashCode(element); }
+		return result;
 	}
 
 	/**

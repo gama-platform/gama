@@ -331,8 +331,15 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 	@Override
 	public boolean equals(final Object m) {
 		if (this == m) return true;
+		// a matrix of integers that holds the same values is equal to this one
+		if (m instanceof GamaIntMatrix ints) {
+			if (numCols != ints.numCols || numRows != ints.numRows) return false;
+			final double[] values = getMatrix();
+			for (int i = 0; i < values.length; i++) { if (values[i] != ints.matrix[i]) return false; }
+			return true;
+		}
 		if (!(m instanceof GamaFloatMatrix mat)) return false;
-		return Arrays.equals(this.getMatrix(), mat.getMatrix());
+		return numCols == mat.numCols && numRows == mat.numRows && Arrays.equals(this.getMatrix(), mat.getMatrix());
 	}
 
 	// TODO Remove to improve performances if necessary

@@ -2239,7 +2239,15 @@ public class Maths {
 			examples = { @example (
 					value = "matrix([[1, 2], [3, 4]]) / matrix([[1, 2], [3, 4]])",
 					equals = "matrix([[1, 1], [1, 1]])") })
-	@test ("matrix([[1, 2], [3, 4]]) / matrix([[1, 2], [3, 4]]) = matrix([[1.0, 1.0], [1.0, 1.0]])")
+	@tests ({
+			@test ("matrix([[1, 2], [3, 4]]) / matrix([[1, 2], [3, 4]]) = matrix([[1.0, 1.0], [1.0, 1.0]])"),
+			// matrices of integers and of floats are equal when they hold the same values
+			@test ("matrix([[1, 2], [3, 4]]) = matrix([[1.0, 2.0], [3.0, 4.0]])"),
+			@test ("matrix([[1.0, 2.0], [3.0, 4.0]]) = matrix([[1, 2], [3, 4]])"),
+			@test ("matrix([[1, 2], [3, 4]]) != matrix([[1.5, 2.0], [3.0, 4.0]])"),
+			// the same values arranged differently do not make equal matrices
+			@test ("matrix([[1, 2, 3, 4]]) != matrix([[1, 2], [3, 4]])")
+	})
 	public static IMatrix opDivide(final IScope scope, final IMatrix a, final IMatrix b) {
 		return a.divides(scope, b);
 	}
