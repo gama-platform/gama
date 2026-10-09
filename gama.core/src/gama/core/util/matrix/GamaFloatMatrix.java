@@ -268,11 +268,16 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 	 */
 	@Override
 	public IMatrix _opAppendVertically(final IScope scope, final IMatrix b) {
-		if (b instanceof GamaFloatMatrix gfm) {
-			final double[] mab = ArrayUtils.addAll(getMatrix(), gfm.getMatrix());
-			return new GamaFloatMatrix(numCols, numRows + gfm.getRows(scope), mab);
-		}
-		return this;
+		// A matrix of objects: the result is one too
+		if (b instanceof GamaObjectMatrix)
+			return GamaObjectMatrix.from(numCols, numRows, this)._opAppendVertically(scope, b);
+		// Matrices of integers are converted to floats
+		final GamaFloatMatrix gfm = from(scope, b);
+		if (gfm == null) return this;
+		if (numCols != gfm.numCols)
+			throw GamaRuntimeException.error(" The dimensions of the matrices do not correspond", scope);
+		final double[] mab = ArrayUtils.addAll(getMatrix(), gfm.getMatrix());
+		return new GamaFloatMatrix(numCols, numRows + gfm.getRows(scope), mab);
 	}
 
 	/**

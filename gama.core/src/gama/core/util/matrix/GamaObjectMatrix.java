@@ -210,7 +210,13 @@ public class GamaObjectMatrix extends GamaMatrix<Object> {
 
 	@Override
 	public IMatrix<?> _opAppendVertically(final IScope scope, final IMatrix b) {
-		final Object[] mab = ArrayUtils.addAll(getMatrix(), ((GamaObjectMatrix) b).getMatrix());
+		// Matrices of integers or floats are converted to matrices of objects
+		final GamaObjectMatrix other =
+				b instanceof GamaObjectMatrix gom ? gom : from(b.getCols(scope), b.getRows(scope), b);
+		if (other == null) return this;
+		if (numCols != other.numCols)
+			throw GamaRuntimeException.error(" The dimensions of the matrices do not correspond", scope);
+		final Object[] mab = ArrayUtils.addAll(getMatrix(), other.getMatrix());
 		final IType<?> newContentsType =
 				GamaType.findCommonType(getGamlType().getContentType(), b.getGamlType().getContentType());
 		return new GamaObjectMatrix(numCols, numRows + b.getRows(scope), mab, newContentsType);

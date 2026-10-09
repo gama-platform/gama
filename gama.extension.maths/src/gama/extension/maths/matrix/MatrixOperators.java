@@ -278,7 +278,10 @@ public class MatrixOperators {
 			@test ("matrix<int> whole1 <- matrix([[1, 2], [3, 4]]); matrix<float> decimal1 <- matrix([[5.5, 6.5], [7.5, 8.5]]); append_vertically(whole1, decimal1).rows = 4"),
 			@test ("matrix<int> whole2 <- matrix([[1, 2], [3, 4]]); matrix<float> decimal2 <- matrix([[5.5, 6.5], [7.5, 8.5]]); append_vertically(whole2, decimal2).columns = 2"),
 			@test ("matrix<int> whole3 <- matrix([[1, 2], [3, 4]]); matrix<float> decimal3 <- matrix([[5.5, 6.5], [7.5, 8.5]]); append_vertically(whole3, decimal3)[0, 2] = 5.5"),
-			@test ("matrix<int> whole4 <- matrix([[1, 2], [3, 4]]); matrix<float> decimal4 <- matrix([[5.5, 6.5], [7.5, 8.5]]); append_vertically(decimal4, whole4)[1, 3] = 4.0")
+			@test ("matrix<int> whole4 <- matrix([[1, 2], [3, 4]]); matrix<float> decimal4 <- matrix([[5.5, 6.5], [7.5, 8.5]]); append_vertically(decimal4, whole4)[1, 3] = 4.0"),
+			@test ("matrix<string> words <- matrix([[\"a\", \"b\"], [\"c\", \"d\"]]); matrix<int> whole5 <- matrix([[1, 2], [3, 4]]); append_vertically(words, whole5).rows = 4"),
+			// the two matrices must have the same number of columns
+			@test ("is_error(append_vertically(matrix([[1, 2], [3, 4]]), matrix([[1, 2, 3]])))")
 	})
 	public static IMatrix opAppendVertically(final IScope scope, final IMatrix a, final IMatrix b) {
 		return a._opAppendVertically(scope, b);
@@ -311,7 +314,10 @@ public class MatrixOperators {
 			@test ("matrix<int> whole1 <- matrix([[1, 2], [3, 4]]); matrix<float> decimal1 <- matrix([[5.5, 6.5], [7.5, 8.5]]); append_horizontally(whole1, decimal1).columns = 4"),
 			@test ("matrix<int> whole2 <- matrix([[1, 2], [3, 4]]); matrix<float> decimal2 <- matrix([[5.5, 6.5], [7.5, 8.5]]); append_horizontally(whole2, decimal2).rows = 2"),
 			@test ("matrix<int> whole3 <- matrix([[1, 2], [3, 4]]); matrix<float> decimal3 <- matrix([[5.5, 6.5], [7.5, 8.5]]); append_horizontally(whole3, decimal3)[2, 0] = 5.5"),
-			@test ("matrix<int> whole4 <- matrix([[1, 2], [3, 4]]); matrix<float> decimal4 <- matrix([[5.5, 6.5], [7.5, 8.5]]); append_horizontally(decimal4, whole4)[3, 1] = 4.0")
+			@test ("matrix<int> whole4 <- matrix([[1, 2], [3, 4]]); matrix<float> decimal4 <- matrix([[5.5, 6.5], [7.5, 8.5]]); append_horizontally(decimal4, whole4)[3, 1] = 4.0"),
+			@test ("matrix<string> words <- matrix([[\"a\", \"b\"], [\"c\", \"d\"]]); matrix<int> whole5 <- matrix([[1, 2], [3, 4]]); append_horizontally(words, whole5).columns = 4"),
+			// the two matrices must have the same number of rows
+			@test ("is_error(append_horizontally(matrix([[1, 2], [3, 4]]), matrix([[1, 2, 3]])))")
 	})
 	public static IMatrix opAppendHorizontally(final IScope scope, final IMatrix a, final IMatrix b) {
 		return a._opAppendHorizontally(scope, b);

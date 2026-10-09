@@ -97,10 +97,15 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	@Override
 	public IMatrix _opAppendVertically(final IScope scope, final IMatrix b) {
 		if (b instanceof GamaIntMatrix gfm) {
+			if (numCols != gfm.numCols)
+				throw GamaRuntimeException.error(" The dimensions of the matrices do not correspond", scope);
 			final int[] mab = ArrayUtils.addAll(getMatrix(), gfm.getMatrix());
 			return new GamaIntMatrix(numCols, numRows + gfm.getRows(scope), mab);
 		}
-		return this;
+		// A matrix of another kind: the result is of the most general of the two (objects, otherwise floats)
+		if (b instanceof GamaObjectMatrix)
+			return GamaObjectMatrix.from(numCols, numRows, this)._opAppendVertically(scope, b);
+		return GamaFloatMatrix.from(scope, this)._opAppendVertically(scope, b);
 	}
 
 	/** The cell size. */
