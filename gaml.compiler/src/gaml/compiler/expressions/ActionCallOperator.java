@@ -11,7 +11,6 @@
 package gaml.compiler.expressions;
 
 import static gama.api.exceptions.GamaRuntimeException.error;
-import static gama.api.exceptions.GamaRuntimeException.warning;
 
 import gama.api.GAMA;
 import gama.api.compilation.artefacts.IArtefact;
@@ -122,7 +121,10 @@ public class ActionCallOperator implements IOperator {
 		// the executer is not available. Can happen in rare cases (like the one in Issue #3493).
 		if (executer == null) {
 			GAMA.reportError(scope,
-					warning(getName() + " is not available in the context of " + scope.getAgent(), scope), false);
+					error("Action '" + getName() + "' is not available in the context of " + scope.getAgent()
+							+ ". Check that it is defined for this agent; actions defined in 'global' must be called "
+							+ "on the simulation (e.g. ask simulation { do " + getName() + "(); }).", scope),
+					false);
 		}
 		return executer;
 	}
@@ -194,25 +196,36 @@ public class ActionCallOperator implements IOperator {
 	}
 
 	/**
-	 * Returns a scope-resolved copy of the arguments for this call.
+	 * Evaluates the arguments for this call in the caller's scope.
 	 *
 	 * <p>
 	 * A fresh copy is produced on every call because argument expressions may contain dynamic references (e.g. local
-	 * variables) that must be re-evaluated against the current scope. See issues #2943 and #2922, as well as the
-	 * multiple-parallel-simulations case.
+	 * variables) that must be re-evaluated against the current scope. Evaluating them before the action target is
+	 * pushed also ensures references such as {@code myself.attribute} use the caller's context rather than the
+	 * callee's. See issues #2943 and #2922, as well as the multiple-parallel-simulations case.
 	 * </p>
 	 *
 	 * @param scope
 	 *            the current execution scope
-	 * @return resolved {@link Arguments}, or {@code null} when this action accepts no arguments
+	 *
+	 * @return evaluated {@link Arguments}, or {@code null} when this action accepts no arguments
 	 */
 	public Arguments getRuntimeArgs(final IScope scope) {
 		if (parameters == null) return null;
-		return parameters.resolveAgainst(scope);
+		return parameters.evaluateAgainst(scope);
 	}
 
 	@Override
 	public boolean isConst() { return false; }
+
+	@Override
+	public boolean isAllowedInParameters() { return false; }
+
+	@Override
+	public String getParameterRestrictionReason() { return """
+			Action calls cannot be used to initialize experiment parameters. Parameter defaults are evaluated before \
+			a simulation is created, so the action has no simulation context. Use a simulation-independent \
+			expression or redeclare the parameter in the experiment."""; }
 
 	@Override
 	public String getTitle() {

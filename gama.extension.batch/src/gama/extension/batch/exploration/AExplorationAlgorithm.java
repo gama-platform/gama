@@ -57,7 +57,6 @@ import gama.api.types.map.IMap;
 import gama.api.utils.StringUtils;
 import gama.api.utils.files.FileUtils;
 import gama.api.utils.prefs.GamaPreferences;
-import gama.core.experiment.ExperimentAgent;
 import gama.core.experiment.parameters.ParameterAdapter;
 import gama.core.experiment.parameters.ParametersSet;
 import gama.extension.batch.BatchAgent;
@@ -81,10 +80,9 @@ import one.util.streamex.StreamEx;
 public abstract class AExplorationAlgorithm extends Symbol implements IExploration {
 
 	/** The Constant CLASSES. */
-	public static final List<Class<?>> CLASSES =
-			Arrays.asList(GeneticAlgorithm.class, SimulatedAnnealing.class, HillClimbing.class, TabuSearch.class,
-					TabuSearchReactive.class, Exploration.class, Swarm.class, SobolExploration.class,
-					MorrisExploration.class, StochanalysisExploration.class, BetaExploration.class);
+	public static final List<Class<?>> CLASSES = Arrays.asList(GeneticAlgorithm.class, SimulatedAnnealing.class,
+			HillClimbing.class, TabuSearch.class, TabuSearchReactive.class, Exploration.class, Swarm.class,
+			SobolExploration.class, MorrisExploration.class, StochanalysisExploration.class, BetaExploration.class);
 
 	/** The current experiment. */
 	protected BatchAgent currentExperiment;
@@ -112,9 +110,7 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	public AExplorationAlgorithm(final IDescription desc) {
 		super(desc);
 		if (hasFacet(IKeyword.BATCH_VAR_OUTPUTS)) { outputsExpression = getFacet(IKeyword.BATCH_VAR_OUTPUTS); }
-		if (hasFacet(IKeyword.BATCH_RAW_RESULTS)) { 
-			outputFilePath = getFacet(IKeyword.BATCH_RAW_RESULTS); 
-		}
+		if (hasFacet(IKeyword.BATCH_RAW_RESULTS)) { outputFilePath = getFacet(IKeyword.BATCH_RAW_RESULTS); }
 	}
 
 	/**
@@ -151,14 +147,12 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 			}
 		});
 
-
 		exp.add(new ParameterAdapter("Sampled points", BatchAgent.EXPLORATION_EXPERIMENT, IType.STRING) {
 			long estimatedSamples = -1;
+
 			@Override
 			public Object value() {
-				if (estimatedSamples < 0) {
-					estimatedSamples = estimateSamples(agent);
-				}
+				if (estimatedSamples < 0) { estimatedSamples = estimateSamples(agent); }
 				return estimatedSamples;
 			}
 		});
@@ -166,11 +160,12 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 		exp.add(new ParameterAdapter("Simulation runs", BatchAgent.EXPLORATION_EXPERIMENT, IType.STRING) {
 
 			long estimatedSamples = -1;
+
 			@Override
 			public Object value() {
 				if (estimatedSamples < 0) {
 					String xpm = IExploration.METHODS[CLASSES.indexOf(AExplorationAlgorithm.this.getClass())];
-					int repeat = (xpm != SOBOL && xpm != MORRIS) ? agent.getSeeds().length : 1;
+					int repeat = xpm != SOBOL && xpm != MORRIS ? agent.getSeeds().length : 1;
 					estimatedSamples = estimateSamples(agent) * repeat;
 				}
 				return estimatedSamples;
@@ -250,8 +245,8 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 		return switch (method) {
 			case MORRIS:
 				yield MorrisSampling.makeMorrisSamplingOnly(hasFacet(MorrisExploration.NB_LEVELS)
-						? Cast.asInt(scope, getFacet(MorrisExploration.NB_LEVELS).value(scope))
-						: Morris.DEFAULT_LEVELS, sample_size, parameters, scope);
+						? Cast.asInt(scope, getFacet(MorrisExploration.NB_LEVELS).value(scope)) : Morris.DEFAULT_LEVELS,
+						sample_size, parameters, scope);
 			case IKeyword.LHS:
 				yield LatinhypercubeSampling.latinHypercubeSamples(sample_size, parameters,
 						scope.getRandom().getGenerator(), scope,
@@ -278,9 +273,9 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 			case IExploration.FROM_FILE:
 				yield buildParametersFromCSV(scope, Cast.asString(scope, getFacet(IKeyword.FROM).value(scope)));
 			default:
-				yield hasFacet(IExploration.SAMPLE_SIZE) ? 
-						RandomSampling.uniformSampling(scope, sample_size, parameters) : 
-							buildParameterSets(scope, new ArrayList<>(), 0);
+				yield hasFacet(IExploration.SAMPLE_SIZE)
+						? RandomSampling.uniformSampling(scope, sample_size, parameters)
+						: buildParameterSets(scope, new ArrayList<>(), 0);
 		};
 
 	}
@@ -314,11 +309,17 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	@SuppressWarnings ("rawtypes")
 	public List<ParametersSet> buildParameterSets(final IScope scope, final List<ParametersSet> sets, final int index) {
 		if (sets == null) {
-			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("Cannot build a sample with empty parameter set", scope), true);
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.error("Cannot build a sample with a null parameter set", scope), true);
+			return Collections.EMPTY_LIST;
 		}
 		final List<Batch> variables = currentExperiment.getParametersToExplore();
 		List<ParametersSet> sets2 = new ArrayList<>();
-		if (variables.isEmpty()) return sets2;
+		if (variables.isEmpty()) {
+			// No parameter to explore: explore the initial state with a single empty set of parameters
+			sets2.add(new ParametersSet());
+			return sets2;
+		}
 		if (sets.isEmpty()) { sets.add(new ParametersSet()); }
 		final IParameter.Batch var = variables.get(index);
 		for (ParametersSet solution : sets) {
@@ -353,28 +354,35 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 		if (!parento.exists()) {
 			try {
 				if (!parento.mkdirs()) {
-					GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.create(new Exception("Unknown reason"), scope), true);
+					GAMA.reportAndThrowIfNeeded(scope,
+							GamaRuntimeException.create(new Exception("Unknown reason"), scope), true);
 				}
 			} catch (Exception e) {
-				GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error(
-						"Cannot create a folder at " + parento.toString() + " because: " + e.getMessage(), scope), true);
+				GAMA.reportAndThrowIfNeeded(scope,
+						GamaRuntimeException.error(
+								"Cannot create a folder at " + parento.toString() + " because: " + e.getMessage(),
+								scope),
+						true);
 			}
 		}
 		if (fo.exists()) {
 			try {
 				if (!fo.delete()) {
-					GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.create(new Exception("Unknown reason"), scope), true);
+					GAMA.reportAndThrowIfNeeded(scope,
+							GamaRuntimeException.create(new Exception("Unknown reason"), scope), true);
 				}
 			} catch (Exception e) {
-				GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException
-						.error("File " + fo.toString() + " cannot be deleted because: " + e.getMessage(), scope), true);
+				GAMA.reportAndThrowIfNeeded(scope,
+						GamaRuntimeException.error(
+								"File " + fo.toString() + " cannot be deleted because: " + e.getMessage(), scope),
+						true);
 			}
 		}
 		try (FileWriter fw = new FileWriter(fo, StandardCharsets.UTF_8, false)) {
 			fw.write(buildSimulationCsv(results, scope));
 		} catch (Exception e) {
-			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("File " + fo.toString() + " cannot be found to save "
-					+ currentExperiment.getName() + " experiment results", scope), true);
+			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("File " + fo.toString()
+					+ " cannot be found to save " + currentExperiment.getName() + " experiment results", scope), true);
 		}
 	}
 
@@ -447,14 +455,15 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 					for (int y = 0; y < tempArr.length; y++) { temp_map.put(list_name.get(y), tempArr[y]); }
 					parameters.add(temp_map);
 				} else {
-					for (String tempStr : tempArr) { list_name.add(tempStr); }
+					Collections.addAll(list_name, tempArr);
 				}
 				i++;
 			}
 		} catch (FileNotFoundException nfe) {
 			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("CSV file not found: " + path, scope), true);
 		} catch (IOException ioe) {
-			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("Error during the reading of the CSV file", scope), true);
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.error("Error during the reading of the CSV file", scope), true);
 		}
 
 		return buildParametersSetList(scope, parameters);
@@ -545,23 +554,26 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 				var scope = agent.getScope();
 				long count = 0;
 				try {
-					filePath = FileUtils.constructAbsoluteFilePath(scope, getFacetValue(scope, IKeyword.FROM).toString(), false);
+					filePath = FileUtils.constructAbsoluteFilePath(scope,
+							getFacetValue(scope, IKeyword.FROM).toString(), false);
 					lines = Files.lines(Paths.get(filePath));
 					count = lines.count();
 				} catch (FileNotFoundException nfe) {
-					GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("CSV file not found: '" + filePath +"'", scope), true);
+					GAMA.reportAndThrowIfNeeded(scope,
+							GamaRuntimeException.error("CSV file not found: '" + filePath + "'", scope), true);
 				} catch (IOException ioe) {
-					GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("Error during the reading of the CSV file", scope), true);
+					GAMA.reportAndThrowIfNeeded(scope,
+							GamaRuntimeException.error("Error during the reading of the CSV file", scope), true);
 				} catch (Exception ex) {
 					GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.create(ex, scope), true);
 				}
 				yield count;
-				
 
 			default:
-				yield hasFacet(IExploration.SAMPLE_SIZE) ? N : 
-					hasFacet(IExploration.SAMPLE_FACTORIAL) ? IntStreamEx
-						.of(getFactorial(agent.getScope(), agent.getParametersToExplore())).reduce(1, (a, b) -> a * b)
+				yield hasFacet(IExploration.SAMPLE_SIZE) ? N
+						: hasFacet(IExploration.SAMPLE_FACTORIAL)
+								? IntStreamEx.of(getFactorial(agent.getScope(), agent.getParametersToExplore()))
+										.reduce(1, (a, b) -> a * b)
 						: IntStreamEx
 								.of(agent.getParametersToExplore().stream()
 										.mapToInt(b -> getParameterSwip(agent.getScope(), b).size()))
@@ -744,9 +756,9 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	 * @return the default parameter swip
 	 */
 	private List<Object> getDefaultParameterSwip(final IScope scope, final Batch var) {
-		
-		if (var.getAmongValue(scope) != null) { return var.getAmongValue(scope); }
-		
+
+		if (var.getAmongValue(scope) != null) return var.getAmongValue(scope);
+
 		List<Object> res = new ArrayList<>();
 		double varValue = Cast.asFloat(scope, var.getMinValue(scope));
 		double maxVarValue = Cast.asFloat(scope, var.getMaxValue(scope));

@@ -10,6 +10,8 @@
 package gama.api.gaml.types;
 
 import gama.annotations.doc;
+import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.type;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
@@ -44,6 +46,15 @@ import gama.api.types.map.IMap;
 		concept = { IConcept.TYPE, IConcept.COLOR },
 		doc = @doc ("The type rgb represents colors in GAML, with their three red, green, blue components and, optionally, a fourth alpha component "))
 @SuppressWarnings ({ "unchecked", "rawtypes" })
+@tests ({
+		@test ("rgb pure_red <- #red; pure_red.alpha = 255"),
+		@test ("rgb fully_transparent <- #transparent; fully_transparent.alpha = 0"),
+		@test ("rgb pure_white <- #white; pure_white.brighter = #white"),
+		@test ("rgb pure_black <- #black; pure_black.darker = #black"),
+		@test ("rgb c3 <- #blue; c3.red = 0"),
+		@test ("rgb c32 <- #blue; c32.green = 0"),
+		@test ("rgb c33 <- #blue; c33.blue = 255")
+})
 public class GamaColorType extends GamaType<IColor> {
 
 	/**

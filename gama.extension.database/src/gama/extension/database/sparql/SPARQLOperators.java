@@ -18,6 +18,7 @@ import org.apache.jena.query.ResultSet;
 
 import gama.annotations.doc;
 import gama.annotations.no_test;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
@@ -44,6 +45,7 @@ public class SPARQLOperators {
 	 *            the endpoint
 	 * @return the i map
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "sparql_query",
 			doc = @doc (
@@ -72,6 +74,7 @@ public class SPARQLOperators {
 	 *            the timeout
 	 * @return the i map
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "sparql_query",
 			doc = @doc (

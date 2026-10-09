@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e
 
+# Remove Copilot plugin from the built
+# Tycho doesn't honor optional tag : https://www.eclipse.org/lists/tycho-user/msg03542.html
+# Related #836
+sed -i '/gama\.feature\.copilot/d' $( dirname $( realpath "${BASH_SOURCE[0]}" ) )/../gama.product/gama.product
+
 echo "Compiling gama.annotations"
 cd $( dirname $( realpath "${BASH_SOURCE[0]}" ) )/../gama.annotations
 # Disable build cache here: gama.annotations must always be fully installed so that

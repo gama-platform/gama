@@ -673,6 +673,10 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 			final int to = intTo(scope);
 			final boolean reverse = from > to;
 			final int step = intStep(scope) * stepSign(reverse);
+			if (from == to) {
+				loopBody(scope, from, result);
+				return result[0];
+			}
 			for (int i = from; reverse ? i >= to : i <= to; i += step) {
 				if (BREAK_STATUSES.contains(loopBody(scope, i, result))) { break; }
 			}
@@ -754,6 +758,10 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 			final double to = doubleTo(scope);
 			final boolean reverse = from > to;
 			final double step = doubleStep(scope) * stepSign(reverse);
+			if (from == to) {
+				loopBody(scope, from, result);
+				return result[0];
+			}
 			for (double i = from; reverse ? i >= to : i <= to; i += step) {
 				if (BREAK_STATUSES.contains(loopBody(scope, i, result))) { break; }
 			}

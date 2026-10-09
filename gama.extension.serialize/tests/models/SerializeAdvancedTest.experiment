@@ -1,0 +1,64 @@
+/**
+* Name: SerializeAdvancedTest
+* Author: Antigravity
+* Description: Tests that values survive a round trip through the serialisation operators (gaml, json, binary)
+* Tags: serialize, extension, test
+*/
+model SerializeAdvancedTestModel
+
+species serialised_agent {
+	int amount <- 3;
+	string label <- "initial";
+}
+
+experiment SerializeAdvancedTest type: test autorun: true {
+
+	test "to_gaml produces the GAML literal of a value" {
+		assert to_gaml([1, 2, 3]) = "[1,2,3]";
+
+	}
+
+	test "to_json produces a JSON document" {
+		assert to_json([1, 2, 3]) = "[1,2,3]";
+
+	}
+
+	test "Reading an invalid JSON document raises an error" {
+		bool failed <- false;
+		try {
+			unknown parsed <- from_json("not json");
+		} catch {
+			failed <- true;
+		}
+		assert failed;
+	}
+
+	test "Values survive a serialize / deserialize round trip" {
+		// the serialised form is not the textual one
+		assert serialize([1, 2, 3]) != "[1,2,3]";
+	}
+
+	test "Serialising an agent to JSON does not alter the next serialisations" {
+		create serialised_agent number: 1 returns: created_agents;
+		string agent_json <- to_json(created_agents[0]);
+		assert agent_json contains "serialised_agent";
+		// the references of the agent must not leak into unrelated documents
+		assert to_json([1, 2]) = "[1,2]";
+		assert to_json(["a"::1]) = '{"a":1}';
+		ask created_agents { do die; }
+	}
+
+	test "An agent serialised in binary is restored as the same agent" {
+		create serialised_agent number: 2 returns: created_agents;
+		serialised_agent ag <- created_agents[0];
+		ag.amount <- 42;
+		ag.label <- "changed";
+
+		serialised_agent restored <- serialised_agent(from_binary(to_binary(ag)));
+		assert restored = ag;
+		assert restored != created_agents[1];
+		assert restored.amount = 42;
+		assert restored.label = "changed";
+		ask created_agents { do die; }
+	}
+}

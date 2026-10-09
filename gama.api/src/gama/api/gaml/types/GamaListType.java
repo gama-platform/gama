@@ -10,6 +10,8 @@
 package gama.api.gaml.types;
 
 import gama.annotations.doc;
+import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.type;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
@@ -86,6 +88,12 @@ import gama.api.types.list.IList;
 		concept = { IConcept.TYPE, IConcept.CONTAINER, IConcept.LIST },
 		doc = @doc ("Ordered collection of values or agents"))
 @SuppressWarnings ({ "unchecked", "rawtypes" })
+@tests ({
+		// a matrix is read row by row when cast to a list
+		@test ("matrix<int> m <- matrix([[1, 2, 3], [4, 5, 6]]); list(m) = [1, 4, 2, 5, 3, 6]"),
+		@test ("map<string, int> src <- [\"x\"::1, \"y\"::2]; list<pair<string, int>> l1 <- src.pairs; l1[0].key = \"x\""),
+		@test ("map<string, int> src2 <- [\"x\"::1, \"y\"::2]; list<pair<string, int>> l12 <- src2.pairs; l12[0].value = 1")
+})
 public class GamaListType extends GamaContainerType<IList> {
 
 	/**

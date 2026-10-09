@@ -209,6 +209,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 			cameraHelper.update();
 			lightHelper.draw();
 			sceneHelper.draw();
+			schedulePendingInitialVisibleRedraw();
 			if (synchronizer != null) { synchronizer.release(); }
 		}
 		//
@@ -231,10 +232,10 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	boolean first = true;
 
 	/** Tracks whether the initial forced layer redraw must wait until the canvas is shown. */
-	private boolean pendingInitialVisibleRedraw;
+	private volatile boolean pendingInitialVisibleRedraw;
 
 	/** Guards the asynchronous completion of the deferred initial redraw. */
-	private boolean initialVisibleRedrawScheduled;
+	private volatile boolean initialVisibleRedrawScheduled;
 
 	/** The synchronizer. */
 	private GeneralSynchronizer synchronizer;
@@ -265,11 +266,10 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 		if (!pendingInitialVisibleRedraw) return;
 		final GamaGLCanvas currentCanvas = getCanvas();
 		if (currentCanvas == null || !currentCanvas.getVisibleStatus() || openGL.getViewWidth() <= 0
-				|| openGL.getViewHeight() <= 0) {
+				|| openGL.getViewHeight() <= 0 || sceneHelper.isNotReadyToUpdate())
 			return;
-		}
+		if (!sceneHelper.forceRedrawingLayers()) return;
 		pendingInitialVisibleRedraw = false;
-		surface.getManager().forceRedrawingLayers();
 		surface.updateDisplay(true, synchronizer);
 	}
 
@@ -287,11 +287,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 		keystoneHelper.reshape(width, height);
 		openGL.reshape(gl, width, height);
 		if (firstMeaningfulReshape) {
-			if (getCanvas().getVisibleStatus()) {
-				surface.getManager().forceRedrawingLayers();
-			} else {
-				pendingInitialVisibleRedraw = true;
-			}
+			pendingInitialVisibleRedraw = true;
 		} else if (pendingInitialVisibleRedraw && getCanvas().getVisibleStatus()) {
 			schedulePendingInitialVisibleRedraw();
 		}
@@ -489,13 +485,12 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 
 	@Override
 	public final IPoint getCameraOrientation() { return cameraHelper.getOrientation(); }
-	
+
 	@Override
 	public final IPoint getCameraUp() { return cameraHelper.getUp(); }
-	
+
 	@Override
 	public final IPoint getCameraRight() { return cameraHelper.getRight(); }
-
 
 	@Override
 	public double getxRatioBetweenPixelsAndModelUnits() {
@@ -565,13 +560,15 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	@Override
 	public int getViewWidth() {
 		final GamaGLCanvas currentCanvas = getCanvas();
-		return currentCanvas == null || currentCanvas.isDisposed() ? super.getViewWidth() : currentCanvas.getClientArea().width;
+		return currentCanvas == null || currentCanvas.isDisposed() ? super.getViewWidth()
+				: currentCanvas.getClientArea().width;
 	}
 
 	@Override
 	public int getViewHeight() {
 		final GamaGLCanvas currentCanvas = getCanvas();
-		return currentCanvas == null || currentCanvas.isDisposed() ? super.getViewHeight() : currentCanvas.getClientArea().height;
+		return currentCanvas == null || currentCanvas.isDisposed() ? super.getViewHeight()
+				: currentCanvas.getClientArea().height;
 	}
 
 	/*

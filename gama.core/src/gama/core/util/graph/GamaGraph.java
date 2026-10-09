@@ -76,12 +76,17 @@ import gama.gaml.operators.spatial.SpatialCreation;
 import one.util.streamex.StreamEx;
 
 /**
- * The Class GamaGraph.
+ * The graph implementation backed by separate vertex and edge maps.
  *
- * @param <V>
- *            the value type
- * @param <E>
- *            the element type
+ * <p>
+ * {@code V} is the vertex (node) type and is the graph container's key type; {@code E} is the edge-object type and is
+ * the container's content/value type. The internal {@code vertexMap} maps each vertex object to its graph wrapper,
+ * while {@code edgeMap} maps each edge object to its graph wrapper. Looking up edges by endpoints uses a pair of
+ * vertices (source, target) and returns a list because multiple edges can share the same endpoints.
+ * </p>
+ *
+ * @param <V> the type of vertices (nodes)
+ * @param <E> the type of edge objects connecting vertices
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamaGraph<V, E> implements IGraph<V, E> {
@@ -99,10 +104,10 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 	/** The path computer. */
 	public IPathComputer pathComputer;
 
-	/** The vertex map. */
+	/** Maps each vertex object (container key) to its internal graph vertex wrapper. */
 	protected final Map<V, _Vertex<V, E>> vertexMap;
 
-	/** The edge map. */
+	/** Maps each edge object (container value) to its internal graph edge wrapper. */
 	protected final Map<E, _Edge<V, E>> edgeMap;
 
 	@Override
@@ -150,11 +155,11 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 	 * @param directed
 	 *            the directed
 	 * @param nodeType
-	 *            the node type
-	 * @param vertexType
-	 *            the vertex type
+	 *            the vertex (node) type, used as the graph container key type
+	 * @param edgeType
+	 *            the edge-object type, used as the graph container content/value type
 	 */
-	public GamaGraph(final IScope scope, final boolean directed, final IType nodeType, final IType vertexType) {
+	public GamaGraph(final IScope scope, final boolean directed, final IType nodeType, final IType edgeType) {
 		this.directed = directed;
 		vertexMap = GamaMapFactory.create();
 		edgeMap = GamaMapFactory.create();
@@ -162,7 +167,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 		vertexRelation = null;
 		agentEdge = false;
 		this.graphScope = scope;
-		type = Types.GRAPH.of(nodeType, vertexType);
+		type = Types.GRAPH.of(nodeType, edgeType);
 	}
 
 	/**
@@ -181,9 +186,9 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 	 * @param edgesSpecies
 	 *            the edges species
 	 * @param nodeType
-	 *            the node type
+	 *            the vertex (node) type
 	 * @param edgeType
-	 *            the edge type
+	 *            the edge-object type
 	 */
 	public GamaGraph(final IScope scope, final IContainer edgesOrVertices, final boolean byEdge, final boolean directed,
 			final boolean uniqueEdge, final VertexRelationship rel, final ISpecies edgesSpecies, final IType nodeType,
@@ -207,9 +212,9 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 	 * @param scope
 	 *            the scope
 	 * @param nodeType
-	 *            the node type
+	 *            the vertex (node) type
 	 * @param edgeType
-	 *            the edge type
+	 *            the edge-object type
 	 */
 	public GamaGraph(final IScope scope, final IType nodeType, final IType edgeType) {
 		vertexMap = GamaMapFactory.create();
@@ -1134,8 +1139,8 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 	 * @param scope
 	 *            the scope
 	 * @param index
-	 *            the index
-	 * @return the list
+	 *            a pair of endpoint vertices (source, target)
+	 * @return all edge objects connecting the endpoints
 	 */
 	@Override
 	public List<E> get(final IScope scope, final IPair<V, V> index) {

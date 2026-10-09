@@ -1,0 +1,128 @@
+/**
+* Name: PedestrianAdvancedTest
+* Description: Tests the 'pedestrian' skill: the documented default values of its social-force
+*   model attributes, the assignability of its species lists, and the 'walk' action.
+* Tags: pedestrian, extension, test
+*/
+
+model PedestrianAdvancedTestModel
+
+species obstacle { }
+
+species ped_agent skills: [pedestrian] {
+	float speed <- 5.0;
+}
+
+experiment PedestrianAdvancedTest type: test autorun: true {
+
+	test "Documented defaults of the social-force attributes" {
+		create ped_agent number: 1 returns: walkers;
+		ped_agent ag <- walkers[0];
+
+		assert ag.shoulder_length = 0.45;
+		assert ag.minimal_distance = 0.0;
+		assert ag.pedestrian_consideration_distance = 2.0;
+		assert ag.obstacle_consideration_distance = 2.0;
+		assert ag.proba_detour = 0.1;
+
+		assert ag.A_pedestrians_SFM = 4.5;
+		assert ag.A_obstacles_SFM = 4.5;
+		assert ag.B_pedestrians_SFM = 2.0;
+		assert ag.B_obstacles_SFM = 2.0;
+
+		assert ag.avoid_other = true;
+		assert ag.pedestrian_model = 'simple';
+	}
+
+	test "Documented defaults of the waypoint attributes" {
+		create ped_agent number: 1 returns: walkers;
+		ped_agent ag <- walkers[0];
+
+		assert ag.velocity = {0, 0, 0};
+		assert ag.current_index = 0;
+		assert ag.tolerance_waypoint = 1.0;
+		assert ag.use_geometry_waypoint = false;
+		assert ag.final_waypoint = nil;
+		assert ag.current_waypoint = nil;
+		assert empty(ag.waypoints);
+	}
+
+	test "The considered species lists can be set" {
+		create ped_agent number: 1 returns: walkers;
+		ped_agent ag <- walkers[0];
+
+		assert empty(ag.pedestrian_species);
+		assert empty(ag.obstacle_species);
+
+		ask ag {
+			pedestrian_species <- [ped_agent];
+			obstacle_species <- [obstacle];
+		}
+
+		assert length(ag.pedestrian_species) = 1;
+		assert length(ag.obstacle_species) = 1;
+	}
+
+	test "Walking with no waypoint leaves the pedestrian where it is" {
+		create ped_agent number: 1 returns: walkers;
+		ped_agent ag <- walkers[0];
+		ask ag { location <- {10, 10}; }
+		point before <- ag.location;
+
+		ask ag { do walk; }
+
+		assert ag.current_waypoint = nil;
+		assert ag.location = before;
+	}
+
+	test "Walking to a target moves the pedestrian by its speed" {
+		create ped_agent number: 1 returns: walkers;
+		ped_agent ag <- walkers[0];
+		ask ag {
+			location <- {10, 10};
+			speed <- 2.0;
+			do walk_to target: {20, 10};
+		}
+		// one step of 2 meters, straight to the target
+		assert ag.location = {12, 10};
+		assert ag.velocity = {2, 0, 0};
+
+		ask ag { do walk_to target: {20, 10}; }
+		assert ag.location = {14, 10};
+		ask walkers { do die; }
+	}
+
+	test "A pedestrian does not overshoot its target" {
+		create ped_agent number: 1 returns: walkers;
+		ped_agent ag <- walkers[0];
+		ask ag {
+			location <- {10, 10};
+			speed <- 3.0;
+		}
+		loop times: 10 {
+			ask ag { do walk_to target: {20, 10}; }
+		}
+		assert ag.location = {20, 10};
+		ask walkers { do die; }
+	}
+
+	test "Pedestrians walking towards each other do not end up at the same place" {
+		create ped_agent number: 2 returns: walkers;
+		ped_agent left_walker <- walkers[0];
+		ped_agent right_walker <- walkers[1];
+		ask walkers {
+			speed <- 1.0;
+			pedestrian_species <- [ped_agent];
+		}
+		left_walker.location <- {10, 10};
+		right_walker.location <- {14, 10};
+		loop times: 10 {
+			ask left_walker { do walk_to target: {14, 10}; }
+			ask right_walker { do walk_to target: {10, 10}; }
+		}
+		// the social forces keep them apart
+		assert left_walker.location != right_walker.location;
+		assert left_walker distance_to right_walker > 0.1;
+		ask walkers { do die; }
+	}
+}

@@ -1,0 +1,206 @@
+/**
+* Name: AgentQueriesTest
+* Description: Tests the operators that select agents from their spatial relation with a geometry (touching,
+* 	crossing, covering, partially_overlapping, intersecting, inside...), their 'agents_*' counterparts that
+* 	look among all the agents, and the queries based on distances
+* Tags: topology, query, spatial, test
+*/
+
+model AgentQueriesTestModel
+
+global {
+	geometry shape <- square(100);
+}
+
+species dot { }
+
+species zone { }
+
+experiment AgentQueriesTest type: test autorun: true {
+
+	// four dots, the first two close to each other
+	dot dot_a;
+	dot dot_b;
+	dot dot_center;
+	dot dot_far;
+	// 'main' covers (0,0)-(20,20); 'right' overlaps it; 'below' shares an edge with it; 'away' is isolated
+	zone main;
+	zone right;
+	zone away;
+	zone below;
+	// crosses 'main' and 'right'
+	geometry crossing_line <- line([{0, 5}, {40, 5}]);
+	bool agents_created <- false;
+
+	// the agents are created once, in the simulation, before the first test
+	setup {
+		if (!agents_created) {
+			create dot(location::{10, 10}) returns: created_dots;
+			dot_a <- created_dots[0];
+			create dot(location::{12, 10}) returns: created_dots2;
+			dot_b <- created_dots2[0];
+			create dot(location::{50, 50}) returns: created_dots3;
+			dot_center <- created_dots3[0];
+			create dot(location::{90, 90}) returns: created_dots4;
+			dot_far <- created_dots4[0];
+
+			create zone(shape::square(20) at_location {10, 10}) returns: created_zones;
+			main <- created_zones[0];
+			create zone(shape::square(20) at_location {25, 10}) returns: created_zones2;
+			right <- created_zones2[0];
+			create zone(shape::square(10) at_location {80, 80}) returns: created_zones3;
+			away <- created_zones3[0];
+			create zone(shape::square(20) at_location {10, 30}) returns: created_zones4;
+			below <- created_zones4[0];
+			agents_created <- true;
+		}
+	}
+
+	/** The order in which spatial queries return their results is not specified */
+	bool same_elements(list first_list, list second_list) {
+		return length(first_list) = length(second_list) and first_list contains_all second_list;
+	}
+
+	// The queries are evaluated in the topology of the world (the experiment has its own), and their results
+	// checked afterwards: asserts are only taken into account directly inside a test
+
+	test "Species filtered by a spatial relation" {
+		list<zone> touching_main; list<zone> partially_overlapping_main; list<zone> overlapping_main;
+		list<zone> intersecting_main; list<zone> crossing_the_line; list<zone> covering_dot_a;
+		list<zone> covering_main; list<zone> touching_away; list<zone> overlapping_away;
+		using topology(world) {
+			touching_main <- zone touching main;
+			partially_overlapping_main <- zone partially_overlapping main;
+			overlapping_main <- zone overlapping main;
+			intersecting_main <- zone intersecting main;
+			crossing_the_line <- zone crossing crossing_line;
+			covering_dot_a <- zone covering dot_a;
+			covering_main <- zone covering main;
+			touching_away <- zone touching away;
+			overlapping_away <- zone overlapping away;
+		}
+		// the geometry used as a reference is never part of the result
+		assert same_elements(touching_main, [below]);
+		assert same_elements(partially_overlapping_main, [right]);
+		assert same_elements(overlapping_main, [right, below]);
+		assert same_elements(intersecting_main, [right, below]);
+		assert same_elements(crossing_the_line, [main, right]);
+		assert same_elements(covering_dot_a, [main]);
+		assert empty(covering_main);
+		assert empty(touching_away);
+		assert empty(overlapping_away);
+	}
+
+	test "Species filtered by inclusion" {
+		list<dot> inside_main; list<dot> overlapping_main; list<dot> inside_away;
+		list<zone> inside_a_big_square; list<dot> overlapping_a_circle;
+		using topology(world) {
+			inside_main <- dot inside main;
+			overlapping_main <- dot overlapping main;
+			inside_away <- dot inside away;
+			inside_a_big_square <- zone inside (square(60) at_location {20, 20});
+			overlapping_a_circle <- dot overlapping (circle(3) at_location {11, 10});
+		}
+		assert same_elements(inside_main, [dot_a, dot_b]);
+		assert same_elements(overlapping_main, [dot_a, dot_b]);
+		assert empty(inside_away);
+		assert same_elements(inside_a_big_square, [main, right, below]);
+		assert same_elements(overlapping_a_circle, [dot_a, dot_b]);
+	}
+
+	test "Queries among all the agents" {
+		list<agent> touching_main; list<agent> partially_overlapping_main; list<agent> crossing_the_line;
+		list<agent> covering_dot_a; list<agent> inside_main; list<agent> overlapping_main; list<agent> intersecting_main;
+		using topology(world) {
+			touching_main <- agents_touching(main);
+			partially_overlapping_main <- agents_partially_overlapping(main);
+			crossing_the_line <- agents_crossing(crossing_line);
+			covering_dot_a <- agents_covering(dot_a);
+			inside_main <- agents_inside(main);
+			overlapping_main <- agents_overlapping(main);
+			intersecting_main <- agent_intersecting(main);
+		}
+		assert same_elements(touching_main, [below]);
+		assert same_elements(partially_overlapping_main, [right]);
+		assert same_elements(crossing_the_line, [main, right]);
+		assert same_elements(covering_dot_a, [main]);
+		assert same_elements(inside_main, [dot_a, dot_b]);
+		// whatever their species
+		assert same_elements(overlapping_main, [dot_a, dot_b, right, below]);
+		assert same_elements(intersecting_main, [dot_a, dot_b, right, below]);
+	}
+
+	test "Closest and farthest agents" {
+		dot closest_dot; dot farthest_dot; list<dot> two_closest_dots; zone closest_zone_to_a; zone closest_zone_to_far;
+		dot closest_in_list; agent closest_agent; agent farthest_agent;
+		using topology(world) {
+			closest_dot <- dot closest_to {49, 49};
+			farthest_dot <- dot farthest_to {0, 0};
+			two_closest_dots <- dot closest_to ({49, 49}, 2);
+			closest_zone_to_a <- zone closest_to dot_a;
+			closest_zone_to_far <- zone closest_to dot_far;
+			closest_in_list <- [dot_a, dot_b, dot_far] closest_to {49, 49};
+			closest_agent <- agent_closest_to({49, 49});
+			farthest_agent <- agent_farthest_to({0, 0});
+		}
+		assert closest_dot = dot_center;
+		assert farthest_dot = dot_far;
+		assert same_elements(two_closest_dots, [dot_center, dot_b]);
+		assert closest_zone_to_a = main;
+		assert closest_zone_to_far = away;
+		assert closest_in_list = dot_b;
+		assert closest_agent = dot_center;
+		assert farthest_agent = dot_far;
+	}
+
+	test "Queries by distance are relative to the agent that asks" {
+		list<dot> around_a <- [];
+		list<dot> around_center <- [];
+		list<zone> zones_near_a <- [];
+		list<agent> everything_near_a <- [];
+		// asked agents use their own topology, even after a 'using' statement has been executed elsewhere
+		ask dot_a {
+			around_a <- dot at_distance 5;
+			// 'right' is exactly 5 away, and a distance query includes its bound
+			zones_near_a <- zone at_distance 4;
+			everything_near_a <- agents_at_distance(1);
+		}
+		ask dot_center {
+			around_center <- dot at_distance 5;
+		}
+		// the agent itself is not part of its neighbours
+		assert same_elements(around_a, [dot_b]);
+		assert empty(around_center);
+		// 'main' contains dot_a, and is thus at a distance of 0
+		assert same_elements(zones_near_a, [main]);
+		assert same_elements(everything_near_a, [main]);
+
+		// 'neighbors_at' looks among the agents of the same species
+		assert same_elements(dot_a neighbors_at 5, [dot_b]);
+		assert empty(dot_center neighbors_at 5);
+		assert same_elements(main neighbors_at 1, [right, below]);
+	}
+
+	test "Distances between agents" {
+		assert dot_a distance_to dot_b = 2.0;
+		assert dot_a distance_to dot_a = 0.0;
+		assert dot_b distance_to dot_a = dot_a distance_to dot_b;
+		// the distance to a geometry is the distance to its closest point
+		assert dot_a distance_to main = 0.0;
+		assert main distance_to right = 0.0;
+		assert main distance_to below = 0.0;
+		assert main distance_to away > 77.7 and main distance_to away < 77.8;
+		assert dot_center distance_to main > 42.4 and dot_center distance_to main < 42.5;
+	}
+
+	test "Clustering agents by distance" {
+		list<list<dot>> clusters <- [];
+		using topology(world) {
+			clusters <- list<list<dot>>(simple_clustering_by_distance(dot, 5));
+		}
+		assert length(clusters) = 3;
+		list<dot> pair_cluster <- clusters first_with (length(each) = 2);
+		assert same_elements(pair_cluster, [dot_a, dot_b]);
+		assert clusters count (length(each) = 1) = 2;
+	}
+}

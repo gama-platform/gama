@@ -1,0 +1,51 @@
+/***
+* Name: Envelope3D
+* Author: Gama Development Team
+* Description: Tests the envelope operator with an explicit depth and the use of the moving3D skill (wander) in a
+*   world defined from a 2D (georeferenced-like) geometry. See issue #347.
+* Tags: spatial, 3d, moving3D, envelope
+***/
+
+model envelope3d_tests
+
+global {
+	float depth <- 50.0;
+	geometry source <- polygon([{1000, 2000}, {1400, 2000}, {1400, 2300}, {1000, 2300}]);
+	geometry shape <- envelope(source, depth);
+
+	init {
+		create walker number: 20 {
+			location <- {rnd(world.shape.width), rnd(world.shape.height), rnd(depth)};
+		}
+	}
+}
+
+species walker skills: [moving3D] {
+	reflex wander_around {
+		do wander(amplitude: 90.0);
+	}
+}
+
+experiment "Envelope3D Test" type: test autorun: true {
+
+	test "Envelope with depth keeps XY extent and sets depth" {
+		geometry e <- envelope(source, 10.0);
+		assert e.width = envelope(source).width;
+		assert e.height = envelope(source).height;
+		assert e.depth = 10.0;
+	}
+
+	test "World has a depth" {
+		assert world.shape.depth = depth;
+	}
+
+	test "3D wander in a world built from a 2D geometry" {
+		list<point> before <- walker collect each.location;
+		ask walker {
+			do wander(amplitude: 90.0);
+		}
+		assert walker all_match (each.location.z >= 0 and each.location.z <= depth);
+		assert (walker collect each.location) != before;
+	}
+
+}

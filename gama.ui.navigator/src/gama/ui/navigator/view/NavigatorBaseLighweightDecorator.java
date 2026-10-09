@@ -14,7 +14,10 @@ import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ILightweightLabelDecorator;
 
+import gama.ui.navigator.view.contents.WrappedLink;
 import gama.ui.navigator.view.contents.VirtualContent;
+import gama.ui.shared.resources.GamaIcon;
+import gama.ui.shared.resources.IGamaIcons;
 
 /**
  * Class NavigatorBaseLighweightDecorator.
@@ -31,6 +34,9 @@ public class NavigatorBaseLighweightDecorator implements ILightweightLabelDecora
 	@Override
 	public void decorate(final Object element, final IDecoration decoration) {
 		if (element instanceof VirtualContent) {
+			if (element instanceof WrappedLink) {
+				decoration.addOverlay(GamaIcon.named(IGamaIcons.EDITOR_LINK).descriptor());
+			}
 			((VirtualContent<?>) element).getSuffix(sb);
 			if (sb.length() > 0) {
 				decoration.addSuffix(" (");

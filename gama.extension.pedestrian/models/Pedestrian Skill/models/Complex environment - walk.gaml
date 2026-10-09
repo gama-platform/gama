@@ -31,7 +31,7 @@ global {
 	float P_proba_detour <- 0.5;
 	bool P_avoid_other <- true;
 	float P_obstacle_consideration_distance <- 3.0;
-	float P_pedestrian_consideration_distance <- 3.0;
+	float P_pedestrian_consideration_distance <- 10.0;
 	float P_tolerance_target <- 0.1;
 	bool P_use_geometry_target <- true;
 	
@@ -50,7 +50,10 @@ global {
 	float P_lambda_SFM_simple <- 2.0 ;
 	float P_gama_SFM_simple <- 0.35 ;
 	float P_relaxion_SFM_simple <- 0.54 ;
-	float P_A_pedestrian_SFM_simple <-4.5;
+	float P_A_pedestrian_SFM_simple <- 15.0;
+	
+	float P_path_deviation <- 0.02;
+	float P_path_deviation_radius <- 5#m;
 	
 	float step <- 0.1;
 	int nb_people <- 250;
@@ -58,6 +61,7 @@ global {
 	geometry open_area ;
 	
 	init {
+		
 		open_area <- first(open_area_shape_file.contents);
 		create wall from:wall_shapefile;
 		create pedestrian_path from: pedestrian_paths_shape_file {
@@ -85,7 +89,8 @@ global {
 			obstacle_species<-[wall];
 			
 			pedestrian_model <- P_model_type;
-			
+			path_deviation <- P_path_deviation;
+			path_deviation_radius <- P_path_deviation_radius;
 		
 			if (pedestrian_model = "simple") {
 				A_pedestrians_SFM <- P_A_pedestrian_SFM_simple;
@@ -192,6 +197,9 @@ experiment normal_sim type: gui {
 	parameter "P pedestrian_consideration_distance" var:P_pedestrian_consideration_distance;
 	parameter "P tolerance_target" var:P_tolerance_target;
 	parameter "P use_geometry_target" var:P_use_geometry_target;
+	
+	parameter "P path deviation" var:P_path_deviation min:0.0 max:1.0;
+	parameter "P path deviation radius" var:P_path_deviation_radius min:2#m max:50#m;
 
 
 	parameter "P model_type" var:P_model_type among: ["simple", "advanced"]; 

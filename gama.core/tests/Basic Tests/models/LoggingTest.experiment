@@ -1,0 +1,21 @@
+/**
+* Name: LoggingTest
+* Author: Antigravity
+* Description: Tests the logging operations (write, warning, error)
+* Tags: logging, text, test
+*/
+
+experiment LoggingTest type: test autorun: true {
+	
+	test "Write Statements" {
+		// Outputting to console should not throw any exceptions
+		write "This is a standard log";
+		
+		int a <- 5;
+		write "Value of a: " + a;
+
+		// the interesting part is the string interpolation the log relies on
+		assert ("Value of a: " + a) = "Value of a: 5";
+		assert ("a list: " + [1, 2]) = "a list: [1,2]";
+	}
+}

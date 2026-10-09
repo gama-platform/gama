@@ -19,7 +19,8 @@ Require-Bundle: org.eclipse.core.resources,
  com.github.weisj.jsvg,
  org.eclipse.ui.views;bundle-version="3.12.800",
  gama.extension.osm,
- gama.extension.gml
+ gama.extension.gml,
+ gama.extension.geopackage
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: gama.ui.viewers.json.eclipse.JsonEditorActivator
 Bundle-ClassPath: .,
@@ -96,4 +97,3 @@ Export-Package: gama.ui.viewers.csv,
  org.jaitools.media.jai.contour,
  org.jaitools.media.jai.rangelookup,
  org.jaitools.media.jai.vectorize
-

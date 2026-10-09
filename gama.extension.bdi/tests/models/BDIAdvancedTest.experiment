@@ -1,0 +1,54 @@
+/**
+* Name: BDIAdvancedTest
+* Author: Antigravity
+* Description: Tests advanced BDI architecture mechanics
+* Tags: bdi, advanced, test
+*/
+
+model BDIAdvancedTestModel
+
+species advanced_bdi_agent control: simple_bdi {
+	bool desire_added <- false;
+	bool plan_executed <- false;
+	
+	perceive target: advanced_bdi_agent {
+		// Just a dummy perception
+		focus id: "other_agent" var: location;
+	}
+	
+	plan my_plan intention: new_predicate("test_desire") {
+		plan_executed <- true;
+		do remove_intention(new_predicate("test_desire"), true);
+	}
+}
+
+experiment BDIAdvancedTest type: test autorun: true {
+	
+	test "BDI Desires and Intentions" {
+		create advanced_bdi_agent number: 1 returns: created_agents;
+		advanced_bdi_agent ag <- created_agents[0];
+		
+		ask ag {
+			do add_desire(new_predicate("test_desire"));
+		}
+		
+		bool has_d <- false;
+		ask ag {
+			has_d <- has_desire(new_predicate("test_desire"));
+		}
+		assert has_d = true;
+		
+		// Run a step so the agent processes desires into intentions and runs the plan
+		ask ag { do _step_; }
+		
+		assert ag.plan_executed = true;
+		
+		bool has_b <- false;
+		ask ag {
+			do add_belief(new_predicate("fake_belief"));
+			has_b <- has_belief(new_predicate("fake_belief"));
+			do remove_belief(new_predicate("fake_belief"));
+		}
+		assert has_b = true;
+	}
+}

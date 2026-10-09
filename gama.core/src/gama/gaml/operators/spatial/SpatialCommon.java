@@ -63,9 +63,9 @@ public class SpatialCommon {
 					test = false) })
 	@no_test // comment="See Topology.experiment in test models"
 	public static Object using(final IScope scope, final IExpression expression, final ITopology topology) {
-		final ITopology oldTopo = scope.getTopology();
+		if (topology == null) return expression.value(scope);
+		final ITopology oldTopo = scope.setTopology(topology);
 		try {
-			if (topology != null) { scope.setTopology(topology); }
 			return expression.value(scope);
 		} finally {
 			scope.setTopology(oldTopo);

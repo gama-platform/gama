@@ -379,7 +379,9 @@ public abstract class AbstractTopology implements ITopology {
 			if (z > environment.getGeometry().getDepth()) return null;
 			return point;
 		}
-		throw GamaRuntimeException.error("The environment must be a 3D environment (e.g shape <- cube(100)).", scope);
+		throw GamaRuntimeException.error(
+				"The environment must be a 3D environment (e.g shape <- cube(100), or shape <- envelope(my_shapefile, 100.0) to give a depth to a georeferenced world).",
+				scope);
 
 	}
 
@@ -627,7 +629,7 @@ public abstract class AbstractTopology implements ITopology {
 		boolean covered = relation == SpatialRelation.INSIDE;
 		// insertAgents(scope, f);
 		if (!isTorus()) {
-			final IEnvelope envelope = source.getEnvelope().intersection(environment.getEnvelope());
+			final IEnvelope envelope = source.getEnvelope();
 			try {
 				final Collection<IAgent> shapes = getSpatialIndex().allInEnvelope(scope, source, envelope, f, covered);
 				final PreparedGeometry pg = pgFact.create(source.getInnerGeometry());

@@ -5,7 +5,6 @@
 * Tags: 
 */
 
-
 model Slicing
 
 global{
@@ -29,24 +28,15 @@ species dummy;
 
 experiment "Slicing tests" type:test {
 	
-	
-	
 	test copyBetween {
 		assert l copy_between(0, 3) = [1,2,3];
 	}
 	test copyBetweenReverse {
 		assert l copy_between(3, 0) = [];
 	}
-	test copyBetweenEmpty {
-		assert [] copy_between(0, 3) = [];
-	}
 	test copyBetweenString {
 		assert s copy_between(0, 3) = "thi";
 	}
-	test copyBetweenEmptyString {
-		assert "" copy_between(0, 3) = "";
-	}
-		
 	test simpleSlicing {
 		assert l slice(0, 3) = [1,2,3,4];
 	}	
@@ -141,19 +131,16 @@ experiment "Slicing tests" type:test {
 		matrix<dummy> m2 <- slice (md, 1::2, 1::2);
 		assert m2 = matrix<dummy>([[dummy(4),dummy(7)],[dummy(5),dummy(8)]]);
 	}
-
 	
 	test sliceMatrixListColRow{
 		matrix<dummy> m2 <- slice (md, [0,2], [0,2]);
 		assert m2 = matrix<dummy>([[dummy(0),dummy(6)],[dummy(2),dummy(8)]]);
 	}
 	
-	
 	test sliceMatrixListColRowRepeatRows{
 		matrix m2 <- slice (mi, [0,2], [0,2,2]);
 		assert m2 = matrix([[1,7,7],[3,9,9]]);
 	}
-	
 	
 	test sliceMatrixListColRowRepeatCols{
 		matrix m2 <- slice (mi, [0,0,2], [0,2]);

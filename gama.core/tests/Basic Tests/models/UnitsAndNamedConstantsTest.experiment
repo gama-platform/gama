@@ -1,0 +1,46 @@
+/**
+* Name: UnitsAndNamedConstantsTest
+* Description: Tests the units (lengths, durations, weights, volumes, surfaces) and the named constants
+* 	that are not numeric limits (dates, font styles, anchors, graph algorithms, layouts...)
+* Tags: constant, unit, test
+*/
+
+experiment UnitsAndNamedConstantsTest type: test autorun: true {
+
+	test "Shortest path algorithms" {
+		assert #Dijkstra = "Dijkstra";
+		assert #BidirectionalDijkstra = "BidirectionalDijkstra";
+		assert #AStar = "AStar";
+		assert #NBAStar = "NBAStar";
+		assert #NBAStarApprox = "NBAStarApprox";
+		assert #FloydWarshall = "FloydWarshall";
+		assert #BellmannFord = "BellmannFord";
+		assert #DeltaStepping = "DeltaStepping";
+		assert #CHBidirectionalDijkstra = "CHBidirectionalDijkstra";
+		assert #TransitNodeRouting = "TransitNodeRouting";
+
+		// they all find the same shortest path
+		graph g <- as_edge_graph([{0, 0}::{10, 0}, {10, 0}::{10, 10}, {0, 0}::{0, 10}, {0, 10}::{10, 10}, {0, 0}::{10, 10}]);
+		// (asserts are only taken into account directly inside a test, hence the list of failures)
+		list<string> wrong_algorithms <- [];
+		loop algo over: [#Dijkstra, #BidirectionalDijkstra, #AStar, #NBAStar, #NBAStarApprox, #FloydWarshall, #BellmannFord, #DeltaStepping, #CHBidirectionalDijkstra, #TransitNodeRouting] {
+			graph g2 <- g with_shortest_path_algorithm algo;
+			path p <- path_between(g2, {0, 0}, {10, 10});
+			if (p = nil or length(p.edges) != 1) {
+				wrong_algorithms <+ algo;
+			}
+		}
+		assert empty(wrong_algorithms);
+	}
+
+	test "The current error is available in a catch block" {
+		string caught_message <- nil;
+		try {
+			error "something went wrong";
+		} catch {
+			caught_message <- #current_error;
+		}
+		assert caught_message != nil;
+		assert caught_message contains "something went wrong";
+	}
+}

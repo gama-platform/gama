@@ -322,6 +322,16 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 		// return !runningAllTests;
 	}
 
+	/**
+	 * The TestView must never be auto-closed by {@code closeSimulationViews()} — its results are intentionally kept
+	 * visible until the user decides to close it manually. This matches the ErrorView behavior and prevents losing the
+	 * current unit-test results when a model experiment is launched.
+	 */
+	@Override
+	public void close(final IScope scope) {
+		// deliberate no-op — see Javadoc above
+	}
+
 	@Override
 	public IColor getItemDisplayColor(final AbstractSummary<?> t) {
 		return t.getColor(null);

@@ -1,0 +1,137 @@
+/**
+* Name: FileInputRobustnessTest
+* Description: Reads malformed files (shapefiles with missing or truncated parts, empty or fake images, CSV files
+* 	with uneven rows, other separators, a byte order mark or unbalanced quotes) and malformed JSON documents (very
+* 	deep nesting, duplicated keys). A malformed input may be rejected, but with a GAML error and not with an
+* 	internal Java exception; when it is accepted, the data read must be the expected one.
+* 	The fixtures are in ../includes
+* Tags: robustness, file, shapefile, csv, image, json, test
+*/
+
+model FileInputRobustnessTestModel
+
+species feature { }
+
+experiment FileInputRobustnessTest type: test autorun: true {
+
+	bool handled(string problem) {
+		return problem = nil ? true : !(problem contains "Java error");
+	}
+
+	test "A complete shapefile can be read" {
+		list<geometry> geometries <- shape_file("../includes/complete.shp").contents;
+		assert not empty(geometries);
+		assert geometries all_match (each.area > 0 or each.perimeter > 0);
+	}
+
+	test "A shapefile without its attributes file" {
+		string problem <- nil;
+		list<geometry> geometries <- [];
+		try { geometries <- shape_file("../includes/no_dbf.shp").contents; } catch { problem <- #current_error; }
+		assert handled(problem);
+		// the geometries can still be read
+		assert problem != nil or length(geometries) = length(shape_file("../includes/complete.shp").contents);
+	}
+
+	test "A shapefile without its projection file" {
+		string problem <- nil;
+		list<geometry> geometries <- [];
+		try { geometries <- shape_file("../includes/no_prj.shp").contents; } catch { problem <- #current_error; }
+		assert handled(problem);
+		assert problem != nil or length(geometries) = length(shape_file("../includes/complete.shp").contents);
+	}
+
+	test "A truncated shapefile" {
+		string problem <- nil;
+		try { list<geometry> geometries <- shape_file("../includes/truncated.shp").contents; } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+	}
+
+	test "Agents created from a malformed shapefile" {
+		string problem <- nil;
+		try { create feature from: shape_file("../includes/truncated.shp"); } catch { problem <- #current_error; }
+		assert handled(problem);
+	}
+
+	test "An empty image file" {
+		string problem <- nil;
+		try { unknown contents <- image_file("../includes/empty.png").contents; } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+	}
+
+	test "A file that is not an image" {
+		string problem <- nil;
+		try { unknown contents <- image_file("../includes/not_an_image.png").contents; } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+	}
+
+	test "A CSV file with rows of different lengths" {
+		string problem <- nil;
+		matrix contents <- nil;
+		try { contents <- matrix(csv_file("../includes/uneven.csv", ",", false)); } catch { problem <- #current_error; }
+		assert handled(problem);
+		// every row is kept
+		assert problem != nil or contents.rows = 4;
+	}
+
+	test "A CSV file with another separator" {
+		matrix contents <- matrix(csv_file("../includes/semicolon.csv", ";", false));
+		assert contents.columns = 2;
+		assert contents.rows = 3;
+		assert string(contents[0, 0]) = "a";
+	}
+
+	test "A CSV file starting with a byte order mark" {
+		matrix contents <- matrix(csv_file("../includes/bom.csv", ",", false));
+		// the mark is not part of the first cell
+		assert string(contents[0, 0]) = "name";
+		assert contents.rows = 3;
+	}
+
+	test "An empty CSV file" {
+		string problem <- nil;
+		matrix contents <- nil;
+		try { contents <- matrix(csv_file("../includes/empty.csv")); } catch { problem <- #current_error; }
+		assert handled(problem);
+		assert problem != nil or contents.rows * contents.columns = 0;
+	}
+
+	test "A CSV file with unbalanced quotes" {
+		string problem <- nil;
+		try { matrix contents <- matrix(csv_file("../includes/unbalanced_quotes.csv", ",", false)); } catch { problem <- #current_error; }
+		assert handled(problem);
+	}
+
+	test "A very deeply nested JSON document" {
+		string opening <- "";
+		string closing <- "";
+		loop times: 5000 {
+			opening <- opening + "[";
+			closing <- closing + "]";
+		}
+		string problem <- nil;
+		try { unknown parsed <- from_json(opening + closing); } catch { problem <- #current_error; }
+		assert handled(problem);
+	}
+
+	test "A JSON object with duplicated keys" {
+		string problem <- nil;
+		unknown value <- nil;
+		try { value <- map(from_json('{"a": 1, "a": 2}'))["a"]; } catch { problem <- #current_error; }
+		assert handled(problem);
+		assert problem != nil or value = 1 or value = 2;
+	}
+
+	test "JSON numbers out of range" {
+		string problem <- nil;
+		unknown value <- nil;
+		try { value <- from_json("1e999"); } catch { problem <- #current_error; }
+		assert handled(problem);
+		problem <- nil;
+		try { value <- from_json("123456789012345678901234567890"); } catch { problem <- #current_error; }
+		assert handled(problem);
+	}
+}

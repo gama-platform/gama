@@ -195,6 +195,7 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 	protected GamaMatrix(final int cols, final int rows, final IType contentsType) {
 		numRows = rows;
 		numCols = cols;
+		normalizeEmptyDimensions();
 		this.type = computeTypeWith(contentsType);
 	}
 
@@ -227,7 +228,15 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 						.error("" + objects.get(0) + " cannot be casted to a List (in matrix creation)", scope);
 			}
 		}
+		normalizeEmptyDimensions();
 		this.type = computeTypeWith(contentsType);
+	}
+
+	protected final void normalizeEmptyDimensions() {
+		if (numCols == 0 || numRows == 0) {
+			numCols = 0;
+			numRows = 0;
+		}
 	}
 
 	/**

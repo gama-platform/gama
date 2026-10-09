@@ -22,12 +22,12 @@ import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IDecoratorManager;
-import org.osgi.service.prefs.BackingStoreException;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.internal.PluginActionBuilder;
 import org.eclipse.ui.internal.ide.application.IDEWorkbenchAdvisor;
+import org.osgi.service.prefs.BackingStoreException;
 
 import gama.api.GAMA;
 import gama.api.additions.delegates.IEventLayerDelegate;
@@ -42,6 +42,7 @@ import gama.dev.DEBUG;
 import gama.ui.application.Application;
 import gama.ui.application.server.GamaGuiWebSocketServer;
 import gama.workspace.manager.WorkspaceModelsManager;
+import gama.workspace.nature.GamaNatures;
 
 /**
  * The Class ApplicationWorkbenchAdvisor.
@@ -95,10 +96,12 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 	@Override
 	public void postStartup() {
 		super.postStartup();
+		// Defer linking until the workbench startup sequence has initialized the UI.
+		if (checkCopyOfBuiltInModels()) { WorkspaceModelsManager.instance.linkSampleModelsToWorkspace(); }
 		FileUtils.cleanCache();
 		final String[] args = Platform.getApplicationArgs();
 		// DEBUG.LOG("Arguments received by GAMA : " + DEBUG.TO_STRING(args));
-		
+
 		// Start Server after the GUI is loaded
 		GamaGuiWebSocketServer.startGuiServer();
 
@@ -154,19 +157,19 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 	 * loads this advisor.
 	 */
 	private void warnIfWaylandUnstable() {
-		if (!SystemInfo.isLinux()) return;
-		if (System.getenv("WAYLAND_DISPLAY") == null) return;
-		if ("x11".equals(System.getenv("GDK_BACKEND"))) return; // already forced onto XWayland
+		if (!SystemInfo.isLinux() || (System.getenv("WAYLAND_DISPLAY") == null) || "x11".equals(System.getenv("GDK_BACKEND"))) return; // already forced onto XWayland
 
 		final IEclipsePreferences node = InstanceScope.INSTANCE.getNode(WAYLAND_PREF_QUALIFIER);
 		if (node.getBoolean(WAYLAND_WARNING_DISMISSED, false)) return; // dismissed for this workspace
 
 		final Shell shell = Display.getDefault().getActiveShell(); // postStartup runs on the UI thread
 		final String title = "Wayland compatibility warning";
-		final String message = "GAMA is not stable under the Wayland display server "
-				+ "(its 3D/OpenGL rendering relies on JOGL, which does not support Wayland).\n\n"
-				+ "For a stable experience, relaunch GAMA with the environment variable GDK_BACKEND=x11, "
-				+ "or start it from the installed application launcher, which is already configured for this.";
+		final String message = """
+				GAMA is not stable under the Wayland display server \
+				(its 3D/OpenGL rendering relies on JOGL, which does not support Wayland).
+
+				For a stable experience, relaunch GAMA with the environment variable GDK_BACKEND=x11, \
+				or start it from the installed application launcher, which is already configured for this.""";
 		final MessageDialogWithToggle dialog = MessageDialogWithToggle.openWarning(shell, title, message,
 				"Do not show this warning again for this workspace", false, null, null);
 		if (dialog.getToggleState()) {
@@ -188,9 +191,16 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
 		final IWorkspace workspace = GAMA.getWorkspaceManager().getWorkspace();
 		final IProject[] projects = workspace.getRoot().getProjects();
-		// If no projects are registered at all, we are facing a fresh new workspace
-		if (projects.length == 0) return true;
-		return false;
+		// User projects do not imply that the bundled library is present in this workspace.
+		for (final IProject project : projects) {
+			try {
+				if (project.hasNature(GamaNatures.BUILTIN_NATURE)) return false;
+			} catch (final CoreException e) {
+				DEBUG.ERR("Could not check whether project " + project.getName() + " belongs to the built-in library",
+						e);
+			}
+		}
+		return true;
 		// Following is not ready for prime time !
 		// // If there are projects, we must be careful to distinguish user projects from built-in projects
 		// List<IProject> builtInProjects = new ArrayList<>();
@@ -291,9 +301,6 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 		// Suspend background jobs while we startup
 		Job.getJobManager().suspend();
 		// super.preStartup();
-		/* Linking the stock models with the workspace if they are not already */
-		if (checkCopyOfBuiltInModels()) { WorkspaceModelsManager.instance.linkSampleModelsToWorkspace(); }
-
 	}
 
 	/**

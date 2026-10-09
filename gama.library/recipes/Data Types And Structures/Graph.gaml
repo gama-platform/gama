@@ -19,7 +19,7 @@ global {
 	bool directed_graph <- false;
 	int x_cells <- 10;
 	int y_cells <- 10;
-	graph g_graph;
+	graph<geometry,geometry> g_graph;
 	string the_layout init: "Circle" among: ["Circle", "Forced", "Grid"];
 	string graph_generator init: "Complete" among: ["Random","Scall-free", "Small-world", "Complete", "Distance", "Intersection", "Grid"];
 
@@ -213,7 +213,7 @@ global {
 		
 		}
 		write "Remove nodes and edges";
-		write "use the 'p1 remove_node_from graph' operator";
+		write "use the 'p1 remove_node_from graph' operator"; 
 		g_graph <- geometry(any(g_graph.vertices)) remove_node_from g_graph;
 		write "Rewire nodes";
 		g_graph <- g_graph rewire_n 10;

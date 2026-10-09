@@ -15,6 +15,7 @@ import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.operator;
 import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
@@ -385,9 +386,12 @@ public class Cast {
 			examples = { @example (
 					value = "list_with(5,2)",
 					equals = "[2,2,2,2,2]") })
-	@test ("list_with(5,2) = [2,2,2,2,2]")
-	@test ("5 list_with(i: i+1) = [1,2,3,4,5]")
-	@test ("5 list_with string(each / 2) = ['0.0','0.5','1.0','1.5','2.0']")
+	@tests ({
+			@test ("list_with(5,2) = [2,2,2,2,2]"),
+			@test ("5 list_with(i: i+1) = [1,2,3,4,5]"),
+			@test ("5 list_with string(each / 2) = ['0.0','0.5','1.0','1.5','2.0']"),
+			@test ("list_with(3, 0) = [0, 0, 0]")
+	})
 	public static IList list_with(final IScope scope, final String eachName, final Integer size,
 			final IExpression fillExpr) {
 		if (fillExpr == null || size <= 0) return GamaListFactory.create(Types.NO_TYPE);

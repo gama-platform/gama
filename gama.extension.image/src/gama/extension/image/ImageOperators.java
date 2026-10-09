@@ -32,7 +32,10 @@ import javax.imageio.ImageIO;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
@@ -71,6 +74,7 @@ public class ImageOperators implements ImageConstants {
 	 *            the display name
 	 * @return the gama image
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "snapshot",
 			can_be_const = false)
@@ -106,6 +110,7 @@ public class ImageOperators implements ImageConstants {
 	 *            the display name
 	 * @return the gama image
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "snapshot",
 			can_be_const = false)
@@ -143,6 +148,7 @@ public class ImageOperators implements ImageConstants {
 	 *            the display name
 	 * @return the gama image
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "snapshot",
 			can_be_const = false)
@@ -201,6 +207,7 @@ public class ImageOperators implements ImageConstants {
 	 *            the format
 	 * @return the gama image
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "send_image_to_websocket",
 			can_be_const = false)
@@ -223,6 +230,7 @@ public class ImageOperators implements ImageConstants {
 	 *            the image
 	 * @return the gama image
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "send_image_to_websocket",
 			can_be_const = false)
@@ -244,6 +252,13 @@ public class ImageOperators implements ImageConstants {
 	@operator ("grayscale")
 	@doc ("Used to convert any image to a grayscale color palette and return it. The original image is left untouched")
 	@no_test
+	@tests ({
+			@test ("image img <- image(4, 4, #red); image gray <- grayscale(img); gray != nil"),
+			@test ("image img2 <- image(4, 4, #red); image gray2 <- grayscale(img2); gray2.width = 4"),
+			@test ("image img3 <- image(4, 4, #red); image gray3 <- grayscale(img3); gray3.height = 4"),
+			@test ("image red_image <- image(4, 2, #red); rgb grey <- rgb(matrix(grayscale(red_image))[0, 0]); grey.red = grey.green and grey.green = grey.blue"),
+			@test ("image red_image2 <- image(4, 2, #red); rgb grey2 <- rgb(matrix(grayscale(red_image2))[0, 0]); grey2.red > 0 and grey2.red < 255")
+	})
 	public static GamaImage grayscale(final IScope scope, final GamaImage image) {
 		try {
 			return apply(image, OP_GRAYSCALE);
@@ -264,6 +279,9 @@ public class ImageOperators implements ImageConstants {
 	@operator (IKeyword.DARKER)
 	@doc ("Used to return an image 10% darker. This operation can be applied multiple times in a row if greater than 10% changes in brightness are desired.")
 	@no_test
+	@tests ({
+			@test ("image red_image <- image(4, 2, #red); rgb darkened <- rgb(matrix(darker(red_image, 0.5))[0, 0]); rgb slightly_darkened <- rgb(matrix(darker(red_image))[0, 0]); slightly_darkened.red < 255 and slightly_darkened.red > darkened.red")
+	})
 	public static GamaImage darker(final IScope scope, final GamaImage image) {
 		try {
 			return apply(image, OP_DARKER);
@@ -288,6 +306,11 @@ public class ImageOperators implements ImageConstants {
 	@operator (IKeyword.DARKER)
 	@doc ("Used to return an image darker by a percentage (between 0 - no change - and 1 - 100% darker). If the percentage is below zero or above 1, returns the image untouched")
 	@no_test
+	@tests ({
+			@test ("image img <- image(4, 4, #red); image drk <- darker(img, 0.5); drk != nil"),
+			@test ("image img2 <- image(4, 4, #red); image drk2 <- darker(img2, 0.5); drk2.width = 4"),
+			@test ("image red_image <- image(4, 2, #red); rgb darkened <- rgb(matrix(darker(red_image, 0.5))[0, 0]); darkened = rgb(127, 0, 0)")
+	})
 	public static GamaImage darker(final IScope scope, final GamaImage image, final double percentage) {
 		try {
 			if (percentage < 0 || percentage > 1) return image;
@@ -310,6 +333,12 @@ public class ImageOperators implements ImageConstants {
 	@operator (IKeyword.BRIGHTER)
 	@doc ("Used to return an image 10% brigther. This operation can be applied multiple times in a row if greater than 10% changes in brightness are desired.")
 	@no_test
+	@tests ({
+			@test ("image img <- image(4, 4, #red); image brt <- brighter(img); brt != nil"),
+			@test ("image img2 <- image(4, 4, #red); image brt2 <- brighter(img2); brt2.width = 4"),
+			@test ("rgb brightened <- rgb(matrix(brighter(image(4, 2, rgb(100, 100, 100))))[0, 0]); brightened.red > 100"),
+			@test ("rgb brightened2 <- rgb(matrix(brighter(image(4, 2, rgb(100, 100, 100))))[0, 0]); brightened2.red = brightened2.green and brightened2.green = brightened2.blue")
+	})
 	public static GamaImage brigther(final IScope scope, final GamaImage image) {
 		try {
 			return apply(image, OP_BRIGHTER);
@@ -422,6 +451,10 @@ public class ImageOperators implements ImageConstants {
 	@doc ("Applies a proportional scaling to the image passed in parameter to  return a new scaled image with the corresponding width. "
 			+ "A width of 0 will return nil, a width equal to the width of the image will return the original image. Automatic scaling and resizing methods are used. The original image is left untouched")
 	@no_test
+	@tests ({
+			// giving one dimension keeps the proportions
+			@test ("image red_image <- image(4, 2, #red); with_width(red_image, 8).height = 4")
+	})
 	public static GamaImage with_width(final IScope scope, final GamaImage image, final Integer width) {
 		return image == null || width <= 0d ? null : width == image.getWidth() ? image
 				: resize(image, Mode.FIT_TO_WIDTH, width, width);
@@ -442,6 +475,9 @@ public class ImageOperators implements ImageConstants {
 	@doc ("Applies a proportional scaling to the image passed in parameter to return a new scaled image with the corresponding height. "
 			+ "A height of 0 will return nil, a height equal to the height of the image will return the original image. Automatic scaling and resizing methods are used. The original image is left untouched")
 	@no_test
+	@tests ({
+			@test ("image red_image <- image(4, 2, #red); with_height(red_image, 4).width = 8")
+	})
 	public static GamaImage with_height(final IScope scope, final GamaImage image, final Integer height) {
 		return image == null || height <= 0d ? null : height == image.getHeight() ? image
 				: resize(image, Mode.FIT_TO_HEIGHT, height, height);
@@ -464,6 +500,10 @@ public class ImageOperators implements ImageConstants {
 	@doc ("Applies a non-proportional scaling to the image passed in parameter to return a new scaled image with the corresponding width and height. "
 			+ "A height of 0 or a width of 0 will return nil. If the width and height parameters are repectively equal to the width and height of the original image, it is returned. Automatic scaling and resizing methods are used. The original image is left untouched")
 	@no_test
+	@tests ({
+			@test ("image red_image <- image(4, 2, #red); image resized <- with_size(red_image, 8, 4); resized.width = 8"),
+			@test ("image red_image2 <- image(4, 2, #red); image resized2 <- with_size(red_image2, 8, 4); resized2.height = 4")
+	})
 	public static GamaImage with_size(final IScope scope, final GamaImage image, final Integer width,
 			final Integer height) {
 		return image == null || height <= 0d || width <= 0d ? null
@@ -483,6 +523,12 @@ public class ImageOperators implements ImageConstants {
 	@operator ("horizontal_flip")
 	@doc ("Returns an image flipped horizontally by reflecting the original image around the y axis. The original image is left untouched")
 	@no_test
+	@tests ({
+			@test ("image img <- image(8, 2, #green); image flipped <- horizontal_flip(img); flipped != nil"),
+			@test ("image img2 <- image(8, 2, #green); image flipped2 <- horizontal_flip(img2); flipped2.width = 8"),
+			@test ("image img3 <- image(8, 2, #green); image flipped3 <- horizontal_flip(img3); flipped3.height = 2"),
+			@test ("image red_image <- image(4, 2, #red); rgb(matrix(horizontal_flip(red_image))[0, 0]) = #red")
+	})
 	public static GamaImage horizontalFlip(final IScope scope, final GamaImage image) {
 		return rotate(image, ImageConstants.FLIP_HORZ);
 	}
@@ -499,6 +545,9 @@ public class ImageOperators implements ImageConstants {
 	@operator ("vertical_flip")
 	@doc ("Returns an image flipped vertically by reflecting the original image around the x axis. The original image is left untouched")
 	@no_test
+	@tests ({
+			@test ("image red_image <- image(4, 2, #red); rgb(matrix(vertical_flip(red_image))[3, 1]) = #red")
+	})
 	public static GamaImage verticalFlip(final IScope scope, final GamaImage image) {
 		return rotate(image, ImageConstants.FLIP_VERT);
 	}
@@ -517,6 +566,12 @@ public class ImageOperators implements ImageConstants {
 	@operator ("rotated_by")
 	@doc ("Returns the image rotated using the angle in degrees passed in parameter. A positive angle means a clockwise rotation, and a negative one a counter-clockwise. The original image is left untouched")
 	@no_test
+	@tests ({
+			@test ("image img <- image(8, 2, #green); image rotated <- img rotated_by 90.0; rotated != nil"),
+			@test ("image img2 <- image(8, 2, #green); image rotated2 <- img2 rotated_by 90.0; rotated2.width = 2"),
+			@test ("image img3 <- image(8, 2, #green); image rotated3 <- img3 rotated_by 90.0; rotated3.height = 8"),
+			@test ("image red_image <- image(4, 2, #red); rgb(matrix(red_image rotated_by 90)[0, 0]) = #red")
+	})
 	public static GamaImage rotated(final IScope scope, final GamaImage image, final double angleInDegrees) {
 		double angle = Math.abs(angleInDegrees) % 360 * Math.signum(angleInDegrees);
 		if (angle == Math.floor(angle)) {
@@ -567,6 +622,10 @@ public class ImageOperators implements ImageConstants {
 	@operator ({ "tinted_with", "*" })
 	@doc ("Returns the image tinted using the color passed in parameter. This effectively multiplies the colors of the image by it. The original image is left untouched")
 	@no_test
+	@tests ({
+			@test ("image img <- image(4, 4, #red); image tinted <- img tinted_with #blue; tinted != nil"),
+			@test ("image img2 <- image(4, 4, #red); image tinted2 <- img2 tinted_with #blue; tinted2.width = 4")
+	})
 	public static GamaImage tint(final IScope scope, final GamaImage image, final IColor color) {
 		GamaImage result = GamaImage.ofDimensions(image.getWidth(), image.getHeight(), Transparency.TRANSLUCENT);
 		Graphics2D graphics = result.createGraphics();
@@ -630,6 +689,11 @@ public class ImageOperators implements ImageConstants {
 	@operator ({ "tinted_with" })
 	@doc ("Returns the image tinted using the color passed in parameter and a factor between 0 and 1, determining the transparency of the dyeing to apply. The original image is left untouched")
 	@no_test
+	@tests ({
+			// the ratio is the strength of the tint
+			@test ("image red_image <- image(4, 2, #red); rgb(matrix(tinted_with(red_image, #blue, 1.0))[0, 0]) = #blue"),
+			@test ("image red_image2 <- image(4, 2, #red); rgb(matrix(tinted_with(red_image2, #blue, 0.0))[0, 0]) = #red")
+	})
 	public static GamaImage tint(final IScope scope, final GamaImage image, final IColor color, final double ratio) {
 		int w = image.getWidth();
 		int h = image.getHeight();
@@ -668,6 +732,14 @@ public class ImageOperators implements ImageConstants {
 					equals = "to a composed image with the two",
 					isExecutable = false) })
 	@no_test
+	@tests ({
+			@test ("image red_image <- image(4, 2, #red); image blue_image <- image(4, 2, #blue); rgb mixed <- rgb(matrix(blend(red_image, blue_image, 0.5))[0, 0]); mixed.red > 120 and mixed.red < 135"),
+			@test ("image red_image2 <- image(4, 2, #red); image blue_image2 <- image(4, 2, #blue); rgb mixed2 <- rgb(matrix(blend(red_image2, blue_image2, 0.5))[0, 0]); mixed2.blue > 120 and mixed2.blue < 135"),
+			@test ("image red_image3 <- image(4, 2, #red); image blue_image3 <- image(4, 2, #blue); rgb mixed3 <- rgb(matrix(blend(red_image3, blue_image3, 0.5))[0, 0]); mixed3.green = 0"),
+			// the ratio is the weight of the second image
+			@test ("image red_image4 <- image(4, 2, #red); image blue_image4 <- image(4, 2, #blue); rgb(matrix(blend(red_image4, blue_image4, 1.0))[0, 0]) = #blue"),
+			@test ("image red_image5 <- image(4, 2, #red); image blue_image5 <- image(4, 2, #blue); rgb(matrix(blend(red_image5, blue_image5, 0.0))[0, 0]) = #red")
+	})
 	public static GamaImage blend(final IScope scope, final GamaImage image, final GamaImage overlay,
 			final double ratio) {
 		GamaImage result = ImageHelper.copyToOptimalImage(image);
@@ -693,6 +765,11 @@ public class ImageOperators implements ImageConstants {
 	@operator ("blurred")
 	@doc ("Application of a blurrying filter to the image passed in parameter. This operation can be applied multiple times. The original image is left untouched")
 	@no_test
+	@tests ({
+			@test ("image img <- image(4, 4, #red); image blur <- blurred(img); blur != nil"),
+			@test ("image img2 <- image(4, 4, #red); image blur2 <- blurred(img2); blur2.width = 4"),
+			@test ("image red_image <- image(4, 2, #red); rgb(matrix(blurred(red_image))[1, 1]) = #red")
+	})
 	public static GamaImage blur(final IScope scope, final GamaImage image) {
 		return apply(image, OP_BLUR);
 	}
@@ -725,6 +802,11 @@ public class ImageOperators implements ImageConstants {
 	@operator ("sharpened")
 	@doc ("Application of a sharpening filter to the image passed in parameter. This operation can be applied multiple times. The original image is left untouched")
 	@no_test
+	@tests ({
+			@test ("image img <- image(4, 4, #red); image sharp <- sharpened(img); sharp != nil"),
+			@test ("image img2 <- image(4, 4, #red); image sharp2 <- sharpened(img2); sharp2.width = 4"),
+			@test ("image red_image <- image(4, 2, #red); rgb(matrix(sharpened(red_image))[1, 1]) = #red")
+	})
 	public static GamaImage sharpen(final IScope scope, final GamaImage image) {
 		return apply(image, OP_SHARPEN);
 	}
@@ -773,6 +855,11 @@ public class ImageOperators implements ImageConstants {
 			 The original image is left untouched""")
 	@no_test
 
+	@tests ({
+			@test ("image red_image <- image(4, 2, #red); image cropped <- cropped_to(red_image, 0, 0, 2, 1); cropped.width = 2"),
+			@test ("image red_image2 <- image(4, 2, #red); image cropped2 <- cropped_to(red_image2, 0, 0, 2, 1); cropped2.height = 1"),
+			@test ("image red_image3 <- image(4, 2, #red); image cropped3 <- cropped_to(red_image3, 0, 0, 2, 1); rgb(matrix(cropped3)[1, 0]) = #red")
+	})
 	public static GamaImage cropped(final IScope scope, final GamaImage image, final int ox, final int oy, final int ow,
 			final int oh) {
 		int iw = image.getWidth();
@@ -800,6 +887,7 @@ public class ImageOperators implements ImageConstants {
 	 *            the image
 	 * @return the boolean
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "copy_to_clipboard",
 			can_be_const = false,
@@ -831,6 +919,11 @@ public class ImageOperators implements ImageConstants {
 			value = "image")
 	@doc ("Builds a new blank image of the specified dimensions, which does not accept transparency")
 	@no_test
+	@tests ({
+			@test ("image blank <- image(4, 4); blank != nil"),
+			@test ("image blank2 <- image(4, 4); blank2.width = 4"),
+			@test ("image blank3 <- image(4, 4); blank3.height = 4")
+	})
 	public static GamaImage image(final int w, final int h) {
 		return GamaImage.ofDimensions(w, h, BufferedImage.TYPE_INT_ARGB);
 	}
@@ -851,6 +944,15 @@ public class ImageOperators implements ImageConstants {
 			value = "image")
 	@doc ("Builds a new image with the specified dimensions and already filled with the given rgb color")
 	@no_test
+	@tests ({
+			@test ("image colored <- image(8, 2, #red); colored.width = 8"),
+			@test ("image colored2 <- image(8, 2, #red); colored2.height = 2"),
+			@test ("image red_image <- image(4, 2, #red); image doubled <- red_image * 2; doubled.width = 8"),
+			@test ("image red_image2 <- image(4, 2, #red); image doubled2 <- red_image2 * 2; doubled2.height = 4"),
+			// the original is left untouched
+			@test ("image red_image3 <- image(4, 2, #red); red_image3.width = 4"),
+			@test ("image red_image4 <- image(4, 2, #red); red_image4.height = 2")
+	})
 	public static GamaImage image(final int w, final int h, final IColor color) {
 		GamaImage gi = GamaImage.ofDimensions(w, h, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = gi.createGraphics();
@@ -895,6 +997,18 @@ public class ImageOperators implements ImageConstants {
 			can_be_const = true)
 	@doc ("Returns the matrix<int> value of the image passed in parameter, where each pixel is represented by the RGB int value. The dimensions of the matrix are those of the image. ")
 	@no_test
+	@tests ({
+			@test ("matrix<int> pixels <- matrix(image(4, 2, rgb(10, 20, 30))); pixels.columns = 4"),
+			@test ("matrix<int> pixels2 <- matrix(image(4, 2, rgb(10, 20, 30))); pixels2.rows = 2"),
+			@test ("matrix<int> pixels3 <- matrix(image(4, 2, rgb(10, 20, 30))); rgb(pixels3[0, 0]) = rgb(10, 20, 30)"),
+			@test ("matrix<int> pixels4 <- matrix(image(4, 2, rgb(10, 20, 30))); rgb(pixels4[3, 1]) = rgb(10, 20, 30)"),
+			@test ("matrix<int> pixels5 <- matrix(image(4, 2, rgb(10, 20, 30))); remove_duplicates(list(pixels5)) = [int(rgb(10, 20, 30))]"),
+			@test ("matrix<int> blank_pixels <- matrix(image(2, 2)); rgb(blank_pixels[0, 0]).alpha = 0"),
+			// two images with the same pixels have equal matrices
+			@test ("matrix(image(4, 2, #red)) = matrix(image(4, 2, #red))"),
+			@test ("matrix(image(4, 2, #red)) != matrix(image(4, 2, #blue))"),
+			@test ("image red_image <- image(4, 2, #red); image doubled <- red_image * 2; rgb(matrix(doubled)[7, 3]) = #red")
+	})
 	public static IMatrix matrix(final IScope scope, final GamaImage image) {
 		final int xSize = image.getWidth();
 		final int ySize = image.getHeight();

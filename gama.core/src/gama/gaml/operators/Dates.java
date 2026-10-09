@@ -27,8 +27,10 @@ import org.geotools.filter.ConstantExpression;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
 import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
@@ -166,9 +168,12 @@ public class Dates {
 					examples = { @example (
 							value = "date('2000-01-02') - date('2000-01-01')",
 							equals = "86400") }))
-	@test ("date('2000-01-02') - date('2000-01-01') = 86400.0")
-	@test ("date('2000-01-01') - date('2000-01-01') = 0.0")
-	@test ("date('2000-01-01') - date('2000-01-02') = -86400.0")
+	@tests ({
+			@test ("date('2000-01-02') - date('2000-01-01') = 86400.0"),
+			@test ("date('2000-01-01') - date('2000-01-01') = 0.0"),
+			@test ("date('2000-01-01') - date('2000-01-02') = -86400.0"),
+			@test ("date('2000-01-02') - date('2000-01-01') = 86400#s")
+	})
 
 	public static double minusDate(final IScope scope, final IDate date1, final IDate date2)
 			throws GamaRuntimeException {
@@ -470,6 +475,7 @@ public class Dates {
 	 *            the end
 	 * @return the i list
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with the bounds of int, e.g. to(2, #max_int)")
 	@operator (
 			value = "to",
 			category = { IOperatorCategory.DATE },
@@ -628,6 +634,7 @@ public class Dates {
 	 *            the date
 	 * @return true, if successful
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with the bounds of int, e.g. to(2, #max_int)")
 	@operator (
 			value = { "until", "to" },
 			category = { IOperatorCategory.DATE },
@@ -766,6 +773,7 @@ public class Dates {
 	 *            the date
 	 * @return true, if successful
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with the bounds of int, e.g. to(2, #max_int)")
 	@operator (
 			value = { "until", "to" },
 			doc = @doc ("Returns true if the first operand is true and the current date is equal to or situated before the second operand"),
@@ -895,7 +903,15 @@ public class Dates {
 					examples = { @example (
 							value = "between(date('2000-01-01'), date('2020-02-02'))",
 							equals = "false") }))
-	@test ("starting_date <- date([2019,5,9]);between((date([2019,5,8])), (date([2019,5,10]))) = true")
+	@tests ({
+			@test ("starting_date <- date([2019,5,9]);between((date([2019,5,8])), (date([2019,5,10]))) = true"),
+			// 'between' excludes both bounds
+			@test ("3 between (1, 5)"),
+			@test ("not (1 between (1, 5))"),
+			@test ("not (5 between (1, 5))"),
+			@test ("1.5 between (1.0, 5.0)"),
+			@test ("not (1.0 between (1.0, 5.0))")
+	})
 	public static boolean between(final IScope scope, final IDate date1, final IDate date2) {
 		return scope.getSimulation().getCurrentDate().isGreaterThan(date1, true)
 				&& scope.getSimulation().getCurrentDate().isSmallerThan(date2, true);
@@ -941,7 +957,13 @@ public class Dates {
 					examples = { @example (
 							value = "date('2000-01-01') + 86400",
 							equals = "date('2000-01-02')") }))
-	@test ("date('2000-01-01') + 86400 = date('2000-01-02')")
+	@tests ({
+			@test ("date('2000-01-01') + 86400 = date('2000-01-02')"),
+			@test ("date reference <- date(\"2026-03-15T10:30:45\"); reference plus_seconds 30 = date(\"2026-03-15T10:31:15\")"),
+			@test ("date reference2 <- date(\"2026-03-15T10:30:45\"); reference2 add_seconds 15 = reference2 plus_seconds 15"),
+			// units roll over
+			@test ("date(\"2026-12-31T23:59:59\") plus_seconds 1 = date(\"2027-01-01T00:00:00\")")
+	})
 	public static IDate plusDuration(final IScope scope, final IDate date1, final int duration)
 			throws GamaRuntimeException {
 		return date1.plus(duration, SECONDS);
@@ -1034,8 +1056,12 @@ public class Dates {
 					examples = { @example (
 							value = "date('2000-01-01') - 86400",
 							equals = "date('1999-12-31')") }))
-	@test ("date('2000-01-01') - 86400 = date('1999-12-31')")
-	@test ("date('2000-01-02') - 86400 = date('2000-01-01')")
+	@tests ({
+			@test ("date('2000-01-01') - 86400 = date('1999-12-31')"),
+			@test ("date('2000-01-02') - 86400 = date('2000-01-01')"),
+			@test ("date reference <- date(\"2026-03-15T10:30:45\"); reference minus_seconds 46 = date(\"2026-03-15T10:29:59\")"),
+			@test ("date reference2 <- date(\"2026-03-15T10:30:45\"); reference2 subtract_seconds 46 = reference2 minus_seconds 46")
+	})
 	public static IDate minusDuration(final IScope scope, final IDate date1, final int duration)
 			throws GamaRuntimeException {
 		return date1.plus(-duration, SECONDS);
@@ -1113,6 +1139,9 @@ public class Dates {
 					equals = "'2000-01-01 00:00:00_Test'") })
 	@test ("date('2000-01-01 00:00:00') + '_Test' = '2000-01-01 00:00:00_Test'")
 	@test ("date('-1000-01-01 00:00:00') + '' = '-1000-01-01 00:00:00'")
+	@test ("date([-100, 1, 2]) + '' = '-0100-01-02 00:00:00'")
+	@test ("date([-1000, 1, 1]) + '' = '-1000-01-01 00:00:00'")
+	@test ("(date([0, 1, 1]) subtract_years 1) + '' = '-0001-01-01 00:00:00'")
 	public static String concatenateDate(final IScope scope, final IDate date1, final String text)
 			throws GamaRuntimeException {
 		return date1.toString() + text;
@@ -1155,7 +1184,16 @@ public class Dates {
 			examples = { @example (
 					value = "date('2000-01-01') plus_years 15",
 					equals = "date('2015-01-01')") })
-	@test ("date('2000-01-01') plus_years 15 = date('2015-01-01')")
+	@tests ({
+			@test ("date('2000-01-01') plus_years 15 = date('2015-01-01')"),
+			@test ("date d1 <- date(\"2026-09-16T15:00:00\"); date d_years <- d1 add_years 4; d_years.year = 2030"),
+			@test ("date reference <- date(\"2026-03-15T10:30:45\"); reference plus_years 2 = date(\"2028-03-15T10:30:45\")"),
+			@test ("date reference2 <- date(\"2026-03-15T10:30:45\"); reference2 add_years 4 = reference2 plus_years 4"),
+			@test ("date reference3 <- date(\"2026-03-15T10:30:45\"); (reference3 plus_years 7) minus_years 7 = reference3"),
+			// nor a 29th of February outside of leap years
+			@test ("date(\"2024-02-29T00:00:00\") plus_years 1 = date(\"2025-02-28T00:00:00\")"),
+			@test ("date(\"2024-02-29T00:00:00\") plus_years 4 = date(\"2028-02-29T00:00:00\")")
+	})
 	public static IDate addYears(final IScope scope, final IDate date1, final int nbYears) throws GamaRuntimeException {
 
 		return date1.plus(nbYears, YEARS);
@@ -1199,7 +1237,15 @@ public class Dates {
 			examples = { @example (
 					value = "date('2000-01-01') plus_months 5",
 					equals = "date('2000-06-01')") })
-	@test ("date('2000-01-01') plus_months 5 = date('2000-06-01')")
+	@tests ({
+			@test ("date('2000-01-01') plus_months 5 = date('2000-06-01')"),
+			@test ("date d1 <- date(\"2026-09-16T15:00:00\"); date d_months <- d1 add_months 2; d_months.month = 11"),
+			@test ("date reference <- date(\"2026-03-15T10:30:45\"); reference plus_months 11 = date(\"2027-02-15T10:30:45\")"),
+			@test ("date reference2 <- date(\"2026-03-15T10:30:45\"); reference2 add_months 2 = reference2 plus_months 2"),
+			// there is no 31st of February
+			@test ("date(\"2026-01-31T00:00:00\") plus_months 1 = date(\"2026-02-28T00:00:00\")"),
+			@test ("date(\"2024-01-31T00:00:00\") plus_months 1 = date(\"2024-02-29T00:00:00\")")
+	})
 	public static IDate addMonths(final IScope scope, final IDate date1, final int nbMonths)
 			throws GamaRuntimeException {
 
@@ -1244,7 +1290,12 @@ public class Dates {
 			examples = { @example (
 					value = "date('2000-01-01') plus_weeks 15",
 					equals = "date('2000-04-15')") })
-	@test ("is_error(date('2000-15-01'))")
+	@tests ({
+			@test ("is_error(date('2000-15-01'))"),
+			@test ("date reference <- date(\"2026-03-15T10:30:45\"); reference plus_weeks 2 = date(\"2026-03-29T10:30:45\")"),
+			@test ("date reference2 <- date(\"2026-03-15T10:30:45\"); reference2 add_weeks 1 = reference2 plus_weeks 1"),
+			@test ("date reference3 <- date(\"2026-03-15T10:30:45\"); reference3 + 1 #week = reference3 plus_weeks 1")
+	})
 	public static IDate addWeeks(final IScope scope, final IDate date1, final int nbWeeks) throws GamaRuntimeException {
 		return date1.plus(nbWeeks, WEEKS);
 
@@ -1287,7 +1338,25 @@ public class Dates {
 			examples = { @example (
 					value = "date('2000-01-01') plus_days 12",
 					equals = "date('2000-01-13')") })
-	@test ("date('2000-01-01') plus_days 12 = date('2000-01-13')")
+	@tests ({
+			@test ("date('2000-01-01') plus_days 12 = date('2000-01-13')"),
+			@test ("date d1 <- date(\"2026-09-16T15:00:00\"); date d_days <- d1 add_days 5; d_days.day = 21"),
+			@test ("date d12 <- date(\"2026-09-16T15:00:00\"); date d_days2 <- d12 add_days 5; d_days2.month = 9"),
+			@test ("date reference <- date(\"2026-03-15T10:30:45\"); reference plus_days 20 = date(\"2026-04-04T10:30:45\")"),
+			@test ("date reference2 <- date(\"2026-03-15T10:30:45\"); reference2 add_days 5 = reference2 plus_days 5"),
+			@test ("date reference3 <- date(\"2026-03-15T10:30:45\"); (reference3 plus_days 400) minus_days 400 = reference3"),
+			// a negative amount goes the other way
+			@test ("date reference4 <- date(\"2026-03-15T10:30:45\"); reference4 plus_days -20 = reference4 minus_days 20"),
+			@test ("date reference5 <- date(\"2026-03-15T10:30:45\"); reference5 + 1 #day = reference5 plus_days 1"),
+			// the difference of two dates is a duration in seconds
+			@test ("date reference6 <- date(\"2026-03-15T10:30:45\"); (reference6 plus_days 1) - reference6 = 86400.0"),
+			@test ("date reference7 <- date(\"2026-03-15T10:30:45\"); (reference7 plus_days 1) - reference7 = 1 #day"),
+			@test ("date reference8 <- date(\"2026-03-15T10:30:45\"); date later <- reference8 plus_days 1; later > reference8"),
+			@test ("date reference9 <- date(\"2026-03-15T10:30:45\"); date later2 <- reference9 plus_days 1; reference9 != later2"),
+			@test ("date reference10 <- date(\"2026-03-15T10:30:45\"); date earlier <- reference10 minus_days 1; date later3 <- reference10 plus_days 1; reference10 between (earlier, later3)"),
+			@test ("date reference11 <- date(\"2026-03-15T10:30:45\"); date earlier2 <- reference11 minus_days 1; date later4 <- reference11 plus_days 1; not (earlier2 between (reference11, later4))"),
+			@test ("date reference12 <- date(\"2026-03-15T10:30:45\"); date earlier3 <- reference12 minus_days 1; date later5 <- reference12 plus_days 1; ([later5, reference12, earlier3] sort_by each) = [earlier3, reference12, later5]")
+	})
 	public static IDate addDays(final IScope scope, final IDate date1, final int nbDays) throws GamaRuntimeException {
 		return date1.plus(nbDays, DAYS);
 
@@ -1333,7 +1402,15 @@ public class Dates {
 					@example (
 							value = "date('2000-01-01') plus_hours 24",
 							equals = "date('2000-01-02')") })
-	@test ("date('2000-01-01') plus_hours 24  = date('2000-01-02')")
+	@tests ({
+			@test ("date('2000-01-01') plus_hours 24  = date('2000-01-02')"),
+			@test ("date reference <- date(\"2026-03-15T10:30:45\"); reference plus_hours 15 = date(\"2026-03-16T01:30:45\")"),
+			@test ("date reference2 <- date(\"2026-03-15T10:30:45\"); reference2 add_hours 2 = reference2 plus_hours 2"),
+			@test ("date reference3 <- date(\"2026-03-15T10:30:45\"); (reference3 plus_hours 1000) minus_hours 1000 = reference3"),
+			@test ("date reference4 <- date(\"2026-03-15T10:30:45\"); reference4 + 3600 = reference4 plus_hours 1"),
+			@test ("date reference5 <- date(\"2026-03-15T10:30:45\"); reference5 + 1 #h = reference5 plus_hours 1"),
+			@test ("date reference6 <- date(\"2026-03-15T10:30:45\"); reference6 - (reference6 plus_hours 1) = -3600.0")
+	})
 	public static IDate addHours(final IScope scope, final IDate date1, final int nbHours) throws GamaRuntimeException {
 		return date1.plus(nbHours, HOURS);
 
@@ -1379,7 +1456,11 @@ public class Dates {
 					@example (
 							value = "date('2000-01-01') plus_minutes 5 ",
 							equals = "date('2000-01-01 00:05:00')") })
-	@test ("date('2000-01-01') plus_minutes 5  = date('2000-01-01 00:05:00')")
+	@tests ({
+			@test ("date('2000-01-01') plus_minutes 5  = date('2000-01-01 00:05:00')"),
+			@test ("date reference <- date(\"2026-03-15T10:30:45\"); reference plus_minutes 45 = date(\"2026-03-15T11:15:45\")"),
+			@test ("date reference2 <- date(\"2026-03-15T10:30:45\"); reference2 add_minutes 30 = reference2 plus_minutes 30")
+	})
 	public static IDate addMinutes(final IScope scope, final IDate date1, final int nbMinutes)
 			throws GamaRuntimeException {
 		return date1.plus(nbMinutes, MINUTES);
@@ -1423,8 +1504,14 @@ public class Dates {
 			examples = { @example (
 					value = "date('2000-01-01') minus_years 3",
 					equals = "date('1997-01-01')") })
-	@test ("date('2000-01-01') minus_years 3 = date('1997-01-01')")
-	@test ("date('0002-01-01') minus_years 3 = date('-0001-01-01')")
+	@tests ({
+			@test ("date('2000-01-01') minus_years 3 = date('1997-01-01')"),
+			@test ("date('0002-01-01') minus_years 3 = date('-0001-01-01')"),
+			@test ("date reference <- date(\"2026-03-15T10:30:45\"); reference minus_years 2 = date(\"2024-03-15T10:30:45\")"),
+			@test ("date reference2 <- date(\"2026-03-15T10:30:45\"); reference2 subtract_years 26 = reference2 minus_years 26"),
+			@test ("date zero_date <- date([0, 1, 1]); date sub_date <- zero_date subtract_years 1; sub_date.year = -1"),
+			@test ("date zero_date2 <- date([0, 1, 1]); date sub_date2 <- zero_date2 subtract_years 1; string(sub_date2, 'yyyy-MM-dd') = '-0001-01-01'")
+	})
 	public static IDate subtractYears(final IScope scope, final IDate date1, final int nbYears)
 			throws GamaRuntimeException {
 		return date1.plus(-nbYears, YEARS);
@@ -1468,7 +1555,11 @@ public class Dates {
 			examples = { @example (
 					value = "date('2000-01-01') minus_months 5",
 					equals = "date('1999-08-01')") })
-	@test ("date('2000-01-01') minus_months 5 = date('1999-08-01')")
+	@tests ({
+			@test ("date('2000-01-01') minus_months 5 = date('1999-08-01')"),
+			@test ("date reference <- date(\"2026-03-15T10:30:45\"); reference minus_months 3 = date(\"2025-12-15T10:30:45\")"),
+			@test ("date reference2 <- date(\"2026-03-15T10:30:45\"); reference2 subtract_months 3 = reference2 minus_months 3")
+	})
 	public static IDate subtractMonths(final IScope scope, final IDate date1, final int nbMonths)
 			throws GamaRuntimeException {
 		return date1.plus(-nbMonths, MONTHS);
@@ -1512,7 +1603,11 @@ public class Dates {
 			examples = { @example (
 					value = "date('2000-01-01') minus_weeks 15",
 					equals = "date('1999-09-18')") })
-	@test ("date('2000-01-01') minus_weeks 15 = date('1999-09-18')")
+	@tests ({
+			@test ("date('2000-01-01') minus_weeks 15 = date('1999-09-18')"),
+			@test ("date reference <- date(\"2026-03-15T10:30:45\"); reference minus_weeks 2 = date(\"2026-03-01T10:30:45\")"),
+			@test ("date reference2 <- date(\"2026-03-15T10:30:45\"); reference2 subtract_weeks 1 = reference2 minus_weeks 1")
+	})
 	public static IDate subtractWeeks(final IScope scope, final IDate date1, final int nbWeeks)
 			throws GamaRuntimeException {
 		return date1.plus(-nbWeeks, WEEKS);
@@ -1556,7 +1651,15 @@ public class Dates {
 			examples = { @example (
 					value = "date('2000-01-01') minus_days 20",
 					equals = "date('1999-12-12')") })
-	@test ("date('2000-01-01') minus_days 20 = date('1999-12-12')")
+	@tests ({
+			@test ("date('2000-01-01') minus_days 20 = date('1999-12-12')"),
+			@test ("date d1 <- date(\"2026-09-16T15:00:00\"); date d_sub <- d1 subtract_days 10; d_sub.day = 6"),
+			@test ("date reference <- date(\"2026-03-15T10:30:45\"); reference minus_days 20 = date(\"2026-02-23T10:30:45\")"),
+			@test ("date reference2 <- date(\"2026-03-15T10:30:45\"); reference2 subtract_days 10 = reference2 minus_days 10"),
+			@test ("date(\"2026-03-01T00:00:00\") minus_days 1 = date(\"2026-02-28T00:00:00\")"),
+			@test ("date(\"2024-03-01T00:00:00\") minus_days 1 = date(\"2024-02-29T00:00:00\")"),
+			@test ("date reference3 <- date(\"2026-03-15T10:30:45\"); date earlier <- reference3 minus_days 1; earlier < reference3")
+	})
 	public static IDate subtractDays(final IScope scope, final IDate date1, final int nbDays)
 			throws GamaRuntimeException {
 		return date1.plus(-nbDays, DAYS);
@@ -1603,7 +1706,11 @@ public class Dates {
 					@example (
 							value = "date('2000-01-01') minus_hours 15 ",
 							equals = "date('1999-12-31 09:00:00')") })
-	@test ("(date('2000-01-01') minus_hours 15)  = date('1999-12-31 09:00:00')")
+	@tests ({
+			@test ("(date('2000-01-01') minus_hours 15)  = date('1999-12-31 09:00:00')"),
+			@test ("date reference <- date(\"2026-03-15T10:30:45\"); reference minus_hours 11 = date(\"2026-03-14T23:30:45\")"),
+			@test ("date reference2 <- date(\"2026-03-15T10:30:45\"); reference2 subtract_hours 2 = reference2 minus_hours 2")
+	})
 	public static IDate subtractHours(final IScope scope, final IDate date1, final int nbHours)
 			throws GamaRuntimeException {
 		return date1.plus(-nbHours, HOURS);
@@ -1650,7 +1757,11 @@ public class Dates {
 					@example (
 							value = "date('2000-01-01') minus_ms 1000 ",
 							equals = "date('1999-12-31 23:59:59')") })
-	@test ("date('2000-01-01') minus_ms 1000  = date('1999-12-31 23:59:59')")
+	@tests ({
+			@test ("date('2000-01-01') minus_ms 1000  = date('1999-12-31 23:59:59')"),
+			@test ("date reference <- date(\"2026-03-15T10:30:45\"); reference minus_ms 1000 = date(\"2026-03-15T10:30:44\")"),
+			@test ("date reference2 <- date(\"2026-03-15T10:30:45\"); reference2 subtract_ms 1000 = reference2 minus_ms 1000")
+	})
 	public static IDate subtractMs(final IScope scope, final IDate date1, final int nbMs) throws GamaRuntimeException {
 		return date1.plus(-nbMs, ChronoUnit.MILLIS);
 	}
@@ -1695,7 +1806,12 @@ public class Dates {
 					@example (
 							value = "date('2000-01-01') plus_ms 1000 ",
 							equals = "date('2000-01-01 00:00:01')") })
-	@test ("date('2000-01-01') plus_ms 1000  = date('2000-01-01 00:00:01')")
+	@tests ({
+			@test ("date('2000-01-01') plus_ms 1000  = date('2000-01-01 00:00:01')"),
+			@test ("date reference <- date(\"2026-03-15T10:30:45\"); reference plus_ms 2000 = date(\"2026-03-15T10:30:47\")"),
+			@test ("date reference2 <- date(\"2026-03-15T10:30:45\"); reference2 add_ms 3000 = reference2 plus_ms 3000"),
+			@test ("date reference3 <- date(\"2026-03-15T10:30:45\"); (reference3 plus_ms 123000) minus_ms 123000 = reference3")
+	})
 	public static IDate addMs(final IScope scope, final IDate date1, final int nbMs) throws GamaRuntimeException {
 		return date1.plus(nbMs, ChronoUnit.MILLIS);
 	}
@@ -1740,7 +1856,11 @@ public class Dates {
 					@example (
 							value = "date('2000-01-01') minus_minutes 5 ",
 							equals = "date('1999-12-31 23:55:00')") })
-	@test ("date('2000-01-01') minus_minutes 5  = date('1999-12-31 23:55:00')")
+	@tests ({
+			@test ("date('2000-01-01') minus_minutes 5  = date('1999-12-31 23:55:00')"),
+			@test ("date reference <- date(\"2026-03-15T10:30:45\"); reference minus_minutes 31 = date(\"2026-03-15T09:59:45\")"),
+			@test ("date reference2 <- date(\"2026-03-15T10:30:45\"); reference2 subtract_minutes 31 = reference2 minus_minutes 31")
+	})
 	public static IDate subtractMinutes(final IScope scope, final IDate date1, final int nbMinutes)
 			throws GamaRuntimeException {
 		return date1.plus(-nbMinutes, MINUTES);
@@ -1786,8 +1906,14 @@ public class Dates {
 			examples = { @example (
 					value = "years_between(date('2000-01-01'), date('2010-01-01'))",
 					equals = "10") })
-	@test ("years_between(date('2000-01-01'), date('2010-01-01')) = 10")
-	@test ("years_between(date('2000-01-01'), date('2001-01-01')) = 1")
+	@tests ({
+			@test ("years_between(date('2000-01-01'), date('2010-01-01')) = 10"),
+			@test ("years_between(date('2000-01-01'), date('2001-01-01')) = 1"),
+			@test ("date reference <- date(\"2026-03-15T10:30:45\"); date later <- date(\"2028-06-20T12:00:00\"); years_between(reference, later) = 2"),
+			// only complete units are counted
+			@test ("date reference2 <- date(\"2026-03-15T10:30:45\"); years_between(reference2, reference2 plus_months 11) = 0"),
+			@test ("years_between(date(\"2026-01-01\"), date(\"2000-01-01\")) = -26")
+	})
 	public static int years_between(final IScope scope, final IDate date1, final IDate date2)
 			throws GamaRuntimeException {
 		return (int) ChronoUnit.YEARS.between(date1, date2);
@@ -1832,8 +1958,13 @@ public class Dates {
 			examples = { @example (
 					value = "milliseconds_between(date('2000-01-01'), date('2000-02-01'))",
 					equals = "2.6784E9") })
-	@test ("milliseconds_between(date('2000-01-01'), date('2000-02-01')) = 2.6784E9")
-	@test ("milliseconds_between(date('2000-01-01'), date('2000-01-01')) = 0")
+	@tests ({
+			@test ("milliseconds_between(date('2000-01-01'), date('2000-02-01')) = 2.6784E9"),
+			@test ("milliseconds_between(date('2000-01-01'), date('2000-01-01')) = 0"),
+			@test ("date reference <- date(\"2026-03-15T10:30:45\"); milliseconds_between(reference, reference plus_seconds 2) = 2000.0"),
+			@test ("date reference2 <- date(\"2026-03-15T10:30:45\"); milliseconds_between(reference2, reference2) = 0.0"),
+			@test ("milliseconds_between(#epoch, #epoch) = 0.0")
+	})
 	public static double milliseconds_between(final IScope scope, final IDate date1, final IDate date2)
 			throws GamaRuntimeException {
 		return ChronoUnit.MILLIS.between(date1, date2);
@@ -1878,7 +2009,11 @@ public class Dates {
 			examples = { @example (
 					value = "months_between(date('2000-01-01'), date('2000-02-01'))",
 					equals = "1") })
-	@test ("months_between(date('2000-01-01'), date('2000-02-01')) = 1")
+	@tests ({
+			@test ("months_between(date('2000-01-01'), date('2000-02-01')) = 1"),
+			@test ("date reference <- date(\"2026-03-15T10:30:45\"); date later <- date(\"2028-06-20T12:00:00\"); months_between(reference, later) = 27"),
+			@test ("date reference2 <- date(\"2026-03-15T10:30:45\"); months_between(reference2, reference2 plus_days 20) = 0")
+	})
 	public static int months_between(final IScope scope, final IDate date1, final IDate date2)
 			throws GamaRuntimeException {
 		return (int) ChronoUnit.MONTHS.between(date1, date2);
@@ -1921,7 +2056,11 @@ public class Dates {
 			examples = { @example (
 					value = "(#now > (#now minus_hours 1))",
 					equals = "true") })
-	@test ("(#now > (#now minus_hours 1)) = true")
+	@tests ({
+			@test ("(#now > (#now minus_hours 1)) = true"),
+			@test ("3.5 > 3.0"),
+			@test ("\"b\" > \"a\"")
+	})
 	public static boolean greater_than(final IScope scope, final IDate date1, final IDate date2)
 			throws GamaRuntimeException {
 		return date1.isGreaterThan(date2, true);
@@ -1964,7 +2103,10 @@ public class Dates {
 			examples = { @example (
 					value = "#now >= #now minus_hours 1",
 					equals = "true") })
-	@test ("(#now >= (#now minus_hours 1)) = true")
+	@tests ({
+			@test ("(#now >= (#now minus_hours 1)) = true"),
+			@test ("\"b\" >= \"b\"")
+	})
 	public static boolean greater_than_or_equal(final IScope scope, final IDate date1, final IDate date2)
 			throws GamaRuntimeException {
 		return date1.isGreaterThan(date2, false);
@@ -2007,7 +2149,13 @@ public class Dates {
 			examples = { @example (
 					value = "#now < #now minus_hours 1",
 					equals = "false") })
-	@test ("(#now < (#now minus_hours 1)) = false")
+	@tests ({
+			@test ("(#now < (#now minus_hours 1)) = false"),
+			@test ("\"a\" < \"b\""),
+			@test ("\"abc\" < \"abd\""),
+			// upper case letters come before lower case ones
+			@test ("\"B\" < \"a\"")
+	})
 	public static boolean smaller_than(final IScope scope, final IDate date1, final IDate date2)
 			throws GamaRuntimeException {
 		return date1.isSmallerThan(date2, true);
@@ -2050,7 +2198,11 @@ public class Dates {
 			examples = { @example (
 					value = "(#now <= (#now minus_hours 1))",
 					equals = "false") })
-	@test ("(#now <= (#now minus_hours 1)) = false")
+	@tests ({
+			@test ("(#now <= (#now minus_hours 1)) = false"),
+			@test ("3.5 <= 4.0"),
+			@test ("\"abc\" <= \"abc\"")
+	})
 	public static boolean smaller_than_or_equal(final IScope scope, final IDate date1, final IDate date2)
 			throws GamaRuntimeException {
 		return date1.isSmallerThan(date2, false);
@@ -2191,7 +2343,80 @@ public class Dates {
 					examples = @example (
 							value = "date den <- date(\"1999-12-30\", 'yyyy-MM-dd');",
 							test = false)))
-	@no_test
+	@tests ({
+			// Wait, GAMA dates have year, month, day, hour, minute, second
+			@test ("date d1 <- date(\"2026-09-16T15:30:45\"); d1.year = 2026"),
+			@test ("date d12 <- date(\"2026-09-16T15:30:45\"); d12.minute = 30"),
+			@test ("date d13 <- date(\"2026-09-16T15:30:45\"); d13.second = 45"),
+			@test ("date d14 <- date(\"2026-09-16T15:30:45\"); int dow <- d14.day_of_week; dow > 0"),
+			// 'before'/'after' compare the *simulation* date; two dates are compared with < and >
+			@test ("date d_start <- date(\"2026-01-01T00:00:00\"); date d_end <- date(\"2026-01-31T00:00:00\"); d_start < d_end"),
+			@test ("date d_start2 <- date(\"2026-01-01T00:00:00\"); date d_end2 <- date(\"2026-01-31T00:00:00\"); d_end2 > d_start2"),
+			@test ("date d_start3 <- date(\"2026-01-01T00:00:00\"); (d_start3 < d_start3) = false"),
+			@test ("date reference <- date(\"2026-03-15T10:30:45\"); reference - reference = 0.0"),
+			@test ("date reference2 <- date(\"2026-03-15T10:30:45\"); reference2.year = 2026"),
+			@test ("date reference3 <- date(\"2026-03-15T10:30:45\"); reference3.month = 3"),
+			@test ("date reference4 <- date(\"2026-03-15T10:30:45\"); reference4.day = 15"),
+			@test ("date reference5 <- date(\"2026-03-15T10:30:45\"); reference5.hour = 10"),
+			@test ("date reference6 <- date(\"2026-03-15T10:30:45\"); reference6.minute = 30"),
+			@test ("date reference7 <- date(\"2026-03-15T10:30:45\"); reference7.second = 45"),
+			// the 15th of March 2026 is a Sunday, the 7th day of the week
+			@test ("date reference8 <- date(\"2026-03-15T10:30:45\"); reference8.day_of_week = 7"),
+			@test ("date(\"2026-03-16T00:00:00\").day_of_week = 1"),
+			@test ("date reference9 <- date(\"2026-03-15T10:30:45\"); reference9.day_of_year = 74"),
+			@test ("date(\"2026-01-01T00:00:00\").day_of_year = 1"),
+			@test ("date(\"2026-12-31T00:00:00\").day_of_year = 365"),
+			@test ("date(\"2024-12-31T00:00:00\").day_of_year = 366"),
+			@test ("date reference10 <- date(\"2026-03-15T10:30:45\"); reference10.week_of_year = 11"),
+			@test ("date reference11 <- date(\"2026-03-15T10:30:45\"); reference11.days_in_month = 31"),
+			@test ("date(\"2026-02-10T00:00:00\").days_in_month = 28"),
+			@test ("date(\"2024-02-10T00:00:00\").days_in_month = 29"),
+			@test ("date reference12 <- date(\"2026-03-15T10:30:45\"); not reference12.leap"),
+			@test ("date(\"2024-01-01T00:00:00\").leap"),
+			@test ("not date(\"1900-01-01T00:00:00\").leap"),
+			@test ("date(\"2000-01-01T00:00:00\").leap"),
+			@test ("date reference13 <- date(\"2026-03-15T10:30:45\"); reference13.minute_of_day = 630"),
+			@test ("date reference14 <- date(\"2026-03-15T10:30:45\"); reference14.second_of_day = 37845"),
+			// the date without its time
+			@test ("date reference15 <- date(\"2026-03-15T10:30:45\"); reference15.date = date(\"2026-03-15T00:00:00\")"),
+			@test ("date reference16 <- date(\"2026-03-15T10:30:45\"); date([2026, 3, 15, 10, 30, 45]) = reference16"),
+			@test ("date([2026, 3, 15]) = date(\"2026-03-15T00:00:00\")"),
+			@test ("date(\"2026-03-15\") = date(\"2026-03-15T00:00:00\")"),
+			// with an explicit pattern
+			@test ("date(\"15/03/2026\", \"dd/MM/yyyy\") = date(\"2026-03-15T00:00:00\")"),
+			@test ("date(\"2026.03.15 10h30\", \"yyyy.MM.dd HH'h'mm\") = date(\"2026-03-15T10:30:00\")"),
+			// a date survives being formatted and parsed again
+			@test ("date reference17 <- date(\"2026-03-15T10:30:45\"); date(string(reference17, \"yyyy-MM-dd HH:mm:ss\"), \"yyyy-MM-dd HH:mm:ss\") = reference17"),
+			@test ("date reference18 <- date(\"2026-03-15T10:30:45\"); reference18 <= reference18"),
+			@test ("date reference19 <- date(\"2026-03-15T10:30:45\"); reference19 >= reference19"),
+			@test ("date d15 <- date(\"2026-09-16T15:00:00\"); d15.year = 2026"),
+			@test ("date d16 <- date(\"2026-09-16T15:00:00\"); d16.month = 9"),
+			@test ("date d17 <- date(\"2026-09-16T15:00:00\"); d17.day = 16"),
+			@test ("date d18 <- date(\"2026-09-16T15:00:00\"); d18.hour = 15"),
+			@test ("date d19 <- date(\"2026-09-16T15:00:00\"); d19.minute = 0"),
+			@test ("date d110 <- date(\"2026-09-16T15:00:00\"); d110.second = 0"),
+			@test ("date d111 <- date(\"2026-09-16T15:00:00\"); date d2 <- d111 + 3600; d2.hour = 16"),
+			@test ("date d112 <- date(\"2026-09-16T15:00:00\"); date d22 <- d112 + 3600; float dduration <- d22 - d112; dduration = 3600.0"),
+			@test ("date d113 <- date(\"2026-09-16T15:00:00\"); date d23 <- date(\"2026-09-16T16:00:00\"); d113 < d23"),
+			@test ("date d114 <- date(\"2026-09-16T15:00:00\"); d114 <= d114"),
+			@test ("date d115 <- date(\"2026-09-16T15:00:00\"); date d24 <- date(\"2026-09-16T16:00:00\"); d24 > d115"),
+			@test ("date d116 <- date(\"2026-09-16T15:00:00\"); date d25 <- date(\"2026-09-16T16:00:00\"); d116 != d25"),
+			@test ("date(\"2026-01-01\") - date(\"2026-01-01\") = 0.0"),
+			@test ("date time1 <- date(['07:39:59', 'HH:mm:ss']); time1.hour = 7 and time1.minute = 39 and time1.second = 59"),
+			@test ("date date1 <- date(['15/01/2025', 'dd/MM/yyyy']); date1.day = 15 and date1.month = 1 and date1.year = 2025"),
+			@test ("date datetime1 <- date(['15/01/2025 14:30:45', 'dd/MM/yyyy HH:mm:ss']); datetime1.day = 15 and datetime1.month = 1 and datetime1.year = 2025"),
+			@test ("date datetime12 <- date(['15/01/2025 14:30:45', 'dd/MM/yyyy HH:mm:ss']); datetime12.hour = 14 and datetime12.minute = 30 and datetime12.second = 45"),
+			@test ("date date2 <- date(['15/01/2025', 'dd/MM/yyyy', 'fr']); date2.day = 15 and date2.month = 1 and date2.year = 2025"),
+			@test ("date date3 <- date([2025, 1, 15, 10, 30, 0]); date3.year = 2025 and date3.month = 1 and date3.day = 15"),
+			@test ("date date32 <- date([2025, 1, 15, 10, 30, 0]); date32.hour = 10 and date32.minute = 30 and date32.second = 0"),
+			@test ("date time2 <- date(['14:30', 'HH:mm']); time2.hour = 14 and time2.minute = 30"),
+			@test ("date time3 <- date(['03:45 PM', 'hh:mm a']); time3.hour = 15 and time3.minute = 45"),
+			@test ("date date4 <- date(['2025-01-15', 'yyyy-MM-dd']); date4.year = 2025 and date4.month = 1 and date4.day = 15"),
+			@test ("date date5 <- date(['15.01.2025', 'dd.MM.yyyy']); date5.year = 2025 and date5.month = 1 and date5.day = 15"),
+			@test ("date neg_date1 <- date([-1000, 1, 1]); neg_date1.year = -1000 and neg_date1.month = 1 and neg_date1.day = 1"),
+			@test ("date neg_date2 <- date(\"-1000-01-01\"); neg_date2.year = -1000 and neg_date2.month = 1 and neg_date2.day = 1"),
+			@test ("date neg_date3 <- date(\"-100-01-01\"); neg_date3.year = -100 and neg_date3.month = 1 and neg_date3.day = 1")
+	})
 	public static IDate date(final IScope scope, final String value, final String pattern) {
 		return GamaDateFactory.createWith(scope, value, pattern);
 	}
@@ -2273,9 +2498,23 @@ public class Dates {
 					examples = @example (
 							value = "string(#now, 'yyyy-MM-dd')",
 							isExecutable = false)))
-	@test ("string(date('2000-01-02'),'yyyy-MM-dd') = '2000-01-02'")
-	@test ("string(date('2000-01-31'),'yyyy-MM-dd') = '2000-01-31'")
-	@test ("string(date('2000-01-02'),'yyyy-MM-dd') = '2000-01-02'")
+	@tests ({
+			@test ("string(date('2000-01-02'),'yyyy-MM-dd') = '2000-01-02'"),
+			@test ("string(date('2000-01-31'),'yyyy-MM-dd') = '2000-01-31'"),
+			@test ("string(date('2000-01-02'),'yyyy-MM-dd') = '2000-01-02'"),
+			@test ("string(42) = \"42\""),
+			@test ("string(3.14) = \"3.14\""),
+			@test ("string(true) = \"true\""),
+			@test ("string(false) = \"false\""),
+			@test ("string(#red) = \"red\""),
+			@test ("date reference <- date(\"2026-03-15T10:30:45\"); string(reference) = \"2026-03-15 10:30:45\""),
+			@test ("date reference2 <- date(\"2026-03-15T10:30:45\"); string(reference2, \"yyyy/MM/dd HH:mm\") = \"2026/03/15 10:30\""),
+			@test ("date reference3 <- date(\"2026-03-15T10:30:45\"); string(reference3, \"HH'h'mm\") = \"10h30\""),
+			@test ("string(5) + \" Value\" = \"5 Value\""),
+			@test ("date neg_date1 <- date([-1000, 1, 1]); string(neg_date1, 'yyyy-MM-dd') = '-1000-01-01'"),
+			// Years are 4 digit (ISO form)
+			@test ("date neg_date3 <- date(\"-100-01-01\"); string(neg_date3) = \"-0100-01-01 00:00:00\"")
+	})
 	public static String format(final IDate time, final String pattern) {
 		return format(time, pattern, null);
 	}
@@ -2316,7 +2555,14 @@ public class Dates {
 					examples = @example (
 							value = "string(#now, 'yyyy-MM-dd', 'en')",
 							isExecutable = false)))
-	@test ("string(date('2000-01-02'),'yyyy-MMMM-dd','en') = '2000-January-02'")
+	@tests ({
+			@test ("string(date('2000-01-02'),'yyyy-MMMM-dd','en') = '2000-January-02'"),
+			@test ("string(date('2000-01-02'), 'yyyy-MM-dd', 'en') = '2000-01-02'"),
+			@test ("date reference <- date(\"2026-03-15T10:30:45\"); string(reference, \"dd MMMM yyyy\", \"en\") = \"15 March 2026\""),
+			@test ("date reference2 <- date(\"2026-03-15T10:30:45\"); string(reference2, \"dd MMMM yyyy\", \"fr\") = \"15 mars 2026\""),
+			@test ("string(date(\"2026-01-01T00:00:00\"), \"EEEE\", \"fr\") = \"jeudi\""),
+			@test ("string(date(\"2026-01-01T00:00:00\"), \"EEEE\", \"ja\") = \"\u6728\u66DC\u65E5\"")
+	})
 
 	public static String format(final IDate time, final String pattern, final String locale) {
 		return time.toString(pattern, locale);

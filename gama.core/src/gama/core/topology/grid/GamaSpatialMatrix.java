@@ -13,6 +13,7 @@ package gama.core.topology.grid;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -26,6 +27,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Set;
 
 import org.geotools.api.referencing.ReferenceIdentifier;
@@ -1142,12 +1144,12 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 		final boolean[] open = new boolean[this.getAgents().size()];
 		initOpen(open, on);
 
-		final List<IAgent> frontier = new ArrayList<>();
+		final Queue<IAgent> frontier = new ArrayDeque<>();
 		final Map<IAgent, IAgent> cameFrom = new Hashtable<>();
 
 		frontier.add(startAg);
 		while (!frontier.isEmpty()) {
-			final IAgent current = frontier.remove(0);
+			final IAgent current = frontier.remove();
 			if (current == endAg) return finalPath(scope, source, target, topo, startAg, current, cameFrom);
 			final Collection<IAgent> neigh = getNeighborhood().getNeighborsIn(scope, current.getIndex(), 1);
 

@@ -292,7 +292,7 @@ species group {
 		float step_distance <- speed * step;
 		float dx <- step_distance * (cos(direction_to_nearest_ball));
 		float dy <- step_distance * (sin(direction_to_nearest_ball));
-		geometry envelope <- shape.envelope;
+		geometry envelope <- envelope(shape);
 		point topleft_point <- (envelope.points) at 0;
 		point bottomright_point <- (envelope.points) at 0;
 		loop p over: envelope.points {

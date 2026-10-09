@@ -82,7 +82,8 @@ import gama.core.outputs.layers.EventLayerStatement.EventLayerValidator;
 @doc (
 		value = "`" + IKeyword.EVENT
 				+ "` allows to interact with the simulation by capturing mouse or key events and doing an action. The name of this action can be defined with the 'action:' facet, in which case the action needs to be defined in 'global' or in the current experiment, without any arguments."
-				+ " The location of the mouse in the world can be retrieved in this action with the pseudo-constant #user_location. The statements to execute can also be defined in the block at the end of this statement, in which case they will be executed in the context of the experiment",
+				+ " The location of the mouse in the world can be retrieved in this action with the pseudo-constant #user_location. The statements to execute can also be defined in the block at the end of this statement, in which case they will be executed in the context of the experiment. "
+				+ "An action defined in 'global' must be called on the simulation from this block (e.g. `ask simulation { do myAction(); }`).",
 		usages = { @usage (
 				value = "The general syntax is:",
 				examples = { @example (

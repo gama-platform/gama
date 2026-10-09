@@ -1,0 +1,281 @@
+/**
+* Name: FipaAdvancedTest
+* Description: Tests FIPA ACL communication. Incoming messages are read through the
+*   per-performative lists provided by the 'fipa' skill (requests, cfps, informs, ...),
+*   which is the only way a GAML model can discriminate performatives.
+* Tags: fipa, extension, test
+*/
+
+model FipaAdvancedTestModel
+
+species communicator skills: [fipa] {
+	bool has_agreed <- false;
+	bool has_informed <- false;
+	bool has_proposed <- false;
+	bool has_accepted <- false;
+
+	// In the fipa_request protocol a request is first agreed to, and only then informed
+	reflex answer_requests {
+		loop msg over: copy(requests) {
+			do agree message: msg contents: ['ok'];
+			has_agreed <- true;
+			do inform message: msg contents: ['done'];
+			has_informed <- true;
+		}
+	}
+
+	reflex answer_cfps {
+		loop msg over: copy(cfps) {
+			do propose message: msg contents: [100.0];
+			has_proposed <- true;
+		}
+	}
+
+	reflex answer_proposes {
+		loop msg over: copy(proposes) {
+			do accept_proposal message: msg contents: ['deal'];
+			has_accepted <- true;
+		}
+	}
+}
+
+experiment FipaAdvancedTest type: test autorun: true {
+
+	test "A request is delivered, agreed to, then informed" {
+		create communicator number: 2 returns: talkers;
+		communicator a1 <- talkers[0];
+		communicator a2 <- talkers[1];
+
+		ask a1 {
+			do start_conversation (to: [a2], protocol: 'fipa-request', performative: 'request', contents: ['task']);
+		}
+
+		// a2 sees exactly one request, and nothing else
+		assert length(a2.requests) = 1;
+		assert length(a2.informs) = 0;
+		assert empty(a1.requests);
+
+		// letting a2 run its reflexes makes it answer
+		ask a2 { do _step_; }
+		assert a2.has_agreed;
+		assert a2.has_informed;
+
+		// a1 now holds both answers
+		assert length(a1.agrees) = 1;
+		assert length(a1.informs) = 1;
+		assert length(a1.requests) = 0;
+	}
+
+	test "A contract-net call for proposal is answered with a proposal" {
+		create communicator number: 2 returns: talkers;
+		communicator a1 <- talkers[0];
+		communicator a2 <- talkers[1];
+
+		ask a1 {
+			do start_conversation (to: [a2], protocol: 'fipa-contract-net', performative: 'cfp', contents: ['job']);
+		}
+		assert length(a2.cfps) = 1;
+
+		ask a2 { do _step_; }
+		assert a2.has_proposed;
+		assert length(a1.proposes) = 1;
+
+		ask a1 { do _step_; }
+		assert a1.has_accepted;
+		assert length(a2.accept_proposals) = 1;
+	}
+
+	test "An inform sent with no protocol reaches the mailbox" {
+		create communicator number: 2 returns: talkers;
+		communicator a1 <- talkers[0];
+		communicator a2 <- talkers[1];
+
+		ask a1 {
+			do start_conversation (to: [a2], protocol: 'no-protocol', performative: 'inform', contents: ['info']);
+		}
+
+		assert length(a2.informs) = 1;
+		assert length(a2.mailbox) = 1;
+		assert a2.mailbox[0].sender = a1;
+		assert a2.mailbox[0].contents = ['info'];
+	}
+
+	// In the tests below the agents answer explicitly rather than through their reflexes. Reading the contents
+	// of a message consumes it: each mailbox is therefore read once and kept in a local variable
+
+	test "A request can be refused" {
+		create communicator number: 2 returns: talkers;
+		communicator a1 <- talkers[0];
+		communicator a2 <- talkers[1];
+		ask a1 {
+			do start_conversation (to: [a2], protocol: 'fipa-request', performative: 'request', contents: ['task']);
+		}
+		ask a2 {
+			do refuse message: requests[0] contents: ['no'];
+		}
+		list<message> refusals <- a1.refuses;
+		assert length(refusals) = 1;
+		assert refusals[0].contents = ['no'];
+		assert refusals[0].sender = a2;
+		// nothing else was received
+		assert empty(a1.agrees);
+		assert empty(a1.informs);
+	}
+
+	test "An agreed request can end with a failure" {
+		create communicator number: 2 returns: talkers;
+		communicator a1 <- talkers[0];
+		communicator a2 <- talkers[1];
+		ask a1 {
+			do start_conversation (to: [a2], protocol: 'fipa-request', performative: 'request', contents: ['task']);
+		}
+		ask a2 {
+			message received <- requests[0];
+			do agree message: received contents: ['ok'];
+			do failure message: received contents: ['broken'];
+		}
+		assert length(a1.agrees) = 1;
+		list<message> failures <- a1.failures;
+		assert length(failures) = 1;
+		assert failures[0].contents = ['broken'];
+		assert empty(a1.informs);
+	}
+
+	test "A proposal can be rejected" {
+		create communicator number: 2 returns: talkers;
+		communicator a1 <- talkers[0];
+		communicator a2 <- talkers[1];
+		ask a1 {
+			do start_conversation (to: [a2], protocol: 'fipa-contract-net', performative: 'cfp', contents: ['job']);
+		}
+		ask a2 {
+			do propose message: cfps[0] contents: [100.0];
+		}
+		ask a1 {
+			do reject_proposal message: proposes[0] contents: ['too expensive'];
+		}
+		list<message> rejections <- a2.reject_proposals;
+		assert length(rejections) = 1;
+		assert rejections[0].contents = ['too expensive'];
+		assert empty(a2.accept_proposals);
+	}
+
+	test "Queries and subscriptions reach their own mailboxes" {
+		create communicator number: 2 returns: talkers;
+		communicator a1 <- talkers[0];
+		communicator a2 <- talkers[1];
+		ask a1 {
+			do start_conversation (to: [a2], protocol: 'fipa-query', performative: 'query', contents: ['what time is it']);
+		}
+		list<message> received_queries <- a2.queries;
+		assert length(received_queries) = 1;
+		assert received_queries[0].contents = ['what time is it'];
+
+		ask a1 {
+			do start_conversation (to: [a2], protocol: 'fipa-subscribe', performative: 'subscribe', contents: ['news']);
+		}
+		list<message> received_subscriptions <- a2.subscribes;
+		assert length(received_subscriptions) = 1;
+		assert received_subscriptions[0].contents = ['news'];
+		// each conversation is tracked separately
+		assert length(a2.conversations) = 2;
+	}
+
+	test "A message can be replied to" {
+		create communicator number: 2 returns: talkers;
+		communicator a1 <- talkers[0];
+		communicator a2 <- talkers[1];
+		ask a1 {
+			do start_conversation (to: [a2], protocol: 'no-protocol', performative: 'inform', contents: ['hi']);
+		}
+		ask a2 {
+			do reply message: informs[0] performative: 'inform' contents: ['hello back'];
+		}
+		list<message> replies <- a1.informs;
+		assert length(replies) = 1;
+		assert replies[0].contents = ['hello back'];
+		assert replies[0].sender = a2;
+		// the reply belongs to the same conversation
+		assert length(a1.conversations) = 1;
+		assert length(a2.conversations) = 1;
+	}
+
+	test "A message can be sent to several agents" {
+		create communicator number: 3 returns: talkers;
+		communicator a1 <- talkers[0];
+		ask a1 {
+			do start_conversation (to: [talkers[1], talkers[2]], protocol: 'no-protocol', performative: 'inform', contents: ['to all']);
+		}
+		list<message> first_inbox <- talkers[1].informs;
+		list<message> second_inbox <- talkers[2].informs;
+		assert length(first_inbox) = 1;
+		assert length(second_inbox) = 1;
+		assert first_inbox[0].contents = ['to all'];
+		assert second_inbox[0].sender = a1;
+		// the sender does not receive its own message
+		assert empty(a1.informs);
+	}
+
+	test "Reading the messages of a mailbox consumes them" {
+		create communicator number: 2 returns: talkers;
+		communicator a1 <- talkers[0];
+		communicator a2 <- talkers[1];
+		ask a1 {
+			do start_conversation (to: [a2], protocol: 'no-protocol', performative: 'inform', contents: ['once']);
+		}
+		list<message> first_read <- a2.informs;
+		assert length(first_read) = 1;
+		assert first_read[0].contents = ['once'];
+		assert empty(a2.informs);
+	}
+
+	test "A message sent to a dead agent is not delivered" {
+		create communicator number: 2 returns: talkers;
+		communicator sender_agent <- talkers[0];
+		communicator dead_agent <- talkers[1];
+		ask dead_agent { do die; }
+		string problem <- nil;
+		try {
+			ask sender_agent {
+				do start_conversation (to: [dead_agent], protocol: 'no-protocol', performative: 'inform', contents: ['x']);
+			}
+		} catch {
+			problem <- #current_error;
+		}
+		// either refused with a proper error, or dropped
+		assert problem = nil or !(problem contains "Java error");
+		assert empty(sender_agent.informs);
+	}
+
+	test "A message sent to nobody" {
+		create communicator number: 1 returns: talkers;
+		string problem <- nil;
+		try {
+			ask talkers[0] {
+				do start_conversation (to: [], protocol: 'no-protocol', performative: 'inform', contents: ['x']);
+			}
+		} catch {
+			problem <- #current_error;
+		}
+		assert problem = nil or !(problem contains "Java error");
+	}
+
+	test "Replying to a message that was already answered in a finished protocol" {
+		create communicator number: 2 returns: talkers;
+		communicator a1 <- talkers[0];
+		communicator a2 <- talkers[1];
+		ask a1 {
+			do start_conversation (to: [a2], protocol: 'fipa-request', performative: 'request', contents: ['task']);
+		}
+		message request <- nil;
+		ask a2 {
+			request <- requests[0];
+			do refuse message: request contents: ['no'];
+		}
+		// the conversation is over: answering again must be refused with a proper error
+		string problem <- nil;
+		try { ask a2 { do agree message: request contents: ['ok after all']; } } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert problem = nil or !(problem contains "Java error");
+	}
+}

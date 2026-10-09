@@ -1322,6 +1322,13 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	}
 
 	/**
+	 * Marks this generated species as model-local rather than a built-in species.
+	 */
+	public void markAsModelLocal() {
+		unSet(Flag.IsBuiltIn);
+	}
+
+	/**
 	 * Compile as built in.
 	 *
 	 * @return the i species

@@ -213,7 +213,9 @@ public class VectorUtils {
 	public static org.jbox2d.common.Vec2 toBox2DVector(final IPoint from, final org.jbox2d.common.Vec2 to,
 			final float scale) {
 		org.jbox2d.common.Vec2 result = to == null ? newBox2DVector() : to;
-		if (from != null) { from.setLocation((float) from.getX() * scale, (float) -from.getY() * scale, 0); }
+		if (from != null) {
+			result.set((float) from.getX() * scale, (float) -from.getY() * scale);
+		}
 		return result;
 	}
 

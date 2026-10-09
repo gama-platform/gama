@@ -46,8 +46,10 @@ import org.locationtech.jts.geom.Coordinate;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
 import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
@@ -105,54 +107,52 @@ import one.util.streamex.StreamEx;
 /**
  * Provides all graph operators for the GAML language in the GAMA modeling and simulation platform.
  *
- * <p>This class is the primary container for graph-related operators, organized into the following
- * functional families:</p>
+ * <p>
+ * This class is the primary container for graph-related operators, organized into the following functional families:
+ * </p>
  *
  * <ul>
- *   <li><strong>Construction:</strong> {@code as_edge_graph}, {@code as_distance_graph},
- *       {@code as_intersection_graph}, {@code directed}, {@code undirected},
- *       {@code generate_barabasi_albert}, {@code generate_watts_strogatz},
- *       {@code generate_random_graph}, {@code generate_complete_graph},
- *       {@code spatial_graph}, {@code grid_cells_to_graph}</li>
- *   <li><strong>Topology (layout):</strong> {@code layout_circle}, {@code layout_grid},
- *       {@code layout_force}, {@code layout_force_FR}, {@code layout_force_FR_indexed}
- *       (require a rendering context &mdash; marked {@code @no_test})</li>
- *   <li><strong>Structure queries:</strong> {@code contains_vertex}, {@code contains_edge},
- *       {@code connected_components_of}, {@code main_connected_component},
- *       {@code successors_of}, {@code predecessors_of}, {@code neighbors_of},
- *       {@code in_degree_of}, {@code out_degree_of}, {@code degree_of},
- *       {@code in_edges_of}, {@code out_edges_of}, {@code edge_between}</li>
- *   <li><strong>Edge/weight queries:</strong> {@code weight_of}, {@code source_of},
- *       {@code target_of}, {@code edge}, {@code node}, {@code edge_betweenness}</li>
- *   <li><strong>Pathfinding:</strong> {@code path_between}, {@code paths_between},
- *       {@code max_flow_between}, {@code all_pairs_shortest_path},
- *       {@code load_shortest_paths}, {@code use_cache}, {@code as_path}</li>
- *   <li><strong>Graph metrics:</strong> {@code betweenness_centrality},
- *       {@code alpha_index}, {@code beta_index}, {@code gamma_index},
- *       {@code connectivity_index}, {@code nb_cycles}, {@code strahler}</li>
- *   <li><strong>Clustering:</strong> {@code girvan_newman_clustering},
- *       {@code k_spanning_tree_clustering}, {@code label_propagation_clustering},
- *       {@code maximal_cliques_of}, {@code biggest_cliques_of}</li>
- *   <li><strong>Maximum flow:</strong> {@code max_flow_between}</li>
- *   <li><strong>Modification:</strong> {@code add_node}, {@code remove_node_from},
- *       {@code add_edge}, {@code rewire_n}, {@code with_weights},
- *       {@code with_shortest_path_algorithm}, {@code with_k_shortest_path_algorithm}</li>
+ * <li><strong>Construction:</strong> {@code as_edge_graph}, {@code as_distance_graph}, {@code as_intersection_graph},
+ * {@code directed}, {@code undirected}, {@code generate_barabasi_albert}, {@code generate_watts_strogatz},
+ * {@code generate_random_graph}, {@code generate_complete_graph}, {@code spatial_graph},
+ * {@code grid_cells_to_graph}</li>
+ * <li><strong>Topology (layout):</strong> {@code layout_circle}, {@code layout_grid}, {@code layout_force},
+ * {@code layout_force_FR}, {@code layout_force_FR_indexed} (require a rendering context &mdash; marked
+ * {@code @no_test})</li>
+ * <li><strong>Structure queries:</strong> {@code contains_vertex}, {@code contains_edge},
+ * {@code connected_components_of}, {@code main_connected_component}, {@code successors_of}, {@code predecessors_of},
+ * {@code neighbors_of}, {@code in_degree_of}, {@code out_degree_of}, {@code degree_of}, {@code in_edges_of},
+ * {@code out_edges_of}, {@code edge_between}</li>
+ * <li><strong>Edge/weight queries:</strong> {@code weight_of}, {@code source_of}, {@code target_of}, {@code edge},
+ * {@code node}, {@code edge_betweenness}</li>
+ * <li><strong>Pathfinding:</strong> {@code path_between}, {@code paths_between}, {@code max_flow_between},
+ * {@code all_pairs_shortest_path}, {@code load_shortest_paths}, {@code use_cache}, {@code as_path}</li>
+ * <li><strong>Graph metrics:</strong> {@code betweenness_centrality}, {@code alpha_index}, {@code beta_index},
+ * {@code gamma_index}, {@code connectivity_index}, {@code nb_cycles}, {@code strahler}</li>
+ * <li><strong>Clustering:</strong> {@code girvan_newman_clustering}, {@code k_spanning_tree_clustering},
+ * {@code label_propagation_clustering}, {@code maximal_cliques_of}, {@code biggest_cliques_of}</li>
+ * <li><strong>Maximum flow:</strong> {@code max_flow_between}</li>
+ * <li><strong>Modification:</strong> {@code add_node}, {@code remove_node_from}, {@code add_edge}, {@code rewire_n},
+ * {@code with_weights}, {@code with_shortest_path_algorithm}, {@code with_k_shortest_path_algorithm}</li>
  * </ul>
  *
- * <p><strong>Important behavioural notes:</strong></p>
+ * <p>
+ * <strong>Important behavioural notes:</strong>
+ * </p>
  * <ul>
- *   <li>The directed/undirected distinction affects successor/predecessor vs. neighbor queries:
- *       on an undirected graph {@code successors_of} and {@code predecessors_of} are both
- *       equivalent to {@code neighbors_of}.</li>
- *   <li>Path operators ({@code path_between}, {@code paths_between}, etc.) return
- *       {@code nil} when no path exists between two nodes in a disconnected graph or when
- *       either node is not in the graph.</li>
- *   <li>Layout operators ({@code layout_circle}, {@code layout_grid}, {@code layout_force},
- *       {@code layout_force_FR}, {@code layout_force_FR_indexed}) modify vertex locations and
- *       require a spatial/rendering context — they are therefore marked {@code @no_test}.</li>
+ * <li>The directed/undirected distinction affects successor/predecessor vs. neighbor queries: on an undirected graph
+ * {@code successors_of} and {@code predecessors_of} are both equivalent to {@code neighbors_of}.</li>
+ * <li>Path operators ({@code path_between}, {@code paths_between}, etc.) return {@code nil} when no path exists between
+ * two nodes in a disconnected graph or when either node is not in the graph.</li>
+ * <li>Layout operators ({@code layout_circle}, {@code layout_grid}, {@code layout_force}, {@code layout_force_FR},
+ * {@code layout_force_FR_indexed}) modify vertex locations and require a spatial/rendering context — they are therefore
+ * marked {@code @no_test}.</li>
  * </ul>
  *
- * <p><strong>Typical usage in GAML:</strong></p>
+ * <p>
+ * <strong>Typical usage in GAML:</strong>
+ * </p>
+ *
  * <pre>{@code
  * // Build a graph from a map of point pairs
  * graph<geometry,geometry> my_graph <- as_edge_graph([{0,0}::{10,0}, {10,0}::{10,10}]);
@@ -620,6 +620,9 @@ public class Graphs {
 					"Returns 1.0 if the element is neither an edge nor a vertex of the graph (fall-through default).",
 					"In an unweighted graph, all edge and vertex weights default to 1.0 (the fixed internal default value).",
 					"If the graph is a localized (spatial) graph, the default edge weight is the geometric distance between the two endpoint vertices." })
+	@tests ({
+			@test ("point p1 <- {0, 0}; point p2 <- {10, 10}; graph near <- as_intersection_graph([p1, p2], 20.0); float edge_weight <- weight_of(near, near.edges[0]); edge_weight > 0.0")
+	})
 	public static Double weightOf(final IScope scope, final IGraph graph, final Object edge) {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
 		if (edge instanceof GraphObjectToAdd) {
@@ -685,7 +688,7 @@ public class Graphs {
 	 */
 	@operator (
 			value = "edge_between",
-			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
 			category = { IOperatorCategory.GRAPH, IConcept.EDGE })
 	@doc (
 			value = "returns the edge linking two nodes",
@@ -702,6 +705,39 @@ public class Graphs {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
 		if (graph.containsVertex(verticePair.key()) && graph.containsVertex(verticePair.value()))
 			return graph.getEdge(verticePair.key(), verticePair.value());
+		return null;
+	}
+
+	/**
+	 * Edge between.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param graph
+	 *            the graph
+	 * @param verticePair
+	 *            the vertice pair
+	 * @return the object
+	 */
+	@operator (
+			value = "edge_between",
+			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.GRAPH, IConcept.EDGE })
+	@doc (
+			value = "returns the edge linking two nodes",
+			examples = { @example (
+					value = "graphFromMap edge_between (node1,node2)",
+					equals = "edge1",
+					isExecutable = false) },
+			see = { "out_edges_of", "in_edges_of" })
+	@test ("""
+			graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),\
+			edge({80,35}, {40,60}),edge({80,35}, {10,5}), node ({50,50})]));\r
+			(g edge_between ({10,5},{20,3})) = g.edges[0]""")
+	public static Object edgeBetween(final IScope scope, final IGraph graph, final Object vertex1,
+			final Object vertex2) {
+		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
+		if (graph.containsVertex(vertex1) && graph.containsVertex(vertex2)) return graph.getEdge(vertex1, vertex2);
 		return null;
 	}
 
@@ -730,8 +766,7 @@ public class Graphs {
 							value = "graphFromMap in_degree_of (node(3))",
 							equals = "2",
 							test = false) },
-			special_cases = {
-					"Returns 0 for an isolated vertex (a vertex with no incoming edges).",
+			special_cases = { "Returns 0 for an isolated vertex (a vertex with no incoming edges).",
 					"On an undirected graph, both in_degree_of and out_degree_of return the total degree of the vertex (number of incident edges).",
 					"Returns 0 if the vertex is not present in the graph." },
 			see = { "out_degree_of", "degree_of" })
@@ -805,8 +840,7 @@ public class Graphs {
 							value = "graphFromMap out_degree_of (node(3))",
 							equals = "4",
 							test = false) },
-			special_cases = {
-					"Returns 0 for an isolated vertex (a vertex with no outgoing edges).",
+			special_cases = { "Returns 0 for an isolated vertex (a vertex with no outgoing edges).",
 					"On an undirected graph, both out_degree_of and in_degree_of return the total degree of the vertex (number of incident edges).",
 					"Returns 0 if the vertex is not present in the graph." },
 			see = { "in_degree_of", "degree_of" })
@@ -878,10 +912,14 @@ public class Graphs {
 							equals = "the list of all the components as list",
 							test = false) },
 			see = { "alpha_index", "connectivity_index", "nb_cycles" })
-	@test ("""
+	@tests ({
+			@test ("""
 			graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r
 			 list comp <- connected_components_of(g); \
-			 length(comp) = 1""")
+			 length(comp) = 1"""),
+			@test ("graph empty_graph <- graph([]); empty(connected_components_of(empty_graph))"),
+			@test ("graph g2 <- as_edge_graph([line([{0, 0}, {10, 0}]), line([{10, 0}, {10, 10}]), line([{50, 50}, {60, 50}])]); length(connected_components_of(g2)) = 2")
+	})
 	public static IList<IList> connectedComponentOf(final IScope scope, final IGraph graph) {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
 
@@ -959,14 +997,20 @@ public class Graphs {
 			concept = { IConcept.GRAPH, IConcept.NODE, IConcept.EDGE })
 	@doc (
 			value = "returns the sub-graph corresponding to the main connected components of the graph",
+			returns = "A graph with the same vertex and edge types as the input graph, containing only its main connected component.",
 			examples = { @example (
 					value = "main_connected_component(my_graph)",
 					isExecutable = false,
 					equals = "the sub-graph corresponding to the main connected components of the graph",
 					test = false) },
 			see = { "connected_components_of" })
-	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
-			+ " length(main_connected_component(g)) = 5")
+	@tests ({
+			@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
+			+ " length(main_connected_component(g)) = 5"),
+			@test ("graph empty_graph <- graph([]); empty(main_connected_component(empty_graph).vertices)"),
+			@test ("graph g2 <- as_edge_graph([line([{0, 0}, {10, 0}]), line([{10, 0}, {10, 10}]), line([{50, 50}, {60, 50}])]); length(main_connected_component(g2).vertices) = 3"),
+			@test ("graph g3 <- as_edge_graph([line([{0, 0}, {10, 0}]), line([{10, 0}, {10, 10}]), line([{50, 50}, {60, 50}])]); length(main_connected_component(g3).edges) = 2")
+	})
 	public static IGraph reduceToMainconnectedComponentOf(final IScope scope, final IGraph graph) {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
 
@@ -1012,8 +1056,7 @@ public class Graphs {
 							value = "maximal_cliques_of (my_graph)",
 							equals = "the list of all the maximal cliques as list",
 							test = false) },
-			special_cases = {
-					"On an empty graph (no vertices), returns an empty list.",
+			special_cases = { "On an empty graph (no vertices), returns an empty list.",
 					"Every isolated vertex (degree 0) is itself a clique of size 1 and will appear as a singleton list in the result." },
 			see = { "biggest_cliques_of" })
 	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
@@ -1090,8 +1133,12 @@ public class Graphs {
 							equals = "the number of cycles in the graph",
 							test = false) },
 			see = { "alpha_index", "beta_index", "gamma_index", "connectivity_index" })
-	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
-			+ " nb_cycles(g) = 1 ")
+	@tests ({
+			@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
+			+ " nb_cycles(g) = 1 "),
+			@test ("graph empty_graph <- graph([]); nb_cycles(empty_graph) = 0"),
+			@test ("nb_cycles(as_edge_graph([line([{0, 0}, {10, 0}]), line([{10, 0}, {10, 10}])])) = 0")
+	})
 	public static int nbCycles(final IScope scope, final IGraph graph) {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
 		final int S = graph.vertexSet().size();
@@ -1123,8 +1170,12 @@ public class Graphs {
 							equals = "the alpha index of the graph",
 							test = false) },
 			see = { "beta_index", "gamma_index", "nb_cycles", "connectivity_index" })
-	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
-			+ " alpha_index(g) = 0.2 ")
+	@tests ({
+			@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
+			+ " alpha_index(g) = 0.2 "),
+			// the indexes of an empty graph are numbers
+			@test ("graph empty_graph <- graph([]); is_number(alpha_index(empty_graph))")
+	})
 	public static double alphaIndex(final IScope scope, final IGraph graph) {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
 		final int S = graph.vertexSet().size();
@@ -1153,10 +1204,15 @@ public class Graphs {
 							equals = "the beta index of the graph",
 							test = false) },
 			see = { "alpha_index", "gamma_index", "nb_cycles", "connectivity_index" })
-	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
-			+ " beta_index(g) = 1.0 ")
+	@tests ({
+			@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
+			+ " beta_index(g) = 1.0 "),
+			@test ("graph empty_graph <- graph([]); is_number(beta_index(empty_graph))")
+	})
 	public static double betaIndex(final IScope scope, final IGraph graph) {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
+		// a graph without vertices has no edges either: 0 rather than the result of 0 / 0
+		if (graph.vertexSet().isEmpty()) return 0.0;
 		return (graph.edgeSet().size() + 0.0) / graph.vertexSet().size();
 	}
 
@@ -1182,8 +1238,11 @@ public class Graphs {
 							equals = "the gamma index of the graph",
 							test = false) },
 			see = { "alpha_index", "beta_index", "nb_cycles", "connectivity_index" })
-	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
-			+ " gamma_index(g) = 1.0 ")
+	@tests ({
+			@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
+			+ " gamma_index(g) = 1.0 "),
+			@test ("graph empty_graph <- graph([]); is_number(gamma_index(empty_graph))")
+	})
 	public static double gammaIndex(final IScope scope, final IGraph graph) {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
 		return graph.edgeSet().size() / (2.0 * graph.vertexSet().size() - 5);
@@ -1248,8 +1307,11 @@ public class Graphs {
 					"Returns 0 for every vertex with degree 0 (isolated vertex), since no shortest path passes through it.",
 					"On a graph with a single vertex and no edges, returns a map with that vertex mapped to 0." },
 			see = {})
-	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
-			+ " betweenness_centrality(g) = [{10.0,5.0,0.0}::5,{20.0,3.0,0.0}::0,{30.0,30.0,0.0}::2,{80.0,35.0,0.0}::4,{40.0,60.0,0.0}::0] ")
+	@tests ({
+			@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
+			+ " betweenness_centrality(g) = [{10.0,5.0,0.0}::5,{20.0,3.0,0.0}::0,{30.0,30.0,0.0}::2,{80.0,35.0,0.0}::4,{40.0,60.0,0.0}::0] "),
+			@test ("graph empty_graph <- graph([]); empty(betweenness_centrality(empty_graph))")
+	})
 	public static IMap betweennessCentrality(final IScope scope, final IGraph graph) {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
 
@@ -1349,8 +1411,7 @@ public class Graphs {
 							value = "graphFromMap neighbors_of node({12,45})",
 							equals = "[{1.0,5.0},{34.0,56.0}]",
 							isExecutable = false) },
-			special_cases = {
-					"Returns an empty list for an isolated vertex (a vertex with no incident edges).",
+			special_cases = { "Returns an empty list for an isolated vertex (a vertex with no incident edges).",
 					"Returns an empty list if the vertex is not present in the graph.",
 					"On a directed graph, returns all vertices connected by any edge (both incoming and outgoing), i.e. the union of predecessors and successors." },
 			see = { "predecessors_of", "successors_of" })
@@ -1393,8 +1454,7 @@ public class Graphs {
 							value = "graphEpidemio predecessors_of node({34,56})",
 							equals = "[{12;45}]",
 							test = false) },
-			special_cases = {
-					"Returns an empty list for a vertex with no incoming edges (in-degree 0).",
+			special_cases = { "Returns an empty list for a vertex with no incoming edges (in-degree 0).",
 					"Returns an empty list if the vertex is not present in the graph.",
 					"On an undirected graph, predecessors_of is equivalent to neighbors_of (all adjacent vertices are returned)." },
 			see = { "neighbors_of", "successors_of" })
@@ -1433,8 +1493,7 @@ public class Graphs {
 					@example (
 							value = "graphEpidemio successors_of node({34,56})",
 							equals = "[]") },
-			special_cases = {
-					"Returns an empty list for a vertex with no outgoing edges (out-degree 0).",
+			special_cases = { "Returns an empty list for a vertex with no outgoing edges (out-degree 0).",
 					"Returns an empty list if the vertex is not present in the graph.",
 					"On an undirected graph, successors_of is equivalent to neighbors_of (all adjacent vertices are returned)." },
 			see = { "predecessors_of", "neighbors_of" })
@@ -1462,7 +1521,10 @@ public class Graphs {
 			category = { IOperatorCategory.GRAPH },
 			concept = { IConcept.GRAPH, IConcept.CAST, IConcept.MAP, IConcept.LIST, IConcept.EDGE })
 	@doc (
-			value = "creates a graph from the list/map of edges given as operand",
+			value = """
+					creates a graph from the list/map of edges given as operand. A graph<vertexType, edgeType>. \
+					For a list of spatial edges, vertices are derived from their endpoints and the input edge objects are used as graph edges; \
+					the exact types are inferred from the input.""",
 			masterDoc = true,
 			usages = @usage (
 					value = "if the operand is a list, the graph will be built with elements of the list as edges",
@@ -1471,8 +1533,12 @@ public class Graphs {
 							equals = "a graph with two edges and three vertices",
 							test = false) }),
 			see = { "as_intersection_graph", "as_distance_graph" })
-	@test (" graph<geometry,geometry> comp <- as_edge_graph([line([{1,5},{12,45}]),line([{12,45},{34,56}])]); "
-			+ " ( ({1,5} in comp.vertices) and  ({12,45} in comp.vertices) and  ({34,56} in comp.vertices) ) ")
+	@tests ({
+			@test (" graph<geometry,geometry> comp <- as_edge_graph([line([{1,5},{12,45}]),line([{12,45},{34,56}])]); "
+			+ " ( ({1,5} in comp.vertices) and  ({12,45} in comp.vertices) and  ({34,56} in comp.vertices) ) "),
+			@test ("empty(as_edge_graph([]).vertices)"),
+			@test ("graph g <- as_edge_graph([{0, 0}::{10, 0}, {10, 10}::{0, 0}, {10, 10}::{20, 10}]); length(g.edges) = 2")
+	})
 	public static IGraph spatialFromEdges(final IScope scope, final IContainer edges) {
 
 		final IGraph createdGraph = new GamaSpatialGraph(edges, true, false, false, null, null, scope, Types.GEOMETRY,
@@ -1504,7 +1570,8 @@ public class Graphs {
 			category = { IOperatorCategory.GRAPH },
 			concept = {})
 	@doc (
-			value = "creates a graph from a list of vertices (left-hand operand). An edge is created between each pair of vertices with an intersection (with a given tolerance).",
+			value = "creates a graph from a list of vertices (left-hand operand). An edge is created between each pair of vertices with an intersection (with a given tolerance). "
+					+ "Returns a graph whose vertices have the input container's content type and whose edges are geometries, or agents of the supplied edge species when one is specified.",
 			see = { "as_distance_graph", "as_edge_graph" })
 	@no_test
 	public static IGraph spatialFromVertices(final IScope scope, final IContainer vertices, final Double tolerance,
@@ -1548,6 +1615,7 @@ public class Graphs {
 							value = "as_edge_graph([line([{1,5},{12,45}]),line([{13,45},{34,56}])],1)",
 							equals = "a graph with two edges and three vertices",
 							test = false) }),
+			returns = "A graph<geometry, edgeType> whose vertices are derived from the spatial edge endpoints and whose edge type is inferred from the input edge container.",
 			see = { "as_intersection_graph", "as_distance_graph" })
 	@test (" graph<geometry,geometry> g <- as_edge_graph([line([{1,5},{12,45}]),line([{13,45},{34,56}])],1); "
 			+ " [{1.0,5.0,0.0},{12.0,45.0,0.0},{34.0,56.0,0.0}] = g.vertices  ")
@@ -1583,7 +1651,8 @@ public class Graphs {
 					examples = @example (
 							value = "as_edge_graph([{1,5}::{12,45},{12,45}::{34,56}])",
 							equals = "a graph with these three vertices and two edges",
-							test = false)))
+							test = false)),
+			returns = "A graph whose vertices are the endpoints in the map's pairs and whose edges connect those endpoint pairs.")
 	@test (" graph<geometry,geometry> g <- as_edge_graph([{1,5}::{12,45},{12,45}::{34,56}]); "
 			+ " length(g.vertices) = 3 and length(g.edges) = 2")
 	public static IGraph spatialFromEdges(final IScope scope, final IMap edges) {
@@ -1612,6 +1681,7 @@ public class Graphs {
 	@doc (
 			value = "creates a graph from the first list of edges and the list nodes",
 			masterDoc = false,
+			returns = "A graph<vertexType, edgeType> using the supplied nodes as vertices and the input edge objects as edges; the exact types are inferred from the inputs.",
 			see = { "as_intersection_graph", "as_distance_graph" })
 	@test ("graph<geometry,geometry> comp <- as_edge_graph([line([{1,5},{12,45}]),line([{12,45},{34,56}])], [{1,5},{12,45},{34,56}]);"
 			+ " ( ({1,5} in comp.vertices) and  ({12,45} in comp.vertices) and  ({34,56} in comp.vertices) ) ")
@@ -1637,13 +1707,20 @@ public class Graphs {
 			category = { IOperatorCategory.GRAPH },
 			concept = { IConcept.GRAPH, IConcept.NODE, IConcept.CAST })
 	@doc (
-			value = "creates a graph from a list of vertices (left-hand operand). An edge is created between each pair of vertices with an intersection (with a given tolerance).",
+			value = "creates a graph from a list of vertices (left-hand operand). An edge is created between each pair of vertices with an intersection (with a given tolerance). "
+					+ "Returns a graph whose vertices have the input container's content type and whose edges are geometries, or agents of the supplied edge species when one is specified.",
 			comment = "as_intersection_graph is more efficient for a list of geometries (but less accurate) than as_distance_graph.",
 			examples = @example (
 					value = "list(ant) as_intersection_graph 0.5",
 					isExecutable = false),
 			see = { "as_distance_graph", "as_edge_graph" })
 	@no_test
+	@tests ({
+			@test ("point p1 <- {0, 0}; point p2 <- {10, 10}; graph far <- as_intersection_graph([p1, p2], 5.0); length(far.vertices) = 2"),
+			@test ("point p12 <- {0, 0}; point p22 <- {10, 10}; graph far2 <- as_intersection_graph([p12, p22], 5.0); length(far2.edges) = 0"),
+			@test ("point p13 <- {0, 0}; point p23 <- {10, 10}; graph near <- as_intersection_graph([p13, p23], 20.0); length(near.vertices) = 2"),
+			@test ("point p14 <- {0, 0}; point p24 <- {10, 10}; graph near2 <- as_intersection_graph([p14, p24], 20.0); length(near2.edges) = 1")
+	})
 	public static IGraph spatialFromVertices(final IScope scope, final IContainer vertices, final Double tolerance) {
 		final IGraph createdGraph =
 				new GamaSpatialGraph(vertices, false, false, true, new IntersectionRelation(tolerance), null, scope,
@@ -1731,7 +1808,8 @@ public class Graphs {
 	@doc (
 			value = "creates a graph from a list of vertices (left-hand operand). An edge is created between each pair of vertices close enough (less than a distance, right-hand operand).",
 			masterDoc = true,
-			comment = "as_distance_graph is more efficient for a list of points than as_intersection_graph.",
+			comment = "as_distance_graph is more efficient for a list of points than as_intersection_graph. "
+					+ "Return a graph whose vertices have the input container's content type and whose edges are geometries, or agents of the supplied edge species when one is specified.",
 			examples = @example (
 					value = "list(ant) as_distance_graph 3.0",
 					isExecutable = false),
@@ -1767,7 +1845,8 @@ public class Graphs {
 			category = { IOperatorCategory.GRAPH },
 			concept = {})
 	@doc (
-			value = "creates an undirected graph from a list of vertices (left-hand operand). An edge is created between each pair of vertices close enough (less than a distance, right-hand operand).",
+			value = "creates an undirected graph from a list of vertices (left-hand operand). An edge is created between each pair of vertices close enough (less than a distance, right-hand operand). "
+					+ "Returns a graph whose vertices have the input container's content type and whose edges are agents of the supplied edge species.",
 			see = { "as_intersection_graph", "as_edge_graph" })
 	@no_test
 	public static IGraph spatialDistanceGraph(final IScope scope, final IContainer vertices, final Double distance,
@@ -1831,6 +1910,7 @@ public class Graphs {
 	@doc (
 			value = "allows to create a spatial graph from a container of vertices, without trying to wire them. "
 					+ "The container can be empty. Emits an error if the contents of the container are not geometries, points or agents",
+			returns = "A graph whose vertices have the input container's content type and whose edge type is geometry. This operator adds no edges.",
 			see = { "graph" })
 	@no_test
 	public static IGraph spatial_graph(final IScope scope, final IContainer vertices) {
@@ -1852,7 +1932,9 @@ public class Graphs {
 			index_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
 			category = { IOperatorCategory.GRAPH },
 			concept = { IConcept.GRAPH, IConcept.GEOMETRY, IConcept.POINT })
-	@doc ("Creates a spatial graph out of an arbitrary graph. If the argument is already a spatial graph, returns it unchanged. If it contains geometrical nodes or edges, they are kept unchanged")
+	@doc (
+			value = "Creates a spatial graph out of an arbitrary graph. If the argument is already a spatial graph, returns it unchanged. If it contains geometrical nodes or edges, they are kept unchanged",
+			returns = "A spatial graph<geometry, geometry>.")
 	@no_test
 	public static ISpatialGraph as_spatial_graph(final IScope scope, final IGraph graph) {
 		if (graph instanceof ISpatialGraph) return (ISpatialGraph) graph;
@@ -1893,6 +1975,7 @@ public class Graphs {
 	@doc (
 			value = "creates a graph from a list of cells (operand). An edge is created between neighbors.",
 			masterDoc = true,
+			returns = "A graph whose vertices have the input container's content type and whose edges are geometries, or agents of the supplied edge species when one is specified.",
 			comment = "",
 			examples = @example (
 					value = "my_cell_graph <- grid_cells_to_graph(cells_list);",
@@ -1925,6 +2008,7 @@ public class Graphs {
 			concept = {})
 	@doc (
 			value = "creates a graph from a list of cells (operand). An edge is created between neighbors.",
+			returns = "A graph whose vertices have the input container's content type and whose edges are agents of the supplied edge species.",
 			see = { "as_intersection_graph", "as_edge_graph" })
 	@no_test
 	public static IGraph gridCellsToGraph(final IScope scope, final IContainer vertices, final ISpecies edgeSpecies) {
@@ -1946,12 +2030,14 @@ public class Graphs {
 	 *            the use cache
 	 * @return the i graph
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "use_cache",
 			category = { IOperatorCategory.GRAPH, IOperatorCategory.PATH },
 			concept = { IConcept.GRAPH, IConcept.SHORTEST_PATH })
 	@doc (
 			value = "if the second operand is true, the operand graph will store in a cache all the previously computed shortest path (the cache be cleared if the graph is modified).",
+			returns = "The same graph, with its vertex and edge types unchanged.",
 			comment = "WARNING / side effect: this operator modifies the operand and does not create a new graph.",
 			see = { "path_between" })
 	@no_test
@@ -1975,6 +2061,7 @@ public class Graphs {
 			concept = { IConcept.GRAPH })
 	@doc (
 			value = "the operand graph becomes a directed graph.",
+			returns = "The same graph, with its vertex and edge types unchanged.",
 			comment = "WARNING / side effect: this operator modifies the operand and does not create a new graph.",
 			see = { "undirected" })
 	@no_test
@@ -1998,6 +2085,7 @@ public class Graphs {
 			concept = { IConcept.GRAPH, IConcept.SHORTEST_PATH })
 	@doc (
 			value = "the operand graph becomes an undirected graph.",
+			returns = "The same graph, with its vertex and edge types unchanged.",
 			comment = "WARNING / side effect: this operator modifies the operand and does not create a new graph.",
 			see = { "directed" })
 	@no_test
@@ -2026,6 +2114,7 @@ public class Graphs {
 	@doc (
 			value = "returns the graph (left-hand operand) with weight given in the map (right-hand operand).",
 			masterDoc = true,
+			returns = "The same graph, with its vertex and edge types unchanged.",
 			comment = "WARNING / side effect: this operator modifies the operand and does not create a new graph. It also re-initializes the path finder",
 			usages = @usage (
 					value = "if the left-hand operand is a map, the map should contains pairs such as: vertex/edge::double",
@@ -2058,6 +2147,7 @@ public class Graphs {
 			category = { IOperatorCategory.GRAPH },
 			concept = {})
 	@doc (
+			returns = "The same graph, with its vertex and edge types unchanged.",
 			usages = @usage ("if the right-hand operand is a list, assigns the n elements of the list to the n first edges. "
 					+ "Note that the ordering of edges may change overtime, which can create some problems..."))
 	@no_test
@@ -2094,6 +2184,7 @@ public class Graphs {
 					IConcept.ALGORITHM })
 	@doc (
 			value = "changes the K shortest paths computation algorithm of the given graph",
+			returns = "The same graph, with its vertex and edge types unchanged.",
 			comment = "the right-hand operand can be #Yen and #Bhandari to use the associated algorithm. ",
 			examples = @example (
 					value = "the_graph <- the_graph with_k_shortest_path_algorithm #Yen;",
@@ -2129,6 +2220,7 @@ public class Graphs {
 					IConcept.ALGORITHM })
 	@doc (
 			value = "changes the shortest path computation algorithm of the given graph",
+			returns = "The same graph, with its vertex and edge types unchanged.",
 			comment = "the right-hand operand can be #Djikstra, #BidirectionalDijkstra, #BellmannFord, #FloydWarshall, #Astar, #NBAStar, #NBAStarApprox, #DeltaStepping, #CHBidirectionalDijkstra, #TransitNodeRouting to use the associated algorithm. ",
 			examples = @example (
 					value = "road_network <- road_network with_shortestpath_algorithm #TransitNodeRouting;",
@@ -2163,6 +2255,7 @@ public class Graphs {
 	@doc (
 			comment = "WARNING / side effect: this operator modifies the operand and does not create a new graph",
 			value = "adds a node in a graph.",
+			returns = "The same graph, with its vertex and edge types unchanged, after adding the node.",
 			examples = @example (
 					value = "graph add_node node(0)",
 					equals = "the graph, to which node(0) has been added",
@@ -2196,6 +2289,7 @@ public class Graphs {
 	@doc (
 			comment = "WARNING / side effect: this operator modifies the operand and does not create a new graph. All the edges containing this node are also removed.",
 			value = "removes a node from a graph.",
+			returns = "The same graph, with its vertex and edge types unchanged, after removing the node and its incident edges.",
 			examples = @example (
 					value = "node(0) remove_node_from graphEpidemio",
 					equals = "the graph without node(0)",
@@ -2221,6 +2315,7 @@ public class Graphs {
 	 *            the count
 	 * @return the i graph
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "rewire_n",
 			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
@@ -2230,6 +2325,7 @@ public class Graphs {
 	@doc (
 			comment = "WARNING / side effect: this operator modifies the operand and does not create a new graph. If there are too many edges, all the edges will be rewired.",
 			value = "rewires the given count of edges.",
+			returns = "The same graph, with its vertex and edge types unchanged, after rewiring edges.",
 			examples = { @example (
 					value = "graph graphEpidemio <- as_edge_graph([{1,5}::{12,45},{12,45}::{34,56}]);",
 					isTestOnly = true),
@@ -2262,6 +2358,7 @@ public class Graphs {
 	@doc (
 			comment = "WARNING / side effect: this operator modifies the operand and does not create a new graph. If the edge already exists, the graph is unchanged",
 			value = "add an edge between a source vertex and a target vertex (resp. the left and the right element of the pair operand)",
+			returns = "The same graph, with its vertex and edge types unchanged, after adding the edge.",
 			examples = @example (
 					value = "graph <- graph add_edge (source::target);",
 					isExecutable = false),
@@ -2334,7 +2431,7 @@ public class Graphs {
 	@operator (
 			value = "paths_between",
 			type = IType.LIST,
-			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			content_type = IType.PATH,
 			category = { IOperatorCategory.GRAPH, IOperatorCategory.PATH },
 			concept = { IConcept.GRAPH })
 	@doc (
@@ -2343,7 +2440,8 @@ public class Graphs {
 					value = "paths_between(my_graph, ag1:: ag2, 2)",
 					equals = "the 2 shortest paths (ordered by length) between ag1 and ag2",
 					isExecutable = false) })
-	@test ("""
+	@tests ({
+			@test ("""
 			graph<geometry, geometry> g <- directed(as_edge_graph([
 										edge({10,5}, {20,3}),
 										edge({10,5}, {30,30}),
@@ -2356,7 +2454,10 @@ public class Graphs {
 										]));
 			   length((paths_between(g, {10,5}:: {80,35}, 2))) = 2
 
-			""")
+			"""),
+			@test ("graph square_graph <- as_edge_graph([line([{0, 0}, {10, 0}]), line([{10, 0}, {10, 10}]), line([{0, 0}, {0, 10}]), line([{0, 10}, {10, 10}])]); list<path> two_ways <- paths_between(square_graph, {0, 0}::{10, 10}, 2); length(two_ways) = 2"),
+			@test ("graph square_graph2 <- as_edge_graph([line([{0, 0}, {10, 0}]), line([{10, 0}, {10, 10}]), line([{0, 0}, {0, 10}]), line([{0, 10}, {10, 10}])]); list<path> two_ways2 <- paths_between(square_graph2, {0, 0}::{10, 10}, 2); two_ways2 all_match (length(each.edges) = 2)")
+	})
 	public static IList<IPath> kPathsBetween(final IScope scope, final IGraphEventProvider graph, final IPair sourTarg,
 			final int k) throws GamaRuntimeException {
 
@@ -2446,6 +2547,7 @@ public class Graphs {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "load_shortest_paths",
 			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
@@ -2454,6 +2556,7 @@ public class Graphs {
 			concept = { IConcept.GRAPH, IConcept.SHORTEST_PATH })
 	@doc (
 			value = "put in the graph cache the computed shortest paths contained in the matrix (rows: source, columns: target)",
+			returns = "The same graph, with its vertex and edge types unchanged.",
 			examples = { @example (
 					value = "load_shortest_paths(shortest_paths_matrix)",
 					equals = "return my_graph with all the shortest paths computed",
@@ -2516,6 +2619,7 @@ public class Graphs {
 	 *            the criterion
 	 * @return the i graph
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "layout_force",
 			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
@@ -2526,6 +2630,7 @@ public class Graphs {
 	@doc (
 			value = "layouts a GAMA graph using Force model (in a given spatial  bound and given coeff_force, cooling_rate, max_iteration, and equilibirum criterion parameters). ",
 			masterDoc = true,
+			returns = "The same graph, with its vertex and edge types unchanged; vertex locations are updated by the layout.",
 			special_cases = """
 					usage: layoutForce(graph, bounds, coeff_force, cooling_rate, max_iteration, equilibirum criterion). graph is the graph to which \
 					applied the layout;  bounds is the shape (geometry) in which the graph should be located; coeff_force is the coefficien use to compute the force, typical value is 0.4; \
@@ -2555,6 +2660,7 @@ public class Graphs {
 	 *            the max iteration
 	 * @return the i graph
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "layout_force_FR",
 			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
@@ -2565,6 +2671,7 @@ public class Graphs {
 	@doc (
 			value = "layouts a GAMA graph using Fruchterman and Reingold Force-Directed Placement Algorithm (in a given spatial bound, normalization factor and max_iteration parameters). ",
 			masterDoc = true,
+			returns = "The same graph, with its vertex and edge types unchanged; vertex locations are updated by the layout.",
 			special_cases = """
 					usage: layoutForce(graph, bounds, normalization_factor, max_iteration, equilibirum criterion). graph is the graph to which \
 					applied the layout;  bounds is the shape (geometry) in which the graph should be located; normalization_factor is the normalization factor for the optimal distance, typical value is 1.0; \
@@ -2606,6 +2713,7 @@ public class Graphs {
 	@doc (
 			value = "layouts a GAMA graph using Fruchterman and Reingold Force-Directed Placement Algorithm with The Barnes-Hut indexing technique(in a given spatial bound, theta, normalization factor and max_iteration parameters). ",
 			masterDoc = true,
+			returns = "The same graph, with its vertex and edge types unchanged; vertex locations are updated by the layout.",
 			special_cases = """
 					usage: layoutForce(graph, bounds, normalization_factor, max_iteration, equilibirum criterion). graph is the graph to which \
 					applied the layout;  bounds is the shape (geometry) in which the graph should be located; theta value for approximation using the Barnes-Hut technique, typical value is 0.5; normalization_factor is the normalization factor for the optimal distance, typical value is 1.0; \
@@ -2613,9 +2721,8 @@ public class Graphs {
 	@no_test
 	public static IGraph indexedFRLayout(final IScope scope, final IGraph graph, final IShape bounds,
 			final double theta, final double normalizationFactor, final int maxIteration) throws GamaRuntimeException {
-        if (theta < 0d || theta > 1d) {
-            throw GamaRuntimeException.error("Theta parameter should be between 0 and 1 (included)", scope);
-        }
+		if (theta < 0d || theta > 1d)
+			throw GamaRuntimeException.error("Theta parameter should be between 0 and 1 (included)", scope);
 
 		final IndexedFRLayoutAlgorithm2D sim = new IndexedFRLayoutAlgorithm2D(maxIteration, theta, normalizationFactor,
 				scope.getSimulation().getRandomGenerator().getGenerator());
@@ -2681,6 +2788,7 @@ public class Graphs {
 	 *            the max iteration
 	 * @return the i graph
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "layout_force",
 			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
@@ -2690,6 +2798,7 @@ public class Graphs {
 			concept = { IConcept.GRAPH })
 	@doc (
 			value = "layouts a GAMA graph using Force model (in a given spatial  bound and given coeff_force, cooling_rate, and max_iteration parameters).",
+			returns = "The same graph, with its vertex and edge types unchanged; vertex locations are updated by the layout.",
 			special_cases = """
 					usage: layoutForce(graph, bounds, coeff_force, cooling_rate, max_iteration). graph is the graph to which \
 					applied the layout;  bounds is the shape (geometry) in which the graph should be located; coeff_force is the coefficient used to compute the force, typical value is 0.4; \
@@ -2725,6 +2834,7 @@ public class Graphs {
 			concept = { IConcept.GRAPH })
 	@doc (
 			value = "layouts a Gama graph on a circle with equidistance between nodes. For now there is no optimization on node ordering.",
+			returns = "The same graph, with its vertex and edge types unchanged; vertex locations are updated by the layout.",
 			special_cases = "Usage: layoutCircle(graph, bound, shuffle) => graph : the graph to layout, bound : the geometry to display the graph within, "
 					+ "shuffle : if true shuffle the nodes, then render same ordering",
 			examples = { @example (
@@ -2751,6 +2861,7 @@ public class Graphs {
 	 *            the coeff sq
 	 * @return the i graph
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "layout_grid",
 			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
@@ -2762,6 +2873,7 @@ public class Graphs {
 					layouts a Gama graph based on a grid latice. usage: layoutForce(graph, bounds, coeff_nb_cells). graph is the graph to which\
 						the layout is applied;  bounds is the shape (geometry) in which the graph should be located; coeff_nb_cells\
 					the coefficient for the number of cells to locate the vertices (nb of places = coeff_nb_cells * nb of vertices).\s""",
+			returns = "The same graph, with its vertex and edge types unchanged; vertex locations are updated by the layout.",
 			examples = { @example (
 					value = "layout_grid(graph, world.shape);",
 					isExecutable = false) })
@@ -3319,6 +3431,7 @@ public class Graphs {
 	@doc (
 			value = "returns a random scale-free network (following Barabasi-Albert (BA) model).",
 			masterDoc = true,
+			returns = "A graph<vertexType, edgeType>. The vertex and edge types are determined by the supplied node and edge species or node container; generated graph defaults are used when those are omitted.",
 			comment = """
 					The Barabasi-Albert (BA) model is an algorithm for generating random scale-free networks using a preferential attachment mechanism. \
 					A scale-free network is a network whose degree distribution follows a power law, at least asymptotically.\
@@ -3571,6 +3684,7 @@ public class Graphs {
 	@doc (
 			value = "returns a random small-world network (following Watts-Strogatz model).",
 			masterDoc = true,
+			returns = "A graph<vertexType, edgeType>. The vertex and edge types are determined by the supplied node and edge species or node container; generated graph defaults are used when those are omitted.",
 			comment = """
 					The Watts-Strogatz model is a random graph generation model that produces graphs with small-world properties, including short average path lengths and high clustering.\
 					A small-world network is a type of graph in which most nodes are not neighbors of one another, but most nodes can be reached from every other by a small number of hops or steps. [From Wikipedia article]\
@@ -3823,12 +3937,14 @@ public class Graphs {
 	 *            the edges species
 	 * @return the i graph
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "generate_random_graph",
 			concept = {})
 	@doc (
 			value = "returns a random graph.",
 			masterDoc = true,
+			returns = "A graph<vertexType, edgeType>. The vertex and edge types are determined by the supplied node and edge species; generated graph defaults are used when those are omitted.",
 			usages = { @usage (
 					value = "`nbNodes`: number of nodes to be created; `nbEdges`: number of edges to be created; `directed`: is the graph has to be directed or not;`node_species`: the species of nodes; `edges_species`: the species of edges ",
 					examples = { @example (
@@ -3879,6 +3995,7 @@ public class Graphs {
 	 *            the node species
 	 * @return the i graph
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "generate_random_graph",
 			concept = {})
@@ -3922,6 +4039,7 @@ public class Graphs {
 	 *            the directed
 	 * @return the i graph
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "generate_random_graph",
 			concept = {})
@@ -3951,12 +4069,14 @@ public class Graphs {
 
 	/******************************/
 
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "generate_complete_graph",
 			concept = {})
 	@doc (
 			value = "returns a fully connected graph.",
 			masterDoc = true,
+			returns = "A graph<vertexType, edgeType>. The vertex type is determined by the supplied node list or species, and the edge type by the supplied edge species; generated graph defaults are used when omitted.",
 			usages = { @usage (
 					value = "\"directed\": is the graph has to be directed or not;\"nodes\": the list of existing nodes; \"edges_species\": the species of edges ",
 					examples = { @example (
@@ -3997,6 +4117,7 @@ public class Graphs {
 	 *            the nodes
 	 * @return the i graph
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "generate_complete_graph",
 			concept = {})
@@ -4034,6 +4155,7 @@ public class Graphs {
 	 *            the edges species
 	 * @return the i graph
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "generate_complete_graph",
 			concept = {})
@@ -4084,6 +4206,7 @@ public class Graphs {
 	 *            the node species
 	 * @return the i graph
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "generate_complete_graph",
 			concept = {})
@@ -4122,6 +4245,7 @@ public class Graphs {
 	 *            the directed
 	 * @return the i graph
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "generate_complete_graph",
 			concept = {})
@@ -4140,6 +4264,10 @@ public class Graphs {
 									isExecutable = false) }) },
 			see = { "generate_barabasi_albert", "generate_watts_strogatz" })
 	@no_test
+	@tests ({
+			@test ("graph complete <- generate_complete_graph(5, false); length(complete.vertices) = 5"),
+			@test ("graph complete2 <- generate_complete_graph(5, false); length(complete2.edges) = 10")
+	})
 	public static IGraph generateGraphComplete(final IScope scope, final int nbNodes, final Boolean directed) {
 		return generateGraphComplete(scope, nbNodes, directed, (ISpecies) null, (ISpecies) null);
 
@@ -4158,7 +4286,8 @@ public class Graphs {
 	 */
 	@operator (
 			value = "girvan_newman_clustering",
-			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			content_type = IType.LIST,
+			content_type_content_type = ITypeProvider.KEY_TYPE_AT_INDEX + 1,
 			category = { IOperatorCategory.GRAPH })
 	@doc (
 			value = "The Girvan�Newman algorithm is a hierarchical method used to detect communities. It detects communities by progressively removing edges from the original network."
@@ -4193,7 +4322,8 @@ public class Graphs {
 	 */
 	@operator (
 			value = "k_spanning_tree_clustering",
-			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			content_type = IType.LIST,
+			content_type_content_type = ITypeProvider.KEY_TYPE_AT_INDEX + 1,
 			category = { IOperatorCategory.GRAPH })
 	@doc (
 			value = """
@@ -4202,6 +4332,10 @@ public class Graphs {
 					 clusters.\
 					It returns a list of list of vertices and takes as operand the graph and the number of clusters""")
 	@no_test
+	@tests ({
+			@test ("graph two_parts <- as_edge_graph([line([{0, 0}, {10, 0}]), line([{10, 0}, {10, 10}]), line([{50, 50}, {60, 50}]), line([{60, 50}, {60, 60}])]); list<list> by_spanning_tree <- k_spanning_tree_clustering(two_parts, 2); length(by_spanning_tree) = 2"),
+			@test ("graph two_parts2 <- as_edge_graph([line([{0, 0}, {10, 0}]), line([{10, 0}, {10, 10}]), line([{50, 50}, {60, 50}]), line([{60, 50}, {60, 60}])]); list<list> by_spanning_tree2 <- k_spanning_tree_clustering(two_parts2, 2); by_spanning_tree2 all_match (length(each) = 3)")
+	})
 	public static IList KSpanningTreeClusteringAfl(final IScope scope, final IGraph graph, final int numCLusters) {
 		if (graph.getVertices().isEmpty() || graph.getEdges().isEmpty()) {
 			IList<IGraph> emptyL = GamaListFactory.create(Types.GRAPH);
@@ -4231,7 +4365,8 @@ public class Graphs {
 	 */
 	@operator (
 			value = "label_propagation_clustering",
-			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			content_type = IType.LIST,
+			content_type_content_type = ITypeProvider.KEY_TYPE_AT_INDEX + 1,
 			category = { IOperatorCategory.GRAPH })
 	@doc (
 			value = """
@@ -4240,6 +4375,9 @@ public class Graphs {
 					 * community structures in large-scale networks. Physical review E, 76(3), 036106.\
 					It returns a list of list of vertices and takes as operand the graph and maximal number of iteration""")
 	@no_test
+	@tests ({
+			@test ("graph two_parts <- as_edge_graph([line([{0, 0}, {10, 0}]), line([{10, 0}, {10, 10}]), line([{50, 50}, {60, 50}]), line([{60, 50}, {60, 60}])]); list<list> by_propagation <- label_propagation_clustering(two_parts, 10); length(by_propagation) = 2")
+	})
 	public static IList labelPropagationClusteringAgl(final IScope scope, final IGraph graph, final int maxIteration) {
 		if (graph.getVertices().isEmpty() || graph.getEdges().isEmpty()) {
 			IList<IGraph> emptyL = GamaListFactory.create(Types.GRAPH);

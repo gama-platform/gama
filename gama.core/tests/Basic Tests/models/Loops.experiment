@@ -354,6 +354,26 @@ experiment loop_from_to type:test{
 		assert iterations = 1;
 	}
 
+	test loop_from_to_equal_int_negative_step {
+		int my_from <- 1;
+		int iterations <- 0;
+		loop i from: my_from to: 1 step: -1 {
+			iterations <- iterations + 1;
+			if iterations > 1 { break; }
+		}
+		assert iterations = 1;
+	}
+
+	test loop_from_to_equal_float_negative_step {
+		float my_from <- 1.0;
+		int iterations <- 0;
+		loop i from: my_from to: 1.0 step: -1.0 {
+			iterations <- iterations + 1;
+			if iterations > 1 { break; }
+		}
+		assert iterations = 1;
+	}
+
 	// Tests for from == to using variable expressions (issue #1109)
 	test loop_from_to_equal_int_variable_from {
 		int my_from <- 1;
@@ -501,7 +521,6 @@ experiment loop_while type:test{
 	}
 	
 }
-
 
 
 

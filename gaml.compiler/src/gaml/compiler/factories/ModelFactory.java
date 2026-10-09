@@ -58,6 +58,7 @@ import gama.dev.DEBUG;
 import gaml.compiler.ast.SyntacticClassElement;
 import gaml.compiler.ast.SyntacticFactory;
 import gaml.compiler.descriptions.ModelDescription;
+import gaml.compiler.descriptions.SpeciesDescription;
 import gaml.compiler.validation.DocumentationContext;
 import gaml.compiler.validation.ValidationContext;
 
@@ -104,6 +105,8 @@ import gaml.compiler.validation.ValidationContext;
  * @see ISyntacticElement
  */
 public class ModelFactory implements IModelFactory {
+
+	private static final String INTERNAL_MODEL_GLOBAL_SCHEDULER_SPECIES = "__internal_model_global_scheduler__";
 
 	/** The singleton instance of ModelFactory. */
 	private static ModelFactory INSTANCE;
@@ -288,6 +291,8 @@ public class ModelFactory implements IModelFactory {
 		// known).
 		parentSpeciesAndExperiments(model, speciesNodes, classNodes, experimentNodes, tempSpeciesCache);
 
+		if (model.hasFacet(SCHEDULES) || model.hasFacet(FREQUENCY)) { createSchedulerSpecies(model); }
+
 		// Initialize the hierarchy of types
 		model.buildTypes();
 		// hqnghi build micro-models as types
@@ -321,9 +326,6 @@ public class ModelFactory implements IModelFactory {
 			if (sd.isExperiment() && !sd.initializeMirrorsAndSubSpecies()) return null;
 		}
 		for (final IClassDescription cd : getClassesInHierarchicalOrder(model)) { cd.inheritFromParent(); }
-
-		// Issue #1708 (put before the finalization)
-		if (model.hasFacet(SCHEDULES) || model.hasFacet(FREQUENCY)) { createSchedulerSpecies(model); }
 
 		if (!model.initializeMirrorsAndSubSpecies()) return null;
 		return model;
@@ -717,9 +719,9 @@ public class ModelFactory implements IModelFactory {
 	 */
 	private void createSchedulerSpecies(final IModelDescription model) {
 		final ISpeciesDescription sd = (ISpeciesDescription) GAML.getDescriptionFactory().create(IKeyword.SPECIES,
-				model, IKeyword.NAME, GamaMetaModel.INTERNAL_GLOBAL_SCHEDULER_SPECIES);
-		// final ISpeciesDescription sd = model.getSpeciesDescription(GamaMetaModel.INTERNAL_GLOBAL_SCHEDULER_SPECIES);
-		sd.initializeMirrorsAndSubSpecies();
+				model, IKeyword.NAME, INTERNAL_MODEL_GLOBAL_SCHEDULER_SPECIES);
+		((SpeciesDescription) sd).markAsModelLocal();
+		sd.setParent(model.getSpeciesDescription(IKeyword.AGENT));
 		if (model.hasFacet(SCHEDULES)) {
 			// remove the warning as GAMA integrates a working workaround to use this facet at the global level
 			// model.warning(
@@ -736,7 +738,6 @@ public class ModelFactory implements IModelFactory {
 			model.removeFacets(FREQUENCY);
 		}
 		model.addChild(sd);
-		model.getTypesManager().addSpeciesType(sd);
 	}
 
 	/**

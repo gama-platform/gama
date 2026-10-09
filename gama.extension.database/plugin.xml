@@ -12,6 +12,4 @@
             description="Create agents from databases">
       </implementation>
    </extension>
- 
-
 </plugin>

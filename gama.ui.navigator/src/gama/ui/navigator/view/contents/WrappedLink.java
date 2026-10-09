@@ -70,6 +70,7 @@ public class WrappedLink extends WrappedFile {
 		super.getSuffix(sb);
 
 		if (sb.length() > 0) { sb.append(" - "); }
+		sb.append("Linked to: ");
 		sb.append(reconstructTargetName());
 
 	}

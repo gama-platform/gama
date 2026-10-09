@@ -12,6 +12,8 @@ package gama.api.gaml.types;
 import java.io.File;
 
 import gama.annotations.doc;
+import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.type;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
@@ -52,6 +54,12 @@ import gama.api.types.misc.IContainer;
 		kind = ISymbolKind.REGULAR,
 		doc = { @doc ("Represents boolean values, either true or false") },
 		concept = { IConcept.TYPE, IConcept.LOGICAL, IConcept.CONDITION })
+@tests ({
+		@test ("true is bool"),
+		@test ("false is bool"),
+		@test ("bool(\"true\") = true"),
+		@test ("bool(\"false\") = false")
+})
 public class GamaBoolType extends GamaType<Boolean> {
 
 	/**

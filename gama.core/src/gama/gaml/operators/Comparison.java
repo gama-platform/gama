@@ -17,6 +17,7 @@ import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.operator;
 import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.usage;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
@@ -155,16 +156,19 @@ public class Comparison {
 							equals = "false",
 							isTestOnly = false) },
 			see = { GT, LT, GTE, LTE })
-	@test ("0 between(-2,4) = true")
-	@test ("-12 between(-22,-10)")
-	@test ("not(1 between(1,4))")
-	@test ("not(2 between(4,1))")
-	@test ("not(5 between(5,10))")
-	@test ("not(10 between(1,10))")
-	@test ("not(0 between(0,0))")
-	@test ("between(5, 1, 10)")
-	@test ("!between(1, 1, 10)")
-	@test ("!between(0, 1, 10)")
+	@tests ({
+			@test ("0 between(-2,4) = true"),
+			@test ("-12 between(-22,-10)"),
+			@test ("not(1 between(1,4))"),
+			@test ("not(2 between(4,1))"),
+			@test ("not(5 between(5,10))"),
+			@test ("not(10 between(1,10))"),
+			@test ("not(0 between(0,0))"),
+			@test ("between(5, 1, 10)"),
+			@test ("!between(1, 1, 10)"),
+			@test ("!between(0, 1, 10)"),
+			@test ("100 between(99, 101)")
+	})
 	public static Boolean between(final Integer a, final Integer inf, final Integer sup) {
 		if (inf > sup) return false;
 		return a >= sup ? false : a > inf;
@@ -244,13 +248,17 @@ public class Comparison {
 							value = "6 > 7",
 							equals = "false") },
 			see = { LT, GTE, LTE, EQUALS, "!=" })
-	@test ("bool val <- (3 > 17); val = false ")
-	@test ("val <- (13 > 7); val = true")
-	@test ("!(7 > 7)")
-	@test ("!(3 > 3)")
-	@test ("2 > 1")
-	@test ("!(1 > 1)")
-	@test ("!(0 > 1)")
+	@tests ({
+			@test ("bool val <- (3 > 17); val = false "),
+			@test ("val <- (13 > 7); val = true"),
+			@test ("!(7 > 7)"),
+			@test ("!(3 > 3)"),
+			@test ("2 > 1"),
+			@test ("!(1 > 1)"),
+			@test ("!(0 > 1)"),
+			@test ("100 > 99"),
+			@test ("100 > #min_int")
+	})
 	public static Boolean greater(final Integer a, final Integer b) {
 		if (a == null || b == null) return false;
 		return a > b;
@@ -315,9 +323,12 @@ public class Comparison {
 					@example (
 							value = "7.0 > 7",
 							equals = "false") })
-	@test ("!(3.5 > 7)")
-	@test ("7.5 > 7")
-	@test ("!(7.0 > 7)")
+	@tests ({
+			@test ("!(3.5 > 7)"),
+			@test ("7.5 > 7"),
+			@test ("!(7.0 > 7)"),
+			@test ("(4.0 > 4) = false")
+	})
 	public static Boolean greater(final Double a, final Integer b) {
 		if (a == null || b == null) return false;
 		return a > b;
@@ -566,10 +577,14 @@ public class Comparison {
 							value = "8 < 7",
 							equals = "false") },
 			see = { GT, GTE, LTE, EQUALS, "!=" })
-	@test ("3 < 7")
-	@test ("!(7 < 7)")
-	@test ("!(8 < 7)")
-	@test ("1 < 2")
+	@tests ({
+			@test ("3 < 7"),
+			@test ("!(7 < 7)"),
+			@test ("!(8 < 7)"),
+			@test ("1 < 2"),
+			@test ("100 < 101"),
+			@test ("100 < #max_int")
+	})
 	public static Boolean less(final Integer a, final Integer b) {
 		if (a == null || b == null) return false;
 		return a < b;
@@ -602,9 +617,12 @@ public class Comparison {
 					@example (
 							value = "3 < 3.0",
 							equals = "false") })
-	@test ("!(3 < 2.5)")
-	@test ("2 < 2.5")
-	@test ("!(3 < 3.0)")
+	@tests ({
+			@test ("!(3 < 2.5)"),
+			@test ("2 < 2.5"),
+			@test ("!(3 < 3.0)"),
+			@test ("(4 < 4.0) = false")
+	})
 	public static Boolean less(final Integer a, final Double b) {
 		if (a == null || b == null) return false;
 		return a < b;
@@ -672,9 +690,12 @@ public class Comparison {
 					@example (
 							value = "3.5 < 3.5",
 							equals = "false") })
-	@test ("3.5 < 7.6")
-	@test ("!(7.6 < 3.5)")
-	@test ("!(3.5 < 3.5)")
+	@tests ({
+			@test ("3.5 < 7.6"),
+			@test ("!(7.6 < 3.5)"),
+			@test ("!(3.5 < 3.5)"),
+			@test ("0.0987 < 0.11")
+	})
 	public static Boolean less(final Double a, final Double b) {
 		if (a == null || b == null) return false;
 		return a < b;
@@ -710,9 +731,12 @@ public class Comparison {
 							value = "8 >= 7",
 							equals = "true") },
 			see = { GT, LT, LTE, EQUALS, "!=" })
-	@test ("!(3 >= 7)")
-	@test ("7 >= 7")
-	@test ("8 >= 7")
+	@tests ({
+			@test ("!(3 >= 7)"),
+			@test ("7 >= 7"),
+			@test ("8 >= 7"),
+			@test ("100 >= 99")
+	})
 	public static Boolean greaterOrEqual(final Integer a, final Integer b) {
 		if (a == null || b == null) return false;
 		return a >= b;
@@ -853,9 +877,12 @@ public class Comparison {
 							value = "8 <= 7",
 							equals = "false") },
 			see = { GT, LT, GTE, EQUALS, "!=" })
-	@test ("3 <= 7")
-	@test ("7 <= 7")
-	@test ("!(8 <= 7)")
+	@tests ({
+			@test ("3 <= 7"),
+			@test ("7 <= 7"),
+			@test ("!(8 <= 7)"),
+			@test ("100 <= 100")
+	})
 	public static Boolean opLessThanOrEqual(final Integer a, final Integer b) {
 		if (a == null || b == null) return false;
 		return a <= b;
@@ -1003,10 +1030,15 @@ public class Comparison {
 							value = "0.0 = 0.0",
 							equals = "true") },
 			see = { GT, LT, GTE, LTE, "!=" })
-	@test ("4.5 = 4.5")
-	@test ("!(4.5 = 4.7)")
-	@test ("0.0 = 0.0")
-	@test ("1.0 = 1.0")
+	@tests ({
+			@test ("4.5 = 4.5"),
+			@test ("!(4.5 = 4.7)"),
+			@test ("0.0 = 0.0"),
+			@test ("1.0 = 1.0"),
+			@test ("10.0 = 10.0"),
+			@test ("1e3 = 1000.0"),
+			@test ("1.5e-3 = 0.0015")
+	})
 	public static Boolean equal(final Double a, final Double b) {
 		if (a == b) return true;
 		if (a == null || b == null) return false;
@@ -1044,9 +1076,12 @@ public class Comparison {
 							value = "0 = 0",
 							equals = "true") },
 			see = { "!=" })
-	@test ("4 = 4")
-	@test ("!(4 = 5)")
-	@test ("0 = 0")
+	@tests ({
+			@test ("4 = 4"),
+			@test ("!(4 = 5)"),
+			@test ("0 = 0"),
+			@test ("100 = 100")
+	})
 	public static Boolean equal(final Integer a, final Integer b) {
 		return a == null ? b == null : a.intValue() == b.intValue();
 		// return !(a < b) && !(a > b);
@@ -1082,9 +1117,12 @@ public class Comparison {
 							value = "0 = 0.0",
 							equals = "true") },
 			see = { "!=" })
-	@test ("3 = 3.0")
-	@test ("!(4 = 4.7)")
-	@test ("0 = 0.0")
+	@tests ({
+			@test ("3 = 3.0"),
+			@test ("!(4 = 4.7)"),
+			@test ("0 = 0.0"),
+			@test ("5 = 5.0")
+	})
 	public static Boolean equal(final Integer a, final Double b) {
 		return a == null ? b == null : Comparison.equal(a.doubleValue(), b);
 		// return !(a < b) && !(a > b);
@@ -1120,9 +1158,12 @@ public class Comparison {
 							value = "0.0 = 0",
 							equals = "true") },
 			see = { "!=" })
-	@test ("!(4.7 = 4)")
-	@test ("4.0 = 4")
-	@test ("0.0 = 0")
+	@tests ({
+			@test ("!(4.7 = 4)"),
+			@test ("4.0 = 4"),
+			@test ("0.0 = 0"),
+			@test ("6.0 = 6")
+	})
 	public static Boolean equal(final Double a, final Integer b) {
 		return a == null ? b == null : Comparison.equal(a, b.doubleValue());
 		// return !(a < b) && !(a > b);
@@ -1159,9 +1200,12 @@ public class Comparison {
 							value = "0.0 != 0.0",
 							equals = "false") },
 			see = { EQUALS, GT, LT, GTE, LTE })
-	@test ("!(3.0 != 3.0)")
-	@test ("4.0 != 4.7")
-	@test ("!(0.0 != 0.0)")
+	@tests ({
+			@test ("!(3.0 != 3.0)"),
+			@test ("4.0 != 4.7"),
+			@test ("!(0.0 != 0.0)"),
+			@test ("10.0 != 10.1")
+	})
 	public static Boolean different(final Double a, final Double b) {
 		if (a == null) return b != null;
 		if (b == null) return false;
@@ -1199,9 +1243,13 @@ public class Comparison {
 							value = "0 != 0",
 							equals = "false") },
 			see = { EQUALS, GT, LT, GTE, LTE })
-	@test ("!(3 != 3)")
-	@test ("4 != 5")
-	@test ("!(0 != 0)")
+	@tests ({
+			@test ("!(3 != 3)"),
+			@test ("4 != 5"),
+			@test ("!(0 != 0)"),
+			@test ("0 != 1"),
+			@test ("1000 != 100")
+	})
 	public static Boolean different(final Integer a, final Integer b) {
 		if (a == null) return b != null;
 		if (b == null) return false;
@@ -1356,11 +1404,14 @@ public class Comparison {
 							@example (
 									value = "'' >= 'a'",
 									equals = "false") }))
-	@test ("!('abc' >= 'aeb')")
-	@test ("'abc' >= 'abc'")
-	@test ("'aeb' >= 'abc'")
-	@test ("!('' >= 'a')")
-	@test ("'a' >= 'a'")
+	@tests ({
+			@test ("!('abc' >= 'aeb')"),
+			@test ("'abc' >= 'abc'"),
+			@test ("'aeb' >= 'abc'"),
+			@test ("!('' >= 'a')"),
+			@test ("'a' >= 'a'"),
+			@test ("\"abd\" >= \"abc\"")
+	})
 	public static Boolean greaterOrEqual(final String a, final String b) {
 		if (a == null) return false;
 		final int i = a.compareTo(b);
@@ -1486,12 +1537,17 @@ public class Comparison {
 							@example (
 									value = "'hello' = 'hello'",
 									equals = "true") }))
-	@test ("[2,3] = [2,3]")
-	@test ("!([2,3] = [2,4])")
-	@test ("'hello' = 'hello'")
-	@test ("!('hello' = 'world')")
-	@test ("!('abc' = 'ABC')")
-	@test ("'' = ''")
+	@tests ({
+			@test ("[2,3] = [2,3]"),
+			@test ("!([2,3] = [2,4])"),
+			@test ("'hello' = 'hello'"),
+			@test ("!('hello' = 'world')"),
+			@test ("!('abc' = 'ABC')"),
+			@test ("'' = ''"),
+			@test ("(\"abc\" = \"bca\") = false"),
+			@test ("\"bde\" = \"bde\""),
+			@test ("{3,7} = {3,7}")
+	})
 	public static Boolean equal(final Object a, final Object b) {
 		return a == null ? b == null : a.equals(b);
 	}
@@ -1525,10 +1581,18 @@ public class Comparison {
 					@example (
 							value = "'hi' != 'hello'",
 							equals = "true") })
-	@test ("!([2,3] != [2,3])")
-	@test ("[2,4] != [2,3]")
-	@test ("'hi' != 'hello'")
-	@test ("!('abc' != 'abc')")
+	@tests ({
+			@test ("!([2,3] != [2,3])"),
+			@test ("[2,4] != [2,3]"),
+			@test ("'hi' != 'hello'"),
+			@test ("!('abc' != 'abc')"),
+			@test ("\"abc\" != \"bde\""),
+			@test ("false != true"),
+			@test ("[3,4] != [4,3]"),
+			@test ("[3,4] != [9]"),
+			// comparisons are case sensitive
+			@test ("\"abc\" != \"ABC\"")
+	})
 	public static Boolean different(final Object a, final Object b) {
 		return a == null ? b != null : !a.equals(b);
 	}
@@ -1574,12 +1638,15 @@ public class Comparison {
 							@example (
 									value = "{3,3} < {3,5}",
 									equals = "false") }) })
-	@test ("{3,5} < {4,6}")
-	@test ("!({5,7} < {4,6})")
-	@test ("!({5,7} < {4,8})")
-	@test ("!({3,3} < {3,5})")
-	@test ("{1,1} < {2,2}")
-	@test ("!({2,1} < {1,2})")
+	@tests ({
+			@test ("{3,5} < {4,6}"),
+			@test ("!({5,7} < {4,6})"),
+			@test ("!({5,7} < {4,8})"),
+			@test ("!({3,3} < {3,5})"),
+			@test ("{1,1} < {2,2}"),
+			@test ("!({2,1} < {1,2})"),
+			@test ("({3,7} < {4,7}) = false")
+	})
 	public static Boolean less(final IPoint p1, final IPoint p) {
 		return p1.smallerThan(p);
 	}
@@ -1620,9 +1687,13 @@ public class Comparison {
 							@example (
 									value = "{4,6} > {4,6}",
 									equals = "false") }) })
-	@test ("{5,7} > {4,6}")
-	@test ("!({5,7} > {4,8})")
-	@test ("!({4,6} > {4,6})")
+	@tests ({
+			@test ("{5,7} > {4,6}"),
+			@test ("!({5,7} > {4,8})"),
+			@test ("!({4,6} > {4,6})"),
+			@test ("({3,7} > {7,3}) = false"),
+			@test ("({3,7} > {2,7}) = false")
+	})
 	public static Boolean greater(final IPoint p1, final IPoint p) {
 		return p1.biggerThan(p);
 	}

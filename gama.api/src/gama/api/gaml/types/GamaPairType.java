@@ -10,6 +10,8 @@
 package gama.api.gaml.types;
 
 import gama.annotations.doc;
+import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.type;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
@@ -103,6 +105,14 @@ import gama.api.types.pair.IPair;
 		concept = { IConcept.TYPE, IConcept.CONTAINER },
 		doc = @doc ("Represents a pair of 2 arbitrary elements"))
 @SuppressWarnings ({ "unchecked", "rawtypes" })
+@tests ({
+		@test ("pair<string, int> p1 <- \"key\"::10; p1.key = \"key\""),
+		@test ("pair<string, int> p12 <- \"key\"::10; p12.value = 10"),
+		@test ("pair<float, bool> p2 <- 3.14::true; p2.key = 3.14"),
+		@test ("pair<float, bool> p22 <- 3.14::true; p22.value = true"),
+		@test ("pair<string, int> p13 <- \"a\"::1; pair<string, int> p23 <- \"a\"::1; p13 = p23"),
+		@test ("pair<string, int> p14 <- \"a\"::1; pair<string, int> p3 <- \"b\"::2; p14 != p3")
+})
 public class GamaPairType extends GamaContainerType<IPair> {
 
 	/**

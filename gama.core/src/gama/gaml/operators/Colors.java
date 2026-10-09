@@ -27,6 +27,7 @@ import gama.annotations.example;
 import gama.annotations.no_test;
 import gama.annotations.operator;
 import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
@@ -369,7 +370,15 @@ public class Colors {
 					value = "hsb (0.0,1.0,1.0)",
 					equals = "rgb(\"red\")"),
 			see = "rgb")
-	@test ("hsb (0.0,1.0,1.0) = rgb('red') ")
+	@tests ({
+			@test ("hsb (0.0,1.0,1.0) = rgb('red') "),
+			@test ("hsb(0.0, 1.0, 1.0) = #red"),
+			@test ("hsb(0.5, 1.0, 1.0) = #cyan"),
+			// no saturation gives a grey, no brightness gives black
+			@test ("hsb(0.0, 0.0, 1.0) = #white"),
+			@test ("hsb(0.3, 1.0, 0.0) = #black"),
+			@test ("list<float> orange_hsb <- list<float>(to_hsb(#orange)); hsb(orange_hsb[0], orange_hsb[1], orange_hsb[2]) = #orange")
+	})
 	public static IColor hsb(final Double h, final Double s, final Double b) {
 		return GamaColorFactory.createFromAWTColor(Color.getHSBColor(h.floatValue(), s.floatValue(), b.floatValue()));
 	}
@@ -397,7 +406,10 @@ public class Colors {
 			examples = @example (
 					value = "hsb (0.5,1.0,1.0,0.0)",
 					equals = "rgb(\"cyan\",0)"))
-	@test ("hsb (0.5,1.0,1.0,0.0) = rgb('cyan',0) ")
+	@tests ({
+			@test ("hsb (0.5,1.0,1.0,0.0) = rgb('cyan',0) "),
+			@test ("hsb(0.0, 1.0, 1.0, 0.5).alpha = 127")
+	})
 	public static IColor hsb(final Double h, final Double s, final Double b, final Double a) {
 		return GamaColorFactory.createWithAlpha(Color.getHSBColor(h.floatValue(), s.floatValue(), b.floatValue()), a);
 	}
@@ -421,7 +433,13 @@ public class Colors {
 			examples = @example (
 					value = "to_hsb (#cyan)",
 					equals = "[0.5,1.0,1.0]"))
-	@test ("[0.5,1.0,1.0] = to_hsb(rgb('cyan',0)) ")
+	@tests ({
+			@test ("[0.5,1.0,1.0] = to_hsb(rgb('cyan',0)) "),
+			@test ("to_hsb(#red) = [0.0, 1.0, 1.0]"),
+			@test ("to_hsb(#white) = [0.0, 0.0, 1.0]"),
+			@test ("to_hsb(#black) = [0.0, 0.0, 0.0]"),
+			@test ("list<float> blue_hsb <- list<float>(to_hsb(#blue)); blue_hsb[0] with_precision 3 = 0.667")
+	})
 	public static IList<Double> toHSB(final IColor c) {
 		IList<Double> hsb = GamaListFactory.create();
 		float[] v = Color.RGBtoHSB(c.red(), c.green(), c.blue(), null);
@@ -481,9 +499,45 @@ public class Colors {
 					value = "rgb (255,0,0)",
 					equals = "#red"),
 			see = "hsb")
-	@test ("rgb (255,0,0) = #red")
-	@test ("rgb(0,0,0) = #black")
-	@test ("rgb(255,255,255) = #white")
+	@tests ({
+			@test ("rgb (255,0,0) = #red"),
+			@test ("rgb(0,0,0) = #black"),
+			@test ("rgb(255,255,255) = #white"),
+			@test ("rgb([255, 0, 0]) = #red"),
+			@test ("rgb([255, 0, 0, 100]) = rgb(255, 0, 0, 100)"),
+			// components are clamped to [0, 255]
+			@test ("rgb(300, -5, 0) = #red"),
+			@test ("rgb(1, 2, 3).red = 1"),
+			@test ("rgb(1, 2, 3).green = 2"),
+			@test ("rgb(1, 2, 3).blue = 3"),
+			// component by component
+			@test ("rgb(255, 0, 0) + rgb(0, 255, 0) = #yellow"),
+			@test ("rgb grey_100 <- rgb(100, 100, 100); grey_100 - rgb(50, 60, 70) = rgb(50, 40, 30)"),
+			// with a number, applied to every component
+			@test ("rgb grey_1002 <- rgb(100, 100, 100); grey_1002 + 50 = rgb(150, 150, 150)"),
+			@test ("rgb grey_1003 <- rgb(100, 100, 100); grey_1003 - 50 = rgb(50, 50, 50)"),
+			@test ("rgb grey_1004 <- rgb(100, 100, 100); grey_1004 * 2 = rgb(200, 200, 200)"),
+			@test ("rgb grey_1005 <- rgb(100, 100, 100); grey_1005 / 2 = rgb(50, 50, 50)"),
+			// the results are clamped
+			@test ("rgb grey_1006 <- rgb(100, 100, 100); grey_1006 * 3 = #white"),
+			@test ("rgb grey_1007 <- rgb(100, 100, 100); grey_1007 - 200 = #black"),
+			@test ("rgb grey_1008 <- rgb(100, 100, 100); grey_1008.brighter = rgb(142, 142, 142)"),
+			@test ("rgb grey_1009 <- rgb(100, 100, 100); grey_1009.darker = rgb(70, 70, 70)"),
+			@test ("rgb c1 <- rgb(255, 0, 0); c1.red = 255"),
+			@test ("rgb c12 <- rgb(255, 0, 0); c12.green = 0"),
+			@test ("rgb c13 <- rgb(255, 0, 0); c13.blue = 0"),
+			// default alpha
+			@test ("rgb c14 <- rgb(255, 0, 0); c14.alpha = 255"),
+			// Color grayscale conversion
+			@test ("rgb(255, 0, 0).brighter.red = 255"),
+			@test ("rgb(100, 100, 100).darker != rgb(100, 100, 100)"),
+			// the named colours follow the CSS palette
+			@test ("rgb(0, 128, 0) = #green"),
+			@test ("rgb(0, 255, 0) = #lime"),
+			@test ("rgb(0, 0, 255) = #blue"),
+			@test ("rgb(-1, -1, -1) = #black"),
+			@test ("rgb(256, 300, 1000) = #white")
+	})
 	public static IColor rgb(final int r, final int g, final int b) {
 		return GamaColorFactory.createWithRGBA(r, g, b, 255);
 	}
@@ -514,7 +568,15 @@ public class Colors {
 					equals = "a light red color",
 					test = false) },
 			see = "hsb")
-	@test ("rgb (255,0,0,125).alpha = 125")
+	@tests ({
+			@test ("rgb (255,0,0,125).alpha = 125"),
+			// a color can be cast to the list of its components
+			@test ("list(rgb(1, 2, 3, 4)) = [1, 2, 3, 4]"),
+			@test ("rgb(200, 100, 50, 128).alpha = 128"),
+			@test ("rgb c2 <- rgb(0, 255, 0, 128); c2.alpha = 128"),
+			@test ("rgb(0, 0, 0, -1).alpha = 0"),
+			@test ("rgb(0, 0, 0, 999).alpha = 255")
+	})
 	public static IColor rgb(final int r, final int g, final int b, final int alpha) {
 		return GamaColorFactory.createWithRGBA(r, g, b, alpha);
 	}
@@ -545,7 +607,11 @@ public class Colors {
 					equals = "a light red color",
 					test = false),
 			see = "hsb")
-	@test (" int(rgb (255,0,0,0.5)) = 2147418112")
+	@tests ({
+			@test (" int(rgb (255,0,0,0.5)) = 2147418112"),
+			@test ("rgb(0, 0, 0, 2.5).alpha = 255"),
+			@test ("rgb(0, 0, 0, -0.5).alpha = 0")
+	})
 	public static IColor rgb(final int r, final int g, final int b, final double alpha) {
 		return GamaColorFactory.createWithDoubleAlpha(r, g, b, alpha);
 	}
@@ -573,7 +639,15 @@ public class Colors {
 					value = "rgb (\"red\")",
 					equals = "rgb(255,0,0)"),
 			see = "hsb")
-	@test ("rgb ('red') = rgb(255,0,0) ")
+	@tests ({
+			@test ("rgb ('red') = rgb(255,0,0) "),
+			@test ("rgb(\"red\") = #red"),
+			@test ("rgb(\"#FF0000\") = #red"),
+			// an int alpha is in [0, 255], a float one in [0, 1]
+			@test ("rgb(#red, 128).alpha = 128"),
+			// two colors that differ by their alpha are different
+			@test ("rgb(#red, 128) != #red")
+	})
 	public static IColor rgb(final IScope scope, final String s, final int a) {
 		return GamaColorFactory.createWithAlpha(s, a);
 	}
@@ -631,7 +705,17 @@ public class Colors {
 					equals = "a light red color",
 					test = false),
 			see = "hsb")
-	@test ("int(rgb(rgb(255,0,0),0.5)) = 2147418112")
+	@tests ({
+			@test ("int(rgb(rgb(255,0,0),0.5)) = 2147418112"),
+			@test ("rgb(#red, 0.5).alpha = 127"),
+			@test ("(#red with_alpha 0.5).alpha = 127"),
+			@test ("(#red with_alpha 1.0).alpha = 255"),
+			@test ("(#red with_alpha 0.0).alpha = 0"),
+			// only the transparency changes
+			@test ("(#red with_alpha 0.5).red = 255"),
+			@test ("(#red with_alpha 5.0).alpha = 255"),
+			@test ("(#red with_alpha -1.0).alpha = 0")
+	})
 	public static IColor rgb(final IScope scope, final IColor s, final double a) {
 		return GamaColorFactory.createWithAlpha(s, a);
 	}
@@ -656,8 +740,16 @@ public class Colors {
 					equals = "to a dark grey",
 					isExecutable = false), },
 			see = { "rgb", "hsb" })
-	@test ("int(grayscale (rgb(255,0,0))) = -11776948")
-	@test ("grayscale (rgb(255,0,0)) = rgb(76,76,76)")
+	@tests ({
+			@test ("int(grayscale (rgb(255,0,0))) = -11776948"),
+			@test ("grayscale (rgb(255,0,0)) = rgb(76,76,76)"),
+			@test ("rgb grey_red <- grayscale(#red); grey_red.red = grey_red.green and grey_red.green = grey_red.blue"),
+			@test ("rgb grey_red2 <- grayscale(#red); grey_red2 = rgb(76, 76, 76)"),
+			@test ("grayscale(#white) = #white"),
+			@test ("grayscale(#black) = #black"),
+			// greys are left untouched
+			@test ("rgb grey_100 <- rgb(100, 100, 100); grayscale(grey_100) = grey_100")
+	})
 	public static IColor grayscale(final IColor c) {
 		final int grayValue = (int) (0.299 * c.red() + 0.587 * c.green() + 0.114 * c.blue());
 		return GamaColorFactory.createWithRGBA(grayValue, grayValue, grayValue, c.alpha());
@@ -684,7 +776,13 @@ public class Colors {
 					equals = "a random color, equivalent to rgb(rnd(255),rnd(255),rnd(255))",
 					test = false),
 			see = { "rgb", "hsb" })
-	@test ("seed <- 1.0; int(rnd_color(255)) = -3749758")
+	@tests ({
+			@test ("seed <- 1.0; int(rnd_color(255)) = -3749758"),
+			@test ("rnd_color(0) = #black"),
+			@test ("rnd_color(255).alpha = 255"),
+			@test ("rnd_color(-5) = #black"),
+			@test ("rgb bright <- rnd_color(1000); bright.red <= 255 and bright.green <= 255 and bright.blue <= 255")
+	})
 	public static IColor random_color(final IScope scope, final Integer max) {
 		final IRandom r = scope.getRandom();
 		final int realMax = Math.max(0, Math.min(max, 255));
@@ -715,7 +813,13 @@ public class Colors {
 					equals = "a random color, equivalent to rgb(rnd(100, 200),rnd(100, 200),rnd(100, 200))",
 					test = false),
 			see = { "rgb", "hsb" })
-	@test ("seed <- 1.0; int(rnd_color(100, 200)) = -5065833")
+	@tests ({
+			@test ("seed <- 1.0; int(rnd_color(100, 200)) = -5065833"),
+			@test ("rgb bounded <- rnd_color(100, 200); bounded.red >= 100 and bounded.red <= 200"),
+			@test ("rgb bounded2 <- rnd_color(100, 200); bounded2.green >= 100 and bounded2.green <= 200"),
+			@test ("rgb bounded3 <- rnd_color(100, 200); bounded3.blue >= 100 and bounded3.blue <= 200"),
+			@test ("rgb between_bounds <- rnd_color(200, 100); between_bounds.red >= 100 and between_bounds.red <= 200")
+	})
 	public static IColor random_color(final IScope scope, final Integer min, final Integer max) {
 		final IRandom r = scope.getRandom();
 		final int realMax = Math.max(0, Math.min(max, 255));
@@ -750,9 +854,18 @@ public class Colors {
 					equals = "to a color between the purple and the blue",
 					isExecutable = false) },
 			see = { "rgb", "hsb" })
-	@test ("blend(#red, #blue, 0.3) = rgb(76,0,178)")
-	@test ("blend(#black, #white, 0.0) = #white")
-	@test ("blend(#black, #white, 1.0) = #black")
+	@tests ({
+			@test ("blend(#red, #blue, 0.3) = rgb(76,0,178)"),
+			@test ("blend(#black, #white, 0.0) = #white"),
+			@test ("blend(#black, #white, 1.0) = #black"),
+			// the ratio is the weight of the first color
+			@test ("blend(#red, #blue, 1.0) = #red"),
+			@test ("blend(#red, #blue, 0.0) = #blue"),
+			@test ("blend(#red, #blue, 0.25) = rgb(63, 0, 191)"),
+			@test ("blend(#red, #red, 0.3) = #red"),
+			// Blending (addition/subtraction of RGB usually not standard, let's use blend if available)
+			@test ("blend(rgb(255, 0, 0), rgb(0, 0, 255), 0.5) = rgb(127, 0, 127)")
+	})
 	public static IColor blend(final IColor c1, final IColor c2, final double r) {
 		final double ir = 1.0 - r;
 		return GamaColorFactory.createWithRGBA((int) (c1.red() * r + c2.red() * ir),
@@ -866,6 +979,9 @@ public class Colors {
 					isExecutable = false) },
 			see = { "brewer_palettes" })
 	@no_test
+	@tests ({
+			@test ("length(brewer_colors(\"Reds\")) >= 5")
+	})
 	public static GamaPalette brewerPaletteColors(final IScope scope, final String type) {
 		if (!BREWER.hasPalette(type)) throw GamaRuntimeException.error(type + " does not exist", scope);
 		try {
@@ -902,6 +1018,12 @@ public class Colors {
 					isExecutable = false) },
 			see = { "brewer_palettes" })
 	@no_test
+	@tests ({
+			@test ("list<rgb> reds <- brewer_colors(\"Reds\", 5); length(reds) = 5"),
+			@test ("list<rgb> reds2 <- brewer_colors(\"Reds\", 5); reds2[0] = rgb(255, 245, 240)"),
+			// sequential palettes go from light to dark
+			@test ("list<rgb> reds3 <- brewer_colors(\"Reds\", 5); reds3[0].green > reds3[4].green")
+	})
 	public static GamaPalette brewerPaletteColors(final IScope scope, final String type, final int nbClasses) {
 		final GamaPalette cols = brewerPaletteColors(scope, type);
 		if (cols.size() < nbClasses)
@@ -963,6 +1085,10 @@ public class Colors {
 					isExecutable = false) },
 			see = { "brewer_colors" })
 	@no_test
+	@tests ({
+			@test ("list<string> names <- brewer_palettes(3); not empty(names)"),
+			@test ("list<string> names2 <- brewer_palettes(3); names2 contains \"Reds\"")
+	})
 	public static IList<String> brewerPaletteNames(final int min) {
 		final IList<String> palettes = GamaListFactory.create(Types.STRING);
 		for (final BrewerPalette p : BREWER.getPalettes()) { if (p.getCount() >= min) { palettes.add(p.getName()); } }
@@ -1120,6 +1246,10 @@ public class Colors {
 					For instance scale([#red::10, #green::0, #blue::30]) would produce the reverse map and associate #green to the interval 0-10, #red to 10-30, and #blue above 30. The main difference in usages is that, for instance in the definition of a \
 					mesh to display, a gradient will produce interpolated colors to accomodate for the intermediary values, while a scale will stick to the colors defined.""")
 	@no_test
+	@tests ({
+			@test ("map<float, rgb> color_scale <- map<float, rgb>(scale([#red::0.0, #blue::1.0])); color_scale[0.0] = #red"),
+			@test ("map<float, rgb> color_scale2 <- map<float, rgb>(scale([#red::0.0, #blue::1.0])); color_scale2[1.0] = #blue")
+	})
 	public static GamaScale scale(final IScope scope, final IMap<IColor, Object> colors) {
 		IMap<Double, IColor> map = GamaMapFactory.createOrdered();
 		colors.forEach((c, f) -> map.put(Cast.asFloat(scope, f), c));
@@ -1215,6 +1345,10 @@ public class Colors {
 	@doc (
 			value = "transforms a list of n colors into a palette (necessary for some layers)")
 	@no_test
+	@tests ({
+			@test ("length(palette([#red, #green, #blue])) = 3"),
+			@test ("palette([#red, #blue])[0] = #red")
+	})
 	public static GamaPalette palette(final IScope scope, final IList<IColor> colors) {
 		return new GamaPalette(colors);
 	}

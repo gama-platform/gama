@@ -10,7 +10,6 @@
  ********************************************************************************************************/
 package gama.api.types.list;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -37,6 +36,7 @@ import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.GamaType;
 import gama.api.gaml.types.IContainerType;
 import gama.api.gaml.types.IType;
+import gama.api.types.map.IMap;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.runtime.GamaExecutorService;
@@ -463,11 +463,14 @@ public class GamaListFactory {
 	public static IList create(final IScope scope, final IType contentType, final int[] ints) {
 		final IList list = create(contentType, ints == null ? 0 : ints.length);
 		if (ints == null) return list;
-		if (!FLAGS.CAST_CONTAINER_CONTENTS) {
-			list.addAll(Arrays.asList(ints));
-			return list;
+		boolean cast = FLAGS.CAST_CONTAINER_CONTENTS;
+		for (final int o : ints) {
+			if (cast) {
+				castAndAdd(scope, list, o);
+			} else {
+				list.add(o);
+			}
 		}
-		for (final int o : ints) { castAndAdd(scope, list, o); }
 		return list;
 	}
 
@@ -529,11 +532,14 @@ public class GamaListFactory {
 	public static IList create(final IScope scope, final IType contentType, final double[] doubles) {
 		final IList list = create(contentType, doubles == null ? 0 : doubles.length);
 		if (doubles == null) return list;
-		if (!FLAGS.CAST_CONTAINER_CONTENTS) {
-			list.addAll(Arrays.asList(doubles));
-			return list;
+		boolean cast = FLAGS.CAST_CONTAINER_CONTENTS;
+		for (final double o : doubles) {
+			if (cast) {
+				castAndAdd(scope, list, o);
+			} else {
+				list.add(o);
+			}
 		}
-		for (final double o : doubles) { castAndAdd(scope, list, o); }
 		return list;
 	}
 
@@ -755,6 +761,8 @@ public class GamaListFactory {
 			case IDate gd -> gd.listValue(scope, contentsType);
 			// Explicitly set copy to true if we deal with a population
 			case IPopulation ip -> ip.listValue(scope, contentsType, true);
+			case IMap<?, ?> m when contentsType.id() == IType.PAIR -> copy ? create(scope, contentsType, m.getPairs())
+					: m.getPairs();
 			case IContainer ic -> ic.listValue(scope, contentsType, copy);
 			case Collection coll -> create(scope, contentsType, coll);
 			case IColor c -> create(scope, contentsType, new int[] { c.red(), c.green(), c.blue(), c.alpha() });

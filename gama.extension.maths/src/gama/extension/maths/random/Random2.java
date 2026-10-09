@@ -17,8 +17,10 @@ import org.apache.commons.math3.distribution.WeibullDistribution;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
 import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.usage;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
@@ -56,6 +58,9 @@ public class Random2 {
 			see = { "binomial", "gauss_rnd", "lognormal_rnd", "poisson", "rnd", "skew_gauss", "truncated_gauss",
 					"weibull_rnd", "gamma_trunc_rnd" })
 	@no_test (Reason.IMPOSSIBLE_TO_TEST)
+	@tests ({
+			@test ("float gamma_val <- gamma_rnd(2.0, 2.0); gamma_val >= 0.0")
+	})
 	public static Double OpGammaDist(final IScope scope, final Double shape, final Double scale)
 			throws GamaRuntimeException {
 		final GammaDistribution dist = new GammaDistribution(new ForwardingGenerator(scope.getRandom().getGenerator()),
@@ -86,6 +91,9 @@ public class Random2 {
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "rnd", "skew_gauss",
 					"truncated_gauss", "weibull_trunc_rnd" })
 	@no_test (Reason.IMPOSSIBLE_TO_TEST)
+	@tests ({
+			@test ("float wb_val <- weibull_rnd(1.0, 1.5); wb_val >= 0.0")
+	})
 	public static Double OpWeibullDist(final IScope scope, final Double shape, final Double scale)
 			throws GamaRuntimeException {
 		final WeibullDistribution dist =
@@ -116,6 +124,9 @@ public class Random2 {
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "rnd", "skew_gauss",
 					"truncated_gauss", "weibull_trunc_rnd" })
 	@no_test (Reason.IMPOSSIBLE_TO_TEST)
+	@tests ({
+			@test ("float exp_val <- exp_rnd(1.0); exp_val >= 0.0")
+	})
 	public static Double OpExpDist(final IScope scope, final Double scale)
 			throws GamaRuntimeException {
 		final ExponentialDistribution dist =
@@ -148,6 +159,9 @@ public class Random2 {
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "poisson", "rnd", "skew_gauss", "truncated_gauss",
 					"weibull_rnd", "lognormal_trunc_rnd" })
 	@no_test (Reason.IMPOSSIBLE_TO_TEST)
+	@tests ({
+			@test ("float ln_val <- lognormal_rnd(0.0, 1.0); ln_val >= 0.0")
+	})
 	public static Double OpLogNormalDist(final IScope scope, final Double shape, final Double scale)
 			throws GamaRuntimeException {
 		final LogNormalDistribution dist =
@@ -166,6 +180,7 @@ public class Random2 {
 	 * @return the double
 	 * @throws GamaRuntimeException the gama runtime exception
 	 */
+	@no_fuzz_test ("never returns when both bounds are equal")
 	@operator (
 			value = "lognormal_trunc_rnd",
 			can_be_const = false,
@@ -179,8 +194,12 @@ public class Random2 {
 							value = "lognormal_trunc_rnd(2,3,0,5)",
 							test = false) }) },
 			see = { "lognormal_rnd", "gamma_trunc_rnd", "weibull_trunc_rnd", "truncated_gauss" })
-	@test ("lognormal_trunc_rnd(2,3,0,5) <= 5.0")
-	@test ("lognormal_trunc_rnd(2,3,0.0,5.0) >= 0.0")
+	@tests ({
+			@test ("lognormal_trunc_rnd(2,3,0,5) <= 5.0"),
+			@test ("lognormal_trunc_rnd(2,3,0.0,5.0) >= 0.0"),
+			@test ("float lnorm_trunc <- lognormal_trunc_rnd(2.0, 3.0, 0.0, 5.0); lnorm_trunc >= 0.0"),
+			@test ("float lnorm_trunc2 <- lognormal_trunc_rnd(2.0, 3.0, 0.0, 5.0); lnorm_trunc2 <= 5.0")
+	})
 	public static Double OpLogNormalTruncDist(final IScope scope, final Double shape, final Double scale,
 			final Double min, final Double max) throws GamaRuntimeException {
 		double tmpResult = 0;
@@ -202,6 +221,7 @@ public class Random2 {
 	 * @return the double
 	 * @throws GamaRuntimeException the gama runtime exception
 	 */
+	@no_fuzz_test ("never returns when both bounds are equal")
 	@operator (
 			value = "lognormal_trunc_rnd",
 			can_be_const = false,
@@ -245,6 +265,7 @@ public class Random2 {
 	 * @return the double
 	 * @throws GamaRuntimeException the gama runtime exception
 	 */
+	@no_fuzz_test ("never returns when both bounds are equal")
 	@operator (
 			value = "weibull_trunc_rnd",
 			can_be_const = false,
@@ -258,8 +279,12 @@ public class Random2 {
 							value = "weibull_trunc_rnd(2,3,0.0,5.0)",
 							test = false) }) },
 			see = { "weibull_rnd", "gamma_trunc_rnd", "lognormal_trunc_rnd", "truncated_gauss" })
-	@test ("weibull_trunc_rnd(2,3,0,5) <= 5.0")
-	@test ("weibull_trunc_rnd(2,3,0.0,5.0) >= 0.0")
+	@tests ({
+			@test ("weibull_trunc_rnd(2,3,0,5) <= 5.0"),
+			@test ("weibull_trunc_rnd(2,3,0.0,5.0) >= 0.0"),
+			@test ("float w_trunc <- weibull_trunc_rnd(2.0, 3.0, 0.0, 5.0); w_trunc >= 0.0"),
+			@test ("float w_trunc2 <- weibull_trunc_rnd(2.0, 3.0, 0.0, 5.0); w_trunc2 <= 5.0")
+	})
 	public static Double OpWeibullTruncDist(final IScope scope, final Double shape, final Double scale,
 			final Double min, final Double max) throws GamaRuntimeException {
 		double tmpResult = 0;
@@ -281,6 +306,7 @@ public class Random2 {
 	 * @return the double
 	 * @throws GamaRuntimeException the gama runtime exception
 	 */
+	@no_fuzz_test ("never returns when both bounds are equal")
 	@operator (
 			value = "weibull_trunc_rnd",
 			can_be_const = false,
@@ -324,6 +350,7 @@ public class Random2 {
 	 * @return the double
 	 * @throws GamaRuntimeException the gama runtime exception
 	 */
+	@no_fuzz_test ("never returns when both bounds are equal")
 	@operator (
 			value = "gamma_trunc_rnd",
 			can_be_const = false,
@@ -337,8 +364,12 @@ public class Random2 {
 							value = "gamma_trunc_rnd(2,3,0,5)",
 							test = false) }) },
 			see = { "gamma_rnd", "weibull_trunc_rnd", "lognormal_trunc_rnd", "truncated_gauss" })
-	@test ("gamma_trunc_rnd(2,3,0,5) <= 5.0")
-	@test ("gamma_trunc_rnd(2,3,0.0,5.0) >= 0.0")
+	@tests ({
+			@test ("gamma_trunc_rnd(2,3,0,5) <= 5.0"),
+			@test ("gamma_trunc_rnd(2,3,0.0,5.0) >= 0.0"),
+			@test ("float g_trunc <- gamma_trunc_rnd(2.0, 3.0, 0.0, 5.0); g_trunc >= 0.0"),
+			@test ("float g_trunc2 <- gamma_trunc_rnd(2.0, 3.0, 0.0, 5.0); g_trunc2 <= 5.0")
+	})
 	public static Double OpGammaTruncDist(final IScope scope, final Double shape, final Double scale, final Double min,
 			final Double max) throws GamaRuntimeException {
 		double tmpResult = 0;
@@ -360,6 +391,7 @@ public class Random2 {
 	 * @return the double
 	 * @throws GamaRuntimeException the gama runtime exception
 	 */
+	@no_fuzz_test ("never returns when both bounds are equal")
 	@operator (
 			value = "gamma_trunc_rnd",
 			can_be_const = false,
@@ -417,6 +449,10 @@ public class Random2 {
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "rnd", "skew_gauss",
 					"lognormal_density", "gamma_density" })
 	@no_test (Reason.IMPOSSIBLE_TO_TEST)
+	@tests ({
+			@test ("float w_den <- weibull_density(2.0, 3.0, 1.0); w_den >= 0.0"),
+			@test ("weibull_density(-1.0, 3.0, 1.0) = 0.0")
+	})
 	public static Double OpWeibullDistDensity(final IScope scope, final Double x, final Double shape,
 			final Double scale) throws GamaRuntimeException {
 		final WeibullDistribution dist =
@@ -451,6 +487,15 @@ public class Random2 {
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "rnd", "skew_gauss",
 					"lognormal_density", "gamma_density" })
 	@no_test (Reason.IMPOSSIBLE_TO_TEST)	
+	@tests ({
+			@test ("float exp_den <- exp_density(2.0, 1.0); exp_den >= 0.0"),
+			@test ("exp_density(-1.0, 1.0) = 0.0"),
+			// the second operand of the exponential density is the mean of the distribution (the inverse of its
+			// rate): the density at 0 is 1 / mean
+			@test ("exp_density(0.0, 2.0) = 0.5"),
+			@test ("exp_density(1.0, 1.0) = exp(-1.0)"),
+			@test ("exp_density(1.0, 2.0) = 0.5 * exp(-0.5)")
+	})
 	public static Double OpExpDistDensity(final IScope scope, final Double x, final Double rate)
 			throws GamaRuntimeException {
 		final ExponentialDistribution dist =
@@ -484,6 +529,10 @@ public class Random2 {
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "poisson", "rnd", "skew_gauss", "truncated_gauss",
 					"weibull_rnd", "weibull_density", "gamma_density" })
 	@no_test (Reason.IMPOSSIBLE_TO_TEST)
+	@tests ({
+			@test ("float logn_den <- lognormal_density(2.0, 3.0, 1.0); logn_den >= 0.0"),
+			@test ("lognormal_density(-1.0, 3.0, 1.0) = 0.0")
+	})
 	public static Double OpLogNormalDist(final IScope scope, final Double x, final Double shape, final Double scale)
 			throws GamaRuntimeException {
 		final LogNormalDistribution dist =
@@ -516,6 +565,10 @@ public class Random2 {
 			see = { "binomial", "gauss_rnd", "lognormal_rnd", "poisson", "rnd", "skew_gauss", "truncated_gauss",
 					"weibull_rnd", "weibull_density", "lognormal_density" })
 	@no_test (Reason.IMPOSSIBLE_TO_TEST)
+	@tests ({
+			@test ("float g_den <- gamma_density(2.0, 3.0, 1.0); g_den >= 0.0"),
+			@test ("gamma_density(-1.0, 3.0, 1.0) = 0.0")
+	})
 	public static Double OpGammaDist(final IScope scope, final Double x, final Double shape, final Double scale)
 			throws GamaRuntimeException {
 		final GammaDistribution dist = new GammaDistribution(new ForwardingGenerator(scope.getRandom().getGenerator()),
