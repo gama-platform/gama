@@ -35,23 +35,23 @@ experiment AgentQueriesTest type: test autorun: true {
 	// the agents are created once, in the simulation, before the first test
 	setup {
 		if (!agents_created) {
-			create dot with: [location::{10, 10}] returns: created_dots;
+			create dot(location::{10, 10}) returns: created_dots;
 			dot_a <- created_dots[0];
-			create dot with: [location::{12, 10}] returns: created_dots;
-			dot_b <- created_dots[0];
-			create dot with: [location::{50, 50}] returns: created_dots;
-			dot_center <- created_dots[0];
-			create dot with: [location::{90, 90}] returns: created_dots;
-			dot_far <- created_dots[0];
+			create dot(location::{12, 10}) returns: created_dots2;
+			dot_b <- created_dots2[0];
+			create dot(location::{50, 50}) returns: created_dots3;
+			dot_center <- created_dots3[0];
+			create dot(location::{90, 90}) returns: created_dots4;
+			dot_far <- created_dots4[0];
 
-			create zone with: [shape::square(20) at_location {10, 10}] returns: created_zones;
+			create zone(shape::square(20) at_location {10, 10}) returns: created_zones;
 			main <- created_zones[0];
-			create zone with: [shape::square(20) at_location {25, 10}] returns: created_zones;
-			right <- created_zones[0];
-			create zone with: [shape::square(10) at_location {80, 80}] returns: created_zones;
-			away <- created_zones[0];
-			create zone with: [shape::square(20) at_location {10, 30}] returns: created_zones;
-			below <- created_zones[0];
+			create zone(shape::square(20) at_location {25, 10}) returns: created_zones2;
+			right <- created_zones2[0];
+			create zone(shape::square(10) at_location {80, 80}) returns: created_zones3;
+			away <- created_zones3[0];
+			create zone(shape::square(20) at_location {10, 30}) returns: created_zones4;
+			below <- created_zones4[0];
 			agents_created <- true;
 		}
 	}
@@ -161,7 +161,8 @@ experiment AgentQueriesTest type: test autorun: true {
 		// asked agents use their own topology, even after a 'using' statement has been executed elsewhere
 		ask dot_a {
 			around_a <- dot at_distance 5;
-			zones_near_a <- zone at_distance 5;
+			// 'right' is exactly 5 away, and a distance query includes its bound
+			zones_near_a <- zone at_distance 4;
 			everything_near_a <- agents_at_distance(1);
 		}
 		ask dot_center {
@@ -195,7 +196,7 @@ experiment AgentQueriesTest type: test autorun: true {
 	test "Clustering agents by distance" {
 		list<list<dot>> clusters <- [];
 		using topology(world) {
-			clusters <- simple_clustering_by_distance(dot, 5);
+			clusters <- list<list<dot>>(simple_clustering_by_distance(dot, 5));
 		}
 		assert length(clusters) = 3;
 		list<dot> pair_cluster <- clusters first_with (length(each) = 2);

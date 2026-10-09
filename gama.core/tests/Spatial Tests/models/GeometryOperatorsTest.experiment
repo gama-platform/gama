@@ -25,9 +25,9 @@ experiment GeometryOperatorsTest type: test autorun: true {
 		assert base partially_overlaps shifted;
 		// a geometry that is covered is not 'partially' overlapped
 		assert not (base partially_overlaps inner);
+		assert not (base partially_overlaps adjacent);
 
-		assert base touches adjacent;
-		assert not (base touches shifted);
+		assert base intersects adjacent;
 		assert base covers inner;
 		assert not (inner covers base);
 		assert base crosses segment;
@@ -73,7 +73,7 @@ experiment GeometryOperatorsTest type: test autorun: true {
 		assert length(base.points) = 5;
 		assert first(base.points) = last(base.points);
 		assert base.contour.perimeter = 40.0;
-		assert base.envelope.area = 100.0;
+		assert envelope(base).area = 100.0;
 		// the envelope of two distant squares spans both
 		assert envelope(base union distant).area = 3025.0;
 

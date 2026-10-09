@@ -67,14 +67,14 @@ experiment RuleBasedArchitectureTest type: test autorun: true {
 		assert ag.step_count = 0;
 
 		// the conditions are all evaluated before any rule runs: only rule1 is eligible
-		ask ag { do _step_; }
+		ask ag { do _step_(); }
 		assert ag.rule1_executed = true;
 		assert ag.step_count = 1;
 
 		// now only rule2 is
-		ask ag { do _step_; }
+		ask ag { do _step_(); }
 		assert ag.step_count = 2;
-		ask ag { do _step_; }
+		ask ag { do _step_(); }
 		assert ag.step_count = 3;
 	}
 
@@ -82,36 +82,36 @@ experiment RuleBasedArchitectureTest type: test autorun: true {
 		create prioritised_agent number: 1 returns: created_agents;
 		prioritised_agent ag <- created_agents[0];
 
-		ask ag { do _step_; }
+		ask ag { do _step_(); }
 		assert ag.fired = ["high", "variable", "low"];
 
 		ag.fired <- [];
 		ag.urgency <- 50.0;
-		ask ag { do _step_; }
+		ask ag { do _step_(); }
 		assert ag.fired = ["variable", "high", "low"];
 
 		ag.fired <- [];
 		ag.urgency <- 0.0;
-		ask ag { do _step_; }
+		ask ag { do _step_(); }
 		assert ag.fired = ["high", "low", "variable"];
 	}
 
 	test "A rule whose condition does not hold is skipped whatever its priority" {
 		create prioritised_agent number: 1 returns: created_agents;
 		prioritised_agent ag <- created_agents[0];
-		ask ag { do _step_; }
+		ask ag { do _step_(); }
 		assert not (ag.fired contains "never");
 
 		ag.fired <- [];
 		ag.energy <- 10;
-		ask ag { do _step_; }
+		ask ag { do _step_(); }
 		assert empty(ag.fired);
 	}
 
 	test "Reflexes run before the rules" {
 		create mixed_agent number: 1 returns: created_agents;
 		mixed_agent ag <- created_agents[0];
-		ask ag { do _step_; }
+		ask ag { do _step_(); }
 		assert ag.fired = ["reflex", "rule"];
 	}
 }

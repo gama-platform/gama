@@ -73,7 +73,8 @@ public class DataFrameOperators {
 	@tests ({
 			@test ("(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]])).rows = 2"),
 			@test ("(dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]])).keys = [\"name\",\"age\"]"),
-			@test ("string(type_of((dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]))[\"name\"])) = \"list<unknown>\""),
+			// a column is statically a list of unknown contents, which is written 'list'
+			@test ("string(type_of((dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]))[\"name\"])) = \"list\""),
 			@test ("string(type_of((dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]))[\"name\"][0])) = \"unknown\""),
 			@test ("string(actual_type_of((dataframe_with([\"name\",\"age\"], [[\"Alice\",30],[\"Bob\",25]]))[\"name\"])) = \"list<string>\""),
 			@test ("dataframe df <- dataframe_with([\"name\", \"age\"], [[\"Alice\", 30], [\"Bob\", 25]]); df != nil"),

@@ -18,9 +18,4 @@ experiment LoggingTest type: test autorun: true {
 		assert ("Value of a: " + a) = "Value of a: 5";
 		assert ("a list: " + [1, 2]) = "a list: [1,2]";
 	}
-	
-
-	
-	// Intentionally omitting testing 'error' here because 'error' acts as an exception 
-	// which halts execution unless inside a try/catch (tested in TryCatchTest)
 }

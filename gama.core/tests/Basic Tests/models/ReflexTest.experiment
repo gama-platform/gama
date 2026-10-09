@@ -32,7 +32,7 @@ experiment ReflexTest type: test autorun: true {
 		assert ag.has_run_conditional = false;
 		
 		// Run first step
-		ask ag { do _step_; }
+		ask ag { do _step_(); }
 		
 		assert ag.has_run_unconditional = true;
 		assert ag.tick = 1;
@@ -40,7 +40,7 @@ experiment ReflexTest type: test autorun: true {
 		// Since the condition `tick > 0` was not true at the *beginning* of the step,
 		// the conditional reflex might not run, or it might depending on declaration order.
 		// Let's force a second step to be sure.
-		ask ag { do _step_; }
+		ask ag { do _step_(); }
 		
 		assert ag.has_run_conditional = true;
 		assert ag.tick = 2;

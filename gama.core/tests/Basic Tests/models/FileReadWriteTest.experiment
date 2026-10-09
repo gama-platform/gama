@@ -39,7 +39,7 @@ experiment FileReadWriteTest type: test autorun: true {
 		save mat to: "test_output.csv" header: false;
 		
 		// Read CSV back
-		matrix<int> loaded_mat <- matrix(csv_file("test_output.csv", ","));
+		matrix<int> loaded_mat <- matrix<int>(csv_file("test_output.csv", ","));
 		
 		assert loaded_mat.rows = 2;
 		assert loaded_mat.columns = 2;

@@ -32,7 +32,7 @@ experiment NestingTest type: test autorun: true {
 		assert ma.child_count = 0;
 		
 		ask ma {
-			do create_children;
+			do create_children();
 		}
 		
 		assert ma.child_count = 3;

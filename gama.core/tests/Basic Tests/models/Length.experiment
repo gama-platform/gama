@@ -15,7 +15,6 @@ experiment length type: test {
 	test "length" {
 		assert length(cell)=25; 
 		assert length(cell where (each.grid_value=1.0))=25;
-
 	}
 	
 }

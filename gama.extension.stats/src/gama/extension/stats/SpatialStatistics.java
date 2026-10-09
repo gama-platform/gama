@@ -357,7 +357,7 @@ public class SpatialStatistics {
 			map<point, float> mapLocationPoints <- [{0,0}::10.0,{0,10}::-3.0];\r
 					list<point> queryPoint <- [{0,5}];\r
 					float((IDW(list(geometry(queryPoint)),mapLocationPoints,1)).pairs[0].value) with_precision 1 = 3.5"""),
-			@test ("map<point, float> interpolated <- IDW([{0, 0}], [{1, 0}::10.0, {-1, 0}::20.0], 2); interpolated[{0, 0}] = 15.0")
+			@test ("map<point, float> interpolated <- map<point, float>(IDW([{0, 0}], [{1, 0}::10.0, {-1, 0}::20.0], 2)); interpolated[{0, 0}] = 15.0")
 	})
 	public static IMap<IShape, Double> primIDW(final IScope scope, final IContainer<?, ? extends IShape> geometries,
 			final IMap points, final int power) {

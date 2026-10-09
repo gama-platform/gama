@@ -1193,9 +1193,9 @@ public class SpatialTransformations {
 					test = false) })
 	@tests ({
 			@test (" // applies only to a square \n " + "length(skeletonize(square(5))) = 1"),
-			@test ("geometry box <- square(10); geometry skeleton <- skeletonize(box); skeleton != nil"),
+			@test ("geometry box <- square(10); geometry skeleton <- geometry(skeletonize(box)); skeleton != nil"),
 			// The skeleton of a square is a set of line segments (multiline)
-			@test ("geometry box2 <- square(10); geometry skeleton2 <- skeletonize(box2); skeleton2.area = 0.0")
+			@test ("geometry box2 <- square(10); geometry skeleton2 <- geometry(skeletonize(box2)); skeleton2.area = 0.0")
 	})
 	public static IList<IShape> skeletonize(final IScope scope, final IShape g) {
 		final List<LineString> netw = squeletisation(scope, g.getInnerGeometry(), 0.0, 0.0, false);

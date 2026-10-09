@@ -377,7 +377,7 @@ public class Colors {
 			// no saturation gives a grey, no brightness gives black
 			@test ("hsb(0.0, 0.0, 1.0) = #white"),
 			@test ("hsb(0.3, 1.0, 0.0) = #black"),
-			@test ("list<float> orange_hsb <- to_hsb(#orange); hsb(orange_hsb[0], orange_hsb[1], orange_hsb[2]) = #orange")
+			@test ("list<float> orange_hsb <- list<float>(to_hsb(#orange)); hsb(orange_hsb[0], orange_hsb[1], orange_hsb[2]) = #orange")
 	})
 	public static IColor hsb(final Double h, final Double s, final Double b) {
 		return GamaColorFactory.createFromAWTColor(Color.getHSBColor(h.floatValue(), s.floatValue(), b.floatValue()));
@@ -438,7 +438,7 @@ public class Colors {
 			@test ("to_hsb(#red) = [0.0, 1.0, 1.0]"),
 			@test ("to_hsb(#white) = [0.0, 0.0, 1.0]"),
 			@test ("to_hsb(#black) = [0.0, 0.0, 0.0]"),
-			@test ("list<float> blue_hsb <- to_hsb(#blue); blue_hsb[0] with_precision 3 = 0.667")
+			@test ("list<float> blue_hsb <- list<float>(to_hsb(#blue)); blue_hsb[0] with_precision 3 = 0.667")
 	})
 	public static IList<Double> toHSB(final IColor c) {
 		IList<Double> hsb = GamaListFactory.create();
@@ -1247,8 +1247,8 @@ public class Colors {
 					mesh to display, a gradient will produce interpolated colors to accomodate for the intermediary values, while a scale will stick to the colors defined.""")
 	@no_test
 	@tests ({
-			@test ("map<float, rgb> color_scale <- scale([#red::0.0, #blue::1.0]); color_scale[0.0] = #red"),
-			@test ("map<float, rgb> color_scale2 <- scale([#red::0.0, #blue::1.0]); color_scale2[1.0] = #blue")
+			@test ("map<float, rgb> color_scale <- map<float, rgb>(scale([#red::0.0, #blue::1.0])); color_scale[0.0] = #red"),
+			@test ("map<float, rgb> color_scale2 <- map<float, rgb>(scale([#red::0.0, #blue::1.0])); color_scale2[1.0] = #blue")
 	})
 	public static GamaScale scale(final IScope scope, final IMap<IColor, Object> colors) {
 		IMap<Double, IColor> map = GamaMapFactory.createOrdered();

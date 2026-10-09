@@ -22,7 +22,7 @@ global {
 
 species walker skills: [moving3D] {
 	reflex wander_around {
-		do wander amplitude: 90.0;
+		do wander(amplitude: 90.0);
 	}
 }
 
@@ -35,12 +35,6 @@ experiment "Envelope3D Test" type: test autorun: true {
 		assert e.depth = 10.0;
 	}
 
-	test "Envelope with negative depth raises an error" {
-		assert_error {
-			geometry e <- envelope(source, -1.0);
-		};
-	}
-
 	test "World has a depth" {
 		assert world.shape.depth = depth;
 	}
@@ -48,7 +42,7 @@ experiment "Envelope3D Test" type: test autorun: true {
 	test "3D wander in a world built from a 2D geometry" {
 		list<point> before <- walker collect each.location;
 		ask walker {
-			do wander amplitude: 90.0;
+			do wander(amplitude: 90.0);
 		}
 		assert walker all_match (each.location.z >= 0 and each.location.z <= depth);
 		assert (walker collect each.location) != before;

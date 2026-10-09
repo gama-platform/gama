@@ -18,7 +18,7 @@ experiment SystemOperatorsTest type: test autorun: true {
 		// 'dead' operator checks if an agent is dead
 		assert dead(ag) = false;
 		
-		ask ag { do die; }
+		ask ag { do die(); }
 		assert dead(ag) = true;
 		
 		// 'copy' operator

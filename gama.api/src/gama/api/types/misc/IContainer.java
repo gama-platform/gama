@@ -836,7 +836,7 @@ public interface IContainer<KeyType, ValueType> extends IValue {
 			// the operators do not modify their operands
 			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; length(numbers) = 8"),
 			@test ("list<int> numbers2 <- [3, 1, 4, 1, 5, 9, 2, 6]; list<int> picked <- 3 among numbers2; length(picked) = 3"),
-			@test ("matrix<rgb> img_matrix <- matrix<rgb>([ [#red, #blue], [#green, #yellow] ]); list<rgb> as_list <- img_matrix collect (each.darker); length(as_list) = 4"),
+			@test ("matrix<rgb> img_matrix <- matrix<rgb>([ [#red, #blue], [#green, #yellow] ]); list<rgb> as_list <- list<rgb>(img_matrix collect (each.darker)); length(as_list) = 4"),
 			@test ("list<int> numbers3 <- [1, 2, 3, 4, 5]; length(numbers3 where (each > 3)) = 2"),
 			@test ("map<string, int> m1 <- [\"a\"::1, \"b\"::2, \"c\"::3]; length(m1) = 3"),
 			@test ("map<string, int> m12 <- [\"a\"::1, \"b\"::2]; m12[\"c\"] <- 3; length(m12) = 3"),

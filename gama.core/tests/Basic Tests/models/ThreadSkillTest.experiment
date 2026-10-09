@@ -23,14 +23,14 @@ experiment ThreadSkillTest type: test autorun: true {
 		
 		// the action itself is synchronous and observable
 		assert ag.is_running = false;
-		ask ag { do thread_action; }
+		ask ag { do thread_action(); }
 		assert ag.is_running = true;
 
 		// starting and stopping the thread must not raise
 		ask ag {
 			is_running <- false;
-			do run_thread;
-			do end_thread;
+			do run_thread();
+			do end_thread();
 		}
 	}
 }

@@ -31,18 +31,18 @@ experiment VariablesAdvancedTest type: test autorun: true {
 		assert ag.dynamic_val = 0;
 
 		// '_step_' only executes the behaviours of the agent: the 'update' facet is not evaluated
-		ask ag { do _step_; }
+		ask ag { do _step_(); }
 		assert ag.dynamic_val = 0;
 
 		// it is evaluated when the agent is stepped by the simulation
-		ask simulation { do _step_; }
+		ask simulation { do _step_(); }
 		assert ag.dynamic_val = 1;
-		ask simulation { do _step_; }
+		ask simulation { do _step_(); }
 		assert ag.dynamic_val = 2;
 
 		// an explicit assignment is taken as the new base value
 		ask ag { dynamic_val <- 7; }
-		ask simulation { do _step_; }
+		ask simulation { do _step_(); }
 		assert ag.dynamic_val = 8;
 	}
 

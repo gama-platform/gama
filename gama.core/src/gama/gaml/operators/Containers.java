@@ -2792,7 +2792,7 @@ public class Containers {
 			@test ("[1,2,4,3,5,7,6,8] sort_by (each) = [1,2,3,4,5,6,7,8]"),
 			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; (numbers sort_by each) = [1, 1, 2, 3, 4, 5, 6, 9]"),
 			@test ("list<int> numbers2 <- [3, 1, 4, 1, 5, 9, 2, 6]; (numbers2 sort_by (-each)) = [9, 6, 5, 4, 3, 2, 1, 1]"),
-			@test ("matrix<int> m1 <- matrix([[1, 2], [3, 4]]); list<int> l1 <- m1 collect (each * 10); (l1 sort_by each) = [10, 20, 30, 40]"),
+			@test ("matrix<int> m1 <- matrix([[1, 2], [3, 4]]); list<int> l1 <- list<int>(m1 collect (each * 10)); (l1 sort_by each) = [10, 20, 30, 40]"),
 			@test ("([\"pear\", \"apple\", \"fig\"] sort_by each) = [\"apple\", \"fig\", \"pear\"]")
 	})
 	@validator (ComparableValidator.class)
@@ -3118,7 +3118,7 @@ public class Containers {
 			value = "When applied to a field, collect returns a field of the same size if the right expression returns float values, in which each element is the evaluation of the right-hand operand on the corresponding element in the left-hand operand")
 	@tests ({
 			@test ("field([1,2,4],[1,3,4]) collect (x: x *2) = field([2,4,8],[2,6,8])"),
-			@test ("matrix<rgb> img_matrix <- matrix<rgb>([ [#red, #blue], [#green, #yellow] ]); list<rgb> as_list <- img_matrix collect (each.darker); as_list[0] != #red"),
+			@test ("matrix<rgb> img_matrix <- matrix<rgb>([ [#red, #blue], [#green, #yellow] ]); list<rgb> as_list <- list<rgb>(img_matrix collect (each.darker)); as_list[0] != #red"),
 			@test ("map<string, int> m1 <- [\"a\"::1, \"b\"::2, \"c\"::3, \"d\"::4]; list<int> l1 <- m1 collect (each * 10); l1 = [10, 20, 30, 40]")
 	})
 	public static IMatrix collect(final IScope scope, final String eachName, final IField f, final IExpression filter) {

@@ -22,13 +22,13 @@ experiment AgentTest type: test autorun: true {
 		assert length(basic_agent) = 5;
 		
 		ask basic_agent[0] {
-			do die;
+			do die();
 		}
 		
 		assert length(basic_agent) = 4;
 		
 		ask basic_agent {
-			do die;
+			do die();
 		}
 		
 		assert empty(basic_agent) = true;
@@ -50,7 +50,7 @@ experiment AgentTest type: test autorun: true {
 		}
 		assert ag.my_value = 60;
 		
-		ask ag { do die; }
+		ask ag { do die(); }
 	}
 	
 	test "Agent Spatial Properties" {
@@ -62,7 +62,7 @@ experiment AgentTest type: test autorun: true {
 		assert ag.location.y = 20;
 		assert ag.location.z = 30;
 		
-		ask ag { do die; }
+		ask ag { do die(); }
 	}
 	
 	test "Ask Operators" {
@@ -80,6 +80,6 @@ experiment AgentTest type: test autorun: true {
 		list<int> values <- ags collect (each.my_value);
 		assert values = [1, 2, 3];
 		
-		ask ags { do die; }
+		ask ags { do die(); }
 	}
 }

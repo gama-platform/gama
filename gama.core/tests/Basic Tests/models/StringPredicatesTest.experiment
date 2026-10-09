@@ -6,12 +6,9 @@
 */
 
 experiment StringPredicatesTest type: test autorun: true {
-
 	test "Tokenizers" {
 		// each character of the right operand is a delimiter
 		assert "a,b;c" tokenize ",;" = ["a", "b", "c"];
 		assert "a,b;c" split_with ",;" = ["a", "b", "c"];
-
 	}
-
 }

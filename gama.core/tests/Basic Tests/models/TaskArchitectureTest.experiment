@@ -33,7 +33,7 @@ experiment TaskArchitectureTest type: test autorun: true {
 		assert ag.task2_run = false;
 		
 		// Run a step
-		ask ag { do _step_; }
+		ask ag { do _step_(); }
 		
 		// task2 has higher weight (2.0 vs 1.0), so it should be executed exclusively
 		// Wait, task-based architecture executes the task with the highest weight
@@ -60,7 +60,7 @@ experiment ProbabilisticTasksTest type: test autorun: true {
 		create prob_task_agent number: 1 returns: created_agents;
 		prob_task_agent ag <- created_agents[0];
 		
-		ask ag { do _step_; }
+		ask ag { do _step_(); }
 		
 		// Since one task has weight 1.0 and the other 0.0, the first one is always chosen
 		assert ag.run_count = 1;

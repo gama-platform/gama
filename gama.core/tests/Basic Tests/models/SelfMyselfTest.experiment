@@ -44,7 +44,7 @@ experiment SelfMyselfTest type: test autorun: true {
 		caller_agent caller <- callers[0];
 
 		ask caller {
-			do test_scope;
+			do test_scope();
 		}
 		assert caller.self_seen_in_ask = 2;
 		assert caller.myself_seen_in_ask = 1;

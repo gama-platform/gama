@@ -458,7 +458,7 @@ public class Random {
 			@test ("seed <- 1.0; poisson(3.5) = 6"),
 			@test ("seed <- 1.0; poisson(0.0) = 0"),
 			// Poisson is always >= 0
-			@test ("float poisson_val <- poisson(5.0); poisson_val >= 0")
+			@test ("float poisson_val <- float(poisson(5.0)); poisson_val >= 0")
 	})
 	public static Integer opPoisson(final IScope scope, final Double mean) {
 		if (mean == null || mean <= 0.0) return 0;
@@ -692,8 +692,8 @@ public class Random {
 			@test ("seed <- 1.0; rnd(10) = 8"),
 			@test ("seed <- 1.0; rnd(0) = 0"),
 			@test ("seed <- 42.0; int r1 <- rnd(100); seed <- 42.0; int r2 <- rnd(100); r1 = r2"),
-			@test ("int first_rnd <- rnd(100); int third_rnd <- rnd(100); first_rnd = third_rnd"),
-			@test ("int second_rnd <- rnd(100); int fourth_rnd <- rnd(100); second_rnd = fourth_rnd"),
+			// the same seed gives the same sequence of draws
+			@test ("seed <- 42.0; int first_rnd <- rnd(100); int second_rnd <- rnd(100); seed <- 42.0; int third_rnd <- rnd(100); int fourth_rnd <- rnd(100); first_rnd = third_rnd and second_rnd = fourth_rnd"),
 			@test ("int drawn <- rnd(-5); drawn >= -5 and drawn <= 0"),
 			@test ("rnd(0) = 0")
 	})
@@ -942,7 +942,7 @@ public class Random {
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "skew_gauss", "truncated_gauss",
 					"weibull_rnd" })
 	@tests ({
-			@test (" seed <- 1.0; rnd(100) = 78"),
+			@test ("seed <- 1.0; rnd(100) = 78"),
 			@test ("seed <- 1.0; rnd(0.0) = 0.0"),
 			@test ("float drawn_float <- rnd(-5.0); drawn_float >= -5.0 and drawn_float <= 0.0")
 	})

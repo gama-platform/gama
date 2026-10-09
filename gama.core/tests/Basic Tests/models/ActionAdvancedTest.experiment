@@ -13,8 +13,8 @@ species action_agent {
 		return a + b;
 	}
 	
-	string greet(string name, string title <- "Mr") {
-		return "Hello " + title + " " + name;
+	string greet(string myname, string title <- "Mr") {
+		return "Hello " + title + " " + myname;
 	}
 	
 	// Test passing by reference using a map
@@ -35,8 +35,8 @@ experiment ActionAdvancedTest type: test autorun: true {
 		// Falling back to default
 		assert ag.calc(a: 5) = 15;
 		
-		assert ag.greet(name: "Smith", title: "Dr") = "Hello Dr Smith";
-		assert ag.greet(name: "Smith") = "Hello Mr Smith";
+		assert ag.greet(myname: "Smith", title: "Dr") = "Hello Dr Smith";
+		assert ag.greet(myname: "Smith") = "Hello Mr Smith";
 	}
 	
 	test "Pass by Reference" {

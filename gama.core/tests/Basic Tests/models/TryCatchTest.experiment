@@ -10,7 +10,7 @@ experiment TryCatchTest type: test autorun: true {
 	test "Basic Try Catch" {
 		bool caught <- false;
 		try {
-			int a <- 10 / 0; // Division by zero
+			int a <- int(10 / 0); // Division by zero
 		} catch {
 			caught <- true;
 		}
@@ -21,7 +21,7 @@ experiment TryCatchTest type: test autorun: true {
 	test "No Exception Thrown" {
 		bool caught <- false;
 		try {
-			int a <- 10 / 2;
+			int a <- int(10 / 2);
 		} catch {
 			caught <- true;
 		}

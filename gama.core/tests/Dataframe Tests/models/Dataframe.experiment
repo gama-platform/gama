@@ -15,13 +15,15 @@ experiment Dataframes type: test {
 	// ========================= Creation =========================
 
 	test creation_empty_columns_fails {
+		bool result <- false;
 		// Creating a dataframe with empty columns should raise an error
 		try {
 			dataframe df <- dataframe_with([], [["a", 1]]);
 			assert false; // should not reach here
 		} catch {
-			assert true;
+			result <- true;
 		}
+		assert result;
 	}
 
 	// ========================= Pseudo-variables =========================
@@ -31,13 +33,15 @@ experiment Dataframes type: test {
 	// ========================= Row access =========================
 
 	test row_out_of_bounds {
+		bool result <- false;
 		dataframe df <- dataframe_with(["a"], [[1], [2]]);
 		try {
 			list r <- (df row_at 10);
 			assert false;
 		} catch {
-			assert true;
+			result <- true;
 		}
+		assert result;
 	}
 
 	// ========================= Cell access =========================

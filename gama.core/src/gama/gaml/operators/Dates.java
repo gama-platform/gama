@@ -2396,7 +2396,7 @@ public class Dates {
 			@test ("date d19 <- date(\"2026-09-16T15:00:00\"); d19.minute = 0"),
 			@test ("date d110 <- date(\"2026-09-16T15:00:00\"); d110.second = 0"),
 			@test ("date d111 <- date(\"2026-09-16T15:00:00\"); date d2 <- d111 + 3600; d2.hour = 16"),
-			@test ("date d112 <- date(\"2026-09-16T15:00:00\"); date d22 <- d112 + 3600; float duration <- d22 - d112; duration = 3600.0"),
+			@test ("date d112 <- date(\"2026-09-16T15:00:00\"); date d22 <- d112 + 3600; float dduration <- d22 - d112; dduration = 3600.0"),
 			@test ("date d113 <- date(\"2026-09-16T15:00:00\"); date d23 <- date(\"2026-09-16T16:00:00\"); d113 < d23"),
 			@test ("date d114 <- date(\"2026-09-16T15:00:00\"); d114 <= d114"),
 			@test ("date d115 <- date(\"2026-09-16T15:00:00\"); date d24 <- date(\"2026-09-16T16:00:00\"); d24 > d115"),
@@ -2512,7 +2512,8 @@ public class Dates {
 			@test ("date reference3 <- date(\"2026-03-15T10:30:45\"); string(reference3, \"HH'h'mm\") = \"10h30\""),
 			@test ("string(5) + \" Value\" = \"5 Value\""),
 			@test ("date neg_date1 <- date([-1000, 1, 1]); string(neg_date1, 'yyyy-MM-dd') = '-1000-01-01'"),
-			@test ("date neg_date3 <- date(\"-100-01-01\"); string(neg_date3) = \"-100-01-01 00:00:00\"")
+			// Years are 4 digit (ISO form)
+			@test ("date neg_date3 <- date(\"-100-01-01\"); string(neg_date3) = \"-0100-01-01 00:00:00\"")
 	})
 	public static String format(final IDate time, final String pattern) {
 		return format(time, pattern, null);

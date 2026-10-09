@@ -33,8 +33,8 @@ experiment SyntaxCompilationTest type: test autorun: true {
 
 	test "Actions bound to user commands and events remain callable" {
 		assert action_calls = 0;
-		do my_action;
-		do my_action;
+		do my_action();
+		do my_action();
 		assert action_calls = 2;
 	}
 

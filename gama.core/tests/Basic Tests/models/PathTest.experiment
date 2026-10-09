@@ -17,7 +17,7 @@ experiment PathTest type: test autorun: true {
 	 * 	d - c
 	 * 'as_edge_graph' is meant for geometries, a graph of plain values is built edge by edge
 	 */
-	graph square_graph {
+	graph square_graph() {
 		graph g <- graph([]);
 		g <- g add_edge ("a"::"b");
 		g <- g add_edge ("b"::"c");
@@ -46,7 +46,10 @@ experiment PathTest type: test autorun: true {
 		path p2 <- path_between(g, "a", "d");
 		assert p2 != nil;
 		assert length(p2.edges) = 1;
-		assert p2.edges[0] = ("a"::"d");
+		// Workaround
+		// This equality will always return false because you are comparing a geometry with a pair<string, string>
+		unknown t <- p2.edges[0];
+		assert t = ("a"::"d");
 	}
 
 	test "Path Properties" {

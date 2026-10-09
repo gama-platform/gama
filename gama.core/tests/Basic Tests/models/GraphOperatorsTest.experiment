@@ -16,7 +16,7 @@ experiment GraphOperatorsTest type: test autorun: true {
 	/**
 	 * A triangle a - b - c with a tail c - d. A graph of plain values is undirected until stated otherwise
 	 */
-	graph value_triangle {
+	graph value_triangle() {
 		graph g <- graph([]);
 		g <- g add_edge ("a"::"b");
 		g <- g add_edge ("b"::"c");
@@ -29,14 +29,14 @@ experiment GraphOperatorsTest type: test autorun: true {
 	 * The same, with oriented edges: a -> b -> c -> a, plus c -> d.
 	 * 'directed' modifies its operand, hence the new graph built for the occasion
 	 */
-	graph directed_triangle {
+	graph directed_triangle() {
 		return directed(value_triangle());
 	}
 
 	/**
 	 * A graph built from segments is spatial and undirected: a triangle with a tail attached to {10, 10}
 	 */
-	graph spatial_triangle {
+	graph spatial_triangle() {
 		return as_edge_graph([line([{0, 0}, {10, 0}]), line([{10, 0}, {10, 10}]), line([{10, 10}, {0, 0}]), line([{10, 10}, {20, 10}])]);
 	}
 
@@ -159,7 +159,7 @@ experiment GraphOperatorsTest type: test autorun: true {
 
 	test "Maximum flow" {
 		graph g <- directed_triangle();
-		map flow <- max_flow_between(g, "a", "d");
+		map flow <- map(max_flow_between(g, "a", "d"));
 		// the only way from a to d goes through b and c
 		assert flow["a"::"b"] = 1.0;
 		assert flow["b"::"c"] = 1.0;
