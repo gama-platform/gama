@@ -131,7 +131,8 @@ public class StringUtils {
 		for (int i = 0; i < length; i++) {
 			final char c = s.charAt(i);
 			switch (c) {
-				case '"':
+				// a double quote is not escaped: the string is delimited by single quotes, and the grammar does
+				// not accept this escape there
 				case '\'':
 				case '\\':
 					// Commented on purpose. See issue #2988

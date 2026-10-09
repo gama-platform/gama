@@ -386,6 +386,8 @@ public class SerialisationOperators {
 			@test ("string expr2 <- \"[1, 2, 3] collect (each * 2)\"; list<int> l_result <- list<int>(eval_gaml(expr2)); length(l_result) = 3"),
 			@test ("string expr22 <- \"[1, 2, 3] collect (each * 2)\"; list<int> l_result2 <- list<int>(eval_gaml(expr22)); l_result2[1] = 4"),
 			@test ("from_gaml(to_gaml(\"it's\")) = \"it's\""),
+			@test ("from_gaml(to_gaml(\"say \\\"hi\\\"\")) = \"say \\\"hi\\\"\""),
+			@test ("from_gaml(to_gaml(\"a\\\\b\")) = \"a\\\\b\""),
 			@test ("from_gaml(\"12\") = 12"),
 			@test ("from_gaml(\"[1, 2] + [3]\") = [1, 2, 3]"),
 			@test ("from_gaml(\"3 * 4\") = 12"),
