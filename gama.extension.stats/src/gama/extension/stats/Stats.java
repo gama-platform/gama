@@ -653,7 +653,7 @@ public class Stats {
 					equals = "1.0"),
 					@example (
 							value = "correlation([13,2,1,4,1,2], [1,2,1,3,1,2]) with_precision(2)",
-							equals = "-0.21") })
+							equals = "-0.18") })
 	@tests ({
 			// the sign of the correlation tells whether the series vary together
 			@test ("list<float> series <- [1.0, 2.0, 3.0, 4.0, 5.0]; list<float> doubled <- [2.0, 4.0, 6.0, 8.0, 10.0]; correlation(series, doubled) > 0"),
@@ -664,15 +664,28 @@ public class Stats {
 			@test ("list<float> series5 <- [1.0, 2.0, 3.0, 4.0, 5.0]; list<float> doubled5 <- [2.0, 4.0, 6.0, 8.0, 10.0]; correlation(series5, reverse(doubled5)) = -1.0"),
 			// the examples of the documentation
 			@test ("correlation([1, 2, 1, 3, 1, 2], [1, 2, 1, 3, 1, 2]) = 1.0"),
-			@test ("correlation([13, 2, 1, 4, 1, 2], [1, 2, 1, 3, 1, 2]) with_precision 2 = -0.21")
+			@test ("correlation([13, 2, 1, 4, 1, 2], [1, 2, 1, 3, 1, 2]) with_precision 2 = -0.18")
 	})
 	public static Double opCorrelation(final IScope scope, final IContainer data1, final IContainer data2) {
 		if ((data1.length(scope) != data2.length(scope)) || (data1.length(scope) == 0)) return 0.0;
-		final double standardDev1 = Stats.opStandardDeviation(scope, data1);
-		final double standardDev2 = Stats.opStandardDeviation(scope, data2);
-		if (standardDev1 == 0 || standardDev2 == 0) return 0.0;
-		return Descriptive.correlation(toDoubleArrayList(scope, data1), standardDev1, toDoubleArrayList(scope, data2),
-				standardDev2);
+		// Computed directly from the sums of deviations: dividing a sample covariance (n - 1) by population standard
+		// deviations (n), as done previously, returned values n / (n - 1) times too large, hence out of [-1, 1]
+		final DoubleArrayList values1 = toDoubleArrayList(scope, data1);
+		final DoubleArrayList values2 = toDoubleArrayList(scope, data2);
+		final int size = values1.size();
+		if (size == 0 || size != values2.size()) return 0.0;
+		final double mean1 = Descriptive.mean(values1);
+		final double mean2 = Descriptive.mean(values2);
+		double products = 0, squares1 = 0, squares2 = 0;
+		for (int i = 0; i < size; i++) {
+			final double deviation1 = values1.getQuick(i) - mean1;
+			final double deviation2 = values2.getQuick(i) - mean2;
+			products += deviation1 * deviation2;
+			squares1 += deviation1 * deviation1;
+			squares2 += deviation2 * deviation2;
+		}
+		if (squares1 == 0 || squares2 == 0) return 0.0;
+		return Math.max(-1.0, Math.min(1.0, products / Math.sqrt(squares1 * squares2)));
 	}
 
 	/**
