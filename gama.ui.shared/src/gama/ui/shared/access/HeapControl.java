@@ -124,7 +124,7 @@ public class HeapControl {
     }
 
     /**
-     * Updates the "MEM xx%" label (used heap over maximum heap) and colors it according to the load.
+     * Updates the "MEM xx%" label to show used heap as a percentage of maximum heap.
      */
     private void updateLabel(final GamaToolbarSimple bar) {
 	if (item == null || item.isDisposed()) return;
