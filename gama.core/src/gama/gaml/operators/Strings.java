@@ -1843,7 +1843,8 @@ public class Strings {
 	public static String zip(final IScope scope, final String str) {
 		if (str == null) throw GamaRuntimeException.error("String cannot be null", scope);
 		if (str.isEmpty()) return str;
-		return new String(CompressionUtils.zip(str.getBytes()), StandardCharsets.ISO_8859_1);
+		// the text is encoded in UTF-8, and decoded the same way by 'uncompress'
+		return new String(CompressionUtils.zip(str.getBytes(StandardCharsets.UTF_8)), StandardCharsets.ISO_8859_1);
 	}
 
 	/**
@@ -1888,7 +1889,7 @@ public class Strings {
 		if (str == null) throw GamaRuntimeException.error("String cannot be null", scope);
 		if (str.isEmpty()) return str;
 		return new String(CompressionUtils.unzip(str.getBytes(StandardCharsets.ISO_8859_1)),
-				StandardCharsets.ISO_8859_1);
+				StandardCharsets.UTF_8);
 	}
 
 }
