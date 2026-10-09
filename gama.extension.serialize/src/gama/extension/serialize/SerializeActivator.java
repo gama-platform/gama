@@ -32,6 +32,7 @@ public class SerializeActivator extends GamaBundleActivator {
 	 */
 	@Override
 	public void initialize(final BundleContext context) {
+		SerializationPreferences.listen();
 		SerializationPreferences.apply();
 	}
 

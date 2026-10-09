@@ -10,7 +10,6 @@
  ********************************************************************************************************/
 package gama.extension.serialize;
 
-import gama.api.gaml.types.IType;
 import gama.api.kernel.serialization.AbstractBinarySerializer;
 import gama.api.kernel.serialization.BinarySerialisation;
 import gama.api.utils.prefs.GamaPreferences;
@@ -33,12 +32,13 @@ public class SerializationPreferences {
 	/** System property that, when set to FST or Fory, overrides the preference (useful in headless mode). */
 	public static final String SYSTEM_PROPERTY = "gama.binary.serializer";
 
-	/** The preference. */
-	public static final Pref<String> BINARY_BACKEND = GamaPreferences
-			.create("pref_binary_serializer", "Library used for binary serialisation (agents, simulation saving)", FST,
-					IType.STRING, true)
-			.among(FST, FORY).in(GamaPreferences.External.NAME, "Serialisation")
-			.onChange(SerializationPreferences::apply);
+	/** The preference, declared in the API so that it is available before this bundle is activated. */
+	public static final Pref<String> BINARY_BACKEND = GamaPreferences.External.BINARY_SERIALIZER;
+
+	/** Starts listening to changes of the preference. */
+	public static void listen() {
+		BINARY_BACKEND.onChange((final String name) -> apply(name));
+	}
 
 	/**
 	 * Returns the selected backend name, the system property taking precedence over the preference.

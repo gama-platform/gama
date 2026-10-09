@@ -1210,6 +1210,17 @@ public class GamaPreferences {
 				create("pref_http_empty_cache", "Empty the local cache of files downloaded from the web", true,
 						IType.BOOL, true).in(Network.NAME, Network.HTTP);
 
+		/** The name of the "Serialisation" group within the Data and Operators tab. */
+		public static final String SERIALISATION = "Serialisation";
+
+		/**
+		 * The library used for binary serialisation ("FST" or "Fory"). Declared here so that it is visible in the
+		 * preferences before the serialisation bundle is activated.
+		 */
+		public static final Pref<String> BINARY_SERIALIZER =
+				create("pref_binary_serializer", "Library used for binary serialisation (agents, simulation saving)",
+						"FST", IType.STRING, true).among("FST", "Fory").in(NAME, SERIALISATION);
+
 		/** The name of the "Random number generation" group within the Data and Operators tab. */
 		public static final String RNG = "Random number generation";
 
