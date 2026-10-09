@@ -689,6 +689,19 @@ public interface IMatrix<T> extends IContainer.Modifiable<IPoint, T, IPoint, T>,
 	}
 
 	/**
+	 * Puts the given matrix on the right side of this one. The default implementation transposes both matrices,
+	 * appends them vertically and transposes the result.
+	 *
+	 * @param scope
+	 * @param b
+	 *            the matrix to put on the right (same number of rows)
+	 * @return the concatenated matrix
+	 */
+	default IMatrix _opAppendHorizontally(final IScope scope, final IMatrix b) {
+		return _reverse(scope)._opAppendVertically(scope, b._reverse(scope))._reverse(scope);
+	}
+
+	/**
 	 * @param scope
 	 * @return
 	 */

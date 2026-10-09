@@ -225,7 +225,8 @@ public class GamaObjectMatrix extends GamaMatrix<Object> {
 	 * @return the matrix concatenated
 	 */
 
-	public GamaObjectMatrix _opAppendHorizontally(final IScope scope, final IMatrix<?> b) {
+	@Override
+	public GamaObjectMatrix _opAppendHorizontally(final IScope scope, final IMatrix b) {
 		final GamaObjectMatrix aprime = _reverse(scope);
 		final GamaObjectMatrix bprime = GamaObjectMatrix.from(b.getCols(scope), b.getRows(scope), b)._reverse(scope);
 		final GamaObjectMatrix c = (GamaObjectMatrix) aprime._opAppendVertically(scope, bprime);

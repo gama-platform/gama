@@ -273,7 +273,12 @@ public class MatrixOperators {
 			@test ("matrix<float> first_matrix <- matrix([[1.0, 2.0], [3.0, 4.0]]); matrix<float> second_matrix <- matrix([[5.0, 6.0], [7.0, 8.0]]); matrix<float> stacked <- append_vertically(first_matrix, second_matrix); stacked.columns = 2"),
 			@test ("matrix<float> first_matrix2 <- matrix([[1.0, 2.0], [3.0, 4.0]]); matrix<float> second_matrix2 <- matrix([[5.0, 6.0], [7.0, 8.0]]); matrix<float> stacked2 <- append_vertically(first_matrix2, second_matrix2); stacked2.rows = 4"),
 			@test ("matrix<float> first_matrix3 <- matrix([[1.0, 2.0], [3.0, 4.0]]); matrix<float> second_matrix3 <- matrix([[5.0, 6.0], [7.0, 8.0]]); matrix<float> stacked3 <- append_vertically(first_matrix3, second_matrix3); stacked3 column_at 0 = [1.0, 2.0, 5.0, 6.0]"),
-			@test ("matrix<float> first_matrix4 <- matrix([[1.0, 2.0], [3.0, 4.0]]); matrix<float> second_matrix4 <- matrix([[5.0, 6.0], [7.0, 8.0]]); matrix<float> stacked4 <- append_vertically(first_matrix4, second_matrix4); stacked4 column_at 1 = [3.0, 4.0, 7.0, 8.0]")
+			@test ("matrix<float> first_matrix4 <- matrix([[1.0, 2.0], [3.0, 4.0]]); matrix<float> second_matrix4 <- matrix([[5.0, 6.0], [7.0, 8.0]]); matrix<float> stacked4 <- append_vertically(first_matrix4, second_matrix4); stacked4 column_at 1 = [3.0, 4.0, 7.0, 8.0]"),
+			// matrices of different kinds (int and float) are appended too, the result holding both contents
+			@test ("matrix<int> whole1 <- matrix([[1, 2], [3, 4]]); matrix<float> decimal1 <- matrix([[5.5, 6.5], [7.5, 8.5]]); append_vertically(whole1, decimal1).rows = 4"),
+			@test ("matrix<int> whole2 <- matrix([[1, 2], [3, 4]]); matrix<float> decimal2 <- matrix([[5.5, 6.5], [7.5, 8.5]]); append_vertically(whole2, decimal2).columns = 2"),
+			@test ("matrix<int> whole3 <- matrix([[1, 2], [3, 4]]); matrix<float> decimal3 <- matrix([[5.5, 6.5], [7.5, 8.5]]); append_vertically(whole3, decimal3)[0, 2] = 5.5"),
+			@test ("matrix<int> whole4 <- matrix([[1, 2], [3, 4]]); matrix<float> decimal4 <- matrix([[5.5, 6.5], [7.5, 8.5]]); append_vertically(decimal4, whole4)[1, 3] = 4.0")
 	})
 	public static IMatrix opAppendVertically(final IScope scope, final IMatrix a, final IMatrix b) {
 		return a._opAppendVertically(scope, b);
@@ -301,10 +306,15 @@ public class MatrixOperators {
 			@test ("matrix<float> first_matrix <- matrix([[1.0, 2.0], [3.0, 4.0]]); matrix<float> second_matrix <- matrix([[5.0, 6.0], [7.0, 8.0]]); matrix<float> side_by_side <- append_horizontally(first_matrix, second_matrix); side_by_side.columns = 4"),
 			@test ("matrix<float> first_matrix2 <- matrix([[1.0, 2.0], [3.0, 4.0]]); matrix<float> second_matrix2 <- matrix([[5.0, 6.0], [7.0, 8.0]]); matrix<float> side_by_side2 <- append_horizontally(first_matrix2, second_matrix2); side_by_side2.rows = 2"),
 			@test ("matrix<float> first_matrix3 <- matrix([[1.0, 2.0], [3.0, 4.0]]); matrix<float> second_matrix3 <- matrix([[5.0, 6.0], [7.0, 8.0]]); matrix<float> side_by_side3 <- append_horizontally(first_matrix3, second_matrix3); side_by_side3 column_at 2 = [5.0, 6.0]"),
-			@test ("matrix<float> first_matrix4 <- matrix([[1.0, 2.0], [3.0, 4.0]]); matrix<float> second_matrix4 <- matrix([[5.0, 6.0], [7.0, 8.0]]); matrix<float> side_by_side4 <- append_horizontally(first_matrix4, second_matrix4); side_by_side4 row_at 0 = [1.0, 3.0, 5.0, 7.0]")
+			@test ("matrix<float> first_matrix4 <- matrix([[1.0, 2.0], [3.0, 4.0]]); matrix<float> second_matrix4 <- matrix([[5.0, 6.0], [7.0, 8.0]]); matrix<float> side_by_side4 <- append_horizontally(first_matrix4, second_matrix4); side_by_side4 row_at 0 = [1.0, 3.0, 5.0, 7.0]"),
+			// matrices of different kinds (int and float) are appended too, the result holding both contents
+			@test ("matrix<int> whole1 <- matrix([[1, 2], [3, 4]]); matrix<float> decimal1 <- matrix([[5.5, 6.5], [7.5, 8.5]]); append_horizontally(whole1, decimal1).columns = 4"),
+			@test ("matrix<int> whole2 <- matrix([[1, 2], [3, 4]]); matrix<float> decimal2 <- matrix([[5.5, 6.5], [7.5, 8.5]]); append_horizontally(whole2, decimal2).rows = 2"),
+			@test ("matrix<int> whole3 <- matrix([[1, 2], [3, 4]]); matrix<float> decimal3 <- matrix([[5.5, 6.5], [7.5, 8.5]]); append_horizontally(whole3, decimal3)[2, 0] = 5.5"),
+			@test ("matrix<int> whole4 <- matrix([[1, 2], [3, 4]]); matrix<float> decimal4 <- matrix([[5.5, 6.5], [7.5, 8.5]]); append_horizontally(decimal4, whole4)[3, 1] = 4.0")
 	})
 	public static IMatrix opAppendHorizontally(final IScope scope, final IMatrix a, final IMatrix b) {
-		return a._opAppendVertically(scope, b);
+		return a._opAppendHorizontally(scope, b);
 	}
 
 	/**

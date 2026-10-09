@@ -310,6 +310,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	 * @return the matrix concatenated
 	 */
 
+	@Override
 	public IMatrix _opAppendHorizontally(final IScope scope, final IMatrix b) {
 		final IMatrix aprime = _reverse(scope);
 		final IMatrix bprime = b._reverse(scope);
