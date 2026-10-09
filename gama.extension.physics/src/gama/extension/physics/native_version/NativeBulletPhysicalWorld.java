@@ -128,7 +128,16 @@ public class NativeBulletPhysicalWorld extends AbstractPhysicalWorld<PhysicsSpac
 			// If the thread is interrupted while waiting, exit the loop cleanly.
 			if (!semaphore.acquire()) { break; }
 			PhysicsSpace world = getWorld();
-			if (world != null) { world.update(timeStep.floatValue(), maxSubSteps, false, false, true); }
+			if (world != null) {
+				int n = computeSubSteps(timeStep, maxSubSteps);
+				if (n > 0) {
+					// n fixed sub-steps of equal size, covering the whole time step
+					world.setAccuracy((float) (timeStep / n) * 0.9999f);
+					world.update(timeStep.floatValue(), n, false, false, true);
+				} else {
+					world.update(timeStep.floatValue(), 0, false, false, true);
+				}
+			}
 			// DEBUG.OUT("Actually updating world in thread " + Thread.currentThread().getName());
 			continueStep = true;
 		}

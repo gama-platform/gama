@@ -97,7 +97,13 @@ public class BulletPhysicalWorld extends AbstractPhysicalWorld<DiscreteDynamicsW
 
 	@Override
 	public void updateEngine(final Double timeStep, final int maxSubSteps) {
-		getWorld().stepSimulation(timeStep.floatValue(), maxSubSteps);
+		int n = computeSubSteps(timeStep, maxSubSteps);
+		if (n > 0) {
+			// n fixed sub-steps of equal size, covering the whole time step
+			getWorld().stepSimulation(timeStep.floatValue(), n, (float) (timeStep / n) * 0.9999f);
+		} else {
+			getWorld().stepSimulation(timeStep.floatValue(), 0);
+		}
 	}
 
 	@Override
