@@ -42,6 +42,34 @@ import gama.api.types.list.IList;
  */
 public class DataFrameOperators {
 
+	/**
+	 * Access to a column of a dataframe with [column name]. A dataframe is iterated row by row (maps), but indexed
+	 * by column: this operator gives the access its own type, a list, instead of the type of the contents.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param df
+	 *            the dataframe
+	 * @param indices
+	 *            the indices, of which the first one is the name of the column
+	 * @return the values of the column
+	 */
+	@operator (
+			internal = true,
+			value = { "internal_at" },
+			type = IType.LIST,
+			content_type = IType.NONE,
+			category = { IDataframeConstants.CATEGORY },
+			concept = { IDataframeConstants.CONCEPT, IConcept.CONTAINER })
+	@doc (
+			value = "For internal use only. Corresponds to the implementation, for dataframes, of the access to a column with [column name]")
+	@no_test
+	public static IList internal_at(final IScope scope, final IDataFrame df, final IList indices)
+			throws GamaRuntimeException {
+		if (df == null) return null;
+		return df.getFromIndicesList(scope, indices);
+	}
+
 	
 
 	// ========================= Creation operators =========================
