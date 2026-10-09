@@ -64,13 +64,12 @@ public class HeapControl {
 	Composite composite = new Composite(parent, SWT.NONE);
 	GridLayoutFactory.fillDefaults().margins(0, 0).spacing(0, 0).extendedMargins(0, 5, 5, 5).numColumns(2)
 		.equalWidth(false).applyTo(composite);
-	GamaToolbarSimple bar = new GamaToolbarSimple(composite, SWT.NONE);
+	GamaToolbarSimple bar = new GamaToolbarSimple(composite, SWT.RIGHT);
 	bar.space(16);
-	ToolItem find = bar.button("editor/command.find", null, "Search GAML reference", e -> {
+	bar.button("editor/command.find", null, "Search GAML reference", e -> {
 	    final GamlAccessContents2 quickAccessDialog = new GamlAccessContents2();
 	    quickAccessDialog.open();
 	});
-	find.setText("FIND...");
 	item = bar.button("generic/garbage.collect", "", "", e -> {
 	    System.gc();
 	    updateLabel(bar);
