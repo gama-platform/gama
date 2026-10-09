@@ -28,11 +28,11 @@ import gama.extension.physics.common.IJointDefinition;
 		type = IType.STRING,
 		doc = @doc ("The type of the joint: hinge, slider, ball_and_socket, fixed, distance, rope, cone_twist or wheel.")),
 		@variable (
-				name = "bodyA",
+				name = "body_a",
 				type = IType.NONE,
 				doc = @doc ("The first body connected by the joint.")),
 		@variable (
-				name = "bodyB",
+				name = "body_b",
 				type = IType.NONE,
 				doc = @doc ("The second body connected by the joint.")),
 		@variable (
@@ -44,19 +44,19 @@ import gama.extension.physics.common.IJointDefinition;
 				type = IType.POINT,
 				doc = @doc ("The hinge or slider axis in world coordinates.")),
 		@variable (
-				name = "lowerLimit",
+				name = "lower_limit",
 				type = IType.FLOAT,
 				doc = @doc ("The lower limit of the joint, in radians for hinges and world units for sliders.")),
 		@variable (
-				name = "upperLimit",
+				name = "upper_limit",
 				type = IType.FLOAT,
 				doc = @doc ("The upper limit of the joint, in radians for hinges and world units for sliders.")),
 		@variable (
-				name = "motorSpeed",
+				name = "motor_speed",
 				type = IType.FLOAT,
 				doc = @doc ("The motor speed, in radians per second for hinges and world units per second for sliders. Can be changed while the simulation runs.")),
 		@variable (
-				name = "maxMotorForce",
+				name = "max_motor_force",
 				type = IType.FLOAT,
 				doc = @doc ("The maximum motor force/torque (or motor impulse in Bullet). A positive value enables the motor.")),
 		@variable (
@@ -68,11 +68,11 @@ import gama.extension.physics.common.IJointDefinition;
 				type = IType.FLOAT,
 				doc = @doc ("The spring damping ratio of distance, wheel and fixed joints.")),
 		@variable (
-				name = "swingLimit",
+				name = "swing_limit",
 				type = IType.FLOAT,
 				doc = @doc ("The swing limit (half-angle of the cone, in radians) of a cone_twist joint.")),
 		@variable (
-				name = "twistLimit",
+				name = "twist_limit",
 				type = IType.FLOAT,
 				doc = @doc ("The twist limit (in radians) of a cone_twist joint.")),
 		@variable (
@@ -208,11 +208,11 @@ public class GamaJoint implements IJointDefinition {
 	@Override
 	public double getDamping() { return damping; }
 
-	@getter ("swingLimit")
+	@getter ("swing_limit")
 	@Override
 	public double getSwingLimit() { return swingLimit; }
 
-	@getter ("twistLimit")
+	@getter ("twist_limit")
 	@Override
 	public double getTwistLimit() { return twistLimit; }
 
@@ -311,11 +311,11 @@ public class GamaJoint implements IJointDefinition {
 	@getter ("type")
 	public String getType() { return type.name().toLowerCase(java.util.Locale.ROOT); }
 
-	@getter ("bodyA")
+	@getter ("body_a")
 	@Override
 	public Object getBodyA() { return bodyA; }
 
-	@getter ("bodyB")
+	@getter ("body_b")
 	@Override
 	public Object getBodyB() { return bodyB; }
 
@@ -327,11 +327,11 @@ public class GamaJoint implements IJointDefinition {
 	@Override
 	public IPoint getAxis() { return axis; }
 
-	@getter ("lowerLimit")
+	@getter ("lower_limit")
 	@Override
 	public double getLowerLimit() { return lowerLimit; }
 
-	@getter ("upperLimit")
+	@getter ("upper_limit")
 	@Override
 	public double getUpperLimit() { return upperLimit; }
 
@@ -340,7 +340,7 @@ public class GamaJoint implements IJointDefinition {
 		return hasLimits;
 	}
 
-	@getter ("motorSpeed")
+	@getter ("motor_speed")
 	@Override
 	public double getMotorSpeed() { return motorSpeed; }
 
@@ -350,7 +350,7 @@ public class GamaJoint implements IJointDefinition {
 	 * @param speed
 	 *            the new motor speed
 	 */
-	@setter ("motorSpeed")
+	@setter ("motor_speed")
 	public void setMotorSpeed(final Double speed) {
 		if (speed != null && !Double.isFinite(speed))
 			throw new IllegalArgumentException("Joint motor speed must be finite");
@@ -392,7 +392,7 @@ public class GamaJoint implements IJointDefinition {
 		}
 	}
 
-	@getter ("maxMotorForce")
+	@getter ("max_motor_force")
 	@Override
 	public double getMaxMotorForce() { return maxMotorForce; }
 
@@ -402,7 +402,7 @@ public class GamaJoint implements IJointDefinition {
 	 * @param force
 	 *            the new max motor force
 	 */
-	@setter ("maxMotorForce")
+	@setter ("max_motor_force")
 	public void setMaxMotorForce(final Double force) {
 		if (force != null && (!Double.isFinite(force) || force < 0))
 			throw new IllegalArgumentException("Joint motor force must be finite and non-negative");
