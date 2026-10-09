@@ -135,7 +135,7 @@ public class Box2DBodyWrapper extends AbstractBodyWrapper<World, Body, Shape, Ve
 	@Override
 	public IPoint getAngularVelocity(final IPoint v) {
 		IPoint result = v == null ? GamaPointFactory.create() : v;
-		result.setLocation(0, 0, body.getAngularVelocity());
+		result.setLocation(0, 0, -body.getAngularVelocity());
 		return result;
 	}
 
@@ -153,9 +153,13 @@ public class Box2DBodyWrapper extends AbstractBodyWrapper<World, Body, Shape, Ve
 
 	@Override
 	public void setMass(final Double mass) {
+		float initialMass = ms.mass;
 		ms.mass = mass.floatValue();
+		// Keep the moment of inertia proportional to the new mass (same density assumption used when a body is
+		// recreated in createAndInitializeBody), otherwise a body explicitly assigned a mass ends up with an
+		// inconsistent (too small) rotational inertia, making it spin far too easily under torque/motor forces.
+		if (initialMass > 0) { ms.I *= ms.mass / initialMass; }
 		body.setMassData(ms);
-
 	}
 
 	@Override
@@ -193,7 +197,7 @@ public class Box2DBodyWrapper extends AbstractBodyWrapper<World, Body, Shape, Ve
 
 	@Override
 	public void setAngularVelocity(final IPoint angularVelocity) {
-		body.setAngularVelocity(toBox2D(angularVelocity.getZ()));
+		body.setAngularVelocity(toBox2D(-angularVelocity.getZ()));
 	}
 
 	@Override
@@ -221,7 +225,7 @@ public class Box2DBodyWrapper extends AbstractBodyWrapper<World, Body, Shape, Ve
 
 	@Override
 	public void applyTorque(final IPoint torque) {
-		body.applyTorque(toBox2D(torque.norm()));
+		body.applyTorque(toBox2D(-torque.getZ()));
 	}
 
 	@Override
@@ -235,7 +239,7 @@ public class Box2DBodyWrapper extends AbstractBodyWrapper<World, Body, Shape, Ve
 		Vec2 vectorTransfer = body.getPosition();
 		agent.setLocation(toGamaPoint(vectorTransfer));
 		Rot bodyRotation = body.getTransform().q;
-		agent.setAttribute(ROTATION, GamaPairFactory.createWith(Math.toDegrees(bodyRotation.getAngle()),
+		agent.setAttribute(ROTATION, GamaPairFactory.createWith(-Math.toDegrees(bodyRotation.getAngle()),
 				GamaPointFactory.create(0, 0, 1), Types.FLOAT, Types.POINT));
 	}
 

@@ -1,0 +1,84 @@
+/**
+ * A two-link robotic arm driven by Box2D revolute-joint motors.
+ */
+model Box2D_Articulated_Arm
+
+global parent: physical_world {
+	string library <- "box2D";
+	float step <- 1.0 / 60;
+	int world_width <- 200;
+	int world_height <- 100;
+	geometry shape <- rectangle(world_width, world_height);
+	point gravity <- {0, 0, 0};
+	joint shoulder_joint <- nil;
+	joint elbow_joint <- nil;
+
+	init {
+		create arm_base {
+			location <- {45, 50};
+		}
+		create arm_link number: 2 {
+			location <- index = 0 ? {75, 50} : {125, 50};
+		}
+
+		shoulder_joint <- create_hinge_joint(arm_base[0], arm_link[0], {50, 50}, -1.2, 1.2, 0.0, 80.0);
+		elbow_joint <- create_hinge_joint(arm_link[0], arm_link[1], {100, 50}, -1.2, 1.2, 0.0, 45.0);
+	}
+
+	reflex drive_arm {
+		shoulder_joint <- shoulder_joint with_motor_speed (1.5 * sin(cycle * 3));
+		elbow_joint <- elbow_joint with_motor_speed (2.0 * sin(cycle * 3 + 90));
+	}
+}
+
+species arm_base skills: [static_body] {
+	geometry shape <- box(10, 14, 0.1);
+
+	aspect default {
+		draw shape color: rgb(211, 205, 194) border: rgb(156, 151, 142);
+		draw "BASE" at: location + {-6, 11} color: rgb(112, 111, 103) font: font("SansSerif", 7, #bold);
+	}
+}
+
+species arm_link skills: [dynamic_body] {
+	geometry shape <- box(50, 8, 0.1);
+	float mass <- 2.0;
+	float friction <- 0.5;
+
+	aspect default {
+		float angle <- float(rotation.key);
+		rgb fill <- index = 0 ? rgb(133, 177, 205) : rgb(218, 157, 164);
+		rgb ink <- index = 0 ? rgb(64, 104, 132) : rgb(153, 83, 96);
+		draw shape color: fill border: #black rotate: angle;
+		point tip <- location + {25 * cos(angle), 25 * sin(angle)};
+		draw "LINK " + (index + 1) at: location + {-6, -7} color: ink font: font("SansSerif", 7, #bold);
+		draw circle(1.5) at: tip color: rgb(248, 246, 240) border: #black;
+	}
+}
+
+experiment "Box2D Articulated Arm" type: gui {
+	float minimum_cycle_duration <- 30#ms;
+
+	output {
+		display Arm type: 2d axes: false background: rgb(248, 246, 240) {
+			graphics grid {
+				loop x from: 0 to: 200 step: 20 {
+					draw line([{x, 0}, {x, 100}]) color: rgb(224, 219, 210) width: 1;
+				}
+				loop y from: 0 to: 100 step: 20 {
+					draw line([{0, y}, {200, y}]) color: rgb(224, 219, 210) width: 1;
+				}
+				draw circle(1.5) at: {50, 50} color: rgb(248, 246, 240) border: #black;
+			}
+			species arm_base;
+			species arm_link;
+			overlay position: {5, 5} size: {250 #px, 90 #px} background: rgb(248, 246, 240) transparency: 0.1 border: rgb(156, 151, 142) {
+				draw "ARTICULATED ARM" at: {10 #px, 16 #px} color: rgb(112, 111, 103) font: font("SansSerif", 10, #bold);
+				draw "Shoulder angle : " + (shoulder_joint.angle * 180 / #pi with_precision 0) + " deg  (limit +/-69)" at: {10 #px, 34 #px} color: rgb(64, 104, 132);
+				draw "Elbow angle : " + (elbow_joint.angle * 180 / #pi with_precision 0) + " deg  (limit +/-69)" at: {10 #px, 50 #px} color: rgb(153, 83, 96);
+				draw "Shoulder motor : " + (shoulder_joint.motor_speed with_precision 2) + " rad/s" at: {10 #px, 66 #px} color: rgb(112, 111, 103);
+				draw "Elbow motor : " + (elbow_joint.motor_speed with_precision 2) + " rad/s" at: {10 #px, 82 #px} color: rgb(112, 111, 103);
+			}
+		}
+	}
+}
