@@ -725,6 +725,8 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 		return true;
 	}
 
+	boolean ownsJoint(final GamaJoint joint) { return joints.contains(joint); }
+
 	/**
 	 * Creates the joint.
 	 *

@@ -27,7 +27,7 @@ global parent: physical_world {
 
 	reflex drive_joints {
 		loop i from: 0 to: length(joints) - 1 {
-			joints[i].motor_speed <- 1.2 * sin(cycle * 8 + i * 45);
+			joints[i] <- joints[i] with_motor_speed (1.2 * sin(cycle * 8 + i * 45));
 		}
 	}
 }

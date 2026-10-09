@@ -26,8 +26,8 @@ global parent: physical_world {
 	}
 
 	reflex drive_arm {
-		shoulder_joint.motor_speed <- 1.5 * sin(cycle * 3);
-		elbow_joint.motor_speed <- 2.0 * sin(cycle * 3 + 90);
+		shoulder_joint <- shoulder_joint with_motor_speed (1.5 * sin(cycle * 3));
+		elbow_joint <- elbow_joint with_motor_speed (2.0 * sin(cycle * 3 + 90));
 	}
 }
 

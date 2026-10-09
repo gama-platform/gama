@@ -26,6 +26,38 @@ public final class JointOperators {
 		throw GamaRuntimeException.error("Joint operators can only be used in a physical simulation", scope);
 	}
 
+	private static GamaJoint requireJoint(final IScope scope, final GamaJoint joint) {
+		if (joint == null || !getPhysicalSimulation(scope).ownsJoint(joint))
+			throw GamaRuntimeException.error("The joint must belong to the current physical simulation", scope);
+		return joint;
+	}
+
+	@operator (
+			doc = @doc ("Returns the same joint after updating its motor speed. The live physical constraint is updated in place; the speed is expressed in radians per second for hinges and world units per second for sliders."),
+			value = "with_motor_speed")
+	public static GamaJoint withMotorSpeed(final IScope scope, final GamaJoint joint, final Double speed) {
+		GamaJoint target = requireJoint(scope, joint);
+		try {
+			target.setMotorSpeed(speed);
+			return target;
+		} catch (IllegalArgumentException e) {
+			throw GamaRuntimeException.error(e.getMessage(), scope);
+		}
+	}
+
+	@operator (
+			doc = @doc ("Returns the same joint after updating its maximum motor force or torque. The live physical constraint is updated in place; a positive value enables the motor."),
+			value = "with_max_motor_force")
+	public static GamaJoint withMaxMotorForce(final IScope scope, final GamaJoint joint, final Double force) {
+		GamaJoint target = requireJoint(scope, joint);
+		try {
+			target.setMaxMotorForce(force);
+			return target;
+		} catch (IllegalArgumentException e) {
+			throw GamaRuntimeException.error(e.getMessage(), scope);
+		}
+	}
+
 	@operator (
 			doc = @doc ("Creates and adds a hinge joint around the world Z axis. Limits are angles in radians; motor speed is radians per second. A positive maximum motor force enables the motor."),
 			value = "create_hinge_joint")
