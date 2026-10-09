@@ -1211,6 +1211,8 @@ public class Graphs {
 	})
 	public static double betaIndex(final IScope scope, final IGraph graph) {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
+		// a graph without vertices has no edges either: 0 rather than the result of 0 / 0
+		if (graph.vertexSet().isEmpty()) return 0.0;
 		return (graph.edgeSet().size() + 0.0) / graph.vertexSet().size();
 	}
 
