@@ -25,7 +25,7 @@ species bench_agent {
 
 experiment Benchmark type: gui {
 
-	action measure (string name, unknown value) {
+	action measure (string title, unknown value) {
 		string bytes <- "";
 		loop times: warmups {
 			bytes <- to_binary(value);
@@ -33,32 +33,40 @@ experiment Benchmark type: gui {
 		}
 		float write_time <- 0.0;
 		float read_time <- 0.0;
-		float memory_before <- free_memory;
+		
+		float memory_before <- gama.free_memory;
 		loop times: repetitions {
-			float t0 <- machine_time;
+			float t0 <- gama.machine_time;
 			bytes <- to_binary(value);
-			float t1 <- machine_time;
+			float t1 <- gama.machine_time;
 			unknown restored <- from_binary(bytes);
-			float t2 <- machine_time;
+			float t2 <- gama.machine_time;
 			write_time <- write_time + (t1 - t0);
 			read_time <- read_time + (t2 - t1);
 		}
-		write "[" + name + "] size: " + length(bytes) + " chars | write: " + (write_time / repetitions) with_precision 2
-		+ " ms | read: " + (read_time / repetitions) with_precision 2 + " ms | free memory delta: "
-		+ ((memory_before - free_memory) / 1024 / 1024) with_precision 1 + " MB";
+		write "[" + title + "] size: " + length(bytes) + " chars | write: " + ((write_time / repetitions) with_precision 2)
+		+ " ms | read: " + ((read_time / repetitions) with_precision 2) + " ms | free memory delta: "
+		+ (((memory_before - gama.free_memory) / 1024 / 1024) with_precision 1) + " MB";
 	}
-
-	user_command "Run benchmark" {
+	
+	action serialize() {
 		list<int> ints <- list_with(100000, rnd(1000000));
 		list<string> strings <- list_with(20000, "text" + rnd(100000));
 		map<string, float> numbers <- map<string, float>(list_with(20000, rnd(100)) as_map (("k" + rnd(100000))::each));
 		create bench_agent number: nb_agents;
-		write "Backend: " + string(experiment) + " (see the preference or -Dgama.binary.serializer)";
+		write "Backend: " + string(gama.pref_binary_serializer);
 		do measure("100000 ints", ints);
 		do measure("20000 strings", strings);
 		do measure("map of 20000 floats", numbers);
 		do measure("list of " + nb_agents + " agents", list(bench_agent));
-		ask bench_agent { do die; }
+		ask bench_agent { do die(); }
+	}
+
+	user_command "Run benchmark" {
+		loop ser over: ["FST","Fory"] {
+			gama.pref_binary_serializer <- ser;
+			do serialize();
+		}
 	}
 
 }

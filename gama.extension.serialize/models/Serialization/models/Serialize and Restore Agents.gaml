@@ -17,7 +17,7 @@ global {
 	
 	list<string> serialized_people <- [];
 	
-	int number_of_people <- 100;
+	int number_of_people <- 5;
 	
 	init {
 		create people number: number_of_people;
@@ -29,7 +29,7 @@ global {
 	 */
 	action save_people_on_disk() {
 		ask people {
-			save self to: '../people/save'+int(self)+'.agent' format: 'json';
+			save self to: '../people/save'+int(self)+'.agent' format: 'binary';
 		}
 	}
 	
@@ -41,7 +41,6 @@ global {
 		ask people {
 			serialized_people << serialize(self);
 		}
-		write serialized_people;
 	}
 	
 	/**
@@ -70,6 +69,7 @@ global {
 	 */
 	action create_clones_from_memory() {
 		loop saved over: serialized_people {
+			write "Trying to create a people from " + saved;
 			create people from: saved;
 		}
 	}

@@ -33,7 +33,7 @@ public class SerializationPreferences {
 	public static final String SYSTEM_PROPERTY = "gama.binary.serializer";
 
 	/** The preference, declared in the API so that it is available before this bundle is activated. */
-	public static final Pref<String> BINARY_BACKEND = GamaPreferences.External.BINARY_SERIALIZER;
+	public static final Pref<String> BINARY_BACKEND = GamaPreferences.Experimental.BINARY_SERIALIZER;
 
 	/** Starts listening to changes of the preference. */
 	public static void listen() {

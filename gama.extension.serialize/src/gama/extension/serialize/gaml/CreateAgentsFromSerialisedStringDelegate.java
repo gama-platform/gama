@@ -61,7 +61,8 @@ public class CreateAgentsFromSerialisedStringDelegate implements ICreateDelegate
 	 */
 	@Override
 	public boolean acceptSource(final IScope scope, final Object source) {
-		return source instanceof String s && !s.isBlank() && s.getBytes()[0] == GAMA_AGENT_IDENTIFIER;
+		// Fory payloads start with a header bitmap byte equal to 0 (native Java mode); the legacy identifier is kept
+		return source instanceof String s && !s.isEmpty() && (s.charAt(0) == 0 || s.charAt(0) == GAMA_AGENT_IDENTIFIER);
 	}
 
 	/**
