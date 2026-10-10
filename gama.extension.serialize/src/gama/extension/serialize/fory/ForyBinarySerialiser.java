@@ -20,6 +20,7 @@ import org.apache.fory.resolver.TypeResolver;
 import org.apache.fory.serializer.Serializer;
 import org.locationtech.jts.geom.CoordinateSequenceFactory;
 
+import gama.api.additions.GamaClassLoader;
 import gama.api.constants.ISerialisationConstants;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.agent.AgentReference;
@@ -99,8 +100,8 @@ public class ForyBinarySerialiser extends AbstractBinarySerializer implements IS
 	 * Constructs a new {@code ForyBinarySerialiser} and registers all the GAMA type serialisers.
 	 */
 	public ForyBinarySerialiser() {
-		fory = Fory.builder().withLanguage(Language.JAVA).withClassLoader(ForyBinarySerialiser.class.getClassLoader())
-				.withAsyncCompilation(true).withClassVersionCheck(false).withRefTracking(true)
+		fory = Fory.builder().withLanguage(Language.JAVA).withClassLoader(GamaClassLoader.getInstance())
+				.withXlang(false).withAsyncCompilation(true).withClassVersionCheck(false).withRefTracking(true)
 				.requireClassRegistration(false).withJdkClassSerializableCheck(false).withCodegen(true)
 				.withCompatible(false).build();
 		register(IPoint.class, new IPointSerialiser());
