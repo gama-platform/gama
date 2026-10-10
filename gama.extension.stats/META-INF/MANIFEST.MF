@@ -5,17 +5,34 @@ Bundle-SymbolicName: gama.extension.stats;singleton:=true
 Bundle-Version: 0.0.0.qualifier
 Require-Bundle: gama.core,
  gama.api,
+ gama.extension.dataframe,
  gama.extension.maths,
  gama.dependencies,
  gama.annotations
 Bundle-ActivationPolicy: lazy
 Export-Package: gama.extension.stats,
  gama.extension.stats.analysis,
+ gama.extension.stats.rds,
  gama.extension.stats.sampling,
  gama.extension.stats.utils,
- org.moeaframework.util.sequence
+ org.moeaframework.util.sequence,
+ se.alipsa.rdatautils
 Bundle-ClassPath: .,
  libs/colt 2.1.4/colt-2.1.4.jar,
- libs/moeaframework 5.1/moeaframework-5.1.jar
+ libs/moeaframework 5.1/moeaframework-5.1.jar,
+ libs/renjin 3.5-beta76/rdatautil-1.0.0.jar,
+ libs/renjin 3.5-beta76/renjin-core-3.5-beta76.jar,
+ libs/renjin 3.5-beta76/renjin-appl-3.5-beta76.jar,
+ libs/renjin 3.5-beta76/renjin-asm-5.0.4b.jar,
+ libs/renjin 3.5-beta76/renjin-blas-3.5-beta76.jar,
+ libs/renjin 3.5-beta76/renjin-common-3.5-beta76.jar,
+ libs/renjin 3.5-beta76/renjin-guava-28.0b.jar,
+ libs/renjin 3.5-beta76/renjin-lapack-3.5-beta76.jar,
+ libs/renjin 3.5-beta76/renjin-nmath-3.5-beta76.jar,
+ libs/renjin 3.5-beta76/gcc-bridge-runtime-3.5-beta76.jar,
+ libs/renjin 3.5-beta76/commons-math-2.2.jar,
+ libs/renjin 3.5-beta76/commons-vfs2-2.0.jar,
+ libs/renjin 3.5-beta76/commons-compress-1.18.jar,
+ libs/renjin 3.5-beta76/xz-1.8.jar
 Bundle-RequiredExecutionEnvironment: JavaSE-25
 Automatic-Module-Name: gama.extension.stats
