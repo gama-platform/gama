@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>Multi-simulation</name>
-	<comment></comment>
+	<name>Batch Simulation</name>
+	<comment>batch plugin</comment>
 	<projects>
 	</projects>
 	<buildSpec>
@@ -13,6 +13,7 @@
 	</buildSpec>
 	<natures>
 		<nature>org.eclipse.xtext.ui.shared.xtextNature</nature>
-		<nature>msi.gama.application.gamaNature</nature>
+		<nature>gama.workspace.gamaNature</nature>
+		<nature>gama.workspace.pluginNature</nature>
 	</natures>
 </projectDescription>

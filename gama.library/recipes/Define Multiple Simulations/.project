@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>Model Exploration</name>
+	<name>Define Multiple Simulations</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -14,6 +14,6 @@
 	<natures>
 		<nature>org.eclipse.xtext.ui.shared.xtextNature</nature>
 		<nature>gama.workspace.gamaNature</nature>
-		<nature>gama.workspace.recipeNature</nature>
+		<nature>gama.workspace.builtinNature</nature>
 	</natures>
 </projectDescription>

@@ -315,11 +315,10 @@ public class DefaultExperimentController extends AbstractExperimentController {
 				try {
 					final boolean wasRunning = !isPaused() && !experiment.isAutorun();
 					paused = true;
-					currentScope.getGui().getStatus().waitStatus("Reloading...", IStatusMessage.SIMULATION_ICON,
-							() -> {
-								currentScope.getGui().showLaunchingOverlay(experiment.getName());
-								experiment.reload();
-							});
+					currentScope.getGui().getStatus().waitStatus("Reloading...", IStatusMessage.SIMULATION_ICON, () -> {
+						currentScope.getGui().showLaunchingOverlay(experiment.getName());
+						experiment.reload();
+					});
 					if (wasRunning) return processUserCommand(_START_CMD);
 					currentScope.getGui().getStatus().informStatus("Experiment reloaded",
 							IStatusMessage.SIMULATION_ICON);
@@ -438,7 +437,8 @@ public class DefaultExperimentController extends AbstractExperimentController {
 	 *            the throwable that caused the failure
 	 */
 	public void notifyExceptionAndCloseExperiment(final Throwable e) {
-		final IScope localScope = scope; // capture before concurrent dispose() can null it
+		IScope localScope = scope; // capture before concurrent dispose() can null it
+		if (localScope == null && e instanceof GamaRuntimeException gre) { localScope = gre.getScope(); }
 		if (e != null && localScope != null) {
 			final GamaRuntimeException gre = GamaRuntimeException.create(e, localScope);
 			// Report to the errors view BEFORE closing so that isDisposing() is still false
@@ -455,8 +455,8 @@ public class DefaultExperimentController extends AbstractExperimentController {
 	 *
 	 * <p>
 	 * This is used for initialisation-time errors (thrown from {@link #schedule}) where the simulation has not been
-	 * fully created yet. The experiment perspective remains visible so the error stays accessible. Any subsequent
-	 * model launch will close this failed experiment cleanly via {@link gama.api.GAMA#runGuiExperiment}.
+	 * fully created yet. The experiment perspective remains visible so the error stays accessible. Any subsequent model
+	 * launch will close this failed experiment cleanly via {@link gama.api.GAMA#runGuiExperiment}.
 	 * </p>
 	 *
 	 * <p>
@@ -481,7 +481,8 @@ public class DefaultExperimentController extends AbstractExperimentController {
 	 *            the throwable thrown during experiment initialisation
 	 */
 	protected void notifyExceptionAndReloadExperiment(final Throwable e) {
-		final IScope localScope = scope;
+		IScope localScope = scope;
+		if (localScope == null && e instanceof GamaRuntimeException gre) { localScope = gre.getScope(); }
 		final GamaRuntimeException gre =
 				e != null && localScope != null ? GamaRuntimeException.create(e, localScope) : null;
 
@@ -591,11 +592,9 @@ public class DefaultExperimentController extends AbstractExperimentController {
 		// Block if paused - wait for START or STEP command to release lock.
 		// If the execution thread is interrupted while waiting, return immediately
 		// so it can exit the while(experimentAlive) loop cleanly.
-		if (paused) {
-			// dispose() sets experimentAlive = false BEFORE releasing the lock so that
-			// the execution thread can exit cleanly without executing one extra step.
-			if (!lock.acquire() || !experimentAlive) return;
-		}
+		// dispose() sets experimentAlive = false BEFORE releasing the lock so that
+		// the execution thread can exit cleanly without executing one extra step.
+		if (paused && (!lock.acquire() || !experimentAlive)) return;
 
 		// Cache scope reference to avoid repeated volatile reads
 		final IScope currentScope = scope;

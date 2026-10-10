@@ -11,6 +11,9 @@
 package gama.api.runtime;
 
 import java.util.Set;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import gama.api.kernel.simulation.ISimulationAgent;
 
@@ -137,5 +140,23 @@ public interface ISimulationRunner {
 	 * @return true if at least one simulation is registered, false otherwise
 	 */
 	boolean hasSimulations();
+
+	/**
+	 * Lets an already added simulation run on its own thread, without any synchronization with the other simulations:
+	 * it steps as many times as needed until {@code isOver} is true, then {@code onOver} is called (from the
+	 * simulation's thread) and the thread terminates. The simulation is not taken into account by {@link #step()}
+	 * anymore.
+	 *
+	 * @param agent
+	 *            a simulation previously added with {@link #add(ISimulationAgent)}
+	 * @param isOver
+	 *            evaluated after each step (and in case of an error); true when the simulation must stop
+	 * @param isPaused
+	 *            evaluated before each step; the simulation waits as long as it is true (unless it is over)
+	 * @param onOver
+	 *            called once, when the simulation is over
+	 */
+	void runAutonomously(ISimulationAgent agent, Predicate<ISimulationAgent> isOver, BooleanSupplier isPaused,
+			Consumer<ISimulationAgent> onOver);
 
 }
