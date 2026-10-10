@@ -21,6 +21,8 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.species.IExperimentSpecies;
@@ -205,9 +207,20 @@ public class SimulationRunner implements ISimulationRunner {
 			setDaemon(true);
 		}
 
+		/** Shows the error to the user (and not only in the console) */
+		private void report(final Throwable tg) {
+			try {
+				final var scope = agent.getScope();
+				GAMA.reportError(scope, tg instanceof GamaRuntimeException g ? g : GamaRuntimeException.create(tg, scope),
+						false);
+			} catch (final Throwable ignored) {
+				EXCEPTION_HANDLER.uncaughtException(Thread.currentThread(), tg);
+			}
+		}
+
 		/** Steps the simulation as fast as possible until it is over. */
 		private void runFreely(final Autonomy a) {
-			boolean over = false;
+			boolean over = false, failed = false;
 			while (!over && !shutdown && runnables.get(agent) == this) {
 				try {
 					while (runnables.get(agent) == this && a.isPaused.getAsBoolean() && !a.isOver.test(agent)
@@ -216,15 +229,17 @@ public class SimulationRunner implements ISimulationRunner {
 					}
 					if (runnables.get(agent) == this && !a.isOver.test(agent) && !shutdown) { agent.step(); }
 				} catch (Throwable tg) {
-					EXCEPTION_HANDLER.uncaughtException(Thread.currentThread(), tg);
+					// A simulation that fails would otherwise fail again at every step, forever
+					report(tg);
+					failed = true;
 				}
 				try {
-					over = agent.dead() || a.isOver.test(agent);
+					over = failed || agent.dead() || a.isOver.test(agent);
 				} catch (final Throwable tg) {
 					EXCEPTION_HANDLER.uncaughtException(Thread.currentThread(), tg);
 					over = true;
 				}
-				if (!shutdown && runnables.get(agent) == this) { a.onOver.accept(agent); }
+				if (over && !shutdown && runnables.get(agent) == this) { a.onOver.accept(agent); }
 			}
 		}
 

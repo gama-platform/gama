@@ -92,10 +92,10 @@ experiment exhaustive_exploration parent: batch_abstract type: batch keep_seed: 
 // repeating each simulation three times (the aggregated fitness correspond to the mean fitness), 
 experiment explicit_exploration parent: batch_abstract type: batch repeat: 3 keep_seed: true until: world.stop_sim() or ( time > end_cycle ) {
 	method exploration with: [
-		[prey_max_transfer::0.1, predator_energy_transfer:: 0.1],
-		[prey_max_transfer::0.5, predator_energy_transfer:: 0.2],
-		[prey_max_transfer::1.0, predator_energy_transfer:: 0.5],
-		[prey_max_transfer::0.5, predator_energy_transfer:: 0.1]
+		["prey_max_transfer"::0.1, "predator_energy_transfer":: 0.1],
+		["prey_max_transfer"::0.5, "predator_energy_transfer":: 0.2],
+		["prey_max_transfer"::1.0, "predator_energy_transfer":: 0.5],
+		["prey_max_transfer"::0.5, "predator_energy_transfer":: 0.1]
 	];
 }
 
