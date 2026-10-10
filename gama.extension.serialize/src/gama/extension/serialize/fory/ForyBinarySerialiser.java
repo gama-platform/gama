@@ -100,8 +100,9 @@ public class ForyBinarySerialiser extends AbstractBinarySerializer implements IS
 	 */
 	public ForyBinarySerialiser() {
 		fory = Fory.builder().withLanguage(Language.JAVA).withClassLoader(ForyBinarySerialiser.class.getClassLoader())
-				.withRefTracking(true).requireClassRegistration(false).withJdkClassSerializableCheck(false)
-				.withCodegen(false).build();
+				.withAsyncCompilation(true).withClassVersionCheck(false).withRefTracking(true)
+				.requireClassRegistration(false).withJdkClassSerializableCheck(false).withCodegen(true)
+				.withCompatible(false).build();
 		register(IPoint.class, new IPointSerialiser());
 		register(IShape.class, new IShapeSerialiser());
 		register(IObject.class, new IObjectSerialiser());
