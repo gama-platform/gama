@@ -1,0 +1,43 @@
+/**
+* Name: SystemOperatorsTest
+* Author: Antigravity
+* Description: Tests the system and environment operators
+* Tags: core, system, test
+*/
+
+model SystemOperatorsTestModel
+
+species sys_agent {}
+
+experiment SystemOperatorsTest type: test autorun: true {
+	
+	test "System Operators" {
+		create sys_agent number: 1 returns: created_agents;
+		sys_agent ag <- created_agents[0];
+		
+		// 'dead' operator checks if an agent is dead
+		assert dead(ag) = false;
+		
+		ask ag { do die(); }
+		assert dead(ag) = true;
+		
+		// 'copy' operator
+		int a <- 5;
+		int b <- copy(a);
+		assert a = b;
+
+		// on a container, 'copy' must be a real copy and not an alias
+		list<int> l <- [1, 2, 3];
+		list<int> lc <- copy(l);
+		assert lc = [1, 2, 3];
+		lc <+ 4;
+		assert length(l) = 3;
+		assert length(lc) = 4;
+
+		map<string, int> m <- ["a"::1];
+		map<string, int> mc <- copy(m);
+		mc["b"] <- 2;
+		assert length(m) = 1;
+		assert length(mc) = 2;
+	}
+}

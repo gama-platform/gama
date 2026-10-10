@@ -34,7 +34,7 @@ global parent: physical_world {
 	//The simulation itself is aligned with this number (see experiment.minimum_cycle_duration)
 	float step <-1.0/120;
 	//Gives access (or not) to an improved (but slower) detection collision algorithm
-	bool better_collision_detection <- false;
+	bool accurate_collision_detection <- true;
 	// Artificially high gravity to make sure that the balls stay on the ground
 	point gravity <- {0,0,-20};
 

@@ -1,0 +1,271 @@
+/**
+* Name: TrafficAdvancedTest
+* Description: Tests the driving skills of the traffic extension: the documented defaults of
+*   the 'driving', 'road_skill' and 'intersection_skill' attributes, and road registration.
+* Tags: traffic, extension, test
+*/
+
+model TrafficAdvancedTestModel
+
+species intersection skills: [intersection_skill] { }
+
+species road skills: [road_skill] { }
+
+species vehicle skills: [driving] { }
+
+species tuned_vehicle skills: [driving] {
+	float max_speed <- 10.0;
+	float vehicle_length <- 3.0;
+	float min_safety_distance <- 2.0;
+}
+
+experiment TrafficAdvancedTest type: test autorun: true {
+
+	test "Documented defaults of the driving skill" {
+		create vehicle number: 1 returns: cars;
+		vehicle v <- cars[0];
+
+		assert v.speed = 0.0;
+		assert v.acceleration = 0.0;
+		assert v.current_index = 0;
+		assert v.lowest_lane = 0;
+		assert v.num_lanes_occupied = 1;
+		assert v.vehicle_length = 0.0;
+		assert v.speed_coeff = 1.0;
+		assert v.max_speed = 50.0;
+		assert v.safety_distance_coeff = 1.0;
+		assert v.min_safety_distance = 0.5;
+		assert v.time_headway = 1.5;
+		assert v.max_acceleration = 0.3;
+		assert v.max_deceleration = 3.0;
+		assert v.delta_idm = 4.0;
+		assert v.politeness_factor = 0.5;
+	}
+
+	test "A vehicle starts on no road and with no path" {
+		create vehicle number: 1 returns: cars;
+		vehicle v <- cars[0];
+
+		assert v.current_road = nil;
+		assert v.next_road = nil;
+		assert v.current_path = nil;
+		assert v.current_target = nil;
+		assert v.final_target = nil;
+	}
+
+	test "Species-level overrides win over the skill defaults" {
+		create tuned_vehicle number: 1 returns: cars;
+		tuned_vehicle v <- cars[0];
+
+		assert v.max_speed = 10.0;
+		assert v.vehicle_length = 3.0;
+		assert v.min_safety_distance = 2.0;
+		// not overridden, so still the skill default
+		assert v.speed_coeff = 1.0;
+	}
+
+	test "Documented defaults of the road skill" {
+		create road number: 1 returns: roads;
+		road r <- roads[0];
+
+		assert r.num_lanes = 2;
+		assert r.maxspeed = 50 #km / #h;
+		assert r.linked_road = nil;
+		assert empty(r.all_agents);
+	}
+
+	test "Documented defaults of the intersection skill" {
+		create intersection number: 1 returns: nodes;
+		intersection n <- nodes[0];
+
+		assert empty(n.roads_in);
+		assert empty(n.roads_out);
+		assert empty(n.priority_roads);
+		assert n.stop != nil;
+		assert n.block != nil;
+	}
+
+	/**
+	 * Builds an L-shaped network of two one-lane roads and returns its three intersections, in order:
+	 * 	{0, 50} --first road--> {100, 50} --second road--> {100, 0}
+	 */
+	list<intersection> build_network() {
+		// start from a clean slate: the agents of the other tests would be part of the driving graph
+		do clear_network;
+		create intersection with: [location::{0, 50}] returns: start_nodes;
+		create intersection with: [location::{100, 50}] returns: middle_nodes;
+		create intersection with: [location::{100, 0}] returns: end_nodes;
+		create road with: [shape::line([{0, 50}, {100, 50}]), num_lanes::1, maxspeed::20.0];
+		create road with: [shape::line([{100, 50}, {100, 0}]), num_lanes::1, maxspeed::20.0];
+		return [start_nodes[0], middle_nodes[0], end_nodes[0]];
+	}
+
+	action clear_network() {
+		ask vehicle { do die; }
+		ask road { do die; }
+		ask intersection { do die; }
+	}
+
+	test "A driving graph links the roads to their intersections" {
+		list<intersection> nodes <- build_network();
+		graph network <- as_driving_graph(road, intersection);
+		road first_road <- road first_with (each.source_node = nodes[0]);
+		road second_road <- road first_with (each.source_node = nodes[1]);
+
+		assert length(network.vertices) = 3;
+		assert length(network.edges) = 2;
+		assert first_road.target_node = nodes[1];
+		assert second_road.target_node = nodes[2];
+		assert nodes[0].roads_out = [first_road];
+		assert empty(nodes[0].roads_in);
+		assert nodes[1].roads_in = [first_road];
+		assert nodes[1].roads_out = [second_road];
+		assert nodes[2].roads_in = [second_road];
+		assert empty(nodes[2].roads_out);
+		do clear_network;
+	}
+
+	test "A path is computed along the roads" {
+		list<intersection> nodes <- build_network();
+		graph network <- as_driving_graph(road, intersection);
+		road first_road <- road first_with (each.source_node = nodes[0]);
+		road second_road <- road first_with (each.source_node = nodes[1]);
+		create vehicle with: [location::nodes[0].location, max_speed::10.0, vehicle_length::2.0] returns: cars;
+		vehicle car <- cars[0];
+
+		path route <- nil;
+		ask car { route <- compute_path(graph: network, target: nodes[2]); }
+		assert route != nil;
+		assert route.edges = [first_road, second_road];
+		assert car.current_path = route;
+		assert car.final_target = nodes[2];
+		// computing a path does not move the vehicle
+		assert car.location = nodes[0].location;
+		assert car.speed = 0.0;
+		do clear_network;
+	}
+
+	test "Driving moves the vehicle along its path, one road after the other" {
+		list<intersection> nodes <- build_network();
+		graph network <- as_driving_graph(road, intersection);
+		road first_road <- road first_with (each.source_node = nodes[0]);
+		road second_road <- road first_with (each.source_node = nodes[1]);
+		create vehicle with: [location::nodes[0].location, max_speed::10.0, vehicle_length::2.0] returns: cars;
+		vehicle car <- cars[0];
+		ask car { path route <- compute_path(graph: network, target: nodes[2]); }
+
+		// the vehicle starts from rest and accelerates
+		ask car { do drive; }
+		assert car.speed > 0.0;
+		assert car.speed <= car.max_acceleration;
+		assert car.location.x > 0.0;
+		assert car.location.y = 50.0;
+		assert car.current_road = first_road;
+		assert first_road.all_agents contains car;
+		float speed_after_one_step <- car.speed;
+
+		loop times: 5 { ask car { do drive; } }
+		assert car.speed > speed_after_one_step;
+		assert car.speed <= car.max_speed;
+		assert car.current_road = first_road;
+
+		// after a while it has turned onto the second road
+		loop times: 25 { ask car { do drive; } }
+		assert car.current_road = second_road;
+		assert car.location.x = 100.0;
+		assert car.location.y < 50.0;
+		assert second_road.all_agents contains car;
+		assert not (first_road.all_agents contains car);
+		assert car.distance_to_goal = car.location distance_to nodes[2].location;
+		do clear_network;
+	}
+
+	test "A vehicle stops when it reaches its target" {
+		list<intersection> nodes <- build_network();
+		graph network <- as_driving_graph(road, intersection);
+		create vehicle with: [location::nodes[0].location, max_speed::10.0, vehicle_length::2.0] returns: cars;
+		vehicle car <- cars[0];
+		ask car { path route <- compute_path(graph: network, target: nodes[2]); }
+
+		// once arrived the vehicle has no path anymore, and driving again would raise an error
+		int steps <- 0;
+		loop while: car.final_target != nil and steps < 500 {
+			ask car { do drive; }
+			steps <- steps + 1;
+		}
+		assert steps < 500;
+		// 150 meters at 10 m/s at most
+		assert steps >= 15;
+		assert car.location = nodes[2].location;
+		assert car.final_target = nil;
+		assert car.current_path = nil;
+
+		bool driving_without_path_failed <- false;
+		try {
+			ask car { do drive; }
+		} catch {
+			driving_without_path_failed <- true;
+		}
+		assert driving_without_path_failed;
+		do clear_network;
+	}
+
+	test "The speed limit of the road caps the speed of the vehicle" {
+		list<intersection> nodes <- build_network();
+		ask road { maxspeed <- 2.0; }
+		graph network <- as_driving_graph(road, intersection);
+		create vehicle with: [location::nodes[0].location, max_speed::10.0, vehicle_length::2.0] returns: cars;
+		vehicle car <- cars[0];
+		ask car { path route <- compute_path(graph: network, target: nodes[2]); }
+
+		loop times: 30 { ask car { do drive; } }
+		assert car.speed > 0.0;
+		assert car.speed <= 2.0;
+		do clear_network;
+	}
+
+	test "Driving without a path raises a proper error" {
+		list<intersection> nodes <- build_network();
+		create vehicle with: [location::nodes[0].location, max_speed::10.0, vehicle_length::2.0] returns: cars;
+		string problem <- nil;
+		try { ask cars[0] { do drive; } } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert !(problem contains "Java error");
+		do clear_network;
+	}
+
+	test "A path to the starting point" {
+		list<intersection> nodes <- build_network();
+		graph network <- as_driving_graph(road, intersection);
+		create vehicle with: [location::nodes[0].location, max_speed::10.0, vehicle_length::2.0] returns: cars;
+		string problem <- nil;
+		path route <- nil;
+		try { ask cars[0] { route <- compute_path(graph: network, target: nodes[0]); } } catch { problem <- #current_error; }
+		assert problem = nil or !(problem contains "Java error");
+		do clear_network;
+	}
+
+	test "A vehicle behind another one keeps its distance" {
+		list<intersection> nodes <- build_network();
+		graph network <- as_driving_graph(road, intersection);
+		create vehicle with: [location::nodes[0].location, max_speed::10.0, vehicle_length::2.0] returns: leaders;
+		vehicle leader <- leaders[0];
+		ask leader { path route <- compute_path(graph: network, target: nodes[2]); }
+		loop times: 10 { ask leader { do drive; } }
+		create vehicle with: [location::nodes[0].location, max_speed::10.0, vehicle_length::2.0] returns: followers;
+		vehicle follower <- followers[0];
+		ask follower { path route <- compute_path(graph: network, target: nodes[2]); }
+		list<float> gaps <- [];
+		loop times: 10 {
+			ask follower { do drive; }
+			ask leader { do drive; }
+			if (leader.current_road = follower.current_road) {
+				gaps <+ leader.location distance_to follower.location;
+			}
+		}
+		assert not empty(gaps);
+		// they never overlap
+		assert gaps all_match (each >= leader.vehicle_length);
+		do clear_network;
+	}
+}

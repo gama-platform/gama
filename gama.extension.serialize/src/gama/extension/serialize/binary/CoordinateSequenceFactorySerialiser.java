@@ -12,20 +12,22 @@ package gama.extension.serialize.binary;
 
 import org.locationtech.jts.geom.CoordinateSequenceFactory;
 
+import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
+import gama.api.kernel.serialization.IGamaObjectInput;
+import gama.api.kernel.serialization.IGamaObjectOutput;
+import gama.api.kernel.serialization.IGamaObjectSerializer;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.geometry.GeometryUtils;
-import gama.extension.serialize.IGamaObjectInput;
-import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link CoordinateSequenceFactory} instances. The factory is a singleton obtained from the global
- * geometry factory. Serialisation writes a fixed marker string ({@value #MARKER}); deserialisation always returns the
- * singleton via {@link GeometryUtils#getGeometryFactory()}.
+ * Binary serialiser for {@link CoordinateSequenceFactory} instances. The factory is a singleton obtained from the
+ * global geometry factory. Serialisation writes a fixed marker string ({@value #MARKER}); deserialisation always
+ * returns the singleton via {@link GeometryUtils#getGeometryFactory()}.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class CoordinateSequenceFactorySerialiser extends FSTIndividualSerialiser<CoordinateSequenceFactory> {
+public class CoordinateSequenceFactorySerialiser implements IGamaObjectSerializer<CoordinateSequenceFactory> {
 
 	/**
 	 * Marker string written to the stream to identify the coordinate sequence factory placeholder.
@@ -43,7 +45,8 @@ class CoordinateSequenceFactorySerialiser extends FSTIndividualSerialiser<Coordi
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final IGamaObjectOutput out, final CoordinateSequenceFactory o) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final CoordinateSequenceFactory o,
+			final TransientSerializationContext context) throws Exception {
 		out.writeStringUTF(MARKER);
 	}
 

@@ -17,6 +17,7 @@ import gama.annotations.example;
 import gama.annotations.getter;
 import gama.annotations.operator;
 import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.variable;
 import gama.annotations.vars;
 import gama.annotations.support.IConcept;
@@ -300,7 +301,11 @@ public interface IMap<K, V> extends Map<K, V>, IContainer.Modifiable<K, V, K, V>
 					value = "reverse(m)",
 					equals = "map([111::1,222::2,333::3,444::4])") })
 
-	@test ("map<int,int> m2 <- [1::111,2::222, 3::333, 4::444]; reverse(m2) = map([111::1,222::2,333::3,444::4])")
+	@tests ({
+			@test ("map<int,int> m2 <- [1::111,2::222, 3::333, 4::444]; reverse(m2) = map([111::1,222::2,333::3,444::4])"),
+			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; reverse(numbers) = [6, 2, 9, 5, 1, 4, 1, 3]"),
+			@test ("reverse(reverse(\"hello\")) = \"hello\"")
+	})
 
 	@Override
 	IMap reverse(final IScope scope);

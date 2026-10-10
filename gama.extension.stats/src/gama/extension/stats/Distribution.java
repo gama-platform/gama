@@ -15,6 +15,7 @@ import java.util.Arrays;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
@@ -326,6 +327,7 @@ public class Distribution {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = { "distribution2d_of" },
 			can_be_const = false,
@@ -385,6 +387,7 @@ public class Distribution {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = { "distribution2d_of" },
 			can_be_const = false,
@@ -437,6 +440,7 @@ public class Distribution {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = { "distribution2d_of" },
 			can_be_const = false,
@@ -639,6 +643,7 @@ public class Distribution {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = { "distribution_of" },
 			can_be_const = false,
@@ -679,6 +684,7 @@ public class Distribution {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = { "distribution_of" },
 			can_be_const = false,
@@ -725,6 +731,7 @@ public class Distribution {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = { "distribution_of" },
 			can_be_const = false,

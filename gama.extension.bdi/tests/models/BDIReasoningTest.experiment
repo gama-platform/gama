@@ -1,0 +1,271 @@
+/**
+* Name: BDIReasoningTest
+* Description: Tests the reasoning cycle of the simple_bdi architecture (beliefs, rules, desires, intentions and
+* 	plans), its other mental states (uncertainties, ideals, obligations), and the predicates, mental states,
+* 	emotions and social links it manipulates
+* Tags: bdi, architecture, predicate, emotion, test
+*/
+model BDIReasoningTestModel
+
+species reasoning_agent control: simple_bdi {
+	/** The plans that were executed, in order */
+	list<string> executed_plans <- [];
+	predicate hungry <- new_predicate("hungry");
+	predicate eat <- new_predicate("eat");
+	predicate rest <- new_predicate("rest");
+
+	// believing to be hungry gives a strong desire to eat
+	rule belief: hungry new_desire: eat strength: 5.0;
+
+	plan do_eat intention: eat {
+		executed_plans <+ "eat";
+		do remove_belief(hungry);
+		do remove_intention(eat, true);
+	}
+
+	plan do_rest intention: rest {
+		executed_plans <+ "rest";
+		do remove_intention(rest, true);
+	}
+}
+
+species social_agent control: simple_bdi {
+	bool use_emotions_architecture <- true;
+	bool use_social_architecture <- true;
+}
+
+experiment BDIReasoningTest type: test autorun: true {
+
+	test "Predicates" {
+		predicate plain <- new_predicate("p");
+		predicate valued <- new_predicate("q", ["k"::1]);
+		assert plain.name = "p";
+		assert plain.is_true;
+		assert valued.values = ["k"::1];
+		// two predicates with the same name are equal
+		assert plain = new_predicate("p");
+		assert plain != valued;
+
+		assert not new_predicate("p", false).is_true;
+		// 'not' gives the opposite predicate
+		predicate negated <- not plain;
+		assert negated.name = "p";
+		assert not negated.is_true;
+		assert (plain with_values ["a"::1]).values = ["a"::1];
+	}
+
+	test "Mental states and emotions" {
+		predicate plain <- new_predicate("p");
+		mental_state belief_state <- new_mental_state("belief", plain, 0.7);
+		assert belief_state.modality = "belief";
+		assert belief_state.predicate = plain;
+		assert belief_state.strength = 0.7;
+		assert new_mental_state("desire", plain, 0.5, 10).lifetime = 10;
+
+		emotion joy <- new_emotion("joy", 0.8);
+		assert joy.name = "joy";
+		assert joy.intensity = 0.8;
+		assert new_emotion("fear", 0.3, new_predicate("wolf")).about = new_predicate("wolf");
+		assert new_emotion("fear", 0.3, 0.1).decay = 0.1;
+	}
+
+	test "Beliefs can be added, queried and removed" {
+		create reasoning_agent returns: created_agents;
+		reasoning_agent ag <- created_agents[0];
+		predicate known <- new_predicate("known");
+		predicate unknown_fact <- new_predicate("unknown");
+		bool has_known; bool has_unknown; bool has_known_after_removal; int nb_beliefs;
+		ask ag {
+			do add_belief(known);
+			has_known <- has_belief(known);
+			has_unknown <- has_belief(unknown_fact);
+			nb_beliefs <- length(get_beliefs(known));
+			do remove_belief(known);
+			has_known_after_removal <- has_belief(known);
+		}
+		assert has_known;
+		assert not has_unknown;
+		assert nb_beliefs = 1;
+		assert not has_known_after_removal;
+		assert empty(ag.belief_base);
+		ask created_agents { do die; }
+	}
+
+	test "A belief can be replaced by another" {
+		create reasoning_agent returns: created_agents;
+		reasoning_agent ag <- created_agents[0];
+		predicate old_fact <- new_predicate("old");
+		predicate new_fact <- new_predicate("new", ["k"::1]);
+		bool has_old; bool has_new; bool found_by_name;
+		ask ag {
+			do add_belief(old_fact);
+			do replace_belief(old_fact, new_fact);
+			has_old <- has_belief(old_fact);
+			has_new <- has_belief(new_fact);
+			found_by_name <- get_belief_with_name("new") != nil;
+		}
+		assert not has_old;
+		assert has_new;
+		assert found_by_name;
+		assert length(ag.belief_base) = 1;
+		ask created_agents { do die; }
+	}
+
+	test "A rule turns a belief into a desire, executed by the matching plan" {
+		create reasoning_agent returns: created_agents;
+		reasoning_agent ag <- created_agents[0];
+		ask ag { do add_belief(hungry); }
+		assert empty(ag.executed_plans);
+
+		ask ag { do _step_; }
+		assert ag.executed_plans = ["eat"];
+		// the plan removed the belief and its own intention
+		bool still_hungry;
+		ask ag { still_hungry <- has_belief(hungry); }
+		assert not still_hungry;
+		assert empty(ag.intention_base);
+
+		// with nothing left to desire, nothing more is executed
+		ask ag { do _step_; }
+		assert ag.executed_plans = ["eat"];
+		ask created_agents { do die; }
+	}
+
+	test "The strongest desire is pursued first" {
+		create reasoning_agent returns: created_agents;
+		reasoning_agent ag <- created_agents[0];
+		ask ag {
+			do add_desire(rest);
+			do add_desire(predicate: eat, strength: 9.0);
+		}
+		ask ag { do _step_; }
+		assert ag.executed_plans = ["eat"];
+		ask ag { do _step_; }
+		assert ag.executed_plans = ["eat", "rest"];
+		ask created_agents { do die; }
+	}
+
+	test "Intentions can be set directly" {
+		create reasoning_agent returns: created_agents;
+		reasoning_agent ag <- created_agents[0];
+		bool rest_is_current; bool eat_is_current; bool has_an_intention; int nb_plans;
+		ask ag {
+			do add_intention(rest);
+			rest_is_current <- is_current_intention(rest);
+			eat_is_current <- is_current_intention(eat);
+			has_an_intention <- get_current_intention() != nil;
+			nb_plans <- length(get_plans());
+		}
+		assert rest_is_current;
+		assert not eat_is_current;
+		assert has_an_intention;
+		assert length(ag.intention_base) = 1;
+		assert nb_plans = 2;
+
+		ask ag { do _step_; }
+		assert ag.executed_plans = ["rest"];
+		ask created_agents { do die; }
+	}
+
+	test "Uncertainties, ideals and obligations have their own bases" {
+		create reasoning_agent returns: created_agents;
+		reasoning_agent ag <- created_agents[0];
+		predicate fact <- new_predicate("fact");
+		bool uncertain; bool uncertain_after_removal; bool ideal; bool obliged;
+		ask ag {
+			do add_uncertainty(fact);
+			uncertain <- has_uncertainty(fact);
+			do remove_uncertainty(fact);
+			uncertain_after_removal <- has_uncertainty(fact);
+			do add_ideal(fact);
+			ideal <- has_ideal(fact);
+			do add_obligation(fact);
+			obliged <- has_obligation(fact);
+		}
+		assert uncertain;
+		assert not uncertain_after_removal;
+		assert ideal;
+		assert obliged;
+		assert empty(ag.uncertainty_base);
+		assert length(ag.ideal_base) = 1;
+		assert length(ag.obligation_base) = 1;
+		// none of them is a belief
+		assert empty(ag.belief_base);
+		ask created_agents { do die; }
+	}
+
+	test "The bases can be cleared" {
+		create reasoning_agent returns: created_agents;
+		reasoning_agent ag <- created_agents[0];
+		ask ag {
+			do add_belief(new_predicate("a"));
+			do add_belief(new_predicate("b"));
+			do add_desire(rest);
+			do add_intention(eat);
+		}
+		assert length(ag.belief_base) = 2;
+		assert not empty(ag.desire_base);
+		assert not empty(ag.intention_base);
+		ask ag {
+			do clear_beliefs();
+			do clear_desires();
+			do clear_intentions();
+		}
+		assert empty(ag.belief_base);
+		assert empty(ag.desire_base);
+		assert empty(ag.intention_base);
+		ask created_agents { do die; }
+	}
+
+	test "Default parameters of the architecture" {
+		create reasoning_agent returns: created_agents;
+		reasoning_agent ag <- created_agents[0];
+		assert ag.plan_persistence = 1.0;
+		assert ag.intention_persistence = 1.0;
+		assert ag.probabilistic_choice = false;
+		assert empty(ag.belief_base);
+		assert empty(ag.desire_base);
+		assert empty(ag.intention_base);
+		ask created_agents { do die; }
+	}
+
+	test "Emotions" {
+		create social_agent returns: created_agents;
+		social_agent ag <- created_agents[0];
+		emotion joy <- new_emotion("joy", 0.8);
+		bool joyful; bool joyful_after_removal; float felt_intensity;
+		ask ag {
+			do add_emotion(joy);
+			joyful <- has_emotion(joy);
+			felt_intensity <- get_emotion(joy).intensity;
+			do remove_emotion(joy);
+			joyful_after_removal <- has_emotion(joy);
+		}
+		assert joyful;
+		assert felt_intensity = 0.8;
+		assert not joyful_after_removal;
+		ask created_agents { do die; }
+	}
+
+	test "Social links" {
+		create social_agent number: 2 returns: created_agents;
+		social_agent ag <- created_agents[0];
+		social_agent friend <- created_agents[1];
+		bool linked; bool linked_to_itself; social_link link;
+		ask ag {
+			// liking, dominance, solidarity, familiarity
+			do add_social_link(new_social_link(friend, 0.5, 0.1, 0.2, 0.3));
+			linked <- has_social_link(new_social_link(friend));
+			linked_to_itself <- has_social_link(new_social_link(self));
+			link <- get_social_link(new_social_link(friend));
+		}
+		assert linked;
+		assert not linked_to_itself;
+		assert link.agent = friend;
+		assert link.liking = 0.5;
+		assert link.dominance = 0.1;
+		assert link.solidarity = 0.2;
+		assert link.familiarity = 0.3;
+		ask created_agents { do die; }
+	}
+}

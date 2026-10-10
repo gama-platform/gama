@@ -1,0 +1,91 @@
+/**
+* Name: DateRobustnessTest
+* Description: Feeds dates with absurd values (impossible days and months, empty strings, huge shifts, invalid
+* 	patterns). An invalid input may be rejected, but with a GAML error and not with an internal Java exception;
+* 	when it is accepted, the result must be a valid date
+* Tags: robustness, date, test
+*/
+
+experiment DateRobustnessTest type: test autorun: true {
+
+	bool handled(string problem) {
+		return problem = nil ? true : !(problem contains "Java error");
+	}
+
+	test "Impossible dates written as strings are rejected" {
+		string problem <- nil;
+		try { date d <- date("2026-13-45"); } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+		problem <- nil;
+		try { date d <- date("2026-02-30"); } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+	}
+
+	test "Impossible dates written as lists are rejected" {
+		string problem <- nil;
+		try { date d <- date([2026, 13, 1]); } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+		problem <- nil;
+		try { date d <- date([2026, 2, 30]); } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+	}
+
+	test "An empty string is not a date" {
+		string problem <- nil;
+		date parsed <- nil;
+		try { parsed <- date(""); } catch { problem <- #current_error; }
+		assert handled(problem);
+		// it must not silently become the current date
+		assert problem != nil or parsed = nil;
+	}
+
+	test "Strings that do not match the pattern are rejected" {
+		string problem <- nil;
+		try { date d <- date("x", "yyyy"); } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+		problem <- nil;
+		try { date d <- date("2026-01-01", ""); } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+	}
+
+	test "Huge shifts" {
+		date reference <- date("2026-01-01T00:00:00");
+		string problem <- nil;
+		date shifted <- nil;
+		try { shifted <- reference plus_days #max_int; } catch { problem <- #current_error; }
+		assert handled(problem);
+		assert problem != nil or shifted > reference;
+
+		problem <- nil;
+		try { shifted <- reference plus_years #max_int; } catch { problem <- #current_error; }
+		assert handled(problem);
+		assert problem != nil or shifted > reference;
+
+		problem <- nil;
+		try { shifted <- reference plus_months -100000; } catch { problem <- #current_error; }
+		assert handled(problem);
+		assert problem != nil or shifted < reference;
+	}
+
+	test "Dates built from absurd numbers" {
+		string problem <- nil;
+		try { date d <- date(#infinity); } catch { problem <- #current_error; }
+		assert handled(problem);
+		problem <- nil;
+		try { date d <- date(-1); } catch { problem <- #current_error; }
+		assert handled(problem);
+	}
+
+	test "Formatting with an invalid pattern" {
+		string problem <- nil;
+		try { string s <- string(date("2026-01-01T00:00:00"), "not a pattern QQQ"); } catch { problem <- #current_error; }
+		assert handled(problem);
+	}
+
+}

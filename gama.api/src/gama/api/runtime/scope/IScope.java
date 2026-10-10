@@ -357,7 +357,8 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 *
 	 * @param topology
 	 *            The topology to set
-	 * @return The topology that was set
+	 * @return The topology that was previously set on this scope (nil if the one of the current agent was in use), to
+	 *         be passed back in order to restore the previous state
 	 */
 	ITopology setTopology(ITopology topology);
 

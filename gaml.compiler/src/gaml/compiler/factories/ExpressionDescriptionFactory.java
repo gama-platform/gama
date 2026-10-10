@@ -402,7 +402,11 @@ public class ExpressionDescriptionFactory extends GamlSwitch<IExpressionDescript
 			default:
 				break;
 		}
-		if (StringUtils.isGamaString(s)) return createLabel(StringUtils.toJavaString(s));
+		// Only a plain quoted literal can be taken as is. With a quote or an escape inside, it is either an
+		// expression that begins and ends with a string ("'a' + 'b'") or a string to unescape ("'it\'s'"): both
+		// are left to the parser
+		if (StringUtils.isGamaString(s) && s.indexOf('\'', 1) == s.length() - 1 && s.indexOf('\\') == -1)
+			return createLabel(StringUtils.toJavaString(s));
 		return new StringBasedExpressionDescription(string);
 	}
 

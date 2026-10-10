@@ -121,6 +121,20 @@ public class ModelLibraryTester extends AbstractModelLibraryRunner {
 		final List<GamlCompilationError> errors = new ArrayList<>();
 		try {
 			final IModelSpecies model = builder.compile(p, errors);
+			final List<GamlCompilationError> compilationErrors =
+					errors.stream().filter(GamlCompilationError::isError).toList();
+			if (!compilationErrors.isEmpty()) {
+				// A test model that does not compile cannot be run: it is reported and counted as aborted, so
+				// that its tests do not silently disappear from the run (see #1250)
+				DEBUG.OUT("----------------------------------------------------------------");
+				DEBUG.OUT("aborted: " + p.getFile() + " does not compile");
+				DEBUG.OUT("----------------------------------------------------------------");
+				compilationErrors.forEach(e -> DEBUG.OUT("error: " + e.toString()));
+				DEBUG.OUT("");
+				count[0]++;
+				code[0]++;
+				return;
+			}
 			if (model == null || model.getDescription() == null) return;
 			final List<String> testExpNames = model.getDescription().getExperimentNames().stream()
 					.filter(e -> model.getExperiment(e).isTest()).toList();
@@ -148,7 +162,15 @@ public class ModelLibraryTester extends AbstractModelLibraryRunner {
 				}
 			}
 		} catch (final Exception ex) {
-			DEBUG.OUT(ex.getMessage());
+			// The experiment stopped before producing its summary: it is counted as aborted rather than ignored
+			System.setOut(original);
+			DEBUG.OUT("----------------------------------------------------------------");
+			DEBUG.OUT("aborted: " + p.getFile() + " stopped on an exception");
+			DEBUG.OUT("----------------------------------------------------------------");
+			DEBUG.OUT("error: " + ex.getMessage());
+			DEBUG.OUT("");
+			count[0]++;
+			code[0]++;
 		}
 
 	}

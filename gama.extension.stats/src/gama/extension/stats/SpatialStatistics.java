@@ -22,6 +22,7 @@ import gama.annotations.example;
 import gama.annotations.no_test;
 import gama.annotations.operator;
 import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.usage;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
@@ -351,10 +352,13 @@ public class SpatialStatistics {
 					value = "IDW([ag1, ag2, ag3, ag4, ag5],[{10,10}::25.0, {10,80}::10.0, {100,10}::15.0], 2)",
 					equals = "for example, can return [ag1::12.0, ag2::23.0,ag3::12.0,ag4::14.0,ag5::17.0]",
 					isExecutable = false) })
-	@test ("""
+	@tests ({
+			@test ("""
 			map<point, float> mapLocationPoints <- [{0,0}::10.0,{0,10}::-3.0];\r
 					list<point> queryPoint <- [{0,5}];\r
-					float((IDW(list(geometry(queryPoint)),mapLocationPoints,1)).pairs[0].value) with_precision 1 = 3.5""")
+					float((IDW(list(geometry(queryPoint)),mapLocationPoints,1)).pairs[0].value) with_precision 1 = 3.5"""),
+			@test ("map<point, float> interpolated <- map<point, float>(IDW([{0, 0}], [{1, 0}::10.0, {-1, 0}::20.0], 2)); interpolated[{0, 0}] = 15.0")
+	})
 	public static IMap<IShape, Double> primIDW(final IScope scope, final IContainer<?, ? extends IShape> geometries,
 			final IMap points, final int power) {
 		final IMap<IShape, Double> results = GamaMapFactory.create(Types.GEOMETRY, Types.FLOAT);

@@ -10,18 +10,20 @@
  ********************************************************************************************************/
 package gama.extension.serialize.binary;
 
+import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
+import gama.api.kernel.serialization.IGamaObjectInput;
+import gama.api.kernel.serialization.IGamaObjectOutput;
+import gama.api.kernel.serialization.IGamaObjectSerializer;
 import gama.api.runtime.scope.IScope;
-import gama.extension.serialize.IGamaObjectInput;
-import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link IScope} instances. Only the scope's name is persisted. On deserialisation, a named copy of
- * the current simulation scope is returned via {@link IScope#copy(String)}.
+ * Binary serialiser for {@link IScope} instances. Only the scope's name is persisted. On deserialisation, a named
+ * copy of the current simulation scope is returned via {@link IScope#copy(String)}.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IScopeSerialiser extends FSTIndividualSerialiser<IScope> {
+public class IScopeSerialiser implements IGamaObjectSerializer<IScope> {
 
 	/**
 	 * Serialises the scope's name.
@@ -34,7 +36,8 @@ class IScopeSerialiser extends FSTIndividualSerialiser<IScope> {
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final IGamaObjectOutput out, final IScope toWrite) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final IScope toWrite,
+			final TransientSerializationContext context) throws Exception {
 		out.writeStringUTF(toWrite.getName());
 	}
 

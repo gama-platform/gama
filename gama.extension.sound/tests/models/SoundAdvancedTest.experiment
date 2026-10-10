@@ -1,0 +1,48 @@
+/**
+* Name: SoundAdvancedTest
+* Description: Tests the sound extension. No audio hardware is assumed: what is checked is that
+*   a missing source is reported as an error instead of failing silently.
+* Tags: sound, extension, test
+*/
+
+model SoundAdvancedTestModel
+
+species player {
+
+	action play_missing_file() {
+		start_sound source: "this_file_does_not_exist.mp3" {}
+	}
+
+	action play_unsupported_format() {
+		start_sound source: "not_audio.txt" {}
+	}
+}
+
+experiment SoundAdvancedTest type: test autorun: true {
+
+	test "Starting a sound from a missing file raises an error" {
+		create player number: 1 returns: players;
+		player p <- players[0];
+
+		bool failed <- false;
+		try {
+			ask p { do play_missing_file; }
+		} catch {
+			failed <- true;
+		}
+		assert failed;
+	}
+
+	test "Starting a sound from a non-audio file raises an error" {
+		create player number: 1 returns: players;
+		player p <- players[0];
+
+		bool failed <- false;
+		try {
+			ask p { do play_unsupported_format; }
+		} catch {
+			failed <- true;
+		}
+		assert failed;
+	}
+}

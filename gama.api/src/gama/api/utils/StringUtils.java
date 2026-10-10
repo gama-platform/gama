@@ -131,7 +131,8 @@ public class StringUtils {
 		for (int i = 0; i < length; i++) {
 			final char c = s.charAt(i);
 			switch (c) {
-				case '"':
+				// a double quote is not escaped: the string is delimited by single quotes, and the grammar does
+				// not accept this escape there
 				case '\'':
 				case '\\':
 					// Commented on purpose. See issue #2988
@@ -524,7 +525,9 @@ public class StringUtils {
 		if (i < length) {
 			final char c = s.charAt(i);
 			if (c >= '0' && c <= '9') return true; // No type qualifier, OK
-			if (c == 'e' || c == 'E') return false; // can't have an E at the last byte
+			// a trailing decimal point is accepted ("12."), anything else is not part of a number ("12A")
+			if (c == '.') return foundDigit && !hasDecPoint && !hasExp;
+			return false;
 		}
 
 		// allowSigns is true iff the val ends in 'E'

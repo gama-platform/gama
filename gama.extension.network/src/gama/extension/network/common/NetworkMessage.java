@@ -10,10 +10,10 @@
  ********************************************************************************************************/
 package gama.extension.network.common;
 
+import gama.api.kernel.serialization.BinarySerialisation;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.message.GamaMessageFactory;
 import gama.api.types.message.IMessage;
-import gama.extension.serialize.binary.BinarySerialisation;
 
 /**
  * The Class NetworkMessage.

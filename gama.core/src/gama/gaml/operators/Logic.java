@@ -421,7 +421,11 @@ public class Logic {
 			@test ("!(true) = false"),
 			@test ("!(false) = true"),
 			@test ("not(true) = false"),
-			@test ("not(false) = true")
+			@test ("not(false) = true"),
+			@test ("not is_csv(\"data.txt\")"),
+			@test ("not is_image(\"data.csv\")"),
+			@test ("not is_shape(\"picture.png\")"),
+			@test ("not is_gaml(\"notes.txt\")")
 	})
 	public static Boolean not(final Boolean b) {
 		return !b;

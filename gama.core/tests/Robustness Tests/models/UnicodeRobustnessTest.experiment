@@ -1,0 +1,63 @@
+/**
+* Name: UnicodeRobustnessTest
+* Description: Feeds the string operators, the serialisations and the files with characters outside of ASCII:
+* 	accents, combining characters, emoji (outside of the basic multilingual plane), flags, other scripts.
+* 	A character must never be cut in half, and the round trips must give back the original text
+* Tags: robustness, string, unicode, test
+*/
+
+experiment UnicodeRobustnessTest type: test autorun: true {
+
+	string emoji <- "😀a";
+	string mixed <- "é😀日本語 Ωω\n\t\"'";
+
+	test "Characters are never cut in half" {
+		// reading a string character by character gives back the string
+		string rebuilt <- "";
+		loop i from: 0 to: length(emoji) - 1 {
+			rebuilt <- rebuilt + (emoji at i);
+		}
+		assert rebuilt = emoji;
+		// the first character is the whole emoji, not half of it
+		assert emoji at 0 = "😀";
+		assert first(emoji) = "😀";
+		assert last(emoji) = "a";
+	}
+
+	test "Reversing keeps the characters" {
+		assert reverse(emoji) = "a😀";
+		assert reverse(reverse(mixed)) = mixed;
+	}
+
+	test "Searching and replacing" {
+		assert emoji contains "😀";
+
+	}
+
+	test "Serialisations give back the text" {
+		assert from_json(to_json(mixed)) = mixed;
+		assert from_binary(to_binary(mixed)) = mixed;
+		assert from_gaml(to_gaml(mixed)) = mixed;
+		assert deserialize(serialize(mixed)) = mixed;
+	}
+
+	test "Compression gives back the text" {
+		assert decompress(compress(mixed)) = mixed;
+
+	}
+
+	test "Files keep the text" {
+		save mixed to: "unicode_test_tmp.txt" format: "text";
+		list<string> lines <- text_file("unicode_test_tmp.txt").contents;
+		assert concatenate(lines) contains "é😀日本語";
+		assert delete_file("unicode_test_tmp.txt");
+	}
+
+	test "Files can have non ASCII names" {
+		save "content" to: "données_😀_tmp.txt" format: "text";
+		assert file_exists("données_😀_tmp.txt");
+		assert text_file("données_😀_tmp.txt").contents = ["content"];
+		assert delete_file("données_😀_tmp.txt");
+	}
+
+}

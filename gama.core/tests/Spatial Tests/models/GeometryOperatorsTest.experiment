@@ -1,0 +1,165 @@
+/**
+* Name: GeometryOperatorsTest
+* Description: Tests the operators that combine, measure, transform and decompose geometries, independently of
+* 	any agent: set operations, buffers, translations, rotations and scalings, splitting into sub-geometries,
+* 	points along a line, directions and the measures of the basic shapes
+* Tags: geometry, spatial, transformation, test
+*/
+
+experiment GeometryOperatorsTest type: test autorun: true {
+
+	// (0,0)-(10,10)
+	geometry base <- square(10) at_location {5, 5};
+	// overlaps the right half of 'base'
+	geometry shifted <- square(10) at_location {10, 5};
+	// shares an edge with 'base'
+	geometry adjacent <- square(10) at_location {15, 5};
+	geometry distant <- square(10) at_location {50, 50};
+	geometry inner <- square(2) at_location {5, 5};
+	geometry segment <- line([{0, 5}, {20, 5}]);
+
+	test "Predicates between geometries" {
+		assert base intersects shifted;
+		assert not (base intersects distant);
+		assert base overlaps shifted;
+		assert base partially_overlaps shifted;
+		// a geometry that is covered is not 'partially' overlapped
+		assert not (base partially_overlaps inner);
+		assert not (base partially_overlaps adjacent);
+
+		assert base intersects adjacent;
+		assert base covers inner;
+		assert not (inner covers base);
+		assert base crosses segment;
+		assert segment crosses base;
+
+		assert base disjoint_from distant;
+		assert not (base disjoint_from shifted);
+		assert not (base disjoint_from adjacent);
+	}
+
+	test "Set operations" {
+		assert (base inter shifted).area = 50.0;
+		assert (base union shifted).area = 150.0;
+		assert (base + shifted).area = 150.0;
+		assert (base - shifted).area = 50.0;
+		// disjoint geometries have no intersection
+		assert base inter distant = nil;
+		assert (base union distant).area = 200.0;
+		assert (base - distant).area = 100.0;
+		// the operators do not modify their operands
+		assert base.area = 100.0;
+	}
+
+	test "Holes" {
+		geometry pierced <- base - inner;
+		assert pierced.area = 96.0;
+		assert length(pierced.holes) = 1;
+		assert pierced.holes[0].area = 4.0;
+		assert empty(base.holes);
+		assert without_holes(pierced).area = 100.0;
+		assert empty(without_holes(pierced).holes);
+	}
+
+	test "Measures and characteristic points" {
+		assert base.area = 100.0;
+		assert base.perimeter = 40.0;
+		assert base.width = 10.0;
+		assert base.height = 10.0;
+		assert base.location = {5, 5};
+		assert base.centroid = {5, 5};
+		assert centroid(base) = {5, 5};
+		// a closed ring repeats its first point
+		assert length(base.points) = 5;
+		assert first(base.points) = last(base.points);
+		assert base.contour.perimeter = 40.0;
+		assert envelope(base).area = 100.0;
+		// the envelope of two distant squares spans both
+		assert envelope(base union distant).area = 3025.0;
+
+	}
+
+	test "Closest and farthest points" {
+		assert base farthest_point_to {0, 0} = {10, 10};
+		assert base farthest_point_to {10, 10} = {0, 0};
+		list<point> closest <- base closest_points_with distant;
+		assert closest[0] = {10, 10};
+		assert closest[1] = {45, 45};
+		assert base distance_to distant = closest[0] distance_to closest[1];
+		assert base covers any_point_in(base);
+		assert base covers any_location_in(base);
+	}
+
+	test "Buffers" {
+		// the corners of a positive buffer are rounded: more than the square, less than its bounding box
+		geometry enlarged <- base enlarged_by 1;
+		assert enlarged.area > 140.0 and enlarged.area < 144.0;
+		assert enlarged.area = (base + 1).area;
+		assert enlarged covers base;
+		// a negative buffer keeps the corners sharp
+		assert (base reduced_by 1).area = 64.0;
+		assert (base - 1.0).area = 64.0;
+		assert base covers (base reduced_by 1);
+		assert (base enlarged_by 0).area = 100.0;
+	}
+
+	test "Translations" {
+		assert (base translated_by {1, 1}).location = {6, 6};
+		assert (base translated_by {-5, 0}).location = {0, 5};
+		assert (base translated_to {50, 50}).location = {50, 50};
+		assert (base at_location {50, 50}).location = {50, 50};
+		// the shape is unchanged
+		assert (base translated_by {30, 30}).area = 100.0;
+		assert (base translated_to {50, 50}).area = 100.0;
+		assert base.location = {5, 5};
+	}
+
+	test "Rotations" {
+		assert (base rotated_by 45).area = 100.0;
+		// the envelope of a square rotated by 45 degrees is its diagonal
+		assert (base rotated_by 45).width = 10 * sqrt(2);
+
+	}
+
+	test "Scalings" {
+		assert (base scaled_by 2).area = 400.0;
+		assert (base scaled_by 0.5).area = 25.0;
+		assert (base scaled_by 2).location = {5, 5};
+		// 'scaled_to' gives the bounding box to fit in
+		geometry stretched <- base scaled_to {20, 5};
+		assert stretched.width = 20.0;
+		assert stretched.height = 5.0;
+		assert stretched.area = 100.0;
+		// 'transformed_by' combines a rotation and a scaling
+		assert (base transformed_by {90, 2}).area = 400.0;
+	}
+
+	test "Decomposition" {
+		assert length(to_segments(base)) = 4;
+		assert to_segments(base) all_match (each.perimeter = 10.0);
+
+		list<geometry> triangles <- to_triangles(base);
+		assert length(triangles) = 2;
+		assert triangles sum_of each.area = 100.0;
+
+		list<geometry> squares <- to_squares(base, 5.0);
+		assert length(squares) = 4;
+		assert squares all_match (each.area = 25.0);
+
+		list<geometry> rectangles <- to_rectangles(base, {5, 5});
+		assert length(rectangles) = 4;
+		assert rectangles sum_of each.area = 100.0;
+
+		list<geometry> halves <- to_sub_geometries(base, [0.5, 0.5]);
+		assert length(halves) = 2;
+		assert halves sum_of each.area > 99.0 and halves sum_of each.area < 101.0;
+	}
+
+	test "Collections of geometries" {
+		geometry both <- geometry_collection([base, distant]);
+		assert length(both.geometries) = 2;
+		assert both.area = 200.0;
+		assert length(base.geometries) = 1;
+	}
+
+}

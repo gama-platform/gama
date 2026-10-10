@@ -33,8 +33,10 @@ import org.locationtech.jts.simplify.DouglasPeuckerSimplifier;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
 import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
@@ -117,6 +119,11 @@ public class SpatialTransformations {
 					equals = "the convex hull of the geometry of the agent applying the operator",
 					test = false) })
 	@no_test
+	@tests ({
+			// The bounding square 10x10
+			@test ("list<point> pts <- [{0, 0}, {0, 10}, {10, 10}, {10, 0}, {5, 5}]; geometry poly <- polygon(pts); geometry hull <- convex_hull(poly); hull.area = 100.0"),
+			@test ("list<point> pts2 <- [{0, 0}, {0, 10}, {10, 10}, {10, 0}, {5, 5}]; geometry poly2 <- polygon(pts2); geometry hull2 <- convex_hull(poly2); length(hull2.points) = 5")
+	})
 	public static IShape convex_hull(final IScope scope, final IShape g) {
 		return GamaShapeFactory.createFrom(g.getInnerGeometry().convexHull()).withAttributesOf(g);
 	}
@@ -155,6 +162,12 @@ public class SpatialTransformations {
 									value = "(circle(10) * 2).height with_precision 9",
 									equals = "(circle(20)).height with_precision 9",
 									returnType = "float") }) })
+	@tests ({
+			// both dimensions are doubled, so the area is multiplied by 4
+			@test ("geometry rect <- rectangle(10, 5) at_location {0, 0}; geometry scaled <- rect scaled_by 2.0; scaled.area = 200.0"),
+			@test ("geometry rect2 <- rectangle(10, 5) at_location {0, 0}; geometry scaled2 <- rect2 scaled_by 2.0; scaled2.width = 20.0"),
+			@test ("geometry rect3 <- rectangle(10, 5) at_location {0, 0}; geometry scaled3 <- rect3 scaled_by 2.0; scaled3.height = 10.0")
+	})
 	public static IShape scaled_by(final IScope scope, final IShape g, final Double coefficient) {
 		return GamaShapeFactory.createFrom(g).withScaling(coefficient);
 	}
@@ -235,6 +248,7 @@ public class SpatialTransformations {
 	 *            the number of segments
 	 * @return the i shape
 	 */
+	@no_fuzz_test ("never returns with an infinite distance")
 	@operator (
 			value = { IKeyword.PLUS, "buffer", "enlarged_by" },
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_TRANSFORMATIONS },
@@ -270,6 +284,7 @@ public class SpatialTransformations {
 	 *            the end cap
 	 * @return the i shape
 	 */
+	@no_fuzz_test ("never returns with an infinite distance")
 	@operator (
 			value = { IKeyword.PLUS, "buffer", "enlarged_by" },
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_TRANSFORMATIONS },
@@ -307,6 +322,7 @@ public class SpatialTransformations {
 	 *            the is single sided
 	 * @return the i shape
 	 */
+	@no_fuzz_test ("never returns with an infinite distance")
 	@operator (
 			value = { IKeyword.PLUS, "buffer", "enlarged_by" },
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_TRANSFORMATIONS },
@@ -342,6 +358,7 @@ public class SpatialTransformations {
 	 *            the is single sided
 	 * @return the i shape
 	 */
+	@no_fuzz_test ("never returns with an infinite distance")
 	@operator (
 			value = { IKeyword.PLUS, "buffer", "enlarged_by" },
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_TRANSFORMATIONS },
@@ -375,6 +392,7 @@ public class SpatialTransformations {
 	 *            the size
 	 * @return the i shape
 	 */
+	@no_fuzz_test ("never returns with an infinite distance")
 	@operator (
 			value = { IKeyword.PLUS, "buffer", "enlarged_by" },
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_TRANSFORMATIONS },
@@ -389,8 +407,13 @@ public class SpatialTransformations {
 			special_cases = {
 					"A buffer distance of 0.0 returns a copy of the original geometry (no expansion).",
 					"A negative distance erodes the geometry (equivalent to reduced_by); very small geometries may collapse to an empty result." })
-	@test ("(circle(5) + 5).height with_precision 1 = 20.0")
-	@test ("(circle(5) + 5).location with_precision 9 = (circle(10)).location with_precision 9")
+	@tests ({
+			@test ("(circle(5) + 5).height with_precision 1 = 20.0"),
+			@test ("(circle(5) + 5).location with_precision 9 = (circle(10)).location with_precision 9"),
+			@test ("geometry pt <- point({50, 50}); geometry buf <- pt + 10.0; buf.area > 0"),
+			// A circle of radius 10 has area ~314
+			@test ("geometry pt2 <- point({50, 50}); geometry buf2 <- pt2 + 10.0; (buf2.area > 310.0 and buf2.area < 320.0)")
+	})
 	public static IShape enlarged_by(final IScope scope, final IShape g, final Double size) {
 		if (g == null) return null;
 		final Geometry gg = g.getInnerGeometry().buffer(size);
@@ -909,6 +932,14 @@ public class SpatialTransformations {
 	@doc (
 			usages = { @usage ("the right-hand operand representing  the angle can be a float or an integer") })
 	@no_test
+	@tests ({
+			@test ("geometry bar <- rectangle(10, 2) at_location {5, 5}; geometry upright <- bar rotated_by 90; upright.width = 2.0"),
+			@test ("geometry bar2 <- rectangle(10, 2) at_location {5, 5}; geometry upright2 <- bar2 rotated_by 90; upright2.height = 10.0"),
+			// a rotation keeps the area and the location
+			@test ("geometry bar3 <- rectangle(10, 2) at_location {5, 5}; geometry upright3 <- bar3 rotated_by 90; upright3.area = 20.0"),
+			@test ("geometry bar4 <- rectangle(10, 2) at_location {5, 5}; geometry upright4 <- bar4 rotated_by 90; upright4.location = {5, 5}"),
+			@test ("geometry bar5 <- rectangle(10, 2) at_location {5, 5}; (bar5 rotated_by 360).width = 10.0")
+	})
 	public static IShape rotated_by(final IScope scope, final IShape g1, final Integer angle) {
 		if (g1 == null) return null;
 		if (angle == null) return g1.copy(scope);
@@ -965,6 +996,9 @@ public class SpatialTransformations {
 					test = false) },
 			see = { "rotated_by", "transformed_by" })
 	@no_test
+	@tests ({
+			@test ("geometry rect <- rectangle(10, 5) at_location {0, 0}; geometry trans <- rect translated_by {10, 10}; trans.location = {10, 10}")
+	})
 	public static IShape translated_by(final IScope scope, final IShape g, final IPoint p) throws GamaRuntimeException {
 		if (g == null) return null;
 		return at_location(scope, g, g.getLocation().plus(p));
@@ -1157,7 +1191,12 @@ public class SpatialTransformations {
 					value = "skeletonize(self)",
 					equals = "the list of geometries corresponding to the skeleton of the geometry of the agent applying the operator.",
 					test = false) })
-	@test (" // applies only to a square \n " + "length(skeletonize(square(5))) = 1")
+	@tests ({
+			@test (" // applies only to a square \n " + "length(skeletonize(square(5))) = 1"),
+			@test ("geometry box <- square(10); geometry skeleton <- geometry(skeletonize(box)); skeleton != nil"),
+			// The skeleton of a square is a set of line segments (multiline)
+			@test ("geometry box2 <- square(10); geometry skeleton2 <- geometry(skeletonize(box2)); skeleton2.area = 0.0")
+	})
 	public static IList<IShape> skeletonize(final IScope scope, final IShape g) {
 		final List<LineString> netw = squeletisation(scope, g.getInnerGeometry(), 0.0, 0.0, false);
 		final IList<IShape> geoms = GamaListFactory.create(Types.GEOMETRY);
@@ -1283,6 +1322,11 @@ public class SpatialTransformations {
 					equals = "the list of geometries (triangles) corresponding to the Delaunay triangulation of the geometry of the agent applying the operator.",
 					test = false) })
 	@no_test
+	@tests ({
+			@test ("list<point> pts <- [{0,0}, {10,10}, {0,10}, {10,0}, {5,5}]; list<geometry> triangles <- triangulate(pts); length(triangles) > 0"),
+			// Every returned geometry should be a triangle (3 points + 1 closing = 4)
+			@test ("list<point> pts2 <- [{0,0}, {10,10}, {0,10}, {10,0}, {5,5}]; list<geometry> triangles2 <- triangulate(pts2); length(triangles2[0].points) = 4")
+	})
 	public static IList<IShape> triangulate(final IScope scope, final IList<IShape> gs) {
 		if (gs == null || gs.isEmpty()) return null;
 		return GeometryUtils.triangulation(scope, gs, 0.0);
@@ -1406,6 +1450,11 @@ public class SpatialTransformations {
 					equals = "the list of geometries corresponding to the Voronoi Diagram built from the list of points.",
 					test = false) })
 	@no_test
+	@tests ({
+			@test ("list<point> pts <- [{0,0}, {10,10}, {0,10}, {10,0}, {5,5}]; list<geometry> voronoi_polys <- voronoi(pts); length(voronoi_polys) > 0"),
+			// The number of voronoi cells should equal the number of points (mostly)
+			@test ("list<point> pts2 <- [{0,0}, {10,10}, {0,10}, {10,0}, {5,5}]; list<geometry> voronoi_polys2 <- voronoi(pts2); length(voronoi_polys2) = 5")
+	})
 	public static IList<IShape> vornoi(final IScope scope, final IList<IPoint> pts) {
 		if (pts == null) return null;
 		return GeometryUtils.voronoi(scope, pts);
@@ -1463,6 +1512,11 @@ public class SpatialTransformations {
 					equals = "a 'rounded' square",
 					test = false) })
 	@no_test
+	@tests ({
+			@test ("geometry box <- square(10); geometry smoothed <- smooth(box, 0.5); smoothed != nil"),
+			// A smoothed square usually has more points than 5 (4 corners + closing)
+			@test ("geometry box2 <- square(10); geometry smoothed2 <- smooth(box2, 0.5); length(smoothed2.points) > 5")
+	})
 	public static IShape smooth(final IScope scope, final IShape geometry, final Double fit) {
 		if (geometry == null) return null;
 		final double param = fit == null ? 0d : fit < 0 ? 0d : fit > 1 ? 1d : fit;
@@ -1483,6 +1537,7 @@ public class SpatialTransformations {
 	 *            the overlaps
 	 * @return the i list
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with a null or negative size")
 	@operator (
 			value = "to_squares",
 			type = IType.LIST,
@@ -1515,6 +1570,7 @@ public class SpatialTransformations {
 	 *            the overlaps
 	 * @return the i list
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with a null or negative size")
 	@operator (
 			value = "to_squares",
 			type = IType.LIST,
@@ -1549,6 +1605,7 @@ public class SpatialTransformations {
 	 *            the precision
 	 * @return the i list
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with a null or negative size")
 	@operator (
 			value = "to_squares",
 			type = IType.LIST,
@@ -1581,6 +1638,7 @@ public class SpatialTransformations {
 	 *            the overlaps
 	 * @return the i list
 	 */
+	@no_fuzz_test ("exhausts the memory with a null size")
 	@operator (
 			value = "to_rectangles",
 			content_type = IType.GEOMETRY,
@@ -1615,6 +1673,7 @@ public class SpatialTransformations {
 	 *            the overlaps
 	 * @return the i list
 	 */
+	@no_fuzz_test ("exhausts the memory with a null size")
 	@operator (
 			value = "to_rectangles",
 			type = IType.LIST,
@@ -1649,6 +1708,7 @@ public class SpatialTransformations {
 	 *            the dimension
 	 * @return the i list
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with a null or negative size")
 	@operator (
 			value = { "split_geometry", "to_squares" },
 			content_type = IType.GEOMETRY,
@@ -1678,6 +1738,7 @@ public class SpatialTransformations {
 	 *            the dimension
 	 * @return the i list
 	 */
+	@no_fuzz_test ("exhausts the memory with a null size")
 	@operator (
 			value = { "split_geometry", "to_rectangles" },
 			content_type = IType.GEOMETRY,
@@ -1708,6 +1769,7 @@ public class SpatialTransformations {
 	 *            the nb rows
 	 * @return the i list
 	 */
+	@no_fuzz_test ("exhausts the memory with a null size")
 	@operator (
 			value = { "split_geometry", "to_rectangles" },
 			content_type = IType.GEOMETRY,
@@ -1782,6 +1844,9 @@ public class SpatialTransformations {
 					equals = "[line([{10,10},{80,10}]), line([{80,10},{80,80}])]",
 					test = false) })
 	@no_test
+	@tests ({
+			@test ("geometry segment <- line([{0, 5}, {20, 5}]); length(to_segments(segment)) = 1")
+	})
 	public static IList<IShape> toSegments(final IScope scope, final IShape geom) {
 		if (geom == null) return GamaListFactory.create(Types.GEOMETRY);
 		final IList<IShape> segments = GamaListFactory.create(Types.GEOMETRY);
@@ -2162,6 +2227,10 @@ public class SpatialTransformations {
 					equals = "returns the geometry resulting from the cleaning of the geometry of the agent applying the operator.",
 					test = false) })
 	@no_test (Reason.IMPOSSIBLE_TO_TEST)
+	@tests ({
+			@test ("geometry bowtie <- polygon([{0, 0}, {10, 10}, {0, 10}, {10, 0}]); geometry cleaned <- clean(bowtie); cleaned != nil"),
+			@test ("geometry bowtie2 <- polygon([{0, 0}, {10, 10}, {0, 10}, {10, 0}]); geometry cleaned2 <- clean(bowtie2); cleaned2.area > 0.0")
+	})
 	public static IShape clean(final IScope scope, final IShape g) {
 
 		if (g == null || g.getInnerGeometry() == null) return g;
@@ -2364,6 +2433,10 @@ public class SpatialTransformations {
 					equals = "the geometry resulting from the application of the Douglas-Peuker algorithm on the geometry of the agent applying the operator with a tolerance distance of 0.1.",
 					test = false) })
 	@no_test (Reason.IMPOSSIBLE_TO_TEST)
+	@tests ({
+			// a nearly aligned vertex is removed by the simplification
+			@test ("simplification(polyline([{0, 0}, {5, 0.01}, {10, 0}]), 0.5).points = [{0, 0}, {10, 0}]")
+	})
 	public static IShape simplification(final IScope scope, final IShape g1, final Double distanceTolerance) {
 		if (g1 == null || g1.getInnerGeometry() == null) return g1;
 		if (g1.isPoint()) return g1.copy(scope);

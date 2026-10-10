@@ -11,14 +11,16 @@
 package gama.extension.serialize.binary;
 
 import gama.api.gaml.types.IType;
+import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
+import gama.api.kernel.serialization.IGamaObjectInput;
+import gama.api.kernel.serialization.IGamaObjectOutput;
+import gama.api.kernel.serialization.IGamaObjectSerializer;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.IShape;
 import gama.core.topology.graph.GamaSpatialGraph;
-import gama.extension.serialize.IGamaObjectInput;
-import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link GamaSpatialGraph} instances.
+ * Binary serialiser for {@link GamaSpatialGraph} instances.
  *
  * <p>
  * Extends the generic graph serialisation with the two fields that are specific to {@link GamaSpatialGraph}: the snap
@@ -29,9 +31,9 @@ import gama.extension.serialize.IGamaObjectOutput;
  * </p>
  *
  * <p>
- * This serialiser is registered for the concrete class {@link GamaSpatialGraph} and therefore takes priority over the
- * more generic {@link IGraphSerialiser} (which is registered for {@link gama.api.types.graph.IGraph}) when FST walks
- * the class lineage.
+ * This binarySerialiser is registered for the concrete class {@link GamaSpatialGraph} and therefore takes priority over
+ * the more generic {@link IGraphSerialiser} (which is registered for {@link gama.api.types.graph.IGraph}) when FST
+ * walks the class lineage.
  * </p>
  *
  * <p>
@@ -50,13 +52,13 @@ import gama.extension.serialize.IGamaObjectOutput;
  * </p>
  *
  * <p>
- * Objects deserialised by this serialiser are not registered for FST back-reference tracking.
+ * Objects deserialised by this binarySerialiser are not registered for FST back-reference tracking.
  * </p>
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 8 avril 2026
  */
-class GamaSpatialGraphSerialiser extends FSTIndividualSerialiser<GamaSpatialGraph> {
+public class GamaSpatialGraphSerialiser implements IGamaObjectSerializer<GamaSpatialGraph> {
 
 	/**
 	 * Returns {@code false}: spatial graphs are not registered for FST back-reference tracking.
@@ -64,7 +66,7 @@ class GamaSpatialGraphSerialiser extends FSTIndividualSerialiser<GamaSpatialGrap
 	 * @return {@code false}
 	 */
 	@Override
-	protected boolean shouldRegister() {
+	public boolean shouldRegister() {
 		return false;
 	}
 
@@ -80,7 +82,8 @@ class GamaSpatialGraphSerialiser extends FSTIndividualSerialiser<GamaSpatialGrap
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final IGamaObjectOutput out, final GamaSpatialGraph g) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final GamaSpatialGraph g,
+			final TransientSerializationContext context) throws Exception {
 		// --- metadata ---
 		out.writeObject(g.getGamlType().getKeyType());
 		out.writeObject(g.getGamlType().getContentType());

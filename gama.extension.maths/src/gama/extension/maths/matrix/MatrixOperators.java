@@ -21,6 +21,7 @@ import gama.annotations.example;
 import gama.annotations.no_test;
 import gama.annotations.operator;
 import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
@@ -100,6 +101,14 @@ public class MatrixOperators {
 			examples = { @example (
 					value = "determinant(matrix([[1,2],[3,4]]))",
 					equals = "-2") })
+	@tests ({
+			@test ("matrix<float> diagonal <- matrix([[2.0, 0.0], [0.0, 3.0]]); det(diagonal) = 6.0"),
+			@test ("matrix<float> full <- matrix([[1.0, 2.0], [3.0, 4.0]]); det(full) = -2.0"),
+			@test ("matrix<float> full2 <- matrix([[1.0, 2.0], [3.0, 4.0]]); determinant(full2) = det(full2)"),
+			// The determinant of [[1, 2], [3, 4]] is (1*4 - 2*3) = -2
+			@test ("matrix<float> mat <- matrix([[1.0, 2.0], [3.0, 4.0]]); determinant(mat) = -2.0"),
+			@test ("matrix<float> m1 <- matrix([[1.0, 2.0], [3.0, 4.0]]); (determinant(m1) with_precision 1) = -2.0")
+	})
 	public static Double getDeterminant(final IScope scope, final IMatrix m) throws GamaRuntimeException {
 		return new LUDecomposition(getRealMatrix(m)).getDeterminant();
 	}
@@ -125,6 +134,13 @@ public class MatrixOperators {
 			examples = { @example (
 					value = "trace(matrix([[1,2],[3,4]]))",
 					equals = "5") })
+	@tests ({
+			@test ("matrix<float> full <- matrix([[1.0, 2.0], [3.0, 4.0]]); trace(full) = 5.0"),
+			@test ("matrix<float> diagonal <- matrix([[2.0, 0.0], [0.0, 3.0]]); trace(diagonal) = 5.0"),
+			@test ("matrix<float> full2 <- matrix([[1.0, 2.0], [3.0, 4.0]]); list<float> full_eigenvalues <- eigenvalues(full2); sum(full_eigenvalues) with_precision 9 = trace(full2)"),
+			// Trace is the sum of elements on the main diagonal (1.0 + 4.0 = 5.0)
+			@test ("matrix<float> mat <- matrix([[1.0, 2.0], [3.0, 4.0]]); trace(mat) = 5.0")
+	})
 	public static Double getTrace(final IScope scope, final IMatrix m) throws GamaRuntimeException {
 		return getRealMatrix(m).getTrace();
 	}
@@ -151,6 +167,11 @@ public class MatrixOperators {
 			examples = { @example (
 					value = "eigenvalues(matrix([[5,-3],[6,-4]]))",
 					equals = "[2.0000000000000004,-0.9999999999999998]") })
+	@tests ({
+			@test ("matrix<float> diagonal <- matrix([[2.0, 0.0], [0.0, 3.0]]); list<float> diagonal_eigenvalues <- eigenvalues(diagonal); length(diagonal_eigenvalues) = 2"),
+			@test ("matrix<float> diagonal2 <- matrix([[2.0, 0.0], [0.0, 3.0]]); list<float> diagonal_eigenvalues2 <- eigenvalues(diagonal2); diagonal_eigenvalues2 contains_all [2.0, 3.0]"),
+			@test ("matrix<float> full <- matrix([[1.0, 2.0], [3.0, 4.0]]); list<float> full_eigenvalues <- eigenvalues(full); (full_eigenvalues[0] * full_eigenvalues[1]) with_precision 9 = det(full)")
+	})
 	public static IList<Double> getEigen(final IScope scope, final IMatrix m) throws GamaRuntimeException {
 		return fromApacheMatrixtoDiagList(scope, new EigenDecomposition(getRealMatrix(m)).getD());
 	}
@@ -178,6 +199,13 @@ public class MatrixOperators {
 			examples = { @example (
 					value = "transpose(matrix([[5,-3],[6,-4]]))",
 					equals = "matrix([[5,6],[-3,-4]])") })
+	@tests ({
+			@test ("matrix<float> full <- matrix([[1.0, 2.0], [3.0, 4.0]]); transpose(transpose(full)) = full"),
+			@test ("matrix<float> m1 <- matrix([[1.0, 2.0], [3.0, 4.0]]); matrix<float> m2 <- transpose(m1); m2[0, 1] = m1[1, 0]"),
+			@test ("matrix<float> m12 <- matrix([[1.0, 2.0], [3.0, 4.0]]); matrix<float> m22 <- transpose(m12); m22[1, 0] = m12[0, 1]"),
+			@test ("matrix<float> m13 <- matrix([[1.0, 2.0], [3.0, 4.0]]); matrix<float> m23 <- transpose(m13); m23[0, 1] = 3.0"),
+			@test ("matrix<float> m14 <- matrix([[1.0, 2.0], [3.0, 4.0]]); matrix<float> m24 <- transpose(m14); m24[1, 0] = 2.0")
+	})
 	public static IMatrix transpose(final IScope scope, final IMatrix m) throws GamaRuntimeException {
 		return m.reverse(scope);
 	}
@@ -206,6 +234,15 @@ public class MatrixOperators {
 			examples = { @example (
 					value = "inverse(matrix([[4,3],[3,2]]))",
 					equals = "matrix([[-2.0,3.0],[3.0,-4.0]])") })
+	@tests ({
+			@test ("matrix<float> diagonal <- matrix([[2.0, 0.0], [0.0, 3.0]]); matrix<float> inverted <- inverse(diagonal); inverted[0, 0] = 0.5"),
+			@test ("matrix<float> diagonal2 <- matrix([[2.0, 0.0], [0.0, 3.0]]); matrix<float> inverted2 <- inverse(diagonal2); inverted2[1, 1] with_precision 6 = 0.333333"),
+			@test ("matrix<float> diagonal3 <- matrix([[2.0, 0.0], [0.0, 3.0]]); matrix<float> inverted3 <- inverse(diagonal3); inverted3[1, 0] = 0.0"),
+			@test ("matrix<float> mat <- matrix([[1.0, 2.0], [3.0, 4.0]]); matrix<float> inv_mat <- inverse(mat); inv_mat != nil"),
+			// 1.0
+			@test ("matrix<float> mat2 <- matrix([[1.0, 2.0], [3.0, 4.0]]); matrix<float> inv_mat2 <- inverse(mat2); matrix<float> id_mat <- mat2 . inv_mat2; (id_mat[0, 0] > 0.99 and id_mat[0, 0] < 1.01)"),
+			@test ("matrix<float> mat3 <- matrix([[1.0, 2.0], [3.0, 4.0]]); matrix<float> inv_mat3 <- inverse(mat3); matrix<float> id_mat2 <- mat3 . inv_mat3; (id_mat2[1, 0] > -0.01 and id_mat2[1, 0] < 0.01)")
+	})
 	public static IMatrix<Double> inverse(final IScope scope, final IMatrix m) throws GamaRuntimeException {
 		return toGamaFloatMatrix(new LUDecomposition(getRealMatrix(m)).getSolver().getInverse());
 	}
@@ -232,6 +269,20 @@ public class MatrixOperators {
 			examples = { @example (
 					value = "matrix([[1,2],[3,4]]) append_vertically matrix([[1,2],[3,4]])",
 					equals = "matrix([[1,2,1,2],[3,4,3,4]])") })
+	@tests ({
+			@test ("matrix<float> first_matrix <- matrix([[1.0, 2.0], [3.0, 4.0]]); matrix<float> second_matrix <- matrix([[5.0, 6.0], [7.0, 8.0]]); matrix<float> stacked <- append_vertically(first_matrix, second_matrix); stacked.columns = 2"),
+			@test ("matrix<float> first_matrix2 <- matrix([[1.0, 2.0], [3.0, 4.0]]); matrix<float> second_matrix2 <- matrix([[5.0, 6.0], [7.0, 8.0]]); matrix<float> stacked2 <- append_vertically(first_matrix2, second_matrix2); stacked2.rows = 4"),
+			@test ("matrix<float> first_matrix3 <- matrix([[1.0, 2.0], [3.0, 4.0]]); matrix<float> second_matrix3 <- matrix([[5.0, 6.0], [7.0, 8.0]]); matrix<float> stacked3 <- append_vertically(first_matrix3, second_matrix3); stacked3 column_at 0 = [1.0, 2.0, 5.0, 6.0]"),
+			@test ("matrix<float> first_matrix4 <- matrix([[1.0, 2.0], [3.0, 4.0]]); matrix<float> second_matrix4 <- matrix([[5.0, 6.0], [7.0, 8.0]]); matrix<float> stacked4 <- append_vertically(first_matrix4, second_matrix4); stacked4 column_at 1 = [3.0, 4.0, 7.0, 8.0]"),
+			// matrices of different kinds (int and float) are appended too, the result holding both contents
+			@test ("matrix<int> whole1 <- matrix([[1, 2], [3, 4]]); matrix<float> decimal1 <- matrix([[5.5, 6.5], [7.5, 8.5]]); append_vertically(whole1, decimal1).rows = 4"),
+			@test ("matrix<int> whole2 <- matrix([[1, 2], [3, 4]]); matrix<float> decimal2 <- matrix([[5.5, 6.5], [7.5, 8.5]]); append_vertically(whole2, decimal2).columns = 2"),
+			@test ("matrix<int> whole3 <- matrix([[1, 2], [3, 4]]); matrix<float> decimal3 <- matrix([[5.5, 6.5], [7.5, 8.5]]); append_vertically(whole3, decimal3)[0, 2] = 5.5"),
+			@test ("matrix<int> whole4 <- matrix([[1, 2], [3, 4]]); matrix<float> decimal4 <- matrix([[5.5, 6.5], [7.5, 8.5]]); append_vertically(decimal4, whole4)[1, 3] = 4.0"),
+			@test ("matrix<string> words <- matrix([[\"a\", \"b\"], [\"c\", \"d\"]]); matrix<int> whole5 <- matrix([[1, 2], [3, 4]]); append_vertically(words, whole5).rows = 4"),
+			// the two matrices must have the same number of columns
+			@test ("is_error(append_vertically(matrix([[1, 2], [3, 4]]), matrix([[1, 2, 3]])))")
+	})
 	public static IMatrix opAppendVertically(final IScope scope, final IMatrix a, final IMatrix b) {
 		return a._opAppendVertically(scope, b);
 	}
@@ -254,8 +305,22 @@ public class MatrixOperators {
 			value = "A matrix resulting from the concatenation of the rows of the two given matrices.",
 			masterDoc = false)
 	@no_test
+	@tests ({
+			@test ("matrix<float> first_matrix <- matrix([[1.0, 2.0], [3.0, 4.0]]); matrix<float> second_matrix <- matrix([[5.0, 6.0], [7.0, 8.0]]); matrix<float> side_by_side <- append_horizontally(first_matrix, second_matrix); side_by_side.columns = 4"),
+			@test ("matrix<float> first_matrix2 <- matrix([[1.0, 2.0], [3.0, 4.0]]); matrix<float> second_matrix2 <- matrix([[5.0, 6.0], [7.0, 8.0]]); matrix<float> side_by_side2 <- append_horizontally(first_matrix2, second_matrix2); side_by_side2.rows = 2"),
+			@test ("matrix<float> first_matrix3 <- matrix([[1.0, 2.0], [3.0, 4.0]]); matrix<float> second_matrix3 <- matrix([[5.0, 6.0], [7.0, 8.0]]); matrix<float> side_by_side3 <- append_horizontally(first_matrix3, second_matrix3); side_by_side3 column_at 2 = [5.0, 6.0]"),
+			@test ("matrix<float> first_matrix4 <- matrix([[1.0, 2.0], [3.0, 4.0]]); matrix<float> second_matrix4 <- matrix([[5.0, 6.0], [7.0, 8.0]]); matrix<float> side_by_side4 <- append_horizontally(first_matrix4, second_matrix4); side_by_side4 row_at 0 = [1.0, 3.0, 5.0, 7.0]"),
+			// matrices of different kinds (int and float) are appended too, the result holding both contents
+			@test ("matrix<int> whole1 <- matrix([[1, 2], [3, 4]]); matrix<float> decimal1 <- matrix([[5.5, 6.5], [7.5, 8.5]]); append_horizontally(whole1, decimal1).columns = 4"),
+			@test ("matrix<int> whole2 <- matrix([[1, 2], [3, 4]]); matrix<float> decimal2 <- matrix([[5.5, 6.5], [7.5, 8.5]]); append_horizontally(whole2, decimal2).rows = 2"),
+			@test ("matrix<int> whole3 <- matrix([[1, 2], [3, 4]]); matrix<float> decimal3 <- matrix([[5.5, 6.5], [7.5, 8.5]]); append_horizontally(whole3, decimal3)[2, 0] = 5.5"),
+			@test ("matrix<int> whole4 <- matrix([[1, 2], [3, 4]]); matrix<float> decimal4 <- matrix([[5.5, 6.5], [7.5, 8.5]]); append_horizontally(decimal4, whole4)[3, 1] = 4.0"),
+			@test ("matrix<string> words <- matrix([[\"a\", \"b\"], [\"c\", \"d\"]]); matrix<int> whole5 <- matrix([[1, 2], [3, 4]]); append_horizontally(words, whole5).columns = 4"),
+			// the two matrices must have the same number of rows
+			@test ("is_error(append_horizontally(matrix([[1, 2], [3, 4]]), matrix([[1, 2, 3]])))")
+	})
 	public static IMatrix opAppendHorizontally(final IScope scope, final IMatrix a, final IMatrix b) {
-		return a._opAppendVertically(scope, b);
+		return a._opAppendHorizontally(scope, b);
 	}
 
 	/**

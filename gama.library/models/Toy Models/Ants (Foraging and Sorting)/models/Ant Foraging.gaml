@@ -221,7 +221,7 @@ experiment "With Inspector" type: gui parent:base{
 	}
 }
 
-experiment "Classic" type: gui parent:base{
+experiment "Classic" type: gui parent:base {
 	parameter 'Number of ants:' var: ants_number category: 'Model';
 	parameter 'Evaporation of the signal (unit/cycle):' var: evaporation_per_cycle category: 'Model';
 	parameter 'Rate of diffusion of the signal (%/cycle):' var: diffusion_rate category: 'Model';
@@ -242,6 +242,8 @@ experiment "Classic" type: gui parent:base{
 
 	}
 }
+
+experiment Record parent: Classic record: true {}
 
 //Complete experiment that will inspect all ants in a table
 experiment "3D View" type: gui parent:base{

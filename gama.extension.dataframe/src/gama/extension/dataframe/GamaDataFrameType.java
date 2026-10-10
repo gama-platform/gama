@@ -63,12 +63,17 @@ public class GamaDataFrameType extends GamaContainerType<IDataFrame> {
 	@Override
 	public IType<?> getKeyType() { return Types.STRING; }
 
+	/**
+	 * The contents of a dataframe are its rows, each one being a map (column name -&gt; value): this is what the
+	 * iterators ('loop over:', 'where', 'collect'...) go through. Accessing a column with df["name"] is typed apart,
+	 * as a list, by the 'internal_at' operator of {@link DataFrameOperators}.
+	 */
 	@Override
-	public IType<?> getContentType() { return Types.LIST; }
+	public IType<?> getContentType() { return Types.MAP; }
 
 	@Override
 	public IType<?> contentsTypeIfCasting(final IExpression exp) {
-		return Types.LIST;
+		return Types.MAP;
 	}
 
 	@Override
