@@ -11,21 +11,14 @@
 package gama.workspace.nature;
 
 /**
- * Defines the nature identifiers used in GAMA workspace projects. These natures help Eclipse identify and configure
- * different types of GAMA projects with appropriate tooling and build configurations.
+ * Defines the nature identifiers used in GAMA workspace projects.
  *
  * <p>
- * The following natures are defined and correspond to the virtual folders displayed in the GAMA Navigator:
+ * Only two natures are used: {@link #GAMA_NATURE}, shared by all GAMA projects, and {@link #XTEXT_NATURE}, which
+ * enables the GAML editor and builder. The classification of the projects in the top-level folders of the navigator
+ * (Data, Demos, Library, Recipes, Tutorials, Tests, User) does not rely on natures but on their location (see
+ * {@link gama.workspace.manager.ProjectCategory}).
  * </p>
- * <ul>
- * <li>{@link #GAMA_NATURE} – base nature shared by all GAMA projects</li>
- * <li>{@link #XTEXT_NATURE} – XText builder nature added to all GAMA projects</li>
- * <li>{@link #BUILTIN_NATURE} – projects shipped with the core GAMA library ("Library" folder)</li>
- * <li>{@link #PLUGIN_NATURE} – projects contributed by additional Eclipse plugins ("Library" folder)</li>
- * <li>{@link #TEST_NATURE} – built-in test suites ("Tests" folder)</li>
- * <li>{@link #TUTORIAL_NATURE} – step-by-step tutorial projects ("Tutorials" folder)</li>
- * <li>{@link #RECIPE_NATURE} – focused single-feature demonstrations ("Recipes" folder)</li>
- * </ul>
  *
  * @author GAMA Development Team
  * @since 1.0
@@ -34,38 +27,57 @@ package gama.workspace.nature;
 public final class GamaNatures {
 
 	/** The nature identifier for standard GAMA modeling projects. */
-	public static final String GAMA_NATURE = "gama.workspace.gamaNature";
+	public static final String GAMA_NATURE = "gama.workspace.nature";
+
+	/**
+	 * The former identifiers of the GAMA nature. They are still recognised, and replaced by {@link #GAMA_NATURE} when
+	 * a project is loaded in a workspace.
+	 */
+	public static final String[] LEGACY_GAMA_NATURES =
+			{ "gama.workspace.gamaNature", "msi.gama.application.gamaNature" };
 
 	/** The nature identifier for XText language support. */
 	public static final String XTEXT_NATURE = "org.eclipse.xtext.ui.shared.xtextNature";
 
-	/** The nature identifier for GAMA plugin development projects (appears in the "Library" virtual folder). */
-	public static final String PLUGIN_NATURE = "gama.workspace.pluginNature";
-
-	/** The nature identifier for GAMA test projects (appears in the "Tests" virtual folder). */
-	public static final String TEST_NATURE = "gama.workspace.testNature";
-
-	/** The nature identifier for built-in GAMA library projects (appears in the "Library" virtual folder). */
-	public static final String BUILTIN_NATURE = "gama.workspace.builtinNature";
-
-	/**
-	 * The nature identifier for GAMA tutorial projects (appears in the "Tutorials" virtual folder). Plugins wishing to
-	 * contribute tutorials should place their tutorial sub-projects inside a {@code tutorials/} subdirectory at the root
-	 * of the plugin bundle and declare this nature in the sub-project's {@code .project} file.
-	 */
-	public static final String TUTORIAL_NATURE = "gama.workspace.tutorialNature";
-
-	/**
-	 * The nature identifier for GAMA recipe projects (appears in the "Recipes" virtual folder). A recipe is a focused,
-	 * self-contained demonstration of a specific GAML feature or modeling pattern. Plugins wishing to contribute
-	 * recipes should place their recipe sub-projects inside a {@code recipes/} subdirectory at the root of the plugin
-	 * bundle and declare this nature in the sub-project's {@code .project} file.
-	 */
-	public static final String RECIPE_NATURE = "gama.workspace.recipeNature";
-
 	/**
 	 * Private constructor to prevent instantiation of this utility class.
 	 */
+	/**
+	 * Tells whether a project description declares the GAMA nature, under its current or one of its former identifiers.
+	 */
+	public static boolean isGamaProject(final org.eclipse.core.resources.IProjectDescription description) {
+		for (final String id : description.getNatureIds()) {
+			if (GAMA_NATURE.equals(id) || isLegacy(id)) return true;
+		}
+		return false;
+	}
+
+	/** Tells whether the nature identifier is a former identifier of the GAMA nature. */
+	public static boolean isLegacy(final String id) {
+		for (final String legacy : LEGACY_GAMA_NATURES) {
+			if (legacy.equals(id)) return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Returns the nature identifiers with the former GAMA nature identifiers replaced by the current one (without
+	 * duplicates). The array is returned unchanged if it contains no former identifier.
+	 */
+	public static String[] migrate(final String[] ids) {
+		final java.util.LinkedHashSet<String> result = new java.util.LinkedHashSet<>();
+		boolean changed = false;
+		for (final String id : ids) {
+			if (isLegacy(id)) {
+				result.add(GAMA_NATURE);
+				changed = true;
+			} else {
+				result.add(id);
+			}
+		}
+		return changed ? result.toArray(new String[0]) : ids;
+	}
+
 	private GamaNatures() {
 		// Utility class - no instances allowed
 	}

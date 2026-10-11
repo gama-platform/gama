@@ -58,6 +58,9 @@ public class WrappedFolder extends WrappedContainer<IFolder> {
 	}
 
 	@Override
+	public String getExplanation() { return "folder"; }
+
+	@Override
 	public boolean canBeDecorated() {
 		countModels();
 		return canBeDecorated;

@@ -444,27 +444,17 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 		if (DEBUG.IS_ON()) { DEBUG.OUT("Project " + project.getName() + " has been added"); }
 		if (!IN_INITIALIZATION_PHASE) {
 			post(() -> {
-				final TopLevelFolder requestedFolder = chooseFolderForPasting(project);
-				final String requestedNature = requestedFolder.getNature();
 				final WorkspaceJob job = new WorkspaceJob("Classifying project " + project.getName()) {
 
 					@Override
 					public IStatus runInWorkspace(final IProgressMonitor monitor) throws CoreException {
 						final IProjectDescription description = project.getDescription();
-						if (!hasFolderNature(description)) {
-							if (GamaNatures.TUTORIAL_NATURE.equals(requestedNature)
-									|| GamaNatures.RECIPE_NATURE.equals(requestedNature)) {
-								final java.util.List<String> natures = new java.util.ArrayList<>();
-								natures.add(GamaNatures.XTEXT_NATURE);
-								natures.add(GamaNatures.GAMA_NATURE);
-								natures.add(requestedNature);
-								description.setNatureIds(natures.toArray(new String[0]));
-								project.setDescription(description, IResource.FORCE, monitor);
+						if (!description.hasNature(GamaNatures.GAMA_NATURE)) {
+							if (GamaNatures.isGamaProject(description)) {
+								description.setNatureIds(GamaNatures.migrate(description.getNatureIds()));
+								project.setDescription(description, IResource.FORCE, null);
 							} else {
-								WorkspaceModelsManager.instance.setValuesProjectDescription(project,
-										GamaNatures.BUILTIN_NATURE.equals(requestedNature),
-										GamaNatures.PLUGIN_NATURE.equals(requestedNature),
-										GamaNatures.TEST_NATURE.equals(requestedNature), null);
+								WorkspaceModelsManager.instance.setValuesProjectDescription(project, null);
 							}
 						}
 						return Status.OK_STATUS;
@@ -489,19 +479,6 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 				job.schedule();
 			});
 		}
-	}
-
-	/**
-	 * Checks for folder nature.
-	 *
-	 * @param description
-	 *            the description
-	 * @return true, if successful
-	 */
-	private boolean hasFolderNature(final IProjectDescription description) {
-		return description.hasNature(GamaNatures.BUILTIN_NATURE) || description.hasNature(GamaNatures.PLUGIN_NATURE)
-				|| description.hasNature(GamaNatures.TEST_NATURE) || description.hasNature(GamaNatures.TUTORIAL_NATURE)
-				|| description.hasNature(GamaNatures.RECIPE_NATURE);
 	}
 
 	/**
@@ -631,9 +608,11 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 		if (DEBUG.IS_ON()) { DEBUG.OUT("Project " + project.getName() + " has been removed"); }
 		final WrappedProject wp = findWrappedInstanceOf(project);
 		cache.invalidate(project);
-		final TopLevelFolder tp = (TopLevelFolder) wp.getParent();
-		tp.initializeChildren();
-		refreshResource(tp);
+		final TopLevelFolder tp = wp == null ? null : wp.getTopLevelFolder();
+		if (tp != null) {
+			tp.initializeChildren();
+			refreshResource(tp);
+		}
 	}
 
 	@Override
@@ -855,7 +834,7 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 			case IResource.FOLDER:
 				return new WrappedFolder((WrappedContainer<?>) parent, (IFolder) child);
 			case IResource.PROJECT:
-				return new WrappedProject((TopLevelFolder) parent, (IProject) child);
+				return new WrappedProject(parent, (IProject) child);
 		}
 		return null;
 	}

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>Define Experiments</name>
+	<comment>gama.library</comment>
+	<projects>
+	</projects>
+	<buildSpec>
+		<buildCommand>
+			<name>Define Experiments</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+	</buildSpec>
+	<natures>
+		<nature>org.eclipse.xtext.ui.shared.xtextNature</nature>
+		<nature>gama.workspace.nature</nature>
+	</natures>
+</projectDescription>

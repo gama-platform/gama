@@ -54,7 +54,6 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.osgi.framework.Bundle;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.Multimap;
 
 import gama.api.GAMA;
 import gama.api.additions.GamaBundleLoader;
@@ -287,7 +286,7 @@ public class WorkspaceModelsManager {
 						// We open the project
 						proj.open(IResource.NONE, monitor);
 						// And we set some properties to it
-						setValuesProjectDescription(proj, false, false, false, null);
+						setValuesProjectDescription(proj, null);
 					}
 				};
 				operation.run(new NullProgressMonitor() {});
@@ -446,46 +445,141 @@ public class WorkspaceModelsManager {
 
 	}
 
+	/** The identifiers of the natures that were used to classify the projects before they were classified by location. */
+	private static final String[] LEGACY_NATURES = { "gama.workspace.builtinNature", "gama.workspace.pluginNature",
+			"gama.workspace.testNature", "gama.workspace.tutorialNature", "gama.workspace.recipeNature",
+			"gama.workspace.dataNature", "gama.workspace.demoNature", "msi.gama.application.builtinNature",
+			"msi.gama.application.pluginNature", "msi.gama.application.testNature",
+			"msi.gama.application.tutorialNature", "msi.gama.application.recipeNature" };
+
 	/**
 	 * Load models library.
 	 */
 	public void loadModelsLibrary() {
-		final Multimap<Bundle, String> pluginsWithModels = GamaBundleLoader.getPluginsWithModels();
-		for (final Bundle plugin : pluginsWithModels.keySet()) {
-			for (final String entry : pluginsWithModels.get(plugin)) { linkModelsToWorkspace(plugin, entry, false); }
+		ProjectCategory.reset();
+		removeLegacyNatures();
+		final List<GamaBundleLoader.ModelFolder> folders = new ArrayList<>(GamaBundleLoader.getModelFolders());
+		// The core library has the priority when several plugins contribute projects with the same name
+		folders.sort((f1, f2) -> Boolean.compare(!f1.bundle().equals(GamaBundleLoader.CORE_MODELS),
+				!f2.bundle().equals(GamaBundleLoader.CORE_MODELS)));
+		final Map<String, Bundle> claimedNames = new HashMap<>();
+		final java.util.Set<String> importedNames = new java.util.HashSet<>();
+		for (final GamaBundleLoader.ModelFolder folder : folders) {
+			linkModelsToWorkspace(folder, claimedNames, importedNames);
 		}
-		final Multimap<Bundle, String> pluginsWithTests = GamaBundleLoader.getPluginsWithTests();
-		for (final Bundle plugin : pluginsWithTests.keySet()) {
-			for (final String entry : pluginsWithTests.get(plugin)) { linkModelsToWorkspace(plugin, entry, true); }
-		}
-		final Multimap<Bundle, String> pluginsWithTutorials = GamaBundleLoader.getPluginsWithTutorials();
-		for (final Bundle plugin : pluginsWithTutorials.keySet()) {
-			for (final String entry : pluginsWithTutorials.get(plugin)) { linkModelsToWorkspace(plugin, entry, false); }
-		}
-		final Multimap<Bundle, String> pluginsWithRecipes = GamaBundleLoader.getPluginsWithRecipes();
-		for (final Bundle plugin : pluginsWithRecipes.keySet()) {
-			for (final String entry : pluginsWithRecipes.get(plugin)) { linkModelsToWorkspace(plugin, entry, false); }
-		}
+		stampWorkspaceFromModels();
+		removeObsoleteProjects(importedNames);
 		// If the directory is not empty, we should maybe try to recreate the projects (if they do not exist...)
-		try (DirectoryStream<java.nio.file.Path> paths = Files.newDirectoryStream(
-				java.nio.file.Path.of(GAMA.getWorkspaceManager().getWorkspaceLocation()), Files::isDirectory)) {
-			for (java.nio.file.Path r : paths) {
-				File folder = r.toFile();
-				if (isGamaProject(folder)) { createOrUpdateProject(folder.getName()); }
+		final java.nio.file.Path workspace = java.nio.file.Path.of(GAMA.getWorkspaceManager().getWorkspaceLocation());
+		recreateProjects(workspace, false);
+		// The test projects of the user are in a dedicated sub-directory of the workspace
+		final java.nio.file.Path tests = workspace.resolve(ProjectCategory.USER_TESTS_FOLDER);
+		if (Files.isDirectory(tests)) { recreateProjects(tests, true); }
+	}
+
+	/**
+	 * Recreates the projects of the workspace found in the sub-directories of a directory.
+	 *
+	 * @param directory
+	 *            the directory to scan
+	 * @param explicitLocation
+	 *            whether the projects are not in their default location in the workspace
+	 */
+	private void recreateProjects(final java.nio.file.Path directory, final boolean explicitLocation) {
+		recreateProjects(directory, explicitLocation, 0);
+	}
+
+	/**
+	 * Recreates the projects found in a directory. Directories that are not projects are considered as user groups
+	 * (see issue #678) and are explored, up to {@link #MAX_GROUP_DEPTH} levels, only in the workspace itself. The
+	 * projects found in groups are always created with an explicit location.
+	 */
+	private void recreateProjects(final java.nio.file.Path directory, final boolean explicitLocation,
+			final int depth) {
+		try (DirectoryStream<java.nio.file.Path> paths = Files.newDirectoryStream(directory, Files::isDirectory)) {
+			for (final java.nio.file.Path r : paths) {
+				final File folder = r.toFile();
+				final String name = folder.getName();
+				if (isGamaProject(folder)) {
+					createOrUpdateProject(name, explicitLocation || depth > 0 ? folder : null);
+				} else if (!explicitLocation && depth < MAX_GROUP_DEPTH && !name.startsWith(".")
+						&& !ProjectCategory.isReservedName(name)) {
+					recreateProjects(r, false, depth + 1);
+				}
 			}
-		} catch (IOException e1) {
+		} catch (final IOException e1) {
 			e1.printStackTrace();
 		}
 	}
 
-	/**
-	 * @param plugin
-	 */
+	/** The maximum number of nested group folders in the workspace. */
+	private static final int MAX_GROUP_DEPTH = 3;
 
-	private void linkModelsToWorkspace(final Bundle bundle, final String path, final boolean tests) {
-		// DEBUG.OUT("Linking library from bundle " + bundle.getSymbolicName() + " at path " + path);
-		final boolean core = bundle.equals(GamaBundleLoader.CORE_MODELS);
-		final URL fileURL = bundle.getEntry(path);
+	/**
+	 * Removes the natures that were formerly used to classify the projects (they are not defined anymore) and replaces
+	 * the former identifiers of the GAMA nature by the current one. The
+	 * projects that were contributed by a plugin in a previous layout, and whose location does not exist anymore, are
+	 * removed from the workspace (without deleting their contents). User projects are never removed.
+	 */
+	private void removeLegacyNatures() {
+		for (final IProject p : GAMA.getWorkspaceManager().getRoot().getProjects()) {
+			try {
+				if (!p.exists()) { continue; }
+				final IProjectDescription desc = p.getDescription();
+				final List<String> natures = new ArrayList<>(List.of(desc.getNatureIds()));
+				final boolean removed = natures.removeAll(List.of(LEGACY_NATURES));
+				final String[] migrated = GamaNatures.migrate(natures.toArray(new String[0]));
+				final boolean renamed = !List.of(migrated).equals(natures);
+				if (!removed && !renamed) { continue; }
+				natures.clear();
+				natures.addAll(List.of(migrated));
+				final IPath loc = p.getLocation();
+				if (loc != null && !loc.toFile().exists()) {
+					p.delete(false, true, null);
+				} else if (p.isOpen()) {
+					desc.setNatureIds(natures.toArray(new String[0]));
+					p.setDescription(desc, IResource.FORCE, null);
+				}
+			} catch (final CoreException e) {
+				DEBUG.ERR("Could not update the natures of project " + p.getName(), e);
+			}
+		}
+	}
+
+	/**
+	 * Removes from the workspace (without deleting their contents) the projects that were contributed by a plugin and
+	 * whose location does not exist anymore. User projects are never removed.
+	 *
+	 * @param importedNames
+	 *            the names of the projects that have just been imported
+	 */
+	private void removeObsoleteProjects(final java.util.Set<String> importedNames) {
+		for (final IProject p : GAMA.getWorkspaceManager().getRoot().getProjects()) {
+			if (importedNames.contains(p.getName())) { continue; }
+			try {
+				final IPath loc = p.getLocation();
+				if (loc == null || loc.toFile().exists()) { continue; }
+				if (p.getPersistentProperty(BUILTIN_PROPERTY) != null) { p.delete(false, true, null); }
+			} catch (final CoreException e) {
+				DEBUG.ERR("Could not check project " + p.getName(), e);
+			}
+		}
+	}
+
+	/**
+	 * Links the projects found in a folder contributed by a plugin to the workspace.
+	 *
+	 * @param folder
+	 *            the folder contributed by a plugin, with its category
+	 * @param claimedNames
+	 *            the names of the projects already imported, with the plugin that contributed them
+	 * @param importedNames
+	 *            the names of all the projects imported so far
+	 */
+	private void linkModelsToWorkspace(final GamaBundleLoader.ModelFolder folder, final Map<String, Bundle> claimedNames,
+			final java.util.Set<String> importedNames) {
+		final Bundle bundle = folder.bundle();
+		final URL fileURL = bundle.getEntry(folder.path());
 		if (fileURL == null) return;
 		File modelsRep = null;
 		try {
@@ -500,10 +594,7 @@ public class WorkspaceModelsManager {
 
 		final Map<File, IPath> foundProjects = new ConcurrentHashMap<>();
 		findProjects(modelsRep, foundProjects);
-		importBuiltInProjects(bundle, core, tests, foundProjects);
-
-		if (core) { stampWorkspaceFromModels(); }
-
+		importBuiltInProjects(bundle, foundProjects, claimedNames, importedNames);
 	}
 
 	/**
@@ -537,46 +628,61 @@ public class WorkspaceModelsManager {
 	 * @param workspace
 	 * @param project
 	 */
-	private void importBuiltInProjects(final Bundle plugin, final boolean core, final boolean tests,
-			final Map<File, IPath> projects) {
+	private void importBuiltInProjects(final Bundle plugin, final Map<File, IPath> projects,
+			final Map<String, Bundle> claimedNames, final java.util.Set<String> importedNames) {
 		for (final Map.Entry<File, IPath> entry : projects.entrySet()) {
 			final File project = entry.getKey();
 			final IPath location = entry.getValue();
 
+			final IProjectDescription description;
+			try {
+				description = GAMA.getWorkspaceManager().getWorkspace().loadProjectDescription(location);
+			} catch (final CoreException e) {
+				DEBUG.ERR("Could not load the project description of: " + project.getName(), e);
+				continue;
+			}
 			// Skip projects whose .project file declares no natures: they are
 			// deprecated container directories that have been emptied of GAMA content
-			// (e.g. the old "Tutorials" container after its sub-projects were moved
-			// to the tutorials/ layout).
-			try {
-				final IProjectDescription peekDesc =
-						GAMA.getWorkspaceManager().getWorkspace().loadProjectDescription(location);
-				if (peekDesc != null && peekDesc.getNatureIds().length == 0) {
-					DEBUG.OUT("Skipping empty/deprecated container project: " + project.getName());
-					continue;
-				}
-			} catch (final CoreException e) {
-				// If we cannot load the description, try importing normally
-				DEBUG.ERR("Could not peek at project description for: " + project.getName(), e);
+			if (description.getNatureIds().length == 0) {
+				DEBUG.OUT("Skipping empty/deprecated container project: " + project.getName());
+				continue;
 			}
+
+			// Two projects cannot have the same name in the workspace: the latest one is renamed
+			String name = project.getName();
+			if (claimedNames.putIfAbsent(name, plugin) != null) {
+				name = name + " (" + lastSegment(plugin) + ")";
+				for (int i = 2; claimedNames.putIfAbsent(name, plugin) != null; i++) {
+					name = project.getName() + " (" + lastSegment(plugin) + " " + i + ")";
+				}
+			}
+			final String projectName = name;
+			final IPath projectLocation = new Path(project.getAbsolutePath());
+			description.setName(projectName);
+			importedNames.add(projectName);
 
 			final WorkspaceModifyOperation operation = new WorkspaceModifyOperation() {
 
 				@Override
 				protected void execute(final IProgressMonitor monitor)
 						throws CoreException, InvocationTargetException, InterruptedException {
-					IProject proj = GAMA.getWorkspaceManager().getRoot().getProject(project.getName());
-					if (!proj.exists()) {
-						proj.create(GAMA.getWorkspaceManager().getWorkspace().loadProjectDescription(location),
-								monitor);
-					} else // project exists but is not accessible
-					if (!proj.isAccessible()) {
-						proj.delete(true, null);
-						proj = GAMA.getWorkspaceManager().getRoot().getProject(project.getName());
-						proj.create(GAMA.getWorkspaceManager().getWorkspace().loadProjectDescription(location),
-								monitor);
+					IProject proj = GAMA.getWorkspaceManager().getRoot().getProject(projectName);
+					if (proj.exists()) {
+						final IPath existingLocation = proj.getLocation();
+						final boolean sameLocation = existingLocation != null && existingLocation.equals(projectLocation);
+						if (!sameLocation) {
+							// A project of the user with the same name is never replaced
+							if (existingLocation != null && existingLocation.toFile().exists()
+									&& ProjectCategory.of(existingLocation) == ProjectCategory.USER)
+								return;
+							// Otherwise, it is a project contributed by a plugin that has moved or is not accessible
+							proj.delete(false, true, monitor);
+							proj = GAMA.getWorkspaceManager().getRoot().getProject(projectName);
+						}
 					}
+					if (!proj.exists()) { proj.create(description, monitor); }
 					proj.open(IResource.NONE, monitor);
-					setValuesProjectDescription(proj, true, !core, tests, plugin);
+					setValuesProjectDescription(proj, plugin);
 				}
 			};
 			try {
@@ -589,6 +695,18 @@ public class WorkspaceModelsManager {
 	}
 
 	/**
+	 * Returns the last segment of the symbolic name of a bundle.
+	 *
+	 * @param bundle
+	 *            the bundle
+	 * @return the last segment of its symbolic name
+	 */
+	private static String lastSegment(final Bundle bundle) {
+		final String bundleName = bundle.getSymbolicName();
+		return bundleName.substring(bundleName.lastIndexOf('.') + 1);
+	}
+
+	/**
 	 * Creates the or update project.
 	 *
 	 * @param name
@@ -596,6 +714,19 @@ public class WorkspaceModelsManager {
 	 * @return the i project
 	 */
 	public IProject createOrUpdateProject(final String name) {
+		return createOrUpdateProject(name, null);
+	}
+
+	/**
+	 * Creates or updates a project, which can be located outside of the default location in the workspace.
+	 *
+	 * @param name
+	 *            the name
+	 * @param location
+	 *            the directory of the project, or null to use the default location
+	 * @return the i project
+	 */
+	public IProject createOrUpdateProject(final String name, final File location) {
 		final IProject[] projectHandle = { null };
 		final WorkspaceModifyOperation op = new WorkspaceModifyOperation() {
 
@@ -607,12 +738,13 @@ public class WorkspaceModelsManager {
 				if (created) {
 					final IProjectDescription desc =
 							GAMA.getWorkspaceManager().getWorkspace().newProjectDescription(name);
+					if (location != null) { desc.setLocation(new Path(location.getAbsolutePath())); }
 					project.create(desc, m.split(1000));
 				}
 				if (monitor.isCanceled()) throw new OperationCanceledException();
 				project.open(IResource.BACKGROUND_REFRESH, m.split(1000));
 				projectHandle[0] = project;
-				if (created) { setValuesProjectDescription(project, false, false, false, null); }
+				if (created) { setValuesProjectDescription(project, null); }
 			}
 		};
 		try {
@@ -631,100 +763,29 @@ public class WorkspaceModelsManager {
 	// }
 
 	/**
-	 * Configures project description with appropriate GAMA natures and properties. Sets up the project based on its
-	 * type (tutorial, recipe, builtin, plugin, test, or regular model).
-	 *
-	 * <p>
-	 * If the project's existing {@code .project} file already declares {@link GamaNatures#TUTORIAL_NATURE} or
-	 * {@link GamaNatures#RECIPE_NATURE}, those natures are preserved and take precedence over the generic
-	 * {@code builtin}/{@code plugin} classification. This allows individual projects inside a plugin's {@code models/}
-	 * directory to opt-in to the "Tutorials" or "Recipes" virtual folders simply by declaring the appropriate nature in
-	 * their {@code .project} file.
-	 * </p>
+	 * Configures the project description of a project with the GAMA natures and properties.
 	 *
 	 * @param proj
 	 *            the project to configure
-	 * @param builtin
-	 *            true if this is a built-in GAMA project (part of the core library or a plugin's {@code models/}
-	 *            directory)
-	 * @param inPlugin
-	 *            true if this project is part of a non-core plugin's {@code models/} directory
-	 * @param inTests
-	 *            true if this is a test project (part of a plugin's {@code tests/} directory)
 	 * @param bundle
-	 *            the OSGi bundle associated with this project (can be null)
+	 *            the plugin that contributed the project (can be null). Its symbolic name is stored in the comment of
+	 *            the {@code .project} file
 	 */
-	public void setValuesProjectDescription(final IProject proj, final boolean builtin, final boolean inPlugin,
-			final boolean inTests, final Bundle bundle) {
+	public void setValuesProjectDescription(final IProject proj, final Bundle bundle) {
 		try {
-			// Check whether the project file already declares a tutorial or recipe nature.
-			// If so, preserve it instead of overwriting with the generic builtin/plugin nature.
-			final IProjectDescription existingDesc = proj.getDescription();
-			final boolean isTutorial = existingDesc.hasNature(GamaNatures.TUTORIAL_NATURE);
-			final boolean isRecipe = existingDesc.hasNature(GamaNatures.RECIPE_NATURE);
-
-			// Build nature IDs list based on project type
-			final List<String> natures = new ArrayList<>();
-			natures.add(GamaNatures.XTEXT_NATURE);
-			natures.add(GamaNatures.GAMA_NATURE);
-
-			// Add specific nature based on project type; tutorial/recipe take precedence
-			if (isTutorial) {
-				natures.add(GamaNatures.TUTORIAL_NATURE);
-			} else if (isRecipe) {
-				natures.add(GamaNatures.RECIPE_NATURE);
-			} else if (inTests) {
-				natures.add(GamaNatures.TEST_NATURE);
-			} else if (inPlugin) {
-				natures.add(GamaNatures.PLUGIN_NATURE);
-			} else if (builtin) { natures.add(GamaNatures.BUILTIN_NATURE); }
-
-			// Update project description
 			final IProjectDescription desc = proj.getDescription();
-			desc.setNatureIds(natures.toArray(new String[0]));
-
-			// Set project comment based on type
-			setProjectComment(desc, inTests, inPlugin, bundle);
-
+			desc.setNatureIds(new String[] { GamaNatures.XTEXT_NATURE, GamaNatures.GAMA_NATURE });
+			desc.setComment(bundle == null ? "" : bundle.getSymbolicName());
 			proj.setDescription(desc, IResource.FORCE, null);
 
-			// Set builtin property if applicable
-			if (builtin && !isTutorial && !isRecipe) {
+			if (bundle != null) {
 				final String version = Platform.getProduct().getDefiningBundle().getVersion().toString();
 				proj.setPersistentProperty(BUILTIN_PROPERTY, version);
 			}
-
-			DEBUG.OUT("Successfully configured project: " + proj.getName() + " (builtin=" + builtin + ", plugin="
-					+ inPlugin + ", tests=" + inTests + ", tutorial=" + isTutorial + ", recipe=" + isRecipe + ")");
+			DEBUG.OUT("Successfully configured project: " + proj.getName());
 
 		} catch (final CoreException e) {
 			DEBUG.ERR("Failed to set project description for: " + proj.getName(), e);
-		}
-	}
-
-	/**
-	 * Sets the appropriate comment on the project description based on project type.
-	 *
-	 * @param desc
-	 *            the project description to update
-	 * @param inTests
-	 *            true if this is a test project
-	 * @param inPlugin
-	 *            true if this is a plugin project
-	 * @param bundle
-	 *            the associated bundle (can be null)
-	 */
-	private void setProjectComment(final IProjectDescription desc, final boolean inTests, final boolean inPlugin,
-			final Bundle bundle) {
-		if (inTests && bundle == null) {
-			desc.setComment("user defined");
-		} else if ((inPlugin || inTests) && bundle != null) {
-			final String bundleName = bundle.getSymbolicName();
-			final String[] segments = bundleName.split("\\.");
-			final String projectName = segments[segments.length - 1] + " plugin";
-			desc.setComment(projectName);
-		} else {
-			desc.setComment("");
 		}
 	}
 
@@ -800,7 +861,7 @@ public class WorkspaceModelsManager {
 						final IPath projectPath = new Path(f.getAbsolutePath()).append(".project");
 						final IProjectDescription pd =
 								GAMA.getWorkspaceManager().getWorkspace().loadProjectDescription(projectPath);
-						return pd.hasNature(GamaNatures.GAMA_NATURE);
+						return GamaNatures.isGamaProject(pd);
 					} catch (CoreException e) {
 						DEBUG.ERR("Error checking GAMA nature for project: " + f.getAbsolutePath(), e);
 						return false;

@@ -64,6 +64,9 @@ import org.eclipse.ui.part.ResourceTransfer;
 import gama.api.GAMA;
 import gama.ui.navigator.view.contents.ResourceManager;
 import gama.ui.navigator.view.contents.TopLevelFolder;
+import gama.ui.navigator.view.contents.UserGroupFolder;
+import gama.ui.navigator.view.contents.UserGroups;
+import gama.workspace.manager.ProjectCategory;
 import gama.workspace.metadata.FileMetaDataProvider;
 
 /**
@@ -88,7 +91,7 @@ public class NavigatorResourceDropAssistant extends ResourceDropAdapterAssistant
 	@Override
 	public IStatus validateDrop(final Object target, final int aDropOperation, final TransferData transferType) {
 		final IResource resource = ResourceManager.getResource(target);
-		if (!(target instanceof TopLevelFolder)) {
+		if (!(target instanceof TopLevelFolder || target instanceof UserGroupFolder)) {
 			if (resource == null) return WorkbenchNavigatorPlugin.createStatus(IStatus.INFO, 0,
 					WorkbenchNavigatorMessages.DropAdapter_targetMustBeResource, null);
 			if (!resource.isAccessible()) return WorkbenchNavigatorPlugin.createErrorStatus(0,
@@ -102,6 +105,12 @@ public class NavigatorResourceDropAssistant extends ResourceDropAdapterAssistant
 		if (LocalSelectionTransfer.getTransfer().isSupportedType(transferType)) {
 			final IResource[] selectedResources = getSelectedResources();
 
+			if (target instanceof UserGroupFolder g && !g.isEditable())
+				return WorkbenchNavigatorPlugin.createErrorStatus(0, "This group cannot be modified", null);
+			if (allProjects(selectedResources) && target instanceof UserGroupFolder) {
+				return allUserProjects(selectedResources) ? Status.OK_STATUS : WorkbenchNavigatorPlugin
+						.createErrorStatus(0, "Only user projects can be moved into a group", null);
+			}
 			if (allProjects(selectedResources) && target instanceof TopLevelFolder) return Status.OK_STATUS;
 			if (anyProjects(selectedResources)) {
 				// drop of projects not supported on other IResources
@@ -158,6 +167,23 @@ public class NavigatorResourceDropAssistant extends ResourceDropAdapterAssistant
 		return true;
 	}
 
+	private boolean allUserProjects(final IResource[] res) {
+		for (final IResource re : res) { if (ProjectCategory.of((IProject) re) != ProjectCategory.USER) return false; }
+		return true;
+	}
+
+	/** Moves projects into a group of user projects (or out of any group if the path is empty). */
+	private IStatus moveProjects(final IResource[] resources, final String groupPath) {
+		try {
+			for (final IResource r : resources) { if (!UserGroups.moveProject((IProject) r, groupPath)) { break; } }
+		} catch (final CoreException e) {
+			return WorkbenchNavigatorPlugin.createErrorStatus(0, e.getMessage(), e);
+		} finally {
+			UserGroups.refreshNavigator();
+		}
+		return Status.OK_STATUS;
+	}
+
 	/**
 	 * Any projects.
 	 *
@@ -183,7 +209,14 @@ public class NavigatorResourceDropAssistant extends ResourceDropAdapterAssistant
 			resources = (IResource[]) aDropTargetEvent.data;
 		}
 
-		if (t instanceof TopLevelFolder && allProjects(resources)) {
+		if (t instanceof UserGroupFolder ro && !ro.isEditable()) return Status.CANCEL_STATUS;
+		if (t instanceof UserGroupFolder group && allProjects(resources)) {
+			status = moveProjects(resources, group.getRelativePath().toString());
+		} else if (t instanceof TopLevelFolder folder && folder.getCategory() == ProjectCategory.USER
+				&& allProjects(resources) && allUserProjects(resources)
+				&& aDropAdapter.getCurrentOperation() == DND.DROP_MOVE) {
+			status = moveProjects(resources, "");
+		} else if (t instanceof TopLevelFolder && allProjects(resources)) {
 			status = performProjectCopy(aDropAdapter, getShell(), resources);
 		} else {
 			final IResource aTarget = ResourceManager.getResource(t);

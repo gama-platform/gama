@@ -24,6 +24,7 @@ import java.net.URI;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.Dialog;
@@ -40,6 +41,8 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 
 import gama.api.GAMA;
+import gama.ui.navigator.view.contents.UserGroups;
+import gama.workspace.manager.ProjectCategory;
 
 /**
  * The Class NewProjectWizardPage.
@@ -55,6 +58,12 @@ public class NewProjectWizardPage extends WizardPage {
 
 	/** The create new model. */
 	boolean createNewModel = true;
+
+	/** The group field and its initial value. */
+	Text groupField;
+
+	/** The initial group. */
+	String initialGroup;
 
 	/** The project name field. */
 	// widgets
@@ -124,9 +133,17 @@ public class NewProjectWizardPage extends WizardPage {
 		data.widthHint = SIZING_TEXT_FIELD_WIDTH;
 		projectNameField.setLayoutData(data);
 		// projectNameField.setFont(parent.getFont());
+		final Label groupLabel = new Label(projectGroup, SWT.NONE);
+		groupLabel.setText("&Group (optional):");
+		groupField = new Text(projectGroup, SWT.BORDER);
+		groupField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		groupField.setToolTipText("A folder of the workspace, created if needed, in which the project is located");
+		if (initialGroup != null) { groupField.setText(initialGroup); }
+		groupField.addListener(SWT.Modify, nameModifyListener);
 		final Button test = new Button(projectGroup, SWT.CHECK);
 		final Button newModel = new Button(projectGroup, SWT.CHECK);
-		test.setText("Configure as a test project");
+		test.setText("Configure as a test project (located in the '" + ProjectCategory.USER_TESTS_FOLDER
+				+ "' directory of the workspace)");
 		test.addSelectionListener(new SelectionAdapter() {
 
 			@Override
@@ -158,6 +175,21 @@ public class NewProjectWizardPage extends WizardPage {
 	}
 
 	/**
+	 * Gets the group (a path relative to the workspace) in which the project will be created.
+	 *
+	 * @return the group, or an empty string
+	 */
+	public String getGroup() { return groupField == null || isTest ? "" : groupField.getText().trim(); }
+
+	/**
+	 * Sets the group proposed by default.
+	 *
+	 * @param group
+	 *            the group, relative to the workspace
+	 */
+	public void setInitialGroup(final String group) { initialGroup = group; }
+
+	/**
 	 * Checks if is test.
 	 *
 	 * @return true, if is test
@@ -181,7 +213,12 @@ public class NewProjectWizardPage extends WizardPage {
 	 * @since 3.2
 	 */
 	public URI getLocationURI() {
-		return Platform.getLocation().addTrailingSeparator().append(getProjectName()).toFile().toURI();
+		IPath location = Platform.getLocation();
+		// The test projects of the user are in a dedicated directory of the workspace
+		if (isTest) {
+			location = location.append(ProjectCategory.USER_TESTS_FOLDER);
+		} else if (!getGroup().isEmpty()) { location = location.append(getGroup()); }
+		return location.addTrailingSeparator().append(getProjectName()).toFile().toURI();
 	}
 
 	/**
@@ -249,9 +286,21 @@ public class NewProjectWizardPage extends WizardPage {
 			return false;
 		}
 
+		if (ProjectCategory.isReservedName(projectFieldContents)) {
+			setErrorMessage("'" + projectFieldContents
+					+ "' is the name of a top-level folder of the navigator and cannot be used for a project");
+			return false;
+		}
+
 		final IStatus nameStatus = workspace.validateName(projectFieldContents, IResource.PROJECT);
 		if (!nameStatus.isOK()) {
 			setErrorMessage(nameStatus.getMessage());
+			return false;
+		}
+
+		final String groupError = UserGroups.validate(getGroup());
+		if (groupError != null) {
+			setErrorMessage(groupError);
 			return false;
 		}
 

@@ -24,6 +24,7 @@ import org.eclipse.ui.actions.TextActionHandler;
 import org.eclipse.ui.navigator.CommonActionProvider;
 import org.eclipse.ui.navigator.ICommonActionExtensionSite;
 
+import gama.ui.navigator.view.contents.UserGroupFolder;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 
@@ -101,7 +102,11 @@ public class EditActionProvider extends CommonActionProvider {
 	 */
 	public void handleKeyPressed(final KeyEvent event) {
 		if (event.character == SWT.DEL && event.stateMask == 0) {
-			if (deleteAction.isEnabled()) { deleteAction.run(); }
+			final Object selected = getContext() == null || !(getContext().getSelection() instanceof IStructuredSelection ss)
+					? null : ss.getFirstElement();
+			if (selected instanceof UserGroupFolder group) {
+				if (group.isEditable()) { new GroupActions.DeleteGroup(group).run(); }
+			} else if (deleteAction.isEnabled()) { deleteAction.run(); }
 
 			// Swallow the event.
 			event.doit = false;

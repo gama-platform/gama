@@ -75,6 +75,9 @@
                      name="gama.ui.navigator.view.contents.TopLevelFolder">
                </objectClass>
                <objectClass
+                     name="gama.ui.navigator.view.contents.UserGroupFolder">
+               </objectClass>
+               <objectClass
                      name="gama.ui.navigator.view.contents.WrappedFile">
                </objectClass>
                <objectClass
@@ -693,6 +696,9 @@
                   <or>
                      <instanceof
                            value="gama.ui.navigator.view.contents.TopLevelFolder">
+                     </instanceof>
+                     <instanceof
+                           value="gama.ui.navigator.view.contents.UserGroupFolder">
                      </instanceof>
                      <adapt
                            type="org.eclipse.core.resources.IResource">

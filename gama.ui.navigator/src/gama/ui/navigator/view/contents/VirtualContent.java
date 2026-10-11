@@ -334,6 +334,13 @@ public abstract class VirtualContent<P extends VirtualContent<?>> implements IWo
 	public abstract void getSuffix(final StringBuilder sb);
 
 	/**
+	 * A short explanation of the role of this element, displayed to the right of its label.
+	 *
+	 * @return the explanation, or null if none
+	 */
+	public String getExplanation() { return null; }
+
+	/**
 	 * Find max problem severity.
 	 *
 	 * @return the int

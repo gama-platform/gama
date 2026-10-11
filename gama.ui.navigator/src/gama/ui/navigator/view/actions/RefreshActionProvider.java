@@ -21,6 +21,7 @@ import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.navigator.CommonActionProvider;
 import org.eclipse.ui.navigator.ICommonActionExtensionSite;
 
+import gama.ui.navigator.view.contents.UserGroupFolder;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 
@@ -31,6 +32,9 @@ public class RefreshActionProvider extends CommonActionProvider {
 
 	/** The refresh action. */
 	private RefreshAction refreshAction;
+
+	/** The clean and update action. */
+	private CleanAndUpdateAction cleanAndUpdateAction;
 
 	/** The run all tests action. */
 	private RunAllTestsAction runAllTestsAction;
@@ -58,6 +62,17 @@ public class RefreshActionProvider extends CommonActionProvider {
 		runAllTestsAction.selectionChanged(selection);
 		if (runAllTestsAction.isEnabled()) { menu.appendToGroup("group.refresh", runAllTestsAction); }
 		menu.appendToGroup("group.refresh", refreshAction);
+		menu.appendToGroup("group.refresh", cleanAndUpdateAction);
+		if (selection.size() == 1) {
+			final Object o = selection.getFirstElement();
+			if (GroupActions.isUserFolder(o)) {
+				menu.appendToGroup("group.refresh", new GroupActions.NewGroup(null));
+			} else if (o instanceof UserGroupFolder group && group.isEditable()) {
+				menu.appendToGroup("group.refresh", new GroupActions.NewGroup(group));
+				menu.appendToGroup("group.refresh", new GroupActions.RenameGroup(group));
+				menu.appendToGroup("group.refresh", new GroupActions.DeleteGroup(group));
+			}
+		}
 	}
 
 	/**
@@ -69,6 +84,8 @@ public class RefreshActionProvider extends CommonActionProvider {
 		refreshAction.setImageDescriptor(GamaIcon.named(IGamaIcons.FILE_REFRESH).descriptor());
 		refreshAction.setDisabledImageDescriptor(GamaIcon.named(IGamaIcons.FILE_REFRESH).disabledDescriptor());
 		refreshAction.setActionDefinitionId(IWorkbenchCommandConstants.FILE_REFRESH);
+		cleanAndUpdateAction = new CleanAndUpdateAction();
+		cleanAndUpdateAction.setImageDescriptor(GamaIcon.named(IGamaIcons.FILE_REFRESH).descriptor());
 		runAllTestsAction = new RunAllTestsAction(sp, "Run all tests");
 		runAllTestsAction.setImageDescriptor(GamaIcon.named(IGamaIcons.TEST_RUN).descriptor());
 		runAllTestsAction.setDisabledImageDescriptor(GamaIcon.named(IGamaIcons.TEST_RUN).disabledDescriptor());

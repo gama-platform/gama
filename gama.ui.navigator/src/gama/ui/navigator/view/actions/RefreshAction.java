@@ -16,7 +16,6 @@ import static gama.ui.shared.utils.WorkbenchHelper.runInUI;
 import static org.eclipse.core.resources.IResource.DEPTH_INFINITE;
 import static org.eclipse.core.resources.IResource.PROJECT;
 import static org.eclipse.core.resources.IResource.ROOT;
-import static org.eclipse.core.runtime.Status.OK_STATUS;
 import static org.eclipse.jface.viewers.StructuredSelection.EMPTY;
 import static org.eclipse.ui.PlatformUI.PLUGIN_ID;
 import static org.eclipse.ui.internal.ide.IIDEHelpContextIds.REFRESH_ACTION;
@@ -28,7 +27,6 @@ import org.eclipse.core.filesystem.IFileInfo;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -45,7 +43,9 @@ import org.eclipse.ui.internal.ide.dialogs.IDEResourceInfoUtils;
 
 import gama.api.GAMA;
 import gama.ui.navigator.view.GamaNavigator;
-import gama.ui.shared.interfaces.IRefreshHandler;
+import gama.ui.navigator.view.contents.TopLevelFolder;
+import gama.ui.navigator.view.contents.UserGroupFolder;
+import gama.ui.navigator.view.contents.WrappedProject;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.workspace.metadata.FileMetaDataProvider;
 
@@ -138,6 +138,18 @@ public class RefreshAction extends WorkspaceAction {
 	protected List<? extends IResource> getSelectedResources() {
 		final List<IResource> resources1 = new ArrayList<>();
 		for (final IResource r : super.getSelectedResources()) { if (r.isAccessible()) { resources1.add(r); } }
+		// A virtual top-level folder stands for the projects it contains
+		for (final Object o : getStructuredSelection()) {
+			if (o instanceof TopLevelFolder folder) {
+				for (final WrappedProject wp : folder.getProjects()) {
+					if (wp.getResource().isAccessible()) { resources1.add(wp.getResource()); }
+				}
+			} else if (o instanceof UserGroupFolder group) {
+				for (final WrappedProject wp : group.getAllProjects()) {
+					if (wp.getResource().isAccessible()) { resources1.add(wp.getResource()); }
+				}
+			}
+		}
 		if (resources1.isEmpty()) { resources1.add(GAMA.getWorkspaceManager().getRoot()); }
 		return resources1;
 	}
@@ -212,25 +224,6 @@ public class RefreshAction extends WorkspaceAction {
 			getNavigator().getCommonViewer().refresh(getInstance().findWrappedInstanceOf(resource), true);
 		});
 
-	}
-
-	@Override
-	public void run() {
-		if (super.getSelectedResources().isEmpty()) {
-			final WorkspaceJob job = new WorkspaceJob("Refreshing the GAMA Workspace") {
-
-				@Override
-				public IStatus runInWorkspace(final IProgressMonitor monitor) throws CoreException {
-					final IRefreshHandler refresh = WorkbenchHelper.getService(IRefreshHandler.class);
-					if (refresh != null) { refresh.completeRefresh(resources); }
-					return OK_STATUS;
-				}
-			};
-			job.setUser(true);
-			job.schedule();
-		} else {
-			super.run();
-		}
 	}
 
 }

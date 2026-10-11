@@ -42,7 +42,7 @@ import gama.dev.DEBUG;
 import gama.ui.application.Application;
 import gama.ui.application.server.GamaGuiWebSocketServer;
 import gama.workspace.manager.WorkspaceModelsManager;
-import gama.workspace.nature.GamaNatures;
+import gama.workspace.manager.ProjectCategory;
 
 /**
  * The Class ApplicationWorkbenchAdvisor.
@@ -193,12 +193,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 		final IProject[] projects = workspace.getRoot().getProjects();
 		// User projects do not imply that the bundled library is present in this workspace.
 		for (final IProject project : projects) {
-			try {
-				if (project.hasNature(GamaNatures.BUILTIN_NATURE)) return false;
-			} catch (final CoreException e) {
-				DEBUG.ERR("Could not check whether project " + project.getName() + " belongs to the built-in library",
-						e);
-			}
+			if (ProjectCategory.of(project) != ProjectCategory.USER) return false;
 		}
 		return true;
 		// Following is not ready for prime time !

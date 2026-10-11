@@ -19,6 +19,9 @@ The new `gama.api` module has been created to decouple public interfaces from in
 *   `[f1c2e72]` Refactor color API, pooling and movement helpers (Cast to Color unification)
 *   `[7085b17]` Move GamaGeometryFactory; optimize GamaListFactory (Factory Generalization)
 
+### 📁 Workspace Models Organisation
+Plugins now contribute models through `models/{Data,Demos,Library,Recipes,Tutorials,Tests}/<GAMA projects>`; the `gama.models` extension point is removed. Projects are classified by location (not by natures), the contributing plugin is stored in the `.project` comment, and the GAMA nature is now `gama.workspace.nature` (the former ids are still recognised and migrated). The navigator gains a "Clean and update workspace..." command, hides empty top-level folders, and supports user *group folders* (plain directories of the workspace containing several projects, see #678) that can be created, renamed, deleted, filled by drag and drop, paste, and the New/Import project wizards.
+
 ### 🚀 GAML Language & Compiler (AST)
 The GAML compiler has been completely rewritten into a stateless architecture, ensuring faster compilation. Furthermore, GAML now natively supports Object-Oriented concepts (`class` and `object`).
 

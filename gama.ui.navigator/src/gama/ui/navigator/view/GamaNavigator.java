@@ -20,7 +20,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -36,9 +35,7 @@ import org.eclipse.ui.IMemento;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionGroup;
 import org.eclipse.ui.dialogs.PropertyDialogAction;
-import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.internal.navigator.CommonNavigatorActionGroup;
-import org.eclipse.ui.internal.navigator.actions.LinkEditorAction;
 import org.eclipse.ui.navigator.CommonNavigator;
 import org.eclipse.ui.navigator.CommonNavigatorManager;
 import org.eclipse.ui.navigator.CommonViewer;
@@ -47,6 +44,7 @@ import gama.api.GAMA;
 import gama.ui.navigator.view.contents.NavigatorRoot;
 import gama.ui.navigator.view.contents.Tag;
 import gama.ui.navigator.view.contents.TopLevelFolder;
+import gama.ui.navigator.view.contents.UserGroupFolder;
 import gama.ui.navigator.view.contents.VirtualContent;
 import gama.ui.navigator.view.contents.WrappedContainer;
 import gama.ui.navigator.view.contents.WrappedFile;
@@ -93,9 +91,6 @@ public class GamaNavigator extends CommonNavigator
 		return manager;
 	}
 
-	/** The toggle linking action. */
-	private LinkEditorAction toggleLinkingAction;
-
 	@Override
 	protected ActionGroup createCommonActionGroup() {
 
@@ -128,13 +123,10 @@ public class GamaNavigator extends CommonNavigator
 		restoreState();
 		sortItem = toolbar.check(byDate, SWT.RIGHT);
 		sortItem.setSelection(true);
-		toggleLinkingAction = new LinkEditorAction(this, getCommonViewer(), getLinkHelperService());
-		IHandlerService service = getSite().getService(IHandlerService.class);
-		service.activateHandler(toggleLinkingAction.getActionDefinitionId(), new ActionHandler(toggleLinkingAction));
 		final GamaCommand linkCommand = new GamaCommand(IGamaIcons.EDITOR_LINK, "", "Stay in sync with the editor",
-				e -> toggleLinkingAction.run());
+				e -> setLinkingEnabled(!isLinkingEnabled()));
 		linkItem = toolbar.check(linkCommand, SWT.RIGHT);
-		linkItem.setSelection(toggleLinkingAction.isChecked());
+		linkItem.setSelection(isLinkingEnabled());
 
 		GamaToolbarSimple tbs = toolbar.getToolbar(SWT.RIGHT);
 
@@ -261,7 +253,8 @@ public class GamaNavigator extends CommonNavigator
 		} else {
 			super.handleDoubleClick(anEvent);
 		}
-		if (element instanceof WrappedContainer || element instanceof TopLevelFolder) {
+		if (element instanceof WrappedContainer || element instanceof TopLevelFolder
+				|| element instanceof UserGroupFolder) {
 			final CommonViewer tree = getCommonViewer();
 			if (tree.getExpandedState(element)) {
 				final Object[] contents = ((VirtualContent<?>) element).getNavigatorChildren();
