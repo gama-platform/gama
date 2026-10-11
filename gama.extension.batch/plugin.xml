@@ -11,10 +11,4 @@
             keyword="batch">
       </implementation>
    </extension>
-   <extension
-         point="gama.models">
-      <path
-            name="models">
-      </path>
-   </extension>
 </plugin>
