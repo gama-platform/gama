@@ -5,7 +5,7 @@
 * Tags: comodel, experiment
 */
 
-experiment urbancomodel model:'../../../../Toy Models/Urban Growth/models/Raster Urban Growth.gaml' type:gui {
+experiment urbancomodel model:'../../../Urban Growth/models/Raster Urban Growth.gaml' type:gui {
 	action transform() {
 		ask plot{
 			location<-{location.x*0.037 , location.y*0.053};

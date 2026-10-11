@@ -5,7 +5,7 @@
 * Tags: comodel, experiment
 */
 
-experiment boidscomodel model:'../../../../Toy Models/Boids/models/Boids 3D Motion.gaml'type:gui {
+experiment boidscomodel model:'../../../Boids/models/Boids 3D Motion.gaml'type:gui {
 	list<boids_goal> get_boids_goal(){
 		return list(boids_goal);
 	}

@@ -5,7 +5,7 @@
 * Tags: comodel, experiment
 */
 
-experiment trafficcomodel model:'../../../../Toy Models/Traffic/models/Traffic and Pollution.gaml' type:gui {
+experiment trafficcomodel model:'../../../Traffic/models/Traffic and Pollution.gaml' type:gui {
 	point centroid <- { 15200, 1580 };
 	action transform() {		
 		loop t over:list(road){			
