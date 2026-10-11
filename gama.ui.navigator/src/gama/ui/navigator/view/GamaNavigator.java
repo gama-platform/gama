@@ -44,6 +44,7 @@ import gama.api.GAMA;
 import gama.ui.navigator.view.contents.NavigatorRoot;
 import gama.ui.navigator.view.contents.Tag;
 import gama.ui.navigator.view.contents.TopLevelFolder;
+import gama.ui.navigator.view.contents.UserGroupFolder;
 import gama.ui.navigator.view.contents.VirtualContent;
 import gama.ui.navigator.view.contents.WrappedContainer;
 import gama.ui.navigator.view.contents.WrappedFile;
@@ -252,7 +253,8 @@ public class GamaNavigator extends CommonNavigator
 		} else {
 			super.handleDoubleClick(anEvent);
 		}
-		if (element instanceof WrappedContainer || element instanceof TopLevelFolder) {
+		if (element instanceof WrappedContainer || element instanceof TopLevelFolder
+				|| element instanceof UserGroupFolder) {
 			final CommonViewer tree = getCommonViewer();
 			if (tree.getExpandedState(element)) {
 				final Object[] contents = ((VirtualContent<?>) element).getNavigatorChildren();

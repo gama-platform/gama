@@ -34,6 +34,8 @@ import org.eclipse.ui.internal.navigator.resources.plugin.WorkbenchNavigatorMess
 import org.eclipse.ui.part.ResourceTransfer;
 
 import gama.api.GAMA;
+import gama.ui.navigator.view.contents.UserGroupFolder;
+import gama.ui.navigator.view.contents.UserGroups;
 import gama.ui.navigator.view.contents.UserProjectsFolder;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.workspace.manager.WorkspaceModelsManager;
@@ -116,7 +118,7 @@ public class PasteAction extends SelectionListenerAction {
 	@Override
 	protected List<?> getSelectedNonResources() {
 		final List<?> result = new ArrayList<>(super.getSelectedNonResources());
-		result.removeIf(UserProjectsFolder.class::isInstance);
+		result.removeIf(o -> o instanceof UserProjectsFolder || o instanceof UserGroupFolder);
 		return result;
 	}
 
@@ -144,7 +146,7 @@ public class PasteAction extends SelectionListenerAction {
 	private boolean hasUser(final List<?> ss) {
 		boolean hasUser = false;
 		for (final Object o : ss) {
-			if (o instanceof UserProjectsFolder) {
+			if (o instanceof UserProjectsFolder || o instanceof UserGroupFolder) {
 				hasUser = true;
 				break;
 			}
@@ -161,8 +163,14 @@ public class PasteAction extends SelectionListenerAction {
 		final ResourceTransfer resTransfer = ResourceTransfer.getInstance();
 		final IResource[] resourceData = (IResource[]) clipboard.getContents(resTransfer);
 
+		final UserGroupFolder group = getStructuredSelection().getFirstElement() instanceof UserGroupFolder g ? g : null;
 		if (resourceData != null && resourceData.length > 0) {
-			if (resourceData[0].getType() == IResource.PROJECT) {
+			if (resourceData[0].getType() == IResource.PROJECT && group != null) {
+				for (final IResource element : resourceData) {
+					UserGroups.copyProject((IProject) element, group.getRelativePath().toString(), shell);
+				}
+				UserGroups.refreshNavigator();
+			} else if (resourceData[0].getType() == IResource.PROJECT) {
 				// enablement checks for all projects
 				for (final IResource element : resourceData) {
 					final CopyProjectOperation operation = new CopyProjectOperation(shell);
@@ -184,6 +192,10 @@ public class PasteAction extends SelectionListenerAction {
 		if (fileData != null) {
 			// enablement should ensure that we always have access to a container
 			final IContainer container = getTarget();
+			if (group != null) {
+				UserGroups.importDirectories(fileData, group.getRelativePath().toString());
+				return;
+			}
 			if (container == GAMA.getWorkspaceManager().getRoot()) {
 				handlePaste(fileData);
 				return;
@@ -214,6 +226,7 @@ public class PasteAction extends SelectionListenerAction {
 	@Override
 	protected boolean updateSelection(final IStructuredSelection selection) {
 		if (!super.updateSelection(selection)) return false;
+		if (selection.getFirstElement() instanceof UserGroupFolder g && !g.isEditable()) return false;
 
 		final IResource[][] clipboardData = new IResource[1][];
 		shell.getDisplay().syncExec(() -> {

@@ -11,6 +11,9 @@
 package gama.ui.navigator.view.contents;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -34,6 +37,12 @@ public class TopLevelFolder extends VirtualContent<NavigatorRoot> implements IGa
 
 	/** The children. */
 	WrappedProject[] children;
+
+	/** What is displayed directly under this folder: the projects and, for user projects, the groups. */
+	Object[] content;
+
+	/** The groups of user projects displayed in this folder. */
+	private final java.util.Map<org.eclipse.core.runtime.IPath, UserGroupFolder> groups = new java.util.HashMap<>();
 
 	/** The status icon. */
 	final ImageDescriptor icon;
@@ -65,13 +74,16 @@ public class TopLevelFolder extends VirtualContent<NavigatorRoot> implements IGa
 	 * Initialize children.
 	 */
 	public void initializeChildren() {
-		children = StreamEx.of(GAMA.getWorkspaceManager().getRoot().getProjects()).filter(this::privateAccepts)
-				.map(p -> (WrappedProject) getManager().wrap(this, p)).toArray(WrappedProject.class);
+		final var root = GAMA.getWorkspaceManager().getRoot();
+		final List<IProject> accepted = StreamEx.of(root.getProjects()).filter(this::privateAccepts).toList();
+		final List<WrappedProject> flat = new ArrayList<>();
+		content = UserGroupFolder.organise(this, accepted, root.getLocation(), flat, groups).toArray();
+		children = flat.toArray(new WrappedProject[0]);
 	}
 
 	@Override
 	public boolean hasChildren() {
-		return children.length > 0;
+		return content.length > 0;
 	}
 
 	// @Override
@@ -80,7 +92,7 @@ public class TopLevelFolder extends VirtualContent<NavigatorRoot> implements IGa
 	// }
 
 	@Override
-	public Object[] getNavigatorChildren() { return children; }
+	public Object[] getNavigatorChildren() { return content; }
 
 	@Override
 	public int findMaxProblemSeverity() {
@@ -118,6 +130,9 @@ public class TopLevelFolder extends VirtualContent<NavigatorRoot> implements IGa
 	// }
 
 	@Override
+	public String getExplanation() { return statusMessage; }
+
+	@Override
 	public void getSuffix(final StringBuilder sb) {
 		final var projectCount = children.length;
 		sb.append(projectCount).append(" project");
@@ -129,6 +144,13 @@ public class TopLevelFolder extends VirtualContent<NavigatorRoot> implements IGa
 
 	@Override
 	public TopLevelFolder getTopLevelFolder() { return this; }
+
+	/**
+	 * Gets all the projects displayed in this folder, including those inside groups.
+	 *
+	 * @return the wrapped projects
+	 */
+	public WrappedProject[] getProjects() { return children; }
 
 	/**
 	 * Gets the category of the projects displayed in this folder.

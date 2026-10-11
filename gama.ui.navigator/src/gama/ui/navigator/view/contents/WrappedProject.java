@@ -47,9 +47,9 @@ public class WrappedProject extends WrappedContainer<IProject> {
 	 * @param wrapped
 	 *            the wrapped
 	 */
-	public WrappedProject(final TopLevelFolder parent, final IProject wrapped) {
+	public WrappedProject(final VirtualContent<?> parent, final IProject wrapped) {
 		super(parent, wrapped);
-		isTest = parent instanceof TestModelsFolder;
+		isTest = parent.getTopLevelFolder() instanceof TestModelsFolder;
 	}
 
 	@Override
@@ -80,13 +80,18 @@ public class WrappedProject extends WrappedContainer<IProject> {
 	public ImageDescriptor getImageDescriptor() { return GamaIcon.named(IGamaIcons.FOLDER_PROJECT).descriptor(); }
 
 	@Override
+	public String getExplanation() {
+		final String plugin = getPlugin();
+		return plugin != null && !plugin.isEmpty() ? "in " + plugin : "project";
+	}
+
+	@Override
 	public void getSuffix(final StringBuilder sb) {
 		if (!isOpen()) {
 			sb.append("closed");
 			return;
 		}
 
-		if (getPlugin() != null && !getPlugin().isEmpty()) { sb.append(getPlugin()).append(", "); }
 		if (isTestProject()) {
 			getTestSuffix(sb);
 		} else {

@@ -44,6 +44,7 @@ import org.eclipse.ui.internal.ide.dialogs.IDEResourceInfoUtils;
 import gama.api.GAMA;
 import gama.ui.navigator.view.GamaNavigator;
 import gama.ui.navigator.view.contents.TopLevelFolder;
+import gama.ui.navigator.view.contents.UserGroupFolder;
 import gama.ui.navigator.view.contents.WrappedProject;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.workspace.metadata.FileMetaDataProvider;
@@ -140,10 +141,12 @@ public class RefreshAction extends WorkspaceAction {
 		// A virtual top-level folder stands for the projects it contains
 		for (final Object o : getStructuredSelection()) {
 			if (o instanceof TopLevelFolder folder) {
-				for (final Object child : folder.getNavigatorChildren()) {
-					if (child instanceof WrappedProject wp && wp.getResource().isAccessible()) {
-						resources1.add(wp.getResource());
-					}
+				for (final WrappedProject wp : folder.getProjects()) {
+					if (wp.getResource().isAccessible()) { resources1.add(wp.getResource()); }
+				}
+			} else if (o instanceof UserGroupFolder group) {
+				for (final WrappedProject wp : group.getAllProjects()) {
+					if (wp.getResource().isAccessible()) { resources1.add(wp.getResource()); }
 				}
 			}
 		}

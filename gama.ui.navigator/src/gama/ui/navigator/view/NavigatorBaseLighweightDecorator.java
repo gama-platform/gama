@@ -44,6 +44,8 @@ public class NavigatorBaseLighweightDecorator implements ILightweightLabelDecora
 				decoration.addSuffix(")");
 				sb.setLength(0);
 			}
+			final String explanation = ((VirtualContent<?>) element).getExplanation();
+			if (explanation != null && !explanation.isEmpty()) { decoration.addSuffix("  — " + explanation); }
 		}
 	}
 

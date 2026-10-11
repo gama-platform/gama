@@ -137,6 +137,35 @@ public enum ProjectCategory {
 	}
 
 	/**
+	 * Returns the group of a project, i.e. the path of the directory containing it relative to the root of its
+	 * category (the {@code models/<Category>} folder of a plugin, the {@code Tests} directory of the workspace, or the
+	 * workspace itself for user projects). The path is empty when the project is not in a group.
+	 *
+	 * @param location
+	 *            the location of the project
+	 * @return the relative path of the group, never {@code null}
+	 */
+	public static IPath groupOf(final IPath location) {
+		if (location == null) return org.eclipse.core.runtime.Path.EMPTY;
+		final String path = normalize(location.toFile());
+		String base = null;
+		final String workspace = workspacePath();
+		if (workspace != null && isIn(path, workspace + "/" + USER_TESTS_FOLDER)) {
+			base = workspace + "/" + USER_TESTS_FOLDER;
+		} else {
+			for (final Root root : getRoots()) {
+				if (path.equals(root.path()) || isIn(path, root.path())) {
+					base = root.path();
+					break;
+				}
+			}
+			if (base == null) { base = workspace; }
+		}
+		if (base == null || !isIn(path, base)) return org.eclipse.core.runtime.Path.EMPTY;
+		return new org.eclipse.core.runtime.Path(path.substring(base.length() + 1)).removeLastSegments(1);
+	}
+
+	/**
 	 * Checks if a path is strictly inside a directory.
 	 */
 	private static boolean isIn(final String path, final String directory) {

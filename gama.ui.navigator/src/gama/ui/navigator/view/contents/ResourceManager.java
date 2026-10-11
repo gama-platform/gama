@@ -608,9 +608,11 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 		if (DEBUG.IS_ON()) { DEBUG.OUT("Project " + project.getName() + " has been removed"); }
 		final WrappedProject wp = findWrappedInstanceOf(project);
 		cache.invalidate(project);
-		final TopLevelFolder tp = (TopLevelFolder) wp.getParent();
-		tp.initializeChildren();
-		refreshResource(tp);
+		final TopLevelFolder tp = wp == null ? null : wp.getTopLevelFolder();
+		if (tp != null) {
+			tp.initializeChildren();
+			refreshResource(tp);
+		}
 	}
 
 	@Override
@@ -832,7 +834,7 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 			case IResource.FOLDER:
 				return new WrappedFolder((WrappedContainer<?>) parent, (IFolder) child);
 			case IResource.PROJECT:
-				return new WrappedProject((TopLevelFolder) parent, (IProject) child);
+				return new WrappedProject(parent, (IProject) child);
 		}
 		return null;
 	}

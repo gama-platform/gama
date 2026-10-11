@@ -21,6 +21,7 @@ import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.navigator.CommonActionProvider;
 import org.eclipse.ui.navigator.ICommonActionExtensionSite;
 
+import gama.ui.navigator.view.contents.UserGroupFolder;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 
@@ -62,6 +63,16 @@ public class RefreshActionProvider extends CommonActionProvider {
 		if (runAllTestsAction.isEnabled()) { menu.appendToGroup("group.refresh", runAllTestsAction); }
 		menu.appendToGroup("group.refresh", refreshAction);
 		menu.appendToGroup("group.refresh", cleanAndUpdateAction);
+		if (selection.size() == 1) {
+			final Object o = selection.getFirstElement();
+			if (GroupActions.isUserFolder(o)) {
+				menu.appendToGroup("group.refresh", new GroupActions.NewGroup(null));
+			} else if (o instanceof UserGroupFolder group && group.isEditable()) {
+				menu.appendToGroup("group.refresh", new GroupActions.NewGroup(group));
+				menu.appendToGroup("group.refresh", new GroupActions.RenameGroup(group));
+				menu.appendToGroup("group.refresh", new GroupActions.DeleteGroup(group));
+			}
+		}
 	}
 
 	/**

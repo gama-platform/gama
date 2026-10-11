@@ -212,6 +212,9 @@ public interface IGamaIcons {
 	/** The folder user. */
 	String FOLDER_USER = "navigator/folder.user";
 
+	/** The icon of the groups of projects. */
+	String FOLDER_GROUP = "navigator/folder.group";
+
 	/** The folder tutorials – used for the "Tutorials" virtual folder in the GAMA Navigator. */
 	String FOLDER_TUTORIALS = "navigator/folder.tutorial";
 

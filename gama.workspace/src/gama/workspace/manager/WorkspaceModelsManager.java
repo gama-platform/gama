@@ -486,15 +486,34 @@ public class WorkspaceModelsManager {
 	 *            whether the projects are not in their default location in the workspace
 	 */
 	private void recreateProjects(final java.nio.file.Path directory, final boolean explicitLocation) {
+		recreateProjects(directory, explicitLocation, 0);
+	}
+
+	/**
+	 * Recreates the projects found in a directory. Directories that are not projects are considered as user groups
+	 * (see issue #678) and are explored, up to {@link #MAX_GROUP_DEPTH} levels, only in the workspace itself. The
+	 * projects found in groups are always created with an explicit location.
+	 */
+	private void recreateProjects(final java.nio.file.Path directory, final boolean explicitLocation,
+			final int depth) {
 		try (DirectoryStream<java.nio.file.Path> paths = Files.newDirectoryStream(directory, Files::isDirectory)) {
 			for (final java.nio.file.Path r : paths) {
 				final File folder = r.toFile();
-				if (isGamaProject(folder)) { createOrUpdateProject(folder.getName(), explicitLocation ? folder : null); }
+				final String name = folder.getName();
+				if (isGamaProject(folder)) {
+					createOrUpdateProject(name, explicitLocation || depth > 0 ? folder : null);
+				} else if (!explicitLocation && depth < MAX_GROUP_DEPTH && !name.startsWith(".")
+						&& !ProjectCategory.isReservedName(name)) {
+					recreateProjects(r, false, depth + 1);
+				}
 			}
 		} catch (final IOException e1) {
 			e1.printStackTrace();
 		}
 	}
+
+	/** The maximum number of nested group folders in the workspace. */
+	private static final int MAX_GROUP_DEPTH = 3;
 
 	/**
 	 * Removes the natures that were formerly used to classify the projects (they are not defined anymore) and replaces

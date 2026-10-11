@@ -24,6 +24,7 @@ import gama.api.ui.IStatusMessage;
 import gama.dev.DEBUG;
 import gama.ui.navigator.view.contents.NavigatorRoot;
 import gama.ui.navigator.view.contents.TopLevelFolder;
+import gama.ui.navigator.view.contents.UserGroupFolder;
 import gama.ui.navigator.view.contents.VirtualContent.VirtualContentType;
 
 /**
@@ -68,7 +69,7 @@ public class NavigatorCommonViewer extends CommonViewer {
 			final Iterator<?> it = currentSelection.iterator();
 			while (it.hasNext()) {
 				final Object o = it.next();
-				if (o instanceof TopLevelFolder || o instanceof IContainer) {
+				if (o instanceof TopLevelFolder || o instanceof UserGroupFolder || o instanceof IContainer) {
 					expandToLevel(o, AbstractTreeViewer.ALL_LEVELS); // 2
 				}
 			}
