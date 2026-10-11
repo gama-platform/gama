@@ -24,6 +24,7 @@ import java.net.URI;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.Dialog;
@@ -40,6 +41,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 
 import gama.api.GAMA;
+import gama.workspace.manager.ProjectCategory;
 
 /**
  * The Class NewProjectWizardPage.
@@ -126,7 +128,8 @@ public class NewProjectWizardPage extends WizardPage {
 		// projectNameField.setFont(parent.getFont());
 		final Button test = new Button(projectGroup, SWT.CHECK);
 		final Button newModel = new Button(projectGroup, SWT.CHECK);
-		test.setText("Configure as a test project");
+		test.setText("Configure as a test project (located in the '" + ProjectCategory.USER_TESTS_FOLDER
+				+ "' directory of the workspace)");
 		test.addSelectionListener(new SelectionAdapter() {
 
 			@Override
@@ -181,7 +184,10 @@ public class NewProjectWizardPage extends WizardPage {
 	 * @since 3.2
 	 */
 	public URI getLocationURI() {
-		return Platform.getLocation().addTrailingSeparator().append(getProjectName()).toFile().toURI();
+		IPath location = Platform.getLocation();
+		// The test projects of the user are in a dedicated directory of the workspace
+		if (isTest) { location = location.append(ProjectCategory.USER_TESTS_FOLDER); }
+		return location.addTrailingSeparator().append(getProjectName()).toFile().toURI();
 	}
 
 	/**
@@ -246,6 +252,12 @@ public class NewProjectWizardPage extends WizardPage {
 		if ("".equals(projectFieldContents)) { //$NON-NLS-1$
 			setErrorMessage(null);
 			setMessage("Project name is empty");
+			return false;
+		}
+
+		if (ProjectCategory.isReservedName(projectFieldContents)) {
+			setErrorMessage("'" + projectFieldContents
+					+ "' is the name of a top-level folder of the navigator and cannot be used for a project");
 			return false;
 		}
 

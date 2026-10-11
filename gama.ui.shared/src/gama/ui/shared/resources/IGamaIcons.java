@@ -218,6 +218,12 @@ public interface IGamaIcons {
 	/** The folder recipes – used for the "Recipes" virtual folder in the GAMA Navigator. */
 	String FOLDER_RECIPES = "navigator/folder.recipe";
 
+	/** The folder data – used for the "Data" virtual folder in the GAMA Navigator. */
+	String FOLDER_DATA = "navigator/folder.data";
+
+	/** The folder demos – used for the "Demos" virtual folder in the GAMA Navigator. */
+	String FOLDER_DEMOS = "navigator/folder.demo";
+
 	/** The font decrease. */
 	String FONT_DECREASE = "toolbar/font.decrease";
 

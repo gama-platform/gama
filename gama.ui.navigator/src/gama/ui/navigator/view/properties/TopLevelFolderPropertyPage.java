@@ -91,7 +91,7 @@ public class TopLevelFolderPropertyPage extends PropertyPage {
 
 		// Label for owner field
 		final Label ownerLabel = new Label(composite, SWT.NONE);
-		ownerLabel.setText("Groups projects of nature");
+		ownerLabel.setText("Groups projects of category");
 
 		// Owner text field
 		ownerText = new Text(composite, SWT.SINGLE | SWT.BORDER | SWT.READ_ONLY);
@@ -100,8 +100,7 @@ public class TopLevelFolderPropertyPage extends PropertyPage {
 		ownerText.setLayoutData(gd);
 
 		// Populate owner text field
-		final String owner = getFolder().getNature();
-		ownerText.setText(owner != null ? owner : "user");
+		ownerText.setText(getFolder().getCategory().getLabel());
 	}
 
 	/**

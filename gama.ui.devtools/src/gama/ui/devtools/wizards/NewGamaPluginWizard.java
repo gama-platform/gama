@@ -61,7 +61,8 @@ import gama.ui.devtools.preferences.GamaDevToolsPreferencePage;
  * <li>An Eclipse PDE plugin project with {@code PluginNature} and {@code JavaNature}</li>
  * <li>{@code META-INF/MANIFEST.MF} wired to {@code gama.annotations}, {@code gama.core}, and {@code gama.dev}</li>
  * <li>{@code plugin.xml}, {@code build.properties}, {@code pom.xml}</li>
- * <li>Source folders: {@code src/}, {@code models/}, {@code tests/}, {@code tutorials/}, {@code recipes/}</li>
+ * <li>Source folders: {@code src/}, {@code models/} and its sub-folders {@code Data}, {@code Demos}, {@code Library},
+ * {@code Recipes}, {@code Tutorials}, {@code Tests}</li>
  * <li>{@code .factorypath} pointing to {@code gama.processor.jar}</li>
  * <li>A sibling feature project ({@code <pluginId>.feature}) with a minimal {@code feature.xml}</li>
  * </ul>
@@ -173,7 +174,8 @@ public class NewGamaPluginWizard extends Wizard implements INewWizard {
 		project.open(sub.split(1));
 
 		// Source folders
-		for (String folder : new String[] { "src", "models", "tests", "tutorials", "recipes" }) {
+		for (String folder : new String[] { "src", "models", "models/Data", "models/Demos", "models/Library",
+				"models/Recipes", "models/Tutorials", "models/Tests" }) {
 			createFolder(project, folder, sub.split(1));
 		}
 		// Source package skeleton
@@ -284,10 +286,7 @@ public class NewGamaPluginWizard extends Wizard implements INewWizard {
 				+ "bin.includes = META-INF/,\\\n"
 				+ "               .,\\\n"
 				+ "               plugin.xml,\\\n"
-				+ "               models/,\\\n"
-				+ "               tests/,\\\n"
-				+ "               tutorials/,\\\n"
-				+ "               recipes/\n"
+				+ "               models/\n"
 				+ "javacDefaultEncoding.. = UTF-8\n";
 	}
 

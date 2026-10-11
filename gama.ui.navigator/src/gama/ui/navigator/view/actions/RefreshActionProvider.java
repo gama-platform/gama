@@ -32,6 +32,9 @@ public class RefreshActionProvider extends CommonActionProvider {
 	/** The refresh action. */
 	private RefreshAction refreshAction;
 
+	/** The clean and update action. */
+	private CleanAndUpdateAction cleanAndUpdateAction;
+
 	/** The run all tests action. */
 	private RunAllTestsAction runAllTestsAction;
 
@@ -58,6 +61,7 @@ public class RefreshActionProvider extends CommonActionProvider {
 		runAllTestsAction.selectionChanged(selection);
 		if (runAllTestsAction.isEnabled()) { menu.appendToGroup("group.refresh", runAllTestsAction); }
 		menu.appendToGroup("group.refresh", refreshAction);
+		menu.appendToGroup("group.refresh", cleanAndUpdateAction);
 	}
 
 	/**
@@ -69,6 +73,8 @@ public class RefreshActionProvider extends CommonActionProvider {
 		refreshAction.setImageDescriptor(GamaIcon.named(IGamaIcons.FILE_REFRESH).descriptor());
 		refreshAction.setDisabledImageDescriptor(GamaIcon.named(IGamaIcons.FILE_REFRESH).disabledDescriptor());
 		refreshAction.setActionDefinitionId(IWorkbenchCommandConstants.FILE_REFRESH);
+		cleanAndUpdateAction = new CleanAndUpdateAction();
+		cleanAndUpdateAction.setImageDescriptor(GamaIcon.named(IGamaIcons.FILE_REFRESH).descriptor());
 		runAllTestsAction = new RunAllTestsAction(sp, "Run all tests");
 		runAllTestsAction.setImageDescriptor(GamaIcon.named(IGamaIcons.TEST_RUN).descriptor());
 		runAllTestsAction.setDisabledImageDescriptor(GamaIcon.named(IGamaIcons.TEST_RUN).disabledDescriptor());

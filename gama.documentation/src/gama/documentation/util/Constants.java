@@ -126,7 +126,7 @@ public class Constants {
 
 	/** The Constant TEST_PLUGIN_FOLDER. */
 	// Tests
-	public final static String TEST_PLUGIN_FOLDER = "tests";
+	public final static String TEST_PLUGIN_FOLDER = "models" + File.separator + "Tests";
 
 	/** The Constant TEST_PLUGIN_GEN_FOLDER. */
 	public final static String TEST_PLUGIN_GEN_FOLDER = TEST_PLUGIN_FOLDER + File.separator + "Generated";

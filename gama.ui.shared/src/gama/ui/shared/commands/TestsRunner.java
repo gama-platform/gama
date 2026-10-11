@@ -28,7 +28,7 @@ import gama.api.utils.tests.CompoundSummary;
 import gama.api.utils.tests.TestExperimentSummary;
 import gama.ui.shared.access.ModelsFinder;
 import gama.ui.shared.utils.SwtGui;
-import gama.workspace.nature.GamaNatures;
+import gama.workspace.manager.ProjectCategory;
 
 /**
  * The Class TestsRunner.
@@ -98,11 +98,12 @@ public class TestsRunner {
 	 */
 	private static boolean isInteresting(final IProject p) throws CoreException {
 		if (p == null || !p.exists() || !p.isAccessible()) return false;
-		// If it is contained in one of the built-in tests projects, return true
-		if (p.getDescription().hasNature(GamaNatures.TEST_NATURE)) return true;
+		final ProjectCategory category = ProjectCategory.of(p);
+		// If it is a test project (of a plugin or located in the Tests directory of the workspace), return true
+		if (category == ProjectCategory.TESTS) return true;
 		if (GamaPreferences.Runtime.USER_TESTS.getValue()) {
 			// If it is not in user defined projects, return false
-			if (p.getDescription().hasNature(GamaNatures.BUILTIN_NATURE)) return false;
+			if (category != ProjectCategory.USER) return false;
 			// We try to find in the project a folder called 'tests'
 			final IResource r = p.findMember("tests");
 			if (r != null && r.exists() && r.isAccessible() && r.getType() == IResource.FOLDER) return true;

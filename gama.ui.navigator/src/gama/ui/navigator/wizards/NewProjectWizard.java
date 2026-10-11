@@ -130,7 +130,7 @@ public class NewProjectWizard extends Wizard implements INewWizard, IExecutableE
 			if (monitor.isCanceled()) throw new OperationCanceledException();
 			proj.open(m.split(1000));
 
-			WorkspaceModelsManager.instance.setValuesProjectDescription(proj, false, false, isTest, null);
+			WorkspaceModelsManager.instance.setValuesProjectDescription(proj, null);
 
 			/*
 			 * We now have the project and we can do more things with it before updating the perspective.
