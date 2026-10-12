@@ -29,8 +29,7 @@ public class TestModelsFolder extends TopLevelFolder {
 	 *            the name
 	 */
 	public TestModelsFolder(final NavigatorRoot root, final String name) {
-		super(root, name, FOLDER_TEST, "Tests of GAMA and its plugins, and tests of the user", NEUTRAL,
-				ProjectCategory.TESTS);
+		super(root, name, FOLDER_TEST, "Automated and manual tests for GAMA features", NEUTRAL, ProjectCategory.TESTS);
 	}
 
 	@Override
