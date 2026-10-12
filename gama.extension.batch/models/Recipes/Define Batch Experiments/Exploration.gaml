@@ -13,12 +13,7 @@
 
 model Exploration
 
-<<<<<<<< HEAD:gama.extension.batch/models/Batch Simulation/Exploration.gaml
-import "../Predator Prey/models/Model 13.gaml"
-
-========
 import "../Predator Prey Tutorial/models/Model 13.gaml"
->>>>>>>> main:gama.extension.batch/models/Recipes/Define Batch Experiments/Exploration.gaml
 
 /*
  * Change a little bit the behavior of the world agent to fit exploration requirements
