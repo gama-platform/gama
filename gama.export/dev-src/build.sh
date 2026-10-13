@@ -1,12 +1,19 @@
-# this script requires graalvm's jdk for building the final executable with 'native-image'
+# if you want to use the Java zipextractor implementation,
+# this script requires graalvm's jdk for building the final 
+# executable with 'native-image'
 
 set -e
 
+if [ -z "${1}" ]; then
+    echo -e "error: the gama export plugin path is unset\nusage : build.sh <gama_export_plugin_path>"
+    exit 1
+else
+    GAMA_EXPORT_PLUGIN_PATH="$1"
+fi
 
-GAMA_EXPORT_PLUGIN_PATH="gama.export"
 GAMA_EXPORT_BINARIES_PATH="${GAMA_EXPORT_PLUGIN_PATH}/binaries"
 
-CLASS_PATH=".:${GAMA_EXPORT_PLUGIN_PATH}/dev-libs/org.apache.commons.commons-compress_1.28.0.jar:${GAMA_EXPORT_PLUGIN_PATH}/dev-libs/org.apache.commons.commons-io_2.21.0.jar"
+# CLASS_PATH=".:${GAMA_EXPORT_PLUGIN_PATH}/dev-libs/org.apache.commons.commons-compress_1.28.0.jar:${GAMA_EXPORT_PLUGIN_PATH}/dev-libs/org.apache.commons.commons-io_2.21.0.jar"
 
 # ZIP_EXTRACTOR_SRC_PATH="${GAMA_EXPORT_PLUGIN_PATH}/dev-src/ZipExtractor.java"
 ZIP_EXTRACTOR_SRC_PATH="${GAMA_EXPORT_PLUGIN_PATH}/dev-src/zipextractor.go"

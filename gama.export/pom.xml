@@ -16,6 +16,44 @@
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
       </plugin>
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.8</version>
+				<executions>
+					<execution>
+						<id>pre-compile-sfx-launcher</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target xmlns:if="ant:if">
+              <!-- build the linux precompiled sfx launcher if -DforceExportPluginSFXBuild=true  or if the binaries don't exist yet -->
+                <condition property="buildSFX">
+                  <or>
+                    <istrue value="${forceExportPluginSFXBuild}"/>
+                    <not>
+                      <available file="${project.basedir}/binaries/runner" />
+                    </not>
+                    <not>
+                      <available file="${project.basedir}/binaries/zipextractor" />
+                    </not>
+                  </or>
+                </condition>
+
+                <exec 
+                  executable="/bin/bash" 
+                  dir="${project.basedir}/dev-src" 
+                  failonerror="true"
+                  if:true="${buildSFX}">
+                    <arg value="build.sh" />
+                    <arg value="${project.basedir}" />
+                </exec>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 </project>

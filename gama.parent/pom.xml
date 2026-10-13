@@ -209,7 +209,8 @@
 		<wagon.version>3.5.3</wagon.version>
 		<maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
 		<maven.plugins.version>3.0.0</maven.plugins.version>
-
+		<forceExportPluginSFXBuild>false</forceExportPluginSFXBuild>
+		
 		<sonar.organization>gama-platform</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 	</properties>
