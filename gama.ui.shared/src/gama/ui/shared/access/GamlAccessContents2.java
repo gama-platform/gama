@@ -730,17 +730,18 @@ public class GamlAccessContents2 extends PopupDialog {
 		table = new Table(tableComposite, SWT.SINGLE | SWT.FULL_SELECTION);
 
 		textLayout = new TextLayout(table.getDisplay());
-		Font boldFont = resourceManager.create(FontDescriptor.createFrom(table.getFont()).setStyle(SWT.BOLD));
+		Font boldFont = JFaceResources.getFontRegistry().getBold(JFaceResources.DIALOG_FONT);
 		textLayout.setFont(boldFont);
-		textLayout.setText("Available categories to search into");
-		int maxProviderWidth = textLayout.getBounds().width;
+		int maxProviderWidth = 0;
 
 		for (GamlIdiomsProvider provider : GamlIdiomsProvider.getProviders()) {
-			textLayout.setText(provider.getSearchCategory());
+			textLayout.setText(provider.name);
 			int width = textLayout.getBounds().width;
 			if (width > maxProviderWidth) { maxProviderWidth = width; }
 		}
-		tableColumnLayout.setColumnData(new TableColumn(table, SWT.NONE), new ColumnWeightData(0, maxProviderWidth));
+		// Allocate enough width for category names with padding
+		int col0Width = Math.max(maxProviderWidth + 24, 180);
+		tableColumnLayout.setColumnData(new TableColumn(table, SWT.NONE), new ColumnWeightData(0, col0Width));
 		tableColumnLayout.setColumnData(new TableColumn(table, SWT.NONE), new ColumnWeightData(100, 100));
 		table.getShell().addControlListener(new ControlAdapter() {
 			@Override
@@ -927,10 +928,10 @@ public class GamlAccessContents2 extends PopupDialog {
 		GC gc = new GC(getContents());
 		FontMetrics fontMetrics = gc.getFontMetrics();
 		gc.dispose();
-		int x = Dialog.convertHorizontalDLUsToPixels(fontMetrics, 300);
-		if (x < 350) { x = 350; }
-		int y = Dialog.convertVerticalDLUsToPixels(fontMetrics, 270);
-		if (y < 420) { y = 420; }
+		int x = Dialog.convertHorizontalDLUsToPixels(fontMetrics, 650);
+		if (x < 800) { x = 800; }
+		int y = Dialog.convertVerticalDLUsToPixels(fontMetrics, 320);
+		if (y < 500) { y = 500; }
 		return new Point(x, y);
 	}
 

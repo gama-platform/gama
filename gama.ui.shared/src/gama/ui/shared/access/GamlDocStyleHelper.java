@@ -55,6 +55,41 @@ public class GamlDocStyleHelper {
 	}
 
 	/**
+	 * Returns the RGB color associated with a category name or title to match the hover documentation header accent.
+	 *
+	 * @param categoryOrTitle
+	 *            the category or title (e.g. "Statements", "Facets", "Operators", etc.)
+	 * @return the SWT RGB color
+	 */
+	public static org.eclipse.swt.graphics.RGB getCategoryRGB(final String categoryOrTitle) {
+		final boolean dark = ThemeHelper.isDark();
+		if (categoryOrTitle == null) return dark ? new org.eclipse.swt.graphics.RGB(52, 152, 219)
+				: new org.eclipse.swt.graphics.RGB(41, 128, 185);
+		String lower = categoryOrTitle.toLowerCase();
+		if (lower.contains("statement")) return dark ? new org.eclipse.swt.graphics.RGB(163, 113, 247)
+				: new org.eclipse.swt.graphics.RGB(142, 68, 173); // Purple
+		if (lower.contains("facet")) return dark ? new org.eclipse.swt.graphics.RGB(210, 123, 207)
+				: new org.eclipse.swt.graphics.RGB(155, 89, 182); // Magenta
+		if (lower.contains("action") || lower.contains("argument") || lower.contains("primitive"))
+			return dark ? new org.eclipse.swt.graphics.RGB(88, 166, 255)
+					: new org.eclipse.swt.graphics.RGB(41, 128, 185); // Blue
+		if (lower.contains("operator") || lower.contains("function") || lower.contains("constructor"))
+			return dark ? new org.eclipse.swt.graphics.RGB(240, 136, 62)
+					: new org.eclipse.swt.graphics.RGB(230, 126, 34); // Orange
+		if (lower.contains("variable") || lower.contains("attribute") || lower.contains("field"))
+			return dark ? new org.eclipse.swt.graphics.RGB(63, 185, 80)
+					: new org.eclipse.swt.graphics.RGB(39, 174, 96); // Green
+		if (lower.contains("type") || lower.contains("species") || lower.contains("skill"))
+			return dark ? new org.eclipse.swt.graphics.RGB(57, 197, 187)
+					: new org.eclipse.swt.graphics.RGB(22, 160, 133); // Teal
+		if (lower.contains("unit") || lower.contains("constant") || lower.contains("model"))
+			return dark ? new org.eclipse.swt.graphics.RGB(224, 108, 117)
+					: new org.eclipse.swt.graphics.RGB(192, 57, 43); // Coral / Red
+		return dark ? new org.eclipse.swt.graphics.RGB(88, 166, 255)
+				: new org.eclipse.swt.graphics.RGB(41, 128, 185);
+	}
+
+	/**
 	 * Returns the CSS class modifier for a documentation section banner based on the section header text.
 	 *
 	 * @param header

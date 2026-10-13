@@ -214,6 +214,15 @@ public class GamlAccessEntry {
 
 					textLayout.setText(provider.name);
 
+					// Apply theme-matching category color
+					org.eclipse.swt.graphics.RGB catRGB = GamlDocStyleHelper.getCategoryRGB(provider.name);
+					gama.ui.shared.resources.GamaColors.GamaUIColor uiColor =
+							gama.ui.shared.resources.GamaColors.get(catRGB);
+					TextStyle dynamicCategoryStyle = new TextStyle(
+							JFaceResources.getFontRegistry().getBold(JFaceResources.DIALOG_FONT),
+							uiColor != null ? uiColor.color() : null, null);
+					textLayout.setStyle(dynamicCategoryStyle, 0, provider.name.length() - 1);
+
 					for (final int[] matchRegion : providerMatchRegions) {
 						textLayout.setStyle(getCategoryStyle(), matchRegion[0], matchRegion[1]);
 					}
