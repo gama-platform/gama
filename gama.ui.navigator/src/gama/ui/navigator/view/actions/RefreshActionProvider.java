@@ -12,6 +12,8 @@
 package gama.ui.navigator.view.actions;
 
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.widgets.Shell;
@@ -65,10 +67,16 @@ public class RefreshActionProvider extends CommonActionProvider {
 		menu.appendToGroup("group.refresh", cleanAndUpdateAction);
 		if (selection.size() == 1) {
 			final Object o = selection.getFirstElement();
-			if (GroupActions.isUserFolder(o)) {
-				menu.appendToGroup("group.refresh", new GroupActions.NewGroup(null));
-			} else if (o instanceof UserGroupFolder group && group.isEditable()) {
-				menu.appendToGroup("group.refresh", new GroupActions.NewGroup(group));
+			final UserGroupFolder group = o instanceof UserGroupFolder g && g.isEditable() ? g : null;
+			if (GroupActions.isUserFolder(o) || group != null) {
+				final MenuManager newMenu = new MenuManager("New...",
+						GamaIcon.named(IGamaIcons.MENU_NEW).descriptor(), "menu.new.group");
+				newMenu.add(new GroupActions.NewGroup(group));
+				newMenu.add(new GroupActions.NewProject(group));
+				menu.insertBefore("group.new", newMenu);
+			}
+			if (group != null) {
+				menu.appendToGroup("group.refresh", new Separator());
 				menu.appendToGroup("group.refresh", new GroupActions.RenameGroup(group));
 				menu.appendToGroup("group.refresh", new GroupActions.DeleteGroup(group));
 			}

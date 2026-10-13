@@ -148,15 +148,17 @@ public class GamaToolbar2 extends Composite {
 			final Point rightPref = right.computeSize(SWT.DEFAULT, SWT.DEFAULT);
 			if (!left.isVisible()) {
 				// No left toolbar: right fills everything
-				right.setBounds(area.x + MARGIN, area.y, Math.max(0, area.width - 2 * MARGIN), rightPref.y);
+				right.setBounds(area.x + MARGIN, area.y + Math.max(0, (area.height - rightPref.y) / 2),
+						Math.max(0, area.width - 2 * MARGIN), rightPref.y);
 				return;
 			}
 			final int rightW = rightPref.x;
 			final int leftW = Math.max(0, area.width - 2 * MARGIN - rightW);
 			final Point leftPref = left.computeSize(leftW, SWT.DEFAULT);
-			final int h = Math.max(leftPref.y, rightPref.y);
-			left.setBounds(area.x + MARGIN, area.y, leftW, h);
-			right.setBounds(area.x + MARGIN + leftW, area.y, rightW, h);
+			left.setBounds(area.x + MARGIN, area.y + Math.max(0, (area.height - leftPref.y) / 2),
+					leftW, leftPref.y);
+			right.setBounds(area.x + MARGIN + leftW, area.y + Math.max(0, (area.height - rightPref.y) / 2),
+					rightW, rightPref.y);
 		}
 	}
 

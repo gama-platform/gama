@@ -68,8 +68,8 @@ public class GamlAccessEntry {
 
 	static TextStyle getCategoryStyle() {
 		if (categoryStyle == null) {
-			categoryStyle = new TextStyle(WorkbenchHelper.getDisplay().getSystemFont(), null,
-					ThemeHelper.isDark() ? IGamaColors.BLUE.color() : IGamaColors.TOOLTIP.color());
+			categoryStyle = new TextStyle(JFaceResources.getFontRegistry().getBold(JFaceResources.DIALOG_FONT),
+					IGamaColors.NICE.color(), null);
 		}
 		return categoryStyle;
 	}
@@ -214,22 +214,7 @@ public class GamlAccessEntry {
 
 					textLayout.setText(provider.name);
 
-					// Apply theme-matching category color
-					org.eclipse.swt.graphics.RGB catRGB = GamlDocStyleHelper.getCategoryRGB(provider.name);
-					gama.ui.shared.resources.GamaColors.GamaUIColor uiColor =
-							gama.ui.shared.resources.GamaColors.get(catRGB);
-					TextStyle dynamicCategoryStyle = new TextStyle(
-							JFaceResources.getFontRegistry().getBold(JFaceResources.DIALOG_FONT),
-							uiColor != null ? uiColor.color() : null, null);
-					textLayout.setStyle(dynamicCategoryStyle, 0, provider.name.length() - 1);
-
-					for (final int[] matchRegion : providerMatchRegions) {
-						textLayout.setStyle(getCategoryStyle(), matchRegion[0], matchRegion[1]);
-					}
-
-					if (providerMatchRegions.length > 0 && !firstInCategory) {
-						event.gc.setForeground(IGamaColors.GRAY_LABEL.color());
-					}
+					textLayout.setStyle(getCategoryStyle(), 0, provider.name.length() - 1);
 					final Rectangle availableBounds = ((TableItem) event.item).getTextBounds(event.index);
 					final Rectangle requiredBounds = textLayout.getBounds();
 					textLayout.draw(event.gc, availableBounds.x + 1,

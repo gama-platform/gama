@@ -5,6 +5,17 @@
          point="org.eclipse.ui.decorators">
       <decorator
             adaptable="false"
+            class="gama.ui.navigator.view.NavigatorPluginDecorator"
+            id="gama.ui.navigator.plugin.decorator"
+            label="Contributing Plugin Decorator"
+            lightweight="true"
+            state="true">
+         <enablement>
+            <objectClass name="gama.ui.navigator.view.contents.WrappedProject"/>
+         </enablement>
+      </decorator>
+      <decorator
+            adaptable="false"
             class="gama.ui.navigator.view.NavigatorBaseLighweightDecorator"
             id="gama.ui.application.decorator"
             label="Metadata Decorator"
@@ -102,7 +113,7 @@
          point="org.eclipse.ui.menus">
       <menuContribution
             allPopups="true"
-            locationURI="popup:navigator.menu?after=group.new">
+            locationURI="popup:navigator.menu?before=group.new">
          <menu
                icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/navigator.new2.svg"
                id="menu.new"
@@ -186,14 +197,15 @@
                         <instanceof
                               value="gama.ui.navigator.view.contents.WrappedFolder">
                         </instanceof>
-                        <instanceof
-                              value="gama.ui.navigator.view.contents.UserProjectsFolder">
-                        </instanceof>
                      </or>
                   </iterate>
                </with>
             </visibleWhen>
          </menu>
+      </menuContribution>
+      <menuContribution
+            allPopups="true"
+            locationURI="popup:navigator.menu?after=group.new">
          <menu
                icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/menu.import.svg"
                id="menu.gama.import"
@@ -390,11 +402,16 @@
                   <iterate
                         ifEmpty="false"
                         operator="and">
-                     <or>
+                     <and>
                         <instanceof
                               value="gama.ui.navigator.view.contents.VirtualContent">
                         </instanceof>
-                     </or>
+                        <not>
+                           <instanceof
+                                 value="gama.ui.navigator.view.contents.UserGroupFolder">
+                           </instanceof>
+                        </not>
+                     </and>
                   </iterate>
                </with>
             </visibleWhen>
@@ -406,6 +423,19 @@
                   class="gama.ui.navigator.view.actions.ImportersContributionItem"
                   id="gama.ui.navigator.dynamic1">
             </dynamic>
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="selection">
+                  <iterate
+                        ifEmpty="false"
+                        operator="and">
+                     <instanceof
+                           value="gama.ui.navigator.view.contents.WrappedGamaFile">
+                     </instanceof>
+                  </iterate>
+               </with>
+            </visibleWhen>
          </menu>
 
       </menuContribution>

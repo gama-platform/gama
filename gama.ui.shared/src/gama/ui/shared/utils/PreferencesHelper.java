@@ -17,7 +17,6 @@ import static gama.api.utils.prefs.GamaPreferences.Interface.NAVIGATOR;
 
 import org.eclipse.core.runtime.CoreException;
 
-import gama.api.GAMA;
 import gama.api.gaml.types.IType;
 import gama.api.types.color.GamaColorFactory;
 import gama.api.types.color.IColor;
@@ -104,6 +103,7 @@ public class PreferencesHelper {
 						final var mgr = WorkbenchHelper.getWorkbench().getDecoratorManager();
 						try {
 							mgr.setEnabled(IGui.NAVIGATOR_LIGHTWEIGHT_DECORATOR_ID, newValue);
+							mgr.update(IGui.NAVIGATOR_LIGHTWEIGHT_DECORATOR_ID);
 						} catch (final CoreException e) {
 							e.printStackTrace();
 						}
@@ -117,15 +117,43 @@ public class PreferencesHelper {
 	public static final Pref<Boolean> NAVIGATOR_HIDDEN =
 			create("pref_navigator_display_hidden", "Display hidden files in navigator", false, IType.BOOL, false)
 					.in(NAME, NAVIGATOR).onChange(newValue -> {
-						GAMA.getGui().refreshNavigator();
+						WorkbenchHelper.refreshNavigator();
 					}).hidden();
 
 	/** The Constant NAVIGATOR_OUTLINE. */
 	public static final Pref<Boolean> NAVIGATOR_OUTLINE =
 			create("pref_navigator_display_outline", "Display the outline of GAML files in navigator", false,
 					IType.BOOL, false).in(NAME, NAVIGATOR).onChange(newValue -> {
-						GAMA.getGui().refreshNavigator();
+						WorkbenchHelper.refreshNavigator();
 					}).hidden();
+
+	/** Whether project labels show the plugin contributing them. */
+	public static final Pref<Boolean> NAVIGATOR_PLUGIN =
+			create("pref_navigator_display_plugin", "Display contributing plugin in navigator", false, IType.BOOL,
+					false).in(NAME, NAVIGATOR).onChange(newValue -> {
+						WorkbenchHelper.getWorkbench().getDecoratorManager()
+								.update("gama.ui.navigator.plugin.decorator");
+						WorkbenchHelper.refreshNavigator();
+					}).hidden();
+
+	/** Whether resource labels show their modification date. */
+	public static final Pref<Boolean> NAVIGATOR_DATE =
+			create("pref_navigator_display_date", "Display modification dates in navigator", false, IType.BOOL,
+					false).in(NAME, NAVIGATOR).onChange(newValue -> {
+						final var mgr = WorkbenchHelper.getWorkbench().getDecoratorManager();
+						try {
+							mgr.setEnabled("gama.ui.application.date.decorator", newValue);
+							mgr.update("gama.ui.application.date.decorator");
+						} catch (final CoreException e) {
+							e.printStackTrace();
+						}
+						WorkbenchHelper.refreshNavigator();
+					}).hidden();
+
+	/** Whether resources are sorted newest first when dates are displayed. */
+	public static final Pref<Boolean> NAVIGATOR_RECENT_FIRST =
+			create("pref_navigator_recent_first", "Sort most recent resources first in navigator", false, IType.BOOL,
+					false).in(NAME, NAVIGATOR).onChange(newValue -> WorkbenchHelper.refreshNavigator()).hidden();
 
 	/**
 	 * Initialize.
