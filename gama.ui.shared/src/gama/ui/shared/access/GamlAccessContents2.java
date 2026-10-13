@@ -227,7 +227,7 @@ public class GamlAccessContents2 extends PopupDialog {
 		if (table != null && !table.isDisposed() && table.getSelectionCount() > 0) {
 			TableItem item = table.getSelection()[0];
 			if (item != null && item.getData() instanceof GamlAccessEntry entry) {
-				browser.setInput(entry.provider.document(entry.element));
+				browser.setElementInput(entry.element, entry.provider.document(entry.element));
 				showBrowser();
 				return;
 			}
@@ -797,9 +797,7 @@ public class GamlAccessContents2 extends PopupDialog {
 							table.setSelection(new TableItem[] { lastItem });
 							final GamlAccessEntry entry = (GamlAccessEntry) lastItem.getData();
 							if (entry != null) {
-
-								final IGamlDescription element = entry.element;
-								browser.setInput(entry.provider.document(element));
+								browser.setElementInput(entry.element, entry.provider.document(entry.element));
 								showBrowser();
 							}
 						}

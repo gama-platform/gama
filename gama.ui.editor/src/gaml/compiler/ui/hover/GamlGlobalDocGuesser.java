@@ -95,7 +95,7 @@ public class GamlGlobalDocGuesser {
 			if (delegate == null) return new GamlConstantDocumentation("");
 			IGamlDocumentation orig = delegate.getDocumentation();
 			String docStr = orig != null ? orig.toString() : "";
-			String banner = "<div style=\"background-color: #f0f4f8; color: #496989; padding: 4px 8px; border-left: 3px solid #3498db; margin-bottom: 8px; font-size: 0.9em;\">"
+			String banner = "<div class=\"gaml-hover-banner\">"
 					+ "<i>GAML Reference (uncompiled model) &mdash; " + hint + "</i></div>";
 			return new GamlConstantDocumentation(banner + docStr);
 		}

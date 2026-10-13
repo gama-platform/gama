@@ -49,6 +49,8 @@ import com.google.common.base.Strings;
 import com.google.inject.Inject;
 
 import gama.api.compilation.descriptions.IGamlDescription;
+import gama.ui.application.workbench.ThemeHelper;
+import gama.ui.shared.access.GamlDocStyleHelper;
 import gama.ui.shared.utils.WebHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gaml.compiler.gaml.ActionRef;
@@ -341,6 +343,12 @@ public class GamlHoverProvider extends DefaultEObjectHoverProvider {
 	}
 
 	@Override
+	protected String getStyleSheet() {
+		String base = super.getStyleSheet();
+		return (base != null ? base : "") + "\n" + GamlDocStyleHelper.getDocCss();
+	}
+
+	@Override
 	protected String getHoverInfoAsHtml(final EObject o) {
 		Pair<IRegion, IDocument> ctx = currentHoverContext.get();
 		IRegion region = ctx != null ? ctx.getFirst() : null;
@@ -352,7 +360,6 @@ public class GamlHoverProvider extends DefaultEObjectHoverProvider {
 	 * Gets the hover info as HTML with region and document context for decontextualized guessing.
 	 */
 	protected String getHoverInfoAsHtml(final EObject o, final IRegion region, final IDocument document) {
-		StringBuilder buffer = new StringBuilder();
 		IGamlDescription doc = provider.getDoc(o);
 		if (doc == null && guesser != null) {
 			doc = guesser.guessDocumentation(o, region, document);
@@ -371,10 +378,7 @@ public class GamlHoverProvider extends DefaultEObjectHoverProvider {
 				comment = super.getDocumentation(ar.getRef());
 			}
 		}
-		if (!Strings.isNullOrEmpty(title)) { buffer.append("<b>").append(title).append("</b><hr>"); }
-		if (!Strings.isNullOrEmpty(comment)) { buffer.append("<p><i>").append(comment).append("</i></p><hr>"); }
-		if (!Strings.isNullOrEmpty(documentation)) { buffer.append("<p>").append(documentation).append("</p>"); }
-		return buffer.toString();
+		return GamlDocStyleHelper.wrapWithCard(title, comment, documentation);
 	}
 
 }

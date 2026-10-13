@@ -253,11 +253,34 @@ public class GamlRegularDocumentation implements IGamlDocumentation {
 		}
 		StringBuilder sb = new StringBuilder(contents);
 		snapshot.forEach((header, category) -> {
-			sb.append("<hr/>").append(header).append("<br/><ul>");
+			String cleanHeader = header.trim();
+			String cssClass = getSectionCssClass(cleanHeader);
+			sb.append("<div class=\"gaml-hover-section ").append(cssClass).append("\">").append(cleanHeader)
+					.append("</div><ul>");
 			category.forEach((name, doc) -> sb.append("<li><b>").append(name).append("</b>: ").append(doc));
-			sb.append("</ul><br/>");
+			sb.append("</ul>");
 		});
 		return sb.toString();
+	}
+
+	/**
+	 * Returns the CSS class modifier for a documentation section banner based on the header text.
+	 *
+	 * @param header
+	 *            the section header string
+	 * @return the CSS class name
+	 */
+	public static String getSectionCssClass(final String header) {
+		if (header == null) return "gaml-section-default";
+		String lower = header.toLowerCase();
+		if (lower.contains("facet")) return "gaml-section-facets";
+		if (lower.contains("argument") || lower.contains("parameter")) return "gaml-section-arguments";
+		if (lower.contains("attribute") || lower.contains("field")) return "gaml-section-attributes";
+		if (lower.contains("action")) return "gaml-section-actions";
+		if (lower.contains("return")) return "gaml-section-returns";
+		if (lower.contains("constructor")) return "gaml-section-constructors";
+		if (lower.contains("example") || lower.contains("usage")) return "gaml-section-examples";
+		return "gaml-section-default";
 	}
 
 	/**
