@@ -81,6 +81,12 @@
          point="org.eclipse.ui.commands">
       <command
             categoryId="gama.category"
+            defaultHandler="gama.ui.shared.commands.SearchGamlReferenceHandler"
+            id="gama.ui.commands.searchGamlReference"
+            name="Search in GAML Reference">
+      </command>
+      <command
+            categoryId="gama.category"
             defaultHandler="gama.ui.shared.commands.OpenGamaWebsiteHandler"
             id="gama.application.command.web"
             name="Documentation">
@@ -393,6 +399,18 @@
              contextId="org.eclipse.ui.contexts.window"
              schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
              sequence="M1+M2+D">
+       </key>
+       <key
+             commandId="gama.ui.commands.searchGamlReference"
+             contextId="org.eclipse.ui.contexts.window"
+             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+             sequence="F1">
+       </key>
+       <key
+             commandId="gama.ui.commands.searchGamlReference"
+             contextId="org.eclipse.ui.contexts.window"
+             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+             sequence="M1+M2+G">
        </key>
     </extension>
 

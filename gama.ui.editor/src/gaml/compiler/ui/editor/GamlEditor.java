@@ -136,6 +136,8 @@ import gama.api.utils.prefs.IPreferenceChangeListener.IPreferenceAfterChangeList
 import gama.dev.DEBUG;
 import gama.dev.FLAGS;
 import gama.ui.application.workbench.ThemeHelper;
+import gama.ui.shared.access.GamlAccessContents2;
+import gama.ui.shared.commands.SearchGamlReferenceHandler;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.GamaColors;
@@ -1005,6 +1007,19 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	}
 
 	/**
+	 * Gets the word at the current caret position in the editor.
+	 *
+	 * @return the word at caret, or an empty string
+	 */
+	public String getWordAtCaret() {
+		final GamaSourceViewer v = getInternalSourceViewer();
+		if (v == null) return "";
+		final StyledText st = v.getTextWidget();
+		if (st == null || st.isDisposed()) return "";
+		return SearchGamlReferenceHandler.getWordAtCaret(st);
+	}
+
+	/**
 	 * @see gaml.compiler.gaml.ui.editor.IGamlEditor#openEditTemplateDialog()
 	 */
 	public boolean openEditTemplateDialog(final TemplatePersistenceData data, final boolean edit) {
@@ -1242,6 +1257,20 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 			UICleanupTasks.RearrangeMenus.changeIcon(menu, item, item.getId());
 		}
 		menu.add(new Separator());
+		menu.add(new Action("Search in GAML Reference", GamaIcon.named("editor/command.find").descriptor()) {
+			{
+				setActionDefinitionId(SearchGamlReferenceHandler.COMMAND_ID);
+			}
+
+			@Override
+			public void run() {
+				String text = getSelectedText();
+				if (text == null || text.isBlank()) {
+					text = getWordAtCaret();
+				}
+				GamlAccessContents2.open(text);
+			}
+		});
 		menu.add(new Action("Extract Action\u2026") {
 			@Override
 			public void run() {

@@ -54,6 +54,7 @@ import gama.api.utils.StringUtils;
 import gama.dev.DEBUG;
 import gama.dev.THREADS;
 import gama.ui.application.workbench.ThemeHelper;
+import gama.ui.shared.access.ConsoleContextMenuHelper;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaColors;
@@ -245,6 +246,10 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 		viewer = new IOConsoleViewer(p, msgConsole);
 
 		viewer.setWordWrap(true);
+		ConsoleContextMenuHelper.install(viewer.getTextWidget(), () -> {
+			msgConsole.clearConsole();
+			showPrompt();
+		}, true);
 
 		msgConsole.getDocument().addDocumentListener(new IDocumentListener() {
 
