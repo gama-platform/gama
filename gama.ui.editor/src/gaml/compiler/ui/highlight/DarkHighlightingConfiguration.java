@@ -38,64 +38,42 @@ public class DarkHighlightingConfiguration extends DelegateHighlightingConfigura
 
 	@Override
 	public TextStyle facetTextStyle() {
-		final var textStyle = defaultTextStyle().copy();
-		textStyle.setColor(new RGB(243, 159, 62));
-		textStyle.setStyle(SWT.BOLD);
-		return textStyle;
+		return newStyle(SWT.NORMAL, 224, 108, 117); // Soft coral / rose
 	}
 
 	@Override
 	public TextStyle pragmaTextStyle() {
-		final var textStyle = defaultTextStyle().copy();
-		textStyle.setStyle(SWT.ITALIC);
-		return textStyle;
+		return newStyle(SWT.ITALIC, 139, 148, 158);
 	}
 
 	@Override
 	public TextStyle typeTextStyle() {
-		final var textStyle = defaultTextStyle().copy();
-		textStyle.setColor(new RGB(204, 108, 29));
-		textStyle.setStyle(SWT.BOLD);
-		return textStyle;
+		return newStyle(SWT.BOLD, 78, 201, 176); // Clean teal/cyan
 	}
 
 	@Override
 	public TextStyle assignTextStyle() {
-		final var textStyle = defaultTextStyle().copy();
-		textStyle.setStyle(SWT.BOLD);
-		return textStyle;
+		return newStyle(SWT.NORMAL, 160, 166, 173);
 	}
 
 	@Override
 	public TextStyle variableTextStyle() {
-		final var textStyle = defaultTextStyle().copy();
-		textStyle.setStyle(SWT.BOLD);
-		textStyle.setColor(new RGB(94, 198, 163));
-		return textStyle;
+		return newStyle(SWT.NORMAL, 171, 178, 191); // Soft off-white
 	}
 
 	@Override
 	public TextStyle fieldTextStyle() {
-		final var textStyle = defaultTextStyle().copy();
-		textStyle.setStyle(SWT.BOLD);
-		textStyle.setColor(new RGB(94, 198, 163));
-		return textStyle;
+		return newStyle(SWT.NORMAL, 94, 198, 163); // Mint
 	}
 
 	@Override
 	public TextStyle operatorTextStyle() {
-		final var textStyle = defaultTextStyle().copy();
-		textStyle.setStyle(SWT.BOLD);
-		textStyle.setColor(new RGB(163, 230, 34));
-		return textStyle;
+		return newStyle(SWT.NORMAL, 97, 175, 239); // Sky blue
 	}
 
 	@Override
 	public TextStyle reservedTextStyle() {
-		final var textStyle = defaultTextStyle().copy();
-		textStyle.setStyle(SWT.ITALIC);
-		textStyle.setColor(new RGB(166, 166, 166));
-		return textStyle;
+		return newStyle(SWT.ITALIC, 198, 120, 221); // Soft purple
 	}
 
 	@Override
@@ -105,69 +83,48 @@ public class DarkHighlightingConfiguration extends DelegateHighlightingConfigura
 
 	@Override
 	public TextStyle unitTextStyle() {
-		final var textStyle = defaultTextStyle().copy();
-		textStyle.setColor(new RGB(166, 166, 166));
-		textStyle.setStyle(SWT.ITALIC);
-
-		return textStyle;
+		return newStyle(SWT.ITALIC, 209, 154, 102); // Warm amber
 	}
 
 	@Override
 	public TextStyle numberTextStyle() {
-		final var textStyle = defaultTextStyle().copy();
-		textStyle.setColor(new RGB(103, 150, 186));
-		return textStyle;
+		return newStyle(SWT.NORMAL, 209, 154, 102); // Warm amber
 	}
 
 	@Override
 	public TextStyle keywordTextStyle() {
-		final var textStyle = defaultTextStyle().copy();
-		textStyle.setStyle(SWT.NONE);
-		textStyle.setColor(new RGB(204, 108, 29));
-		return textStyle;
+		return newStyle(SWT.BOLD, 198, 120, 221); // Soft purple
 	}
 
 	@Override
 	public TextStyle punctuationTextStyle() {
-		final var textStyle = defaultTextStyle().copy();
-		textStyle.setColor(new RGB(180, 180, 180));
-		return textStyle;
+		return newStyle(SWT.NORMAL, 160, 166, 173);
 	}
 
 	@Override
 	public TextStyle stringTextStyle() {
-		final var textStyle = defaultTextStyle().copy();
-		textStyle.setColor(new RGB(141, 218, 248));
-		return textStyle;
+		return newStyle(SWT.NORMAL, 152, 195, 121); // Sage green
 	}
 
 	@Override
 	public TextStyle varDefTextStyle() {
-		final var textStyle = defaultTextStyle().copy();
-		textStyle.setStyle(SWT.NONE);
-		textStyle.setColor(new RGB(226, 225, 5));
-		return textStyle;
+		return newStyle(SWT.NORMAL, 229, 192, 123); // Soft gold
 	}
 
 	@Override
 	public TextStyle taskTextStyle() {
-		final var textStyle = defaultTextStyle().copy();
-		textStyle.setStyle(SWT.ITALIC | SWT.BOLD);
-		textStyle.setColor(new RGB(128, 128, 128));
-		return textStyle;
+		return newStyle(SWT.ITALIC | SWT.BOLD, 229, 192, 123);
 	}
 
 	@Override
 	public TextStyle commentTextStyle() {
-		final var textStyle = defaultTextStyle().copy();
-		textStyle.setColor(new RGB(56, 142, 193));
-		return textStyle;
+		return newStyle(SWT.ITALIC, 127, 140, 141); // Muted slate gray
 	}
 
 	@Override
 	public TextStyle defaultTextStyle() {
 		final var textStyle = new TextStyle();
-		textStyle.setColor(new RGB(255, 255, 255));
+		textStyle.setColor(new RGB(171, 178, 191));
 		return textStyle;
 	}
 
