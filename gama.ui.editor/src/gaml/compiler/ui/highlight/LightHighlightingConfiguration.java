@@ -58,7 +58,7 @@ public class LightHighlightingConfiguration extends DelegateHighlightingConfigur
 
 	@Override
 	public TextStyle variableTextStyle() {
-		return newStyle(SWT.NORMAL, 31, 35, 40);
+		return newStyle(SWT.NORMAL, 72, 82, 145); // Indigo, distinct from default text
 	}
 
 	@Override
@@ -83,7 +83,7 @@ public class LightHighlightingConfiguration extends DelegateHighlightingConfigur
 
 	@Override
 	public TextStyle unitTextStyle() {
-		return newStyle(SWT.ITALIC, 181, 83, 9);
+		return newStyle(SWT.ITALIC, 0, 112, 128); // Teal, distinct from numeric literals
 	}
 
 	@Override

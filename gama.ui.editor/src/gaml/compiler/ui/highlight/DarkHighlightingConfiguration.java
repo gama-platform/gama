@@ -58,7 +58,7 @@ public class DarkHighlightingConfiguration extends DelegateHighlightingConfigura
 
 	@Override
 	public TextStyle variableTextStyle() {
-		return newStyle(SWT.NORMAL, 171, 178, 191); // Soft off-white
+		return newStyle(SWT.NORMAL, 142, 166, 219); // Soft periwinkle, distinct from default text
 	}
 
 	@Override
@@ -83,7 +83,7 @@ public class DarkHighlightingConfiguration extends DelegateHighlightingConfigura
 
 	@Override
 	public TextStyle unitTextStyle() {
-		return newStyle(SWT.ITALIC, 209, 154, 102); // Warm amber
+		return newStyle(SWT.ITALIC, 86, 182, 194); // Cyan, distinct from numeric literals
 	}
 
 	@Override
