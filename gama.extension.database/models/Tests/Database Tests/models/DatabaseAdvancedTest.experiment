@@ -37,7 +37,7 @@ experiment DatabaseAdvancedTest type: test autorun: true {
 
 		bool update_failed <- false;
 		try {
-			ask ag { do executeUpdate params: params updateComm: "UPDATE t SET v = 1"; }
+			ask ag { do executeUpdate (params: params, updateComm: "UPDATE t SET v = 1"); }
 		} catch {
 			update_failed <- true;
 		}
@@ -45,7 +45,7 @@ experiment DatabaseAdvancedTest type: test autorun: true {
 
 		bool select_failed <- false;
 		try {
-			ask ag { list r <- select(params: params, select: "SELECT * FROM t"); }
+			ask ag { dataframe r <- select(params: params, select: "SELECT * FROM t"); }
 		} catch {
 			select_failed <- true;
 		}
@@ -53,7 +53,7 @@ experiment DatabaseAdvancedTest type: test autorun: true {
 
 		bool insert_failed <- false;
 		try {
-			ask ag { do insert params: params into: "t" data: [1, 2, 3]; }
+			ask ag { do insert (params: params, into: "t",data: [1, 2, 3]); }
 		} catch {
 			insert_failed <- true;
 		}
@@ -85,9 +85,9 @@ experiment DatabaseAdvancedTest type: test autorun: true {
 		list<map<string, unknown>> everyone <- [];
 		list<map<string, unknown>> total <- [];
 		ask ag {
-			do executeUpdate params: params updateComm: "CREATE TABLE people (id INTEGER PRIMARY KEY, name TEXT, age INTEGER, score REAL)";
-			do insert params: params into: "people" data: [1, "Alice", 30, 1.5];
-			do insert params: params into: "people" data: [2, "Bob", 25, 0.0];
+			do executeUpdate (params: params, updateComm: "CREATE TABLE people (id INTEGER PRIMARY KEY, name TEXT, age INTEGER, score REAL)");
+			do insert (params: params,into: "people", data: [1, "Alice", 30, 1.5]);
+			do insert (params: params, into: "people", data: [2, "Bob", 25, 0.0]);
 			everyone <- select(params: params, select: "SELECT * FROM people ORDER BY id");
 			total <- select(params: params, select: "SELECT COUNT(*) AS n FROM people");
 		}
@@ -108,10 +108,10 @@ experiment DatabaseAdvancedTest type: test autorun: true {
 		map<string, string> params <- new_database();
 		list<map<string, unknown>> adults <- [];
 		ask ag {
-			do executeUpdate params: params updateComm: "CREATE TABLE people (id INTEGER PRIMARY KEY, name TEXT, age INTEGER)";
-			do executeUpdate params: params updateComm: "INSERT INTO people (id, name, age) VALUES (?, ?, ?)" values: [1, "Alice", 30];
-			do executeUpdate params: params updateComm: "INSERT INTO people (id, name, age) VALUES (?, ?, ?)" values: [2, "Bob", 25];
-			do executeUpdate params: params updateComm: "INSERT INTO people (id, name, age) VALUES (?, ?, ?)" values: [3, "Eve", 12];
+			do executeUpdate (params: params, updateComm: "CREATE TABLE people (id INTEGER PRIMARY KEY, name TEXT, age INTEGER)");
+			do executeUpdate (params: params, updateComm: "INSERT INTO people (id, name, age) VALUES (?, ?, ?)", values: [1, "Alice", 30]);
+			do executeUpdate (params: params, updateComm: "INSERT INTO people (id, name, age) VALUES (?, ?, ?)", values: [2, "Bob", 25]);
+			do executeUpdate (params: params, updateComm: "INSERT INTO people (id, name, age) VALUES (?, ?, ?)", values: [3, "Eve", 12]);
 			adults <- select(params: params, select: "SELECT name FROM people WHERE age > ? ORDER BY id", values: [18]);
 		}
 		assert adults collect each["NAME"] = ["Alice", "Bob"];
@@ -142,9 +142,9 @@ experiment DatabaseAdvancedTest type: test autorun: true {
 		create sql_agent number: 1 returns: dbs;
 		sql_agent ag <- dbs[0];
 		map<string, string> params <- new_database();
-		list<map<string, unknown>> nobody <- [];
+		dataframe nobody <- [];
 		ask ag {
-			do executeUpdate params: params updateComm: "CREATE TABLE people (id INTEGER PRIMARY KEY, name TEXT)";
+			do executeUpdate (params: params, updateComm: "CREATE TABLE people (id INTEGER PRIMARY KEY, name TEXT)");
 			nobody <- select(params: params, select: "SELECT * FROM people");
 		}
 		assert empty(nobody);
@@ -157,7 +157,7 @@ experiment DatabaseAdvancedTest type: test autorun: true {
 		map<string, string> params <- new_database();
 		bool failed <- false;
 		try {
-			ask ag { list rows <- select(params: params, select: "SELECT * FROM a_table_that_does_not_exist"); }
+			ask ag { dataframe rows <- select(params: params, select: "SELECT * FROM a_table_that_does_not_exist"); }
 		} catch {
 			failed <- true;
 		}

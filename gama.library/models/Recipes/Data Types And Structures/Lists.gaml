@@ -43,15 +43,15 @@ species declaring_list_attributes {
 	// untyped lists can contain heterogeneous objects
 	list untyped_list <- ['5',5,[5]];
 	// the casting applies to all elements when a contents type is defined (note the default last value of 0)
-	list<int> recasted_list_with_int <- list<int>(untyped_list); //=> [5,5,0]
+	list<int> recasted_list_with_int <- list<int>(untyped_list); //=> [5,5,0] 
 
 	
 	init {
 		write "";
 		write "== DECLARING LISTS ==";
 		write "";
-		write sample(empty_list);
-		write sample(explicit_empty_list);
+		write sample(empty_list); 
+		write sample(explicit_empty_list); 
 		write sample(list_of_size_10);
 		write sample(list_of_size_10_with_0);
 		write sample(empty_list_of_int);

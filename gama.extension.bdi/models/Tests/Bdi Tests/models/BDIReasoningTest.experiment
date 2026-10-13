@@ -88,7 +88,7 @@ experiment BDIReasoningTest type: test autorun: true {
 		assert nb_beliefs = 1;
 		assert not has_known_after_removal;
 		assert empty(ag.belief_base);
-		ask created_agents { do die; }
+		ask created_agents { do die(); }
 	}
 
 	test "A belief can be replaced by another" {
@@ -108,7 +108,7 @@ experiment BDIReasoningTest type: test autorun: true {
 		assert has_new;
 		assert found_by_name;
 		assert length(ag.belief_base) = 1;
-		ask created_agents { do die; }
+		ask created_agents { do die(); }
 	}
 
 	test "A rule turns a belief into a desire, executed by the matching plan" {
@@ -117,7 +117,7 @@ experiment BDIReasoningTest type: test autorun: true {
 		ask ag { do add_belief(hungry); }
 		assert empty(ag.executed_plans);
 
-		ask ag { do _step_; }
+		ask ag { do _step_(); }
 		assert ag.executed_plans = ["eat"];
 		// the plan removed the belief and its own intention
 		bool still_hungry;
@@ -126,9 +126,9 @@ experiment BDIReasoningTest type: test autorun: true {
 		assert empty(ag.intention_base);
 
 		// with nothing left to desire, nothing more is executed
-		ask ag { do _step_; }
+		ask ag { do _step_(); }
 		assert ag.executed_plans = ["eat"];
-		ask created_agents { do die; }
+		ask created_agents { do die(); }
 	}
 
 	test "The strongest desire is pursued first" {
@@ -138,11 +138,11 @@ experiment BDIReasoningTest type: test autorun: true {
 			do add_desire(rest);
 			do add_desire(predicate: eat, strength: 9.0);
 		}
-		ask ag { do _step_; }
+		ask ag { do _step_(); }
 		assert ag.executed_plans = ["eat"];
-		ask ag { do _step_; }
+		ask ag { do _step_(); }
 		assert ag.executed_plans = ["eat", "rest"];
-		ask created_agents { do die; }
+		ask created_agents { do die(); }
 	}
 
 	test "Intentions can be set directly" {
@@ -162,9 +162,9 @@ experiment BDIReasoningTest type: test autorun: true {
 		assert length(ag.intention_base) = 1;
 		assert nb_plans = 2;
 
-		ask ag { do _step_; }
+		ask ag { do _step_(); }
 		assert ag.executed_plans = ["rest"];
-		ask created_agents { do die; }
+		ask created_agents { do die(); }
 	}
 
 	test "Uncertainties, ideals and obligations have their own bases" {
@@ -191,7 +191,7 @@ experiment BDIReasoningTest type: test autorun: true {
 		assert length(ag.obligation_base) = 1;
 		// none of them is a belief
 		assert empty(ag.belief_base);
-		ask created_agents { do die; }
+		ask created_agents { do die(); }
 	}
 
 	test "The bases can be cleared" {
@@ -214,7 +214,7 @@ experiment BDIReasoningTest type: test autorun: true {
 		assert empty(ag.belief_base);
 		assert empty(ag.desire_base);
 		assert empty(ag.intention_base);
-		ask created_agents { do die; }
+		ask created_agents { do die(); }
 	}
 
 	test "Default parameters of the architecture" {
@@ -226,7 +226,7 @@ experiment BDIReasoningTest type: test autorun: true {
 		assert empty(ag.belief_base);
 		assert empty(ag.desire_base);
 		assert empty(ag.intention_base);
-		ask created_agents { do die; }
+		ask created_agents { do die(); }
 	}
 
 	test "Emotions" {
@@ -244,7 +244,7 @@ experiment BDIReasoningTest type: test autorun: true {
 		assert joyful;
 		assert felt_intensity = 0.8;
 		assert not joyful_after_removal;
-		ask created_agents { do die; }
+		ask created_agents { do die(); }
 	}
 
 	test "Social links" {
@@ -266,6 +266,6 @@ experiment BDIReasoningTest type: test autorun: true {
 		assert link.dominance = 0.1;
 		assert link.solidarity = 0.2;
 		assert link.familiarity = 0.3;
-		ask created_agents { do die; }
+		ask created_agents { do die(); }
 	}
 }

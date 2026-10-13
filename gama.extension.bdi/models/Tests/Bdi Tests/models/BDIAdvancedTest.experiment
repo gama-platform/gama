@@ -39,7 +39,7 @@ experiment BDIAdvancedTest type: test autorun: true {
 		assert has_d = true;
 		
 		// Run a step so the agent processes desires into intentions and runs the plan
-		ask ag { do _step_; }
+		ask ag { do _step_(); }
 		
 		assert ag.plan_executed = true;
 		
