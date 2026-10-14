@@ -72,6 +72,7 @@ public class ModelLibraryTester extends AbstractModelLibraryRunner {
 		final int[] count = { 0 };
 		final int[] code = { 0 };
 		final Multimap<Bundle, String> plugins = GamaBundleLoader.getPluginsWithTests();
+		linkModelsLibraryToWorkspace();
 		final List<URL> allURLs = new ArrayList<>();
 		for (final Bundle bundle : plugins.keySet()) {
 			for (final String entry : plugins.get(bundle)) {
@@ -89,7 +90,7 @@ public class ModelLibraryTester extends AbstractModelLibraryRunner {
 						final URL url = urls.nextElement();
 						if (isTest(url)) {
 							final URL resolvedFileURL = FileLocator.toFileURL(url);
-							allURLs.add(resolvedFileURL);
+							allURLs.add(toWorkspaceURL(resolvedFileURL));
 						}
 					}
 				}
