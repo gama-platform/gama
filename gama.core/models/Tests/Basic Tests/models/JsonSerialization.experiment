@@ -111,6 +111,39 @@ experiment SerializationTest type:test {
 		assert to_json( map("x"::#nan)) = '{"x":"NaN"}';
 	}
 
+	test serialization_preferences_at_runtime {
+		bool infinity_as_string <- gama.pref_json_infinity_as_string;
+		bool nan_as_string <- gama.pref_json_nan_as_string;
+		loop as_string over: [false, true, false] {
+			gama.pref_json_infinity_as_string <- as_string;
+			gama.pref_json_nan_as_string <- as_string;
+			string infinity_json <- as_string ? '"Infinity"' : 'Infinity';
+			string negative_infinity_json <- as_string ? '"-Infinity"' : '-Infinity';
+			string nan_json <- as_string ? '"NaN"' : 'NaN';
+			assert to_json(#infinity) = infinity_json;
+			assert to_json(-#infinity) = negative_infinity_json;
+			assert to_json(#nan) = nan_json;
+			assert to_json(#infinity, true) = infinity_json;
+			assert to_json(-#infinity, true) = negative_infinity_json;
+			assert to_json(#nan, true) = nan_json;
+			assert to_json(map("x"::#infinity)) = '{"x":' + infinity_json + '}';
+			assert to_json(map("x"::-#infinity)) = '{"x":' + negative_infinity_json + '}';
+			assert to_json(map("x"::#nan)) = '{"x":' + nan_json + '}';
+			assert to_json([#infinity, -#infinity, #nan]) = '[' + infinity_json + ',' + negative_infinity_json + ',' + nan_json + ']';
+			if as_string {
+				assert from_json('"Infinity"') = #infinity;
+				assert from_json('"-Infinity"') = -#infinity;
+				assert from_json('"NaN"') = #nan;
+			} else {
+				assert from_json('"Infinity"') = "Infinity";
+				assert from_json('"-Infinity"') = "-Infinity";
+				assert from_json('"NaN"') = "NaN";
+			}
+		}
+		gama.pref_json_infinity_as_string <- infinity_as_string;
+		gama.pref_json_nan_as_string <- nan_as_string;
+	}
+
 	// errors
 	test from_infinity_literal_with_string_option {
 		gama.pref_json_infinity_as_string <- true;

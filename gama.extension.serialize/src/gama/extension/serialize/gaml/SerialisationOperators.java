@@ -153,7 +153,7 @@ public class SerialisationOperators {
 	 */
 	@operator (
 			value = { "to_json" },
-			can_be_const = true,
+			can_be_const = false,
 			category = { IOperatorCategory.CASTING },
 			concept = { IConcept.SERIALIZE })
 	@test ("to_json(1) = '1'")
@@ -165,6 +165,7 @@ public class SerialisationOperators {
 	@doc (
 			value = """
 					Serializes any object/agent/simulation into a string, using the json format. A flag can be passed to enable/disable pretty printing (`false` by default).
+					Non-finite floats follow the current `pref_json_infinity_as_string` and `pref_json_nan_as_string` preferences at runtime.
 					The format used by GAMA follows simple rules. `int`, `float`, `bool`, `string` values are outputted as they are. `nil` is outputted as `null`. A list is outputted as a json array. Any other object or agent is outputted as a json object. If this object possesses the attribute `gaml_type`, \
 					it is an instance of the corresponding type, and the members that follow contain the attributes and the values necessary to reconstruct it. If it has the `agent_reference` attribute, its value represents the reference to an agent. If any reference to an agent is found, the \
 					json string returned will be an object with two attributes: `gama_object`, the object containing the references, and `reference_table` a dictionary mapping the references to the json description of the agents (their `species`, `name`, `index`, and list of attributes). \
@@ -188,12 +189,13 @@ public class SerialisationOperators {
 	 */
 	@operator (
 			value = { "to_json" },
-			can_be_const = true,
+			can_be_const = false,
 			category = { IOperatorCategory.CASTING },
 			concept = { IConcept.SERIALIZE })
 	@doc (
 			value = """
 					Serializes any object/agent/simulation into a string, using the json format and no pretty printing.
+					Non-finite floats follow the current `pref_json_infinity_as_string` and `pref_json_nan_as_string` preferences at runtime.
 					The format used by GAMA follows simple rules. `int`, `float`, `bool`, `string` values are outputted as they are. `nil` is outputted as `null`. A `list` is outputted as a json array. Any other object or agent is outputted as a json object. If this object possesses the "gaml_type" attribute, \
 					it is an instance of the corresponding type, and the members that follow contain the attributes and the values necessary to reconstruct it. If it has the "agent_reference" attribute, its value represent the reference to an agent. If any reference to an agent is found, the \
 					json string returned will be an object with two attributes: "gama_object", the object containing the references, and "reference_table" a dictionary mapping the references to the json description of the agents (their species, name, index, and list of attributes). \
@@ -321,12 +323,12 @@ public class SerialisationOperators {
 	 */
 	@operator (
 			value = { "from_json" },
-			can_be_const = true,
+			can_be_const = false,
 			type = ITypeProvider.DENOTED_TYPE_AT_INDEX + 2,
 			category = { IOperatorCategory.CASTING },
 			concept = { IConcept.SERIALIZE })
 	@doc (
-			value = "Deserializes an object precedently serialized using 'to_json' (or an arbitrary json string obtained elsewhere). Agents and populations are not supported yet (i.e. they will return maps)",
+			value = "Deserializes an object precedently serialized using 'to_json' (or an arbitrary json string obtained elsewhere). Agents and populations are not supported yet (i.e. they will return maps). Non-finite numbers and overflowing integers follow the current JSON preferences at runtime.",
 			see = { "from_gaml", "from_binary" })
 	@no_test
 	@tests ({

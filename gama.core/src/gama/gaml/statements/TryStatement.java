@@ -138,6 +138,12 @@ public class TryStatement extends AbstractStatementSequence {
 	}
 
 	@Override
+	public Iterable<IStatement> getSubStatements() {
+		return catchStatement == null ? super.getSubStatements()
+				: Iterables.concat(super.getSubStatements(), java.util.List.of(catchStatement));
+	}
+
+	@Override
 	public Object privateExecuteIn(final IScope scope) {
 		Object result = null;
 		try {

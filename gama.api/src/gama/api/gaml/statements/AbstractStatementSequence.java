@@ -10,6 +10,9 @@
  ********************************************************************************************************/
 package gama.api.gaml.statements;
 
+import java.util.Arrays;
+import java.util.List;
+
 import com.google.common.collect.FluentIterable;
 
 import gama.api.compilation.descriptions.IDescription;
@@ -193,6 +196,13 @@ public class AbstractStatementSequence extends AbstractStatement {
 	 * @return the child statements
 	 */
 	public IStatement[] getCommands() { return commands; }
+
+	/**
+	 * Returns all child statements for inspection, including non-sequential branches in subclasses.
+	 */
+	public Iterable<IStatement> getSubStatements() {
+		return commands == null ? List.of() : Arrays.asList(commands);
+	}
 
 	@Override
 	public void dispose() {

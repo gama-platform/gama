@@ -55,7 +55,7 @@ import one.util.streamex.StreamEx;
 				doc = @doc ("identifier of the test")) },
 		omissible = IKeyword.NAME)
 @doc (
-		value = "The test statement allows modeler to define a set of assertions that will be tested. Before the execution of the embedded set of instructions, if a setup is defined in the species, model or experiment, it is executed. In a test, if one assertion fails, the evaluation of other assertions continue.",
+		value = "The test statement allows modeler to define a set of assertions that will be tested. Assertions nested in loops, conditional branches and other statement blocks are included in the test summary. Before the execution of the embedded set of instructions, if a setup is defined in the species, model or experiment, it is executed. In a test, if one assertion fails, the evaluation of other assertions continue.",
 		usages = { @usage (
 				value = "An example of use:",
 				examples = { @example (
@@ -133,7 +133,19 @@ public class TestStatement extends AbstractStatementSequence implements IStateme
 	@Override
 	public void setChildren(final Iterable<? extends ISymbol> commands) {
 		super.setChildren(commands);
-		commands.forEach(s -> { if (s instanceof AssertStatement a) { assertions.add(a); } });
+		assertions.clear();
+		collectAssertions(getSubStatements());
+		summary = null;
+	}
+
+	private void collectAssertions(final Iterable<? extends IStatement> statements) {
+		for (final IStatement statement : statements) {
+			if (statement instanceof AssertStatement assertion) {
+				assertions.add(assertion);
+			} else if (statement instanceof AbstractStatementSequence sequence) {
+				collectAssertions(sequence.getSubStatements());
+			}
+		}
 	}
 
 	@Override

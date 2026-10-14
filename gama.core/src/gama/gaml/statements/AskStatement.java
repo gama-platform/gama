@@ -24,6 +24,7 @@ import gama.api.compilation.descriptions.IDescription;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.statements.AbstractStatementSequence;
+import gama.api.gaml.statements.IStatement;
 import gama.api.gaml.statements.IStatement.Breakable;
 import gama.api.gaml.symbols.ISymbol;
 import gama.api.gaml.types.Cast;
@@ -221,6 +222,11 @@ public class AskStatement extends AbstractStatementSequence implements Breakable
 		sequence = new RemoteSequence(description);
 		sequence.setName("commands of " + getName());
 		sequence.setChildren(com);
+	}
+
+	@Override
+	public Iterable<IStatement> getSubStatements() {
+		return sequence == null ? java.util.List.of() : sequence.getSubStatements();
 	}
 
 	@SuppressWarnings ({ "rawtypes", "unchecked" })
