@@ -73,13 +73,19 @@ public class NavigatorSearchControl {
 	 * @return true, if successful
 	 */
 	boolean shouldSelect(final Object o) {
-		if (!(o instanceof WrappedGamaFile file)) return false;
 		if (appliedBody) {
+			if (!(o instanceof WrappedGamaFile file)) return false;
 			final IFile resource = file.getResource();
 			final Long stamp = bodyMatches.get(resource);
 			return stamp != null && resource.isAccessible() && stamp == resource.getModificationStamp();
 		}
-		return file.getName().toLowerCase(Locale.ROOT).contains(appliedPattern) || file.hasTag(appliedPattern);
+		if (!(o instanceof VirtualContent<?> content)) return false;
+		return switch (content.getType()) {
+			case FILE, FOLDER, PROJECT, VIRTUAL_FOLDER ->
+				content.getName().toLowerCase(Locale.ROOT).contains(appliedPattern)
+						|| content instanceof WrappedGamaFile file && file.hasTag(appliedPattern);
+			default -> false;
+		};
 	}
 
 	/**
@@ -137,9 +143,29 @@ public class NavigatorSearchControl {
 		 */
 		private boolean internalSelect(final VirtualContent<?> element, final boolean considerVirtualContent) {
 			if (appliedPattern.isEmpty()) return true;
+			if (!appliedBody) {
+				if (shouldSelect(element)) return true;
+				for (VirtualContent<?> parent = element.getParent(); parent != null; parent = parent.getParent()) {
+					switch (parent.getType()) {
+						case FOLDER, PROJECT, VIRTUAL_FOLDER:
+							if (shouldSelect(parent)) return true;
+							break;
+						default:
+							break;
+					}
+				}
+			}
 			switch (element.getType()) {
 				case FILE:
-					return shouldSelect(element);
+					if (shouldSelect(element)) return true;
+					if (!appliedBody) {
+						for (final Object child : element.getNavigatorChildren()) {
+							if (child instanceof VirtualContent<?> content
+									&& content.getType() == VirtualContent.VirtualContentType.FILE
+									&& select(content, false)) return true;
+						}
+					}
+					return false;
 				case CATEGORY:
 				case FILE_REFERENCE:
 				case GAML_ELEMENT:
@@ -162,7 +188,7 @@ public class NavigatorSearchControl {
 	Text find;
 
 	/** The Constant EMPTY. */
-	private static final String EMPTY = "Find model..."; //$NON-NLS-1$
+	private static final String EMPTY = "Search..."; //$NON-NLS-1$
 
 	/** The pattern. */
 	String pattern = "";
@@ -264,7 +290,8 @@ public class NavigatorSearchControl {
 		mode.setBackground(c);
 		mode.setSelection(true);
 		mode.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-		mode.setToolTipText("Title: search model filenames and tags. Body: search saved source, including comments "
+		mode.setToolTipText("Title: search file, folder, group and project names, and model tags. "
+				+ "Body: search saved model source, including comments "
 				+ "(case-insensitive; unsaved editor changes are not searched).");
 		mode.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
 			searchBody = !mode.getSelection();
@@ -276,7 +303,7 @@ public class NavigatorSearchControl {
 		focusService.addFocusTracker(find, "search");
 
 		find.setMessage(EMPTY);
-		find.setToolTipText("Find models by filename and tags (Title) or saved source content (Body).");
+		find.setToolTipText("Search file and folder names and model tags (Title) or saved model source (Body).");
 
 		find.addModifyListener(modifyListener);
 		find.addSelectionListener(SelectionListener.widgetDefaultSelectedAdapter(e -> {
@@ -372,7 +399,7 @@ public class NavigatorSearchControl {
 				}
 			};
 		} else {
-			pendingSearch = new UIJob(display, "Search model titles") {
+			pendingSearch = new UIJob(display, "Search navigator titles") {
 				@Override
 				public IStatus runInUIThread(final IProgressMonitor monitor) {
 					if (!monitor.isCanceled()) { applySearch(query, false, Map.of(), generation); }

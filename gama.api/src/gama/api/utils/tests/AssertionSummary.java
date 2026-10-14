@@ -12,6 +12,7 @@ package gama.api.utils.tests;
 
 import java.util.Collections;
 import java.util.Map;
+import org.eclipse.emf.common.util.URI;
 
 import gama.api.utils.StringUtils;
 
@@ -37,6 +38,11 @@ public class AssertionSummary extends AbstractSummary<WithTestSummary> {
 	 */
 	public AssertionSummary(final WithTestSummary a) {
 		super(a);
+		timeStamp = System.currentTimeMillis();
+	}
+
+	public AssertionSummary(final String title, final URI uri) {
+		super(title, uri);
 		timeStamp = System.currentTimeMillis();
 	}
 

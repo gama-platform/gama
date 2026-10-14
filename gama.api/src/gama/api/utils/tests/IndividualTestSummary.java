@@ -12,6 +12,7 @@ package gama.api.utils.tests;
 
 import gama.api.gaml.statements.IStatement;
 import gama.api.utils.StringUtils;
+import org.eclipse.emf.common.util.URI;
 
 /**
  * A summary of a test statement
@@ -29,6 +30,10 @@ public class IndividualTestSummary extends CompoundSummary<AssertionSummary, ISt
 	 */
 	public IndividualTestSummary(final IStatement.Test test) {
 		super(test);
+	}
+
+	public IndividualTestSummary(final String title, final URI uri) {
+		super(title, uri);
 	}
 
 	@Override

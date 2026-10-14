@@ -393,13 +393,20 @@ public class GAMA {
 		if (!controllers.isEmpty()) { closeAllExperiments(true, false); }
 
 		if (newExperiment.isTest()) {
+			if (getGui().runTestExperiment(model, id)) return;
 			// controllers.add(controller);
 			newExperiment.open();
 			final IExperimentAgent.Test agent = (Test) newExperiment.getAgent();
-			agent.init(agent.getScope());
-			agent.step(agent.getScope());
-			agent.displayTestResults();
-			GAMA.closeExperiment(newExperiment);
+			try {
+				agent.init(agent.getScope());
+				if (!getGui().isTestStopRequested()) { agent.step(agent.getScope()); }
+			} finally {
+				try {
+					agent.displayTestResults();
+				} finally {
+					GAMA.closeExperiment(newExperiment);
+				}
+			}
 		} else if (getGui().openSimulationPerspective(model, id)) {
 			controllers.add(controller);
 			startBenchmark(newExperiment);

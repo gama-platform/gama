@@ -22,7 +22,7 @@ The new `gama.api` module has been created to decouple public interfaces from in
 ### 📁 Workspace Models Organisation
 Plugins now contribute models through `models/{Data,Demos,Library,Recipes,Tutorials,Tests}/<GAMA projects>`; the `gama.models` extension point is removed. Projects are classified by location (not by natures), the contributing plugin is stored in the `.project` comment, and the GAMA nature is now `gama.workspace.nature` (the former ids are still recognised and migrated). The navigator gains a "Clean and update workspace..." command, hides empty top-level folders, and supports user *group folders* (plain directories of the workspace containing several projects, see #678) that can be created, renamed, deleted, filled by drag and drop, paste, and the New/Import project wizards.
 
-The navigator's **Find model** field now offers **Title | Body** search modes. Title (the default) searches filenames and tags; Body searches saved model source, including comments, case-insensitively. Body scans run in the background after a short typing delay, cancel when the query or mode changes, and use a bounded cache checked against resource modification stamps and charset. Unsaved editor changes are not searched. Clearing the field or pressing Escape restores the previous tree expansion.
+The navigator's **Search...** field now offers **Title | Body** search modes. Title (the default) searches all filenames, folder, group and project names, and model tags, case-insensitively. Matching folders show their contents; ancestor folders remain visible for matching files. Body searches saved model source, including comments, case-insensitively. Body scans run in the background after a short typing delay, cancel when the query or mode changes, and use a bounded cache checked against resource modification stamps and charset. Unsaved editor changes are not searched. Clearing the field or pressing Escape restores the previous tree expansion.
 
 The navigator's top-right menu includes **Modification date** and, when enabled, **Most recent first**. These saved settings replace the toolbar's date-sorting button. Dates can be displayed while retaining alphabetical order; hiding dates restores alphabetical order without losing the preferred date-sorting setting.
 
@@ -51,6 +51,12 @@ Massive performance upgrades taking advantage of JDK 25 multithreading enhanceme
 
 ### 🖥️ UI, Displays & OpenGL 4.1 Native
 A brand-new, blazing-fast native display plugin relying solely on OpenGL 4.1 Core Profile logic. Legacy APIs have been removed.
+
+The test view has a **Stop tests** button and displays the currently executing model, experiment and test name. By default, GUI tests execute in the workbench JVM, using scope cancellation and thread interruption. **Stop tests** interrupts the current experiment and ends the suite, preserving completed results and marking the active test as **interrupted**. **Execution > Tests > Test experiment timeout (seconds)** defaults to 10 seconds: a timeout requests interruption, marks the active test as **timeout**, and continues with the next experiment once execution actually exits. The runner never abandons a live test thread. Unstarted tests and assertions remain **not run**.
+
+**Advanced > Tests > Run tests in a separate headless process** enables stronger isolation for Java operators that ignore cooperative cancellation. An isolated sequence reuses an initialized headless worker, replacing it after a timeout or worker failure and terminating it when the sequence ends. In this mode Stop and timeout can forcibly terminate unresponsive computations. The timeout covers experiment initialization and execution, not model compilation or worker startup. Isolated tests require saved local model files; default same-JVM execution can use the model compiled from the editor.
+
+The test-view toolbar shows **Stop tests** only during execution and **Expand/Collapse** only when the resulting summary is displayed.
 
 *   `[47f55ee]` Migrate renderer to OpenGL 4 core profile
 *   `[7614445]` Migrate OpenGL4 renderer away from fixed-function
