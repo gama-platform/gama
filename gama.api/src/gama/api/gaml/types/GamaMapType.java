@@ -10,6 +10,8 @@
 package gama.api.gaml.types;
 
 import gama.annotations.doc;
+import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.type;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
@@ -86,6 +88,28 @@ import gama.api.types.map.IMap;
 		concept = { IConcept.TYPE, IConcept.CONTAINER, IConcept.MAP },
 		doc = @doc ("Represents lists of pairs key::value, where each key is unique in the map. Maps are ordered by the insertion order of elements"))
 @SuppressWarnings ({ "unchecked", "rawtypes" })
+@tests ({
+		@test ("map<string, int> src <- [\"a\"::1, \"b\"::2]; src[\"a\"] = 1"),
+		@test ("map<string, int> src2 <- [\"a\"::1, \"b\"::2]; src2[\"b\"] = 2"),
+		@test ("map<string, int> src3 <- [\"a\"::1, \"b\"::2]; list<pair<string, int>> lp <- src3.pairs; map<string, int> m1 <- map(lp); m1[\"a\"] = 1"),
+		@test ("map<string, int> src4 <- [\"a\"::1, \"b\"::2]; list<pair<string, int>> lp2 <- src4.pairs; map<string, int> m12 <- map(lp2); m12[\"b\"] = 2"),
+		@test ("map<string, int> scores <- [\"a\"::1, \"b\"::2]; scores.pairs[1] = (\"b\"::2)"),
+		@test ("map<string, int> scores2 <- [\"a\"::1, \"b\"::2]; scores2[\"z\"] = nil"),
+		@test ("map<int, int> from_list <- map([1, 2, 3]); from_list.keys = [1, 2, 3]"),
+		@test ("map<int, int> from_list2 <- map([1, 2, 3]); from_list2.values = [1, 2, 3]"),
+		@test ("map<string, int> m13 <- [\"a\"::1, \"b\"::2, \"c\"::3]; m13[\"a\"] = 1"),
+		@test ("map<string, int> m14 <- [\"a\"::1, \"b\"::2, \"c\"::3]; m14[\"b\"] = 2"),
+		@test ("map<string, int> m15 <- [\"a\"::1, \"b\"::2, \"c\"::3]; m15[\"c\"] = 3"),
+		@test ("map<string, int> m16 <- [\"a\"::1, \"b\"::2, \"c\"::3]; m16.keys = [\"a\", \"b\", \"c\"]"),
+		@test ("map<string, int> m17 <- [\"a\"::1, \"b\"::2, \"c\"::3]; m17.values = [1, 2, 3]"),
+		@test ("map<string, int> m18 <- [\"a\"::1, \"b\"::2]; m18[\"c\"] <- 3; m18[\"c\"] = 3"),
+		@test ("map<string, int> m19 <- [\"a\"::1, \"b\"::2]; m19[\"c\"] <- 3; m19[\"a\"] <- 10; m19[\"a\"] = 10"),
+		@test ("map<string, int> m110 <- [\"a\"::1, \"b\"::2]; m110[\"c\"] <- 3; m110[\"a\"] <- 10; remove key: \"b\" from: m110; m110.keys = [\"a\", \"c\"]"),
+		@test ("map<string, int> m111 <- [\"a\"::1, \"b\"::2]; m111[\"c\"] <- 3; m111[\"a\"] <- 10; remove key: \"b\" from: m111; m111.values = [10, 3]"),
+		@test ("map<string, int> m112 <- map([\"a\"::10, \"b\"::20]); m112[\"a\"] = 10"),
+		@test ("map<string, int> m <- [\"a\"::1]; m[\"missing\"] = nil"),
+		@test ("map<string, int> m2 <- [\"a\"::1]; m2[nil] = nil")
+})
 public class GamaMapType extends GamaContainerType<IMap> {
 
 	/**

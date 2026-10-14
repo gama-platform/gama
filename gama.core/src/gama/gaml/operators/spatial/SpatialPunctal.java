@@ -20,8 +20,10 @@ import org.locationtech.jts.operation.distance.DistanceOp;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
 import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.usage;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
@@ -122,6 +124,13 @@ public class SpatialPunctal {
 					test = false) },
 			see = { "closest_points_with", "farthest_point_to", "points_at" })
 	@no_test
+	@tests ({
+			// The point should be inside the square
+			@test ("geometry sq <- square(10) at_location {5, 5}; point p <- any_location_in(sq); (p.x >= 0.0 and p.x <= 10.0)"),
+			@test ("geometry sq2 <- square(10) at_location {5, 5}; point p2 <- any_location_in(sq2); (p2.y >= 0.0 and p2.y <= 10.0)"),
+			@test ("geometry sq3 <- square(10) at_location {5, 5}; point p3 <- any_location_in(sq3); (sq3 covers p3) = true"),
+			@test ("any_location_in(nil) = nil")
+	})
 	public static IPoint any_location_in(final IScope scope, final IShape g) {
 		if (g == null) return null;
 		return GeometryUtils.pointInGeom(scope, g.getInnerGeometry());
@@ -136,6 +145,7 @@ public class SpatialPunctal {
 	 *            the distance
 	 * @return the i list
 	 */
+	@no_fuzz_test ("exhausts the memory with a null or negative distance")
 	@operator (
 			value = { "points_on" },
 			type = IType.LIST,
@@ -208,6 +218,7 @@ public class SpatialPunctal {
 	 *            the distance
 	 * @return the i list
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = { "points_at" },
 			content_type = IType.POINT,
@@ -361,6 +372,14 @@ public class SpatialPunctal {
 			examples = { @example (
 					value = "angle_between({5,5},{10,5},{5,10})",
 					equals = "90") })
+	@tests ({
+			// the angle at the first point, between the two others, in [0, 360[
+			@test ("angle_between({0, 0}, {1, 0}, {0, 1}) = 90.0"),
+			@test ("angle_between({0, 0}, {1, 0}, {1, 1}) with_precision 6 = 45.0"),
+			@test ("angle_between({0, 0}, {1, 0}, {-1, 0}) = 180.0"),
+			@test ("angle_between({0, 0}, {1, 0}, {0, -1}) = 270.0"),
+			@test ("angle_between({0, 0}, {1, 0}, {1, 0}) = 0.0")
+	})
 	public static Double angleInDegreesBetween(final IScope scope, final IPoint p0, final IPoint p1, final IPoint p2) {
 		final double Xa = p1.getX() - p0.getX();
 		final double Ya = p1.getY() - p0.getY();

@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * IGamaColors.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * IGamaColors.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -36,8 +35,11 @@ public interface IGamaColors {
 	// isDark() ? get(get(create("palette/palette.red2")).lighter()) : get(create("palette/palette.red2"));
 
 	/** The ok. */
-	GamaUIColor OK = isDark() ? get(get(81, 135, 56).lighter()) : get(81, 135, 56);
+	GamaUIColor OK = isDark() ? get(get(120, 158, 109).lighter()) : get(120, 158, 109);
 	// isDark() ? get(get(create("palette/palette.green2")).lighter()) : get(create("palette/palette.green2"));
+
+	/** The nice. */
+	GamaUIColor NICE = isDark() ? get(get(123, 164, 162).lighter()) : get(123, 164, 162);
 
 	/** The warning. */
 	GamaUIColor WARNING = get(207, 119, 56); // get(create("palette/palette.orange2"));

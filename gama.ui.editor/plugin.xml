@@ -854,6 +854,18 @@
   <extension
         point="org.eclipse.ui.bindings">
      <key
+           commandId="gama.ui.commands.searchGamlReference"
+           contextId="org.eclipse.xtext.ui.XtextEditorScope"
+           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+           sequence="F1">
+     </key>
+     <key
+           commandId="gama.ui.commands.searchGamlReference"
+           contextId="org.eclipse.xtext.ui.XtextEditorScope"
+           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+           sequence="M1+M2+G">
+     </key>
+     <key
            commandId="org.eclipse.ui.edit.text.contentAssist.proposals"
            contextId="org.eclipse.xtext.ui.XtextEditorScope"
            platform="cocoa"

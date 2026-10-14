@@ -408,7 +408,8 @@ public class GamlEditorDragAndDropHandler {
 	 * @param file
 	 */
 	private int addDropFile(final StringBuilder sb, final IFile file) {
-		final ParametricFileType type = GamaFileType.extensionsToFullType.get(file.getFileExtension());
+		final String ext = file.getFileExtension();
+		final ParametricFileType type = ext == null ? null : GamaFileType.extensionsToFullType.get(ext.toLowerCase());
 		final String fullType = type == null ? "file" : type.toString();
 		final String name = obtainRelativePath(file);
 		final String varName = clean(file.getName()) + "_" + fullType;

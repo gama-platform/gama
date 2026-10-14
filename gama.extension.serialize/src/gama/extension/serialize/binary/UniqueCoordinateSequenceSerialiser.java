@@ -10,19 +10,21 @@
  ********************************************************************************************************/
 package gama.extension.serialize.binary;
 
+import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
+import gama.api.kernel.serialization.IGamaObjectInput;
+import gama.api.kernel.serialization.IGamaObjectOutput;
+import gama.api.kernel.serialization.IGamaObjectSerializer;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.geometry.UniqueCoordinateSequence;
-import gama.extension.serialize.IGamaObjectInput;
-import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link UniqueCoordinateSequence} instances. A {@code UniqueCoordinateSequence} holds exactly one
+ * binarySerialiser for {@link UniqueCoordinateSequence} instances. A {@code UniqueCoordinateSequence} holds exactly one
  * coordinate; serialisation persists its x, y, and z components at index 0.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class UniqueCoordinateSequenceSerialiser extends FSTIndividualSerialiser<UniqueCoordinateSequence> {
+public class UniqueCoordinateSequenceSerialiser implements IGamaObjectSerializer<UniqueCoordinateSequence> {
 
 	/**
 	 * Serialises the x, y, and z values of the single coordinate at index 0.
@@ -35,7 +37,8 @@ class UniqueCoordinateSequenceSerialiser extends FSTIndividualSerialiser<UniqueC
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final IGamaObjectOutput out, final UniqueCoordinateSequence o) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final UniqueCoordinateSequence o,
+			final TransientSerializationContext context) throws Exception {
 		out.writeDouble(o.getX(0));
 		out.writeDouble(o.getY(0));
 		out.writeDouble(o.getZ(0));

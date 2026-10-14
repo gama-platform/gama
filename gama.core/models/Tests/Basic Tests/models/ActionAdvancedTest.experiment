@@ -1,0 +1,56 @@
+/**
+* Name: ActionAdvancedTest
+* Author: Antigravity
+* Description: Tests advanced action parameters, optional arguments, and returns
+* Tags: action, method, test
+*/
+
+model ActionAdvancedTestModel
+
+species action_agent {
+	
+	int calc(int a, int b <- 10) {
+		return a + b;
+	}
+	
+	string greet(string myname, string title <- "Mr") {
+		return "Hello " + title + " " + myname;
+	}
+	
+	// Test passing by reference using a map
+	action modify_map(map<string, int> m) {
+		m["new"] <- 100;
+	}
+}
+
+experiment ActionAdvancedTest type: test autorun: true {
+	
+	test "Default Arguments" {
+		create action_agent number: 1 returns: created_agents;
+		action_agent ag <- created_agents[0];
+		
+		// Passing both
+		assert ag.calc(a: 5, b: 20) = 25;
+		
+		// Falling back to default
+		assert ag.calc(a: 5) = 15;
+		
+		assert ag.greet(myname: "Smith", title: "Dr") = "Hello Dr Smith";
+		assert ag.greet(myname: "Smith") = "Hello Mr Smith";
+	}
+	
+	test "Pass by Reference" {
+		create action_agent number: 1 returns: created_agents;
+		action_agent ag <- created_agents[0];
+		
+		map<string, int> my_map <- ["old"::1];
+		
+		// In GAMA, complex objects (lists, maps, agents) are passed by reference
+		ask ag {
+			do modify_map(m: my_map);
+		}
+		
+		assert length(my_map) = 2;
+		assert my_map["new"] = 100;
+	}
+}

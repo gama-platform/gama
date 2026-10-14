@@ -11,10 +11,12 @@
 package gama.ui.navigator.view.contents;
 
 import gama.api.utils.tests.CompoundSummary;
-import gama.workspace.nature.GamaNatures;
+import gama.workspace.manager.ProjectCategory;
 
 /**
- * The Class TestModelsFolder.
+ * The Class TestModelsFolder: the test projects contributed by GAMA and its plugins (in {@code models/Tests}) and the
+ * test projects of the user, located in the {@code Tests} directory of the workspace. This directory only exists on
+ * disk: the "Tests" folder of the navigator is virtual and displays both kinds of projects.
  */
 public class TestModelsFolder extends TopLevelFolder {
 
@@ -27,7 +29,7 @@ public class TestModelsFolder extends TopLevelFolder {
 	 *            the name
 	 */
 	public TestModelsFolder(final NavigatorRoot root, final String name) {
-		super(root, name, FOLDER_TEST, "Built-in tests", NEUTRAL, GamaNatures.TEST_NATURE, Location.Tests);
+		super(root, name, FOLDER_TEST, "Automated and manual tests for GAMA features", NEUTRAL, ProjectCategory.TESTS);
 	}
 
 	@Override

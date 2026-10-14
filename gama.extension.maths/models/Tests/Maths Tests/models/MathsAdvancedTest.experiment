@@ -1,0 +1,28 @@
+/**
+* Name: MathsAdvancedTest
+* Author: Antigravity
+* Description: Tests advanced maths extension operators like truncated and density distributions
+* Tags: maths, random, advanced, test
+*/
+
+experiment MathsAdvancedTest type: test autorun: true {
+	
+	test "Inverse and matrix product" {
+		matrix<float> full <- matrix([[1.0, 2.0], [3.0, 4.0]]);
+		matrix<float> identity <- matrix([[1.0, 0.0], [0.0, 1.0]]);
+
+		// '.' is the matrix product, '*' multiplies cell by cell
+		assert full . inverse(full) = identity;
+		assert full . identity = full;
+		assert (full . full)[0, 0] = 7.0;
+		assert (full * full)[0, 0] = 1.0;
+		assert (full * full)[1, 1] = 16.0;
+		assert (full / full) = matrix([[1.0, 1.0], [1.0, 1.0]]);
+		assert (full - full) = matrix([[0.0, 0.0], [0.0, 0.0]]);
+
+	}
+
+	// NB: lognormal_trunc_rnd, weibull_trunc_rnd and gamma_trunc_rnd never return when both bounds are equal,
+	// which is why this case cannot be part of the tests
+
+}

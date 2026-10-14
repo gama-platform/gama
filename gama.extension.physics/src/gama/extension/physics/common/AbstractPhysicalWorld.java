@@ -88,6 +88,22 @@ public abstract class AbstractPhysicalWorld<WorldType, ShapeType, VectorType>
 	 */
 	protected abstract IShapeConverter<ShapeType, VectorType> createShapeConverter();
 
+	/** The internal fixed time step (in seconds) Bullet is naturally tuned for. */
+	protected static final double BASE_FIXED_STEP = 1d / 60d;
+
+	/**
+	 * Computes the number of internal sub-steps needed to cover the whole {@code timeStep}. Bullet only simulates
+	 * {@code maxSubSteps * fixedStep} seconds per call, so a large GAMA step would silently be truncated. The number of
+	 * sub-steps is therefore increased (up to {@code maxSubSteps}) so that the whole step is simulated, and the
+	 * sub-steps are enlarged only if the cap is reached.
+	 *
+	 * @return the number of sub-steps (0 if the engine must use a single variable step)
+	 */
+	protected static int computeSubSteps(final double timeStep, final int maxSubSteps) {
+		if (maxSubSteps <= 0) return 0;
+		return Math.max(1, Math.min(maxSubSteps, (int) Math.ceil(timeStep / BASE_FIXED_STEP - 1e-6)));
+	}
+
 	@Override
 	public void doStep(final Double timeStep, final int maxSubSteps) {
 		updateEngine(timeStep, maxSubSteps);

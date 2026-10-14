@@ -1,0 +1,48 @@
+/**
+* Name: ReflexTest
+* Author: Antigravity
+* Description: Tests the default reflex-based control architecture
+* Tags: reflex, architecture, test
+*/
+
+model ReflexTestModel
+
+species reflex_agent {
+	int tick <- 0;
+	bool has_run_unconditional <- false;
+	bool has_run_conditional <- false;
+	
+	reflex unconditional {
+		has_run_unconditional <- true;
+		tick <- tick + 1;
+	}
+	
+	reflex conditional when: tick > 0 {
+		has_run_conditional <- true;
+	}
+}
+
+experiment ReflexTest type: test autorun: true {
+	
+	test "Reflex Execution Order and Conditions" {
+		create reflex_agent number: 1 returns: created_agents;
+		reflex_agent ag <- created_agents[0];
+		
+		assert ag.has_run_unconditional = false;
+		assert ag.has_run_conditional = false;
+		
+		// Run first step
+		ask ag { do _step_(); }
+		
+		assert ag.has_run_unconditional = true;
+		assert ag.tick = 1;
+		
+		// Since the condition `tick > 0` was not true at the *beginning* of the step,
+		// the conditional reflex might not run, or it might depending on declaration order.
+		// Let's force a second step to be sure.
+		ask ag { do _step_(); }
+		
+		assert ag.has_run_conditional = true;
+		assert ag.tick = 2;
+	}
+}

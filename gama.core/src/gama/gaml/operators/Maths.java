@@ -11,6 +11,7 @@ package gama.gaml.operators;
 
 import gama.annotations.doc;
 import gama.annotations.example;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
 import gama.annotations.test;
 import gama.annotations.tests;
@@ -104,7 +105,11 @@ public class Maths {
 			@test ("2^1 = 2.0"),
 			@test ("10 ^ 0 = 1"),
 			@test ("10 ^ 1 = 10"),
-			@test ("(100 ^ 2) = 10000")
+			@test ("(100 ^ 2) = 10000"),
+			@test ("2 ^ 10 = 1024.0"),
+			@test ("2 ^ 0 = 1.0"),
+			@test ("2 ^ -1 = 0.5"),
+			@test ("(2 ^ 10) is float")
 	})
 	public static Double pow(final Integer a, final Integer b) {
 		return Math.pow(a, b);
@@ -336,7 +341,9 @@ public class Maths {
 			@test ("abs(0.0) = 0.0"),
 			@test ("abs(-0.0) = 0.0"),
 			@test ("abs(-0.5) = 0.5"),
-			@test ("abs(-7.0) = 7")
+			@test ("abs(-7.0) = 7"),
+			@test ("abs(-5.5) = 5.5"),
+			@test ("abs(-3.5) = 3.5")
 	})
 	public static Double abs(final Double rv) {
 		if (Double.isInfinite(rv)) return Double.POSITIVE_INFINITY;
@@ -406,7 +413,9 @@ public class Maths {
 			@test ("abs(0) = 0"),
 			@test ("abs(-0) = 0"),
 			@test ("abs(-100) = 100"),
-			@test ("abs(-7) = 7")
+			@test ("abs(-7) = 7"),
+			@test ("abs(-3) = 3"),
+			@test ("abs(3) = 3")
 	})
 	public static Integer abs(final Integer rv) {
 		int a = rv.intValue();
@@ -434,11 +443,15 @@ public class Maths {
 					value = "acos (0)",
 					equals = "90.0"),
 			see = { "asin", "atan", "cos" })
-	@test ("acos(0.0) = 90.0")
-	@test ("acos(-1.0) = 180.0")
-	@test ("acos(1.0) = 0.0")
-	@test ("not(is_number(acos(-10.0)))")
-	@test ("not(is_number(acos(10.0)))")
+	@tests ({
+			@test ("acos(0.0) = 90.0"),
+			@test ("acos(-1.0) = 180.0"),
+			@test ("acos(1.0) = 0.0"),
+			@test ("not(is_number(acos(-10.0)))"),
+			@test ("not(is_number(acos(10.0)))"),
+			@test ("acos(0.5) = 60.0"),
+			@test ("acos(cos(25)) = 25.0")
+	})
 	public static Double acos(final Double rv) {
 		return Math.acos(rv) * toDeg;
 	}
@@ -458,11 +471,16 @@ public class Maths {
 	@doc (
 			value = "the arccos of the operand (result in decimal degrees in [0, 180])",
 			special_cases = { "if the operand is outside of [-1,1], returns NaN." })
-	@test ("acos(0) = 90.0")
-	@test ("acos(-1) = 180.0")
-	@test ("acos(1) = 0.0")
-	@test ("not(is_number(acos(-10)))")
-	@test ("not(is_number(acos(10)))")
+	@tests ({
+			@test ("acos(0) = 90.0"),
+			@test ("acos(-1) = 180.0"),
+			@test ("acos(1) = 0.0"),
+			@test ("not(is_number(acos(-10)))"),
+			@test ("not(is_number(acos(10)))"),
+			@test ("acos(-10) = #nan"),
+			// outside of [-1, 1] the result is not a number
+			@test ("not is_number(acos(2))")
+	})
 	public static Double acos(final Integer rv) {
 		return Math.acos(rv) * toDeg;
 	}
@@ -487,11 +505,16 @@ public class Maths {
 					value = "asin (0)",
 					equals = "0.0"),
 			see = { "acos", "atan", "sin" })
-	@test ("asin(0.0) = 0.0")
-	@test ("asin(-1.0) = -90.0")
-	@test ("asin(1.0) = 90.0")
-	@test ("not(is_number(asin(-10.0)))")
-	@test ("not(is_number(asin(10.0)))")
+	@tests ({
+			@test ("asin(0.0) = 0.0"),
+			@test ("asin(-1.0) = -90.0"),
+			@test ("asin(1.0) = 90.0"),
+			@test ("not(is_number(asin(-10.0)))"),
+			@test ("not(is_number(asin(10.0)))"),
+			@test ("asin(0.5) = 30.0"),
+			// they invert the direct operators
+			@test ("asin(sin(25)) = 25.0")
+	})
 	public static Double asin(final Double rv) {
 		return Math.asin(rv) * toDeg;
 	}
@@ -516,11 +539,15 @@ public class Maths {
 					equals = "#nan",
 					test = false),
 			see = { "acos", "atan" })
-	@test ("asin(0) = 0.0")
-	@test ("asin(-1) = -90.0")
-	@test ("asin(1) = 90.0")
-	@test ("not(is_number(asin(-10)))")
-	@test ("not(is_number(asin(10)))")
+	@tests ({
+			@test ("asin(0) = 0.0"),
+			@test ("asin(-1) = -90.0"),
+			@test ("asin(1) = 90.0"),
+			@test ("not(is_number(asin(-10)))"),
+			@test ("not(is_number(asin(10)))"),
+			@test ("asin(10) = #nan"),
+			@test ("not is_number(asin(-2))")
+	})
 	public static Double asin(final Integer rv) {
 		return Math.asin(rv) * toDeg;
 	}
@@ -544,9 +571,12 @@ public class Maths {
 					value = "atan (1)",
 					equals = "45.0"),
 			see = { "acos", "asin", "tan" })
-	@test ("atan(0.0) = 0.0")
-	@test ("atan(-1.0) = -45.0")
-	@test ("atan(1.0) = 45.0")
+	@tests ({
+			@test ("atan(0.0) = 0.0"),
+			@test ("atan(-1.0) = -45.0"),
+			@test ("atan(1.0) = 45.0"),
+			@test ("atan(tan(25)) = 25.0")
+	})
 	public static Double atan(final Double rv) {
 		return Math.atan(rv) * toDeg;
 	}
@@ -618,9 +648,12 @@ public class Maths {
 	@doc (
 			value = "the hyperbolic tangent of the operand (which has to be expressed in decimal degrees).",
 			returns = "a {@code float} in [-1.0, 1.0].")
-	@test ("tanh(100) = 1.0")
-	@test ("tanh(0) = 0.0")
-	@test ("tanh(-100) = -1.0")
+	@tests ({
+			@test ("tanh(100) = 1.0"),
+			@test ("tanh(0) = 0.0"),
+			@test ("tanh(-100) = -1.0"),
+			@test ("tanh(1) > 0.76 and tanh(1) < 0.77")
+	})
 	public static Double tanh(final Integer rv) {
 		return Math.tanh(rv);
 	}
@@ -649,6 +682,11 @@ public class Maths {
 					@example (
 							value = "cos_rad(#pi)",
 							equals = "-1.0") })
+	@tests ({
+			@test ("cos_rad(#pi) = -1.0"),
+			@test ("cos_rad(0) = 1.0"),
+			@test ("cos_rad(60 * #to_rad) = cos(60)")
+	})
 	public static Double cos_rad(final Double rv) {
 		return Math.cos(rv);
 	}
@@ -675,6 +713,12 @@ public class Maths {
 							value = "sin_rad(#pi/2)",
 							equals = "1.0") },
 			see = { "cos_rad", "tan_rad" })
+	@tests ({
+			@test ("sin_rad(0) = 0.0"),
+			@test ("sin_rad(#pi / 2) = 1.0"),
+			// both families agree once the angle is converted
+			@test ("sin_rad(30 * #to_rad) = sin(30)")
+	})
 	public static Double sin_rad(final Double rv) {
 		return Math.sin(rv);
 	}
@@ -698,6 +742,9 @@ public class Maths {
 					value = "tan_rad(0)",
 					equals = "0.0") },
 			see = { "cos_rad", "sin_rad" })
+	@tests ({
+			@test ("tan_rad(#pi / 4) = 1.0")
+	})
 	public static Double tan_rad(final Double v) {
 		return Math.tan(v);
 	}
@@ -731,11 +778,16 @@ public class Maths {
 							value = "cos(-720.0)",
 							equals = "1.0") },
 			see = { "sin", "tan" })
-	@test ("cos(0.0) = 1.0")
-	@test ("cos(90.0) with_precision 10 = 0.0")
-	@test ("cos(180.0) = -1.0")
-	@test ("cos(360.0) = 1.0")
-	@test ("cos(-180.0) = -1.0")
+	@tests ({
+			@test ("cos(0.0) = 1.0"),
+			@test ("cos(90.0) with_precision 10 = 0.0"),
+			@test ("cos(180.0) = -1.0"),
+			@test ("cos(360.0) = 1.0"),
+			@test ("cos(-180.0) = -1.0"),
+			// trigonometric operators work in degrees, the '_rad' variants in radians
+			@test ("cos(#pi * #to_deg) = -1.0"),
+			@test ("not is_number(cos(#infinity))")
+	})
 	public static Double cos(final Double rv) {
 		return Math.cos(rv * toRad);
 	}
@@ -795,6 +847,12 @@ public class Maths {
 					@example (
 							value = "cos(-720)",
 							equals = "1.0") })
+	@tests ({
+			@test ("cos(0) = 1.0"),
+			@test ("cos(60) = 0.5"),
+			@test ("cos(180) = -1.0"),
+			@test ("cos(360) = 1.0")
+	})
 	public static Double cos(final Integer rv) {
 		return Math.cos(rv * toRad);
 		// double rad = toRad * rv;
@@ -880,6 +938,12 @@ public class Maths {
 			examples = { @example (
 					value = "sin (0)",
 					equals = "0.0") })
+	@tests ({
+			@test ("sin(0) = 0.0"),
+			@test ("sin(30) = 0.5"),
+			@test ("sin(90) = 1.0"),
+			@test ("sin(-90) = -1.0")
+	})
 	public static Double sin(final Integer rv) {
 		// double rad = toRad * rv;
 		return Math.sin(rv * toRad);
@@ -934,6 +998,13 @@ public class Maths {
 					@example (
 							value = "tan(90)",
 							equals = "1.633123935319537E16") })
+	@tests ({
+			@test ("tan(0) = 0.0"),
+			@test ("tan(45) = 1.0"),
+			// the tangent of 90 is not infinite, but a very big number
+			@test ("is_finite(tan(90))"),
+			@test ("tan(90) > 1.0E15")
+	})
 	public static Double tan(final Integer v) {
 		return Math.tan(toRad * v);
 	}
@@ -963,11 +1034,17 @@ public class Maths {
 					@example (
 							value = "even(-12)",
 							equals = "true") })
-	@test ("even(0)")
-	@test ("even(2)")
-	@test ("even(-4)")
-	@test ("!even(1)")
-	@test ("!even(-3)")
+	@tests ({
+			@test ("even(0)"),
+			@test ("even(2)"),
+			@test ("even(-4)"),
+			@test ("!even(1)"),
+			@test ("!even(-3)"),
+			@test ("even(4)"),
+			@test ("even(-2)"),
+			@test ("not even(3)"),
+			@test ("not even(-1)")
+	})
 	public static Boolean even(final Integer rv) {
 		return (rv.intValue() & 1) == 0;
 	}
@@ -996,10 +1073,13 @@ public class Maths {
 					value = "exp (0.0)",
 					equals = "1.0"),
 			see = "ln")
-	@test ("exp(0.0) = 1.0")
-	@test ("exp(1.0) with_precision 5 = 2.71828")
-	@test ("exp(-1.0) = 1.0 / exp(1.0)")
-	@test ("ln(exp(1.0)) with_precision 10 = 1.0")
+	@tests ({
+			@test ("exp(0.0) = 1.0"),
+			@test ("exp(1.0) with_precision 5 = 2.71828"),
+			@test ("exp(-1.0) = 1.0 / exp(1.0)"),
+			@test ("ln(exp(1.0)) with_precision 10 = 1.0"),
+			@test ("exp(1.0) = #e")
+	})
 	public static Double exp(final Double rv) {
 		return Math.exp(rv);
 	}
@@ -1018,7 +1098,11 @@ public class Maths {
 			concept = {})
 	@doc (
 			value = "returns Euler's number e raised to the power of the operand.")
-	@test ("exp (0) = 1.0")
+	@tests ({
+			@test ("exp (0) = 1.0"),
+			@test ("not is_finite(exp(1000))"),
+			@test ("exp(1000) = #infinity")
+	})
 	public static Double exp(final Integer rv) {
 		return Math.exp(rv.doubleValue());
 	}
@@ -1056,6 +1140,7 @@ public class Maths {
 	 *            the n
 	 * @return the double
 	 */
+	@no_fuzz_test ("never returns with #max_int")
 	@operator (
 			value = "fact",
 			can_be_const = true,
@@ -1077,11 +1162,16 @@ public class Maths {
 					@example (
 							value = "fact(-1)",
 							equals = "0.0") })
-	@test ("fact(0) = 1.0")
-	@test ("fact(1) = 1.0")
-	@test ("fact(4) = 24.0")
-	@test ("fact(-1) = 0.0")
-	@test ("fact(10) = 3628800.0")
+	@tests ({
+			@test ("fact(0) = 1.0"),
+			@test ("fact(1) = 1.0"),
+			@test ("fact(4) = 24.0"),
+			@test ("fact(-1) = 0.0"),
+			@test ("fact(10) = 3628800.0"),
+			@test ("fact(5) = 120.0"),
+			// too big for an int, the result is a float
+			@test ("fact(20) = 2.43290200817664E18")
+	})
 	public static Double fact(final Integer n) {
 		if (n < 0) return 0.0;
 		double product = 1;
@@ -1116,9 +1206,14 @@ public class Maths {
 					value = "ln(exp(1))",
 					equals = "1.0"),
 			see = "exp")
-	@test ("ln(1.0) = 0.0")
-	@test ("ln(exp(1.0)) with_precision 10 = 1.0")
-	@test ("ln(exp(3.0)) with_precision 5 = 3.0")
+	@tests ({
+			@test ("ln(1.0) = 0.0"),
+			@test ("ln(exp(1.0)) with_precision 10 = 1.0"),
+			@test ("ln(exp(3.0)) with_precision 5 = 3.0"),
+			@test ("ln(#e) = 1.0"),
+			@test ("(ln(exp(1.0)) with_precision 2) = 1.0"),
+			@test ("ln(exp(3)) = 3.0")
+	})
 	public static Double ln(final IScope scope, final Double x) {
 		if (x <= 0) {
 			GAMA.reportAndThrowIfNeeded(scope,
@@ -1230,9 +1325,12 @@ public class Maths {
 					@example (
 							value = "log(10)",
 							equals = "1.0") })
-	@test ("log(1) = 0.0")
-	@test ("log(10) = 1.0")
-	@test ("log(100) = 2.0")
+	@tests ({
+			@test ("log(1) = 0.0"),
+			@test ("log(10) = 1.0"),
+			@test ("log(100) = 2.0"),
+			@test ("log(1000) = 3.0")
+	})
 	public static Double log(final IScope scope, final Integer x) {
 		if (x <= 0) {
 			GAMA.reportAndThrowIfNeeded(scope,
@@ -1400,9 +1498,12 @@ public class Maths {
 					@example (
 							value = "-(0.0)",
 							equals = "0.0") })
-	@test ("-(-90.0) = 90.0")
-	@test ("-(3.5) = -3.5")
-	@test ("-(0.0) = 0.0")
+	@tests ({
+			@test ("-(-90.0) = 90.0"),
+			@test ("-(3.5) = -3.5"),
+			@test ("-(0.0) = 0.0"),
+			@test ("int(-3.99) = -3")
+	})
 	public static Double negate(final Double x) {
 		return -x;
 	}
@@ -1473,7 +1574,16 @@ public class Maths {
 			@test ("round(-2.3) = -2"),
 			@test ("round(2.7) = 3"),
 			@test ("round(100.5) = 101"),
-			@test ("round(100.4) = 100")
+			@test ("round(100.4) = 100"),
+			@test ("float f1 <- 3.14159; round(f1) = 3"),
+			@test ("round(3.6) = 4"),
+			@test ("round(-3.6) = -4"),
+			@test ("round(-3.1) = -3"),
+			@test ("round(2.4) = 2"),
+			// halves are rounded away from zero
+			@test ("round(2.5) = 3"),
+			@test ("round(-2.5) = -3"),
+			@test ("round(0.4999) = 0")
 	})
 	public static Integer round(final Double v) {
 		int i;
@@ -1542,11 +1652,16 @@ public class Maths {
 					@example (
 							value = "sqrt(2)",
 							equals = "1.4142135623730951") })
-	@test ("sqrt(4) = 2.0")
-	@test ("sqrt(0) = 0.0")
-	@test ("sqrt(1) = 1.0")
-	@test ("sqrt(9) = 3.0")
-	@test ("is_error(sqrt(-1))")
+	@tests ({
+			@test ("sqrt(4) = 2.0"),
+			@test ("sqrt(0) = 0.0"),
+			@test ("sqrt(1) = 1.0"),
+			@test ("sqrt(9) = 3.0"),
+			@test ("is_error(sqrt(-1))"),
+			@test ("2.0 ^ 0.5 = sqrt(2)"),
+			@test ("sqrt(16) = 4.0"),
+			@test ("sqrt(2) * sqrt(2) = 2.0")
+	})
 	public static Double sqrt(final IScope scope, final Integer v) throws GamaRuntimeException {
 		if (v < 0) {
 			GAMA.reportAndThrowIfNeeded(scope,
@@ -1581,10 +1696,14 @@ public class Maths {
 					@example (
 							value = "sqrt(0.0)",
 							equals = "0.0") })
-	@test ("sqrt(4.0) = 2.0")
-	@test ("sqrt(0.0) = 0.0")
-	@test ("sqrt(1.0) = 1.0")
-	@test ("is_error(sqrt(-1.0))")
+	@tests ({
+			@test ("sqrt(4.0) = 2.0"),
+			@test ("sqrt(0.0) = 0.0"),
+			@test ("sqrt(1.0) = 1.0"),
+			@test ("is_error(sqrt(-1.0))"),
+			@test ("sqrt(#infinity) = #infinity"),
+			@test ("sqrt(16.0) = 4.0")
+	})
 	public static Double sqrt(final IScope scope, final Double v) throws GamaRuntimeException {
 		if (v < 0) {
 			GAMA.reportAndThrowIfNeeded(scope,
@@ -1625,7 +1744,11 @@ public class Maths {
 			@test ("0/1=0"),
 			@test ("is_error(1/0)"),
 			@test ("3/5=0.6"),
-			@test ("!((100 / 100) is int)")
+			@test ("!((100 / 100) is int)"),
+			// '/' always yields a float
+			@test ("7 / 2 = 3.5"),
+			@test ("6 / 3 = 2.0"),
+			@test ("(6 / 3) is float")
 	})
 	public static Double opDivide(final IScope scope, final Integer a, final Integer b) throws GamaRuntimeException {
 		if (b == null || b == 0) throw GamaRuntimeException.error("Division by zero", scope);
@@ -1682,9 +1805,12 @@ public class Maths {
 	@doc (
 			value = "Returns a float, equal to the division of the left-hand operand by the right-hand operand.",
 			see = "*")
-	@test ("0.2/0.5=0.4")
-	@test ("is_error(1.5/0.0)")
-	@test ("0.0/1.0=0.0")
+	@tests ({
+			@test ("0.2/0.5=0.4"),
+			@test ("is_error(1.5/0.0)"),
+			@test ("0.0/1.0=0.0"),
+			@test ("5.0 / 2.0 = 2.5")
+	})
 	public static Double opDivide(final IScope scope, final Double a, final Double b) throws GamaRuntimeException {
 		if (b == null || b == 0.0) throw GamaRuntimeException.error("Division by zero", scope);
 		return a / b;
@@ -1711,9 +1837,13 @@ public class Maths {
 	@doc (
 			value = "Returns a float, equal to the division of the left-hand operand by the right-hand operand.",
 			see = "*")
-	@test ("1/0.5=2.0")
-	@test ("is_error(2/0.0)")
-	@test ("0/0.3=0.0")
+	@tests ({
+			@test ("1/0.5=2.0"),
+			@test ("is_error(2/0.0)"),
+			@test ("0/0.3=0.0"),
+			// Mixed typing
+			@test ("5 / 2.0 = 2.5")
+	})
 	public static Double opDivide(final IScope scope, final Integer a, final Double b) throws GamaRuntimeException {
 		if (b == null || b == 0.0) throw GamaRuntimeException.error("Division by zero", scope);
 		return a.doubleValue() / b.doubleValue();
@@ -1966,8 +2096,12 @@ public class Maths {
 			concept = {})
 	@doc (
 			value = "the sum, union or concatenation of the two operands.")
-	@test ("1.0 + (- 1.0) = 0.0")
-	@test ("1.0 + 1.0 = 2.0")
+	@tests ({
+			@test ("1.0 + (- 1.0) = 0.0"),
+			@test ("1.0 + 1.0 = 2.0"),
+			// '=' on floats absorbs rounding errors...
+			@test ("0.1 + 0.2 = 0.3")
+	})
 	public static Double opPlus(final Double a, final Double b) {
 		return a + b;
 	}
@@ -2023,7 +2157,11 @@ public class Maths {
 			examples = { @example (
 					value = "matrix([[1, 2], [3, 4]]) + matrix([[1, 2], [3, 4]])",
 					equals = "matrix([[2, 4], [6, 8]])") })
-	@test ("matrix([[1, 2], [3, 4]]) + matrix([[1, 2], [3, 4]]) = matrix([[2, 4], [6, 8]])")
+	@tests ({
+			@test ("matrix([[1, 2], [3, 4]]) + matrix([[1, 2], [3, 4]]) = matrix([[2, 4], [6, 8]])"),
+			@test ("matrix<int> m1 <- matrix([[1, 1], [1, 1]]); matrix<int> m2 <- matrix([[2, 2], [2, 2]]); matrix<int> m_sum <- m1 + m2; m_sum[0, 0] = 3"),
+			@test ("matrix<int> m12 <- matrix([[1, 1], [1, 1]]); matrix<int> m22 <- matrix([[2, 2], [2, 2]]); matrix<int> m_sum2 <- m12 + m22; m_sum2[1, 1] = 3")
+	})
 	public static IMatrix opPlus(final IScope scope, final IMatrix a, final IMatrix b) {
 		return a.plus(scope, b);
 	}
@@ -2048,7 +2186,10 @@ public class Maths {
 			examples = { @example (
 					value = "matrix([[1, 2], [3, 4]]) - matrix([[1, 2], [3, 4]])",
 					equals = "matrix([[0, 0], [0, 0]])") })
-	@test ("matrix([[1, 2], [3, 4]]) - matrix([[1, 2], [3, 4]]) = matrix([[0, 0], [0, 0]])")
+	@tests ({
+			@test ("matrix([[1, 2], [3, 4]]) - matrix([[1, 2], [3, 4]]) = matrix([[0, 0], [0, 0]])"),
+			@test ("matrix<int> m1 <- matrix([[1, 1], [1, 1]]); matrix<int> m2 <- matrix([[2, 2], [2, 2]]); matrix<int> m_sub <- m2 - m1; m_sub[0, 0] = 1")
+	})
 	public static IMatrix opMinus(final IScope scope, final IMatrix a, final IMatrix b) {
 		return a.minus(scope, b);
 	}
@@ -2098,7 +2239,15 @@ public class Maths {
 			examples = { @example (
 					value = "matrix([[1, 2], [3, 4]]) / matrix([[1, 2], [3, 4]])",
 					equals = "matrix([[1, 1], [1, 1]])") })
-	@test ("matrix([[1, 2], [3, 4]]) / matrix([[1, 2], [3, 4]]) = matrix([[1.0, 1.0], [1.0, 1.0]])")
+	@tests ({
+			@test ("matrix([[1, 2], [3, 4]]) / matrix([[1, 2], [3, 4]]) = matrix([[1.0, 1.0], [1.0, 1.0]])"),
+			// matrices of integers and of floats are equal when they hold the same values
+			@test ("matrix([[1, 2], [3, 4]]) = matrix([[1.0, 2.0], [3.0, 4.0]])"),
+			@test ("matrix([[1.0, 2.0], [3.0, 4.0]]) = matrix([[1, 2], [3, 4]])"),
+			@test ("matrix([[1, 2], [3, 4]]) != matrix([[1.5, 2.0], [3.0, 4.0]])"),
+			// the same values arranged differently do not make equal matrices
+			@test ("matrix([[1, 2, 3, 4]]) != matrix([[1, 2], [3, 4]])")
+	})
 	public static IMatrix opDivide(final IScope scope, final IMatrix a, final IMatrix b) {
 		return a.divides(scope, b);
 	}
@@ -2380,6 +2529,14 @@ public class Maths {
 							value = "123 with_precision 2",
 							equals = "123.00") },
 			see = "round")
+	@tests ({
+			// String formatting
+			@test ("float f1 <- 3.14159; (f1 with_precision 2) = 3.14"),
+			@test ("float f12 <- 3.14159; (f12 with_precision 4) = 3.1416"),
+			@test ("3.14159 with_precision 3 = 3.142"),
+			@test ("3.14159 with_precision 0 = 3.0"),
+			@test ("2.5 with_precision 0 = 3.0")
+	})
 	public static double round(final Double v, final Integer precision) {
 		return MathUtils.round(v, precision);
 	}
@@ -2418,7 +2575,9 @@ public class Maths {
 			@test ("floor(3.0) = 3"),
 			@test ("floor(-2.0) = -2"),
 			@test ("floor(0.0) = 0"),
-			@test ("floor(100.5) = 100")
+			@test ("floor(100.5) = 100"),
+			@test ("float f1 <- 3.14159; floor(f1) = 3.0"),
+			@test ("floor(4.7) = 4")
 	})
 	public static final int floor(final double x) {
 		// This method is a *lot* faster than using (int)Math.floor(x)
@@ -2458,7 +2617,10 @@ public class Maths {
 			@test ("ceil(3.0) = 3"),
 			@test ("ceil(-2.0) = -2"),
 			@test ("ceil(0.0) = 0"),
-			@test ("ceil(100.5) = 101")
+			@test ("ceil(100.5) = 101"),
+			@test ("float f1 <- 3.14159; ceil(f1) = 4.0"),
+			@test ("ceil(4.1) = 5"),
+			@test ("ceiling(4.1) = ceil(4.1)")
 	})
 	public static final int ceil(final double d) {
 		return (int) Math.ceil(d);
@@ -2506,7 +2668,11 @@ public class Maths {
 			@test ("(-7) mod 3 = -1"),
 			@test ("is_error(5 mod 0)"),
 			@test ("mod(100, 11) = 1"),
-			@test ("45 mod 10 = 5")
+			@test ("45 mod 10 = 5"),
+			@test ("5 mod 3 = 2"),
+			// the result takes the sign of the left operand
+			@test ("-5 mod 3 = -2"),
+			@test ("5 mod -3 = 2")
 	})
 	public static Integer opMod(final IScope scope, final Integer a, final Integer b) {
 		if (b == 0) {
@@ -2557,7 +2723,12 @@ public class Maths {
 			@test ("(-7) div 2 = -3"),
 			@test ("6 div 3 = 2"),
 			@test ("is_error(5 div 0)"),
-			@test ("45 div 10 = 4")
+			@test ("45 div 10 = 4"),
+			@test ("5 div 3 = 1"),
+			@test ("-5 div 3 = -1"),
+			@test ("(5 div 3) is int"),
+			// a number is rebuilt from its quotient and remainder
+			@test ("(17 div 5) * 5 + 17 mod 5 = 17")
 	})
 	public static Integer div(final IScope scope, final Integer a, final Integer b) throws GamaRuntimeException {
 		if (b == 0) throw GamaRuntimeException.error("Division by zero", scope);
@@ -2588,6 +2759,9 @@ public class Maths {
 					value = "40.5 div 3",
 					equals = "13"),
 			see = "mod")
+	@tests ({
+			@test ("5.5 div 2 = 2")
+	})
 	public static Integer div(final IScope scope, final Double a, final Integer b) throws GamaRuntimeException {
 		if (b == 0) throw GamaRuntimeException.error("Division by zero", scope);
 		return (int) (a / b);
@@ -2722,6 +2896,15 @@ public class Maths {
 							value = "atan2 (-1,-1)",
 							equals = "-135.0"), },
 			see = { "atan", "acos", "asin", "atan2_rad" })
+	@tests ({
+			// the first operand is y, the second is x
+			@test ("atan2(0, 1) = 0.0"),
+			@test ("atan2(1, 1) = 45.0"),
+			@test ("atan2(1, 0) = 90.0"),
+			@test ("atan2(0, -1) = 180.0"),
+			@test ("atan2(-1, 0) = -90.0"),
+			@test ("atan2(0, 0) = 0.0")
+	})
 	public static double atan2(final double y, final double x) {
 		return Math.atan2(y, x) * toDeg;
 	}
@@ -2770,6 +2953,9 @@ public class Maths {
 							value = "atan2 (-1,-1)",
 							equals = "-3*#pi/4"), },
 			see = { "atan2", "cos_rad", "sin_rad", "tan_rad" })
+	@tests ({
+			@test ("atan2_rad(1, 1) = #pi / 4")
+	})
 	public static double atan2_rad(final double y, final double x) {
 		return Math.atan2(y, x);
 	}
@@ -2829,6 +3015,12 @@ public class Maths {
 			examples = @example (
 					value = "hypot(0,1,0,1)",
 					equals = "sqrt(2)"))
+	@tests ({
+			// hypot(x1, x2, y1, y2) is the distance between (x1, y1) and (x2, y2)
+			@test ("hypot(0, 3, 0, 4) = 5.0"),
+			@test ("hypot(1, 4, 1, 5) = 5.0"),
+			@test ("hypot(2, 2, 7, 7) = 0.0")
+	})
 	public static double hypot(final IScope scope, final double x1, final double x2, final double y1, final double y2) {
 		return Math.hypot(x2 - x1, y2 - y1);
 	}
@@ -2859,7 +3051,9 @@ public class Maths {
 	@tests ({
 			@test ("is_number(100)"),
 			@test ("is_number(#max_int)"),
-			@test ("is_number(#min_int)")
+			@test ("is_number(#min_int)"),
+			// a fractional power of a negative number is not a number
+			@test ("not is_number((-8) ^ (1 / 3))")
 	})
 	public static Boolean is_number(final Double d) {
 		return !Double.isNaN(d);
@@ -2886,7 +3080,10 @@ public class Maths {
 							value = "is_finite(#infinity)",
 							equals = "false") })
 	@tests ({
-			@test ("is_finite(100)")
+			@test ("is_finite(100)"),
+			@test ("not is_finite(10.0 ^ 400)"),
+			@test ("not is_finite(1e308 * 10)"),
+			@test ("not is_finite(float(\"1e400\"))")
 	})
 	public static Boolean is_finite(final Double d) {
 		return !Double.isInfinite(d);
@@ -2915,6 +3112,13 @@ public class Maths {
 					@example (
 							value = "signum(0.0)",
 							equals = "0") })
+	@tests ({
+			@test ("signum(#infinity) = 1"),
+			@test ("signum(-#infinity) = -1"),
+			@test ("signum(#nan) = 0"),
+			@test ("signum(-12.8) = -1"),
+			@test ("signum(0.0) = 0")
+	})
 	public static Integer signum(final Double d) {
 		if (d == null || d.isNaN() || Comparison.equal(d, 0d)) return 0;
 		if (d < 0) return -1;
@@ -2944,6 +3148,9 @@ public class Maths {
 					@example (
 							value = "signum(0)",
 							equals = "0") })
+	@tests ({
+			@test ("signum(3) = 1")
+	})
 	public static Integer signum(final Integer d) {
 		int a = d.intValue();
 		return a < 0 ? -1 : a == 0 ? 0 : 1;

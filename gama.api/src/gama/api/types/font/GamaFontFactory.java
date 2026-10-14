@@ -18,6 +18,8 @@ import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
 import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
@@ -372,6 +374,9 @@ public class GamaFontFactory {
 	@doc (
 			value = "Creates a new font, by specifying its name (either a font face name like 'Lucida Grande Bold' or 'Helvetica', or a logical name like 'Dialog', 'SansSerif', 'Serif', etc.) and a size in points. No style is attached to this font")
 	@no_test
+	@tests ({
+			@test ("float size <- font(\"Arial\", 12.7).size; size >= 12 and size <= 13")
+	})
 	public static IFont createFont(final String name, final Integer size) {
 		return createFont(name, Font.PLAIN, size);
 	}

@@ -267,10 +267,10 @@
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${project.build.outputDirectory}/tests</outputDirectory>
+							<outputDirectory>${project.build.outputDirectory}/models</outputDirectory>
 							<resources>
 								<resource>
-									<directory>target/tests</directory>
+									<directory>target/models</directory>
 								</resource>
 							</resources>
 						</configuration>

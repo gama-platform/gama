@@ -126,6 +126,12 @@ public class Pref<T> implements IParameter {
 	 */
 	Supplier<T> valueProvider;
 
+	/** The provider for the compiled-in default value. */
+	Supplier<T> initialValueProvider;
+
+	/** Whether the compiled-in default has been captured. */
+	boolean hasInitialValue;
+
 	/**
 	 * The GAML type identifier of this preference's value (one of the {@code IType.*} constants).
 	 */
@@ -356,7 +362,7 @@ public class Pref<T> implements IParameter {
 	 * @return {@code this} preference, for method chaining
 	 */
 	public Pref<T> init(final T v) {
-		this.valueProvider = () -> v;
+		init(() -> v);
 		return this;
 	}
 
@@ -371,6 +377,10 @@ public class Pref<T> implements IParameter {
 	 */
 	public Pref<T> init(final Supplier<T> p) {
 		valueProvider = p;
+		if (!hasInitialValue) {
+			initialValueProvider = p;
+			hasInitialValue = true;
+		}
 		return this;
 	}
 
@@ -551,6 +561,15 @@ public class Pref<T> implements IParameter {
 	@Override
 	public Object getInitialValue(final IScope scope) {
 		return getValue();
+	}
+
+	/**
+	 * Returns the compiled-in default value, before any stored or runtime override.
+	 *
+	 * @return the compiled-in default value
+	 */
+	public T getDefaultValue() {
+		return initialValueProvider == null ? getValue() : initialValueProvider.get();
 	}
 
 	@Override

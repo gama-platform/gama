@@ -13,7 +13,6 @@ package gama.ui.navigator.view.contents;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.swt.graphics.Image;
 
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
@@ -56,6 +55,9 @@ public class WrappedFolder extends WrappedContainer<IFolder> {
 		}
 		return modelsCount;
 	}
+
+	@Override
+	public String getExplanation() { return ""; }
 
 	@Override
 	public boolean canBeDecorated() {

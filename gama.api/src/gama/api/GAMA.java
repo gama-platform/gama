@@ -24,10 +24,11 @@ import gama.api.gaml.GAML;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.gaml.symbols.ISymbol;
 import gama.api.kernel.PlatformAgent;
+import gama.api.kernel.serialization.SimulationRecorder;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.IExperimentAgent.Test;
 import gama.api.kernel.simulation.IExperimentController;
-import gama.api.kernel.simulation.IExperimentRecorder;
+import gama.api.kernel.simulation.ISimulationRecorder;
 import gama.api.kernel.simulation.IExperimentStateListener;
 import gama.api.kernel.simulation.IExperimentStateListener.State;
 import gama.api.kernel.simulation.ISimulationAgent;
@@ -112,9 +113,6 @@ public class GAMA {
 	// available during runtime
 	// ==================================================================================
 
-	/** The recorder. */
-	private volatile static Class<? extends IExperimentRecorder> __RECORDER__;
-
 	/** Platform-wide random number generator */
 	private volatile static IRandom __RANDOM__;
 
@@ -159,16 +157,6 @@ public class GAMA {
 	 *            the file metadata provider implementation
 	 */
 	public static void setMetadataProvider(final IFileMetadataProvider metadata) { __METADATA__ = metadata; }
-
-	/**
-	 * Sets the recorder class.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param clazz
-	 *            the new recorder class
-	 * @date 2 sept. 2023
-	 */
-	public static void setRecorderClass(final Class<? extends IExperimentRecorder> clazz) { __RECORDER__ = clazz; }
 
 	/**
 	 * Sets the platform-wide random number generator.
@@ -294,11 +282,8 @@ public class GAMA {
 	 * @return the i simulation recorder
 	 * @date 2 sept. 2023
 	 */
-	public static IExperimentRecorder getExperimentRecorder() {
-		try {
-			if (__RECORDER__ != null) return __RECORDER__.getConstructor().newInstance();
-		} catch (Exception e) {}
-		return null;
+	public static ISimulationRecorder createExperimentRecorder() {
+		return new SimulationRecorder();
 	}
 
 	// ==================================================================================

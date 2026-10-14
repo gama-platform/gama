@@ -44,6 +44,8 @@ public class MathUtils {
 	  * represented precisely.
 	  */
 	 public static boolean isZeroWidth(double min, double max){
+	   // identical values are equal, infinite ones included (their difference is not a number)
+	   if (min == max) return true;
 	   double width = max - min;
 	   if (Math.abs(width) <= GamlCoreConstants.min_float) return true;
 	

@@ -5,12 +5,6 @@
          point="gaml.extension">
    </extension>
    <extension
-         point="gama.models">
-      <path
-            name="models">
-      </path>
-   </extension>
-   <extension
          point="gama.create">
       <implementation
             class="gama.extension.serialize.gaml.CreateAgentsFromSerialisedFileDelegate"

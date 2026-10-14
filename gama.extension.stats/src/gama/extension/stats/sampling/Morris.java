@@ -28,7 +28,10 @@ import org.apache.commons.io.FilenameUtils;
 
 import gama.annotations.doc;
 import gama.annotations.no_test;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.api.GAMA;
@@ -427,6 +430,7 @@ public final class Morris {
 	 * @return the result of a morris analysis
 	 *
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "morris_analysis",
 			type = IType.STRING,
@@ -436,6 +440,10 @@ public final class Morris {
 	@doc (
 			value = "Return a string containing the Report of the morris analysis for the corresponding data (path, map or matrix)")
 	@no_test
+	@tests ({
+			@test ("map morris_data <- [\"p1\":: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6], \"out\":: [1.0, 1.1, 1.2, 1.3, 1.4, 1.5]]; string morris_report <- morris_analysis(morris_data, 4, 1); morris_report != ''"),
+			@test ("map mor2d <- [ \"p1\":: [0.1, 0.5, 0.5, 0.1, 0.1, 0.5], \"p2\":: [0.1, 0.1, 0.5, 0.5, 0.1, 0.1], \"out\":: [1.0, 1.2, 1.8, 1.5, 1.0, 1.2] ]; morris_analysis(mor2d, 4, 2) != \"\"")
+	})
 	public static String morrisAnalysis(final IScope scope, final Object data, final int nb_levels,
 			final int nb_parameters) {
 		String ext = "csv";

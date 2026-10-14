@@ -11,14 +11,16 @@
 package gama.extension.serialize.binary;
 
 import gama.api.gaml.types.IType;
+import gama.api.kernel.serialization.IGamaObjectInput;
+import gama.api.kernel.serialization.IGamaObjectOutput;
+import gama.api.kernel.serialization.IGamaObjectSerializer;
+import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.graph.IGraph;
 import gama.core.util.graph.GamaGraph;
-import gama.extension.serialize.IGamaObjectInput;
-import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link IGraph} instances.
+ * Binary serialiser for {@link IGraph} instances.
  *
  * <p>
  * Persists the graph's structural metadata (vertex type, edge type, directed flag) followed by all vertices with their
@@ -40,13 +42,13 @@ import gama.extension.serialize.IGamaObjectOutput;
  * </p>
  *
  * <p>
- * Objects deserialised by this serialiser are not registered for FST back-reference tracking.
+ * Objects deserialised by this binarySerialiser are not registered for FST back-reference tracking.
  * </p>
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 8 avril 2026
  */
-public class IGraphSerialiser extends FSTIndividualSerialiser<IGraph> {
+public class IGraphSerialiser implements IGamaObjectSerializer<IGraph> {
 
 	/**
 	 * Returns {@code false}: graphs are not registered for FST back-reference tracking.
@@ -54,7 +56,7 @@ public class IGraphSerialiser extends FSTIndividualSerialiser<IGraph> {
 	 * @return {@code false}
 	 */
 	@Override
-	protected boolean shouldRegister() {
+	public boolean shouldRegister() {
 		return false;
 	}
 
@@ -71,7 +73,8 @@ public class IGraphSerialiser extends FSTIndividualSerialiser<IGraph> {
 	 */
 	@SuppressWarnings ("unchecked")
 	@Override
-	public void serialise(final IGamaObjectOutput out, final IGraph g) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final IGraph g, final TransientSerializationContext context)
+			throws Exception {
 		// --- metadata ---
 		out.writeObject(g.getGamlType().getKeyType());
 		out.writeObject(g.getGamlType().getContentType());

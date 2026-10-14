@@ -206,8 +206,9 @@ public class GamaFileType extends GamaContainerType<IGamaFile> {
 	 */
 	public static ParametricFileType getTypeFromFileName(final String fileName) {
 		final IPath p = new Path(fileName);
+		// Extensions are registered in lower case (see addFileTypeDefinition), so the lookup is made the same way
 		final String ext = p.getFileExtension();
-		ParametricFileType ft = extensionsToFullType.get(ext);
+		ParametricFileType ft = ext == null ? null : extensionsToFullType.get(ext.toLowerCase());
 		if (ft == null) { ft = ParametricFileType.getGenericFileType(); }
 		return ft;
 	}
@@ -235,7 +236,7 @@ public class GamaFileType extends GamaContainerType<IGamaFile> {
 	 * @return true if the extension is registered, false otherwise
 	 */
 	public static boolean managesExtension(final String ext) {
-		return extensionsToFullType.containsKey(ext);
+		return ext != null && extensionsToFullType.containsKey(ext.toLowerCase());
 	}
 
 	/**

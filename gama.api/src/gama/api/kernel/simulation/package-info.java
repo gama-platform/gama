@@ -33,7 +33,7 @@
  * 
  * <h3>Recording:</h3>
  * <ul>
- *   <li>{@link gama.api.kernel.simulation.IExperimentRecorder} - Interface for recording experiment execution</li>
+ *   <li>{@link gama.api.kernel.simulation.ISimulationRecorder} - Interface for recording experiment execution</li>
  * </ul>
  * 
  * <h2>Simulation Lifecycle</h2>

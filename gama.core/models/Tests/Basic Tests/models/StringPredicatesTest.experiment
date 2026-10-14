@@ -1,0 +1,14 @@
+/**
+* Name: StringPredicatesTest
+* Description: Tests the predicates on the nature of a string (is_alpha, is_digit...), the search operators
+* 	(starts_with, index_of, regex_matches...), the tokenizers, the case conversions and the compression
+* Tags: string, regex, test
+*/
+
+experiment StringPredicatesTest type: test autorun: true {
+	test "Tokenizers" {
+		// each character of the right operand is a delimiter
+		assert "a,b;c" tokenize ",;" = ["a", "b", "c"];
+		assert "a,b;c" split_with ",;" = ["a", "b", "c"];
+	}
+}

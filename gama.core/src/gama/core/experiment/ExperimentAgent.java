@@ -43,7 +43,7 @@ import gama.api.kernel.agent.IPopulationFactory;
 import gama.api.kernel.object.IObject;
 import gama.api.kernel.simulation.IClock;
 import gama.api.kernel.simulation.IExperimentAgent;
-import gama.api.kernel.simulation.IExperimentRecorder;
+import gama.api.kernel.simulation.ISimulationRecorder;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.kernel.species.IModelSpecies;
@@ -111,7 +111,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	protected final ActionExecuter executer;
 
 	/** The recorder. */
-	protected IExperimentRecorder recorder;
+	protected ISimulationRecorder recorder;
 
 	/** The extra parameters map. */
 	final IMap<String, Object> extraParametersMap = GamaMapFactory.createOrdered();
@@ -168,7 +168,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		ownClock = new ExperimentClock(ownScope);
 		executer = new ActionExecuter(ownScope);
 		populationFactory = initializePopulationFactory();
-		if (getSpecies().isMemorize()) { recorder = GAMA.getExperimentRecorder(); }
+		if (getSpecies().isMemorize()) { recorder = GAMA.createExperimentRecorder(); }
 		// Should not perform a whole reset as it shuts down UI outputs in comodels (see #2813)
 		if (s.getSpecies().getDescription().belongsToAMicroModel()) {
 			initialize();

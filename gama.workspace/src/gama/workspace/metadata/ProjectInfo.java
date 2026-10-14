@@ -54,7 +54,10 @@ public class ProjectInfo extends AbstractFileMetaData {
 
 	@Override
 	public void appendSuffix(final StringBuilder sb) {
-		if (comment != null && !comment.isEmpty()) { sb.append(comment); }
+		if (comment == null || comment.isEmpty()) return;
+		// The comment of a contributed project is the symbolic name of its plugin: only its last segment is shown
+		final boolean plugin = comment.indexOf(' ') < 0 && comment.indexOf('.') > 0;
+		sb.append(plugin ? comment.substring(comment.lastIndexOf('.') + 1) : comment);
 	}
 
 	@Override

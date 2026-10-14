@@ -35,7 +35,7 @@ public class PrepareEnv {
 		if (testsFolder.exists()) {
 			if (testsGenFolder.exists()) { deleteDirectory(testsGenFolder); }
 		} else {
-			testsFolder.mkdir();
+			testsFolder.mkdirs();
 		}
 
 		testsGenFolder.mkdir();

@@ -10,18 +10,20 @@
  ********************************************************************************************************/
 package gama.extension.serialize.binary;
 
+import gama.api.kernel.serialization.IGamaObjectInput;
+import gama.api.kernel.serialization.IGamaObjectOutput;
+import gama.api.kernel.serialization.IGamaObjectSerializer;
+import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.message.GamaMessageFactory;
 import gama.core.util.messaging.GamaMessage;
-import gama.extension.serialize.IGamaObjectInput;
-import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link GamaMessage} instances.
+ * Binary serialiser for {@link GamaMessage} instances.
  *
  * @author GitHub Copilot
  */
-public class GamaMessageSerialiser extends FSTIndividualSerialiser<GamaMessage> {
+public class GamaMessageSerialiser implements IGamaObjectSerializer<GamaMessage> {
 
 	/**
 	 * Serialises the given GamaMessage instance to the FST output stream.
@@ -34,7 +36,8 @@ public class GamaMessageSerialiser extends FSTIndividualSerialiser<GamaMessage> 
 	 *             if an error occurs during serialisation
 	 */
 	@Override
-	public void serialise(final IGamaObjectOutput out, final GamaMessage toWrite) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final GamaMessage toWrite, final TransientSerializationContext context)
+			throws Exception {
 		out.writeObject(toWrite.getSender());
 		out.writeObject(toWrite.getReceivers());
 		java.lang.reflect.Field contentsField = GamaMessage.class.getDeclaredField("contents");

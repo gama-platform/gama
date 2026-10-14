@@ -1,0 +1,164 @@
+/**
+* Name: GeometryPropertiesTest
+* Description: Checks invariants of the geometric operators on random geometries drawn from a fixed seed: set
+* 	operations, transformations that preserve or scale the area, hulls and buffers that cover their operand,
+* 	distances. Each test lists the inputs that break the invariant, so that a failure can be replayed
+* Tags: property, geometry, spatial, random, test
+*/
+
+experiment GeometryPropertiesTest type: test autorun: true {
+
+	int cases <- 200;
+
+	/** A random rectangle or circle of the 100 x 100 square */
+	geometry random_shape() {
+		point center <- {rnd(100.0), rnd(100.0)};
+		return flip(0.5) ? (rectangle(1 + rnd(30.0), 1 + rnd(30.0)) at_location center) : (circle(1 + rnd(15.0)) at_location center);
+	}
+
+	/** Relative comparison of two areas */
+	bool close(float a, float b) {
+		return abs(a - b) <= 1e-6 * max(1.0, abs(a), abs(b));
+	}
+
+	test "A union covers its operands" {
+		seed <- 1.0;
+		list<string> failures <- [];
+		loop times: cases {
+			geometry a <- random_shape();
+			geometry b <- random_shape();
+			geometry u <- a union b;
+			if (u = nil or !(u covers a) or !(u covers b) or u.area > a.area + b.area + 1e-6) {
+				failures <+ string(a) + " | " + string(b);
+			}
+		}
+		// the inputs that break the invariant are listed in the error
+		if (!empty(failures)) { error "union does not cover its operands for: " + failures; }
+		assert empty(failures);
+	}
+
+	test "An intersection is smaller than its operands and covered by them" {
+		seed <- 2.0;
+		list<string> failures <- [];
+		loop times: cases {
+			geometry a <- random_shape();
+			geometry b <- random_shape();
+			geometry i <- a inter b;
+			if (i != nil and (i.area > min(a.area, b.area) + 1e-6 or !(a.envelope covers i.envelope))) {
+				failures <+ string(a) + " | " + string(b);
+			}
+			// two geometries intersect if and only if their intersection is not empty
+			if ((a intersects b) != (i != nil)) {
+				failures <+ "intersects/inter disagree: " + string(a) + " | " + string(b);
+			}
+		}
+		// the inputs that break the invariant are listed in the error
+		if (!empty(failures)) { error "inter: " + failures; }
+		assert empty(failures);
+	}
+
+	test "The area of a union and an intersection add up" {
+		seed <- 3.0;
+		list<string> failures <- [];
+		loop times: cases {
+			geometry a <- random_shape();
+			geometry b <- random_shape();
+			geometry i <- a inter b;
+			float inter_area <- i = nil ? 0.0 : i.area;
+			if (!close((a union b).area + inter_area, a.area + b.area)) {
+				failures <+ string(a) + " | " + string(b);
+			}
+		}
+		// the inputs that break the invariant are listed in the error
+		if (!empty(failures)) { error "area(a union b) + area(a inter b) != area(a) + area(b) for: " + failures; }
+		assert empty(failures);
+	}
+
+	test "Translations and rotations preserve the area and the perimeter" {
+		seed <- 4.0;
+		list<string> failures <- [];
+		loop times: cases {
+			geometry a <- random_shape();
+			point shift <- {rnd(-50.0, 50.0), rnd(-50.0, 50.0)};
+			float angle <- rnd(-720.0, 720.0);
+			geometry moved <- a translated_by shift;
+			geometry turned <- a rotated_by angle;
+			if (!close(moved.area, a.area) or !close(moved.perimeter, a.perimeter)) {
+				failures <+ "translated_by " + shift + ": " + string(a);
+			}
+			if (!close(turned.area, a.area) or !close(turned.perimeter, a.perimeter)) {
+				failures <+ "rotated_by " + angle + ": " + string(a);
+			}
+			// a translation moves the centroid by the same vector
+			if (moved.location distance_to (a.location + shift) > 1e-6) {
+				failures <+ "location after translated_by " + shift + ": " + string(a);
+			}
+		}
+		// the inputs that break the invariant are listed in the error
+		if (!empty(failures)) { error "transformations: " + failures; }
+		assert empty(failures);
+	}
+
+	test "Scaling multiplies the area by the square of the factor" {
+		seed <- 5.0;
+		list<string> failures <- [];
+		loop times: cases {
+			geometry a <- random_shape();
+			float factor <- rnd(0.1, 5.0);
+			if (!close((a scaled_by factor).area, a.area * factor * factor)) {
+				failures <+ "scaled_by " + factor + ": " + string(a);
+			}
+		}
+		// the inputs that break the invariant are listed in the error
+		if (!empty(failures)) { error "scaled_by: " + failures; }
+		assert empty(failures);
+	}
+
+	test "Hulls, envelopes and buffers cover their operand" {
+		seed <- 6.0;
+		list<string> failures <- [];
+		loop times: cases {
+			geometry a <- random_shape();
+			float distance <- rnd(0.1, 10.0);
+			if (!(convex_hull(a) covers a)) { failures <+ "convex_hull: " + string(a); }
+			if (!(a.envelope covers a)) { failures <+ "envelope: " + string(a); }
+			if (!((a + distance) covers a)) { failures <+ "buffer " + distance + ": " + string(a); }
+			geometry reduced <- a - distance;
+			if (reduced != nil and !(a covers reduced)) { failures <+ "negative buffer " + distance + ": " + string(a); }
+		}
+		// the inputs that break the invariant are listed in the error
+		if (!empty(failures)) { error "covering: " + failures; }
+		assert empty(failures);
+	}
+
+	test "Distances are symmetric and respect the triangle inequality" {
+		seed <- 7.0;
+		list<string> failures <- [];
+		loop times: cases {
+			point p <- {rnd(100.0), rnd(100.0)};
+			point q <- {rnd(100.0), rnd(100.0)};
+			point r <- {rnd(100.0), rnd(100.0)};
+			if (abs((p distance_to q) - (q distance_to p)) > 1e-9) { failures <+ "symmetry " + p + " " + q; }
+			if ((p distance_to r) > (p distance_to q) + (q distance_to r) + 1e-9) { failures <+ "triangle " + p + " " + q + " " + r; }
+			if ((p distance_to p) != 0.0) { failures <+ "identity " + p; }
+			// for points, the distance is the norm of the difference
+			if (abs((p distance_to q) - norm(p - q)) > 1e-9) { failures <+ "norm " + p + " " + q; }
+		}
+		// the inputs that break the invariant are listed in the error
+		if (!empty(failures)) { error "distances: " + failures; }
+		assert empty(failures);
+	}
+
+	test "A point drawn in a geometry is covered by it" {
+		seed <- 8.0;
+		list<string> failures <- [];
+		loop times: cases {
+			geometry a <- random_shape();
+			point inside <- any_location_in(a);
+			if (!(a covers inside)) { failures <+ string(a) + " does not cover " + inside; }
+		}
+		// the inputs that break the invariant are listed in the error
+		if (!empty(failures)) { error "any_location_in: " + failures; }
+		assert empty(failures);
+	}
+}

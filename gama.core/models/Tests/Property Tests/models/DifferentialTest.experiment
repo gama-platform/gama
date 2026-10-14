@@ -1,0 +1,136 @@
+/**
+* Name: DifferentialTest
+* Description: Computes the same result through two different routes and checks that they agree, on random values
+* 	drawn from a fixed seed: degrees and radians, the shortest path algorithms against each other, the three
+* 	serialisation formats, and statistics computed with different operators
+* Tags: property, differential, random, test
+*/
+
+model DifferentialTestModel
+
+experiment DifferentialTest type: test autorun: true {
+
+	int cases <- 100;
+
+	bool close(float a, float b) {
+		return abs(a - b) <= 1e-9 * max(1.0, abs(a), abs(b));
+	}
+
+	test "Trigonometry in degrees and in radians" {
+		seed <- 1.0;
+		list<string> failures <- [];
+		loop times: cases {
+			float degrees <- rnd(-720.0, 720.0);
+			float radians <- degrees * #to_rad;
+			if (!close(sin(degrees), sin_rad(radians))) { failures <+ "sin " + degrees; }
+			if (!close(cos(degrees), cos_rad(radians))) { failures <+ "cos " + degrees; }
+			float y <- rnd(-10.0, 10.0);
+			float x <- rnd(-10.0, 10.0);
+			if (!close(atan2(y, x), atan2_rad(y, x) * #to_deg)) { failures <+ "atan2 " + y + " " + x; }
+			// the hypotenuse of the vector is its norm
+			if (!close(hypot(0, x, 0, y), norm({x, y}))) { failures <+ "hypot " + x + " " + y; }
+		}
+		// the inputs that break the invariant are listed in the error
+		if (!empty(failures)) { error "trigonometry: " + failures; }
+		assert empty(failures);
+	}
+
+	test "All the shortest path algorithms find paths of the same length" {
+		seed <- 2.0;
+		list<string> algorithms <- [#Dijkstra, #BidirectionalDijkstra, #AStar, #NBAStar, #NBAStarApprox, #FloydWarshall, #BellmannFord, #DeltaStepping, #CHBidirectionalDijkstra, #TransitNodeRouting];
+		list<string> failures <- [];
+		loop times: 20 {
+			// a random set of segments between the points of a 5 x 5 grid
+			list<geometry> segments <- [];
+			loop times: 30 {
+				point a <- {rnd(0, 4) * 10, rnd(0, 4) * 10};
+				point b <- a + one_of([{10, 0}, {0, 10}, {10, 10}]);
+				segments <+ line([a, b]);
+			}
+			graph g <- as_edge_graph(segments);
+			point source <- first(g.vertices);
+			point target <- last(g.vertices);
+			list<float> lengths <- [];
+			loop algorithm over: algorithms {
+				path p <- (g with_shortest_path_algorithm algorithm) path_between (source, target);
+				lengths <+ (p = nil or empty(p.edges)) ? -1.0 : p.shape.perimeter;
+			}
+			if (lengths count (!close(each, lengths[0])) > 0) {
+				failures <+ "from " + source + " to " + target + ": " + (algorithms collect (each + "=" + lengths[algorithms index_of each]));
+			}
+		}
+		// the inputs that break the invariant are listed in the error
+		if (!empty(failures)) { error "shortest paths disagree: " + failures; }
+		assert empty(failures);
+	}
+
+	test "The three serialisation formats restore the same values" {
+		seed <- 3.0;
+		list<string> failures <- [];
+		loop times: cases {
+			list values <- [rnd(-1000, 1000), rnd(-1000.0, 1000.0), flip(0.5), "s" + rnd(100), {rnd(10.0), rnd(10.0)}, rnd_color(255),
+				[rnd(10), [rnd(10)]], ["k" + rnd(10)::rnd(10)], rnd(1, 5)::rnd(1, 5)];
+			loop v over: values {
+				try { if (from_json(to_json(v)) != v) { failures <+ "json " + v; } } catch { failures <+ "json " + v + " raised " + #current_error; }
+				try { if (from_binary(to_binary(v)) != v) { failures <+ "binary " + v; } } catch { failures <+ "binary " + v + " raised " + #current_error; }
+				try { if (from_gaml(to_gaml(v)) != v) { failures <+ "gaml " + v; } } catch { failures <+ "gaml " + v + " raised " + #current_error; }
+			}
+		}
+		// the inputs that break the invariant are listed in the error
+		if (!empty(failures)) { error "round trips: " + failures; }
+		assert empty(failures);
+	}
+
+	test "Statistics computed with different operators agree" {
+		seed <- 4.0;
+		list<string> failures <- [];
+		loop times: cases {
+			list<float> l <- [];
+			loop times: rnd(1, 30) { l <+ rnd(-100.0, 100.0); }
+			if (!close(mean(l), sum(l) / length(l))) { failures <+ "mean " + l; }
+			if (!close(l mean_of each, mean(l))) { failures <+ "mean_of " + l; }
+			if (!close(l sum_of (each * 2), 2 * sum(l))) { failures <+ "sum_of " + l; }
+			if (!close(standard_deviation(l), sqrt(variance(l)))) { failures <+ "standard_deviation " + l; }
+			if (!close(max(l), (l sort_by each)[length(l) - 1])) { failures <+ "max " + l; }
+			if (!close(l max_of each, max(l))) { failures <+ "max_of " + l; }
+			if (!close(quantile(l sort_by each, 1.0), max(l))) { failures <+ "quantile " + l; }
+		}
+		// the inputs that break the invariant are listed in the error
+		if (!empty(failures)) { error "statistics: " + failures; }
+		assert empty(failures);
+	}
+
+	test "Matrix identities" {
+		seed <- 5.0;
+		list<string> failures <- [];
+		loop times: cases {
+			matrix<float> m <- matrix([[rnd(-5.0, 5.0), rnd(-5.0, 5.0)], [rnd(-5.0, 5.0), rnd(-5.0, 5.0)]]);
+			matrix<float> n <- matrix([[rnd(-5.0, 5.0), rnd(-5.0, 5.0)], [rnd(-5.0, 5.0), rnd(-5.0, 5.0)]]);
+			if (!close(determinant(transpose(m)), determinant(m))) { failures <+ "det(transpose) " + m; }
+			if (!close(determinant(m . n), determinant(m) * determinant(n))) { failures <+ "det(product) " + m + " " + n; }
+			if (!close(trace(m + n), trace(m) + trace(n))) { failures <+ "trace " + m + " " + n; }
+			if (transpose(transpose(m)) != m) { failures <+ "transpose " + m; }
+		}
+		// the inputs that break the invariant are listed in the error
+		if (!empty(failures)) { error "matrices: " + failures; }
+		assert empty(failures);
+	}
+
+	test "Moving and spatial operators agree" {
+		seed <- 6.0;
+		list<string> failures <- [];
+		loop times: cases {
+			point a <- {rnd(100.0), rnd(100.0)};
+			point b <- {rnd(100.0), rnd(100.0)};
+			if (a = b) { continue; }
+			float heading <- a towards b;
+			float distance <- a distance_to b;
+			point reached <- a + {cos(heading) * distance, sin(heading) * distance};
+			if (reached distance_to b > 1e-6) { failures <+ "towards " + a + " " + b; }
+			if (!close(line([a, b]).perimeter, distance)) { failures <+ "line " + a + " " + b; }
+		}
+		// the inputs that break the invariant are listed in the error
+		if (!empty(failures)) { error "spatial: " + failures; }
+		assert empty(failures);
+	}
+}

@@ -55,7 +55,17 @@ import gama.api.types.misc.IValue;
 		@test ("(100 * 100) is int"),
 		@test ("int(100.0) is int"),
 		@test ("int(\"223\") is int"),
-		@test ("int(\"223.3\") is int")
+		@test ("int(\"223.3\") is int"),
+		@test ("int(\"42\") = 42"),
+		@test ("int(3.14) = 3"),
+		@test ("int(3.99) = 3"),
+		@test ("int(true) = 1"),
+		@test ("int(false) = 0"),
+		@test ("int(\" 12 \") = 12"),
+		// a string that is not a number is cast to 0
+		@test ("int(\"abc\") = 0"),
+		@test ("int(\"\") = 0"),
+		@test ("int(nil) = 0")
 })
 public class GamaIntegerType extends GamaType<Integer> {
 

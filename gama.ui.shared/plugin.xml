@@ -7,7 +7,7 @@
       <image
             icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/files/folder.model.svg"
             id="gama.application.nature.gamaNature.img"
-            natureId="gama.workspace.gamaNature">
+            natureId="gama.workspace.nature">
       </image>
    </extension>
    <extension
@@ -79,6 +79,12 @@
    </extension>
    <extension
          point="org.eclipse.ui.commands">
+      <command
+            categoryId="gama.category"
+            defaultHandler="gama.ui.shared.commands.SearchGamlReferenceHandler"
+            id="gama.ui.commands.searchGamlReference"
+            name="Search in GAML Reference">
+      </command>
       <command
             categoryId="gama.category"
             defaultHandler="gama.ui.shared.commands.OpenGamaWebsiteHandler"
@@ -439,6 +445,18 @@
              contextId="org.eclipse.ui.contexts.window"
              schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
              sequence="M1+M2+D">
+       </key>
+       <key
+             commandId="gama.ui.commands.searchGamlReference"
+             contextId="org.eclipse.ui.contexts.window"
+             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+             sequence="F1">
+       </key>
+       <key
+             commandId="gama.ui.commands.searchGamlReference"
+             contextId="org.eclipse.ui.contexts.window"
+             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+             sequence="M1+M2+G">
        </key>
     </extension>
 

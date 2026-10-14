@@ -171,6 +171,9 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 		/** The is invalid. */
 		boolean isInvalid = false;
 
+		/** Whether the project has been renamed and must therefore be copied. */
+		boolean renamed;
+
 		/** The description. */
 		IProjectDescription description;
 
@@ -330,6 +333,9 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 	/** The copy checkbox. */
 	Button copyCheckbox;
 
+	/** The group (relative path in the workspace) in which copied projects are created. */
+	org.eclipse.swt.widgets.Text groupField;
+
 	/** The copy files. */
 	boolean copyFiles = false;
 
@@ -449,6 +455,20 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 			}
 		});
 
+		final org.eclipse.swt.widgets.Composite groupComposite =
+				new org.eclipse.swt.widgets.Composite(optionsGroup, SWT.NONE);
+		groupComposite.setLayout(new org.eclipse.swt.layout.GridLayout(2, false));
+		groupComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		new org.eclipse.swt.widgets.Label(groupComposite, SWT.NONE)
+				.setText("Group (optional, used when copying projects into the workspace):");
+		groupField = new org.eclipse.swt.widgets.Text(groupComposite, SWT.BORDER);
+		groupField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		groupField.addModifyListener(e -> {
+			final String error = gama.ui.navigator.view.contents.UserGroups.validate(groupField.getText());
+			setErrorMessage(error);
+			setPageComplete(error == null);
+		});
+
 		copyCheckbox = new Button(optionsGroup, SWT.CHECK);
 		copyCheckbox.setText(DataTransferMessages.WizardProjectsImportPage_CopyProjectsIntoWorkspace);
 		copyCheckbox.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -537,7 +557,7 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 
 		projectsList.addCheckStateListener(event -> {
 			final ProjectRecord element = (ProjectRecord) event.getElement();
-			if (element.hasConflicts || element.isInvalid) { projectsList.setChecked(element, false); }
+			if (element.isInvalid) { projectsList.setChecked(element, false); }
 			setPageComplete(projectsList.getCheckedElements().length > 0);
 		});
 
@@ -902,7 +922,8 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 		if (displayConflictWarning && displayInvalidWarning) {
 			setMessage(DataTransferMessages.WizardProjectsImportPage_projectsInWorkspaceAndInvalid, WARNING);
 		} else if (displayConflictWarning) {
-			setMessage(DataTransferMessages.WizardProjectsImportPage_projectsInWorkspace, WARNING);
+			setMessage("Some projects use a name that already exists (grayed). If you select them, you will be asked for another name.",
+					WARNING);
 		} else if (displayInvalidWarning) {
 			setMessage(DataTransferMessages.WizardProjectsImportPage_projectsInvalid, WARNING);
 		} else {
@@ -1106,6 +1127,17 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 		saveWidgetValues();
 
 		final Object[] selected = projectsList.getCheckedElements();
+		getProjectRecords();
+		final String group = groupField == null ? "" : groupField.getText().trim();
+		for (final Object element : selected) {
+			final ProjectRecord record = (ProjectRecord) element;
+			if (!record.hasConflicts) { continue; }
+			final String newName =
+					gama.ui.navigator.view.contents.UserGroups.askNewName(record.getProjectName(), group, null);
+			if (newName == null) return false;
+			record.projectName = newName;
+			record.renamed = true;
+		}
 		createdProjects = new ArrayList<>();
 		final WorkspaceModifyOperation op = new WorkspaceModifyOperation() {
 			@Override
@@ -1208,7 +1240,12 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 		}
 		// import from file system
 		File importSource = null;
-		if (copyFiles) {
+		final boolean inPlace = !record.renamed && isSourceInPlace(record);
+		final boolean copy = (copyFiles || record.renamed) && !inPlace;
+		if (inPlace && groupField != null && groupField.getText().trim().isEmpty()) {
+			record.description.setLocation(null);
+		}
+		if (copy) {
 			// import project from location copying files - use default project
 			// location for this workspace
 			final URI locationURI = record.description.getLocationURI();
@@ -1227,6 +1264,12 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 				// desc.setDynamicReferences(record.description.getDynamicReferences());
 				desc.setNatureIds(record.description.getNatureIds());
 				desc.setReferencedProjects(record.description.getReferencedProjects());
+				final String group = groupField == null ? "" : groupField.getText().trim();
+				if (!group.isEmpty() && gama.ui.navigator.view.contents.UserGroups.validate(group) == null) {
+					gama.ui.navigator.view.contents.UserGroups.create(group);
+					desc.setLocation(gama.ui.navigator.view.contents.UserGroups.workspaceLocation().append(group)
+							.append(projectName));
+				}
 				record.description = desc;
 			}
 		}
@@ -1243,7 +1286,7 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 		}
 
 		// import operation to import project files if copy checkbox is selected
-		if (copyFiles && importSource != null) {
+		if (copy && importSource != null) {
 			final List<?> filesToImport = FileSystemStructureProvider.INSTANCE.getChildren(importSource);
 			final ImportOperation operation = new ImportOperation(project.getFullPath(), importSource,
 					FileSystemStructureProvider.INSTANCE, this, filesToImport);
@@ -1258,6 +1301,14 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 				if (e.getCause() instanceof CoreException) return ((CoreException) e.getCause()).getStatus();
 				return new Status(IStatus.ERROR, IDEWorkbenchPlugin.IDE_WORKBENCH, 2,
 						e.getCause().getLocalizedMessage(), e);
+			}
+			if (record.renamed) {
+				try {
+					final IProjectDescription renamed = project.getDescription();
+					project.setDescription(renamed, IResource.FORCE, monitor);
+				} catch (final CoreException e) {
+					return e.getStatus();
+				}
 			}
 			return operation.getStatus();
 		}
@@ -1301,8 +1352,8 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 		final List<ProjectRecord> projectRecords = new ArrayList<>();
 		for (int i = 0; i < selectedProjects.length; i++) {
 			final String projectName = selectedProjects[i].getProjectName();
-			selectedProjects[i].hasConflicts =
-					isProjectInWorkspacePath(projectName) && copyFiles || isProjectInWorkspace(projectName);
+			selectedProjects[i].hasConflicts = isProjectInWorkspace(projectName)
+					|| copyFiles && isProjectInWorkspacePath(projectName) && !isSourceInPlace(selectedProjects[i]);
 			projectRecords.add(selectedProjects[i]);
 		}
 		return projectRecords.toArray(new ProjectRecord[projectRecords.size()]);
@@ -1316,10 +1367,28 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 	 * @return true if there is a directory with the same name of the imported project
 	 */
 	private boolean isProjectInWorkspacePath(final String projectName) {
-		final IWorkspace workspace = GAMA.getWorkspaceManager().getWorkspace();
-		final IPath wsPath = workspace.getRoot().getLocation();
-		final IPath localProjectPath = wsPath.append(projectName);
-		return localProjectPath.toFile().exists();
+		return getTargetDirectory(projectName).toFile().exists();
+	}
+
+	/**
+	 * Gets the directory in which a copied project is created (inside the group, if any).
+	 */
+	private IPath getTargetDirectory(final String projectName) {
+		final IPath wsPath = GAMA.getWorkspaceManager().getRoot().getLocation();
+		final String group = groupField == null ? "" : groupField.getText().trim();
+		if (!group.isEmpty() && gama.ui.navigator.view.contents.UserGroups.validate(group) == null)
+			return wsPath.append(group).append(projectName);
+		return wsPath.append(projectName);
+	}
+
+	/**
+	 * A project that has been removed from the workspace without deleting its files can be registered again where it is
+	 * without being copied onto itself.
+	 */
+	private boolean isSourceInPlace(final ProjectRecord record) {
+		if (record.projectSystemFile == null) return false;
+		final File source = record.projectSystemFile.getParentFile();
+		return source != null && source.equals(getTargetDirectory(record.getProjectName()).toFile());
 	}
 
 	/**

@@ -11,6 +11,8 @@
 package gama.api.gaml.types;
 
 import gama.annotations.doc;
+import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.type;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
@@ -93,6 +95,9 @@ import gama.api.types.geometry.IShape;
 		concept = { IConcept.TYPE, IConcept.GEOMETRY },
 		doc = @doc ("Represents geometries, i.e. the support for the shapes of agents and all the spatial operations in GAMA."))
 @SuppressWarnings ({ "unchecked", "rawtypes" })
+@tests ({
+		@test ("geometry box <- box(10, 10, 10); box.volume = 1000.0")
+})
 public class GamaGeometryType extends GamaType<IShape> {
 
 	/**

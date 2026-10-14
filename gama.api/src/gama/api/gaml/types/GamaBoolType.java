@@ -56,7 +56,9 @@ import gama.api.types.misc.IContainer;
 		concept = { IConcept.TYPE, IConcept.LOGICAL, IConcept.CONDITION })
 @tests ({
 		@test ("true is bool"),
-		@test ("false is bool")
+		@test ("false is bool"),
+		@test ("bool(\"true\") = true"),
+		@test ("bool(\"false\") = false")
 })
 public class GamaBoolType extends GamaType<Boolean> {
 

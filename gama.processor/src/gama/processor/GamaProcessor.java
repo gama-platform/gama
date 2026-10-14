@@ -32,6 +32,7 @@ import javax.tools.Diagnostic.Kind;
 import javax.tools.FileObject;
 
 import gama.annotations.tests;
+import gama.processor.tests.FuzzTestGenerator;
 import gama.processor.tests.TestProcessor;
 
 /**
@@ -112,6 +113,9 @@ public class GamaProcessor extends AbstractProcessor implements Constants {
 	 * processors.
 	 */
 	private ProcessorContext context;
+
+	/** The generator of the fuzz tests of the operators and types of the plugin. */
+	private final FuzzTestGenerator fuzzTests = new FuzzTestGenerator();
 
 	/**
 	 * Counter for tracking processing operations (currently unused).
@@ -206,6 +210,7 @@ public class GamaProcessor extends AbstractProcessor implements Constants {
 			try {
 				begin = System.currentTimeMillis();
 				processors.forEach((s, p) -> p.process(context));
+				fuzzTests.collect(context);
 				// After processing all elements, discover plugin-specific packages for dynamic imports -- not yet
 				// functional
 				// context.discoverPluginPackages();
@@ -256,6 +261,8 @@ public class GamaProcessor extends AbstractProcessor implements Constants {
 				context.emitWarning("An exception occured in the generation of test files: ", e);
 			}
 		}
+		// Fuzz tests of the operators and types, in experiments of their own
+		if (fuzzTests.hasElements()) { fuzzTests.write(context); }
 		// We pass the current document of the documentation processor to avoir re-reading it
 		// final DocProcessor dp = (DocProcessor) processors.get(doc.class);
 		// ExamplesToTests.createTests(context, dp.document);

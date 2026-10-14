@@ -51,7 +51,13 @@ import gama.api.types.misc.IValue;
 		doc = { @doc ("Represents floating point numbers (equivalent to Double in Java)") },
 		concept = { IConcept.TYPE })
 @tests ({
-		@test ("100.0 is float")
+		@test ("100.0 is float"),
+		@test ("float(\"3.14\") = 3.14"),
+		@test ("float(42) = 42.0"),
+		@test ("float(\"1e3\") = 1000.0"),
+		@test ("float(\"abc\") = 0.0"),
+		@test ("float(\"  \") = 0.0"),
+		@test ("float(nil) = 0.0")
 })
 public class GamaFloatType extends GamaType<Double> {
 

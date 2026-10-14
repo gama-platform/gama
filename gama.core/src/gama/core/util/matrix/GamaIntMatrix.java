@@ -97,10 +97,15 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	@Override
 	public IMatrix _opAppendVertically(final IScope scope, final IMatrix b) {
 		if (b instanceof GamaIntMatrix gfm) {
+			if (numCols != gfm.numCols)
+				throw GamaRuntimeException.error(" The dimensions of the matrices do not correspond", scope);
 			final int[] mab = ArrayUtils.addAll(getMatrix(), gfm.getMatrix());
 			return new GamaIntMatrix(numCols, numRows + gfm.getRows(scope), mab);
 		}
-		return this;
+		// A matrix of another kind: the result is of the most general of the two (objects, otherwise floats)
+		if (b instanceof GamaObjectMatrix)
+			return GamaObjectMatrix.from(numCols, numRows, this)._opAppendVertically(scope, b);
+		return GamaFloatMatrix.from(scope, this)._opAppendVertically(scope, b);
 	}
 
 	/** The cell size. */
@@ -310,6 +315,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	 * @return the matrix concatenated
 	 */
 
+	@Override
 	public IMatrix _opAppendHorizontally(final IScope scope, final IMatrix b) {
 		final IMatrix aprime = _reverse(scope);
 		final IMatrix bprime = b._reverse(scope);
@@ -355,15 +361,20 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	@Override
 	public boolean equals(final Object m) {
 		if (this == m) return true;
+		// a matrix of floats that holds the same values is equal to this one
+		if (m instanceof GamaFloatMatrix floats) return floats.equals(this);
 		if (!(m instanceof GamaIntMatrix mat)) return false;
-		return Arrays.equals(this.matrix, mat.matrix);
+		return numCols == mat.numCols && numRows == mat.numRows && Arrays.equals(this.matrix, mat.matrix);
 	}
 
 	// TODO Remove to improve performances if necessary
 	//
 	@Override
 	public int hashCode() {
-		return Arrays.hashCode(matrix);
+		// computed as for a matrix of floats, which can be equal to this one
+		int result = 1;
+		for (final int element : matrix) { result = 31 * result + Double.hashCode(element); }
+		return result;
 	}
 
 	/**

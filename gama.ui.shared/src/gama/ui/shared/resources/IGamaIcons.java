@@ -212,11 +212,20 @@ public interface IGamaIcons {
 	/** The folder user. */
 	String FOLDER_USER = "navigator/folder.user";
 
+	/** The icon of the groups of projects. */
+	String FOLDER_GROUP = "navigator/folder.group";
+
 	/** The folder tutorials – used for the "Tutorials" virtual folder in the GAMA Navigator. */
 	String FOLDER_TUTORIALS = "navigator/folder.tutorial";
 
 	/** The folder recipes – used for the "Recipes" virtual folder in the GAMA Navigator. */
 	String FOLDER_RECIPES = "navigator/folder.recipe";
+
+	/** The folder data – used for the "Data" virtual folder in the GAMA Navigator. */
+	String FOLDER_DATA = "navigator/folder.data";
+
+	/** The folder demos – used for the "Demos" virtual folder in the GAMA Navigator. */
+	String FOLDER_DEMOS = "navigator/folder.demo";
 
 	/** The font decrease. */
 	String FONT_DECREASE = "toolbar/font.decrease";

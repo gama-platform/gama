@@ -43,13 +43,15 @@ import gama.core.util.file.GamaGisFile;
  */
 @file (
 		name = "geopackage",
-		extensions = { "gpkg", "GPKG" },
+		extensions = { "gpkg" },
 		buffer_type = IType.LIST,
 		buffer_content = IType.GEOMETRY,
 		buffer_index = IType.INT,
 		concept = { IConcept.GIS, IConcept.FILE },
 		doc = @doc ("Represents a GeoPackage file. Files with multiple feature layers use the first layer by default; specify a layer name to select another."))
-@test ("is_geopackage(\"features.gpkg\") and is_geopackage(\"features.GPKG\") and !is_geopackage(\"features.shp\")")
+@test ("is_geopackage(\"features.gpkg\")")
+@test ("is_geopackage(\"features.GPKG\")")
+@test ("!is_geopackage(\"features.shp\")")
 public class GamaGeoPackageFile extends GamaGisFile {
 
 	static {

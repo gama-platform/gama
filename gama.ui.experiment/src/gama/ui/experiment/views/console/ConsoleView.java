@@ -33,6 +33,7 @@ import gama.api.types.color.IColor;
 import gama.api.ui.IGamaView;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.ui.application.workbench.ThemeHelper;
+import gama.ui.shared.access.ConsoleContextMenuHelper;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
@@ -91,6 +92,7 @@ public class ConsoleView extends GamaViewPart implements IToolbarDecoratedView.S
 		GamaPreferences.Interface.CORE_CONSOLE_SIZE.onChange(this::setCharacterLimit);
 		viewer = new IOConsoleViewer(parent, msgConsole);
 		viewer.setWordWrap(GamaPreferences.Interface.CORE_CONSOLE_WRAP.getValue());
+		ConsoleContextMenuHelper.install(viewer.getTextWidget(), this::reset, false);
 	}
 
 	/**

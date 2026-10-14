@@ -42,6 +42,12 @@ public class NavigatorRoot extends VirtualContent implements IAdaptable {
 	/** The recipes folder. */
 	private TopLevelFolder recipesFolder;
 
+	/** The data folder. */
+	private TopLevelFolder dataFolder;
+
+	/** The demos folder. */
+	private TopLevelFolder demosFolder;
+
 	/** The Constant instance. */
 	private final static NavigatorRoot instance = new NavigatorRoot();
 
@@ -86,6 +92,26 @@ public class NavigatorRoot extends VirtualContent implements IAdaptable {
 	}
 
 	/**
+	 * Gets the data folder.
+	 *
+	 * @return the data folder
+	 */
+	public TopLevelFolder getDataFolder() {
+		if (dataFolder == null) { dataFolder = new DataFolder(this, "Data"); }
+		return dataFolder;
+	}
+
+	/**
+	 * Gets the demos folder.
+	 *
+	 * @return the demos folder
+	 */
+	public TopLevelFolder getDemosFolder() {
+		if (demosFolder == null) { demosFolder = new DemosFolder(this, "Demos"); }
+		return demosFolder;
+	}
+
+	/**
 	 * Gets the tutorials folder.
 	 *
 	 * @return the tutorials folder
@@ -118,6 +144,8 @@ public class NavigatorRoot extends VirtualContent implements IAdaptable {
 		setLibraryFolder(null);
 		setTutorialsFolder(null);
 		setRecipesFolder(null);
+		dataFolder = null;
+		demosFolder = null;
 	}
 
 	/**
@@ -139,7 +167,10 @@ public class NavigatorRoot extends VirtualContent implements IAdaptable {
 	}
 
 	@Override
-	public Object[] getNavigatorChildren() { return getFolders(); }
+	public Object[] getNavigatorChildren() {
+		final TopLevelFolder user = getUserFolder();
+		return java.util.Arrays.stream(getFolders()).filter(f -> f == user || f.hasChildren()).toArray();
+	}
 
 	/**
 	 * Gets the folders.
@@ -147,8 +178,8 @@ public class NavigatorRoot extends VirtualContent implements IAdaptable {
 	 * @return the folders
 	 */
 	public TopLevelFolder[] getFolders() {
-		return new TopLevelFolder[] { getLibraryFolder(), getTutorialsFolder(), getRecipesFolder(), getTestFolder(),
-				getUserFolder() };
+		return new TopLevelFolder[] { getDataFolder(), getDemosFolder(), getLibraryFolder(), getRecipesFolder(),
+				getTutorialsFolder(), getTestFolder(), getUserFolder() };
 	}
 
 	@Override

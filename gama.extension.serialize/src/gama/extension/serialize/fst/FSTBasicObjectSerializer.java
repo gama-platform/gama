@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.extension.serialize.fst;
 
-import gama.extension.serialize.IGamaObjectInput;
+import gama.api.kernel.serialization.IGamaObjectInput;
 
 /**
  * Created with IntelliJ IDEA. User: ruedi Date: 11.11.12 Time: 12:09 To change this template use File | Settings | File

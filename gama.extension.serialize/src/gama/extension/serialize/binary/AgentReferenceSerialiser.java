@@ -11,18 +11,21 @@
 package gama.extension.serialize.binary;
 
 import gama.api.kernel.agent.AgentReference;
+import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
+import gama.api.kernel.serialization.IGamaObjectInput;
+import gama.api.kernel.serialization.IGamaObjectOutput;
+import gama.api.kernel.serialization.IGamaObjectSerializer;
 import gama.api.runtime.scope.IScope;
-import gama.extension.serialize.IGamaObjectInput;
-import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link AgentReference} instances. Serialises the species path (a {@code String[]} array) and the
- * index path (an {@code Integer[]} array) that together identify the referenced agent within the simulation hierarchy.
+ * Binary serialiser for {@link AgentReference} instances. Serialises the species path (a {@code String[]} array) and
+ * the index path (an {@code Integer[]} array) that together identify the referenced agent within the simulation
+ * hierarchy.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class AgentReferenceSerialiser extends FSTIndividualSerialiser<AgentReference> {
+public class AgentReferenceSerialiser implements IGamaObjectSerializer<AgentReference> {
 
 	/**
 	 * Serialises the species path array and the index path array of the agent reference.
@@ -35,7 +38,8 @@ class AgentReferenceSerialiser extends FSTIndividualSerialiser<AgentReference> {
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final IGamaObjectOutput out, final AgentReference o) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final AgentReference o,
+			final TransientSerializationContext context) throws Exception {
 		out.writeObject(o.species());
 		out.writeObject(o.index());
 	}

@@ -1,0 +1,193 @@
+/**
+* Name: Serialization
+* Based on the internal empty template. 
+* Author: baptiste
+* Tags: serialization, JSON, test
+*/
+
+model Serialization
+
+experiment SerializationTest type:test {
+	
+	test from_json_empty {
+		bool exception <- false;
+		try{
+			unknown l <- from_json('');
+			
+		}
+		catch{
+			exception <- true;
+		}
+		assert exception;
+	}
+	
+	//parameters: int overflow
+	test int_overflow_to_float {
+		gama.pref_json_int_overflow_as_double <- true;
+		assert actual_type_of(from_json("123456789123456789123456789")) = type_of(1.0);
+	}
+	
+	test int_overflow_to_string{
+		gama.pref_json_int_overflow_as_double <- false;
+		assert from_json("123456789123456789123456789") = "123456789123456789123456789";
+	}
+	
+	//parameters: infinity
+	test infinity_from_literal {
+		gama.pref_json_infinity_as_string <- false;
+		assert from_json('Infinity') = #infinity;
+	}
+	test infinity_from_literal_in_map {
+		gama.pref_json_infinity_as_string <- false;
+		assert from_json('{"x":Infinity}') = map(['x'::#infinity]);
+	}
+	
+	test infinity_from_string_with_literal_option {
+		gama.pref_json_infinity_as_string <- false;
+		assert from_json('{"x":"Infinity"}') = map(['x'::"Infinity"]);	
+	}
+	
+	test infinity_to_literal {
+		gama.pref_json_infinity_as_string <- false;
+		assert to_json(#infinity) = "Infinity";
+	}
+	test infinity_from_string {
+		gama.pref_json_infinity_as_string <- true;
+		assert from_json('"Infinity"') = #infinity;
+	}
+	test infinity_to_string {
+		gama.pref_json_infinity_as_string <- true;
+		assert to_json( map("x"::#infinity)) = '{"x":"Infinity"}';
+	}
+	
+	test negative_infinity_from_literal{
+		gama.pref_json_infinity_as_string <- false;
+		assert from_json('-Infinity') = -#infinity;
+	}
+	test negative_infinity_from_literal_in_map {
+		gama.pref_json_infinity_as_string <- false;
+		assert from_json('{"x":-Infinity}') = map(['x'::-#infinity]);
+	}
+	test negative_infinity_to_literal {
+		gama.pref_json_infinity_as_string <- false;
+		assert to_json(-#infinity) = "-Infinity";
+	}
+	test negative_infinity_from_string {
+		gama.pref_json_infinity_as_string <- true;
+		assert from_json('"-Infinity"') = -#infinity;
+	}
+	test negative_infinity_to_string {
+		gama.pref_json_infinity_as_string <- true;
+		assert to_json( map("x"::-#infinity)) = '{"x":"-Infinity"}'; 
+	}
+	
+	//parameters: nan
+	test nan_from_literal {
+		gama.pref_json_nan_as_string <- false;
+		assert from_json('NaN') = #nan;
+	}
+	test nan_from_literal_in_map {
+		gama.pref_json_nan_as_string <- false;
+		assert from_json('{"x":NaN}') = map(['x'::#nan]);
+	}
+	test nan_to_literal {
+		gama.pref_json_nan_as_string <- false;
+		assert to_json(#nan) = "NaN";
+	}
+	test nan_from_string {
+		gama.pref_json_nan_as_string <- true;
+		assert from_json('"NaN"') = #nan;
+	}
+	test nan_from_string_in_map {
+		gama.pref_json_nan_as_string <- true;
+		assert from_json('{"x":"NaN"}') = map(["x"::#nan]);
+	}
+	test nan_from_string_with_literal_option {
+		gama.pref_json_nan_as_string <- false;
+		assert from_json('{"x":"NaN"}') = map(['x'::"NaN"]);	
+	}
+	test nan_to_string {
+		gama.pref_json_nan_as_string <- true;
+		assert to_json( map("x"::#nan)) = '{"x":"NaN"}';
+	}
+
+	// errors
+	test from_infinity_literal_with_string_option {
+		gama.pref_json_infinity_as_string <- true;
+		bool exception <- false;
+		try{
+			map m <- map(from_json('{"x":Infinity}'));	
+		}catch{
+			write "Expected json parser exception: " + #current_error;
+			exception <- true;
+		}
+		assert exception;
+	}
+	test from_nan_literal_with_string_option {
+		gama.pref_json_nan_as_string <- true;
+		bool exception <- false;
+		try{
+			map m <- map(from_json('{"x":NaN}'));	
+		}catch{
+			write "Expected json parser exception: " + #current_error;
+			exception <- true;
+		}
+		assert exception;
+	}
+	
+	test from_unknown_literal {
+		bool exception <- false;
+		try{
+			unknown l <- from_json('{"x": UnknownLiteral}');
+		}catch{
+			write "Expected json parser exception: " + #current_error;
+			exception <- true;
+		}
+		assert exception;
+	}
+	
+	test from_unclosed_json {
+		bool exception <- false;
+		try{
+			unknown l <- from_json('{"x": 123');
+		}catch{
+			write "Expected json parser exception: " + #current_error;
+			exception <- true;
+		}
+		assert exception;
+	}
+		
+	test from_forgotten_comma {
+		bool exception <- false;
+		try{
+			unknown l <- from_json('{"x": 123 "y":123}');
+		}catch{
+			write "Expected json parser exception: " + #current_error;
+			exception <- true;
+		}
+		assert exception;
+	}
+			
+	test from_trailing_comma {
+		bool exception <- false;
+		try{
+			unknown l <- from_json('{"x": 123, "y":123 , }');
+		}catch{
+			write "Expected json parser exception: " + #current_error;
+			exception <- true;
+		}
+		assert exception;
+	}
+
+	test from_simple_quotes{
+		bool exception <- false;
+		try{
+			unknown l <- from_json("{'x': 123, 'y':123 }");
+		}catch{
+			write "Expected json parser exception: " + #current_error;
+			exception <- true;
+		}
+		assert exception;
+	}
+	
+}

@@ -43,7 +43,7 @@ species people skills: [moving] {
 	point target;
 	
 	reflex move {
-		do goto target: target on: road_network speed: 5.0;
+		do goto (target: target, on: road_network, speed: 5.0);
 		if (location = target) {
 			target <- any_location_in(one_of(building));
 		}

@@ -13,6 +13,8 @@ import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
 import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.api.exceptions.GamaRuntimeException;
@@ -332,6 +334,10 @@ public class Fields {
 					examples = { @example (
 							value = "matrix mat <- matrix_with(ant_grid, \"road\");",
 							isExecutable = false) }) })
+	@tests ({
+			@test ("matrix<int> ones <- {2, 2} matrix_with (1); ones[0, 0] = 1"),
+			@test ("matrix<int> ones2 <- {2, 2} matrix_with (1); ones2[1, 1] = 1")
+	})
 	public static IMatrix matrixWith(final IScope scope, final Object pop, final String varName) {
 		IPopulation.Grid grid = null;
 		if (pop instanceof IPopulation.Grid g) {

@@ -29,7 +29,10 @@ import org.moeaframework.util.sequence.Saltelli;
 
 import gama.annotations.doc;
 import gama.annotations.no_test;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.api.GAMA;
@@ -601,6 +604,7 @@ public final class Sobol {
 	 *            number of parameters in the model
 	 * @return
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "sobol_analysis",
 			type = IType.STRING,
@@ -610,6 +614,12 @@ public final class Sobol {
 	@doc (
 			value = "Return a string containing the Report of the sobol analysis for the corresponding data (path, map of columns or matrix) and save this report in a txt/csv file.")
 	@no_test
+	@tests ({
+			@test ("map sobol_data <- [\"p1\":: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8], \"out\":: [1.0, 1.1, 1.2, 1.3, 2.0, 2.1, 2.2, 2.3]]; string sobol_report <- sobol_analysis(sobol_data, \"sobol_test_report.txt\", 1); sobol_report != \"\""),
+			@test ("map data_map <- [\"col0\":: [0.1, 0.2, 0.3, 0.4], \"col1\":: [1.0, 1.1, 1.2, 1.3]]; matrix data_mat <- matrix([[0.1, 0.2, 0.3, 0.4], [1.0, 1.1, 1.2, 1.3]]); string s1 <- sobol_analysis(data_map, \"sob_map.txt\", 1); string s2 <- sobol_analysis(data_mat, \"sob_mat.txt\", 1); s1 = s2"),
+			// Cleanup
+			@test ("do delete_file(\"sobol_test_report.txt\"); do delete_file(\"sob_map.txt\"); delete_file(\"sob_mat.txt\")")
+	})
 	public static String sobolAnalysis(final IScope scope, final Object data, final String report_path,
 			final int nb_parameters) {
 		final File f_report = new File(FileUtils.constructAbsoluteFilePath(scope, report_path, false));

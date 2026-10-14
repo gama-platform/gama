@@ -43,6 +43,7 @@ import org.locationtech.jts.geom.Geometry;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.file;
+import gama.annotations.test;
 import gama.annotations.support.IConcept;
 import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
@@ -77,13 +78,16 @@ import gama.dev.DEBUG;
  */
 @file (
 		name = "shape",
-		extensions = { "shp", "SHP" },
+		extensions = { "shp" },
 		buffer_type = IType.LIST,
 		buffer_content = IType.GEOMETRY,
 		buffer_index = IType.INT,
 		concept = { IConcept.SHAPEFILE, IConcept.FILE },
 		doc = @doc ("Represents a shape file as defined by the ESRI standard. See https://en.wikipedia.org/wiki/Shapefile for more information."))
 @SuppressWarnings ({ "unchecked", "rawtypes" })
+@test ("is_shape(\"features.shp\")")
+@test ("is_shape(\"features.SHP\")")
+@test ("!is_shape(\"features.gpkg\")")
 public class GamaShapeFile extends GamaGisFile {
 
 	static {

@@ -1133,7 +1133,9 @@ public class ExecutionScope implements IScope {
 	 */
 	@Override
 	public ITopology setTopology(final ITopology topo) {
-		final ITopology previous = getTopology();
+		// the topology previously forced, not the one of the current agent: restoring the latter would pin it in
+		// this scope, and the agents executed afterwards (in an 'ask', for instance) would not use their own
+		final ITopology previous = additionalContext.topology;
 		additionalContext.topology = topo;
 		return previous;
 	}

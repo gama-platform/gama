@@ -34,9 +34,8 @@ import java.util.Map;
 import java.util.Stack;
 
 import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.serialization.IGamaObjectInput;
 import gama.dev.DEBUG;
-import gama.extension.serialize.IGamaObjectInput;
-import gama.extension.serialize.IGamaObjectOutput;
 import gama.extension.serialize.fst.FSTClazzInfo.FSTFieldInfo;
 import gama.extension.serialize.fst.coders.Unknown;
 import gama.extension.serialize.fst.util.FSTUtil;
@@ -507,13 +506,13 @@ public class FSTObjectInput implements IGamaObjectInput {
 		Class<?> c;
 		final int readPos = getCodec().getInputPos();
 		byte code = getCodec().readObjectHeaderTag(); // NOTICE: THIS ADVANCES THE INPUT STREAM...
-		if (code == IGamaObjectOutput.OBJECT) {
+		if (code == FSTSerialisationConstants.OBJECT) {
 			// class name
 			clzSerInfo = readClass();
 			c = clzSerInfo.getClazz();
 			if (c.isArray()) return readArrayNoHeader(referencee, readPos, c);
 			// fall through
-		} else if (code == IGamaObjectOutput.TYPED) {
+		} else if (code == FSTSerialisationConstants.TYPED) {
 			c = referencee.getType();
 			clzSerInfo = getClazzInfo(c, referencee);
 		} else if (code >= 1) {
@@ -562,37 +561,37 @@ public class FSTObjectInput implements IGamaObjectInput {
 	protected Object instantiateSpecialTag(final FSTClazzInfo.FSTFieldInfo referencee, final int readPos,
 			final byte code) throws Exception {
 		switch (code) {
-			case IGamaObjectOutput.STRING: {
+			case FSTSerialisationConstants.STRING: {
 				String res = getCodec().readStringUTF();
 				objects.registerObjectForRead(res, readPos);
 				return res;
 			}
-			case IGamaObjectOutput.BIG_INT:
+			case FSTSerialisationConstants.BIG_INT:
 				return instantiateBigInt();
-			case IGamaObjectOutput.NULL:
+			case FSTSerialisationConstants.NULL:
 				return null;
 			default:
 				switch (code) {
 					// case FSTObjectOutput.BIG_INT: { return instantiateBigInt(); }
-					case IGamaObjectOutput.BIG_LONG: {
+					case FSTSerialisationConstants.BIG_LONG: {
 						return Long.valueOf(getCodec().readFLong());
 					}
-					case IGamaObjectOutput.BIG_BOOLEAN_FALSE: {
+					case FSTSerialisationConstants.BIG_BOOLEAN_FALSE: {
 						return Boolean.FALSE;
 					}
-					case IGamaObjectOutput.BIG_BOOLEAN_TRUE: {
+					case FSTSerialisationConstants.BIG_BOOLEAN_TRUE: {
 						return Boolean.TRUE;
 					}
-					case IGamaObjectOutput.ONE_OF: {
+					case FSTSerialisationConstants.ONE_OF: {
 						return referencee.getOneOf()[getCodec().readFByte()];
 					}
 					// case FSTObjectOutput.NULL: { return null; }
-					case IGamaObjectOutput.DIRECT_ARRAY_OBJECT: {
+					case FSTSerialisationConstants.DIRECT_ARRAY_OBJECT: {
 						Object directObject = getCodec().getDirectObject();
 						objects.registerObjectForRead(directObject, readPos);
 						return directObject;
 					}
-					case IGamaObjectOutput.DIRECT_OBJECT: {
+					case FSTSerialisationConstants.DIRECT_OBJECT: {
 						Object directObject = getCodec().getDirectObject();
 						if (directObject.getClass() == byte[].class && referencee != null
 								&& referencee.getType() == boolean[].class) {
@@ -605,16 +604,16 @@ public class FSTObjectInput implements IGamaObjectInput {
 						return directObject;
 					}
 					// case FSTObjectOutput.STRING: return getCodec().readStringUTF();
-					case IGamaObjectOutput.HANDLE: {
+					case FSTSerialisationConstants.HANDLE: {
 						Object res = instantiateHandle(referencee);
 						getCodec().readObjectEnd();
 						return res;
 					}
-					case IGamaObjectOutput.ARRAY: {
+					case FSTSerialisationConstants.ARRAY: {
 						Object res = instantiateArray(referencee, readPos);
 						return res;
 					}
-					case IGamaObjectOutput.ENUM: {
+					case FSTSerialisationConstants.ENUM: {
 						return instantiateEnum(referencee, readPos);
 					}
 				}
@@ -1372,7 +1371,6 @@ public class FSTObjectInput implements IGamaObjectInput {
 	 *             the class not found exception
 	 * @date 29 sept. 2023
 	 */
-	@Override
 	public FSTClazzInfo readClass() throws IOException, ClassNotFoundException {
 		return getCodec().readClass();
 	}
@@ -1527,7 +1525,7 @@ public class FSTObjectInput implements IGamaObjectInput {
 			public Object readObjectOverride() throws IOException, ClassNotFoundException {
 				try {
 					byte b = FSTObjectInput.this.readByte();
-					if (b != IGamaObjectOutput.SPECIAL_COMPATIBILITY_OBJECT_TAG) {
+					if (b != FSTSerialisationConstants.SPECIAL_COMPATIBILITY_OBJECT_TAG) {
 						Constructor<?>[] constructors = OptionalDataException.class.getDeclaredConstructors();
 						FSTObjectInput.this.pushBack(1);
 						for (Constructor<?> constructor : constructors) {

@@ -22,9 +22,9 @@ import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IPopulation;
+import gama.api.kernel.serialization.BinarySerialisation;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.IList;
-import gama.extension.serialize.binary.BinarySerialisation;
 
 /**
  * Class CreateFromSavecSimulationDelegate.
@@ -61,7 +61,8 @@ public class CreateAgentsFromSerialisedStringDelegate implements ICreateDelegate
 	 */
 	@Override
 	public boolean acceptSource(final IScope scope, final Object source) {
-		return source instanceof String s && !s.isBlank() && s.getBytes()[0] == GAMA_AGENT_IDENTIFIER;
+		// Fory payloads start with a header bitmap byte equal to 0 (native Java mode); the legacy identifier is kept
+		return source instanceof String s && !s.isEmpty() && (s.charAt(0) == 0 || s.charAt(0) == GAMA_AGENT_IDENTIFIER);
 	}
 
 	/**

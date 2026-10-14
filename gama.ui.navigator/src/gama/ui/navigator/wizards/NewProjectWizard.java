@@ -38,6 +38,8 @@ import org.eclipse.ui.actions.WorkspaceModifyOperation;
 
 import gama.api.GAMA;
 import gama.ui.navigator.view.contents.ResourceManager;
+import gama.ui.navigator.view.contents.UserGroupFolder;
+import gama.ui.navigator.view.contents.UserGroups;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.workspace.manager.WorkspaceModelsManager;
 
@@ -52,6 +54,9 @@ public class NewProjectWizard extends Wizard implements INewWizard, IExecutableE
 	/** The project. */
 	private IProject project;
 
+	/** The group proposed by default. */
+	private String initialGroup;
+
 	/**
 	 * Instantiates a new new project wizard.
 	 */
@@ -62,6 +67,7 @@ public class NewProjectWizard extends Wizard implements INewWizard, IExecutableE
 		wizardPage = new NewProjectWizardPage("NewGAMAProject");
 		wizardPage.setDescription("Create a new GAMA Project.");
 		wizardPage.setTitle("New GAMA Project");
+		wizardPage.setInitialGroup(initialGroup);
 		addPage(wizardPage);
 	}
 
@@ -74,6 +80,7 @@ public class NewProjectWizard extends Wizard implements INewWizard, IExecutableE
 		final boolean createNewModel = wizardPage.createNewModel();
 		final IProject projectHandle = wizardPage.getProjectHandle();
 		final URI projectURI = /* !wizardPage.useDefaults() ? */ wizardPage.getLocationURI()/* : null */;
+		UserGroups.create(wizardPage.getGroup());
 		final IWorkspace workspace = GAMA.getWorkspaceManager().getWorkspace();
 		final IProjectDescription desc = workspace.newProjectDescription(projectHandle.getName());
 		desc.setLocationURI(projectURI);
@@ -130,7 +137,7 @@ public class NewProjectWizard extends Wizard implements INewWizard, IExecutableE
 			if (monitor.isCanceled()) throw new OperationCanceledException();
 			proj.open(m.split(1000));
 
-			WorkspaceModelsManager.instance.setValuesProjectDescription(proj, false, false, isTest, null);
+			WorkspaceModelsManager.instance.setValuesProjectDescription(proj, null);
 
 			/*
 			 * We now have the project and we can do more things with it before updating the perspective.
@@ -162,7 +169,12 @@ public class NewProjectWizard extends Wizard implements INewWizard, IExecutableE
 	}
 
 	@Override
-	public void init(final IWorkbench workbench, final IStructuredSelection selection) {}
+	public void init(final IWorkbench workbench, final IStructuredSelection selection) {
+		if (selection != null && selection.getFirstElement() instanceof UserGroupFolder group
+				&& group.isEditable()) {
+			initialGroup = group.getRelativePath().toString();
+		}
+	}
 
 	@Override
 	public void setInitializationData(final IConfigurationElement config, final String propertyName, final Object data)
