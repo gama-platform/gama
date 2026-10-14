@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
+   <extension id="testWorker" point="org.eclipse.core.runtime.applications">
+      <application cardinality="singleton-global" thread="main" visible="false">
+         <run class="gama.headless.runtime.TestWorkerApplication"/>
+      </application>
+   </extension>
    <extension
          id="product"
          name="Headless Gama"

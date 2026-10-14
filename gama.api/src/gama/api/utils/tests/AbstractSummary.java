@@ -59,6 +59,11 @@ public abstract class AbstractSummary<S extends WithTestSummary<?>> implements I
 		}
 	}
 
+	protected AbstractSummary(final String title, final URI uri) {
+		this.title = title;
+		this.uri = uri;
+	}
+
 	/**
 	 * Sets the error.
 	 *
@@ -160,7 +165,7 @@ public abstract class AbstractSummary<S extends WithTestSummary<?>> implements I
 	@Override
 	public final String toString() {
 		final TestState state = getState();
-		if (GamaPreferences.Runtime.FAILED_TESTS.getValue() && state != TestState.FAILED && state != TestState.ABORTED)
+		if (GamaPreferences.Runtime.FAILED_TESTS.getValue() && !state.isFailure())
 			return "";
 		final StringBuilder sb = new StringBuilder();
 		printHeader(sb);

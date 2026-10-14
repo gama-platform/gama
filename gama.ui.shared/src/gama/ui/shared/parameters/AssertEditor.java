@@ -21,7 +21,6 @@ import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.tests.AbstractSummary;
 import gama.api.utils.tests.AssertionSummary;
-import gama.api.utils.tests.TestState;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.interfaces.EditorListener;
 import gama.ui.shared.resources.GamaColors;
@@ -75,8 +74,8 @@ public class AssertEditor extends AbstractStatementEditor<AbstractSummary<?>> {
 	@Override
 	protected FlatButton createCustomParameterControl(final Composite composite) throws GamaRuntimeException {
 		final AbstractSummary<?> summary = getStatement();
-		String text = summary instanceof AssertionSummary && getStatement().getState() == TestState.ABORTED
-				? getStatement().getState().toString() + ": " + ((AssertionSummary) getStatement()).getError()
+		String text = summary.getError() != null
+				? getStatement().getState().toString() + ": " + summary.getError()
 				: getStatement().getState().toString();
 		textBox = FlatButton.button(composite, null, text);
 		textBox.setSelectionListener(e -> GAMA.getGui().getModelsManager().editModel(getStatement().getURI()));

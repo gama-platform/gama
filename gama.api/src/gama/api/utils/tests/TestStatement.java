@@ -24,6 +24,7 @@ import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
+import gama.api.GAMA;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.exceptions.GamaAssertException;
 import gama.api.exceptions.GamaRuntimeException;
@@ -137,12 +138,18 @@ public class TestStatement extends AbstractStatementSequence implements IStateme
 
 	@Override
 	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
+		final var gui = GAMA.getGui();
+		if (gui.isTestStopRequested() || scope.interrupted()) return null;
 		getSummary().reset();
-		if (setup != null) { setup.setup(scope); }
+		TestExperimentRunner.entering(scope, getSummary());
+		gui.displayRunningTest(scope, getName());
+		gui.displayTestSummary(scope, getSummary(), false);
 		Object lastResult = null;
 		try {
+			if (setup != null && !gui.isTestStopRequested()) { setup.setup(scope); }
 			scope.enableTryMode();
 			for (final IStatement statement : commands) {
+				if (gui.isTestStopRequested() || scope.interrupted()) break;
 				try {
 					// TODO Verify this call (wrt IScope.execute())
 					lastResult = statement.executeOn(scope);
@@ -160,9 +167,16 @@ public class TestStatement extends AbstractStatementSequence implements IStateme
 					getSummary().setError(GamaRuntimeException.create(e, scope).getMessage());
 					break;
 				}
+				gui.displayTestSummary(scope, getSummary(), false);
 			}
 		} finally {
 			scope.disableTryMode();
+			if (gui.isTestStopRequested()) {
+				getSummary().setState(TestState.INTERRUPTED);
+				getSummary().setError("Interrupted by user");
+			}
+			TestExperimentRunner.leaving(getSummary());
+			gui.displayTestSummary(scope, getSummary(), true);
 		}
 		return lastResult;
 

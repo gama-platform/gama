@@ -43,6 +43,8 @@ public class CompoundSummary<T extends AbstractSummary<?>, S extends WithTestSum
 	/** The aborted. */
 	public boolean aborted;
 
+	private TestState terminationState;
+
 	/** The string summary. */
 	public String stringSummary;
 
@@ -82,6 +84,10 @@ public class CompoundSummary<T extends AbstractSummary<?>, S extends WithTestSum
 		this(Collections.EMPTY_LIST);
 	}
 
+	protected CompoundSummary(final String title, final URI uri) {
+		super(title, uri);
+	}
+
 	/**
 	 * Checks if is empty.
 	 *
@@ -91,7 +97,7 @@ public class CompoundSummary<T extends AbstractSummary<?>, S extends WithTestSum
 
 	@Override
 	public long getTimeStamp() {
-		return StreamEx.ofValues(summaries).mapToLong(AbstractSummary::getTimeStamp).max().getAsLong();
+		return StreamEx.ofValues(summaries).mapToLong(AbstractSummary::getTimeStamp).max().orElse(0);
 	}
 
 	@Override
@@ -100,7 +106,11 @@ public class CompoundSummary<T extends AbstractSummary<?>, S extends WithTestSum
 	}
 
 	@Override
-	public void setState(final TestState s) { aborted = s == TestState.ABORTED; }
+	public void setState(final TestState s) {
+		aborted = s == TestState.ABORTED;
+		terminationState = s == TestState.INTERRUPTED || s == TestState.TIMED_OUT ? s : null;
+		stringSummary = null;
+	}
 
 	@Override
 	public Map<String, ? extends AbstractSummary<?>> getSummaries() { return summaries; }
@@ -131,8 +141,11 @@ public class CompoundSummary<T extends AbstractSummary<?>, S extends WithTestSum
 
 	@Override
 	public void reset() {
+		super.reset();
 		summaries.values().forEach(AbstractSummary::reset);
 		aborted = false;
+		terminationState = null;
+		stringSummary = null;
 	}
 
 	@SuppressWarnings ("unchecked")
@@ -149,6 +162,7 @@ public class CompoundSummary<T extends AbstractSummary<?>, S extends WithTestSum
 
 	@Override
 	public TestState getState() {
+		if (terminationState != null) return terminationState;
 		if (aborted) return TestState.ABORTED;
 		TestState state = TestState.NOT_RUN;
 		for (final AbstractSummary<?> a : summaries.values()) {
@@ -169,6 +183,8 @@ public class CompoundSummary<T extends AbstractSummary<?>, S extends WithTestSum
 					break;
 				case ABORTED:
 					return TestState.ABORTED;
+				case INTERRUPTED, TIMED_OUT:
+					return s;
 			}
 		}
 		return state;
@@ -238,6 +254,8 @@ public class CompoundSummary<T extends AbstractSummary<?>, S extends WithTestSum
 		map.put(TestState.NOT_RUN, 0);
 		map.put(TestState.PASSED, 0);
 		map.put(TestState.WARNING, 0);
+		map.put(TestState.INTERRUPTED, 0);
+		map.put(TestState.TIMED_OUT, 0);
 		final int[] size = { 0 };
 		summaries.values().forEach(t -> {
 			map.keySet().forEach(state -> map.put(state, map.get(state) + t.countTestsWith(state)));

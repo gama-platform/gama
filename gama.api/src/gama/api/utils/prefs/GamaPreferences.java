@@ -739,10 +739,15 @@ public class GamaPreferences {
 				create("pref_user_tests", "Include user-defined tests in the tests suite", false, IType.BOOL, false)
 						.in(NAME, TESTS).withComment(", if true, will run user models with 'test' experiments");
 
+		public static final Pref<Integer> TEST_TIMEOUT =
+				create("pref_test_timeout", "Test experiment timeout (seconds)", 10, IType.INT, false)
+						.in(NAME, TESTS).between(1, null)
+						.withComment("Includes experiment initialization and execution, but not worker startup or model compilation. Timed-out experiments are skipped.");
+
 		/** Whether only failed and aborted tests should be shown in the tests view, hiding passing tests. */
 		public static final Pref<Boolean> FAILED_TESTS =
-				create("pref_failed_tests", "Only display failed and aborted tests", false, IType.BOOL, true)
-						.in(NAME, TESTS).withComment(", if true, only aborted and failed tests are displayed");
+				create("pref_failed_tests", "Only display unsuccessful tests", false, IType.BOOL, true)
+						.in(NAME, TESTS).withComment("Includes failed, aborted, interrupted and timed-out tests.");
 
 		/** The name of the "Memory" group within the Execution tab. */
 		public static final String MEMORY = "Memory";
@@ -1399,6 +1404,11 @@ public class GamaPreferences {
 
 		/** The display name of the "Advanced" tab shown in the GAMA preferences dialog. */
 		public static final String NAME = "Advanced";
+
+		public static final Pref<Boolean> ISOLATED_TESTS =
+				create("pref_isolated_tests", "Run tests in a separate headless process", false, IType.BOOL, false)
+						.in(NAME, Runtime.TESTS)
+						.withComment("Slower startup, but Stop and timeout can terminate unresponsive Java operators. By default tests run in this JVM using cooperative interruption.");
 
 		/** The name of the "Serialisation" group within the Data and Operators tab. */
 		public static final String SERIALISATION = "Serialisation";

@@ -467,6 +467,13 @@ public interface IGui {
 	 */
 	default IModelsManager getModelsManager() { return NULL_MODELS_MANAGER; }
 
+	/** Returns true when the GUI takes responsibility for running this test experiment in isolation. */
+	default boolean runTestExperiment(final IModelSpecies model, final String experiment) { return false; }
+
+	/** Publishes an incremental test snapshot; headless workers use it to preserve results before interruption. */
+	default void displayTestSummary(final IScope scope,
+			final gama.api.utils.tests.IndividualTestSummary summary, final boolean finished) {}
+
 	/**
 	 * Close simulation views.
 	 *
@@ -597,6 +604,12 @@ public interface IGui {
 	 * @param scope
 	 */
 	default void displayTestsProgress(final IScope scope, final int number, final int total) {}
+
+	/** Reports the test or experiment currently executing. */
+	default void displayRunningTest(final IScope scope, final String name) {}
+
+	/** Whether the current test sequence was stopped by the user. */
+	default boolean isTestStopRequested() { return false; }
 
 	/**
 	 * Display tests results.
