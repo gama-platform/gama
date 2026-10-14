@@ -156,6 +156,8 @@ public interface IGui {
 	/** The test view id. */
 	String TEST_VIEW_ID = "gama.ui.application.view.TestView";
 
+	String COMPACT_TEST_VIEW_ID = "gama.ui.application.view.CompactTestView";
+
 	/** The parameter view id. */
 	String PARAMETER_VIEW_ID = "gama.ui.application.view.ParameterView";
 
@@ -604,6 +606,8 @@ public interface IGui {
 	 * @param scope
 	 */
 	default void displayTestsProgress(final IScope scope, final int number, final int total) {}
+
+	default void displayTestCounts(final int completed, final int total) {}
 
 	/** Reports the test or experiment currently executing. */
 	default void displayRunningTest(final IScope scope, final String name) {}

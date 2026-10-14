@@ -43,6 +43,7 @@ public final class IsolatedTestRunner {
 	private volatile boolean interrupted;
 	private TestExperimentSummary summary;
 	private String currentTest;
+	private final java.util.Set<String> finishedTests = new java.util.HashSet<>();
 	private boolean completed;
 	private long started;
 
@@ -201,10 +202,16 @@ public final class IsolatedTestRunner {
 			Thread.currentThread().interrupt();
 		} catch (final IOException | RuntimeException e) {
 			DEBUG.ERR("Unable to run isolated test experiment " + experiment, e);
-			if (termination == null) { markTermination(TestState.ABORTED, e.getMessage(), currentTest); }
+			if (termination == null) { markTermination(TestState.ABORTED, AbstractSummary.errorWithTrace(e), currentTest); }
+			if (currentTest != null && finishedTests.add(currentTest)) {
+				gui.displayTestSummary(GAMA.getRuntimeScope(), summary.summaries.get(currentTest), true);
+			}
 		} finally {
 			if (!completed || termination != null) { session.discard(); }
 			if (termination != null) { markTermination(termination, terminationMessage, terminatedTest); }
+			if (terminatedTest != null && termination != null && finishedTests.add(terminatedTest)) {
+				gui.displayTestSummary(GAMA.getRuntimeScope(), summary.summaries.get(terminatedTest), true);
+			}
 		}
 		return summary;
 	}
@@ -233,6 +240,9 @@ public final class IsolatedTestRunner {
 						final boolean finished = in.readBoolean();
 						summary.summaries.put(key, TestProcessProtocol.readTest(in));
 						currentTest = finished ? null : key;
+						if (!finished || finishedTests.add(key)) {
+							gui.displayTestSummary(GAMA.getRuntimeScope(), summary.summaries.get(key), finished);
+						}
 					}
 					case TestProcessProtocol.RESULT -> {
 						summary = TestProcessProtocol.readExperiment(in);

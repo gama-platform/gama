@@ -156,7 +156,7 @@ public class TestStatement extends AbstractStatementSequence implements IStateme
 				} catch (final GamaAssertException e) {} catch (final GamaRuntimeException e) {
 					if (!(statement instanceof AssertStatement)) {
 						getSummary().setState(TestState.ABORTED);
-						getSummary().setError(e.getMessage());
+						getSummary().setErrorWithTrace(e);
 						break;
 					}
 
@@ -164,7 +164,7 @@ public class TestStatement extends AbstractStatementSequence implements IStateme
 					// A statement that throws a Java exception instead of a GAML error only aborts this test:
 					// uncaught, it would end the whole experiment and its other tests would not be reported
 					getSummary().setState(TestState.ABORTED);
-					getSummary().setError(GamaRuntimeException.create(e, scope).getMessage());
+					getSummary().setErrorWithTrace(GamaRuntimeException.create(e, scope));
 					break;
 				}
 				gui.displayTestSummary(scope, getSummary(), false);

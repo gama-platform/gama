@@ -50,6 +50,7 @@ public final class TestProcessProtocol {
 		writeString(out, summary.getURI() == null ? "" : summary.getURI().toString());
 		writeString(out, summary.getState().name());
 		writeString(out, summary.getError() == null ? "" : summary.getError());
+		writeString(out, summary.getErrorDetails() == null ? "" : summary.getErrorDetails());
 		out.writeInt(summary.getSummaries().size());
 		for (final var entry : summary.getSummaries().entrySet()) {
 			writeString(out, entry.getKey());
@@ -84,6 +85,8 @@ public final class TestProcessProtocol {
 		summary.setState(TestState.valueOf(readString(in)));
 		final String error = readString(in);
 		if (!error.isEmpty()) { summary.setError(error); }
+		final String details = readString(in);
+		if (!details.isEmpty()) { summary.setErrorDetails(details); }
 		final int count = in.readInt();
 		if (count < 0) throw new IOException("Negative test snapshot size");
 		return count;

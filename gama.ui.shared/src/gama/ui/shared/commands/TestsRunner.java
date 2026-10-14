@@ -52,6 +52,7 @@ public class TestsRunner {
 		gui.openTestView(scope, false);
 		Job.createSystem("Test " + experiment, m -> {
 			try {
+				gui.displayTestCounts(0, TestExperimentRunner.countTests(model, experiment));
 				final var result = TestExperimentRunner.run(model, experiment, gui);
 				gui.displayTestsResults(scope, result);
 			} catch (final RuntimeException e) {
@@ -93,6 +94,13 @@ public class TestsRunner {
 
 		Job.createSystem("All tests", m -> {
 			try (var session = IsolatedTestRunner.openSession()) {
+				int totalTests = 0;
+				for (final IFile file : testFiles) {
+					if (m.isCanceled() || gui.isTestStopRequested()) return;
+					gui.displayRunningTest(scope, "Discovering tests in " + file.getProjectRelativePath());
+					totalTests = Math.addExact(totalTests, gui.getModelsManager().countHeadlessTests(file));
+				}
+				gui.displayTestCounts(0, totalTests);
 				for (final IFile file : testFiles) {
 					if (m.isCanceled() || gui.isTestStopRequested() || Thread.currentThread().isInterrupted()) break;
 					gui.displayTestsProgress(scope, i[0]++, size);
@@ -100,6 +108,9 @@ public class TestsRunner {
 					final List<TestExperimentSummary> list = gui.getModelsManager().runHeadlessTests(file);
 					if (list != null) { LAST_RUN.addSummaries(list); }
 				}
+			} catch (final RuntimeException e) {
+				DEBUG.ERR("Unable to discover or run tests", e);
+				gui.getDialogFactory().error("Unable to discover or run tests: " + e.getMessage());
 			} finally {
 				try {
 					gui.displayTestsResults(scope, LAST_RUN);

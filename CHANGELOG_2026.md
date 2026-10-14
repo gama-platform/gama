@@ -58,6 +58,12 @@ The test view has a **Stop tests** button and displays the currently executing m
 
 The test-view toolbar shows **Stop tests** only during execution and **Expand/Collapse** only when the resulting summary is displayed.
 
+The compact **Tests** view is now the default. **Advanced > Tests > Use the compact test results view** can be disabled to use the legacy view for the next test run; changing the preference does not move an active run or its report. The compact view uses a virtual native tree (experiment, test, assertion), small status indicators, summary counters, and one shared details pane instead of per-assertion editor controls. It provides problems-only filtering, severity sorting, source navigation, copy/export, and coalesced progress updates.
+
+The compact view places Expand/Collapse on the right and hides them for empty or flat reports. Its details pane appears only when a test or assertion is selected, shows the source filename rather than its path, and includes complete error stacks (including causes and GAML context) in both execution modes.
+
+Before running the test suite, a discovery pass counts individual tests across its test experiments. The compact view shows “Discovering tests...” during this pass, then a live completed/total counter in both execution modes, retaining partial counts after Stop or timeout.
+
 *   `[47f55ee]` Migrate renderer to OpenGL 4 core profile
 *   `[7614445]` Migrate OpenGL4 renderer away from fixed-function
 *   `[973f54c]` Add FastTriangulation and use for polygons

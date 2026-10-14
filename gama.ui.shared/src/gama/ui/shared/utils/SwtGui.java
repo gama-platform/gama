@@ -108,6 +108,13 @@ public class SwtGui implements IGui {
 
 	private volatile boolean testSequenceRunning;
 
+	private volatile String testViewId = TEST_VIEW_ID;
+
+	private volatile IGamaView.Test activeTestView;
+
+	private final java.util.concurrent.atomic.AtomicInteger completedTests = new java.util.concurrent.atomic.AtomicInteger();
+	private volatile int totalTests = -1;
+
 	private volatile IScope runningTestScope;
 
 	public void stopTests() {
@@ -245,12 +252,17 @@ public class SwtGui implements IGui {
 	public IGamaView.Test openTestView(final IScope scope, final boolean allTests) {
 		final boolean continuing = testSequenceRunning && !allTests;
 		if (!continuing) {
+			completedTests.set(0);
+			totalTests = -1;
+			testViewId = GamaPreferences.Experimental.COMPACT_TEST_VIEW.getValue()
+					? COMPACT_TEST_VIEW_ID : TEST_VIEW_ID;
 			testSequenceRunning = true;
 			ALL_TESTS_RUNNING = allTests;
 			testStopRequested = false;
 			runningTestScope = null;
 		}
-		final IGamaView.Test v = (Test) showView(scope, TEST_VIEW_ID, null, IWorkbenchPage.VIEW_ACTIVATE);
+		final IGamaView.Test v = (Test) showView(scope, testViewId, null, IWorkbenchPage.VIEW_ACTIVATE);
+		activeTestView = v;
 		if (v != null && !continuing) { v.startNewTestSequence(allTests); }
 		return v;
 	}
@@ -267,10 +279,12 @@ public class SwtGui implements IGui {
 		final String title = experiment instanceof gama.api.utils.tests.WithTestSummary<?> test
 				? test.getTitleForSummary() : "";
 		final String label = title.isBlank() || title.equals(name) ? name : title + " - " + name;
-		WorkbenchHelper.asyncRun(() -> {
-			final IGamaView.Test v = (Test) WorkbenchHelper.getPage().findView(TEST_VIEW_ID);
-			if (v != null) { v.displayRunningTest(label); }
-		});
+		final var v = activeTestView;
+		if (v instanceof gama.ui.shared.views.CompactTestView) {
+			v.displayRunningTest(label);
+		} else {
+			WorkbenchHelper.asyncRun(() -> { if (v != null) { v.displayRunningTest(label); } });
+		}
 	}
 
 	/**
@@ -281,13 +295,32 @@ public class SwtGui implements IGui {
 	 */
 	@Override
 	public void displayTestsProgress(final IScope scope, final int number, final int total) {
-		final IGamaView.Test v = (Test) WorkbenchHelper.getPage().findView(TEST_VIEW_ID);
+		final IGamaView.Test v = activeTestView;
 		if (v != null) { v.displayProgress(number, total); }
 	}
 
 	@Override
+	public void displayTestCounts(final int completed, final int total) {
+		totalTests = total;
+		completedTests.set(completed);
+		if (activeTestView instanceof gama.ui.shared.views.CompactTestView view) {
+			view.displayTestCounts(completed, total);
+		}
+	}
+
+	@Override
+	public void displayTestSummary(final IScope scope,
+			final gama.api.utils.tests.IndividualTestSummary summary, final boolean finished) {
+		if (!finished) return;
+		final int completed = completedTests.incrementAndGet();
+		if (activeTestView instanceof gama.ui.shared.views.CompactTestView view) {
+			view.displayTestCounts(completed, totalTests);
+		}
+	}
+
+	@Override
 	public void displayTestsResults(final IScope scope, final CompoundSummary<?, ?> summary) {
-		IGamaView.Test v = (Test) WorkbenchHelper.getPage().findView(TEST_VIEW_ID);
+		IGamaView.Test v = activeTestView;
 		if (v != null) { v.addTestResult(summary); }
 	}
 
@@ -295,7 +328,7 @@ public class SwtGui implements IGui {
 	public void endTestDisplay() {
 		testSequenceRunning = false;
 		runningTestScope = null;
-		final IGamaView.Test v = (Test) WorkbenchHelper.getPage().findView(TEST_VIEW_ID);
+		final IGamaView.Test v = activeTestView;
 		if (v != null) { v.finishTestSequence(); }
 		WorkbenchHelper.refreshNavigator();
 	}

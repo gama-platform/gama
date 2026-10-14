@@ -71,7 +71,7 @@ public final class TestWorkerApplication implements IApplication {
 				return IApplication.EXIT_OK;
 			} catch (final Exception e) {
 				TestProcessProtocol.send(events, TestProcessProtocol.ERROR,
-						out -> TestProcessProtocol.writeString(out, e.toString()));
+						out -> TestProcessProtocol.writeString(out, gama.api.utils.tests.AbstractSummary.errorWithTrace(e)));
 				throw e;
 			}
 		} finally {

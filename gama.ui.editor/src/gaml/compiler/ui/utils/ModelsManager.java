@@ -120,6 +120,19 @@ public class ModelsManager extends AbstractServiceFactory implements IModelsMana
 	 * @param object
 	 * @return
 	 */
+	@Override
+	public int countHeadlessTests(final Object object) {
+		final var model = findModel(object);
+		if (model == null) throw new IllegalArgumentException("Cannot discover tests in " + object);
+		try {
+			return model.getDescription().getExperimentNames().stream()
+					.filter(name -> model.getExperiment(name).isTest())
+					.mapToInt(name -> TestExperimentRunner.countTests(model, name)).sum();
+		} finally {
+			if (!(object instanceof IModelSpecies)) { model.dispose(); }
+		}
+	}
+
 	private IModelSpecies findModel(final Object object) {
 		if (object instanceof IModelSpecies) return (IModelSpecies) object;
 		if (object instanceof WrappedGamaFile) return findModel(((WrappedGamaFile) object).getResource());

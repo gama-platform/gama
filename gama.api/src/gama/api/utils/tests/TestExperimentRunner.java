@@ -39,6 +39,11 @@ public final class TestExperimentRunner {
 
 	private TestExperimentRunner(final IExperimentSpecies experiment) { this.experiment = experiment; }
 
+	public static int countTests(final IModelSpecies model, final String name) {
+		return model.getAllTests().size() + (int) model.getExperiment(name).getBehaviors().stream()
+				.filter(statement -> statement instanceof WithTestSummary<?>).count();
+	}
+
 	public static void interrupt() {
 		IsolatedTestRunner.interrupt();
 		final var runner = ACTIVE.get();
@@ -119,7 +124,7 @@ public final class TestExperimentRunner {
 				DEBUG.ERR("Test experiment failed: " + name, e);
 				if (result == null) { result = new TestExperimentSummary(name, model.getURI()); }
 				result.setState(TestState.ABORTED);
-				result.setError(e.getMessage());
+				result.setErrorWithTrace(e);
 			}
 		} finally {
 			synchronized (this) {

@@ -99,17 +99,19 @@ public class AssertStatement extends AbstractStatement implements WithTestSummar
 		try {
 			result = Cast.asBool(scope, value.value(scope));
 		} catch (final GamaRuntimeException e) {
-			summary.setError(e.getMessage());
+			summary.setErrorWithTrace(e);
 			summary.setState(TestState.ABORTED);
 			throw e;
 		}
 		if (!result) {
 			final TestState s = isWarning(scope) ? TestState.WARNING : TestState.FAILED;
 			summary.setState(s);
-			throw new GamaAssertException(scope,
+			final var failure = new GamaAssertException(scope,
 					"Assert failed: "
 							+ (label == null ? getTitleForSummary() : Cast.asString(scope, label.value(scope))),
 					isWarning(scope));
+			summary.setErrorWithTrace(failure);
+			throw failure;
 		}
 		summary.setState(TestState.PASSED);
 		return result;

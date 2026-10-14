@@ -118,6 +118,10 @@ public interface IModelsManager {
 		return Collections.emptyList();
 	}
 
+	default int countHeadlessTests(final Object model) {
+		throw new UnsupportedOperationException("Test discovery is not supported by this models manager");
+	}
+
 	/**
 	 * Retrieves information about all GAML models available in the workspace.
 	 * 

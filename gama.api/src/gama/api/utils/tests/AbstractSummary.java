@@ -10,11 +10,14 @@
  ********************************************************************************************************/
 package gama.api.utils.tests;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Map;
 
 import org.eclipse.emf.common.util.URI;
 
 import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.color.IColor;
 import gama.api.utils.interfaces.IColored;
@@ -43,6 +46,8 @@ public abstract class AbstractSummary<S extends WithTestSummary<?>> implements I
 	/** The error. */
 	public String error;
 
+	private String errorDetails;
+
 	/**
 	 * Instantiates a new abstract summary.
 	 *
@@ -70,7 +75,26 @@ public abstract class AbstractSummary<S extends WithTestSummary<?>> implements I
 	 * @param error
 	 *            the new error
 	 */
-	public void setError(final String error) { this.error = error; }
+	public void setError(final String error) {
+		this.error = error;
+		errorDetails = null;
+	}
+
+	public void setErrorWithTrace(final Throwable failure) {
+		setError(failure.getMessage());
+		errorDetails = errorWithTrace(failure);
+	}
+
+	public String getErrorDetails() { return errorDetails == null ? error : errorDetails; }
+
+	public void setErrorDetails(final String details) { errorDetails = details; }
+
+	public static String errorWithTrace(final Throwable failure) {
+		final var text = new StringWriter();
+		if (failure instanceof GamaRuntimeException e) { text.append(e.getAllText()).append("\n\n"); }
+		failure.printStackTrace(new PrintWriter(text));
+		return text.toString();
+	}
 
 	/**
 	 * Gets the error.
@@ -137,6 +161,7 @@ public abstract class AbstractSummary<S extends WithTestSummary<?>> implements I
 	 */
 	public void reset() {
 		error = null;
+		errorDetails = null;
 	}
 
 	/**

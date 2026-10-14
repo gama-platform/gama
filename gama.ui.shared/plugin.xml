@@ -76,6 +76,13 @@
                   name="Tests"
                   restorable="false"> 
             </view> 
+            <view allowMultiple="false"
+                  category="gama.ui.category.gama"
+                  class="gama.ui.shared.views.CompactTestView"
+                  icon="icons_svg/light/views/tabs/view.test.svg"
+                  id="gama.ui.application.view.CompactTestView"
+                  name="Tests"
+                  restorable="false"/>
    </extension>
    <extension
          point="org.eclipse.ui.commands">
