@@ -61,7 +61,7 @@ experiment AgentRobustnessTest type: test autorun: true {
 		assert ag.ratio = 1.0;
 		ag.ratio <- #nan;
 		assert ag.ratio >= 0.0 and ag.ratio <= 1.0;
-		ask created { do die; }
+		ask created { do die(); }
 	}
 
 	test "A negative speed does not move an agent away from its target" {
@@ -70,10 +70,10 @@ experiment AgentRobustnessTest type: test autorun: true {
 		w.location <- {50, 50};
 		ask w {
 			speed <- -5.0;
-			do goto target: {60, 50};
+			do goto (target: {60, 50});
 		}
 		assert (w.location distance_to {60, 50}) <= 10.0;
-		ask created { do die; }
+		ask created { do die(); }
 	}
 
 	test "An infinite speed reaches the target without going beyond" {
@@ -82,10 +82,10 @@ experiment AgentRobustnessTest type: test autorun: true {
 		w.location <- {50, 50};
 		ask w {
 			speed <- #infinity;
-			do goto target: {60, 50};
+			do goto (target: {60, 50});
 		}
 		assert w.location = {60, 50};
-		ask created { do die; }
+		ask created { do die(); }
 	}
 
 	test "A speed that is not a number does not corrupt the location" {
@@ -96,12 +96,12 @@ experiment AgentRobustnessTest type: test autorun: true {
 		try {
 			ask w {
 				speed <- #nan;
-				do goto target: {60, 50};
+				do goto (target: {60, 50});
 			}
 		} catch { problem <- #current_error; }
 		assert handled(problem);
 		assert is_number(w.location.x) and is_number(w.location.y);
-		ask created { do die; }
+		ask created { do die(); }
 	}
 
 	test "Going nowhere" {
@@ -109,10 +109,10 @@ experiment AgentRobustnessTest type: test autorun: true {
 		walker w <- created[0];
 		w.location <- {50, 50};
 		string problem <- nil;
-		try { ask w { do goto target: nil; } } catch { problem <- #current_error; }
+		try { ask w { do goto (target: nil); } } catch { problem <- #current_error; }
 		assert handled(problem);
 		assert w.location = {50, 50};
-		ask created { do die; }
+		ask created { do die(); }
 	}
 
 	test "A location that is not a number is rejected" {
@@ -123,7 +123,7 @@ experiment AgentRobustnessTest type: test autorun: true {
 		try { w.location <- {#nan, #nan}; } catch { problem <- #current_error; }
 		assert handled(problem);
 		assert is_number(w.location.x) and is_number(w.location.y);
-		ask created { do die; }
+		ask created { do die(); }
 	}
 
 	test "Headings are normalised" {
@@ -133,7 +133,7 @@ experiment AgentRobustnessTest type: test autorun: true {
 		assert w.heading = 45.0;
 		w.heading <- -90.0;
 		assert w.heading = 270.0;
-		ask created { do die; }
+		ask created { do die(); }
 	}
 
 	test "Accessing a population out of its bounds" {
@@ -145,7 +145,7 @@ experiment AgentRobustnessTest type: test autorun: true {
 		problem <- nil;
 		try { bounded_agent ag <- bounded_agent[-1]; } catch { problem <- #current_error; }
 		assert handled(problem);
-		ask created { do die; }
+		ask created { do die(); }
 	}
 
 	test "Accessing a grid out of its bounds" {
@@ -161,11 +161,11 @@ experiment AgentRobustnessTest type: test autorun: true {
 		assert dead(nil);
 		create bounded_agent returns: created;
 		bounded_agent ag <- created[0];
-		ask ag { do die; }
+		ask ag { do die(); }
 		assert dead(ag);
 		// killing an agent twice is harmless
 		string problem <- nil;
-		try { ask ag { do die; } } catch { problem <- #current_error; }
+		try { ask ag { do die(); } } catch { problem <- #current_error; }
 		assert handled(problem);
 		problem <- nil;
 		try { float d <- ag distance_to nil; } catch { problem <- #current_error; }
