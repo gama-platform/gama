@@ -173,12 +173,15 @@ public interface IRandom {
 	double between(double min, double max);
 
 	/**
-	 * @return an uniformly distributed int random number in [min, max] respecting the step
+	 * Samples min + k * step without passing max. The nonzero step must point toward max;
+	 * equal bounds accept either sign. Invalid steps raise a GAML runtime error.
+	 * @return a uniformly distributed integer on the stepped interval
 	 */
 	int between(int min, int max, int step);
 
 	/**
-	 * Between.
+	 * Samples and rounds within a stepped interval. The finite, nonzero step must point toward max;
+	 * equal bounds accept either sign. Bounds must be finite. Invalid inputs raise a GAML runtime error.
 	 *
 	 * @param min
 	 *            the min
@@ -275,7 +278,7 @@ public interface IRandom {
 	boolean oneOf(boolean[] c);
 
 	/**
-	 * Between.
+	 * Samples each coordinate using the directional-step rule of {@link #between(double, double, double)}.
 	 *
 	 * @param pMin
 	 *            the min
