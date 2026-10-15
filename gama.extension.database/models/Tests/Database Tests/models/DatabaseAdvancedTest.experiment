@@ -126,7 +126,7 @@ experiment DatabaseAdvancedTest type: test autorun: true {
 		list<map<string, unknown>> after_delete <- [];
 		ask ag {
 			do executeUpdate params: params updateComm: "CREATE TABLE people (id INTEGER PRIMARY KEY, name TEXT, age INTEGER)";
-			do insert params: params into: "people" data: [1, "Alice", 30];
+			do insert (params: params, into: "people", data: [1, "Alice", 30]);
 			do insert params: params into: "people" data: [2, "Bob", 25];
 			do executeUpdate params: params updateComm: "UPDATE people SET age = 31 WHERE name = 'Alice'";
 			after_update <- select(params: params, select: "SELECT age FROM people WHERE name = 'Alice'");

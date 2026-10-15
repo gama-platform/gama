@@ -16,41 +16,45 @@ import java.lang.annotation.RetentionPolicy;
  * they are automatically named after the operator, constant, statement they annotate. For instance, for the '+'
  * operator, this annotation will produce:
  *
- * @test("10+10=20") -> test "+" { assert 10+10=20;}
+ * @test("10+10=20") -> test "Operator +" { assert 10+10=20;}
  *
  * It is possible to give them a more explicit name:
  *
  * @test(value="10+10 = 20" name="int addition") -> test "int addition" { assert 10+10=20; }
  *
- * Several @test() annotations can be attached to an operator or constant. In that case, the corresponding assertions
- * are grouped together in a single GAML test statement. Example:
+ * Several @test() annotations can be attached to an operator or constant. Each annotation produces its own independent
+ * GAML test statement. Duplicate names are suffixed with " (1)", " (2)", etc. Example:
  *
  * @test("10+10=20") @test("0+0 = 0")
  *
- * will produce the following GAML test statement:
+ * will produce the following GAML test statements:
  *
- * test "+" { assert 10+10=20; assert 0+0=0; }
+ * test "Operator +" { assert 10+10=20; }
+ * test "Operator + (1)" { assert 0+0=0; }
  *
- * If they are named, the name of the test statement is a concatenation of their names:
+ * If they are named, each test statement keeps its own name:
  *
  * @test(value="10+10=20" name="int addition" ) @test(value="10+0 = 10" name="zero neutrality")
  *
  * produces:
  *
- * test "int addition and zero neutrality" { assert 10+10=20; assert 10 + 0 = 10; }
+ * test "int addition" { assert 10+10=20; }
+ * test "zero neutrality" { assert 10+0=10; }
  *
  * test annotations accept multi-line tests, provided that the last line is a boolean expression (i.e. an assertion).
  * Simply separate (as you would do in GAML) the lines by a semi-colon. If there are no assertion (i.e. the last line
  * ends with a semi-colon), the lines are simply copied to the GAML code. This can be handy if one wants to initialize a
- * bunch of variables, for instance. These statements can even contain complete 'assert' statements.
+ * bunch of variables, for instance. These statements can even contain complete 'assert' statements. Variables are
+ * local to each test: initialization and the assertions that use it must be in the same annotation.
  *
  * Example:
  *
- * @test("int a <- 10; int b <- 10;") @test("a+b = 20") @test("a+0 = a") @test("int c<- 0; assert c+b = b;")
+ * @test("int a <- 10; int b <- 10; a+b = 20") @test("int a <- 10; a+0 = a")
  *
  * produces:
  *
- * test "+" { int a <- 10; int b <- 10; assert a+b = 20; assert a+0 = a; int c<- 0; assert c+b = 0; }
+ * test "Operator +" { int a <- 10; int b <- 10; assert a+b = 20; }
+ * test "Operator + (1)" { int a <- 10; assert a+0 = a; }
  *
  * Note that no syntax verification occurs when writing these annotations. It is up to the programmer to produce
  * syntactically correct codes, otherwise the automated validation of models (which occurs whenever the code is
@@ -81,8 +85,7 @@ public @interface test {
 	 *         '@test("int a <- 0; !is_error(100 / a)")' // when tested, the runtime error will be caught but the test
 	 *         will fail (as the division by zero IS an error)
 	 *
-	 *         An empty value will produce an empty test statement (unless the @test annotation is preceded or followed
-	 *         by other @test annotations)
+	 *         An empty value will produce an empty test statement.
 	 *
 	 */
 	String value();

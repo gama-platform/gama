@@ -7,7 +7,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * The Interface tests.
+ * Container for repeatable {@link test} annotations. Each entry generates an independent GAML test statement.
  */
 @Retention (RetentionPolicy.RUNTIME)
 public @interface tests {
