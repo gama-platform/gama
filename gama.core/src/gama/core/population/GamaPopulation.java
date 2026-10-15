@@ -372,14 +372,28 @@ public class GamaPopulation<T extends IAgent> extends AbstractPopulation<T> {
 
 	}
 
-	@SuppressWarnings ("unchecked")
+	/**
+	 * Returns the agent at a zero-based position, reporting invalid positions as GAML errors.
+	 */
+	@Override
+	public T get(final IScope scope, final Integer index) throws GamaRuntimeException {
+		synchronized (agentsContainer) {
+			final int size = agentsContainer.size();
+			if (index < 0 || index >= size) {
+				throw GamaRuntimeException.error("Index " + index + " out of bounds for population '"
+						+ species.getName() + "' (size: " + size + ")", scope);
+			}
+			return agentsContainer.get(index.intValue());
+		}
+	}
+
 	@Override
 	public T getFromIndicesList(final IScope scope, final IList indices) throws GamaRuntimeException {
 		if (indices == null) return null;
 		final int size = indices.size();
 		return switch (size) {
 			case 0 -> null;
-			case 1 -> (T) agentsContainer.getFromIndicesList(scope, indices);
+			case 1 -> get(scope, Cast.asInt(scope, indices.get(0)));
 			case 2 -> this.getAgent(scope,
 					GamaPointFactory.create(Cast.asFloat(scope, indices.get(0)), Cast.asFloat(scope, indices.get(1))));
 			default -> throw GamaRuntimeException.error("Populations cannot be accessed with 3 or more indexes", scope);

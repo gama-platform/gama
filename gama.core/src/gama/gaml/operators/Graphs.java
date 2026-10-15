@@ -71,7 +71,6 @@ import gama.api.types.graph.GamaGraphFactory;
 import gama.api.types.graph.GamaPathFactory;
 import gama.api.types.graph.GraphObjectToAdd;
 import gama.api.types.graph.IGraph;
-import gama.api.types.graph.IGraphEventProvider;
 import gama.api.types.graph.IPath;
 import gama.api.types.graph.IPathComputer;
 import gama.api.types.graph.ISpatialGraph;
@@ -2435,7 +2434,7 @@ public class Graphs {
 			category = { IOperatorCategory.GRAPH, IOperatorCategory.PATH },
 			concept = { IConcept.GRAPH })
 	@doc (
-			value = "The K shortest paths between a list of two objects in a graph",
+			value = "The K shortest paths between two vertices in a graph, including non-spatial vertices such as strings or integers.",
 			examples = { @example (
 					value = "paths_between(my_graph, ag1:: ag2, 2)",
 					equals = "the 2 shortest paths (ordered by length) between ag1 and ag2",
@@ -2458,11 +2457,12 @@ public class Graphs {
 			@test ("graph square_graph <- as_edge_graph([line([{0, 0}, {10, 0}]), line([{10, 0}, {10, 10}]), line([{0, 0}, {0, 10}]), line([{0, 10}, {10, 10}])]); list<path> two_ways <- paths_between(square_graph, {0, 0}::{10, 10}, 2); length(two_ways) = 2"),
 			@test ("graph square_graph2 <- as_edge_graph([line([{0, 0}, {10, 0}]), line([{10, 0}, {10, 10}]), line([{0, 0}, {0, 10}]), line([{0, 10}, {10, 10}])]); list<path> two_ways2 <- paths_between(square_graph2, {0, 0}::{10, 10}, 2); two_ways2 all_match (length(each.edges) = 2)")
 	})
-	public static IList<IPath> kPathsBetween(final IScope scope, final IGraphEventProvider graph, final IPair sourTarg,
+	public static IList<IPath> kPathsBetween(final IScope scope, final IGraph graph, final IPair sourTarg,
 			final int k) throws GamaRuntimeException {
-
-		return GamaTopologyFactory.castToTopology(scope, graph, false).kPathsBetween(scope, (IShape) sourTarg.key(),
-				(IShape) sourTarg.value(), k);
+		if (graph instanceof GamaSpatialGraph)
+			return GamaTopologyFactory.castToTopology(scope, graph, false).kPathsBetween(scope, (IShape) sourTarg.key(),
+					(IShape) sourTarg.value(), k);
+		return graph.getPathComputer().computeKShortestPathsBetween(scope, sourTarg.key(), sourTarg.value(), k);
 	}
 
 	/**

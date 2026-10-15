@@ -18,7 +18,9 @@ species bounded_agent {
 	float ratio <- 0.5 min: 0.0 max: 1.0;
 }
 
-species walker skills: [moving] { }
+species walker skills: [moving] { 
+	float speed <- 0.0 min: 0.0;
+}
 
 grid cell width: 3 height: 3 { }
 
@@ -65,15 +67,15 @@ experiment AgentRobustnessTest type: test autorun: true {
 	}
 
 	test "A negative speed does not move an agent away from its target" {
-		create walker returns: created;
-		walker w <- created[0];
-		w.location <- {50, 50};
+		// Note: negative speeds are ok in the driving skill. So the test is made with a species 
+		// that explicitly sets a minimum value of zero. 
+		walker w <- walker(location:{50, 50}, speed: -5.0);
 		ask w {
-			speed <- -5.0;
 			do goto (target: {60, 50});
 		}
+		write w.location;
 		assert (w.location distance_to {60, 50}) <= 10.0;
-		ask created { do die(); }
+		ask w { do die(); }
 	}
 
 	test "An infinite speed reaches the target without going beyond" {
@@ -138,14 +140,37 @@ experiment AgentRobustnessTest type: test autorun: true {
 
 	test "Accessing a population out of its bounds" {
 		create bounded_agent number: 2 returns: created;
+		// the casting of 99 as a bounded_agent does not raise an error, but simply returns nil
 		assert bounded_agent(99) = nil;
+		assert bounded_agent[0] = created[0];
+		assert bounded_agent[1] = created[1];
 		string problem <- nil;
 		try { bounded_agent ag <- bounded_agent[5]; } catch { problem <- #current_error; }
+		write problem;
+		assert problem != nil;
 		assert handled(problem);
+		assert problem contains "Index 5 out of bounds for population 'bounded_agent' (size: 2)";
 		problem <- nil;
 		try { bounded_agent ag <- bounded_agent[-1]; } catch { problem <- #current_error; }
+		assert problem != nil;
 		assert handled(problem);
+		assert problem contains "Index -1 out of bounds for population 'bounded_agent' (size: 2)";
+		problem <- nil;
+		try { bounded_agent ag <- bounded_agent[2]; } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+		assert problem contains "Index 2 out of bounds for population 'bounded_agent' (size: 2)";
+		problem <- nil;
+		try { bounded_agent ag <- bounded_agent at 2; } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+		assert problem contains "Index 2 out of bounds for population 'bounded_agent' (size: 2)";
 		ask created { do die(); }
+		problem <- nil;
+		try { bounded_agent ag <- bounded_agent[0]; } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+		assert problem contains "Index 0 out of bounds for population 'bounded_agent' (size: 0)";
 	}
 
 	test "Accessing a grid out of its bounds" {
@@ -159,8 +184,7 @@ experiment AgentRobustnessTest type: test autorun: true {
 
 	test "Dead and nil agents" {
 		assert dead(nil);
-		create bounded_agent returns: created;
-		bounded_agent ag <- created[0];
+		bounded_agent ag <- bounded_agent();
 		ask ag { do die(); }
 		assert dead(ag);
 		// killing an agent twice is harmless
@@ -169,6 +193,38 @@ experiment AgentRobustnessTest type: test autorun: true {
 		assert handled(problem);
 		problem <- nil;
 		try { float d <- ag distance_to nil; } catch { problem <- #current_error; }
+		write problem;
+		assert problem != nil;
 		assert handled(problem);
+		assert problem contains "Cannot compute distance_to: the source and target must not be nil";
+	}
+
+	test "Distances reject nil sources and targets" {
+		geometry present_shape <- square(1);
+		geometry absent_shape <- nil;
+		point present_point <- {0, 0};
+		point absent_point <- nil;
+		assert present_shape distance_to present_shape = 0.0;
+		assert present_point distance_to {3, 4} = 5.0;
+		string problem <- nil;
+		try { float d <- present_shape distance_to absent_shape; } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+		assert problem contains "Cannot compute distance_to: the source and target must not be nil";
+		problem <- nil;
+		try { float d <- absent_shape distance_to present_shape; } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+		assert problem contains "Cannot compute distance_to: the source and target must not be nil";
+		problem <- nil;
+		try { float d <- present_point distance_to absent_point; } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+		assert problem contains "Cannot compute distance_to: the source and target must not be nil";
+		problem <- nil;
+		try { float d <- absent_point distance_to present_point; } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+		assert problem contains "Cannot compute distance_to: the source and target must not be nil";
 	}
 }
