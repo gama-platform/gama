@@ -1415,6 +1415,12 @@ public class GamaPreferences {
 						.in(NAME, Runtime.TESTS)
 						.withComment("Slower startup, but Stop and timeout can terminate unresponsive Java operators. By default tests run in this JVM using cooperative interruption.");
 
+		/** Whether tests launched in the UI should write to the standard UI console. */
+		public static final Pref<Boolean> TESTS_USE_UI_CONSOLE =
+				create("pref_tests_use_ui_console", "Show test output in the UI console", false, IType.BOOL, false)
+						.in(NAME, Runtime.TESTS)
+						.withComment("Routes test console messages to the standard GAMA console, including tests run in a separate process. Command-line runs are unchanged.");
+
 		/** The name of the "Serialisation" group within the Data and Operators tab. */
 		public static final String SERIALISATION = "Serialisation";
 

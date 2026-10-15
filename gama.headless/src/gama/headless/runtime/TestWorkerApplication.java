@@ -29,6 +29,7 @@ import gama.api.gaml.statements.IStatement;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.runtime.scope.IScope;
+import gama.api.ui.IConsoleListener;
 import gama.api.ui.IGamaView;
 import gama.api.ui.NullGuiHandler;
 import gama.api.utils.tests.IndividualTestSummary;
@@ -53,7 +54,8 @@ public final class TestWorkerApplication implements IApplication {
 				var requests = new DataInputStream(System.in)) {
 			try {
 				HeadlessApplication.getInjector();
-				GAMA.setHeadlessGui(new WorkerGui(events));
+				final var gui = new WorkerGui(events);
+				GAMA.setHeadlessGui(gui);
 				final Thread execution = Thread.currentThread();
 				final Thread watcher = new Thread(() -> watch(directory.resolve("stop"), execution), "Test interruption");
 				watcher.setDaemon(true);
@@ -66,6 +68,7 @@ public final class TestWorkerApplication implements IApplication {
 						break;
 					}
 					final String name = TestProcessProtocol.readString(requests);
+					gui.useUIConsole = requests.readBoolean();
 					run(path, name, events);
 				}
 				return IApplication.EXIT_OK;
@@ -130,8 +133,20 @@ public final class TestWorkerApplication implements IApplication {
 	private final class WorkerGui extends NullGuiHandler {
 
 		private final OutputStream events;
+		private volatile boolean useUIConsole;
+		private final IConsoleListener uiConsole = (message, root, color) -> {
+			final var resolvedColor = color == null && root != null ? root.getColor() : color;
+			send(TestProcessProtocol.CONSOLE, out -> {
+				TestProcessProtocol.writeString(out, message);
+				out.writeBoolean(resolvedColor != null);
+				if (resolvedColor != null) { out.writeInt(resolvedColor.getRGB()); }
+			});
+		};
 
 		WorkerGui(final OutputStream events) { this.events = events; }
+
+		@Override
+		public IConsoleListener getConsole() { return useUIConsole ? uiConsole : super.getConsole(); }
 
 		@Override
 		public boolean isTestStopRequested() { return stopped; }

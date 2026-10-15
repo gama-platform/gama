@@ -39,6 +39,12 @@ public final class TestExperimentRunner {
 
 	private TestExperimentRunner(final IExperimentSpecies experiment) { this.experiment = experiment; }
 
+	/** Console routing is opt-in and never changes command-line or server output. */
+	public static boolean usesUIConsole() {
+		return !GAMA.isInHeadLessMode() && GAMA.getRegularGui() != null
+				&& GamaPreferences.Experimental.TESTS_USE_UI_CONSOLE.getValue();
+	}
+
 	public static int countTests(final IModelSpecies model, final String name) {
 		return model.getAllTests().size() + (int) model.getExperiment(name).getBehaviors().stream()
 				.filter(statement -> statement instanceof WithTestSummary<?>).count();

@@ -31,6 +31,7 @@ import org.osgi.framework.FrameworkUtil;
 
 import gama.api.GAMA;
 import gama.api.kernel.species.IModelSpecies;
+import gama.api.types.color.GamaColorFactory;
 import gama.api.ui.IGui;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
@@ -46,6 +47,7 @@ public final class IsolatedTestRunner {
 	private final java.util.Set<String> finishedTests = new java.util.HashSet<>();
 	private boolean completed;
 	private long started;
+	private final boolean useUIConsole = TestExperimentRunner.usesUIConsole();
 
 	private IsolatedTestRunner(final String model, final String experiment) {
 		summary = new TestExperimentSummary(experiment + " in " + Path.of(model).getFileName(),
@@ -74,7 +76,7 @@ public final class IsolatedTestRunner {
 
 		private Session owner() { return borrowed == null ? this : borrowed.owner(); }
 
-		private void request(final String model, final String experiment) throws IOException {
+		private void request(final String model, final String experiment, final boolean useUIConsole) throws IOException {
 			if (process == null || !process.isAlive()) {
 				discard();
 				directory = Files.createTempDirectory("gama-test-");
@@ -86,6 +88,7 @@ public final class IsolatedTestRunner {
 			}
 			TestProcessProtocol.writeString(requests, model);
 			TestProcessProtocol.writeString(requests, experiment);
+			requests.writeBoolean(useUIConsole);
 			requests.flush();
 		}
 
@@ -158,7 +161,7 @@ public final class IsolatedTestRunner {
 		TestState termination = null;
 		String terminationMessage = null, terminatedTest = null;
 		try {
-			session.request(model, experiment);
+			session.request(model, experiment, useUIConsole);
 			final Path stop = session.directory.resolve("stop");
 			final Path log = session.directory.resolve("worker.log");
 			final Process process = session.process;
@@ -250,6 +253,13 @@ public final class IsolatedTestRunner {
 						return;
 					}
 					case TestProcessProtocol.ERROR -> throw new IOException(TestProcessProtocol.readString(in));
+					case TestProcessProtocol.CONSOLE -> {
+						final String message = TestProcessProtocol.readString(in);
+						final var color = in.readBoolean() ? GamaColorFactory.get(in.readInt()) : null;
+						if (useUIConsole) {
+							gui.getConsole().informConsole(message, GAMA.getPlatformAgent(), color);
+						}
+					}
 					default -> throw new IOException("Unknown test worker event");
 				}
 			}
