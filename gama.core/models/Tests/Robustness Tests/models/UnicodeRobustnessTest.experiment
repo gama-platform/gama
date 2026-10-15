@@ -22,6 +22,31 @@ experiment UnicodeRobustnessTest type: test autorun: true {
 		assert emoji at 0 = "😀";
 		assert first(emoji) = "😀";
 		assert last(emoji) = "a";
+		assert length(emoji) = 2;
+		assert emoji at 1 = "a";
+		assert emoji at 2 = "";
+		assert emoji at -1 = "";
+		assert last("a😀") = "😀";
+		assert first("😀") = last("😀");
+		assert length("😀😀") = 2;
+		assert length("é日本語") = 4;
+		assert length("é") = 2;
+	}
+
+	test "Search positions and slices count code points" {
+		string text <- "😀a😀b";
+		assert text index_of "a" = 1;
+		assert text last_index_of "😀" = 2;
+		assert text index_of "b" = 3;
+		assert text index_of "missing" = -1;
+		assert text last_index_of "" = length(text);
+		assert copy_between(text, 0, 1) = "😀";
+		assert copy_between(text, 1, 3) = "a😀";
+		assert copy_between(text, text last_index_of "😀", length(text)) = "😀b";
+		assert copy_between(text, -1, 99) = text;
+		assert copy_between(text, 99, 100) = "";
+		assert copy_between(text, 2, 1) = "";
+		assert capitalize("😀a") = "😀a";
 	}
 
 	test "Reversing keeps the characters" {

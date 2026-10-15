@@ -37,16 +37,26 @@ experiment SerializeAdvancedTest type: test autorun: true {
 		// the serialised form is not the textual one
 		assert serialize([1, 2, 3]) != "[1,2,3]";
 	}
-
+	
+	
 	test "Serialising an agent to JSON does not alter the next serialisations" {
 		create serialised_agent number: 1 returns: created_agents;
 		string agent_json <- to_json(created_agents[0]);
 		assert agent_json contains "serialised_agent";
 		// the references of the agent must not leak into unrelated documents
 		assert to_json([1, 2]) = "[1,2]";
+		assert to_json([1, 2, 3]) = "[1,2,3]";
 		assert to_json(["a"::1]) = '{"a":1}';
-		ask created_agents { do die; }
+		list<int> values <- [1, 2, 3];
+		assert to_json(values) = "[1,2,3]";
+		created_agents[0].amount <- 42;
+		string updated_agent_json <- to_json(created_agents[0]);
+		assert updated_agent_json contains '"amount":42';
+		assert updated_agent_json != agent_json;
+		assert to_json(values) = "[1,2,3]";
+		ask created_agents { do die(); }
 	}
+
 
 	test "An agent serialised in binary is restored as the same agent" {
 		create serialised_agent number: 2 returns: created_agents;
@@ -59,6 +69,6 @@ experiment SerializeAdvancedTest type: test autorun: true {
 		assert restored != created_agents[1];
 		assert restored.amount = 42;
 		assert restored.label = "changed";
-		ask created_agents { do die; }
+		ask created_agents { do die(); }
 	}
 }

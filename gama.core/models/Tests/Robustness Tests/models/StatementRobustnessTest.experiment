@@ -57,7 +57,7 @@ experiment StatementRobustnessTest type: test autorun: true {
 		ask [] { asked <- asked + 1; }
 		assert asked = 0;
 		string problem <- nil;
-		try { ask nil { asked <- asked + 1; } } catch { problem <- #current_error; }
+		try { ask agent(nil) { asked <- asked + 1; } } catch { problem <- #current_error; }
 		assert problem != nil;
 		assert handled(problem);
 		assert asked = 0;
@@ -66,7 +66,7 @@ experiment StatementRobustnessTest type: test autorun: true {
 	test "Asking a dead agent does not execute anything" {
 		create victim returns: created;
 		victim dead_one <- created[0];
-		ask dead_one { do die; }
+		ask dead_one { do die(); }
 		int asked <- 0;
 		string problem <- nil;
 		try { ask dead_one { asked <- 1; } } catch { problem <- #current_error; }
@@ -80,7 +80,7 @@ experiment StatementRobustnessTest type: test autorun: true {
 		string problem <- nil;
 		try {
 			loop v over: created {
-				ask created { do die; }
+				ask created { do die(); }
 				iterations <- iterations + 1;
 			}
 		} catch { problem <- #current_error; }
@@ -94,18 +94,18 @@ experiment StatementRobustnessTest type: test autorun: true {
 		create holder returns: holders;
 		create victim returns: victims;
 		victim dead_one <- victims[0];
-		ask dead_one { do die; }
+		ask dead_one { do die(); }
 		string problem <- nil;
 		try { ask holders[0] { capture dead_one as: inner; } } catch { problem <- #current_error; }
 		assert problem != nil;
 		assert handled(problem);
 		assert empty(holders[0].inner);
-		ask holders { do die; }
+		ask holders { do die(); }
 	}
 
 	test "Creating agents from an empty source creates nothing" {
 		int before <- length(counter);
-		create counter from: [] returns: created;
+		create counter from: list<geometry>([]) returns: created;
 		assert empty(created);
 		assert length(counter) = before;
 	}
@@ -115,16 +115,17 @@ experiment StatementRobustnessTest type: test autorun: true {
 		int result <- 0;
 		ask created[0] { result <- depth(200); }
 		assert result = 200;
-		ask created { do die; }
+		ask created { do die(); }
 	}
 
 	test "A runaway recursion raises a proper error" {
 		create recursive_agent returns: created;
 		string problem <- nil;
-		try { ask created[0] { int result <- depth(100000); } } catch { problem <- #current_error; }
+		try { ask created[0] { int result <- depth(1000000); } } catch { problem <- #current_error; }
 		assert problem != nil;
 		assert handled(problem);
-		ask created { do die; }
+		assert problem contains "Execution stack exhausted";
+		ask created { do die(); }
 	}
 
 	test "Asking agents in parallel gives the same result as in sequence" {
@@ -135,7 +136,7 @@ experiment StatementRobustnessTest type: test autorun: true {
 		ask created { value <- int(self) * 2; }
 		list<int> in_sequence <- created collect each.value;
 		assert in_parallel = in_sequence;
-		ask created { do die; }
+		ask created { do die(); }
 	}
 
 	test "An error raised in an action reaches the caller" {
