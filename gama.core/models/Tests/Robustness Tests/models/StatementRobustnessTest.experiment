@@ -35,13 +35,16 @@ experiment StatementRobustnessTest type: test autorun: true {
 	test "Loops with a null or negative number of iterations do nothing" {
 		int iterations <- 0;
 		loop times: -1 {
-			iterations <- iterations + 1; }
+			iterations <- iterations + 1;
+		}
 		assert iterations = 0;
 		loop times: 0 {
-			iterations <- iterations + 1; }
+			iterations <- iterations + 1;
+		}
 		assert iterations = 0;
 		loop i from: 5 to: 5 {
-			iterations <- iterations + 1; }
+			iterations <- iterations + 1;
+		}
 		assert iterations = 1;
 	}
 
@@ -49,26 +52,33 @@ experiment StatementRobustnessTest type: test autorun: true {
 		int iterations <- 0;
 		list<int> nothing <- nil;
 		loop i over: nothing {
-			iterations <- iterations + 1; }
+			iterations <- iterations + 1;
+		}
 		assert iterations = 0;
 		loop i over: [] {
-			iterations <- iterations + 1; }
+			iterations <- iterations + 1;
+		}
 		assert iterations = 0;
 		loop k over: map([]) {
-			iterations <- iterations + 1; }
+			iterations <- iterations + 1;
+		}
 		assert iterations = 0;
 	}
 
 	test "Asking nothing" {
 		int asked <- 0;
 		ask [] {
-			asked <- asked + 1; }
+			asked <- asked + 1;
+		}
 		assert asked = 0;
 		string problem <- nil;
 		try {
 			ask agent(nil) {
-				asked <- asked + 1; } } catch {
-			problem <- #current_error; }
+				asked <- asked + 1;
+			}
+		} catch {
+			problem <- #current_error;
+		}
 		assert problem != nil;
 		assert handled(problem);
 		assert asked = 0;
@@ -78,13 +88,17 @@ experiment StatementRobustnessTest type: test autorun: true {
 		create victim returns: created;
 		victim dead_one <- created[0];
 		ask dead_one {
-			do die(); }
+			do die();
+		}
 		int asked <- 0;
 		string problem <- nil;
 		try {
 			ask dead_one {
-				asked <- 1; } } catch {
-			problem <- #current_error; }
+				asked <- 1;
+			}
+		} catch {
+			problem <- #current_error;
+		}
 		assert handled(problem);
 		assert asked = 0;
 	}
@@ -96,11 +110,13 @@ experiment StatementRobustnessTest type: test autorun: true {
 		try {
 			loop v over: created {
 				ask created {
-					do die(); }
+					do die();
+				}
 				iterations <- iterations + 1;
 			}
 		} catch {
-			problem <- #current_error; }
+			problem <- #current_error;
+		}
 		assert handled(problem);
 		assert empty(victim);
 		// the loop iterates over a copy of the list
@@ -112,17 +128,22 @@ experiment StatementRobustnessTest type: test autorun: true {
 		create victim returns: victims;
 		victim dead_one <- victims[0];
 		ask dead_one {
-			do die(); }
+			do die();
+		}
 		string problem <- nil;
 		try {
 			ask holders[0] {
-				capture dead_one as: inner; } } catch {
-			problem <- #current_error; }
+				capture dead_one as: inner;
+			}
+		} catch {
+			problem <- #current_error;
+		}
 		assert problem != nil;
 		assert handled(problem);
 		assert empty(holders[0].inner);
 		ask holders {
-			do die(); }
+			do die();
+		}
 	}
 
 	test "Creating agents from an empty source creates nothing" {
@@ -136,10 +157,12 @@ experiment StatementRobustnessTest type: test autorun: true {
 		create recursive_agent returns: created;
 		int result <- 0;
 		ask created[0] {
-			result <- depth(200); }
+			result <- depth(200);
+		}
 		assert result = 200;
 		ask created {
-			do die(); }
+			do die();
+		}
 	}
 
 // AD: Removed. 
@@ -163,16 +186,20 @@ experiment StatementRobustnessTest type: test autorun: true {
 	test "Asking agents in parallel gives the same result as in sequence" {
 		create counter number: 50 returns: created;
 		ask created parallel: true {
-			value <- int(self) * 2; }
+			value <- int(self) * 2;
+		}
 		list<int> in_parallel <- created collect each.value;
 		ask created {
-			value <- 0; }
+			value <- 0;
+		}
 		ask created {
-			value <- int(self) * 2; }
+			value <- int(self) * 2;
+		}
 		list<int> in_sequence <- created collect each.value;
 		assert in_parallel = in_sequence;
 		ask created {
-			do die(); }
+			do die();
+		}
 	}
 
 	test "An error raised in an action reaches the caller" {
@@ -182,7 +209,8 @@ experiment StatementRobustnessTest type: test autorun: true {
 			}
 			error "raised on purpose";
 		} catch {
-			problem <- #current_error; }
+			problem <- #current_error;
+		}
 		assert problem contains "raised on purpose";
 	}
 }

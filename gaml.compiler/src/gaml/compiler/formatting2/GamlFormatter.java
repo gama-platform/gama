@@ -535,7 +535,7 @@ public class GamlFormatter extends AbstractJavaFormatter {
 			doc.append(open, it -> it.newLine());
 			doc.interior(open, close, it -> it.indent());
 			if (open.getNextHiddenRegion() != close.getPreviousHiddenRegion()) {
-				doc.prepend(close, it -> it.setNewLines(0, 0, 1));
+				doc.prepend(close, it -> it.newLine());
 			}
 		}
 	}
@@ -637,7 +637,7 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 * <ul>
 	 * <li>A newline after the opening {@code {}.</li>
 	 * <li>Indentation of the interior between the braces.</li>
-	 * <li>Zero-to-one newlines before the closing {@code }} in non-empty blocks; empty blocks
+	 * <li>A newline before the closing {@code }} in non-empty blocks; empty blocks
 	 *     share the opening brace's newline rule.</li>
 	 * <li>Each statement inside the block is recursively formatted, with a newline before it.</li>
 	 * </ul>
@@ -675,7 +675,7 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 * <ul>
 	 * <li>A newline after the opening {@code {}.</li>
 	 * <li>Indentation of the interior between the braces via {@code doc.interior()}.</li>
-	 * <li>Zero-to-one newlines before the closing {@code }} in non-empty blocks; empty blocks
+	 * <li>A newline before the closing {@code }} in non-empty blocks; empty blocks
 	 *     share the opening brace's newline rule.</li>
 	 * <li>Two blank lines (i.e. {@code setNewLines(2)}) are inserted <em>between</em> statements
 	 *     whenever the next or the previous statement is a major declaration, by appending to the
@@ -697,7 +697,7 @@ public class GamlFormatter extends AbstractJavaFormatter {
 			doc.interior(openBrace, closeBrace, it -> it.indent());
 			// Empty blocks have only one hidden region between the braces.
 			if (openBrace.getNextHiddenRegion() != closeBrace.getPreviousHiddenRegion()) {
-				doc.prepend(closeBrace, it -> it.setNewLines(0, 0, 1));
+				doc.prepend(closeBrace, it -> it.newLine());
 			}
 		}
 
