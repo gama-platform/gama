@@ -30,6 +30,8 @@ public class AssertionSummary extends AbstractSummary<WithTestSummary> {
 	/** The time stamp. */
 	public final long timeStamp;
 
+	private String evaluatedTitle;
+
 	/**
 	 * Instantiates a new assertion summary.
 	 *
@@ -53,7 +55,15 @@ public class AssertionSummary extends AbstractSummary<WithTestSummary> {
 	public void reset() {
 		super.reset();
 		state = TestState.NOT_RUN;
+		evaluatedTitle = null;
 	}
+
+	public void setEvaluatedExpression(final String expression) {
+		evaluatedTitle = super.getTitle() + " => " + expression;
+	}
+
+	@Override
+	public String getTitle() { return evaluatedTitle == null ? super.getTitle() : evaluatedTitle; }
 
 	@Override
 	public TestState getState() { return state; }

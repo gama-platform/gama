@@ -22,14 +22,19 @@ import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
+import gama.api.additions.registries.ArtefactRegistry;
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.exceptions.GamaAssertException;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.expressions.IOperator;
+import gama.api.gaml.expressions.IVarExpression;
 import gama.api.gaml.statements.AbstractStatement;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.StringUtils;
 
 /**
  * The Class AssertStatement.
@@ -104,17 +109,79 @@ public class AssertStatement extends AbstractStatement implements WithTestSummar
 			throw e;
 		}
 		if (!result) {
-			final TestState s = isWarning(scope) ? TestState.WARNING : TestState.FAILED;
+			final boolean warning = isWarning(scope);
+			final TestState s = warning ? TestState.WARNING : TestState.FAILED;
 			summary.setState(s);
+			if (!warning) {
+				try {
+					summary.setEvaluatedExpression(resolveExpression(value, scope));
+				} catch (final GamaRuntimeException e) {
+					summary.setEvaluatedExpression(value.serializeToGaml(true) + " [value expansion failed: "
+							+ e.getMessage() + "]");
+				}
+			}
 			final var failure = new GamaAssertException(scope,
 					"Assert failed: "
 							+ (label == null ? getTitleForSummary() : Cast.asString(scope, label.value(scope))),
-					isWarning(scope));
+					warning);
 			summary.setErrorWithTrace(failure);
 			throw failure;
 		}
 		summary.setState(TestState.PASSED);
 		return result;
+	}
+
+	private String resolveExpression(final IExpression expression, final IScope scope) {
+		if (expression == null) return "nil";
+		if (expression instanceof IVarExpression variable) {
+			return StringUtils.toGaml(variable.value(scope), true);
+		}
+		if (expression instanceof IExpression.List list) {
+			final StringBuilder result = new StringBuilder("[");
+			for (final IExpression element : list.getElements()) {
+				if (result.length() > 1) { result.append(", "); }
+				result.append(resolveExpression(element, scope));
+			}
+			return result.append(']').toString();
+		}
+		if (expression instanceof IExpression.Map map) {
+			final StringBuilder result = new StringBuilder("[");
+			for (final java.util.Map.Entry<IExpression, IExpression> entry : map.getElements().entrySet()) {
+				if (result.length() > 1) { result.append(", "); }
+				result.append(resolveExpression(entry.getKey(), scope)).append("::")
+						.append(resolveExpression(entry.getValue(), scope));
+			}
+			return result.append(']').toString();
+		}
+		if (expression instanceof IOperator operator
+				&& operator.getPrototype() instanceof IArtefact.Operator prototype) {
+			final int arity = prototype.getSignature().list().length;
+			final String[] arguments = new String[arity];
+			for (int i = 0; i < arity; i++) {
+				arguments[i] = resolveChild(operator.arg(i), scope);
+			}
+			final String name = expression.getName();
+			if (arity == 1 && ArtefactRegistry.ARTEFACTS_WITHOUT_PARENTHESES.contains(name)) {
+				return name + arguments[0];
+			}
+			if (arity == 2 && IKeyword.AS.equals(name)) {
+				return operator.arg(1).serializeToGaml(true) + "(" + resolveExpression(operator.arg(0), scope) + ")";
+			}
+			if (arity == 2 && "internal_at".equals(name)) { return arguments[0] + arguments[1]; }
+			if (arity == 2 && ArtefactRegistry.BINARY_ARTEFACTS_NAMES.contains(name)) {
+				return arguments[0] + " " + name + " " + arguments[1];
+			}
+			return name + "(" + String.join(", ", arguments) + ")";
+		}
+		if (expression.isConst()) { return StringUtils.toGaml(expression.getConstValue(), true); }
+		return expression.serializeToGaml(true);
+	}
+
+	private String resolveChild(final IExpression expression, final IScope scope) {
+		final String resolved = resolveExpression(expression, scope);
+		if (expression instanceof IOperator && !(expression instanceof IVarExpression)
+				&& expression.shouldBeParenthesized()) return "(" + resolved + ")";
+		return resolved;
 	}
 
 	/**
