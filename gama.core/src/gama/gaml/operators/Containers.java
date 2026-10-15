@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import java.util.function.Function;
@@ -1570,7 +1571,7 @@ public class Containers {
 	@doc (
 			value = "the index of the first occurence of the right operand in the left operand container, or -1 if this list does not contain the element",
 			masterDoc = true,
-			comment = "The definition of index_of and the type of the index depend on the container",
+			comment = "The definition of index_of and the type of the index depend on the container. Searching for nil matches nil values.",
 			usages = @usage (
 					value = "if the left operand is a list, index_of returns the index as an integer",
 					examples = { @example (
@@ -1612,7 +1613,7 @@ public class Containers {
 			// on a map, 'index_of' gives the key of a value
 			@test ("map<string, int> scores <- [\"a\"::1, \"b\"::2]; scores index_of 2 = \"b\"") })
 	public static Object index_of(final IScope scope, final IMap<?, ?> c, final Object o) {
-		for (final Map.Entry<?, ?> k : notNull(scope, c).entrySet()) { if (k.getValue().equals(o)) return k.getKey(); }
+		for (final Map.Entry<?, ?> k : notNull(scope, c).entrySet()) { if (Objects.equals(k.getValue(), o)) return k.getKey(); }
 		return null;
 	}
 
@@ -1643,7 +1644,7 @@ public class Containers {
 	public static IPoint index_of(final IScope scope, final IMatrix c, final Object o) {
 		for (int i = 0; i < notNull(scope, c).getCols(scope); i++) {
 			for (int j = 0; j < c.getRows(scope); j++) {
-				if (c.get(scope, i, j).equals(o)) return GamaPointFactory.create(i, j);
+				if (Objects.equals(c.get(scope, i, j), o)) return GamaPointFactory.create(i, j);
 			}
 		}
 		return null;
@@ -1669,7 +1670,7 @@ public class Containers {
 	@doc (
 			value = "all the index of all the occurences of the right operand in the left operand container",
 			masterDoc = true,
-			comment = "The definition of all_indexes_of and the type of the index depend on the container",
+			comment = "The definition of all_indexes_of and the type of the index depend on the container. Searching for nil matches nil values.",
 			usages = @usage (
 					value = "if the left operand is a list, all_indexes_of returns a list of all the indexes as integers",
 					examples = { @example (
@@ -1683,7 +1684,7 @@ public class Containers {
 			@test ("list<int> numbers2 <- [3, 1, 4, 1, 5, 9, 2, 6]; empty(numbers2 all_indexes_of 7)") })
 	public static IList all_indexes_of2(final IScope scope, final IList c, final Object o) {
 		final IList results = GamaListFactory.create(Types.INT);
-		for (int i = 0; i < notNull(scope, c).size(); i++) { if (o.equals(c.get(scope, i))) { results.add(i); } }
+		for (int i = 0; i < notNull(scope, c).size(); i++) { if (Objects.equals(o, c.get(scope, i))) { results.add(i); } }
 		return results;
 
 		// Note: I also tested the following version with streams, but it was around 2 times slower...
@@ -1735,7 +1736,7 @@ public class Containers {
 	@doc (
 			value = "the index of the last occurence of the right operand in the left operand container",
 			masterDoc = true,
-			comment = "The definition of last_index_of and the type of the index depend on the container",
+			comment = "The definition of last_index_of and the type of the index depend on the container. Searching for nil matches nil values.",
 			usages = { @usage (
 					value = "if the left operand is a list, last_index_of returns the index as an integer",
 					examples = { @example (
@@ -1778,7 +1779,7 @@ public class Containers {
 	public static IPoint last_index_of(final IScope scope, final IMatrix c, final Object o) {
 		for (int i = notNull(scope, c).getCols(scope) - 1; i > -1; i--) {
 			for (int j = c.getRows(scope) - 1; j > -1; j--) {
-				if (c.get(scope, i, j).equals(o)) return GamaPointFactory.create(i, j);
+				if (Objects.equals(c.get(scope, i, j), o)) return GamaPointFactory.create(i, j);
 			}
 		}
 		return null;
@@ -1811,7 +1812,7 @@ public class Containers {
 	@test ("[1::2, 3::4, 5::4] last_index_of 4 = 5")
 	public static Object last_index_of(final IScope scope, final IMap<?, ?> c, final Object o) {
 		for (final Map.Entry<?, ?> k : Lists.reverse(new ArrayList<>(notNull(scope, c).entrySet()))) {
-			if (k.getValue().equals(o)) return k.getKey();
+			if (Objects.equals(k.getValue(), o)) return k.getKey();
 		}
 		return null;
 	}

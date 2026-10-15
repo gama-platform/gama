@@ -83,7 +83,7 @@ experiment ContainerAndStringRobustnessTest type: test autorun: true {
 		// the sum of nothing is either 0 or a proper error
 		string problem <- nil;
 		float total <- 0.0;
-		try { total <- sum([]); } catch { problem <- #current_error; }
+		try { total <- sum(list<float>([])); } catch { problem <- #current_error; }
 		assert handled(problem);
 		assert problem != nil or total = 0.0;
 	}
@@ -94,6 +94,47 @@ experiment ContainerAndStringRobustnessTest type: test autorun: true {
 		assert not (numbers contains nil);
 		assert numbers index_of nil = -1;
 
+	}
+
+	test "Searching lists for nil values" {
+		assert all_indexes_of(numbers, nil) = [];
+		list values <- [nil, 1, nil, 2, nil];
+		assert values all_indexes_of nil = [0, 2, 4];
+		assert values all_indexes_of 1 = [1];
+		assert values all_indexes_of 3 = [];
+		assert values index_of nil = 0;
+		assert values last_index_of nil = 4;
+		assert [] all_indexes_of nil = [];
+	}
+
+	test "Searching maps with nil values" {
+		geometry present <- square(1);
+		geometry absent <- circle(1);
+		map<string, geometry> values <- ["first"::nil, "middle"::present, "last"::nil];
+		assert values index_of nil = "first";
+		assert values last_index_of nil = "last";
+		assert values index_of present = "middle";
+		assert values last_index_of present = "middle";
+		assert values index_of absent = nil;
+		assert values last_index_of absent = nil;
+		map no_nil <- ["a"::1];
+		assert no_nil index_of nil = nil;
+		assert no_nil last_index_of nil = nil;
+	}
+
+	test "Searching matrices with nil cells" {
+		geometry present <- square(1);
+		geometry absent <- circle(1);
+		matrix<geometry> values <- matrix([[nil, present, nil]]);
+		assert values index_of nil = {0, 0};
+		assert values last_index_of nil = {0, 2};
+		assert values index_of present = {0, 1};
+		assert values last_index_of present = {0, 1};
+		assert values index_of absent = nil;
+		assert values last_index_of absent = nil;
+		matrix<int> no_nil <- matrix([[1, 2]]);
+		assert no_nil index_of nil = nil;
+		assert no_nil last_index_of nil = nil;
 	}
 
 	test "A ragged list of lists cannot become a matrix silently" {
