@@ -88,7 +88,7 @@ public interface IEnvelope extends IIntersectable {
 	IEnvelope rotate(AxisAngle rotation);
 
 	/**
-	 * To geometry.
+	 * Converts this envelope to a polygon, preserving its exact X/Y bounds.
 	 *
 	 * @return the polygon
 	 */

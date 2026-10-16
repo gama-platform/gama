@@ -1333,8 +1333,8 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 					value = "get the list of plans.",
 					returns = "the list of BDI plans.",
 					examples = { @example ("get_plans()") }))
-	public List<BDIPlan> getPlans(final IScope scope) {
-		return _plans;
+	public IList<BDIPlan> getPlans(final IScope scope) {
+		return GamaListFactory.wrap(Types.get(BDIPlanType.BDIPLANTYPE_ID), _plans);
 	}
 
 	/**

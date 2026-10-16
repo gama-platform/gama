@@ -17,6 +17,8 @@ import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.util.NumberUtil;
 
+import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
@@ -367,6 +369,7 @@ public class GamaPoint extends Coordinate implements IPoint {
 	 */
 	@Override
 	public IPoint divideBy(final double value) {
+		if (value == 0.0) throw GamaRuntimeException.error("Division by zero", GAMA.getRuntimeScope());
 		x /= value;
 		y /= value;
 		setZ(z / value);

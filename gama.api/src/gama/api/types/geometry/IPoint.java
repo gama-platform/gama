@@ -23,6 +23,8 @@ import gama.annotations.vars;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
+import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
@@ -422,7 +424,7 @@ public interface IPoint extends IShape, IIntersectable, Cloneable, Comparable<Co
 	 * 
 	 * <p>The operation is: {@code this.x /= value; this.y /= value; this.z /= value}</p>
 	 * 
-	 * <p><b>Note:</b> Division by zero will result in infinite or NaN values.</p>
+	 * <p><b>Note:</b> Division by zero raises a runtime error.</p>
 	 *
 	 * @param value the scalar to divide by
 	 * @return this point (modified)
@@ -547,6 +549,7 @@ public interface IPoint extends IShape, IIntersectable, Cloneable, Comparable<Co
 			@test ("point p2 <- {4, 5, 6}; p2 / 2 = {2.0, 2.5, 3.0}")
 	})
 	default IPoint dividedBy(final Integer i) {
+		if (i == null || i == 0) throw GamaRuntimeException.error("Division by zero", GAMA.getRuntimeScope());
 		return dividedBy(i.doubleValue());
 	}
 

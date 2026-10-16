@@ -8,12 +8,14 @@
 
 
 
-experiment FontAndColorRobustnessTest type: test autorun: true {
+experiment FontAndColorRobustnessTest type: test  {
 	
 
 	/** True if there was no error, or if the error is a proper GAML one rather than a leaked Java exception */
 	bool handled(string problem) {
-		return problem = nil ? true : !(problem contains "Java error");
+		bool handled <-  problem = nil ? true : !(problem contains "Java error");
+		if (!handled) {write problem; }
+		return handled;
 	}
 
 	test "A font cannot have a negative size" {

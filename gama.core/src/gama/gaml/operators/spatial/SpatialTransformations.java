@@ -170,6 +170,7 @@ public class SpatialTransformations {
 	})
 	public static IShape scaled_by(final IScope scope, final IShape g, final Double coefficient) {
 		SpatialCommon.requireGeometry(scope, g);
+		SpatialCommon.requireFinite(scope, coefficient, "The scaling factor");
 		return GamaShapeFactory.createFrom(g).withScaling(coefficient);
 	}
 
@@ -269,6 +270,7 @@ public class SpatialTransformations {
 	public static IShape enlarged_by(final IScope scope, final IShape g, final Double size,
 			final Integer numberOfSegments) {
 		if (g == null) return null;
+		SpatialCommon.requireFinite(scope, size, "The buffer distance");
 		final Geometry gg = g.getInnerGeometry().buffer(size, numberOfSegments);
 		if (gg != null && !gg.isEmpty()) return GamaShapeFactory.createFrom(gg).withAttributesOf(g);
 		return null;
@@ -305,6 +307,7 @@ public class SpatialTransformations {
 	public static IShape enlarged_by(final IScope scope, final IShape g, final Double size,
 			final Integer numberOfSegments, final Integer endCap) {
 		if (g == null) return null;
+		SpatialCommon.requireFinite(scope, size, "The buffer distance");
 		final Geometry gg = g.getInnerGeometry().buffer(size, numberOfSegments, endCap);
 		if (gg != null && !gg.isEmpty()) return GamaShapeFactory.createFrom(gg).withAttributesOf(g);
 		return null;
@@ -343,6 +346,7 @@ public class SpatialTransformations {
 	public static IShape enlarged_by(final IScope scope, final IShape g, final Double size,
 			final Integer numberOfSegments, final Integer endCap, final Boolean isSingleSided) {
 		if (g == null) return null;
+		SpatialCommon.requireFinite(scope, size, "The buffer distance");
 		BufferParameters param = new BufferParameters(numberOfSegments, endCap);
 		param.setSingleSided(isSingleSided);
 		Geometry gg = BufferOp.bufferOp(g.getInnerGeometry(), size, param);
@@ -379,6 +383,7 @@ public class SpatialTransformations {
 	public static IShape enlarged_by(final IScope scope, final IShape g, final Double size,
 			final Boolean isSingleSided) {
 		if (g == null) return null;
+		SpatialCommon.requireFinite(scope, size, "The buffer distance");
 		BufferParameters param = new BufferParameters();
 		param.setSingleSided(isSingleSided);
 		Geometry gg = BufferOp.bufferOp(g.getInnerGeometry(), size, param);
@@ -421,6 +426,7 @@ public class SpatialTransformations {
 	})
 	public static IShape enlarged_by(final IScope scope, final IShape g, final Double size) {
 		if (g == null) return null;
+		SpatialCommon.requireFinite(scope, size, "The buffer distance");
 		final Geometry gg = g.getInnerGeometry().buffer(size);
 		if (gg != null && !gg.isEmpty()) return GamaShapeFactory.createFrom(gg).withAttributesOf(g);
 		return null;
@@ -478,6 +484,7 @@ public class SpatialTransformations {
 	@test ("(( square(5) rotated_by 45).width with_precision 2 = 7.07)")
 	public static IShape rotated_by(final IScope scope, final IShape g1, final Double angle) {
 		if (g1 == null) return null;
+		SpatialCommon.requireFinite(scope, angle, "The rotation angle");
 		return GamaShapeFactory.createFrom(g1).withRotation(new AxisAngle(angle));
 	}
 
@@ -1053,6 +1060,7 @@ public class SpatialTransformations {
 							returnType = "float") })
 	public static IShape at_location(final IScope scope, final IShape g, final IPoint p) throws GamaRuntimeException {
 		if (g == null) return null;
+		SpatialCommon.requireFinitePoint(scope, p, "The target location");
 		return GamaShapeFactory.createFrom(g).withLocation(p);
 	}
 

@@ -28,7 +28,8 @@ experiment GeometryPropertiesTest type: test autorun: true {
 			geometry a <- random_shape();
 			geometry b <- random_shape();
 			geometry u <- a union b;
-			if (u = nil or !(u covers a) or !(u covers b) or u.area > a.area + b.area + 1e-6) {
+			// Overlay intersections can put boundary points a few ulps outside the result.
+			if (u = nil or !((u + 1e-9) covers a) or !((u + 1e-9) covers b) or u.area > a.area + b.area + 1e-6) {
 				failures <+ string(a) + " | " + string(b);
 			}
 		}
@@ -44,7 +45,7 @@ experiment GeometryPropertiesTest type: test autorun: true {
 			geometry a <- random_shape();
 			geometry b <- random_shape();
 			geometry i <- a inter b;
-			if (i != nil and (i.area > min(a.area, b.area) + 1e-6 or !(a.envelope covers i.envelope))) {
+			if (i != nil and (i.area > min(a.area, b.area) + 1e-6 or !(envelope(a) covers envelope(i)))) {
 				failures <+ string(a) + " | " + string(b);
 			}
 			// two geometries intersect if and only if their intersection is not empty
@@ -121,7 +122,7 @@ experiment GeometryPropertiesTest type: test autorun: true {
 			geometry a <- random_shape();
 			float distance <- rnd(0.1, 10.0);
 			if (!(convex_hull(a) covers a)) { failures <+ "convex_hull: " + string(a); }
-			if (!(a.envelope covers a)) { failures <+ "envelope: " + string(a); }
+			if (!(envelope(a) covers a)) { failures <+ "envelope: " + string(a); }
 			if (!((a + distance) covers a)) { failures <+ "buffer " + distance + ": " + string(a); }
 			geometry reduced <- a - distance;
 			if (reduced != nil and !(a covers reduced)) { failures <+ "negative buffer " + distance + ": " + string(a); }
@@ -129,6 +130,14 @@ experiment GeometryPropertiesTest type: test autorun: true {
 		// the inputs that break the invariant are listed in the error
 		if (!empty(failures)) { error "covering: " + failures; }
 		assert empty(failures);
+	}
+
+	test "Envelopes preserve their exact bounds" {
+		geometry a <- polygon([{85.76066227886818,25.069983052424035}, {91.053422853158,25.069983052424035},
+			{91.053422853158,-2.4088380685129582}, {85.76066227886818,-2.4088380685129582}]);
+		assert envelope(a) covers a;
+		assert envelope(a, 10.0) covers a;
+		assert envelope(a, 10.0).depth = 10.0;
 	}
 
 	test "Distances are symmetric and respect the triangle inequality" {

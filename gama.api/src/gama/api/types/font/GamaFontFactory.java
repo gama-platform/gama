@@ -23,6 +23,8 @@ import gama.annotations.tests;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
+import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
 
 /**
@@ -381,6 +383,14 @@ public class GamaFontFactory {
 		return createFont(name, Font.PLAIN, size);
 	}
 
+	private static int checkedSize(final IScope scope, final Number size) {
+		if (size == null) throw GamaRuntimeException.error("A font size must be a positive finite number", scope);
+		final double value = size.doubleValue();
+		if (!Double.isFinite(value) || value < 1 || value >= Integer.MAX_VALUE)
+			throw GamaRuntimeException.error("A font size must be a positive finite number", scope);
+		return (int) value;
+	}
+
 	/**
 	 * Creates a new {@link IFont} with the specified name, style, and point size.
 	 *
@@ -429,7 +439,9 @@ public class GamaFontFactory {
 	 * @see java.awt.Font#Font(String, int, int)
 	 */
 	public static IFont createFont(final String name, final Integer style, final Integer size) {
-		return createFontFrom(new Font(name, style, size));
+		final int validStyle = style == null || style < Font.PLAIN || style > (Font.BOLD | Font.ITALIC)
+				? Font.PLAIN : style;
+		return createFontFrom(new Font(name, validStyle, checkedSize(GAMA.getRuntimeScope(), size)));
 	}
 
 	/**
@@ -466,6 +478,21 @@ public class GamaFontFactory {
 	@no_test
 	public static IFont font(final String name, final Integer size, final Integer style) {
 		return createFont(name, style, size);
+	}
+
+	@operator (
+			value = IKeyword.FONT,
+			category = { IOperatorCategory.CASTING },
+			concept = { IConcept.TEXT, IConcept.DISPLAY },
+			can_be_const = true)
+	@doc (
+			value = "Creates a font from a name and a positive finite point size",
+			examples = @example (
+					value = "font(\"Arial\", 12.7)",
+					test = false))
+	@no_test
+	public static IFont createFont(final IScope scope, final String name, final Double size) {
+		return createFont(name, checkedSize(scope, size));
 	}
 
 }

@@ -668,9 +668,16 @@ public class GamaEnvelope extends Envelope implements IEnvelope {
 	 */
 	@Override
 	public Polygon toGeometry() {
-		if (isFlat())
+		if (isNull())
 			return (Polygon) GamaShapeFactory.buildRectangle(getWidth(), getHeight(), center()).getInnerGeometry();
-		return (Polygon) GamaShapeFactory.buildBox(getWidth(), getHeight(), getDepth(), center()).getInnerGeometry();
+		final double z = (getMinZ() + getMaxZ()) / 2.0;
+		// Keep the original bounds: center +/- half-size can round an edge inward.
+		return GeometryUtils.getGeometryFactory().createRectangle(
+				GamaPointFactory.create(getMinX(), getMaxY(), z),
+				GamaPointFactory.create(getMaxX(), getMaxY(), z),
+				GamaPointFactory.create(getMaxX(), getMinY(), z),
+				GamaPointFactory.create(getMinX(), getMinY(), z),
+				GamaPointFactory.create(getMinX(), getMaxY(), z));
 	}
 
 	@Override

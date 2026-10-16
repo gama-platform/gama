@@ -315,6 +315,7 @@ public class Colors {
 	@test ("rgb([255, 128, 32]) / 2 = rgb([127,64,16])")
 	@test ("rgb([10,20,30]) / 1 = rgb([10,20,30])")
 	public static IColor divide(final IColor c, final Integer i) {
+		if (i == 0) throw GamaRuntimeException.error("Cannot divide a color by zero", GAMA.getRuntimeScope());
 		return GamaColorFactory.createWithRGBA(c.red() / i, c.green() / i, c.blue() / i, c.alpha());
 	}
 
@@ -343,6 +344,9 @@ public class Colors {
 							equals = "rgb([102,51,13])") }))
 	@test ("rgb([255, 128, 32]) / 2.5 = rgb([102,51,13])")
 	public static IColor divide(final IColor c, final Double i) {
+		if (i == 0.0 || !Double.isFinite(i))
+			throw GamaRuntimeException.error("Cannot divide a color by zero or a non-finite value",
+					GAMA.getRuntimeScope());
 		return GamaColorFactory.createWithRGBA(Maths.round(c.red() / i), Maths.round(c.green() / i),
 				Maths.round(c.blue() / i), c.alpha());
 	}
@@ -543,6 +547,17 @@ public class Colors {
 	})
 	public static IColor rgb(final int r, final int g, final int b) {
 		return GamaColorFactory.createWithRGBA(r, g, b, 255);
+	}
+
+	@operator (
+			value = "rgb",
+			can_be_const = true,
+			category = { IOperatorCategory.COLOR },
+			concept = { IConcept.COLOR })
+	public static IColor rgb(final IScope scope, final double r, final double g, final double b) {
+		if (!Double.isFinite(r) || !Double.isFinite(g) || !Double.isFinite(b))
+			throw GamaRuntimeException.error("rgb components must be finite numbers", scope);
+		return GamaColorFactory.createWithRGBA((int) r, (int) g, (int) b, 255);
 	}
 
 	/**
@@ -876,10 +891,14 @@ public class Colors {
 	public static IColor blend(final IColor c1, final IColor c2, final double r) {
 		if (c1 == null || c2 == null)
 			throw GamaRuntimeException.error("blend: the colors must not be nil", GAMA.getRuntimeScope());
-		final double ir = 1.0 - r;
-		return GamaColorFactory.createWithRGBA((int) (c1.red() * r + c2.red() * ir),
-				(int) (c1.green() * r + c2.green() * ir), (int) (c1.blue() * r + c2.blue() * ir),
-				(int) (c1.alpha() * r + c2.alpha() * ir));
+		if (!Double.isFinite(r))
+			throw GamaRuntimeException.error("blend ratio must be a finite number", GAMA.getRuntimeScope());
+		final double ratio = Math.max(0, Math.min(1, r));
+		final double inverseRatio = 1.0 - ratio;
+		return GamaColorFactory.createWithRGBA((int) (c1.red() * ratio + c2.red() * inverseRatio),
+				(int) (c1.green() * ratio + c2.green() * inverseRatio),
+				(int) (c1.blue() * ratio + c2.blue() * inverseRatio),
+				(int) (c1.alpha() * ratio + c2.alpha() * inverseRatio));
 	}
 
 	/**

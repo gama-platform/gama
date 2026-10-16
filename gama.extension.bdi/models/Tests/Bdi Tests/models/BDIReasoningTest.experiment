@@ -194,6 +194,17 @@ experiment BDIReasoningTest type: test autorun: true {
 		ask created_agents { do die(); }
 	}
 
+	test "An agent without plans returns an empty plan list" {
+		create social_agent returns: created_agents;
+		social_agent ag <- created_agents[0];
+		int nb_plans <- -1;
+		ask ag {
+			nb_plans <- length(get_plans());
+		}
+		assert nb_plans = 0;
+		ask created_agents { do die(); }
+	}
+
 	test "The bases can be cleared" {
 		create reasoning_agent returns: created_agents;
 		reasoning_agent ag <- created_agents[0];
