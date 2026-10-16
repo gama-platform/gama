@@ -21,6 +21,8 @@ import java.util.function.Function;
 
 import org.apache.commons.math3.distribution.FDistribution;
 import org.apache.commons.math3.distribution.TDistribution;
+import org.apache.commons.math3.exception.MathIllegalArgumentException;
+import org.apache.commons.math3.exception.MathIllegalStateException;
 import org.apache.commons.math3.ml.clustering.CentroidCluster;
 import org.apache.commons.math3.ml.clustering.Cluster;
 import org.apache.commons.math3.ml.clustering.DBSCANClusterer;
@@ -1644,6 +1646,7 @@ public class Stats {
 					algorithm from the first operand data according to the number of clusters to split\
 					 the data into (k) and the maximum number of iterations to run the algorithm.\
 					(If negative, no maximum will be used) (maxIt). Usage: kmeans(data,k,maxit)""",
+			special_cases = "Requires non-empty numeric points of equal dimension with finite coordinates and 1 <= k <= the number of points.",
 			// special_cases = "if the lengths of two vectors in the right-hand aren't equal, returns 0",
 			masterDoc = true,
 			examples = { @example (
@@ -1651,19 +1654,33 @@ public class Stats {
 					equals = "[[0,2,3],[1]]") })
 	public static IList<IList> opKMeans(final IScope scope, final IList data, final Integer k, final Integer maxIt)
 			throws GamaRuntimeException {
+		if (data == null || k == null || k <= 0 || k > data.size() || maxIt == null)
+			throw GamaRuntimeException.error("kmeans requires non-nil data and 1 <= k <= the number of points", scope);
 		// AD 04/21 : Is it ok to use an additional generator here ?
 		final MersenneTwister rand = new MersenneTwister(scope.getRandom().getSeed().longValue());
 
 		final List<DoublePoint> instances = new ArrayList<>();
 		for (int i = 0; i < data.size(); i++) {
-			final IList d = (IList) data.get(i);
+			if (!(data.get(i) instanceof IList d) || d.isEmpty())
+				throw GamaRuntimeException.error("kmeans requires non-empty lists of numeric coordinates", scope);
+			if (i > 0 && d.size() != instances.getFirst().getPoint().length)
+				throw GamaRuntimeException.error("kmeans requires points of equal dimension", scope);
 			final double point[] = new double[d.size()];
-			for (int j = 0; j < d.size(); j++) { point[j] = Cast.asFloat(scope, d.get(j)); }
+			for (int j = 0; j < d.size(); j++) {
+				if (!(d.get(j) instanceof Number n) || !Double.isFinite(n.doubleValue()))
+					throw GamaRuntimeException.error("kmeans requires finite numeric coordinates", scope);
+				point[j] = n.doubleValue();
+			}
 			instances.add(new Instance(i, point));
 		}
 		final KMeansPlusPlusClusterer<DoublePoint> kmeans =
 				new KMeansPlusPlusClusterer<>(k, maxIt, new EuclideanDistance(), rand);
-		final List<CentroidCluster<DoublePoint>> clusters = kmeans.cluster(instances);
+		final List<CentroidCluster<DoublePoint>> clusters;
+		try {
+			clusters = kmeans.cluster(instances);
+		} catch (final MathIllegalArgumentException | MathIllegalStateException e) {
+			throw GamaRuntimeException.error("kmeans: " + e.getMessage(), scope);
+		}
 		try (final Collector.AsList results = Collector.getList()) {
 			for (final Cluster<DoublePoint> cl : clusters) {
 				final IList clG = GamaListFactory.create();
@@ -2433,6 +2450,7 @@ public class Stats {
 			concept = { IConcept.STATISTIC })
 	@doc (
 			value = "Returns the phi-quantile; that is, an element elem for which holds that phi percent of data elements are less than elem. The quantile does not need necessarily to be contained in the data sequence, it can be a linear interpolation. Note that the container holding the values must be sorted first",
+			special_cases = "Requires at least one numeric value and a finite probability phi in [0, 1].",
 			comment = "",
 			examples = { @example (
 					value = "quantile([1,3,5,6,9,11,12,13,19,21,22,32,35,36,45,44,55,68,79,80,81,88,90,91,92,100], 0.5)",
@@ -2442,10 +2460,12 @@ public class Stats {
 			@test ("list<float> series3 <- [1.0, 2.0, 3.0, 4.0, 5.0]; quantile(series3, 0.0) = 1.0"),
 			@test ("list<float> series4 <- [1.0, 2.0, 3.0, 4.0, 5.0]; quantile(series4, 1.0) = 5.0") })
 	public static Double opQuantile(final IScope scope, final IContainer data, final Double phi) {
-
-		// TODO input parameters validation
-
-		return Descriptive.quantile(toDoubleArrayList(scope, data), phi);
+		if (data == null || phi == null || !Double.isFinite(phi) || phi < 0 || phi > 1)
+			throw GamaRuntimeException.error("quantile requires non-nil data and a finite probability in [0, 1]", scope);
+		final DoubleArrayList values = toDoubleArrayList(scope, data);
+		if (values.isEmpty())
+			throw GamaRuntimeException.error("quantile requires at least one numeric value", scope);
+		return Descriptive.quantile(values, phi);
 	}
 
 	/**
@@ -2825,17 +2845,26 @@ public class Stats {
 			category = { IOperatorCategory.STATISTICAL },
 			concept = { IConcept.STATISTIC })
 	@doc (
-			value = "Computes the p-value for the HSIC independence test between two variables using a permutation test. A small p-value (< 0.05) indicates strong evidence of dependence.",
+			value = "Computes the p-value for the HSIC independence test between two variables using a permutation test. A small p-value (< 0.05) indicates strong evidence of dependence. Requires equally sized lists of at least two finite observations and a positive permutation count. Runtime grows with the number of permutations; cancellation raises an error instead of returning a partial p-value.",
 			examples = { @example (
 					value = "hsic_p_value([1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0, 4.0, 5.0], 100)",
 					isExecutable = false) })
 	@test ("hsic_p_value([1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0, 4.0, 5.0], 100) < 0.05")
+	@no_fuzz_test ("The permutation count controls runtime; generic #max_int inputs request billions of permutations. Covered by bounded HSIC regression tests.")
 	public static Double opHSICPValue(final IScope scope, final IList<Double> x, final IList<Double> y,
 			final Integer permutations) {
+		if (permutations == null || permutations <= 0)
+			throw GamaRuntimeException.error("hsic_p_value requires a positive permutation count", scope);
+		if (x == null || y == null)
+			throw GamaRuntimeException.error("hsic_p_value requires non-nil input lists", scope);
 		if (x.size() != y.size()) throw GamaRuntimeException.error("Input lists must have the same size", scope);
+		if (x.size() < 2)
+			throw GamaRuntimeException.error("hsic_p_value requires at least two observations", scope);
 		double[] xData = new double[x.size()];
 		double[] yData = new double[y.size()];
 		for (int i = 0; i < x.size(); i++) {
+			if (x.get(i) == null || y.get(i) == null)
+				throw GamaRuntimeException.error("hsic_p_value requires non-nil observations", scope);
 			xData[i] = x.get(i);
 			yData[i] = y.get(i);
 		}
@@ -2975,11 +3004,17 @@ public class Stats {
 			name = "Power test sensitivity") })
 	@doc (
 			value = "Return the number of observation to satisfy power test given a critical effect size, tAlpha and tBeta."
-					+ "</br>see reference: https://rseri.me/publication/b016/B016.pdf (accessible as of 04/2026).")
+					+ "</br>see reference: https://rseri.me/publication/b016/B016.pdf (accessible as of 04/2026).",
+			special_cases = "Requires at least two finite numeric observations, tAlpha and tBeta strictly between 0 and 1, and a finite positive critical effect size.")
 	public static Integer powerTestCSE(final IScope scope, final IList<Double> data, final double tAlpha,
 			final double tBeta, final double criticalEffectSize) {
-		IList<Double> dSample =
-				data.stream().mapToDouble(v -> Cast.asFloat(scope, v)).boxed().collect(GamaListFactory.toGamaList());
+		if (!Double.isFinite(tAlpha) || tAlpha <= 0 || tAlpha >= 1
+				|| !Double.isFinite(tBeta) || tBeta <= 0 || tBeta >= 1
+				|| !Double.isFinite(criticalEffectSize) || criticalEffectSize <= 0)
+			throw GamaRuntimeException.error(
+					"power_test requires probabilities strictly between 0 and 1 and a finite positive effect size", scope);
+		IList<Double> dSample = Arrays.stream(finiteSample(scope, data, "power_test")).boxed()
+				.collect(GamaListFactory.toGamaList());
 		double mean = dSample.stream().mapToDouble(v -> v).average().orElse(0.0);
 
 		IList<Double> currentES = GamaListFactory.create(Types.FLOAT);
@@ -3220,6 +3255,7 @@ public class Stats {
 					Splits a list of numbers into n bins defined by n-1 bounds between the minimum and maximum values\
 					 found in the first argument. The boolean argument controls whether or not the splitting is \
 					 strict (if true, elements are in the ith bin if they are strictly smaller than the ith bound)""",
+			special_cases = "Requires non-nil data and a bin count no greater than the maximum Java list capacity (2147483639).",
 			examples = { @example ("list<float> l <- [1.0,3.1,5.2,6.0,9.2,11.1,12.0,13.0,19.9,35.9,40.0];"), @example (
 					value = "split_in(l,3, true)",
 					equals = "[[1.0,3.1,5.2,6.0,9.2,11.1,12.0,13.0],[19.9],[35.9,40.0]]") })
@@ -3228,6 +3264,9 @@ public class Stats {
 			@test ("list<float> spread_values <- [1.0, 3.1, 5.2, 6.0, 9.2, 11.1, 12.0, 13.0, 19.9, 35.9, 40.0]; split_in(spread_values, 3, true) = [[1.0, 3.1, 5.2, 6.0, 9.2, 11.1, 12.0, 13.0], [19.9], [35.9, 40.0]]") })
 	public static <T extends Number> IList<IList<T>> opSplitIn(final IScope scope, final IList<T> list, final int nb,
 			final boolean strict) {
+		if (list == null) throw GamaRuntimeException.error("split_in requires a non-nil list", scope);
+		if (nb > Integer.MAX_VALUE - 8)
+			throw GamaRuntimeException.error("split_in bin count exceeds the maximum list capacity", scope);
 		if (nb <= 1) {
 			final IList<IList<T>> result = GamaListFactory.create(Types.LIST.of(list.getGamlType().getContentType()));
 			result.add(list);
@@ -3235,7 +3274,7 @@ public class Stats {
 		}
 		final DataSet d = toDataSet(scope, list);
 		final IList<Double> stops = GamaListFactory.create(scope, Types.FLOAT, d.getStops(nb));
-		return opSplitUsing(scope, list, stops);
+		return opSplitUsing(scope, list, stops, strict);
 	}
 
 	/**
@@ -3457,19 +3496,24 @@ public class Stats {
 					Returns the observed significance level, or p-value, associated with a two-sample, \
 					two-tailed t-test comparing the means of the two input lists.\
 					The number returned is the smallest significance level at which one can reject the null hypothesis""",
+			special_cases = "Each sample must contain at least two finite numeric observations.",
 			examples = { @example (
 					value = "t_test([10.0,5.0,1.0, 3.0],[1.0,10.0,5.0,1.0])",
 					equals = "0.01") })
 	public static Double opTTest(final IScope scope, final IList seq1, final IList seq2) {
-		TTest t = new TTest();
+		return new TTest().tTest(finiteSample(scope, seq1, "t_test"), finiteSample(scope, seq2, "t_test"));
+	}
 
-		double[] s1 = new double[seq1.length(scope)];
-		for (int i = 0; i < seq1.length(scope); i++) { s1[i] = Cast.asFloat(scope, seq1.get(i)); }
-
-		double[] s2 = new double[seq2.length(scope)];
-		for (int i = 0; i < seq2.length(scope); i++) { s2[i] = Cast.asFloat(scope, seq2.get(i)); }
-
-		return t.tTest(s1, s2);
+	private static double[] finiteSample(final IScope scope, final IList<?> data, final String operator) {
+		if (data == null || data.size() < 2)
+			throw GamaRuntimeException.error(operator + " requires at least two observations per sample", scope);
+		final double[] values = new double[data.size()];
+		for (int i = 0; i < values.length; i++) {
+			if (!(data.get(i) instanceof Number n) || !Double.isFinite(n.doubleValue()))
+				throw GamaRuntimeException.error(operator + " requires finite numeric observations", scope);
+			values[i] = n.doubleValue();
+		}
+		return values;
 	}
 
 	/**

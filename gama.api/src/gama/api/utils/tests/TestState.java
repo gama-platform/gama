@@ -29,8 +29,8 @@ public enum TestState implements IColored {
 	WARNING("warning"),
 	/** The passed. */
 	PASSED("passed"),
-	/** The not run. */
-	NOT_RUN("not run");
+	/** Tests and assertions whose execution was not reached. */
+	NOT_RUN("not reached");
 
 	/** The name. */
 	private final String name;

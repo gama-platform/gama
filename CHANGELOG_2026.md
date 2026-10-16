@@ -52,7 +52,7 @@ Massive performance upgrades taking advantage of JDK 25 multithreading enhanceme
 ### 🖥️ UI, Displays & OpenGL 4.1 Native
 A brand-new, blazing-fast native display plugin relying solely on OpenGL 4.1 Core Profile logic. Legacy APIs have been removed.
 
-The test view has a **Stop tests** button and displays the currently executing model, experiment and test name. By default, GUI tests execute in the workbench JVM, using scope cancellation and thread interruption. **Stop tests** interrupts the current experiment and ends the suite, preserving completed results and marking the active test as **interrupted**. **Execution > Tests > Test experiment timeout (seconds)** defaults to 10 seconds: a timeout requests interruption, marks the active test as **timeout**, and continues with the next experiment once execution actually exits. The runner never abandons a live test thread. Unstarted tests and assertions remain **not run**.
+The test view has a **Stop tests** button and displays the currently executing model, experiment and test name. By default, GUI tests execute in the workbench JVM, using scope cancellation and thread interruption. **Stop tests** interrupts the current experiment and ends the suite, preserving completed results and marking the active test as **interrupted**. **Execution > Tests > Test experiment timeout (seconds)** defaults to 10 seconds: a timeout requests interruption, marks the active test as **timeout**, and continues with the next experiment once execution actually exits. The runner never abandons a live test thread. Unstarted tests and assertions remain **not reached**.
 
 **Advanced > Tests > Run tests in a separate headless process** enables stronger isolation for Java operators that ignore cooperative cancellation. An isolated sequence reuses an initialized headless worker, replacing it after a timeout or worker failure and terminating it when the sequence ends. In this mode Stop and timeout can forcibly terminate unresponsive computations. The timeout covers experiment initialization and execution, not model compilation or worker startup. Isolated tests require saved local model files; default same-JVM execution can use the model compiled from the editor.
 
@@ -62,7 +62,11 @@ The compact **Tests** view is now the default. **Advanced > Tests > Use the comp
 
 The compact view places Expand/Collapse on the right and hides them for empty or flat reports. Its details pane appears only when a test or assertion is selected, shows the source filename rather than its path, and includes complete error stacks (including causes and GAML context) in both execution modes.
 
+Summaries and the compact view label unexecuted tests and assertions **not reached**. These tests remain included in the summary counters, but **Problems only** hides not-reached entries.
+
 Before running the test suite, a discovery pass counts individual tests across its test experiments. The compact view shows “Discovering tests...” during this pass, then a live completed/total counter in both execution modes, retaining partial counts after Stop or timeout.
+
+Statistical operators now report GAML errors for malformed `kmeans` points, invalid `power_test` probabilities or samples, out-of-range `quantile` probabilities, impossible `split_in` bin counts, and missing or undersized `t_test` samples instead of leaking Java exceptions. `split_in` also honors its strict/non-strict boundary argument.
 
 *   `[47f55ee]` Migrate renderer to OpenGL 4 core profile
 *   `[7614445]` Migrate OpenGL4 renderer away from fixed-function

@@ -154,9 +154,15 @@ public class CompactTestView extends ViewPart implements IGamaView, IGamaView.Te
 	}
 
 	private List<AbstractSummary<?>> filtered(final List<AbstractSummary<?>> result) {
-		if (problemsOnly) { result.removeIf(s -> !s.getState().isFailure()); }
+		if (problemsOnly) { result.removeIf(s -> !hasProblem(s)); }
 		if (severity) { result.sort(Comparator.comparing(AbstractSummary::getState)); }
 		return result;
+	}
+
+	private boolean hasProblem(final AbstractSummary<?> summary) {
+		final TestState state = summary.getState();
+		if (state.isFailure()) return true;
+		return summary.getSummaries().values().stream().anyMatch(this::hasProblem);
 	}
 
 	private void populate(final TreeItem item) {

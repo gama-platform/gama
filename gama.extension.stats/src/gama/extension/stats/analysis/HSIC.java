@@ -11,6 +11,7 @@ package gama.extension.stats.analysis;
 
 import java.util.Arrays;
 
+import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
 
 /**
@@ -112,12 +113,24 @@ public class HSIC {
 	 * @return the p-value
 	 */
 	public static double computePValue(final IScope scope, final double[] x, final double[] y, final int permutations) {
+		if (permutations <= 0)
+			throw GamaRuntimeException.error("hsic_p_value requires a positive permutation count", scope);
+		if (x == null || y == null || x.length != y.length || x.length < 2)
+			throw GamaRuntimeException.error("hsic_p_value requires equally sized arrays of at least two observations", scope);
+		for (int i = 0; i < x.length; i++) {
+			if (!Double.isFinite(x[i]) || !Double.isFinite(y[i]))
+				throw GamaRuntimeException.error("hsic_p_value requires finite observations", scope);
+		}
+		if (scope.interrupted())
+			throw GamaRuntimeException.error("hsic_p_value computation was interrupted", scope);
 		double observedHSIC = computeHSIC(x, y, false); // Use biased for p-value stability
 		int count = 0;
 		double[] yPerm = y.clone();
 		java.util.Random rnd = new java.util.Random();
 
 		for (int p = 0; p < permutations; p++) {
+			if (scope.interrupted())
+				throw GamaRuntimeException.error("hsic_p_value computation was interrupted", scope);
 			// Shuffle yPerm (Fisher-Yates)
 			for (int i = yPerm.length - 1; i > 0; i--) {
 				int index = rnd.nextInt(i + 1);
@@ -126,9 +139,8 @@ public class HSIC {
 				yPerm[i] = temp;
 			}
 			if (computeHSIC(x, yPerm, false) >= observedHSIC) { count++; }
-			if (scope.interrupted()) { break; }
 		}
-		return (double) (count + 1) / (permutations + 1);
+		return (count + 1.0) / (permutations + 1.0);
 	}
 
 	/**
