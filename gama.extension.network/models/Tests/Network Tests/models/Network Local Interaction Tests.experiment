@@ -20,9 +20,7 @@ species Person skills:[network]
 experiment "Tests for gam.extension.network" type: test {
 	
 	init {
-		write gama.pref_test_timeout;
 		gama.pref_test_timeout <- 120;
-		write gama.pref_test_timeout;
 		
 	}
 
@@ -51,7 +49,6 @@ experiment "Tests for gam.extension.network" type: test {
 	}
 
 	test "Message sending" {
-				write "Message sending -- " + gama.pref_test_timeout;
 		bool test <- false;
 		try{ 
 			ask Person where(each.name = "Travis") {
@@ -65,7 +62,6 @@ experiment "Tests for gam.extension.network" type: test {
 	}
 	
 	test "Message receiving" {
-				write "Message receiving -- "  + gama.pref_test_timeout;
 		bool test <- false;
 		ask Person where(each.name = "Travis") {
 				do send(to:"Mel", contents:"Travis is the best tester of the World and of the Universe");
@@ -83,7 +79,6 @@ experiment "Tests for gam.extension.network" type: test {
 	}
 
 	test "Message contents" {
-				write "Message contents -- " + gama.pref_test_timeout;
 		bool test <- false;
 		ask Person where(each.name = "Travis") {
 				do send(to:"Melanie", contents:"Travis is the best tester of the World and of the Universe");
@@ -104,7 +99,6 @@ experiment "Tests for gam.extension.network" type: test {
 	}
 	
 	test "has_more_element and fetch_message action" {
-				write "has_more_element and fetch_message action -- " + gama.pref_test_timeout;
 		bool a1; 
 		bool a2;
 		bool a3;
