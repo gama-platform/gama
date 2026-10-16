@@ -276,6 +276,55 @@ experiment FipaAdvancedTest type: test autorun: true {
 		string problem <- nil;
 		try { ask a2 { do agree (message: request, contents: ['ok after all']); } } catch { problem <- #current_error; }
 		assert problem != nil;
-		assert problem = nil or !(problem contains "Java error");
+		assert !(problem contains "Java error") label: problem;
+		// Rejected replies must neither damage the protocol state nor enter the mailbox.
+		assert length(a1.refuses) = 1;
+		assert empty(a1.agrees);
+		problem <- nil;
+		try { ask a2 { do agree (message: request, contents: ['retry']); } } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert !(problem contains "Java error") label: problem;
+		assert empty(a1.agrees);
+	}
+
+	test "A rejected transition does not prevent a valid reply" {
+		create communicator number: 2 returns: talkers;
+		communicator a1 <- talkers[0];
+		communicator a2 <- talkers[1];
+		ask a1 {
+			do start_conversation (to: [a2], protocol: 'fipa-request', performative: 'request', contents: ['task']);
+		}
+		message request <- nil;
+		ask a2 { request <- requests[0]; }
+		string problem <- nil;
+		try { ask a2 { do propose (message: request, contents: ['invalid']); } } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert !(problem contains "Java error") label: problem;
+		ask a2 {
+			do agree (message: request, contents: ['ok']);
+			do inform (message: request, contents: ['done']);
+		}
+		assert empty(a1.proposes);
+		assert length(a1.agrees) = 1;
+		assert length(a1.informs) = 1;
+	}
+
+	test "A finished participant does not prevent another participant from answering" {
+		create communicator number: 3 returns: talkers;
+		communicator a1 <- talkers[0];
+		communicator a2 <- talkers[1];
+		communicator a3 <- talkers[2];
+		ask a1 {
+			do start_conversation (to: [a2, a3], protocol: 'fipa-request', performative: 'request', contents: ['task']);
+		}
+		ask a2 { do refuse (message: requests[0], contents: ['no']); }
+		ask a3 {
+			message received <- requests[0];
+			do agree (message: received, contents: ['ok']);
+			do inform (message: received, contents: ['done']);
+		}
+		assert length(a1.refuses) = 1;
+		assert length(a1.agrees) = 1;
+		assert length(a1.informs) = 1;
 	}
 }

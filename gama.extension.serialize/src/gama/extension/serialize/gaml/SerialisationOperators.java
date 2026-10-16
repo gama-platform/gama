@@ -166,6 +166,7 @@ public class SerialisationOperators {
 	@doc (
 			value = """
 					Serializes any object/agent/simulation into a string, using the json format. A flag can be passed to enable/disable pretty printing (`false` by default).
+					Finite floats, including point coordinates, retain the precision needed to restore their original values.
 					Non-finite floats follow the current `pref_json_infinity_as_string` and `pref_json_nan_as_string` preferences at runtime.
 					The format used by GAMA follows simple rules. `int`, `float`, `bool`, `string` values are outputted as they are. `nil` is outputted as `null`. A list is outputted as a json array. Any other object or agent is outputted as a json object. If this object possesses the attribute `gaml_type`, \
 					it is an instance of the corresponding type, and the members that follow contain the attributes and the values necessary to reconstruct it. If it has the `agent_reference` attribute, its value represents the reference to an agent. If any reference to an agent is found, the \
@@ -196,6 +197,7 @@ public class SerialisationOperators {
 	@doc (
 			value = """
 					Serializes any object/agent/simulation into a string, using the json format and no pretty printing.
+					Finite floats, including point coordinates, retain the precision needed to restore their original values.
 					Non-finite floats follow the current `pref_json_infinity_as_string` and `pref_json_nan_as_string` preferences at runtime.
 					The format used by GAMA follows simple rules. `int`, `float`, `bool`, `string` values are outputted as they are. `nil` is outputted as `null`. A `list` is outputted as a json array. Any other object or agent is outputted as a json object. If this object possesses the "gaml_type" attribute, \
 					it is an instance of the corresponding type, and the members that follow contain the attributes and the values necessary to reconstruct it. If it has the "agent_reference" attribute, its value represent the reference to an agent. If any reference to an agent is found, the \

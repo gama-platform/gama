@@ -889,7 +889,7 @@ public class Strings {
 			category = { IOperatorCategory.STRING },
 			concept = { IConcept.STRING })
 	@doc (
-			value = "Returns the string obtained by replacing by the third operand, in the first operand, all the sub-strings that match the regular expression of the second operand",
+			value = "Returns the string obtained by replacing by the third operand, in the first operand, all the sub-strings that match the regular expression of the second operand. An invalid regular expression raises a GAML error.",
 			examples = @example (
 					value = "replace_regex(\"colour, color\", \"colou?r\", \"col\")",
 					equals = "'col, col'"),
@@ -905,7 +905,14 @@ public class Strings {
 		requireString(target, "replace_regex");
 		requireString(pattern, "replace_regex");
 		requireString(replacement, "replace_regex");
-		return getCachedPattern(pattern).matcher(target).replaceAll(replacement);
+		try {
+			return getCachedPattern(pattern).matcher(target).replaceAll(replacement);
+		} catch (final PatternSyntaxException e) {
+			final var error = GamaRuntimeException.error("Invalid regular expression '" + pattern + "': "
+					+ e.getDescription() + " at index " + e.getIndex(), GAMA.getRuntimeScope());
+			error.initCause(e);
+			throw error;
+		}
 	}
 
 	/**

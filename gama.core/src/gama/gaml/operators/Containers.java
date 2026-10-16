@@ -1120,7 +1120,7 @@ public class Containers {
 			masterDoc = true,
 			comment = """
 					The first element of the container is located at the index 0. \
-					In addition, if the user tries to get the element at an index higher or equals than the length of the container, he will get an IndexOutOfBoundException.\
+					Accessing a list with a negative index or an index greater than or equal to its length raises a GAML error.\
 					The at operator behavior depends on the nature of the operand""",
 			special_cases = { "If the index is out of bounds (negative or >= length), raises a runtime error.",
 					"If the container is nil, raises a runtime error.",

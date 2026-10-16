@@ -1264,6 +1264,7 @@ public class PedestrianSkill extends MovingSkill {
 		IPoint current_velocity = getVelocity(agent).copy(scope);
 		IPoint fsoc = GamaPointFactory.create(0, 0, 0);
 		double dist = location.euclidianDistanceTo(currentTarget);
+		if (dist == 0 || getSpeed(agent) <= 0.0) return GamaPointFactory.create(0, 0, 0);
 		IList<IAgent> obstacles = GamaListFactory.create(Types.AGENT);
 		IList<IAgent> pedestrians = GamaListFactory.create(Types.AGENT);
 
@@ -1284,6 +1285,11 @@ public class PedestrianSkill extends MovingSkill {
 			IPoint D = current_velocity.minus(getVelocity(ag)).multiplyBy(lambda).add(itoj);
 			double D_norm = D.norm();
 			double B = gama_ * D_norm;
+			// With zero interaction width, the force tends to zero for separated pedestrians.
+			if (B == 0.0) {
+				forcesMap.put(ag, force);
+				continue;
+			}
 			IPoint t_ = D.divideBy(D_norm);
 			IPoint n_;
 			if (t_.getX() == 0) {

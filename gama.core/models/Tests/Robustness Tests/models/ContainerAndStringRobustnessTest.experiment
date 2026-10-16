@@ -18,17 +18,17 @@ experiment ContainerAndStringRobustnessTest type: test autorun: true {
 		string problem <- nil;
 		try { int i <- numbers[5]; } catch { problem <- #current_error; }
 		assert problem != nil;
-		assert handled(problem);
+		assert handled(problem) label: problem;
 
 		problem <- nil;
 		try { int i <- numbers[-1]; } catch { problem <- #current_error; }
 		assert problem != nil;
-		assert handled(problem);
+		assert handled(problem) label: problem;
 
 		problem <- nil;
 		try { int i <- numbers at 5; } catch { problem <- #current_error; }
 		assert problem != nil;
-		assert handled(problem);
+		assert handled(problem) label: problem;
 	}
 
 	test "Accessing a matrix out of its bounds raises a proper error" {
@@ -138,7 +138,20 @@ experiment ContainerAndStringRobustnessTest type: test autorun: true {
 	test "A ragged list of lists cannot become a matrix silently" {
 		string problem <- nil;
 		try { matrix<int> m <- matrix([[1, 2], [3]]); } catch { problem <- #current_error; }
-		assert handled(problem);
+		assert problem != nil;
+		assert handled(problem) label: problem;
+		problem <- nil;
+		try { matrix<float> m <- matrix([[1.0], [2.0, 3.0]]); } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem) label: problem;
+		problem <- nil;
+		try { matrix<string> m <- matrix([["a", "b"], ["c"]]); } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem) label: problem;
+		problem <- nil;
+		try { matrix<int> m <- matrix([[], [1]]); } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem) label: problem;
 	}
 
 	test "Matrices with absurd dimensions" {
@@ -157,11 +170,13 @@ experiment ContainerAndStringRobustnessTest type: test autorun: true {
 		string problem <- nil;
 		try { string s <- replace_regex("abc", "[", "x"); } catch { problem <- #current_error; }
 		assert problem != nil;
-		assert handled(problem);
+		assert handled(problem) label: problem;
 		problem <- nil;
 		list<string> matches <- [];
 		try { matches <- "abc" regex_matches "("; } catch { problem <- #current_error; }
 		assert handled(problem);
+		assert "a(b" regex_matches "(" = ["("];
+		assert replace_regex("abc123", "[0-9]+", "x") = "abcx";
 	}
 
 	test "Rounding to a negative precision" {
