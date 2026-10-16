@@ -28,8 +28,10 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
@@ -223,6 +225,7 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 	 *            the test
 	 */
 	public void createEditors(final EditorsGroup compo, final AbstractSummary<?> test) {
+		createErrorDetails(compo, test);
 		Map<String, ? extends AbstractSummary<?>> assertions = test.getSummaries();
 		for (final Map.Entry<String, ? extends AbstractSummary<?>> assertion : assertions.entrySet()) {
 			final AbstractSummary<?> summary = assertion.getValue();
@@ -257,6 +260,19 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 		}
 		final AssertEditor ed = new AssertEditor(scope, subTest);
 		ed.createControls(compo);
+		createErrorDetails(compo, subTest);
+	}
+
+	private void createErrorDetails(final EditorsGroup compo, final AbstractSummary<?> summary) {
+		final String error = summary.getErrorDetails();
+		if (error == null || error.isBlank()) return;
+		final Text details = new Text(compo, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.BORDER);
+		details.setText(error);
+		details.setToolTipText("Error details for " + summary.getTitle());
+		final GridData data = new GridData(SWT.FILL, SWT.TOP, true, false, 3, 1);
+		data.widthHint = 0;
+		data.heightHint = details.getLineHeight() * Math.min(8, Math.max(2, details.getLineCount()));
+		details.setLayoutData(data);
 	}
 
 	@SuppressWarnings ("synthetic-access")

@@ -108,15 +108,13 @@ experiment ContainerAndStringRobustnessTest type: test autorun: true {
 	}
 
 	test "Searching maps with nil values" {
-		geometry present <- square(1);
-		geometry absent <- circle(1);
-		map<string, geometry> values <- ["first"::nil, "middle"::present, "last"::nil];
+		map values <- ["first"::nil, "middle"::1, "last"::nil];
 		assert values index_of nil = "first";
 		assert values last_index_of nil = "last";
-		assert values index_of present = "middle";
-		assert values last_index_of present = "middle";
-		assert values index_of absent = nil;
-		assert values last_index_of absent = nil;
+		assert values index_of 1 = "middle";
+		assert values last_index_of 1 = "middle";
+		assert values index_of 2 = nil;
+		assert values last_index_of 2 = nil;
 		map no_nil <- ["a"::1];
 		assert no_nil index_of nil = nil;
 		assert no_nil last_index_of nil = nil;

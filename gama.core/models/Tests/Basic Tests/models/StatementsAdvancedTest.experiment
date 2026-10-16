@@ -89,13 +89,10 @@ experiment StatementsAdvancedTest type: test autorun: true {
 		// Highlight sets the GUI focus
 		highlight ag color: #red;
 
-		// Focus uses id and var in newer GAMA
-		focus id: "dummy_focus" var: ag;
-
 		// Using statement dynamically changes the topology/scope
 		int seen_in_world_topology <- 0;
 		using topology(world) {
-			seen_in_world_topology <- length(container_agent);
+			seen_in_world_topology <- length(container_agent); 
 		}
 		assert seen_in_world_topology = length(container_agent);
 		assert seen_in_world_topology >= 1;

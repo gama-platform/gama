@@ -48,8 +48,6 @@ import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.tests.AbstractSummary;
 import gama.api.utils.tests.CompoundSummary;
-import gama.api.utils.tests.IndividualTestSummary;
-import gama.api.utils.tests.AssertionSummary;
 import gama.api.utils.tests.TestExperimentSummary;
 import gama.api.utils.tests.TestState;
 import gama.ui.shared.resources.GamaColors;
@@ -164,7 +162,9 @@ public class CompactTestView extends ViewPart implements IGamaView, IGamaView.Te
 		if (index < 0 || index >= siblings.size()) return;
 		final var summary = siblings.get(index);
 		item.setData(summary);
-		item.setText(summary.getTitle() + "  [" + summary.getState() + "]");
+		final String error = summary.getError();
+		item.setText(summary.getTitle() + "  [" + summary.getState() + "]"
+				+ (error == null || error.isBlank() ? "" : " - " + error.replace('\n', ' ').replace('\r', ' ')));
 		item.setImage(statusIcon(summary.getState()));
 		item.setItemCount(rows(summary).size());
 	}
@@ -190,8 +190,7 @@ public class CompactTestView extends ViewPart implements IGamaView, IGamaView.Te
 
 	private void showDetails() {
 		final var summary = selected();
-		final boolean show = summary instanceof IndividualTestSummary || summary instanceof AssertionSummary;
-		if (!show) {
+		if (summary == null) {
 			details.setText("");
 			sash.setMaximizedControl(tree);
 			return;
