@@ -63,7 +63,7 @@ public class GamlIdiomsProvider<T extends IGamlDescription> {
 	 *
 	 * @return the providers
 	 */
-	public static GamlIdiomsProvider<?>[] getProviders() {
+	public static synchronized GamlIdiomsProvider<?>[] getProviders() {
 		if (PROVIDERS == null) {
 
 			GamlIdiomsProvider<IGamlFileInfo> FILES = new GamlIdiomsProvider<>("models", "Models (title & tags)",
@@ -224,7 +224,7 @@ public class GamlIdiomsProvider<T extends IGamlDescription> {
 	 */
 	public static Multimap<GamlIdiomsProvider<?>, IGamlDescription> forName(final String name) {
 		final Multimap<GamlIdiomsProvider<?>, IGamlDescription> result = ArrayListMultimap.create();
-		for (final GamlIdiomsProvider<?> p : PROVIDERS) { result.replaceValues(p, p.get(name)); }
+		for (final GamlIdiomsProvider<?> p : getProviders()) { result.replaceValues(p, p.get(name)); }
 		return result;
 	}
 
