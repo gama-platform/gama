@@ -12,6 +12,7 @@ species Person skills:[network]
 	string myGroup;
 	init
 	{
+		gama.pref_test_timeout <- 120;
 		do connect(with_name:name, force_network_use:true);
 	}
 }

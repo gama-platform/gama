@@ -19,6 +19,23 @@ species container_agent {
 	action do_migrate() {
 		migrate source: list(source_agent) target: target_agent;
 	}
+
+	action migrate_species() {
+		migrate source: source_agent target: target_agent;
+	}
+
+	action migrate_one() {
+		migrate source: source_agent[0] target: target_agent;
+	}
+
+	action migrate_subset() {
+		migrate source: [source_agent[0]] target: target_agent;
+	}
+
+	action migrate_nil() {
+		source_agent candidate <- nil;
+		migrate source: candidate target: target_agent;
+	}
 }
 
 experiment StatementsAdvancedTest type: test autorun: true {
@@ -80,6 +97,69 @@ experiment StatementsAdvancedTest type: test autorun: true {
 		assert length(c.target_agent) = 2;
 		// the attributes are kept by the migrated agents
 		assert c.target_agent[0].my_val = 5;
+	}
+
+	test "Migrate Statement accepts a species" {
+		create container_agent number: 1 returns: containers;
+		container_agent c <- containers[0];
+		ask c {
+			create source_agent number: 2;
+			do migrate_species();
+		}
+		assert length(c.source_agent) = 0;
+		assert length(c.target_agent) = 2;
+		assert c.target_agent all_match (each.my_val = 5);
+	}
+
+	test "Migrate Statement accepts a single agent" {
+		create container_agent number: 1 returns: containers;
+		container_agent c <- containers[0];
+		ask c {
+			create source_agent number: 2;
+			do migrate_one();
+		}
+		assert length(c.source_agent) = 1;
+		assert length(c.target_agent) = 1;
+		assert c.target_agent[0].my_val = 5;
+	}
+
+	test "Migrate Statement migrates only the supplied list" {
+		create container_agent number: 1 returns: containers;
+		container_agent c <- containers[0];
+		ask c {
+			create source_agent number: 2;
+			do migrate_subset();
+		}
+		assert length(c.source_agent) = 1;
+		assert length(c.target_agent) = 1;
+		assert c.target_agent[0].my_val = 5;
+	}
+
+	test "Migrate Statement accepts an empty list" {
+		create container_agent number: 1 returns: containers;
+		container_agent c <- containers[0];
+		ask c {
+			do do_migrate();
+		}
+		assert empty(c.source_agent);
+		assert empty(c.target_agent);
+	}
+
+	test "Migrate Statement reports a nil source" {
+		create container_agent number: 1 returns: containers;
+		container_agent c <- containers[0];
+		string problem <- nil;
+		try {
+			ask c {
+				do migrate_nil();
+			}
+		} catch {
+			problem <- #current_error;
+		}
+		assert problem != nil;
+		assert problem contains "the source must be an agent";
+		assert empty(c.source_agent);
+		assert empty(c.target_agent);
 	}
 
 	test "Highlight, Focus, and Using Statements" {
