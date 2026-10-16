@@ -45,13 +45,13 @@ experiment FileInputRobustnessTest type: test autorun: true {
 		string problem <- nil;
 		try { list<geometry> geometries <- shape_file("../includes/truncated.shp").contents; } catch { problem <- #current_error; }
 		assert problem != nil;
-		assert handled(problem);
+		assert handled(problem) label: problem;
 	}
 
 	test "Agents created from a malformed shapefile" {
 		string problem <- nil;
 		try { create feature from: shape_file("../includes/truncated.shp"); } catch { problem <- #current_error; }
-		assert handled(problem);
+		assert handled(problem) label: problem;
 	}
 
 	test "An empty image file" {
@@ -84,6 +84,23 @@ experiment FileInputRobustnessTest type: test autorun: true {
 		assert string(contents[0, 0]) = "a";
 	}
 
+	test "CSV header inference still skips the header when requested" {
+		matrix contents <- matrix(csv_file("../includes/semicolon.csv", ";", true));
+		assert contents.columns = 2;
+		assert contents.rows = 2;
+		assert contents[0, 0] = 1;
+		assert contents[1, 1] = 4;
+	}
+
+	test "An explicit numeric CSV type still converts the first row" {
+		matrix contents <- matrix(csv_file("../includes/semicolon.csv", ";", int, false));
+		assert contents.columns = 2;
+		assert contents.rows = 3;
+		assert contents[0, 0] = 0;
+		assert contents[0, 1] = 1;
+		assert contents[1, 2] = 4;
+	}
+
 	test "A CSV file starting with a byte order mark" {
 		matrix contents <- matrix(csv_file("../includes/bom.csv", ",", false));
 		// the mark is not part of the first cell
@@ -95,7 +112,7 @@ experiment FileInputRobustnessTest type: test autorun: true {
 		string problem <- nil;
 		matrix contents <- nil;
 		try { contents <- matrix(csv_file("../includes/empty.csv")); } catch { problem <- #current_error; }
-		assert handled(problem);
+		assert handled(problem) label: problem;
 		assert problem != nil or contents.rows * contents.columns = 0;
 	}
 
@@ -114,7 +131,9 @@ experiment FileInputRobustnessTest type: test autorun: true {
 		}
 		string problem <- nil;
 		try { unknown parsed <- from_json(opening + closing); } catch { problem <- #current_error; }
-		assert handled(problem);
+		assert problem != nil;
+		assert handled(problem) label: problem;
+		assert problem contains "Nesting too deep";
 	}
 
 	test "A JSON object with duplicated keys" {

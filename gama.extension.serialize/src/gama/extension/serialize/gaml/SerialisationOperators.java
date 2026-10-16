@@ -32,6 +32,7 @@ import gama.api.kernel.serialization.BinarySerialisation;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.StringUtils;
 import gama.api.utils.json.IJsonValue;
+import gama.core.util.json.ParseException;
 import gama.dev.DEBUG;
 import gama.gaml.statements.save.GeoJSonSaver;
 
@@ -328,7 +329,7 @@ public class SerialisationOperators {
 			category = { IOperatorCategory.CASTING },
 			concept = { IConcept.SERIALIZE })
 	@doc (
-			value = "Deserializes an object precedently serialized using 'to_json' (or an arbitrary json string obtained elsewhere). Agents and populations are not supported yet (i.e. they will return maps). Non-finite numbers and overflowing integers follow the current JSON preferences at runtime.",
+			value = "Deserializes an object precedently serialized using 'to_json' (or an arbitrary json string obtained elsewhere). Agents and populations are not supported yet (i.e. they will return maps). Non-finite numbers and overflowing integers follow the current JSON preferences at runtime. Invalid JSON, including excessive nesting, raises a GAML error with the parser location.",
 			see = { "from_gaml", "from_binary" })
 	@no_test
 	@tests ({
@@ -361,7 +362,13 @@ public class SerialisationOperators {
 			@test ("from_json(to_json([\"k\"::{1, 2}])) = [\"k\"::{1, 2}]")
 	})
 	public static Object fromJson(final IScope scope, final String s) {
-		return GAMA.getJsonEncoder().parse(s).toGamlValue(scope);
+		try {
+			return GAMA.getJsonEncoder().parse(s).toGamlValue(scope);
+		} catch (final ParseException e) {
+			final var error = GamaRuntimeException.error("Invalid JSON: " + e.getMessage(), scope);
+			error.initCause(e);
+			throw error;
+		}
 	}
 
 	/**
