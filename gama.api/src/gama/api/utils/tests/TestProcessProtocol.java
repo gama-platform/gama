@@ -23,7 +23,8 @@ import org.eclipse.emf.common.util.URI;
 /** Length-prefixed snapshots keep a killed worker's incomplete final write out of the report. */
 public final class TestProcessProtocol {
 
-	public static final int READY = 1, SUMMARY = 2, RUNNING = 3, TEST = 4, RESULT = 5, ERROR = 6, CONSOLE = 7;
+	public static final int READY = 1, SUMMARY = 2, RUNNING = 3, TEST = 4, RESULT = 5, ERROR = 6, CONSOLE = 7,
+			TIMEOUT = 8;
 
 	private TestProcessProtocol() {}
 

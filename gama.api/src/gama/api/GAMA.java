@@ -17,10 +17,8 @@ import java.util.prefs.Preferences;
 
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
 
-import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.exceptions.GamaRuntimeFileException;
-import gama.api.gaml.GAML;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.gaml.symbols.ISymbol;
 import gama.api.kernel.PlatformAgent;
@@ -28,10 +26,10 @@ import gama.api.kernel.serialization.SimulationRecorder;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.IExperimentAgent.Test;
 import gama.api.kernel.simulation.IExperimentController;
-import gama.api.kernel.simulation.ISimulationRecorder;
 import gama.api.kernel.simulation.IExperimentStateListener;
 import gama.api.kernel.simulation.IExperimentStateListener.State;
 import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.kernel.simulation.ISimulationRecorder;
 import gama.api.kernel.simulation.ITopLevelAgent;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.kernel.species.IModelSpecies;
@@ -42,7 +40,6 @@ import gama.api.types.map.IMap;
 import gama.api.ui.IGui;
 import gama.api.ui.NullGuiHandler;
 import gama.api.ui.layers.ISnapshotMaker;
-import gama.api.utils.PoolUtils;
 import gama.api.utils.benchmark.Benchmark;
 import gama.api.utils.benchmark.IBenchmarkable;
 import gama.api.utils.benchmark.StopWatch;
@@ -479,9 +476,9 @@ public class GAMA {
 	public static void closeAllExperiments(final boolean andOpenModelingPerspective, final boolean immediately) {
 		for (final IExperimentController controller : new ArrayList<>(controllers)) { closeController(controller); }
 		getGui().closeSimulationViews(null, andOpenModelingPerspective, immediately);
-		PoolUtils.writeStats();
-		GAML.getExpressionFactory().writeStats();
-		ArtefactRegistry.writeStats();
+		// PoolUtils.writeStats();
+		// GAML.getExpressionFactory().writeStats();
+		// ArtefactRegistry.writeStats();
 		changeCurrentTopLevelAgent(getPlatformAgent(), false);
 	}
 

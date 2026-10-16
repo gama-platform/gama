@@ -124,7 +124,7 @@ public class Pref<T> implements IParameter {
 	 * A lazily-evaluated supplier that provides the current value of this preference. May be {@code null} before the
 	 * preference has been initialized.
 	 */
-	Supplier<T> valueProvider;
+	volatile Supplier<T> valueProvider;
 
 	/** The provider for the compiled-in default value. */
 	Supplier<T> initialValueProvider;
@@ -326,8 +326,8 @@ public class Pref<T> implements IParameter {
 	}
 
 	/**
-	 * Sets an optional comment or unit label displayed next to the preference control in the UI. Returns {@code this}
-	 * for fluent chaining.
+	 * Sets an optional comment or unit label displayed next to the preference control in the UI and included in the
+	 * editor hover documentation for the preference's GAML variable. Returns {@code this} for fluent chaining.
 	 *
 	 * @param aComment
 	 *            the comment string to display; may be {@code null}

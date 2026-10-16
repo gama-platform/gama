@@ -32,11 +32,13 @@ import gama.api.runtime.scope.IScope;
 import gama.api.ui.IConsoleListener;
 import gama.api.ui.IGamaView;
 import gama.api.ui.NullGuiHandler;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.api.utils.tests.IndividualTestSummary;
 import gama.api.utils.tests.TestProcessProtocol;
 import gama.api.utils.tests.TestExperimentSummary;
 import gama.core.experiment.TestAgent;
 import gama.core.experiment.parameters.ParametersSet;
+import gama.dev.DEBUG;
 import gaml.compiler.validation.GamlModelBuilder;
 
 /** Sequential experiments in a warm, killable JVM, with incremental reports sent to the workbench. */
@@ -44,6 +46,8 @@ public final class TestWorkerApplication implements IApplication {
 
 	private volatile IExperimentSpecies experiment;
 	private volatile boolean stopped;
+	private int publishedTimeout;
+	private volatile IOException timeoutPublicationFailure;
 
 	@Override
 	public Object start(final IApplicationContext context) throws Exception {
@@ -57,7 +61,8 @@ public final class TestWorkerApplication implements IApplication {
 				final var gui = new WorkerGui(events);
 				GAMA.setHeadlessGui(gui);
 				final Thread execution = Thread.currentThread();
-				final Thread watcher = new Thread(() -> watch(directory.resolve("stop"), execution), "Test interruption");
+				final Thread watcher =
+						new Thread(() -> watch(directory.resolve("stop"), execution, events), "Test interruption");
 				watcher.setDaemon(true);
 				watcher.start();
 				while (!stopped) {
@@ -69,6 +74,7 @@ public final class TestWorkerApplication implements IApplication {
 					}
 					final String name = TestProcessProtocol.readString(requests);
 					gui.useUIConsole = requests.readBoolean();
+					GamaPreferences.Runtime.TEST_TIMEOUT.set(requests.readInt());
 					run(path, name, events);
 				}
 				return IApplication.EXIT_OK;
@@ -100,20 +106,41 @@ public final class TestWorkerApplication implements IApplication {
 		TestProcessProtocol.send(events, TestProcessProtocol.READY, out -> {});
 		TestProcessProtocol.send(events, TestProcessProtocol.SUMMARY,
 				out -> TestProcessProtocol.writeSummary(out, initialSummary));
-		experiment = GAMA.addHeadlessExperiment(model, name, new ParametersSet(), null);
-		final var agent = (TestAgent) experiment.getAgent();
-		if (!stopped) { agent.init(agent.getScope()); }
-		if (!stopped) { agent.step(agent.getScope()); }
-		final var summary = agent.getSummary();
-		GAMA.closeExperiment(experiment);
-		experiment = null;
+		final TestExperimentSummary summary;
+		try {
+			synchronized (this) {
+				experiment = plan;
+				publishedTimeout = 0;
+				publishTimeout(events);
+			}
+			GAMA.addHeadlessExperiment(model, name, new ParametersSet(), null);
+			final var agent = (TestAgent) experiment.getAgent();
+			if (!stopped) { agent.init(agent.getScope()); }
+			if (!stopped) { agent.step(agent.getScope()); }
+			summary = agent.getSummary();
+		} finally {
+			synchronized (this) { experiment = null; }
+			GAMA.closeExperiment(plan);
+		}
+		if (timeoutPublicationFailure != null) throw timeoutPublicationFailure;
 		TestProcessProtocol.send(events, TestProcessProtocol.RESULT,
 				out -> TestProcessProtocol.writeSummary(out, summary));
 	}
 
-	private void watch(final Path stop, final Thread execution) {
+	private synchronized void publishTimeout(final OutputStream events) throws IOException {
+		if (experiment == null) return;
+		final int seconds = GamaPreferences.Runtime.TEST_TIMEOUT.getValue();
+		if (seconds == publishedTimeout) return;
+		TestProcessProtocol.send(events, TestProcessProtocol.TIMEOUT, out -> out.writeInt(seconds));
+		publishedTimeout = seconds;
+	}
+
+	private void watch(final Path stop, final Thread execution, final OutputStream events) {
 		try {
-			while (!stopped && !Files.exists(stop)) { Thread.sleep(20); }
+			while (!stopped && !Files.exists(stop)) {
+				publishTimeout(events);
+				Thread.sleep(20);
+			}
 			if (stopped) return;
 			stopped = true;
 			final var current = experiment;
@@ -124,6 +151,11 @@ public final class TestWorkerApplication implements IApplication {
 			execution.interrupt();
 		} catch (final InterruptedException e) {
 			Thread.currentThread().interrupt();
+		} catch (final IOException e) {
+			timeoutPublicationFailure = e;
+			DEBUG.ERR("Cannot publish test timeout", e);
+			stopped = true;
+			execution.interrupt();
 		}
 	}
 

@@ -73,7 +73,6 @@ experiment AgentRobustnessTest type: test autorun: true {
 		ask w {
 			do goto (target: {60, 50});
 		}
-		write w.location;
 		assert (w.location distance_to {60, 50}) <= 10.0;
 		ask w { do die(); }
 	}

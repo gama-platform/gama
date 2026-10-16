@@ -31,7 +31,7 @@ public final class TestExperimentRunner {
 	private static final AtomicReference<TestExperimentRunner> ACTIVE = new AtomicReference<>();
 	private final Thread execution = Thread.currentThread();
 	private final IExperimentSpecies experiment;
-	private final int seconds = GamaPreferences.Runtime.TEST_TIMEOUT.getValue();
+	private volatile int seconds = GamaPreferences.Runtime.TEST_TIMEOUT.getValue();
 	private volatile TestState termination;
 	private IndividualTestSummary currentTest;
 	private IScope currentScope;
@@ -116,7 +116,16 @@ public final class TestExperimentRunner {
 		});
 		TestExperimentSummary result = null;
 		try {
-			watchdog.schedule(() -> cancel(TestState.TIMED_OUT), seconds, TimeUnit.SECONDS);
+			final long started = System.nanoTime();
+			watchdog.scheduleAtFixedRate(() -> {
+				synchronized (this) {
+					if (finished || termination != null) return;
+					seconds = GamaPreferences.Runtime.TEST_TIMEOUT.getValue();
+					if (System.nanoTime() - started >= TimeUnit.SECONDS.toNanos(seconds)) {
+						cancel(TestState.TIMED_OUT);
+					}
+				}
+			}, 0, 20, TimeUnit.MILLISECONDS);
 			if (gui.isTestStopRequested()) { cancel(TestState.INTERRUPTED); }
 			if (termination == null) {
 				GAMA.addHeadlessExperiment(model, name, GamaMapFactory.create(Types.STRING, Types.NO_TYPE), null);

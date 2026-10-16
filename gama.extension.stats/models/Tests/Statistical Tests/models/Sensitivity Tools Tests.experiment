@@ -20,7 +20,6 @@ experiment tests type:test {
 			"out":: [1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5]
 		];
 		assert sobol_analysis(sob2d, "sob2d.txt", 2) != "";
-		write sobol_analysis(sob2d, "sob2d.txt", 2);
 		assert file_exists("sob2d.txt");
 		assert delete_file("sob2d.txt");
 	}

@@ -175,7 +175,7 @@ experiment StatementRobustnessTest type: test autorun: true {
 //		try {
 //			ask created[0] {
 //				int result <- depth(10000); } } catch {
-//			write #current_error; problem <- #current_error; }
+//			problem <- #current_error; }
 //		assert problem != nil;
 //		assert handled(problem);
 //		assert problem contains "Execution stack exhausted";

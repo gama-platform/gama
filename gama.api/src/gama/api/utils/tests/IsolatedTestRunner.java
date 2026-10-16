@@ -47,6 +47,7 @@ public final class IsolatedTestRunner {
 	private final java.util.Set<String> finishedTests = new java.util.HashSet<>();
 	private boolean completed;
 	private long started;
+	private int seconds = GamaPreferences.Runtime.TEST_TIMEOUT.getValue();
 	private final boolean useUIConsole = TestExperimentRunner.usesUIConsole();
 
 	private IsolatedTestRunner(final String model, final String experiment) {
@@ -89,6 +90,7 @@ public final class IsolatedTestRunner {
 			TestProcessProtocol.writeString(requests, model);
 			TestProcessProtocol.writeString(requests, experiment);
 			requests.writeBoolean(useUIConsole);
+			requests.writeInt(GamaPreferences.Runtime.TEST_TIMEOUT.getValue());
 			requests.flush();
 		}
 
@@ -166,15 +168,14 @@ public final class IsolatedTestRunner {
 			final Path log = session.directory.resolve("worker.log");
 			final Process process = session.process;
 			final long startup = System.nanoTime();
-			final int seconds = GamaPreferences.Runtime.TEST_TIMEOUT.getValue();
-			final long timeout = TimeUnit.SECONDS.toNanos(seconds);
 			final RandomAccessFile input = session.input;
 			while (true) {
 				readEvents(input, gui);
 				if (completed) break;
 				final boolean stopped = interrupted || gui.isTestStopRequested()
 						|| Thread.currentThread().isInterrupted();
-				final boolean timedOut = started != 0 && System.nanoTime() - started >= timeout;
+				final boolean timedOut =
+						started != 0 && System.nanoTime() - started >= TimeUnit.SECONDS.toNanos(seconds);
 				if (stopped || timedOut) {
 					terminatedTest = currentTest;
 					termination = stopped ? TestState.INTERRUPTED : TestState.TIMED_OUT;
@@ -235,6 +236,10 @@ public final class IsolatedTestRunner {
 			try (var in = new DataInputStream(new ByteArrayInputStream(bytes))) {
 				switch (in.readInt()) {
 					case TestProcessProtocol.READY -> started = System.nanoTime();
+					case TestProcessProtocol.TIMEOUT -> {
+						seconds = in.readInt();
+						if (seconds < 1) throw new IOException("Invalid test timeout: " + seconds);
+					}
 					case TestProcessProtocol.SUMMARY -> summary = TestProcessProtocol.readExperiment(in);
 					case TestProcessProtocol.RUNNING ->
 						gui.displayRunningTest(GAMA.getRuntimeScope(), TestProcessProtocol.readString(in));
