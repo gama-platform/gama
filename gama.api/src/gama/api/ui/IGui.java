@@ -476,6 +476,13 @@ public interface IGui {
 	default void displayTestSummary(final IScope scope,
 			final gama.api.utils.tests.IndividualTestSummary summary, final boolean finished) {}
 
+	/** Publishes an individual test snapshot with its experiment for views outside the execution scope. */
+	default void displayTestSummary(final IScope scope,
+			final gama.api.utils.tests.TestExperimentSummary experiment,
+			final gama.api.utils.tests.IndividualTestSummary summary, final boolean finished) {
+		displayTestSummary(scope, summary, finished);
+	}
+
 	/**
 	 * Close simulation views.
 	 *

@@ -311,10 +311,20 @@ public class SwtGui implements IGui {
 	@Override
 	public void displayTestSummary(final IScope scope,
 			final gama.api.utils.tests.IndividualTestSummary summary, final boolean finished) {
-		if (!finished) return;
-		final int completed = completedTests.incrementAndGet();
+		final gama.api.utils.tests.TestExperimentSummary experiment =
+				scope != null && scope.getExperiment() instanceof gama.api.kernel.simulation.IExperimentAgent.Test test
+						? test.getSummary() : null;
+		displayTestSummary(scope, experiment, summary, finished);
+	}
+
+	@Override
+	public void displayTestSummary(final IScope scope,
+			final gama.api.utils.tests.TestExperimentSummary experiment,
+			final gama.api.utils.tests.IndividualTestSummary summary, final boolean finished) {
+		final int completed = finished ? completedTests.incrementAndGet() : completedTests.get();
 		if (activeTestView instanceof gama.ui.shared.views.CompactTestView view) {
-			view.displayTestCounts(completed, totalTests);
+			if (finished) { view.displayTestCounts(completed, totalTests); }
+			view.displayTestSummary(experiment, summary);
 		}
 	}
 

@@ -48,6 +48,7 @@ import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.tests.AbstractSummary;
 import gama.api.utils.tests.CompoundSummary;
+import gama.api.utils.tests.IndividualTestSummary;
 import gama.api.utils.tests.TestExperimentSummary;
 import gama.api.utils.tests.TestState;
 import gama.ui.shared.resources.GamaColors;
@@ -61,6 +62,9 @@ public class CompactTestView extends ViewPart implements IGamaView, IGamaView.Te
 
 	private final List<AbstractSummary<?>> experiments = new ArrayList<>();
 	private final Map<AbstractSummary<?>, List<AbstractSummary<?>>> children = new IdentityHashMap<>();
+	private final Map<AbstractSummary<?>, TreeItem> items = new IdentityHashMap<>();
+	private final Map<TestExperimentSummary, Boolean> liveExperiments = new IdentityHashMap<>();
+	private final Map<TestExperimentSummary, IndividualTestSummary> pendingSummaries = new IdentityHashMap<>();
 	private List<AbstractSummary<?>> roots = List.of();
 	private final Map<TestState, Image> icons = new EnumMap<>(TestState.class);
 	private org.eclipse.swt.widgets.Display display;
@@ -162,6 +166,11 @@ public class CompactTestView extends ViewPart implements IGamaView, IGamaView.Te
 		if (index < 0 || index >= siblings.size()) return;
 		final var summary = siblings.get(index);
 		item.setData(summary);
+		items.put(summary, item);
+		updateItem(item, summary);
+	}
+
+	private void updateItem(final TreeItem item, final AbstractSummary<?> summary) {
 		final String error = summary.getError();
 		item.setText(summary.getTitle() + "  [" + summary.getState() + "]"
 				+ (error == null || error.isBlank() ? "" : " - " + error.replace('\n', ' ').replace('\r', ' ')));
@@ -220,6 +229,7 @@ public class CompactTestView extends ViewPart implements IGamaView, IGamaView.Te
 
 	private void refresh() {
 		children.clear();
+		items.clear();
 		roots = filtered(new ArrayList<>(experiments));
 		tree.setRedraw(false);
 		try {
@@ -312,6 +322,8 @@ public class CompactTestView extends ViewPart implements IGamaView, IGamaView.Te
 	public void startNewTestSequence(final boolean all) {
 		ui(() -> {
 			generation++;
+			synchronized (this) { pendingSummaries.clear(); }
+			liveExperiments.clear();
 			running = true;
 			report = false;
 			currentName = "Preparing tests...";
@@ -328,10 +340,38 @@ public class CompactTestView extends ViewPart implements IGamaView, IGamaView.Te
 	@Override
 	public void addTestResult(final CompoundSummary<?, ?> summary) {
 		ui(() -> {
-			if (summary instanceof TestExperimentSummary) { experiments.add(summary); }
-			else { experiments.addAll(summary.getSummaries().values()); }
+			if (summary instanceof TestExperimentSummary experiment) {
+				upsertExperiment(experiment);
+			} else {
+				for (final var result : summary.getSummaries().values()) {
+					if (result instanceof TestExperimentSummary experiment) { upsertExperiment(experiment); }
+					else { experiments.add(result); }
+				}
+			}
 			refresh();
 		});
+	}
+
+	private void upsertExperiment(final TestExperimentSummary experiment) {
+		for (int i = 0; i < experiments.size(); i++) {
+			final var existing = experiments.get(i);
+			if (existing == experiment || existing instanceof TestExperimentSummary test
+					&& liveExperiments.containsKey(test)
+					&& java.util.Objects.equals(test.getTitle(), experiment.getTitle())
+					&& java.util.Objects.equals(test.getURI(), experiment.getURI())) {
+				if (existing instanceof TestExperimentSummary test) { liveExperiments.remove(test); }
+				experiments.set(i, experiment);
+				return;
+			}
+		}
+		experiments.add(experiment);
+	}
+
+	/** Queues live summaries for a coalesced SWT-thread refresh. */
+	public void displayTestSummary(final TestExperimentSummary experiment, final IndividualTestSummary summary) {
+		if (experiment == null || summary == null) return;
+		synchronized (this) { pendingSummaries.put(experiment, summary); }
+		queueProgress();
 	}
 
 	@Override
@@ -364,8 +404,14 @@ public class CompactTestView extends ViewPart implements IGamaView, IGamaView.Te
 		display.asyncExec(() -> {
 			if (root.isDisposed()) { progressPending = false; return; }
 			display.timerExec(100, () -> {
-				progressPending = false;
+				final Map<TestExperimentSummary, IndividualTestSummary> summaries;
+				synchronized (CompactTestView.this) {
+					progressPending = false;
+					summaries = new IdentityHashMap<>(pendingSummaries);
+					pendingSummaries.clear();
+				}
 				if (root.isDisposed() || !running || sequence != generation) return;
+				refreshLiveSummaries(summaries);
 				counters.setText(testCountsText());
 				status.setText((totalModels > 0 ? "Model " + currentModel + " of " + totalModels + " - " : "")
 						+ currentName);
@@ -375,9 +421,71 @@ public class CompactTestView extends ViewPart implements IGamaView, IGamaView.Te
 		});
 	}
 
+	private void refreshLiveSummaries(final Map<TestExperimentSummary, IndividualTestSummary> summaries) {
+		boolean rootsChanged = false;
+		for (final var experiment : summaries.keySet()) {
+			boolean found = false;
+			for (final var existing : experiments) {
+				if (existing == experiment) { found = true; break; }
+			}
+			if (!found) {
+				experiments.add(experiment);
+				liveExperiments.put(experiment, Boolean.TRUE);
+				rootsChanged = true;
+			}
+		}
+		if (rootsChanged) {
+			children.clear();
+			roots = filtered(new ArrayList<>(experiments));
+			tree.setItemCount(roots.size());
+		}
+		tree.setRedraw(false);
+		try {
+			for (final var entry : summaries.entrySet()) {
+				refreshLiveExperiment(entry.getKey(), entry.getValue());
+			}
+		} finally {
+			tree.setRedraw(true);
+		}
+		tree.redraw();
+	}
+
+	private void refreshLiveExperiment(final TestExperimentSummary experiment, final IndividualTestSummary test) {
+		final var experimentItem = items.get(experiment);
+		if (experimentItem == null || experimentItem.isDisposed()) return;
+		children.remove(experiment);
+		updateItem(experimentItem, experiment);
+		final var summaries = new ArrayList<>(experiment.getSummaries().values());
+		for (int i = 0; i < summaries.size(); i++) {
+			if (summaries.get(i) == test && i < experimentItem.getItemCount()) {
+				final TreeItem testItem = experimentItem.getItem(i);
+				if (experimentItem.getExpanded() || testItem.getData() != null) { refreshLiveItem(testItem, test); }
+				break;
+			}
+		}
+	}
+
+	private void refreshLiveItem(final TreeItem item, final AbstractSummary<?> summary) {
+		final Object previous = item.getData();
+		if (previous instanceof AbstractSummary<?> old && old != summary) {
+			items.remove(old);
+			children.remove(old);
+		}
+		item.setData(summary);
+		items.put(summary, item);
+		children.remove(summary);
+		updateItem(item, summary);
+		final var summaries = rows(summary);
+		final TreeItem[] childItems = item.getItems();
+		for (int i = 0; i < Math.min(summaries.size(), childItems.length); i++) {
+			if (childItems[i].getData() != null) { refreshLiveItem(childItems[i], summaries.get(i)); }
+		}
+	}
+
 	@Override
 	public void finishTestSequence() {
 		ui(() -> {
+			synchronized (this) { pendingSummaries.clear(); }
 			running = false;
 			report = true;
 			final boolean stopped = GAMA.getRegularGui().isTestStopRequested();
@@ -437,6 +545,9 @@ public class CompactTestView extends ViewPart implements IGamaView, IGamaView.Te
 	public void dispose() {
 		experiments.clear();
 		children.clear();
+		items.clear();
+		liveExperiments.clear();
+		synchronized (this) { pendingSummaries.clear(); }
 		roots = List.of();
 		icons.values().forEach(Image::dispose);
 		icons.clear();

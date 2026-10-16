@@ -208,13 +208,15 @@ public final class IsolatedTestRunner {
 			DEBUG.ERR("Unable to run isolated test experiment " + experiment, e);
 			if (termination == null) { markTermination(TestState.ABORTED, AbstractSummary.errorWithTrace(e), currentTest); }
 			if (currentTest != null && finishedTests.add(currentTest)) {
-				gui.displayTestSummary(GAMA.getRuntimeScope(), summary.summaries.get(currentTest), true);
+				gui.displayTestSummary(GAMA.getRuntimeScope(), summary,
+						summary.summaries.get(currentTest), true);
 			}
 		} finally {
 			if (!completed || termination != null) { session.discard(); }
 			if (termination != null) { markTermination(termination, terminationMessage, terminatedTest); }
 			if (terminatedTest != null && termination != null && finishedTests.add(terminatedTest)) {
-				gui.displayTestSummary(GAMA.getRuntimeScope(), summary.summaries.get(terminatedTest), true);
+				gui.displayTestSummary(GAMA.getRuntimeScope(), summary,
+						summary.summaries.get(terminatedTest), true);
 			}
 		}
 		return summary;
@@ -249,7 +251,8 @@ public final class IsolatedTestRunner {
 						summary.summaries.put(key, TestProcessProtocol.readTest(in));
 						currentTest = finished ? null : key;
 						if (!finished || finishedTests.add(key)) {
-							gui.displayTestSummary(GAMA.getRuntimeScope(), summary.summaries.get(key), finished);
+							gui.displayTestSummary(GAMA.getRuntimeScope(), summary, summary.summaries.get(key),
+									finished);
 						}
 					}
 					case TestProcessProtocol.RESULT -> {
