@@ -186,7 +186,7 @@ experiment GraphOperatorsTest type: test autorun: true {
 		// on a graph of values too
 		list<path> value_paths <- [];
 		
-		try {value_paths <- paths_between(value_triangle(), "a"::"d", 2);} catch {write #current_error;}
+		value_paths <- paths_between(value_triangle(), "a"::"d", 2);
 		assert length(value_paths) = 2;
 		assert length(value_paths[0].edges) = 2;
 		assert length(value_paths[1].edges) = 3;

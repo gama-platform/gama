@@ -159,7 +159,6 @@ experiment Lists  type:test {
 			assert false; // an exception must be raised so this line should never be reached
 		}
 		catch{
-			write "An exception was raised but was expected: " + #current_error;
 			assert true; // the exception is caught
 		}
 

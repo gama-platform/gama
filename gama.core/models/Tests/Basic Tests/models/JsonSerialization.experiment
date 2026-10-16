@@ -151,7 +151,6 @@ experiment SerializationTest type:test {
 		try{
 			map m <- map(from_json('{"x":Infinity}'));	
 		}catch{
-			write "Expected json parser exception: " + #current_error;
 			exception <- true;
 		}
 		assert exception;
@@ -162,7 +161,6 @@ experiment SerializationTest type:test {
 		try{
 			map m <- map(from_json('{"x":NaN}'));	
 		}catch{
-			write "Expected json parser exception: " + #current_error;
 			exception <- true;
 		}
 		assert exception;
@@ -173,7 +171,6 @@ experiment SerializationTest type:test {
 		try{
 			unknown l <- from_json('{"x": UnknownLiteral}');
 		}catch{
-			write "Expected json parser exception: " + #current_error;
 			exception <- true;
 		}
 		assert exception;
@@ -184,7 +181,6 @@ experiment SerializationTest type:test {
 		try{
 			unknown l <- from_json('{"x": 123');
 		}catch{
-			write "Expected json parser exception: " + #current_error;
 			exception <- true;
 		}
 		assert exception;
@@ -195,7 +191,6 @@ experiment SerializationTest type:test {
 		try{
 			unknown l <- from_json('{"x": 123 "y":123}');
 		}catch{
-			write "Expected json parser exception: " + #current_error;
 			exception <- true;
 		}
 		assert exception;
@@ -206,7 +201,6 @@ experiment SerializationTest type:test {
 		try{
 			unknown l <- from_json('{"x": 123, "y":123 , }');
 		}catch{
-			write "Expected json parser exception: " + #current_error;
 			exception <- true;
 		}
 		assert exception;
@@ -217,7 +211,6 @@ experiment SerializationTest type:test {
 		try{
 			unknown l <- from_json("{'x': 123, 'y':123 }");
 		}catch{
-			write "Expected json parser exception: " + #current_error;
 			exception <- true;
 		}
 		assert exception;
