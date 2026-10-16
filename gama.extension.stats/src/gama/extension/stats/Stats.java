@@ -381,7 +381,7 @@ public class Stats {
 			concept = { IConcept.STATISTIC })
 	@doc (
 			value = "Returns the auto-correlation of a data sequence given some lag",
-			comment = "",
+			comment = "Requires numeric data and a non-negative lag smaller than the number of numeric values.",
 			examples = { @example (
 					value = "auto_correlation([1,0,1,0,1,0],2)",
 					equals = "1"),
@@ -391,12 +391,16 @@ public class Stats {
 	@tests ({ @test ("list<float> series <- [1.0, 2.0, 3.0, 4.0, 5.0]; auto_correlation(series, 1) = 0.5") })
 	public static Double opAutoCorrelation(final IScope scope, final IContainer data, final Integer lag) {
 
-		// TODO input parameters validation
+		if (data == null) throw GamaRuntimeException.error("auto_correlation requires non-nil data", scope);
+		final DoubleArrayList values = toDoubleArrayList(scope, data);
+		if (lag == null || lag < 0 || lag >= values.size()) {
+			throw GamaRuntimeException.error("auto_correlation requires 0 <= lag < the number of numeric values", scope);
+		}
 
 		final double mean = (Double) Containers.opMean(scope, data);
 		final double variance = Stats.opVariance(scope, data);
 
-		return Descriptive.autoCorrelation(toDoubleArrayList(scope, data), lag, mean, variance);
+		return Descriptive.autoCorrelation(values, lag, mean, variance);
 	}
 
 	/**
@@ -798,7 +802,7 @@ public class Stats {
 			concept = { IConcept.STATISTIC })
 	@doc (
 			value = "Returns the covariance of two data sequences",
-			comment = "",
+			comment = "Requires two sequences with the same number of numeric values (at least two).",
 			examples = { @example (
 					value = "covariance([13,2,1,4,1,2], [1,2,1,3,1,2]) with_precision(2)",
 					equals = "-0.67") })
@@ -809,9 +813,16 @@ public class Stats {
 			@test ("list<float> data1 <- [1.0, 2.0, 3.0, 4.0, 5.0]; list<float> data2 <- [2.0, 4.0, 6.0, 8.0, 10.0]; float cov <- covariance(data1, data2); cov > 0.0") })
 	public static Double opCovariance(final IScope scope, final IContainer data1, final IContainer data2) {
 
-		// TODO input parameters validation
-
-		return Descriptive.covariance(toDoubleArrayList(scope, data1), toDoubleArrayList(scope, data2));
+		if (data1 == null || data2 == null) {
+			throw GamaRuntimeException.error("covariance requires two non-nil data sequences", scope);
+		}
+		final DoubleArrayList values1 = toDoubleArrayList(scope, data1);
+		final DoubleArrayList values2 = toDoubleArrayList(scope, data2);
+		if (values1.size() < 2 || values1.size() != values2.size()) {
+			throw GamaRuntimeException.error("covariance requires equally sized numeric sequences of at least two values",
+					scope);
+		}
+		return Descriptive.covariance(values1, values2);
 	}
 
 	// TODO Penser a faire ces calculs sur les points, egalement (et les entiers
@@ -844,7 +855,7 @@ public class Stats {
 					 (density-based spatial clustering of applications with noise) algorithm from the \
 					first operand data according to the maximum radius of the neighborhood to be considered (eps) \
 					and the minimum number of points needed for a cluster (minPts). Usage: dbscan(data,eps,minPoints)""",
-			special_cases = "if the lengths of two vectors in the right-hand aren't equal, returns 0",
+			special_cases = "Raises an error unless data contains numeric lists of equal dimension, eps is non-negative and minPts is non-negative.",
 			examples = { @example (
 					value = "dbscan ([[2,4,5], [3,8,2], [1,1,3], [4,3,4]],10,2)",
 					equals = "[[0,1,2,3]]") })
@@ -856,13 +867,26 @@ public class Stats {
 			@test ("list<list<float>> instances4 <- [[1.0, 1.0], [1.1, 1.0], [10.0, 10.0], [10.1, 10.0]]; length(dbscan(instances4, 100.0, 1)) = 1") })
 	public static IList<IList> opDBScan(final IScope scope, final IList data, final Double eps, final Integer minPts)
 			throws GamaRuntimeException {
+		if (data == null || eps == null || !Double.isFinite(eps) || eps < 0 || minPts == null || minPts < 0) {
+			throw GamaRuntimeException.error("dbscan requires non-nil data, finite eps >= 0 and minPts >= 0", scope);
+		}
 		final IList<Integer> remainingData = GamaListFactory.create(Types.INT);
 		final DBSCANClusterer<DoublePoint> dbscan = new DBSCANClusterer(eps, minPts);
 		final List<DoublePoint> instances = new ArrayList<>();
 		for (int i = 0; i < data.size(); i++) {
-			final IList d = (IList) data.get(i);
+			if (!(data.get(i) instanceof IList d)) {
+				throw GamaRuntimeException.error("dbscan requires a list of numeric lists", scope);
+			}
+			if (i > 0 && d.size() != instances.get(0).getPoint().length) {
+				throw GamaRuntimeException.error("dbscan requires points of equal dimension", scope);
+			}
 			final double point[] = new double[d.size()];
-			for (int j = 0; j < d.size(); j++) { point[j] = Cast.asFloat(scope, d.get(j)); }
+			for (int j = 0; j < d.size(); j++) {
+				if (!(d.get(j) instanceof Number)) {
+					throw GamaRuntimeException.error("dbscan requires numeric coordinates", scope);
+				}
+				point[j] = Cast.asFloat(scope, d.get(j));
+			}
 			remainingData.add(i);
 			instances.add(new Instance(i, point));
 		}
@@ -903,7 +927,7 @@ public class Stats {
 			concept = { IConcept.STATISTIC })
 	@doc (
 			value = "Durbin-Watson computation",
-			comment = "",
+			comment = "Requires at least two numeric values.",
 			examples = { @example (
 					value = "durbin_watson([13,2,1,4,1,2]) with_precision(4)",
 					equals = "0.7231") })
@@ -911,9 +935,12 @@ public class Stats {
 			@test ("list<float> series <- [1.0, 2.0, 3.0, 4.0, 5.0]; durbin_watson(series) > 0.07 and durbin_watson(series) < 0.08") })
 	public static Double opDurbinWatson(final IScope scope, final IContainer data) {
 
-		// TODO input parameters validation
-
-		return Descriptive.durbinWatson(toDoubleArrayList(scope, data));
+		if (data == null) throw GamaRuntimeException.error("durbin_watson requires non-nil data", scope);
+		final DoubleArrayList values = toDoubleArrayList(scope, data);
+		if (values.size() < 2) {
+			throw GamaRuntimeException.error("durbin_watson requires at least two numeric values", scope);
+		}
+		return Descriptive.durbinWatson(values);
 	}
 
 	/**
@@ -1003,11 +1030,15 @@ public class Stats {
 	@doc (
 			value = "returns the dynamic time warping between the two series of values"
 					+ " (step pattern used: symetric1) with Sakoe-Chiba band (radius: the window width of Sakoe-Chiba band)",
+			comment = "The radius must be non-negative. A radius covering both series is equivalent to unconstrained dtw.",
 			examples = { @example (
 					value = "dtw([10.0,5.0,1.0, 3.0],[1.0,10.0,5.0,1.0], 2)",
 					equals = "11.0") })
 	public static Double opDynamicTimeWarping(final IScope scope, final IList vals1, final IList vals2,
 			final int radius) throws GamaRuntimeException {
+		if (vals1 == null || vals2 == null || radius < 0) {
+			throw GamaRuntimeException.error("dtw requires non-nil series and a non-negative radius", scope);
+		}
 		final int n1 = vals1.size();
 		final int n2 = vals2.size();
 		final double[][] table = new double[2][n2 + 1];
@@ -1017,11 +1048,11 @@ public class Stats {
 		for (int i = 1; i <= n2; i++) { table[0][i] = Double.POSITIVE_INFINITY; }
 
 		for (int i = 1; i <= n1; i++) {
-			final int start = Math.max(1, i - radius);
-			final int end = Math.min(n2, i + radius);
+			final int start = (int) Math.max(1L, (long) i - radius);
+			final int end = (int) Math.min(n2, (long) i + radius);
 
-			table[1][start - 1] = Double.POSITIVE_INFINITY;
-			if (end < n2) { table[1][end + 1] = Double.POSITIVE_INFINITY; }
+			if (start > end) return Double.POSITIVE_INFINITY;
+			Arrays.fill(table[1], Double.POSITIVE_INFINITY);
 
 			for (int j = start; j <= end; j++) {
 				final double cost =
@@ -1371,6 +1402,7 @@ public class Stats {
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.STATISTICAL },
 			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION })
 	@doc (
+			comment = "Requires a non-nil list of non-nil numeric values.",
 			usages = { @usage (
 					value = "return the Gini Index of the given list of values (list of floats)",
 					examples = { @example (
@@ -1386,14 +1418,21 @@ public class Stats {
 			@test ("gini([1.0, 2.0, 3.0]) > 0.0 and gini([1.0, 2.0, 3.0]) < gini([0.0, 0.0, 10.0])") })
 
 	public static double opGini(final IScope scope, final IList<Double> vals) {
+		if (vals == null) throw GamaRuntimeException.error("gini requires a non-nil list of numeric values", scope);
+		final IList<?> values = vals;
+		for (final Object value : values) {
+			if (!(value instanceof Number)) {
+				throw GamaRuntimeException.error("gini requires non-nil numeric values", scope);
+			}
+		}
 		final int N = vals.size();
 		double G = 0.0;
 		double sumXi = 0.0;
 		for (int i = 0; i < N; i++) {
-			final double xi = vals.get(i);
+			final double xi = ((Number) values.get(i)).doubleValue();
 			sumXi += xi;
 			for (int j = 0; j < N; j++) {
-				final double yi = vals.get(j);
+				final double yi = ((Number) values.get(j)).doubleValue();
 				G += Math.abs(xi - yi);
 			}
 		}
@@ -2578,6 +2617,7 @@ public class Stats {
 			concept = { IConcept.STATISTIC })
 	@doc (
 			value = "Performs a one-way ANOVA test on a list of groups of data. Each group is a list of numbers.",
+			comment = "Non-empty data must contain at least two non-nil groups, each with at least two numeric observations.",
 			examples = { @example (
 					value = "anova([[6.0, 8.0, 4.0, 5.0, 3.0, 4.0], [8.0, 12.0, 9.0, 11.0, 6.0, 8.0], [13.0, 9.0, 11.0, 8.0, 7.0, 12.0]])",
 					isExecutable = false) })
@@ -2585,6 +2625,21 @@ public class Stats {
 			@test ("(anova([[6.0, 8.0, 4.0, 5.0, 3.0, 4.0], [8.0, 12.0, 9.0, 11.0, 6.0, 8.0], [13.0, 9.0, 11.0, 8.0, 7.0, 12.0]]).f_stat with_precision 2) = 9.26"),
 			@test ("(anova([[6.0, 8.0, 4.0, 5.0, 3.0, 4.0], [8.0, 12.0, 9.0, 11.0, 6.0, 8.0], [13.0, 9.0, 11.0, 8.0, 7.0, 12.0]]).p_value with_precision 3) = 0.002") })
 	public static GamaAnova anova(final IScope scope, final IList<IList<?>> data) {
+		if (data != null && !data.isEmpty()) {
+			for (final Object group : data) {
+				if (!(group instanceof IList<?> values) || values.size() < 2) {
+					throw GamaRuntimeException.error("anova requires groups of at least two numeric observations", scope);
+				}
+				for (final Object value : values) {
+					if (!(value instanceof Number)) {
+						throw GamaRuntimeException.error("anova requires non-nil numeric observations", scope);
+					}
+				}
+			}
+			if (data.size() < 2) {
+				throw GamaRuntimeException.error("anova requires at least two groups", scope);
+			}
+		}
 		return new GamaAnova(scope, data);
 	}
 

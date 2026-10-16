@@ -42,6 +42,13 @@ import gama.api.types.list.IList;
  */
 public class DataFrameOperators {
 
+	static void requireColumn(final IScope scope, final IDataFrame df, final String column) {
+		if (df == null) throw GamaRuntimeException.error("Dataframe cannot be nil", scope);
+		if (column == null) throw GamaRuntimeException.error("Dataframe column name cannot be nil", scope);
+		if (!df.getColumns().contains(column))
+			throw GamaRuntimeException.error("Unknown dataframe column: '" + column + "'", scope);
+	}
+
 	/**
 	 * Access to a column of a dataframe with [column name]. A dataframe is iterated row by row (maps), but indexed
 	 * by column: this operator gives the access its own type, a list, instead of the type of the contents.
@@ -92,7 +99,7 @@ public class DataFrameOperators {
 			category = { IDataframeConstants.CATEGORY },
 			concept = { IDataframeConstants.CONCEPT, IConcept.CONTAINER })
 	@doc (
-			value = "Creates a dataframe from a list of column names and a list of rows (each row is a list of values).",
+			value = "Creates a dataframe from a list of column names and a list of rows (each row is a list of values). A nil row raises an error.",
 			usages = { @usage (
 					value = "Create a dataframe with column names and data rows",
 					examples = { @example (
@@ -256,7 +263,7 @@ public class DataFrameOperators {
 			category = { IDataframeConstants.CATEGORY },
 			concept = { IDataframeConstants.CONCEPT })
 	@doc (
-			value = "Returns the value at the specified row index and column name.",
+			value = "Returns the value at the specified row index and column name. A nil or unknown column name raises an error.",
 			usages = { @usage (
 					value = "Get a specific cell value",
 					examples = { @example (
@@ -281,7 +288,8 @@ public class DataFrameOperators {
 	})
 	public static Object dfCell(final IScope scope, final IDataFrame df, final Integer rowIndex,
 			final String columnName) {
-		if (rowIndex < 0 || rowIndex >= df.getRows())
+		requireColumn(scope, df, columnName);
+		if (rowIndex == null || rowIndex < 0 || rowIndex >= df.getRows())
 			throw GamaRuntimeException.error("Row index out of bounds: " + rowIndex, scope);
 		return df.getCellValue(rowIndex, columnName);
 	}
@@ -471,7 +479,7 @@ public class DataFrameOperators {
 			category = { IDataframeConstants.CATEGORY },
 			concept = { IDataframeConstants.CONCEPT, IConcept.FILTER })
 	@doc (
-			value = "Returns a new dataframe containing only the rows where the specified column equals the given value.",
+			value = "Returns a new dataframe containing only the rows where the specified column equals the given value. A nil or unknown column name raises an error.",
 			usages = { @usage (
 					value = "Filter rows where 'city' equals 'Paris'",
 					examples = { @example (
@@ -487,6 +495,7 @@ public class DataFrameOperators {
 	})
 	public static IDataFrame dfFilter(final IScope scope, final IDataFrame df, final String columnName,
 			final Object value) {
+		requireColumn(scope, df, columnName);
 		return df.filterRows(columnName, value);
 	}
 
@@ -500,7 +509,7 @@ public class DataFrameOperators {
 			category = { IDataframeConstants.CATEGORY },
 			concept = { IDataframeConstants.CONCEPT, IConcept.FILTER })
 	@doc (
-			value = "Returns a new dataframe with rows removed where the specified column has null or empty values.",
+			value = "Returns a new dataframe with rows removed where the specified column has null or empty values. A nil or unknown column name raises an error.",
 			usages = { @usage (
 					value = "Remove rows with empty 'name' values",
 					examples = { @example (
@@ -512,6 +521,7 @@ public class DataFrameOperators {
 			@test ("dataframe df <- dataframe_with([\"name\", \"note\"], [[\"Alice\", \"ok\"], [\"Bob\", \"\"], [\"Charlie\", nil]]); dataframe cleaned <- remove_empty(df, \"note\"); cleaned.rows = 1")
 	})
 	public static IDataFrame dfRemoveEmpty(final IScope scope, final IDataFrame df, final String columnName) {
+		requireColumn(scope, df, columnName);
 		return df.removeRowsWithEmptyValues(columnName);
 	}
 
@@ -593,7 +603,7 @@ public class DataFrameOperators {
 			concept = { IDataframeConstants.CONCEPT })
 	@doc (
 			value = "Inner-joins two dataframes on the given common key column: only the rows whose key matches in "
-					+ "both dataframes are kept.",
+					+ "both dataframes are kept. The key must be a non-nil column name present in both dataframes.",
 			usages = { @usage (
 					value = "Join two dataframes on the 'id' column",
 					examples = { @example (
@@ -626,7 +636,7 @@ public class DataFrameOperators {
 			category = { IDataframeConstants.CATEGORY },
 			concept = { IDataframeConstants.CONCEPT })
 	@doc (
-			value = "Inner-joins two dataframes on the given list of common key columns.",
+			value = "Inner-joins two dataframes on the given non-empty list of common key columns. Every key must be non-nil and present in both dataframes.",
 			usages = { @usage (
 					value = "Join two dataframes on two key columns",
 					examples = { @example (
@@ -655,7 +665,7 @@ public class DataFrameOperators {
 			concept = { IDataframeConstants.CONCEPT })
 	@doc (
 			value = "Joins two dataframes on the given key columns using an explicit join type: \"inner\" (default), "
-					+ "\"left\", \"right\" or \"full\".",
+					+ "\"left\", \"right\" or \"full\". Keys must be non-nil column names present in both dataframes.",
 			usages = { @usage (
 					value = "Left-join two dataframes on 'id' (keeps every row of the left dataframe)",
 					examples = { @example (
@@ -726,7 +736,7 @@ public class DataFrameOperators {
 			concept = { IDataframeConstants.CONCEPT })
 	@doc (
 			value = "Pivots the dataframe: the index column becomes row labels, the pivot column values become new column names, "
-					+ "and the value column provides the cell values. When multiple values exist for a combination, the first is kept.",
+					+ "and the value column provides the cell values. When multiple values exist for a combination, the first is kept. A nil or unknown column name raises an error.",
 			usages = { @usage (
 					value = "Pivot a sales dataframe",
 					examples = { @example (
@@ -741,6 +751,9 @@ public class DataFrameOperators {
 	})
 	public static IDataFrame dfPivot(final IScope scope, final IDataFrame df, final String indexColumn,
 			final String pivotColumn, final String valueColumn) {
+		requireColumn(scope, df, indexColumn);
+		requireColumn(scope, df, pivotColumn);
+		requireColumn(scope, df, valueColumn);
 		return df.pivot(indexColumn, pivotColumn, valueColumn);
 	}
 
@@ -879,7 +892,7 @@ public class DataFrameOperators {
 			concept = { IDataframeConstants.CONCEPT })
 	@doc (
 			value = "Pandas-style df.iloc[i, [j, ...]]: returns the values of row i taken from the selected columns, "
-					+ "in the order of the input column indices. Negative indices are supported.",
+					+ "in the order of the input column indices. Negative indices are supported. Nil indices raise an error.",
 			usages = { @usage (
 					value = "Get cells [0] and [2] of row 1",
 					examples = { @example (
@@ -904,7 +917,7 @@ public class DataFrameOperators {
 			concept = { IDataframeConstants.CONCEPT })
 	@doc (
 			value = "Pandas-style df.iloc[[i, ...], j]: returns the values of column j taken from the selected rows, "
-					+ "in the order of the input row indices. Negative indices are supported.",
+					+ "in the order of the input row indices. Negative indices are supported. Nil indices raise an error.",
 			usages = { @usage (
 					value = "Get column 1 values at rows 0 and 2",
 					examples = { @example (
@@ -928,7 +941,7 @@ public class DataFrameOperators {
 			concept = { IDataframeConstants.CONCEPT })
 	@doc (
 			value = "Pandas-style df.iloc[[i, ...]]: returns a new dataframe containing only the rows at the given "
-					+ "integer indices (in that order). All columns are kept. Negative indices are supported.",
+					+ "integer indices (in that order). All columns are kept. Negative indices are supported. Nil indices raise an error.",
 			usages = { @usage (
 					value = "Select rows 0 and 2",
 					examples = { @example (
@@ -954,7 +967,7 @@ public class DataFrameOperators {
 			value = """
 					Pandas-style df.iloc[[i, ...], [j, ...]]: returns a new dataframe containing only the rows and \
 					columns at the given integer indices, in the order of the input indices. Negative indices are \
-					supported on both axes.""",
+					supported on both axes. Nil indices raise an error.""",
 			usages = { @usage (
 					value = "Select rows 0 and 2, columns 0 and 1",
 					examples = { @example (

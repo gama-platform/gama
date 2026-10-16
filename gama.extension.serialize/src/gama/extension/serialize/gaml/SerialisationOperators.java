@@ -379,7 +379,7 @@ public class SerialisationOperators {
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.CASTING },
 			concept = { IConcept.SYSTEM, IConcept.SERIALIZE })
 	@doc (
-			value = "Evaluates/deserialises the given GAML string into a value.",
+			value = "Evaluates/deserialises the given GAML string into a value. Nil strings and invalid GAML expressions raise an error.",
 			examples = { @example (
 					value = "eval_gaml(\"2+3\")",
 					equals = "5") })
@@ -406,11 +406,13 @@ public class SerialisationOperators {
 			@test ("from_gaml(to_gaml(date(\"2026-01-02T03:04:05\"))) = date(\"2026-01-02T03:04:05\")")
 	})
 	public static Object opEvalGaml(final IScope scope, final String gaml) {
+		if (gaml == null) throw GamaRuntimeException.error("Cannot evaluate a nil GAML string", scope);
 		final IAgent agent = scope.getAgent();
 		final IDescription d = agent.getSpecies().getDescription();
+		final IExpression expression = GAML.getExpressionFactory().createExpr(gaml, d);
+		if (expression == null) throw GamaRuntimeException.error("Invalid GAML expression: '" + gaml + "'", scope);
 		try {
-			final IExpression e = GAML.getExpressionFactory().createExpr(gaml, d);
-			return scope.evaluate(e, agent).getValue();
+			return scope.evaluate(expression, agent).getValue();
 		} catch (final GamaRuntimeException e) {
 			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("Error in evaluating Gaml code : '" + gaml
 					+ "' in " + scope.getAgent() + StringUtils.LN + "Reason: " + e.getMessage(), scope), false);

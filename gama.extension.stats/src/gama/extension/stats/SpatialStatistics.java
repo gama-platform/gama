@@ -348,6 +348,7 @@ public class SpatialStatistics {
 					Inverse Distance Weighting (IDW) is a type of deterministic method for multivariate \
 					interpolation with a known scattered set of points. The assigned values to each geometry are calculated with a weighted average of the values available at the known points. See: http://en.wikipedia.org/wiki/Inverse_distance_weighting \
 					Usage: IDW (list of geometries, map of points (key: point, value: value), power parameter)""",
+			comment = "Query geometries must be non-nil, and sample keys must be convertible to non-nil points.",
 			examples = { @example (
 					value = "IDW([ag1, ag2, ag3, ag4, ag5],[{10,10}::25.0, {10,80}::10.0, {100,10}::15.0], 2)",
 					equals = "for example, can return [ag1::12.0, ag2::23.0,ag3::12.0,ag4::14.0,ag5::17.0]",
@@ -365,12 +366,18 @@ public class SpatialStatistics {
 		if (points == null || points.isEmpty()) return null;
 		if (geometries == null || geometries.isEmpty(scope)) return results;
 		for (final IShape geom : geometries.iterable(scope)) {
+			if (geom == null) {
+				throw GamaRuntimeException.error("IDW requires non-nil query geometries", scope);
+			}
 			double sum = 0;
 			double weight = 0;
 			double sumNull = 0;
 			int nbNull = 0;
 			for (final Object obj : points.keySet()) {
 				final IPoint pt = GamaPointFactory.castToPoint(scope, obj);
+				if (pt == null) {
+					throw GamaRuntimeException.error("IDW requires sample keys convertible to non-nil points", scope);
+				}
 				final double dist = scope.getTopology().distanceBetween(scope, geom, pt);
 				if (dist == 0) {
 					nbNull++;

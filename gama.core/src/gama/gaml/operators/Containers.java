@@ -592,12 +592,13 @@ public class Containers {
 				see = { "copy_between", "between", "submatrix", "slice" })
 		@test ("sublist ([4, 1, 6, 9 ,7], [2, 2, 4]) = [6, 6, 7]")
 		public static IList sublist(final IScope scope, final IList l1, final IList<Integer> indices) {
-
+			notNull(scope, l1);
+			notNull(scope, indices);
 			final IList result = listLike(l1).get();
 
 			if (l1.size() == 0) return result;
 
-			for (int i : indices) { result.add(l1.get(convertToListIndex(i, l1.size()))); }
+			for (Integer i : indices) { result.add(l1.get(convertToListIndex(notNull(scope, i), l1.size()))); }
 			return result;
 		}
 
@@ -640,12 +641,12 @@ public class Containers {
 			final IList result = listLike(l1).get();
 			final boolean positiveStep = step > 0;
 
-			if (step == 0) return result;
+			if (size == 0 || step == 0) return result;
 
 			int beginIdx = convertToListIndex(begin, size);
 			int endIdx = convertToListIndex(end, size);
 
-			for (int i = beginIdx; positiveStep ? i <= endIdx : i >= endIdx; i += step) { result.add(l1.get(i)); }
+			for (long i = beginIdx; positiveStep ? i <= endIdx : i >= endIdx; i += step) { result.add(l1.get((int) i)); }
 			return result;
 		}
 
@@ -721,7 +722,9 @@ public class Containers {
 		@test ("submatrix (matrix([[1, 4, 7], [2, 5, 8], [3, 6, 9 ], [1, 1, 1]]), [2, 1, 3], [0, 1]) = matrix([[3, 6], [2, 5], [1, 1]])")
 		public static IMatrix submatrix(final IScope scope, final IMatrix m1, final IList<Integer> columns,
 				final IList<Integer> rows) {
-
+			notNull(scope, m1);
+			for (Integer column : notNull(scope, columns)) { notNull(scope, column); }
+			for (Integer row : notNull(scope, rows)) { notNull(scope, row); }
 			final IPoint aimedDimensions = GamaPointFactory.create(columns.size(), rows.size());
 			final IMatrix result = GamaMatrixFactory.createMatrixLike(scope, m1, aimedDimensions);
 
@@ -801,7 +804,9 @@ public class Containers {
 		@test ("slice (matrix([[1, 4, 7], [2, 5, 8], [3, 6, 9 ], [1, 1, 1]]), 1::3, 0::1, 2::1) = matrix([[2, 5], [1, 1]])")
 		public static IMatrix submatrix(final IScope scope, final IMatrix m1, final IPair<Integer, Integer> columns,
 				final IPair<Integer, Integer> rows, final IPair<Integer, Integer> steps) {
-
+			requireIndexPair(scope, columns);
+			requireIndexPair(scope, rows);
+			requireIndexPair(scope, steps);
 			// TODO: this definition relies on the submatrix that uses lists of indices, could be optimized to avoid
 			// creating the intermediate lists
 			final IPoint initialDimensions = notNull(scope, m1).getDimensions();
@@ -819,11 +824,11 @@ public class Containers {
 
 			IList<Integer> cols = GamaListFactory.create(Types.INT);
 			IList<Integer> rowsList = GamaListFactory.create(Types.INT);
-			for (int col = startCol; positiveColStep ? col <= endCol : col >= endCol; col += steps.key()) {
-				cols.add(col);
+			for (long col = startCol; positiveColStep ? col <= endCol : col >= endCol; col += steps.key()) {
+				cols.add((int) col);
 			}
-			for (int row = startRow; positiveRowStep ? row <= endRow : row >= endRow; row += steps.value()) {
-				rowsList.add(row);
+			for (long row = startRow; positiveRowStep ? row <= endRow : row >= endRow; row += steps.value()) {
+				rowsList.add((int) row);
 			}
 
 			return submatrix(scope, m1, cols, rowsList);
@@ -896,6 +901,9 @@ public class Containers {
 		@test ("slice (matrix([[1, 4, 7], [2, 5, 8], [3, 6, 9 ], [1, 1, 1]]), 1::3, 0::1) = matrix([[2, 5], [3, 6], [1, 1]])")
 		public static IMatrix submatrix(final IScope scope, final IMatrix m1, final IPair<Integer, Integer> columns,
 				final IPair<Integer, Integer> rows) {
+			notNull(scope, m1);
+			requireIndexPair(scope, columns);
+			requireIndexPair(scope, rows);
 			final int firstCol = convertToListIndex(columns.key(), (int) m1.getDimensions().getX());
 			final int lastCol = convertToListIndex(columns.value(), (int) m1.getDimensions().getX());
 			final int firstRow = convertToListIndex(rows.key(), (int) m1.getDimensions().getY());
@@ -904,6 +912,11 @@ public class Containers {
 					GamaPairFactory.createWith(lastCol == firstCol ? 1 : (int) Math.signum(lastCol - firstCol),
 							lastRow == firstRow ? 1 : (int) Math.signum(lastRow - firstRow), Types.INT, Types.INT);
 			return submatrix(scope, m1, columns, rows, steps);
+		}
+
+		private static void requireIndexPair(final IScope scope, final IPair<Integer, Integer> pair) {
+			if (pair == null || pair.key() == null || pair.value() == null)
+				throw GamaRuntimeException.error("submatrix: index and step pairs must not be nil or contain nil", scope);
 		}
 
 		/**

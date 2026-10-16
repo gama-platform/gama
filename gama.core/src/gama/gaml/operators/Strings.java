@@ -30,6 +30,7 @@ import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
+import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
@@ -72,7 +73,7 @@ import gama.api.utils.files.CompressionUtils;
  * <h3>Empty string</h3>
  * <p>
  * The empty string {@code ''} is a valid operand in all operators unless otherwise stated in the individual operator
- * documentation.
+ * documentation. Operations requiring a string reject nil with a GAML error.
  * </p>
  *
  * @author Alexis Drogoul (original), GAMA development team
@@ -85,6 +86,12 @@ import gama.api.utils.files.CompressionUtils;
  */
 @SuppressWarnings ({ "rawtypes" })
 public class Strings {
+
+	private static String requireString(final String value, final String operator) {
+		if (value == null)
+			throw GamaRuntimeException.error(operator + ": the string operand must not be nil", GAMA.getRuntimeScope());
+		return value;
+	}
 
 	/** Upper bound for cached compiled regex patterns used by string operators. */
 	private static final int REGEX_CACHE_SIZE = 256;
@@ -297,6 +304,7 @@ public class Strings {
 	@test ("concatenate(['a','b'], '') = 'ab'")
 	public static String opConcatenateSep(final IScope scope, final IList<String> strings, final String separator)
 			throws GamaRuntimeException {
+		if (separator == null) throw GamaRuntimeException.error("concatenate: the separator must not be nil", scope);
 		StringJoiner sj = new StringJoiner(separator);
 		for (String s : strings) { sj.add(s); }
 		return sj.toString();
@@ -344,6 +352,7 @@ public class Strings {
 			@test ("\"ac\" in \"abcede\" = false") })
 	public static Boolean opIn(final String pattern, final String target) {
 		if (target == null) return false;
+		requireString(pattern, "in");
 		return target.contains(pattern);
 	}
 
@@ -573,6 +582,8 @@ public class Strings {
 			@test ("(\"abcgrbc\" index_of \"bc\") = 1"), @test ("\"hello\" index_of \"l\" = 2"),
 			@test ("\"hello\" index_of \"z\" = -1") })
 	public static Integer opIndexOf(final String target, final String pattern) {
+		requireString(target, "index_of");
+		requireString(pattern, "index_of");
 		final int index = target.indexOf(pattern);
 		return index < 0 ? -1 : target.codePointCount(0, index);
 	}
@@ -613,6 +624,8 @@ public class Strings {
 			@test ("(\"abcgrbc\" last_index_of \"bc\") = 5"), @test ("\"hello\" last_index_of \"l\" = 3"),
 			@test ("\"hello\" last_index_of \"z\" = -1") })
 	public static Integer opLastIndexOf(final String target, final String pattern) {
+		requireString(target, "last_index_of");
+		requireString(pattern, "last_index_of");
 		final int index = target.lastIndexOf(pattern);
 		return index < 0 ? -1 : target.codePointCount(0, index);
 	}
@@ -760,6 +773,8 @@ public class Strings {
 							equals = "['aa','bb','cc']") })
 	public static IList opTokenize(final IScope scope, final String target, final String pattern,
 			final Boolean completeSep) {
+		if (target == null || pattern == null)
+			throw GamaRuntimeException.error("split_with: the string and separator must not be nil", scope);
 		if (completeSep) return GamaListFactory.create(scope, Types.STRING, target.split(pattern));
 		final StringTokenizer st = new StringTokenizer(target, pattern);
 		return GamaListFactory.create(scope, Types.STRING, st);
@@ -839,6 +854,9 @@ public class Strings {
 			@test ("\"hello\" replace (\"z\", \"y\") = \"hello\""), @test ("\"hello\" replace (\"l\", \"\") = \"heo\""),
 			@test ("\"a\uD83D\uDE00b\" replace (\"\uD83D\uDE00\", \"-\") = \"a-b\"") })
 	public static String opReplace(final String target, final String pattern, final String replacement) {
+		requireString(target, "replace");
+		requireString(pattern, "replace");
+		requireString(replacement, "replace");
 		return target.replace(pattern, replacement);
 	}
 
@@ -884,7 +902,9 @@ public class Strings {
 			@test ("\"a1b22c333\" replace_regex (\"[0-9]+\", \"#\") = \"a#b#c#\""),
 			@test ("\"a\uD83D\uDE00b\" replace_regex (\"\uD83D\uDE00\", \"-\") = \"a-b\"") })
 	public static String opReplaceRegex(final String target, final String pattern, final String replacement) {
-		// DEBUG.OUT("String pattern = " + pattern);
+		requireString(target, "replace_regex");
+		requireString(pattern, "replace_regex");
+		requireString(replacement, "replace_regex");
 		return getCachedPattern(pattern).matcher(target).replaceAll(replacement);
 	}
 
@@ -927,6 +947,7 @@ public class Strings {
 			@test ("empty(\"Hello\" regex_matches \"hello\")") })
 	public static IList<String> opRegexMatches(final String target, final String pattern) {
 		if (pattern == null || pattern.isEmpty()) return GamaListFactory.create();
+		requireString(target, "regex_matches");
 		Pattern p;
 		try {
 			p = getCachedPattern(pattern);
@@ -1014,6 +1035,7 @@ public class Strings {
 	@tests ({ @test ("reverse('') = ''"), @test ("reverse('abc') = 'cba'"), @test ("reverse('a') = 'a'"),
 			@test ("reverse(\"hello\") = \"olleh\""), @test ("reverse(\"\") = \"\"") })
 	static public String reverse(final String s) {
+		requireString(s, "reverse");
 		final StringBuilder buf = new StringBuilder(s);
 		buf.reverse();
 		return buf.toString();
@@ -1180,6 +1202,7 @@ public class Strings {
 	@tests ({ @test ("\"hello\" at 0 = \"h\""), @test ("\"hello\" at 1 = \"e\""), @test ("\"hello\" at 10 = \"\""),
 			@test ("\"hello\" at -1 = \"\"") })
 	public static String get(final String lv, final int rv) {
+		requireString(lv, "at");
 		if (rv >= lv.codePointCount(0, lv.length()) || rv < 0) return "";
 		final int index = lv.offsetByCodePoints(0, rv);
 		return lv.substring(index, lv.offsetByCodePoints(index, 1));
@@ -1452,6 +1475,7 @@ public class Strings {
 	public static String replaceFirst(final String target, final String pattern, final String replacement) {
 		if (target == null) return null;
 		if (pattern == null || pattern.isEmpty()) return target;
+		requireString(replacement, "replace_first");
 		return target.replaceFirst(java.util.regex.Pattern.quote(pattern),
 				java.util.regex.Matcher.quoteReplacement(replacement));
 	}

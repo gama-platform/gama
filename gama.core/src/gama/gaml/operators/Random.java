@@ -261,6 +261,7 @@ public class Random {
 			@test ("float gaussian <- truncated_gauss(0, 1, 5, -5); gaussian >= -5 and gaussian <= 5")
 	})
 	public static Double opTGauss(final IScope scope, final IPoint p) {
+		if (p == null) throw GamaRuntimeException.error("truncated_gauss: the parameter point must not be nil", scope);
 		return opTGauss(scope, GamaListFactory.wrap(Types.FLOAT, p.getX(), p.getY()));
 	}
 
@@ -346,6 +347,7 @@ public class Random {
 					"weibull_rnd" })
 	@test ("seed <- 1.0; gauss({0.5, 0.2}) = 0.6343093594589535")
 	public static Double opGauss(final IScope scope, final IPoint point) {
+		if (point == null) throw GamaRuntimeException.error("gauss: the parameter point must not be nil", scope);
 		final double mean = point.getX();
 		final double sd = point.getY();
 		return RANDOM(scope).createGaussian(mean, sd);
@@ -632,6 +634,7 @@ public class Random {
 					test = false) })
 	@test ("seed <- 1.0; shuffle (matrix([[\"c11\",\"c12\",\"c13\"],[\"c21\",\"c22\",\"c23\"]])) = matrix([[\"c13\",\"c21\",\"c22\"],[\"c11\",\"c23\",\"c12\"]])")
 	public static IMatrix opShuffle(final IScope scope, final IMatrix target) throws GamaRuntimeException {
+		if (target == null) throw GamaRuntimeException.error("shuffle: the matrix must not be nil", scope);
 		final IMatrix matrix2 = target.copy(scope);
 		matrix2.shuffleWith(RANDOM(scope));
 		return matrix2;
@@ -870,6 +873,7 @@ public class Random {
 					"weibull_rnd" })
 	@test ("seed <- 1.0; rnd ({2.0, 4.0}, {2.0, 5.0, 10.0}) = {2.0,4.785039740667429,5.087825199078746}")
 	public static IPoint opRnd(final IScope scope, final IPoint min, final IPoint max) {
+		if (min == null || max == null) throw GamaRuntimeException.error("rnd: point bounds must not be nil", scope);
 		return RANDOM(scope).between(min, max);
 	}
 
@@ -905,6 +909,7 @@ public class Random {
 					"weibull_rnd" })
 	@test ("seed <- 1.0; rnd ({2.0, 4.0}, {2.0, 5.0, 10.0},1) = {2.0,5.0,5.0}")
 	public static IPoint opRnd(final IScope scope, final IPoint min, final IPoint max, final Double step) {
+		if (min == null || max == null) throw GamaRuntimeException.error("rnd: point bounds must not be nil", scope);
 		RandomUtils.validateStep(scope, min.getX(), max.getX(), step);
 		RandomUtils.validateStep(scope, min.getY(), max.getY(), step);
 		RandomUtils.validateStep(scope, min.getZ(), max.getZ(), step);
@@ -1032,6 +1037,12 @@ public class Random {
 			see = { "rnd" })
 	@test ("seed <- 1.0; rnd_choice([0.2,0.5,0.3]) = 2")
 	public static Integer opRndChoice(final IScope scope, final IList distribution) {
+		if (distribution != null) {
+			for (Object weight : distribution) {
+				if (!(weight instanceof Number))
+					throw GamaRuntimeException.error("rnd_choice: weights must be numbers, not nil", scope);
+			}
+		}
 		return RANDOM(scope).choiceIn(distribution);
 	}
 

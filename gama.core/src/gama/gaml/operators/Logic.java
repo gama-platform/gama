@@ -105,11 +105,13 @@ public class Logic {
 			concept = { IConcept.LOGICAL, IConcept.MATRIX })
 	@doc (
 			value = "Returns a new matrix where elements are selected from the true_matrix if the condition matrix element is strictly positive (> 0.0), and set to the scalar false_value otherwise.",
+			special_cases = "Matrix operands must not be nil and must have the same dimensions.",
 			examples = { @example (
 					value = "ifelse(matrix([[1.0, 0.0], [0.0, 1.0]]), matrix([[1, 2], [3, 4]]), 0.0)",
 					equals = "matrix([[1.0, 0.0], [0.0, 4.0]])") })
 	public static IMatrix ifelse(final IScope scope, final IMatrix condition, final IMatrix trueMatrix,
 			final Double falseValue) {
+		if (condition == null) throw GamaRuntimeException.error("ifelse: the condition matrix must not be nil", scope);
 		final GamaFloatMatrix cond = GamaFloatMatrix.from(scope, condition);
 		final int cols = cond.getCols(scope);
 		final int rows = cond.getRows(scope);
@@ -325,12 +327,14 @@ public class Logic {
 			concept = { IConcept.LOGICAL, IConcept.MATRIX })
 	@doc (
 			value = "Returns a new matrix where elements are selected from the true_matrix if the condition matrix element is strictly positive (> 0.0), and from the false_matrix otherwise.",
+			special_cases = "Matrix operands must not be nil and must have the same dimensions.",
 			examples = { @example (
 					value = "ifelse(matrix([[1.0, 0.0], [0.0, 1.0]]), matrix([[1, 2], [3, 4]]), matrix([[9, 8], [7, 6]]))",
 					equals = "matrix([[1.0, 8.0], [7.0, 4.0]])") })
 	@test ("ifelse(matrix([[1.0, 0.0], [0.0, 1.0]]), matrix([[1, 2], [3, 4]]), matrix([[9, 8], [7, 6]])) = matrix([[1.0, 8.0], [7.0, 4.0]])")
 	public static IMatrix ifelse(final IScope scope, final IMatrix condition, final IMatrix trueMatrix,
 			final IMatrix falseMatrix) {
+		if (condition == null) throw GamaRuntimeException.error("ifelse: the condition matrix must not be nil", scope);
 		final GamaFloatMatrix cond = GamaFloatMatrix.from(scope, condition);
 		final int cols = cond.getCols(scope);
 		final int rows = cond.getRows(scope);
@@ -378,6 +382,9 @@ public class Logic {
 	// Helper method to guarantee a flat, column-major double array
 	private static double[] getSafeDoubleArray(final IScope scope, final IMatrix<?> matrix, final int cols,
 			final int rows) {
+		if (matrix == null) throw GamaRuntimeException.error("ifelse: the value matrices must not be nil", scope);
+		if (matrix.getCols(scope) != cols || matrix.getRows(scope) != rows)
+			throw GamaRuntimeException.error("ifelse: all matrices must have the same dimensions", scope);
 		if (matrix instanceof GamaFloatMatrix) return ((GamaFloatMatrix) matrix).getMatrix();
 		final double[] arr = new double[cols * rows];
 		// GAMA standard row-major flat layout: row-first, then column

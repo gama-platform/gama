@@ -8,8 +8,11 @@ import gama.annotations.usage;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.annotations.support.ITypeProvider;
+import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
 import gama.api.types.topology.ITopology;
 
 /**
@@ -33,6 +36,23 @@ import gama.api.types.topology.ITopology;
  * @see gama.api.types.topology.ITopology
  */
 public class SpatialCommon {
+
+	/** Checks coordinates before passing them to geometry algorithms. */
+	static void requireFinitePoint(final IScope scope, final IPoint point, final String name) {
+		if (point == null || !Double.isFinite(point.getX()) || !Double.isFinite(point.getY())
+				|| !Double.isFinite(point.getZ()))
+			throw GamaRuntimeException.error(name + " must be a non-nil point with finite coordinates", scope);
+	}
+
+	static void requireFinite(final IScope scope, final Double value, final String name) {
+		if (value == null || !Double.isFinite(value))
+			throw GamaRuntimeException.error(name + " must be a finite number", scope);
+	}
+
+	static void requireGeometry(final IScope scope, final IShape geometry) {
+		if (geometry == null || geometry.getInnerGeometry() == null)
+			throw GamaRuntimeException.error("The geometry must not be nil", scope);
+	}
 
 	/**
 	 * Using.

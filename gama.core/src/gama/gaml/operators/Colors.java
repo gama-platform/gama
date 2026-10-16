@@ -32,6 +32,7 @@ import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
+import gama.api.GAMA;
 import gama.api.annotations.validator;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.validation.IOperatorValidator;
@@ -429,6 +430,7 @@ public class Colors {
 			category = { IOperatorCategory.COLOR },
 			concept = {})
 	@doc (
+			special_cases = "Raises a GAML error if the color is nil.",
 			value = "Converts a Gama color to hsb (h=hue, s=saturation, b=brightness) value",
 			examples = @example (
 					value = "to_hsb (#cyan)",
@@ -441,6 +443,7 @@ public class Colors {
 			@test ("list<float> blue_hsb <- list<float>(to_hsb(#blue)); blue_hsb[0] with_precision 3 = 0.667")
 	})
 	public static IList<Double> toHSB(final IColor c) {
+		if (c == null) throw GamaRuntimeException.error("to_hsb: the color must not be nil", GAMA.getRuntimeScope());
 		IList<Double> hsb = GamaListFactory.create();
 		float[] v = Color.RGBtoHSB(c.red(), c.green(), c.blue(), null);
 		hsb.add(Float.valueOf(v[0]).doubleValue());
@@ -678,6 +681,7 @@ public class Colors {
 			see = "hsb")
 	@test ("int(rgb(rgb(255,0,0),125)) = 2113863680")
 	public static IColor rgb(final IScope scope, final IColor s, final int a) {
+		if (s == null) throw GamaRuntimeException.error("rgb/with_alpha: the color must not be nil", scope);
 		return GamaColorFactory.createWithAlpha(s, a);
 	}
 
@@ -717,6 +721,7 @@ public class Colors {
 			@test ("(#red with_alpha -1.0).alpha = 0")
 	})
 	public static IColor rgb(final IScope scope, final IColor s, final double a) {
+		if (s == null) throw GamaRuntimeException.error("rgb/with_alpha: the color must not be nil", scope);
 		return GamaColorFactory.createWithAlpha(s, a);
 	}
 
@@ -734,6 +739,7 @@ public class Colors {
 			concept = { IConcept.COLOR })
 	@doc (
 			value = "Converts rgb color to grayscale value",
+			special_cases = "Raises a GAML error if the color is nil.",
 			comment = "r=red, g=green, b=blue. Between 0 and 255 and gray = 0.299 `*` red + 0.587 `*` green + 0.114 `*` blue (Photoshop value)",
 			examples = { @example (
 					value = "grayscale (rgb(255,0,0))",
@@ -751,6 +757,7 @@ public class Colors {
 			@test ("rgb grey_100 <- rgb(100, 100, 100); grayscale(grey_100) = grey_100")
 	})
 	public static IColor grayscale(final IColor c) {
+		if (c == null) throw GamaRuntimeException.error("grayscale: the color must not be nil", GAMA.getRuntimeScope());
 		final int grayValue = (int) (0.299 * c.red() + 0.587 * c.green() + 0.114 * c.blue());
 		return GamaColorFactory.createWithRGBA(grayValue, grayValue, grayValue, c.alpha());
 	}
@@ -867,6 +874,8 @@ public class Colors {
 			@test ("blend(rgb(255, 0, 0), rgb(0, 0, 255), 0.5) = rgb(127, 0, 127)")
 	})
 	public static IColor blend(final IColor c1, final IColor c2, final double r) {
+		if (c1 == null || c2 == null)
+			throw GamaRuntimeException.error("blend: the colors must not be nil", GAMA.getRuntimeScope());
 		final double ir = 1.0 - r;
 		return GamaColorFactory.createWithRGBA((int) (c1.red() * r + c2.red() * ir),
 				(int) (c1.green() * r + c2.green() * ir), (int) (c1.blue() * r + c2.blue() * ir),

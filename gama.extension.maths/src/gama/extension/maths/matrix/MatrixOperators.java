@@ -11,10 +11,12 @@
 package gama.extension.maths.matrix;
 
 import org.apache.commons.math3.exception.DimensionMismatchException;
+import org.apache.commons.math3.exception.MaxCountExceededException;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.EigenDecomposition;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.SingularMatrixException;
 
 import gama.annotations.doc;
 import gama.annotations.example;
@@ -42,6 +44,18 @@ import gama.core.util.matrix.GamaIntMatrix;
  * The Class MatrixOperators.
  */
 public class MatrixOperators {
+
+	private static void requireMatrix(final IScope scope, final IMatrix m) {
+		if (m == null) throw GamaRuntimeException.error("Matrix cannot be nil", scope);
+	}
+
+	private static void requireSquareMatrix(final IScope scope, final IMatrix m) {
+		requireMatrix(scope, m);
+		if (m.getRows(scope) == 0 || m.getCols(scope) == 0)
+			throw GamaRuntimeException.error("Matrix must not be empty", scope);
+		if (m.getRows(scope) != m.getCols(scope))
+			throw GamaRuntimeException.error("Matrix must be square", scope);
+	}
 
 	/**
 	 * Matrix multiplication.
@@ -96,7 +110,7 @@ public class MatrixOperators {
 			category = { IOperatorCategory.MATRIX },
 			concept = { IConcept.MATRIX })
 	@doc (
-			value = "The determinant of the given matrix",
+			value = "The determinant of the given matrix. Requires a non-nil, non-empty square matrix.",
 			masterDoc = true,
 			examples = { @example (
 					value = "determinant(matrix([[1,2],[3,4]]))",
@@ -110,6 +124,7 @@ public class MatrixOperators {
 			@test ("matrix<float> m1 <- matrix([[1.0, 2.0], [3.0, 4.0]]); (determinant(m1) with_precision 1) = -2.0")
 	})
 	public static Double getDeterminant(final IScope scope, final IMatrix m) throws GamaRuntimeException {
+		requireSquareMatrix(scope, m);
 		return new LUDecomposition(getRealMatrix(m)).getDeterminant();
 	}
 
@@ -129,7 +144,7 @@ public class MatrixOperators {
 			category = { IOperatorCategory.MATRIX },
 			concept = { IConcept.MATRIX })
 	@doc (
-			value = "The trace of the given matrix (the sum of the elements on the main diagonal).",
+			value = "The trace of the given matrix (the sum of the elements on the main diagonal). Requires a non-nil, non-empty square matrix.",
 			masterDoc = true,
 			examples = { @example (
 					value = "trace(matrix([[1,2],[3,4]]))",
@@ -142,6 +157,7 @@ public class MatrixOperators {
 			@test ("matrix<float> mat <- matrix([[1.0, 2.0], [3.0, 4.0]]); trace(mat) = 5.0")
 	})
 	public static Double getTrace(final IScope scope, final IMatrix m) throws GamaRuntimeException {
+		requireSquareMatrix(scope, m);
 		return getRealMatrix(m).getTrace();
 	}
 
@@ -162,7 +178,7 @@ public class MatrixOperators {
 			category = { IOperatorCategory.MATRIX },
 			concept = { IConcept.MATRIX })
 	@doc (
-			value = "The list of the eigen values of the given matrix",
+			value = "The list of the eigen values of the given matrix. Requires a non-nil, non-empty square matrix. Raises an error if the decomposition does not converge.",
 			masterDoc = true,
 			examples = { @example (
 					value = "eigenvalues(matrix([[5,-3],[6,-4]]))",
@@ -173,7 +189,15 @@ public class MatrixOperators {
 			@test ("matrix<float> full <- matrix([[1.0, 2.0], [3.0, 4.0]]); list<float> full_eigenvalues <- eigenvalues(full); (full_eigenvalues[0] * full_eigenvalues[1]) with_precision 9 = det(full)")
 	})
 	public static IList<Double> getEigen(final IScope scope, final IMatrix m) throws GamaRuntimeException {
-		return fromApacheMatrixtoDiagList(scope, new EigenDecomposition(getRealMatrix(m)).getD());
+		requireSquareMatrix(scope, m);
+		final RealMatrix realMatrix = getRealMatrix(m);
+		final RealMatrix diagonal;
+		try {
+			diagonal = new EigenDecomposition(realMatrix).getD();
+		} catch (final MaxCountExceededException e) {
+			throw GamaRuntimeException.error("Eigenvalue decomposition did not converge", scope);
+		}
+		return fromApacheMatrixtoDiagList(scope, diagonal);
 	}
 
 	/**
@@ -194,7 +218,7 @@ public class MatrixOperators {
 			category = { IOperatorCategory.MATRIX },
 			concept = { IConcept.MATRIX })
 	@doc (
-			value = "The transposition of the given matrix",
+			value = "The transposition of the given matrix. A nil matrix raises an error.",
 			masterDoc = true,
 			examples = { @example (
 					value = "transpose(matrix([[5,-3],[6,-4]]))",
@@ -207,6 +231,7 @@ public class MatrixOperators {
 			@test ("matrix<float> m14 <- matrix([[1.0, 2.0], [3.0, 4.0]]); matrix<float> m24 <- transpose(m14); m24[1, 0] = 2.0")
 	})
 	public static IMatrix transpose(final IScope scope, final IMatrix m) throws GamaRuntimeException {
+		requireMatrix(scope, m);
 		return m.reverse(scope);
 	}
 
@@ -229,7 +254,7 @@ public class MatrixOperators {
 			category = { IOperatorCategory.MATRIX },
 			concept = { IConcept.MATRIX })
 	@doc (
-			value = "The inverse matrix of the given matrix. If no inverse exists, returns a matrix that has properties that resemble that of an inverse.",
+			value = "The inverse matrix of the given matrix. Requires a non-nil, non-empty square matrix. A singular matrix raises an error.",
 			masterDoc = true,
 			examples = { @example (
 					value = "inverse(matrix([[4,3],[3,2]]))",
@@ -244,7 +269,15 @@ public class MatrixOperators {
 			@test ("matrix<float> mat3 <- matrix([[1.0, 2.0], [3.0, 4.0]]); matrix<float> inv_mat3 <- inverse(mat3); matrix<float> id_mat2 <- mat3 . inv_mat3; (id_mat2[1, 0] > -0.01 and id_mat2[1, 0] < 0.01)")
 	})
 	public static IMatrix<Double> inverse(final IScope scope, final IMatrix m) throws GamaRuntimeException {
-		return toGamaFloatMatrix(new LUDecomposition(getRealMatrix(m)).getSolver().getInverse());
+		requireSquareMatrix(scope, m);
+		final RealMatrix realMatrix = getRealMatrix(m);
+		final RealMatrix inverted;
+		try {
+			inverted = new LUDecomposition(realMatrix).getSolver().getInverse();
+		} catch (final SingularMatrixException e) {
+			throw GamaRuntimeException.error("Cannot invert a singular matrix", scope);
+		}
+		return toGamaFloatMatrix(inverted);
 	}
 
 	/**
@@ -264,7 +297,7 @@ public class MatrixOperators {
 			category = { IOperatorCategory.MATRIX },
 			concept = { IConcept.MATRIX })
 	@doc (
-			value = "A matrix resulting from the concatenation of the columns  of the two given matrices. ",
+			value = "A matrix resulting from the concatenation of the columns of the two given matrices. Both matrices must be non-nil.",
 			masterDoc = false,
 			examples = { @example (
 					value = "matrix([[1,2],[3,4]]) append_vertically matrix([[1,2],[3,4]])",
@@ -284,6 +317,8 @@ public class MatrixOperators {
 			@test ("is_error(append_vertically(matrix([[1, 2], [3, 4]]), matrix([[1, 2, 3]])))")
 	})
 	public static IMatrix opAppendVertically(final IScope scope, final IMatrix a, final IMatrix b) {
+		requireMatrix(scope, a);
+		requireMatrix(scope, b);
 		return a._opAppendVertically(scope, b);
 	}
 

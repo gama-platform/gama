@@ -189,13 +189,17 @@ public class SpatialPunctal {
 			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_RELATION, IConcept.POINT })
 	@doc (
 			value = "A list of points along the operand-geometry given its location in terms of rate of distance from the starting points of the geometry.",
+			special_cases = { "Nil geometries, nil rate lists, and nil or non-finite rates raise an error." },
 			examples = { @example (
 					value = " line([{10,10},{80,80}]) points_along ([0.3, 0.5, 0.9])",
 					equals = "the list of following points: [{31.0,31.0,0.0},{45.0,45.0,0.0},{73.0,73.0,0.0}]",
 					test = false) },
 			see = { "closest_points_with", "farthest_point_to", "points_at", "points_on" })
 	@test ("line({0,0},{0,10}) points_along [0.50, 0.75] = [{0.0,5.0,0.0},{0.0,7.5,0.0}]")
-	public static IList points_along(final IShape geom, final IList<Double> rates) {
+	public static IList points_along(final IScope scope, final IShape geom, final IList<Double> rates) {
+		SpatialCommon.requireGeometry(scope, geom);
+		if (rates == null) throw GamaRuntimeException.error("The list of rates must not be nil", scope);
+		for (final Double rate : rates) { SpatialCommon.requireFinite(scope, rate, "Each rate"); }
 		final IList<IPoint> locs = GamaListFactory.create(Types.POINT);
 		if (geom.getInnerGeometry() instanceof GeometryCollection) {
 			for (int i = 0; i < geom.getInnerGeometry().getNumGeometries(); i++) {
@@ -205,6 +209,10 @@ public class SpatialPunctal {
 			locs.addAll(GeometryUtils.locsAlongGeometry(geom.getInnerGeometry(), rates));
 		}
 		return locs;
+	}
+
+	public static IList points_along(final IShape geom, final IList<Double> rates) {
+		return points_along(null, geom, rates);
 	}
 
 	/**
@@ -381,6 +389,9 @@ public class SpatialPunctal {
 			@test ("angle_between({0, 0}, {1, 0}, {1, 0}) = 0.0")
 	})
 	public static Double angleInDegreesBetween(final IScope scope, final IPoint p0, final IPoint p1, final IPoint p2) {
+		SpatialCommon.requireFinitePoint(scope, p0, "The angle origin");
+		SpatialCommon.requireFinitePoint(scope, p1, "The first angle point");
+		SpatialCommon.requireFinitePoint(scope, p2, "The second angle point");
 		final double Xa = p1.getX() - p0.getX();
 		final double Ya = p1.getY() - p0.getY();
 		final double Za = p1.getZ() - p0.getZ();

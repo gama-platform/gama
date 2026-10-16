@@ -173,6 +173,26 @@ import one.util.streamex.StreamEx;
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class Graphs {
 
+	private static void requireGraph(final IScope scope, final IGraph graph) {
+		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
+	}
+
+	private static void validateEndpoints(final IScope scope, final IGraph graph, final Object source,
+			final Object target) {
+		requireGraph(scope, graph);
+		if (graph instanceof GamaSpatialGraph && (!(source instanceof IShape) || !(target instanceof IShape)))
+			throw GamaRuntimeException.error("Spatial graph endpoints must be geometries or agents", scope);
+	}
+
+	private static void requireShapes(final IScope scope, final IContainer container, final String role) {
+		if (container == null)
+			throw GamaRuntimeException.error("The " + role + " container must not be nil", scope);
+		for (final Object value : container.iterable(scope)) {
+			if (!(value instanceof IShape))
+				throw GamaRuntimeException.error("The " + role + " container must contain geometries or agents", scope);
+		}
+	}
+
 	/**
 	 * The Class IntersectionRelation.
 	 */
@@ -1454,12 +1474,14 @@ public class Graphs {
 							equals = "[{12;45}]",
 							test = false) },
 			special_cases = { "Returns an empty list for a vertex with no incoming edges (in-degree 0).",
+					"Raises an error if the graph is nil.",
 					"Returns an empty list if the vertex is not present in the graph.",
 					"On an undirected graph, predecessors_of is equivalent to neighbors_of (all adjacent vertices are returned)." },
 			see = { "neighbors_of", "successors_of" })
 	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
 			+ "g predecessors_of ({10,5}) = [{80.0,35.0,0.0}]")
 	public static IList predecessorsOf(final IScope scope, final IGraph graph, final Object vertex) {
+		requireGraph(scope, graph);
 		if (graph.containsVertex(vertex)) return GamaListFactory.create(scope, graph.getGamlType().getKeyType(),
 				org.jgrapht.Graphs.predecessorListOf(graph, vertex));
 		return GamaListFactory.create(graph.getGamlType().getKeyType());
@@ -1493,12 +1515,14 @@ public class Graphs {
 							value = "graphEpidemio successors_of node({34,56})",
 							equals = "[]") },
 			special_cases = { "Returns an empty list for a vertex with no outgoing edges (out-degree 0).",
+					"Raises an error if the graph is nil.",
 					"Returns an empty list if the vertex is not present in the graph.",
 					"On an undirected graph, successors_of is equivalent to neighbors_of (all adjacent vertices are returned)." },
 			see = { "predecessors_of", "neighbors_of" })
 	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
 			+ "g successors_of ({10,5}) = [{20.0,3.0,0.0},{30.0,30.0,0.0}]")
 	public static IList successorsOf(final IScope scope, final IGraph graph, final Object vertex) {
+		requireGraph(scope, graph);
 		if (graph.containsVertex(vertex)) return GamaListFactory.create(scope, graph.getGamlType().getKeyType(),
 				org.jgrapht.Graphs.successorListOf(graph, vertex));
 		return GamaListFactory.create(graph.getGamlType().getKeyType());
@@ -1539,7 +1563,7 @@ public class Graphs {
 			@test ("graph g <- as_edge_graph([{0, 0}::{10, 0}, {10, 10}::{0, 0}, {10, 10}::{20, 10}]); length(g.edges) = 2")
 	})
 	public static IGraph spatialFromEdges(final IScope scope, final IContainer edges) {
-
+		if (edges == null) throw GamaRuntimeException.error("The edges container must not be nil", scope);
 		final IGraph createdGraph = new GamaSpatialGraph(edges, true, false, false, null, null, scope, Types.GEOMETRY,
 				edges.getGamlType().getContentType());
 		if (Types.AGENT.equals(edges.getGamlType().getContentType())) {
@@ -1619,7 +1643,7 @@ public class Graphs {
 	@test (" graph<geometry,geometry> g <- as_edge_graph([line([{1,5},{12,45}]),line([{13,45},{34,56}])],1); "
 			+ " [{1.0,5.0,0.0},{12.0,45.0,0.0},{34.0,56.0,0.0}] = g.vertices  ")
 	public static IGraph spatialFromEdges(final IScope scope, final IContainer edges, final Double tolerance) {
-
+		if (edges == null) throw GamaRuntimeException.error("The edges container must not be nil", scope);
 		final GamaSpatialGraph createdGraph = new GamaSpatialGraph(edges, true, false, false, null, null, scope,
 				Types.GEOMETRY, edges.getGamlType().getContentType(), tolerance);
 
@@ -1651,12 +1675,15 @@ public class Graphs {
 							value = "as_edge_graph([{1,5}::{12,45},{12,45}::{34,56}])",
 							equals = "a graph with these three vertices and two edges",
 							test = false)),
-			returns = "A graph whose vertices are the endpoints in the map's pairs and whose edges connect those endpoint pairs.")
+			returns = "A graph whose vertices are the endpoints in the map's pairs and whose edges connect those endpoint pairs.",
+			special_cases = "Raises an error if the map is nil or if its keys or values are not geometries or agents.")
 	@test (" graph<geometry,geometry> g <- as_edge_graph([{1,5}::{12,45},{12,45}::{34,56}]); "
 			+ " length(g.vertices) = 3 and length(g.edges) = 2")
 	public static IGraph spatialFromEdges(final IScope scope, final IMap edges) {
 		// Edges are represented by pairs of vertex::vertex
-
+		if (edges == null) throw GamaRuntimeException.error("The edges map must not be nil", scope);
+		requireShapes(scope, edges.getKeys(), "source endpoints");
+		requireShapes(scope, edges.getValues(), "target endpoints");
 		return GamaGraphFactory.createFromMap(scope, edges, true);
 	}
 
@@ -1679,12 +1706,15 @@ public class Graphs {
 			concept = { IConcept.GRAPH, IConcept.CAST, IConcept.MAP, IConcept.LIST, IConcept.EDGE })
 	@doc (
 			value = "creates a graph from the first list of edges and the list nodes",
+			special_cases = "Raises an error if either container is nil or contains values other than geometries or agents.",
 			masterDoc = false,
 			returns = "A graph<vertexType, edgeType> using the supplied nodes as vertices and the input edge objects as edges; the exact types are inferred from the inputs.",
 			see = { "as_intersection_graph", "as_distance_graph" })
 	@test ("graph<geometry,geometry> comp <- as_edge_graph([line([{1,5},{12,45}]),line([{12,45},{34,56}])], [{1,5},{12,45},{34,56}]);"
 			+ " ( ({1,5} in comp.vertices) and  ({12,45} in comp.vertices) and  ({34,56} in comp.vertices) ) ")
 	public static IGraph spatialFromEdges(final IScope scope, final IContainer edges, final IContainer nodes) {
+		requireShapes(scope, edges, "edges");
+		requireShapes(scope, nodes, "nodes");
 		return new GamaSpatialGraph(edges, nodes, scope);
 	}
 
@@ -2254,6 +2284,7 @@ public class Graphs {
 	@doc (
 			comment = "WARNING / side effect: this operator modifies the operand and does not create a new graph",
 			value = "adds a node in a graph.",
+			special_cases = "Raises an error if the graph is nil.",
 			returns = "The same graph, with its vertex and edge types unchanged, after adding the node.",
 			examples = @example (
 					value = "graph add_node node(0)",
@@ -2265,7 +2296,8 @@ public class Graphs {
 			graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r
 			g <- g add_node {10,40} ;\
 			 length(g.vertices) = 6""")
-	public static IGraph addNode(final IGraph g, final IShape node) {
+	public static IGraph addNode(final IScope scope, final IGraph g, final IShape node) {
+		requireGraph(scope, g);
 		g.addVertex(node);
 		return g;
 	}
@@ -2288,6 +2320,7 @@ public class Graphs {
 	@doc (
 			comment = "WARNING / side effect: this operator modifies the operand and does not create a new graph. All the edges containing this node are also removed.",
 			value = "removes a node from a graph.",
+			special_cases = "Raises an error if the graph is nil.",
 			returns = "The same graph, with its vertex and edge types unchanged, after removing the node and its incident edges.",
 			examples = @example (
 					value = "node(0) remove_node_from graphEpidemio",
@@ -2297,7 +2330,8 @@ public class Graphs {
 			graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r
 			g <- geometry({10,5}) remove_node_from g; \
 			 length(g.vertices) = 4 and length(g.edges) = 2""")
-	public static IGraph removeNodeFrom(final IShape node, final IGraph g) {
+	public static IGraph removeNodeFrom(final IScope scope, final IShape node, final IGraph g) {
+		requireGraph(scope, g);
 		g.removeVertex(node);
 
 		return g;
@@ -2357,6 +2391,7 @@ public class Graphs {
 	@doc (
 			comment = "WARNING / side effect: this operator modifies the operand and does not create a new graph. If the edge already exists, the graph is unchanged",
 			value = "add an edge between a source vertex and a target vertex (resp. the left and the right element of the pair operand)",
+			special_cases = "Raises an error if the graph or endpoint pair is nil, or if spatial graph endpoints are not geometries or agents.",
 			returns = "The same graph, with its vertex and edge types unchanged, after adding the edge.",
 			examples = @example (
 					value = "graph <- graph add_edge (source::target);",
@@ -2366,7 +2401,10 @@ public class Graphs {
 			graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r
 			g <- g add_edge ({40,60}::{50,50}); \
 			 length(g.edges) = 6""")
-	public static IGraph addEdge(final IGraph g, final IPair nodes) {
+	public static IGraph addEdge(final IScope scope, final IGraph g, final IPair nodes) {
+		requireGraph(scope, g);
+		if (nodes == null) throw GamaRuntimeException.error("The endpoint pair must not be nil", scope);
+		validateEndpoints(scope, g, nodes.key(), nodes.value());
 		g.addEdge(nodes.key(), nodes.value());
 		g.getPathComputer().incVersion();
 		return g;
@@ -2400,6 +2438,7 @@ public class Graphs {
 					equals = "A path between ag1 and ag2",
 					isExecutable = false) },
 			special_cases = {
+					"Raises an error if the graph is nil or if spatial graph endpoints are not geometries or agents.",
 					"Returns nil if no path exists between the two nodes (e.g. the graph is disconnected and source/target belong to different components).",
 					"Returns nil if either the source or the target node is not present in the graph.",
 					"On an empty graph (no vertices, no edges), always returns nil." })
@@ -2407,8 +2446,10 @@ public class Graphs {
 			+ " length((path_between (g, {10,5}, {50,50}))) = 1 ")
 	public static IPath path_between(final IScope scope, final IGraph graph, final Object source, final Object target)
 			throws GamaRuntimeException {
+		validateEndpoints(scope, graph, source, target);
 		if (graph instanceof GamaSpatialGraph)
 			return GamaTopologyFactory.createFrom(scope, graph).pathBetween(scope, (IShape) source, (IShape) target);
+		if (!graph.containsVertex(source) || !graph.containsVertex(target)) return null;
 		return graph.getPathComputer().computeShortestPathBetween(scope, source, target);
 	}
 
@@ -2435,6 +2476,9 @@ public class Graphs {
 			concept = { IConcept.GRAPH })
 	@doc (
 			value = "The K shortest paths between two vertices in a graph, including non-spatial vertices such as strings or integers.",
+			special_cases = {
+					"Raises an error if the graph or endpoint pair is nil, or if spatial graph endpoints are not geometries or agents.",
+					"Returns an empty list if either endpoint is absent from a non-spatial graph." },
 			examples = { @example (
 					value = "paths_between(my_graph, ag1:: ag2, 2)",
 					equals = "the 2 shortest paths (ordered by length) between ag1 and ag2",
@@ -2459,9 +2503,14 @@ public class Graphs {
 	})
 	public static IList<IPath> kPathsBetween(final IScope scope, final IGraph graph, final IPair sourTarg,
 			final int k) throws GamaRuntimeException {
+		requireGraph(scope, graph);
+		if (sourTarg == null) throw GamaRuntimeException.error("The endpoint pair must not be nil", scope);
+		validateEndpoints(scope, graph, sourTarg.key(), sourTarg.value());
 		if (graph instanceof GamaSpatialGraph)
 			return GamaTopologyFactory.castToTopology(scope, graph, false).kPathsBetween(scope, (IShape) sourTarg.key(),
 					(IShape) sourTarg.value(), k);
+		if (!graph.containsVertex(sourTarg.key()) || !graph.containsVertex(sourTarg.value()))
+			return GamaListFactory.create(Types.PATH);
 		return graph.getPathComputer().computeKShortestPathsBetween(scope, sourTarg.key(), sourTarg.value(), k);
 	}
 
