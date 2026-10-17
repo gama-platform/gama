@@ -266,9 +266,11 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 		this.nbBands = gfile.getBandsNumber(scope);
 		if (nbBands > 1) {
 			bands = new ArrayList<>();
+			final double[][] bandValues = new double[nbBands][];
+			for (int b = 0; b < nbBands; b++) { bandValues[b] = gfile.getBand(scope, b); }
 			for (int i = 0; i < size; i++) {
 				IList<Double> bb = GamaListFactory.create(Types.FLOAT);
-				for (int b = 0; b < nbBands; b++) { bb.add(gfile.getBand(scope, b)[i]); }
+				for (int b = 0; b < nbBands; b++) { bb.add(bandValues[b][i]); }
 				bands.add(bb);
 			}
 		}
