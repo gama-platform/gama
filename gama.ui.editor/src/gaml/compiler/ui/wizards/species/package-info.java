@@ -29,6 +29,9 @@
  * unchanged in the draft and are not shown here.
  * SpeciesWizardContext provides read-only metadata; editor adapters augment the built-in provider
  * with model-local ancestry. No platform description or live model is edited by the form.
+ * Skill/control attributes use GamaSkillRegistry.getEffectiveVariablesForSkill, including registered Java
+ * superclass/interface additions and matching species compilation
+ * even when the named skill is an annotation-only subclass (such as driving).
  * Its mirrorNames hook supplies mirror candidates independently of parent-cycle exclusions and
  * remains available through context composition.
  * Parent choices include runtime-registered built-in species in both modes, except model/experiment

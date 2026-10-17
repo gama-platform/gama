@@ -631,8 +631,7 @@ public class SpeciesWizard extends TitleAreaDialog {
 		try {
 			var metadata = new ArrayList<>(context.attributes(readDraft()));
 			if (kind == Kind.GRID) {
-				for (var variable : GamaSkillRegistry.INSTANCE.getVariablesForSkill("grid"))
-					metadata.add(SpeciesWizardContext.attribute(variable, "grid"));
+				metadata.addAll(SpeciesWizardContext.skillAttributes("grid", "grid"));
 			}
 			if (kind == Kind.MODEL) {
 				var world = gama.api.kernel.GamaMetaModel.getSpeciesDescription(gama.annotations.constants.IKeyword.MODEL);

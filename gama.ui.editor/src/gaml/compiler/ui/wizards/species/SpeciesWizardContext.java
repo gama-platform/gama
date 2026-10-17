@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.Objects;
 
 import gama.api.additions.registries.GamaSkillRegistry;
-import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.kernel.GamaMetaModel;
 
 /** Read-only attribute metadata for a detached species selection. Never mutate compiler descriptions. */
@@ -101,6 +101,12 @@ public interface SpeciesWizardContext {
 	}
 
 	private static void addSkill(final List<InheritedAttribute> result, final String name, final String origin) {
-		for (var attribute : GamaSkillRegistry.INSTANCE.getVariablesForSkill(name)) result.add(attribute(attribute, origin));
+		result.addAll(skillAttributes(name, origin));
+	}
+
+	/** Skill attributes, including Java superclass/interface additions used by the species compiler. */
+	static List<InheritedAttribute> skillAttributes(final String name, final String origin) {
+		return GamaSkillRegistry.INSTANCE.getEffectiveVariablesForSkill(name).stream()
+				.map(variable -> attribute(variable, origin)).toList();
 	}
 }

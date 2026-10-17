@@ -42,7 +42,7 @@ public final class SpeciesWizardTest {
 		}
 
 		@Override
-		protected List<String> possibleSkillNames() { return List.of("moving", "bouncing"); }
+		protected List<String> possibleSkillNames() { return List.of("moving", "bouncing", InheritedSkillFixture.SKILL); }
 
 		@Override
 		protected List<String> possibleControlNames() { return List.of("reflex", "fsm"); }
@@ -257,6 +257,7 @@ public final class SpeciesWizardTest {
 						&& !SpeciesWizardContext.builtInParentNames().contains(excluded),
 						"Inapplicable built-in excluded: " + excluded);
 			}
+
 			check(SpeciesWizardContext.builtInParent("wizard_missing") == null,
 					"Unknown built-in parent is not recognized");
 			for (var kind : List.of(SpeciesWizard.Kind.SPECIES, SpeciesWizard.Kind.GRID)) {
@@ -306,11 +307,62 @@ public final class SpeciesWizardTest {
 		}
 	}
 
+	private static void checkInheritedSkills(final Shell shell) throws Exception {
+		try (var fixture = new InheritedSkillFixture()) {
+			var registry = gama.api.additions.registries.GamaSkillRegistry.INSTANCE;
+			var own = new ArrayList<String>();
+			registry.getVariablesForSkill(InheritedSkillFixture.SKILL).forEach(variable -> own.add(variable.getName()));
+			check(own.equals(List.of("direct_attribute")), "Own-attributes registry API remains unchanged");
+			var effective = registry.getEffectiveVariablesForSkill(InheritedSkillFixture.SKILL);
+			check(effective.stream().map(variable -> variable.getName()).sorted().toList()
+					.equals(List.of("acceleration", "direct_attribute", "speed")),
+					"Registry resolves effective inherited skill attributes");
+			check(registry.getEffectiveVariablesForSkill("wizard_unknown_skill").isEmpty(),
+					"Unknown effective skill lookup is empty");
+			boolean immutable = false;
+			try { effective.clear(); } catch (UnsupportedOperationException expected) { immutable = true; }
+			check(immutable, "Effective attribute list is an immutable snapshot");
+			var metadata = SpeciesWizardContext.skillAttributes(InheritedSkillFixture.SKILL, "skill: driving");
+			check(metadata.stream().map(attribute -> attribute.variable().name()).sorted().toList()
+					.equals(List.of("acceleration", "direct_attribute", "speed")),
+					"Driving class hierarchy attributes supplement directly registered attributes");
+			check(metadata.stream().filter(attribute -> attribute.variable().name().equals("speed"))
+					.findFirst().orElseThrow().redefinable(), "Driving override wins over moving superclass");
+			for (var kind : SpeciesWizard.Kind.values()) {
+				var dialog = new Dialog(shell, SpeciesDraft.empty(), draft -> null, true,
+						SpeciesWizardContext.builtIns(), kind);
+				dialog.create();
+				if (kind == SpeciesWizard.Kind.MODEL) ((Text) header(dialog, "Model name")).setText("driving_model");
+				Table table = attributes(dialog);
+				check(!contains(table, "acceleration"), kind + " Driving initially absent");
+				var skill = java.util.Arrays.stream(header(dialog, "Skills").getMenu().getItems())
+						.filter(item -> item.getText().equals(InheritedSkillFixture.SKILL)).findFirst().orElseThrow();
+				skill.setSelection(true);
+				skill.notifyListeners(SWT.Selection, new Event());
+				check(contains(table, "acceleration") && contains(table, "speed") && contains(table, "direct_attribute"),
+						kind + " Selecting driving immediately displays inherited attributes");
+				select(table, "acceleration");
+				check(table.getSelection()[0].getText(2).equals("skill: " + InheritedSkillFixture.SKILL),
+						kind + " Inherited attribute origin is selected skill");
+				skill.setSelection(false);
+				skill.notifyListeners(SWT.Selection, new Event());
+				check(!contains(table, "acceleration"), kind + " Deselecting driving removes inherited attributes");
+				skill.setSelection(true);
+				skill.notifyListeners(SWT.Selection, new Event());
+				dialog.click(IDialogConstants.OK_ID);
+				check(dialog.getResult().variables().isEmpty()
+						&& dialog.getResult().skills().contains(InheritedSkillFixture.SKILL),
+						kind + " Inherited attributes are not materialized as local declarations");
+			}
+		}
+	}
+
 	public static void main(final String[] args) throws Exception {
 		Display display = new Display();
 		Shell shell = new Shell(display);
 		try {
 			checkBuiltInParents(shell);
+			checkInheritedSkills(shell);
 			AtomicInteger contextCalls = new AtomicInteger();
 			SpeciesWizardContext context = draft -> {
 				contextCalls.incrementAndGet();
