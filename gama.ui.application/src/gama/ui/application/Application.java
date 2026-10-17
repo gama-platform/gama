@@ -20,6 +20,8 @@ import static org.eclipse.ui.internal.util.PrefUtil.getInternalPreferenceStore;
 import java.util.ArrayList;
 
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.preferences.ConfigurationScope;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.osgi.service.datalocation.Location;
@@ -30,6 +32,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.Workbench;
 import org.eclipse.ui.internal.ide.application.DelayedEventsProcessor;
+import org.osgi.service.prefs.BackingStoreException;
 
 import gama.api.GAMA;
 import gama.api.runtime.IWorkspaceManager;
@@ -97,6 +100,7 @@ public class Application implements IApplication {
 
 	@Override
 	public Object start(final IApplicationContext context) throws Exception {
+		configureCopilotStartup();
 		GAMA.setRegularGui(new TempSWTGui());
 		setDefaultUncaughtExceptionHandler((t, e) -> {
 			if (e instanceof OutOfMemoryError) {
@@ -133,6 +137,28 @@ public class Application implements IApplication {
 		}
 		return EXIT_OK;
 
+	}
+
+	private static void configureCopilotStartup() {
+		final IEclipsePreferences preferences =
+				ConfigurationScope.INSTANCE.getNode("com.microsoft.copilot.eclipse.ui");
+		boolean changed = false;
+		// Copilot 0.21 checks this marker before showing its Quick Start.
+		if (preferences.get("copilotQuickStartVersion", null) == null) {
+			preferences.putInt("copilotQuickStartVersion", 1);
+			changed = true;
+		}
+		if (preferences.get("autoShowWhatsNew", null) == null) {
+			preferences.putBoolean("autoShowWhatsNew", false);
+			changed = true;
+		}
+		if (changed) {
+			try {
+				preferences.flush();
+			} catch (final BackingStoreException e) {
+				DEBUG.ERR("Unable to persist Copilot startup preferences", e);
+			}
+		}
 	}
 
 	/**

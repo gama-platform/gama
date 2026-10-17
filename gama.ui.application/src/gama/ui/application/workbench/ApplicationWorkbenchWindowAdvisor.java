@@ -139,6 +139,7 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
 
 	@Override
 	public void postWindowOpen() {
+		PerspectiveHelper.showBottomTray((WorkbenchWindow) getWindowConfigurer().getWindow(), false);
 		PerspectiveHelper.cleanPerspectives();
 	}
 

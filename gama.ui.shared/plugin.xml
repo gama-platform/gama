@@ -43,6 +43,16 @@
             activityId="disabled"
             pattern="org.eclipse.*team.*/.*">
       </activityPatternBinding>
+      <activityPatternBinding
+            activityId="disabled"
+            isEqualityPattern="true"
+            pattern="com.microsoft.copilot.eclipse.ui/com.microsoft.copilot.eclipse.ui.statusBar">
+      </activityPatternBinding>
+      <activityPatternBinding
+            activityId="disabled"
+            isEqualityPattern="true"
+            pattern="com.microsoft.copilot.eclipse.ui/com.microsoft.copilot.eclipse.commands.showStatusBarMenu">
+      </activityPatternBinding>
       <activity
             id="disabled2"
             name="Disable XText activity">
@@ -251,6 +261,24 @@
                visible="true">
          </separator>
          <command
+               commandId="gama.ui.install.graphical"
+               icon="icons_svg/light/editor/command.graphical.svg"
+               label="Install diagramming..."
+               style="push"
+               tooltip="Install the GAMA graphical editor and its Graphiti dependencies">
+         </command>
+         <command
+               commandId="gama.ui.install.copilot"
+               icon="icons_svg/light/editor/command.copilot.svg"
+               label="Install Copilot..."
+               style="push"
+               tooltip="Install GitHub Copilot and its dependencies">
+         </command>
+         <separator
+               name="gama.ui.shared.separator4"
+               visible="true">
+         </separator>
+         <command
                commandId="gama.ui.update"
                icon="platform:/plugin/gama.ui.shared/icons_svg/light/generic/menu.update.svg"
                label="Check for Updates"
@@ -337,6 +365,18 @@
             defaultHandler="gama.ui.shared.commands.InstallHandler"
             id="gama.ui.install"
             name="Install new plugins...">
+      </command>
+      <command
+            categoryId="gama.category"
+            defaultHandler="gama.ui.shared.commands.InstallOptionalFeatureHandler"
+            id="gama.ui.install.graphical"
+            name="Install diagramming...">
+      </command>
+      <command
+            categoryId="gama.category"
+            defaultHandler="gama.ui.shared.commands.InstallOptionalFeatureHandler"
+            id="gama.ui.install.copilot"
+            name="Install Copilot...">
       </command>
       <command
             categoryId="gama.category"
