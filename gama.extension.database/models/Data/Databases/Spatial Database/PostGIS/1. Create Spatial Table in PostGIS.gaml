@@ -45,7 +45,7 @@ global {
 
 }
 
-species dummy skills: [SQLSKILL] {
+species dummy skills: [sql] {
 }
 
 experiment default_expr type: gui {

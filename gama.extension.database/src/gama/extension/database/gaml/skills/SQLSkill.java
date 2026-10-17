@@ -44,7 +44,7 @@ import gama.extension.dataframe.IDataFrame;
  * they are irrelevant to databases Last Modified: 01-Aug-2014
  */
 @skill (
-		name = "SQLSKILL",
+		name = "sql",
 		concept = { IConcept.DATABASE, IConcept.SKILL })
 @SuppressWarnings ({ "rawtypes", "unchecked" })
 @doc ("This skill allows agents to be provided with actions and attributes in order to connect to SQL databases")

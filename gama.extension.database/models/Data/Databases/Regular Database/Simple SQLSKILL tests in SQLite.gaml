@@ -1,11 +1,11 @@
 /**
 * Name: Simple SQL Commands in SQLite
 * Author: Truong Minh Thai
-* Description: Demonstrates the core SQL operations available via the SQLSKILL in GAMA using an SQLite
+* Description: Demonstrates the core SQL operations available via the sql skill in GAMA using an SQLite
 *   database: CREATE TABLE, INSERT data, SELECT data, DELETE data, and DROP TABLE. The model uses an
 *   empty SQLite file as the database. Each operation is executed using the 'executeUpdate' or 'select'
-*   actions of the SQLSKILL. This is the minimal reference for SQLite integration in GAMA.
-* Tags: database, SQL, SQLite, SQLSKILL, create, insert, select, delete, drop
+*   actions of the sql skill. This is the minimal reference for SQLite integration in GAMA.
+* Tags: database, SQLite, sql, create, insert, select, delete, drop
 */
 model SQLite_selectNUpdate
 
@@ -44,7 +44,7 @@ global {
 	}
 }
 
-species DB_Accessor skills: [SQLSKILL] {
+species DB_Accessor skills: [sql] {
 	reflex select {
 		// 'select' now returns a dataframe: named, typed columns directly usable in GAML
 		dataframe t <- select(PARAMS, "SELECT * FROM registration");

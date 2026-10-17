@@ -1,7 +1,7 @@
 /**
 * Name: Simple Agents Tests in MySQL
 * Author: Truong Minh Thai
-* Description: Demonstrates the use of the AgentDB species (an alternative to the SQLSKILL) for interacting
+* Description: Demonstrates the use of the AgentDB species (an alternative to the sql skill) for interacting
 *   with a MySQL database directly from a GAMA agent. Covered actions: testConnection, isConnected, close,
 *   executeUpdate, insert, select, getParameter. SQL operations shown: CREATE TABLE, INSERT, SELECT, DELETE,
 *   DROP TABLE. Requires a pre-existing MySQL database (testDB) with the meteo_DB_dump.sql schema imported.

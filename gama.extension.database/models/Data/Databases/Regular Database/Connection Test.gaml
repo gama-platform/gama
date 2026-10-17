@@ -1,11 +1,11 @@
 /**
 * Name: SQL Connection Test
 * Author: Truong Minh Thai
-* Description: Demonstrates how to create and test database connections in GAMA using the SQLSKILL. Shows
+* Description: Demonstrates how to create and test database connections in GAMA using the sql skill. Shows
 *   connection parameter maps for both MySQL and SQLite. Tests the connection using 'testConnection' and
 *   'isConnected' actions, and illustrates how to switch between different database backends by changing
 *   the connection parameter map. This is the entry-point model for all database-related work in GAMA.
-* Tags: database, SQL, MySQL, SQLite, connection, SQLSKILL
+* Tags: database, SQL, MySQL, SQLite, connection, sql_skill
 */
 model test_connection
 
@@ -26,7 +26,6 @@ global {
 		write " Enable the postGIS extension in the database with: CREATE EXTENSION postgis;" color: #orange;
 
 
-		write "TESTS CONNECTIONS WITH SQLSKILL";
 		create DB_connection_tester;
 		
 		write "";
@@ -42,7 +41,7 @@ global {
 
 }
 
-species DB_connection_tester skills: [SQLSKILL] {
+species DB_connection_tester skills: [sql] {
 	init {
 		write "Connection to MySQL is " +  testConnection(MySQL);
 		write "Connection to SQLITE is " +  testConnection(SQLITE);

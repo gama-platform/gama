@@ -44,7 +44,7 @@ global {
 	}
 }
 
-species DB_accessor skills: [SQLSKILL];
+species DB_accessor skills: [sql];
 
 species buildings {
 	string nature;

@@ -38,6 +38,6 @@ global
 	}
 }
 
-species test_species skills: [SQLSKILL]  { }
+species test_species skills: [sql]  { }
 
 experiment default_expr type: gui { }
