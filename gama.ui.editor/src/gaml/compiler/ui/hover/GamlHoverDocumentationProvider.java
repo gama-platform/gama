@@ -42,6 +42,7 @@ import gaml.compiler.gaml.ExpressionList;
 import gaml.compiler.gaml.Facet;
 import gaml.compiler.gaml.Function;
 import gaml.compiler.gaml.Import;
+import gaml.compiler.gaml.Model;
 import gaml.compiler.gaml.Parameter;
 import gaml.compiler.gaml.S_Definition;
 import gaml.compiler.gaml.S_Display;
@@ -137,9 +138,19 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 
 	@Override
 	public IGamlDescription caseS_Global(final S_Global global) {
-		EObject model = global.eContainer().eContainer();
-		String title = "Global section of <i>" + getDoc(model).getTitle() + "</i>";
-		String doc = "";
+		EObject model = global.eContainer();
+		while (model != null && !(model instanceof Model)) model = model.eContainer();
+		IGamlDescription contextual = getDoc(model);
+		String modelTitle = contextual != null ? contextual.getTitle()
+				: model instanceof Model root ? root.getName() : "the model";
+		String title = "Global section of <i>" + modelTitle + "</i>";
+		String doc = "<p>The <code>global</code> section defines the world (simulation) species: "
+				+ "its attributes, initialization, reflexes, actions and aspects. "
+				+ "Its facets configure the model rather than a population of ordinary agents. "
+				+ "Grid dimensions, neighborhoods and grid file options do not apply here.</p>";
+		var reference = ArtefactRegistry.getStatementArtefact(IKeyword.MODEL);
+		if (reference != null && reference.getDocumentation() != null)
+			doc += reference.getDocumentation().toString();
 		return new Result(title, doc);
 	}
 

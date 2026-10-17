@@ -87,6 +87,27 @@
  <extension
        point="org.eclipse.ui.handlers">
     <handler
+          class="gaml.compiler.ui.GamlExecutableExtensionFactory:gaml.compiler.ui.wizards.species.SpeciesWizardHandler"
+          commandId="gaml.compiler.Gaml.createGrid">
+       <activeWhen>
+          <reference definitionId="gaml.compiler.Gaml.Editor.opened"/>
+       </activeWhen>
+    </handler>
+    <handler
+          class="gaml.compiler.ui.GamlExecutableExtensionFactory:gaml.compiler.ui.wizards.species.SpeciesWizardHandler"
+          commandId="gaml.compiler.Gaml.createSpecies">
+       <activeWhen>
+          <reference definitionId="gaml.compiler.Gaml.Editor.opened"/>
+       </activeWhen>
+    </handler>
+    <handler
+          class="gaml.compiler.ui.GamlExecutableExtensionFactory:gaml.compiler.ui.wizards.species.SpeciesWizardHandler"
+          commandId="gaml.compiler.Gaml.editSpecies">
+       <activeWhen>
+          <reference definitionId="gaml.compiler.Gaml.Editor.opened"/>
+       </activeWhen>
+    </handler>
+    <handler
           class="gaml.compiler.ui.GamlExecutableExtensionFactory:org.eclipse.xtext.ui.editor.hyperlinking.OpenDeclarationHandler"
           commandId="org.eclipse.xtext.ui.editor.hyperlinking.OpenDeclaration">
        <activeWhen>
@@ -178,6 +199,18 @@
 	<extension
 		point="org.eclipse.ui.commands">
 		<command
+			description="Define a grid using the shared declaration form"
+			id="gaml.compiler.Gaml.createGrid"
+			name="Define grid..."/>
+		<command
+			description="Create an ordinary species using the shared declaration form"
+			id="gaml.compiler.Gaml.createSpecies"
+			name="Define species..."/>
+		<command
+			description="Edit the enclosing ordinary species header without changing its body"
+			id="gaml.compiler.Gaml.editSpecies"
+			name="Edit..."/>
+		<command
 			description="Trigger expensive validation"
 			id="gaml.compiler.Gaml.validate"
 			name="Validate">
@@ -214,6 +247,7 @@
         locationURI="popup:#TextEditorContext?after=group.edit">
      <command
            commandId="org.eclipse.xtext.ui.editor.FindReferences"
+           label="References in other models"
            icon="platform:/plugin/gama.ui.shared/icons_svg/light/editor/find.references.svg">
         <visibleWhen
               checkEnabled="false">
@@ -883,5 +917,17 @@
            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
            sequence="M1+7">
      </key>
+  </extension>
+  <extension
+        point="org.eclipse.ui.newWizards">
+     <wizard
+           category="gama.ui.wizards.GAMA"
+           class="gaml.compiler.ui.GamlExecutableExtensionFactory:gaml.compiler.ui.wizards.species.NewModelWizard"
+           hasPages="true"
+           icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/new.model2.svg"
+           id="gama.ui.wizards.NewFileWizard"
+           name="Model file"
+           project="false">
+     </wizard>
   </extension>
 </plugin>

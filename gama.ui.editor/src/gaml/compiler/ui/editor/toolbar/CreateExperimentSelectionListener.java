@@ -58,6 +58,11 @@ public class CreateExperimentSelectionListener implements Selector {
 					final Template t = editor.getTemplateStore().getTemplateData(path).getTemplate();
 					action(t.getDescription(), e1 -> editor.applyTemplateAtTheEnd(t));
 				}
+				sep();
+				action("Define species...", e1 -> editor.openSpeciesWizard(true)).setEnabled(editor.isEditable());
+				action("Define grid...", e1 -> editor.openGridWizard()).setEnabled(editor.isEditable());
+				sep();
+				action("Extract action...", e1 -> editor.extractAction()).setEnabled(editor.canExtractAction());
 
 			}
 

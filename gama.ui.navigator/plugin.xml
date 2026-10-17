@@ -808,15 +808,6 @@
             id="gama.ui.wizards.GAMA"
             name="GAMA">
       </category>
-      <wizard
-            category="gama.ui.wizards.GAMA"
-            class="gama.ui.navigator.wizards.NewFileWizard"
-            hasPages="true"
-            icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/new.model2.svg"
-            id="gama.ui.wizards.NewFileWizard"
-            name="Model file"
-            project="false">
-      </wizard>
        <wizard
              category="gama.ui.wizards.GAMA"
              class="gama.ui.navigator.wizards.NewExperimentWizard"

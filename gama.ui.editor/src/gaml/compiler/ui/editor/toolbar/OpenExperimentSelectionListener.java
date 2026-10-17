@@ -55,17 +55,20 @@ public class OpenExperimentSelectionListener implements Selector {
 	 */
 	@Override
 	public void widgetSelected(final SelectionEvent e) {
+		final String label = (String) e.widget.getData("exp");
+		final int i = state.abbreviations.indexOf(label);
+		if (i == -1) return;
+		launch(state.experiments.get(i));
+	}
 
+	/** Launch by full experiment name, preserving the text editor's save policy. */
+	public void launch(final String name) {
 		// final IGui gui = GAMA.getRegularGui();
 		// We refuse to run if there is no XtextGui available.
 		editor.doSave(null);
 		if (GamaPreferences.Modeling.EDITOR_SAVE.getValue()) {
 			WorkbenchHelper.getPage().saveAllEditors(GamaPreferences.Modeling.EDITOR_SAVE_ASK.getValue());
 		}
-		String name = (String) e.widget.getData("exp");
-		final int i = state.abbreviations.indexOf(name);
-		if (i == -1) return;
-		name = state.experiments.get(i);
 		modelsManager.runModel(editor.getDocument(), name);
 
 	}
