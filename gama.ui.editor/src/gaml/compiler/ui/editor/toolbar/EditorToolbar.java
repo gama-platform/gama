@@ -167,51 +167,37 @@ public class EditorToolbar {
 
 				@Override
 				protected void fillMenu() {
-					GamaCommand.build("display/zoom.in", "Zoom In ", "Increases the size of the font in this editor",
-							event -> {
-								editor.zoomIn();
-							}).toItem(mainMenu).setAccelerator(SWT.MOD1 | '+');
-					GamaCommand.build("display/zoom.fit", "Zoom Reset ",
-							"Resets the size of the font to its default in the preferences", e -> {
-								editor.zoomFit();
-							}).toItem(mainMenu).setAccelerator(SWT.MOD1 | '=');
-					GamaCommand.build("display/zoom.out", "Zoom Out ", "Decreases the size of the font in this editor",
-							event -> {
-								editor.zoomOut();
-							}).toItem(mainMenu).setAccelerator(SWT.MOD1 | '-');
-					separate();
 					addPresentationItems(mainMenu, -1);
-					addManagementItems(mainMenu, -1);
+					// addManagementItems(mainMenu, -1);
 					separate();
+					if (GamaBundleLoader.isDiagramEditorLoaded()) {
+						GamaCommand.build("editor/command.graphical", "Show diagram", "Switch to diagram",
+								e -> { editor.switchToDiagram(); }).toItem(mainMenu);
+					}
 					final IViewPart part = WorkbenchHelper.getPage().findView(IGui.OUTLINE_VIEW_ID);
 					String title = part == null ? "Show outline" : "Hide outline";
 					Selector command = part == null ? e -> showView(IGui.OUTLINE_VIEW_ID)
 							: e -> WorkbenchHelper.getPage().hideView(part);
 					GamaCommand.build("editor/command.outline", title, null, command).toItem(mainMenu);
-					if (GamaBundleLoader.isDiagramEditorLoaded()) {
-						GamaCommand.build("editor/command.graphical", "Toggle diagram view", "Switch to diagram", e -> {
-							editor.switchToDiagram();
-						}).toItem(mainMenu);
-					}
+
 					final IViewPart map = WorkbenchHelper.getPage().findView(IGui.MINIMAP_VIEW_ID);
 					title = map == null ? "Show minimap" : "Hide minimap";
 					command = map == null ? e -> showView(IGui.MINIMAP_VIEW_ID)
 							: e -> WorkbenchHelper.getPage().hideView(map);
 					GamaCommand.build("editor/command.navigation", title, null, command).toItem(mainMenu);
 					separate();
-					check("Surround selection using { [ ( \\", GamaPreferences.Modeling.CORE_SURROUND_SELECTED);
-					check("Close quotes '...' ", GamaPreferences.Modeling.CORE_CLOSE_QUOTE);
-					check("Close double quotes \"...\" ", GamaPreferences.Modeling.CORE_CLOSE_DOUBLE);
-					check("Close brackets [...] ", GamaPreferences.Modeling.CORE_CLOSE_SQUARE);
-					check("Close curly brackets {...} ", GamaPreferences.Modeling.CORE_CLOSE_CURLY);
-					check("Close parentheses (...) ", GamaPreferences.Modeling.CORE_CLOSE_PARENTHESES);
+					final Menu edition = sub(mainMenu, "Edition", null, "editor/menu.edition");
+					check(edition, "Surround selection using { [ ( \\", GamaPreferences.Modeling.CORE_SURROUND_SELECTED,
+							null);
+					check(edition, "Close quotes '...' ", GamaPreferences.Modeling.CORE_CLOSE_QUOTE, null);
+					check(edition, "Close double quotes \"...\" ", GamaPreferences.Modeling.CORE_CLOSE_DOUBLE, null);
+					check(edition, "Close brackets [...] ", GamaPreferences.Modeling.CORE_CLOSE_SQUARE, null);
+					check(edition, "Close curly brackets {...} ", GamaPreferences.Modeling.CORE_CLOSE_CURLY, null);
+					check(edition, "Close parentheses (...) ", GamaPreferences.Modeling.CORE_CLOSE_PARENTHESES, null);
 					separate();
-					check("Formatting on save", GamaPreferences.Modeling.EDITOR_CLEAN_UP);
-					check("Mark occurences", GamaPreferences.Modeling.EDITOR_MARK_OCCURRENCES);
-					check("Inline markers", GamaPreferences.Modeling.EDITOR_MINING);
+					check("Formatting on save", GamaPreferences.Modeling.EDITOR_CLEAN_UP)
+							.setImage(GamaIcon.named("editor/command.format").image());
 					separate();
-					check("Use a menu for experiments", GamaPreferences.Modeling.EDITOR_EXPERIMENT_MENU,
-							e1 -> editor.updateToolbar());
 				}
 
 			};
@@ -254,43 +240,42 @@ public class EditorToolbar {
 		menuItem.setMenu(menu);
 		menu.addListener(SWT.Show, e -> {
 			for (final MenuItem item : menu.getItems()) { item.dispose(); }
-			createLineToggle(menu);
-			createFoldingToggle(menu);
-			createMarkToggle(menu);
-			createOverviewToggle(menu);
-			createWordWrapToggle(menu);
-		});
-	}
-
-	/**
-	 * Adds the management items.
-	 *
-	 * @param m
-	 *            the m
-	 * @param index
-	 *            the index
-	 */
-	public void addManagementItems(final Menu m, final int index) {
-
-		MenuItem menuItem = new MenuItem(m, SWT.CASCADE);
-		menuItem.setText("Management");
-		menuItem.setImage(GamaIcon.named("views/layout.menu").image());
-		Menu menu2 = new Menu(menuItem);
-		if (menuItem.getMenu() != null) { menuItem.getMenu().dispose(); }
-		menuItem.setMenu(menu2);
-		menu2.addListener(SWT.Show, e -> {
-			for (final MenuItem item : menu2.getItems()) { item.dispose(); }
+			GamaCommand.build("display/zoom.in", "Zoom In ", "Increases the size of the font in this editor", event -> {
+				editor.zoomIn();
+			}).toItem(menu).setAccelerator(SWT.MOD1 | '+');
+			GamaCommand.build("display/zoom.fit", "Zoom Reset ",
+					"Resets the size of the font to its default in the preferences", event -> {
+						editor.zoomFit();
+					}).toItem(menu).setAccelerator(SWT.MOD1 | '=');
+			GamaCommand
+					.build("display/zoom.out", "Zoom Out ", "Decreases the size of the font in this editor", event -> {
+						editor.zoomOut();
+					}).toItem(menu).setAccelerator(SWT.MOD1 | '-');
+			GamaMenu.separate(menu);
 			GamaCommand.build("views/layout.vertical", "Split Vertically ", "", event -> {
 				WorkbenchHelper.runCommand("org.eclipse.ui.window.splitEditor",
 						Map.of("Splitter.isHorizontal", "true"));
-			}).toItem(menu2);
+			}).toItem(menu);
 			GamaCommand.build("views/layout.horizontal", "Split Horizontally ", "", event -> {
 				WorkbenchHelper.runCommand("org.eclipse.ui.window.splitEditor",
 						Map.of("Splitter.isHorizontal", "false"));
-			}).toItem(menu2);
+			}).toItem(menu);
 			GamaCommand.build("views/layout.stack", "Clone ", "", event -> {
 				WorkbenchHelper.runCommand("org.eclipse.ui.window.newEditor");
-			}).toItem(menu2);
+			}).toItem(menu);
+			GamaMenu.separate(menu);
+			createLineToggle(menu);
+			createFoldingToggle(menu);
+			createOverviewToggle(menu);
+			createWordWrapToggle(menu);
+			GamaMenu.check(menu, "Inline markers", GamaPreferences.Modeling.EDITOR_MINING.getValue(),
+					event -> GamaPreferences.Modeling.EDITOR_MINING
+							.set(!GamaPreferences.Modeling.EDITOR_MINING.getValue()),
+					"editor/toggle.mark").setToolTipText(GamaPreferences.Modeling.EDITOR_MINING.getTitle());
+			GamaMenu.separate(menu);
+			GamaMenu.check(menu, "Use a menu for experiments", GamaPreferences.Modeling.EDITOR_EXPERIMENT_MENU,
+					e1 -> editor.updateToolbar()).setImage(GamaIcon.named(IGamaIcons.OTHER_EXPERIMENTS).image());
+
 		});
 	}
 

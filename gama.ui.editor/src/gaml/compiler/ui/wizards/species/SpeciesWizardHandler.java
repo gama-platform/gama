@@ -23,8 +23,9 @@ public final class SpeciesWizardHandler extends AbstractHandler {
 	public Object execute(final ExecutionEvent event) throws ExecutionException {
 		if (!(HandlerUtil.getActiveEditor(event) instanceof GamlEditor editor)) return null;
 		String command = event.getCommand().getId();
-		open(editor, command.endsWith(".createSpecies") || command.endsWith(".createGrid"),
-				command.endsWith(".createGrid") ? SpeciesWizard.Kind.GRID : SpeciesWizard.Kind.SPECIES);
+		open(editor, command.endsWith(".createSpecies") || command.endsWith(".createGrid") || command.endsWith(".createClass"),
+				command.endsWith(".createGrid") ? SpeciesWizard.Kind.GRID
+						: command.endsWith(".createClass") ? SpeciesWizard.Kind.CLASS : SpeciesWizard.Kind.SPECIES);
 		return null;
 	}
 

@@ -42,8 +42,13 @@ public record SpeciesDraft(String name, List<String> skills, List<Facet> facets,
 
 	/** Effective parent; an absent facet is the implicit agent parent. */
 	public String parent() {
+		return parent("agent");
+	}
+
+	/** Effective parent with the declaration kind's implicit root (object for classes, agent for species). */
+	public String parent(final String defaultParent) {
 		return facets.stream().filter(facet -> "parent".equals(facet.name())).map(facet -> facet.value().trim())
-				.findFirst().orElse("agent");
+				.findFirst().orElse(defaultParent);
 	}
 
 	public static boolean isIdentifier(final String value) {

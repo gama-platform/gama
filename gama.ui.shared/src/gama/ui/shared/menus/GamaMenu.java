@@ -204,7 +204,7 @@ public abstract class GamaMenu {
 		action.setText(s);
 
 		action.setData("image", image);
-    
+
 		if (listener != null) { action.addSelectionListener(listener); }
 		if (image != null) { action.setImage(GamaIcon.named(image).image()); }
 
@@ -232,7 +232,7 @@ public abstract class GamaMenu {
 		if (listener != null) { action.addSelectionListener(listener); }
 		if (image != null) { action.setImage(GamaIcon.named(image).image()); }
 
-    return action;
+		return action;
 	}
 
 	/**
@@ -274,11 +274,11 @@ public abstract class GamaMenu {
 		action.setText(s);
 		action.setData("image", image);
 		action.setSelection(select);
-    
-    if (listener != null) { action.addSelectionListener(listener); }
-    if (image != null) { action.setImage(GamaIcon.named(image).image()); }
 
-    return action;
+		if (listener != null) { action.addSelectionListener(listener); }
+		if (image != null) { action.setImage(GamaIcon.named(image).image()); }
+
+		return action;
 	}
 
 	/**
@@ -306,7 +306,7 @@ public abstract class GamaMenu {
 		if (listener != null) { action.addSelectionListener(listener); }
 		if (image != null) { action.setImage(GamaIcon.named(image).image()); }
 
-    return action;
+		return action;
 	}
 
 	/**
@@ -485,7 +485,7 @@ public abstract class GamaMenu {
 	 * @param string
 	 * @param coreConsoleKeep
 	 */
-	public MenuItem check(final Menu menu, final String string, final Pref<Boolean> pref,
+	public static MenuItem check(final Menu menu, final String string, final Pref<Boolean> pref,
 			final Selector additionalListener) {
 		final MenuItem item = check(menu, string, pref.getValue(), null, null);
 		item.setToolTipText(pref.getTitle());

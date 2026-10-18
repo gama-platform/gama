@@ -6,6 +6,7 @@ import java.util.Objects;
 
 import gama.api.additions.registries.GamaSkillRegistry;
 import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.compilation.descriptions.IClassDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.kernel.GamaMetaModel;
 
@@ -76,6 +77,26 @@ public interface SpeciesWizardContext {
 					new SpeciesDraft.Variable("target", mirror, "", "", "", "", ""), "mirror: " + mirror, false));
 			return List.copyOf(result);
 		};
+	}
+
+	/** Class metadata starts at object, without agent attributes, skills or control architectures. */
+	static SpeciesWizardContext classBuiltIns() {
+		return selection -> {
+			var object = classParent("object");
+			if (object == null) return List.of();
+			List<InheritedAttribute> result = new ArrayList<>();
+			for (var variable : object.getAttributes()) result.add(attribute(variable, "object"));
+			return List.copyOf(result);
+		};
+	}
+
+	/** The built-in class root. Local class parents are supplied by each editor's context. */
+	static List<String> classParentNames() { return List.of("object"); }
+
+	/** Read-only object description, or null for a non-class name or an uninitialized compiler registry. */
+	static IClassDescription classParent(final String name) {
+		return !"object".equals(name) || gama.api.gaml.GAML.getDescriptionFactory() == null ? null
+				: GamaMetaModel.getObjectClassDescription();
 	}
 
 	static String facet(final SpeciesDraft draft, final String name, final String defaultValue) {

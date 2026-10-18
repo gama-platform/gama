@@ -59,10 +59,11 @@ public class CreateExperimentSelectionListener implements Selector {
 					action(t.getDescription(), e1 -> editor.applyTemplateAtTheEnd(t));
 				}
 				sep();
-				action("Define species...", e1 -> editor.openSpeciesWizard(true)).setEnabled(editor.isEditable());
-				action("Define grid...", e1 -> editor.openGridWizard()).setEnabled(editor.isEditable());
+				action("Add species...", e1 -> editor.openSpeciesWizard(true)).setEnabled(editor.isEditable());
+				action("Add grid species...", e1 -> editor.openGridWizard()).setEnabled(editor.isEditable());
+				action("Add class...", e1 -> editor.openClassWizard()).setEnabled(editor.isEditable());
 				sep();
-				action("Extract action...", e1 -> editor.extractAction()).setEnabled(editor.canExtractAction());
+				action("Add action...", e1 -> editor.extractAction()).setEnabled(editor.canExtractAction());
 
 			}
 

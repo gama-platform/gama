@@ -49,6 +49,7 @@ import gaml.compiler.gaml.S_Display;
 import gaml.compiler.gaml.S_Do;
 import gaml.compiler.gaml.S_Experiment;
 import gaml.compiler.gaml.S_Global;
+import gaml.compiler.gaml.S_Species;
 import gaml.compiler.gaml.Statement;
 import gaml.compiler.gaml.StringLiteral;
 import gaml.compiler.gaml.TypeRef;
@@ -134,6 +135,23 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 		String title = "Import of the " + model + " defined in <i>" + uri + "</i>";
 		String doc = "ctrl-click or cmd-click on the path to open this model in a new editor";
 		return new Result(title, doc);
+	}
+
+	@Override
+	public IGamlDescription caseS_Species(final S_Species declaration) {
+		if (!IKeyword.CLASS.equals(declaration.getKey())) return null;
+		String doc = "<p>The <code>class</code> statement defines a template for objects, with attributes and actions. "
+				+ "Classes belong to the world (model), not to another species. "
+				+ "A class can inherit only from another class; its implicit parent is <code>object</code>. "
+				+ "Species and grids cannot inherit from classes.</p>"
+				+ "<p>Facets: <code>name</code> identifies the class, <code>parent</code> selects its superclass, "
+				+ "and <code>virtual: true</code> prevents direct instantiation. "
+				+ "Classes do not have agent skills, control architectures or scheduling.</p>";
+		var reference = ArtefactRegistry.getStatementArtefact(IKeyword.CLASS);
+		if (reference != null && reference.getDocumentation() != null) doc += reference.getDocumentation().toString();
+		var contextual = documenter.getGamlDocumentation(declaration);
+		if (contextual != null && contextual.getDocumentation() != null) doc += contextual.getDocumentation().toString();
+		return new Result("Class <i>" + declaration.getName() + "</i>", doc);
 	}
 
 	@Override

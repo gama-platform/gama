@@ -1143,6 +1143,11 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 				.open(this, true, gaml.compiler.ui.wizards.species.SpeciesWizard.Kind.GRID);
 	}
 
+	public void openClassWizard() {
+		injector.getInstance(gaml.compiler.ui.wizards.species.SpeciesWizardHandler.class)
+				.open(this, true, gaml.compiler.ui.wizards.species.SpeciesWizard.Kind.CLASS);
+	}
+
 	/**
 	 * The Class InternalMenuManager.
 	 */

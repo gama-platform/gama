@@ -37,7 +37,7 @@ import gaml.compiler.ui.wizards.species.SpeciesWizardContext.InheritedAttribute;
 /** Detached species settings. Editor adapters validate on OK and own the undoable apply. */
 public class SpeciesWizard extends TitleAreaDialog {
 
-	public enum Kind { SPECIES, GRID, MODEL }
+	public enum Kind { SPECIES, GRID, MODEL, CLASS }
 
 	/** Receives form feedback when the form is embedded outside this dialog, e.g. in a workbench wizard page. */
 	public interface FormHost {
@@ -126,7 +126,7 @@ public class SpeciesWizard extends TitleAreaDialog {
 	@Override
 	protected Control createDialogArea(final Composite parent) {
 		Composite area = (Composite) super.createDialogArea(parent);
-		getShell().setText(kind == Kind.GRID ? "Grid" : kind == Kind.MODEL ? "Model" : "Species");
+		getShell().setText(kind == Kind.GRID ? "Grid" : kind == Kind.MODEL ? "Model" : kind == Kind.CLASS ? "Class" : "Species");
 		Composite form = createForm(area, new FormHost() {
 			@Override
 			public void setTitle(final String title) { SpeciesWizard.this.setTitle(title); }
@@ -156,12 +156,13 @@ public class SpeciesWizard extends TitleAreaDialog {
 	 */
 	public Composite createForm(final Composite parent, final FormHost formHost) {
 		host = Objects.requireNonNull(formHost);
-		String noun = kind == Kind.GRID ? "grid" : kind == Kind.MODEL ? "model" : "species";
+		String noun = kind == Kind.GRID ? "grid" : kind == Kind.MODEL ? "model" : kind == Kind.CLASS ? "class" : "species";
 		host.setTitle(original.name().isBlank() ? "New " + noun
-				: kind == Kind.GRID ? "Grid settings" : kind == Kind.MODEL ? "Model settings" : "Species settings");
+				: kind == Kind.GRID ? "Grid settings" : kind == Kind.MODEL ? "Model settings"
+				: kind == Kind.CLASS ? "Class settings" : "Species settings");
 		host.setMessage(editBody ? "Define the " + noun + " structure and its attributes."
 				: kind == Kind.MODEL ? "Define the model header. Global declarations remain unchanged in the source."
-				: "Define the species header. Attribute declarations remain unchanged in the source.");
+				: "Define the " + noun + " header. Attribute declarations remain unchanged in the source.");
 		Composite form = composite(parent, 1);
 		form.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
@@ -169,10 +170,13 @@ public class SpeciesWizard extends TitleAreaDialog {
 		else {
 			Composite basic = composite(form, 4);
 			basic.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-			field(basic, "Name", original.name().isBlank() ? kind == Kind.GRID ? "my_grid" : "my_species" : original.name(), null);
+			field(basic, "Name", original.name().isBlank() ? kind == Kind.GRID ? "my_grid"
+					: kind == Kind.CLASS ? "my_class" : "my_species" : original.name(), null);
 			field(basic, "Virtual", Boolean.valueOf(facet("virtual", "false").trim()), null);
-			field(basic, "Parent", original.parent(), speciesChoices(original.parent(), false));
-			createSkills(basic);
+			String parentName = original.parent(kind == Kind.CLASS ? "object" : "agent");
+			field(basic, "Parent", parentName, speciesChoices(parentName, false));
+			if (kind == Kind.CLASS) ((GridData) header.get("parent").getLayoutData()).horizontalSpan = 3;
+			else createSkills(basic);
 		}
 		if (kind == Kind.GRID) {
 			Composite dimensions = composite(form, 6);
@@ -186,51 +190,53 @@ public class SpeciesWizard extends TitleAreaDialog {
 			((GridData) header.get("neighbors").getLayoutData()).widthHint = 65;
 		}
 
-		ExpandableComposite advanced = new ExpandableComposite(form, SWT.NONE,
-				ExpandableComposite.TWISTIE | ExpandableComposite.CLIENT_INDENT);
-		advanced.setText("Advanced");
-		advanced.setToolTipText(kind == Kind.MODEL ? "Expand to configure skills, the control architecture and scheduling."
-				: "Expand to configure control, mirroring, scheduling and concurrency.");
-		advanced.setData("species.field", "Advanced");
-		advanced.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		accessible(advanced, "Advanced");
-		Composite advancedSettings = composite(advanced, 4);
-		advanced.setClient(advancedSettings);
-		advanced.setExpanded(false);
-		if (kind == Kind.MODEL) createSkills(advancedSettings);
-		field(advancedSettings, "Control", facet("control", "reflex").trim(),
-				withCurrent(possibleControlNames(), facet("control", "reflex").trim()));
-		if (kind == Kind.SPECIES) {
-			field(advancedSettings, "Mirrors", facet("mirrors", "").trim(),
-					speciesChoices(facet("mirrors", "").trim(), true));
-		} else if (kind == Kind.GRID) {
-			((GridData) header.get("control").getLayoutData()).horizontalSpan = 3;
-		}
-		Composite scheduling = composite(advancedSettings, kind == Kind.MODEL ? 4 : 6);
-		((GridLayout) scheduling.getLayout()).marginWidth = 0;
-		((GridLayout) scheduling.getLayout()).marginHeight = 0;
-		scheduling.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 4, 1));
-		expressionHeader(scheduling, "Schedules", facet("schedules", ""));
-		((GridData) header.get("schedules").getLayoutData()).widthHint = 125;
-		expressionHeader(scheduling, "Frequency", facet("frequency", ""));
-		((GridData) header.get("frequency").getLayoutData()).widthHint = 65;
-		if (kind != Kind.MODEL) createParallel(scheduling);
-		if (kind == Kind.GRID) {
-			expressionHeader(advancedSettings, "File", facet("file", ""));
-			expressionHeader(advancedSettings, "Files", facet("files", ""));
-			Composite options = composite(advancedSettings, 6);
-			options.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 4, 1));
-			gridOption(options, "Use individual shapes", "use_individual_shapes");
-			gridOption(options, "Use neighbors cache", "use_neighbors_cache");
-			gridOption(options, "Use regular agents", "use_regular_agents");
-		}
-		advanced.addExpansionListener(new ExpansionAdapter() {
-			@Override
-			public void expansionStateChanged(final ExpansionEvent event) {
-				form.layout(true, true);
-				host.relayout();
+		if (kind != Kind.CLASS) {
+			ExpandableComposite advanced = new ExpandableComposite(form, SWT.NONE,
+					ExpandableComposite.TWISTIE | ExpandableComposite.CLIENT_INDENT);
+			advanced.setText("Advanced");
+			advanced.setToolTipText(kind == Kind.MODEL ? "Expand to configure skills, the control architecture and scheduling."
+					: "Expand to configure control, mirroring, scheduling and concurrency.");
+			advanced.setData("species.field", "Advanced");
+			advanced.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+			accessible(advanced, "Advanced");
+			Composite advancedSettings = composite(advanced, 4);
+			advanced.setClient(advancedSettings);
+			advanced.setExpanded(false);
+			if (kind == Kind.MODEL) createSkills(advancedSettings);
+			field(advancedSettings, "Control", facet("control", "reflex").trim(),
+					withCurrent(possibleControlNames(), facet("control", "reflex").trim()));
+			if (kind == Kind.SPECIES) {
+				field(advancedSettings, "Mirrors", facet("mirrors", "").trim(),
+						speciesChoices(facet("mirrors", "").trim(), true));
+			} else if (kind == Kind.GRID) {
+				((GridData) header.get("control").getLayoutData()).horizontalSpan = 3;
 			}
-		});
+			Composite scheduling = composite(advancedSettings, kind == Kind.MODEL ? 4 : 6);
+			((GridLayout) scheduling.getLayout()).marginWidth = 0;
+			((GridLayout) scheduling.getLayout()).marginHeight = 0;
+			scheduling.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 4, 1));
+			expressionHeader(scheduling, "Schedules", facet("schedules", ""));
+			((GridData) header.get("schedules").getLayoutData()).widthHint = 125;
+			expressionHeader(scheduling, "Frequency", facet("frequency", ""));
+			((GridData) header.get("frequency").getLayoutData()).widthHint = 65;
+			if (kind != Kind.MODEL) createParallel(scheduling);
+			if (kind == Kind.GRID) {
+				expressionHeader(advancedSettings, "File", facet("file", ""));
+				expressionHeader(advancedSettings, "Files", facet("files", ""));
+				Composite options = composite(advancedSettings, 6);
+				options.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 4, 1));
+				gridOption(options, "Use individual shapes", "use_individual_shapes");
+				gridOption(options, "Use neighbors cache", "use_neighbors_cache");
+				gridOption(options, "Use regular agents", "use_regular_agents");
+			}
+			advanced.addExpansionListener(new ExpansionAdapter() {
+				@Override
+				public void expansionStateChanged(final ExpansionEvent event) {
+					form.layout(true, true);
+					host.relayout();
+				}
+			});
+		}
 
 		ExpandableComposite attributeDisclosure = new ExpandableComposite(form, SWT.NONE,
 				ExpandableComposite.TWISTIE | ExpandableComposite.CLIENT_INDENT | ExpandableComposite.EXPANDED);
@@ -418,15 +424,17 @@ public class SpeciesWizard extends TitleAreaDialog {
 
 	private String explanation(final String name) {
 		return switch (name) {
-			case "Name" -> "Name of the species, used to refer to it in GAML.";
+			case "Name" -> "Name of the " + (kind == Kind.CLASS ? "class" : "species") + ", used to refer to it in GAML.";
 			case "Model name" -> "Name of the model, declared by the model statement. Derived from the file name until edited.";
 			case "Container" -> "Workspace folder containing the model file.";
 			case "File name" -> "Name of the model file; the .gaml extension is added when omitted.";
 			case "Author" -> "Author of the model, kept in the model header comment.";
 			case "Tags" -> "Comma-separated keywords describing the model, kept in the model header comment.";
 			case "Documentation" -> "Description of the model, kept in the model header comment.";
-			case "Virtual" -> "A virtual species defines a common structure but cannot be instantiated directly.";
-			case "Parent" -> "Species whose attributes and behaviors are inherited. The default is agent.";
+			case "Virtual" -> "A virtual " + (kind == Kind.CLASS ? "class" : "species")
+					+ " defines a common structure but cannot be instantiated directly.";
+			case "Parent" -> kind == Kind.CLASS ? "Class whose attributes and actions are inherited. The default is object."
+					: "Species whose attributes and behaviors are inherited. The default is agent.";
 			case "Skills" -> "Select or deselect skills to add their attributes and capabilities to the "
 					+ (kind == Kind.MODEL ? "world." : "species.");
 			case "Control" -> "Control architecture used by " + (kind == Kind.MODEL ? "the world" : "agents of this species")
@@ -470,9 +478,9 @@ public class SpeciesWizard extends TitleAreaDialog {
 	private List<String> speciesChoices(final String current, final boolean empty) {
 		List<String> result = new ArrayList<>();
 		if (empty) result.add("");
-		else result.add("agent");
+		else result.add(kind == Kind.CLASS ? "object" : "agent");
 		List<String> candidates = new ArrayList<>();
-		if (!empty) candidates.addAll(SpeciesWizardContext.builtInParentNames());
+		if (!empty && kind != Kind.CLASS) candidates.addAll(SpeciesWizardContext.builtInParentNames());
 		candidates.addAll(parentNames);
 		(empty ? context.mirrorNames(parentNames) : context.parentNames(candidates)).stream()
 				.filter(name -> !name.equals(original.name())).forEach(result::add);
@@ -590,13 +598,15 @@ public class SpeciesWizard extends TitleAreaDialog {
 		if (kind != Kind.MODEL) {
 			changes.put("parent", value("parent"));
 			changes.put("virtual", value("virtual"));
-			changes.put("parallel", value("parallel"));
+			if (kind != Kind.CLASS) changes.put("parallel", value("parallel"));
 		}
-		changes.put("control", value("control"));
-		if (kind == Kind.SPECIES) changes.put("mirrors", value("mirrors"));
-		changes.put("schedules", value("schedules"));
-		changes.put("frequency", value("frequency"));
-		Map<String, String> defaults = Map.of("parent", "agent", "virtual", "false", "parallel", "", "control", "reflex",
+		if (kind != Kind.CLASS) {
+			changes.put("control", value("control"));
+			if (kind == Kind.SPECIES) changes.put("mirrors", value("mirrors"));
+			changes.put("schedules", value("schedules"));
+			changes.put("frequency", value("frequency"));
+		}
+		Map<String, String> defaults = Map.of("parent", kind == Kind.CLASS ? "object" : "agent", "virtual", "false", "parallel", "", "control", "reflex",
 				"mirrors", "", "schedules", "", "frequency", "");
 		if (kind == Kind.GRID) {
 			for (String key : List.of("width", "height", "neighbors", "file", "files",
@@ -659,6 +669,12 @@ public class SpeciesWizard extends TitleAreaDialog {
 		String error = contextError == null ? draft.validationError() : contextError;
 		if (kind == Kind.MODEL && error != null && error.startsWith("Species name"))
 			error = "Model name must be a GAML identifier.";
+		if (kind == Kind.CLASS && error != null && error.startsWith("Species name"))
+			error = "Class name must be a GAML identifier.";
+		if (error == null && kind == Kind.CLASS && (!draft.skills().isEmpty()
+				|| draft.facets().stream().anyMatch(facet -> !List.of("parent", "virtual").contains(facet.name()))
+				|| !draft.init().isBlank() || !draft.reflexOrder().isEmpty()))
+			error = "Classes support name, parent, virtual, attributes and actions, not agent-specific settings.";
 		if (error == null && kind == Kind.MODEL && location != null && locationEditable) {
 			ModelLocation proposed = readLocation();
 			if (proposed.container().isBlank()) error = "Select the folder that will contain the model.";
@@ -677,8 +693,8 @@ public class SpeciesWizard extends TitleAreaDialog {
 					error = "Grid " + dimension + " must be positive.";
 			}
 		}
-		if (error == null && kind != Kind.MODEL && draft.name().equals(draft.parent()))
-			error = "A species cannot inherit from itself.";
+		if (error == null && kind != Kind.MODEL && draft.name().equals(draft.parent(kind == Kind.CLASS ? "object" : "agent")))
+			error = "A " + (kind == Kind.CLASS ? "class" : "species") + " cannot inherit from itself.";
 		if (host != null) {
 			host.setErrorMessage(error);
 			host.setComplete(error == null);

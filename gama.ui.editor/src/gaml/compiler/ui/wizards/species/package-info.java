@@ -1,5 +1,5 @@
 /**
- * Shared species and grid declaration settings, independent of Graphiti and diagram model types.
+ * Shared species, grid, class and model declaration settings, independent of Graphiti and diagram model types.
  *
  * <p>The top rows contain Name/Virtual and Parent/Skills. Parallel accepts a boolean or
  * integer threshold; an empty value retains the platform preference. A collapsed Advanced
@@ -43,8 +43,8 @@
  * by a separator. References in other models and Search in GAML Reference form a separated group after Paste;
  * Preferences appears last with a dedicated sliders icon.
  * Run As, Debug As, Source, Refactorings and Code Actions submenus are excluded from the text popup.
- * Define species and Define grid follow the three experiment templates in the toolbar "+" menu;
- * Extract action appears last there after a separator. These three actions are not in the text popup.
+ * Add species, Add grid species and Add class follow the experiment templates in the toolbar "+" menu;
+ * Add action appears last there after a separator. These creation actions are not in the text popup.
  * Existing source bodies remain read-only: header token edits preserve all declarations, unsupported constructs and
  * comments. Use Rename refactoring when references must be renamed too. Syntax and duplicate local names are checked before applying; semantic
  * diagnostics remain the normal text-editor validator's responsibility.
@@ -52,6 +52,15 @@
  * <p>Adapters open SpeciesWizard with an immutable SpeciesDraft and apply getResult() only after
  * successful OK, inside their own undo transaction. Cancel never mutates the input. The adapter's
  * validator runs on OK, not on every keystroke. Changes to selection refresh only attribute metadata.
+ *
+ * <p>Class mode shows only Name, Virtual, Parent and Attributes. Classes belong to the world and
+ * inherit only from classes, with implicit root object; they are never parents of species or grids.
+ * Adapters supply classBuiltIns(), not the agent/skill/control metadata provider, and augment it
+ * with local class ancestry. classParentNames()/classParent(name) expose root class descriptions;
+ * SpeciesDraft.parent("object") reads class inheritance without changing the agent default of parent().
+ * Class actions remain editor-owned and untouched by the draft, like all other existing body contents.
+ * The source adapter creates classes at model level and edits only header tokens. Class hover help
+ * remains available before semantic compilation, including on incomplete declarations.
  *
  * <p>Model mode edits the global species: Container/File name, Model name, a collapsed Advanced
  * section with Skills/Control and Schedules/Frequency, the open Attributes section (including built-in model

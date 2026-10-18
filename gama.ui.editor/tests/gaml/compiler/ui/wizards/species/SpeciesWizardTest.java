@@ -38,7 +38,9 @@ public final class SpeciesWizardTest {
 
 		Dialog(final Shell shell, final SpeciesDraft draft, final Function<SpeciesDraft, String> validator,
 				final boolean editBody, final SpeciesWizardContext context, final Kind kind) {
-			super(shell, draft, validator, editBody, List.of("agent", "animal", "wolf", "prey"), context, kind);
+			super(shell, draft, validator, editBody,
+					kind == Kind.CLASS ? List.of("object", "base", "other") : List.of("agent", "animal", "wolf", "prey"),
+					context, kind);
 		}
 
 		@Override
@@ -328,7 +330,7 @@ public final class SpeciesWizardTest {
 					"Driving class hierarchy attributes supplement directly registered attributes");
 			check(metadata.stream().filter(attribute -> attribute.variable().name().equals("speed"))
 					.findFirst().orElseThrow().redefinable(), "Driving override wins over moving superclass");
-			for (var kind : SpeciesWizard.Kind.values()) {
+			for (var kind : List.of(SpeciesWizard.Kind.SPECIES, SpeciesWizard.Kind.GRID, SpeciesWizard.Kind.MODEL)) {
 				var dialog = new Dialog(shell, SpeciesDraft.empty(), draft -> null, true,
 						SpeciesWizardContext.builtIns(), kind);
 				dialog.create();
@@ -357,12 +359,83 @@ public final class SpeciesWizardTest {
 		}
 	}
 
+	private static void checkClasses(final Shell shell) {
+		AtomicInteger calls = new AtomicInteger();
+		Function<SpeciesDraft, String> validator = draft -> { calls.incrementAndGet(); return null; };
+		SpeciesWizardContext context = draft -> "base".equals(draft.parent("object"))
+				? List.of(inherited("inherited", "int", "parent: base", true)) : List.of();
+		var dialog = new Dialog(shell, SpeciesDraft.empty(), validator, true, context, SpeciesWizard.Kind.CLASS);
+		dialog.create();
+		check(dialog.getShell().getText().equals("Class"), "Class title");
+		check(((Text) header(dialog, "Name")).getText().equals("my_class"), "Class creation name");
+		Combo parent = (Combo) header(dialog, "Parent");
+		check(parent.getText().equals("object") && !List.of(parent.getItems()).contains("agent"),
+				"Class defaults to object, without agent parent");
+		for (String name : List.of("Skills", "Advanced", "Control", "Mirrors", "Parallel", "Schedules", "Frequency",
+				"Documentation", "Container", "File name"))
+			check(header(dialog, name) == null, "Class omits " + name);
+		checkHelp(dialog.getShell());
+		choose(parent, "base");
+		check(contains(attributes(dialog), "inherited") && !contains(attributes(dialog), "location"),
+				"Class parent refresh exposes class attributes only");
+		select(attributes(dialog), "inherited");
+		Button redefine = button(dialog.getShell(), "Redefine");
+		redefine.setSelection(true);
+		redefine.notifyListeners(SWT.Selection, new Event());
+		((Text) field(dialog.getShell(), "species.attribute.field", 2)).setText("42");
+		Button virtual = (Button) header(dialog, "Virtual");
+		virtual.setSelection(true);
+		virtual.notifyListeners(SWT.Selection, new Event());
+		check(calls.get() == 0, "Class metadata/field edits do not invoke adapter compilation");
+		Table classAttributes = attributes(dialog);
+		classAttributes.getColumn(0).notifyListeners(SWT.Selection, new Event());
+		check(classAttributes.getSortDirection() == SWT.UP, "Class attributes support sorting");
+		button(dialog.getShell(), "Add attribute").notifyListeners(SWT.Selection, new Event());
+		check(classAttributes.getSelection()[0].getText(0).equals("my_attribute"),
+				"Class Add selects a new attribute under sorting");
+		button(dialog.getShell(), "Remove selected attribute").notifyListeners(SWT.Selection, new Event());
+		check(!contains(classAttributes, "my_attribute") && contains(classAttributes, "inherited"),
+				"Class Remove deletes only the selected local attribute");
+		dialog.click(IDialogConstants.OK_ID);
+		var accepted = dialog.getResult();
+		check(calls.get() == 1 && accepted != null, "Class validated only on OK");
+		check(accepted.parent("object").equals("base") && SpeciesWizardContext.facet(accepted, "virtual", "").equals("true"),
+				"Class parent and virtual accepted");
+		check(accepted.variables().size() == 1 && accepted.variables().getFirst().init().equals("42"),
+				"Class inherited attribute redefinition is local");
+		var unchanged = new Dialog(shell, accepted, validator, true, context, SpeciesWizard.Kind.CLASS);
+		unchanged.create();
+		unchanged.click(IDialogConstants.OK_ID);
+		check(accepted.equals(unchanged.getResult()), "Class no-op preserves draft exactly");
+		var cancelled = new Dialog(shell, accepted, validator, true, context, SpeciesWizard.Kind.CLASS);
+		cancelled.create();
+		((Text) header(cancelled, "Name")).setText("cancelled");
+		int before = calls.get();
+		cancelled.click(IDialogConstants.CANCEL_ID);
+		check(cancelled.getResult() == null && calls.get() == before, "Class cancel returns no draft and never compiles");
+		var implicit = new SpeciesDraft("plain", List.of(), List.of(), List.of(), "", List.of());
+		var defaults = new Dialog(shell, implicit, validator, true, context, SpeciesWizard.Kind.CLASS);
+		defaults.create();
+		defaults.click(IDialogConstants.OK_ID);
+		check(implicit.equals(defaults.getResult()), "Class implicit object/false defaults do not materialize facets");
+		var text = new Dialog(shell, accepted, validator, false, context, SpeciesWizard.Kind.CLASS);
+		text.create();
+		check(!button(text.getShell(), "Add attribute").getEnabled(), "Source class attributes visibly read-only");
+		text.click(IDialogConstants.CANCEL_ID);
+		var invalid = new Dialog(shell, new SpeciesDraft("bad", List.of("moving"), List.of(), List.of(), "", List.of()),
+				validator, true, context, SpeciesWizard.Kind.CLASS);
+		invalid.create();
+		check(!invalid.acceptsInput(), "Class rejects hidden agent settings rather than silently preserving them");
+		invalid.click(IDialogConstants.CANCEL_ID);
+	}
+
 	public static void main(final String[] args) throws Exception {
 		Display display = new Display();
 		Shell shell = new Shell(display);
 		try {
 			checkBuiltInParents(shell);
 			checkInheritedSkills(shell);
+			checkClasses(shell);
 			AtomicInteger contextCalls = new AtomicInteger();
 			SpeciesWizardContext context = draft -> {
 				contextCalls.incrementAndGet();
@@ -729,7 +802,7 @@ public final class SpeciesWizardTest {
 			fileGrid.create();
 			fileGrid.click(IDialogConstants.OK_ID);
 			check(fileGridDraft.equals(fileGrid.getResult()), "File-defined grid preserves absent dimensions and hidden bodies");
-			for (SpeciesWizard.Kind kind : SpeciesWizard.Kind.values()) {
+			for (SpeciesWizard.Kind kind : List.of(SpeciesWizard.Kind.SPECIES, SpeciesWizard.Kind.GRID, SpeciesWizard.Kind.MODEL)) {
 				var sorting = new Dialog(shell, unchanged, validator, true, context, kind);
 				sorting.create();
 				Table list = attributes(sorting);
