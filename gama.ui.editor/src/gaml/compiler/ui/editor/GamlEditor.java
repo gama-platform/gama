@@ -19,7 +19,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -145,10 +144,6 @@ import gaml.compiler.ui.editor.toolbar.EditorToolbar;
 import gaml.compiler.ui.editor.toolbar.ExperimentToolbar;
 import gaml.compiler.ui.editor.toolbar.OpenExperimentSelectionListener;
 import gaml.compiler.ui.editor.toolbar.RevalidateModelSelectionListener;
-import gaml.compiler.ui.reference.BuiltinReferenceMenu;
-import gaml.compiler.ui.reference.ColorReferenceMenu;
-import gaml.compiler.ui.reference.OperatorsReferenceMenu;
-import gaml.compiler.ui.reference.TemplateReferenceMenu;
 import gaml.compiler.ui.editor.refactoring.ExtractActionHandler;
 import gaml.compiler.ui.templates.GamlEditTemplateDialogFactory;
 import gaml.compiler.ui.templates.GamlTemplateStore;
@@ -1117,11 +1112,6 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 			}, () -> org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn(getSite().getShell(),
 					"gaml.compiler.Gaml", null, null).open(),
 			GamaIcon.named("editor/command.find").descriptor(), GamaIcon.named("editor/preferences").descriptor());
-		menu.add(new Separator());
-		menu.add(new InternalMenuManager(parent -> new TemplateReferenceMenu().installSubMenuIn(parent)));
-		menu.add(new InternalMenuManager(parent -> new BuiltinReferenceMenu().installSubMenuIn(parent)));
-		menu.add(new InternalMenuManager(parent -> new OperatorsReferenceMenu().installSubMenuIn(parent)));
-		menu.add(new InternalMenuManager(parent -> new ColorReferenceMenu().installSubMenuIn(parent)));
 
 	}
 
@@ -1146,30 +1136,6 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	public void openClassWizard() {
 		injector.getInstance(gaml.compiler.ui.wizards.species.SpeciesWizardHandler.class)
 				.open(this, true, gaml.compiler.ui.wizards.species.SpeciesWizard.Kind.CLASS);
-	}
-
-	/**
-	 * The Class InternalMenuManager.
-	 */
-	class InternalMenuManager extends MenuManager {
-
-		/** The fill. */
-		final Consumer<Menu> fill;
-
-		/**
-		 * Instantiates a new internal menu manager.
-		 */
-		InternalMenuManager(final Consumer<Menu> fill) {
-			this.fill = fill;
-			setRemoveAllWhenShown(true);
-			setVisible(true);
-		}
-
-		@Override
-		public void fill(final Menu parent, final int index) {
-			fill.accept(parent);
-		}
-
 	}
 
 	/**

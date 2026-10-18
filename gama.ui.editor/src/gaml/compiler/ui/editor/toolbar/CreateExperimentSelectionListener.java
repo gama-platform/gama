@@ -13,10 +13,15 @@ package gaml.compiler.ui.editor.toolbar;
 import org.eclipse.jface.text.templates.Template;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Menu;
 
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.views.toolbar.Selector;
 import gaml.compiler.ui.editor.GamlEditor;
+import gaml.compiler.ui.reference.BuiltinReferenceMenu;
+import gaml.compiler.ui.reference.ColorReferenceMenu;
+import gaml.compiler.ui.reference.OperatorsReferenceMenu;
+import gaml.compiler.ui.reference.TemplateReferenceMenu;
 
 /**
  * The class CreateExperimentSelectionListener.
@@ -64,7 +69,12 @@ public class CreateExperimentSelectionListener implements Selector {
 				action("Add class...", e1 -> editor.openClassWizard()).setEnabled(editor.isEditable());
 				sep();
 				action("Add action...", e1 -> editor.extractAction()).setEnabled(editor.canExtractAction());
-
+				sep();
+				final Menu builtInElements = sub("Insert built-in elements...");
+				new TemplateReferenceMenu().installSubMenuIn(builtInElements);
+				new BuiltinReferenceMenu().installSubMenuIn(builtInElements);
+				new OperatorsReferenceMenu().installSubMenuIn(builtInElements);
+				new ColorReferenceMenu().installSubMenuIn(builtInElements);
 			}
 
 		};

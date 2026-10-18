@@ -304,7 +304,7 @@ public class BuiltinReferenceMenu extends GamlReferenceMenu {
 	 * @see gaml.compiler.gaml.ui.reference.GamlReferenceMenu#getTitle()
 	 */
 	@Override
-	protected String getTitle() { return "Built-In structures"; }
+	protected String getTitle() { return "Structures"; }
 
 	/**
 	 * @see gaml.compiler.ui.reference.GamlReferenceMenu#isDynamic()
