@@ -85,8 +85,12 @@ public final class BehaviorSourceTest {
 		var rule = new BehaviorSource(source, source.indexOf("rule belief"), parser, false);
 		check(rule.draft().kind() == BehaviorKind.RULE && rule.draft().name().isEmpty()
 				&& rule.draft().facets().size() == 2, "Rule read: " + rule.draft());
-		check(refused(() -> new BehaviorSource(source, source.indexOf("energy <- 2.0"), parser, false)),
-				"init blocks are not behaviours");
+		var init = new BehaviorSource(source, source.indexOf("init {"), parser, false);
+		check(init.draft().equals(new BehaviorDraft(BehaviorKind.INIT, "", List.of(), " energy <- 2.0; ")),
+				"Anonymous init read: " + init.draft());
+		check(init.isBehaviorSelection(source.indexOf("init {"), 4), "Init header selection enables edit");
+		check(!init.isBehaviorSelection(source.indexOf("energy <- 2.0"), 0),
+				"Caret inside init code is left to the species/experiment form");
 		check(refused(() -> new BehaviorSource(source, source.indexOf("int total"), parser, false)),
 				"Caret outside behaviours refused");
 		check(move.siblingNames(BehaviorKind.REFLEX).isEmpty() && idle.siblingNames(BehaviorKind.STATE).equals(
@@ -158,10 +162,50 @@ public final class BehaviorSourceTest {
 		check(createdCrlf.contains("\tstate my_state {\r\n\t}\r\n}") && !createdCrlf.replace("\r\n", "").contains("\n"),
 				"CRLF kept");
 
+		// ---- lifecycle kinds (reflex / init / abort share one declaration)
+		check(BehaviorKind.LIFECYCLE.equals(java.util.EnumSet.of(BehaviorKind.REFLEX, BehaviorKind.INIT, BehaviorKind.ABORT))
+				&& BehaviorKind.INIT.convertibleKinds().equals(BehaviorKind.LIFECYCLE)
+				&& BehaviorKind.STATE.convertibleKinds().equals(java.util.Set.of(BehaviorKind.STATE))
+				&& BehaviorKind.of("abort") == BehaviorKind.ABORT && BehaviorKind.ABORT.ordinal() == 7,
+				"Lifecycle contract");
+		check(BehaviorDraft.empty(BehaviorKind.INIT).name().isEmpty() && BehaviorDraft.empty(BehaviorKind.ABORT).name().isEmpty()
+				&& BehaviorFacet.of(BehaviorKind.ABORT).stream().map(BehaviorFacet::name).toList().equals(List.of("when")),
+				"Init/abort anonymous by default, only when");
+		String toAbort = move.render(new BehaviorDraft(BehaviorKind.ABORT, d.name(), d.facets(), d.body()));
+		check(toAbort.equals(source.replace("reflex move when", "abort move when")), "Reflex -> abort keeps all: " + toAbort);
+		parses(parser, toAbort, "abort");
+		var abort = new BehaviorSource(toAbort, toAbort.indexOf("abort move"), parser, false);
+		check(abort.draft().equals(new BehaviorDraft(BehaviorKind.ABORT, "move", d.facets(), d.body())), "Abort read back");
+		check(abort.render(abort.draft()) == toAbort, "Abort no-op");
+		check(abort.render(d).equals(source), "Abort -> reflex restores the source");
+		String toReflex = init.render(new BehaviorDraft(BehaviorKind.REFLEX, "", List.of(), init.draft().body()));
+		check(toReflex.equals(source.replace("\tinit { energy", "\treflex { energy")), "Init -> reflex: " + toReflex);
+		String namedInit = init.render(new BehaviorDraft(BehaviorKind.INIT, "setup", List.of(new Facet("when", "true")),
+				init.draft().body()));
+		check(namedInit.equals(source.replace("\tinit {", "\tinit setup when: true {")), "Named init with when: " + namedInit);
+		parses(parser, namedInit, "named init");
+		check(init.validationError(BehaviorDraft.empty(BehaviorKind.INIT)) == null, "Several anonymous inits allowed");
+		String createdAbort = new BehaviorSource(source, source.indexOf("float energy"), parser, true)
+				.render(new BehaviorDraft(BehaviorKind.ABORT, "", List.of(), "\n\t\twrite 'bye';\n\t"));
+		check(createdAbort.contains("\tinit { energy <- 2.0; }\n\tabort {\n\t\twrite 'bye';\n\t}\n}"), "Abort created: " + createdAbort);
+		parses(parser, createdAbort, "created abort");
+		var setup = new BehaviorSource(namedInit, namedInit.indexOf("init setup"), parser, false);
+		check(setup.validationError(named(setup.draft(), "setup")) == null, "Own name not a duplicate");
+		String twoInits = namedInit.replace("\tinit setup", "\tinit setup {}\n\tinit setup");
+		var second = new BehaviorSource(twoInits, twoInits.lastIndexOf("init setup"), parser, false);
+		check(second.validationError(second.draft()).contains("already exists"), "Duplicate named init refused");
+		check(second.validationError(new BehaviorDraft(BehaviorKind.ABORT, "setup", List.of(), "")).contains("already exists"),
+				"Same name across lifecycle kinds refused");
+		check(second.validationError(new BehaviorDraft(BehaviorKind.ABORT, "init", List.of(), "")) == null,
+				"An init named 'init' is legal next to anonymous ones");
+
 		// ---- validation
 		check(move.validationError(d) == null, "Valid draft");
 		check(idle.validationError(named(idle.draft(), "busy")).contains("already exists"), "Duplicate state name");
-		check(move.validationError(named(d, "idle")) == null, "Same name of another kind allowed");
+		check(move.validationError(named(d, "idle")).contains("already exists"),
+				"Same name of another kind refused (the compiler keeps one behaviour per name)");
+		check(move.siblingNames().equals(java.util.Set.of("idle", "busy")) && move.siblingNames(BehaviorKind.STATE)
+				.equals(java.util.Set.of("idle", "busy")) && move.siblingNames(BehaviorKind.REFLEX).isEmpty(), "Sibling names");
 		check(idle.validationError(named(idle.draft(), "")) != null, "State name required");
 		check(work.validationError(work.draft().withFacet("weight", null)) != null, "Task weight required");
 		check(move.validationError(named(d, "2bad")) != null, "Identifier required");
@@ -194,6 +238,15 @@ public final class BehaviorSourceTest {
 		}
 		check(refusedStale && document.get().equals(" " + source), "Stale document refused, not rebased");
 		check(refused(() -> new BehaviorSource(source + "species {", 0, parser, true)), "Syntax errors rejected");
+		Document lifecycle = new Document(source);
+		DocumentUndoManagerRegistry.connect(lifecycle);
+		var lifecycleUndo = DocumentUndoManagerRegistry.getDocumentUndoManager(lifecycle);
+		lifecycleUndo.connect(lifecycle);
+		var lifecycleTx = new SpeciesDocumentEdit(lifecycle);
+		check(!lifecycleTx.apply(init.render(init.draft())) && !lifecycleUndo.undoable(), "Init no-op");
+		check(lifecycleTx.apply(toReflex) && lifecycle.get().equals(toReflex), "Init conversion applied");
+		lifecycleUndo.undo();
+		check(lifecycle.get().equals(source), "Single undo restores the init");
 		System.out.println("BehaviorSourceTest: " + checks + " checks passed");
 	}
 }

@@ -32,7 +32,7 @@ import gaml.compiler.ui.wizards.action.ActionBodyContext;
 import gaml.compiler.ui.wizards.species.SpeciesDraft;
 
 /**
- * Lossless GAML source adapter for one behaviour (reflex, state, task, plan, perceive, rule). Editing only replaces the
+ * Lossless GAML source adapter for one behaviour (reflex, init, abort, state, task, plan, perceive, rule). Editing only replaces the
  * tokens that changed (keyword, name, individual facet values, the exact text between the braces), removes deleted
  * facets and appends new ones at the end of the header; comments, other code and the facets' order are kept. Rendering
  * returns a complete snapshot, never an edit on live offsets.
@@ -72,16 +72,16 @@ public final class BehaviorSource {
 		} else {
 			behavior = smallest(root, offset, Statement.class, BehaviorSource::isBehavior);
 			if (behavior == null) throw new IllegalArgumentException(
-					"Place the cursor in a reflex, state, task, plan, perceive or rule declaration.");
+					"Place the cursor in a reflex, init, abort, state, task, plan, perceive or rule declaration.");
 			owner = behavior.eContainer() instanceof Block block && block.eContainer() instanceof FacetsAndBlock f ? f
 					: null;
 			original = read(behavior);
 		}
 	}
 
-	/** Whether the statement is a supported behaviour (init/abort blocks and other statements are not). */
+	/** Whether the statement is a supported behaviour (reflex, init, abort, state, task, plan, perceive, rule). */
 	public static boolean isBehavior(final Statement statement) {
-		if (statement instanceof S_Reflex) return "reflex".equals(statement.getKey());
+		if (statement instanceof S_Reflex) return BehaviorKind.of(statement.getKey()) != null;
 		if (statement instanceof S_Definition definition)
 			return BehaviorKind.of(keyword(statement)) != null;
 		return statement.eClass() == GamlPackage.Literals.STATEMENT && BehaviorKind.of(statement.getKey()) != null;
@@ -193,9 +193,23 @@ public final class BehaviorSource {
 
 	/** Names of the behaviours of the same kind declared directly in the owner, excluding the edited one. */
 	public Set<String> siblingNames(final BehaviorKind kind) {
+		return siblingNames(kind, false);
+	}
+
+	/**
+	 * Names of all the behaviours declared directly in the owner, whatever their kind, excluding the edited one. The
+	 * compiler keeps behaviours in one map by name: a second behaviour with the same name replaces the first one
+	 * (silently when the keywords differ, e.g. {@code init startup} and {@code abort startup}).
+	 */
+	public Set<String> siblingNames() {
+		return siblingNames(null, true);
+	}
+
+	private Set<String> siblingNames(final BehaviorKind kind, final boolean allKinds) {
 		Set<String> result = new TreeSet<>();
 		if (owner != null && owner.getBlock() != null) for (var statement : owner.getBlock().getStatements())
-			if (statement != behavior && isBehavior(statement) && BehaviorKind.of(keyword(statement)) == kind) {
+			if (statement != behavior && isBehavior(statement)
+					&& (allKinds || BehaviorKind.of(keyword(statement)) == kind)) {
 				try {
 					String name = read(statement).name();
 					if (!name.isEmpty()) result.add(name);
@@ -210,8 +224,9 @@ public final class BehaviorSource {
 	public String validationError(final BehaviorDraft draft) {
 		String error = draft.validationError();
 		if (error != null) return error;
-		if (!draft.name().isEmpty() && siblingNames(draft.kind()).contains(draft.name()))
-			return "A " + draft.kind().keyword() + " named " + draft.name() + " already exists here.";
+		if (!draft.name().isEmpty() && siblingNames().contains(draft.name()))
+			return "A behavior named " + draft.name() + " already exists here; it would replace or be replaced by this "
+					+ draft.kind().keyword() + ".";
 		return null;
 	}
 
@@ -241,6 +256,8 @@ public final class BehaviorSource {
 		patchName(draft, patches);
 		patchFacets(draft, patches);
 		patchBody(draft, patches);
+		// insertions at the same offset keep their order (e.g. a new name before new facets of an anonymous header)
+		java.util.Collections.reverse(patches);
 		patches.sort(Comparator.comparingInt(Patch::offset).reversed());
 		StringBuilder result = new StringBuilder(source);
 		for (Patch patch : patches) result.replace(patch.offset(), patch.offset() + patch.length(), patch.text());

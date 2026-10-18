@@ -170,7 +170,7 @@ public final class BehaviorWizardTest {
 			d = new Dialog(shell, empty, EnumSet.allOf(BehaviorKind.class), x -> null);
 			d.create();
 			Combo kind = (Combo) field(d, "Kind");
-			check(kind.getEnabled() && kind.getItemCount() == 6, "Six kinds offered on creation");
+			check(kind.getEnabled() && kind.getItemCount() == 8, "Eight kinds offered on creation");
 			check(field(d, "facet:when") instanceof Button, "Reflex 'when' as check box when absent");
 			toggle(d, "when", true);
 			select(d, BehaviorKind.TASK);
@@ -190,6 +190,28 @@ public final class BehaviorWizardTest {
 			((Text) field(d, "facet:target")).setText("wolf");
 			check(d.ok() && code.getEditable() && d.closed(), "Perceive has code");
 			check(d.accept() && d.getResult().kind() == BehaviorKind.PERCEIVE, "Creation accepted");
+			d.close();
+
+			// ---- lifecycle conversion (reflex / init / abort): everything kept, unchanged round trip is a no-op
+			d = new Dialog(shell, reflex, EnumSet.copyOf(reflex.kind().convertibleKinds()), x -> null);
+			d.create();
+			kind = (Combo) field(d, "Kind");
+			check(kind.getEnabled() && List.of(kind.getItems()).equals(List.of("reflex", "init", "abort")),
+					"Lifecycle kinds offered when editing a reflex: " + List.of(kind.getItems()));
+			select(d, BehaviorKind.INIT);
+			check(d.ok() && d.signature().startsWith("init move when: ") && d.closed(), "Init signature: " + d.signature());
+			select(d, BehaviorKind.ABORT);
+			check(d.signature().startsWith("abort move when: "), "Abort signature: " + d.signature());
+			((Text) field(d, "Name")).setText("");
+			check(d.ok() && d.signature().startsWith("abort when: "), "Anonymous abort allowed");
+			check(d.accept() && d.getResult().equals(new BehaviorDraft(BehaviorKind.ABORT, "", reflex.facets(), reflex.body())),
+					"Abort keeps facets and code: " + d.getResult());
+			d.close();
+			d = new Dialog(shell, reflex, EnumSet.copyOf(BehaviorKind.LIFECYCLE), x -> null);
+			d.create();
+			select(d, BehaviorKind.ABORT);
+			select(d, BehaviorKind.REFLEX);
+			check(d.accept() && d.getResult() == reflex, "Switching back is a no-op");
 			d.close();
 
 			// ---- cancel

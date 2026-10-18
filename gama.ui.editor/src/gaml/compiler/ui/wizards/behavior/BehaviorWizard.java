@@ -161,7 +161,7 @@ public class BehaviorWizard extends TitleAreaDialog {
 		kindCombo.select(kinds.indexOf(kind));
 		kindCombo.setEnabled(kinds.size() > 1);
 		field(kindCombo, "Kind", 110);
-		WizardWidgets.label(header, "Name", "Name of the behavior; optional for reflexes, plans, perceives and rules.");
+		WizardWidgets.label(header, "Name", "Name of the behavior; optional for reflexes, init, abort, plans, perceives and rules.");
 		name = new Text(header, SWT.BORDER | SWT.SINGLE);
 		name.setText(original.name());
 		field(name, "Name", 180);

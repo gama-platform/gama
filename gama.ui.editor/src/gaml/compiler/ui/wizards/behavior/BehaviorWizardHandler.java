@@ -52,7 +52,7 @@ public final class BehaviorWizardHandler {
 			var source = new BehaviorSource(transaction.snapshot(), offset, parser, create);
 			URI uri = isolatedUri(editor);
 			var dialog = new BehaviorWizard(shell, source.draft(),
-					create ? EnumSet.allOf(BehaviorKind.class) : EnumSet.of(source.draft().kind()), draft -> {
+					create ? EnumSet.allOf(BehaviorKind.class) : source.draft().kind().convertibleKinds(), draft -> {
 						if (!transaction.isCurrent()) return "The document changed. Cancel and reopen the behavior form.";
 						return source.validationError(draft);
 					}, draft -> source.bodyContext(draft, uri));

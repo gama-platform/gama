@@ -32,8 +32,10 @@ public record BehaviorFacet(String name, String type, boolean required, String d
 	private static final String PREDICATE = "predicate";
 
 	/** Copies of the @facets declarations (ReflexStatement, FsmStateStatement, ...), used without the registry. */
+	private static final List<BehaviorFacet> REFLEX = List.of(f("when", "bool", false, "an expression that evaluates a boolean, the condition to fulfill in order to execute the statements embedded in the reflex."));
+
 	private static final Map<BehaviorKind, List<BehaviorFacet>> DECLARED = Map.of(
-			BehaviorKind.REFLEX, List.of(f("when", "bool", false, "an expression that evaluates a boolean, the condition to fulfill in order to execute the statements embedded in the reflex.")),
+			BehaviorKind.REFLEX, REFLEX, BehaviorKind.INIT, REFLEX, BehaviorKind.ABORT, REFLEX,
 			BehaviorKind.STATE, List.of(f("initial", "bool", false, "specifies whether the state is the initial one (default value = false)"),
 					f("final", "bool", false, "specifies whether the state is a final one (i.e. there is no transition from this state to another state) (default value= false)")),
 			BehaviorKind.TASK, List.of(f("weight", "float", true, "the priority level of the task")),
