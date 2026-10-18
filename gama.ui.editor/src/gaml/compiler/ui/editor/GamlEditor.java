@@ -1092,14 +1092,20 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 			UICleanupTasks.RearrangeMenus.changeIcon(menu, item, item.getId());
 		}
 		boolean onAction = injector.getInstance(gaml.compiler.ui.wizards.action.ActionWizardHandler.class).canEdit(this);
+		boolean onBehavior = !onAction
+				&& injector.getInstance(gaml.compiler.ui.wizards.behavior.BehaviorWizardHandler.class).canEdit(this);
+		boolean onExperiment = !onAction && !onBehavior && injector
+				.getInstance(gaml.compiler.ui.wizards.experiment.ExperimentWizardHandler.class).canEdit(this);
 		Action editSpecies = new Action("Edit...") {
 			@Override
 			public void run() {
 				if (onAction) openActionWizard(false);
+				else if (onBehavior) openBehaviorWizard(false);
+				else if (onExperiment) openExperimentWizard(false);
 				else openSpeciesWizard(false);
 			}
 		};
-		editSpecies.setEnabled(onAction || injector.getInstance(gaml.compiler.ui.wizards.species.SpeciesWizardHandler.class)
+		editSpecies.setEnabled(onAction || onBehavior || onExperiment || injector.getInstance(gaml.compiler.ui.wizards.species.SpeciesWizardHandler.class)
 				.canEdit(this));
 		IContributionItem[] existingItems = menu.getItems();
 		menu.removeAll();
@@ -1134,6 +1140,14 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 
 	public void openActionWizard(final boolean create) {
 		injector.getInstance(gaml.compiler.ui.wizards.action.ActionWizardHandler.class).open(this, create);
+	}
+
+	public void openBehaviorWizard(final boolean create) {
+		injector.getInstance(gaml.compiler.ui.wizards.behavior.BehaviorWizardHandler.class).open(this, create);
+	}
+
+	public void openExperimentWizard(final boolean create) {
+		injector.getInstance(gaml.compiler.ui.wizards.experiment.ExperimentWizardHandler.class).open(this, create);
 	}
 
 	public void openGridWizard() {

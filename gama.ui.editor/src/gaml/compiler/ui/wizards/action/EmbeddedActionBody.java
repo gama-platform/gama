@@ -20,7 +20,7 @@ import gama.ui.editor.internal.EditorActivator;
  * Embedded GAML editor showing only the action code. The surrounding synthetic model (no imports) gives correct
  * parsing and highlighting; automatic validation is disabled so the compiler never runs on keystrokes.
  */
-final class EmbeddedActionBody implements ActionWizard.BodyEditor {
+public final class EmbeddedActionBody implements ActionWizard.BodyEditor {
 
 	private static final IResourceValidator NO_VALIDATION = (resource, mode, indicator) -> List.of();
 
@@ -32,7 +32,11 @@ final class EmbeddedActionBody implements ActionWizard.BodyEditor {
 		this.access = access;
 	}
 
-	static EmbeddedActionBody create(final Composite parent, final ActionBodyContext context, final String initial) {
+	/**
+	 * Embeds an editor showing only {@code initial} between the hidden {@code context} prefix and suffix. Returns null
+	 * when the GAML UI is not running. Shared by the declaration wizards having a body (actions, behaviours).
+	 */
+	public static EmbeddedActionBody create(final Composite parent, final ActionBodyContext context, final String initial) {
 		EditorActivator activator = EditorActivator.getInstance();
 		if (activator == null) return null;
 		var injector = activator.getInjector(EditorActivator.GAML_COMPILER_GAML);

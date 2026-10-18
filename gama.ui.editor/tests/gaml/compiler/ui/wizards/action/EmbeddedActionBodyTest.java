@@ -28,13 +28,18 @@ public final class EmbeddedActionBodyTest {
 
 	private static void body(final Shell shell, final Injector injector, final String initial,
 			final boolean reproduce) throws Exception {
+		body(shell, injector, initial, reproduce, ActionBodyContext.standalone(ActionDraft.empty()),
+				ActionDraft.empty().header());
+	}
+
+	private static void body(final Shell shell, final Injector injector, final String initial, final boolean reproduce,
+			final ActionBodyContext context, final String header) throws Exception {
 		var viewer = new XtextSourceViewer(shell, null, null, false, SWT.BORDER | SWT.MULTI);
 		var tokens = new DocumentTokenSource();
 		tokens.setLexer(injector.getProvider(org.eclipse.xtext.parser.antlr.Lexer.class));
 		var document = new XtextDocument(tokens, null);
 		viewer.setUndoManager(new TextViewerUndoManager(20));
 		var resources = injector.getInstance(XtextResourceSet.class);
-		var context = ActionBodyContext.standalone(ActionDraft.empty());
 		var editor = new EmbeddedEditor(document, viewer, null, () -> {
 			// Parsing is real; linking is excluded because the GAMA workspace requires a running workbench.
 			var resource = new XtextResource(context.uri()) {
@@ -57,7 +62,7 @@ public final class EmbeddedActionBodyTest {
 			check(body.text().equals(initial), "Editable part must preserve the exact initial body");
 			check(viewer.getVisibleRegion().getLength() == initial.length(), "Visible region has body length only");
 			check(viewer.getVisibleRegion().getOffset() > context.prefix().length(), "Hidden prefix ends on its own line");
-			check(document.get().contains(ActionDraft.empty().header()), "Signature remains in the hidden parsing context");
+			check(document.get().contains(header), "Signature remains in the hidden parsing context");
 			check(document.get().endsWith(context.suffix()), "Closing braces remain in the hidden parsing context");
 			check(document.get(viewer.getVisibleRegion().getOffset(), initial.length()).equals(initial),
 					"Visible document region contains only body bytes");
@@ -87,6 +92,14 @@ public final class EmbeddedActionBodyTest {
 			for (String initial : List.of("", "write 'hello';", "\n\twrite 'hello';\n", "\r\n\twrite 'hello';\r\n",
 					"// action my_action() { must remain a comment }\nwrite 'braces { }';"))
 				body(shell, injector, initial, false);
+			// The behaviour wizard embeds the same editor with its own hidden header (reflex, state, plan...).
+			for (var kind : List.of(gaml.compiler.ui.wizards.behavior.BehaviorKind.REFLEX,
+					gaml.compiler.ui.wizards.behavior.BehaviorKind.STATE, gaml.compiler.ui.wizards.behavior.BehaviorKind.PLAN)) {
+				var draft = gaml.compiler.ui.wizards.behavior.BehaviorDraft.empty(kind);
+				for (String initial : List.of("", "\n\twrite 'hello';\n"))
+					body(shell, injector, initial, false, gaml.compiler.ui.wizards.behavior.BehaviorWizard.standalone(draft),
+							draft.header() + " {");
+			}
 			System.out.println("EmbeddedActionBodyTest: " + checks + " checks passed");
 		} finally {
 			shell.dispose();
