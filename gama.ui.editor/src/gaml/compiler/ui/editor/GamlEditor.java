@@ -1091,11 +1091,15 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 			// DEBUG.OUT("Item " + item);
 			UICleanupTasks.RearrangeMenus.changeIcon(menu, item, item.getId());
 		}
+		boolean onAction = injector.getInstance(gaml.compiler.ui.wizards.action.ActionWizardHandler.class).canEdit(this);
 		Action editSpecies = new Action("Edit...") {
 			@Override
-			public void run() { openSpeciesWizard(false); }
+			public void run() {
+				if (onAction) openActionWizard(false);
+				else openSpeciesWizard(false);
+			}
 		};
-		editSpecies.setEnabled(injector.getInstance(gaml.compiler.ui.wizards.species.SpeciesWizardHandler.class)
+		editSpecies.setEnabled(onAction || injector.getInstance(gaml.compiler.ui.wizards.species.SpeciesWizardHandler.class)
 				.canEdit(this));
 		IContributionItem[] existingItems = menu.getItems();
 		menu.removeAll();
@@ -1126,6 +1130,10 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 
 	public void openSpeciesWizard(final boolean create) {
 		injector.getInstance(gaml.compiler.ui.wizards.species.SpeciesWizardHandler.class).open(this, create);
+	}
+
+	public void openActionWizard(final boolean create) {
+		injector.getInstance(gaml.compiler.ui.wizards.action.ActionWizardHandler.class).open(this, create);
 	}
 
 	public void openGridWizard() {
