@@ -4,7 +4,8 @@
  * State, Task, Plan, Perceive and Rule Editors are diagram-only entry points, locked to the draft's kind even when a
  * caller supplies a broader selectable-kind set. Both BehaviorWizard constructors retain their signatures; the
  * constructor without a selectable-kind set offers the draft's convertible kinds.
- * Lifecycle headers show Kind, Name and When on one row. When is always an inline GAML expression displaying true
+ * Lifecycle headers show Name, Kind and When on one row, following the common Name-first identity layout.
+ * When is always an inline GAML expression displaying true
  * when absent. Untouched omitted or explicit conditions are retained; an edited true or empty condition is omitted.
  *
  * All editors retain the same facet, body, validation and transactional result handling. BehaviorSource continues to

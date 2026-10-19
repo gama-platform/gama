@@ -194,15 +194,15 @@ public final class SpeciesWizardTest {
 		check(((Text) creation.field("Model name")).getText().equals("_2preys"), "File name keeps syncing model name");
 		check(creation.field("Parent") == null && creation.field("Parallel") == null && creation.field("Mirrors") == null,
 				"Model has no Parent, Mirrors or Parallel");
-		check(creation.field("Skills") != null && creation.field("Skills").getParent() == creation.field("Control").getParent()
-				&& ((ExpandableComposite) creation.field("Advanced")).getClient() == creation.field("Skills").getParent(),
-				"Model skills in Advanced, on the Control row");
-		var advancedRow = creation.field("Skills").getParent().getChildren();
-		check(java.util.Arrays.asList(advancedRow).indexOf(creation.field("Skills"))
-				< java.util.Arrays.asList(advancedRow).indexOf(creation.field("Control")), "Skills before Control");
+		check(creation.field("Skills").getParent() == creation.field("Control").getParent()
+				&& "Capabilities".equals(creation.field("Skills").getParent().getData("wizard.section")),
+				"Model Skills and Control share a row");
+		check(creation.field("Skills").getBounds().x < creation.field("Control").getBounds().x
+				&& Math.abs(creation.field("Skills").toDisplay(0, 0).y - creation.field("Control").toDisplay(0, 0).y) < 8,
+				"Model Skills then Control aligned on one line");
 		check(!((ExpandableComposite) creation.field("Advanced")).isExpanded(), "Model Advanced collapsed");
 		check(creation.field("Control") != null && creation.field("Schedules") != null
-				&& creation.field("Frequency") != null, "Model Advanced has control and scheduling");
+				&& creation.field("Frequency") != null, "Model retains control and advanced scheduling");
 		check(((ExpandableComposite) creation.field("Attributes")).isExpanded(), "Model attributes open");
 		var docSection = (ExpandableComposite) creation.field("Documentation");
 		check(!docSection.isExpanded(), "Documentation collapsed");
@@ -478,7 +478,8 @@ public final class SpeciesWizardTest {
 			check(((Text) header(dialog, "Schedules")).getText().isEmpty()
 					&& ((Text) header(dialog, "Frequency")).getText().isEmpty(), "Scheduling fields empty by default");
 			check(!advanced(dialog).isExpanded(), "Advanced collapsed initially");
-			check(!header(dialog, "Control").isVisible(), "Advanced controls hidden initially");
+			check("Capabilities".equals(header(dialog, "Control").getParent().getData("wizard.section")),
+					"Control belongs to shared capabilities row, not Advanced");
 			check(!header(dialog, "Parallel").isVisible(), "Parallel is hidden inside Advanced");
 			check(field(dialog.getShell(), "species.attributes", true) != null,
 					"Attributes appear directly in the structure form");
@@ -500,10 +501,13 @@ public final class SpeciesWizardTest {
 			check(Math.abs(header(dialog, "Name").toDisplay(0, 0).y
 							- header(dialog, "Virtual").toDisplay(0, 0).y) < 8,
 					"Name and Virtual share the first row");
-			check(Math.abs(header(dialog, "Parent").toDisplay(0, 0).y
-					- (header(dialog, "Skills").toDisplay(0, 0).y + header(dialog, "Skills").getSize().y / 2)
-					+ header(dialog, "Parent").getSize().y / 2) < 8,
-					"Parent and Skills share the second row");
+			check(header(dialog, "Parent").getParent() == header(dialog, "Name").getParent()
+					&& header(dialog, "Name").getBounds().x < header(dialog, "Parent").getBounds().x
+					&& header(dialog, "Parent").getBounds().x < header(dialog, "Virtual").getBounds().x,
+					"Name, Parent and Virtual share the first row in order");
+			check(header(dialog, "Skills").getParent() == header(dialog, "Control").getParent()
+					&& Math.abs(header(dialog, "Skills").toDisplay(0, 0).y - header(dialog, "Control").toDisplay(0, 0).y) < 8,
+					"Skills and Control are aligned on the same row");
 			check(contains(attributes(dialog), "location") && contains(attributes(dialog), "index"), "Base built-in attributes visible");
 			check(!field(dialog.getShell(), "species.attribute.field", 5).getVisible()
 					&& !field(dialog.getShell(), "species.attribute.field", 6).getVisible(),

@@ -7,11 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.accessibility.AccessibleAdapter;
-import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -30,8 +26,8 @@ import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import gama.api.additions.registries.GamaSkillRegistry;
 import gama.api.gaml.types.Types;
 
-/** Detached species settings. Editor adapters validate on OK and own the undoable apply. */
-public class SpeciesWizard extends TitleAreaDialog {
+/** Detached species settings. Editor adapters validate on explicit request/acceptance and own the undoable apply. */
+public class SpeciesWizard extends DeclarationWizard<SpeciesDraft> {
 
 	public enum Kind { SPECIES, GRID, MODEL, CLASS }
 
@@ -117,34 +113,16 @@ public class SpeciesWizard extends TitleAreaDialog {
 		this.editBody = editBody;
 		this.parentNames = List.copyOf(parentNames);
 		selectedSkills.addAll(draft.skills());
-		setShellStyle(getShellStyle() | SWT.RESIZE);
 	}
 
 	@Override
-	protected Control createDialogArea(final Composite parent) {
-		Composite area = (Composite) super.createDialogArea(parent);
-		getShell().setText(kind == Kind.GRID ? "Grid" : kind == Kind.MODEL ? "Model" : kind == Kind.CLASS ? "Class" : "Species");
-		Composite form = createForm(area, new FormHost() {
-			@Override
-			public void setTitle(final String title) { SpeciesWizard.this.setTitle(title); }
-
-			@Override
-			public void setMessage(final String message) { SpeciesWizard.this.setMessage(message); }
-
-			@Override
-			public void setErrorMessage(final String error) { SpeciesWizard.this.setErrorMessage(error); }
-
-			@Override
-			public void setComplete(final boolean complete) {
-				Button ok = getButton(IDialogConstants.OK_ID);
-				if (ok != null) ok.setEnabled(complete);
-			}
-
-			@Override
-			public void relayout() { getShell().pack(); }
-		});
-		form.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		return area;
+	protected String dialogTitle() {
+		return switch (kind) {
+			case GRID -> "Grid";
+			case MODEL -> "Model";
+			case CLASS -> "Class";
+			default -> "Species";
+		};
 	}
 
 	/**
@@ -165,15 +143,18 @@ public class SpeciesWizard extends TitleAreaDialog {
 
 		if (kind == Kind.MODEL) createModelHeader(form);
 		else {
-			Composite basic = composite(form, 4);
-			basic.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+			Composite basic = WizardWidgets.row(form, 6, "Identity");
 			field(basic, "Name", original.name().isBlank() ? kind == Kind.GRID ? "my_grid"
 					: kind == Kind.CLASS ? "my_class" : "my_species" : original.name(), null);
-			booleanField(basic, "Virtual", "virtual", false);
 			String parentName = original.parent(kind == Kind.CLASS ? "object" : "agent");
 			field(basic, "Parent", parentName, speciesChoices(parentName, false));
-			if (kind == Kind.CLASS) ((GridData) header.get("parent").getLayoutData()).horizontalSpan = 3;
-			else createSkills(basic);
+			booleanField(basic, "Virtual", "virtual", false);
+		}
+		if (kind != Kind.CLASS) {
+			Composite capabilities = WizardWidgets.row(form, 4, "Capabilities");
+			createSkills(capabilities);
+			field(capabilities, "Control", facet("control", "reflex").trim(),
+					withCurrent(possibleControlNames(), facet("control", "reflex").trim()));
 		}
 		if (kind == Kind.GRID) {
 			Composite dimensions = composite(form, 6);
@@ -191,22 +172,17 @@ public class SpeciesWizard extends TitleAreaDialog {
 			ExpandableComposite advanced = new ExpandableComposite(form, SWT.NONE,
 					ExpandableComposite.TWISTIE | ExpandableComposite.CLIENT_INDENT);
 			advanced.setText("Advanced");
-			advanced.setToolTipText(kind == Kind.MODEL ? "Expand to configure skills, the control architecture and scheduling."
-					: "Expand to configure control, mirroring, scheduling and concurrency.");
+			advanced.setToolTipText(kind == Kind.MODEL ? "Expand to configure scheduling."
+					: "Expand to configure mirroring, scheduling, concurrency and grid options where applicable.");
 			advanced.setData("species.field", "Advanced");
 			advanced.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 			accessible(advanced, "Advanced");
 			Composite advancedSettings = composite(advanced, 4);
 			advanced.setClient(advancedSettings);
 			advanced.setExpanded(false);
-			if (kind == Kind.MODEL) createSkills(advancedSettings);
-			field(advancedSettings, "Control", facet("control", "reflex").trim(),
-					withCurrent(possibleControlNames(), facet("control", "reflex").trim()));
 			if (kind == Kind.SPECIES) {
 				field(advancedSettings, "Mirrors", facet("mirrors", "").trim(),
 						speciesChoices(facet("mirrors", "").trim(), true));
-			} else if (kind == Kind.GRID) {
-				((GridData) header.get("control").getLayoutData()).horizontalSpan = 3;
 			}
 			Composite scheduling = composite(advancedSettings, kind == Kind.MODEL ? 4 : 6);
 			((GridLayout) scheduling.getLayout()).marginWidth = 0;
@@ -275,6 +251,15 @@ public class SpeciesWizard extends TitleAreaDialog {
 	}
 
 	private void createModelHeader(final Composite form) {
+		Composite basic = WizardWidgets.row(form, 2, "Identity");
+		String modelName = original.name().isBlank() && location != null ? modelNameFor(location.fileName()) : original.name();
+		Text name = WizardWidgets.textField(basic, "Name", modelName, explanation("Model name"),
+				"species.field", "Model name", 180);
+		header.put("name", name);
+		name.addModifyListener(event -> {
+			if (!syncingModelName) modelNameEdited = true;
+			changed();
+		});
 		if (location != null) {
 			Composite place = composite(form, 5);
 			place.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
@@ -300,13 +285,6 @@ public class SpeciesWizard extends TitleAreaDialog {
 				} finally { syncingModelName = false; }
 			});
 		}
-		Composite basic = composite(form, 4);
-		basic.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		field(basic, "Model name", original.name().isBlank() && location != null ? modelNameFor(location.fileName())
-				: original.name(), null);
-		header.put("name", header.remove("model name"));
-		((Text) header.get("name")).addModifyListener(event -> { if (!syncingModelName) modelNameEdited = true; });
-		((GridData) header.get("name").getLayoutData()).horizontalSpan = 3;
 	}
 
 	/** Model identifier derived from a file name, as the former New Model File wizard did. */
@@ -358,14 +336,7 @@ public class SpeciesWizard extends TitleAreaDialog {
 	protected String locationError(final ModelLocation proposed) { return null; }
 
 	private Composite composite(final Composite parent, final int columns) {
-		Composite result = new Composite(parent, SWT.NONE);
-		GridLayout layout = new GridLayout(columns, false);
-		layout.marginWidth = 6;
-		layout.marginHeight = 4;
-		layout.horizontalSpacing = 8;
-		layout.verticalSpacing = 5;
-		result.setLayout(layout);
-		return result;
+		return WizardWidgets.composite(parent, columns);
 	}
 
 	private void gridOption(final Composite parent, final String label, final String facet) {
@@ -373,7 +344,7 @@ public class SpeciesWizard extends TitleAreaDialog {
 		if ("use_individual_shapes".equals(facet))
 			header.get(facet).setToolTipText(explanation(label)
 					+ " Wizard initial value: false. Runtime default: true (or inherited)."
-					+ " An absent value is saved explicitly as false on OK; Cancel leaves it unchanged."
+					+ " An absent value is saved explicitly as false on acceptance; Cancel leaves it unchanged."
 					+ " Existing source expressions are kept until this checkbox is edited.");
 	}
 
@@ -399,27 +370,15 @@ public class SpeciesWizard extends TitleAreaDialog {
 			final List<String> choices) {
 		Control control;
 		if (value instanceof Boolean bool) {
-			Button button = new Button(parent, SWT.CHECK);
-			button.setText(WizardWidgets.labelText(label));
-			button.setSelection(bool);
-			button.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
-			control = button;
+			control = WizardWidgets.checkbox(parent, label, bool, explanation(label), "species.field", label);
 		} else {
-			label(parent, label, explanation(label));
 			if (choices != null) {
-				Combo combo = new Combo(parent, SWT.READ_ONLY | SWT.DROP_DOWN);
-				combo.setItems(choices.toArray(String[]::new));
-				combo.select(choices.indexOf(value));
-				control = combo;
+				control = WizardWidgets.choiceField(parent, label, value.toString(), choices, false,
+						explanation(label), "species.field", label, 180);
 			} else {
-				Text text = new Text(parent, SWT.BORDER | SWT.SINGLE);
-				text.setText(value.toString());
-				control = text;
+				control = WizardWidgets.textField(parent, label, value.toString(), explanation(label),
+						"species.field", label, 180);
 			}
-			GridData data = new GridData(SWT.FILL, SWT.CENTER, true, false);
-			data.widthHint = 180;
-			data.minimumWidth = 80;
-			control.setLayoutData(data);
 		}
 		accessible(control, label);
 		control.setToolTipText(explanation(label));
@@ -427,10 +386,7 @@ public class SpeciesWizard extends TitleAreaDialog {
 	}
 
 	private Label label(final Composite parent, final String text, final String description) {
-		Label label = new Label(parent, SWT.NONE);
-		label.setText(WizardWidgets.labelText(text) + ":");
-		label.setToolTipText(description);
-		return label;
+		return WizardWidgets.label(parent, text, description);
 	}
 
 	private String explanation(final String name) {
@@ -569,26 +525,11 @@ public class SpeciesWizard extends TitleAreaDialog {
 	}
 
 	private Button action(final Composite parent, final String text, final String description) {
-		Button button = new Button(parent, SWT.PUSH);
-		button.setText(WizardWidgets.labelText(text));
-		GridData data = new GridData(SWT.FILL, SWT.CENTER, false, false);
-		org.eclipse.swt.graphics.GC gc = new org.eclipse.swt.graphics.GC(button);
-		gc.setFont(button.getFont());
-		int width = org.eclipse.jface.dialogs.Dialog.convertHorizontalDLUsToPixels(gc.getFontMetrics(),
-				IDialogConstants.BUTTON_WIDTH);
-		gc.dispose();
-		data.widthHint = Math.max(width, button.computeSize(SWT.DEFAULT, SWT.DEFAULT, true).x);
-		button.setLayoutData(data);
-		button.setToolTipText(description);
-		accessible(button, description);
-		return button;
+		return WizardWidgets.button(parent, text, description);
 	}
 
 	private void accessible(final Control control, final String label) {
-		control.getAccessible().addAccessibleListener(new AccessibleAdapter() {
-			@Override
-			public void getName(final AccessibleEvent event) { event.result = label; }
-		});
+		WizardWidgets.accessible(control, label);
 	}
 
 	private String value(final String key) {
@@ -672,12 +613,6 @@ public class SpeciesWizard extends TitleAreaDialog {
 		validateDraft();
 	}
 
-	@Override
-	protected void createButtonsForButtonBar(final Composite parent) {
-		super.createButtonsForButtonBar(parent);
-		validateDraft();
-	}
-
 	private boolean validateDraft() {
 		if (!ready) return false;
 		SpeciesDraft draft = readDraft();
@@ -736,32 +671,29 @@ public class SpeciesWizard extends TitleAreaDialog {
 						: doc.replace("\r\n", "\n").replace('\r', '\n'));
 	}
 
-	/** Validates locally and with the adapter validator; on success stores the results. Used for OK and wizard Finish. */
-	public boolean accept() {
+	/** Runs local and contextual adapter checks without accepting or applying a result. */
+	public boolean validateNow() {
 		if (!validateDraft()) return false;
-		SpeciesDraft draft = readDraft();
-		String error = validator.apply(draft);
-		if (error != null) {
-			host.setErrorMessage(error);
-			return false;
-		}
-		result = draft;
+		String error = validator.apply(readDraft());
+		host.setErrorMessage(error);
+		return error == null;
+	}
+
+	/** Validates locally and with the adapter validator; on success stores the results. */
+	public boolean accept() {
+		clearResult();
+		if (!validateNow()) return false;
+		result = readDraft();
 		documentationResult = readDocumentation();
 		locationResult = readLocation();
 		return true;
 	}
 
 	@Override
-	protected void okPressed() {
-		if (accept()) super.okPressed();
-	}
-
-	@Override
-	protected void cancelPressed() {
+	protected void clearResult() {
 		result = null;
 		documentationResult = null;
 		locationResult = null;
-		super.cancelPressed();
 	}
 
 	public SpeciesDraft getResult() { return result; }

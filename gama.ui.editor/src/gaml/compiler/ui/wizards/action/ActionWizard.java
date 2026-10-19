@@ -7,12 +7,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.accessibility.AccessibleAdapter;
-import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.layout.GridData;
@@ -29,15 +25,15 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
 import gaml.compiler.ui.wizards.species.SpeciesWizard.FormHost;
+import gaml.compiler.ui.wizards.species.DeclarationWizard;
+import gaml.compiler.ui.wizards.species.WizardWidgets;
 
 /**
  * Detached action settings: name, return type, virtual, arguments and code. Code is edited in an embedded,
  * syntax-highlighted GAML editor and is enabled only for non-virtual actions; its text is kept across Virtual toggles.
- * Compilation runs only on Validate and OK, never on keystrokes. Editor adapters own the undoable apply.
+ * Compilation runs only on Validate and acceptance, never on keystrokes. Editor adapters own the undoable apply.
  */
-public class ActionWizard extends TitleAreaDialog {
-
-	public static final int VALIDATE_ID = IDialogConstants.CLIENT_ID + 1;
+public class ActionWizard extends DeclarationWizard<ActionDraft> {
 
 	/** The code area. The default implementation embeds the GAML editor, falling back to plain text without UI. */
 	protected interface BodyEditor {
@@ -77,11 +73,11 @@ public class ActionWizard extends TitleAreaDialog {
 	 * @param draft
 	 *            initial values; returned unchanged (same instance) when the form is not modified
 	 * @param validator
-	 *            adapter validation run on Validate/OK after local and contextual checks; returns an error or null
+	 *            adapter validation run on Validate/acceptance after local and contextual checks; returns an error or null
 	 * @param typeNames
 	 *            proposed types for the return type ({@code action} is always first) and for arguments
 	 * @param bodyContext
-	 *            contextual source for code verification, called only on Validate/OK for valid non-virtual drafts;
+	 *            contextual source for code verification, called only on Validate/acceptance for valid non-virtual drafts;
 	 *            null uses a minimal synthetic model
 	 */
 	public ActionWizard(final Shell shell, final ActionDraft draft, final Function<ActionDraft, String> validator,
@@ -92,67 +88,31 @@ public class ActionWizard extends TitleAreaDialog {
 		this.typeNames = List.copyOf(typeNames);
 		this.bodyContext = bodyContext;
 		arguments.addAll(draft.arguments());
-		setShellStyle(getShellStyle() | SWT.RESIZE);
 	}
 
 	@Override
-	protected Control createDialogArea(final Composite parent) {
-		Composite area = (Composite) super.createDialogArea(parent);
-		getShell().setText("Action");
-		Composite form = createForm(area, new FormHost() {
-			@Override
-			public void setTitle(final String title) { ActionWizard.this.setTitle(title); }
+	protected String dialogTitle() { return "Action"; }
 
-			@Override
-			public void setMessage(final String message) { ActionWizard.this.setMessage(message); }
-
-			@Override
-			public void setErrorMessage(final String error) { ActionWizard.this.setErrorMessage(error); }
-
-			@Override
-			public void setComplete(final boolean complete) {
-				Button ok = getButton(IDialogConstants.OK_ID);
-				if (ok != null) ok.setEnabled(complete);
-				Button validate = getButton(VALIDATE_ID);
-				if (validate != null) validate.setEnabled(complete);
-			}
-
-			@Override
-			public void relayout() { getShell().pack(); }
-		});
-		form.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		return area;
-	}
-
-	/** Builds the form in another container; use {@link #accept()} instead of OK. */
+	/** Builds the form in another container; use {@link #accept()} instead of the dialog's primary button. */
 	public Composite createForm(final Composite parent, final FormHost formHost) {
 		host = Objects.requireNonNull(formHost);
 		host.setTitle("Action settings");
-		host.setMessage("Define the action signature and its code. Code is verified on Validate and OK.");
+		host.setMessage("Define the action signature and its code. Code is verified on Validate and acceptance.");
 		Composite form = composite(parent, 1);
 		form.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-		Composite header = composite(form, 5);
-		header.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		label(header, "Name", "Name of the action, used to call it with do or as a function.");
-		name = new Text(header, SWT.BORDER | SWT.SINGLE);
-		name.setText(original.name());
-		field(name, "Name", 160);
-		label(header, "Returns", "Type of the returned value. 'action' means that the action returns nothing.");
-		returnType = new Combo(header, SWT.DROP_DOWN);
+		Composite header = WizardWidgets.row(form, 6, "Identity");
+		name = WizardWidgets.textField(header, "Name", original.name(),
+				"Name of the action, used to call it with do or as a function.", "action.field", "Name", 160);
 		List<String> returns = new ArrayList<>();
 		returns.add(ActionDraft.NO_RETURN);
 		for (String type : typeNames) if (!returns.contains(type)) returns.add(type);
 		if (!returns.contains(original.returnType())) returns.add(original.returnType());
-		returnType.setItems(returns.toArray(String[]::new));
-		returnType.setText(original.returnType());
-		field(returnType, "Returns", 130);
-		virtual = new Button(header, SWT.CHECK);
-		virtual.setText(gaml.compiler.ui.wizards.species.WizardWidgets.labelText("Virtual"));
-		virtual.setSelection(original.virtual());
-		virtual.setToolTipText("A virtual action has no code: it must be redefined by the children of its owner. Default: false.");
-		virtual.setData("action.field", "Virtual");
-		accessible(virtual, "Virtual");
+		returnType = WizardWidgets.choiceField(header, "Returns", original.returnType(), returns, true,
+				"Type of the returned value. 'action' means that the action returns nothing.", "action.field", "Returns", 130);
+		virtual = WizardWidgets.checkbox(header, "Virtual", original.virtual(),
+				"A virtual action has no code: it must be redefined by the children of its owner. Default: false.",
+				"action.field", "Virtual");
 
 		createArguments(form);
 
@@ -332,21 +292,6 @@ public class ActionWizard extends TitleAreaDialog {
 		};
 	}
 
-	@Override
-	protected void createButtonsForButtonBar(final Composite parent) {
-		createButton(parent, VALIDATE_ID, "Validate", false)
-				.setToolTipText("Compile the action in its context and report errors.");
-		super.createButtonsForButtonBar(parent);
-		changed();
-	}
-
-	@Override
-	protected void buttonPressed(final int buttonId) {
-		if (buttonId == VALIDATE_ID) {
-			if (validateNow()) host.setMessage("No errors found.");
-		} else super.buttonPressed(buttonId);
-	}
-
 	/** Current form values; the initial instance when nothing changed. */
 	public ActionDraft readDraft() {
 		ActionDraft draft = new ActionDraft(name.getText().trim(), returnType.getText().trim(), virtual.getSelection(),
@@ -438,6 +383,7 @@ public class ActionWizard extends TitleAreaDialog {
 
 	/** Validates (locally, contextually and with the adapter); on success stores the result. */
 	public boolean accept() {
+		result = null;
 		if (readDraft() == original && original.validationError() == null) {
 			// Unchanged: no recompilation of pre-existing code; the adapter still checks staleness/conflicts.
 			String error = validator.apply(original);
@@ -452,58 +398,30 @@ public class ActionWizard extends TitleAreaDialog {
 	}
 
 	@Override
-	protected void okPressed() {
-		if (accept()) super.okPressed();
-	}
-
-	@Override
-	protected void cancelPressed() {
+	protected void clearResult() {
 		result = null;
-		super.cancelPressed();
 	}
 
 	/** The accepted draft (the initial instance when unchanged), or null after Cancel or before OK. */
 	public ActionDraft getResult() { return result; }
 
 	private Composite composite(final Composite parent, final int columns) {
-		Composite result = new Composite(parent, SWT.NONE);
-		GridLayout layout = new GridLayout(columns, false);
-		layout.marginWidth = 6;
-		layout.marginHeight = 4;
-		layout.horizontalSpacing = 8;
-		layout.verticalSpacing = 5;
-		result.setLayout(layout);
-		return result;
+		return WizardWidgets.composite(parent, columns);
 	}
 
 	private void label(final Composite parent, final String text, final String description) {
-		Label label = new Label(parent, SWT.NONE);
-		label.setText(gaml.compiler.ui.wizards.species.WizardWidgets.labelText(text) + ":");
-		label.setToolTipText(description);
+		WizardWidgets.label(parent, text, description);
 	}
 
 	private void field(final Control control, final String label, final int width) {
-		GridData data = new GridData(SWT.FILL, SWT.CENTER, true, false);
-		data.widthHint = width;
-		data.minimumWidth = 70;
-		control.setLayoutData(data);
-		control.setData("action.field", label);
-		accessible(control, label);
+		WizardWidgets.field(control, "action.field", label, width);
 	}
 
 	private Button button(final Composite parent, final String text, final String description) {
-		Button button = new Button(parent, SWT.PUSH);
-		button.setText(gaml.compiler.ui.wizards.species.WizardWidgets.labelText(text));
-		button.setToolTipText(description);
-		button.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
-		accessible(button, description);
-		return button;
+		return WizardWidgets.button(parent, text, description);
 	}
 
 	private void accessible(final Control control, final String label) {
-		control.getAccessible().addAccessibleListener(new AccessibleAdapter() {
-			@Override
-			public void getName(final AccessibleEvent event) { event.result = label; }
-		});
+		WizardWidgets.accessible(control, label);
 	}
 }

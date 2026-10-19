@@ -53,6 +53,12 @@ public class NewModelWizard extends Wizard implements INewWizard {
 	}
 
 	@Override
+	public boolean performCancel() {
+		if (page != null && page.form != null) page.form.clearResult();
+		return true;
+	}
+
+	@Override
 	public boolean performFinish() {
 		SpeciesWizard form = page.form;
 		if (form == null || !form.accept()) return false;
@@ -158,6 +164,7 @@ public class NewModelWizard extends Wizard implements INewWizard {
 				@Override
 				protected String locationError(final ModelLocation proposed) { return locationProblem(root(), proposed); }
 			};
+			form.setCreationMode(true);
 			form.createForm(control, new SpeciesWizard.FormHost() {
 				@Override
 				public void setTitle(final String title) { ModelPage.this.setTitle(title); }

@@ -11,9 +11,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IMessageProvider;
-import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.BusyIndicator;
@@ -39,6 +37,7 @@ import gaml.compiler.ui.wizards.action.EmbeddedActionBody;
 import gaml.compiler.ui.wizards.species.AttributeTable;
 import gaml.compiler.ui.wizards.species.SpeciesDraft.Facet;
 import gaml.compiler.ui.wizards.species.SpeciesWizard.FormHost;
+import gaml.compiler.ui.wizards.species.DeclarationWizard;
 import gaml.compiler.ui.wizards.species.WizardWidgets;
 
 /**
@@ -46,12 +45,10 @@ import gaml.compiler.ui.wizards.species.WizardWidgets;
  * compiler (check boxes for literal booleans, expressions otherwise) with a section specific to the type, attributes
  * (shared {@link AttributeTable}), parameters, monitors and the init code (embedded GAML editor below a live
  * declaration label). Changing the type reorganises the form but never discards values: settings irrelevant to the
- * new type are kept and reported as a warning. Compilation runs only on Validate and OK; adapters own the undoable
+ * new type are kept and reported as a warning. Compilation runs only on Validate and acceptance; adapters own the undoable
  * apply and preserve the statements the draft does not represent.
  */
-public class ExperimentWizard extends TitleAreaDialog {
-
-	public static final int VALIDATE_ID = IDialogConstants.CLIENT_ID + 1;
+public class ExperimentWizard extends DeclarationWizard<ExperimentDraft> {
 
 	/** Data key identifying the form's controls (for tests and accessibility tools). */
 	public static final String FIELD = "experiment.field";
@@ -77,6 +74,7 @@ public class ExperimentWizard extends TitleAreaDialog {
 	private Combo typeCombo;
 	private final Supplier<List<String>> experimentNames;
 	private Composite commonArea;
+	private Composite capabilitiesArea;
 	private Group typeArea;
 	private Composite otherArea;
 	private TabFolder tabs;
@@ -104,7 +102,7 @@ public class ExperimentWizard extends TitleAreaDialog {
 	 * @param draft
 	 *            initial values; returned unchanged (same instance) when the form is not modified
 	 * @param validator
-	 *            run on Validate/OK after the local checks; returns an error or null
+	 *            run on Validate/acceptance after the local checks; returns an error or null
 	 * @param typeNames
 	 *            types offered for attributes
 	 * @param variableNames
@@ -119,7 +117,7 @@ public class ExperimentWizard extends TitleAreaDialog {
 	/**
 	 * @param bodyContext
 	 *            the source containing the rendered experiment, split around the init code (when the draft has no
-	 *            init code: the whole source as prefix); compiled on Validate/OK for locally valid drafts. Errors
+	 *            init code: the whole source as prefix); compiled on Validate/acceptance for locally valid drafts. Errors
 	 *            outside the code already present for the initial draft are ignored. Null skips this step.
 	 */
 	public ExperimentWizard(final Shell shell, final ExperimentDraft draft,
@@ -130,7 +128,7 @@ public class ExperimentWizard extends TitleAreaDialog {
 
 	/**
 	 * As above, with existing experiment names offered as parents (the adapter excludes self/descendants).
-	 * The header is Name, Title, Type, Virtual. Parent and Control are editable lists, retaining loaded values
+	 * The header is Name, Title, Type, Parent, Virtual. Parent and Control are editable lists, retaining loaded values
 	 * not supplied by the adapter or architecture registry. Older constructors offer no parent candidates.
 	 */
 	public ExperimentWizard(final Shell shell, final ExperimentDraft draft,
@@ -148,7 +146,6 @@ public class ExperimentWizard extends TitleAreaDialog {
 		facets = draft.facets();
 		parameters.addAll(draft.parameters());
 		monitors.addAll(draft.monitors());
-		setShellStyle(getShellStyle() | SWT.RESIZE);
 	}
 
 	/** A minimal synthetic model containing only the experiment (a model without global attributes). */
@@ -200,41 +197,22 @@ public class ExperimentWizard extends TitleAreaDialog {
 	}
 
 	@Override
-	protected Control createDialogArea(final Composite parent) {
-		Composite area = (Composite) super.createDialogArea(parent);
-		getShell().setText("Experiment");
-		Composite form = createForm(area, new FormHost() {
-			@Override
-			public void setTitle(final String title) { ExperimentWizard.this.setTitle(title); }
+	protected String dialogTitle() { return "Experiment"; }
 
-			@Override
-			public void setMessage(final String message) {
-				ExperimentWizard.this.setMessage(message,
-						message != null && message.startsWith(WARNING) ? IMessageProvider.WARNING : IMessageProvider.NONE);
-			}
+	@Override
+	protected void showFormMessage(final String message) {
+		setMessage(message, message != null && message.startsWith(WARNING) ? IMessageProvider.WARNING : IMessageProvider.NONE);
+	}
 
-			@Override
-			public void setErrorMessage(final String error) { ExperimentWizard.this.setErrorMessage(error); }
-
-			@Override
-			public void setComplete(final boolean complete) {
-				Button ok = getButton(IDialogConstants.OK_ID);
-				if (ok != null) ok.setEnabled(complete);
-				Button validate = getButton(VALIDATE_ID);
-				if (validate != null) validate.setEnabled(complete);
-			}
-
-			@Override
-			public void relayout() { getShell().layout(true, true); }
-		});
-		form.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		return area;
+	@Override
+	protected void showValidationSuccess() {
+		if (readDraft().inactiveFacets().isEmpty()) super.showValidationSuccess();
 	}
 
 	private static final String WARNING = "Kept but not used";
-	private static final String INFO = "Define the experiment. Code is verified on Validate and OK.";
+	private static final String INFO = "Define the experiment. Code is verified on Validate and acceptance.";
 
-	/** Builds the form in another container; use {@link #accept()} instead of OK. */
+	/** Builds the form in another container; use {@link #accept()} instead of the dialog's primary button. */
 	public Composite createForm(final Composite parent, final FormHost formHost) {
 		host = Objects.requireNonNull(formHost);
 		host.setTitle("Experiment settings");
@@ -242,24 +220,20 @@ public class ExperimentWizard extends TitleAreaDialog {
 		Composite form = WizardWidgets.composite(parent, 1);
 		form.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-		Composite header = WizardWidgets.composite(form, 8);
-		header.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		Composite header = WizardWidgets.row(form, 10, "Identity");
 		header.setData(FIELD, "Header");
-		WizardWidgets.label(header, "Name", "Name of the experiment, shown in the interface (any text without quotes).");
-		name = new Text(header, SWT.BORDER | SWT.SINGLE);
-		name.setText(original.name());
-		field(name, "Name", 220);
+		name = WizardWidgets.textField(header, "Name", original.name(),
+				"Name of the experiment, shown in the interface (any text without quotes).", FIELD, "Name", 160);
 		facetControl(header, ExperimentFacet.DECLARED.stream().filter(f -> f.name().equals("title")).findFirst().orElseThrow(), 1);
-		WizardWidgets.label(header, "Type",
-				"gui: interactive experiment with displays; batch: exploration of the parameters; test: runs tests.");
-		typeCombo = new Combo(header, SWT.READ_ONLY | SWT.DROP_DOWN);
 		List<String> types = new ArrayList<>(ExperimentDraft.TYPES);
 		if (!types.contains(type)) types.add(type);
-		typeCombo.setItems(types.toArray(String[]::new));
-		typeCombo.select(types.indexOf(type));
-		field(typeCombo, "Type", 90);
+		typeCombo = WizardWidgets.choiceField(header, "Type", type, types, false,
+				"gui: interactive experiment with displays; batch: exploration of the parameters; test: runs tests.",
+				FIELD, "Type", 90);
+		facetControl(header, ExperimentFacet.DECLARED.stream().filter(f -> f.name().equals("parent")).findFirst().orElseThrow(), 1);
 		facetControl(header, ExperimentFacet.DECLARED.stream().filter(f -> f.name().equals("virtual")).findFirst().orElseThrow(), 1);
 
+		capabilitiesArea = WizardWidgets.row(form, 2, "Capabilities");
 		commonArea = WizardWidgets.composite(form, 6);
 		commonArea.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
 		commonArea.setData(FIELD, "Common");
@@ -354,9 +328,10 @@ public class ExperimentWizard extends TitleAreaDialog {
 	private void renderFacets() {
 		loading = true;
 		try {
-			for (Composite area : List.of(commonArea, typeArea, otherArea))
+			for (Composite area : List.of(capabilitiesArea, commonArea, typeArea, otherArea))
 				for (Control child : area.getChildren()) child.dispose();
-			Set<String> shown = new HashSet<>(List.of("title", "virtual", "skills", "schedules", "parallel"));
+			Set<String> shown = new HashSet<>(List.of("title", "virtual", "parent", "control", "skills", "schedules", "parallel"));
+			facetControl(capabilitiesArea, ExperimentFacet.DECLARED.stream().filter(f -> f.name().equals("control")).findFirst().orElseThrow(), 1);
 			for (String key : List.of("autorun", "benchmark", "record")) {
 				ExperimentFacet facet = ExperimentFacet.DECLARED.stream().filter(f -> f.name().equals(key)).findFirst().orElseThrow();
 				shown.add(key);
@@ -408,18 +383,15 @@ public class ExperimentWizard extends TitleAreaDialog {
 	private void facetControl(final Composite area, final ExperimentFacet facet, final int span) {
 		String value = value(facet.name());
 		if ("parent".equals(facet.name()) || "control".equals(facet.name())) {
-			WizardWidgets.label(area, facet.name(), facet.documentation());
-			Combo choice = new Combo(area, SWT.BORDER | SWT.DROP_DOWN);
 			java.util.TreeSet<String> choices = new java.util.TreeSet<>("parent".equals(facet.name())
 					? experimentNames.get() : possibleControlNames());
 			choices.add("");
 			if (value != null) choices.add(value);
-			choice.setItems(choices.toArray(String[]::new));
-			choice.setText(value == null ? "" : value);
-			field(choice, "facet:" + facet.name(), 160);
-			choice.setToolTipText(facet.documentation() + ("parent".equals(facet.name())
+			String help = facet.documentation() + ("parent".equals(facet.name())
 					? ". Choose an existing experiment, or enter an imported experiment name."
-					: ". Choose a registered control architecture.") + " Clear to omit the facet.");
+					: ". Choose a registered control architecture.") + " Clear to omit the facet.";
+			Combo choice = WizardWidgets.choiceField(area, facet.name(), value == null ? "" : value,
+					List.copyOf(choices), true, help, FIELD, "facet:" + facet.name(), 160);
 			choice.addModifyListener(e -> set(facet.name(), choice.getText().isBlank() ? null : choice.getText()));
 		} else if (facet.flag()) {
 			literalCheckbox(area, facet.name(), value, () -> facet.defaultValue(facets),
@@ -440,36 +412,15 @@ public class ExperimentWizard extends TitleAreaDialog {
 			final java.util.function.Supplier<Boolean> defaults, final String description, final String key,
 			final Consumer<String> setter) {
 		Boolean defaultValue = defaults.get();
-		Button check = new Button(parent, SWT.CHECK);
-		check.setText(WizardWidgets.labelText(label));
-		check.setSelection(value == null ? Boolean.TRUE.equals(defaultValue)
-				: "true".equals(value.trim()) || (!"false".equals(value.trim()) && Boolean.TRUE.equals(defaultValue)));
-		check.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
-		check.setData(FIELD, key);
-		WizardWidgets.accessible(check, label);
-		check.setToolTipText(description + " Default: " + (defaultValue == null ? "inherited/runtime context" : defaultValue)
-				+ ". Edited literals equal to a known default are omitted."
-				+ (value != null && !"true".equals(value.trim()) && !"false".equals(value.trim())
-						? " Existing expression retained until checkbox edited: " + value : ""));
-		check.addListener(SWT.Selection, e -> {
-			if (loading) return;
-			Boolean effectiveDefault = defaults.get();
-			setter.accept(effectiveDefault != null && check.getSelection() == effectiveDefault
-					? null : Boolean.toString(check.getSelection()));
-		});
+		WizardWidgets.literalBoolean(parent, label, value, Boolean.TRUE.equals(defaultValue), defaults,
+				description, FIELD, key, next -> { if (!loading) setter.accept(next); });
 	}
 
 	private void expression(final Composite area, final String label, final String facet, final String description,
 			final String value, final int span) {
-		WizardWidgets.label(area, label, description);
-		Text text = new Text(area, SWT.BORDER | SWT.SINGLE);
-		text.setText(value == null ? "" : value);
-		text.setToolTipText(description);
-		GridData data = new GridData(SWT.FILL, SWT.CENTER, true, false, span, 1);
-		data.widthHint = 160;
-		text.setLayoutData(data);
-		text.setData(FIELD, "facet:" + facet);
-		WizardWidgets.accessible(text, facet);
+		Text text = WizardWidgets.textField(area, label, value == null ? "" : value, description,
+				FIELD, "facet:" + facet, 160);
+		((GridData) text.getLayoutData()).horizontalSpan = span;
 		text.addModifyListener(e -> set(facet, text.getText().isBlank() ? null : text.getText()));
 	}
 
@@ -786,21 +737,6 @@ public class ExperimentWizard extends TitleAreaDialog {
 		};
 	}
 
-	@Override
-	protected void createButtonsForButtonBar(final Composite parent) {
-		createButton(parent, VALIDATE_ID, "Validate", false)
-				.setToolTipText("Compile the experiment in its context and report errors.");
-		super.createButtonsForButtonBar(parent);
-		changed();
-	}
-
-	@Override
-	protected void buttonPressed(final int buttonId) {
-		if (buttonId == VALIDATE_ID) {
-			if (validateNow()) host.setMessage("No errors found.");
-		} else super.buttonPressed(buttonId);
-	}
-
 	/** Current form values; the initial instance when nothing changed. */
 	public ExperimentDraft readDraft() {
 		ExperimentDraft draft = new ExperimentDraft(name.getText().trim(), type, facets, attributes.values(),
@@ -896,25 +832,11 @@ public class ExperimentWizard extends TitleAreaDialog {
 	}
 
 	@Override
-	protected void okPressed() {
-		if (accept()) super.okPressed();
-	}
-
-	@Override
-	protected void cancelPressed() {
+	protected void clearResult() {
 		result = null;
-		super.cancelPressed();
 	}
 
 	/** The accepted draft (the initial instance when unchanged), or null after Cancel or before OK. */
 	public ExperimentDraft getResult() { return result; }
 
-	private void field(final Control control, final String label, final int width) {
-		GridData data = new GridData(SWT.FILL, SWT.CENTER, true, false);
-		data.widthHint = width;
-		data.minimumWidth = 70;
-		control.setLayoutData(data);
-		control.setData(FIELD, label);
-		WizardWidgets.accessible(control, label);
-	}
 }

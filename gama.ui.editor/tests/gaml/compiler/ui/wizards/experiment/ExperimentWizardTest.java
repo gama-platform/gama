@@ -67,6 +67,8 @@ public final class ExperimentWizardTest {
 		}
 
 		void cancel() { getButton(IDialogConstants.CANCEL_ID).notifyListeners(SWT.Selection, new Event()); }
+
+		void validate() { getButton(VALIDATE_ID).notifyListeners(SWT.Selection, new Event()); }
 	}
 
 	private static void check(final boolean condition, final String message) {
@@ -130,15 +132,18 @@ public final class ExperimentWizardTest {
 		while (display.readAndDispatch()) {}
 		check(d.readDraft() == draft, "Nonliteral checkbox values and hidden facets retained on open");
 		Control name = field(d, "Name"), title = field(d, "facet:title"), virtual = field(d, "facet:virtual"),
-				type = field(d, "Type");
+				type = field(d, "Type"), parent = field(d, "facet:parent");
 		check(name.getParent() == title.getParent() && title.getParent() == virtual.getParent()
-				&& type.getParent() == name.getParent() && name.getParent() == field(d, "Header"),
-				"Name, Title, Type and Virtual share header");
+				&& type.getParent() == name.getParent() && parent.getParent() == name.getParent()
+				&& name.getParent() == field(d, "Header"),
+				"Name, Title, Type, Parent and Virtual share header");
 		check(name.toDisplay(0, 0).x < title.toDisplay(0, 0).x && title.toDisplay(0, 0).x < type.toDisplay(0, 0).x
-				&& type.toDisplay(0, 0).x < virtual.toDisplay(0, 0).x
-				&& Math.abs(name.toDisplay(0, 0).y - virtual.toDisplay(0, 0).y) < 12, "Header order Name, Title, Type, Virtual");
-		check(field(d, "facet:parent") instanceof Combo parent && List.of(parent.getItems()).containsAll(List.of("base", "other"))
-				&& parent.getText().isEmpty(), "Parent offers existing experiments without materializing a default");
+				&& type.toDisplay(0, 0).x < parent.toDisplay(0, 0).x && parent.toDisplay(0, 0).x < virtual.toDisplay(0, 0).x
+				&& Math.abs(name.toDisplay(0, 0).y - virtual.toDisplay(0, 0).y) < 12
+				&& Math.abs(name.toDisplay(0, 0).y - parent.toDisplay(0, 0).y) < 12,
+				"Header order Name, Title, Type, Parent, Virtual on one line");
+		check(parent instanceof Combo choices && List.of(choices.getItems()).containsAll(List.of("base", "other"))
+				&& choices.getText().isEmpty(), "Parent offers existing experiments without materializing a default");
 		check(field(d, "facet:control") instanceof Combo control
 				&& List.of(control.getItems()).containsAll(List.of("reflex", "fsm", "weighted_tasks"))
 				&& control.getText().isEmpty(), "Control offers registered architectures without changing omitted source");
@@ -321,6 +326,11 @@ public final class ExperimentWizardTest {
 			check(tabs(d).equals(List.of("Attributes", "Init", "Parameters", "Monitors")), "Test tab order");
 			check(d.ok() && d.messageType() == IMessageProvider.WARNING && d.message().contains("repeat"),
 					"Batch facet kept with a warning in test: " + d.message());
+			ExperimentDraft acceptedBeforeValidation = d.getResult();
+			d.validate();
+			check(d.error() == null && d.messageType() == IMessageProvider.WARNING && d.message().contains("repeat")
+					&& d.getResult() == acceptedBeforeValidation,
+					"Successful validation retains inactive-facet warning without accepting");
 			check(field(d, "facet:repeat") instanceof Text t && t.getText().equals("3")
 					&& inside(t, field(d, "Other")), "Inactive facet editable in the other area");
 			((Text) field(d, "facet:repeat")).setText("");

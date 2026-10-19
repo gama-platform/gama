@@ -10,8 +10,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.BusyIndicator;
@@ -44,17 +42,17 @@ import gaml.compiler.ui.wizards.species.SpeciesDraft.Facet;
 import gaml.compiler.ui.wizards.species.SpeciesWizard.FormHost;
 import gaml.compiler.ui.wizards.species.WizardWidgets;
 import gaml.compiler.ui.wizards.species.BooleanFacetField;
+import gaml.compiler.ui.wizards.species.DeclarationWizard;
 
 /**
  * Shared transactional display settings editor with a generated (not runtime) preview. Layer editing is currently
  * not exposed; existing ordered layer drafts and body source are retained unchanged. All source
- * compilation and adapter validation is explicit, on Validate/OK only. Adapters own live objects and undo.
+ * compilation and adapter validation is explicit, on Validate/acceptance only. Adapters own live objects and undo.
  * Settings intentionally exposes only its dedicated controls. Other facets, and nonliteral values behind literal-only
  * checkboxes or the background color chooser, are retained verbatim until explicitly replaced, never evaluated.
  */
-public class DisplayWizard extends TitleAreaDialog {
+public class DisplayWizard extends DeclarationWizard<DisplayDraft> {
 	public static final String FIELD = "display.field";
-	public static final int VALIDATE_ID = IDialogConstants.CLIENT_ID + 1;
 	private final DisplayDraft original;
 	private final Function<DisplayDraft, String> validator;
 	private final Function<DisplayDraft, ActionBodyContext> context;
@@ -99,7 +97,6 @@ public class DisplayWizard extends TitleAreaDialog {
 		aspects = aspectsBySpecies == null ? s -> List.of() : aspectsBySpecies;
 		facets = draft.facets();
 		layers = new ArrayList<>(draft.layers());
-		setShellStyle(getShellStyle() | SWT.RESIZE);
 	}
 
 	private static class StandaloneParser {
@@ -119,30 +116,13 @@ public class DisplayWizard extends TitleAreaDialog {
 	}
 
 	@Override
-	protected Control createDialogArea(final Composite parent) {
-		Composite area = (Composite) super.createDialogArea(parent);
-		getShell().setText("Display");
-		Composite form = createForm(area, new FormHost() {
-			@Override public void setTitle(final String title) { DisplayWizard.this.setTitle(title); }
-			@Override public void setMessage(final String message) { DisplayWizard.this.setMessage(message); }
-			@Override public void setErrorMessage(final String error) { DisplayWizard.this.setErrorMessage(error); }
-			@Override public void setComplete(final boolean complete) {
-				for (int id : new int[] { IDialogConstants.OK_ID, VALIDATE_ID }) {
-					Button button = getButton(id);
-					if (button != null) button.setEnabled(complete);
-				}
-			}
-			@Override public void relayout() { area.layout(true, true); }
-		});
-		form.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		return area;
-	}
+	protected String dialogTitle() { return "Display"; }
 
 	/** Builds the same form in a graphical editor's container. */
 	public Composite createForm(final Composite parent, final FormHost formHost) {
 		host = Objects.requireNonNull(formHost);
 		host.setTitle("Display settings");
-		host.setMessage("Configure the display settings. Existing layers are kept unchanged. GAML is verified on Validate and OK.");
+		host.setMessage("Configure the display settings. Existing layers are kept unchanged. GAML is verified on Validate and acceptance.");
 		Composite form = WizardWidgets.composite(parent, 1);
 		TabFolder tabs = new TabFolder(form, SWT.NONE);
 		GridData tabData = new GridData(SWT.FILL, SWT.FILL, true, true);
@@ -155,10 +135,9 @@ public class DisplayWizard extends TitleAreaDialog {
 		settingsBody = WizardWidgets.composite(settingsScroll, 1);
 		settingsScroll.setContent(settingsBody);
 		Composite first = settingsRow(settingsBody, 7, "Settings row 1");
-		WizardWidgets.label(first, "Name", "Plain display name; quoted labels are supported.");
-		name = new Text(first, SWT.BORDER | SWT.SINGLE);
-		name.setText(original.name());
-		fill(name, "Name");
+		first.setData("wizard.section", "Identity");
+		name = WizardWidgets.textField(first, "Name", original.name(), "Plain display name; quoted labels are supported.",
+				FIELD, "Name", 160);
 		settingsExpression(first, "title", "", List.of());
 		Composite dimensions = WizardWidgets.composite(first, 3);
 		dimensions.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
@@ -238,23 +217,8 @@ public class DisplayWizard extends TitleAreaDialog {
 	private void settingsFlag(final Composite parent, final String key, final boolean initial) {
 		DisplayFacet metadata = displayFacet(key);
 		String value = DisplayDraft.find(facets, key);
-		Boolean runtimeDefault = metadata.defaultValue("display", facets);
-		Button check = new Button(parent, SWT.CHECK);
-		check.setText(WizardWidgets.labelText(key));
-		check.setSelection(value == null ? initial
-				: "true".equals(value.trim()) || (!"false".equals(value.trim()) && initial));
-		check.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
-		field(check, "display:" + key);
-		check.setToolTipText(metadata.documentation() + " Initial UI value: " + initial
-				+ ". Effective omission default: " + (runtimeDefault == null ? "inherited/runtime context" : runtimeDefault)
-				+ (value != null && !"true".equals(value.trim()) && !"false".equals(value.trim())
-						? ". Existing expression retained until checkbox edited: " + value : "")
-				+ ". Editing replaces the value with a literal; untouched source is retained.");
-		check.addListener(SWT.Selection, e -> {
-			Boolean effectiveDefault = metadata.defaultValue("display", facets);
-			setDisplayFacet(key, effectiveDefault != null && check.getSelection() == effectiveDefault
-					? null : Boolean.toString(check.getSelection()));
-		});
+		WizardWidgets.literalBoolean(parent, key, value, initial, () -> metadata.defaultValue("display", facets),
+				metadata.documentation(), FIELD, "display:" + key, next -> setDisplayFacet(key, next));
 	}
 
 	private void settingsBackground(final Composite parent) {
@@ -274,7 +238,6 @@ public class DisplayWizard extends TitleAreaDialog {
 		String value = DisplayDraft.find(facets, key);
 		String help = metadata.documentation() + " (" + metadata.type() + "). Initial UI value: "
 				+ (initial.isEmpty() ? "empty" : initial) + ". Untouched omitted facets remain omitted.";
-		WizardWidgets.label(parent, key.replace('_', '-'), help);
 		Consumer<String> modified = text -> {
 			String next = text.isBlank() ? null : text;
 			Boolean runtimeDefault = metadata.defaultValue("display", facets);
@@ -283,17 +246,12 @@ public class DisplayWizard extends TitleAreaDialog {
 			setDisplayFacet(key, next);
 		};
 		if ("z_near".equals(key) || "z_far".equals(key)) {
-			Text input = new Text(parent, SWT.BORDER | SWT.SINGLE);
-			input.setText(value == null ? initial : value);
-			fill(input, "display:" + key);
-			input.setToolTipText(help + " Enter a GAML float expression; empty uses runtime clipping.");
+			Text input = WizardWidgets.textField(parent, key.replace('_', '-'), value == null ? initial : value,
+					help + " Enter a GAML float expression; empty uses runtime clipping.", FIELD, "display:" + key, 160);
 			input.addModifyListener(e -> modified.accept(input.getText()));
 		} else {
-			Combo input = new Combo(parent, SWT.DROP_DOWN);
-			input.setItems(choices.toArray(String[]::new));
-			input.setText(value == null ? initial : value);
-			fill(input, "display:" + key);
-			input.setToolTipText(help);
+			Combo input = WizardWidgets.choiceField(parent, key, value == null ? initial : value, choices, true,
+					help, FIELD, "display:" + key, 160);
 			input.addModifyListener(e -> modified.accept(input.getText()));
 		}
 	}
@@ -626,14 +584,7 @@ public class DisplayWizard extends TitleAreaDialog {
 	}
 
 	public DisplayDraft getResult() { return result; }
-	@Override protected void okPressed() { if (accept()) super.okPressed(); }
-	@Override protected void cancelPressed() { result = null; super.cancelPressed(); }
-	@Override protected void createButtonsForButtonBar(final Composite parent) {
-		createButton(parent, VALIDATE_ID, "Validate", false);
-		super.createButtonsForButtonBar(parent);
-		changed();
-	}
-	@Override protected void buttonPressed(final int id) { if (id == VALIDATE_ID) validateNow(); else super.buttonPressed(id); }
+	@Override protected void clearResult() { result = null; }
 
 	private static Composite page(final TabFolder tabs, final String title) {
 		TabItem tab = new TabItem(tabs, SWT.NONE);

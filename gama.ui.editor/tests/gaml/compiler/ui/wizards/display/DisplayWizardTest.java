@@ -107,7 +107,8 @@ public final class DisplayWizardTest {
 			check(((Button) d.field("display:fullscreen")).getText().equals("Fullscreen"),
 					"Display boolean labels are capitalized");
 			check(!d.field("3D settings").getVisible() && ((Button) d.field("2D")).getSelection(), "2D hides 3D fields");
-			check(d.readDraft() == fresh && d.accept() && d.compiles == 0, "Untouched fallback values preserve no-op");
+			check(d.readDraft() == fresh && d.accept() && d.compiles == 0,
+					"Untouched fallback values preserve no-op: " + d.readDraft() + " versus " + fresh + "; compiles " + d.compiles);
 			d.dimension(true);
 			d.getShell().layout(true, true);
 			while (display.readAndDispatch()) {}

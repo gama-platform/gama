@@ -80,6 +80,7 @@ public final class SpeciesWizardHandler extends AbstractHandler {
 				if (!transaction.isCurrent()) return "The document changed. Cancel and reopen the species form.";
 				return source.validationError(draft);
 			}, create, source.parentNames(), source.context(), source.kind());
+			dialog.setCreationMode(create);
 			if (dialog.open() == Window.OK) transaction.apply(source.render(dialog.getResult()));
 		} catch (IllegalArgumentException | IllegalStateException | BadLocationException error) {
 			MessageDialog.openError(shell, "Species", error.getMessage());
@@ -96,6 +97,7 @@ public final class SpeciesWizardHandler extends AbstractHandler {
 			if (!transaction.isCurrent()) return "The document changed. Cancel and reopen the model form.";
 			return source.validationError(draft);
 		}, false, source.context(), location, false, source.documentation());
+		dialog.setCreationMode(false);
 		if (dialog.open() == Window.OK) transaction.apply(source.render(dialog.getResult(), dialog.getDocumentation()));
 	}
 }

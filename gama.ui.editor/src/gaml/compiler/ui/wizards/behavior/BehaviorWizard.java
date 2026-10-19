@@ -10,8 +10,6 @@ import java.util.Set;
 import java.util.function.Function;
 
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.BusyIndicator;
@@ -30,18 +28,17 @@ import gaml.compiler.ui.wizards.action.ActionVerifier;
 import gaml.compiler.ui.wizards.action.EmbeddedActionBody;
 import gaml.compiler.ui.wizards.species.SpeciesDraft;
 import gaml.compiler.ui.wizards.species.SpeciesWizard.FormHost;
+import gaml.compiler.ui.wizards.species.DeclarationWizard;
 import gaml.compiler.ui.wizards.species.WizardWidgets;
 
 /**
  * Detached behaviour settings (reflex, state, task, plan, perceive, rule): kind, name, the kind's facets from the
  * compiler declarations (check boxes for literal booleans, expressions otherwise, other facets kept verbatim) and the
- * code, edited in an embedded GAML editor below a live declaration label. Compilation runs only on Validate and OK.
+ * code, edited in an embedded GAML editor below a live declaration label. Compilation runs only on Validate and acceptance.
  * Editor adapters own the undoable apply. Lifecycle kinds share the Reflex Editor; other kinds use a dedicated,
  * kind-locked editor (State Editor, Rule Editor, etc.) for diagram adapters.
  */
-public class BehaviorWizard extends TitleAreaDialog {
-
-	public static final int VALIDATE_ID = IDialogConstants.CLIENT_ID + 1;
+public class BehaviorWizard extends DeclarationWizard<BehaviorDraft> {
 
 	/** Data key identifying the form's controls (for tests and accessibility tools). */
 	public static final String FIELD = "behavior.field";
@@ -89,10 +86,10 @@ public class BehaviorWizard extends TitleAreaDialog {
 	 *            kinds offered by the Kind selector, restricted to the draft's convertible kinds; a single kind fixes
 	 *            it. Non-lifecycle kinds are always locked. Facets are kept when a lifecycle kind changes.
 	 * @param validator
-	 *            adapter validation run on Validate/OK after local and contextual checks; returns an error or null
+	 *            adapter validation run on Validate/acceptance after local and contextual checks; returns an error or null
 	 * @param bodyContext
 	 *            contextual source of the draft's code (for kinds without code: the whole rendered declaration as
-	 *            prefix), called only on Validate/OK for locally valid drafts; null uses a minimal synthetic model
+	 *            prefix), called only on Validate/acceptance for locally valid drafts; null uses a minimal synthetic model
 	 */
 	public BehaviorWizard(final Shell shell, final BehaviorDraft draft, final Set<BehaviorKind> selectableKinds,
 			final Function<BehaviorDraft, String> validator, final Function<BehaviorDraft, ActionBodyContext> bodyContext) {
@@ -107,7 +104,6 @@ public class BehaviorWizard extends TitleAreaDialog {
 		this.bodyContext = bodyContext;
 		kind = draft.kind();
 		facets.addAll(draft.facets());
-		setShellStyle(getShellStyle() | SWT.RESIZE);
 	}
 
 	/** A minimal synthetic model placing the behaviour in {@code global}. */
@@ -119,64 +115,30 @@ public class BehaviorWizard extends TitleAreaDialog {
 	}
 
 	@Override
-	protected Control createDialogArea(final Composite parent) {
-		Composite area = (Composite) super.createDialogArea(parent);
-		getShell().setText(editorTitle());
-		Composite form = createForm(area, new FormHost() {
-			@Override
-			public void setTitle(final String title) { BehaviorWizard.this.setTitle(title); }
+	protected String dialogTitle() { return editorTitle(); }
 
-			@Override
-			public void setMessage(final String message) { BehaviorWizard.this.setMessage(message); }
-
-			@Override
-			public void setErrorMessage(final String error) { BehaviorWizard.this.setErrorMessage(error); }
-
-			@Override
-			public void setComplete(final boolean complete) {
-				Button ok = getButton(IDialogConstants.OK_ID);
-				if (ok != null) ok.setEnabled(complete);
-				Button validate = getButton(VALIDATE_ID);
-				if (validate != null) validate.setEnabled(complete);
-			}
-
-			@Override
-			public void relayout() { getShell().pack(); }
-		});
-		form.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		return area;
-	}
-
-	/** Builds the form in another container; use {@link #accept()} instead of OK. */
+	/** Builds the form in another container; use {@link #accept()} instead of the dialog's primary button. */
 	public Composite createForm(final Composite parent, final FormHost formHost) {
 		host = Objects.requireNonNull(formHost);
 		host.setTitle(editorTitle());
 		host.setMessage("Define the " + (BehaviorKind.LIFECYCLE.contains(kind) ? "reflex, init or abort" : kind.keyword())
-				+ ", its facets and its code. Code is verified on Validate and OK.");
+				+ ", its facets and its code. Code is verified on Validate and acceptance.");
 		Composite form = WizardWidgets.composite(parent, 1);
 		form.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
 		boolean lifecycle = BehaviorKind.LIFECYCLE.contains(kind);
-		Composite header = WizardWidgets.composite(form, lifecycle ? 6 : 4);
-		header.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		WizardWidgets.label(header, "Kind", BehaviorKind.LIFECYCLE.contains(kind)
-				? "Lifecycle declaration: reflex, init or abort." : "This editor only edits " + kind.keyword() + " declarations.");
-		kindCombo = new Combo(header, SWT.READ_ONLY | SWT.DROP_DOWN);
-		kindCombo.setItems(kinds.stream().map(BehaviorKind::keyword).toArray(String[]::new));
-		kindCombo.select(kinds.indexOf(kind));
+		Composite header = WizardWidgets.row(form, lifecycle ? 6 : 4, "Identity");
+		name = WizardWidgets.textField(header, "Name", original.name(),
+				"Name of the behavior; optional for reflexes, init, abort, plans, perceives and rules.", FIELD, "Name", 180);
+		kindCombo = WizardWidgets.choiceField(header, "Kind", kind.keyword(),
+				kinds.stream().map(BehaviorKind::keyword).toList(), false, lifecycle
+						? "Lifecycle declaration: reflex, init or abort." : "This editor only edits " + kind.keyword() + " declarations.",
+				FIELD, "Kind", 110);
 		kindCombo.setEnabled(kinds.size() > 1);
-		field(kindCombo, "Kind", 110);
-		WizardWidgets.label(header, "Name", "Name of the behavior; optional for reflexes, init, abort, plans, perceives and rules.");
-		name = new Text(header, SWT.BORDER | SWT.SINGLE);
-		name.setText(original.name());
-		field(name, "Name", 180);
 		if (lifecycle) {
 			String help = "Boolean GAML condition. Default: true (unconditional). An edited true or empty value omits the facet.";
-			WizardWidgets.label(header, "When", help);
-			Text when = new Text(header, SWT.BORDER | SWT.SINGLE);
-			when.setText(value("when") == null ? "true" : value("when"));
-			when.setToolTipText(help);
-			field(when, "facet:when", 260);
+			Text when = WizardWidgets.textField(header, "When", value("when") == null ? "true" : value("when"),
+					help, FIELD, "facet:when", 260);
 			when.addModifyListener(e -> {
 				String text = when.getText();
 				set("when", text.isBlank() || "true".equals(text.trim()) ? null : text);
@@ -262,15 +224,8 @@ public class BehaviorWizard extends TitleAreaDialog {
 	}
 
 	private void expression(final String label, final String facet, final String description, final String value) {
-		WizardWidgets.label(facetArea, label, description);
-		Text text = new Text(facetArea, SWT.BORDER | SWT.SINGLE);
-		text.setText(value == null ? "" : value);
-		text.setToolTipText(description);
-		GridData data = new GridData(SWT.FILL, SWT.CENTER, true, false);
-		data.widthHint = 260;
-		text.setLayoutData(data);
-		text.setData(FIELD, "facet:" + facet);
-		WizardWidgets.accessible(text, facet);
+		Text text = WizardWidgets.textField(facetArea, label, value == null ? "" : value, description,
+				FIELD, "facet:" + facet, 260);
 		text.addModifyListener(e -> set(facet, text.getText().isBlank() ? null : text.getText()));
 		facetControls.put(facet, text);
 	}
@@ -342,21 +297,6 @@ public class BehaviorWizard extends TitleAreaDialog {
 				text.setEnabled(enabled);
 			}
 		};
-	}
-
-	@Override
-	protected void createButtonsForButtonBar(final Composite parent) {
-		createButton(parent, VALIDATE_ID, "Validate", false)
-				.setToolTipText("Compile the behavior in its context and report errors.");
-		super.createButtonsForButtonBar(parent);
-		changed();
-	}
-
-	@Override
-	protected void buttonPressed(final int buttonId) {
-		if (buttonId == VALIDATE_ID) {
-			if (validateNow()) host.setMessage("No errors found.");
-		} else super.buttonPressed(buttonId);
 	}
 
 	/** Current form values; the initial instance when nothing changed. */
@@ -464,25 +404,11 @@ public class BehaviorWizard extends TitleAreaDialog {
 	}
 
 	@Override
-	protected void okPressed() {
-		if (accept()) super.okPressed();
-	}
-
-	@Override
-	protected void cancelPressed() {
+	protected void clearResult() {
 		result = null;
-		super.cancelPressed();
 	}
 
 	/** The accepted draft (the initial instance when unchanged), or null after Cancel or before OK. */
 	public BehaviorDraft getResult() { return result; }
 
-	private void field(final Control control, final String label, final int width) {
-		GridData data = new GridData(SWT.FILL, SWT.CENTER, true, false);
-		data.widthHint = width;
-		data.minimumWidth = 70;
-		control.setLayoutData(data);
-		control.setData(FIELD, label);
-		WizardWidgets.accessible(control, label);
-	}
 }

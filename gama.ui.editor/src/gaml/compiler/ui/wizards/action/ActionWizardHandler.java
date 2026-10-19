@@ -68,6 +68,7 @@ public final class ActionWizardHandler {
 							: super.signature(draft);
 				}
 			};
+			dialog.setCreationMode(create);
 			if (dialog.open() == Window.OK && dialog.getResult() != null)
 				transaction.apply(source.render(dialog.getResult()));
 		} catch (IllegalArgumentException | IllegalStateException | BadLocationException error) {

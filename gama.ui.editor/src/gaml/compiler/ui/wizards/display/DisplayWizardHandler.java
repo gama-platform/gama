@@ -52,6 +52,7 @@ public final class DisplayWizardHandler {
 				if (!transaction.isCurrent()) return "The document changed. Cancel and reopen the display form.";
 				return source.validationError(draft);
 			}, source::speciesNames, source::gridNames, draft -> source.bodyContext(draft, isolated), source::aspectNames);
+			dialog.setCreationMode(create);
 			if (dialog.open() == Window.OK && dialog.getResult() != null) transaction.apply(source.render(dialog.getResult()));
 		} catch (IllegalArgumentException | IllegalStateException | BadLocationException error) {
 			MessageDialog.openError(shell, "Display", error.getMessage());

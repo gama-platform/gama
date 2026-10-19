@@ -2,6 +2,8 @@ package gaml.compiler.ui.wizards.species;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -17,11 +19,87 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 
 /** Layout and accessibility primitives shared by the declaration wizards. */
 public final class WizardWidgets {
 
 	private WizardWidgets() {}
+
+	/** Common row roles let hosts and regression tests identify arrangement without relying on individual fields. */
+	public static Composite row(final Composite parent, final int columns, final String role) {
+		Composite row = composite(parent, columns);
+		row.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		row.setData("wizard.section", role);
+		return row;
+	}
+
+	public static void field(final Control control, final String property, final String key, final int width) {
+		GridData data = new GridData(SWT.FILL, SWT.CENTER, true, false);
+		data.widthHint = width;
+		data.minimumWidth = 70;
+		control.setLayoutData(data);
+		control.setData(property, key);
+		accessible(control, labelText(key));
+	}
+
+	/** No listeners are attached during initialization, so displaying a default never writes a facet. */
+	public static Text textField(final Composite parent, final String caption, final String value,
+			final String help, final String property, final String key, final int width) {
+		label(parent, caption, help);
+		Text text = new Text(parent, SWT.BORDER | SWT.SINGLE);
+		text.setText(value);
+		text.setToolTipText(help);
+		field(text, property, key, width);
+		return text;
+	}
+
+	/** Includes loaded values not in the suggestions; editable choices also allow imported/plugin identifiers. */
+	public static Combo choiceField(final Composite parent, final String caption, final String value,
+			final List<String> choices, final boolean editable, final String help,
+			final String property, final String key, final int width) {
+		label(parent, caption, help);
+		Combo combo = new Combo(parent, SWT.DROP_DOWN | (editable ? SWT.NONE : SWT.READ_ONLY));
+		var items = new java.util.ArrayList<>(choices);
+		if (!items.contains(value)) items.add(value);
+		combo.setItems(items.toArray(String[]::new));
+		combo.select(items.indexOf(value));
+		combo.setToolTipText(help);
+		field(combo, property, key, width);
+		return combo;
+	}
+
+	public static Button checkbox(final Composite parent, final String caption, final boolean selected,
+			final String help, final String property, final String key) {
+		Button check = new Button(parent, SWT.CHECK);
+		check.setText(labelText(caption));
+		check.setSelection(selected);
+		check.setToolTipText(help);
+		check.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
+		check.setData(property, key);
+		accessible(check, labelText(caption));
+		return check;
+	}
+
+	/** Checkbox-only facet, retaining raw expressions until an explicit edit and reading defaults live on each edit. */
+	public static Button literalBoolean(final Composite parent, final String caption, final String value,
+			final boolean initial, final Supplier<Boolean> defaults, final String documentation,
+			final String property, final String key, final Consumer<String> modified) {
+		Boolean defaultValue = defaults.get();
+		String help = documentation + " Initial UI value: " + initial + ". Effective omission default: "
+				+ (defaultValue == null ? "inherited/runtime context" : defaultValue)
+				+ (value != null && !"true".equals(value.trim()) && !"false".equals(value.trim())
+						? ". Existing expression: " + value : "")
+				+ ". Existing expressions are kept until this checkbox is edited; edits replace them with literals.";
+		Button check = checkbox(parent, caption, value == null ? initial
+				: "true".equals(value.trim()) || (!"false".equals(value.trim()) && initial), help, property, key);
+		check.addListener(SWT.Selection, e -> {
+			Boolean currentDefault = defaults.get();
+			modified.accept(currentDefault != null && check.getSelection() == currentDefault
+					? null : Boolean.toString(check.getSelection()));
+		});
+		return check;
+	}
 
 	public static Composite composite(final Composite parent, final int columns) {
 		Composite result = new Composite(parent, SWT.NONE);

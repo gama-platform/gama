@@ -183,10 +183,10 @@ public final class BehaviorWizardTest {
 			check(when.getParent() == kind.getParent() && when.getParent() == field(d, "Name").getParent()
 					&& ((org.eclipse.swt.layout.GridLayout) when.getParent().getLayout()).numColumns == 6,
 					"Kind, Name and When share one six-column row");
-			check(kind.getBounds().x < field(d, "Name").getBounds().x
-					&& field(d, "Name").getBounds().x < when.getBounds().x
+			check(field(d, "Name").getBounds().x < kind.getBounds().x
+					&& kind.getBounds().x < when.getBounds().x
 					&& kind.getBounds().y + kind.getBounds().height / 2 == when.getBounds().y + when.getBounds().height / 2,
-					"Header controls ordered Kind, Name, When and vertically aligned");
+					"Header controls ordered Name, Kind, When and vertically aligned");
 			check(find(d.getShell(), "facet:when:expression") == null
 					&& when.getParent().getChildren().length == 6, "No When checkbox, defined control or expression button");
 			when.setText("false");

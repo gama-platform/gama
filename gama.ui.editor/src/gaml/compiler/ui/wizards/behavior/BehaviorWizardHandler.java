@@ -58,6 +58,7 @@ public final class BehaviorWizardHandler {
 						if (!transaction.isCurrent()) return "The document changed. Cancel and reopen the Reflex Editor.";
 						return source.validationError(draft);
 					}, draft -> source.bodyContext(draft, uri));
+			dialog.setCreationMode(create);
 			if (dialog.open() == Window.OK && dialog.getResult() != null)
 				transaction.apply(source.render(dialog.getResult()));
 		} catch (IllegalArgumentException | IllegalStateException | BadLocationException error) {
