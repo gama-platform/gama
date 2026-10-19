@@ -2,15 +2,30 @@ package gaml.compiler.ui.wizards.experiment;
 
 import java.util.List;
 
+import gama.api.utils.prefs.GamaPreferences;
+import gaml.compiler.ui.wizards.species.SpeciesDraft.Facet;
+
 /**
  * Header facets of experiments, as declared by the compiler ({@code ExperimentSpecies}), grouped by the experiment
- * type they apply to. {@code flag} facets are shown as check boxes when their value is a literal boolean; the others
- * (including conditions such as {@code until} or {@code record}) are GAML expressions.
+ * type they apply to. {@code flag} facets have literal-only checkbox controls: existing expressions remain in the
+ * detached draft until explicitly replaced by a checkbox edit. Conditions such as {@code until} and {@code record}
+ * remain GAML expressions. Record initially displays false without rewriting an omitted source facet.
  *
  * @param section
  *            {@link #COMMON}, or the experiment type (gui, batch) for which the facet is meaningful
  */
 public record ExperimentFacet(String name, String type, boolean flag, String section, String documentation) {
+
+	/** Defaults used by ExperimentSpecies; inherited experiment facets require unresolved owner context. */
+	public Boolean defaultValue(final List<Facet> facets) {
+		if (facets.stream().anyMatch(f -> "parent".equals(f.name()))) return null;
+		return switch (name) {
+			case "virtual", "benchmark", "keep_seed" -> false;
+			case "keep_simulations" -> true;
+			case "autorun" -> GamaPreferences.Runtime.CORE_AUTO_RUN.getValue();
+			default -> null;
+		};
+	}
 
 	public static final String COMMON = "common";
 

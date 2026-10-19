@@ -56,7 +56,7 @@ public final class ExperimentWizardHandler {
 			var dialog = new ExperimentWizard(shell, source.draft(), draft -> {
 				if (!transaction.isCurrent()) return "The document changed. Cancel and reopen the experiment form.";
 				return source.validationError(draft);
-			}, typeNames(), source::globalNames, draft -> source.bodyContext(draft, uri));
+			}, typeNames(), source::globalNames, draft -> source.bodyContext(draft, uri), source::parentNames);
 			if (dialog.open() == Window.OK && dialog.getResult() != null)
 				transaction.apply(source.render(dialog.getResult()));
 		} catch (IllegalArgumentException | IllegalStateException | BadLocationException error) {

@@ -64,6 +64,7 @@ public class SpeciesWizard extends TitleAreaDialog {
 	private final Kind kind;
 	private final Map<String, Control> header = new LinkedHashMap<>();
 	private final Map<String, String> initialHeader = new LinkedHashMap<>();
+	private final java.util.Set<String> editedBooleans = new java.util.HashSet<>();
 	private final List<String> selectedSkills = new ArrayList<>();
 	private final List<String> skillChoices = new ArrayList<>();
 	private SpeciesDraft result;
@@ -168,7 +169,7 @@ public class SpeciesWizard extends TitleAreaDialog {
 			basic.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 			field(basic, "Name", original.name().isBlank() ? kind == Kind.GRID ? "my_grid"
 					: kind == Kind.CLASS ? "my_class" : "my_species" : original.name(), null);
-			field(basic, "Virtual", Boolean.valueOf(facet("virtual", "false").trim()), null);
+			booleanField(basic, "Virtual", "virtual", false);
 			String parentName = original.parent(kind == Kind.CLASS ? "object" : "agent");
 			field(basic, "Parent", parentName, speciesChoices(parentName, false));
 			if (kind == Kind.CLASS) ((GridData) header.get("parent").getLayoutData()).horizontalSpan = 3;
@@ -223,7 +224,6 @@ public class SpeciesWizard extends TitleAreaDialog {
 				options.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 4, 1));
 				gridOption(options, "Use individual shapes", "use_individual_shapes");
 				gridOption(options, "Use neighbors cache", "use_neighbors_cache");
-				gridOption(options, "Use regular agents", "use_regular_agents");
 			}
 			advanced.addExpansionListener(new ExpansionAdapter() {
 				@Override
@@ -369,8 +369,22 @@ public class SpeciesWizard extends TitleAreaDialog {
 	}
 
 	private void gridOption(final Composite parent, final String label, final String facet) {
-		field(parent, label, Boolean.valueOf(facet(facet, "true").trim()), null);
-		header.put(facet, header.remove(label.toLowerCase()));
+		booleanField(parent, label, facet, !"use_individual_shapes".equals(facet));
+		if ("use_individual_shapes".equals(facet))
+			header.get(facet).setToolTipText(explanation(label)
+					+ " Wizard initial value: false. Runtime default: true (or inherited)."
+					+ " An absent value is saved explicitly as false on OK; Cancel leaves it unchanged."
+					+ " Existing source expressions are kept until this checkbox is edited.");
+	}
+
+	private void booleanField(final Composite parent, final String label, final String facet, final boolean defaultValue) {
+		String current = facet(facet, Boolean.toString(defaultValue)).trim();
+		field(parent, label, "true".equals(current) || (!"false".equals(current) && defaultValue), null);
+		Control field = header.remove(label.toLowerCase());
+		header.put(facet, field);
+		field.setToolTipText(explanation(label) + " Default: " + defaultValue
+				+ ". Existing source expressions are kept until this checkbox is edited; grid defaults may be inherited.");
+		field.addListener(SWT.Selection, e -> { editedBooleans.add(facet); changed(); });
 	}
 
 	private void field(final Composite parent, final String label, final Object value, final List<String> choices) {
@@ -386,7 +400,7 @@ public class SpeciesWizard extends TitleAreaDialog {
 		Control control;
 		if (value instanceof Boolean bool) {
 			Button button = new Button(parent, SWT.CHECK);
-			button.setText(label);
+			button.setText(WizardWidgets.labelText(label));
 			button.setSelection(bool);
 			button.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
 			control = button;
@@ -414,7 +428,7 @@ public class SpeciesWizard extends TitleAreaDialog {
 
 	private Label label(final Composite parent, final String text, final String description) {
 		Label label = new Label(parent, SWT.NONE);
-		label.setText(text + ":");
+		label.setText(WizardWidgets.labelText(text) + ":");
 		label.setToolTipText(description);
 		return label;
 	}
@@ -532,7 +546,7 @@ public class SpeciesWizard extends TitleAreaDialog {
 
 	private void updateSkillsLabel(final Button button) {
 		String names = String.join(", ", selectedSkills);
-		button.setText(selectedSkills.isEmpty() ? "Select skills..." : names);
+		button.setText(selectedSkills.isEmpty() ? WizardWidgets.labelText("Select skills...") : names);
 		button.setToolTipText(explanation("Skills")
 				+ (names.isEmpty() ? "" : ": " + names));
 	}
@@ -556,7 +570,7 @@ public class SpeciesWizard extends TitleAreaDialog {
 
 	private Button action(final Composite parent, final String text, final String description) {
 		Button button = new Button(parent, SWT.PUSH);
-		button.setText(text);
+		button.setText(WizardWidgets.labelText(text));
 		GridData data = new GridData(SWT.FILL, SWT.CENTER, false, false);
 		org.eclipse.swt.graphics.GC gc = new org.eclipse.swt.graphics.GC(button);
 		gc.setFont(button.getFont());
@@ -595,6 +609,7 @@ public class SpeciesWizard extends TitleAreaDialog {
 		if (kind != Kind.MODEL) {
 			changes.put("parent", value("parent"));
 			changes.put("virtual", value("virtual"));
+			if (editedBooleans.contains("virtual") && "false".equals(value("virtual"))) changes.put("virtual", "");
 			if (kind != Kind.CLASS) changes.put("parallel", value("parallel"));
 		}
 		if (kind != Kind.CLASS) {
@@ -607,7 +622,9 @@ public class SpeciesWizard extends TitleAreaDialog {
 				"mirrors", "", "schedules", "", "frequency", "");
 		if (kind == Kind.GRID) {
 			for (String key : List.of("width", "height", "neighbors", "file", "files",
-					"use_individual_shapes", "use_neighbors_cache", "use_regular_agents")) changes.put(key, value(key));
+					"use_individual_shapes", "use_neighbors_cache")) changes.put(key, value(key));
+			for (String key : List.of("use_individual_shapes", "use_neighbors_cache"))
+				if (editedBooleans.contains(key) && "true".equals(value(key)) && "agent".equals(value("parent"))) changes.put(key, "");
 			defaults = new LinkedHashMap<>(defaults);
 			defaults.putAll(Map.of("width", "", "height", "", "neighbors", "4", "file", "", "files", "",
 					"use_individual_shapes", "true", "use_neighbors_cache", "true", "use_regular_agents", "true"));
@@ -615,13 +632,14 @@ public class SpeciesWizard extends TitleAreaDialog {
 		List<SpeciesDraft.Facet> facets = new ArrayList<>();
 		for (var facet : original.facets()) {
 			String change = changes.remove(facet.name());
-			if (change == null || change.equals(initialHeader.get(facet.name()))
+			if (change == null || !editedBooleans.contains(facet.name()) && change.equals(initialHeader.get(facet.name()))
 					|| change.equals(facet.value()) || change.equals(facet.value().trim()))
 				facets.add(facet);
 			else if (!change.isBlank()) facets.add(new SpeciesDraft.Facet(facet.name(), change));
 		}
 		for (var change : changes.entrySet()) {
-			if (!change.getValue().isBlank() && !change.getValue().equals(defaults.get(change.getKey())))
+			if (!change.getValue().isBlank() && (editedBooleans.contains(change.getKey())
+					|| !change.getValue().equals(defaults.get(change.getKey()))))
 				facets.add(new SpeciesDraft.Facet(change.getKey(), change.getValue()));
 		}
 		return new SpeciesDraft(value("name").trim(), selectedSkills, facets,

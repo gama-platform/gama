@@ -9,9 +9,14 @@
  * Implicit agent/reflex/false defaults do not create facets on an unchanged acceptance.
  * Additional existing facets are preserved verbatim, but not exposed in a generic Facets tab.
  * Grid mode adds width/height expressions and 4/6/8 neighbors, replaces mirroring with grid-only
- * file/files and geometry/cache/agent options, and includes grid-skill attribute metadata.
- * New grids start at 100 by 100 cells; default neighbors is 4 and the three grid options default
- * to true, matching the runtime. Existing file/cell-size grids retain absent dimensions unchanged.
+ * file/files and geometry/cache checkboxes, and includes grid-skill attribute metadata.
+ * New grids start at 100 by 100 cells; default neighbors is 4 and cache defaults to true.
+ * Individual shapes initially shows false when absent and saves an explicit false on acceptance, because the runtime
+ * default is true (or inherited). Existing explicit values and expressions remain unchanged until edited.
+ * Virtual and the grid options are checkbox-only. Existing expressions remain unchanged until a checkbox is edited;
+ * edited literals matching verified defaults are omitted (inherited grid defaults are not guessed).
+ * The legacy use_regular_agents facet is hidden and retained verbatim.
+ * Existing file/cell-size grids retain absent dimensions unchanged.
  * A grid with a legacy mirrors facet is rejected explicitly, not silently repaired.
  *
  * <p>Attributes appear as an initially expanded disclosure section and merge local declarations with metadata

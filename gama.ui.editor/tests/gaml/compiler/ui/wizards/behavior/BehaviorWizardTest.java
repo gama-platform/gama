@@ -32,6 +32,10 @@ public final class BehaviorWizardTest {
 		List<ActionVerifier.Problem> problems = List.of();
 		Function<String, List<ActionVerifier.Problem>> byCode;
 
+		Dialog(final Shell shell, final BehaviorDraft draft) {
+			super(shell, draft, x -> null, null);
+		}
+
 		Dialog(final Shell shell, final BehaviorDraft draft, final EnumSet<BehaviorKind> kinds,
 				final Function<BehaviorDraft, String> validator) {
 			super(shell, draft, kinds, validator, d -> new ActionBodyContext(
@@ -160,37 +164,98 @@ public final class BehaviorWizardTest {
 			toggle(d, "final", true);
 			check(d.readDraft().facet("final").equals("true"), "Checking sets true");
 			toggle(d, "final", false);
-			check(d.readDraft() == state, "Unchecking keeps the explicit false");
+			check(d.readDraft().facet("final") == null, "Edited default false is omitted");
 			((Text) field(d, "Name")).setText("");
 			check(!d.ok() && d.error().contains("name is required"), "State name required");
 			d.close();
 
-			// ---- creation: kind selector, facets reorganised, required facets, codeless rule
+			// ---- generic creation stays lifecycle-only, even if a caller requests every kind
 			BehaviorDraft empty = BehaviorDraft.empty(BehaviorKind.REFLEX);
 			d = new Dialog(shell, empty, EnumSet.allOf(BehaviorKind.class), x -> null);
 			d.create();
 			Combo kind = (Combo) field(d, "Kind");
-			check(kind.getEnabled() && kind.getItemCount() == 8, "Eight kinds offered on creation");
-			check(field(d, "facet:when") instanceof Button, "Reflex 'when' as check box when absent");
-			toggle(d, "when", true);
-			select(d, BehaviorKind.TASK);
-			check(field(d, "facet:weight") instanceof Text && !d.ok() && d.error().contains("weight"),
-					"Task requires weight");
-			check(field(d, "facet:when") instanceof Text t && t.getText().equals("true"),
-					"Facet of the previous kind kept as other facet");
-			((Text) field(d, "facet:weight")).setText("2.0");
-			check(d.ok() && d.signature().equals("task my_reflex when: true weight: 2.0 {"), "Task signature");
-			((Text) field(d, "facet:when")).setText("");
-			select(d, BehaviorKind.RULE);
-			code = (StyledText) field(d, "Code");
-			check(!code.getEditable() && !d.closed() && d.signature().endsWith(";"), "Rule has no code nor braces");
-			check(d.signature().equals("rule my_reflex weight: 2.0;"), "Rule signature: " + d.signature());
-			select(d, BehaviorKind.PERCEIVE);
-			check(field(d, "facet:target") instanceof Text && !d.ok(), "Perceive requires target");
-			((Text) field(d, "facet:target")).setText("wolf");
-			check(d.ok() && code.getEditable() && d.closed(), "Perceive has code");
-			check(d.accept() && d.getResult().kind() == BehaviorKind.PERCEIVE, "Creation accepted");
+			check(kind.getEnabled() && List.of(kind.getItems()).equals(List.of("reflex", "init", "abort")),
+					"Generic creation offers only reflex lifecycle kinds");
+			check(d.getShell().getText().equals("Reflex Editor"), "Lifecycle dialog title");
+			check(field(d, "facet:when") instanceof Text, "Reflex 'when' always inline expression");
+			Text when = (Text) field(d, "facet:when");
+			check(when.getText().equals("true") && d.readDraft() == empty, "Absent condition displays true without a facet");
+			check(when.getParent() == kind.getParent() && when.getParent() == field(d, "Name").getParent()
+					&& ((org.eclipse.swt.layout.GridLayout) when.getParent().getLayout()).numColumns == 6,
+					"Kind, Name and When share one six-column row");
+			check(kind.getBounds().x < field(d, "Name").getBounds().x
+					&& field(d, "Name").getBounds().x < when.getBounds().x
+					&& kind.getBounds().y + kind.getBounds().height / 2 == when.getBounds().y + when.getBounds().height / 2,
+					"Header controls ordered Kind, Name, When and vertically aligned");
+			check(find(d.getShell(), "facet:when:expression") == null
+					&& when.getParent().getChildren().length == 6, "No When checkbox, defined control or expression button");
+			when.setText("false");
+			select(d, BehaviorKind.INIT);
+			check(((Text) field(d, "facet:when")).getText().equals("false"), "Init retains edited guard");
+			select(d, BehaviorKind.ABORT);
+			check(((Text) field(d, "facet:when")).getText().equals("false")
+					&& "false".equals(d.readDraft().facet("when")), "Lifecycle switch preserves explicit guard override");
+			when.setText("true");
+			check(d.readDraft().facet("when") == null, "Abort true default omitted");
+			when.setText("energy > 2");
+			check(d.accept() && d.getResult().facet("when").equals("energy > 2"), "Inline condition edit validated on accept");
 			d.close();
+
+			for (String condition : List.of("true", "false", "energy > 0")) {
+				BehaviorDraft explicit = empty.withFacet("when", condition);
+				d = new Dialog(shell, explicit);
+				d.create();
+				when = (Text) field(d, "facet:when");
+				check(when.getText().equals(condition) && d.accept() && d.getResult() == explicit,
+						"Untouched explicit condition preserved: " + condition);
+				when.setText("changed_condition");
+				when.setText(condition);
+				check("true".equals(condition) ? d.readDraft().facet("when") == null : d.readDraft() == explicit,
+						"Edited default omitted; restored nondefault condition is no-op: " + condition);
+				when.setText("");
+				check(d.readDraft().facet("when") == null, "Clearing condition omits optional facet");
+				d.cancel();
+				check(d.getResult() == null, "Condition edits discarded on Cancel");
+			}
+
+			// ---- diagram-specific editors never offer a cross-kind conversion
+			for (BehaviorKind fixed : BehaviorKind.values()) {
+				if (BehaviorKind.LIFECYCLE.contains(fixed)) continue;
+				BehaviorDraft initial = BehaviorDraft.empty(fixed).withFacet("custom", "42");
+				if (fixed == BehaviorKind.TASK) initial = initial.withFacet("weight", "2.0");
+				if (fixed == BehaviorKind.PERCEIVE) initial = initial.withFacet("target", "wolf");
+				d = new Dialog(shell, initial, EnumSet.allOf(BehaviorKind.class), x -> null);
+				d.create();
+				kind = (Combo) field(d, "Kind");
+				String title = Character.toUpperCase(fixed.keyword().charAt(0)) + fixed.keyword().substring(1) + " Editor";
+				check(d.getShell().getText().equals(title), "Dedicated title: " + title);
+				check(!kind.getEnabled() && List.of(kind.getItems()).equals(List.of(fixed.keyword())),
+						"Kind locked for " + fixed);
+				check(d.accept() && d.getResult() == initial && d.compiled.isEmpty(),
+						"Dedicated editor no-op preserves draft for " + fixed);
+				code = (StyledText) field(d, "Code");
+				check(code.getEditable() == fixed.hasBody() && d.closed() == fixed.hasBody(),
+						"Dedicated code semantics for " + fixed);
+				if (fixed == BehaviorKind.PLAN) {
+					check(field(d, "facet:finished_when") instanceof Text,
+							"Completion absence semantics remain an expression");
+					check(field(d, "facet:instantaneous") instanceof Button b && !b.getSelection(),
+							"Instantaneous defaults false");
+				}
+				if (fixed == BehaviorKind.TASK || fixed == BehaviorKind.PERCEIVE) {
+					String required = fixed == BehaviorKind.TASK ? "weight" : "target";
+					Text expression = (Text) field(d, "facet:" + required);
+					String value = expression.getText();
+					expression.setText("");
+					check(!d.ok() && !d.accept(), "Required facet validation for " + fixed);
+					expression.setText(value);
+				}
+				((Text) field(d, "facet:custom")).setText("43");
+				check(d.accept() && d.getResult().equals(initial.withFacet("custom", "43")) && !d.compiled.isEmpty(),
+						"Dedicated editor validates and preserves other data for " + fixed);
+				d.cancel();
+				check(d.getResult() == null, "Dedicated editor Cancel returns no result for " + fixed);
+			}
 
 			// ---- lifecycle conversion (reflex / init / abort): everything kept, unchanged round trip is a no-op
 			d = new Dialog(shell, reflex, EnumSet.copyOf(reflex.kind().convertibleKinds()), x -> null);
@@ -213,6 +278,18 @@ public final class BehaviorWizardTest {
 			select(d, BehaviorKind.REFLEX);
 			check(d.accept() && d.getResult() == reflex, "Switching back is a no-op");
 			d.close();
+
+			for (BehaviorKind lifecycle : BehaviorKind.LIFECYCLE) {
+				BehaviorDraft initial = BehaviorDraft.empty(lifecycle);
+				d = new Dialog(shell, initial);
+				d.create();
+				kind = (Combo) field(d, "Kind");
+				check(kind.getEnabled() && List.of(kind.getItems()).equals(List.of("reflex", "init", "abort")),
+						"Default constructor allows only lifecycle conversion for " + lifecycle);
+				check(d.getShell().getText().equals("Reflex Editor"), "Shared lifecycle title for " + lifecycle);
+				check(d.accept() && d.getResult() == initial, "Default constructor lifecycle no-op for " + lifecycle);
+				d.close();
+			}
 
 			// ---- cancel
 			d = new Dialog(shell, reflex, EnumSet.of(BehaviorKind.REFLEX), x -> null);

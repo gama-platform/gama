@@ -70,7 +70,38 @@ public final class ExperimentSourceTest {
 	}
 
 	public static void main(final String[] args) throws Exception {
+		var parentParser = GamlStandaloneSetup.doSetup().getInstance(IParser.class);
+		String inheritance = "model m\nexperiment base type: gui {}\nexperiment current type: gui parent: base {}\n"
+				+ "experiment child type: gui parent: current {}\nexperiment grandchild type: gui parent: child {}\n"
+				+ "experiment peer type: batch {}\n";
+		var parentSource = new ExperimentSource(inheritance, inheritance.indexOf("experiment current"), parentParser, false, "gui");
+		check(parentSource.parentNames().equals(List.of("base", "peer")), "Parent suggestions exclude self and descendants");
+		check(parentSource.render(parentSource.draft()) == inheritance, "Reading parent suggestions does not change source");
+		check(new ExperimentSource(inheritance, -1, parentParser, true, "gui").parentNames()
+				.equals(List.of("base", "child", "current", "grandchild", "peer")), "New experiment offers all existing parents");
 		parser = GamlStandaloneSetup.doSetup().getInstance(IParser.class);
+		String retained = "model retained\nglobal {int n;}\nexperiment e type: gui title: /*title*/ \"Old\" "
+				+ "virtual: virtual_condition autorun: auto_condition benchmark: benchmark_condition "
+				+ "skills: [moving] schedules: simulation parallel: 2 record: cycle > 3 {\n"
+				+ "parameter \"N\" var: n slider: slider_condition;\noutput {display d {}}\n}\n";
+		var retainedAdapter = new ExperimentSource(retained, retained.indexOf("experiment e"), parser, false, ExperimentDraft.GUI);
+		var retainedDraft = retainedAdapter.draft();
+		check(retainedAdapter.render(retainedDraft) == retained, "Simplified settings no-op retains expression/removed facets exactly");
+		var changedFacets = ExperimentDraft.withFacet(retainedDraft.facets(), retainedDraft.facets(), "title", "\"New\"");
+		changedFacets = ExperimentDraft.withFacet(changedFacets, retainedDraft.facets(), "record", "false");
+		String retainedEdit = retainedAdapter.render(with(retainedDraft, retainedDraft.name(), retainedDraft.type(), changedFacets));
+		check(retainedEdit.equals(retained.replace("\"Old\"", "\"New\"").replace("record: cycle > 3", "record: false")),
+				"Title/Record edit touches only selected tokens, not hidden facets or boolean expressions");
+		parses(retainedEdit, "Simplified settings source generation");
+		Document retainedDocument = new Document(retained);
+		DocumentUndoManagerRegistry.connect(retainedDocument);
+		var retainedUndo = DocumentUndoManagerRegistry.getDocumentUndoManager(retainedDocument);
+		retainedUndo.connect(retainedDocument);
+		check(new SpeciesDocumentEdit(retainedDocument).apply(retainedEdit), "Settings edit applied as transaction");
+		retainedUndo.undo();
+		check(retainedDocument.get().equals(retained), "Settings undo restores source exactly");
+		retainedUndo.redo();
+		check(retainedDocument.get().equals(retainedEdit), "Settings redo restores edited tokens");
 		String init = "\n\t\twrite \"start\"; // keep\n\t";
 		String source = "model sample\n\nglobal {\n\tint n <- 10;\n\tfloat rate <- 0.5;\n}\n\n"
 				+ "experiment \"My exp\" type: batch keep_seed: true repeat: 2 /* reps */ until: cycle > 100 {\n"

@@ -75,6 +75,7 @@ public class ExperimentWizard extends TitleAreaDialog {
 	private FormHost host;
 	private Text name;
 	private Combo typeCombo;
+	private final Supplier<List<String>> experimentNames;
 	private Composite commonArea;
 	private Group typeArea;
 	private Composite otherArea;
@@ -124,12 +125,25 @@ public class ExperimentWizard extends TitleAreaDialog {
 	public ExperimentWizard(final Shell shell, final ExperimentDraft draft,
 			final Function<ExperimentDraft, String> validator, final List<String> typeNames,
 			final Supplier<List<String>> variableNames, final Function<ExperimentDraft, ActionBodyContext> bodyContext) {
+		this(shell, draft, validator, typeNames, variableNames, bodyContext, List::of);
+	}
+
+	/**
+	 * As above, with existing experiment names offered as parents (the adapter excludes self/descendants).
+	 * The header is Name, Title, Type, Virtual. Parent and Control are editable lists, retaining loaded values
+	 * not supplied by the adapter or architecture registry. Older constructors offer no parent candidates.
+	 */
+	public ExperimentWizard(final Shell shell, final ExperimentDraft draft,
+			final Function<ExperimentDraft, String> validator, final List<String> typeNames,
+			final Supplier<List<String>> variableNames, final Function<ExperimentDraft, ActionBodyContext> bodyContext,
+			final Supplier<List<String>> experimentNames) {
 		super(shell);
 		original = Objects.requireNonNull(draft);
 		this.validator = Objects.requireNonNull(validator);
 		this.typeNames = List.copyOf(typeNames);
 		this.variableNames = Objects.requireNonNull(variableNames);
 		this.bodyContext = bodyContext;
+		this.experimentNames = Objects.requireNonNull(experimentNames);
 		type = draft.type();
 		facets = draft.facets();
 		parameters.addAll(draft.parameters());
@@ -228,12 +242,14 @@ public class ExperimentWizard extends TitleAreaDialog {
 		Composite form = WizardWidgets.composite(parent, 1);
 		form.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-		Composite header = WizardWidgets.composite(form, 4);
+		Composite header = WizardWidgets.composite(form, 8);
 		header.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		header.setData(FIELD, "Header");
 		WizardWidgets.label(header, "Name", "Name of the experiment, shown in the interface (any text without quotes).");
 		name = new Text(header, SWT.BORDER | SWT.SINGLE);
 		name.setText(original.name());
 		field(name, "Name", 220);
+		facetControl(header, ExperimentFacet.DECLARED.stream().filter(f -> f.name().equals("title")).findFirst().orElseThrow(), 1);
 		WizardWidgets.label(header, "Type",
 				"gui: interactive experiment with displays; batch: exploration of the parameters; test: runs tests.");
 		typeCombo = new Combo(header, SWT.READ_ONLY | SWT.DROP_DOWN);
@@ -242,8 +258,9 @@ public class ExperimentWizard extends TitleAreaDialog {
 		typeCombo.setItems(types.toArray(String[]::new));
 		typeCombo.select(types.indexOf(type));
 		field(typeCombo, "Type", 90);
+		facetControl(header, ExperimentFacet.DECLARED.stream().filter(f -> f.name().equals("virtual")).findFirst().orElseThrow(), 1);
 
-		commonArea = WizardWidgets.composite(form, 4);
+		commonArea = WizardWidgets.composite(form, 6);
 		commonArea.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
 		commonArea.setData(FIELD, "Common");
 		typeArea = new Group(form, SWT.NONE);
@@ -339,8 +356,14 @@ public class ExperimentWizard extends TitleAreaDialog {
 		try {
 			for (Composite area : List.of(commonArea, typeArea, otherArea))
 				for (Control child : area.getChildren()) child.dispose();
-			Set<String> shown = new HashSet<>();
+			Set<String> shown = new HashSet<>(List.of("title", "virtual", "skills", "schedules", "parallel"));
+			for (String key : List.of("autorun", "benchmark", "record")) {
+				ExperimentFacet facet = ExperimentFacet.DECLARED.stream().filter(f -> f.name().equals(key)).findFirst().orElseThrow();
+				shown.add(key);
+				facetControl(commonArea, facet, 1);
+			}
 			for (ExperimentFacet facet : ExperimentFacet.of(ExperimentFacet.COMMON)) {
+				if (shown.contains(facet.name())) continue;
 				shown.add(facet.name());
 				facetControl(commonArea, facet, 1);
 			}
@@ -351,6 +374,7 @@ public class ExperimentWizard extends TitleAreaDialog {
 			});
 			List<ExperimentFacet> specific = ExperimentFacet.of(type);
 			for (ExperimentFacet facet : specific) {
+				if (shown.contains(facet.name())) continue;
 				shown.add(facet.name());
 				facetControl(typeArea, facet, 1);
 			}
@@ -362,6 +386,12 @@ public class ExperimentWizard extends TitleAreaDialog {
 			});
 			note.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 4, 1));
 			for (Facet facet : List.copyOf(facets)) if (!shown.contains(facet.name())) {
+				var flag = ExperimentFacet.DECLARED.stream().filter(f -> f.name().equals(facet.name()) && f.flag())
+						.findFirst();
+				if (flag.isPresent()) {
+					facetControl(otherArea, flag.get(), 1);
+					continue;
+				}
 				String section = ExperimentFacet.section(facet.name());
 				String label = facet.name() + (section == null ? " (other)" : " (" + section + " only)");
 				String description = section == null ? "Facet not declared for experiments; kept as written. Clear it to remove it."
@@ -377,22 +407,56 @@ public class ExperimentWizard extends TitleAreaDialog {
 
 	private void facetControl(final Composite area, final ExperimentFacet facet, final int span) {
 		String value = value(facet.name());
-		boolean literal = value == null || "true".equals(value.trim()) || "false".equals(value.trim());
-		if (facet.flag() && literal) {
-			Button check = new Button(area, SWT.CHECK);
-			check.setText(facet.name());
-			check.setSelection(value != null && "true".equals(value.trim()));
-			check.setToolTipText(facet.documentation());
-			check.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
-			check.setData(FIELD, "facet:" + facet.name());
-			WizardWidgets.accessible(check, facet.name());
-			check.addListener(SWT.Selection, e -> {
-				String before = original.facet(facet.name());
-				// Unchecking keeps an explicit 'false' that was in the source; otherwise the facet is removed.
-				set(facet.name(), check.getSelection() ? "true"
-						: before != null && "false".equals(before.trim()) ? before : null);
-			});
-		} else expression(area, facet.name(), facet.name(), facet.documentation() + " (" + facet.type() + ")", value, span);
+		if ("parent".equals(facet.name()) || "control".equals(facet.name())) {
+			WizardWidgets.label(area, facet.name(), facet.documentation());
+			Combo choice = new Combo(area, SWT.BORDER | SWT.DROP_DOWN);
+			java.util.TreeSet<String> choices = new java.util.TreeSet<>("parent".equals(facet.name())
+					? experimentNames.get() : possibleControlNames());
+			choices.add("");
+			if (value != null) choices.add(value);
+			choice.setItems(choices.toArray(String[]::new));
+			choice.setText(value == null ? "" : value);
+			field(choice, "facet:" + facet.name(), 160);
+			choice.setToolTipText(facet.documentation() + ("parent".equals(facet.name())
+					? ". Choose an existing experiment, or enter an imported experiment name."
+					: ". Choose a registered control architecture.") + " Clear to omit the facet.");
+			choice.addModifyListener(e -> set(facet.name(), choice.getText().isBlank() ? null : choice.getText()));
+		} else if (facet.flag()) {
+			literalCheckbox(area, facet.name(), value, () -> facet.defaultValue(facets),
+					facet.documentation() + ("autorun".equals(facet.name()) ? " Default follows the live auto-run preference." : ""),
+					"facet:" + facet.name(), next -> set(facet.name(), next));
+		} else expression(area, facet.name(), facet.name(), facet.documentation() + " (" + facet.type() + ")"
+				+ ("record".equals(facet.name()) ? ". Initial UI expression: false; untouched omitted record remains omitted." : ""),
+				value == null && "record".equals(facet.name()) ? "false" : value, span);
+	}
+
+	/** The same registered control architectures offered by the species form. */
+	protected List<String> possibleControlNames() {
+		return gama.api.additions.registries.GamaSkillRegistry.INSTANCE.getArchitectureNames().stream().sorted().toList();
+	}
+
+	/** Literal-only UI preserves existing expressions until the user explicitly replaces them by a checkbox edit. */
+	private void literalCheckbox(final Composite parent, final String label, final String value,
+			final java.util.function.Supplier<Boolean> defaults, final String description, final String key,
+			final Consumer<String> setter) {
+		Boolean defaultValue = defaults.get();
+		Button check = new Button(parent, SWT.CHECK);
+		check.setText(WizardWidgets.labelText(label));
+		check.setSelection(value == null ? Boolean.TRUE.equals(defaultValue)
+				: "true".equals(value.trim()) || (!"false".equals(value.trim()) && Boolean.TRUE.equals(defaultValue)));
+		check.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
+		check.setData(FIELD, key);
+		WizardWidgets.accessible(check, label);
+		check.setToolTipText(description + " Default: " + (defaultValue == null ? "inherited/runtime context" : defaultValue)
+				+ ". Edited literals equal to a known default are omitted."
+				+ (value != null && !"true".equals(value.trim()) && !"false".equals(value.trim())
+						? " Existing expression retained until checkbox edited: " + value : ""));
+		check.addListener(SWT.Selection, e -> {
+			if (loading) return;
+			Boolean effectiveDefault = defaults.get();
+			setter.accept(effectiveDefault != null && check.getSelection() == effectiveDefault
+					? null : Boolean.toString(check.getSelection()));
+		});
 	}
 
 	private void expression(final Composite area, final String label, final String facet, final String description,
@@ -417,6 +481,7 @@ public class ExperimentWizard extends TitleAreaDialog {
 	private void set(final String facet, final String value) {
 		if (loading) return;
 		facets = ExperimentDraft.withFacet(facets, original.facets(), facet, value);
+		gaml.compiler.ui.wizards.species.BooleanFacetField.refreshDefaults(commonArea.getParent());
 		changed();
 	}
 
@@ -625,17 +690,15 @@ public class ExperimentWizard extends TitleAreaDialog {
 
 	private void detailFacet(final Composite parent, final String prefix, final String facet, final boolean flag,
 			final String value, final Consumer<String> setter) {
-		boolean literal = value == null || "true".equals(value.trim()) || "false".equals(value.trim());
-		if (flag && literal) {
-			Button check = new Button(parent, SWT.CHECK);
-			check.setText(facet);
-			check.setSelection(value != null && "true".equals(value.trim()));
-			check.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
-			check.setData(FIELD, prefix + facet);
-			WizardWidgets.accessible(check, facet);
-			// Unchecking keeps an explicit 'false'; otherwise the facet is removed.
-			check.addListener(SWT.Selection, e -> setter.accept(check.getSelection() ? "true"
-					: value != null && "false".equals(value.trim()) ? value : null));
+		if (flag) {
+			if ("slider".equals(facet)) {
+				literalCheckbox(parent, facet, value, () -> true,
+						"Allows a slider when the parameter has suitable numeric bounds.", prefix + facet, setter);
+			} else new gaml.compiler.ui.wizards.species.BooleanFacetField(parent, facet, value,
+					() -> "slider".equals(facet) ? Boolean.TRUE : null, false,
+					"slider".equals(facet) ? "Allows a slider when the parameter has suitable numeric bounds."
+							: "Read-only status also depends on the target variable's modifiability.",
+					FIELD, prefix + facet, setter);
 			return;
 		}
 		WizardWidgets.label(parent, facet, "GAML expression for " + facet + ":");
@@ -674,7 +737,7 @@ public class ExperimentWizard extends TitleAreaDialog {
 		table.setLinesVisible(true);
 		for (String column : columns) {
 			TableColumn tc = new TableColumn(table, SWT.NONE);
-			tc.setText(column);
+			tc.setText(WizardWidgets.labelText(column));
 			tc.setWidth(column.equals("Facets") ? 260 : 140);
 		}
 		GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);

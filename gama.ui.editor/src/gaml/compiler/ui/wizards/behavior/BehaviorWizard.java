@@ -36,7 +36,8 @@ import gaml.compiler.ui.wizards.species.WizardWidgets;
  * Detached behaviour settings (reflex, state, task, plan, perceive, rule): kind, name, the kind's facets from the
  * compiler declarations (check boxes for literal booleans, expressions otherwise, other facets kept verbatim) and the
  * code, edited in an embedded GAML editor below a live declaration label. Compilation runs only on Validate and OK.
- * Editor adapters own the undoable apply.
+ * Editor adapters own the undoable apply. Lifecycle kinds share the Reflex Editor; other kinds use a dedicated,
+ * kind-locked editor (State Editor, Rule Editor, etc.) for diagram adapters.
  */
 public class BehaviorWizard extends TitleAreaDialog {
 
@@ -75,18 +76,18 @@ public class BehaviorWizard extends TitleAreaDialog {
 	private boolean loading;
 	private boolean ready;
 
-	/** Edition (or creation) of a behaviour whose kind is fixed. */
+	/** Edition (or creation), allowing only lossless lifecycle conversions; other kinds are fixed. */
 	public BehaviorWizard(final Shell shell, final BehaviorDraft draft, final Function<BehaviorDraft, String> validator,
 			final Function<BehaviorDraft, ActionBodyContext> bodyContext) {
-		this(shell, draft, Set.of(draft.kind()), validator, bodyContext);
+		this(shell, draft, draft.kind().convertibleKinds(), validator, bodyContext);
 	}
 
 	/**
 	 * @param draft
 	 *            initial values; returned unchanged (same instance) when the form is not modified
 	 * @param selectableKinds
-	 *            kinds offered by the Kind selector (creation); a single kind fixes it. Facets are kept when the kind
-	 *            changes (those unknown to the new kind are listed as other facets)
+	 *            kinds offered by the Kind selector, restricted to the draft's convertible kinds; a single kind fixes
+	 *            it. Non-lifecycle kinds are always locked. Facets are kept when a lifecycle kind changes.
 	 * @param validator
 	 *            adapter validation run on Validate/OK after local and contextual checks; returns an error or null
 	 * @param bodyContext
@@ -98,7 +99,9 @@ public class BehaviorWizard extends TitleAreaDialog {
 		super(shell);
 		original = Objects.requireNonNull(draft);
 		List<BehaviorKind> offered = new ArrayList<>();
-		for (BehaviorKind k : BehaviorKind.values()) if (selectableKinds.contains(k) || k == draft.kind()) offered.add(k);
+		for (BehaviorKind k : BehaviorKind.values())
+			if (k == draft.kind() || selectableKinds.contains(k) && draft.kind().convertibleKinds().contains(k))
+				offered.add(k);
 		kinds = List.copyOf(offered);
 		this.validator = Objects.requireNonNull(validator);
 		this.bodyContext = bodyContext;
@@ -118,7 +121,7 @@ public class BehaviorWizard extends TitleAreaDialog {
 	@Override
 	protected Control createDialogArea(final Composite parent) {
 		Composite area = (Composite) super.createDialogArea(parent);
-		getShell().setText("Behavior");
+		getShell().setText(editorTitle());
 		Composite form = createForm(area, new FormHost() {
 			@Override
 			public void setTitle(final String title) { BehaviorWizard.this.setTitle(title); }
@@ -147,15 +150,17 @@ public class BehaviorWizard extends TitleAreaDialog {
 	/** Builds the form in another container; use {@link #accept()} instead of OK. */
 	public Composite createForm(final Composite parent, final FormHost formHost) {
 		host = Objects.requireNonNull(formHost);
-		host.setTitle("Behavior settings");
-		host.setMessage("Define the behavior, its facets and its code. Code is verified on Validate and OK.");
+		host.setTitle(editorTitle());
+		host.setMessage("Define the " + (BehaviorKind.LIFECYCLE.contains(kind) ? "reflex, init or abort" : kind.keyword())
+				+ ", its facets and its code. Code is verified on Validate and OK.");
 		Composite form = WizardWidgets.composite(parent, 1);
 		form.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-		Composite header = WizardWidgets.composite(form, 4);
+		boolean lifecycle = BehaviorKind.LIFECYCLE.contains(kind);
+		Composite header = WizardWidgets.composite(form, lifecycle ? 6 : 4);
 		header.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		WizardWidgets.label(header, "Kind", "Kind of behavior: reflex, state (fsm), task (weighted tasks), plan, perceive"
-				+ " or rule (BDI).");
+		WizardWidgets.label(header, "Kind", BehaviorKind.LIFECYCLE.contains(kind)
+				? "Lifecycle declaration: reflex, init or abort." : "This editor only edits " + kind.keyword() + " declarations.");
 		kindCombo = new Combo(header, SWT.READ_ONLY | SWT.DROP_DOWN);
 		kindCombo.setItems(kinds.stream().map(BehaviorKind::keyword).toArray(String[]::new));
 		kindCombo.select(kinds.indexOf(kind));
@@ -165,6 +170,18 @@ public class BehaviorWizard extends TitleAreaDialog {
 		name = new Text(header, SWT.BORDER | SWT.SINGLE);
 		name.setText(original.name());
 		field(name, "Name", 180);
+		if (lifecycle) {
+			String help = "Boolean GAML condition. Default: true (unconditional). An edited true or empty value omits the facet.";
+			WizardWidgets.label(header, "When", help);
+			Text when = new Text(header, SWT.BORDER | SWT.SINGLE);
+			when.setText(value("when") == null ? "true" : value("when"));
+			when.setToolTipText(help);
+			field(when, "facet:when", 260);
+			when.addModifyListener(e -> {
+				String text = when.getText();
+				set("when", text.isBlank() || "true".equals(text.trim()) ? null : text);
+			});
+		}
 
 		Label facetTitle = new Label(form, SWT.NONE);
 		facetTitle.setText("Facets:");
@@ -206,6 +223,12 @@ public class BehaviorWizard extends TitleAreaDialog {
 		return form;
 	}
 
+	private String editorTitle() {
+		if (BehaviorKind.LIFECYCLE.contains(original.kind())) return "Reflex Editor";
+		String keyword = original.kind().keyword();
+		return Character.toUpperCase(keyword.charAt(0)) + keyword.substring(1) + " Editor";
+	}
+
 	/** Rebuilds the facet fields of the current kind, then the facets it does not declare (kept verbatim). */
 	private void renderFacets() {
 		loading = true;
@@ -216,22 +239,15 @@ public class BehaviorWizard extends TitleAreaDialog {
 			Set<String> known = new HashSet<>();
 			for (BehaviorFacet facet : declared) {
 				known.add(facet.name());
+				if (BehaviorKind.LIFECYCLE.contains(kind) && "when".equals(facet.name())) continue;
 				String value = value(facet.name());
-				boolean literal = value == null || "true".equals(value.trim()) || "false".equals(value.trim());
-				if (facet.bool() && literal) {
-					Button check = new Button(facetArea, SWT.CHECK);
-					check.setText(facet.name());
-					check.setSelection(value != null && "true".equals(value.trim()));
-					check.setToolTipText(facet.documentation());
-					check.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
-					check.setData(FIELD, "facet:" + facet.name());
-					WizardWidgets.accessible(check, facet.name());
-					check.addListener(SWT.Selection, e -> {
-						String before = originalValue(facet.name());
-						// Unchecking keeps an explicit 'false' that was in the source; otherwise the facet is removed.
-						set(facet.name(), check.getSelection() ? "true" : "false".equals(before) ? before : null);
-					});
-					facetControls.put(facet.name(), check);
+				if (facet.bool()) {
+					var field = new gaml.compiler.ui.wizards.species.BooleanFacetField(facetArea, facet.name(), value,
+							() -> facet.defaultValue(kind), facet.required(), facet.documentation()
+									+ ("finished_when".equals(facet.name())
+											? " Omitting this condition is distinct from supplying a literal condition." : ""), FIELD,
+							"facet:" + facet.name(), next -> set(facet.name(), next));
+					facetControls.put(facet.name(), field);
 				} else expression(facet.name() + (facet.required() ? " *" : ""), facet.name(),
 						facet.documentation() + (facet.type().isEmpty() ? "" : " (" + facet.type() + ")"), value);
 			}
@@ -262,11 +278,6 @@ public class BehaviorWizard extends TitleAreaDialog {
 	private String value(final String facet) {
 		for (var f : facets) if (f.name().equals(facet)) return f.value();
 		return null;
-	}
-
-	private String originalValue(final String facet) {
-		String value = original.facet(facet);
-		return value == null ? null : value.trim();
 	}
 
 	/** Sets a facet in place, appends it, or removes it (null); an unchanged original value keeps its instance. */

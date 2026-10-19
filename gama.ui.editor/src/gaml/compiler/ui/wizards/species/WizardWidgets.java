@@ -36,7 +36,7 @@ public final class WizardWidgets {
 
 	public static Label label(final Composite parent, final String text, final String description) {
 		Label label = new Label(parent, SWT.NONE);
-		label.setText(text + ":");
+		label.setText(labelText(text) + ":");
 		label.setToolTipText(description);
 		return label;
 	}
@@ -44,7 +44,7 @@ public final class WizardWidgets {
 	/** A push button at least as wide as the standard dialog buttons. */
 	public static Button button(final Composite parent, final String text, final String description) {
 		Button button = new Button(parent, SWT.PUSH);
-		button.setText(text);
+		button.setText(labelText(text));
 		GridData data = new GridData(SWT.FILL, SWT.CENTER, false, false);
 		GC gc = new GC(button);
 		gc.setFont(button.getFont());
@@ -55,6 +55,16 @@ public final class WizardWidgets {
 		button.setToolTipText(description);
 		accessible(button, description);
 		return button;
+	}
+
+	/** Sentence-case visible wizard labels without changing facet keys or GAML identifiers. */
+	public static String labelText(final String text) {
+		if (text == null || text.isEmpty()) return text;
+		String words = text.replace('_', ' ');
+		int first = 0;
+		while (first < words.length() && !Character.isLetterOrDigit(words.charAt(first))) first++;
+		if (first == words.length()) return words;
+		return words.substring(0, first) + Character.toUpperCase(words.charAt(first)) + words.substring(first + 1);
 	}
 
 	public static void accessible(final Control control, final String label) {

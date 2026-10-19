@@ -25,6 +25,17 @@ public record BehaviorFacet(String name, String type, boolean required, String d
 		return "bool".equals(type);
 	}
 
+	/** Runtime defaults: reflex/BDI guards are unconditional; FSM flags, BDI all/instantaneous are false. */
+	public Boolean defaultValue(final BehaviorKind kind) {
+		return switch (name) {
+			case "when" -> true;
+			case "initial", "final" -> kind == BehaviorKind.STATE ? false : null;
+			case "instantaneous" -> kind == BehaviorKind.PLAN ? false : null;
+			case "all" -> kind == BehaviorKind.RULE ? false : null;
+			default -> null; // finished_when has absence semantics; parallel may be an integer threshold.
+		};
+	}
+
 	private static BehaviorFacet f(final String name, final String type, final boolean required, final String doc) {
 		return new BehaviorFacet(name, type, required, doc);
 	}
@@ -89,7 +100,8 @@ public record BehaviorFacet(String name, String type, boolean required, String d
 			symbol.getPossibleFacets().forEach((name, facet) -> {
 				if ("name".equals(name) || facet.isInternal()) return;
 				var types = facet.getTypes();
-				String type = types == null || types.length == 0 ? "" : types[0].getName();
+				String type = types == null || types.length == 0 ? ""
+						: String.join(" or ", java.util.Arrays.stream(types).map(t -> t.getName()).toList());
 				String doc = facet.getDocumentation() == null ? "" : facet.getDocumentation().getContents();
 				result.add(new BehaviorFacet(name, type, !facet.isOptional(), doc));
 			});

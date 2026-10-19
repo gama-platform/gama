@@ -89,6 +89,22 @@ public final class BehaviorSourceTest {
 		check(init.draft().equals(new BehaviorDraft(BehaviorKind.INIT, "", List.of(), " energy <- 2.0; ")),
 				"Anonymous init read: " + init.draft());
 		check(init.isBehaviorSelection(source.indexOf("init {"), 4), "Init header selection enables edit");
+		for (var adapter : List.of(move, anonymous, init))
+			check(BehaviorWizardHandler.canEdit(adapter,
+					source.indexOf(adapter == move ? "reflex move" : adapter == anonymous ? "reflex {}" : "init {"), 0),
+					"Text editor offers lifecycle header: " + adapter.draft().kind());
+		for (var adapter : List.of(idle, busy, work, perceive, plan, rule))
+			check(!BehaviorWizardHandler.canEdit(adapter, 0, source.length()),
+					"Non-lifecycle full declaration selection cannot open generic text editor: " + adapter.draft().kind());
+		for (String header : List.of("state idle", "state busy", "task work", "perceive target", "plan go_home",
+				"rule belief")) {
+			int offset = source.indexOf(header);
+			var adapter = new BehaviorSource(source, offset, parser, false);
+			check(adapter.isBehaviorSelection(offset, 0) && !BehaviorWizardHandler.canEdit(adapter, offset, 0),
+					"Non-lifecycle header is supported by source adapter but not generic text UI: " + header);
+		}
+		check(!BehaviorWizardHandler.canEdit(move, source.indexOf("energy <- energy -"), 0),
+				"Text editor lifecycle filter still excludes body selections");
 		check(!init.isBehaviorSelection(source.indexOf("energy <- 2.0"), 0),
 				"Caret inside init code is left to the species/experiment form");
 		check(refused(() -> new BehaviorSource(source, source.indexOf("int total"), parser, false)),
@@ -100,6 +116,20 @@ public final class BehaviorSourceTest {
 		check(move.render(d) == source, "Unchanged draft returns the exact source instance");
 		check(move.render(new BehaviorDraft(d.kind(), d.name(), d.facets(), d.body())).equals(source),
 				"Equal draft is a no-op");
+		for (BehaviorKind lifecycle : BehaviorKind.LIFECYCLE) {
+			for (String condition : List.of("", " when: true", " when: false", " when: cycle > 0")) {
+				String fixture = "model m\nglobal {\n\t" + lifecycle.keyword() + condition
+						+ " { /* retained body */ }\n}\n";
+				var adapter = new BehaviorSource(fixture, fixture.indexOf(lifecycle.keyword()), parser, false);
+				check(adapter.render(adapter.draft()) == fixture, "Inline condition no-op source: " + lifecycle + condition);
+				String edited = adapter.render(adapter.draft().withFacet("when", "cycle > 1"));
+				parses(parser, edited, "Inline condition edit: " + lifecycle + condition);
+				check(edited.contains("when: cycle > 1 { /* retained body */ }"), "Condition edit keeps body");
+				String omitted = adapter.render(adapter.draft().withFacet("when", null));
+				check(omitted.equals("model m\nglobal {\n\t" + lifecycle.keyword() + " { /* retained body */ }\n}\n"),
+						"Optional default omission only removes condition");
+			}
+		}
 
 		// ---- minimal patches
 		String renamed = move.render(named(d, "walk"));

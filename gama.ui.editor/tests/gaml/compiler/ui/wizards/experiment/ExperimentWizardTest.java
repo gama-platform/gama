@@ -28,6 +28,7 @@ import gaml.compiler.ui.wizards.action.ActionBodyContext;
 import gaml.compiler.ui.wizards.action.ActionVerifier;
 import gaml.compiler.ui.wizards.species.SpeciesDraft.Facet;
 import gaml.compiler.ui.wizards.species.SpeciesDraft.Variable;
+import gaml.compiler.ui.wizards.species.WizardWidgets;
 
 /** Native SWT regression of the experiment dialog; the compiler is substituted. */
 public final class ExperimentWizardTest {
@@ -41,8 +42,11 @@ public final class ExperimentWizardTest {
 			super(shell, draft, validator, List.of("int", "float", "string"), () -> List.of("n", "rate"),
 					d -> new ActionBodyContext(
 							org.eclipse.emf.common.util.URI.createURI("synthetic:/t.experiment-wizard.gaml"), "prefix{",
-							"}"));
+							"}"), () -> List.of("base", "other"));
 		}
+
+		@Override
+		protected List<String> possibleControlNames() { return List.of("reflex", "fsm", "weighted_tasks"); }
 
 		@Override
 		protected List<ActionVerifier.Problem> compile(final ActionBodyContext context, final String code) {
@@ -113,10 +117,105 @@ public final class ExperimentWizardTest {
 		t.notifyListeners(SWT.Selection, new Event());
 	}
 
+	private static void simplifiedSettings(final Shell shell, final Display display) {
+		var draft = new ExperimentDraft("settings", "batch", List.of(new Facet("title", "\"Original\""),
+				new Facet("virtual", "virtual_condition"), new Facet("autorun", "auto_condition"),
+				new Facet("benchmark", "benchmark_condition"), new Facet("keep_seed", "seed_condition"),
+				new Facet("keep_simulations", "keep_condition"), new Facet("skills", "[moving]"),
+				new Facet("schedules", "simulation"), new Facet("parallel", "2")),
+				List.of(), "", List.of(new ExperimentDraft.Parameter("Count", "n", List.of(new Facet("slider", "slider_condition")))),
+				List.of());
+		Dialog d = new Dialog(shell, draft, x -> null);
+		d.setBlockOnOpen(false); d.open();
+		while (display.readAndDispatch()) {}
+		check(d.readDraft() == draft, "Nonliteral checkbox values and hidden facets retained on open");
+		Control name = field(d, "Name"), title = field(d, "facet:title"), virtual = field(d, "facet:virtual"),
+				type = field(d, "Type");
+		check(name.getParent() == title.getParent() && title.getParent() == virtual.getParent()
+				&& type.getParent() == name.getParent() && name.getParent() == field(d, "Header"),
+				"Name, Title, Type and Virtual share header");
+		check(name.toDisplay(0, 0).x < title.toDisplay(0, 0).x && title.toDisplay(0, 0).x < type.toDisplay(0, 0).x
+				&& type.toDisplay(0, 0).x < virtual.toDisplay(0, 0).x
+				&& Math.abs(name.toDisplay(0, 0).y - virtual.toDisplay(0, 0).y) < 12, "Header order Name, Title, Type, Virtual");
+		check(field(d, "facet:parent") instanceof Combo parent && List.of(parent.getItems()).containsAll(List.of("base", "other"))
+				&& parent.getText().isEmpty(), "Parent offers existing experiments without materializing a default");
+		check(field(d, "facet:control") instanceof Combo control
+				&& List.of(control.getItems()).containsAll(List.of("reflex", "fsm", "weighted_tasks"))
+				&& control.getText().isEmpty(), "Control offers registered architectures without changing omitted source");
+		check(virtual.getParent().getChildren()[virtual.getParent().getChildren().length - 1] == virtual,
+				"Virtual ends first row");
+		for (String key : List.of("virtual", "autorun", "benchmark", "keep_seed", "keep_simulations")) {
+			check(field(d, "facet:" + key) instanceof Button b && (b.getStyle() & SWT.CHECK) != 0
+					&& field(d, "facet:" + key + ":expression") == null, "Checkbox-only flag: " + key);
+			check(((Button) field(d, "facet:" + key)).getText().equals(WizardWidgets.labelText(key)),
+					"Visible checkbox label is capitalized: " + key);
+		}
+		check(field(d, "param:slider") instanceof Button && field(d, "param:slider:expression") == null,
+				"Slider expression retained behind direct checkbox only");
+		for (String key : List.of("skills", "schedules", "parallel"))
+			check(field(d, "facet:" + key) == null, "Removed facet UI absent: " + key);
+		check(field(d, "facet:record") instanceof Text t && t.getText().equals("false")
+				&& d.readDraft().facet("record") == null, "Record shows false without rewriting omitted source");
+		check(d.accept() && d.getResult() == draft && d.compiled.isEmpty(), "Nonliteral checkbox no-op stays identical");
+		((Text) title).setText("\"Changed title\"");
+		((Text) field(d, "facet:record")).setText("cycle > 5");
+		for (String key : List.of("virtual", "autorun", "benchmark", "keep_seed", "keep_simulations"))
+			toggle(d, "facet:" + key, false);
+		toggle(d, "param:slider", false);
+		check("false".equals(d.readDraft().parameters().getFirst().facet("slider")), "Slider edit replaces expression");
+		check(d.readDraft().facet("virtual") == null && d.readDraft().facet("benchmark") == null
+				&& d.readDraft().facet("keep_seed") == null && "false".equals(d.readDraft().facet("keep_simulations")),
+				"Checkbox edits normalize verified defaults, not assumed false");
+		check(java.util.Objects.equals(d.readDraft().facet("autorun"),
+				gama.api.utils.prefs.GamaPreferences.Runtime.CORE_AUTO_RUN.getValue() ? "false" : null),
+				"Autorun edit follows actual live preference");
+		check("[moving]".equals(d.readDraft().facet("skills")) && "simulation".equals(d.readDraft().facet("schedules"))
+				&& "2".equals(d.readDraft().facet("parallel")), "Editing visible fields retains removed facets");
+		String generated = ExperimentWizard.render(d.readDraft(), null);
+		check(generated.contains("title: \"Changed title\"") && generated.contains("record: cycle > 5")
+				&& generated.contains("slider: false") && generated.contains("skills: [moving]")
+				&& generated.contains("schedules: simulation") && generated.contains("parallel: 2"), "Generated GAML keeps edited and hidden facets");
+		var parser = gaml.compiler.GamlStandaloneSetup.doSetup().getInstance(org.eclipse.xtext.parser.IParser.class);
+		check(!parser.parse(new java.io.StringReader("model m\nglobal {int n;}\n" + generated)).hasSyntaxErrors(),
+				"Checkbox/title/record GAML generation parses");
+		select(d, "gui");
+		check(field(d, "facet:keep_simulations") instanceof Button && field(d, "facet:keep_simulations:expression") == null,
+				"Inactive batch flag remains checkbox-only");
+		check(((Text) field(d, "facet:record")).getText().equals("cycle > 5"), "Record expression survives type switch");
+		d.close();
+		var customFacets = ExperimentDraft.withFacet(draft.facets(), draft.facets(), "parent", "imported_experiment");
+		customFacets = ExperimentDraft.withFacet(customFacets, draft.facets(), "control", "plugin_control");
+		var custom = new ExperimentDraft(draft.name(), draft.type(), customFacets, draft.variables(), draft.init(),
+				draft.parameters(), draft.monitors());
+		d = new Dialog(shell, custom, x -> null);
+		d.create();
+		for (String key : List.of("parent", "control")) {
+			var choice = (Combo) field(d, "facet:" + key);
+			check(List.of(choice.getItems()).contains(custom.facet(key)) && choice.getText().equals(custom.facet(key)),
+					"Unknown loaded choice preserved and offered: " + key);
+		}
+		check(d.accept() && d.getResult() == custom, "Choice controls preserve exact no-op");
+		((Combo) field(d, "facet:parent")).setText("base");
+		((Combo) field(d, "facet:control")).setText("fsm");
+		select(d, "gui");
+		check(((Combo) field(d, "facet:parent")).getText().equals("base")
+				&& ((Combo) field(d, "facet:control")).getText().equals("fsm"), "Parent/control selections survive type switch");
+		check(d.accept() && d.getResult().facet("parent").equals("base") && d.getResult().facet("control").equals("fsm"),
+				"Parent/control edits accepted and validated");
+		d.cancel();
+		check(d.getResult() == null && custom.facet("parent").equals("imported_experiment"), "Choice edits are detached on Cancel");
+		d = new Dialog(shell, draft, x -> null); d.setBlockOnOpen(false); d.open();
+		((Text) field(d, "facet:title")).setText("\"Cancelled\"");
+		toggle(d, "facet:virtual", true);
+		d.cancel();
+		check(d.getResult() == null && draft.facet("virtual").equals("virtual_condition"), "Checkbox/title Cancel is detached");
+	}
+
 	public static void main(final String[] args) {
 		Display display = new Display();
 		Shell shell = new Shell(display);
 		try {
+			simplifiedSettings(shell, display);
 			AtomicInteger validations = new AtomicInteger();
 			ExperimentDraft gui = new ExperimentDraft("My exp", "gui",
 					List.of(new Facet("autorun", "true"), new Facet("parallel", "nb > 2"), new Facet("custom", "3")),
@@ -135,12 +234,12 @@ public final class ExperimentWizardTest {
 			check(((Combo) field(d, "Type")).getText().equals("gui"), "Type loaded");
 			check(field(d, "facet:autorun") instanceof Button b && b.getSelection()
 					&& inside(b, field(d, "Common")), "Literal flag as checked box in the common section");
-			check(field(d, "facet:parallel") instanceof Text t && t.getText().equals("nb > 2"),
-					"Expression-valued flag shown as expression, not a check box");
+			check(field(d, "facet:parallel") == null && "nb > 2".equals(d.readDraft().facet("parallel")),
+					"Parallel hidden without losing expression");
 			check(field(d, "facet:benchmark") instanceof Button b && !b.getSelection(), "Absent flag unchecked");
 			check(field(d, "facet:keep_seed") == null, "Batch flag hidden for gui");
-			check(field(d, "facet:record") != null && inside(field(d, "facet:record"), field(d, "TypeSection")),
-					"GUI section holds record");
+			check(field(d, "facet:record") instanceof Text t && t.getText().equals("false")
+					&& inside(t, field(d, "Common")), "Common row holds Record expression default false");
 			check(field(d, "facet:repeat") == null, "Batch facets hidden for gui");
 			check(field(d, "facet:custom") instanceof Text t && t.getText().equals("3") && inside(t, field(d, "Other")),
 					"Undeclared facet kept in the other area");
@@ -179,9 +278,13 @@ public final class ExperimentWizardTest {
 
 			// ---- check boxes
 			toggle(d, "facet:autorun", false);
-			check(d.readDraft().facet("autorun") == null, "Unchecking an implicit flag removes it");
+			check(java.util.Objects.equals(d.readDraft().facet("autorun"),
+					gama.api.utils.prefs.GamaPreferences.Runtime.CORE_AUTO_RUN.getValue() ? "false" : null),
+					"Autorun omission follows live preference");
 			toggle(d, "facet:autorun", true);
-			check(d.readDraft() == gui, "Rechecking restores the identical draft");
+			check(java.util.Objects.equals(d.readDraft().facet("autorun"),
+					gama.api.utils.prefs.GamaPreferences.Runtime.CORE_AUTO_RUN.getValue() ? null : "true"),
+					"Rechecking writes only a preference override");
 			toggle(d, "facet:benchmark", true);
 			check("true".equals(d.readDraft().facet("benchmark")), "Checking sets true");
 			toggle(d, "facet:benchmark", false);
@@ -194,7 +297,7 @@ public final class ExperimentWizardTest {
 			check(((Group) field(d, "TypeSection")).getText().equals("Batch exploration")
 					&& inside(field(d, "facet:repeat"), field(d, "TypeSection"))
 					&& field(d, "facet:keep_simulations") instanceof Button, "Batch section reorganized");
-			check(field(d, "facet:record") == null, "GUI section gone");
+			check(field(d, "facet:record") instanceof Text, "Record expression retained across experiment types");
 			check(field(d, "Init") == init && !init.isDisposed() && field(d, "Attributes") != null
 					&& field(d, "Monitors") != null, "Pages survive the reorganization of the tabs");
 			check(((Text) field(d, "facet:custom")).getText().equals("4"), "Edited other facet survives the switch");
@@ -236,10 +339,10 @@ public final class ExperimentWizardTest {
 			((Text) field(d, "param:title")).setText("Rate");
 			((Combo) field(d, "param:var")).setText("rate");
 			((Text) field(d, "param:max")).setText("1.0");
-			toggle(d, "param:slider", true);
+			toggle(d, "param:slider", false);
 			added = d.readDraft().parameters().get(1);
 			check(added.title().equals("Rate") && added.variable().equals("rate") && "1.0".equals(added.facet("max"))
-					&& "true".equals(added.facet("slider")), "Parameter edited through the detail panel");
+					&& "false".equals(added.facet("slider")), "Parameter edited through the detail panel");
 			check(((Table) field(d, "Parameters")).getItem(1).getText(2).contains("max: 1.0"), "Row refreshed");
 			((Text) field(d, "param:title")).setText("");
 			check(!d.ok() && d.error() != null, "Parameter title required");
@@ -304,9 +407,24 @@ public final class ExperimentWizardTest {
 			d = new Dialog(shell, keep, x -> null);
 			d.create();
 			check(field(d, "facet:keep_seed") instanceof Button b && !b.getSelection(), "Explicit false unchecked");
+			check(d.readDraft() == keep, "Untouched explicit false is a no-op");
 			toggle(d, "facet:keep_seed", true);
 			toggle(d, "facet:keep_seed", false);
-			check(d.readDraft() == keep, "Unchecking keeps the explicit false");
+			check(d.readDraft().facet("keep_seed") == null, "Edited default false omitted");
+			check(((Button) field(d, "facet:keep_simulations")).getSelection(), "Keep simulations defaults true");
+			toggle(d, "facet:keep_simulations", false);
+			check("false".equals(d.readDraft().facet("keep_simulations")), "False overrides keep simulations default");
+			select(d, "gui");
+			select(d, "batch");
+			check(!((Button) field(d, "facet:keep_simulations")).getSelection(), "Type round trip keeps false override");
+			toggle(d, "facet:keep_simulations", true);
+			check(d.readDraft().facet("keep_simulations") == null, "Restoring true omits keep simulations facet");
+			((Combo) field(d, "facet:parent")).setText("base");
+			check(field(d, "facet:keep_seed") instanceof Button, "Inherited experiment still uses direct checkbox");
+			toggle(d, "facet:keep_seed", false);
+			check("false".equals(d.readDraft().facet("keep_seed")), "Inherited false override is explicit");
+			((Combo) field(d, "facet:parent")).setText("");
+			check(field(d, "facet:keep_seed") instanceof Button b && !b.getSelection(), "Removing inheritance resolves checkbox");
 			check(tabs(d).get(0).equals("Parameters (explored)"), "Batch draft opens on explored parameters");
 			d.close();
 

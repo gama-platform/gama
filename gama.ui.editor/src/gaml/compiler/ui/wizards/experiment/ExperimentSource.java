@@ -42,6 +42,7 @@ public final class ExperimentSource {
 
 	private final String source;
 	private final List<String> otherNames = new ArrayList<>();
+	private final java.util.Map<String, String> experimentParents = new java.util.LinkedHashMap<>();
 	private final List<String> globalNames = new ArrayList<>();
 	private final S_Experiment experiment;
 	private final List<S_Definition> attributeNodes = new ArrayList<>();
@@ -79,8 +80,11 @@ public final class ExperimentSource {
 		}
 		experiment = selected;
 		for (var it = root.eAllContents(); it.hasNext();)
-			if (it.next() instanceof S_Experiment other && other != experiment && other.getName() != null)
-				otherNames.add(other.getName());
+			if (it.next() instanceof S_Experiment other && other.getName() != null) {
+				if (other != experiment) otherNames.add(other.getName());
+				Facet parent = facet(other, "parent");
+				experimentParents.put(other.getName(), parent == null ? "" : text(parent.getExpr()).trim());
+			}
 		for (var it = root.eAllContents(); it.hasNext();) if (it.next() instanceof gaml.compiler.gaml.S_Global global
 				&& global.getBlock() != null)
 			for (Statement statement : global.getBlock().getStatements())
@@ -91,6 +95,19 @@ public final class ExperimentSource {
 
 	/** Attributes declared in the model's global section (candidate parameter variables). */
 	public List<String> globalNames() { return List.copyOf(globalNames); }
+
+	/** Existing local experiments excluding this declaration and descendants that would introduce a parent cycle. */
+	public List<String> parentNames() {
+		return otherNames.stream().filter(candidate -> {
+			Set<String> seen = new java.util.HashSet<>();
+			String ancestor = candidate;
+			while (ancestor != null && seen.add(ancestor)) {
+				if (!isCreation() && ancestor.equals(original.name())) return false;
+				ancestor = experimentParents.get(ancestor);
+			}
+			return true;
+		}).distinct().sorted().toList();
+	}
 
 	public ExperimentDraft draft() { return original; }
 

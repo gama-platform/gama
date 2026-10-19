@@ -1,7 +1,5 @@
 package gaml.compiler.ui.wizards.behavior;
 
-import java.util.EnumSet;
-
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.BadLocationException;
@@ -15,33 +13,37 @@ import gaml.compiler.ui.editor.GamlEditor;
 import gaml.compiler.ui.wizards.species.SpeciesDocumentEdit;
 
 /**
- * Opens the shared behaviour form on a GAML editor: creation (kind selectable) in the caret's species, class, grid,
- * global or experiment, or edition of the behaviour whose header is selected. The result is applied as one undoable
- * document change, refused when the document changed meanwhile.
+ * Opens the shared Reflex Editor on a GAML editor: creation in the caret's species, class, grid, global or experiment,
+ * or edition of a reflex/init/abort header. Other behavior editors are diagram-only. The result is applied as one
+ * undoable document change, refused when the document changed meanwhile.
  */
 public final class BehaviorWizardHandler {
 
 	@Inject private IParser parser;
 
-	/** True when the selection is on a behaviour header (not inside its code). */
+	/** True when the selection is on a reflex/init/abort header (not inside its code). */
 	public boolean canEdit(final GamlEditor editor) {
 		if (!editor.isEditable() || !(editor.getSelectionProvider().getSelection() instanceof ITextSelection selection))
 			return false;
 		return editor.getDocument().readOnly(resource -> {
 			if (resource.getParseResult() == null || resource.getParseResult().hasSyntaxErrors()) return false;
 			try {
-				return new BehaviorSource(editor.getDocument().get(), selection.getOffset(), parser, false)
-						.isBehaviorSelection(selection.getOffset(), selection.getLength());
+				return canEdit(new BehaviorSource(editor.getDocument().get(), selection.getOffset(), parser, false),
+						selection.getOffset(), selection.getLength());
 			} catch (IllegalArgumentException error) {
 				return false;
 			}
 		});
 	}
 
+	static boolean canEdit(final BehaviorSource source, final int offset, final int length) {
+		return BehaviorKind.LIFECYCLE.contains(source.draft().kind()) && source.isBehaviorSelection(offset, length);
+	}
+
 	public void open(final GamlEditor editor, final boolean create) {
 		var shell = editor.getEditorSite().getShell();
 		if (!editor.isEditable()) {
-			MessageDialog.openError(shell, "Behavior", "This editor is read-only.");
+			MessageDialog.openError(shell, "Reflex Editor", "This editor is read-only.");
 			return;
 		}
 		if (!create && !canEdit(editor)) return;
@@ -52,14 +54,14 @@ public final class BehaviorWizardHandler {
 			var source = new BehaviorSource(transaction.snapshot(), offset, parser, create);
 			URI uri = isolatedUri(editor);
 			var dialog = new BehaviorWizard(shell, source.draft(),
-					create ? EnumSet.allOf(BehaviorKind.class) : source.draft().kind().convertibleKinds(), draft -> {
-						if (!transaction.isCurrent()) return "The document changed. Cancel and reopen the behavior form.";
+					BehaviorKind.LIFECYCLE, draft -> {
+						if (!transaction.isCurrent()) return "The document changed. Cancel and reopen the Reflex Editor.";
 						return source.validationError(draft);
 					}, draft -> source.bodyContext(draft, uri));
 			if (dialog.open() == Window.OK && dialog.getResult() != null)
 				transaction.apply(source.render(dialog.getResult()));
 		} catch (IllegalArgumentException | IllegalStateException | BadLocationException error) {
-			MessageDialog.openError(shell, "Behavior", error.getMessage());
+			MessageDialog.openError(shell, "Reflex Editor", error.getMessage());
 		}
 	}
 

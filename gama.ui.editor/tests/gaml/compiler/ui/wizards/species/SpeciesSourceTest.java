@@ -151,13 +151,42 @@ public final class SpeciesSourceTest {
 		var gridRenamed = header(gridSource.draft(), "terrain", List.of(), gridSource.draft().facets());
 		check(gridSource.render(gridRenamed).equals(nested.replace("grid cells", "grid terrain")),
 				"Grid rename preserves declaration kind and existing facets");
+		var shapesFalse = new SpeciesDraft.Facet("use_individual_shapes", "false");
+		var shapeFacets = new java.util.ArrayList<>(gridSource.draft().facets());
+		shapeFacets.add(shapesFalse);
+		var shapesDraft = header(gridSource.draft(), "cells", List.of(), shapeFacets);
+		check(gridSource.render(shapesDraft).equals(nested.replace("height: 2 {}", "height: 2 use_individual_shapes: false {}"))
+				&& gridSource.validationError(shapesDraft) == null,
+				"Absent shapes saved as explicit false without touching other grid source");
+		for (String literal : List.of("true", "false")) {
+			String fixture = "model m\ngrid cells use_individual_shapes: " + literal + " { /* keep */ }\n";
+			var shapeAdapter = new SpeciesSource(fixture, fixture.indexOf("cells"), parser);
+			check(shapeAdapter.render(shapeAdapter.draft()) == fixture, "Explicit shapes literal source no-op: " + literal);
+			check(shapeAdapter.render(header(shapeAdapter.draft(), "cells", List.of(), List.of(shapesFalse)))
+					.equals(fixture.replace("shapes: " + literal, "shapes: false")), "False checkbox only patches shapes literal");
+		}
+		String retainedGrid = "model m\ngrid cells virtual: virtual_condition "
+				+ "use_individual_shapes: shape_condition use_neighbors_cache: cache_condition "
+				+ "use_regular_agents: false { /* untouched */ int value <- 1; }\n";
+		var retainedGridAdapter = new SpeciesSource(retainedGrid, retainedGrid.indexOf("cells"), parser);
+		check(retainedGridAdapter.render(retainedGridAdapter.draft()).equals(retainedGrid),
+				"Grid no-op keeps hidden regular-agents and nonliteral checkbox facets byte for byte");
+		check(retainedGridAdapter.render(header(retainedGridAdapter.draft(), "terrain", List.of(),
+				retainedGridAdapter.draft().facets())).equals(retainedGrid.replace("grid cells", "grid terrain")),
+				"Unrelated grid edit preserves checkbox expressions and hidden facets");
+		var literalGridFacets = gaml.compiler.ui.wizards.experiment.ExperimentDraft.withFacet(
+				retainedGridAdapter.draft().facets(), retainedGridAdapter.draft().facets(), "use_individual_shapes", "false");
+		check(retainedGridAdapter.render(header(retainedGridAdapter.draft(), "cells", List.of(), literalGridFacets))
+				.equals(retainedGrid.replace("use_individual_shapes: shape_condition", "use_individual_shapes: false")),
+				"Explicit grid checkbox edit patches only its expression token");
 		var newGrid = new SpeciesSource("model sample\n", -1, parser, SpeciesWizard.Kind.GRID);
 		var gridDraft = new SpeciesDraft("cells", List.of(),
 				List.of(new SpeciesDraft.Facet("width", "10"), new SpeciesDraft.Facet("height", "20"),
-						new SpeciesDraft.Facet("neighbors", "6"), new SpeciesDraft.Facet("use_neighbors_cache", "false")),
+						new SpeciesDraft.Facet("neighbors", "6"), new SpeciesDraft.Facet("use_neighbors_cache", "false"), shapesFalse),
 				List.of(new SpeciesDraft.Variable("level", "float", "2", "", "", "", "")), "", List.of());
 		check(newGrid.validationError(gridDraft) == null && newGrid.render(gridDraft).contains("grid cells width: 10"),
 				"Grid creation renders and parses grid-specific facets and attributes");
+		check(newGrid.render(gridDraft).contains("use_individual_shapes: false"), "New grid explicit false reaches generated GAML");
 		check(newGrid.validationError(header(gridDraft, "cells", List.of(),
 				List.of(new SpeciesDraft.Facet("mirrors", "outer")))) != null, "Grid mirroring rejected");
 		rejects(() -> new SpeciesSource("model sample\nglobal {}", 20, parser), "Global excluded");

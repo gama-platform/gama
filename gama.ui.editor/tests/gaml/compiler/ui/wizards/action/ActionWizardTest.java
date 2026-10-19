@@ -116,6 +116,8 @@ public final class ActionWizardTest {
 					"Unchanged OK: no recompilation, adapter validator run, same instance");
 
 			Button virtual = (Button) field(d, "Virtual");
+			check((virtual.getStyle() & SWT.CHECK) != 0 && field(d, "Virtual:expression") == null,
+					"Action Virtual is checkbox-only");
 			virtual.setSelection(true);
 			virtual.notifyListeners(SWT.Selection, new Event());
 			check(!code.getEditable() && code.getText().equals(initial.body()), "Virtual disables code but keeps text");

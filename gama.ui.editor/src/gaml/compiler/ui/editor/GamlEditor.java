@@ -1091,21 +1091,23 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 			// DEBUG.OUT("Item " + item);
 			UICleanupTasks.RearrangeMenus.changeIcon(menu, item, item.getId());
 		}
-		boolean onAction = injector.getInstance(gaml.compiler.ui.wizards.action.ActionWizardHandler.class).canEdit(this);
-		boolean onBehavior = !onAction
+		boolean onDisplay = injector.getInstance(gaml.compiler.ui.wizards.display.DisplayWizardHandler.class).canEdit(this);
+		boolean onAction = !onDisplay && injector.getInstance(gaml.compiler.ui.wizards.action.ActionWizardHandler.class).canEdit(this);
+		boolean onBehavior = !onDisplay && !onAction
 				&& injector.getInstance(gaml.compiler.ui.wizards.behavior.BehaviorWizardHandler.class).canEdit(this);
-		boolean onExperiment = !onAction && !onBehavior && injector
+		boolean onExperiment = !onDisplay && !onAction && !onBehavior && injector
 				.getInstance(gaml.compiler.ui.wizards.experiment.ExperimentWizardHandler.class).canEdit(this);
 		Action editSpecies = new Action("Edit...") {
 			@Override
 			public void run() {
-				if (onAction) openActionWizard(false);
+				if (onDisplay) openDisplayWizard(false);
+				else if (onAction) openActionWizard(false);
 				else if (onBehavior) openBehaviorWizard(false);
 				else if (onExperiment) openExperimentWizard(false);
 				else openSpeciesWizard(false);
 			}
 		};
-		editSpecies.setEnabled(onAction || onBehavior || onExperiment || injector.getInstance(gaml.compiler.ui.wizards.species.SpeciesWizardHandler.class)
+		editSpecies.setEnabled(onDisplay || onAction || onBehavior || onExperiment || injector.getInstance(gaml.compiler.ui.wizards.species.SpeciesWizardHandler.class)
 				.canEdit(this));
 		IContributionItem[] existingItems = menu.getItems();
 		menu.removeAll();
@@ -1148,6 +1150,14 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 
 	public void openExperimentWizard(final boolean create) {
 		injector.getInstance(gaml.compiler.ui.wizards.experiment.ExperimentWizardHandler.class).open(this, create);
+	}
+
+	public void openDisplayWizard(final boolean create) {
+		injector.getInstance(gaml.compiler.ui.wizards.display.DisplayWizardHandler.class).open(this, create);
+	}
+
+	public boolean canAddDisplay() {
+		return injector.getInstance(gaml.compiler.ui.wizards.display.DisplayWizardHandler.class).canCreate(this);
 	}
 
 	public void openGridWizard() {

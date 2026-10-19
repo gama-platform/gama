@@ -64,13 +64,14 @@ public class CreateExperimentSelectionListener implements Selector {
 					action(t.getDescription(), e1 -> editor.applyTemplateAtTheEnd(t));
 				}
 				action("Add experiment...", e1 -> editor.openExperimentWizard(true)).setEnabled(editor.isEditable());
+				action("Add display...", e1 -> editor.openDisplayWizard(true)).setEnabled(editor.canAddDisplay());
 				sep();
 				action("Add species...", e1 -> editor.openSpeciesWizard(true)).setEnabled(editor.isEditable());
 				action("Add grid species...", e1 -> editor.openGridWizard()).setEnabled(editor.isEditable());
 				action("Add class...", e1 -> editor.openClassWizard()).setEnabled(editor.isEditable());
 				sep();
 				action("Add action...", e1 -> editor.openActionWizard(true)).setEnabled(editor.isEditable());
-				action("Add behavior...", e1 -> editor.openBehaviorWizard(true)).setEnabled(editor.isEditable());
+				action("Add reflex...", e1 -> editor.openBehaviorWizard(true)).setEnabled(editor.isEditable());
 				action("Extract selection as action...", e1 -> editor.extractAction()).setEnabled(editor.canExtractAction());
 				sep();
 				final Menu builtInElements = sub("Insert built-in elements...");

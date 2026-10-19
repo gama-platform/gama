@@ -148,9 +148,9 @@ public class ActionWizard extends TitleAreaDialog {
 		returnType.setText(original.returnType());
 		field(returnType, "Returns", 130);
 		virtual = new Button(header, SWT.CHECK);
-		virtual.setText("Virtual");
+		virtual.setText(gaml.compiler.ui.wizards.species.WizardWidgets.labelText("Virtual"));
 		virtual.setSelection(original.virtual());
-		virtual.setToolTipText("A virtual action has no code: it must be redefined by the children of its owner.");
+		virtual.setToolTipText("A virtual action has no code: it must be redefined by the children of its owner. Default: false.");
 		virtual.setData("action.field", "Virtual");
 		accessible(virtual, "Virtual");
 
@@ -205,7 +205,7 @@ public class ActionWizard extends TitleAreaDialog {
 		table.setLayoutData(tableData);
 		for (String column : List.of("Name", "Type", "Default")) {
 			TableColumn c = new TableColumn(table, SWT.NONE);
-			c.setText(column);
+			c.setText(gaml.compiler.ui.wizards.species.WizardWidgets.labelText(column));
 			c.setWidth("Default".equals(column) ? 100 : column.equals("Name") ? 110 : 80);
 		}
 		table.addListener(SWT.Selection, e -> loadSelection());
@@ -478,7 +478,7 @@ public class ActionWizard extends TitleAreaDialog {
 
 	private void label(final Composite parent, final String text, final String description) {
 		Label label = new Label(parent, SWT.NONE);
-		label.setText(text + ":");
+		label.setText(gaml.compiler.ui.wizards.species.WizardWidgets.labelText(text) + ":");
 		label.setToolTipText(description);
 	}
 
@@ -493,7 +493,7 @@ public class ActionWizard extends TitleAreaDialog {
 
 	private Button button(final Composite parent, final String text, final String description) {
 		Button button = new Button(parent, SWT.PUSH);
-		button.setText(text);
+		button.setText(gaml.compiler.ui.wizards.species.WizardWidgets.labelText(text));
 		button.setToolTipText(description);
 		button.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 		accessible(button, description);

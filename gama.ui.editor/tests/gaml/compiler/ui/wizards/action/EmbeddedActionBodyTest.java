@@ -100,10 +100,55 @@ public final class EmbeddedActionBodyTest {
 					body(shell, injector, initial, false, gaml.compiler.ui.wizards.behavior.BehaviorWizard.standalone(draft),
 							draft.header() + " {");
 			}
+			displayLayers(shell, injector);
 			System.out.println("EmbeddedActionBodyTest: " + checks + " checks passed");
 		} finally {
 			shell.dispose();
 			display.dispose();
+		}
+	}
+
+	/** Exercises DisplayWizard's real raw-editor construction/listener path, not just an equivalent context string. */
+	private static void displayLayers(final Shell shell, final Injector injector) {
+		for (String initial : List.of("", "\n// chart\nchart c type: series { data n value: cycle; }\n",
+				"\r\n/* kept */ graphics g { draw 'text'; }\r\n")) {
+			var viewer = new XtextSourceViewer(shell, null, null, false, SWT.BORDER | SWT.MULTI);
+			var tokens = new DocumentTokenSource();
+			tokens.setLexer(injector.getProvider(org.eclipse.xtext.parser.antlr.Lexer.class));
+			var document = new XtextDocument(tokens, null);
+			viewer.setUndoManager(new TextViewerUndoManager(20));
+			var resources = injector.getInstance(XtextResourceSet.class);
+			String[] modified = { null };
+			var wizard = new gaml.compiler.ui.wizards.display.DisplayWizard(shell,
+					gaml.compiler.ui.wizards.display.DisplayDraft.empty(), d -> null, null, null, null) {
+				@Override
+				protected EmbeddedActionBody createEmbeddedEditor(final org.eclipse.swt.widgets.Composite parent,
+						final ActionBodyContext context, final String code) {
+					var editor = new EmbeddedEditor(document, viewer, null, () -> {
+						var resource = new XtextResource(context.uri()) {
+							@Override protected void doLinking() {}
+						};
+						injector.injectMembers(resource);
+						resources.getResources().add(resource);
+						return resource;
+					}, () -> {});
+					return EmbeddedActionBody.create(editor, context, code);
+				}
+				org.eclipse.swt.widgets.Control raw() { return createRawEditor(shell, initial, text -> modified[0] = text); }
+			};
+			try {
+				wizard.raw();
+				check(viewer.getTextWidget().getText().equals(initial), "Display raw editor hides the model/display header");
+				check(document.get().contains("display d {") && document.get().contains(initial), "Hidden display parsing context");
+				check(modified[0] == null, "Raw listener is not called by initialization");
+				viewer.getTextWidget().append("\n// edited");
+				check(modified[0].equals(initial + "\n// edited"), "Display listener returns only editable bytes");
+				check(!modified[0].contains("model display_wizard"), "Display callback never leaks its hidden header");
+			} finally {
+				viewer.getControl().dispose();
+				for (var resource : List.copyOf(resources.getResources())) resource.unload();
+				resources.getResources().clear();
+			}
 		}
 	}
 }

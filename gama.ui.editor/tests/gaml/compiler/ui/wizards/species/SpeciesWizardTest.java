@@ -287,7 +287,12 @@ public final class SpeciesWizardTest {
 				var retained = new Dialog(shell, external, draft -> null, true, SpeciesWizardContext.builtIns(), kind);
 				retained.create();
 				retained.click(IDialogConstants.OK_ID);
-				check(external.equals(retained.getResult()), kind + " retains existing external parent");
+				var expectedFacets = new java.util.ArrayList<>(external.facets());
+				if (kind == SpeciesWizard.Kind.GRID)
+					expectedFacets.add(new SpeciesDraft.Facet("use_individual_shapes", "false"));
+				check(new SpeciesDraft(external.name(), external.skills(), expectedFacets, external.variables(),
+						external.init(), external.reflexOrder()).equals(retained.getResult()),
+						kind + " retains existing external parent (grid explicitly saves absent shapes as false)");
 			}
 			SpeciesWizardContext filtered = new SpeciesWizardContext() {
 				@Override
@@ -433,6 +438,9 @@ public final class SpeciesWizardTest {
 		Display display = new Display();
 		Shell shell = new Shell(display);
 		try {
+			check(WizardWidgets.labelText("use_individual_shapes").equals("Use individual shapes")
+					&& WizardWidgets.labelText("z_near").equals("Z near"),
+					"Shared wizard labels capitalize and humanize facet labels without changing facet keys");
 			checkBuiltInParents(shell);
 			checkInheritedSkills(shell);
 			checkClasses(shell);
@@ -645,8 +653,24 @@ public final class SpeciesWizardTest {
 					List.of(new SpeciesDraft.Facet("virtual", "some_condition")), List.of(), "", List.of());
 			var complexNoOp = new Dialog(shell, complexVirtual, validator, true, context);
 			complexNoOp.create();
+			check(header(complexNoOp, "Virtual") instanceof Button
+					&& header(complexNoOp, "Virtual:expression") == null, "Species Virtual is checkbox-only for nonliteral source");
 			complexNoOp.click(IDialogConstants.OK_ID);
 			check(complexVirtual.equals(complexNoOp.getResult()), "Untouched complex existing virtual facet is preserved");
+			for (SpeciesWizard.Kind virtualKind : List.of(SpeciesWizard.Kind.SPECIES, SpeciesWizard.Kind.GRID, SpeciesWizard.Kind.CLASS)) {
+				var virtualDialog = new Dialog(shell, complexVirtual, validator, true, context, virtualKind);
+				virtualDialog.create();
+				check(header(virtualDialog, "Virtual") instanceof Button b && (b.getStyle() & SWT.CHECK) != 0
+						&& header(virtualDialog, "Virtual:expression") == null, virtualKind + " Virtual is direct checkbox");
+				Button virtualControl = (Button) header(virtualDialog, "Virtual");
+				virtualControl.setSelection(true);
+				virtualControl.notifyListeners(SWT.Selection, new Event());
+				virtualControl.setSelection(false);
+				virtualControl.notifyListeners(SWT.Selection, new Event());
+				virtualDialog.click(IDialogConstants.OK_ID);
+				check(virtualDialog.getResult() != null && SpeciesWizardContext.facet(virtualDialog.getResult(), "virtual", "").isEmpty(),
+						virtualKind + " edited Virtual expression replaced with omitted false default");
+			}
 
 			var duplicateEdits = new Dialog(shell, SpeciesDraft.empty(), validator, true, context);
 			duplicateEdits.create();
@@ -759,16 +783,18 @@ public final class SpeciesWizardTest {
 					&& ((Text) header(grid, "Height")).getText().equals("100"), "Grid dimensions have defaults");
 			check(java.util.Arrays.asList(((Combo) header(grid, "Neighbors")).getItems()).equals(List.of("4", "6", "8")),
 					"Grid offers 4, 6 or 8 neighbors");
-			check(((Button) header(grid, "Use individual shapes")).getSelection()
+			check(!((Button) header(grid, "Use individual shapes")).getSelection()
 					&& ((Button) header(grid, "Use neighbors cache")).getSelection()
-					&& ((Button) header(grid, "Use regular agents")).getSelection(), "Grid options default true");
+					&& header(grid, "Use regular agents") == null, "Grid shapes initially false, cache true; regular-agents UI removed");
+			check(header(grid, "Use individual shapes:expression") == null
+					&& header(grid, "Use neighbors cache:expression") == null, "Grid flags are checkbox-only");
 			expand(grid, true);
 			((Text) header(grid, "Width")).setText("20");
 			((Text) header(grid, "Height")).setText("30");
 			choose((Combo) header(grid, "Neighbors"), "6");
 			((Text) header(grid, "File")).setText("image_file(\"cells.png\")");
 			((Text) header(grid, "Files")).setText("[image_file(\"bands.png\")]");
-			for (String option : List.of("Use individual shapes", "Use neighbors cache", "Use regular agents")) {
+			for (String option : List.of("Use individual shapes", "Use neighbors cache")) {
 				Button checkbox = (Button) header(grid, option);
 				checkbox.setSelection(false);
 				checkbox.notifyListeners(SWT.Selection, new Event());
@@ -779,29 +805,92 @@ public final class SpeciesWizardTest {
 			check(Math.abs(header(grid, "File").toDisplay(0, 0).y - header(grid, "Files").toDisplay(0, 0).y) < 8,
 					"Grid File and Files share an Advanced row");
 			check(Math.abs(header(grid, "Use individual shapes").toDisplay(0, 0).y
-					- header(grid, "Use regular agents").toDisplay(0, 0).y) < 8,
+					- header(grid, "Use neighbors cache").toDisplay(0, 0).y) < 8,
 					"Grid optimization checkboxes share an Advanced row");
 			if (args.length == 1) screenshot(grid.getShell(), args[0].replace(".png", "-grid.png"));
 			grid.click(IDialogConstants.OK_ID);
+			check(grid.getResult() != null, "Grid accepted: " + grid.getErrorMessage());
 			check(SpeciesWizardContext.facet(grid.getResult(), "width", "").equals("20")
 					&& SpeciesWizardContext.facet(grid.getResult(), "height", "").equals("30")
 					&& SpeciesWizardContext.facet(grid.getResult(), "neighbors", "").equals("6"), "Grid dimensions stored");
 			check(SpeciesWizardContext.facet(grid.getResult(), "file", "").equals("image_file(\"cells.png\")")
 					&& SpeciesWizardContext.facet(grid.getResult(), "files", "").equals("[image_file(\"bands.png\")]"),
 					"Grid file expressions stored without evaluation");
-			check(List.of("use_individual_shapes", "use_neighbors_cache", "use_regular_agents").stream()
+			check(List.of("use_individual_shapes", "use_neighbors_cache").stream()
 					.allMatch(key -> SpeciesWizardContext.facet(grid.getResult(), key, "").equals("false")),
 					"Grid optimization options stored");
 			var gridNoOp = new Dialog(shell, grid.getResult(), validator, true, context, SpeciesWizard.Kind.GRID);
 			gridNoOp.create();
 			gridNoOp.click(IDialogConstants.OK_ID);
 			check(gridNoOp.getResult().equals(grid.getResult()), "Grid no-op retains every draft value");
+			for (String current : List.of("", "true", "false", "shape_condition")) {
+				var initial = new SpeciesDraft("loaded_grid", List.of(), current.isEmpty() ? List.of()
+						: List.of(new SpeciesDraft.Facet("use_individual_shapes", current)), List.of(), "", List.of());
+				var shapeDialog = new Dialog(shell, initial, validator, true, context, SpeciesWizard.Kind.GRID);
+				shapeDialog.create();
+				var shapeCheck = (Button) header(shapeDialog, "Use individual shapes");
+				check(shapeCheck.getSelection() == "true".equals(current),
+						"Grid shapes false initial policy respects explicit literal: " + current);
+				check(shapeCheck.getToolTipText().contains("Wizard initial value: false")
+						&& shapeCheck.getToolTipText().contains("Runtime default: true"), "Grid shapes help distinguishes defaults");
+				shapeDialog.click(IDialogConstants.OK_ID);
+				check(shapeDialog.getResult() != null && SpeciesWizardContext.facet(shapeDialog.getResult(),
+						"use_individual_shapes", "").equals(current.isEmpty() ? "false" : current),
+						"Accepted absent shapes becomes explicit false; loaded value retained: " + current);
+				shapeDialog = new Dialog(shell, initial, validator, true, context, SpeciesWizard.Kind.GRID);
+				shapeDialog.create();
+				shapeCheck = (Button) header(shapeDialog, "Use individual shapes");
+				shapeCheck.setSelection(false);
+				shapeCheck.notifyListeners(SWT.Selection, new Event());
+				shapeDialog.click(IDialogConstants.OK_ID);
+				check(shapeDialog.getResult() != null && SpeciesWizardContext.facet(shapeDialog.getResult(),
+						"use_individual_shapes", "").equals("false"), "Explicit false selection serialized: " + current);
+				shapeDialog = new Dialog(shell, initial, validator, true, context, SpeciesWizard.Kind.GRID);
+				shapeDialog.create();
+				shapeCheck = (Button) header(shapeDialog, "Use individual shapes");
+				shapeCheck.setSelection(true);
+				shapeCheck.notifyListeners(SWT.Selection, new Event());
+				shapeDialog.click(IDialogConstants.CANCEL_ID);
+				check(shapeDialog.getResult() == null, "Grid shapes Cancel returns no draft: " + current);
+			}
+			var defaultGrid = new Dialog(shell, SpeciesDraft.empty(), validator, true, context, SpeciesWizard.Kind.GRID);
+			defaultGrid.create();
+			defaultGrid.click(IDialogConstants.OK_ID);
+			check(defaultGrid.getResult() != null && SpeciesWizardContext.facet(defaultGrid.getResult(),
+					"use_individual_shapes", "").equals("false"), "New grid saves false without a checkbox edit");
+			var expressionGrid = new SpeciesDraft("expression_grid", List.of(),
+					List.of(new SpeciesDraft.Facet("use_individual_shapes", "shape_condition"),
+							new SpeciesDraft.Facet("use_neighbors_cache", "cache_condition"),
+							new SpeciesDraft.Facet("use_regular_agents", "false")), List.of(), "", List.of());
+			var expressionGridDialog = new Dialog(shell, expressionGrid, validator, true, context, SpeciesWizard.Kind.GRID);
+			expressionGridDialog.create();
+			check(header(expressionGridDialog, "Use individual shapes") instanceof Button
+					&& header(expressionGridDialog, "Use neighbors cache") instanceof Button
+					&& header(expressionGridDialog, "Use regular agents") == null, "Loaded grid expressions have checkbox-only controls");
+			expressionGridDialog.click(IDialogConstants.OK_ID);
+			check(expressionGrid.equals(expressionGridDialog.getResult()), "Grid no-op preserves nonliteral flags and hidden regular agents");
+			expressionGridDialog = new Dialog(shell, expressionGrid, validator, true, context, SpeciesWizard.Kind.GRID);
+			expressionGridDialog.create();
+			for (String key : List.of("Use individual shapes", "Use neighbors cache")) {
+				var checkBox = (Button) header(expressionGridDialog, key);
+				checkBox.setSelection(false); checkBox.notifyListeners(SWT.Selection, new Event());
+				checkBox.setSelection(true); checkBox.notifyListeners(SWT.Selection, new Event());
+			}
+			expressionGridDialog.click(IDialogConstants.OK_ID);
+			check(expressionGridDialog.getResult() != null
+					&& SpeciesWizardContext.facet(expressionGridDialog.getResult(), "use_individual_shapes", "").isEmpty()
+					&& SpeciesWizardContext.facet(expressionGridDialog.getResult(), "use_neighbors_cache", "").isEmpty()
+					&& SpeciesWizardContext.facet(expressionGridDialog.getResult(), "use_regular_agents", "").equals("false"),
+					"Edited true grid defaults omitted without deleting hidden regular-agents facet");
 			var fileGridDraft = new SpeciesDraft("file_grid", List.of(),
 					List.of(new SpeciesDraft.Facet("file", "raster_file(\"map.asc\")")), List.of(), "write 1;", List.of("tick"));
 			var fileGrid = new Dialog(shell, fileGridDraft, validator, true, context, SpeciesWizard.Kind.GRID);
 			fileGrid.create();
 			fileGrid.click(IDialogConstants.OK_ID);
-			check(fileGridDraft.equals(fileGrid.getResult()), "File-defined grid preserves absent dimensions and hidden bodies");
+			check(new SpeciesDraft(fileGridDraft.name(), fileGridDraft.skills(),
+					List.of(fileGridDraft.facets().getFirst(), new SpeciesDraft.Facet("use_individual_shapes", "false")),
+					fileGridDraft.variables(), fileGridDraft.init(), fileGridDraft.reflexOrder()).equals(fileGrid.getResult()),
+					"File-defined grid preserves absent dimensions and hidden bodies while explicitly saving false shapes");
 			for (SpeciesWizard.Kind kind : List.of(SpeciesWizard.Kind.SPECIES, SpeciesWizard.Kind.GRID, SpeciesWizard.Kind.MODEL)) {
 				var sorting = new Dialog(shell, unchanged, validator, true, context, kind);
 				sorting.create();

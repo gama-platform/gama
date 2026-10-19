@@ -81,7 +81,7 @@ public final class AttributeTable {
 		table.setLayoutData(tableData);
 		for (String name : List.of("Name", "Type", "From")) {
 			TableColumn column = new TableColumn(table, SWT.NONE);
-			column.setText(name);
+			column.setText(WizardWidgets.labelText(name));
 			column.setToolTipText(switch (name) {
 				case "Name" -> "Attribute identifier.";
 				case "Type" -> "Type of values stored in the attribute.";
@@ -108,7 +108,7 @@ public final class AttributeTable {
 		add = action(actions, "Add...", "Add attribute");
 		remove = action(actions, "Remove", "Remove selected attribute");
 		redefine = new Button(detail, SWT.CHECK);
-		redefine.setText("Redefine");
+		redefine.setText(WizardWidgets.labelText("Redefine"));
 		redefine.setToolTipText("Declare a local override of this inherited attribute. Uncheck to use its inherited values.");
 		redefine.setData("species.redefine", true);
 		redefine.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
