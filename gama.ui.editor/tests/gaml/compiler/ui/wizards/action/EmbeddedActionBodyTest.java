@@ -101,6 +101,7 @@ public final class EmbeddedActionBodyTest {
 							draft.header() + " {");
 			}
 			displayLayers(shell, injector);
+			layerBodies(shell, injector);
 			System.out.println("EmbeddedActionBodyTest: " + checks + " checks passed");
 		} finally {
 			shell.dispose();
@@ -108,7 +109,60 @@ public final class EmbeddedActionBodyTest {
 		}
 	}
 
-	/** Exercises DisplayWizard's real raw-editor construction/listener path, not just an equivalent context string. */
+	private static void layerBodies(final Shell shell, final Injector injector) {
+		for (String source : List.of("graphics g { /*original*/ draw circle(1); }",
+				"overlay 'HUD' { draw 'Text'; }", "species wolf {species child;}",
+				"agents a value: wolf {draw square(1);}", "light 'custom' type: point {write 'test';}")) {
+			var parser = injector.getInstance(org.eclipse.xtext.parser.IParser.class);
+			var draft = gaml.compiler.ui.wizards.display.DisplaySource.parseLayer(source, "embedded", parser);
+			var viewer = new XtextSourceViewer(shell, null, null, false, SWT.BORDER | SWT.MULTI);
+			var tokens = new DocumentTokenSource();
+			tokens.setLexer(injector.getProvider(org.eclipse.xtext.parser.antlr.Lexer.class));
+			var document = new XtextDocument(tokens, null);
+			viewer.setUndoManager(new TextViewerUndoManager(20));
+			var resources = injector.getInstance(XtextResourceSet.class);
+			var wizard = new gaml.compiler.ui.wizards.display.LayerWizard(shell, draft, d -> null, null, null,
+					d -> new ActionBodyContext(org.eclipse.emf.common.util.URI.createURI("synthetic:/layer-body.gaml"),
+							"model layer_wizard\nglobal { int n; }\nexperiment e type: gui { output { display d type: opengl {\n"
+									+ source + "\n" + gaml.compiler.ui.wizards.display.DisplaySource.renderLayer(d, parser)
+									+ "\n} } }\n", ""), null) {
+				@Override
+				protected EmbeddedActionBody createEmbeddedEditor(final org.eclipse.swt.widgets.Composite parent,
+						final ActionBodyContext context, final String initial) {
+					var editor = new EmbeddedEditor(document, viewer, null, () -> {
+						var resource = new XtextResource(context.uri()) {
+							@Override protected void doLinking() {}
+						};
+						injector.injectMembers(resource);
+						resources.getResources().add(resource);
+						return resource;
+					}, () -> {});
+					return EmbeddedActionBody.create(editor, context, initial);
+				}
+			};
+			try {
+				wizard.create();
+				check(viewer.getTextWidget().getText().equals(draft.body()), "Layer editor exposes block contents only");
+				check(wizard.readDraft() == draft, "Embedded initialization retains original layer");
+				check(document.get().contains("display d type: opengl") && document.get().contains(draft.body()),
+						"Embedded layer has hidden model/display context");
+				check(document.get().contains("global { int n; }") && document.get().contains(source),
+						"Host model and identical sibling layer remain in hidden context");
+				viewer.getTextWidget().append("\n// edited");
+				check(wizard.readDraft().body().equals(draft.body() + "\n// edited"), "Body listener returns editable bytes only");
+				check(wizard.readDraft().source().equals(source), "Body typing retains source backing");
+				check(document.get().contains(source) && !document.get().contains("layer_body_"),
+						"Unique body location leaves sibling unchanged and never leaks markers");
+			} finally {
+				wizard.close();
+				if (!viewer.getControl().isDisposed()) viewer.getControl().dispose();
+				for (var resource : List.copyOf(resources.getResources())) resource.unload();
+				resources.getResources().clear();
+			}
+		}
+	}
+
+	/** Exercises DisplayWizard's compatibility embedded-editor hook, not just an equivalent context string. */
 	private static void displayLayers(final Shell shell, final Injector injector) {
 		for (String initial : List.of("", "\n// chart\nchart c type: series { data n value: cycle; }\n",
 				"\r\n/* kept */ graphics g { draw 'text'; }\r\n")) {

@@ -16,6 +16,11 @@ import gama.core.outputs.layers.GraphicLayerStatement;
 import gama.core.outputs.layers.GridLayerStatement;
 import gama.core.outputs.layers.ImageLayerStatement;
 import gama.core.outputs.layers.SpeciesLayerStatement;
+import gama.core.outputs.layers.MeshLayerStatement;
+import gama.core.outputs.layers.OverlayStatement;
+import gama.core.outputs.layers.properties.CameraStatement;
+import gama.core.outputs.layers.properties.LightStatement;
+import gama.core.outputs.layers.properties.RotationStatement;
 import gama.gaml.statements.draw.DrawStatement;
 import gaml.compiler.ui.wizards.species.SpeciesDraft.Facet;
 
@@ -56,10 +61,13 @@ public record DisplayFacet(String name, String type, boolean flag, boolean requi
 		};
 	}
 
-	private static final Map<String, Class<?>> DECLARATIONS = Map.of(
-			"display", LayeredDisplayOutput.class, "species_layer", SpeciesLayerStatement.class,
-			"agents", AgentLayerStatement.class, "display_grid", GridLayerStatement.class,
-			"picture", ImageLayerStatement.class, "graphics", GraphicLayerStatement.class, "draw", DrawStatement.class);
+	private static final Map<String, Class<?>> DECLARATIONS = Map.ofEntries(
+			Map.entry("display", LayeredDisplayOutput.class), Map.entry("species_layer", SpeciesLayerStatement.class),
+			Map.entry("agents", AgentLayerStatement.class), Map.entry("display_grid", GridLayerStatement.class),
+			Map.entry("picture", ImageLayerStatement.class), Map.entry("graphics", GraphicLayerStatement.class),
+			Map.entry("draw", DrawStatement.class), Map.entry("mesh", MeshLayerStatement.class),
+			Map.entry("overlay", OverlayStatement.class), Map.entry("camera", CameraStatement.class),
+			Map.entry("light", LightStatement.class), Map.entry("rotation", RotationStatement.class));
 
 	public static List<DisplayFacet> of(final String keyword) {
 		var registered = ArtefactRegistry.getStatementArtefact(keyword);

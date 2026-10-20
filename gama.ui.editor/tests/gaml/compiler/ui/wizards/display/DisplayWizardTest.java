@@ -84,10 +84,12 @@ public final class DisplayWizardTest {
 			Dialog d = new Dialog(shell, fresh);
 			d.setBlockOnOpen(false); d.open();
 			while (display.readAndDispatch()) {}
-			check(((TabFolder) d.field("Tabs")).getItemCount() == 1
-					&& ((TabFolder) d.field("Tabs")).getItem(0).getText().equals("Settings"), "Settings-only tab");
-			for (String key : List.of("Layers", "New layer kind", "Raw source", "Add", "Duplicate", "Remove"))
-				check(d.field(key) == null, "No layer editor: " + key);
+			check(((TabFolder) d.field("Tabs")).getItemCount() == 2
+					&& ((TabFolder) d.field("Tabs")).getItem(0).getText().equals("Settings")
+					&& ((TabFolder) d.field("Tabs")).getItem(1).getText().equals("Layers"), "Settings and Layers tabs");
+			for (String key : List.of("Layers", "New layer kind", "Add", "Edit", "Duplicate", "Remove", "Move up", "Move down"))
+				check(d.field(key) != null, "Layer organization control: " + key);
+			check(d.field("Raw source") == null, "Unsupported code has no lossy/raw form");
 			for (String key : List.of("parent", "locked", "draw_diffuse_light", "background", "Advanced", "Advanced 3D",
 					"virtual:expression", "antialias:expression", "fullscreen:expression", "light:expression", "axes:expression", "toolbar:expression"))
 				check(d.field("display:" + key) == null, "Unwanted control absent: " + key);

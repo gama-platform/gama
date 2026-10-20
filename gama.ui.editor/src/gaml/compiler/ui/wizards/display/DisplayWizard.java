@@ -22,15 +22,11 @@ import org.eclipse.swt.widgets.ColorDialog;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.xtext.parser.IParser;
-import org.eclipse.ui.forms.events.ExpansionAdapter;
-import org.eclipse.ui.forms.events.ExpansionEvent;
-import org.eclipse.ui.forms.widgets.ExpandableComposite;
 
 import gama.ui.editor.internal.EditorActivator;
 import gaml.compiler.GamlStandaloneSetup;
@@ -45,8 +41,7 @@ import gaml.compiler.ui.wizards.species.BooleanFacetField;
 import gaml.compiler.ui.wizards.species.DeclarationWizard;
 
 /**
- * Shared transactional display settings editor with a generated (not runtime) preview. Layer editing is currently
- * not exposed; existing ordered layer drafts and body source are retained unchanged. All source
+ * Shared transactional display settings and ordered layer editor with a generated (not runtime) preview. All source
  * compilation and adapter validation is explicit, on Validate/acceptance only. Adapters own live objects and undo.
  * Settings intentionally exposes only its dedicated controls. Other facets, and nonliteral values behind literal-only
  * checkboxes or the background color chooser, are retained verbatim until explicitly replaced, never evaluated.
@@ -69,10 +64,8 @@ public class DisplayWizard extends DeclarationWizard<DisplayDraft> {
 	private Composite settingsBody;
 	private org.eclipse.swt.widgets.List rows;
 	private Combo addKind;
-	private Composite inspector;
-	private ScrolledComposite inspectorScroll;
 	private StyledText preview;
-	private Button duplicate, remove, up, down;
+	private Button duplicate, remove, up, down, edit;
 	private DisplayDraft result;
 	private boolean ready;
 	private boolean refreshing;
@@ -122,7 +115,7 @@ public class DisplayWizard extends DeclarationWizard<DisplayDraft> {
 	public Composite createForm(final Composite parent, final FormHost formHost) {
 		host = Objects.requireNonNull(formHost);
 		host.setTitle("Display settings");
-		host.setMessage("Configure the display settings. Existing layers are kept unchanged. GAML is verified on Validate and acceptance.");
+		host.setMessage("Configure the display and its ordered layers. GAML is verified on Validate and acceptance.");
 		Composite form = WizardWidgets.composite(parent, 1);
 		TabFolder tabs = new TabFolder(form, SWT.NONE);
 		GridData tabData = new GridData(SWT.FILL, SWT.FILL, true, true);
@@ -183,6 +176,7 @@ public class DisplayWizard extends DeclarationWizard<DisplayDraft> {
 		settingsScroll.addListener(SWT.Resize, e -> resizeScroll(settingsScroll, settingsBody));
 		resizeScroll(settingsScroll, settingsBody);
 
+		createLayers(page(tabs, "Layers"));
 		WizardWidgets.label(form, "Generated GAML (read-only)", "Source preview only. Runtime rendering is not part of this editor.");
 		preview = new StyledText(form, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.READ_ONLY);
 		preview.setFont(JFaceResources.getTextFont());
@@ -195,6 +189,105 @@ public class DisplayWizard extends DeclarationWizard<DisplayDraft> {
 		ready = true;
 		changed();
 		return form;
+	}
+
+	private void createLayers(final Composite page) {
+		Composite layout = WizardWidgets.composite(page, 2);
+		layout.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		rows = new org.eclipse.swt.widgets.List(layout, SWT.BORDER | SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL);
+		rows.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		field(rows, "Layers");
+		Composite actions = WizardWidgets.composite(layout, 1);
+		actions.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
+		addKind = WizardWidgets.choiceField(actions, "New layer kind", LayerKind.SPECIES.title(),
+				java.util.Arrays.stream(LayerKind.values()).filter(k -> k != LayerKind.RAW).map(LayerKind::title).toList(),
+				false, "Charts, events and unknown declarations are preserved but cannot be created or edited here.",
+				FIELD, "New layer kind", 130);
+		button(actions, "Add", () -> {
+			LayerKind kind = java.util.Arrays.stream(LayerKind.values()).filter(k -> k.title().equals(addKind.getText()))
+					.findFirst().orElseThrow();
+			LayerDraft accepted = openLayerWizard(LayerDraft.empty(kind), true);
+			if (accepted != null) {
+				layers.add(accepted);
+				refreshRows(layers.size() - 1);
+				changed();
+			}
+		});
+		edit = button(actions, "Edit", this::editLayer);
+		duplicate = button(actions, "Duplicate", () -> {
+			int index = rows.getSelectionIndex();
+			if (index < 0) return;
+			layers.add(index + 1, layers.get(index).duplicate());
+			refreshRows(index + 1);
+			changed();
+		});
+		remove = button(actions, "Remove", () -> {
+			int index = rows.getSelectionIndex();
+			if (index < 0) return;
+			layers.remove(index);
+			refreshRows(Math.min(index, layers.size() - 1));
+			changed();
+		});
+		up = button(actions, "Move up", () -> move(-1));
+		down = button(actions, "Move down", () -> move(1));
+		WizardWidgets.label(page, "Charts, events and unknown declarations are source-preserved",
+				"These rows can be moved, duplicated or removed, but their code is not edited by a layer form.");
+		rows.addListener(SWT.Selection, e -> updateButtons());
+		rows.addListener(SWT.DefaultSelection, e -> editLayer());
+		refreshRows(layers.isEmpty() ? -1 : 0);
+	}
+
+	private DisplayDraft candidateDisplay(final LayerDraft layer, final boolean create) {
+		DisplayDraft current = readDraft();
+		List<LayerDraft> candidate = new ArrayList<>(current.layers());
+		if (create) candidate.add(layer);
+		else {
+			int index = -1;
+			for (int i = 0; i < candidate.size(); i++) if (candidate.get(i).id().equals(layer.id())) index = i;
+			if (index < 0) throw new IllegalArgumentException("The layer is no longer in this display.");
+			candidate.set(index, layer);
+		}
+		return new DisplayDraft(current.name(), current.renderer(), current.facets(), candidate, current.trailingSource());
+	}
+
+	/** Factory seam for diagram hosts and native tests. No display draft is changed until the child accepts. */
+	protected LayerWizard createLayerWizard(final LayerDraft layer, final boolean create) {
+		LayerWizard wizard = new LayerWizard(name.getShell(), layer,
+				next -> validator.apply(candidateDisplay(next, create)), species, grids,
+				next -> {
+					DisplayDraft candidate = candidateDisplay(next, create);
+					return context == null ? standalone(candidate, parser()) : context.apply(candidate);
+				}, aspects) {
+			@Override protected IParser parser() { return DisplayWizard.this.parser(); }
+			@Override protected List<ActionVerifier.Problem> compile(final ActionBodyContext candidate) {
+				Set<String> existing = DisplayWizard.this.baseline();
+				return DisplayWizard.this.compile(candidate).stream().filter(p -> !existing.contains(p.message())).toList();
+			}
+			@Override protected EmbeddedActionBody createEmbeddedEditor(final Composite parent,
+					final ActionBodyContext candidate, final String initial) {
+				return DisplayWizard.this.createEmbeddedEditor(parent, candidate, initial);
+			}
+			@Override protected String chooseColor(final String current) { return DisplayWizard.this.chooseColor(current); }
+			@Override protected String browseImage() { return DisplayWizard.this.browseImage(); }
+		};
+		wizard.setCreationMode(create);
+		return wizard;
+	}
+
+	protected LayerDraft openLayerWizard(final LayerDraft layer, final boolean create) {
+		LayerWizard wizard = createLayerWizard(layer, create);
+		return wizard.open() == org.eclipse.jface.window.Window.OK ? wizard.getResult() : null;
+	}
+
+	private void editLayer() {
+		int index = rows.getSelectionIndex();
+		if (index < 0 || layers.get(index).kind() == LayerKind.RAW) return;
+		LayerDraft accepted = openLayerWizard(layers.get(index), false);
+		if (accepted != null) {
+			layers.set(index, accepted);
+			refreshRows(index);
+			changed();
+		}
 	}
 
 	private Composite settingsRow(final Composite parent, final int columns, final String key) {
@@ -288,100 +381,40 @@ public class DisplayWizard extends DeclarationWizard<DisplayDraft> {
 
 	private void move(final int delta) {
 		int index = rows.getSelectionIndex();
+		if (index < 0 || index + delta < 0 || index + delta >= layers.size()) return;
 		java.util.Collections.swap(layers, index, index + delta);
 		refreshRows(index + delta);
 		changed();
 	}
 
 	private void refreshRows(final int selected) {
-		rows.setItems(layers.stream().map(l -> l.kind() + (l.expression().isEmpty() ? "" : "  " + l.expression())).toArray(String[]::new));
+		rows.setItems(layers.stream().map(DisplayWizard::layerLabel).toArray(String[]::new));
 		if (selected >= 0) rows.setSelection(selected);
 		updateButtons();
+	}
+
+	private static String layerLabel(final LayerDraft layer) {
+		if (layer.kind() != LayerKind.RAW)
+			return layer.kind().title() + (layer.expression().isEmpty() ? "" : "  " + layer.expression());
+		String source = layer.source().strip().replaceAll("\\s+", " ");
+		return "Source-preserved: " + source.substring(0, Math.min(90, source.length()));
 	}
 
 	private void updateButtons() {
 		int index = rows.getSelectionIndex();
 		duplicate.setEnabled(index >= 0); remove.setEnabled(index >= 0);
+		edit.setEnabled(index >= 0 && layers.get(index).kind() != LayerKind.RAW);
 		up.setEnabled(index > 0); down.setEnabled(index >= 0 && index < layers.size() - 1);
 	}
 
-	private void showLayer() {
-		refreshing = true;
-		try {
-			for (var child : inspector.getChildren()) child.dispose();
-			updateButtons();
-			int selected = rows.getSelectionIndex();
-			if (selected < 0) { WizardWidgets.label(inspector, "No layer selected", "Add a layer to begin."); return; }
-			var layer = layers.get(selected);
-			Label title = new Label(inspector, SWT.NONE);
-			title.setText(WizardWidgets.labelText(layer.kind() + " (kind fixed; add a new layer to choose another kind)"));
-			if (layer.kind() == LayerKind.RAW) {
-				Label note = new Label(inspector, SWT.WRAP);
-				note.setText("Source-backed declaration. Charts, drawing code and other unsupported declarations are kept as GAML.");
-				note.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
-				Control code = createRawEditor(inspector, layer.source(), text -> {
-					var current = layers.get(rows.getSelectionIndex());
-					replaceSelected(new LayerDraft(current.id(), current.kind(), current.expression(), current.facets(),
-							current.textFacets(), text));
-				});
-				GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
-				data.heightHint = 230;
-				code.setLayoutData(data);
-				field(code, "Raw source");
-				return;
-			}
-			WizardWidgets.label(inspector, switch (layer.kind()) {
-				case SPECIES, GRID -> "Species";
-				case AGENTS -> "Layer label (GAML, optional)";
-				case IMAGE -> "Image expression (GAML)";
-				case TEXT -> "Text expression (GAML)";
-				default -> throw new IllegalStateException();
-			}, "Editable GAML expression; suggestions are not restrictions.");
-			Composite expressionParent = inspector;
-			if (layer.kind() == LayerKind.IMAGE) {
-				expressionParent = WizardWidgets.composite(inspector, 2);
-				expressionParent.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
-			}
-			Combo expression = new Combo(expressionParent, SWT.DROP_DOWN);
-			expression.setItems((layer.kind() == LayerKind.GRID ? grids.get()
-					: layer.kind() == LayerKind.SPECIES ? species.get() : List.<String>of()).toArray(String[]::new));
-			expression.setText(layer.expression());
-			fill(expression, "Expression");
-			if (layer.kind() == LayerKind.IMAGE) button(expressionParent, "Browse...", () -> {
-				String file = browseImage();
-				if (file != null) expression.setText(ExperimentDraft.quote(file));
-			});
-			Consumer<List<Facet>> setOuter = values -> {
-				var current = layers.get(rows.getSelectionIndex());
-				replaceSelected(new LayerDraft(current.id(), current.kind(), current.expression(), values,
-						current.textFacets(), current.source()));
-			};
-			facetFields(inspector, layer.kind().compilerKeyword(),
-					layer.kind().expressionFacet() == null ? List.of() : List.of(layer.kind().expressionFacet()),
-					layer.facets(), layer.facets(), setOuter,
-					n -> "aspect".equals(n) && layer.kind() == LayerKind.SPECIES ? aspects.apply(expression.getText())
-							: "value".equals(n) && layer.kind() == LayerKind.AGENTS ? species.get() : List.of(), "layer:");
-			if (layer.kind() == LayerKind.TEXT) {
-				WizardWidgets.label(inspector, "Text drawing", "Facets of the single draw statement; outer graphics settings are above.");
-				facetFields(inspector, "draw", List.of("geometry"), layer.textFacets(), layer.textFacets(), values -> {
-					var current = layers.get(rows.getSelectionIndex());
-					replaceSelected(new LayerDraft(current.id(), current.kind(), current.expression(), current.facets(),
-							values, current.source()));
-				}, n -> List.of(), "draw:");
-			}
-			expression.addModifyListener(e -> {
-				var current = layers.get(rows.getSelectionIndex());
-				replaceSelected(new LayerDraft(current.id(), current.kind(), expression.getText(), current.facets(),
-						current.textFacets(), current.source()));
-			});
-		} finally {
-			refreshing = false;
-			inspector.layout(true, true);
-			resizeScroll(inspectorScroll, inspector);
-		}
+	protected String chooseColor(final String current) {
+		ColorDialog dialog = new ColorDialog(getShell());
+		dialog.setText("Choose color");
+		var color = dialog.open();
+		return color == null ? null : "rgb(" + color.red + ", " + color.green + ", " + color.blue + ")";
 	}
 
-	/** Actual embedded Xtext editor in the running UI; plain SWT only when the workbench is unavailable. */
+	/** Compatibility hook for embedded GAML hosts; unsupported rows are not edited through this control. */
 	protected Control createRawEditor(final Composite parent, final String initial, final Consumer<String> modified) {
 		var context = new ActionBodyContext(URI.createURI("synthetic:/display-wizard/.layer-wizard.gaml"),
 				"model display_wizard\nexperiment e type: gui { output { display d {\n", "\n} } }\n");
@@ -396,113 +429,15 @@ public class DisplayWizard extends DeclarationWizard<DisplayDraft> {
 		return text;
 	}
 
-	/** Factory seam for the real embedded viewer (also used by the native regression harness without a workbench). */
 	protected EmbeddedActionBody createEmbeddedEditor(final Composite parent, final ActionBodyContext context, final String initial) {
 		return EmbeddedActionBody.create(parent, context, initial);
 	}
 
-	/** Selection assists do not constrain, evaluate or replace expressions unless the user confirms a choice. */
 	protected String browseImage() {
 		FileDialog dialog = new FileDialog(getShell(), SWT.OPEN);
 		dialog.setText("Choose image");
 		dialog.setFilterExtensions(new String[] { "*.png;*.jpg;*.jpeg;*.gif;*.tif;*.tiff;*.bmp", "*" });
 		return dialog.open();
-	}
-
-	protected String chooseColor(final String current) {
-		ColorDialog dialog = new ColorDialog(getShell());
-		dialog.setText("Choose color");
-		var color = dialog.open();
-		return color == null ? null : "rgb(" + color.red + ", " + color.green + ", " + color.blue + ")";
-	}
-
-	private void replaceSelected(final LayerDraft next) {
-		if (refreshing) return;
-		int index = rows.getSelectionIndex();
-		layers.set(index, next);
-		rows.setItem(index, next.kind() + (next.expression().isEmpty() ? "" : "  " + next.expression()));
-		changed();
-	}
-
-	/** All declared facets plus unrecognized explicit facets; advanced controls never rewrite hidden values. */
-	private void facetFields(final Composite parent, final String keyword, final List<String> excluded,
-			final List<Facet> values, final List<Facet> originalValues, final Consumer<List<Facet>> modified,
-			final Function<String, List<String>> suggestions, final String keyPrefix) {
-		List<Facet> current = new ArrayList<>(values);
-		List<DisplayFacet> metadata = new ArrayList<>(DisplayFacet.of(keyword));
-		for (var f : values) if (metadata.stream().noneMatch(m -> m.name().equals(f.name())))
-			metadata.add(new DisplayFacet(f.name(), "expression", false, false, "Unrecognized facet, kept verbatim."));
-		Composite common = WizardWidgets.composite(parent, 2);
-		common.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
-		ExpandableComposite advanced = new ExpandableComposite(parent, SWT.NONE,
-				ExpandableComposite.TWISTIE | ExpandableComposite.CLIENT_INDENT);
-		advanced.setText("Advanced");
-		advanced.setToolTipText("Expand to configure additional facets.");
-		advanced.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		field(advanced, keyPrefix + "Advanced");
-		WizardWidgets.accessible(advanced, "Advanced");
-		Composite other = WizardWidgets.composite(advanced, 2);
-		advanced.setClient(other);
-		advanced.setExpanded(false);
-		Set<String> primary = Set.of("title", "background", "refresh", "visible", "aspect", "value", "elevation", "border",
-				"gis", "color", "at", "font");
-		for (var facet : metadata) if (!excluded.contains(facet.name())) {
-			Composite target = primary.contains(facet.name()) || facet.required() ? common : other;
-			String value = DisplayDraft.find(values, facet.name());
-			Consumer<String> set = next -> {
-				var updated = ExperimentDraft.withFacet("display".equals(keyword) ? facets : current,
-						originalValues, facet.name(), next);
-				current.clear(); current.addAll(updated);
-				modified.accept(List.copyOf(current));
-			};
-			if (facet.flag()) {
-				new BooleanFacetField(target, facet.name(), value,
-						() -> facet.defaultValue(keyword, "display".equals(keyword) ? facets : current), facet.required(),
-						facet.documentation() + ("display".equals(keyword)
-								&& Set.of("antialias", "axes", "draw_env").contains(facet.name())
-										? " Default follows the live display preference." : ""),
-						FIELD, keyPrefix + facet.name(), set);
-			} else {
-				WizardWidgets.label(target, facet.name() + (facet.required() ? " *" : ""),
-						facet.documentation() + " (" + facet.type() + ")");
-				boolean color = facet.type().contains("rgb") || facet.type().contains("color");
-				Composite inputParent = target;
-				if (color) inputParent = WizardWidgets.composite(target, 2);
-				if (color) inputParent.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-				Combo input = new Combo(inputParent, SWT.DROP_DOWN);
-				input.setItems(suggestions.apply(facet.name()).toArray(String[]::new));
-				input.setText(value == null ? "" : value);
-				fill(input, keyPrefix + facet.name());
-				input.setToolTipText(facet.documentation() + " (" + facet.type() + ")");
-				if (color) {
-					Button choose = button(inputParent, "Choose color...", () -> {
-						String chosen = chooseColor(input.getText());
-						if (chosen != null) input.setText(chosen);
-					});
-					field(choose, keyPrefix + "choose:" + facet.name());
-				}
-				input.addListener(SWT.MouseDown, e -> {
-					String text = input.getText();
-					// Refresh model-aware choices without emitting a fake edit.
-					String[] choices = suggestions.apply(facet.name()).toArray(String[]::new);
-					if (!java.util.Arrays.equals(input.getItems(), choices)) {
-						input.setItems(choices); input.setText(text);
-					}
-				});
-				input.addModifyListener(e -> set.accept(input.getText().isBlank() ? null : input.getText()));
-			}
-		}
-		other.setVisible(false);
-		advanced.addExpansionListener(new ExpansionAdapter() {
-			@Override
-			public void expansionStateChanged(final ExpansionEvent event) {
-				parent.layout(true, true);
-				Composite p = parent;
-				while (p != null && !(p instanceof ScrolledComposite)) p = p.getParent();
-				if (p instanceof ScrolledComposite scroll) resizeScroll(scroll, (Composite) scroll.getContent());
-				host.relayout();
-			}
-		});
 	}
 
 	public DisplayDraft readDraft() {

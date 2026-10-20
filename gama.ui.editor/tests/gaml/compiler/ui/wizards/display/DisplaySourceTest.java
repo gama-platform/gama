@@ -27,7 +27,7 @@ public final class DisplaySourceTest {
 		return new DisplayDraft(d.name(), d.renderer(), d.facets(), layers, d.trailingSource());
 	}
 	private static LayerDraft expression(final LayerDraft d, final String value) {
-		return new LayerDraft(d.id(), d.kind(), value, d.facets(), d.textFacets(), d.source());
+		return new LayerDraft(d.id(), d.kind(), value, d.facets(), d.textFacets(), d.source(), d.body());
 	}
 	public static void main(final String[] args) throws Exception {
 		IParser parser = GamlStandaloneSetup.doSetup().getInstance(IParser.class);
@@ -47,7 +47,7 @@ public final class DisplaySourceTest {
 		var draft = adapter.draft();
 		check(draft.name().equals("My display") && draft.renderer().equals("opengl"), "Header decoded");
 		check(draft.layers().stream().map(LayerDraft::kind).toList().equals(List.of(LayerKind.SPECIES,
-				LayerKind.AGENTS, LayerKind.GRID, LayerKind.IMAGE, LayerKind.TEXT, LayerKind.RAW, LayerKind.RAW, LayerKind.RAW)),
+				LayerKind.AGENTS, LayerKind.GRID, LayerKind.IMAGE, LayerKind.TEXT, LayerKind.RAW, LayerKind.GRAPHICS, LayerKind.RAW)),
 				"Kinds: " + draft.layers());
 		check(draft.validationError() == null, "Valid detached draft: " + draft.validationError());
 		check(adapter.render(draft) == source, "No-op same instance");
@@ -86,6 +86,9 @@ public final class DisplaySourceTest {
 			if (kind == LayerKind.AGENTS) empty = new LayerDraft(empty.id(), kind, "", List.of(new Facet("value", "wolf")), List.of(), "");
 			else if (kind == LayerKind.SPECIES || kind == LayerKind.GRID) empty = expression(empty, kind == LayerKind.GRID ? "cells" : "wolf");
 			else if (kind == LayerKind.IMAGE) empty = expression(empty, "\"pic.png\"");
+			else if (kind == LayerKind.MESH) empty = expression(empty, "matrix<float>([[1.0]])");
+			else if (kind == LayerKind.CAMERA || kind == LayerKind.LIGHT) empty = expression(empty, "\"custom\"");
+			else if (kind == LayerKind.ROTATION) empty = expression(empty, "30.0");
 			generated = DisplaySource.renderLayer(empty, parser);
 			check(!DisplaySource.parseBody("\n" + generated + "\n", parser).layers().isEmpty(), "New " + kind + " parses");
 			check(empty.validationError() == null, "New " + kind + " valid: " + empty.validationError());
@@ -94,6 +97,38 @@ public final class DisplaySourceTest {
 				"species wolf { species child; }", "chart c type: series { data x value: cycle; }", "graphics g {draw circle(1);}")) {
 			var layer = DisplaySource.parseLayer(fragment, "stable", parser);
 			check(DisplaySource.renderLayer(layer, parser).equals(fragment), "Fragment exact: " + fragment);
+		}
+		for (String fragment : List.of("\n/*lead*/ graphics /*name*/ g visible: /*flag*/ true { draw circle(1); /*end*/ } //tail",
+				"\noverlay \"HUD\" background: #black { draw \"Cycle\" at: {0,0}; }\n",
+				"\nspecies wolf { species other; }\n",
+				"\nagents \"chosen\" value: wolf { draw circle(1); }\n")) {
+			var layer = DisplaySource.parseLayer(fragment, "block", parser);
+			check(layer.kind() != LayerKind.RAW && layer.kind().hasBody() && !layer.body().isEmpty(),
+					"Editable block kind: " + layer.kind());
+			check(DisplaySource.renderLayer(layer, parser).equals(fragment), "Block no-op byte exact");
+			var next = new LayerDraft(layer.id(), layer.kind(), layer.expression(), layer.facets(), layer.textFacets(),
+					layer.source(), " /*replacement*/ ");
+			String rendered = DisplaySource.renderLayer(next, parser);
+			check(rendered.equals(fragment.replace(layer.body(), " /*replacement*/ ")), "Only body range patched: " + rendered);
+			var header = new LayerDraft(layer.id(), layer.kind(), layer.expression(),
+					List.of(new Facet("visible", "false")), layer.textFacets(), layer.source(), layer.body());
+			check(DisplaySource.renderLayer(header, parser).contains(layer.body()), "Header edit keeps exact body");
+			check(layer.duplicate().body().equals(layer.body()) && !layer.duplicate().id().equals(layer.id()),
+					"Duplicate preserves body with new identity");
+		}
+		var leaf = DisplaySource.parseLayer("\n species wolf; // tail", "leaf", parser);
+		String withBlock = DisplaySource.renderLayer(new LayerDraft(leaf.id(), leaf.kind(), leaf.expression(),
+				leaf.facets(), leaf.textFacets(), leaf.source(), "\n species other;"), parser);
+		check(withBlock.equals("\n species wolf { \n species other;\n} // tail")
+				|| withBlock.equals("\n species wolf {\n species other;\n} // tail"),
+				"Adding a body replaces terminator without losing comment: " + withBlock);
+		check(DisplaySource.parseLayer(withBlock, leaf.id(), parser).body().contains("species other;"),
+				"New body parses into the block draft");
+		for (String fragment : List.of("chart c type: series {data x value: cycle;}",
+				"event 'mouse_down' {write 'click';}", "plugin_layer p value: 3;")) {
+			var unsupported = DisplaySource.parseLayer(fragment, "unsupported", parser);
+			check(unsupported.kind() == LayerKind.RAW && DisplaySource.renderLayer(unsupported, parser).equals(fragment),
+					"Excluded/unknown kind remains opaque and exact");
 		}
 		refuses(() -> DisplaySource.parseBody("species ; invalid ???", parser));
 		refuses(() -> DisplaySource.parseLayer("species wolf; grid cells;", "x", parser));
@@ -240,6 +275,26 @@ public final class DisplaySourceTest {
 		undo.redo();
 		check(document.get().equals(booleans), "Boolean edit redo");
 		undo.undo();
+		var organization = new ArrayList<>(draft.layers());
+		var drawing = organization.get(6);
+		organization.set(6, new LayerDraft(drawing.id(), drawing.kind(), drawing.expression(), drawing.facets(),
+				drawing.textFacets(), drawing.source(), "\n draw square(2); // edited drawing\n"));
+		organization.remove(3);
+		organization.add(0, new LayerDraft("new-mesh", LayerKind.MESH, "[[1.0]]", List.of(), List.of(), ""));
+		java.util.Collections.swap(organization, 5, 7);
+		String organized = adapter.render(layers(draft, organization));
+		check(organized.contains("mesh [[1.0]]") && organized.contains("draw square(2)")
+				&& !organized.contains("image \"pic.png\""), "Combined add/delete/body edit/reorder rendered");
+		check(organized.contains(draft.layers().get(5).source()) && organized.contains(draft.layers().get(7).source()),
+				"Chart and event source survive organization byte for byte");
+		check(!parser.parse(new StringReader(organized)).hasSyntaxErrors(), "Organized mixed display parses");
+		tx = new SpeciesDocumentEdit(document);
+		check(tx.apply(organized), "Apply all layer organization as one transaction");
+		undo.undo();
+		check(document.get().equals(source), "One undo restores add/delete/body/order and comments");
+		undo.redo();
+		check(document.get().equals(organized), "One redo restores complete organization");
+		undo.undo();
 		tx = new SpeciesDocumentEdit(document);
 		check(tx.apply(moved), "Apply order/edit");
 		undo.undo();
@@ -271,6 +326,11 @@ public final class DisplaySourceTest {
 					case AGENTS -> new LayerDraft(layer.id(), kind, "\"selected\"", List.of(new Facet("value", "wolf")), List.of(), "");
 					case TEXT -> new LayerDraft(layer.id(), kind, "\"Population\"", List.of(),
 							List.of(new Facet("color", "rgb(10, 20, 30)"), new Facet("at", "{0,0}")), "");
+					case MESH -> expression(layer, "matrix<float>([[1.0]])");
+					case GRAPHICS, OVERLAY -> new LayerDraft(layer.id(), kind, "\"drawing\"", List.of(), List.of(), "",
+							" draw circle(1); ");
+					case CAMERA, LIGHT -> expression(layer, "\"custom\"");
+					case ROTATION -> expression(layer, "30.0");
 					case RAW -> DisplaySource.parseLayer("\nchart 'Raw' type: series {data 'time' value: cycle;}", layer.id(), parser);
 				});
 			}

@@ -25,7 +25,7 @@ import gaml.compiler.ui.wizards.species.SpeciesDraft.Facet;
 
 /**
  * Detached display adapter. Layers retain their own source fragments and identities, so settings edits do not
- * regenerate their contents; moves carry their leading comments. Unsupported declarations remain editable raw GAML.
+ * regenerate their contents; moves carry their leading comments. Unsupported declarations remain opaque raw GAML.
  * Creation requires a caret inside an experiment and reuses its output section, creating one if absent.
  * Global and species declarations are never display creation targets.
  * Every public parse helper reports syntax failures, without touching a workspace resource.
@@ -240,6 +240,12 @@ public final class DisplaySource {
 			case "agents" -> LayerKind.AGENTS;
 			case "grid" -> LayerKind.GRID;
 			case "image" -> LayerKind.IMAGE;
+			case "mesh" -> LayerKind.MESH;
+			case "graphics" -> LayerKind.GRAPHICS;
+			case "overlay" -> LayerKind.OVERLAY;
+			case "camera" -> LayerKind.CAMERA;
+			case "light" -> LayerKind.LIGHT;
+			case "rotation" -> LayerKind.ROTATION;
 			default -> LayerKind.RAW;
 		};
 		// Do not turn arbitrary graphics/drawing code into a form. Only one literal text draw is unambiguous.
@@ -256,13 +262,19 @@ public final class DisplaySource {
 				}
 			}
 		}
-		if (kind == LayerKind.RAW || statement.getBlock() != null) return raw(id, source);
+		if (kind == LayerKind.RAW || statement.getBlock() != null && !kind.hasBody()) return raw(id, source);
 		try {
 			String expression = expression(statement);
 			var facets = readFacets(statement, kind.expressionFacet());
 			if (expression.isEmpty()) expression = value(statement, kind.expressionFacet());
 			else if (facet(statement, kind.expressionFacet()) != null) return raw(id, source);
-			return new LayerDraft(id, kind, expression, facets, List.of(), source);
+			String body = "";
+			if (statement.getBlock() != null) {
+				INode block = node(statement.getBlock());
+				String text = block.getRootNode().getText();
+				body = text.substring(open(statement.getBlock()) + 1, close(statement.getBlock()));
+			}
+			return new LayerDraft(id, kind, expression, facets, List.of(), source, body);
 		} catch (IllegalArgumentException unsupported) {
 			return raw(id, source);
 		}
@@ -334,6 +346,16 @@ public final class DisplaySource {
 			if (!draft.expression().equals(before.expression())) patchExpression(patches, statement,
 					draft.kind().expressionFacet(), draft.expression());
 			patchFacets(patches, statement, before.facets(), draft.facets());
+			if (!draft.body().equals(before.body())) {
+				if (statement.getBlock() != null) {
+					int start = open(statement.getBlock()) + 1;
+					patches.add(new Patch(start, close(statement.getBlock()) - start, draft.body()));
+				} else {
+					INode end = node(statement);
+					int offset = end.getEndOffset() - 1;
+					patches.add(new Patch(offset, 1, " {" + draft.body() + "\n}"));
+				}
+			}
 		}
 		return apply(draft.source(), patches, wrapped.bodyStart());
 	}
@@ -371,6 +393,8 @@ public final class DisplaySource {
 			text.append(" { draw ").append(draft.expression());
 			DisplayDraft.appendFacets(text, draft.textFacets());
 			text.append("; }");
+		} else if (draft.kind() == LayerKind.GRAPHICS || draft.kind() == LayerKind.OVERLAY || !draft.body().isEmpty()) {
+			text.append(" {").append(draft.body()).append("\n}");
 		} else text.append(';');
 		return text.toString();
 	}
