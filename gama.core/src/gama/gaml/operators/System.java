@@ -55,6 +55,7 @@ import gama.api.types.misc.IValue;
 import gama.api.utils.StringUtils;
 import gama.api.utils.files.FileUtils;
 import gama.core.experiment.parameters.InputParameter;
+import gama.core.util.CommandProcessManager;
 
 /**
  * Provides GAML system-level and introspection operators for the GAMA modeling and simulation
@@ -357,7 +358,7 @@ public class System {
 			category = { IOperatorCategory.SYSTEM },
 			concept = { IConcept.SYSTEM, IConcept.COMMUNICATION })
 	@doc (
-			value = "command allows GAMA to issue a system command using the system terminal or shell and to receive a string containing the outcome of the command or script executed. By default, commands are blocking the agent calling them, unless the sequence ' &' is used at the end. In this case, the result of the operator is an empty string. The basic form with only one string in argument uses the directory of the model and does not set any environment variables. Two other forms (with a directory and a map<string, string> of environment variables) are available.",
+			value = "command allows GAMA to issue a system command using the system terminal or shell and to receive a string containing the outcome of the command or script executed. By default, commands are blocking the agent calling them, unless the sequence ' &' is used at the end. In this case, the result of the operator is an empty string. Commands started by an agent are terminated, along with their subprocesses, when that agent is disposed. The basic form with only one string in argument uses the directory of the model and does not set any environment variables. Two other forms (with a directory and a map<string, string> of environment variables) are available.",
 			masterDoc = true)
 	@no_test
 	public static String console(final IScope scope, final String s) {
@@ -392,7 +393,7 @@ public class System {
 			value = "command",
 			category = { IOperatorCategory.SYSTEM },
 			concept = { IConcept.SYSTEM, IConcept.COMMUNICATION })
-	@doc ("command allows GAMA to issue a system command using the system terminal or shell and to receive a string containing the outcome of the command or script executed. By default, commands are blocking the agent calling them, unless the sequence ' &' is used at the end. In this case, the result of the operator is an empty string. The basic form with only one string in argument uses the directory of the model and does not set any environment variables. Two other forms (with a directory and a map<string, string> of environment variables) are available.")
+	@doc ("command allows GAMA to issue a system command using the system terminal or shell and to receive a string containing the outcome of the command or script executed. By default, commands are blocking the agent calling them, unless the sequence ' &' is used at the end. In this case, the result of the operator is an empty string. Commands started by an agent are terminated, along with their subprocesses, when that agent is disposed. The basic form with only one string in argument uses the directory of the model and does not set any environment variables. Two other forms (with a directory and a map<string, string> of environment variables) are available.")
 	@no_test
 	public static String console(final IScope scope, final String s, final String directory) {
 		return console(scope, s, directory, GamaMapFactory.create());
@@ -430,7 +431,7 @@ public class System {
 			value = "command",
 			category = { IOperatorCategory.SYSTEM },
 			concept = { IConcept.SYSTEM, IConcept.COMMUNICATION })
-	@doc ("command allows GAMA to issue a system command using the system terminal or shell and to receive a string containing the outcome of the command or script executed. By default, commands are blocking the agent calling them, unless the sequence ' &' is used at the end. In this case, the result of the operator is an empty string. A map<string, string> containing environment variables values can be passed, replacing, only for this command, the values of existing variables.")
+	@doc ("command allows GAMA to issue a system command using the system terminal or shell and to receive a string containing the outcome of the command or script executed. By default, commands are blocking the agent calling them, unless the sequence ' &' is used at the end. In this case, the result of the operator is an empty string. Commands started by an agent are terminated, along with their subprocesses, when that agent is disposed. A map<string, string> containing environment variables values can be passed, replacing, only for this command, the values of existing variables.")
 	@no_test
 	public static String console(final IScope scope, final String s, final String directory,
 			final IMap<String, String> environment) {
@@ -439,18 +440,17 @@ public class System {
 		final List<String> commands = new ArrayList<>();
 		commands.add(Platform.OS_WIN32.equals(Platform.getOS()) ? "cmd.exe" : "/bin/bash");
 		commands.add(Platform.OS_WIN32.equals(Platform.getOS()) ? "/C" : "-c");
-		commands.add(s.trim());
-		// commands.addAll(Arrays.asList(s.split(" ")));
-		final boolean nonBlocking = commands.get(commands.size() - 1).endsWith("&");
-		if (nonBlocking) {
-			// commands.(commands.size() - 1);
-		}
+		final String command = s.trim();
+		final boolean nonBlocking = command.endsWith("&");
+		commands.add(nonBlocking ? command.substring(0, command.length() - 1).stripTrailing() : command);
 		final ProcessBuilder b = new ProcessBuilder(commands);
 		b.redirectErrorStream(true);
+		if (nonBlocking) { b.redirectOutput(ProcessBuilder.Redirect.DISCARD); }
 		b.directory(new File(directory));
 		b.environment().putAll(environment);
 		try {
 			final Process p = b.start();
+			CommandProcessManager.register(scope.getAgent(), p);
 			if (nonBlocking) return "";
 			try (BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
 				final int returnValue = p.waitFor();

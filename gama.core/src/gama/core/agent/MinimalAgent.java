@@ -59,6 +59,7 @@ import gama.api.utils.geometry.GamaEnvelopeFactory;
 import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.json.IJson;
 import gama.api.utils.json.IJsonValue;
+import gama.core.util.CommandProcessManager;
 
 /**
  * The Class MinimalAgent.
@@ -832,6 +833,7 @@ public class MinimalAgent implements IAgent, Comparable<IAgent> {
 	public void dispose() {
 		if (dead) return;
 		dead = true;
+		CommandProcessManager.dispose(this);
 		final IPopulation<? extends IAgent> p = getPopulation();
 		// if (p != null) { p.removeValue(null, this); }
 		if (p != null && !p.isDisposing()) { p.removeValue(null, this); }
