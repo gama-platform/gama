@@ -58,6 +58,14 @@ public interface IParameterEditor<T> extends IScoped, Comparable<IParameterEdito
 	void updateWithValueOfParameter(boolean synchronously, boolean retrieveVarValue);
 
 	/**
+	 * Displays a temporary value without modifying the underlying parameter.
+	 *
+	 * @param value
+	 *            the value to display
+	 */
+	void displayValue(T value);
+
+	/**
 	 * Sets the active.
 	 *
 	 * @param value

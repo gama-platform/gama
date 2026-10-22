@@ -367,7 +367,7 @@ public class FIPASkill extends MessagingSkill {
 							type = IType.LIST,
 							optional = false,
 							doc = @doc ("The content of the replying message")) },
-			doc = @doc ("Replies a message with an 'agree' performative message."))
+			doc = @doc ("Replies a message with an 'agree' performative message. Protocol validity is checked before sending, including earlier replies still queued for delivery; a reply after refusal or completion is rejected immediately."))
 	public Object primAgree(final IScope scope) throws GamaRuntimeException {
 		final IList originals = getMessageArg(scope);
 		if (originals == null || originals.size() == 0) return null;

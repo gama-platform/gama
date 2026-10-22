@@ -22,14 +22,12 @@ import org.eclipse.jface.viewers.ViewerComparator;
 
 import gama.ui.navigator.view.contents.ResourceManager;
 import gama.ui.navigator.view.contents.WrappedContainer;
+import gama.ui.shared.utils.PreferencesHelper;
 
 /**
  * The Class FileFolderSorter.
  */
 public class FileFolderSorter extends ViewerComparator {
-
-	/** The by date. */
-	public static boolean BY_DATE = false;
 
 	/**
 	 * Instantiates a new file folder sorter.
@@ -59,10 +57,11 @@ public class FileFolderSorter extends ViewerComparator {
 		final int cat2 = category(e2);
 
 		if (cat1 != cat2) return cat1 - cat2;
-		if (BY_DATE) {
+		if (PreferencesHelper.NAVIGATOR_DATE.getValue() && PreferencesHelper.NAVIGATOR_RECENT_FIRST.getValue()) {
 			final Long date1 = getDate(e1);
 			final Long date2 = getDate(e2);
-			return date2.compareTo(date1);
+			final int byDate = date2.compareTo(date1);
+			if (byDate != 0) return byDate;
 		}
 		final String name1 = getLabel(viewer, e1);
 		final String name2 = getLabel(viewer, e2);

@@ -274,6 +274,11 @@ public class GamaDataFrame implements IDataFrame, IContainer<String, Object>, IF
 			final String joinType) {
 		if (keyColumns == null || keyColumns.isEmpty())
 			throw GamaRuntimeException.error("A join requires at least one key column", scope);
+		if (other == null) throw GamaRuntimeException.error("Cannot join a nil dataframe", scope);
+		for (final String key : keyColumns) {
+			DataFrameOperators.requireColumn(scope, this, key);
+			DataFrameOperators.requireColumn(scope, other, key);
+		}
 		final DataFrame right = other.getInner();
 		final String jt = joinType == null ? "inner" : joinType.trim().toLowerCase();
 		final org.dflib.join.Join join = switch (jt) {
@@ -403,7 +408,11 @@ public class GamaDataFrame implements IDataFrame, IContainer<String, Object>, IF
 			final String axis) {
 		if (indices == null) throw GamaRuntimeException.error("iloc " + axis + " indices cannot be nil", scope);
 		final int[] out = new int[indices.size()];
-		for (int i = 0; i < out.length; i++) { out[i] = normalizeIloc(scope, indices.get(i), size, axis); }
+		for (int i = 0; i < out.length; i++) {
+			if (indices.get(i) == null)
+				throw GamaRuntimeException.error("iloc " + axis + " index at position " + i + " cannot be nil", scope);
+			out[i] = normalizeIloc(scope, indices.get(i), size, axis);
+		}
 		return out;
 	}
 

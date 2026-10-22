@@ -91,6 +91,10 @@ public class Conversation extends GamaList<FIPAMessage> {
 	/** The no protocol node participant map. */
 	private final Map<IAgent, FIPAMessage> noProtocolNodeParticipantMap = new HashMap<>();
 
+	private final Map<IAgent, ProtocolNode> scheduledProtocolNodes = new HashMap<>();
+
+	private final Map<IAgent, FIPAMessage> scheduledNoProtocolMessages = new HashMap<>();
+
 	/** The current node in the protocol tree. */
 	// private ProtocolNode currentNode;
 	/**
@@ -161,8 +165,20 @@ public class Conversation extends GamaList<FIPAMessage> {
 	 */
 	protected void addMessage(final IScope scope, final FIPAMessage message, final IAgent receiver)
 			throws GamaRuntimeException {
+		advanceProtocol(scope, message, receiver, protocolNodeParticipantMap, noProtocolNodeParticipantMap);
+		messages.add(message);
+	}
 
-		// OutputManager.debug(name + " adds message " + message);
+	/** Validate at send time as well, including replies that have not reached the receiver's mailbox yet. */
+	protected void scheduleMessage(final IScope scope, final FIPAMessage message, final IAgent receiver) {
+		advanceProtocol(scope, message, receiver, scheduledProtocolNodes, scheduledNoProtocolMessages);
+	}
+
+	private void advanceProtocol(final IScope scope, final FIPAMessage message, final IAgent receiver,
+			final Map<IAgent, ProtocolNode> protocolNodeParticipantMap,
+			final Map<IAgent, FIPAMessage> noProtocolNodeParticipantMap) {
+		if (ended) throw GamaRuntimeException.error("Cannot send a message in a conversation which has already ended",
+				scope);
 
 		// Check if the message belongs to this conversation
 		final Conversation msgConv = message.getConversation();
@@ -180,7 +196,7 @@ public class Conversation extends GamaList<FIPAMessage> {
 			if (senderIsInitiator) {
 				if (message.getReceivers().contains(receiver)) {
 					if (protocolNodeParticipantMap.containsKey(receiver)) {
-						currentNode = protocolNodeParticipantMap.remove(receiver);
+						currentNode = protocolNodeParticipantMap.get(receiver);
 						protocolNodeParticipantMap.put(receiver, protocol.getNode(scope, message, currentNode,
 								message.getPerformative(), senderIsInitiator));
 					} else {
@@ -198,7 +214,7 @@ public class Conversation extends GamaList<FIPAMessage> {
 
 			} else if (participants.contains(message.getSender())) {
 				if (protocolNodeParticipantMap.containsKey(message.getSender())) {
-					currentNode = protocolNodeParticipantMap.remove(message.getSender());
+					currentNode = protocolNodeParticipantMap.get(message.getSender());
 					protocolNodeParticipantMap.put(message.getSender(), protocol.getNode(scope, message, currentNode,
 							message.getPerformative(), senderIsInitiator));
 				} else {
@@ -240,8 +256,6 @@ public class Conversation extends GamaList<FIPAMessage> {
 				noProtocolNodeParticipantMap.put(message.getSender(), message);
 			}
 		}
-
-		messages.add(message);
 	}
 
 	/**
@@ -345,6 +359,8 @@ public class Conversation extends GamaList<FIPAMessage> {
 		end();
 		protocolNodeParticipantMap.clear();
 		noProtocolNodeParticipantMap.clear();
+		scheduledProtocolNodes.clear();
+		scheduledNoProtocolMessages.clear();
 		participants.clear();
 		initiator = null;
 	}

@@ -31,8 +31,7 @@ public class RecipesFolder extends TopLevelFolder {
 	 *            the display name shown in the navigator (typically "Recipes")
 	 */
 	public RecipesFolder(final NavigatorRoot root, final String name) {
-		super(root, name, FOLDER_RECIPES, "Focused GAML feature demonstrations shipped with GAMA plugins", WARNING,
-				ProjectCategory.RECIPES);
+		super(root, name, FOLDER_RECIPES, "Focused GAMA features demonstrations", WARNING, ProjectCategory.RECIPES);
 	}
 
 }

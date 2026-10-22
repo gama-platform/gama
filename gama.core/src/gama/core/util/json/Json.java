@@ -51,7 +51,7 @@ public final class Json implements IJsonConstants, IJson {
 	/** The initial. */
 	ThreadLocal<Boolean> firstPass = ThreadLocal.withInitial(() -> true);
 
-	/** The agents. */
+	/** Agent references shared by nested calls within one top-level serialization. */
 	ThreadLocal<JsonObject> agentReferences = ThreadLocal.withInitial(() -> new JsonObject(this));
 
 	/**
@@ -86,13 +86,14 @@ public final class Json implements IJsonConstants, IJson {
 				case null -> NULL;
 				default -> valueOf(object.toString());
 			};
+			if (initial && !agentReferences.get().isEmpty()) { result = contents(result, agentReferences.get()); }
+			return result;
 		} finally {
 			if (initial) {
-				if (!agentReferences.get().isEmpty()) { result = contents(result, agentReferences.get()); }
-				firstPass.set(true); // in case the encoder is reused
+				agentReferences.remove();
+				firstPass.remove();
 			}
 		}
-		return result;
 	}
 
 	/**

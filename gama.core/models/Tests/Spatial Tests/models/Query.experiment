@@ -113,7 +113,6 @@ experiment QueryTests type: test {
 		using topology(world) {
 			cl <- (agents_at_distance(20));
 		}
-		write "++--> "+cl;
 		//assert cl = ??;
 	}
 	*/

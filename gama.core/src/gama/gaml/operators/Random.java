@@ -261,6 +261,7 @@ public class Random {
 			@test ("float gaussian <- truncated_gauss(0, 1, 5, -5); gaussian >= -5 and gaussian <= 5")
 	})
 	public static Double opTGauss(final IScope scope, final IPoint p) {
+		if (p == null) throw GamaRuntimeException.error("truncated_gauss: the parameter point must not be nil", scope);
 		return opTGauss(scope, GamaListFactory.wrap(Types.FLOAT, p.getX(), p.getY()));
 	}
 
@@ -346,6 +347,7 @@ public class Random {
 					"weibull_rnd" })
 	@test ("seed <- 1.0; gauss({0.5, 0.2}) = 0.6343093594589535")
 	public static Double opGauss(final IScope scope, final IPoint point) {
+		if (point == null) throw GamaRuntimeException.error("gauss: the parameter point must not be nil", scope);
 		final double mean = point.getX();
 		final double sd = point.getY();
 		return RANDOM(scope).createGaussian(mean, sd);
@@ -632,6 +634,7 @@ public class Random {
 					test = false) })
 	@test ("seed <- 1.0; shuffle (matrix([[\"c11\",\"c12\",\"c13\"],[\"c21\",\"c22\",\"c23\"]])) = matrix([[\"c13\",\"c21\",\"c22\"],[\"c11\",\"c23\",\"c12\"]])")
 	public static IMatrix opShuffle(final IScope scope, final IMatrix target) throws GamaRuntimeException {
+		if (target == null) throw GamaRuntimeException.error("shuffle: the matrix must not be nil", scope);
 		final IMatrix matrix2 = target.copy(scope);
 		matrix2.shuffleWith(RANDOM(scope));
 		return matrix2;
@@ -753,15 +756,23 @@ public class Random {
 			concept = { IConcept.RANDOM })
 	@doc (
 			value = "a random integer in the interval [first operand, second operand], constrained by a step given by the last operand",
-			special_cases = { "If min equals max, always returns that value." },
+			special_cases = { "The step must be nonzero and point toward the second bound: positive for ascending bounds, "
+					+ "negative for descending bounds. Zero and direction mismatches raise a GAML error.",
+					"Values are first + k * step for nonnegative integers k, without passing the second bound. "
+					+ "If both bounds are equal, returns that value for either nonzero step sign." },
 			examples = { @example (
 					value = "rnd (2, 12, 4)",
 					equals = "2, 6 or 10",
 					test = false) },
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "skew_gauss", "truncated_gauss",
 					"weibull_rnd" })
-	@test ("seed <- 1.0; rnd (2, 12, 4) = 10")
+	@tests ({
+			@test ("seed <- 1.0; rnd (2, 12, 4) = 10"),
+			@test ("rnd(12, 2, -4) in [12, 8, 4]"),
+			@test ("rnd(3, 3, -2) = 3")
+	})
 	public static Integer opRnd(final IScope scope, final Integer min, final Integer max, final Integer step) {
+		RandomUtils.validateStep(scope, min, max, step);
 		final IRandom r = RANDOM(scope);
 		return r.between(min, max, step);
 	}
@@ -815,15 +826,23 @@ public class Random {
 			concept = { IConcept.RANDOM })
 	@doc (
 			value = "a random float in the interval [first operand, second operand] constrained by the last operand (step)",
-			special_cases = { "If min equals max, always returns that value." },
+			special_cases = { "The step must be finite, nonzero, and point toward the second bound: positive for ascending "
+					+ "bounds, negative for descending bounds. Invalid steps or nonfinite bounds raise a GAML error.",
+					"The result is rounded to the nearest step from the first bound, clipped at the second bound. "
+					+ "If both bounds are equal, returns that value for either valid step sign." },
 			examples = { @example (
 					value = "rnd (2.0, 4.0, 0.5)",
 					equals = "a float number between 2.0 and 4.0 every 0.5",
 					test = false) },
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "skew_gauss", "truncated_gauss",
 					"weibull_rnd" })
-	@test ("seed <- 1.0; rnd (2.0, 4.0, 0.5) = 3.5")
+	@tests ({
+			@test ("seed <- 1.0; rnd (2.0, 4.0, 0.5) = 3.5"),
+			@test ("rnd(4.0, 2.0, -0.5) in [2.0, 2.5, 3.0, 3.5, 4.0]"),
+			@test ("rnd(3.123456789, 3.123456789, -0.5) = 3.123456789")
+	})
 	public static Double opRnd(final IScope scope, final Double min, final Double max, final Double step) {
+		RandomUtils.validateStep(scope, min, max, step);
 		final IRandom r = RANDOM(scope);
 		return r.between(min, max, step);
 	}
@@ -854,6 +873,7 @@ public class Random {
 					"weibull_rnd" })
 	@test ("seed <- 1.0; rnd ({2.0, 4.0}, {2.0, 5.0, 10.0}) = {2.0,4.785039740667429,5.087825199078746}")
 	public static IPoint opRnd(final IScope scope, final IPoint min, final IPoint max) {
+		if (min == null || max == null) throw GamaRuntimeException.error("rnd: point bounds must not be nil", scope);
 		return RANDOM(scope).between(min, max);
 	}
 
@@ -875,8 +895,12 @@ public class Random {
 			category = { IOperatorCategory.RANDOM },
 			concept = { IConcept.RANDOM })
 	@doc (
-			value = "a random point in the interval [first operand, second operand], constained by the step provided by the last operand",
-			special_cases = { "If min equals max, always returns that value." },
+			value = "a random point in the interval [first operand, second operand], constrained by the step provided by the last operand",
+			special_cases = { "The finite, nonzero scalar step applies independently to each coordinate, using the float "
+					+ "rnd rounding rule. It must be positive for every ascending coordinate and negative for every "
+					+ "descending coordinate. Equal coordinates accept either sign. Mixed ascending and descending "
+					+ "coordinates, zero or nonfinite steps, and nonfinite bounds raise a GAML error.",
+					"If both points are equal, returns that point for either valid step sign." },
 			examples = { @example (
 					value = "rnd ({2.0, 4.0}, {2.0, 5.0, 10.0}, 1)",
 					equals = "a point with x = 2.0, y equal to 2.0, 3.0 or 4.0 and z between 0.0 and 10.0 every 1.0",
@@ -885,6 +909,10 @@ public class Random {
 					"weibull_rnd" })
 	@test ("seed <- 1.0; rnd ({2.0, 4.0}, {2.0, 5.0, 10.0},1) = {2.0,5.0,5.0}")
 	public static IPoint opRnd(final IScope scope, final IPoint min, final IPoint max, final Double step) {
+		if (min == null || max == null) throw GamaRuntimeException.error("rnd: point bounds must not be nil", scope);
+		RandomUtils.validateStep(scope, min.getX(), max.getX(), step);
+		RandomUtils.validateStep(scope, min.getY(), max.getY(), step);
+		RandomUtils.validateStep(scope, min.getZ(), max.getZ(), step);
 		return RANDOM(scope).between(min, max, GamaPointFactory.create(step, step, step));
 	}
 
@@ -1009,6 +1037,12 @@ public class Random {
 			see = { "rnd" })
 	@test ("seed <- 1.0; rnd_choice([0.2,0.5,0.3]) = 2")
 	public static Integer opRndChoice(final IScope scope, final IList distribution) {
+		if (distribution != null) {
+			for (Object weight : distribution) {
+				if (!(weight instanceof Number))
+					throw GamaRuntimeException.error("rnd_choice: weights must be numbers, not nil", scope);
+			}
+		}
 		return RANDOM(scope).choiceIn(distribution);
 	}
 

@@ -28,7 +28,6 @@ import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
-import gama.api.utils.geometry.GamaEnvelopeFactory;
 import gama.core.util.file.GamaGisFile;
 
 /**
@@ -185,10 +184,8 @@ public class GamaGMLFile extends GamaGisFile {
 	@Override
 	protected SimpleFeatureCollection getFeatureCollection(final IScope scope) {
 		final var gml = new GML(Version.GML3);
-		try {
-			SimpleFeatureCollection collection = gml.decodeFeatureCollection(new FileInputStream(getFile(scope)));
-			computeProjection(scope, GamaEnvelopeFactory.of(collection.getBounds()));
-			return collection;
+		try (FileInputStream stream = new FileInputStream(getFile(scope))) {
+			return gml.decodeFeatureCollection(stream);
 		} catch (IOException | SAXException | ParserConfigurationException e) {
 			throw GamaRuntimeException.create(e, scope);
 		}

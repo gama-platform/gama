@@ -84,6 +84,7 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.eclipse.ui.dialogs.WizardDataTransferPage;
 import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
@@ -1129,6 +1130,7 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 		final Object[] selected = projectsList.getCheckedElements();
 		getProjectRecords();
 		final String group = groupField == null ? "" : groupField.getText().trim();
+		final Shell shell = getShell();
 		for (final Object element : selected) {
 			final ProjectRecord record = (ProjectRecord) element;
 			if (!record.hasConflicts) { continue; }
@@ -1151,7 +1153,7 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 					final MultiStatus status = new MultiStatus(IDEWorkbenchPlugin.IDE_WORKBENCH, 1,
 							DataTransferMessages.WizardProjectsImportPage_projectsInWorkspaceAndInvalid, null);
 					for (final Object element : selected) {
-						status.add(createExistingProject((ProjectRecord) element, m.split(1)));
+						status.add(createExistingProject((ProjectRecord) element, group, shell, m.split(1)));
 					}
 					if (!status.isOK()) throw new InvocationTargetException(new CoreException(status));
 				} finally {
@@ -1202,7 +1204,8 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 	 * @return status of the creation
 	 * @throws InterruptedException
 	 */
-	IStatus createExistingProject(final ProjectRecord record, final IProgressMonitor monitor)
+	IStatus createExistingProject(final ProjectRecord record, final String group, final Shell shell,
+			final IProgressMonitor monitor)
 			throws InterruptedException {
 		final String projectName = record.getProjectName();
 		final IWorkspace workspace = GAMA.getWorkspaceManager().getWorkspace();
@@ -1228,7 +1231,7 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 			structureProvider.setStrip(record.level);
 			final ImportOperation operation = new ImportOperation(project.getFullPath(), structureProvider.getRoot(),
 					structureProvider, this, fileSystemObjects);
-			operation.setContext(getShell());
+			operation.setContext(shell);
 			try {
 				operation.run(monitor);
 			} catch (final InvocationTargetException e) {
@@ -1240,9 +1243,9 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 		}
 		// import from file system
 		File importSource = null;
-		final boolean inPlace = !record.renamed && isSourceInPlace(record);
+		final boolean inPlace = !record.renamed && isSourceInPlace(record, group);
 		final boolean copy = (copyFiles || record.renamed) && !inPlace;
-		if (inPlace && groupField != null && groupField.getText().trim().isEmpty()) {
+		if (inPlace && group.isEmpty()) {
 			record.description.setLocation(null);
 		}
 		if (copy) {
@@ -1264,7 +1267,6 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 				// desc.setDynamicReferences(record.description.getDynamicReferences());
 				desc.setNatureIds(record.description.getNatureIds());
 				desc.setReferencedProjects(record.description.getReferencedProjects());
-				final String group = groupField == null ? "" : groupField.getText().trim();
 				if (!group.isEmpty() && gama.ui.navigator.view.contents.UserGroups.validate(group) == null) {
 					gama.ui.navigator.view.contents.UserGroups.create(group);
 					desc.setLocation(gama.ui.navigator.view.contents.UserGroups.workspaceLocation().append(group)
@@ -1290,7 +1292,7 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 			final List<?> filesToImport = FileSystemStructureProvider.INSTANCE.getChildren(importSource);
 			final ImportOperation operation = new ImportOperation(project.getFullPath(), importSource,
 					FileSystemStructureProvider.INSTANCE, this, filesToImport);
-			operation.setContext(getShell());
+			operation.setContext(shell);
 			operation.setOverwriteResources(true); // need to overwrite
 			// .project, .classpath
 			// files
@@ -1350,10 +1352,12 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 	 */
 	public ProjectRecord[] getProjectRecords() {
 		final List<ProjectRecord> projectRecords = new ArrayList<>();
+		final String group = groupField == null ? "" : groupField.getText().trim();
 		for (int i = 0; i < selectedProjects.length; i++) {
 			final String projectName = selectedProjects[i].getProjectName();
 			selectedProjects[i].hasConflicts = isProjectInWorkspace(projectName)
-					|| copyFiles && isProjectInWorkspacePath(projectName) && !isSourceInPlace(selectedProjects[i]);
+					|| copyFiles && isProjectInWorkspacePath(projectName, group)
+							&& !isSourceInPlace(selectedProjects[i], group);
 			projectRecords.add(selectedProjects[i]);
 		}
 		return projectRecords.toArray(new ProjectRecord[projectRecords.size()]);
@@ -1366,16 +1370,15 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 	 *            the name of the project
 	 * @return true if there is a directory with the same name of the imported project
 	 */
-	private boolean isProjectInWorkspacePath(final String projectName) {
-		return getTargetDirectory(projectName).toFile().exists();
+	private boolean isProjectInWorkspacePath(final String projectName, final String group) {
+		return getTargetDirectory(projectName, group).toFile().exists();
 	}
 
 	/**
 	 * Gets the directory in which a copied project is created (inside the group, if any).
 	 */
-	private IPath getTargetDirectory(final String projectName) {
+	private IPath getTargetDirectory(final String projectName, final String group) {
 		final IPath wsPath = GAMA.getWorkspaceManager().getRoot().getLocation();
-		final String group = groupField == null ? "" : groupField.getText().trim();
 		if (!group.isEmpty() && gama.ui.navigator.view.contents.UserGroups.validate(group) == null)
 			return wsPath.append(group).append(projectName);
 		return wsPath.append(projectName);
@@ -1385,10 +1388,10 @@ public class ImportProjectWizardPage extends WizardDataTransferPage {
 	 * A project that has been removed from the workspace without deleting its files can be registered again where it is
 	 * without being copied onto itself.
 	 */
-	private boolean isSourceInPlace(final ProjectRecord record) {
+	private boolean isSourceInPlace(final ProjectRecord record, final String group) {
 		if (record.projectSystemFile == null) return false;
 		final File source = record.projectSystemFile.getParentFile();
-		return source != null && source.equals(getTargetDirectory(record.getProjectName()).toFile());
+		return source != null && source.equals(getTargetDirectory(record.getProjectName(), group).toFile());
 	}
 
 	/**

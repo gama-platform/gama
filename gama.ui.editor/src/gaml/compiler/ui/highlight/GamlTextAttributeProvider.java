@@ -41,6 +41,7 @@ import com.google.inject.name.Named;
 import gama.api.types.font.GamaFontFactory;
 import gama.api.types.font.IFont;
 import gama.ui.application.workbench.ThemeHelper;
+import gama.ui.shared.utils.WorkbenchHelper;
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
@@ -101,7 +102,10 @@ public class GamlTextAttributeProvider implements ITextAttributeProvider, IHighl
 		initialize();
 		ThemeHelper.addListener(isLight -> {
 			highlightingConfig.changeTo(isLight);
-			initialize();
+			WorkbenchHelper.run(this::initialize);
+		});
+		DelegateHighlightingConfiguration.addListener(() -> {
+			WorkbenchHelper.run(this::initialize);
 		});
 	}
 

@@ -38,42 +38,42 @@ public class LightHighlightingConfiguration extends DelegateHighlightingConfigur
 
 	@Override
 	public TextStyle facetTextStyle() {
-		return newStyle(SWT.BOLD, 154, 72, 71);
+		return newStyle(SWT.NORMAL, 176, 58, 132); // Modern magenta / rose
 	}
 
 	@Override
 	public TextStyle pragmaTextStyle() {
-		return newStyle(SWT.ITALIC, 122, 122, 122);
+		return newStyle(SWT.ITALIC, 140, 149, 159);
 	}
 
 	@Override
 	public TextStyle typeTextStyle() {
-		return newStyle(SWT.BOLD, 0, 79, 116);
+		return newStyle(SWT.BOLD, 9, 105, 218); // Modern crisp blue
 	}
 
 	@Override
 	public TextStyle assignTextStyle() {
-		return newStyle(SWT.BOLD, 50, 50, 50);
+		return newStyle(SWT.NORMAL, 87, 96, 106);
 	}
 
 	@Override
 	public TextStyle variableTextStyle() {
-		return newStyle(SWT.BOLD, 28, 125, 180);
+		return newStyle(SWT.NORMAL, 72, 82, 145); // Indigo, distinct from default text
 	}
 
 	@Override
 	public TextStyle fieldTextStyle() {
-		return newStyle(SWT.NORMAL, 125, 125, 0);
+		return newStyle(SWT.NORMAL, 44, 93, 99); // Teal-slate
 	}
 
 	@Override
 	public TextStyle operatorTextStyle() {
-		return newStyle(SWT.BOLD, 46, 93, 78);
+		return newStyle(SWT.NORMAL, 5, 80, 174); // Royal blue
 	}
 
 	@Override
 	public TextStyle reservedTextStyle() {
-		return newStyle(SWT.ITALIC);
+		return newStyle(SWT.ITALIC, 142, 68, 173);
 	}
 
 	@Override
@@ -83,48 +83,48 @@ public class LightHighlightingConfiguration extends DelegateHighlightingConfigur
 
 	@Override
 	public TextStyle unitTextStyle() {
-		return newStyle(SWT.ITALIC);
+		return newStyle(SWT.ITALIC, 0, 112, 128); // Teal, distinct from numeric literals
 	}
 
 	@Override
 	public TextStyle numberTextStyle() {
-		return newStyle(SWT.NORMAL, 125, 125, 125);
+		return newStyle(SWT.NORMAL, 181, 83, 9); // Warm amber/rust
 	}
 
 	@Override
 	public TextStyle keywordTextStyle() {
-		return newStyle(SWT.BOLD, 127, 0, 85);
+		return newStyle(SWT.BOLD, 142, 68, 173); // Purple
 	}
 
 	@Override
 	public TextStyle punctuationTextStyle() {
-		return newStyle();
+		return newStyle(SWT.NORMAL, 87, 96, 106);
 	}
 
 	@Override
 	public TextStyle stringTextStyle() {
-		return newStyle(SWT.NORMAL, 116, 167, 251);
+		return newStyle(SWT.NORMAL, 17, 99, 41); // Forest green
 	}
 
 	@Override
 	public TextStyle varDefTextStyle() {
-		return newStyle(SWT.NORMAL, 0, 0, 153);
+		return newStyle(SWT.NORMAL, 27, 73, 101); // Steel blue
 	}
 
 	@Override
 	public TextStyle taskTextStyle() {
-		return newStyle(SWT.ITALIC | SWT.BOLD, 150, 132, 106);
+		return newStyle(SWT.ITALIC | SWT.BOLD, 181, 83, 9);
 	}
 
 	@Override
 	public TextStyle commentTextStyle() {
-		return newStyle(SWT.NORMAL, 63, 127, 95);
+		return newStyle(SWT.ITALIC, 110, 119, 129); // Muted slate gray
 	}
 
 	@Override
 	public TextStyle defaultTextStyle() {
 		final var textStyle = new TextStyle();
-		textStyle.setColor(new RGB(0, 0, 0));
+		textStyle.setColor(new RGB(31, 35, 40));
 		return textStyle;
 	}
 

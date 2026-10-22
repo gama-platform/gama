@@ -156,6 +156,8 @@ public interface IGui {
 	/** The test view id. */
 	String TEST_VIEW_ID = "gama.ui.application.view.TestView";
 
+	String COMPACT_TEST_VIEW_ID = "gama.ui.application.view.CompactTestView";
+
 	/** The parameter view id. */
 	String PARAMETER_VIEW_ID = "gama.ui.application.view.ParameterView";
 
@@ -467,6 +469,20 @@ public interface IGui {
 	 */
 	default IModelsManager getModelsManager() { return NULL_MODELS_MANAGER; }
 
+	/** Returns true when the GUI takes responsibility for running this test experiment in isolation. */
+	default boolean runTestExperiment(final IModelSpecies model, final String experiment) { return false; }
+
+	/** Publishes an incremental test snapshot; headless workers use it to preserve results before interruption. */
+	default void displayTestSummary(final IScope scope,
+			final gama.api.utils.tests.IndividualTestSummary summary, final boolean finished) {}
+
+	/** Publishes an individual test snapshot with its experiment for views outside the execution scope. */
+	default void displayTestSummary(final IScope scope,
+			final gama.api.utils.tests.TestExperimentSummary experiment,
+			final gama.api.utils.tests.IndividualTestSummary summary, final boolean finished) {
+		displayTestSummary(scope, summary, finished);
+	}
+
 	/**
 	 * Close simulation views.
 	 *
@@ -597,6 +613,14 @@ public interface IGui {
 	 * @param scope
 	 */
 	default void displayTestsProgress(final IScope scope, final int number, final int total) {}
+
+	default void displayTestCounts(final int completed, final int total) {}
+
+	/** Reports the test or experiment currently executing. */
+	default void displayRunningTest(final IScope scope, final String name) {}
+
+	/** Whether the current test sequence was stopped by the user. */
+	default boolean isTestStopRequested() { return false; }
 
 	/**
 	 * Display tests results.

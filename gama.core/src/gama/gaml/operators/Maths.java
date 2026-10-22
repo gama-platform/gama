@@ -273,10 +273,13 @@ public class Maths {
 			concept = { IConcept.MATH, IConcept.ARITHMETIC, IConcept.MATRIX })
 	@doc (
 			value = "Returns the 2D convolution of the first matrix (e.g. grid values) using the second matrix as the convolution kernel. Useful for fast grid neighborhood computations.",
+			special_cases = "Raises an error if either matrix is nil.",
 			examples = { @example (
 					value = "matrix([[1, 2, 1], [3, 4, 1], [1, 1, 1]]) convolution matrix([[0, 1, 0], [1, -4, 1], [0, 1, 0]])",
 					equals = "matrix([[-1, 2, -1], [1, -7, 0], [1, 2, 1]])") })
 	public static IMatrix convolve(final IScope scope, final IMatrix a, final IMatrix kernel) {
+		if (a == null) throw GamaRuntimeException.error("convolution: the input matrix must not be nil", scope);
+		if (kernel == null) throw GamaRuntimeException.error("convolution: the kernel matrix must not be nil", scope);
 		final GamaFloatMatrix matA = GamaFloatMatrix.from(scope, a);
 		final GamaFloatMatrix k = GamaFloatMatrix.from(scope, kernel);
 
@@ -366,10 +369,12 @@ public class Maths {
 			concept = { IConcept.MATH, IConcept.ARITHMETIC, IConcept.MATRIX })
 	@doc (
 			value = "Returns a new matrix containing the absolute value of each element.",
+			special_cases = "Raises an error if the matrix is nil.",
 			examples = { @example (
 					value = "abs(matrix([[-1, 2], [-3, -4]]))",
 					equals = "matrix([[1.0, 2.0], [3.0, 4.0]])") })
 	public static IMatrix abs(final IScope scope, final IMatrix a) {
+		if (a == null) throw GamaRuntimeException.error("abs: the matrix must not be nil", scope);
 		final GamaFloatMatrix mat = GamaFloatMatrix.from(scope, a);
 		final GamaFloatMatrix nm =
 				(GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(mat.getCols(scope), mat.getRows(scope));
@@ -807,8 +812,10 @@ public class Maths {
 			category = { IOperatorCategory.ARITHMETIC, IOperatorCategory.MATRIX },
 			concept = { IConcept.MATH, IConcept.ARITHMETIC, IConcept.MATRIX })
 	@doc (
-			value = "Returns a new matrix where the cosine function is applied to each element (element values are assumed to be in degrees).")
+			value = "Returns a new matrix where the cosine function is applied to each element (element values are assumed to be in degrees).",
+			special_cases = "Raises an error if the matrix is nil.")
 	public static IMatrix cos(final IScope scope, final IMatrix a) {
+		if (a == null) throw GamaRuntimeException.error("cos: the matrix must not be nil", scope);
 		final GamaFloatMatrix mat = GamaFloatMatrix.from(scope, a);
 		final GamaFloatMatrix nm =
 				(GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(mat.getCols(scope), mat.getRows(scope));
@@ -904,8 +911,10 @@ public class Maths {
 			category = { IOperatorCategory.ARITHMETIC, IOperatorCategory.MATRIX },
 			concept = { IConcept.MATH, IConcept.ARITHMETIC, IConcept.MATRIX })
 	@doc (
-			value = "Returns a new matrix where the sine function is applied to each element (element values are assumed to be in degrees).")
+			value = "Returns a new matrix where the sine function is applied to each element (element values are assumed to be in degrees).",
+			special_cases = "Raises an error if the matrix is nil.")
 	public static IMatrix sin(final IScope scope, final IMatrix a) {
+		if (a == null) throw GamaRuntimeException.error("sin: the matrix must not be nil", scope);
 		final GamaFloatMatrix mat = GamaFloatMatrix.from(scope, a);
 		final GamaFloatMatrix nm =
 				(GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(mat.getCols(scope), mat.getRows(scope));
@@ -1122,8 +1131,10 @@ public class Maths {
 			category = { IOperatorCategory.ARITHMETIC, IOperatorCategory.MATRIX },
 			concept = { IConcept.MATH, IConcept.ARITHMETIC, IConcept.MATRIX })
 	@doc (
-			value = "Returns a new matrix where Euler's number e is raised to the power of each element.")
+			value = "Returns a new matrix where Euler's number e is raised to the power of each element.",
+			special_cases = "Raises an error if the matrix is nil.")
 	public static IMatrix exp(final IScope scope, final IMatrix a) {
+		if (a == null) throw GamaRuntimeException.error("exp: the matrix must not be nil", scope);
 		final GamaFloatMatrix mat = GamaFloatMatrix.from(scope, a);
 		final GamaFloatMatrix nm =
 				(GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(mat.getCols(scope), mat.getRows(scope));
@@ -2509,6 +2520,8 @@ public class Maths {
 	/**
 	 * Round.
 	 *
+	 * @param scope
+	 *            the scope
 	 * @param v
 	 *            the v
 	 * @param precision
@@ -2522,6 +2535,7 @@ public class Maths {
 			concept = { IConcept.MATH, IConcept.ARITHMETIC })
 	@doc (
 			value = "Rounds off the value of left-hand operand to the precision given by the value of right-hand operand",
+			special_cases = "The precision must be between 0 and 99 (inclusive); otherwise an error is raised.",
 			examples = { @example (
 					value = "12345.78943 with_precision 2",
 					equals = "12345.79"),
@@ -2537,8 +2551,20 @@ public class Maths {
 			@test ("3.14159 with_precision 0 = 3.0"),
 			@test ("2.5 with_precision 0 = 3.0")
 	})
-	public static double round(final Double v, final Integer precision) {
+	public static double round(final IScope scope, final Double v, final Integer precision) {
+		if (precision == null || precision < 0 || precision >= MathUtils.TENS.length) {
+			throw GamaRuntimeException.error(
+					"with_precision: the precision must be between 0 and " + (MathUtils.TENS.length - 1) + " (inclusive)",
+					scope);
+		}
 		return MathUtils.round(v, precision);
+	}
+
+	/**
+	 * Rounds a value for Java callers without an execution scope.
+	 */
+	public static double round(final Double v, final Integer precision) {
+		return round(null, v, precision);
 	}
 
 	/**

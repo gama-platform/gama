@@ -360,6 +360,7 @@ public class SpatialOperators {
 	})
 	public static IShape add_point(final IScope scope, final IShape g, final IPoint p) {
 		if (p == null || g == null) return g;
+		SpatialCommon.requireFinitePoint(scope, p, "The point to add");
 		final Coordinate point = p.toCoordinate();
 		final Geometry geometry = g.getInnerGeometry();
 		final org.locationtech.jts.geom.GeometryFactory gf = GeometryUtils.getGeometryFactory();
@@ -722,7 +723,9 @@ public class SpatialOperators {
 	@tests ({
 			@test ("(line([{0,0},{100,0}]) split_at {50,0}) = [line([{0,0},{50,0}]), line([{50,0},{100,0}])]")
 	})
-	public static IList<IShape> split_at(final IShape geom, final IPoint pt) {
+	public static IList<IShape> split_at(final IScope scope, final IShape geom, final IPoint pt) {
+		SpatialCommon.requireGeometry(scope, geom);
+		SpatialCommon.requireFinitePoint(scope, pt, "The split point");
 		final IList<IShape> lines = GamaListFactory.create(Types.GEOMETRY);
 		List<Geometry> geoms = null;
 		// Compute split coordinate once, shared between both branches
@@ -747,6 +750,10 @@ public class SpatialOperators {
 		if (geoms != null) { for (final Geometry g : geoms) { lines.add(GamaShapeFactory.createFrom(g)); } }
 		for (final IShape li : lines) { li.copyAttributesOf(geom); }
 		return lines;
+	}
+
+	public static IList<IShape> split_at(final IShape geom, final IPoint pt) {
+		return split_at(null, geom, pt);
 	}
 
 	/**

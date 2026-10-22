@@ -97,7 +97,7 @@ public class GamaImageType extends GamaType<GamaImage> {
 	@doc (
 			value = "Cast any object to an image",
 			usages = { @usage (
-					value = "if the operand is a point, returns an empty image of dimensions x and y",
+					value = "if the operand is a point, returns an empty image of dimensions x and y. Dimensions must be finite, fit in an integer and be at least 1 after truncation; otherwise raises an error",
 					examples = { @example ("image i <- image({100,100}); // equivalent to image(100, 100)") }),
 					@usage (
 							value = "if the operand is a grid species, returns an image of the same dimension where each cell gives its color to the corresponding pixel",
@@ -153,6 +153,9 @@ public class GamaImageType extends GamaType<GamaImage> {
 				return GamaImage.from(f.getImage(scope, true), true, f.getOriginalPath());
 			}
 			case IPoint p -> {
+				if (!Double.isFinite(p.getX()) || !Double.isFinite(p.getY()) || p.getX() < 1 || p.getY() < 1
+						|| p.getX() > Integer.MAX_VALUE || p.getY() > Integer.MAX_VALUE)
+					throw GamaRuntimeException.error("Image dimensions must be finite positive integers", scope);
 				return ImageOperators.image((int) p.getX(), (int) p.getY());
 			}
 			case String s -> {

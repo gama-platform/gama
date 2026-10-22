@@ -363,7 +363,9 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 			scope.getGui().getStatus().beginTask("Opening file " + getName(scope), IStatusMessage.DOWNLOAD_ICON);
 			final CSVInfo stats = getInfo(scope, csvSeparator);
 			csvSeparator = csvSeparator == null ? "" + stats.delimiter : csvSeparator;
-			contentsType = contentsType == null ? stats.type : contentsType;
+			// Header inference excludes the first row from type inference, but an explicit false keeps that row.
+			contentsType = contentsType == null
+					? Boolean.FALSE.equals(hasHeader) && stats.header ? Types.NO_TYPE : stats.type : contentsType;
 			if (userSize == null) { userSize = GamaPointFactory.create(stats.cols, stats.rows); }
 
 			// AD We take the decision for the modeler is he/she hasn't

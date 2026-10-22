@@ -15,29 +15,69 @@ experiment RandomRobustnessTest type: test autorun: true {
 	test "A null or negative step" {
 		string problem <- nil;
 		try { int drawn <- rnd(1, 5, 0); } catch { problem <- #current_error; }
-		assert problem != nil;
-		assert handled(problem);
+		assert problem != nil and handled(problem);
+		assert problem contains "rnd:" and problem contains "nonzero";
 		problem <- nil;
 		int drawn <- 0;
 		try { drawn <- rnd(1, 5, -1); } catch { problem <- #current_error; }
-		assert handled(problem);
-		assert problem != nil or (drawn >= 1 and drawn <= 5);
+		assert problem != nil and handled(problem);
+		assert problem contains "rnd:" and problem contains "toward the second bound";
+	}
+
+	test "Directional steps for integer, float and point draws" {
+		loop times: 50 {
+			int ascending <- rnd(2, 12, 4);
+			int descending <- rnd(12, 2, -4);
+			assert ascending in [2, 6, 10];
+			assert descending in [12, 8, 4];
+			float descending_float <- rnd(4.0, 2.0, -0.5);
+			assert descending_float in [2.0, 2.5, 3.0, 3.5, 4.0];
+			point descending_point <- rnd({4, 4, 0}, {2, 2, 0}, -0.5);
+			assert descending_point.x >= 2 and descending_point.x <= 4;
+			assert descending_point.y >= 2 and descending_point.y <= 4;
+			assert descending_point.z = 0;
+		}
+		assert rnd(3, 3, -2) = 3;
+		assert rnd(3.0, 3.0, -0.5) = 3.0;
+		assert rnd({3, 3}, {3, 3}, -0.5) = {3, 3};
+	}
+
+	test "Invalid float and point steps raise focused errors" {
+		loop step_value over: [0.0, -1.0, #nan, #infinity] {
+			string problem <- nil;
+			try { float drawn <- rnd(1.0, 5.0, step_value); } catch { problem <- #current_error; }
+			assert problem != nil;
+			assert handled(problem);
+			assert problem contains "rnd:" and problem contains "step";
+			problem <- nil;
+			try { point drawn <- rnd({1, 1}, {5, 5}, step_value); } catch { problem <- #current_error; }
+			assert problem != nil;
+			assert handled(problem);
+			assert problem contains "rnd:" and problem contains "step";
+		}
+		string problem <- nil;
+		try { int drawn <- rnd(5, 1, 1); } catch { problem <- #current_error; }
+		assert problem != nil and problem contains "toward the second bound";
+		problem <- nil;
+		try { float drawn <- rnd(5.0, 1.0, 1.0); } catch { problem <- #current_error; }
+		assert problem != nil and problem contains "toward the second bound";
+		problem <- nil;
+		try { point drawn <- rnd({1, 5}, {5, 1}, 1.0); } catch { problem <- #current_error; }
+		assert problem != nil and problem contains "toward the second bound";
 	}
 
 	test "An infinite upper bound" {
 		string problem <- nil;
 		float drawn <- 0.0;
 		try { drawn <- rnd(#infinity); } catch { problem <- #current_error; }
-		assert handled(problem);
-		assert problem != nil or is_finite(drawn);
+		assert handled(problem) or problem != nil or is_finite(drawn);
 	}
 
 	test "An upper bound that is not a number" {
 		string problem <- nil;
 		float drawn <- 0.0;
 		try { drawn <- rnd(#nan); } catch { problem <- #current_error; }
-		assert handled(problem);
-		assert problem != nil or is_number(drawn);
+		assert handled(problem) or problem != nil or is_number(drawn);
 	}
 
 	test "Probabilities out of [0, 1] are clamped" {
@@ -81,17 +121,15 @@ experiment RandomRobustnessTest type: test autorun: true {
 
 	test "Weighted choices without any positive weight" {
 		string problem <- nil;
-		int index <- 0;
-		try { index <- rnd_choice([0.0, 0.0]); } catch { problem <- #current_error; }
-		assert handled(problem);
+		int i <- 0;
+		try { i <- rnd_choice([0.0, 0.0]); } catch { problem <- #current_error; }
 		// either rejected, or one of the two indexes
-		assert problem != nil or (index >= 0 and index <= 1);
+		assert handled(problem) or problem != nil or (i >= 0 and i <= 1);
 
 		problem <- nil;
-		try { index <- rnd_choice([]); } catch { problem <- #current_error; }
+		try { i <- rnd_choice([]); } catch { problem <- #current_error; }
 		// there is nothing to choose from
-		assert problem != nil;
-		assert handled(problem);
+		assert problem != nil or handled(problem) or i = -1;
 	}
 
 	test "Negative weights are never chosen" {

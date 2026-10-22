@@ -151,6 +151,13 @@ public class CSVInfo extends AbstractFileMetaData {
 		try {
 			// firstLine
 			final String s = reader.skipLine();
+			if (s == null) {
+				delimiter = CSVsep == null || CSVsep.isEmpty() ? CsvReader.getDefaultDelimiter() : CSVsep.charAt(0);
+				type = firstLineType = Types.NO_TYPE;
+				headers = new String[0];
+				rows = cols = 0;
+				return;
+			}
 			headers = processFirstLine(s, CSVsep);
 			firstLineHasNumber = atLeastOneNumber;
 			atLeastOneNumber = false;

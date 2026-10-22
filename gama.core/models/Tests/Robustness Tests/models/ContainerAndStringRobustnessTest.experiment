@@ -18,17 +18,17 @@ experiment ContainerAndStringRobustnessTest type: test autorun: true {
 		string problem <- nil;
 		try { int i <- numbers[5]; } catch { problem <- #current_error; }
 		assert problem != nil;
-		assert handled(problem);
+		assert handled(problem) label: problem;
 
 		problem <- nil;
 		try { int i <- numbers[-1]; } catch { problem <- #current_error; }
 		assert problem != nil;
-		assert handled(problem);
+		assert handled(problem) label: problem;
 
 		problem <- nil;
 		try { int i <- numbers at 5; } catch { problem <- #current_error; }
 		assert problem != nil;
-		assert handled(problem);
+		assert handled(problem) label: problem;
 	}
 
 	test "Accessing a matrix out of its bounds raises a proper error" {
@@ -83,7 +83,7 @@ experiment ContainerAndStringRobustnessTest type: test autorun: true {
 		// the sum of nothing is either 0 or a proper error
 		string problem <- nil;
 		float total <- 0.0;
-		try { total <- sum([]); } catch { problem <- #current_error; }
+		try { total <- sum(list<float>([])); } catch { problem <- #current_error; }
 		assert handled(problem);
 		assert problem != nil or total = 0.0;
 	}
@@ -96,10 +96,62 @@ experiment ContainerAndStringRobustnessTest type: test autorun: true {
 
 	}
 
+	test "Searching lists for nil values" {
+		assert all_indexes_of(numbers, nil) = [];
+		list values <- [nil, 1, nil, 2, nil];
+		assert values all_indexes_of nil = [0, 2, 4];
+		assert values all_indexes_of 1 = [1];
+		assert values all_indexes_of 3 = [];
+		assert values index_of nil = 0;
+		assert values last_index_of nil = 4;
+		assert [] all_indexes_of nil = [];
+	}
+
+	test "Searching maps with nil values" {
+		map values <- ["first"::nil, "middle"::1, "last"::nil];
+		assert values index_of nil = "first";
+		assert values last_index_of nil = "last";
+		assert values index_of 1 = "middle";
+		assert values last_index_of 1 = "middle";
+		assert values index_of 2 = nil;
+		assert values last_index_of 2 = nil;
+		map no_nil <- ["a"::1];
+		assert no_nil index_of nil = nil;
+		assert no_nil last_index_of nil = nil;
+	}
+
+	test "Searching matrices with nil cells" {
+		geometry present <- square(1);
+		geometry absent <- circle(1);
+		matrix<geometry> values <- matrix([[nil, present, nil]]);
+		assert values index_of nil = {0, 0};
+		assert values last_index_of nil = {0, 2};
+		assert values index_of present = {0, 1};
+		assert values last_index_of present = {0, 1};
+		assert values index_of absent = nil;
+		assert values last_index_of absent = nil;
+		matrix<int> no_nil <- matrix([[1, 2]]);
+		assert no_nil index_of nil = nil;
+		assert no_nil last_index_of nil = nil;
+	}
+
 	test "A ragged list of lists cannot become a matrix silently" {
 		string problem <- nil;
 		try { matrix<int> m <- matrix([[1, 2], [3]]); } catch { problem <- #current_error; }
-		assert handled(problem);
+		assert problem != nil;
+		assert handled(problem) label: problem;
+		problem <- nil;
+		try { matrix<float> m <- matrix([[1.0], [2.0, 3.0]]); } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem) label: problem;
+		problem <- nil;
+		try { matrix<string> m <- matrix([["a", "b"], ["c"]]); } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem) label: problem;
+		problem <- nil;
+		try { matrix<int> m <- matrix([[], [1]]); } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem) label: problem;
 	}
 
 	test "Matrices with absurd dimensions" {
@@ -118,11 +170,13 @@ experiment ContainerAndStringRobustnessTest type: test autorun: true {
 		string problem <- nil;
 		try { string s <- replace_regex("abc", "[", "x"); } catch { problem <- #current_error; }
 		assert problem != nil;
-		assert handled(problem);
+		assert handled(problem) label: problem;
 		problem <- nil;
 		list<string> matches <- [];
 		try { matches <- "abc" regex_matches "("; } catch { problem <- #current_error; }
 		assert handled(problem);
+		assert "a(b" regex_matches "(" = ["("];
+		assert replace_regex("abc123", "[0-9]+", "x") = "abcx";
 	}
 
 	test "Rounding to a negative precision" {

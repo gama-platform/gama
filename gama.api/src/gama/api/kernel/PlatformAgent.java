@@ -579,7 +579,7 @@ public class PlatformAgent implements ITopLevelAgent.Platform {
 	}
 
 	/**
-	 * Restore prefs.
+	 * Restores saved preference values and clears the snapshot so the next experiment captures fresh originals.
 	 */
 	@Override
 	public void restorePrefs() {
@@ -588,7 +588,7 @@ public class PlatformAgent implements ITopLevelAgent.Platform {
 			Pref<?> p = GAMA.getPreferenceStore().get(key);
 			if (p != null) { p.setValue(basicScope, value); }
 		});
-
+		prefsToRestore.clear();
 	}
 
 	@Override

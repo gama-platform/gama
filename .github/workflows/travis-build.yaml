@@ -144,7 +144,7 @@ jobs:
           action: restore
 
       - name: Compiling gama
-        run: bash $GITHUB_WORKSPACE/travis/build.sh -e -B -T 4 $MVN_EXTRA_ARGUMENTS
+        run: bash $GITHUB_WORKSPACE/travis/build.sh -e -B -T 4 $MVN_EXTRA_ARGUMENTS -Dmaven.resolver.validation=MILD
         env:
           MVN_EXTRA_ARGUMENTS: ${{ inputs.mvn_extra_arguments }}
 

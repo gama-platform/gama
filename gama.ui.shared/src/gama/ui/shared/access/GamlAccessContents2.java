@@ -93,6 +93,7 @@ import gama.api.compilation.descriptions.IGamlDescription;
 import gama.api.compilation.documentation.GamlIdiomsProvider;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.WebHelper;
+import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.toolbar.GamaCommand;
 import gama.ui.shared.views.toolbar.Selector;
 
@@ -151,11 +152,25 @@ public class GamlAccessContents2 extends PopupDialog {
 	/** The popup. */
 	GamlBrowserPane browser;
 
+	/** The initial filter. */
+	private final String initialFilter;
+
 	/**
 	 * Instantiates a new gaml access contents 2.
 	 */
 	public GamlAccessContents2() {
+		this("");
+	}
+
+	/**
+	 * Instantiates a new gaml access contents 2 with an initial filter.
+	 *
+	 * @param initialFilter
+	 *            the initial filter
+	 */
+	public GamlAccessContents2(final String initialFilter) {
 		super(getDefaultParent(), SWT.RESIZE, true, true, false, false, false, "GAML Reference", null);
+		this.initialFilter = initialFilter == null ? "" : initialFilter.trim();
 	}
 
 	@Override
@@ -174,10 +189,24 @@ public class GamlAccessContents2 extends PopupDialog {
 
 	@Override
 	public int open() {
-
 		int result = super.open();
-		updateProposals("");
+		if (initialFilter != null && !initialFilter.isEmpty() && filterText != null && !filterText.isDisposed()) {
+			filterText.setText(initialFilter);
+			filterText.selectAll();
+		} else {
+			updateProposals("");
+		}
 		return result;
+	}
+
+	/**
+	 * Open the GAML reference popup with an optional initial query.
+	 *
+	 * @param initialFilter
+	 *            the initial query, or null / empty string
+	 */
+	public static void open(final String initialFilter) {
+		WorkbenchHelper.run(() -> new GamlAccessContents2(initialFilter).open());
 	}
 
 	/**
@@ -187,7 +216,23 @@ public class GamlAccessContents2 extends PopupDialog {
 		Rectangle rect = table.getClientArea();
 		int itemHeight = table.getItemHeight();
 		int headerHeight = table.getHeaderHeight();
-		return (rect.height - headerHeight + itemHeight - 1) / (itemHeight + table.getGridLineWidth());
+		int computed = (rect.height - headerHeight + itemHeight - 1) / (itemHeight + table.getGridLineWidth());
+		return Math.max(computed, 10);
+	}
+
+	/**
+	 * Updates the browser pane with documentation for the currently selected table item.
+	 */
+	private void updateBrowserForSelection() {
+		if (table != null && !table.isDisposed() && table.getSelectionCount() > 0) {
+			TableItem item = table.getSelection()[0];
+			if (item != null && item.getData() instanceof GamlAccessEntry entry) {
+				browser.setElementInput(entry.element, entry.provider.document(entry.element));
+				showBrowser();
+				return;
+			}
+		}
+		hideBrowser();
 	}
 
 	/**
@@ -322,9 +367,12 @@ public class GamlAccessContents2 extends PopupDialog {
 		if (table.getItemCount() > 0) {
 			table.setSelection(selectionIndex);
 			hideHintText();
+			updateBrowserForSelection();
 		} else if (filter.isEmpty()) {
+			hideBrowser();
 			showHintText("Start typing text to find GAML elements", grayColor);
 		} else {
+			hideBrowser();
 			showHintText("No matching GAML elements", grayColor);
 		}
 	}
@@ -595,11 +643,17 @@ public class GamlAccessContents2 extends PopupDialog {
 						break;
 					case SWT.ARROW_DOWN:
 						int index = table.getSelectionIndex();
-						if (index != -1 && table.getItemCount() > index + 1) { table.setSelection(index + 1); }
+						if (index != -1 && table.getItemCount() > index + 1) {
+							table.setSelection(index + 1);
+							updateBrowserForSelection();
+						}
 						break;
 					case SWT.ARROW_UP:
 						index = table.getSelectionIndex();
-						if (index != -1 && index >= 1) { table.setSelection(index - 1); }
+						if (index != -1 && index >= 1) {
+							table.setSelection(index - 1);
+							updateBrowserForSelection();
+						}
 						break;
 					case SWT.ESC:
 						doClose();
@@ -676,17 +730,18 @@ public class GamlAccessContents2 extends PopupDialog {
 		table = new Table(tableComposite, SWT.SINGLE | SWT.FULL_SELECTION);
 
 		textLayout = new TextLayout(table.getDisplay());
-		Font boldFont = resourceManager.create(FontDescriptor.createFrom(table.getFont()).setStyle(SWT.BOLD));
+		Font boldFont = JFaceResources.getFontRegistry().getBold(JFaceResources.DIALOG_FONT);
 		textLayout.setFont(boldFont);
-		textLayout.setText("Available categories to search into");
-		int maxProviderWidth = textLayout.getBounds().width;
+		int maxProviderWidth = 0;
 
 		for (GamlIdiomsProvider provider : GamlIdiomsProvider.getProviders()) {
-			textLayout.setText(provider.getSearchCategory());
+			textLayout.setText(provider.name);
 			int width = textLayout.getBounds().width;
 			if (width > maxProviderWidth) { maxProviderWidth = width; }
 		}
-		tableColumnLayout.setColumnData(new TableColumn(table, SWT.NONE), new ColumnWeightData(0, maxProviderWidth));
+		// Allocate enough width for category names with padding
+		int col0Width = Math.max(maxProviderWidth + 24, 180);
+		tableColumnLayout.setColumnData(new TableColumn(table, SWT.NONE), new ColumnWeightData(0, col0Width));
 		tableColumnLayout.setColumnData(new TableColumn(table, SWT.NONE), new ColumnWeightData(100, 100));
 		table.getShell().addControlListener(new ControlAdapter() {
 			@Override
@@ -743,9 +798,7 @@ public class GamlAccessContents2 extends PopupDialog {
 							table.setSelection(new TableItem[] { lastItem });
 							final GamlAccessEntry entry = (GamlAccessEntry) lastItem.getData();
 							if (entry != null) {
-
-								final IGamlDescription element = entry.element;
-								browser.setInput(entry.provider.document(element));
+								browser.setElementInput(entry.element, entry.provider.document(entry.element));
 								showBrowser();
 							}
 						}
@@ -763,6 +816,11 @@ public class GamlAccessContents2 extends PopupDialog {
 
 		table.addSelectionListener(new SelectionAdapter() {
 			@Override
+			public void widgetSelected(final SelectionEvent e) {
+				updateBrowserForSelection();
+			}
+
+			@Override
 			public void widgetDefaultSelected(final SelectionEvent e) {
 				handleSelection();
 			}
@@ -772,7 +830,9 @@ public class GamlAccessContents2 extends PopupDialog {
 
 			@Override
 			public void mouseEnter(final MouseEvent e) {
-				hideBrowser();
+				if (table.getSelectionCount() == 0) {
+					hideBrowser();
+				}
 			}
 		});
 
@@ -868,10 +928,10 @@ public class GamlAccessContents2 extends PopupDialog {
 		GC gc = new GC(getContents());
 		FontMetrics fontMetrics = gc.getFontMetrics();
 		gc.dispose();
-		int x = Dialog.convertHorizontalDLUsToPixels(fontMetrics, 300);
-		if (x < 350) { x = 350; }
-		int y = Dialog.convertVerticalDLUsToPixels(fontMetrics, 270);
-		if (y < 420) { y = 420; }
+		int x = Dialog.convertHorizontalDLUsToPixels(fontMetrics, 650);
+		if (x < 800) { x = 800; }
+		int y = Dialog.convertVerticalDLUsToPixels(fontMetrics, 320);
+		if (y < 500) { y = 500; }
 		return new Point(x, y);
 	}
 

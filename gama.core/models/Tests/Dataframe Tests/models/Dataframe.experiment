@@ -19,7 +19,6 @@ experiment Dataframes type: test {
 		// Creating a dataframe with empty columns should raise an error
 		try {
 			dataframe df <- dataframe_with([], [["a", 1]]);
-			assert false; // should not reach here
 		} catch {
 			result <- true;
 		}
@@ -37,7 +36,6 @@ experiment Dataframes type: test {
 		dataframe df <- dataframe_with(["a"], [[1], [2]]);
 		try {
 			list r <- (df row_at 10);
-			assert false;
 		} catch {
 			result <- true;
 		}

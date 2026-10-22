@@ -51,20 +51,24 @@ public class GamlBrowserPane {
 					var	         { font-style: italic; }
 					th	         { font-weight: bold; }
 								""";
-	static String css = HTMLPrinter.convertTopLevelFont(rawCSS, fontData);
-
 	/** The control's browser widget */
 	private Browser fBrowser;
+
+	public void setElementInput(final gama.api.compilation.descriptions.IGamlDescription element, final String docText) {
+		String title = element != null ? element.getTitle() : null;
+		setInput(GamlDocStyleHelper.wrapWithCard(title, null, docText));
+	}
 
 	public void setInput(final String msg) {
 		StringBuilder builder = new StringBuilder(msg);
 		ColorRegistry registry = JFaceResources.getColorRegistry();
 		RGB fgRGB = registry.getRGB("org.eclipse.ui.workbench.HOVER_FOREGROUND"); //$NON-NLS-1$
 		RGB bgRGB = registry.getRGB("org.eclipse.ui.workbench.HOVER_BACKGROUND"); //$NON-NLS-1$
+		String currentCss = HTMLPrinter.convertTopLevelFont(GamlDocStyleHelper.getDocCss(), fontData);
 		if (fgRGB != null && bgRGB != null) {
-			HTMLPrinter.insertPageProlog(builder, 0, fgRGB, bgRGB, css);
+			HTMLPrinter.insertPageProlog(builder, 0, fgRGB, bgRGB, currentCss);
 		} else {
-			HTMLPrinter.insertPageProlog(builder, 0, css);
+			HTMLPrinter.insertPageProlog(builder, 0, currentCss);
 		}
 		HTMLPrinter.addPageEpilog(builder);
 		String content = builder.toString();

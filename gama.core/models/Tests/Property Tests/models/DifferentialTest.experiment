@@ -81,6 +81,22 @@ experiment DifferentialTest type: test autorun: true {
 		assert empty(failures);
 	}
 
+	test "JSON preserves floating-point precision in both output formats" {
+		list<float> values <- [21.569519293322514, -419.00557721635084, 0.0010000000000000002,
+			0.0009999999999999998, 9999999.123456789, -10000000.123456789, 1e-300, 1e300, -0.0];
+		loop value over: values {
+			assert from_json(to_json(value)) = value;
+			assert from_json(to_json(value, true)) = value;
+			point coordinates <- {value, 5.394009344651737, 6.185989626463755};
+			assert from_json(to_json(coordinates)) = coordinates;
+			assert from_json(to_json(coordinates, true)) = coordinates;
+		}
+		map nested <- ["values"::values, "point"::{5.394009344651737, 6.185989626463755}];
+		assert from_json(to_json(nested)) = nested;
+		assert from_json(to_json(nested, true)) = nested;
+		assert to_json(-0.0) = "-0.0";
+	}
+
 	test "Statistics computed with different operators agree" {
 		seed <- 4.0;
 		list<string> failures <- [];

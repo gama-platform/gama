@@ -24,8 +24,6 @@ import gama.api.utils.prefs.GamaPreferences;
 @SuppressWarnings ("serial") // use default serial UID
 class JsonFloat extends JsonValue {
 
-	/** The Constant DEFAULT_NUMBER_OF_DIGITS. */
-	private static final int DEFAULT_NUMBER_OF_DIGITS = 8;
 	/** The string. */
 	private final String string;
 
@@ -38,7 +36,7 @@ class JsonFloat extends JsonValue {
 	 * @date 29 oct. 2023
 	 */
 	JsonFloat(final double x) {
-		this(formatOrdinate(x, DEFAULT_NUMBER_OF_DIGITS));
+		this(formatOrdinate(x));
 	}
 
 	/**
@@ -63,7 +61,7 @@ class JsonFloat extends JsonValue {
 	 * @return the string
 	 * @date 4 nov. 2023
 	 */
-	public static String formatOrdinate(double x, final int numberOfDigits) {
+	private static String formatOrdinate(final double x) {
 		if (Double.isInfinite(x)) {
 			String result = (x > 0 ? "" : "-") + "Infinity";
 			return GamaPreferences.External.JSON_INFINITY.getValue() ? "\"" + result + "\"" : result;
@@ -72,8 +70,6 @@ class JsonFloat extends JsonValue {
 			String result = "NaN";
 			return GamaPreferences.External.JSON_NAN.getValue() ? "\"" + result + "\"" : result;
 		}
-		double scale = Math.pow(10, numberOfDigits);
-		if (Math.abs(x) >= Math.pow(10, -3) && x < Math.pow(10, 7)) { x = Math.floor(x * scale + 0.5) / scale; }
 		return Double.toString(x);
 
 	}

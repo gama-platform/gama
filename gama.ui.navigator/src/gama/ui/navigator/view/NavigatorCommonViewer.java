@@ -15,9 +15,12 @@ import java.util.Iterator;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.StyledString;
+import org.eclipse.swt.graphics.TextStyle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Widget;
 import org.eclipse.ui.navigator.CommonViewer;
+import org.eclipse.ui.internal.navigator.NavigatorDecoratingLabelProvider;
 
 import gama.api.GAMA;
 import gama.api.ui.IStatusMessage;
@@ -26,6 +29,7 @@ import gama.ui.navigator.view.contents.NavigatorRoot;
 import gama.ui.navigator.view.contents.TopLevelFolder;
 import gama.ui.navigator.view.contents.UserGroupFolder;
 import gama.ui.navigator.view.contents.VirtualContent.VirtualContentType;
+import gama.ui.shared.resources.IGamaColors;
 
 /**
  * The Class NavigatorCommonViewer.
@@ -48,6 +52,27 @@ public class NavigatorCommonViewer extends CommonViewer {
 	 */
 	public NavigatorCommonViewer(final String aViewerId, final Composite aParent, final int aStyle) {
 		super(aViewerId, aParent, aStyle);
+	}
+
+	@Override
+	protected void init() {
+		setUseHashlookup(true);
+		setContentProvider(getNavigatorContentService().createCommonContentProvider());
+		setLabelProvider(new NavigatorDecoratingLabelProvider(
+				getNavigatorContentService().createCommonLabelProvider()) {
+			private final StyledString.Styler decorationStyle = new StyledString.Styler() {
+				@Override
+				public void applyStyles(final TextStyle textStyle) {
+					textStyle.foreground = IGamaColors.NICE.color();
+				}
+			};
+
+			@Override
+			protected StyledString.Styler getDecorationStyle(final Object element) {
+				return decorationStyle;
+			}
+		});
+		initDragAndDrop();
 	}
 
 	@Override

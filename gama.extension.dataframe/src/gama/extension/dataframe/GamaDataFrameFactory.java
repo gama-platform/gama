@@ -62,7 +62,7 @@ public class GamaDataFrameFactory {
 	 * @return a new empty dataframe
 	 */
 	public static IDataFrame create(final String... columns) {
-		return new GamaDataFrame(DataFrame.foldByRow(columns).of());
+		return new GamaDataFrame(DataFrame.empty(columns));
 	}
 	
 	/**
@@ -105,6 +105,10 @@ public class GamaDataFrameFactory {
 				.error("Each row must have " + numCols + " values (got " + firstRow.size() + ")", scope);
 
 		final int numRows = data.size();
+		for (int r = 0; r < numRows; r++) {
+			if (data.get(r) == null)
+				throw GamaRuntimeException.error("Dataframe row " + r + " cannot be nil", scope);
+		}
 
 		// Build one typed Series per column
 		final Series<?>[] series = new Series<?>[numCols];
@@ -360,7 +364,6 @@ public class GamaDataFrameFactory {
 	 *            whether to create a copy
 	 * @return a GamaDataFrame, or null if conversion is not possible
 	 */
-	@SuppressWarnings ("unchecked")
 	public static IDataFrame castToDataframe(final IScope scope, final Object obj, final boolean copy) {
 		return switch (obj) {
 			case null -> null;
@@ -370,8 +373,8 @@ public class GamaDataFrameFactory {
 				final Object contents = f.getContents(scope);
 				yield contents == obj ? null : castToDataframe(scope, contents, copy);
 			}
-			case IMap<?, ?> map -> fromMap(scope, (IMap<String, IList<Object>>) map);
-			case IList<?> list -> fromList(scope, (IList<IList<Object>>) list);
+			case IMap<?, ?> map -> fromMap(scope, map);
+			case IList<?> list -> fromList(scope, list);
 			case IField field -> fromField(scope, field);
 			case IMatrix<?> matrix -> fromMatrix(scope, matrix);
 			default -> null;
@@ -387,16 +390,23 @@ public class GamaDataFrameFactory {
 	 *            the map to convert
 	 * @return a new dataframe
 	 */
-	@SuppressWarnings ("unchecked")
-	private static IDataFrame fromMap(final IScope scope, final IMap<String, IList<Object>> map) {
-		final List<String> colNames = new ArrayList<>(map.keySet());
+	private static IDataFrame fromMap(final IScope scope, final IMap<?, ?> map) {
+		final List<String> colNames = new ArrayList<>(map.size());
+		final List<IList<?>> columns = new ArrayList<>(map.size());
+		for (final var entry : map.entrySet()) {
+			if (!(entry.getKey() instanceof String name))
+				throw GamaRuntimeException.error("Dataframe column names must be non-nil strings", scope);
+			if (!(entry.getValue() instanceof IList<?> values))
+				throw GamaRuntimeException.error("Dataframe column '" + name + "' must be a non-nil list", scope);
+			colNames.add(name);
+			columns.add(values);
+		}
 		if (colNames.isEmpty()) return create();
-		final int rowCount = map.get(colNames.get(0)).size();
+		final int rowCount = columns.get(0).size();
 		final Object[] flat = new Object[rowCount * colNames.size()];
 		int idx = 0;
 		for (int r = 0; r < rowCount; r++) {
-			for (final String col : colNames) {
-				final IList<Object> colData = map.get(col);
+			for (final IList<?> colData : columns) {
 				flat[idx++] = r < colData.size() ? colData.get(r) : null;
 			}
 		}
@@ -412,18 +422,21 @@ public class GamaDataFrameFactory {
 	 *            the list of lists
 	 * @return a new dataframe
 	 */
-	@SuppressWarnings ("unchecked")
-	private static IDataFrame fromList(final IScope scope, final IList<IList<Object>> list) {
+	private static IDataFrame fromList(final IScope scope, final IList<?> list) {
 		if (list.isEmpty()) return create();
+		for (int r = 0; r < list.size(); r++) {
+			if (!(list.get(r) instanceof IList<?>))
+				throw GamaRuntimeException.error("Dataframe row " + r + " must be a non-nil list", scope);
+		}
 		// First row is headers
-		final IList<Object> headers = list.get(0);
+		final IList<?> headers = (IList<?>) list.get(0);
 		final String[] colNames = new String[headers.size()];
 		for (int i = 0; i < headers.size(); i++) { colNames[i] = String.valueOf(headers.get(i)); }
 		// Remaining rows are data
 		final Object[] flat = new Object[(list.size() - 1) * colNames.length];
 		int idx = 0;
 		for (int r = 1; r < list.size(); r++) {
-			final IList<Object> row = list.get(r);
+			final IList<?> row = (IList<?>) list.get(r);
 			for (int c = 0; c < colNames.length; c++) { flat[idx++] = c < row.size() ? row.get(c) : null; }
 		}
 		return new GamaDataFrame(DataFrame.foldByRow(colNames).of(flat));

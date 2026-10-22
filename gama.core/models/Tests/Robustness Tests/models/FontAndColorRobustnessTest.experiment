@@ -6,16 +6,21 @@
 * Tags: robustness, font, color, test
 */
 
-experiment FontAndColorRobustnessTest type: test autorun: true {
+
+
+experiment FontAndColorRobustnessTest type: test  {
+	
 
 	/** True if there was no error, or if the error is a proper GAML one rather than a leaked Java exception */
 	bool handled(string problem) {
-		return problem = nil ? true : !(problem contains "Java error");
+		bool handled <-  problem = nil ? true : !(problem contains "Java error");
+		if (!handled) {write problem; }
+		return handled;
 	}
 
 	test "A font cannot have a negative size" {
 		string problem <- nil;
-		float size <- 1.0;
+		int size <- 1;
 		try { size <- font("Arial", -5).size; } catch { problem <- #current_error; }
 		assert handled(problem);
 		assert problem != nil or size > 0;
@@ -23,7 +28,7 @@ experiment FontAndColorRobustnessTest type: test autorun: true {
 
 	test "A font cannot have a null size" {
 		string problem <- nil;
-		float size <- 1.0;
+		int size <- 1;
 		try { size <- font("Arial", 0).size; } catch { problem <- #current_error; }
 		assert handled(problem);
 		assert problem != nil or size > 0;
@@ -31,7 +36,7 @@ experiment FontAndColorRobustnessTest type: test autorun: true {
 
 	test "A font cannot have an infinite size" {
 		string problem <- nil;
-		float size <- 1.0;
+		int size <- 1;
 		try { size <- font("Arial", #infinity).size; } catch { problem <- #current_error; }
 		assert handled(problem);
 		assert problem != nil;
@@ -39,11 +44,11 @@ experiment FontAndColorRobustnessTest type: test autorun: true {
 
 	test "A font cannot have a size that is not a number" {
 		string problem <- nil;
-		float size <- 1.0;
+		int size <- 1;
 		try { size <- font("Arial", #nan).size; } catch { problem <- #current_error; }
 		assert handled(problem);
 		assert problem != nil or size > 0;
-	}
+	} 
 
 	test "Unknown font names and styles fall back to valid values" {
 		string problem <- nil;

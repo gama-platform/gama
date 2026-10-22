@@ -8,6 +8,13 @@ Bundle-Version: 0.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-25
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.equinox.p2.core,
+ org.eclipse.equinox.p2.engine,
+ org.eclipse.equinox.p2.metadata,
+ org.eclipse.equinox.p2.metadata.repository,
+ org.eclipse.equinox.p2.operations,
+ org.eclipse.equinox.p2.repository,
+ org.eclipse.equinox.p2.ui,
  org.eclipse.ui.ide,
  org.eclipse.ui,
  gama.core,

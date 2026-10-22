@@ -37,13 +37,12 @@ import gama.api.GAMA;
 import gama.api.compilation.GamlCompilationError;
 import gama.api.compilation.IModelsManager;
 import gama.api.constants.GamlFileExtension;
-import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.kernel.species.IModelSpecies;
 import gama.api.utils.files.IFileMetadataProvider;
 import gama.api.utils.files.IGamlFileInfo;
 import gama.api.utils.tests.TestExperimentSummary;
-import gama.core.experiment.TestAgent;
-import gama.core.experiment.parameters.ParametersSet;
+import gama.api.utils.tests.IsolatedTestRunner;
+import gama.api.utils.tests.TestExperimentRunner;
 import gama.dev.DEBUG;
 import gama.ui.editor.internal.EditorActivator;
 import gama.ui.navigator.view.contents.WrappedGamaFile;
@@ -97,7 +96,6 @@ public class ModelsManager extends AbstractServiceFactory implements IModelsMana
 		WorkbenchHelper.asyncRun(() -> editModelInternal(eObject));
 	}
 
-	@SuppressWarnings ("unchecked")
 	@Override
 	public List<TestExperimentSummary> runHeadlessTests(final Object object) {
 		// final StringBuilder sb = new StringBuilder();
@@ -107,16 +105,12 @@ public class ModelsManager extends AbstractServiceFactory implements IModelsMana
 				.filter(e -> model.getExperiment(e).isTest()).toList();
 		if (testExpNames.isEmpty()) return null;
 		final List<TestExperimentSummary> result = new ArrayList<>();
-		for (final String expName : testExpNames) {
-			final IExperimentSpecies exp = GAMA.addHeadlessExperiment(model, expName, new ParametersSet(), null);
-			if (exp != null) {
-				exp.setHeadless(true);
-				final TestAgent agent = (TestAgent) exp.getAgent();
-				// exp.getController().getScheduler().resume();
-				agent.init(agent.getScope());
-				agent.step(agent.getScope());
-				result.add(agent.getSummary());
-				GAMA.closeExperiment(exp);
+		try (var session = IsolatedTestRunner.openSession()) {
+			for (final String expName : testExpNames) {
+				if (GAMA.getGui().isTestStopRequested()) break;
+				final var summary = TestExperimentRunner.run(model, expName, GAMA.getGui());
+				result.add(summary);
+				if (summary.getState() == gama.api.utils.tests.TestState.INTERRUPTED) break;
 			}
 		}
 		return result;
@@ -126,6 +120,19 @@ public class ModelsManager extends AbstractServiceFactory implements IModelsMana
 	 * @param object
 	 * @return
 	 */
+	@Override
+	public int countHeadlessTests(final Object object) {
+		final var model = findModel(object);
+		if (model == null) throw new IllegalArgumentException("Cannot discover tests in " + object);
+		try {
+			return model.getDescription().getExperimentNames().stream()
+					.filter(name -> model.getExperiment(name).isTest())
+					.mapToInt(name -> TestExperimentRunner.countTests(model, name)).sum();
+		} finally {
+			if (!(object instanceof IModelSpecies)) { model.dispose(); }
+		}
+	}
+
 	private IModelSpecies findModel(final Object object) {
 		if (object instanceof IModelSpecies) return (IModelSpecies) object;
 		if (object instanceof WrappedGamaFile) return findModel(((WrappedGamaFile) object).getResource());

@@ -48,6 +48,9 @@
    </feature>
 
    <!-- Extra -->
+   <feature id="gama.feature.copilot" version="0.0.0">
+      <category name="gama.optional"/>
+   </feature>
    <feature url="features/gama.feature.library_0.0.0.qualifier.jar" id="gama.feature.library" version="0.0.0.qualifier">
       <category name="gama.models"/>
    </feature>

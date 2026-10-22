@@ -15,12 +15,17 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.window.Window;
+import org.eclipse.jface.wizard.WizardDialog;
 
 import gama.api.GAMA;
 import gama.ui.navigator.view.contents.TopLevelFolder;
 import gama.ui.navigator.view.contents.UserGroupFolder;
 import gama.ui.navigator.view.contents.UserGroups;
+import gama.ui.navigator.wizards.NewProjectWizard;
+import gama.ui.shared.resources.GamaIcon;
+import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.workspace.manager.ProjectCategory;
 
@@ -44,9 +49,11 @@ public final class GroupActions {
 		 *            the selected group, or {@code null} to create the group at the top of the User folder
 		 */
 		public NewGroup(final UserGroupFolder parent) {
-			super("New group folder...");
+			super("Group...");
 			this.parent = parent;
 			setToolTipText("Creates a folder that can contain several projects");
+			setImageDescriptor(GamaIcon.named(IGamaIcons.NEW_FOLDER).descriptor());
+			setEnabled(parent == null || parent.getRelativePath().segmentCount() < 3);
 		}
 
 		@Override
@@ -55,11 +62,35 @@ public final class GroupActions {
 			final IInputValidator validator =
 					text -> text.isBlank() || text.contains("/") || text.contains("\\") ? "Enter a valid name"
 							: UserGroups.validate(base.append(text.trim()).toString());
-			final InputDialog dialog = new InputDialog(WorkbenchHelper.getShell(), "New group folder",
-					"Name of the new group in the " + ProjectCategory.USER.getLabel() + " folder:", "", validator);
+			final InputDialog dialog = new InputDialog(WorkbenchHelper.getShell(), "New group",
+					"Name of the new group in '" + (parent == null ? ProjectCategory.USER.getLabel()
+							: parent.getRelativePath().toString()) + "':", "", validator);
 			if (dialog.open() != Window.OK) return;
-			UserGroups.create(base.append(dialog.getValue().trim()).toString());
+			if (!UserGroups.create(base.append(dialog.getValue().trim()).toString())) {
+				GAMA.getGui().getDialogFactory().error("The group could not be created.");
+				return;
+			}
 			UserGroups.refreshNavigator();
+		}
+	}
+
+	/** Opens the project wizard in the selected user group. */
+	public static class NewProject extends Action {
+
+		private final UserGroupFolder parent;
+
+		public NewProject(final UserGroupFolder parent) {
+			super("Project...");
+			this.parent = parent;
+			setImageDescriptor(GamaIcon.named(IGamaIcons.NEW_PROJECT).descriptor());
+		}
+
+		@Override
+		public void run() {
+			final NewProjectWizard wizard = new NewProjectWizard();
+			wizard.init(WorkbenchHelper.getWorkbench(),
+					parent == null ? StructuredSelection.EMPTY : new StructuredSelection(parent));
+			new WizardDialog(WorkbenchHelper.getShell(), wizard).open();
 		}
 	}
 
@@ -76,8 +107,9 @@ public final class GroupActions {
 		 *            the group to rename
 		 */
 		public RenameGroup(final UserGroupFolder group) {
-			super("Rename group folder...");
+			super("Rename...");
 			this.group = group;
+			setImageDescriptor(GamaIcon.named(IGamaIcons.FILE_RENAME).descriptor());
 		}
 
 		@Override
@@ -113,8 +145,9 @@ public final class GroupActions {
 		 *            the group to delete
 		 */
 		public DeleteGroup(final UserGroupFolder group) {
-			super("Delete group folder");
+			super("Delete...");
 			this.group = group;
+			setImageDescriptor(GamaIcon.named(IGamaIcons.DELETE).descriptor());
 		}
 
 		@Override

@@ -34,6 +34,23 @@ experiment DateRobustnessTest type: test autorun: true {
 		assert handled(problem);
 	}
 
+	test "Invalid time components are rejected with GAML errors" {
+		loop components over: [[2026, 1, 1, 24], [2026, 1, 1, 0, 60], [2026, 1, 1, 0, 0, 60]] {
+			string problem <- nil;
+			try { date d <- date(components); } catch { problem <- #current_error; }
+			assert problem != nil;
+			assert handled(problem);
+		}
+	}
+
+	test "Valid components and explicit current dates still work" {
+		assert date([2024, 2, 29]) = date("2024-02-29");
+		assert date([2026, 1, 1, 23, 59, 59]) = date("2026-01-01T23:59:59");
+		assert date([2026]) = date("2026-01-01");
+		assert date("now") != nil;
+		assert date(nil) = nil;
+	}
+
 	test "An empty string is not a date" {
 		string problem <- nil;
 		date parsed <- nil;
@@ -41,6 +58,15 @@ experiment DateRobustnessTest type: test autorun: true {
 		assert handled(problem);
 		// it must not silently become the current date
 		assert problem != nil or parsed = nil;
+		assert problem != nil;
+		problem <- nil;
+		try { parsed <- date("", "yyyy-MM-dd"); } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+		problem <- nil;
+		try { parsed <- date(["", "yyyy-MM-dd", "fr"]); } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
 	}
 
 	test "Strings that do not match the pattern are rejected" {

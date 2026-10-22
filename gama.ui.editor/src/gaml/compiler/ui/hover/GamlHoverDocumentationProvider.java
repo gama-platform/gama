@@ -42,12 +42,14 @@ import gaml.compiler.gaml.ExpressionList;
 import gaml.compiler.gaml.Facet;
 import gaml.compiler.gaml.Function;
 import gaml.compiler.gaml.Import;
+import gaml.compiler.gaml.Model;
 import gaml.compiler.gaml.Parameter;
 import gaml.compiler.gaml.S_Definition;
 import gaml.compiler.gaml.S_Display;
 import gaml.compiler.gaml.S_Do;
 import gaml.compiler.gaml.S_Experiment;
 import gaml.compiler.gaml.S_Global;
+import gaml.compiler.gaml.S_Species;
 import gaml.compiler.gaml.Statement;
 import gaml.compiler.gaml.StringLiteral;
 import gaml.compiler.gaml.TypeRef;
@@ -136,10 +138,37 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 	}
 
 	@Override
+	public IGamlDescription caseS_Species(final S_Species declaration) {
+		if (!IKeyword.CLASS.equals(declaration.getKey())) return null;
+		String doc = "<p>The <code>class</code> statement defines a template for objects, with attributes and actions. "
+				+ "Classes belong to the world (model), not to another species. "
+				+ "A class can inherit only from another class; its implicit parent is <code>object</code>. "
+				+ "Species and grids cannot inherit from classes.</p>"
+				+ "<p>Facets: <code>name</code> identifies the class, <code>parent</code> selects its superclass, "
+				+ "and <code>virtual: true</code> prevents direct instantiation. "
+				+ "Classes do not have agent skills, control architectures or scheduling.</p>";
+		var reference = ArtefactRegistry.getStatementArtefact(IKeyword.CLASS);
+		if (reference != null && reference.getDocumentation() != null) doc += reference.getDocumentation().toString();
+		var contextual = documenter.getGamlDocumentation(declaration);
+		if (contextual != null && contextual.getDocumentation() != null) doc += contextual.getDocumentation().toString();
+		return new Result("Class <i>" + declaration.getName() + "</i>", doc);
+	}
+
+	@Override
 	public IGamlDescription caseS_Global(final S_Global global) {
-		EObject model = global.eContainer().eContainer();
-		String title = "Global section of <i>" + getDoc(model).getTitle() + "</i>";
-		String doc = "";
+		EObject model = global.eContainer();
+		while (model != null && !(model instanceof Model)) model = model.eContainer();
+		IGamlDescription contextual = getDoc(model);
+		String modelTitle = contextual != null ? contextual.getTitle()
+				: model instanceof Model root ? root.getName() : "the model";
+		String title = "Global section of <i>" + modelTitle + "</i>";
+		String doc = "<p>The <code>global</code> section defines the world (simulation) species: "
+				+ "its attributes, initialization, reflexes, actions and aspects. "
+				+ "Its facets configure the model rather than a population of ordinary agents. "
+				+ "Grid dimensions, neighborhoods and grid file options do not apply here.</p>";
+		var reference = ArtefactRegistry.getStatementArtefact(IKeyword.MODEL);
+		if (reference != null && reference.getDocumentation() != null)
+			doc += reference.getDocumentation().toString();
 		return new Result(title, doc);
 	}
 

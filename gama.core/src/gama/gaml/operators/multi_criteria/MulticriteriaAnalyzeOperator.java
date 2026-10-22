@@ -43,6 +43,7 @@ import gama.api.types.map.IMap;
  * from the supplied list, or {@code -1} if the candidate list is {@code nil} or empty.
  * Candidates are lists of criterion values (one numeric value per criterion); criteria
  * are specified as maps with at minimum a {@code "name"} key and a {@code "weight"} key.
+ * Invalid candidate or criterion structures raise a GAML runtime error.
  *
  * <p>Available operators:
  * <ul>
@@ -78,6 +79,25 @@ public class MulticriteriaAnalyzeOperator {
 	/** The Constant MULTICRITERIA. */
 	final static String MULTICRITERIA = "multicriteria operators";
 
+	private static void validateCandidates(final IScope scope, final IList<?> candidates, final int criterionCount,
+			final boolean choquet) {
+		for (final Object candidate : candidates) {
+			if (!(candidate instanceof List<?> values))
+				throw GamaRuntimeException.error("Each decision candidate must be a list of criterion values", scope);
+			if (choquet ? values.isEmpty() || values.size() > criterionCount : values.size() < criterionCount)
+				throw GamaRuntimeException.error("Candidate values do not match the supplied criteria", scope);
+		}
+	}
+
+	private static void validateDecisionInputs(final IScope scope, final IList<?> candidates, final IList<?> criteria) {
+		if (criteria == null) throw GamaRuntimeException.error("The criteria list must not be nil", scope);
+		for (final Object criterion : criteria) {
+			if (!(criterion instanceof Map<?, ?> map) || !(map.get(IKeyword.NAME) instanceof String))
+				throw GamaRuntimeException.error("Each criterion must be a map with a string name", scope);
+		}
+		validateCandidates(scope, candidates, criteria.size(), false);
+	}
+
 	/**
 	 * Weighted means decision making.
 	 *
@@ -99,6 +119,7 @@ public class MulticriteriaAnalyzeOperator {
 			value = "The index of the candidate that maximizes the weighted mean of its criterion values. The first operand is the list of candidates (a candidate is a list of criterion values); the second operand the list of criterion (list of map)",
 			special_cases = {
 					"Returns -1 if the candidate list is nil or empty.",
+					"Otherwise, criteria must be a non-nil list of named maps and candidates must be lists with a value for each criterion.",
 					"All criterion values must be numeric; non-numeric values are cast to float (0 if not convertible)." },
 			examples = { @example (
 					value = "weighted_means_DM([[1.0, 7.0],[4.0,2.0],[3.0, 3.0]], [[\"name\"::\"utility\", \"weight\" :: 2.0],[\"name\"::\"price\", \"weight\" :: 1.0]])",
@@ -108,6 +129,7 @@ public class MulticriteriaAnalyzeOperator {
 	public static Integer weightedMeansDecisionMaking(final IScope scope, final IList<List> cands,
 			final IList<Map<String, Object>> criteriaMap) throws GamaRuntimeException {
 		if (cands == null || cands.isEmpty()) return -1;
+		validateDecisionInputs(scope, cands, criteriaMap);
 		final List<String> criteriaStr = new LinkedList<>();
 		final Map<String, Double> weight = new HashMap<>();
 		for (final Map<String, Object> critMap : criteriaMap) {
@@ -194,7 +216,8 @@ public class MulticriteriaAnalyzeOperator {
 			concept = { IConcept.MULTI_CRITERIA })
 	@doc (
 			value = "The index of the candidate that maximizes the Fuzzy Choquet Integral value. The first operand is the list of candidates (a candidate is a list of criterion values); the second operand the list of criterion (list of string); the third operand the weights of each sub-set of criteria (map with list for key and float for value)",
-			special_cases = { "returns -1 is the list of candidates is nil or empty" },
+			special_cases = { "Returns -1 if the candidate list is nil or empty.",
+					"Otherwise, criteria must be a non-nil list of strings, candidates must be non-empty lists of values, and weight keys must be lists of criterion names." },
 			examples = { @example (
 					value = "fuzzy_choquet_DM([[1.0, 7.0],[4.0,2.0],[3.0, 3.0]], [\"utility\", \"price\", \"size\"],[[\"utility\"]::0.5,[\"size\"]::0.1,[\"price\"]::0.4,[\"utility\", \"price\"]::0.55])",
 					equals = "0") },
@@ -202,9 +225,22 @@ public class MulticriteriaAnalyzeOperator {
 	public static Integer fuzzyChoquetDecisionMaking(final IScope scope, final IList<List> cands,
 			final IList<String> criteria, final IMap criteriaWeights) throws GamaRuntimeException {
 		if (cands == null || cands.isEmpty()) return -1;
+		if (criteria == null) throw GamaRuntimeException.error("The criteria list must not be nil", scope);
+		for (final Object criterion : criteria) {
+			if (!(criterion instanceof String))
+				throw GamaRuntimeException.error("Choquet criteria must be strings", scope);
+		}
+		validateCandidates(scope, cands, criteria.size(), true);
+		if (criteriaWeights == null) throw GamaRuntimeException.error("The criterion weights must not be nil", scope);
 		final Map<String, Double> critWeight = new HashMap<>();
 		final Map<Set<String>, Double> weight = new HashMap<>();
 		for (final Object o : criteriaWeights.keySet()) {
+			if (!(o instanceof List<?> subset))
+				throw GamaRuntimeException.error("Each Choquet weight key must be a list of criterion names", scope);
+			for (final Object criterion : subset) {
+				if (!(criterion instanceof String))
+					throw GamaRuntimeException.error("Choquet weight keys must contain string criterion names", scope);
+			}
 			final Set<String> key = new LinkedHashSet<>((List) o);
 			final Double val = Cast.asFloat(scope, criteriaWeights.get(o));
 			if (key.size() == 1) { critWeight.put(new ArrayList<>(key).get(0), val); }
@@ -275,7 +311,8 @@ public class MulticriteriaAnalyzeOperator {
 			concept = { IConcept.MULTI_CRITERIA })
 	@doc (
 			value = "The index of the best candidate according to the Promethee II method. This method is based on a comparison per pair of possible candidates along each criterion: all candidates are compared to each other by pair and ranked. More information about this method can be found in [Behzadian, M., Kazemzadeh, R., Albadvi, A., M., A.: PROMETHEE: A comprehensive literature review on methodologies and applications. European Journal of Operational Research(2010)](https://www.sciencedirect.com/science/article/abs/pii/S0377221709000071). The first operand is the list of candidates (a candidate is a list of criterion values); the second operand the list of criterion: A criterion is a map that contains fours elements: a name, a weight, a preference value (p) and an indifference value (q). The preference value represents the threshold from which the difference between two criterion values allows to prefer one vector of values over another. The indifference value represents the threshold from which the difference between two criterion values is considered significant.",
-			special_cases = { "Returns -1 if the candidate list is nil or empty." },
+			special_cases = { "Returns -1 if the candidate list is nil or empty.",
+					"Otherwise, criteria must be a non-nil list of named maps and candidates must be lists with a value for each criterion." },
 			examples = { @example (
 					value = "promethee_DM([[1.0, 7.0],[4.0,2.0],[3.0, 3.0]], [[\"name\"::\"utility\", \"weight\" :: 2.0,\"p\"::0.5, \"q\"::0.0, \"s\"::1.0, \"maximize\" :: true],[\"name\"::\"price\", \"weight\" :: 1.0,\"p\"::0.5, \"q\"::0.0, \"s\"::1.0, \"maximize\" :: false]])",
 					equals = "1") },
@@ -283,6 +320,7 @@ public class MulticriteriaAnalyzeOperator {
 	public static Integer prometheeDecisionMaking(final IScope scope, final IList<List> cands,
 			final IList<Map<String, Object>> criteriaMap) throws GamaRuntimeException {
 		if (cands == null || cands.isEmpty()) return -1;
+		validateDecisionInputs(scope, cands, criteriaMap);
 		int cpt = 0;
 		final LinkedList<Candidate> candidates = new LinkedList<>();
 		final List<String> criteriaStr = new LinkedList<>();
@@ -375,6 +413,7 @@ public class MulticriteriaAnalyzeOperator {
 					the last operand is the fuzzy cut.""",
 			special_cases = {
 					"Returns -1 if the candidate list is nil or empty.",
+					"Otherwise, criteria must be a non-nil list of named maps and candidates must be lists with a value for each criterion.",
 					"All preference (p), indifference (q) and veto (v) thresholds must be non-negative values." },
 			examples = { @example (
 					value = "electre_DM([[1.0, 7.0],[4.0,2.0],[3.0, 3.0]], [[\"name\"::\"utility\", \"weight\" :: 2.0,\"p\"::0.5, \"q\"::0.0, \"s\"::1.0, \"maximize\" :: true],[\"name\"::\"price\", \"weight\" :: 1.0,\"p\"::0.5, \"q\"::0.0, \"s\"::1.0, \"maximize\" :: false]],0.7)",
@@ -385,6 +424,7 @@ public class MulticriteriaAnalyzeOperator {
 		Double fuzzyCut = cut;
 		if (fuzzyCut == null) { fuzzyCut = 0.7; }
 		if (cands == null || cands.isEmpty()) return -1;
+		validateDecisionInputs(scope, cands, criteriaMap);
 		int cpt = 0;
 		final List<Candidate> candidates = new ArrayList<>();
 		final List<String> criteriaStr = GamaListFactory.create(Types.STRING);
@@ -462,7 +502,8 @@ public class MulticriteriaAnalyzeOperator {
 			examples = { @example (
 					value = "evidence_theory_DM([[1.0, 7.0],[4.0,2.0],[3.0, 3.0]], [[\"name\"::\"utility\", \"s1\" :: 0.0,\"s2\"::1.0, \"v1p\"::0.0, \"v2p\"::1.0, \"v1c\"::0.0, \"v2c\"::0.0, \"maximize\" :: true],[\"name\"::\"price\",  \"s1\" :: 0.0,\"s2\"::1.0, \"v1p\"::0.0, \"v2p\"::1.0, \"v1c\"::0.0, \"v2c\"::0.0, \"maximize\" :: true]])",
 					equals = "0") },
-			special_cases = { "Returns -1 if the candidate list is nil or empty." },
+			special_cases = { "Returns -1 if the candidate list is nil or empty.",
+					"Otherwise, criteria must be a non-nil list of named maps and candidates must be lists with a value for each criterion." },
 			usages = { @usage (
 					value = "if the operator is used with only 2 operands (the candidates and the criteria), the last parameter (use simple method) is set to true"), })
 	public static Integer evidenceTheoryDecisionMaking(final IScope scope, final IList<List> cands,
@@ -508,6 +549,7 @@ public class MulticriteriaAnalyzeOperator {
 			masterDoc = true,
 			special_cases = {
 					"Returns -1 if the candidate list is nil or empty.",
+					"Otherwise, criteria must be a non-nil list of named maps and candidates must be lists with a value for each criterion.",
 					"The belief masses v1p, v2p, v1c, v2c must satisfy: v1p + v1c ≤ 1.0 and v2p + v2c ≤ 1.0." },
 			examples = { @example (
 					value = "evidence_theory_DM([[1.0, 7.0],[4.0,2.0],[3.0, 3.0]], [[\"name\"::\"utility\", \"s1\" :: 0.0,\"s2\"::1.0, \"v1p\"::0.0, \"v2p\"::1.0, \"v1c\"::0.0, \"v2c\"::0.0, \"maximize\" :: true],[\"name\"::\"price\",  \"s1\" :: 0.0,\"s2\"::1.0, \"v1p\"::0.0, \"v2p\"::1.0, \"v1c\"::0.0, \"v2c\"::0.0, \"maximize\" :: true]], false)",
@@ -516,6 +558,7 @@ public class MulticriteriaAnalyzeOperator {
 	public static Integer evidenceTheoryDecisionMaking(final IScope scope, final IList<List> cands,
 			final IList<Map<String, Object>> criteriaMap, final Boolean isSimple) throws GamaRuntimeException {
 		if (cands == null || cands.isEmpty()) return -1;
+		validateDecisionInputs(scope, cands, criteriaMap);
 		int cpt = 0;
 		final boolean simple = isSimple == null ? false : isSimple;
 		final Map<String, Boolean> maximizeCrit = new HashMap<>();

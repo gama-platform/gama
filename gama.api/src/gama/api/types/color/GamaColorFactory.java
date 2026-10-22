@@ -405,7 +405,9 @@ public class GamaColorFactory {
 				final int size = l.size();
 				return switch (size) {
 					case 0 -> BLACK;
-					case 1, 2 -> castToColor(scope, ((List) obj).get(0), param, copy);
+					case 1 -> castToColor(scope, l.get(0), param, copy);
+					case 2 -> throw GamaRuntimeException
+							.error("A color component list must contain at least three components", scope);
 					case 3 -> createWithRGBA(Cast.asInt(scope, l.get(0)), Cast.asInt(scope, l.get(1)),
 							Cast.asInt(scope, l.get(2)), 255);
 					default -> createWithRGBA(Cast.asInt(scope, l.get(0)), Cast.asInt(scope, l.get(1)),
@@ -424,7 +426,11 @@ public class GamaColorFactory {
 				IColor c = NAME_REGISTRY.get(s);
 				if (c == null) {
 					try {
-						c = createFromAWTColor(Color.decode(s));
+						final String hex = s.matches("#[0-9a-f]{3}")
+								? "#" + s.charAt(1) + s.charAt(1) + s.charAt(2) + s.charAt(2) + s.charAt(3)
+										+ s.charAt(3)
+								: s;
+						c = createFromAWTColor(Color.decode(hex));
 					} catch (final NumberFormatException e) {
 						c = null;
 						if (s != null && s.contains("rgb")) {

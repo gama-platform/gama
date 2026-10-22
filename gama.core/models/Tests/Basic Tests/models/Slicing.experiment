@@ -234,7 +234,9 @@ experiment "Slicing tests" type:test {
 	}
 	test sliceMatrixOutOfBoundStepRow{
 		matrix m2 <- slice (mi, 0::-1, 0::-1, 1::10);
-		assert m2 = matrix([[1,2,3]]);
+		assert m2.columns = 3;
+		assert m2.rows = 1;
+		assert m2 = matrix([[1],[2],[3]]);
 	}
 	test sliceMatrixNegativeOutOfBoundStepCol{
 		matrix m2 <- slice (mi, -1::0, 0::-1, -10::1);
@@ -242,7 +244,9 @@ experiment "Slicing tests" type:test {
 	}
 	test sliceMatrixNegativeOutOfBoundStepRow{
 		matrix m2 <- slice (mi, 0::-1, -1::0, 1::-10);
-		assert m2 = matrix([[7,8,9]]);
+		assert m2.columns = 3;
+		assert m2.rows = 1;
+		assert m2 = matrix([[7],[8],[9]]);
 	}
 	test sliceMatrixNonsensicalColAndStepDirection{
 		matrix m2 <- slice (mi, 0::-1, 0::-1, -1::1);

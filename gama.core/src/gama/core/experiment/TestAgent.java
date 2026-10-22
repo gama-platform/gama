@@ -18,6 +18,7 @@ import org.eclipse.emf.common.util.URI;
 import gama.annotations.doc;
 import gama.annotations.experiment;
 import gama.annotations.constants.IKeyword;
+import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.statements.IStatement;
 import gama.api.kernel.agent.IPopulation;
@@ -60,7 +61,8 @@ public class TestAgent extends ExperimentAgent implements IExperimentAgent.Test 
 		super.init(scope);
 		final TestExperimentSummary summary = getSummary();
 		summary.reset();
-		if (!summary.isEmpty()) { scope.getGui().openTestView(scope, false); }
+		if (!summary.isEmpty()) { GAMA.getGui().openTestView(scope, false); }
+		GAMA.getGui().displayRunningTest(scope, getTitleForSummary());
 		DEBUG.BANNER(BANNER_CATEGORY.TESTS, getTitleForSummary(), "starting", this.ownModelPath);
 		return true;
 	}
@@ -137,9 +139,8 @@ public class TestAgent extends ExperimentAgent implements IExperimentAgent.Test 
 
 	@Override
 	public void displayTestResults() {
-		getScope().getGui().openTestView(getScope(), false);
-		getScope().getGui().displayTestsResults(getScope(), getSummary());
-		getScope().getGui().endTestDisplay();
+		GAMA.getGui().displayTestsResults(getScope(), getSummary());
+		GAMA.getGui().endTestDisplay();
 	}
 
 }

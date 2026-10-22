@@ -19,6 +19,8 @@ import java.util.Random;
 
 import gama.api.GAMA;
 import gama.api.constants.Generators;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.GamaPointFactory;
 import gama.api.types.geometry.IPoint;
 import gama.api.utils.MathUtils;
@@ -350,8 +352,32 @@ public class RandomUtils implements IRandom {
 	 */
 	@Override
 	public int between(final int min, final int max, final int step) {
-		final int nbSteps = (max - min) / step;
-		return min + between(0, nbSteps) * step;
+		validateStep(null, min, max, step);
+		final long nbSteps = ((long) max - min) / step;
+		return (int) (min + (long) ((nbSteps + 1) * next()) * step);
+	}
+
+	/**
+	 * Validates a directional random step before sampling. Equal bounds accept either nonzero sign.
+	 *
+	 * @param scope the calling scope, or null for callers outside GAML
+	 * @param min the first bound
+	 * @param max the second bound
+	 * @param step the signed increment
+	 */
+	public static void validateStep(final IScope scope, final double min, final double max, final double step) {
+		if (!Double.isFinite(step) || step == 0) {
+			throw GamaRuntimeException.error("rnd: the step must be finite and nonzero, but was " + step, scope);
+		}
+		if (!Double.isFinite(min) || !Double.isFinite(max)) {
+			throw GamaRuntimeException.error("rnd: stepped bounds must be finite, but were " + min + " and " + max,
+					scope);
+		}
+		if (min < max && step < 0 || min > max && step > 0) {
+			throw GamaRuntimeException.error("rnd: the step must point from the first bound toward the second bound"
+					+ " (positive for ascending bounds, negative for descending bounds), but was " + step
+					+ " for bounds " + min + " and " + max, scope);
+		}
 	}
 
 	/**
@@ -367,6 +393,13 @@ public class RandomUtils implements IRandom {
 	 */
 	@Override
 	public double between(final double min, final double max, final double step) {
+		validateStep(null, min, max, step);
+		if (min == max) {
+			// Preserve the random stream, including for fixed coordinates in point draws.
+			next();
+			return min;
+		}
+		if (step < 0) return -between(-min, -max, -step);
 		// uniformly distributed double random number in [min, max] respecting
 		// the step
 		final double val = between(min, max);
@@ -508,6 +541,9 @@ public class RandomUtils implements IRandom {
 	 */
 	@Override
 	public IPoint between(final IPoint pMin, final IPoint pMax, final IPoint pStep) {
+		validateStep(null, pMin.getX(), pMax.getX(), pStep.getX());
+		validateStep(null, pMin.getY(), pMax.getY(), pStep.getY());
+		validateStep(null, pMin.getZ(), pMax.getZ(), pStep.getZ());
 		double x = between(pMin.getX(), pMax.getX(), pStep.getX());
 		double y = between(pMin.getY(), pMax.getY(), pStep.getY());
 		double z = between(pMin.getZ(), pMax.getZ(), pStep.getZ());

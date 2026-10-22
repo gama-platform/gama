@@ -59,10 +59,11 @@ public class GamlJointType extends GamaType<GamaJoint> {
 	 * @return the gama joint
 	 */
 	@Override
+	@doc ("Returns a physical joint unchanged, or nil for nil. Other values cannot be cast to a joint and raise an error.")
 	public GamaJoint cast(final IScope scope, final Object obj, final Object param, final boolean copy) {
 		if (obj == null) return null;
 		if (obj instanceof GamaJoint joint) return joint;
-		throw new IllegalArgumentException("Cannot cast object to GamaJoint.");
+		throw GamaRuntimeException.error("Cannot cast this value to a physical joint", scope);
 	}
 
 	/**

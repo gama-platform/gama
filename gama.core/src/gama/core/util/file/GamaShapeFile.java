@@ -11,7 +11,6 @@
 package gama.core.util.file;
 
 import static gama.api.GAMA.reportError;
-import static gama.api.exceptions.GamaRuntimeException.create;
 import static gama.api.exceptions.GamaRuntimeException.warning;
 import static org.apache.commons.lang3.StringUtils.splitByWholeSeparatorPreserveAllTokens;
 
@@ -551,8 +550,8 @@ public class GamaShapeFile extends GamaGisFile {
 						indexOfGeometry[0]++;
 					}
 				}
-			} catch (final IOException e2) {
-				throw create(e2, scope);
+			} catch (final IOException | RuntimeException e2) {
+				throw readError(scope, e2);
 			}
 		}
 
@@ -580,12 +579,20 @@ public class GamaShapeFile extends GamaGisFile {
 			featureCollection = new ListFeatureCollection(source.getFeatures(query));
 			return featureCollection;
 
-		} catch (IOException e) {
-			throw create(e, scope);
+		} catch (final IOException | RuntimeException e) {
+			throw readError(scope, e);
 		} finally {
 			// GeoTools may return a lazy collection, so materialize it before disposing the datastore.
 			if (store != null) { store.dispose(); }
 		}
+	}
+
+	private GamaRuntimeException readError(final IScope scope, final Exception cause) {
+		if (cause instanceof GamaRuntimeException error) return error;
+		final var error = GamaRuntimeException.error(
+				"Unable to read shapefile '" + getPath(scope) + "': " + cause.getMessage(), scope);
+		error.initCause(cause);
+		return error;
 	}
 
 	@Override

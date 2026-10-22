@@ -225,6 +225,9 @@ public interface IGamaView {
 		 */
 		void displayProgress(int number, int total);
 
+		/** Displays the name of the currently executing test. */
+		default void displayRunningTest(final String name) {}
+
 		/**
 		 * Finishes the current test sequence.
 		 * 

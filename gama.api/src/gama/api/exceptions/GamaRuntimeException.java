@@ -75,7 +75,8 @@ public class GamaRuntimeException extends RuntimeException {
 	 * Creates a GamaRuntimeException from a generic Throwable.
 	 * <p>
 	 * This factory method wraps different types of exceptions into appropriate GAMA exception types, such as
-	 * {@link GamaRuntimeFileException} for I/O errors.
+	 * {@link GamaRuntimeFileException} for I/O errors. Stack exhaustion is reported as a GAML execution error while
+	 * retaining its original cause for diagnostics.
 	 * </p>
 	 *
 	 * @param ex
@@ -88,6 +89,13 @@ public class GamaRuntimeException extends RuntimeException {
 		return switch (ex) {
 			case GamaRuntimeException gre -> gre;
 			case IOException io -> new GamaRuntimeFileException(scope, io);
+			case StackOverflowError overflow -> {
+				final GamaRuntimeException error = error(
+						"Execution stack exhausted: action calls are nested too deeply. Check for runaway recursion.",
+						scope);
+				error.initCause(overflow);
+				yield error;
+			}
 			default -> new GamaRuntimeException(scope, ex);
 		};
 	}

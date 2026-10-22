@@ -359,6 +359,11 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 	}
 
 	@Override
+	public Iterable<IStatement> getSubStatements() {
+		return sequence.getSubStatements();
+	}
+
+	@Override
 	public void enterScope(final IScope scope) {
 		if (returns != null) { scope.addVarWithValue(returns, null); }
 		super.enterScope(scope);

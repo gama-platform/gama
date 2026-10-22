@@ -10,6 +10,9 @@
  ********************************************************************************************************/
 package gama.ui.experiment.views.console;
 
+import static gama.ui.application.workbench.ThemeHelper.isDark;
+import static gama.ui.shared.resources.IGamaColors.VERY_DARK_GRAY;
+import static gama.ui.shared.resources.IGamaColors.VERY_LIGHT_GRAY;
 import static gama.ui.shared.resources.IGamaIcons.ACTION_CLEAR;
 import static gama.ui.shared.resources.IGamaIcons.DISPLAY_TOOLBAR_CSVEXPORT;
 
@@ -18,24 +21,35 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.HashMap;
 
+import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.console.IOConsole;
 import org.eclipse.ui.console.IOConsoleOutputStream;
 import org.eclipse.ui.internal.console.IOConsoleViewer;
+import org.eclipse.ui.swt.IFocusService;
 
 import gama.api.kernel.simulation.ITopLevelAgent;
+import gama.api.runtime.SystemInfo;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.color.IColor;
 import gama.api.ui.IGamaView;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.ui.application.workbench.ThemeHelper;
+import gama.ui.shared.access.ConsoleContextMenuHelper;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
+import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.GamaViewPart;
@@ -59,6 +73,18 @@ public class ConsoleView extends GamaViewPart implements IToolbarDecoratedView.S
 
 	/** The viewer. */
 	IOConsoleViewer viewer;
+
+	/** The console search field. */
+	private Text find;
+
+	/** The search navigation buttons. */
+	private ToolItem previousMatch, nextMatch;
+
+	/** The pending incremental search. */
+	private Runnable pendingSearch;
+
+	/** The notification shown when paused output is waiting. */
+	private ToolItem newContentsStatus;
 
 	/** The paused. */
 	boolean paused = false;
@@ -91,6 +117,7 @@ public class ConsoleView extends GamaViewPart implements IToolbarDecoratedView.S
 		GamaPreferences.Interface.CORE_CONSOLE_SIZE.onChange(this::setCharacterLimit);
 		viewer = new IOConsoleViewer(parent, msgConsole);
 		viewer.setWordWrap(GamaPreferences.Interface.CORE_CONSOLE_WRAP.getValue());
+		ConsoleContextMenuHelper.install(viewer.getTextWidget(), this::reset, false);
 	}
 
 	/**
@@ -185,7 +212,11 @@ public class ConsoleView extends GamaViewPart implements IToolbarDecoratedView.S
 			} else if (maxMemorized == -1) { pauseBuffer.append(text); }
 			if (!indicated) {
 				WorkbenchHelper.run(() -> {
-					if (toolbar != null) { toolbar.status("New contents available"); }
+					if (toolbar != null && !toolbar.isDisposed()) {
+						newContentsStatus = toolbar.button(null, "New contents available",
+								GamaIcon.named("navigator/status.info").image(), null, 24, SWT.LEFT);
+						toolbar.requestLayout();
+					}
 					indicated = true;
 				});
 			}
@@ -231,7 +262,12 @@ public class ConsoleView extends GamaViewPart implements IToolbarDecoratedView.S
 	public void pauseChanged() {
 		if (paused) {
 			WorkbenchHelper.asyncRun(() -> {
-				if (toolbar != null) { toolbar.wipe(SWT.LEFT, true); }
+				if (newContentsStatus != null && !newContentsStatus.isDisposed()) {
+					newContentsStatus.getControl().dispose();
+					newContentsStatus.dispose();
+					newContentsStatus = null;
+					toolbar.requestLayout();
+				}
 				indicated = false;
 			});
 
@@ -247,6 +283,7 @@ public class ConsoleView extends GamaViewPart implements IToolbarDecoratedView.S
 	@Override
 	public void createToolItems(final GamaToolbar2 tb) {
 		super.createToolItems(tb);
+		createSearchControls(tb.getToolbar(SWT.LEFT));
 		GamaToolbarSimple tbs = toolbar.getToolbar(SWT.RIGHT);
 		tbs.button("editor/local.menu", "More...", "More options", e -> {
 
@@ -270,6 +307,105 @@ public class ConsoleView extends GamaViewPart implements IToolbarDecoratedView.S
 			menu.open(tbs, e, tbs.getSize().y, 0);
 		});
 
+	}
+
+	/**
+	 * Adds incremental text search and match navigation to the console toolbar.
+	 *
+	 * @param toolbar
+	 *            the toolbar
+	 */
+	private void createSearchControls(final GamaToolbarSimple toolbar) {
+		previousMatch = toolbar.button("editor/command.lastedit", null, "Previous match (Shift+Enter)",
+				e -> search(false, false));
+
+		Composite parent = toolbar;
+		Color c = parent.getBackground();
+		if (SystemInfo.isWindows()) {
+			parent = new Composite(toolbar, SWT.NONE);
+			final GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
+			data.heightHint = 24;
+			data.widthHint = 100;
+			parent.setLayoutData(data);
+			final GridLayout layout = new GridLayout();
+			parent.setLayout(layout);
+			GamaColors.setBackground(c, parent);
+		}
+		find = new Text(parent, SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
+		final GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
+		data.heightHint = 24;
+		data.widthHint = 100;
+		find.setLayoutData(data);
+
+		GamaColors.setBackAndForeground(c, isDark() ? VERY_LIGHT_GRAY.color() : VERY_DARK_GRAY.color(), find);
+		toolbar.control(parent == toolbar ? find : parent, 100);
+
+		find.setMessage("Search...");
+		find.setToolTipText("Search console text (case-insensitive). Enter: next match; Shift+Enter: previous match.");
+
+		nextMatch = toolbar.button("editor/command.nextedit", null, "Next match (Enter)", e -> search(true, false));
+		previousMatch.setEnabled(false);
+		nextMatch.setEnabled(false);
+		getSite().getService(IFocusService.class).addFocusTracker(find, "search");
+		find.addModifyListener(e -> {
+			cancelPendingSearch();
+			final boolean active = !find.getText().isEmpty();
+			previousMatch.setEnabled(active);
+			nextMatch.setEnabled(active);
+			find.setForeground(IGamaColors.WIDGET_FOREGROUND.color());
+			if (active) {
+				pendingSearch = () -> {
+					pendingSearch = null;
+					search(true, true);
+				};
+				find.getDisplay().timerExec(100, pendingSearch);
+			} else if (viewer != null && !viewer.getTextWidget().isDisposed()) {
+				viewer.setSelectedRange(viewer.getSelectedRange().x, 0);
+			}
+		});
+		find.addSelectionListener(SelectionListener.widgetDefaultSelectedAdapter(e -> {
+			if (e.detail == SWT.ICON_CANCEL) {
+				find.setText("");
+			} else {
+				search((e.stateMask & SWT.SHIFT) == 0, false);
+			}
+		}));
+		find.addListener(SWT.KeyDown, e -> {
+			if (e.character == SWT.ESC) {
+				cancelPendingSearch();
+				setFocus();
+				e.doit = false;
+			}
+		});
+		find.addDisposeListener(e -> cancelPendingSearch());
+	}
+
+	/** Cancels an incremental search before navigating or disposing the search field. */
+	private void cancelPendingSearch() {
+		if (pendingSearch != null) {
+			find.getDisplay().timerExec(-1, pendingSearch);
+			pendingSearch = null;
+		}
+	}
+
+	/**
+	 * Selects and reveals a literal match, wrapping at either end of the console.
+	 *
+	 * @param forward
+	 *            whether to search forward
+	 * @param incremental
+	 *            whether to include the current match while editing the query
+	 */
+	private void search(final boolean forward, final boolean incremental) {
+		cancelPendingSearch();
+		if (find.isDisposed() || find.getText().isEmpty() || viewer == null || viewer.getTextWidget().isDisposed())
+			return;
+		final IFindReplaceTarget target = viewer.getFindReplaceTarget();
+		final Point selection = target.getSelection();
+		final int offset = incremental ? selection.x : forward ? selection.x + selection.y : selection.x - 1;
+		int result = target.findAndSelect(offset, find.getText(), forward, false, false);
+		if (result == -1 && offset != -1) { result = target.findAndSelect(-1, find.getText(), forward, false, false); }
+		find.setForeground(result == -1 ? IGamaColors.ERROR.inactive() : IGamaColors.OK.inactive());
 	}
 
 	@Override

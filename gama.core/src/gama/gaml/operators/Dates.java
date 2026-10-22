@@ -17,6 +17,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.time.temporal.ChronoUnit.WEEKS;
 import static java.time.temporal.ChronoUnit.YEARS;
 
+import java.time.DateTimeException;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
@@ -36,6 +37,7 @@ import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.annotations.support.ITypeProvider;
+import gama.api.GAMA;
 import gama.api.annotations.validator;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.validation.IOperatorValidator;
@@ -96,6 +98,8 @@ import gama.api.types.list.IList;
  *       than the right one.</li>
  *   <li>Leap-year handling (e.g. Feb 29 arithmetic) is fully delegated to
  *       {@link java.time}.</li>
+ *   <li>Date arithmetic, temporal predicates, period queries, and formatting reject nil dates.
+ *       Arithmetic outside the supported date range raises a GAML error.</li>
  * </ul>
  *
  * <h3>Usage examples</h3>
@@ -123,6 +127,20 @@ public class Dates {
 	 * Initialize.Only here to load the class and its preferences
 	 */
 	public static void initialize() {}
+
+	private static IDate requireDate(final IScope scope, final IDate date) {
+		if (date == null) throw GamaRuntimeException.error("Date operands must not be nil", scope);
+		return date;
+	}
+
+	private static IDate shiftDate(final IScope scope, final IDate date, final long amount, final ChronoUnit unit) {
+		requireDate(scope, date);
+		try {
+			return date.plus(amount, unit);
+		} catch (DateTimeException | ArithmeticException e) {
+			throw GamaRuntimeException.error("Date arithmetic exceeds the supported date range: " + e.getMessage(), scope);
+		}
+	}
 
 	/**
 	 * Minus date.
@@ -177,7 +195,7 @@ public class Dates {
 
 	public static double minusDate(final IScope scope, final IDate date1, final IDate date2)
 			throws GamaRuntimeException {
-		final Duration duration = Duration.between(date2, date1);
+		final Duration duration = Duration.between(requireDate(scope, date2), requireDate(scope, date1));
 		return duration.getSeconds();
 	}
 
@@ -536,6 +554,7 @@ public class Dates {
 	@test ("starting_date <- date([2019,5,9]);since(date([2019,5,9])) = true")
 	@test ("starting_date <- date([2019,5,9]);since(date([2019,5,8])) = true")
 	public static boolean since(final IScope scope, final IDate date) {
+		requireDate(scope, date);
 		return scope.getSimulation().getCurrentDate().isGreaterThan(date, false);
 	}
 
@@ -577,6 +596,7 @@ public class Dates {
 	@test ("starting_date <- date([2019,5,9]);after(date([2019,5,9])) = false")
 	@test ("starting_date <- date([2019,5,9]);after(date([2019,5,8])) = true")
 	public static boolean after(final IScope scope, final IDate date) {
+		requireDate(scope, date);
 		return scope.getSimulation().getCurrentDate().isGreaterThan(date, true);
 	}
 
@@ -612,6 +632,7 @@ public class Dates {
 	@test ("starting_date <- date([2019,5,9]);before(date([2019,5,9])) = false")
 	@test ("starting_date <- date([2019,5,9]);before(date([2019,5,8])) = false")
 	public static boolean before(final IScope scope, final IDate date) {
+		requireDate(scope, date);
 		return scope.getSimulation().getCurrentDate().isSmallerThan(date, true);
 	}
 
@@ -648,6 +669,7 @@ public class Dates {
 	@test ("starting_date <- date([2019,5,9]);until(date([2019,5,9])) = true")
 	@test ("starting_date <- date([2019,5,9]);until(date([2019,5,8])) = false")
 	public static boolean until(final IScope scope, final IDate date) {
+		requireDate(scope, date);
 		return scope.getSimulation().getCurrentDate().isSmallerThan(date, false);
 	}
 
@@ -867,6 +889,9 @@ public class Dates {
 									isExecutable = false) }))
 
 	public static boolean between(final IScope scope, final IDate date, final IDate date1, final IDate date2) {
+		requireDate(scope, date);
+		requireDate(scope, date1);
+		requireDate(scope, date2);
 		return date.isGreaterThan(date1, true) && date.isSmallerThan(date2, true);
 	}
 
@@ -913,6 +938,8 @@ public class Dates {
 			@test ("not (1.0 between (1.0, 5.0))")
 	})
 	public static boolean between(final IScope scope, final IDate date1, final IDate date2) {
+		requireDate(scope, date1);
+		requireDate(scope, date2);
 		return scope.getSimulation().getCurrentDate().isGreaterThan(date1, true)
 				&& scope.getSimulation().getCurrentDate().isSmallerThan(date2, true);
 	}
@@ -966,7 +993,7 @@ public class Dates {
 	})
 	public static IDate plusDuration(final IScope scope, final IDate date1, final int duration)
 			throws GamaRuntimeException {
-		return date1.plus(duration, SECONDS);
+		return shiftDate(scope, date1, duration, SECONDS);
 	}
 
 	/**
@@ -1012,7 +1039,7 @@ public class Dates {
 	@test ("date('2016-01-01 00:00:01') + 86400 = date('2016-01-02 00:00:01')")
 	public static IDate plusDuration(final IScope scope, final IDate date1, final double duration)
 			throws GamaRuntimeException {
-		return date1.plus(duration * 1000, ChronoUnit.MILLIS);
+		return shiftDate(scope, date1, (long) (duration * 1000), ChronoUnit.MILLIS);
 	}
 
 	/**
@@ -1064,7 +1091,7 @@ public class Dates {
 	})
 	public static IDate minusDuration(final IScope scope, final IDate date1, final int duration)
 			throws GamaRuntimeException {
-		return date1.plus(-duration, SECONDS);
+		return shiftDate(scope, date1, -(long) duration, SECONDS);
 	}
 
 	/**
@@ -1111,7 +1138,7 @@ public class Dates {
 	@test ("date('2000-01-02') - 86400 = date('2000-01-01')")
 	public static IDate minusDuration(final IScope scope, final IDate date1, final double duration)
 			throws GamaRuntimeException {
-		return date1.plus(-duration * 1000, ChronoUnit.MILLIS);
+		return shiftDate(scope, date1, (long) (-duration * 1000), ChronoUnit.MILLIS);
 	}
 
 	/**
@@ -1196,7 +1223,7 @@ public class Dates {
 	})
 	public static IDate addYears(final IScope scope, final IDate date1, final int nbYears) throws GamaRuntimeException {
 
-		return date1.plus(nbYears, YEARS);
+		return shiftDate(scope, date1, nbYears, YEARS);
 
 	}
 
@@ -1249,7 +1276,7 @@ public class Dates {
 	public static IDate addMonths(final IScope scope, final IDate date1, final int nbMonths)
 			throws GamaRuntimeException {
 
-		return date1.plus(nbMonths, MONTHS);
+		return shiftDate(scope, date1, nbMonths, MONTHS);
 
 	}
 
@@ -1297,7 +1324,7 @@ public class Dates {
 			@test ("date reference3 <- date(\"2026-03-15T10:30:45\"); reference3 + 1 #week = reference3 plus_weeks 1")
 	})
 	public static IDate addWeeks(final IScope scope, final IDate date1, final int nbWeeks) throws GamaRuntimeException {
-		return date1.plus(nbWeeks, WEEKS);
+		return shiftDate(scope, date1, nbWeeks, WEEKS);
 
 	}
 
@@ -1358,7 +1385,7 @@ public class Dates {
 			@test ("date reference12 <- date(\"2026-03-15T10:30:45\"); date earlier3 <- reference12 minus_days 1; date later5 <- reference12 plus_days 1; ([later5, reference12, earlier3] sort_by each) = [earlier3, reference12, later5]")
 	})
 	public static IDate addDays(final IScope scope, final IDate date1, final int nbDays) throws GamaRuntimeException {
-		return date1.plus(nbDays, DAYS);
+		return shiftDate(scope, date1, nbDays, DAYS);
 
 	}
 
@@ -1412,7 +1439,7 @@ public class Dates {
 			@test ("date reference6 <- date(\"2026-03-15T10:30:45\"); reference6 - (reference6 plus_hours 1) = -3600.0")
 	})
 	public static IDate addHours(final IScope scope, final IDate date1, final int nbHours) throws GamaRuntimeException {
-		return date1.plus(nbHours, HOURS);
+		return shiftDate(scope, date1, nbHours, HOURS);
 
 	}
 
@@ -1463,7 +1490,7 @@ public class Dates {
 	})
 	public static IDate addMinutes(final IScope scope, final IDate date1, final int nbMinutes)
 			throws GamaRuntimeException {
-		return date1.plus(nbMinutes, MINUTES);
+		return shiftDate(scope, date1, nbMinutes, MINUTES);
 
 	}
 
@@ -1514,7 +1541,7 @@ public class Dates {
 	})
 	public static IDate subtractYears(final IScope scope, final IDate date1, final int nbYears)
 			throws GamaRuntimeException {
-		return date1.plus(-nbYears, YEARS);
+		return shiftDate(scope, date1, -(long) nbYears, YEARS);
 
 	}
 
@@ -1562,7 +1589,7 @@ public class Dates {
 	})
 	public static IDate subtractMonths(final IScope scope, final IDate date1, final int nbMonths)
 			throws GamaRuntimeException {
-		return date1.plus(-nbMonths, MONTHS);
+		return shiftDate(scope, date1, -(long) nbMonths, MONTHS);
 
 	}
 
@@ -1610,7 +1637,7 @@ public class Dates {
 	})
 	public static IDate subtractWeeks(final IScope scope, final IDate date1, final int nbWeeks)
 			throws GamaRuntimeException {
-		return date1.plus(-nbWeeks, WEEKS);
+		return shiftDate(scope, date1, -(long) nbWeeks, WEEKS);
 
 	}
 
@@ -1662,7 +1689,7 @@ public class Dates {
 	})
 	public static IDate subtractDays(final IScope scope, final IDate date1, final int nbDays)
 			throws GamaRuntimeException {
-		return date1.plus(-nbDays, DAYS);
+		return shiftDate(scope, date1, -(long) nbDays, DAYS);
 
 	}
 
@@ -1713,7 +1740,7 @@ public class Dates {
 	})
 	public static IDate subtractHours(final IScope scope, final IDate date1, final int nbHours)
 			throws GamaRuntimeException {
-		return date1.plus(-nbHours, HOURS);
+		return shiftDate(scope, date1, -(long) nbHours, HOURS);
 
 	}
 
@@ -1763,7 +1790,7 @@ public class Dates {
 			@test ("date reference2 <- date(\"2026-03-15T10:30:45\"); reference2 subtract_ms 1000 = reference2 minus_ms 1000")
 	})
 	public static IDate subtractMs(final IScope scope, final IDate date1, final int nbMs) throws GamaRuntimeException {
-		return date1.plus(-nbMs, ChronoUnit.MILLIS);
+		return shiftDate(scope, date1, -(long) nbMs, ChronoUnit.MILLIS);
 	}
 
 	/**
@@ -1813,7 +1840,7 @@ public class Dates {
 			@test ("date reference3 <- date(\"2026-03-15T10:30:45\"); (reference3 plus_ms 123000) minus_ms 123000 = reference3")
 	})
 	public static IDate addMs(final IScope scope, final IDate date1, final int nbMs) throws GamaRuntimeException {
-		return date1.plus(nbMs, ChronoUnit.MILLIS);
+		return shiftDate(scope, date1, nbMs, ChronoUnit.MILLIS);
 	}
 
 	/**
@@ -1863,7 +1890,7 @@ public class Dates {
 	})
 	public static IDate subtractMinutes(final IScope scope, final IDate date1, final int nbMinutes)
 			throws GamaRuntimeException {
-		return date1.plus(-nbMinutes, MINUTES);
+		return shiftDate(scope, date1, -(long) nbMinutes, MINUTES);
 
 	}
 
@@ -1916,7 +1943,7 @@ public class Dates {
 	})
 	public static int years_between(final IScope scope, final IDate date1, final IDate date2)
 			throws GamaRuntimeException {
-		return (int) ChronoUnit.YEARS.between(date1, date2);
+		return (int) ChronoUnit.YEARS.between(requireDate(scope, date1), requireDate(scope, date2));
 	}
 
 	/**
@@ -1967,7 +1994,7 @@ public class Dates {
 	})
 	public static double milliseconds_between(final IScope scope, final IDate date1, final IDate date2)
 			throws GamaRuntimeException {
-		return ChronoUnit.MILLIS.between(date1, date2);
+		return ChronoUnit.MILLIS.between(requireDate(scope, date1), requireDate(scope, date2));
 	}
 
 	/**
@@ -2016,7 +2043,7 @@ public class Dates {
 	})
 	public static int months_between(final IScope scope, final IDate date1, final IDate date2)
 			throws GamaRuntimeException {
-		return (int) ChronoUnit.MONTHS.between(date1, date2);
+		return (int) ChronoUnit.MONTHS.between(requireDate(scope, date1), requireDate(scope, date2));
 	}
 
 	/**
@@ -2565,7 +2592,7 @@ public class Dates {
 	})
 
 	public static String format(final IDate time, final String pattern, final String locale) {
-		return time.toString(pattern, locale);
+		return requireDate(GAMA.getRuntimeScope(), time).toString(pattern, locale);
 	}
 
 }

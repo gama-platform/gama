@@ -108,7 +108,7 @@ public class NewProjectWizard extends Wizard implements INewWizard, IExecutableE
 		project = projectHandle;
 		if (createNewModel) {
 			WorkbenchHelper.runInUI("Opening model creation wizard", 100, m -> {
-				final IWorkbenchWizard w = isTest ? new NewTestExperimentWizard() : new NewFileWizard();
+				final IWorkbenchWizard w = isTest ? new NewTestExperimentWizard() : newModelWizard();
 				w.init(WorkbenchHelper.getWorkbench(), new StructuredSelection(project));
 				final WizardDialog wd = new WizardDialog(getShell(), w);
 				wd.open();
@@ -116,6 +116,18 @@ public class NewProjectWizard extends Wizard implements INewWizard, IExecutableE
 		}
 		return true;
 
+	}
+
+	/** The registered New Model File wizard (contributed by the GAML editor), or the legacy one if unavailable. */
+	private static IWorkbenchWizard newModelWizard() {
+		final var descriptor =
+				WorkbenchHelper.getWorkbench().getNewWizardRegistry().findWizard("gama.ui.wizards.NewFileWizard");
+		if (descriptor != null) {
+			try {
+				return descriptor.createWizard();
+			} catch (final CoreException e) {}
+		}
+		return new NewFileWizard();
 	}
 
 	/**

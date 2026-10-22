@@ -184,8 +184,21 @@ experiment GraphOperatorsTest type: test autorun: true {
 
 	test "K shortest paths" {
 		// on a graph of values too
-		list<path> value_paths <- paths_between(value_triangle(), "a"::"d", 2);
-		assert not empty(value_paths);
+		list<path> value_paths <- [];
+		
+		value_paths <- paths_between(value_triangle(), "a"::"d", 2);
+		assert length(value_paths) = 2;
+		assert length(value_paths[0].edges) = 2;
+		assert length(value_paths[1].edges) = 3;
+		assert value_paths[0].weight = 2.0;
+		assert value_paths[1].weight = 3.0;
+		list<path> directed_paths <- paths_between(directed_triangle(), "a"::"d", 2);
+		assert length(directed_paths) = 1;
+		assert length(directed_paths[0].edges) = 3;
+		list<path> spatial_paths <- paths_between(spatial_triangle(), {0, 0}::{20, 10}, 2);
+		assert length(spatial_paths) = 2;
+		assert length(spatial_paths[0].edges) = 2;
+		assert length(spatial_paths[1].edges) = 3;
 	}
 
 	test "Generated graphs have the requested size" {

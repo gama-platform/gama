@@ -54,7 +54,7 @@ experiment "Complex classes" type:test{
 	test recursiveAlgorithm{
 		Node root <- Node();
 		root.add_children(list_with(3, Node()));
-		write root.children[1];
+		//write root.children[1];
 		Node n <- root.children[1];
 		n.add_children(list_with(4, Node()));
 		Node n2 <- n.children[3];

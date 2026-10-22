@@ -13,10 +13,15 @@ package gaml.compiler.ui.editor.toolbar;
 import org.eclipse.jface.text.templates.Template;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Menu;
 
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.views.toolbar.Selector;
 import gaml.compiler.ui.editor.GamlEditor;
+import gaml.compiler.ui.reference.BuiltinReferenceMenu;
+import gaml.compiler.ui.reference.ColorReferenceMenu;
+import gaml.compiler.ui.reference.OperatorsReferenceMenu;
+import gaml.compiler.ui.reference.TemplateReferenceMenu;
 
 /**
  * The class CreateExperimentSelectionListener.
@@ -58,7 +63,22 @@ public class CreateExperimentSelectionListener implements Selector {
 					final Template t = editor.getTemplateStore().getTemplateData(path).getTemplate();
 					action(t.getDescription(), e1 -> editor.applyTemplateAtTheEnd(t));
 				}
-
+				action("Add experiment...", e1 -> editor.openExperimentWizard(true)).setEnabled(editor.isEditable());
+				action("Add display...", e1 -> editor.openDisplayWizard(true)).setEnabled(editor.canAddDisplay());
+				sep();
+				action("Add species...", e1 -> editor.openSpeciesWizard(true)).setEnabled(editor.isEditable());
+				action("Add grid species...", e1 -> editor.openGridWizard()).setEnabled(editor.isEditable());
+				action("Add class...", e1 -> editor.openClassWizard()).setEnabled(editor.isEditable());
+				sep();
+				action("Add action...", e1 -> editor.openActionWizard(true)).setEnabled(editor.isEditable());
+				action("Add reflex...", e1 -> editor.openBehaviorWizard(true)).setEnabled(editor.isEditable());
+				action("Extract selection as action...", e1 -> editor.extractAction()).setEnabled(editor.canExtractAction());
+				sep();
+				final Menu builtInElements = sub("Insert built-in elements...");
+				new TemplateReferenceMenu().installSubMenuIn(builtInElements);
+				new BuiltinReferenceMenu().installSubMenuIn(builtInElements);
+				new OperatorsReferenceMenu().installSubMenuIn(builtInElements);
+				new ColorReferenceMenu().installSubMenuIn(builtInElements);
 			}
 
 		};

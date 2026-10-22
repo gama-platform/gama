@@ -32,6 +32,7 @@ import gama.api.kernel.serialization.BinarySerialisation;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.StringUtils;
 import gama.api.utils.json.IJsonValue;
+import gama.core.util.json.ParseException;
 import gama.dev.DEBUG;
 import gama.gaml.statements.save.GeoJSonSaver;
 
@@ -153,7 +154,7 @@ public class SerialisationOperators {
 	 */
 	@operator (
 			value = { "to_json" },
-			can_be_const = true,
+			can_be_const = false,
 			category = { IOperatorCategory.CASTING },
 			concept = { IConcept.SERIALIZE })
 	@test ("to_json(1) = '1'")
@@ -165,6 +166,8 @@ public class SerialisationOperators {
 	@doc (
 			value = """
 					Serializes any object/agent/simulation into a string, using the json format. A flag can be passed to enable/disable pretty printing (`false` by default).
+					Finite floats, including point coordinates, retain the precision needed to restore their original values.
+					Non-finite floats follow the current `pref_json_infinity_as_string` and `pref_json_nan_as_string` preferences at runtime.
 					The format used by GAMA follows simple rules. `int`, `float`, `bool`, `string` values are outputted as they are. `nil` is outputted as `null`. A list is outputted as a json array. Any other object or agent is outputted as a json object. If this object possesses the attribute `gaml_type`, \
 					it is an instance of the corresponding type, and the members that follow contain the attributes and the values necessary to reconstruct it. If it has the `agent_reference` attribute, its value represents the reference to an agent. If any reference to an agent is found, the \
 					json string returned will be an object with two attributes: `gama_object`, the object containing the references, and `reference_table` a dictionary mapping the references to the json description of the agents (their `species`, `name`, `index`, and list of attributes). \
@@ -188,12 +191,14 @@ public class SerialisationOperators {
 	 */
 	@operator (
 			value = { "to_json" },
-			can_be_const = true,
+			can_be_const = false,
 			category = { IOperatorCategory.CASTING },
 			concept = { IConcept.SERIALIZE })
 	@doc (
 			value = """
 					Serializes any object/agent/simulation into a string, using the json format and no pretty printing.
+					Finite floats, including point coordinates, retain the precision needed to restore their original values.
+					Non-finite floats follow the current `pref_json_infinity_as_string` and `pref_json_nan_as_string` preferences at runtime.
 					The format used by GAMA follows simple rules. `int`, `float`, `bool`, `string` values are outputted as they are. `nil` is outputted as `null`. A `list` is outputted as a json array. Any other object or agent is outputted as a json object. If this object possesses the "gaml_type" attribute, \
 					it is an instance of the corresponding type, and the members that follow contain the attributes and the values necessary to reconstruct it. If it has the "agent_reference" attribute, its value represent the reference to an agent. If any reference to an agent is found, the \
 					json string returned will be an object with two attributes: "gama_object", the object containing the references, and "reference_table" a dictionary mapping the references to the json description of the agents (their species, name, index, and list of attributes). \
@@ -321,12 +326,12 @@ public class SerialisationOperators {
 	 */
 	@operator (
 			value = { "from_json" },
-			can_be_const = true,
+			can_be_const = false,
 			type = ITypeProvider.DENOTED_TYPE_AT_INDEX + 2,
 			category = { IOperatorCategory.CASTING },
 			concept = { IConcept.SERIALIZE })
 	@doc (
-			value = "Deserializes an object precedently serialized using 'to_json' (or an arbitrary json string obtained elsewhere). Agents and populations are not supported yet (i.e. they will return maps)",
+			value = "Deserializes an object precedently serialized using 'to_json' (or an arbitrary json string obtained elsewhere). Agents and populations are not supported yet (i.e. they will return maps). Non-finite numbers and overflowing integers follow the current JSON preferences at runtime. Invalid JSON, including excessive nesting, raises a GAML error with the parser location.",
 			see = { "from_gaml", "from_binary" })
 	@no_test
 	@tests ({
@@ -359,7 +364,13 @@ public class SerialisationOperators {
 			@test ("from_json(to_json([\"k\"::{1, 2}])) = [\"k\"::{1, 2}]")
 	})
 	public static Object fromJson(final IScope scope, final String s) {
-		return GAMA.getJsonEncoder().parse(s).toGamlValue(scope);
+		try {
+			return GAMA.getJsonEncoder().parse(s).toGamlValue(scope);
+		} catch (final ParseException e) {
+			final var error = GamaRuntimeException.error("Invalid JSON: " + e.getMessage(), scope);
+			error.initCause(e);
+			throw error;
+		}
 	}
 
 	/**
@@ -377,7 +388,7 @@ public class SerialisationOperators {
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.CASTING },
 			concept = { IConcept.SYSTEM, IConcept.SERIALIZE })
 	@doc (
-			value = "Evaluates/deserialises the given GAML string into a value.",
+			value = "Evaluates/deserialises the given GAML string into a value. Nil strings and invalid GAML expressions raise an error.",
 			examples = { @example (
 					value = "eval_gaml(\"2+3\")",
 					equals = "5") })
@@ -404,11 +415,13 @@ public class SerialisationOperators {
 			@test ("from_gaml(to_gaml(date(\"2026-01-02T03:04:05\"))) = date(\"2026-01-02T03:04:05\")")
 	})
 	public static Object opEvalGaml(final IScope scope, final String gaml) {
+		if (gaml == null) throw GamaRuntimeException.error("Cannot evaluate a nil GAML string", scope);
 		final IAgent agent = scope.getAgent();
 		final IDescription d = agent.getSpecies().getDescription();
+		final IExpression expression = GAML.getExpressionFactory().createExpr(gaml, d);
+		if (expression == null) throw GamaRuntimeException.error("Invalid GAML expression: '" + gaml + "'", scope);
 		try {
-			final IExpression e = GAML.getExpressionFactory().createExpr(gaml, d);
-			return scope.evaluate(e, agent).getValue();
+			return scope.evaluate(expression, agent).getValue();
 		} catch (final GamaRuntimeException e) {
 			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("Error in evaluating Gaml code : '" + gaml
 					+ "' in " + scope.getAgent() + StringUtils.LN + "Reason: " + e.getMessage(), scope), false);

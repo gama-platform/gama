@@ -281,12 +281,14 @@ public class Fields {
 			concept = { IConcept.GRID, IConcept.MATRIX },
 			doc = { @doc (
 					value = "Shifts a matrix spatially by x and y offsets. Zeros are introduced for edge boundaries unless wrapped. Very useful for summing neighborhood offsets in cellular automata.",
+					special_cases = "Raises a GAML error if the matrix is nil.",
 					returns = "A spatially shifted matrix.",
 					examples = { @example (
 							value = "matrix shifted <- shift(mat, 1, 0, true);",
 							isExecutable = false) }) })
 	public static IMatrix shiftMatrix(final IScope scope, final IMatrix matrix, final Integer dx, final Integer dy,
 			final Boolean wrap) {
+		if (matrix == null) throw GamaRuntimeException.error("shift: the matrix must not be nil", scope);
 		int cols = matrix.getCols(scope);
 		int rows = matrix.getRows(scope);
 		GamaFloatMatrix mat = GamaFloatMatrix.from(scope, matrix);

@@ -278,7 +278,7 @@ public class GamaDateType extends GamaType<IDate> {
 	 * @throws GamaRuntimeException
 	 *             if the casting operation fails
 	 */
-	@doc ("Cast the argument into a date. If the argument is a date already, returns it, otherwise: if it is a container, casts its contents to integer numbers and tries to build a date from it (following the order 'year, month, day, hour, minute, second'); if it is a string, tries to decode it into a date using the format described in the preferences; otherwise cast the argument into a float number and interprets it as the number of milliseconds since the start of the simulation")
+	@doc ("Cast the argument into a date. If the argument is a date already, returns it, otherwise: if it is a container, casts its contents to integer numbers and tries to build a date from it (following the order 'year, month, day, hour, minute, second'); invalid components raise an error. If it is a string, tries to decode it into a date using the format described in the preferences; an empty string raises an error, while 'now' returns the current date and time. Otherwise cast the argument into a float number and interprets it as the number of milliseconds since the start of the simulation")
 	@Override
 	public IDate cast(final IScope scope, final Object obj, final Object param, final boolean copy)
 			throws GamaRuntimeException {

@@ -169,6 +169,8 @@ public class SpatialTransformations {
 			@test ("geometry rect3 <- rectangle(10, 5) at_location {0, 0}; geometry scaled3 <- rect3 scaled_by 2.0; scaled3.height = 10.0")
 	})
 	public static IShape scaled_by(final IScope scope, final IShape g, final Double coefficient) {
+		SpatialCommon.requireGeometry(scope, g);
+		SpatialCommon.requireFinite(scope, coefficient, "The scaling factor");
 		return GamaShapeFactory.createFrom(g).withScaling(coefficient);
 	}
 
@@ -201,6 +203,8 @@ public class SpatialTransformations {
 			float v2 <- g.area * g.height;  \
 			v1 < v2""")
 	public static IShape scaled_by(final IScope scope, final IShape g, final IPoint coefficients) {
+		SpatialCommon.requireGeometry(scope, g);
+		SpatialCommon.requireFinitePoint(scope, coefficients, "The scaling coefficients");
 		return GamaShapeFactory.createFrom(g).withScaling(Scaling3D.of(coefficients), false);
 	}
 
@@ -232,6 +236,8 @@ public class SpatialTransformations {
 			float v2 <- g.area * g.height;  \
 			v1 < v2""")
 	public static IShape scaled_to(final IScope scope, final IShape g, final IPoint bounds) {
+		SpatialCommon.requireGeometry(scope, g);
+		SpatialCommon.requireFinitePoint(scope, bounds, "The scaling bounds");
 		return GamaShapeFactory.createFrom(g).withScaling(Scaling3D.of(bounds), true);
 	}
 
@@ -264,6 +270,7 @@ public class SpatialTransformations {
 	public static IShape enlarged_by(final IScope scope, final IShape g, final Double size,
 			final Integer numberOfSegments) {
 		if (g == null) return null;
+		SpatialCommon.requireFinite(scope, size, "The buffer distance");
 		final Geometry gg = g.getInnerGeometry().buffer(size, numberOfSegments);
 		if (gg != null && !gg.isEmpty()) return GamaShapeFactory.createFrom(gg).withAttributesOf(g);
 		return null;
@@ -300,6 +307,7 @@ public class SpatialTransformations {
 	public static IShape enlarged_by(final IScope scope, final IShape g, final Double size,
 			final Integer numberOfSegments, final Integer endCap) {
 		if (g == null) return null;
+		SpatialCommon.requireFinite(scope, size, "The buffer distance");
 		final Geometry gg = g.getInnerGeometry().buffer(size, numberOfSegments, endCap);
 		if (gg != null && !gg.isEmpty()) return GamaShapeFactory.createFrom(gg).withAttributesOf(g);
 		return null;
@@ -338,6 +346,7 @@ public class SpatialTransformations {
 	public static IShape enlarged_by(final IScope scope, final IShape g, final Double size,
 			final Integer numberOfSegments, final Integer endCap, final Boolean isSingleSided) {
 		if (g == null) return null;
+		SpatialCommon.requireFinite(scope, size, "The buffer distance");
 		BufferParameters param = new BufferParameters(numberOfSegments, endCap);
 		param.setSingleSided(isSingleSided);
 		Geometry gg = BufferOp.bufferOp(g.getInnerGeometry(), size, param);
@@ -374,6 +383,7 @@ public class SpatialTransformations {
 	public static IShape enlarged_by(final IScope scope, final IShape g, final Double size,
 			final Boolean isSingleSided) {
 		if (g == null) return null;
+		SpatialCommon.requireFinite(scope, size, "The buffer distance");
 		BufferParameters param = new BufferParameters();
 		param.setSingleSided(isSingleSided);
 		Geometry gg = BufferOp.bufferOp(g.getInnerGeometry(), size, param);
@@ -416,6 +426,7 @@ public class SpatialTransformations {
 	})
 	public static IShape enlarged_by(final IScope scope, final IShape g, final Double size) {
 		if (g == null) return null;
+		SpatialCommon.requireFinite(scope, size, "The buffer distance");
 		final Geometry gg = g.getInnerGeometry().buffer(size);
 		if (gg != null && !gg.isEmpty()) return GamaShapeFactory.createFrom(gg).withAttributesOf(g);
 		return null;
@@ -473,6 +484,7 @@ public class SpatialTransformations {
 	@test ("(( square(5) rotated_by 45).width with_precision 2 = 7.07)")
 	public static IShape rotated_by(final IScope scope, final IShape g1, final Double angle) {
 		if (g1 == null) return null;
+		SpatialCommon.requireFinite(scope, angle, "The rotation angle");
 		return GamaShapeFactory.createFrom(g1).withRotation(new AxisAngle(angle));
 	}
 
@@ -732,7 +744,19 @@ public class SpatialTransformations {
 			see = { "rotation_composition, normalized_rotation" })
 	@test ("inverse_rotation(38.0::{1,1,1}) = (-38.0::{1,1,1})")
 	public static IPair<Double, IPoint> inverse_rotation(final IScope scope, final IPair<Double, IPoint> rotation) {
-		return GamaPairFactory.createWith(-rotation.key(), rotation.value(), Types.FLOAT, Types.POINT);
+		final IPair<Double, IPoint> rot = requireRotation(scope, rotation);
+		return GamaPairFactory.createWith(-rot.key(), rot.value(), Types.FLOAT, Types.POINT);
+	}
+
+	private static IPair<Double, IPoint> requireRotation(final IScope scope, final Object rotation) {
+		if (!(rotation instanceof IPair<?, ?> pair) || !(pair.key() instanceof Number)
+				|| !(pair.value() instanceof IPoint))
+			throw GamaRuntimeException.error("A rotation must be a non-nil angle::axis pair (number::point)", scope);
+		final double angle = ((Number) pair.key()).doubleValue();
+		final IPoint axis = (IPoint) pair.value();
+		SpatialCommon.requireFinite(scope, angle, "The rotation angle");
+		SpatialCommon.requireFinitePoint(scope, axis, "The rotation axis");
+		return GamaPairFactory.createWith(angle, axis, Types.FLOAT, Types.POINT);
 	}
 
 	/**
@@ -753,6 +777,7 @@ public class SpatialTransformations {
 			concept = { IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_TRANSFORMATION })
 	@doc (
 			value = "The rotation normalized according to Euler formalism with a positive angle, such that each rotation has a unique set of parameters (positive angle, normalize axis rotation).",
+			special_cases = { "A rotation must be a non-nil number::point pair with finite components and a non-zero axis; invalid rotations raise an error." },
 			masterDoc = true,
 			examples = { @example (
 					value = "normalized_rotation(-38.0::{1,1,1})",
@@ -761,11 +786,11 @@ public class SpatialTransformations {
 			see = { "rotation_composition, inverse_rotation" })
 	@test ("normalized_rotation(-38::{1,1,1})=(38.0::{-0.5773502691896258,-0.5773502691896258,-0.5773502691896258})")
 	public static IPair<Double, IPoint> normalized_rotation(final IScope scope, final IPair rotation) {
-		final IPair<Double, IPoint> rot = (IPair<Double, IPoint>) GamaType.from(Types.PAIR, Types.FLOAT, Types.POINT)
-				.cast(scope, rotation, null, false);
+		final IPair<Double, IPoint> rot = requireRotation(scope, rotation);
 		final IPoint axis = rot.value();
 
 		final double norm = axis.norm();
+		if (norm == 0) throw GamaRuntimeException.error("The rotation axis must not be zero", scope);
 		final double signum = Math.signum(rot.key());
 		axis.setLocation(signum * axis.getX() / norm, signum * axis.getY() / norm, signum * axis.getZ() / norm);
 		return GamaPairFactory.createWith(signum * rot.key(), axis, Types.FLOAT, Types.POINT);
@@ -789,6 +814,7 @@ public class SpatialTransformations {
 			concept = { IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_TRANSFORMATION })
 	@doc (
 			value = "The rotation resulting from the composition of the rotations in the list. Rotations will be applied in the order of the list: if R=[R1,...,Rn], Rx = Rn...R1x. Angles are in degrees.",
+			special_cases = { "The list must be non-nil and contain only non-nil number::point pairs with finite components; invalid rotations raise an error." },
 			masterDoc = true,
 			examples = { @example (
 					value = "rotation_composition([38.0::{1,1,1},90.0::{1,0,0}])",
@@ -805,12 +831,12 @@ public class SpatialTransformations {
 	// }
 	@test ("normalized_rotation(rotation_composition(38.0::{1,1,1},90.0::{1,0,0}))=normalized_rotation(115.22128507898105::{0.9491582126366207,0.0,0.31479943993669307})")
 	public static IPair<Double, IPoint> rotation_composition(final IScope scope, final IList<IPair> rotation_list) {
+		if (rotation_list == null) throw GamaRuntimeException.error("The list of rotations must not be nil", scope);
 		// Precompute the degree-to-radians factor to avoid recomputing it per iteration
 		final double DEG_TO_RAD = Math.PI / 180.0;
 		Rotation3D rotation = new Rotation3D(GamaPointFactory.create(1, 0, 0), 0.0);
-		for (final IPair element : rotation_list) {
-			final IPair<Double, IPoint> rot = (IPair<Double, IPoint>) GamaType
-					.from(Types.PAIR, Types.FLOAT, Types.POINT).cast(scope, element, null, false);
+		for (final Object element : rotation_list) {
+			final IPair<Double, IPoint> rot = requireRotation(scope, element);
 			rotation = rotation.applyTo(new Rotation3D(rot.value(), DEG_TO_RAD * rot.key()));
 		}
 		return GamaPairFactory.createWith(180 / Math.PI * rotation.getAngle(), rotation.getAxis(), Types.FLOAT,
@@ -1034,6 +1060,7 @@ public class SpatialTransformations {
 							returnType = "float") })
 	public static IShape at_location(final IScope scope, final IShape g, final IPoint p) throws GamaRuntimeException {
 		if (g == null) return null;
+		SpatialCommon.requireFinitePoint(scope, p, "The target location");
 		return GamaShapeFactory.createFrom(g).withLocation(p);
 	}
 
@@ -1104,6 +1131,7 @@ public class SpatialTransformations {
 	@no_test
 	public static IList<IShape> skeletonize(final IScope scope, final IShape g, final Double clippingTolerance,
 			final Double triangulationTolerance) {
+		SpatialCommon.requireGeometry(scope, g);
 		final List<LineString> netw =
 				squeletisation(scope, g.getInnerGeometry(), triangulationTolerance, clippingTolerance, false);
 		final IList<IShape> geoms = GamaListFactory.create(Types.GEOMETRY);
@@ -1137,6 +1165,7 @@ public class SpatialTransformations {
 	@no_test
 	public static IList<IShape> skeletonize(final IScope scope, final IShape g, final Double clippingTolerance,
 			final Double triangulationTolerance, final boolean approxiClipping) {
+		SpatialCommon.requireGeometry(scope, g);
 		final List<LineString> netw =
 				squeletisation(scope, g.getInnerGeometry(), triangulationTolerance, clippingTolerance, approxiClipping);
 		final IList<IShape> geoms = GamaListFactory.create(Types.GEOMETRY);
@@ -1164,6 +1193,7 @@ public class SpatialTransformations {
 			usages = { @usage ("It can be used with 1 additional float operand: the tolerance for the clipping.") })
 	@no_test
 	public static IList<IShape> skeletonize(final IScope scope, final IShape g, final Double clippingTolerance) {
+		SpatialCommon.requireGeometry(scope, g);
 		final List<LineString> netw = squeletisation(scope, g.getInnerGeometry(), 0.0, clippingTolerance, false);
 		final IList<IShape> geoms = GamaListFactory.create(Types.GEOMETRY);
 		for (final LineString ls : netw) { geoms.add(GamaShapeFactory.createFrom(ls)); }
@@ -1198,6 +1228,7 @@ public class SpatialTransformations {
 			@test ("geometry box2 <- square(10); geometry skeleton2 <- geometry(skeletonize(box2)); skeleton2.area = 0.0")
 	})
 	public static IList<IShape> skeletonize(final IScope scope, final IShape g) {
+		SpatialCommon.requireGeometry(scope, g);
 		final List<LineString> netw = squeletisation(scope, g.getInnerGeometry(), 0.0, 0.0, false);
 		final IList<IShape> geoms = GamaListFactory.create(Types.GEOMETRY);
 		for (final LineString ls : netw) { geoms.add(GamaShapeFactory.createFrom(ls)); }
@@ -2094,10 +2125,10 @@ public class SpatialTransformations {
 				accu += rates.get(i);
 				translatedRates.add(accu / sum);
 			}
-			final IList<IPoint> pts = SpatialPunctal.points_along(geom, translatedRates);
+			final IList<IPoint> pts = SpatialPunctal.points_along(scope, geom, translatedRates);
 			IShape g = geom.copy(scope);
 			for (final IPoint pt : pts) {
-				final IList<IShape> shapes = SpatialOperators.split_at(g, pt);
+				final IList<IShape> shapes = SpatialOperators.split_at(scope, g, pt);
 				nwGeoms.add(shapes.get(0));
 				g = shapes.get(1);
 			}
@@ -2153,6 +2184,8 @@ public class SpatialTransformations {
 	@test ("split_lines([line([{0,10}, {20,10}]), line([{10,0}, {10,20}])]) = [line([{0,10}, {10,10}]), line([{10,10}, {20,10}]), line([{10,0}, {10,10}]) , line([{10,10}, {10,20}])]")
 	public static IList<IShape> split_lines(final IScope scope, final IContainer<?, IShape> geoms)
 			throws GamaRuntimeException {
+		if (geoms == null) throw GamaRuntimeException.error("The geometries to split must not be nil", scope);
+		for (final IShape geometry : geoms.iterable(scope)) { SpatialCommon.requireGeometry(scope, geometry); }
 		if (geoms.isEmpty(scope)) return GamaListFactory.create(Types.GEOMETRY);
 		final IShape line = SpatialOperators.union(scope, geoms);
 		final Geometry nodedLineStrings = line.getInnerGeometry();
@@ -2285,6 +2318,7 @@ public class SpatialTransformations {
 	public static IList<IShape> clean(final IScope scope, final IList<IShape> polylines, final double tolerance,
 			final boolean splitlines, final boolean keepMainGraph) {
 		if (polylines == null || polylines.isEmpty()) return polylines;
+		for (final IShape geometry : polylines) { SpatialCommon.requireGeometry(scope, geometry); }
 		final IList<IShape> geoms = polylines.copy(scope);
 		geoms.removeIf(a -> !a.getGeometry().isLine());
 		if (geoms.isEmpty()) return GamaListFactory.getEmptyList();
@@ -2372,7 +2406,7 @@ public class SpatialTransformations {
 			if (pt.euclidianDistanceTo(lp) > tolerance) {
 				final IPoint ptS = SpatialPunctal.closest_points_with(pt, closest).get(1);
 				modifyPoint(scope, shape, ptS, first);
-				final IList<IShape> spliL = SpatialOperators.split_at(closest, ptS);
+				final IList<IShape> spliL = SpatialOperators.split_at(scope, closest, ptS);
 				if (results.contains(closest)) {
 					results.remove(closest);
 					results.addAll(spliL);

@@ -12,6 +12,7 @@ package gama.api.utils.tests;
 
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.utils.StringUtils;
+import org.eclipse.emf.common.util.URI;
 
 /**
  * A summary of a whole test experiment
@@ -29,6 +30,10 @@ public class TestExperimentSummary extends CompoundSummary<IndividualTestSummary
 	 */
 	public TestExperimentSummary(final IExperimentAgent.Test testAgent) {
 		super(testAgent);
+	}
+
+	public TestExperimentSummary(final String title, final URI uri) {
+		super(title, uri);
 	}
 
 	@Override

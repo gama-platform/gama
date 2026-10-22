@@ -19,7 +19,7 @@ import "Experiment_comodel/move_comodel.experiment" as Evacuation
 global
 {
 	//set the bound of the environment
-	geometry shape <- envelope(file("../../../Toy Models/Flood Simulation/includes/mnt50.asc"));
+	geometry shape <- envelope(file("../../../Flood Simulation/includes/mnt50.asc"));
 	geometry the_free_shape<-copy(shape);
 	//counter for casualties
 	int casualty <- 0;

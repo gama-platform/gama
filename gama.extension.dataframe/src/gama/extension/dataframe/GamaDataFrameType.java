@@ -54,7 +54,7 @@ public class GamaDataFrameType extends GamaContainerType<IDataFrame> {
 	}
 
 	@Override
-	@doc ("Casts the operand into a dataframe. If already a dataframe, returns it (or a copy). Lists of lists and maps can be converted.")
+	@doc ("Casts the operand into a dataframe. If already a dataframe, returns it (or a copy). Lists of lists and maps can be converted. In a list, the first row supplies column names and every row must be a non-nil list; otherwise an error is raised. In a map, keys must be non-nil strings and values must be non-nil lists. The first column determines the row count; shorter columns are padded with nil and excess values in longer columns are ignored. An empty list or map creates an empty dataframe with no columns.")
 	public IDataFrame cast(final IScope scope, final Object obj, final Object param, final IType<?> keyType,
 			final IType<?> contentType, final boolean copy) throws GamaRuntimeException {
 		return GamaDataFrameFactory.castToDataframe(scope, obj, copy);

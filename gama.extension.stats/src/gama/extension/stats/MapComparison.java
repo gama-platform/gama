@@ -28,6 +28,7 @@ import gama.annotations.tests;
 import gama.annotations.usage;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
+import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
@@ -73,6 +74,7 @@ public class MapComparison {
 			concept = { IConcept.MAP })
 	@doc (
 			value = "kappa indicator for 2 map comparisons: kappa(list_vals1,list_vals2,categories). Reference: Cohen, J. A coefficient of agreement for nominal scales. Educ. Psychol. Meas. 1960, 20.",
+			comment = "Value lists and categories must be non-nil, and every compared value must belong to the categories.",
 			examples = { @example (
 					value = "kappa([cat1,cat1,cat2,cat3,cat2],[cat2,cat1,cat2,cat1,cat2],[cat1,cat2,cat3])",
 					isExecutable = false),
@@ -114,14 +116,20 @@ public class MapComparison {
 			concept = {})
 	@doc (
 			value = "kappa indicator for 2 map comparisons: kappa(list_vals1,list_vals2,categories, weights). Reference: Cohen, J. A coefficient of agreement for nominal scales. Educ. Psychol. Meas. 1960, 20. ",
+			comment = "Categories must be non-nil and contain every compared value. Weights, when supplied, must match the number of values.",
 			examples = { @example (
 					value = "kappa([\"cat1\",\"cat3\",\"cat2\",\"cat1\",\"cat3\"],[\"cat1\",\"cat3\",\"cat2\",\"cat3\",\"cat1\"],[\"cat1\",\"cat2\",\"cat3\"], [1.0, 2.0, 3.0, 1.0, 5.0])",
 					equals = "0.29411764705882354") })
 	public static double kappa(final IScope scope, final IList<Object> vals1, final IList<Object> vals2,
 			final IList<Object> categories, final IList<Object> weights) {
-		if (vals1 == null || vals2 == null) return 1;
+		if (vals1 == null || vals2 == null || categories == null) {
+			throw GamaRuntimeException.error("kappa requires non-nil value lists and categories", scope);
+		}
 		final int nb = vals1.size();
 		if (nb != vals2.size()) return 0;
+		if (weights != null && weights.size() != nb) {
+			throw GamaRuntimeException.error("kappa requires one weight per compared value", scope);
+		}
 		final int nbCat = categories.size();
 		final double[] X = new double[nbCat];
 		final double[] Y = new double[nbCat];
@@ -140,8 +148,8 @@ public class MapComparison {
 			total += weight;
 			final Object val1 = vals1.get(i);
 			final Object val2 = vals2.get(i);
-			final int indexVal1 = categoriesId.get(val1);
-			final int indexVal2 = categoriesId.get(val2);
+			final int indexVal1 = categoryIndex(scope, categoriesId, val1);
+			final int indexVal2 = categoryIndex(scope, categoriesId, val2);
 			X[indexVal1] += weight;
 			Y[indexVal2] += weight;
 			contigency[indexVal1][indexVal2] += weight;
@@ -183,6 +191,7 @@ public class MapComparison {
 			concept = { IConcept.MAP })
 	@doc (
 			value = "Kappa simulation indicator for 2 map comparisons. Reference: `van Vliet, J., Bregt, A.K. & Hagen-Zanker, A. (2011). Revisiting Kappa to account for change in the accuracy assessment of land-use change models, Ecological Modelling 222(8).`",
+			comment = "Value lists and categories must be non-nil, and every compared value must belong to the categories.",
 			masterDoc = true,
 			examples = { @example (
 					value = "kappa_sim([\"cat1\",\"cat1\",\"cat2\",\"cat2\",\"cat2\"],[\"cat1\",\"cat3\",\"cat2\",\"cat1\",\"cat3\"],[\"cat1\",\"cat3\",\"cat2\",\"cat3\",\"cat1\"],[\"cat1\",\"cat2\",\"cat3\"])",
@@ -216,6 +225,7 @@ public class MapComparison {
 			concept = {})
 	@doc (
 			value = "kappa simulation indicator for 2 map comparisons: kappa(list_valsInits,list_valsObs,list_valsSim, categories, weights). Reference: van Vliet, J., Bregt, A.K. & Hagen-Zanker, A. (2011). Revisiting Kappa to account for change in the accuracy assessment of land-use change models, Ecological Modelling 222(8)",
+			comment = "Categories must be non-nil and contain every compared value. Weights, when supplied, must match the number of values.",
 			usages = { @usage (
 					value = "kappa_sim can be used with an additional weights operand",
 					examples = { @example (
@@ -223,9 +233,14 @@ public class MapComparison {
 							equals = "0.2702702702702703") }) })
 	public static double kappaSimulation(final IScope scope, final IList<Object> valsInit, final IList<Object> valsObs,
 			final IList<Object> valsSim, final IList<Object> categories, final IList<Object> weights) {
-		if (valsInit == null || valsObs == null || valsSim == null) return 1;
+		if (valsInit == null || valsObs == null || valsSim == null || categories == null) {
+			throw GamaRuntimeException.error("kappa_sim requires non-nil value lists and categories", scope);
+		}
 		final int nb = valsInit.size();
 		if (nb != valsObs.size() || nb != valsSim.size()) return 0;
+		if (weights != null && weights.size() != nb) {
+			throw GamaRuntimeException.error("kappa_sim requires one weight per compared value", scope);
+		}
 		final int nbCat = categories.size();
 		final double[] O = new double[nbCat];
 		final double[][] contigency = new double[nbCat][nbCat];
@@ -248,9 +263,9 @@ public class MapComparison {
 			final Object val1 = valsObs.get(i);
 			final Object val2 = valsSim.get(i);
 			final Object valO = valsInit.get(i);
-			final int indexVal1 = categoriesId.get(val1);
-			final int indexVal2 = categoriesId.get(val2);
-			final int indexValO = categoriesId.get(valO);
+			final int indexVal1 = categoryIndex(scope, categoriesId, val1);
+			final int indexVal2 = categoryIndex(scope, categoriesId, val2);
+			final int indexValO = categoryIndex(scope, categoriesId, valO);
 			O[indexValO] += weight;
 			contigency[indexVal1][indexVal2] += weight;
 			contigencyOA[indexValO][indexVal1] += weight;
@@ -276,6 +291,15 @@ public class MapComparison {
 		}
 		if (pe == 1) return 1;
 		return (po - pe) / (1 - pe);
+	}
+
+	private static int categoryIndex(final IScope scope, final Map<Object, Integer> categories, final Object value) {
+		final Integer index = categories.get(value);
+		if (index == null) {
+			throw GamaRuntimeException.error("kappa and kappa_sim require every compared value to belong to the categories",
+					scope);
+		}
+		return index;
 	}
 
 	/**

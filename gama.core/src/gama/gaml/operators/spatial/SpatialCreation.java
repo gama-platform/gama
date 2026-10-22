@@ -104,6 +104,7 @@ public class SpatialCreation {
 			usages = { @usage (
 					value = "returns a point if the radius operand is lower or equal to 0.") },
 			special_cases = {
+					"A non-finite radius raises an error.",
 					"A radius ≤ 0 returns a point geometry at the agent's current location (or {0,0,0}).",
 					"The center is the location of the calling agent by default; use circle(r, pt) to specify an explicit center." },
 			comment = "the center of the circle is by default the location of the current agent in which has been called this operator.",
@@ -122,6 +123,7 @@ public class SpatialCreation {
 			@test ("circle(10).width = 20.0")
 	})
 	public static IShape circle(final IScope scope, final Double radius) {
+		SpatialCommon.requireFinite(scope, radius, "The circle radius");
 		IPoint location;
 		final IAgent a = scope.getAgent();
 		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
@@ -166,6 +168,8 @@ public class SpatialCreation {
 					"triangle" })
 	@no_test
 	public static IShape circle(final IScope scope, final Double radius, final IPoint position) {
+		SpatialCommon.requireFinite(scope, radius, "The circle radius");
+		if (position != null) { SpatialCommon.requireFinitePoint(scope, position, "The circle center"); }
 		IPoint location = position;
 		if (radius <= 0) return GamaShapeFactory.createFrom(location);
 		return GamaShapeFactory.buildCircle(radius, location);
@@ -590,6 +594,7 @@ public class SpatialCreation {
 			concept = { IConcept.SHAPE, IConcept.GEOMETRY, IConcept.THREED })
 	@doc (
 			value = "A sphere geometry which radius is equal to the operand.",
+			special_cases = { "A non-finite radius raises an error." },
 			usages = { @usage (
 					value = "returns a point if the operand is lower or equal to 0.") },
 			comment = "the centre of the sphere is by default the location of the current agent in which has been called this operator.",
@@ -604,6 +609,7 @@ public class SpatialCreation {
 			@test ("sphere(1).volume > 4.18 and sphere(1).volume < 4.19")
 	})
 	public static IShape sphere(final IScope scope, final Double radius) {
+		SpatialCommon.requireFinite(scope, radius, "The sphere radius");
 		IPoint location;
 		final IAgent a = scope.getAgent();
 		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
@@ -827,6 +833,7 @@ public class SpatialCreation {
 					value = "returns nil if the operand is nil.") },
 			special_cases = {
 					"A negative side length gives the same square as its absolute value.",
+					"A non-finite side length raises an error.",
 					"A side length of 0 returns a point geometry at the agent's current location (or {0,0,0})." },
 			comment = "the centre of the square is by default the location of the current agent in which has been called this operator.",
 			examples = { @example (
@@ -853,6 +860,8 @@ public class SpatialCreation {
 			@test ("((square(10) at_location {0,0}) - (square(10) at_location {5,0})) = polygon ([{-5,5},{0,5},{0,-5},{-5,-5}])")
 	})
 	public static IShape square(final IScope scope, final Double side_size) {
+		if (side_size == null) return null;
+		SpatialCommon.requireFinite(scope, side_size, "The square side size");
 		IPoint location;
 		final IAgent a = scope.getAgent();
 		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
@@ -886,6 +895,7 @@ public class SpatialCreation {
 			concept = { IConcept.SHAPE, IConcept.GEOMETRY, IConcept.THREED })
 	@doc (
 			value = "A cube geometry which side size is equal to the operand.",
+			special_cases = { "A non-finite side length raises an error." },
 			usages = { @usage (
 					value = "returns nil if the operand is nil.") },
 			comment = "the center of the cube is by default the location of the current agent in which has been called this operator.",
@@ -900,6 +910,8 @@ public class SpatialCreation {
 			@test ("cube(2).volume = 8.0")
 	})
 	public static IShape cube(final IScope scope, final Double side_size) {
+		if (side_size == null) return null;
+		SpatialCommon.requireFinite(scope, side_size, "The cube side size");
 		IPoint location;
 		final IAgent a = scope.getAgent();
 		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
@@ -930,6 +942,7 @@ public class SpatialCreation {
 			concept = { IConcept.SHAPE, IConcept.GEOMETRY })
 	@doc (
 			value = "A rectangle geometry which side sizes are given by the operands (as a point).",
+			special_cases = { "Nil dimensions or non-finite coordinates raise an error." },
 			comment = "the center of the rectangle is by default the location of the current agent in which has been called this operator.",
 			examples = { @example (
 					value = "rectangle({10, 5})",
@@ -939,6 +952,7 @@ public class SpatialCreation {
 					"triangle" })
 	@test ("rectangle({10, 5}).area = 50.0")
 	public static IShape rectangle(final IScope scope, final IPoint p) {
+		SpatialCommon.requireFinitePoint(scope, p, "The rectangle dimensions");
 		IPoint location;
 		final IAgent a = scope.getAgent();
 		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
@@ -997,6 +1011,8 @@ public class SpatialCreation {
 			@test ("geometry bar2 <- rectangle(10, 2) at_location {5, 5}; bar2.height = 2.0")
 	})
 	public static IShape rectangle(final IScope scope, final double x, final double y) {
+		SpatialCommon.requireFinite(scope, x, "The rectangle width");
+		SpatialCommon.requireFinite(scope, y, "The rectangle height");
 		IPoint location;
 		final IAgent a = scope.getAgent();
 		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
@@ -1028,6 +1044,7 @@ public class SpatialCreation {
 			concept = {})
 	@doc (
 			value = "A rectangle geometry which upper-left and lower-right corners are defined as points.",
+			special_cases = { "Nil corners or non-finite coordinates raise an error." },
 			examples = { @example (
 					value = "rectangle({0.0,0.0}, {10.0,10.0})",
 					equals = "a geometry as a rectangle with {1.0,1.0} as the upper-left corner, {10.0,10.0} as the lower-right corner.",
@@ -1036,6 +1053,8 @@ public class SpatialCreation {
 					"triangle" })
 	@test ("rectangle({0.0,0.0}, {10.0,10.0}).area = 100.0")
 	public static IShape rectangle(final IScope scope, final IPoint upperLeftCorner, final IPoint lowerRightCorner) {
+		SpatialCommon.requireFinitePoint(scope, upperLeftCorner, "The upper-left corner");
+		SpatialCommon.requireFinitePoint(scope, lowerRightCorner, "The lower-right corner");
 		IPoint location;
 		final double width = Math.abs(upperLeftCorner.getX() - lowerRightCorner.getX());
 		final double height = Math.abs(upperLeftCorner.getY() - lowerRightCorner.getY());
@@ -1070,8 +1089,9 @@ public class SpatialCreation {
 	@doc (
 			value = "A box geometry which side sizes are given by the operands.",
 			masterDoc = true,
+			special_cases = { "Negative dimensions are treated as their absolute values." },
 			usages = { @usage (
-					value = "returns nil if the operand is nil.") },
+					value = "Raises an error if the dimensions are nil or contain non-finite coordinates.") },
 			comment = "the center of the box is by default the location of the current agent in which has been called this operator.",
 			examples = { @example (
 					value = "box({10, 5 , 5})",
@@ -1084,10 +1104,11 @@ public class SpatialCreation {
 			see = { "around", "circle", "sphere", "cone", "line", "link", "norm", "point", "polygon", "polyline",
 					"square", "cube", "triangle" })
 	public static IShape box(final IScope scope, final IPoint p) {
+		SpatialCommon.requireFinitePoint(scope, p, "The box dimensions");
 		IPoint location;
 		final IAgent a = scope.getAgent();
 		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
-		return GamaShapeFactory.buildBox(p.getX(), p.getY(), p.getZ(), location);
+		return GamaShapeFactory.buildBox(Math.abs(p.getX()), Math.abs(p.getY()), Math.abs(p.getZ()), location);
 	}
 
 	/**
@@ -1123,6 +1144,7 @@ public class SpatialCreation {
 			concept = {})
 	@doc (
 			value = "A box geometry which side sizes are given by the operands.",
+			special_cases = { "Negative dimensions are treated as their absolute values." },
 			usages = { @usage (
 					value = "returns nil if the operand is nil.") },
 			comment = "the center of the box is by default the location of the current agent in which has been called this operator.",
@@ -1137,10 +1159,13 @@ public class SpatialCreation {
 			@test ("box(2, 3, 4).volume = 24.0")
 	})
 	public static IShape box(final IScope scope, final double x, final double y, final double z) {
+		SpatialCommon.requireFinite(scope, x, "The box width");
+		SpatialCommon.requireFinite(scope, y, "The box height");
+		SpatialCommon.requireFinite(scope, z, "The box depth");
 		IPoint location;
 		final IAgent a = scope.getAgent();
 		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
-		return GamaShapeFactory.buildBox(x, y, z, location);
+		return GamaShapeFactory.buildBox(Math.abs(x), Math.abs(y), Math.abs(z), location);
 	}
 
 	/**
@@ -2556,7 +2581,8 @@ public class SpatialCreation {
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SHAPE },
 			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION })
 	@doc (
-			value = "A 3D geometry that represents the box that surrounds the geometries or the surface described by the arguments. More general than geometry(arguments).envelope, as it allows to pass int, double, point, image files, shape files, asc files, or any list combining these arguments, in which case the envelope will be correctly expanded. If an envelope cannot be determined from the arguments, a default one of dimensions (0,100, 0, 100, 0, 100) is returned",
+			value = "A 3D geometry that represents the box that surrounds the geometries or the surface described by the arguments. More general than geometry(arguments).envelope, as it allows to pass int, double, point, image files, shape files, asc files, or any list combining these arguments, in which case the envelope will be correctly expanded. If the computed envelope is empty, a default one of dimensions (0,100, 0, 100, 0, 100) is returned",
+			special_cases = { "Raises an error if the argument is nil or no envelope can be determined (for example, from an empty list)." },
 			usages = { @usage (
 					value = "This operator is often used to define the environment of simulation") },
 			examples = { @example (
@@ -2579,10 +2605,16 @@ public class SpatialCreation {
 
 	)
 	public static IShape envelope(final IScope scope, final Object obj) {
-		IEnvelope env = GamaEnvelopeFactory.of(GamaEnvelopeFactory.castToEnvelope(scope, obj));
+		if (obj == null) throw GamaRuntimeException.error("Cannot compute an envelope from nil", scope);
+		final IEnvelope bounds = GamaEnvelopeFactory.castToEnvelope(scope, obj);
+		if (bounds == null) throw GamaRuntimeException.error("Cannot determine an envelope from the argument", scope);
+		IEnvelope env = GamaEnvelopeFactory.of(bounds);
 		try {
 			if (env.isNull()) { env = GamaEnvelopeFactory.of(0, 100, 0, 100, 0, 100); }
-			return GamaShapeFactory.buildBox(env.getWidth(), env.getHeight(), env.getDepth(), env.center());
+			final IShape result = env.toShape();
+			result.setDepth(env.getDepth());
+			result.setGeometricalType(IShape.Type.BOX);
+			return result;
 		} finally {
 			env.dispose();
 		}
@@ -2605,6 +2637,7 @@ public class SpatialCreation {
 			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.THREED })
 	@doc (
 			value = "A 3D geometry that represents the box that surrounds the geometries or the surface described by the first argument (see the envelope operator with one argument), and whose depth (extent along the z axis) is given by the second argument. The x and y extents are those of the envelope of the first argument. This operator allows to define a 3D world from a georeferenced (2D) data source, which is required, for instance, to use the moving3D skill in such a world.",
+			special_cases = { "Raises an error if the first argument is nil or no envelope can be determined, or if the depth is nil, negative or non-finite." },
 			examples = { @example (
 					value = "geometry shape <- envelope(road_shapefile, 100.0);",
 					isExecutable = false),
@@ -2614,12 +2647,18 @@ public class SpatialCreation {
 							returnType = "float",
 							test = false) })
 	public static IShape envelope(final IScope scope, final Object obj, final Double depth) {
-		if (depth == null || depth < 0)
-			throw GamaRuntimeException.error("The depth of an envelope must be a positive number", scope);
-		IEnvelope env = GamaEnvelopeFactory.of(GamaEnvelopeFactory.castToEnvelope(scope, obj));
+		if (depth == null || !Double.isFinite(depth) || depth < 0)
+			throw GamaRuntimeException.error("The depth of an envelope must be a finite non-negative number", scope);
+		if (obj == null) throw GamaRuntimeException.error("Cannot compute an envelope from nil", scope);
+		final IEnvelope bounds = GamaEnvelopeFactory.castToEnvelope(scope, obj);
+		if (bounds == null) throw GamaRuntimeException.error("Cannot determine an envelope from the argument", scope);
+		IEnvelope env = GamaEnvelopeFactory.of(bounds);
 		try {
 			if (env.isNull()) { env = GamaEnvelopeFactory.of(0, 100, 0, 100, 0, 100); }
-			return GamaShapeFactory.buildBox(env.getWidth(), env.getHeight(), depth, env.center());
+			final IShape result = env.toShape();
+			result.setDepth(depth);
+			result.setGeometricalType(IShape.Type.BOX);
+			return result;
 		} finally {
 			env.dispose();
 		}

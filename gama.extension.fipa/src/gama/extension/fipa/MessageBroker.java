@@ -111,7 +111,10 @@ public class MessageBroker {
 	 *            the m
 	 */
 	public void scheduleForDelivery(final IScope scope, final FIPAMessage m) {
-		for (final IAgent a : m.getReceivers().iterable(scope)) { scheduleForDelivery(m.copy(scope), a); }
+		for (final IAgent a : m.getReceivers().iterable(scope)) {
+			m.getConversation().scheduleMessage(scope, m, a);
+			scheduleForDelivery(m.copy(scope), a);
+		}
 	}
 
 	/**

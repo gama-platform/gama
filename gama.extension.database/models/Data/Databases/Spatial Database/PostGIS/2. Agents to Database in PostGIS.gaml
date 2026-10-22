@@ -48,7 +48,7 @@ global {
 	}
 }
 
-species DB_Accessor skills: [SQLSKILL] ;
+species DB_Accessor skills: [sql] ;
 
 species bounds ;
 

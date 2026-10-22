@@ -14,6 +14,7 @@ import static java.time.temporal.ChronoField.DAY_OF_MONTH;
 import static java.time.temporal.ChronoField.MINUTE_OF_HOUR;
 
 import java.time.Clock;
+import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -178,7 +179,7 @@ public class GamaDateFactory {
 	 * @param scope
 	 *            the current execution scope.
 	 * @param s
-	 *            the string to parse.
+	 *            the non-empty string to parse, or "now" for the current date and time.
 	 * @return the parsed {@link IDate} instance.
 	 */
 	public static IDate createFromString(final IScope scope, final String s) {
@@ -313,7 +314,11 @@ public class GamaDateFactory {
 				}
 			}
 		}
-		return LocalDateTime.of(year, month, day, hour, minute, second);
+		try {
+			return LocalDateTime.of(year, month, day, hour, minute, second);
+		} catch (final DateTimeException e) {
+			throw GamaRuntimeException.error(THE_DATE + vals + " has invalid components: " + e.getMessage(), scope);
+		}
 	}
 
 	/**
@@ -328,7 +333,9 @@ public class GamaDateFactory {
 	 * @return the temporal
 	 */
 	private static Temporal parse(final IScope scope, final String original, final DateTimeFormatter df) {
-		if (original == null || original.isEmpty() || "now".equals(original))
+		if (original != null && original.isEmpty())
+			throw GamaRuntimeException.error("An empty string cannot be converted to a date", scope);
+		if (original == null || "now".equals(original))
 			return LocalDateTime.now(GamaDateFactory.DEFAULT_ZONE);
 
 		if (df != null) return parseWithFormatter(scope, original, df);

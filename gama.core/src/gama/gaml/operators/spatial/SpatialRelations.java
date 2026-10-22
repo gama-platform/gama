@@ -460,6 +460,7 @@ public class SpatialRelations {
 	@doc (
 			value = "A distance between two geometries (geometries, agents or points) considering the topology of the agent applying the operator.",
 			masterDoc = true,
+			special_cases = { "Raises a runtime error if the source or target is nil." },
 			usages = { @usage ("Returns 0.0 if the two geometries are equal or at the same location."),
 					@usage ("Returns 0.0 if one geometry contains the other (i.e. the topological distance between overlapping geometries is 0).") },
 			examples = { @example (
@@ -469,6 +470,8 @@ public class SpatialRelations {
 			see = { "towards", "direction_to", "distance_between", "direction_between", "path_between", "path_to" })
 	@no_test // test already done in Spatial tests models
 	public static Double distance_to(final IScope scope, final IShape source, final IShape target) {
+		if (source == null || target == null)
+			throw GamaRuntimeException.error("Cannot compute distance_to: the source and target must not be nil", scope);
 		return scope.getTopology().distanceBetween(scope, source, target);
 	}
 
@@ -487,7 +490,8 @@ public class SpatialRelations {
 			value = "distance_to",
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.SP_RELATIONS })
 	@doc (
-			value = "An Euclidean distance between two points.")
+			value = "An Euclidean distance between two points.",
+			special_cases = { "Raises a runtime error if the source or target is nil." })
 	// No documentation because it is same same as the previous one (but
 	// optimized for points?)
 	@tests ({
@@ -499,6 +503,8 @@ public class SpatialRelations {
 			@test ("point p13 <- {5, 50}; point p23 <- {95, 50}; (p13 distance_to p23) = 90.0")
 	})
 	public static Double distance_to(final IScope scope, final IPoint source, final IPoint target) {
+		if (source == null || target == null)
+			throw GamaRuntimeException.error("Cannot compute distance_to: the source and target must not be nil", scope);
 		return scope.getTopology().distanceBetween(scope, source, target);
 	}
 

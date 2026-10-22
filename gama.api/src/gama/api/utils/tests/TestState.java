@@ -19,6 +19,8 @@ import gama.api.utils.interfaces.IColored;
  */
 public enum TestState implements IColored {
 
+	INTERRUPTED("interrupted"),
+	TIMED_OUT("timeout"),
 	/** The aborted. */
 	ABORTED("error"),
 	/** The failed. */
@@ -27,8 +29,8 @@ public enum TestState implements IColored {
 	WARNING("warning"),
 	/** The passed. */
 	PASSED("passed"),
-	/** The not run. */
-	NOT_RUN("not run");
+	/** Tests and assertions whose execution was not reached. */
+	NOT_RUN("not reached");
 
 	/** The name. */
 	private final String name;
@@ -46,6 +48,10 @@ public enum TestState implements IColored {
 	@Override
 	public String toString() {
 		return name;
+	}
+
+	public boolean isFailure() {
+		return this == FAILED || this == ABORTED || this == INTERRUPTED || this == TIMED_OUT;
 	}
 
 	/**

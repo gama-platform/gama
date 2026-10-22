@@ -86,7 +86,10 @@ public class PlatformSpeciesDescription extends SpeciesDescription implements IS
 		String key = entry.getKey();
 		final VariableDescription var = (VariableDescription) GAML.getDescriptionFactory()
 				.create(entry.getType().toString(), this, IKeyword.NAME, key);
-		PREF_DEFINITIONS.put(key, entry.getTitle());
+		String documentation = entry.getTitle();
+		String comment = entry.getUnitLabel(null);
+		if (comment != null && !comment.isBlank()) { documentation += "<br/>" + comment; }
+		PREF_DEFINITIONS.put(key, documentation);
 		final IGamaHelper<?> get = (scope, agent, skill, values) -> entry.getValue();
 		final IGamaHelper<?> set = (scope, agent, skill, val) -> {
 			if (agent instanceof ITopLevelAgent.Platform gama) {

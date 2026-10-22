@@ -43,7 +43,11 @@ public class RevalidateModelSelectionListener implements Selector {
 	 */
 	@Override
 	public void widgetSelected(final SelectionEvent e) {
+		revalidate();
+	}
 
+	/** Recompile the text editor's resource when its error status is clicked. */
+	public void revalidate() {
 		editor.getDocument().readOnly(new CancelableUnitOfWork<Object, XtextResource>() {
 
 			@Override

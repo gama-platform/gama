@@ -33,6 +33,7 @@ import gama.api.constants.IGamlIssue;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.statements.AbstractStatementSequence;
+import gama.api.gaml.statements.IStatement;
 import gama.api.gaml.symbols.ISymbol;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
@@ -211,6 +212,11 @@ public class CaptureStatement extends AbstractStatementSequence {
 		sequence = new RemoteSequence(description);
 		sequence.setName("commands of " + getName());
 		sequence.setChildren(com);
+	}
+
+	@Override
+	public Iterable<IStatement> getSubStatements() {
+		return sequence == null ? java.util.List.of() : sequence.getSubStatements();
 	}
 
 	@Override

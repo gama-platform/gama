@@ -74,7 +74,7 @@ species idPoint {
 	}
 }
 
-species DB_accessor skills: [SQLSKILL] {
+species DB_accessor skills: [sql] {
 	list listRes <- [];
 	
 	init {

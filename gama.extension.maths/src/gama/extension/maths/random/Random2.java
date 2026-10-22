@@ -106,7 +106,7 @@ public class Random2 {
 	 * Op exponential dist.
 	 *
 	 * @param scope the scope
-	 * @param rate the shape
+	 * @param scale the mean (inverse rate)
 	 * @return a double
 	 * @throws GamaRuntimeException the gama runtime exception
 	 */
@@ -116,7 +116,9 @@ public class Random2 {
 			category = { IOperatorCategory.RANDOM },
 			concept = { IConcept.RANDOM })
 	@doc (
-			value = "returns a random value from a exponential distribution with specified values of the scale parameters (1/lambda). See https://mathworld.wolfram.com/ExponentialDistribution.html for more details ). ",
+			value = "returns a random value from an exponential distribution with the specified scale (mean, or 1/lambda). "
+					+ "The scale must be finite and strictly positive; otherwise a GAML error is raised. "
+					+ "See https://mathworld.wolfram.com/ExponentialDistribution.html for more details.",
 			examples = { @example (
 					value = "exp_rnd(5) ",
 					equals = "0.731",
@@ -129,12 +131,22 @@ public class Random2 {
 	})
 	public static Double OpExpDist(final IScope scope, final Double scale)
 			throws GamaRuntimeException {
-		final ExponentialDistribution dist =
-				new ExponentialDistribution(new ForwardingGenerator(scope.getRandom().getGenerator()), scale);
+		final ExponentialDistribution dist = exponentialDistribution(scope, scale, "exp_rnd");
 
 		return dist.sample();
 	}	
 	
+	private static ExponentialDistribution exponentialDistribution(final IScope scope, final Double scale,
+			final String operator) {
+		if (scale == null || !Double.isFinite(scale) || scale <= 0) {
+			throw GamaRuntimeException.error(
+					operator + ": the scale (mean, inverse rate) must be finite and strictly positive, but was "
+							+ (scale == null ? "nil" : scale),
+					scope);
+		}
+		return new ExponentialDistribution(new ForwardingGenerator(scope.getRandom().getGenerator()), scale);
+	}
+
 
 	/**
 	 * Op log normal dist.
@@ -468,7 +480,7 @@ public class Random2 {
 	 *
 	 * @param scope the scope
 	 * @param x the x
-	 * @param rate the rate
+	 * @param scale the mean (inverse rate)
 	 * @return the double
 	 * @throws GamaRuntimeException the gama runtime exception
 	 */
@@ -479,7 +491,8 @@ public class Random2 {
 			concept = { IConcept.RANDOM })
 	@doc (
 			value = "returns the probability density function (PDF) at the specified point x "
-					+ "of the exponential distribution with the given rate.",
+					+ "of the exponential distribution with the given scale (mean, or inverse rate). "
+					+ "The scale must be finite and strictly positive; otherwise a GAML error is raised.",
 			examples = { @example (
 					value = "exp_density(5,3) ",
 					equals = "0.731",
@@ -496,10 +509,9 @@ public class Random2 {
 			@test ("exp_density(1.0, 1.0) = exp(-1.0)"),
 			@test ("exp_density(1.0, 2.0) = 0.5 * exp(-0.5)")
 	})
-	public static Double OpExpDistDensity(final IScope scope, final Double x, final Double rate)
+	public static Double OpExpDistDensity(final IScope scope, final Double x, final Double scale)
 			throws GamaRuntimeException {
-		final ExponentialDistribution dist =
-				new ExponentialDistribution(new ForwardingGenerator(scope.getRandom().getGenerator()), rate);
+		final ExponentialDistribution dist = exponentialDistribution(scope, scale, "exp_density");
 
 		return dist.density(x);
 	}	

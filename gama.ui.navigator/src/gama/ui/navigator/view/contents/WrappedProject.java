@@ -81,8 +81,7 @@ public class WrappedProject extends WrappedContainer<IProject> {
 
 	@Override
 	public String getExplanation() {
-		final String plugin = getPlugin();
-		return plugin != null && !plugin.isEmpty() ? "in " + plugin : "project";
+		return "project";
 	}
 
 	@Override
@@ -147,7 +146,7 @@ public class WrappedProject extends WrappedContainer<IProject> {
 	 *
 	 * @return the plugin
 	 */
-	String getPlugin() {
+	public String getPlugin() {
 		if (plugin == null) {
 			final var data = getMetaDataProvider().getMetaData(getResource(), false, false);
 			if (data != null) {

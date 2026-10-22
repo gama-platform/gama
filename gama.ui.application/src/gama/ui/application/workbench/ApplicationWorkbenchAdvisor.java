@@ -22,6 +22,9 @@ import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IDecoratorManager;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.ide.IDE;
@@ -96,6 +99,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 	@Override
 	public void postStartup() {
 		super.postStartup();
+		showInteractiveConsoleAtStartup();
 		// Defer linking until the workbench startup sequence has initialized the UI.
 		if (checkCopyOfBuiltInModels()) { WorkspaceModelsManager.instance.linkSampleModelsToWorkspace(); }
 		FileUtils.cleanCache();
@@ -136,6 +140,16 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
 		}
 
+	}
+
+	private void showInteractiveConsoleAtStartup() {
+		final var window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+		if (window == null || window.getActivePage() == null) return;
+		try {
+			window.getActivePage().showView(IGui.INTERACTIVE_CONSOLE_VIEW_ID, null, IWorkbenchPage.VIEW_ACTIVATE);
+		} catch (final PartInitException e) {
+			DEBUG.ERR("Unable to show the interactive console at startup", e);
+		}
 	}
 
 	/** Qualifier of the workspace-scoped preference node holding the Wayland-warning dismissal flag. */
