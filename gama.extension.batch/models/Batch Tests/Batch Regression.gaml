@@ -16,7 +16,7 @@ global {
 	bool stop_sim() { return is_over; }
 	// Used by 'die_in_batch': these simulations end with 'do die' instead of their 'until'
 	bool dies <- false;
-	reflex die_early when: dies and p = 0.5 and cycle = 3 { do die; }
+	reflex die_early when: dies and p = 0.5 and cycle = 3 { do die(); }
 }
 
 // Writes the result of the checks on the simulations of one run (called at the end of each run).
@@ -53,7 +53,7 @@ experiment many_not_kept parent: regression_abstract type: batch repeat: 100 par
 // 3. 'with:' needs parameter names as strings; each run must use one of the given values.
 experiment explicit_with parent: regression_abstract type: batch repeat: 3 keep_seed: true
 		until: world.stop_sim() {
-	method exploration with: [["p"::0.2], ["p"::0.4], ["p"::0.8]];
+	method exploration(["p"::0.2], ["p"::0.4], ["p"::0.8]);
 	reflex end_of_runs {
 		bool p_ok <- simulations all_match (each.p in [0.2, 0.4, 0.8]);
 		write "explicit_with | parameters taken from the plan: " + (p_ok ? "PASS" : "FAIL");

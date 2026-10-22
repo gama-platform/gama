@@ -17,7 +17,7 @@ global {
 }
 
 // 1. Test LHS Facets
-experiment "LHS Facet Test" type: batch {
+experiment LHS_Facet_Test title: "LHS Facet Test" type: batch until: cycle >= 100 {
 	parameter "p1" var: p1 min: 0.0 max: 1.0;
 	parameter "p2" var: p2 min: 0.0 max: 1.0;
 	
@@ -29,7 +29,7 @@ experiment "LHS Facet Test" type: batch {
 }
 
 // 2. Test Morris Facets
-experiment "Morris Facet Test" type: batch {
+experiment Morris_Facet_Test title: "Morris Facet Test" type: batch until: cycle >= 100 {
 	parameter "p1" var: p1 min: 0.0 max: 1.0;
 	parameter "p2" var: p2 min: 0.0 max: 1.0;
 	
@@ -38,16 +38,16 @@ experiment "Morris Facet Test" type: batch {
 }
 
 // 3. Test With Facet (Direct Data)
-experiment "With Facet Test" type: batch {
+experiment With_Facet_Test title: "With Facet Test" type: batch until: cycle >= 100 {
 	parameter "p1" var: p1;
 	
-	list<map<string, object>> my_plan <- [["p1"::0.1], ["p1"::0.5], ["p1"::0.9]];
+	list<map<string, object>> my_plan <- list<map<string, object>>([["p1"::0.1], ["p1"::0.5], ["p1"::0.9]]);
 	
 	method exploration with: my_plan;
 }
 
 // 4. Test Default Sample Size
-experiment "Default Sample Test" type: batch {
+experiment Default_Sample_Test title: "Default Sample Test" type: batch until: cycle >= 100 {
 	parameter "p1" var: p1 min: 0.0 max: 1.0;
 	
 	method exploration sampling: "latinhypercube" sample: 132;
