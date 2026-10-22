@@ -14,6 +14,9 @@ global {
 	float p <- 0.0;
 	bool is_over -> cycle >= target;
 	bool stop_sim() { return is_over; }
+	// Used by 'die_in_batch': these simulations end with 'do die' instead of their 'until'
+	bool dies <- false;
+	reflex die_early when: dies and p = 0.5 and cycle = 3 { do die; }
 }
 
 // Writes the result of the checks on the simulations of one run (called at the end of each run).
@@ -67,5 +70,17 @@ experiment permanent_reload parent: regression_abstract type: batch repeat: 3 un
 				data "Max" value: max(simulations collect each.cycle) color: #red;
 			}
 		}
+	}
+}
+
+// 5. Simulations that kill themselves ('do die') must be collected like the others: the batch used to wait for them
+// forever. The check is only written if the batch reaches the end of its runs.
+experiment die_in_batch parent: regression_abstract type: batch repeat: 4 parallel: 3 keep_seed: true
+		until: world.stop_sim() {
+	parameter "dies" var: dies among: [true];
+	method exploration;
+	reflex end_of_runs {
+		write "die_in_batch | the batch reaches the end of a run (" + length(simulations) + " simulations kept): PASS";
+		do check("die_in_batch");
 	}
 }
