@@ -154,7 +154,8 @@ public interface ISimulationRunner {
 	 * @param isPaused
 	 *            evaluated before each step; the simulation waits as long as it is true (unless it is over)
 	 * @param onOver
-	 *            called once, when the simulation is over
+	 *            called once, when the simulation is over, including when it dies (and is thus removed from this
+	 *            runner) or is already dead
 	 */
 	void runAutonomously(ISimulationAgent agent, Predicate<ISimulationAgent> isOver, BooleanSupplier isPaused,
 			Consumer<ISimulationAgent> onOver);

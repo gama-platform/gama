@@ -220,7 +220,7 @@ public class SimulationRunner implements ISimulationRunner {
 
 		/** Steps the simulation as fast as possible until it is over. */
 		private void runFreely(final Autonomy a) {
-			boolean over = false, failed = false;
+			boolean over = false, failed = false, notified = false;
 			while (!over && !shutdown && runnables.get(agent) == this) {
 				try {
 					while (runnables.get(agent) == this && a.isPaused.getAsBoolean() && !a.isOver.test(agent)
@@ -239,8 +239,14 @@ public class SimulationRunner implements ISimulationRunner {
 					EXCEPTION_HANDLER.uncaughtException(Thread.currentThread(), tg);
 					over = true;
 				}
-				if (over && !shutdown && runnables.get(agent) == this) { a.onOver.accept(agent); }
+				if (over && !shutdown && runnables.get(agent) == this) {
+					a.onOver.accept(agent);
+					notified = true;
+				}
 			}
+			// A simulation that dies (e.g. 'do die') is removed from the runner by its population before this thread
+			// notices that it is over: it must be reported all the same, otherwise it is waited for forever
+			if (!notified && !shutdown && agent.dead()) { a.onOver.accept(agent); }
 		}
 
 		@Override
@@ -277,6 +283,13 @@ public class SimulationRunner implements ISimulationRunner {
 	@Override
 	public void runAutonomously(final ISimulationAgent agent, final Predicate<ISimulationAgent> isOver,
 			final BooleanSupplier isPaused, final Consumer<ISimulationAgent> onOver) {
+		// A simulation that died before (e.g. during its initialization, in which case it is added after its death and
+		// its thread is already over) will never step: it is over already
+		if (agent.dead()) {
+			remove(agent);
+			onOver.accept(agent);
+			return;
+		}
 		if (!(runnables.get(agent) instanceof SimulationThread st)) return;
 		// The simulation does not take part in the synchronized steps anymore
 		activeCount.decrementAndGet();
