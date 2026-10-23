@@ -1133,7 +1133,7 @@ public class GraphTopology extends AbstractTopology {
 				agentsTotest = scope.getSimulation().getAgents(scope);
 			}
 			final Set<IShape> edges = getNeighborsOfRec(scope, realS, true, distance, graph, new LinkedHashSet<>());
-			final Set<IShape> graphEdges = new HashSet<>(graph.getEdges());
+			final Set<IShape> graphEdges = graph.edgeSet();
 			for (final Object ob : agentsTotest.iterable(scope)) {
 				final IShape ag = (IShape) ob;
 				if (filter.accept(scope, source, ag)) {
