@@ -142,7 +142,8 @@ public abstract class AbstractOutput extends Symbol implements IOutput {
 	 */
 	protected IScope buildScopeFrom(final IScope scope) {
 		String desc = description == null ? " " : description.getKeyword() + " ";
-		return scope.copy("of " + desc + getName());
+		// Detached, as outputs live as long as the simulation and are used by other threads
+		return scope.detachedCopy("of " + desc + getName());
 	}
 
 	@Override

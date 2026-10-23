@@ -1058,6 +1058,12 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 			return copy;
 		}
 
+		@Override
+		public IScope detachedCopy(final String additionalName) {
+			// Copies never share the frames of this scope
+			return copy(additionalName);
+		}
+
 		/**
 		 * Gets the experiment.
 		 *

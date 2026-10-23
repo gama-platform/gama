@@ -161,6 +161,19 @@ public interface IExecutionContext extends IDisposable {
 	IExecutionContext createCopy(ISymbol command);
 
 	/**
+	 * Creates a copy of this context (same local variables, same outer context) that belongs to another scope.
+	 *
+	 * @param scope
+	 *            the scope the copy belongs to
+	 * @param command
+	 *            the current symbol of the copy
+	 * @return the copy
+	 */
+	default IExecutionContext createCopy(final IScope scope, final ISymbol command) {
+		return createCopy(command);
+	}
+
+	/**
 	 * Creates the child context.
 	 *
 	 * @return the i execution context

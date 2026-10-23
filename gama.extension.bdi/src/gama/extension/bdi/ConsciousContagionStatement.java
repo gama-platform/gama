@@ -131,40 +131,43 @@ public class ConsciousContagionStatement extends AbstractStatement {
 		} 
 		scopeMySelf = mySelfAgent.getScope().copy("of ConsciousContagionStatement");
 		scopeMySelf.push(mySelfAgent);
+		try {
 			
-		if (when == null || Cast.asBool(scopeMySelf, when.value(scopeMySelf))) {
-			if (emotionDetected != null && emotionCreated != null) {
-				if (BdiUtils.hasEmotion(scope, (Emotion) emotionDetected.value(scope))) {
-					if (charisma != null) {
-						charismaValue = BdiUtils.clamp((double) charisma.value(scope), 0,1);
-					} else {
-						charismaValue = (Double) scope.getAgent().getAttribute(CHARISMA);
-					}
-					if (receptivity != null) {
-						receptivityValue = BdiUtils.clamp((double)receptivity.value(scopeMySelf), 0,1);
-					} else {
-						receptivityValue = (Double) mySelfAgent.getAttribute(RECEPTIVITY);
-					}
-					if (threshold != null) {
-						thresholdValue = BdiUtils.clamp((double) threshold.value(scopeMySelf),0,1);
-					}
-					if (charismaValue * receptivityValue >= thresholdValue) {
-						final Emotion tempEmo = (Emotion) emotionCreated.value(scope);
-						tempEmo.setAgentCause(scope.getAgent());
-						if(decay != null){
-							decayValue = BdiUtils.clamp((double) decay.value(scopeMySelf), 0,1);
+			if (when == null || Cast.asBool(scopeMySelf, when.value(scopeMySelf))) {
+				if (emotionDetected != null && emotionCreated != null) {
+					if (BdiUtils.hasEmotion(scope, (Emotion) emotionDetected.value(scope))) {
+						if (charisma != null) {
+							charismaValue = BdiUtils.clamp((double) charisma.value(scope), 0,1);
+						} else {
+							charismaValue = (Double) scope.getAgent().getAttribute(CHARISMA);
 						}
-						tempEmo.setDecay(decayValue);
-						if(intensity != null){
-							intensityValue = BdiUtils.clamp((double)intensity.value(scopeMySelf),0,1);
+						if (receptivity != null) {
+							receptivityValue = BdiUtils.clamp((double)receptivity.value(scopeMySelf), 0,1);
+						} else {
+							receptivityValue = (Double) mySelfAgent.getAttribute(RECEPTIVITY);
 						}
-						tempEmo.setIntensity(intensityValue);
-						BdiUtils.addEmotion(scopeMySelf, tempEmo);
+						if (threshold != null) {
+							thresholdValue = BdiUtils.clamp((double) threshold.value(scopeMySelf),0,1);
+						}
+						if (charismaValue * receptivityValue >= thresholdValue) {
+							final Emotion tempEmo = (Emotion) emotionCreated.value(scope);
+							tempEmo.setAgentCause(scope.getAgent());
+							if(decay != null){
+								decayValue = BdiUtils.clamp((double) decay.value(scopeMySelf), 0,1);
+							}
+							tempEmo.setDecay(decayValue);
+							if(intensity != null){
+								intensityValue = BdiUtils.clamp((double)intensity.value(scopeMySelf),0,1);
+							}
+							tempEmo.setIntensity(intensityValue);
+							BdiUtils.addEmotion(scopeMySelf, tempEmo);
+						}
 					}
 				}
 			}
+		} finally {
+			GAMA.releaseScope(scopeMySelf);
 		}
-		GAMA.releaseScope(scopeMySelf);
 		return null;
 	}
 }

@@ -121,6 +121,10 @@ public class EventLayer extends AbstractLayer implements IEventLayerListener {
 	@Override
 	public void dispose() {
 		super.dispose();
+		if (executionScope != null) {
+			GAMA.releaseScope(executionScope);
+			executionScope = null;
+		}
 	}
 
 	@Override

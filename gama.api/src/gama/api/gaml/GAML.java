@@ -454,10 +454,9 @@ public class GAML {
 			throw GamaRuntimeException.error("Enter a valid expression", a.getScope());
 		final IExpression expr = compileExpression(expression, a, true);
 		if (expr == null) return null;
-		final IScope scope = a.getScope().copy("in temporary expression evaluator");
-		final Object o = scope.evaluate(expr, a).getValue();
-		GAMA.releaseScope(scope);
-		return o;
+		try (IScope scope = a.getScope().copy("in temporary expression evaluator")) {
+			return scope.evaluate(expr, a).getValue();
+		}
 	}
 
 	/**

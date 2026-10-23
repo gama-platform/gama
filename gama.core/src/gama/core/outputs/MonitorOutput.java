@@ -162,7 +162,7 @@ public class MonitorOutput extends AbstractValuedDisplayOutput implements IExper
 		super(GAML.getDescriptionFactory().create(IKeyword.MONITOR, IKeyword.VALUE, expr == null ? "" : expr,
 				IKeyword.NAME, name == null ? expr : name));
 		shouldBeInitialized = true;
-		setScope(scope.copy("in monitor '" + name + "'"));
+		setScope(scope.detachedCopy("in monitor '" + name + "'"));
 		setNewExpressionText(expr);
 		if (getScope().init(this).passed()) {
 			getScope().getSimulation().addOutput(this);

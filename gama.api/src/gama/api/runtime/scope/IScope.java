@@ -159,14 +159,54 @@ public interface IScope extends Closeable, IBenchmarkable {
 	default String getNameForBenchmarks() { return getName(); }
 
 	/**
-	 * Creates a new scope that is a copy of this one, with an additional name component. The copy shares the same
-	 * context but can have its own local variables and state.
+	 * Creates a new scope that is a copy of this one, with an additional name component, that can be used by another
+	 * thread. If the current thread is the one executing in this scope, the copy shares its local variables (whose
+	 * accesses become synchronized) and its agent stack, like a {@link #fork(String)}. Otherwise, as this scope can be
+	 * in use by its own thread, the copy only shares its root agent and services (topology, gui...).
+	 * Copies should be cleared (e.g. with try-with-resources or {@code GAMA.releaseScope()}) when no longer used: the
+	 * frames they share remain retained (and their accesses synchronized) until then.
 	 *
 	 * @param additionalName
 	 *            Name to append to the current scope name
-	 * @return A new IScope instance that shares context with this scope
+	 * @return A new IScope instance
 	 */
 	IScope copy(String additionalName);
+
+	/**
+	 * Creates a new scope that shares the local variables (whose accesses become synchronized) and the agent stack of
+	 * this one, whatever the current thread. Used for the parallel execution of agents, where the forks are executed
+	 * by other threads while the thread executing in this scope waits for them. Must not be used if this scope can be
+	 * concurrently used by another thread.
+	 * The fork must be cleared after its execution and all its child tasks have finished; this releases the enclosing
+	 * frames so that they no longer require synchronization when no other fork or copy uses them.
+	 *
+	 * @param additionalName
+	 *            Name to append to the current scope name
+	 * @return A new IScope instance sharing the local variables and agent stack of this scope
+	 */
+	default IScope fork(final String additionalName) {
+		return copy(additionalName);
+	}
+
+	/**
+	 * Creates a new scope that shares neither the local variables nor the agent stack of this one, whatever the
+	 * current thread: only its root agent and services (topology, gui...). To be used for long-lived copies, which
+	 * would otherwise retain (and synchronize the accesses to) the frames of this scope until they are cleared.
+	 *
+	 * @param additionalName
+	 *            Name to append to the current scope name
+	 * @return A new IScope instance independent from the local variables and agent stack of this scope
+	 */
+	default IScope detachedCopy(final String additionalName) {
+		return copy(additionalName);
+	}
+
+	/**
+	 * Declares that the current thread is, from now on, the one executing in this scope, so that its copies made by
+	 * this thread can share its local variables. Called by the thread dedicated to a simulation when it starts, as the
+	 * scope of the simulation is created by another thread. Has no effect if the scope is executing a statement.
+	 */
+	default void bindToCurrentThread() {}
 
 	/**
 	 * Creates a new graphics-enabled scope that is a copy of this one, with an additional name. The resulting scope

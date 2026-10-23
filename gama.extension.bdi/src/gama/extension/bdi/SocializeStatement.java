@@ -125,35 +125,38 @@ public class SocializeStatement extends AbstractStatement{
 			scopeMySelf = mySelfAgent.getScope().copy("in SocializeStatement");
 			scopeMySelf.push(mySelfAgent);
 		}
-		if(!scope.getAgent().equals(mySelfAgent)){
-			SocialLink tempSocial = new SocialLink(scope.getAgent());
-			if(!BdiUtils.hasSocialLink(scopeMySelf, tempSocial)){
-				if (appreciation != null) {
-					tempSocial.setLiking(Cast.asFloat(scopeMySelf, appreciation.value(scopeMySelf)));;
+		try {
+			if(!scope.getAgent().equals(mySelfAgent)){
+				SocialLink tempSocial = new SocialLink(scope.getAgent());
+				if(!BdiUtils.hasSocialLink(scopeMySelf, tempSocial)){
+					if (appreciation != null) {
+						tempSocial.setLiking(Cast.asFloat(scopeMySelf, appreciation.value(scopeMySelf)));;
+					}
+					if (dominance != null){
+						tempSocial.setDominance(Cast.asFloat(scopeMySelf, dominance.value(scopeMySelf)));
+					}
+					if (solidarity != null){
+						tempSocial.setSolidarity(Cast.asFloat(scopeMySelf, solidarity.value(scopeMySelf)));
+					}
+					if (familiarity != null){
+						tempSocial.setFamiliarity(Cast.asFloat(scopeMySelf, familiarity.value(scopeMySelf)));
+					}
+					if (trust != null){
+						tempSocial.setTrust(Cast.asFloat(scopeMySelf, trust.value(scopeMySelf)));
+					}
+					if (agent != null){
+						tempSocial.setAgent((IAgent)agent.value(scopeMySelf));
+					}
+					BdiUtils.addSocialLink(scopeMySelf, tempSocial);
+				} else{
+					/*update the social link.*/
+					tempSocial = BdiUtils.getSocialLink(scopeMySelf, tempSocial);
+					BdiUtils.updateSocialLink(scopeMySelf, tempSocial);
 				}
-				if (dominance != null){
-					tempSocial.setDominance(Cast.asFloat(scopeMySelf, dominance.value(scopeMySelf)));
-				}
-				if (solidarity != null){
-					tempSocial.setSolidarity(Cast.asFloat(scopeMySelf, solidarity.value(scopeMySelf)));
-				}
-				if (familiarity != null){
-					tempSocial.setFamiliarity(Cast.asFloat(scopeMySelf, familiarity.value(scopeMySelf)));
-				}
-				if (trust != null){
-					tempSocial.setTrust(Cast.asFloat(scopeMySelf, trust.value(scopeMySelf)));
-				}
-				if (agent != null){
-					tempSocial.setAgent((IAgent)agent.value(scopeMySelf));
-				}
-				BdiUtils.addSocialLink(scopeMySelf, tempSocial);
-			} else{
-				/*update the social link.*/
-				tempSocial = BdiUtils.getSocialLink(scopeMySelf, tempSocial);
-				BdiUtils.updateSocialLink(scopeMySelf, tempSocial);
 			}
+		} finally {
+			GAMA.releaseScope(scopeMySelf);
 		}
-		GAMA.releaseScope(scopeMySelf);
 		return null;
 	}
 

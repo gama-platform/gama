@@ -38,6 +38,7 @@ import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.runtime.GamaExecutorService.Caller;
+import gama.api.runtime.scope.IScope;
 import gama.dev.DEBUG;
 
 /**
@@ -248,6 +249,9 @@ public class SimulationRunner implements ISimulationRunner {
 
 		@Override
 		public void run() {
+			// The scope of the simulation has been created by another thread: this one executes in it from now on
+			final IScope scope = agent.getScope();
+			if (scope != null) { scope.bindToCurrentThread(); }
 			SimulationContext.runFor(agent, this::processMailbox);
 		}
 

@@ -15,6 +15,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import gama.api.GAMA;
 import gama.api.runtime.IExecutable;
 import gama.api.runtime.scope.IScope;
 
@@ -48,7 +49,20 @@ public class ActionExecuter {
 	 *            the scope
 	 */
 	public ActionExecuter(final IScope scope) {
-		this.scope = scope.copy("of ActionExecuter");
+		// Detached: a copy sharing the frames of the scope would retain them (and synchronize their accesses) as long
+		// as the agent lives
+		this.scope = scope.detachedCopy("of ActionExecuter");
+	}
+
+	/**
+	 * Disposes of this executer: removes the pending actions and releases its scope. Must be called once the agent
+	 * has executed its dispose actions.
+	 */
+	public void dispose() {
+		endActions.clear();
+		oneShotActions.clear();
+		disposeActions.clear();
+		GAMA.releaseScope(scope);
 	}
 
 	/**

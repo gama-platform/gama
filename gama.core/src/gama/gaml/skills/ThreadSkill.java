@@ -238,8 +238,8 @@ public class ThreadSkill extends Skill {
 			IScope scope = agent.getScope();
 			if (scope == null || scope.interrupted()) return false;
 			IStatement action = agent.getSpecies().getAction(ACTION_NAME);
-			try {
-				scope.copy("ThreadScope").execute(action, agent, null);
+			try (IScope copy = scope.copy("ThreadScope")) {
+				copy.execute(action, agent, null);
 			} catch (RuntimeException e) {
 				// Errors happening because the thread has been stopped while executing the action are ignored
 				if (!stopped) { GAMA.reportError(scope, GamaRuntimeException.create(e, scope), false); }

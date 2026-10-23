@@ -323,10 +323,10 @@ public class DefaultServerCommands {
 		if (agent == null) {
 			agent = GAMA.getPlatformAgent();
 		}
-		final IScope scope = agent.getScope().copy("in web socket");
 		if (entered.startsWith("?")) {
 			res = GamlIdiomsProvider.getDocumentationOn(entered.substring(1));
 		} else {
+			final IScope scope = agent.getScope().copy("in web socket");
 			try {
 				final var expression = GAML.compileExpression(entered, agent, false);
 				if (expression != null) {

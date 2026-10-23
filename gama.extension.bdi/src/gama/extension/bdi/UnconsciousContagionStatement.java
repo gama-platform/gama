@@ -151,38 +151,40 @@ public class UnconsciousContagionStatement extends AbstractStatement {
 			scopeMySelf = mySelfAgent.getScope().copy("in UnconsciousContagionStatement");
 			scopeMySelf.push(mySelfAgent);
 		}
+		try {
 		
-		if (when != null && !Cast.asBool(scopeMySelf, when.value(scopeMySelf)) || (emotion == null)) {
-			GAMA.releaseScope(scopeMySelf);
-			return null;
-		}
+			if (when != null && !Cast.asBool(scopeMySelf, when.value(scopeMySelf)) || (emotion == null)) {
+				return null;
+			}
 		
-		if (BdiUtils.hasEmotion(scope, (Emotion) emotion.value(scope))) {
+			if (BdiUtils.hasEmotion(scope, (Emotion) emotion.value(scope))) {
 			
-			charismaValue = (double) (charisma != null ? charisma.value(scope) : scope.getAgent().getAttribute(CHARISMA));
+				charismaValue = (double) (charisma != null ? charisma.value(scope) : scope.getAgent().getAttribute(CHARISMA));
 			
-			receptivityValue = (double) (receptivity != null ? receptivity.value(scopeMySelf) : mySelfAgent.getAttribute(RECEPTIVITY));
+				receptivityValue = (double) (receptivity != null ? receptivity.value(scopeMySelf) : mySelfAgent.getAttribute(RECEPTIVITY));
 
-			if (threshold != null) { 
-				thresholdValue = (double) threshold.value(scopeMySelf); 
-			}
-			if (charismaValue * receptivityValue >= thresholdValue) {
-				final Emotion tempEmo = BdiUtils.getEmotion(scope, (Emotion) emotion.value(scope));
-				Emotion temp;
-				if (tempEmo.hasIntensity()) {
-					temp = new Emotion(tempEmo.getName(), tempEmo.getIntensity() * charismaValue * receptivityValue,
-							tempEmo.getAbout(), tempEmo.getDecay());
-				} else {
-					temp = (Emotion) tempEmo.copy(scope);
+				if (threshold != null) { 
+					thresholdValue = (double) threshold.value(scopeMySelf); 
 				}
-				temp.setAgentCause(scope.getAgent());
-				if (decay != null) {
-					temp.setDecay(BdiUtils.clamp((Double) decay.value(scopeMySelf),0 ,1));
+				if (charismaValue * receptivityValue >= thresholdValue) {
+					final Emotion tempEmo = BdiUtils.getEmotion(scope, (Emotion) emotion.value(scope));
+					Emotion temp;
+					if (tempEmo.hasIntensity()) {
+						temp = new Emotion(tempEmo.getName(), tempEmo.getIntensity() * charismaValue * receptivityValue,
+								tempEmo.getAbout(), tempEmo.getDecay());
+					} else {
+						temp = (Emotion) tempEmo.copy(scope);
+					}
+					temp.setAgentCause(scope.getAgent());
+					if (decay != null) {
+						temp.setDecay(BdiUtils.clamp((Double) decay.value(scopeMySelf),0 ,1));
+					}
+					BdiUtils.addEmotion(scopeMySelf, temp);
 				}
-				BdiUtils.addEmotion(scopeMySelf, temp);
 			}
+		} finally {
+			GAMA.releaseScope(scopeMySelf);
 		}
-		GAMA.releaseScope(scopeMySelf);
 		return null;
 	}
 

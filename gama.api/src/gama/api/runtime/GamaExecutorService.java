@@ -165,18 +165,6 @@ public abstract class GamaExecutorService {
 	 */
 	private static final ConcurrentHashMap<Long, Integer> PARALLELISM_IDENTITY_CACHE = new ConcurrentHashMap<>();
 
-	/**
-	 * Per-thread reusable list of {@link ForkJoinTask} references used in {@link #doStep} case 1.
-	 *
-	 * <p>
-	 * Allocating a fresh {@code ArrayList} per species per cycle (case 1) is wasteful when populations are large.
-	 * Using a {@code ThreadLocal} means the list is allocated once per thread and reused across steps; the list is
-	 * cleared at the start of each use so its internal array is retained between cycles.
-	 * </p>
-	 */
-	private static final ThreadLocal<ArrayList<ForkJoinTask<?>>> TASK_LIST_CACHE =
-			ThreadLocal.withInitial(ArrayList::new);
-
 	/** The Constant CONCURRENCY_SIMULATIONS. */
 	public static final Pref<Boolean> CONCURRENCY_SIMULATIONS =
 			create("pref_parallel_simulations", "Allow experiments to run simulations in parallel", true, IType.BOOL,
@@ -421,16 +409,19 @@ public abstract class GamaExecutorService {
 					// avoid sharing mutable scope state across concurrent threads. All tasks are
 					// submitted to the pool and joined before returning so that the caller always sees
 					// completed results rather than fire-and-forget side effects.
-					// Reuse the per-thread task list to avoid allocating a new ArrayList every cycle.
-					final ArrayList<ForkJoinTask<?>> tasks = TASK_LIST_CACHE.get();
-					tasks.clear();
-					for (final A aa : array) {
-						final IAgent agent = (IAgent) aa;
-						if (agent == null || agent.dead()) { continue; }
-						final IScope agentScope = scope.copy(" - step - ");
-						tasks.add(AGENT_PARALLEL_EXECUTOR.submit(ForkJoinTask.adapt(() -> agentScope.step(agent))));
+					// A worker can help a nested run while joining: its task list must be invocation-local.
+					final ArrayList<ForkJoinTask<?>> tasks = new ArrayList<>(array.length);
+					try {
+						for (final A aa : array) {
+							final IAgent agent = (IAgent) aa;
+							if (agent == null || agent.dead()) { continue; }
+							submitFork(scope, tasks, fork -> fork.step(agent));
+						}
+					} catch (final RuntimeException | Error failure) {
+						joinTasks(tasks, failure);
+						throw failure;
 					}
-					for (final ForkJoinTask<?> task : tasks) { task.join(); }
+					joinTasks(tasks, null);
 					break;
 				}
 				default:
@@ -472,21 +463,59 @@ public abstract class GamaExecutorService {
 			// Each agent is submitted as a separate task; each task gets its own scope copy to
 			// avoid sharing mutable scope state across concurrent threads. All tasks are
 			// submitted to the pool and joined before returning.
-			// Reuse the per-thread task list to avoid allocating a new ArrayList every cycle.
-			final ArrayList<ForkJoinTask<?>> tasks = TASK_LIST_CACHE.get();
-			tasks.clear();
-			for (final A aa : array) {
-				final IAgent agent = (IAgent) aa;
-				final IScope agentScope = scope.copy(" - execute - ");
-				tasks.add(AGENT_PARALLEL_EXECUTOR
-						.submit(ForkJoinTask.adapt(() -> agentScope.execute(executable, agent, null))));
+			final ArrayList<ForkJoinTask<?>> tasks = new ArrayList<>(array.length);
+			try {
+				for (final A aa : array) {
+					final IAgent agent = (IAgent) aa;
+					submitFork(scope, tasks, fork -> fork.execute(executable, agent, null));
+				}
+			} catch (final RuntimeException | Error failure) {
+				joinTasks(tasks, failure);
+				throw failure;
 			}
-			for (final ForkJoinTask<?> task : tasks) { task.join(); }
+			joinTasks(tasks, null);
 			return;
 		}
 			default:
 				ParallelAgentRunner.execute(scope, executable, array, threshold);
 		}
+	}
+
+	private static void submitFork(final IScope scope, final ArrayList<ForkJoinTask<?>> tasks,
+			final java.util.function.Consumer<IScope> action) {
+		final IScope fork = scope.fork(" - parallel - ");
+		final ForkJoinTask<?> task = ForkJoinTask.adapt(() -> {
+			try {
+				action.accept(fork);
+			} finally {
+				fork.clear();
+			}
+		});
+		try {
+			AGENT_PARALLEL_EXECUTOR.execute(task);
+		} catch (final RuntimeException | Error failure) {
+			fork.clear();
+			throw failure;
+		}
+		tasks.add(task);
+	}
+
+	/** Even a failed run must finish all siblings before the caller can reuse its frames. */
+	private static void joinTasks(final ArrayList<ForkJoinTask<?>> tasks, final Throwable initialFailure) {
+		Throwable failure = initialFailure;
+		for (final ForkJoinTask<?> task : tasks) {
+			try {
+				task.join();
+			} catch (final RuntimeException | Error e) {
+				if (failure == null) {
+					failure = e;
+				} else if (failure != e) {
+					failure.addSuppressed(e);
+				}
+			}
+		}
+		if (failure instanceof RuntimeException e) throw e;
+		if (failure instanceof Error e) throw e;
 	}
 
 	/**

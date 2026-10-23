@@ -431,7 +431,13 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 		if (dead) return;
 		// The dispose actions belong to the lifecycle of the simulation: they are run by its thread (after its current
 		// step if it is stepping)
-		runInOwnThread(executer::executeDisposeActions);
+		runInOwnThread(() -> {
+			try {
+				executer.executeDisposeActions();
+			} finally {
+				executer.dispose();
+			}
+		});
 		// hqnghi if simulation comes from an external population, dispose this population first
 		// and then its outputs
 

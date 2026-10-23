@@ -242,23 +242,26 @@ public class FocusStatement extends AbstractStatement {
 			scopeMySelf = mySelfAgent.getScope().copy("in FocusStatement");
 			scopeMySelf.push(mySelfAgent);
 		}
+		try {
 
-		if (variable != null) {
+			if (variable != null) {
 
-			if (variable.value(scope) instanceof IContainer varValue) {
-				buildAndAddBeliefFromVariableList(scope, scopeMySelf, varValue);				
-			} else {
-				buildAndAddBeliefFromSingleVariable(scope, scopeMySelf);
-			}
-		} else if (belief != null || desire != null || uncertainty != null || ideal != null || emotion != null || expression != null) {
-			//There's at least one mentalstate provided by the facets of the statement so we use it
-			buildAndAddBeliefFromFacets(scope, scopeMySelf);
+				if (variable.value(scope) instanceof IContainer varValue) {
+					buildAndAddBeliefFromVariableList(scope, scopeMySelf, varValue);				
+				} else {
+					buildAndAddBeliefFromSingleVariable(scope, scopeMySelf);
+				}
+			} else if (belief != null || desire != null || uncertainty != null || ideal != null || emotion != null || expression != null) {
+				//There's at least one mentalstate provided by the facets of the statement so we use it
+				buildAndAddBeliefFromFacets(scope, scopeMySelf);
 			
-		} else {
-			//if there is no mentalstate provided we create one by default
-			buildAndAddDefaultBelief(scope, scopeMySelf);
+			} else {
+				//if there is no mentalstate provided we create one by default
+				buildAndAddDefaultBelief(scope, scopeMySelf);
+			}
+		} finally {
+			GAMA.releaseScope(scopeMySelf);
 		}
-		GAMA.releaseScope(scopeMySelf);
 		return null;
 	}
 

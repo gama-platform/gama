@@ -833,15 +833,19 @@ public class BdiUtils {
 				}
 			}
 		}
-		if (scopeAgentCause != null) {
-			for (final Emotion emo : getEmotionBase(scopeAgentCause, SimpleBdiArchitecture.EMOTION_BASE)) {
-				if (emo.getAgentCause() != null && emo.getAgentCause().equals(currentAgent)) {
-					if ("sadness".equals(emo.getName()) || "fear".equals(emo.getName())) {
-						nbPositive = nbPositive + 1.0;
-						avgPositive = avgPositive + emo.getIntensity();
+		try {
+			if (scopeAgentCause != null) {
+				for (final Emotion emo : getEmotionBase(scopeAgentCause, SimpleBdiArchitecture.EMOTION_BASE)) {
+					if (emo.getAgentCause() != null && emo.getAgentCause().equals(currentAgent)) {
+						if ("sadness".equals(emo.getName()) || "fear".equals(emo.getName())) {
+							nbPositive = nbPositive + 1.0;
+							avgPositive = avgPositive + emo.getIntensity();
+						}
 					}
-				}
-			}			
+				}			
+			}
+		} finally {
+			GAMA.releaseScope(scopeAgentCause);
 		}
 
 		avgPositive = nbPositive != 0.0 ? avgPositive / nbPositive : 0;
@@ -849,7 +853,6 @@ public class BdiUtils {
 
 		dominanceModif = BdiUtils.clamp(dominanceModif + coefModification * Maths.abs(dominanceModif) * (avgPositive - avgNegative), 1, 1);
 		social.setDominance(dominanceModif);
-		GAMA.releaseScope(scopeAgentCause);
 	}
 
 	/**
@@ -1369,19 +1372,22 @@ public class BdiUtils {
 			IScope scopeAgentTemp = null;
 			scopeAgentTemp = agentTemp.getScope().copy("in SimpleBdiArchitecture");
 			scopeAgentTemp.push(agentTemp);
-			double signLiking = Math.signum(temp.getLiking());
-			for (final Emotion emo : BdiUtils.getEmotionBase(scopeAgentTemp, SimpleBdiArchitecture.EMOTION_BASE)) {
-				if ( "joy".equals(emo.getName()) || "sadness".equals(emo.getName()) ) {
-					final Emotion newEmo = new Emotion(BdiUtils.getNewEmotionNameToCreateHappyFor(emo.getName(), signLiking > 0),
-							emo.getIntensity() * signLiking * temp.getLiking(), emo.getAbout(),
-							//TODO: the previous comments said that the formula had to be changed but with no further indication
-							// maybe use the one used in createHappyForFromMentalState (above)?
-							agentTemp);
-					newEmo.setDecay(0);
-					BdiUtils.addEmotion(scope, newEmo);
+			try {
+				double signLiking = Math.signum(temp.getLiking());
+				for (final Emotion emo : BdiUtils.getEmotionBase(scopeAgentTemp, SimpleBdiArchitecture.EMOTION_BASE)) {
+					if ( "joy".equals(emo.getName()) || "sadness".equals(emo.getName()) ) {
+						final Emotion newEmo = new Emotion(BdiUtils.getNewEmotionNameToCreateHappyFor(emo.getName(), signLiking > 0),
+								emo.getIntensity() * signLiking * temp.getLiking(), emo.getAbout(),
+								//TODO: the previous comments said that the formula had to be changed but with no further indication
+								// maybe use the one used in createHappyForFromMentalState (above)?
+								agentTemp);
+						newEmo.setDecay(0);
+						BdiUtils.addEmotion(scope, newEmo);
+					}
 				}
+			} finally {
+				GAMA.releaseScope(scopeAgentTemp);
 			}
-			GAMA.releaseScope(scopeAgentTemp);
 		}
 	}
 	
