@@ -209,6 +209,22 @@ public final class BuiltInClassTest {
 				framework.getBundleContext().installBundle(name, new ByteArrayInputStream(bytes.toByteArray())).start();
 			}
 			InternalPlatform.getDefault().start(framework.getBundleContext());
+			if (org.eclipse.core.runtime.RegistryFactory.getRegistry() == null) {
+				final Object token = new Object();
+				final var registry = org.eclipse.core.runtime.RegistryFactory.createRegistry(null, token, new Object());
+				registry.addContribution(new ByteArrayInputStream("""
+						<plugin>
+						  <extension-point id="filesystems" name="File systems"/>
+						  <extension point="org.eclipse.core.filesystem.filesystems">
+						    <filesystem scheme="file">
+						      <run class="org.eclipse.core.internal.filesystem.local.LocalFileSystem"/>
+						    </filesystem>
+						  </extension>
+						</plugin>
+						""".getBytes()), org.eclipse.core.runtime.ContributorFactorySimple.createContributor(
+								"org.eclipse.core.filesystem"), false, null, null, token);
+				org.eclipse.core.runtime.RegistryFactory.setDefaultRegistryProvider(() -> registry);
+			}
 			runChecks(additions);
 		} finally {
 			framework.stop();
@@ -248,6 +264,7 @@ public final class BuiltInClassTest {
 					global {
 						native_counter c <- native_counter();
 						native_counter fluent <- native_identity(native_counter());
+						context shell <- command("echo hi", context());
 					}
 					class local_record {
 						int value <- 2;
@@ -286,6 +303,7 @@ public final class BuiltInClassTest {
 			check(evaluate("local_record().value", model, scope).equals(2), "Existing model-defined class unchanged");
 			check(evaluate("local_record().increment()", model, scope).equals(3),
 					"Model-defined methods still access their object's variables");
+			checkContext(model, scope, file.getParent().toFile());
 			final Counter counter = (Counter) model.getClass("native_counter").createInstance(scope, Map.of());
 			counter.setDirectVarValue(scope, "value", 42);
 			check(counter.getValue() == 42 && counter.getNotifications() == 1, "Native setter and listener");
@@ -323,6 +341,45 @@ public final class BuiltInClassTest {
 				}
 				""", "requires a public constructor (IScope scope, IClass clazz)");
 		System.out.println("Built-in class integration: " + checks + " checks passed");
+	}
+
+	private static void checkContext(final IModelSpecies model, final IScope scope, final java.io.File folder)
+			throws Exception {
+		check(evaluate("context().directory.path", model, scope).equals(folder.getAbsolutePath()),
+				"Context starts in the model directory");
+		check(evaluate("command('printf hello', context()).result", model, scope).equals("hello"),
+				"Context returns the output without a trailing separator");
+		check(evaluate("command('echo hello', context()).result", model, scope).equals("hello\n"),
+				"Context keeps line separators");
+		check(evaluate("command('echo $X', command('X=42', context())).result", model, scope).equals("42\n"),
+				"Context keeps shell variables");
+		check(evaluate("command('pwd', command('cd ..', context())).directory.path", model, scope)
+				.equals(folder.getCanonicalFile().getParentFile().getAbsolutePath()), "Context keeps directory changes");
+		check(evaluate("command('false', context()).status", model, scope).equals(1),
+				"Failing commands set status without errors");
+		check(evaluate("command('echo b', command('echo a', context())).commands", model, scope)
+				.equals(java.util.List.of("echo a", "echo b")), "Context records commands");
+		check(evaluate("command('echo b', command('echo a', context())).results", model, scope)
+				.equals(java.util.List.of("a\n", "b\n")), "Context records results");
+		final var context = (gama.core.util.CommandContext) evaluate("context()", model, scope);
+		final var child = Files.createTempDirectory(folder.toPath(), "context-");
+		try {
+			context.execute(scope, "Y=1");
+			context.setDirectory(scope, new gama.api.types.file.GamaFolderFile(scope, child.toString()));
+			check(context.execute(scope, "pwd -P; echo $Y").getResult().equals(
+					child.toFile().getCanonicalPath() + "\n1\n"), "Assigned directory applies to the live shell");
+			final long start = System.nanoTime();
+			check(context.execute(scope, "sleep 2 &").getResult().isEmpty() && System.nanoTime() - start < 1_000_000_000L,
+					"Background commands do not block");
+			context.execute(scope, "exit 3");
+			check(context.getStatus() == 3 && context.execute(scope, "echo $Y").getResult().equals("\n")
+					&& context.getDirectory(scope).getFile(scope).getCanonicalPath().equals(child.toFile().getCanonicalPath()),
+					"Exited shell restarts in the same directory with fresh state");
+			check(context.close(scope) && !context.close(scope), "Close terminates the shell");
+		} finally {
+			context.close(scope);
+			Files.deleteIfExists(child);
+		}
 	}
 
 	private static void checkInvalidImplementation(final String declaration, final String diagnostic) throws Exception {

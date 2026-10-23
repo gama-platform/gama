@@ -148,6 +148,24 @@ including through a GAML-only subclass. A concrete Java subclass must supply the
 Native classes can also be used directly as Java operator parameter and return types without a
 separate `@type` declaration.
 
+### Persistent shell contexts
+
+The built-in `context` class keeps a shell alive between commands. The new
+`command(string, context)` form returns the same context, whose state (current directory,
+variables...) is preserved:
+
+```gaml
+context c <- context();
+c <- command("cd ../includes", c);
+c <- command("ls", c);
+write c.result + " (" + c.status + ") in " + c.directory.path;
+```
+
+`commands` and `results` record the history, `result` and `status` describe the last command,
+and `directory` is a `folder` that can also be assigned. Unlike the string forms of `command`,
+a failing command does not raise an error. `c.close()` terminates the shell; the next command
+starts a new one in the same directory.
+
 ---
 
 ## 3. Cleaner, Faster GAML Syntax

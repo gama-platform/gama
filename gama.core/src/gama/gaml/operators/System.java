@@ -55,6 +55,7 @@ import gama.api.types.misc.IValue;
 import gama.api.utils.StringUtils;
 import gama.api.utils.files.FileUtils;
 import gama.core.experiment.parameters.InputParameter;
+import gama.core.util.CommandContext;
 import gama.core.util.CommandProcessManager;
 
 /**
@@ -465,6 +466,42 @@ public class System {
 		}
 		return output.toString();
 
+	}
+
+	/**
+	 * Runs a command in a persistent context and returns this context.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param s
+	 *            the command
+	 * @param context
+	 *            the context
+	 * @return the context
+	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
+	@operator (
+			value = "command",
+			category = { IOperatorCategory.SYSTEM },
+			concept = { IConcept.SYSTEM, IConcept.COMMUNICATION })
+	@doc (
+			value = "Runs the command in the persistent shell of the context and returns this same context, so that its state (current directory, variables...) is kept between commands. The output of the command is available in 'result' (and 'results'), its exit status in 'status' and the commands themselves in 'commands'. A failing command does not raise an error. A trailing ' &' runs the command in the background and discards its output. The shell is terminated, along with its subprocesses, when the agent that started it is disposed, or with the 'close' action of the context.",
+			examples = { @example (
+					value = "context c <- context();",
+					isExecutable = false),
+					@example (
+							value = "c <- command(\"cd ../includes\", c);",
+							isExecutable = false),
+					@example (
+							value = "c <- command(\"ls\", c);",
+							isExecutable = false),
+					@example (
+							value = "write c.result + ' in ' + c.directory.path;",
+							isExecutable = false) })
+	@no_test
+	public static CommandContext console(final IScope scope, final String s, final CommandContext context) {
+		if (context == null) throw GamaRuntimeException.error("The context of a command cannot be nil", scope);
+		return context.execute(scope, s);
 	}
 
 	/**
