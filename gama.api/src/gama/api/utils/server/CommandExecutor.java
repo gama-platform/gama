@@ -123,7 +123,8 @@ public class CommandExecutor implements ICommandExecuter {
 	}
 
 	/**
-	 * Process.
+	 * Processes a command on the calling thread. In particular, commands posted as one-shot experiment actions must
+	 * finish before the experiment starts its next cycle.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @param socket
@@ -133,27 +134,27 @@ public class CommandExecutor implements ICommandExecuter {
 	 * @date 15 oct. 2023
 	 */
 	protected void process(final IGamaServer server, final WebSocket socket, final ReceivedMessage map) {
-		final String cmd_type = map.get(IKeyword.TYPE).toString();
-		ISocketCommand command = commands.get(cmd_type);
-		if (command == null) throw new IllegalArgumentException("Invalid command type: " + cmd_type);
+		final String cmd_type = String.valueOf(map.get(IKeyword.TYPE));
+		GamaServerMessage res;
+		try {
+			final ISocketCommand command = commands.get(cmd_type);
+			if (command == null) throw new IllegalArgumentException("Invalid command type: " + cmd_type);
+			res = command.execute(server, socket, map);
+		} catch (Throwable t) {
+			// We ensure that every request gets an answer, even in case of complete crash
+			DEBUG.ERR("Error while executing the command '" + cmd_type + "'", t);
+			res = new CommandResponse(MessageType.GamaServerError, t, map, false);
+		}
+		if (res != null && ReadyState.OPEN.equals(socket.getReadyState())) {
+			socket.send(GAMA.getJsonEncoder().valueOf(res).toString());
+		}
+	}
 
-		// Executes the command in a separate thread so the executor can
-		// continue with the next one without waiting for it to finish.
-		// This is necessary to prevent connection closing during long commands
-		// because the main thread is busy and can't answer to the keepalive ping.
-		new Thread(() -> {
-			GamaServerMessage res;
-			try {
-				res = command.execute(server, socket, map);
-			} catch (Throwable t) {
-				// We ensure that every request gets an answer, even in case of complete crash
-				DEBUG.ERR("Error while executing the command '" + cmd_type + "'", t);
-				res = new CommandResponse(MessageType.GamaServerError, t, map, false);
-			}
-			if (res != null && ReadyState.OPEN.equals(socket.getReadyState())) {
-				socket.send(GAMA.getJsonEncoder().valueOf(res).toString());
-			}
-		 }).start();
+	/**
+	 * Processes a command off the WebSocket thread so long commands do not prevent keepalive handling.
+	 */
+	protected void processAsync(final IGamaServer server, final WebSocket socket, final ReceivedMessage map) {
+		new Thread(() -> process(server, socket, map), "GAMA server command").start();
 	}
 
 	/**
