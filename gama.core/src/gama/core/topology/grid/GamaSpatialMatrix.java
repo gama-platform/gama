@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -77,7 +76,6 @@ import gama.core.util.file.GamaGridFile;
 import gama.core.util.matrix.GamaMatrix;
 import gama.gaml.operators.Maths;
 import gama.gaml.operators.spatial.SpatialOperators;
-import gama.gaml.operators.spatial.SpatialProjections;
 import gama.gaml.operators.spatial.SpatialTransformations;
 import one.util.streamex.StreamEx;
 
@@ -317,6 +315,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 			crsF.add(taCRS);
 		}
 
+		final IProjection[] projections = new IProjection[gfiles.size() - 1];
 		for (int i = 0; i < matrix.length; i++) {
 			final IList vals = GamaListFactory.create(Types.FLOAT);
 			vals.add(gridValue[i]);
@@ -325,8 +324,19 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 				String taCRS = crsF.get(j - 1);
 				IPoint loc = matrix[i].getLocation();
 				// See #3306 : initCRS was never used to compute the location
-				if (/* initCRS != null && */ taCRS != null) {
-					loc = SpatialProjections.transform_CRS(scope, loc, taCRS).getLocation();
+				if (taCRS != null) {
+					// Resolve each projection at its first use, preserving raster evaluation order.
+					if (i == 0) {
+						try {
+							projections[j - 1] = scope.getSimulation().getProjectionFactory().forSavingWith(scope, taCRS);
+						} catch (final Exception e) {
+							throw GamaRuntimeException.error(
+									"The code " + taCRS + " does not correspond to a known EPSG code", scope);
+						}
+					}
+					final IProjection projection = projections[j - 1];
+					loc = projection == null ? loc.copy(scope).getLocation()
+							: GamaShapeFactory.createFrom(projection.inverseTransform(loc.getInnerGeometry())).getLocation();
 				}
 				final Double v = gfile2.valueOf(scope, loc);
 				vals.add(v);
@@ -1052,23 +1062,26 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 		if (filter.accept(scope, source, startAg)) return startAg;
 		IAgent agT = testPlace(scope, source, filter, startAg);
 		if (agT != null) return agT;
-		final List<Integer> cells = new ArrayList<>();
+		final boolean[] cells = new boolean[matrix.length];
+		final boolean[] currentCells = new boolean[matrix.length];
 
 		int cpt = 0;
-		cells.add(startAg.getIndex());
+		cells[startAg.getIndex()] = true;
 		// final int max = this.numCols * this.numRows;
-		List<IAgent> neighb = getNeighborhoods(scope, startAg, cells, new ArrayList<>());
+		List<IAgent> neighb = getNeighborhoods(scope, startAg, cells, currentCells);
 		scope.getRandom().shuffleInPlace(neighb);
 		while (cpt < this.numCols * this.numRows) {
 			cpt++;
+			for (final IAgent ag : neighb) { currentCells[ag.getIndex()] = true; }
 			try (ICollector<IAgent> neighb2 = Collector.getOrderedSet()) {
 				for (final IAgent ag : neighb) {
 					agT = testPlace(scope, source, filter, ag);
 					if (agT != null) return agT;
-					cells.add(ag.getIndex());
-					neighb2.addAll(getNeighborhoods(scope, ag, cells, neighb));
+					cells[ag.getIndex()] = true;
+					neighb2.addAll(getNeighborhoods(scope, ag, cells, currentCells));
 				}
 				neighb2.shuffleInPlaceWith(scope.getRandom());
+				for (final IAgent ag : neighb) { currentCells[ag.getIndex()] = false; }
 				neighb = new ArrayList<>(neighb2.items());
 			}
 		}
@@ -1084,23 +1097,19 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 	 *            the agent
 	 * @param cells
 	 *            the cells
-	 * @param currentList
-	 *            the current list
+	 * @param currentCells
+	 *            the cells in the current ring
 	 * @return the neighborhoods
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	private List<IAgent> getNeighborhoods(final IScope scope, final IAgent agent, final List<Integer> cells,
-			final List<IAgent> currentList) throws GamaRuntimeException {
-		final List<IAgent> agents = new ArrayList<>(getNeighborsOf(scope, agent.getLocation(), 1.0, null));
+	private List<IAgent> getNeighborhoods(final IScope scope, final IAgent agent, final boolean[] cells,
+			final boolean[] currentCells) throws GamaRuntimeException {
+		final Set<IAgent> agents = getNeighborsOf(scope, agent.getLocation(), 1.0, null);
 		final List<IAgent> neighs = new ArrayList<>();
-		final Set<Integer> visitedCells = new HashSet<>(cells);
-		final Set<IAgent> currentAgents = new HashSet<>(currentList);
-		final Set<IAgent> seenNeighbors = new HashSet<>();
 		for (final IAgent ag : agents) {
-			if (!visitedCells.contains(ag.getIndex()) && !currentAgents.contains(ag) && seenNeighbors.add(ag)) {
-				neighs.add(ag);
-			}
+			final int index = ag.getIndex();
+			if (!cells[index] && !currentCells[index]) { neighs.add(ag); }
 		}
 		return neighs;
 	}
@@ -1142,7 +1151,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 		final IAgent startAg = matrix[currentplace].getAgent();
 		final IAgent endAg = matrix[targetplace].getAgent();
 		if (startAg == endAg) return simplePath(scope, source, target, topo, startAg, endAg);
-		final boolean[] open = new boolean[this.getAgents().size()];
+		final boolean[] open = new boolean[matrix.length];
 		initOpen(open, on);
 
 		final Queue<IAgent> frontier = new ArrayDeque<>();
@@ -1194,7 +1203,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 		if (startAg == endAg) return simplePath(scope, source, target, topo, startAg, endAg);
 		final Double maxDim = onWithWeight != null ? Math.max(this.cellHeight, this.cellWidth) : 0.0;
 
-		final boolean[] open = new boolean[this.getAgents().size()];
+		final boolean[] open = new boolean[matrix.length];
 		initOpen(open, onWithWeight != null ? onWithWeight.keySet() : on);
 
 		final Map<IAgent, IAgent> cameFrom = new HashMap<>();
@@ -1265,7 +1274,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 		if (startAg == endAg) return simplePath(scope, source, target, topo, startAg, endAg);
 		final Double maxDim = weighted ? Math.max(this.cellHeight, this.cellWidth) : 0.0;
 
-		final boolean[] open = new boolean[this.getAgents().size()];
+		final boolean[] open = new boolean[matrix.length];
 		initOpen(open, weighted ? onWithWeight.keySet() : on);
 		final PriorityQueue<PathQueueEntry> frontier = newPriorityQueue();
 		final Map<IAgent, IAgent> cameFrom = new HashMap<>();
@@ -1326,7 +1335,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 		final IAgent endAg = matrix[targetplace].getAgent();
 
 		if (startAg == endAg) return simplePath(scope, source, target, topo, startAg, endAg);
-		final boolean[] open = new boolean[this.getAgents().size()];
+		final boolean[] open = new boolean[matrix.length];
 		initOpen(open, on);
 		final PriorityQueue<PathQueueEntry> frontier = newPriorityQueue();
 		final Map<IAgent, IAgent> cameFrom = new HashMap<>();
