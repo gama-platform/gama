@@ -46,8 +46,12 @@ import gama.api.gaml.types.IType;
 import gama.api.gaml.types.ITypesManager;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.GamaMetaModel;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.object.IClass;
+import gama.api.kernel.object.IConstructor;
 import gama.api.kernel.object.IObject;
+import gama.api.kernel.object.IObjectConstructor;
 import gama.api.kernel.species.IModelSpecies;
 import gama.api.runtime.scope.ExecutionScope;
 import gama.api.runtime.scope.IScope;
@@ -168,6 +172,7 @@ public final class BuiltInClassTest {
 		GAML.registerSymbolFactory(ClassFactory.getInstance());
 		GAML.registerExpressionFactory(GamlExpressionFactory.getInstance());
 		GAML.registerExpressionDescriptionFactory(ExpressionDescriptionFactory.getInstance());
+		gama.api.types.geometry.GamaShapeFactory.setBuilder(new gama.core.geometry.InternalGamaShapeFactory());
 		GamaBundleLoader.CURRENT_PLUGIN_NAME = "gama.api";
 		new gaml.additions.api.GamlAdditions().initialize();
 		GamaBundleLoader.CURRENT_PLUGIN_NAME = "gama.core";
@@ -248,6 +253,21 @@ public final class BuiltInClassTest {
 		Types.init();
 		GamlStandaloneSetup.initializeAfterPlatformReady(injector);
 		final var description = GamaMetaModel.getClassDescription("native_counter");
+		final var agentConstructor = GamaMetaModel.getSpeciesDescription("agent").getConstructor();
+		check(agentConstructor != null, "Species expose their agent factory through the shared accessor");
+		final IPopulation<?> population = (IPopulation<?>) Proxy.newProxyInstance(IPopulation.class.getClassLoader(),
+				new Class<?>[] { IPopulation.class }, (p, m, a) -> {
+					if (m.getName().equals("hashCode")) return System.identityHashCode(p);
+					throw new UnsupportedOperationException(m.getName());
+				});
+		final IConstructor<IAgent, IPopulation<?>, Integer> sharedAgentConstructor = agentConstructor;
+		final IAgent agent = sharedAgentConstructor.create(population, 17);
+		check(agent.getPopulation() == population && agent.getIndex() == 17,
+				"Shared factory preserves agent population and index");
+		final IAgent directAgent = agentConstructor.createOneAgent(population, 18);
+		check(directAgent.getPopulation() == population && directAgent.getIndex() == 18,
+				"Primitive-index agent construction remains available");
+		check(description.getConstructor() != null, "Java-backed classes provide an object constructor");
 		check(description.isBuiltIn() && !description.isAbstract(), "Concrete built-in description");
 		check(description.getJavaBase() == Counter.class, "Java implementation preserved");
 		check(description.getDefiningPlugin().equals("nativeclasses"), "Defining plugin preserved");
@@ -305,6 +325,14 @@ public final class BuiltInClassTest {
 					"Model-defined methods still access their object's variables");
 			checkContext(model, scope, file.getParent().toFile());
 			final Counter counter = (Counter) model.getClass("native_counter").createInstance(scope, Map.of());
+			if (!(description.getConstructor() instanceof IObjectConstructor objectConstructor))
+				throw new AssertionError("Class descriptions expose an object constructor");
+			final IConstructor<IObject, IScope, IClass> sharedObjectConstructor = objectConstructor;
+			final IObject constructed = sharedObjectConstructor.create(scope, model.getClass("native_counter"));
+			check(constructed instanceof Counter && constructed.getSpecies() == model.getClass("native_counter"),
+					"Shared factory preserves object implementation and class");
+			check(model.getDescription().getClassDescription("derived").getConstructor() == description.getConstructor(),
+					"Model-defined classes inherit the shared constructor");
 			counter.setDirectVarValue(scope, "value", 42);
 			check(counter.getValue() == 42 && counter.getNotifications() == 1, "Native setter and listener");
 			check(counter.get(scope, "value").equals(42), "String indexing uses native getter");

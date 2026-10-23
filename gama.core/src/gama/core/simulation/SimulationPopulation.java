@@ -161,7 +161,7 @@ public class SimulationPopulation extends GamaPopulation<ISimulationAgent> imple
 			final boolean toBeScheduled, final IStatement sequence) throws GamaRuntimeException {
 
 		final IList<ISimulationAgent> result = GamaListFactory.create(ISimulationAgent.class);
-		final IAgentConstructor constr = species.getDescription().getAgentConstructor();
+		final IAgentConstructor constr = species.getDescription().getConstructor();
 		scope.getGui().getStatus().waitStatus("Initializing simulations", IStatusMessage.SIMULATION_ICON, () -> {
 			for (int i = 0; i < number; i++) {
 

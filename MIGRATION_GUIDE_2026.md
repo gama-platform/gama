@@ -148,6 +148,13 @@ including through a GAML-only subclass. A concrete Java subclass must supply the
 Native classes can also be used directly as Java operator parameter and return types without a
 separate `@type` declaration.
 
+Java class and species descriptions now expose their factory through the same `getConstructor()`
+accessor, replacing `getObjectConstructor()` and `getAgentConstructor()`. Both factories implement
+`IConstructor<T, A, B>`: `IObjectConstructor` creates an object from `(IScope, IClass)`, while
+`IAgentConstructor` creates an agent from `(IPopulation<?>, Integer)`. Species descriptions narrow
+the return type to `IAgentConstructor`; its existing primitive-index `createOneAgent(population, index)`
+method and constructor method references remain supported.
+
 ### Persistent shell contexts
 
 The built-in `context` class keeps a shell alive between commands. The new

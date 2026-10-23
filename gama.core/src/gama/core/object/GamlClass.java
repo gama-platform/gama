@@ -37,6 +37,7 @@ import gama.api.gaml.symbols.Symbol;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.object.IClass;
 import gama.api.kernel.object.IObject;
+import gama.api.kernel.object.IObjectConstructor;
 import gama.api.kernel.GamaMetaModel;
 import gama.api.kernel.species.IModelSpecies;
 import gama.api.kernel.species.ISpecies;
@@ -326,14 +327,16 @@ public class GamlClass extends Symbol implements IClass {
 	public IObject createInstance(final IScope scope, final Map<String, Object> args) {
 		if (getDescription().isAbstract())
 			throw GamaRuntimeException.error("Cannot instantiate abstract class " + getName(), scope);
-		final var constructor = getDescription().getObjectConstructor();
+		final var constructor = getDescription().getConstructor();
 		if (constructor == null) {
 			if (getDescription().getJavaBase() != IObject.class)
 				throw GamaRuntimeException.error(
 						"No Java instance constructor for class " + getName(), scope);
 			return new GamlObject(scope, this, args);
 		}
-		final IObject object = constructor.create(scope, this);
+		if (!(constructor instanceof IObjectConstructor objectConstructor))
+			throw GamaRuntimeException.error("Class " + getName() + " requires an object constructor", scope);
+		final IObject object = objectConstructor.create(scope, this);
 		if (object == null || object.getSpecies() != this)
 			throw GamaRuntimeException.error(
 					"Java constructor did not create an instance of " + getName(), scope);

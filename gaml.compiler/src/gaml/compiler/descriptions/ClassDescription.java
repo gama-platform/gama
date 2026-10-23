@@ -115,14 +115,14 @@ public class ClassDescription extends TypeDescription implements IClassDescripti
 	}
 
 	@Override
-	public IObjectConstructor getObjectConstructor() {
+	public IObjectConstructor getConstructor() {
 		if (isBuiltIn()) return objectConstructor;
-		return getParent() == null ? null : getParent().getObjectConstructor();
+		return getParent() == null ? null : getParent().getConstructor();
 	}
 
 	@Override
 	public boolean isAbstract() {
-		return super.isAbstract() || getJavaBase() != IObject.class && getObjectConstructor() == null;
+		return super.isAbstract() || getJavaBase() != IObject.class && getConstructor() == null;
 	}
 
 	/**

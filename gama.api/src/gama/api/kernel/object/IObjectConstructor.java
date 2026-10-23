@@ -16,7 +16,8 @@ import gama.api.runtime.scope.IScope;
  * Creates a Java-backed GAML object. GAML attributes are initialized by the caller after this factory returns.
  */
 @FunctionalInterface
-public interface IObjectConstructor {
+public interface IObjectConstructor extends IConstructor<IObject, IScope, IClass> {
 
+	@Override
 	IObject create(IScope scope, IClass clazz);
 }

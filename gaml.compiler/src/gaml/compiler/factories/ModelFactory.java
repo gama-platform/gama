@@ -453,7 +453,7 @@ public class ModelFactory implements IModelFactory {
 		}
 		final IModelDescription model = new ModelDescription(modelName, null, projectPath, modelPath,
 				source.getElement(), null, parent, null, globalFacets, collector, documentationContext,
-				absoluteAlternatePathAsStrings, parent.getAgentConstructor());
+				absoluteAlternatePathAsStrings, parent.getConstructor());
 		final Collection<String> allModelNames = Iterables.size(models) == 1 ? null : ImmutableSet
 				.copyOf(Iterables.transform(Iterables.skip(models, 1), each -> buildModelName(each.getName())));
 		model.setImportedModelNames(allModelNames);

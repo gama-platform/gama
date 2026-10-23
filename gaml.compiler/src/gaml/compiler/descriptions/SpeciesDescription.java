@@ -802,12 +802,12 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	 * @return the agent constructor
 	 */
 	@Override
-	public IAgentConstructor getAgentConstructor() {
+	public IAgentConstructor getConstructor() {
 		if (agentConstructor == null && parent != null && parent != this) {
 			final Class<?> parentJavaBase = getParent().getJavaBase();
 			final Class<?> myJavaBase = getJavaBase();
 			if (parentJavaBase == myJavaBase) {
-				agentConstructor = getParent().getAgentConstructor();
+				agentConstructor = getParent().getConstructor();
 			} else {
 				agentConstructor = AgentConstructorsRegistry.CONSTRUCTORS.get(myJavaBase);
 			}
