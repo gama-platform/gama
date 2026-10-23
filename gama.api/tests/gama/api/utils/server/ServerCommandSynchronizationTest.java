@@ -46,13 +46,15 @@ public final class ServerCommandSynchronizationTest {
 		final BlockingQueue<IExecutable> actions = new LinkedBlockingQueue<>();
 		boolean paused;
 		boolean loaded = true;
+		String schedulingMethod;
 
 		final IExperimentController controller = proxy(IExperimentController.class, (p, method, args) -> {
 			if ("isPaused".equals(method.getName())) return paused;
 			throw new AssertionError("Unexpected controller call: " + method);
 		});
 		final IExperimentAgent agent = proxy(IExperimentAgent.class, (p, method, args) -> {
-			if ("postOneShotAction".equals(method.getName())) {
+			if ("postOneShotAction".equals(method.getName()) || "executeAction".equals(method.getName())) {
+				schedulingMethod = method.getName();
 				actions.add((IExecutable) args[0]);
 				return args[0];
 			}
@@ -100,12 +102,13 @@ public final class ServerCommandSynchronizationTest {
 		}
 	}
 
-	private static void checkBetweenCycles(final Server server, final WebSocket socket, final String type)
-			throws Exception {
+	private static void checkBetweenCycles(final Server server, final WebSocket socket, final String type,
+			final boolean paused) throws Exception {
 		final CountDownLatch entered = new CountDownLatch(1);
 		final CountDownLatch release = new CountDownLatch(1);
 		final AtomicReference<Thread> commandThread = new AtomicReference<>();
 		final AtomicReference<Throwable> failure = new AtomicReference<>();
+		server.paused = paused;
 		server.cmdHelper.commands.put(type, (s, ws, message) -> {
 			commandThread.set(Thread.currentThread());
 			entered.countDown();
@@ -113,9 +116,11 @@ public final class ServerCommandSynchronizationTest {
 			return new CommandResponse(MessageType.CommandExecutedSuccessfully, type, message, false);
 		});
 		server.onMessage(socket, type);
-		check(entered.getCount() == 1, "A running experiment must queue model access: " + type);
+		check(entered.getCount() == 1, "An experiment must queue model access: " + type);
 		final IExecutable action = server.actions.poll(5, TimeUnit.SECONDS);
 		check(action != null, "Missing between-cycle action: " + type);
+		check(("executeAction".equals(server.schedulingMethod)) == paused,
+				"Paused model access must use step exclusion: " + type);
 		final Thread simulation = new Thread(() -> {
 			try {
 				action.executeOn(null);
@@ -197,7 +202,7 @@ public final class ServerCommandSynchronizationTest {
 			final Server server = new Server();
 			for (final String type : new String[] { ISocketCommand.EXPRESSION, ISocketCommand.EVALUATE,
 					ISocketCommand.ASK, "contributed_command" }) {
-				checkBetweenCycles(server, socket, type);
+				checkBetweenCycles(server, socket, type, false);
 				final GamaServerMessage response = responses.poll(5, TimeUnit.SECONDS);
 				check(response != null && response.type == MessageType.CommandExecutedSuccessfully
 						&& type.equals(response.content), "Model access must send its command response: " + type);
@@ -209,8 +214,13 @@ public final class ServerCommandSynchronizationTest {
 					ISocketCommand.RELOAD, ISocketCommand.EXIT }) {
 				checkOffWebSocketThread(server, socket, type);
 			}
-			server.paused = true;
-			checkOffWebSocketThread(server, socket, ISocketCommand.EXPRESSION);
+			checkBetweenCycles(server, socket, ISocketCommand.EXPRESSION, true);
+			final GamaServerMessage pausedResponse = responses.poll(5, TimeUnit.SECONDS);
+			check(pausedResponse != null && pausedResponse.type == MessageType.CommandExecutedSuccessfully,
+					"Paused model access must produce a successful response");
+			check(MessageType.CommandExecutedSuccessfully.name().equals(sent.poll(5, TimeUnit.SECONDS)),
+					"Paused model access must reach the client");
+			checkOffWebSocketThread(server, socket, ISocketCommand.STEP);
 			server.loaded = false;
 			checkOffWebSocketThread(server, socket, ISocketCommand.DESCRIBE);
 

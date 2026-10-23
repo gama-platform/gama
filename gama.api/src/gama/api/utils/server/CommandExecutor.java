@@ -41,6 +41,7 @@ import org.java_websocket.enums.ReadyState;
 import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
 import gama.api.gaml.types.Types;
+import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.types.list.IList;
 import gama.dev.DEBUG;
 
@@ -159,6 +160,17 @@ public class CommandExecutor implements ICommandExecuter {
 	 */
 	protected void processAsync(final IGamaServer server, final WebSocket socket, final ReceivedMessage map) {
 		new Thread(() -> process(server, socket, map), "GAMA server command").start();
+	}
+
+	/**
+	 * Processes a model command off the WebSocket thread and excludes concurrent experiment steps.
+	 */
+	protected void processAsync(final IGamaServer server, final WebSocket socket, final ReceivedMessage map,
+			final IExperimentAgent agent) {
+		new Thread(() -> agent.executeAction(scope -> {
+			process(server, socket, map);
+			return null;
+		}), "GAMA server command").start();
 	}
 
 	/**

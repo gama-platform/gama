@@ -267,8 +267,14 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 					ISocketCommand.EXIT -> true;
 			default -> false;
 		};
-		if (agent == null || exp.getController().isPaused()) {
+		if (agent == null) {
 			cmdHelper.processAsync(this, socket, received);
+		} else if (exp.getController().isPaused()) {
+			if (controlsExperiment) {
+				cmdHelper.processAsync(this, socket, received);
+			} else {
+				cmdHelper.processAsync(this, socket, received, agent);
+			}
 		} else {
 			// In order to sync the command with the experiment cycles
 			agent.postOneShotAction(scope1 -> {
