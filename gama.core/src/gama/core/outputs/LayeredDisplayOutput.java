@@ -184,7 +184,7 @@ import gama.dev.DEBUG;
 						name = "z_near",
 						type = IType.FLOAT,
 						optional = true,
-						doc = @doc ("Set the distances to the near depth clipping planes. Must be positive.")),
+						doc = @doc ("Set the distances to the near depth clipping planes. Must be positive. To preserve depth-buffer precision, values smaller than z_far / 100000 are raised to that limit.")),
 				@facet (
 						name = "z_far",
 						type = IType.FLOAT,

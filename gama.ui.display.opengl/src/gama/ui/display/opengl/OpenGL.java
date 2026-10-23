@@ -397,6 +397,9 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		// DEBUG.OUT("Client area of window:" + getRenderer().getCanvas().getClientArea());
 	}
 
+	/** The maximum ratio between the far and near clipping planes preserving depth-buffer precision. */
+	private static final double MAX_DEPTH_RANGE_RATIO = 1e5;
+
 	/**
 	 * Update perspective.
 	 *
@@ -417,6 +420,9 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 			zFar = maxDim * 100d;
 			data.setZFar(zFar);
 		}
+		// A 24-bit depth buffer cannot resolve surfaces when zFar/zNear is too large: back faces then win the
+		// depth test and objects appear lit from behind (#973).
+		zNear = Math.max(zNear, zFar / MAX_DEPTH_RANGE_RATIO);
 
 		if (!getData().isOrtho()) {
 			try {
