@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -266,9 +265,11 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 		this.nbBands = gfile.getBandsNumber(scope);
 		if (nbBands > 1) {
 			bands = new ArrayList<>();
+			final double[][] bandValues = new double[nbBands][];
+			for (int b = 0; b < nbBands; b++) { bandValues[b] = gfile.getBand(scope, b); }
 			for (int i = 0; i < size; i++) {
 				IList<Double> bb = GamaListFactory.create(Types.FLOAT);
-				for (int b = 0; b < nbBands; b++) { bb.add(gfile.getBand(scope, b)[i]); }
+				for (int b = 0; b < nbBands; b++) { bb.add(bandValues[b][i]); }
 				bands.add(bb);
 			}
 		}
@@ -1198,19 +1199,14 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 
 		final Map<IAgent, IAgent> cameFrom = new HashMap<>();
 
-		final PriorityQueue frontier = newPriorityQueue();
+		final PriorityQueue<PathQueueEntry> frontier = newPriorityQueue();
 
 		final Map<IAgent, Double> costSoFar = new HashMap<>();
 		costSoFar.put(startAg, 0.0);
 
-		frontier.add(new ArrayList() {
-			{
-				add(startAg);
-				add(0.0);
-			}
-		});
+		frontier.add(new PathQueueEntry(startAg, 0.0));
 		while (!frontier.isEmpty()) {
-			final IAgent current = (IAgent) ((List) frontier.remove()).get(0);
+			final IAgent current = frontier.remove().agent;
 			if (current == endAg) {
 				if (onWithWeight != null)
 					return finalPath(scope, source, target, topo, startAg, current, cameFrom, onWithWeight);
@@ -1225,12 +1221,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 				final double nextCost = cost + (onWithWeight == null ? dist
 						: Cast.asFloat(scope, onWithWeight.get(next)) + (dist > maxDim ? Double.MIN_VALUE : 0.0));
 
-				frontier.add(new ArrayList() {
-					{
-						add(next);
-						add(nextCost);
-					}
-				});
+				frontier.add(new PathQueueEntry(next, nextCost));
 				open[next.getIndex()] = false;
 				Double nextCostSoFar = costSoFar.get(next);
 				if (nextCostSoFar == null || nextCost < nextCostSoFar) {
@@ -1276,19 +1267,15 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 
 		final boolean[] open = new boolean[this.getAgents().size()];
 		initOpen(open, weighted ? onWithWeight.keySet() : on);
-		final PriorityQueue frontier = newPriorityQueue();
+		final PriorityQueue<PathQueueEntry> frontier = newPriorityQueue();
 		final Map<IAgent, IAgent> cameFrom = new HashMap<>();
 		final Map<IAgent, Double> costSoFar = new HashMap<>();
 
-		frontier.add(new ArrayList() {
-			{
-				add(startAg);
-				add(weighted ? Cast.asFloat(scope, onWithWeight.get(startAg)) : 0.0);
-			}
-		});
+		frontier.add(new PathQueueEntry(startAg,
+				weighted ? Cast.asFloat(scope, onWithWeight.get(startAg)) : 0.0));
 		costSoFar.put(startAg, 0.0);
 		while (!frontier.isEmpty()) {
-			final IAgent current = (IAgent) ((List) frontier.remove()).get(0);
+			final IAgent current = frontier.remove().agent;
 			if (current == endAg) {
 				if (weighted) return finalPath(scope, source, target, topo, startAg, current, cameFrom, onWithWeight);
 				return finalPath(scope, source, target, topo, startAg, current, cameFrom);
@@ -1303,12 +1290,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 				Double nextCostSoFar = costSoFar.get(next);
 				if (nextCostSoFar == null || nextCost < nextCostSoFar) {
 					costSoFar.put(next, nextCost);
-					frontier.add(new ArrayList() {
-						{
-							add(next);
-							add(nextCost + heuristic(next, endAg));
-						}
-					});
+					frontier.add(new PathQueueEntry(next, nextCost + heuristic(next, endAg)));
 					cameFrom.put(next, current);
 
 				}
@@ -1346,19 +1328,14 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 		if (startAg == endAg) return simplePath(scope, source, target, topo, startAg, endAg);
 		final boolean[] open = new boolean[this.getAgents().size()];
 		initOpen(open, on);
-		final PriorityQueue frontier = newPriorityQueue();
+		final PriorityQueue<PathQueueEntry> frontier = newPriorityQueue();
 		final Map<IAgent, IAgent> cameFrom = new HashMap<>();
 		final Map<IAgent, Double> costSoFar = new HashMap<>();
 
-		frontier.add(new ArrayList() {
-			{
-				add(startAg);
-				add(0.0);
-			}
-		});
+		frontier.add(new PathQueueEntry(startAg, 0.0));
 		costSoFar.put(startAg, 0.0);
 		while (!frontier.isEmpty()) {
-			final IAgent current = (IAgent) ((List) frontier.remove()).get(0);
+			final IAgent current = frontier.remove().agent;
 			if (current == endAg) return finalPath(scope, source, target, topo, startAg, current, cameFrom);
 			final Double cost = costSoFar.get(current);
 			final Set<IAgent> neigh = getNeighborsPrune(scope, current, cameFrom.get(current), open);
@@ -1371,12 +1348,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 				Double neCostSoFar = costSoFar.get(ne);
 				if (neCostSoFar == null || nextCost < neCostSoFar) {
 					costSoFar.put(ne, nextCost);
-					frontier.add(new ArrayList() {
-						{
-							add(ne);
-							add(nextCost + heuristic(ne, endAg));
-						}
-					});
+					frontier.add(new PathQueueEntry(ne, nextCost + heuristic(ne, endAg)));
 					cameFrom.put(ne, current);
 				}
 			}
@@ -1685,10 +1657,24 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 	 *
 	 * @return the priority queue
 	 */
-	private PriorityQueue newPriorityQueue() {
-		final Comparator<List> comparator = (o1, o2) -> ((Double) o1.get(1)).compareTo((Double) o2.get(1));
+	private PriorityQueue<PathQueueEntry> newPriorityQueue() {
+		return new PriorityQueue<>();
+	}
 
-		return new PriorityQueue(comparator);
+	private static final class PathQueueEntry implements Comparable<PathQueueEntry> {
+
+		private final IAgent agent;
+		private final double priority;
+
+		private PathQueueEntry(final IAgent agent, final double priority) {
+			this.agent = agent;
+			this.priority = priority;
+		}
+
+		@Override
+		public int compareTo(final PathQueueEntry other) {
+			return Double.compare(priority, other.priority);
+		}
 	}
 
 	@Override
