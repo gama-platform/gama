@@ -26,6 +26,7 @@ import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.tests.TestExperimentSummary;
+import gama.api.utils.tests.TestSelection;
 import gama.api.utils.tests.WithTestSummary;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
@@ -124,6 +125,8 @@ public class TestAgent extends ExperimentAgent implements IExperimentAgent.Test 
 		final List tests = getModel().getAllTests();
 		final Consumer<IStatement> filter = t -> { if (t instanceof WithTestSummary ts) { tests.add(ts); } };
 		getSpecies().getBehaviors().forEach(filter);
+		final TestSelection selection = TestSelection.forExperiment(getSpecies());
+		if (selection != null) { tests.removeIf(t -> !selection.matches((WithTestSummary) t)); }
 		return tests;
 	}
 

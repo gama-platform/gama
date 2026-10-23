@@ -25,6 +25,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.xtext.resource.EObjectAtOffsetHelper;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IMenuManager;
@@ -130,6 +133,8 @@ import gama.ui.shared.commands.SearchGamlReferenceHandler;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaFonts;
 import gama.ui.shared.resources.GamaIcon;
+import gama.ui.shared.resources.IGamaIcons;
+import gaml.compiler.gaml.FacetsAndBlock;
 import gama.ui.shared.utils.UICleanupTasks;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.toolbar.GamaCommand;
@@ -252,6 +257,9 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 
 	/** The modelsManager. */
 	@Inject IModelsManager modelsManager;
+
+	/** Resolves the GAML element under the caret. */
+	@Inject private EObjectAtOffsetHelper eObjectAtOffsetHelper;
 
 	/** The template dialog factory. */
 	@Inject private GamlEditTemplateDialogFactory templateDialogFactory;
@@ -1112,6 +1120,15 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 		IContributionItem[] existingItems = menu.getItems();
 		menu.removeAll();
 		menu.add(editSpecies);
+		final URI test = getTestDeclarationAtCaret();
+		if (test != null) {
+			menu.add(new Action("Run this test", GamaIcon.named(IGamaIcons.TEST_RUN).descriptor()) {
+				@Override
+				public void run() {
+					runTest(test);
+				}
+			});
+		}
 		menu.add(new Separator());
 		for (IContributionItem item : existingItems) menu.add(item);
 		menu.add(new Separator());
@@ -1125,6 +1142,29 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 					"gaml.compiler.Gaml", null, null).open(),
 			GamaIcon.named("editor/command.find").descriptor(), GamaIcon.named("editor/preferences").descriptor());
 
+	}
+
+	/**
+	 * Returns the URI of the {@code test} declaration enclosing the caret, or null if the caret is not in a test.
+	 */
+	public URI getTestDeclarationAtCaret() {
+		if (!(getSelectionProvider().getSelection() instanceof ITextSelection selection)) return null;
+		return getDocument().readOnly(resource -> {
+			EObject object = eObjectAtOffsetHelper.resolveContainedElementAt(resource, selection.getOffset());
+			while (object != null && !(object instanceof FacetsAndBlock block && IKeyword.TEST.equals(block.getKey()))) {
+				object = object.eContainer();
+			}
+			return object == null ? null : EcoreUtil.getURI(object);
+		});
+	}
+
+	/** Saves the model (following the launch save policy) and runs the given test declaration alone. */
+	public void runTest(final URI test) {
+		doSave(null);
+		if (GamaPreferences.Modeling.EDITOR_SAVE.getValue()) {
+			WorkbenchHelper.getPage().saveAllEditors(GamaPreferences.Modeling.EDITOR_SAVE_ASK.getValue());
+		}
+		modelsManager.runTest(getDocument(), test);
 	}
 
 	public boolean canExtractAction() {

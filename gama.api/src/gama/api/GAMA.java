@@ -369,8 +369,22 @@ public class GAMA {
 	 *            the model containing the experiment
 	 */
 	public static void runGuiExperiment(final String id, final IModelSpecies model) {
+		runGuiExperiment(id, model, null);
+	}
+
+	/**
+	 * Same as {@link #runGuiExperiment(String, IModelSpecies)}; when {@code selection} is not null, the experiment
+	 * must be a test experiment and only the selected test is run.
+	 */
+	public static void runGuiExperiment(final String id, final IModelSpecies model,
+			final gama.api.utils.tests.TestSelection selection) {
 		final IExperimentSpecies newExperiment = model.getExperiment(id);
 		if (newExperiment == null) return;
+		if (selection != null) {
+			if (!newExperiment.isTest())
+				throw new IllegalArgumentException("Experiment " + id + " is not a test experiment");
+			selection.validate(model, id);
+		}
 
 		IExperimentController controller = getFrontmostController();
 		if (controller != null) {
@@ -390,19 +404,24 @@ public class GAMA {
 		if (!controllers.isEmpty()) { closeAllExperiments(true, false); }
 
 		if (newExperiment.isTest()) {
-			if (getGui().runTestExperiment(model, id)) return;
+			if (getGui().runTestExperiment(model, id, selection)) return;
 			// controllers.add(controller);
-			newExperiment.open();
-			final IExperimentAgent.Test agent = (Test) newExperiment.getAgent();
+			gama.api.utils.tests.TestSelection.activate(newExperiment, selection);
 			try {
-				agent.init(agent.getScope());
-				if (!getGui().isTestStopRequested()) { agent.step(agent.getScope()); }
-			} finally {
+				newExperiment.open();
+				final IExperimentAgent.Test agent = (Test) newExperiment.getAgent();
 				try {
-					agent.displayTestResults();
+					agent.init(agent.getScope());
+					if (!getGui().isTestStopRequested()) { agent.step(agent.getScope()); }
 				} finally {
-					GAMA.closeExperiment(newExperiment);
+					try {
+						agent.displayTestResults();
+					} finally {
+						GAMA.closeExperiment(newExperiment);
+					}
 				}
+			} finally {
+				gama.api.utils.tests.TestSelection.activate(newExperiment, null);
 			}
 		} else if (getGui().openSimulationPerspective(model, id)) {
 			controllers.add(controller);

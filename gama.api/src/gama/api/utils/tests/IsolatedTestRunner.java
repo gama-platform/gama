@@ -77,7 +77,8 @@ public final class IsolatedTestRunner {
 
 		private Session owner() { return borrowed == null ? this : borrowed.owner(); }
 
-		private void request(final String model, final String experiment, final boolean useUIConsole) throws IOException {
+		private void request(final String model, final String experiment, final boolean useUIConsole,
+				final TestSelection selection) throws IOException {
 			if (process == null || !process.isAlive()) {
 				discard();
 				directory = Files.createTempDirectory("gama-test-");
@@ -91,6 +92,8 @@ public final class IsolatedTestRunner {
 			TestProcessProtocol.writeString(requests, experiment);
 			requests.writeBoolean(useUIConsole);
 			requests.writeInt(GamaPreferences.Runtime.TEST_TIMEOUT.getValue());
+			TestProcessProtocol.writeString(requests, selection == null ? "" : selection.location());
+			TestProcessProtocol.writeString(requests, selection == null ? "" : selection.fragment());
 			requests.flush();
 		}
 
@@ -145,17 +148,22 @@ public final class IsolatedTestRunner {
 	}
 
 	public static TestExperimentSummary run(final String model, final String experiment, final IGui gui) {
+		return run(model, experiment, gui, null);
+	}
+
+	public static TestExperimentSummary run(final String model, final String experiment, final IGui gui,
+			final TestSelection selection) {
 		final var runner = new IsolatedTestRunner(model, experiment);
 		if (!ACTIVE.compareAndSet(null, runner)) throw new IllegalStateException("A test experiment is already running");
 		try (final Session session = openSession()) {
-			return runner.execute(model, experiment, gui, session.owner());
+			return runner.execute(model, experiment, gui, session.owner(), selection);
 		} finally {
 			ACTIVE.compareAndSet(runner, null);
 		}
 	}
 
 	private TestExperimentSummary execute(final String model, final String experiment, final IGui gui,
-			final Session session) {
+			final Session session, final TestSelection selection) {
 		if (interrupted || gui.isTestStopRequested()) {
 			markTermination(TestState.INTERRUPTED, "Interrupted by user", null);
 			return summary;
@@ -163,7 +171,7 @@ public final class IsolatedTestRunner {
 		TestState termination = null;
 		String terminationMessage = null, terminatedTest = null;
 		try {
-			session.request(model, experiment, useUIConsole);
+			session.request(model, experiment, useUIConsole, selection);
 			final Path stop = session.directory.resolve("stop");
 			final Path log = session.directory.resolve("worker.log");
 			final Process process = session.process;

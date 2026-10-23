@@ -102,6 +102,17 @@ public interface IModelsManager {
 	default void runModel(final Object object, final String exp) {}
 
 	/**
+	 * Runs a single {@code test} declaration of the specified model, using a test experiment of this model that runs
+	 * it (the user is asked to choose when several do).
+	 *
+	 * @param object
+	 *            the model object to run. Can be a file path, URI, document or model object
+	 * @param test
+	 *            the URI (including its fragment) of the {@code test} declaration
+	 */
+	default void runTest(final Object object, final org.eclipse.emf.common.util.URI test) {}
+
+	/**
 	 * Runs all test experiments defined in the specified model in headless mode.
 	 * 
 	 * <p>This method executes all experiments marked as tests in the model and collects
