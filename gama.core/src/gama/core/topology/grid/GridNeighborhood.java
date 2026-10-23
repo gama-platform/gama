@@ -92,7 +92,8 @@ public abstract class GridNeighborhood implements INeighborhood {
 				final Set<Integer> list = getNeighborsAtRadius(placeIndex, i);
 				final int required = size + list.size();
 				if (required > buffer.length) {
-					buffer = Arrays.copyOf(buffer, Math.max(required, buffer.length + (buffer.length >> 1) + 1));
+					buffer = Arrays.copyOf(buffer, i == end ? required
+							: Math.max(required, buffer.length + (buffer.length >> 1) + 1));
 				}
 				int index = size;
 				for (final Integer neighbor : list) { buffer[index++] = neighbor.intValue(); }
