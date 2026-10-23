@@ -23,6 +23,7 @@ import org.jgrapht.alg.util.Pair;
 import org.jgrapht.graph.GraphWalk;
 
 import gama.api.GAMA;
+import gama.api.types.geometry.IPoint;
 import gama.api.types.graph.IGraph;
 import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
@@ -102,6 +103,10 @@ public class FloydWarshallShortestPathsGAMA<V, E> {
 		this.matrix = matrix;
 	}
 
+	private int indexOfVertex(final V vertex) {
+		return vertex instanceof IPoint ? vertices.indexOf(vertex) : vertexIndices.getOrDefault(vertex, -1);
+	}
+
 	/**
 	 * @return the graph on which this algorithm operates
 	 */
@@ -158,8 +163,8 @@ public class FloydWarshallShortestPathsGAMA<V, E> {
 			final V v1 = graph.getEdgeSource(edge);
 			final V v2 = graph.getEdgeTarget(edge);
 
-			final int v_1 = vertexIndices.getOrDefault(v1, -1);
-			final int v_2 = vertexIndices.getOrDefault(v2, -1);
+			final int v_1 = indexOfVertex(v1);
+			final int v_2 = indexOfVertex(v2);
 
 			d[v_1][v_2] = graph.getEdgeWeight(edge);
 			if (!graph.isDirected()) { d[v_2][v_1] = graph.getEdgeWeight(edge); }
@@ -261,8 +266,8 @@ public class FloydWarshallShortestPathsGAMA<V, E> {
 	 * @return the shortest path impl
 	 */
 	private GraphPath<V, E> getShortestPathImpl(final V a, final V b) {
-		int v_a = vertexIndices.getOrDefault(a, -1);
-		final int v_b = vertexIndices.getOrDefault(b, -1);
+		int v_a = indexOfVertex(a);
+		final int v_b = indexOfVertex(b);
 		int prev = v_a;
 		final List<E> edges = new ArrayList<>();
 		if (matrix != null) {
