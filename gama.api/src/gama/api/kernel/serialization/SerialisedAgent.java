@@ -426,10 +426,9 @@ public record SerialisedAgent(int index, String species, Map<String, Object> att
 					p = microModel.getAllSpecies().get(species).getPopulation(scope);
 				}
 			}
-
-			throw GamaRuntimeException.error("No population named" + species + " exist in this simulation", scope);
+			if (p == null) throw GamaRuntimeException.error(
+					"No population named " + species + " exists in this simulation", scope);
 		}
-
 		IAgent a = p.getOrCreateAgent(scope, index, this.attributes);
 		restoreAs(scope, a);
 		return a;

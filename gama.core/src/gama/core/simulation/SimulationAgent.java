@@ -383,6 +383,30 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 		return super.schedule(this.getScope());
 	}
 
+	/** True during the simulation's own step (scheduler or step()): a _step_ then runs only the behaviour. */
+	private volatile boolean inOwnStep;
+
+	@Override
+	public boolean step(final IScope scope) {
+		inOwnStep = true;
+		try {
+			return super.step(scope);
+		} finally {
+			inOwnStep = false;
+		}
+	}
+
+	/**
+	 * _step_ called from GAML, outside the simulation's own step (a co-model stepping its micro-model: ask
+	 * sim { do _step_(); }): the whole step, so that the clock advances (cycle, current_date) and the end-of-cycle
+	 * actions and buffered saves run, as in GAMA 2024/2025. During its own step (from doStep): the behaviour only.
+	 */
+	@Override
+	public Object _step_(final IScope scope) {
+		if (inOwnStep) return super._step_(scope);
+		return step(this.getScope());
+	}
+
 	@Override
 	protected boolean preStep(final IScope scope) {
 		ownClock.beginCycle();

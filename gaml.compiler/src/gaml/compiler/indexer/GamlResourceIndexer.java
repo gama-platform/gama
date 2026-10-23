@@ -38,6 +38,7 @@ import gaml.compiler.gaml.StandaloneExperiment;
 import gaml.compiler.gaml.impl.ModelImpl;
 import gaml.compiler.resource.GamlResource;
 import gaml.compiler.resource.ImportedResources;
+import gaml.compiler.validation.GamlModelBuilder;
 
 /**
  * The Class GamlResourceIndexer.
@@ -195,13 +196,30 @@ public class GamlResourceIndexer {
 				final GamlResource r = (GamlResource) resource.getResourceSet().getResource(entry.getKey(), true);
 				if (r == resource) { continue; }
 				if (r.hasErrors()) {
-					resource.invalidate(r, "Errors detected");
+					resource.invalidate(r, errorsOf(r));
 					return null;
 				}
 				imports.add(entry.getValue(), r);
 			}
 		}
 		return imports;
+	}
+
+	/**
+	 * The syntax errors of an imported file, with its path and each error's line: "Errors detected in <path>: line
+	 * 12: <message>; line 30: ..." (at most 10). Without them, a model whose imported file doesn't compile only says
+	 * "Errors detected" -- nothing to go on in headless mode.
+	 *
+	 * @param r
+	 *            the imported resource with errors
+	 * @return the message
+	 */
+	static String errorsOf(final GamlResource r) {
+		final StringBuilder sb = new StringBuilder("Errors detected in ")
+				.append(r.getURI().isFile() ? r.getURI().toFileString() : r.getURI().toString());
+		final List<String> errors = GamlModelBuilder.syntaxErrorsOf(r);
+		for (int i = 0; i < errors.size(); i++) { sb.append(i == 0 ? ": " : "; ").append(errors.get(i)); }
+		return sb.toString();
 	}
 
 	/**

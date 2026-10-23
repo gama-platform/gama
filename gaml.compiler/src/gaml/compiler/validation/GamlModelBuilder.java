@@ -14,10 +14,13 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.resource.SynchronizedXtextResourceSet;
 
 import com.google.common.collect.Iterables;
@@ -148,11 +151,13 @@ public class GamlModelBuilder implements IGamlModelBuilder {
 		if (!myFile.exists()) throw new IOException("Model file does not exist: " + fileName);
 		DEBUG.LOG(fileName + " model is being compiled...");
 
-		final IModelSpecies model = compile(URI.createFileURI(fileName), errors);
+		// A list of our own when the caller gives none (headless -xml mode): the errors are still printed.
+		final List<GamlCompilationError> errs = errors == null ? new ArrayList<>() : errors;
+		final IModelSpecies model = compile(URI.createFileURI(fileName), errs);
 		if (model == null) {
 			DEBUG.LOG("Model didn't compile because of the following compilation errors: \n"
-					+ (errors == null ? "" : StreamEx.of(errors).joining("\n")));
-			throw new GamaCompilationFailedException(errors);
+					+ StreamEx.of(errs).filter(GamlCompilationError::isError).joining("\n"));
+			throw new GamaCompilationFailedException(errs);
 		}
 		if (metaProperties != null) { model.getDescription().collectMetaInformation(metaProperties); }
 		return model;
@@ -176,6 +181,30 @@ public class GamlModelBuilder implements IGamlModelBuilder {
 	}
 
 	/**
+	 * The syntax errors of a resource as "line <n>: <message>" (at most 10, then "..."): from its EMF diagnostics,
+	 * or else from the parser's error nodes.
+	 *
+	 * @param r
+	 *            the resource
+	 * @return the errors
+	 */
+	public static List<String> syntaxErrorsOf(final GamlResource r) {
+		final List<String> result = new ArrayList<>();
+		for (final Resource.Diagnostic d : r.getErrors()) { result.add("line " + d.getLine() + ": " + d.getMessage()); }
+		if (result.isEmpty() && r.getParseResult() != null) {
+			for (final INode n : r.getParseResult().getSyntaxErrors()) {
+				result.add("line " + n.getStartLine() + ": " + n.getSyntaxErrorMessage().getMessage());
+			}
+		}
+		if (result.size() > 10) {
+			final int more = result.size() - 10;
+			result.subList(10, result.size()).clear();
+			result.add("... " + more + " more");
+		}
+		return result;
+	}
+
+	/**
 	 * Builds the model description.
 	 *
 	 * @param uri
@@ -195,10 +224,8 @@ public class GamlModelBuilder implements IGamlModelBuilder {
 			// Syntactic errors detected, we cannot build the resource
 			if (r.hasErrors()) {
 				if (errors != null) {
-					final String err_ =
-							r.getErrors() != null && !r.getErrors().isEmpty() ? r.getErrors().get(0).toString() : "";
-					errors.add(GamlCompilationError.create("Syntax errors: " + err_, IGamlIssue.GENERAL,
-							r.getContents().get(0), GamlCompilationError.Type.Error));
+					errors.add(GamlCompilationError.create("Syntax errors: " + String.join("; ", syntaxErrorsOf(r)),
+							IGamlIssue.GENERAL, r.getContents().get(0), GamlCompilationError.Type.Error));
 				}
 				return null;
 			}

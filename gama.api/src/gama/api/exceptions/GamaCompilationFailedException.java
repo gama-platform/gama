@@ -14,6 +14,7 @@ import java.util.List;
 
 import gama.api.compilation.GamlCompilationError;
 import gama.api.gaml.GAML;
+import gama.dev.DEBUG;
 
 /**
  * Exception thrown when a GAML model fails to compile.
@@ -52,6 +53,12 @@ public class GamaCompilationFailedException extends GamaRuntimeException {
 	public GamaCompilationFailedException(final List<GamlCompilationError> errorList) {
 		super(null, "The model couldn't be compiled because of compilation errors", true);
 		this.errorList = errorList;
+		DEBUG.ERR("Compilation errors : ");
+		if (errorList != null) {
+			for(var let: errorList) {
+				DEBUG.ERR("		*** " + let.toString() + where(let));
+			}
+		}
 	}
 
 	/**
@@ -92,5 +99,27 @@ public class GamaCompilationFailedException extends GamaRuntimeException {
 		sb.append("]");
 		sb.append('}');
 		return sb.toString();
+	}
+
+	/**
+	 * " [file:line]" of an error, from the Xtext node attached to its source (no dependency on Xtext: the node is
+	 * found among the source's adapters by its getStartLine method). Empty when unknown.
+	 */
+	static String where(final GamlCompilationError e) {
+		try {
+			final var s = e.source();
+			String file = e.uri() != null ? e.uri().lastSegment() : null;
+			if (s != null && s.eResource() != null) { file = s.eResource().getURI().lastSegment(); }
+			if (s != null) {
+				for (final Object a : s.eAdapters()) {
+					try {
+						return " [" + file + ":" + a.getClass().getMethod("getStartLine").invoke(a) + "]";
+					} catch (final NoSuchMethodException x) {}
+				}
+			}
+			return file == null ? "" : " [" + file + "]";
+		} catch (final Throwable t) {
+			return "";
+		}
 	}
 }
