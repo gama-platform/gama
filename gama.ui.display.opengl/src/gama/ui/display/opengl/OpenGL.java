@@ -1515,7 +1515,8 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		if (isTextured()) { gl.glBlendFunc(GL.GL_ONE, GL.GL_ONE_MINUS_SRC_ALPHA); }
 		setCurrentColor(att.getColor());
 		if (!empty && !att.isSynthetic()) {
-			gl.glTexEnvi(GL2ES1.GL_TEXTURE_ENV, GL2ES1.GL_TEXTURE_ENV_MODE, GL2ES1.GL_DECAL);
+			gl.glTexEnvi(GL2ES1.GL_TEXTURE_ENV, GL2ES1.GL_TEXTURE_ENV_MODE,
+					getLighting() ? GL2ES1.GL_MODULATE : GL2ES1.GL_DECAL);
 		}
 
 	}
