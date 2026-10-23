@@ -453,7 +453,7 @@ public class ModelFactory implements IModelFactory {
 		}
 		final IModelDescription model = new ModelDescription(modelName, null, projectPath, modelPath,
 				source.getElement(), null, parent, null, globalFacets, collector, documentationContext,
-				absoluteAlternatePathAsStrings, parent.getAgentConstructor());
+				absoluteAlternatePathAsStrings, parent.getConstructor());
 		final Collection<String> allModelNames = Iterables.size(models) == 1 ? null : ImmutableSet
 				.copyOf(Iterables.transform(Iterables.skip(models, 1), each -> buildModelName(each.getName())));
 		model.setImportedModelNames(allModelNames);
@@ -1106,8 +1106,7 @@ public class ModelFactory implements IModelFactory {
 	IClassDescription lookupClass(final String name, final Map<String, ITypeDescription> cache) {
 		ITypeDescription result = cache.get(name);
 		if (result instanceof IClassDescription cd) return cd;
-		if (IKeyword.OBJECT.equals(name)) return GamaMetaModel.getObjectClassDescription();
-		return null;
+		return GamaMetaModel.getClassDescription(name);
 	}
 
 }

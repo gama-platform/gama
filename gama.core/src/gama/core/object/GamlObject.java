@@ -49,16 +49,18 @@ public class GamlObject implements IObject {
 	 *            the species.
 	 */
 	public GamlObject(final IScope scope, final IClass species, final Map<String, Object> attributes) {
+		this(species);
+		initializeAttributes(scope, attributes);
+	}
+
+	/**
+	 * Allocates an object without initializing its GAML attributes. Used by Java-backed class constructors.
+	 */
+	protected GamlObject(final IClass species) {
 		this.index = System.identityHashCode(this);
 		this.hashCode = Objects.hash(species, index);
 		this.species = species;
 		this.attributes = GamaMapFactory.create();
-		if (attributes != null && !attributes.isEmpty()) { this.attributes.putAll(attributes); }
-		// We initialize the attributes using either the provided value, the init facet, or the default value of the
-		// type
-		species.getVars().forEach(v -> {
-			v.initializeWith(scope, this, attributes == null ? null : attributes.get(v.getName()));
-		});
 	}
 
 	/**
@@ -72,7 +74,12 @@ public class GamlObject implements IObject {
 	 */
 	@Override
 	public GamlObject copy(final IScope scope) throws GamaRuntimeException {
-		return new GamlObject(scope, species, attributes);
+		final IMap<String, Object> values = GamaMapFactory.create();
+		values.putAll(attributes);
+		for (final var variable : species.getVars()) { values.put(variable.getName(), variable.value(scope, this)); }
+		final IObject copy = species.createInstance(scope, values);
+		if (copy instanceof GamlObject object) return object;
+		throw GamaRuntimeException.error("Cannot copy " + getSpeciesName() + " as a GamlObject", scope);
 	}
 
 	/**
@@ -115,12 +122,12 @@ public class GamlObject implements IObject {
 
 	@Override
 	public Object get(final IScope scope, final String index) throws GamaRuntimeException {
-		return attributes.get(index);
+		return species.hasVar(index) ? getDirectVarValue(scope, index) : attributes.get(index);
 	}
 
 	@Override
 	public Object getFromIndicesList(final IScope scope, final IList<String> indices) throws GamaRuntimeException {
-		return null;
+		return IObject.super.getFromIndicesList(scope, indices);
 	}
 
 	@Override

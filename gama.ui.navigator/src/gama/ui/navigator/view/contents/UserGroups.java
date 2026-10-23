@@ -11,7 +11,11 @@
 package gama.ui.navigator.view.contents;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
@@ -19,6 +23,7 @@ import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 
@@ -263,7 +268,49 @@ public final class UserGroups {
 		gama.ui.shared.utils.WorkbenchHelper.runInUI("Refresh groups", 5, m -> {
 			final NavigatorRoot root = NavigatorRoot.getInstance();
 			for (final TopLevelFolder folder : root.getFolders()) { folder.initializeChildren(); }
-			root.getManager().refreshResource(root);
+			WorkbenchHelper.refreshNavigator();
+		});
+	}
+
+	/**
+	 * Deletes a user group, its projects and its remaining files. Project registrations are removed through the
+	 * workspace API; filesystem traversal does not follow symbolic links.
+	 */
+	public static void deleteGroup(final IPath relative, final IProgressMonitor monitor)
+			throws CoreException, IOException {
+		final String error = validate(relative.toString());
+		if (relative.isEmpty() || error != null)
+			throw new IOException(error == null ? "Only user groups can be deleted" : error);
+		final IPath location = workspaceLocation().append(relative);
+		final java.nio.file.Path directory = location.toFile().toPath();
+		final java.nio.file.Path workspace = workspaceLocation().toFile().toPath().toRealPath();
+		if (Files.exists(directory)) {
+			final java.nio.file.Path resolved = directory.toRealPath();
+			if (resolved.equals(workspace) || !resolved.startsWith(workspace))
+				throw new IOException("The group directory must be inside the workspace");
+		}
+		for (final IProject project : GAMA.getWorkspaceManager().getRoot().getProjects()) {
+			if (project.getLocation() != null && location.isPrefixOf(project.getLocation())) {
+				// Remove registrations only; the walk below deletes contents without following linked directories.
+				project.delete(false, true, monitor);
+			}
+		}
+		if (!Files.exists(directory, java.nio.file.LinkOption.NOFOLLOW_LINKS)) return;
+		Files.walkFileTree(directory, new SimpleFileVisitor<>() {
+			@Override
+			public FileVisitResult visitFile(final java.nio.file.Path file, final BasicFileAttributes attrs)
+					throws IOException {
+				Files.delete(file);
+				return FileVisitResult.CONTINUE;
+			}
+
+			@Override
+			public FileVisitResult postVisitDirectory(final java.nio.file.Path dir, final IOException exception)
+					throws IOException {
+				if (exception != null) throw exception;
+				Files.delete(dir);
+				return FileVisitResult.CONTINUE;
+			}
 		});
 	}
 

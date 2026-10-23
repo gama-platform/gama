@@ -104,6 +104,11 @@ public class TestStatement extends AbstractStatementSequence implements IStateme
 	/** The summary. */
 	IndividualTestSummary summary;
 
+	private record SelectionMatch(TestSelection selection, boolean selected) {}
+
+	/** Last selection checked, cached because tests of species are executed by every agent at every step. */
+	private volatile SelectionMatch lastMatch;
+
 	/**
 	 * Instantiates a new test statement.
 	 *
@@ -151,7 +156,7 @@ public class TestStatement extends AbstractStatementSequence implements IStateme
 	@Override
 	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
 		final var gui = GAMA.getGui();
-		if (gui.isTestStopRequested() || scope.interrupted()) return null;
+		if (gui.isTestStopRequested() || scope.interrupted() || !isSelected(TestSelection.active(scope))) return null;
 		getSummary().reset();
 		TestExperimentRunner.entering(scope, getSummary());
 		gui.displayRunningTest(scope, getName());
@@ -192,6 +197,16 @@ public class TestStatement extends AbstractStatementSequence implements IStateme
 		}
 		return lastResult;
 
+	}
+
+	private boolean isSelected(final TestSelection selection) {
+		if (selection == null) return true;
+		SelectionMatch match = lastMatch;
+		if (match == null || match.selection() != selection) {
+			match = new SelectionMatch(selection, selection.matches(this));
+			lastMatch = match;
+		}
+		return match.selected();
 	}
 
 	@Override

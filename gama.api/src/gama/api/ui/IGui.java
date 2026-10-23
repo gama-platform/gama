@@ -472,6 +472,15 @@ public interface IGui {
 	/** Returns true when the GUI takes responsibility for running this test experiment in isolation. */
 	default boolean runTestExperiment(final IModelSpecies model, final String experiment) { return false; }
 
+	/**
+	 * Same as {@link #runTestExperiment(IModelSpecies, String)}, restricted to the selected test when
+	 * {@code selection} is not null.
+	 */
+	default boolean runTestExperiment(final IModelSpecies model, final String experiment,
+			final gama.api.utils.tests.TestSelection selection) {
+		return selection == null && runTestExperiment(model, experiment);
+	}
+
 	/** Publishes an incremental test snapshot; headless workers use it to preserve results before interruption. */
 	default void displayTestSummary(final IScope scope,
 			final gama.api.utils.tests.IndividualTestSummary summary, final boolean finished) {}

@@ -38,6 +38,8 @@ import gama.api.constants.IGamlIssue;
 import gama.api.gaml.GAML;
 import gama.api.gaml.symbols.Facets;
 import gama.api.kernel.agent.IAgentConstructor;
+import gama.api.kernel.object.IObject;
+import gama.api.kernel.object.IObjectConstructor;
 import gama.dev.DEBUG;
 import gaml.compiler.ast.SyntacticFactory;
 import gaml.compiler.factories.ModelFactory;
@@ -383,6 +385,14 @@ public class DescriptionFactory implements IDescriptionFactory {
 	public IClassDescription createBuiltInClassDescription(final String name, final String plugin) {
 		ISymbolDescriptionFactory.Clazz factory = (ISymbolDescriptionFactory.Clazz) getFactory(ISymbolKind.CLASS);
 		return factory.createBuiltInClassDescription(name, plugin);
+	}
+
+	@Override
+	public IClassDescription createBuiltInClassDescription(final String name,
+			final Class<? extends IObject> clazz, final IClassDescription parent,
+			final IObjectConstructor constructor, final String plugin) {
+		ISymbolDescriptionFactory.Clazz factory = (ISymbolDescriptionFactory.Clazz) getFactory(ISymbolKind.CLASS);
+		return factory.createBuiltInClassDescription(name, clazz, parent, constructor, plugin);
 	}
 
 	/**

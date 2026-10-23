@@ -10,14 +10,21 @@
  ********************************************************************************************************/
 package gama.ui.navigator.view.actions;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.swt.program.Program;
 
 import gama.api.GAMA;
 import gama.ui.navigator.view.contents.TopLevelFolder;
@@ -133,7 +140,7 @@ public final class GroupActions {
 	}
 
 	/**
-	 * Deletes an empty group.
+	 * Deletes a group and its contents after confirmation.
 	 */
 	public static class DeleteGroup extends Action {
 
@@ -148,20 +155,46 @@ public final class GroupActions {
 			super("Delete...");
 			this.group = group;
 			setImageDescriptor(GamaIcon.named(IGamaIcons.DELETE).descriptor());
+			setEnabled(group.isEditable());
 		}
 
 		@Override
 		public void run() {
-			if (!group.getAllProjects().isEmpty()) {
-				GAMA.getGui().getDialogFactory().error("This group still contains projects. "
-						+ "Move or delete them first.");
-				return;
-			}
+			if (!group.isEditable()) return;
 			if (!GAMA.getGui().getDialogFactory().confirm("Delete group folder",
-					"Delete the empty group '" + group.getName() + "'?"))
+					"Permanently delete the group '" + group.getName()
+							+ "' and all its projects, subgroups and files from disk? This cannot be undone."))
 				return;
-			UserGroups.deleteIfEmpty(group.getRelativePath());
-			UserGroups.refreshNavigator();
+			final List<IResource> projects = new ArrayList<>();
+			group.getAllProjects().forEach(p -> projects.add(p.getResource()));
+			try {
+				UserGroups.deleteGroup(group.getRelativePath(), new NullProgressMonitor());
+			} catch (final CoreException | IOException e) {
+				GAMA.getGui().getDialogFactory().error("The group could not be deleted: " + e.getMessage());
+			} finally {
+				DeleteResourceAction.closeMatchingEditors(projects, true);
+				UserGroups.refreshNavigator();
+			}
+		}
+	}
+
+	/** Opens a group's directory in the operating system's file manager. */
+	public static class RevealGroup extends Action {
+
+		private final UserGroupFolder group;
+
+		public RevealGroup(final UserGroupFolder group) {
+			super("Reveal in OS");
+			this.group = group;
+			setImageDescriptor(GamaIcon.named("navigator/file.reveal").descriptor());
+		}
+
+		@Override
+		public void run() {
+			final IPath location = group.getLocation();
+			if (!location.toFile().isDirectory() || !Program.launch(location.toOSString())) {
+				GAMA.getGui().getDialogFactory().error("The group directory could not be opened: " + location);
+			}
 		}
 	}
 

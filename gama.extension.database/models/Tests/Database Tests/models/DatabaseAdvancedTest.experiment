@@ -7,7 +7,7 @@
 
 model DatabaseAdvancedTestModel
 
-species sql_agent skills: [SQLSKILL] { }
+species sql_agent skills: [sql] { }
 
 experiment DatabaseAdvancedTest type: test autorun: true {
 

@@ -177,7 +177,7 @@ public class GamaPopulation<T extends IAgent> extends AbstractPopulation<T> {
 		final int number = geometries.length(scope);
 		if (number == 0) return GamaListFactory.getEmptyList();
 		final IList<T> list = GamaListFactory.create(getGamlType().getContentType(), number);
-		final IAgentConstructor constr = species.getDescription().getAgentConstructor();
+		final IAgentConstructor constr = species.getDescription().getConstructor();
 		for (final IShape geom : geometries.iterable(scope)) {
 			// WARNING Should be redefined somehow
 			final T a = (T) constr.createOneAgent(this, currentAgentIndex++);
@@ -229,7 +229,7 @@ public class GamaPopulation<T extends IAgent> extends AbstractPopulation<T> {
 			final boolean toBeScheduled, final IStatement sequence) throws GamaRuntimeException {
 		if (number == 0) return GamaListFactory.getEmptyList();
 		final IList<T> list = GamaListFactory.create(getGamlType().getContentType(), number);
-		final IAgentConstructor constr = species.getDescription().getAgentConstructor();
+		final IAgentConstructor constr = species.getDescription().getConstructor();
 		for (int i = 0; i < number; i++) {
 			final T a = (T) constr.createOneAgent(this, currentAgentIndex++);
 			// Try to grab the location earlier

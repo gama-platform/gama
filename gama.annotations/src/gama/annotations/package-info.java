@@ -22,6 +22,7 @@
  * <h3>Structural Annotations Layer</h3>
  * <ul>
  *   <li><strong>{@link gama.annotations.species @species}</strong> - Defines agent types and templates</li>
+ *   <li><strong>{@link gama.annotations.gaml_class @gaml_class}</strong> - Defines Java-backed non-agent classes</li>
  *   <li><strong>{@link gama.annotations.skill @skill}</strong> - Defines reusable behavioral components</li>
  *   <li><strong>{@link gama.annotations.symbol @symbol}</strong> - Defines GAML language constructs</li>
  *   <li><strong>{@link gama.annotations.operator @operator}</strong> - Defines computational operations</li>

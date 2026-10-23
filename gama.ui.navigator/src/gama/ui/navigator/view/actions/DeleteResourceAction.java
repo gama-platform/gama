@@ -37,6 +37,7 @@ import org.eclipse.ui.part.FileEditorInput;
 
 import gama.ui.navigator.view.contents.LinkedFile;
 import gama.ui.navigator.view.contents.ResourceManager;
+import gama.ui.navigator.view.contents.UserGroupFolder;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.workspace.metadata.FileMetaDataProvider;
 
@@ -187,6 +188,11 @@ public class DeleteResourceAction extends SelectionListenerAction {
 
 	@Override
 	public void run() {
+		final IStructuredSelection selection = getStructuredSelection();
+		if (selection.size() == 1 && selection.getFirstElement() instanceof UserGroupFolder group) {
+			new GroupActions.DeleteGroup(group).run();
+			return;
+		}
 		final List<? extends IResource> resources = getSelectedResources();
 		if (LTKLauncher.openDeleteWizard(new StructuredSelection(resources))) {
 			closeMatchingEditors(resources, true);
@@ -200,6 +206,8 @@ public class DeleteResourceAction extends SelectionListenerAction {
 	 */
 	@Override
 	protected boolean updateSelection(final IStructuredSelection selection) {
+		if (selection.toList().stream().anyMatch(UserGroupFolder.class::isInstance))
+			return selection.size() == 1 && ((UserGroupFolder) selection.getFirstElement()).isEditable();
 		return canDelete(getSelectedResources());
 	}
 

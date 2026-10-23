@@ -9,6 +9,7 @@
  ********************************************************************************************************/
 package gama.api.kernel.object;
 
+import java.util.Map;
 import gama.api.compilation.IVarAndActionSupport;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
@@ -22,6 +23,16 @@ import gama.api.utils.interfaces.IAttributed;
  *
  */
 public interface IObject extends IAttributed, IContainer.ToGet<String, Object>, IVarAndActionSupport, IValue {
+
+	/**
+	 * Initializes GAML attributes after the Java constructor and field initializers have completed.
+	 */
+	default void initializeAttributes(final IScope scope, final Map<String, Object> values) {
+		if (values != null) { getAttributes(true).putAll(values); }
+		for (final var variable : getSpecies().getVars()) {
+			variable.initializeWith(scope, this, values == null ? null : values.get(variable.getName()));
+		}
+	}
 
 	/**
 	 * Gets the species.

@@ -72,6 +72,7 @@ import gama.api.utils.server.ISocketCommand;
 import gama.api.utils.tests.CompoundSummary;
 import gama.api.utils.tests.IsolatedTestRunner;
 import gama.api.utils.tests.TestExperimentRunner;
+import gama.api.utils.tests.TestSelection;
 import gama.core.outputs.InspectDisplayOutput;
 import gama.core.outputs.display.AbstractDisplayGraphics;
 import gama.dev.DEBUG;
@@ -133,8 +134,14 @@ public class SwtGui implements IGui {
 
 	@Override
 	public boolean runTestExperiment(final IModelSpecies model, final String experiment) {
+		return runTestExperiment(model, experiment, null);
+	}
+
+	@Override
+	public boolean runTestExperiment(final IModelSpecies model, final String experiment,
+			final TestSelection selection) {
 		if (!GamaPreferences.Experimental.ISOLATED_TESTS.getValue()) {
-			TestsRunner.start(model, experiment);
+			TestsRunner.start(model, experiment, selection);
 			return true;
 		}
 		final String modelPath;
@@ -163,7 +170,7 @@ public class SwtGui implements IGui {
 			}
 		});
 		if (dirty[0]) return true;
-		TestsRunner.start(model, experiment);
+		TestsRunner.start(model, experiment, selection);
 		return true;
 	}
 

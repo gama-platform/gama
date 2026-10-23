@@ -160,6 +160,13 @@ public class UserGroupFolder extends VirtualContent<VirtualContent<?>> {
 	 */
 	public IPath getRelativePath() { return relativePath; }
 
+	/** Returns the directory represented by this group, including groups contributed by plugins. */
+	public IPath getLocation() {
+		if (editable) return UserGroups.workspaceLocation().append(relativePath);
+		final IPath project = getAllProjects().getFirst().getResource().getLocation();
+		return project.removeLastSegments(ProjectCategory.groupOf(project).segmentCount() + 1).append(relativePath);
+	}
+
 	/**
 	 * Gets the projects contained in this group or its sub-groups.
 	 *

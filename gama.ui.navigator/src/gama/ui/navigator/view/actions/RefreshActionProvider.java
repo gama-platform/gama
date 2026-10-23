@@ -67,6 +67,9 @@ public class RefreshActionProvider extends CommonActionProvider {
 		menu.appendToGroup("group.refresh", cleanAndUpdateAction);
 		if (selection.size() == 1) {
 			final Object o = selection.getFirstElement();
+			if (o instanceof UserGroupFolder g) {
+				menu.appendToGroup("group.copy", new GroupActions.RevealGroup(g));
+			}
 			final UserGroupFolder group = o instanceof UserGroupFolder g && g.isEditable() ? g : null;
 			if (GroupActions.isUserFolder(o) || group != null) {
 				final MenuManager newMenu = new MenuManager("New...",
@@ -78,7 +81,6 @@ public class RefreshActionProvider extends CommonActionProvider {
 			if (group != null) {
 				menu.appendToGroup("group.refresh", new Separator());
 				menu.appendToGroup("group.refresh", new GroupActions.RenameGroup(group));
-				menu.appendToGroup("group.refresh", new GroupActions.DeleteGroup(group));
 			}
 		}
 	}

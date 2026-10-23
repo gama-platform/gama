@@ -30,6 +30,7 @@ import gama.api.utils.tests.CompoundSummary;
 import gama.api.utils.tests.TestExperimentSummary;
 import gama.api.utils.tests.IsolatedTestRunner;
 import gama.api.utils.tests.TestExperimentRunner;
+import gama.api.utils.tests.TestSelection;
 import gama.dev.DEBUG;
 import gama.ui.shared.access.ModelsFinder;
 import gama.ui.shared.utils.SwtGui;
@@ -46,14 +47,19 @@ public class TestsRunner {
 	private static final AtomicBoolean RUNNING = new AtomicBoolean();
 
 	public static void start(final IModelSpecies model, final String experiment) {
+		start(model, experiment, null);
+	}
+
+	/** Runs a test experiment; only the selected test is run when {@code selection} is not null. */
+	public static void start(final IModelSpecies model, final String experiment, final TestSelection selection) {
 		if (!RUNNING.compareAndSet(false, true)) return;
 		final IGui gui = GAMA.getRegularGui();
 		final IScope scope = GAMA.getRuntimeScope();
 		gui.openTestView(scope, false);
 		Job.createSystem("Test " + experiment, m -> {
 			try {
-				gui.displayTestCounts(0, TestExperimentRunner.countTests(model, experiment));
-				final var result = TestExperimentRunner.run(model, experiment, gui);
+				gui.displayTestCounts(0, TestExperimentRunner.countTests(model, experiment, selection));
+				final var result = TestExperimentRunner.run(model, experiment, gui, selection);
 				gui.displayTestsResults(scope, result);
 			} catch (final RuntimeException e) {
 				DEBUG.ERR("Unable to start test experiment " + experiment, e);

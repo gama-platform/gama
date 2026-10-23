@@ -25,7 +25,6 @@ import org.eclipse.emf.common.util.URI;
 
 import gama.api.GAMA;
 import gama.api.compilation.GamlCompilationError;
-import gama.api.gaml.statements.IStatement;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.runtime.scope.IScope;
@@ -36,6 +35,7 @@ import gama.api.utils.prefs.GamaPreferences;
 import gama.api.utils.tests.IndividualTestSummary;
 import gama.api.utils.tests.TestProcessProtocol;
 import gama.api.utils.tests.TestExperimentSummary;
+import gama.api.utils.tests.TestSelection;
 import gama.core.experiment.TestAgent;
 import gama.core.experiment.parameters.ParametersSet;
 import gama.dev.DEBUG;
@@ -75,7 +75,9 @@ public final class TestWorkerApplication implements IApplication {
 					final String name = TestProcessProtocol.readString(requests);
 					gui.useUIConsole = requests.readBoolean();
 					GamaPreferences.Runtime.TEST_TIMEOUT.set(requests.readInt());
-					run(path, name, events);
+					final String location = TestProcessProtocol.readString(requests);
+					final String fragment = TestProcessProtocol.readString(requests);
+					run(path, name, events, location.isEmpty() ? null : new TestSelection(location, fragment));
 				}
 				return IApplication.EXIT_OK;
 			} catch (final Exception e) {
@@ -88,7 +90,8 @@ public final class TestWorkerApplication implements IApplication {
 		}
 	}
 
-	private void run(final String path, final String name, final OutputStream events) throws IOException {
+	private void run(final String path, final String name, final OutputStream events, final TestSelection selection)
+			throws IOException {
 		// Experiment disposal releases its compiled statements; each request needs a fresh model instance.
 		final var errors = new ArrayList<GamlCompilationError>();
 		final var model = GamlModelBuilder.getInstance().compile(URI.createFileURI(path), errors);
@@ -96,11 +99,13 @@ public final class TestWorkerApplication implements IApplication {
 			throw new IllegalArgumentException("Cannot compile test model " + path + ": " + errors);
 		final var plan = model.getExperiment(name);
 		if (plan == null || !plan.isTest()) throw new IllegalArgumentException("Not a test experiment: " + name);
+		if (selection != null) { selection.validate(model, name); }
 		final var initialSummary = new TestExperimentSummary(name + " in " + Path.of(path).getFileName(),
 				URI.createFileURI(path));
-		model.getAllTests().forEach(test -> initialSummary.addSummary(test.getSummary()));
-		plan.getBehaviors().forEach(statement -> {
-			if (statement instanceof IStatement.Test test) { initialSummary.addSummary(test.getSummary()); }
+		TestSelection.testsOf(model, name).forEach(test -> {
+			if ((selection == null || selection.matches(test)) && test.getSummary() instanceof IndividualTestSummary s) {
+				initialSummary.addSummary(s);
+			}
 		});
 		initialSummary.reset();
 		TestProcessProtocol.send(events, TestProcessProtocol.READY, out -> {});
@@ -113,6 +118,7 @@ public final class TestWorkerApplication implements IApplication {
 				publishedTimeout = 0;
 				publishTimeout(events);
 			}
+			TestSelection.activate(plan, selection);
 			GAMA.addHeadlessExperiment(model, name, new ParametersSet(), null);
 			final var agent = (TestAgent) experiment.getAgent();
 			if (!stopped) { agent.init(agent.getScope()); }
@@ -120,7 +126,11 @@ public final class TestWorkerApplication implements IApplication {
 			summary = agent.getSummary();
 		} finally {
 			synchronized (this) { experiment = null; }
-			GAMA.closeExperiment(plan);
+			try {
+				GAMA.closeExperiment(plan);
+			} finally {
+				TestSelection.activate(plan, null);
+			}
 		}
 		if (timeoutPublicationFailure != null) throw timeoutPublicationFailure;
 		TestProcessProtocol.send(events, TestProcessProtocol.RESULT,

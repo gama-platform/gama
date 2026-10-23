@@ -72,7 +72,8 @@ public interface ISpeciesDescription extends IClassDescription {
 	/**
 	 * @return
 	 */
-	IAgentConstructor getAgentConstructor();
+	@Override
+	IAgentConstructor getConstructor();
 
 	/**
 	 * @param a

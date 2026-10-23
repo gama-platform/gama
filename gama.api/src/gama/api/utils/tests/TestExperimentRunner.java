@@ -46,6 +46,14 @@ public final class TestExperimentRunner {
 	}
 
 	public static int countTests(final IModelSpecies model, final String name) {
+		return countTests(model, name, null);
+	}
+
+	public static int countTests(final IModelSpecies model, final String name, final TestSelection selection) {
+		if (selection != null) {
+			selection.validate(model, name);
+			return 1;
+		}
 		return model.getAllTests().size() + (int) model.getExperiment(name).getBehaviors().stream()
 				.filter(statement -> statement instanceof WithTestSummary<?>).count();
 	}
@@ -57,12 +65,19 @@ public final class TestExperimentRunner {
 	}
 
 	public static TestExperimentSummary run(final IModelSpecies model, final String name, final IGui gui) {
+		return run(model, name, gui, null);
+	}
+
+	/** Runs the test experiment, restricted to the selected test when {@code selection} is not null. */
+	public static TestExperimentSummary run(final IModelSpecies model, final String name, final IGui gui,
+			final TestSelection selection) {
+		if (selection != null) { selection.validate(model, name); }
 		if (GamaPreferences.Experimental.ISOLATED_TESTS.getValue())
-			return IsolatedTestRunner.run(IsolatedTestRunner.modelPath(model), name, gui);
+			return IsolatedTestRunner.run(IsolatedTestRunner.modelPath(model), name, gui, selection);
 		final var runner = new TestExperimentRunner(model.getExperiment(name));
 		if (!ACTIVE.compareAndSet(null, runner)) throw new IllegalStateException("A test experiment is already running");
 		try {
-			return runner.execute(model, name, gui);
+			return runner.execute(model, name, gui, selection);
 		} finally {
 			ACTIVE.compareAndSet(runner, null);
 		}
@@ -108,7 +123,8 @@ public final class TestExperimentRunner {
 		return termination == TestState.TIMED_OUT ? "Timeout after " + seconds + " seconds" : "Interrupted by user";
 	}
 
-	private TestExperimentSummary execute(final IModelSpecies model, final String name, final IGui gui) {
+	private TestExperimentSummary execute(final IModelSpecies model, final String name, final IGui gui,
+			final TestSelection selection) {
 		final var watchdog = Executors.newSingleThreadScheduledExecutor(r -> {
 			final var thread = new Thread(r, "Test experiment timeout");
 			thread.setDaemon(true);
@@ -128,6 +144,7 @@ public final class TestExperimentRunner {
 			}, 0, 20, TimeUnit.MILLISECONDS);
 			if (gui.isTestStopRequested()) { cancel(TestState.INTERRUPTED); }
 			if (termination == null) {
+				TestSelection.activate(experiment, selection);
 				GAMA.addHeadlessExperiment(model, name, GamaMapFactory.create(Types.STRING, Types.NO_TYPE), null);
 				final var agent = (IExperimentAgent.Test) experiment.getAgent();
 				result = agent.getSummary();
@@ -162,7 +179,11 @@ public final class TestExperimentRunner {
 			watchdog.shutdownNow();
 			// Consume only the interruption issued by this runner; later experiments must start normally.
 			if (termination != null) { Thread.interrupted(); }
-			GAMA.closeExperiment(experiment);
+			try {
+				GAMA.closeExperiment(experiment);
+			} finally {
+				TestSelection.activate(experiment, null);
+			}
 		}
 		return result;
 	}

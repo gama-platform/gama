@@ -23,7 +23,10 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.window.Window;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.services.AbstractServiceFactory;
 import org.eclipse.ui.services.IServiceLocator;
@@ -43,6 +46,7 @@ import gama.api.utils.files.IGamlFileInfo;
 import gama.api.utils.tests.TestExperimentSummary;
 import gama.api.utils.tests.IsolatedTestRunner;
 import gama.api.utils.tests.TestExperimentRunner;
+import gama.api.utils.tests.TestSelection;
 import gama.dev.DEBUG;
 import gama.ui.editor.internal.EditorActivator;
 import gama.ui.navigator.view.contents.WrappedGamaFile;
@@ -181,6 +185,38 @@ public class ModelsManager extends AbstractServiceFactory implements IModelsMana
 		final IModelSpecies model = findModel(object);
 		if (model == null) return;
 		GAMA.runGuiExperiment(exp, model);
+	}
+
+	@Override
+	public void runTest(final Object object, final URI test) {
+		final IModelSpecies model = findModel(object);
+		if (model == null) return;
+		try {
+			final TestSelection selection = TestSelection.of(test);
+			final List<String> experiments = selection.experimentsIn(model);
+			final String experiment = switch (experiments.size()) {
+				case 0 -> throw new IllegalArgumentException(
+						"No test experiment of this model runs this test. Declare it in, or add, an experiment of type test.");
+				case 1 -> experiments.get(0);
+				default -> chooseTestExperiment(experiments);
+			};
+			if (experiment != null) { GAMA.runGuiExperiment(experiment, model, selection); }
+		} catch (final IllegalArgumentException e) {
+			GAMA.getGui().getDialogFactory().error("Unable to run this test: " + e.getMessage());
+		}
+	}
+
+	private static String chooseTestExperiment(final List<String> experiments) {
+		final String[] result = { null };
+		WorkbenchHelper.run(() -> {
+			final var dialog = new ElementListSelectionDialog(WorkbenchHelper.getShell(), new LabelProvider());
+			dialog.setTitle("Run this test");
+			dialog.setMessage("Choose the test experiment in which to run this test:");
+			dialog.setElements(experiments.toArray());
+			dialog.setMultipleSelection(false);
+			if (dialog.open() == Window.OK && dialog.getFirstResult() instanceof String name) { result[0] = name; }
+		});
+		return result[0];
 	}
 
 	@Override
