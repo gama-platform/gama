@@ -1399,8 +1399,12 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	public int compileAsList(final Runnable r) {
 		final int index = gl.glGenLists(1);
 		gl.glNewList(index, GL2.GL_COMPILE);
-		r.run();
-		gl.glEndList();
+		try {
+			r.run();
+		} finally {
+			// Always close the list: an exception would otherwise leave GL in compile mode and swallow the whole frame
+			gl.glEndList();
+		}
 		return index;
 	}
 
