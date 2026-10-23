@@ -378,14 +378,19 @@ public class GamaCoordinateSequence implements ICoordinates {
 					(v0.getX() - v1.getX()) * (v0.getY() + v1.getY()));
 		}
 		if (!isRing(points)) {
-			final IPoint v0 = points[0];
-			final IPoint v1 = points[1];
+			final IPoint v0 = points[points.length - 1];
+			final IPoint v1 = points[0];
 			normal.add((v0.getY() - v1.getY()) * (v0.getZ() + v1.getZ()),
 					(v0.getZ() - v1.getZ()) * (v0.getX() + v1.getX()),
 					(v0.getX() - v1.getX()) * (v0.getY() + v1.getY()));
 		}
-		final double norm = clockwise ? -normal.norm() : normal.norm();
-		normal.divideBy(norm / factor);
+		final double norm = normal.norm();
+		if (norm == 0d || Double.isNaN(norm)) {
+			// Degenerate (zero-area) sequence: fall back to the vertical axis instead of dividing by zero
+			normal.setLocation(0, 0, clockwise ? -factor : factor);
+			return;
+		}
+		normal.divideBy((clockwise ? -norm : norm) / factor);
 	}
 
 	/**
