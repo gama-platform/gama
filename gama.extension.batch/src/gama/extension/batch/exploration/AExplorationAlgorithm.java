@@ -418,13 +418,19 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	 *            the parameter sets
 	 * @return the list
 	 */
+	@SuppressWarnings ("unchecked")
 	private List<ParametersSet> buildParametersSetList(final IScope scope,
 			final List<Map<String, Object>> parameterSets) {
 		var sets = new ArrayList<ParametersSet>();
-		for (Map<String, Object> parameterSet : parameterSets) {
+		for (Map<?, ?> parameterSet : (List<Map<?, ?>>) (List<?>) parameterSets) {
 			ParametersSet p = new ParametersSet();
-			for (Entry<String, Object> entry : parameterSet.entrySet()) {
-				p.put(entry.getKey(), entry.getValue() instanceof IExpression
+			for (Entry<?, ?> entry : parameterSet.entrySet()) {
+				if (!(entry.getKey() instanceof String)) {
+					GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("Parameter names in the '"
+							+ IKeyword.WITH + "' facet must be strings (e.g. \"my_param\"::0.5), got: "
+							+ entry.getKey(), scope), true);
+				}
+				p.put((String) entry.getKey(), entry.getValue() instanceof IExpression
 						? ((IExpression) entry.getValue()).value(scope) : entry.getValue());
 			}
 			sets.add(p);

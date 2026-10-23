@@ -15,6 +15,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
+import java.util.function.IntSupplier;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.DoubleStream;
 
 import gama.annotations.doc;
@@ -47,7 +55,6 @@ import gama.core.experiment.parameters.ExperimentParameter;
 import gama.core.experiment.parameters.ParameterAdapter;
 import gama.core.experiment.parameters.ParametersSet;
 import gama.core.simulation.SimulationPopulation;
-import gama.dev.THREADS;
 import gama.extension.batch.exploration.AExplorationAlgorithm;
 import gama.extension.batch.exploration.Exploration;
 import gama.extension.batch.optimization.AOptimizationAlgorithm;
@@ -78,6 +85,9 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 
 	/** The run number. */
 	private int runNumber;
+
+	/** The number of simulations that have finished since the beginning of the batch. */
+	private volatile int finishedSimulations;
 
 	/** The current solution. */
 	ParametersSet currentSolution;
@@ -363,7 +373,6 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 		// LinkedHashSet<ParametersSet> sols_u = new LinkedHashSet<>(sols);
 		for (ParametersSet sol : sols) {
 			for (int i = 0; i < getSeeds().length; i++) {
-				runNumber = runNumber + 1;
 				Map<String, Object> sim = new HashMap<>();
 				sim.put("parameters", sol);
 				sim.put("seed", getSeeds()[i]);
@@ -371,46 +380,20 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 			}
 		}
 
-		int nb = Math.min(sims.size(), numberOfCores);
-
-		List<Map<String, Object>> simsToRun = new ArrayList<>();
-
-		for (int i = 0; i < nb; i++) { simsToRun.add(sims.remove(0)); }
-		Map<IAgent, ParametersSet> simToParameter = GamaMapFactory.create();
-		Iterator<Map<String, Object>> it = simsToRun.iterator();
-		while (it.hasNext()) { createSimulation(it.next(), simToParameter); }
-		while (pop.hasScheduledSimulations() && !dead) {
-			for (final ISimulationAgent agent : new ArrayList<>(pop.getRunningSimulations())) {
-				agent.step();
-				ParametersSet ps = simToParameter.get(agent);
-				currentSolution = new ParametersSet(ps);
-
-				// test the condition first in case it is paused
-				final boolean stopConditionMet = dead
-						|| Cast.asBool(agent.getScope(), agent.getScope().evaluate(stopCondition, agent).getValue());
-				final boolean mustStop = stopConditionMet || agent.dead();
-				// AD -- removed because it would prevent simulations from running if 'do pause' was called in the
-				// experiment
-				// || agent.getScope().isPaused();
-				if (mustStop) {
-					pop.unscheduleSimulation(agent);
-					// pop.remove(agent);
-					IMap<String, Object> localRes = manageOutputAndCloseSimulation(agent, ps, false, simDispose);
-
-					if (!res.containsKey(ps)) { res.put(ps, GamaMapFactory.create()); }
-					localRes.forEach((output, obj) -> {
-						if (!res.get(ps).containsKey(output)) { res.get(ps).put(output, GamaListFactory.create()); }
-						res.get(ps).get(output).add(obj);
-					});
-
-					if (!sims.isEmpty()) { createSimulation(sims.remove(0), simToParameter); }
-
-				}
-			}
-			if (!dead) { informStatus(pop, sims.size()); }
-			// We then verify that the front scheduler has not been paused
-			while (getSpecies().getController().isPaused() && !dead) { THREADS.WAIT(10); }
-		}
+		final Map<IAgent, ParametersSet> simToParameter = GamaMapFactory.create();
+		runSimulations(pop, numberOfCores, () -> {
+			if (sims.isEmpty()) return null;
+			return createSimulation(sims.remove(0), simToParameter);
+		}, sims::size, agent -> {
+			final ParametersSet ps = simToParameter.get(agent);
+			currentSolution = new ParametersSet(ps);
+			final IMap<String, Object> localRes = manageOutputAndCloseSimulation(agent, ps, false, simDispose);
+			if (!res.containsKey(ps)) { res.put(ps, GamaMapFactory.create()); }
+			localRes.forEach((output, obj) -> {
+				if (!res.get(ps).containsKey(output)) { res.get(ps).put(output, GamaListFactory.create()); }
+				res.get(ps).get(output).add(obj);
+			});
+		});
 
 		// When the simulations are finished, we give a chance to the outputs of
 		// the experiment and the experiment
@@ -519,29 +502,12 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 
 		int numberOfCores = pop.getMaxNumberOfConcurrentSimulations();
 		if (numberOfCores == 0) { numberOfCores = 1; }
-		int repeatIndex = 0;
-		while (repeatIndex < getSeeds().length && !dead) {
-			for (int coreIndex = 0; coreIndex < numberOfCores; coreIndex++) {
-				runNumber = runNumber + 1;
-
-				setSeed(getSeeds()[repeatIndex]);
-				createSimulation(currentSolution, true);
-				repeatIndex++;
-				if (repeatIndex == getSeeds().length || dead) { break; }
-			}
-			while (pop.hasScheduledSimulations() && !dead) {
-				for (final ISimulationAgent sim : new ArrayList<>(pop.getRunningSimulations())) {
-					sim.step();
-					final boolean stopConditionMet =
-							dead || Cast.asBool(sim.getScope(), sim.getScope().evaluate(stopCondition, sim).getValue());
-					if (stopConditionMet || sim.dead()) {
-						processFinishedSimulation(sim, outputs);
-					}
-				}
-				if (!dead) { informStatus(pop, repeatIndex); }
-				while (getSpecies().getController().isPaused() && !dead) { THREADS.WAIT(10); }
-			}
-		}
+		final int[] repeatIndex = { 0 };
+		runSimulations(pop, numberOfCores, () -> {
+			if (repeatIndex[0] >= getSeeds().length) return null;
+			setSeed(getSeeds()[repeatIndex[0]++]);
+			return createSimulation(currentSolution, true);
+		}, () -> getSeeds().length - repeatIndex[0], sim -> processFinishedSimulation(sim, outputs));
 
 		super.step(getScope());
 		if (dead) return outputs;
@@ -554,17 +520,68 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 	}
 
 	/**
+	 * Runs simulations, at most {@code concurrency} at a time. Each simulation runs on its own thread, without waiting
+	 * for the others, until its own stop condition is met; it is then collected and replaced by a new one.
+	 *
+	 * @param pop
+	 *            the simulation population
+	 * @param concurrency
+	 *            the maximum number of simulations running at the same time
+	 * @param factory
+	 *            creates (and schedules) the next simulation to run, or returns null when there are none left
+	 * @param remaining
+	 *            gives the number of simulations that are still to be created
+	 * @param collector
+	 *            called, from the experiment thread, for each finished simulation
+	 */
+	private void runSimulations(final SimulationPopulation pop, final int concurrency,
+			final Supplier<ISimulationAgent> factory, final IntSupplier remaining,
+			final Consumer<ISimulationAgent> collector) {
+		final BlockingQueue<ISimulationAgent> finished = new LinkedBlockingQueue<>();
+		final Predicate<ISimulationAgent> isOver = sim -> dead || sim.dead()
+				|| Cast.asBool(sim.getScope(), sim.getScope().evaluate(stopCondition, sim).getValue());
+		final BooleanSupplier isPaused = () -> getSpecies().getController().isPaused();
+		int running = 0;
+		try {
+			while (!dead) {
+				ISimulationAgent sim;
+				while (running < concurrency && (sim = factory.get()) != null) {
+					runNumber++;
+					pop.runAutonomously(sim, isOver, isPaused, finished::add);
+					running++;
+				}
+				if (running == 0) { break; }
+				informStatus(pop, remaining.getAsInt());
+				sim = finished.poll(100, TimeUnit.MILLISECONDS);
+				if (sim == null) { continue; }
+				running--;
+				pop.unscheduleSimulation(sim);
+				finishedSimulations++;
+				collector.accept(sim);
+			}
+		} catch (final InterruptedException e) {
+			Thread.currentThread().interrupt();
+		} finally {
+			// Whatever the reason we leave (end, death, interruption), no simulation thread should remain
+			for (final ISimulationAgent sim : new ArrayList<>(pop.getRunningSimulations())) {
+				pop.unscheduleSimulation(sim);
+			}
+		}
+	}
+
+	/**
 	 * Inform status.
 	 *
 	 * @param pop
 	 *            the pop
-	 * @param repeatIndex
-	 *            the repeat index
+	 * @param waiting
+	 *            the number of simulations not yet started
 	 */
-	private void informStatus(final SimulationPopulation pop, final int repeatIndex) {
-		getScope().getGui().getStatus().setStatus("Run " + runNumber + " | " + repeatIndex + "/" + seeds.length
-				+ " simulations (using " + pop.getNumberOfActiveThreads() + " threads)", IStatusMessage.SIMULATION_ICON,
-				null);
+	private void informStatus(final SimulationPopulation pop, final int waiting) {
+		getScope().getGui().getStatus()
+				.setStatus(finishedSimulations + " simulations finished | " + pop.getRunningSimulations().size()
+						+ " running | " + waiting + " waiting (using " + pop.getMaxNumberOfConcurrentSimulations()
+						+ " threads)", IStatusMessage.SIMULATION_ICON, null);
 		getScope().getGui().getStatus().updateExperimentStatus();
 	}
 
@@ -661,6 +678,9 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 		// We interrupt the simulation scope directly (as it cannot be
 		// interrupted by the global scheduler)
 		if (getSimulation() != null) { getSimulation().getScope().setDisposeStatus(); }
+		// When reloading, the views (including those of the 'permanent' section) must be closed, otherwise the new
+		// experiment opens its own next to the old ones (Issue #199). Not done on a simple reset between runs.
+		if (getSpecies().isReloading()) { getScope().getGui().closeSimulationViews(getScope(), false, true); }
 	}
 	
 	@Override
