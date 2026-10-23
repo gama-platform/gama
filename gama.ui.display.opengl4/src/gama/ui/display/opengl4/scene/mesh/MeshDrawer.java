@@ -390,7 +390,13 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 				colorBuffer.put(TRANSPARENT, 0, 4);
 			} else {
 				double[] c = colorProvider.getColor(y * cols + x, z, minMax[0], minMax[1], rgb);
-				colorBuffer.put((float) c[0]).put((float) c[1]).put((float) c[2]).put((float) c[3]);
+				// Textures supply their own RGB; do not tint them with the mesh's default color.
+				if (outputsTextures) {
+					colorBuffer.put(1f).put(1f).put(1f);
+				} else {
+					colorBuffer.put((float) c[0]).put((float) c[1]).put((float) c[2]);
+				}
+				colorBuffer.put((float) c[3]);
 			}
 		}
 		// If the line color is specified, outputs it
