@@ -51,6 +51,11 @@ public class GamaRNG extends Random implements IGamaRNG {
 		return internalNext(bits);
 	}
 
+	@Override
+	public int nextInt(final int origin, final int bound) {
+		return super.nextInt(origin, bound);
+	}
+
 	/**
 	 * Internal next. Should be redefined for specific RNG -- returns the legacy Random.next() value by default
 	 *
