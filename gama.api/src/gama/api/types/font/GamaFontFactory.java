@@ -251,7 +251,7 @@ public class GamaFontFactory {
 	 * @param font
 	 *            the source font whose name and style are preserved; must not be {@code null}
 	 * @param size
-	 *            the desired point size for the new font; must be a positive integer
+	 *            the desired point size for the new font; sizes smaller than 1 are clamped to 1
 	 * @return a new {@link IFont} with the same name and style as {@code font} but with the given {@code size}
 	 * @see #cloneWithStyle(IFont, Integer)
 	 * @see #createFont(String, Integer, Integer)
@@ -362,7 +362,7 @@ public class GamaFontFactory {
 	 * @param name
 	 *            the font family or logical name; must not be {@code null}
 	 * @param size
-	 *            the desired point size; must be a positive integer
+	 *            the desired point size; sizes smaller than 1 are clamped to 1
 	 * @return a new plain {@link IFont} with the given name and size
 	 * @see #createFont(String, Integer, Integer)
 	 * @see java.awt.Font#Font(String, int, int)
@@ -384,10 +384,13 @@ public class GamaFontFactory {
 	}
 
 	private static int checkedSize(final IScope scope, final Number size) {
-		if (size == null) throw GamaRuntimeException.error("A font size must be a positive finite number", scope);
+		if (size == null) throw GamaRuntimeException.error("A font size must be a finite number", scope);
 		final double value = size.doubleValue();
-		if (!Double.isFinite(value) || value < 1 || value >= Integer.MAX_VALUE)
-			throw GamaRuntimeException.error("A font size must be a positive finite number", scope);
+		if (!Double.isFinite(value))
+			throw GamaRuntimeException.error("A font size must be a finite number", scope);
+		// Sizes computed from the zoom level can legitimately become tiny: clamp them instead of failing
+		if (value < 1) return 1;
+		if (value >= Integer.MAX_VALUE) return Integer.MAX_VALUE;
 		return (int) value;
 	}
 
@@ -431,7 +434,7 @@ public class GamaFontFactory {
 	 *            the style bitfield; one of {@code 0} (plain), {@code 1} (bold), {@code 2} (italic),
 	 *            or {@code 3} (bold+italic)
 	 * @param size
-	 *            the desired point size; must be a positive integer
+	 *            the desired point size; sizes smaller than 1 are clamped to 1
 	 * @return a new {@link IFont} with the given name, style, and size
 	 * @see #createFont(String, Integer)
 	 * @see #cloneWithSize(IFont, Integer)
@@ -456,7 +459,7 @@ public class GamaFontFactory {
 	 * @param name
 	 *            the font family or logical name; must not be {@code null}
 	 * @param size
-	 *            the desired point size; must be a positive integer
+	 *            the desired point size; sizes smaller than 1 are clamped to 1
 	 * @param style
 	 *            the style bitfield; one of {@code 0} (plain), {@code 1} (bold), {@code 2} (italic),
 	 *            or {@code 3} (bold+italic)
@@ -486,7 +489,7 @@ public class GamaFontFactory {
 			concept = { IConcept.TEXT, IConcept.DISPLAY },
 			can_be_const = true)
 	@doc (
-			value = "Creates a font from a name and a positive finite point size",
+			value = "Creates a font from a name and a finite point size. Sizes smaller than 1 are clamped to 1",
 			examples = @example (
 					value = "font(\"Arial\", 12.7)",
 					test = false))

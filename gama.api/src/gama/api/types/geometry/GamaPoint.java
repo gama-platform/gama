@@ -567,6 +567,7 @@ public class GamaPoint extends Coordinate implements IPoint {
 	 */
 	@Override
 	public IPoint dividedBy(final double d) {
+		if (d == 0.0) throw GamaRuntimeException.error("Division by zero", GAMA.getRuntimeScope());
 		return GamaPointFactory.create(x / d, y / d, z / d);
 	}
 
