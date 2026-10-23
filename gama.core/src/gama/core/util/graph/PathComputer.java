@@ -330,8 +330,8 @@ public class PathComputer<V, E> implements IPathComputer<V, E> {
 		matrixVertexIndicesVersion = version;
 		final IList<E> edges = GamaListFactory.create(graph.getGamlType().getContentType());
 		V vs = s;
-		final int indexS = vertexIndices.getOrDefault(vs, -1);
-		final int indexT = vertexIndices.getOrDefault(t, -1);
+		final int indexS = vertices.indexOf(vs);
+		final int indexT = vertices.indexOf(t);
 		int previous = indexS;
 		Integer next = shortestPathMatrix.get(graph.getScope(), indexT, previous);
 		if (previous == next) return edges;
