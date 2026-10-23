@@ -34,6 +34,7 @@ import gama.api.kernel.simulation.ITopLevelAgent;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.kernel.species.IModelSpecies;
 import gama.api.runtime.IWorkspaceManager;
+import gama.api.runtime.SimulationContext;
 import gama.api.runtime.scope.IScope;
 import gama.api.runtime.scope.InScope;
 import gama.api.types.map.IMap;
@@ -541,11 +542,14 @@ public class GAMA {
 	// ==================================================================================
 
 	/**
-	 * Gets the current simulation agent.
+	 * Gets the current simulation agent: the simulation on behalf of which the current thread is running if any (see
+	 * {@link SimulationContext}), otherwise the current simulation of the frontmost experiment.
 	 *
 	 * @return the current simulation agent, or null if no experiment is running
 	 */
 	public static ISimulationAgent getSimulation() {
+		final ISimulationAgent bound = SimulationContext.current();
+		if (bound != null && !bound.dead()) return bound;
 		final IExperimentController controller = getFrontmostController();
 		if (controller == null || controller.getExperiment() == null) return null;
 		return controller.getExperiment().getCurrentSimulation();
@@ -812,12 +816,15 @@ public class GAMA {
 	}
 
 	/**
-	 * Gets the current runtime scope. Returns the most appropriate scope based on current context: simulation scope >
-	 * experiment scope > platform scope.
+	 * Gets the current runtime scope. Returns the most appropriate scope based on current context: the scope of the
+	 * simulation on behalf of which the current thread is running if any (see {@link SimulationContext}), otherwise
+	 * simulation scope > experiment scope > platform scope of the frontmost experiment.
 	 *
 	 * @return the current runtime scope, or null if platform is not loaded
 	 */
 	public static IScope getRuntimeScope() {
+		final ISimulationAgent bound = SimulationContext.current();
+		if (bound != null && !bound.dead()) return bound.getScope();
 		// // If GAMA has not yet been loaded, we return null
 		// if (__AGENT__ == null) return null;
 		// // return getCurrentTopLevelAgent().getScope().copy("(copy)");

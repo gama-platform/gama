@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.google.common.collect.Iterables;
 
@@ -109,6 +110,9 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 
 	/** The executer. */
 	protected final ActionExecuter executer;
+
+	/** Held while the experiment steps, so that actions requested from other threads do not run meanwhile. */
+	private final ReentrantLock stepLock = new ReentrantLock();
 
 	/** The recorder. */
 	protected ISimulationRecorder recorder;
@@ -345,7 +349,6 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	@Override
 	protected boolean preStep(final IScope scope) {
 		ownClock.beginCycle();
-		executer.executeBeginActions();
 		return super.preStep(scope);
 	}
 
@@ -1281,10 +1284,40 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	 *            the executable
 	 * @date 24 sept. 2023
 	 */
+	/**
+	 * Executes the action as soon as possible, never while the experiment steps: immediately (in the calling thread) if
+	 * the experiment is not stepping, otherwise at the end of its current step. Never waits for the step to finish.
+	 */
 	@Override
 	public void executeAction(final IExecutable executable) {
-		executer.executeOneAction(executable);
+		// Called from within the step itself: the action is executed at its end, as before
+		if (stepLock.isHeldByCurrentThread() || !stepLock.tryLock()) {
+			executer.insertOneShotAction(executable);
+			return;
+		}
+		try {
+			executer.executeNow(executable);
+		} finally {
+			stepLock.unlock();
+		}
+	}
 
+	/**
+	 * Steps the experiment, preventing actions from being executed meanwhile (see {@link #executeAction(IExecutable)}).
+	 * The actions requested during the step are executed at its end, whatever its outcome.
+	 */
+	@Override
+	public boolean step(final IScope scope) {
+		stepLock.lock();
+		try {
+			return super.step(scope);
+		} finally {
+			try {
+				executer.executeOneShotActions();
+			} finally {
+				stepLock.unlock();
+			}
+		}
 	}
 
 	@Override

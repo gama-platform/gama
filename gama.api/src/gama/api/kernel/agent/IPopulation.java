@@ -243,6 +243,33 @@ public interface IPopulation<T extends IAgent>
 			return task.get();
 		}
 
+		/**
+		 * Posts a task to the dedicated thread of one of the simulations of this population, without waiting for it.
+		 * By default, does nothing and returns false.
+		 *
+		 * @param sim
+		 *            the simulation
+		 * @param task
+		 *            the task
+		 * @return true if the task has been (or will be) run by the thread of the simulation, false otherwise (in which
+		 *         case it is not run)
+		 */
+		default boolean postInThreadOf(final ISimulationAgent sim, final Runnable task) {
+			return false;
+		}
+
+		/**
+		 * Whether the current thread is the dedicated thread of one of the simulations of this population. By default,
+		 * returns false.
+		 *
+		 * @param sim
+		 *            the simulation
+		 * @return true if the current thread is the thread of the simulation
+		 */
+		default boolean isInThreadOf(final ISimulationAgent sim) {
+			return false;
+		}
+
 	}
 
 	/**

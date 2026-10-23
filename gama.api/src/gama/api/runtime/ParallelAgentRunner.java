@@ -16,6 +16,7 @@ import java.util.concurrent.RecursiveTask;
 
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.IShape;
 
@@ -250,7 +251,12 @@ public abstract class ParallelAgentRunner<T> extends RecursiveTask<T> implements
 	@Override
 	protected T compute() throws GamaRuntimeException {
 		final Spliterator<IAgent> sub = agents.trySplit();
-		if (sub == null) { return executeOn(originalScope); }
+		if (sub == null) {
+			// Worker threads (possibly shared between simulations) run the leaf on behalf of its simulation
+			final ISimulationAgent sim = originalScope.getSimulation();
+			if (sim == null || SimulationContext.current() == sim) return executeOn(originalScope);
+			return SimulationContext.callFor(sim, () -> executeOn(originalScope));
+		}
 		final ParallelAgentRunner<T> left = subTask(sub);
 		left.fork();
 		final T rightResult = compute();

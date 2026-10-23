@@ -11,32 +11,32 @@
 package gama.core.experiment.tools;
 
 import java.util.Collection;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import gama.api.runtime.IExecutable;
 import gama.api.runtime.scope.IScope;
 
 /**
- * The Class ActionExecuter.
+ * Holds and executes the actions posted to a top-level agent (simulation or experiment):
+ * <ul>
+ * <li>end actions, executed at the end of every step of the agent, until it is disposed of;</li>
+ * <li>one-shot actions, executed once, at the end of the next step of the agent;</li>
+ * <li>dispose actions, executed once, when the agent is disposed of.</li>
+ * </ul>
+ * Actions can be posted from any thread.
  */
 public class ActionExecuter {
 
-	/** The Constant BEGIN. */
-	private static final int BEGIN = 0;
+	/** The actions executed at the end of every step. */
+	private final Collection<IExecutable> endActions = new CopyOnWriteArrayList<>();
 
-	/** The Constant END. */
-	private static final int END = 1;
+	/** The actions executed when the agent is disposed of. */
+	private final Collection<IExecutable> disposeActions = new CopyOnWriteArrayList<>();
 
-	/** The Constant DISPOSE. */
-	private static final int DISPOSE = 2;
-
-	/** The Constant ONE_SHOT. */
-	private static final int ONE_SHOT = 3;
-
-	/** The actions. */
-	@SuppressWarnings ("unchecked") final Collection<IExecutable>[] actions =
-			new Collection[] { new CopyOnWriteArrayList<>(), new CopyOnWriteArrayList<>(), new CopyOnWriteArrayList<>(),
-					new CopyOnWriteArrayList<>() };
+	/** The actions executed once, at the end of the next step. */
+	private final Queue<IExecutable> oneShotActions = new ConcurrentLinkedQueue<>();
 
 	/** The scope. */
 	protected final IScope scope;
@@ -52,110 +52,103 @@ public class ActionExecuter {
 	}
 
 	/**
-	 * Insert action.
+	 * Inserts an action to execute when the agent is disposed of.
 	 *
 	 * @param action
 	 *            the action
-	 * @param type
-	 *            the type
-	 * @return the i executable
-	 */
-	private IExecutable insertAction(final IExecutable action, final int type) {
-		if (actions[type].add(action)) return action;
-		return null;
-	}
-
-	/**
-	 * Insert dispose action.
-	 *
-	 * @param action
-	 *            the action
-	 * @return the i executable
+	 * @return the action
 	 */
 	public IExecutable insertDisposeAction(final IExecutable action) {
-		return insertAction(action, DISPOSE);
+		disposeActions.add(action);
+		return action;
 	}
 
 	/**
-	 * Insert end action.
+	 * Inserts an action to execute at the end of every step.
 	 *
 	 * @param action
 	 *            the action
-	 * @return the i executable
+	 * @return the action
 	 */
 	public IExecutable insertEndAction(final IExecutable action) {
-		return insertAction(action, END);
+		endActions.add(action);
+		return action;
 	}
 
 	/**
-	 * Insert one shot action.
+	 * Inserts an action to execute once, at the end of the next step.
 	 *
 	 * @param action
 	 *            the action
-	 * @return the i executable
+	 * @return the action
 	 */
 	public IExecutable insertOneShotAction(final IExecutable action) {
-		return insertAction(action, ONE_SHOT);
+		oneShotActions.add(action);
+		return action;
 	}
 
 	/**
-	 * Execute end actions.
+	 * Executes the end actions.
 	 */
 	public void executeEndActions() {
 		if (scope.interrupted()) return;
-		executeActions(END);
+		executeActions(endActions);
 	}
 
 	/**
-	 * Execute dispose actions.
+	 * Executes the dispose actions.
 	 */
 	public void executeDisposeActions() {
-		executeActions(DISPOSE);
+		executeActions(disposeActions);
 	}
 
 	/**
-	 * Execute one shot actions.
+	 * Executes the one-shot actions posted so far, and removes them. Actions posted while executing them (including by
+	 * themselves) are kept for the next time.
 	 */
 	public void executeOneShotActions() {
-		if (scope.interrupted()) return;
-		try {
-			executeActions(ONE_SHOT);
-		} finally {
-			actions[ONE_SHOT].clear();
+		for (int n = oneShotActions.size(); n > 0 && !scope.interrupted(); n--) {
+			final IExecutable action = oneShotActions.poll();
+			if (action == null) { break; }
+			action.executeOn(scope);
 		}
 	}
 
 	/**
-	 * Execute actions.
+	 * Executes the actions.
 	 *
-	 * @param type
-	 *            the type
+	 * @param actions
+	 *            the actions
 	 */
-	private void executeActions(final int type) {
-		for (final IExecutable action : actions[type]) { if (!scope.interrupted()) { action.executeOn(scope); } }
+	private void executeActions(final Collection<IExecutable> actions) {
+		for (final IExecutable action : actions) { if (!scope.interrupted()) { action.executeOn(scope); } }
 	}
 
 	/**
-	 * Execute one action.
+	 * Executes an action immediately, in the current thread. The caller is responsible for making sure that the agent
+	 * is not stepping meanwhile.
+	 *
+	 * @param action
+	 *            the action
+	 */
+	public void executeNow(final IExecutable action) {
+		action.executeOn(scope);
+	}
+
+	/**
+	 * Executes an action immediately if the agent is paused, otherwise at the end of its next step. As the agent may be
+	 * resumed (or paused) meanwhile, this does not guarantee that the action is not executed while it steps: prefer
+	 * running the action in the thread of the agent, or excluding its step.
 	 *
 	 * @param action
 	 *            the action
 	 */
 	public void executeOneAction(final IExecutable action) {
-		final boolean paused = scope.isPaused();
-		if (paused) {
+		if (scope.isPaused()) {
 			action.executeOn(scope);
 		} else {
 			insertOneShotAction(action);
 		}
-	}
-
-	/**
-	 * Execute begin actions.
-	 */
-	public void executeBeginActions() {
-		if (scope.interrupted()) return;
-		executeActions(BEGIN);
 	}
 
 }

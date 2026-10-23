@@ -23,7 +23,9 @@ import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.statements.IStatement;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.skill.Skill;
+import gama.api.runtime.SimulationContext;
 import gama.api.runtime.scope.IScope;
 
 /**
@@ -180,10 +182,13 @@ public class ThreadSkill extends Skill {
 		}
 
 		/**
-		 * Start.
+		 * Starts the virtual thread, bound to the simulation of the agent (see {@link SimulationContext}).
 		 */
 		public void start() {
-			thread = Thread.ofVirtual().name("Thread skill of " + agent.getName()).start(this);
+			final IScope scope = agent.getScope();
+			final ISimulationAgent simulation = scope == null ? null : scope.getSimulation();
+			thread = Thread.ofVirtual().name("Thread skill of " + agent.getName())
+					.start(() -> SimulationContext.runFor(simulation, this));
 		}
 
 		/**

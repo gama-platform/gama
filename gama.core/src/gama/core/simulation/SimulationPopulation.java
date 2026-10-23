@@ -295,6 +295,16 @@ public class SimulationPopulation extends GamaPopulation<ISimulationAgent> imple
 		return runner.runInThreadOf(sim, task);
 	}
 
+	@Override
+	public boolean postInThreadOf(final ISimulationAgent sim, final Runnable task) {
+		return runner.post(sim, task);
+	}
+
+	@Override
+	public boolean isInThreadOf(final ISimulationAgent sim) {
+		return runner.isInThreadOf(sim);
+	}
+
 	/**
 	 * Lets a scheduled simulation run on its own thread, not synchronized with the other simulations, until it is
 	 * over.

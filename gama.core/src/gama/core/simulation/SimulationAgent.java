@@ -386,7 +386,6 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	@Override
 	protected boolean preStep(final IScope scope) {
 		ownClock.beginCycle();
-		executer.executeBeginActions();
 		return super.preStep(scope);
 	}
 
@@ -430,7 +429,9 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	public void dispose() {
 		GAMA.getGui().getStatus().beginTask("Disposing " + this, IStatusMessage.SIMULATION_ICON);
 		if (dead) return;
-		executer.executeDisposeActions();
+		// The dispose actions belong to the lifecycle of the simulation: they are run by its thread (after its current
+		// step if it is stepping)
+		runInOwnThread(executer::executeDisposeActions);
 		// hqnghi if simulation comes from an external population, dispose this population first
 		// and then its outputs
 
@@ -1000,10 +1001,26 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 
 	}
 
+	/**
+	 * Executes the action as soon as possible in the thread of the simulation: immediately if called from it, otherwise
+	 * as soon as the simulation is not stepping (immediately if it is paused, after its current step otherwise). The
+	 * method does not wait for the action to be executed. Errors are reported to the user.
+	 */
 	@Override
 	public void executeAction(final IExecutable executable) {
-		executer.executeOneAction(executable);
-
+		if (isInOwnThread()) {
+			executer.executeNow(executable);
+			return;
+		}
+		final Runnable task = () -> {
+			try {
+				executer.executeNow(executable);
+			} catch (final RuntimeException e) {
+				GAMA.reportError(getScope(), GamaRuntimeException.create(e, getScope()), false);
+			}
+		};
+		// If the simulation has no dedicated thread, fall back to the previous behaviour
+		if (!postInOwnThread(task)) { executer.executeOneAction(executable); }
 	}
 
 	@SuppressWarnings ("unchecked")

@@ -144,6 +144,29 @@ public interface ISimulationRunner {
 	}
 
 	/**
+	 * Posts a task to the thread of a simulation, without waiting for its execution. The task is run as soon as the
+	 * simulation is not stepping (immediately if it is paused or idle, otherwise after its current step). If called
+	 * from the thread of the simulation itself, the task is run immediately.
+	 *
+	 * @param agent
+	 *            the simulation agent
+	 * @param task
+	 *            the task to run
+	 * @return true if the task has been run or will be run by the thread of the simulation, false if the simulation
+	 *         has no thread (not managed by this runner, or dead), in which case the task is not run
+	 */
+	boolean post(ISimulationAgent agent, Runnable task);
+
+	/**
+	 * Whether the current thread is the thread owning the simulation.
+	 *
+	 * @param agent
+	 *            the simulation agent
+	 * @return true if the current thread is the dedicated thread of this simulation
+	 */
+	boolean isInThreadOf(ISimulationAgent agent);
+
+	/**
 	 * Executes one step for all active simulation agents concurrently.
 	 * 
 	 * <p>
