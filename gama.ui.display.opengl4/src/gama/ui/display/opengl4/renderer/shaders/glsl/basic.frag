@@ -9,46 +9,58 @@ in vec3 fragPos;
 
 uniform sampler2D texture1;
 uniform bool useTexture;
+// Legacy OpenGL blends textured objects with GL_ONE, so object transparency does not dim the texture.
+uniform bool premultiplyTexture;
 
-// Lighting uniforms
-uniform bool  useLighting;
-uniform vec3  ambientColor;      // ambient light colour (RGB)
-uniform vec3  lightPosition;     // world-space position of the primary light
-uniform vec3  lightColor;        // diffuse+specular colour of the primary light
-uniform vec3  viewPos;           // world-space camera position
-uniform float shininess;         // specular shininess exponent (default 32)
+const int MAX_LIGHTS = 8;
+
+struct Light {
+    vec4 position;              // eye-space position (w=1) or direction towards the light (w=0)
+    vec3 color;
+    vec3 attenuation;           // constant, linear, quadratic
+    vec3 spotDirection;         // eye-space direction away from the light
+    float spotCutoff;           // cosine of cutoff angle, -1 for non-spot lights
+};
+
+uniform bool useLighting;
+uniform vec3 ambientColor;
+uniform int lightCount;
+uniform Light lights[MAX_LIGHTS];
 
 void main()
 {
-    vec4 baseColor;
-    if (useTexture) {
-        baseColor = texture(texture1, TexCoord) * vertexColor;
-    } else {
-        baseColor = vertexColor;
-    }
+    vec4 texel = useTexture ? texture(texture1, TexCoord) : vec4(1.0);
+    vec4 baseColor = texel * vertexColor;
+
+    float colorScale = useTexture && premultiplyTexture ? texel.a : 1.0;
 
     if (!useLighting) {
-        FragColor = baseColor;
+        FragColor = vec4(baseColor.rgb * colorScale, baseColor.a);
         return;
     }
 
-    // --- Phong lighting ---
-    vec3 norm    = normalize(fragNormal);
-    vec3 lightDir = normalize(lightPosition - fragPos);
+    vec3 norm = normalize(fragNormal);
+    if (!gl_FrontFacing) norm = -norm;
 
-    // Ambient
-    vec3 ambient = ambientColor * baseColor.rgb;
+    vec3 illumination = ambientColor;
+    for (int i = 0; i < lightCount; i++) {
+        vec3 toLight = lights[i].position.xyz - fragPos * lights[i].position.w;
+        float distanceToLight = length(toLight);
+        vec3 lightDir = distanceToLight > 0.0 ? toLight / distanceToLight : vec3(0.0);
+        float attenuation = 1.0;
+        if (lights[i].position.w != 0.0) {
+            vec3 distanceTerms = vec3(1.0, distanceToLight, distanceToLight * distanceToLight);
+            attenuation = 1.0 / max(dot(lights[i].attenuation, distanceTerms), 0.000001);
+            if (lights[i].spotCutoff > -1.0
+                    && dot(-lightDir, normalize(lights[i].spotDirection)) < lights[i].spotCutoff) {
+                attenuation = 0.0;
+            }
+        }
+        illumination += max(dot(norm, lightDir), 0.0) * lights[i].color * attenuation;
+    }
 
-    // Diffuse
-    float diff   = max(dot(norm, lightDir), 0.0);
-    vec3 diffuse = diff * lightColor * baseColor.rgb;
-
-    // Specular (Blinn-Phong half-vector)
-    vec3 viewDir    = normalize(viewPos - fragPos);
-    vec3 halfDir    = normalize(lightDir + viewDir);
-    float spec      = pow(max(dot(norm, halfDir), 0.0), max(shininess, 1.0));
-    vec3 specular   = spec * lightColor * 0.3;   // scale specular contribution
-
-    vec3 result = ambient + diffuse + specular;
-    FragColor   = vec4(result, baseColor.a);
+    // Fixed-function OpenGL clamps the lit material color before modulating the texture.
+    vec3 materialColor = clamp(vertexColor.rgb * illumination, 0.0, 1.0);
+    vec3 result = texel.rgb * materialColor;
+    FragColor = vec4(result * colorScale, baseColor.a);
 }

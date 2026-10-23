@@ -839,18 +839,16 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		basicShader.loadViewMatrix(new org.joml.Matrix4f().identity());
 		basicShader.loadProjectionMatrix(projectionMatrix.getCurrentMatrix());
 		basicShader.loadUseTexture(hasTex);
+		basicShader.loadPremultiplyTexture(hasTex);
 
 		// --- lighting uniforms ---
 		basicShader.loadUseLighting(hasNormals);
-		gama.api.types.geometry.IPoint camPos = getData().getCameraPos();
-		basicShader.loadViewPos((float) camPos.getX(), (float) -camPos.getY(), (float) camPos.getZ());
-		basicShader.loadShininess(32.0f);
 
-		// Enable blending so that the alpha written into per-vertex colours (including
-		// layer/object alpha and per-color transparency) is actually respected by the
-		// hardware compositing stage. Use standard src-alpha blending; for pre-multiplied
-		// textures beginObject overrides this to GL_ONE / GL_ONE_MINUS_SRC_ALPHA.
+		// TextureCache2 uploads straight-alpha pixels. Like legacy OpenGL, textured draws use GL_ONE so that
+		// object transparency reveals the background without dimming the texture; the shader premultiplies
+		// the texel alpha to avoid fringes.
 		gl.glEnable(GL.GL_BLEND);
+		gl.glBlendFunc(hasTex ? GL.GL_ONE : GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
 		// For transparent draws, disable depth-buffer writes so that objects behind a
 		// semi-transparent surface remain visible (depth *testing* is kept on).
 		boolean transparent = currentObjectAlpha < 1.0 || (currentColor != null && currentColor.alpha() < 255);
@@ -859,6 +857,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		gl.glDrawArrays(currentDrawStyle, 0, currentVertices.limit() / 3);
 
 		if (transparent) { gl.glDepthMask(true); }
+		if (hasTex) { gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA); }
 
 		gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0);
 		gl.glBindVertexArray(0);
@@ -1757,15 +1756,8 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		previousObjectLighting = setObjectLighting(att.isLighting());
 		previousObjectLineWidth = setLineWidth(att.getLineWidth().floatValue());
 		setCurrentTextures(object.getPrimaryTexture(this), object.getAlternateTexture(this));
-		// Always enable blending so that alpha (both per-color and layer/object alpha) is
-		// respected. Use pre-multiplied blending for textured objects (textures may already
-		// carry pre-multiplied alpha) and standard src-alpha blending for plain colored ones.
 		gl.glEnable(GL.GL_BLEND);
-		if (isTextured()) {
-			gl.glBlendFunc(GL.GL_ONE, GL.GL_ONE_MINUS_SRC_ALPHA);
-		} else {
-			gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
-		}
+		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
 		// Only set the visual colour when NOT in picking mode; during picking
 		// the colour is the ID-encoded value set by registerForSelection() above.
 		if (!isPicking) {
@@ -1809,9 +1801,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 				backgroundColor.blue() / 255.0f, 1.0f);
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT | GL.GL_STENCIL_BUFFER_BIT);
 		gl.glClearDepth(1.0f);
-		// Enable blending once for the whole scene with the standard src-alpha equation.
-		// Individual draw calls (beginObject/endDrawing) may override the blend function
-		// for specific cases (e.g. pre-multiplied textures) and must restore it afterwards.
+		// Individual draw calls may override blending and must restore the straight-alpha equation.
 		gl.glEnable(GL.GL_BLEND);
 		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
 		// Depth mask on by default; transparent draws will temporarily turn it off.

@@ -52,6 +52,12 @@ Massive performance upgrades taking advantage of JDK 25 multithreading enhanceme
 ### 🖥️ UI, Displays & OpenGL 4.1 Native
 A brand-new, blazing-fast native display plugin relying solely on OpenGL 4.1 Core Profile logic. Legacy APIs have been removed.
 
+OpenGL4 lighting now uses consistent eye-space coordinates for surfaces and lights, supports up to eight active diffuse lights with directional, point and spotlight behavior (including attenuation), and leaves only ambient illumination when all diffuse lights are disabled. Two-sided lighting, material-color clamping before texture modulation, and the absence of unsolicited specular highlights match the legacy renderer, including textured OBJ models such as Moving 3D Object.
+
+OpenGL4 also matches legacy draw rotations and primitive orientations, correcting reversed sprites and axis arrows. Textured draws premultiply by texel alpha and blend like legacy OpenGL. This removes bright fringes around transparent icons and keeps translucent textured layers, such as the water in Moving 3D Object, at full brightness.
+
+The shared default light intensity for OpenGL and OpenGL4 is increased from 160 to 180 for slightly brighter scenes. Explicit model intensities and saved lighting preferences are unchanged.
+
 The test view has a **Stop tests** button and displays the currently executing model, experiment and test name. By default, GUI tests execute in the workbench JVM, using scope cancellation and thread interruption. **Stop tests** interrupts the current experiment and ends the suite, preserving completed results and marking the active test as **interrupted**. **Execution > Tests > Test experiment timeout (seconds)** defaults to 10 seconds: a timeout requests interruption, marks the active test as **timeout**, and continues with the next experiment once execution actually exits. The runner never abandons a live test thread. Unstarted tests and assertions remain **not reached**.
 
 **Advanced > Tests > Run tests in a separate headless process** enables stronger isolation for Java operators that ignore cooperative cancellation. An isolated sequence reuses an initialized headless worker, replacing it after a timeout or worker failure and terminating it when the sequence ends. In this mode Stop and timeout can forcibly terminate unresponsive computations. The timeout covers experiment initialization and execution, not model compilation or worker startup. Isolated tests require saved local model files; default same-JVM execution can use the model compiled from the editor.

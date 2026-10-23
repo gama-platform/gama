@@ -1216,7 +1216,7 @@ public class GamaPreferences {
 		 * (maximum brightness).
 		 */
 		public static final Pref<Integer> OPENGL_DEFAULT_LIGHT_INTENSITY = create("pref_display_light_intensity",
-				"Set the default intensity of the lights (from 0, dark, to 255, light)", 160, IType.INT, true)
+				"Set the default intensity of the lights (from 0, dark, to 255, light)", 180, IType.INT, true)
 						.in(NAME, RENDERING).between(0, 255);
 
 		/**

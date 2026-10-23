@@ -584,13 +584,9 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 			shader.loadViewMatrix(new org.joml.Matrix4f().identity());
 			shader.loadProjectionMatrix(gl.getProjectionMatrix());
 			shader.loadUseTexture(outputsTextures);
+			shader.loadPremultiplyTexture(false);
 			boolean useLighting = outputsColors && gl.getLighting();
 			shader.loadUseLighting(useLighting);
-			if (useLighting) {
-				gama.api.types.geometry.IPoint camPos = gl.getRenderer().getData().getCameraPos();
-				shader.loadViewPos((float) camPos.getX(), (float) -camPos.getY(), (float) camPos.getZ());
-				shader.loadShininess(32.0f);
-			}
 		}
 
 		try {
