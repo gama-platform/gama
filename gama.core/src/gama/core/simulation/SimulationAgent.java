@@ -135,7 +135,11 @@ import gama.gaml.operators.spatial.SpatialTransformations;
 		@variable (
 				name = ISimulationAgent.USAGE,
 				type = IType.INT,
-				doc = @doc ("Returns the number of times the random number generator of the simulation has been drawn")),
+				doc = @doc ("Counts raw draws from the simulation RNG, not operator calls. Float draws usually consume "
+						+ "two raw draws, bounded integer draws usually one (more if rejection sampling is needed). "
+						+ "Assigning a value reinitializes the RNG with its current seed and advances it to that usage; "
+						+ "negative values reset it to zero. Cached Gaussian values are not restored. "
+						+ "The threaded RNG always reports zero and cannot be restored.")),
 		@variable (
 				name = ISimulationAgent.PAUSED,
 				type = IType.BOOL,

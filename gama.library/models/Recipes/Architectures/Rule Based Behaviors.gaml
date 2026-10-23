@@ -6,6 +6,7 @@
 *   the rule(s) whose condition is true are fired, in decreasing order of priority. This allows modelers to write
 *   reactive agents with priority-ordered behaviors without complex conditional logic. For more complex BDI reasoning,
 *   see the simple_bdi control architecture.
+*   Uses bounded integer sampling for priorities; seeded rule sequences differ from legacy rnd.
 * Tags: rule, behavior, architecture, control, priority, reactive
 ***/
 
@@ -25,8 +26,8 @@ global {
  */
 species simple_rules_statements control: rules {
 	
-	int priority_of_a <- 0 update: rnd(100);
-	int priority_of_b <- 0 update: rnd(100);
+	int priority_of_a <- 0 update: rnd(100, true);
+	int priority_of_b <- 0 update: rnd(100, true);
 	
 	reflex show_priorities {
 		write " Priority of rule a = " + priority_of_a + ", priority of rule b = " + priority_of_b;

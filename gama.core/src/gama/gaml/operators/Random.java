@@ -705,6 +705,26 @@ public class Random {
 	}
 
 	/**
+	 * Draws an integer using either the legacy float-based method or bounded integer sampling.
+	 */
+	@operator (
+			value = "rnd",
+			category = { IOperatorCategory.RANDOM },
+			concept = { IConcept.RANDOM })
+	@doc (
+			value = "a random integer in [0, max]. If the boolean operand is true, uses bounded integer sampling; "
+					+ "false preserves the legacy rnd(max) sequence",
+			comment = "Integer sampling usually consumes one raw RNG draw instead of two. Rejection sampling may "
+					+ "consume additional draws. It produces a different seeded sequence from legacy rnd.",
+			special_cases = { "With integer sampling enabled, max must be nonnegative." },
+			examples = { @example (value = "rnd(10, true)", equals = "an integer between 0 and 10", test = false) },
+			see = { "rnd" })
+	@test ("seed <- 42.0; int drawn <- rnd(10, false); seed <- 42.0; drawn = rnd(10)")
+	public static Integer opRnd(final IScope scope, final Integer max, final Boolean optimized) {
+		return opRnd(scope, 0, max, optimized);
+	}
+
+	/**
 	 * Op rnd.
 	 *
 	 * @param scope
@@ -735,6 +755,37 @@ public class Random {
 	public static Integer opRnd(final IScope scope, final Integer min, final Integer max) {
 		final IRandom r = RANDOM(scope);
 		return r.between(min, max);
+	}
+
+	/**
+	 * Draws an integer in an inclusive interval without overflowing at either integer limit.
+	 */
+	@operator (
+			value = "rnd",
+			category = { IOperatorCategory.RANDOM },
+			concept = { IConcept.RANDOM })
+	@doc (
+			value = "a random integer in [min, max]. If the boolean operand is true, uses bounded integer sampling; "
+					+ "false preserves the legacy rnd(min, max) sequence",
+			comment = "Integer sampling usually consumes one raw RNG draw instead of two, but rejection sampling "
+					+ "may consume more. Existing rnd calls are unchanged. Both bounds are inclusive, including "
+					+ "the minimum and maximum integer values.",
+			special_cases = { "With integer sampling enabled, min must not exceed max.",
+					"Equal bounds return that value and still consume a draw." },
+			examples = { @example (value = "rnd(-5, 5, true)", equals = "an integer between -5 and 5", test = false) },
+			see = { "rnd" })
+	@tests ({
+			@test ("rnd(3, 3, true) = 3"),
+			@test ("seed <- 42.0; int drawn <- rnd(1, 10, false); seed <- 42.0; drawn = rnd(1, 10)")
+	})
+	public static Integer opRnd(final IScope scope, final Integer min, final Integer max, final Boolean optimized) {
+		if (!optimized) return opRnd(scope, min, max);
+		if (min > max) throw GamaRuntimeException.error("rnd: min must not exceed max for integer sampling", scope);
+		final IRandom r = RANDOM(scope);
+		if (max < Integer.MAX_VALUE) return r.nextInt(min, max + 1);
+		// Shift the interval down when its inclusive upper bound cannot be incremented.
+		if (min > Integer.MIN_VALUE) return r.nextInt(min - 1, max) + 1;
+		return r.nextInt();
 	}
 
 	/**

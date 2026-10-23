@@ -27,7 +27,7 @@ public interface IGamaRNG {
 	int getUsage();
 
 	/**
-	 * Sets the usage.
+	 * Advances a freshly initialized generator by the given number of raw draws.
 	 *
 	 * @param usage
 	 *            the new usage
@@ -42,6 +42,16 @@ public interface IGamaRNG {
 	 * @return the int
 	 */
 	int nextInt();
+
+	/**
+	 * @return a uniformly distributed integer in [0, bound)
+	 */
+	int nextInt(int bound);
+
+	/**
+	 * @return a uniformly distributed integer in [origin, bound)
+	 */
+	int nextInt(int origin, int bound);
 
 	/**
 	 * Next double.

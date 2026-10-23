@@ -22,7 +22,8 @@ experiment ReproducibilityTest type: test autorun: true {
 			truncated_gauss(0, 1, -1, 1), poisson(3.0), binomial(10, 0.5), exp_rnd(2.0), gamma_rnd(2.0, 2.0),
 			lognormal_rnd(0.0, 1.0), weibull_rnd(1.0, 1.5), skew_gauss(0.0, 1.0, 0.7, 0.2), rnd_choice([0.2, 0.3, 0.5]),
 			shuffle([1, 2, 3, 4, 5, 6]), 3 among [1, 2, 3, 4, 5, 6], one_of([1, 2, 3, 4, 5, 6]), any([1, 2, 3, 4, 5, 6]),
-			rnd_color(255), any_location_in(square(10)), sample([1, 2, 3, 4, 5], 3, false), rnd({10, 10, 10})];
+			rnd_color(255), any_location_in(square(10)), sample([1, 2, 3, 4, 5], 3, false), rnd({10, 10, 10}),
+			rnd(1000, true), rnd(-1000, 1000, true)];
 	}
 
 	list draw_sequence(float s) {
@@ -89,5 +90,24 @@ experiment ReproducibilityTest type: test autorun: true {
 		list second_draw <- [];
 		loop times: 5 { second_draw <+ draw_all(); }
 		assert first_draw = second_draw;
+	}
+
+	test "Usage restores a mixed uniform random stream" {
+		loop generator over: ["java", "mersenne", "parallel"] {
+			ask simulation {
+				rng <- generator;
+				seed <- 42.0;
+				int prefix <- rnd(31, true);
+				int saved_usage <- rng_usage;
+				list expected <- [rnd(100), rnd(100, true), rnd(-50, 50, true), rnd(1.0),
+					rnd_choice([0.2, 0.3, 0.5]), shuffle([1, 2, 3, 4, 5]), rnd({10, 10, 10})];
+				int final_usage <- rng_usage;
+				rng_usage <- saved_usage;
+				list replay <- [rnd(100), rnd(100, true), rnd(-50, 50, true), rnd(1.0),
+					rnd_choice([0.2, 0.3, 0.5]), shuffle([1, 2, 3, 4, 5]), rnd({10, 10, 10})];
+				assert replay = expected;
+				assert rng_usage = final_usage;
+			}
+		}
 	}
 }

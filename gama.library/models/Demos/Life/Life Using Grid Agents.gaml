@@ -8,6 +8,7 @@
 *   spaceships, and stable structures. The model supports toroidal or bounded environments and multiple random
 *   initial configurations. 
 * 	This model proposes also to edit the death/birth configurations easily
+*   Uses bounded integer sampling for cell initialization; seeded patterns differ from legacy rnd.
 * Tags: grid, cellular_automaton, life, game_of_life, emergence, Conway, complexity
 */
 model life
@@ -79,7 +80,7 @@ use_neighbors_cache: false parallel: parallel{
 	//List of all the neighbours
 	list<life_cell> neighbours <- self neighbors_at 1;
 	//Boolean  to know if it is a living or dead cell
-	bool alive <- (rnd(100)) < density;
+	bool alive <- rnd(100, true) < density;
 	
 	rgb color <- alive ? livingcolor : deadcolor;
 	

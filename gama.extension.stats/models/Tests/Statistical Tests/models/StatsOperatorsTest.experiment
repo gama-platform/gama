@@ -35,4 +35,27 @@ experiment StatsOperatorsTest type: test autorun: true {
 		assert t_test(series, series) = 1.0;
 	}
 
+	test "Gamma distribution functions do not consume random draws" {
+		loop generator over: ["java", "mersenne", "parallel"] {
+			ask simulation {
+				rng <- generator;
+				seed <- 123.0;
+				float expected_next <- rnd(1.0);
+				seed <- 123.0;
+				// Variables keep these constant-capable operators evaluated at runtime.
+				float shape_parameter <- 2.0;
+				float rate_parameter <- 3.0;
+				float bound <- 0.9;
+				float cumulative <- gamma_distribution(shape_parameter, rate_parameter, bound);
+				assert cumulative >= 0.0 and cumulative <= 1.0;
+				assert rng_usage = 0;
+				float complemented <- gamma_distribution_complemented(shape_parameter, rate_parameter, bound);
+				assert complemented >= 0.0 and complemented <= 1.0;
+				assert rng_usage = 0;
+				assert (cumulative + complemented) with_precision 12 = 1.0;
+				assert rnd(1.0) = expected_next;
+			}
+		}
+	}
+
 }

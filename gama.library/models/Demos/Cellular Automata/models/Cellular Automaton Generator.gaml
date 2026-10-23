@@ -1,6 +1,7 @@
 /**
 * Name: CellularAutomatonGenerator
 * Generates one dimensional cellular automata based on rules specified by the users
+* Uses bounded integer sampling for random borders; seeded patterns differ from legacy rnd.
 * Author: Baptiste Lesquoy
 * Tags: Cellular Automaton, Wolfram
 */
@@ -54,7 +55,7 @@ global{
 				buffer <- [[1, automaton[0,cycle].val, automaton[1,cycle].val]] + buffer + [[automaton[width-2,cycle].val, automaton[width-1,cycle].val,1]];
 			}
 			match "random"{
-				buffer <- [[rnd(1), automaton[0,cycle].val, automaton[1,cycle].val]] + buffer + [[automaton[width-2,cycle].val, automaton[width-1,cycle].val,rnd(1)]];
+				buffer <- [[rnd(1, true), automaton[0,cycle].val, automaton[1,cycle].val]] + buffer + [[automaton[width-2,cycle].val, automaton[width-1,cycle].val,rnd(1, true)]];
 			}
 			match "only_left_alive"{
 				buffer <- [[1, automaton[0,cycle].val, automaton[1,cycle].val]] + buffer + [[automaton[width-2,cycle].val, automaton[width-1,cycle].val,0]];				
@@ -153,5 +154,4 @@ experiment "Run automaton" {
 	}
 	
 }
-
 

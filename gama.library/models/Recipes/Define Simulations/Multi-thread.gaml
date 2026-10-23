@@ -6,6 +6,7 @@
 *   This can significantly speed up models with many independent agents performing expensive computations.
 *   The model creates a large number of simple agents and compares single-threaded vs. multi-threaded
 *   execution to illustrate the performance benefits and the caveats (non-deterministic execution order).
+*   Uses bounded integer sampling for agent sizes; seeded configurations differ from legacy rnd.
 * Tags: multi_thread, parallel, performance, concurrency, simulation
 */
 
@@ -23,7 +24,7 @@ global {
 }
 
 species simple_agent parallel: true{
-	int size <- rnd(1,10) update: size + (flip(0.5) ? 1 : 0);
+	int size <- rnd(1, 10, true) update: size + (flip(0.5) ? 1 : 0);
 	float var1;
 	reflex behavior {
 		var1 <- exp(-size);

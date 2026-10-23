@@ -12,6 +12,48 @@ experiment RandomRobustnessTest type: test autorun: true {
 		return problem = nil ? true : !(problem contains "Java error");
 	}
 
+	test "Optimized integer sampling rejects reversed bounds with a GAML error" {
+		string problem <- nil;
+		try { int drawn <- rnd(5, 1, true); } catch { problem <- #current_error; }
+		assert problem != nil and handled(problem);
+		assert problem contains "rnd:" and problem contains "min must not exceed max";
+		problem <- nil;
+		try { int drawn <- rnd(-5, true); } catch { problem <- #current_error; }
+		assert problem != nil and handled(problem);
+		assert problem contains "rnd:" and problem contains "min must not exceed max";
+	}
+
+	test "Optimized integer sampling handles inclusive integer limits" {
+		loop generator over: ["java", "mersenne", "parallel", "threaded"] {
+			ask simulation {
+				rng <- generator;
+				seed <- 123.0;
+				int lowest <- -2147483647 - 1;
+				int highest <- 2147483647;
+				assert rnd(lowest, lowest, true) = lowest;
+				assert rnd(highest, highest, true) = highest;
+				list<int> lower_values <- [];
+				list<int> upper_values <- [];
+				loop times: 100 {
+					lower_values <+ rnd(lowest, lowest + 1, true);
+					upper_values <+ rnd(highest - 1, highest, true);
+					int drawn <- rnd(lowest, highest, true);
+					assert drawn >= lowest and drawn <= highest;
+					drawn <- rnd(-100, highest, true);
+					assert drawn >= -100 and drawn <= highest;
+					drawn <- rnd(lowest, 100, true);
+					assert drawn >= lowest and drawn <= 100;
+					drawn <- rnd(highest, true);
+					assert drawn >= 0 and drawn <= highest;
+				}
+				assert lower_values all_match (each = lowest or each = lowest + 1);
+				assert upper_values all_match (each = highest - 1 or each = highest);
+				assert (lowest in lower_values) and ((lowest + 1) in lower_values);
+				assert ((highest - 1) in upper_values) and (highest in upper_values);
+			}
+		}
+	}
+
 	test "A null or negative step" {
 		string problem <- nil;
 		try { int drawn <- rnd(1, 5, 0); } catch { problem <- #current_error; }
