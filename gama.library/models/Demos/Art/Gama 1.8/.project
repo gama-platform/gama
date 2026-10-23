@@ -1,3 +1,24 @@
+<<<<<<<< HEAD:gama.extension.batch/models/Batch Simulation/.project
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>Batch Simulation</name>
+	<comment>batch plugin</comment>
+	<projects>
+	</projects>
+	<buildSpec>
+		<buildCommand>
+			<name>org.eclipse.xtext.ui.shared.xtextBuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+	</buildSpec>
+	<natures>
+		<nature>org.eclipse.xtext.ui.shared.xtextNature</nature>
+		<nature>gama.workspace.gamaNature</nature>
+		<nature>gama.workspace.pluginNature</nature>
+	</natures>
+</projectDescription>
+========
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
 	<name>Gama 1.8</name>
@@ -16,3 +37,4 @@
 		<nature>gama.workspace.nature</nature>
 	</natures>
 </projectDescription>
+>>>>>>>> main:gama.library/models/Demos/Art/Gama 1.8/.project
