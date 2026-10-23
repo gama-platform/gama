@@ -52,13 +52,15 @@ import gama.api.runtime.scope.IScope;
  * IExecutable action = ...; // Some GAML action or statement
  * IScope scope = ...; // Current execution scope
  * 
- * // Set up execution context
- * action.setMyself(callingAgent);
- * action.setRuntimeArgs(scope, arguments);
- * 
- * // Execute and get result
- * Object result = action.executeOn(scope);
+ * // Execute on an agent with arguments and get the result
+ * Object result = scope.execute(action, agent, arguments).getValue();
  * </pre>
+ * 
+ * <p>
+ * Executables of a model are shared by all its simulations and by all the threads executing them: they must not store
+ * the data of a call (arguments, caller, "myself"...). The scope performing the call hands it to them instead (see
+ * {@link gama.api.runtime.scope.Invocation}).
+ * </p>
  * 
  * @see IScope
  * @see ParallelAgentExecuter
@@ -96,9 +98,10 @@ public interface IExecutable {
 	 * Sets the runtime arguments for this executable before execution.
 	 * 
 	 * <p>
-	 * This method is called to provide argument values when executing actions or parameterized statements. The default
-	 * implementation does nothing, as many executables don't accept runtime arguments. Implementations that do accept
-	 * arguments should override this method to store them for use during {@link #executeOn(IScope)}.
+	 * Legacy protocol, used by {@link IScope#execute(IExecutable, gama.api.kernel.object.IObject, boolean, Arguments)}
+	 * only for executables that are not GAML statements accepting arguments (which receive them through
+	 * {@link IScope#takeInvocation(IExecutable)}). The default implementation does nothing. Implementations must not
+	 * store the arguments in a field, as the executable can be executed concurrently.
 	 * </p>
 	 * 
 	 * @param executionScope
@@ -114,9 +117,10 @@ public interface IExecutable {
 	 * Sets the calling agent ("myself") for this execution.
 	 * 
 	 * <p>
-	 * In GAML, "myself" refers to the agent that called the current action or statement. This method allows the
-	 * execution framework to establish that context before execution. The default implementation does nothing, as not
-	 * all executables need to track the caller. Implementations that use "myself" should override this method.
+	 * In GAML, "myself" refers to the agent that called the current action or statement. Legacy protocol, used by
+	 * {@link IScope#execute(IExecutable, gama.api.kernel.object.IObject, boolean, Arguments)} only for executables that
+	 * are not remote statements (which receive the caller through {@link IScope#takeInvocation(IExecutable)}). The
+	 * default implementation does nothing.
 	 * </p>
 	 * 
 	 * @param caller

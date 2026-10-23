@@ -16,6 +16,7 @@ import gama.api.gaml.symbols.Arguments;
 import gama.api.gaml.symbols.ISymbol;
 import gama.api.runtime.IExecutable;
 import gama.api.runtime.scope.IScope;
+import gama.api.runtime.scope.Invocation;
 import gama.api.ui.IExperimentDisplayable;
 import gama.api.utils.tests.IndividualTestSummary;
 import gama.api.utils.tests.WithTestSummary;
@@ -147,10 +148,13 @@ public interface IStatement extends ISymbol, IExecutable {
 		void setFormalArgs(Arguments args);
 
 		/**
-		 * Sets the runtime argument values for execution.
+		 * Prepares the next execution of this statement in the scope with the runtime argument values.
 		 *
 		 * <p>
-		 * This method is called before execution to provide the actual values for the statement's parameters.
+		 * The arguments are not stored in the statement (which is shared by all the simulations and threads executing
+		 * it) but handed to it through the scope (see {@link IScope#setInvocation(Invocation)}), so this method must be
+		 * followed by the execution of the statement in the same scope. Prefer
+		 * {@link IScope#execute(IExecutable, Arguments)}, which does both.
 		 * </p>
 		 *
 		 * @param scope
@@ -159,7 +163,11 @@ public interface IStatement extends ISymbol, IExecutable {
 		 *            the runtime argument values
 		 */
 		@Override
-		default void setRuntimeArgs(final IScope scope, final Arguments args) {}
+		default void setRuntimeArgs(final IScope scope, final Arguments args) {
+			if (scope != null) {
+				scope.setInvocation(new Invocation(this, args, args == null ? null : args.getCaller(), null));
+			}
+		}
 
 	}
 

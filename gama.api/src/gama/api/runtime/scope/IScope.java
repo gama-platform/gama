@@ -753,13 +753,46 @@ public interface IScope extends Closeable, IBenchmarkable {
 	IExecutionResult step(final IAgent agent);
 
 	/**
-	 * Pushes a set of arguments onto the argument stack. These arguments can later be accessed using the getArg
-	 * methods.
+	 * Pushes a set of arguments onto the argument stack, evaluating them in the context of their own caller (if any).
+	 * These arguments can later be accessed using the getArg methods.
 	 *
 	 * @param actualArgs
 	 *            The arguments to push
 	 */
-	void stackArguments(Arguments actualArgs);
+	default void stackArguments(final Arguments actualArgs) {
+		if (actualArgs != null) { stackArguments(actualArgs, actualArgs.getCaller()); }
+	}
+
+	/**
+	 * Pushes a set of arguments onto the argument stack, evaluating them in the context of the caller (if not null).
+	 * These arguments can later be accessed using the getArg methods.
+	 *
+	 * @param actualArgs
+	 *            The arguments to push
+	 * @param caller
+	 *            the object in the context of which the arguments are evaluated (may be null)
+	 */
+	void stackArguments(Arguments actualArgs, IObject caller);
+
+	/**
+	 * Prepares a call: the invocation will be returned by the next call to {@link #takeInvocation(IExecutable)} with
+	 * its executable.
+	 *
+	 * @param invocation
+	 *            the invocation (or null to clear the pending one)
+	 * @return the invocation that was pending before (may be null), so that callers can restore it
+	 */
+	Invocation setInvocation(Invocation invocation);
+
+	/**
+	 * Returns and clears the pending invocation of the executable, if any. Executables that accept arguments (or need
+	 * to know their caller) call it once, at the beginning of their execution.
+	 *
+	 * @param executable
+	 *            the executable being executed
+	 * @return its pending invocation, or null if it has not been called through this scope
+	 */
+	Invocation takeInvocation(IExecutable executable);
 
 	/**
 	 * Updates an agent. This is typically called during the simulation update phase.

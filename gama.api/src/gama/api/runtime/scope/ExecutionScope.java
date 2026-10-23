@@ -339,6 +339,9 @@ public class ExecutionScope implements IScope {
 	/** The execution context. */
 	protected IExecutionContext executionContext;
 
+	/** The pending invocation (call data of the executable about to be executed in this scope). */
+	private Invocation invocation;
+
 	/** The agent context. */
 	protected AgentExecutionContext agentContext;
 
@@ -444,6 +447,7 @@ public class ExecutionScope implements IScope {
 	@Override
 	public void clear() {
 		if (executionContext != null) { executionContext.dispose(); }
+		invocation = null;
 		setExecutionContext(null);
 		if (agentContext != null) { agentContext.dispose(); }
 		agentContext = null;
@@ -719,30 +723,33 @@ public class ExecutionScope implements IScope {
 		final IAgent agent = this.getAgent();
 		// We then try to push the agent on the stack
 		final boolean pushed = push(target);
+		final IScope executionScope = useTargetScopeForExecution ? agent.getScope() : ExecutionScope.this;
+		Invocation previous = null;
+		boolean invoked = false;
 		try (StopWatch w = GAMA.benchmark(this, statement)) {
-			// Otherwise we compute the result of the statement, pushing the
-			// arguments if the statement expects them
-			if (args != null) { args.setCaller(caller); }
-			// See issue #2815: we also push args even if they are null
-			statement.setRuntimeArgs(this, args);
 			// #3407 a specific case when create micro experiment, the myself (agentcontext) is as same as target
 			// fixed by change myself to outer agentcontext
-			if (statement instanceof IStatement.Remote remote && "create".equals(remote.getDescription().getKeyword())
-					&& caller.equals(target)) {
-				statement.setMyself(this.agentContext.outer.getFirstAgent());
+			final IAgent myself = statement instanceof IStatement.Remote remote
+					&& "create".equals(remote.getDescription().getKeyword()) && caller.equals(target)
+							? this.agentContext.outer.getFirstAgent() : agent;
+			if (statement instanceof IStatement.WithArgs || statement instanceof IStatement.Remote) {
+				// The call data is handed to the statement through the scope, as the statement is shared by all the
+				// simulations and threads executing it. See issue #2815: we also pass args even if they are null
+				previous = executionScope
+						.setInvocation(new Invocation(statement, args, args == null ? null : caller, myself));
+				invoked = true;
 			} else {
-				statement.setMyself(agent);
+				// Legacy protocol for other executables
+				statement.setRuntimeArgs(executionScope, args);
+				statement.setMyself(myself);
 			}
-			// We push the caller to the remote sequence (will be cleaned when the remote
-			// sequence leaves its scope)
-			return withValue(statement.executeOn(useTargetScopeForExecution ? agent.getScope() : ExecutionScope.this));
+			return withValue(statement.executeOn(executionScope));
 		} catch (final Exception g) {
 			GAMA.reportAndThrowIfNeeded(this, g instanceof GamaRuntimeException e ? e : create(g, this), true);
 			return IExecutionResult.FAILED;
 		} finally {
-			// We clean the caller that may have been set previously so as to keep the
-			// arguments clean
-			if (args != null) { args.setCaller(null); }
+			// Whatever the outcome, we restore the invocation pending before (if the statement has not taken its own)
+			if (invoked) { executionScope.setInvocation(previous); }
 			// Whatever the outcome, we pop the agent from the stack if it has
 			// been previously pushed
 			if (pushed) { pop(target); }
@@ -751,10 +758,24 @@ public class ExecutionScope implements IScope {
 	}
 
 	@Override
-	public void stackArguments(final Arguments actualArgs) {
+	public Invocation setInvocation(final Invocation invocation) {
+		final Invocation previous = this.invocation;
+		this.invocation = invocation;
+		return previous;
+	}
+
+	@Override
+	public Invocation takeInvocation(final IExecutable executable) {
+		final Invocation result = invocation;
+		if (result == null || result.executable() != executable) return null;
+		invocation = null;
+		return result;
+	}
+
+	@Override
+	public void stackArguments(final Arguments actualArgs, final IObject caller) {
 		if (actualArgs == null) return;
 		boolean callerPushed = false;
-		final IObject caller = actualArgs.getCaller();
 		if (caller != null) { callerPushed = push(caller); }
 		try {
 			actualArgs.forEachArgument((a, b) -> {

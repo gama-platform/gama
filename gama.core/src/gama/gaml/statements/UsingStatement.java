@@ -21,6 +21,7 @@ import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.descriptions.IDescription;
+import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.statements.AbstractStatementSequence;
 import gama.api.gaml.types.IType;
@@ -73,9 +74,6 @@ public class UsingStatement extends AbstractStatementSequence {
 	/** The topology. */
 	final IExpression topology;
 
-	/** The previous. */
-	final ThreadLocal<ITopology> previous = new ThreadLocal<>();
-
 	/**
 	 * Constructor.
 	 *
@@ -89,29 +87,20 @@ public class UsingStatement extends AbstractStatementSequence {
 	}
 
 	/**
-	 * When entering the scope, the statement pushes the topology (if not null) to it and remembers the one that was
-	 * previously pushed.
-	 *
-	 * @see gama.api.gaml.statements.AbstractStatementSequence#enterScope(gama.api.runtime.scope.IScope)
+	 * Executes the sub-statements with the topology (if not null) and restores the previous one afterwards. The previous
+	 * topology is kept by the call itself, as the statement is shared by all the simulations and threads executing it
+	 * (and can be executed recursively).
 	 */
 	@Override
-	public void enterScope(final IScope scope) {
-		super.enterScope(scope);
+	public Object executeOn(final IScope scope) throws GamaRuntimeException {
 		final ITopology topo = GamaTopologyFactory.castToTopology(scope, topology.value(scope));
-		if (topo != null) { previous.set(scope.setTopology(topo)); }
-	}
-
-	/**
-	 * When leaving the scope, the statement replaces its topology by the previous one.
-	 *
-	 * @see gama.api.gaml.statements.AbstractStatementSequence#leaveScope(gama.api.runtime.scope.IScope)
-	 */
-
-	@Override
-	public void leaveScope(final IScope scope) {
-		scope.setTopology(previous.get());
-		previous.set(null);
-		super.leaveScope(scope);
+		if (topo == null) return super.executeOn(scope);
+		final ITopology previous = scope.setTopology(topo);
+		try {
+			return super.executeOn(scope);
+		} finally {
+			scope.setTopology(previous);
+		}
 	}
 
 }
