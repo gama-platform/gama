@@ -145,8 +145,12 @@ public class CommandExecutor implements ICommandExecuter {
 			DEBUG.ERR("Error while executing the command '" + cmd_type + "'", t);
 			res = new CommandResponse(MessageType.GamaServerError, t, map, false);
 		}
-		if (res != null && ReadyState.OPEN.equals(socket.getReadyState())) {
-			socket.send(GAMA.getJsonEncoder().valueOf(res).toString());
+		try {
+			if (res != null && ReadyState.OPEN.equals(socket.getReadyState())) {
+				socket.send(GAMA.getJsonEncoder().valueOf(res).toString());
+			}
+		} catch (final RuntimeException e) {
+			DEBUG.ERR("Error while sending the response to command '" + cmd_type + "'", e);
 		}
 	}
 
