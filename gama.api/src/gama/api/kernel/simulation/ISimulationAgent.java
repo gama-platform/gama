@@ -11,7 +11,9 @@
 package gama.api.kernel.simulation;
 
 import java.util.Map;
+import java.util.function.Supplier;
 
+import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.topology.IProjectionFactory;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.date.IDate;
@@ -253,6 +255,36 @@ public interface ISimulationAgent extends ITopLevelAgent {
 
 	/** The Constant USAGE. */
 	String USAGE = "rng_usage";
+
+	/**
+	 * Runs a task in the dedicated thread of this simulation (one simulation = one thread) and waits for its result.
+	 * To be used for the operations that belong to the lifecycle of the simulation (initialization, restoration,
+	 * recording, collection of results...).
+	 *
+	 * @param <T>
+	 *            the type of the result
+	 * @param task
+	 *            the task
+	 * @return the result of the task
+	 */
+	default <T> T computeInOwnThread(final Supplier<T> task) {
+		if (getPopulation() instanceof IPopulation.Simulation pop) return pop.runInThreadOf(this, task);
+		return task.get();
+	}
+
+	/**
+	 * Runs a task in the dedicated thread of this simulation and waits for its completion.
+	 *
+	 * @param task
+	 *            the task
+	 * @see #computeInOwnThread(Supplier)
+	 */
+	default void runInOwnThread(final Runnable task) {
+		computeInOwnThread(() -> {
+			task.run();
+			return null;
+		});
+	}
 
 	/**
 	 * @return

@@ -227,6 +227,22 @@ public interface IPopulation<T extends IAgent>
 		 */
 		int getNumberOfActiveThreads();
 
+		/**
+		 * Runs a task in the dedicated thread of one of the simulations of this population and waits for its result.
+		 * By default, runs it in the current thread.
+		 *
+		 * @param <T>
+		 *            the type of the result
+		 * @param sim
+		 *            the simulation
+		 * @param task
+		 *            the task
+		 * @return the result of the task
+		 */
+		default <T> T runInThreadOf(final ISimulationAgent sim, final java.util.function.Supplier<T> task) {
+			return task.get();
+		}
+
 	}
 
 	/**

@@ -9,9 +9,6 @@
  ********************************************************************************************************/
 package gama.gaml.skills;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import gama.annotations.action;
@@ -21,13 +18,12 @@ import gama.annotations.example;
 import gama.annotations.skill;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
+import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.statements.IStatement;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.skill.Skill;
-import gama.api.kernel.species.ISpecies;
-import gama.api.runtime.GamaExecutorService;
 import gama.api.runtime.scope.IScope;
 
 /**
@@ -44,9 +40,6 @@ import gama.api.runtime.scope.IScope;
 		name = IKeyword.THREAD_SKILL,
 		concept = { IConcept.SKILL, IConcept.SYSTEM })
 public class ThreadSkill extends Skill {
-
-	/** The executor. */
-	ScheduledExecutorService executor = Executors.newScheduledThreadPool(GamaExecutorService.THREADS_NUMBER.getValue());
 
 	/** The Constant ACTION_NAME. */
 	private static final String ACTION_NAME = "thread_action";
@@ -148,28 +141,37 @@ public class ThreadSkill extends Skill {
 	}
 
 	/**
-	 * The Class ControlSubThread.
+	 * Runs the 'thread_action' of an agent in its own virtual thread, in parallel with the simulation. Virtual threads
+	 * are cheap to create and to park (while waiting for the next execution), so no pool needs to be shared or kept
+	 * alive between uses: the thread ends when the task is stopped, when the agent dies or when its scope is
+	 * interrupted.
 	 */
-	public class ControlSubThread implements Runnable {
+	public static class ControlSubThread implements Runnable {
 
-		/** The sf. */
-		ScheduledFuture sf;
+		/** The delay between the end of an execution and the start of the next one (fixed delay), in ms. */
+		private final int interval;
 
-		/** The interval. */
-		private final int interval, rate;
+		/** The period between the starts of two executions (fixed rate), in ms. */
+		private final int rate;
 
 		/** The agent. */
 		private final IAgent agent;
+
+		/** Whether this task has been stopped. */
+		private volatile boolean stopped;
+
+		/** The virtual thread running this task. */
+		private volatile Thread thread;
 
 		/**
 		 * Instantiates a new control sub thread.
 		 *
 		 * @param ag
-		 *            the ag
-		 * @param cont
-		 *            the cont
-		 * @param sleepInterval
-		 *            the sleep interval
+		 *            the agent
+		 * @param interval
+		 *            the fixed delay in ms (0 for continuous execution, negative if not defined)
+		 * @param rate
+		 *            the fixed rate in ms (negative if not defined)
 		 */
 		public ControlSubThread(final IAgent ag, final int interval, final int rate) {
 			this.interval = interval;
@@ -181,38 +183,64 @@ public class ThreadSkill extends Skill {
 		 * Start.
 		 */
 		public void start() {
-			if (rate > 0) {
-				sf = executor.scheduleAtFixedRate(this, 0, rate, TimeUnit.MILLISECONDS);
-			} else if (interval > 0) {
-				sf = executor.scheduleWithFixedDelay(this, 0, interval, TimeUnit.MILLISECONDS);
-			} else if (interval == 0) {
-				sf = executor.scheduleWithFixedDelay(this, 0, 1, TimeUnit.NANOSECONDS);
-			} else {
-				executor.execute(this);
-			}
+			thread = Thread.ofVirtual().name("Thread skill of " + agent.getName()).start(this);
 		}
 
 		/**
 		 * Stop.
 		 */
 		public void stop() {
-			if (sf != null && !sf.isCancelled()) { sf.cancel(true); }
+			stopped = true;
+			Thread t = thread;
+			if (t != null && t != Thread.currentThread()) { t.interrupt(); }
 		}
 
 		@Override
 		public void run() {
-			if (agent.dead()) {
-				stop();
-				return;
+			final boolean once = rate <= 0 && interval < 0;
+			long next = System.nanoTime();
+			try {
+				while (!stopped && executeOnce() && !once) {
+					long delay;
+					if (rate > 0) {
+						// Fixed rate: if late, run immediately after the previous execution without trying to catch up
+						next = Math.max(next + TimeUnit.MILLISECONDS.toNanos(rate), System.nanoTime());
+						delay = next - System.nanoTime();
+					} else {
+						delay = TimeUnit.MILLISECONDS.toNanos(interval);
+					}
+					if (delay > 0) {
+						TimeUnit.NANOSECONDS.sleep(delay);
+					} else {
+						Thread.yield();
+					}
+				}
+			} catch (InterruptedException e) {
+				// Stopped while waiting
+			} finally {
+				stopped = true;
 			}
+		}
+
+		/**
+		 * Executes the thread action once.
+		 *
+		 * @return true if the execution can go on, false if the agent is dead or its scope interrupted or if an
+		 *         error occurred
+		 */
+		private boolean executeOnce() {
+			if (agent.dead()) return false;
 			IScope scope = agent.getScope();
-			if (scope != null && !scope.interrupted()) {
-				ISpecies context = agent.getSpecies();
-				IStatement action = context.getAction(ACTION_NAME);
+			if (scope == null || scope.interrupted()) return false;
+			IStatement action = agent.getSpecies().getAction(ACTION_NAME);
+			try {
 				scope.copy("ThreadScope").execute(action, agent, null);
-			} else {
-				stop();
+			} catch (RuntimeException e) {
+				// Errors happening because the thread has been stopped while executing the action are ignored
+				if (!stopped) { GAMA.reportError(scope, GamaRuntimeException.create(e, scope), false); }
+				return false;
 			}
+			return true;
 		}
 
 	}

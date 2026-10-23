@@ -382,8 +382,12 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 			if (sp != null && shouldRecord != null) {
 				List<ISimulationAgent> sims = new ArrayList<>(sp);
 				for (ISimulationAgent sim : sims) {
-					IScope scope = sim.getScope();
-					if (!scope.interrupted() && Cast.asBool(scope, shouldRecord.value(scope))) { recorder.record(sim); }
+					sim.runInOwnThread(() -> {
+						IScope scope = sim.getScope();
+						if (!scope.interrupted() && Cast.asBool(scope, shouldRecord.value(scope))) {
+							recorder.record(sim);
+						}
+					});
 				}
 			}
 		}
@@ -956,11 +960,12 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 				for (ISimulationAgent sim : getSimulationPopulation()) {
 					if (recorder.canStepBack(sim)) {
 						// restore() returns false when there is nothing left to restore.
-						if (!recorder.restore(sim)) { continue; }
+						if (!sim.computeInOwnThread(() -> recorder.restore(sim))) { continue; }
 						restored[0] = true;
 						if (!((ExperimentSpecies) this.getSpecies()).keepsSeed()) {
-							sim.setRandomGenerator(
-									new RandomUtils(random.next(), sim.getRandomGenerator().getRngName()));
+							final double seed = random.next();
+							sim.runInOwnThread(() -> sim.setRandomGenerator(
+									new RandomUtils(seed, sim.getRandomGenerator().getRngName())));
 						}
 					}
 
