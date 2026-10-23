@@ -30,7 +30,9 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.window.IShellProvider;
@@ -45,6 +47,7 @@ import gama.api.GAMA;
 import gama.ui.navigator.view.GamaNavigator;
 import gama.ui.navigator.view.contents.TopLevelFolder;
 import gama.ui.navigator.view.contents.UserGroupFolder;
+import gama.ui.navigator.view.contents.UserGroups;
 import gama.ui.navigator.view.contents.WrappedProject;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.workspace.metadata.FileMetaDataProvider;
@@ -142,11 +145,11 @@ public class RefreshAction extends WorkspaceAction {
 		for (final Object o : getStructuredSelection()) {
 			if (o instanceof TopLevelFolder folder) {
 				for (final WrappedProject wp : folder.getProjects()) {
-					if (wp.getResource().isAccessible()) { resources1.add(wp.getResource()); }
+					resources1.add(wp.getResource());
 				}
 			} else if (o instanceof UserGroupFolder group) {
 				for (final WrappedProject wp : group.getAllProjects()) {
-					if (wp.getResource().isAccessible()) { resources1.add(wp.getResource()); }
+					resources1.add(wp.getResource());
 				}
 			}
 		}
@@ -180,14 +183,20 @@ public class RefreshAction extends WorkspaceAction {
 		return new WorkspaceModifyOperation() {
 			@Override
 			public void execute(final IProgressMonitor monitor) {
+				final MultiStatus errors = new MultiStatus("gama.ui.navigator", 0,
+						"Some resources could not be refreshed", null);
 				try {
 					for (IResource resource : resources) {
 						try {
 							refreshResource(resource, null);
-						} catch (final CoreException e) {}
+						} catch (final CoreException e) {
+							errors.add(e.getStatus());
+						}
 						if (monitor.isCanceled()) throw new OperationCanceledException();
 					}
 				} finally {
+					errorStatus[0] = errors.isOK() ? Status.OK_STATUS : errors;
+					UserGroups.refreshNavigator();
 					monitor.done();
 				}
 			}
@@ -216,7 +225,7 @@ public class RefreshAction extends WorkspaceAction {
 			for (final IProject project : projects) { checkLocationDeleted(project); }
 		}
 		resource.refreshLocal(DEPTH_INFINITE, monitor);
-		resource.getParent().refreshLocal(DEPTH_INFINITE, monitor);
+		if (resource.getParent() != null) { resource.getParent().refreshLocal(DEPTH_INFINITE, monitor); }
 
 		runInUI("Refreshing " + resource.getName(), 0, m -> {
 			FileMetaDataProvider.getInstance().storeMetaData(resource, null, true);
