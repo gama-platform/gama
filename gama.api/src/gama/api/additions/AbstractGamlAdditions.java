@@ -42,6 +42,8 @@ import gama.api.gaml.types.Signature;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.GamaMetaModel;
 import gama.api.kernel.agent.IAgentConstructor;
+import gama.api.kernel.object.IObject;
+import gama.api.kernel.object.IObjectConstructor;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.IExperimentAgentCreator;
 import gama.api.kernel.simulation.IExperimentAgentCreator.ExperimentAgentDescription;
@@ -207,6 +209,13 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 	 */
 	public void _species(final String name, final Class clazz, final IAgentConstructor helper, final String... skills) {
 		GamaMetaModel.addSpecies(name, clazz, helper, skills);
+	}
+
+	/**
+	 * Registers a Java-backed non-agent GAML class.
+	 */
+	public void _class(final String name, final Class<? extends IObject> clazz, final IObjectConstructor helper) {
+		GamaMetaModel.addClass(name, clazz, helper);
 	}
 
 	/**

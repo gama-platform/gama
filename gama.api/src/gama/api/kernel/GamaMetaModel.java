@@ -33,12 +33,17 @@ import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.gaml.GAML;
+import gama.api.gaml.types.Types;
+import gama.api.gaml.types.TypesManager;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IAgentConstructor;
 import gama.api.kernel.object.IClass;
+import gama.api.kernel.object.IObject;
+import gama.api.kernel.object.IObjectConstructor;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.species.ISpecies;
+import gama.api.types.object.GamaObjectType;
 
 /**
  * The GAMA metamodel that defines and manages all built-in species in the platform.
@@ -104,6 +109,8 @@ public class GamaMetaModel {
 	/** The temp species. */
 	private final Map<String, SpeciesRecord> tempSpecies = new ConcurrentHashMap<>();
 
+	private final Map<String, ClassRecord> tempClasses = new ConcurrentHashMap<>();
+
 	/** The species skills. */
 	private final Multimap<String, String> speciesSkills = HashMultimap.create();
 
@@ -138,6 +145,9 @@ public class GamaMetaModel {
 	 */
 	private record SpeciesRecord(String name, String plugin, Class clazz, IAgentConstructor helper, String[] skills) {}
 
+	private record ClassRecord(String name, String plugin, Class<? extends IObject> clazz,
+			IObjectConstructor constructor) {}
+
 	/**
 	 * Private constructor enforcing singleton pattern.
 	 */
@@ -165,13 +175,57 @@ public class GamaMetaModel {
 	 * @return the abstract object class
 	 */
 	public static IClass getAbstractObjectClass() {
-		IClass clazz = INSTANCE.builtInClasses.get(OBJECT);
-		if (clazz == null) {
-			IClassDescription desc = getObjectClassDescription();
-			clazz = desc.compileAsBuiltIn();
-			INSTANCE.builtInClasses.put(OBJECT, clazz);
+		getObjectClassDescription();
+		return getClass(OBJECT);
+	}
+
+	/**
+	 * Registers a non-agent class before the metamodel is built.
+	 */
+	public static void addClass(final String name, final Class<? extends IObject> clazz,
+			final IObjectConstructor constructor) {
+		if (name == null || name.isBlank() || OBJECT.equals(name))
+			throw new IllegalArgumentException("Invalid built-in class name: " + name);
+		if (IAgent.class.isAssignableFrom(clazz))
+			throw new IllegalArgumentException("Agents must be registered as species: " + name);
+		for (final ClassRecord existing : INSTANCE.tempClasses.values()) {
+			if (existing.clazz == clazz)
+				throw new IllegalArgumentException("Java implementation already registered as " + existing.name);
 		}
-		return clazz;
+		if (INSTANCE.isInitialized)
+			throw new IllegalStateException("Built-in classes must be registered before building the metamodel");
+		if (Types.get(name) != Types.NO_TYPE || INSTANCE.tempSpecies.containsKey(name)
+				|| INSTANCE.builtInSpeciesDescriptions.containsKey(name))
+			throw new IllegalArgumentException("Built-in class name conflicts with an existing type: " + name);
+		if (INSTANCE.tempClasses.putIfAbsent(name,
+				new ClassRecord(name, GamaBundleLoader.CURRENT_PLUGIN_NAME, clazz, constructor)) != null)
+			throw new IllegalArgumentException("Built-in class already registered: " + name);
+		final var type = new GamaObjectType<>(Types.createTypesManagerParentedBy(null), null, name,
+				++TypesManager.CURRENT_INDEX, clazz);
+		Types.addRegularType(name, type, GamaBundleLoader.CURRENT_PLUGIN_NAME);
+		Types.addClassTypeCorrespondance(clazz, name);
+	}
+
+	public static IClassDescription getClassDescription(final String name) {
+		if (name == null) return null;
+		return OBJECT.equals(name) ? getObjectClassDescription() : INSTANCE.builtInClassDescriptions.get(name);
+	}
+
+	/**
+	 * Returns the shared compiled built-in class, or null for an unknown name.
+	 */
+	public static IClass getClass(final String name) {
+		if (name == null) return null;
+		synchronized (INSTANCE.builtInClasses) {
+			IClass clazz = INSTANCE.builtInClasses.get(name);
+			if (clazz == null) {
+				final IClassDescription description = getClassDescription(name);
+				if (description == null) return null;
+				clazz = description.compileAsBuiltIn();
+				INSTANCE.builtInClasses.put(name, clazz);
+			}
+			return clazz;
+		}
 	}
 
 	/**
@@ -294,6 +348,8 @@ public class GamaMetaModel {
 		object.setEnclosingDescription(model);
 		model.addChild(object);
 
+		for (final ClassRecord proto : INSTANCE.tempClasses.values()) { INSTANCE.buildClass(proto, model); }
+
 		// We then create all other built-in species and attach them to "model"
 		for (final SpeciesRecord proto : INSTANCE.tempSpecies.values()) {
 			ISpeciesDescription desc = INSTANCE.buildSpecies(proto, model, agent);
@@ -306,9 +362,41 @@ public class GamaMetaModel {
 		addBuiltInGlobalSchedulerSpecies(agent, model);
 
 		INSTANCE.tempSpecies.clear();
+		INSTANCE.tempClasses.clear();
 		model.buildTypes();
 		model.initializeMirrorsAndSubSpecies();
 		INSTANCE.isInitialized = true;
+	}
+
+	private IClassDescription buildClass(final ClassRecord proto, final IModelDescription model) {
+		final IClassDescription existing = builtInClassDescriptions.get(proto.name);
+		if (existing != null) return existing;
+		if (tempSpecies.containsKey(proto.name)
+				|| builtInSpeciesDescriptions.containsKey(proto.name))
+			throw new IllegalArgumentException("Built-in class name conflicts with an existing type: " + proto.name);
+		IClassDescription parent = getObjectClassDescription();
+		for (Class<?> base = proto.clazz.getSuperclass(); base != null; base = base.getSuperclass()) {
+			ClassRecord parentRecord = null;
+			for (final ClassRecord candidate : tempClasses.values()) {
+				if (candidate.clazz == base) {
+					parentRecord = candidate;
+					break;
+				}
+			}
+			if (parentRecord != null) {
+				parent = buildClass(parentRecord, model);
+				break;
+			}
+		}
+		final IClassDescription description = GAML.getDescriptionFactory().createBuiltInClassDescription(
+				proto.name, proto.clazz, parent, proto.constructor, proto.plugin);
+		description.setEnclosingDescription(model);
+		// Register before copying members, which may refer to this class.
+		builtInClassDescriptions.put(proto.name, description);
+		description.copyJavaAdditions();
+		description.inheritFromParent();
+		model.addChild(description);
+		return description;
 	}
 
 	/**

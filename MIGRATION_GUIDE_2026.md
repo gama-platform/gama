@@ -86,6 +86,68 @@ GAML now supports **`class`** (a lightweight, purely data-oriented structure wit
 
 This is the first time GAML supports structured data types that are not agents — no migration is required unless you want to take advantage of this.
 
+### Java-backed built-in classes
+
+Plugins can contribute non-agent GAML classes using `@gaml_class`. Unlike an ordinary operator,
+a class constructor accepts zero arguments: `counter c <- counter();`.
+
+```java
+import gama.annotations.*;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.object.IClass;
+import gama.api.runtime.scope.IScope;
+import gama.core.object.GamlObject;
+
+@gaml_class(name = "counter", doc = @doc("A non-agent counter."))
+@vars(@variable(name = "value", type = IType.INT, init = "0",
+        doc = @doc("The current count.")))
+public class Counter extends GamlObject {
+    private int value;
+
+    public Counter(final IScope scope, final IClass clazz) {
+        super(clazz);
+    }
+
+    @getter("value")
+    public int getValue() { return value; }
+
+    @setter("value")
+    public void setValue(final int value) { this.value = value; }
+
+    @action(name = "increment", doc = @doc("Increment this counter."))
+    public Integer increment(final IScope scope) { return ++value; }
+}
+```
+
+The existing annotation processor generates the registration and factory; the plugin must contribute
+its generated additions through `gaml.extension`, as for species. Concrete implementations must be
+public, implement `IObject`, and provide a public `(IScope, IClass)` constructor. Nested implementations
+must be static. Extending `GamlObject` requires a dependency on `gama.core`; implementing `IObject`
+directly requires only `gama.api`.
+
+Java construction finishes **before** GAML attributes are initialized. Call `super(clazz)`, not the
+older initializing `GamlObject(IScope, IClass, Map)` constructor, and do not initialize GAML attributes
+yourself. Named arguments, `init` expressions, and type defaults are applied afterward through the
+annotated setters. A getter marked `initializer = true` can provide the initial Java value when no
+argument or `init` expression is given.
+
+```gaml
+counter c <- counter();
+counter initialized <- counter(value: 10);
+int result <- initialized.increment();
+
+class labeled_counter parent: counter {
+    string label <- "example";
+}
+```
+
+The nearest registered Java superclass becomes the GAML parent; otherwise it is `object`.
+Attributes, actions, and the Java instance factory are inherited by model-defined subclasses.
+Abstract Java implementations can be registered without a factory, but cannot be instantiated,
+including through a GAML-only subclass. A concrete Java subclass must supply the implementation.
+Native classes can also be used directly as Java operator parameter and return types without a
+separate `@type` declaration.
+
 ---
 
 ## 3. Cleaner, Faster GAML Syntax

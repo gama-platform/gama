@@ -37,6 +37,7 @@ import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.facet;
 import gama.annotations.file;
+import gama.annotations.gaml_class;
 import gama.annotations.no_test;
 import gama.annotations.operator;
 import gama.annotations.skill;
@@ -294,6 +295,7 @@ public abstract class ElementProcessor<T extends Annotation> implements IProcess
 	protected doc getDocAnnotation(final Element main, final Annotation a) {
 		doc[] docs = switch (a) {
 			case species s -> s.doc();
+			case gaml_class s -> s.doc();
 			case symbol s -> s.doc();
 			case arg s -> s.doc();
 			case constant s -> s.doc();
@@ -771,12 +773,12 @@ public abstract class ElementProcessor<T extends Annotation> implements IProcess
 	 */
 	protected boolean assertClassIsAgentOrSkill(final boolean throwsError, final TypeElement e) {
 		TypeMirror t = e.asType();
-		if (context.getTypeUtils().isAssignable(t, context.getIAgent())
+		if (context.getTypeUtils().isAssignable(t, context.getType("gama.api.kernel.object.IObject"))
 				|| context.getTypeUtils().isAssignable(t, context.getISkill()))
 			return true;
 		context.emit(throwsError ? Kind.ERROR : Kind.WARNING,
 				getAnnotationClass().getSimpleName()
-						+ " annotations do not make sense outside an IAgent or ISkill subclass: " + t.toString()
+						+ " annotations do not make sense outside an IObject or ISkill subclass: " + t.toString()
 						+ " is neither of them.",
 				e);
 		return !throwsError;

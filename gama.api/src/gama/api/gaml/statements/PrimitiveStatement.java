@@ -95,7 +95,7 @@ import gama.api.runtime.scope.IScope;
 		internal = true,
 		concept = { IConcept.ACTION, IConcept.SYSTEM })
 @inside (
-		kinds = { ISymbolKind.SPECIES, ISymbolKind.EXPERIMENT, ISymbolKind.MODEL },
+		kinds = { ISymbolKind.SPECIES, ISymbolKind.EXPERIMENT, ISymbolKind.MODEL, ISymbolKind.CLASS },
 		symbols = IKeyword.CHART)
 @facets (
 		value = { @facet (
@@ -167,7 +167,7 @@ public class PrimitiveStatement extends ActionStatement {
 	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
 		scope.stackArguments(actualArgs.get());
 		final IAgent agent = scope.getAgent();
-		return helper.run(scope, agent, skill == null ? agent : skill);
+		return helper.run(scope, agent, skill == null ? scope.getCurrentObjectOrAgent() : skill);
 	}
 
 	/**

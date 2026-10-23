@@ -19,6 +19,7 @@ import gama.api.gaml.types.GamaType;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.ITypesManager;
 import gama.api.gaml.types.Types;
+import gama.api.kernel.GamaMetaModel;
 import gama.api.kernel.object.IClass;
 import gama.api.kernel.object.IObject;
 import gama.api.runtime.scope.IScope;
@@ -76,7 +77,7 @@ public class GamaObjectType<T extends IObject> extends GamaType<T> {
 	 * @return the defining plugin
 	 */
 	@Override
-	public String getDefiningPlugin() { return getSpecies().getDefiningPlugin(); }
+	public String getDefiningPlugin() { return super.getDefiningPlugin(); }
 
 	/**
 	 * Cast.
@@ -134,7 +135,9 @@ public class GamaObjectType<T extends IObject> extends GamaType<T> {
 	 * @return the species
 	 */
 	@Override
-	public IClassDescription getSpecies() { return species; }
+	public IClassDescription getSpecies() {
+		return species == null ? GamaMetaModel.getClassDescription(name) : species;
+	}
 
 	/**
 	 * Can cast to const.

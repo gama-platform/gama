@@ -26,6 +26,7 @@ import gama.api.annotations.validator;
 import gama.api.compilation.descriptions.IClassDescription;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IDescriptionValidator;
+import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.statements.ActionStatement;
 import gama.api.gaml.statements.IStatement;
@@ -33,10 +34,10 @@ import gama.api.gaml.statements.IStatement.WithArgs;
 import gama.api.gaml.symbols.ISymbol;
 import gama.api.gaml.symbols.IVariable;
 import gama.api.gaml.symbols.Symbol;
-import gama.api.gaml.types.IContainerType;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.object.IClass;
 import gama.api.kernel.object.IObject;
+import gama.api.kernel.GamaMetaModel;
 import gama.api.kernel.species.IModelSpecies;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
@@ -239,6 +240,7 @@ public class GamlClass extends Symbol implements IClass {
 	 */
 	@Override
 	public void dispose() {
+		if (getDescription().isBuiltIn()) return;
 		// Dispose of resources if necessary
 		for (IVariable variable : variables.values()) { variable.dispose(); }
 		for (IStatement.Action action : actions.values()) { action.dispose(); }
@@ -249,11 +251,7 @@ public class GamlClass extends Symbol implements IClass {
 	}
 
 	@Override
-	public IContainerType<?> getGamlType() {
-		// TODO: Difficult to understand if this is correct, but it seems to be the way to get the type of a class
-
-		return (IContainerType<?>) getDescription().getTypeNamed(getName());
-	}
+	public IType<?> getGamlType() { return getDescription().getTypeNamed(getName()); }
 
 	@Override
 	public Collection<String> getVarNames() { return getDescription().getAttributeNames(); }
@@ -284,7 +282,8 @@ public class GamlClass extends Symbol implements IClass {
 		if (parentClass == null) {
 			final String name = getDescription().getParentName();
 			IModelSpecies currentMacroSpec = this.getMacroSpecies(); // model species
-			parentClass = currentMacroSpec.getClass(name);
+			parentClass = currentMacroSpec == null ? GamaMetaModel.getClass(name)
+					: currentMacroSpec.getClass(name);
 		}
 		return parentClass;
 	}
@@ -325,7 +324,21 @@ public class GamlClass extends Symbol implements IClass {
 
 	@Override
 	public IObject createInstance(final IScope scope, final Map<String, Object> args) {
-		return new GamlObject(scope, this, args);
+		if (getDescription().isAbstract())
+			throw GamaRuntimeException.error("Cannot instantiate abstract class " + getName(), scope);
+		final var constructor = getDescription().getObjectConstructor();
+		if (constructor == null) {
+			if (getDescription().getJavaBase() != IObject.class)
+				throw GamaRuntimeException.error(
+						"No Java instance constructor for class " + getName(), scope);
+			return new GamlObject(scope, this, args);
+		}
+		final IObject object = constructor.create(scope, this);
+		if (object == null || object.getSpecies() != this)
+			throw GamaRuntimeException.error(
+					"Java constructor did not create an instance of " + getName(), scope);
+		object.initializeAttributes(scope, args);
+		return object;
 	}
 
 }

@@ -10,6 +10,8 @@
  ********************************************************************************************************/
 package gaml.compiler.descriptions;
 
+import java.util.List;
+
 import org.eclipse.emf.ecore.EObject;
 
 import gama.annotations.constants.IKeyword;
@@ -19,15 +21,23 @@ import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.constants.IGamlIssue;
+import gama.api.gaml.GAML;
 import gama.api.gaml.symbols.Facets;
+import gama.api.gaml.symbols.ISymbol;
 import gama.api.kernel.GamaMetaModel;
 import gama.api.kernel.object.IClass;
 import gama.api.kernel.object.IObject;
+import gama.api.kernel.object.IObjectConstructor;
+import gama.api.utils.JavaUtils;
 
 /**
  *
  */
 public class ClassDescription extends TypeDescription implements IClassDescription {
+
+	private final Class<? extends IObject> javaBase;
+
+	private IObjectConstructor objectConstructor;
 
 	/**
 	 * Instantiates a new class description. ONLY USED FOR THE BUILT-IN OBJECT DESCRIPTION
@@ -36,10 +46,17 @@ public class ClassDescription extends TypeDescription implements IClassDescripti
 	 *            the plugin
 	 */
 	public ClassDescription(final String name, final String plugin) {
-		this(IKeyword.CLASS, IObject.class, GamaMetaModel.getSpeciesDescription(IKeyword.MODEL), null, null, null,
+		this(name, IObject.class, null, null, plugin);
+	}
+
+	public ClassDescription(final String name, final Class<? extends IObject> clazz,
+			final IClassDescription parent, final IObjectConstructor constructor, final String plugin) {
+		this(IKeyword.CLASS, clazz, GamaMetaModel.getSpeciesDescription(IKeyword.MODEL), parent, null, null,
 				new Facets(IKeyword.NAME, name), plugin);
-		set(Flag.IsAbstract);
+		objectConstructor = constructor;
 		set(Flag.IsBuiltIn);
+		originName = plugin;
+		setIf(Flag.IsAbstract, constructor == null);
 	}
 
 	/**
@@ -62,14 +79,13 @@ public class ClassDescription extends TypeDescription implements IClassDescripti
 	 * @param plugin
 	 *            the plugin
 	 */
-	public ClassDescription(final String keyword, final Class clazz, final IDescription macroDesc,
+	public ClassDescription(final String keyword, final Class<? extends IObject> clazz, final IDescription macroDesc,
 			final IClassDescription parent, final Iterable<? extends IDescription> cp, final EObject source,
 			final Facets facets, final String plugin) {
 		super(keyword, clazz, macroDesc, parent, cp, source, facets, plugin);
+		javaBase = clazz;
+		if (plugin == null) { unSet(Flag.IsBuiltIn); }
 	}
-
-	@Override
-	public boolean isBuiltIn() { return false; }
 
 	@Override
 	public String getTitle() { return IKeyword.CLASS + " " + getName(); }
@@ -88,7 +104,41 @@ public class ClassDescription extends TypeDescription implements IClassDescripti
 	}
 
 	@Override
-	public Class<? extends IObject> getJavaBase() { return IObject.class; }
+	public ISymbol compile() {
+		return isBuiltIn() ? GamaMetaModel.getClass(getName()) : super.compile();
+	}
+
+	@Override
+	public Class<? extends IObject> getJavaBase() {
+		if (javaBase != null) return javaBase;
+		return getParent() == null ? IObject.class : getParent().getJavaBase();
+	}
+
+	@Override
+	public IObjectConstructor getObjectConstructor() {
+		if (isBuiltIn()) return objectConstructor;
+		return getParent() == null ? null : getParent().getObjectConstructor();
+	}
+
+	@Override
+	public boolean isAbstract() {
+		return super.isAbstract() || getJavaBase() != IObject.class && getObjectConstructor() == null;
+	}
+
+	/**
+	 * Copies annotated members from the implementation hierarchy, from base to derived classes.
+	 */
+	@Override
+	public void copyJavaAdditions() {
+		for (final Class<?> clazz : JavaUtils.collectImplementationClasses(getJavaBase(), List.of(),
+				GAML.getAdditionClasses())) {
+			for (final IDescription member : GAML.getAdditions(clazz)) {
+				final IDescription copy = member.copy(this);
+				copy.setOriginName("built-in class " + clazz.getName());
+				addChild(copy);
+			}
+		}
+	}
 
 	@Override
 	public void addChild(final IDescription child) {

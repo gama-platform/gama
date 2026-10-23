@@ -16,6 +16,8 @@ import gama.api.compilation.ast.ISyntacticElement;
 import gama.api.compilation.factories.ISymbolDescriptionFactory;
 import gama.api.gaml.symbols.Facets;
 import gama.api.kernel.agent.IAgentConstructor;
+import gama.api.kernel.object.IObject;
+import gama.api.kernel.object.IObjectConstructor;
 
 /**
  * Factory interface for creating semantic descriptions of GAML model elements.
@@ -370,5 +372,8 @@ public interface IDescriptionFactory {
 	 * @return
 	 */
 	IClassDescription createBuiltInClassDescription(String name, String plugin);
+
+	IClassDescription createBuiltInClassDescription(String name, Class<? extends IObject> clazz,
+			IClassDescription parent, IObjectConstructor constructor, String plugin);
 
 }

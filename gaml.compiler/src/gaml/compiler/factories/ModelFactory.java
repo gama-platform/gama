@@ -1106,8 +1106,7 @@ public class ModelFactory implements IModelFactory {
 	IClassDescription lookupClass(final String name, final Map<String, ITypeDescription> cache) {
 		ITypeDescription result = cache.get(name);
 		if (result instanceof IClassDescription cd) return cd;
-		if (IKeyword.OBJECT.equals(name)) return GamaMetaModel.getObjectClassDescription();
-		return null;
+		return GamaMetaModel.getClassDescription(name);
 	}
 
 }
