@@ -14,7 +14,10 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
+import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
 
 import com.jogamp.opengl.GL4;
 import com.jogamp.opengl.GLAutoDrawable;
@@ -24,7 +27,6 @@ import gama.api.runtime.GeneralSynchronizer;
 import gama.api.types.color.GamaColorFactory;
 import gama.api.types.color.IColor;
 import gama.api.types.geometry.GamaPointFactory;
-import gama.api.types.geometry.GamaShapeFactory;
 import gama.api.types.geometry.IPoint;
 import gama.api.types.geometry.IShape;
 import gama.api.types.matrix.IField;
@@ -32,6 +34,7 @@ import gama.api.ui.displays.IAsset;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.ui.layers.ILayer;
+import gama.api.utils.geometry.GeometryUtils;
 import gama.api.utils.interfaces.IImageProvider;
 import gama.core.outputs.display.AbstractDisplayGraphics;
 import gama.core.util.file.GamaGeometryFile;
@@ -424,24 +427,27 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	public void drawGridLine(final IPoint dimensions, final IColor lineColor) {
 		final ModelScene scene = sceneHelper.getSceneToUpdate();
 		if (scene == null) return;
-		double stepX, stepY;
-		final double cellWidth = getEnvWidth() / dimensions.getX();
-		final double cellHeight = getEnvHeight() / dimensions.getY();
-		final IColor color = GamaColorFactory.get(lineColor.getRGB());
-		final DrawingAttributes attributes = new ShapeDrawingAttributes(null, color, color, IShape.Type.GRIDLINE);
-		attributes.setEmpty(true);
-		for (double i = 0; i < dimensions.getX(); i++) {
-			for (double j = 0; j < dimensions.getY(); j++) {
-				stepX = i + 0.5;
-				stepY = j + 0.5;
-				final Geometry g =
-						GamaShapeFactory
-								.buildRectangle(cellWidth, cellHeight,
-										GamaPointFactory.create(stepX * cellWidth, stepY * cellHeight))
-								.getInnerGeometry();
-				scene.addGeometry(g, attributes);
-			}
+		final int columns = (int) dimensions.getX();
+		final int rows = (int) dimensions.getY();
+		final double width = getEnvWidth();
+		final double height = getEnvHeight();
+		final GeometryFactory factory = GeometryUtils.getGeometryFactory();
+		final LineString[] lines = new LineString[columns + rows + 2];
+		for (int i = 0; i <= columns; i++) {
+			final double x = i * width / columns;
+			lines[i] =
+					factory.createLineString(new Coordinate[] { new Coordinate(x, 0, 0), new Coordinate(x, height, 0) });
 		}
+		for (int j = 0; j <= rows; j++) {
+			final double y = j * height / rows;
+			lines[columns + 1 + j] =
+					factory.createLineString(new Coordinate[] { new Coordinate(0, y, 0), new Coordinate(width, y, 0) });
+		}
+		final IColor color = GamaColorFactory.get(lineColor.getRGB());
+		final DrawingAttributes attributes = new ShapeDrawingAttributes(null, color, color, IShape.Type.MULTILINESTRING);
+		attributes.setEmpty(true);
+		// One object keeps grid size from diluting the scene's anti-z-fighting increment.
+		scene.addGeometry(factory.createMultiLineString(lines), attributes);
 	}
 
 	/**
