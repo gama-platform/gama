@@ -87,7 +87,7 @@ experiment "Color sort" type: gui {
 	parameter "Width and height of the grid:" var: width_and_height_of_grid category: "Environment";
 	parameter "Number of agents:" var: ants category: "Agents";
 	output synchronized: false {
-		display view type: 3d antialias: true {
+		display view type: 3d antialias: false {
 			grid ant_grid;
 			species ant transparency: 0.05;
 		}
