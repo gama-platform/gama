@@ -60,6 +60,8 @@ The shared default light intensity for OpenGL and OpenGL4 is increased from 160 
 
 Both 3D renderers now limit the effective `z_near` to `z_far / 100000`. Very small values no longer exhaust depth-buffer precision, which made back faces show through and objects appear lit from behind (#973).
 
+Empty 3D displays now show their axes; previously they were hidden as if the display only contained charts (#809).
+
 The test view has a **Stop tests** button and displays the currently executing model, experiment and test name. By default, GUI tests execute in the workbench JVM, using scope cancellation and thread interruption. **Stop tests** interrupts the current experiment and ends the suite, preserving completed results and marking the active test as **interrupted**. **Execution > Tests > Test experiment timeout (seconds)** defaults to 10 seconds: a timeout requests interruption, marks the active test as **timeout**, and continues with the next experiment once execution actually exits. The runner never abandons a live test thread. Unstarted tests and assertions remain **not reached**.
 
 **Advanced > Tests > Run tests in a separate headless process** enables stronger isolation for Java operators that ignore cooperative cancellation. An isolated sequence reuses an initialized headless worker, replacing it after a timeout or worker failure and terminating it when the sequence ends. In this mode Stop and timeout can forcibly terminate unresponsive computations. The timeout covers experiment initialization and execution, not model compilation or worker startup. Isolated tests require saved local model files; default same-JVM execution can use the model compiled from the editor.

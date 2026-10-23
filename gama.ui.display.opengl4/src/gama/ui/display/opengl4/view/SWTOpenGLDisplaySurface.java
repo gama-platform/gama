@@ -148,7 +148,10 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 		this.output.setSurface(this);
 		setDisplayScope(this.output.getScope().copyForGraphics("in opengl display"));
 		layerManager = new LayerManager(this, output);
-		if (!layerManager.stayProportional()) { output.getData().setDrawEnv(false); }
+		// Displays containing only non-proportional layers (e.g. charts) hide the axes; empty displays keep them (#809)
+		if (!layerManager.getItems().isEmpty() && !layerManager.stayProportional()) {
+			output.getData().setDrawEnv(false);
+		}
 		renderer = createRenderer();
 		final GamaGLCanvas canvas =
 				new GamaGLCanvas(this.parent, renderer, getOutput().getName(), !LaunchingOverlay.isLaunchOverlayVisible());
