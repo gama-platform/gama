@@ -11,6 +11,7 @@
 package gama.ui.application.server;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.Map;
 
 import org.java_websocket.WebSocket;
@@ -56,6 +57,10 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 
 	/** The current state. */
 	private volatile State currentState = State.NONE;
+
+	private WeakReference<IExperimentSpecies> currentStateExperiment = new WeakReference<>(null);
+
+	private WebSocket currentStateSocket;
 
 	private final IPreferenceBeforeChangeListener<Boolean> loggingPreferenceListener = enabled -> {
 		try {
@@ -240,17 +245,24 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 	}
 
 	@Override
-	public void updateStateTo(final IExperimentSpecies experiment, final State state) {
-		if (state != currentState) {
-			currentState = state;
-			final IServerConfiguration config = experiment != null && experiment.getAgent() != null
-					? experiment.getAgent().getScope().getServerConfiguration() : currentServerConfig;
-			WebSocket ws = config == null ? null : config.socket();
-			if (ws == null || ws.isClosed()) return;
-			ws.send(GAMA.getJsonEncoder()
-					.valueOf(new GamaServerMessage(MessageType.SimulationStatus, state.name(),
-							config.expId().isBlank() ? "0" : config.expId())).toString());
-		}
+	public synchronized void updateStateTo(final IExperimentSpecies experiment, final State state) {
+		final var agent = experiment == null ? null : experiment.getAgent();
+		final var scope = agent == null ? null : agent.getScope();
+		final IServerConfiguration config = scope == null ? currentServerConfig : scope.getServerConfiguration();
+		final WebSocket ws = config == null ? null : config.socket();
+		if (ws == null || ws.isClosed()) return;
+		// A cycle or controller command may finish after disposal has already announced NONE.
+		final boolean closing = experiment != null && experiment.getController().isDisposing();
+		final IExperimentSpecies previousExperiment = currentStateExperiment.get();
+		if (closing && previousExperiment != null && experiment != previousExperiment) return;
+		final State effectiveState = closing ? State.NONE : state;
+		if (effectiveState == currentState && experiment == previousExperiment && ws == currentStateSocket) return;
+		ws.send(GAMA.getJsonEncoder()
+				.valueOf(new GamaServerMessage(MessageType.SimulationStatus, effectiveState.name(),
+						config.expId().isBlank() ? "0" : config.expId())).toString());
+		currentState = effectiveState;
+		currentStateExperiment = new WeakReference<>(experiment);
+		currentStateSocket = ws;
 	}
 
 	/**

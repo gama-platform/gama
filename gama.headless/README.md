@@ -200,7 +200,33 @@ When the stop condition becomes true, the GUI experiment pauses and emits one `S
 
 Send a `reload` request to initialize another run. Forwarding settings are retained. `reload` can supply new `parameters` in either supported format and `until`; parameters omitted from reload retain their current values. An omitted or empty reload `until` clears the previous stop condition, so resend it to retain a limit.
 
+`stop` closes the experiment, unlike `pause` or reaching an `until` condition. Wait for its
+`CommandExecutedSuccessfully` response before sending another lifecycle command, discard the old `exp_id`,
+and use `load` (not `reload`) to open an experiment again. The GUI sends `SimulationStatus` with `content`
+`NONE` when closing; a finishing cycle cannot change a disposing experiment back to `PAUSED` or `RUNNING`.
+Lifecycle notifications and command replies are separate messages and can arrive in either order.
+Successful `reload` replies have empty `content`: keep the existing `exp_id` rather than replacing it.
+
 GUI mode remains interactive, single-experiment mode, not a replacement for headless multi-experiment execution. In particular, GUI `play` acknowledges starting execution; it does not implement headless `play`'s deferred `sync: true` response. Wait for `SimulationEnded` to detect completion.
+
+### Compatibility notes: Stop lifecycle correction (#988)
+
+This correction does not change GAML syntax, WebSocket command names, JSON fields, or response formats.
+Existing models do not require changes, and headless command handling is unchanged. The following
+observable behavior changes apply:
+
+| Surface | Change |
+|---|---|
+| Experiment state queries | `GAMA.getExperimentState()` returns `NONE` for a disposing controller, even if its paused flag is still set. |
+| GUI lifecycle notifications | A disposing experiment cannot emit a late `PAUSED`, `RUNNING`, or `NOTREADY` state after closure. Notifications are serialized to preserve delivery order. |
+| GUI notification deduplication | A different experiment or destination connection can receive a notification even when the state name is unchanged. Clients must not assume a fixed notification count. |
+| Bundled browser connector | Load, Reload and Stop requests wait for their replies before another Load, Reload or Stop can be sent, including with Headless mode enabled. This is a connector-side restriction, not a new server protocol requirement. |
+
+Clients should process lifecycle notifications as state updates, not count them or depend on transient
+shutdown states. Treat a successful Stop reply as confirmation that the experiment is closed; use Pause
+to suspend an experiment that should later resume. Keep command-response handling separate from
+asynchronous status handling. Clients following these rules should remain compatible; clients relying
+on the previous shutdown race or notification suppression may need adjustments.
 
 ### Headless batch experiments
 

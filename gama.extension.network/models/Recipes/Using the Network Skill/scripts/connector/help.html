@@ -66,6 +66,15 @@
                 If you want to avoid this probem, I suggest to set the global variable pref_experiment_ask_closing to false in the init of the global of your model.
             </li>
         </ul>
+        <h3>How do I load an experiment after Stop?</h3>
+        <div>
+            Stop closes the experiment. Wait for its successful response; the connector then shows
+            NONE and Load / Reload sends a new Load request. No page refresh is needed.
+            While a Load, Reload or Stop request is pending, wait for its response before sending another,
+            including with Headless mode enabled. This waiting rule belongs to this connector; the server
+            command names and message formats have not changed, and existing GAML models need no changes.
+            Use Pause instead of Stop if you want to resume the same experiment.
+        </div>
         <h3>Why can't the connector connect to Gama Server?</h3>
         <ul class="text">
             <li>I'll be very clear on this point: if you can't connect to the Gama server, it's either because you haven't specified the right connection port, 
@@ -78,7 +87,9 @@
         <ul class="text">
             <li>Simulation status is the state of Gama Server: is a simulation running?
                  is it paused? The connector knows this status when it receives a SimlationStatus message.
-                  This message is only sent when there's a change in Gama Server status, so it's normal not to know it when you connect.
+                  Notifications are sent when the state changes, and can also be sent when the experiment or
+                  destination connection changes even if the state name is unchanged. Connecting alone does not
+                  guarantee an initial status notification, so the connector can initially show UNKNOWN.
             </li>
         </ul>
         

@@ -1172,6 +1172,7 @@ public class GAMA {
 	public static State getExperimentState(final IExperimentSpecies exp) {
 		final IExperimentController controller = exp == null ? GAMA.getFrontmostController() : exp.getController();
 		if (controller != null) {
+			if (controller.isDisposing()) return State.NONE;
 			if (controller.isPaused()) return State.PAUSED;
 			return State.RUNNING;
 		}
