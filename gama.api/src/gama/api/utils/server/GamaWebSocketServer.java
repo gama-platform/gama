@@ -230,7 +230,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 			if (exp != null) {
 				processInSyncWithExperiment(socket, received, exp);
 			} else {
-				cmdHelper.process(this, socket, received);
+				cmdHelper.processAsync(this, socket, received);
 			}
 		} catch (Exception e1) {
 			DEBUG.OUT(e1);
@@ -248,7 +248,8 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 	}
 
 	/**
-	 * Process in sync with experiment.
+	 * Processes model access between experiment cycles. Controller commands run separately: a synchronous step or
+	 * reload must not wait for the execution thread from inside that same thread.
 	 *
 	 * @param socket
 	 *            the socket
@@ -260,12 +261,28 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 	private void processInSyncWithExperiment(final WebSocket socket, final ReceivedMessage received,
 			final IExperimentSpecies exp) {
 		IExperimentAgent agent = exp.getAgent();
-		if (agent == null || exp.getController().isPaused()) {
-			cmdHelper.process(this, socket, received);
+		final boolean controlsExperiment = switch (received.get(IKeyword.TYPE).toString()) {
+			case ISocketCommand.LOAD, ISocketCommand.PLAY, ISocketCommand.PAUSE, ISocketCommand.STEP,
+					ISocketCommand.BACK, ISocketCommand.STEPBACK, ISocketCommand.STOP, ISocketCommand.RELOAD,
+					ISocketCommand.EXIT -> true;
+			default -> false;
+		};
+		if (agent == null) {
+			cmdHelper.processAsync(this, socket, received);
+		} else if (exp.getController().isPaused()) {
+			if (controlsExperiment) {
+				cmdHelper.processAsync(this, socket, received);
+			} else {
+				cmdHelper.processAsync(this, socket, received, agent);
+			}
 		} else {
 			// In order to sync the command with the experiment cycles
 			agent.postOneShotAction(scope1 -> {
-				cmdHelper.process(this, socket, received);
+				if (controlsExperiment) {
+					cmdHelper.processAsync(this, socket, received);
+				} else {
+					cmdHelper.process(this, socket, received);
+				}
 				return null;
 			});
 		}
