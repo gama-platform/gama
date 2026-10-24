@@ -363,7 +363,7 @@ public class DefaultServerCommands {
 		if (expr == null)
 			return new CommandResponse(MessageType.MalformedRequest,
 					"For " + ISocketCommand.VALIDATE + ", mandatory parameter is: " + EXPR, map, false);
-		String entered = expr.toString().trim();
+		String entered = expr.toString();
 		if (entered.isBlank())
 			return new CommandResponse(CommandExecutedSuccessfully, entered, map, false);
 		List<GamlCompilationError> errors = GAML.validate(entered, syntaxOnly);

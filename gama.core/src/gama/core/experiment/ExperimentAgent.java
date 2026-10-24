@@ -584,14 +584,9 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 				"Random number generator", cat, Generators.names(), false);
 
 		params.add(p);
+		// Reload reapplies the stored parameter value before creating the simulation.
 		p = new ExperimentParameter(getScope(), getSpecies().getVar(IKeyword.SEED), "Default random seed", cat,
-				"(current seed)", null, true) {
-
-			@Override
-			protected Object getValue(final IScope scope) {
-				return getSeed();
-			}
-		};
+				"(current seed)", null, true);
 		p.setDefined(GamaPreferences.External.CORE_SEED_DEFINED.getValue());
 		params.add(p);
 		return params;

@@ -128,10 +128,10 @@ public interface IGamlTextValidator {
 	 */
 	default void validateExpression(final String expr, final List<GamlCompilationError> errors,
 			final boolean syntaxOnly) {
-		String fixed_exp = expr;
-		if (!expr.endsWith("}") && !expr.endsWith(";")) { fixed_exp += ";"; }
-		if (!expr.contains("<-")) { fixed_exp = "unknow result <- " + fixed_exp; }
-		validateStatements(fixed_exp, errors, syntaxOnly);
+		final String suffix = !expr.endsWith("}") && !expr.endsWith(";") ? ";\n}}" : "\n}}";
+		String prefix = "model synthetic \nspecies synthetic_species { init {\n";
+		if (!expr.contains("<-")) { prefix += "unknow result <- "; }
+		validateWrapped(expr, prefix, suffix, errors, syntaxOnly);
 	}
 
 	/**
@@ -167,7 +167,7 @@ public interface IGamlTextValidator {
 	 */
 	default void validateStatements(final String expr, final List<GamlCompilationError> errors,
 			final boolean syntaxOnly) {
-		validateSpecies("species synthetic_species { init {" + expr + " }}", errors, syntaxOnly);
+		validateWrapped(expr, "model synthetic \nspecies synthetic_species { init {\n", "\n}}", errors, syntaxOnly);
 	}
 
 	/**
@@ -200,7 +200,31 @@ public interface IGamlTextValidator {
 	 * @see #validateModel
 	 */
 	default void validateSpecies(final String expr, final List<GamlCompilationError> errors, final boolean syntaxOnly) {
-		validateModel("model synthetic \n" + expr, errors, syntaxOnly);
+		validateWrapped(expr, "model synthetic \n", "", errors, syntaxOnly);
+	}
+
+	private void validateWrapped(final String expr, final String prefix, final String suffix,
+			final List<GamlCompilationError> errors, final boolean syntaxOnly) {
+		final int firstError = errors.size();
+		validateModel(prefix + expr + suffix, errors, syntaxOnly);
+		for (int i = firstError; i < errors.size(); i++) {
+			final var error = errors.get(i);
+			if (error.location().line() == 0) continue;
+			final int offset = Math.clamp(error.location().offset() - prefix.length(), 0, expr.length());
+			int line = 1;
+			int column = 1;
+			for (int j = 0; j < offset; j++) {
+				final char c = expr.charAt(j);
+				if (c == '\r' || c == '\n') {
+					if (c == '\r' && j + 1 < offset && expr.charAt(j + 1) == '\n') { j++; }
+					line++;
+					column = 1;
+				} else {
+					column++;
+				}
+			}
+			errors.set(i, error.withLocation(new GamlCompilationError.Location(line, column, offset)));
+		}
 	}
 
 	/**
@@ -254,5 +278,13 @@ public interface IGamlTextValidator {
 	 * @return array of [lineNumber, offset], or appropriate defaults if location unavailable
 	 */
 	int[] getStartLineAndOffsetInFileInfo(EObject source);
+
+	/**
+	 * Returns the 1-based line and column and 0-based offset of a source element.
+	 */
+	default GamlCompilationError.Location getSourceLocation(final EObject source) {
+		final int[] location = getStartLineAndOffsetInFileInfo(source);
+		return new GamlCompilationError.Location(location[0], 0, location[1]);
+	}
 
 }
