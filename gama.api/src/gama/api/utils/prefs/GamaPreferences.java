@@ -1224,6 +1224,15 @@ public class GamaPreferences {
 				true, IType.BOOL, true).in(Experimental.NAME, Experimental.GRAPHICAL);
 
 		/**
+		 * The maximum number of cells of a field (mesh) drawn by OpenGL displays. Larger fields are downsampled (by
+		 * averaging blocks of cells) before being sent to the graphics card, which bounds the memory required to
+		 * display them. {@code 0} disables downsampling.
+		 */
+		public static final Pref<Integer> OPENGL_MESH_MAX_CELLS = create("pref_display_mesh_max_cells",
+				"Max. number of cells of a field displayed in OpenGL (larger fields are downsampled; 0 = no limit)",
+				2_000_000, IType.INT, true).in(NAME, RENDERING).between(0, null);
+
+		/**
 		 * The default intensity of OpenGL light sources, ranging from {@code 0} (completely dark) to {@code 255}
 		 * (maximum brightness).
 		 */

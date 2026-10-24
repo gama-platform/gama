@@ -11,7 +11,6 @@
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-xsd-gml3-33.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-xsd-ows-33.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-xsd-wfs-33.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/jaxb-api-2.4.0-b180830.0359.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/net.opengis.fes-33.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/net.opengis.ows-33.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/net.opengis.wfs-33.4.jar"/>

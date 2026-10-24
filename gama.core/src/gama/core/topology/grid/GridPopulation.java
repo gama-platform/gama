@@ -38,6 +38,7 @@ import gama.api.types.list.IList;
 import gama.api.types.matrix.IMatrix;
 import gama.api.types.misc.IContainer;
 import gama.api.types.topology.GamaTopologyFactory;
+import gama.api.ui.TaskProgress;
 import gama.api.utils.json.IJson;
 import gama.core.agent.GamlAgent;
 import gama.core.agent.MinimalAgent;
@@ -123,25 +124,33 @@ public class GridPopulation extends AbstractPopulation<IAgent> implements IPopul
 
 	@Override
 	public IList<IAgent> createAgents(final IScope scope, final IContainer<?, ? extends IShape> geometries) {
-		for (int i = 0; i < getGrid().actualNumberOfCells; i++) {
-			final IShape s = getGrid().matrix[i];
-			final Class javaBase = species.getDescription().getJavaBase();
-			final boolean usesRegularAgents = GamlAgent.class.isAssignableFrom(javaBase);
-			if (s != null) {
-				getGrid().matrix[i] = usesRegularAgents ? new GamlAgent(this, i, s) : new MinimalAgent(this, i, s);
+		final int n = getGrid().actualNumberOfCells;
+		final int step = Math.max(1, n / 100);
+		final boolean usesRegularAgents = GamlAgent.class.isAssignableFrom(species.getDescription().getJavaBase());
+		try (TaskProgress progress = TaskProgress.begin(scope, "Creating the agents of " + getName())) {
+			for (int i = 0; i < n; i++) {
+				if (i % step == 0) { progress.report(i, n); }
+				final IShape s = getGrid().matrix[i];
+				if (s != null) {
+					getGrid().matrix[i] = usesRegularAgents ? new GamlAgent(this, i, s) : new MinimalAgent(this, i, s);
+				}
 			}
 		}
-
-		for (final IVariable var : orderedVars) {
-			for (int i = 0; i < getGrid().actualNumberOfCells; i++) {
+		try (TaskProgress progress = TaskProgress.begin(scope, "Initializing the agents of " + getName())) {
+			final long total = (long) n * (orderedVars.length + 1);
+			long done = 0;
+			for (final IVariable var : orderedVars) {
+				for (int i = 0; i < n; i++, done++) {
+					if (i % step == 0) { progress.report(done, total); }
+					final IAgent a = (IAgent) getGrid().matrix[i];
+					if (a != null) { var.initializeWith(scope, a, null); }
+				}
+			}
+			for (int i = 0; i < n; i++, done++) {
+				if (i % step == 0) { progress.report(done, total); }
 				final IAgent a = (IAgent) getGrid().matrix[i];
-				if (a != null) { var.initializeWith(scope, a, null); }
+				if (a != null) { a.schedule(scope); }
 			}
-		}
-
-		for (int i = 0; i < getGrid().actualNumberOfCells; i++) {
-			final IAgent a = (IAgent) getGrid().matrix[i];
-			if (a != null) { a.schedule(scope); }
 		}
 		fireAgentsAdded(scope, (IList) getAgents(scope));
 		return null;
