@@ -6,6 +6,13 @@ All commits listed below point to specific changes that drive the massive archit
 
 ## [2026.0.0] - Unreleased
 
+### BDI: shared internal mental-state operations
+
+The BDI extension now centralises its built-in modality/base mapping, mental-state construction, and common
+predicate and name lookups (#161). Public string-based modalities (including custom names), GAML actions and facets,
+base-argument overrides, and modality-specific insertion/removal effects remain unchanged. Beliefs still perform
+their specialised contradiction and intention handling; emotions retain their separate replacement policy.
+
 ### GAMA Server: full exchange logs
 
 GUI and headless servers can now record all WebSocket exchanges in a separate JSON Lines file per run under `~/.gama/server-logs/` (#1269). Logging is **off by default**; enable it in **Network > Server mode** or with headless `-server-log`. Headless `-server-log-directory <path>` and `-no-server-log` override settings for one launch without changing saved preferences. Records include timestamps, connection IDs, directions and full payloads, including broadcasts, asynchronous events and binary/control frames. See [exchange logging configuration, format and privacy precautions](gama.headless/README.md#server-exchange-logs).

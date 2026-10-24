@@ -278,12 +278,7 @@ public class MentalState implements IValue {
 	 * Instantiates a new mental state.
 	 */
 	public MentalState() {
-		this.modality = "";
-		this.predicate = null;
-		this.mental = null;
-		this.strength = 1.0;
-		this.owner = null;
-		this.emo = null;
+		this("");
 	}
 
 	/**
@@ -293,12 +288,7 @@ public class MentalState implements IValue {
 	 *            the mod
 	 */
 	public MentalState(final String mod) {
-		this.modality = mod;
-		this.predicate = null;
-		this.mental = null;
-		this.strength = 1.0;
-		this.owner = null;
-		this.emo = null;
+		this(mod, (Predicate) null);
 	}
 
 	/**
@@ -310,12 +300,7 @@ public class MentalState implements IValue {
 	 *            the pred
 	 */
 	public MentalState(final String mod, final Predicate pred) {
-		this.modality = mod;
-		this.predicate = pred;
-		this.mental = null;
-		this.strength = 1.0;
-		this.owner = null;
-		this.emo = null;
+		this(mod, pred, 1.0, -1, null);
 	}
 
 	/**
@@ -327,12 +312,7 @@ public class MentalState implements IValue {
 	 *            the ment
 	 */
 	public MentalState(final String mod, final MentalState ment) {
-		this.modality = mod;
-		this.predicate = null;
-		this.mental = ment;
-		this.strength = 1.0;
-		this.owner = null;
-		this.emo = null;
+		this(mod, ment, 1.0, -1, null);
 	}
 
 	/**
@@ -344,12 +324,7 @@ public class MentalState implements IValue {
 	 *            the em
 	 */
 	public MentalState(final String mod, final Emotion em) {
-		this.modality = mod;
-		this.predicate = null;
-		this.mental = null;
-		this.strength = 1.0;
-		this.owner = null;
-		this.emo = em;
+		this(mod, em, 1.0, -1, null);
 	}
 
 	/**
@@ -363,12 +338,7 @@ public class MentalState implements IValue {
 	 *            the ag
 	 */
 	public MentalState(final String mod, final Predicate pred, final IAgent ag) {
-		this.modality = mod;
-		this.predicate = pred;
-		this.mental = null;
-		this.strength = 1.0;
-		this.owner = ag;
-		this.emo = null;
+		this(mod, pred, 1.0, -1, ag);
 	}
 
 	/**
@@ -382,12 +352,7 @@ public class MentalState implements IValue {
 	 *            the ag
 	 */
 	public MentalState(final String mod, final MentalState ment, final IAgent ag) {
-		this.modality = mod;
-		this.predicate = null;
-		this.mental = ment;
-		this.strength = 1.0;
-		this.owner = ag;
-		this.emo = null;
+		this(mod, ment, 1.0, -1, ag);
 	}
 
 	/**
@@ -401,12 +366,7 @@ public class MentalState implements IValue {
 	 *            the ag
 	 */
 	public MentalState(final String mod, final Emotion em, final IAgent ag) {
-		this.modality = mod;
-		this.predicate = null;
-		this.mental = null;
-		this.strength = 1.0;
-		this.owner = ag;
-		this.emo = em;
+		this(mod, em, 1.0, -1, ag);
 	}
 
 	/**
@@ -420,11 +380,7 @@ public class MentalState implements IValue {
 	 *            the stre
 	 */
 	public MentalState(final String mod, final Predicate pred, final Double stre) {
-		this.modality = mod;
-		this.predicate = pred;
-		this.mental = null;
-		this.strength = stre;
-		this.emo = null;
+		this(mod, pred, stre, -1, null);
 	}
 
 	/**
@@ -438,11 +394,7 @@ public class MentalState implements IValue {
 	 *            the stre
 	 */
 	public MentalState(final String mod, final MentalState ment, final Double stre) {
-		this.modality = mod;
-		this.predicate = null;
-		this.mental = ment;
-		this.strength = stre;
-		this.emo = null;
+		this(mod, ment, stre, -1, null);
 	}
 
 	/**
@@ -456,11 +408,7 @@ public class MentalState implements IValue {
 	 *            the stre
 	 */
 	public MentalState(final String mod, final Emotion em, final Double stre) {
-		this.modality = mod;
-		this.predicate = null;
-		this.mental = null;
-		this.strength = stre;
-		this.emo = em;
+		this(mod, em, stre, -1, null);
 	}
 
 	/**
@@ -474,12 +422,7 @@ public class MentalState implements IValue {
 	 *            the life
 	 */
 	public MentalState(final String mod, final Predicate pred, final int life) {
-		this.modality = mod;
-		this.predicate = pred;
-		this.mental = null;
-		this.lifetime = life;
-		this.strength = 1.0;
-		this.emo = null;
+		this(mod, pred, 1.0, life, null);
 	}
 
 	/**
@@ -493,12 +436,7 @@ public class MentalState implements IValue {
 	 *            the life
 	 */
 	public MentalState(final String mod, final MentalState ment, final int life) {
-		this.modality = mod;
-		this.predicate = null;
-		this.mental = ment;
-		this.lifetime = life;
-		this.strength = 1.0;
-		this.emo = null;
+		this(mod, ment, 1.0, life, null);
 	}
 
 	/**
@@ -512,12 +450,7 @@ public class MentalState implements IValue {
 	 *            the life
 	 */
 	public MentalState(final String mod, final Emotion em, final int life) {
-		this.modality = mod;
-		this.predicate = null;
-		this.mental = null;
-		this.lifetime = life;
-		this.strength = 1.0;
-		this.emo = em;
+		this(mod, em, 1.0, life, null);
 	}
 
 	/**
@@ -533,12 +466,7 @@ public class MentalState implements IValue {
 	 *            the life
 	 */
 	public MentalState(final String mod, final Predicate pred, final Double stre, final int life) {
-		this.modality = mod;
-		this.predicate = pred;
-		this.mental = null;
-		this.strength = stre;
-		this.lifetime = life;
-		this.emo = null;
+		this(mod, pred, stre, life, null);
 	}
 
 	/**
@@ -554,12 +482,7 @@ public class MentalState implements IValue {
 	 *            the life
 	 */
 	public MentalState(final String mod, final MentalState ment, final Double stre, final int life) {
-		this.modality = mod;
-		this.predicate = null;
-		this.mental = ment;
-		this.strength = stre;
-		this.lifetime = life;
-		this.emo = null;
+		this(mod, ment, stre, life, null);
 	}
 
 	/**
@@ -575,12 +498,7 @@ public class MentalState implements IValue {
 	 *            the life
 	 */
 	public MentalState(final String mod, final Emotion em, final Double stre, final int life) {
-		this.modality = mod;
-		this.predicate = null;
-		this.mental = null;
-		this.strength = stre;
-		this.lifetime = life;
-		this.emo = em;
+		this(mod, em, stre, life, null);
 	}
 
 	/**
@@ -596,12 +514,7 @@ public class MentalState implements IValue {
 	 *            the ag
 	 */
 	public MentalState(final String mod, final Predicate pred, final Double stre, final IAgent ag) {
-		this.modality = mod;
-		this.predicate = pred;
-		this.mental = null;
-		this.strength = stre;
-		this.owner = ag;
-		this.emo = null;
+		this(mod, pred, stre, -1, ag);
 	}
 
 	/**
@@ -617,12 +530,7 @@ public class MentalState implements IValue {
 	 *            the ag
 	 */
 	public MentalState(final String mod, final MentalState ment, final Double stre, final IAgent ag) {
-		this.modality = mod;
-		this.predicate = null;
-		this.mental = ment;
-		this.strength = stre;
-		this.owner = ag;
-		this.emo = null;
+		this(mod, ment, stre, -1, ag);
 	}
 
 	/**
@@ -638,12 +546,7 @@ public class MentalState implements IValue {
 	 *            the ag
 	 */
 	public MentalState(final String mod, final Emotion em, final Double stre, final IAgent ag) {
-		this.modality = mod;
-		this.predicate = null;
-		this.mental = null;
-		this.strength = stre;
-		this.owner = ag;
-		this.emo = em;
+		this(mod, em, stre, -1, ag);
 	}
 
 	/**
@@ -659,13 +562,7 @@ public class MentalState implements IValue {
 	 *            the ag
 	 */
 	public MentalState(final String mod, final Predicate pred, final int life, final IAgent ag) {
-		this.modality = mod;
-		this.predicate = pred;
-		this.mental = null;
-		this.strength = 1.0;
-		this.lifetime = life;
-		this.owner = ag;
-		this.emo = null;
+		this(mod, pred, 1.0, life, ag);
 	}
 
 	/**
@@ -681,13 +578,7 @@ public class MentalState implements IValue {
 	 *            the ag
 	 */
 	public MentalState(final String mod, final MentalState ment, final int life, final IAgent ag) {
-		this.modality = mod;
-		this.predicate = null;
-		this.mental = ment;
-		this.strength = 1.0;
-		this.lifetime = life;
-		this.owner = ag;
-		this.emo = null;
+		this(mod, ment, 1.0, life, ag);
 	}
 
 	/**
@@ -703,13 +594,7 @@ public class MentalState implements IValue {
 	 *            the ag
 	 */
 	public MentalState(final String mod, final Emotion em, final int life, final IAgent ag) {
-		this.modality = mod;
-		this.predicate = null;
-		this.mental = null;
-		this.strength = 1.0;
-		this.lifetime = life;
-		this.owner = ag;
-		this.emo = em;
+		this(mod, em, 1.0, life, ag);
 	}
 
 	/**

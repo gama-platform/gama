@@ -119,6 +119,35 @@ public class BdiUtils {
 		return scope.hasArg(basename) ? scope.getListArg(basename) : (IList<MentalState>) agent.getAttribute(basename);
 	}
 
+	static IList<MentalState> getBase(final IScope scope, final MentalStateKind kind) {
+		return getBase(scope, kind.base());
+	}
+
+	static boolean hasPredicates(final IScope scope, final MentalStateKind kind, final List<Predicate> predicates) {
+		for (final Predicate predicate : predicates) {
+			if (!getBase(scope, kind).contains(kind.create(predicate))) return false;
+		}
+		return true;
+	}
+
+	static MentalState findByPredicate(final IScope scope, final MentalStateKind kind, final Predicate predicate) {
+		if (predicate != null) {
+			for (final MentalState state : getBase(scope, kind)) {
+				if (state.getPredicate() != null && predicate.equals(state.getPredicate())) return state;
+			}
+		}
+		return null;
+	}
+
+	static MentalState findByName(final IScope scope, final MentalStateKind kind, final String name) {
+		if (name != null) {
+			for (final MentalState state : getBase(scope, kind)) {
+				if (state.getPredicate() != null && name.equals(state.getPredicate().getName())) return state;
+			}
+		}
+		return null;
+	}
+
 	/**
 	 * Gets the emotion base.
 	 *
@@ -310,7 +339,7 @@ public class BdiUtils {
 			createHappyForFromMentalState(scope, predicateDirect); // (seulement si le prédicat est sur une	
 																	// émotion).
 		}
-		for (final MentalState predTest : getBase(scope, SimpleBdiArchitecture.BELIEF_BASE)) {
+		for (final MentalState predTest : getBase(scope, MentalStateKind.BELIEF)) {
 			if (   predTest.getPredicate() != null && predicateDirect.getPredicate() != null
 				&& predTest.getPredicate().equalsButNotTruth(predicateDirect.getPredicate())) {
 				predTemp = predTest;
@@ -319,19 +348,19 @@ public class BdiUtils {
 		if (predTemp != null) {
 			removeFromBase(scope, predTemp, SimpleBdiArchitecture.BELIEF_BASE);
 		}
-		if (getBase(scope, SimpleBdiArchitecture.INTENTION_BASE).contains(predicateDirect)) {
+		if (getBase(scope, MentalStateKind.INTENTION).contains(predicateDirect)) {
 			removeFromBase(scope, predicateDirect, SimpleBdiArchitecture.DESIRE_BASE);
 			removeFromBase(scope, predicateDirect, SimpleBdiArchitecture.INTENTION_BASE);
 			scope.getAgent().setAttribute(SimpleBdiArchitecture.CURRENT_PLAN, null);
 			scope.getAgent().setAttribute(SimpleBdiArchitecture.CURRENT_NORM, null);
 		}
-		if (getBase(scope, SimpleBdiArchitecture.UNCERTAINTY_BASE).contains(predicateDirect)) {
+		if (getBase(scope, MentalStateKind.UNCERTAINTY).contains(predicateDirect)) {
 			removeFromBase(scope, predicateDirect, SimpleBdiArchitecture.UNCERTAINTY_BASE);
 		}
-		if (getBase(scope, SimpleBdiArchitecture.OBLIGATION_BASE).contains(predicateDirect)) {
+		if (getBase(scope, MentalStateKind.OBLIGATION).contains(predicateDirect)) {
 			removeFromBase(scope, predicateDirect, SimpleBdiArchitecture.OBLIGATION_BASE);
 		}
-		for (final MentalState predTest : getBase(scope, SimpleBdiArchitecture.UNCERTAINTY_BASE)) {
+		for (final MentalState predTest : getBase(scope, MentalStateKind.UNCERTAINTY)) {
 			if (	predTest.getPredicate() != null && predicateDirect.getPredicate() != null
 				&& 	predTest.getPredicate().equalsButNotTruth(predicateDirect.getPredicate())) {
 				predTemp = predTest;
@@ -340,7 +369,7 @@ public class BdiUtils {
 		if (predTemp != null) {
 			removeFromBase(scope, predTemp, SimpleBdiArchitecture.UNCERTAINTY_BASE);
 		}
-		for (final MentalState statement : getBase(scope, SimpleBdiArchitecture.INTENTION_BASE)) {
+		for (final MentalState statement : getBase(scope, MentalStateKind.INTENTION)) {
 			List<MentalState> statementSubintention = null;
 			List<MentalState> statementOnHoldUntil = null;
 			if (statement.getPredicate() != null) {
@@ -360,7 +389,7 @@ public class BdiUtils {
     
 	public static MentalState getBeliefMentalStateFromBase(final IScope scope, MentalState predicateDirect) {
 		if (predicateDirect != null) {
-			for (final MentalState mental : getBase(scope, SimpleBdiArchitecture.BELIEF_BASE)) {
+			for (final MentalState mental : getBase(scope, MentalStateKind.BELIEF)) {
 				if (mental.getMentalState() != null && predicateDirect.equals(mental.getMentalState())) { 
 					return mental; 
 				}
@@ -403,7 +432,7 @@ public class BdiUtils {
 	 * @return the boolean
 	 */
 	public static Boolean removeBelief(final IScope scope, final MentalState pred) {
-		return getBase(scope, SimpleBdiArchitecture.BELIEF_BASE).remove(pred);
+		return getBase(scope, MentalStateKind.BELIEF).remove(pred);
 	}
 	
 
@@ -415,8 +444,8 @@ public class BdiUtils {
 	 * @return the boolean
 	 */
 	public static Boolean removeIntention(final IScope scope, final MentalState pred) {
-		getBase(scope, SimpleBdiArchitecture.INTENTION_BASE).remove(pred);
-		for (final MentalState statement : getBase(scope, SimpleBdiArchitecture.INTENTION_BASE)) {
+		getBase(scope, MentalStateKind.INTENTION).remove(pred);
+		for (final MentalState statement : getBase(scope, MentalStateKind.INTENTION)) {
 			if (statement.getPredicate() != null) {
 				final List<MentalState> statementSubintention = statement.getSubintentions();
 				if (statementSubintention != null) {
@@ -442,7 +471,7 @@ public class BdiUtils {
 	 * @return the boolean
 	 */
 	public static Boolean clearIntention(final IScope scope) {
-		getBase(scope, SimpleBdiArchitecture.INTENTION_BASE).clear();
+		getBase(scope, MentalStateKind.INTENTION).clear();
 		scope.getAgent().setAttribute(SimpleBdiArchitecture.CURRENT_PLAN, null);
 		return true;
 	}
@@ -529,7 +558,7 @@ public class BdiUtils {
 				scope.hasArg(SimpleBdiArchitecture.USE_EMOTIONS_ARCHITECTURE) ? scope.getBoolArg(SimpleBdiArchitecture.USE_EMOTIONS_ARCHITECTURE)
 						: (Boolean) scope.getAgent().getAttribute(SimpleBdiArchitecture.USE_EMOTIONS_ARCHITECTURE);
 		MentalState predTemp = null;
-		for (final MentalState predTest : getBase(scope, SimpleBdiArchitecture.BELIEF_BASE)) {
+		for (final MentalState predTest : getBase(scope, MentalStateKind.BELIEF)) {
 			if (predTest.getPredicate() != null && predicate.getPredicate() != null
 					&& predTest.getPredicate().equalsButNotTruth(predicate.getPredicate())) {
 				predTemp = predTest;
@@ -538,7 +567,7 @@ public class BdiUtils {
 		if (predTemp != null) {
 			removeFromBase(scope, predTemp, SimpleBdiArchitecture.BELIEF_BASE);
 		}
-		for (final MentalState predTest : getBase(scope, SimpleBdiArchitecture.UNCERTAINTY_BASE)) {
+		for (final MentalState predTest : getBase(scope, MentalStateKind.UNCERTAINTY)) {
 			if (predTest.getPredicate() != null && predicate.getPredicate() != null
 					&& predTest.getPredicate().equalsButNotTruth(predicate.getPredicate())) {
 				predTemp = predTest;
@@ -562,7 +591,7 @@ public class BdiUtils {
 	 * @return the boolean
 	 */
 	public static Boolean hasUncertainty(final IScope scope, final MentalState predicateDirect) {
-		return getBase(scope, SimpleBdiArchitecture.UNCERTAINTY_BASE).contains(predicateDirect);
+		return getBase(scope, MentalStateKind.UNCERTAINTY).contains(predicateDirect);
 	}
 
 	/**
@@ -573,7 +602,7 @@ public class BdiUtils {
 	 * @return the boolean
 	 */
 	public static Boolean removeUncertainty(final IScope scope, final MentalState pred) {
-		return getBase(scope, SimpleBdiArchitecture.UNCERTAINTY_BASE).remove(pred);
+		return getBase(scope, MentalStateKind.UNCERTAINTY).remove(pred);
 	}
 	/**
 	 * Adds the ideal.
@@ -595,7 +624,7 @@ public class BdiUtils {
 	 * @return the boolean
 	 */
 	public static Boolean hasIdeal(final IScope scope, final MentalState predicateDirect) {
-		return getBase(scope, SimpleBdiArchitecture.IDEAL_BASE).contains(predicateDirect);
+		return getBase(scope, MentalStateKind.IDEAL).contains(predicateDirect);
 	}
 
 	/**
@@ -606,7 +635,7 @@ public class BdiUtils {
 	 * @return the boolean
 	 */
 	public static Boolean removeIdeal(final IScope scope, final MentalState pred) {
-		return getBase(scope, SimpleBdiArchitecture.IDEAL_BASE).remove(pred);
+		return getBase(scope, MentalStateKind.IDEAL).remove(pred);
 	}
 
 	/**
@@ -617,7 +646,7 @@ public class BdiUtils {
 	 * @return the boolean
 	 */
 	public static Boolean hasObligation(final IScope scope, final MentalState predicateDirect) {
-		return getBase(scope, SimpleBdiArchitecture.OBLIGATION_BASE).contains(predicateDirect);
+		return getBase(scope, MentalStateKind.OBLIGATION).contains(predicateDirect);
 	}
 
 	/**
@@ -628,7 +657,7 @@ public class BdiUtils {
 	 * @return the boolean
 	 */
 	public static Boolean removeObligation(final IScope scope, final MentalState pred) {
-		return getBase(scope, SimpleBdiArchitecture.OBLIGATION_BASE).remove(pred);
+		return getBase(scope, MentalStateKind.OBLIGATION).remove(pred);
 	}
 
 	/**
@@ -699,7 +728,7 @@ public class BdiUtils {
 	 * @return the boolean
 	 */
 	public static Boolean hasBelief(final IScope scope, final MentalState predicateDirect) {
-		return getBase(scope, SimpleBdiArchitecture.BELIEF_BASE).contains(predicateDirect);
+		return getBase(scope, MentalStateKind.BELIEF).contains(predicateDirect);
 
 	}
 
@@ -711,7 +740,7 @@ public class BdiUtils {
 	 * @return the boolean
 	 */
 	public static Boolean hasDesire(final IScope scope, final MentalState predicateDirect) {
-		return getBase(scope, SimpleBdiArchitecture.DESIRE_BASE).contains(predicateDirect);
+		return getBase(scope, MentalStateKind.DESIRE).contains(predicateDirect);
 	}
 
 	/**
@@ -722,9 +751,9 @@ public class BdiUtils {
 	 * @return the boolean
 	 */
 	public static Boolean removeDesire(final IScope scope, final MentalState pred) {
-		BdiUtils.getBase(scope, SimpleBdiArchitecture.DESIRE_BASE).remove(pred);
-		BdiUtils.getBase(scope, SimpleBdiArchitecture.INTENTION_BASE).remove(pred);
-		for (final MentalState statement : BdiUtils.getBase(scope, SimpleBdiArchitecture.INTENTION_BASE)) {
+		BdiUtils.getBase(scope, MentalStateKind.DESIRE).remove(pred);
+		BdiUtils.getBase(scope, MentalStateKind.INTENTION).remove(pred);
+		for (final MentalState statement : BdiUtils.getBase(scope, MentalStateKind.INTENTION)) {
 			if (statement.getPredicate() != null) {
 				final List<MentalState> statementSubintention = statement.getPredicate().getSubintentions();
 				if (statementSubintention != null) {
@@ -891,11 +920,11 @@ public class BdiUtils {
 			}
 		}
 		// Modifier pour ne prendre que ses propres croyances
-		for (final MentalState predTest1 : getBase(scope, SimpleBdiArchitecture.BELIEF_BASE)) {
+		for (final MentalState predTest1 : getBase(scope, MentalStateKind.BELIEF)) {
 			if (predTest1.getMentalState() != null && predTest1.getMentalState().getOwner() != null
 					&& predTest1.getMentalState().getOwner().equals(agentCause)
-					&& "Belief".equals(predTest1.getMentalState().getModality())) {
-				for (final MentalState predTest2 : getBase(scope, SimpleBdiArchitecture.BELIEF_BASE)) {
+					&& MentalStateKind.BELIEF.matches(predTest1.getMentalState())) {
+				for (final MentalState predTest2 : getBase(scope, MentalStateKind.BELIEF)) {
 					if (predTest2.getPredicate() != null && predTest1.getMentalState().getPredicate() != null
 							&& predTest2.getPredicate().equals(predTest1.getMentalState().getPredicate())) {
 						tempPositif = tempPositif + 1.0;
@@ -910,8 +939,8 @@ public class BdiUtils {
 			}
 			if (predTest1.getMentalState() != null && predTest1.getMentalState().getOwner() != null
 					&& predTest1.getMentalState().getOwner().equals(agentCause)
-					&& "Desire".equals(predTest1.getMentalState().getModality())) {
-				for (final MentalState predTest2 : getBase(scope, SimpleBdiArchitecture.DESIRE_BASE)) {
+					&& MentalStateKind.DESIRE.matches(predTest1.getMentalState())) {
+				for (final MentalState predTest2 : getBase(scope, MentalStateKind.DESIRE)) {
 					if (predTest2.getPredicate() != null && predTest1.getMentalState().getPredicate() != null
 							&& predTest2.getPredicate().equals(predTest1.getMentalState().getPredicate())) {
 						tempPositif = tempPositif + 1.0;
@@ -926,8 +955,8 @@ public class BdiUtils {
 			}
 			if (predTest1.getMentalState() != null && predTest1.getMentalState().getOwner() != null
 					&& predTest1.getMentalState().getOwner().equals(agentCause)
-					&& "Uncertainty".equals(predTest1.getMentalState().getModality())) {
-				for (final MentalState predTest2 : getBase(scope, SimpleBdiArchitecture.UNCERTAINTY_BASE)) {
+					&& MentalStateKind.UNCERTAINTY.matches(predTest1.getMentalState())) {
+				for (final MentalState predTest2 : getBase(scope, MentalStateKind.UNCERTAINTY)) {
 					if (predTest2.getPredicate() != null && predTest1.getMentalState().getPredicate() != null
 							&& predTest2.getPredicate().equals(predTest1.getMentalState().getPredicate())) {
 						tempPositif = tempPositif + 1.0;
@@ -942,8 +971,8 @@ public class BdiUtils {
 			}
 			if (predTest1.getMentalState() != null && predTest1.getMentalState().getOwner() != null
 					&& predTest1.getMentalState().getOwner().equals(agentCause)
-					&& "Ideal".equals(predTest1.getMentalState().getModality())) {
-				for (final MentalState predTest2 : getBase(scope, SimpleBdiArchitecture.IDEAL_BASE)) {
+					&& MentalStateKind.IDEAL.matches(predTest1.getMentalState())) {
+				for (final MentalState predTest2 : getBase(scope, MentalStateKind.IDEAL)) {
 					if (predTest2.getPredicate() != null && predTest1.getMentalState().getPredicate() != null
 							&& predTest2.getPredicate().equals(predTest1.getMentalState().getPredicate())) {
 						tempPositif = tempPositif + 1.0;
@@ -1009,7 +1038,7 @@ public class BdiUtils {
 		final Boolean use_personality = scope.hasArg(SimpleBdiArchitecture.USE_PERSONALITY) ? scope.getBoolArg(SimpleBdiArchitecture.USE_PERSONALITY)
 				: (Boolean) scope.getAgent().getAttribute(SimpleBdiArchitecture.USE_PERSONALITY);
 		if (predTest.getPredicate() != null) {
-			if (getBase(scope, SimpleBdiArchitecture.DESIRE_BASE).contains(predTest)) {
+			if (getBase(scope, MentalStateKind.DESIRE).contains(predTest)) {
 				final Emotion joy = new Emotion("joy", predTest.getPredicate());
 				final IAgent agentTest = predTest.getPredicate().getAgentCause();
 				if (agentTest != null) {
@@ -1021,7 +1050,7 @@ public class BdiUtils {
 				if (use_personality) {
 					final Double neurotisme = (Double) scope.getAgent().getAttribute(SimpleBdiArchitecture.NEUROTISM);
 					MentalState desire = null;
-					for (final MentalState mental : getBase(scope, SimpleBdiArchitecture.DESIRE_BASE)) {
+					for (final MentalState mental : getBase(scope, MentalStateKind.DESIRE)) {
 						if (mental.getPredicate() != null && predTest.getPredicate().equals(mental.getPredicate())) {
 							desire = mental;
 						}
@@ -1045,7 +1074,7 @@ public class BdiUtils {
 				createGratificationGratitudeFromJoy(scope, joy);
 
 			} else {
-				for (final MentalState pred : getBase(scope, SimpleBdiArchitecture.DESIRE_BASE)) {
+				for (final MentalState pred : getBase(scope, MentalStateKind.DESIRE)) {
 					if (pred.getPredicate() != null) {
 						if (predTest.getPredicate().equalsButNotTruth(pred.getPredicate())) {
 							final Emotion sadness = new Emotion("sadness", predTest.getPredicate());
@@ -1095,7 +1124,7 @@ public class BdiUtils {
 		final Boolean use_personality = scope.hasArg(SimpleBdiArchitecture.USE_PERSONALITY) ? scope.getBoolArg(SimpleBdiArchitecture.USE_PERSONALITY)
 				: (Boolean) scope.getAgent().getAttribute(SimpleBdiArchitecture.USE_PERSONALITY);
 		if (predTest.getPredicate() != null) {
-			if (getBase(scope, SimpleBdiArchitecture.DESIRE_BASE).contains(predTest)) {
+			if (getBase(scope, MentalStateKind.DESIRE).contains(predTest)) {
 				final Emotion hope = new Emotion("hope", predTest.getPredicate());
 				final IAgent agentTest = predTest.getPredicate().getAgentCause();
 				if (agentTest != null) {
@@ -1107,7 +1136,7 @@ public class BdiUtils {
 				if (use_personality) {
 					final Double neurotisme = (Double) scope.getAgent().getAttribute(SimpleBdiArchitecture.NEUROTISM);
 					MentalState desire = null;
-					for (final MentalState mental : getBase(scope, SimpleBdiArchitecture.DESIRE_BASE)) {
+					for (final MentalState mental : getBase(scope, MentalStateKind.DESIRE)) {
 						if (mental.getPredicate() != null && predTest.getPredicate().equals(mental.getPredicate())) {
 							desire = mental;
 						}
@@ -1129,7 +1158,7 @@ public class BdiUtils {
 				addEmotion(scope, hope);
 
 			} else {
-				for (final MentalState pred : getBase(scope, SimpleBdiArchitecture.DESIRE_BASE)) {
+				for (final MentalState pred : getBase(scope, MentalStateKind.DESIRE)) {
 					if (pred.getPredicate() != null) {
 						if (predTest.getPredicate().equalsButNotTruth(pred.getPredicate())) {
 							final Emotion fear = new Emotion("fear", predTest.getPredicate());
@@ -1460,7 +1489,7 @@ public class BdiUtils {
 			return;
 		}
 		
-		for (final MentalState temp : getBase(scope, SimpleBdiArchitecture.IDEAL_BASE).stream().filter(m -> m != null && m.getPredicate().equals(pred)).toList()) {
+		for (final MentalState temp : getBase(scope, MentalStateKind.IDEAL).stream().filter(m -> m != null && m.getPredicate().equals(pred)).toList()) {
 			double absStrength = Math.abs(temp.getStrength());
 			double intensity = 1.0;
 			double decay = 0.0;

@@ -240,11 +240,11 @@ public class LawStatement extends AbstractStatement {
 		
 		List<Predicate> predBeliefList = new ArrayList<>();
 		
-		final MentalState tempBelief = new MentalState("Belief");
+		final MentalState tempBelief = MentalStateKind.BELIEF.create();
 		if (belief != null) {
 			tempBelief.setPredicate((Predicate) belief.value(scope));
 			if (BdiUtils.hasBelief(scope, tempBelief)) {
-				for (final MentalState mental : BdiUtils.getBase(scope, SimpleBdiArchitecture.BELIEF_BASE)) {
+				for (final MentalState mental : BdiUtils.getBase(scope, MentalStateKind.BELIEF)) {
 					if (tempBelief.getPredicate().equals(mental.getPredicate())) {
 						predBeliefList.add(mental.getPredicate());
 					}
@@ -278,7 +278,7 @@ public class LawStatement extends AbstractStatement {
 
 	private void addNewObligation(IScope scope, Predicate initialObligation, IMap<String, Object> initialValues) {
 
-		final MentalState tempNewObligation = new MentalState("Obligation", initialObligation);
+		final MentalState tempNewObligation = MentalStateKind.OBLIGATION.create(initialObligation);
 		
 		if (initialValues != null) {
 			tempNewObligation.getPredicate().setValues(initialValues);			
@@ -310,11 +310,7 @@ public class LawStatement extends AbstractStatement {
 	 * @return true, if successful
 	 */
 	private boolean hasBeliefs(final IScope scope, final List<Predicate> predicates) {
-		for (final Predicate p : predicates) {
-			final MentalState temp = new MentalState("Belief", p);
-			if (!BdiUtils.hasBelief(scope, temp)) return false;
-		}
-		return true;
+		return BdiUtils.hasPredicates(scope, MentalStateKind.BELIEF, predicates);
 	}
 
 }

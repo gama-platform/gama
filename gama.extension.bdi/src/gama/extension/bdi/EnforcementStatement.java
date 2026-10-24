@@ -243,10 +243,10 @@ public class EnforcementStatement extends AbstractStatement {
 		boolean context = tempLaw.getContextExpression() == null || Cast.asBool(scope, tempLaw.getContextExpression().value(scope));
 		boolean givenBeliefRegistered = tempLaw.getBeliefExpression() == null
 									|| tempLaw.getBeliefExpression().value(scope) == null
-									|| BdiUtils.hasBelief(scope, new MentalState("Belief",(Predicate) tempLaw.getBeliefExpression().value(scope)));
+									|| BdiUtils.hasBelief(scope, MentalStateKind.BELIEF.create((Predicate) tempLaw.getBeliefExpression().value(scope)));
 		boolean givenObligationRegistered = tempLaw.getObligationExpression() == null
 										|| tempLaw.getObligationExpression().value(scope) == null
-										|| BdiUtils.hasObligation(scope, new MentalState("Obligation", (Predicate) tempLaw.getObligationExpression().value(scope)));
+										|| BdiUtils.hasObligation(scope, MentalStateKind.OBLIGATION.create((Predicate) tempLaw.getObligationExpression().value(scope)));
 		boolean thresholdRespected = tempLaw.getThreshold() == null || tempLaw.getThreshold().value(scope) == null
 									|| obedience >= (double) tempLaw.getThreshold().value(scope);
 		boolean preconditionsMet = context && givenBeliefRegistered && givenObligationRegistered && thresholdRespected;

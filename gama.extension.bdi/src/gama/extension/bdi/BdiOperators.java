@@ -362,8 +362,8 @@ public class BdiOperators {
 	public static Predicate and(final Predicate pred1, final Predicate pred2) {
 		final Predicate tempPred = new Predicate(pred1.getName() + "_and_" + pred2.getName());
 		final List<MentalState> tempList = new ArrayList<>();
-		final MentalState tempPred1 = new MentalState("Intention", pred1);
-		final MentalState tempPred2 = new MentalState("Intention", pred2);
+		final MentalState tempPred1 = MentalStateKind.INTENTION.create(pred1);
+		final MentalState tempPred2 = MentalStateKind.INTENTION.create(pred2);
 		tempList.add(tempPred1);
 		tempList.add(tempPred2);
 		tempPred.setSubintentions(tempList);
@@ -396,8 +396,8 @@ public class BdiOperators {
 	public static Predicate or(final Predicate pred1, final Predicate pred2) {
 		final Predicate tempPred = new Predicate(pred1.getName() + "_or_" + pred2.getName());
 		final List<MentalState> tempList = new ArrayList<>();
-		final MentalState tempPred1 = new MentalState("Intention", pred1);
-		final MentalState tempPred2 = new MentalState("Intention", pred2);
+		final MentalState tempPred1 = MentalStateKind.INTENTION.create(pred1);
+		final MentalState tempPred2 = MentalStateKind.INTENTION.create(pred2);
 		tempList.add(tempPred1);
 		tempList.add(tempPred2);
 		tempPred.setSubintentions(tempList);
