@@ -117,6 +117,25 @@ Records are serialized across threads and flushed after every write, allowing in
 
 **Treat these files as sensitive:** they contain complete messages without redaction, including model paths, parameter values, executed expressions, outputs, and any credentials or personal data present in payloads. TLS does not protect the local log. Review/redact a copy before attaching it to a bug report. Files are not rotated or automatically deleted: monitor disk usage, archive/remove old runs yourself, or disable logging when it is not appropriate. When reporting a server problem, include the relevant run's log together with the model and reproduction steps.
 
+## Calling agent actions with `ask`
+
+The `agent` field is an **agent reference**, not a GAML expression. For example:
+
+```json
+{"type":"ask","exp_id":"exp","agent":"simulation[0].boids[12]","action":"say_hello","args":{"the_value":12}}
+```
+
+Use the reference returned when an agent is serialized by the server. References start at the simulation
+and can include nested populations. `one_of(boids)` is not a reference; evaluate it with an `expression`
+request first to obtain an agent reference, then use that reference in `ask`. Omit `agent` to call an
+action on the experiment agent.
+
+`action` must be a non-empty string. `args` accepts a JSON object or, for compatibility with existing
+clients, a string containing a JSON object (for example, `"args":"{\"the_value\":12}"`).
+Omitting `args` supplies no arguments. Malformed references or arguments return `MalformedRequest`;
+missing/dead agents and unknown actions return `UnableToExecuteRequest`. Resolving an `ask` target
+does not create missing agents.
+
 ## The `load` request
 
 ```json

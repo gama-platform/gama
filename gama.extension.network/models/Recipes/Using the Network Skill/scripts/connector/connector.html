@@ -118,10 +118,10 @@
                 <input type="text" id="action-ask-input" placeholder="Enter the action" style="width:80%;">
             </div>
             <div class="content-expr-ask-div">
-                <input type="text" id="agent-ask-input" placeholder="Enter the agent" style="width:80%;">
+                <input type="text" id="agent-ask-input" placeholder="Agent reference, e.g. simulation[0].boids[12] (blank: experiment)" style="width:80%;">
             </div>
             <div class="content-expr-ask-div" id="ask-div">
-              <textarea type="text" id="args-ask-input" placeholder="Enter the arguments (JSON format)" style="width:80%;"></textarea>
+              <textarea type="text" id="args-ask-input" placeholder='Arguments as a JSON object, e.g. {"the_value":12} or {}' style="width:80%;"></textarea>
               <button onclick="sendAsk()" class="round-button">&#10138;</button>
           </div>
         </div>

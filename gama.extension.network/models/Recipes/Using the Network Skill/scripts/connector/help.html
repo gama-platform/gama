@@ -48,6 +48,15 @@
             <object type="image/svg+xml" data="instruction.svg"></object>
         </div>
     </div>
+    <h2 class="with-bar-left">Calling an agent action</h2>
+    <div class="text">
+        Enter the action name (for example, <code>say_hello</code>) and an agent reference such as
+        <code>simulation[0].boids[12]</code>. Use the reference returned by an Expression request
+        evaluating <code>one_of(boids)</code>; do not enter that expression directly in the Agent field.
+        Leave Agent blank to target the experiment agent.
+        Arguments must be a JSON object, for example <code>{"the_value":12}</code>.
+        Leave Arguments blank or enter <code>{}</code> for an action without arguments.
+    </div>
     <h2 class="with-bar-left">FAQ</h2>
     <div class="text">
         <h3>Why sometimes I have no response when I want to load an experiment ?</h3>

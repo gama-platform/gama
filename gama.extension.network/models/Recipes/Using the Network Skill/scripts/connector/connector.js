@@ -83,9 +83,10 @@ function send_expression() {
 function send_ask() {
     return {
         "type":"ask",
+        "exp_id": experiment_id,
         "action": current_action,
-        "agent": current_agent,
-        "args": current_args
+        "agent": current_agent.trim() || undefined,
+        "args": current_args.trim() || "{}"
     }
 }
 

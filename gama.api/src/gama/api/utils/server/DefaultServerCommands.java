@@ -457,25 +457,58 @@ public class DefaultServerCommands {
 		} catch (CommandException e) {
 			return e.getResponse();
 		}
-		final String action = map.get(IKeyword.ACTION) != null ? map.get(IKeyword.ACTION).toString().trim() : null;
-		if (action == null)
+		if (!(map.get(IKeyword.ACTION) instanceof String action) || action.isBlank())
 			return new CommandResponse(MessageType.MalformedRequest,
-					"For " + ISocketCommand.ASK + ", mandatory parameter is: 'action'", map, false);
-		final String ref = map.get(IKeyword.AGENT) != null ? map.get(IKeyword.AGENT).toString().trim() : null;
+					"For " + ISocketCommand.ASK + ", 'action' must be a non-empty string", map, false);
 		final IExperimentAgent exp = plan.getAgent();
 		IScope scope = exp.getScope();
-		final IAgent agent = ref == null ? exp : AgentReference.of(ref).getReferencedAgent(scope);
-		if (agent == null)
+		final Object ref = map.get(IKeyword.AGENT);
+		final IAgent agent;
+		if (ref == null) {
+			agent = exp;
+		} else {
+			if (!(ref instanceof String reference))
+				return new CommandResponse(MalformedRequest, "'agent' must be an agent reference string", map, false);
+			final AgentReference parsed;
+			try {
+				parsed = AgentReference.of(reference.trim());
+			} catch (IllegalArgumentException e) {
+				return new CommandResponse(MalformedRequest,
+						"Invalid agent reference: " + reference
+								+ ". Use simulation[0].boids[12], not a GAML expression such as one_of(boids)",
+						map, false);
+			}
+			agent = parsed.getExistingAgent(scope);
+		}
+		if (agent == null || agent.dead())
 			return new CommandResponse(UnableToExecuteRequest, "Agent does not exist: " + ref, map, false);
-		final IExecutable exec = agent.getSpecies().getAction(action);
+		final IExecutable exec = agent.getSpecies().getAction(action.trim());
 		if (exec == null)
 			return new CommandResponse(UnableToExecuteRequest, "Action " + action + " does not exist in agent " + ref,
 					map, false);
-		// TODO Verify that it is not a JSON string...Otherwise, use
-		// Json.getNew().parse(...)
-		String json = (String) map.get(ARGS);
-		IJsonValue object = GAMA.getJsonEncoder().parse(json);
-		Map<String, Object> args = GamaMapFactory.castToMap(scope, object.toGamlValue(scope));
+		Object arguments = map.get(ARGS);
+		if (arguments instanceof String json) {
+			final IJsonValue object;
+			try {
+				object = GAMA.getJsonEncoder().parse(json);
+			} catch (RuntimeException e) {
+				return new CommandResponse(MalformedRequest, "Invalid JSON in 'args': " + e.getMessage(), map, false);
+			}
+			if (!object.isObject())
+				return new CommandResponse(MalformedRequest, "'args' must contain a JSON object", map, false);
+			arguments = object.toGamlValue(scope);
+		}
+		if (arguments != null && !(arguments instanceof Map<?, ?>))
+			return new CommandResponse(MalformedRequest, "'args' must be a JSON object or a JSON object string", map,
+					false);
+		Map<String, Object> args = new HashMap<>();
+		if (arguments instanceof Map<?, ?> values) {
+			for (var entry : values.entrySet()) {
+				if (!(entry.getKey() instanceof String name))
+					return new CommandResponse(MalformedRequest, "'args' keys must be argument names", map, false);
+				args.put(name, entry.getValue());
+			}
+		}
 		IExecutionResult er = IExecutionResult.PASSED;
 		IScope newScope = agent.getScope().copy("Ask command of gama-server");
 		try {
@@ -487,9 +520,7 @@ public class DefaultServerCommands {
 		}
 		if (!er.passed())
 			return new CommandResponse(UnableToExecuteRequest, "Error in the execution of " + action, map, false);
-		final boolean escaped = map.get(ISocketCommand.ESCAPED) == null ? false
-				: Boolean.parseBoolean("" + map.get(ISocketCommand.ESCAPED));
-		return new CommandResponse(CommandExecutedSuccessfully, "", map, escaped);
+		return new CommandResponse(CommandExecutedSuccessfully, "", map, false);
 	}
 
 	/**
