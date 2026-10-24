@@ -165,6 +165,10 @@ does not create missing agents.
 
 Parameter values are applied **before the simulation's `global init` executes**, so initialization and the parameter view use the supplied values immediately. Parameters omitted from the request keep their model defaults.
 
+Model paths can contain spaces in both file and directory names, including on macOS. Send the plain filesystem path
+(for example, `"/Users/alice/My models/Model with spaces.gaml"`), not a URL-encoded or shell-escaped path.
+In the HTML connector's path field, omit the JSON quotes and click the checkmark to apply the model and experiment.
+
 Forwarding settings are associated with the experiment and its requesting connection, including during initialization and reload. In GUI mode they only control the extra WebSocket messages: they do **not** hide the local console, status bar, dialogs or errors. Local modal dialogs may still require a desktop user's response.
 
 The GUI also sends lifecycle notifications of type `SimulationStatus` (for example `RUNNING` or `PAUSED`). These are control notifications, independent of the `status` option.

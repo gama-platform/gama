@@ -40,6 +40,28 @@ function connector() {
     return context;
 }
 
+test("Load preserves spaces in model paths from the input fields", () => {
+    for (const model of [
+        "/models/Model with spaces.gaml",
+        "/models/My project/Model.gaml",
+        "/Users/alice/My models/Model with spaces.gaml",
+        "C:\\My models\\Model with spaces.gaml"
+    ]) {
+        for (const headless of [false, true]) {
+            const c = connector();
+            c.ignore_states = headless;
+            c.document.querySelector("#model-file-input").value = model;
+            c.document.querySelector("#experiment-name-input").value = "Basic";
+            c.setExperiment();
+            c.load();
+            assert.equal(c.socket.sent.length, 1);
+            assert.deepEqual(c.socket.sent[0], {
+                type: "load", model, experiment: "Basic"
+            });
+        }
+    }
+});
+
 test("Stop completes in NONE despite late paused/running notifications", () => {
     for (const statusBeforeReply of [true, false]) {
         const c = connector();

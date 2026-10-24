@@ -35,8 +35,12 @@
             <li>Check that you are connected to Gama Server, as can be seen in the Connection information section. 
                 You must have CONNECTED status. 
                 If this is not the case, check and, if necessary, modify the Gama Server web address in the Address section.</li>
-            <li>Load the model you wish to use. To do this, enter the path to your .gaml file, and the name of the experiment 
-                you wish to view in the Load An Experiment section.</li>
+            <li>Enter the absolute path to your .gaml file on the machine running GAMA, and the name of the experiment
+                you wish to view in the Load An Experiment section. Click the checkmark to apply these values.
+                Spaces in file and folder names are supported, including on macOS: for example,
+                <code>/Users/alice/My models/Model with spaces.gaml</code>.
+                Enter the path as plain text, without surrounding quotes, shell escapes such as <code>\ </code>,
+                or URL encoding such as <code>%20</code>.</li>
             <li>Launch the model by clicking on Load / Reload in the Simulation Commands section.</li>
             <li>You can check whether the model has been launched by looking at the GAMA response messages. 
                 You should receive a CommandExecutedSucessfully message and have Gama State paused or launched.</li>
