@@ -162,6 +162,14 @@ Send a `reload` request to initialize another run. Forwarding settings are retai
 
 GUI mode remains interactive, single-experiment mode, not a replacement for headless multi-experiment execution. In particular, GUI `play` acknowledges starting execution; it does not implement headless `play`'s deferred `sync: true` response. Wait for `SimulationEnded` to detect completion.
 
+### Headless batch experiments
+
+For a `type: batch` experiment, `play` runs the complete exploration, including all parameter sets and repetitions.
+The experiment's `until` condition (or its override supplied by `load`) stops each individual simulation, not the
+whole batch. The server emits one `SimulationEnded` event when the exploration finishes, even without a client-supplied
+`until`. A batch `play` with `sync: true` defers its response until that event. Further `play` and `step` requests are
+refused once the batch is complete; load a new experiment to run another batch.
+
 ## Complete example
 
 Save this model as `server_load.gaml` on the GAMA machine:

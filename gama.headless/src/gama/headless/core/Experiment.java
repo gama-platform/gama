@@ -185,8 +185,8 @@ public class Experiment implements IExperiment {
 
 	@Override
 	public boolean isInterrupted() {
+		if (currentExperiment.isBatch()) return currentExperiment.getAgent().getScope().interrupted();
 		final ISimulationAgent sim = currentExperiment.getCurrentSimulation();
-		if (currentExperiment.isBatch() && sim == null) return false;
 		return sim == null || sim.dead() || sim.getScope().interrupted();
 	}
 
