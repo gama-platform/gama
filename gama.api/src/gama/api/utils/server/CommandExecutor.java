@@ -61,7 +61,8 @@ public class CommandExecutor implements ICommandExecuter {
 			entry(EXPRESSION, DefaultServerCommands::EVAL), entry(EVALUATE, DefaultServerCommands::EVAL),
 			entry(EXIT, DefaultServerCommands::EXIT), entry(DOWNLOAD, DefaultServerCommands::DOWNLOAD),
 			entry(UPLOAD, DefaultServerCommands::UPLOAD), entry(ASK, DefaultServerCommands::ASK),
-			entry(VALIDATE, DefaultServerCommands::VALIDATE), entry(DESCRIBE, DefaultServerCommands::DESCRIBE));
+			entry(VALIDATE, DefaultServerCommands::VALIDATE), entry(DESCRIBE, DefaultServerCommands::DESCRIBE),
+			entry(ISocketCommand.SERVER_LOG, DefaultServerCommands::SERVER_LOG));
 
 	/**
 	 * Commands contributed by plug-ins through the {@code gama.server_command} extension point. Populated by
@@ -103,6 +104,7 @@ public class CommandExecutor implements ICommandExecuter {
 		// Copy into a mutable map (some IGui implementations return an immutable/shared map) and merge the commands
 		// contributed by plug-ins through the 'gama.server_command' extension point.
 		commands = new HashMap<>(GAMA.getGui().getServerCommands());
+		commands.put(ISocketCommand.SERVER_LOG, DefaultServerCommands::SERVER_LOG);
 		commands.putAll(CONTRIBUTED_COMMANDS);
 		commandQueue = new LinkedBlockingQueue<>();
 	}

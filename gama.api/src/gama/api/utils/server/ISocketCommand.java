@@ -68,6 +68,9 @@ public interface ISocketCommand {
 	/** The load. */
 	String LOAD = "load";
 
+	/** Toggle the running server's exchange journal. */
+	String SERVER_LOG = "server_log";
+
 	/** The stop. */
 	String STOP = "stop";
 

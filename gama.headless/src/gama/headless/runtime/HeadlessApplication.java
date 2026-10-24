@@ -148,6 +148,15 @@ public class HeadlessApplication implements IApplication {
 	/** The Constant SOCKET_PARAMETER. */
 	final public static String NO_DELAY_PARAMETER = "-no-delay";
 
+	/** Enable the WebSocket exchange journal for this launch. */
+	final public static String SERVER_LOG_PARAMETER = "-server-log";
+
+	/** Override the WebSocket exchange journal directory for this launch. */
+	final public static String SERVER_LOG_DIRECTORY_PARAMETER = "-server-log-directory";
+
+	/** Disable the WebSocket exchange journal even when explicitly enabled. */
+	final public static String NO_SERVER_LOG_PARAMETER = "-no-server-log";
+
 	/** The Constant SOCKET_PARAMETER. */
 	final public static String SOCKET_PARAMETER = "-socket";
 
@@ -239,7 +248,13 @@ public class HeadlessApplication implements IApplication {
 				+ PING_INTERVAL + " [pingInterval] "
 				+ "-- when in server mode (socket parameter set), defines in milliseconds the time "
 				+ "between each ping packet sent to clients to keep alive the connection. "
-				+ "The default value is 10000, set to -1 to deactivate this behaviour." + "\n\t=== Infos ===" + "\n\t\t"
+				+ "The default value is 10000, set to -1 to deactivate this behaviour." + "\n\t\t"
+				+ SERVER_LOG_PARAMETER + "                  -- enable server exchange logging for this launch"
+				+ " (disabled by default)" + "\n\t\t"
+				+ SERVER_LOG_DIRECTORY_PARAMETER + " [path] -- override the exchange log directory"
+				+ " (default ~/.gama/server-logs; does not enable logging)" + "\n\t\t"
+				+ NO_SERVER_LOG_PARAMETER + "               -- disable server exchange logging;"
+				+ " overrides -server-log" + "\n\t=== Infos ===" + "\n\t\t"
 				+ HELP_PARAMETER + "                         -- get the help of the command line" + "\n\t\t"
 				+ GAMA_VERSION + "                      -- get the the version of gama" + "\n\t=== Library Runner ==="
 				+ "\n\t\t" + VALIDATE_LIBRARY_PARAMETER
@@ -310,6 +325,9 @@ public class HeadlessApplication implements IApplication {
 			size = size - 2;
 			this.ping = Integer.parseInt(after(args, PING_INTERVAL));
 		}
+		if (args.contains(NO_SERVER_LOG_PARAMETER)) { size = size - 1; }
+		if (args.contains(SERVER_LOG_PARAMETER)) { size = size - 1; }
+		if (args.contains(SERVER_LOG_DIRECTORY_PARAMETER)) { size = size - 2; }
 		if (args.contains(THREAD_PARAMETER)) {
 			size = size - 2;
 			processorQueue.setNumberOfThreads(Integer.parseInt(after(args, THREAD_PARAMETER)));
@@ -423,6 +441,7 @@ public class HeadlessApplication implements IApplication {
 
 		// Debug runner
 		boolean noDelay = args.contains(NO_DELAY_PARAMETER);
+		configureServerLogging(args);
 		if (args.contains(VALIDATE_LIBRARY_PARAMETER)) return ModelLibraryValidator.getInstance().start();
 		if (args.contains(TEST_LIBRARY_PARAMETER)) return ModelLibraryTester.getInstance().start();
 		if (args.contains(RUN_LIBRARY_PARAMETER)) return ModelLibraryRunner.getInstance().start();
@@ -446,6 +465,25 @@ public class HeadlessApplication implements IApplication {
 		}
 
 		return null;
+	}
+
+	/** Apply launch-only overrides, without writing the preference store. */
+	static void configureServerLogging(final List<String> args) {
+		final int directoryOption = args.indexOf(SERVER_LOG_DIRECTORY_PARAMETER);
+		String directory = null;
+		if (directoryOption >= 0) {
+			if (directoryOption + 1 >= args.size() || args.get(directoryOption + 1).isBlank()
+					|| args.get(directoryOption + 1).startsWith("-"))
+				throw new IllegalArgumentException(SERVER_LOG_DIRECTORY_PARAMETER + " requires a directory path");
+			directory = args.get(directoryOption + 1);
+			java.nio.file.Path.of(directory);
+		}
+		if (directory != null) { System.setProperty("gama.server.log.directory", directory); }
+		if (args.contains(NO_SERVER_LOG_PARAMETER)) {
+			System.setProperty("gama.server.log", "false");
+		} else if (args.contains(SERVER_LOG_PARAMETER)) {
+			System.setProperty("gama.server.log", "true");
+		}
 	}
 
 	/**

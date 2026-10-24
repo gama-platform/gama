@@ -10,6 +10,7 @@
  ********************************************************************************************************/
 package gama.ui.application.server;
 
+import java.io.IOException;
 import java.util.Map;
 
 import org.java_websocket.WebSocket;
@@ -20,6 +21,7 @@ import gama.api.exceptions.CommandException;
 import gama.api.kernel.simulation.IExperimentStateListener;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.utils.prefs.GamaPreferences;
+import gama.api.utils.prefs.IPreferenceChangeListener.IPreferenceBeforeChangeListener;
 import gama.api.utils.server.CommandResponse;
 import gama.api.utils.server.GamaServerMessage;
 import gama.api.utils.server.GamaWebSocketServer;
@@ -54,6 +56,16 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 
 	/** The current state. */
 	private volatile State currentState = State.NONE;
+
+	private final IPreferenceBeforeChangeListener<Boolean> loggingPreferenceListener = enabled -> {
+		try {
+			setExchangeLogging(enabled);
+			return true;
+		} catch (final IOException e) {
+			GAMA.getGui().getDialogFactory().error("Unable to change server exchange logging: " + e.getMessage());
+			return false;
+		}
+	};
 
 	/**
 	 * Start for GUI. No SSL, the default ping interval, and no TCP_NODELAY option
@@ -176,6 +188,7 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 	@Override
 	public void onStart() {
 		super.onStart();
+		GamaPreferences.Runtime.CORE_SERVER_LOG.addChangeListener(loggingPreferenceListener);
 		GAMA.getGui().getConsole().addConsoleListener(console);
 		GAMA.addExperimentStateListener(this);
 	}
@@ -187,10 +200,11 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 	 *             the interrupted exception
 	 */
 	@Override
-	public void stop() throws InterruptedException {
+	public void stop(final int timeout, final String closeMessage) throws InterruptedException {
 		try {
-			super.stop();
+			super.stop(timeout, closeMessage);
 		} finally {
+			GamaPreferences.Runtime.CORE_SERVER_LOG.removeChangeListener(loggingPreferenceListener);
 			GAMA.getGui().getConsole().removeConsoleListener(console);
 			GAMA.removeExperimentStateListener(this);
 		}

@@ -825,7 +825,8 @@ public class GamaPreferences {
 		public static final Pref<Boolean> CORE_SERVER_MODE =
 				create("pref_enable_server", "Enable GAMA server mode", true, IType.BOOL, true)
 						.in(Network.NAME, Network.SERVER)
-						.activates("pref_server_port", "pref_server_ping", "pref_server_console");
+						.activates("pref_server_port", "pref_server_ping", "pref_server_console", "pref_server_log",
+								"pref_server_log_directory");
 
 		/** The TCP port on which the GAMA Server listens for incoming client connections. */
 		public static final Pref<Integer> CORE_SERVER_PORT =
@@ -850,6 +851,17 @@ public class GamaPreferences {
 		/** The Constant CORE_SERVER_CONSOLE. */
 		public static final Pref<Boolean> CORE_SERVER_CONSOLE =
 				create("pref_server_console", "Send console outputs to clients", true, IType.BOOL, true)
+						.in(Network.NAME, Network.SERVER);
+
+		/** Whether the server records all WebSocket frames. Changes apply immediately to a running GUI server. */
+		public static final Pref<Boolean> CORE_SERVER_LOG =
+				create("pref_server_log", "Log all GAMA server exchanges", false, IType.BOOL, true)
+						.in(Network.NAME, Network.SERVER);
+
+		/** Persistent directory, outside the temporary headless workspace. */
+		public static final Pref<String> CORE_SERVER_LOG_DIRECTORY =
+				create("pref_server_log_directory", "Server exchange log directory (restart required)",
+						System.getProperty("user.home") + "/.gama/server-logs", IType.STRING, true)
 						.in(Network.NAME, Network.SERVER);
 
 		/** The maximum number of simultaneous commands an experiment can accept through GAMA server. */

@@ -73,6 +73,18 @@ import gama.dev.DEBUG;
  * @date 15 oct. 2023
  */
 public class DefaultServerCommands {
+
+	/** Toggle exchange logging immediately, independently of the current experiment. */
+	public static GamaServerMessage SERVER_LOG(final IGamaServer server, final WebSocket socket,
+			final Map<String, Object> map) {
+		if (!(map.get("enabled") instanceof Boolean enabled))
+			return new CommandResponse(MalformedRequest, "'enabled' must be a JSON boolean", map, false);
+		try {
+			return new CommandResponse(CommandExecutedSuccessfully, server.setExchangeLogging(enabled), map, false);
+		} catch (final IOException e) {
+			return new CommandResponse(UnableToExecuteRequest, e.getMessage(), map, false);
+		}
+	}
 	
 	/**
 	 * Load.

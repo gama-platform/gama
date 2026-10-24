@@ -6,6 +6,14 @@ All commits listed below point to specific changes that drive the massive archit
 
 ## [2026.0.0] - Unreleased
 
+### GAMA Server: full exchange logs
+
+GUI and headless servers can now record all WebSocket exchanges in a separate JSON Lines file per run under `~/.gama/server-logs/` (#1269). Logging is **off by default**; enable it in **Network > Server mode** or with headless `-server-log`. Headless `-server-log-directory <path>` and `-no-server-log` override settings for one launch without changing saved preferences. Records include timestamps, connection IDs, directions and full payloads, including broadcasts, asynchronous events and binary/control frames. See [exchange logging configuration, format and privacy precautions](gama.headless/README.md#server-exchange-logs).
+
+Clients can also send `{"type":"server_log","enabled":true}` (or `false`) to toggle logging immediately for the whole running GUI/headless server without changing saved settings. Re-enabling appends to the same run's log.
+
+The GUI logging preference also takes effect immediately, without restarting GAMA or disconnecting clients. The log-directory preference still applies to the next server run.
+
 ### GAMA Server: configurable GUI loading
 
 WebSocket `load` now honors `parameters`, `until`, `console`, `status`, `dialog` and `runtime` in desktop GUI mode, not only headless mode (#394). Parameter values are applied before `global init`. Forwarding options use the same defaults in both modes and do not suppress local GUI output. The loaded experiment retains its requesting socket even when another client connects. A GUI experiment pauses and sends `SimulationEnded` when its stop condition is reached; reload it before running again. See the [GUI loading guide and runnable client example](gama.headless/README.md).

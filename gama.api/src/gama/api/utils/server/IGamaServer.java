@@ -9,12 +9,14 @@
  ********************************************************************************************************/
 package gama.api.utils.server;
 
+import java.io.IOException;
 import java.util.Map;
 
 import org.java_websocket.WebSocket;
 
 import gama.api.exceptions.CommandException;
 import gama.api.kernel.species.IExperimentSpecies;
+import gama.api.utils.json.IJsonObject;
 
 /**
  *
@@ -45,6 +47,11 @@ public interface IGamaServer {
 
 	/** The Constant DEFAULT_PING_INTERVAL. */
 	int DEFAULT_PING_INTERVAL = 10000;
+
+	/** Change logging for this running server, without persisting preferences. */
+	default IJsonObject setExchangeLogging(final boolean enabled) throws IOException {
+		throw new IOException("This server does not support exchange logging");
+	}
 
 	/**
 	 * Adds the listener.
