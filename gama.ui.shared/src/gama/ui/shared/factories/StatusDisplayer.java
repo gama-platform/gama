@@ -25,6 +25,7 @@ import gama.api.ui.IStatusControl;
 import gama.api.ui.IStatusDisplayer;
 import gama.api.ui.IStatusMessage;
 import gama.api.ui.IStatusMessage.StatusType;
+import gama.api.utils.server.GamaServerStatusDisplayer;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.workspace.status.StatusMessageFactory;
 
@@ -32,6 +33,8 @@ import gama.workspace.status.StatusMessageFactory;
  * The Class StatusDisplayer.
  */
 public class StatusDisplayer implements IStatusDisplayer, IExperimentStateListener {
+
+	private final GamaServerStatusDisplayer serverStatus = new GamaServerStatusDisplayer();
 
 	/** The experimentControl. */
 	private IStatusControl experimentControl = new IStatusControl() {};
@@ -176,6 +179,7 @@ public class StatusDisplayer implements IStatusDisplayer, IExperimentStateListen
 	 */
 	@Override
 	public void errorStatus(final GamaRuntimeException error) {
+		serverStatus.errorStatus(error);
 		statusRefresher.updateWith(StatusMessageFactory.ERROR(error));
 	}
 
@@ -190,6 +194,7 @@ public class StatusDisplayer implements IStatusDisplayer, IExperimentStateListen
 	 *            the icon
 	 */
 	private void setStatus(final String msg, final StatusType code, final String icon) {
+		serverStatus.informStatus(msg, icon);
 		statusRefresher.updateWith(StatusMessageFactory.CUSTOM(msg, code, icon, null));
 	}
 
@@ -203,6 +208,7 @@ public class StatusDisplayer implements IStatusDisplayer, IExperimentStateListen
 	 */
 	@Override
 	public void setTaskCompletion(final String name, final Double s) {
+		serverStatus.setTaskCompletion(name, s);
 		statusRefresher.updateWith(StatusMessageFactory.COMPLETION(name, s));
 	}
 
@@ -259,6 +265,7 @@ public class StatusDisplayer implements IStatusDisplayer, IExperimentStateListen
 	 */
 	@Override
 	public void setStatus(final String message, final String icon, final IColor color) {
+		serverStatus.setStatus(message, icon, color);
 		if (message == null) {
 			// resetStatus();
 		} else {

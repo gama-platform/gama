@@ -129,11 +129,10 @@ public class GamaServerExperimentJob extends ExperimentJob {
 		if (this.simulator == null) { this.load(); }
 		this.setup();
 		controller.setExperiment(simulator.getModel().getExperiment(experimentName));
-		IExecutionResult ex = simulator.setup(experimentName, this.seed, params, this);
-		if (ex.passed()) {
-			simulator.getExperimentPlan().setStopCondition(endCond);			
+		if (endCond != null && !endCond.isBlank()) {
+			simulator.getModel().getExperiment(experimentName).setStopCondition(endCond);
 		}
-		return ex;
+		return simulator.setup(experimentName, this.seed, params, this);
 	}
 
 	/**

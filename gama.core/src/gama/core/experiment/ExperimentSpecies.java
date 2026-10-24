@@ -1076,10 +1076,11 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 	public void setStopCondition(final String cond) {
 		IExpression exp = GAML.getExpressionFactory().getFalse();
 		if (cond != null && !cond.isBlank()) {
-			setStopCondition(GAML.getExpressionFactory().createExpr(cond, getModel().getDescription()));
+			exp = GAML.getExpressionFactory().createExpr(cond, getModel().getDescription());
 		}
 		if (exp.getGamlType() != Types.BOOL) throw GamaRuntimeException
 				.error("The until condition of the experiment should be a boolean", GAMA.getRuntimeScope());
+		setStopCondition(exp);
 	}
 
 	@Override

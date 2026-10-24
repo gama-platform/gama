@@ -39,6 +39,7 @@ import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.statements.IStatement;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.simulation.DefaultExperimentController;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.simulation.ITopLevelAgent;
 import gama.api.kernel.species.IExperimentSpecies;
@@ -68,7 +69,9 @@ import gama.api.ui.displays.IDisplayCreator;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.api.utils.server.CommandExecutor;
+import gama.api.utils.server.GamaServerMessager;
 import gama.api.utils.server.ISocketCommand;
+import gama.api.utils.server.MessageType;
 import gama.api.utils.tests.CompoundSummary;
 import gama.api.utils.tests.IsolatedTestRunner;
 import gama.api.utils.tests.TestExperimentRunner;
@@ -218,6 +221,11 @@ public class SwtGui implements IGui {
 	public void runtimeError(final IScope scope, final GamaRuntimeException g) {
 		if (g.isReported() || GAMA.getFrontmostController() != null && GAMA.getFrontmostController().isDisposing())
 			return;
+		if (scope != null && scope.getExperiment() != null
+				&& scope.getExperiment().getSpecies().getController() instanceof DefaultExperimentController controller) {
+			controller.recordRuntimeError(g);
+		}
+		GamaServerMessager.forwardMessage(scope, g, MessageType.SimulationError);
 		final IRuntimeExceptionHandler handler = getRuntimeExceptionHandler();
 		if (!handler.isRunning()) { handler.start(); }
 		handler.offer(g);

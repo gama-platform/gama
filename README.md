@@ -47,6 +47,12 @@ mvn clean install
 
 The produced release should be stored in the project `gama.product` under the `target` folder.
 
+## Controlling GAMA from a WebSocket client
+
+GAMA Server works in both the desktop GUI and headless mode. A `load` request can set experiment parameters **before initialization**, choose which console/status/dialog/runtime-error messages are sent to the client, and supply an `until` condition to stop execution. In GUI mode, displays and local output remain available.
+
+See the [GAMA Server GUI loading guide](gama.headless/README.md) for enabling the server, all load options and defaults, and a complete model/client example.
+
 ## Reporting problems, bugs and issues
 
 If you spot a bug or want to suggest an improvement to GAMA, please do so by posting an issue here: [https://github.com/gama-platform/gama/issues](https://github.com/gama-platform/gama/issues). 

@@ -85,27 +85,19 @@ public class DefaultServerCommands {
 	 */
 	public static GamaServerMessage LOAD(final IGamaServer server, final WebSocket socket,
 			final Map<String, Object> map) {
-		// TODO: is this thing really used ? I think what happens is that the call just
-		// hangs until the experiment is closed
 		if (!GAMA.isInHeadLessMode()
 				&& GAMA.getExperimentState(GAMA.getExperiment()) == IExperimentStateListener.State.NOTREADY)
 			return new CommandResponse(MessageType.UnableToExecuteRequest,
 					"Unable to start new experiment, another one is loading", map, false);
 
-		final Object modelPath = map.get("model");
-		final Object experiment = map.get("experiment");
-		if (modelPath == null || experiment == null)
-			return new CommandResponse(MalformedRequest,
-					"For 'load', mandatory parameters are: 'model' and 'experiment'", map, false);
-		String pathToModel = modelPath.toString().trim();
-		String nameOfExperiment = experiment.toString().trim();
-		File ff = new File(pathToModel);
-		if (!ff.exists())
-			return new CommandResponse(UnableToExecuteRequest, "'" + ff.getAbsolutePath() + "' does not exist", map,
-					false);
-		if (!GamlFileExtension.isGaml(ff.getAbsoluteFile().toString()))
-			return new CommandResponse(MessageType.UnableToExecuteRequest,
-					"'" + ff.getAbsolutePath() + "' is not a gaml file", map, false);
+		final ServerLoadRequest request;
+		try {
+			request = ServerLoadRequest.parse(socket, map);
+		} catch (CommandException e) {
+			return e.getResponse();
+		}
+		final File ff = request.model();
+		final String nameOfExperiment = request.experiment();
 		IModelSpecies model = null;
 		try {
 			List<GamlCompilationError> errors = new ArrayList<>();
@@ -122,9 +114,21 @@ public class DefaultServerCommands {
 										map,
 										false);
 		final IModelSpecies mm = model;
-		GAMA.getGui().run(	"Opening experiment " + nameOfExperiment, 
-							() -> GAMA.runGuiExperiment(nameOfExperiment, mm),
-							false);
+		final IExperimentSpecies plan = model.getExperiment(nameOfExperiment);
+		try {
+			plan.setParameterValues(request.parameters());
+			if (!request.until().isBlank()) { plan.setStopCondition(request.until()); }
+			final boolean[] opened = { false };
+			GAMA.getGui().run("Opening experiment " + nameOfExperiment,
+					() -> opened[0] = GAMA.runGuiServerExperiment(nameOfExperiment, mm, request.configuration()), false);
+			final GamaRuntimeException error =
+					plan.getAgent() == null ? null : plan.getController().consumeLastRuntimeError();
+			if (error != null) return new CommandResponse(MessageType.RuntimeError, error, map, false);
+			if (!opened[0]) return new CommandResponse(UnableToExecuteRequest,
+					"Unable to open experiment '" + nameOfExperiment + "'", map, false);
+		} catch (RuntimeException e) {
+			return new CommandResponse(UnableToExecuteRequest, e, map, false);
+		}
 		return new CommandResponse(CommandExecutedSuccessfully, nameOfExperiment, map, false);
 	}
 
@@ -140,7 +144,9 @@ public class DefaultServerCommands {
 	public static GamaServerMessage PLAY(final IGamaServer server, final WebSocket socket,
 			final Map<String, Object> map) {
 		if (!GAMA.startFrontmostExperiment(true))
-			return new CommandResponse(UnableToExecuteRequest, "Controller is full", map, false);
+			return new CommandResponse(UnableToExecuteRequest,
+					"Unable to start: no experiment is loaded, the simulation has ended, or the controller is full",
+					map, false);
 		return new CommandResponse(CommandExecutedSuccessfully, "", map, false);
 	}
 

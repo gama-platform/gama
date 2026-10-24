@@ -55,6 +55,7 @@ import gama.api.utils.prefs.IGamaPreferenceStore;
 import gama.api.utils.prefs.JREPreferenceStore;
 import gama.api.utils.random.IRandom;
 import gama.api.utils.server.IGamaServer;
+import gama.api.utils.server.IServerConfiguration;
 import gama.dev.DEBUG;
 import gama.dev.FLAGS;
 
@@ -379,8 +380,19 @@ public class GAMA {
 	 */
 	public static void runGuiExperiment(final String id, final IModelSpecies model,
 			final gama.api.utils.tests.TestSelection selection) {
+		runGuiExperiment(id, model, selection, null);
+	}
+
+	/** Opens a GUI experiment synchronously, with server options installed before initialization. */
+	public static boolean runGuiServerExperiment(final String id, final IModelSpecies model,
+			final IServerConfiguration configuration) {
+		return runGuiExperiment(id, model, null, configuration);
+	}
+
+	private static boolean runGuiExperiment(final String id, final IModelSpecies model,
+			final gama.api.utils.tests.TestSelection selection, final IServerConfiguration configuration) {
 		final IExperimentSpecies newExperiment = model.getExperiment(id);
-		if (newExperiment == null) return;
+		if (newExperiment == null) return false;
 		if (selection != null) {
 			if (!newExperiment.isTest())
 				throw new IllegalArgumentException("Experiment " + id + " is not a test experiment");
@@ -392,7 +404,7 @@ public class GAMA {
 			final IExperimentSpecies existingExperiment = controller.getExperiment();
 			if (existingExperiment != null) {
 				controller.processPause(true);
-				if (!getGui().confirmClose(existingExperiment)) return;
+				if (!getGui().confirmClose(existingExperiment)) return false;
 			}
 		}
 
@@ -403,9 +415,10 @@ public class GAMA {
 		// experiment" button — so any partial or failed simulation state is discarded
 		// before the new experiment's perspective is opened.
 		if (!controllers.isEmpty()) { closeAllExperiments(true, false); }
+		if (configuration != null) { controller.setServerConfiguration(configuration); }
 
 		if (newExperiment.isTest()) {
-			if (getGui().runTestExperiment(model, id, selection)) return;
+			if (getGui().runTestExperiment(model, id, selection)) return true;
 			// controllers.add(controller);
 			gama.api.utils.tests.TestSelection.activate(newExperiment, selection);
 			try {
@@ -427,11 +440,13 @@ public class GAMA {
 		} else if (getGui().openSimulationPerspective(model, id)) {
 			controllers.add(controller);
 			startBenchmark(newExperiment);
-			controller.processOpen(false);
+			return controller.processOpen(configuration != null);
 		} else {
 			DEBUG.ERR("Unable to launch simulation perspective for experiment " + id + " of model "
 					+ model.getFilePath());
+			return false;
 		}
+		return true;
 	}
 
 	/**

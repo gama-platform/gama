@@ -184,7 +184,12 @@ public abstract class AbstractExperimentController implements IExperimentControl
 	protected volatile boolean disposing;
 
 	/** The server configuration. */
-	protected IServerConfiguration serverConfiguration;
+	protected volatile IServerConfiguration serverConfiguration;
+
+	@Override
+	public void setServerConfiguration(final IServerConfiguration configuration) {
+		serverConfiguration = configuration;
+	}
 
 	/**
 	 * Alive. Flag indicating that the scheduler is running (it should be alive unless the application is shutting down)

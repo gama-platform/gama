@@ -12,6 +12,7 @@ package gama.api.utils.server;
 
 import gama.api.GAMA;
 import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.runtime.scope.IScope;
 import gama.dev.DEBUG;
 
 /**
@@ -21,6 +22,27 @@ import gama.dev.DEBUG;
  * @date 2 nov. 2023
  */
 public abstract class GamaServerMessager {
+
+	private static final GamaServerMessager FORWARDER = new GamaServerMessager() {
+		@Override
+		public boolean canSendMessage(final IExperimentAgent exp) { return exp != null; }
+	};
+
+	/** Mirrors an event to the experiment's client without changing local GUI behavior. */
+	public static void forwardMessage(final IScope scope, final Object message, final MessageType type) {
+		final IExperimentAgent exp = scope == null ? null : scope.getExperiment();
+		if (exp == null) return;
+		final IServerConfiguration config = exp.getScope().getServerConfiguration();
+		if (config == null || config.socket() == null) return;
+		final boolean enabled = switch (type) {
+			case SimulationDialog, SimulationErrorDialog -> config.hasDialog();
+			case SimulationError -> config.hasRuntime();
+			case SimulationStatusInform, SimulationStatusError, SimulationStatusNeutral -> config.hasStatus();
+			case SimulationEnded -> true;
+			default -> throw new IllegalArgumentException("Unsupported forwarded event: " + type);
+		};
+		if (enabled) { FORWARDER.sendMessage(exp, message, type); }
+	}
 
 	/**
 	 * Can send message.

@@ -21,6 +21,8 @@ import gama.api.gaml.statements.IStatement;
 import gama.api.runtime.SystemInfo;
 import gama.api.runtime.scope.IScope;
 import gama.api.ui.IDialogFactory;
+import gama.api.utils.server.GamaServerMessager;
+import gama.api.utils.server.MessageType;
 import gama.ui.application.workbench.PickWorkspaceDialog;
 import gama.ui.shared.dialogs.UserControlDialog;
 import gama.ui.shared.utils.WorkbenchHelper;
@@ -58,6 +60,7 @@ public class DialogFactory extends AbstractServiceFactory implements IDialogFact
 	 */
 	@Override
 	public void error(final IScope scope, final String error) {
+		GamaServerMessager.forwardMessage(scope, error, MessageType.SimulationErrorDialog);
 		WorkbenchHelper.run(() -> MessageDialog.openError(null, "Error", error));
 	}
 
@@ -69,6 +72,7 @@ public class DialogFactory extends AbstractServiceFactory implements IDialogFact
 	 */
 	@Override
 	public void inform(final IScope scope, final String message) {
+		GamaServerMessager.forwardMessage(scope, message, MessageType.SimulationDialog);
 		WorkbenchHelper.run(() -> MessageDialog.openInformation(null, "Information", message));
 	}
 

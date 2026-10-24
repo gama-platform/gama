@@ -134,7 +134,6 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 	@Override
 	public void onOpen(final WebSocket socket, final ClientHandshake handshake) {
 		currentServerConfig = currentServerConfig.withSocket(socket);
-		GAMA.getGui().getConsole().addConsoleListener(console);
 		super.onOpen(socket, handshake);
 	}
 
@@ -153,7 +152,6 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 	@Override
 	public void onClose(final WebSocket conn, final int code, final String reason, final boolean remote) {
 		super.onClose(conn, code, reason, remote);
-		GAMA.getGui().getConsole().removeConsoleListener(console);
 	}
 
 	/**
@@ -178,6 +176,7 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 	@Override
 	public void onStart() {
 		super.onStart();
+		GAMA.getGui().getConsole().addConsoleListener(console);
 		GAMA.addExperimentStateListener(this);
 	}
 
@@ -189,8 +188,12 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 	 */
 	@Override
 	public void stop() throws InterruptedException {
-		super.stop();
-		GAMA.removeExperimentStateListener(this);
+		try {
+			super.stop();
+		} finally {
+			GAMA.getGui().getConsole().removeConsoleListener(console);
+			GAMA.removeExperimentStateListener(this);
+		}
 	}
 
 	/**
@@ -226,10 +229,13 @@ public class GamaGuiWebSocketServer extends GamaWebSocketServer implements IExpe
 	public void updateStateTo(final IExperimentSpecies experiment, final State state) {
 		if (state != currentState) {
 			currentState = state;
-			WebSocket ws = currentServerConfig.socket();
+			final IServerConfiguration config = experiment != null && experiment.getAgent() != null
+					? experiment.getAgent().getScope().getServerConfiguration() : currentServerConfig;
+			WebSocket ws = config == null ? null : config.socket();
 			if (ws == null || ws.isClosed()) return;
 			ws.send(GAMA.getJsonEncoder()
-					.valueOf(new GamaServerMessage(MessageType.SimulationStatus, state.name(), "0")).toString());
+					.valueOf(new GamaServerMessage(MessageType.SimulationStatus, state.name(),
+							config.expId().isBlank() ? "0" : config.expId())).toString());
 		}
 	}
 

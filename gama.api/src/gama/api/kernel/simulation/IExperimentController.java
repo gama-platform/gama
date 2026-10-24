@@ -16,6 +16,7 @@ import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.runtime.scope.IExecutionResult;
 import gama.api.utils.interfaces.IDisposable;
+import gama.api.utils.server.IServerConfiguration;
 
 /**
  * Class IExperimentController.
@@ -143,6 +144,11 @@ public interface IExperimentController extends IDisposable, Closeable {
 	 * @return the error raised during the last execution, or {@code null} if it ran without one
 	 */
 	default GamaRuntimeException consumeLastRuntimeError() { return null; }
+
+	/** Installs an experiment-specific server configuration before opening the experiment. */
+	default void setServerConfiguration(final IServerConfiguration configuration) {
+		throw new UnsupportedOperationException("This controller does not support server configuration");
+	}
 
 	/**
 	 * Process back.

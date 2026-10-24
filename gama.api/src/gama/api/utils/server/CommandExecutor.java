@@ -40,7 +40,6 @@ import org.java_websocket.enums.ReadyState;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
-import gama.api.gaml.types.Types;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.types.list.IList;
 import gama.dev.DEBUG;
@@ -184,8 +183,11 @@ public class CommandExecutor implements ICommandExecuter {
 	public static CommandResponse checkLoadParameters(final IList parameters, final Map<String, Object> commandMap) {
 		if (parameters != null) {
 			int i = 1;
-			for (var param : parameters.listValue(null, Types.MAP, false)) {
-				@SuppressWarnings ("unchecked") Map<String, Object> m = (Map<String, Object>) param;
+			for (var param : parameters) {
+				if (!(param instanceof Map<?, ?> m))
+					return new CommandResponse(MessageType.MalformedRequest,
+							"Parameter number " + i + " must be an object with `name` and `value` fields",
+							commandMap, false);
 				// field IKeyword.TYPE is optional, IKeyword.NAME and "value" are mandatory
 				var name = m.get(IKeyword.NAME);
 				var value = m.get("value");
