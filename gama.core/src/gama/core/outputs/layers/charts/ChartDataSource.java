@@ -144,6 +144,24 @@ public class ChartDataSource implements IChartDataSource {
 	/** Is Box and whisker. */
 	boolean isBoxAndWhiskerData = false;
 
+	/** Whether the statement declaring this source has been executed in the last evaluation of the chart body. */
+	boolean active = true;
+
+	/**
+	 * Checks if is active.
+	 *
+	 * @return true, if is active
+	 */
+	public boolean isActive() { return active; }
+
+	/**
+	 * Sets the active.
+	 *
+	 * @param active
+	 *            the new active
+	 */
+	public void setActive(final boolean active) { this.active = active; }
+
 	/** The line thickness. */
 	IExpression lineThickness = GAML.getExpressionFactory().createConst(GamaPreferences.Displays.CHART_LINE_THICKNESS.getValue(), Types.FLOAT);
 
@@ -184,6 +202,7 @@ public class ChartDataSource implements IChartDataSource {
 		useMarkerShapeExp = source.useMarkerShapeExp;
 		lineThickness = source.lineThickness;
 		isBoxAndWhiskerData = source.isBoxAndWhiskerData;
+		active = source.active;
 		return true;
 	}
 

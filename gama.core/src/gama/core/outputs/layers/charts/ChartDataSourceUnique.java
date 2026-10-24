@@ -24,7 +24,10 @@ import gama.api.types.color.IColor;
 import gama.gaml.operators.Random;
 
 /**
- * The Class ChartDataSourceUnique.
+ * Data source created by a {@code data} statement: a single series. The series is identified internally by an id
+ * derived from this source ({@link #getSerieId()}), while its legend is only used as displayed text, so that several
+ * sources can share the same legend (#785). Sources are reused across steps by {@link ChartDataSet#getOrCreateSource}
+ * as long as the statement is executed with the same legend (#403).
  */
 public class ChartDataSourceUnique extends ChartDataSource {
 
@@ -117,7 +120,7 @@ public class ChartDataSourceUnique extends ChartDataSource {
 		final String id = getSerieId();
 		myserie.setName(id);
 		myserie.setSeriesLegend(legend);
-		getDataset().addNewSerie(id, myserie, 0);
+		getDataset().addNewSerie(id, myserie, getDataset().getDate(scope));
 		mySeries.put(id, myserie);
 	}
 

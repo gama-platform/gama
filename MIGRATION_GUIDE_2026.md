@@ -42,6 +42,7 @@ A high-level summary of every area that changed. Use this to quickly assess what
 | `image` layer renamed to `picture` | Update display blocks |
 | Displays/experiments need explicit `title:` | Identifier and UI label are now separate |
 | `overlay` position/size unified in 2D and 3D | Contents drawn in model units may need `#px` |
+| Chart bodies re-evaluated at every step | Dynamic legends create new series; duplicate legends no longer merge |
 
 ## Engine, UI, and Graphics
 
@@ -317,6 +318,26 @@ overlay position: {10#px, 10#px} size: {200#px, 100#px} background: #white {
 ```
 
 > **Action needed:** none for overlays whose contents are drawn with `#px`. Models that draw the contents with model units in an overlay smaller than the view (e.g. `at: location / 3`) may need to express these coordinates in pixels.
+
+---
+
+### 1.7 Charts — body re-evaluated at every step, legends no longer identify series
+
+The body of a `chart` was only executed once, when the chart was created; only the `value` of its data was then re-evaluated. It is now re-evaluated at every step (#403):
+
+```gaml
+chart "Rewards" type: series {
+    if (cycle > 1) { data "Instant reward" value: reward color: #blue; }   // now appears at cycle 2
+    data "period " + (cycle div 10) value: reward;                       // a new series every 10 cycles
+    loop g over: groups { data g.name value: g.reward; }                 // follows the current groups
+}
+```
+
+- A series is identified by the statement declaring it and by its current legend. A new legend creates a new series.
+- A series that is not declared at some step is **frozen** in `series`, `xy`, `scatter` and `heatmap` charts (its history is kept and it resumes if it is declared again), and **removed** in `pie`, `histogram`, `radar` and `box_whisker` charts.
+- Legends are only displayed names (#785): two `data "a"` statements now produce two series (previously, the second replaced the first), and duplicated category labels are no longer merged.
+
+> **Action needed:** none for charts whose body only contains `data`/`datalist` statements with constant legends. Charts whose legends depend on changing expressions (e.g. `data "value at " + cycle ...`) now create a new series at each change: use a constant legend to keep a single series. Models relying on duplicated legends to merge series must use a single `data` statement.
 
 ---
 

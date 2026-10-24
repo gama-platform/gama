@@ -12,9 +12,13 @@ package gama.core.outputs.layers.charts;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
@@ -378,6 +382,66 @@ public class ChartDataSet {
 	 */
 	public ArrayList<ChartDataSource> getSources() { return sources; }
 
+	/** Identifies a data source by the statement that declares it and its evaluated legend. */
+	private record SourceKey(Object statement, String legend, int occurrence) {}
+
+	/** The sources indexed by the statement/legend that produced them (#403). */
+	private final Map<SourceKey, ChartDataSource> sourcesByKey = new LinkedHashMap<>();
+
+	/** The sources declared during the current evaluation of the chart body. */
+	private final Map<SourceKey, ChartDataSource> sourcesInPass = new HashMap<>();
+
+	/** Number of occurrences of each statement/legend pair during the current pass. */
+	private final Map<SourceKey, Integer> occurrencesInPass = new HashMap<>();
+
+	/**
+	 * Begins a new evaluation of the chart body: must be followed by the execution of the data statements, which call
+	 * {@link #getOrCreateSource}, and by {@link #endSourcesPass(IScope)}.
+	 */
+	public void beginSourcesPass() {
+		sourcesInPass.clear();
+		occurrencesInPass.clear();
+	}
+
+	/**
+	 * Returns the source previously declared by the same statement with the same legend (and at the same rank, if
+	 * the statement is executed several times with the same legend), or creates and adds a new one.
+	 */
+	public ChartDataSource getOrCreateSource(final Object statement, final String legend,
+			final Supplier<ChartDataSource> creator) {
+		final int occurrence = occurrencesInPass.merge(new SourceKey(statement, legend, 0), 1, Integer::sum) - 1;
+		final SourceKey key = new SourceKey(statement, legend, occurrence);
+		ChartDataSource source = sourcesByKey.get(key);
+		if (source == null) {
+			source = creator.get();
+			addDataSource(source);
+			sourcesByKey.put(key, source);
+		}
+		source.setActive(true);
+		sourcesInPass.put(key, source);
+		return source;
+	}
+
+	/**
+	 * Ends the evaluation of the chart body. Sources that have not been declared are frozen in charts showing a
+	 * history of values, and removed in charts showing a snapshot (by category).
+	 */
+	public void endSourcesPass(final IScope scope) {
+		final Iterator<Map.Entry<SourceKey, ChartDataSource>> it = sourcesByKey.entrySet().iterator();
+		while (it.hasNext()) {
+			final Map.Entry<SourceKey, ChartDataSource> entry = it.next();
+			if (sourcesInPass.containsKey(entry.getKey())) { continue; }
+			final ChartDataSource source = entry.getValue();
+			if (byCategory) {
+				for (final String id : new ArrayList<>(source.getSeries().keySet())) { removeserie(scope, id); }
+				sources.remove(source);
+				it.remove();
+			} else {
+				source.setActive(false);
+			}
+		}
+	}
+
 	/**
 	 * Adds the data source.
 	 *
@@ -493,6 +557,11 @@ public class ChartDataSet {
 			}
 			sources.remove(source);
 		}
+		for (int i = 0; i < sourcestoremove.size(); i++) {
+			final ChartDataSource old = sourcestoremove.get(i);
+			final ChartDataSource replacement = sourcestoadd.get(i);
+			sourcesByKey.replaceAll((k, s) -> s == old ? replacement : s);
+		}
 		for (final ChartDataSource source : sourcestoadd) { this.addDataSource(source); }
 		if (this.getXSeriesValues().size() > 0) {
 			final DoubleList ser = this.getXSeriesValues();
@@ -531,6 +600,7 @@ public class ChartDataSet {
 		if (commonYindex >= this.getYSeriesValues().size()) { commonYindex = this.getYSeriesValues().size() - 1; }
 
 		for (final ChartDataSource source : sources) {
+			if (!source.isActive()) { continue; }
 			source.updatevalues(scope, chartCycle);
 			if (keepHistory) { source.savehistory(scope, history); }
 		}

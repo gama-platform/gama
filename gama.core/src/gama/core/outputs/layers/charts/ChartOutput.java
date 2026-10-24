@@ -145,6 +145,19 @@ public abstract class ChartOutput implements IChart {
 	}
 
 	/**
+	 * Step, after having (re)declared the data sources of the chart.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param declareData
+	 *            the evaluation of the chart body
+	 */
+	public void step(final IScope scope, final Runnable declareData) {
+		if (declareData != null) { declareData.run(); }
+		step(scope);
+	}
+
+	/**
 	 * Initdataset.
 	 */
 	public void initdataset() {}

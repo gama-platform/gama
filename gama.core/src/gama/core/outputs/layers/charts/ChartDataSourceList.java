@@ -22,7 +22,9 @@ import gama.api.types.list.IList;
 import gama.api.ui.displays.IChartDataSource;
 
 /**
- * The Class ChartDataSourceList.
+ * Data source created by a {@code datalist} statement: one series per element of its value. Series are identified by
+ * their position in the list (ids are independent from legends, which are only displayed text). Sources are reused
+ * across steps by {@link ChartDataSet#getOrCreateSource} (#403).
  */
 public class ChartDataSourceList extends ChartDataSource {
 

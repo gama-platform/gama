@@ -236,6 +236,13 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 		}
 	}
 
+	@Override
+	public void step(final IScope scope, final Runnable declareData) {
+		synchronized (lock) {
+			super.step(scope, declareData);
+		}
+	}
+
 	/**
 	 * Inits the renderer.
 	 *
@@ -373,6 +380,16 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 	 *
 	 * @param scope
 	 *            the scope
+	 */
+	/**
+	 * Returns the text to display for a JFreeChart series key: series keys are internal ids, which must be replaced by
+	 * the legend of the corresponding series (#785). Keys not corresponding to a series are displayed as is.
+	 *
+	 * @param scope
+	 *            the scope (can be null)
+	 * @param serieKey
+	 *            the JFreeChart series (row or section) key
+	 * @return the label to display
 	 */
 	protected String getSerieDisplayLabel(final IScope scope, final Comparable<?> serieKey) {
 		if (serieKey == null) return "";

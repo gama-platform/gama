@@ -105,6 +105,15 @@ Both 3D renderers now limit the effective `z_near` to `z_far / 100000`. Very sma
 
 Empty 3D displays now show their axes; previously they were hidden as if the display only contained charts (#809).
 
+### Charts: dynamic bodies, distinct names and stable colors
+
+- The body of a `chart` (its `data` and `datalist` statements and any `if`, `loop`… around them) is now re-evaluated at every step (#403). Series can appear conditionally, be created in loops, or get a new legend (which creates a new series). A series that is no longer declared is frozen (kept, but no longer updated) in charts showing a history of values (`series`, `xy`, `scatter`, `heatmap`) and removed in charts showing a snapshot (`pie`, `histogram`, `radar`, `box_whisker`). The other facets of `chart` keep their previous behaviour.
+- Series are identified internally, independently of their legend (#785): several `data` statements can share the same legend, and pie labels, radar legends, histogram bar labels, tooltips and saved histories display legends rather than internal ids. Categories (`x_serie_labels`, `datalist` categories) are identified by position, so duplicated labels such as `["a", "b", "a"]` give three distinct categories.
+- Histograms, radars and box-whisker charts keep their colors when the number of values of a `datalist` changes (#801).
+- `y2_tick_values_visible` hides the tick values of the second y axis (#783).
+
+Manual regression models are available in `Tests/Chart Tests/models` (`Chart Varying Datalist Regression`, `Chart Duplicate Names Regression`, `Chart Dynamic Body Regression`).
+
 The test view has a **Stop tests** button and displays the currently executing model, experiment and test name. By default, GUI tests execute in the workbench JVM, using scope cancellation and thread interruption. **Stop tests** interrupts the current experiment and ends the suite, preserving completed results and marking the active test as **interrupted**. **Execution > Tests > Test experiment timeout (seconds)** defaults to 10 seconds: a timeout requests interruption, marks the active test as **timeout**, and continues with the next experiment once execution actually exits. The runner never abandons a live test thread. Unstarted tests and assertions remain **not reached**.
 
 **Advanced > Tests > Run tests in a separate headless process** enables stronger isolation for Java operators that ignore cooperative cancellation. An isolated sequence reuses an initialized headless worker, replacing it after a timeout or worker failure and terminating it when the sequence ends. In this mode Stop and timeout can forcibly terminate unresponsive computations. The timeout covers experiment initialization and execution, not model compilation or worker startup. Isolated tests require saved local model files; default same-JVM execution can use the model compiled from the editor.

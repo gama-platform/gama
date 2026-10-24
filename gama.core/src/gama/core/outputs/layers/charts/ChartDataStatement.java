@@ -34,7 +34,10 @@ import gama.annotations.support.ISymbolKind;
 		kind = ISymbolKind.SINGLE_STATEMENT,
 		with_sequence = false,
 		concept = { IConcept.CHART })
-@doc ("This statement allows to describe the values that will be displayed on the chart.")
+@doc ("This statement allows to describe the values that will be displayed on the chart. It is executed at every step of the chart: "
+		+ "the series it declares is identified by the statement and its current legend (a new legend creates a new series). "
+		+ "If the statement is not executed at some step (e.g. because it is inside an `if` whose condition is false), its series is frozen in series, xy, scatter and heatmap charts, "
+		+ "and removed in pie, histogram, radar and box_whisker charts. Several data can share the same legend: they are displayed as distinct series.")
 @inside (
 		symbols = IKeyword.CHART,
 		kinds = ISymbolKind.SEQUENCE_STATEMENT)
@@ -49,7 +52,7 @@ import gama.annotations.support.ISymbolKind;
 						name = IKeyword.LEGEND,
 						type = IType.STRING,
 						optional = false,
-						doc = @doc ("The legend of the chart")),
+						doc = @doc ("The legend (displayed name) of the series. It is re-evaluated at every step; it does not need to be unique, as series are not identified by their legend")),
 				@facet (
 						name = ChartDataStatement.USE_SECOND_Y_AXIS,
 						type = IType.BOOL,
@@ -313,9 +316,9 @@ public class ChartDataStatement extends AbstractStatement {
 	@Override
 	protected Object privateExecuteIn(final IScope scope) {
 		final ChartDataSet graphdataset = (ChartDataSet) scope.getVarValue(ChartLayerStatement.CHARTDATASET);
-		final ChartDataSourceUnique data = createDataSource(scope, graphdataset);
-		graphdataset.addDataSource(data);
-		return data;
+		if (graphdataset == null) return null;
+		final String legend = Cast.asString(scope, getFacetValue(scope, IKeyword.LEGEND));
+		return graphdataset.getOrCreateSource(this, legend, () -> createDataSource(scope, graphdataset));
 	}
 
 }
