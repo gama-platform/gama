@@ -39,6 +39,14 @@ import gama.api.runtime.scope.IScope;
  * GamaRuntimeException can be configured to track multiple occurrences of the same error across different agents,
  * providing aggregated error reporting to avoid flooding the user with duplicate messages.
  * </p>
+ * <p>
+ * The factory methods construct or wrap exceptions; they do not deliver them to the runtime error handler. Throw an
+ * exception when the current operation cannot safely continue: normal statement and scope execution boundaries catch
+ * and report propagated failures. For a recoverable condition with a defined fallback, use
+ * {@link gama.api.GAMA#reportAndThrowIfNeeded(IScope, GamaRuntimeException, boolean)} and implement the fallback if it
+ * returns. Do not replace a throw with a reporting call unless continuing execution is safe. In particular, throwing a
+ * warning still abandons the current operation, even if reporting policy later allows the simulation to continue.
+ * </p>
  *
  * @author drogoul
  * @since 7 janv. 2011

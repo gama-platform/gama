@@ -632,6 +632,12 @@ public class GAMA {
 	/**
 	 * Reports an error to the UI and determines whether the simulation should continue. This method handles both
 	 * warnings and errors according to user preferences.
+	 * <p>
+	 * This method does not itself throw the supplied exception or pause the experiment; callers manage control flow
+	 * using its return value. Delivery depends on experiment lifecycle and scope reporting settings. Use
+	 * {@link #reportAndThrowIfNeeded(IScope, GamaRuntimeException, boolean)} when the standard throwing/pausing policy is
+	 * needed.
+	 * </p>
 	 *
 	 * @param scope
 	 *            the current scope
@@ -662,17 +668,29 @@ public class GAMA {
 	}
 
 	/**
-	 * Reports an error and throws it if necessary according to error handling configuration. This method handles the
-	 * complete lifecycle of error reporting and decides whether to continue execution or throw the exception.
+	 * Reports an error and throws it if necessary according to error handling configuration.
+	 * <p>
+	 * This method can return normally. At a failure site, use it only when the following code implements a safe
+	 * continuation or fallback. Otherwise, throw the exception to abort the operation and let the enclosing statement
+	 * or scope execution boundary report it. Replacing a direct throw with this call changes control flow.
+	 * </p>
+	 * <p>
+	 * On the normal reporting path, errors throw when {@code shouldStopSimulation} and the stop-at-first-error
+	 * preference are both enabled. Warnings instead use the warnings-as-errors and stop-at-first-error preferences,
+	 * regardless of {@code shouldStopSimulation}. In GAML try mode, the exception is thrown before delivery to the
+	 * runtime error handler. Null-scope and some non-reporting-scope paths only print a stack trace and return;
+	 * delivery also depends on the experiment lifecycle and reporting settings.
+	 * </p>
 	 *
 	 * @param scope
 	 *            the current scope
 	 * @param g
 	 *            the runtime exception
 	 * @param shouldStopSimulation
-	 *            whether errors should stop the simulation
+	 *            whether errors should stop the simulation when stop-at-first-error is enabled; does not control
+	 *            warning escalation
 	 * @throws GamaRuntimeException
-	 *             if the error requires stopping execution
+	 *             in try mode or when the reporting decision requires aborting execution
 	 */
 	public static void reportAndThrowIfNeeded(final IScope scope, final GamaRuntimeException g,
 			final boolean shouldStopSimulation) {
