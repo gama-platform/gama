@@ -13,6 +13,15 @@ predicate and name lookups (#161). Public string-based modalities (including cus
 base-argument overrides, and modality-specific insertion/removal effects remain unchanged. Beliefs still perform
 their specialised contradiction and intention handling; emotions retain their separate replacement policy.
 
+### BDI: numeric contracts and emotion calculations
+
+BDI variable and operator documentation now distinguishes conventional ranges from existing validation, and describes
+numeric defaults, unspecified intensity, and decay units (#161). Repeated desire-appraisal and compound-emotion
+intensity calculations and personality-based decay share internal helpers. This is a compatibility-preserving
+refactoring: the decay coefficient remains `0.00028`, multiplication order and negative decay are unchanged,
+and no new clamping or rejection of previously accepted numeric values is introduced. Existing presence flags and
+operator-specific range checks (including `with_dominance` excluding 1) remain unchanged.
+
 ### GAMA Server: full exchange logs
 
 GUI and headless servers can now record all WebSocket exchanges in a separate JSON Lines file per run under `~/.gama/server-logs/` (#1269). Logging is **off by default**; enable it in **Network > Server mode** or with headless `-server-log`. Headless `-server-log-directory <path>` and `-no-server-log` override settings for one launch without changing saved preferences. Records include timestamps, connection IDs, directions and full payloads, including broadcasts, asynchronous events and binary/control frames. See [exchange logging configuration, format and privacy precautions](gama.headless/README.md#server-exchange-logs).

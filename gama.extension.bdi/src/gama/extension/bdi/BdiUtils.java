@@ -12,6 +12,25 @@ import gama.gaml.operators.Maths;
 
 public class BdiUtils {
 
+	// Historical approximation of 1 / 3600; keep its value and multiplication order for reproducibility.
+	private static final double EMOTION_DECAY_PER_SECOND = 0.00028;
+
+	static double emotionDecay(final IScope scope, final double neuroticism, final double intensity) {
+		return scope.getSimulation().getTimeStep(scope) * EMOTION_DECAY_PER_SECOND * neuroticism * intensity;
+	}
+
+	static double desireEmotionIntensity(final double stateStrength, final double desireStrength,
+			final double neuroticism) {
+		double intensity = stateStrength * desireStrength * (1 + (0.5 - neuroticism));
+		if (intensity > 1.0) intensity = 1.0;
+		if (intensity < 0.0) intensity = 0.0;
+		return intensity;
+	}
+
+	static double compoundEmotionIntensity(final Emotion first, final Emotion second) {
+		return first.hasIntensity() && second.hasIntensity() ? first.getIntensity() * second.getIntensity() : 1.0;
+	}
+
 	//TODO: replace this by Math.clamp calls once we switch in java21
 	public static int clamp(long value, int min, int max) {
         if (min > max) {
@@ -1057,16 +1076,9 @@ public class BdiUtils {
 					}
 					// Faire ce calcul seulement si le désire à une force (vérifier le no value)
 					if (desire != null && desire.getStrength() >= 0.0 && predTest.getStrength() >= 0.0) {
-						intensity = predTest.getStrength() * desire.getStrength() * (1 + (0.5 - neurotisme));
-						if (intensity > 1.0) {
-							intensity = 1.0;
-						}
-						if (intensity < 0) {
-							intensity = 0.0;
-						}
+						intensity = desireEmotionIntensity(predTest.getStrength(), desire.getStrength(), neurotisme);
 					}
-					// 0.00028=1/3600
-					decay = scope.getSimulation().getTimeStep(scope) * 0.00028 * neurotisme * intensity;
+					decay = emotionDecay(scope, neurotisme, intensity);
 				}
 				joy.setIntensity(intensity);
 				joy.setDecay(decay);
@@ -1090,17 +1102,9 @@ public class BdiUtils {
 								final MentalState desire = pred;
 								// Faire ce calcul seulement si le désire à une force (vérifier le no value)
 								if (desire.getStrength() >= 0.0 && predTest.getStrength() >= 0.0) {
-									intensity =
-											predTest.getStrength() * desire.getStrength() * (1 + (0.5 - neurotisme));
-									if (intensity > 1.0) {
-										intensity = 1.0;
-									}
-									if (intensity < 0) {
-										intensity = 0.0;
-									}
+									intensity = desireEmotionIntensity(predTest.getStrength(), desire.getStrength(), neurotisme);
 								}
-								// 0.00028=1/3600
-								decay = scope.getSimulation().getTimeStep(scope) * 0.00028 * neurotisme * intensity;
+								decay = emotionDecay(scope, neurotisme, intensity);
 
 							}
 							sadness.setIntensity(intensity);
@@ -1142,16 +1146,9 @@ public class BdiUtils {
 						}
 					}
 					if (desire != null && desire.getStrength() >= 0.0 && predTest.getStrength() >= 0.0) {
-						intensity = predTest.getStrength() * desire.getStrength() * (1 + (0.5 - neurotisme));
-						if (intensity > 1.0) {
-							intensity = 1.0;
-						}
-						if (intensity < 0) {
-							intensity = 0.0;
-						}
+						intensity = desireEmotionIntensity(predTest.getStrength(), desire.getStrength(), neurotisme);
 					}
-					// 0.00028=1/3600
-					decay = scope.getSimulation().getTimeStep(scope) * 0.00028 * neurotisme * intensity;
+					decay = emotionDecay(scope, neurotisme, intensity);
 				}
 				hope.setIntensity(intensity);
 				hope.setDecay(decay);
@@ -1174,17 +1171,9 @@ public class BdiUtils {
 								final MentalState desire = pred;
 								// Faire ce calcul seulement si le désire à une force (vérifier le no value)
 								if (desire.getStrength() >= 0.0 && predTest.getStrength() >= 0.0) {
-									intensity =
-											predTest.getStrength() * desire.getStrength() * (1 + (0.5 - neurotisme));
-									if (intensity > 1.0) {
-										intensity = 1.0;
-									}
-									if (intensity < 0) {
-										intensity = 0.0;
-									}
+									intensity = desireEmotionIntensity(predTest.getStrength(), desire.getStrength(), neurotisme);
 								}
-								// 0.00028=1/3600
-								decay = scope.getSimulation().getTimeStep(scope) * 0.00028 * neurotisme * intensity;
+								decay = emotionDecay(scope, neurotisme, intensity);
 
 							}
 							fear.setIntensity(intensity);
@@ -1240,8 +1229,7 @@ public class BdiUtils {
 						Double decay = 0.0;
 						if (use_personality) {
 							final Double neurotisme = (Double) scope.getAgent().getAttribute(SimpleBdiArchitecture.NEUROTISM);
-							decay = scope.getSimulation().getTimeStep(scope) * 0.00028 * neurotisme
-									* satisfaction.getIntensity();
+							decay = emotionDecay(scope, neurotisme, satisfaction.getIntensity());
 						}
 						satisfaction.setDecay(decay);
 						joy.setDecay(decay);
@@ -1277,8 +1265,7 @@ public class BdiUtils {
 						Double decay = 0.0;
 						if (use_personality) {
 							final Double neurotisme = (Double) scope.getAgent().getAttribute(SimpleBdiArchitecture.NEUROTISM);
-							decay = scope.getSimulation().getTimeStep(scope) * 0.00028 * neurotisme
-									* disappointment.getIntensity();
+							decay = emotionDecay(scope, neurotisme, disappointment.getIntensity());
 
 						}
 						disappointment.setDecay(decay);
@@ -1318,7 +1305,7 @@ public class BdiUtils {
 						if (use_personality) {
 							final Double neurotisme = (Double) scope.getAgent().getAttribute(SimpleBdiArchitecture.NEUROTISM);
 							//TODO: decay will be negative, is it normal ?
-							decay = scope.getSimulation().getTimeStep(scope) * 0.00028 * neurotisme * fearConfirmed.getIntensity();
+							decay = emotionDecay(scope, neurotisme, fearConfirmed.getIntensity());
 
 						}
 						fearConfirmed.setDecay(decay);
@@ -1356,7 +1343,7 @@ public class BdiUtils {
 						if (use_personality) {
 							final Double neurotisme = (Double) scope.getAgent().getAttribute(SimpleBdiArchitecture.NEUROTISM);
 							//TODO: decay will be negative, is it normal ?
-							decay = scope.getSimulation().getTimeStep(scope) * 0.00028 * neurotisme * relief.getIntensity();
+							decay = emotionDecay(scope, neurotisme, relief.getIntensity());
 
 						}
 						relief.setDecay(decay);
@@ -1466,7 +1453,7 @@ public class BdiUtils {
 					final double neurotisme = (double) scope.getAgent().getAttribute(SimpleBdiArchitecture.NEUROTISM);
 					final double amicability = (double) scope.getAgent().getAttribute(SimpleBdiArchitecture.AGREEABLENESS);
 					intensity = BdiUtils.clamp(emo.getIntensity() * absLiking * (1 - signLiking * (0.5 - amicability)), 0, 1);
-					decay = scope.getSimulation().getTimeStep(scope) * 0.00028 * neurotisme * emotion.getIntensity();//TODO: decay will be negative, is it normal ?
+					decay = emotionDecay(scope, neurotisme, emotion.getIntensity());//TODO: decay will be negative, is it normal ?
 				}
 				emotion.setIntensity(intensity);
 				emotion.setDecay(decay);
@@ -1497,7 +1484,7 @@ public class BdiUtils {
 				final Double neurotisme = (Double) scope.getAgent().getAttribute(SimpleBdiArchitecture.NEUROTISM);
 				final Double openness = (Double) scope.getAgent().getAttribute(SimpleBdiArchitecture.OPENNESS);
 				intensity = BdiUtils.clamp(predicateDirect.getStrength() * absStrength * (1 + (0.5 - openness)), 0, 1);
-				decay = scope.getSimulation().getTimeStep(scope) * 0.00028 * neurotisme * -1;//TODO: formula obtained while refactoring and unchanged: decay will be negative, is it normal ?
+				decay = emotionDecay(scope, neurotisme, -1);//TODO: formula obtained while refactoring and unchanged: decay will be negative, is it normal ?
 			}
 			
 			if (temp.getStrength() > 0.0) {
@@ -1555,10 +1542,8 @@ public class BdiUtils {
 						if (use_personality) {
 							// update intensity and decay
 							final Double neurotisme = (Double) scope.getAgent().getAttribute(SimpleBdiArchitecture.NEUROTISM);
-							if (emo.hasIntensity() && emoTemp.hasIntensity()) {
-								intensity = emo.getIntensity() * emoTemp.getIntensity();
-							}
-							decay = scope.getSimulation().getTimeStep(scope) * 0.00028 * neurotisme * intensity;
+							intensity = compoundEmotionIntensity(emo, emoTemp);
+							decay = emotionDecay(scope, neurotisme, intensity);
 						}
 						gratification.setIntensity(intensity);
 						gratification.setDecay(decay);
@@ -1578,10 +1563,8 @@ public class BdiUtils {
 						Double decay = 0.0;
 						if (use_personality) {
 							final Double neurotisme = (Double) scope.getAgent().getAttribute(SimpleBdiArchitecture.NEUROTISM);
-							if (emo.hasIntensity() && emoTemp.hasIntensity()) {
-								intensity = emo.getIntensity() * emoTemp.getIntensity();
-							}
-							decay = scope.getSimulation().getTimeStep(scope) * 0.00028 * neurotisme * intensity;
+							intensity = compoundEmotionIntensity(emo, emoTemp);
+							decay = emotionDecay(scope, neurotisme, intensity);
 						}
 						gratitude.setIntensity(intensity);
 						gratitude.setDecay(decay);
@@ -1614,10 +1597,8 @@ public class BdiUtils {
 						Double decay = 0.0;
 						if (use_personality) {
 							final Double neurotisme = (Double) scope.getAgent().getAttribute(SimpleBdiArchitecture.NEUROTISM);
-							if (emo.hasIntensity() && emoTemp.hasIntensity()) {
-								intensity = emo.getIntensity() * emoTemp.getIntensity();
-							}
-							decay = scope.getSimulation().getTimeStep(scope) * 0.00028 * neurotisme * intensity;
+							intensity = compoundEmotionIntensity(emo, emoTemp);
+							decay = emotionDecay(scope, neurotisme, intensity);
 						}
 						remorse.setIntensity(intensity);
 						remorse.setDecay(decay);
@@ -1637,10 +1618,8 @@ public class BdiUtils {
 						Double decay = 0.0;
 						if (use_personality) {
 							final Double neurotisme = (Double) scope.getAgent().getAttribute(SimpleBdiArchitecture.NEUROTISM);
-							if (emo.hasIntensity() && emoTemp.hasIntensity()) {
-								intensity = emo.getIntensity() * emoTemp.getIntensity();
-							}
-							decay = scope.getSimulation().getTimeStep(scope) * 0.00028 * neurotisme * intensity;
+							intensity = compoundEmotionIntensity(emo, emoTemp);
+							decay = emotionDecay(scope, neurotisme, intensity);
 						}
 						anger.setIntensity(intensity);
 						anger.setDecay(decay);

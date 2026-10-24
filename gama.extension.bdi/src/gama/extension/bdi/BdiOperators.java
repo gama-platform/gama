@@ -448,7 +448,10 @@ public class BdiOperators {
 			category = { "BDI" },
 			concept = { IConcept.BDI })
 	@doc (
-			value = "a new emotion with the given properties (at least its name, and eventually intensity, parameters...)",
+			value = "a new emotion with the given properties (at least its name, and eventually intensity, parameters...). "
+					+ "Intensity is conventionally in [0, 1], but supplied values are retained without range validation. "
+					+ "Omitted intensity is -1 internally. Decay defaults to 0 and is an amount subtracted per emotion "
+					+ "update; negative decay increases intensity.",
 			masterDoc = true,
 			examples = @example (
 					value = "new_emotion(\"joy\")",
@@ -835,7 +838,9 @@ public class BdiOperators {
 			category = { "BDI" },
 			concept = { IConcept.BDI })
 	@doc (
-			value = "change the intensity value of the given emotion",
+			value = "change the intensity value of the given emotion without range validation. The conventional range "
+					+ "is [0, 1], but values such as 12 are retained. This operator preserves the existing internal "
+					+ "intensity-presence flag.",
 			examples = @example (
 					value = "emotion with_intensity 12",
 					isExecutable = false))
@@ -862,7 +867,8 @@ public class BdiOperators {
 			category = { "BDI" },
 			concept = { IConcept.BDI })
 	@doc (
-			value = "change the decay value of the given emotion",
+			value = "change the amount subtracted from intensity per emotion update, without range validation. "
+					+ "Zero leaves intensity unchanged; negative decay increases intensity.",
 			examples = @example (
 					value = "emotion with_decay 12",
 					isExecutable = false))
@@ -915,7 +921,9 @@ public class BdiOperators {
 			category = { "BDI" },
 			concept = { IConcept.BDI })
 	@doc (
-			value = "creates a new social link with another agent (eventually given additional parameters such as the appreciation, dominance, solidarity, and familiarity values).",
+			value = "creates a new social link with another agent (eventually given additional parameters such as the appreciation, dominance, solidarity, and familiarity values). "
+					+ "Liking, dominance and trust are conventionally in [-1, 1]; solidarity and familiarity in [0, 1]. "
+					+ "Unspecified components default to 0. Construction does not validate these ranges.",
 			masterDoc = true,
 			examples = @example (
 					value = "new_social_link(agentA)",
@@ -1000,7 +1008,7 @@ public class BdiOperators {
 			category = { "BDI" },
 			concept = { IConcept.BDI })
 	@doc (
-			value = "change the liking value of the given social link",
+			value = "change the liking value of the given social link if it is in [-1, 1]; otherwise leave the link unchanged",
 			examples = @example (
 					value = "social_link with_liking 0.4",
 					isExecutable = false))
@@ -1027,7 +1035,8 @@ public class BdiOperators {
 			category = { "BDI" },
 			concept = { IConcept.BDI })
 	@doc (
-			value = "change the dominance value of the given social link",
+			value = "change the dominance value of the given social link if it is in [-1, 1); otherwise leave the link "
+					+ "unchanged. The upper endpoint 1 is currently excluded by this operator.",
 			examples = @example (
 					value = "social_link with_dominance 0.4",
 					isExecutable = false))
@@ -1054,7 +1063,7 @@ public class BdiOperators {
 			category = { "BDI" },
 			concept = { IConcept.BDI })
 	@doc (
-			value = "change the solidarity value of the given social link",
+			value = "change the solidarity value of the given social link if it is in [0, 1]; otherwise leave the link unchanged",
 			examples = @example (
 					value = "social_link with_solidarity 0.4",
 					isExecutable = false))
@@ -1082,7 +1091,7 @@ public class BdiOperators {
 			category = { "BDI" },
 			concept = { IConcept.BDI })
 	@doc (
-			value = "change the familiarity value of the given social link",
+			value = "change the familiarity value of the given social link if it is in [0, 1]; otherwise leave the link unchanged",
 			examples = @example (
 					value = "social_link with_familiarity 0.4",
 					isExecutable = false))
@@ -1110,7 +1119,7 @@ public class BdiOperators {
 			category = { "BDI" },
 			concept = { IConcept.BDI })
 	@doc (
-			value = "change the trust value of the given social link",
+			value = "change the trust value of the given social link if it is in [-1, 1]; otherwise leave the link unchanged",
 			examples = @example (
 					value = "social_link with_trust 0.4",
 					isExecutable = false))

@@ -46,12 +46,14 @@ import gama.gaml.operators.Random;
 		name = SimpleBdiArchitecture.PERSISTENCE_COEFFICIENT_PLANS,
 		type = IType.FLOAT,
 		init = "1.0",
-		doc = @doc ("plan persistence")),
+		doc = @doc ("plan persistence probability, conventionally in [0, 1]; defaults to 1. "
+				+ "No range validation is performed on this variable.")),
 		@variable (
 				name = SimpleBdiArchitecture.PERSISTENCE_COEFFICIENT_INTENTIONS,
 				type = IType.FLOAT,
 				init = "1.0",
-				doc = @doc ("intention persistence")),
+				doc = @doc ("intention persistence probability, conventionally in [0, 1]; defaults to 1. "
+						+ "No range validation is performed on this variable.")),
 		@variable (
 				name = SimpleBdiArchitecture.PROBABILISTIC_CHOICE,
 				type = IType.BOOL,
@@ -81,42 +83,50 @@ import gama.gaml.operators.Random;
 				name = SimpleBdiArchitecture.OBEDIENCE,
 				type = IType.FLOAT,
 				init = "1.0",
-				doc = @doc ("an obedience value. By default, it is computed with personality")),
+				doc = @doc ("an obedience value, conventionally in [0, 1]; defaults to 1. Computed from "
+						+ "conscientiousness and agreeableness when personality is enabled. No range validation is performed.")),
 		@variable (
 				name = SimpleBdiArchitecture.CHARISMA,
 				type = IType.FLOAT,
 				init = "1.0",
-				doc = @doc ("a charisma value. By default, it is computed with personality")),
+				doc = @doc ("a charisma value, conventionally in [0, 1]; defaults to 1. Set to extraversion "
+						+ "when personality is enabled. No range validation is performed.")),
 		@variable (
 				name = SimpleBdiArchitecture.RECEPTIVITY,
 				type = IType.FLOAT,
 				init = "1.0",
-				doc = @doc ("a receptivity value. By default, it is computed with personality")),
+				doc = @doc ("a receptivity value, conventionally in [0, 1]; defaults to 1. Set to 1 - neurotism "
+						+ "when personality is enabled. No range validation is performed.")),
 		@variable (
 				name = SimpleBdiArchitecture.OPENNESS,
 				type = IType.FLOAT,
 				init = "0.5",
-				doc = @doc ("an openness value for the personality")),
+				doc = @doc ("an openness value for the personality, conventionally in [0, 1]; defaults to 0.5. "
+						+ "No range validation is performed.")),
 		@variable (
 				name = SimpleBdiArchitecture.CONSCIENTIOUSNESS,
 				type = IType.FLOAT,
 				init = "0.5",
-				doc = @doc ("a conscientiousness value for the personality")),
+				doc = @doc ("a conscientiousness value for the personality, conventionally in [0, 1]; defaults to 0.5. "
+						+ "No range validation is performed.")),
 		@variable (
 				name = SimpleBdiArchitecture.EXTRAVERSION,
 				type = IType.FLOAT,
 				init = "0.5",
-				doc = @doc ("an extraversion value for the personality")),
+				doc = @doc ("an extraversion value for the personality, conventionally in [0, 1]; defaults to 0.5. "
+						+ "No range validation is performed.")),
 		@variable (
 				name = SimpleBdiArchitecture.AGREEABLENESS,
 				type = IType.FLOAT,
 				init = "0.5",
-				doc = @doc ("an agreeableness value for the personality")),
+				doc = @doc ("an agreeableness value for the personality, conventionally in [0, 1]; defaults to 0.5. "
+						+ "No range validation is performed.")),
 		@variable (
 				name = SimpleBdiArchitecture.NEUROTISM,
 				type = IType.FLOAT,
 				init = "0.5",
-				doc = @doc ("a neurotism value for the personality")),
+				doc = @doc ("a neurotism value for the personality, conventionally in [0, 1]; defaults to 0.5. "
+						+ "No range validation is performed.")),
 		@variable (
 				name = SimpleBdiArchitecture.BELIEF_BASE,
 				type = IType.LIST,
@@ -3286,7 +3296,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	private List<Emotion> listEmotionsNull(final IScope scope) {
 		final List<Emotion> tempPred = new ArrayList<>();
 		for (final Emotion pred : BdiUtils.getEmotionBase(scope, SimpleBdiArchitecture.EMOTION_BASE)) {
-			if (pred.getIntensity() <= 0 && pred.getIntensity() != -1.0) { tempPred.add(pred); }
+			if (pred.getIntensity() <= 0 && pred.getIntensity() != Emotion.UNSPECIFIED_INTENSITY) { tempPred.add(pred); }
 		}
 		return tempPred;
 	}

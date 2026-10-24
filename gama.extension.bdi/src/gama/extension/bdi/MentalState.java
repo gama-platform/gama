@@ -51,11 +51,13 @@ import gama.api.utils.json.IJsonValue;
 		@variable (
 				name = MentalState.STRENGTH,
 				type = IType.FLOAT,
-				doc = @doc ("the strength value related to the mental state")),
+				doc = @doc ("the strength or priority of the mental state; defaults to 1. No [0, 1] bound is enforced: "
+						+ "strengths above 1 can express higher priority, and signed ideal strengths are used in appraisal.")),
 		@variable (
 				name = "lifetime",
 				type = IType.INT,
-				doc = @doc ("the lifetime of the mental state")) })
+				doc = @doc ("the lifetime in reasoning cycles; defaults to -1 (no expiration). Positive values are "
+						+ "decremented by lifetime updates. Constructors and setters retain the supplied integer.")) })
 public class MentalState implements IValue {
 
 	
