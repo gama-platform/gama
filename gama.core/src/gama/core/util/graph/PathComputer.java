@@ -9,6 +9,7 @@
  ********************************************************************************************************/
 package gama.core.util.graph;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -95,6 +96,13 @@ public class PathComputer<V, E> implements IPathComputer<V, E> {
 
 	/** The shortest path matrix. */
 	protected GamaIntMatrix shortestPathMatrix = null;
+
+	/** Vertex indices for matrix routing, in the current graph vertex order. */
+	private Map<V, Integer> matrixVertexIndices;
+
+	private int matrixVertexIndicesVersion;
+
+	private int matrixVertexCount;
 
 	/** The Constant ONLY_FOR_DIRECTED_GRAPH. */
 	public static final ImmutableList<PathComputer.KShortestPathAlgorithmEnum> ONLY_FOR_DIRECTED_GRAPH =
@@ -308,7 +316,18 @@ public class PathComputer<V, E> implements IPathComputer<V, E> {
 	 */
 	@Override
 	public IList<E> getShortestPathFromMatrix(final V s, final V t) {
+		// getVertices() itself increments the version in GamaGraph (through vertexSet()).
+		Map<V, Integer> vertexIndices = matrixVertexIndices;
+		final boolean rebuildIndices = vertexIndices == null || matrixVertexIndicesVersion != version;
 		final IList<V> vertices = graph.getVertices();
+		if (rebuildIndices || matrixVertexCount != vertices.size()) {
+			vertexIndices = new HashMap<>();
+			int index = 0;
+			for (final V vertex : vertices) { vertexIndices.putIfAbsent(vertex, index++); }
+			matrixVertexIndices = vertexIndices;
+			matrixVertexCount = vertices.size();
+		}
+		matrixVertexIndicesVersion = version;
 		final IList<E> edges = GamaListFactory.create(graph.getGamlType().getContentType());
 		V vs = s;
 		final int indexS = vertices.indexOf(vs);
@@ -368,6 +387,7 @@ public class PathComputer<V, E> implements IPathComputer<V, E> {
 	@Override
 	public void loadShortestPaths(final IScope scope, final IMatrix matrix) {
 		shortestPathMatrix = GamaIntMatrix.from(scope, matrix);
+		matrixVertexIndices = null;
 
 	}
 
@@ -714,6 +734,7 @@ public class PathComputer<V, E> implements IPathComputer<V, E> {
 	@Override
 	public void setVersion(final int version) {
 		this.version = version;
+		matrixVertexIndices = null;
 		// shortestPathComputed.clear();
 		shortestPathComputed = new ConcurrentHashMap<>();
 
@@ -742,6 +763,7 @@ public class PathComputer<V, E> implements IPathComputer<V, E> {
 	@Override
 	public void reInitPathFinder() {
 		optimizer = null;
+		matrixVertexIndices = null;
 	}
 
 }
