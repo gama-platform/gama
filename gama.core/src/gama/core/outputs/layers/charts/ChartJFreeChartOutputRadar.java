@@ -13,6 +13,8 @@ import java.awt.Color;
 import java.util.ArrayList;
 
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.LegendItem;
+import org.jfree.chart.LegendItemCollection;
 import org.jfree.chart.plot.SpiderWebPlot;
 import org.jfree.chart.renderer.AbstractRenderer;
 import org.jfree.data.category.CategoryDataset;
@@ -37,7 +39,24 @@ public class ChartJFreeChartOutputRadar extends ChartJFreeChartOutput {
 		super.createChart(scope);
 		DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 		jfreedataset.add(0, dataset);
-		final SpiderWebPlot plot = new SpiderWebPlot(dataset);
+		final SpiderWebPlot plot = new SpiderWebPlot(dataset) {
+			@Override
+			public LegendItemCollection getLegendItems() {
+				final LegendItemCollection result = new LegendItemCollection();
+				final LegendItemCollection items = super.getLegendItems();
+				for (int i = 0; i < items.getItemCount(); i++) {
+					final LegendItem item = items.get(i);
+					final String label = getSerieDisplayLabel(scope, item.getSeriesKey());
+					final LegendItem relabeled = new LegendItem(label, label, null, null, item.getShape(),
+							item.getFillPaint(), item.getOutlineStroke(), item.getOutlinePaint());
+					relabeled.setDataset(item.getDataset());
+					relabeled.setSeriesKey(item.getSeriesKey());
+					relabeled.setSeriesIndex(item.getSeriesIndex());
+					result.add(relabeled);
+				}
+				return result;
+			}
+		};
 		chart = new JFreeChart(getName(), null, plot, true);
 	}
 
@@ -125,7 +144,7 @@ public class ChartJFreeChartOutputRadar extends ChartJFreeChartOutput {
 			serie.setNotify(false);
 			try {
 				for (int i = deb; i < cValues.size(); i++) {
-					serie.addValue(yValues.get(i), serieid, cValues.get(i - deb));
+					serie.addValue(yValues.get(i), serieid, new ChartCategoryKey(i - deb, cValues.get(i - deb)));
 				}
 			} finally {
 				serie.setNotify(oldNotify);

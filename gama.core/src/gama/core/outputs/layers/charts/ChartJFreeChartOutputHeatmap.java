@@ -147,7 +147,7 @@ public class ChartJFreeChartOutputHeatmap extends ChartJFreeChartOutput {
 			}
 			newr.setPaintScale(paintscale);
 
-			final NumberAxis scaleAxis = new NumberAxis(myserie.getName());
+			final NumberAxis scaleAxis = new NumberAxis(String.valueOf(myserie.getSerieLegend(scope)));
 			Color ac = IColor.toAWTColor(properties.getAxesColor());
 			scaleAxis.setAxisLinePaint(ac);
 			scaleAxis.setTickMarkPaint(ac);

@@ -734,7 +734,7 @@ public void addcbwvalue(final IScope scope, final String dx, final double dmean,
 	 *            the history
 	 */
 	public void savehistory(final IScope scope, final ChartHistory history) {
-		history.append(this.getName() + ",");
+		history.append(this.getSerieLegend(scope) + ",");
 		if (mysource.isByCategory()) {
 			if (this.cvalues.size() > 0) {
 				if (this.getMysource().isCumulative()) {

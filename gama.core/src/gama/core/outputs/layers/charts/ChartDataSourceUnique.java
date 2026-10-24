@@ -63,7 +63,12 @@ public class ChartDataSourceUnique extends ChartDataSource {
 	 *
 	 * @return the myserie
 	 */
-	public ChartDataSeries getMyserie() { return mySeries.get(legend); }
+	public ChartDataSeries getMyserie() { return mySeries.get(getSerieId()); }
+
+	/**
+	 * Internal id of the series, distinct from its legend so that several data can share the same displayed name.
+	 */
+	private String getSerieId() { return "d_" + System.identityHashCode(this); }
 
 	/**
 	 * Sets the legend.
@@ -109,9 +114,11 @@ public class ChartDataSourceUnique extends ChartDataSource {
 		myserie.setMysource(this);
 		myserie.setDataset(getDataset());
 		inferDatasetProperties(scope, myserie);
-		myserie.setName(legend);
-		getDataset().addNewSerie(legend, myserie, 0);
-		mySeries.put(legend, myserie);
+		final String id = getSerieId();
+		myserie.setName(id);
+		myserie.setSeriesLegend(legend);
+		getDataset().addNewSerie(id, myserie, 0);
+		mySeries.put(id, myserie);
 	}
 
 }

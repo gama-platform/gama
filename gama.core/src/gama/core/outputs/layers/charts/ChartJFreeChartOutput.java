@@ -374,6 +374,14 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 	 * @param scope
 	 *            the scope
 	 */
+	protected String getSerieDisplayLabel(final IScope scope, final Comparable<?> serieKey) {
+		if (serieKey == null) return "";
+		final ChartDataSeries ds = chartdataset == null ? null : chartdataset.getDataSeries(scope, serieKey.toString());
+		if (ds == null) return serieKey.toString();
+		final Comparable<?> legend = ds.getSerieLegend(scope);
+		return legend == null ? "" : legend.toString();
+	}
+
 	private void updateLegendVisibility(final IScope scope) {
 		if (chart == null || chartdataset == null || chart.getLegend() == null) return;
 
@@ -516,7 +524,7 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 				sb.append(" | ").append(yTitle).append(" ").append(yInt ? (int) yy : String.format("%.2f", yy));
 			}
 			case PieSectionEntity ps -> {
-				final String title = ps.getSectionKey().toString();
+				final String title = getSerieDisplayLabel(null, ps.getSectionKey());
 				final PieDataset<?> data = ps.getDataset();
 				final int index = ps.getSectionIndex();
 				final double xx = data.getValue(index).doubleValue();

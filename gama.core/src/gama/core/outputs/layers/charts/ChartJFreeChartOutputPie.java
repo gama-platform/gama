@@ -17,6 +17,7 @@ import org.jfree.chart.plot.PiePlot;
 import org.jfree.chart.renderer.AbstractRenderer;
 import org.jfree.chart.renderer.DefaultPolarItemRenderer;
 import org.jfree.data.general.DefaultPieDataset;
+import org.jfree.data.general.PieDataset;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.gaml.expressions.IExpression;
@@ -72,7 +73,14 @@ public class ChartJFreeChartOutputPie extends ChartJFreeChartOutput {
 		pp.setShadowYOffset(0);
 
 		if (!"none".equals(properties.getSeriesLabelPosition())) {
-			pp.setLabelGenerator(new StandardPieSectionLabelGenerator("{0} = {1} ({2})"));
+			pp.setLabelGenerator(new StandardPieSectionLabelGenerator("{0} = {1} ({2})") {
+				@Override
+				protected Object[] createItemArray(final PieDataset dataset, final Comparable key) {
+					final Object[] result = super.createItemArray(dataset, key);
+					result[0] = getSerieDisplayLabel(scope, key);
+					return result;
+				}
+			});
 			if (properties.getAxesColor() != null) { pp.setLabelLinkPaint(IColor.toAWTColor(properties.getAxesColor())); }
 			pp.setLabelFont(properties.getTickFont());
 			if (properties.getLabelTextColor() != null) { pp.setLabelPaint(IColor.toAWTColor(properties.getLabelTextColor())); }

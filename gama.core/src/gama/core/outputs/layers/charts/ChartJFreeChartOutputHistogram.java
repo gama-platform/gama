@@ -103,10 +103,10 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 		source.setUseSize(scope, false);
 	}
 
-	static class LabelGenerator extends StandardCategoryItemLabelGenerator {
+	class LabelGenerator extends StandardCategoryItemLabelGenerator {
 		@Override
 		public String generateLabel(final CategoryDataset dataset, final int series, final int category) {
-			return dataset.getRowKey(series).toString();
+			return getSerieDisplayLabel(null, dataset.getRowKey(series));
 		}
 	}
 
@@ -215,7 +215,7 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 				if (properties.isYLogscale() && yValues.get(i) <= 0) {
 					throw GamaRuntimeException.warning("Log scale with <=0 value:" + yValues.get(i), scope);
 				}
-				serie.addValue(yValues.get(i), serieid, cValues.get(i));
+				serie.addValue(yValues.get(i), serieid, new ChartCategoryKey(i, cValues.get(i)));
 			}
 		} finally {
 			serie.setNotify(oldNotify);
