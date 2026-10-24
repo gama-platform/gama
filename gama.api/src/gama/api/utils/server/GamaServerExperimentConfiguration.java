@@ -18,8 +18,44 @@ import org.java_websocket.WebSocket;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 3 nov. 2023
  */
-public record GamaServerExperimentConfiguration(WebSocket socket, String expId, boolean hasConsole, boolean hasStatus,
-		boolean hasDialog, boolean hasRuntime) implements IServerConfiguration {
+public final class GamaServerExperimentConfiguration implements IServerConfiguration {
+
+	private final WebSocket socket;
+	private final String expId;
+	private final boolean hasConsole;
+	private volatile boolean hasStatus;
+	private final boolean hasDialog;
+	private final boolean hasRuntime;
+
+	public GamaServerExperimentConfiguration(final WebSocket socket, final String expId, final boolean hasConsole,
+			final boolean hasStatus, final boolean hasDialog, final boolean hasRuntime) {
+		this.socket = socket;
+		this.expId = expId;
+		this.hasConsole = hasConsole;
+		this.hasStatus = hasStatus;
+		this.hasDialog = hasDialog;
+		this.hasRuntime = hasRuntime;
+	}
+
+	@Override
+	public WebSocket socket() { return socket; }
+
+	@Override
+	public String expId() { return expId; }
+
+	@Override
+	public boolean hasConsole() { return hasConsole; }
+
+	@Override
+	public boolean hasStatus() { return hasStatus; }
+
+	public void setStatusEnabled(final boolean enabled) { hasStatus = enabled; }
+
+	@Override
+	public boolean hasDialog() { return hasDialog; }
+
+	@Override
+	public boolean hasRuntime() { return hasRuntime; }
 
 	/**
 	 * Clones the current config with an exp id.
@@ -32,7 +68,7 @@ public record GamaServerExperimentConfiguration(WebSocket socket, String expId, 
 	 */
 	@Override
 	public GamaServerExperimentConfiguration withExpId(final String experimentID) {
-		return new GamaServerExperimentConfiguration(socket, experimentID, hasConsole, hasStatus, hasDialog,
+		return new GamaServerExperimentConfiguration(socket, experimentID, hasConsole, hasStatus(), hasDialog,
 				hasRuntime);
 	}
 
@@ -47,6 +83,6 @@ public record GamaServerExperimentConfiguration(WebSocket socket, String expId, 
 	 */
 	@Override
 	public GamaServerExperimentConfiguration withSocket(final WebSocket s) {
-		return new GamaServerExperimentConfiguration(s, expId, hasConsole, hasStatus, hasDialog, hasRuntime);
+		return new GamaServerExperimentConfiguration(s, expId, hasConsole, hasStatus(), hasDialog, hasRuntime);
 	}
 }

@@ -62,6 +62,9 @@ public class CommandExecutor implements ICommandExecuter {
 			entry(EXIT, DefaultServerCommands::EXIT), entry(DOWNLOAD, DefaultServerCommands::DOWNLOAD),
 			entry(UPLOAD, DefaultServerCommands::UPLOAD), entry(ASK, DefaultServerCommands::ASK),
 			entry(VALIDATE, DefaultServerCommands::VALIDATE), entry(DESCRIBE, DefaultServerCommands::DESCRIBE),
+			entry(ISocketCommand.SIMULATION_STATUS_SUBSCRIBE, DefaultServerCommands::SIMULATION_STATUS_SUBSCRIBE),
+			entry(ISocketCommand.SIMULATION_STATUS_UNSUBSCRIBE, DefaultServerCommands::SIMULATION_STATUS_UNSUBSCRIBE),
+			entry(ISocketCommand.SIMULATION_STATUS_REQUEST, DefaultServerCommands::SIMULATION_STATUS_REQUEST),
 			entry(ISocketCommand.SERVER_LOG, DefaultServerCommands::SERVER_LOG));
 
 	/**

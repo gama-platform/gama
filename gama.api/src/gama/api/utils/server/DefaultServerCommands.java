@@ -85,6 +85,54 @@ public class DefaultServerCommands {
 			return new CommandResponse(UnableToExecuteRequest, e.getMessage(), map, false);
 		}
 	}
+
+	public static GamaServerMessage SIMULATION_STATUS_SUBSCRIBE(final IGamaServer server, final WebSocket socket,
+			final Map<String, Object> map) {
+		return setSimulationStatusSubscription(server, socket, map, true);
+	}
+
+	public static GamaServerMessage SIMULATION_STATUS_UNSUBSCRIBE(final IGamaServer server, final WebSocket socket,
+			final Map<String, Object> map) {
+		return setSimulationStatusSubscription(server, socket, map, false);
+	}
+
+	private static GamaServerMessage setSimulationStatusSubscription(final IGamaServer server, final WebSocket socket,
+			final Map<String, Object> map, final boolean enabled) {
+		try {
+			final IExperimentSpecies experiment = retrieveOwnedExperiment(server, socket, map);
+			final var configuration = (GamaServerExperimentConfiguration) experiment.getAgent().getScope()
+					.getServerConfiguration();
+			configuration.setStatusEnabled(enabled);
+			return new CommandResponse(CommandExecutedSuccessfully, Map.of("status", enabled), map, false);
+		} catch (final CommandException e) {
+			return e.getResponse();
+		}
+	}
+
+	public static GamaServerMessage SIMULATION_STATUS_REQUEST(final IGamaServer server, final WebSocket socket,
+			final Map<String, Object> map) {
+		try {
+			final IExperimentSpecies experiment = retrieveOwnedExperiment(server, socket, map);
+			final var configuration = experiment.getAgent().getScope().getServerConfiguration();
+			return new GamaServerMessage(MessageType.SimulationStatus, GAMA.getExperimentState(experiment).name(),
+					configuration.expId());
+		} catch (final CommandException e) {
+			return e.getResponse();
+		}
+	}
+
+	private static IExperimentSpecies retrieveOwnedExperiment(final IGamaServer server, final WebSocket socket,
+			final Map<String, Object> map) throws CommandException {
+		final IExperimentSpecies experiment = server.retrieveExperimentPlan(socket, map);
+		if (experiment == null || experiment.getAgent() == null || experiment.getAgent().getScope() == null)
+			throw new CommandException(new CommandResponse(UnableToExecuteRequest,
+					"Unable to find an experiment owned by this connection", map, false));
+		final var configuration = experiment.getAgent().getScope().getServerConfiguration();
+		if (!(configuration instanceof GamaServerExperimentConfiguration) || configuration.socket() != socket)
+			throw new CommandException(new CommandResponse(UnableToExecuteRequest,
+					"Unable to find an experiment owned by this connection", map, false));
+		return experiment;
+	}
 	
 	/**
 	 * Load.

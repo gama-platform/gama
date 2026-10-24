@@ -31,18 +31,20 @@ import gama.api.types.map.GamaMapFactory;
 import gama.api.ui.IConsoleListener;
 import gama.api.ui.IStatusDisplayer;
 import gama.api.ui.NullGuiHandler;
+import gama.api.utils.server.CommandExecutor;
 import gama.api.utils.server.DefaultServerCommands;
 import gama.api.utils.server.GamaServerConsoleListener;
 import gama.api.utils.server.GamaServerExperimentConfiguration;
 import gama.api.utils.server.GamaServerMessager;
 import gama.api.utils.server.GamaServerStatusDisplayer;
 import gama.api.utils.server.IGamaServer;
+import gama.api.utils.server.ISocketCommand;
 import gama.api.utils.server.MessageType;
 import gama.api.utils.server.ReceivedMessage;
 import gama.api.utils.server.ServerLoadRequest;
 import gama.headless.listener.HeadlessLoadCommand;
 
-/** Regression checks for #394. Invoke run() after initializing the runtime, before starting a server. */
+/** Regression checks for #15 and #394. Invoke run() after initializing the runtime, before starting a server. */
 public final class ServerLoadCommandTest {
 
 	private static void check(final boolean condition, final String message) {
@@ -62,6 +64,10 @@ public final class ServerLoadCommandTest {
 	public static void run() throws Exception {
 		final var previousGui = GAMA.getHeadlessGui();
 		final var previousServer = GAMA.getServer();
+		check(CommandExecutor.getDefaultCommands().containsKey(ISocketCommand.SIMULATION_STATUS_SUBSCRIBE)
+				&& CommandExecutor.getDefaultCommands().containsKey(ISocketCommand.SIMULATION_STATUS_UNSUBSCRIBE)
+				&& CommandExecutor.getDefaultCommands().containsKey(ISocketCommand.SIMULATION_STATUS_REQUEST),
+				"All simulation status commands must be registered");
 		check(previousServer == null, "Run before starting a server");
 		final String previousDirectory = System.getProperty("user.dir");
 		final var events = new CopyOnWriteArrayList<String>();
@@ -144,6 +150,50 @@ public final class ServerLoadCommandTest {
 			check(plan.getAgent().getScope().getServerConfiguration().socket() == socket,
 					"The experiment must retain the requesting socket");
 			check(count(events, MessageType.SimulationOutput) == 1, "Init output must reach the configured client");
+
+			events.clear();
+			final IGamaServer commandServer = (IGamaServer) Proxy.newProxyInstance(IGamaServer.class.getClassLoader(),
+					new Class<?>[] { IGamaServer.class }, (p, method, args) -> {
+						if ("retrieveExperimentPlan".equals(method.getName())) return plan;
+						throw new AssertionError("Unexpected server call: " + method);
+					});
+			final var subscriptionCommand = new ReceivedMessage("", Map.of("type",
+					ISocketCommand.SIMULATION_STATUS_SUBSCRIBE, "exp_id", "exp"));
+			final var subscriptionResponse =
+					DefaultServerCommands.SIMULATION_STATUS_SUBSCRIBE(commandServer, socket, subscriptionCommand);
+			check(subscriptionResponse.type == MessageType.CommandExecutedSuccessfully
+					&& ((GamaServerExperimentConfiguration) plan.getAgent().getScope().getServerConfiguration())
+							.hasStatus(),
+					"Status subscription must enable status forwarding immediately");
+			new GamaServerStatusDisplayer().informStatus(plan.getAgent().getScope(), "subscribed", null);
+			check(count(events, MessageType.SimulationStatusInform) == 1,
+					"Subscribed status messages must reach the client");
+			final var statusRequest = new ReceivedMessage("",
+					Map.of("type", ISocketCommand.SIMULATION_STATUS_REQUEST, "exp_id", "exp"));
+			final var statusSnapshot =
+					DefaultServerCommands.SIMULATION_STATUS_REQUEST(commandServer, socket, statusRequest);
+			check(statusSnapshot.type == MessageType.SimulationStatus && "PAUSED".equals(statusSnapshot.content)
+					&& "exp".equals(statusSnapshot.exp_id), "Status requests must return the current lifecycle state");
+			final var unsubscribeCommand = new ReceivedMessage("", Map.of("type",
+					ISocketCommand.SIMULATION_STATUS_UNSUBSCRIBE, "exp_id", "exp"));
+			final WebSocket unauthorizedSocket = (WebSocket) Proxy.newProxyInstance(WebSocket.class.getClassLoader(),
+					new Class<?>[] { WebSocket.class }, (p, method, args) -> {
+						throw new AssertionError("Unexpected socket call: " + method);
+					});
+			check(DefaultServerCommands.SIMULATION_STATUS_UNSUBSCRIBE(commandServer, unauthorizedSocket,
+					unsubscribeCommand).type == MessageType.UnableToExecuteRequest
+					&& ((GamaServerExperimentConfiguration) plan.getAgent().getScope().getServerConfiguration())
+							.hasStatus(),
+					"Another connection must not change the experiment's status subscription");
+			final var unsubscribeResponse =
+					DefaultServerCommands.SIMULATION_STATUS_UNSUBSCRIBE(commandServer, socket, unsubscribeCommand);
+			check(unsubscribeResponse.type == MessageType.CommandExecutedSuccessfully
+					&& !((GamaServerExperimentConfiguration) plan.getAgent().getScope().getServerConfiguration())
+							.hasStatus(),
+					"Status unsubscription must disable status forwarding immediately");
+			new GamaServerStatusDisplayer().informStatus(plan.getAgent().getScope(), "unsubscribed", null);
+			check(count(events, MessageType.SimulationStatusInform) == 1,
+					"Unsubscribed status messages must not reach the client");
 
 			for (final String enabled : List.of("", "console", "status", "dialog", "runtime")) {
 				events.clear();

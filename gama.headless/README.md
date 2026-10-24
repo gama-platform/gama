@@ -129,6 +129,25 @@ Forwarding settings are associated with the experiment and its requesting connec
 
 The GUI also sends lifecycle notifications of type `SimulationStatus` (for example `RUNNING` or `PAUSED`). These are control notifications, independent of the `status` option.
 
+### Runtime status subscription and status requests
+
+The `status` load option sets the initial forwarding preference for status-bar messages. The owning client can change it while the experiment is loaded:
+
+```json
+{"type":"simulation_status_subscribe","exp_id":"exp"}
+{"type":"simulation_status_unsubscribe","exp_id":"exp"}
+```
+
+These commands enable or disable forwarding of `SimulationStatusInform`, `SimulationStatusError` and `SimulationStatusNeutral` messages without reloading the experiment. While a simulation is running, commands are synchronized with execution and processed at an experiment step boundary. They do not affect local GUI status output or the GUI's lifecycle `SimulationStatus` notifications. A successful command returns `CommandExecutedSuccessfully` with `content` set to `{"status":true}` or `{"status":false}`. As with other experiment commands, headless clients must provide the `exp_id` returned by `load`; the GUI server has only one current experiment and can resolve it without an `exp_id`. Only the connection that loaded the experiment can change its status subscription or request its current state.
+
+To retrieve the current lifecycle state on demand, send:
+
+```json
+{"type":"simulation_status_request","exp_id":"exp"}
+```
+
+The server replies with a `SimulationStatus` message, for example `{"type":"SimulationStatus","content":"PAUSED","exp_id":"exp"}`. This snapshot is independent of the status-bar subscription, so a client can unsubscribe from status-bar messages and still request the current state. A headless request needs `exp_id`; it is optional in GUI mode.
+
 ### Responses and completion
 
 A successful GUI load returns `CommandExecutedSuccessfully` with the experiment name in `content`. Use that returned string as `exp_id` in subsequent requests. Headless mode returns its generated experiment ID instead. Missing required fields or malformed parameter objects return `MalformedRequest`; missing files, unknown experiments and invalid stop conditions return `UnableToExecuteRequest`.
