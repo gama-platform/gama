@@ -79,6 +79,8 @@ public class NavigatorSearchControl {
 			final Long stamp = bodyMatches.get(resource);
 			return stamp != null && resource.isAccessible() && stamp == resource.getModificationStamp();
 		}
+		if (appliedModelsOnly && (!(o instanceof WrappedGamaFile file)
+				|| !GamlFileExtension.isAny(file.getResource().getName()))) return false;
 		if (!(o instanceof VirtualContent<?> content)) return false;
 		return switch (content.getType()) {
 			case FILE, FOLDER, PROJECT, VIRTUAL_FOLDER ->
@@ -202,8 +204,17 @@ public class NavigatorSearchControl {
 	/** The applied body. */
 	private boolean appliedBody;
 
+	/** Whether title searches are restricted to model files. */
+	private boolean modelsOnly;
+
+	/** The applied model-file restriction. */
+	private boolean appliedModelsOnly;
+
 	/** The mode. */
 	private SwitchButton mode;
+
+	/** The file scope. */
+	private SwitchButton fileScope;
 
 	/** The search generation. */
 	private volatile long searchGeneration;
@@ -273,7 +284,7 @@ public class NavigatorSearchControl {
 
 		final Composite parent = new Composite(toolbar, SWT.NONE);
 		final Color c = toolbar.getBackground();
-		final GridLayout layout = new GridLayout(2, false);
+		final GridLayout layout = new GridLayout(3, false);
 		layout.marginWidth = 0;
 		layout.marginHeight = 0;
 		// layout.horizontalSpacing = 4;
@@ -295,6 +306,17 @@ public class NavigatorSearchControl {
 				+ "(case-insensitive; unsaved editor changes are not searched).");
 		mode.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
 			searchBody = !mode.getSelection();
+			fileScope.setEnabled(!searchBody);
+			scheduleSearch(200);
+		}));
+		fileScope = new SwitchButton(parent, SWT.CHECK, IGamaColors.NICE.color(), IGamaColors.NICE.color(),
+				new String[] { "All", "Models" });
+		fileScope.setBackground(c);
+		fileScope.setSelection(true);
+		fileScope.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+		fileScope.setToolTipText("Title search: include all files or only model files.");
+		fileScope.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+			modelsOnly = !fileScope.getSelection();
 			scheduleSearch(200);
 		}));
 		toolbar.control(parent, SWT.DEFAULT);
@@ -362,6 +384,7 @@ public class NavigatorSearchControl {
 		final long generation = searchGeneration;
 		final String query = pattern;
 		final boolean body = searchBody;
+		final boolean onlyModels = modelsOnly;
 		final var display = find.getDisplay();
 		if (body) {
 			pendingSearch = new Job("Search saved model source") {
@@ -393,7 +416,7 @@ public class NavigatorSearchControl {
 					}
 					if (monitor.isCanceled() || generation != searchGeneration) return Status.CANCEL_STATUS;
 					if (!display.isDisposed()) {
-						display.asyncExec(() -> applySearch(query, true, matches, generation));
+						display.asyncExec(() -> applySearch(query, true, onlyModels, matches, generation));
 					}
 					return Status.OK_STATUS;
 				}
@@ -402,7 +425,7 @@ public class NavigatorSearchControl {
 			pendingSearch = new UIJob(display, "Search navigator titles") {
 				@Override
 				public IStatus runInUIThread(final IProgressMonitor monitor) {
-					if (!monitor.isCanceled()) { applySearch(query, false, Map.of(), generation); }
+					if (!monitor.isCanceled()) { applySearch(query, false, onlyModels, Map.of(), generation); }
 					return Status.OK_STATUS;
 				}
 			};
@@ -466,13 +489,14 @@ public class NavigatorSearchControl {
 	 * @param generation
 	 *            the generation
 	 */
-	private void applySearch(final String query, final boolean body, final Map<IFile, Long> matches,
-			final long generation) {
+	private void applySearch(final String query, final boolean body, final boolean onlyModels,
+			final Map<IFile, Long> matches, final long generation) {
 		if (generation != searchGeneration || find.isDisposed() || treeViewer == null
 				|| treeViewer.getControl().isDisposed())
 			return;
 		appliedPattern = query;
 		appliedBody = body;
+		appliedModelsOnly = onlyModels;
 		bodyMatches = matches;
 		refreshSearch();
 	}
