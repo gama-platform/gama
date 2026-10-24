@@ -293,6 +293,11 @@ public class DefaultServerCommands {
 		} catch (CommandException e) {
 			return e.getResponse();
 		}
+		if (!plan.isMemorize()) {
+			return new CommandResponse(UnableToExecuteRequest,
+					"Unable to step back: stepbacks are not allowed on non-record experiments; declare the experiment with 'record: true'",
+					map, false);
+		}
 		final int nb_step;
 		if (map.get(NB_STEP) != null && !"".equals(("" + map.get(NB_STEP)).trim())) {
 			nb_step = Integer.parseInt("" + map.get(NB_STEP));

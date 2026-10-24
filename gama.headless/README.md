@@ -196,6 +196,10 @@ Output from `global init` can arrive **before** the load response. Always instal
 
 Send `{"type":"play","exp_id":"exp"}` to run the experiment. GUI experiments retain their usual autorun preference; declare `autorun: false` if the client should start execution explicitly.
 
+The `stepBack` command (or its `back` alias) requires an experiment declared with `record: true`.
+In both GUI and headless modes, non-record experiments return `UnableToExecuteRequest` with an
+explanation, whether `sync` is omitted, `false`, or `true`; no backward step is submitted to the controller.
+
 When the stop condition becomes true, the GUI experiment pauses and emits one `SimulationEnded` event with empty `content` and its `exp_id`. No further steps are executed until the experiment is reloaded. The displays remain open for inspection.
 
 Send a `reload` request to initialize another run. Forwarding settings are retained. `reload` can supply new `parameters` in either supported format and `until`; parameters omitted from reload retain their current values. An omitted or empty reload `until` clears the previous stop condition, so resend it to retain a limit.
