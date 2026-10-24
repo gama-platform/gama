@@ -22,6 +22,7 @@ import com.google.common.collect.Lists;
 
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.statements.IStatement;
+import gama.api.gaml.symbols.ISymbol;
 import gama.api.gaml.symbols.IVariable;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
@@ -85,8 +86,17 @@ public class GridPopulation extends AbstractPopulation<IAgent> implements IPopul
 	 */
 	@Override
 	public void computeTopology(final IScope scope) {
-		topology = GamaTopologyFactory.createGrid(scope, species, host);
-		agentsContainer = (GamaSpatialMatrix) topology.getPlaces();
+		final ISymbol previous = scope.getCurrentSymbol();
+		scope.push(species);
+		try {
+			topology = GamaTopologyFactory.createGrid(scope, species, host);
+			agentsContainer = (GamaSpatialMatrix) topology.getPlaces();
+		} catch (final RuntimeException e) {
+			throw GamaRuntimeException.create(e, scope);
+		} finally {
+			scope.pop(species);
+			scope.setCurrentSymbol(previous);
+		}
 	}
 
 	/**

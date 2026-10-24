@@ -94,7 +94,7 @@ import gama.core.util.matrix.GamaFloatMatrix;
 		buffer_content = IType.GEOMETRY,
 		buffer_index = IType.INT,
 		concept = { IConcept.GRID, IConcept.ASC, IConcept.TIF, IConcept.FILE },
-		doc = @doc ("Represents .asc or .tif files that contain grid descriptions"))
+		doc = @doc ("Represents .asc or .tif files that contain grid descriptions. ASC files may use CELLSIZE or separate DX and DY values, with spaces or tabs as separators. NODATA_value is optional."))
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 
@@ -259,7 +259,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 	 *            the scope
 	 */
 	private void createCoverage(final IScope scope) {
-		if (coverage == null) {
+		if (coverage == null && ascData == null) {
 			final File gridFile = getFile(scope);
 			gridFile.setReadable(true);
 			InputStream fis = null;
@@ -295,8 +295,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 	 * @date 31 août 2023
 	 */
 	private Double doubleVal(final String line) {
-		String[] l = line.split(" ");
-		if (l.length == 1) { l = line.split("t"); }
+		String[] l = line.trim().split("\\s+");
 		if (l.length > 1) return Double.valueOf(l[l.length - 1]);
 		return null;
 	}
@@ -312,8 +311,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 	 */
 	private Integer intVal(final String line) {
 
-		String[] l = line.split(" ");
-		if (l.length == 1) { l = line.split("t"); }
+		String[] l = line.trim().split("\\s+");
 		if (l.length > 1) return Integer.valueOf(l[l.length - 1]);
 		return null;
 	}
@@ -327,6 +325,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 	 * @date 31 août 2023
 	 */
 	private void customAscReader(final IScope scope) {
+		int lineNumber = 0;
 		try (Scanner scanner = new Scanner(getFile(scope))) {
 			boolean headingComplete = false;
 			Integer nbCols = null;
@@ -341,16 +340,18 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 			ascInfo = new Double[4];
 			int j = 0;
 			while (scanner.hasNextLine()) {
-				String line = scanner.nextLine();
-				line = line.toLowerCase();
+				lineNumber++;
+				String line = scanner.nextLine().trim();
+				if (line.isEmpty()) { continue; }
+				final String header = line.toLowerCase(java.util.Locale.ROOT);
 				if (!headingComplete) {
-					if (dX == null && line.contains("dx")) {
+					if (dX == null && header.startsWith("dx")) {
 						dX = doubleVal(line);
 						ascInfo[0] = dX;
-					} else if (dY == null && line.contains("dy")) {
+					} else if (dY == null && header.startsWith("dy")) {
 						dY = doubleVal(line);
 						ascInfo[1] = dY;
-					} else if ((dX == null || dY == null) && line.contains("cellsize")) {
+					} else if ((dX == null || dY == null) && header.startsWith("cellsize")) {
 						Double cellSize = doubleVal(line);
 						if (dX == null) {
 							dX = cellSize;
@@ -360,39 +361,43 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 							dY = cellSize;
 							ascInfo[1] = dY;
 						}
-					} else if (nbCols == null && line.contains("ncols")) {
+					} else if (nbCols == null && header.startsWith("ncols")) {
 						nbCols = intVal(line);
-					} else if (nbRows == null && line.contains("nrows")) {
+					} else if (nbRows == null && header.startsWith("nrows")) {
 						nbRows = intVal(line);
-					} else if (noDataD == null && (line.contains("nodata") || line.contains("nodata_value"))) {
-						noDataD = line.contains("nan") ? Double.NaN : doubleVal(line);
-					} else if (xCorner == null && xCenter == null && line.contains("xllcorner")) {
+					} else if (noDataD == null && header.startsWith("nodata")) {
+						noDataD = header.contains("nan") ? Double.NaN : doubleVal(line);
+					} else if (xCorner == null && xCenter == null && header.startsWith("xllcorner")) {
 						xCorner = doubleVal(line);
 						ascInfo[2] = xCorner;
-					} else if (yCorner == null && yCenter == null && line.contains("yllcorner")) {
+					} else if (yCorner == null && yCenter == null && header.startsWith("yllcorner")) {
 						yCorner = doubleVal(line);
-					} else if (xCorner == null && xCenter == null && line.contains("xllcenter")) {
+					} else if (xCorner == null && xCenter == null && header.startsWith("xllcenter")) {
 						xCenter = doubleVal(line);
-					} else if (yCorner == null && yCenter == null && line.contains("yllcenter")) {
+					} else if (yCorner == null && yCenter == null && header.startsWith("yllcenter")) {
 						yCenter = doubleVal(line);
-					} else if (line.replace(" ", "").length() > 0) {
-						if (nbCols == null || nbCols == 0 || nbRows == null || nbRows == 0)
+					} else {
+						if (nbCols == null || nbCols <= 0 || nbRows == null || nbRows <= 0)
 							throw GamaRuntimeException.error("The format of " + getName(scope)
-									+ " is not correct. Error: NCOLS and NROWS have to be defined", scope);
-						if (xCenter != null && dX != null) {
-							xCorner = xCenter - nbCols * dX / 2.0;
+									+ " is not correct. Error: NCOLS and NROWS must be positive", scope);
+						if (dX == null || dY == null || !Double.isFinite(dX) || !Double.isFinite(dY)
+								|| dX <= 0 || dY <= 0)
+							throw GamaRuntimeException.error("The format of " + getName(scope)
+									+ " is not correct. Error: positive CELLSIZE or DX and DY must be defined", scope);
+						if (xCenter != null) {
+							xCorner = xCenter - dX / 2.0;
 							ascInfo[2] = xCorner;
 						}
-						if (yCenter != null && dY != null) { yCorner = yCenter - nbRows * dY / 2.0; }
-
-						if (yCorner != null && dY != null) { ascInfo[3] = yCorner + nbRows * dY; }
+						if (yCenter != null) { yCorner = yCenter - dY / 2.0; }
 
 						ascData = (GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(nbCols, nbRows);
-						if (noData != null) { this.noData = noDataD; }
+						this.noData = noDataD == null ? IField.NO_NO_DATA : noDataD;
 						double xC = xCorner == null ? 0 : xCorner;
 						double yC = yCorner == null ? 0 : yCorner;
+						ascInfo[2] = xC;
+						ascInfo[3] = yC + nbRows * dY;
 						final IEnvelope env =
-								GamaEnvelopeFactory.of(xC, yC, xC + nbCols * (dX == null ? 0 : dX), ascInfo[3], 0, 0);
+								GamaEnvelopeFactory.of(xC, xC + nbCols * dX, yC, yC + nbRows * dY, 0, 0);
 						computeProjection(scope, env);
 						numRows = nbRows;
 						numCols = nbCols;
@@ -401,28 +406,30 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 					}
 				}
 				if (headingComplete) {
-					String[] l = line.split(" ");
+					String[] l = line.split("\\s+");
+					if (j >= nbRows || l.length != nbCols)
+						throw GamaRuntimeException.error("The format of " + getName(scope)
+								+ " is not correct. Error: raster data does not match NCOLS and NROWS", scope);
 					for (int i = 0; i < l.length; i++) {
-						if (l[i].isEmpty()) { continue; }
-						if (noDataD != null && noDataD.isNaN()) {
-							Double v = 0.0;
-							try {
-								v = Double.valueOf(l[i]);
-							} catch (Exception e) {
-								v = Double.NaN;
-							}
-							ascData.set(scope, i, j, v);
-						} else {
-							ascData.set(scope, i, j, Double.valueOf(l[i]));
-						}
-
+						ascData.set(scope, i, j, "nan".equalsIgnoreCase(l[i]) ? Double.NaN : Double.valueOf(l[i]));
 					}
 					j++;
 				}
 			}
+			if (!headingComplete || j != nbRows)
+				throw GamaRuntimeException.error("The format of " + getName(scope)
+						+ " is not correct. Error: incomplete raster data", scope);
 		} catch (final FileNotFoundException e2) {
 			throw GamaRuntimeException
 					.error("The format of " + getName(scope) + " is not correct. Error: " + e2.getMessage(), scope);
+		} catch (final RuntimeException e) {
+			ascData = null;
+			final GamaRuntimeException error = e instanceof NumberFormatException
+					? GamaRuntimeException.error("The format of " + getName(scope)
+							+ " is not correct. Error: invalid numeric value: " + e.getMessage(), scope)
+					: GamaRuntimeException.create(e, scope);
+			error.addContext("Reading " + getName(scope) + " at ASC line " + lineNumber);
+			throw error;
 		}
 
 	}
@@ -983,6 +990,8 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 		super.invalidateContents();
 		if (coverage != null) { coverage.dispose(true); }
 		coverage = null;
+		ascData = null;
+		ascInfo = null;
 	}
 
 	/**
