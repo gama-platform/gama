@@ -199,6 +199,10 @@ public final class SharedSceneTest {
 	}
 
 	public static void main(final String[] args) {
+		final var display = gama.ui.display.opengl.view.SWTOpenGLDisplaySurface.class
+				.getAnnotation(gama.annotations.display.class);
+		check(display.is3D() && java.util.Arrays.asList(display.value()).containsAll(List.of("opengl", "3d", "3D")),
+				"Both 3d and 3D aliases must register the OpenGL factory and its 3D metadata");
 		checkCachedLayers();
 		checkOverlay(true);
 		checkOverlay(false);
