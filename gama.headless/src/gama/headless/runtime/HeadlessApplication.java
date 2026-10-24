@@ -237,33 +237,40 @@ public class HeadlessApplication implements IApplication {
 	private static void showHelp() {
 		showVersion();
 		DEBUG.ON();
-		DEBUG.LOG("sh ./gama-headless.sh [Options]\n" + "\nList of available options:" + "\n\t=== Headless Options ==="
+		DEBUG.LOG("gama-headless[.bat|.sh] [Options]\n" + "\nList of available options:"
+				+ "\n\t=== General Options ==="
 				+ "\n\t\t-m [mem]                      -- allocate memory (ex 2048m)"
 				+ "\n\t\t-ws [./path/to/ws]            -- manually set a workspace" + "\n\t\t" + CONSOLE_PARAMETER
 				+ "                            -- start the console to write xml parameter file" + "\n\t\t"
 				+ VERBOSE_PARAMETER + "                            -- verbose mode" + "\n\t\t" + THREAD_PARAMETER
-				+ " [core]                   -- set the number of core available for experimentation" + "\n\t\t"
-				+ TUNNELING_PARAMETER
-				+ "                            -- start pipeline to interact with another framework" + "\n\t\t"
-				+ PING_INTERVAL + " [pingInterval] "
+				+ " [core]                   -- set the number of cores available for experimentation"
+				+ "\n\t\t" + STEPS_PARAMETER + " [steps]                 -- set the number of steps to run"
+				+ "\n\t\t" + TUNNELING_PARAMETER
+				+ "                            -- start a pipeline to interact with another framework" + "\n\t=== Server Options ==="
+				+ "\n\t\t" + SOCKET_PARAMETER + " [port]             -- start an unencrypted WebSocket server"
+				+ "\n\t\t" + SSOCKET_PARAMETER + " [port]            -- start a secure WebSocket server"
+				+ "\n\t\t" + SSOCKET_PARAMETER_JKSPATH + " [path]             -- keystore used by the secure server"
+				+ "\n\t\t" + SSOCKET_PARAMETER_SPWD + " [password]          -- keystore password"
+				+ "\n\t\t" + SSOCKET_PARAMETER_KPWD + " [password]          -- private-key password"
+				+ "\n\t\t" + PING_INTERVAL + " [pingInterval] "
 				+ "-- when in server mode (socket parameter set), defines in milliseconds the time "
 				+ "between each ping packet sent to clients to keep alive the connection. "
-				+ "The default value is 10000, set to -1 to deactivate this behaviour." + "\n\t\t"
+				+ "The default value is 10000; set to -1 to deactivate this behaviour." + "\n\t\t"
+				+ NO_DELAY_PARAMETER + "                     -- disable delayed WebSocket message sending" + "\n\t\t"
 				+ SERVER_LOG_PARAMETER + "                  -- enable server exchange logging for this launch"
 				+ " (disabled by default)" + "\n\t\t"
 				+ SERVER_LOG_DIRECTORY_PARAMETER + " [path] -- override the exchange log directory"
 				+ " (default ~/.gama/server-logs; does not enable logging)" + "\n\t\t"
 				+ NO_SERVER_LOG_PARAMETER + "               -- disable server exchange logging;"
-				+ " overrides -server-log" + "\n\t=== Infos ===" + "\n\t\t"
+				+ " overrides -server-log" + "\n\t=== Information ===" + "\n\t\t"
 				+ HELP_PARAMETER + "                         -- get the help of the command line" + "\n\t\t"
-				+ GAMA_VERSION + "                      -- get the the version of gama" + "\n\t=== Library Runner ==="
+				+ GAMA_VERSION + "                      -- get the version of GAMA" + "\n\t=== Library Runner ==="
 				+ "\n\t\t" + VALIDATE_LIBRARY_PARAMETER
 				+ "                     -- invokes GAMA to validate models present in built-in library and plugins"
 				+ "\n\t\t" + TEST_LIBRARY_PARAMETER
 				+ "                         -- invokes GAMA to execute the tests present in built-in library and plugins and display their results"
-				+ "\n\t=== GAMA Headless Runner ===" + "\n\t\t" + SOCKET_PARAMETER
-				+ " [socketPort]          -- starts socket pipeline to interact with another framework" + "\n\t\t"
-				+ BATCH_PARAMETER + " [experimentName] [modelFile.gaml]"
+				+ "\n\t=== GAMA Headless Runner ===" + "\n\t\t" + BATCH_PARAMETER
+				+ " [experimentName] [modelFile.gaml]"
 				+ "\n\t\t                              -- Run batch experiment in headless mode"
 				// + "\n\t\t" + GAML_PARAMETER + " [experimentName] [modelFile.gaml]"
 				// + "\n\t\t -- Run single gaml experiment in headless mode"

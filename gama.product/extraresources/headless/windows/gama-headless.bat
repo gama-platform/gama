@@ -14,9 +14,9 @@ SETLOCAL enabledelayedexpansion
 
 :TOP
 
-	IF (%1) == () GOTO NEXT_CODE
+	IF "%~1" == "" GOTO NEXT_CODE
 
-	if %1 EQU -m (
+	if "%~1"=="-m" (
 		set memory=%2
 		SHIFT
 	) else IF "%~1"=="-ws" (
@@ -30,6 +30,8 @@ SETLOCAL enabledelayedexpansion
 GOTO TOP
 
 :NEXT_CODE
+if "!param!"=="" set "param=-help"
+
 echo ******************************************************************
 echo * GAMA version 0.0.0-SNAPSHOT                                         *
 echo * http://gama-platform.org                                       *
@@ -83,7 +85,7 @@ set "tempWorkspace=false"
 IF "%userWorkspace%"=="" (
     set workDir=%workDir%
     if "!param!"=="" set "tempWorkspace=true"
-    for %%c in (-help -version -validate -test -xml -batch -write-xmi -socket) do (
+    for %%c in (-help -version -validate -test -xml -batch -write-xmi -socket -ssocket) do (
         if not "!param!"=="!param:%%c=!" set "tempWorkspace=true"
     )
 ) ELSE (

@@ -4,6 +4,27 @@ GAMA's WebSocket server can control experiments in the **desktop GUI as well as 
 
 For the complete command protocol and headless startup instructions, see [Headless Server](https://gama-platform.org/wiki/next/HeadlessServer).
 
+### Headless command-line help and server options
+
+Run `gama-headless.bat -help` on Windows or `./gama-headless.sh -help` on Linux/macOS to print the local command-line options. Running either launcher with no arguments prints the same help. These are process-startup options, not WebSocket requests:
+
+| Option | Purpose |
+|---|---|
+| `-m <memory>` | Set the maximum memory (for example, `2048m`). |
+| `-ws <path>` | Use the specified workspace. |
+| `-c`, `-v`, `-p` | Enable the XML parameter console, verbose mode, or external-framework pipeline. |
+| `-hpc <cores>` | Set the number of cores available for experimentation. |
+| `-steps <count>` | Set the number of steps to run. |
+| `-socket <port>` | Start an unencrypted WebSocket server. |
+| `-ssocket <port>` | Start a secure WebSocket server. |
+| `-jks <path> -spwd <password> -kpwd <password>` | Configure the secure server's keystore and passwords. |
+| `-ping_interval <ms>` | Set the server ping interval; `-1` disables pings. |
+| `-no-delay` | Disable delayed WebSocket message sending. |
+| `-server-log`, `-no-server-log` | Enable or disable exchange logging for this launch. Disable takes precedence. |
+| `-server-log-directory <path>` | Select the exchange-log directory; this does not enable logging. |
+
+There is no WebSocket `help` command: a connected client cannot query a server for its launch options. The client protocol operates after startup and is documented below, including the `load` options, experiment commands, status subscriptions and server-log control. Plug-ins may contribute additional commands, so the command set can vary by installation.
+
 ## Enable the desktop server
 
 In GAMA's preferences, open **Network > Server mode**, enable **Enable GAMA server mode**, and check **Port to which GAMA server is listening** (default: `1000`). Connect to `ws://localhost:1000`, substituting your configured port.
