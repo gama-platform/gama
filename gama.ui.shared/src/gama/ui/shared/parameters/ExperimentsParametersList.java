@@ -25,6 +25,7 @@ import gama.api.kernel.simulation.ITopLevelAgent;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.color.IColor;
 import gama.api.ui.IExperimentDisplayable;
+import gama.api.ui.IOutput;
 import gama.api.ui.IOutputManager;
 import gama.api.utils.interfaces.ICategory;
 import gama.api.utils.prefs.GamaPreferences;
@@ -47,7 +48,7 @@ public class ExperimentsParametersList extends EditorsList<String> {
 	final Map<String, Boolean> activations = new HashMap<>();
 
 	/** The monitors. */
-	final Map<MonitorOutput, MonitorDisplayer> monitors = new HashMap<>();
+	final Map<MonitorOutput, MonitorDisplayer> monitors = new LinkedHashMap<>();
 
 	/** The categories. */
 	final Map<String, EditorsCategory> categories = new LinkedHashMap<>();
@@ -64,14 +65,40 @@ public class ExperimentsParametersList extends EditorsList<String> {
 		if (agent == null || agent.getExperiment() == null) return;
 		IExperimentAgent exp = agent.getExperiment();
 		final List<IExperimentDisplayable> paramsAndCommands = new ArrayList<>(exp.getDisplayables());
-		if (agent.isSimulation() && GamaPreferences.Runtime.CORE_MONITOR_PARAMETERS.getValue()) {
-			IOutputManager som = agent.getOutputManager();
-			if (som != null) {
-				paramsAndCommands.addAll((Collection<? extends IExperimentDisplayable>) som.getMonitors());
-			}
-		}
 		Collections.sort(paramsAndCommands);
 		add(exp, paramsAndCommands);
+		setMonitors(agent);
+	}
+
+	/**
+	 * Rebinds monitors to the selected agent, including outputs initialized after selection.
+	 *
+	 * @return whether the monitor controls need to be rebuilt
+	 */
+	public boolean setMonitors(final ITopLevelAgent agent) {
+		final List<MonitorOutput> selected = new ArrayList<>();
+		if (agent != null && GamaPreferences.Runtime.CORE_MONITOR_PARAMETERS.getValue()) {
+			final Iterable<IOutputManager> managers = agent instanceof IExperimentAgent experiment
+					? experiment.getAllSimulationOutputs() : Collections.singletonList(agent.getOutputManager());
+			for (final IOutputManager manager : managers) {
+				if (manager == null) continue;
+				for (final IOutput output : manager.getMonitors()) {
+					if (output instanceof MonitorOutput monitor && monitor.isOpen()) { selected.add(monitor); }
+				}
+			}
+		}
+		if (monitors.size() == selected.size() && monitors.keySet().containsAll(selected)) return false;
+		disposeMonitors();
+		for (final MonitorOutput monitor : selected) { addMonitor(monitor.getScope(), monitor); }
+		return true;
+	}
+
+	/**
+	 * Releases editors without closing their simulation's outputs.
+	 */
+	public void disposeMonitors() {
+		monitors.values().forEach(MonitorDisplayer::dispose);
+		monitors.clear();
 	}
 
 	@Override

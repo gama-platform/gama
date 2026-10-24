@@ -126,14 +126,6 @@ public class MonitorOutput extends AbstractValuedDisplayOutput implements IExper
 			constantColor = Types.COLOR.cast(null, facet.getConstValue(), null, false);
 			return;
 		}
-		if (colorExpression == null) {
-			final ITopLevelAgent sim = GAMA.getSimulation();
-			if (sim != null) {
-				constantColor = sim.getColor();
-			} else {
-				constantColor = GamaColorFactory.GRAY;
-			}
-		}
 	}
 
 	/**
@@ -229,7 +221,10 @@ public class MonitorOutput extends AbstractValuedDisplayOutput implements IExper
 	 */
 	@Override
 	public IColor getColor(final IScope scope) {
-
+		if (colorExpression == null) {
+			final ITopLevelAgent owner = getScope() == null ? null : getScope().getRoot();
+			return owner == null ? GamaColorFactory.GRAY : owner.getColor();
+		}
 		return constantColor == null ? color : constantColor;
 	}
 
