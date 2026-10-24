@@ -537,35 +537,16 @@ public class HeadlessApplication implements IApplication {
 		final String argXMLFile = arg.get(arg.size() - 1);
 
 		final List<IExperimentJob> jb = ExperimentationPlanFactory.buildExperiment(argGamlFile);
-		final ArrayList<IExperimentJob> selectedJob = new ArrayList<>();
-		for (final IExperimentJob j : jb) {
-			if (j.getExperimentName().equals(argExperimentName)) {
-				selectedJob.add(j);
-				break;
-			}
-		}
-
-		if (selectedJob.size() == 0) {
-			DEBUG.ON();
-			DEBUG.ERR("""
-
-					=== ERROR ===\
-
-						GAMA is about to generate an empty XML file.\
-
-						If you want to run a Batch experiment, please check the "-batch" flag.""");
-			System.exit(-1);
-		} else {
-			final Document dd = ExperimentationPlanFactory.buildXmlDocument(selectedJob);
-			final TransformerFactory transformerFactory = TransformerFactory.newInstance();
-			final Transformer transformer = transformerFactory.newTransformer();
-			final DOMSource source = new DOMSource(dd);
-			final File output = new File(argXMLFile);
-			final StreamResult result = new StreamResult(output);
-			transformer.transform(source, result);
-			DEBUG.OFF();
-			DEBUG.LOG("Parameter file saved at: " + output.getAbsolutePath());
-		}
+		final IExperimentJob selectedJob = selectExperimentJob(jb, argExperimentName, argGamlFile);
+		final Document dd = ExperimentationPlanFactory.buildXmlDocument(List.of(selectedJob));
+		final TransformerFactory transformerFactory = TransformerFactory.newInstance();
+		final Transformer transformer = transformerFactory.newTransformer();
+		final DOMSource source = new DOMSource(dd);
+		final File output = new File(argXMLFile);
+		final StreamResult result = new StreamResult(output);
+		transformer.transform(source, result);
+		DEBUG.OFF();
+		DEBUG.LOG("Parameter file saved at: " + output.getAbsolutePath());
 	}
 
 	/**
@@ -751,14 +732,7 @@ public class HeadlessApplication implements IApplication {
 		final List<IExperimentJob> jb =
 				ExperimentationPlanFactory.buildExperiment(argGamlFile, numberOfSteps, numberOfCores);
 
-		ExperimentJob selectedJob = null;
-		for (final IExperimentJob j : jb) {
-			if (j.getExperimentName().equals(argExperimentName)) {
-				selectedJob = (ExperimentJob) j;
-				break;
-			}
-		}
-		if (selectedJob == null) return;
+		final ExperimentJob selectedJob = (ExperimentJob) selectExperimentJob(jb, argExperimentName, argGamlFile);
 		Globals.OUTPUT_PATH = argOutDir;
 
 		selectedJob.setBufferedWriter(new XMLWriter(Globals.OUTPUT_PATH + "/" + Globals.OUTPUT_FILENAME + ".xml"));
@@ -767,6 +741,20 @@ public class HeadlessApplication implements IApplication {
 		processorQueue.shutdown();
 		while (!processorQueue.awaitTermination(100, TimeUnit.MILLISECONDS)) {}
 		System.exit(0);
+	}
+
+	static IExperimentJob selectExperimentJob(final List<IExperimentJob> jobs, final String experimentName,
+			final String modelPath) {
+		for (final IExperimentJob job : jobs) {
+			if (job.getExperimentName().equals(experimentName)) return job;
+		}
+		final List<String> names = jobs.stream().map(IExperimentJob::getExperimentName).distinct().toList();
+		DEBUG.ERR("Experiment '" + experimentName
+				+ "' was not found among the non-batch experiments in model '" + modelPath + "'. Verify its name.\n"
+				+ "Available non-batch experiments: " + (names.isEmpty() ? "(none)" : String.join(", ", names))
+				+ ".\nIf you want to run a Batch experiment, please check the \"-batch\" flag.");
+		System.exit(-1);
+		return null;
 	}
 
 	/**

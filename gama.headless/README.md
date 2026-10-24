@@ -25,6 +25,11 @@ Run `gama-headless.bat -help` on Windows or `./gama-headless.sh -help` on Linux/
 
 There is no WebSocket `help` command: a connected client cannot query a server for its launch options. The client protocol operates after startup and is documented below, including the `load` options, experiment commands, status subscriptions and server-log control. Plug-ins may contribute additional commands, so the command set can vary by installation.
 
+For legacy `-xml <experiment> <model.gaml> <parameters.xml>` generation and
+`-gaml <experiment> <model.gaml> <output-directory>` execution, experiment names are case-sensitive.
+An unknown name produces an error identifying the requested experiment and model, lists the available
+non-batch experiments, and exits with a nonzero status. Batch experiments use `-batch` instead.
+
 ## Enable the desktop server
 
 In GAMA's preferences, open **Network > Server mode**, enable **Enable GAMA server mode**, and check **Port to which GAMA server is listening** (default: `1000`). Connect to `ws://localhost:1000`, substituting your configured port.
