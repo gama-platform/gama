@@ -219,7 +219,7 @@ public class GeometryCache {
 	 */
 	public Integer get(final GamaGeometryFile file) {
 		// DEBUG.OUT("Getting from cache: " + file);
-		return fileCache.getUnchecked(file.getPath(scope));
+		return fileCache.getUnchecked(file.getDrawingCacheKey(scope));
 	}
 
 	/**
@@ -302,10 +302,10 @@ public class GeometryCache {
 	 */
 	public void process(final GamaGeometryFile file) {
 		if (file == null) return;
-		final String path = file.getPath(scope);
-		if (fileCache.getIfPresent(path) != null) return;
-		fileMap.putIfAbsent(path, file);
-		if (!geometriesToProcess.containsKey(path)) { geometriesToProcess.put(path, file); }
+		final String key = file.getDrawingCacheKey(scope);
+		if (fileCache.getIfPresent(key) != null) return;
+		fileMap.putIfAbsent(key, file);
+		geometriesToProcess.putIfAbsent(key, file);
 	}
 
 	/**

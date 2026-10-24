@@ -188,6 +188,12 @@ public class GamaObjFile extends Gama3DGeometryFile {
 
 	}
 
+	@Override
+	public String getDrawingCacheKey(final IScope scope) {
+		// NUL cannot occur in file paths, so distinct OBJ/MTL pairs cannot collide.
+		return getPath(scope) + '\0' + (mtlPath == null ? "" : mtlPath);
+	}
+
 	/**
 	 * Centerit.
 	 */
