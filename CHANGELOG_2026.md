@@ -13,6 +13,14 @@ predicate and name lookups (#161). Public string-based modalities (including cus
 base-argument overrides, and modality-specific insertion/removal effects remain unchanged. Beliefs still perform
 their specialised contradiction and intention handling; emotions retain their separate replacement policy.
 
+### BDI: shared statement execution
+
+The `rule`, `coping`, and `law` statements now share internal condition checks, mental-state preparation, and
+list-effect operations (#161), without removing or merging their GAML syntax. Statement-specific guards,
+`all` expansion, scalar versus indexed strength/lifetime evaluation, specialised base updates, and the order of
+effects remain unchanged. Coping bodies retain their existing execution and return-value behaviour; laws retain
+their obedience threshold and plan/norm invalidation. This refactoring does not change legacy matching policies.
+
 ### BDI: numeric contracts and emotion calculations
 
 BDI variable and operator documentation now distinguishes conventional ranges from existing validation, and describes

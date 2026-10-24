@@ -170,6 +170,8 @@ public class LawStatement extends AbstractStatement {
 	/** The all. */
 	final IExpression all;
 
+	private final BdiStatementSupport operations;
+
 	/**
 	 * Gets the context expression.
 	 *
@@ -223,6 +225,7 @@ public class LawStatement extends AbstractStatement {
 		threshold = getFacet(LawStatement.THRESHOLD);
 		parallel = getFacet(IKeyword.PARALLEL);
 		all = getFacet(IKeyword.ALL);
+		operations = new BdiStatementSupport(strength, lifetime);
 		setName(desc.getName());
 	}
 
@@ -253,7 +256,7 @@ public class LawStatement extends AbstractStatement {
 		}
 
 		if (	(belief == null || BdiUtils.hasBelief(scope, tempBelief))
-			&& 	(beliefs == null || hasBeliefs(scope, (List<Predicate>) beliefs.value(scope)))
+			&& 	BdiStatementSupport.hasPredicates(scope, MentalStateKind.BELIEF, beliefs)
 			&&	(threshold == null || (double) scope.getAgent().getAttribute("obedience") >= (double) threshold.value(scope))) {
 			
 			if (newObligation != null) {								
@@ -278,18 +281,8 @@ public class LawStatement extends AbstractStatement {
 
 	private void addNewObligation(IScope scope, Predicate initialObligation, IMap<String, Object> initialValues) {
 
-		final MentalState tempNewObligation = MentalStateKind.OBLIGATION.create(initialObligation);
-		
-		if (initialValues != null) {
-			tempNewObligation.getPredicate().setValues(initialValues);			
-		}
-		
-		if (strength != null) {
-			tempNewObligation.setStrength(Cast.asFloat(scope, strength.value(scope)));
-		}
-		if (lifetime != null) {
-			tempNewObligation.setLifeTime(Cast.asInt(scope, lifetime.value(scope)));
-		}
+		final MentalState tempNewObligation =
+				operations.prepare(scope, MentalStateKind.OBLIGATION, initialObligation, initialValues);
 		// Only do it if there's not already an obligation
 		if (!BdiUtils.hasObligation(scope, tempNewObligation)) {
 			BdiUtils.addObligation(scope, tempNewObligation);
@@ -298,19 +291,6 @@ public class LawStatement extends AbstractStatement {
 			agent.setAttribute(SimpleBdiArchitecture.CURRENT_PLAN, null);
 			agent.setAttribute(SimpleBdiArchitecture.CURRENT_NORM, null);
 		}
-	}
-
-	/**
-	 * Checks for beliefs.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param predicates
-	 *            the predicates
-	 * @return true, if successful
-	 */
-	private boolean hasBeliefs(final IScope scope, final List<Predicate> predicates) {
-		return BdiUtils.hasPredicates(scope, MentalStateKind.BELIEF, predicates);
 	}
 
 }

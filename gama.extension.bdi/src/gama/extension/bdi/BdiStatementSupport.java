@@ -1,6 +1,7 @@
 package gama.extension.bdi;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
@@ -30,6 +31,12 @@ final class BdiStatementSupport {
 	@SuppressWarnings ("unchecked")
 	static boolean hasPredicates(final IScope scope, final MentalStateKind kind, final IExpression expression) {
 		return expression == null || BdiUtils.hasPredicates(scope, kind, (List<Predicate>) expression.value(scope));
+	}
+
+	static boolean hasPredicate(final IScope scope, final MentalStateKind kind, final IExpression expression) {
+		if (expression == null) return true;
+		final MentalState state = kind.create((Predicate) expression.value(scope));
+		return BdiUtils.getBase(scope, kind).contains(state);
 	}
 
 	static boolean hasEmotions(final IScope scope, final List<Emotion> emotions) {
@@ -99,28 +106,28 @@ final class BdiStatementSupport {
 	@SuppressWarnings ("unchecked")
 	static void removeList(final IScope scope, final MentalStateKind kind, final IExpression expression) {
 		if (expression == null) return;
-		for (final Predicate predicate : (List<Predicate>) expression.value(scope)) {
+		removeList(scope, kind, (List<Predicate>) expression.value(scope));
+	}
+
+	static void removeList(final IScope scope, final MentalStateKind kind, final List<Predicate> predicates) {
+		for (final Predicate predicate : predicates) {
 			remove(scope, kind, predicate);
 		}
 	}
 
-	@SuppressWarnings ("unchecked")
-	static void emotions(final IScope scope, final IExpression expression, final boolean list, final boolean add) {
-		if (expression == null) return;
-		if (list) {
-			for (final Emotion emotion : (List<Emotion>) expression.value(scope)) {
-				emotion(scope, emotion, add);
-			}
-		} else {
-			emotion(scope, (Emotion) expression.value(scope), add);
-		}
+	static void addEmotions(final IScope scope, final IExpression expression) {
+		forEachEmotion(scope, expression, emotion -> BdiUtils.addEmotion(scope, emotion));
 	}
 
-	private static void emotion(final IScope scope, final Emotion emotion, final boolean add) {
-		if (add) {
-			BdiUtils.addEmotion(scope, emotion);
-		} else {
-			BdiUtils.removeEmotion(scope, emotion);
+	static void removeEmotions(final IScope scope, final IExpression expression) {
+		forEachEmotion(scope, expression, emotion -> BdiUtils.removeEmotion(scope, emotion));
+	}
+
+	@SuppressWarnings ("unchecked")
+	private static void forEachEmotion(final IScope scope, final IExpression expression, final Consumer<Emotion> action) {
+		if (expression == null) return;
+		for (final Emotion emotion : (List<Emotion>) expression.value(scope)) {
+			action.accept(emotion);
 		}
 	}
 }
