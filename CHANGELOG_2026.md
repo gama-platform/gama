@@ -13,6 +13,13 @@ predicate and name lookups (#161). Public string-based modalities (including cus
 base-argument overrides, and modality-specific insertion/removal effects remain unchanged. Beliefs still perform
 their specialised contradiction and intention handling; emotions retain their separate replacement policy.
 
+### BDI: configurable thought-history capacity
+
+Agents using `simple_bdi` or `parallel_bdi` can set `thinking_capacity` to control the size of their `thinking`
+history (#161). The default remains 5 and thoughts remain newest-first. Setting the capacity to 0 clears and
+disables automatic history; negative values raise an error. Reducing the capacity immediately discards the oldest
+excess entries. History updates still replace the list rather than mutating previously returned lists.
+
 ### BDI: shared statement execution
 
 The `rule`, `coping`, and `law` statements now share internal condition checks, mental-state preparation, and

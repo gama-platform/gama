@@ -30,6 +30,7 @@ import gama.annotations.action;
 import gama.annotations.arg;
 import gama.annotations.doc;
 import gama.annotations.example;
+import gama.annotations.setter;
 import gama.annotations.skill;
 import gama.annotations.variable;
 import gama.annotations.vars;
@@ -137,7 +138,16 @@ import gama.gaml.operators.Random;
 				name = SimpleBdiArchitecture.LAST_THOUGHTS,
 				type = IType.LIST,
 				init = "[]",
-				doc = @doc ("the list of the last thoughts of the agent")),
+				doc = @doc ("The most recent thoughts of the agent, newest first. Automatic recording retains at most "
+						+ "thinking_capacity entries (5 by default), replacing the list on each update.")),
+		@variable (
+				name = SimpleBdiArchitecture.THINKING_CAPACITY,
+				type = IType.INT,
+				init = "5",
+				doc = @doc ("Maximum number of thoughts retained per agent in thinking; defaults to 5. "
+						+ "0 clears and disables automatic thought history; negative values raise an error. "
+						+ "Reducing the capacity immediately discards the oldest excess entries; increasing it does not "
+						+ "restore discarded thoughts. For example: int thinking_capacity <- 10;")),
 		@variable (
 				name = SimpleBdiArchitecture.INTENTION_BASE,
 				type = IType.LIST,
@@ -283,7 +293,10 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	// INFORMATION THAT CAN BE DISPLAYED
 	public static final String LAST_THOUGHTS = "thinking";
 
-	/** The Constant LAST_THOUGHTS_SIZE. */
+	/** Per-agent thought-history limit. */
+	public static final String THINKING_CAPACITY = "thinking_capacity";
+
+	/** Default thought-history capacity, retained for Java API compatibility. */
 	public static final Integer LAST_THOUGHTS_SIZE = 5;
 
 	/** The Constant EMOTION. */
@@ -1239,6 +1252,24 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 		return thoughts;
 	}
 
+	@setter (THINKING_CAPACITY)
+	public void setThinkingCapacity(final IScope scope, final IAgent agent, final Integer capacity) {
+		validateThinkingCapacity(scope, capacity);
+		final IList<String> thoughts = (IList<String>) agent.getAttribute(LAST_THOUGHTS);
+		if (capacity == 0 || thoughts != null && thoughts.size() > capacity) {
+			final IList<String> retained = GamaListFactory.create(Types.STRING);
+			if (capacity > 0) retained.addAll(thoughts.subList(0, capacity));
+			agent.setAttribute(LAST_THOUGHTS, retained);
+		}
+		agent.setAttribute(THINKING_CAPACITY, capacity);
+	}
+
+	private static void validateThinkingCapacity(final IScope scope, final Integer capacity) {
+		if (capacity == null || capacity < 0) {
+			throw GamaRuntimeException.error("thinking_capacity must be a non-negative integer", scope);
+		}
+	}
+
 	/**
 	 * Adds the thoughts.
 	 *
@@ -1250,11 +1281,15 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	 */
 	public IList<String> addThoughts(final IScope scope, final String think) {
 		final IAgent agent = getCurrentAgent(scope);
+		final Integer capacity = (Integer) agent.getAttribute(THINKING_CAPACITY);
+		validateThinkingCapacity(scope, capacity);
 		final IList<String> thoughts = (IList<String>) agent.getAttribute(LAST_THOUGHTS);
-		final IList newthoughts = GamaListFactory.create(Types.STRING);
-		newthoughts.add(think);
-		if (thoughts != null && thoughts.size() > 0) {
-			newthoughts.addAll(thoughts.subList(0, Math.min(LAST_THOUGHTS_SIZE - 1, thoughts.size())));
+		final IList<String> newthoughts = GamaListFactory.create(Types.STRING);
+		if (capacity > 0) {
+			newthoughts.add(think);
+			if (thoughts != null && !thoughts.isEmpty()) {
+				newthoughts.addAll(thoughts.subList(0, Math.min(capacity - 1, thoughts.size())));
+			}
 		}
 		agent.setAttribute(LAST_THOUGHTS, newthoughts);
 		return newthoughts;
