@@ -148,7 +148,7 @@ public class GamaServerExperimentJob extends ExperimentJob {
 			final ExperimentSpecies curExperiment = (ExperimentSpecies) simulator.getExperimentPlan();
 			for (var param : params.listValue(null, Types.MAP, false)) {
 				IMap<String, Object> m = (IMap<String, Object>) param;
-				String type = m.get(IKeyword.TYPE).toString();
+				String type = m.get(IKeyword.TYPE) == null ? "" : m.get(IKeyword.TYPE).toString();
 				Object v = m.get("value");
 				if ("int".equals(type)) { v = Integer.valueOf("" + m.get("value")); }
 				if ("float".equals(type)) { v = Double.valueOf("" + m.get("value")); }

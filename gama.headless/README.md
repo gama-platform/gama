@@ -103,9 +103,7 @@ Records are serialized across threads and flushed after every write, allowing in
   "type": "load",
   "model": "/absolute/path/to/server_load.gaml",
   "experiment": "exp",
-  "parameters": [
-    { "name": "var1", "value": 42, "type": "int" }
-  ],
+  "parameters": { "var1": 42 },
   "until": "completed >= 10",
   "console": true,
   "status": false,
@@ -118,7 +116,7 @@ Records are serialized across threads and flushed after every write, allowing in
 |---|---|---|
 | `model` | Required | Path to a `.gaml` file on the machine running GAMA, not on the client. Absolute paths are recommended. |
 | `experiment` | Required | Name of an experiment declared in the model. |
-| `parameters` | No overrides | Array of objects containing `name` and `value`; `type` is optional. Names can be parameter titles (such as `"param"`) or variable names (such as `"var1"`). `"int"` and `"float"` also accept numeric strings. |
+| `parameters` | No overrides | Either an object mapping parameter names to values (for example, `{ "var1": 42 }`) or the legacy array of `{ "name": "...", "value": ... }` objects. Names can be parameter titles (such as `"param"`) or variable names (such as `"var1"`). In the array form, `type` is optional; `"int"` and `"float"` also accept numeric strings. |
 | `until` | No client override | Boolean GAML expression evaluated in the simulation scope. If omitted, the model's experiment stop condition is retained. |
 | `console` | `true` | Forward console output (`SimulationOutput` and `SimulationDebug`). The global **Send console outputs to clients** preference must also be enabled. |
 | `status` | `false` | Forward status-bar messages (`SimulationStatusInform`, `SimulationStatusError`). |
@@ -141,7 +139,7 @@ Send `{"type":"play","exp_id":"exp"}` to run the experiment. GUI experiments ret
 
 When the stop condition becomes true, the GUI experiment pauses and emits one `SimulationEnded` event with empty `content` and its `exp_id`. No further steps are executed until the experiment is reloaded. The displays remain open for inspection.
 
-Send a `reload` request to initialize another run. Forwarding settings are retained. `reload` can supply new `parameters` and `until`; parameters omitted from reload retain their current values. An omitted or empty reload `until` clears the previous stop condition, so resend it to retain a limit.
+Send a `reload` request to initialize another run. Forwarding settings are retained. `reload` can supply new `parameters` in either supported format and `until`; parameters omitted from reload retain their current values. An omitted or empty reload `until` clears the previous stop condition, so resend it to retain a limit.
 
 GUI mode remains interactive, single-experiment mode, not a replacement for headless multi-experiment execution. In particular, GUI `play` acknowledges starting execution; it does not implement headless `play`'s deferred `sync: true` response. Wait for `SimulationEnded` to detect completion.
 
@@ -204,7 +202,7 @@ socket.addEventListener("open", () => {
     type: "load",
     model,
     experiment: "exp",
-    parameters: [{ name: "var1", value: 42, type: "int" }],
+    parameters: { var1: 42 },
     until: "completed >= 10",
     console: true,
     status: false,

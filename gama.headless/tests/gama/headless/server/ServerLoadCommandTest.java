@@ -184,14 +184,24 @@ public final class ServerLoadCommandTest {
 			GAMA.setServer((IGamaServer) Proxy.newProxyInstance(IGamaServer.class.getClassLoader(),
 					new Class<?>[] { IGamaServer.class }, (p, method, args) -> {
 						if ("stop".equals(method.getName())) return null;
+						if ("retrieveExperimentPlan".equals(method.getName())) return plan;
 						if ("obtainGuiServerConfiguration".equals(method.getName()))
 							return new GamaServerExperimentConfiguration(otherSocket, "", true, true, true, true);
 						throw new AssertionError("Unexpected server call: " + method);
 					}));
-			plan.setStopCondition("completed >= 2");
+			command.put("type", "reload");
+			command.put("parameters", Map.of("param", 43, "amount", 3.5));
+			command.put("until", "completed >= 2");
+			final var compactReload = DefaultServerCommands.RELOAD(GAMA.getServer(), socket, command);
+			check(compactReload.type == MessageType.CommandExecutedSuccessfully,
+					"Reload must accept compact parameters: " + compactReload.content);
+			check(value("initial").equals(43) && value("amount").equals(3.5),
+					"Compact reload parameters must be applied before global init");
+			check(plan.getAgent().getScope().getServerConfiguration().socket() == socket,
+					"Reload must retain experiment-specific routing");
 			ended.set(new CountDownLatch(1));
 			check(plan.getController().processReload(true), "Reloading must permit another run");
-			check(value("initial").equals(42), "Reload must retain parameter overrides");
+			check(value("initial").equals(43), "Reload must retain parameter overrides");
 			check(plan.getAgent().getScope().getServerConfiguration().socket() == socket,
 					"Reload must retain experiment-specific routing");
 			check(plan.getController().processStart(true), "Reload must reset completion state");
@@ -221,7 +231,8 @@ public final class ServerLoadCommandTest {
 			check(value("completed").equals(7), "Omitting until must preserve the model's stop condition");
 			GAMA.closeAllExperiments(true, false);
 
-			command.put("parameters", parameters);
+			command.put("type", "load");
+			command.put("parameters", Map.of("param", 44, "amount", 4.5));
 			command.put("socket_id", "load-test");
 			final var server = (IGamaServer) Proxy.newProxyInstance(IGamaServer.class.getClassLoader(),
 					new Class<?>[] { IGamaServer.class }, (p, method, args) -> {
@@ -230,8 +241,8 @@ public final class ServerLoadCommandTest {
 					});
 			final var headless = new HeadlessLoadCommand().execute(server, socket, new ReceivedMessage("", command));
 			check(headless.type == MessageType.CommandExecutedSuccessfully, "Headless loading must still work");
-			check(value("initial").equals(42) && value("amount").equals(2.5),
-					"GUI and headless must apply parameters identically before init");
+			check(value("initial").equals(44) && value("amount").equals(4.5),
+					"Headless load must apply compact parameters before init");
 			final var simulation = GAMA.getExperiment().getCurrentSimulation();
 			simulation.setDirectVarValue(simulation.getScope(), "completed", 7);
 			check(Boolean.TRUE.equals(GAMA.getExperiment().getAgent().getStopCondition().value(simulation.getScope())),

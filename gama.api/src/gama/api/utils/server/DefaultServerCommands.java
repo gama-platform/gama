@@ -297,11 +297,12 @@ public class DefaultServerCommands {
 		} catch (CommandException e) {
 			return e.getResponse();
 		}
-		IList params = (IList) map.get(PARAMETERS);
-		// checking the parameters' format
-		var parametersError = CommandExecutor.checkLoadParameters(params, map);
-		if (parametersError != null)
-			return parametersError;
+		final IList<?> params;
+		try {
+			params = ServerLoadRequest.parseParameters(map.get(PARAMETERS), map);
+		} catch (CommandException e) {
+			return e.getResponse();
+		}
 		plan.setParameterValues(params);
 		plan.setStopCondition((String) map.get(ISocketCommand.UNTIL));
 		// actual reload
