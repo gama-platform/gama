@@ -26,7 +26,7 @@ global {
 		ask dummy {
 			if (testConnection(PARAMS)) {
 				do executeUpdate (params: PARAMS, updateComm: "DROP DATABASE IF EXISTS " + database_name + " ;");
-				do executeUpdate (params: PARAMS, updateComm: "CREATE DATABASE "+ database_name +" with TEMPLATE = template1;");
+				do executeUpdate (params: PARAMS, updateComm: "CREATE DATABASE "+ database_name +" with TEMPLATE = template_postgis;");
 				write "spatial_BD database has been created. ";
 
 				// remove "database" from: PARAMS;
