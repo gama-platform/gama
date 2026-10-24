@@ -263,19 +263,19 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 			curY = yFromModelUnitsToPixels(attributes.getLocation().getY());
 		}
 		imageTransform.translate(curX, curY);
-		int curWidth, curHeight;
+		double curWidth, curHeight;
 		if (attributes.getSize() == null) {
 			curWidth = getLayerWidth();
 			curHeight = getLayerHeight();
 		} else {
-			curWidth = (int) wFromModelUnitsToPixels(attributes.getSize().getX());
-			curHeight = (int) hFromModelUnitsToPixels(attributes.getSize().getY());
+			curWidth = wFromModelUnitsToPixels(attributes.getSize().getX());
+			curHeight = hFromModelUnitsToPixels(attributes.getSize().getY());
 		}
 		if (attributes.getAngle() != null) {
 			imageTransform.rotate(Maths.toRad * attributes.getAngle(), curWidth / 2d, curHeight / 2d);
 		}
 		if (curWidth != img.getWidth() || curHeight != img.getHeight()) {
-			imageTransform.scale((double) curWidth / img.getWidth(), (double) curHeight / img.getHeight());
+			imageTransform.scale(curWidth / img.getWidth(), curHeight / img.getHeight());
 		}
 		currentRenderer.drawImage(img, imageTransform, null);
 		if (attributes.getBorder() != null) { drawGridLine(img, attributes.getBorder()); }
