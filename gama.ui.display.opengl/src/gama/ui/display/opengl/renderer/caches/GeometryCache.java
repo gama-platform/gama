@@ -192,20 +192,20 @@ public class GeometryCache {
 	 * @param renderer
 	 *            the renderer
 	 */
-	public GeometryCache(final IOpenGLRenderer renderer) {
+	public GeometryCache(final IOpenGLRenderer renderer, final OpenGL openGL) {
 		this.scope = renderer.getSurface().getScope().copy("in opengl geometry cache");
-		this.drawer = g -> renderer.getOpenGLHelper().getGeometryDrawer().drawGeometry(g, null, 0, getTypeOf(g));
+		this.drawer = g -> openGL.getGeometryDrawer().drawGeometry(g, null, 0, getTypeOf(g));
 		envelopes = newBuilder().expireAfterAccess(2, MINUTES).build();
 		builtInCache = newBuilder().concurrencyLevel(2).initialCapacity(10).build();
 		fileCache = newBuilder().expireAfterAccess(2, MINUTES).initialCapacity(10).removalListener(notif -> {
 			if (renderer.isDisposed()) return;
-			renderer.getOpenGLHelper().getGL().glDeleteLists((Integer) notif.getValue(), 1);
+			openGL.getGL().glDeleteLists((Integer) notif.getValue(), 1);
 
 		}).build(new CacheLoader<String, Integer>() {
 
 			@Override
 			public Integer load(final String file) {
-				return buildList(renderer.getOpenGLHelper(), file);
+				return buildList(openGL, file);
 			}
 		});
 	}

@@ -10,10 +10,10 @@
  ********************************************************************************************************/
 package gama.ui.display.opengl.renderer.helpers;
 
-import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.GL2GL3;
 
 import gama.api.ui.displays.IDisplayData;
-import gama.ui.display.opengl.OpenGL;
+import gama.ui.display.opengl.IOpenGL;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.display.opengl.view.GamaGLCanvas;
 import gama.ui.display.opengl.view.SWTOpenGLDisplaySurface;
@@ -72,14 +72,14 @@ public abstract class AbstractRendererHelper {
 	 *
 	 * @return the gl
 	 */
-	protected GL2 getGL() { return renderer.getOpenGLHelper().getGL(); }
+	protected GL2GL3 getGL() { return renderer.getOpenGLHelper().getGL(); }
 
 	/**
 	 * Gets the open GL.
 	 *
 	 * @return the open GL
 	 */
-	protected OpenGL getOpenGL() { return renderer.getOpenGLHelper(); }
+	protected IOpenGL getOpenGL() { return renderer.getOpenGLHelper(); }
 
 	/**
 	 * Gets the canvas.

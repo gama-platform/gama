@@ -50,7 +50,7 @@ import gama.ui.display.opengl.scene.ObjectDrawer;
  * @revised january 2017
  *
  */
-public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
+public class GeometryDrawer extends ObjectDrawer<GeometryObject, OpenGL> {
 
 	/** The Constant DEFAULT_BORDER. */
 	private static final IColor DEFAULT_BORDER = GamaColorFactory.BLACK;

@@ -32,6 +32,7 @@ import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.api.utils.geometry.GeometryUtils;
 import gama.api.utils.geometry.ICoordinates.VertexVisitor;
 import gama.ui.display.opengl.ITesselator;
+import gama.ui.display.opengl.IOpenGL;
 import jogamp.opengl.glu.tessellator.GLUtessellatorImpl;
 
 import gama.api.types.color.GamaColorFactory;
@@ -52,21 +53,20 @@ import gama.api.utils.prefs.GamaPreferences;
 import gama.core.util.file.GamaGeometryFile;
 import gama.dev.DEBUG;
 import gama.gaml.operators.Maths;
-import gama.ui.display.opengl4.renderer.IOpenGLRenderer;
+import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.display.opengl4.renderer.caches.GeometryCache;
 import gama.ui.display.opengl4.renderer.caches.GeometryCache.BuiltInGeometry;
-import gama.ui.display.opengl4.renderer.caches.ITextureCache;
+import gama.ui.display.opengl.renderer.caches.ITextureCache;
 import gama.ui.display.opengl4.renderer.caches.TextureCache2;
 import gama.ui.display.opengl4.renderer.helpers.AbstractRendererHelper;
-import gama.ui.display.opengl4.renderer.helpers.KeystoneHelper;
 import gama.ui.display.opengl4.renderer.shaders.BasicShader;
 import gama.ui.display.opengl4.renderer.shaders.MatrixStack;
-import gama.ui.display.opengl4.scene.AbstractObject;
-import gama.ui.display.opengl4.scene.ObjectDrawer;
+import gama.ui.display.opengl.scene.AbstractObject;
+import gama.ui.display.opengl.scene.ObjectDrawer;
 import gama.ui.display.opengl4.scene.geometry.GeometryDrawer;
 import gama.ui.display.opengl4.scene.mesh.MeshDrawer;
-import gama.ui.display.opengl4.scene.mesh.MeshObject;
-import gama.ui.display.opengl4.scene.resources.ResourceDrawer;
+import gama.ui.display.opengl.scene.mesh.MeshObject;
+import gama.ui.display.opengl.scene.resources.ResourceDrawer;
 import gama.ui.display.opengl4.scene.text.TextDrawer;
 import gama.ui.shared.utils.DPIHelper;
 
@@ -75,7 +75,7 @@ import gama.ui.shared.utils.DPIHelper;
  * {@link ITesselator} so that the GLU tessellator callbacks ({@code begin}, {@code vertex}, {@code end}) are wired
  * directly to the VBO-based drawing path used by this core-profile renderer.
  */
-public class OpenGL extends AbstractRendererHelper implements ITesselator {
+public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselator {
 
 	static {
 		DEBUG.OFF();
@@ -92,7 +92,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	public static final GLProfile PROFILE = GLProfile.get(GLProfile.GL4);
 
 	/** The drawers. */
-	final Map<DrawerType, ObjectDrawer<?>> drawers = new HashMap<>();
+	final Map<DrawerType, ObjectDrawer<?, ?>> drawers = new HashMap<>();
 
 	/** The mesh drawers. */
 	final Map<MeshDrawer.Signature, MeshDrawer> meshDrawers = new HashMap<>();
@@ -281,7 +281,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	public OpenGL(final IOpenGLRenderer renderer) {
 		super(renderer);
 		glu = new GLU();
-		geometryCache = new GeometryCache(renderer);
+		geometryCache = new GeometryCache(renderer, this);
 		glTesselatorDrawer = (final double[] ordinates) -> { tobj.gluTessVertex(ordinates, 0, ordinates); };
 		GLU.gluTessCallback(tobj, GLU.GLU_TESS_VERTEX, this);
 		GLU.gluTessCallback(tobj, GLU.GLU_TESS_BEGIN, this);
@@ -311,7 +311,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 *            the type
 	 * @return the drawer for
 	 */
-	public ObjectDrawer<? extends AbstractObject<?, ?>> getDrawerFor(final AbstractObject<?, ?> object) {
+	public ObjectDrawer<? extends AbstractObject<?, ?>, ?> getDrawerFor(final AbstractObject<?, ?> object) {
 		// Only create signature and checking mesh drawers if the object is indeed a mesh.
 		if (object instanceof MeshObject mo) {
 			// Optimize: avoid creating a new Signature every time if possible or rely on efficient map operations.
@@ -337,7 +337,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * Dispose.
 	 */
 	public void dispose() {
-		for (ObjectDrawer<?> o : drawers.values()) { o.dispose(); }
+		for (ObjectDrawer<?, ?> o : drawers.values()) { o.dispose(); }
 		for (MeshDrawer md : meshDrawers.values()) { md.dispose(); }
 		geometryCache.dispose();
 		textureCache.dispose();
@@ -355,6 +355,57 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 *            the new gl2
 	 */
 	public void setGL4(final GL4 gl2) { this.gl = gl2; }
+
+	@Override
+	public GLProfile getProfile() { return PROFILE; }
+
+	@Override
+	public void setGL(final GL context) { setGL4(context.getGL4()); }
+
+	@Override
+	public void reshape(final GL context, final int width, final int height) {
+		reshape(context.getGL4(), width, height);
+	}
+
+	@Override
+	public int[] getViewport() { return viewport; }
+
+	@Override
+	public void lookAt(final IPoint position, final IPoint target, final IPoint up) {
+		getCurrentMatrixStack().multMatrix(new org.joml.Matrix4f().lookAt(
+				(float) position.getX(), (float) position.getY(), (float) position.getZ(),
+				(float) target.getX(), (float) target.getY(), (float) target.getZ(),
+				(float) up.getX(), (float) up.getY(), (float) up.getZ()));
+	}
+
+	private final org.joml.Vector3f unprojectResult = new org.joml.Vector3f();
+
+	@Override
+	public void unproject(final double x, final double y, final double depth, final double[] result) {
+		final var modelView = new org.joml.Matrix4f(
+				(float) mvmatrix[0], (float) mvmatrix[1], (float) mvmatrix[2], (float) mvmatrix[3],
+				(float) mvmatrix[4], (float) mvmatrix[5], (float) mvmatrix[6], (float) mvmatrix[7],
+				(float) mvmatrix[8], (float) mvmatrix[9], (float) mvmatrix[10], (float) mvmatrix[11],
+				(float) mvmatrix[12], (float) mvmatrix[13], (float) mvmatrix[14], (float) mvmatrix[15]);
+		final var projection = new org.joml.Matrix4f(
+				(float) projmatrix[0], (float) projmatrix[1], (float) projmatrix[2], (float) projmatrix[3],
+				(float) projmatrix[4], (float) projmatrix[5], (float) projmatrix[6], (float) projmatrix[7],
+				(float) projmatrix[8], (float) projmatrix[9], (float) projmatrix[10], (float) projmatrix[11],
+				(float) projmatrix[12], (float) projmatrix[13], (float) projmatrix[14], (float) projmatrix[15]);
+		projection.mul(modelView).unproject((float) x, (float) y, (float) depth, viewport, unprojectResult);
+		result[0] = unprojectResult.x;
+		result[1] = unprojectResult.y;
+		result[2] = unprojectResult.z;
+	}
+
+	@Override
+	public void ortho(final double left, final double right, final double bottom, final double top,
+			final double near, final double far) {
+		getCurrentMatrixStack().ortho(left, right, bottom, top, near, far);
+	}
+
+	@Override
+	public boolean isDrawingStored() { return false; }
 
 	/**
 	 * Reshapes the GL world to comply with a new view size and computes the resulting ratios between pixels and world
@@ -2019,7 +2070,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * @return true, if is rendering keystone
 	 */
 	public boolean isRenderingKeystone() {
-		KeystoneHelper k = getRenderer().getKeystoneHelper();
+		var k = getRenderer().getKeystoneHelper();
 		return k.isActive() || getRenderer().getData().isKeystoneDefined();
 	}
 

@@ -26,7 +26,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import gama.api.ui.layers.ILayer;
 import gama.dev.DEBUG;
-import gama.ui.display.opengl.OpenGL;
+import gama.ui.display.opengl.IOpenGL;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.display.opengl.scene.ModelScene;
 
@@ -226,7 +226,7 @@ public class SceneHelper extends AbstractRendererHelper {
 	 *
 	 * @param gl
 	 */
-	public void garbageCollect(final OpenGL gl) {
+	public void garbageCollect(final IOpenGL gl) {
 		int size = garbage.size();
 		if (size == 0) return;
 		final ModelScene[] scenes = garbage.toArray(new ModelScene[size]);
@@ -290,7 +290,7 @@ public class SceneHelper extends AbstractRendererHelper {
 	 * Draw.
 	 */
 	public void draw() {
-		final OpenGL gl = getOpenGL();
+		final IOpenGL gl = getOpenGL();
 
 		// AD Fix: Check if scene is ready before attempting to draw to avoid NullPointerException
 		if (!isReady()) return;
@@ -298,7 +298,7 @@ public class SceneHelper extends AbstractRendererHelper {
 		// Do some garbage collecting in model scenes
 		garbageCollect(gl);
 		// if picking, we draw a first pass to pick the color
-		final PickingHelper picking = getRenderer().getPickingHelper();
+		final IPickingHelper picking = getRenderer().getPickingHelper();
 		if (picking.isBeginningPicking()) {
 			// DEBUG.OUT("In SceneHelper.draw, beginning picking");
 			picking.beginPicking();

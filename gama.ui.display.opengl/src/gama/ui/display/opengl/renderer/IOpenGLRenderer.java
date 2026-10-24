@@ -15,11 +15,11 @@ import com.jogamp.opengl.GLEventListener;
 import gama.api.types.geometry.IPoint;
 import gama.api.ui.displays.IDisplayData;
 import gama.api.ui.displays.IGraphics;
-import gama.ui.display.opengl.OpenGL;
+import gama.ui.display.opengl.IOpenGL;
 import gama.ui.display.opengl.renderer.helpers.CameraHelper;
-import gama.ui.display.opengl.renderer.helpers.KeystoneHelper;
-import gama.ui.display.opengl.renderer.helpers.LightHelper;
-import gama.ui.display.opengl.renderer.helpers.PickingHelper;
+import gama.ui.display.opengl.renderer.helpers.IKeystoneHelper;
+import gama.ui.display.opengl.renderer.helpers.ILightHelper;
+import gama.ui.display.opengl.renderer.helpers.IPickingHelper;
 import gama.ui.display.opengl.renderer.helpers.SceneHelper;
 import gama.ui.display.opengl.view.GamaGLCanvas;
 import gama.ui.display.opengl.view.SWTOpenGLDisplaySurface;
@@ -92,28 +92,28 @@ public interface IOpenGLRenderer extends GLEventListener, IGraphics.ThreeD {
 	 *
 	 * @return the keystone helper
 	 */
-	KeystoneHelper getKeystoneHelper();
+	IKeystoneHelper getKeystoneHelper();
 
 	/**
 	 * Gets the picking helper.
 	 *
 	 * @return the picking helper
 	 */
-	PickingHelper getPickingHelper();
+	IPickingHelper getPickingHelper();
 
 	/**
 	 * Gets the open GL helper.
 	 *
 	 * @return the open GL helper
 	 */
-	OpenGL getOpenGLHelper();
+	IOpenGL getOpenGLHelper();
 
 	/**
 	 * Gets the light helper.
 	 *
 	 * @return the light helper
 	 */
-	LightHelper getLightHelper();
+	ILightHelper getLightHelper();
 
 	/**
 	 * Gets the scene helper.

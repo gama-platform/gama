@@ -11,8 +11,6 @@
 package gama.ui.display.opengl.scene.layers;
 
 import com.jogamp.opengl.GL;
-import com.jogamp.opengl.GL2;
-import com.jogamp.opengl.GL2ES3;
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 
 import gama.annotations.constants.IKeyword;
@@ -25,7 +23,7 @@ import gama.api.types.geometry.IShape;
 import gama.api.ui.layers.ILayer;
 import gama.core.outputs.layers.OverlayLayerData;
 import gama.dev.DEBUG;
-import gama.ui.display.opengl.OpenGL;
+import gama.ui.display.opengl.IOpenGL;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 
 /**
@@ -72,7 +70,7 @@ public class OverlayLayerObject extends LayerObject {
 	 *            the gl
 	 */
 	@Override
-	protected void addFrame(final OpenGL gl) {
+	protected void addFrame(final IOpenGL gl) {
 		IPoint size = GamaPointFactory.create(renderer.getEnvWidth(), renderer.getEnvHeight());
 		final IScope scope = renderer.getSurface().getScope();
 		final IExpression expr = layer.getDefinition().getFacet(IKeyword.SIZE);
@@ -95,7 +93,7 @@ public class OverlayLayerObject extends LayerObject {
 			if (d.isRounded()) {
 				gl.translateBy(-sx / 2, -sy / 2, 0);
 				gl.scaleBy(1, 1, 1);
-				drawRoundedRectangle(gl.getGL(), sx / 2, -sy / 2, sx, sy, sx / 20, 40);
+				drawRoundedRectangle(gl, sx / 2, -sy / 2, sx, sy, sx / 20, 40);
 			} else {
 				gl.translateBy(sx / 2, -sy / 2, 0);
 				gl.scaleBy(sx, sy, 1);
@@ -111,7 +109,7 @@ public class OverlayLayerObject extends LayerObject {
 	 * Draws a filled rectangle with rounded corners.
 	 *
 	 * @param gl
-	 *            The OpenGL GL2 context.
+	 *            The rendering backend.
 	 * @param d
 	 *            The X coordinate of the lower-left corner of the enclosing rectangle.
 	 * @param e
@@ -125,19 +123,16 @@ public class OverlayLayerObject extends LayerObject {
 	 * @param numSegments
 	 *            The number of line segments to draw each corner arc (more => smoother).
 	 */
-	public void drawRoundedRectangle(final GL2 gl, final double d, final double e, final double x, final double y,
+	public void drawRoundedRectangle(final IOpenGL gl, final double d, final double e, final double x, final double y,
 			double cornerRadius, final int numSegments) {
 		double maxRadius = Math.min(x / 2.0f, y / 2.0f);
 		if (cornerRadius < 0) { cornerRadius = 0; }
 		if (cornerRadius > maxRadius) { cornerRadius = maxRadius; }
 
 		if (cornerRadius == 0) {
-			gl.glBegin(GL2ES3.GL_QUADS);
-			gl.glVertex2d(d, e);
-			gl.glVertex2d(d + x, e);
-			gl.glVertex2d(d + x, e + y);
-			gl.glVertex2d(d, e + y);
-			gl.glEnd();
+			gl.beginDrawing(GL.GL_TRIANGLES);
+			outputRectangle(gl, d, e, d + x, e + y);
+			gl.endDrawing();
 			return;
 		}
 
@@ -155,41 +150,14 @@ public class OverlayLayerObject extends LayerObject {
 		double cx_tl = d + cornerRadius; // Centre X Coin Supérieur Gauche (Top-Left)
 		double cy_tl = e + y - cornerRadius;// Centre Y Coin Supérieur Gauche
 
-		// --- Dessiner les 5 parties rectangulaires ---
-		// Utiliser GL_QUADS pour dessiner les rectangles. Chaque quad est défini par 4 sommets.
-		gl.glBegin(GL2ES3.GL_QUADS);
-
-		// 1. Rectangle Central
-		gl.glVertex2d(cx_bl, cy_bl); // Coin inférieur gauche du rectangle central
-		gl.glVertex2d(cx_br, cy_br); // Coin inférieur droit du rectangle central
-		gl.glVertex2d(cx_tr, cy_tr); // Coin supérieur droit du rectangle central
-		gl.glVertex2d(cx_tl, cy_tl); // Coin supérieur gauche du rectangle central
-
-		// 2. Rectangle du Bas (sous le rectangle central)
-		gl.glVertex2d(cx_bl, e); // Coin inférieur gauche (bord du rectangle englobant)
-		gl.glVertex2d(cx_br, e); // Coin inférieur droit (bord du rectangle englobant)
-		gl.glVertex2d(cx_br, cy_br); // Coin supérieur droit (jonction avec central)
-		gl.glVertex2d(cx_bl, cy_bl); // Coin supérieur gauche (jonction avec central)
-
-		// 3. Rectangle du Haut (au-dessus du rectangle central)
-		gl.glVertex2d(cx_tl, cy_tl); // Coin inférieur gauche (jonction avec central)
-		gl.glVertex2d(cx_tr, cy_tr); // Coin inférieur droit (jonction avec central)
-		gl.glVertex2d(cx_tr, e + y); // Coin supérieur droit (bord du rectangle englobant)
-		gl.glVertex2d(cx_tl, e + y); // Coin supérieur gauche (bord du rectangle englobant)
-
-		// 4. Rectangle de Gauche (à gauche du rectangle central)
-		gl.glVertex2d(d, cy_bl); // Coin inférieur gauche (bord du rectangle englobant)
-		gl.glVertex2d(cx_bl, cy_bl); // Coin inférieur droit (jonction avec central)
-		gl.glVertex2d(cx_tl, cy_tl); // Coin supérieur droit (jonction avec central)
-		gl.glVertex2d(d, cy_tl); // Coin supérieur gauche (bord du rectangle englobant)
-
-		// 5. Rectangle de Droite (à droite du rectangle central)
-		gl.glVertex2d(cx_br, cy_br); // Coin inférieur gauche (jonction avec central)
-		gl.glVertex2d(d + x, cy_br); // Coin inférieur droit (bord du rectangle englobant)
-		gl.glVertex2d(d + x, cy_tr); // Coin supérieur droit (bord du rectangle englobant)
-		gl.glVertex2d(cx_tr, cy_tr); // Coin supérieur gauche (jonction avec central)
-
-		gl.glEnd(); // Fin du dessin des parties rectangulaires
+		// Triangles work in both the fixed-function and core profiles.
+		gl.beginDrawing(GL.GL_TRIANGLES);
+		outputRectangle(gl, cx_bl, cy_bl, cx_br, cy_tr);
+		outputRectangle(gl, cx_bl, e, cx_br, cy_br);
+		outputRectangle(gl, cx_tl, cy_tl, cx_tr, e + y);
+		outputRectangle(gl, d, cy_bl, cx_tl, cy_tl);
+		outputRectangle(gl, cx_br, cy_br, d + x, cy_tr);
+		gl.endDrawing();
 
 		// --- Dessiner les 4 coins arrondis (quarts de cercle) ---
 		// Chaque coin est un GL_TRIANGLE_FAN centré sur le point cx_*, cy_*.
@@ -198,51 +166,61 @@ public class OverlayLayerObject extends LayerObject {
 
 		// Coin Inférieur Gauche
 		// Angles de PI (180°) à 3*PI/2 (270°)
-		gl.glBegin(GL.GL_TRIANGLE_FAN);
-		gl.glVertex2d(cx_bl, cy_bl); // Centre de l'éventail
+		gl.beginDrawing(GL.GL_TRIANGLE_FAN);
+		gl.outputVertex(cx_bl, cy_bl, 0); // Centre de l'éventail
 		for (int i = 0; i <= numSegments; i++) {
 			double angle = (float) Math.PI + i * angleIncrement;
 			double vx = cx_bl + cornerRadius * Math.cos(angle);
 			double vy = cy_bl + cornerRadius * Math.sin(angle);
-			gl.glVertex2d(vx, vy);
+			gl.outputVertex(vx, vy, 0);
 		}
-		gl.glEnd();
+		gl.endDrawing();
 
 		// Coin Inférieur Droit
 		// Angles de 3*PI/2 (270°) à 2*PI (360°)
-		gl.glBegin(GL.GL_TRIANGLE_FAN);
-		gl.glVertex2d(cx_br, cy_br); // Centre de l'éventail
+		gl.beginDrawing(GL.GL_TRIANGLE_FAN);
+		gl.outputVertex(cx_br, cy_br, 0); // Centre de l'éventail
 		for (int i = 0; i <= numSegments; i++) {
 			double angle = (float) (3 * Math.PI / 2.0) + i * angleIncrement;
 			double vx = cx_br + cornerRadius * Math.cos(angle);
 			double vy = cy_br + cornerRadius * Math.sin(angle);
-			gl.glVertex2d(vx, vy);
+			gl.outputVertex(vx, vy, 0);
 		}
-		gl.glEnd();
+		gl.endDrawing();
 
 		// Coin Supérieur Droit
 		// Angles de 0° à PI/2 (90°)
-		gl.glBegin(GL.GL_TRIANGLE_FAN);
-		gl.glVertex2d(cx_tr, cy_tr); // Centre de l'éventail
+		gl.beginDrawing(GL.GL_TRIANGLE_FAN);
+		gl.outputVertex(cx_tr, cy_tr, 0); // Centre de l'éventail
 		for (int i = 0; i <= numSegments; i++) {
 			double angle = i * angleIncrement; // angle = 0 pour le premier point, puis augmente
 			double vx = cx_tr + cornerRadius * Math.cos(angle);
 			double vy = cy_tr + cornerRadius * Math.sin(angle);
-			gl.glVertex2d(vx, vy);
+			gl.outputVertex(vx, vy, 0);
 		}
-		gl.glEnd();
+		gl.endDrawing();
 
 		// Coin Supérieur Gauche
 		// Angles de PI/2 (90°) à PI (180°)
-		gl.glBegin(GL.GL_TRIANGLE_FAN);
-		gl.glVertex2d(cx_tl, cy_tl); // Centre de l'éventail
+		gl.beginDrawing(GL.GL_TRIANGLE_FAN);
+		gl.outputVertex(cx_tl, cy_tl, 0); // Centre de l'éventail
 		for (int i = 0; i <= numSegments; i++) {
 			double angle = (float) (Math.PI / 2.0) + i * angleIncrement;
 			double vx = cx_tl + cornerRadius * Math.cos(angle);
 			double vy = cy_tl + cornerRadius * Math.sin(angle);
-			gl.glVertex2d(vx, vy);
+			gl.outputVertex(vx, vy, 0);
 		}
-		gl.glEnd();
+		gl.endDrawing();
+	}
+
+	private static void outputRectangle(final IOpenGL gl, final double left, final double bottom,
+			final double right, final double top) {
+		gl.outputVertex(left, bottom, 0);
+		gl.outputVertex(right, bottom, 0);
+		gl.outputVertex(right, top, 0);
+		gl.outputVertex(left, bottom, 0);
+		gl.outputVertex(right, top, 0);
+		gl.outputVertex(left, top, 0);
 	}
 
 	@Override
@@ -255,7 +233,7 @@ public class OverlayLayerObject extends LayerObject {
 	protected void computeZ(final Trace list) {}
 
 	@Override
-	protected void prepareDrawing(final OpenGL gl, final Trace list) {
+	protected void prepareDrawing(final IOpenGL gl, final Trace list) {
 		final double viewHeight = gl.getViewHeight();
 		final double viewWidth = gl.getViewWidth();
 		final double viewRatio = viewWidth / (viewHeight == 0 ? 1 : viewHeight);
@@ -264,9 +242,9 @@ public class OverlayLayerObject extends LayerObject {
 		final double maxDim = worldHeight > worldWidth ? worldHeight : worldWidth;
 		gl.pushIdentity(GLMatrixFunc.GL_PROJECTION);
 		if (viewRatio >= 1.0) {
-			gl.getGL().glOrtho(0, maxDim * viewRatio, -maxDim, 0, -1, 1);
+			gl.ortho(0, maxDim * viewRatio, -maxDim, 0, -1, 1);
 		} else {
-			gl.getGL().glOrtho(0, maxDim, -maxDim / viewRatio, 0, -1, 1);
+			gl.ortho(0, maxDim, -maxDim / viewRatio, 0, -1, 1);
 		}
 		super.prepareDrawing(gl, list);
 
@@ -278,7 +256,7 @@ public class OverlayLayerObject extends LayerObject {
 	}
 
 	@Override
-	protected void doDrawing(final OpenGL gl) {
+	protected void doDrawing(final IOpenGL gl) {
 		drawObjects(gl, currentList, alpha, false);
 	}
 
@@ -286,7 +264,7 @@ public class OverlayLayerObject extends LayerObject {
 	public boolean isPickable() { return false; }
 
 	@Override
-	protected void stopDrawing(final OpenGL gl) {
+	protected void stopDrawing(final IOpenGL gl) {
 		// super.stopDrawing(gl);
 		// Addition to fix #2228 and #2222
 		gl.resumeZTranslation();

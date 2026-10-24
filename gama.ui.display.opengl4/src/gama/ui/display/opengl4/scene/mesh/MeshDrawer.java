@@ -34,7 +34,8 @@ import gama.core.outputs.layers.MeshLayerData;
 import gama.dev.DEBUG;
 import gama.gaml.statements.draw.MeshSampling;
 import gama.ui.display.opengl4.OpenGL;
-import gama.ui.display.opengl4.scene.ObjectDrawer;
+import gama.ui.display.opengl.scene.ObjectDrawer;
+import gama.ui.display.opengl.scene.mesh.MeshObject;
 import one.util.streamex.DoubleStreamEx;
 
 /**
@@ -45,7 +46,7 @@ import one.util.streamex.DoubleStreamEx;
  * @since 15 mai 2013
  *
  */
-public class MeshDrawer extends ObjectDrawer<MeshObject> {
+public class MeshDrawer extends ObjectDrawer<MeshObject, OpenGL> {
 
 	/**
 	 * The Signature.

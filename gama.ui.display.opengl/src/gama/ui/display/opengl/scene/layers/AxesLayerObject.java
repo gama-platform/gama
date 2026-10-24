@@ -33,7 +33,7 @@ import gama.api.utils.prefs.GamaPreferences;
 import gama.gaml.statements.draw.DrawingAttributes;
 import gama.gaml.statements.draw.ShapeDrawingAttributes;
 import gama.gaml.statements.draw.TextDrawingAttributes;
-import gama.ui.display.opengl.OpenGL;
+import gama.ui.display.opengl.IOpenGL;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.display.opengl.scene.AbstractObject;
 import gama.ui.display.opengl.scene.geometry.GeometryObject;
@@ -102,7 +102,7 @@ public class AxesLayerObject extends StaticLayerObject.World {
 	}
 
 	@Override
-	public void draw(final OpenGL gl) {
+	public void draw(final IOpenGL gl) {
 		boolean previous = gl.setObjectWireframe(false);
 		if (gl.isInRotationMode()) {
 			final IPoint pivotPoint = renderer.getCameraTarget();

@@ -43,7 +43,6 @@ import com.jogamp.opengl.GLRunnable;
 
 import gama.api.runtime.SystemInfo;
 import gama.dev.DEBUG;
-import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.camera.IMultiListener;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.shared.bindings.IDelegateEventsToParent;
@@ -277,7 +276,7 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 	 *             the GL exception
 	 */
 	private GLCapabilities defineCapabilities() throws GLException {
-		final GLCapabilities cap = new GLCapabilities(OpenGL.PROFILE);
+		final GLCapabilities cap = new GLCapabilities(renderer.getOpenGLHelper().getProfile());
 		cap.setDepthBits(24);
 		cap.setDoubleBuffered(true);
 		cap.setHardwareAccelerated(true);

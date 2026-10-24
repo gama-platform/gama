@@ -15,7 +15,7 @@ import gama.api.types.geometry.IPoint;
 import gama.api.utils.geometry.AxisAngle;
 import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.geometry.Scaling3D;
-import gama.ui.display.opengl.OpenGL;
+import gama.ui.display.opengl.IOpenGL;
 
 /**
  * The Class ObjectDrawer.
@@ -23,10 +23,10 @@ import gama.ui.display.opengl.OpenGL;
  * @param <T>
  *            the generic type
  */
-public abstract class ObjectDrawer<T extends AbstractObject<?, ?>> {
+public abstract class ObjectDrawer<T extends AbstractObject<?, ?>, G extends IOpenGL> {
 
 	/** The gl. */
-	protected final OpenGL gl;
+	protected final G gl;
 
 	/**
 	 * Instantiates a new object drawer.
@@ -34,7 +34,7 @@ public abstract class ObjectDrawer<T extends AbstractObject<?, ?>> {
 	 * @param gl
 	 *            the gl
 	 */
-	public ObjectDrawer(final OpenGL gl) {
+	public ObjectDrawer(final G gl) {
 		this.gl = gl;
 	}
 

@@ -52,7 +52,8 @@ import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.api.utils.geometry.ICoordinates;
 import gama.dev.DEBUG;
 import gama.ui.display.opengl4.OpenGL;
-import gama.ui.display.opengl4.scene.ObjectDrawer;
+import gama.ui.display.opengl.scene.ObjectDrawer;
+import gama.ui.display.opengl.scene.text.StringObject;
 
 /**
  * The Class TextDrawer.
@@ -79,7 +80,7 @@ import gama.ui.display.opengl4.scene.ObjectDrawer;
  *
  * <h3>Thread safety</h3> All methods must be called from the GL thread.
  */
-public class TextDrawer extends ObjectDrawer<StringObject> {
+public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> {
 
 	// -------------------------------------------------------------------------
 	// JOGL graph / curve API state

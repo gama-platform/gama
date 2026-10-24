@@ -37,7 +37,7 @@ import org.eclipse.swt.widgets.Menu;
 
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.GL;
-import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.GL2GL3;
 import com.jogamp.opengl.GLAnimatorControl;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLContext;
@@ -205,7 +205,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 		int h = dimensions.height;
 		final GLAutoDrawable glad = renderer.getCanvas();
 		if (glad == null) return null;
-		GL2 gl = glad.getGL().getGL2();
+		GL2GL3 gl = glad.getGL().getGL2GL3();
 		if (gl == null) return null;
 		GLContext context = gl.getContext();
 		if (context == null) return null;

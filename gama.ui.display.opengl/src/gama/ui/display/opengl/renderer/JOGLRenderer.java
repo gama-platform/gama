@@ -19,7 +19,7 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 
-import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GLAutoDrawable;
 
 import gama.api.GAMA;
@@ -43,6 +43,10 @@ import gama.gaml.statements.draw.AssetDrawingAttributes;
 import gama.gaml.statements.draw.DrawingAttributes;
 import gama.gaml.statements.draw.ShapeDrawingAttributes;
 import gama.ui.display.opengl.OpenGL;
+import gama.ui.display.opengl.IOpenGL;
+import gama.ui.display.opengl.renderer.helpers.IKeystoneHelper;
+import gama.ui.display.opengl.renderer.helpers.ILightHelper;
+import gama.ui.display.opengl.renderer.helpers.IPickingHelper;
 import gama.ui.display.opengl.renderer.helpers.AbstractRendererHelper.Pass;
 import gama.ui.display.opengl.renderer.helpers.CameraHelper;
 import gama.ui.display.opengl.renderer.helpers.KeystoneHelper;
@@ -74,13 +78,13 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 
 	/** The keystone helper. */
 	// Helpers
-	private final KeystoneHelper keystoneHelper;
+	private final IKeystoneHelper keystoneHelper;
 
 	/** The picking helper. */
-	private final PickingHelper pickingHelper;
+	private final IPickingHelper pickingHelper;
 
 	/** The light helper. */
-	private final LightHelper lightHelper;
+	private final ILightHelper lightHelper;
 
 	/** The camera helper. */
 	private final CameraHelper cameraHelper;
@@ -90,7 +94,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 
 	/** The open GL. */
 	// OpenGL back-end
-	protected OpenGL openGL;
+	protected IOpenGL openGL;
 
 	/** The disposed. */
 	// State
@@ -108,9 +112,9 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	 */
 	public JOGLRenderer(final IDisplaySurface surface) {
 		setDisplaySurface(surface);
-		keystoneHelper = new KeystoneHelper(this);
-		pickingHelper = new PickingHelper(this);
-		lightHelper = new LightHelper(this);
+		keystoneHelper = createKeystoneHelper();
+		pickingHelper = createPickingHelper();
+		lightHelper = createLightHelper();
 		cameraHelper = new CameraHelper(this);
 		sceneHelper = new SceneHelper(this);
 	}
@@ -119,8 +123,17 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	public void setDisplaySurface(final IDisplaySurface d) {
 		super.setDisplaySurface(d);
 		d.getScope().setGraphics(this);
-		openGL = new OpenGL(this);
+		openGL = createOpenGL();
 	}
+
+	/** Backend factories run during construction; overrides must not depend on subclass field initialization. */
+	protected IOpenGL createOpenGL() { return new OpenGL(this); }
+
+	protected IKeystoneHelper createKeystoneHelper() { return new KeystoneHelper(this); }
+
+	protected IPickingHelper createPickingHelper() { return new PickingHelper(this); }
+
+	protected ILightHelper createLightHelper() { return new LightHelper(this); }
 
 	@Override
 	public void setCanvas(final GamaGLCanvas canvas) {
@@ -131,7 +144,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 
 	@Override
 	public void init(final GLAutoDrawable drawable) {
-		openGL.setGL2(drawable.getGL().getGL2());
+		openGL.setGL(drawable.getGL());
 		cameraHelper.initialize();
 		openGL.initializeGLStates(data.getBackgroundColor());
 		lightHelper.initialize();
@@ -286,7 +299,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 		// height = scaleDownIfMac(height);
 		if (width <= 0 || height <= 0 || openGL.getViewWidth() == width && openGL.getViewHeight() == height) return;
 		final boolean firstMeaningfulReshape = openGL.getViewWidth() <= 0 || openGL.getViewHeight() <= 0;
-		final GL2 gl = drawable.getContext().getGL().getGL2();
+		final GL gl = drawable.getContext().getGL();
 		keystoneHelper.reshape(width, height);
 		openGL.reshape(gl, width, height);
 		if (firstMeaningfulReshape) {
@@ -592,7 +605,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	 * @see gama.ui.display.opengl.renderer.IOpenGLRenderer#getKeystoneHelper()
 	 */
 	@Override
-	public KeystoneHelper getKeystoneHelper() { return keystoneHelper; }
+	public IKeystoneHelper getKeystoneHelper() { return keystoneHelper; }
 
 	/*
 	 * (non-Javadoc)
@@ -600,7 +613,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	 * @see gama.ui.display.opengl.renderer.IOpenGLRenderer#getPickingHelper()
 	 */
 	@Override
-	public PickingHelper getPickingHelper() { return pickingHelper; }
+	public IPickingHelper getPickingHelper() { return pickingHelper; }
 
 	/*
 	 * (non-Javadoc)
@@ -608,7 +621,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	 * @see gama.ui.display.opengl.renderer.IOpenGLRenderer#getOpenGLHelper()
 	 */
 	@Override
-	public OpenGL getOpenGLHelper() { return openGL; }
+	public IOpenGL getOpenGLHelper() { return openGL; }
 
 	/*
 	 * (non-Javadoc)
@@ -616,7 +629,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	 * @see gama.ui.display.opengl.renderer.IOpenGLRenderer#getLightHelper()
 	 */
 	@Override
-	public LightHelper getLightHelper() { return lightHelper; }
+	public ILightHelper getLightHelper() { return lightHelper; }
 
 	/*
 	 * (non-Javadoc)

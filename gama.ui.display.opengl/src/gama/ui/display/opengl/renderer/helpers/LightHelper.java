@@ -29,7 +29,7 @@ import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 /**
  * The Class LightHelper.
  */
-public class LightHelper extends AbstractRendererHelper {
+public class LightHelper extends GL2RendererHelper implements ILightHelper {
 
 	/**
 	 * Instantiates a new light helper.

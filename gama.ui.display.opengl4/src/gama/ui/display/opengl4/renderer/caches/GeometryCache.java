@@ -55,7 +55,7 @@ import gama.core.util.file.GamaObjFile;
 import gama.dev.DEBUG;
 import gama.ui.display.opengl4.OpenGL;
 import gama.ui.display.opengl4.files.ObjFileDrawer;
-import gama.ui.display.opengl4.renderer.IOpenGLRenderer;
+import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 
 /**
  * The Class GeometryCache. Manages two kinds of geometry caches for the OpenGL 4 renderer:
@@ -240,15 +240,18 @@ public class GeometryCache {
 	/** Back-reference to the renderer, kept for list-ID cleanup on disposal. */
 	private final IOpenGLRenderer renderer;
 
+	private final OpenGL openGL;
+
 	/**
 	 * Instantiates a new geometry cache.
 	 *
 	 * @param renderer the {@link IOpenGLRenderer} that owns this cache
 	 */
-	public GeometryCache(final IOpenGLRenderer renderer) {
+	public GeometryCache(final IOpenGLRenderer renderer, final OpenGL openGL) {
 		this.renderer = renderer;
+		this.openGL = openGL;
 		this.scope = renderer.getSurface().getScope().copy("in opengl geometry cache");
-		this.drawer = g -> renderer.getOpenGLHelper().getGeometryDrawer().drawGeometry(g, null, 0, getTypeOf(g));
+		this.drawer = g -> openGL.getGeometryDrawer().drawGeometry(g, null, 0, getTypeOf(g));
 		envelopes = newBuilder().expireAfterAccess(2, MINUTES).build();
 		builtInCache = newBuilder().concurrencyLevel(2).initialCapacity(10).build();
 		fileCache = newBuilder().expireAfterAccess(2, MINUTES).initialCapacity(10).removalListener(notif -> {
@@ -258,7 +261,7 @@ public class GeometryCache {
 		}).build(new CacheLoader<String, Integer>() {
 			@Override
 			public Integer load(final String file) {
-				return buildList(renderer.getOpenGLHelper(), file);
+				return buildList(openGL, file);
 			}
 		});
 	}
@@ -327,7 +330,6 @@ public class GeometryCache {
 	public void dispose() {
 		// Release all built-in geometry Runnables from the OpenGL list cache.
 		if (!renderer.isDisposed()) {
-			final OpenGL openGL = renderer.getOpenGLHelper();
 			builtInCache.asMap().values().forEach(bg -> {
 				for (final Integer id : bg.listIds()) { openGL.deleteList(id); }
 			});

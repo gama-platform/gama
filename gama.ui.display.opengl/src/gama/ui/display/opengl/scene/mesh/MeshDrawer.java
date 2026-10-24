@@ -48,7 +48,7 @@ import one.util.streamex.DoubleStreamEx;
  * @since 15 mai 2013
  *
  */
-public class MeshDrawer extends ObjectDrawer<MeshObject> {
+public class MeshDrawer extends ObjectDrawer<MeshObject, OpenGL> {
 
 	/**
 	 * The Signature.

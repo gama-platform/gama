@@ -26,7 +26,7 @@ import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 /**
  * The Class PickingHelper.
  */
-public class PickingHelper extends AbstractRendererHelper {
+public class PickingHelper extends GL2RendererHelper implements IPickingHelper {
 
 	static {
 		DEBUG.OFF();

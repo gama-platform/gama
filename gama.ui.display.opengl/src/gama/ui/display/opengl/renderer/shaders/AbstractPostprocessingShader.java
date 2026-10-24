@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.ui.display.opengl.renderer.shaders;
 
-import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.GL2ES2;
 
 /**
  * The Class AbstractPostprocessingShader.
@@ -30,8 +30,13 @@ public abstract class AbstractPostprocessingShader extends AbstractShader {
 	 * @param vertexFile the vertex file
 	 * @param fragmentFile the fragment file
 	 */
-	protected AbstractPostprocessingShader(final GL2 gl, final String vertexFile, final String fragmentFile) {
+	protected AbstractPostprocessingShader(final GL2ES2 gl, final String vertexFile, final String fragmentFile) {
 		super(gl, vertexFile, fragmentFile);
+	}
+
+	protected AbstractPostprocessingShader(final GL2ES2 gl, final String vertexFile, final String fragmentFile,
+			final boolean initializeBlending) {
+		super(gl, vertexFile, fragmentFile, initializeBlending);
 	}
 
 	@Override

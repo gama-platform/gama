@@ -37,7 +37,7 @@ import gama.ui.shared.utils.DPIHelper;
 /**
  * The Class KeystoneHelper.
  */
-public class KeystoneHelper extends AbstractRendererHelper {
+public class KeystoneHelper extends GL2RendererHelper implements IKeystoneHelper {
 
 	/** The finishing helper. */
 	private final Pass finishingHelper = this::finishRenderToTexture;

@@ -1,6 +1,7 @@
 package gama.ui.display.opengl4.renderer.shaders;
 
 import com.jogamp.opengl.GL4;
+import gama.ui.display.opengl.renderer.shaders.AbstractShader;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -71,7 +72,7 @@ public class BasicShader extends AbstractShader {
 	 * @param gl the GL4 context
 	 */
 	public BasicShader(final GL4 gl) {
-		super(gl, "glsl/basic.vert", "glsl/basic.frag");
+		super(gl, "glsl/basic.vert", "glsl/basic.frag", false);
 	}
 
 	@Override

@@ -23,13 +23,14 @@ import gama.api.types.geometry.IPoint;
 import gama.api.ui.layers.ILightDefinition;
 import gama.dev.DEBUG;
 import gama.ui.display.opengl4.OpenGL;
-import gama.ui.display.opengl4.renderer.IOpenGLRenderer;
+import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.display.opengl4.renderer.shaders.BasicShader;
 
 /**
  * The Class LightHelper.
  */
-public class LightHelper extends AbstractRendererHelper {
+public class LightHelper extends AbstractRendererHelper
+		implements gama.ui.display.opengl.renderer.helpers.ILightHelper {
 
 	/**
 	 * Instantiates a new light helper.

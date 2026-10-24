@@ -26,17 +26,18 @@ import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.api.utils.geometry.ICoordinates;
 import gama.api.utils.geometry.Scaling3D;
 import gama.ui.display.opengl4.OpenGL;
-import gama.ui.display.opengl4.renderer.IOpenGLRenderer;
-import gama.ui.display.opengl4.renderer.shaders.AbstractPostprocessingShader;
-import gama.ui.display.opengl4.renderer.shaders.AbstractShader;
-import gama.ui.display.opengl4.renderer.shaders.FrameBufferObject;
+import gama.ui.display.opengl.renderer.IOpenGLRenderer;
+import gama.ui.display.opengl.renderer.shaders.AbstractPostprocessingShader;
+import gama.ui.display.opengl.renderer.shaders.AbstractShader;
+import gama.ui.display.opengl.renderer.shaders.FrameBufferObject;
 import gama.ui.display.opengl4.renderer.shaders.KeystoneShaderProgram;
 import gama.ui.shared.utils.DPIHelper;
 
 /**
  * The Class KeystoneHelper.
  */
-public class KeystoneHelper extends AbstractRendererHelper {
+public class KeystoneHelper extends AbstractRendererHelper
+		implements gama.ui.display.opengl.renderer.helpers.IKeystoneHelper {
 
 	/** The finishing helper. */
 	private final Pass finishingHelper = this::finishRenderToTexture;
