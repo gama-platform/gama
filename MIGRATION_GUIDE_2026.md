@@ -41,6 +41,7 @@ A high-level summary of every area that changed. Use this to quickly assess what
 | `diffuse var:` and `transition to:` removed | Use `diffuse` and `transition` directly |
 | `image` layer renamed to `picture` | Update display blocks |
 | Displays/experiments need explicit `title:` | Identifier and UI label are now separate |
+| `overlay` position/size unified in 2D and 3D | Contents drawn in model units may need `#px` |
 
 ## Engine, UI, and Graphics
 
@@ -296,6 +297,26 @@ do my_action with: (agents: ag, values: [1, 2, 3]);
 **Key differences:**
 - Outer `[...]` → `(...)`
 - Double-colon `::` → single colon `:`
+
+---
+
+### 1.6 `overlay` layers — consistent position, size and contents
+
+The `position` and `size` facets of `overlay` are now interpreted identically by 2D (java2D) and 3D (opengl) displays, and follow their documentation (issues #354, #589, #656, #997):
+
+- Each coordinate is interpreted independently: a coordinate written with `#px` is a number of pixels of the view, a value in [0,1] (in [-1,1] for the position) is a fraction of the view, and a larger value is in model units. For instance, in `size: {2000, 32#px}`, only the height is in pixels.
+- Negative positions are counted from the right (resp. bottom) border of the view.
+- Small pixel sizes (e.g. `{5#px, 5#px}`) are no longer turned into a fraction of the view in 3D displays, and 3D overlays are no longer shrunk by 10%.
+- Overlays are recomputed when the view is resized (e.g. after switching to full screen).
+- Inside the overlay, `#px` is always one pixel of the view, whatever the size of the overlay, and model units are scaled as in the view (previously, in 2D displays, they were scaled according to the width of the overlay).
+
+```gaml
+overlay position: {10#px, 10#px} size: {200#px, 100#px} background: #white {
+    draw "Cycle: " + cycle at: {20#px, 30#px} color: #black;
+}
+```
+
+> **Action needed:** none for overlays whose contents are drawn with `#px`. Models that draw the contents with model units in an overlay smaller than the view (e.g. `at: location / 3`) may need to express these coordinates in pixels.
 
 ---
 

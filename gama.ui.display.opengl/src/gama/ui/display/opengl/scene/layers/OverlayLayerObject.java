@@ -13,13 +13,8 @@ package gama.ui.display.opengl.scene.layers;
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 
-import gama.annotations.constants.IKeyword;
-import gama.api.gaml.expressions.IExpression;
-import gama.api.gaml.types.Cast;
 import gama.api.runtime.scope.IScope;
-import gama.api.types.geometry.GamaPointFactory;
-import gama.api.types.geometry.IPoint;
-import gama.api.types.geometry.IShape;
+import gama.api.types.color.IColor;
 import gama.api.ui.layers.ILayer;
 import gama.core.outputs.layers.OverlayLayerData;
 import gama.dev.DEBUG;
@@ -47,62 +42,89 @@ public class OverlayLayerObject extends LayerObject {
 		super(renderer, layer);
 	}
 
-	@Override
-	public void computeScale(final Trace list) {
-		list.scale.setLocation(0.9, 0.9, 1);
-	}
+	/** The radius, in pixels, of the rounded corners (same as the Java2D displays). */
+	private static final double CORNER_RADIUS = 5;
+
+	/** The number of segments used to draw each rounded corner. */
+	private static final int CORNER_SEGMENTS = 10;
 
 	/**
-	 * Compute rotation.
-	 *
-	 * @param trace
-	 *            the trace
+	 * The geometry of overlays is entirely computed by {@link OverlayLayerData} in pixels: no offset, scale, rotation or
+	 * z translation is computed here.
 	 */
 	@Override
-	public void computeRotation(final Trace trace) {
-		// trace.rotation = NULL_ROTATION;
-	}
+	public void computeScale(final Trace list) {}
+
+	@Override
+	public void computeOffset(final Trace list) {}
+
+	@Override
+	public void computeRotation(final Trace trace) {}
 
 	/**
-	 * Adds the frame.
+	 * Adds the frame (background and border), drawn in pixels from the origin of the overlay.
 	 *
 	 * @param gl
 	 *            the gl
 	 */
 	@Override
 	protected void addFrame(final IOpenGL gl) {
-		IPoint size = GamaPointFactory.create(renderer.getEnvWidth(), renderer.getEnvHeight());
+		if (layer == null || !(layer.getData() instanceof OverlayLayerData d)) return;
+		final java.awt.Point size = d.getSizeInPixels();
+		final double w = size.getX();
+		final double h = size.getY();
+		if (w <= 0 || h <= 0) return;
 		final IScope scope = renderer.getSurface().getScope();
-		final IExpression expr = layer.getDefinition().getFacet(IKeyword.SIZE);
-		OverlayLayerData d = (OverlayLayerData) layer.getData();
-		if (expr != null) { size = GamaPointFactory.castToPoint(scope, expr.value(scope)); }
-		double sx = size.getX();
-		double sy = size.getY();
-		if (sx <= 1) {
-			sx *= renderer.getEnvWidth();
-			size.setX(sx);
-		}
-		if (sy <= 1) {
-			sy *= renderer.getEnvHeight();
-			size.setY(sy);
-		}
-		gl.pushMatrix();
-		boolean previous = gl.setObjectWireframe(false);
+		final double radius = d.isRounded() ? CORNER_RADIUS : 0;
+		final boolean previous = gl.setObjectWireframe(false);
 		try {
-			gl.setCurrentColor(d.getBackgroundColor(scope), 1 - layer.getData().getTransparency(scope));
-			if (d.isRounded()) {
-				gl.translateBy(-sx / 2, -sy / 2, 0);
-				gl.scaleBy(1, 1, 1);
-				drawRoundedRectangle(gl, sx / 2, -sy / 2, sx, sy, sx / 20, 40);
-			} else {
-				gl.translateBy(sx / 2, -sy / 2, 0);
-				gl.scaleBy(sx, sy, 1);
-				gl.drawCachedGeometry(IShape.Type.SQUARE, null);
+			final IColor background = d.getBackgroundColor(scope);
+			if (background != null) {
+				gl.setCurrentColor(background, 1 - d.getTransparency(scope));
+				drawRoundedRectangle(gl, 0, -h, w, h, radius, CORNER_SEGMENTS);
+			}
+			final IColor border = d.getBorderColor();
+			if (border != null) {
+				gl.setCurrentColor(border, 1);
+				drawRoundedOutline(gl, 0, -h, w, h, radius, CORNER_SEGMENTS);
 			}
 		} finally {
 			gl.setObjectWireframe(previous);
-			gl.popMatrix();
 		}
+	}
+
+	/**
+	 * Draws the outline of a rectangle with rounded corners.
+	 *
+	 * @param gl
+	 *            The rendering backend.
+	 * @param d
+	 *            The X coordinate of the lower-left corner of the enclosing rectangle.
+	 * @param e
+	 *            The Y coordinate of the lower-left corner of the enclosing rectangle.
+	 * @param x
+	 *            The total width of the rectangle.
+	 * @param y
+	 *            The total height of the rectangle.
+	 * @param cornerRadius
+	 *            The radius of the rounded corners.
+	 * @param numSegments
+	 *            The number of line segments to draw each corner arc.
+	 */
+	public void drawRoundedOutline(final IOpenGL gl, final double d, final double e, final double x, final double y,
+			final double cornerRadius, final int numSegments) {
+		final double r = Math.max(0, Math.min(cornerRadius, Math.min(x / 2, y / 2)));
+		final double[][] centers = { { d + r, e + r }, { d + x - r, e + r }, { d + x - r, e + y - r }, { d + r, e + y - r } };
+		final int segments = r == 0 ? 0 : numSegments;
+		gl.beginDrawing(GL.GL_LINE_LOOP);
+		for (int corner = 0; corner < 4; corner++) {
+			final double startAngle = Math.PI + corner * Math.PI / 2;
+			for (int i = 0; i <= segments; i++) {
+				final double angle = startAngle + i * Math.PI / 2 / Math.max(1, segments);
+				gl.outputVertex(centers[corner][0] + r * Math.cos(angle), centers[corner][1] + r * Math.sin(angle), 0);
+			}
+		}
+		gl.endDrawing();
 	}
 
 	/**
@@ -232,22 +254,25 @@ public class OverlayLayerObject extends LayerObject {
 	@Override
 	protected void computeZ(final Trace list) {}
 
+	/**
+	 * Sets up a projection where one unit is one (logical) pixel of the view, with the origin at the top-left corner,
+	 * translates to the position of the overlay, draws its frame and finally scales the contents using the ratio
+	 * computed by {@link OverlayLayerData}, so that `#px` inside the overlay represents exactly one pixel.
+	 */
 	@Override
 	protected void prepareDrawing(final IOpenGL gl, final Trace list) {
-		final double viewHeight = gl.getViewHeight();
-		final double viewWidth = gl.getViewWidth();
-		final double viewRatio = viewWidth / (viewHeight == 0 ? 1 : viewHeight);
-		final double worldHeight = gl.getWorldHeight();
-		final double worldWidth = gl.getWorldWidth();
-		final double maxDim = worldHeight > worldWidth ? worldHeight : worldWidth;
 		gl.pushIdentity(GLMatrixFunc.GL_PROJECTION);
-		if (viewRatio >= 1.0) {
-			gl.ortho(0, maxDim * viewRatio, -maxDim, 0, -1, 1);
-		} else {
-			gl.ortho(0, maxDim, -maxDim / viewRatio, 0, -1, 1);
+		gl.ortho(0, gl.getViewWidth(), -gl.getViewHeight(), 0, -1, 1);
+		final OverlayLayerData data = layer != null && layer.getData() instanceof OverlayLayerData d ? d : null;
+		if (data != null) {
+			final java.awt.Point position = data.getPositionInPixels();
+			gl.translateBy(position.getX(), -position.getY(), 0);
 		}
-		super.prepareDrawing(gl, list);
-
+		addFrame(gl);
+		if (data != null) {
+			final double ratio = data.getContentRatio();
+			gl.scaleBy(ratio, ratio, 1);
+		}
 	}
 
 	@Override
