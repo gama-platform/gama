@@ -99,8 +99,9 @@ public final class PluginConfigurationChecker {
 				add(issues, p, APT_RECONCILE, "Annotation processing during reconcile (editing) is enabled");
 			}
 			String fp = ResourceUtils.read(p, ".factorypath");
-			if (fp == null || !fp.contains(GamaProjects.PROCESSOR_WKSP_PATH)) {
-				add(issues, p, FACTORY_PATH, ".factorypath does not reference " + GamaProjects.PROCESSOR_WKSP_PATH);
+			if (!hasEnabledProcessorFactoryPath(fp)) {
+				add(issues, p, FACTORY_PATH,
+						".factorypath does not contain an enabled workspace-JAR entry for " + GamaProjects.PROCESSOR_WKSP_PATH);
 			}
 			if (!hasSourceEntry(jp, GamaProjects.GEN_SRC_DIR)) {
 				add(issues, p, CLASSPATH_GAML, "'gaml' is not declared as a source folder in .classpath");
@@ -218,6 +219,14 @@ public final class PluginConfigurationChecker {
 		return false;
 	}
 
+	private static boolean hasEnabledProcessorFactoryPath(final String factoryPath) {
+		if (factoryPath == null) return false;
+		String path = Pattern.quote(GamaProjects.PROCESSOR_WKSP_PATH);
+		return Pattern.compile("<factorypathentry\\b(?=[^>]*\\bkind\\s*=\\s*['\"]WKSPJAR['\"])"
+				+ "(?=[^>]*\\bid\\s*=\\s*['\"]" + path + "['\"])(?=[^>]*\\benabled\\s*=\\s*['\"]true['\"])[^>]*>")
+				.matcher(factoryPath).find();
+	}
+
 	/** The project-relative paths of the jars found under 'libs/'. */
 	static List<String> libJars(final IProject p) {
 		List<String> jars = new ArrayList<>();
@@ -308,7 +317,9 @@ public final class PluginConfigurationChecker {
 		if (kinds.contains(FACTORY_PATH)) {
 			if (p.getFile(".factorypath").exists()) {
 				IFactoryPath fp = AptConfig.getFactoryPath(jp);
-				fp.addWkspJar(IPath.fromPortableString(GamaProjects.PROCESSOR_WKSP_PATH));
+				IPath processorPath = IPath.fromPortableString(GamaProjects.PROCESSOR_WKSP_PATH);
+				fp.removeWkspJar(processorPath);
+				fp.addWkspJar(processorPath);
 				AptConfig.setFactoryPath(jp, fp);
 			} else {
 				ResourceUtils.write(p, ".factorypath", CodeTemplates.factoryPath(), monitor);
