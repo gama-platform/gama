@@ -10,6 +10,9 @@
  ********************************************************************************************************/
 package gama.ui.shared.factories;
 
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -80,8 +83,8 @@ public class StatusDisplayer implements IStatusDisplayer, IExperimentStateListen
 	 */
 	private class StatusRefresher extends UIJob {
 
-		/** The message. */
-		IStatusMessage message = null;
+		/** Pending messages, including errors followed by launch/cleanup notifications. */
+		private final Queue<IStatusMessage> messages = new ConcurrentLinkedQueue<>();
 
 		/**
 		 * Instantiates a new threaded updater.
@@ -103,19 +106,18 @@ public class StatusDisplayer implements IStatusDisplayer, IExperimentStateListen
 		 *            the m
 		 */
 		public void updateWith(final IStatusMessage m) {
-			message = m;
-			if (m != null) { schedule(); }
+			if (m != null) {
+				messages.offer(m);
+				schedule();
+			}
 		}
 
 		@Override
 		public IStatus runInUIThread(final IProgressMonitor monitor) {
-			try {
-				if (message != null) {
-					if (statusControl.isDisposed()) return Status.CANCEL_STATUS;
-					statusControl.updateWith(message);
-				}
-			} finally {
-				message = null;
+			if (statusControl.isDisposed()) return Status.CANCEL_STATUS;
+			IStatusMessage message;
+			while ((message = messages.poll()) != null) {
+				statusControl.updateWith(message);
 			}
 			return Status.OK_STATUS;
 		}

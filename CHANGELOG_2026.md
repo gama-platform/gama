@@ -6,6 +6,14 @@ All commits listed below point to specific changes that drive the massive archit
 
 ## [2026.0.0] - Unreleased
 
+### Runtime errors: persistent, clickable status
+
+Runtime errors, including experiment launch failures (#286), remain visible as red text on the normal top-right status background
+until clicked, rather than being replaced by background activity or the idle timer. Click the error text to
+open its source location in the editor; hover to read the full error, or right-click to open an error-details
+dialog. If no source location is available, clicking opens the details instead. The dropdown arrow still
+opens status history, where errors also provide their full text on hover and link to the editor.
+
 ### Lists and maps: explicit nil is distinct from an empty container
 
 Lists and maps now preserve explicit `nil` initialization, assignment and casts (#765).

@@ -44,7 +44,6 @@ import gama.dev.DEBUG;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.utils.WorkbenchHelper;
-import gama.workspace.status.StatusMessage;
 
 /**
  * The Class CustomMenu. An alternative to Popup & Regular menus
@@ -183,7 +182,9 @@ public class StatusHistoryPopUpMenu extends PopupDialog {
 				image.setImage(GamaIcon.named(command.icon()).image());
 				labelComposite.setData(command);
 				label.setText(GamlIdiomsProvider.toText(command.message()));
-				label.setToolTipText(command.message());
+				label.setForeground(command.isError() ? GamaColors.get(command.color()).color()
+						: contents.getForeground());
+				label.setToolTipText(command.exception() == null ? command.message() : command.exception().getAllText());
 				time.pack(true);
 				image.pack(true);
 				labelComposite.requestLayout();
@@ -265,9 +266,13 @@ public class StatusHistoryPopUpMenu extends PopupDialog {
 				@Override
 				public void mouseDown(final MouseEvent e) {
 					hide();
-					StatusMessage message = (StatusMessage) labelText.getParent().getData();
+					IStatusMessage message = (IStatusMessage) labelText.getParent().getData();
 					if (message.isError()) {
-						GAMA.getGui().getModelsManager().editModel(message.exception().getEditorContext());
+						if (message.exception().getEditorContext() == null) {
+							status.showErrorDetails(message.exception());
+						} else {
+							GAMA.getGui().getModelsManager().editModel(message.exception().getEditorContext());
+						}
 					} else {
 						GAMA.getGui().showView(null, "org.eclipse.ui.views.ProgressView", null,
 								IWorkbenchPage.VIEW_ACTIVATE);
