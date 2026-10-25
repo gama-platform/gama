@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
  * SQLSkill.java, in gama.extension.database, is part of the source code of the GAMA modeling and simulation platform
- * (v.2025-03).
+ * (v.2026-11).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
