@@ -211,6 +211,7 @@ public class GamaMapType extends GamaContainerType<IMap> {
 	 * <li><b>Agent:</b> Keys are attribute names → Types.STRING</li>
 	 * <li><b>String (JSON):</b> Keys are JSON property names → Types.STRING</li>
 	 * <li><b>Map:</b> Preserves the original key type</li>
+	 * <li><b>File:</b> Uses the file buffer's key type</li>
 	 * <li><b>Pair:</b> Preserves the pair's key type</li>
 	 * <li><b>Matrix:</b> Keys are cell values → matrix's content type</li>
 	 * <li><b>Graph:</b> Keys are edges (vertex pairs) → Types.PAIR</li>
@@ -243,6 +244,7 @@ public class GamaMapType extends GamaContainerType<IMap> {
 	public IType keyTypeIfCasting(final IExpression exp) {
 		final IType itemType = exp.getGamlType();
 		if (itemType.isAgentType()) return Types.STRING;
+		if (Types.FILE.isAssignableFrom(itemType)) return itemType.getKeyType();
 		switch (itemType.id()) {
 			case STRING:
 				return Types.STRING;
@@ -270,6 +272,7 @@ public class GamaMapType extends GamaContainerType<IMap> {
 	 * <li><b>Agent:</b> Values are attribute values → Types.NO_TYPE (mixed types)</li>
 	 * <li><b>String (JSON):</b> Values are JSON values → Types.NO_TYPE (mixed types)</li>
 	 * <li><b>Map:</b> Preserves the original content type</li>
+	 * <li><b>File:</b> Uses the file buffer's content type</li>
 	 * <li><b>Pair:</b> Values are pair values → pair's content type</li>
 	 * <li><b>Matrix:</b> Values are cell values → matrix's content type</li>
 	 * <li><b>Graph:</b> Values are edge weights → graph's content type</li>
@@ -285,6 +288,7 @@ public class GamaMapType extends GamaContainerType<IMap> {
 	public IType contentsTypeIfCasting(final IExpression exp) {
 		final IType itemType = exp.getGamlType();
 		if (itemType.isAgentType()) return Types.NO_TYPE;
+		if (Types.FILE.isAssignableFrom(itemType)) return itemType.getContentType();
 		switch (itemType.id()) {
 			case STRING:
 				return Types.NO_TYPE;

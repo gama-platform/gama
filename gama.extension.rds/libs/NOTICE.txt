@@ -1,0 +1,29 @@
+RDS serialization dependencies
+==============================
+
+These unmodified jars are taken from gama-platform/gama PR #1201, revision
+a8e6b2ad1e830a865234ad6875a568ad1b66825b.
+
+renjin-core-3.5-beta76.jar
+  Renjin, Copyright BeDataDriven and contributors.
+  GNU General Public License, version 2 or later.
+  License text: org/renjin/COPYING inside the jar.
+  Corresponding source: https://github.com/bedatadriven/renjin
+  Release artifacts and sources:
+  https://nexus.bedatadriven.com/content/groups/public/org/renjin/renjin-core/3.5-beta76/
+
+renjin-guava-28.0b.jar
+  Repackaged Google Guava, Copyright The Guava Authors.
+  Apache License, version 2.0.
+  License text: LICENSE.txt in this directory.
+  Source: https://github.com/bedatadriven/renjin
+  Upstream: https://github.com/google/guava
+
+commons-math-2.2.jar
+  Apache Commons Math, Copyright The Apache Software Foundation.
+  Apache License, version 2.0.
+  License and notices: META-INF/LICENSE.txt and META-INF/NOTICE.txt inside the jar.
+  Source: https://archive.apache.org/dist/commons/math/source/
+
+Renjin and its third-party packages are private to this bundle. No R interpreter
+session, native R installation, or RDataUtil wrapper is used.

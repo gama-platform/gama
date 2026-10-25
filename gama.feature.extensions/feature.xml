@@ -67,6 +67,10 @@
          version="0.0.0"/>
 
    <plugin
+         id="gama.extension.rds"
+         version="0.0.0"/>
+
+   <plugin
          id="gama.extension.physics"
          version="0.0.0"/>
 

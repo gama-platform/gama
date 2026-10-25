@@ -1,0 +1,22 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: RDS Serialization
+Bundle-SymbolicName: gama.extension.rds;singleton:=true
+Bundle-Version: 0.0.0.qualifier
+Bundle-Vendor: UMMISCO
+Require-Bundle: gama.api,
+ gama.core,
+ gama.annotations,
+ gama.dependencies,
+ gama.extension.dataframe,
+ org.eclipse.core.resources,
+ org.eclipse.core.runtime
+Bundle-ActivationPolicy: lazy
+Import-Package: org.eclipse.jface.resource;resolution:=optional,
+ org.eclipse.jface.viewers;resolution:=optional
+Bundle-ClassPath: .,
+ libs/renjin-core-3.5-beta76.jar,
+ libs/renjin-guava-28.0b.jar,
+ libs/commons-math-2.2.jar
+Bundle-RequiredExecutionEnvironment: JavaSE-25
+Automatic-Module-Name: gama.extension.rds
