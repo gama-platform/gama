@@ -10,16 +10,24 @@ Bundle-ActivationPolicy: lazy
 Automatic-Module-Name: gama.ui.devtools
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
+ org.eclipse.core.filesystem,
  org.eclipse.ui,
  org.eclipse.ui.ide,
  org.eclipse.jdt.core,
+ org.eclipse.jdt.apt.core,
+ org.eclipse.jdt.ui,
  org.eclipse.pde.core,
  org.eclipse.jface,
+ org.eclipse.jface.notifications,
  gama.dependencies,
  com.google.guava,
  gama.dev
 Export-Package: gama.ui.devtools,
+ gama.ui.devtools.config,
+ gama.ui.devtools.dependencies,
  gama.ui.devtools.handlers,
- gama.ui.devtools.wizards,
+ gama.ui.devtools.jobs,
  gama.ui.devtools.preferences,
- gama.ui.devtools.dependencies
+ gama.ui.devtools.templates,
+ gama.ui.devtools.util,
+ gama.ui.devtools.wizards
