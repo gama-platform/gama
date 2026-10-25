@@ -23,10 +23,25 @@ The update site is built from `gama.p2site.devtools`, which contains only `gama.
 | **Clean and Rebuild Selected Plugins** | The same, limited to the GAMA plugins in the selection. |
 | **Check GAMA Plugins Configuration** | Checks every GAMA plugin (see below), adds problem markers with quick fixes (`Ctrl/Cmd+1` in the Problems view) and offers to repair everything at once. |
 | **Rebuild the Annotation Processor Jar** | Regenerates `gama.processor/gama.processor.jar` from `Generate Processor.jardesc`. Use it after modifying `gama.processor` or `gama.annotations`. |
+| **Update Java Headers...** | Sets the GAMA version and copyright end year, updates existing headers and adds missing ones, with a mandatory per-file preview and undo. |
 | **GAML Documentation and Tests Report** | Builds a Markdown report from the warnings of the processor. It lists the undocumented GAML elements and the untested operators, per plugin. |
 | **Generate GAML Test Stubs for Untested Operators** | Writes `models/Tests/Untested Operators.gaml` in each selected plugin (or all of them). It contains one `test` stub per operator reported as not tested, with its Java signature. Stubs already in the file are kept. |
 | **Package Dependency Graph...** | Runs `jdeps` on the compiled bundles and produces an interactive HTML graph of the package dependencies. This needs a JDK. |
 | **New > GAMA Plugin / Skill / Operators / Action / Type / GAML Test Model** | The wizards. They are also available in *File > New > Other... > GAMA Development*. |
+
+## Updating Java headers
+
+**GAMA > Update Java Headers...** asks for a GAMA version and copyright end year. By default it processes all open GAMA plugins; the scope can be restricted to the selected GAMA projects. The next page previews the changes and lets you exclude individual files before applying them.
+
+Every Java compilation unit in the projects' Java source folders is considered, including `package-info.java` and files created without a GAMA wizard. Missing GAMA headers are added, and existing ones have their filename, plugin name, version and GAMA copyright year updated. Existing copyright holders, author annotations and other license notices are preserved; a new GAMA header is prepended rather than replacing an unrelated notice. Files outside Java source folders (such as vendored files under `libs/`), generated `gaml/` sources, and derived resources are excluded.
+
+Line endings, encoding and the rest of the file are preserved. Changes use Eclipse's refactoring preview and undo support, including its handling of open editor buffers and save state. The command is independent of Clean & Rebuild and never runs automatically. After applying it, the version and year are remembered and used by the Java wizards as well. This command does not change files in closed or non-GAMA projects.
+
+The text transformer has a standalone regression test that needs only a JDK:
+```
+javac -d /tmp/gama-header-tests gama.ui.devtools/src/gama/ui/devtools/util/JavaHeaderText.java gama.ui.devtools/tests/JavaHeaderTextTest.java
+java -cp /tmp/gama-header-tests JavaHeaderTextTest
+```
 
 ## Finding the Java implementation of a GAML keyword
 

@@ -106,7 +106,10 @@ public abstract class AbstractGamaClassWizard extends Wizard implements INewWiza
 						throws org.eclipse.core.runtime.CoreException {
 					String folder = "src/" + pkg.replace('.', '/') + "/";
 					for (Map.Entry<String, String> e : files.entrySet()) {
-						created.put(e.getKey(), ResourceUtils.write(project, folder + e.getKey(), e.getValue(), monitor));
+						String content = gama.ui.devtools.util.JavaHeaderText.update(e.getValue(), e.getKey(),
+								project.getName(), gama.ui.devtools.preferences.JavaHeaderSettings.version(),
+								gama.ui.devtools.preferences.JavaHeaderSettings.year());
+						created.put(e.getKey(), ResourceUtils.write(project, folder + e.getKey(), content, monitor));
 					}
 				}
 			});

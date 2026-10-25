@@ -683,19 +683,10 @@ public final class CodeTemplates {
 
 	/** The standard header of a Java file. */
 	public static String header(final String pkg, final String className) {
-		return """
-				/*******************************************************************************************************
-				 *
-				 * %2$s.java, part of the GAMA modeling and simulation platform.
-				 *
-				 * (c) 2007-%3$s UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
-				 *
-				 * Visit https://github.com/gama-platform/gama for license information and contacts.
-				 *
-				 ********************************************************************************************************/
-				package %1$s;
-
-				""".formatted(pkg, className, Year.now());
+		String notice = gama.ui.devtools.util.JavaHeaderText.header(className + ".java", null,
+				gama.ui.devtools.preferences.JavaHeaderSettings.version(),
+				gama.ui.devtools.preferences.JavaHeaderSettings.year(), "\n");
+		return notice + "package " + pkg + ";\n\n";
 	}
 
 	/** Turns a GAML name (that may contain characters invalid in Java) into a Java identifier. */

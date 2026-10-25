@@ -6,27 +6,30 @@
    <extension point="org.eclipse.ui.commands">
       <category id="gama.ui.devtools.category" name="GAMA Developer Tools"/>
       <command id="gama.ui.devtools.cleanAndRebuild" categoryId="gama.ui.devtools.category"
-            name="Clean and Rebuild GAMA Plugins"
+            name="Clean and Rebuild"
             description="Resets the annotation processor of the GAMA plugins, deletes the generated gaml folders and rebuilds everything, without any dialog">
          <commandParameter id="gama.ui.devtools.scope" name="Scope (selection or all)" optional="true"/>
       </command>
       <command id="gama.ui.devtools.checkConfiguration" categoryId="gama.ui.devtools.category"
-            name="Check GAMA Plugins Configuration"
+            name="Check GAMA Plugins"
             description="Checks (and offers to repair) the configuration of the annotation processor, classpath, build.properties and manifest of the GAMA plugins"/>
       <command id="gama.ui.devtools.gamlReport" categoryId="gama.ui.devtools.category"
-            name="GAML Documentation and Tests Report"
+            name="Missing annotations"
             description="Lists the GAML elements that are not documented and the operators that are not tested"/>
       <command id="gama.ui.devtools.generateTestStubs" categoryId="gama.ui.devtools.category"
-            name="Generate GAML Test Stubs for Untested Operators"
+            name="Generate @test stubs"
             description="Writes, in models/Tests of each plugin, a GAML test model with one stub per operator reported as not tested by the annotation processor"/>
       <command id="gama.ui.devtools.findKeyword" categoryId="gama.ui.devtools.category"
-            name="Find GAML Keyword Implementation..."
+            name="Keyword Implementation..."
             description="Searches the GAML keywords (operators, statements, skills, attributes, facets, actions...) declared in the Java sources of the workspace and opens their Java implementation"/>
+      <command id="gama.ui.devtools.updateJavaHeaders" categoryId="gama.ui.devtools.category"
+            name="Update Java Headers..."
+            description="Updates GAMA Java headers and adds missing headers, with a version/year dialog and a preview"/>
       <command id="gama.ui.devtools.rebuildProcessorJar" categoryId="gama.ui.devtools.category"
-            name="Rebuild the Annotation Processor Jar"
+            name="Rebuild Annotation Processor"
             description="Regenerates gama.processor.jar from the sources of gama.processor and gama.annotations"/>
       <command id="gama.ui.devtools.dependencyGraph" categoryId="gama.ui.devtools.category"
-            name="Package Dependency Graph..."
+            name="Dependency Graph..."
             description="Computes the graph of dependencies between the packages of GAMA (requires jdeps)"/>
       <command id="gama.ui.devtools.openNewWizard" categoryId="gama.ui.devtools.category" name="Open a GAMA Wizard">
          <commandParameter id="gama.ui.devtools.wizardId" name="Wizard id" optional="false"/>
@@ -40,6 +43,7 @@
       <handler commandId="gama.ui.devtools.gamlReport" class="gama.ui.devtools.handlers.GamlReportHandler"/>
       <handler commandId="gama.ui.devtools.generateTestStubs" class="gama.ui.devtools.handlers.GenerateTestStubsHandler"/>
       <handler commandId="gama.ui.devtools.findKeyword" class="gama.ui.devtools.handlers.FindGamlKeywordHandler"/>
+      <handler commandId="gama.ui.devtools.updateJavaHeaders" class="gama.ui.devtools.handlers.UpdateJavaHeadersHandler"/>
       <handler commandId="gama.ui.devtools.rebuildProcessorJar" class="gama.ui.devtools.handlers.RebuildProcessorJarHandler"/>
       <handler commandId="gama.ui.devtools.dependencyGraph" class="gama.ui.devtools.handlers.DependencyGraphHandler"/>
       <handler commandId="gama.ui.devtools.openNewWizard" class="gama.ui.devtools.handlers.OpenNewWizardHandler"/>
@@ -78,21 +82,49 @@
                   <parameter name="gama.ui.devtools.wizardId" value="gama.ui.devtools.wizards.testModel"/>
                </command>
             </menu>
-            <separator name="search" visible="true"/>
-            <command commandId="gama.ui.devtools.findKeyword" style="push"/>
             <separator name="build" visible="true"/>
-            <command commandId="gama.ui.devtools.cleanAndRebuild" label="Clean and Rebuild All GAMA Plugins" icon="icons/gama.png" style="push">
+            <command commandId="gama.ui.devtools.cleanAndRebuild" label="Rebuild all..." style="push">
                <parameter name="gama.ui.devtools.scope" value="all"/>
             </command>
-            <command commandId="gama.ui.devtools.cleanAndRebuild" label="Clean and Rebuild Selected Plugins" style="push">
+            <command commandId="gama.ui.devtools.cleanAndRebuild" label="Rebuild selected plugins..." style="push">
                <parameter name="gama.ui.devtools.scope" value="selection"/>
             </command>
-            <command commandId="gama.ui.devtools.checkConfiguration" style="push"/>
-            <command commandId="gama.ui.devtools.rebuildProcessorJar" style="push"/>
+            <command
+                  commandId="gama.ui.devtools.checkConfiguration"
+                  label="Check and repair plugins..."
+                  style="push"/>
+            <command
+                  commandId="gama.ui.devtools.rebuildProcessorJar"
+                  label="Rebuild processor..."
+                  style="push"/>
             <separator name="reports" visible="true"/>
-            <command commandId="gama.ui.devtools.gamlReport" style="push"/>
-            <command commandId="gama.ui.devtools.generateTestStubs" style="push"/>
-            <command commandId="gama.ui.devtools.dependencyGraph" style="push"/>
+            <command
+                  commandId="gama.ui.devtools.updateJavaHeaders"
+                  label="Update headers..."
+                  style="push">
+            </command>
+            <command
+                  commandId="gama.ui.devtools.generateTestStubs"
+                  label="Generate test stubs..."
+                  style="push"/>
+            <separator
+                  name="search"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="gama.ui.devtools.findKeyword"
+                  label="Search keyword implementations..."
+                  style="push">
+            </command>
+            <command
+                  commandId="gama.ui.devtools.dependencyGraph"
+                  label="Search plugin dependencies..."
+                  style="push"/>
+            <command
+                  commandId="gama.ui.devtools.gamlReport"
+                  label="Search missing annotations..."
+                  style="push">
+            </command>
             <separator name="additions" visible="true"/>
          </menu>
       </menuContribution>
@@ -103,6 +135,7 @@
                <parameter name="gama.ui.devtools.scope" value="selection"/>
             </command>
             <command commandId="gama.ui.devtools.checkConfiguration" label="Check Configuration" style="push"/>
+            <command commandId="gama.ui.devtools.updateJavaHeaders" style="push"/>
             <command commandId="gama.ui.devtools.gamlReport" label="Documentation and Tests Report" style="push"/>
             <command commandId="gama.ui.devtools.generateTestStubs" label="Generate Test Stubs for Untested Operators" style="push"/>
             <separator name="new" visible="true"/>
