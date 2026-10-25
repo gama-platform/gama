@@ -76,6 +76,13 @@ public final class EmbeddedActionBodyTest {
 			check(!viewer.isEditable() && body.text().equals(initial + "\nwrite 'added';"), "Disabling preserves body");
 			body.setEnabled(true);
 			check(viewer.isEditable() && viewer.getTextWidget().getText().equals(body.text()), "Enabling preserves body");
+			body.setText("");
+			check(body.text().isEmpty() && viewer.getTextWidget().getText().isEmpty(), "Selection opt-out clears only editable body");
+			check(document.get().startsWith(context.prefix()) && document.get().endsWith(context.suffix()),
+					"Replacing body keeps hidden model context");
+			body.setText(initial);
+			check(body.text().equals(initial) && viewer.getTextWidget().getText().equals(initial),
+					"Selection opt-in restores exact selected body without hidden-header leakage");
 		} finally {
 			viewer.getControl().dispose();
 			for (var resource : List.copyOf(resources.getResources())) resource.unload();

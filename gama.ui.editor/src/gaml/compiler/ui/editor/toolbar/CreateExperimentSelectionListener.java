@@ -72,7 +72,6 @@ public class CreateExperimentSelectionListener implements Selector {
 				sep();
 				action("Add action...", e1 -> editor.openActionWizard(true)).setEnabled(editor.isEditable());
 				action("Add reflex...", e1 -> editor.openBehaviorWizard(true)).setEnabled(editor.isEditable());
-				action("Extract selection as action...", e1 -> editor.extractAction()).setEnabled(editor.canExtractAction());
 				sep();
 				final Menu builtInElements = sub("Insert built-in elements...");
 				new TemplateReferenceMenu().installSubMenuIn(builtInElements);

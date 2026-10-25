@@ -149,7 +149,6 @@ import gaml.compiler.ui.editor.toolbar.EditorToolbar;
 import gaml.compiler.ui.editor.toolbar.ExperimentToolbar;
 import gaml.compiler.ui.editor.toolbar.OpenExperimentSelectionListener;
 import gaml.compiler.ui.editor.toolbar.RevalidateModelSelectionListener;
-import gaml.compiler.ui.editor.refactoring.ExtractActionHandler;
 import gaml.compiler.ui.templates.GamlEditTemplateDialogFactory;
 import gaml.compiler.ui.templates.GamlTemplateStore;
 import gaml.compiler.validation.IGamlBuilderListener;
@@ -1173,7 +1172,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	}
 
 	public void extractAction() {
-		ExtractActionHandler.extractAction(this);
+		openActionWizard(true);
 	}
 
 	public void openSpeciesWizard(final boolean create) {
