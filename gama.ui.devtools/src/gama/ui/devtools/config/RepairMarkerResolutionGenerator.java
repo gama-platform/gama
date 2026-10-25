@@ -88,7 +88,7 @@ public class RepairMarkerResolutionGenerator implements IMarkerResolutionGenerat
 				ConfigurationIssue i = PluginConfigurationChecker.fromMarker(m);
 				if (i != null) { issues.add(i); }
 			}
-			new WorkspaceJob("Repairing GAMA plugins configuration") {
+			WorkspaceJob job = new WorkspaceJob("Repairing GAMA plugins configuration") {
 				@Override
 				public IStatus runInWorkspace(final IProgressMonitor monitor) throws CoreException {
 					PluginConfigurationChecker.repair(issues, monitor);
@@ -98,7 +98,9 @@ public class RepairMarkerResolutionGenerator implements IMarkerResolutionGenerat
 									.filter(i -> projects.contains(i.project())).toList());
 					return Status.OK_STATUS;
 				}
-			}.schedule();
+			};
+			job.setRule(org.eclipse.core.resources.ResourcesPlugin.getWorkspace().getRoot());
+			job.schedule();
 		}
 
 	}
