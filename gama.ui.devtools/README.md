@@ -32,7 +32,7 @@ local installation, use a uniquely named ZIP for each build rather than a cached
 | Command | What it does |
 |---|---|
 | **Find GAML Keyword Implementation...** (`Ctrl/Cmd+Shift+Alt+K`) | Finds the Java code behind a GAML keyword (see below). |
-| **Clean and Rebuild All GAMA Plugins** (`Ctrl/Cmd+Shift+Alt+B`) | Saves the editors and repairs the configuration (optional). Disables the annotation processor, deletes the `gaml/` folders and re-enables the processor. Then runs a clean build and a full build of the workspace, or only of the GAMA plugins (preference), and checks that every `GamlAdditions.java` was regenerated. No dialog is shown and the job can be cancelled. |
+| **Clean and Rebuild All GAMA Plugins** (`Cmd+B` on macOS, `Ctrl+B` on Windows/Linux) | Saves the editors and repairs the configuration (optional). Disables the annotation processor, deletes the `gaml/` folders and re-enables the processor. Then runs a clean build and a full build of the workspace, or only of the GAMA plugins (preference), and checks that every `GamlAdditions.java` was regenerated. No dialog is shown and the job can be cancelled. |
 | **Clean and Rebuild Selected Plugins** | The same, limited to the GAMA plugins in the selection. |
 | **Check GAMA Plugins Configuration** | Checks every GAMA plugin (see below), adds problem markers with quick fixes (`Ctrl/Cmd+1` in the Problems view) and offers to repair everything at once. |
 | **Rebuild the Annotation Processor Jar** | Regenerates `gama.processor/gama.processor.jar` from `Generate Processor.jardesc`. Use it after modifying `gama.processor` or `gama.annotations`. |
@@ -41,6 +41,10 @@ local installation, use a uniquely named ZIP for each build rather than a cached
 | **Generate GAML Test Stubs for Untested Operators** | Writes `models/Tests/Untested Operators.gaml` in each selected plugin (or all of them). It contains one `test` stub per operator reported as not tested, with its Java signature. Stubs already in the file are kept. |
 | **Package Dependency Graph...** | Runs `jdeps` on the compiled bundles and produces an interactive HTML graph of the package dependencies. This needs a JDK. |
 | **New > GAMA Plugin / Skill / Operators / Action / Type / GAML Test Model** | The wizards. They are also available in *File > New > Other... > GAMA Development*. |
+
+The Clean and Rebuild All shortcut takes precedence over Eclipse's standard Build All binding in the default
+key scheme. It always targets all GAMA plugins, regardless of selection. Explicit user bindings and more
+specific editor bindings can still override it; configure these in *Preferences > General > Keys*.
 
 ## Updating Java headers
 

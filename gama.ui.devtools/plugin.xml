@@ -51,8 +51,25 @@
 
    <!-- Key bindings: Clean and Rebuild (all), Find GAML Keyword Implementation -->
    <extension point="org.eclipse.ui.bindings">
+      <!-- Delete the generic Build All binding without deleting our matching platform-specific bindings. -->
+      <key schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ui.contexts.window" platform="cocoa" sequence="M1+B"/>
+      <key schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ui.contexts.window" platform="win32" sequence="M1+B"/>
+      <key schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ui.contexts.window" platform="gtk" sequence="M1+B"/>
       <key commandId="gama.ui.devtools.cleanAndRebuild" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+M2+M3+B"/>
+            contextId="org.eclipse.ui.contexts.window" platform="cocoa" sequence="M1+B">
+         <parameter id="gama.ui.devtools.scope" value="all"/>
+      </key>
+      <key commandId="gama.ui.devtools.cleanAndRebuild" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ui.contexts.window" platform="win32" sequence="M1+B">
+         <parameter id="gama.ui.devtools.scope" value="all"/>
+      </key>
+      <key commandId="gama.ui.devtools.cleanAndRebuild" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ui.contexts.window" platform="gtk" sequence="M1+B">
+         <parameter id="gama.ui.devtools.scope" value="all"/>
+      </key>
       <key commandId="gama.ui.devtools.findKeyword" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+M2+M3+K"/>
    </extension>
