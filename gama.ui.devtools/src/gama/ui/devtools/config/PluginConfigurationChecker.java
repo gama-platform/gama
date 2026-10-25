@@ -20,6 +20,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -348,7 +350,10 @@ public final class PluginConfigurationChecker {
 		if (kinds.contains(SINGLETON)) {
 			String mf = ResourceUtils.read(p, "META-INF/MANIFEST.MF");
 			String bsn = ManifestText.get(mf, "Bundle-SymbolicName");
-			mf = ManifestText.setList(mf, "Bundle-SymbolicName", List.of(bsn.strip() + ";singleton:=true"));
+			String fixedBsn = bsn.strip();
+			Matcher singleton = Pattern.compile("(?i)(;\\s*singleton\\s*:=\\s*)[^;]*").matcher(fixedBsn);
+			fixedBsn = singleton.find() ? singleton.replaceFirst("$1true") : fixedBsn + ";singleton:=true";
+			mf = ManifestText.setList(mf, "Bundle-SymbolicName", List.of(fixedBsn));
 			ResourceUtils.write(p, "META-INF/MANIFEST.MF", mf, monitor);
 			count++;
 		}
