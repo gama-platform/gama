@@ -13,6 +13,8 @@ package gama.extension.traffic.driving.carfollowing;
 import static gama.extension.traffic.driving.DrivingSkill.getCurrentRoad;
 import static gama.extension.traffic.driving.DrivingSkill.getCurrentTarget;
 import static gama.extension.traffic.driving.DrivingSkill.getDistanceToCurrentTarget;
+import static gama.extension.traffic.driving.DrivingSkill.getFinalTarget;
+import static gama.extension.traffic.driving.DrivingSkill.getStopAtFinalTarget;
 import static gama.extension.traffic.driving.DrivingSkill.getLinkedLaneLimit;
 import static gama.extension.traffic.driving.DrivingSkill.getMinSafetyDistance;
 import static gama.extension.traffic.driving.DrivingSkill.getNextRoad;
@@ -116,6 +118,9 @@ public class Utils {
 		double minGap = Double.MAX_VALUE;
 		boolean sameDirection = false;
 		IAgent nextRoad = getNextRoad(vehicle);
+		// End of path without stopping (stop_at_final_target false): nothing ahead
+		if (nextRoad == null && target == getFinalTarget(vehicle) && !getStopAtFinalTarget(vehicle))
+			return ImmutableTriple.of(null, 1e6, false);
 		// If vehicle is approaching an intersection, we need to slow down if
 		// 1. The intersection is the final target, the vehicle hasn't decide the next road yet
 		// 2. It is not possible to enter the next road (e.g. traffic lights)

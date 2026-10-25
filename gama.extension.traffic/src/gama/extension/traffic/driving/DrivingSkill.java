@@ -257,6 +257,11 @@ import gama.gaml.skills.MovingSkill;
 				init = "true",
 				doc = @doc ("are vehicles driving on the right size of the road?")),
 		@variable (
+				name = DrivingSkill.STOP_AT_FINAL_TARGET,
+				type = IType.BOOL,
+				init = "true",
+				doc = @doc ("does the vehicle slow down to stop at the final node of its path? false: it reaches it at its current speed (e.g. leaving the network)")),
+		@variable (
 				name = DrivingSkill.DISTANCE_TO_GOAL,
 				type = IType.FLOAT,
 				init = "0.0",
@@ -349,6 +354,9 @@ public class DrivingSkill extends MovingSkill {
 
 	/** The Constant RIGHT_SIDE_DRIVING. */
 	public static final String RIGHT_SIDE_DRIVING = "right_side_driving";
+
+	/** The Constant STOP_AT_FINAL_TARGET. */
+	public static final String STOP_AT_FINAL_TARGET = "stop_at_final_target";
 
 	/** The Constant IGNORE_ONEWAY. */
 	public static final String IGNORE_ONEWAY = "ignore_oneway";
@@ -1103,6 +1111,19 @@ public class DrivingSkill extends MovingSkill {
 		vehicle.setAttribute(RIGHT_SIDE_DRIVING, isRight);
 	}
 
+	/** Does the vehicle stop at the final node of its path (default true). */
+	@getter (STOP_AT_FINAL_TARGET)
+	public static boolean getStopAtFinalTarget(final IAgent vehicle) {
+		Object v = vehicle.getAttribute(STOP_AT_FINAL_TARGET);
+		return v == null || (Boolean) v;
+	}
+
+	/** Sets whether the vehicle stops at the final node of its path. */
+	@setter (STOP_AT_FINAL_TARGET)
+	public static void setStopAtFinalTarget(final IAgent vehicle, final Boolean stop) {
+		vehicle.setAttribute(STOP_AT_FINAL_TARGET, stop);
+	}
+
 	/**
 	 * Gets the safety distance coeff.
 	 *
@@ -1819,6 +1840,88 @@ public class DrivingSkill extends MovingSkill {
 	public boolean primUnregister(final IScope scope) throws GamaRuntimeException {
 		IAgent vehicle = getCurrentAgent(scope);
 		return unregister(scope, vehicle);
+	}
+
+	/**
+	 * Places the vehicle on a road at a given distance to the road's end, as it was in another simulation (e.g. a
+	 * vehicle moved between processes). Registers it in the road's vehicle ordering for its lanes (as
+	 * updateVehicleOrdering does) and sets current_road, lowest_lane and distance_to_current_target. The caller sets the
+	 * other driving variables (path, current_index, current_target, next_road, segment_index_on_road,
+	 * distance_to_goal, location, speed, ...).
+	 */
+	@action (
+			name = "restore_on_road",
+			args = { @arg (
+					name = "road",
+					type = IType.AGENT,
+					optional = false,
+					doc = @doc ("the road")),
+					@arg (
+							name = "lane",
+							type = IType.INT,
+							optional = false,
+							doc = @doc ("the lowest lane occupied")),
+					@arg (
+							name = "distance",
+							type = IType.FLOAT,
+							optional = false,
+							doc = @doc ("the distance to the end of the road (distance_to_current_target)")) },
+			doc = @doc (
+					value = "place the vehicle on a road at a given distance to its end (restoring a vehicle's state)",
+					examples = { @example ("do restore_on_road road: r lane: 0 distance: 12.5;") }))
+	public boolean primRestoreOnRoad(final IScope scope) throws GamaRuntimeException {
+		IAgent vehicle = getCurrentAgent(scope);
+		IAgent road = (IAgent) scope.getArg("road", IType.AGENT);
+		int lowestLane = scope.getIntArg("lane");
+		double dist = scope.getFloatArg("distance");
+		int numLanesCorrect = RoadSkill.getNumLanes(road);
+		for (int i = 0; i < getNumLanesOccupied(vehicle); i += 1) {
+			int lane = lowestLane + i;
+			double d = lane < numLanesCorrect ? dist : RoadSkill.getTotalLength(road) - dist;
+			RoadSkill.getVehicleOrderingMap(scope, road, lane).put(vehicle, d);
+		}
+		setCurrentRoad(vehicle, road);
+		setLowestLane(vehicle, lowestLane);
+		setDistanceToCurrentTarget(vehicle, dist);
+		return true;
+	}
+
+	/**
+	 * Restores the driving variables that are read-only in GAML (computed by drive), as they were in another
+	 * simulation: acceleration and the leader seen at the last step (MOBIL reads the follower's leading_distance).
+	 */
+	@action (
+			name = "restore_driving",
+			args = { @arg (
+					name = ACCELERATION,
+					type = IType.FLOAT,
+					optional = false,
+					doc = @doc ("acceleration")),
+					@arg (
+							name = LEADING_VEHICLE,
+							type = IType.AGENT,
+							optional = true,
+							doc = @doc ("leading vehicle (nil: none)")),
+					@arg (
+							name = LEADING_DISTANCE,
+							type = IType.FLOAT,
+							optional = false,
+							doc = @doc ("distance to the leading vehicle")),
+					@arg (
+							name = LEADING_SPEED,
+							type = IType.FLOAT,
+							optional = false,
+							doc = @doc ("speed of the leading vehicle")) },
+			doc = @doc (
+					value = "restore acceleration and leader variables (read-only in GAML) of a vehicle moved from another simulation",
+					examples = { @example ("do restore_driving acceleration: 0.0 leading_vehicle: nil leading_distance: 1e6 leading_speed: 0.0;") }))
+	public boolean primRestoreDriving(final IScope scope) throws GamaRuntimeException {
+		IAgent vehicle = getCurrentAgent(scope);
+		setAcceleration(vehicle, scope.getFloatArg(ACCELERATION));
+		setLeadingVehicle(vehicle, (IAgent) scope.getArg(LEADING_VEHICLE, IType.AGENT));
+		setLeadingDistance(vehicle, scope.getFloatArg(LEADING_DISTANCE));
+		setLeadingSpeed(vehicle, scope.getFloatArg(LEADING_SPEED));
+		return true;
 	}
 
 	/**
