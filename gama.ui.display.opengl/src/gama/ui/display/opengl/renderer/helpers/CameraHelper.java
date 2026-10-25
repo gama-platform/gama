@@ -14,6 +14,8 @@ import java.nio.FloatBuffer;
 import java.util.Collection;
 
 import com.jogamp.common.nio.Buffers;
+import com.jogamp.newt.event.InputEvent;
+import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2ES2;
 import com.jogamp.opengl.GLRunnable;
@@ -440,26 +442,13 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		});
 	}
 
-	/**
-	 * Checks if is control down.
-	 *
-	 * @param e
-	 *            the e
-	 * @return true, if is control down
-	 */
-	private boolean isControlDown(final com.jogamp.newt.event.MouseEvent e) {
-		return e.isControlDown() || SystemInfo.isMac() && e.isMetaDown();
+	/** Camera and display shortcuts use CMD on macOS, CTRL elsewhere. */
+	static boolean isControlDown(final InputEvent e) {
+		return SystemInfo.isMac() ? e.isMetaDown() : e.isControlDown();
 	}
 
-	/**
-	 * Checks if is control down.
-	 *
-	 * @param e
-	 *            the e
-	 * @return true, if is control down
-	 */
-	private boolean isControlDown(final com.jogamp.newt.event.KeyEvent e) {
-		return e.isControlDown() || SystemInfo.isMac() && e.isMetaDown();
+	static boolean isCameraModifierKey(final short key) {
+		return key == (SystemInfo.isMac() ? KeyEvent.VK_META : KeyEvent.VK_CONTROL);
 	}
 
 	@Override
@@ -881,7 +870,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 						break;
 					case com.jogamp.newt.event.KeyEvent.VK_CONTROL, com.jogamp.newt.event.KeyEvent.VK_META:
 						// The press and release of these keys does not seem to work. Caught after
-						setCtrlPressed(!firsttimeMouseDown);
+						if (isCameraModifierKey(e.getKeySymbol())) { setCtrlPressed(!firsttimeMouseDown); }
 						break;
 				}
 				// setShiftPressed(e.isShiftDown());
@@ -915,7 +904,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 
 				switch (e.getKeyChar()) {
 					case 0:
-						setCtrlPressed(e.isControlDown() || SystemInfo.isMac() && e.isMetaDown());
+						setCtrlPressed(isControlDown(e));
 						setShiftPressed(e.isShiftDown());
 						break;
 					case '+':
@@ -1037,7 +1026,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		invokeOnGLThread(drawable -> {
 			if (!keystoneMode) {
 				if (e.getKeyChar() == 0) {
-					if (ctrlPressed) { setCtrlPressed(!isControlDown(e)); }
+					setCtrlPressed(!isCameraModifierKey(e.getKeySymbol()) && isControlDown(e));
 					if (shiftPressed) { setShiftPressed(!e.isShiftDown()); }
 					return true;
 				}
@@ -1057,7 +1046,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 						if (cameraInteraction) { goesBackward = false; }
 						break;
 					case com.jogamp.newt.event.KeyEvent.VK_CONTROL, com.jogamp.newt.event.KeyEvent.VK_META:
-						setCtrlPressed(false);
+						if (isCameraModifierKey(e.getKeySymbol())) { setCtrlPressed(false); }
 						break;
 					case com.jogamp.newt.event.KeyEvent.VK_SHIFT:
 						setShiftPressed(false);

@@ -92,6 +92,10 @@ import gama.core.outputs.layers.AbstractLayerStatement.OpenGLSpecificLayerValida
 				+ "` allows the modeler to define a camera. The display will then be able to choose among the camera defined (either within this statement or globally in GAMA) in a dynamic way. "
 				+ "Several preset cameras are provided and accessible in the preferences (to choose the default) or in GAML using the keywords #from_above, #from_left, #from_right, #from_up_right, #from_up_left, #from_front, #from_up_front, #isometric."
 				+ "These cameras are unlocked (so that they can be manipulated by the user), look at the center of the world from a symbolic position, and the distance between this position and the target is equal to the maximum of the width and height of the world's shape. "
+				+ "For interactive camera navigation in both OpenGL and OpenGL4, the camera modifier is CMD on macOS and CTRL on Windows/Linux. "
+				+ "On macOS, use CMD instead of CTRL for modified mouse and keyboard camera controls: CTRL no longer substitutes for CMD and remains available for model-defined keyboard events. "
+				+ "On Windows/Linux, the Windows/Meta key does not substitute for CTRL. Unmodified and SHIFT-based navigation are unchanged. "
+				+ "macOS CTRL-click still opens the contextual menu; operating-system and workbench shortcuts remain active. "
 				+ "These preset cameras can be reused when defining new cameras, since their names can become symbolic positions for them. For instance: camera 'my_camera' location: #from_top distance: 10; will lower (or extend) the distance between the camera and the center of the world to 10. "
 				+ "camera 'my_camera' locked: true location: #from_up_front target: people(0); will continuously follow the first agent of the people species from the up-front position. ",
 		see = { IKeyword.DISPLAY, IKeyword.AGENTS, IKeyword.CHART, IKeyword.EVENT, "graphics", IKeyword.GRID_LAYER,

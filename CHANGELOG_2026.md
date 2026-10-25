@@ -6,6 +6,51 @@ All commits listed below point to specific changes that drive the massive archit
 
 ## [2026.0.0] - Unreleased
 
+### BIG CHANGE: keyboard combinations in display events
+
+The `event` statement now supports **explicit keyboard combinations** in Java2D, OpenGL and OpenGL4 displays
+(#332). Models can bind several modifiers to a character or named key without replacing existing single-key events:
+
+```gaml
+event "ctrl+shift+a" { write "CTRL+SHIFT+A"; }
+event "alt+arrow_up" { write "ALT+UP"; }
+event #ctrl + "a" { write "CTRL+A"; }
+event #cmd + "+" + #enter { write "Command/Windows+Enter"; }
+```
+
+Use `ctrl`, `shift`, `alt`, and `cmd`, followed by one character or a named keyboard key. Modifier order and
+capitalization do not matter, but the modifier set must match **exactly**: `ctrl+a` does not match `ctrl+shift+a`.
+Letters are case-insensitive inside combinations; declare `shift` explicitly. `space` names the space key, and
+`ctrl++` names CTRL with the plus character (add `shift` if producing `+` requires it on your keyboard).
+Modifier-only combinations, duplicate modifiers, unknown names and mouse-event combinations are rejected.
+
+Existing `#ctrl`, `#cmd`, `#shift`, and `#alt` constants retain their string values and standalone-event behavior.
+They can also be concatenated directly: `#ctrl + "a"` and `#ctrl + #shift + "a"` are accepted compact spellings
+of `ctrl+a` and `ctrl+shift+a`. The explicit separator form, e.g. `#ctrl + "+a"`, is recommended for readability.
+`control` aliases `ctrl`; `command`, `meta`, `win`, and `windows` alias `cmd`. CMD means Command on macOS and
+Windows/Meta elsewhere; it is **not** a portable alias for CTRL.
+
+Combinations fire on key press, including native auto-repeat, when the display has keyboard focus. Their blocks
+execute in the experiment context; use `ask simulation` to change simulation state. Legacy key events continue
+to be dispatched as before. Built-in camera, display and workbench shortcuts remain active rather than being
+overridden. Validation warns specifically about CTRL-based OpenGL events on Windows and known shortcut conflicts; OS or
+workbench interception can still prevent delivery.
+
+See the runnable [Keyboard Combinations](gama.library/models/Recipes/User%20Interaction/models/Keyboard%20Combinations.gaml)
+recipe for string syntax, constant concatenation, multiple modifiers, named keys and unchanged single-key events.
+
+### BEHAVIOR CHANGE: macOS 3D camera controls use CMD, not CTRL
+
+In **both OpenGL and OpenGL4**, the camera modifier is now **CMD only on macOS**. Previously, both CTRL and CMD
+could activate modified camera navigation. macOS users who held CTRL while rotating or moving the camera must
+now hold **CMD** instead. CTRL is no longer a camera modifier and can be used for model-defined keyboard events
+without also activating that modifier's camera behavior.
+
+**Windows and Linux keep CTRL as their camera modifier**; the Windows/Meta key does not substitute for it.
+The platform-specific selection applies to mouse and keyboard camera interaction and to the camera helper's
+display shortcuts. Unmodified navigation and SHIFT-based controls are unchanged. On macOS, **CTRL-click still
+opens the contextual menu**; this change does not override operating-system or workbench shortcuts.
+
 ### BDI: shared internal mental-state operations
 
 The BDI extension now centralises its built-in modality/base mapping, mental-state construction, and common

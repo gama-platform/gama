@@ -23,6 +23,7 @@ import gama.api.ui.displays.IGraphics;
 import gama.api.ui.displays.IGraphicsScope;
 import gama.api.ui.layers.IEventLayerListener;
 import gama.api.ui.layers.ILayerStatement;
+import gama.api.ui.layers.KeyCombination;
 import gama.dev.DEBUG;
 
 /**
@@ -46,6 +47,8 @@ public class EventLayer extends AbstractLayer implements IEventLayerListener {
 
 	/** The event. */
 	private String event;
+
+	private KeyCombination combination;
 
 	/**
 	 * Instantiates a new event layer.
@@ -114,6 +117,7 @@ public class EventLayer extends AbstractLayer implements IEventLayerListener {
 		// Evaluated in the display surface scope to gather variables defined in
 		// there
 		event = Cast.asString(surface.getScope(), eventType.value(surface.getScope()));
+		combination = KeyCombination.isCombination(event) ? KeyCombination.parse(event) : null;
 		listenedEvent = getListeningEvent(event);
 		surface.addListener(this);
 	}
@@ -211,6 +215,11 @@ public class EventLayer extends AbstractLayer implements IEventLayerListener {
 	@Override
 	public void keyPressed(final String c) {
 		if (c.equals(event)) { executeEvent(-1, -1); }
+	}
+
+	@Override
+	public void keyCombinationPressed(final KeyCombination pressed) {
+		if (pressed.equals(combination)) { executeEvent(-1, -1); }
 	}
 
 	@Override

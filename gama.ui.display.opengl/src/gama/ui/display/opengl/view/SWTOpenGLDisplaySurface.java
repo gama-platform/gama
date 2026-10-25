@@ -59,6 +59,7 @@ import gama.api.ui.displays.IGraphics;
 import gama.api.ui.displays.IGraphicsScope;
 import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.ui.layers.IEventLayerListener;
+import gama.api.ui.layers.KeyCombination;
 import gama.api.ui.layers.ILayer;
 import gama.api.ui.layers.ILayerManager;
 import gama.api.utils.geometry.GamaEnvelopeFactory;
@@ -765,6 +766,11 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	@Override
 	public void dispatchKeyEvent(final char e) {
 		for (final IEventLayerListener gl : listeners) { gl.keyPressed(String.valueOf(e)); }
+	}
+
+	@Override
+	public void dispatchKeyCombination(final KeyCombination combination) {
+		for (final IEventLayerListener listener : listeners) { listener.keyCombinationPressed(combination); }
 	}
 
 	@Override
