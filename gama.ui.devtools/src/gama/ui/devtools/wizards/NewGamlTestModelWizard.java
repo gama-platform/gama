@@ -72,7 +72,7 @@ public class NewGamlTestModelWizard extends Wizard implements INewWizard {
 			getContainer().run(true, false, new WorkspaceModifyOperation() {
 				@Override
 				protected void execute(final IProgressMonitor monitor) throws CoreException {
-					created[0] = ResourceUtils.write(project, page.path(), CodeTemplates.gamlTestModel(name,
+					created[0] = ResourceUtils.write(project, "models/Tests/" + name + ".gaml", CodeTemplates.gamlTestModel(name,
 							feature.isEmpty() ? name : feature), monitor);
 				}
 			});
