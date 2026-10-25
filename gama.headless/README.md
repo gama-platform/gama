@@ -38,6 +38,58 @@ The GUI server has one current experiment, shared with the desktop user; it does
 
 Use this server on a trusted network. Clients can load local models and execute GAML; the desktop WebSocket endpoint is not an authenticated public service.
 
+## Platform preferences over WebSocket
+
+GUI and headless servers accept `get_preferences` and `set_preference` **without loading an experiment**.
+These commands operate on GAML-accessible preferences registered in the running installation, including plug-in
+preferences. Internal preferences that are not exposed in GAML cannot be read or changed through these commands.
+
+Read selected preferences, or omit `names` to discover all remotely exposed preferences:
+
+```json
+{"type":"get_preferences","names":["pref_experiment_ask_closing"]}
+```
+
+The `CommandExecutedSuccessfully` response's `content` is an object keyed by preference name. Each entry contains
+`value`, `type`, `description`, `restart_required`, `min`, `max`, and `among`. Unspecified constraints are `null`.
+An empty `names` array selects nothing; unknown or unexposed names cause the entire read to fail.
+
+To suppress the GUI's experiment-replacement confirmation, send this command and **wait for its successful response
+before sending `load`**:
+
+```json
+{"type":"set_preference","name":"pref_experiment_ask_closing","value":false}
+```
+
+Changes are runtime-only by default. Add `"persist":true` to save the value for subsequent launches. The response's
+`content` contains the same metadata as a read, plus `name` and `persisted` (whether persistence was requested and
+completed). `restart_required` means the new value is stored but may not take effect until GAMA restarts; the command
+never restarts GAMA automatically. Setting the current value is harmless and can still explicitly persist it.
+
+Values use the following JSON representations, both when reading and writing:
+
+| Preference type | JSON value |
+|---|---|
+| `bool` | Boolean, not `"true"` / `"false"` strings. |
+| `int` | Integral number in the signed 32-bit range. |
+| `float` | Finite number. |
+| `string` | String, including for enumerated string preferences. |
+| `rgb` (color) | `[red, green, blue, alpha]`, integer components in `0..255`; writes also accept three components (alpha defaults to `255`). |
+| `font` | `{"name":"Helvetica","style":0,"size":12}`; style `0..3` (plain, bold, italic, bold italic), positive integer size. |
+| `point` | `[x,y,z]`; writes also accept `[x,y]` with `z=0`. |
+| `date` | ISO date/time string. |
+| `file` | Non-empty server-side path string. |
+
+Missing fields, null values, incorrect types, unsupported write types, unknown keys, and values outside declared ranges
+or allowed choices return `MalformedRequest`. Listener vetoes or update/persistence failures return
+`UnableToExecuteRequest`. Persistence or listener failures can occur after an in-memory change; read the preference
+again to determine its effective value. Changes use normal preference listeners, on the GUI thread when applicable.
+
+**Preferences are global to the running GAMA instance**, not to an experiment or connection. They affect the desktop
+user and other clients and are not restored on disconnect. Only trusted clients should access the server: GAML
+visibility is not an authorization mechanism, and any connected client can modify exposed preferences.
+There are no batch writes or preference-change subscriptions.
+
 ## Server exchange logs
 
 **Exchange logging is off by default**, in both GUI and headless modes, including secure (`wss://`) headless servers. When enabled, each server run creates a separate UTF-8 JSON Lines file in **`~/.gama/server-logs/`**, outside the temporary headless workspace. The startup console prints its absolute path, for example:

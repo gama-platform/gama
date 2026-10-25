@@ -117,6 +117,32 @@ The GUI logging preference also takes effect immediately, without restarting GAM
 
 WebSocket `load` now honors `parameters`, `until`, `console`, `status`, `dialog` and `runtime` in desktop GUI mode, not only headless mode (#394). Parameter values are applied before `global init`. Forwarding options use the same defaults in both modes and do not suppress local GUI output. The loaded experiment retains its requesting socket even when another client connects. A GUI experiment pauses and sends `SimulationEnded` when its stop condition is reached; reload it before running again. See the [GUI loading guide and runnable client example](gama.headless/README.md).
 
+### GAMA Server: read and configure platform preferences
+
+GUI and headless clients can now read and change GAML-accessible platform preferences through
+`get_preferences` and `set_preference`, **before loading an experiment** (#812).
+For example, read the experiment-close confirmation setting, then disable it to allow subsequent GUI
+`load` commands to replace the current experiment without a confirmation dialog:
+
+```json
+{"type":"get_preferences","names":["pref_experiment_ask_closing"]}
+{"type":"set_preference","name":"pref_experiment_ask_closing","value":false}
+```
+
+Send these as separate WebSocket messages and wait for the successful `set_preference` response before
+sending `load`. Omit `names` to discover all exposed preferences and their current values, types,
+descriptions, allowed values/ranges and restart requirements.
+
+Changes are runtime-only by default; add `"persist":true` to `set_preference` to save the value for
+future launches. Values are validated and normal preference listeners are notified; rejected changes
+and persistence failures return explicit errors. Preferences marked as requiring a restart are not
+necessarily applied immediately.
+
+**Preferences affect the whole GAMA instance**, including other clients and the desktop user, and are
+not restored when a connection closes. Only trusted clients should access the server. See the
+[preference command guide](gama.headless/README.md#platform-preferences-over-websocket) for JSON value
+formats, response fields and error behavior.
+
 ### 🏗️ Architecture & Core API (`gama.api`)
 The new `gama.api` module has been created to decouple public interfaces from internal implementations (`gama.core`). Core types have been extensively relocated, and heavily used classes have been modernized to use Java Records.
 

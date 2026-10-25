@@ -105,6 +105,17 @@ public interface IGamaPreferenceStore {
 	void write(Pref gp);
 
 	/**
+	 * Persists a preference and reports durability failures to the caller. Backends that suppress flush failures in
+	 * {@link #write(Pref)} must override this method to perform a checked flush.
+	 *
+	 * @param gp the preference to persist
+	 * @throws IllegalStateException if the backing store cannot be flushed
+	 */
+	default void writeAndFlush(final Pref<?> gp) {
+		write(gp);
+	}
+
+	/**
 	 * Registers a {@link Pref} with this store so that it participates in persistence and override resolution. During
 	 * registration the store checks whether the preference key has been overridden — either via a JVM system property
 	 * ({@code -Dkey=value}) or by a previously persisted value — and initializes the preference accordingly. The

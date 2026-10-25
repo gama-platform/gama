@@ -261,6 +261,11 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 				cmdHelper.process(this, socket, received);
 				return;
 			}
+			if (ISocketCommand.GET_PREFERENCES.equals(received.get(IKeyword.TYPE))
+					|| ISocketCommand.SET_PREFERENCE.equals(received.get(IKeyword.TYPE))) {
+				cmdHelper.processAsync(this, socket, received);
+				return;
+			}
 			final String expId = received.getOrDefault(EXP_ID, "").toString();
 			final String socketId = received.getOrDefault(SOCKET_ID, getSocketId(socket)).toString();
 			IExperimentSpecies exp = getExperiment(socketId, expId);
