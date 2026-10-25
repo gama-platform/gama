@@ -65,7 +65,9 @@ public class Arguments extends Facets {
 	public Arguments(final Map<String, Object> myArgs) {
 		this();
 		if (myArgs != null) {
-			myArgs.forEach((k, v) -> put(k, GAML.getExpressionDescriptionFactory().createConstant(v)));
+			// Runtime values: not cached (the cache is keyed by equality, so an equal list or map would be replaced by
+			// an earlier object)
+			myArgs.forEach((k, v) -> put(k, GAML.getExpressionDescriptionFactory().createConstantNoCache(v)));
 		}
 	}
 
@@ -130,7 +132,11 @@ public class Arguments extends Facets {
 		result.setCaller(caller.get());
 		forEach((s, e) -> {
 			final IExpression exp = getExpr(s);
-			if (exp != null) { result.put(s, GAML.getExpressionDescriptionFactory().createConstant(exp.value(scope))); }
+			// Not cached: the constant cache is keyed by equality, so an argument equal to an earlier one (e.g. a copy of a
+			// map) would be passed as that earlier object, and the action would modify it
+			if (exp != null) {
+				result.put(s, GAML.getExpressionDescriptionFactory().createConstantNoCache(exp.value(scope)));
+			}
 		});
 		return result;
 	}
