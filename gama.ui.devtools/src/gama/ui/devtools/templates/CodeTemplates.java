@@ -703,7 +703,7 @@ public final class CodeTemplates {
 		StringBuilder sb = new StringBuilder();
 		for (char c : name.toCharArray()) { sb.append(Character.isJavaIdentifierPart(c) ? c : '_'); }
 		if (sb.isEmpty() || !Character.isJavaIdentifierStart(sb.charAt(0))) { sb.insert(0, '_'); }
-		return sb.toString();
+		return javax.lang.model.SourceVersion.isKeyword(sb) ? "_" + sb : sb.toString();
 	}
 
 	/** Turns a name into a valid GAML model identifier. */
