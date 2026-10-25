@@ -18,6 +18,7 @@ The update site is built from `gama.p2site.devtools`, which contains only `gama.
 
 | Command | What it does |
 |---|---|
+| **Find GAML Keyword Implementation...** (`Ctrl/Cmd+Shift+Alt+K`) | Finds the Java code behind a GAML keyword (see below). |
 | **Clean and Rebuild All GAMA Plugins** (`Ctrl/Cmd+Shift+Alt+B`) | Saves the editors and repairs the configuration (optional). Disables the annotation processor, deletes the `gaml/` folders and re-enables the processor. Then runs a clean build and a full build of the workspace, or only of the GAMA plugins (preference), and checks that every `GamlAdditions.java` was regenerated. No dialog is shown and the job can be cancelled. |
 | **Clean and Rebuild Selected Plugins** | The same, limited to the GAMA plugins in the selection. |
 | **Check GAMA Plugins Configuration** | Checks every GAMA plugin (see below), adds problem markers with quick fixes (`Ctrl/Cmd+1` in the Problems view) and offers to repair everything at once. |
@@ -26,6 +27,24 @@ The update site is built from `gama.p2site.devtools`, which contains only `gama.
 | **Generate GAML Test Stubs for Untested Operators** | Writes `models/Tests/Untested Operators.gaml` in each selected plugin (or all of them). It contains one `test` stub per operator reported as not tested, with its Java signature. Stubs already in the file are kept. |
 | **Package Dependency Graph...** | Runs `jdeps` on the compiled bundles and produces an interactive HTML graph of the package dependencies. This needs a JDK. |
 | **New > GAMA Plugin / Skill / Operators / Action / Type / GAML Test Model** | The wizards. They are also available in *File > New > Other... > GAMA Development*. |
+
+## Finding the Java implementation of a GAML keyword
+
+**GAMA > Find GAML Keyword Implementation...** opens a dialog like *Open Type*. It lists the GAML keywords declared in the Java sources of the open projects, with the Java element that implements each one:
+
+- operators, statements, skills, species, types, file, experiment and display types, classes and constants;
+- actions and their arguments;
+- attributes, with their getters and setters;
+- facets.
+
+The names are read from the annotations (`@operator`, `@symbol`, `@variable`, `@facet`, `@arg`...). Names given as constants, such as `IKeyword.SPEED` or a local `VELOCITY`, are resolved to their GAML value.
+
+- The pattern matches the start of the names and is case-insensitive. `*` and `?` are wildcards when the pattern also contains a letter (`*_path`); on their own they find the operators `*`, `?`...
+- To restrict the search to one kind, prefix the pattern with the kind: `facet:speed`, `op:+`, `action:go`, `attr:location`, `statement:draw`.
+- The dialog opens with the selected text or the word under the caret, in any editor, including the GAML editor. For example, put the caret on `draw` in a model and press `Ctrl/Cmd+Shift+Alt+K`.
+- Choosing one or several entries opens the Java files and selects the name in the annotation.
+
+The index needs no build. The first search parses the annotated files (about one second for the whole GAMA code base), and each later search only parses the files that changed.
 
 ## Quick fixes on the processor warnings
 

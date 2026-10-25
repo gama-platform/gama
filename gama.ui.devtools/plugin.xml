@@ -19,6 +19,9 @@
       <command id="gama.ui.devtools.generateTestStubs" categoryId="gama.ui.devtools.category"
             name="Generate GAML Test Stubs for Untested Operators"
             description="Writes, in models/Tests of each plugin, a GAML test model with one stub per operator reported as not tested by the annotation processor"/>
+      <command id="gama.ui.devtools.findKeyword" categoryId="gama.ui.devtools.category"
+            name="Find GAML Keyword Implementation..."
+            description="Searches the GAML keywords (operators, statements, skills, attributes, facets, actions...) declared in the Java sources of the workspace and opens their Java implementation"/>
       <command id="gama.ui.devtools.rebuildProcessorJar" categoryId="gama.ui.devtools.category"
             name="Rebuild the Annotation Processor Jar"
             description="Regenerates gama.processor.jar from the sources of gama.processor and gama.annotations"/>
@@ -36,15 +39,18 @@
       <handler commandId="gama.ui.devtools.checkConfiguration" class="gama.ui.devtools.handlers.CheckConfigurationHandler"/>
       <handler commandId="gama.ui.devtools.gamlReport" class="gama.ui.devtools.handlers.GamlReportHandler"/>
       <handler commandId="gama.ui.devtools.generateTestStubs" class="gama.ui.devtools.handlers.GenerateTestStubsHandler"/>
+      <handler commandId="gama.ui.devtools.findKeyword" class="gama.ui.devtools.handlers.FindGamlKeywordHandler"/>
       <handler commandId="gama.ui.devtools.rebuildProcessorJar" class="gama.ui.devtools.handlers.RebuildProcessorJarHandler"/>
       <handler commandId="gama.ui.devtools.dependencyGraph" class="gama.ui.devtools.handlers.DependencyGraphHandler"/>
       <handler commandId="gama.ui.devtools.openNewWizard" class="gama.ui.devtools.handlers.OpenNewWizardHandler"/>
    </extension>
 
-   <!-- Key binding: Clean and Rebuild (all) -->
+   <!-- Key bindings: Clean and Rebuild (all), Find GAML Keyword Implementation -->
    <extension point="org.eclipse.ui.bindings">
       <key commandId="gama.ui.devtools.cleanAndRebuild" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+M2+M3+B"/>
+      <key commandId="gama.ui.devtools.findKeyword" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+M3+K"/>
    </extension>
 
    <!-- Menus -->
@@ -72,6 +78,8 @@
                   <parameter name="gama.ui.devtools.wizardId" value="gama.ui.devtools.wizards.testModel"/>
                </command>
             </menu>
+            <separator name="search" visible="true"/>
+            <command commandId="gama.ui.devtools.findKeyword" style="push"/>
             <separator name="build" visible="true"/>
             <command commandId="gama.ui.devtools.cleanAndRebuild" label="Clean and Rebuild All GAMA Plugins" icon="icons/gama.png" style="push">
                <parameter name="gama.ui.devtools.scope" value="all"/>
@@ -90,6 +98,7 @@
       </menuContribution>
       <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
          <menu id="gama.ui.devtools.popup" label="GAMA" icon="icons/gama.png">
+            <command commandId="gama.ui.devtools.findKeyword" label="Find GAML Keyword Implementation..." style="push"/>
             <command commandId="gama.ui.devtools.cleanAndRebuild" label="Clean and Rebuild" style="push">
                <parameter name="gama.ui.devtools.scope" value="selection"/>
             </command>
