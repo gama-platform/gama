@@ -31,6 +31,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
     steps:
       - uses: actions/checkout@v6
 
@@ -52,10 +55,40 @@ jobs:
           mvn -B -f gama.parent/pom.xml -pl ../gama.ui.devtools,../gama.feature.devtools,../gama.p2site.devtools \
             -DskipTests -Dmaven.build.cache.enabled=false package
 
-      - name: Assemble the site
+      - name: Restore the published site
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
         run: |
-          mkdir -p _site/devtools
-          cp -r gama.p2site.devtools/target/repository/. _site/devtools/
+          mkdir _site
+          git -C _site init -b devtools-site
+          git -C _site remote add origin "https://github.com/${REPOSITORY}.git"
+          gh auth setup-git
+          # Exit 2 means the branch does not exist; authentication/network failures must fail the job.
+          status=0
+          git -C _site ls-remote --exit-code --heads origin refs/heads/devtools-site > /tmp/devtools-site-ref || status=$?
+          if [ "$status" -eq 0 ]; then
+            git -C _site fetch --depth=1 origin devtools-site
+            git -C _site checkout -B devtools-site FETCH_HEAD
+          elif [ "$status" -ne 2 ]; then
+            exit "$status"
+          else
+            previous=$(gh run list --repo "$REPOSITORY" --workflow publish-devtools.yaml \
+              --branch main --status success --limit 1 --json databaseId --jq '.[0].databaseId // empty')
+            if [ -n "$previous" ]; then
+              gh run download "$previous" --repo "$REPOSITORY" --name github-pages --dir /tmp/previous-pages
+              tar -xf /tmp/previous-pages/artifact.tar -C _site
+            fi
+          fi
+
+      - name: Assemble the versioned composite site
+        env:
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          python3 -m unittest discover -s gama.p2site.devtools -p 'test_publish.py'
+          python3 gama.p2site.devtools/publish.py \
+            gama.p2site.devtools/target/repository _site/devtools "${RUN_ID}-${RUN_ATTEMPT}"
           cp gama.p2site.devtools/index.html _site/devtools/index.html
           cat > _site/index.html <<'EOF'
           <!DOCTYPE html>
@@ -63,6 +96,16 @@ jobs:
           <title>GAMA</title></head>
           <body><a href="devtools/">GAMA Developer Tools update site</a></body></html>
           EOF
+
+      - name: Retain published repositories
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git -C _site config user.name "github-actions[bot]"
+          git -C _site config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C _site add .
+          git -C _site commit -m "Publish devtools build ${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          git -C _site push origin HEAD:refs/heads/devtools-site
 
       - uses: actions/upload-pages-artifact@v4
         with:

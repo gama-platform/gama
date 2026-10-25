@@ -14,6 +14,19 @@ Updates are then found by *Help > Check for Updates*.
 
 The update site is built from `gama.p2site.devtools`, which contains only `gama.feature.devtools`. The workflow `.github/workflows/publish-devtools.yaml` publishes it on every change of the developer tools on `main`. The plugin depends only on Eclipse bundles; the jgrapht jars it uses are embedded in `libs/`. To try local changes without installing, launch a runtime Eclipse from the workspace.
 
+The public URL is a composite p2 repository. Each workflow run adds an immutable child at
+`devtools/releases/<run-id>-<attempt>/`; previous builds are retained on the `devtools-site` branch and included
+in subsequent Pages deployments. Eclipse can therefore finish an installation using cached metadata even
+after a newer build is published. Do not delete that branch or prune old releases while clients may need them.
+Publishing requires permission for the workflow token to push to that branch; branch rules must allow it.
+On the first run of this publishing scheme, the latest successful main-branch Pages artifact is restored
+if available. A previous flat repository is migrated into a child while its original artifact URLs remain
+available. If that artifact has expired, the workflow fails rather than silently discarding the old site;
+restore a copy of the published site to the `devtools-site` branch before retrying.
+
+Local `target/repository` builds remain standalone repositories and are replaced by `clean`. For repeated
+local installation, use a uniquely named ZIP for each build rather than a cached directory URL.
+
 ## Commands
 
 | Command | What it does |

@@ -82,16 +82,24 @@
                   <parameter name="gama.ui.devtools.wizardId" value="gama.ui.devtools.wizards.testModel"/>
                </command>
             </menu>
-            <separator name="build" visible="true"/>
-            <command commandId="gama.ui.devtools.cleanAndRebuild" label="Rebuild all..." style="push">
+            <separator
+                  name="build"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="gama.ui.devtools.command1"
+                  label="Build"
+                  style="push">
+            </command>
+            <command commandId="gama.ui.devtools.cleanAndRebuild" label="Clean all..." style="push">
                <parameter name="gama.ui.devtools.scope" value="all"/>
             </command>
-            <command commandId="gama.ui.devtools.cleanAndRebuild" label="Rebuild selected plugins..." style="push">
+            <command commandId="gama.ui.devtools.cleanAndRebuild" label="Clean selection..." style="push">
                <parameter name="gama.ui.devtools.scope" value="selection"/>
             </command>
             <command
                   commandId="gama.ui.devtools.checkConfiguration"
-                  label="Check and repair plugins..."
+                  label="Repair all..."
                   style="push"/>
             <command
                   commandId="gama.ui.devtools.rebuildProcessorJar"
@@ -131,13 +139,16 @@
       <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
          <menu id="gama.ui.devtools.popup" label="GAMA" icon="icons/gama.png">
             <command commandId="gama.ui.devtools.findKeyword" label="Find GAML Keyword Implementation..." style="push"/>
-            <command commandId="gama.ui.devtools.cleanAndRebuild" label="Clean and Rebuild" style="push">
+            <command commandId="gama.ui.devtools.cleanAndRebuild" label="Clean and Rebuild..." style="push">
                <parameter name="gama.ui.devtools.scope" value="selection"/>
             </command>
-            <command commandId="gama.ui.devtools.checkConfiguration" label="Check Configuration" style="push"/>
-            <command commandId="gama.ui.devtools.updateJavaHeaders" style="push"/>
-            <command commandId="gama.ui.devtools.gamlReport" label="Documentation and Tests Report" style="push"/>
-            <command commandId="gama.ui.devtools.generateTestStubs" label="Generate Test Stubs for Untested Operators" style="push"/>
+            <command commandId="gama.ui.devtools.checkConfiguration" label="Check configuration..." style="push"/>
+            <command
+                  commandId="gama.ui.devtools.updateJavaHeaders"
+                  label="Update headers..."
+                  style="push"/>
+            <command commandId="gama.ui.devtools.gamlReport" label="Search missing annotations..." style="push"/>
+            <command commandId="gama.ui.devtools.generateTestStubs" label="Generate test annotations..." style="push"/>
             <separator name="new" visible="true"/>
             <command commandId="gama.ui.devtools.openNewWizard" label="New GAMA Skill..." style="push">
                <parameter name="gama.ui.devtools.wizardId" value="gama.ui.devtools.wizards.skill"/>
