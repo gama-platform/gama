@@ -6,6 +6,29 @@ All commits listed below point to specific changes that drive the massive archit
 
 ## [2026.0.0] - Unreleased
 
+### RDS files: import and export R serialized data
+
+The new `gama.extension.rds` plugin adds **RDS serialization version 2** support (#191),
+independently of the statistics extension and without requiring an installed R runtime.
+It is included in the standard desktop and headless distributions.
+
+Use `rds_file("data.rds")` to load an object and `save value to: "output.rds" format: "rds";`
+to export one. Supported values include typed vectors/lists, string-keyed maps, two-dimensional
+matrices and dataframes. Missing values are preserved as `nil`; factors are imported as labels.
+Agent collections can be exported as dataframe snapshots, including selected or computed attributes.
+
+Input may be gzip-compressed or uncompressed; exports use gzip-compressed XDR version 2 and can
+be read with R's `readRDS`. **Version 3, R workspace files (`.RData`), other compression formats,
+and unsupported object types are rejected explicitly.** Export compatible input from R with
+`saveRDS(object, "data.rds", version = 2)`. Each save writes one object; appending is not supported,
+and conversion failures do not replace an existing destination.
+
+The navigator identifies RDS files with a violet **R** document icon and displays serialization
+version and compression. Metadata inspection reads only the stream header, without deserializing
+the object or adding background computation. See the [RDS guide](gama.extension.rds/README.md)
+for conversion details and limitations, and the bundled
+[RDS Files examples](gama.extension.rds/models/Data/RDS%20Files) for usage.
+
 ### BIG CHANGE: keyboard combinations in display events
 
 The `event` statement now supports **explicit keyboard combinations** in Java2D, OpenGL and OpenGL4 displays
