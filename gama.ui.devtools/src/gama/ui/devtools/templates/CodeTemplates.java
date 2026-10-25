@@ -526,7 +526,7 @@ public final class CodeTemplates {
 
 					@Override
 					public String serializeToGaml(final boolean includingBuiltIn) {
-						return getGamlType().getName() + "(" + "'" + name + "')";
+						return getGamlType().getName() + "(" + gama.api.utils.StringUtils.toGaml(name, includingBuiltIn) + ")";
 					}
 
 					@Override
