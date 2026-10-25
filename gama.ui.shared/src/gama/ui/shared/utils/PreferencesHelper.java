@@ -155,6 +155,16 @@ public class PreferencesHelper {
 			create("pref_navigator_recent_first", "Sort most recent resources first in navigator", false, IType.BOOL,
 					false).in(NAME, NAVIGATOR).onChange(newValue -> WorkbenchHelper.refreshNavigator()).hidden();
 
+	/** Whether the navigator search looks only into names and tags rather than into model source. */
+	public static final Pref<Boolean> NAVIGATOR_SEARCH_TITLES =
+			create("pref_navigator_search_titles", "Search only titles in navigator", true, IType.BOOL, false)
+					.in(NAME, NAVIGATOR).hidden();
+
+	/** Whether the navigator title search is restricted to model files. */
+	public static final Pref<Boolean> NAVIGATOR_SEARCH_MODELS_ONLY =
+			create("pref_navigator_search_models_only", "Restrict navigator title search to models", false,
+					IType.BOOL, false).in(NAME, NAVIGATOR).hidden();
+
 	/**
 	 * Initialize.
 	 */

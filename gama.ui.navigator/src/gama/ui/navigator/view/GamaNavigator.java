@@ -145,6 +145,17 @@ public class GamaNavigator extends CommonNavigator
 						check("Most recent first", PreferencesHelper.NAVIGATOR_RECENT_FIRST,
 								event -> PreferencesHelper.NAVIGATOR_RECENT_FIRST.save());
 					}
+					separate(mainMenu);
+					separate(mainMenu, "Search in:");
+					check("Only titles", PreferencesHelper.NAVIGATOR_SEARCH_TITLES, event -> {
+						PreferencesHelper.NAVIGATOR_SEARCH_TITLES.save();
+						findControl.searchOptionsChanged();
+					}).setToolTipText("Search file, folder, group and project names, and model tags. "
+							+ "When unchecked, search saved model source, including comments.");
+					check("Only models", PreferencesHelper.NAVIGATOR_SEARCH_MODELS_ONLY, event -> {
+						PreferencesHelper.NAVIGATOR_SEARCH_MODELS_ONLY.save();
+						findControl.searchOptionsChanged();
+					}).setEnabled(PreferencesHelper.NAVIGATOR_SEARCH_TITLES.getValue());
 				}
 
 			};
