@@ -740,6 +740,7 @@ public class GamaListFactory {
 
 	/**
 	 * Converts an object to a list, handling various types (arrays, collections, single objects).
+	 * This Java construction helper converts null to an empty list; the GAML list cast preserves nil instead.
 	 *
 	 * @param scope
 	 *            the execution scope.
@@ -788,11 +789,11 @@ public class GamaListFactory {
 			can_be_const = true,
 			concept = { IConcept.CAST, IConcept.CONTAINER })
 	@doc (
-			value = "casts the operand to a list, making an explicit copy if it is already a list or a subtype of list (interval, population, etc.)",
+			value = "casts the operand to a list, making an explicit copy if it is already a list or a subtype of list (interval, population, etc.). A nil operand remains nil.",
 			see = { "list" })
 	@no_test
 	public static IList copyToList(final IScope scope, final Object obj) {
-		return castToList(scope, obj, null, true);
+		return obj == null ? null : castToList(scope, obj, null, true);
 	}
 
 	/**

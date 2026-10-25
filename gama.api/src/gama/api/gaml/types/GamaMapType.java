@@ -86,7 +86,9 @@ import gama.api.types.map.IMap;
 		wraps = { IMap.class },
 		kind = ISymbolKind.REGULAR,
 		concept = { IConcept.TYPE, IConcept.CONTAINER, IConcept.MAP },
-		doc = @doc ("Represents lists of pairs key::value, where each key is unique in the map. Maps are ordered by the insertion order of elements"))
+		doc = @doc ("Represents lists of pairs key::value, where each key is unique in the map. Maps are ordered by the insertion order of elements. "
+				+ "Without an initializer, each variable receives a new empty map. Explicit initialization or assignment with nil stores nil, "
+				+ "as does map(nil). An empty map is not nil."))
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 @tests ({
 		@test ("map<string, int> src <- [\"a\"::1, \"b\"::2]; src[\"a\"] = 1"),
@@ -125,6 +127,11 @@ public class GamaMapType extends GamaContainerType<IMap> {
 	 */
 	public GamaMapType(final ITypesManager typesManager) {
 		super(typesManager);
+	}
+
+	@Override
+	public IMap createDefaultValue(final IScope scope) {
+		return GamaMapFactory.create(getKeyType(), getContentType());
 	}
 
 	/**
@@ -182,10 +189,11 @@ public class GamaMapType extends GamaContainerType<IMap> {
 	 * @see GamaMapFactory#castToMap(IScope, Object, IType, IType, boolean)
 	 */
 	@Override
-	@doc ("Casts the operand into a map. In case of an agent, returns its attributes. In case of a string, tries to parse JSON contents and returns a corresponding map.")
+	@doc ("Casts the operand into a map. A nil operand remains nil; use map([]) to create an empty map. "
+			+ "In case of an agent, returns its attributes. In case of a string, tries to parse JSON contents and returns a corresponding map.")
 	public IMap cast(final IScope scope, final Object obj, final Object param, final IType keyType,
 			final IType contentType, final boolean copy) throws GamaRuntimeException {
-		return GamaMapFactory.castToMap(scope, obj, keyType, contentType, copy);
+		return obj == null ? null : GamaMapFactory.castToMap(scope, obj, keyType, contentType, copy);
 	}
 
 	/**

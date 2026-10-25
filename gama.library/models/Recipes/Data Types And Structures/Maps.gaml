@@ -19,8 +19,12 @@ species declaring_map_attributes {
 	 * Declarations of map attributes
 	 */
 	 // The simplest declaration identifies empty_map as a map that can contain any type of objects. 
-	 // Its default value will be [] (the empty list/map) if it is not initialized.
+	 // Its default value will be map([]) (a new empty map) if it is not initialized.
 	map empty_map;
+	// Explicit nil means no map, not an empty map. This also applies to later assignments and map(nil).
+	map absent_map <- nil;
+	// Test for absence with absent_map = nil. An empty map is not nil.
+	// To create or restore an empty map explicitly, assign map([]).
 	// To provide it with a literal initial value, use the '<-' (or 'init:') facet and pass a map
 	map explicit_empty_map <- [];
 	// Or, more explicitely
@@ -52,6 +56,10 @@ species declaring_map_attributes {
 		write "== DECLARING MAPS ==";
 		write "";
 		write sample(empty_map);
+		write sample(absent_map);
+		write sample(absent_map = nil); // true
+		write sample(empty_map = nil); // false
+		write sample(map(nil) = nil); // true
 		write sample(explicit_empty_map);
 		write sample(empty_map_of_int);
 		write sample(explicit_filled_map);

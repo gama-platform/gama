@@ -43,6 +43,7 @@ A high-level summary of every area that changed. Use this to quickly assess what
 | Displays/experiments need explicit `title:` | Identifier and UI label are now separate |
 | `overlay` position/size unified in 2D and 3D | Contents drawn in model units may need `#px` |
 | Chart bodies re-evaluated at every step | Dynamic legends create new series; duplicate legends no longer merge |
+| Explicit `nil` for lists and maps is preserved | Use `[]` or `map([])` when an empty container is intended |
 
 ## Engine, UI, and Graphics
 
@@ -226,6 +227,32 @@ Work through each section that applies to your plugin. Each section is self-cont
 ## 1. GAML Language Syntax Changes
 
 These changes affect `.gaml` model files. Most can be applied with a global find-and-replace.
+
+### Lists and maps: absence is not emptiness (#765)
+
+An omitted initializer creates a new empty list or map. An explicit `nil` initializer, later assignment,
+or cast preserves `nil`. These rules apply equally to locals, globals and species attributes, including
+parameterized types.
+Explicit nil values passed through `create ... with:` or object constructor arguments follow the same rule.
+
+```gaml
+list<int> numbers;               // a new empty list<int>
+map<string,int> scores;          // a new empty map<string,int>
+list<int> missing <- nil;        // nil, not []
+numbers <- nil;                 // now nil
+numbers <- [];                  // explicitly restore an empty list
+scores <- map([]);              // explicitly create an empty map
+// list(nil), map(nil), and to_list(nil) all return nil
+```
+
+An empty container is never equal to `nil`. Test `value = nil` for absence before using operations
+that require a container; indexing a nil container reports a runtime error. Each omitted initializer
+allocates an independent container, even for repeated executions of the same local declaration.
+
+**Java contributors:** use `IType.createDefaultValue(scope)` for omitted initialization, not
+`cast(scope, null, ...)`. `getDefault()` remains the type's fallback/nullability value.
+The Java construction helpers `GamaListFactory.castToList` and `GamaMapFactory.castToMap` still
+convert Java null to an empty container; they are not the GAML casts.
 
 ### 1.1 Arrow (`->`) expressions — braces removed
 

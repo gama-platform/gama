@@ -30,7 +30,8 @@ public interface IObject extends IAttributed, IContainer.ToGet<String, Object>, 
 	default void initializeAttributes(final IScope scope, final Map<String, Object> values) {
 		if (values != null) { getAttributes(true).putAll(values); }
 		for (final var variable : getSpecies().getVars()) {
-			variable.initializeWith(scope, this, values == null ? null : values.get(variable.getName()));
+			variable.initializeWith(scope, this, values == null ? null : values.get(variable.getName()),
+					values != null && values.containsKey(variable.getName()));
 		}
 	}
 

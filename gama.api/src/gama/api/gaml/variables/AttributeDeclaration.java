@@ -766,9 +766,15 @@ public class AttributeDeclaration extends Symbol implements IVariable {
 	@Override
 	public void initializeWith(final IScope scope, final IObject gamaObject, final Object v)
 			throws GamaRuntimeException {
+		initializeWith(scope, gamaObject, v, v != null);
+	}
+
+	@Override
+	public void initializeWith(final IScope scope, final IObject gamaObject, final Object v, final boolean provided)
+			throws GamaRuntimeException {
 		try (StopWatch w = GAMA.benchmark(scope, this)) {
 			scope.setCurrentSymbol(this);
-			if (v != null) {
+			if (v != null || provided && (type.id() == IType.LIST || type.id() == IType.MAP)) {
 				_setVal(gamaObject, scope, v);
 			} else if (initExpression != null) {
 				_setVal(gamaObject, scope, scope.evaluate(initExpression, gamaObject).getValue());
@@ -777,7 +783,7 @@ public class AttributeDeclaration extends Symbol implements IVariable {
 						gSkill == null ? gamaObject : gSkill);
 				_setVal(gamaObject, scope, val);
 			} else {
-				_setVal(gamaObject, scope, getType().getDefault());
+				_setVal(gamaObject, scope, getType().createDefaultValue(scope));
 			}
 		} catch (final GamaRuntimeException e) {
 			e.addContext("in initializing attribute " + getName());

@@ -325,7 +325,7 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 					final Object initGet = empty/*
 												 * || !allowVarInitToBeOverridenByExternalInit(var)
 												 */ ? null : inits.get(s);
-					var.initializeWith(scope, agent, initGet);
+					var.initializeWith(scope, agent, initGet, inits.containsKey(s));
 					names.remove(s);
 				}
 				// Trick to initialize the simulation variables (and not only

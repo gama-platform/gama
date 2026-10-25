@@ -6,6 +6,30 @@ All commits listed below point to specific changes that drive the massive archit
 
 ## [2026.0.0] - Unreleased
 
+### Lists and maps: explicit nil is distinct from an empty container
+
+Lists and maps now preserve explicit `nil` initialization, assignment and casts (#765).
+The rule is the same for local variables, global and species attributes, and typed or untyped containers:
+
+| GAML | Result |
+|---|---|
+| `list l;` / `map m;` | A new empty list / map |
+| `list<int> l;` / `map<string,int> m;` | A new empty container with the declared types |
+| `list l <- nil;` / `map m <- nil;` | No container: the value is `nil` |
+| `l <- nil;` / `m <- nil;` | The variable becomes `nil` |
+| `list(nil)` / `map(nil)` / `to_list(nil)` | `nil` |
+| `[] = nil` / `map([]) = nil` | `false` |
+
+Each omitted initializer creates its own mutable container, including on repeated execution of a local
+declaration and for separate agents. A `nil` container is not an empty container: test for absence with
+`value = nil` before using operators that require an actual container. Operator-specific nil handling
+still applies; for example, indexing a nil container reports a runtime error.
+Explicit nil values supplied through `create ... with:` or object constructor arguments are also preserved.
+
+**Migration:** assigning or casting `nil` no longer creates an empty list or map. Use `[]` or `map([])`
+explicitly when an empty container is intended. The bundled **Lists** and **Maps** recipes illustrate
+this distinction.
+
 ### Editor: per-file automatic validation control
 
 The GAML editor's top-right **Editor options** menu now ends with **Automatic validation** and
