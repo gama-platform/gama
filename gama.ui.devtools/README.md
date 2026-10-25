@@ -32,6 +32,8 @@ local installation, use a uniquely named ZIP for each build rather than a cached
 | Command | What it does |
 |---|---|
 | **Find GAML Keyword Implementation...** (`Ctrl/Cmd+Shift+Alt+K`) | Finds the Java code behind a GAML keyword (see below). |
+| **Run / Debug > GAMA GUI / GAMA Headless... / GAMA Tests** | Launches workspace GAMA through editable PDE Eclipse Application configurations. |
+| **Run > Configure Launches...** | Associates each flavor with an existing configuration or generates a default; provides editing and confirmed restoration of defaults. |
 | **Clean and Rebuild All GAMA Plugins** (`Cmd+B` on macOS, `Ctrl+B` on Windows/Linux) | Saves the editors and repairs the configuration (optional). Disables the annotation processor, deletes the `gaml/` folders and re-enables the processor. Then runs a clean build and a full build of the workspace, or only of the GAMA plugins (preference), and checks that every `GamlAdditions.java` was regenerated. No dialog is shown and the job can be cancelled. |
 | **Clean and Rebuild Selected Plugins** | The same, limited to the GAMA plugins in the selection. |
 | **Check GAMA Plugins Configuration** | Checks every GAMA plugin (see below), adds problem markers with quick fixes (`Ctrl/Cmd+1` in the Problems view) and offers to repair everything at once. |
@@ -45,6 +47,41 @@ local installation, use a uniquely named ZIP for each build rather than a cached
 The Clean and Rebuild All shortcut takes precedence over Eclipse's standard Build All binding in the default
 key scheme. It always targets all GAMA plugins, regardless of selection. Explicit user bindings and more
 specific editor bindings can still override it; configure these in *Preferences > General > Keys*.
+
+## Running and debugging workspace GAMA
+
+The **GAMA > Run** and **GAMA > Debug** menus share three launch configurations. **GUI** opens GAMA,
+**Headless...** asks for mode/arguments (for example, an XML experiment file and output directory, or
+`-batch experimentName "/path/model.gaml"`), and **Tests** generates a headless configuration with `-test`.
+Headless arguments are remembered; tests report to Eclipse's Console.
+
+On first use, select an existing **Eclipse Application** configuration or generate a default with a registered
+**JDK 25**. An exact Java 25 JDK is required because the current product VM arguments enable preview features;
+Eclipse itself can still run on Java 21. Add the JDK in *Preferences > Java > Installed JREs*.
+
+Default configurations, named `GAMA - GUI`, `GAMA - Headless` and `GAMA - Tests`, read the workspace
+`gama.product/gama.product` or `gama.product/gama.headless.product`. Import the product project, the feature
+projects listed by the product, and their GAMA plugins, and resolve the GAMA target platform. Creation checks
+the required projects; PDE validates bundle dependencies at launch. No GAMA binaries are bundled in devtools.
+Generated defaults use feature-based plugin selection, the product's common and OS-specific VM/program
+arguments, startup levels, and configuration properties. `${build.id}` becomes `development` for these
+workspace launches. The product's `-data` argument is replaced by a separate runtime workspace per flavor,
+located beside the development workspace (`gama-runtime-gui`, `gama-runtime-headless`, `gama-runtime-tests`).
+They do not clear runtime workspaces automatically.
+
+**Configure Launches...** lets you select each flavor and change its associated configuration. **Edit
+configuration...** opens Eclipse's standard launch properties, including JRE, memory, arguments and plugins.
+Existing configurations and customizations are never automatically rewritten. **Restore generated defaults...**
+asks for confirmation, then creates and selects a fresh configuration; the old configuration is retained.
+New product settings are picked up when generating defaults, not silently applied to existing configurations.
+These launch commands require the Eclipse Debug, Java launching and PDE launching bundles, installed as
+devtools dependencies. They use public Eclipse APIs rather than version-specific PDE implementation classes.
+
+The product-settings regression test runs without Eclipse, from the repository root:
+```
+javac -d /tmp/gama-launch-tests gama.ui.devtools/src/gama/ui/devtools/launch/ProductLaunchSpec.java gama.ui.devtools/tests/ProductLaunchSpecTest.java
+java -cp /tmp/gama-launch-tests ProductLaunchSpecTest .
+```
 
 ## Updating Java headers
 

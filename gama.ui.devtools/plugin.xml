@@ -5,6 +5,11 @@
    <!-- Commands -->
    <extension point="org.eclipse.ui.commands">
       <category id="gama.ui.devtools.category" name="GAMA Developer Tools"/>
+      <command id="gama.ui.devtools.launchGama" categoryId="gama.ui.devtools.category"
+            name="Launch GAMA" description="Run or debug workspace GAMA using a standard Eclipse Application configuration">
+         <commandParameter id="gama.ui.devtools.launchFlavor" name="Flavor (GUI, HEADLESS, TESTS)" optional="true"/>
+         <commandParameter id="gama.ui.devtools.launchMode" name="Mode (run, debug, configure)" optional="true"/>
+      </command>
       <command id="gama.ui.devtools.cleanAndRebuild" categoryId="gama.ui.devtools.category"
             name="Clean and Rebuild"
             description="Resets the annotation processor of the GAMA plugins, deletes the generated gaml folders and rebuilds everything, without any dialog">
@@ -38,6 +43,7 @@
 
    <!-- Handlers -->
    <extension point="org.eclipse.ui.handlers">
+      <handler commandId="gama.ui.devtools.launchGama" class="gama.ui.devtools.handlers.LaunchGamaHandler"/>
       <handler commandId="gama.ui.devtools.cleanAndRebuild" class="gama.ui.devtools.handlers.CleanAndRebuildHandler"/>
       <handler commandId="gama.ui.devtools.checkConfiguration" class="gama.ui.devtools.handlers.CheckConfigurationHandler"/>
       <handler commandId="gama.ui.devtools.gamlReport" class="gama.ui.devtools.handlers.GamlReportHandler"/>
@@ -78,6 +84,38 @@
    <extension point="org.eclipse.ui.menus">
       <menuContribution locationURI="menu:org.eclipse.ui.main.menu?after=additions">
          <menu id="gama.ui.devtools.menu" label="GAMA" mnemonic="G">
+            <menu id="gama.ui.devtools.menu.run" label="Run">
+               <command commandId="gama.ui.devtools.launchGama" label="GAMA GUI" style="push">
+                  <parameter name="gama.ui.devtools.launchFlavor" value="GUI"/>
+                  <parameter name="gama.ui.devtools.launchMode" value="run"/>
+               </command>
+               <command commandId="gama.ui.devtools.launchGama" label="GAMA Headless..." style="push">
+                  <parameter name="gama.ui.devtools.launchFlavor" value="HEADLESS"/>
+                  <parameter name="gama.ui.devtools.launchMode" value="run"/>
+               </command>
+               <command commandId="gama.ui.devtools.launchGama" label="GAMA Tests" style="push">
+                  <parameter name="gama.ui.devtools.launchFlavor" value="TESTS"/>
+                  <parameter name="gama.ui.devtools.launchMode" value="run"/>
+               </command>
+               <separator name="configuration" visible="true"/>
+               <command commandId="gama.ui.devtools.launchGama" label="Configure Launches..." style="push">
+                  <parameter name="gama.ui.devtools.launchMode" value="configure"/>
+               </command>
+            </menu>
+            <menu id="gama.ui.devtools.menu.debug" label="Debug">
+               <command commandId="gama.ui.devtools.launchGama" label="GAMA GUI" style="push">
+                  <parameter name="gama.ui.devtools.launchFlavor" value="GUI"/>
+                  <parameter name="gama.ui.devtools.launchMode" value="debug"/>
+               </command>
+               <command commandId="gama.ui.devtools.launchGama" label="GAMA Headless..." style="push">
+                  <parameter name="gama.ui.devtools.launchFlavor" value="HEADLESS"/>
+                  <parameter name="gama.ui.devtools.launchMode" value="debug"/>
+               </command>
+               <command commandId="gama.ui.devtools.launchGama" label="GAMA Tests" style="push">
+                  <parameter name="gama.ui.devtools.launchFlavor" value="TESTS"/>
+                  <parameter name="gama.ui.devtools.launchMode" value="debug"/>
+               </command>
+            </menu>
             <menu id="gama.ui.devtools.menu.new" label="New" icon="icons/gama.png">
                <command commandId="gama.ui.devtools.openNewWizard" label="New GAMA Plugin..." icon="icons/gama.png" style="push">
                   <parameter name="gama.ui.devtools.wizardId" value="gama.ui.devtools.wizards.plugin"/>
