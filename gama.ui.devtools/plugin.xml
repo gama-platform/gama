@@ -16,6 +16,9 @@
       <command id="gama.ui.devtools.gamlReport" categoryId="gama.ui.devtools.category"
             name="GAML Documentation and Tests Report"
             description="Lists the GAML elements that are not documented and the operators that are not tested"/>
+      <command id="gama.ui.devtools.generateTestStubs" categoryId="gama.ui.devtools.category"
+            name="Generate GAML Test Stubs for Untested Operators"
+            description="Writes, in models/Tests of each plugin, a GAML test model with one stub per operator reported as not tested by the annotation processor"/>
       <command id="gama.ui.devtools.rebuildProcessorJar" categoryId="gama.ui.devtools.category"
             name="Rebuild the Annotation Processor Jar"
             description="Regenerates gama.processor.jar from the sources of gama.processor and gama.annotations"/>
@@ -32,6 +35,7 @@
       <handler commandId="gama.ui.devtools.cleanAndRebuild" class="gama.ui.devtools.handlers.CleanAndRebuildHandler"/>
       <handler commandId="gama.ui.devtools.checkConfiguration" class="gama.ui.devtools.handlers.CheckConfigurationHandler"/>
       <handler commandId="gama.ui.devtools.gamlReport" class="gama.ui.devtools.handlers.GamlReportHandler"/>
+      <handler commandId="gama.ui.devtools.generateTestStubs" class="gama.ui.devtools.handlers.GenerateTestStubsHandler"/>
       <handler commandId="gama.ui.devtools.rebuildProcessorJar" class="gama.ui.devtools.handlers.RebuildProcessorJarHandler"/>
       <handler commandId="gama.ui.devtools.dependencyGraph" class="gama.ui.devtools.handlers.DependencyGraphHandler"/>
       <handler commandId="gama.ui.devtools.openNewWizard" class="gama.ui.devtools.handlers.OpenNewWizardHandler"/>
@@ -79,6 +83,7 @@
             <command commandId="gama.ui.devtools.rebuildProcessorJar" style="push"/>
             <separator name="reports" visible="true"/>
             <command commandId="gama.ui.devtools.gamlReport" style="push"/>
+            <command commandId="gama.ui.devtools.generateTestStubs" style="push"/>
             <command commandId="gama.ui.devtools.dependencyGraph" style="push"/>
             <separator name="additions" visible="true"/>
          </menu>
@@ -89,6 +94,8 @@
                <parameter name="gama.ui.devtools.scope" value="selection"/>
             </command>
             <command commandId="gama.ui.devtools.checkConfiguration" label="Check Configuration" style="push"/>
+            <command commandId="gama.ui.devtools.gamlReport" label="Documentation and Tests Report" style="push"/>
+            <command commandId="gama.ui.devtools.generateTestStubs" label="Generate Test Stubs for Untested Operators" style="push"/>
             <separator name="new" visible="true"/>
             <command commandId="gama.ui.devtools.openNewWizard" label="New GAMA Skill..." style="push">
                <parameter name="gama.ui.devtools.wizardId" value="gama.ui.devtools.wizards.skill"/>
@@ -156,6 +163,19 @@
    <extension point="org.eclipse.ui.ide.markerResolution">
       <markerResolutionGenerator class="gama.ui.devtools.config.RepairMarkerResolutionGenerator"
             markerType="gama.ui.devtools.configurationProblem"/>
+   </extension>
+
+   <!-- Quick fixes on the warnings of the GAML annotation processor (missing documentation, untested operators).
+        Marker resolutions match exact marker types, hence the registration on each type used by APT. -->
+   <extension point="org.eclipse.ui.ide.markerResolution">
+      <markerResolutionGenerator class="gama.ui.devtools.quickfix.ProcessorWarningResolutionGenerator"
+            markerType="org.eclipse.jdt.apt.pluggable.core.compileProblem"/>
+      <markerResolutionGenerator class="gama.ui.devtools.quickfix.ProcessorWarningResolutionGenerator"
+            markerType="org.eclipse.jdt.apt.core.compile.problem"/>
+      <markerResolutionGenerator class="gama.ui.devtools.quickfix.ProcessorWarningResolutionGenerator"
+            markerType="org.eclipse.jdt.apt.core.nonreconcile.compile.problem"/>
+      <markerResolutionGenerator class="gama.ui.devtools.quickfix.ProcessorWarningResolutionGenerator"
+            markerType="org.eclipse.jdt.core.problem"/>
    </extension>
 
    <!-- Preferences -->
