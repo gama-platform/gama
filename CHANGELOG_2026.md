@@ -6,6 +6,11 @@ All commits listed below point to specific changes that drive the massive archit
 
 ## [2026.0.0] - Unreleased
 
+### Co-model imports: preserve aliases while editing
+
+Adding, renaming, or removing `as` on an existing import now preserves the import's dependency-graph entry
+(#774). Aliased imports support spaces in both filenames and directories, without requiring files to be renamed.
+
 ### RDS files: import and export R serialized data
 
 The new `gama.extension.rds` plugin adds **RDS serialization version 2** support (#191),
