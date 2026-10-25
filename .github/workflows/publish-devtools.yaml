@@ -44,6 +44,21 @@ jobs:
           java-version: "25"
           cache: maven
 
+      # Tycho 5.0.2 dependency collection fails with the runner's Maven 3.10.0.
+      - name: Set up Maven 3.9.16
+        env:
+          MAVEN_VERSION: "3.9.16"
+        run: |
+          base="https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${MAVEN_VERSION}"
+          archive="apache-maven-${MAVEN_VERSION}-bin.tar.gz"
+          curl --fail --silent --show-error --location --retry 3 "$base/$archive" -o "$RUNNER_TEMP/$archive"
+          curl --fail --silent --show-error --location --retry 3 "$base/$archive.sha512" -o "$RUNNER_TEMP/$archive.sha512"
+          checksum=$(cat "$RUNNER_TEMP/$archive.sha512")
+          printf '%s  %s\n' "$checksum" "$RUNNER_TEMP/$archive" | sha512sum --check
+          tar -xzf "$RUNNER_TEMP/$archive" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/apache-maven-${MAVEN_VERSION}/bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/apache-maven-${MAVEN_VERSION}/bin/mvn" --version
+
       # The parent pom declares the GAML annotation processor for every module
       - name: Install the annotations and the annotation processor
         run: |
@@ -52,7 +67,7 @@ jobs:
 
       - name: Build the update site
         run: |
-          mvn -B -f gama.parent/pom.xml -pl ../gama.ui.devtools,../gama.feature.devtools,../gama.p2site.devtools \
+          mvn -B -e -f gama.parent/pom.xml -pl ../gama.ui.devtools,../gama.feature.devtools,../gama.p2site.devtools \
             -DskipTests -Dmaven.build.cache.enabled=false package
 
       - name: Restore the published site
