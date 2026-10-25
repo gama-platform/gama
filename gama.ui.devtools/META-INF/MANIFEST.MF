@@ -5,21 +5,37 @@ Bundle-SymbolicName: gama.ui.devtools;singleton:=true
 Bundle-Version: 0.0.0.qualifier
 Bundle-Vendor: UMMISCO
 Bundle-Activator: gama.ui.devtools.GamaDevToolsActivator
-Bundle-RequiredExecutionEnvironment: JavaSE-25
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Automatic-Module-Name: gama.ui.devtools
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
+ org.eclipse.core.filesystem,
  org.eclipse.ui,
  org.eclipse.ui.ide,
  org.eclipse.jdt.core,
+ org.eclipse.jdt.apt.core,
+ org.eclipse.jdt.ui,
  org.eclipse.pde.core,
  org.eclipse.jface,
- gama.dependencies,
- com.google.guava,
- gama.dev
+ org.eclipse.jface.text,
+ org.eclipse.ltk.core.refactoring,
+ org.eclipse.ltk.ui.refactoring,
+ org.eclipse.text,
+ org.eclipse.ui.workbench.texteditor,
+ org.eclipse.jface.notifications
+Bundle-ClassPath: .,
+ libs/jgrapht-core-1.5.2.jar,
+ libs/jgrapht-io-1.5.2.jar,
+ libs/jheaps-0.14.jar
 Export-Package: gama.ui.devtools,
+ gama.ui.devtools.config,
+ gama.ui.devtools.dependencies,
  gama.ui.devtools.handlers,
- gama.ui.devtools.wizards,
+ gama.ui.devtools.jobs,
+ gama.ui.devtools.keywords,
  gama.ui.devtools.preferences,
- gama.ui.devtools.dependencies
+ gama.ui.devtools.quickfix,
+ gama.ui.devtools.templates,
+ gama.ui.devtools.util,
+ gama.ui.devtools.wizards

@@ -33,7 +33,6 @@ import org.jgrapht.graph.*;
 import org.jgrapht.nio.*;
 import org.jgrapht.nio.dot.*;
 import org.jgrapht.traverse.*;
-import com.google.common.primitives.Bytes;
 
 
 public class DependencyGraphBuilder {
@@ -605,7 +604,7 @@ public class DependencyGraphBuilder {
 
                     for (String service : services)
                     {
-                        if (Bytes.indexOf(content,service.getBytes(StandardCharsets.UTF_8)) != -1)
+                        if (contains(content, service.getBytes(StandardCharsets.UTF_8)))
                         {
                             serviceToLibraryMap.get(service).forEach(provider -> {
                                 serviceConsumingGraph.addEdge(filename,provider);
@@ -717,5 +716,14 @@ public class DependencyGraphBuilder {
     public Set<String> getLibraryServices(String library)
     {
         return new HashSet<String>(libraryToServicesMap.getOrDefault(library,Collections.emptySet()));
+    }
+
+    /** Whether {@code target} occurs in {@code array}. */
+    private static boolean contains(final byte[] array, final byte[] target) {
+        outer: for (int i = 0; i <= array.length - target.length; i++) {
+            for (int j = 0; j < target.length; j++) { if (array[i + j] != target[j]) continue outer; }
+            return true;
+        }
+        return false;
     }
 }

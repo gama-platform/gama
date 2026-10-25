@@ -2,170 +2,259 @@
 <?eclipse version="3.4"?>
 <plugin>
 
-   <!-- ============================================================ -->
-   <!-- Commands                                                      -->
-   <!-- ============================================================ -->
+   <!-- Commands -->
    <extension point="org.eclipse.ui.commands">
-      <category
-            id="gama.ui.devtools.category"
-            name="GAMA Dev Tools">
-      </category>
-      <command
-            categoryId="gama.ui.devtools.category"
-            id="gama.ui.devtools.command.newPlugin"
-            name="New GAMA Plugin...">
+      <category id="gama.ui.devtools.category" name="GAMA Developer Tools"/>
+      <command id="gama.ui.devtools.cleanAndRebuild" categoryId="gama.ui.devtools.category"
+            name="Clean and Rebuild"
+            description="Resets the annotation processor of the GAMA plugins, deletes the generated gaml folders and rebuilds everything, without any dialog">
+         <commandParameter id="gama.ui.devtools.scope" name="Scope (selection or all)" optional="true"/>
       </command>
-      <command
-            categoryId="gama.ui.devtools.category"
-            id="gama.ui.devtools.command.newSkill"
-            name="New GAMA Skill...">
-      </command>
-      <command
-            categoryId="gama.ui.devtools.category"
-            id="gama.ui.devtools.command.newOperator"
-            name="New GAMA Operator...">
-      </command>
-      <command
-            categoryId="gama.ui.devtools.category"
-            id="gama.ui.devtools.command.newAction"
-            name="New GAMA Action...">
-      </command>
-      <command
-            categoryId="gama.ui.devtools.category"
-            id="gama.ui.devtools.command.reallyRefresh"
-            name="Really Refresh Workspace">
+      <command id="gama.ui.devtools.checkConfiguration" categoryId="gama.ui.devtools.category"
+            name="Check GAMA Plugins"
+            description="Checks (and offers to repair) the configuration of the annotation processor, classpath, build.properties and manifest of the GAMA plugins"/>
+      <command id="gama.ui.devtools.gamlReport" categoryId="gama.ui.devtools.category"
+            name="Missing annotations"
+            description="Lists the GAML elements that are not documented and the operators that are not tested"/>
+      <command id="gama.ui.devtools.generateTestStubs" categoryId="gama.ui.devtools.category"
+            name="Generate @test stubs"
+            description="Writes, in models/Tests of each plugin, a GAML test model with one stub per operator reported as not tested by the annotation processor"/>
+      <command id="gama.ui.devtools.findKeyword" categoryId="gama.ui.devtools.category"
+            name="Keyword Implementation..."
+            description="Searches the GAML keywords (operators, statements, skills, attributes, facets, actions...) declared in the Java sources of the workspace and opens their Java implementation"/>
+      <command id="gama.ui.devtools.updateJavaHeaders" categoryId="gama.ui.devtools.category"
+            name="Update Java Headers..."
+            description="Updates GAMA Java headers and adds missing headers, with a version/year dialog and a preview"/>
+      <command id="gama.ui.devtools.rebuildProcessorJar" categoryId="gama.ui.devtools.category"
+            name="Rebuild Annotation Processor"
+            description="Regenerates gama.processor.jar from the sources of gama.processor and gama.annotations"/>
+      <command id="gama.ui.devtools.dependencyGraph" categoryId="gama.ui.devtools.category"
+            name="Dependency Graph..."
+            description="Computes the graph of dependencies between the packages of GAMA (requires jdeps)"/>
+      <command id="gama.ui.devtools.openNewWizard" categoryId="gama.ui.devtools.category" name="Open a GAMA Wizard">
+         <commandParameter id="gama.ui.devtools.wizardId" name="Wizard id" optional="false"/>
       </command>
    </extension>
 
-   <!-- ============================================================ -->
-   <!-- Handlers                                                      -->
-   <!-- ============================================================ -->
+   <!-- Handlers -->
    <extension point="org.eclipse.ui.handlers">
-      <handler
-            class="gama.ui.devtools.handlers.NewGamaPluginHandler"
-            commandId="gama.ui.devtools.command.newPlugin">
-      </handler>
-      <handler
-            class="gama.ui.devtools.handlers.NewGamaSkillHandler"
-            commandId="gama.ui.devtools.command.newSkill">
-      </handler>
-      <handler
-            class="gama.ui.devtools.handlers.NewGamaOperatorHandler"
-            commandId="gama.ui.devtools.command.newOperator">
-      </handler>
-      <handler
-            class="gama.ui.devtools.handlers.NewGamaActionHandler"
-            commandId="gama.ui.devtools.command.newAction">
-      </handler>
-      <handler
-            class="gama.ui.devtools.handlers.ReallyRefreshHandler"
-            commandId="gama.ui.devtools.command.reallyRefresh">
-      </handler>
+      <handler commandId="gama.ui.devtools.cleanAndRebuild" class="gama.ui.devtools.handlers.CleanAndRebuildHandler"/>
+      <handler commandId="gama.ui.devtools.checkConfiguration" class="gama.ui.devtools.handlers.CheckConfigurationHandler"/>
+      <handler commandId="gama.ui.devtools.gamlReport" class="gama.ui.devtools.handlers.GamlReportHandler"/>
+      <handler commandId="gama.ui.devtools.generateTestStubs" class="gama.ui.devtools.handlers.GenerateTestStubsHandler"/>
+      <handler commandId="gama.ui.devtools.findKeyword" class="gama.ui.devtools.handlers.FindGamlKeywordHandler"/>
+      <handler commandId="gama.ui.devtools.updateJavaHeaders" class="gama.ui.devtools.handlers.UpdateJavaHeadersHandler"/>
+      <handler commandId="gama.ui.devtools.rebuildProcessorJar" class="gama.ui.devtools.handlers.RebuildProcessorJarHandler"/>
+      <handler commandId="gama.ui.devtools.dependencyGraph" class="gama.ui.devtools.handlers.DependencyGraphHandler"/>
+      <handler commandId="gama.ui.devtools.openNewWizard" class="gama.ui.devtools.handlers.OpenNewWizardHandler"/>
    </extension>
 
-   <!-- ============================================================ -->
-   <!-- Menu contributions                                            -->
-   <!-- ============================================================ -->
-   <extension point="org.eclipse.ui.menus">
+   <!-- Key bindings: Clean and Rebuild (all), Find GAML Keyword Implementation -->
+   <extension point="org.eclipse.ui.bindings">
+      <!-- Delete the generic Build All binding without deleting our matching platform-specific bindings. -->
+      <key schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ui.contexts.window" platform="cocoa" sequence="M1+B"/>
+      <key schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ui.contexts.window" platform="win32" sequence="M1+B"/>
+      <key schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ui.contexts.window" platform="gtk" sequence="M1+B"/>
+      <key commandId="gama.ui.devtools.cleanAndRebuild" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ui.contexts.window" platform="cocoa" sequence="M1+B">
+         <parameter id="gama.ui.devtools.scope" value="all"/>
+      </key>
+      <key commandId="gama.ui.devtools.cleanAndRebuild" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ui.contexts.window" platform="win32" sequence="M1+B">
+         <parameter id="gama.ui.devtools.scope" value="all"/>
+      </key>
+      <key commandId="gama.ui.devtools.cleanAndRebuild" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            contextId="org.eclipse.ui.contexts.window" platform="gtk" sequence="M1+B">
+         <parameter id="gama.ui.devtools.scope" value="all"/>
+      </key>
+      <key commandId="gama.ui.devtools.findKeyword" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+M3+K"/>
+   </extension>
 
-      <!-- Top-level "GAMA Dev Tools" menu in the menu bar -->
+   <!-- Menus -->
+   <extension point="org.eclipse.ui.menus">
       <menuContribution locationURI="menu:org.eclipse.ui.main.menu?after=additions">
-         <menu
-               id="gama.ui.devtools.menu"
-               label="GAMA Dev Tools"
-               mnemonic="G">
+         <menu id="gama.ui.devtools.menu" label="GAMA" mnemonic="G">
+            <menu id="gama.ui.devtools.menu.new" label="New" icon="icons/gama.png">
+               <command commandId="gama.ui.devtools.openNewWizard" label="New GAMA Plugin..." icon="icons/gama.png" style="push">
+                  <parameter name="gama.ui.devtools.wizardId" value="gama.ui.devtools.wizards.plugin"/>
+               </command>
+               <separator name="classes" visible="true"/>
+               <command commandId="gama.ui.devtools.openNewWizard" label="New GAMA Skill..." icon="icons/gama.png" style="push">
+                  <parameter name="gama.ui.devtools.wizardId" value="gama.ui.devtools.wizards.skill"/>
+               </command>
+               <command commandId="gama.ui.devtools.openNewWizard" label="New GAMA Operators..." icon="icons/gama.png" style="push">
+                  <parameter name="gama.ui.devtools.wizardId" value="gama.ui.devtools.wizards.operator"/>
+               </command>
+               <command commandId="gama.ui.devtools.openNewWizard" label="New GAMA Action..." icon="icons/gama.png" style="push">
+                  <parameter name="gama.ui.devtools.wizardId" value="gama.ui.devtools.wizards.action"/>
+               </command>
+               <command commandId="gama.ui.devtools.openNewWizard" label="New GAMA Type..." icon="icons/gama.png" style="push">
+                  <parameter name="gama.ui.devtools.wizardId" value="gama.ui.devtools.wizards.type"/>
+               </command>
+               <command commandId="gama.ui.devtools.openNewWizard" label="New GAML Test Model..." icon="icons/gama.png" style="push">
+                  <parameter name="gama.ui.devtools.wizardId" value="gama.ui.devtools.wizards.testModel"/>
+               </command>
+            </menu>
+            <separator
+                  name="build"
+                  visible="true">
+            </separator>
             <command
-                  commandId="gama.ui.devtools.command.newPlugin"
-                  label="New GAMA Plugin..."
+                  commandId="gama.ui.devtools.command1"
+                  label="Build"
                   style="push">
             </command>
-            <separator name="sep1" visible="true"/>
+            <command commandId="gama.ui.devtools.cleanAndRebuild" label="Clean all..." style="push">
+               <parameter name="gama.ui.devtools.scope" value="all"/>
+            </command>
+            <command commandId="gama.ui.devtools.cleanAndRebuild" label="Clean selection..." style="push">
+               <parameter name="gama.ui.devtools.scope" value="selection"/>
+            </command>
             <command
-                  commandId="gama.ui.devtools.command.newSkill"
-                  label="New GAMA Skill..."
+                  commandId="gama.ui.devtools.checkConfiguration"
+                  label="Repair all..."
+                  style="push"/>
+            <command
+                  commandId="gama.ui.devtools.rebuildProcessorJar"
+                  label="Rebuild processor..."
+                  style="push"/>
+            <separator name="reports" visible="true"/>
+            <command
+                  commandId="gama.ui.devtools.updateJavaHeaders"
+                  label="Update headers..."
                   style="push">
             </command>
             <command
-                  commandId="gama.ui.devtools.command.newOperator"
-                  label="New GAMA Operator..."
+                  commandId="gama.ui.devtools.generateTestStubs"
+                  label="Generate test stubs..."
+                  style="push"/>
+            <separator
+                  name="search"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="gama.ui.devtools.findKeyword"
+                  label="Search keyword implementations..."
                   style="push">
             </command>
             <command
-                  commandId="gama.ui.devtools.command.newAction"
-                  label="New GAMA Action..."
-                  style="push">
-            </command>
-            <separator name="sep2" visible="true"/>
+                  commandId="gama.ui.devtools.dependencyGraph"
+                  label="Search plugin dependencies..."
+                  style="push"/>
             <command
-                  commandId="gama.ui.devtools.command.reallyRefresh"
-                  label="Really Refresh Workspace"
+                  commandId="gama.ui.devtools.gamlReport"
+                  label="Search missing annotations..."
                   style="push">
             </command>
+            <separator name="additions" visible="true"/>
          </menu>
       </menuContribution>
-
-      <!-- Context menu entry in Project/Package Explorer -->
-      <menuContribution locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu?after=additions">
-         <command
-               commandId="gama.ui.devtools.command.reallyRefresh"
-               label="Really Refresh (GAMA)"
-               style="push">
-         </command>
+      <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
+         <menu id="gama.ui.devtools.popup" label="GAMA" icon="icons/gama.png">
+            <command commandId="gama.ui.devtools.findKeyword" label="Find GAML Keyword Implementation..." style="push"/>
+            <command commandId="gama.ui.devtools.cleanAndRebuild" label="Clean and Rebuild..." style="push">
+               <parameter name="gama.ui.devtools.scope" value="selection"/>
+            </command>
+            <command commandId="gama.ui.devtools.checkConfiguration" label="Check configuration..." style="push"/>
+            <command
+                  commandId="gama.ui.devtools.updateJavaHeaders"
+                  label="Update headers..."
+                  style="push"/>
+            <command commandId="gama.ui.devtools.gamlReport" label="Search missing annotations..." style="push"/>
+            <command commandId="gama.ui.devtools.generateTestStubs" label="Generate test annotations..." style="push"/>
+            <separator name="new" visible="true"/>
+            <command commandId="gama.ui.devtools.openNewWizard" label="New GAMA Skill..." style="push">
+               <parameter name="gama.ui.devtools.wizardId" value="gama.ui.devtools.wizards.skill"/>
+            </command>
+            <command commandId="gama.ui.devtools.openNewWizard" label="New GAMA Operators..." style="push">
+               <parameter name="gama.ui.devtools.wizardId" value="gama.ui.devtools.wizards.operator"/>
+            </command>
+            <command commandId="gama.ui.devtools.openNewWizard" label="New GAMA Action..." style="push">
+               <parameter name="gama.ui.devtools.wizardId" value="gama.ui.devtools.wizards.action"/>
+            </command>
+            <command commandId="gama.ui.devtools.openNewWizard" label="New GAMA Type..." style="push">
+               <parameter name="gama.ui.devtools.wizardId" value="gama.ui.devtools.wizards.type"/>
+            </command>
+            <command commandId="gama.ui.devtools.openNewWizard" label="New GAML Test Model..." style="push">
+               <parameter name="gama.ui.devtools.wizardId" value="gama.ui.devtools.wizards.testModel"/>
+            </command>
+            <visibleWhen checkEnabled="false">
+               <with variable="activeMenuSelection">
+                  <iterate ifEmpty="false" operator="or">
+                     <adapt type="org.eclipse.core.resources.IProject">
+                        <test property="org.eclipse.core.resources.projectNature" value="org.eclipse.jdt.core.javanature"/>
+                     </adapt>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </menu>
       </menuContribution>
-
    </extension>
 
-   <!-- ============================================================ -->
-   <!-- New Wizards                                                   -->
-   <!-- ============================================================ -->
+   <!-- New wizards (also available in File > New > Other...) -->
    <extension point="org.eclipse.ui.newWizards">
-      <category
-            id="gama.ui.devtools.wizards"
-            name="GAMA Dev Tools">
-      </category>
-      <wizard
-            category="gama.ui.devtools.wizards"
-            class="gama.ui.devtools.wizards.NewGamaPluginWizard"
-            id="gama.ui.devtools.wizard.newPlugin"
-            name="GAMA Plugin"
-            icon="icons/gama_plugin.png">
-         <description>Creates a new complete GAMA plugin project with all required structure, annotation processor wiring, and a companion feature project.</description>
+      <category id="gama.ui.devtools.wizards" name="GAMA Development"/>
+      <wizard id="gama.ui.devtools.wizards.plugin" category="gama.ui.devtools.wizards" name="New GAMA Plugin"
+            class="gama.ui.devtools.wizards.NewGamaPluginWizard" icon="icons/gama.png" project="true">
+         <description>Creates a GAMA plugin with the standard layout (src, gaml, libs, models), the annotation processor configured and a Maven pom.</description>
       </wizard>
-      <wizard
-            category="gama.ui.devtools.wizards"
-            class="gama.ui.devtools.wizards.NewGamaSkillWizard"
-            id="gama.ui.devtools.wizard.newSkill"
-            name="GAMA Skill"
-            icon="icons/gama_skill.png">
-         <description>Creates a new GAMA Skill class with the @skill annotation boilerplate.</description>
+      <wizard id="gama.ui.devtools.wizards.skill" category="gama.ui.devtools.wizards" name="New GAMA Skill"
+            class="gama.ui.devtools.wizards.NewGamaSkillWizard" icon="icons/gama.png" project="false">
+         <description>Creates a skill in a GAMA plugin.</description>
       </wizard>
-      <wizard
-            category="gama.ui.devtools.wizards"
-            class="gama.ui.devtools.wizards.NewGamaOperatorWizard"
-            id="gama.ui.devtools.wizard.newOperator"
-            name="GAMA Operator"
-            icon="icons/gama_operator.png">
-         <description>Creates a new GAMA Operator class with the @operator annotation boilerplate.</description>
+      <wizard id="gama.ui.devtools.wizards.operator" category="gama.ui.devtools.wizards" name="New GAMA Operators"
+            class="gama.ui.devtools.wizards.NewGamaOperatorWizard" icon="icons/gama.png" project="false">
+         <description>Creates a class of documented GAML operators in a GAMA plugin.</description>
       </wizard>
-      <wizard
-            category="gama.ui.devtools.wizards"
-            class="gama.ui.devtools.wizards.NewGamaActionWizard"
-            id="gama.ui.devtools.wizard.newAction"
-            name="GAMA Action"
-            icon="icons/gama_action.png">
-         <description>Creates a new GAMA Action method stub with the @action annotation boilerplate.</description>
+      <wizard id="gama.ui.devtools.wizards.action" category="gama.ui.devtools.wizards" name="New GAMA Action"
+            class="gama.ui.devtools.wizards.NewGamaActionWizard" icon="icons/gama.png" project="false">
+         <description>Creates a skill with a single action in a GAMA plugin.</description>
+      </wizard>
+      <wizard id="gama.ui.devtools.wizards.type" category="gama.ui.devtools.wizards" name="New GAMA Type"
+            class="gama.ui.devtools.wizards.NewGamaTypeWizard" icon="icons/gama.png" project="false">
+         <description>Creates a GAML type and its value class in a GAMA plugin.</description>
+      </wizard>
+      <wizard id="gama.ui.devtools.wizards.testModel" category="gama.ui.devtools.wizards" name="New GAML Test Model"
+            class="gama.ui.devtools.wizards.NewGamlTestModelWizard" icon="icons/gama.png" project="false">
+         <description>Creates a GAML test model in models/Tests of a GAMA plugin.</description>
       </wizard>
    </extension>
 
-   <!-- ============================================================ -->
-   <!-- Preference Pages                                              -->
-   <!-- ============================================================ -->
+   <!-- Configuration problems and their quick fix -->
+   <extension id="configurationProblem" name="GAMA Plugin Configuration Problem" point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.core.resources.problemmarker"/>
+      <persistent value="false"/>
+      <attribute name="gamaIssueKind"/>
+   </extension>
+   <extension point="org.eclipse.ui.ide.markerResolution">
+      <markerResolutionGenerator class="gama.ui.devtools.config.RepairMarkerResolutionGenerator"
+            markerType="gama.ui.devtools.configurationProblem"/>
+   </extension>
+
+   <!-- Quick fixes on the warnings of the GAML annotation processor (missing documentation, untested operators).
+        Marker resolutions match exact marker types, hence the registration on each type used by APT. -->
+   <extension point="org.eclipse.ui.ide.markerResolution">
+      <markerResolutionGenerator class="gama.ui.devtools.quickfix.ProcessorWarningResolutionGenerator"
+            markerType="org.eclipse.jdt.apt.pluggable.core.compileProblem"/>
+      <markerResolutionGenerator class="gama.ui.devtools.quickfix.ProcessorWarningResolutionGenerator"
+            markerType="org.eclipse.jdt.apt.core.compile.problem"/>
+      <markerResolutionGenerator class="gama.ui.devtools.quickfix.ProcessorWarningResolutionGenerator"
+            markerType="org.eclipse.jdt.apt.core.nonreconcile.compile.problem"/>
+      <markerResolutionGenerator class="gama.ui.devtools.quickfix.ProcessorWarningResolutionGenerator"
+            markerType="org.eclipse.jdt.core.problem"/>
+   </extension>
+
+   <!-- Preferences -->
    <extension point="org.eclipse.ui.preferencePages">
-      <page
-            class="gama.ui.devtools.preferences.GamaDevToolsPreferencePage"
-            id="gama.ui.devtools.preferences"
-            name="GAMA Dev Tools">
-      </page>
+      <page id="gama.ui.devtools.preferences" name="GAMA Developer Tools"
+            class="gama.ui.devtools.preferences.GamaDevToolsPreferencePage"/>
+   </extension>
+   <extension point="org.eclipse.core.runtime.preferences">
+      <initializer class="gama.ui.devtools.preferences.DevToolsPreferences"/>
    </extension>
 
 </plugin>

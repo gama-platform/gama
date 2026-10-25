@@ -8,4 +8,18 @@
   </parent>
   <artifactId>gama.feature.devtools</artifactId>
   <packaging>eclipse-feature</packaging>
+  <build>
+    <plugins>
+      <plugin>
+        <!-- Dev-only IDE plugin: JDT/PDE are needed here, so the parent's target platform filters
+             (which strip JDT from the product) are dropped for this module only. -->
+        <groupId>org.eclipse.tycho</groupId>
+        <artifactId>target-platform-configuration</artifactId>
+        <version>${tycho.version}</version>
+        <configuration>
+          <filters combine.self="override"/>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>
