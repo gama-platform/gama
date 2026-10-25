@@ -77,13 +77,16 @@ public class CleanAndRebuildJob extends WorkspaceJob {
 			}
 			sub.setWorkRemaining(95);
 			sub.subTask("Resetting annotation processing");
-			for (IProject p : targets) { AptConfig.setEnabled(GamaProjects.java(p), false); }
-			SubMonitor del = sub.split(5).setWorkRemaining(targets.size());
-			for (IProject p : targets) {
-				IFolder gaml = p.getFolder(GamaProjects.GEN_SRC_DIR);
-				if (gaml.exists()) { gaml.delete(IResource.FORCE, del.split(1)); }
+			try {
+				for (IProject p : targets) { AptConfig.setEnabled(GamaProjects.java(p), false); }
+				SubMonitor del = sub.split(5).setWorkRemaining(targets.size());
+				for (IProject p : targets) {
+					IFolder gaml = p.getFolder(GamaProjects.GEN_SRC_DIR);
+					if (gaml.exists()) { gaml.delete(IResource.FORCE, del.split(1)); }
+				}
+			} finally {
+				for (IProject p : targets) { AptConfig.setEnabled(GamaProjects.java(p), true); }
 			}
-			for (IProject p : targets) { AptConfig.setEnabled(GamaProjects.java(p), true); }
 
 			IBuildConfiguration[] configs = buildConfigurations();
 			sub.subTask("Cleaning");
