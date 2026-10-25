@@ -28,6 +28,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -442,9 +443,18 @@ public final class PluginConfigurationChecker {
 		IProject proc = GamaProjects.processor();
 		if (global && proc != null && proc.isOpen()) { all.add(proc); }
 		for (IProject p : all) { if (p.isOpen()) { p.deleteMarkers(MARKER, false, IResource.DEPTH_ZERO); } }
+		IWorkspaceRoot root = GamaProjects.root();
+		if (global) { root.deleteMarkers(MARKER, false, IResource.DEPTH_ZERO); }
 		for (ConfigurationIssue i : issues) {
-			if (!i.project().isOpen() || !all.contains(i.project())) { continue; }
-			IMarker m = i.project().createMarker(MARKER);
+			IResource resource = i.project();
+			if (!i.project().isOpen() || !all.contains(i.project())) {
+				if (global && i.kind() == PROCESSOR_MISSING) {
+					resource = root;
+				} else {
+					continue;
+				}
+			}
+			IMarker m = resource.createMarker(MARKER);
 			m.setAttribute(IMarker.MESSAGE, "[GAMA] " + i.message());
 			m.setAttribute(IMarker.SEVERITY, i.kind().severity);
 			m.setAttribute(IMarker.LOCATION, i.project().getName());
