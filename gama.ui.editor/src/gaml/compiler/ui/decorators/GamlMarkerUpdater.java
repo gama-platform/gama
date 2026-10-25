@@ -31,6 +31,7 @@ import org.eclipse.xtext.validation.CheckMode;
 import com.google.inject.Inject;
 
 import gama.dev.DEBUG;
+import gaml.compiler.validation.GamlAutoValidation;
 
 /**
  * Manages the lifecycle of error and warning markers in GAML resource files.
@@ -142,7 +143,7 @@ public class GamlMarkerUpdater extends MarkerUpdaterImpl {
 	private void updateMarkersForNewResource(final IFile file, final URI uri, final ResourceSet resourceSet,
 			final IResourceUIValidatorExtension validatorExtension, final IMarkerContributor markerContributor,
 			final IProgressMonitor monitor) {
-		if (resourceSet == null) return;
+		if (resourceSet == null || !GamlAutoValidation.isEnabled(file)) return;
 		
 		final Resource resource = resourceSet.getResource(uri, true);
 		if (resource == null) return;

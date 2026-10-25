@@ -6,6 +6,20 @@ All commits listed below point to specific changes that drive the massive archit
 
 ## [2026.0.0] - Unreleased
 
+### Editor: per-file automatic validation control
+
+The GAML editor's top-right **Editor options** menu now ends with **Automatic validation** and
+**Validate now** (#802). Automatic validation is enabled by default; disabling it pauses semantic validation
+and documentation rebuilding for that file, while parsing and syntax colouring remain active. The setting
+is stored in workspace metadata and survives saving, closing and reopening the file.
+
+A grey-circle overlay on navigator and editor-tab icons identifies files with automatic validation disabled;
+their diagnostics may be outdated. **Validate now** is available only while automatic validation is disabled
+and refreshes diagnostics and documentation for the current editor content without changing the setting.
+Re-enabling **Automatic validation** immediately performs the same refresh, then resumes automatic updates.
+Both actions update error annotations without requiring an edit or save. Running an experiment still compiles
+the model, and stale error markers do not prevent launching a file whose automatic validation is disabled.
+
 ### Co-model imports: preserve aliases while editing
 
 Adding, renaming, or removing `as` on an existing import now preserves the import's dependency-graph entry

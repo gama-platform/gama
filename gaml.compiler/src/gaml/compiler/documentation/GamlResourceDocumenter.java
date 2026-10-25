@@ -13,6 +13,7 @@ package gaml.compiler.documentation;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BooleanSupplier;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
@@ -24,6 +25,7 @@ import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.documentation.IDocManager;
 import gama.dev.DEBUG;
 import gaml.compiler.resource.GamlResourceServices;
+import gaml.compiler.validation.GamlAutoValidation;
 
 /**
  * Central documentation manager for GAML resources.
@@ -126,8 +128,14 @@ public class GamlResourceDocumenter implements IDocManager {
 	 */
 	@Override
 	public void setGamlDocumentation(final URI res, final EObject object, final IGamlDescription desc) {
-		addDocumentationTask(res,
-				() -> internalSetGamlDocumentation(res, getCurrentDocGenerationFor(res), object, desc));
+		if (!isTaskValid(res)) return;
+		BooleanSupplier valid = GamlAutoValidation.publicationGuard(res);
+		if (!valid.getAsBoolean()) return;
+		addDocumentationTask(res, () -> {
+			if (valid.getAsBoolean()) {
+				internalSetGamlDocumentation(res, getCurrentDocGenerationFor(res), object, desc);
+			}
+		});
 	}
 
 	/**
@@ -201,6 +209,9 @@ public class GamlResourceDocumenter implements IDocManager {
 	@Override
 	public void doDocument(final URI res, final IModelDescription desc,
 			final Map<EObject, IGamlDescription> additionalExpressions) {
+		if (!isTaskValid(res)) return;
+		BooleanSupplier valid = GamlAutoValidation.publicationGuard(res);
+		if (!valid.getAsBoolean()) return;
 		GamlResourceDocumentationTask task = getTaskFor(res);
 		// Capture the new generation atomically; the return value of incrementGeneration() is the
 		// generation we must use for all work in this pass — avoids a TOCTOU between
@@ -216,11 +227,13 @@ public class GamlResourceDocumenter implements IDocManager {
 			// from executing. The try/catch in the job loop (GamlResourceDocumentationTask) also
 			// provides a safety net, but it is better to keep the failure as local as possible.
 			try {
-				internalDoDocument(res, generation, desc);
+				internalDoDocument(res, generation, desc, valid);
 			} catch (final Throwable t) {
 				DEBUG.ERR("Exception while documenting model tree for " + res.lastSegment(), t);
 			}
-			snapshot.forEach((e, d) -> internalSetGamlDocumentation(res, generation, e, d));
+			snapshot.forEach((e, d) -> {
+				if (valid.getAsBoolean()) { internalSetGamlDocumentation(res, generation, e, d); }
+			});
 		});
 	}
 
@@ -241,12 +254,13 @@ public class GamlResourceDocumenter implements IDocManager {
 	 *            the description to document; {@code null} is handled gracefully
 	 * @return {@code true} if documentation should continue; {@code false} to abort the current subtree
 	 */
-	private boolean internalDoDocument(final URI resource, final int generation, final IDescription desc) {
-		if (desc == null) return false;
+	private boolean internalDoDocument(final URI resource, final int generation, final IDescription desc,
+			final BooleanSupplier valid) {
+		if (desc == null || !valid.getAsBoolean()) return false;
 		final EObject e = desc.getUnderlyingElement();
 		if (e == null) return true; // We return true to continue exploring if other descriptions should be documented
 		if (!internalSetGamlDocumentation(resource, generation, e, desc)) return false;
-		return desc.visitOwnChildren(d -> internalDoDocument(resource, generation, d));
+		return desc.visitOwnChildren(d -> internalDoDocument(resource, generation, d, valid));
 	}
 
 	/**
