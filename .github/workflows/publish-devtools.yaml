@@ -1,0 +1,78 @@
+#
+# Builds the update site of the GAMA Developer Tools (gama.p2site.devtools) and publishes it on the GitHub Pages
+# of this repository: https://gama-platform.github.io/gama/devtools/
+#
+# One-time setup (repository admin): Settings > Pages > Build and deployment > Source: "GitHub Actions".
+#
+
+name: "Publish GAMA Developer Tools"
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'gama.ui.devtools/**'
+      - 'gama.feature.devtools/**'
+      - 'gama.p2site.devtools/**'
+      - '.github/workflows/publish-devtools.yaml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: "temurin"
+          java-version: "25"
+          cache: maven
+
+      # The parent pom declares the GAML annotation processor for every module
+      - name: Install the annotations and the annotation processor
+        run: |
+          mvn -B -q -f gama.annotations/pom.xml install -DskipTests -Dmaven.build.cache.enabled=false
+          mvn -B -q -f gama.processor/pom.xml install -DskipTests -Dmaven.build.cache.enabled=false
+
+      - name: Build the update site
+        run: |
+          mvn -B -f gama.parent/pom.xml -pl ../gama.ui.devtools,../gama.feature.devtools,../gama.p2site.devtools \
+            -DskipTests -Dmaven.build.cache.enabled=false package
+
+      - name: Assemble the site
+        run: |
+          mkdir -p _site/devtools
+          cp -r gama.p2site.devtools/target/repository/. _site/devtools/
+          cp gama.p2site.devtools/index.html _site/devtools/index.html
+          cat > _site/index.html <<'EOF'
+          <!DOCTYPE html>
+          <html><head><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=devtools/">
+          <title>GAMA</title></head>
+          <body><a href="devtools/">GAMA Developer Tools update site</a></body></html>
+          EOF
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}devtools/
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

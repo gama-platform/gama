@@ -201,6 +201,7 @@
 		<module>../gama.feature.devtools</module>
 
 		<module>../gama.p2site</module>
+		<module>../gama.p2site.devtools</module>
 
 		<module>../gama.product</module>
 		

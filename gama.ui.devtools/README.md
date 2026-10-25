@@ -1,6 +1,18 @@
 # GAMA Developer Tools (`gama.ui.devtools`)
 
-An Eclipse plugin for the developers of GAMA. Install it in the Eclipse IDE used to develop GAMA, not in GAMA itself. You can install it from `gama.feature.devtools`, or launch it in a runtime Eclipse. It adds a **GAMA** menu to the menu bar and a **GAMA** sub-menu to the context menu of Java projects.
+An Eclipse plugin for the developers of GAMA. It adds a **GAMA** menu to the menu bar and a **GAMA** sub-menu to the context menu of Java projects.
+
+## Installation
+
+Install it in the Eclipse IDE used to develop GAMA, not in GAMA itself. This Eclipse needs JDT and PDE and must run on Java 25.
+
+1. In Eclipse, choose *Help > Install New Software...*
+2. Add the update site `https://gama-platform.github.io/gama/devtools/`.
+3. Select **GAMA Developer Tools**, then restart Eclipse.
+
+Updates are then found by *Help > Check for Updates*.
+
+The update site is built from `gama.p2site.devtools`, which contains only `gama.feature.devtools`. The workflow `.github/workflows/publish-devtools.yaml` publishes it on every change of the developer tools on `main`. The plugin depends only on Eclipse bundles; the jgrapht jars it uses are embedded in `libs/`. To try local changes without installing, launch a runtime Eclipse from the workspace.
 
 ## Commands
 
