@@ -1,8 +1,9 @@
 #
 # Builds the update site of the GAMA Developer Tools (gama.p2site.devtools) and publishes it on the GitHub Pages
-# of this repository: https://gama-platform.github.io/gama/devtools/
+# of this repository: https://gama-platform.org/gama/devtools/
 #
-# One-time setup (repository admin): Settings > Pages > Build and deployment > Source: "GitHub Actions".
+# Requires Settings > Pages > Build and deployment > Source: "GitHub Actions" (enabled). The organisation domain
+# redirects https://gama-platform.github.io/gama/ to https://gama-platform.org/gama/.
 #
 
 name: "Publish GAMA Developer Tools"

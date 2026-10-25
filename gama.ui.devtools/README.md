@@ -7,7 +7,7 @@ An Eclipse plugin for the developers of GAMA. It adds a **GAMA** menu to the men
 Install it in the Eclipse IDE used to develop GAMA, not in GAMA itself. This Eclipse needs JDT and PDE and must run on Java 25.
 
 1. In Eclipse, choose *Help > Install New Software...*
-2. Add the update site `https://gama-platform.github.io/gama/devtools/`.
+2. Add the update site `https://gama-platform.org/gama/devtools/`.
 3. Select **GAMA Developer Tools**, then restart Eclipse.
 
 Updates are then found by *Help > Check for Updates*.

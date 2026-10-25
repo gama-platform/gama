@@ -7,7 +7,7 @@
     <version>0.0.0-SNAPSHOT</version>
     <relativePath>../gama.parent/</relativePath>
   </parent>
-  <!-- Update site of the GAMA Developer Tools, published on https://gama-platform.github.io/gama/devtools/
+  <!-- Update site of the GAMA Developer Tools, published on https://gama-platform.org/gama/devtools/
        by .github/workflows/publish-devtools.yaml. Only contains the devtools feature: its dependencies are
        part of any Eclipse IDE with JDT and PDE. -->
   <artifactId>gama.p2site.devtools</artifactId>

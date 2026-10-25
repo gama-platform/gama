@@ -23,7 +23,7 @@
    </license>
 
    <url>
-      <update label="GAMA Developer Tools" url="https://gama-platform.github.io/gama/devtools/"/>
+      <update label="GAMA Developer Tools" url="https://gama-platform.org/gama/devtools/"/>
    </url>
 
    <plugin
