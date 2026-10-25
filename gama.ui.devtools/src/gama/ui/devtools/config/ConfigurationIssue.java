@@ -48,8 +48,6 @@ public record ConfigurationIssue(IProject project, Kind kind, String message) {
 		SINGLETON(true, IMarker.SEVERITY_ERROR),
 		/** 'models/' exists but is not exported in bin.includes. */
 		MODELS_NOT_EXPORTED(true, IMarker.SEVERITY_WARNING),
-		/** A jar of 'libs/' is not declared everywhere it should be. */
-		LIB_NOT_DECLARED(true, IMarker.SEVERITY_ERROR),
 		/** The project has no explicit encoding. */
 		ENCODING(true, IMarker.SEVERITY_WARNING),
 		/** The project name is not the Bundle-SymbolicName (the processor relies on it). */

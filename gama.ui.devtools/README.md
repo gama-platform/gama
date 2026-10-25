@@ -4,7 +4,7 @@ An Eclipse plugin for the developers of GAMA. It adds a **GAMA** menu to the men
 
 ## Installation
 
-Install it in the Eclipse IDE used to develop GAMA, not in GAMA itself. This Eclipse needs JDT and PDE and must run on Java 25.
+Install it in the Eclipse IDE used to develop GAMA, not in GAMA itself. This Eclipse needs JDT and PDE and must run on Java 21 or newer. Eclipse can use its bundled JustJ Java 21 runtime; configure a separate JDK 25 under *Preferences > Java > Installed JREs* for compiling and running GAMA.
 
 1. In Eclipse, choose *Help > Install New Software...*
 2. Add the update site `https://gama-platform.org/gama/devtools/`.
@@ -73,7 +73,7 @@ A GAMA plugin is a Java project whose `.factorypath` references `gama.processor`
 - `gaml` is a source folder of `.classpath` and of `build.properties`.
 - `plugin.xml` declares `gaml.extension`, and the bundle is a singleton.
 - `models/` is exported.
-- The jars of `libs/` are declared in `Bundle-ClassPath`, `bin.includes` and `.classpath`.
+- Library declarations are left unchanged: repairs never register JARs found under `libs/` automatically. Add runtime dependencies explicitly; attach source and Javadoc archives to their libraries instead of adding them to the runtime classpath.
 
 **Naming and encoding**
 - The encoding is UTF-8.

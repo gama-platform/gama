@@ -49,7 +49,8 @@ import gama.ui.devtools.util.ResourceUtils;
 
 /**
  * Checks (and repairs) the configuration of GAMA plugins: annotation processing, generated source folder, factory
- * path, classpath, build.properties, plugin.xml, libraries, etc. The reference layout is the one produced by the
+ * path, generated source classpath, build.properties and plugin.xml. Existing library declarations are preserved.
+ * The reference layout is the one produced by the
  * "New GAMA Plugin" wizard (see {@link CodeTemplates}).
  */
 public final class PluginConfigurationChecker {
@@ -134,10 +135,6 @@ public final class PluginConfigurationChecker {
 					if (!bsn.replace(" ", "").contains("singleton:=true")) {
 						add(issues, p, SINGLETON, "The bundle should be declared with 'singleton:=true'");
 					}
-				}
-				for (String jar : missingLibs(p, mf, bp, jp)) {
-					add(issues, p, LIB_NOT_DECLARED,
-							"'" + jar + "' is not declared in Bundle-ClassPath, build.properties and/or .classpath");
 				}
 			}
 			if (p.getDefaultCharset(false) == null) {
@@ -225,45 +222,6 @@ public final class PluginConfigurationChecker {
 		return Pattern.compile("<factorypathentry\\b(?=[^>]*\\bkind\\s*=\\s*['\"]WKSPJAR['\"])"
 				+ "(?=[^>]*\\bid\\s*=\\s*['\"]" + path + "['\"])(?=[^>]*\\benabled\\s*=\\s*['\"]true['\"])[^>]*>")
 				.matcher(factoryPath).find();
-	}
-
-	/** The project-relative paths of the jars found under 'libs/'. */
-	static List<String> libJars(final IProject p) {
-		List<String> jars = new ArrayList<>();
-		IFolder libs = p.getFolder("libs");
-		if (!libs.exists()) return jars;
-		try {
-			libs.accept(r -> {
-				if (r.getType() == IResource.FILE && "jar".equalsIgnoreCase(r.getFileExtension())) {
-					jars.add(r.getProjectRelativePath().toString());
-				}
-				return true;
-			});
-		} catch (CoreException e) {
-			ResourceUtils.log(e);
-		}
-		jars.sort(String::compareTo);
-		return jars;
-	}
-
-	private static List<String> missingLibs(final IProject p, final String mf, final String bp, final IJavaProject jp)
-			throws CoreException {
-		List<String> missing = new ArrayList<>();
-		List<String> jars = libJars(p);
-		if (jars.isEmpty()) return missing;
-		List<String> bundleCp = ManifestText.getNames(mf, "Bundle-ClassPath");
-		List<String> bin = bp == null ? List.of() : BuildPropertiesText.getList(bp, "bin.includes");
-		Set<IPath> cpLibs = new LinkedHashSet<>();
-		for (IClasspathEntry e : jp.getRawClasspath()) {
-			if (e.getEntryKind() == IClasspathEntry.CPE_LIBRARY) { cpLibs.add(e.getPath()); }
-		}
-		for (String jar : jars) {
-			boolean inBin = BuildPropertiesText.containsPath(bin, jar) || BuildPropertiesText.containsPath(bin, "libs");
-			if (!bundleCp.contains(jar) || !inBin || !cpLibs.contains(p.getFullPath().append(jar))) {
-				missing.add(jar);
-			}
-		}
-		return missing;
 	}
 
 	private static void add(final List<ConfigurationIssue> issues, final IProject p, final Kind kind,
@@ -369,10 +327,6 @@ public final class PluginConfigurationChecker {
 			ResourceUtils.write(p, "META-INF/MANIFEST.MF", mf, monitor);
 			count++;
 		}
-		if (kinds.contains(LIB_NOT_DECLARED)) {
-			declareLibs(p, jp, monitor);
-			count++;
-		}
 		if (kinds.contains(ENCODING)) {
 			p.setDefaultCharset("UTF-8", monitor);
 			count++;
@@ -392,50 +346,6 @@ public final class PluginConfigurationChecker {
 		}
 		entries.add(index, entry);
 		jp.setRawClasspath(entries.toArray(IClasspathEntry[]::new), monitor);
-	}
-
-	private static void declareLibs(final IProject p, final IJavaProject jp, final IProgressMonitor monitor)
-			throws CoreException {
-		List<String> jars = libJars(p);
-		// MANIFEST.MF: Bundle-ClassPath, with '.' first
-		String mf = ResourceUtils.read(p, "META-INF/MANIFEST.MF");
-		List<String> cp = new ArrayList<>(ManifestText.getList(mf, "Bundle-ClassPath"));
-		if (cp.stream().noneMatch(s -> ".".equals(s.split(";", 2)[0].strip()))) { cp.add(0, "."); }
-		List<String> names = cp.stream().map(s -> s.split(";", 2)[0].strip()).toList();
-		boolean changed = false;
-		for (String jar : jars) {
-			if (!names.contains(jar)) {
-				cp.add(jar);
-				changed = true;
-			}
-		}
-		if (changed) { ResourceUtils.write(p, "META-INF/MANIFEST.MF", ManifestText.setList(mf, "Bundle-ClassPath", cp), monitor); }
-		// build.properties: bin.includes
-		String bp = ResourceUtils.read(p, "build.properties");
-		if (bp != null) {
-			List<String> bin = BuildPropertiesText.getList(bp, "bin.includes");
-			if (!BuildPropertiesText.containsPath(bin, "libs")) {
-				String nbp = BuildPropertiesText.addAll(bp, "bin.includes", jars);
-				if (!nbp.equals(bp)) { ResourceUtils.write(p, "build.properties", nbp, monitor); }
-			}
-		}
-		// .classpath: exported libraries, before the containers
-		List<IClasspathEntry> entries = new ArrayList<>(List.of(jp.getRawClasspath()));
-		Set<IPath> existing = new LinkedHashSet<>();
-		for (IClasspathEntry e : entries) { if (e.getEntryKind() == IClasspathEntry.CPE_LIBRARY) { existing.add(e.getPath()); } }
-		int index = 0;
-		for (int i = 0; i < entries.size(); i++) {
-			if (entries.get(i).getEntryKind() == IClasspathEntry.CPE_LIBRARY) { index = i + 1; }
-		}
-		boolean cpChanged = false;
-		for (String jar : jars) {
-			IPath path = p.getFullPath().append(jar);
-			if (!existing.contains(path)) {
-				entries.add(index++, JavaCore.newLibraryEntry(path, null, null, true));
-				cpChanged = true;
-			}
-		}
-		if (cpChanged) { jp.setRawClasspath(entries.toArray(IClasspathEntry[]::new), monitor); }
 	}
 
 	// ------------------------------------------------------------------------------------------------------------

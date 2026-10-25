@@ -5,7 +5,7 @@ Bundle-SymbolicName: gama.ui.devtools;singleton:=true
 Bundle-Version: 0.0.0.qualifier
 Bundle-Vendor: UMMISCO
 Bundle-Activator: gama.ui.devtools.GamaDevToolsActivator
-Bundle-RequiredExecutionEnvironment: JavaSE-25
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Automatic-Module-Name: gama.ui.devtools
 Require-Bundle: org.eclipse.core.runtime,

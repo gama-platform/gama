@@ -190,9 +190,10 @@ public class NewGamaPluginWizard extends Wizard implements INewWizard {
 		ResourceUtils.createFolder(p, GamaProjects.GEN_SRC_DIR, sub.split(1));
 		if (spec.libs()) {
 			ResourceUtils.write(p, "libs/README.md",
-					"Put here the third-party jars used by this plugin, then run GAMA > Check Plugin Configuration "
-							+ "and accept the repair: they will be declared in the manifest, build.properties and "
-							+ ".classpath.\n",
+					"Put third-party jars here. Declare only the required runtime jars in Bundle-ClassPath, "
+							+ "build.properties and .classpath. Source and Javadoc archives should be attached "
+							+ "to their libraries, not added as runtime dependencies. Configuration repair does "
+							+ "not register jars automatically.\n",
 					sub.split(1));
 		}
 		for (String f : spec.modelFolders()) { ResourceUtils.createFolder(p, "models/" + f, sub.split(1)); }
