@@ -340,6 +340,7 @@ public class NewGamaPluginWizard extends Wizard implements INewWizard {
 				validate();
 			});
 			for (Text t : List.of(vendor, location)) { t.addListener(SWT.Modify, e -> validate()); }
+			register.addListener(SWT.Selection, e -> validate());
 			setControl(c);
 			validate();
 		}
@@ -421,6 +422,10 @@ public class NewGamaPluginWizard extends Wizard implements INewWizard {
 			IPath l = location();
 			if (l == null || !l.toFile().isDirectory()) {
 				setErrorMessage("The location must be an existing folder");
+				return;
+			}
+			if (register.getSelection() && !l.equals(IPath.fromOSString(defaultLocation()))) {
+				setErrorMessage("To register this plugin, choose the GAMA repository root as its location");
 				return;
 			}
 			if (new File(l.toFile(), i).exists()) {
