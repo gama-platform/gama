@@ -230,7 +230,12 @@ public abstract class AbstractGamaClassWizard extends Wizard implements INewWiza
 				setErrorMessage("Package: " + s.getMessage());
 				return;
 			}
-			s = JavaConventions.validateJavaTypeName(className.getText().strip(), JavaCore.VERSION_21,
+			String simpleName = className.getText().strip();
+			if (simpleName.contains(".")) {
+				setErrorMessage("Class name must be a simple Java type name, without a package");
+				return;
+			}
+			s = JavaConventions.validateJavaTypeName(simpleName, JavaCore.VERSION_21,
 					JavaCore.VERSION_21, null);
 			if (s.getSeverity() == IStatus.ERROR) {
 				setErrorMessage("Class name: " + s.getMessage());
