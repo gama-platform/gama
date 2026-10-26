@@ -151,18 +151,23 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 			@Override
 			public void controlResized(final ControlEvent e) {
 				/* Detached views have no title! */
-				if (drawable == null || nativePeerJustCreated) return;
+				if (drawable == null) return;
 				if (SystemInfo.isMac() || SystemInfo.isWindows()) {
 					final var isDetached = parent.getShell().getText().length() == 0;
 					if (isDetached) {
 						if (!detached) {
 							// DEBUG.OUT("Reparenting because of detached");
-							reparentWindow();
+							// A peer that has never been shown (e.g. display opened directly in fullscreen) must not
+							// be reparented, but the transition is recorded so that re-attaching it reparents it
+							if (!nativePeerJustCreated) { reparentWindow(); }
 							detached = true;
 						}
 
 					} else if (detached) {
 						// DEBUG.OUT("Reparenting because of attached");
+						// Always reparent when coming back (e.g. exiting fullscreen), otherwise the native window
+						// stays blank on macOS. See #1214
+						nativePeerJustCreated = false;
 						reparentWindow();
 						detached = false;
 					}
