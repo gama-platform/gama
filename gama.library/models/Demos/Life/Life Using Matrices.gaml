@@ -60,7 +60,7 @@ experiment "Game of Life" type: gui {
 	parameter 'Width:' var: environment_width category: 'Board';
 	parameter 'Height:' var: environment_height category: 'Board';
 	parameter 'Torus?:' var: torus_environment category: 'Board';
-	parameter 'Initial density of live cells:' var: density category: 'Cells';
+	parameter 'Initial density of live cells:' var: density category: 'Cells' unit: "%";
 	
 	output {
 		display "Game of Life" type: 3d axes: false antialias: false {

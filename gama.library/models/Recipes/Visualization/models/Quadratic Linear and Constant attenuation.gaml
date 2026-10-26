@@ -42,7 +42,7 @@ experiment Display type: gui autorun: true {
 	int angle;
 	int height;
 	int distance;
-	parameter "Spot light angle" var:angle <- 0 min:0 max:360 slider:true category:"Spot light location";
+	parameter "Spot light angle" var:angle <- 0 min:0 max:360 slider:true category:"Spot light location" unit: "°";
 	parameter "Spot light height" var:height <- 0 min:-30 max:30 slider:true category:"Spot light location";
 	parameter "Spot light distance from ball" var:distance <- 10 min:2 max:30 slider:true category:"Spot light location";
 	parameter "Quadratic attenuation" var:quad <- 0.0001 min:0.0000001 max:0.001 slider:true category:"Light attenuation";

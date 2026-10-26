@@ -112,7 +112,7 @@ experiment "Game of Life" type: gui {
 	parameter 'Width:' var: environment_width category: 'Board';
 	parameter 'Height:' var: environment_height category: 'Board';
 	parameter 'Torus?:' var: torus_environment category: 'Board';
-	parameter 'Initial density of live cells:' var: density category: 'Cells';
+	parameter 'Initial density of live cells:' var: density category: 'Cells' unit: "%";
 	parameter 'Numbers of live neighbours required to stay alive:' var: living_conditions category: 'Cells';
 	parameter 'Numbers of live neighbours required to become alive:' var: birth_conditions category: 'Cells';
 	parameter 'Color of live cells:' var: livingcolor category: 'Colors';

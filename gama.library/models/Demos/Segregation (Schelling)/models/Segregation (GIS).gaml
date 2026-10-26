@@ -120,7 +120,7 @@ species space {
 experiment schelling type: gui parent:base_exp{	
 	
 	parameter "Shapefile to load:" var:shape_file_name category: "GIS specific";
-	parameter "Occupancy of people (in m2):" var:square_meters_per_people category: "GIS specific";
+	parameter "Occupancy of people:" var:square_meters_per_people category: "GIS specific" unit: "m²";
 	
 	output {
 		display Town_display type:2d  {

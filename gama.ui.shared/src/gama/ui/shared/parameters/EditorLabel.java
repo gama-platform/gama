@@ -25,7 +25,7 @@ import org.eclipse.swt.widgets.Menu;
 
 import gama.api.GAMA;
 import gama.api.gaml.symbols.IParameter;
-import gama.api.utils.StringUtils;
+import gama.api.gaml.types.IType;
 import gama.dev.DEBUG;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.IGamaColors;
@@ -114,22 +114,30 @@ public class EditorLabel extends Label {
 		}
 		s.append("value of " + (isExperiment ? "experiment" : "model") + " attribute " + param.getName());
 		if (!isBatch) {
+			final IParameter.DisplayUnit unit =
+					param.getType().id() == IType.FLOAT ? param.getDisplayUnit(e.getScope()) : null;
 			if (e.getMinValue() != null) {
-				final var min = StringUtils.toGaml(e.getMinValue(), false);
+				final var min = formatBound(e, e.getMinValue(), unit);
 				if (e.getMaxValue() != null) {
-					s.append(" [").append(min).append("..").append(toGaml(e.getMaxValue(), false)).append("]");
+					s.append(" [").append(min).append("..").append(formatBound(e, e.getMaxValue(), unit)).append("]");
 				} else {
 					s.append(">= ").append(min);
 				}
-			} else if (e.getMaxValue() != null) { s.append("<=").append(toGaml(e.getMaxValue(), false)); }
+			} else if (e.getMaxValue() != null) { s.append("<=").append(formatBound(e, e.getMaxValue(), unit)); }
 			if ((e.getMinValue() != null || e.getMaxValue() != null) && e.getStepValue() != null) {
-				s.append(" every ").append(e.getStepValue());
+				s.append(" every ").append(formatBound(e, e.getStepValue(), unit));
 			}
 		} else {
 			final var u = param.getUnitLabel(e.getScope());
 			if (u != null) { s.append(" ").append(u); }
 		}
 		return s.toString();
+	}
+
+	private static String formatBound(final AbstractEditor<?> editor, final Object value,
+			final IParameter.DisplayUnit unit) {
+		if (unit == null) return toGaml(value, false);
+		return FloatUnitFormatter.format(((Number) value).doubleValue(), (Number) editor.getStepValue(), unit);
 	}
 
 	/**

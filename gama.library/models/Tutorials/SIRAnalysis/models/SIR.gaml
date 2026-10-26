@@ -64,8 +64,8 @@ experiment SIR_simulation type: gui {
     parameter "Number of agents"      var: nb_agents;
     parameter "Initially infected"    var: nb_infected_init;
     parameter "Infection rate"        var: infection_rate;
-    parameter "Infection distance"    var: infection_distance;
-    parameter "Recovery time"         var: recovery_time;
+    parameter "Infection distance"    var: infection_distance unit: "m";
+    parameter "Recovery time"         var: recovery_time unit: "cycles";
 
     output {
         display "Population" type: java2D {

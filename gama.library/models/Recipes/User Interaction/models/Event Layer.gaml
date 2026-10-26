@@ -100,7 +100,7 @@ species dummy  {
 experiment Displays type: gui
 {
 	float minimum_cycle_duration <-0.01;
-	parameter "Radius of selection" var: radius ;	// The radius of the disk around the click 
+	parameter "Radius of selection" var: radius unit: "m";	// The radius of the disk around the click 
 	output synchronized:true
 	{    
 		layout horizontal([0::5000,1::5000]) tabs:true editors: false;

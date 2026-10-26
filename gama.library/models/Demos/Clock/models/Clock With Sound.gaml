@@ -79,11 +79,11 @@ experiment Display type: gui {
 	float minimum_cycle_duration <- 0.001#s;
 	parameter 'Zoom: ' var: zoom category: 'Init' ;
 	parameter 'Milliseconds/cycle' var: stepDuration category: 'Init';
-	parameter 'alarm Day' var: alarm_days;
-	parameter 'alarm Hour' var: alarm_hours;
+	parameter 'alarm Day' var: alarm_days unit: "d";
+	parameter 'alarm Hour' var: alarm_hours unit: "h";
 	parameter 'alarm Am' var: alarm_am;
-	parameter 'alarm Minutes' var: alarm_minutes;
-	parameter 'alarm Seconds' var: alarm_seconds;
+	parameter 'alarm Minutes' var: alarm_minutes unit: "min";
+	parameter 'alarm Seconds' var: alarm_seconds unit: "s";
 	output {
 		display ClockView type: opengl { 
 			graphics "c" refresh: false {

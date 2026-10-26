@@ -107,12 +107,12 @@ experiment road_traffic type: gui {
 	parameter "Shapefile for the roads:" var: shape_file_roads category: "GIS" ;
 	parameter "Shapefile for the bounds:" var: shape_file_bounds category: "GIS" ;
 	parameter "Number of people agents" var: nb_people category: "People" ;
-	parameter "Earliest hour to start work" var: min_work_start category: "People" min: 2 max: 8;
-	parameter "Latest hour to start work" var: max_work_start category: "People" min: 8 max: 12;
-	parameter "Earliest hour to end work" var: min_work_end category: "People" min: 12 max: 16;
-	parameter "Latest hour to end work" var: max_work_end category: "People" min: 16 max: 23;
-	parameter "minimal speed" var: min_speed category: "People" min: 0.1 #km/#h max: 3.0 #km/#h step: 0.01;
-	parameter "maximal speed" var: max_speed category: "People" min: 3.0 #km/#h max: 10.0 #km/#h step: 0.01;
+	parameter "Earliest hour to start work" var: min_work_start category: "People" min: 2 max: 8 unit: "h";
+	parameter "Latest hour to start work" var: max_work_start category: "People" min: 8 max: 12 unit: "h";
+	parameter "Earliest hour to end work" var: min_work_end category: "People" min: 12 max: 16 unit: "h";
+	parameter "Latest hour to end work" var: max_work_end category: "People" min: 16 max: 23 unit: "h";
+	parameter "minimal speed" var: min_speed category: "People" min: 0.1 #km/#h max: 3.0 #km/#h step: 0.1 #km/#h unit: #km/#h;
+	parameter "maximal speed" var: max_speed category: "People" min: 3.0 #km/#h max: 10.0 #km/#h step: 0.1 #km/#h unit: #km/#h;
 
 	
 	output {

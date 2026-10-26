@@ -132,7 +132,7 @@ experiment Simulation_ABM_EBM type: gui {
 	parameter 'Number of Removed' type: int var: number_R <- 0 category: "Initial population";
 	parameter 'Beta (S->I)' type: float var: beta <- 0.1 category: "Parameters";
 	parameter 'Gamma (I->R)' type: float var: gamma <- 0.01 category: "Parameters";
-	parameter 'Size of the neighbours' type: int var: neighbours_size <- 1 min: 1 max: 5 category: "Infection";
+	parameter 'Size of the neighbours' type: int var: neighbours_size <- 1 min: 1 max: 5 category: "Infection" unit: "cells";
 	output {
 		layout #split;
 		display sir_display type:2d antialias:false { 

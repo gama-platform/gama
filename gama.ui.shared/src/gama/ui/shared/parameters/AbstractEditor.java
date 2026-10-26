@@ -175,6 +175,8 @@ public abstract class AbstractEditor<T> implements Selector, ModifyListener, IPa
 	 */
 	protected abstract int[] getToolItems();
 
+	protected String[] getValueLabelsForSizing() { return new String[0]; }
+
 	/**
 	 * Returns null by default as only some types can define a "step" value
 	 *

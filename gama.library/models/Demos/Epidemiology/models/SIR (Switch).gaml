@@ -345,7 +345,7 @@ experiment mysimulation type: gui {
 	parameter 'Delta (I->R)' type: float var: delta <- 0.01 category: "Parameters";	
 	
 	parameter 'Is the infection is computed locally?' type: bool var: local_infection <- true category: "Infection";
-	parameter 'Size of the neighbours' type: int var: neighbours_range <- 2 min:1 max: 5 category: "Infection";
+	parameter 'Size of the neighbours' type: int var: neighbours_range <- 2 min:1 max: 5 category: "Infection" unit: "cells";
 
 	parameter 'Local Random Walk' type: bool var: local_random_walk <- true category: "Agents";	
 	

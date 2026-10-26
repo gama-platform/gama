@@ -128,7 +128,7 @@ class cell {
 experiment "Game of Life" type: gui record: true {
 	parameter 'Width:' var: environment_width category: 'Board';
 	parameter 'Height:' var: environment_height category: 'Board';
-	parameter 'Initial density of live cells:' var: density category: 'Cells';
+	parameter 'Initial density of live cells:' var: density category: 'Cells' unit: "%";
 	parameter 'History size' var:history_size;
 	parameter 'Numbers of live neighbours required to stay alive:' var: living_conditions category: 'Cells';
 	parameter 'Numbers of live neighbours required to become alive:' var: birth_conditions category: 'Cells';

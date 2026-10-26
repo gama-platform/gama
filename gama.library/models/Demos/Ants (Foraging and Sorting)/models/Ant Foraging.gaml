@@ -190,7 +190,7 @@ experiment base virtual:true {
 	parameter 'Rate of diffusion of the signal (%/cycle):' var:diffusion_rate category: 'Signals';
 	parameter 'Width and Height of the grid:' var:gridsize category: 'Environment and Population';
 	parameter 'Number of ants:' var:ants_number category: 'Environment and Population';
-	parameter 'Grid updates itself every:' var:grid_frequency category: 'Environment and Population';
+	parameter 'Grid updates itself every:' var:grid_frequency category: 'Environment and Population' unit: "cycles";
 	parameter 'Number of food depots:' var:number_of_food_places category: 'Environment and Population';
 }
 

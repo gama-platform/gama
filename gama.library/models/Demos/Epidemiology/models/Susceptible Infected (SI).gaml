@@ -115,7 +115,7 @@ experiment Simulation type: gui {
 	parameter "Beta (S->I)" var:beta; 	// The parameter Beta
 	parameter "Mortality" var:nu ;	// The parameter Nu
 	parameter "Is the infection is computed locally?" var:local_infection ;
-	parameter "Size of the neighbours" var:neighbours_size ;
+	parameter "Size of the neighbours" var:neighbours_size unit: "cells";
 	
  	output {
  		layout #split; 

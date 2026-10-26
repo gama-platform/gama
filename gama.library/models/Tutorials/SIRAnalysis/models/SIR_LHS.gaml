@@ -65,8 +65,8 @@ experiment SIR_gui type: gui {
     parameter "Number of agents"    var: nb_agents;
     parameter "Initially infected"  var: nb_infected_init;
     parameter "Infection rate"      var: infection_rate;
-    parameter "Infection distance"  var: infection_distance;
-    parameter "Recovery time"       var: recovery_time;
+    parameter "Infection distance"  var: infection_distance unit: "m";
+    parameter "Recovery time"       var: recovery_time unit: "cycles";
 
     output {
         display "Population" type: java2D {
@@ -93,8 +93,8 @@ experiment SIR_LHS type: batch repeat: 1 keep_seed: false
     parameter "Number of agents"    var: nb_agents          min: 50  max: 500;
     parameter "Initially infected"  var: nb_infected_init   min: 1   max: 50;
     parameter "Infection rate"      var: infection_rate     min: 0.0 max: 1.0;
-    parameter "Infection distance"  var: infection_distance min: 1   max: 20;
-    parameter "Recovery time"       var: recovery_time      min: 10  max: 200;
+    parameter "Infection distance"  var: infection_distance min: 1   max: 20 unit: "m";
+    parameter "Recovery time"       var: recovery_time      min: 10  max: 200 unit: "cycles";
 
     method exploration sampling: "latinhypercube" sample: 100;
 

@@ -109,10 +109,10 @@ experiment "Road Traffic" type: gui {
 	parameter 'Shapefile for the buildings:' var: shape_file_buildings category: 'GIS';
 	parameter 'Shapefile for the roads:' var: shape_file_roads category: 'GIS';
 	parameter 'Shapefile for the bounds:' var: shape_file_bounds category: 'GIS';
-	parameter 'Earliest hour to start work' var: min_work_start category: 'People';
-	parameter 'Latest hour to start work' var: max_work_start category: 'People';
-	parameter 'Earliest hour to end work' var: min_work_end category: 'People';
-	parameter 'Latest hour to end work' var: max_work_end category: 'People';
+	parameter 'Earliest hour to start work' var: min_work_start category: 'People' unit: "h";
+	parameter 'Latest hour to start work' var: max_work_start category: 'People' unit: "h";
+	parameter 'Earliest hour to end work' var: min_work_end category: 'People' unit: "h";
+	parameter 'Latest hour to end work' var: max_work_end category: 'People' unit: "h";
 	parameter 'minimal speed' var: min_speed category: 'People';
 	parameter 'maximal speed' var: max_speed category: 'People';
 	parameter 'Number of people agents' var: nb_people category: 'People' min: 0 max: 100000 {

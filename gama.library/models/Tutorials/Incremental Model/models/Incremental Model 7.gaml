@@ -144,7 +144,7 @@ species building {
 }
 
 experiment main_experiment type: gui {
-	parameter "Infection distance" var: infection_distance;
+	parameter "Infection distance" var: infection_distance unit: #m;
 	parameter "Proba infection" var: proba_infection min: 0.0 max: 1.0;
 	parameter "Nb people infected at init" var: nb_infected_init;
 	output {

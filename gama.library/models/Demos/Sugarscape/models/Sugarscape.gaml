@@ -124,13 +124,13 @@ species animal {
 
 experiment sugarscape type: gui{
 	float minimum_cycle_duration<-0.1;
-	parameter 'Growth rate of sugar:' var: sugarGrowthRate category: 'Environment';
-	parameter 'Minimum age of death:' var: minDeathAge <- 60 category: 'Agents';
-	parameter 'Maximum age of death:' var: maxDeathAge <- 100 category: 'Agents';
+	parameter 'Growth rate of sugar:' var: sugarGrowthRate category: 'Environment' unit: "/cycle";
+	parameter 'Minimum age of death:' var: minDeathAge <- 60 category: 'Agents' unit: "cycles";
+	parameter 'Maximum age of death:' var: maxDeathAge <- 100 category: 'Agents' unit: "cycles";
 	parameter 'Maximum metabolism:' var: maxMetabolism <- 3 category: 'Agents';
 	parameter 'Maximum initial sugar per cell:'  var: maxInitialSugar <- 25 category: 'Environment';
 	parameter 'Minimum initial sugar per cell:' var: minInitialSugar <- 5 category: 'Environment';
-	parameter 'Maximum range of vision:' var: maxRange <- 6 category: 'Agents';
+	parameter 'Maximum range of vision:' var: maxRange <- 6 category: 'Agents' unit: "cells";
 	parameter 'Replace dead agents ?' var: replace <- true category: 'Agents';
 	parameter 'Number of agents:' var: numberOfAgents <- 400 category: 'Agents';
 	

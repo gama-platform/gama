@@ -118,7 +118,7 @@ public class OpenGLActivator extends GamaBundleActivator {
 			property = "Line width granularity";
 			gl.glGetFloatv(GL2GL3.GL_SMOOTH_LINE_WIDTH_GRANULARITY, fresult, 0);
 			DEBUG.BANNER(prefix, property, "value", String.valueOf(fresult[0]));
-			GamaPreferences.Displays.CORE_LINE_WIDTH.step(fresult[0]);
+			// GamaPreferences.Displays.CORE_LINE_WIDTH.step(fresult[0]);
 			property = "Point size range";
 			gl.glGetFloatv(GL.GL_POINT_SIZE, fresult, 0);
 			DEBUG.BANNER(prefix, property, "between",

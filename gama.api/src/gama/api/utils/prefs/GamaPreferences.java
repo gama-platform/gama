@@ -824,9 +824,8 @@ public class GamaPreferences {
 		 */
 		public static final Pref<Boolean> CORE_SERVER_MODE =
 				create("pref_enable_server", "Enable GAMA server mode", true, IType.BOOL, true)
-						.in(Network.NAME, Network.SERVER)
-						.activates("pref_server_port", "pref_server_ping", "pref_server_console", "pref_server_log",
-								"pref_server_log_directory");
+						.in(Network.NAME, Network.SERVER).activates("pref_server_port", "pref_server_ping",
+								"pref_server_console", "pref_server_log", "pref_server_log_directory");
 
 		/** The TCP port on which the GAMA Server listens for incoming client connections. */
 		public static final Pref<Integer> CORE_SERVER_PORT =
@@ -855,14 +854,14 @@ public class GamaPreferences {
 
 		/** Whether the server records all WebSocket frames. Changes apply immediately to a running GUI server. */
 		public static final Pref<Boolean> CORE_SERVER_LOG =
-				create("pref_server_log", "Log all GAMA server exchanges", false, IType.BOOL, true)
-						.in(Network.NAME, Network.SERVER);
+				create("pref_server_log", "Log all GAMA server exchanges", false, IType.BOOL, true).in(Network.NAME,
+						Network.SERVER);
 
 		/** Persistent directory, outside the temporary headless workspace. */
 		public static final Pref<String> CORE_SERVER_LOG_DIRECTORY =
 				create("pref_server_log_directory", "Server exchange log directory (restart required)",
-						System.getProperty("user.home") + "/.gama/server-logs", IType.STRING, true)
-						.in(Network.NAME, Network.SERVER);
+						System.getProperty("user.home") + "/.gama/server-logs", IType.STRING, true).in(Network.NAME,
+								Network.SERVER);
 
 		/** The maximum number of simultaneous commands an experiment can accept through GAMA server. */
 		public static final Pref<Integer> CORE_SERVER_COMMAND_QUEUE_SIZE = create("pref_server_command_queue_size",
@@ -1124,7 +1123,7 @@ public class GamaPreferences {
 		 */
 		public static final Pref<Double> CORE_LINE_WIDTH = create("pref_display_line_width",
 				"Default line width (facet 'width' of 'draw'). Note that this attribute is not supported by all OpenGL implementations",
-				1d, IType.FLOAT, true).in(NAME, RENDERING);
+				1d, IType.FLOAT, true).in(NAME, RENDERING).step(0.01);
 
 		/**
 		 * Whether only the outward-facing faces of 3D objects should be rendered in OpenGL, hiding internal faces for a

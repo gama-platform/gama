@@ -29,6 +29,7 @@ import static gama.ui.shared.resources.IGamaIcons.SMALL_REVERT;
 import static gama.ui.shared.resources.IGamaIcons.SMALL_UNDEFINE;
 import static gama.ui.shared.views.toolbar.GamaCommand.build;
 
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.layout.RowDataFactory;
 import org.eclipse.jface.layout.RowLayoutFactory;
 import org.eclipse.swt.SWT;
@@ -36,6 +37,7 @@ import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
@@ -154,24 +156,65 @@ public class EditorToolbar<T> {
 		final RowLayout id = RowLayoutFactory.fillDefaults().center(true).spacing(2).margins(0, 0).type(SWT.HORIZONTAL)
 				.fill(true).pack(true).extendedMargins(0, 0, 0, 0).justify(false).wrap(false).create();
 		final RowData gd = RowDataFactory.swtDefaults().create();
-		group.setLayout(id);
 		IParameter p = editor.getParam();
-		if (p == null || p.isEditable()) {
-			for (final int i : editor.getToolItems()) {
-				MouseListener listener = new MouseAdapter() {
+		final int[] toolItems = p == null || p.isEditable() || p.getDisplayUnit(editor.getScope()) != null
+				? editor.getToolItems() : new int[0];
+		final String[] samples = editor.getValueLabelsForSizing();
+		final boolean valueColumn = samples.length > 0 && contains(toolItems, VALUE);
+		Composite buttons = group;
+		if (valueColumn) {
+			group.setLayout(GridLayoutFactory.fillDefaults().numColumns(2).spacing(6, 0).create());
+			buttons = new Composite(group, SWT.NONE);
+			buttons.setLayout(id);
+		} else {
+			group.setLayout(id);
+		}
+		for (final int i : toolItems) {
+			if (p != null && !p.isEditable() && i != VALUE) { continue; }
+			MouseListener listener = new MouseAdapter() {
 
-					@Override
-					public void mouseDown(final MouseEvent e) {
-						execute(i, 0);
-					}
-				};
-				items[i] = new Item(group, commands[i], listener);
-				items[i].label.setLayoutData(RowDataFactory.copyData(gd));
-			}
+				@Override
+				public void mouseDown(final MouseEvent e) {
+					execute(i, 0);
+				}
+			};
+			items[i] = new Item(valueColumn && i == VALUE ? group : buttons, commands[i], listener);
+			if (!valueColumn || i != VALUE) { items[i].label.setLayoutData(RowDataFactory.copyData(gd)); }
+		}
+		if (valueColumn) {
+			final Label value = items[VALUE].label;
+			// The value column comes first, just after the editor control, so that all values align on the left.
+			value.moveAbove(buttons);
+			value.setAlignment(SWT.LEAD);
+			final GridData valueData = new GridData(SWT.BEGINNING, SWT.CENTER, false, false);
+			value.setLayoutData(valueData);
+			final GridData buttonsData = new GridData(SWT.END, SWT.CENTER, true, false);
+			buttons.setLayoutData(buttonsData);
+			editor.parent.alignValueColumn(group, valueData, textWidth(value, samples) + 4, buttonsData,
+					buttons.computeSize(SWT.DEFAULT, SWT.DEFAULT).x);
 		}
 		Color color = editor.parent.getBackground();
 		GamaColors.setBackground(color, group);
 		GamaColors.setBackground(color, group.getChildren());
+		GamaColors.setBackground(color, buttons.getChildren());
+	}
+
+	/** Whether the items contain the given item. */
+	private static boolean contains(final int[] items, final int item) {
+		for (final int i : items) { if (i == item) return true; }
+		return false;
+	}
+
+	/** The width of the widest of the texts, in the font of the label. */
+	private static int textWidth(final Label label, final String[] texts) {
+		final GC gc = new GC(label);
+		try {
+			int width = 0;
+			for (final String text : texts) { if (text != null) { width = Math.max(width, gc.textExtent(text).x); } }
+			return width;
+		} finally {
+			gc.dispose();
+		}
 	}
 
 	/**
@@ -245,7 +288,13 @@ public class EditorToolbar<T> {
 	 */
 	public void updateValue(final String s) {
 		final var c = items[IParameterEditor.VALUE];
-		if (c != null && !c.isDisposed()) { c.label.setText(s); }
+		if (c != null && !c.isDisposed()) {
+			if (s.equals(c.label.getText())) return;
+			c.label.setText(s);
+			c.label.setToolTipText(s);
+			// The width of the value column is reserved, so only the label itself needs to be redrawn
+			if (!(c.label.getLayoutData() instanceof GridData)) { group.layout(); }
+		}
 	}
 
 	/**

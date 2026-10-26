@@ -158,7 +158,7 @@ experiment "3D" type: gui {
 	parameter 'Cohesion Factor' var:cohesion_factor;
 	parameter 'Alignment Factor' var:alignment_factor;
 	parameter 'Minimal Distance' var:minimal_distance;
-	parameter 'Maximal Turn' var:maximal_turn;
+	parameter 'Maximal Turn' var:maximal_turn unit: "°";
 	parameter 'Width/Height of the Environment' var:width_and_height_of_environment;
 	parameter 'Z max of the Environment' var:z_max;
 	parameter 'Toroidal Environment ?' var:torus_environment;

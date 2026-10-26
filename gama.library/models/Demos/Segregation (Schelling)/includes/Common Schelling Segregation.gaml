@@ -92,7 +92,7 @@ experiment base_exp virtual:true{
 	parameter "Density of people:" var:density_of_people category: "Population";
 	parameter "Desired percentage of similarity:" var:percent_similar_wanted category: "Population";
 	parameter "Width and height of the environment:" var:dimensions category: "Environment";
-	parameter "Distance of perception:" var:neighbours_distance category: "Population";
+	parameter "Distance of perception:" var:neighbours_distance category: "Population" unit: "cells";
 
 }
 
