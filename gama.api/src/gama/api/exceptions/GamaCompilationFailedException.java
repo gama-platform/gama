@@ -105,7 +105,7 @@ public class GamaCompilationFailedException extends GamaRuntimeException {
 	 * " [file:line]" of an error, from the Xtext node attached to its source (no dependency on Xtext: the node is
 	 * found among the source's adapters by its getStartLine method). Empty when unknown.
 	 */
-	static String where(final GamlCompilationError e) {
+	public static String where(final GamlCompilationError e) {
 		try {
 			final var s = e.source();
 			String file = e.uri() != null ? e.uri().lastSegment() : null;

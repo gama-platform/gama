@@ -180,6 +180,9 @@ public class HeadlessApplication implements IApplication {
 	/** The Constant CHECK_MODEL_PARAMETER. */
 	final public static String CHECK_MODEL_PARAMETER = "-check";
 
+	/** The Constant COMPILE_PARAMETER: compiles a model without running it (-validate and -check are taken). */
+	final public static String COMPILE_PARAMETER = "-compile";
+
 	/** The Constant RUN_LIBRARY_PARAMETER. */
 	final public static String RUN_LIBRARY_PARAMETER = "-runLibrary";
 
@@ -274,6 +277,8 @@ public class HeadlessApplication implements IApplication {
 				+ "\n\t\t                              -- Run batch experiment in headless mode"
 				// + "\n\t\t" + GAML_PARAMETER + " [experimentName] [modelFile.gaml]"
 				// + "\n\t\t -- Run single gaml experiment in headless mode"
+				+ "\n\t\t" + COMPILE_PARAMETER + " [modelFile.gaml]"
+				+ "\n\t\t                              -- compile a model without running it: errors with file and line, exit 0 compiles, 3 doesn't"
 				+ "\n\t\t" + BUILD_XML_PARAMETER + " [experimentName] [modelFile.gaml] [xmlOutputFile.xml]"
 				+ "\n\t\t                              -- build an xml parameter file from a model"
 				+ "\n\t\t[xmlHeadlessFile.xml] [outputDirectory]"
@@ -350,6 +355,10 @@ public class HeadlessApplication implements IApplication {
 		}
 		if (args.contains(BUILD_XML_PARAMETER)) {
 			size = size - 4;
+			mustContainInFile = mustContainOutFolder = false;
+		}
+		if (args.contains(COMPILE_PARAMETER)) {
+			size = size - 2;
 			mustContainInFile = mustContainOutFolder = false;
 		}
 
@@ -447,6 +456,8 @@ public class HeadlessApplication implements IApplication {
 
 		DEBUG.OFF();
 
+		if (args.contains(COMPILE_PARAMETER)) { System.exit(compileModel(after(args, COMPILE_PARAMETER))); }
+
 		// Debug runner
 		boolean noDelay = args.contains(NO_DELAY_PARAMETER);
 		if (args.contains(VALIDATE_LIBRARY_PARAMETER)) return ModelLibraryValidator.getInstance().start();
@@ -472,6 +483,31 @@ public class HeadlessApplication implements IApplication {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Compiles a model without running it (-compile): one line "ERROR [file:line] message" per error, then
+	 * "COMPILE OK" or "COMPILE FAILED: n error(s)". Returns the exit code: 0 compiles, 3 doesn't, 2 no such file.
+	 */
+	public static int compileModel(final String path) {
+		final File file = path == null ? null : new File(path);
+		if (file == null || !file.isFile()) {
+			System.out.println("COMPILE FAILED: no such model file: " + path);
+			return 2;
+		}
+		final List<GamlCompilationError> errors = new ArrayList<>();
+		final IModelSpecies model =
+				GamlModelBuilder.getInstance().compile(URI.createFileURI(file.getAbsolutePath()), errors);
+		final List<GamlCompilationError> errs = errors.stream().filter(GamlCompilationError::isError).toList();
+		for (final GamlCompilationError e : errs) {
+			System.out.println("ERROR" + GamaCompilationFailedException.where(e) + " " + e.message());
+		}
+		if (model != null && errs.isEmpty()) {
+			System.out.println("COMPILE OK");
+			return 0;
+		}
+		System.out.println("COMPILE FAILED: " + Math.max(errs.size(), 1) + " error(s)");
+		return 3;
 	}
 
 	/**
