@@ -196,8 +196,8 @@ experiment base virtual:true {
 
 	//Complete experiment that will inspect all ants in a table
 experiment "With Inspector" type: gui parent:base{
-	parameter 'Number:' var: ants_number <- 100 unit: 'ants' category: 'Environment and Population';
-	parameter 'Grid dimension:' var: gridsize <- 100 unit: '(number of rows and columns)' category: 'Environment and Population';
+	parameter 'Number:' var: ants_number <- 100  category: 'Environment and Population';
+	parameter 'Grid dimension:' var: gridsize <- 100 category: 'Environment and Population';
 
 	
 	parameter 'Number of food depots:' var: number_of_food_places init: 5 min: 1 category: 'Environment and Population';
@@ -247,8 +247,8 @@ experiment Record parent: Classic record: true {}
 
 //Complete experiment that will inspect all ants in a table
 experiment "3D View" type: gui parent:base{
-	parameter 'Number:' var: ants_number <- 30 unit: 'ants' category: 'Environment and Population';
-	parameter 'Grid dimension:' var: gridsize <- 100 unit: '(number of rows and columns)' category: 'Environment and Population';
+	parameter 'Number:' var: ants_number <- 30 category: 'Environment and Population';
+	parameter 'Grid dimension:' var: gridsize <- 100 category: 'Environment and Population';
 	parameter 'Number of food depots:' var: number_of_food_places <- 5 min: 1 category: 'Environment and Population';
 	output {
 		display Ants3D type: 3d show_fps: true antialias: false{
@@ -261,8 +261,8 @@ experiment "3D View" type: gui parent:base{
 
 //Experiment to show how to make multi simulations
 experiment "3 Simulations" type: gui  parent:base{
-	parameter 'Number:' var: ants_number <- 100 unit: 'ants' category: 'Environment and Population';
-	parameter 'Grid dimension:' var: gridsize <- 100 unit: '(number of rows and columns)' category: 'Environment and Population';
+	parameter 'Number:' var: ants_number <- 100 category: 'Environment and Population';
+	parameter 'Grid dimension:' var: gridsize <- 100 category: 'Environment and Population';
 	parameter 'Number of food depots:' var: number_of_food_places <- 5 min: 1 category: 'Environment and Population';
 	
 
