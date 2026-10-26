@@ -1,0 +1,2 @@
+# Filled by git archive (commit of the archived sources): read by travis/build.sh for the build identity
+travis/build_commit.txt export-subst

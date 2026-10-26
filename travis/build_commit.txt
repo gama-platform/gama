@@ -1,0 +1,1 @@
+$Format:commit: %H%ndescribe: %(describe:tags)%nrefs: %D$

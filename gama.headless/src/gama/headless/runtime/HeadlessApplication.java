@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -31,6 +32,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
@@ -213,12 +215,32 @@ public class HeadlessApplication implements IApplication {
 	/** The is server. */
 	private static boolean isServer = false;
 
+	/** File written in the product root by travis/build.sh: branch, commit and state of the sources built. */
+	final public static String BUILD_INFO_FILE = "build_info.txt";
+
+	/**
+	 * The build identity of this product: the lines of build_info.txt, empty if the product has none.
+	 */
+	public static List<String> buildInfo() {
+		try {
+			final var location = Platform.getInstallLocation();
+			if (location == null) return List.of();
+			final File file = new File(location.getURL().getPath(), BUILD_INFO_FILE);
+			return file.isFile() ? Files.readAllLines(file.toPath()) : List.of();
+		} catch (final IOException | RuntimeException e) {
+			return List.of();
+		}
+	}
+
 	/**
 	 * Show version.
 	 */
 	private static void showVersion() {
 		DEBUG.ON();
 		DEBUG.LOG("Welcome to Gama-platform.org version " + SystemInfo.VERSION + "\n");
+		final List<String> build = buildInfo();
+		DEBUG.LOG(build.isEmpty() ? "No build identity (" + BUILD_INFO_FILE + ") in this product\n"
+				: String.join("\n", build) + "\n");
 		DEBUG.OFF();
 	}
 
@@ -417,6 +439,10 @@ public class HeadlessApplication implements IApplication {
 		// ========================
 		// With GAMA run
 		// ========================
+		// which GAMA ran: the build identity, once, at the start of every run
+		final List<String> build = buildInfo();
+		System.out.println("GAMA " + (build.isEmpty() ? SystemInfo.VERSION_NUMBER + " (no build identity)"
+				: build.get(0)));
 		configureInjector();
 
 		DEBUG.OFF();

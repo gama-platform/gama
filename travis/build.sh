@@ -21,5 +21,31 @@ cd ../gama.processor
 mvn clean install -Dmaven.build.cache.enabled=false "$@"
 
 echo "Compiling gama.parent"
-cd ../gama.parent 
+cd ../gama.parent
 mvn clean install -Dmaven.build.cache.configPath=maven-build-cache-config.xml "$@"
+
+# Build identity in each headless product (build_info.txt: printed by -version and at the start of every run).
+# From git, or from travis/build_commit.txt when built from a git archive (no .git; filled by export-subst).
+ROOT=$( realpath "$( dirname $( realpath "${BASH_SOURCE[0]}" ) )/.." )
+if git -C "$ROOT" rev-parse HEAD > /dev/null 2>&1; then
+	COMMIT=$(git -C "$ROOT" rev-parse HEAD)
+	BRANCH=$(git -C "$ROOT" rev-parse --abbrev-ref HEAD)
+	DESCRIBE=$(git -C "$ROOT" describe --tags --always)
+	# gama.product/gama.product is edited by this script (copilot feature): not a source change
+	MODIFIED=$(git -C "$ROOT" status --porcelain --untracked-files=no | grep -cv ' gama.product/gama.product$' || true)
+else
+	COMMIT=$(sed -n 's/^commit: //p' "$ROOT/travis/build_commit.txt")
+	BRANCH="git archive ($(sed -n 's/^refs: //p' "$ROOT/travis/build_commit.txt"))"
+	DESCRIBE=$(sed -n 's/^describe: //p' "$ROOT/travis/build_commit.txt")
+	MODIFIED=0
+fi
+COMMIT=${COMMIT:-unknown}
+STATE=$([ "$MODIFIED" = 0 ] && echo clean || echo "$MODIFIED modified file(s)")
+BUILT=$(date -Iseconds)
+for PRODUCT in "$ROOT"/gama.product/target/products/gama.headless.product/*/*/*/; do
+	[ -d "$PRODUCT/plugins" ] || continue
+	printf 'build: %s@%s %s, built %s\nbranch: %s\ncommit: %s\ndescribe: %s\nmodified: %s\nbuilt: %s\n' \
+		"$BRANCH" "${COMMIT:0:9}" "$STATE" "$BUILT" "$BRANCH" "$COMMIT" "$DESCRIBE" "$MODIFIED" "$BUILT" \
+		> "$PRODUCT/build_info.txt"
+	echo "Build identity: $(sed -n 's/^build: //p' "$PRODUCT/build_info.txt") -> $PRODUCT"
+done
