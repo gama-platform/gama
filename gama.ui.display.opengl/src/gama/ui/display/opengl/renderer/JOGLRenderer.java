@@ -219,6 +219,8 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 
 	@Override
 	public void display(final GLAutoDrawable drawable) {
+		// Fullscreen reparenting can resize the native surface without delivering a reshape callback.
+		reshape(drawable, 0, 0, drawable.getSurfaceWidth(), drawable.getSurfaceHeight());
 		if (!sceneHelper.isReady()) return;
 
 		try (Pass c = keystoneHelper.render(); Pass d = openGL.beginScene();) {
@@ -256,6 +258,9 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	/** The synchronizer. */
 	private GeneralSynchronizer synchronizer;
 
+	/** Native viewport dimensions, which can change with DPI even when the logical size stays the same. */
+	private int surfaceWidth, surfaceHeight;
+
 	/**
 	 * Requests completion of a deferred initial redraw after the canvas becomes visible.
 	 */
@@ -291,17 +296,19 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 
 	@Override
 	public void reshape(final GLAutoDrawable drawable, final int arg1, final int arg2, final int w, final int h) {
-		int width = DPIHelper.autoScaleDown(getCanvas().getMonitor(), w),
-				height = DPIHelper.autoScaleDown(getCanvas().getMonitor(), h);
-		// int width = w, height = h;
-		// See #2628 and https://github.com/sgothel/jogl/commit/ca7f0fb61b0a608b6e684a5bbde71f6ecb6e3fe0
-		// width = scaleDownIfMac(width);
-		// height = scaleDownIfMac(height);
-		if (width <= 0 || height <= 0 || openGL.getViewWidth() == width && openGL.getViewHeight() == height) return;
+		// JOGL's backing scale can differ from SWT's monitor zoom after a cross-monitor reparent.
+		final int[] dimensions = drawable.getNativeSurface().convertToWindowUnits(new int[] { w, h });
+		final int width = dimensions[0], height = dimensions[1];
+		if (width <= 0 || height <= 0
+				|| openGL.getViewWidth() == width && openGL.getViewHeight() == height
+						&& surfaceWidth == w && surfaceHeight == h)
+			return;
 		final boolean firstMeaningfulReshape = openGL.getViewWidth() <= 0 || openGL.getViewHeight() <= 0;
 		final GL gl = drawable.getContext().getGL();
 		keystoneHelper.reshape(width, height);
 		openGL.reshape(gl, width, height);
+		surfaceWidth = w;
+		surfaceHeight = h;
 		if (firstMeaningfulReshape) {
 			pendingInitialVisibleRedraw = true;
 		} else if (pendingInitialVisibleRedraw && getCanvas().getVisibleStatus()) {

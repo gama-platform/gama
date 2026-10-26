@@ -76,7 +76,7 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 	volatile boolean visible;
 
 	/** The monitor. */
-	private Monitor monitor;
+	private volatile Monitor monitor;
 
 	/** The renderer owning this canvas. */
 	private final IOpenGLRenderer renderer;
@@ -252,18 +252,26 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 	 */
 	private void fixSurfaceScaleOnWindows() {
 		if (!SystemInfo.isWindows() || monitor == null) return;
-		final int zoom = monitor.getZoom();
-		if (zoom == 100) return;
-		final float scale = zoom / 100f;
 		WorkbenchHelper.asyncRun(() -> {
 			if (drawable != null && drawable.isNativeValid()) {
+				final float scale = monitor.getZoom() / 100f;
 				drawable.setSurfaceScale(new float[] { scale, scale });
 			}
 		});
 	}
 
 	@Override
-	public Monitor getMonitor() { return monitor; }
+	public Monitor getMonitor() {
+		// Reparenting into a fullscreen shell does not necessarily move or resize this control.
+		if (!isDisposed() && WorkbenchHelper.isDisplayThread()) {
+			final Monitor current = super.getMonitor();
+			if (!current.equals(monitor)) {
+				setMonitor(current);
+				fixSurfaceScaleOnWindows();
+			}
+		}
+		return monitor;
+	}
 
 	@Override
 	protected void checkWidget() {}

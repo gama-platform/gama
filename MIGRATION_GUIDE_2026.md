@@ -337,6 +337,7 @@ The `position` and `size` facets of `overlay` are now interpreted identically by
 - Small pixel sizes (e.g. `{5#px, 5#px}`) are no longer turned into a fraction of the view in 3D displays, and 3D overlays are no longer shrunk by 10%.
 - Overlays are recomputed when the view is resized (e.g. after switching to full screen).
 - Inside the overlay, `#px` is always one pixel of the view, whatever the size of the overlay, and model units are scaled as in the view (previously, in 2D displays, they were scaled according to the width of the overlay).
+- Pixels here are logical window pixels, not physical backing pixels. OpenGL uses the native surface's actual scale when moving between monitors with different DPI; a `40#px` element keeps its logical size, although its physical pixel count can change.
 
 ```gaml
 overlay position: {10#px, 10#px} size: {200#px, 100#px} background: #white {
