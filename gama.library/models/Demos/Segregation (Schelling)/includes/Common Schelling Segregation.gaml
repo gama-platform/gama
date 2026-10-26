@@ -89,8 +89,8 @@ experiment base_exp virtual:true{
 	parameter "Color of group 8:" category: "User interface" var:color_8;	
 	
 	parameter "Number of groups:" var:number_of_groups category: "Population";
-	parameter "Density of people:" var:density_of_people category: "Population";
-	parameter "Desired percentage of similarity:" var:percent_similar_wanted category: "Population";
+	parameter "Density of people:" var:density_of_people category: "Population" unit: #percent;
+	parameter "Desired percentage of similarity:" var:percent_similar_wanted category: "Population" unit: #percent;
 	parameter "Width and height of the environment:" var:dimensions category: "Environment";
 	parameter "Distance of perception:" var:neighbours_distance category: "Population" unit: "cells";
 

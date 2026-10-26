@@ -187,9 +187,9 @@ species ant skills: [moving] control: fsm {
 
 experiment base virtual:true {
 	parameter 'Evaporation of the signal (unit/cycle):' var:evaporation_per_cycle category: 'Signals';
-	parameter 'Rate of diffusion of the signal (%/cycle):' var:diffusion_rate category: 'Signals';
+	parameter 'Rate of diffusion of the signal (per cycle):' var:diffusion_rate category: 'Signals' unit: #percent;
 	parameter 'Width and Height of the grid:' var:gridsize category: 'Environment and Population';
-	parameter 'Number of ants:' var:ants_number category: 'Environment and Population';
+	parameter 'Population:' var:ants_number unit: 'ants' category: 'Environment and Population';
 	parameter 'Grid updates itself every:' var:grid_frequency category: 'Environment and Population' unit: "cycles";
 	parameter 'Number of food depots:' var:number_of_food_places category: 'Environment and Population';
 }
@@ -222,9 +222,9 @@ experiment "With Inspector" type: gui parent:base{
 }
 
 experiment "Classic" type: gui parent:base {
-	parameter 'Number of ants:' var: ants_number category: 'Model';
+	parameter 'Population:' var:ants_number unit: 'ants' category: 'Model';
 	parameter 'Evaporation of the signal (unit/cycle):' var: evaporation_per_cycle category: 'Model';
-	parameter 'Rate of diffusion of the signal (%/cycle):' var: diffusion_rate category: 'Model';
+	parameter 'Rate of diffusion of the signal (per cycle):' var: diffusion_rate category: 'Model' unit: #percent;
 	parameter 'Use icons for the agents:' var: use_icons category: 'Display';
 	parameter 'Display state of agents:' var: display_state category: 'Display';
 	

@@ -73,7 +73,7 @@ experiment goto_grid type: gui {
 // Environment Category
 	parameter "Scenario type" var: scenario category: "Environment";
 	parameter "Grid size" var: grid_size category: "Environment";
-	parameter "Obstacle rate (only for random scenario)" var: obstacle_rate category: "Environment" ;
+	parameter "Obstacle rate (only for random scenario)" var: obstacle_rate category: "Environment" unit: #percent;
 	
 	// Algorithm Category
 	parameter "Pathfinding algorithm" var: algorithm category: "Algorithm";

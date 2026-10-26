@@ -113,12 +113,15 @@ import gama.core.experiment.parameters.ExperimentParameter.ExperimentParameterVa
 						name = IKeyword.UNIT,
 						type = { IType.STRING, IType.FLOAT, IType.INT },
 						optional = true,
-						doc = @doc ("A constant numeric expression, such as #h or #km/#h, to convert float values for display only, "
-								+ "or a string interpreted as such an expression when possible, otherwise used as a label. "
-								+ "Stored values, bounds and steps remain unchanged. "
-								+ "Float text editors retain the original editable value and show the converted value beside it, "
-								+ "or only the label when there is no conversion. On int parameters, strings are always labels. "
-								+ "Calendar-dependent conversions and non-positive factors are not supported.")),
+						doc = @doc ("""
+								The unit used to display the value of the parameter (display only: stored values, min, max and step \
+								are never modified). Either a constant numeric expression, like #h, #km/#h or #percent, which converts \
+								float values before displaying them (e.g. 0.25 with unit: #percent is shown as 25 %); or a string. \
+								A string that can be interpreted as such an expression (e.g. "#km/#h") converts float values in the same way; \
+								any other string (e.g. "items", "m/min" or "%") is only displayed as a label after the value. \
+								Sliders display the converted value followed by the unit; text editors keep the original value editable \
+								and display the converted value, or only the label, beside it. Int parameters only accept string labels. \
+								Calendar-dependent units (#month, #year) and non-positive factors are not supported.""")),
 				@facet (
 						name = IKeyword.ON_CHANGE,
 						type = IType.NONE,
@@ -220,6 +223,23 @@ import gama.core.experiment.parameters.ExperimentParameter.ExperimentParameterVa
 								isExecutable = false),
 								@example (
 										value = "parameter 'Value of titi:' var: titi min: 1 max: 100 step: 2; ",
+										isExecutable = false) }),
+				@usage (
+						value = "The unit: facet changes how a value is displayed, never the value itself. A numeric unit converts float values (stored in GAMA's base units) before display, while a string that is not a numeric expression is a simple label:",
+						examples = { @example (
+								value = "parameter 'Duration' var: duration min: 1#h max: 10#h step: 15#mn unit: #h; // a duration of 9000.0 (s) is displayed as 2.5 h",
+								isExecutable = false),
+								@example (
+										value = "parameter 'Speed' var: speed min: 0.0 max: 50#km/#h unit: #km/#h; // 10.0 (m/s) is displayed as 36 km/h",
+										isExecutable = false),
+								@example (
+										value = "parameter 'Density' var: density min: 0.0 max: 1.0 step: 0.05 unit: #percent; // 0.7 is displayed as 70 %",
+										isExecutable = false),
+								@example (
+										value = "parameter 'Flood speed' var: flood_speed unit: \"m/min\"; // label only: 5.0 is displayed as 5.0 with m/min beside it",
+										isExecutable = false),
+								@example (
+										value = "parameter 'Opening hour' var: opening_hour min: 6 max: 12 unit: \"h\"; // int parameters only accept labels",
 										isExecutable = false) }), })
 @SuppressWarnings ({ "rawtypes" })
 public class ExperimentParameter extends Symbol implements IParameter.Batch {
@@ -1019,7 +1039,7 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 	}
 
 	private static String unitLabelOf(final String expression) {
-		return expression.replaceAll("\\((#[\\p{L}\\p{N}_]+)\\)", "$1").replace("#", "");
+		return expression.replaceAll("\\((#[\\p{L}\\p{N}_]+)\\)", "$1").replaceAll("#percent\\b", "%").replace("#", "");
 	}
 
 	/**

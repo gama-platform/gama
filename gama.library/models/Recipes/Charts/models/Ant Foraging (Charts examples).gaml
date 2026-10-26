@@ -133,7 +133,7 @@ experiment "Experiment" type: gui {
 	//Parameters to play with  in the gui
 	parameter 'Number of ants:' var: ants_number category: 'Model' ;
 	parameter 'Evaporation of the signal (unit/cycle):' var: evaporation_per_cycle category: 'Model' ;
-	parameter 'Rate of diffusion of the signal (%/cycle):' var: diffusion_rate category: 'Model' ;
+	parameter 'Rate of diffusion of the signal (per cycle):' var: diffusion_rate category: 'Model' unit: #percent;
 
 	list<list<int>> nbants<-[[0]];
 	list<string> statesnames<-["wandering"];

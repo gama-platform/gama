@@ -552,7 +552,7 @@ grid cell width: grid_width height: grid_height {
 
 experiment ABValuationDemo type: gui autorun:true{
 	parameter "Commuting cost" var: commutingCost min: 0.0 max: 1.0 step: 0.05; 
-	parameter "Share of low income" var: shareLowIncome min: 0.0 max: 1.0 step: 0.05; 
+	parameter "Share of low income" var: shareLowIncome min: 0.0 max: 1.0 step: 0.05 unit: #percent;
 	parameter "Housing Supply" var: updateUnitSize; 
 	output { 
 		display map_3D  type:opengl background: #black axes: false  toolbar:true 

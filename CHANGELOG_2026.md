@@ -12,6 +12,33 @@ Numeric values can now use `%` as a postfix percentage suffix: `100%` is equival
 `100 #percent` and evaluates to `1.0`. This also works with decimal values and in larger
 expressions, for example `2.5%` or `100% + 2%`.
 
+### Parameters: display units (`unit:` facet)
+
+The `unit:` facet of `parameter` (#197) now controls how numeric values are displayed in the
+parameters view. It affects display only: stored values, `min:`, `max:` and `step:` are unchanged.
+
+| GAML | Display |
+|---|---|
+| `parameter "Duration" var: d min: 1#h max: 10#h unit: #h;` | `9000.0` (s) is shown as `2.5 h` |
+| `parameter "Speed" var: v unit: #km/#h;` | `10.0` (m/s) is shown as `36 km/h` |
+| `parameter "Density" var: dens min: 0.0 max: 1.0 unit: #percent;` | `0.7` is shown as `70 %` |
+| `parameter "Speed" var: v unit: "#km/#h";` | Same conversion: the string is a numeric expression |
+| `parameter "Flood speed" var: f unit: "m/min";` | Label only, no conversion |
+| `parameter "Opening hour" var: h min: 6 max: 12 unit: "h";` | Int parameters accept labels only |
+
+- Numeric units (constants, compound expressions or strings that compile to them) convert float values;
+  the label is taken from the expression as written (`#km/#h` is shown as `km/h`, `#percent` as `%`).
+  Use `#percent` for fractions in [0,1], and the label `"%"` for values that are already percentages.
+- Sliders show the converted value and its unit; float and int text editors keep the stored value
+  editable and show the conversion (`= 36 km/h`) or the label, in gray, beside it.
+- Slider values and unit annotations are left-aligned in a fixed column, so editors no longer shift
+  while a slider is moved, and adding a unit no longer changes the displayed precision.
+- Non-constant numeric units, non-positive factors and numeric units on non-float parameters are
+  rejected at compilation. Calendar-dependent units (`#month`, `#year`) are not supported.
+- Library models now use units where relevant (Road Traffic, Moussaid, Incremental Model, SIR,
+  Schelling, Sugarscape, Clock, Life, Ants, Boids, City Escape, Vote, etc.), and the
+  **Declaration of Parameters** recipe illustrates each form.
+
 ### Recording: shared Fory dependency
 
 Apache Fory is now supplied and exported by `gama.dependencies`, rather than embedded privately

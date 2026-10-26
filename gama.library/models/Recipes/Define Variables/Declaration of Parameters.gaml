@@ -20,6 +20,7 @@ global {
 	float my_distance <- 1500#m;
 	float my_amount <- 2.5;
 	float my_speed <- 10#m/#s;
+	float my_share <- 0.3;
 }
 
 experiment base_experiment virtual:true {
@@ -56,5 +57,7 @@ experiment "Show Parameters" parent:base_experiment{
 	parameter "Amount" var: my_amount min: 0.0 max: 10.0 step: 0.1 unit: "items";
 	// Compound expressions work directly or inside a string, e.g. unit: "#km/#h".
 	parameter "Speed" var: my_speed min: 0.0 max: 100.0 step: 0.25 unit: #km/#h;
+	// #percent displays a fraction as a percentage (0.3 is shown as 30 %), whereas the string "%" is only a label.
+	parameter "Share" var: my_share min: 0.0 max: 1.0 step: 0.05 unit: #percent;
 
 }
