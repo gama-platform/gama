@@ -999,6 +999,17 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 
 	@Override
 	public IExpression caseUnit(final Unit object) {
+		if ("%".equals(object.getOp())) {
+			final IExpression left = compile(object.getLeft());
+			final IExpression percent = GAML.getUnit("percent");
+			if (left == null) return null;
+			if (percent == null) {
+				context.getContext().error("The percent unit is not registered.", IGamlIssue.NOT_A_UNIT, object,
+						"percent");
+				return null;
+			}
+			return FACTORY.createOperator("*", context.getContext(), object, left, percent);
+		}
 		return binary("*", object.getLeft(), object.getRight());
 	}
 

@@ -6,6 +6,12 @@ All commits listed below point to specific changes that drive the massive archit
 
 ## [2026.0.0] - Unreleased
 
+### GAML: percentage literals
+
+Numeric values can now use `%` as a postfix percentage suffix: `100%` is equivalent to
+`100 #percent` and evaluates to `1.0`. This also works with decimal values and in larger
+expressions, for example `2.5%` or `100% + 2%`.
+
 ### Recording: shared Fory dependency
 
 Apache Fory is now supplied and exported by `gama.dependencies`, rather than embedded privately
