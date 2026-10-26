@@ -1,2 +1,4 @@
 # Filled by git archive (commit of the archived sources): read by travis/build.sh for the build identity
 travis/build_commit.txt export-subst
+# Launcher of the headless product: bash fails on CRLF
+gama.product/extraresources/headless/product/gama-headless.sh text eol=lf

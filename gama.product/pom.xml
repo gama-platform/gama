@@ -176,6 +176,15 @@
 								<mkdir
                                     dir="./target/products/gama.ui.application.product/linux/gtk/x86_64/dropins"
                                 />
+								<!-- headless product: launcher with the Java options GAMA needs -->
+								<copy
+                                    file="./extraresources/headless/product/gama-headless.sh"
+                                    todir="./target/products/gama.headless.product/linux/gtk/x86_64/"
+                                />
+								<chmod
+                                    file="./target/products/gama.headless.product/linux/gtk/x86_64/gama-headless.sh"
+                                    perm="755"
+                                />
 			                </target>
 						</configuration>
 
