@@ -454,6 +454,17 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	public void dispose() {
 		GAMA.getGui().getStatus().beginTask("Disposing " + this, IStatusMessage.SIMULATION_ICON);
 		if (dead) return;
+		// The global abort block, once, when the simulation is closed (end of a headless run, experiment
+		// closed) and not by die, which already ran it: before anything is disposed, so it can still save,
+		// write or exchange (an MPI run finalizes MPI after its simulations)
+		if (!dying) {
+			dying = true;
+			try {
+				getSpecies().getArchitecture().abort(getScope());
+			} catch (final GamaRuntimeException e) {
+				getScope().getGui().getConsole().informConsole("Error in abort: " + e.getMessage(), getScope().getRoot());
+			}
+		}
 		executer.executeDisposeActions();
 		// hqnghi if simulation comes from an external population, dispose this population first
 		// and then its outputs
