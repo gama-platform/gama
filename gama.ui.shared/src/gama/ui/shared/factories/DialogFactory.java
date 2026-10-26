@@ -90,6 +90,18 @@ public class DialogFactory extends AbstractServiceFactory implements IDialogFact
 		return WorkbenchHelper.run(() -> MessageDialog.open(MessageDialog.QUESTION, null, title, message, SWT.SHEET));
 	}
 
+	@Override
+	public boolean question(final String title, final String message, final String toggleMessage,
+			final java.util.function.Consumer<Boolean> toggleResult) {
+		return WorkbenchHelper.run(() -> {
+			final org.eclipse.jface.dialogs.MessageDialogWithToggle d =
+					org.eclipse.jface.dialogs.MessageDialogWithToggle.openYesNoQuestion(null, title, message,
+							toggleMessage, false, null, null);
+			toggleResult.accept(d.getToggleState());
+			return d.getReturnCode() == org.eclipse.jface.dialogs.IDialogConstants.YES_ID;
+		});
+	}
+
 	/**
 	 * Modal question.
 	 *

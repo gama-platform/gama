@@ -77,6 +77,18 @@ public class TempSWTGui implements IGui {
 			}
 
 			@Override
+			public boolean question(final String title, final String message, final String toggleMessage,
+					final java.util.function.Consumer<Boolean> toggleResult) {
+				return Display.getDefault().syncCall(() -> {
+					final org.eclipse.jface.dialogs.MessageDialogWithToggle d =
+							org.eclipse.jface.dialogs.MessageDialogWithToggle.openYesNoQuestion(null, title, message,
+									toggleMessage, false, null, null);
+					toggleResult.accept(d.getToggleState());
+					return d.getReturnCode() == org.eclipse.jface.dialogs.IDialogConstants.YES_ID;
+				});
+			}
+
+			@Override
 			public boolean confirm(final String title, final String message) {
 				return Display.getDefault().syncCall(() -> MessageDialog.openConfirm(null, title, message));
 			}

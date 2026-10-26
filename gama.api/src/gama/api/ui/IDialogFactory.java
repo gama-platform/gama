@@ -171,6 +171,20 @@ public interface IDialogFactory {
 	}
 
 	/**
+	 * Displays a yes/no question dialog with a checkbox. The default implementation ignores the checkbox.
+	 *
+	 * @param title the dialog title
+	 * @param message the question to ask the user
+	 * @param toggleMessage the label of the checkbox
+	 * @param toggleResult receives the state of the checkbox when the dialog is closed
+	 * @return true if the user answered yes, false otherwise
+	 */
+	default boolean question(final String title, final String message, final String toggleMessage,
+			final java.util.function.Consumer<Boolean> toggleResult) {
+		return question(title, message);
+	}
+
+	/**
 	 * Displays a modal yes/no question dialog using the default runtime scope.
 	 * 
 	 * <p>Modal dialogs block execution until the user responds. This is a convenience
