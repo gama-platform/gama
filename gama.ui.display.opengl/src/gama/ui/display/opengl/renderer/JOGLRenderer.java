@@ -523,9 +523,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 
 	@Override
 	public double getAbsoluteRatioBetweenPixelsAndModelsUnits() {
-		return Math.min(
-				DPIHelper.autoScaleDown(getCanvas().getMonitor(), canvas.getSurfaceHeight() / data.getEnvHeight()),
-				DPIHelper.autoScaleDown(getCanvas().getMonitor(), canvas.getSurfaceWidth() / data.getEnvWidth()));
+		return Math.min(getViewHeight() / data.getEnvHeight(), getViewWidth() / data.getEnvWidth());
 	}
 
 	/*
@@ -578,6 +576,8 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 
 	@Override
 	public int getViewWidth() {
+		// Use the same logical viewport as the projection, including after fullscreen reparenting.
+		if (openGL != null && openGL.getViewWidth() > 0) return openGL.getViewWidth();
 		final GamaGLCanvas currentCanvas = getCanvas();
 		return currentCanvas == null || currentCanvas.isDisposed() ? super.getViewWidth()
 				: currentCanvas.getClientArea().width;
@@ -585,6 +585,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 
 	@Override
 	public int getViewHeight() {
+		if (openGL != null && openGL.getViewHeight() > 0) return openGL.getViewHeight();
 		final GamaGLCanvas currentCanvas = getCanvas();
 		return currentCanvas == null || currentCanvas.isDisposed() ? super.getViewHeight()
 				: currentCanvas.getClientArea().height;
