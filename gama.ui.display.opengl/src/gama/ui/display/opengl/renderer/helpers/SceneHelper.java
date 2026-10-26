@@ -22,6 +22,7 @@ package gama.ui.display.opengl.renderer.helpers;
  ********************************************************************************************************/
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
 import gama.api.ui.layers.ILayer;
@@ -61,6 +62,9 @@ public class SceneHelper extends AbstractRendererHelper {
 	/** Serializes scene updates with invalidation and forced redraws. */
 	private final ReentrantLock sceneUpdateLock = new ReentrantLock();
 
+	/** Updates skipped while a scene is being built or awaiting its first render. */
+	private final AtomicBoolean pendingUpdate = new AtomicBoolean();
+
 	/**
 	 * Instantiates a new scene helper.
 	 *
@@ -94,7 +98,10 @@ public class SceneHelper extends AbstractRendererHelper {
 	 * @return true, if successful
 	 */
 	public boolean beginUpdatingScene() {
-		if (!sceneUpdateLock.tryLock()) return false;
+		if (!sceneUpdateLock.tryLock()) {
+			requestUpdate();
+			return false;
+		}
 		boolean keepLock = false;
 		try {
 			// If we are syncrhonized with the simulation and a backScene exists, we
@@ -106,8 +113,11 @@ public class SceneHelper extends AbstractRendererHelper {
 			// }
 			// If we are not synchronized (or if the wait is over), we verify that
 			// backScene is null and create a new one
-			if (backScene != null) // if it the case ?
+			if (backScene != null) {
+				requestUpdate();
 				return false;
+			}
+			pendingUpdate.set(false);
 			backScene = createSceneFrom(staticScene);
 			// We prepare it for drawing
 			backScene.beginDrawingLayers();
@@ -126,6 +136,22 @@ public class SceneHelper extends AbstractRendererHelper {
 	public boolean isNotReadyToUpdate() {
 		if (frontScene != null && !frontScene.rendered()) return true;
 		return false;
+	}
+
+	/**
+	 * Retains a refresh request until rendering has caught up, even if the simulation has since paused.
+	 */
+	public void requestUpdate() {
+		pendingUpdate.set(true);
+	}
+
+	public boolean hasPendingUpdate() { return pendingUpdate.get(); }
+
+	/**
+	 * Coalesces missed updates into a refresh of the latest model state without waiting on the rendering thread.
+	 */
+	public void retryPendingUpdate(final Runnable update) {
+		if (!isNotReadyToUpdate() && pendingUpdate.compareAndSet(true, false)) { update.run(); }
 	}
 
 	/**
@@ -151,6 +177,7 @@ public class SceneHelper extends AbstractRendererHelper {
 			// later)
 			if (frontScene != null) {
 				if (!frontScene.rendered()) {
+					requestUpdate();
 					garbage.add(backScene);
 					backScene = null;
 					return;
@@ -185,7 +212,7 @@ public class SceneHelper extends AbstractRendererHelper {
 	 *
 	 * @return true, if successful
 	 */
-	private boolean hasStructurallyChanged() {
+	protected boolean hasStructurallyChanged() {
 		return getSurface().getManager().hasStructurallyChanged();
 	}
 

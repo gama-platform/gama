@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MenuEvent;
@@ -131,7 +132,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	volatile boolean disposed;
 
 	/** The already updating. */
-	private volatile boolean alreadyUpdating;
+	private final AtomicBoolean alreadyUpdating = new AtomicBoolean();
 
 	/** The current mouse location converted to a world position */
 	private IPoint world_position;
@@ -292,13 +293,15 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	 */
 	@Override
 	public void updateDisplay(final boolean force, final GeneralSynchronizer synchronizer) {
-		if (alreadyUpdating) return;
+		if (!alreadyUpdating.compareAndSet(false, true)) {
+			renderer.getSceneHelper().requestUpdate();
+			return;
+		}
 		try {
-			alreadyUpdating = true;
 			renderer.setSynchronizer(synchronizer);
 			layerManager.drawLayersOn(renderer);
 		} finally {
-			alreadyUpdating = false;
+			alreadyUpdating.set(false);
 		}
 	}
 

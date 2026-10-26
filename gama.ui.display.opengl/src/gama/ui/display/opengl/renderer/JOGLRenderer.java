@@ -172,6 +172,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	@Override
 	public boolean beginDrawingLayers() {
 		if (isNotReadyToUpdate()) {
+			sceneHelper.requestUpdate();
 			if (synchronizer != null) { synchronizer.release(); }
 			return false;
 		}
@@ -182,7 +183,9 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 		// return false;
 		// }
 		// }
-		return sceneHelper.beginUpdatingScene();
+		if (sceneHelper.beginUpdatingScene()) return true;
+		if (synchronizer != null) { synchronizer.release(); }
+		return false;
 
 	}
 
@@ -221,7 +224,10 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	public void display(final GLAutoDrawable drawable) {
 		// Fullscreen reparenting can resize the native surface without delivering a reshape callback.
 		reshape(drawable, 0, 0, drawable.getSurfaceWidth(), drawable.getSurfaceHeight());
-		if (!sceneHelper.isReady()) return;
+		if (!sceneHelper.isReady()) {
+			schedulePendingSceneUpdate();
+			return;
+		}
 
 		try (Pass c = keystoneHelper.render(); Pass d = openGL.beginScene();) {
 			cameraHelper.update();
@@ -230,6 +236,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 			schedulePendingInitialVisibleRedraw();
 			if (synchronizer != null) { synchronizer.release(); }
 		}
+		schedulePendingSceneUpdate();
 		//
 		// if (!visible) {
 		// // We make the canvas visible only after a first display has occured
@@ -254,6 +261,18 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 
 	/** Guards the asynchronous completion of the deferred initial redraw. */
 	private volatile boolean initialVisibleRedrawScheduled;
+
+	private volatile boolean sceneUpdateScheduled;
+
+	private void schedulePendingSceneUpdate() {
+		if (!sceneHelper.hasPendingUpdate() || sceneUpdateScheduled) return;
+		sceneUpdateScheduled = true;
+		WorkbenchHelper.asyncRun(() -> {
+			sceneUpdateScheduled = false;
+			if (disposed || surface.isDisposed()) return;
+			sceneHelper.retryPendingUpdate(() -> surface.updateDisplay(true, synchronizer));
+		});
+	}
 
 	/** The synchronizer. */
 	private GeneralSynchronizer synchronizer;
