@@ -32,8 +32,8 @@ import gama.core.topology.graph.GamaSpatialGraph;
  *
  * <p>
  * This binarySerialiser is registered for the concrete class {@link GamaSpatialGraph} and therefore takes priority over
- * the more generic {@link IGraphSerialiser} (which is registered for {@link gama.api.types.graph.IGraph}) when FST
- * walks the class lineage.
+ * the more generic {@link IGraphSerialiser} (which is registered for {@link gama.api.types.graph.IGraph}) when
+ * selecting the most specific registered supertype.
  * </p>
  *
  * <p>
@@ -52,7 +52,7 @@ import gama.core.topology.graph.GamaSpatialGraph;
  * </p>
  *
  * <p>
- * Objects deserialised by this binarySerialiser are not registered for FST back-reference tracking.
+ * Objects deserialised by this binarySerialiser are not registered for back-reference tracking.
  * </p>
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
@@ -61,7 +61,7 @@ import gama.core.topology.graph.GamaSpatialGraph;
 public class GamaSpatialGraphSerialiser implements IGamaObjectSerializer<GamaSpatialGraph> {
 
 	/**
-	 * Returns {@code false}: spatial graphs are not registered for FST back-reference tracking.
+	 * Returns {@code false}: spatial graphs are not registered for back-reference tracking.
 	 *
 	 * @return {@code false}
 	 */
@@ -75,7 +75,7 @@ public class GamaSpatialGraphSerialiser implements IGamaObjectSerializer<GamaSpa
 	 * and all edges with their source, target, and weight.
 	 *
 	 * @param out
-	 *            the FST output stream
+	 *            the binary output stream
 	 * @param g
 	 *            the spatial graph to serialise
 	 * @throws Exception
@@ -118,7 +118,7 @@ public class GamaSpatialGraphSerialiser implements IGamaObjectSerializer<GamaSpa
 	 * @param scope
 	 *            the current GAMA simulation scope, used to create the graph and its edges
 	 * @param in
-	 *            the FST input stream
+	 *            the binary input stream
 	 * @return the deserialised {@link GamaSpatialGraph}
 	 * @throws Exception
 	 *             if deserialisation fails

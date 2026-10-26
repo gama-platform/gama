@@ -31,7 +31,7 @@ public class IFontSerialiser implements IGamaObjectSerializer<IFont> {
 	 * Serialises the font name, style, and size.
 	 *
 	 * @param out
-	 *            the FST output stream
+	 *            the binary output stream
 	 * @param o
 	 *            the font to serialise
 	 * @throws Exception
@@ -52,7 +52,7 @@ public class IFontSerialiser implements IGamaObjectSerializer<IFont> {
 	 * @param scope
 	 *            the current GAMA simulation scope (unused)
 	 * @param in
-	 *            the FST input stream
+	 *            the binary input stream
 	 * @return the deserialised {@link IFont}
 	 * @throws Exception
 	 *             if deserialisation fails

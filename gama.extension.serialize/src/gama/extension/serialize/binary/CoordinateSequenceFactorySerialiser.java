@@ -38,7 +38,7 @@ public class CoordinateSequenceFactorySerialiser implements IGamaObjectSerialize
 	 * Serialises the coordinate sequence factory by writing the marker string {@value #MARKER}.
 	 *
 	 * @param out
-	 *            the FST output stream
+	 *            the binary output stream
 	 * @param o
 	 *            the factory (not directly used)
 	 * @throws Exception
@@ -57,7 +57,7 @@ public class CoordinateSequenceFactorySerialiser implements IGamaObjectSerialize
 	 * @param scope
 	 *            the current GAMA simulation scope (unused)
 	 * @param in
-	 *            the FST input stream
+	 *            the binary input stream
 	 * @return the global {@link CoordinateSequenceFactory}
 	 * @throws Exception
 	 *             if deserialisation fails

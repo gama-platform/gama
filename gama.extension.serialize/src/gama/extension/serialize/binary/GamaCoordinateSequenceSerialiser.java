@@ -32,7 +32,7 @@ public class GamaCoordinateSequenceSerialiser implements IGamaObjectSerializer<G
 	 * Serialises the x, y, and z values of the single coordinate at index 0.
 	 *
 	 * @param out
-	 *            the FST output stream
+	 *            the binary output stream
 	 * @param o
 	 *            the coordinate sequence to serialise
 	 * @throws Exception
@@ -50,7 +50,7 @@ public class GamaCoordinateSequenceSerialiser implements IGamaObjectSerializer<G
 	 * @param scope
 	 *            the current GAMA simulation scope (unused)
 	 * @param in
-	 *            the FST input stream
+	 *            the binary input stream
 	 * @return the deserialised {@link UniqueCoordinateSequence}
 	 * @throws Exception
 	 *             if deserialisation fails

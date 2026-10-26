@@ -37,7 +37,7 @@ public class GamaGeometryFactorySerialiser implements IGamaObjectSerializer<Gama
 	 * Serialises the geometry factory by writing the marker string {@value #MARKER}.
 	 *
 	 * @param out
-	 *            the FST output stream
+	 *            the binary output stream
 	 * @param o
 	 *            the geometry factory (not directly used)
 	 * @throws Exception
@@ -55,7 +55,7 @@ public class GamaGeometryFactorySerialiser implements IGamaObjectSerializer<Gama
 	 * @param scope
 	 *            the current GAMA simulation scope (unused)
 	 * @param in
-	 *            the FST input stream
+	 *            the binary input stream
 	 * @return the global {@link GamaGeometryFactory} singleton
 	 * @throws Exception
 	 *             if deserialisation fails

@@ -1442,17 +1442,6 @@ public class GamaPreferences {
 				"Show test output in the UI console", false, IType.BOOL, false).in(NAME, Runtime.TESTS).withComment(
 						"Routes test console messages to the standard GAMA console, including tests run in a separate process. Command-line runs are unchanged.");
 
-		/** The name of the "Serialisation" group within the Data and Operators tab. */
-		public static final String SERIALISATION = "Serialisation";
-
-		/**
-		 * The library used for binary serialisation ("FST" or "Fory"). Declared here so that it is visible in the
-		 * preferences before the serialisation bundle is activated.
-		 */
-		public static final Pref<String> BINARY_SERIALIZER = create("pref_binary_serializer",
-				"Library used for binary serialisation (FST is the default. Fory is much faster, but less tested)",
-				"FST", IType.STRING, true).among("FST", "Fory").in(NAME, SERIALISATION);
-
 		/**
 		 * The label for the experimental features group, warning users that features within have not been fully tested.
 		 */

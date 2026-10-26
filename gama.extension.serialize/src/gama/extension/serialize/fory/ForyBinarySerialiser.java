@@ -77,8 +77,7 @@ import gama.extension.serialize.binary.SerialisedPopulationSerialiser;
 import gama.extension.serialize.binary.UniqueCoordinateSequenceSerialiser;
 
 /**
- * Binary serialiser based on Apache Fory. Registers the same GAMA serialisers as the FST implementation, so that both
- * backends handle exactly the same types. Like FST, serialisers are registered for a type <em>and</em> its subtypes:
+ * Binary serialiser based on Apache Fory. GAMA serialisers are registered for a type <em>and</em> its subtypes:
  * when several registered types match a class, the most specific one is used.
  *
  * <p>

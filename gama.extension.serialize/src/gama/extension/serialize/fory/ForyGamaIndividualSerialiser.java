@@ -20,8 +20,7 @@ import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializa
 import gama.api.kernel.serialization.IGamaObjectSerializer;
 
 /**
- * Adapts an {@link IGamaObjectSerializer} to an Apache Fory {@link Serializer}. This is the Fory counterpart of
- * {@code FSTGamaIndividualSerialiser}.
+ * Adapts an {@link IGamaObjectSerializer} to an Apache Fory {@link Serializer}.
  *
  * @param <T>
  *            the GAMA type being serialised and deserialised

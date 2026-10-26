@@ -32,10 +32,10 @@ public class IMapSerialiser implements IGamaObjectSerializer<IMap> {
 
 	/**
 	 * Serialises the map's key type, content type, ordering flag, size, and all key-value pairs. Each key and value is
-	 * written as an object via {@link gama.extension.serialize.fst.FSTObjectOutput#writeObject}.
+	 * written as an object via {@link gama.api.kernel.serialization.IGamaObjectOutput#writeObject}.
 	 *
 	 * @param out
-	 *            the FST output stream
+	 *            the binary output stream
 	 * @param o
 	 *            the map to serialise
 	 * @throws Exception
@@ -65,7 +65,7 @@ public class IMapSerialiser implements IGamaObjectSerializer<IMap> {
 	 * @param scope
 	 *            the current GAMA simulation scope (unused)
 	 * @param in
-	 *            the FST input stream
+	 *            the binary input stream
 	 * @return the deserialised {@link IMap}
 	 * @throws Exception
 	 *             if deserialisation fails

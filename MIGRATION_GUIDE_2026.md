@@ -29,6 +29,18 @@ A high-level summary of every area that changed. Use this to quickly assess what
 | **`Cast` utility class** reduced | Casting delegated to individual `IType` implementations |
 | **`AbstractPopulation`** centralises population logic | `createAgentAt` renamed to `createAgentAtIndex` |
 | **`IAgent`** now extends `IDelegatingShape` | Attribute mutation via containers is restricted |
+| **Apache Fory** replaces FST for binary serialization | FST binary saves must be regenerated; no legacy reader is provided |
+
+### Binary serialization compatibility
+
+GAMA 2026 uses Apache Fory exclusively for binary serialization and experiment recording. Existing
+FST-produced simulation files and serialized objects cannot be read. Regenerate them from their source
+models using GAMA 2026. If their state must be retained, export the necessary model data in a portable
+format from the older GAMA version before upgrading.
+
+Remove uses of `gama.pref_binary_serializer` from models and `-Dgama.binary.serializer` from launch
+arguments. Backend selection and the `gama.extension.serialize.fst` Java packages have been removed.
+Fory is supplied by `gama.dependencies`; plugins must not embed a second copy.
 
 ## GAML Language
 

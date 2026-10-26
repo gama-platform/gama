@@ -6,6 +6,17 @@ All commits listed below point to specific changes that drive the massive archit
 
 ## [2026.0.0] - Unreleased
 
+### Recording: shared Fory dependency
+
+Apache Fory is now supplied and exported by `gama.dependencies`, rather than embedded privately
+in the serialization extension. This lets generated serializers access Fory from model bundles,
+fixing record-experiment failures involving image files, OBJ files and grids while retaining JIT compilation.
+
+Fory is the sole binary serializer. The embedded FST implementation, backend-selection preference
+(`pref_binary_serializer`) and `gama.binary.serializer` system property have been removed.
+Binary saves produced with FST are not supported; regenerate saved simulations and serialized objects
+with GAMA 2026. There is no legacy reader or automatic conversion.
+
 ### Runtime errors: persistent, clickable status
 
 Runtime errors, including experiment launch failures (#286), remain visible as red text on the normal top-right status background

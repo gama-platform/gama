@@ -31,7 +31,7 @@ import gama.api.runtime.scope.IScope;
 public class IObjectSerialiser implements IGamaObjectSerializer<IObject> {
 
 	/**
-	 * Returns {@code false}: objects are not registered for FST back-reference tracking.
+	 * Returns {@code false}: objects are not registered for back-reference tracking.
 	 *
 	 * @return {@code false}
 	 */
@@ -44,7 +44,7 @@ public class IObjectSerialiser implements IGamaObjectSerializer<IObject> {
 	 * Serialises the species name and the attribute map of the object.
 	 *
 	 * @param out
-	 *            the FST output stream
+	 *            the binary output stream
 	 * @param o
 	 *            the object to serialise
 	 * @throws Exception
@@ -64,7 +64,7 @@ public class IObjectSerialiser implements IGamaObjectSerializer<IObject> {
 	 * @param scope
 	 *            the current GAMA simulation scope
 	 * @param in
-	 *            the FST input stream
+	 *            the binary input stream
 	 * @return the deserialised {@link IObject}, or {@code null} if the class is unknown
 	 * @throws Exception
 	 *             if deserialisation fails
