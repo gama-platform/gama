@@ -15,7 +15,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.eclipse.emf.common.util.URI;
 import org.jgrapht.Graphs;
@@ -77,7 +77,7 @@ public class GamlResourceGraph {
 	 * <li><b>No multiple edges:</b> At most one edge between any pair of vertices</li>
 	 * <li><b>No self-loops:</b> A resource cannot import itself</li>
 	 * <li><b>Allows cycles:</b> Circular dependencies are permitted in the graph structure</li>
-	 * <li><b>Thread-safe edges:</b> Uses {@link ConcurrentHashMap} for edge storage</li>
+	 * <li><b>Thread-safe edges:</b> Uses {@link CopyOnWriteArraySet} (insertion-ordered) for edge storage</li>
 	 * </ul>
 	 * </p>
 	 * 
@@ -107,7 +107,8 @@ public class GamlResourceGraph {
 					new FastLookupGraphSpecificsStrategy<URI, LabeledEdge>() {
 						@Override
 						public EdgeSetFactory<URI, LabeledEdge> getEdgeSetFactory() {
-							return vertex -> Collections.newSetFromMap(new ConcurrentHashMap<LabeledEdge, Boolean>());
+							// insertion-ordered and thread-safe, so that imports keep their declaration order
+							return vertex -> new CopyOnWriteArraySet<LabeledEdge>();
 						}
 					});
 		}
