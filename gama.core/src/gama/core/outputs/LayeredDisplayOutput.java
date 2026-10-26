@@ -125,7 +125,7 @@ import gama.dev.DEBUG;
 						name = IKeyword.FULLSCREEN,
 						type = { IType.BOOL, IType.INT },
 						optional = true,
-						doc = @doc ("Indicates, when using a boolean value, whether or not the display should cover the whole screen (default is false). If an integer is passed, specifies also the screen to use: 0 for the primary monitor, 1 for the secondary one, and so on and so forth. If the monitor is not available, the first one is used")),
+						doc = @doc ("Indicates, when using a boolean value, whether or not the display should cover the whole screen (default is false). When true, uses the monitor containing the display's window. If an integer is passed, specifies also the screen to use: 0 for the primary monitor, 1 for the secondary one, and so on and so forth. If the monitor is not available, the last available one is used")),
 				@facet (
 						name = "show_fps",
 						internal = true,

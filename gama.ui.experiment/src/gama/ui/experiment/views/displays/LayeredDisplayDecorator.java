@@ -19,6 +19,7 @@ import static gama.ui.shared.resources.IGamaIcons.EXPERIMENT_RUN;
 import static gama.ui.shared.resources.IGamaIcons.TOGGLE_ANTIALIAS;
 import static gama.ui.shared.resources.IGamaIcons.TOGGLE_OVERLAY;
 
+import java.util.Arrays;
 import java.util.function.Function;
 
 import org.eclipse.swt.SWT;
@@ -386,7 +387,8 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	private Shell createFullScreenShell() {
 		final int monitorId = view.getOutput().getData().fullScreen();
 		final Monitor[] monitors = WorkbenchHelper.getMonitors();
-		int monitorId1 = Math.min(monitors.length - 1, Math.max(0, monitorId));
+		final int currentMonitor = Arrays.asList(monitors).indexOf(view.getSite().getShell().getMonitor());
+		final int monitorId1 = resolveFullScreenMonitor(monitorId, currentMonitor, monitors.length);
 		final Rectangle bounds = monitors[monitorId1].getBounds();
 		if (ViewsHelper.registerFullScreenView(monitorId1, view)) {
 			final Shell shell = new Shell(WorkbenchHelper.getDisplay(), SWT.NO_TRIM | SWT.ON_TOP);
@@ -397,6 +399,10 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 			return shell;
 		}
 		return null;
+	}
+
+	static int resolveFullScreenMonitor(final int requestedMonitor, final int currentMonitor, final int monitorCount) {
+		return Math.min(monitorCount - 1, Math.max(0, requestedMonitor < 0 ? currentMonitor : requestedMonitor));
 	}
 
 	/**
