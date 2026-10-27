@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import java.nio.file.StandardOpenOption;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
@@ -443,6 +444,11 @@ public class GamaZipBuilder {
                 final String projectName = projectPath.getFileName().toString();
                 final Map<Path, String> externalDataFiles = new LinkedHashMap<>();
                 final Set<String> usedIncludeNames = new HashSet<>();
+                if (Files.isDirectory(includeDir)) {
+                    try (Stream<Path> stream = Files.list(includeDir)) {
+                        stream.map(path -> path.getFileName().toString()).forEach(usedIncludeNames::add);
+                    }
+                }
 
                 if (! dataFiles.isEmpty() && dataFiles.keySet().contains(project)) {
                     for (final String dataFile : dataFiles.get(project)) {
@@ -466,26 +472,11 @@ public class GamaZipBuilder {
                         }
 
                         final String fileName = resolved.getFileName().toString();
-                        String uniqueName = fileName;
-                        int counter = 1;
-                        while (!usedIncludeNames.add(uniqueName)) {
-                            final int dot = fileName.lastIndexOf('.');
-                            if (dot > 0) {
-                                uniqueName = fileName.substring(0, dot) + "_" + counter + fileName.substring(dot);
-                            } else {
-                                uniqueName = fileName + "_" + counter;
-                            }
-                            counter++;
-                        }
-                        externalDataFiles.put(resolved, uniqueName);
-
-                        // .shp files may require additionnal files.
-                        if(fileName.endsWith(".shp"))
-                        {
-                            String filePrefix = fileName.replace(".shp","");
-                            String uniquePrefix = uniqueName.replace(".shp","");
+                        final List<Path> shapeCompanions = new ArrayList<>();
+                        if (fileName.endsWith(".shp")) {
+                            final String filePrefix = fileName.replace(".shp", "");
                             try (Stream<Path> stream = Files.walk(resolved.getParent())) {
-                                stream.forEach(filePath -> { 
+                                stream.forEach(filePath -> {
                                     final String currentFileName = filePath.getFileName().toString();
                                     final int lastDotIndex = currentFileName.lastIndexOf('.');
 
@@ -497,16 +488,52 @@ public class GamaZipBuilder {
 
                                     if (
                                         ! externalDataFiles.containsKey(filePath)
-                                        && ! Files.isDirectory(filePath) 
+                                        && ! Files.isDirectory(filePath)
                                         && currentFilePrefix.equals(filePrefix)
                                         && shapeFileExtensionsSet.contains(currentFileExtension)
                                     )
-                                        externalDataFiles.put(filePath, currentFileName.replace(filePrefix,uniquePrefix));
+                                        shapeCompanions.add(filePath);
                                 });
-                                
-                            } catch (IOException exception) 
-                            {
+                            } catch (IOException exception) {
                                 exception.printStackTrace();
+                            }
+                        }
+
+                        String uniqueName = fileName;
+                        int counter = 1;
+                        while (true) {
+                            final String uniquePrefix = uniqueName.replace(".shp", "");
+                            final Set<String> candidateNames = new HashSet<>();
+                            boolean hasCollision = !candidateNames.add(uniqueName)
+                                    || usedIncludeNames.contains(uniqueName);
+                            for (final Path companion : shapeCompanions) {
+                                final String companionName = companion.getFileName().toString()
+                                        .replace(fileName.replace(".shp", ""), uniquePrefix);
+                                if (!candidateNames.add(companionName) || usedIncludeNames.contains(companionName)) {
+                                    hasCollision = true;
+                                }
+                            }
+                            if (!hasCollision) {
+                                usedIncludeNames.addAll(candidateNames);
+                                break;
+                            }
+                            final int dot = fileName.lastIndexOf('.');
+                            if (dot > 0) {
+                                uniqueName = fileName.substring(0, dot) + "_" + counter + fileName.substring(dot);
+                            } else {
+                                uniqueName = fileName + "_" + counter;
+                            }
+                            counter++;
+                        }
+                        externalDataFiles.put(resolved, uniqueName);
+
+                        // .shp files may require additionnal files.
+                        if (fileName.endsWith(".shp")) {
+                            final String uniquePrefix = uniqueName.replace(".shp", "");
+                            for (final Path companion : shapeCompanions) {
+                                final String companionName = companion.getFileName().toString()
+                                        .replace(fileName.replace(".shp", ""), uniquePrefix);
+                                externalDataFiles.put(companion, companionName);
                             }
                         }
                     }
