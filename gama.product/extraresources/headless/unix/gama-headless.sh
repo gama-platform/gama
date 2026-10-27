@@ -69,8 +69,9 @@ else
 fi
 
 function read_from_ini {
-  start_line=$(grep -n -- '-server' "${gamaIniPath}" | cut -d ':' -f 1)
-  tail -n +$start_line "${gamaIniPath}" | tr '\n' ' '
+  # Everything after -vmargs, minus heap flags (set by the script itself)
+  start_line=$(grep -n -- '^-vmargs' "${gamaIniPath}" | cut -d ':' -f 1)
+  tail -n +$((start_line + 1)) "${gamaIniPath}" | grep -v -e '^-Xmx' -e '^-Xms' | tr '\n' ' '
 }
 
 echo "******************************************************************"

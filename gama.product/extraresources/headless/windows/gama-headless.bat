@@ -57,7 +57,7 @@ REM We don't want to use the options before the `-server` options in the GAMA.in
 REM because they are not compatible with the headless mode
 
 set "ini_arguments="
-set "skip_until_line=-server"
+set "skip_until_line=-vmargs"
 set "skipping=true"
 
 for /f "usebackq delims=" %%a in (..\GAMA.ini) do (
@@ -66,7 +66,6 @@ for /f "usebackq delims=" %%a in (..\GAMA.ini) do (
 	if !skipping!==true (
 		if !skip_until_line!==%%a (
 			set "skipping=false"
-			set "ini_arguments=!ini_arguments!!line! "
 		)
 	) else (
 		if "!line:~0,4!"=="-Xmx" (
