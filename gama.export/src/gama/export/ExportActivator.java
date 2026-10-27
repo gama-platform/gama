@@ -23,18 +23,7 @@ public class ExportActivator implements BundleActivator {
     @Override
     public void start(BundleContext context) throws Exception {
       
-        eclipsePathStr = System.getProperty("eclipse.home.location");
-        eclipsePathStr = eclipsePathStr.replaceAll("file:", "");
-
-        if(SystemInfo.isWindows())
-        {
-            int index = 0;
-            while (eclipsePathStr.charAt(index) == '\\' || eclipsePathStr.charAt(index) == '/')
-                index++;
-            
-            if (index > 0)
-                eclipsePathStr = eclipsePathStr.substring(index);
-        }
+        eclipsePathStr = Path.of(java.net.URI.create(System.getProperty("eclipse.home.location"))).toString();
 
         appRootPathStr = eclipsePathStr;
 
