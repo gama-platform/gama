@@ -147,13 +147,16 @@ public class ConstantExpression extends AbstractExpression {
 	/**
 	 * Creates a constant expression with explicit type.
 	 * 
-	 * <p>The name is derived from the value's string representation.</p>
+	 * <p>The name is derived from the value's string representation, on demand ({@link #getName()} calls
+	 * {@link #toString()}): no eager {@code val.toString()}, which costs O(size) for a graph or a list passed as an
+	 * action argument, on every call.</p>
 	 *
 	 * @param val the constant value (can be null for nil)
 	 * @param t the GAML type of the value
 	 */
 	public ConstantExpression(final Object val, final IType<?> t) {
-		this(val, t, val == null ? "nil" : val.toString());
+		value = val;
+		type = t;
 	}
 
 	/**
