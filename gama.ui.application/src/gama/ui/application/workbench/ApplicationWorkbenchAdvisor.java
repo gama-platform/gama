@@ -53,6 +53,7 @@ import gama.api.runtime.SystemInfo;
 import gama.api.types.file.IGamaFile;
 import gama.api.utils.files.BufferingUtils;
 import gama.api.ui.IGui;
+import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.utils.files.FileUtils;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
@@ -339,9 +340,11 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 							.question("Warning", "New simulation artifacts have been found. Do you want to save them ?")) {
 				final List<IExperimentController> runningControllers =
 						GAMA.getControllers().stream().filter(controller -> !controller.isPaused()).toList();
+				final IExperimentSpecies experiment = GAMA.getExperiment();
 				boolean saved = false;
 				try {
 					if (GAMA.pauseFrontmostExperiment(true)) {
+						if (experiment != null) experiment.pauseAllOutputs();
 						BufferingUtils.getInstance().flushAllBuffers();
 						final IHandlerService handlerService =
 								(IHandlerService) PlatformUI.getWorkbench().getService(IHandlerService.class);
@@ -353,7 +356,10 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 				} catch (final Exception e) {
 					e.printStackTrace();
 				} finally {
-					if (!saved) runningControllers.forEach(controller -> controller.processStart(true));
+					if (!saved) {
+						if (experiment != null) experiment.resumeAllOutputs();
+						runningControllers.forEach(controller -> controller.processStart(true));
+					}
 				}
 				if (!saved) return false;
 			}

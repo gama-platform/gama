@@ -27,6 +27,9 @@ import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 
 import gama.api.GAMA;
 import gama.api.compilation.GamlCompilationError;
@@ -203,12 +206,17 @@ public class StartupModelHelper
     }
 
     public boolean saveSimulationArtifacts(Path targetSavePath) throws IOException {
+        return saveSimulationArtifacts(targetSavePath, new NullProgressMonitor());
+    }
+
+    public boolean saveSimulationArtifacts(Path targetSavePath, IProgressMonitor monitor) throws IOException {
 
         long cutoff = Instant.now().toEpochMilli();
-        Stream<Path> stream = Files.walk(getProjectPath());
         boolean somethingHasBeenSaved = false;
-                
-        for (Path path : (Iterable<Path>) stream::iterator) {
+        monitor.beginTask("Saving simulation artifacts", IProgressMonitor.UNKNOWN);
+        try (Stream<Path> stream = Files.walk(getProjectPath())) {
+            for (Path path : (Iterable<Path>) stream::iterator) {
+                if (monitor.isCanceled()) throw new OperationCanceledException();
 
                 if(path.toFile().lastModified() <= lastSimulationArtifactsUpdateMs)
                     continue;
@@ -223,6 +231,9 @@ public class StartupModelHelper
                     Files.copy(path,targetPath,StandardCopyOption.REPLACE_EXISTING);
                     somethingHasBeenSaved = true;
                 }
+            }
+        } finally {
+            monitor.done();
         }
         
         lastSimulationArtifactsUpdateMs = cutoff;
@@ -230,12 +241,12 @@ public class StartupModelHelper
     }
 
     public boolean areThereAnyArtifactsToSave() throws IOException {
-        Stream<Path> stream = Files.walk(getProjectPath());
-
-        for (Path path : (Iterable<Path>) stream::iterator) {
+        try (Stream<Path> stream = Files.walk(getProjectPath())) {
+            for (Path path : (Iterable<Path>) stream::iterator) {
 
                 if(path.toFile().lastModified() > lastSimulationArtifactsUpdateMs)
                     return true;
+            }
         }
         
         return false;   

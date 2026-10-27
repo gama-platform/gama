@@ -3,23 +3,17 @@ package gama.export.dependency;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.Collections;
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
 import org.osgi.framework.Bundle;
-
-import gama.export.ExportHelper;
-import gama.export.ZipHelper;
 
 
 public class BundleDependencyAnalyzer {
@@ -128,17 +122,20 @@ public class BundleDependencyAnalyzer {
     public static Set<String> getManifestAttribute(Path jarPath, String attribute)
     {
         try {
-            Manifest manifest = null; 
+            Manifest manifest;
 
             if(Files.isDirectory(jarPath))
             {
-                InputStream is = new FileInputStream(jarPath.resolve("META-INF").resolve("MANIFEST.MF").toString());
-                manifest = new Manifest(is);
+                try (var input = Files.newInputStream(jarPath.resolve("META-INF").resolve("MANIFEST.MF"))) {
+                    manifest = new Manifest(input);
+                }
             } else {
-                JarFile jar = new JarFile(jarPath.toString());
-                manifest = jar.getManifest();
+                try (JarFile jar = new JarFile(jarPath.toFile())) {
+                    manifest = jar.getManifest();
+                }
             }
 
+            if (manifest == null) return Collections.emptySet();
             Attributes attribs = manifest.getMainAttributes();
         
             return parseOsgiHeader(attribs.getValue(attribute));
@@ -190,7 +187,7 @@ public class BundleDependencyAnalyzer {
 
         if (bundle == null) return null;
         try {
-            return org.eclipse.core.runtime.FileLocator.getBundleFile(bundle).toPath();
+            return FileLocator.getBundleFile(bundle).toPath();
         } catch (IOException e) {
             throw new IllegalStateException("Unable to resolve plugin " + name, e);
         }

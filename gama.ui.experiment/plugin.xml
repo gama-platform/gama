@@ -1348,6 +1348,16 @@
             id="gama.ui.experiment.toolbar.simulation.menu"
             name="Simulations">
       </command>
+      <command
+            categoryId="gama.category"
+            id="gama.application.commands.SaveSimulationsArtifacts"
+            name="Save Simulation Artifacts">
+      </command>
+      <command
+            categoryId="gama.category"
+            id="gama.application.commands.SelectExperiment"
+            name="Select Experiment">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.services">

@@ -957,6 +957,11 @@ type="java.lang.Object">
              id="gama.navigator.convert2026"
              name="Convert to GAMA 2026 syntax...">
        </command>
+       <command
+             categoryId="gama.category"
+             id="gama.ui.navigator.commands.exportProjectAsSimulation"
+             name="Export Project as Simulation">
+       </command>
     </extension>
     <extension
           point="org.eclipse.ui.handlers">

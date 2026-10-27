@@ -36,9 +36,6 @@ public final class ElfPacker {
         
         private static final int META_DATA_SIZE = META_DATA_STRING_SIZE*5 + 8*3;
 
-        private static final Path TMP_PATH = Path.of(System.getProperty("java.io.tmpdir"));
-        // private static final Path TMP_PATH = Path.of(".");
-
         private ElfPacker() {}
 
         public static void pack(
@@ -207,29 +204,12 @@ public final class ElfPacker {
                         int index = 0;
                         byte[] writingBuffer;
 
-                        String pathSuffixPlaceholder = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
-                        Path specificTmpPath = TMP_PATH.resolve("gama_simulation_launcher_" + pathSuffixPlaceholder);
-                        String specificTmpPathStr = specificTmpPath.toString();
-                        String extractorTargetPathStr = specificTmpPath.resolve("extractor").toString();
-                        String zipPayloadTargetPathStr = specificTmpPath.resolve("archive.zip").toString();
-                        String extractedZipTargetPathStr = specificTmpPath.resolve("gama").toString();
-                        String gamaEntryPointPathStr = Path.of(extractedZipTargetPathStr).resolve("Gama").toString();
-                        
-                        // writing the specific tmp path
-                        index = writeString(metaData,index,specificTmpPathStr);
-
-                        // // writing the extractor desired Path where the runner will write it on the disk
-                        index = writeString(metaData,index,extractorTargetPathStr);
-
-                        // writing the zip payload desired Path where the runner will write it on the disk
-                        index = writeString(metaData,index,zipPayloadTargetPathStr);
-
-                        // writing the desired Path where the zip will be extracted 
-                        // (must be 1 directory deeper than the specific tmp path max) 
-                        index = writeString(metaData,index,extractedZipTargetPathStr);
-
-                        // writing the Gama entrypoint path
-                        index = writeString(metaData,index,gamaEntryPointPathStr);
+                        // The runner fills these paths from the launcher's TMPDIR at runtime.
+                        index = writeString(metaData,index,"");
+                        index = writeString(metaData,index,"");
+                        index = writeString(metaData,index,"");
+                        index = writeString(metaData,index,"");
+                        index = writeString(metaData,index,"");
 
                         // writing the extractor size
                         metaData.putLong(index,extractorSize);

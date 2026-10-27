@@ -3,6 +3,7 @@
  */
 package gama.export;
 
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.prefs.Preferences;
 import org.osgi.framework.Bundle;
@@ -23,7 +24,11 @@ public class ExportActivator implements BundleActivator {
     @Override
     public void start(BundleContext context) throws Exception {
       
-        eclipsePathStr = Path.of(java.net.URI.create(System.getProperty("eclipse.home.location"))).toString();
+        try {
+            eclipsePathStr = Path.of(URI.create(System.getProperty("eclipse.home.location"))).toString();
+        } catch (IllegalArgumentException e) {
+            throw new IllegalStateException("Unable to resolve the Eclipse installation path", e);
+        }
 
         appRootPathStr = eclipsePathStr;
 

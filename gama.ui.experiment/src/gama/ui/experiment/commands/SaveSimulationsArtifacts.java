@@ -13,18 +13,19 @@ package gama.ui.experiment.commands;
 import java.util.Map;
 import java.nio.file.Path;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.awt.Desktop;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
+import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.swt.widgets.Display;
 
-import gama.export.ExportHelper;
 import gama.export.ui.SaveSimulationsArtifactsDialog;
 import gama.ui.application.workbench.StartupModelHelper;
 import gama.api.GAMA;
@@ -52,14 +53,7 @@ public class SaveSimulationsArtifacts extends AbstractHandler implements IElemen
 		// if no artifacts to save, exit with info popup
 		if (! areThereAnyArtifactsToSave)
 		{
-			new Thread(() -> {
-				System.out.println("No new artifacts worth saving have been found.");
-
-				GAMA.getGui()
-					.getDialogFactory()
-						.inform("No new artifacts worth saving have been found.");
-			}).start();
-
+			System.out.println("No new artifacts worth saving have been found.");
 			return Boolean.TRUE;
 		}
 
@@ -69,54 +63,46 @@ public class SaveSimulationsArtifacts extends AbstractHandler implements IElemen
 
 		if (result != IDialogConstants.OK_ID) return Boolean.FALSE;
 
-		final FutureTask<Boolean> saveTask = new FutureTask<>(() -> {
-			try
-			{
-				final Path outputParentDirectory = Path.of(dialog.getOutputPath());
-				final String outputDirectoryName = dialog.getOutputDirectoryName();
-				final boolean openFileExplorer = dialog.getOpenFileExplorer(); 
-
-				final Path targetSavePath = outputParentDirectory.resolve(outputDirectoryName);
-
-				StartupModelHelper.getInstance().saveSimulationArtifacts(targetSavePath);
-				System.out.println("Simulation artifacts saved successfully.");
-				
-				if(Desktop.isDesktopSupported() && openFileExplorer)
-				{
-					Desktop desktop = Desktop.getDesktop();
-					try {
-						desktop.open(targetSavePath.toFile());
-					} catch (Exception exception) {
-						exception.printStackTrace();
-					}
-				}
-				return true;
-
-			} catch (IOException e) {
-				System.out.println("An error occured while saving simulation artifacts : ");
-				e.printStackTrace();
-				return false;
-			}
-		});
-		new Thread(saveTask).start();
-
+		final Path targetSavePath;
 		try {
-			final boolean saved = saveTask.get();
-			if (!saved) GAMA.getGui().getDialogFactory().error("An error occured while saving simulation artifacts.");
-			return saved;
-		} catch (InterruptedException e) {
-			while (true) {
-				try {
-					saveTask.get();
-					break;
-				} catch (InterruptedException ignored) {
-				} catch (ExecutionException ignored) {
-					break;
-				}
-			}
-			Thread.currentThread().interrupt();
-			throw new ExecutionException(e);
+			targetSavePath = Path.of(dialog.getOutputPath()).resolve(dialog.getOutputDirectoryName());
+		} catch (RuntimeException e) {
+			GAMA.getGui().getDialogFactory().error("The simulation artifacts destination is invalid.");
+			return Boolean.FALSE;
 		}
+		try {
+			new ProgressMonitorDialog(Display.getDefault().getActiveShell()).run(true, true,
+					monitor -> {
+						try {
+							StartupModelHelper.getInstance().saveSimulationArtifacts(targetSavePath, monitor);
+						} catch (IOException e) {
+							throw new InvocationTargetException(e);
+						}
+					});
+		} catch (InterruptedException e) {
+			return Boolean.FALSE;
+		} catch (InvocationTargetException e) {
+			if (e.getCause() instanceof OperationCanceledException) return Boolean.FALSE;
+			System.out.println("An error occured while saving simulation artifacts : ");
+			if (e.getCause() != null) e.getCause().printStackTrace();
+			GAMA.getGui().getDialogFactory().error("An error occured while saving simulation artifacts.");
+			return Boolean.FALSE;
+		} catch (RuntimeException e) {
+			System.out.println("An error occured while saving simulation artifacts : ");
+			e.printStackTrace();
+			GAMA.getGui().getDialogFactory().error("An error occured while saving simulation artifacts.");
+			return Boolean.FALSE;
+		}
+
+		System.out.println("Simulation artifacts saved successfully.");
+		if (Desktop.isDesktopSupported() && dialog.getOpenFileExplorer()) {
+			try {
+				Desktop.getDesktop().open(targetSavePath.toFile());
+			} catch (Exception exception) {
+				exception.printStackTrace();
+			}
+		}
+		return Boolean.TRUE;
 	}
 
 	@Override

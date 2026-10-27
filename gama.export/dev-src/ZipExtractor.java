@@ -1,12 +1,10 @@
-import java.io.File;
 import java.io.BufferedOutputStream;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Set;
 import java.util.Enumeration;
@@ -102,9 +100,8 @@ public class ZipExtractor {
 
     public static void unzip(Path src, Path destDirectory) throws IOException {
 
-        if (! Files.isDirectory(destDirectory)) {
-            destDirectory.toFile().mkdirs();
-        }
+        Files.createDirectories(destDirectory);
+        Path extractionRoot = destDirectory.toAbsolutePath().normalize().toRealPath();
         
         // try (ZipArchiveInputStream zipIn = new ZipArchiveInputStream(new FileInputStream(src.toString()))) {
         
@@ -113,13 +110,16 @@ public class ZipExtractor {
             while (entries.hasMoreElements()) {
                 ZipArchiveEntry entry = entries.nextElement();
 
-                File filePath = new File(destDirectory.toString(), entry.getName());
+                Path filePath = resolveZipEntry(extractionRoot, entry.getName());
                 if (!entry.isDirectory()) {
                     // Create parent directories if they don't exist
-                    filePath.getParentFile().mkdirs();
+                    Files.createDirectories(filePath.getParent());
+                    filePath = resolveZipEntry(extractionRoot, entry.getName());
                     // Extract the file
                     try (InputStream is = archive.getInputStream(entry);
-                         BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath))) 
+                         BufferedOutputStream bos = new BufferedOutputStream(Files.newOutputStream(filePath,
+                                 StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING,
+                                 StandardOpenOption.WRITE, LinkOption.NOFOLLOW_LINKS)))
                     {
                         // byte[] bytesIn = new byte[4096];
                         byte[] bytesIn = new byte[8192];
@@ -129,14 +129,35 @@ public class ZipExtractor {
                         }
                     }
                 } else { // if filepath is a directory
-                    filePath.mkdirs();
+                    Files.createDirectories(filePath);
+                    resolveZipEntry(extractionRoot, entry.getName());
                 }
 
                 int mode = entry.getUnixMode();
                 if (mode > 0)
-                    setPermissions(filePath.toPath(), mode);
+                    setPermissions(filePath, mode);
                 
             }
         }
+    }
+
+    private static Path resolveZipEntry(Path extractionRoot, String entryName) throws IOException {
+        Path entryPath = Path.of(entryName.replace('\\', '/'));
+        Path filePath = extractionRoot.resolve(entryPath).normalize();
+        if (entryName.isBlank() || entryPath.isAbsolute() || filePath.equals(extractionRoot)
+                || !filePath.startsWith(extractionRoot)) {
+            throw new IOException("ZIP entry is outside the extraction directory: " + entryName);
+        }
+
+        Path current = extractionRoot;
+        for (Path component : extractionRoot.relativize(filePath)) {
+            current = current.resolve(component);
+            if (Files.isSymbolicLink(current)
+                    || (Files.exists(current, LinkOption.NOFOLLOW_LINKS)
+                            && !current.toRealPath().startsWith(extractionRoot))) {
+                throw new IOException("ZIP entry traverses outside the extraction directory: " + entryName);
+            }
+        }
+        return filePath;
     }
 }

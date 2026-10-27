@@ -33,6 +33,79 @@ phdr:                                     ; Elf64_Phdr
 phdrsize    equ     $ - phdr
 
 _start:
+    ; resolve the temporary base directory on the machine running this launcher
+    lea rdi, [rel tmp_path]
+    lea rsi, [rel runtime_tmp_fallback]
+    call .copy_tmp_base
+
+    mov rax, [rsp]
+    lea rdi, [rsp + rax*8 + 16]
+.find_tmpdir:
+    mov r8, [rdi]
+    test r8, r8
+    jz .tmpdir_ready
+    lea rsi, [rel tmpdir_prefix]
+    mov rbx, r8
+    mov ecx, 7
+.compare_tmpdir:
+    mov al, [rbx]
+    cmp al, [rsi]
+    jne .next_environment
+    inc rbx
+    inc rsi
+    loop .compare_tmpdir
+    cmp byte [rbx], '/'
+    jne .next_environment
+
+    lea rdi, [rel tmp_path]
+    xor r11d, r11d
+.copy_tmpdir:
+    mov al, [rbx]
+    test al, al
+    jz .tmpdir_slash
+    inc r11d
+    cmp r11d, 900
+    ja .use_tmp_fallback
+    mov [rdi], al
+    inc rdi
+    inc rbx
+    jmp .copy_tmpdir
+.tmpdir_slash:
+    cmp byte [rdi - 1], '/'
+    je .tmpdir_leaf
+    mov byte [rdi], '/'
+    inc rdi
+.tmpdir_leaf:
+    lea rsi, [rel runtime_dir_name]
+.copy_runtime_dir_name:
+    mov al, [rsi]
+    test al, al
+    jz .tmpdir_ready
+    mov [rdi], al
+    inc rdi
+    inc rsi
+    jmp .copy_runtime_dir_name
+.next_environment:
+    add rdi, 8
+    jmp .find_tmpdir
+.use_tmp_fallback:
+    lea rdi, [rel tmp_path]
+    lea rsi, [rel runtime_tmp_fallback]
+    call .copy_tmp_base
+.tmpdir_ready:
+    lea rdi, [rel extractor_path]
+    lea rsi, [rel extractor_suffix]
+    call .make_runtime_path
+    lea rdi, [rel zip_path]
+    lea rsi, [rel zip_suffix]
+    call .make_runtime_path
+    lea rdi, [rel zip_extracted_path]
+    lea rsi, [rel extracted_suffix]
+    call .make_runtime_path
+    lea rdi, [rel gama_entrypoint_path]
+    lea rsi, [rel gama_suffix]
+    call .make_runtime_path
+
     ; create an unpredictable suffix for a private runtime directory
     mov rax, 318 ; getrandom syscall
     lea rdi, [rel random_bytes]
@@ -107,10 +180,16 @@ _start:
     jl .exit_with_error
   
     ;  write the extractor on disk
-    mov rax, 0x1
     lea rsi, [rel data]
     mov rdx, [rel extractor_content_size]
+.write_extractor:
+    mov rax, 0x1
     syscall
+    test rax, rax
+    jle .exit_with_error
+    add rsi, rax
+    sub rdx, rax
+    jnz .write_extractor
 
     ; close extractor file descriptor
     mov rax, 0x3
@@ -128,7 +207,6 @@ _start:
     jl .exit_with_error
 
     ; write the zip on disk
-    mov rax, 0x1
     lea rsi, [rel data]
     mov rcx, [rel zip_content_offset]
     add rsi, rcx
@@ -206,6 +284,35 @@ _start:
     loop .copy_path_suffix_loop
     ret
 
+.copy_tmp_base:
+    mov al, [rsi]
+    mov [rdi], al
+    inc rsi
+    inc rdi
+    test al, al
+    jnz .copy_tmp_base
+    ret
+
+.make_runtime_path:
+    mov r8, rdi
+    lea r9, [rel tmp_path]
+.copy_runtime_prefix:
+    mov al, [r9]
+    test al, al
+    jz .copy_runtime_suffix
+    mov [r8], al
+    inc r8
+    inc r9
+    jmp .copy_runtime_prefix
+.copy_runtime_suffix:
+    mov al, [rsi]
+    mov [r8], al
+    inc r8
+    inc rsi
+    test al, al
+    jnz .copy_runtime_suffix
+    ret
+
  .execve_extractor:
     mov rax, 0x3b
     lea rdi, [rel extractor_path]
@@ -230,6 +337,13 @@ gama_args: dq gama_entrypoint_path,0
 random_bytes: times 16 db 0
 random_suffix: times 32 db 0
 hex_digits: db "0123456789abcdef"
+tmpdir_prefix: db "TMPDIR=",0
+runtime_tmp_fallback: db "/tmp",0
+runtime_dir_name: db "gama_simulation_launcher_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",0
+extractor_suffix: db "/extractor",0
+zip_suffix: db "/archive.zip",0
+extracted_suffix: db "/gama",0
+gama_suffix: db "/gama/Gama",0
 
 filesize equ $ - $$
 data:

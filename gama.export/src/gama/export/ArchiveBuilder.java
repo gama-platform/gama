@@ -3,6 +3,7 @@ package gama.export;
 import java.io.FileOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -140,7 +141,6 @@ public class ArchiveBuilder implements AutoCloseable {
         
         if (! Files.isDirectory(targetFilePath))
         {
-            // Read source file bytes and write directly to the archive
             try (var input = Files.newInputStream(targetFilePath)) {
                 byte[] buffer = new byte[8192];
                 int count;

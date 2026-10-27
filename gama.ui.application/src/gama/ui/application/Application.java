@@ -41,6 +41,7 @@ import gama.api.utils.prefs.GamaPreferences;
 import gama.api.utils.files.BufferingUtils;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
+import gama.dev.FLAGS;
 import gama.ui.application.workbench.ApplicationWorkbenchAdvisor;
 import gama.ui.application.workbench.StartupModelHelper;
 import gama.workspace.manager.WorkspaceModelsManager;
@@ -118,8 +119,8 @@ public class Application implements IApplication {
 		final Display display = configureDisplay();
 		Object check = Display.getCurrent().syncCall(() -> GAMA.getWorkspaceManager().checkWorkspace());
 
-		if (!EXIT_OK.equals(check) && gama.dev.FLAGS.SIMULATION_ONLY
-				&& GamaPreferences.Interface.CORE_STARTUP_MODEL.getValue())
+		if (!EXIT_OK.equals(check) && FLAGS.SIMULATION_ONLY
+				&& GamaPreferences.Interface.CORE_STARTUP_MODEL.getValue())
 			check = StartupModelHelper.getInstance().initialize();
 
 		if (!EXIT_OK.equals(check)) {

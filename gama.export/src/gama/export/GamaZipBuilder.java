@@ -27,6 +27,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 import java.net.URL;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
@@ -57,7 +59,8 @@ public class GamaZipBuilder {
     private static Set<String> necessaryGamaPlugins = new HashSet<String>(Set.of(
         "gama.dependencies",
         "gama.ui.application",
-        "gama.ui.shared"
+        "gama.ui.shared",
+        "gama.ui.experiment"
     ));
 
     // private static Set<String> necessaryGamaPlugins = new HashSet<String>(Set.of(
@@ -96,14 +99,6 @@ public class GamaZipBuilder {
     private static final Path pluginsPath = eclipsePath.resolve("plugins");
 
     private static final Path dropinsPath = eclipsePath.resolve("dropins");
-
-    private static final Path tmpDirectoryPath = Path.of(System.getProperty("java.io.tmpdir"),"gama.export.tmp");
-
-    private static final Path gamaIniTmpPath = tmpDirectoryPath.resolve("gama.ini.tmp");
-
-    private static final Path gamaPrefsTmpPath = tmpDirectoryPath.resolve("gama.prefs.tmp");
-
-    private static final Path gamaUiApplicationJarTmpPath = tmpDirectoryPath.resolve("gama.ui.application.jar.tmp");
 
     private static final Path gamaUiApplicationPluginPath = BundleDependencyAnalyzer.getPluginPath("gama.ui.application");
     
@@ -177,26 +172,32 @@ public class GamaZipBuilder {
     public void addEntryAndUpdateGamlImports(Path filePath, Path includeDir, Map<Path,String> externalDataFiles, String entryName, ArchiveBuilder archive) throws IOException, RuntimeException{
 
         String content = Files.readString(filePath, StandardCharsets.UTF_8);
-        final Path gamlParent = filePath.getParent();
-
-        for (final Map.Entry<Path, String> entry : externalDataFiles.entrySet()) {
-            final Path sourcePath = entry.getKey();
-            final String uniqueName = entry.getValue();
-            // Only meaningful when both paths share the same root.
-            // if (!gamlParent.getRoot().equals(sourcePath.getRoot())) {
-            //     continue;
-            // }
-            final String originalString =
-                    gamlParent.relativize(sourcePath).toString().replace('\\', '/');
-            final String newRelativePath = gamlParent
-                    .relativize(includeDir.resolve(uniqueName)).toString().replace('\\', '/');
-            content = content.replace("\"" + originalString + "\"",
-                    "\"" + newRelativePath + "\"");
-            content = content.replace("'" + originalString + "'",
-                    "'" + newRelativePath + "'");
+        final Path archiveModelPath = Path.of(entryName.replace('\\', '/'));
+        final Path archiveIncludeDir = Path.of(embeddedWorkspacePathStr,
+                includeDir.getParent().getFileName().toString(), "includes");
+        final Matcher matcher = Pattern.compile("([\"'])([^\"']+)\\1").matcher(content);
+        final StringBuffer rewritten = new StringBuffer();
+        while (matcher.find()) {
+            String replacement = matcher.group();
+            try {
+                Path literalPath = Path.of(matcher.group(2).replace('\\', File.separatorChar));
+                Path resolvedPath = (literalPath.isAbsolute() ? literalPath : filePath.getParent().resolve(literalPath))
+                        .toAbsolutePath().normalize();
+                String includeName = externalDataFiles.get(resolvedPath);
+                if (includeName != null) {
+                    Path archiveIncludePath = archiveIncludeDir.resolve(includeName);
+                    String relativePath = archiveModelPath.getParent().relativize(archiveIncludePath)
+                            .toString().replace('\\', '/');
+                    replacement = matcher.group(1) + relativePath + matcher.group(1);
+                }
+            } catch (RuntimeException ignored) {
+                // Non-path string literals are left unchanged.
+            }
+            matcher.appendReplacement(rewritten, Matcher.quoteReplacement(replacement));
         }
+        matcher.appendTail(rewritten);
 
-        archive.addEntryFromString(content,entryName);
+        archive.addEntryFromString(rewritten.toString(),entryName);
     }
 
     public GamaZipBuilder(
@@ -291,14 +292,36 @@ public class GamaZipBuilder {
         GAMA.getGui().getStatus().setStatus("Exporting the project", IStatusMessage.COMPILE_ICON,
                 GamaColorFactory.get(200, 200, 200));
 
-        final Path outputPath = Path.of(outputPathStr);
-
-        final Path zipOutputPath = isOneFileExport ? GamaZipBuilder.tmpDirectoryPath.resolve("archive.zip") : outputPath;
-
-        if(Files.isDirectory(GamaZipBuilder.tmpDirectoryPath))
-            deleteDirectory(GamaZipBuilder.tmpDirectoryPath); 
-
-        Files.createDirectories(GamaZipBuilder.tmpDirectoryPath);
+        final Path outputPath = Path.of(outputPathStr).toAbsolutePath().normalize();
+        if (outputPath.startsWith(appRootPath.toAbsolutePath().normalize())
+                || targetProjects.stream().map(project -> Path.of(project.getLocation().toOSString())
+                        .toAbsolutePath().normalize()).anyMatch(outputPath::startsWith)) {
+            throw new IOException("The export destination cannot be inside the installation or an exported project");
+        }
+        if (outputPath.getParent() == null) throw new IOException("The export destination must be a file path");
+        Files.createDirectories(outputPath.getParent());
+        final Path realOutputPath = outputPath.getParent().toRealPath().resolve(outputPath.getFileName());
+        final Path normalizedAppRootPath = appRootPath.toRealPath();
+        boolean destinationInProject = false;
+        for (IProject project : targetProjects) {
+            if (realOutputPath.startsWith(Path.of(project.getLocation().toOSString()).toRealPath())) {
+                destinationInProject = true;
+                break;
+            }
+        }
+        if (realOutputPath.startsWith(normalizedAppRootPath) || destinationInProject) {
+            throw new IOException("The export destination cannot be inside the installation or an exported project");
+        }
+        final Path tmpDirectoryPath = Files.createTempDirectory("gama.export.tmp-");
+        Path stagingPath = null;
+        boolean completed = false;
+        try {
+        stagingPath = Files.createTempFile(outputPath.getParent(), ".gama-export-", ".tmp");
+        final Path outputStagingPath = stagingPath;
+        final Path gamaIniTmpPath = tmpDirectoryPath.resolve("gama.ini.tmp");
+        final Path gamaPrefsTmpPath = tmpDirectoryPath.resolve("gama.prefs.tmp");
+        final Path gamaUiApplicationJarTmpPath = tmpDirectoryPath.resolve("gama.ui.application.jar.tmp");
+        final Path zipOutputPath = isOneFileExport ? tmpDirectoryPath.resolve("archive.zip") : outputStagingPath;
 
         try(ArchiveBuilder archive = new ArchiveBuilder(zipOutputPath,isOneFileExport)){
         
@@ -307,7 +330,8 @@ public class GamaZipBuilder {
             ///////////////////////////////////////////
 
             // Walk the appRootPath tree stream
-            try (Stream<Path> stream = filter(Files.walk(appRootPath))) {
+            try (Stream<Path> stream = filter(Files.walk(appRootPath))
+                    .filter(path -> !path.toAbsolutePath().normalize().startsWith(tmpDirectoryPath))) {
                 stream.forEach(sourcePath -> {
                     try {
                         archive.addEntry(sourcePath,appRootPath.relativize(sourcePath).toString());
@@ -333,12 +357,12 @@ public class GamaZipBuilder {
             // splash screen                     //
             ///////////////////////////////////////
 
-            Files.copy(GamaZipBuilder.pluginsPath.resolve(GamaZipBuilder.gamaUiApplicationPluginFileName),GamaZipBuilder.gamaUiApplicationJarTmpPath);
-            ZipHelper.renameEntry(GamaZipBuilder.gamaUiApplicationJarTmpPath,"splash.png","old_splash.png");
-            ZipHelper.renameEntry(GamaZipBuilder.gamaUiApplicationJarTmpPath,"splash_simulation_launcher.png","splash.png");
+            Files.copy(GamaZipBuilder.pluginsPath.resolve(GamaZipBuilder.gamaUiApplicationPluginFileName),gamaUiApplicationJarTmpPath);
+            ZipHelper.renameEntry(gamaUiApplicationJarTmpPath,"splash.png","old_splash.png");
+            ZipHelper.renameEntry(gamaUiApplicationJarTmpPath,"splash_simulation_launcher.png","splash.png");
 
             archive.addEntry(
-                GamaZipBuilder.gamaUiApplicationJarTmpPath, 
+                gamaUiApplicationJarTmpPath,
                 appRootPath.relativize(
                     pluginsPath.resolve(GamaZipBuilder.gamaUiApplicationPluginFileName)
                 ).toString()
@@ -349,8 +373,8 @@ public class GamaZipBuilder {
             /////////////////////////////////////
 
             // switching to non global preferences
-            Files.copy(eclipsePath.resolve("Gama.ini"),GamaZipBuilder.gamaIniTmpPath);
-            String gamaIniContent = Files.readString(GamaZipBuilder.gamaIniTmpPath); 
+            Files.copy(eclipsePath.resolve("Gama.ini"),gamaIniTmpPath);
+            String gamaIniContent = Files.readString(gamaIniTmpPath);
 
             // use embedded preferences
             if (gamaIniContent.contains("\n-Duse_global_preference_store="))
@@ -378,17 +402,18 @@ public class GamaZipBuilder {
                 if(SystemInfo.isMac())
                     javaBinaryPathStr = "./jdk/Contents/Home/bin/java";
 
-                if(gamaIniContent.contains("-vm\n"))
-                    gamaIniContent.replaceAll("^-vm\n.*\n","-vm\n" + javaBinaryPathStr + "\n");
+                if(Pattern.compile("(?m)^-vm\\r?\\n").matcher(gamaIniContent).find())
+                    gamaIniContent = gamaIniContent.replaceAll("(?m)^-vm\\r?\\n[^\\r\\n]*(?:\\r?\\n|$)",
+                            "-vm\n" + javaBinaryPathStr + "\n");
                 else
                     gamaIniContent = "-vm\n" + javaBinaryPathStr + "\n" + gamaIniContent;
             }
 
-            Files.writeString(GamaZipBuilder.gamaIniTmpPath,gamaIniContent);
+            Files.writeString(gamaIniTmpPath,gamaIniContent);
 
             // Replace existing files/directories if needed
             // Create a new entry inside the ZIP archive
-            archive.addEntry(GamaZipBuilder.gamaIniTmpPath,appRootPath.relativize(eclipsePath.resolve("Gama.ini")).toString());
+            archive.addEntry(gamaIniTmpPath,appRootPath.relativize(eclipsePath.resolve("Gama.ini")).toString());
 
             // creating / updating preferences
             JREPreferenceStore store = new JREPreferenceStore(Preferences.userRoot().node(GamaPreferenceStore.NODE_NAME));
@@ -409,7 +434,7 @@ public class GamaZipBuilder {
             store.putInStore("pref_default_experiment",targetExperiment);
             store.putInStore("pref_errors_in_editor",false);
             
-            store.saveToProperties(GamaZipBuilder.gamaPrefsTmpPath.toString());
+            store.saveToProperties(gamaPrefsTmpPath.toString());
 
             store.putInStore("pref_workspace_path",workspacePathPreferenceOld);
             store.putInStore("pref_workspace_remember",workspaceRememberPreferenceOld);
@@ -419,7 +444,7 @@ public class GamaZipBuilder {
             store.putInStore("pref_errors_in_editor",errorsInEditorPreferenceOld);
 
             archive.addEntry(
-                GamaZipBuilder.gamaPrefsTmpPath,
+                gamaPrefsTmpPath,
                 appRootPath.relativize(
                     eclipsePath
                         .resolve("configuration")
@@ -548,7 +573,8 @@ public class GamaZipBuilder {
                 // Actual embedding of projects //
                 //////////////////////////////////
 
-                try (Stream<Path> stream = Files.walk(projectPath)) {
+                try (Stream<Path> stream = Files.walk(projectPath)
+                        .filter(path -> !path.toAbsolutePath().normalize().startsWith(tmpDirectoryPath))) {
                     stream.forEach(filePath -> {
                         
                         try 
@@ -558,7 +584,9 @@ public class GamaZipBuilder {
                             )
                             {
                                 final String currentFileName = filePath.getFileName().toString();
-                                final boolean isGaml = currentFileName.toLowerCase().endsWith(".gaml");
+                                final String lowerFileName = currentFileName.toLowerCase();
+                                final boolean isGaml = lowerFileName.endsWith(".gaml")
+                                        || lowerFileName.endsWith(".experiment");
                                 String entryName;
 
                                 entryName = filePath.toString().replace(
@@ -608,13 +636,21 @@ public class GamaZipBuilder {
                 for (String virtualPathStr : linkedFilesMap.keySet())
                 {
                     // preserve the link virtual path /Embedded_Workspace/projectName/path/to/link
-                    String entryName = 
-                            GamaZipBuilder.embeddedWorkspacePathStr 
-                            + File.separator + projectName 
-                            + File.separator + virtualPathStr;
-
-                    // but write the actual content of the file designed by the link
-                    addEntryAndUpdateGamlImports(linkedFilesMap.get(virtualPathStr),includeDir,externalDataFiles,entryName, archive);
+                    Path entryPath = Path.of(GamaZipBuilder.embeddedWorkspacePathStr, projectName, virtualPathStr);
+                    Path linkedPath = linkedFilesMap.get(virtualPathStr);
+                    if (Files.isDirectory(linkedPath)) {
+                        try (Stream<Path> linkedFiles = Files.walk(linkedPath)) {
+                            for (Path linkedFile : (Iterable<Path>) linkedFiles::iterator) {
+                                if (Files.isRegularFile(linkedFile)) {
+                                    Path linkedEntry = entryPath.resolve(linkedPath.relativize(linkedFile));
+                                    addLinkedFile(linkedFile, includeDir, externalDataFiles,
+                                            linkedEntry.toString(), archive);
+                                }
+                            }
+                        }
+                    } else if (Files.isRegularFile(linkedPath)) {
+                        addLinkedFile(linkedPath, includeDir, externalDataFiles, entryPath.toString(), archive);
+                    }
                 }
 
                 ///////////////////////////////////////////////////////
@@ -717,8 +753,8 @@ public class GamaZipBuilder {
                         "unable to find the elf64 zip extractor : binaries/zipextractor"
                     );
 
-                Path tmpRunnerPath = GamaZipBuilder.tmpDirectoryPath.resolve("runner");
-                Path tmpZipExtractorPath = GamaZipBuilder.tmpDirectoryPath.resolve("zipextractor");
+                Path tmpRunnerPath = tmpDirectoryPath.resolve("runner");
+                Path tmpZipExtractorPath = tmpDirectoryPath.resolve("zipextractor");
 
                 try (InputStream inputStream = runnerUrl.openStream()) {
                     Files.copy(
@@ -737,11 +773,9 @@ public class GamaZipBuilder {
                 }
                 
                 try {
-                    ElfPacker.pack(tmpRunnerPath,tmpZipExtractorPath,zipOutputPath,outputPath);
-                } catch (Exception e)
-                {
-                    System.out.println("error: unable to pack the elf64 executable : ");
-                    e.printStackTrace();
+                    ElfPacker.pack(tmpRunnerPath,tmpZipExtractorPath,zipOutputPath,outputStagingPath);
+                } catch (Exception e) {
+                    throw new IOException("Unable to pack the Linux executable", e);
                 }
             }
 
@@ -753,7 +787,7 @@ public class GamaZipBuilder {
                         "unable to find the 7zS2.sfx stub for building Windows x64 PE file : binaries/7zS2.sfx"
                     );
 
-                Path tmpSevenZStubPath = GamaZipBuilder.tmpDirectoryPath.resolve("7zS2.sfx");
+                Path tmpSevenZStubPath = tmpDirectoryPath.resolve("7zS2.sfx");
 
                 try (InputStream inputStream = sevenZStubUrl.openStream()) {
                     Files.copy(
@@ -764,7 +798,7 @@ public class GamaZipBuilder {
                 }
 
                 try (OutputStream out = Files.newOutputStream(
-                        outputPath,
+                        outputStagingPath,
                         StandardOpenOption.CREATE,
                         StandardOpenOption.TRUNCATE_EXISTING,
                         StandardOpenOption.WRITE
@@ -773,9 +807,28 @@ public class GamaZipBuilder {
                         Files.copy(zipOutputPath, out);
                 }
             }
-        }
 
-        // clean tmp directory
-        deleteDirectory(GamaZipBuilder.tmpDirectoryPath);
+        Files.move(outputStagingPath, outputPath, StandardCopyOption.REPLACE_EXISTING);
+        completed = true;
+        } finally {
+            deleteDirectory(tmpDirectoryPath);
+            if (!completed && stagingPath != null) {
+                try {
+                    Files.deleteIfExists(stagingPath);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private void addLinkedFile(Path filePath, Path includeDir, Map<Path, String> externalDataFiles,
+            String entryName, ArchiveBuilder archive) throws IOException {
+        String fileName = filePath.getFileName().toString().toLowerCase();
+        if (fileName.endsWith(".gaml") || fileName.endsWith(".experiment")) {
+            addEntryAndUpdateGamlImports(filePath, includeDir, externalDataFiles, entryName, archive);
+        } else {
+            archive.addEntry(filePath, entryName);
+        }
     }
 }
