@@ -89,7 +89,8 @@ public class ExportProjectAsSimulation extends AbstractHandler {
 		for (IResource member : members) {
 			if (member instanceof IContainer) {
 				getModelsFromProject((IContainer) member, list);
-			} else if (member instanceof IFile && GamlFileExtension.isGaml(member.getName())) {
+            } else if (member instanceof IFile && (GamlFileExtension.isGaml(member.getName())
+                    || GamlFileExtension.isExperiment(member.getName()))) {
 				list.add((IFile) member);
 			}
 		}
