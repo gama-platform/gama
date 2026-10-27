@@ -33,20 +33,67 @@ phdr:                                     ; Elf64_Phdr
 phdrsize    equ     $ - phdr
 
 _start:
+    ; create an unpredictable suffix for a private runtime directory
+    mov rax, 318 ; getrandom syscall
+    lea rdi, [rel random_bytes]
+    mov rsi, 16
+    xor rdx, rdx
+    syscall
+
+    cmp rax, 16
+    jne .exit_with_error
+
+    lea rsi, [rel random_bytes]
+    lea rdi, [rel random_suffix]
+    lea rbx, [rel hex_digits]
+    mov ecx, 16
+.generate_suffix:
+    movzx eax, byte [rsi]
+    mov edx, eax
+    shr eax, 4
+    and edx, 0x0f
+    mov al, [rbx + rax]
+    mov [rdi], al
+    inc rdi
+    mov dl, [rbx + rdx]
+    mov [rdi], dl
+    inc rdi
+    inc rsi
+    loop .generate_suffix
+
+    lea rdi, [rel tmp_path]
+    lea rsi, [rel random_suffix]
+    call .fill_path_suffix
+    lea rdi, [rel extractor_path]
+    lea rsi, [rel random_suffix]
+    call .fill_path_suffix
+    lea rdi, [rel zip_path]
+    lea rsi, [rel random_suffix]
+    call .fill_path_suffix
+    lea rdi, [rel zip_extracted_path]
+    lea rsi, [rel random_suffix]
+    call .fill_path_suffix
+    lea rdi, [rel gama_entrypoint_path]
+    lea rsi, [rel random_suffix]
+    call .fill_path_suffix
+
     ; check tmp directory
     mov rax, 0x53 ; mkdir syscall
     lea rdi, [rel tmp_path]
-    mov rsi,777o
+    mov rsi,700o
     syscall
-    
+
+    test rax, rax
+    js .exit_with_error
+
     ; check the desired directory where the zip will be extracted
     mov rax, 0x53 ; mkdir syscall
     lea rdi, [rel zip_extracted_path]
-    mov rsi,777o
+    mov rsi,700o
     syscall
 
-    cmp rax,-17 ; check if directory aleady exist
-    je .start_gama ; if yes, jump straight to the execution of Gama
+    test rax, rax
+    js .exit_with_error
 
     ; open extractor file
     mov rax, 0x02
@@ -125,6 +172,31 @@ _start:
     mov rdi, 0x1
     syscall
 
+.fill_path_suffix:
+.find_path_suffix:
+    cmp byte [rdi], 'X'
+    jne .advance_path_suffix
+    mov rax, rdi
+    mov ecx, 32
+.check_path_suffix:
+    cmp byte [rax], 'X'
+    jne .advance_path_suffix
+    inc rax
+    loop .check_path_suffix
+    jmp .copy_path_suffix
+.advance_path_suffix:
+    inc rdi
+    jmp .find_path_suffix
+.copy_path_suffix:
+    mov ecx, 32
+.copy_path_suffix_loop:
+    mov al, [rsi]
+    mov [rdi], al
+    inc rsi
+    inc rdi
+    loop .copy_path_suffix_loop
+    ret
+
  .execve_extractor:
     mov rax, 0x3b
     lea rdi, [rel extractor_path]
@@ -145,6 +217,10 @@ zip_content_size: dq 0
 ; the following values are  hard coded in this file
 extractor_args: dq extractor_path,zip_path,zip_extracted_path,0
 gama_args: dq gama_entrypoint_path,0
+
+random_bytes: times 16 db 0
+random_suffix: times 32 db 0
+hex_digits: db "0123456789abcdef"
 
 filesize equ $ - $$
 data:

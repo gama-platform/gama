@@ -9,8 +9,6 @@ import java.nio.file.Path;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 public final class ElfPacker {
 
@@ -209,11 +207,8 @@ public final class ElfPacker {
                         int index = 0;
                         byte[] writingBuffer;
 
-                        String timestampStr = LocalDateTime.now().format(
-                                DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS")
-                        ); 
-        
-                        Path specificTmpPath = TMP_PATH.resolve("gama_simulation_launcher_" + timestampStr);
+                        String pathSuffixPlaceholder = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+                        Path specificTmpPath = TMP_PATH.resolve("gama_simulation_launcher_" + pathSuffixPlaceholder);
                         String specificTmpPathStr = specificTmpPath.toString();
                         String extractorTargetPathStr = specificTmpPath.resolve("extractor").toString();
                         String zipPayloadTargetPathStr = specificTmpPath.resolve("archive.zip").toString();
