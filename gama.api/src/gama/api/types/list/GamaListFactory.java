@@ -287,7 +287,8 @@ public class GamaListFactory {
 	public static IList create(final IScope scope, final IType contentType, final IContainer container) {
 		if (container == null) return create(contentType);
 		if (FLAGS.CAST_CONTAINER_CONTENTS
-				&& GamaType.requiresCasting(contentType, container.getGamlType().getContentType())) {
+				&& GamaType.requiresContentTypeCasting(scope, contentType, container.getGamlType().getContentType(),
+						container.iterable(scope))) {
 			final IList list = create(contentType);
 			for (final Object o : container.iterable(scope)) { castAndAdd(scope, list, o); }
 			return list;

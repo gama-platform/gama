@@ -19,6 +19,13 @@ and [random draws/sampling](#random-draws-and-statistical-correctness), in addit
 
 ## [2026.0.0] - Unreleased
 
+### Nested map content types
+
+- Converting nested maps and lists now propagates declared container types even when the inferred
+  types are assignment-compatible. A `map<string, map<string, unknown>>` initialized with float-only
+  inner maps accepts later string values without coercing them to floats (#751). Explicitly typed
+  maps still cast inserted values when container-content casting is enabled.
+
 ### BREAKING CHANGE: GAML syntax overhaul and model translator
 
 **GAML 2026 is not source-compatible with all GAMA 2025-06 models.** The rewritten grammar
