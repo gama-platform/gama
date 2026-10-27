@@ -20,8 +20,7 @@ global {
 	action record(string event_label) {
 		last_event <- event_label;
 		event_count <- event_count + 1;
-		int i <- 1000; d
-		toto est totot 
+		int i <- 1000;
 	}
 }
 
