@@ -1,18 +1,21 @@
 package gama.ui.display.opengl4.renderer.shaders;
 
 import com.jogamp.opengl.GL4;
+import gama.ui.display.opengl.renderer.shaders.AbstractShader;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 /**
  * The Class BasicShader.
  *
  * <p>The main shader program used for rendering all opaque geometry in the OpenGL4 display. It
- * supports texturing, per-vertex colour and Phong (Blinn-Phong) lighting driven by uniform
+ * supports texturing, per-vertex colour and two-sided ambient/diffuse lighting driven by uniform
  * variables that are updated every frame by {@link gama.ui.display.opengl4.renderer.helpers.LightHelper}.
  *
  * <h3>Vertex attributes (all bound before linking)</h3>
  * <ul>
- *   <li>{@code aPos}      (location 0) – world-space XYZ position.</li>
+ *   <li>{@code aPos}      (location 0) – object-space XYZ position.</li>
  *   <li>{@code aColor}    (location 1) – RGBA vertex colour.</li>
  *   <li>{@code aTexCoord} (location 2) – UV texture coordinates.</li>
  *   <li>{@code aNormal}   (location 3) – object-space surface normal.</li>
@@ -24,15 +27,16 @@ import org.joml.Matrix4f;
  *   <li>{@code view}          – 4×4 view matrix (identity in current usage).</li>
  *   <li>{@code projection}    – 4×4 projection matrix.</li>
  *   <li>{@code useTexture}    – whether to sample from {@code texture1}.</li>
- *   <li>{@code useLighting}   – whether Phong lighting is active.</li>
+ *   <li>{@code useLighting}   – whether lighting is active.</li>
  *   <li>{@code ambientColor}  – RGB ambient light colour.</li>
- *   <li>{@code lightPosition} – world-space position of the primary light.</li>
- *   <li>{@code lightColor}    – RGB colour of the primary light.</li>
- *   <li>{@code viewPos}       – world-space camera position for specular computation.</li>
- *   <li>{@code shininess}     – Blinn-Phong specular shininess exponent.</li>
+ *   <li>{@code lightCount}    – number of active lights, up to eight like legacy OpenGL.</li>
+ *   <li>{@code lights}        – eye-space positions/directions, colours, attenuation and spot cutoffs.</li>
  * </ul>
  */
 public class BasicShader extends AbstractShader {
+
+	/** Must match MAX_LIGHTS in glsl/basic.frag. */
+	public static final int MAX_LIGHTS = 8;
 
 	/** Uniform location: model matrix. */
 	private int location_model;
@@ -46,23 +50,20 @@ public class BasicShader extends AbstractShader {
 	/** Uniform location: useTexture flag. */
 	private int location_useTexture;
 
+	/** Uniform location: premultiplyTexture flag. */
+	private int location_premultiplyTexture;
+
 	/** Uniform location: useLighting flag. */
 	private int location_useLighting;
 
 	/** Uniform location: ambient light colour (RGB). */
 	private int location_ambientColor;
 
-	/** Uniform location: primary light world-space position. */
-	private int location_lightPosition;
+	/** Uniform location: active light count. */
+	private int location_lightCount;
 
-	/** Uniform location: primary light RGB colour. */
-	private int location_lightColor;
-
-	/** Uniform location: camera world-space position. */
-	private int location_viewPos;
-
-	/** Uniform location: Blinn-Phong shininess exponent. */
-	private int location_shininess;
+	/** Per-light uniform locations: position, color, attenuation, spot direction, spot cutoff. */
+	private int[][] location_lights;
 
 	/**
 	 * Instantiates a new BasicShader, compiling and linking {@code glsl/basic.vert} and
@@ -71,7 +72,7 @@ public class BasicShader extends AbstractShader {
 	 * @param gl the GL4 context
 	 */
 	public BasicShader(final GL4 gl) {
-		super(gl, "glsl/basic.vert", "glsl/basic.frag");
+		super(gl, "glsl/basic.vert", "glsl/basic.frag", false);
 	}
 
 	@Override
@@ -89,12 +90,20 @@ public class BasicShader extends AbstractShader {
 		location_view          = getUniformLocation("view");
 		location_projection    = getUniformLocation("projection");
 		location_useTexture    = getUniformLocation("useTexture");
+		location_premultiplyTexture = getUniformLocation("premultiplyTexture");
 		location_useLighting   = getUniformLocation("useLighting");
 		location_ambientColor  = getUniformLocation("ambientColor");
-		location_lightPosition = getUniformLocation("lightPosition");
-		location_lightColor    = getUniformLocation("lightColor");
-		location_viewPos       = getUniformLocation("viewPos");
-		location_shininess     = getUniformLocation("shininess");
+		location_lightCount    = getUniformLocation("lightCount");
+		// This method is called by the superclass constructor, before field initializers run.
+		location_lights = new int[MAX_LIGHTS][5];
+		for (int i = 0; i < MAX_LIGHTS; i++) {
+			String prefix = "lights[" + i + "].";
+			location_lights[i][0] = getUniformLocation(prefix + "position");
+			location_lights[i][1] = getUniformLocation(prefix + "color");
+			location_lights[i][2] = getUniformLocation(prefix + "attenuation");
+			location_lights[i][3] = getUniformLocation(prefix + "spotDirection");
+			location_lights[i][4] = getUniformLocation(prefix + "spotCutoff");
+		}
 	}
 
 	/**
@@ -134,10 +143,20 @@ public class BasicShader extends AbstractShader {
 	}
 
 	/**
+	 * Sets whether textured fragments output colour premultiplied by the texel alpha only, for use with
+	 * {@code GL_ONE, GL_ONE_MINUS_SRC_ALPHA} blending (legacy OpenGL behaviour for textured objects).
+	 *
+	 * @param premultiply {@code true} to premultiply the textured colour by the texel alpha
+	 */
+	public void loadPremultiplyTexture(final boolean premultiply) {
+		gl.glUniform1i(location_premultiplyTexture, premultiply ? 1 : 0);
+	}
+
+	/**
 	 * Sets the {@code useLighting} boolean uniform. When {@code false} the fragment shader
 	 * outputs the raw vertex/texture colour with no lighting computation.
 	 *
-	 * @param useLighting {@code true} to enable Phong lighting
+	 * @param useLighting {@code true} to enable lighting
 	 */
 	public void loadUseLighting(final boolean useLighting) {
 		gl.glUniform1i(location_useLighting, useLighting ? 1 : 0);
@@ -155,46 +174,30 @@ public class BasicShader extends AbstractShader {
 	}
 
 	/**
-	 * Loads the primary light world-space position into the {@code lightPosition} uniform.
-	 *
-	 * @param x X coordinate
-	 * @param y Y coordinate
-	 * @param z Z coordinate
+	 * Loads the number of active lights. Zero leaves only ambient illumination.
 	 */
-	public void loadLightPosition(final float x, final float y, final float z) {
-		gl.glUniform3f(location_lightPosition, x, y, z);
+	public void loadLightCount(final int count) {
+		gl.glUniform1i(location_lightCount, count);
 	}
 
 	/**
-	 * Loads the primary light colour into the {@code lightColor} uniform.
+	 * Loads a light in eye space, matching the combined model-view transform used for geometry.
 	 *
-	 * @param r red component   [0..1]
-	 * @param g green component [0..1]
-	 * @param b blue component  [0..1]
+	 * @param index light slot
+	 * @param position position (w=1) or direction towards a directional light (w=0)
+	 * @param color RGB intensity
+	 * @param attenuation constant, linear and quadratic attenuation
+	 * @param spotDirection direction away from a spotlight
+	 * @param spotCutoff cosine of the spotlight cutoff, or -1 for other lights
 	 */
-	public void loadLightColor(final float r, final float g, final float b) {
-		gl.glUniform3f(location_lightColor, r, g, b);
-	}
-
-	/**
-	 * Loads the camera world-space position into the {@code viewPos} uniform (used for
-	 * specular reflection computation).
-	 *
-	 * @param x X coordinate
-	 * @param y Y coordinate
-	 * @param z Z coordinate
-	 */
-	public void loadViewPos(final float x, final float y, final float z) {
-		gl.glUniform3f(location_viewPos, x, y, z);
-	}
-
-	/**
-	 * Loads the Blinn-Phong shininess exponent into the {@code shininess} uniform.
-	 *
-	 * @param shininess exponent (positive float, typically 8–256)
-	 */
-	public void loadShininess(final float shininess) {
-		gl.glUniform1f(location_shininess, shininess);
+	public void loadLight(final int index, final Vector4f position, final Vector3f color,
+			final Vector3f attenuation, final Vector3f spotDirection, final float spotCutoff) {
+		int[] locations = location_lights[index];
+		gl.glUniform4f(locations[0], position.x, position.y, position.z, position.w);
+		gl.glUniform3f(locations[1], color.x, color.y, color.z);
+		gl.glUniform3f(locations[2], attenuation.x, attenuation.y, attenuation.z);
+		gl.glUniform3f(locations[3], spotDirection.x, spotDirection.y, spotDirection.z);
+		gl.glUniform1f(locations[4], spotCutoff);
 	}
 
 	/**

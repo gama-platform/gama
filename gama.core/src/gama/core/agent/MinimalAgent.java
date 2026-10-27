@@ -42,6 +42,7 @@ import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.species.GamlSpecies;
 import gama.api.kernel.species.IModelSpecies;
 import gama.api.kernel.species.ISpecies;
+import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.GamaShapeFactory;
 import gama.api.types.geometry.IPoint;
@@ -58,6 +59,7 @@ import gama.api.utils.geometry.GamaEnvelopeFactory;
 import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.json.IJson;
 import gama.api.utils.json.IJsonValue;
+import gama.core.util.CommandProcessManager;
 
 /**
  * The Class MinimalAgent.
@@ -210,6 +212,9 @@ public class MinimalAgent implements IAgent, Comparable<IAgent> {
 	@Override
 	public IPoint setLocation(final IScope scope, final IPoint point) {
 		if (point == null || dead() || this.getSpecies().isGrid()) return getLocation();
+		if (!Double.isFinite(point.getX() + point.getY() + (Double.isNaN(point.getZ()) ? 0 : point.getZ())))
+			throw GamaRuntimeException.error("Invalid location " + point + " for " + getName()
+					+ ": coordinates must be finite numbers (not #nan or infinite)", scope);
 		IPoint newLocation = point.copy(scope);
 		final ITopology topology = getTopology();
 		if (topology == null) return getLocation();
@@ -631,8 +636,9 @@ public class MinimalAgent implements IAgent, Comparable<IAgent> {
 	public void setHost(final IMacroAgent macroAgent) {}
 
 	@Override
-	public void schedule(final IScope scope) {
-		if (!dead()) { scope.init(this); }
+	public IExecutionResult schedule(final IScope scope) {
+		if (!dead()) { return scope.init(this); }
+		return IExecutionResult.PASSED;
 	}
 
 	@Override
@@ -762,7 +768,8 @@ public class MinimalAgent implements IAgent, Comparable<IAgent> {
 	}
 
 	/**
-	 * Copy.
+	 * Copy. Agents cannot be copied; calling copy on an agent returns the agent itself. To duplicate an agent, use the
+	 * {@code create} statement instead (e.g. {@code create species_of(agent) from: agent;}).
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @param scope
@@ -826,6 +833,7 @@ public class MinimalAgent implements IAgent, Comparable<IAgent> {
 	public void dispose() {
 		if (dead) return;
 		dead = true;
+		CommandProcessManager.dispose(this);
 		final IPopulation<? extends IAgent> p = getPopulation();
 		// if (p != null) { p.removeValue(null, this); }
 		if (p != null && !p.isDisposing()) { p.removeValue(null, this); }

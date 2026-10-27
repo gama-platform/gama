@@ -219,4 +219,9 @@ public class GeoTiffSaver extends AbstractSaver {
 	public Set<String> computeFileTypes() {
 		return Set.of(GEOTIFF);
 	}
+
+	@Override
+	public boolean handlesNoData() {
+		return true;
+	}
 }

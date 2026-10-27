@@ -127,16 +127,18 @@ public class EditorSearchControls {
 			GamaColors.setBackground(c, parent);
 		}
 		find = new Text(parent, SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
-		final IFocusService focusService = editor.getSite().getService(IFocusService.class);
-		focusService.addFocusTracker(find, "search");
-
 		final GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
 		data.heightHint = 24;
 		data.widthHint = 100;
 		find.setLayoutData(data);
-		// find.setBackground(IGamaColors.WHITE.color());
-		// find.setForeground(IGamaColors.BLACK.color());
 		find.setMessage(EMPTY);
+
+		GamaColors.setBackAndForeground(c, isDark() ? VERY_LIGHT_GRAY.color() : VERY_DARK_GRAY.color(), find);
+		toolbar.control(parent == toolbar ? find : parent, 100);
+
+		// Focus
+		final IFocusService focusService = editor.getSite().getService(IFocusService.class);
+		focusService.addFocusTracker(find, "search");
 		find.addFocusListener(new FocusListener() {
 
 			@Override
@@ -150,8 +152,6 @@ public class EditorSearchControls {
 				incrementalOffset = -1;
 			}
 		});
-		GamaColors.setBackAndForeground(c, isDark() ? VERY_LIGHT_GRAY.color() : VERY_DARK_GRAY.color(), find);
-		toolbar.control(parent == toolbar ? find : parent, 100);
 		find.addModifyListener(modifyListener);
 		find.addKeyListener(new KeyListener() {
 

@@ -22,9 +22,9 @@ import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.serialization.BinarySerialisation;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.files.SaveOptions;
-import gama.extension.serialize.binary.BinarySerialisation;
 
 /**
  * The Class SimulationSaveDelegate.

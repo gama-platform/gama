@@ -18,12 +18,15 @@ import org.eclipse.emf.common.util.URI;
 import gama.annotations.doc;
 import gama.annotations.experiment;
 import gama.annotations.constants.IKeyword;
+import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.statements.IStatement;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.tests.TestExperimentSummary;
+import gama.api.utils.tests.TestSelection;
 import gama.api.utils.tests.WithTestSummary;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
@@ -59,7 +62,8 @@ public class TestAgent extends ExperimentAgent implements IExperimentAgent.Test 
 		super.init(scope);
 		final TestExperimentSummary summary = getSummary();
 		summary.reset();
-		if (!summary.isEmpty()) { scope.getGui().openTestView(scope, false); }
+		if (!summary.isEmpty()) { GAMA.getGui().openTestView(scope, false); }
+		GAMA.getGui().displayRunningTest(scope, getTitleForSummary());
 		DEBUG.BANNER(BANNER_CATEGORY.TESTS, getTitleForSummary(), "starting", this.ownModelPath);
 		return true;
 	}
@@ -72,8 +76,9 @@ public class TestAgent extends ExperimentAgent implements IExperimentAgent.Test 
 	}
 
 	@Override
-	public void schedule(final IScope scope) {
+	public IExecutionResult schedule(final IScope scope) {
 		scheduled = true;
+		return IExecutionResult.PASSED;
 		// scheduled = true;
 		// The experiment agent is scheduled in the global scheduler
 		// getSpecies().getController().schedule(this);
@@ -120,6 +125,8 @@ public class TestAgent extends ExperimentAgent implements IExperimentAgent.Test 
 		final List tests = getModel().getAllTests();
 		final Consumer<IStatement> filter = t -> { if (t instanceof WithTestSummary ts) { tests.add(ts); } };
 		getSpecies().getBehaviors().forEach(filter);
+		final TestSelection selection = TestSelection.forExperiment(getSpecies());
+		if (selection != null) { tests.removeIf(t -> !selection.matches((WithTestSummary) t)); }
 		return tests;
 	}
 
@@ -135,9 +142,8 @@ public class TestAgent extends ExperimentAgent implements IExperimentAgent.Test 
 
 	@Override
 	public void displayTestResults() {
-		getScope().getGui().openTestView(getScope(), false);
-		getScope().getGui().displayTestsResults(getScope(), getSummary());
-		getScope().getGui().endTestDisplay();
+		GAMA.getGui().displayTestsResults(getScope(), getSummary());
+		GAMA.getGui().endTestDisplay();
 	}
 
 }

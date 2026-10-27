@@ -13,6 +13,7 @@ import gama.api.constants.IGamlIssue;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
+import gaml.compiler.resource.GamlResource;
 
 /**
  *
@@ -54,9 +55,10 @@ public abstract class DescriptionErrorManager implements IDescription {
 			if (desc != null) { e = desc.getUnderlyingElement(); }
 		}
 		// throws a runtime exception if there is no way to signal the error in the source
-		// (i.e. we are probably in a runtime scenario)
+		// (i.e. we are probably in a runtime scenario), except for dedicated text-validation resources.
 		if (e == null || e.eResource() == null
-				|| e.eResource().getURI().path().contains(IInternalFacets.SYNTHETIC_RESOURCES_PREFIX)) {
+				|| e.eResource().getURI().path().contains(IInternalFacets.SYNTHETIC_RESOURCES_PREFIX)
+						&& !(e.eResource() instanceof GamlResource resource && resource.isValidationOnly())) {
 			if (type == GamlCompilationError.Type.Error)
 				throw GamaRuntimeException.error(s, gama.api.GAMA.getRuntimeScope());
 			return;

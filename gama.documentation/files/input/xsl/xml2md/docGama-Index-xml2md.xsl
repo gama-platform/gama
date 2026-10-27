@@ -65,6 +65,33 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:wiki="www.google.fr">
 
 ----
 
+## Operators by category
+<xsl:for-each select="//doc/operatorsCategories/category[not(@id = (preceding-sibling::*/@id))]">
+	<xsl:sort select="@id" />
+	<xsl:variable name="categoryGlobal" select="@id" />
+	<xsl:text>
+
+### </xsl:text><xsl:value-of select="@id" /><xsl:text>
+</xsl:text>
+	<xsl:for-each select="/doc/operators/operator[operatorCategories/category/@id = $categoryGlobal]">
+		<xsl:sort select="@name" />
+		<xsl:if test="position() != 1"><xsl:text>, </xsl:text></xsl:if>
+		<xsl:text>[</xsl:text><xsl:value-of select="@name" /><xsl:text>](</xsl:text>
+		<xsl:choose>
+			<xsl:when test="@alphabetOrder = 'aa'"><xsl:value-of select="$fileOperatorsAA" /></xsl:when>
+			<xsl:when test="@alphabetOrder = 'bc'"><xsl:value-of select="$fileOperatorsBC" /></xsl:when>
+			<xsl:when test="@alphabetOrder = 'dh'"><xsl:value-of select="$fileOperatorsDH" /></xsl:when>
+			<xsl:when test="@alphabetOrder = 'im'"><xsl:value-of select="$fileOperatorsIM" /></xsl:when>
+			<xsl:when test="@alphabetOrder = 'nr'"><xsl:value-of select="$fileOperatorsNR" /></xsl:when>
+			<xsl:otherwise><xsl:value-of select="$fileOperatorsSZ" /></xsl:otherwise>
+		</xsl:choose>
+		<xsl:text>#</xsl:text><xsl:value-of select="@name" /><xsl:text>)</xsl:text>
+	</xsl:for-each>
+</xsl:for-each>
+
+
+----
+
 ## Statements
 <xsl:for-each select="/doc/statements/statement">
 	<xsl:sort select="@name" />
@@ -106,7 +133,10 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:wiki="www.google.fr">
 	<xsl:text>)</xsl:text>
 	<xsl:if test="@altNames">
 		<xsl:text> (</xsl:text>
-		<xsl:value-of select="@altNames" />
+		<xsl:call-template name="linkConstantAliases">
+			<xsl:with-param name="aliases" select="@altNames" />
+			<xsl:with-param name="target" select="concat($fileUnitsConstants, '#', translate(translate(categories/category/@id, $uppercase, $lowercase), $space, $minus))" />
+		</xsl:call-template>
 		<xsl:text>)</xsl:text>
 	</xsl:if>
 	<xsl:text>, </xsl:text>
@@ -231,5 +261,23 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:wiki="www.google.fr">
 
 </xsl:template>
 
+<!-- Emits the comma-separated alias names of a constant/color as links, each pointing to the same
+     description anchor as the main keyword, so aliases are clickable (see gama-platform.github.io#218). -->
+<xsl:template name="linkConstantAliases">
+	<xsl:param name="aliases" />
+	<xsl:param name="target" />
+	<xsl:choose>
+		<xsl:when test="contains($aliases, ',')">
+			<xsl:text>[</xsl:text><xsl:value-of select="substring-before($aliases, ',')" /><xsl:text>](</xsl:text><xsl:value-of select="$target" /><xsl:text>), </xsl:text>
+			<xsl:call-template name="linkConstantAliases">
+				<xsl:with-param name="aliases" select="substring-after($aliases, ',')" />
+				<xsl:with-param name="target" select="$target" />
+			</xsl:call-template>
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:text>[</xsl:text><xsl:value-of select="$aliases" /><xsl:text>](</xsl:text><xsl:value-of select="$target" /><xsl:text>)</xsl:text>
+		</xsl:otherwise>
+	</xsl:choose>
+</xsl:template>
 
 </xsl:stylesheet>

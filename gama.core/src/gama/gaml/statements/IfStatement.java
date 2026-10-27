@@ -215,6 +215,11 @@ public class IfStatement extends AbstractStatementSequence {
 	}
 
 	@Override
+	public Iterable<IStatement> getSubStatements() {
+		return alt == null ? super.getSubStatements() : Iterables.concat(super.getSubStatements(), java.util.List.of(alt));
+	}
+
+	@Override
 	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
 		final Object condition = cond.value(scope);
 		if (!(condition instanceof Boolean))

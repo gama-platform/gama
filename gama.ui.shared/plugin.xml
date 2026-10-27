@@ -7,7 +7,7 @@
       <image
             icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/files/folder.model.svg"
             id="gama.application.nature.gamaNature.img"
-            natureId="gama.workspace.gamaNature">
+            natureId="gama.workspace.nature">
       </image>
    </extension>
    <extension
@@ -43,6 +43,16 @@
             activityId="disabled"
             pattern="org.eclipse.*team.*/.*">
       </activityPatternBinding>
+      <activityPatternBinding
+            activityId="disabled"
+            isEqualityPattern="true"
+            pattern="com.microsoft.copilot.eclipse.ui/com.microsoft.copilot.eclipse.ui.statusBar">
+      </activityPatternBinding>
+      <activityPatternBinding
+            activityId="disabled"
+            isEqualityPattern="true"
+            pattern="com.microsoft.copilot.eclipse.ui/com.microsoft.copilot.eclipse.commands.showStatusBarMenu">
+      </activityPatternBinding>
       <activity
             id="disabled2"
             name="Disable XText activity">
@@ -76,9 +86,22 @@
                   name="Tests"
                   restorable="false"> 
             </view> 
+            <view allowMultiple="false"
+                  category="gama.ui.category.gama"
+                  class="gama.ui.shared.views.CompactTestView"
+                  icon="icons_svg/light/views/tabs/view.test.svg"
+                  id="gama.ui.application.view.CompactTestView"
+                  name="Tests"
+                  restorable="false"/>
    </extension>
    <extension
          point="org.eclipse.ui.commands">
+      <command
+            categoryId="gama.category"
+            defaultHandler="gama.ui.shared.commands.SearchGamlReferenceHandler"
+            id="gama.ui.commands.searchGamlReference"
+            name="Search in GAML Reference">
+      </command>
       <command
             categoryId="gama.category"
             defaultHandler="gama.ui.shared.commands.OpenGamaWebsiteHandler"
@@ -238,6 +261,24 @@
                visible="true">
          </separator>
          <command
+               commandId="gama.ui.install.graphical"
+               icon="icons_svg/light/editor/command.graphical.svg"
+               label="Install diagramming..."
+               style="push"
+               tooltip="Install the GAMA graphical editor and its Graphiti dependencies">
+         </command>
+         <command
+               commandId="gama.ui.install.copilot"
+               icon="icons_svg/light/editor/command.copilot.svg"
+               label="Install Copilot..."
+               style="push"
+               tooltip="Install GitHub Copilot and its dependencies">
+         </command>
+         <separator
+               name="gama.ui.shared.separator4"
+               visible="true">
+         </separator>
+         <command
                commandId="gama.ui.update"
                icon="platform:/plugin/gama.ui.shared/icons_svg/light/generic/menu.update.svg"
                label="Check for Updates"
@@ -362,6 +403,18 @@
       </command>
       <command
             categoryId="gama.category"
+            defaultHandler="gama.ui.shared.commands.InstallOptionalFeatureHandler"
+            id="gama.ui.install.graphical"
+            name="Install diagramming...">
+      </command>
+      <command
+            categoryId="gama.category"
+            defaultHandler="gama.ui.shared.commands.InstallOptionalFeatureHandler"
+            id="gama.ui.install.copilot"
+            name="Install Copilot...">
+      </command>
+      <command
+            categoryId="gama.category"
             defaultHandler="gama.ui.shared.commands.UpdateHandler"
             id="gama.ui.update"
             name="Check for updates">
@@ -439,6 +492,18 @@
              contextId="org.eclipse.ui.contexts.window"
              schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
              sequence="M1+M2+D">
+       </key>
+       <key
+             commandId="gama.ui.commands.searchGamlReference"
+             contextId="org.eclipse.ui.contexts.window"
+             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+             sequence="F1">
+       </key>
+       <key
+             commandId="gama.ui.commands.searchGamlReference"
+             contextId="org.eclipse.ui.contexts.window"
+             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+             sequence="M1+M2+G">
        </key>
     </extension>
 

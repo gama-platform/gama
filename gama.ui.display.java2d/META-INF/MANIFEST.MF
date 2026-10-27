@@ -12,3 +12,5 @@ Require-Bundle: gama.dependencies,
  gama.ui.experiment,
  gama.extension.image
 Automatic-Module-Name: gama.ui.display.java2d
+Import-Package: gama.extension.image,
+ gama.extension.image.display

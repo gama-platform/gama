@@ -11,6 +11,7 @@
 package gama.ui.shared.parameters;
 
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TableEditor;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -18,8 +19,8 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -30,7 +31,6 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
-import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.matrix.GamaMatrixFactory;
@@ -79,8 +79,9 @@ public class MatrixEditorDialog extends Dialog {
 	@Override
 	protected Control createDialogArea(final Composite parent) {
 		container = (Composite) super.createDialogArea(parent);
+		container.setLayout(new GridLayout(2, false));
 		table = new Table(container, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION);
-		container.setLayout(new FillLayout());
+		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 		table.setLinesVisible(true);
 		table.setHeaderVisible(false);
 
@@ -157,11 +158,11 @@ public class MatrixEditorDialog extends Dialog {
 		});
 
 		/** Create and configure the "Add" button */
-		final Button add = new Button(parent, SWT.PUSH | SWT.CENTER);
+		final Button add = new Button(container, SWT.PUSH | SWT.CENTER);
 		add.setText("Add a row");
-		final GridData gridData = new GridData(GridData.FILL, GridData.CENTER, true, false);
-		gridData.widthHint = 80;
-		add.setLayoutData(gridData);
+		final GridData addGridData = new GridData(GridData.FILL, GridData.CENTER, true, false);
+		addGridData.widthHint = 80;
+		add.setLayoutData(addGridData);
 		add.addSelectionListener(new SelectionAdapter() {
 
 			/** Add a row and refresh the view */
@@ -189,11 +190,13 @@ public class MatrixEditorDialog extends Dialog {
 		});
 
 		/** Create and configure the "Delete" button */
-		final Button del = new Button(parent, SWT.PUSH | SWT.CENTER);
+		final Button del = new Button(container, SWT.PUSH | SWT.CENTER);
 		del.setText("Delete this row");
 		del.setEnabled(false);
 
-		del.setLayoutData(gridData);
+		final GridData deleteGridData = new GridData(GridData.FILL, GridData.CENTER, true, false);
+		deleteGridData.widthHint = 80;
+		del.setLayoutData(deleteGridData);
 
 		table.addListener(SWT.Selection, event -> {
 			if (table.getSelectionIndices().length != 0) {
@@ -211,14 +214,18 @@ public class MatrixEditorDialog extends Dialog {
 			add.setText("Add a row");
 			refreshColumnIndex(nextIndex);
 		});
-		container.addDisposeListener(e -> {
-			try {
-				data = getNewMatrix();
-			} catch (final GamaRuntimeException e1) {
-				GAMA.reportError(GAMA.getRuntimeScope(), e1, false);
-			}
-		});
 		return container;
+	}
+
+	@Override
+	protected void okPressed() {
+		try {
+			data = getNewMatrix();
+			super.okPressed();
+		} catch (final GamaRuntimeException e) {
+			final String message = e.getMessage() == null ? e.toString() : e.getMessage();
+			MessageDialog.openError(getShell(), "Invalid matrix value", message);
+		}
 	}
 
 	/** A refresh for the index column of the dialog box */

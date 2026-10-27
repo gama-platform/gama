@@ -70,6 +70,8 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 	/** The color code. */
 	private RGB colorCode;
 
+	private GamaUIColor textColor;
+
 	/** Dimensions. */
 	private int preferredHeight = SWT.DEFAULT, preferredWidth = SWT.DEFAULT, forcedWidth = SWT.DEFAULT,
 			minimalHeight = MINIMAL_HEIGHT;
@@ -257,7 +259,8 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 		setBackground(getParent().getBackground());
 		GamaUIColor color = GamaColors.get(colorCode);
 		Color background = color == null ? getParent().getBackground() : hovered ? color.lighter() : color.color();
-		final Color foreground = GamaColors.getTextColorForBackground(background).color();
+		final Color foreground =
+				(textColor == null ? GamaColors.getTextColorForBackground(background) : textColor).color();
 
 		gc.setBackground(background);
 		if (down) {
@@ -554,6 +557,11 @@ public class FlatButton extends Canvas implements PaintListener, Listener {
 		colorCode = c.getRGB();
 		redraw();
 		return this;
+	}
+
+	public void setTextColor(final GamaUIColor color) {
+		textColor = color;
+		redraw();
 	}
 
 	/**

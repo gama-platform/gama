@@ -10,6 +10,8 @@
  ********************************************************************************************************/
 package gama.api.kernel.agent;
 
+import gama.api.kernel.object.IConstructor;
+
 /**
  * Functional interface for constructing agent instances.
  * 
@@ -66,7 +68,12 @@ package gama.api.kernel.agent;
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 @FunctionalInterface
-public interface IAgentConstructor {
+public interface IAgentConstructor extends IConstructor<IAgent, IPopulation<?>, Integer> {
+
+	@Override
+	default IAgent create(final IPopulation<?> manager, final Integer index) {
+		return createOneAgent(manager, index);
+	}
 
 	/**
 	 * Creates a single agent instance within the specified population.

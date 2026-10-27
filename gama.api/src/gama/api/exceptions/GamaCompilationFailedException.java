@@ -12,8 +12,11 @@ package gama.api.exceptions;
 
 import java.util.List;
 
+import gama.api.GAMA;
 import gama.api.compilation.GamlCompilationError;
-import gama.api.gaml.GAML;
+import gama.api.utils.json.IJson;
+import gama.api.utils.json.IJsonArray;
+import gama.api.utils.json.IJsonObject;
 
 /**
  * Exception thrown when a GAML model fails to compile.
@@ -58,39 +61,30 @@ public class GamaCompilationFailedException extends GamaRuntimeException {
 	 * Converts this exception and its error list to a JSON string representation.
 	 * <p>
 	 * The JSON format includes the exception type, message, and a detailed array of all
-	 * compilation errors with their types, messages, codes, source locations, and line numbers.
+	 * compilation errors with their types, messages, codes, and source locations. Lines and columns are
+	 * 1-based; offsets are 0-based. An unavailable location is represented by zeros.
 	 * </p>
 	 *
 	 * @return a JSON string representation of the compilation errors
 	 */
 	public String toJsonString() {
-		StringBuilder sb = new StringBuilder("{");
-		sb.append("\"exception\":\"").append(getClass().getSimpleName()).append("\",");
-		sb.append("\"message\":\"").append(getMessage()).append("\",");
-		sb.append("\"errors\":[");
-
-		boolean atLeastSecond = false;
+		IJson json = GAMA.getJsonEncoder();
+		IJsonArray errors = json.array();
 		for (var error : errorList) {
-			if (atLeastSecond) { sb.append(","); }
-			sb.append("{");
-			sb.append("\"type\":\"").append(error.errorType().name()).append("\",");
-			sb.append("\"message\":\"").append(error.message()).append("\",");
-			sb.append("\"code\":\"").append(error.code()).append("\",");
-			sb.append("\"data\":[\"").append(String.join("\",\"", error.data() != null ? error.data() : new String[0]))
-					.append("\"],");
-			sb.append("\"source\":\"").append(
-					(error.uri() != null ? error.uri().toFileString() : "").replace("\\", "\\\\").replace("\"", "\\\""))
-					.append("\",");
-			sb.append("\"uri\":\"").append(error.uri()).append("\"");
-			int[] loc = GAML.getLocationInFileInfo(error.source());
-			sb.append(",\"starting_at_line\":").append(loc[0]).append(",");
-			sb.append("\"offset\":").append(loc[1]).append("");
-			// }
-			sb.append("}");
-			atLeastSecond = true;
+			IJsonArray data = json.array();
+			if (error.data() != null) {
+				for (String value : error.data()) { data.add(value); }
+			}
+			var location = error.location();
+			IJsonObject item = json.object("type", error.errorType().name(), "message", error.message())
+					.add("code", error.code()).add("data", data)
+					.add("source", error.uri() == null ? "" : error.uri().toFileString())
+					.add("uri", error.uri() == null ? null : error.uri().toString())
+					.add("starting_at_line", location.line()).add("column", location.column())
+					.add("offset", location.offset());
+			errors.add(item);
 		}
-		sb.append("]");
-		sb.append('}');
-		return sb.toString();
+		return json.object("exception", getClass().getSimpleName(), "message", getMessage()).add("errors", errors)
+				.toString();
 	}
 }

@@ -727,7 +727,7 @@ public class ProcessorContext implements ProcessingEnvironment, RoundEnvironment
 	 */
 	private String getTestFolderName() {
 		final String title = currentPlugin.substring(currentPlugin.lastIndexOf('.') + 1);
-		return "tests.Generated From " + Constants.capitalizeFirstLetter(title);
+		return "models.Tests.Generated From " + Constants.capitalizeFirstLetter(title);
 	}
 
 	/**
@@ -773,8 +773,7 @@ public class ProcessorContext implements ProcessingEnvironment, RoundEnvironment
 						</buildSpec>
 						<natures>
 							<nature>org.eclipse.xtext.ui.shared.xtextNature</nature>
-							<nature>gama.workspace.gamaNature</nature>
-							<nature>gama.workspace.testNature</nature>
+							<nature>gama.workspace.nature</nature>
 						</natures>
 					</projectDescription>
 					""".formatted(currentPlugin, currentPlugin));

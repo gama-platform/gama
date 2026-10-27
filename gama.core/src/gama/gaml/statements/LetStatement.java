@@ -76,7 +76,8 @@ import gama.gaml.statements.LetStatement.LetValidator;
 		kinds = { ISymbolKind.BEHAVIOR, ISymbolKind.SEQUENCE_STATEMENT, ISymbolKind.LAYER })
 @validator (LetValidator.class)
 @serializer (LetSerializer.class)
-@doc ("Declaration and initialization of a temporary variable.")
+@doc ("Declaration and initialization of a temporary variable. Lists and maps declared without an initializer receive "
+		+ "a new empty container on each execution. Explicit nil initialization or assignment stores nil, not an empty container.")
 public class LetStatement extends SetStatement {
 
 	/**
@@ -135,7 +136,7 @@ public class LetStatement extends SetStatement {
 
 	@Override
 	protected Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
-		final Object val = value.value(scope);
+		final Object val = value == null ? varExpr.getGamlType().createDefaultValue(scope) : value.value(scope);
 		varExpr.setVal(scope, val, true);
 		return val;
 	}

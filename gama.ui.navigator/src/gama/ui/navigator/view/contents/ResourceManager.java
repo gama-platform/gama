@@ -30,14 +30,20 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
+import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -88,9 +94,8 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 
 	/**
 	 * Actions accumulated during a resource-change event, drained and executed on the UI thread by
-	 * {@link #runPostEventActions()}. {@link ConcurrentLinkedQueue} is used so that {@link #post(Runnable)}
-	 * (called from any thread) and the drain in {@link #runPostEventActions()} (called on the UI thread)
-	 * are both lock-free.
+	 * {@link #runPostEventActions()}. {@link ConcurrentLinkedQueue} is used so that {@link #post(Runnable)} (called
+	 * from any thread) and the drain in {@link #runPostEventActions()} (called on the UI thread) are both lock-free.
 	 */
 	private final ConcurrentLinkedQueue<Runnable> postEventActions = new ConcurrentLinkedQueue<>();
 
@@ -438,31 +443,40 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 	public void projectAdded(final IProject project) {
 		if (DEBUG.IS_ON()) { DEBUG.OUT("Project " + project.getName() + " has been added"); }
 		if (!IN_INITIALIZATION_PHASE) {
-			final TopLevelFolder root = chooseFolderForPasting(project);
-			final String nature = root.getNature();
-			final WrappedProject p = (WrappedProject) wrap(root, project);
 			post(() -> {
-				// For tutorial/recipe folders, inject the correct nature into the project description first
-				if (GamaNatures.TUTORIAL_NATURE.equals(nature) || GamaNatures.RECIPE_NATURE.equals(nature)) {
-					try {
-						final var desc = project.getDescription();
-						final java.util.List<String> natures = new java.util.ArrayList<>();
-						natures.add(GamaNatures.XTEXT_NATURE);
-						natures.add(GamaNatures.GAMA_NATURE);
-						natures.add(nature);
-						desc.setNatureIds(natures.toArray(new String[0]));
-						project.setDescription(desc, org.eclipse.core.resources.IResource.FORCE, null);
-					} catch (final org.eclipse.core.runtime.CoreException e) {
-						e.printStackTrace();
+				final WorkspaceJob job = new WorkspaceJob("Classifying project " + project.getName()) {
+
+					@Override
+					public IStatus runInWorkspace(final IProgressMonitor monitor) throws CoreException {
+						final IProjectDescription description = project.getDescription();
+						if (!description.hasNature(GamaNatures.GAMA_NATURE)) {
+							if (GamaNatures.isGamaProject(description)) {
+								description.setNatureIds(GamaNatures.migrate(description.getNatureIds()));
+								project.setDescription(description, IResource.FORCE, null);
+							} else {
+								WorkspaceModelsManager.instance.setValuesProjectDescription(project, null);
+							}
+						}
+						return Status.OK_STATUS;
 					}
-				} else {
-					WorkspaceModelsManager.instance.setValuesProjectDescription(project,
-							GamaNatures.BUILTIN_NATURE.equals(nature), GamaNatures.PLUGIN_NATURE.equals(nature),
-							GamaNatures.TEST_NATURE.equals(nature), null);
-				}
-				root.initializeChildren();
-				refreshResource(root);
-				reveal(p);
+				};
+				job.addJobChangeListener(new JobChangeAdapter() {
+
+					@Override
+					public void done(final IJobChangeEvent event) {
+						WorkbenchHelper.runInUI("Refresh added project", 5, monitor -> {
+							final NavigatorRoot navigatorRoot = NavigatorRoot.getInstance();
+							cache.invalidate(project);
+							for (final TopLevelFolder folder : navigatorRoot.getFolders()) {
+								folder.initializeChildren();
+							}
+							refreshResource(navigatorRoot);
+							final WrappedProject wrapped = findWrappedInstanceOf(project);
+							if (wrapped != null) { reveal(wrapped); }
+						});
+					}
+				});
+				job.schedule();
 			});
 		}
 	}
@@ -594,9 +608,11 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 		if (DEBUG.IS_ON()) { DEBUG.OUT("Project " + project.getName() + " has been removed"); }
 		final WrappedProject wp = findWrappedInstanceOf(project);
 		cache.invalidate(project);
-		final TopLevelFolder tp = (TopLevelFolder) wp.getParent();
-		tp.initializeChildren();
-		refreshResource(tp);
+		final TopLevelFolder tp = wp == null ? null : wp.getTopLevelFolder();
+		if (tp != null) {
+			tp.initializeChildren();
+			refreshResource(tp);
+		}
 	}
 
 	@Override
@@ -818,7 +834,7 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 			case IResource.FOLDER:
 				return new WrappedFolder((WrappedContainer<?>) parent, (IFolder) child);
 			case IResource.PROJECT:
-				return new WrappedProject((TopLevelFolder) parent, (IProject) child);
+				return new WrappedProject(parent, (IProject) child);
 		}
 		return null;
 	}

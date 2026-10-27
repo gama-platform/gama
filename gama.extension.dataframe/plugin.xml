@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="gama.save">
+      <implementation
+            class="gama.extension.dataframe.DataFrameJsonSaver"
+            description="Save dataframes in json format">
+      </implementation>
+      <implementation
+            class="gama.extension.dataframe.DataFrameCSVSaver"
+            description="Saves dataframes in csv format">
+      </implementation>
+      <implementation
+            class="gama.extension.dataframe.ExcelSaver"
+            description="Saves a dataframe (or a map of dataframes) as a .xlsx workbook">
+      </implementation>
+      <implementation
+            class="gama.extension.dataframe.AvroSaver"
+            description="Saves a dataframe as an .avro file">
+      </implementation>
+      <implementation
+            class="gama.extension.dataframe.ParquetSaver"
+            description="Saves a dataframe as a .parquet file">
+      </implementation>
+   </extension>
+   <extension
+         point="gaml.extension">
+   </extension>
+
+</plugin> 

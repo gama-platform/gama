@@ -43,7 +43,7 @@ import gama.gaml.statements.TryStatement.IfSerializer;
 @inside (
 		kinds = { ISymbolKind.BEHAVIOR, ISymbolKind.SEQUENCE_STATEMENT, ISymbolKind.LAYER })
 @doc (
-		value = "Allows the agent to execute a sequence of statements and to catch any runtime error that might happen in a subsequent `catch` block, either to ignore it (not a good idea, usually) or to safely stop the model",
+		value = "Executes statements and intercepts thrown runtime errors and warnings before they reach normal error reporting, independently of the stopping preferences. On failure, remaining statements in try are skipped and the optional catch block runs with #current_error containing the message. Execution then resumes after try/catch. Earlier side effects are not rolled back. Without catch, the failure is discarded. Operations that only report a diagnostic and return a fallback are not necessarily intercepted.",
 		usages = { @usage (
 				value = "The generic syntax is:",
 				examples = { @example (
@@ -135,6 +135,12 @@ public class TryStatement extends AbstractStatementSequence {
 	public void setChildren(final Iterable<? extends ISymbol> commands) {
 		for (final ISymbol c : commands) { if (c instanceof CatchStatement) { catchStatement = (IStatement) c; } }
 		super.setChildren(Iterables.filter(commands, each -> each != catchStatement));
+	}
+
+	@Override
+	public Iterable<IStatement> getSubStatements() {
+		return catchStatement == null ? super.getSubStatements()
+				: Iterables.concat(super.getSubStatements(), java.util.List.of(catchStatement));
 	}
 
 	@Override

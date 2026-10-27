@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
  * DatabaseActivator.java, in gama.extension.database, is part of the source code of the GAMA modeling and simulation
- * platform (v.2025-03).
+ * platform (v.2026-11).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -14,7 +14,6 @@ import org.osgi.framework.BundleContext;
 
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.topology.IProjection;
-import gama.api.types.list.IList;
 import gama.api.types.map.IMap;
 import gama.api.utils.geometry.GamaEnvelopeFactory;
 import gama.api.utils.geometry.IEnvelope;
@@ -27,6 +26,7 @@ import gama.extension.database.utils.sql.postgres.PostgresConnection;
 import gama.extension.database.utils.sql.postgres.PostgresConnector;
 import gama.extension.database.utils.sql.sqlite.SqliteConnection;
 import gama.extension.database.utils.sql.sqlite.SqliteConnector;
+import gama.extension.dataframe.IDataFrame;
 
 /**
  * The Class DatabaseActivator.
@@ -59,7 +59,7 @@ public class DatabaseActivator extends GamaBundleActivator {
 				// create connection
 				// sqlConn = SqlUtils.createConnectionObject(scope, params);
 				// get data
-				final IList gamaList = sqlConn.selectDB(scope, (String) params.get("select"));
+				final IDataFrame gamaList = sqlConn.selectDB(scope, (String) params.get("select"));
 				env = SqlConnection.getBounds(gamaList);
 
 				IProjection gis = scope.getSimulation().getProjectionFactory().fromParams(scope, params, env);

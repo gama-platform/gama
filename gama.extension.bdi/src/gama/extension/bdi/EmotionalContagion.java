@@ -178,59 +178,62 @@ public class EmotionalContagion extends AbstractStatement {
 			scopeMySelf = mySelfAgent.getScope().copy("of EmotionalContagion");
 			scopeMySelf.push(mySelfAgent);
 		}
-		if (	   (when == null || Cast.asBool(scopeMySelf, when.value(scopeMySelf))) 
-				&& emotionDetected != null
-				&& BdiUtils.hasEmotion(scope, (Emotion) emotionDetected.value(scope))) {
+		try {
+			if (	   (when == null || Cast.asBool(scopeMySelf, when.value(scopeMySelf))) 
+					&& emotionDetected != null
+					&& BdiUtils.hasEmotion(scope, (Emotion) emotionDetected.value(scope))) {
 
-			final Emotion detectedEmo = BdiUtils.getEmotion(scope, (Emotion) emotionDetected.value(scope));
+				final Emotion detectedEmo = BdiUtils.getEmotion(scope, (Emotion) emotionDetected.value(scope));
 			
-			//getting variables to calculate the contagious power
-			if (charisma != null) {
-				charismaValue = (double) charisma.value(scope);
-			} else {
-				charismaValue = (double) scope.getAgent().getAttribute(CHARISMA);
-			}
-			if (receptivity != null) {
-				receptivityValue = (double) receptivity.value(scopeMySelf);
-			} else if (mySelfAgent != null) { 
-				receptivityValue = (double) mySelfAgent.getAttribute(RECEPTIVITY); 
-			}
-			if (threshold != null) { 
-				thresholdValue = (double) threshold.value(scopeMySelf); 
-			}
-			
-			// if contagious power is above the threshold a new emotion is created and added
-			if (charismaValue * receptivityValue >= thresholdValue) {
-				
-				final Emotion emo;
-				
-				if (decay != null) {
-					decayValue = (double) decay.value(scopeMySelf);
-				}
-				
-				if (emotionCreated != null) {
-					emo = (Emotion) emotionCreated.value(scope);
-					if (decay == null) {
-						decayValue = detectedEmo.getDecay();
-					}
-					if (intensity != null) {
-						intensityValue = BdiUtils.clamp((double) intensity.value(scopeMySelf), 0, 1);
-					}
-					emo.setIntensity(intensityValue);
+				//getting variables to calculate the contagious power
+				if (charisma != null) {
+					charismaValue = (double) charisma.value(scope);
 				} else {
-					if (detectedEmo.hasIntensity()) {
-						emo = new Emotion(detectedEmo.getName(), detectedEmo.getIntensity() * charismaValue * receptivityValue,
-											detectedEmo.getAbout(), detectedEmo.getDecay());
-					} else {
-						emo = (Emotion) detectedEmo.copy(scope);
-					}
+					charismaValue = (double) scope.getAgent().getAttribute(CHARISMA);
 				}
-				emo.setAgentCause(scope.getAgent());
-				emo.setDecay(BdiUtils.clamp(decayValue, 0, 1));
-				BdiUtils.addEmotion(scopeMySelf, emo);
+				if (receptivity != null) {
+					receptivityValue = (double) receptivity.value(scopeMySelf);
+				} else if (mySelfAgent != null) { 
+					receptivityValue = (double) mySelfAgent.getAttribute(RECEPTIVITY); 
+				}
+				if (threshold != null) { 
+					thresholdValue = (double) threshold.value(scopeMySelf); 
+				}
+			
+				// if contagious power is above the threshold a new emotion is created and added
+				if (charismaValue * receptivityValue >= thresholdValue) {
+				
+					final Emotion emo;
+				
+					if (decay != null) {
+						decayValue = (double) decay.value(scopeMySelf);
+					}
+				
+					if (emotionCreated != null) {
+						emo = (Emotion) emotionCreated.value(scope);
+						if (decay == null) {
+							decayValue = detectedEmo.getDecay();
+						}
+						if (intensity != null) {
+							intensityValue = BdiUtils.clamp((double) intensity.value(scopeMySelf), 0, 1);
+						}
+						emo.setIntensity(intensityValue);
+					} else {
+						if (detectedEmo.hasIntensity()) {
+							emo = new Emotion(detectedEmo.getName(), detectedEmo.getIntensity() * charismaValue * receptivityValue,
+												detectedEmo.getAbout(), detectedEmo.getDecay());
+						} else {
+							emo = (Emotion) detectedEmo.copy(scope);
+						}
+					}
+					emo.setAgentCause(scope.getAgent());
+					emo.setDecay(BdiUtils.clamp(decayValue, 0, 1));
+					BdiUtils.addEmotion(scopeMySelf, emo);
+				}
 			}
+		} finally {
+			GAMA.releaseScope(scopeMySelf);
 		}
-		GAMA.releaseScope(scopeMySelf);
 		return null;
 	}
 

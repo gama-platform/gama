@@ -12,13 +12,12 @@ package gaml.compiler.ui.editor;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 import org.eclipse.emf.common.util.URI;
-
-import com.google.common.collect.Iterables;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.compilation.descriptions.IDescription;
@@ -28,21 +27,22 @@ import gama.ui.shared.resources.GamaColors.GamaUIColor;
 import gama.ui.shared.resources.IGamaColors;
 
 /**
- * The Class GamlEditorState.
+ * A validation snapshot for experiment controls. Descriptions and validation contexts are not retained, so this
+ * object can be built during validation and passed to the UI after the descriptions have been disposed.
  */
 public class GamlEditorState {
 
 	/** The has internal errors. */
-	boolean hasInternalErrors;
+	final boolean hasInternalErrors;
 
 	/** The has imported errors. */
-	boolean hasImportedErrors;
+	final boolean hasImportedErrors;
 
 	/** The has experiments. */
-	boolean hasExperiments;
+	final boolean hasExperiments;
 
 	/** The has null status. */
-	boolean hasNullStatus;
+	final boolean hasNullStatus;
 
 	/** The show experiments. */
 	final boolean showExperiments;
@@ -71,36 +71,44 @@ public class GamlEditorState {
 
 		if (status != null) {
 			hasImportedErrors = status.hasImportedErrors();
-			importedErrors = hasImportedErrors ? status.getImportedErrorsAsStrings() : Collections.EMPTY_MAP;
+			importedErrors = hasImportedErrors
+					? Collections.unmodifiableMap(new LinkedHashMap<>(status.getImportedErrorsAsStrings()))
+					: Collections.emptyMap();
 			hasInternalErrors = status.hasInternalErrors() || status.hasInternalSyntaxErrors();
 			hasNullStatus = false;
 			showExperiments = !status.getNoExperiment();
 		} else {
 			hasNullStatus = true;
-			importedErrors = Collections.EMPTY_MAP;
+			hasInternalErrors = false;
+			hasImportedErrors = false;
+			importedErrors = Collections.emptyMap();
 			showExperiments = true;
 		}
-		final int n = Iterables.size(descriptions);
-		if (n > 0) {
-			hasExperiments = true;
-			experiments = new ArrayList<>(n);
-			abbreviations = new ArrayList<>(n);
-			types = new ArrayList<>(n);
+		final List<String> names = new ArrayList<>();
+		final List<String> experimentTypes = new ArrayList<>();
+		if (descriptions != null) {
 			for (final IDescription ep : descriptions) {
 				final String name = ep.getName();
-				experiments.add(name);
-				abbreviations.add(name);
-				// abbreviations.add(name.replaceFirst("Experiment ", ""));
+				names.add(name);
 				IExperimentDescription r = (IExperimentDescription) ep;
-				types.add(IKeyword.BATCH.equals(r.getLitteral(IKeyword.TYPE)) ? IKeyword.BATCH
+				experimentTypes.add(IKeyword.BATCH.equals(r.getLitteral(IKeyword.TYPE)) ? IKeyword.BATCH
 						: r.isMemorize() ? IKeyword.RECORD : IKeyword.GUI_);
 			}
-		} else {
-			experiments = Collections.EMPTY_LIST;
-			abbreviations = Collections.EMPTY_LIST;
-			types = Collections.EMPTY_LIST;
 		}
+		experiments = Collections.unmodifiableList(names);
+		abbreviations = experiments;
+		types = Collections.unmodifiableList(experimentTypes);
+		hasExperiments = !experiments.isEmpty();
 	}
+
+	/** @return whether validation allows experiment controls to be shown */
+	public boolean isShowingExperiments() { return showExperiments; }
+
+	/** @return whether an imported-error menu should be shown */
+	public boolean hasImportedErrors() { return hasImportedErrors; }
+
+	/** @return experiment types, in the same order as {@link #experiments} */
+	public List<String> getExperimentTypes() { return types; }
 
 	/**
 	 * Equals 2.
@@ -111,9 +119,7 @@ public class GamlEditorState {
 	 */
 	public boolean equals2(final Object old) {
 		if (!(old instanceof final GamlEditorState state)) return false;
-		return state.hasNullStatus == hasNullStatus && state.hasImportedErrors == hasImportedErrors
-				&& state.hasInternalErrors == hasInternalErrors && state.experiments.equals(experiments)
-				&& state.showExperiments == showExperiments && state.types.equals(types);
+		return equals(state);
 	}
 
 	/**
@@ -121,7 +127,8 @@ public class GamlEditorState {
 	 */
 	@Override
 	public int hashCode() {
-		return Objects.hash(experiments, hasImportedErrors, hasInternalErrors, hasNullStatus, showExperiments, types);
+		return Objects.hash(experiments, hasImportedErrors, hasInternalErrors, hasNullStatus, showExperiments, types,
+				importedErrors);
 	}
 
 	/**
@@ -135,7 +142,8 @@ public class GamlEditorState {
 		if (!Objects.equals(experiments, other.experiments) || hasImportedErrors != other.hasImportedErrors
 				|| hasInternalErrors != other.hasInternalErrors || hasNullStatus != other.hasNullStatus)
 			return false;
-		if (showExperiments != other.showExperiments || !Objects.equals(types, other.types)) return false;
+		if (showExperiments != other.showExperiments || !Objects.equals(types, other.types)
+				|| !Objects.equals(importedErrors, other.importedErrors)) return false;
 		return true;
 	}
 

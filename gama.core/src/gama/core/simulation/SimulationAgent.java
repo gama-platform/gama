@@ -20,6 +20,7 @@ import java.util.Map.Entry;
 import org.locationtech.jts.geom.Geometry;
 
 import gama.annotations.action;
+import gama.annotations.arg;
 import gama.annotations.doc;
 import gama.annotations.getter;
 import gama.annotations.setter;
@@ -50,6 +51,7 @@ import gama.api.runtime.GamaExecutorService;
 import gama.api.runtime.GamaExecutorService.Caller;
 import gama.api.runtime.IExecutable;
 import gama.api.runtime.scope.ExecutionScope;
+import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.color.IColor;
 import gama.api.types.date.IDate;
@@ -133,7 +135,11 @@ import gama.gaml.operators.spatial.SpatialTransformations;
 		@variable (
 				name = ISimulationAgent.USAGE,
 				type = IType.INT,
-				doc = @doc ("Returns the number of times the random number generator of the simulation has been drawn")),
+				doc = @doc ("Counts raw draws from the simulation RNG, not operator calls. Float draws usually consume "
+						+ "two raw draws, bounded integer draws usually one (more if rejection sampling is needed). "
+						+ "Assigning a value reinitializes the RNG with its current seed and advances it to that usage; "
+						+ "negative values reset it to zero. Cached Gaussian values are not restored. "
+						+ "The threaded RNG always reports zero and cannot be restored.")),
 		@variable (
 				name = ISimulationAgent.PAUSED,
 				type = IType.BOOL,
@@ -373,14 +379,13 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	public void setColor(final IColor color) { this.color = color; }
 
 	@Override
-	public void schedule(final IScope scope) {
-		super.schedule(this.getScope());
+	public IExecutionResult schedule(final IScope scope) {
+		return super.schedule(this.getScope());
 	}
 
 	@Override
 	protected boolean preStep(final IScope scope) {
 		ownClock.beginCycle();
-		executer.executeBeginActions();
 		return super.preStep(scope);
 	}
 
@@ -424,7 +429,15 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	public void dispose() {
 		GAMA.getGui().getStatus().beginTask("Disposing " + this, IStatusMessage.SIMULATION_ICON);
 		if (dead) return;
-		executer.executeDisposeActions();
+		// The dispose actions belong to the lifecycle of the simulation: they are run by its thread (after its current
+		// step if it is stepping)
+		runInOwnThread(() -> {
+			try {
+				executer.executeDisposeActions();
+			} finally {
+				executer.dispose();
+			}
+		});
 		// hqnghi if simulation comes from an external population, dispose this population first
 		// and then its outputs
 
@@ -703,6 +716,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	 *            the scope
 	 * @return the object
 	 */
+	@Override
 	@action (
 			name = "pause",
 			doc = @doc ("Allows to pause the current simulation **ACTUALLY EXPERIMENT FOR THE MOMENT**. It can be resumed with the manual intervention of the user or the 'resume' action."))
@@ -717,12 +731,43 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	}
 
 	/**
+	 * Prim sleep.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the object
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
+	@action (
+			name = "sleep",
+			args = { @arg (
+					name = "duration",
+					type = IType.FLOAT,
+					doc = @doc ("Duration to wait in machine time. The default unit is seconds; explicit units such as `10#ms` are supported.")) },
+			doc = @doc (
+					value = "Waits for the specified duration by blocking the current execution thread. Ex: ask simulation {do sleep (duration: 1#s);}"))
+	public final Object primSleep(final IScope scope) throws GamaRuntimeException {
+		final double duration = scope.getFloatArg("duration");
+		if (!Double.isFinite(duration) || duration < 0 || duration > Long.MAX_VALUE / 1000d) throw GamaRuntimeException
+				.error("The sleep duration must be a finite, non-negative value within range", scope);
+		try {
+			Thread.sleep(Math.round(duration * 1000));
+		} catch (final InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw GamaRuntimeException.error("The sleep action was interrupted", scope);
+		}
+		return null;
+	}
+
+	/**
 	 * Resume.
 	 *
 	 * @param scope
 	 *            the scope
 	 * @return the object
 	 */
+	@Override
 	@action (
 			name = "resume",
 			doc = @doc ("Allows to resume the current simulation **ACTUALLY EXPERIMENT FOR THE MOMENT**. It can then be paused with the manual intervention of the user or the 'pause' action."))
@@ -779,8 +824,9 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 		outputs.forEach((oName, output) -> {
 			String keyName, newOutputName;
 			if (!scheduled) {
-				keyName = output.getTitle() + "#" + this.getSpecies().getDescription().getModelDescription().getMicroAlias()
-						+ "#" + this.getExperiment().getSpecies().getName() + "#" + this.getExperiment().getIndex();
+				keyName = output.getTitle() + "#"
+						+ this.getSpecies().getDescription().getModelDescription().getMicroAlias() + "#"
+						+ this.getExperiment().getSpecies().getName() + "#" + this.getExperiment().getIndex();
 				newOutputName = keyName;
 			} else {
 				final String postfix = buildPostfix();
@@ -961,10 +1007,26 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 
 	}
 
+	/**
+	 * Executes the action as soon as possible in the thread of the simulation: immediately if called from it, otherwise
+	 * as soon as the simulation is not stepping (immediately if it is paused, after its current step otherwise). The
+	 * method does not wait for the action to be executed. Errors are reported to the user.
+	 */
 	@Override
 	public void executeAction(final IExecutable executable) {
-		executer.executeOneAction(executable);
-
+		if (isInOwnThread()) {
+			executer.executeNow(executable);
+			return;
+		}
+		final Runnable task = () -> {
+			try {
+				executer.executeNow(executable);
+			} catch (final RuntimeException e) {
+				GAMA.reportError(getScope(), GamaRuntimeException.create(e, getScope()), false);
+			}
+		};
+		// If the simulation has no dedicated thread, fall back to the previous behaviour
+		if (!postInOwnThread(task)) { executer.executeOneAction(executable); }
 	}
 
 	@SuppressWarnings ("unchecked")

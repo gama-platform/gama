@@ -385,19 +385,19 @@ public record SerialisedAgent(int index, String species, Map<String, Object> att
 					} else if (v instanceof SerialisedPopulation sp) { sp.restoreAs(scope, pop); }
 				}
 			});
-			// Update simulation-specific variables
-			if (agent instanceof ISimulationAgent sim) {
-				final Map<String, Object> attr = attributes();
-				Double seedValue = (Double) attr.remove(IKeyword.SEED);
-				String rngValue = (String) attr.remove(IKeyword.RNG);
-				Integer usageValue = (Integer) attr.remove(ISimulationAgent.USAGE);
-				sim.generateRandomGenerator(seedValue, rngValue);
-				sim.setUsage(usageValue);
-				// Update Clock
-				final Integer cycle = (Integer) sim.getAttribute(IKeyword.CYCLE);
-				sim.getClock().setCycleNoCheck(cycle);
-
-			}
+		}
+		
+		// Update simulation-specific state. should apply to all models even those without species declaration
+		if (agent instanceof ISimulationAgent sim) {
+			final Map<String, Object> attr = attributes();
+			Double seedValue = (Double) attr.remove(IKeyword.SEED);
+			String rngValue = (String) attr.remove(IKeyword.RNG);
+			Integer usageValue = (Integer) attr.remove(ISimulationAgent.USAGE);
+			sim.generateRandomGenerator(seedValue, rngValue);
+			sim.setUsage(usageValue);
+			
+			// The snapshot may hold no cycle.
+			if (sim.getAttribute(IKeyword.CYCLE) instanceof Integer cycle) { sim.getClock().setCycleNoCheck(cycle); }
 		}
 	}
 

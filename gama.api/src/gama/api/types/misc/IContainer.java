@@ -15,6 +15,7 @@ import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.operator;
 import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
@@ -80,7 +81,7 @@ import one.util.streamex.StreamEx;
  * <li><strong>Lists:</strong> KeyType=Integer, ordered sequences indexed from 0</li>
  * <li><strong>Maps:</strong> KeyType=any, unordered key-value associations</li>
  * <li><strong>Matrices:</strong> KeyType=IPoint, 2D grids indexed by {column, row}</li>
- * <li><strong>Graphs:</strong> KeyType=node, ValueType=edge (or vice versa)</li>
+ * <li><strong>Graphs:</strong> KeyType=vertex (node), ValueType=edge; edge lookup uses a pair of endpoint vertices</li>
  * <li><strong>Populations:</strong> KeyType=Integer/String, ValueType=IAgent</li>
  * <li><strong>Files:</strong> Delegate to their content container</li>
  * <li><strong>Pairs:</strong> KeyType=key type, ValueType=value type (single entry)</li>
@@ -650,7 +651,16 @@ public interface IContainer<KeyType, ValueType> extends IValue {
 					@usage ("if it is a population, contains returns true if the operand is an agent of the population, false otherwise"),
 					@usage ("if it is a graph, contains can be written 'contains_edge' and  returns true if the operand is an edge of the graph, false otherwise (use 'contains_node' for testing the presence of a node)") },
 			see = { "contains_all", "contains_any", "contains_key" })
-	@test ("['aa'::'bb', 13::14] contains 'bb'")
+	@tests ({
+			@test ("['aa'::'bb', 13::14] contains 'bb'"),
+			@test ("map<string, int> src <- [\"a\"::1, \"b\"::2]; list l1 <- list(src); l1 contains 1 = true"),
+			@test ("map<string, int> src2 <- [\"a\"::1, \"b\"::2]; list l12 <- list(src2); l12 contains 2 = true"),
+			@test ("map<string, int> scores <- [\"a\"::1, \"b\"::2]; scores contains_value 2"),
+			@test ("map<string, int> scores2 <- [\"a\"::1, \"b\"::2]; not (scores2 contains_value 3)"),
+			@test ("matrix<int> m <- matrix([[1, 2, 3], [4, 5, 6]]); m contains 5"),
+			@test ("matrix<int> m2 <- matrix([[1, 2, 3], [4, 5, 6]]); not (m2 contains 7)"),
+			@test ("list<int> numbers <- [1, 2, 3, 4, 5]; (numbers contains 3) = true")
+	})
 	boolean contains(IScope scope, Object o) throws GamaRuntimeException;
 
 	/**
@@ -690,7 +700,11 @@ public interface IContainer<KeyType, ValueType> extends IValue {
 					@usage ("if it is a file, contains_key is applied to the file contents -- a container"),
 					@usage ("if it is a graph, contains_key returns true if the graph contains the corresponding vertex") },
 			see = { "contains_all", "contains", "contains_any" })
-	@test ("['aa'::'bb', 13::14] contains_key 'aa'")
+	@tests ({
+			@test ("['aa'::'bb', 13::14] contains_key 'aa'"),
+			@test ("map<string, int> scores <- [\"a\"::1, \"b\"::2]; scores contains_key \"a\""),
+			@test ("map<string, int> scores2 <- [\"a\"::1, \"b\"::2]; not (scores2 contains_key \"z\")")
+	})
 	boolean containsKey(IScope scope, Object o) throws GamaRuntimeException;
 
 	/**
@@ -733,6 +747,10 @@ public interface IContainer<KeyType, ValueType> extends IValue {
 					@usage (
 							value = "for a matrix of object or geometry, it will return nil if the matrix is empty") },
 			see = { "last" })
+	@tests ({
+			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; first(numbers) = 3"),
+			@test ("first([]) = nil")
+	})
 	ValueType firstValue(IScope scope) throws GamaRuntimeException;
 
 	/**
@@ -775,6 +793,10 @@ public interface IContainer<KeyType, ValueType> extends IValue {
 					@usage (
 							value = "for a matrix of object or geometry, it will return nil if the matrix is empty") },
 			see = { "first" })
+	@tests ({
+			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; last(numbers) = 6"),
+			@test ("last([]) = nil")
+	})
 	ValueType lastValue(IScope scope) throws GamaRuntimeException;
 
 	/**
@@ -808,6 +830,30 @@ public interface IContainer<KeyType, ValueType> extends IValue {
 							examples = { @example (
 									value = "length(matrix([[\"c11\",\"c12\",\"c13\"],[\"c21\",\"c22\",\"c23\"]]))",
 									equals = "6") }) })
+	@tests ({
+			@test ("map<string, int> src <- [\"a\"::1, \"b\"::2]; list l1 <- list(src); length(l1) = 2"),
+			@test ("map<string, int> src2 <- [\"a\"::1, \"b\"::2]; list<pair<string, int>> lp <- src2.pairs; length(lp) = 2"),
+			// the operators do not modify their operands
+			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; length(numbers) = 8"),
+			@test ("list<int> numbers2 <- [3, 1, 4, 1, 5, 9, 2, 6]; list<int> picked <- 3 among numbers2; length(picked) = 3"),
+			@test ("matrix<rgb> img_matrix <- matrix<rgb>([ [#red, #blue], [#green, #yellow] ]); list<rgb> as_list <- list<rgb>(img_matrix collect (each.darker)); length(as_list) = 4"),
+			@test ("list<int> numbers3 <- [1, 2, 3, 4, 5]; length(numbers3 where (each > 3)) = 2"),
+			@test ("map<string, int> m1 <- [\"a\"::1, \"b\"::2, \"c\"::3]; length(m1) = 3"),
+			@test ("map<string, int> m12 <- [\"a\"::1, \"b\"::2]; m12[\"c\"] <- 3; length(m12) = 3"),
+			@test ("map<string, int> m13 <- [\"a\"::1, \"b\"::2]; m13[\"c\"] <- 3; m13[\"a\"] <- 10; remove key: \"b\" from: m13; length(m13) = 2"),
+			@test ("map<string, int> m14 <- [\"a\"::1, \"b\"::2]; m14[\"c\"] <- 3; m14[\"a\"] <- 10; remove key: \"b\" from: m14; m14 <- []; length(m14) = 0"),
+			@test ("map<string, int> m15 <- [\"a\"::1, \"b\"::2, \"c\"::3, \"d\"::4]; length(m15.values where (each > 0)) = 4"),
+			@test ("map<string, int> m16 <- [\"a\"::1, \"b\"::2, \"c\"::3, \"d\"::4]; length(m16.values where (each > 3)) = 1"),
+			@test ("map<string, int> m17 <- [\"a\"::1, \"b\"::2]; map<string, int> m2 <- [\"c\"::3, \"d\"::4]; map<string, int> m3 <- m17 + m2; length(m3) = 4"),
+			@test ("map<string, int> m18 <- [\"a\"::1, \"b\"::2]; map<string, int> m22 <- [\"c\"::3, \"d\"::4]; map<string, int> m32 <- m18 + m22; map<string, int> m4 <- m32 - [\"c\"::3]; length(m4) = 3"),
+			@test ("matrix<int> m19 <- matrix([[1, 2], [3, 4]]); list<int> l12 <- m19 collect (each * 10); length(l12) = 4"),
+			@test ("map<string, int> src3 <- [\"x\"::1, \"y\"::2]; list<pair<string, int>> l13 <- src3.pairs; length(l13) = 2"),
+			@test ("map<string, int> m110 <- map([\"a\"::10, \"b\"::20]); length(m110) = 2"),
+			@test ("length([1,2,3,4.4])=4"),
+			@test ("list<int> vList<- [12,13]; length(vList)=2"),
+			// Testing ranges
+			@test ("list<int> zList <- [1,2,3,4,5]; length(zList[1::3]) = 2")
+	})
 	int length(IScope scope);
 
 	/**
@@ -855,6 +901,17 @@ public interface IContainer<KeyType, ValueType> extends IValue {
 							value = "if it is a matrix of int, float or object, it will return true if all elements are respectively 0, 0.0 or null, and false otherwise"),
 					@usage (
 							value = "if it is a matrix of geometry, it will return true if the matrix contains no cell, and false otherwise") })
+	@tests ({
+			@test ("list<int> numbers <- [1, 2, 3, 4, 5]; !empty(numbers where (each > 3)) = true"),
+			@test ("map<string, int> m1 <- [\"a\"::1, \"b\"::2]; m1[\"c\"] <- 3; m1[\"a\"] <- 10; remove key: \"b\" from: m1; m1 <- []; empty(m1) = true"),
+			// Any / All using empty/where
+			@test ("map<string, int> m12 <- [\"a\"::1, \"b\"::2, \"c\"::3, \"d\"::4]; !empty(m12.values where (each > 3)) = true"),
+			@test ("matrix<int> m13 <- matrix([[1, 2], [3, 4]]); !empty(list(m13) where (each > 0)) = true"),
+			@test ("matrix<int> m14 <- matrix([[1, 2], [3, 4]]); !empty(list(m14) where (each > 3)) = true"),
+			@test ("empty(list(nil))"),
+			@test ("empty(map(nil))"),
+			@test ("graph empty_graph <- graph([]); empty(empty_graph.vertices)")
+	})
 	boolean isEmpty(IScope scope);
 
 	/**
@@ -944,10 +1001,16 @@ public interface IContainer<KeyType, ValueType> extends IValue {
 									value = "bug b <- one_of(bug);  	// Given a previously defined species bug, b is one of the created bugs, e.g. bug3",
 									isExecutable = false) }) },
 			see = { "contains" })
-	@test ("one_of([]) = nil")
-	@test ("int i  <- any([1,2,3]); [1,2,3] contains i")
-	@test ("string sMat <- one_of(matrix([[\"c11\",\"c12\",\"c13\"],[\"c21\",\"c22\",\"c23\"]])); matrix([[\"c11\",\"c12\",\"c13\"],[\"c21\",\"c22\",\"c23\"]]) contains sMat")
-	@test ("agent b <- one_of(agents);")
+	@tests ({
+			@test ("one_of([]) = nil"),
+			@test ("int i  <- any([1,2,3]); [1,2,3] contains i"),
+			@test ("string sMat <- one_of(matrix([[\"c11\",\"c12\",\"c13\"],[\"c21\",\"c22\",\"c23\"]])); matrix([[\"c11\",\"c12\",\"c13\"],[\"c21\",\"c22\",\"c23\"]]) contains sMat"),
+			@test ("agent b <- one_of(agents);"),
+			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; numbers contains one_of(numbers)"),
+			@test ("one_of([7]) = 7"),
+			@test ("any([]) = nil"),
+			@test ("list<int> l1 <- [1, 2, 3, 4, 5]; int choice <- any(l1); l1 contains choice = true")
+	})
 	ValueType anyValue(IScope scope);
 
 }

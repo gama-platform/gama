@@ -19,6 +19,7 @@ import gama.api.additions.registries.GamaAdditionRegistry;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.symbols.IParameter;
+import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.color.IColor;
 import gama.api.types.font.IFont;
@@ -31,6 +32,7 @@ import gama.api.ui.displays.IDisplayCreator;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.utils.server.ISocketCommand;
 import gama.api.utils.tests.CompoundSummary;
+import gama.api.utils.tests.TestExperimentRunner;
 import gama.dev.DEBUG;
 
 /**
@@ -266,13 +268,24 @@ public class NullGuiHandler implements IGui {
 	 * Gets the console listener for headless mode.
 	 * 
 	 * <p>Lazily creates a console listener that logs messages to the headless
-	 * logger instead of displaying them in a GUI console.</p>
+	 * logger, or forwards test messages to the UI console when requested.</p>
 	 *
 	 * @return the headless console listener
 	 */
 	@Override
 	public IConsoleListener getConsole() {
-		if (console == null) { console = (s, root, color) -> logger.log(s); }
+		if (console == null) {
+			console = (s, root, color) -> {
+				if (root != null
+						&& (root instanceof IExperimentAgent.Test
+								|| root.getScope().getExperiment() instanceof IExperimentAgent.Test)
+						&& TestExperimentRunner.usesUIConsole()) {
+					GAMA.getRegularGui().getConsole().informConsole(s, root, color);
+				} else {
+					logger.log(s);
+				}
+			};
+		}
 		return console;
 	}
 

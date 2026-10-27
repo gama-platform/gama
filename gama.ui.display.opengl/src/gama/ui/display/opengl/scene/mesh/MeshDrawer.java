@@ -10,27 +10,32 @@
  ********************************************************************************************************/
 package gama.ui.display.opengl.scene.mesh;
 
-import java.nio.DoubleBuffer;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Locale;
 
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2ES2;
-import com.jogamp.opengl.GL2GL3;
+import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.fixedfunc.GLPointerFunc;
 import com.jogamp.opengl.util.gl2.GLUT;
 
+import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.runtime.scope.IScope;
 import gama.api.types.color.GamaColorFactory;
 import gama.api.types.color.IColor;
 import gama.api.types.geometry.GamaPointFactory;
 import gama.api.types.geometry.IPoint;
 import gama.api.types.matrix.IField;
 import gama.api.ui.layers.IMeshColorProvider;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.api.utils.geometry.ICoordinates;
 import gama.core.outputs.layers.MeshLayerData;
 import gama.dev.DEBUG;
+import gama.gaml.statements.draw.MeshSampling;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.scene.ObjectDrawer;
 import one.util.streamex.DoubleStreamEx;
@@ -43,7 +48,7 @@ import one.util.streamex.DoubleStreamEx;
  * @since 15 mai 2013
  *
  */
-public class MeshDrawer extends ObjectDrawer<MeshObject> {
+public class MeshDrawer extends ObjectDrawer<MeshObject, OpenGL> {
 
 	/**
 	 * The Signature.
@@ -55,10 +60,10 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 	}
 
 	/** The Constant BLACK. */
-	static final double[] BLACK = { 0, 0, 0, 1 };
+	static final float[] BLACK = { 0, 0, 0, 1 };
 
 	/** The Constant TRANSPARENT. */
-	static final double[] TRANSPARENT = { 0, 0, 0, 0 };
+	static final float[] TRANSPARENT = { 0, 0, 0, 0 };
 
 	// ARRAYS
 
@@ -67,7 +72,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 
 	// BUFFERS
 	/** The buffers for vertices, normals, textures, colors, line colors */
-	private DoubleBuffer vertexBuffer, normalBuffer, texBuffer, colorBuffer, lineColorBuffer;
+	private FloatBuffer vertexBuffer, normalBuffer, texBuffer, colorBuffer, lineColorBuffer;
 
 	/** The buffer holding the indices to the vertices to draw */
 	private IntBuffer indexBuffer;
@@ -90,7 +95,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 
 	// NAME_REGISTRY
 	/** An array holding the 4 components of the line color */
-	private double[] lineColor;
+	private float[] lineColor;
 
 	/** An array used for the transfer of colors from the color provider */
 	double[] rgb = new double[4];
@@ -102,7 +107,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 	private IMeshColorProvider colorProvider;
 
 	/** The normals used for drawing quads when the mesh is drawn using rectangles */
-	final static double[] quadNormals = { 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1 };
+	final static float[] quadNormals = { 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1 };
 
 	/** A temporary coordinate sequence used to hold vertices in order to compute normals of triangles */
 	final ICoordinates surface = GamaCoordinateSequenceFactory.ofLength(9);
@@ -115,6 +120,48 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 
 	/** The vbo ids. */
 	private int[] vboIds;
+
+	/** The dimensions of the original field (before downsampling) and the downsampling step */
+	private int sourceCols, sourceRows, step = 1;
+
+	/** The key describing what the buffers currently hold; used to avoid rebuilding them at every frame */
+	private BuildKey builtKey;
+
+	/** The key of the last mesh that could not be built (to avoid retrying -- and reporting -- at every frame) */
+	private BuildKey failedKey;
+
+	/** Whether the buffers have changed since their last upload to the graphics card */
+	private boolean needsUpload;
+
+	/** The (possibly downsampled and smoothed) data used to build the buffers. Kept for drawing the labels */
+	private double[] builtData;
+
+	/**
+	 * Everything that determines the content of the buffers. The mesh object is compared by identity: a new one is
+	 * produced each time the layer is refreshed.
+	 */
+	private record BuildKey(MeshObject object, int cols, int rows, int step, boolean triangles,
+			boolean outputsTextures, boolean outputsColors, boolean outputsLines, boolean useFillForLines,
+			IMeshColorProvider colorProvider, IColor line, double above, double noData, int smooth, double zTranslation) {
+
+		@Override
+		public boolean equals(final Object o) {
+			if (this == o) return true;
+			if (!(o instanceof BuildKey k)) return false;
+			return object == k.object && cols == k.cols && rows == k.rows && step == k.step
+					&& triangles == k.triangles && outputsTextures == k.outputsTextures
+					&& outputsColors == k.outputsColors && outputsLines == k.outputsLines
+					&& useFillForLines == k.useFillForLines && colorProvider == k.colorProvider
+					&& java.util.Objects.equals(line, k.line) && Double.compare(above, k.above) == 0
+					&& Double.compare(noData, k.noData) == 0 && smooth == k.smooth
+					&& Double.compare(zTranslation, k.zTranslation) == 0;
+		}
+
+		@Override
+		public int hashCode() {
+			return System.identityHashCode(object) * 31 + cols * 17 + rows;
+		}
+	}
 
 	/**
 	 * Instantiates a new mesh drawer.
@@ -133,9 +180,12 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 	public void dispose() {
 		surface.setTo(0);
 		colorProvider = null;
-		realIndexes = null;
-		vertexBuffer = normalBuffer = texBuffer = colorBuffer = lineColorBuffer = null;
-		indexBuffer = null;
+		releaseBuffers();
+		failedKey = null;
+		if (vboIds != null) {
+			gl.getGL().glDeleteBuffers(vboIds.length, vboIds, 0);
+			vboIds = null;
+		}
 	}
 
 	/**
@@ -147,14 +197,14 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 	@Override
 	protected void _draw(final MeshObject object) {
 		var attributes = object.getAttributes();
-		cols = (int) attributes.getXYDimension().getX();
-		rows = (int) attributes.getXYDimension().getY();
+		sourceCols = (int) attributes.getXYDimension().getX();
+		sourceRows = (int) attributes.getXYDimension().getY();
 		boolean grayscale = attributes.isGrayscaled();
 		IColor line = attributes.getBorder();
-		useFillForLines = line == null && gl.isWireframe() && colorProvider != null;
 		this.colorProvider = attributes.getColorProvider();
+		useFillForLines = line == null && gl.isWireframe() && colorProvider != null;
 		this.lineColor =
-				line != null ? new double[] { line.red() / 255d, line.green() / 255d, line.blue() / 255d, 1 } : BLACK;
+				line != null ? new float[] { line.red() / 255f, line.green() / 255f, line.blue() / 255f, 1 } : BLACK;
 		outputsTextures = gl.isTextured() && !grayscale;
 		outputsColors = (colorProvider != null || grayscale) && !gl.isWireframe();
 		outputsLines = gl.isWireframe() || line != null;
@@ -162,6 +212,10 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 		double noData = attributes.getNoDataValue();
 		if (noData == IField.NO_NO_DATA) { noData = object.getObject().getNoData(null); }
 		above = attributes.getAbove();
+		// Level of detail: large fields are downsampled so as to bound the size of the buffers
+		step = MeshSampling.stepFor(sourceCols, sourceRows, GamaPreferences.Displays.OPENGL_MESH_MAX_CELLS.getValue());
+		cols = MeshSampling.sampledSize(sourceCols, step);
+		rows = MeshSampling.sampledSize(sourceRows, step);
 
 		this.cy = this.gl.getWorldHeight() / rows;
 		this.cx = this.gl.getWorldWidth() / cols;
@@ -169,12 +223,11 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 		boolean withText = attributes.isWithText();
 		this.triangles = attributes.isTriangulated();
 
-		double[] data = attributes.getSmoothProvider().smooth(cols, rows, object.getObject().getMatrix(), noData,
-				attributes.getSmooth());
-		getMinMax(data, noData);
-		initializeBuffers();
-		fillBuffers(data, noData);
-		finalizeBuffers();
+		BuildKey key = new BuildKey(object, cols, rows, step, triangles, outputsTextures, outputsColors, outputsLines,
+				useFillForLines, colorProvider, line, above, noData, attributes.getSmooth(),
+				gl.getCurrentZTranslation());
+		if (key.equals(failedKey)) return;
+		if (!key.equals(builtKey) && !buildMesh(object, key, noData)) return;
 		gl.pushMatrix();
 		try {
 			// applyTranslation(object);
@@ -183,10 +236,83 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 				gl.scaleBy(1, 1, zScale);
 			}
 			drawField();
-			if (withText) { drawLabels(data); }
+			if (withText) { drawLabels(builtData); }
 		} finally {
 			gl.popMatrix();
 		}
+	}
+
+	/**
+	 * Builds the buffers of the mesh. In case they cannot be allocated, the error is reported once and the mesh is not
+	 * drawn.
+	 *
+	 * @param object
+	 *            the object
+	 * @param key
+	 *            the key describing the mesh
+	 * @param noData
+	 *            the no data value
+	 * @return true if the buffers have been built
+	 */
+	private boolean buildMesh(final MeshObject object, final BuildKey key, final double noData) {
+		builtKey = null;
+		try {
+			checkBufferSizes();
+			var attributes = object.getAttributes();
+			double[] source = object.getObject().getMatrix();
+			if (step > 1) { source = MeshSampling.downsample(source, sourceCols, sourceRows, step, noData); }
+			double[] data = attributes.getSmoothProvider().smooth(cols, rows, source, noData, attributes.getSmooth());
+			getMinMax(data, noData);
+			initializeBuffers();
+			fillBuffers(data, noData);
+			finalizeBuffers();
+			builtData = data;
+			builtKey = key;
+			needsUpload = true;
+			return true;
+		} catch (OutOfMemoryError | IllegalArgumentException e) {
+			releaseBuffers();
+			failedKey = key;
+			reportBuildError(e);
+			return false;
+		}
+	}
+
+	/**
+	 * Verifies that the buffers needed to draw the mesh do not exceed the maximum size of Java direct buffers.
+	 */
+	private void checkBufferSizes() {
+		final long vertices = triangles ? (long) (cols + 1) * (rows + 1) : (long) cols * rows * 4;
+		final long indices = (long) cols * rows * 6;
+		if (!MeshSampling.fitsInDirectBuffer(vertices * 4, Float.BYTES)
+				|| !MeshSampling.fitsInDirectBuffer(indices, Integer.BYTES))
+			throw new IllegalArgumentException("a mesh of " + cols + "x" + rows + " cells requires buffers over 2GB");
+	}
+
+	/**
+	 * Reports an error when the mesh cannot be built.
+	 *
+	 * @param e
+	 *            the cause
+	 */
+	private void reportBuildError(final Throwable e) {
+		String msg = "Impossible to display a field of " + sourceCols + "x" + sourceRows + " cells"
+				+ (step > 1 ? " (downsampled to " + cols + "x" + rows + ")" : "") + ": " + e.getMessage()
+				+ ". Reduce the maximum number of cells displayed in the OpenGL preferences, or increase the memory allocated to GAMA.";
+		DEBUG.ERR(msg);
+		IScope scope = gl.getRenderer().getSurface().getScope();
+		if (scope != null) { GAMA.reportError(scope, GamaRuntimeException.warning(msg, scope), false); }
+	}
+
+	/**
+	 * Releases the buffers so that the memory they use can be reclaimed.
+	 */
+	private void releaseBuffers() {
+		realIndexes = null;
+		vertexBuffer = normalBuffer = texBuffer = colorBuffer = lineColorBuffer = null;
+		indexBuffer = null;
+		builtData = null;
+		builtKey = null;
 	}
 
 	/**
@@ -205,34 +331,63 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 	}
 
 	/**
-	 * Initialize buffers.
+	 * Initialize buffers. Buffers are only (re)allocated when they are needed and too small; the optional ones
+	 * (textures, colors, lines) are only allocated when the corresponding output is enabled.
 	 */
 	private void initializeBuffers() {
-		final var length = (cols + 1) * (rows + 1);
-		int previous = realIndexes == null ? 0 : realIndexes.length;
-		if (length > previous) {
-			realIndexes = new int[length];
-			final var lengthM1 = cols * rows;
-			int colors = triangles ? length * 4 : lengthM1 * 16;
-			int points = triangles ? length * 3 : lengthM1 * 12;
-			int textures = triangles ? length * 2 : lengthM1 * 8;
-			vertexBuffer = Buffers.newDirectDoubleBuffer(points);
-			normalBuffer = Buffers.newDirectDoubleBuffer(points);
-			indexBuffer = Buffers.newDirectIntBuffer(length * 6);
-			// AD : fix for #3299. outputsLines and outputsColors can change overtime and it is necessary to maintain
-			// the buffers if the size doesnt change
-			lineColorBuffer = Buffers.newDirectDoubleBuffer(colors);
-			texBuffer = Buffers.newDirectDoubleBuffer(textures);
-			colorBuffer = Buffers.newDirectDoubleBuffer(colors);
-		} else {
-			vertexBuffer.clear();
-			normalBuffer.clear();
-			indexBuffer.clear();
-			lineColorBuffer.clear();
-			texBuffer.clear();
-			colorBuffer.clear();
-		}
+		final int vertices = triangles ? (cols + 1) * (rows + 1) : cols * rows * 4;
+		if (triangles && (realIndexes == null || realIndexes.length < vertices)) { realIndexes = new int[vertices]; }
+		vertexBuffer = ensureCapacity(vertexBuffer, vertices * 3);
+		normalBuffer = ensureCapacity(normalBuffer, vertices * 3);
+		indexBuffer = ensureCapacity(indexBuffer, cols * rows * 6);
+		if (outputsColors) { colorBuffer = ensureCapacity(colorBuffer, vertices * 4); }
+		if (outputsTextures) { texBuffer = ensureCapacity(texBuffer, vertices * 2); }
+		if (outputsLines) { lineColorBuffer = ensureCapacity(lineColorBuffer, vertices * 4); }
+	}
 
+	/**
+	 * Returns a cleared buffer able to hold at least {@code size} elements, reusing {@code buffer} if possible.
+	 *
+	 * @param buffer
+	 *            the buffer to reuse (can be null)
+	 * @param size
+	 *            the size
+	 * @return the buffer
+	 */
+	private static FloatBuffer ensureCapacity(final FloatBuffer buffer, final int size) {
+		if (buffer == null || buffer.capacity() < size) return Buffers.newDirectFloatBuffer(size);
+		buffer.clear();
+		return buffer;
+	}
+
+	/**
+	 * Returns a cleared buffer able to hold at least {@code size} elements, reusing {@code buffer} if possible.
+	 *
+	 * @param buffer
+	 *            the buffer to reuse (can be null)
+	 * @param size
+	 *            the size
+	 * @return the buffer
+	 */
+	private static IntBuffer ensureCapacity(final IntBuffer buffer, final int size) {
+		if (buffer == null || buffer.capacity() < size) return Buffers.newDirectIntBuffer(size);
+		buffer.clear();
+		return buffer;
+	}
+
+	/**
+	 * Index, in the original (not downsampled) field, of the cell corresponding to the vertex (x, y) of the mesh. Used
+	 * to query the color providers, which can be based on the cells of the original field.
+	 *
+	 * @param x
+	 *            the x
+	 * @param y
+	 *            the y
+	 * @return the index
+	 */
+	private int sourceIndex(final int x, final int y) {
+		// Vertices on the last row/column (x == cols or y == rows) use the color of the last cells
+		return Math.min(y * step, sourceRows - 1) * sourceCols + Math.min(x * step, sourceCols - 1);
 	}
 
 	/**
@@ -263,7 +418,8 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 				double y2 = -(j + 1) * cy;
 				var z = get(data, i, j);
 				if (z == noData) { continue; }
-				vertexBuffer.put(new double[] { x1, y1, z, x2, y1, z, x2, y2, z, x1, y2, z });
+				vertexBuffer.put(new float[] { (float) x1, (float) y1, (float) z, (float) x2, (float) y1, (float) z,
+						(float) x2, (float) y2, (float) z, (float) x1, (float) y2, (float) z });
 				setColor(z, i, j);
 				setColor(z, i + 1, j);
 				setColor(z, i + 1, j + 1);
@@ -286,7 +442,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 		for (var j = 0; j < rows + 1; j++) {
 			for (var i = 0; i < cols + 1; i++) {
 				var z = get(data, i, j);
-				vertexBuffer.put(i * cx).put(-j * cy).put(z);
+				vertexBuffer.put((float) (i * cx)).put((float) (-j * cy)).put((float) z);
 				setColor(z, i, j);
 				setNormal(data, i, j);
 			}
@@ -320,7 +476,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 				var z = get(data, i, j);
 				realIndexes[index] = z == noData ? -1 : realIndex++;
 				if (z == noData) { continue; }
-				vertexBuffer.put(x).put(-y).put(z + gl.getCurrentZTranslation());
+				vertexBuffer.put((float) x).put((float) -y).put((float) (z + gl.getCurrentZTranslation()));
 				setColor(z, i, j);
 				setNormal(data, i, j);
 				if (j > 0 && i > 0) {
@@ -359,7 +515,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 				get(data, i + 1, j - 1), x + cx, y, get(data, i + 1, j), x + cx, y + cy, get(data, i + 1, j + 1), x,
 				y + cy, get(data, i, j + 1), x - cx, y + cy, get(data, i - 1, j + 1), x - cx, y, get(data, i - 1, j),
 				x - cx, y - cy, get(data, i - 1, j - 1)).getNormal(true, 1, normal);
-		normalBuffer.put(normal.getX()).put(normal.getY()).put(normal.getZ());
+		normalBuffer.put((float) normal.getX()).put((float) normal.getY()).put((float) normal.getZ());
 	}
 
 	/**
@@ -380,21 +536,23 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 			// See Issue #144 : cols - 1 and rows - 1 replaced by cols and rows.
 			// DEBUG.OUT("Texture coordinates added to the buffer = " + (double) x / (double) cols + " x "
 			// + (double) y / (double) rows + " for vertex " + x0 + " x " + y0);
-			texBuffer.put((double) x / (double) cols).put((double) y / (double) rows);
+			texBuffer.put((float) x / (float) cols).put((float) y / (float) rows);
 		}
 		if (outputsColors) {
 			if (above != MeshLayerData.ABOVE && z < above) {
 				colorBuffer.put(TRANSPARENT, 0, 4);
 			} else {
-				colorBuffer.put(colorProvider.getColor(y * cols + x, z, minMax[0], minMax[1], rgb), 0, 4);
+				double[] c = colorProvider.getColor(sourceIndex(x, y), z, minMax[0], minMax[1], rgb);
+				colorBuffer.put((float) c[0]).put((float) c[1]).put((float) c[2]).put((float) c[3]);
 			}
 		}
 		// If the line color is specified, outputs it
 		if (outputsLines) {
 			if (useFillForLines) {
-				lineColorBuffer.put(colorProvider.getColor(y * cols + x, z, minMax[0], minMax[1], rgb), 0, 4);
+				double[] c = colorProvider.getColor(sourceIndex(x, y), z, minMax[0], minMax[1], rgb);
+				lineColorBuffer.put((float) c[0]).put((float) c[1]).put((float) c[2]).put((float) c[3]);
 			} else {
-				lineColorBuffer.put(lineColor);
+				lineColorBuffer.put(lineColor, 0, 4);
 			}
 		}
 	}
@@ -415,7 +573,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 	 * Draw field fallback.
 	 */
 	public void drawFieldFallback(final int cols, final int rows) {
-		if (vertexBuffer.limit() == 0) return;
+		if (vertexBuffer == null || vertexBuffer.limit() == 0) return;
 		final var ogl = gl.getGL();
 		// Forcing alpha
 		ogl.glBlendColor(0.0f, 0.0f, 0.0f, (float) gl.getCurrentObjectAlpha());
@@ -442,8 +600,9 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 			boolean previous = gl.setObjectWireframe(true);
 			for (var index = 0; index < indexBuffer.limit(); index++) {
 				var i = indexBuffer.get(index);
-				gl.setCurrentColor(lineColorBuffer.get(i * 3), lineColorBuffer.get(i * 3 + 1),
-						lineColorBuffer.get(i * 3 + 2), lineColorBuffer.get(i * 3 + 4));
+				// lineColorBuffer has 4 components per vertex (RGBA)
+				gl.setCurrentColor(lineColorBuffer.get(i * 4), lineColorBuffer.get(i * 4 + 1),
+						lineColorBuffer.get(i * 4 + 2), lineColorBuffer.get(i * 4 + 3));
 				gl.outputVertex(vertexBuffer.get(i * 3), vertexBuffer.get(i * 3 + 1), vertexBuffer.get(i * 3 + 2));
 			}
 			gl.setObjectWireframe(previous);
@@ -462,39 +621,26 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 			drawFieldFallback(cols, rows);
 			return;
 		}
-		if (vertexBuffer.limit() == 0) return;
+		if (vertexBuffer == null || vertexBuffer.limit() == 0) return;
 		final var ogl = gl.getGL();
 		// Forcing alpha
 		ogl.glBlendColor(0.0f, 0.0f, 0.0f, (float) gl.getCurrentObjectAlpha());
 		ogl.glBlendFunc(GL2ES2.GL_CONSTANT_ALPHA, GL2ES2.GL_ONE_MINUS_CONSTANT_ALPHA);
 
-		// VBO Management
+		// VBO Management. The buffers are only uploaded to the graphics card when they have changed
 		if (useVBO) {
 			if (vboIds == null) {
 				vboIds = new int[5]; // Vertex, Normal, Tex, Color, LineColor
 				ogl.glGenBuffers(5, vboIds, 0);
+				needsUpload = true;
 			}
-			// Bind and upload Data
-			ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[0]);
-			ogl.glBufferData(GL.GL_ARRAY_BUFFER, vertexBuffer.capacity() * Double.BYTES, vertexBuffer,
-					GL.GL_DYNAMIC_DRAW);
-			ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[1]);
-			ogl.glBufferData(GL.GL_ARRAY_BUFFER, normalBuffer.capacity() * Double.BYTES, normalBuffer,
-					GL.GL_DYNAMIC_DRAW);
-			if (outputsTextures) {
-				ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[2]);
-				ogl.glBufferData(GL.GL_ARRAY_BUFFER, texBuffer.capacity() * Double.BYTES, texBuffer,
-						GL.GL_DYNAMIC_DRAW);
-			}
-			if (outputsColors) {
-				ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[3]);
-				ogl.glBufferData(GL.GL_ARRAY_BUFFER, colorBuffer.capacity() * Double.BYTES, colorBuffer,
-						GL.GL_DYNAMIC_DRAW);
-			}
-			if (outputsLines) {
-				ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[4]);
-				ogl.glBufferData(GL.GL_ARRAY_BUFFER, lineColorBuffer.capacity() * Double.BYTES, lineColorBuffer,
-						GL.GL_DYNAMIC_DRAW);
+			if (needsUpload) {
+				needsUpload = false;
+				upload(ogl, vboIds[0], vertexBuffer);
+				upload(ogl, vboIds[1], normalBuffer);
+				if (outputsTextures) { upload(ogl, vboIds[2], texBuffer); }
+				if (outputsColors) { upload(ogl, vboIds[3], colorBuffer); }
+				if (outputsLines) { upload(ogl, vboIds[4], lineColorBuffer); }
 			}
 		}
 
@@ -509,23 +655,23 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 		try {
 			if (useVBO) {
 				ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[0]);
-				ogl.glVertexPointer(3, GL2GL3.GL_DOUBLE, 0, 0);
+				ogl.glVertexPointer(3, GL.GL_FLOAT, 0, 0);
 				ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[1]);
-				ogl.glNormalPointer(GL2GL3.GL_DOUBLE, 0, 0);
+				ogl.glNormalPointer(GL.GL_FLOAT, 0, 0);
 				if (outputsTextures) {
 					ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[2]);
-					ogl.glTexCoordPointer(2, GL2GL3.GL_DOUBLE, 0, 0);
+					ogl.glTexCoordPointer(2, GL.GL_FLOAT, 0, 0);
 				}
 				if (outputsColors) {
 					ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[3]);
-					ogl.glColorPointer(4, GL2GL3.GL_DOUBLE, 0, 0);
+					ogl.glColorPointer(4, GL.GL_FLOAT, 0, 0);
 				}
 			} else {
-				ogl.glVertexPointer(3, GL2GL3.GL_DOUBLE, 0, vertexBuffer);
-				ogl.glNormalPointer(GL2GL3.GL_DOUBLE, 0, normalBuffer);
+				ogl.glVertexPointer(3, GL.GL_FLOAT, 0, vertexBuffer);
+				ogl.glNormalPointer(GL.GL_FLOAT, 0, normalBuffer);
 
-				if (outputsTextures) { ogl.glTexCoordPointer(2, GL2GL3.GL_DOUBLE, 0, texBuffer); }
-				if (outputsColors) { ogl.glColorPointer(4, GL2GL3.GL_DOUBLE, 0, colorBuffer); }
+				if (outputsTextures) { ogl.glTexCoordPointer(2, GL.GL_FLOAT, 0, texBuffer); }
+				if (outputsColors) { ogl.glColorPointer(4, GL.GL_FLOAT, 0, colorBuffer); }
 			}
 
 			if (!gl.isWireframe()) {
@@ -535,9 +681,9 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 				if (!outputsColors) { gl.enable(GLPointerFunc.GL_COLOR_ARRAY); }
 				if (useVBO) {
 					ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[4]);
-					ogl.glColorPointer(4, GL2GL3.GL_DOUBLE, 0, 0);
+					ogl.glColorPointer(4, GL.GL_FLOAT, 0, 0);
 				} else {
-					ogl.glColorPointer(4, GL2GL3.GL_DOUBLE, 0, lineColorBuffer);
+					ogl.glColorPointer(4, GL.GL_FLOAT, 0, lineColorBuffer);
 				}
 				boolean previous = gl.setObjectWireframe(true);
 				ogl.glDrawElements(GL.GL_TRIANGLES, indexBuffer.limit(), GL.GL_UNSIGNED_INT, indexBuffer);
@@ -556,6 +702,21 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 
 		}
 
+	}
+
+	/**
+	 * Uploads a buffer to a VBO.
+	 *
+	 * @param ogl
+	 *            the GL context
+	 * @param id
+	 *            the id of the VBO
+	 * @param buffer
+	 *            the buffer to upload (only its content up to its limit is uploaded)
+	 */
+	private void upload(final GL2 ogl, final int id, final FloatBuffer buffer) {
+		ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, id);
+		ogl.glBufferData(GL.GL_ARRAY_BUFFER, (long) buffer.limit() * Float.BYTES, buffer, GL.GL_STATIC_DRAW);
 	}
 
 	/**

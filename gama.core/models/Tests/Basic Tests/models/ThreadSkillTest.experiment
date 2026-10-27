@@ -1,0 +1,36 @@
+/**
+* Name: ThreadSkillTest
+* Author: Antigravity
+* Description: Tests the multithreading thread_skill
+* Tags: core, thread, skill, test
+*/
+
+model ThreadSkillTestModel
+
+species thread_agent skills: [thread] {
+	bool is_running <- false;
+	
+	action thread_action() {
+		is_running <- true;
+	}
+}
+
+experiment ThreadSkillTest type: test autorun: true {
+	
+	test "Thread Skill Lifecycle" {
+		create thread_agent number: 1 returns: created_agents;
+		thread_agent ag <- created_agents[0];
+		
+		// the action itself is synchronous and observable
+		assert ag.is_running = false;
+		ask ag { do thread_action(); }
+		assert ag.is_running = true;
+
+		// starting and stopping the thread must not raise
+		ask ag {
+			is_running <- false;
+			do run_thread();
+			do end_thread();
+		}
+	}
+}

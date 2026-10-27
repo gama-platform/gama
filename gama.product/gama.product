@@ -25,20 +25,19 @@
       </programArgs>
       <programArgsLin>--launcher.GTK_version 3
       </programArgsLin>
-      <vmArgs>-server 
--Xms4G -Xmx16G -Xss128m
--XX:+UnlockExperimentalVMOptions 
--XX:+UseG1GC -XX:+UseAdaptiveSizePolicy -XX:+OptimizeStringConcat
+      <vmArgs>-Xms4G -Xmx16G
+-XX:+UseParallelGC
 -Dorg.eclipse.swt.graphics.Resource.reportNonDisposed=false
 -Dosgi.locking=none -Dosgi.checkConfiguration=false -Dosgi.requiredJavaVersion=25
 -Declipse.log.level=ERROR
 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.retryAttempts=10
 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.closeTimeout=6000
 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.readTimeout=6000
--Denable_logging=true -Denable_debug=true -Duse_global_preference_store=true -Dread_only=false -Duse_old_tabs=true -Dcast_container_contents=false
+-Denable_logging=true -Denable_debug=true -Duse_global_preference_store=true -Dread_only=false -Duse_old_tabs=true -Dcast_container_contents=true
 -Dswt.autoScale=exact
 -Declipse.e4.inject.javax.disabled=true
 -Djts.relate=ng
+--add-opens=java.base/java.lang.invoke=ALL-UNNAMED
 --add-exports=java.base/java.lang=ALL-UNNAMED --add-exports=java.desktop/sun.awt=ALL-UNNAMED
 --add-exports=java.desktop/sun.java2d=ALL-UNNAMED --add-exports=java.desktop/sun.java2d.loops=ALL-UNNAMED
 --add-exports=java.desktop/sun.awt.image=ALL-UNNAMED --add-exports=java.base/java.math=ALL-UNNAMED
@@ -138,14 +137,11 @@
    </configurations>
 
    <repositories>
-      <repository location="https://updates.gama-platform.org/SNAPSHOT" name="Gama" enabled="true" />
-      <repository location="https://updates.gama-platform.org/experimental/SNAPSHOT" name="Experimental" enabled="true" />
+      <repository location="https://updates.gama-platform.org/SNAPSHOT" name="Core GAMA modules" enabled="true" />
+      <repository location="https://updates.gama-platform.org/plugin/SNAPSHOT" name="Optional GAMA plugins" enabled="true" />
       <repository location="https://anb0s.github.io/EasyShell/release/" name="EasyShell" enabled="true" />
       <repository location="https://download.eclipse.org/egit/updates/" name="EGit" enabled="true" />
-      <repository location="https://updates.gama-platform.org/SNAPSHOT" name="" enabled="true" />
-      <repository location="https://updates.gama-platform.org/experimental/SNAPSHOT" name="" enabled="true" />
-      <repository location="https://anb0s.github.io/EasyShell/release/" name="" enabled="true" />
-      <repository location="https://download.eclipse.org/egit/updates/" name="" enabled="true" />
+      <repository location="https://azuredownloads-g3ahgwb5b8bkbxhd.b01.azurefd.net/github-copilot" name="Github Copilot" enabled="true" />
    </repositories>
 
    <preferencesInfo>

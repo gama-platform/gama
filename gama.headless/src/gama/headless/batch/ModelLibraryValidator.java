@@ -17,6 +17,7 @@ import java.util.Enumeration;
 import java.util.List;
 
 import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.emf.ecore.EObject;
 import org.osgi.framework.Bundle;
 
 import com.google.common.collect.Multimap;
@@ -24,6 +25,7 @@ import com.google.inject.Injector;
 
 import gama.api.additions.GamaBundleLoader;
 import gama.api.compilation.GamlCompilationError;
+import gama.api.gaml.GAML;
 import gama.dev.DEBUG;
 import gama.headless.runtime.HeadlessApplication;
 import gaml.compiler.validation.GamlModelBuilder;
@@ -51,6 +53,7 @@ public class ModelLibraryValidator extends AbstractModelLibraryRunner {
 		final int[] count = { 0 };
 		final int[] code = { 0, 0 };
 
+		linkModelsLibraryToWorkspace();
 		this.validatePluginsFromURLs(GamaBundleLoader.getPluginsWithModels(), builder, count, code);
 
 		DEBUG.OUT("" + count[0] + " GAMA models compiled in built-in library and plugins. " + code[0]
@@ -93,7 +96,7 @@ public class ModelLibraryValidator extends AbstractModelLibraryRunner {
 						final URL url = urls.nextElement();
 						if (isModel(url)) {
 							final URL resolvedFileURL = FileLocator.toFileURL(url);
-							allURLs.add(resolvedFileURL);
+							allURLs.add(toWorkspaceURL(resolvedFileURL));
 						}
 					}
 				}
@@ -122,7 +125,10 @@ public class ModelLibraryValidator extends AbstractModelLibraryRunner {
 		builder.compile(pathToModel, errors);
 		countOfModelsValidated[0]++;
 		errors.stream().filter(GamlCompilationError::isError).forEach(e -> {
-			DEBUG.ERR("Error in " + e.uri() + ":\n " + e.toString() + " \n " + e.source().toString() + "\n");
+			// Report the location only: serializing the source can fail on the very construct that is in error
+			final EObject source = e.source();
+			final String line = source == null ? "?" : String.valueOf(GAML.getLocationInFileInfo(source)[0]);
+			DEBUG.ERR("Error in " + e.uri() + " (line " + line + "):\n " + e.message() + "\n");
 			returnCode[0]++;
 		});
 	}

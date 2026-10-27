@@ -14,7 +14,10 @@ import static gama.api.utils.prefs.GamaPreferences.create;
 import static gama.ui.shared.resources.GamaColors.toGamaColor;
 import static java.util.Map.entry;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.RGB;
@@ -27,6 +30,7 @@ import gama.api.gaml.types.IType;
 import gama.api.types.color.IColor;
 import gama.api.types.font.IFont;
 import gama.api.utils.prefs.GamaPreferences.Theme;
+import gama.api.utils.prefs.Pref;
 
 /**
  * The class IGamlHighlightingConfiguration.
@@ -97,6 +101,45 @@ public abstract class DelegateHighlightingConfiguration implements IHighlighting
 
 	/** The theme. */
 	String theme;
+
+	/** The listeners. */
+	private static final List<Runnable> LISTENERS = new CopyOnWriteArrayList<>();
+
+	/** The default colors. */
+	final Map<String, RGB> defaultColors = new HashMap<>();
+
+	/** The color preferences. */
+	final Map<String, Pref<IColor>> colorPreferences = new HashMap<>();
+
+	/** The preference controlling whether to use default colors. */
+	Pref<Boolean> useDefaultPref;
+
+	/**
+	 * Adds a listener to be notified when syntax coloring changes.
+	 *
+	 * @param r
+	 *            the listener
+	 */
+	public static void addListener(final Runnable r) {
+		LISTENERS.add(r);
+	}
+
+	/**
+	 * Removes a listener.
+	 *
+	 * @param r
+	 *            the listener
+	 */
+	public static void removeListener(final Runnable r) {
+		LISTENERS.remove(r);
+	}
+
+	/**
+	 * Notifies listeners that syntax coloring has changed.
+	 */
+	public static void notifyListeners() {
+		LISTENERS.forEach(Runnable::run);
+	}
 
 	/** The Constant TITLES. */
 	// final Map<String, Pref<?>> preferences = new HashMap<>();
@@ -191,18 +234,65 @@ public abstract class DelegateHighlightingConfiguration implements IHighlighting
 	 * Configure preferences.
 	 */
 	public void configurePreferences() {
-		// we create and/or read the preferences
-		configure((id, name, style) -> {
-			var key = "pref_" + id + "_color_" + theme;
-			final var pref2 = create(key, theme + " theme " + name + " color", () -> toGamaColor(style.getColor()),
-					IType.COLOR, false).in(Theme.NAME, "Syntax coloring (" + theme + " theme)").onChange(color -> {
-						applyColor(id, name, style, color);
-					});
-			applyColor(id, name, style, pref2.getValue());
-			final var color = pref2.getValue();
-			if (color != null) { style.setColor(new RGB(color.red(), color.green(), color.blue())); }
+		// Capture default compiled-in colors
+		styles.forEach((id, style) -> {
+			final RGB rgb = style.getColor();
+			defaultColors.put(id, new RGB(rgb.red, rgb.green, rgb.blue));
 		});
 
+		final String[] colorKeys = TITLES.keySet().stream()
+				.map(id -> "pref_" + id + "_color_" + theme)
+				.toArray(String[]::new);
+
+		final var useDefaultKey = "pref_syntax_use_default_colors_" + theme;
+		useDefaultPref = create(useDefaultKey, "Use default syntax colors", true, IType.BOOL, false)
+				.in(Theme.NAME, "Syntax coloring (" + theme + " theme)")
+				.deactivates(colorKeys)
+				.onChange(this::applyAllColors);
+
+		// we create and/or read the preferences
+		configure((id, name, style) -> {
+			final var key = "pref_" + id + "_color_" + theme;
+			final var pref2 = create(key, theme + " theme " + name + " color",
+					() -> toGamaColor(defaultColors.get(id)), IType.COLOR, false)
+					.in(Theme.NAME, "Syntax coloring (" + theme + " theme)")
+					.onChange(color -> {
+						if (!Boolean.TRUE.equals(useDefaultPref.getValue())) {
+							applyColor(id, name, style, color);
+							notifyListeners();
+						}
+					});
+			colorPreferences.put(id, pref2);
+		});
+
+		applyAllColors(useDefaultPref.getValue());
+	}
+
+	/**
+	 * Apply all colors.
+	 *
+	 * @param useDefaults
+	 *            whether to use default colors or user-chosen colors
+	 */
+	public void applyAllColors(final Boolean useDefaults) {
+		final boolean defaults = Boolean.TRUE.equals(useDefaults);
+		for (final String id : TITLES.keySet()) {
+			final TextStyle style = styles.get(id);
+			if (style == null) continue;
+			if (defaults) {
+				final RGB rgb = defaultColors.get(id);
+				if (rgb != null) { style.setColor(new RGB(rgb.red, rgb.green, rgb.blue)); }
+			} else {
+				final Pref<IColor> pref = colorPreferences.get(id);
+				if (pref != null) {
+					final IColor color = pref.getValue();
+					if (color != null) {
+						style.setColor(new RGB(color.red(), color.green(), color.blue()));
+					}
+				}
+			}
+		}
+		notifyListeners();
 	}
 
 	/**
@@ -235,8 +325,19 @@ public abstract class DelegateHighlightingConfiguration implements IHighlighting
 	 *            the color
 	 */
 	private void applyColor(final String id, final String name, final TextStyle style, final IColor color) {
-		style.setColor(new RGB(color.red(), color.green(), color.blue()));
+		if (color != null) {
+			style.setColor(new RGB(color.red(), color.green(), color.blue()));
+		}
 		// acceptDefaultHighlighting(id, name, style);
+	}
+
+	/**
+	 * Gets the use default pref.
+	 *
+	 * @return the use default pref
+	 */
+	public Pref<Boolean> getUseDefaultPref() {
+		return useDefaultPref;
 	}
 
 	/**

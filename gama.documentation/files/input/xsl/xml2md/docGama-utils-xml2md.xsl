@@ -120,7 +120,26 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:wiki="www.google.fr">
 </xsl:if>
 
 		
-		</xsl:for-each>	
+		</xsl:for-each>
+</xsl:template>
+
+<!-- Renders prose that may span several paragraphs. In Markdown a single newline does not start a
+     new paragraph, so every newline coming from the @doc text is turned into a blank line to keep
+     the paragraphs separated instead of collapsing them into one block. -->
+<xsl:template name="printParagraphs">
+	<xsl:param name="text"/>
+	<xsl:choose>
+		<xsl:when test="contains($text, '&#10;')">
+			<xsl:value-of select="substring-before($text, '&#10;')"/>
+			<xsl:text>&#10;&#10;</xsl:text>
+			<xsl:call-template name="printParagraphs">
+				<xsl:with-param name="text" select="substring-after($text, '&#10;')"/>
+			</xsl:call-template>
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:value-of select="$text"/>
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:template>
 
 </xsl:stylesheet>

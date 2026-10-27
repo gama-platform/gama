@@ -16,7 +16,6 @@ import static gama.ui.shared.utils.WorkbenchHelper.runInUI;
 import static org.eclipse.core.resources.IResource.DEPTH_INFINITE;
 import static org.eclipse.core.resources.IResource.PROJECT;
 import static org.eclipse.core.resources.IResource.ROOT;
-import static org.eclipse.core.runtime.Status.OK_STATUS;
 import static org.eclipse.jface.viewers.StructuredSelection.EMPTY;
 import static org.eclipse.ui.PlatformUI.PLUGIN_ID;
 import static org.eclipse.ui.internal.ide.IIDEHelpContextIds.REFRESH_ACTION;
@@ -28,11 +27,12 @@ import org.eclipse.core.filesystem.IFileInfo;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.window.IShellProvider;
@@ -45,7 +45,10 @@ import org.eclipse.ui.internal.ide.dialogs.IDEResourceInfoUtils;
 
 import gama.api.GAMA;
 import gama.ui.navigator.view.GamaNavigator;
-import gama.ui.shared.interfaces.IRefreshHandler;
+import gama.ui.navigator.view.contents.TopLevelFolder;
+import gama.ui.navigator.view.contents.UserGroupFolder;
+import gama.ui.navigator.view.contents.UserGroups;
+import gama.ui.navigator.view.contents.WrappedProject;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.workspace.metadata.FileMetaDataProvider;
 
@@ -138,6 +141,18 @@ public class RefreshAction extends WorkspaceAction {
 	protected List<? extends IResource> getSelectedResources() {
 		final List<IResource> resources1 = new ArrayList<>();
 		for (final IResource r : super.getSelectedResources()) { if (r.isAccessible()) { resources1.add(r); } }
+		// A virtual top-level folder stands for the projects it contains
+		for (final Object o : getStructuredSelection()) {
+			if (o instanceof TopLevelFolder folder) {
+				for (final WrappedProject wp : folder.getProjects()) {
+					resources1.add(wp.getResource());
+				}
+			} else if (o instanceof UserGroupFolder group) {
+				for (final WrappedProject wp : group.getAllProjects()) {
+					resources1.add(wp.getResource());
+				}
+			}
+		}
 		if (resources1.isEmpty()) { resources1.add(GAMA.getWorkspaceManager().getRoot()); }
 		return resources1;
 	}
@@ -168,14 +183,20 @@ public class RefreshAction extends WorkspaceAction {
 		return new WorkspaceModifyOperation() {
 			@Override
 			public void execute(final IProgressMonitor monitor) {
+				final MultiStatus errors = new MultiStatus("gama.ui.navigator", 0,
+						"Some resources could not be refreshed", null);
 				try {
 					for (IResource resource : resources) {
 						try {
 							refreshResource(resource, null);
-						} catch (final CoreException e) {}
+						} catch (final CoreException e) {
+							errors.add(e.getStatus());
+						}
 						if (monitor.isCanceled()) throw new OperationCanceledException();
 					}
 				} finally {
+					errorStatus[0] = errors.isOK() ? Status.OK_STATUS : errors;
+					UserGroups.refreshNavigator();
 					monitor.done();
 				}
 			}
@@ -204,7 +225,7 @@ public class RefreshAction extends WorkspaceAction {
 			for (final IProject project : projects) { checkLocationDeleted(project); }
 		}
 		resource.refreshLocal(DEPTH_INFINITE, monitor);
-		resource.getParent().refreshLocal(DEPTH_INFINITE, monitor);
+		if (resource.getParent() != null) { resource.getParent().refreshLocal(DEPTH_INFINITE, monitor); }
 
 		runInUI("Refreshing " + resource.getName(), 0, m -> {
 			FileMetaDataProvider.getInstance().storeMetaData(resource, null, true);
@@ -212,25 +233,6 @@ public class RefreshAction extends WorkspaceAction {
 			getNavigator().getCommonViewer().refresh(getInstance().findWrappedInstanceOf(resource), true);
 		});
 
-	}
-
-	@Override
-	public void run() {
-		if (super.getSelectedResources().isEmpty()) {
-			final WorkspaceJob job = new WorkspaceJob("Refreshing the GAMA Workspace") {
-
-				@Override
-				public IStatus runInWorkspace(final IProgressMonitor monitor) throws CoreException {
-					final IRefreshHandler refresh = WorkbenchHelper.getService(IRefreshHandler.class);
-					if (refresh != null) { refresh.completeRefresh(resources); }
-					return OK_STATUS;
-				}
-			};
-			job.setUser(true);
-			job.schedule();
-		} else {
-			super.run();
-		}
 	}
 
 }

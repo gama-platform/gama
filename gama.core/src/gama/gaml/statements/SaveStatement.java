@@ -11,6 +11,7 @@ package gama.gaml.statements;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.Set;
 
@@ -91,6 +92,16 @@ import gaml.compiler.expressions.ConstantExpression;
 						type = IType.BOOL,
 						optional = true,
 						doc = @doc ("an expression that evaluates to a boolean, specifying whether the save will write a header if the file does not exist")),
+				@facet (
+						name = "separator",
+						type = IType.STRING,
+						optional = true,
+						doc = @doc ("the single character used to separate columns when saving tabular data to CSV (e.g. \";\"). If omitted, the value of the 'CSV separator' preference is used. Only applies to CSV output.")),
+				@facet (
+						name = "encoding",
+						type = IType.STRING,
+						optional = true,
+						doc = @doc ("the name of the character encoding to use when writing the file (e.g. \"UTF-8\", \"ISO-8859-1\"). Only taken into account when saving to CSV, or when saving a dataframe to JSON; ignored for every other data type and format.")),
 				@facet (
 						name = IKeyword.TO,
 						type = IType.STRING,
@@ -207,9 +218,9 @@ public class SaveStatement extends AbstractStatementSequence {
 			if (type != null) { desc.setFacetExprDescription(FORMAT, type); }
 			final IExpression format = type == null ? null : type.getExpression();
 
-			final IExpression data = desc.getFacetExpr(DATA);
-			if (data == null) return;
-			final IType<?> dataType = data.getGamlType();
+			final IExpression item = desc.getFacetExpr(DATA);
+			if (item == null) return;
+			final IType<?> dataType = item.getGamlType();
 			final IExpression to = desc.getFacetExpr(TO);
 
 			boolean isAFile = Types.FILE.isAssignableFrom(dataType);
@@ -269,23 +280,39 @@ public class SaveStatement extends AbstractStatementSequence {
 						+ BufferingUtils.PER_SIMULATION_BUFFERING + "'.", IGamlIssue.WRONG_TYPE);
 			}
 
-			if (noData != null && noData.getGamlType() != Types.INT && noData.getGamlType() != Types.FLOAT) {
-				desc.error("The value for no_data must be numeric", IGamlIssue.WRONG_TYPE, IKeyword.NO_DATA);
+			if (noData != null) {
+				if (noData.getGamlType() != Types.INT && noData.getGamlType() != Types.FLOAT) {
+					desc.error("The value for no_data must be numeric", IGamlIssue.WRONG_TYPE, IKeyword.NO_DATA);
+				}
+				final String formatId = format == null ? ext : format.literalValue();
+				ISaveDelegate saver = GamaAdditionRegistry.getSaveDelegate(formatId, dataType);
+				if (saver != null && !saver.handlesNoData()) {
+					desc.warning("The no_data facet will not be respected for this format (" + formatId + ")",
+							IGamlIssue.WRONG_TYPE, IKeyword.NO_DATA);
+				}
 			}
 
-			if (noData != null) {
+			final IExpression encoding = desc.getFacetExpr("encoding");
+			if (encoding != null) {
 				final String formatId = format == null ? ext : format.literalValue();
-				if (formatId != null && !isGeoTiffFormat(formatId)) {
-					desc.warning("The no_data facet is only used when saving GeoTIFF rasters", IGamlIssue.WRONG_TYPE,
-							IKeyword.NO_DATA);
+				ISaveDelegate saver = GamaAdditionRegistry.getSaveDelegate(formatId, dataType);
+				if (saver != null && !saver.handlesEncoding()) {
+					desc.warning("The encoding facet will not be respected for this format (" + formatId + ")",
+							IGamlIssue.WRONG_TYPE, "encoding");
 				}
+			}
+
+			if (att == null) return;
+			final String formatId = format == null ? ext : format.literalValue();
+			ISaveDelegate saver = GamaAdditionRegistry.getSaveDelegate(formatId, dataType);
+			if (saver != null && !saver.handlesAttributes()) {
+				desc.warning("Attributes can only be defined for shape, geojson or json files", IGamlIssue.WRONG_TYPE,
+						ATTRIBUTES);
 			}
 
 			// Starting from here we validate the attributes, other validations must be done before
 			switch (att) {
-				case null -> {
-					return;
-				}
+
 				case IExpression.Map map -> {
 					if (map.getGamlType().getKeyType() != Types.STRING) {
 						desc.error(
@@ -329,29 +356,10 @@ public class SaveStatement extends AbstractStatementSequence {
 				}
 			}
 
-			if (ext != null && format == null && !"shp".equals(ext) && !"json".equals(ext) && !"geojson".equals(ext)
-					|| format != null && !"shp".equals(format.literalValue())
-							&& !"geojson".equals(format.literalValue()) && !"json".equals(format.literalValue())) {
-				desc.warning("Attributes can only be defined for shape, geojson or json files", IGamlIssue.WRONG_TYPE,
-						ATTRIBUTES);
-			}
-
 			// Error deactivated for fixing #2982.
 			// desc.error("Attributes can only be saved for agents", IGamlIssue.UNKNOWN_FACET,
 			// att == null ? WITH : ATTRIBUTES);
 
-		}
-
-		/**
-		 * Checks whether a format identifier targets a GeoTIFF raster.
-		 *
-		 * @param formatId
-		 *            the format identifier or file extension to test
-		 * @return {@code true} when the identifier designates a GeoTIFF format
-		 */
-		private boolean isGeoTiffFormat(final String formatId) {
-			return "geotiff".equalsIgnoreCase(formatId) || "tif".equalsIgnoreCase(formatId)
-					|| "tiff".equalsIgnoreCase(formatId);
 		}
 
 	}
@@ -377,6 +385,12 @@ public class SaveStatement extends AbstractStatementSequence {
 	/** The no-data facet. */
 	private final IExpression noDataFacet;
 
+	/** The CSV separator facet. */
+	private final IExpression separatorFacet;
+
+	/** The encoding facet (only used when saving a dataframe to JSON). */
+	private final IExpression encodingFacet;
+
 	/**
 	 * Instantiates a new save statement.
 	 *
@@ -392,6 +406,8 @@ public class SaveStatement extends AbstractStatementSequence {
 		attributesFacet = getFacet(IKeyword.ATTRIBUTES);
 		bufferingStrategy = getFacet(IKeyword.BUFFERING);
 		noDataFacet = getFacet(IKeyword.NO_DATA);
+		separatorFacet = getFacet("separator");
+		encodingFacet = getFacet("encoding");
 	}
 
 	/**
@@ -489,7 +505,8 @@ public class SaveStatement extends AbstractStatementSequence {
 
 		try {
 			Files.createDirectories(fileToSave.toPath().getParent());
-			boolean exists = fileToSave.exists() || BufferingUtils.getInstance().isFileWaitingToBeWritten(fileToSave);
+			boolean exists = strategy == BufferingStrategies.NO_BUFFERING ? fileToSave.exists()
+					: BufferingUtils.getInstance().isFileWaitingToBeWritten(fileToSave) || fileToSave.exists();
 			final boolean rewrite = shouldOverwrite(scope);
 
 			IExpression header = getFacet(IKeyword.HEADER);
@@ -507,8 +524,19 @@ public class SaveStatement extends AbstractStatementSequence {
 			IType itemType = item.getGamlType();
 			ISaveDelegate delegate = GamaAdditionRegistry.getSaveDelegate(type, itemType);
 			if (delegate != null) {
-				var saveOptions =
-						new SaveOptions(code, addHeader, type, attributesFacet, strategy, rewrite, getNoDataValue(scope));
+				var saveOptions = new SaveOptions(code, addHeader, type, attributesFacet, strategy, rewrite,
+						getNoDataValue(scope));
+				if (separatorFacet != null) {
+					saveOptions = saveOptions.withSeparator(Cast.asString(scope, separatorFacet.value(scope)));
+				}
+				if (encodingFacet != null) {
+					final String enc = Cast.asString(scope, encodingFacet.value(scope));
+					try {
+						saveOptions = saveOptions.withCharset(Charset.forName(enc));
+					} catch (final IllegalArgumentException e) {
+						throw GamaRuntimeException.error("Unknown encoding: " + enc, scope);
+					}
+				}
 				delegate.save(scope, item, fileToSave, saveOptions);
 				return Cast.asString(scope, file.value(scope));
 			}

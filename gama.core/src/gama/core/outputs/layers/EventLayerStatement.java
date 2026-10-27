@@ -46,6 +46,7 @@ import gama.api.runtime.SystemInfo;
 import gama.api.runtime.scope.IScope;
 import gama.api.ui.IOutput;
 import gama.api.ui.layers.ILayerStatement;
+import gama.api.ui.layers.KeyCombination;
 import gama.core.outputs.layers.EventLayerStatement.EventLayerValidator;
 
 /**
@@ -66,7 +67,7 @@ import gama.core.outputs.layers.EventLayerStatement.EventLayerValidator;
 				name = ILayerStatement.Event.TRIGGER,
 				type = { IType.STRING },
 				optional = false,
-				doc = @doc ("the type of event captured: basic events include #mouse_up, #mouse_down, #mouse_move, #mouse_exit, #mouse_enter, #mouse_menu, #mouse_drag, #arrow_down, #arrow_up, #arrow_left, #arrow_right, #escape, #tab, #enter, #page_up, #page_down or a character")),
+				doc = @doc ("The trigger: a mouse-event constant, a keyboard-event constant, a single character, or an explicit keyboard combination such as 'ctrl+shift+a', 'alt+arrow_up', #ctrl + 'a', or #cmd + '+' + #enter. Keyboard constants include #arrow_down, #arrow_up, #arrow_left, #arrow_right, #escape, #tab, #enter, #page_up, #page_down, #ctrl, #cmd, #shift and #alt. Mouse constants include #mouse_up, #mouse_down, #mouse_click, #mouse_move, #mouse_exit, #mouse_enter, #mouse_menu and #mouse_drag.")),
 				@facet (
 						name = IKeyword.TYPE,
 						type = IType.STRING,
@@ -82,12 +83,51 @@ import gama.core.outputs.layers.EventLayerStatement.EventLayerValidator;
 @doc (
 		value = "`" + IKeyword.EVENT
 				+ "` allows to interact with the simulation by capturing mouse or key events and doing an action. The name of this action can be defined with the 'action:' facet, in which case the action needs to be defined in 'global' or in the current experiment, without any arguments."
-				+ " The location of the mouse in the world can be retrieved in this action with the pseudo-constant #user_location. The statements to execute can also be defined in the block at the end of this statement, in which case they will be executed in the context of the experiment",
+				+ " The location of the mouse in the world can be retrieved in this action with the pseudo-constant #user_location. The statements to execute can also be defined in the block at the end of this statement, in which case they will be executed in the context of the experiment. "
+				+ "Keyboard combinations can be written as strings, e.g. 'ctrl+shift+a', 'alt+arrow_up' or 'cmd+enter'. "
+				+ "Modifiers (ctrl, shift, alt, cmd) are case-insensitive and must match exactly; modifier order does not matter. "
+				+ "For example, 'ctrl+a' does not match CTRL+SHIFT+A; declare 'ctrl+shift+a' for that combination. "
+				+ "Existing constants retain their values: #ctrl + 'a' evaluates to 'ctrla', a supported compact spelling of 'ctrl+a'. "
+				+ "Likewise #ctrl + #shift + 'a' means 'ctrl+shift+a'. Explicit separators such as #ctrl + '+a' or #alt + '+' + #arrow_up are recommended for readability. "
+				+ "The aliases control, command, meta, win and windows are accepted; cmd/win denotes the Command key on macOS and the Windows/Meta key elsewhere, not CTRL. "
+				+ "Letters in combinations are case-insensitive; use shift explicitly for shifted letters. Use 'space' for the space key and 'ctrl++' for CTRL with plus. "
+				+ "Punctuation follows the character produced by the keyboard layout; include shift in the declaration if producing that character requires it (e.g. 'ctrl+shift++'). "
+				+ "The final key can be a single character, space, arrow_up, arrow_down, arrow_left, arrow_right, escape, tab, enter, page_up or page_down. "
+				+ "A combination requires at least one modifier and one non-modifier key; duplicate modifiers, unknown keys and mouse-event combinations are errors. "
+				+ "Combinations run on key press (including auto-repeat) alongside existing single-key events and built-in shortcuts, without overriding them. "
+				+ "Click the display to give it keyboard focus. No key-release event is introduced; holding a key may repeatedly execute its block. "
+				+ "Standalone #ctrl, #cmd, #shift and #alt events retain their existing behavior; adding combination events does not change legacy character or special-key dispatch. "
+				+ "Shortcuts intercepted by the operating system or workbench may not reach the display. On Windows, CTRL-based events receive an additional warning about conflicts with OpenGL camera interaction. "
+				+ "OpenGL camera controls use CMD only on macOS and CTRL only on Windows/Linux; macOS CTRL is not a camera modifier. CTRL-click on macOS retains its contextual-menu behavior. "
+				+ "An action defined in 'global' must be called on the simulation from this block (e.g. `ask simulation { do myAction(); }`).",
 		usages = { @usage (
 				value = "The general syntax is:",
 				examples = { @example (
 						value = "event [event_type] action: myAction;",
 						isExecutable = false) }),
+				@usage (
+						value = "Keyboard combinations use one or more modifiers and a final key. These forms can be used inside a display; event blocks execute in the experiment context:",
+						examples = { @example (
+								value = "event 'ctrl+shift+a' { write 'CTRL+SHIFT+A'; }",
+								isExecutable = false),
+								@example (
+										value = "event #ctrl + 'a' { write 'CTRL+A (compact constant syntax)'; }",
+										isExecutable = false),
+								@example (
+										value = "event #alt + '+' + #arrow_up { write 'ALT+UP'; }",
+										isExecutable = false),
+								@example (
+										value = "event #cmd + '+enter' { write 'Command/Windows+Enter'; }",
+										isExecutable = false),
+								@example (
+										value = "event #ctrl + #shift + 'b' { write 'CTRL+SHIFT+B'; }",
+										isExecutable = false),
+								@example (
+										value = "event 'shift+space' { write 'SHIFT+SPACE'; }",
+										isExecutable = false),
+								@example (
+										value = "event 'ctrl+shift++' { write 'CTRL+SHIFT+plus'; }",
+										isExecutable = false) }),
 				@usage (
 						value = "For instance:",
 						examples = { @example (
@@ -152,7 +192,15 @@ public class EventLayerStatement extends AbstractLayerStatement implements ILaye
 				description.error("Impossible to find this trigger", IGamlIssue.UNKNOWN_ACTION, ACTION);
 				return;
 			}
-			if (name.length() > 1) { // If it is not a char
+			KeyCombination combination = null;
+			if (KeyCombination.isCombination(name)) {
+				try {
+					combination = KeyCombination.parse(name);
+				} catch (final IllegalArgumentException e) {
+					description.error(e.getMessage(), IGamlIssue.UNKNOWN_ARGUMENT, TRIGGER);
+					return;
+				}
+			} else if (name.length() > 1) { // If it is not a char
 				StringBuilder error = new StringBuilder();
 				boolean foundEventName = false;
 				for (final IEventLayerDelegate delegate : GamaAdditionRegistry.getEventLayerDelegates()) {
@@ -166,6 +214,27 @@ public class EventLayerStatement extends AbstractLayerStatement implements ILaye
 				}
 				if (SystemInfo.isLinux() && IKeyword.MOUSE_EXIT.equals(name)) {
 					description.warning("'" + IKeyword.MOUSE_EXIT + "' may not fire reliably on Linux systems",
+							IGamlIssue.GENERAL, TRIGGER);
+				}
+			}
+			if (SystemInfo.isWindows() && (IEventLayerDelegate.CONTROL_MODIFIER.equals(name)
+					|| combination != null && (combination.modifiers() & KeyCombination.CTRL) != 0)
+					&& OpenGLSpecificLayerValidator.isOpenGL(description.getEnclosingDescription())) {
+				description.warning(
+						"On Windows, CTRL-based keyboard events may conflict with camera interaction in OpenGL displays; built-in shortcuts remain active and may intercept the event",
+						IGamlIssue.GENERAL, TRIGGER);
+			} else if (combination != null) {
+				final boolean command = (combination.modifiers()
+						& (SystemInfo.isMac() ? KeyCombination.CMD : KeyCombination.CTRL)) != 0;
+				final boolean displayKey = switch (combination.key()) {
+					case "arrow_up", "arrow_down", "arrow_left", "arrow_right", " ", "+", "-", "4", "6", "8", "2", "k" -> true;
+					default -> false;
+				};
+				if ("escape".equals(combination.key())
+						|| command && List.of("o", "t", "p", "r", "x").contains(combination.key())
+						|| displayKey && OpenGLSpecificLayerValidator.isOpenGL(description.getEnclosingDescription())) {
+					description.warning(
+							"This key combination may also activate a built-in display or workbench shortcut, which remains active and may intercept the event",
 							IGamlIssue.GENERAL, TRIGGER);
 				}
 			}

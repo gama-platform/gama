@@ -25,6 +25,7 @@ import com.jogamp.newt.event.WindowUpdateEvent;
 import gama.api.runtime.SystemInfo;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.layers.IEventLayerListener;
+import gama.api.ui.layers.KeyCombination;
 import gama.api.utils.interfaces.IDisposable;
 import gama.dev.DEBUG;
 import gama.ui.experiment.views.displays.LayeredDisplayDecorator;
@@ -35,7 +36,7 @@ import gama.ui.experiment.views.displays.LayeredDisplayMultiListener;
  *
  */
 public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListener, WindowListener, IDisposable {
-	private int mapKeyCodeToEventAction(int keyCode) {
+	private static int mapKeyCodeToEventAction(final int keyCode) {
 		return switch (keyCode) {
 			case KeyEvent.VK_UP -> IEventLayerListener.ARROW_UP;
 			case KeyEvent.VK_DOWN -> IEventLayerListener.ARROW_DOWN;
@@ -141,6 +142,8 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 	public void keyPressed(final KeyEvent e) {
 		DEBUG.OUT("Key pressed in Newt listener: " + e);
 		if (!ok.get()) return;
+		delegate.keyCombinationPressed(combinationKey(e), e.isControlDown(), e.isShiftDown(),
+				e.isAltDown(), e.isMetaDown());
 		// Bug on Windows : the character returned contains the modifiers despite the documentation saying the contrary
 		boolean isPrintable = SystemInfo.isWindows() || SystemInfo.isLinux()
 				? KeyEvent.isPrintableKey(e.getKeySymbol(), true) : e.isPrintableKey();
@@ -159,6 +162,14 @@ public class NEWTLayeredDisplayMultiListener implements MouseListener, KeyListen
 				|| e.isAutoRepeat() && !e.isAltDown() && !e.isControlDown() && !e.isShiftDown() && !e.isMetaDown()) {
 			delegate.specialKeyPressed(mapKeyCodeToEventAction(e.getKeyCode()));
 		}
+	}
+
+	static String combinationKey(final KeyEvent e) {
+		final String special = KeyCombination.specialKey(mapKeyCodeToEventAction(e.getKeyCode()));
+		if (special != null) return special;
+		if (!KeyEvent.isPrintableKey(e.getKeySymbol(), true)) return null;
+		return String.valueOf(Character.isLetterOrDigit((char) e.getKeySymbol()) || Character.isISOControl(e.getKeyChar())
+				? (char) e.getKeySymbol() : e.getKeyChar());
 	}
 
 	@Override

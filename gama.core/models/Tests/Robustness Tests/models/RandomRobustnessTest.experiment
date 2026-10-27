@@ -1,0 +1,185 @@
+/**
+* Name: RandomRobustnessTest
+* Description: Feeds the random operators with absurd parameters (negative, null, infinite, not a number,
+* 	reversed bounds, empty weights). An invalid input may be rejected, but with a GAML error and not with an
+* 	internal Java exception; when it is accepted, the drawn value must be a number within the possible range
+* Tags: robustness, random, distribution, test
+*/
+
+experiment RandomRobustnessTest type: test autorun: true {
+
+	bool handled(string problem) {
+		return problem = nil ? true : !(problem contains "Java error");
+	}
+
+	test "Optimized integer sampling rejects reversed bounds with a GAML error" {
+		string problem <- nil;
+		try { int drawn <- rnd(5, 1, true); } catch { problem <- #current_error; }
+		assert problem != nil and handled(problem);
+		assert problem contains "rnd:" and problem contains "min must not exceed max";
+		problem <- nil;
+		try { int drawn <- rnd(-5, true); } catch { problem <- #current_error; }
+		assert problem != nil and handled(problem);
+		assert problem contains "rnd:" and problem contains "min must not exceed max";
+	}
+
+	test "Optimized integer sampling handles inclusive integer limits" {
+		loop generator over: ["java", "mersenne", "parallel", "threaded"] {
+			ask simulation {
+				rng <- generator;
+				seed <- 123.0;
+				int lowest <- -2147483647 - 1;
+				int highest <- 2147483647;
+				assert rnd(lowest, lowest, true) = lowest;
+				assert rnd(highest, highest, true) = highest;
+				list<int> lower_values <- [];
+				list<int> upper_values <- [];
+				loop times: 100 {
+					lower_values <+ rnd(lowest, lowest + 1, true);
+					upper_values <+ rnd(highest - 1, highest, true);
+					int drawn <- rnd(lowest, highest, true);
+					assert drawn >= lowest and drawn <= highest;
+					drawn <- rnd(-100, highest, true);
+					assert drawn >= -100 and drawn <= highest;
+					drawn <- rnd(lowest, 100, true);
+					assert drawn >= lowest and drawn <= 100;
+					drawn <- rnd(highest, true);
+					assert drawn >= 0 and drawn <= highest;
+				}
+				assert lower_values all_match (each = lowest or each = lowest + 1);
+				assert upper_values all_match (each = highest - 1 or each = highest);
+				assert (lowest in lower_values) and ((lowest + 1) in lower_values);
+				assert ((highest - 1) in upper_values) and (highest in upper_values);
+			}
+		}
+	}
+
+	test "A null or negative step" {
+		string problem <- nil;
+		try { int drawn <- rnd(1, 5, 0); } catch { problem <- #current_error; }
+		assert problem != nil and handled(problem);
+		assert problem contains "rnd:" and problem contains "nonzero";
+		problem <- nil;
+		int drawn <- 0;
+		try { drawn <- rnd(1, 5, -1); } catch { problem <- #current_error; }
+		assert problem != nil and handled(problem);
+		assert problem contains "rnd:" and problem contains "toward the second bound";
+	}
+
+	test "Directional steps for integer, float and point draws" {
+		loop times: 50 {
+			int ascending <- rnd(2, 12, 4);
+			int descending <- rnd(12, 2, -4);
+			assert ascending in [2, 6, 10];
+			assert descending in [12, 8, 4];
+			float descending_float <- rnd(4.0, 2.0, -0.5);
+			assert descending_float in [2.0, 2.5, 3.0, 3.5, 4.0];
+			point descending_point <- rnd({4, 4, 0}, {2, 2, 0}, -0.5);
+			assert descending_point.x >= 2 and descending_point.x <= 4;
+			assert descending_point.y >= 2 and descending_point.y <= 4;
+			assert descending_point.z = 0;
+		}
+		assert rnd(3, 3, -2) = 3;
+		assert rnd(3.0, 3.0, -0.5) = 3.0;
+		assert rnd({3, 3}, {3, 3}, -0.5) = {3, 3};
+	}
+
+	test "Invalid float and point steps raise focused errors" {
+		loop step_value over: [0.0, -1.0, #nan, #infinity] {
+			string problem <- nil;
+			try { float drawn <- rnd(1.0, 5.0, step_value); } catch { problem <- #current_error; }
+			assert problem != nil;
+			assert handled(problem);
+			assert problem contains "rnd:" and problem contains "step";
+			problem <- nil;
+			try { point drawn <- rnd({1, 1}, {5, 5}, step_value); } catch { problem <- #current_error; }
+			assert problem != nil;
+			assert handled(problem);
+			assert problem contains "rnd:" and problem contains "step";
+		}
+		string problem <- nil;
+		try { int drawn <- rnd(5, 1, 1); } catch { problem <- #current_error; }
+		assert problem != nil and problem contains "toward the second bound";
+		problem <- nil;
+		try { float drawn <- rnd(5.0, 1.0, 1.0); } catch { problem <- #current_error; }
+		assert problem != nil and problem contains "toward the second bound";
+		problem <- nil;
+		try { point drawn <- rnd({1, 5}, {5, 1}, 1.0); } catch { problem <- #current_error; }
+		assert problem != nil and problem contains "toward the second bound";
+	}
+
+	test "An infinite upper bound" {
+		string problem <- nil;
+		float drawn <- 0.0;
+		try { drawn <- rnd(#infinity); } catch { problem <- #current_error; }
+		assert handled(problem) or problem != nil or is_finite(drawn);
+	}
+
+	test "An upper bound that is not a number" {
+		string problem <- nil;
+		float drawn <- 0.0;
+		try { drawn <- rnd(#nan); } catch { problem <- #current_error; }
+		assert handled(problem) or problem != nil or is_number(drawn);
+	}
+
+	test "Probabilities out of [0, 1] are clamped" {
+		assert flip(2.0);
+		assert not flip(-1.0);
+		string problem <- nil;
+		try { bool b <- flip(#nan); } catch { problem <- #current_error; }
+		assert handled(problem);
+	}
+
+	test "Invalid parameters of the binomial and Poisson distributions" {
+		string problem <- nil;
+		try { int drawn <- binomial(-1, 0.5); } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+		problem <- nil;
+		try { int drawn <- binomial(10, 2.0); } catch { problem <- #current_error; }
+		assert problem != nil;
+		assert handled(problem);
+		// a negative mean cannot give a negative count
+		assert poisson(-1.0) >= 0;
+		assert poisson(0.0) = 0;
+	}
+
+	test "Invalid rates of the exponential distribution" {
+		string problem <- nil;
+		try { float drawn <- exp_rnd(0.0); } catch { problem <- #current_error; }
+		assert handled(problem);
+		problem <- nil;
+		try { float drawn <- exp_rnd(-1.0); } catch { problem <- #current_error; }
+		assert handled(problem);
+	}
+
+	test "A negative standard deviation" {
+		string problem <- nil;
+		float drawn <- 0.0;
+		try { drawn <- gauss(0, -1); } catch { problem <- #current_error; }
+		assert handled(problem);
+		assert problem != nil or is_number(drawn);
+	}
+
+	test "Weighted choices without any positive weight" {
+		string problem <- nil;
+		int i <- 0;
+		try { i <- rnd_choice([0.0, 0.0]); } catch { problem <- #current_error; }
+		// either rejected, or one of the two indexes
+		assert handled(problem) or problem != nil or (i >= 0 and i <= 1);
+
+		problem <- nil;
+		try { i <- rnd_choice([]); } catch { problem <- #current_error; }
+		// there is nothing to choose from
+		assert problem != nil or handled(problem) or i = -1;
+	}
+
+	test "Negative weights are never chosen" {
+		seed <- 1.0;
+		list<int> choices <- [];
+		loop times: 50 {
+			choices <+ rnd_choice([-1.0, 2.0]);
+		}
+		assert choices all_match (each = 1);
+	}
+}

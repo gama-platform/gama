@@ -23,7 +23,10 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.window.Window;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.services.AbstractServiceFactory;
 import org.eclipse.ui.services.IServiceLocator;
@@ -37,19 +40,20 @@ import gama.api.GAMA;
 import gama.api.compilation.GamlCompilationError;
 import gama.api.compilation.IModelsManager;
 import gama.api.constants.GamlFileExtension;
-import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.kernel.species.IModelSpecies;
 import gama.api.utils.files.IFileMetadataProvider;
 import gama.api.utils.files.IGamlFileInfo;
 import gama.api.utils.tests.TestExperimentSummary;
-import gama.core.experiment.TestAgent;
-import gama.core.experiment.parameters.ParametersSet;
+import gama.api.utils.tests.IsolatedTestRunner;
+import gama.api.utils.tests.TestExperimentRunner;
+import gama.api.utils.tests.TestSelection;
 import gama.dev.DEBUG;
 import gama.ui.editor.internal.EditorActivator;
 import gama.ui.navigator.view.contents.WrappedGamaFile;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gaml.compiler.resource.GamlFileInfo;
 import gaml.compiler.validation.GamlModelBuilder;
+import gaml.compiler.validation.GamlAutoValidation;
 
 /**
  * The class ModelsManager.
@@ -97,7 +101,6 @@ public class ModelsManager extends AbstractServiceFactory implements IModelsMana
 		WorkbenchHelper.asyncRun(() -> editModelInternal(eObject));
 	}
 
-	@SuppressWarnings ("unchecked")
 	@Override
 	public List<TestExperimentSummary> runHeadlessTests(final Object object) {
 		// final StringBuilder sb = new StringBuilder();
@@ -107,16 +110,12 @@ public class ModelsManager extends AbstractServiceFactory implements IModelsMana
 				.filter(e -> model.getExperiment(e).isTest()).toList();
 		if (testExpNames.isEmpty()) return null;
 		final List<TestExperimentSummary> result = new ArrayList<>();
-		for (final String expName : testExpNames) {
-			final IExperimentSpecies exp = GAMA.addHeadlessExperiment(model, expName, new ParametersSet(), null);
-			if (exp != null) {
-				exp.setHeadless(true);
-				final TestAgent agent = (TestAgent) exp.getAgent();
-				// exp.getController().getScheduler().resume();
-				agent.init(agent.getScope());
-				agent.step(agent.getScope());
-				result.add(agent.getSummary());
-				GAMA.closeExperiment(exp);
+		try (var session = IsolatedTestRunner.openSession()) {
+			for (final String expName : testExpNames) {
+				if (GAMA.getGui().isTestStopRequested()) break;
+				final var summary = TestExperimentRunner.run(model, expName, GAMA.getGui());
+				result.add(summary);
+				if (summary.getState() == gama.api.utils.tests.TestState.INTERRUPTED) break;
 			}
 		}
 		return result;
@@ -126,13 +125,26 @@ public class ModelsManager extends AbstractServiceFactory implements IModelsMana
 	 * @param object
 	 * @return
 	 */
+	@Override
+	public int countHeadlessTests(final Object object) {
+		final var model = findModel(object);
+		if (model == null) throw new IllegalArgumentException("Cannot discover tests in " + object);
+		try {
+			return model.getDescription().getExperimentNames().stream()
+					.filter(name -> model.getExperiment(name).isTest())
+					.mapToInt(name -> TestExperimentRunner.countTests(model, name)).sum();
+		} finally {
+			if (!(object instanceof IModelSpecies)) { model.dispose(); }
+		}
+	}
+
 	private IModelSpecies findModel(final Object object) {
 		if (object instanceof IModelSpecies) return (IModelSpecies) object;
 		if (object instanceof WrappedGamaFile) return findModel(((WrappedGamaFile) object).getResource());
 		switch (object) {
 			case IFile file -> {
 				try {
-					if (file.findMaxProblemSeverity(IMarker.PROBLEM, true,
+					if (GamlAutoValidation.isEnabled(file) && file.findMaxProblemSeverity(IMarker.PROBLEM, true,
 							IResource.DEPTH_ZERO) == IMarker.SEVERITY_ERROR) {
 						GAMA.getGui().getDialogFactory()
 								.error("Model " + file.getFullPath() + " has errors and cannot be launched");
@@ -174,6 +186,38 @@ public class ModelsManager extends AbstractServiceFactory implements IModelsMana
 		final IModelSpecies model = findModel(object);
 		if (model == null) return;
 		GAMA.runGuiExperiment(exp, model);
+	}
+
+	@Override
+	public void runTest(final Object object, final URI test) {
+		final IModelSpecies model = findModel(object);
+		if (model == null) return;
+		try {
+			final TestSelection selection = TestSelection.of(test);
+			final List<String> experiments = selection.experimentsIn(model);
+			final String experiment = switch (experiments.size()) {
+				case 0 -> throw new IllegalArgumentException(
+						"No test experiment of this model runs this test. Declare it in, or add, an experiment of type test.");
+				case 1 -> experiments.get(0);
+				default -> chooseTestExperiment(experiments);
+			};
+			if (experiment != null) { GAMA.runGuiExperiment(experiment, model, selection); }
+		} catch (final IllegalArgumentException e) {
+			GAMA.getGui().getDialogFactory().error("Unable to run this test: " + e.getMessage());
+		}
+	}
+
+	private static String chooseTestExperiment(final List<String> experiments) {
+		final String[] result = { null };
+		WorkbenchHelper.run(() -> {
+			final var dialog = new ElementListSelectionDialog(WorkbenchHelper.getShell(), new LabelProvider());
+			dialog.setTitle("Run this test");
+			dialog.setMessage("Choose the test experiment in which to run this test:");
+			dialog.setElements(experiments.toArray());
+			dialog.setMultipleSelection(false);
+			if (dialog.open() == Window.OK && dialog.getFirstResult() instanceof String name) { result[0] = name; }
+		});
+		return result[0];
 	}
 
 	@Override

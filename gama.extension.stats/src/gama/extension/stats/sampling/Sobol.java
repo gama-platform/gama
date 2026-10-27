@@ -29,16 +29,16 @@ import org.moeaframework.util.sequence.Saltelli;
 
 import gama.annotations.doc;
 import gama.annotations.no_test;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
-import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
-import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
 import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
@@ -67,7 +67,7 @@ public final class Sobol {
 	private Map<String, List<Object>> problem;
 
 	/** Map giving the values of each parameters */
-	private final Map<String, List<Object>> parameters;
+	private final Map<String, List> parameters;
 
 	/** Output name */
 	private final List<String> output_names;
@@ -107,16 +107,16 @@ public final class Sobol {
 	/**
 	 * Build a sobol problem from a map of data (columns)
 	 */
-	public Sobol(final Map<String, List<Double>> data, final int nb_parameters, final IScope scope) {
+	public Sobol(final Map<String, IList> data, final int nb_parameters, final IScope scope) {
 		this.scope = scope;
 		this.parameters = new LinkedHashMap<>();
 		this.output_names = new ArrayList<>();
 		this.outputs = new HashMap<>();
 
 		int i = 0;
-		for (Entry<String, List<Double>> entry : data.entrySet()) {
+		for (Entry<String, IList> entry : data.entrySet()) {
 			String name = entry.getKey();
-			List<Object> values = new ArrayList<>(entry.getValue());
+			List values = new ArrayList<>(entry.getValue());
 
 			if (i < nb_parameters) {
 				this.parameters.put(name, values);
@@ -128,8 +128,8 @@ public final class Sobol {
 		}
 
 		_sample = this.parameters.values().iterator().next().size();
-		if (_sample % (2 * nb_parameters + 2) != 0) throw new IllegalArgumentException(
-				"Number of sample in the data doesn't match the number of parameters");
+		if (_sample % (2 * nb_parameters + 2) != 0)
+			throw new IllegalArgumentException("Number of sample in the data doesn't match the number of parameters");
 		sample = _sample / (2 * nb_parameters + 2);
 	}
 
@@ -157,18 +157,18 @@ public final class Sobol {
 			int rowIdx = 1;
 			while ((line = br.readLine()) != null) {
 				rowIdx++;
-				if (line.trim().isEmpty()) continue;
+				if (line.trim().isEmpty()) { continue; }
 				this._sample++;
 				String values[] = parseCsvLine(line);
-				if (values.length != columns_names.length) {
-					throw new IOException("Row " + rowIdx + " has " + values.length + " columns, expected " + columns_names.length);
-				}
+				if (values.length != columns_names.length) throw new IOException(
+						"Row " + rowIdx + " has " + values.length + " columns, expected " + columns_names.length);
 				for (int i = 0; i < nb_parameters; i++) {
 					String val = values[i].trim();
 					try {
 						this.parameters.get(columns_names[i].trim()).add(Double.parseDouble(val));
 					} catch (NumberFormatException e) {
-						throw new IOException("Invalid number '" + val + "' at row " + rowIdx + ", column " + columns_names[i]);
+						throw new IOException(
+								"Invalid number '" + val + "' at row " + rowIdx + ", column " + columns_names[i]);
 					}
 				}
 				for (int i = nb_parameters; i < columns_names.length; i++) {
@@ -176,7 +176,8 @@ public final class Sobol {
 					try {
 						this.outputs.get(columns_names[i].trim()).add(Double.parseDouble(val));
 					} catch (NumberFormatException e) {
-						throw new IOException("Invalid number '" + val + "' at row " + rowIdx + ", column " + columns_names[i]);
+						throw new IOException(
+								"Invalid number '" + val + "' at row " + rowIdx + ", column " + columns_names[i]);
 					}
 				}
 			}
@@ -185,7 +186,8 @@ public final class Sobol {
 			sample = _sample / (2 * nb_parameters + 2);
 
 		} catch (Exception e) {
-			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("[SOBOL] Load Error: " + e.getMessage(), scope), true);
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.error("[SOBOL] Load Error: " + e.getMessage(), scope), true);
 		}
 	}
 
@@ -234,12 +236,24 @@ public final class Sobol {
 		try (FileWriter fw = new FileWriter(file, false)) {
 			fw.write(buildSaltelliReport());
 		} catch (IOException e) {
-			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("Failed to save Saltelli sample: " + e.getMessage(), scope), true);
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.error("Failed to save Saltelli sample: " + e.getMessage(), scope), true);
 		}
 	}
 
-	public Map<String, List<Object>> getParametersValues() { return this.parameters; }
+	/**
+	 * Gets the parameters values.
+	 *
+	 * @return the parameters values
+	 */
+	public Map<String, List> getParametersValues() { return this.parameters; }
 
+	/**
+	 * Sets the map of outputs values.
+	 *
+	 * @param outputs
+	 *            the new map of outputs values
+	 */
 	public void setOutputs(final Map<String, List<Object>> outputs) {
 		for (String output : outputs.keySet()) {
 			if (outputs.get(output).size() != _sample) throw GamaRuntimeException.error(
@@ -268,9 +282,7 @@ public final class Sobol {
 				for (int j = 0; j < this.parameters.size(); j++) {
 					C_A[i][j] = Double.parseDouble(it.next().toString());
 				}
-				for (int j = 0; j < this.parameters.size(); j++) {
-					it.next();
-				}
+				for (int j = 0; j < this.parameters.size(); j++) { it.next(); }
 				B[i] = Double.parseDouble(it.next().toString());
 			}
 
@@ -301,14 +313,26 @@ public final class Sobol {
 		return sobol_analysis;
 	}
 
+	/**
+	 * Save result.
+	 *
+	 * @param file
+	 *            the file
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
 	public void saveResult(final File file) throws GamaRuntimeException {
 		try (FileWriter fw = new FileWriter(file, false)) {
 			fw.write(this.buildReportString(FilenameUtils.getExtension(file.getPath())));
 		} catch (Exception e) {
-			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("Failed to save Sobol results: " + e.getMessage(), scope), true);
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.error("Failed to save Sobol results: " + e.getMessage(), scope), true);
 		}
 	}
 
+	/**
+	 * Sample.
+	 */
 	private void sample() {
 		for (int i = 0; i < _sample; i++) {
 			int j = 0;
@@ -319,6 +343,13 @@ public final class Sobol {
 		}
 	}
 
+	/**
+	 * Builds the report string.
+	 *
+	 * @param extension
+	 *            the extension
+	 * @return the string
+	 */
 	public String buildReportString(final String extension) {
 		StringBuilder sb = new StringBuilder();
 		char sep = ',';
@@ -343,7 +374,8 @@ public final class Sobol {
 				}
 			}
 		} else {
-			sb.append("output,parameter,first order,first order confidence,Total order,Total order confidence").append(StringUtils.LN);
+			sb.append("output,parameter,first order,first order confidence,Total order,Total order confidence")
+					.append(StringUtils.LN);
 			for (String output_name : sobol_analysis.keySet()) {
 				for (String param : sobol_analysis.get(output_name).keySet()) {
 					sb.append(output_name).append(sep).append(param);
@@ -357,6 +389,11 @@ public final class Sobol {
 		return sb.toString();
 	}
 
+	/**
+	 * Builds the saltelli report.
+	 *
+	 * @return the string
+	 */
 	private String buildSaltelliReport() {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < this._sample; i++) {
@@ -369,6 +406,14 @@ public final class Sobol {
 		return sb.toString();
 	}
 
+	/**
+	 * Parses the saltelli.
+	 *
+	 * @param file
+	 *            the file
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
 	private void parseSaltelli(final File file) throws GamaRuntimeException {
 		saltelli = new double[this._sample][parameters.size()];
 		try (BufferedReader br = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8))) {
@@ -380,10 +425,21 @@ public final class Sobol {
 				sIdx++;
 			}
 		} catch (Exception e) {
-			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("Failed to parse Saltelli file: " + e.getMessage(), scope), true);
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.error("Failed to parse Saltelli file: " + e.getMessage(), scope), true);
 		}
 	}
 
+	/**
+	 * Roll.
+	 *
+	 * @param param
+	 *            the param
+	 * @param saltelli
+	 *            the saltelli
+	 * @param info
+	 *            the info
+	 */
 	private void roll(final String param, final Double saltelli, final List<Object> info) {
 		Object val = null;
 		if (info.stream().allMatch(Double.class::isInstance)) {
@@ -404,6 +460,21 @@ public final class Sobol {
 		parameters.get(param).add(val);
 	}
 
+	/**
+	 * Compute first order confidence.
+	 *
+	 * @param a0
+	 *            the a 0
+	 * @param a1
+	 *            the a 1
+	 * @param a2
+	 *            the a 2
+	 * @param nsample
+	 *            the nsample
+	 * @param nresample
+	 *            the nresample
+	 * @return the double
+	 */
 	private double computeFirstOrderConfidence(final double[] a0, final double[] a1, final double[] a2,
 			final int nsample, final int nresample) {
 		double[] b0 = new double[nsample];
@@ -413,7 +484,9 @@ public final class Sobol {
 		for (int i = 0; i < nresample; i++) {
 			for (int j = 0; j < nsample; j++) {
 				int index = scope.getRandom().getGenerator().nextInt(nsample);
-				b0[j] = a0[index]; b1[j] = a1[index]; b2[j] = a2[index];
+				b0[j] = a0[index];
+				b1[j] = a1[index];
+				b2[j] = a2[index];
 			}
 			s[i] = computeFirstOrder(b0, b1, b2, nsample);
 		}
@@ -423,7 +496,21 @@ public final class Sobol {
 		return 1.96 * Math.sqrt(sss / (nresample - 1));
 	}
 
+	/**
+	 * Compute first order.
+	 *
+	 * @param a0
+	 *            the a 0
+	 * @param a1
+	 *            the a 1
+	 * @param a2
+	 *            the a 2
+	 * @param nsample
+	 *            the nsample
+	 * @return the double
+	 */
 	private double computeFirstOrder(final double[] a0, final double[] a1, final double[] a2, final int nsample) {
+		if (nsample <= 1) return 0.0;
 		double c = 0.0;
 		for (int i = 0; i < nsample; i++) { c += a0[i]; }
 		c /= nsample;
@@ -434,28 +521,57 @@ public final class Sobol {
 			tmp2 += a2[i] - c;
 			tmp3 += (a1[i] - c) * (a2[i] - c);
 		}
-		EY2 /= nsample;
+		EY2 /= nsample - 1;
 		double V = tmp1 / (nsample - 1) - Math.pow(tmp2 / nsample, 2.0);
+		if (V == 0.0) return 0.0;
 		double U = tmp3 / (nsample - 1);
 		return (U - EY2) / V;
 	}
 
+	/**
+	 * Compute total order.
+	 *
+	 * @param a0
+	 *            the a 0
+	 * @param a1
+	 *            the a 1
+	 * @param a2
+	 *            the a 2
+	 * @param nsample
+	 *            the nsample
+	 * @return the double
+	 */
 	private double computeTotalOrder(final double[] a0, final double[] a1, final double[] a2, final int nsample) {
+		if (nsample <= 1) return 0.0;
 		double c = 0.0;
 		for (int i = 0; i < nsample; i++) { c += a0[i]; }
 		c /= nsample;
-		double tmp1 = 0.0, tmp2 = 0.0, tmp3 = 0.0;
+		double tmp1 = 0.0, tmp2 = 0.0;
 		for (int i = 0; i < nsample; i++) {
 			tmp1 += (a0[i] - c) * (a0[i] - c);
 			tmp2 += (a0[i] - c) * (a1[i] - c);
-			tmp3 += a0[i] - c;
 		}
-		double EY2 = Math.pow(tmp3 / nsample, 2.0);
-		double V = tmp1 / (nsample - 1) - EY2;
+		double V = tmp1 / (nsample - 1);
+		if (V == 0.0) return 0.0;
 		double U = tmp2 / (nsample - 1);
-		return 1.0 - (U - EY2) / V;
+		return 1.0 - U / V;
 	}
 
+	/**
+	 * Compute total order confidence.
+	 *
+	 * @param a0
+	 *            the a 0
+	 * @param a1
+	 *            the a 1
+	 * @param a2
+	 *            the a 2
+	 * @param nsample
+	 *            the nsample
+	 * @param nresample
+	 *            the nresample
+	 * @return the double
+	 */
 	private double computeTotalOrderConfidence(final double[] a0, final double[] a1, final double[] a2,
 			final int nsample, final int nresample) {
 		double[] b0 = new double[nsample];
@@ -465,7 +581,9 @@ public final class Sobol {
 		for (int i = 0; i < nresample; i++) {
 			for (int j = 0; j < nsample; j++) {
 				int index = scope.getRandom().getGenerator().nextInt(nsample);
-				b0[j] = a0[index]; b1[j] = a1[index]; b2[j] = a2[index];
+				b0[j] = a0[index];
+				b1[j] = a1[index];
+				b2[j] = a2[index];
 			}
 			s[i] = computeTotalOrder(b0, b1, b2, nsample);
 		}
@@ -474,7 +592,7 @@ public final class Sobol {
 		for (int i = 0; i < nresample; i++) { sss += Math.pow(s[i] - ss, 2.0); }
 		return 1.96 * Math.sqrt(sss / (nresample - 1));
 	}
-	
+
 	/**
 	 *
 	 * @param scope
@@ -486,6 +604,7 @@ public final class Sobol {
 	 *            number of parameters in the model
 	 * @return
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "sobol_analysis",
 			type = IType.STRING,
@@ -495,21 +614,27 @@ public final class Sobol {
 	@doc (
 			value = "Return a string containing the Report of the sobol analysis for the corresponding data (path, map of columns or matrix) and save this report in a txt/csv file.")
 	@no_test
+	@tests ({
+			@test ("map sobol_data <- [\"p1\":: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8], \"out\":: [1.0, 1.1, 1.2, 1.3, 2.0, 2.1, 2.2, 2.3]]; string sobol_report <- sobol_analysis(sobol_data, \"sobol_test_report.txt\", 1); sobol_report != \"\""),
+			@test ("map data_map <- [\"col0\":: [0.1, 0.2, 0.3, 0.4], \"col1\":: [1.0, 1.1, 1.2, 1.3]]; matrix data_mat <- matrix([[0.1, 0.2, 0.3, 0.4], [1.0, 1.1, 1.2, 1.3]]); string s1 <- sobol_analysis(data_map, \"sob_map.txt\", 1); string s2 <- sobol_analysis(data_mat, \"sob_mat.txt\", 1); s1 = s2"),
+			// Cleanup
+			@test ("do delete_file(\"sobol_test_report.txt\"); do delete_file(\"sob_map.txt\"); delete_file(\"sob_mat.txt\")")
+	})
 	public static String sobolAnalysis(final IScope scope, final Object data, final String report_path,
 			final int nb_parameters) {
 		final File f_report = new File(FileUtils.constructAbsoluteFilePath(scope, report_path, false));
 		Sobol sob;
-		if (data instanceof String path) {
-			final File f = new File(FileUtils.constructAbsoluteFilePath(scope, path, false));
-			sob = new Sobol(f, nb_parameters, scope);
-		} else if (data instanceof IMap map) {
-			sob = new Sobol(map, nb_parameters, scope);
-		} else if (data instanceof IMatrix matrix) {
-			sob = new Sobol((IMap)GamaMapFactory.createFromMatrix(scope, matrix), nb_parameters, scope);
-		} else {
-			throw GamaRuntimeException.error("sobol_analysis expects a path (string), a map or a matrix", scope);
+		switch (data) {
+			case String path -> {
+				final File f = new File(FileUtils.constructAbsoluteFilePath(scope, path, false));
+				sob = new Sobol(f, nb_parameters, scope);
+			}
+			case IMap map -> sob = new Sobol(map, nb_parameters, scope);
+			case IMatrix matrix -> sob =
+					new Sobol(GamaMapFactory.createFromMatrix(scope, matrix), nb_parameters, scope);
+			case null, default -> throw GamaRuntimeException
+					.error("sobol_analysis expects a path (string), a map or a matrix", scope);
 		}
-
 		sob.evaluate();
 		sob.saveResult(f_report);
 		return sob.buildReportString(FilenameUtils.getExtension(f_report.getPath()));

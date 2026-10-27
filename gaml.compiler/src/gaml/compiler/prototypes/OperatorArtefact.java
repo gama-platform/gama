@@ -286,6 +286,9 @@ public class OperatorArtefact extends AbstractArtefact implements IArtefact.Oper
 	 */
 	@Override
 	public String documentSignature() {
+		if (isAccumulator()) {
+			return "container values, " + (signature.size() == 4 ? "unknown initial_value, " : "") + "expression body";
+		}
 		if (!(support instanceof final Method method)) return signature.asPattern(false);
 		final StringBuilder builder = new StringBuilder();
 		int signatureIndex = 0;
@@ -340,17 +343,36 @@ public class OperatorArtefact extends AbstractArtefact implements IArtefact.Oper
 	@Override
 	public IGamlDocumentation getDocumentation() {
 		if (!isVarOrField) return super.getDocumentation();
-		final vars annot = getJavaBase().getAnnotation(vars.class);
-		if (annot != null) {
-			final variable[] allVars = annot.value();
-			for (final variable v : allVars) {
-				if (v.name().equals(getName())) {
-					if (v.doc().length > 0) return new GamlConstantDocumentation(v.doc()[0].value());
-					break;
-				}
+		final variable field = getVariableAnnotation();
+		if (field == null || field.doc().length == 0) return new GamlConstantDocumentation(getTitle());
+		final doc documentation = field.doc()[0];
+		final StringBuilder contents = new StringBuilder(documentation.value());
+		if (!documentation.deprecated().isEmpty()) {
+			contents.append("<br/><b>Deprecated</b>: ").append(documentation.deprecated());
+		}
+		return new GamlConstantDocumentation(contents.toString());
+	}
+
+	@Override
+	public String getDeprecated() {
+		if (isVarOrField) {
+			final variable field = getVariableAnnotation();
+			if (field != null && field.doc().length > 0) {
+				final String message = field.doc()[0].deprecated();
+				if (!message.isEmpty()) return message;
 			}
 		}
-		return new GamlConstantDocumentation(getTitle());
+		return super.getDeprecated();
+	}
+
+	private variable getVariableAnnotation() {
+		final vars annot = getJavaBase().getAnnotation(vars.class);
+		if (annot != null) {
+			for (final variable field : annot.value()) {
+				if (field.name().equals(getName())) return field;
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -413,6 +435,11 @@ public class OperatorArtefact extends AbstractArtefact implements IArtefact.Oper
 	public String getPattern(final boolean withVariables) {
 		final int size = signature.size();
 		final String aName = getName();
+		if (isAccumulator()) {
+			final String container = withVariables ? signature.get(1).asPattern() : "container";
+			final String initial = withVariables ? "${initial_value}" : "initial_value";
+			return container + " " + aName + " (" + (size == 4 ? initial + ", " : "") + "@ + each)";
+		}
 		if (size == 1 || size > 2) {
 			if (ArtefactRegistry.ARTEFACTS_WITHOUT_PARENTHESES.contains(aName))
 				return aName + signature.asPattern(withVariables);

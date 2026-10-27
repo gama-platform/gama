@@ -56,6 +56,7 @@ import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.kernel.species.IModelSpecies;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.ExecutionScope;
+import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.color.IColor;
 import gama.api.types.geometry.IPoint;
@@ -196,9 +197,9 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 
 	/** The controller. */
 	protected IExperimentController controller;
-	// An original copy of the simualtion outputs (which will be eventually
-	/** The original simulation outputs. */
+	// An original copy of the simulation outputs (which will be eventually
 	// duplicated in all the simulations)
+	/** The original simulation outputs. */
 	protected SimulationOutputManager originalSimulationOutputs;
 
 	/** The experiment outputs. */
@@ -324,7 +325,7 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 					final Object initGet = empty/*
 												 * || !allowVarInitToBeOverridenByExternalInit(var)
 												 */ ? null : inits.get(s);
-					var.initializeWith(scope, agent, initGet);
+					var.initializeWith(scope, agent, initGet, inits.containsKey(s));
 					names.remove(s);
 				}
 				// Trick to initialize the simulation variables (and not only
@@ -379,7 +380,7 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 		setName(description.getName());
 		experimentType = description.getLitteral(IKeyword.TYPE);
 		// final String type = description.getFacets().getLabel(IKeyword.TYPE);
-		//if (IKeyword.BATCH.equals(experimentType)) { exploration = new Exploration(null); }
+		// if (IKeyword.BATCH.equals(experimentType)) { exploration = new Exploration(null); }
 
 		// else if (IKeyword.HEADLESS_UI.equals(experimentType)) {
 		// setHeadless(true); }
@@ -609,7 +610,7 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 	 *            the seed
 	 */
 	@Override
-	public synchronized void open(final Double seed) {
+	public synchronized IExecutionResult open(final Double seed) {
 
 		createAgent(seed);
 
@@ -619,17 +620,18 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 		// Make sure that the attributes in experiment are initialized (see #3842)
 		agent.getParameterValues().forEach((n, v) -> { if (hasVar(n)) { agent.setDirectVarValue(myScope, n, v); } });
 		myScope.push(agent);
-		prepareGui();
+		prepareGui(); // TODO: do we really need that in headless ?
 		IScope scope = agent.getScope();
-		agent.schedule(scope);
+		IExecutionResult res = agent.schedule(scope);
 
 		// showParameters();
 
-		if (isBatch()) {
+		if (res.passed() && isBatch()) {
 			myScope.getGui().getStatus().informStatus(" Batch ready. Click run to begin.",
 					IStatusMessage.SIMULATION_ICON);
 			GAMA.updateExperimentState(this);
 		}
+		return res;
 
 	}
 
@@ -677,8 +679,10 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 		try {
 
 			reloading = true;
-			agent.dispose();
-			agent = null;
+			if (agent != null) {
+				agent.dispose();
+				agent = null;
+			}
 		} finally {
 			reloading = false;
 		}
@@ -697,10 +701,10 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 
 	// @Override
 	@Override
-	public boolean isBatch() { return IKeyword.BATCH.equals(getExperimentType()); }
+	public boolean isBatch() { return getDescription().isBatch(); }
 
 	@Override
-	public boolean isTest() { return IKeyword.TEST.equals(getExperimentType()); }
+	public boolean isTest() { return getDescription().isTest(); }
 
 	@Override
 	public boolean isMemorize() { return getDescription().hasFacet(IKeyword.RECORD); }
@@ -952,7 +956,8 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 	 */
 	@Override
 	public void setController(final IExperimentController ec) {
-		if (controller != null && controller.equals(ec)) {
+		// The controller being replaced is the one to shut down. Reassigning the same one must leave it alone.
+		if (controller != null && !controller.equals(ec)) {
 			controller.close();
 			controller.dispose();
 		}
@@ -1080,10 +1085,11 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 	public void setStopCondition(final String cond) {
 		IExpression exp = GAML.getExpressionFactory().getFalse();
 		if (cond != null && !cond.isBlank()) {
-			setStopCondition(GAML.getExpressionFactory().createExpr(cond, getModel().getDescription()));
+			exp = GAML.getExpressionFactory().createExpr(cond, getModel().getDescription());
 		}
 		if (exp.getGamlType() != Types.BOOL) throw GamaRuntimeException
 				.error("The until condition of the experiment should be a boolean", GAMA.getRuntimeScope());
+		setStopCondition(exp);
 	}
 
 	@Override

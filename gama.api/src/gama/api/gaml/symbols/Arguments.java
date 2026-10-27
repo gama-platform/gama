@@ -36,10 +36,11 @@ public class Arguments extends Facets {
 	private List<String> keys;
 
 	/**
-	 * The caller represents the agent in the context of which the arguments need to be evaluated. Uses ThreadLocal to
-	 * support multi-threaded evaluation contexts.
+	 * The default caller, i.e. the agent in the context of which the arguments need to be evaluated when they are not
+	 * passed through {@link IScope#execute(gama.api.runtime.IExecutable, IObject, boolean, Arguments)} (which uses the
+	 * current agent of the calling scope instead, without modifying this field).
 	 */
-	private final ThreadLocal<IObject> caller = new ThreadLocal<>();
+	private volatile IObject caller;
 
 	/**
 	 * Instantiates a new arguments map from another arguments object. Copies all argument mappings and the caller
@@ -96,7 +97,7 @@ public class Arguments extends Facets {
 	@Override
 	public Arguments cleanCopy() {
 		final Arguments result = new Arguments();
-		result.setCaller(caller.get());
+		result.setCaller(caller);
 		forEach((s, e) -> result.put(s, e.cleanCopy()));
 		return result;
 	}
@@ -110,10 +111,27 @@ public class Arguments extends Facets {
 	 */
 	public Arguments resolveAgainst(final IScope scope) {
 		final Arguments result = new Arguments();
-		result.setCaller(caller.get());
+		result.setCaller(caller);
 		forEach((s, e) -> {
 			final IExpression exp = getExpr(s);
 			if (exp != null) { result.putExpression(s, exp.resolveAgainst(scope)); }
+		});
+		return result;
+	}
+
+	/**
+	 * Evaluates all argument expressions in the given scope and returns them as constant expressions.
+	 *
+	 * @param scope
+	 *            the scope in which the argument expressions should be evaluated
+	 * @return a new argument list containing the evaluated values
+	 */
+	public Arguments evaluateAgainst(final IScope scope) {
+		final Arguments result = new Arguments();
+		result.setCaller(caller);
+		forEach((s, e) -> {
+			final IExpression exp = getExpr(s);
+			if (exp != null) { result.put(s, GAML.getExpressionDescriptionFactory().createConstant(exp.value(scope))); }
 		});
 		return result;
 	}
@@ -154,7 +172,7 @@ public class Arguments extends Facets {
 	 *            the agent context
 	 */
 	public void setCaller(final IObject caller) {
-		this.caller.set(caller);
+		this.caller = caller;
 	}
 
 	/**
@@ -162,7 +180,7 @@ public class Arguments extends Facets {
 	 *
 	 * @return the caller, or null if not set
 	 */
-	public IObject getCaller() { return caller.get(); }
+	public IObject getCaller() { return caller; }
 
 	/**
 	 * Clears all arguments and resets the caller context.
@@ -170,7 +188,7 @@ public class Arguments extends Facets {
 	@Override
 	public void dispose() {
 		super.dispose();
-		caller.set(null);
+		caller = null;
 	}
 
 	/**

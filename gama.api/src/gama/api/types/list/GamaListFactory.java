@@ -10,7 +10,6 @@
  ********************************************************************************************************/
 package gama.api.types.list;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -37,6 +36,7 @@ import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.GamaType;
 import gama.api.gaml.types.IContainerType;
 import gama.api.gaml.types.IType;
+import gama.api.types.map.IMap;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.runtime.GamaExecutorService;
@@ -287,7 +287,8 @@ public class GamaListFactory {
 	public static IList create(final IScope scope, final IType contentType, final IContainer container) {
 		if (container == null) return create(contentType);
 		if (FLAGS.CAST_CONTAINER_CONTENTS
-				&& GamaType.requiresCasting(contentType, container.getGamlType().getContentType())) {
+				&& GamaType.requiresContentTypeCasting(scope, contentType, container.getGamlType().getContentType(),
+						container.iterable(scope))) {
 			final IList list = create(contentType);
 			for (final Object o : container.iterable(scope)) { castAndAdd(scope, list, o); }
 			return list;
@@ -463,11 +464,14 @@ public class GamaListFactory {
 	public static IList create(final IScope scope, final IType contentType, final int[] ints) {
 		final IList list = create(contentType, ints == null ? 0 : ints.length);
 		if (ints == null) return list;
-		if (!FLAGS.CAST_CONTAINER_CONTENTS) {
-			list.addAll(Arrays.asList(ints));
-			return list;
+		boolean cast = FLAGS.CAST_CONTAINER_CONTENTS;
+		for (final int o : ints) {
+			if (cast) {
+				castAndAdd(scope, list, o);
+			} else {
+				list.add(o);
+			}
 		}
-		for (final int o : ints) { castAndAdd(scope, list, o); }
 		return list;
 	}
 
@@ -529,11 +533,14 @@ public class GamaListFactory {
 	public static IList create(final IScope scope, final IType contentType, final double[] doubles) {
 		final IList list = create(contentType, doubles == null ? 0 : doubles.length);
 		if (doubles == null) return list;
-		if (!FLAGS.CAST_CONTAINER_CONTENTS) {
-			list.addAll(Arrays.asList(doubles));
-			return list;
+		boolean cast = FLAGS.CAST_CONTAINER_CONTENTS;
+		for (final double o : doubles) {
+			if (cast) {
+				castAndAdd(scope, list, o);
+			} else {
+				list.add(o);
+			}
 		}
-		for (final double o : doubles) { castAndAdd(scope, list, o); }
 		return list;
 	}
 
@@ -734,6 +741,7 @@ public class GamaListFactory {
 
 	/**
 	 * Converts an object to a list, handling various types (arrays, collections, single objects).
+	 * This Java construction helper converts null to an empty list; the GAML list cast preserves nil instead.
 	 *
 	 * @param scope
 	 *            the execution scope.
@@ -755,6 +763,8 @@ public class GamaListFactory {
 			case IDate gd -> gd.listValue(scope, contentsType);
 			// Explicitly set copy to true if we deal with a population
 			case IPopulation ip -> ip.listValue(scope, contentsType, true);
+			case IMap<?, ?> m when contentsType.id() == IType.PAIR -> copy ? create(scope, contentsType, m.getPairs())
+					: m.getPairs();
 			case IContainer ic -> ic.listValue(scope, contentsType, copy);
 			case Collection coll -> create(scope, contentsType, coll);
 			case IColor c -> create(scope, contentsType, new int[] { c.red(), c.green(), c.blue(), c.alpha() });
@@ -780,11 +790,11 @@ public class GamaListFactory {
 			can_be_const = true,
 			concept = { IConcept.CAST, IConcept.CONTAINER })
 	@doc (
-			value = "casts the operand to a list, making an explicit copy if it is already a list or a subtype of list (interval, population, etc.)",
+			value = "casts the operand to a list, making an explicit copy if it is already a list or a subtype of list (interval, population, etc.). A nil operand remains nil.",
 			see = { "list" })
 	@no_test
 	public static IList copyToList(final IScope scope, final Object obj) {
-		return castToList(scope, obj, null, true);
+		return obj == null ? null : castToList(scope, obj, null, true);
 	}
 
 	/**

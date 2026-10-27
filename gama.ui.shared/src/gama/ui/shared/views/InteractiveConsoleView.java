@@ -52,8 +52,8 @@ import gama.api.runtime.scope.IScope;
 import gama.api.ui.IGamaView;
 import gama.api.utils.StringUtils;
 import gama.dev.DEBUG;
-import gama.dev.THREADS;
 import gama.ui.application.workbench.ThemeHelper;
+import gama.ui.shared.access.ConsoleContextMenuHelper;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaColors;
@@ -190,6 +190,9 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 	/** The index in history. */
 	private int indexInHistory = 0;
 
+	/** The unfinished command being edited while navigating history. */
+	private String historyDraft = "";
+
 	/** The control to display in full screen. */
 	private Composite controlToDisplayInFullScreen;
 
@@ -238,13 +241,21 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 		reader = new BufferedReader(new InputStreamReader(msgConsole.getInputStream()));
 		var stream = msgConsole.newOutputStream();
 		stream.setColor(ThemeHelper.isDark() ? IGamaColors.NEUTRAL.lighter() : IGamaColors.NEUTRAL.color());
+		stream.setActivateOnWrite(false);
 		resultWriter = new OutputStreamWriter(stream);
 		stream = msgConsole.newOutputStream();
 		stream.setColor(IGamaColors.ERROR.color());
+		stream.setActivateOnWrite(false);
 		errorWriter = new OutputStreamWriter(stream);
 		viewer = new IOConsoleViewer(p, msgConsole);
 
 		viewer.setWordWrap(true);
+		viewer.getTextWidget().setToolTipText(
+				"Enter a GAML expression and press Enter. Type ?keyword for documentation. Use Up/Down to browse history.");
+		ConsoleContextMenuHelper.install(viewer.getTextWidget(), () -> {
+			msgConsole.clearConsole();
+			showPrompt();
+		}, true);
 
 		msgConsole.getDocument().addDocumentListener(new IDocumentListener() {
 
@@ -255,10 +266,14 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 					try {
 						textEntered = reader.readLine();
 					} catch (final IOException e) {
-						append("Error in reading command", true, true);
+						append("> Error reading command: " + e.getMessage(), true, true);
 						return;
 					}
 					processInput(textEntered);
+				} else if (endsWithPrompt(event.getDocument())) {
+					// Output (incl. the prompt) is appended asynchronously by the console: place the caret once the
+					// prompt actually lands in the document
+					moveCaretToEnd();
 				}
 			}
 
@@ -268,16 +283,26 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 			}
 		});
 
-		viewer.getTextWidget().addVerifyKeyListener(e -> {
+		// Prepended so that it runs before the viewer's own key handling
+		viewer.prependVerifyKeyListener(e -> {
+			final StyledText text = viewer.getTextWidget();
+			final int caret = text.getCaretOffset();
+			final int start = getInputStartOffset();
+			if (caret < start) return;
+			final boolean noSelection = text.getSelectionCount() == 0;
 			if (e.keyCode == SWT.ARROW_UP || e.keyCode == SWT.ARROW_DOWN) {
-				final var text = (StyledText) e.widget;
-				final var selection = text.getSelection();
-				final var line = text.getLineAtOffset(selection.y);
-				if (line == text.getLineCount() - 1) {
-					e.doit = false;
-					insertHistory(e.keyCode == SWT.ARROW_UP);
-
+				e.doit = false;
+				insertHistory(e.keyCode == SWT.ARROW_UP);
+			} else if (e.keyCode == SWT.HOME
+					|| e.keyCode == SWT.ARROW_LEFT && (e.stateMask & SWT.MOD1) != 0 && SWT.getPlatform().equals("cocoa")) {
+				e.doit = false;
+				if ((e.stateMask & SWT.SHIFT) != 0) {
+					text.setSelection(caret, start);
+				} else {
+					text.setCaretOffset(start);
 				}
+			} else if ((e.keyCode == SWT.ARROW_LEFT || e.keyCode == SWT.BS) && caret <= start && noSelection) {
+				e.doit = false;
 			}
 		});
 		p.layout(true, true);
@@ -299,19 +324,11 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 	 * Show prompt.
 	 */
 	private void showPrompt() {
-
-		new Thread(() -> {
-			append(StringUtils.LN + PROMPT, false, false);
-			THREADS.WAIT(200);
-			WorkbenchHelper.run(() -> {
-				if (viewer != null && viewer.getTextWidget() != null && !viewer.getTextWidget().isDisposed()) {
-					viewer.getTextWidget().setCaretOffset(viewer.getTextWidget().getCharCount());
-				}
-
-			});
-
-		}).start();
-
+		WorkbenchHelper.asyncRun(() -> {
+			if (viewer == null || viewer.getTextWidget() == null || viewer.getTextWidget().isDisposed()) return;
+			writeToConsole(StringUtils.LN + PROMPT, false);
+			moveCaretToEnd();
+		});
 	}
 
 	/**
@@ -321,32 +338,41 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 	 *            the back
 	 */
 	private void insertHistory(final boolean back) {
-
-		if (history.size() == 0) {
+		if (history.isEmpty()) {
 			ViewsHelper.requestUserAttention(this, "No history");
 			return;
 		}
-		if (indexInHistory <= 0) {
-			if (back) { ViewsHelper.requestUserAttention(this, "No more history"); }
-			indexInHistory = 0;
-		} else if (indexInHistory >= history.size() - 1) {
-			if (!back) { ViewsHelper.requestUserAttention(this, "No more history"); }
-			indexInHistory = history.size() - 1;
-		}
+		final var doc = viewer.getDocument();
+		final int start = getInputStartOffset();
+		final int length = doc.getLength() - start;
 		try {
-			final var text = viewer.getTextWidget();
-			final var lineIndex = text.getLineCount() - 1;
-			final var nbChars = text.getCharCount();
-			final var firstOffset = text.getOffsetAtLine(lineIndex) + PROMPT.length();
-			viewer.getDocument().replace(firstOffset, nbChars - firstOffset, history.get(indexInHistory));
-			text.setCaretOffset(text.getCharCount());
-			if (back) {
-				indexInHistory--;
-			} else {
-				indexInHistory++;
-			}
-		} catch (final org.eclipse.jface.text.BadLocationException e1) {}
+			if (indexInHistory == history.size()) { historyDraft = doc.get(start, length); }
+			final int newIndex = back ? indexInHistory - 1 : indexInHistory + 1;
+			if (newIndex < 0 || newIndex > history.size()) return;
+			final String command = newIndex == history.size() ? historyDraft : history.get(newIndex);
+			doc.replace(start, length, command);
+			indexInHistory = newIndex;
+			viewer.getTextWidget().setCaretOffset(doc.getLength());
+			viewer.getTextWidget().showSelection();
+		} catch (final org.eclipse.jface.text.BadLocationException e) {
+			DEBUG.ERR("Unable to navigate interactive console history", e);
+		}
+	}
 
+	/**
+	 * Returns the document offset where user input begins, i.e. just after the prompt on the last line.
+	 *
+	 * @return the input start offset
+	 */
+	private int getInputStartOffset() {
+		final var doc = viewer.getDocument();
+		try {
+			final int lineStart = doc.getLineOffset(doc.getNumberOfLines() - 1);
+			final String line = doc.get(lineStart, doc.getLength() - lineStart);
+			return line.startsWith(PROMPT) ? lineStart + PROMPT.length() : lineStart;
+		} catch (final org.eclipse.jface.text.BadLocationException e) {
+			return doc.getLength();
+		}
 	}
 
 	/**
@@ -358,15 +384,45 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 	public void append(final String text, final boolean error, final boolean showPrompt) {
 
 		WorkbenchHelper.asyncRun(() -> {
-			@SuppressWarnings ("resource") final var writer = error ? errorWriter : resultWriter;
-			try {
-				writer.append(text);
-				writer.flush();
-				if (showPrompt) { showPrompt(); }
-			} catch (final IOException e) {}
+			if (viewer == null || viewer.getTextWidget() == null || viewer.getTextWidget().isDisposed()) return;
+			writeToConsole(text, error);
+			if (showPrompt) {
+				writeToConsole(StringUtils.LN + PROMPT, false);
+				moveCaretToEnd();
+			}
 
 		});
 
+	}
+
+	private void writeToConsole(final String text, final boolean error) {
+		@SuppressWarnings ("resource") final var writer = error ? errorWriter : resultWriter;
+		try {
+			writer.append(text);
+			writer.flush();
+		} catch (final IOException e) {
+			DEBUG.ERR("Unable to write to interactive console", e);
+		}
+	}
+
+	private static boolean endsWithPrompt(final org.eclipse.jface.text.IDocument doc) {
+		final int length = doc.getLength();
+		if (length < PROMPT.length()) return false;
+		try {
+			return PROMPT.equals(doc.get(length - PROMPT.length(), PROMPT.length()));
+		} catch (final org.eclipse.jface.text.BadLocationException e) {
+			return false;
+		}
+	}
+
+	private void moveCaretToEnd() {
+		if (viewer == null || viewer.getTextWidget() == null || viewer.getTextWidget().isDisposed()) return;
+		viewer.getTextWidget().getDisplay().asyncExec(() -> {
+			if (viewer != null && viewer.getTextWidget() != null && !viewer.getTextWidget().isDisposed()) {
+				viewer.getTextWidget().setCaretOffset(viewer.getTextWidget().getCharCount());
+				viewer.getTextWidget().showSelection();
+			}
+		});
 	}
 
 	@Override
@@ -415,6 +471,11 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 						msgConsole.clearConsole();
 						showPrompt();
 					}).toItem(mainMenu);
+					GamaCommand.build(null, "Console help", "Show interactive console shortcuts and help",
+							e -> append("Enter a GAML expression and press Enter to evaluate it." + StringUtils.LN
+									+ "Type ?keyword to display documentation for a GAML keyword." + StringUtils.LN
+									+ "Use Up/Down to browse command history; Down restores the current input."
+									+ StringUtils.LN, false, false)).toItem(mainMenu);
 					GamaMenu.separate(mainMenu);
 					GamaCommand.build(IGamaIcons.DISPLAY_TOOLBAR_CSVEXPORT, "Export to log file", "Export to log file",
 							e -> saveAsLog()).toItem(mainMenu);
@@ -501,13 +562,15 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 	 *            the s
 	 */
 	protected void processInput(final String s) {
+		final var entered = s == null ? "" : s.trim();
+		if (!entered.isEmpty()) { history.add(entered); }
+		indexInHistory = history.size();
+		historyDraft = "";
 		final var agent = GAMA.getCurrentTopLevelAgent();
 		if (agent == null || agent.dead()) {
 			topLevelAgentChanged(null);
+			append("> No active experiment. Start an experiment before evaluating a command.", true, true);
 		} else {
-			final var entered = s.trim();
-			history.add(entered);
-			indexInHistory = history.size() - 1;
 			String result = null;
 			var error = false;
 			if (entered.startsWith("?")) {
@@ -523,7 +586,7 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 					if (expr != null) { result = StringUtils.toGaml(scope.evaluate(expr, agent).getValue(), true); }
 				} catch (final Exception e) {
 					error = true;
-					result = "> Error: " + e.getMessage();
+					result = "> Error: " + (e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage());
 				} finally {
 					agent.getSpecies().removeTemporaryAction();
 					GAMA.releaseScope(scope);

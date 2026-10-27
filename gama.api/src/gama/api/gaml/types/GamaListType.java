@@ -10,6 +10,8 @@
 package gama.api.gaml.types;
 
 import gama.annotations.doc;
+import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.type;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
@@ -84,8 +86,15 @@ import gama.api.types.list.IList;
 		wraps = { IList.class },
 		kind = ISymbolKind.REGULAR,
 		concept = { IConcept.TYPE, IConcept.CONTAINER, IConcept.LIST },
-		doc = @doc ("Ordered collection of values or agents"))
+		doc = @doc ("Ordered collection of values or agents. Without an initializer, each variable receives a new empty list. "
+				+ "Explicit initialization or assignment with nil stores nil, as does list(nil). An empty list is not nil."))
 @SuppressWarnings ({ "unchecked", "rawtypes" })
+@tests ({
+		// a matrix is read row by row when cast to a list
+		@test ("matrix<int> m <- matrix([[1, 2, 3], [4, 5, 6]]); list(m) = [1, 4, 2, 5, 3, 6]"),
+		@test ("map<string, int> src <- [\"x\"::1, \"y\"::2]; list<pair<string, int>> l1 <- src.pairs; l1[0].key = \"x\""),
+		@test ("map<string, int> src2 <- [\"x\"::1, \"y\"::2]; list<pair<string, int>> l12 <- src2.pairs; l12[0].value = 1")
+})
 public class GamaListType extends GamaContainerType<IList> {
 
 	/**
@@ -101,6 +110,11 @@ public class GamaListType extends GamaContainerType<IList> {
 	 */
 	public GamaListType(final ITypesManager typesManager) {
 		super(typesManager);
+	}
+
+	@Override
+	public IList createDefaultValue(final IScope scope) {
+		return GamaListFactory.create(getContentType());
 	}
 
 	/**
@@ -157,9 +171,10 @@ public class GamaListType extends GamaContainerType<IList> {
 	 * @see GamaListFactory#castToList(IScope, Object, IType, boolean)
 	 */
 	@Override
+	@doc ("Casts the operand to a list. A nil operand remains nil; use [] to create an empty list.")
 	public IList cast(final IScope scope, final Object obj, final Object param, final IType keyType,
 			final IType contentsType, final boolean copy) throws GamaRuntimeException {
-		return GamaListFactory.castToList(scope, obj, contentsType, copy);
+		return obj == null ? null : GamaListFactory.castToList(scope, obj, contentsType, copy);
 	}
 
 	/**

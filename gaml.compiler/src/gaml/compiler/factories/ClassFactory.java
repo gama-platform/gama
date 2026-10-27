@@ -19,6 +19,8 @@ import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.factories.ISymbolDescriptionFactory;
 import gama.api.gaml.symbols.Facets;
+import gama.api.kernel.object.IObject;
+import gama.api.kernel.object.IObjectConstructor;
 import gaml.compiler.descriptions.ClassDescription;
 
 /**
@@ -86,6 +88,12 @@ public class ClassFactory implements ISymbolDescriptionFactory.Clazz {
 	@Override
 	public IClassDescription createBuiltInClassDescription(final String name, final String plugin) {
 		return new ClassDescription(name, plugin);
+	}
+
+	@Override
+	public IClassDescription createBuiltInClassDescription(final String name, final Class<? extends IObject> clazz,
+			final IClassDescription parent, final IObjectConstructor constructor, final String plugin) {
+		return new ClassDescription(name, clazz, parent, constructor, plugin);
 	}
 
 }

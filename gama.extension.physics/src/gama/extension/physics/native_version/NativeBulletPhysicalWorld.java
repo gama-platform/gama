@@ -18,7 +18,15 @@ import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.PersistentManifolds;
 import com.jme3.bullet.collision.PhysicsCollisionObject;
 import com.jme3.bullet.collision.shapes.CollisionShape;
+import com.jme3.bullet.joints.ConeJoint;
+import com.jme3.bullet.joints.HingeJoint;
+import com.jme3.bullet.joints.PhysicsJoint;
+import com.jme3.bullet.joints.Point2PointJoint;
+import com.jme3.bullet.joints.SixDofJoint;
+import com.jme3.bullet.joints.SliderJoint;
 import com.jme3.bullet.objects.PhysicsRigidBody;
+import com.jme3.math.Matrix3f;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 
 import gama.api.kernel.agent.IAgent;
@@ -27,6 +35,7 @@ import gama.api.types.geometry.IPoint;
 import gama.dev.DEBUG;
 import gama.extension.physics.common.AbstractPhysicalWorld;
 import gama.extension.physics.common.IBody;
+import gama.extension.physics.common.IJointDefinition;
 import gama.extension.physics.common.IShapeConverter;
 import gama.extension.physics.gaml.PhysicalSimulationAgent;
 
@@ -119,7 +128,16 @@ public class NativeBulletPhysicalWorld extends AbstractPhysicalWorld<PhysicsSpac
 			// If the thread is interrupted while waiting, exit the loop cleanly.
 			if (!semaphore.acquire()) { break; }
 			PhysicsSpace world = getWorld();
-			if (world != null) { world.update(timeStep.floatValue(), maxSubSteps, false, false, true); }
+			if (world != null) {
+				int n = computeSubSteps(timeStep, maxSubSteps);
+				if (n > 0) {
+					// n fixed sub-steps of equal size, covering the whole time step
+					world.setAccuracy((float) (timeStep / n) * 0.9999f);
+					world.update(timeStep.floatValue(), n, false, false, true);
+				} else {
+					world.update(timeStep.floatValue(), 0, false, false, true);
+				}
+			}
 			// DEBUG.OUT("Actually updating world in thread " + Thread.currentThread().getName());
 			continueStep = true;
 		}
@@ -187,7 +205,7 @@ public class NativeBulletPhysicalWorld extends AbstractPhysicalWorld<PhysicsSpac
 	public void setCCD(final boolean ccd) {
 		if (world != null) {
 			for (PhysicsRigidBody b : world.getRigidBodyList()) {
-				if (b.isStatic()) continue;
+				if (b.isStatic()) { continue; }
 				Object o = b.getUserObject();
 				if (o instanceof IBody) { ((IBody) o).setCCD(ccd); }
 			}
@@ -242,4 +260,157 @@ public class NativeBulletPhysicalWorld extends AbstractPhysicalWorld<PhysicsSpac
 		updatableAgents.clear();
 	}
 
+	/**
+	 * Adds a joint to the native Bullet world.
+	 *
+	 * @param joint
+	 *            the joint to add
+	 */
+	public void addJoint(final PhysicsJoint joint) {
+		world.addJoint(joint);
+	}
+
+	@Override
+	public Object createJoint(final IJointDefinition jointDefinition) {
+		PhysicsJoint joint = convertToNativeBulletJoint(jointDefinition);
+		if (joint instanceof com.jme3.bullet.joints.Constraint constraint) {
+			constraint.setCollisionBetweenLinkedBodies(false);
+		}
+		getWorld().addJoint(joint);
+		return joint;
+	}
+
+	/**
+	 * Convert to native bullet joint.
+	 *
+	 * @param jointDefinition
+	 *            the joint definition
+	 * @return the physics joint
+	 */
+	private PhysicsJoint convertToNativeBulletJoint(final IJointDefinition jointDefinition) {
+		if (!(jointDefinition.getBodyA() instanceof IAgent agentA)
+				|| !(jointDefinition.getBodyB() instanceof IAgent agentB))
+			throw new IllegalArgumentException("Joint bodies must be agents with physical body skills");
+		Object bodyA = agentA.getAttribute(BODY);
+		Object bodyB = agentB.getAttribute(BODY);
+		if (!(bodyA instanceof NativeBulletBodyWrapper wrapperA)
+				|| !(bodyB instanceof NativeBulletBodyWrapper wrapperB))
+			throw new IllegalArgumentException("Both joint bodies must be registered in the physical world");
+		PhysicsRigidBody first = wrapperA.getBody();
+		PhysicsRigidBody second = wrapperB.getBody();
+		// Make sure the bodies are where their agents are before computing the local pivots
+		wrapperA.setLocation(agentA.getLocation());
+		wrapperB.setLocation(agentB.getLocation());
+		Vector3f anchor = toVector(jointDefinition.getAnchorPoint());
+		Vector3f pivotA = toLocalPoint(first, anchor);
+		Vector3f pivotB = toLocalPoint(second, anchor);
+		switch (jointDefinition.getJointType()) {
+			case HINGE -> {
+				Vector3f axis = toVector(jointDefinition.getAxis());
+				if (axis.lengthSquared() == 0) throw new IllegalArgumentException("Joint axis must be non-zero");
+				axis = axis.normalize();
+				HingeJoint hinge = new HingeJoint(first, second, pivotA, pivotB, toLocalAxis(first, axis),
+						toLocalAxis(second, axis));
+				if (jointDefinition.hasLimits()) {
+					hinge.setLimit((float) jointDefinition.getLowerLimit(), (float) jointDefinition.getUpperLimit());
+				}
+				hinge.enableMotor(jointDefinition.getMaxMotorForce() > 0, (float) jointDefinition.getMotorSpeed(),
+						(float) jointDefinition.getMaxMotorForce());
+				return hinge;
+			}
+			case SLIDER -> {
+				Vector3f axis = toVector(jointDefinition.getAxis());
+				if (axis.lengthSquared() == 0) throw new IllegalArgumentException("Joint axis must be non-zero");
+				axis = axis.normalize();
+				SliderJoint slider = new SliderJoint(first, second, pivotA, pivotB, jointFrame(first, axis),
+						jointFrame(second, axis), true);
+				if (jointDefinition.hasLimits()) {
+					slider.setLowerLinLimit((float) jointDefinition.getLowerLimit());
+					slider.setUpperLinLimit((float) jointDefinition.getUpperLimit());
+				}
+				slider.setPoweredLinMotor(jointDefinition.getMaxMotorForce() > 0);
+				slider.setTargetLinMotorVelocity((float) jointDefinition.getMotorSpeed());
+				slider.setMaxLinMotorForce((float) jointDefinition.getMaxMotorForce());
+				return slider;
+			}
+			case BALL_AND_SOCKET -> {
+				return new Point2PointJoint(first, second, pivotA, pivotB);
+			}
+			case FIXED -> {
+				Vector3f axis = new Vector3f(0, 0, 1);
+				SixDofJoint fixed = new SixDofJoint(first, second, pivotA, pivotB, jointFrame(first, axis),
+						jointFrame(second, axis), true);
+				fixed.setLinearLowerLimit(new Vector3f());
+				fixed.setLinearUpperLimit(new Vector3f());
+				fixed.setAngularLowerLimit(new Vector3f());
+				fixed.setAngularUpperLimit(new Vector3f());
+				return fixed;
+			}
+			case CONE_TWIST -> {
+				Vector3f axis = toVector(jointDefinition.getAxis());
+				if (axis.lengthSquared() == 0) throw new IllegalArgumentException("Joint axis must be non-zero");
+				axis = axis.normalize();
+				ConeJoint cone =
+						new ConeJoint(first, second, pivotA, pivotB, jointFrame(first, axis), jointFrame(second, axis));
+				cone.setLimit((float) jointDefinition.getSwingLimit(), (float) jointDefinition.getSwingLimit(),
+						(float) jointDefinition.getTwistLimit());
+				return cone;
+			}
+			default -> throw new IllegalArgumentException(
+					"Joint type " + jointDefinition.getJointType() + " is not supported by the native Bullet library");
+		}
+	}
+
+	@Override
+	public void destroyJoint(final Object joint) {
+		if (joint instanceof PhysicsJoint physicsJoint && world != null) { world.removeJoint(physicsJoint); }
+	}
+
+	/**
+	 * To local point.
+	 *
+	 * @param body
+	 *            the body
+	 * @param worldPoint
+	 *            the world point
+	 * @return the vector 3 f
+	 */
+	private Vector3f toLocalPoint(final PhysicsRigidBody body, final Vector3f worldPoint) {
+		Vector3f offset = worldPoint.subtract(body.getPhysicsLocation(new Vector3f()));
+		return body.getPhysicsRotation(new Quaternion()).inverse().toRotationMatrix().mult(offset, new Vector3f());
+	}
+
+	/**
+	 * To local axis.
+	 *
+	 * @param body
+	 *            the body
+	 * @param worldAxis
+	 *            the world axis
+	 * @return the vector 3 f
+	 */
+	private Vector3f toLocalAxis(final PhysicsRigidBody body, final Vector3f worldAxis) {
+		Vector3f result =
+				body.getPhysicsRotation(new Quaternion()).inverse().toRotationMatrix().mult(worldAxis, new Vector3f());
+		return result.normalize();
+	}
+
+	/**
+	 * Joint frame.
+	 *
+	 * @param body
+	 *            the body
+	 * @param worldAxis
+	 *            the world axis
+	 * @return the matrix 3 f
+	 */
+	private Matrix3f jointFrame(final PhysicsRigidBody body, final Vector3f worldAxis) {
+		Vector3f reference = Math.abs(worldAxis.z) < 0.9f ? new Vector3f(0, 0, 1) : new Vector3f(0, 1, 0);
+		Vector3f second = reference.cross(worldAxis).normalize();
+		Vector3f third = worldAxis.cross(second).normalize();
+		Matrix3f worldBasis = new Matrix3f();
+		worldBasis.fromAxes(worldAxis, second, third);
+		Matrix3f inverseRotation = body.getPhysicsRotation(new Quaternion()).inverse().toRotationMatrix();
+		return inverseRotation.mult(worldBasis, new Matrix3f());
+	}
 }

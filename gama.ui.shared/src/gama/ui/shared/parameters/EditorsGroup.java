@@ -12,8 +12,12 @@ package gama.ui.shared.parameters;
 
 import static org.eclipse.jface.layout.GridLayoutFactory.fillDefaults;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 
@@ -47,6 +51,34 @@ public class EditorsGroup extends Composite {
 		// GamaColors.setBackground(this, parent.getBackground());
 		// Necessary to force SWT to "reskin" and give the right background to the composite (issue in the CSS engine)
 		computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
+	}
+
+	/** Value labels and buttons of the editors that display a value, sized identically so that values align. */
+	private final List<ValueColumn> valueColumns = new ArrayList<>();
+
+	/** The value column of one editor. */
+	private record ValueColumn(Composite owner, GridData value, GridData buttons) {}
+
+	/** The widths shared by all the value columns of this group. */
+	private int valueWidth, buttonsWidth;
+
+	/**
+	 * Registers the layout data of a value label and of its buttons, and makes all registered columns share the
+	 * largest widths. Only done when editors are created, so value updates never relayout the group.
+	 */
+	void alignValueColumn(final Composite owner, final GridData value, final int valueHint, final GridData buttons,
+			final int buttonsHint) {
+		final ValueColumn column = new ValueColumn(owner, value, buttons);
+		valueColumns.add(column);
+		owner.addDisposeListener(e -> valueColumns.remove(column));
+		final boolean grown = valueHint > valueWidth || buttonsHint > buttonsWidth;
+		valueWidth = Math.max(valueWidth, valueHint);
+		buttonsWidth = Math.max(buttonsWidth, buttonsHint);
+		for (final ValueColumn c : valueColumns) {
+			c.value.widthHint = valueWidth;
+			c.buttons.widthHint = buttonsWidth;
+			if (grown && c.owner != owner && !c.owner.isDisposed()) { c.owner.requestLayout(); }
+		}
 	}
 
 }

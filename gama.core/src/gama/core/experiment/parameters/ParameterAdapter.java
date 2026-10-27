@@ -29,7 +29,7 @@ import gama.dev.COUNTER;
 public abstract class ParameterAdapter implements IParameter.Batch {
 
 	/** The order. */
-	private final long order = COUNTER.COUNT();
+	private final long order = COUNTER.GET_UNIQUE();
 
 	/** The title. */
 	protected String title;

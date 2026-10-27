@@ -77,6 +77,16 @@ public class ConfigurationPreferenceStore extends GamaPreferenceStore<IEclipsePr
 		} catch (org.osgi.service.prefs.BackingStoreException e) {}
 	}
 
+	@Override
+	public void writeAndFlush(final Pref<?> gp) {
+		write(gp);
+		try {
+			store.flush();
+		} catch (final org.osgi.service.prefs.BackingStoreException e) {
+			throw new IllegalStateException("Unable to persist preferences", e);
+		}
+	}
+
 	/**
 	 * Destroys the entire Eclipse {@code IEclipsePreferences} node by calling its {@code removeNode()} method, which
 	 * deletes the node and all of its keys from the persistent backing store. After this call, subsequent reads will

@@ -29,8 +29,10 @@ import static gama.api.utils.server.ISocketCommand.VALIDATE;
 import static java.util.Map.entry;
 
 import java.util.AbstractMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.java_websocket.WebSocket;
@@ -38,8 +40,9 @@ import org.java_websocket.enums.ReadyState;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
-import gama.api.gaml.types.Types;
+import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.types.list.IList;
+import gama.dev.DEBUG;
 
 /**
  * The Class CommandExecutor.
@@ -58,7 +61,33 @@ public class CommandExecutor implements ICommandExecuter {
 			entry(EXPRESSION, DefaultServerCommands::EVAL), entry(EVALUATE, DefaultServerCommands::EVAL),
 			entry(EXIT, DefaultServerCommands::EXIT), entry(DOWNLOAD, DefaultServerCommands::DOWNLOAD),
 			entry(UPLOAD, DefaultServerCommands::UPLOAD), entry(ASK, DefaultServerCommands::ASK),
-			entry(VALIDATE, DefaultServerCommands::VALIDATE), entry(DESCRIBE, DefaultServerCommands::DESCRIBE));
+			entry(VALIDATE, DefaultServerCommands::VALIDATE), entry(DESCRIBE, DefaultServerCommands::DESCRIBE),
+			entry(ISocketCommand.SIMULATION_STATUS_SUBSCRIBE, DefaultServerCommands::SIMULATION_STATUS_SUBSCRIBE),
+			entry(ISocketCommand.SIMULATION_STATUS_UNSUBSCRIBE, DefaultServerCommands::SIMULATION_STATUS_UNSUBSCRIBE),
+			entry(ISocketCommand.SIMULATION_STATUS_REQUEST, DefaultServerCommands::SIMULATION_STATUS_REQUEST),
+			entry(ISocketCommand.GET_PREFERENCES, PreferenceCommands::get),
+			entry(ISocketCommand.SET_PREFERENCE, PreferenceCommands::set),
+			entry(ISocketCommand.SERVER_LOG, DefaultServerCommands::SERVER_LOG));
+
+	/**
+	 * Commands contributed by plug-ins through the {@code gama.server_command} extension point. Populated by
+	 * {@code GamaBundleLoader} at startup and merged into every {@link CommandExecutor} instance, so that contributed
+	 * commands are available to both the GUI and the headless servers.
+	 */
+	private static final Map<String, ISocketCommand> CONTRIBUTED_COMMANDS = new ConcurrentHashMap<>();
+
+	/**
+	 * Registers a command contributed by a plug-in. Called by {@code GamaBundleLoader} when reading the
+	 * {@code gama.server_command} extension point.
+	 *
+	 * @param type
+	 *            the command keyword (the JSON 'type' field sent by clients)
+	 * @param command
+	 *            the command implementation
+	 */
+	public static void registerContributedCommand(final String type, final ISocketCommand command) {
+		if (type != null && command != null) { CONTRIBUTED_COMMANDS.put(type, command); }
+	}
 
 	/** The commands. */
 	protected final Map<String, ISocketCommand> commands;
@@ -77,7 +106,11 @@ public class CommandExecutor implements ICommandExecuter {
 	 */
 
 	public CommandExecutor() {
-		commands = GAMA.getGui().getServerCommands();
+		// Copy into a mutable map (some IGui implementations return an immutable/shared map) and merge the commands
+		// contributed by plug-ins through the 'gama.server_command' extension point.
+		commands = new HashMap<>(GAMA.getGui().getServerCommands());
+		commands.put(ISocketCommand.SERVER_LOG, DefaultServerCommands::SERVER_LOG);
+		commands.putAll(CONTRIBUTED_COMMANDS);
 		commandQueue = new LinkedBlockingQueue<>();
 	}
 
@@ -97,7 +130,8 @@ public class CommandExecutor implements ICommandExecuter {
 	}
 
 	/**
-	 * Process.
+	 * Processes a command on the calling thread. In particular, commands posted as one-shot experiment actions must
+	 * finish before the experiment starts its next cycle.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @param socket
@@ -107,18 +141,42 @@ public class CommandExecutor implements ICommandExecuter {
 	 * @date 15 oct. 2023
 	 */
 	protected void process(final IGamaServer server, final WebSocket socket, final ReceivedMessage map) {
-		final String cmd_type = map.get(IKeyword.TYPE).toString();
-		ISocketCommand command = commands.get(cmd_type);
-		if (command == null) throw new IllegalArgumentException("Invalid command type: " + cmd_type);
-
-		// Executes the command in a separate thread so the executor can
-		// continue with the next one without waiting for it to finish
-		// new Thread(() -> {
-		var res = command.execute(server, socket, map);
-		if (res != null && ReadyState.OPEN.equals(socket.getReadyState())) {
-			socket.send(GAMA.getJsonEncoder().valueOf(res).toString());
+		final String cmd_type = String.valueOf(map.get(IKeyword.TYPE));
+		GamaServerMessage res;
+		try {
+			final ISocketCommand command = commands.get(cmd_type);
+			if (command == null) throw new IllegalArgumentException("Invalid command type: " + cmd_type);
+			res = command.execute(server, socket, map);
+		} catch (Throwable t) {
+			// We ensure that every request gets an answer, even in case of complete crash
+			DEBUG.ERR("Error while executing the command '" + cmd_type + "'", t);
+			res = new CommandResponse(MessageType.GamaServerError, t, map, false);
 		}
-		// }).start();
+		try {
+			if (res != null && ReadyState.OPEN.equals(socket.getReadyState())) {
+				socket.send(GAMA.getJsonEncoder().valueOf(res).toString());
+			}
+		} catch (final RuntimeException e) {
+			DEBUG.ERR("Error while sending the response to command '" + cmd_type + "'", e);
+		}
+	}
+
+	/**
+	 * Processes a command off the WebSocket thread so long commands do not prevent keepalive handling.
+	 */
+	protected void processAsync(final IGamaServer server, final WebSocket socket, final ReceivedMessage map) {
+		new Thread(() -> process(server, socket, map), "GAMA server command").start();
+	}
+
+	/**
+	 * Processes a model command off the WebSocket thread and excludes concurrent experiment steps.
+	 */
+	protected void processAsync(final IGamaServer server, final WebSocket socket, final ReceivedMessage map,
+			final IExperimentAgent agent) {
+		new Thread(() -> agent.executeAction(scope -> {
+			process(server, socket, map);
+			return null;
+		}), "GAMA server command").start();
 	}
 
 	/**
@@ -132,8 +190,11 @@ public class CommandExecutor implements ICommandExecuter {
 	public static CommandResponse checkLoadParameters(final IList parameters, final Map<String, Object> commandMap) {
 		if (parameters != null) {
 			int i = 1;
-			for (var param : parameters.listValue(null, Types.MAP, false)) {
-				@SuppressWarnings ("unchecked") Map<String, Object> m = (Map<String, Object>) param;
+			for (var param : parameters) {
+				if (!(param instanceof Map<?, ?> m))
+					return new CommandResponse(MessageType.MalformedRequest,
+							"Parameter number " + i + " must be an object with `name` and `value` fields",
+							commandMap, false);
 				// field IKeyword.TYPE is optional, IKeyword.NAME and "value" are mandatory
 				var name = m.get(IKeyword.NAME);
 				var value = m.get("value");

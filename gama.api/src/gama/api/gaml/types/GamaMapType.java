@@ -10,6 +10,8 @@
 package gama.api.gaml.types;
 
 import gama.annotations.doc;
+import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.type;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
@@ -84,8 +86,32 @@ import gama.api.types.map.IMap;
 		wraps = { IMap.class },
 		kind = ISymbolKind.REGULAR,
 		concept = { IConcept.TYPE, IConcept.CONTAINER, IConcept.MAP },
-		doc = @doc ("Represents lists of pairs key::value, where each key is unique in the map. Maps are ordered by the insertion order of elements"))
+		doc = @doc ("Represents lists of pairs key::value, where each key is unique in the map. Maps are ordered by the insertion order of elements. "
+				+ "Without an initializer, each variable receives a new empty map. Explicit initialization or assignment with nil stores nil, "
+				+ "as does map(nil). An empty map is not nil."))
 @SuppressWarnings ({ "unchecked", "rawtypes" })
+@tests ({
+		@test ("map<string, int> src <- [\"a\"::1, \"b\"::2]; src[\"a\"] = 1"),
+		@test ("map<string, int> src2 <- [\"a\"::1, \"b\"::2]; src2[\"b\"] = 2"),
+		@test ("map<string, int> src3 <- [\"a\"::1, \"b\"::2]; list<pair<string, int>> lp <- src3.pairs; map<string, int> m1 <- map(lp); m1[\"a\"] = 1"),
+		@test ("map<string, int> src4 <- [\"a\"::1, \"b\"::2]; list<pair<string, int>> lp2 <- src4.pairs; map<string, int> m12 <- map(lp2); m12[\"b\"] = 2"),
+		@test ("map<string, int> scores <- [\"a\"::1, \"b\"::2]; scores.pairs[1] = (\"b\"::2)"),
+		@test ("map<string, int> scores2 <- [\"a\"::1, \"b\"::2]; scores2[\"z\"] = nil"),
+		@test ("map<int, int> from_list <- map([1, 2, 3]); from_list.keys = [1, 2, 3]"),
+		@test ("map<int, int> from_list2 <- map([1, 2, 3]); from_list2.values = [1, 2, 3]"),
+		@test ("map<string, int> m13 <- [\"a\"::1, \"b\"::2, \"c\"::3]; m13[\"a\"] = 1"),
+		@test ("map<string, int> m14 <- [\"a\"::1, \"b\"::2, \"c\"::3]; m14[\"b\"] = 2"),
+		@test ("map<string, int> m15 <- [\"a\"::1, \"b\"::2, \"c\"::3]; m15[\"c\"] = 3"),
+		@test ("map<string, int> m16 <- [\"a\"::1, \"b\"::2, \"c\"::3]; m16.keys = [\"a\", \"b\", \"c\"]"),
+		@test ("map<string, int> m17 <- [\"a\"::1, \"b\"::2, \"c\"::3]; m17.values = [1, 2, 3]"),
+		@test ("map<string, int> m18 <- [\"a\"::1, \"b\"::2]; m18[\"c\"] <- 3; m18[\"c\"] = 3"),
+		@test ("map<string, int> m19 <- [\"a\"::1, \"b\"::2]; m19[\"c\"] <- 3; m19[\"a\"] <- 10; m19[\"a\"] = 10"),
+		@test ("map<string, int> m110 <- [\"a\"::1, \"b\"::2]; m110[\"c\"] <- 3; m110[\"a\"] <- 10; remove key: \"b\" from: m110; m110.keys = [\"a\", \"c\"]"),
+		@test ("map<string, int> m111 <- [\"a\"::1, \"b\"::2]; m111[\"c\"] <- 3; m111[\"a\"] <- 10; remove key: \"b\" from: m111; m111.values = [10, 3]"),
+		@test ("map<string, int> m112 <- map([\"a\"::10, \"b\"::20]); m112[\"a\"] = 10"),
+		@test ("map<string, int> m <- [\"a\"::1]; m[\"missing\"] = nil"),
+		@test ("map<string, int> m2 <- [\"a\"::1]; m2[nil] = nil")
+})
 public class GamaMapType extends GamaContainerType<IMap> {
 
 	/**
@@ -101,6 +127,11 @@ public class GamaMapType extends GamaContainerType<IMap> {
 	 */
 	public GamaMapType(final ITypesManager typesManager) {
 		super(typesManager);
+	}
+
+	@Override
+	public IMap createDefaultValue(final IScope scope) {
+		return GamaMapFactory.create(getKeyType(), getContentType());
 	}
 
 	/**
@@ -158,10 +189,11 @@ public class GamaMapType extends GamaContainerType<IMap> {
 	 * @see GamaMapFactory#castToMap(IScope, Object, IType, IType, boolean)
 	 */
 	@Override
-	@doc ("Casts the operand into a map. In case of an agent, returns its attributes. In case of a string, tries to parse JSON contents and returns a corresponding map.")
+	@doc ("Casts the operand into a map. A nil operand remains nil; use map([]) to create an empty map. "
+			+ "In case of an agent, returns its attributes. In case of a string, tries to parse JSON contents and returns a corresponding map.")
 	public IMap cast(final IScope scope, final Object obj, final Object param, final IType keyType,
 			final IType contentType, final boolean copy) throws GamaRuntimeException {
-		return GamaMapFactory.castToMap(scope, obj, keyType, contentType, copy);
+		return obj == null ? null : GamaMapFactory.castToMap(scope, obj, keyType, contentType, copy);
 	}
 
 	/**
@@ -187,6 +219,7 @@ public class GamaMapType extends GamaContainerType<IMap> {
 	 * <li><b>Agent:</b> Keys are attribute names → Types.STRING</li>
 	 * <li><b>String (JSON):</b> Keys are JSON property names → Types.STRING</li>
 	 * <li><b>Map:</b> Preserves the original key type</li>
+	 * <li><b>File:</b> Uses the file buffer's key type</li>
 	 * <li><b>Pair:</b> Preserves the pair's key type</li>
 	 * <li><b>Matrix:</b> Keys are cell values → matrix's content type</li>
 	 * <li><b>Graph:</b> Keys are edges (vertex pairs) → Types.PAIR</li>
@@ -219,6 +252,7 @@ public class GamaMapType extends GamaContainerType<IMap> {
 	public IType keyTypeIfCasting(final IExpression exp) {
 		final IType itemType = exp.getGamlType();
 		if (itemType.isAgentType()) return Types.STRING;
+		if (Types.FILE.isAssignableFrom(itemType)) return itemType.getKeyType();
 		switch (itemType.id()) {
 			case STRING:
 				return Types.STRING;
@@ -246,6 +280,7 @@ public class GamaMapType extends GamaContainerType<IMap> {
 	 * <li><b>Agent:</b> Values are attribute values → Types.NO_TYPE (mixed types)</li>
 	 * <li><b>String (JSON):</b> Values are JSON values → Types.NO_TYPE (mixed types)</li>
 	 * <li><b>Map:</b> Preserves the original content type</li>
+	 * <li><b>File:</b> Uses the file buffer's content type</li>
 	 * <li><b>Pair:</b> Values are pair values → pair's content type</li>
 	 * <li><b>Matrix:</b> Values are cell values → matrix's content type</li>
 	 * <li><b>Graph:</b> Values are edge weights → graph's content type</li>
@@ -261,6 +296,7 @@ public class GamaMapType extends GamaContainerType<IMap> {
 	public IType contentsTypeIfCasting(final IExpression exp) {
 		final IType itemType = exp.getGamlType();
 		if (itemType.isAgentType()) return Types.NO_TYPE;
+		if (Types.FILE.isAssignableFrom(itemType)) return itemType.getContentType();
 		switch (itemType.id()) {
 			case STRING:
 				return Types.NO_TYPE;

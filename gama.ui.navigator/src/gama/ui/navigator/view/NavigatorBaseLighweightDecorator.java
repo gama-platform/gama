@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * NavigatorBaseLighweightDecorator.java, in gama.ui.navigator.view, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * NavigatorBaseLighweightDecorator.java, in gama.ui.navigator.view, is part of the source code of the GAMA modeling and
+ * simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.navigator.view;
 
@@ -15,6 +15,9 @@ import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ILightweightLabelDecorator;
 
 import gama.ui.navigator.view.contents.VirtualContent;
+import gama.ui.navigator.view.contents.WrappedLink;
+import gama.ui.shared.resources.GamaIcon;
+import gama.ui.shared.resources.IGamaIcons;
 
 /**
  * Class NavigatorBaseLighweightDecorator.
@@ -31,13 +34,26 @@ public class NavigatorBaseLighweightDecorator implements ILightweightLabelDecora
 	@Override
 	public void decorate(final Object element, final IDecoration decoration) {
 		if (element instanceof VirtualContent) {
+			if (element instanceof WrappedLink) {
+				decoration.addOverlay(GamaIcon.named(IGamaIcons.EDITOR_LINK).descriptor());
+			}
+			final String explanation = ((VirtualContent<?>) element).getExplanation();
 			((VirtualContent<?>) element).getSuffix(sb);
+
+			boolean hasExplanation = explanation != null && !explanation.isBlank();
+
+			if (!hasExplanation && sb.isEmpty()) return;
+
+			decoration.addSuffix(" | ");
+
+			if (hasExplanation) { decoration.addSuffix(explanation); }
+
 			if (sb.length() > 0) {
-				decoration.addSuffix(" (");
+				if (hasExplanation) { decoration.addSuffix(", "); }
 				decoration.addSuffix(sb.toString());
-				decoration.addSuffix(")");
 				sb.setLength(0);
 			}
+
 		}
 	}
 

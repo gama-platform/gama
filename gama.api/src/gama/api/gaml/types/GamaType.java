@@ -23,7 +23,6 @@ import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IClassDescription;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
-import gama.api.compilation.documentation.GamlConstantDocumentation;
 import gama.api.compilation.documentation.GamlRegularDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.exceptions.GamaRuntimeException;
@@ -276,7 +275,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 			for (final variable v : allVars) {
 				if (v.name().equals(prototype.getName())) {
 					if (v.doc().length > 0) {
-						sb.set("Accessible fields: ", v.name(), new GamlConstantDocumentation(v.doc()[0].value()));
+						sb.set("Accessible fields: ", v.name(), prototype.getDocumentation());
 					}
 					break;
 				}
@@ -1157,6 +1156,39 @@ public abstract class GamaType<Support> implements IType<Support> {
 	 */
 	public static boolean requiresCasting(final IType<?> castingType, final IType<?> originalType) {
 		return castingType != null && castingType != Types.NO_TYPE && !castingType.isAssignableFrom(originalType);
+	}
+
+	/**
+	 * Whether container elements need conversion, including assignable nested containers whose runtime type controls
+	 * subsequent writes.
+	 *
+	 * @param scope
+	 *            the execution scope
+	 * @param castingType
+	 *            the requested element type
+	 * @param originalType
+	 *            the original element type
+	 * @param values
+	 *            the elements, whose individual types may be more specific than the aggregate type
+	 * @return whether elements must be cast to the requested type
+	 */
+	public static boolean requiresContentTypeCasting(final IScope scope, final IType<?> castingType,
+			final IType<?> originalType, final Iterable<?> values) {
+		if (requiresCasting(castingType, originalType)) return true;
+		if (castingType == null || !castingType.isContainer()) return false;
+		if (!castingType.equals(originalType)) return true;
+		// A common inferred type can hide differently typed nested containers.
+		for (final Object value : values) {
+			if (!(value instanceof IContainer<?, ?> container)) continue;
+			final IType<?> actualType = container.getGamlType();
+			if (!castingType.equals(actualType)
+					|| requiresContentTypeCasting(scope, castingType.getContentType(), actualType.getContentType(),
+							container.iterable(scope))
+					|| container instanceof IMap<?, ?> map && requiresContentTypeCasting(scope, castingType.getKeyType(),
+							actualType.getKeyType(), map.keySet()))
+				return true;
+		}
+		return false;
 	}
 
 	/**

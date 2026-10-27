@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+<<<<<<<< HEAD:gama.library/recipes/Define Experiments/.project
+	<name>Define Experiments</name>
+========
+	<name>Mondrian City</name>
+>>>>>>>> main:gama.library/models/Demos/Art/Mondrian City/.project
+	<comment></comment>
+	<projects>
+	</projects>
+	<buildSpec>
+		<buildCommand>
+			<name>org.eclipse.xtext.ui.shared.xtextBuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+	</buildSpec>
+	<natures>
+		<nature>org.eclipse.xtext.ui.shared.xtextNature</nature>
+<<<<<<<< HEAD:gama.library/recipes/Define Experiments/.project
+		<nature>gama.workspace.gamaNature</nature>
+		<nature>gama.workspace.recipeNature</nature>
+========
+		<nature>gama.workspace.nature</nature>
+>>>>>>>> main:gama.library/models/Demos/Art/Mondrian City/.project
+	</natures>
+</projectDescription>

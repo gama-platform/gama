@@ -27,8 +27,10 @@ import org.eclipse.core.runtime.Platform;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
 import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
@@ -53,6 +55,8 @@ import gama.api.types.misc.IValue;
 import gama.api.utils.StringUtils;
 import gama.api.utils.files.FileUtils;
 import gama.core.experiment.parameters.InputParameter;
+import gama.core.util.CommandContext;
+import gama.core.util.CommandProcessManager;
 
 /**
  * Provides GAML system-level and introspection operators for the GAMA modeling and simulation
@@ -152,10 +156,15 @@ public class System {
 			returns = "a {@code bool}: {@code true} if evaluating the expression raised a runtime error.",
 			special_cases = {
 					"is_error evaluates the expression in a try-catch manner; if an error is raised, it returns true without propagating the error.",
+					"Only thrown failures are detected. This operator does not enable GAML try mode, force report-only recovery paths to throw, or itself update #current_error. Evaluating the expression can have side effects.",
 					"is_error(1/0) = true (integer division by zero is an error in GAML)." })
-	@test ("!is_error(1.0 = 1)")
-	@test ("is_error(1/0)")
-	@test ("!is_error(1/1)")
+	@tests ({
+			@test ("!is_error(1.0 = 1)"),
+			@test ("is_error(1/0)"),
+			@test ("!is_error(1/1)"),
+			@test ("is_error(10 / 0)"),
+			@test ("is_error(date(\"not a date\"))")
+	})
 	public static Boolean is_error(final IScope scope, final IExpression expr) {
 		try {
 			expr.value(scope);
@@ -180,7 +189,8 @@ public class System {
 			concept = IConcept.TEST)
 	@doc (
 			value = "Returns whether or not the argument raises a warning when evaluated",
-			returns = "a {@code bool}: {@code true} if evaluating the expression produced a runtime warning.")
+			returns = "a {@code bool}: {@code true} if evaluating the expression threw a runtime warning.",
+			special_cases = "Only thrown warnings are detected. This operator does not enable GAML try mode, force reported warnings to throw, or itself update #current_error. Evaluating the expression can have side effects.")
 	@test ("is_warning(1.0 = 1) = false")
 	public static Boolean is_warning(final IScope scope, final IExpression expr) {
 		try {
@@ -214,6 +224,7 @@ public class System {
 	 *            the timeout
 	 * @return the boolean
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "is_reachable",
 			can_be_const = true,
@@ -259,6 +270,7 @@ public class System {
 	 *            the source
 	 * @return the boolean
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "play_sound",
 			can_be_const = true,
@@ -306,6 +318,7 @@ public class System {
 	 *            the timeout
 	 * @return the boolean
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "is_reachable",
 			concept = IConcept.TEST)
@@ -342,12 +355,13 @@ public class System {
 	 *            the s
 	 * @return the string
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "command",
 			category = { IOperatorCategory.SYSTEM },
 			concept = { IConcept.SYSTEM, IConcept.COMMUNICATION })
 	@doc (
-			value = "command allows GAMA to issue a system command using the system terminal or shell and to receive a string containing the outcome of the command or script executed. By default, commands are blocking the agent calling them, unless the sequence ' &' is used at the end. In this case, the result of the operator is an empty string. The basic form with only one string in argument uses the directory of the model and does not set any environment variables. Two other forms (with a directory and a map<string, string> of environment variables) are available.",
+			value = "command allows GAMA to issue a system command using the system terminal or shell and to receive a string containing the outcome of the command or script executed. By default, commands are blocking the agent calling them, unless the sequence ' &' is used at the end. In this case, the result of the operator is an empty string. Commands started by an agent are terminated, along with their subprocesses, when that agent is disposed. The basic form with only one string in argument uses the directory of the model and does not set any environment variables. Two other forms (with a directory and a map<string, string> of environment variables) are available.",
 			masterDoc = true)
 	@no_test
 	public static String console(final IScope scope, final String s) {
@@ -377,11 +391,12 @@ public class System {
 	 *            the directory
 	 * @return the string
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "command",
 			category = { IOperatorCategory.SYSTEM },
 			concept = { IConcept.SYSTEM, IConcept.COMMUNICATION })
-	@doc ("command allows GAMA to issue a system command using the system terminal or shell and to receive a string containing the outcome of the command or script executed. By default, commands are blocking the agent calling them, unless the sequence ' &' is used at the end. In this case, the result of the operator is an empty string. The basic form with only one string in argument uses the directory of the model and does not set any environment variables. Two other forms (with a directory and a map<string, string> of environment variables) are available.")
+	@doc ("command allows GAMA to issue a system command using the system terminal or shell and to receive a string containing the outcome of the command or script executed. By default, commands are blocking the agent calling them, unless the sequence ' &' is used at the end. In this case, the result of the operator is an empty string. Commands started by an agent are terminated, along with their subprocesses, when that agent is disposed. The basic form with only one string in argument uses the directory of the model and does not set any environment variables. Two other forms (with a directory and a map<string, string> of environment variables) are available.")
 	@no_test
 	public static String console(final IScope scope, final String s, final String directory) {
 		return console(scope, s, directory, GamaMapFactory.create());
@@ -414,11 +429,12 @@ public class System {
 	 *            the environment
 	 * @return the string
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "command",
 			category = { IOperatorCategory.SYSTEM },
 			concept = { IConcept.SYSTEM, IConcept.COMMUNICATION })
-	@doc ("command allows GAMA to issue a system command using the system terminal or shell and to receive a string containing the outcome of the command or script executed. By default, commands are blocking the agent calling them, unless the sequence ' &' is used at the end. In this case, the result of the operator is an empty string. A map<string, string> containing environment variables values can be passed, replacing, only for this command, the values of existing variables.")
+	@doc ("command allows GAMA to issue a system command using the system terminal or shell and to receive a string containing the outcome of the command or script executed. By default, commands are blocking the agent calling them, unless the sequence ' &' is used at the end. In this case, the result of the operator is an empty string. Commands started by an agent are terminated, along with their subprocesses, when that agent is disposed. A map<string, string> containing environment variables values can be passed, replacing, only for this command, the values of existing variables.")
 	@no_test
 	public static String console(final IScope scope, final String s, final String directory,
 			final IMap<String, String> environment) {
@@ -427,18 +443,17 @@ public class System {
 		final List<String> commands = new ArrayList<>();
 		commands.add(Platform.OS_WIN32.equals(Platform.getOS()) ? "cmd.exe" : "/bin/bash");
 		commands.add(Platform.OS_WIN32.equals(Platform.getOS()) ? "/C" : "-c");
-		commands.add(s.trim());
-		// commands.addAll(Arrays.asList(s.split(" ")));
-		final boolean nonBlocking = commands.get(commands.size() - 1).endsWith("&");
-		if (nonBlocking) {
-			// commands.(commands.size() - 1);
-		}
+		final String command = s.trim();
+		final boolean nonBlocking = command.endsWith("&");
+		commands.add(nonBlocking ? command.substring(0, command.length() - 1).stripTrailing() : command);
 		final ProcessBuilder b = new ProcessBuilder(commands);
 		b.redirectErrorStream(true);
+		if (nonBlocking) { b.redirectOutput(ProcessBuilder.Redirect.DISCARD); }
 		b.directory(new File(directory));
 		b.environment().putAll(environment);
 		try {
 			final Process p = b.start();
+			CommandProcessManager.register(scope.getAgent(), p);
 			if (nonBlocking) return "";
 			try (BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
 				final int returnValue = p.waitFor();
@@ -453,6 +468,42 @@ public class System {
 		}
 		return output.toString();
 
+	}
+
+	/**
+	 * Runs a command in a persistent context and returns this context.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param s
+	 *            the command
+	 * @param context
+	 *            the context
+	 * @return the context
+	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
+	@operator (
+			value = "command",
+			category = { IOperatorCategory.SYSTEM },
+			concept = { IConcept.SYSTEM, IConcept.COMMUNICATION })
+	@doc (
+			value = "Runs the command in the persistent shell of the context and returns this same context, so that its state (current directory, variables...) is kept between commands. The output of the command is available in 'result' (and 'results'), its exit status in 'status' and the commands themselves in 'commands'. A failing command does not raise an error. A trailing ' &' runs the command in the background and discards its output. The shell is terminated, along with its subprocesses, when the agent that started it is disposed, or with the 'close' action of the context.",
+			examples = { @example (
+					value = "context c <- context();",
+					isExecutable = false),
+					@example (
+							value = "c <- command(\"cd ../includes\", c);",
+							isExecutable = false),
+					@example (
+							value = "c <- command(\"ls\", c);",
+							isExecutable = false),
+					@example (
+							value = "write c.result + ' in ' + c.directory.path;",
+							isExecutable = false) })
+	@no_test
+	public static CommandContext console(final IScope scope, final String s, final CommandContext context) {
+		if (context == null) throw GamaRuntimeException.error("The context of a command cannot be nil", scope);
+		return context.execute(scope, s);
 	}
 
 	/**
@@ -580,7 +631,8 @@ public class System {
 			value = "returns a copy of the operand.",
 			returns = "a deep copy of the operand.",
 			special_cases = { "copy(nil) returns nil.",
-					"The copy is independent of the original; modifying one does not affect the other." })
+					"The copy is independent of the original for all operand types except agents; modifying one does not affect the other.",
+					"Agents cannot be copied: copy(agent) returns the agent itself. To duplicate an agent, use the create statement instead (e.g. create species_of(agent) from: agent;)." })
 	@no_test
 	public static Object opCopy(final IScope scope, final Object o) throws GamaRuntimeException {
 		if (o instanceof IValue) return ((IValue) o).copy(scope);
@@ -611,6 +663,7 @@ public class System {
 	 * @return the i map
 	 */
 	@SuppressWarnings ("unchecked")
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = IKeyword.USER_INPUT_DIALOG,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -647,6 +700,7 @@ public class System {
 	 *            the parameters
 	 * @return the i map
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = IKeyword.USER_INPUT_DIALOG,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -678,6 +732,7 @@ public class System {
 	 * @return the i map
 	 */
 	@SuppressWarnings ("unchecked")
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = IKeyword.USER_INPUT_DIALOG,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -712,6 +767,7 @@ public class System {
 	 *            the color
 	 * @return the i map
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = IKeyword.USER_INPUT_DIALOG,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -747,6 +803,7 @@ public class System {
 	 * @return the i map
 	 */
 	@SuppressWarnings ("unchecked")
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = IKeyword.USER_INPUT_DIALOG,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -780,6 +837,7 @@ public class System {
 	 *            the pages
 	 * @return the i map
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = IKeyword.WIZARD,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -820,6 +878,7 @@ public class System {
 	 *            the pages
 	 * @return the i map
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = IKeyword.WIZARD,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -862,6 +921,7 @@ public class System {
 	 *            the font
 	 * @return the i map
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = IKeyword.WIZARD_PAGE,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -905,6 +965,7 @@ public class System {
 	 *            the parameters
 	 * @return the i map
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = IKeyword.WIZARD_PAGE,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -947,6 +1008,7 @@ public class System {
 	 *            the message
 	 * @return the boolean
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = IKeyword.USER_CONFIRM,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -984,6 +1046,7 @@ public class System {
 	 *            the type
 	 * @return the i parameter
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			can_be_const = false,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -1018,6 +1081,7 @@ public class System {
 	 *            the init
 	 * @return the i parameter
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			can_be_const = false,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -1060,6 +1124,7 @@ public class System {
 	 *            the max
 	 * @return the i parameter
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			can_be_const = false,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -1108,6 +1173,7 @@ public class System {
 	 *            the step
 	 * @return the i parameter
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			can_be_const = false,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -1163,6 +1229,7 @@ public class System {
 	 *            the max
 	 * @return the i parameter
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			can_be_const = false,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -1211,6 +1278,7 @@ public class System {
 	 *            the step
 	 * @return the i parameter
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			can_be_const = false,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -1247,6 +1315,7 @@ public class System {
 	 *            the init
 	 * @return the i parameter
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			can_be_const = false,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -1281,6 +1350,7 @@ public class System {
 	 *            the init
 	 * @return the i parameter
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			can_be_const = false,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -1323,6 +1393,7 @@ public class System {
 	 *            the init
 	 * @return the i parameter
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			can_be_const = false,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -1362,6 +1433,7 @@ public class System {
 	 *            the init
 	 * @return the i parameter
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			can_be_const = false,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -1396,6 +1468,7 @@ public class System {
 	 *            the init
 	 * @return the i parameter
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			can_be_const = false,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -1438,6 +1511,7 @@ public class System {
 	 *            the among
 	 * @return the i parameter
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			can_be_const = false,
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.USER_CONTROL },
@@ -1469,6 +1543,7 @@ public class System {
 	 *            the text
 	 * @return the boolean
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "copy_to_clipboard",
 			can_be_const = false,
@@ -1491,6 +1566,7 @@ public class System {
 	 *            the type
 	 * @return the boolean
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "copy_from_clipboard",
 			can_be_const = false,

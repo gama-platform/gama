@@ -235,6 +235,20 @@ public class GraphicsScope extends ExecutionScope implements IGraphicsScope {
 		super(scope.getRoot(), name);
 	}
 
+	/**
+	 * Instantiates a new graphics scope as a copy of another scope (see {@link ExecutionScope#copy(String)}).
+	 *
+	 * @param source
+	 *            the source
+	 * @param name
+	 *            the name
+	 * @param sharing
+	 *            whether the local variables and agent stack of the source are shared
+	 */
+	protected GraphicsScope(final ExecutionScope source, final String name, final Sharing sharing) {
+		super(source, name, sharing);
+	}
+
 	@Override
 	public IRandom getRandom() {
 		if (graphics != null) return graphics.getRandom();

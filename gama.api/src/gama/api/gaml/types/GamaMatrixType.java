@@ -11,6 +11,8 @@
 package gama.api.gaml.types;
 
 import gama.annotations.doc;
+import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.type;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
@@ -77,6 +79,28 @@ import gama.api.types.matrix.IMatrix;
 		concept = { IConcept.TYPE, IConcept.CONTAINER, IConcept.MATRIX },
 		doc = @doc ("Matrices are 2-dimensional containers that can contain any type of date (not only floats or integers). They can be accessed with a point index or by rows / columns"))
 @SuppressWarnings ({ "unchecked", "rawtypes" })
+@tests ({
+		@test ("matrix<int> mat <- matrix([[1, 2], [3, 4]]); mat[0, 0] = 1"),
+		@test ("matrix<int> mat2 <- matrix([[1, 2], [3, 4]]); mat2[0, 1] = 2"),
+		@test ("matrix<int> mat3 <- matrix([[1, 2], [3, 4]]); mat3[1, 0] = 3"),
+		@test ("matrix<int> mat4 <- matrix([[1, 2], [3, 4]]); mat4[1, 1] = 4"),
+		@test ("matrix<int> m <- matrix([[1, 2, 3], [4, 5, 6]]); m.columns = 2"),
+		@test ("matrix<int> m2 <- matrix([[1, 2, 3], [4, 5, 6]]); m2.rows = 3"),
+		// cells are addressed by column then row
+		@test ("matrix<int> m3 <- matrix([[1, 2, 3], [4, 5, 6]]); m3[1, 0] = 4"),
+		@test ("matrix<rgb> img_matrix <- matrix<rgb>([ [#red, #blue], [#green, #yellow] ]); img_matrix.columns = 2"),
+		@test ("matrix<rgb> img_matrix2 <- matrix<rgb>([ [#red, #blue], [#green, #yellow] ]); img_matrix2.rows = 2"),
+		@test ("matrix<rgb> img_matrix3 <- matrix<rgb>([ [#red, #blue], [#green, #yellow] ]); img_matrix3[0, 0] = #red"),
+		@test ("matrix<rgb> img_matrix4 <- matrix<rgb>([ [#red, #blue], [#green, #yellow] ]); img_matrix4[1, 1] = #yellow"),
+		// matrices are indexed [column, row], and each inner list is a column
+		@test ("matrix<int> m1 <- matrix([[1, 2], [3, 4]]); m1[0, 0] = 1"),
+		@test ("matrix<int> m12 <- matrix([[1, 2], [3, 4]]); m12[0, 1] = 2"),
+		@test ("matrix<int> m13 <- matrix([[1, 2], [3, 4]]); m13[1, 0] = 3"),
+		@test ("matrix<int> m14 <- matrix([[1, 2], [3, 4]]); m14[1, 1] = 4"),
+		// Row and Column access
+		@test ("matrix<int> m15 <- matrix([[1, 2], [3, 4]]); m15.rows = 2"),
+		@test ("matrix<int> m16 <- matrix([[1, 2], [3, 4]]); m16.columns = 2")
+})
 public class GamaMatrixType extends GamaContainerType<IMatrix> {
 
 	/**

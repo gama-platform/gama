@@ -61,6 +61,17 @@ import gama.api.ui.IExperimentDisplayable;
 public interface IParameter extends IExperimentDisplayable {
 
 	/**
+	 * Presentation metadata only: model values are divided by {@code factor} for display.
+	 */
+	record DisplayUnit(String label, double factor) {}
+
+	/**
+	 * Returns an explicitly supplied display unit, or null. Unlike {@link #getUnitLabel(IScope)}, this never returns
+	 * generated descriptions of a parameter's bounds.
+	 */
+	default DisplayUnit getDisplayUnit(final IScope scope) { return null; }
+
+	/**
 	 * Listener interface for observing parameter value changes.
 	 * 
 	 * <p>

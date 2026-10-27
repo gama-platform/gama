@@ -29,6 +29,7 @@ import gama.api.exceptions.GamaCompilationFailedException;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.species.IModelSpecies;
+import gama.api.runtime.scope.IExecutionResult;
 import gama.api.types.list.IList;
 import gama.api.types.map.IMap;
 import gama.core.experiment.ExperimentSpecies;
@@ -123,13 +124,15 @@ public class GamaServerExperimentJob extends ExperimentJob {
 	 * @throws GamaHeadlessException
 	 *             the gama headless exception
 	 */
-	public void loadAndBuildWithJson(final IList params, final String endCond)
+	public IExecutionResult loadAndBuildWithJson(final IList params, final String endCond)
 			throws IOException, GamaCompilationFailedException {
 		if (this.simulator == null) { this.load(); }
 		this.setup();
 		controller.setExperiment(simulator.getModel().getExperiment(experimentName));
-		simulator.setup(experimentName, this.seed, params, this);
-		simulator.getExperimentPlan().setStopCondition(endCond);
+		if (endCond != null && !endCond.isBlank()) {
+			simulator.getModel().getExperiment(experimentName).setStopCondition(endCond);
+		}
+		return simulator.setup(experimentName, this.seed, params, this);
 	}
 
 	/**
@@ -145,7 +148,7 @@ public class GamaServerExperimentJob extends ExperimentJob {
 			final ExperimentSpecies curExperiment = (ExperimentSpecies) simulator.getExperimentPlan();
 			for (var param : params.listValue(null, Types.MAP, false)) {
 				IMap<String, Object> m = (IMap<String, Object>) param;
-				String type = m.get(IKeyword.TYPE).toString();
+				String type = m.get(IKeyword.TYPE) == null ? "" : m.get(IKeyword.TYPE).toString();
 				Object v = m.get("value");
 				if ("int".equals(type)) { v = Integer.valueOf("" + m.get("value")); }
 				if ("float".equals(type)) { v = Double.valueOf("" + m.get("value")); }

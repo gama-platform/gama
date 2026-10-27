@@ -18,14 +18,14 @@ Import-Package: gama.extension.image,
 Export-Package: org.joml,
  org.joml.sampling,
  gama.ui.display.opengl4,
- gama.ui.display.opengl4.camera,
  gama.ui.display.opengl4.files,
  gama.ui.display.opengl4.renderer,
  gama.ui.display.opengl4.renderer.caches,
  gama.ui.display.opengl4.renderer.helpers,
  gama.ui.display.opengl4.renderer.shaders,
- gama.ui.display.opengl4.scene,
- gama.ui.display.opengl4.scene.layers,
+ gama.ui.display.opengl4.scene.geometry,
+ gama.ui.display.opengl4.scene.mesh,
+ gama.ui.display.opengl4.scene.text,
  gama.ui.display.opengl4.view
 Bundle-Vendor: UMMISCO
 Bundle-RequiredExecutionEnvironment: JavaSE-25

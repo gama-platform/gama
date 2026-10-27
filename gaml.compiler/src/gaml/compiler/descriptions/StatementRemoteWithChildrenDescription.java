@@ -82,7 +82,7 @@ public class StatementRemoteWithChildrenDescription extends StatementWithChildre
 		if (sd != null) {
 			final IType t = getTypeContext().getGamlType();
 			addTemp(this, null, MYSELF, t);
-			setEnclosingDescription(sd);
+			if (getEnclosingDescription() != sd) { setEnclosingDescription(sd); }
 		}
 
 		return super.compileChildren();
@@ -144,8 +144,10 @@ public class StatementRemoteWithChildrenDescription extends StatementWithChildre
 			if (s != null) {
 				final IType t = s.getGamlType();
 				addTemp(this, null, MYSELF, t);
-				previousEnclosingDescription = getEnclosingDescription();
-				setEnclosingDescription(denotedSpecies);
+				if (getEnclosingDescription() != denotedSpecies) {
+					previousEnclosingDescription = getEnclosingDescription();
+					setEnclosingDescription(denotedSpecies);
+				}
 				// FIXME ===> Model Description is lost if we are dealing with a built-in species !
 			}
 		}
@@ -163,7 +165,7 @@ public class StatementRemoteWithChildrenDescription extends StatementWithChildre
 	 */
 	public void popRemoteContext(final IDescription previousEnclosingDescription) {
 
-		if (previousEnclosingDescription != null) { setEnclosingDescription(previousEnclosingDescription); }
+		if (previousEnclosingDescription != null) { super.setEnclosingDescription(previousEnclosingDescription); }
 
 	}
 

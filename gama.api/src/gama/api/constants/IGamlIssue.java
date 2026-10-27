@@ -165,6 +165,9 @@ public interface IGamlIssue {
 	/** The unused. */
 	String UNUSED = "gaml.unused.code.issue";
 
+	/** The varArg rule. */
+	String VARARG_RULE = "gaml.vararg.rule.info";
+
 	/** The conflicting facets. */
 	String CONFLICTING_FACETS = "gaml.conflicting.facets";
 

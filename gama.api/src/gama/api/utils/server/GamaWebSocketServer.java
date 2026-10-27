@@ -12,9 +12,17 @@ package gama.api.utils.server;
 
 import static gama.api.utils.server.ISocketCommand.EXP_ID;
 
+import java.io.IOException;
 import java.io.PrintStream;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CodingErrorAction;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -31,6 +39,7 @@ import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.types.map.IMap;
 import gama.api.ui.IConsoleListener;
+import gama.api.utils.json.IJsonObject;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 
@@ -64,6 +73,16 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 	/** The listeners. */
 	protected final ListenerList<Listener> listeners = new ListenerList<>(ListenerList.IDENTITY);
 
+	private final GamaServerExchangeLog exchangeLog;
+
+	// Is thread local because the decoder is stateful
+	// TODO: It may be better to have one decoder per open connection (needs to be benchmarked) but good enough for now
+	protected static final ThreadLocal<CharsetDecoder> DECODER = ThreadLocal.withInitial(() ->
+	    StandardCharsets.UTF_8.newDecoder()
+	        .onMalformedInput(CodingErrorAction.REPLACE)
+	        .onUnmappableCharacter(CodingErrorAction.REPLACE)
+	);
+	
 	/**
 	 * Instantiates a new gama web socket server.
 	 *
@@ -85,7 +104,13 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 	 * @date 16 oct. 2023
 	 */
 	protected GamaWebSocketServer(final int port, final int interval, final boolean noDelay) {
-		super(new InetSocketAddress(port));
+		this(port, interval, noDelay, new GamaServerExchangeLog());
+	}
+
+	private GamaWebSocketServer(final int port, final int interval, final boolean noDelay,
+			final GamaServerExchangeLog log) {
+		super(new InetSocketAddress(port), List.of(new GamaServerLoggingDraft(log)));
+		exchangeLog = log;
 		// Should solve the problem with the address being still used after relaunching
 		this.setReuseAddr(true);
 		this.setTcpNoDelay(noDelay);
@@ -153,11 +178,31 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 
 	@Override
 	public void onStart() {
+		exchangeLog.start(getPort());
 		DEBUG.BANNER(BANNER_CATEGORY.GAMA, "Server started", "at port", "" + this.getPort());
+	}
+
+	/** @return this run's exchange log file, or null if no file was created. */
+	public Path getExchangeLogFile() { return exchangeLog.file(); }
+
+	@Override
+	public IJsonObject setExchangeLogging(final boolean enabled) throws IOException {
+		return exchangeLog.setEnabled(enabled, getPort());
+	}
+
+	@Override
+	public void stop(final int timeout, final String closeMessage) throws InterruptedException {
+		try {
+			super.stop(timeout, closeMessage);
+		} finally {
+			exchangeLog.close();
+		}
 	}
 
 	@Override
 	public void onOpen(final WebSocket socket, final ClientHandshake handshake) {
+		if (socket.getDraft() instanceof GamaServerLoggingDraft draft) { draft.bind(socket); }
+		exchangeLog.connectionOpened(socket);
 		socket.send(GAMA.getJsonEncoder()
 				.valueOf(new GamaServerMessage(MessageType.ConnectionSuccessful, String.valueOf(socket.hashCode())))
 				.toString());
@@ -175,6 +220,7 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 
 	@Override
 	public void onClose(final WebSocket conn, final int code, final String reason, final boolean remote) {
+		exchangeLog.connectionClosed(conn, code, reason, remote);
 		var timer = pingTimers.remove(conn);
 		if (timer != null) { timer.cancel(); }
 		listeners.clear();
@@ -211,24 +257,41 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 			ReceivedMessage received = extractParam(socket, message);
 			// Gives listeners a chance to process the message. If one returns false, we abort the processing. See #438
 			for (Listener listener : listeners) { if (!listener.process(received)) return; }
+			if (ISocketCommand.SERVER_LOG.equals(received.get(IKeyword.TYPE))) {
+				cmdHelper.process(this, socket, received);
+				return;
+			}
+			if (ISocketCommand.GET_PREFERENCES.equals(received.get(IKeyword.TYPE))
+					|| ISocketCommand.SET_PREFERENCE.equals(received.get(IKeyword.TYPE))) {
+				cmdHelper.processAsync(this, socket, received);
+				return;
+			}
 			final String expId = received.getOrDefault(EXP_ID, "").toString();
 			final String socketId = received.getOrDefault(SOCKET_ID, getSocketId(socket)).toString();
 			IExperimentSpecies exp = getExperiment(socketId, expId);
 			if (exp != null) {
 				processInSyncWithExperiment(socket, received, exp);
 			} else {
-				cmdHelper.process(this, socket, received);
+				cmdHelper.processAsync(this, socket, received);
 			}
 		} catch (Exception e1) {
 			DEBUG.OUT(e1);
-			socket.send(
-					GAMA.getJsonEncoder().valueOf(new GamaServerMessage(MessageType.GamaServerError, e1)).toString());
-
+			socket.send(GAMA.getJsonEncoder().valueOf(new GamaServerMessage(MessageType.GamaServerError, e1)).toString());
+		}
+	}
+	
+	@Override
+	public void onMessage(WebSocket socket, ByteBuffer message) {
+		try {
+			onMessage(socket, DECODER.get().decode(message).toString());
+		} catch (CharacterCodingException e) {
+			socket.send(GAMA.getJsonEncoder().valueOf(new GamaServerMessage(MessageType.GamaServerError, e)).toString());
 		}
 	}
 
 	/**
-	 * Process in sync with experiment.
+	 * Processes model access between experiment cycles. Controller commands run separately: a synchronous step or
+	 * reload must not wait for the execution thread from inside that same thread.
 	 *
 	 * @param socket
 	 *            the socket
@@ -240,12 +303,28 @@ public abstract class GamaWebSocketServer extends WebSocketServer implements IGa
 	private void processInSyncWithExperiment(final WebSocket socket, final ReceivedMessage received,
 			final IExperimentSpecies exp) {
 		IExperimentAgent agent = exp.getAgent();
-		if (agent == null || exp.getController().isPaused()) {
-			cmdHelper.process(this, socket, received);
+		final boolean controlsExperiment = switch (received.get(IKeyword.TYPE).toString()) {
+			case ISocketCommand.LOAD, ISocketCommand.PLAY, ISocketCommand.PAUSE, ISocketCommand.STEP,
+					ISocketCommand.BACK, ISocketCommand.STEPBACK, ISocketCommand.STOP, ISocketCommand.RELOAD,
+					ISocketCommand.EXIT -> true;
+			default -> false;
+		};
+		if (agent == null) {
+			cmdHelper.processAsync(this, socket, received);
+		} else if (exp.getController().isPaused()) {
+			if (controlsExperiment) {
+				cmdHelper.processAsync(this, socket, received);
+			} else {
+				cmdHelper.processAsync(this, socket, received, agent);
+			}
 		} else {
 			// In order to sync the command with the experiment cycles
 			agent.postOneShotAction(scope1 -> {
-				cmdHelper.process(this, socket, received);
+				if (controlsExperiment) {
+					cmdHelper.processAsync(this, socket, received);
+				} else {
+					cmdHelper.process(this, socket, received);
+				}
 				return null;
 			});
 		}

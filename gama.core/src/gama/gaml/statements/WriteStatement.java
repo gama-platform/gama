@@ -15,6 +15,7 @@ import gama.annotations.example;
 import gama.annotations.facet;
 import gama.annotations.facets;
 import gama.annotations.inside;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
 import gama.annotations.symbol;
 import gama.annotations.test;
@@ -193,6 +194,7 @@ public class WriteStatement extends AbstractStatement {
 	 *            the expr
 	 * @return the string
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "sample",
 			doc = { @doc ("Returns a string containing the GAML code of the expression passed in parameter, followed by the result of its evaluation") },
@@ -213,6 +215,7 @@ public class WriteStatement extends AbstractStatement {
 	 *            the expr
 	 * @return the string
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "sample",
 			doc = @doc ("Returns a string containing the string passed in parameter, followed by the result of the evaluation of the expression"),

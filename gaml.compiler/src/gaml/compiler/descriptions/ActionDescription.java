@@ -157,33 +157,35 @@ public class ActionDescription extends StatementWithChildrenDescription implemen
 		}
 
 		return names.forEachFacet((s, e) -> {
-			// A null value indicates a previous compilation error in the
-			// arguments
+			// A null description or expression indicates a previous compilation error.
 			if (e != null) {
 				if (!allArgs.contains(s)) {
 					caller.error("Unknown argument " + s + " in call to " + getName(), IGamlIssue.UNKNOWN_ARGUMENT,
 							e.getTarget(), s);
 					return false;
 				}
-				if (e.getExpression() != null) {
-					final IDescription formalArg = Iterables.find(formalArgs, input -> input.getName().equals(s));
-					if (formalArg.isID()) return true;
-					final IType<?> formalType = formalArg.getGamlType();
-					final IType<?> callerType = e.getExpression().getGamlType();
-					if (!Types.intFloatCase(formalType, callerType)) {
-						boolean accepted = formalType == Types.NO_TYPE || callerType.isTranslatableInto(formalType);
-						accepted = accepted || callerType == Types.NO_TYPE && formalType.getDefault() == null;
-						if (!accepted) {
-							caller.error("The type of argument " + s + " should be " + formalType,
-									IGamlIssue.WRONG_TYPE, e.getTarget());
-							return false;
-						}
-						return true;
-					}
-					caller.warning(
-							"The argument " + s + " (of type " + callerType + ") will be casted to " + formalType,
-							IGamlIssue.WRONG_TYPE, e.getTarget());
+				final IExpression expression = e.getExpression();
+				if (expression == null) {
+					caller.error("Unable to compile argument " + s + " in call to " + getName(), IGamlIssue.GENERAL,
+							e.getTarget());
+					return false;
 				}
+				final IDescription formalArg = Iterables.find(formalArgs, input -> input.getName().equals(s));
+				if (formalArg.isID()) return true;
+				final IType<?> formalType = formalArg.getGamlType();
+				final IType<?> callerType = expression.getGamlType();
+				if (!Types.intFloatCase(formalType, callerType)) {
+					boolean accepted = formalType == Types.NO_TYPE || callerType.isTranslatableInto(formalType);
+					accepted = accepted || callerType == Types.NO_TYPE && formalType.getDefault() == null;
+					if (!accepted) {
+						caller.error("The type of argument " + s + " should be " + formalType, IGamlIssue.WRONG_TYPE,
+								e.getTarget());
+						return false;
+					}
+					return true;
+				}
+				caller.warning("The argument " + s + " (of type " + callerType + ") will be casted to " + formalType,
+						IGamlIssue.WRONG_TYPE, e.getTarget());
 				return true;
 			}
 			return false;

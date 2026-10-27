@@ -18,9 +18,13 @@ import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
 import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
+import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
 
 /**
@@ -247,7 +251,7 @@ public class GamaFontFactory {
 	 * @param font
 	 *            the source font whose name and style are preserved; must not be {@code null}
 	 * @param size
-	 *            the desired point size for the new font; must be a positive integer
+	 *            the desired point size for the new font; sizes smaller than 1 are clamped to 1
 	 * @return a new {@link IFont} with the same name and style as {@code font} but with the given {@code size}
 	 * @see #cloneWithStyle(IFont, Integer)
 	 * @see #createFont(String, Integer, Integer)
@@ -358,7 +362,7 @@ public class GamaFontFactory {
 	 * @param name
 	 *            the font family or logical name; must not be {@code null}
 	 * @param size
-	 *            the desired point size; must be a positive integer
+	 *            the desired point size; sizes smaller than 1 are clamped to 1
 	 * @return a new plain {@link IFont} with the given name and size
 	 * @see #createFont(String, Integer, Integer)
 	 * @see java.awt.Font#Font(String, int, int)
@@ -372,8 +376,22 @@ public class GamaFontFactory {
 	@doc (
 			value = "Creates a new font, by specifying its name (either a font face name like 'Lucida Grande Bold' or 'Helvetica', or a logical name like 'Dialog', 'SansSerif', 'Serif', etc.) and a size in points. No style is attached to this font")
 	@no_test
+	@tests ({
+			@test ("float size <- font(\"Arial\", 12.7).size; size >= 12 and size <= 13")
+	})
 	public static IFont createFont(final String name, final Integer size) {
 		return createFont(name, Font.PLAIN, size);
+	}
+
+	private static int checkedSize(final IScope scope, final Number size) {
+		if (size == null) throw GamaRuntimeException.error("A font size must be a finite number", scope);
+		final double value = size.doubleValue();
+		if (!Double.isFinite(value))
+			throw GamaRuntimeException.error("A font size must be a finite number", scope);
+		// Sizes computed from the zoom level can legitimately become tiny: clamp them instead of failing
+		if (value < 1) return 1;
+		if (value >= Integer.MAX_VALUE) return Integer.MAX_VALUE;
+		return (int) value;
 	}
 
 	/**
@@ -416,7 +434,7 @@ public class GamaFontFactory {
 	 *            the style bitfield; one of {@code 0} (plain), {@code 1} (bold), {@code 2} (italic),
 	 *            or {@code 3} (bold+italic)
 	 * @param size
-	 *            the desired point size; must be a positive integer
+	 *            the desired point size; sizes smaller than 1 are clamped to 1
 	 * @return a new {@link IFont} with the given name, style, and size
 	 * @see #createFont(String, Integer)
 	 * @see #cloneWithSize(IFont, Integer)
@@ -424,7 +442,9 @@ public class GamaFontFactory {
 	 * @see java.awt.Font#Font(String, int, int)
 	 */
 	public static IFont createFont(final String name, final Integer style, final Integer size) {
-		return createFontFrom(new Font(name, style, size));
+		final int validStyle = style == null || style < Font.PLAIN || style > (Font.BOLD | Font.ITALIC)
+				? Font.PLAIN : style;
+		return createFontFrom(new Font(name, validStyle, checkedSize(GAMA.getRuntimeScope(), size)));
 	}
 
 	/**
@@ -439,7 +459,7 @@ public class GamaFontFactory {
 	 * @param name
 	 *            the font family or logical name; must not be {@code null}
 	 * @param size
-	 *            the desired point size; must be a positive integer
+	 *            the desired point size; sizes smaller than 1 are clamped to 1
 	 * @param style
 	 *            the style bitfield; one of {@code 0} (plain), {@code 1} (bold), {@code 2} (italic),
 	 *            or {@code 3} (bold+italic)
@@ -461,6 +481,21 @@ public class GamaFontFactory {
 	@no_test
 	public static IFont font(final String name, final Integer size, final Integer style) {
 		return createFont(name, style, size);
+	}
+
+	@operator (
+			value = IKeyword.FONT,
+			category = { IOperatorCategory.CASTING },
+			concept = { IConcept.TEXT, IConcept.DISPLAY },
+			can_be_const = true)
+	@doc (
+			value = "Creates a font from a name and a finite point size. Sizes smaller than 1 are clamped to 1",
+			examples = @example (
+					value = "font(\"Arial\", 12.7)",
+					test = false))
+	@no_test
+	public static IFont createFont(final IScope scope, final String name, final Double size) {
+		return createFont(name, checkedSize(scope, size));
 	}
 
 }

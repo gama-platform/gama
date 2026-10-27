@@ -7,10 +7,10 @@
    <extension-point id="gama.draw" name="Implementations of IDrawDelegate" schema="schema/gama.draw.exsd"/>
    <extension-point id="gama.event_layer" name="Implementations of IEventLayerDelegate" schema="schema/gama.event_layer.exsd"/>
    <extension-point id="gaml.extension" name="Additions to the GAML language" schema="schema/gaml.extension.exsd"/>
-   <extension-point id="gama.models" name="Allow plugins to add sample models to GAMA" schema="schema/gama.models.exsd"/>
    <extension-point id="gama.experiment" name="Implementations of IExperimentAgent" schema="schema/gama.experiment.exsd"/>
    <extension-point id="gama.constants" name="Implementations of IConstantsSupplier" schema="schema/gama.constants.exsd"/>
    <extension-point id="gama.metadata" name="Implementations of IGamaFileMetaData" schema="schema/gama.metadata.exsd"/>
+   <extension-point id="gama.server_command" name="Implementations of ISocketCommand" schema="schema/gama.server_command.exsd"/>
    <extension
          point="gaml.extension">
    </extension>

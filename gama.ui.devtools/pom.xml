@@ -8,8 +8,22 @@
   </parent>
   <artifactId>gama.ui.devtools</artifactId>
   <packaging>eclipse-plugin</packaging>
+  <properties>
+    <!-- The IDE runtime need not match the JDK used to compile GAMA. -->
+    <jdk.version>21</jdk.version>
+  </properties>
   <build>
     <plugins>
+      <plugin>
+        <!-- Dev-only IDE plugin: JDT/PDE are needed here, so the parent's target platform filters
+             (which strip JDT from the product) are dropped for this module only. -->
+        <groupId>org.eclipse.tycho</groupId>
+        <artifactId>target-platform-configuration</artifactId>
+        <version>${tycho.version}</version>
+        <configuration>
+          <filters combine.self="override"/>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>

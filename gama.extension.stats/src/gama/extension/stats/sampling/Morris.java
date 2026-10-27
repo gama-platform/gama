@@ -28,13 +28,15 @@ import org.apache.commons.io.FilenameUtils;
 
 import gama.annotations.doc;
 import gama.annotations.no_test;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
-import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
@@ -126,7 +128,8 @@ public final class Morris {
 		this(nblevels);
 		this.scope = scope;
 		if (data == null || data.isEmpty()) {
-			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("[MORRIS] Input data map cannot be empty", scope), true);
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.error("[MORRIS] Input data map cannot be empty", scope), true);
 			return;
 		}
 
@@ -164,7 +167,7 @@ public final class Morris {
 			String header = br.readLine();
 			if (header == null) return;
 			String[] cols = parseCsvLine(header);
-			
+
 			for (int i = 0; i < cols.length; i++) {
 				String name = cols[i].trim();
 				if (i < nbParams) {
@@ -178,11 +181,10 @@ public final class Morris {
 			int rowIdx = 1;
 			while ((line = br.readLine()) != null) {
 				rowIdx++;
-				if (line.trim().isEmpty()) continue;
+				if (line.trim().isEmpty()) { continue; }
 				String[] vals = parseCsvLine(line);
-				if (vals.length != cols.length) {
-					throw new IOException("Row " + rowIdx + " has " + vals.length + " columns, expected " + cols.length);
-				}
+				if (vals.length != cols.length) throw new IOException(
+						"Row " + rowIdx + " has " + vals.length + " columns, expected " + cols.length);
 				Map<String, Object> row = new LinkedHashMap<>();
 				for (int i = 0; i < cols.length; i++) {
 					String name = cols[i].trim();
@@ -190,7 +192,8 @@ public final class Morris {
 					try {
 						val = Double.parseDouble(vals[i].trim());
 					} catch (NumberFormatException e) {
-						throw new IOException("Invalid number '" + vals[i] + "' in column '" + name + "' at row " + rowIdx);
+						throw new IOException(
+								"Invalid number '" + vals[i] + "' in column '" + name + "' at row " + rowIdx);
 					}
 					row.put(name, val);
 					if (i >= nbParams) { outputs.get(name).add(val); }
@@ -198,14 +201,15 @@ public final class Morris {
 				simulationSamples.add(row);
 			}
 		} catch (IOException | NumberFormatException e) {
-			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("[MORRIS] Failed to load Morris CSV: " + e.getMessage(), scope), true);
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.error("[MORRIS] Failed to load Morris CSV: " + e.getMessage(), scope), true);
 		}
 	}
 
 	/**
 	 * Simple robust CSV line parser handling quotes.
 	 */
-	private String[] parseCsvLine(String line) {
+	private String[] parseCsvLine(final String line) {
 		List<String> result = new ArrayList<>();
 		StringBuilder cur = new StringBuilder();
 		boolean inQuotes = false;
@@ -237,21 +241,24 @@ public final class Morris {
 	 */
 	public MorrisResult evaluate() {
 		if (simulationSamples.isEmpty()) {
-			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("[MORRIS] No simulation samples provided.", scope), true);
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.error("[MORRIS] No simulation samples provided.", scope), true);
 		}
 		if (outputs == null || outputs.isEmpty()) {
-			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("[MORRIS] No outputs provided for analysis.", scope), true);
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.error("[MORRIS] No outputs provided for analysis.", scope), true);
 		}
 
 		int k = parametersNames.size();
 		int trajectorySize = k + 1;
 		if (simulationSamples.size() % trajectorySize != 0) {
-			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("[MORRIS] Sample size (" + simulationSamples.size() + ") is not a multiple of (k+1)=" + trajectorySize, scope), true);
+			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("[MORRIS] Sample size ("
+					+ simulationSamples.size() + ") is not a multiple of (k+1)=" + trajectorySize, scope), true);
 		}
 		int numTrajectories = simulationSamples.size() / trajectorySize;
 
 		// Theoretical Morris step size delta = p / (2*(p-1))
-		double expectedDelta = (double) nblevels / (2.0 * (nblevels - 1.0));
+		double expectedDelta = nblevels / (2.0 * (nblevels - 1.0));
 
 		// Compute parameter ranges for normalization
 		Map<String, Double> mins = new HashMap<>();
@@ -261,8 +268,8 @@ public final class Morris {
 			double max = Double.NEGATIVE_INFINITY;
 			for (Map<String, Object> sample : simulationSamples) {
 				double v = toDouble(sample.get(name));
-				if (v < min) min = v;
-				if (v > max) max = v;
+				if (v < min) { min = v; }
+				if (v > max) { max = v; }
 			}
 			mins.put(name, min);
 			maxs.put(name, max);
@@ -274,7 +281,9 @@ public final class Morris {
 			String outName = entry.getKey();
 			List<Double> y = entry.getValue();
 			if (y.size() != simulationSamples.size()) {
-				GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("[MORRIS] Output list '" + outName + "' size mismatch.", scope), true);
+				GAMA.reportAndThrowIfNeeded(scope,
+						GamaRuntimeException.error("[MORRIS] Output list '" + outName + "' size mismatch.", scope),
+						true);
 			}
 
 			Map<String, List<Double>> eeMap = new HashMap<>();
@@ -296,15 +305,18 @@ public final class Morris {
 						double v2 = toDouble(p2.get(name));
 						if (abs(v1 - v2) > 1e-10) {
 							if (changedParam != null) {
-								GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("[MORRIS] Multiple parameters changed at index " + i1, scope), true);
+								GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException
+										.error("[MORRIS] Multiple parameters changed at index " + i1, scope), true);
 							}
 							changedParam = name;
 							double range = maxs.get(name) - mins.get(name);
-							deltaX = range == 0 ? (v2 - v1) : (v2 - v1) / range;
+							deltaX = range == 0 ? v2 - v1 : (v2 - v1) / range;
 						}
 					}
 					if (changedParam == null) {
-						GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("[MORRIS] No parameters changed at index " + i1, scope), true);
+						GAMA.reportAndThrowIfNeeded(scope,
+								GamaRuntimeException.error("[MORRIS] No parameters changed at index " + i1, scope),
+								true);
 					}
 
 					// Strict Morris delta check
@@ -325,26 +337,31 @@ public final class Morris {
 			for (String name : parametersNames) {
 				List<Double> ees = eeMap.get(name);
 				if (ees.isEmpty()) {
-					muMap.put(name, 0.0); muStarMap.put(name, 0.0); sigmaMap.put(name, 0.0);
+					muMap.put(name, 0.0);
+					muStarMap.put(name, 0.0);
+					sigmaMap.put(name, 0.0);
 					continue;
 				}
 				double sum = 0, sumAbs = 0;
-				for (double e : ees) { sum += e; sumAbs += abs(e); }
-				
+				for (double e : ees) {
+					sum += e;
+					sumAbs += abs(e);
+				}
+
 				int n_ee = ees.size();
 				double mean = sum / n_ee;
 				muMap.put(name, mean);
 				muStarMap.put(name, sumAbs / n_ee);
 
 				double varSum = 0;
-				for (double e : ees) varSum += pow(e - mean, 2);
+				for (double e : ees) { varSum += pow(e - mean, 2); }
 				sigmaMap.put(name, n_ee > 1 ? sqrt(varSum / (n_ee - 1)) : 0.0);
 			}
 			results.mu.put(outName, muMap);
 			results.muStar.put(outName, muStarMap);
 			results.sigma.put(outName, sigmaMap);
 		}
-		
+
 		this.mu = results.mu;
 		this.mu_star = results.muStar;
 		this.sigma = results.sigma;
@@ -352,6 +369,13 @@ public final class Morris {
 		return results;
 	}
 
+	/**
+	 * To double.
+	 *
+	 * @param o
+	 *            the o
+	 * @return the double
+	 */
 	private double toDouble(final Object o) {
 		if (o instanceof Number n) return n.doubleValue();
 		if (o instanceof Boolean b) return b ? 1.0 : 0.0;
@@ -369,11 +393,14 @@ public final class Morris {
 				for (String o : mu.keySet()) {
 					sb.append(StringUtils.LN).append("Result for output: ").append(o).append(StringUtils.LN);
 					sb.append("\u00B5:").append(StringUtils.LN);
-					mu.get(o).forEach((n, v) -> sb.append("\t").append(n).append(" : ").append(v).append(StringUtils.LN));
+					mu.get(o).forEach(
+							(n, v) -> sb.append("\t").append(n).append(" : ").append(v).append(StringUtils.LN));
 					sb.append("\u00B5*:").append(StringUtils.LN);
-					mu_star.get(o).forEach((n, v) -> sb.append("\t").append(n).append(" : ").append(v).append(StringUtils.LN));
+					mu_star.get(o).forEach(
+							(n, v) -> sb.append("\t").append(n).append(" : ").append(v).append(StringUtils.LN));
 					sb.append("\u03C3:").append(StringUtils.LN);
-					sigma.get(o).forEach((n, v) -> sb.append("\t").append(n).append(" : ").append(v).append(StringUtils.LN));
+					sigma.get(o).forEach(
+							(n, v) -> sb.append("\t").append(n).append(" : ").append(v).append(StringUtils.LN));
 				}
 			}
 		} else {
@@ -390,7 +417,7 @@ public final class Morris {
 		}
 		return sb.toString();
 	}
-	
+
 	/**
 	 *
 	 * @param scope
@@ -403,6 +430,7 @@ public final class Morris {
 	 * @return the result of a morris analysis
 	 *
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = "morris_analysis",
 			type = IType.STRING,
@@ -412,23 +440,28 @@ public final class Morris {
 	@doc (
 			value = "Return a string containing the Report of the morris analysis for the corresponding data (path, map or matrix)")
 	@no_test
+	@tests ({
+			@test ("map morris_data <- [\"p1\":: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6], \"out\":: [1.0, 1.1, 1.2, 1.3, 1.4, 1.5]]; string morris_report <- morris_analysis(morris_data, 4, 1); morris_report != ''"),
+			@test ("map mor2d <- [ \"p1\":: [0.1, 0.5, 0.5, 0.1, 0.1, 0.5], \"p2\":: [0.1, 0.1, 0.5, 0.5, 0.1, 0.1], \"out\":: [1.0, 1.2, 1.8, 1.5, 1.0, 1.2] ]; morris_analysis(mor2d, 4, 2) != \"\"")
+	})
 	public static String morrisAnalysis(final IScope scope, final Object data, final int nb_levels,
 			final int nb_parameters) {
 		String ext = "csv";
 		Morris momo = switch (data) {
-		case String path -> {
-			final File f = new File(FileUtils.constructAbsoluteFilePath(scope, path, false));
-			ext = FilenameUtils.getExtension(path);
-			yield new Morris(f, nb_parameters, nb_levels, scope);
-		}
-		case IMap map -> new Morris(map, nb_parameters, nb_levels, scope);
-		case IMatrix matrix -> new Morris( (IMap) GamaMapFactory.createFromMatrix(scope, matrix), nb_parameters, nb_levels, scope);
-		case null, default -> throw GamaRuntimeException.error("morris_analysis expects a path (string), a map or a matrix", scope);
+			case String path -> {
+				final File f = new File(FileUtils.constructAbsoluteFilePath(scope, path, false));
+				ext = FilenameUtils.getExtension(path);
+				yield new Morris(f, nb_parameters, nb_levels, scope);
+			}
+			case IMap map -> new Morris(map, nb_parameters, nb_levels, scope);
+			case IMatrix matrix -> new Morris((IMap) GamaMapFactory.createFromMatrix(scope, matrix), nb_parameters,
+					nb_levels, scope);
+			case null, default -> throw GamaRuntimeException
+					.error("morris_analysis expects a path (string), a map or a matrix", scope);
 		};
 
 		momo.evaluate();
 		return momo.buildReportString(ext);
 	}
 
-	
 }

@@ -126,7 +126,7 @@ import gama.core.outputs.layers.AbstractLayerStatement;
 						name = IKeyword.X_LABELS,
 						type = { IType.LIST, IType.FLOAT, IType.INT, IType.STRING },
 						optional = true,
-						doc = @doc ("change the default common x series labels (replace x value or categories) for an other value (string or numerical).")),
+						doc = @doc ("change the default common x series labels (replace x value or categories) for an other value (string or numerical). Categories are identified by their position, not by their label: several categories can share the same label.")),
 				@facet (
 						name = IKeyword.Y_LABELS,
 						type = { IType.LIST, IType.FLOAT, IType.INT, IType.STRING },
@@ -162,6 +162,11 @@ import gama.core.outputs.layers.AbstractLayerStatement;
 						type = IType.BOOL,
 						optional = true,
 						doc = @doc ("Y tick values visible")),
+				@facet (
+						name = ChartLayerStatement.Y2TICKVALUEVISIBLE,
+						type = IType.BOOL,
+						optional = true,
+						doc = @doc ("Y2 tick values visible")),
 				@facet (
 						name = ChartLayerStatement.TITLEVISIBLE,
 						type = IType.BOOL,
@@ -250,6 +255,12 @@ import gama.core.outputs.layers.AbstractLayerStatement;
 						optional = true,
 						doc = @doc ("Position of the legend: default (best guess), none, legend, onchart, xaxis (for category plots) or yaxis (uses the first serie name). 'left', 'right', 'top' and 'bottom' can also be used to force the position of the legend (default is bottom).")),
 				@facet (
+						name = ChartLayerStatement.LEGEND_ORIENTATION,
+						type = IType.ID,
+						values = { "default", "horizontal", "vertical" },
+						optional = true,
+						doc = @doc ("Orientation of the legend: default, horizontal or vertical. When explicitly set with the default series_label_position, uses the chart legend instead of the histogram's default x-axis labels.")),
+				@facet (
 						name = ANCHOR,
 						type = IType.POINT,
 						optional = true,
@@ -269,6 +280,11 @@ import gama.core.outputs.layers.AbstractLayerStatement;
 						type = IType.BOOL,
 						optional = true,
 						doc = @doc ("Whether or not to keep the values in memory (in order to produce a csv file, for instance). The default value is true")),
+				@facet (
+						name = ChartLayerStatement.INCLUDE_INIT,
+						type = IType.BOOL,
+						optional = true,
+						doc = @doc ("Whether or not to record the chart data during initialization. The default value is true")),
 				@facet (
 						name = ChartLayerStatement.TICKFONTFACE,
 						type = { IType.STRING, IType.FONT },
@@ -313,7 +329,11 @@ import gama.core.outputs.layers.AbstractLayerStatement;
 		omissible = IKeyword.NAME)
 @doc (
 		value = "`" + IKeyword.CHART
-				+ "` allows modeler to display a chart: this enables to display specific values of the model at each iteration. GAMA can display various chart types: time series (series), pie charts (pie) and histograms (histogram).",
+				+ "` allows modeler to display a chart: this enables to display specific values of the model at each iteration. GAMA can display various chart types: time series (series), pie charts (pie) and histograms (histogram). "
+				+ "The body of the chart (the `data` and `datalist` statements, but also any `if`, `loop` or other statement surrounding them) is re-evaluated at every step: "
+				+ "series can therefore appear, disappear or be renamed dynamically. A series is identified by the statement that declares it and by its current legend: "
+				+ "when the legend changes, a new series is created. When a series is no longer declared (e.g. its `if` becomes false), it is frozen (kept with its history but no longer updated) in charts showing an history of values (series, xy, scatter, heatmap), "
+				+ "and removed in charts showing a snapshot of values (pie, histogram, radar, box_whisker). The facets of the chart itself are evaluated once, at its creation, except for those related to labels, ranges, ticks, colors and fonts.",
 		usages = { @usage (
 				value = "The general syntax is:",
 				examples = { @example (
@@ -330,7 +350,24 @@ import gama.core.outputs.layers.AbstractLayerStatement;
 								isExecutable = false),
 						@example (
 								value = "}",
-								isExecutable = false) }) },
+								isExecutable = false) }),
+				@usage (
+						value = "The body of a chart is re-evaluated at every step, so data can be declared conditionally, in loops, or with dynamic legends. In the following series chart, 'Instant' appears at cycle 2 and the series 'Even cycles' is frozen during odd cycles:",
+						examples = { @example (
+								value = "chart \"dynamic\" type: series {",
+								isExecutable = false),
+								@example (
+										value = "   if (cycle > 1) { data \"Instant\" value: cycle; }",
+										isExecutable = false),
+								@example (
+										value = "   if (even(cycle)) { data \"Even cycles\" value: 2 * cycle; }",
+										isExecutable = false),
+								@example (
+										value = "   loop i from: 1 to: nb_groups { data \"group \" + i value: i * cycle; }",
+										isExecutable = false),
+								@example (
+										value = "}",
+										isExecutable = false) }) },
 		see = { IKeyword.DISPLAY, IKeyword.AGENTS, IKeyword.EVENT, "graphics", IKeyword.GRID_LAYER,
 				IKeyword.IMAGE_LAYER, IKeyword.OVERLAY, IKeyword.QUADTREE, IKeyword.SPECIES_LAYER, IKeyword.TEXT })
 public class ChartLayerStatement extends AbstractLayerStatement {
@@ -368,8 +405,14 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 	/** The Constant MEMORIZE. */
 	public static final String MEMORIZE = "memorize";
 
+	/** The Constant INCLUDE_INIT. */
+	public static final String INCLUDE_INIT = "include_init";
+
 	/** The Constant SERIES_LABEL_POSITION. */
 	public static final String SERIES_LABEL_POSITION = "series_label_position";
+
+	/** The Constant LEGEND_ORIENTATION. */
+	public static final String LEGEND_ORIENTATION = "legend_orientation";
 
 	/** The Constant X_LOGSCALE. */
 	public static final String X_LOGSCALE = "x_log_scale";
@@ -406,6 +449,9 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 
 	/** The Constant YTICKVALUEVISIBLE. */
 	public static final String YTICKVALUEVISIBLE = "y_tick_values_visible";
+
+	/** The Constant Y2TICKVALUEVISIBLE. */
+	public static final String Y2TICKVALUEVISIBLE = "y2_tick_values_visible";
 
 	/** The Constant TICKFONTFACE. */
 	public static final String TICKFONTFACE = "tick_font";
@@ -451,6 +497,9 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 	/** The chartoutput. */
 	private ChartOutput chartOutput = null;
 
+	/** Whether the initial step done by the output manager must be skipped (include_init: false). */
+	private boolean skipInitialStep;
+
 	// private HashMap<String,Object> chartParameters=new
 	// HashMap<String,Object>();
 
@@ -494,7 +543,10 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 		return chartOutput.getJFChart();
 	}
 
-	// What can not change at eery step
+	/**
+	 * Creates the chart and declares its initial data sources. The facets of the chart are evaluated here, while its
+	 * body is evaluated here and at every step (see {@link #_step(IScope)}).
+	 */
 	@Override
 	public boolean _init(final IScope scope) throws GamaRuntimeException {
 		setName(getChartName(scope));
@@ -502,7 +554,8 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 
 		IExpression expression = getFacet(IKeyword.TYPE);
 
-		chartOutput = ChartJFreeChartOutput.createChartOutput(scope, getName(), expression);
+		chartOutput = ChartOutputFactory.createChartOutput(scope, getName(), expression);
+		chartOutput.setHostDisplayOutput(getDisplayOutput());
 
 		expression = getFacet(IKeyword.STYLE);
 		if (expression != null) { chartOutput.setStyle(scope, Cast.asString(scope, expression.value(scope))); }
@@ -561,10 +614,10 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 			chartdataset.setYLabels(scope, expval);
 			chartOutput.setUseYLabels(scope, expval);
 		}
-		scope.addVarWithValue(ChartLayerStatement.CHARTDATASET, chartdataset);
-		for (final IStatement s : dataDeclaration.getCommands()) { scope.execute(s); }
-		chartdataset = (ChartDataSet) scope.getVarValue(ChartLayerStatement.CHARTDATASET);
+		evaluateDataDeclarations(scope, chartdataset);
 		chartOutput.initChart_post_data_init(scope);
+		// The output manager runs an initial _step right after init: it is skipped if include_init is false
+		skipInitialStep = !getFacetValue(scope, INCLUDE_INIT, true);
 		chartOutput.updateOutput(scope);
 
 		// Legend position and anchor
@@ -577,6 +630,24 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 		// }
 
 		return true;
+	}
+
+	private void updateLegendProperties(final IScope scope) {
+		IExpression expr = getFacet(ChartLayerStatement.SERIES_LABEL_POSITION);
+		if (expr != null) {
+			String pos = Cast.asString(scope, expr.value(scope));
+			chartOutput.setSeriesLabelPosition(scope, pos);
+		}
+		expr = getFacet(ChartLayerStatement.LEGEND_ORIENTATION);
+		if (expr != null) {
+			String orient = Cast.asString(scope, expr.value(scope));
+			chartOutput.setLegendOrientation(scope, orient);
+		}
+		expr = getFacet(IKeyword.ANCHOR);
+		if (expr != null) {
+			final IPoint pt = GamaPointFactory.castToPoint(scope, expr.value(scope));
+			chartOutput.setSeriesLabelAnchor(scope, pt);
+		}
 	}
 
 	/**
@@ -597,60 +668,40 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 	 *            the scope
 	 * @return true, if successful
 	 */
-	// what can be updated at each step
-	public boolean updateValues(final IScope scope) {
+	private void updateAxisRange(final IScope scope, final String facetName, final int axisIndex) {
+		final IExpression expr = getFacet(facetName);
+		if (expr == null) return;
+		final Object range = expr.value(scope);
+		if (range instanceof Number number) {
+			if (axisIndex == 0) chartOutput.setXRangeInterval(scope, number.doubleValue());
+			else if (axisIndex == 1) chartOutput.setYRangeInterval(scope, number.doubleValue());
+			else if (axisIndex == 2) chartOutput.setY2RangeInterval(scope, number.doubleValue());
+		} else if (range instanceof IPoint point) {
+			if (axisIndex == 0) chartOutput.setXRangeMinMax(scope, point.getX(), point.getY());
+			else if (axisIndex == 1) chartOutput.setYRangeMinMax(scope, point.getX(), point.getY());
+			else if (axisIndex == 2) chartOutput.setY2RangeMinMax(scope, point.getX(), point.getY());
+		} else if (range instanceof IList<?> list) {
+			double min = Cast.asFloat(scope, list.get(0));
+			double max = Cast.asFloat(scope, list.get(1));
+			if (axisIndex == 0) chartOutput.setXRangeMinMax(scope, min, max);
+			else if (axisIndex == 1) chartOutput.setYRangeMinMax(scope, min, max);
+			else if (axisIndex == 2) chartOutput.setY2RangeMinMax(scope, min, max);
+		}
+	}
 
+	private void updateLabelsAndRanges(final IScope scope) {
 		IExpression string1 = getFacet(ChartLayerStatement.XLABEL);
 		if (string1 != null) { chartOutput.setXLabel(scope, Cast.asString(scope, string1.value(scope))); }
-
 		string1 = getFacet(ChartLayerStatement.YLABEL);
 		if (string1 != null) { chartOutput.setYLabel(scope, Cast.asString(scope, string1.value(scope))); }
-
 		string1 = getFacet(ChartLayerStatement.Y2LABEL);
 		if (string1 != null) { chartOutput.setY2Label(scope, Cast.asString(scope, string1.value(scope))); }
 
-		IExpression expr = getFacet(XRANGE);
-		if (expr != null) {
-			final Object range = expr.value(scope);
+		updateAxisRange(scope, XRANGE, 0);
+		updateAxisRange(scope, YRANGE, 1);
+		updateAxisRange(scope, Y2RANGE, 2);
 
-			if (range instanceof Number) {
-				chartOutput.setXRangeInterval(scope, ((Number) range).doubleValue());
-			} else if (range instanceof IPoint) {
-				chartOutput.setXRangeMinMax(scope, ((IPoint) range).getX(), ((IPoint) range).getY());
-			} else if (range instanceof IList) {
-				chartOutput.setXRangeMinMax(scope, Cast.asFloat(scope, ((IList<?>) range).get(0)),
-						Cast.asFloat(scope, ((IList<?>) range).get(1)));
-			}
-		}
-
-		expr = getFacet(YRANGE);
-		if (expr != null) {
-			final Object range = expr.value(scope);
-
-			if (range instanceof Number) {
-				chartOutput.setYRangeInterval(scope, ((Number) range).doubleValue());
-			} else if (range instanceof IPoint) {
-				chartOutput.setYRangeMinMax(scope, ((IPoint) range).getX(), ((IPoint) range).getY());
-			} else if (range instanceof IList) {
-				chartOutput.setYRangeMinMax(scope, Cast.asFloat(scope, ((IList<?>) range).get(0)),
-						Cast.asFloat(scope, ((IList<?>) range).get(1)));
-			}
-		}
-		expr = getFacet(Y2RANGE);
-		if (expr != null) {
-			final Object range = expr.value(scope);
-
-			if (range instanceof Number) {
-				chartOutput.setY2RangeInterval(scope, ((Number) range).doubleValue());
-			} else if (range instanceof IPoint) {
-				chartOutput.setY2RangeMinMax(scope, ((IPoint) range).getX(), ((IPoint) range).getY());
-			} else if (range instanceof IList) {
-				chartOutput.setY2RangeMinMax(scope, Cast.asFloat(scope, ((IList<?>) range).get(0)),
-						Cast.asFloat(scope, ((IList<?>) range).get(1)));
-			}
-		}
-
-		expr = getFacet(XMIN);
+		IExpression expr = getFacet(XMIN);
 		if (expr != null) { chartOutput.setXMin(scope, Cast.asFloat(scope, expr.value(scope))); }
 		expr = getFacet(XMAX);
 		if (expr != null) { chartOutput.setXMax(scope, Cast.asFloat(scope, expr.value(scope))); }
@@ -658,55 +709,32 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 		if (expr != null) { chartOutput.setYMin(scope, Cast.asFloat(scope, expr.value(scope))); }
 		expr = getFacet(YMAX);
 		if (expr != null) { chartOutput.setYMax(scope, Cast.asFloat(scope, expr.value(scope))); }
+	}
+
+	private void updateTickAndLineProperties(final IScope scope) {
 		IExpression expr2 = getFacet(XTICKUNIT);
-		if (expr2 != null) {
-			final Object range = expr2.value(scope);
-
-			if (range instanceof Number) {
-				final double r = ((Number) range).doubleValue();
-				chartOutput.setXTickUnit(scope, r);
-			}
+		if (expr2 != null && expr2.value(scope) instanceof Number number) {
+			chartOutput.setXTickUnit(scope, number.doubleValue());
 		}
-
 		expr2 = getFacet(YTICKUNIT);
-		if (expr2 != null) {
-			final Object range = expr2.value(scope);
-
-			if (range instanceof Number) {
-				final double r = ((Number) range).doubleValue();
-				chartOutput.setYTickUnit(scope, r);
-			}
+		if (expr2 != null && expr2.value(scope) instanceof Number number) {
+			chartOutput.setYTickUnit(scope, number.doubleValue());
 		}
 		expr2 = getFacet(Y2TICKUNIT);
-		if (expr2 != null) {
-			final Object range = expr2.value(scope);
-
-			if (range instanceof Number) {
-				final double r = ((Number) range).doubleValue();
-				chartOutput.setY2TickUnit(scope, r);
-			}
+		if (expr2 != null && expr2.value(scope) instanceof Number number) {
+			chartOutput.setY2TickUnit(scope, number.doubleValue());
 		}
 		expr2 = getFacet(IKeyword.GAP);
 		if (expr2 != null) {
-			final Double range = Cast.asFloat(scope, expr2.value(scope));
-			chartOutput.setGap(scope, range);
+			chartOutput.setGap(scope, Cast.asFloat(scope, expr2.value(scope)));
 		}
-		// ((BarRenderer) plot.getRenderer()).setItemMargin(gap);
 
-		IColor colorvalue = GamaColorFactory.BLACK;
-		IExpression color = getFacet(IKeyword.AXES);
-		if (color != null) { colorvalue = GamaColorFactory.castToColor(scope, color.value(scope)); }
-		chartOutput.setAxesColorValue(scope, colorvalue);
-
-		colorvalue = GamaColorFactory.BLACK;
-		color = getFacet(ChartLayerStatement.TICKLINECOLOR);
-		if (color != null) { colorvalue = GamaColorFactory.castToColor(scope, color.value(scope)); }
-		chartOutput.setTickColorValue(scope, colorvalue);
-
-		string1 = getFacet(ChartLayerStatement.XTICKVALUEVISIBLE);
+		IExpression string1 = getFacet(ChartLayerStatement.XTICKVALUEVISIBLE);
 		if (string1 != null) { chartOutput.setXTickValueVisible(scope, Cast.asBool(scope, string1.value(scope))); }
 		string1 = getFacet(ChartLayerStatement.YTICKVALUEVISIBLE);
 		if (string1 != null) { chartOutput.setYTickValueVisible(scope, Cast.asBool(scope, string1.value(scope))); }
+		string1 = getFacet(ChartLayerStatement.Y2TICKVALUEVISIBLE);
+		if (string1 != null) { chartOutput.setY2TickValueVisible(scope, Cast.asBool(scope, string1.value(scope))); }
 		string1 = getFacet(ChartLayerStatement.TITLEVISIBLE);
 		if (string1 != null) { chartOutput.setTitleVisible(scope, Cast.asBool(scope, string1.value(scope))); }
 
@@ -717,108 +745,123 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 		string1 = getFacet("lines");
 		if (string1 != null) { chartOutput.setGridLinesVisible(scope, Cast.asBool(scope, string1.value(scope))); }
 
-		// Legend position and anchor
-		expr = getFacet(ChartLayerStatement.SERIES_LABEL_POSITION);
-		if (expr != null) {
-			String pos = Cast.asString(scope, expr.value(scope));
-			chartOutput.setSeriesLabelPosition(scope, pos);
+		updateLegendProperties(scope);
+	}
+
+	private void updateFontProperty(final IScope scope, final String facetName, final int fontType) {
+		IExpression face = getFacet(facetName);
+		if (face == null) return;
+		if (face.getGamlType() == Types.STRING) {
+			String str = Cast.asString(scope, face.value(scope));
+			switch (fontType) {
+				case 0 -> chartOutput.setTickFontFace(scope, str);
+				case 1 -> chartOutput.setLabelFontFace(scope, str);
+				case 2 -> chartOutput.setLegendFontFace(scope, str);
+				case 3 -> chartOutput.setTitleFontFace(scope, str);
+			}
+		} else {
+			IFont font = (IFont) Types.FONT.cast(scope, face.value(scope), null, false);
+			if (font != null) {
+				switch (fontType) {
+					case 0 -> {
+						chartOutput.setTickFontFace(scope, font.getFontName());
+						chartOutput.setTickFontSize(scope, font.getSize());
+						chartOutput.setTickFontStyle(scope, font.getStyle());
+					}
+					case 1 -> {
+						chartOutput.setLabelFontFace(scope, font.getFontName());
+						chartOutput.setLabelFontSize(scope, font.getSize());
+						chartOutput.setLabelFontStyle(scope, font.getStyle());
+					}
+					case 2 -> {
+						chartOutput.setLegendFontFace(scope, font.getFontName());
+						chartOutput.setLegendFontSize(scope, font.getSize());
+						chartOutput.setLegendFontStyle(scope, font.getStyle());
+					}
+					case 3 -> {
+						chartOutput.setTitleFontFace(scope, font.getFontName());
+						chartOutput.setTitleFontSize(scope, font.getSize());
+						chartOutput.setTitleFontStyle(scope, font.getStyle());
+					}
+				}
+			}
 		}
-		expr = getFacet(IKeyword.ANCHOR);
-		if (expr != null) {
-			final IPoint pt = GamaPointFactory.castToPoint(scope, expr.value(scope));
-			chartOutput.setSeriesLabelAnchor(scope, pt);
-		}
+	}
+
+	private void updateColorAndFontProperties(final IScope scope) {
+		IColor colorvalue = GamaColorFactory.BLACK;
+		IExpression color = getFacet(IKeyword.AXES);
+		if (color != null) { colorvalue = GamaColorFactory.castToColor(scope, color.value(scope)); }
+		chartOutput.setAxesColorValue(scope, colorvalue);
+
+		colorvalue = GamaColorFactory.BLACK;
+		color = getFacet(ChartLayerStatement.TICKLINECOLOR);
+		if (color != null) { colorvalue = GamaColorFactory.castToColor(scope, color.value(scope)); }
+		chartOutput.setTickColorValue(scope, colorvalue);
 
 		color = getFacet(IKeyword.COLOR);
 		if (color != null) { colorvalue = GamaColorFactory.castToColor(scope, color.value(scope)); }
 		chartOutput.setColorValue(scope, colorvalue);
-		colorvalue = GamaColorFactory.WHITE;
+
 		color = getFacet(IKeyword.BACKGROUND);
-		if (color != null) { colorvalue = GamaColorFactory.castToColor(scope, color.value(scope)); }
-		chartOutput.setBackgroundColorValue(scope, colorvalue);
+		if (color != null) {
+			chartOutput.setBackgroundColorValue(scope, GamaColorFactory.castToColor(scope, color.value(scope)));
+		} else {
+			chartOutput.setBackgroundColorValue(scope, null);
+		}
 
 		color = getFacet(LABELTEXTCOLOR);
 		if (color != null) {
-			colorvalue = GamaColorFactory.castToColor(scope, color.value(scope));
-			chartOutput.setLabelTextColorValue(scope, colorvalue);
+			chartOutput.setLabelTextColorValue(scope, GamaColorFactory.castToColor(scope, color.value(scope)));
 		}
 
 		color = getFacet(LABELBACKGROUNDCOLOR);
 		if (color != null) {
-			colorvalue = GamaColorFactory.castToColor(scope, color.value(scope));
-			chartOutput.setLabelBackgroundColorValue(scope, colorvalue);
+			chartOutput.setLabelBackgroundColorValue(scope, GamaColorFactory.castToColor(scope, color.value(scope)));
 		}
 
-		color = getFacet(IKeyword.BACKGROUND);
-		if (color != null) {
-			colorvalue = GamaColorFactory.castToColor(scope, color.value(scope));
-			chartOutput.setBackgroundColorValue(scope, colorvalue);
-		}
-		IFont font = null;
-		IExpression face = getFacet(TICKFONTFACE);
-		if (face != null) {
-			if (face.getGamlType() == Types.STRING) {
-				chartOutput.setTickFontFace(scope, Cast.asString(scope, face.value(scope)));
-			} else {
-				font = (IFont) Types.FONT.cast(scope, face.value(scope), null, false);
-				if (font != null) {
-					chartOutput.setTickFontFace(scope, font.getFontName());
-					chartOutput.setTickFontSize(scope, font.getSize());
-					chartOutput.setTickFontStyle(scope, font.getStyle());
-				}
-			}
-		}
+		updateFontProperty(scope, TICKFONTFACE, 0);
+		updateFontProperty(scope, LABELFONTFACE, 1);
+		updateFontProperty(scope, LEGENDFONTFACE, 2);
+		updateFontProperty(scope, TITLEFONTFACE, 3);
+	}
 
-		face = getFacet(LABELFONTFACE);
-		if (face != null) {
-			if (face.getGamlType() == Types.STRING) {
-				chartOutput.setLabelFontFace(scope, Cast.asString(scope, face.value(scope)));
-			} else {
-				font = (IFont) Types.FONT.cast(scope, face.value(scope), null, false);
-				if (font != null) {
-					chartOutput.setLabelFontFace(scope, font.getFontName());
-					chartOutput.setLabelFontSize(scope, font.getSize());
-					chartOutput.setLabelFontStyle(scope, font.getStyle());
-				}
-			}
-		}
-
-		face = getFacet(LEGENDFONTFACE);
-		if (face != null) {
-			if (face.getGamlType() == Types.STRING) {
-				chartOutput.setLegendFontFace(scope, Cast.asString(scope, face.value(scope)));
-			} else {
-				font = (IFont) Types.FONT.cast(scope, face.value(scope), null, false);
-				if (font != null) {
-					chartOutput.setLegendFontFace(scope, font.getFontName());
-					chartOutput.setLegendFontSize(scope, font.getSize());
-					chartOutput.setLegendFontStyle(scope, font.getStyle());
-				}
-			}
-		}
-
-		face = getFacet(TITLEFONTFACE);
-		if (face != null) {
-			if (face.getGamlType() == Types.STRING) {
-				chartOutput.setTitleFontFace(scope, Cast.asString(scope, face.value(scope)));
-			} else {
-				font = (IFont) Types.FONT.cast(scope, face.value(scope), null, false);
-				if (font != null) {
-					chartOutput.setTitleFontFace(scope, font.getFontName());
-					chartOutput.setTitleFontSize(scope, font.getSize());
-					chartOutput.setTitleFontStyle(scope, font.getStyle());
-				}
-			}
-		}
-
+	// what can be updated at each step
+	public boolean updateValues(final IScope scope) {
+		updateLabelsAndRanges(scope);
+		updateTickAndLineProperties(scope);
+		updateColorAndFontProperties(scope);
 		return true;
+	}
+
+	/**
+	 * Executes the body of the chart, which declares (or re-declares) its data sources. Called once at init and at
+	 * every step (#403): sources whose statement is not executed anymore are frozen or removed by
+	 * {@link ChartDataSet#endSourcesPass(IScope)}.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param chartdataset
+	 *            the dataset receiving the data sources
+	 */
+	private void evaluateDataDeclarations(final IScope scope, final ChartDataSet chartdataset) {
+		if (chartdataset == null) return;
+		chartdataset.beginSourcesPass();
+		scope.addVarWithValue(ChartLayerStatement.CHARTDATASET, chartdataset);
+		for (final IStatement s : dataDeclaration.getCommands()) { scope.execute(s); }
+		chartdataset.endSourcesPass(scope);
 	}
 
 	@Override
 	public boolean _step(final IScope scope) throws GamaRuntimeException {
+		if (skipInitialStep) {
+			skipInitialStep = false;
+			return true;
+		}
 		updateValues(scope);
-
-		chartOutput.step(scope);
+		// The body of the chart is re-evaluated at every step, so that data declarations can appear, change or
+		// disappear (#403)
+		chartOutput.step(scope, () -> evaluateDataDeclarations(scope, chartOutput.getChartdataset()));
 
 		return true;
 	}

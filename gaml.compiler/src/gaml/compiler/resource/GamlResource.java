@@ -101,6 +101,13 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	/** The offset map. */
 	final GamlResourceOffsetMap offsetMap = new GamlResourceOffsetMap();
 
+	private boolean validationOnly;
+
+	/** Whether errors in this synthetic resource should be collected rather than thrown as runtime errors. */
+	public boolean isValidationOnly() { return validationOnly; }
+
+	public void setValidationOnly(final boolean value) { validationOnly = value; }
+
 	/**
 	 * Gets the validation context.
 	 *

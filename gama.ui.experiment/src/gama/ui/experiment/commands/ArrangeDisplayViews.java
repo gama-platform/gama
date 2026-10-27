@@ -10,6 +10,7 @@
  ********************************************************************************************************/
 package gama.ui.experiment.commands;
 
+import static gama.api.ui.displays.IDisplayData.FULLSCREEN_CURRENT_MONITOR;
 import static gama.gaml.operators.Displays.HORIZONTAL;
 import static gama.gaml.operators.Displays.VERTICAL;
 import static org.eclipse.e4.ui.model.application.ui.basic.MBasicFactory.INSTANCE;
@@ -410,7 +411,8 @@ public class ArrangeDisplayViews extends AbstractHandler {
 		// than seeing the normal-size view first and then watching it expand.
 		displays.forEach(d -> {
 			if (!d.isFullScreen() && d.getOutput() instanceof LayeredDisplayOutput ldo
-					&& ldo.getData().fullScreen() > -1) {
+					&& (ldo.getData().fullScreen() >= 0
+							|| ldo.getData().fullScreen() == FULLSCREEN_CURRENT_MONITOR)) {
 				d.toggleFullScreen();
 			}
 		});

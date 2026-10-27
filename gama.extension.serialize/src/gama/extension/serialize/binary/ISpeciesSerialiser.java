@@ -10,32 +10,35 @@
  ********************************************************************************************************/
 package gama.extension.serialize.binary;
 
+import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
+import gama.api.kernel.serialization.IGamaObjectInput;
+import gama.api.kernel.serialization.IGamaObjectOutput;
+import gama.api.kernel.serialization.IGamaObjectSerializer;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
-import gama.extension.serialize.IGamaObjectInput;
-import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link ISpecies} instances. Only the species name is persisted. On deserialisation, the species is
- * looked up in the current simulation model by name.
+ * Binary serialiser for {@link ISpecies} instances. Only the species name is persisted. On deserialisation, the
+ * species is looked up in the current simulation model by name.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class ISpeciesSerialiser extends FSTIndividualSerialiser<ISpecies> {
+public class ISpeciesSerialiser implements IGamaObjectSerializer<ISpecies> {
 
 	/**
 	 * Serialises the species name.
 	 *
 	 * @param out
-	 *            the FST output stream
+	 *            the binary output stream
 	 * @param o
 	 *            the species to serialise
 	 * @throws Exception
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final IGamaObjectOutput out, final ISpecies o) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final ISpecies o, final TransientSerializationContext context)
+			throws Exception {
 		out.writeStringUTF(o.getName());
 	}
 
@@ -45,7 +48,7 @@ class ISpeciesSerialiser extends FSTIndividualSerialiser<ISpecies> {
 	 * @param scope
 	 *            the current GAMA simulation scope
 	 * @param in
-	 *            the FST input stream
+	 *            the binary input stream
 	 * @return the resolved {@link ISpecies}
 	 * @throws Exception
 	 *             if deserialisation fails

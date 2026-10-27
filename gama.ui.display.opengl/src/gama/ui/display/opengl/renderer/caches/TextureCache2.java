@@ -151,6 +151,7 @@ public class TextureCache2 implements ITextureCache/* , IPreferenceAfterChangeLi
 		if (texture == null) {
 			texture = this.buildTexture(gl.getGL(), img);
 			volatileTextures.put(id, texture);
+			gl.invalidateTextureCache();
 		}
 		return texture;
 	}

@@ -10,6 +10,7 @@
  ********************************************************************************************************/
 package gama.ui.shared.parameters;
 
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
@@ -88,6 +89,7 @@ public abstract class NumberEditor<T extends Comparable> extends ExpressionBased
 	@Override
 	protected void updateToolbar() {
 		super.updateToolbar();
+		editorToolbar.updateValue(unitAnnotation(param.getDisplayUnit(getScope())));
 		final Label t = editorToolbar.getItem(DEFINE);
 		if (t == null || t.isDisposed()) return;
 		if (param.isDefined()) {
@@ -118,8 +120,54 @@ public abstract class NumberEditor<T extends Comparable> extends ExpressionBased
 		updateToolbar();
 	}
 
+	/**
+	 * Plain labels (factor 1) only name the unit of the editable value; real conversions show the converted value.
+	 */
+	private String unitAnnotation(final IParameter.DisplayUnit unit) {
+		if (unit == null) return "";
+		if (isLabelOnly(unit)) return unit.label();
+		return currentValue == null || !param.isDefined() ? ""
+				: "= " + FloatUnitFormatter.format(((Number) currentValue).doubleValue(), null, unit);
+	}
+
+	private static boolean isLabelOnly(final IParameter.DisplayUnit unit) {
+		return unit.factor() == 1d;
+	}
+
+	private static Double asDouble(final Object value) {
+		return value instanceof Number n ? n.doubleValue() : null;
+	}
+
+	@Override
+	EditorToolbar createEditorToolbar() {
+		final EditorToolbar toolbar = super.createEditorToolbar();
+		// Unit annotations are not part of the editable value
+		final Label unit = toolbar.getItem(VALUE);
+		if (unit != null && !unit.isDisposed()) { unit.setForeground(unit.getDisplay().getSystemColor(SWT.COLOR_GRAY)); }
+		return toolbar;
+	}
+
+	@Override
+	protected String[] getValueLabelsForSizing() {
+		final IParameter.DisplayUnit unit = param.getDisplayUnit(getScope());
+		if (unit == null) return super.getValueLabelsForSizing();
+		if (isLabelOnly(unit)) return new String[] { unit.label() };
+		return new String[] { "= -000000.000000 " + unit.label(),
+				"= " + FloatUnitFormatter.format(asDouble(getMinValue()), null, unit),
+				"= " + FloatUnitFormatter.format(asDouble(getMaxValue()), null, unit) };
+	}
+
 	@Override
 	protected int[] getToolItems() {
+		final int[] items = getNumberToolItems();
+		if (param.getDisplayUnit(getScope()) == null) return items;
+		final int[] withValue = new int[items.length + 1];
+		withValue[0] = VALUE;
+		System.arraycopy(items, 0, withValue, 1, items.length);
+		return withValue;
+	}
+
+	private int[] getNumberToolItems() {
 		if (param.getAmongValue(getScope()) != null) {
 			if (acceptNull) return new int[] { DEFINE, REVERT };
 			return new int[] { REVERT };

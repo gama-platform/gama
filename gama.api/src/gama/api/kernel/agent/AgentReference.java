@@ -10,8 +10,10 @@
  ********************************************************************************************************/
 package gama.api.kernel.agent;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.kernel.simulation.IExperimentAgent;
@@ -20,7 +22,6 @@ import gama.api.runtime.scope.IScope;
 import gama.api.utils.json.IJson;
 import gama.api.utils.json.IJsonValue;
 import gama.api.utils.json.IJsonable;
-import one.util.streamex.StreamEx;
 
 /**
  * A unique way to reference agents across simulations within experiments.
@@ -91,6 +92,9 @@ import one.util.streamex.StreamEx;
  */
 public record AgentReference(String[] species, Integer[] index, String cached_ref) implements IJsonable {
 
+	private static final Pattern REFERENCE =
+			Pattern.compile("[^\\s.\\[\\]]+\\[[0-9]+\\](?:\\.[^\\s.\\[\\]]+\\[[0-9]+\\])*");
+
 	/** The null. */
 	public static final AgentReference NULL = new AgentReference(new String[0], new Integer[0], null);
 
@@ -117,17 +121,19 @@ public record AgentReference(String[] species, Integer[] index, String cached_re
 	 * @param ref the reference string to parse
 	 * @return the parsed agent reference
 	 * 
-	 * @throws NumberFormatException if indices cannot be parsed as integers
+	 * @throws IllegalArgumentException if the reference is malformed or an index is out of range
 	 */
 	public static AgentReference of(final String ref) {
+		if (ref == null || !REFERENCE.matcher(ref).matches())
+			throw new IllegalArgumentException("Expected an agent reference such as simulation[0].people[42]");
 		String[] tokens = ref.split("[\\[\\]\\.]");
-		tokens = StreamEx.of(tokens).filter(s -> !s.isEmpty()).toArray(String.class);
+		tokens = Arrays.stream(tokens).filter(s -> !s.isEmpty()).toArray(String[]::new);
 		int size = tokens.length / 2;
 		String[] species = new String[size];
 		Integer[] index = new Integer[size];
 		for (int i = 0; i < size; i++) {
 			species[i] = tokens[i * 2];
-			index[i] = Integer.decode(tokens[i * 2 + 1]);
+			index[i] = Integer.valueOf(tokens[i * 2 + 1]);
 		}
 		return new AgentReference(species, index, ref);
 	}
@@ -181,15 +187,27 @@ public record AgentReference(String[] species, Integer[] index, String cached_re
 	 * @see IPopulation#getOrCreateAgent(IScope, int)
 	 */
 	public IAgent getReferencedAgent(final IScope scope) {
-		if (scope == null) return null;
+		return resolve(scope, true);
+	}
+
+	/** Resolves an existing agent without creating missing agents, unlike snapshot deserialization. */
+	public IAgent getExistingAgent(final IScope scope) {
+		return resolve(scope, false);
+	}
+
+	private IAgent resolve(final IScope scope, final boolean create) {
+		if (scope == null || index.length == 0 || species.length != index.length) return null;
+		for (Integer i : index) { if (i == null || i < 0) return null; }
 		IExperimentAgent sim = scope.getExperiment();
 		if (sim == null) return null;
 		IPopulation<? extends IAgent> pop = sim.getSimulationPopulation();
-		IAgent referencedAgt = pop.getOrCreateAgent(scope, index[0]);
+		if (pop == null) return null;
+		IAgent referencedAgt = create ? pop.getOrCreateAgent(scope, index[0]) : pop.getAgent(index[0]);
 		for (int i = 1; i < index.length; i++) {
+			if (referencedAgt == null || !create && referencedAgt.dead()) return null;
 			pop = referencedAgt.getPopulationFor(species[i]);
 			if (pop == null) return null;
-			referencedAgt = pop.getOrCreateAgent(scope, index[i]);
+			referencedAgt = create ? pop.getOrCreateAgent(scope, index[i]) : pop.getAgent(index[i]);
 		}
 		return referencedAgt;
 	}

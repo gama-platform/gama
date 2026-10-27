@@ -195,16 +195,16 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 	protected GamaMatrix(final int cols, final int rows, final IType contentsType) {
 		numRows = rows;
 		numCols = cols;
+		normalizeEmptyDimensions();
 		this.type = computeTypeWith(contentsType);
 	}
 
 	/**
-	 * Instantiates a new gama matrix.
+	 * Instantiates a new gama matrix. Without a preferred size, nested lists represent columns and must have equal
+	 * lengths.
 	 *
 	 * @param objects
 	 *            the objects
-	 * @param flat
-	 *            whether the list is flat or not (i.e. no sublist)
 	 * @param preferredSize
 	 *            the preferred size
 	 */
@@ -219,15 +219,28 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 			numRows = 1;
 			numCols = objects.size();
 		} else {
-			try {
-				numCols = objects.size();
-				numRows = ((List) objects.get(0)).size();
-			} catch (final Exception e) {
-				throw GamaRuntimeException
-						.error("" + objects.get(0) + " cannot be casted to a List (in matrix creation)", scope);
+			numCols = objects.size();
+			if (!(objects.get(0) instanceof List firstColumn))
+				throw GamaRuntimeException.error(objects.get(0) + " cannot be casted to a List (in matrix creation)",
+						scope);
+			numRows = firstColumn.size();
+			for (int column = 0; column < numCols; column++) {
+				if (!(objects.get(column) instanceof List values))
+					throw GamaRuntimeException.error("Matrix column " + column + " must be a list", scope);
+				if (values.size() != numRows)
+					throw GamaRuntimeException.error("Matrix column " + column + " has " + values.size()
+							+ " rows; expected " + numRows + ". Matrix columns must have the same length.", scope);
 			}
 		}
+		normalizeEmptyDimensions();
 		this.type = computeTypeWith(contentsType);
+	}
+
+	protected final void normalizeEmptyDimensions() {
+		if (numCols == 0 || numRows == 0) {
+			numCols = 0;
+			numRows = 0;
+		}
 	}
 
 	/**

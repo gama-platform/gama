@@ -28,7 +28,9 @@ import gama.api.compilation.descriptions.IStatementDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.constants.IGamlIssue;
 import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.statements.AbstractStatementSequence;
+import gama.api.gaml.statements.IStatement;
 import gama.api.gaml.symbols.ISymbol;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
@@ -38,6 +40,7 @@ import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
+import gama.api.types.misc.IContainer;
 import gama.gaml.statements.MigrateStatement.MigrateValidator;
 
 /**
@@ -64,7 +67,7 @@ import gama.gaml.statements.MigrateStatement.MigrateValidator;
 				type = { IType.AGENT, IType.SPECIES, IType.CONTAINER, IType.ID },
 				of = IType.AGENT,
 				optional = false,
-				doc = @doc ("can be an agent, a list of agents, a agent's population to be migrated")), // workaround
+				doc = @doc ("An agent, a species, or a container of agents to migrate. Source agents must be living micro-agents of the executing agent.")),
 				@facet (
 						name = IKeyword.TARGET,
 						type = IType.SPECIES,
@@ -118,8 +121,7 @@ public class MigrateStatement extends AbstractStatementSequence {
 	}
 
 	/** The source. */
-	// private IExpression source;
-	private final String source;
+	private final IExpression source;
 
 	/** The target. */
 	private final String target;
@@ -146,7 +148,7 @@ public class MigrateStatement extends AbstractStatementSequence {
 	public MigrateStatement(final IDescription desc) {
 		super(desc);
 
-		source = getLiteral(IKeyword.SOURCE);
+		source = getFacet(IKeyword.SOURCE);
 
 		target = getLiteral(IKeyword.TARGET);
 
@@ -161,25 +163,47 @@ public class MigrateStatement extends AbstractStatementSequence {
 	}
 
 	@Override
+	public Iterable<IStatement> getSubStatements() {
+		return sequence == null ? java.util.List.of() : sequence.getSubStatements();
+	}
+
+	@Override
 	public Object privateExecuteIn(final IScope stack) throws GamaRuntimeException {
 		// TODO Verify it is a macro agent
 		final IMacroAgent executor = (IMacroAgent) stack.getAgent();
 		final IList<IAgent> immigrants = GamaListFactory.create(Types.AGENT);
 
 		final ISpecies targetMicroSpecies = executor.getSpecies().getMicroSpecies(target);
-		final ISpecies sourceMicroSpecies = executor.getSpecies().getMicroSpecies(source);
+		if (targetMicroSpecies == null) throw GamaRuntimeException.error(
+				"Cannot migrate agents: " + target + " is not a micro-species of " + executor.getSpeciesName(), stack);
 
-		immigrants.addAll(executor.migrateMicroAgents(stack, sourceMicroSpecies, targetMicroSpecies));
-
-		/*
-		 * Object immigrantCandidates = source.value(stack);
-		 *
-		 * if (immigrantCandidates instanceof ISpecies) { immigrants.addAll(executor.migrateMicroAgent((ISpecies)
-		 * immigrantCandidates, targetMicroSpecies)); } else if (immigrantCandidates instanceof IList) {
-		 * immigrants.addAll(executor.migrateMicroAgents((IList) immigrantCandidates, targetMicroSpecies)); } else if
-		 * (immigrantCandidates instanceof IAgent) { IList<IAgent> m = GamaListFactory.create(Types.AGENT);
-		 * m.add((IAgent) immigrantCandidates); immigrants.addAll(executor.migrateMicroAgents(m, targetMicroSpecies)); }
-		 */
+		final Object candidates = source.value(stack);
+		if (candidates instanceof ISpecies sourceMicroSpecies) {
+			if (executor.getSpecies().getMicroSpecies(sourceMicroSpecies.getName()) != sourceMicroSpecies)
+				throw GamaRuntimeException.error("Cannot migrate agents: the source must be a micro-species of "
+						+ executor.getSpeciesName(), stack);
+			immigrants.addAll(executor.migrateMicroAgents(stack, sourceMicroSpecies, targetMicroSpecies));
+		} else {
+			final IList<IAgent> microAgents = GamaListFactory.create(Types.AGENT);
+			if (candidates instanceof IAgent agent) {
+				microAgents.add(agent);
+			} else if (candidates instanceof IContainer<?, ?> container) {
+				for (final Object candidate : container.iterable(stack)) {
+					if (!(candidate instanceof IAgent agent)) throw GamaRuntimeException
+							.error("Cannot migrate agents: the source container must contain only agents", stack);
+					microAgents.add(agent);
+				}
+			} else {
+				throw GamaRuntimeException.error(
+						"Cannot migrate agents: the source must be an agent, a species or a container of agents", stack);
+			}
+			for (final IAgent agent : microAgents) {
+				if (agent.dead() || agent.getHost() != executor) throw GamaRuntimeException
+						.error("Cannot migrate agents: source agents must be living micro-agents of the executing agent",
+								stack);
+			}
+			immigrants.addAll(executor.migrateMicroAgents(stack, microAgents, targetMicroSpecies));
+		}
 
 		if (returnString != null) { stack.setVarValue(returnString, immigrants); }
 

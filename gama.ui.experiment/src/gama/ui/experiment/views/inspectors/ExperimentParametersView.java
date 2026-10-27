@@ -20,7 +20,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 
@@ -118,17 +117,38 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 	public void displayItems() {
 		WorkbenchHelper.run(() -> {
 			super.displayItems();
-			createMonitorSectionIfNeeded(false);
-			final Map<MonitorOutput, MonitorDisplayer> monitors = getEditorsList().getMonitors();
-			monitors.forEach((mo, md) -> {
-				md.createControls((EditorsGroup) monitorSection.getControl());
-				md.setCloser(() -> deleteMonitor(md));
-			});
-			if (monitorSection != null && !monitors.isEmpty()) {
-				monitorSection.setHeight(monitorSection.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT, true).y);
-			}
+			displayMonitors();
 		});
 		updateToolbar();
+	}
+
+	private void displayMonitors() {
+		createMonitorSectionIfNeeded(getEditorsList().getItems().contains(MONITOR_SECTION_NAME));
+		final Map<MonitorOutput, MonitorDisplayer> monitors = getEditorsList().getMonitors();
+		monitors.forEach((mo, md) -> {
+			md.createControls((EditorsGroup) monitorSection.getControl());
+			md.setCloser(() -> deleteMonitor(md));
+		});
+		if (monitorSection != null && !monitors.isEmpty()) {
+			monitorSection.setHeight(monitorSection.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT, true).y);
+		}
+	}
+
+	private void refreshMonitors() {
+		if (getEditorsList() == null || !getEditorsList().setMonitors(agent)) return;
+		if (monitorSection != null && !monitorSection.isDisposed()) { monitorSection.dispose(); }
+		monitorSection = null;
+		displayMonitors();
+		getParentComposite().requestLayout();
+	}
+
+	@Override
+	public void reset() {
+		WorkbenchHelper.run(() -> {
+			if (getEditorsList() != null) { getEditorsList().disposeMonitors(); }
+			super.reset();
+			monitorSection = null;
+		});
 	}
 
 	/**
@@ -193,7 +213,7 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 		}
 		createMonitorSectionIfNeeded(true);
 		IScope scope = GAMA.getRuntimeScope();
-		MonitorOutput m = new MonitorOutput(scope, "Monitor " + COUNTER.COUNT(), null);
+		MonitorOutput m = new MonitorOutput(scope, "Monitor " + COUNTER.GET_UNIQUE(), null);
 		MonitorDisplayer md = getEditorsList().addMonitor(GAMA.getCurrentTopLevelAgent().getScope(), m);
 		md.createControls((EditorsGroup) monitorSection.getControl());
 		monitorSection.setHeight(monitorSection.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT, true).y);
@@ -248,6 +268,10 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 	 */
 	@Override
 	public void topLevelAgentChanged(final ITopLevelAgent newTopLevelAgent) {
+		WorkbenchHelper.run(() -> updateTopLevelAgent(newTopLevelAgent));
+	}
+
+	private void updateTopLevelAgent(final ITopLevelAgent newTopLevelAgent) {
 		if (newTopLevelAgent == null || newTopLevelAgent.isPlatform()) {
 			agent = null;
 			reset();
@@ -272,6 +296,7 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 				saveParameterValuesForCurrentAgent();
 				agent = newSimulation;
 				getEditorsList().setItemValues(newSimulation.getExternalInits());
+				refreshMonitors();
 				getEditorsList().updateItemValues(false, false);
 				updateToolbar();
 				return;
@@ -279,8 +304,8 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 			if (agent.isExperiment()) {
 				// Experiment ==> Simulation
 				agent = newSimulation;
+				refreshMonitors();
 				getEditorsList().updateItemValues(false, false);
-				if (getEditorsList().hasMonitors()) { createMonitorSectionIfNeeded(false); }
 				updateToolbar();
 				return;
 			}
@@ -289,14 +314,11 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 		if (newTopLevelAgent.isExperiment()) {
 			IExperimentAgent newExperiment = (IExperimentAgent) newTopLevelAgent;
 			if (agent == newExperiment || !newExperiment.hasParametersOrUserCommands()) return;
-			if (monitorSection != null) {
-				WorkbenchHelper.run(() -> monitorSection.dispose());
-				monitorSection = null;
-			}
 			if (agent != null && agent.isSimulation()) {
 				// Simulation ==> Experiment
 				saveParameterValuesForCurrentAgent();
 				agent = newExperiment;
+				refreshMonitors();
 				getEditorsList().updateItemValues(false, false);
 				updateToolbar();
 				return;
@@ -371,8 +393,7 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 	@Override
 	protected ViewUpdateUIJob createUpdateJob() {
 		ExperimentsParametersList editorsList = getEditorsList();
-		if (editorsList != null && GamaPreferences.Runtime.CORE_MONITOR_PARAMETERS.getValue()
-				&& editorsList.hasMonitors())
+		if (editorsList != null && GamaPreferences.Runtime.CORE_MONITOR_PARAMETERS.getValue())
 			return new ViewUpdateUIJob() {
 
 				@Override
@@ -383,8 +404,9 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 				@Override
 				public IStatus runInUIThread(final IProgressMonitor monitor) {
 					if (!isOpen) return Status.CANCEL_STATUS;
+					refreshMonitors();
 					if (getViewer() != null && !getViewer().isDisposed()) {
-						((ExperimentsParametersList) editors).updateMonitors(GAMA.isSynchronized());
+						getEditorsList().updateMonitors(GAMA.isSynchronized());
 					}
 					return Status.OK_STATUS;
 				}

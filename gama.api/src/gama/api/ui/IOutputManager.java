@@ -142,6 +142,13 @@ public interface IOutputManager extends IStepable, Iterable<IOutput> {
 	boolean isEmpty();
 
 	/**
+	 * Checks if the output manager or any of its outputs requires synchronization.
+	 *
+	 * @return true if synchronized
+	 */
+	default boolean isSynchronized() { return false; }
+
+	/**
 	 * For each.
 	 *
 	 * @param action

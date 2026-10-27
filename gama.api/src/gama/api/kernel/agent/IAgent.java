@@ -26,6 +26,7 @@ import gama.api.kernel.simulation.ITopLevelAgent;
 import gama.api.kernel.species.IModelSpecies;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.IStepable;
+import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
 import gama.api.runtime.scope.IScoped;
 import gama.api.types.geometry.IDelegatingShape;
@@ -407,7 +408,7 @@ public interface IAgent extends IObject, IDelegatingShape, INamed, Comparable<IA
 	 * @param scope
 	 *            the scope
 	 */
-	void schedule(IScope scope);
+	IExecutionResult schedule(IScope scope);
 
 	/**
 	 * Gets the index.

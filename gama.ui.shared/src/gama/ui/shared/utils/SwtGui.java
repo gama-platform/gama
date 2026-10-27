@@ -39,6 +39,7 @@ import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.statements.IStatement;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.simulation.DefaultExperimentController;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.simulation.ITopLevelAgent;
 import gama.api.kernel.species.IExperimentSpecies;
@@ -68,8 +69,13 @@ import gama.api.ui.displays.IDisplayCreator;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.api.utils.server.CommandExecutor;
+import gama.api.utils.server.GamaServerMessager;
 import gama.api.utils.server.ISocketCommand;
+import gama.api.utils.server.MessageType;
 import gama.api.utils.tests.CompoundSummary;
+import gama.api.utils.tests.IsolatedTestRunner;
+import gama.api.utils.tests.TestExperimentRunner;
+import gama.api.utils.tests.TestSelection;
 import gama.core.outputs.InspectDisplayOutput;
 import gama.core.outputs.display.AbstractDisplayGraphics;
 import gama.dev.DEBUG;
@@ -78,6 +84,7 @@ import gama.ui.application.workbench.SimulationPerspectiveDescriptor;
 import gama.ui.shared.interfaces.IDisplayLayoutManager;
 import gama.ui.shared.interfaces.IRefreshHandler;
 import gama.ui.shared.interfaces.ISpeedDisplayer;
+import gama.ui.shared.commands.TestsRunner;
 import gama.ui.shared.parameters.EditorsDialog;
 import gama.ui.shared.parameters.GamaWizard;
 import gama.ui.shared.parameters.GamaWizardDialog;
@@ -100,6 +107,75 @@ public class SwtGui implements IGui {
 
 	/** The all tests running. */
 	public volatile static boolean ALL_TESTS_RUNNING;
+
+	private volatile boolean testStopRequested;
+
+	private volatile boolean testSequenceRunning;
+
+	private volatile String testViewId = TEST_VIEW_ID;
+
+	private volatile IGamaView.Test activeTestView;
+
+	private final java.util.concurrent.atomic.AtomicInteger completedTests = new java.util.concurrent.atomic.AtomicInteger();
+	private volatile int totalTests = -1;
+
+	private volatile IScope runningTestScope;
+
+	public void stopTests() {
+		testStopRequested = true;
+		TestExperimentRunner.interrupt();
+		final IScope scope = runningTestScope;
+		if (scope != null) {
+			scope.setDisposeStatus();
+			final var experiment = scope.getExperiment();
+			if (experiment != null) { experiment.closeSimulations(false); }
+		}
+	}
+
+	@Override
+	public boolean isTestStopRequested() { return testStopRequested; }
+
+	@Override
+	public boolean runTestExperiment(final IModelSpecies model, final String experiment) {
+		return runTestExperiment(model, experiment, null);
+	}
+
+	@Override
+	public boolean runTestExperiment(final IModelSpecies model, final String experiment,
+			final TestSelection selection) {
+		if (!GamaPreferences.Experimental.ISOLATED_TESTS.getValue()) {
+			TestsRunner.start(model, experiment, selection);
+			return true;
+		}
+		final String modelPath;
+		try {
+			modelPath = IsolatedTestRunner.modelPath(model);
+		} catch (final IllegalArgumentException e) {
+			getDialogFactory().error(e.getMessage());
+			return true;
+		}
+		// A separate JVM cannot see the editor's in-memory document.
+		final boolean[] dirty = { false };
+		WorkbenchHelper.run(() -> {
+			for (final var reference : WorkbenchHelper.getPage().getEditorReferences()) {
+				final var editor = reference.getEditor(false);
+				if (editor == null || !editor.isDirty()) continue;
+				final var input = editor.getEditorInput();
+				final var file = input.getAdapter(org.eclipse.core.resources.IFile.class);
+				final java.net.URI uri = file != null ? file.getLocationURI()
+						: input instanceof org.eclipse.ui.IURIEditorInput external ? external.getURI() : null;
+				if (uri != null && "file".equals(uri.getScheme())
+						&& java.nio.file.Path.of(uri).toAbsolutePath().toString().equals(modelPath)) {
+					dirty[0] = true;
+					getDialogFactory().error("Save the model before running its tests in an isolated process.");
+					break;
+				}
+			}
+		});
+		if (dirty[0]) return true;
+		TestsRunner.start(model, experiment, selection);
+		return true;
+	}
 
 	/** The highlighted agent. */
 	private IAgent highlightedAgent;
@@ -145,6 +221,11 @@ public class SwtGui implements IGui {
 	public void runtimeError(final IScope scope, final GamaRuntimeException g) {
 		if (g.isReported() || GAMA.getFrontmostController() != null && GAMA.getFrontmostController().isDisposing())
 			return;
+		if (scope != null && scope.getExperiment() != null
+				&& scope.getExperiment().getSpecies().getController() instanceof DefaultExperimentController controller) {
+			controller.recordRuntimeError(g);
+		}
+		GamaServerMessager.forwardMessage(scope, g, MessageType.SimulationError);
 		final IRuntimeExceptionHandler handler = getRuntimeExceptionHandler();
 		if (!handler.isRunning()) { handler.start(); }
 		handler.offer(g);
@@ -184,10 +265,41 @@ public class SwtGui implements IGui {
 
 	@Override
 	public IGamaView.Test openTestView(final IScope scope, final boolean allTests) {
-		ALL_TESTS_RUNNING = allTests;
-		final IGamaView.Test v = (Test) showView(scope, TEST_VIEW_ID, null, IWorkbenchPage.VIEW_ACTIVATE);
-		if (v != null) { v.startNewTestSequence(allTests); }
+		final boolean continuing = testSequenceRunning && !allTests;
+		if (!continuing) {
+			completedTests.set(0);
+			totalTests = -1;
+			testViewId = GamaPreferences.Experimental.COMPACT_TEST_VIEW.getValue()
+					? COMPACT_TEST_VIEW_ID : TEST_VIEW_ID;
+			testSequenceRunning = true;
+			ALL_TESTS_RUNNING = allTests;
+			testStopRequested = false;
+			runningTestScope = null;
+		}
+		final IGamaView.Test v = (Test) showView(scope, testViewId, null, IWorkbenchPage.VIEW_ACTIVATE);
+		activeTestView = v;
+		if (v != null && !continuing) { v.startNewTestSequence(allTests); }
 		return v;
+	}
+
+	@Override
+	public void displayRunningTest(final IScope scope, final String name) {
+		runningTestScope = scope.getExperiment() instanceof gama.api.kernel.simulation.IExperimentAgent.Test
+				? scope : null;
+		if (testStopRequested) {
+			stopTests();
+			return;
+		}
+		final var experiment = scope.getExperiment();
+		final String title = experiment instanceof gama.api.utils.tests.WithTestSummary<?> test
+				? test.getTitleForSummary() : "";
+		final String label = title.isBlank() || title.equals(name) ? name : title + " - " + name;
+		final var v = activeTestView;
+		if (v instanceof gama.ui.shared.views.CompactTestView) {
+			v.displayRunningTest(label);
+		} else {
+			WorkbenchHelper.asyncRun(() -> { if (v != null) { v.displayRunningTest(label); } });
+		}
 	}
 
 	/**
@@ -198,19 +310,50 @@ public class SwtGui implements IGui {
 	 */
 	@Override
 	public void displayTestsProgress(final IScope scope, final int number, final int total) {
-		final IGamaView.Test v = (Test) WorkbenchHelper.getPage().findView(TEST_VIEW_ID);
+		final IGamaView.Test v = activeTestView;
 		if (v != null) { v.displayProgress(number, total); }
 	}
 
 	@Override
+	public void displayTestCounts(final int completed, final int total) {
+		totalTests = total;
+		completedTests.set(completed);
+		if (activeTestView instanceof gama.ui.shared.views.CompactTestView view) {
+			view.displayTestCounts(completed, total);
+		}
+	}
+
+	@Override
+	public void displayTestSummary(final IScope scope,
+			final gama.api.utils.tests.IndividualTestSummary summary, final boolean finished) {
+		final gama.api.utils.tests.TestExperimentSummary experiment =
+				scope != null && scope.getExperiment() instanceof gama.api.kernel.simulation.IExperimentAgent.Test test
+						? test.getSummary() : null;
+		displayTestSummary(scope, experiment, summary, finished);
+	}
+
+	@Override
+	public void displayTestSummary(final IScope scope,
+			final gama.api.utils.tests.TestExperimentSummary experiment,
+			final gama.api.utils.tests.IndividualTestSummary summary, final boolean finished) {
+		final int completed = finished ? completedTests.incrementAndGet() : completedTests.get();
+		if (activeTestView instanceof gama.ui.shared.views.CompactTestView view) {
+			if (finished) { view.displayTestCounts(completed, totalTests); }
+			view.displayTestSummary(experiment, summary);
+		}
+	}
+
+	@Override
 	public void displayTestsResults(final IScope scope, final CompoundSummary<?, ?> summary) {
-		IGamaView.Test v = (Test) WorkbenchHelper.getPage().findView(TEST_VIEW_ID);
+		IGamaView.Test v = activeTestView;
 		if (v != null) { v.addTestResult(summary); }
 	}
 
 	@Override
 	public void endTestDisplay() {
-		final IGamaView.Test v = (Test) WorkbenchHelper.getPage().findView(TEST_VIEW_ID);
+		testSequenceRunning = false;
+		runningTestScope = null;
+		final IGamaView.Test v = activeTestView;
 		if (v != null) { v.finishTestSequence(); }
 		WorkbenchHelper.refreshNavigator();
 	}
@@ -399,6 +542,16 @@ public class SwtGui implements IGui {
 	@Override
 	public IModelsManager getModelsManager() { return WorkbenchHelper.getService(IModelsManager.class); }
 
+	@Override
+	public void updateSynchronizedState() {
+		WorkbenchHelper.asyncRun(() -> {
+			ICommandService hs = WorkbenchHelper.getService(ICommandService.class);
+			if (hs != null) {
+				hs.refreshElements("gama.application.commands.SynchronizeExperiment", null);
+			}
+		});
+	}
+
 	/**
 	 * Update parameters.
 	 *
@@ -498,8 +651,7 @@ public class SwtGui implements IGui {
 		pendingArrange = () -> {
 			WorkbenchHelper.getWindow().updateActionBars();
 			// To solve issue #3697
-			ICommandService hs = WorkbenchHelper.getService(ICommandService.class);
-			hs.refreshElements("gama.ui.application.commands.SynchronizeExperiment", null);
+			updateSynchronizedState();
 			WorkbenchHelper.getPage().setEditorAreaVisible(showEditors);
 			getConsole().toggleConsoleViews(exp.getAgent(), showConsoles == null || showConsoles);
 			if (showNavigator != null && !showNavigator) { hideView(IGui.NAVIGATOR_VIEW_ID); }

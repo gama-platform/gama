@@ -17,6 +17,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.jface.internal.text.html.BrowserInformationControl;
 import org.eclipse.jface.text.DefaultInformationControl;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IRegion;
@@ -28,6 +29,7 @@ import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.xtext.Keyword;
 import org.eclipse.xtext.documentation.IEObjectDocumentationProvider;
 import org.eclipse.xtext.nodemodel.ILeafNode;
+import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.resource.EObjectAtOffsetHelper;
 import org.eclipse.xtext.resource.ILocationInFileProvider;
@@ -47,10 +49,15 @@ import com.google.common.base.Strings;
 import com.google.inject.Inject;
 
 import gama.api.compilation.descriptions.IGamlDescription;
+import gama.ui.application.workbench.ThemeHelper;
+import gama.ui.shared.access.GamlDocStyleHelper;
 import gama.ui.shared.utils.WebHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gaml.compiler.gaml.ActionRef;
+import gaml.compiler.gaml.Facet;
 import gaml.compiler.gaml.Function;
+import gaml.compiler.gaml.GamlDefinition;
+import gaml.compiler.gaml.Statement;
 import gaml.compiler.gaml.VariableRef;
 import gaml.compiler.ui.hover.GamlHoverDocumentationProvider.Result;
 
@@ -75,41 +82,84 @@ public class GamlHoverProvider extends DefaultEObjectHoverProvider {
 
 		@Override
 		protected Pair<EObject, IRegion> getXtextElementAt(final XtextResource resource, final int offset) {
-			// BUGFIX AD 2/4/13 : getXtextElementAt() is called twice, one to
-			// compute the region
-			// from the UI thread, one to compute the objects from the hover
-			// thread. The offset in
-			// the second call is always false (maybe we should file a bug in
-			// XText). The following
-			// code is a workaround.
-			ITextRegion region = null;
+			if (resource == null || resource.getParseResult() == null) return null;
+			final ILeafNode leaf = NodeModelUtils.findLeafNodeAtOffset(resource.getParseResult().getRootNode(), offset);
+			if (leaf == null || leaf.isHidden()) return null;
+
+			int tokenOffset = leaf.getOffset();
+			int tokenLength = leaf.getLength();
+			String tokenText = leaf.getText();
+
+			// Handle facet key ending in ':' where ':' is a separate leaf node in the grammar
+			if (":".equals(tokenText) && tokenOffset > 0) {
+				INode prev = leaf.getPreviousSibling();
+				while (prev instanceof ILeafNode lp && lp.isHidden()) { prev = prev.getPreviousSibling(); }
+				if (prev != null && prev.getOffset() + prev.getLength() == tokenOffset) {
+					tokenOffset = prev.getOffset();
+					tokenLength = prev.getLength() + leaf.getLength();
+					tokenText = prev.getText() + ":";
+				}
+			} else {
+				INode next = leaf.getNextSibling();
+				while (next instanceof ILeafNode ln && ln.isHidden()) { next = next.getNextSibling(); }
+				if (next != null && ":".equals(next.getText()) && leaf.getOffset() + leaf.getLength() == next.getOffset()) {
+					tokenLength = leaf.getLength() + next.getLength();
+					tokenText = leaf.getText() + ":";
+				}
+			}
+			final IRegion tokenRegion = new Region(tokenOffset, tokenLength);
+
 			EObject o;
 			if (correct == null) {
-				correct = eObjectAtOffsetHelper.resolveContainedElementAt(resource, offset);
-				o = correct;
+				o = computeElementAt(resource, offset, leaf, tokenText);
+				correct = o;
 			} else {
 				o = correct;
 				correct = null;
 			}
-			// /BUGFIX
-			if (o != null) {
-				if (o instanceof ActionRef) {
-					final EObject container = o.eContainer();
-					if (container instanceof Function) {
-						o = container;
-						region = locationInFileProvider.getFullTextRegion(o);
+
+			ITextRegion sigRegion = null;
+			if (o != null && !(o instanceof Statement) && !(o instanceof Facet) && !(o instanceof GamlDefinition)) {
+				sigRegion = locationInFileProvider.getSignificantTextRegion(o);
+			}
+
+			final IRegion finalRegion;
+			if (sigRegion == null || sigRegion.getLength() > tokenRegion.getLength()) {
+				finalRegion = tokenRegion;
+			} else {
+				finalRegion = new Region(sigRegion.getOffset(), sigRegion.getLength());
+			}
+
+			return Tuples.create(o != null ? o : leaf.getSemanticElement(), finalRegion);
+		}
+
+		private EObject computeElementAt(final XtextResource resource, final int offset, final ILeafNode leaf,
+				final String tokenText) {
+			EObject o = eObjectAtOffsetHelper.resolveContainedElementAt(resource, offset);
+			if (o instanceof ActionRef) {
+				final EObject container = o.eContainer();
+				if (container instanceof Function) { o = container; }
+			}
+			if (o instanceof Statement stmt) {
+				if (tokenText.endsWith(":")) {
+					String fKey = tokenText.substring(0, tokenText.length() - 1);
+					for (Facet f : stmt.getFacets()) {
+						String k = f.getKey();
+						if (k != null) {
+							if (k.endsWith(":")) { k = k.substring(0, k.length() - 1); }
+							if (k.equals(fKey)) {
+								o = f;
+								break;
+							}
+						}
 					}
 				}
-				if (region == null) { region = locationInFileProvider.getSignificantTextRegion(o); }
-				final IRegion region2 = new Region(region.getOffset(), region.getLength());
-				return Tuples.create(o, region2);
+			} else if (o instanceof GamlDefinition || o == null) {
+				EObject target = leaf.getGrammarElement() instanceof Keyword ? leaf.getGrammarElement()
+						: leaf.getSemanticElement();
+				if (target != null) { o = target; }
 			}
-			final ILeafNode node = NodeModelUtils.findLeafNodeAtOffset(resource.getParseResult().getRootNode(), offset);
-			if (node != null && node.getGrammarElement() instanceof Keyword) {
-				final IRegion region2 = new Region(node.getOffset(), node.getLength());
-				return Tuples.create(node.getGrammarElement(), region2);
-			}
-			return null;
+			return o;
 		}
 
 		@Override
@@ -188,10 +238,45 @@ public class GamlHoverProvider extends DefaultEObjectHoverProvider {
 	/** The provider. */
 	@Inject private GamlHoverDocumentationProvider provider;
 
+	/** The guesser for decontextualized documentation when models do not compile. */
+	@Inject private GamlGlobalDocGuesser guesser = new GamlGlobalDocGuesser();
+
+	/** The current hover context (region and document). */
+	private final ThreadLocal<Pair<IRegion, IDocument>> currentHoverContext = new ThreadLocal<>();
+
 	@Override
 	public IInformationControlCreator getHoverControlCreator() {
 		if (creator == null) { creator = new GamlHoverControlCreator(getInformationPresenterControlCreator()); }
 		return creator;
+	}
+
+	@Override
+	public IInformationControlCreatorProvider getHoverInfo(final EObject first, final ITextViewer textViewer,
+			final IRegion hoverRegion) {
+		return new IInformationControlCreatorProvider() {
+
+			@Override
+			public IInformationControlCreator getHoverControlCreator() {
+				return GamlHoverProvider.this.getHoverControlCreator();
+			}
+
+			@Override
+			public Object getInfo() {
+				try {
+					currentHoverContext
+							.set(Tuples.create(hoverRegion, textViewer != null ? textViewer.getDocument() : null));
+					return GamlHoverProvider.this.getHoverInfo(first, hoverRegion, null);
+				} finally {
+					currentHoverContext.remove();
+				}
+			}
+		};
+	}
+
+	@Override
+	public XtextBrowserInformationControlInput getHoverInfo(final EObject object, final IRegion region,
+			final XtextBrowserInformationControlInput previous) {
+		return super.getHoverInfo(object, region, previous);
 	}
 
 	/**
@@ -258,23 +343,42 @@ public class GamlHoverProvider extends DefaultEObjectHoverProvider {
 	}
 
 	@Override
+	protected String getStyleSheet() {
+		String base = super.getStyleSheet();
+		return (base != null ? base : "") + "\n" + GamlDocStyleHelper.getDocCss();
+	}
+
+	@Override
 	protected String getHoverInfoAsHtml(final EObject o) {
-		StringBuilder buffer = new StringBuilder();
+		Pair<IRegion, IDocument> ctx = currentHoverContext.get();
+		IRegion region = ctx != null ? ctx.getFirst() : null;
+		IDocument document = ctx != null ? ctx.getSecond() : null;
+		return getHoverInfoAsHtml(o, region, document);
+	}
+
+	/**
+	 * Gets the hover info as HTML with region and document context for decontextualized guessing.
+	 */
+	protected String getHoverInfoAsHtml(final EObject o, final IRegion region, final IDocument document) {
 		IGamlDescription doc = provider.getDoc(o);
+		if (doc == null && guesser != null) {
+			doc = guesser.guessDocumentation(o, region, document);
+		}
 		if (doc == null) {
-			doc = new Result("Unknow object of type " + o.getClass().getSimpleName(),
+			doc = new Result("Unknown object of type " + (o != null ? o.getClass().getSimpleName() : "null"),
 					"File an issue at https://github.com/gama-platform/gama/issues to document it");
 		}
 		String title = doc.getTitle();
-		String documentation = doc.getDocumentation().toString();
-		String comment = decoratedProvider.getDocumentation(o);
-		if (Strings.isNullOrEmpty(comment)) if (o instanceof VariableRef) {
-			comment = super.getDocumentation(((VariableRef) o).getRef());
-		} else if (o instanceof ActionRef) { comment = super.getDocumentation(((ActionRef) o).getRef()); }
-		if (!Strings.isNullOrEmpty(title)) { buffer.append("<b>").append(title).append("</b><hr>"); }
-		if (!Strings.isNullOrEmpty(comment)) { buffer.append("<p><i>").append(comment).append("</i></p><hr>"); }
-		if (!Strings.isNullOrEmpty(documentation)) { buffer.append("<p>").append(documentation).append("</p>"); }
-		return buffer.toString();
+		String documentation = doc.getDocumentation() != null ? doc.getDocumentation().toString() : "";
+		String comment = o != null ? decoratedProvider.getDocumentation(o) : null;
+		if (Strings.isNullOrEmpty(comment)) {
+			if (o instanceof VariableRef vr) {
+				comment = super.getDocumentation(vr.getRef());
+			} else if (o instanceof ActionRef ar) {
+				comment = super.getDocumentation(ar.getRef());
+			}
+		}
+		return GamlDocStyleHelper.wrapWithCard(title, comment, documentation);
 	}
 
 }

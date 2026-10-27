@@ -18,6 +18,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.xtext.nodemodel.ICompositeNode;
+import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.locationtech.jts.util.NumberUtil;
 
 import gama.annotations.doc;
@@ -108,9 +111,17 @@ import gama.core.experiment.parameters.ExperimentParameter.ExperimentParameterVa
 						doc = @doc ("the name of the variable (that should be declared in global)")),
 				@facet (
 						name = IKeyword.UNIT,
-						type = { IType.STRING },
+						type = { IType.STRING, IType.FLOAT, IType.INT },
 						optional = true,
-						doc = @doc ("the variable unit")),
+						doc = @doc ("""
+								The unit used to display the value of the parameter (display only: stored values, min, max and step \
+								are never modified). Either a constant numeric expression, like #h, #km/#h or #percent, which converts \
+								float values before displaying them (e.g. 0.25 with unit: #percent is shown as 25 %); or a string. \
+								A string that can be interpreted as such an expression (e.g. "#km/#h") converts float values in the same way; \
+								any other string (e.g. "items", "m/min" or "%") is only displayed as a label after the value. \
+								Sliders display the converted value followed by the unit; text editors keep the original value editable \
+								and display the converted value, or only the label, beside it. Int parameters only accept string labels. \
+								Calendar-dependent units (#month, #year) and non-positive factors are not supported.""")),
 				@facet (
 						name = IKeyword.ON_CHANGE,
 						type = IType.NONE,
@@ -212,6 +223,23 @@ import gama.core.experiment.parameters.ExperimentParameter.ExperimentParameterVa
 								isExecutable = false),
 								@example (
 										value = "parameter 'Value of titi:' var: titi min: 1 max: 100 step: 2; ",
+										isExecutable = false) }),
+				@usage (
+						value = "The unit: facet changes how a value is displayed, never the value itself. A numeric unit converts float values (stored in GAMA's base units) before display, while a string that is not a numeric expression is a simple label:",
+						examples = { @example (
+								value = "parameter 'Duration' var: duration min: 1#h max: 10#h step: 15#mn unit: #h; // a duration of 9000.0 (s) is displayed as 2.5 h",
+								isExecutable = false),
+								@example (
+										value = "parameter 'Speed' var: speed min: 0.0 max: 50#km/#h unit: #km/#h; // 10.0 (m/s) is displayed as 36 km/h",
+										isExecutable = false),
+								@example (
+										value = "parameter 'Density' var: density min: 0.0 max: 1.0 step: 0.05 unit: #percent; // 0.7 is displayed as 70 %",
+										isExecutable = false),
+								@example (
+										value = "parameter 'Flood speed' var: flood_speed unit: \"m/min\"; // label only: 5.0 is displayed as 5.0 with m/min beside it",
+										isExecutable = false),
+								@example (
+										value = "parameter 'Opening hour' var: opening_hour min: 6 max: 12 unit: \"h\"; // int parameters only accept labels",
 										isExecutable = false) }), })
 @SuppressWarnings ({ "rawtypes" })
 public class ExperimentParameter extends Symbol implements IParameter.Batch {
@@ -223,6 +251,18 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 		@Override
 		public void validate(final IDescription vd) {
 			super.validate(vd);
+			final IExpression unit = vd.getFacetExpr(IKeyword.UNIT);
+			if (unit != null && unit.getGamlType().id() != IType.STRING) {
+				if (!unit.isConst()
+						|| !(unit.value(null) instanceof Number factor) || !Double.isFinite(factor.doubleValue())
+						|| factor.doubleValue() <= 0) {
+					vd.error("unit: expects a constant numeric expression with a positive finite factor (e.g. #km/#h), "
+							+ "or a string label.", IGamlIssue.WRONG_TYPE, IKeyword.UNIT);
+				} else if (vd.getGamlType().id() != IType.FLOAT) {
+					vd.error("Unit conversion is only supported for float parameters. Use a string for a label without conversion.",
+							IGamlIssue.WRONG_TYPE, IKeyword.UNIT);
+				}
+			}
 			String varName = vd.getLitteral(IKeyword.VAR);
 			final IVariableDescription targetedGlobalVar = findTargetedVar(vd, varName);
 			final IExperimentDescription ed = (IExperimentDescription) vd.getEnclosingDescription();
@@ -245,6 +285,16 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 
 	/** The unit label. */
 	String varName, title, category, unitLabel;
+
+	private IExpression unitExpression;
+
+	private String unitExpressionLabel;
+
+	private String parsedUnitLabel;
+
+	private DisplayUnit parsedUnit;
+
+	private DisplayUnit displayUnit;
 
 	/** The type. */
 	IType type = Types.NO_TYPE;
@@ -285,7 +335,11 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 		setName(desc.getLitteral(IKeyword.VAR));
 		type = desc.getGamlType();
 		title = sd.getName();
-		unitLabel = getLiteral(IKeyword.UNIT);
+		unitExpression = getFacet(IKeyword.UNIT);
+		final IExpressionDescription unitDescription = sd.getFacet(IKeyword.UNIT);
+		if (unitDescription != null) {
+			unitExpressionLabel = unitLabelOf(sourceOf(sd, unitDescription));
+		}
 		min = getFacet(IKeyword.MIN);
 		final IScope runtimeScope = GAMA.getRuntimeScope();
 		if (min != null && min.isConst()) { getMinValue(runtimeScope); }
@@ -403,6 +457,7 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 	public ExperimentParameter(final IScope scope, final IParameter p, final String title, final String category,
 			final String unit, final List among, final boolean canBeNull) {
 		super(null);
+		displayUnit = unit == null ? p.getDisplayUnit(scope) : new DisplayUnit(unit, 1d);
 		this.slider = null;
 		this.title = title;
 		disables = EMPTY_STRINGS;
@@ -911,7 +966,9 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 	public String getUnitLabel(final IScope scope) {
 		try {
 			if (scope != null) { scope.push(this); }
-			if (unitLabel == null && canBeExplored()) {
+			final DisplayUnit explicitUnit = getDisplayUnit(scope);
+			if (explicitUnit != null) return explicitUnit.label();
+			if (canBeExplored()) {
 				final List l = getAmongValue(scope);
 				if (l != null) return "among " + l;
 				return "between " + getMinValue(scope) + " and " + getMaxValue(scope) + " every " + getStepValue(scope);
@@ -923,7 +980,67 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 	}
 
 	@Override
-	public void setUnitLabel(final String label) { unitLabel = label; }
+	public void setUnitLabel(final String label) {
+		unitExpression = null;
+		displayUnit = null;
+		unitLabel = label;
+	}
+
+	@Override
+	public DisplayUnit getDisplayUnit(final IScope scope) {
+		try {
+			if (scope != null) { scope.push(this); }
+			if (unitLabel != null) return new DisplayUnit(unitLabel, 1d);
+			if (displayUnit != null) return displayUnit;
+			if (unitExpression == null) return null;
+			if (unitExpression.getGamlType().id() == IType.STRING) {
+				final String label = Cast.asString(scope, unitExpression.value(scope));
+				if (label == null) return null;
+				if (!label.equals(parsedUnitLabel)) {
+					// A failed numeric interpretation is an ordinary text label, not a model compilation error.
+					// Only float values can be converted: other parameters always display string units as labels.
+					final IExpression expression = getType().id() != IType.FLOAT ? null
+							: GAML.getExpressionFactory().createExpr(label, null, null);
+					final Object factor = expression != null && expression.isConst() ? expression.value(scope) : null;
+					if (factor instanceof Number number) {
+						if (!Double.isFinite(number.doubleValue()) || number.doubleValue() <= 0)
+							throw GamaRuntimeException.error("Invalid display unit: expected a positive finite factor.", scope);
+						parsedUnit = new DisplayUnit(unitLabelOf(label), number.doubleValue());
+					} else {
+						parsedUnit = new DisplayUnit(label, 1d);
+					}
+					parsedUnitLabel = label;
+				}
+				return parsedUnit;
+			}
+			if (!unitExpression.isConst()
+					|| !(unitExpression.value(scope) instanceof Number factor) || !Double.isFinite(factor.doubleValue())
+					|| factor.doubleValue() <= 0)
+				throw GamaRuntimeException.error("Invalid display unit: expected a constant numeric expression with a positive finite factor.",
+						scope);
+			return new DisplayUnit(unitExpressionLabel, factor.doubleValue());
+		} finally {
+			if (scope != null) { scope.pop(this); }
+		}
+	}
+
+	/**
+	 * The text written by the modeler (e.g. #s rather than its canonical name #sec), or its serialization otherwise.
+	 */
+	private static String sourceOf(final IDescription sd, final IExpressionDescription description) {
+		final EObject facet = sd.getUnderlyingElement(IKeyword.UNIT, true);
+		final ICompositeNode node = facet == null ? null : NodeModelUtils.getNode(facet);
+		if (node != null) {
+			final String text = NodeModelUtils.getTokenText(node).trim().replaceFirst("^" + IKeyword.UNIT + "\\s*:", "")
+					.trim();
+			if (!text.isEmpty()) return text;
+		}
+		return description.cleanCopy().serializeToGaml(false);
+	}
+
+	private static String unitLabelOf(final String expression) {
+		return expression.replaceAll("\\((#[\\p{L}\\p{N}_]+)\\)", "$1").replaceAll("#percent\\b", "%").replace("#", "");
+	}
 
 	/**
 	 * Gets the value.

@@ -12,9 +12,13 @@ package gama.core.outputs.layers.charts;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
@@ -47,6 +51,9 @@ public class ChartDataSet {
 	/** The series. */
 	private final LinkedHashMap<String, ChartDataSeries> series = new LinkedHashMap<>();
 
+	/** Sequential series index counter for color palette assignment. */
+	private int seriesCounter = 0;
+
 	/** The deleted series. */
 	final LinkedHashMap<String, ChartDataSeries> deletedseries = new LinkedHashMap<>();
 
@@ -55,14 +62,14 @@ public class ChartDataSet {
 
 	/** The X series values. */
 	// datasets
-	final ArrayList<Double> XSeriesValues = new ArrayList<>(); // for series
+	final DoubleList XSeriesValues = new DoubleList(); // for series
 
 	/** The Ycategories. */
 	final ArrayList<String> Ycategories = new ArrayList<>(); // for Y categories
 
 	/** The Y series values. */
 	// datasets
-	final ArrayList<Double> YSeriesValues = new ArrayList<>(); // for 3d series
+	final DoubleList YSeriesValues = new DoubleList(); // for 3d series
 
 	/** The serie creation date. */
 	final LinkedHashMap<String, Integer> serieCreationDate = new LinkedHashMap<>();
@@ -214,14 +221,14 @@ public class ChartDataSet {
 	 *
 	 * @return the x series values
 	 */
-	public ArrayList<Double> getXSeriesValues() { return XSeriesValues; }
+	public DoubleList getXSeriesValues() { return XSeriesValues; }
 
 	/**
 	 * Gets the y series values.
 	 *
 	 * @return the y series values
 	 */
-	public ArrayList<Double> getYSeriesValues() { return YSeriesValues; }
+	public DoubleList getYSeriesValues() { return YSeriesValues; }
 
 	/**
 	 * Sets the x series values.
@@ -229,7 +236,7 @@ public class ChartDataSet {
 	 * @param xSeriesValues
 	 *            the new x series values
 	 */
-	public void setXSeriesValues(final ArrayList<Double> xSeriesValues) {
+	public void setXSeriesValues(final DoubleList xSeriesValues) {
 		XSeriesValues.clear();
 		XSeriesValues.addAll(xSeriesValues);
 	}
@@ -355,19 +362,17 @@ public class ChartDataSet {
 	 *            the date
 	 */
 	public void addNewSerie(final String id, final ChartDataSeries serie, final int date) {
-		if (series.containsKey(id)) {
-			// Series name already present, should do something.... Don't change
-			// creation date?
-			series.put(id, serie);
-		} else {
+		if (!series.containsKey(id)) {
+			if (serie != null && serie.getSeriesIndex() < 0) {
+				serie.setSeriesIndex(seriesCounter++);
+			}
 			series.put(id, serie);
 			serieCreationDate.put(id, date);
-
+		} else {
+			series.put(id, serie);
 		}
-		// serieCreationDate.put(id, date);
 		serieToUpdateBefore.put(id, date);
 		serieRemovalDate.put(id, -1);
-
 	}
 
 	/**
@@ -376,6 +381,66 @@ public class ChartDataSet {
 	 * @return the sources
 	 */
 	public ArrayList<ChartDataSource> getSources() { return sources; }
+
+	/** Identifies a data source by the statement that declares it and its evaluated legend. */
+	private record SourceKey(Object statement, String legend, int occurrence) {}
+
+	/** The sources indexed by the statement/legend that produced them (#403). */
+	private final Map<SourceKey, ChartDataSource> sourcesByKey = new LinkedHashMap<>();
+
+	/** The sources declared during the current evaluation of the chart body. */
+	private final Map<SourceKey, ChartDataSource> sourcesInPass = new HashMap<>();
+
+	/** Number of occurrences of each statement/legend pair during the current pass. */
+	private final Map<SourceKey, Integer> occurrencesInPass = new HashMap<>();
+
+	/**
+	 * Begins a new evaluation of the chart body: must be followed by the execution of the data statements, which call
+	 * {@link #getOrCreateSource}, and by {@link #endSourcesPass(IScope)}.
+	 */
+	public void beginSourcesPass() {
+		sourcesInPass.clear();
+		occurrencesInPass.clear();
+	}
+
+	/**
+	 * Returns the source previously declared by the same statement with the same legend (and at the same rank, if
+	 * the statement is executed several times with the same legend), or creates and adds a new one.
+	 */
+	public ChartDataSource getOrCreateSource(final Object statement, final String legend,
+			final Supplier<ChartDataSource> creator) {
+		final int occurrence = occurrencesInPass.merge(new SourceKey(statement, legend, 0), 1, Integer::sum) - 1;
+		final SourceKey key = new SourceKey(statement, legend, occurrence);
+		ChartDataSource source = sourcesByKey.get(key);
+		if (source == null) {
+			source = creator.get();
+			addDataSource(source);
+			sourcesByKey.put(key, source);
+		}
+		source.setActive(true);
+		sourcesInPass.put(key, source);
+		return source;
+	}
+
+	/**
+	 * Ends the evaluation of the chart body. Sources that have not been declared are frozen in charts showing a
+	 * history of values, and removed in charts showing a snapshot (by category).
+	 */
+	public void endSourcesPass(final IScope scope) {
+		final Iterator<Map.Entry<SourceKey, ChartDataSource>> it = sourcesByKey.entrySet().iterator();
+		while (it.hasNext()) {
+			final Map.Entry<SourceKey, ChartDataSource> entry = it.next();
+			if (sourcesInPass.containsKey(entry.getKey())) { continue; }
+			final ChartDataSource source = entry.getValue();
+			if (byCategory) {
+				for (final String id : new ArrayList<>(source.getSeries().keySet())) { removeserie(scope, id); }
+				sources.remove(source);
+				it.remove();
+			} else {
+				source.setActive(false);
+			}
+		}
+	}
 
 	/**
 	 * Adds the data source.
@@ -492,16 +557,21 @@ public class ChartDataSet {
 			}
 			sources.remove(source);
 		}
+		for (int i = 0; i < sourcestoremove.size(); i++) {
+			final ChartDataSource old = sourcestoremove.get(i);
+			final ChartDataSource replacement = sourcestoadd.get(i);
+			sourcesByKey.replaceAll((k, s) -> s == old ? replacement : s);
+		}
 		for (final ChartDataSource source : sourcestoadd) { this.addDataSource(source); }
 		if (this.getXSeriesValues().size() > 0) {
-			final ArrayList<Double> ser = this.getXSeriesValues();
+			final DoubleList ser = this.getXSeriesValues();
 			for (int i = 0; i < this.getXSeriesValues().size(); i++) {
 				if (ser.get(i) == chartCycle - 1) { this.commonXindex = i; }
 			}
 
 		}
 		if (this.getYSeriesValues().size() > 0) {
-			final ArrayList<Double> sery = this.getYSeriesValues();
+			final DoubleList sery = this.getYSeriesValues();
 			for (int i = 0; i < this.getYSeriesValues().size(); i++) {
 				if (sery.get(i) == chartCycle - 1) { this.commonYindex = i; }
 			}
@@ -530,6 +600,7 @@ public class ChartDataSet {
 		if (commonYindex >= this.getYSeriesValues().size()) { commonYindex = this.getYSeriesValues().size() - 1; }
 
 		for (final ChartDataSource source : sources) {
+			if (!source.isActive()) { continue; }
 			source.updatevalues(scope, chartCycle);
 			if (keepHistory) { source.savehistory(scope, history); }
 		}
@@ -613,11 +684,11 @@ public class ChartDataSet {
 	 * @param chartCycle
 	 *            the chart cycle
 	 */
-	private void addCommonYValue(final IScope scope, final Double chartCycle) {
-
+	private void addCommonYValue(final IScope scope, final double chartCycle) {
 		YSeriesValues.add(chartCycle);
-		Ycategories.add("" + chartCycle);
-
+		if (byCategory) {
+			Ycategories.add(String.valueOf(chartCycle));
+		}
 	}
 
 	/**
@@ -765,11 +836,11 @@ public class ChartDataSet {
 	 * @param chartCycle
 	 *            the chart cycle
 	 */
-	private void addCommonXValue(final IScope scope, final Double chartCycle) {
-
+	private void addCommonXValue(final IScope scope, final double chartCycle) {
 		XSeriesValues.add(chartCycle);
-		Xcategories.add("" + chartCycle);
-
+		if (byCategory) {
+			Xcategories.add(String.valueOf(chartCycle));
+		}
 	}
 
 	/**

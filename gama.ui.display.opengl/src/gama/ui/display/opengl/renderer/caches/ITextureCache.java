@@ -24,7 +24,7 @@ public interface ITextureCache {
 	/**
 	 * Initialize.
 	 */
-	void initialize();
+	default void initialize() {}
 
 	/**
 	 * Delete volatile textures.

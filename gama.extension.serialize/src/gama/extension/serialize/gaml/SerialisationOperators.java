@@ -18,6 +18,7 @@ import gama.annotations.example;
 import gama.annotations.no_test;
 import gama.annotations.operator;
 import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.annotations.support.ITypeProvider;
@@ -27,11 +28,12 @@ import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.serialization.BinarySerialisation;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.StringUtils;
 import gama.api.utils.json.IJsonValue;
+import gama.core.util.json.ParseException;
 import gama.dev.DEBUG;
-import gama.extension.serialize.binary.BinarySerialisation;
 import gama.gaml.statements.save.GeoJSonSaver;
 
 /**
@@ -81,11 +83,25 @@ public class SerialisationOperators {
 							equals = " 1 as node",
 							isExecutable = false) },
 			see = {})
-	@test ("to_gaml(true) = 'true'")
-	@test ("to_gaml(5::34) = '5::34'")
-	@test ("to_gaml([1,5,9,3]) = '[1,5,9,3]'")
-	@test ("to_gaml(['a'::345, 'b'::13, 'c'::12]) = \"map([\'a\'::345,\'b\'::13,\'c\'::12])\"")
-	@test ("to_gaml([[3,5,7,9],[2,4,6,8]]) = '[[3,5,7,9],[2,4,6,8]]'")
+	@tests ({
+			@test ("to_gaml(true) = 'true'"),
+			@test ("to_gaml(5::34) = '5::34'"),
+			@test ("to_gaml([1,5,9,3]) = '[1,5,9,3]'"),
+			@test ("to_gaml(['a'::345, 'b'::13, 'c'::12]) = \"map([\'a\'::345,\'b\'::13,\'c\'::12])\""),
+			@test ("to_gaml([[3,5,7,9],[2,4,6,8]]) = '[[3,5,7,9],[2,4,6,8]]'"),
+			@test ("to_gaml(#infinity) = \"#infinity\""),
+			@test ("to_gaml(#nan) = \"#nan\""),
+			@test ("to_gaml(12) = \"12\""),
+			@test ("to_gaml(3.5) = \"3.5\""),
+			@test ("to_gaml(true) = \"true\""),
+			@test ("to_gaml(nil) = \"nil\""),
+			@test ("to_gaml(\"text\") = \"'text'\""),
+			@test ("to_gaml([\"a\"::1]) = \"map(['a'::1])\""),
+			@test ("to_gaml(1::2) = \"1::2\""),
+			@test ("to_gaml({1, 2}) = \"{1.0,2.0,0.0}\""),
+			@test ("to_gaml(#red) = \"#red\""),
+			@test ("to_gaml(matrix([[1, 2], [3, 4]])) = \"matrix<int>([[1,2],[3,4]])\"")
+	})
 	public static String toGaml(final Object val) {
 		return StringUtils.toGaml(val, false);
 	}
@@ -138,7 +154,7 @@ public class SerialisationOperators {
 	 */
 	@operator (
 			value = { "to_json" },
-			can_be_const = true,
+			can_be_const = false,
 			category = { IOperatorCategory.CASTING },
 			concept = { IConcept.SERIALIZE })
 	@test ("to_json(1) = '1'")
@@ -150,6 +166,8 @@ public class SerialisationOperators {
 	@doc (
 			value = """
 					Serializes any object/agent/simulation into a string, using the json format. A flag can be passed to enable/disable pretty printing (`false` by default).
+					Finite floats, including point coordinates, retain the precision needed to restore their original values.
+					Non-finite floats follow the current `pref_json_infinity_as_string` and `pref_json_nan_as_string` preferences at runtime.
 					The format used by GAMA follows simple rules. `int`, `float`, `bool`, `string` values are outputted as they are. `nil` is outputted as `null`. A list is outputted as a json array. Any other object or agent is outputted as a json object. If this object possesses the attribute `gaml_type`, \
 					it is an instance of the corresponding type, and the members that follow contain the attributes and the values necessary to reconstruct it. If it has the `agent_reference` attribute, its value represents the reference to an agent. If any reference to an agent is found, the \
 					json string returned will be an object with two attributes: `gama_object`, the object containing the references, and `reference_table` a dictionary mapping the references to the json description of the agents (their `species`, `name`, `index`, and list of attributes). \
@@ -173,18 +191,41 @@ public class SerialisationOperators {
 	 */
 	@operator (
 			value = { "to_json" },
-			can_be_const = true,
+			can_be_const = false,
 			category = { IOperatorCategory.CASTING },
 			concept = { IConcept.SERIALIZE })
 	@doc (
 			value = """
 					Serializes any object/agent/simulation into a string, using the json format and no pretty printing.
+					Finite floats, including point coordinates, retain the precision needed to restore their original values.
+					Non-finite floats follow the current `pref_json_infinity_as_string` and `pref_json_nan_as_string` preferences at runtime.
 					The format used by GAMA follows simple rules. `int`, `float`, `bool`, `string` values are outputted as they are. `nil` is outputted as `null`. A `list` is outputted as a json array. Any other object or agent is outputted as a json object. If this object possesses the "gaml_type" attribute, \
 					it is an instance of the corresponding type, and the members that follow contain the attributes and the values necessary to reconstruct it. If it has the "agent_reference" attribute, its value represent the reference to an agent. If any reference to an agent is found, the \
 					json string returned will be an object with two attributes: "gama_object", the object containing the references, and "reference_table" a dictionary mapping the references to the json description of the agents (their species, name, index, and list of attributes). \
 					This choice allows to manage cross references between agents""",
 			see = { "serialize", "to_gaml" })
 	@no_test
+	@tests ({
+			@test ("to_json(1) = \"1\""),
+			@test ("to_json(1.2) = \"1.2\""),
+			@test ("to_json(\"\") = '\"\"'"),
+			@test ("to_json(\"abcd\") = '\"abcd\"'"),
+			@test ("to_json([]) = \"[]\""),
+			@test ("to_json([1,\"a\",false]) = '[1,\"a\",false]'"),
+			@test ("to_json([[1,2,3],[4,5,6]]) = '[[1,2,3],[4,5,6]]'"),
+			@test ("to_json(nil) = 'null'"),
+			@test ("map my_var <- [ \"x\"::\"abc\", \"y\"::#red, \"z\"::123, \"123\"::10.2, \"a\"::false ]; to_json(my_var) = '{\"x\":\"abc\",\"y\":{\"gaml_type\":\"rgb\",\"red\":255,\"green\":0,\"blue\":0,\"alpha\":255},\"z\":123,\"123\":10.2,\"a\":false}'"),
+			@test ("to_json(3.5) = \"3.5\""),
+			@test ("to_json(true) = \"true\""),
+			@test ("to_json(nil) = \"null\""),
+			@test ("to_json(\"text\") = '\"text\"'"),
+			@test ("to_json([1, [2, [3]]]) = \"[1,[2,[3]]]\""),
+			@test ("to_json([\"a\"::1, \"b\"::[1, 2]]) = '{\"a\":1,\"b\":[1,2]}'"),
+			// GAML types with no JSON equivalent are tagged with their type
+			@test ("to_json({1, 2, 3}) = '{\"gaml_type\":\"point\",\"x\":1.0,\"y\":2.0,\"z\":3.0}'"),
+			@test ("to_json(#red) = '{\"gaml_type\":\"rgb\",\"red\":255,\"green\":0,\"blue\":0,\"alpha\":255}'"),
+			@test ("to_json(1::2) = '{\"gaml_type\":\"pair<int, int>\",\"key\":1,\"value\":2}'")
+	})
 	public static String toJson(final IScope scope, final Object obj) {
 		return toJson(scope, obj, false);
 	}
@@ -232,13 +273,40 @@ public class SerialisationOperators {
 			can_be_const = true,
 			category = { IOperatorCategory.CASTING },
 			concept = { IConcept.SERIALIZE })
-	@test ("from_binary(to_binary(25+5)) = 30")
-	@test ("from_binary(to_binary([1,2,4])) = [1,2,4]")
+	@tests ({
+			@test ("from_binary(to_binary(25+5)) = 30"),
+			@test ("from_binary(to_binary([1,2,4])) = [1,2,4]"),
+			@test ("from_binary(to_binary(1)) = 1"),
+			@test ("from_binary(to_binary(1.2)) = 1.2"),
+			@test ("from_binary(to_binary(\"\")) = \"\""),
+			@test ("from_binary(to_binary(\"abcd\")) = \"abcd\""),
+			@test ("from_binary(to_binary([])) = []"),
+			@test ("from_binary(to_binary([1, \"a\", false])) = [1, \"a\", false]"),
+			@test ("from_binary(to_binary([[1, 2, 3], [4, 5, 6]])) = [[1, 2, 3], [4, 5, 6]]"),
+			@test ("from_binary(to_binary(nil)) = nil"),
+			@test ("map my_var <- [\"x\"::\"abc\", \"y\"::#red, \"z\"::123, \"123\"::10.2, \"a\"::false]; from_binary(to_binary(my_var)) = my_var"),
+			@test ("map my_roundtrip <- [\"x\"::\"abc\", \"y\"::#red, \"z\"::123, \"123\"::10.2, \"a\"::false, \"e\"::[1,2,3]]; from_binary(to_binary(my_roundtrip)) = my_roundtrip"),
+			@test ("from_binary(to_binary(#infinity)) = #infinity"),
+			@test ("from_binary(to_binary(map(['x'::#infinity]))) = map(['x'::#infinity])"),
+			@test ("from_binary(to_binary(-#infinity)) = -#infinity"),
+			@test ("from_binary(to_binary(map(['x'::-#infinity]))) = map(['x'::-#infinity])"),
+			@test ("from_binary(to_binary(#nan)) = #nan"),
+			@test ("from_binary(to_binary(map([\"x\"::#nan]))) = map([\"x\"::#nan])"),
+			@test ("from_binary(to_binary('')) = ''"),
+			@test ("from_binary(to_binary(12)) = 12"),
+			@test ("from_binary(to_binary(\"text\")) = \"text\""),
+			@test ("from_binary(to_binary([1, \"a\", 2.5, true])) = [1, \"a\", 2.5, true]"),
+			@test ("from_binary(to_binary([\"k\"::{1, 2}, \"c\"::#red])) = [\"k\"::{1, 2}, \"c\"::#red]"),
+			@test ("from_binary(to_binary(matrix([[1, 2], [3, 4]]))) = matrix([[1, 2], [3, 4]])"),
+			@test ("from_binary(to_binary(date(\"2026-01-02T03:04:05\"))) = date(\"2026-01-02T03:04:05\")"),
+			@test ("deserialize(serialize(3.5)) = 3.5"),
+			@test ("deserialize(serialize([1, 2, 3])) = [1, 2, 3]"),
+			@test ("deserialize(serialize([\"k\"::[1, 2]])) = [\"k\"::[1, 2]]")
+	})
 	@doc (
 			value = "Deserializes an object precedently serialized using `serialize` or `to_binary`."
 					+ "It is safer to deserialize agents or simulations with the 'restore' or 'create' statements rather than with this operator.",
 			see = { "from_gaml", "from_json" })
-	@no_test
 	public static Object unserialize(final IScope scope, final String s) {
 		return BinarySerialisation.createFromString(scope, s);
 	}
@@ -258,16 +326,51 @@ public class SerialisationOperators {
 	 */
 	@operator (
 			value = { "from_json" },
-			can_be_const = true,
+			can_be_const = false,
 			type = ITypeProvider.DENOTED_TYPE_AT_INDEX + 2,
 			category = { IOperatorCategory.CASTING },
 			concept = { IConcept.SERIALIZE })
 	@doc (
-			value = "Deserializes an object precedently serialized using 'to_json' (or an arbitrary json string obtained elsewhere). Agents and populations are not supported yet (i.e. they will return maps)",
+			value = "Deserializes an object precedently serialized using 'to_json' (or an arbitrary json string obtained elsewhere). Agents and populations are not supported yet (i.e. they will return maps). Non-finite numbers and overflowing integers follow the current JSON preferences at runtime. Invalid JSON, including excessive nesting, raises a GAML error with the parser location.",
 			see = { "from_gaml", "from_binary" })
 	@no_test
+	@tests ({
+			@test ("from_json(\"1\") = 1"),
+			@test ("from_json(\"1.2\") = 1.2"),
+			@test ("from_json('\"\"') = \"\""),
+			@test ("from_json('\"abcd\"') = \"abcd\""),
+			@test ("from_json('[]') = []"),
+			@test ("from_json('[1,\"a\",false]') = [1,\"a\",false]"),
+			@test ("from_json('[[1,2,3],[4,5,6]]') = [[1,2,3],[4,5,6]]"),
+			@test ("from_json(\"null\") = nil"),
+			@test ("map my_var <- [ \"x\"::\"abc\", \"y\"::#red, \"z\"::123, \"123\"::10.2, \"a\"::false ]; from_json('{\"x\":\"abc\",\"y\":{\"gaml_type\":\"rgb\",\"red\":255,\"green\":0,\"blue\":0,\"alpha\":255},\"z\":123,\"123\":10.2,\"a\":false}') = my_var"),
+			@test ("map my_var2 <- [\"x\"::\"abc\",\"y\"::#red,\"z\"::123,\"123\"::10.2,\"a\"::false, \"e\"::[1,2,3]]; from_json(to_json(my_var2)) = my_var2"),
+			@test ("from_json(\"3\") = 3"),
+			@test ("from_json('\"text\"') = \"text\""),
+			@test ("from_json(\"[]\") = []"),
+			@test ("from_json('[1, \"a\", 2.5, true, null]') = [1, \"a\", 2.5, true, nil]"),
+			@test ("map<string, unknown> parsed <-  map<string, unknown>(from_json('{\"a\": 1.5, \"b\": \"s\", \"c\": true, \"d\": null, \"e\": {\"f\": [1, 2]}}')); float(parsed[\"a\"]) = 1.5"),
+			@test ("map<string, unknown> parsed2 <- map<string, unknown>(from_json('{\"a\": 1.5, \"b\": \"s\", \"c\": true, \"d\": null, \"e\": {\"f\": [1, 2]}}')); parsed2[\"b\"] = \"s\""),
+			@test ("map<string, unknown> parsed3 <- map<string, unknown>(from_json('{\"a\": 1.5, \"b\": \"s\", \"c\": true, \"d\": null, \"e\": {\"f\": [1, 2]}}')); bool(parsed3[\"c\"]) = true"),
+			@test ("map<string, unknown> parsed4 <- map<string, unknown>(from_json('{\"a\": 1.5, \"b\": \"s\", \"c\": true, \"d\": null, \"e\": {\"f\": [1, 2]}}')); parsed4[\"d\"] = nil"),
+			@test ("map<string, unknown> parsed5 <- map<string, unknown>(from_json('{\"a\": 1.5, \"b\": \"s\", \"c\": true, \"d\": null, \"e\": {\"f\": [1, 2]}}')); map(parsed5[\"e\"])[\"f\"] = [1, 2]"),
+			@test ("from_json(to_json([1, [2, [3]]])) = [1, [2, [3]]]"),
+			@test ("from_json(to_json([\"a\"::1, \"b\"::[1, 2]])) = [\"a\"::1, \"b\"::[1, 2]]"),
+			@test ("from_json(to_json({1, 2, 3})) = {1, 2, 3}"),
+			@test ("from_json(to_json(#red)) = #red"),
+			@test ("from_json(to_json(1::2)) = (1::2)"),
+			@test ("from_json(to_json(matrix([[1, 2], [3, 4]]))) = matrix([[1, 2], [3, 4]])"),
+			@test ("from_json(to_json(date(\"2026-01-02T03:04:05\"))) = date(\"2026-01-02T03:04:05\")"),
+			@test ("from_json(to_json([\"k\"::{1, 2}])) = [\"k\"::{1, 2}]")
+	})
 	public static Object fromJson(final IScope scope, final String s) {
-		return GAMA.getJsonEncoder().parse(s).toGamlValue(scope);
+		try {
+			return GAMA.getJsonEncoder().parse(s).toGamlValue(scope);
+		} catch (final ParseException e) {
+			final var error = GamaRuntimeException.error("Invalid JSON: " + e.getMessage(), scope);
+			error.initCause(e);
+			throw error;
+		}
 	}
 
 	/**
@@ -285,21 +388,47 @@ public class SerialisationOperators {
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.CASTING },
 			concept = { IConcept.SYSTEM, IConcept.SERIALIZE })
 	@doc (
-			value = "Evaluates/deserialises the given GAML string into a value.",
+			value = "Evaluates/deserialises the given GAML string into a value. Nil strings, invalid GAML expressions and runtime evaluation failures raise an error. Use try/catch to recover; nil is a valid result, not an error indicator.",
 			examples = { @example (
 					value = "eval_gaml(\"2+3\")",
 					equals = "5") })
+	@tests ({
+			@test ("string expr <- \"10 + 20\"; int result <- int(eval_gaml(expr)); result = 30"),
+			@test ("string expr2 <- \"[1, 2, 3] collect (each * 2)\"; list<int> l_result <- list<int>(eval_gaml(expr2)); length(l_result) = 3"),
+			@test ("string expr22 <- \"[1, 2, 3] collect (each * 2)\"; list<int> l_result2 <- list<int>(eval_gaml(expr22)); l_result2[1] = 4"),
+			@test ("from_gaml(to_gaml(\"it's\")) = \"it's\""),
+			@test ("from_gaml(to_gaml(\"say \\\"hi\\\"\")) = \"say \\\"hi\\\"\""),
+			@test ("from_gaml(to_gaml(\"a\\\\b\")) = \"a\\\\b\""),
+			@test ("from_gaml(\"12\") = 12"),
+			@test ("from_gaml(\"[1, 2] + [3]\") = [1, 2, 3]"),
+			@test ("from_gaml(\"3 * 4\") = 12"),
+			@test ("from_gaml(\"'a' + 'b'\") = \"ab\""),
+			@test ("from_gaml(to_gaml(12)) = 12"),
+			@test ("from_gaml(to_gaml(3.5)) = 3.5"),
+			@test ("from_gaml(to_gaml(\"text\")) = \"text\""),
+			@test ("from_gaml(to_gaml([1, 2, 3])) = [1, 2, 3]"),
+			@test ("from_gaml(to_gaml([\"a\"::1, \"b\"::2])) = [\"a\"::1, \"b\"::2]"),
+			@test ("from_gaml(to_gaml(1::2)) = (1::2)"),
+			@test ("from_gaml(to_gaml({1, 2, 3})) = {1, 2, 3}"),
+			@test ("from_gaml(to_gaml(#red)) = #red"),
+			@test ("from_gaml(to_gaml(matrix([[1, 2], [3, 4]]))) = matrix([[1, 2], [3, 4]])"),
+			@test ("from_gaml(to_gaml(date(\"2026-01-02T03:04:05\"))) = date(\"2026-01-02T03:04:05\")")
+	})
 	public static Object opEvalGaml(final IScope scope, final String gaml) {
+		if (gaml == null) throw GamaRuntimeException.error("Cannot evaluate a nil GAML string", scope);
 		final IAgent agent = scope.getAgent();
 		final IDescription d = agent.getSpecies().getDescription();
+		final IExpression expression = GAML.getExpressionFactory().createExpr(gaml, d);
+		if (expression == null) throw GamaRuntimeException.error("Invalid GAML expression: '" + gaml + "'", scope);
+		final boolean pushed = scope.push(agent);
 		try {
-			final IExpression e = GAML.getExpressionFactory().createExpr(gaml, d);
-			return scope.evaluate(e, agent).getValue();
+			// scope.evaluate can report and swallow failures when stopping is disabled.
+			return expression.value(scope);
 		} catch (final GamaRuntimeException e) {
-			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("Error in evaluating Gaml code : '" + gaml
-					+ "' in " + scope.getAgent() + StringUtils.LN + "Reason: " + e.getMessage(), scope), false);
-
-			return null;
+			e.addContext("when evaluating GAML code: '" + gaml + "'");
+			throw e;
+		} finally {
+			if (pushed) { scope.pop(agent); }
 		}
 
 	}

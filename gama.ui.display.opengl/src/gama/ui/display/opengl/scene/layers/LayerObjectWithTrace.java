@@ -12,8 +12,10 @@ package gama.ui.display.opengl.scene.layers;
 
 import java.util.LinkedList;
 
+import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
+
 import gama.api.ui.layers.ILayer;
-import gama.ui.display.opengl.OpenGL;
+import gama.ui.display.opengl.IOpenGL;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 
 /**
@@ -51,7 +53,7 @@ public class LayerObjectWithTrace extends LayerObject {
 	 *            the picking
 	 */
 	@Override
-	protected void drawAllObjects(final OpenGL gl, final boolean picking) {
+	protected void drawAllObjects(final IOpenGL gl, final boolean picking) {
 		double delta = 0;
 		if (isFading) {
 			final int size = traces.size();
@@ -60,7 +62,12 @@ public class LayerObjectWithTrace extends LayerObject {
 		double alpha1 = 0d;
 		for (final Trace list : traces) {
 			alpha1 = delta == 0d ? this.alpha : this.alpha * (alpha1 + delta);
-			drawObjects(gl, list, alpha1, picking);
+			gl.push(GLMatrixFunc.GL_MODELVIEW);
+			try {
+				drawObjects(gl, list, alpha1, picking);
+			} finally {
+				gl.pop(GLMatrixFunc.GL_MODELVIEW);
+			}
 		}
 	}
 
@@ -71,7 +78,7 @@ public class LayerObjectWithTrace extends LayerObject {
 	 *            the gl
 	 */
 	@Override
-	public void clear(final OpenGL gl) {
+	public void clear(final IOpenGL gl) {
 		final int sizeLimit = getTrace();
 		isFading = getFading();
 		final int size = traces.size();

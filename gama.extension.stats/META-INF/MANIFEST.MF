@@ -12,8 +12,10 @@ Bundle-ActivationPolicy: lazy
 Export-Package: gama.extension.stats,
  gama.extension.stats.analysis,
  gama.extension.stats.sampling,
- gama.extension.stats.utils
+ gama.extension.stats.utils,
+ org.moeaframework.util.sequence
 Bundle-ClassPath: .,
- libs/colt 2.1.4/colt-2.1.4.jar
+ libs/colt 2.1.4/colt-2.1.4.jar,
+ libs/moeaframework 5.1/moeaframework-5.1.jar
 Bundle-RequiredExecutionEnvironment: JavaSE-25
 Automatic-Module-Name: gama.extension.stats

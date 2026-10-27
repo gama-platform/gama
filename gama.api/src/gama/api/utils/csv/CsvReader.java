@@ -38,6 +38,8 @@ public class CsvReader extends AbstractCSVManipulator {
 	/** The input stream. */
 	private Reader inputStream = null;
 
+	private boolean firstBuffer = true;
+
 	// this will be our working buffer to hold data chunks
 	// read in from the data file
 
@@ -344,6 +346,13 @@ public class CsvReader extends AbstractCSVManipulator {
 		if (dataBuffer.count == -1) { hasMoreData = false; }
 		dataBuffer.position = 0;
 		dataBuffer.columnStart = 0;
+		if (firstBuffer && dataBuffer.count > 0) {
+			firstBuffer = false;
+			if (dataBuffer.buffer[0] == '\uFEFF') {
+				dataBuffer.position = 1;
+				dataBuffer.columnStart = 1;
+			}
+		}
 	}
 
 	/**
@@ -470,7 +479,7 @@ public class CsvReader extends AbstractCSVManipulator {
 	 * Skips the next line of data using the standard end of line characters and does not do any column delimited
 	 * parsing.
 	 *
-	 * @return Whether a line was successfully skipped or not.
+	 * @return the skipped line, or {@code null} if the end of the input was reached without reading any characters
 	 * @exception IOException
 	 *                Thrown if an error occurs while reading data from the source stream.
 	 */
@@ -501,7 +510,7 @@ public class CsvReader extends AbstractCSVManipulator {
 			} while (hasMoreData && !foundEol);
 			columnBufferPosition = 0;
 		}
-		return skippedLine.toString();
+		return skippedLine.isEmpty() && !hasMoreData ? null : skippedLine.toString();
 	}
 
 	/**

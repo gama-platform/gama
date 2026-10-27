@@ -12,6 +12,22 @@ on:
         required: true
         default: false
         type: boolean
+      RELEASE_DOCKER:
+        required: true
+        default: false
+        type: boolean
+      RELEASE_MICROSOFT:
+        required: true
+        default: false
+        type: boolean
+      RELEASE_LINUX_PPA:
+        required: true
+        default: false
+        type: boolean
+      RELEASE_NPM_GAML:
+        required: true
+        default: false
+        type: boolean
     secrets:
       BOT_TOKEN:
         required: true
@@ -48,6 +64,7 @@ jobs:
   #
 
   windows:
+    if: "${{ inputs.RELEASE_MICROSOFT == true }}"
     needs: get-tag-info
     runs-on: ubuntu-latest
     name: Publish to windows 🪟
@@ -99,7 +116,7 @@ jobs:
         run: |
           # Add delay to let the PR being opened and API to update
           sleep 10
-          #  
+          #
           curl -G \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${{ secrets.BOT_TOKEN }}" \
@@ -130,7 +147,12 @@ jobs:
               .addLink("Link to the Winget PR", "https://github.com/microsoft/winget-pkgs/pull/${{ steps.get-pr.outputs.number }}")
               .write()
 
+  #
+  # =====================================
+  #
+
   docker:
+    if: "${{ inputs.RELEASE_DOCKER == true }}"
     needs: get-tag-info
     runs-on: ubuntu-latest
     name: Publish pre-release as container 🐳
@@ -144,7 +166,12 @@ jobs:
             --data '{"event_type": "automated-generation"}' \
             https://api.github.com/repos/gama-platform/gama.docker/dispatches
 
+  #
+  # =====================================
+  #
+
   linux-debian:
+    if: "${{ inputs.RELEASE_LINUX_PPA == true }}"
     needs: get-tag-info
     runs-on: ubuntu-latest
     name: Publish to PPA/Debian repo 🐧 🟠🔴
@@ -161,10 +188,13 @@ jobs:
             https://api.github.com/repos/gama-platform/gama.ppa/actions/workflows/69865833/dispatches
         env:
           TAG: ${{ inputs.tag }}
-          
 
+  #
+  # =====================================
+  #
 
   prism-gaml:
+    if: "${{ inputs.RELEASE_NPM_GAML == true }}"
     needs: get-tag-info
     runs-on: ubuntu-latest
     name: Publish to npm 📦

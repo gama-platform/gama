@@ -214,6 +214,12 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	@Override
 	public IContainer<?, ?> getDefault() { return type.getDefault(); }
 
+	@Override
+	public IContainer<?, ?> createDefaultValue(final IScope scope) {
+		final IContainer<?, ?> value = type.createDefaultValue(scope);
+		return value == null ? null : cast(scope, value, null, false);
+	}
+
 	/**
 	 * Method getVarKind()
 	 *

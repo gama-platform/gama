@@ -10,27 +10,14 @@
  ********************************************************************************************************/
 package gama.ui.navigator.view.contents;
 
-import gama.workspace.nature.GamaNatures;
+import gama.workspace.manager.ProjectCategory;
 
 /**
  * The Class TutorialsFolder.
  *
  * <p>
- * Virtual top-level folder that aggregates all tutorial projects in the GAMA Navigator under the label "Tutorials". A
- * tutorial project is one that bears {@link GamaNatures#TUTORIAL_NATURE} in its Eclipse project description.
- * </p>
- *
- * <p>
- * To contribute tutorials, a plugin bundle should:
- * </p>
- * <ol>
- * <li>Create a {@code tutorials/} sub-directory at the root of the bundle.</li>
- * <li>Place one or more GAMA sub-projects inside that directory, each with a {@code .project} file that declares
- * {@code gama.workspace.gamaNature}, {@code org.eclipse.xtext.ui.shared.xtextNature}, and
- * {@code gama.workspace.tutorialNature}.</li>
- * </ol>
- * <p>
- * The platform will automatically detect and import those projects at startup and place them in this folder.
+ * Virtual top-level folder that aggregates the tutorial projects: those found in the {@code models/Tutorials} directory
+ * of GAMA or of one of its plugins.
  * </p>
  */
 public class TutorialsFolder extends TopLevelFolder {
@@ -44,8 +31,8 @@ public class TutorialsFolder extends TopLevelFolder {
 	 *            the display name shown in the navigator (typically "Tutorials")
 	 */
 	public TutorialsFolder(final NavigatorRoot root, final String name) {
-		super(root, name, FOLDER_TUTORIALS, "Step-by-step tutorials shipped with GAMA plugins", BLUE,
-				GamaNatures.TUTORIAL_NATURE, Location.Tutorials);
+		super(root, name, FOLDER_TUTORIALS, "Step-by-step tutorials shipped with GAMA", BLUE,
+				ProjectCategory.TUTORIALS);
 	}
 
 }

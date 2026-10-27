@@ -22,7 +22,7 @@ import gama.api.ui.layers.ILayer;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.core.util.file.GamaGeometryFile;
 import gama.dev.DEBUG;
-import gama.ui.display.opengl.OpenGL;
+import gama.ui.display.opengl.IOpenGL;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.display.opengl.scene.layers.AxesLayerObject;
 import gama.ui.display.opengl.scene.layers.FrameLayerObject;
@@ -97,7 +97,7 @@ public class ModelScene {
 	 * @param context
 	 *            Called every new iteration when updateDisplay() is called on the surface
 	 */
-	public void wipe(final OpenGL gl) {
+	public void wipe(final IOpenGL gl) {
 		layers.forEach((name, layer) -> { if (layer != null && !layer.isStatic()) { layer.clear(gl); } });
 		// Wipe the textures.
 		gl.deleteVolatileTextures();
@@ -109,7 +109,7 @@ public class ModelScene {
 	 * @param gl
 	 *            the gl
 	 */
-	public void draw(final OpenGL gl) {
+	public void draw(final IOpenGL gl) {
 		// if (index++ == 0) {
 		// DEBUG.OUT("Drawing the first scene");
 		// } else {
@@ -154,7 +154,7 @@ public class ModelScene {
 	// *
 	// * @return the double
 	// */
-	// private double computeVisualZIncrement(final OpenGL gl) {
+	// private double computeVisualZIncrement(final IOpenGL gl) {
 	// if (objectNumber < 1 || !GamaPreferences.Displays.OPENGL_Z_FIGHTING.getValue()) return 0d;
 	// return gl.getViewHeight() / gl.getWorldHeight() / (1000d * objectNumber);
 	//

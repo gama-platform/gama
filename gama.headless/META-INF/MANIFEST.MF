@@ -21,7 +21,9 @@ Export-Package:
  gama.headless.script,
  gama.headless.xml
 Import-Package: com.google.inject,
- gama.workspace
+ gama.workspace,
+ gama.workspace.manager,
+ org.eclipse.core.resources
 Bundle-ClassPath: .
 Bundle-RequiredExecutionEnvironment: JavaSE-25
 Automatic-Module-Name: gama.headless

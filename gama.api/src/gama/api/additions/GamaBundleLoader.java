@@ -16,10 +16,14 @@ import static gama.dev.DEBUG.TIMER_WITH_EXCEPTIONS;
 import java.awt.Toolkit;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Comparator;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
@@ -30,8 +34,12 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.InvalidRegistryObjectException;
 import org.eclipse.core.runtime.Platform;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.wiring.BundleRevision;
+import org.osgi.framework.wiring.BundleWire;
+import org.osgi.framework.wiring.BundleWiring;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
 import gama.annotations.constants.IKeyword;
@@ -43,14 +51,16 @@ import gama.api.additions.delegates.IEventLayerDelegate;
 import gama.api.additions.delegates.ISaveDelegate;
 import gama.api.additions.registries.GamaAdditionRegistry;
 import gama.api.gaml.GAML;
+import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.GamaMetaModel;
 import gama.api.runtime.SystemInfo;
-import gama.api.types.dataframe.GamaDataFrameFactory;
-import gama.api.types.dataframe.IDataFrame;
 import gama.api.utils.files.IGamaFileMetaData;
+import gama.api.utils.server.CommandExecutor;
+import gama.api.utils.server.ISocketCommand;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
+import one.util.streamex.StreamEx;
 
 /**
  * The GamaBundleLoader class is responsible for loading and initializing all GAMA plugins and their extensions at
@@ -81,7 +91,6 @@ import gama.dev.DEBUG;
  * <li><b>gama.draw</b>: Extensions to the 'draw' statement</li>
  * <li><b>gama.event_layer</b>: Extensions for event layer handling</li>
  * <li><b>gama.metadata</b>: File metadata providers for different content types</li>
- * <li><b>gama.models</b>: Model library declarations</li>
  * <li><b>gama.constants</b>: Constant value suppliers</li>
  * </ul>
  *
@@ -179,34 +188,39 @@ public class GamaBundleLoader {
 	/** The event layer extension. */
 	public static final String EVENT_LAYER_EXTENSION = "gama.event_layer";
 
-	/** The models extension. */
-	public static final String MODELS_EXTENSION = "gama.models";
-
 	/** The Constant METADATA_EXTENSION. */
 	public static final String METADATA_EXTENSION = "gama.metadata";
 
-	/** The regular models layout. */
+	/** The server command extension. Allows plug-ins to register new gama-server (WebSocket) commands. */
+	public static final String SERVER_COMMAND_EXTENSION = "gama.server_command";
+
+	/** The folder, at the root of each plugin, that contains all the models contributed by this plugin. */
 	public static final String REGULAR_MODELS_LAYOUT = "models";
 
-	/** The regular tests layout. */
-	public static final String REGULAR_TESTS_LAYOUT = "tests";
+	/** The generated models folder, where the annotation processor writes the generated tests (development mode). */
+	public static final String GENERATED_MODELS_LAYOUT = "gaml/models";
 
-	/** The generated tests layout. */
-	public static final String GENERATED_TESTS_LAYOUT = "gaml/tests";
+	/** The category of the projects that are not classified. */
+	public static final String LIBRARY_CATEGORY = "Library";
+
+	/** The category of the test projects. */
+	public static final String TESTS_CATEGORY = "Tests";
+
+	/** The sub-folders of {@code models/} that are mapped to the top-level folders of the navigator. */
+	public static final List<String> MODEL_CATEGORIES =
+			List.of("Data", "Demos", LIBRARY_CATEGORY, "Recipes", "Tutorials", TESTS_CATEGORY);
 
 	/**
-	 * The standard sub-directory name that a plugin bundle can use to contribute tutorial projects. Any sub-project
-	 * found inside this directory will be imported with {@code gama.workspace.tutorialNature} and placed in the
-	 * "Tutorials" virtual folder of the GAMA Navigator.
+	 * A folder of a plugin that contains projects of a given category.
+	 *
+	 * @param bundle
+	 *            the contributing plugin
+	 * @param category
+	 *            one of {@link GamaBundleLoader#MODEL_CATEGORIES}
+	 * @param path
+	 *            the path of the folder, relative to the bundle
 	 */
-	public static final String REGULAR_TUTORIALS_LAYOUT = "tutorials";
-
-	/**
-	 * The standard sub-directory name that a plugin bundle can use to contribute recipe projects. Any sub-project found
-	 * inside this directory will be imported with {@code gama.workspace.recipeNature} and placed in the "Recipes"
-	 * virtual folder of the GAMA Navigator.
-	 */
-	public static final String REGULAR_RECIPES_LAYOUT = "recipes";
+	public record ModelFolder(Bundle bundle, String category, String path) {}
 
 	/** The gama plugins. */
 	private static final List<Bundle> GAMA_PLUGINS = new ArrayList<>(50);
@@ -224,28 +238,11 @@ public class GamaBundleLoader {
 	/** The Constant GAMA_DIAGRAM_EDITOR_PLUGIN. */
 	private static final String GAMA_DIAGRAM_EDITOR_PLUGIN = "gama.ui.diagram";
 
-	/** The model plugins. */
-	private static final Multimap<Bundle, String> MODEL_PLUGINS = ArrayListMultimap.create();
-
-	/** The test plugins. */
-	private static final Multimap<Bundle, String> TEST_PLUGINS = ArrayListMultimap.create();
-
-	/**
-	 * Plugins contributing tutorial projects, mapped to the relative path of their {@code tutorials/} directory. Used
-	 * by {@link gama.workspace.manager.WorkspaceModelsManager} to import tutorial projects and assign them
-	 * {@code gama.workspace.tutorialNature}.
-	 */
-	private static final Multimap<Bundle, String> TUTORIAL_PLUGINS = ArrayListMultimap.create();
-
-	/**
-	 * Plugins contributing recipe projects, mapped to the relative path of their {@code recipes/} directory. Used by
-	 * {@link gama.workspace.manager.WorkspaceModelsManager} to import recipe projects and assign them
-	 * {@code gama.workspace.recipeNature}.
-	 */
-	private static final Multimap<Bundle, String> RECIPE_PLUGINS = ArrayListMultimap.create();
+	/** The folders contributing models, classified by category. */
+	private static final List<ModelFolder> MODEL_FOLDERS = new ArrayList<>();
 
 	/** The handled file extensions. */
-	public static final Set<String> HANDLED_FILE_EXTENSIONS = new LinkedHashSet<>();
+	public static final Multimap<String, String> HANDLED_FILE_EXTENSIONS = ArrayListMultimap.create();
 
 	/**
 	 * Builds all plugin contributions to the GAMA platform. This is the main entry point for the plugin loading process
@@ -330,7 +327,7 @@ public class GamaBundleLoader {
 			}
 			// We then build the other extensions to the language
 			CompletableFuture.runAsync(() -> {
-				for (final Bundle addition : GAMA_PLUGINS) {
+				for (final Bundle addition : orderByBundleDependencies(GAMA_PLUGINS)) {
 					CURRENT_PLUGIN_NAME = addition.getSymbolicName();
 					try {
 						loadGamlExtensions(addition);
@@ -344,17 +341,18 @@ public class GamaBundleLoader {
 				}
 				CURRENT_PLUGIN_NAME = null;
 				try {
-					TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Loading extensions to 'create'", "completed in",
-							() -> {
-								loadCreateExt(registry);
-							});
+					loadCreateExt(registry);
+					DEBUG.BANNER(BANNER_CATEGORY.GAML, "Loading extensions to 'create'", "data types",
+							StreamEx.of(Lists.newArrayList(GamaAdditionRegistry.getCreateDelegateTypes()))
+									.map(IType::getName).remove(String::isBlank).distinct().sorted().joining("|"));
 				} catch (RuntimeException e) {
 					ERROR("Error in loading extensions to 'create'. ", e);
 				}
 				try {
-					TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Loading extensions to 'save'", "completed in", () -> {
-						loadSaveExt(registry);
-					});
+					loadSaveExt(registry);
+					DEBUG.BANNER(BANNER_CATEGORY.GAML, "Loading extensions to 'save'", "file types",
+							StreamEx.of(GamaAdditionRegistry.getSaveFileFormats()).remove(String::isBlank)
+									.map(s -> "." + s.toLowerCase()).distinct().sorted().joining("|"));
 				} catch (RuntimeException e) {
 					ERROR("Error in loading extensions to 'save'. ", e);
 				}
@@ -373,12 +371,28 @@ public class GamaBundleLoader {
 					ERROR("Error in loading extensions to 'event'. ", e);
 				}
 				try {
-					TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Loading extensions to 'metadata'", "completed in",
-							() -> {
-								loadMetadataExt(registry);
-							});
+					loadContentExtensions(registry);
+					DEBUG.BANNER(BANNER_CATEGORY.GAML, "Loading file content extensions", "file types",
+							StreamEx.of(HANDLED_FILE_EXTENSIONS.values()).remove(String::isBlank)
+									.map(s -> "." + s.toLowerCase()).distinct().sorted().joining("|"));
+				} catch (RuntimeException e) {
+					ERROR("Error in loading content extensions. ", e);
+				}
+				try {
+					loadMetadataExt(registry);
+					DEBUG.BANNER(BANNER_CATEGORY.GAML, "Loading file metadata extensions", "file types",
+							StreamEx.of(GAMA.getMetadataProvider().getMetadataFileExtensions()).remove(String::isBlank)
+									.map(s -> "." + s.toLowerCase()).distinct().sorted().joining("|"));
 				} catch (RuntimeException e) {
 					ERROR("Error in loading extensions to 'metadata'. ", e);
+				}
+				try {
+					TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Loading extensions to 'server_command'",
+							"completed in", () -> {
+								loadServerCommandExt(registry);
+							});
+				} catch (RuntimeException e) {
+					ERROR("Error in loading extensions to 'server_command'. ", e);
 				}
 				try {
 					TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Gathering built-in models", "completed in",
@@ -386,13 +400,7 @@ public class GamaBundleLoader {
 				} catch (RuntimeException e) {
 					ERROR("Error in gathering built-in models. ", e);
 				}
-				try {
-					TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAMA, "Loading content extensions", "completed in", () -> {
-						loadContentExtensions(registry);
-					});
-				} catch (RuntimeException e) {
-					ERROR("Error in loading content extensions. ", e);
-				}
+
 				// CRUCIAL INITIALIZATIONS
 				// We init the meta-model of GAMA (i.e. abstract agent, model, experiment species)
 				try {
@@ -536,8 +544,7 @@ public class GamaBundleLoader {
 	 *            the Eclipse extension registry containing plugin contributions
 	 */
 	private static void loadMetadataExt(final IExtensionRegistry registry) {
-		// We gather all the extensions to the `metadata` statement and add them
-		// as delegates to MetadataStatement
+		// We gather all the extensions to the `metadata` statement
 		for (final IConfigurationElement e : registry.getConfigurationElementsFor(METADATA_EXTENSION)) {
 			try {
 				GAMA.getMetadataProvider().registerMetadataClass(e.getAttribute("content_type"),
@@ -545,11 +552,38 @@ public class GamaBundleLoader {
 								.loadClass(e.getAttribute("class")));
 				// TODO Add the defining plug-in
 			} catch (final Exception e1) {
-				ERROR("Error in loading MetadataStatement delegate : "
-						+ e.getDeclaringExtension().getContributor().getName(), e1);
+				ERROR("Error in loading metadata declaration : " + e.getDeclaringExtension().getContributor().getName(),
+						e1);
 				// We do not systematically exit in case of additional plugins failing to load, so as to
 				// give the platform a chance to execute even in case of errors (to save files, to
 				// remove offending plugins, etc.)
+			}
+		}
+	}
+
+	/**
+	 * Loads server command extensions from registered plugins. This method discovers all {@link ISocketCommand}
+	 * implementations contributed through the {@code gama.server_command} extension point and registers them on
+	 * {@link CommandExecutor}, making them available to both the GUI and the headless gama-server.
+	 *
+	 * <p>
+	 * Each contribution associates a command keyword (the JSON {@code type} field sent by clients, e.g.
+	 * {@code "stream"}) with a class implementing {@link ISocketCommand}.
+	 *
+	 * @param registry
+	 *            the Eclipse extension registry containing plugin contributions
+	 */
+	private static void loadServerCommandExt(final IExtensionRegistry registry) {
+		for (final IConfigurationElement e : registry.getConfigurationElementsFor(SERVER_COMMAND_EXTENSION)) {
+			try {
+				final String type = e.getAttribute("type");
+				final ISocketCommand command = (ISocketCommand) e.createExecutableExtension("class");
+				CommandExecutor.registerContributedCommand(type, command);
+			} catch (final Exception e1) {
+				ERROR("Error in loading server command from " + e.getDeclaringExtension().getContributor().getName(),
+						e1);
+				// We do not systematically exit in case of additional plugins failing to load, so as to
+				// give the platform a chance to execute even in case of errors.
 			}
 		}
 	}
@@ -573,28 +607,14 @@ public class GamaBundleLoader {
 	}
 
 	/**
-	 * Discovers and indexes model libraries, test suites, tutorial projects and recipe projects from all registered
-	 * plugins. This method scans plugins for standard directory layouts containing GAML models.
+	 * Discovers and indexes the projects contributed by all registered plugins. Each plugin contributes projects
+	 * through its {@code models/} folder, organised in the sub-folders {@code Data}, {@code Demos}, {@code Library},
+	 * {@code Recipes}, {@code Tutorials} and {@code Tests} (the latter being also generated by the annotation processor
+	 * in {@code gaml/models/Tests}). Any other sub-folder is classified in {@code Library}.
 	 *
 	 * <p>
-	 * The method recognizes five standard layouts:
-	 * </p>
-	 * <ul>
-	 * <li><b>models/</b>: Standard location for model library projects (Library virtual folder)</li>
-	 * <li><b>tests/</b>: Standard location for test files (Tests virtual folder)</li>
-	 * <li><b>gaml/tests/</b>: Alternative location for generated test files (Tests virtual folder)</li>
-	 * <li><b>tutorials/</b>: Step-by-step tutorial projects (Tutorials virtual folder)</li>
-	 * <li><b>recipes/</b>: Focused single-feature demonstrations (Recipes virtual folder)</li>
-	 * </ul>
-	 *
-	 * <p>
-	 * The core library bundle ({@code gama.library}) is always included as a model, tutorial, and recipe provider and
-	 * is handled specially because it is not a GAML-language plugin and therefore does not appear in
-	 * {@code GAMA_PLUGINS}. All other bundles in {@code GAMA_PLUGINS} are scanned for any of the five layouts above.
-	 * </p>
-	 *
-	 * <p>
-	 * Plugins can also explicitly declare non-standard model locations using the {@code gama.models} extension point.
+	 * The core library bundle ({@code gama.library}) is not a GAML-language plugin and does not appear in
+	 * {@code GAMA_PLUGINS}: it is scanned explicitly.
 	 * </p>
 	 *
 	 * @param registry
@@ -603,30 +623,33 @@ public class GamaBundleLoader {
 	 *             if the extension registry contains invalid objects
 	 */
 	private static void loadModels(final IExtensionRegistry registry) throws InvalidRegistryObjectException {
-		// Always register the core library bundle for its models/ layout.
-		MODEL_PLUGINS.put(CORE_MODELS, REGULAR_MODELS_LAYOUT);
-		// CORE_MODELS is NOT part of GAMA_PLUGINS, so scan it explicitly for the
-		// tutorials/ and recipes/ layouts introduced by the new navigator structure.
-		if (CORE_MODELS.getEntry(REGULAR_TUTORIALS_LAYOUT) != null) {
-			TUTORIAL_PLUGINS.put(CORE_MODELS, REGULAR_TUTORIALS_LAYOUT);
-		}
-		if (CORE_MODELS.getEntry(REGULAR_RECIPES_LAYOUT) != null) {
-			RECIPE_PLUGINS.put(CORE_MODELS, REGULAR_RECIPES_LAYOUT);
-		}
-		GAMA_PLUGINS.add(CORE_PLUGIN); // We add it back to gather tests
-		GAMA_PLUGINS.forEach(bundle -> {
-			if (bundle.getEntry(REGULAR_MODELS_LAYOUT) != null) { MODEL_PLUGINS.put(bundle, REGULAR_MODELS_LAYOUT); }
-			if (bundle.getEntry(REGULAR_TESTS_LAYOUT) != null) { TEST_PLUGINS.put(bundle, REGULAR_TESTS_LAYOUT); }
-			if (bundle.getEntry(GENERATED_TESTS_LAYOUT) != null) { TEST_PLUGINS.put(bundle, GENERATED_TESTS_LAYOUT); }
-			if (bundle.getEntry(REGULAR_TUTORIALS_LAYOUT) != null) {
-				TUTORIAL_PLUGINS.put(bundle, REGULAR_TUTORIALS_LAYOUT);
+		MODEL_FOLDERS.clear();
+		final List<Bundle> bundles = new ArrayList<>(GAMA_PLUGINS);
+		// gama.library is not a GAML plugin and the core is removed from GAMA_PLUGINS: we add them explicitly
+		if (CORE_MODELS != null && !bundles.contains(CORE_MODELS)) { bundles.add(CORE_MODELS); }
+		if (!bundles.contains(CORE_PLUGIN)) { bundles.add(CORE_PLUGIN); }
+		bundles.forEach(GamaBundleLoader::scanModelFolders);
+	}
+
+	/**
+	 * Scans the {@code models} folder of a bundle (and its generated counterpart) and registers the sub-folders that
+	 * contain projects. Sub-folders that are not categories are registered in the {@code Library} category.
+	 *
+	 * @param bundle
+	 *            the bundle to scan
+	 */
+	private static void scanModelFolders(final Bundle bundle) {
+		for (final String root : List.of(REGULAR_MODELS_LAYOUT, GENERATED_MODELS_LAYOUT)) {
+			final Enumeration<String> entries = bundle.getEntryPaths(root);
+			if (entries == null) { continue; }
+			while (entries.hasMoreElements()) {
+				String path = entries.nextElement();
+				if (!path.endsWith("/")) { continue; }
+				path = path.substring(0, path.length() - 1);
+				final String name = path.substring(path.lastIndexOf('/') + 1);
+				final String category = MODEL_CATEGORIES.contains(name) ? name : LIBRARY_CATEGORY;
+				MODEL_FOLDERS.add(new ModelFolder(bundle, category, path));
 			}
-			if (bundle.getEntry(REGULAR_RECIPES_LAYOUT) != null) { RECIPE_PLUGINS.put(bundle, REGULAR_RECIPES_LAYOUT); }
-		});
-		// We gather all the GAMA_PLUGINS that explicitly declare models using
-		// the non-default scheme (plugin > models ...).
-		for (final IConfigurationElement e : registry.getConfigurationElementsFor(MODELS_EXTENSION)) {
-			MODEL_PLUGINS.put(Platform.getBundle(e.getContributor().getName()), e.getAttribute(IKeyword.NAME));
 		}
 	}
 
@@ -661,7 +684,8 @@ public class GamaBundleLoader {
 				final String s = config.getAttribute("file-extensions");
 				if (s != null) {
 					final String[] fileExts = s.split(",");
-					Collections.addAll(HANDLED_FILE_EXTENSIONS, fileExts);
+					HANDLED_FILE_EXTENSIONS.putAll(config.getAttribute("id"),
+							StreamEx.of(fileExts).map(String::trim).toList());
 				}
 			}
 		}
@@ -768,49 +792,43 @@ public class GamaBundleLoader {
 	}
 
 	/**
-	 * Returns a multimap of all GAMA plugins that contain model libraries, along with the inner path to the folder
-	 * containing model projects. This is used by the platform to discover and load built-in models.
+	 * Returns all the folders contributed by the plugins that contain projects, with their category. Folders found in
+	 * {@code models/} that are not named after a category are classified in {@code Library}.
 	 *
-	 * <p>
-	 * The returned multimap maps Bundle objects to path strings (e.g., "models", "examples"). A single bundle may have
-	 * multiple entries if it contains models in multiple locations.
-	 *
-	 * @return a multimap where keys are bundles containing models and values are the relative paths to model folders
-	 *         within those bundles
+	 * @return the list of folders, in the order the plugins have been scanned
 	 */
-	public static Multimap<Bundle, String> getPluginsWithModels() { return MODEL_PLUGINS; }
+	public static List<ModelFolder> getModelFolders() { return MODEL_FOLDERS; }
 
 	/**
-	 * Returns a multimap of all GAMA plugins that contain test suites, along with the inner path to the folder
-	 * containing test files. This is used by the platform to discover and execute built-in tests.
+	 * Returns a multimap of all GAMA plugins that contain model projects (all categories but Tests), along with the
+	 * inner path of the folders containing them.
 	 *
-	 * <p>
-	 * The returned multimap maps Bundle objects to path strings (e.g., "tests", "gaml/tests"). A single bundle may have
-	 * multiple entries if it contains tests in multiple locations.
-	 *
-	 * @return a multimap where keys are bundles containing tests and values are the relative paths to test folders
-	 *         within those bundles
+	 * @return a multimap where keys are bundles and values are the relative paths of the folders
 	 */
-	public static Multimap<Bundle, String> getPluginsWithTests() { return TEST_PLUGINS; }
+	public static Multimap<Bundle, String> getPluginsWithModels() { return foldersToMultimap(false); }
 
 	/**
-	 * Returns a multimap of all GAMA plugins that contain tutorial projects, along with the inner path to the folder
-	 * containing those projects (always {@value #REGULAR_TUTORIALS_LAYOUT}). A single bundle may have at most one
-	 * entry.
+	 * Returns a multimap of all GAMA plugins that contain tests (the {@code Tests} category), along with the inner path
+	 * of the folders containing them.
 	 *
-	 * @return a multimap where keys are bundles contributing tutorials and values are the relative paths to their
-	 *         {@code tutorials/} directories
+	 * @return a multimap where keys are bundles and values are the relative paths of the folders
 	 */
-	public static Multimap<Bundle, String> getPluginsWithTutorials() { return TUTORIAL_PLUGINS; }
+	public static Multimap<Bundle, String> getPluginsWithTests() { return foldersToMultimap(true); }
 
 	/**
-	 * Returns a multimap of all GAMA plugins that contain recipe projects, along with the inner path to the folder
-	 * containing those projects (always {@value #REGULAR_RECIPES_LAYOUT}). A single bundle may have at most one entry.
+	 * Folders to multimap.
 	 *
-	 * @return a multimap where keys are bundles contributing recipes and values are the relative paths to their
-	 *         {@code recipes/} directories
+	 * @param tests
+	 *            whether to keep the test folders or all the others
+	 * @return the multimap
 	 */
-	public static Multimap<Bundle, String> getPluginsWithRecipes() { return RECIPE_PLUGINS; }
+	private static Multimap<Bundle, String> foldersToMultimap(final boolean tests) {
+		final Multimap<Bundle, String> result = ArrayListMultimap.create();
+		for (final ModelFolder f : MODEL_FOLDERS) {
+			if (TESTS_CATEGORY.equals(f.category()) == tests) { result.put(f.bundle(), f.path()); }
+		}
+		return result;
+	}
 
 	/**
 	 * Checks whether a GAML plugin with the specified symbolic name has been successfully loaded during platform
@@ -857,5 +875,56 @@ public class GamaBundleLoader {
 	 * @return true, if is diagram editor loaded
 	 */
 	public static boolean isDiagramEditorLoaded() { return Platform.getBundle(GAMA_DIAGRAM_EDITOR_PLUGIN) != null; }
+
+	/**
+	 * Orders extension bundles from their resolved OSGi bundle wires so that any GAML additions contributed by a
+	 * required bundle are registered first. Unrelated bundles retain their discovery order.
+	 */
+	private static List<Bundle> orderByBundleDependencies(final List<Bundle> bundles) {
+		final Set<Bundle> candidates = new LinkedHashSet<>(bundles);
+		final Map<Bundle, Integer> discoveryOrder = new HashMap<>();
+		final Map<Bundle, Integer> dependencyCounts = new HashMap<>();
+		final Map<Bundle, Set<Bundle>> dependents = new HashMap<>();
+		for (int i = 0; i < bundles.size(); i++) {
+			final Bundle bundle = bundles.get(i);
+			discoveryOrder.put(bundle, i);
+			dependencyCounts.put(bundle, 0);
+			dependents.put(bundle, new HashSet<>());
+		}
+		for (final Bundle bundle : bundles) {
+			final BundleWiring wiring = bundle.adapt(BundleWiring.class);
+			if (wiring == null) {
+				DEBUG.ERR("Cannot inspect bundle dependencies for " + bundle.getSymbolicName()
+						+ "; no dependency constraints will be applied to its GAML extension order.");
+				continue;
+			}
+			for (final BundleWire wire : wiring.getRequiredWires(BundleRevision.BUNDLE_NAMESPACE)) {
+				final Bundle provider = wire.getProviderWiring().getBundle();
+				if (provider != bundle && candidates.contains(provider) && dependents.get(provider).add(bundle)) {
+					dependencyCounts.compute(bundle, (key, count) -> count + 1);
+				}
+			}
+		}
+		final PriorityQueue<Bundle> ready = new PriorityQueue<>(Comparator.comparingInt(discoveryOrder::get));
+		dependencyCounts.forEach((bundle, count) -> { if (count == 0) { ready.add(bundle); } });
+		final List<Bundle> ordered = new ArrayList<>(bundles.size());
+		while (!ready.isEmpty()) {
+			final Bundle provider = ready.remove();
+			ordered.add(provider);
+			for (final Bundle dependent : dependents.get(provider)) {
+				final int remaining = dependencyCounts.compute(dependent, (key, count) -> count - 1);
+				if (remaining == 0) { ready.add(dependent); }
+			}
+		}
+		if (ordered.size() < bundles.size()) {
+			final Set<Bundle> orderedSet = new HashSet<>(ordered);
+			final List<String> unresolved = bundles.stream().filter(bundle -> !orderedSet.contains(bundle))
+					.map(Bundle::getSymbolicName).toList();
+			DEBUG.ERR("Cannot fully order GAML extension bundles because of cyclic bundle dependencies: "
+					+ String.join(", ", unresolved) + ". Retaining their discovered order.");
+			for (final Bundle bundle : bundles) { if (!orderedSet.contains(bundle)) { ordered.add(bundle); } }
+		}
+		return ordered;
+	}
 
 }

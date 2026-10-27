@@ -177,7 +177,7 @@ public class GamaPopulation<T extends IAgent> extends AbstractPopulation<T> {
 		final int number = geometries.length(scope);
 		if (number == 0) return GamaListFactory.getEmptyList();
 		final IList<T> list = GamaListFactory.create(getGamlType().getContentType(), number);
-		final IAgentConstructor constr = species.getDescription().getAgentConstructor();
+		final IAgentConstructor constr = species.getDescription().getConstructor();
 		for (final IShape geom : geometries.iterable(scope)) {
 			// WARNING Should be redefined somehow
 			final T a = (T) constr.createOneAgent(this, currentAgentIndex++);
@@ -229,7 +229,7 @@ public class GamaPopulation<T extends IAgent> extends AbstractPopulation<T> {
 			final boolean toBeScheduled, final IStatement sequence) throws GamaRuntimeException {
 		if (number == 0) return GamaListFactory.getEmptyList();
 		final IList<T> list = GamaListFactory.create(getGamlType().getContentType(), number);
-		final IAgentConstructor constr = species.getDescription().getAgentConstructor();
+		final IAgentConstructor constr = species.getDescription().getConstructor();
 		for (int i = 0; i < number; i++) {
 			final T a = (T) constr.createOneAgent(this, currentAgentIndex++);
 			// Try to grab the location earlier
@@ -302,9 +302,9 @@ public class GamaPopulation<T extends IAgent> extends AbstractPopulation<T> {
 			final IAgent a = agents.get(i);
 			inits = empty ? EMPTY_MAP : initialValues.get(i);
 			for (final IVariable var : orderedVars) {
-				final Object initGet =
-						empty || !allowVarInitToBeOverridenByExternalInit(var) ? null : inits.get(var.getName());
-				var.initializeWith(scope, a, initGet);
+				final boolean provided = !empty && allowVarInitToBeOverridenByExternalInit(var)
+						&& inits.containsKey(var.getName());
+				var.initializeWith(scope, a, provided ? inits.get(var.getName()) : null, provided);
 			}
 			// Added to fix #3266 -- saves the values of the "extra" attributes found in the files
 			if (!empty) {
@@ -372,14 +372,28 @@ public class GamaPopulation<T extends IAgent> extends AbstractPopulation<T> {
 
 	}
 
-	@SuppressWarnings ("unchecked")
+	/**
+	 * Returns the agent at a zero-based position, reporting invalid positions as GAML errors.
+	 */
+	@Override
+	public T get(final IScope scope, final Integer index) throws GamaRuntimeException {
+		synchronized (agentsContainer) {
+			final int size = agentsContainer.size();
+			if (index < 0 || index >= size) {
+				throw GamaRuntimeException.error("Index " + index + " out of bounds for population '"
+						+ species.getName() + "' (size: " + size + ")", scope);
+			}
+			return agentsContainer.get(index.intValue());
+		}
+	}
+
 	@Override
 	public T getFromIndicesList(final IScope scope, final IList indices) throws GamaRuntimeException {
 		if (indices == null) return null;
 		final int size = indices.size();
 		return switch (size) {
 			case 0 -> null;
-			case 1 -> (T) agentsContainer.getFromIndicesList(scope, indices);
+			case 1 -> get(scope, Cast.asInt(scope, indices.get(0)));
 			case 2 -> this.getAgent(scope,
 					GamaPointFactory.create(Cast.asFloat(scope, indices.get(0)), Cast.asFloat(scope, indices.get(1))));
 			default -> throw GamaRuntimeException.error("Populations cannot be accessed with 3 or more indexes", scope);

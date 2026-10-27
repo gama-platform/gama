@@ -98,8 +98,16 @@ public class FloatEditor extends NumberEditor<Double> {
 
 	@Override
 	protected Double normalizeValues() throws GamaRuntimeException {
-		final Double valueToConsider = getOriginalValue() == null ? 0.0 : Cast.asFloat(getScope(), getOriginalValue());
-		currentValue = getOriginalValue() == null ? null : valueToConsider;
+		final Object orig = getOriginalValue() == null && param != null ? param.value(getScope()) : getOriginalValue();
+
+		if (acceptNull && orig == null) {
+			setOriginalValue(null);
+			currentValue = null;
+			return null;
+		}
+		final Double valueToConsider = orig == null ? 0.0 : Cast.asFloat(getScope(), orig);
+		if (getOriginalValue() == null) { setOriginalValue(valueToConsider); }
+		currentValue = valueToConsider;
 		return valueToConsider;
 	}
 
@@ -124,9 +132,11 @@ public class FloatEditor extends NumberEditor<Double> {
 	protected void updateToolbar() {
 		super.updateToolbar();
 		editorToolbar.enable(PLUS,
-				param.isDefined() && (getMaxValue() == null || applyPlus() < Cast.asFloat(getScope(), getMaxValue())));
+				param.isDefined() && (getMaxValue() == null || applyPlus() <= Cast.asFloat(getScope(), getMaxValue())));
+
 		editorToolbar.enable(MINUS,
-				param.isDefined() && (getMinValue() == null || applyMinus() > Cast.asFloat(getScope(), getMinValue())));
+				param.isDefined() && (getMinValue() == null || applyMinus() >= Cast.asFloat(getScope(), getMinValue())));
+
 	}
 
 	@Override

@@ -65,8 +65,7 @@ Export-Package: gama.api,
  gama.api.utils.prefs,
  gama.api.utils.random,
  gama.api.utils.server,
- gama.api.utils.tests,
- gaml.additions.api
+ gama.api.utils.tests
 Require-Bundle: gama.annotations;visibility:=reexport,
  gama.processor,
  gama.dependencies,

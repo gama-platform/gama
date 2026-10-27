@@ -193,7 +193,7 @@ public class InternalGamaMatrixFactory implements IMatrixFactory {
 	@Override
 	public IMatrix createFrom(final IScope scope, final IList list, final IType desiredType,
 			final IPoint preferredSize) {
-		if (list == null || list.isEmpty()) return new GamaObjectMatrix(0, 0, desiredType);
+		if (list == null || list.isEmpty()) return create(0, 0, desiredType);
 		if (desiredType.id() == IType.INT) return new GamaIntMatrix(scope, list, preferredSize);
 		if (desiredType.id() == IType.FLOAT) return new GamaFloatMatrix(scope, list, preferredSize);
 		return new GamaObjectMatrix(scope, list, preferredSize, desiredType);

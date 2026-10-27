@@ -10,28 +10,8 @@
       <vmArgs>-server 
 -Xms4G
 -Xmx16G
--XX:+UseG1GC 
--XX:+ParallelRefProcEnabled 
--XX:MaxGCPauseMillis=200 
--XX:+UnlockExperimentalVMOptions 
--XX:+DisableExplicitGC 
--XX:+AlwaysPreTouch 
--XX:G1HeapWastePercent=5 
--XX:G1MixedGCCountTarget=4 
--XX:InitiatingHeapOccupancyPercent=15 
--XX:G1MixedGCLiveThresholdPercent=90 
--XX:G1RSetUpdatingPauseTimePercent=5 
--XX:SurvivorRatio=32 
--XX:+PerfDisableSharedMem 
--XX:MaxTenuringThreshold=1 
--XX:G1NewSizePercent=30 
--XX:G1MaxNewSizePercent=40 
--XX:G1HeapRegionSize=8M 
--XX:G1ReservePercent=20
--XX:+UseStringDeduplication
+-XX:+UseParallelGC
 -Dorg.eclipse.swt.graphics.Resource.reportNonDisposed=false
--XX:+UseAdaptiveSizePolicy
--XX:+OptimizeStringConcat
 -Dosgi.locking=none
 -Dosgi.checkConfiguration=false -Dosgi.requiredJavaVersion=25
 -Declipse.log.level=ERROR
@@ -41,7 +21,7 @@
 -Denable_logging=true 
 -Denable_debug=true
 -Duse_global_preference_store=true 
--Dcast_container_contents=false
+-Dcast_container_contents=true
 -Dswt.autoScale=exact
 -Dread_only=false 
 -Duse_old_tabs=true 
@@ -49,6 +29,7 @@
 -Duse_delayed_resize=false 
 -Declipse.e4.inject.javax.disabled=true
 -Djts.relate=ng
+--add-opens=java.base/java.lang.invoke=ALL-UNNAMED
 --add-exports=java.base/java.lang=ALL-UNNAMED
 --add-exports=java.desktop/sun.awt=ALL-UNNAMED
 --add-exports=java.desktop/sun.java2d=ALL-UNNAMED
@@ -118,6 +99,13 @@
       <plugin id="org.eclipse.equinox.p2.reconciler.dropins" autoStart="true" startLevel="5" />
       <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
       <plugin id="slf4j.api" autoStart="true" startLevel="0" />
+      <property name="org.eclipse.update.reconcile" value="false" />
+      <property name="eclipse.buildId" value="${build.id}" />
+      <property name="gama.version" value="SNAPSHOT" />
+      <property name="gama.commit" value="SNAPSHOT" />
+      <property name="gama.branch" value="SNAPSHOT" />
+      <property name="gama.date" value="SNAPSHOT" />
+      <property name="gama.jdk" value="SNAPSHOT" />
    </configurations>
 
    <preferencesInfo>

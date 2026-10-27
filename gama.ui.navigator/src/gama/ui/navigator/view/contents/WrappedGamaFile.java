@@ -18,6 +18,7 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.jface.resource.ImageDescriptor;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.compilation.ast.ISyntacticElement;
@@ -32,12 +33,25 @@ import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.PreferencesHelper;
 import gaml.compiler.resource.GamlFileInfo;
+import gaml.compiler.validation.GamlAutoValidation;
 import one.util.streamex.StreamEx;
 
 /**
  * The Class WrappedGamaFile.
  */
 public class WrappedGamaFile extends WrappedFile {
+
+	@Override
+	public ImageDescriptor getOverlay() {
+		return GamlAutoValidation.isEnabled(getResource()) ? super.getOverlay()
+				: GamaIcon.named(IGamaIcons.OVERLAY_PAUSED).descriptor();
+	}
+
+	@Override
+	public String getStatusTooltip() {
+		return GamlAutoValidation.isEnabled(getResource()) ? super.getStatusTooltip()
+				: super.getStatusTooltip() + "\nAutomatic validation disabled; diagnostics may be outdated";
+	}
 
 	/** The is experiment. */
 	boolean isExperiment;

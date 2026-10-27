@@ -19,6 +19,7 @@ import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
@@ -36,108 +37,137 @@ import gama.ui.shared.views.toolbar.GamaToolbarSimple;
  */
 public class HeapControl {
 
-    static {
-	DEBUG.OFF();
-    }
+	static {
+		DEBUG.OFF();
+	}
 
-    /** The item. */
-    ToolItem item;
+	/** Refresh period of the memory label, in ms. */
+	private static final int REFRESH_DELAY = 2000;
 
-    /**
-     * Display on.
-     *
-     * @param parent
-     *            the parent
-     * @return the control
-     */
-    Control displayOn(final Composite parent) {
-	// TrimBarLayout layout = (TrimBarLayout) parent.getLayout();
-	// // layout.marginTop = 10;
-	// // layout.marginBottom = 10;
-	// layout.marginLeft = 10;
-	// layout.marginRight = 10;
+	/** The item. */
+	ToolItem item;
 
-	Composite composite = new Composite(parent, SWT.NONE);
-	GridLayoutFactory.fillDefaults().margins(0, 0).spacing(0, 0).extendedMargins(0, 5, 5, 5).numColumns(2)
-		.equalWidth(false).applyTo(composite);
-	GamaToolbarSimple bar = new GamaToolbarSimple(composite, SWT.NONE);
-	bar.space(16);
-	bar.button("editor/command.find", null, "Search GAML reference", e -> {
-	    final GamlAccessContents2 quickAccessDialog = new GamlAccessContents2();
-	    quickAccessDialog.open();
-	});
-	item = bar.button("generic/garbage.collect", "", "", e -> {
-	    Runtime runtime = Runtime.getRuntime();
-	    long totalMem = convertToMeg(runtime.totalMemory());
-	    System.gc();
-	    totalMem = convertToMeg(runtime.totalMemory());
-	    GAMA.getGui().getStatus().informStatus(
-		    "Compact memory (" + (totalMem - convertToMeg(runtime.freeMemory())) + "M on " + totalMem + "M)",
-		    IStatusMessage.MEMORY_ICON);
-	});
-	GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(false, false).indent(16, 0).applyTo(bar);
-	bar.addListener(SWT.MouseEnter, e -> updateToolTip());
+	/**
+	 * Display on.
+	 *
+	 * @param parent
+	 *            the parent
+	 * @return the control
+	 */
+	Control displayOn(final Composite parent) {
+		// TrimBarLayout layout = (TrimBarLayout) parent.getLayout();
+		// // layout.marginTop = 10;
+		// // layout.marginBottom = 10;
+		// layout.marginLeft = 10;
+		// layout.marginRight = 10;
 
-	new StatusControlContribution().fill(bar, 0);
-	parent.requestLayout();
-	parent.addControlListener(new ControlListener() {
+		Composite composite = new Composite(parent, SWT.NONE);
+		GridLayoutFactory.fillDefaults().margins(0, 0).spacing(0, 0).extendedMargins(0, 5, 5, 5).numColumns(2)
+				.equalWidth(false).applyTo(composite);
+		GamaToolbarSimple bar = new GamaToolbarSimple(composite, SWT.RIGHT);
+		bar.space(16);
+		bar.button("editor/command.find", null, "Search GAML reference", e -> {
+			final GamlAccessContents2 quickAccessDialog = new GamlAccessContents2();
+			quickAccessDialog.open();
+		});
+		item = bar.button("generic/garbage.collect", "", "", e -> {
+			System.gc();
+			updateLabel(bar);
+			Runtime runtime = Runtime.getRuntime();
+			long totalMem = convertToMeg(runtime.totalMemory());
+			GAMA.getGui().getStatus().informStatus("Memory after garbage collection: "
+					+ (totalMem - convertToMeg(runtime.freeMemory())) + "M used on " + totalMem + "M",
+					IStatusMessage.MEMORY_ICON);
+		});
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(false, false).indent(16, 0).applyTo(bar);
+		bar.addListener(SWT.MouseEnter, e -> updateToolTip());
+		updateLabel(bar);
+		final Display display = parent.getDisplay();
+		display.timerExec(REFRESH_DELAY, new Runnable() {
 
-	    @Override
-	    public void controlResized(final ControlEvent e) {
-		DEBUG.OUT("Size of parent : " + parent.getSize());
-		DEBUG.OUT("Size of composite : " + composite.getSize());
-		DEBUG.OUT("Size of toolbar : " + bar.getSize());
+			@Override
+			public void run() {
+				if (bar.isDisposed()) return;
+				updateLabel(bar);
+				display.timerExec(REFRESH_DELAY, this);
+			}
+		});
+
+		new StatusControlContribution().fill(bar, 0);
 		parent.requestLayout();
-	    }
+		parent.addControlListener(new ControlListener() {
 
-	    @Override
-	    public void controlMoved(final ControlEvent e) {
-	    }
-	});
-	return composite;
-    }
+			@Override
+			public void controlResized(final ControlEvent e) {
+				// DEBUG.OUT("Size of parent : " + parent.getSize());
+				// DEBUG.OUT("Size of composite : " + composite.getSize());
+				// DEBUG.OUT("Size of toolbar : " + bar.getSize());
+				parent.requestLayout();
+			}
 
-    /**
-     * Update tool tip.
-     */
-    protected void updateToolTip() {
-	Runtime runtime = Runtime.getRuntime();
-	long totalMem = convertToMeg(runtime.totalMemory());
-	item.setToolTipText(
-		"Memory used: " + (totalMem - convertToMeg(runtime.freeMemory())) + "M on " + totalMem + "M");
-    }
+			@Override
+			public void controlMoved(final ControlEvent e) {}
+		});
+		return composite;
+	}
 
-    /**
-     * Convert to meg.
-     *
-     * @param numBytes
-     *            the num bytes
-     * @return the long
-     */
-    private long convertToMeg(final long numBytes) {
-	return (numBytes + 512 * 1024) / (1024 * 1024);
-    }
+	/**
+	 * Update tool tip.
+	 */
+	protected void updateToolTip() {
+		Runtime runtime = Runtime.getRuntime();
+		long maxMem = convertToMeg(runtime.maxMemory());
+		long usedMem = convertToMeg(runtime.totalMemory() - runtime.freeMemory());
+		item.setToolTipText("Memory used: " + usedMem + "M over " + maxMem + "M. Click to free unused memory.");
+	}
 
-    /**
-     * Install.
-     */
-    public static void install() {
-	WorkbenchHelper.runInUI("Install GAMA Status and Heap Controls", 0, m -> {
-	    final IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-	    if (window instanceof WorkbenchWindow ww) {
-		final MTrimBar topTrim = ww.getTopTrim();
-		for (final MTrimElement element : topTrim.getChildren()) {
-		    if ("SearchField".equals(element.getElementId())) {
-			final Composite parent = ((Control) element.getWidget()).getParent();
-			final Control old = (Control) element.getWidget();
-			WorkbenchHelper.asyncRun(() -> old.dispose(), 500, () -> true);
-			element.setWidget(new HeapControl().displayOn(parent));
-			parent.requestLayout();
-			break;
-		    }
+	/**
+	 * Updates the "MEM xx%" label to show used heap as a percentage of maximum heap.
+	 */
+	private void updateLabel(final GamaToolbarSimple bar) {
+		if (item == null || item.isDisposed()) return;
+		Runtime runtime = Runtime.getRuntime();
+		int percent = (int) Math.round(100d * (runtime.totalMemory() - runtime.freeMemory()) / runtime.maxMemory());
+		String text = "MEM " + percent + "%";
+		if (!text.equals(item.getText())) {
+			item.setText(text);
+			bar.requestLayout();
+			bar.getParent().requestLayout();
 		}
-	    }
-	});
-    }
+		updateToolTip();
+	}
+
+	/**
+	 * Convert to meg.
+	 *
+	 * @param numBytes
+	 *            the num bytes
+	 * @return the long
+	 */
+	private long convertToMeg(final long numBytes) {
+		return (numBytes + 512 * 1024) / (1024 * 1024);
+	}
+
+	/**
+	 * Install.
+	 */
+	public static void install() {
+		WorkbenchHelper.runInUI("Install GAMA Status and Heap Controls", 0, m -> {
+			final IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+			if (window instanceof WorkbenchWindow ww) {
+				final MTrimBar topTrim = ww.getTopTrim();
+				for (final MTrimElement element : topTrim.getChildren()) {
+					if ("SearchField".equals(element.getElementId())) {
+						final Composite parent = ((Control) element.getWidget()).getParent();
+						final Control old = (Control) element.getWidget();
+						WorkbenchHelper.asyncRun(() -> old.dispose(), 500, () -> true);
+						element.setWidget(new HeapControl().displayOn(parent));
+						parent.requestLayout();
+						break;
+					}
+				}
+			}
+		});
+	}
 
 }

@@ -32,6 +32,7 @@ public class JsonSaver extends AbstractSaver {
 	@Override
 	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions saveOptions)
 			throws GamaRuntimeException {
+
 		try (Writer fw = new FileWriter(file, StandardCharsets.UTF_8, !saveOptions.rewrite())) {
 			fw.write(GAMA.getJsonEncoder().valueOf(item.value(scope)).toPrettyPrint());
 		} catch (final GamaRuntimeException e) {
@@ -44,6 +45,11 @@ public class JsonSaver extends AbstractSaver {
 	@Override
 	protected Set<String> computeFileTypes() {
 		return Set.of("json");
+	}
+
+	@Override
+	public boolean handlesAttributes() {
+		return true;
 	}
 
 }

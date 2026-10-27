@@ -17,6 +17,7 @@ import java.util.Map;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 
+import gama.api.GAMA;
 import gama.annotations.no_test;
 import gama.annotations.operator;
 import gama.annotations.constants.IKeyword;
@@ -254,6 +255,7 @@ public class GamaPointFactory {
 
 		@Override
 		public Immutable divideBy(final double value) {
+			if (value == 0.0) throw GamaRuntimeException.error("Division by zero", GAMA.getRuntimeScope());
 			return this;
 		}
 

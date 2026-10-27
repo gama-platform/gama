@@ -11,10 +11,11 @@
 package gama.core.util.file;
 
 import static gama.api.GAMA.reportError;
-import static gama.api.exceptions.GamaRuntimeException.create;
 import static gama.api.exceptions.GamaRuntimeException.warning;
 import static org.apache.commons.lang3.StringUtils.splitByWholeSeparatorPreserveAllTokens;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -29,6 +30,7 @@ import org.geotools.api.data.Query;
 import org.geotools.api.data.SimpleFeatureSource;
 import org.geotools.api.feature.type.AttributeDescriptor;
 import org.geotools.api.feature.type.GeometryType;
+import org.geotools.data.collection.ListFeatureCollection;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.files.ShpFiles;
 import org.geotools.data.shapefile.shp.ShapefileReader;
@@ -40,6 +42,7 @@ import org.locationtech.jts.geom.Geometry;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.file;
+import gama.annotations.test;
 import gama.annotations.support.IConcept;
 import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
@@ -74,13 +77,16 @@ import gama.dev.DEBUG;
  */
 @file (
 		name = "shape",
-		extensions = { "shp", "SHP" },
+		extensions = { "shp" },
 		buffer_type = IType.LIST,
 		buffer_content = IType.GEOMETRY,
 		buffer_index = IType.INT,
 		concept = { IConcept.SHAPEFILE, IConcept.FILE },
 		doc = @doc ("Represents a shape file as defined by the ESRI standard. See https://en.wikipedia.org/wiki/Shapefile for more information."))
 @SuppressWarnings ({ "unchecked", "rawtypes" })
+@test ("is_shape(\"features.shp\")")
+@test ("is_shape(\"features.SHP\")")
+@test ("!is_shape(\"features.gpkg\")")
 public class GamaShapeFile extends GamaGisFile {
 
 	static {
@@ -421,6 +427,9 @@ public class GamaShapeFile extends GamaGisFile {
 	/** The attributes. */
 	private Map<String, String> attributes = null;
 
+	/** The materialized feature collection. */
+	private SimpleFeatureCollection featureCollection;
+
 	@Override
 	public IList<String> getAttributes(final IScope scope) {
 		if (attributes == null) {
@@ -541,8 +550,8 @@ public class GamaShapeFile extends GamaGisFile {
 						indexOfGeometry[0]++;
 					}
 				}
-			} catch (final IOException e2) {
-				throw create(e2, scope);
+			} catch (final IOException | RuntimeException e2) {
+				throw readError(scope, e2);
 			}
 		}
 
@@ -550,10 +559,16 @@ public class GamaShapeFile extends GamaGisFile {
 
 	@Override
 	protected SimpleFeatureCollection getFeatureCollection(final IScope scope) {
+		if (featureCollection != null) return featureCollection;
+		FileDataStore store = null;
 		try {
+			final File file = getFile(scope);
+			if (!file.exists()) { throw new FileNotFoundException("Shapefile not found: " + file.getAbsolutePath()); }
 
 			// if (store == null) { store = getDataStoreOld(getFile(scope).toURI().toURL()); }
-			final SimpleFeatureSource source = getDataStore(getFile(scope).toURI().toURL()).getFeatureSource();
+			store = getDataStore(file.toURI().toURL());
+			if (store == null) { throw new IOException("Unable to open shapefile: " + file.getAbsolutePath()); }
+			final SimpleFeatureSource source = store.getFeatureSource();
 			// AD See Issue #3094. This constitutes a workaround
 			Query query = new Query();
 			// if (!with3D) { query.setHints(new Hints(Hints.FEATURE_2D, true)); }
@@ -561,13 +576,23 @@ public class GamaShapeFile extends GamaGisFile {
 					GamaCoordinateSequenceFactory.getJTSCoordinateSequenceFactory());
 			query.getHints().put(Hints.JTS_GEOMETRY_FACTORY, GeometryUtils.getGeometryFactory());
 			// AD
-			SimpleFeatureCollection collection = source.getFeatures(query);
-			if (source.getDataStore() != null) { source.getDataStore().dispose(); }
-			return collection;
+			featureCollection = new ListFeatureCollection(source.getFeatures(query));
+			return featureCollection;
 
-		} catch (IOException e) {
-			throw create(e, scope);
+		} catch (final IOException | RuntimeException e) {
+			throw readError(scope, e);
+		} finally {
+			// GeoTools may return a lazy collection, so materialize it before disposing the datastore.
+			if (store != null) { store.dispose(); }
 		}
+	}
+
+	private GamaRuntimeException readError(final IScope scope, final Exception cause) {
+		if (cause instanceof GamaRuntimeException error) return error;
+		final var error = GamaRuntimeException.error(
+				"Unable to read shapefile '" + getPath(scope) + "': " + cause.getMessage(), scope);
+		error.initCause(cause);
+		return error;
 	}
 
 	@Override
@@ -575,6 +600,13 @@ public class GamaShapeFile extends GamaGisFile {
 		// This line deactivated because of issue #3525
 		// if (getBuffer() == null) return getFeatureCollection(scope).size();
 		return super.length(scope);
+	}
+
+	@Override
+	public void invalidateContents() {
+		super.invalidateContents();
+		featureCollection = null;
+		attributes = null;
 	}
 
 }

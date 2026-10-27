@@ -155,36 +155,18 @@ Note that due to the fact that actions are written by modelers, the general func
 
 ### </xsl:text> <xsl:value-of select="@id"/> <xsl:text>
 </xsl:text>
-		<xsl:for-each select="/doc/operators/operator"> 
+		<xsl:for-each select="/doc/operators/operator[operatorCategories/category/@id = $categoryGlobal]">
 			<xsl:sort select="@name" />
-				<xsl:variable name="nameOp" select="@name"/>
-				<xsl:variable name="alphabetOrderOp" select="@alphabetOrder"/>			
-			<xsl:for-each select="operatorCategories/category">
-				<xsl:variable name="catItem" select="@id"/>
-				<xsl:if test="$catItem = $categoryGlobal "> 
-					<xsl:text>[</xsl:text><xsl:value-of select="$nameOp"/><xsl:text>](</xsl:text>
-					<xsl:choose>
-					<xsl:when test="$alphabetOrderOp = $aa">
-						<xsl:value-of select="$fileAA"/>
-					</xsl:when>
-					<xsl:when test="$alphabetOrderOp = $bc">
-						<xsl:value-of select="$fileBC"/>
-					</xsl:when>
-					<xsl:when test="$alphabetOrderOp = $dh">
-						<xsl:value-of select="$fileDH"/>
-					</xsl:when>
-					<xsl:when test="$alphabetOrderOp = $im">
-						<xsl:value-of select="$fileIM"/>
-					</xsl:when>
-					<xsl:when test="$alphabetOrderOp = $nr">
-						<xsl:value-of select="$fileNR"/>
-					</xsl:when>
-					<xsl:otherwise>
-						<xsl:value-of select="$fileSZ"/>
-					</xsl:otherwise>
-					</xsl:choose><xsl:text>#</xsl:text><xsl:value-of select="translate($nameOp, $uppercase, $smallcase)"/><xsl:text>), </xsl:text> 
-				</xsl:if>			
-			</xsl:for-each>
+			<xsl:if test="position() != 1"><xsl:text>, </xsl:text></xsl:if>
+			<xsl:text>[</xsl:text><xsl:value-of select="@name"/><xsl:text>](</xsl:text>
+			<xsl:choose>
+			<xsl:when test="@alphabetOrder = $aa"><xsl:value-of select="$fileAA"/></xsl:when>
+			<xsl:when test="@alphabetOrder = $bc"><xsl:value-of select="$fileBC"/></xsl:when>
+			<xsl:when test="@alphabetOrder = $dh"><xsl:value-of select="$fileDH"/></xsl:when>
+			<xsl:when test="@alphabetOrder = $im"><xsl:value-of select="$fileIM"/></xsl:when>
+			<xsl:when test="@alphabetOrder = $nr"><xsl:value-of select="$fileNR"/></xsl:when>
+			<xsl:otherwise><xsl:value-of select="$fileSZ"/></xsl:otherwise>
+			</xsl:choose><xsl:text>#</xsl:text><xsl:value-of select="translate(@name, $uppercase, $smallcase)"/><xsl:text>)</xsl:text>
 		</xsl:for-each>    	
 	</xsl:for-each>
 </xsl:template>
@@ -214,12 +196,12 @@ Note that due to the fact that actions are written by modelers, the general func
 	
 	<xsl:if test="documentation/result[text()]"> 
 
-**Result:** <xsl:value-of select="documentation/result"/>
+**Result:** <xsl:call-template name="printParagraphs"><xsl:with-param name="text" select="documentation/result"/></xsl:call-template>
     </xsl:if>
     
   <xsl:if test="documentation/comment[text()]">  
 
-**Comment:** <xsl:value-of select="documentation/comment"/> 
+**Comment:** <xsl:call-template name="printParagraphs"><xsl:with-param name="text" select="documentation/comment"/></xsl:call-template>
   </xsl:if>
   
   <xsl:if test="documentation/specialCases[node()] | documentation/usages[node()] | documentation/usagesNoExample[node()]">

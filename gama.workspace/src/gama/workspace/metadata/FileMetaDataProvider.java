@@ -19,8 +19,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -45,6 +47,7 @@ import org.eclipse.core.runtime.content.IContentTypeManager;
 import org.eclipse.emf.common.util.URI;
 
 import gama.api.GAMA;
+import gama.api.additions.GamaBundleLoader;
 import gama.api.constants.GamlFileExtension;
 import gama.api.ui.IStatusMessage;
 import gama.api.utils.files.CompressionUtils;
@@ -81,6 +84,9 @@ import gama.dev.FLAGS;
  * @version 2.0 - Improved thread safety and compression handling
  */
 public class FileMetaDataProvider implements IFileMetadataProvider {
+
+	/** The handled file extensions. */
+	private final Set<String> handledFileExtensions = new HashSet<>();
 
 	/** The metadata builders. */
 	Map<String, Function<IFile, IGamaFileMetaData>> metadataBuilders = new HashMap<>();
@@ -125,8 +131,12 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 				return null;
 			}
 		};
+		handledFileExtensions.addAll(GamaBundleLoader.HANDLED_FILE_EXTENSIONS.get(contentType));
 		registerMetadataDecoder(contentType, retriever);
 	}
+
+	@Override
+	public Set<String> getMetadataFileExtensions() { return Collections.unmodifiableSet(handledFileExtensions); }
 
 	/**
 	 * Register metadata builder.
@@ -187,17 +197,6 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 
 	/** The Constant INSTANCE. */
 	private static FileMetaDataProvider INSTANCE;
-
-	/** The Constant OSMExt. */
-	public static final ArrayList<String> OSMExt = new ArrayList<>() {
-
-		{
-			add("osm");
-			add("gz");
-			add("pbf");
-			add("bz2");
-		}
-	};
 
 	/** The Constant longNames. */
 	public static final HashMap<String, String> longNames = new HashMap<>() {
@@ -374,8 +373,9 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 	 */
 	private IGamaFileMetaData buildAndStore(final String contentType, final IFile file, final Object element) {
 		try {
-			// Re-check: another thread may have stored it while we were waiting.
-			IGamaFileMetaData data = readMetadata(contentType, file, true);
+			// Re-check: another thread may have stored or updated it while we were waiting.
+			// Only get a cached file if it is up-to-date
+			IGamaFileMetaData data = readMetadata(contentType, file, false);
 			if (data != null) return data;
 
 			final Function<IFile, IGamaFileMetaData> builder = metadataBuilders.get(contentType);
@@ -396,6 +396,36 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 	}
 
 	/**
+	 * Computes a robust, cross-platform content stamp used to decide whether a file's cached metadata is still valid.
+	 * <p>
+	 * We cannot use {@link IResource#getModificationStamp()} because it is an Eclipse-internal counter that is
+	 * <b>not</b> updated when a file is modified outside of the workspace.
+	 * <p>
+	 * Instead, this reads the <b>real</b> file-system last-modified time. Any content change updates the last-modified
+	 * time, so the stamp changes and the cache is invalidated. False positives (the stamp changing without an actual
+	 * content change, e.g. after a bare {@code touch}) are harmless, they merely trigger a recomputation, whereas false
+	 * negatives (reusing cached metadata after the content changed) are avoided for every realistic edit.
+	 * <p>
+	 * Only regular files use this scheme; projects and folders keep the workspace stamp, as do files whose local
+	 * location cannot be resolved (the method then falls back to {@link IResource#getModificationStamp()}).
+	 *
+	 * @param file
+	 *            the resource whose content stamp is requested
+	 * @return the content stamp of the file, or the workspace modification stamp when the local file is unavailable
+	 */
+	private static long getContentStamp(final IResource file) {
+		try {
+			if (file.getType() == IResource.FILE && file.getLocation() != null) {
+				final java.io.File f = file.getLocation().toFile();
+				if (f.exists()) return f.lastModified();
+			}
+		} catch (final Exception e) {
+			// Ignore and fall back to the workspace modification stamp below.
+		}
+		return file.getModificationStamp();
+	}
+
+	/**
 	 * Read metadata from either session properties (runtime) or persistent properties (startup). Handles both
 	 * compressed and uncompressed data formats for backward compatibility.
 	 *
@@ -412,7 +442,7 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 		if (file == null || !file.isAccessible() || contentType == null) return null;
 
 		IGamaFileMetaData result = null;
-		final long modificationStamp = file.getModificationStamp();
+		final long modificationStamp = getContentStamp(file);
 
 		try {
 			// First try to get from session properties (runtime cache)
@@ -485,7 +515,7 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 		try {
 			if (GAMA.getWorkspaceManager().getWorkspace().isTreeLocked()) return;
 
-			if (data != null) { data.setModificationStamp(file.getModificationStamp()); }
+			if (data != null) { data.setModificationStamp(getContentStamp(file)); }
 
 			final Runnable runnable = () -> {
 				try {
@@ -566,7 +596,6 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 		if (GamlFileExtension.isAny(p.getName())) return GAML_CT_ID;
 		final String ext = p.getFileExtension();
 		if ("shp".equals(ext)) return SHAPEFILE_CT_ID;
-		if (OSMExt.contains(ext)) return OSM_CT_ID;
 		if (longNames.containsKey(ext)) return SHAPEFILE_SUPPORT_CT_ID;
 		if ("gsim".equals(ext)) return GSIM_CT_ID;
 		return "";

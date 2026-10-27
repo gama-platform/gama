@@ -46,6 +46,7 @@ import gaml.compiler.documentation.GamlResourceDocumenter;
 import gaml.compiler.indexer.GamlResourceIndexer;
 import gaml.compiler.parsing.GamlSyntacticConverter;
 import gaml.compiler.validation.DocumentationContext;
+import gaml.compiler.validation.GamlAutoValidation;
 import gaml.compiler.validation.IGamlBuilderListener;
 import gaml.compiler.validation.ValidationContext;
 
@@ -194,7 +195,7 @@ public class GamlResourceServices {
 		final URI newURI = uri;
 
 		final IGamlBuilderListener listener = resourceListeners.get(newURI);
-		if (listener == null) return;
+		if (listener == null || !GamlAutoValidation.publicationGuard(uri).getAsBoolean()) return;
 
 		final Iterable exps = model == null ? newState ? Collections.EMPTY_SET : null
 				: Iterables.filter(model.getExperiments(), each -> !each.isAbstract());

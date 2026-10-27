@@ -534,7 +534,9 @@ public class GamlFormatter extends AbstractJavaFormatter {
 		if (open != null && close != null) {
 			doc.append(open, it -> it.newLine());
 			doc.interior(open, close, it -> it.indent());
-			doc.prepend(close, it -> it.setNewLines(0, 0, 1));
+			if (open.getNextHiddenRegion() != close.getPreviousHiddenRegion()) {
+				doc.prepend(close, it -> it.newLine());
+			}
 		}
 	}
 
@@ -635,7 +637,8 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 * <ul>
 	 * <li>A newline after the opening {@code {}.</li>
 	 * <li>Indentation of the interior between the braces.</li>
-	 * <li>Zero-to-one newlines before the closing {@code }}.</li>
+	 * <li>A newline before the closing {@code }} in non-empty blocks; empty blocks
+	 *     share the opening brace's newline rule.</li>
 	 * <li>Each statement inside the block is recursively formatted, with a newline before it.</li>
 	 * </ul>
 	 *
@@ -672,7 +675,8 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 * <ul>
 	 * <li>A newline after the opening {@code {}.</li>
 	 * <li>Indentation of the interior between the braces via {@code doc.interior()}.</li>
-	 * <li>Zero-to-one newlines before the closing {@code }}.</li>
+	 * <li>A newline before the closing {@code }} in non-empty blocks; empty blocks
+	 *     share the opening brace's newline rule.</li>
 	 * <li>Two blank lines (i.e. {@code setNewLines(2)}) are inserted <em>between</em> statements
 	 *     whenever the next or the previous statement is a major declaration, by appending to the
 	 *     hidden region <em>after</em> the preceding statement. The {@code append} direction avoids
@@ -691,7 +695,10 @@ public class GamlFormatter extends AbstractJavaFormatter {
 		if (openBrace != null && closeBrace != null) {
 			doc.append(openBrace, it -> it.newLine());
 			doc.interior(openBrace, closeBrace, it -> it.indent());
-			doc.prepend(closeBrace, it -> it.setNewLines(0, 0, 1));
+			// Empty blocks have only one hidden region between the braces.
+			if (openBrace.getNextHiddenRegion() != closeBrace.getPreviousHiddenRegion()) {
+				doc.prepend(closeBrace, it -> it.newLine());
+			}
 		}
 
 		final java.util.List<Statement> stmts = block.getStatements();

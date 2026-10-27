@@ -57,7 +57,6 @@ import gama.ui.display.opengl.renderer.caches.GeometryCache.BuiltInGeometry;
 import gama.ui.display.opengl.renderer.caches.ITextureCache;
 import gama.ui.display.opengl.renderer.caches.TextureCache2;
 import gama.ui.display.opengl.renderer.helpers.AbstractRendererHelper;
-import gama.ui.display.opengl.renderer.helpers.KeystoneHelper;
 import gama.ui.display.opengl.scene.AbstractObject;
 import gama.ui.display.opengl.scene.ObjectDrawer;
 import gama.ui.display.opengl.scene.geometry.GeometryDrawer;
@@ -77,7 +76,7 @@ import jogamp.opengl.glu.tessellator.GLUtessellatorImpl;
  * @author drogoul
  *
  */
-public class OpenGL extends AbstractRendererHelper implements ITesselator {
+public class OpenGL extends AbstractRendererHelper implements IOpenGL, ITesselator {
 
 	static {
 		DEBUG.OFF();
@@ -94,7 +93,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	public static final GLProfile PROFILE = GLProfile.getMaxFixedFunc(true);
 
 	/** The drawers. */
-	final Map<DrawerType, ObjectDrawer<?>> drawers = new HashMap<>();
+	final Map<DrawerType, ObjectDrawer<?, ?>> drawers = new HashMap<>();
 
 	/** The mesh drawers. */
 	final Map<MeshDrawer.Signature, MeshDrawer> meshDrawers = new HashMap<>();
@@ -235,7 +234,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		glut = new GLUT();
 		glu = new GLU();
 		// pickingState = renderer.getPickingHelper();
-		geometryCache = new GeometryCache(renderer);
+		geometryCache = new GeometryCache(renderer, this);
 		glTesselatorDrawer = (final double[] ordinates) -> { tobj.gluTessVertex(ordinates, 0, ordinates); };
 		GLU.gluTessCallback(tobj, GLU.GLU_TESS_VERTEX, this);
 		GLU.gluTessCallback(tobj, GLU.GLU_TESS_BEGIN, this);
@@ -265,7 +264,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 *            the type
 	 * @return the drawer for
 	 */
-	public ObjectDrawer<? extends AbstractObject<?, ?>> getDrawerFor(final AbstractObject<?, ?> object) {
+	public ObjectDrawer<? extends AbstractObject<?, ?>, ?> getDrawerFor(final AbstractObject<?, ?> object) {
 		// Only create signature and checking mesh drawers if the object is indeed a mesh.
 		if (object instanceof MeshObject mo) {
 			// Optimize: avoid creating a new Signature every time if possible or rely on efficient map operations.
@@ -291,7 +290,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * Dispose.
 	 */
 	public void dispose() {
-		for (ObjectDrawer<?> o : drawers.values()) { o.dispose(); }
+		for (ObjectDrawer<?, ?> o : drawers.values()) { o.dispose(); }
 		for (MeshDrawer md : meshDrawers.values()) { md.dispose(); }
 		geometryCache.dispose();
 		textureCache.dispose();
@@ -309,6 +308,40 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 *            the new gl2
 	 */
 	public void setGL2(final GL2 gl2) { this.gl = gl2; }
+
+	@Override
+	public GLProfile getProfile() { return PROFILE; }
+
+	@Override
+	public void setGL(final GL context) { setGL2(context.getGL2()); }
+
+	@Override
+	public void reshape(final GL context, final int width, final int height) {
+		reshape(context.getGL2(), width, height);
+	}
+
+	@Override
+	public int[] getViewport() { return viewport; }
+
+	@Override
+	public void lookAt(final IPoint position, final IPoint target, final IPoint up) {
+		glu.gluLookAt(position.getX(), position.getY(), position.getZ(), target.getX(), target.getY(), target.getZ(),
+				up.getX(), up.getY(), up.getZ());
+	}
+
+	@Override
+	public void unproject(final double x, final double y, final double depth, final double[] result) {
+		glu.gluUnProject(x, y, depth, mvmatrix, 0, projmatrix, 0, viewport, 0, result, 0);
+	}
+
+	@Override
+	public void ortho(final double left, final double right, final double bottom, final double top,
+			final double near, final double far) {
+		gl.glOrtho(left, right, bottom, top, near, far);
+	}
+
+	@Override
+	public boolean isDrawingStored() { return true; }
 
 	/**
 	 * Gets the glut.
@@ -397,6 +430,9 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		// DEBUG.OUT("Client area of window:" + getRenderer().getCanvas().getClientArea());
 	}
 
+	/** The maximum ratio between the far and near clipping planes preserving depth-buffer precision. */
+	private static final double MAX_DEPTH_RANGE_RATIO = 1e5;
+
 	/**
 	 * Update perspective.
 	 *
@@ -417,6 +453,9 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 			zFar = maxDim * 100d;
 			data.setZFar(zFar);
 		}
+		// A 24-bit depth buffer cannot resolve surfaces when zFar/zNear is too large: back faces then win the
+		// depth test and objects appear lit from behind (#973).
+		zNear = Math.max(zNear, zFar / MAX_DEPTH_RANGE_RATIO);
 
 		if (!getData().isOrtho()) {
 			try {
@@ -1163,9 +1202,17 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	}
 
 	/**
+	 * Invalidate cached texture state.
+	 */
+	public void invalidateTextureCache() {
+		lastBoundTexture = NO_TEXTURE;
+	}
+
+	/**
 	 * Delete volatile textures.
 	 */
 	public void deleteVolatileTextures() {
+		lastBoundTexture = NO_TEXTURE;
 		textureCache.deleteVolatileTextures();
 	}
 
@@ -1391,8 +1438,12 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	public int compileAsList(final Runnable r) {
 		final int index = gl.glGenLists(1);
 		gl.glNewList(index, GL2.GL_COMPILE);
-		r.run();
-		gl.glEndList();
+		try {
+			r.run();
+		} finally {
+			// Always close the list: an exception would otherwise leave GL in compile mode and swallow the whole frame
+			gl.glEndList();
+		}
 		return index;
 	}
 
@@ -1503,7 +1554,8 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		if (isTextured()) { gl.glBlendFunc(GL.GL_ONE, GL.GL_ONE_MINUS_SRC_ALPHA); }
 		setCurrentColor(att.getColor());
 		if (!empty && !att.isSynthetic()) {
-			gl.glTexEnvi(GL2ES1.GL_TEXTURE_ENV, GL2ES1.GL_TEXTURE_ENV_MODE, GL2ES1.GL_DECAL);
+			gl.glTexEnvi(GL2ES1.GL_TEXTURE_ENV, GL2ES1.GL_TEXTURE_ENV_MODE,
+					getLighting() ? GL2ES1.GL_MODULATE : GL2ES1.GL_DECAL);
 		}
 
 	}
@@ -1731,7 +1783,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * @return true, if is rendering keystone
 	 */
 	public boolean isRenderingKeystone() {
-		KeystoneHelper k = getRenderer().getKeystoneHelper();
+		var k = getRenderer().getKeystoneHelper();
 		return k.isActive() || getRenderer().getData().isKeystoneDefined();
 	}
 

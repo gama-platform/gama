@@ -109,6 +109,16 @@ public class JREPreferenceStore extends GamaPreferenceStore<Preferences> {
 		} catch (BackingStoreException e) {}
 	}
 
+	@Override
+	public void writeAndFlush(final Pref<?> gp) {
+		write(gp);
+		try {
+			store.flush();
+		} catch (final BackingStoreException e) {
+			throw new IllegalStateException("Unable to persist preferences", e);
+		}
+	}
+
 	/**
 	 * Destroys the entire JRE {@link Preferences} node by calling {@link Preferences#removeNode()}, which deletes the
 	 * node and all of its keys from the persistent backing store. After this call, subsequent reads will return

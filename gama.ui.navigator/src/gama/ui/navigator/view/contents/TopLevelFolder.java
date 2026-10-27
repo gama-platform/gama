@@ -10,25 +10,20 @@
  ********************************************************************************************************/
 package gama.ui.navigator.view.contents;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IProjectDescription;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.resource.ImageDescriptor;
 
 import gama.api.GAMA;
-import gama.api.additions.GamaBundleLoader;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.resources.IGamaIcons;
+import gama.workspace.manager.ProjectCategory;
 import one.util.streamex.StreamEx;
 
 /**
@@ -40,58 +35,37 @@ import one.util.streamex.StreamEx;
  */
 public class TopLevelFolder extends VirtualContent<NavigatorRoot> implements IGamaIcons, IGamaColors {
 
-	/**
-	 * The Enum Location.
-	 *
-	 * <p>
-	 * Describes where a project physically lives so that closed projects (whose description cannot be read) can be
-	 * assigned to the correct virtual folder.
-	 * </p>
-	 */
-	public enum Location {
-
-		/** The Core models – projects inside the {@code gama.library} bundle's {@code models/} directory. */
-		CoreModels,
-		/** The Plugins – projects inside any non-core bundle's {@code models/} directory. */
-		Plugins,
-		/** The Other – user-created projects outside any known plugin layout. */
-		Other,
-		/** The Unknown – could not be determined. */
-		Unknown,
-		/** The Tests – projects inside a {@code tests/} or {@code gaml/tests/} directory. */
-		Tests,
-		/** Tutorials – projects inside a {@code tutorials/} directory of any plugin bundle. */
-		Tutorials,
-		/** Recipes – projects inside a {@code recipes/} directory of any plugin bundle. */
-		Recipes
-	}
-
 	/** The children. */
 	WrappedProject[] children;
+
+	/** What is displayed directly under this folder: the projects and, for user projects, the groups. */
+	Object[] content;
+
+	/** The groups of user projects displayed in this folder. */
+	private final java.util.Map<org.eclipse.core.runtime.IPath, UserGroupFolder> groups = new java.util.HashMap<>();
 
 	/** The status icon. */
 	final ImageDescriptor icon;
 
-	/** The nature. */
-	final String statusMessage, nature;
+	/** The status message. */
+	final String statusMessage;
 
 	/** The status color. */
 	final GamaUIColor statusColor;
 
-	/** The location. */
-	final Location location;
+	/** The category of the projects displayed in this folder. */
+	final ProjectCategory category;
 
 	/**
 	 * @param root
 	 * @param name
 	 */
 	public TopLevelFolder(final NavigatorRoot root, final String name, final String iconName,
-			final String statusMessage, final GamaUIColor statusColor, final String nature, final Location location) {
+			final String statusMessage, final GamaUIColor statusColor, final ProjectCategory category) {
 		super(root, name);
 		this.statusColor = statusColor;
 		this.statusMessage = statusMessage;
-		this.nature = nature;
-		this.location = location;
+		this.category = category;
 		icon = GamaIcon.named(iconName).descriptor();
 		initializeChildren();
 	}
@@ -100,13 +74,16 @@ public class TopLevelFolder extends VirtualContent<NavigatorRoot> implements IGa
 	 * Initialize children.
 	 */
 	public void initializeChildren() {
-		children = StreamEx.of(GAMA.getWorkspaceManager().getRoot().getProjects()).filter(this::privateAccepts)
-				.map(p -> (WrappedProject) getManager().wrap(this, p)).toArray(WrappedProject.class);
+		final var root = GAMA.getWorkspaceManager().getRoot();
+		final List<IProject> accepted = StreamEx.of(root.getProjects()).filter(this::privateAccepts).toList();
+		final List<WrappedProject> flat = new ArrayList<>();
+		content = UserGroupFolder.organise(this, accepted, root.getLocation(), flat, groups).toArray();
+		children = flat.toArray(new WrappedProject[0]);
 	}
 
 	@Override
 	public boolean hasChildren() {
-		return children.length > 0;
+		return content.length > 0;
 	}
 
 	// @Override
@@ -115,7 +92,7 @@ public class TopLevelFolder extends VirtualContent<NavigatorRoot> implements IGa
 	// }
 
 	@Override
-	public Object[] getNavigatorChildren() { return children; }
+	public Object[] getNavigatorChildren() { return content; }
 
 	@Override
 	public int findMaxProblemSeverity() {
@@ -129,69 +106,16 @@ public class TopLevelFolder extends VirtualContent<NavigatorRoot> implements IGa
 	}
 
 	/**
-	 * @param desc
-	 * @return
+	 * Checks whether a project belongs to this folder. Projects are classified by their location (see
+	 * {@link ProjectCategory}).
+	 *
+	 * @param project
+	 *            the project to test
+	 * @return {@code true} if the project should appear in this folder
 	 */
 	public final boolean privateAccepts(final IProject project) {
 		if (project == null || !project.exists()) return false;
-		// TODO This one is clearly a hack. Should be replaced by a proper way
-		// to track persistently the closed projects
-		if (!project.isOpen()) return estimateLocation(project.getLocation()) == location;
-		try {
-			return accepts(project.getDescription());
-		} catch (final CoreException e) {
-			return false;
-		}
-	}
-
-	/**
-	 * Estimate location.
-	 *
-	 * @param location
-	 *            the location
-	 * @return the location
-	 */
-	protected Location estimateLocation(final IPath location) {
-		try {
-			final var old_url = new URL("platform:/plugin/" + GamaBundleLoader.CORE_MODELS.getSymbolicName() + "/");
-			final var new_url = FileLocator.toFileURL(old_url);
-			// windows URL formating
-			final var resolvedURI = new URI(new_url.getProtocol(), new_url.getPath(), null).normalize();
-			final var urlRep = resolvedURI.toURL();
-			final var osString = location.toOSString();
-			final var isTest = osString.contains(GamaBundleLoader.REGULAR_TESTS_LAYOUT);
-			final var isTutorial = osString.contains("/" + GamaBundleLoader.REGULAR_TUTORIALS_LAYOUT + "/");
-			final var isRecipe = osString.contains("/" + GamaBundleLoader.REGULAR_RECIPES_LAYOUT + "/");
-			if (isTutorial) return Location.Tutorials;
-			if (isRecipe) return Location.Recipes;
-			if (!isTest && osString.startsWith(urlRep.getPath())) return Location.CoreModels;
-			if (osString
-					.startsWith(urlRep.getPath().replace(GamaBundleLoader.CORE_MODELS.getSymbolicName() + "/", ""))) {
-				if (isTest) return Location.Tests;
-				return Location.Plugins;
-			}
-			return Location.Other;
-		} catch (final IOException | URISyntaxException e) {
-			e.printStackTrace();
-			return Location.Unknown;
-		}
-	}
-
-	/**
-	 * Accepts.
-	 *
-	 * <p>
-	 * Returns {@code true} if the given project description belongs to this virtual folder. Subclasses may override
-	 * this method to perform custom nature-matching logic (e.g., accepting multiple natures).
-	 * </p>
-	 *
-	 * @param desc
-	 *            the project description to test
-	 * @return {@code true} if the project should appear in this folder
-	 */
-	public boolean accepts(final IProjectDescription desc) {
-		if (nature != null) return desc.hasNature(nature);
-		return desc.getNatureIds().length < 3;
+		return ProjectCategory.of(project) == category;
 	}
 
 	@Override
@@ -204,6 +128,9 @@ public class TopLevelFolder extends VirtualContent<NavigatorRoot> implements IGa
 	// public Color getColor() {
 	// return ThemeHelper.isDark() ? IGamaColors.VERY_LIGHT_GRAY.color() : IGamaColors.GRAY_LABEL.color();
 	// }
+
+	@Override
+	public String getExplanation() { return statusMessage; }
 
 	@Override
 	public void getSuffix(final StringBuilder sb) {
@@ -219,11 +146,18 @@ public class TopLevelFolder extends VirtualContent<NavigatorRoot> implements IGa
 	public TopLevelFolder getTopLevelFolder() { return this; }
 
 	/**
-	 * Gets the nature.
+	 * Gets all the projects displayed in this folder, including those inside groups.
 	 *
-	 * @return the nature
+	 * @return the wrapped projects
 	 */
-	public String getNature() { return nature; }
+	public WrappedProject[] getProjects() { return children; }
+
+	/**
+	 * Gets the category of the projects displayed in this folder.
+	 *
+	 * @return the category
+	 */
+	public ProjectCategory getCategory() { return category; }
 
 	@Override
 	public VirtualContentType getType() { return VirtualContentType.VIRTUAL_FOLDER; }

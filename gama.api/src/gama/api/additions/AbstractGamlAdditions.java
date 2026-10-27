@@ -20,6 +20,8 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import gama.annotations.constants.IKeyword;
+import gama.annotations.display;
+import gama.annotations.skill;
 import gama.annotations.support.ISymbolKind;
 import gama.annotations.support.ITypeProvider;
 import gama.api.additions.registries.ArtefactRegistry;
@@ -41,6 +43,8 @@ import gama.api.gaml.types.Signature;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.GamaMetaModel;
 import gama.api.kernel.agent.IAgentConstructor;
+import gama.api.kernel.object.IObject;
+import gama.api.kernel.object.IObjectConstructor;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.IExperimentAgentCreator;
 import gama.api.kernel.simulation.IExperimentAgentCreator.ExperimentAgentDescription;
@@ -169,7 +173,11 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 	 */
 	public void _display(final String string, final Class<? extends IDisplaySurface> support, final IDisplayCreator d) {
 		GAML.addConstants(string);
-		GamaAdditionRegistry.addDelegate(string, new DisplayDescription(d, support, string, CURRENT_PLUGIN_NAME));
+		display ann = support.getAnnotation(display.class);
+		String vid = ann != null ? ann.viewId() : "";
+		boolean is3D = ann != null && ann.is3D();
+		GamaAdditionRegistry.addDelegate(string,
+				new DisplayDescription(d, support, string, CURRENT_PLUGIN_NAME, vid, is3D));
 		GamaBundleLoader.addDisplayPlugin(CURRENT_PLUGIN_NAME);
 	}
 
@@ -202,6 +210,13 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 	 */
 	public void _species(final String name, final Class clazz, final IAgentConstructor helper, final String... skills) {
 		GamaMetaModel.addSpecies(name, clazz, helper, skills);
+	}
+
+	/**
+	 * Registers a Java-backed non-agent GAML class.
+	 */
+	public void _class(final String name, final Class<? extends IObject> clazz, final IObjectConstructor helper) {
+		GamaMetaModel.addClass(name, clazz, helper);
 	}
 
 	/**
@@ -259,10 +274,10 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 	 *            the species
 	 */
 	protected void _skill(final String name, final Class clazz, final String... species) {
+		setSkillOrigin(clazz, name);
 		Iterable<IDescription> children = GAML.getAdditions(clazz);
 		if (children != null) {
 			for (final IDescription d : children) {
-				d.setOriginName("skill " + name);
 				d.setDefiningPlugin(CURRENT_PLUGIN_NAME);
 			}
 		}
@@ -271,6 +286,24 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 
 		GamaSkillRegistry.INSTANCE.register(sd, clazz);
 		for (final String spec : species) { GamaMetaModel.addSpeciesSkill(spec, name); }
+	}
+
+	/**
+	 * Labels inherited additions too, including those declared in unregistered implementation classes. An explicitly
+	 * annotated ancestor retains its own skill name, independently of skill registration order. Existing origins and
+	 * defining plugins are preserved.
+	 */
+	private static void setSkillOrigin(final Class<?> clazz, final String name) {
+		if (clazz == null) return;
+		final skill annotation = clazz.getDeclaredAnnotation(skill.class);
+		final String origin = annotation == null ? name : annotation.name();
+		for (final IDescription child : GAML.getAdditions(clazz)) {
+			child.setOriginName("skill " + origin);
+		}
+		setSkillOrigin(clazz.getSuperclass(), origin);
+		for (final Class<?> contract : clazz.getInterfaces()) {
+			setSkillOrigin(contract, origin);
+		}
 	}
 
 	/**

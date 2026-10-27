@@ -29,6 +29,7 @@ import gama.annotations.display;
 import gama.annotations.doc;
 import gama.annotations.experiment;
 import gama.annotations.file;
+import gama.annotations.gaml_class;
 import gama.annotations.listener;
 import gama.annotations.operator;
 import gama.annotations.skill;
@@ -40,6 +41,7 @@ import gama.annotations.vars;
 import gama.annotations.constants.IKeyword;
 import gama.processor.doc.DocProcessor;
 import gama.processor.elements.ActionProcessor;
+import gama.processor.elements.ClassProcessor;
 import gama.processor.elements.ConstantProcessor;
 import gama.processor.elements.DisplayProcessor;
 import gama.processor.elements.ExperimentProcessor;
@@ -355,6 +357,7 @@ public interface Constants {
 			put(doc.class, new DocProcessor());
 			// Then all the processors for specific annotations
 			put(species.class, new SpeciesProcessor());
+			put(gaml_class.class, new ClassProcessor());
 			put(symbol.class, new SymbolProcessor());
 			put(vars.class, new VarsProcessor());
 			put(listener.class, new ListenerProcessor());

@@ -1,10 +1,10 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Annotations shared by all GAMA plugins
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-SymbolicName: gama.annotations
 Bundle-Version: 0.0.0.qualifier
 Bundle-Vendor: UMMISCO
-Bundle-RequiredExecutionEnvironment: JavaSE-25
 Export-Package: gama.annotations,
  gama.annotations.constants,
  gama.annotations.support

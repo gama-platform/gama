@@ -10,6 +10,9 @@
 package gama.gaml.operators;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.StringJoiner;
 import java.util.StringTokenizer;
 import java.util.regex.MatchResult;
@@ -18,13 +21,16 @@ import java.util.regex.PatternSyntaxException;
 
 import gama.annotations.doc;
 import gama.annotations.example;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.no_test;
 import gama.annotations.operator;
 import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
+import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
@@ -67,7 +73,7 @@ import gama.api.utils.files.CompressionUtils;
  * <h3>Empty string</h3>
  * <p>
  * The empty string {@code ''} is a valid operand in all operators unless otherwise stated in the individual operator
- * documentation.
+ * documentation. Operations requiring a string reject nil with a GAML error.
  * </p>
  *
  * @author Alexis Drogoul (original), GAMA development team
@@ -80,6 +86,44 @@ import gama.api.utils.files.CompressionUtils;
  */
 @SuppressWarnings ({ "rawtypes" })
 public class Strings {
+
+	private static String requireString(final String value, final String operator) {
+		if (value == null)
+			throw GamaRuntimeException.error(operator + ": the string operand must not be nil", GAMA.getRuntimeScope());
+		return value;
+	}
+
+	/** Upper bound for cached compiled regex patterns used by string operators. */
+	private static final int REGEX_CACHE_SIZE = 256;
+
+	/** Small LRU cache to avoid recompiling frequently reused regex patterns. */
+	private static final Map<String, Pattern> REGEX_CACHE =
+			Collections.synchronizedMap(new LinkedHashMap<>(REGEX_CACHE_SIZE, 0.75f, true) {
+
+				@Override
+				protected boolean removeEldestEntry(final Map.Entry<String, Pattern> eldest) {
+					return size() > REGEX_CACHE_SIZE;
+				}
+			});
+
+	/**
+	 * Returns a compiled regex pattern from cache or compiles and stores it if missing.
+	 *
+	 * @param pattern
+	 *            the regex source
+	 * @return the compiled {@link Pattern}
+	 * @throws PatternSyntaxException
+	 *             if the regex is invalid
+	 */
+	private static Pattern getCachedPattern(final String pattern) {
+		synchronized (REGEX_CACHE) {
+			final Pattern cached = REGEX_CACHE.get(pattern);
+			if (cached != null) return cached;
+			final Pattern compiled = Pattern.compile(pattern);
+			REGEX_CACHE.put(pattern, compiled);
+			return compiled;
+		}
+	}
 
 	/**
 	 * Op plus.
@@ -113,11 +157,10 @@ public class Strings {
 							value = "\"hello \" + \"World\"",
 							equals = "\"hello World\"")))
 
-	@test ("'a'+'b'='ab'")
-	@test ("''+'' = ''")
-	@test ("string a <- 'a'; a + '' = a")
-	@test ("'hello' + '' = 'hello'")
-	@test ("'' + 'world' = 'world'")
+	@tests ({ @test ("'a'+'b'='ab'"), @test ("''+'' = ''"), @test ("string a <- 'a'; a + '' = a"),
+			@test ("'hello' + '' = 'hello'"), @test ("'' + 'world' = 'world'"),
+			@test ("char(49) + \"_annees\" != \"10_annees\""), @test ("char(49) + \"_annees\" = \"1_annees\""),
+			@test ("\"a\" + \"b\" = \"ab\"") })
 	public static String opPlus(final String a, final String b) {
 		return a + b;
 	}
@@ -163,9 +206,8 @@ public class Strings {
 					examples = @example (
 							value = "\"hello \" + 12",
 							equals = "\"hello 12\"")))
-	@test ("'a' + 1 = 'a1'")
-	@test ("'a' + 1.5 = 'a1.5'")
-	@test ("'a' + true = 'atrue'")
+	@tests ({ @test ("'a' + 1 = 'a1'"), @test ("'a' + 1.5 = 'a1.5'"), @test ("'a' + true = 'atrue'"),
+			@test ("(\"Result: \" + true) = \"Result: true\""), @test ("\"list \" + [1, 2] = \"list [1,2]\"") })
 	public static String opPlus(final IScope scope, final String a, final Object b) throws GamaRuntimeException {
 		return a + Cast.asString(scope, b);
 	}
@@ -208,9 +250,8 @@ public class Strings {
 					examples = @example (
 							value = "concatenate(['a','bc'])",
 							equals = "'abc'")))
-	@test ("concatenate([]) = ''")
-	@test ("concatenate(['a']) = 'a'")
-	@test ("concatenate(['a','b','c']) = 'abc'")
+	@tests ({ @test ("concatenate([]) = ''"), @test ("concatenate(['a']) = 'a'"),
+			@test ("concatenate(['a','b','c']) = 'abc'"), @test ("concatenate([\"a\", \"b\", \"c\"]) = \"abc\"") })
 	public static String opConcatenate(final IScope scope, final IList<String> strings) throws GamaRuntimeException {
 		StringBuilder sb = new StringBuilder();
 		for (String s : strings) { sb.append(s); }
@@ -263,6 +304,7 @@ public class Strings {
 	@test ("concatenate(['a','b'], '') = 'ab'")
 	public static String opConcatenateSep(final IScope scope, final IList<String> strings, final String separator)
 			throws GamaRuntimeException {
+		if (separator == null) throw GamaRuntimeException.error("concatenate: the separator must not be nil", scope);
 		StringJoiner sj = new StringJoiner(separator);
 		for (String s : strings) { sj.add(s); }
 		return sj.toString();
@@ -305,12 +347,12 @@ public class Strings {
 			examples = @example (
 					value = " 'bc' in 'abcded'",
 					equals = "true"))
-	@test ("'bc' in 'abcd'")
-	@test ("'' in 'abc'")
-	@test ("'abc' in 'abc'")
-	@test ("!('BC' in 'abcd')")
-	@test ("!('xyz' in 'abcd')")
+	@tests ({ @test ("'bc' in 'abcd'"), @test ("'' in 'abc'"), @test ("'abc' in 'abc'"), @test ("!('BC' in 'abcd')"),
+			@test ("!('xyz' in 'abcd')"), @test ("\"ce\" in \"abcede\" = true"),
+			@test ("\"ac\" in \"abcede\" = false") })
 	public static Boolean opIn(final String pattern, final String target) {
+		if (target == null) return false;
+		requireString(pattern, "in");
 		return target.contains(pattern);
 	}
 
@@ -347,9 +389,11 @@ public class Strings {
 			examples = @example (
 					value = "'abcded' contains 'bc'",
 					equals = "true"))
-	@test ("'abcd' contains 'bc'")
-	@test ("'abcd' contains ''")
-	@test ("!('abcd' contains 'xyz')")
+	@tests ({ @test ("'abcd' contains 'bc'"), @test ("'abcd' contains ''"), @test ("!('abcd' contains 'xyz')"),
+			@test ("'abcded' contains 'bd' = false"), @test ("'abcded' contains 'cd' = true"),
+			@test ("map<string, int> m1 <- [\"a\"::1, \"b\"::2]; map<string, int> m2 <- [\"c\"::3, \"d\"::4]; map<string, int> m3 <- m1 + m2; map<string, int> m4 <- m3 - [\"c\"::3]; m4.keys contains \"c\" = false"),
+			@test ("\"hello\" contains \"ell\""), @test ("not (\"hello\" contains \"xyz\")"),
+			@test ("\"\u65E5\u672C\u8A9E\" contains \"\u672C\"") })
 	public static Boolean opContains(final String target, final String pattern) {
 		return opIn(pattern, target);
 	}
@@ -381,14 +425,17 @@ public class Strings {
 	@doc (
 			value = "Returns true if the string contains at least one element of the list.",
 			returns = "a {@code bool}.",
-			special_cases = { "If the list is empty, returns false.",
-					"Non-string elements in the list are ignored." },
+			special_cases = { "If the list is empty, returns false.", "Non-string elements in the list are ignored." },
 			examples = @example (
 					value = "\"abcabcabc\" contains_any [\"ca\",\"xy\"]",
 					equals = "true"))
-	@test ("'abc' contains_any ['a', 'z']")
-	@test ("!('abc' contains_any ['x','y','z'])")
-	@test ("!('abc' contains_any [])")
+	@tests ({ @test ("'abc' contains_any ['a', 'z']"), @test ("!('abc' contains_any ['x','y','z'])"),
+			@test ("!('abc' contains_any [])"), @test ("'abcabcabc' contains_any ['ca', \"gh\"] = true"),
+			// GAMA doesn't have a direct string regex match operator that returns boolean easily without replacing,
+			// but one can use `contains_any` or `replace_regex` to verify patterns.
+			@test ("string s2 <- \"A1B2C3\"; s2 contains_any [\"1\", \"2\"] = true"),
+			@test ("\"hello\" contains_any [\"xx\", \"lo\"]"),
+			@test ("not (\"hello\" contains_any [\"xx\", \"yy\"])") })
 	public static Boolean opContainsAny(final String target, final IList l) {
 		for (final Object o : l) { if (o instanceof String && opContains(target, (String) o)) return true; }
 		return false;
@@ -428,9 +475,11 @@ public class Strings {
 					examples = @example (
 							value = "\"abcabcabc\" contains_all [\"ca\",\"xy\"]",
 							equals = "false")))
-	@test ("'abcabcabc' contains_all ['ab', 'bc']")
-	@test ("!('abc' contains_all ['ab','xyz'])")
-	@test ("'abc' contains_all []")
+	@tests ({ @test ("'abcabcabc' contains_all ['ab', 'bc']"), @test ("!('abc' contains_all ['ab','xyz'])"),
+			@test ("'abc' contains_all []"), @test ("\"abcabcabc\" contains_all [\"ca\", \"xy\"] = false"),
+			@test ("\"abcabcabc\" contains_all [\"ca\", \"ab\"] = true"),
+			@test ("\"hello\" contains_all [\"he\", \"lo\"]"),
+			@test ("not (\"hello\" contains_all [\"he\", \"xx\"])") })
 	public static Boolean opContainsAll(final String target, final IList l) {
 		for (final Object o : l) { if (!(o instanceof String) || !opContains(target, (String) o)) return false; }
 		return true;
@@ -457,8 +506,9 @@ public class Strings {
 					examples = @example (
 							value = "\"abcabcabc\" starts_with \"ab\"",
 							equals = "true")))
-	@test ("'abcabcabc' starts_with 'ab' = true")
-	@test ("'abcabcabc' starts_with 'bc' = false")
+	@tests ({ @test ("'abcabcabc' starts_with 'ab' = true"), @test ("'abcabcabc' starts_with 'bc' = false"),
+			@test ("\"hello world\" starts_with \"hello\""), @test ("not (\"hello world\" starts_with \"world\")"),
+			@test ("\"hello\" starts_with \"\""), @test ("\"hello\" starts_with \"hello\"") })
 	public static Boolean startsWith(final String target, final String pattern) {
 		if (target == null || pattern == null) return false;
 		return target.startsWith(pattern);
@@ -485,8 +535,8 @@ public class Strings {
 					examples = @example (
 							value = "\"abcabcabc\" ends_with \"bc\"",
 							equals = "true")))
-	@test ("'abcabcabc' ends_with 'bc' = true")
-	@test ("'abcabcabc' ends_with 'ab' = false")
+	@tests ({ @test ("'abcabcabc' ends_with 'bc' = true"), @test ("'abcabcabc' ends_with 'ab' = false"),
+			@test ("\"hello world\" ends_with \"world\""), @test ("not (\"hello world\" ends_with \"hello\")") })
 	public static Boolean endsWith(final String target, final String pattern) {
 		if (target == null || pattern == null) return false;
 		return target.endsWith(pattern);
@@ -517,7 +567,7 @@ public class Strings {
 			category = { IOperatorCategory.STRING },
 			concept = { IConcept.STRING })
 	@doc (
-			value = "Returns the index of the first occurrence of the right-hand string in the left-hand string. The index is 0-based.",
+			value = "Returns the index of the first occurrence of the right-hand string in the left-hand string. The index is 0-based and counts Unicode code points.",
 			returns = "an {@code int} &ge; 0 if found, or -1 if not found.",
 			special_cases = { "If the pattern is not found, returns -1.",
 					"If the pattern is the empty string, returns 0." },
@@ -526,11 +576,16 @@ public class Strings {
 					examples = @example (
 							value = "\"abcabcabc\" index_of \"ca\"",
 							equals = "2")))
-	@test ("'abcabcabc' index_of 'ca' = 2")
-	@test ("'abcabcabc' index_of 'x' = -1")
-	@test ("'abcabcabc' index_of '' = 0")
+	@tests ({ @test ("'abcabcabc' index_of 'ca' = 2"), @test ("'abcabcabc' index_of 'x' = -1"),
+			@test ("'abcabcabc' index_of '' = 0"), @test ("\"abcgrbd\" index_of \"bd\" = 5"),
+			@test ("\"abcgr\" index_of \"g\" = 3"), @test ("(\"abgrbdcghbd\" index_of \"bd\") = 4"),
+			@test ("(\"abcgrbc\" index_of \"bc\") = 1"), @test ("\"hello\" index_of \"l\" = 2"),
+			@test ("\"hello\" index_of \"z\" = -1") })
 	public static Integer opIndexOf(final String target, final String pattern) {
-		return target.indexOf(pattern);
+		requireString(target, "index_of");
+		requireString(pattern, "index_of");
+		final int index = target.indexOf(pattern);
+		return index < 0 ? -1 : target.codePointCount(0, index);
 	}
 
 	/**
@@ -558,15 +613,21 @@ public class Strings {
 			category = { IOperatorCategory.STRING },
 			concept = { IConcept.STRING })
 	@doc (
+			value = "Returns the 0-based Unicode code-point index of the last occurrence, or -1 if not found.",
 			usages = @usage (
 					value = "if both operands are strings, returns the index within the left-hand string of the rightmost occurrence of the given right-hand string",
 					examples = @example (
 							value = "\"abcabcabc\" last_index_of \"ca\"",
 							equals = "5")))
-	@test ("'abcabcabc' last_index_of 'x' = -1")
-	@test ("'abcabcabc' last_index_of 'ca' = 5")
+	@tests ({ @test ("'abcabcabc' last_index_of 'x' = -1"), @test ("'abcabcabc' last_index_of 'ca' = 5"),
+			@test ("\"abcgrbd\" last_index_of \"bd\" = 5"), @test ("(\"abgrbdcghbd\" last_index_of \"bd\") = 9"),
+			@test ("(\"abcgrbc\" last_index_of \"bc\") = 5"), @test ("\"hello\" last_index_of \"l\" = 3"),
+			@test ("\"hello\" last_index_of \"z\" = -1") })
 	public static Integer opLastIndexOf(final String target, final String pattern) {
-		return target.lastIndexOf(pattern);
+		requireString(target, "last_index_of");
+		requireString(pattern, "last_index_of");
+		final int index = target.lastIndexOf(pattern);
+		return index < 0 ? -1 : target.codePointCount(0, index);
 	}
 
 	/**
@@ -598,14 +659,21 @@ public class Strings {
 			category = { IOperatorCategory.STRING },
 			concept = { IConcept.STRING })
 	@doc (
+			value = "Copies the string between Unicode code-point indices, including the begin index and excluding the end index.",
 			examples = @example (
 					value = "copy_between(\"abcabcabc\", 2,6)",
 					equals = "\"cabc\""))
+	@tests ({ @test ("copy_between(\"abcabcabc\", 2, 6) != \"cabca\""),
+			@test ("copy_between(\"abcabcabc\", 2, 6) = \"cabc\""),
+			// the end index is excluded
+			@test ("copy_between(\"hello world\", 2, 5) = \"llo\""),
+			@test ("copy_between(\"hello world\", 0, 5) = \"hello\""), @test ("copy_between(\"hello\", 3, 1) = \"\""),
+			@test ("copy_between(\"hello\", -5, 50) = \"hello\""), @test ("\"\" copy_between(0, 3) = \"\"") })
 	public static String opCopy(final String target, final Integer beginIndex, final Integer endIndex) {
 		final int bIndex = beginIndex < 0 ? 0 : beginIndex;
-		final int eIndex = endIndex > target.length() ? target.length() : endIndex;
+		final int eIndex = Math.min(endIndex, length(target));
 		if (bIndex >= eIndex) return "";
-		return target.substring(bIndex, eIndex);
+		return target.substring(target.offsetByCodePoints(0, bIndex), target.offsetByCodePoints(0, eIndex));
 	}
 
 	/**
@@ -644,8 +712,18 @@ public class Strings {
 			examples = @example (
 					value = "'to be or not to be,that is the question' split_with ' ,'",
 					equals = "['to','be','or','not','to','be','that','is','the','question']"))
-	@test ("split_with('a,b,c', ',') = ['a','b','c']")
-	@test ("split_with('', ',') = []")
+	@tests ({ @test ("split_with('a,b,c', ',') = ['a','b','c']"), @test ("split_with('', ',') = []"),
+			@test ("string s1 <- \"apple,banana,orange\"; list<string> fruits <- s1 split_with \",\"; length(fruits) = 3"),
+			@test ("string s12 <- \"apple,banana,orange\"; list<string> fruits2 <- s12 split_with \",\"; fruits2[1] = \"banana\""),
+			@test ("string s2 <- \"apple  banana \\t orange\"; list<string> parts <- s2 split_with \" \\t\"; parts = [\"apple\", \"banana\", \"orange\"]"),
+			@test ("list<string> parts2 <- \"a-b-c\" split_with \"-\"; parts2 = [\"a\", \"b\", \"c\"]"),
+			@test ("\"one two  three\" tokenize \" \" = [\"one\", \"two\", \"three\"]"),
+			@test ("\"hello world\" split_with \" \" = [\"hello\", \"world\"]"),
+			// no delimiter, no split
+			@test ("\"hello\" split_with \",\" = [\"hello\"]"), @test ("\"\" split_with \",\" = []"),
+			@test ("\"hello\" split_with \"\" = [\"hello\"]"),
+			@test ("\"\uD83D\uDE00\uD83D\uDE00\" split_with \"\uD83D\uDE00\" = []"),
+			@test ("\"a\uD83D\uDE00b\uD83D\uDE00c\" split_with \"\uD83D\uDE00\" = [\"a\", \"b\", \"c\"]") })
 	public static IList opTokenize(final IScope scope, final String target, final String pattern) {
 		return opTokenize(scope, target, pattern, false);
 	}
@@ -695,6 +773,8 @@ public class Strings {
 							equals = "['aa','bb','cc']") })
 	public static IList opTokenize(final IScope scope, final String target, final String pattern,
 			final Boolean completeSep) {
+		if (target == null || pattern == null)
+			throw GamaRuntimeException.error("split_with: the string and separator must not be nil", scope);
 		if (completeSep) return GamaListFactory.create(scope, Types.STRING, target.split(pattern));
 		final StringTokenizer st = new StringTokenizer(target, pattern);
 		return GamaListFactory.create(scope, Types.STRING, st);
@@ -724,14 +804,14 @@ public class Strings {
 					examples = @example (
 							value = "\"to be,or not to be,that is the question\" tokenize_regex \",| \"",
 							equals = "['to','be','or','not','to','be','that','is','the','question']")))
-	@test ("'a,b,c' tokenize_regex ',' = ['a','b','c']")
-	@test ("'' tokenize_regex ',' = ['']")
+	@tests ({ @test ("'a,b,c' tokenize_regex ',' = ['a','b','c']"), @test ("'' tokenize_regex ',' = ['']"),
+			// with a regular expression
+			@test ("\"a1b22c333\" tokenize_regex \"[0-9]+\" = [\"a\", \"b\", \"c\"]") })
 	public static IList opTokenizeRegex(final IScope scope, final String target, final String pattern) {
 		if (target == null) return GamaListFactory.create();
 		if (pattern == null || pattern.isEmpty()) return GamaListFactory.create(scope, Types.STRING, target);
-		return GamaListFactory.create(scope, Types.STRING, target.split(pattern));
+		return GamaListFactory.create(scope, Types.STRING, getCachedPattern(pattern).split(target));
 	}
-
 
 	/**
 	 * Op replace.
@@ -767,9 +847,16 @@ public class Strings {
 					value = "replace('to be or not to be,that is the question','to', 'do')",
 					equals = "'do be or not do be,that is the question'"),
 			see = { "replace_regex" })
-	@test ("replace('hello world', 'world', 'GAMA') = 'hello GAMA'")
-	@test ("replace('', 'x', 'y') = ''")
+	@tests ({ @test ("replace('hello world', 'world', 'GAMA') = 'hello GAMA'"), @test ("replace('', 'x', 'y') = ''"),
+			@test ("string original <- \"hello world\"; string mod <- original replace(\"world\", \"GAMA\"); mod = \"hello GAMA\""),
+			@test ("string original2 <- \"hello world\"; string no_l <- original2 replace(\"l\", \"\"); no_l = \"heo word\""),
+			@test ("\"hello world hello\" replace (\"hello\", \"bye\") = \"bye world bye\""),
+			@test ("\"hello\" replace (\"z\", \"y\") = \"hello\""), @test ("\"hello\" replace (\"l\", \"\") = \"heo\""),
+			@test ("\"a\uD83D\uDE00b\" replace (\"\uD83D\uDE00\", \"-\") = \"a-b\"") })
 	public static String opReplace(final String target, final String pattern, final String replacement) {
+		requireString(target, "replace");
+		requireString(pattern, "replace");
+		requireString(replacement, "replace");
 		return target.replace(pattern, replacement);
 	}
 
@@ -802,14 +889,30 @@ public class Strings {
 			category = { IOperatorCategory.STRING },
 			concept = { IConcept.STRING })
 	@doc (
-			value = "Returns the string obtained by replacing by the third operand, in the first operand, all the sub-strings that match the regular expression of the second operand",
+			value = "Returns the string obtained by replacing by the third operand, in the first operand, all the sub-strings that match the regular expression of the second operand. An invalid regular expression raises a GAML error.",
 			examples = @example (
 					value = "replace_regex(\"colour, color\", \"colou?r\", \"col\")",
 					equals = "'col, col'"),
 			see = { "replace" })
+	@tests ({
+			@test ("string original <- \"hello world\"; string regex_mod <- original replace_regex(\"o.*d\", \"O\"); regex_mod = \"hellO\""),
+			@test ("\"\u00E9t\u00E9\" replace_regex (\"\u00E9\", \"e\") = \"ete\""),
+			// groups can be used in the replacement
+			@test ("\"hello world\" replace_regex (\"(\\\\w+) (\\\\w+)\", \"$2 $1\") = \"world hello\""),
+			@test ("\"a1b22c333\" replace_regex (\"[0-9]+\", \"#\") = \"a#b#c#\""),
+			@test ("\"a\uD83D\uDE00b\" replace_regex (\"\uD83D\uDE00\", \"-\") = \"a-b\"") })
 	public static String opReplaceRegex(final String target, final String pattern, final String replacement) {
-		// DEBUG.OUT("String pattern = " + pattern);
-		return target.replaceAll(pattern, replacement);
+		requireString(target, "replace_regex");
+		requireString(pattern, "replace_regex");
+		requireString(replacement, "replace_regex");
+		try {
+			return getCachedPattern(pattern).matcher(target).replaceAll(replacement);
+		} catch (final PatternSyntaxException e) {
+			final var error = GamaRuntimeException.error("Invalid regular expression '" + pattern + "': "
+					+ e.getDescription() + " at index " + e.getIndex(), GAMA.getRuntimeScope());
+			error.initCause(e);
+			throw error;
+		}
 	}
 
 	/**
@@ -843,11 +946,18 @@ public class Strings {
 					value = "regex_matches(\"colour, color\", \"colou?r\")",
 					equals = "['colour','color']"),
 			see = { "replace_regex" })
+	@tests ({
+			// 'regex_matches' returns every match of the pattern
+			@test ("\"hello\" regex_matches \"h.*o\" = [\"hello\"]"),
+			@test ("\"hello\" regex_matches \"h.l\" = [\"hel\"]"),
+			@test ("\"a1b22c333\" regex_matches \"[0-9]+\" = [\"1\", \"22\", \"333\"]"),
+			@test ("empty(\"Hello\" regex_matches \"hello\")") })
 	public static IList<String> opRegexMatches(final String target, final String pattern) {
 		if (pattern == null || pattern.isEmpty()) return GamaListFactory.create();
+		requireString(target, "regex_matches");
 		Pattern p;
 		try {
-			p = Pattern.compile(pattern);
+			p = getCachedPattern(pattern);
 		} catch (PatternSyntaxException e) {
 			return target.contains(pattern) ? GamaListFactory.createWithoutCasting(Types.STRING, pattern)
 					: GamaListFactory.create();
@@ -894,10 +1004,11 @@ public class Strings {
 					@example (
 							value = "is_number(\"#12FA\")",
 							equals = "true") })
-	@test ("is_number('42')")
-	@test ("is_number('3.14')")
-	@test ("!is_number('abc')")
-	@test ("!is_number('')")
+	@tests ({ @test ("is_number('42')"), @test ("is_number('3.14')"), @test ("!is_number('abc')"),
+			@test ("!is_number('')"), @test ("is_number(\"123.56\") = true"), @test ("is_number(\"test\") = false"),
+			@test ("is_number(\"123,56\") = false"), @test ("is_number(\"-123.56\") = true"),
+			@test ("not is_number(\"NaN\")"), @test ("is_number(\"123.45\") = true"),
+			@test ("is_number(\"12A\") = false"), @test ("is_number(\"12 apples\") = false") })
 	public static Boolean isGamaNumber(final String s) {
 		return StringUtils.isGamaNumber(s);
 	}
@@ -928,10 +1039,10 @@ public class Strings {
 					examples = @example (
 							value = "reverse ('abcd')",
 							equals = "'dcba'")))
-	@test ("reverse('') = ''")
-	@test ("reverse('abc') = 'cba'")
-	@test ("reverse('a') = 'a'")
+	@tests ({ @test ("reverse('') = ''"), @test ("reverse('abc') = 'cba'"), @test ("reverse('a') = 'a'"),
+			@test ("reverse(\"hello\") = \"olleh\""), @test ("reverse(\"\") = \"\"") })
 	static public String reverse(final String s) {
+		requireString(s, "reverse");
 		final StringBuilder buf = new StringBuilder(s);
 		buf.reverse();
 		return buf.toString();
@@ -963,6 +1074,8 @@ public class Strings {
 					examples = @example (
 							value = "empty ('abced')",
 							equals = "false")))
+	@tests ({ @test ("empty('abced') = false"), @test ("empty(\"\") = true"), @test ("empty(\"\")"),
+			@test ("not empty(\" \")") })
 	static public Boolean isEmpty(final String s) {
 		return s != null && s.isEmpty();
 	}
@@ -989,13 +1102,14 @@ public class Strings {
 			concept = { IConcept.STRING })
 	@doc (
 			usages = @usage (
-					value = "if it is a string, first returns a string composed of its first character",
+					value = "if it is a string, first returns a string composed of its first Unicode code point",
 					examples = @example (
 							value = "first ('abce')",
 							equals = "'a'")))
+	@tests ({ @test ("first(\"ghaj\") = \"g\""), @test ("first(\"hello\") = \"h\""), @test ("first(\"\") = \"\"") })
 	static public String first(final String s) {
 		if (s == null || s.isEmpty()) return "";
-		return String.valueOf(s.charAt(0));
+		return s.substring(0, s.offsetByCodePoints(0, 1));
 	}
 
 	/**
@@ -1020,13 +1134,14 @@ public class Strings {
 			concept = { IConcept.STRING })
 	@doc (
 			usages = @usage (
-					value = "if it is a string, last returns a string composed of its last character, or an empty string if the operand is empty",
+					value = "if it is a string, last returns a string composed of its last Unicode code point, or an empty string if the operand is empty",
 					examples = @example (
 							value = "last ('abce')",
 							equals = "'e'")))
+	@tests ({ @test ("last(\"ghaj\") = \"j\""), @test ("last(\"hello\") = \"o\""), @test ("last(\"\") = \"\"") })
 	static public String last(final String s) {
 		if (s == null || s.isEmpty()) return "";
-		return String.valueOf(s.charAt(s.length() - 1));
+		return s.substring(s.offsetByCodePoints(s.length(), -1));
 	}
 
 	/**
@@ -1051,15 +1166,15 @@ public class Strings {
 			concept = { IConcept.STRING })
 	@doc (
 			usages = @usage (
-					value = "if it is a string, length returns the number of characters",
+					value = "if it is a string, length returns the number of Unicode code points, not UTF-16 code units or visual grapheme clusters",
 					examples = @example (
 							value = "length (\"I am an agent\")",
 							equals = "13")))
-	@test ("length('') = 0")
-	@test ("length('abc') = 3")
+	@tests ({ @test ("length('') = 0"), @test ("length('abc') = 3"), @test ("length(\"to be or not to be\") = 18"),
+			@test ("length(\"hello\") = 5"), @test ("length(\"\") = 0") })
 	static public Integer length(final String s) {
 		if (s == null) return 0;
-		return s.length();
+		return s.codePointCount(0, s.length());
 	}
 
 	/**
@@ -1087,11 +1202,17 @@ public class Strings {
 			category = { IOperatorCategory.STRING },
 			concept = { IConcept.STRING })
 	@doc (
+			value = "Returns the Unicode code point at the given 0-based index as a string, or an empty string if the index is out of bounds.",
 			examples = @example (
 					value = "'abcdef' at 0",
 					equals = "'a'"))
+	@tests ({ @test ("\"hello\" at 0 = \"h\""), @test ("\"hello\" at 1 = \"e\""), @test ("\"hello\" at 10 = \"\""),
+			@test ("\"hello\" at -1 = \"\"") })
 	public static String get(final String lv, final int rv) {
-		return rv < lv.length() && rv >= 0 ? lv.substring(rv, rv + 1) : "";
+		requireString(lv, "at");
+		if (rv >= lv.codePointCount(0, lv.length()) || rv < 0) return "";
+		final int index = lv.offsetByCodePoints(0, rv);
+		return lv.substring(index, lv.offsetByCodePoints(index, 1));
 	}
 
 	/**
@@ -1120,6 +1241,7 @@ public class Strings {
 					examples = @example (
 							value = "char (34)",
 							equals = "'\"'")))
+	@tests ({ @test ("char(65) = \"A\"") })
 	static public String asChar(final Integer s) {
 		if (s == null) return "";
 		return Character.toString((char) s.byteValue());
@@ -1144,6 +1266,7 @@ public class Strings {
 	 *            the nb
 	 * @return the string
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "indented_by",
 			can_be_const = true,
@@ -1154,6 +1277,10 @@ public class Strings {
 			examples = @example (
 					value = "\"my\" + indented_by(\"text\", 1)",
 					equals = "\"my	text\""))
+	@tests ({
+			// every line is shifted by the given number of tabulations
+			@test ("\"hello\" indented_by 0 = \"hello\""), @test ("\"hello\" indented_by 2 = \"\\t\\thello\""),
+			@test ("\"a\\nb\" indented_by 1 = \"\\ta\\n\\tb\"") })
 	static public String indent(final String s, final int nb) {
 		if (nb <= 0) return s;
 		final StringBuilder sb = new StringBuilder(nb);
@@ -1181,8 +1308,9 @@ public class Strings {
 					examples = @example (
 							value = "trim(\"  abc  \")",
 							equals = "\"abc\"")))
-	@test ("trim('  abc  ') = 'abc'")
-	@test ("trim('abc') = 'abc'")
+	@tests ({ @test ("trim('  abc  ') = 'abc'"), @test ("trim('abc') = 'abc'"),
+			@test ("trim(\"  hello  \") = \"hello\""), @test ("trim(\" \\t hello world \\n\") = \"hello world\""),
+			@test ("trim(\"   \") = \"\"") })
 	public static String trim(final String target) {
 		if (target == null) return null;
 		return target.trim();
@@ -1214,8 +1342,9 @@ public class Strings {
 					value = "lower_case(\"Abc\")",
 					equals = "'abc'"),
 			see = { "upper_case" })
-	@test ("lower_case('') = ''")
-	@test ("lower_case('HELLO') = 'hello'")
+	@tests ({ @test ("lower_case('') = ''"), @test ("lower_case('HELLO') = 'hello'"),
+			@test ("lower_case(\"HjkLM\") = \"hjklm\""), @test ("lower_case(\"AbC\") = \"abc\""),
+			@test ("lower_case(\"ABC\") = \"abc\""), @test ("lower_case(\"\u00C9\u03A9\") = \"\u00E9\u03C9\"") })
 	static public String toLowerCase(final String s) {
 		if (s == null) return s;
 		return s.toLowerCase();
@@ -1247,8 +1376,10 @@ public class Strings {
 					value = "upper_case(\"Abc\")",
 					equals = "'ABC'"),
 			see = { "lower_case" })
-	@test ("upper_case('') = ''")
-	@test ("upper_case('hello') = 'HELLO'")
+	@tests ({ @test ("upper_case('') = ''"), @test ("upper_case('hello') = 'HELLO'"),
+			@test ("upper_case(\"GaMa\") = \"GAMA\""), @test ("upper_case(\"Abc\") = \"ABC\""),
+			@test ("upper_case(\"stra\u00DFe\") = \"STRASSE\""),
+			@test ("upper_case(\"\u00E9\u03C9\") = \"\u00C9\u03A9\"") })
 	static public String toUpperCase(final String s) {
 		if (s == null) return s;
 		return s.toUpperCase();
@@ -1282,12 +1413,16 @@ public class Strings {
 					value = "capitalize(\"abc\")",
 					equals = "'Abc'"),
 			see = { "lower_case", "upper_case" })
+	@tests ({
+			// only the first letter is capitalized
+			@test ("capitalize(\"hello world\") = \"Hello world\""), @test ("capitalize(\"Hello\") = \"Hello\""),
+			@test ("capitalize(\"\") = \"\"") })
 	public static String capitalize(final IScope scope, final String str) {
 		if (str == null) throw GamaRuntimeException.error("String cannot be null", scope);
 		if (str.isEmpty()) return str;
-		return str.substring(0, 1).toUpperCase().concat(str.substring(1));
+		final int end = str.offsetByCodePoints(0, 1);
+		return str.substring(0, end).toUpperCase().concat(str.substring(end));
 	}
-
 
 	/**
 	 * Whitespace check.
@@ -1302,8 +1437,8 @@ public class Strings {
 			examples = @example (
 					value = "whitespace(\"   \")",
 					equals = "true"))
-	@test ("whitespace('   ') = true")
-	@test ("whitespace('a') = false")
+	@tests ({ @test ("whitespace('   ') = true"), @test ("whitespace('a') = false"), @test ("is_whitespace(\"  \\t\")"),
+			@test ("not is_whitespace(\" a \")") })
 	public static Boolean isWhitespace(final String target) {
 		if (target == null) return false;
 		return target.trim().isEmpty() && !target.isEmpty();
@@ -1342,11 +1477,14 @@ public class Strings {
 			examples = @example (
 					value = "replace_first(\"abcabc\", \"a\", \"d\")",
 					equals = "\"dbcabc\""))
-	@test ("replace_first('abcabc', 'a', 'd') = 'dbcabc'")
+	@tests ({ @test ("replace_first('abcabc', 'a', 'd') = 'dbcabc'"),
+			@test ("\"hello world hello\" replace_first (\"hello\", \"bye\") = \"bye world hello\"") })
 	public static String replaceFirst(final String target, final String pattern, final String replacement) {
 		if (target == null) return null;
 		if (pattern == null || pattern.isEmpty()) return target;
-		return target.replaceFirst(java.util.regex.Pattern.quote(pattern), java.util.regex.Matcher.quoteReplacement(replacement));
+		requireString(replacement, "replace_first");
+		return target.replaceFirst(java.util.regex.Pattern.quote(pattern),
+				java.util.regex.Matcher.quoteReplacement(replacement));
 	}
 
 	/**
@@ -1362,7 +1500,10 @@ public class Strings {
 			examples = @example (
 					value = "count(\"abcabc\", \"a\")",
 					equals = "2"))
-	@test ("count('abcabc', 'a') = 2")
+	@tests ({ @test ("count('abcabc', 'a') = 2"),
+			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; numbers count (each = 1) = 2"),
+			@test ("list<int> numbers2 <- [1, 2, 3, 4, 5]; int count_even <- numbers2 count (each mod 2 = 0); count_even = 2"),
+			@test ("map<string, int> m1 <- [\"a\"::1, \"b\"::2, \"c\"::3, \"d\"::4]; int c1 <- m1 count (each > 2); c1 = 2") })
 	public static Integer count(final String target, final String pattern) {
 		if (target == null || pattern == null || pattern.isEmpty()) return 0;
 		int c = 0;
@@ -1387,8 +1528,8 @@ public class Strings {
 			examples = @example (
 					value = "is_alphanum(\"a1\")",
 					equals = "true"))
-	@test ("is_alphanum('a1') = true")
-	@test ("is_alphanum('a 1') = false")
+	@tests ({ @test ("is_alphanum('a1') = true"), @test ("is_alphanum('a 1') = false"), @test ("is_alphanum(\"abc1\")"),
+			@test ("not is_alphanum(\"abc-1\")") })
 	public static Boolean isAlphanum(final String target) {
 		if (target == null || target.isEmpty()) return false;
 		return target.matches("^[a-zA-Z0-9]+$");
@@ -1407,8 +1548,8 @@ public class Strings {
 			examples = @example (
 					value = "is_alpha(\"ab\")",
 					equals = "true"))
-	@test ("is_alpha('ab') = true")
-	@test ("is_alpha('a1') = false")
+	@tests ({ @test ("is_alpha('ab') = true"), @test ("is_alpha('a1') = false"), @test ("is_alpha(\"abc\")"),
+			@test ("not is_alpha(\"abc1\")"), @test ("not is_alpha(\"a b\")"), @test ("not is_alpha(\"\")") })
 	public static Boolean isAlpha(final String target) {
 		if (target == null || target.isEmpty()) return false;
 		return target.matches("^[a-zA-Z]+$");
@@ -1427,7 +1568,7 @@ public class Strings {
 			examples = @example (
 					value = "is_ascii(\"ab\")",
 					equals = "true"))
-	@test ("is_ascii('ab') = true")
+	@tests ({ @test ("is_ascii('ab') = true"), @test ("is_ascii(\"abc\")"), @test ("not is_ascii(\"\u00E9\")") })
 	public static Boolean isAscii(final String target) {
 		if (target == null) return false;
 		return target.matches("^\\p{ASCII}*$");
@@ -1466,15 +1607,11 @@ public class Strings {
 			examples = @example (
 					value = "is_digit(\"12\")",
 					equals = "true"))
-	@test ("is_digit('12') = true")
-	@test ("is_digit('a1') = false")
+	@tests ({ @test ("is_digit('12') = true"), @test ("is_digit('a1') = false"), @test ("is_digit(\"123\")"),
+			@test ("not is_digit(\"12.3\")"), @test ("not is_digit(\"12a\")") })
 	public static Boolean isDigit(final String target) {
 		if (target == null || target.isEmpty()) return false;
-		for (int i = 0; i < target.length(); i++) {
-			if (!Character.isDigit(target.charAt(i))) {
-				return false;
-			}
-		}
+		for (int i = 0; i < target.length(); i++) { if (!Character.isDigit(target.charAt(i))) return false; }
 		return true;
 	}
 
@@ -1491,8 +1628,8 @@ public class Strings {
 			examples = @example (
 					value = "is_upper(\"AB\")",
 					equals = "true"))
-	@test ("is_upper('AB') = true")
-	@test ("is_upper('Ab') = false")
+	@tests ({ @test ("is_upper('AB') = true"), @test ("is_upper('Ab') = false"), @test ("is_upper(\"ABC\")"),
+			@test ("not is_upper(\"ABc\")"), @test ("is_upper(upper_case(\"mixed Case\"))") })
 	public static Boolean isUpper(final String target) {
 		if (target == null || target.isEmpty()) return false;
 		return target.equals(target.toUpperCase());
@@ -1511,8 +1648,8 @@ public class Strings {
 			examples = @example (
 					value = "is_lower(\"ab\")",
 					equals = "true"))
-	@test ("is_lower('ab') = true")
-	@test ("is_lower('Ab') = false")
+	@tests ({ @test ("is_lower('ab') = true"), @test ("is_lower('Ab') = false"), @test ("is_lower(\"abc\")"),
+			@test ("not is_lower(\"aBc\")"), @test ("is_lower(lower_case(\"MIXEDcase\"))") })
 	public static Boolean isLower(final String target) {
 		if (target == null || target.isEmpty()) return false;
 		return target.equals(target.toLowerCase());
@@ -1521,6 +1658,7 @@ public class Strings {
 	/**
 	 * String with.
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "string_with",
 			can_be_const = true,
@@ -1535,9 +1673,7 @@ public class Strings {
 	public static String stringWith(final Integer count, final String pattern) {
 		if (count == null || count <= 0 || pattern == null) return "";
 		StringBuilder sb = new StringBuilder(count * pattern.length());
-		for (int i = 0; i < count; i++) {
-			sb.append(pattern);
-		}
+		for (int i = 0; i < count; i++) { sb.append(pattern); }
 		return sb.toString();
 	}
 
@@ -1560,6 +1696,7 @@ public class Strings {
 	 *            the str
 	 * @return the string
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = { "compress", "zip" },
 			can_be_const = true,
@@ -1569,10 +1706,13 @@ public class Strings {
 			value = "Returns a string that represents the compressed form (using gzip) of the argument",
 			see = { "uncompress" })
 	@no_test
+	@tests ({
+			@test ("string original <- \"hello hello hello hello hello hello hello hello\"; string compressed <- compress(original); compressed != original") })
 	public static String zip(final IScope scope, final String str) {
 		if (str == null) throw GamaRuntimeException.error("String cannot be null", scope);
 		if (str.isEmpty()) return str;
-		return new String(CompressionUtils.zip(str.getBytes()), StandardCharsets.ISO_8859_1);
+		// the text is encoded in UTF-8, and decoded the same way by 'uncompress'
+		return new String(CompressionUtils.zip(str.getBytes(StandardCharsets.UTF_8)), StandardCharsets.ISO_8859_1);
 	}
 
 	/**
@@ -1596,6 +1736,7 @@ public class Strings {
 	 *            the str
 	 * @return the string
 	 */
+	@no_fuzz_test ("acts on the outside world (files, network, clipboard, user interface, shell...)")
 	@operator (
 			value = { "uncompress", "decompress", "unzip" },
 			can_be_const = true,
@@ -1605,11 +1746,15 @@ public class Strings {
 			value = "Returns a string that represents the uncompressed form (using gzip) of the argument",
 			see = { "compress" })
 	@no_test
+	@tests ({
+			@test ("string original <- \"hello hello hello hello hello hello hello hello\"; string compressed <- compress(original); decompress(compressed) = original"),
+			@test ("string original2 <- \"hello hello hello hello hello hello hello hello\"; string compressed2 <- compress(original2); uncompress(compressed2) = original2"),
+			@test ("decompress(compress(\"\")) = \"\""), @test ("decompress(compress(\"\u00E9\")) = \"\u00E9\""),
+			@test ("decompress(compress(\"\uD83D\uDE00\uD83D\uDE00\uD83D\uDE00\")) = \"\uD83D\uDE00\uD83D\uDE00\uD83D\uDE00\"") })
 	public static String unzip(final IScope scope, final String str) {
 		if (str == null) throw GamaRuntimeException.error("String cannot be null", scope);
 		if (str.isEmpty()) return str;
-		return new String(CompressionUtils.unzip(str.getBytes(StandardCharsets.ISO_8859_1)),
-				StandardCharsets.ISO_8859_1);
+		return new String(CompressionUtils.unzip(str.getBytes(StandardCharsets.ISO_8859_1)), StandardCharsets.UTF_8);
 	}
 
 }

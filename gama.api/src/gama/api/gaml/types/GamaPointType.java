@@ -12,6 +12,8 @@ package gama.api.gaml.types;
 import org.eclipse.emf.ecore.EObject;
 
 import gama.annotations.doc;
+import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.type;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
@@ -92,6 +94,18 @@ import gama.api.types.map.IMap;
 		concept = { IConcept.TYPE, IConcept.POINT },
 		doc = @doc ("Represent locations in either 2 or 3 dimensions"))
 @SuppressWarnings ({ "unchecked", "rawtypes" })
+@tests ({
+		@test ("point p1 <- {1, 2, 3}; point p2 <- {1.0, 2.0, 3.0}; p1 = p2"),
+		@test ("point p12 <- {1, 2, 3}; point p3 <- {1, 2}; p12 != p3"),
+		@test ("point p13 <- {1, 2, 3}; p13.x = 1"),
+		@test ("point p14 <- {1, 2, 3}; p14.y = 2"),
+		@test ("point p15 <- {1, 2, 3}; p15.z = 3"),
+		@test ("point p32 <- {1, 2}; p32.z = 0"),
+		@test ("point p16 <- {1, 2}; point p22 <- {3, 4}; (p16 < p22) = true"),
+		@test ("point p17 <- {1, 2}; point p23 <- {3, 4}; (p17 > p23) = false"),
+		@test ("point p18 <- {1, 2}; (p18 <= {1, 2}) = true"),
+		@test ("point p19 <- {1, 2}; (p19 >= {1, 2}) = true")
+})
 public class GamaPointType extends GamaType<IPoint> {
 
 	/**

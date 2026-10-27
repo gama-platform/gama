@@ -29,6 +29,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.PlatformUI;
 
 import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
@@ -75,6 +76,8 @@ public class ExpressionControl implements /* IPopupProvider, */SelectionListener
 	/** The expected type. */
 	private final IType<?> expectedType;
 
+	private final boolean sourceOnly;
+
 	/** The tooltip listener. */
 	MouseTrackListener tooltipListener = new MouseTrackAdapter() {
 
@@ -104,7 +107,23 @@ public class ExpressionControl implements /* IPopupProvider, */SelectionListener
 	 */
 	public ExpressionControl(final IScope scope, final Composite comp, final ExpressionBasedEditor ed,
 			final IAgent agent, final IType<?> expectedType, final int controlStyle, final boolean evaluate) {
+		this(scope, comp, ed, agent, expectedType, controlStyle, evaluate, false);
+	}
+
+	/**
+	 * Creates a declaration-source editor without a runtime scope. The text remains verbatim, including
+	 * incomplete expressions and empty optional fields; the owning form validates it before applying.
+	 * No expression is compiled, evaluated or reformatted on modification, Enter or focus loss.
+	 */
+	public ExpressionControl(final Composite comp, final int controlStyle) {
+		this(null, comp, null, null, null, controlStyle, false, true);
+	}
+
+	private ExpressionControl(final IScope scope, final Composite comp, final ExpressionBasedEditor ed,
+			final IAgent agent, final IType<?> expectedType, final int controlStyle, final boolean evaluate,
+			final boolean sourceOnly) {
 		this.scope = scope;
+		this.sourceOnly = sourceOnly;
 		editor = ed;
 		evaluateExpression = evaluate;
 		hostAgent = agent;
@@ -119,6 +138,7 @@ public class ExpressionControl implements /* IPopupProvider, */SelectionListener
 
 	@Override
 	public void modifyText(final ModifyEvent event) {
+		if (sourceOnly) return;
 		if (editor != null && editor.internalModification) return;
 		modifyValue();
 		displayTooltip();
@@ -150,6 +170,7 @@ public class ExpressionControl implements /* IPopupProvider, */SelectionListener
 
 	@Override
 	public void widgetDefaultSelected(final SelectionEvent me) {
+		if (sourceOnly) return;
 		try {
 			if (text == null || text.isDisposed()) return;
 			modifyValue();
@@ -202,6 +223,7 @@ public class ExpressionControl implements /* IPopupProvider, */SelectionListener
 	 * Modify value.
 	 */
 	public void modifyValue() {
+		if (sourceOnly) return;
 		final var oldValue = getCurrentValue();
 		final var value = computeValue();
 		if (currentException != null) {
@@ -251,12 +273,16 @@ public class ExpressionControl implements /* IPopupProvider, */SelectionListener
 			GC gc = e.gc;
 			Rectangle bounds = c.getBounds();
 			Color ref = comp.getBackground();
-			gc.setBackground(ThemeHelper.isDark() ? get(ref).lighter() : get(ref).darker());
+			gc.setBackground(sourceOnly && !PlatformUI.isWorkbenchRunning()
+					? comp.getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW)
+					: ThemeHelper.isDark() ? get(ref).lighter() : get(ref).darker());
 			// gc.setForeground(gc.getBackground());
 			gc.fillRoundRectangle(0, 0, bounds.width, bounds.height, 5, 5);
 		});
 		final var t = new Text(c, controlStyle);
-		t.setForeground(GamaColors.getTextColorForBackground(comp.getBackground()).color());
+		t.setForeground(sourceOnly && !PlatformUI.isWorkbenchRunning()
+				? comp.getDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND)
+				: GamaColors.getTextColorForBackground(comp.getBackground()).color());
 
 		// force the color, see #2601
 		return t;
@@ -285,6 +311,7 @@ public class ExpressionControl implements /* IPopupProvider, */SelectionListener
 	 * @see gama.ui.shared.controls.IPopupProvider#getPopupText()
 	 */
 	public String getPopupText() {
+		if (sourceOnly) return "";
 		StringBuilder result = new StringBuilder();
 		final var value = getCurrentValue();
 		if (currentException != null) {
@@ -327,6 +354,10 @@ public class ExpressionControl implements /* IPopupProvider, */SelectionListener
 	 * @param currentValue2
 	 */
 	public void displayValue(final Object currentValue2) {
+		if (sourceOnly) {
+			if (!text.isDisposed()) text.setText(currentValue2 == null ? "" : currentValue2.toString());
+			return;
+		}
 		setCurrentValue(evaluateExpression ? expectedType == Types.STRING
 				? StringUtils.toJavaString(GamaStringType.staticCast(scope, currentValue2, false))
 				: expectedType.cast(scope, currentValue2, null, false) : currentValue2);

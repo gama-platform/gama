@@ -35,23 +35,33 @@ import gama.api.utils.json.IJsonValue;
 		@variable (
 				name = "liking",
 				type = IType.FLOAT,
-				doc = @doc ("the liking value of the link")),
+				doc = @doc ("the liking value of the link, conventionally in [-1, 1]; defaults to 0 (unspecified). "
+						+ "Constructors and Java setters do not validate the range. with_liking and add_social_link "
+						+ "check this range.")),
 		@variable (
 				name = "dominance",
 				type = IType.FLOAT,
-				doc = @doc ("the dominance value of the link")),
+				doc = @doc ("the dominance value of the link, conventionally in [-1, 1]; defaults to 0 (unspecified). "
+						+ "Constructors and Java setters do not validate the range. add_social_link accepts [-1, 1]; "
+						+ "with_dominance currently accepts [-1, 1), excluding 1.")),
 		@variable (
 				name = "solidarity",
 				type = IType.FLOAT,
-				doc = @doc ("the solidarity value of the link")),
+				doc = @doc ("the solidarity value of the link, conventionally in [0, 1]; defaults to 0 (unspecified). "
+						+ "Constructors and Java setters do not validate the range. with_solidarity and add_social_link "
+						+ "check this range.")),
 		@variable (
 				name = "familiarity",
 				type = IType.FLOAT,
-				doc = @doc ("the familiarity value of the link")),
+				doc = @doc ("the familiarity value of the link, conventionally in [0, 1]; defaults to 0 (unspecified). "
+						+ "Constructors and Java setters do not validate the range. with_familiarity and add_social_link "
+						+ "check this range.")),
 		@variable (
 				name = "trust",
 				type = IType.FLOAT,
-				doc = @doc ("the trust value of the link")) })
+				doc = @doc ("the trust value of the link, conventionally in [-1, 1]; defaults to 0 (unspecified). "
+						+ "Constructors and Java setters do not validate the range. with_trust checks this range; "
+						+ "add_social_link does not check trust.")) })
 
 public class SocialLink implements IValue {
 

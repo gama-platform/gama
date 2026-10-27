@@ -454,10 +454,9 @@ public class GAML {
 			throw GamaRuntimeException.error("Enter a valid expression", a.getScope());
 		final IExpression expr = compileExpression(expression, a, true);
 		if (expr == null) return null;
-		final IScope scope = a.getScope().copy("in temporary expression evaluator");
-		final Object o = scope.evaluate(expr, a).getValue();
-		GAMA.releaseScope(scope);
-		return o;
+		try (IScope scope = a.getScope().copy("in temporary expression evaluator")) {
+			return scope.evaluate(expr, a).getValue();
+		}
 	}
 
 	/**
@@ -511,19 +510,43 @@ public class GAML {
 			final IExecutionContext tempContext, final boolean onlyExpression) throws GamaRuntimeException {
 		if (agent == null) throw GamaRuntimeException.error("Agent is nil", tempContext.getScope());
 		final IDescription context = agent.getSpecies().getDescription();
+		IExpression result = null;
+		Throwable error = null;
 		try {
-			return getExpressionFactory().createExpr(expression, context, tempContext);
+			result = getExpressionFactory().createExpr(expression, context, tempContext);
 		} catch (final Throwable e) {
-			// Maybe it is a statement instead ?
-			if (onlyExpression) throw GamaRuntimeException.create(e, tempContext.getScope());
-			try {
-				return getExpressionFactory().createTemporaryActionForAgent(agent, expression, tempContext);
-			} catch (final Throwable e2) {
-				// Not a statement.
-				throw GamaRuntimeException.error(e.getMessage() + "\n" + e2.getMessage(), tempContext.getScope());
-			}
-
+			error = e;
 		}
+		
+		if (result != null) return result;
+
+		// if getExpressionFactory returned null, we stop here if we are in expression only, and  try to create an action otherwise.
+		
+		// it is possible that no exception was raised but getExpressionFactory wasn't able to create an expression either
+		final String firstError =	error == null 
+								? "'" + expression + "' cannot be compiled as an expression" 
+								: error.getMessage();
+		if (onlyExpression) {
+			throw	error == null 
+				? GamaRuntimeException.error(firstError, tempContext.getScope())
+				: GamaRuntimeException.create(error, tempContext.getScope());
+		}
+		
+		// Maybe it is a statement instead ?
+		try {
+			error = null;
+			result = getExpressionFactory().createTemporaryActionForAgent(agent, expression, tempContext);
+		} catch (final Throwable e2) {
+			error = e2;
+		}
+		if (result != null) return result;
+		
+		// If nothing worked until then, we have to raise an exception
+		final String secondError =	error == null
+								? firstError
+								: firstError + "\n" + error.getMessage();
+		
+		throw GamaRuntimeException.error(secondError, tempContext.getScope());
 	}
 
 	// ==================================================================================
@@ -941,9 +964,10 @@ public class GAML {
 	 */
 	public static List<GamlCompilationError> validate(final String entered, final boolean syntaxOnly) {
 		List<GamlCompilationError> errors = new ArrayList<>();
-		if (entered.startsWith(IKeyword.MODEL)) {
+		final String construct = entered.stripLeading();
+		if (construct.startsWith(IKeyword.MODEL)) {
 			gamlTextValidator.validateModel(entered, errors, syntaxOnly);
-		} else if (entered.startsWith(IKeyword.SPECIES) || entered.startsWith(IKeyword.GRID)) {
+		} else if (construct.startsWith(IKeyword.SPECIES) || construct.startsWith(IKeyword.GRID)) {
 			gamlTextValidator.validateSpecies(entered, errors, syntaxOnly);
 		} else if (entered.lines().count() > 1) {
 			gamlTextValidator.validateStatements(entered, errors, syntaxOnly);
@@ -968,6 +992,15 @@ public class GAML {
 	 */
 	public static int[] getLocationInFileInfo(final EObject source) {
 		return gamlTextValidator.getStartLineAndOffsetInFileInfo(source);
+	}
+
+	/**
+	 * Returns a source position captured before the containing resource is discarded.
+	 * Returns an unknown position for source-less diagnostics or before the text validator is registered.
+	 */
+	public static GamlCompilationError.Location getSourceLocation(final EObject source) {
+		return source == null || gamlTextValidator == null ? GamlCompilationError.Location.UNKNOWN
+				: gamlTextValidator.getSourceLocation(source);
 	}
 
 }

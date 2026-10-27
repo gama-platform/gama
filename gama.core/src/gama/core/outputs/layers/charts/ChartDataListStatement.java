@@ -10,13 +10,6 @@
  ********************************************************************************************************/
 package gama.core.outputs.layers.charts;
 
-import gama.api.compilation.descriptions.IDescription;
-import gama.api.exceptions.GamaRuntimeException;
-import gama.api.gaml.expressions.IExpression;
-import gama.api.gaml.statements.AbstractStatement;
-import gama.api.gaml.types.Cast;
-import gama.api.gaml.types.IType;
-import gama.api.runtime.scope.IScope;
 import gama.annotations.doc;
 import gama.annotations.facet;
 import gama.annotations.facets;
@@ -25,6 +18,13 @@ import gama.annotations.symbol;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.statements.AbstractStatement;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.runtime.scope.IScope;
 
 /**
  * The Class ChartDataListStatement.
@@ -34,8 +34,8 @@ import gama.annotations.support.ISymbolKind;
 		kind = ISymbolKind.SINGLE_STATEMENT,
 		with_sequence = false,
 		concept = { IConcept.CHART },
-		doc = @doc ("add a list of series to a chart. The number of series can be dynamic (the size of the list changes each step). See Ant Foraging (Charts) model in ChartTest for examples."))
-@doc ("add a list of series to a chart. The number of series can be dynamic (the size of the list changes each step). See Ant Foraging (Charts) model in ChartTest for examples.")
+		doc = @doc ("add a list of series to a chart. The number of series can be dynamic (the size of the list changes each step). Series are identified by their position in the list, not by their legend, so several series can share the same legend. Like the other statements of the chart body, it is re-evaluated at every step: if it is not executed at some step, its series are frozen in series, xy, scatter and heatmap charts, and removed in pie, histogram, radar and box_whisker charts. See Ant Foraging (Charts) model in ChartTest for examples."))
+@doc ("add a list of series to a chart. The number of series can be dynamic (the size of the list changes each step). Series are identified by their position in the list, not by their legend, so several series can share the same legend. Like the other statements of the chart body, it is re-evaluated at every step: if it is not executed at some step, its series are frozen in series, xy, scatter and heatmap charts, and removed in pie, histogram, radar and box_whisker charts. See Ant Foraging (Charts) model in ChartTest for examples.")
 @inside (
 		symbols = IKeyword.CHART,
 		kinds = ISymbolKind.SEQUENCE_STATEMENT)
@@ -72,9 +72,9 @@ import gama.annotations.support.ISymbolKind;
 						doc = @doc ("the marker sizes to display. Can be a list of numbers (same size for each marker of the series) or a list of list (different sizes by point)")),
 				@facet (
 						name = IKeyword.LEGEND,
-						type = IType.LIST,
+						type = { IType.LIST, IType.BOOL, IType.STRING, IType.NONE },
 						optional = true,
-						doc = @doc ("the name of the series: a list of strings (can be a variable with dynamic names)")),
+						doc = @doc ("Series legend labels: a string labels the first series; a list provides one label per series. Use true for default series names, false or nil to hide all series labels, or nil/whitespace list elements to hide individual labels. Legends are only displayed names and do not need to be unique.")),
 				@facet (
 						name = ChartDataStatement.MARKER,
 						type = IType.BOOL,
@@ -108,9 +108,9 @@ import gama.annotations.support.ISymbolKind;
 						doc = @doc ("Marker filled (true) or not (false), same for all series.")),
 				@facet (
 						name = IKeyword.COLOR,
-						type = IType.LIST,
+						type = { IType.LIST, IType.COLOR, IType.CONTAINER, IType.NONE },
 						optional = true,
-						doc = @doc ("list of colors, for heatmaps can be a list of [minColor,maxColor] or [minColor,medColor,maxColor]")),
+						doc = @doc ("a single color or list of colors. If a list of colors smaller than the list of values is provided, colors will cycle. For heatmaps can be a list of [minColor,maxColor] or [minColor,medColor,maxColor]")),
 				@facet (
 						name = ChartDataStatement.THICKNESS,
 						type = IType.FLOAT,
@@ -124,7 +124,7 @@ import gama.annotations.support.ISymbolKind;
 								IKeyword.EXPLODED },
 						optional = true,
 						doc = @doc ("Style for the serie (if not the default one sepecified on chart statement)")) },
-		omissible = IKeyword.LEGEND)
+		omissible = IKeyword.VALUE)
 public class ChartDataListStatement extends AbstractStatement {
 
 	/**
@@ -232,9 +232,8 @@ public class ChartDataListStatement extends AbstractStatement {
 	@Override
 	protected Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
 		final ChartDataSet graphdataset = (ChartDataSet) scope.getVarValue(ChartLayerStatement.CHARTDATASET);
-		final ChartDataSourceList data = createDataSource(scope, graphdataset);
-		graphdataset.addDataSource(data);
-		return data;
+		if (graphdataset == null) return null;
+		return graphdataset.getOrCreateSource(this, "", () -> createDataSource(scope, graphdataset));
 	}
 
 }

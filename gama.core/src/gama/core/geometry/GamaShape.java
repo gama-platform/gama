@@ -87,6 +87,9 @@ public class GamaShape implements IShape {
 	/** The attributes. */
 	protected IMap<String, Object> attributes;
 
+	/** The envelope of the data source this shape was built from, if any. */
+	private IEnvelope sourceEnvelope;
+
 	/**
 	 * Instantiates a new gama shape.
 	 *
@@ -528,7 +531,25 @@ public class GamaShape implements IShape {
 
 	@Override
 	public IShape copy(final IScope scope) {
-		return GamaShapeFactory.createFrom(geometry.copy());
+		final IShape result = GamaShapeFactory.createFrom(geometry.copy());
+		if (result instanceof GamaShape gs) { gs.sourceEnvelope = sourceEnvelope; }
+		return result;
+	}
+
+	/**
+	 * Sets the envelope of the data source (e.g. a GIS file) this shape was built from. When defined, it is what the
+	 * 'envelope' attribute returns, so that geometry(file).envelope is the same as envelope(file).
+	 *
+	 * @param env
+	 *            the source envelope (may be null)
+	 */
+	public void setSourceEnvelope(final IEnvelope env) { sourceEnvelope = env; }
+
+	@Override
+	public IShape getGeometricEnvelope() {
+		final IEnvelope env = sourceEnvelope;
+		if (env == null || env.isNull()) return IShape.super.getGeometricEnvelope();
+		return GamaShapeFactory.buildBox(env.getWidth(), env.getHeight(), env.getDepth(), env.center());
 	}
 
 	@Override

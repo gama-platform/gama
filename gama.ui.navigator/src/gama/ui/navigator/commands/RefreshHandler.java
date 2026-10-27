@@ -43,6 +43,7 @@ import gama.dev.DEBUG;
 import gama.ui.navigator.view.GamaNavigator;
 import gama.ui.navigator.view.contents.NavigatorRoot;
 import gama.ui.navigator.view.contents.ResourceManager;
+import gama.ui.navigator.view.contents.UserGroups;
 import gama.ui.shared.interfaces.IRefreshHandler;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.workspace.manager.WorkspaceModelsManager;
@@ -98,9 +99,15 @@ public class RefreshHandler implements IRefreshHandler {
 
 				@Override
 				public IStatus runInWorkspace(final IProgressMonitor monitor) throws CoreException {
-					resource.refreshLocal(DEPTH_INFINITE, monitor);
-					resource.getParent().refreshLocal(DEPTH_INFINITE, monitor);
-					return Status.OK_STATUS;
+					try {
+						resource.refreshLocal(DEPTH_INFINITE, monitor);
+						if (resource.getParent() != null) {
+							resource.getParent().refreshLocal(DEPTH_INFINITE, monitor);
+						}
+						return Status.OK_STATUS;
+					} finally {
+						UserGroups.refreshNavigator();
+					}
 				}
 			};
 			job.schedule();

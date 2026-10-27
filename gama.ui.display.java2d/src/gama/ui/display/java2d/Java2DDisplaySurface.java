@@ -53,6 +53,7 @@ import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.displays.IGraphicsScope;
 import gama.api.ui.layers.IEventLayerListener;
+import gama.api.ui.layers.KeyCombination;
 import gama.api.ui.layers.ILayer;
 import gama.api.ui.layers.ILayerManager;
 import gama.api.utils.geometry.GamaEnvelopeFactory;
@@ -204,6 +205,11 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	public void dispatchKeyEvent(final char e) {
 		// DEBUG.OUT("Key received by the surface " + e);
 		for (final IEventLayerListener gl : listeners) { gl.keyPressed(String.valueOf(e)); }
+	}
+
+	@Override
+	public void dispatchKeyCombination(final KeyCombination combination) {
+		for (final IEventLayerListener listener : listeners) { listener.keyCombinationPressed(combination); }
 	}
 
 	/**
@@ -562,7 +568,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 		if (gg == null) // DEBUG.OUT("[paintComponent] SKIPPED (iGraphics=null) for " + output.getName() + " thread="
 			// + Thread.currentThread().getName());
 			return;
-		final long t0 = System.currentTimeMillis();
+		// final long t0 = System.currentTimeMillis();
 		// DEBUG.OUT("[paintComponent] START for " + output.getName() + " thread=" + Thread.currentThread().getName());
 		// DEBUG.OUT("-- Surface effectively painting on Java2D context");
 		super.paintComponent(g);

@@ -34,7 +34,7 @@ global {
 		if(appkey = "KEY") {
 			map useless <- user_input_dialog("Please enter your MapQuest key in the model code.", []);			
 		} else {
-			map answers <- user_input_dialog("Center of the map can be a pair lat,lon (e.g; '48.8566140,2.3522219')", [enter("Center",map_center),enter("Zoom x",map_zoom),enter("Size", map_size)]);
+			map<string, string> answers <- user_input_dialog("Center of the map can be a pair lat,lon (e.g; '48.8566140,2.3522219')", [enter("Center",map_center),enter("Zoom x",map_zoom),enter("Size", map_size)]);
 		    map_center <- answers["Center"]; 
 			map_zoom <- int(answers["Zoom x"]);
 			map_size <- point(answers["Size"]);

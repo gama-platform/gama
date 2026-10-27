@@ -25,8 +25,8 @@ import gama.api.runtime.scope.IScope;
 /**
  * Base exception class for all runtime exceptions in GAMA.
  * <p>
- * This exception is thrown when an abnormal situation occurs during model execution. It provides
- * comprehensive context information including:
+ * This exception is thrown when an abnormal situation occurs during model execution. It provides comprehensive context
+ * information including:
  * </p>
  * <ul>
  * <li>The simulation cycle at which the error occurred</li>
@@ -36,11 +36,18 @@ import gama.api.runtime.scope.IScope;
  * <li>Stack trace and contextual information for debugging</li>
  * </ul>
  * <p>
- * GamaRuntimeException can be configured to track multiple occurrences of the same error across
- * different agents, providing aggregated error reporting to avoid flooding the user with duplicate
- * messages.
+ * GamaRuntimeException can be configured to track multiple occurrences of the same error across different agents,
+ * providing aggregated error reporting to avoid flooding the user with duplicate messages.
  * </p>
- * 
+ * <p>
+ * The factory methods construct or wrap exceptions; they do not deliver them to the runtime error handler. Throw an
+ * exception when the current operation cannot safely continue: normal statement and scope execution boundaries catch
+ * and report propagated failures. For a recoverable condition with a defined fallback, use
+ * {@link gama.api.GAMA#reportAndThrowIfNeeded(IScope, GamaRuntimeException, boolean)} and implement the fallback if it
+ * returns. Do not replace a throw with a reporting call unless continuing execution is safe. In particular, throwing a
+ * warning still abandons the current operation, even if reporting policy later allows the simulation to continue.
+ * </p>
+ *
  * @author drogoul
  * @since 7 janv. 2011
  */
@@ -75,18 +82,28 @@ public class GamaRuntimeException extends RuntimeException {
 	/**
 	 * Creates a GamaRuntimeException from a generic Throwable.
 	 * <p>
-	 * This factory method wraps different types of exceptions into appropriate GAMA exception types,
-	 * such as {@link GamaRuntimeFileException} for I/O errors.
+	 * This factory method wraps different types of exceptions into appropriate GAMA exception types, such as
+	 * {@link GamaRuntimeFileException} for I/O errors. Stack exhaustion is reported as a GAML execution error while
+	 * retaining its original cause for diagnostics.
 	 * </p>
 	 *
-	 * @param ex the throwable to wrap
-	 * @param scope the execution scope in which the exception occurred
+	 * @param ex
+	 *            the throwable to wrap
+	 * @param scope
+	 *            the execution scope in which the exception occurred
 	 * @return a GamaRuntimeException wrapping the throwable
 	 */
 	public static GamaRuntimeException create(final Throwable ex, final IScope scope) {
 		return switch (ex) {
 			case GamaRuntimeException gre -> gre;
 			case IOException io -> new GamaRuntimeFileException(scope, io);
+			case StackOverflowError overflow -> {
+				final GamaRuntimeException error = error(
+						"Execution stack exhausted: action calls are nested too deeply. Check for runaway recursion.",
+						scope);
+				error.initCause(overflow);
+				yield error;
+			}
 			default -> new GamaRuntimeException(scope, ex);
 		};
 	}
@@ -94,8 +111,10 @@ public class GamaRuntimeException extends RuntimeException {
 	/**
 	 * Creates a GamaRuntimeException representing an error.
 	 *
-	 * @param s the error message
-	 * @param scope the execution scope
+	 * @param s
+	 *            the error message
+	 * @param scope
+	 *            the execution scope
 	 * @return a new error exception
 	 */
 	public static GamaRuntimeException error(final String s, final IScope scope) {
@@ -105,8 +124,10 @@ public class GamaRuntimeException extends RuntimeException {
 	/**
 	 * Creates a GamaRuntimeException representing a warning.
 	 *
-	 * @param s the warning message
-	 * @param scope the execution scope
+	 * @param s
+	 *            the warning message
+	 * @param scope
+	 *            the execution scope
 	 * @return a new warning exception
 	 */
 	public static GamaRuntimeException warning(final String s, final IScope scope) {
@@ -118,11 +139,12 @@ public class GamaRuntimeException extends RuntimeException {
 	/**
 	 * Extracts a user-friendly exception name from a Throwable.
 	 * <p>
-	 * This method provides specialized names for common exception types and library-specific
-	 * exceptions to improve error message clarity for users.
+	 * This method provides specialized names for common exception types and library-specific exceptions to improve
+	 * error message clarity for users.
 	 * </p>
 	 *
-	 * @param ex the exception
+	 * @param ex
+	 *            the exception
 	 * @return a user-friendly name for the exception
 	 */
 	@SuppressWarnings ("unused")
@@ -149,13 +171,14 @@ public class GamaRuntimeException extends RuntimeException {
 	/**
 	 * Constructs a GamaRuntimeException from a Throwable.
 	 * <p>
-	 * This constructor wraps a Java exception and captures the current execution context
-	 * including the symbol being executed and the simulation cycle. It also includes
-	 * stack trace information from the original exception.
+	 * This constructor wraps a Java exception and captures the current execution context including the symbol being
+	 * executed and the simulation cycle. It also includes stack trace information from the original exception.
 	 * </p>
 	 *
-	 * @param scope the execution scope
-	 * @param ex the underlying exception
+	 * @param scope
+	 *            the execution scope
+	 * @param ex
+	 *            the underlying exception
 	 */
 	protected GamaRuntimeException(final IScope scope, final Throwable ex) {
 		super(ex == null ? "Error" : "Java error: " + getExceptionName(ex), ex);
@@ -166,7 +189,8 @@ public class GamaRuntimeException extends RuntimeException {
 			if (symbol != null) { addContext(symbol); }
 		}
 		if (ex != null) {
-			ex.printStackTrace();
+			// Errors caught by 'try' or by a test are expected: don't flood the output with their traces
+			if (scope == null || !scope.isInTryMode()) { ex.printStackTrace(); }
 			addContext(ex.getClass().getSimpleName() + ": " + ex.getMessage());
 			int i = 0;
 			for (final StackTraceElement element : ex.getStackTrace()) {
@@ -181,13 +205,16 @@ public class GamaRuntimeException extends RuntimeException {
 	/**
 	 * Constructs a GamaRuntimeException with a custom message.
 	 * <p>
-	 * This constructor creates an exception with a user-specified message and allows
-	 * configuring whether it represents a warning or error.
+	 * This constructor creates an exception with a user-specified message and allows configuring whether it represents
+	 * a warning or error.
 	 * </p>
 	 *
-	 * @param scope the execution scope
-	 * @param s the exception message
-	 * @param warning true if this is a warning, false if it's an error
+	 * @param scope
+	 *            the execution scope
+	 * @param s
+	 *            the exception message
+	 * @param warning
+	 *            true if this is a warning, false if it's an error
 	 */
 	protected GamaRuntimeException(final IScope scope, final String s, final boolean warning) {
 		super(s);
@@ -205,11 +232,12 @@ public class GamaRuntimeException extends RuntimeException {
 	/**
 	 * Adds a context string to this exception.
 	 * <p>
-	 * Context strings provide additional information about where and how the exception occurred,
-	 * helping with debugging and error reporting.
+	 * Context strings provide additional information about where and how the exception occurred, helping with debugging
+	 * and error reporting.
 	 * </p>
 	 *
-	 * @param c the context string to add
+	 * @param c
+	 *            the context string to add
 	 */
 	public void addContext(final String c) {
 		context.add(c);
@@ -218,12 +246,12 @@ public class GamaRuntimeException extends RuntimeException {
 	/**
 	 * Adds context information from a GAML symbol.
 	 * <p>
-	 * This method extracts contextual information from a symbol (such as its GAML representation)
-	 * and adds it to the exception's context. It also captures the underlying model element
-	 * for editor integration.
+	 * This method extracts contextual information from a symbol (such as its GAML representation) and adds it to the
+	 * exception's context. It also captures the underlying model element for editor integration.
 	 * </p>
 	 *
-	 * @param s the symbol to extract context from
+	 * @param s
+	 *            the symbol to extract context from
 	 */
 	public void addContext(final ISymbol s) {
 		String serial = s.serializeToGaml(false);
@@ -242,11 +270,12 @@ public class GamaRuntimeException extends RuntimeException {
 	/**
 	 * Adds an agent name to the list of agents affected by this exception.
 	 * <p>
-	 * This method is used to track which agents encountered this exception. It prevents
-	 * duplicate entries and increments the occurrence counter.
+	 * This method is used to track which agents encountered this exception. It prevents duplicate entries and
+	 * increments the occurrence counter.
 	 * </p>
 	 *
-	 * @param agent the name of the agent to add
+	 * @param agent
+	 *            the name of the agent to add
 	 */
 	public void addAgent(final String agent) {
 		occurrences++;
@@ -257,7 +286,8 @@ public class GamaRuntimeException extends RuntimeException {
 	/**
 	 * Adds multiple agent names to the list of affected agents.
 	 *
-	 * @param agents the list of agent names to add
+	 * @param agents
+	 *            the list of agent names to add
 	 */
 	public void addAgents(final List<String> agents) {
 		for (final String agent : agents) { addAgent(agent); }
@@ -273,8 +303,7 @@ public class GamaRuntimeException extends RuntimeException {
 	/**
 	 * Gets a summary string describing the agents affected by this exception.
 	 * <p>
-	 * The summary includes the number of occurrences and the affected agents,
-	 * formatted for user-friendly display.
+	 * The summary includes the number of occurrences and the affected agents, formatted for user-friendly display.
 	 * </p>
 	 *
 	 * @return a formatted string summarizing affected agents
@@ -297,7 +326,8 @@ public class GamaRuntimeException extends RuntimeException {
 	/**
 	 * Computes the current simulation cycle from a scope.
 	 *
-	 * @param scope the execution scope
+	 * @param scope
+	 *            the execution scope
 	 * @return the current cycle number, or 0 if not available
 	 */
 	public long computeCycle(final IScope scope) {
@@ -308,8 +338,8 @@ public class GamaRuntimeException extends RuntimeException {
 	/**
 	 * Gets the full context information as a list of strings.
 	 * <p>
-	 * This includes the simulation name, affected agents, and all context strings
-	 * that have been added to this exception.
+	 * This includes the simulation name, affected agents, and all context strings that have been added to this
+	 * exception.
 	 * </p>
 	 *
 	 * @return the context as a list of strings
@@ -348,12 +378,12 @@ public class GamaRuntimeException extends RuntimeException {
 	/**
 	 * Checks if this exception is equivalent to another exception.
 	 * <p>
-	 * Two exceptions are considered equivalent if they have the same message, editor context,
-	 * simulation root, and occurred in the same cycle. This is used to avoid reporting
-	 * duplicate exceptions.
+	 * Two exceptions are considered equivalent if they have the same message, editor context, simulation root, and
+	 * occurred in the same cycle. This is used to avoid reporting duplicate exceptions.
 	 * </p>
 	 *
-	 * @param ex the exception to compare with
+	 * @param ex
+	 *            the exception to compare with
 	 * @return true if the exceptions are equivalent
 	 */
 	public boolean equivalentTo(final GamaRuntimeException ex) {
@@ -385,9 +415,8 @@ public class GamaRuntimeException extends RuntimeException {
 	/**
 	 * Gets the complete exception message including all context information.
 	 * <p>
-	 * This method returns a formatted string containing the agent summary, cycle number,
-	 * exception message, and all context information, suitable for display in error logs
-	 * or user interfaces.
+	 * This method returns a formatted string containing the agent summary, cycle number, exception message, and all
+	 * context information, suitable for display in error logs or user interfaces.
 	 * </p>
 	 *
 	 * @return the full exception text with context
@@ -405,8 +434,8 @@ public class GamaRuntimeException extends RuntimeException {
 	/**
 	 * Checks if this exception is invalid and should not be reported.
 	 * <p>
-	 * An exception is considered invalid if the simulation or experiment has been closed
-	 * or is no longer valid. Invalid exceptions are typically not shown to the user.
+	 * An exception is considered invalid if the simulation or experiment has been closed or is no longer valid. Invalid
+	 * exceptions are typically not shown to the user.
 	 * </p>
 	 *
 	 * @return true if the exception is invalid
@@ -420,5 +449,10 @@ public class GamaRuntimeException extends RuntimeException {
 	 * @return the top-level agent, or null if not available
 	 */
 	public ITopLevelAgent getTopLevelAgent() { return scope == null ? null : scope.getRoot(); }
+
+	/**
+	 * @return
+	 */
+	public IScope getScope() { return scope; }
 
 }

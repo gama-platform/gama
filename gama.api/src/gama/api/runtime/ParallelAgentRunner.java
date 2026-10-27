@@ -16,6 +16,7 @@ import java.util.concurrent.RecursiveTask;
 
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.IShape;
 
@@ -122,8 +123,12 @@ public abstract class ParallelAgentRunner<T> extends RecursiveTask<T> implements
 	public static <A extends IShape> Boolean step(final IScope scope, final A[] array, final int threshold)
 			throws GamaRuntimeException {
 		final ParallelAgentStepper runner = from(scope, array, threshold);
-		if (array.length <= threshold) { return runner.executeOn(scope); }
-		return execute(runner);
+		try {
+			if (array.length <= threshold) { return runner.executeOn(scope); }
+			return execute(runner);
+		} finally {
+			runner.originalScope.clear();
+		}
 	}
 
 	/**
@@ -150,10 +155,14 @@ public abstract class ParallelAgentRunner<T> extends RecursiveTask<T> implements
 	public static <A extends IShape> void execute(final IScope scope, final IExecutable executable, final A[] array,
 			final int threshold) throws GamaRuntimeException {
 		final ParallelAgentRunner<?> runner = from(scope, executable, array, threshold);
-		if (array.length <= threshold) {
-			runner.executeOn(scope);
-		} else {
-			execute(runner);
+		try {
+			if (array.length <= threshold) {
+				runner.executeOn(scope);
+			} else {
+				execute(runner);
+			}
+		} finally {
+			runner.originalScope.clear();
 		}
 	}
 
@@ -212,7 +221,7 @@ public abstract class ParallelAgentRunner<T> extends RecursiveTask<T> implements
 	 */
 	protected <A extends IShape> ParallelAgentRunner(final IScope scope, final Spliterator<IAgent> agents) {
 		this.agents = agents;
-		this.originalScope = scope.copy(" - forked - ");
+		this.originalScope = scope.fork(" - forked - ");
 	}
 
 	/**
@@ -249,11 +258,39 @@ public abstract class ParallelAgentRunner<T> extends RecursiveTask<T> implements
 	 */
 	@Override
 	protected T compute() throws GamaRuntimeException {
+		try {
+			return computePartition();
+		} finally {
+			originalScope.clear();
+		}
+	}
+
+	private T computePartition() {
 		final Spliterator<IAgent> sub = agents.trySplit();
-		if (sub == null) { return executeOn(originalScope); }
+		if (sub == null) {
+			// Worker threads (possibly shared between simulations) run the leaf on behalf of its simulation
+			final ISimulationAgent sim = originalScope.getSimulation();
+			if (sim == null || SimulationContext.current() == sim) return executeOn(originalScope);
+			return SimulationContext.callFor(sim, () -> executeOn(originalScope));
+		}
 		final ParallelAgentRunner<T> left = subTask(sub);
-		left.fork();
-		final T rightResult = compute();
+		try {
+			left.fork();
+		} catch (final RuntimeException | Error failure) {
+			left.originalScope.clear();
+			throw failure;
+		}
+		final T rightResult;
+		try {
+			rightResult = computePartition();
+		} catch (final RuntimeException | Error failure) {
+			try {
+				left.join();
+			} catch (final RuntimeException | Error leftFailure) {
+				if (leftFailure != failure) { failure.addSuppressed(leftFailure); }
+			}
+			throw failure;
+		}
 		final T leftResult = left.join();
 		return mergeResults(leftResult, rightResult);
 	}

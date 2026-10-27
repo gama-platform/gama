@@ -49,7 +49,7 @@ import org.geotools.renderer.lite.StreamingRenderer;
 import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.types.geometry.IShape;
-import gama.core.util.file.GamaOsmFile;
+import gama.extension.osm.GamaOsmFile;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.GamaColors;

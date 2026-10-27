@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -25,9 +26,11 @@ import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription.DescriptionVisitor;
 import gama.api.compilation.descriptions.ISkillDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
+import gama.api.gaml.GAML;
 import gama.api.kernel.skill.ISkill;
 import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
+import gama.api.utils.JavaUtils;
 
 /**
  * Registry for agent skills and control architectures in GAMA.
@@ -248,7 +251,8 @@ public class GamaSkillRegistry {
 	}
 
 	/**
-	 * Gets the variables for skill.
+	 * Gets the variables declared directly by a skill description. For inherited Java additions as well,
+	 * use {@link #getEffectiveVariablesForSkill(String)}.
 	 *
 	 * @param s
 	 *            the s
@@ -258,6 +262,32 @@ public class GamaSkillRegistry {
 		final ISkillDescription sd = skills.get(s);
 		if (sd == null) return Collections.EMPTY_LIST;
 		return sd.getOwnAttributes().values();
+	}
+
+	/**
+	 * Returns the effective attributes of a skill or control architecture, including registered Java superclass
+	 * and interface additions. Uses the same implementation hierarchy as species compilation; more specialized
+	 * additions override inherited attributes with the same name.
+	 *
+	 * @param name the registered skill name
+	 * @return an immutable snapshot of the registered descriptions (read-only), or an empty list for an unknown skill
+	 */
+	public List<IVariableDescription> getEffectiveVariablesForSkill(final String name) {
+		final ISkillDescription description = skills.get(name);
+		if (description == null) return List.of();
+		final Map<String, IVariableDescription> variables = new LinkedHashMap<>();
+		for (final IVariableDescription variable : description.getOwnAttributes().values())
+			variables.put(variable.getName(), variable);
+		final Class<?> implementationClass = description.getJavaBase();
+		if (implementationClass != null) {
+			final Class<? extends ISkill> support = implementationClass.asSubclass(ISkill.class);
+			for (final Class implementation : JavaUtils.collectImplementationClasses(support, List.of(support),
+					GAML.getAdditionClasses())) {
+				for (final var addition : GAML.getAdditions(implementation))
+					if (addition instanceof IVariableDescription variable) variables.put(variable.getName(), variable);
+			}
+		}
+		return List.copyOf(variables.values());
 	}
 
 	/**

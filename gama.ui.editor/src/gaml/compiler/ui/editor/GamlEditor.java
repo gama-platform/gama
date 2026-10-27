@@ -10,29 +10,26 @@
  ********************************************************************************************************/
 package gaml.compiler.ui.editor;
 
-import static gama.api.utils.prefs.GamaPreferences.Modeling.EDITOR_COLLAPSE_BUTTONS;
-import static gama.api.utils.prefs.GamaPreferences.Modeling.EDITOR_EXPERIMENT_MENU;
-import static gama.ui.shared.resources.IGamaIcons.MARKER_ERROR;
-import static gama.ui.shared.resources.IGamaIcons.SMALL_DROPDOWN;
-import static gaml.compiler.ui.editor.GamlEditorState.NO_EXP_DEFINED;
 import static org.eclipse.ui.texteditor.ITextEditorActionConstants.DELETE;
 import static org.eclipse.ui.texteditor.ITextEditorActionConstants.FIND;
 import static org.eclipse.ui.texteditor.ITextEditorActionConstants.REDO;
 import static org.eclipse.ui.texteditor.ITextEditorActionConstants.UNDO;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.xtext.resource.EObjectAtOffsetHelper;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IMenuManager;
@@ -78,8 +75,6 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
@@ -94,6 +89,7 @@ import org.eclipse.text.edits.MalformedTreeException;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.text.templates.TemplatePersistenceData;
 import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.internal.editors.text.codemining.annotation.AnnotationCodeMiningPreferenceConstants;
@@ -117,13 +113,12 @@ import org.eclipse.xtext.ui.editor.validation.ValidationJob;
 import org.eclipse.xtext.ui.resource.IResourceSetProvider;
 import org.eclipse.xtext.ui.validation.MarkerTypeProvider;
 import org.eclipse.xtext.validation.CheckMode;
-import org.eclipse.xtext.validation.IResourceValidator;
-import org.eclipse.xtext.validation.Issue;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
 import gama.annotations.constants.IKeyword;
+import gama.api.GAMA;
 import gama.api.compilation.IModelsManager;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IModelDescription;
@@ -135,39 +130,34 @@ import gama.api.utils.prefs.GamaPreferences;
 import gama.api.utils.prefs.IPreferenceChangeListener.IPreferenceAfterChangeListener;
 import gama.dev.DEBUG;
 import gama.dev.FLAGS;
-import gama.ui.application.workbench.ThemeHelper;
-import gama.ui.shared.controls.FlatButton;
-import gama.ui.shared.menus.GamaMenu;
+import gama.ui.shared.access.GamlAccessContents2;
+import gama.ui.shared.commands.SearchGamlReferenceHandler;
 import gama.ui.shared.resources.GamaColors;
-import gama.ui.shared.resources.GamaColors.GamaUIColor;
 import gama.ui.shared.resources.GamaFonts;
 import gama.ui.shared.resources.GamaIcon;
-import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.resources.IGamaIcons;
+import gaml.compiler.gaml.FacetsAndBlock;
 import gama.ui.shared.utils.UICleanupTasks;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.toolbar.GamaCommand;
 import gama.ui.shared.views.toolbar.GamaToolbar2;
 import gama.ui.shared.views.toolbar.GamaToolbarFactory;
 import gama.ui.shared.views.toolbar.IToolbarDecoratedView;
-import gama.ui.shared.views.toolbar.Selector;
 import gaml.compiler.resource.GamlResourceServices;
 import gaml.compiler.ui.decorators.GamlAnnotationImageProvider;
+import gaml.compiler.ui.decorators.GamlDecorator;
 import gaml.compiler.ui.editor.toolbar.CreateExperimentSelectionListener;
 import gaml.compiler.ui.editor.toolbar.EditorSearchControls;
 import gaml.compiler.ui.editor.toolbar.EditorToolbar;
-import gaml.compiler.ui.editor.toolbar.OpenExperimentSelectionListener;
 import gaml.compiler.ui.editor.toolbar.ExportExperimentSelectionListener;
-import gaml.compiler.ui.editor.toolbar.OpenImportedErrorSelectionListener;
+import gaml.compiler.ui.editor.toolbar.ExperimentToolbar;
+import gaml.compiler.ui.editor.toolbar.OpenExperimentSelectionListener;
 import gaml.compiler.ui.editor.toolbar.RevalidateModelSelectionListener;
-import gaml.compiler.ui.reference.BuiltinReferenceMenu;
-import gaml.compiler.ui.reference.ColorReferenceMenu;
-import gaml.compiler.ui.reference.OperatorsReferenceMenu;
-import gaml.compiler.ui.reference.TemplateReferenceMenu;
-import gaml.compiler.ui.editor.refactoring.ExtractActionHandler;
 import gaml.compiler.ui.templates.GamlEditTemplateDialogFactory;
 import gaml.compiler.ui.templates.GamlTemplateStore;
 import gaml.compiler.validation.IGamlBuilderListener;
+import gaml.compiler.validation.GamlAutoValidation;
+import gaml.compiler.validation.GamlResourceValidator;
 
 /**
  * The Class GamlEditor.
@@ -191,7 +181,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	private static IPreferenceStore miningPreferencesStore;
 
 	/** The to remove. */
-	private final static Set<String> TO_REMOVE_FROM_MENUS = Set.of("revert", "save", "__PREFS__.ContextAction",
+	private final static Set<String> TO_REMOVE_FROM_MENUS = Set.of("revert", "save",
 			"QuickAssist", "Open W&ith", "Sho&w In	⌥⌘W", "group.open");
 
 	/** The Constant ANNOTATION_INFO_TYPES. */
@@ -229,15 +219,6 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	/** The diagram opener. */
 	static IDiagramOpener diagramOpener;
 
-	/** The BUTTON_IMAGES. */
-	static final Map<String, Image> BUTTON_IMAGES = new HashMap();
-
-	/** The menu BUTTON_IMAGES. */
-	static final Map<String, String> MENU_IMAGES = new HashMap();
-
-	/** The Constant BUTTON_HEIGHT. */
-	static final int BUTTON_HEIGHT = 20;
-
 	/** The Constant SCHEDULE_DELAY. */
 	public static final int SCHEDULE_DELAY = 0;
 
@@ -247,13 +228,6 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 		store.setDefault(AbstractDecoratedTextEditorPreferenceConstants.SHOW_RANGE_INDICATOR, false);
 		store.setDefault("spellingEnabled", false);
 		store.setValue("spellingEnabled", false);
-		BUTTON_IMAGES.put(IKeyword.BATCH, GamaIcon.named(IGamaIcons.BUTTON_BATCH).image());
-		BUTTON_IMAGES.put(IKeyword.RECORD, GamaIcon.named(IGamaIcons.BUTTON_BACK).image());
-		BUTTON_IMAGES.put("regular", GamaIcon.named(IGamaIcons.BUTTON_GUI).image());
-		MENU_IMAGES.put(IKeyword.BATCH, ThemeHelper.isDark() ? IGamaIcons.BUTTON_BATCH : IGamaIcons.MENU_BATCH);
-		MENU_IMAGES.put(IKeyword.RECORD, ThemeHelper.isDark() ? IGamaIcons.BUTTON_BACK : IGamaIcons.MENU_BACK);
-		MENU_IMAGES.put("regular", ThemeHelper.isDark() ? IGamaIcons.BUTTON_GUI : IGamaIcons.MENU_GUI);
-		BUTTON_IMAGES.put("new", GamaIcon.named(IGamaIcons.ADD_EXPERIMENT).image());
 	}
 
 	/**
@@ -272,6 +246,8 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	/** The toolbar. */
 	GamaToolbar2 toolbar;
 
+	private ExperimentToolbar experimentToolbar;
+
 	/** The toolbar parent. */
 	Composite toolbarParent;
 
@@ -287,6 +263,9 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	/** The modelsManager. */
 	@Inject IModelsManager modelsManager;
 
+	/** Resolves the GAML element under the caret. */
+	@Inject private EObjectAtOffsetHelper eObjectAtOffsetHelper;
+
 	/** The template dialog factory. */
 	@Inject private GamlEditTemplateDialogFactory templateDialogFactory;
 
@@ -294,7 +273,41 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	@Inject private TemplateStore templateStore;
 
 	/** The validator. */
-	@Inject private IResourceValidator validator;
+	@Inject private GamlResourceValidator validator;
+
+	private ValidationJob validationJob;
+
+	GamlEditorTickUpdater validationTickUpdater;
+
+	public boolean isAutomaticValidationEnabled() {
+		return GamlAutoValidation.isEnabled(fileURI);
+	}
+
+	@Override
+	public String getTitleToolTip() {
+		String tooltip = super.getTitleToolTip();
+		return isAutomaticValidationEnabled() ? tooltip
+				: tooltip + "\nAutomatic validation disabled; diagnostics may be outdated";
+	}
+
+	public void setAutomaticValidation(final boolean enabled) {
+		if (!(getResource() instanceof IFile file)) return;
+		try {
+			GamlAutoValidation.setEnabled(file, enabled);
+		} catch (CoreException e) {
+			GAMA.getGui().getDialogFactory().error("Cannot change automatic validation: " + e.getMessage());
+			return;
+		}
+		if (validationJob != null) { validationJob.cancel(); }
+		if (validationTickUpdater != null) { validationTickUpdater.updateEditorImage(this); }
+		firePropertyChange(PROP_TITLE);
+		PlatformUI.getWorkbench().getDecoratorManager().update(GamlDecorator.decoratorId);
+		if (enabled) { scheduleValidationJob(); }
+	}
+
+	public void validateNow() {
+		scheduleValidationJob(true);
+	}
 
 	/** The marker creator. */
 	@Inject private MarkerCreator markerCreator;
@@ -378,6 +391,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 
 	@Override
 	public void dispose() {
+		if (validationJob != null) { validationJob.cancel(); }
 		GamaPreferences.Modeling.EDITOR_DRAG_RESOURCES.removeChangeListener(dndChangedListener);
 		GamlResourceServices.removeResourceListener(this);
 		super.dispose();
@@ -402,14 +416,8 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	 */
 	private void buildRightToolbar() {
 		findControl = new EditorToolbar(this).fill(toolbar.getToolbar(SWT.RIGHT));
-		fakeButton =
-				FlatButton.button(toolbar.getToolbar(SWT.RIGHT), IGamaColors.OK, "", BUTTON_IMAGES.get(IKeyword.BATCH));
-		fakeButton.setVisible(false);
 		toolbar.requestLayout();
 	}
-
-	/** The fake button. To compute text size */
-	FlatButton fakeButton;
 
 	@Override
 	public boolean isLineNumberRulerVisible() {
@@ -469,6 +477,13 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 		editor.setLayoutData(data);
 		editor.setLayout(new FillLayout());
 		super.createPartControl(editor);
+		Menu contextMenu = getSourceViewer().getTextWidget().getMenu();
+		contextMenu.addListener(SWT.Show, event -> {
+			if (contextMenu.getData(MenuManager.MANAGER_KEY) instanceof MenuManager manager) {
+				GamlEditorContextMenu.finish(manager, GamaIcon.named("editor/preferences").descriptor());
+				GamlEditorContextMenu.update(manager);
+			}
+		});
 		editor.addControlListener(new ControlListener() {
 
 			long lastEvent;
@@ -559,23 +574,38 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	 * </p>
 	 */
 	private void scheduleValidationJob() {
-		final IValidationIssueProcessor processor = new MarkerIssueProcessor(getResource(),
-				getInternalSourceViewer().getAnnotationModel(), markerCreator, markerTypeProvider);
-		final ValidationJob validate = new ValidationJob(validator, getDocument(), processor, CheckMode.FAST_ONLY) {
+		scheduleValidationJob(false);
+	}
+
+	private void scheduleValidationJob(final boolean explicit) {
+		if (!explicit && !isAutomaticValidationEnabled()) return;
+		if (validationJob != null) { validationJob.cancel(); }
+		final var document = getDocument();
+		final var uri = fileURI;
+		final var file = getResource();
+		final var annotationModel = getInternalSourceViewer().getAnnotationModel();
+		final IValidationIssueProcessor processor = new GamlEditorIssueProcessor(document, annotationModel, issueResolver,
+				new MarkerIssueProcessor(file, annotationModel, markerCreator, markerTypeProvider));
+		validationJob = new ValidationJob(validator, document, processor,
+				explicit ? CheckMode.ALL : CheckMode.FAST_ONLY) {
 			@Override
 			protected IStatus run(final IProgressMonitor monitor) {
-				// Retrieve the resource reference without holding the document read-lock.
-				// Calling validator.validate() under readOnly() would pin the lock for the entire
-				// GAML semantic validation, blocking the reconciler write-lock and causing races
-				// with the concurrent GamlReconciler that also fires at SCHEDULE_DELAY = 0.
-				final var resource = getDocument().readOnly(r -> r);
-				if (resource == null || resource.isValidationDisabled()) return Status.OK_STATUS;
-				final var issues = validator.validate(resource, getCheckMode(), null);
-				processor.processIssues((List<Issue>) issues, monitor);
-				return Status.OK_STATUS;
+				try (var request = file instanceof IFile f ? GamlAutoValidation.begin(f, explicit)
+						: GamlAutoValidation.begin(uri, explicit)) {
+					if (!request.isValid() || monitor.isCanceled()) return Status.CANCEL_STATUS;
+					// Do not hold a document read-lock throughout semantic validation.
+					final var resource = document.readOnly(r -> r);
+					if (resource == null || resource.isValidationDisabled()) return Status.OK_STATUS;
+					final var issues = validator.validate(resource, getCheckMode(), monitor::isCanceled, explicit);
+					if (!request.isValid() || monitor.isCanceled()) return Status.CANCEL_STATUS;
+					processor.processIssues(issues, monitor);
+					return Status.OK_STATUS;
+				} catch (OperationCanceledException e) {
+					return Status.CANCEL_STATUS;
+				}
 			}
 		};
-		validate.schedule(GamlEditor.SCHEDULE_DELAY);
+		validationJob.schedule(GamlEditor.SCHEDULE_DELAY);
 	}
 
 	@Override
@@ -652,9 +682,6 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 
 	ToolItem addExperiments = null;
 
-	/** The previous show experiments. */
-	boolean previousShowExperiments = false;
-
 	/**
 	 * Update toolbar.
 	 *
@@ -665,49 +692,18 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	 */
 	private void updateToolbar(final GamlEditorState newState, final boolean forceState) {
 		DEBUG.OUT("Updating toolbar for " + this.getTitle());
+		final var valid = GamlAutoValidation.publicationGuard(fileURI);
 		if (forceState || !state.equals(newState)) {
 			WorkbenchHelper.runInUI("Editor refresh", 50, m -> {
-				if (toolbar == null || toolbar.isDisposed()) return;
-				toolbar.wipe(SWT.LEFT, 1);
+				if ((!forceState && !valid.getAsBoolean()) || toolbar == null || toolbar.isDisposed()) return;
 				// getDocument().getAdapter(IFile.class) can return null if the editor is being
 				// initialised or disposed; skip the update in that case to avoid a NullPointerException
 				// whose exception-handling overhead can cause a visible stutter on Windows.
 				final IFile editorFile = getDocument().getAdapter(IFile.class);
 				boolean showExperiments = editorFile != null
 						&& !GamlFileExtension.isExperiment(editorFile.getName()) && newState.showExperiments;
-				if (addExperiments == null || showExperiments != previousShowExperiments) {
-					updateAddExperimentButton(showExperiments);
-				}
-				final GamaUIColor c = newState.getColor();
-				String msg = newState.getStatus();
-
-				Selector listener = null;
-				String imageName = null;
-
-				if (NO_EXP_DEFINED.equals(msg)) {
-					msg = null;
-				} else if (newState.hasImportedErrors) {
-					listener = new OpenImportedErrorSelectionListener(GamlEditor.this, newState,
-							toolbar.getToolbar(SWT.LEFT));
-					imageName = SMALL_DROPDOWN;
-				} else if (msg != null) {
-					listener = new RevalidateModelSelectionListener(GamlEditor.this);
-					imageName = MARKER_ERROR;
-				} else {
-					listener = new OpenExperimentSelectionListener(GamlEditor.this, newState, modelsManager);
-				}
-				if (msg != null) {
-					toolbar.button(c, msg, GamaIcon.named(imageName).image(), listener, BUTTON_HEIGHT, SWT.LEFT);
-				} else if (newState.showExperiments) {
-					if (EDITOR_EXPERIMENT_MENU.getValue()
-							|| EDITOR_COLLAPSE_BUTTONS.getValue() && buttonsOverflow(newState)) {
-						displayExperimentMenu(newState, listener);
-					} else {
-						displayExperimentButtons(newState, listener);
-					}
-					displayExperimentExportButton(newState,new ExportExperimentSelectionListener(GamlEditor.this, newState));
-				}
-				toolbar.requestLayout();
+				updateAddExperimentButton(showExperiments);
+				experimentToolbar.update(newState);
 
 			});
 		}
@@ -726,6 +722,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 							new CreateExperimentSelectionListener(GamlEditor.this, toolbar.getToolbar(SWT.LEFT)))
 					.toItem(toolbar.getToolbar(SWT.LEFT));
 			toolbar.getToolbar(SWT.LEFT).space(8);
+			experimentToolbar.setLeadingItemCount(toolbar.getToolbar(SWT.LEFT).getItemCount());
 		}
 		if (showExperiments) {
 			addExperiments.setToolTipText("Add an experiment to the model");
@@ -735,127 +732,11 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 		addExperiments.setEnabled(showExperiments);
 	}
 
-	/**
-	 * Compute width.
-	 *
-	 * @param newState
-	 *            the new state
-	 * @return the int
-	 */
-	private int computeWidth(final GamlEditorState newState) {
-		int width = 0;
-		for (final String text : newState.abbreviations) {
-			if (text == null) { continue; }
-			fakeButton.setText(text);
-			width += fakeButton.computeSize(SWT.DEFAULT, 12).x + 2;
-		}
-		return width;
-	}
-
-	/**
-	 * Returns true when the total pixel width of all experiment buttons exceeds the space currently available in the
-	 * left toolbar. If the toolbar has not been sized yet (available width unknown), returns false so that buttons are
-	 * shown optimistically and the next resize event will re-evaluate.
-	 *
-	 * @param newState
-	 *            the new state
-	 * @return true if the buttons would overflow the left toolbar
-	 */
-	private boolean buttonsOverflow(final GamlEditorState newState) {
-		final int available = toolbar.getAvailableLeftWidth();
-		if (available < 0) return false; // toolbar not yet laid out — show buttons
-		return computeWidth(newState) > available;
-	}
-
-	/**
-	 * Display experiment buttons.
-	 *
-	 * @param newState
-	 *            the new state
-	 * @param listener
-	 *            the listener
-	 */
-	private void displayExperimentButtons(final GamlEditorState state, final Selector listener) {
-		var index = 0;
-		for (final String text : state.abbreviations) {
-			if (text == null) return;
-			final var expType = state.types.get(index++);
-			final var type = IKeyword.BATCH.equals(expType) ? IKeyword.BATCH
-					: IKeyword.RECORD.equals(expType) ? IKeyword.RECORD : "regular";
-			final var t =
-					toolbar.button(IGamaColors.OK, text, BUTTON_IMAGES.get(type), listener, BUTTON_HEIGHT, SWT.LEFT);
-			t.setToolTipText("Executes the " + type + " experiment named '" + text + "'");
-			t.setData("index", index);
-			t.getControl().setData("exp", text);
-		}
-		// Necessary to recompute the width correctly
-		toolbar.normalizeToolbars();
-	}
-
-	/**
-	 * Display experiment buttons.
-	 *
-	 * @param newState
-	 *            the new state
-	 * @param listener
-	 *            the listener
-	 */
-	private void displayExperimentExportButton(final GamlEditorState state, final Selector listener) {
-		final ToolItem t =
-				toolbar.button(IGamaIcons.MENU_EXPORT,null, "Export this model", listener, SWT.LEFT);
-		// Necessary to recompute the width correctly
-		toolbar.normalizeToolbars();
-	}
-
-
-	/**
-	 * Display experiment menu.
-	 *
-	 * @param state
-	 *            the state
-	 * @param listener
-	 *            the listener
-	 */
-	private void displayExperimentMenu(final GamlEditorState state, final Selector listener) {
-
-		final ToolItem menu = toolbar.menuButton(IGamaColors.OK, "Run Experiment...", SWT.LEFT);
-		final FlatButton b = ((FlatButton) menu.getControl()).withHeight(BUTTON_HEIGHT);
-
-		b.setSelectionListener(new Selector() {
-
-			Menu popupMenu;
-
-			@Override
-			public void widgetSelected(final SelectionEvent e) {
-				if (popupMenu == null || popupMenu.isDisposed()) {
-					popupMenu = new Menu(toolbar.getShell(), SWT.POP_UP);
-					// Dispose the popup menu automatically when the button is disposed (toolbar wipe)
-					b.addDisposeListener(de -> { if (popupMenu != null && !popupMenu.isDisposed()) { popupMenu.dispose(); } });
-					fillMenu();
-				}
-				final Point point = toolbar.toDisplay(new Point(e.x, e.y + toolbar.getSize().y));
-				popupMenu.setLocation(point.x, point.y);
-				popupMenu.setVisible(true);
-			}
-
-			private void fillMenu() {
-				var index = 0;
-				for (final String text : state.abbreviations) {
-					if (text == null) return;
-					final var expType = state.types.get(index++);
-					final String type = IKeyword.BATCH.equals(expType) ? IKeyword.BATCH
-							: IKeyword.RECORD.equals(expType) ? IKeyword.RECORD : "regular";
-					final String image = MENU_IMAGES.get(type);
-					GamaMenu.action(popupMenu, text, listener, image).setData("exp", text);
-				}
-			}
-		});
-		toolbar.normalizeToolbars();
-	}
-
 	@Override
 	public void validationEnded(final IModelDescription model, final Iterable<? extends IDescription> newExperiments,
 			final IValidationContext status) {
+		final var valid = GamlAutoValidation.publicationGuard(fileURI);
+		if (!valid.getAsBoolean()) return;
 
 		// updateCodeMinings() accesses SWT-backed objects and MUST be called on the UI thread.
 		// validationEnded() is invoked by the GamlReconciler background thread (via
@@ -864,6 +745,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 		// which is synchronous – calling it directly from the background thread stalls that thread
 		// until the UI thread processes the message, producing the reported editor freezes.
 		WorkbenchHelper.asyncRun(() -> {
+			if (!valid.getAsBoolean()) return;
 			final GamaSourceViewer v = getInternalSourceViewer();
 			if (v != null && !v.getControl().isDisposed()) { v.updateCodeMinings(); }
 		});
@@ -875,6 +757,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 			String newLine = requires + " " + meta.get(GamlProperties.PLUGINS);
 			IXtextDocument document = getDocument();
 			WorkbenchHelper.asyncRun(() -> {
+				if (!valid.getAsBoolean()) return;
 				int offset;
 				try {
 					offset = document.search(0, requires, true, true, false);
@@ -1023,6 +906,19 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	}
 
 	/**
+	 * Gets the word at the current caret position in the editor.
+	 *
+	 * @return the word at caret, or an empty string
+	 */
+	public String getWordAtCaret() {
+		final GamaSourceViewer v = getInternalSourceViewer();
+		if (v == null) return "";
+		final StyledText st = v.getTextWidget();
+		if (st == null || st.isDisposed()) return "";
+		return SearchGamlReferenceHandler.getWordAtCaret(st);
+	}
+
+	/**
 	 * @see gaml.compiler.gaml.ui.editor.IGamlEditor#openEditTemplateDialog()
 	 */
 	public boolean openEditTemplateDialog(final TemplatePersistenceData data, final boolean edit) {
@@ -1092,6 +988,13 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	public void createToolItems(final GamaToolbar2 tb) {
 		this.toolbar = tb;
 		buildRightToolbar();
+		experimentToolbar = new ExperimentToolbar(tb,
+				new OpenExperimentSelectionListener(this, state, modelsManager)::launch,
+				new RevalidateModelSelectionListener(this)::revalidate,
+				uri -> modelsManager.editModel(uri));
+		tb.button(IGamaIcons.MENU_EXPORT, null, "Export this model",
+				new ExportExperimentSelectionListener(this, state), SWT.LEFT);
+		experimentToolbar.setLeadingItemCount(1);
 	}
 
 	@Override
@@ -1259,49 +1162,115 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 			// DEBUG.OUT("Item " + item);
 			UICleanupTasks.RearrangeMenus.changeIcon(menu, item, item.getId());
 		}
-		menu.add(new Separator());
-		menu.add(new Action("Extract Action\u2026") {
+		boolean onDisplay = injector.getInstance(gaml.compiler.ui.wizards.display.DisplayWizardHandler.class).canEdit(this);
+		boolean onAction = !onDisplay && injector.getInstance(gaml.compiler.ui.wizards.action.ActionWizardHandler.class).canEdit(this);
+		boolean onBehavior = !onDisplay && !onAction
+				&& injector.getInstance(gaml.compiler.ui.wizards.behavior.BehaviorWizardHandler.class).canEdit(this);
+		boolean onExperiment = !onDisplay && !onAction && !onBehavior && injector
+				.getInstance(gaml.compiler.ui.wizards.experiment.ExperimentWizardHandler.class).canEdit(this);
+		Action editSpecies = new Action("Edit...") {
 			@Override
 			public void run() {
-				ExtractActionHandler.extractAction(GamlEditor.this);
+				if (onDisplay) openDisplayWizard(false);
+				else if (onAction) openActionWizard(false);
+				else if (onBehavior) openBehaviorWizard(false);
+				else if (onExperiment) openExperimentWizard(false);
+				else openSpeciesWizard(false);
 			}
-
-			@Override
-			public boolean isEnabled() {
-				final ITextSelection sel = (ITextSelection) getSelectionProvider().getSelection();
-				return sel != null && sel.getLength() > 0;
-			}
-		});
+		};
+		editSpecies.setEnabled(onDisplay || onAction || onBehavior || onExperiment || injector.getInstance(gaml.compiler.ui.wizards.species.SpeciesWizardHandler.class)
+				.canEdit(this));
+		IContributionItem[] existingItems = menu.getItems();
+		menu.removeAll();
+		menu.add(editSpecies);
+		final URI test = getTestDeclarationAtCaret();
+		if (test != null) {
+			menu.add(new Action("Run this test", GamaIcon.named(IGamaIcons.TEST_RUN).descriptor()) {
+				@Override
+				public void run() {
+					runTest(test);
+				}
+			});
+		}
 		menu.add(new Separator());
-		menu.add(new InternalMenuManager(parent -> new TemplateReferenceMenu().installSubMenuIn(parent)));
-		menu.add(new InternalMenuManager(parent -> new BuiltinReferenceMenu().installSubMenuIn(parent)));
-		menu.add(new InternalMenuManager(parent -> new OperatorsReferenceMenu().installSubMenuIn(parent)));
-		menu.add(new InternalMenuManager(parent -> new ColorReferenceMenu().installSubMenuIn(parent)));
+		for (IContributionItem item : existingItems) menu.add(item);
+		menu.add(new Separator());
+		GamlEditorContextMenu.addEditorActions(menu, () -> {
+				String text = getSelectedText();
+				if (text == null || text.isBlank()) {
+					text = getWordAtCaret();
+				}
+				GamlAccessContents2.open(text);
+			}, () -> org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn(getSite().getShell(),
+					"gaml.compiler.Gaml", null, null).open(),
+			GamaIcon.named("editor/command.find").descriptor(), GamaIcon.named("editor/preferences").descriptor());
 
 	}
 
 	/**
-	 * The Class InternalMenuManager.
+	 * Returns the URI of the {@code test} declaration enclosing the caret, or null if the caret is not in a test.
 	 */
-	class InternalMenuManager extends MenuManager {
+	public URI getTestDeclarationAtCaret() {
+		if (!(getSelectionProvider().getSelection() instanceof ITextSelection selection)) return null;
+		return getDocument().readOnly(resource -> {
+			EObject object = eObjectAtOffsetHelper.resolveContainedElementAt(resource, selection.getOffset());
+			while (object != null && !(object instanceof FacetsAndBlock block && IKeyword.TEST.equals(block.getKey()))) {
+				object = object.eContainer();
+			}
+			return object == null ? null : EcoreUtil.getURI(object);
+		});
+	}
 
-		/** The fill. */
-		final Consumer<Menu> fill;
-
-		/**
-		 * Instantiates a new internal menu manager.
-		 */
-		InternalMenuManager(final Consumer<Menu> fill) {
-			this.fill = fill;
-			setRemoveAllWhenShown(true);
-			setVisible(true);
+	/** Saves the model (following the launch save policy) and runs the given test declaration alone. */
+	public void runTest(final URI test) {
+		doSave(null);
+		if (GamaPreferences.Modeling.EDITOR_SAVE.getValue()) {
+			WorkbenchHelper.getPage().saveAllEditors(GamaPreferences.Modeling.EDITOR_SAVE_ASK.getValue());
 		}
+		modelsManager.runTest(getDocument(), test);
+	}
 
-		@Override
-		public void fill(final Menu parent, final int index) {
-			fill.accept(parent);
-		}
+	public boolean canExtractAction() {
+		return isEditable() && getSelectionProvider().getSelection() instanceof ITextSelection selection
+				&& selection.getLength() > 0;
+	}
 
+	public void extractAction() {
+		openActionWizard(true);
+	}
+
+	public void openSpeciesWizard(final boolean create) {
+		injector.getInstance(gaml.compiler.ui.wizards.species.SpeciesWizardHandler.class).open(this, create);
+	}
+
+	public void openActionWizard(final boolean create) {
+		injector.getInstance(gaml.compiler.ui.wizards.action.ActionWizardHandler.class).open(this, create);
+	}
+
+	public void openBehaviorWizard(final boolean create) {
+		injector.getInstance(gaml.compiler.ui.wizards.behavior.BehaviorWizardHandler.class).open(this, create);
+	}
+
+	public void openExperimentWizard(final boolean create) {
+		injector.getInstance(gaml.compiler.ui.wizards.experiment.ExperimentWizardHandler.class).open(this, create);
+	}
+
+	public void openDisplayWizard(final boolean create) {
+		injector.getInstance(gaml.compiler.ui.wizards.display.DisplayWizardHandler.class).open(this, create);
+	}
+
+	public boolean canAddDisplay() {
+		return injector.getInstance(gaml.compiler.ui.wizards.display.DisplayWizardHandler.class).canCreate(this);
+	}
+
+	public void openGridWizard() {
+		injector.getInstance(gaml.compiler.ui.wizards.species.SpeciesWizardHandler.class)
+				.open(this, true, gaml.compiler.ui.wizards.species.SpeciesWizard.Kind.GRID);
+	}
+
+	public void openClassWizard() {
+		injector.getInstance(gaml.compiler.ui.wizards.species.SpeciesWizardHandler.class)
+				.open(this, true, gaml.compiler.ui.wizards.species.SpeciesWizard.Kind.CLASS);
 	}
 
 	/**

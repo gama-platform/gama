@@ -28,8 +28,11 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
+import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
 
@@ -58,6 +61,7 @@ import gama.ui.shared.resources.GamaColors.GamaUIColor;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.ViewsHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
+import gama.ui.shared.utils.SwtGui;
 import gama.ui.shared.views.toolbar.GamaCommand;
 import gama.ui.shared.views.toolbar.GamaToolbar2;
 import gama.ui.shared.views.toolbar.GamaToolbarSimple;
@@ -86,6 +90,20 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 
 	/** The running all tests. */
 	private boolean runningAllTests;
+
+	private volatile boolean sequenceRunning;
+
+	private boolean stopped;
+
+	private ToolItem stopItem;
+
+	private ToolItem expandItem, collapseItem;
+
+	private boolean summaryDisplayed;
+
+	private String currentTest = "";
+
+	private int currentModel, totalModels;
 
 	/** The icon provider. */
 	private final StatusIconProvider iconProvider = new StatusIconProvider();
@@ -116,11 +134,16 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 	@Override
 	public void startNewTestSequence(final boolean all) {
 		runningAllTests = all;
+		sequenceRunning = true;
 		experiments.clear();
 		WorkbenchHelper.run(() -> {
+			stopped = false;
+			summaryDisplayed = false;
+			currentTest = "";
+			currentModel = totalModels = 0;
+			updateSequenceToolItems();
 			if (toolbar != null) {
-				toolbar.status(null, "Run experiment to see the tests results",
-						e -> { GAMA.startFrontmostExperiment(false); }, null);
+				toolbar.status("Preparing tests...");
 			}
 		});
 		super.reset();
@@ -128,6 +151,11 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 
 	@Override
 	public void finishTestSequence() {
+		sequenceRunning = false;
+		WorkbenchHelper.run(() -> {
+			summaryDisplayed = true;
+			updateSequenceToolItems();
+		});
 		super.reset();
 		updateIcon = false;
 		reset();
@@ -151,7 +179,7 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 		if (item != null) { item.dispose(); }
 		if (onlyFailed) {
 			final TestState state = experiment.getState();
-			if (state != TestState.FAILED && state != TestState.ABORTED) return false;
+			if (!state.isFailure()) return false;
 		}
 		item = createItem(getParentComposite(), experiment, !runningAllTests,
 				GamaColors.get(getItemDisplayColor(experiment)));
@@ -197,6 +225,7 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 	 *            the test
 	 */
 	public void createEditors(final EditorsGroup compo, final AbstractSummary<?> test) {
+		createErrorDetails(compo, test);
 		Map<String, ? extends AbstractSummary<?>> assertions = test.getSummaries();
 		for (final Map.Entry<String, ? extends AbstractSummary<?>> assertion : assertions.entrySet()) {
 			final AbstractSummary<?> summary = assertion.getValue();
@@ -227,10 +256,23 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 			final AbstractSummary<?> subTest, final String name) {
 		if (GamaPreferences.Runtime.FAILED_TESTS.getValue()) {
 			final TestState state = subTest.getState();
-			if (state != TestState.FAILED && state != TestState.ABORTED) return;
+			if (!state.isFailure()) return;
 		}
 		final AssertEditor ed = new AssertEditor(scope, subTest);
 		ed.createControls(compo);
+		createErrorDetails(compo, subTest);
+	}
+
+	private void createErrorDetails(final EditorsGroup compo, final AbstractSummary<?> summary) {
+		final String error = summary.getErrorDetails();
+		if (error == null || error.isBlank()) return;
+		final Text details = new Text(compo, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.BORDER);
+		details.setText(error);
+		details.setToolTipText("Error details for " + summary.getTitle());
+		final GridData data = new GridData(SWT.FILL, SWT.TOP, true, false, 3, 1);
+		data.widthHint = 0;
+		data.heightHint = details.getLineHeight() * Math.min(8, Math.max(2, details.getLineCount()));
+		details.setLayoutData(data);
 	}
 
 	@SuppressWarnings ("synthetic-access")
@@ -240,6 +282,7 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 		TESTS_SORTED.removeChangeListeners();
 		FAILED_TESTS.removeChangeListeners();
 		GamaToolbarSimple tbs = toolbar.getToolbar(SWT.RIGHT);
+		updateSequenceToolItems();
 		tbs.button("editor/local.menu", "More...", "More options", e -> {
 
 			final GamaMenu menu = new GamaMenu() {
@@ -247,14 +290,14 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 				@Override
 				protected void fillMenu() {
 					GamaCommand.build(TEST_SORT, "Sort by severity",
-							"When checked, sort the tests by their decreasing state severity (i.e. errored > failed > warning > passed > not run). Otherwise they are sorted by their order of execution.",
+							"When checked, sort by severity, including interrupted and timed-out tests. Otherwise sort by order of execution.",
 							e -> {
 								TESTS_SORTED.set(!TESTS_SORTED.getValue());
 								TestView.this.reset();
 								reset();
 							}).toCheckItem(mainMenu).setSelection(TESTS_SORTED.getValue());
 					GamaCommand.build(TEST_FILTER, "Filter tests",
-							"When checked, show only errored and failed tests and assertions", e -> {
+							"When checked, show only failed, errored, interrupted and timed-out tests and assertions", e -> {
 								FAILED_TESTS.set(!FAILED_TESTS.getValue());
 								TestView.this.reset();
 								reset();
@@ -269,6 +312,34 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 			menu.open(tbs, e, tbs.getSize().y, 0);
 		});
 
+	}
+
+	@Override
+	public void createExpandItems(final GamaToolbar2 tb) {}
+
+	private void updateSequenceToolItems() {
+		if (toolbar == null || toolbar.isDisposed()) return;
+		if (stopItem != null && !stopItem.isDisposed()) { stopItem.dispose(); }
+		if (expandItem != null && !expandItem.isDisposed()) { expandItem.dispose(); }
+		if (collapseItem != null && !collapseItem.isDisposed()) { collapseItem.dispose(); }
+		stopItem = expandItem = collapseItem = null;
+		if (sequenceRunning) {
+			stopItem = toolbar.button(new GamaCommand(IGamaIcons.EXPERIMENT_STOP, "Stop tests",
+					"Stop the current test sequence and keep its results", e -> {
+					if (!sequenceRunning || stopped) return;
+					stopped = true;
+					stopItem.setEnabled(false);
+					if (GAMA.getRegularGui() instanceof SwtGui gui) { gui.stopTests(); }
+					toolbar.status("Stopping tests...");
+					}), SWT.RIGHT);
+			stopItem.setEnabled(!stopped);
+		} else if (summaryDisplayed) {
+			expandItem = toolbar.button(IGamaIcons.TREE_EXPAND, "Expand all items", "Expand all items",
+					e -> expandAll(), SWT.RIGHT);
+			collapseItem = toolbar.button(IGamaIcons.TREE_COLLAPSE, "Collapse all items", "Collapse all items",
+					e -> collapseAll(), SWT.RIGHT);
+		}
+		toolbar.requestLayout();
 	}
 
 	/**
@@ -313,6 +384,7 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 		final StringBuilder sb = new StringBuilder(300);
 		final String name = obj.getTitle();
 		sb.append(obj.getState()).append(IItemList.SEPARATION_CODE).append(name).append(' ');
+		if (obj.getError() != null) { sb.append("[").append(obj.getError()).append("]"); }
 		return sb.toString();
 	}
 
@@ -320,6 +392,16 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 	protected boolean shouldBeClosedWhenNoExperiments() {
 		return false;
 		// return !runningAllTests;
+	}
+
+	/**
+	 * The TestView must never be auto-closed by {@code closeSimulationViews()} — its results are intentionally kept
+	 * visible until the user decides to close it manually. This matches the ErrorView behavior and prevents losing the
+	 * current unit-test results when a model experiment is launched.
+	 */
+	@Override
+	public void close(final IScope scope) {
+		// deliberate no-op — see Javadoc above
 	}
 
 	@Override
@@ -343,7 +425,9 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 				resortTests();
 				displayItems();
 				getParentComposite().layout(true, false);
-				if (toolbar != null) { toolbar.status(new CompoundSummary<>(experiments).getStringSummary()); }
+				if (toolbar != null) {
+					toolbar.status((stopped ? "Stopped - " : "") + new CompoundSummary<>(experiments).getStringSummary());
+				}
 				ViewsHelper.bringToFront(this);
 			}
 		});
@@ -369,10 +453,21 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 	}
 
 	/** The update icon. */
-	boolean updateIcon = false;
+	volatile boolean updateIcon = false;
 
 	@Override
 	public void displayProgress(final int number, final int total) {
+		startProgressAnimation();
+		WorkbenchHelper.asyncRun(() -> {
+			if (!sequenceRunning || stopped || getParentComposite().isDisposed()) return;
+			currentModel = number;
+			totalModels = total;
+			showRunningTest();
+		});
+
+	}
+
+	private void startProgressAnimation() {
 		if (!updateIcon) {
 			updateIcon = true;
 			Callable<Boolean> stop = () -> !updateIcon;
@@ -383,13 +478,23 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 				}
 			}, 100, stop);
 		}
+	}
 
+	@Override
+	public void displayRunningTest(final String name) {
 		WorkbenchHelper.asyncRun(() -> {
-			if (toolbar != null) {
-				toolbar.status(iconProvider.getIcon(), "Executing test models: " + number + " on " + total, null);
-			}
+			if (!sequenceRunning || stopped || getParentComposite().isDisposed()) return;
+			startProgressAnimation();
+			currentTest = name;
+			showRunningTest();
 		});
+	}
 
+	private void showRunningTest() {
+		if (toolbar != null) {
+			final String progress = totalModels > 0 ? "Model " + currentModel + " of " + totalModels + " - " : "";
+			toolbar.status(iconProvider.getIcon(), progress + currentTest, null);
+		}
 	}
 
 }

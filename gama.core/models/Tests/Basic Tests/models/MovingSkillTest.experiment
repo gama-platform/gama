@@ -1,0 +1,62 @@
+/**
+* Name: MovingSkillTest
+* Author: Antigravity
+* Description: Tests the moving skill operations and behaviors
+* Tags: skill, moving, test
+*/
+
+model MovingSkillTestModel
+
+global {
+	geometry shape <- square(100);
+}
+
+species moving_agent skills: [moving] {
+	float speed <- 5.0;
+}
+
+experiment MovingSkillTest type: test autorun: true {
+	
+	test "Goto Movement" {
+		create moving_agent number: 1 returns: created_agents;
+		moving_agent ag <- created_agents[0];
+		
+		ag.location <- {50, 50};
+		point target <- {55, 50};
+		
+		ask ag {
+			do goto(target: target);
+		}
+		
+		// Speed is 5.0, distance is 5.0, should reach in 1 step
+		assert ag.location = {55, 50};
+		
+		ask ag {
+			do goto(target: {65, 50}); // distance 10
+		}
+		// Should only move by speed (5.0)
+		assert ag.location = {60, 50};
+	}
+	
+	test "Move and Wander" {
+		create moving_agent number: 1 returns: created_agents;
+		moving_agent ag <- created_agents[0];
+		
+		ag.location <- {10, 10};
+		ag.heading <- 90.0; // Pointing downwards in GAMA's coordinate system, or right depending on 0 orientation. 
+		// Actually 0 is right (x-axis), 90 is down (y-axis).
+		
+		ask ag {
+			do move(); // moves according to heading and speed
+		}
+		
+		assert (ag.location.y > 10.0 or ag.location.x > 10.0);
+		
+		point loc_before <- ag.location;
+		ask ag {
+			do wander();
+		}
+		// Wander is random, we just check location changed
+		assert ag.location != loc_before;
+	}
+}

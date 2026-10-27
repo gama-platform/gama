@@ -136,7 +136,8 @@ import gama.dev.FLAGS;
  * cast elements to the declared content type.</li>
  * <li><b>Empty Lists</b>: Operations on empty lists (first, last, any) return {@code null} rather than throwing
  * exceptions.</li>
- * <li><b>Index Validation</b>: Out-of-bounds indices follow standard Java List behavior (IndexOutOfBoundsException).
+ * <li><b>Index Validation</b>: Scoped access reports out-of-bounds indices as GAML errors; direct Java access follows
+ * standard List behavior.
  * </li>
  * <li><b>Runtime Type</b>: The runtime type is computed dynamically from actual elements via
  * {@link #computeRuntimeType(IScope)}.</li>
@@ -185,7 +186,7 @@ public interface IList<E>
 	 */
 	@Override
 	default IList<E> listValue(final IScope scope, final IType contentsType, final boolean copy) {
-		if (!GamaType.requiresCasting(contentsType, getGamlType().getContentType())) {
+		if (!GamaType.requiresContentTypeCasting(scope, contentsType, getGamlType().getContentType(), this)) {
 			if (copy) return GamaListFactory.createWithoutCasting(contentsType, this);
 			return this;
 		}
@@ -483,6 +484,9 @@ public interface IList<E>
 	 */
 	@Override
 	default E get(final IScope scope, final Integer index) {
+		if (index == null || index < 0 || index >= size())
+			throw GamaRuntimeException.error("List index " + index + " is out of bounds for a list of size " + size(),
+					scope);
 		return get(index);
 	}
 
@@ -640,7 +644,7 @@ public interface IList<E>
 	 *      gama.gaml.types.IContainerType)
 	 */
 	default Integer buildIndex(final IScope scope, final Object object) {
-		if (!FLAGS.CAST_CONTAINER_CONTENTS) return (Integer) object;
+		if (!FLAGS.CAST_CONTAINER_CONTENTS && object instanceof Number n) return n.intValue();
 		return GamaIntegerType.staticCast(scope, object, null, false);
 	}
 

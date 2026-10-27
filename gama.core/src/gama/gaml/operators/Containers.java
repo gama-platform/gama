@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import java.util.function.Function;
@@ -34,9 +35,11 @@ import com.google.common.collect.Sets;
 
 import gama.annotations.doc;
 import gama.annotations.example;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.no_test;
 import gama.annotations.operator;
 import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
@@ -101,7 +104,7 @@ import one.util.streamex.StreamEx;
  * {@code last_with}, {@code count}, {@code sort_by}, {@code group_by}, {@code index_by}</li>
  * <li><b>Transformation:</b> {@code reverse}, {@code shuffle}, {@code distinct}/ {@code remove_duplicates},
  * {@code interleave}</li>
- * <li><b>Reduction:</b> {@code sum}, {@code mean}</li>
+ * <li><b>Reduction:</b> {@code sum}, {@code mean}, {@code reduce}, {@code scan}</li>
  * <li><b>Construction:</b> {@code range}, {@code create_map}, {@code as_map}</li>
  * <li><b>Graph:</b> {@code as_graph}, {@code as_spatial_graph}</li>
  * </ul>
@@ -150,11 +153,11 @@ public class Containers {
 	 */
 	public static <T, K, U> Collector<T, ?, IMap<K, U>> toIMap(final Function<? super T, ? extends K> keyMapper,
 			final Function<? super T, ? extends U> valueMapper, final IType keyType, final IType valueType) {
-		return Collectors.collectingAndThen(Collectors.toList(), list -> {
-			IMap<K, U> result = GamaMapFactory.create(keyType, valueType);
-			for (T item : list) { result.put(keyMapper.apply(item), valueMapper.apply(item)); }
-			return result;
-		});
+		return Collector.of(() -> GamaMapFactory.create(keyType, valueType),
+				(result, item) -> result.put(keyMapper.apply(item), valueMapper.apply(item)), (left, right) -> {
+					left.putAll(right);
+					return left;
+				});
 
 	}
 
@@ -373,6 +376,7 @@ public class Containers {
 		 *            the end
 		 * @return the i list
 		 */
+		@no_fuzz_test ("exhausts the memory with the bounds of int, e.g. range(#max_int)")
 		@operator (
 				value = IKeyword.RANGE,
 				content_type = IType.INT,
@@ -391,9 +395,10 @@ public class Containers {
 						@example (
 								value = "range(1) collect(i: range(1) collect(j: i + j))",
 								equals = "[[0,1],[1,2]]") })
-		@test ("range(2) = [0,1,2]")
-		@test ("range(-2) = [0,-1,-2]")
-		@test ("range(1) collect(i: range(1) collect(j: i + j)) = [[0,1],[1,2]]")
+		@tests ({ @test ("range(2) = [0,1,2]"), @test ("range(-2) = [0,-1,-2]"),
+				@test ("range(1) collect(i: range(1) collect(j: i + j)) = [[0,1],[1,2]]"),
+				// both bounds are included
+				@test ("range(5) = [0, 1, 2, 3, 4, 5]") })
 		public static IList range(final IScope scope, final Integer end) {
 			if (end == 0) return GamaListFactory.wrap(Types.INT, 0);
 			return range(scope, 0, end);
@@ -410,6 +415,7 @@ public class Containers {
 		 *            the end
 		 * @return the i list
 		 */
+		@no_fuzz_test ("never returns or exhausts the memory with the bounds of int, e.g. to(2, #max_int)")
 		@operator (
 				value = { IKeyword.RANGE, "to" },
 				content_type = IType.INT,
@@ -428,9 +434,8 @@ public class Containers {
 								@example (
 										value = "range(0,0)",
 										equals = "[0]") }) })
-		@test ("range(0,2) = [0,1,2]")
-		@test ("range(2,0) = [2,1,0]")
-		@test ("range(0,0) = [0]")
+		@tests ({ @test ("range(0,2) = [0,1,2]"), @test ("range(2,0) = [2,1,0]"), @test ("range(0,0) = [0]"),
+				@test ("range(2, 5) = [2, 3, 4, 5]"), @test ("range(5, 0) = [5, 4, 3, 2, 1, 0]") })
 		public static IList range(final IScope scope, final Integer start, final Integer end) {
 			final Integer step = start > end ? -1 : 1;
 			return range(scope, start, end, step);
@@ -449,6 +454,7 @@ public class Containers {
 		 *            the step
 		 * @return the i list
 		 */
+		@no_fuzz_test ("exhausts the memory with the bounds of int, e.g. range(#max_int)")
 		@operator (
 				value = IKeyword.RANGE,
 				content_type = IType.INT,
@@ -461,6 +467,7 @@ public class Containers {
 						examples = { @example (
 								value = "range(0,6,2)",
 								equals = "[0,2,4,6]") }) })
+		@tests ({ @test ("range(0, 10, 5) = [0, 5, 10]") })
 		public static IList range(final IScope scope, final Integer start, final Integer end, final Integer step) {
 			if (step == 0) throw GamaRuntimeException.error("The step of a range should not be equal to 0", scope);
 			if (start.equals(end)) return GamaListFactory.wrap(Types.INT, start);
@@ -527,7 +534,10 @@ public class Containers {
 						@usage ("If the second operand is greater than or equal to the third operand, returns an empty object of the same type"),
 						@usage ("If the first operand is nil, raises an error") },
 				see = { "slice", "submatrix", "sublist" })
-		@test ("copy_between ([4, 1, 6, 9 ,7], 1, 3) = [1,6]")
+		@tests ({ @test ("copy_between ([4, 1, 6, 9 ,7], 1, 3) = [1,6]"),
+				// the end index is excluded
+				@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; numbers copy_between (1, 3) = [1, 4]"),
+				@test ("[] copy_between(0, 3) = []") })
 		public static IList copy_between(final IScope scope, final IList l1, final Integer begin, final Integer end) {
 			final int beginIndex = begin < 0 ? 0 : begin;
 			final int size = notNull(scope, l1).size();
@@ -582,12 +592,13 @@ public class Containers {
 				see = { "copy_between", "between", "submatrix", "slice" })
 		@test ("sublist ([4, 1, 6, 9 ,7], [2, 2, 4]) = [6, 6, 7]")
 		public static IList sublist(final IScope scope, final IList l1, final IList<Integer> indices) {
-
+			notNull(scope, l1);
+			notNull(scope, indices);
 			final IList result = listLike(l1).get();
 
 			if (l1.size() == 0) return result;
 
-			for (int i : indices) { result.add(l1.get(convertToListIndex(i, l1.size()))); }
+			for (Integer i : indices) { result.add(l1.get(convertToListIndex(notNull(scope, i), l1.size()))); }
 			return result;
 		}
 
@@ -630,12 +641,12 @@ public class Containers {
 			final IList result = listLike(l1).get();
 			final boolean positiveStep = step > 0;
 
-			if (step == 0) return result;
+			if (size == 0 || step == 0) return result;
 
 			int beginIdx = convertToListIndex(begin, size);
 			int endIdx = convertToListIndex(end, size);
 
-			for (int i = beginIdx; positiveStep ? i <= endIdx : i >= endIdx; i += step) { result.add(l1.get(i)); }
+			for (long i = beginIdx; positiveStep ? i <= endIdx : i >= endIdx; i += step) { result.add(l1.get((int) i)); }
 			return result;
 		}
 
@@ -711,7 +722,9 @@ public class Containers {
 		@test ("submatrix (matrix([[1, 4, 7], [2, 5, 8], [3, 6, 9 ], [1, 1, 1]]), [2, 1, 3], [0, 1]) = matrix([[3, 6], [2, 5], [1, 1]])")
 		public static IMatrix submatrix(final IScope scope, final IMatrix m1, final IList<Integer> columns,
 				final IList<Integer> rows) {
-
+			notNull(scope, m1);
+			for (Integer column : notNull(scope, columns)) { notNull(scope, column); }
+			for (Integer row : notNull(scope, rows)) { notNull(scope, row); }
 			final IPoint aimedDimensions = GamaPointFactory.create(columns.size(), rows.size());
 			final IMatrix result = GamaMatrixFactory.createMatrixLike(scope, m1, aimedDimensions);
 
@@ -791,7 +804,9 @@ public class Containers {
 		@test ("slice (matrix([[1, 4, 7], [2, 5, 8], [3, 6, 9 ], [1, 1, 1]]), 1::3, 0::1, 2::1) = matrix([[2, 5], [1, 1]])")
 		public static IMatrix submatrix(final IScope scope, final IMatrix m1, final IPair<Integer, Integer> columns,
 				final IPair<Integer, Integer> rows, final IPair<Integer, Integer> steps) {
-
+			requireIndexPair(scope, columns);
+			requireIndexPair(scope, rows);
+			requireIndexPair(scope, steps);
 			// TODO: this definition relies on the submatrix that uses lists of indices, could be optimized to avoid
 			// creating the intermediate lists
 			final IPoint initialDimensions = notNull(scope, m1).getDimensions();
@@ -809,11 +824,11 @@ public class Containers {
 
 			IList<Integer> cols = GamaListFactory.create(Types.INT);
 			IList<Integer> rowsList = GamaListFactory.create(Types.INT);
-			for (int col = startCol; positiveColStep ? col <= endCol : col >= endCol; col += steps.key()) {
-				cols.add(col);
+			for (long col = startCol; positiveColStep ? col <= endCol : col >= endCol; col += steps.key()) {
+				cols.add((int) col);
 			}
-			for (int row = startRow; positiveRowStep ? row <= endRow : row >= endRow; row += steps.value()) {
-				rowsList.add(row);
+			for (long row = startRow; positiveRowStep ? row <= endRow : row >= endRow; row += steps.value()) {
+				rowsList.add((int) row);
 			}
 
 			return submatrix(scope, m1, cols, rowsList);
@@ -886,6 +901,9 @@ public class Containers {
 		@test ("slice (matrix([[1, 4, 7], [2, 5, 8], [3, 6, 9 ], [1, 1, 1]]), 1::3, 0::1) = matrix([[2, 5], [3, 6], [1, 1]])")
 		public static IMatrix submatrix(final IScope scope, final IMatrix m1, final IPair<Integer, Integer> columns,
 				final IPair<Integer, Integer> rows) {
+			notNull(scope, m1);
+			requireIndexPair(scope, columns);
+			requireIndexPair(scope, rows);
 			final int firstCol = convertToListIndex(columns.key(), (int) m1.getDimensions().getX());
 			final int lastCol = convertToListIndex(columns.value(), (int) m1.getDimensions().getX());
 			final int firstRow = convertToListIndex(rows.key(), (int) m1.getDimensions().getY());
@@ -894,6 +912,11 @@ public class Containers {
 					GamaPairFactory.createWith(lastCol == firstCol ? 1 : (int) Math.signum(lastCol - firstCol),
 							lastRow == firstRow ? 1 : (int) Math.signum(lastRow - firstRow), Types.INT, Types.INT);
 			return submatrix(scope, m1, columns, rows, steps);
+		}
+
+		private static void requireIndexPair(final IScope scope, final IPair<Integer, Integer> pair) {
+			if (pair == null || pair.key() == null || pair.value() == null)
+				throw GamaRuntimeException.error("submatrix: index and step pairs must not be nil or contain nil", scope);
 		}
 
 		/**
@@ -1085,6 +1108,7 @@ public class Containers {
 	 *            the key
 	 * @return the object
 	 */
+	@no_fuzz_test ("the type of the index is checked at compile time: calls with arbitrary indexes are not valid GAML")
 	@operator (
 			value = { IKeyword.AT, "@" },
 			can_be_const = true,
@@ -1096,7 +1120,7 @@ public class Containers {
 			masterDoc = true,
 			comment = """
 					The first element of the container is located at the index 0. \
-					In addition, if the user tries to get the element at an index higher or equals than the length of the container, he will get an IndexOutOfBoundException.\
+					Accessing a list with a negative index or an index greater than or equal to its length raises a GAML error.\
 					The at operator behavior depends on the nature of the operand""",
 			special_cases = { "If the index is out of bounds (negative or >= length), raises a runtime error.",
 					"If the container is nil, raises a runtime error.",
@@ -1119,7 +1143,7 @@ public class Containers {
 			see = { "contains_all", "contains_any" })
 	@validator (AtValidator.class)
 	@test ("list<int> l <- [10,20,30]; l at 0 = 10")
-	@test ("list<int> l2 <- [10,20,30]; l at 2 = 30")
+	@test ("list<int> l2 <- [10,20,30]; l2 at 2 = 30")
 	public static Object at(final IScope scope, final IContainer container, final Object key) {
 		if (container instanceof IContainer.ToGet) return ((IContainer.ToGet) container).get(scope, key);
 		throw GamaRuntimeException.error("" + container + " cannot be accessed using " + key, scope);
@@ -1215,6 +1239,7 @@ public class Containers {
 			concept = { IConcept.CONTAINER })
 	@doc ("the element at the right (point) operand index of the matrix")
 	@no_test
+	@tests ({ @test ("matrix<int> m <- matrix([[1, 2, 3], [4, 5, 6]]); m at {1, 0} = 4") })
 	public static Object at(final IScope scope, final IMatrix container, final IPoint key) {
 		return container.get(scope, key);
 	}
@@ -1320,9 +1345,11 @@ public class Containers {
 			examples = { @example (
 					value = "remove_duplicates([3,2,5,1,2,3,5,5,5])",
 					equals = "[3,2,5,1]") })
-	@test ("remove_duplicates([3,2,5,1,2,3,5,5,5]) = [3,2,5,1]")
-	@test ("distinct([1,2,1,3]) = [1,2,3]")
-	@test ("distinct([]) = []")
+	@tests ({ @test ("remove_duplicates([3,2,5,1,2,3,5,5,5]) = [3,2,5,1]"), @test ("distinct([1,2,1,3]) = [1,2,3]"),
+			@test ("distinct([]) = []"),
+			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; distinct(numbers) = [3, 1, 4, 5, 9, 2, 6]"),
+			@test ("list<int> numbers2 <- [3, 1, 4, 1, 5, 9, 2, 6]; remove_duplicates(numbers2) = distinct(numbers2)"),
+			@test ("remove_duplicates([nil, nil, 1]) = [nil, 1]") })
 	public static IList remove_duplicates(final IScope scope, final IContainer c) {
 		return (IList) stream(scope, c).distinct().toCollection(listLike(c));
 	}
@@ -1360,9 +1387,12 @@ public class Containers {
 							value = "[1::2, 3::4, 5::6] contains_all [2,4]",
 							equals = "true") },
 			see = { "contains", "contains_any" })
-	@test ("[1,2,3,4,5,6] contains_all [2,8] = false")
-	@test ("[1::2, 3::4, 5::6] contains_all [1,3] = false")
-	@test ("[1::2, 3::4, 5::6] contains_all [2,4] = true")
+	@tests ({ @test ("[1,2,3,4,5,6] contains_all [2,8] = false"),
+			@test ("[1::2, 3::4, 5::6] contains_all [1,3] = false"),
+			@test ("[1::2, 3::4, 5::6] contains_all [2,4] = true"),
+			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; numbers contains_all [9, 2]"),
+			@test ("list<int> numbers2 <- [3, 1, 4, 1, 5, 9, 2, 6]; not (numbers2 contains_all [9, 7])"),
+			@test ("list<int> numbers3 <- [3, 1, 4, 1, 5, 9, 2, 6]; list<int> picked <- 3 among numbers3; numbers3 contains_all picked") })
 	public static Boolean contains_all(final IScope scope, final IContainer c, final IContainer c2) {
 		return stream(scope, c2).allMatch(inContainer(scope, c));
 	}
@@ -1400,9 +1430,10 @@ public class Containers {
 							value = "[1::2, 3::4, 5::6] contains_any [2,4]",
 							equals = "true") },
 			see = { "contains", "contains_all" })
-	@test ("[1,2,3,4,5,6] contains_any [2,4] = true")
-	@test ("[1,2,3,4,5,6] contains_any [2,8] = true")
-	@test ("[1::2, 3::4, 5::6] contains_any [2,4] = true")
+	@tests ({ @test ("[1,2,3,4,5,6] contains_any [2,4] = true"), @test ("[1,2,3,4,5,6] contains_any [2,8] = true"),
+			@test ("[1::2, 3::4, 5::6] contains_any [2,4] = true"),
+			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; numbers contains_any [100, 2]"),
+			@test ("list<int> numbers2 <- [3, 1, 4, 1, 5, 9, 2, 6]; not (numbers2 contains_any [100, 200])") })
 	public static Boolean contains_any(final IScope scope, final IContainer c, final IContainer c1) {
 		return stream(scope, c1).anyMatch(inContainer(scope, c));
 	}
@@ -1429,12 +1460,10 @@ public class Containers {
 			special_cases = { "If the container is empty, returns an empty list.",
 					"If the container is nil, raises a runtime error.",
 					"If n is greater than the container size, returns all elements as a list." })
-	@test ("first(3, [1,2,3,4,5,6]) = [1,2,3]")
-	@test ("first(0,[1,2,3,4,5,6]) = []")
-	@test ("first_of(3, [1,2,3,4,5,6]) = [1,2,3]")
-	@test ("first_of(0,[1,2,3,4,5,6]) = []")
-	@test ("first([1,2,3]) = 1")
-	@test ("first([]) = nil")
+	@tests ({ @test ("first(3, [1,2,3,4,5,6]) = [1,2,3]"), @test ("first(0,[1,2,3,4,5,6]) = []"),
+			@test ("first_of(3, [1,2,3,4,5,6]) = [1,2,3]"), @test ("first_of(0,[1,2,3,4,5,6]) = []"),
+			@test ("first([1,2,3]) = 1"), @test ("first([]) = nil"),
+			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; first(3, numbers) = [3, 1, 4]") })
 	public static IList first(final IScope scope, final Integer number, final IContainer c) {
 		return (IList) stream(scope, c).limit(number < 0 ? 0 : number).toCollection(listLike(c));
 	}
@@ -1461,11 +1490,9 @@ public class Containers {
 			special_cases = { "If the container is empty, returns an empty list.",
 					"If the container is nil, raises a runtime error.",
 					"If n is greater than the container size, returns all elements as a list." })
-	@test ("last(3, [1,2,3,4,5,6]) = [4,5,6]")
-	@test ("last(0,[1,2,3,4,5,6]) = []")
-	@test ("last(10,[1::2, 3::4]) is list")
-	@test ("last([1,2,3]) = 3")
-	@test ("last([]) = nil")
+	@tests ({ @test ("last(3, [1,2,3,4,5,6]) = [4,5,6]"), @test ("last(0,[1,2,3,4,5,6]) = []"),
+			@test ("last(10,[1::2, 3::4]) is list"), @test ("last([1,2,3]) = 3"), @test ("last([]) = nil"),
+			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; last(3, numbers) = [9, 2, 6]") })
 	public static IList last(final IScope scope, final Integer number, final IContainer c) {
 		int n = number < 0 ? 0 : number;
 		return (IList) stream(scope, c).skip(Math.max(0, c.length(scope) - n)).toCollection(listLike(c));
@@ -1505,8 +1532,8 @@ public class Containers {
 							value = "6 in [1::2, 3::4, 5::6]",
 							equals = "true") },
 			see = { "contains" })
-	@test ("2 in [1,2,3,4,5,6] = true")
-	@test ("3 in [1::2, 3::4, 5::6] = false")
+	@tests ({ @test ("2 in [1,2,3,4,5,6] = true"), @test ("3 in [1::2, 3::4, 5::6] = false"),
+			@test ("\"abc\" in [\"abc\", \"d\"]") })
 
 	public static Boolean in(final IScope scope, final Object o, final IContainer c) throws GamaRuntimeException {
 		return notNull(scope, c).contains(scope, o);
@@ -1555,9 +1582,9 @@ public class Containers {
 			category = { IOperatorCategory.LIST },
 			concept = { IConcept.LIST })
 	@doc (
-			value = "the index of the first occurence of the right operand in the left operand container",
+			value = "the index of the first occurence of the right operand in the left operand container, or -1 if this list does not contain the element",
 			masterDoc = true,
-			comment = "The definition of index_of and the type of the index depend on the container",
+			comment = "The definition of index_of and the type of the index depend on the container. Searching for nil matches nil values.",
 			usages = @usage (
 					value = "if the left operand is a list, index_of returns the index as an integer",
 					examples = { @example (
@@ -1567,7 +1594,9 @@ public class Containers {
 									value = "[4,2,3,4,5,4] index_of 4",
 									equals = "0") }),
 			see = { "at", "last_index_of" })
-	@test ("[1,2,3,1,2,1,4,5] index_of 4 = 6")
+	@tests ({ @test ("[1,2,3,1,2,1,4,5] index_of 4 = 6"),
+			@test ("list<string> words <- [\"apple\", \"banana\", \"cherry\"]; int idx_banana <- words index_of \"banana\"; idx_banana = 1"),
+			@test ("list<int> duplicates <- [10, 20, 10, 30]; (duplicates index_of 10) = 0") })
 	public static Integer index_of(final IScope scope, final IList c, final Object o) {
 		return notNull(scope, c).indexOf(o);
 	}
@@ -1593,9 +1622,11 @@ public class Containers {
 			examples = { @example (
 					value = "[1::2, 3::4, 5::6] index_of 4",
 					equals = "3") })
-	@test ("[1::2, 3::4, 5::6] index_of 4 = 3")
+	@tests ({ @test ("[1::2, 3::4, 5::6] index_of 4 = 3"),
+			// on a map, 'index_of' gives the key of a value
+			@test ("map<string, int> scores <- [\"a\"::1, \"b\"::2]; scores index_of 2 = \"b\"") })
 	public static Object index_of(final IScope scope, final IMap<?, ?> c, final Object o) {
-		for (final Map.Entry<?, ?> k : notNull(scope, c).entrySet()) { if (k.getValue().equals(o)) return k.getKey(); }
+		for (final Map.Entry<?, ?> k : notNull(scope, c).entrySet()) { if (Objects.equals(k.getValue(), o)) return k.getKey(); }
 		return null;
 	}
 
@@ -1621,11 +1652,12 @@ public class Containers {
 					examples = { @example (
 							value = "matrix([[1,2,3],[4,5,6]]) index_of 4",
 							equals = "{1.0,0.0}") }))
-	@test ("matrix([[1,2,3],[4,5,6]]) index_of 4 = {1.0,0.0}")
+	@tests ({ @test ("matrix([[1,2,3],[4,5,6]]) index_of 4 = {1.0,0.0}"),
+			@test ("matrix<int> m <- matrix([[1, 2, 3], [4, 5, 6]]); m index_of 5 = {1, 1}") })
 	public static IPoint index_of(final IScope scope, final IMatrix c, final Object o) {
 		for (int i = 0; i < notNull(scope, c).getCols(scope); i++) {
 			for (int j = 0; j < c.getRows(scope); j++) {
-				if (c.get(scope, i, j).equals(o)) return GamaPointFactory.create(i, j);
+				if (Objects.equals(c.get(scope, i, j), o)) return GamaPointFactory.create(i, j);
 			}
 		}
 		return null;
@@ -1651,7 +1683,7 @@ public class Containers {
 	@doc (
 			value = "all the index of all the occurences of the right operand in the left operand container",
 			masterDoc = true,
-			comment = "The definition of all_indexes_of and the type of the index depend on the container",
+			comment = "The definition of all_indexes_of and the type of the index depend on the container. Searching for nil matches nil values.",
 			usages = @usage (
 					value = "if the left operand is a list, all_indexes_of returns a list of all the indexes as integers",
 					examples = { @example (
@@ -1661,9 +1693,11 @@ public class Containers {
 									value = "[1,2,3,1,2,3] all_indexes_of 4",
 									equals = "[]") }),
 			see = { "index_of", "last_index_of" })
+	@tests ({ @test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; numbers all_indexes_of 1 = [1, 3]"),
+			@test ("list<int> numbers2 <- [3, 1, 4, 1, 5, 9, 2, 6]; empty(numbers2 all_indexes_of 7)") })
 	public static IList all_indexes_of2(final IScope scope, final IList c, final Object o) {
 		final IList results = GamaListFactory.create(Types.INT);
-		for (int i = 0; i < notNull(scope, c).size(); i++) { if (o.equals(c.get(scope, i))) { results.add(i); } }
+		for (int i = 0; i < notNull(scope, c).size(); i++) { if (Objects.equals(o, c.get(scope, i))) { results.add(i); } }
 		return results;
 
 		// Note: I also tested the following version with streams, but it was around 2 times slower...
@@ -1715,7 +1749,7 @@ public class Containers {
 	@doc (
 			value = "the index of the last occurence of the right operand in the left operand container",
 			masterDoc = true,
-			comment = "The definition of last_index_of and the type of the index depend on the container",
+			comment = "The definition of last_index_of and the type of the index depend on the container. Searching for nil matches nil values.",
 			usages = { @usage (
 					value = "if the left operand is a list, last_index_of returns the index as an integer",
 					examples = { @example (
@@ -1725,7 +1759,8 @@ public class Containers {
 									value = "[4,2,3,4,5,4] last_index_of 4",
 									equals = "5") }) },
 			see = { "at", "last_index_of" })
-	@test ("[4,2,3,4,5,4] last_index_of 4 = 5")
+	@tests ({ @test ("[4,2,3,4,5,4] last_index_of 4 = 5"),
+			@test ("list<int> duplicates <- [10, 20, 10, 30]; (duplicates last_index_of 10) = 2") })
 	public static Integer last_index_of(final IScope scope, final IList c, final Object o) {
 		return notNull(scope, c).lastIndexOf(o);
 	}
@@ -1757,7 +1792,7 @@ public class Containers {
 	public static IPoint last_index_of(final IScope scope, final IMatrix c, final Object o) {
 		for (int i = notNull(scope, c).getCols(scope) - 1; i > -1; i--) {
 			for (int j = c.getRows(scope) - 1; j > -1; j--) {
-				if (c.get(scope, i, j).equals(o)) return GamaPointFactory.create(i, j);
+				if (Objects.equals(c.get(scope, i, j), o)) return GamaPointFactory.create(i, j);
 			}
 		}
 		return null;
@@ -1790,7 +1825,7 @@ public class Containers {
 	@test ("[1::2, 3::4, 5::4] last_index_of 4 = 5")
 	public static Object last_index_of(final IScope scope, final IMap<?, ?> c, final Object o) {
 		for (final Map.Entry<?, ?> k : Lists.reverse(new ArrayList<>(notNull(scope, c).entrySet()))) {
-			if (k.getValue().equals(o)) return k.getKey();
+			if (Objects.equals(k.getValue(), o)) return k.getKey();
 		}
 		return null;
 	}
@@ -1837,7 +1872,13 @@ public class Containers {
 							value = "[1,2,3,4,5,6] inter [0,8]",
 							equals = "[]") },
 			see = { "remove_duplicates" })
-	@test ("[1,2,3,4,5,6] inter [0,8] = []")
+	@tests ({ @test ("[1,2,3,4,5,6] inter [0,8] = []"), @test ("[1, 2, 3] inter [2, 3, 4] = [2, 3]"),
+			@test ("empty([1, 2] inter [3, 4])"), @test ("nil inter square(10) = nil"),
+			@test ("geometry(nil) inter  {10,10} = nil"), @test ("{10,10} inter {20,10} = nil"),
+			@test ("{10,10} inter {10,10} = {10,10}"), @test ("line([{10,10},{20,20}]) inter {10,10} = {10,10}"),
+			@test ("line([{10,10},{20,20}]) inter {20,10} = nil"),
+			@test ("line([{10,10},{20,20}]) inter line([{5,5},{15,15}]) = line([{10,10},{15,15}])"),
+			@test ("line([{10,5},{10,20}]) inter line([{5,15},{30,15}]) distance_to {10,15} < 0.1") })
 	public static IList inter(final IScope scope, final IContainer c, final IContainer c1) {
 		return (IList) stream(scope, c).filter(inContainer(scope, c1)).distinct().toCollection(listLike(c, c1));
 	}
@@ -1876,7 +1917,9 @@ public class Containers {
 											returnType = "list<int>",
 											equals = "[1,2,3,4,5,6]") }) },
 			see = { "" + IKeyword.PLUS })
-	@test ("[1,2,3,4,5,6] - [0,8] = [1,2,3,4,5,6]")
+	@tests ({ @test ("[1,2,3,4,5,6] - [0,8] = [1,2,3,4,5,6]"),
+			// removing a list removes every occurrence of its elements
+			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; numbers - [1, 5] = [3, 4, 9, 2, 6]") })
 	public static IList minus(final IScope scope, final IContainer source, final IContainer l) {
 		final IList result =
 				notNull(scope, source).listValue(scope, source.getGamlType().getContentType(), false).copy(scope);
@@ -2120,10 +2163,9 @@ public class Containers {
 											returnType = "list<int>",
 											equals = "[1,2,3,4,5,6,0,8]") }) },
 			see = { "" + IKeyword.MINUS })
-	@test ("[1,2,3,4,5,6] + [2,4,9] = [1,2,3,4,5,6,2,4,9]")
-	@test ("[1,2] + [3,4] = [1,2,3,4]")
-	@test ("[1,2] + [] = [1,2]")
-	@test ("[] + [1,2] = [1,2]")
+	@tests ({ @test ("[1,2,3,4,5,6] + [2,4,9] = [1,2,3,4,5,6,2,4,9]"), @test ("[1,2] + [3,4] = [1,2,3,4]"),
+			@test ("[1,2] + [] = [1,2]"), @test ("[] + [1,2] = [1,2]"),
+			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; numbers + [7, 8] = [3, 1, 4, 1, 5, 9, 2, 6, 7, 8]") })
 	public static IContainer plus(final IScope scope, final IContainer c1, final IContainer c2) {
 		// special case for the addition of two populations or meta-populations
 		if (c1 instanceof IPopulationSet && c2 instanceof IPopulationSet) {
@@ -2165,7 +2207,7 @@ public class Containers {
 									value = "[1,2,3,4,5,6] + 0",
 									returnType = "list<int>",
 									equals = "[1,2,3,4,5,6,0]") }))
-	@test ("[1,2,3,4,5,6] + 2 = [1,2,3,4,5,6,2]")
+	@tests ({ @test ("[1,2,3,4,5,6] + 2 = [1,2,3,4,5,6,2]"), @test ("#white + #white = #white") })
 	public static IList plus(final IScope scope, final IContainer l1, final Object l) {
 		final IList result = notNull(scope, l1).listValue(scope, Types.NO_TYPE, false).copy(scope);
 		result.addValue(scope, l);
@@ -2227,7 +2269,8 @@ public class Containers {
 							value = "[1,3,2,4,5,6,8,5,6] union [0,8]",
 							equals = "[1,3,2,4,5,6,8,0]") },
 			see = { "inter", IKeyword.PLUS })
-	@test ("[1,2,3,4,5,6] union [2,4,9] = [1,2,3,4,5,6,9]")
+	@tests ({ @test ("[1,2,3,4,5,6] union [2,4,9] = [1,2,3,4,5,6,9]"), @test ("[1, 2] union [2, 3] = [1, 2, 3]"),
+			@test ("geometry(nil) union {10,10} = {10,10}") })
 	public static IList union(final IScope scope, final IContainer c, final IContainer c1) {
 		return (IList) stream(scope, c).append(stream(scope, c1)).distinct().toCollection(listLike(c, c1));
 	}
@@ -2274,8 +2317,10 @@ public class Containers {
 							equals = "[false::[2, 4], true::[6]]",
 							returnType = "map<bool,list>") },
 			see = { "first_with", "last_with", "where" })
-	@test ("[1,2,3,4,5,6,7,8] group_by (each > 3) = [false::[1, 2, 3], true::[4, 5, 6, 7, 8]]")
-	@test ("[1::2, 3::4, 5::6] group_by (each > 4) = [false::[2, 4], true::[6]]")
+	@tests ({ @test ("[1,2,3,4,5,6,7,8] group_by (each > 3) = [false::[1, 2, 3], true::[4, 5, 6, 7, 8]]"),
+			@test ("[1::2, 3::4, 5::6] group_by (each > 4) = [false::[2, 4], true::[6]]"),
+			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; map<bool, list<int>> by_parity <- numbers group_by even(each); by_parity[true] = [4, 2, 6]"),
+			@test ("list<int> numbers2 <- [3, 1, 4, 1, 5, 9, 2, 6]; map<bool, list<int>> by_parity2 <- numbers2 group_by even(each); by_parity2[false] = [3, 1, 1, 5, 9]") })
 	public static IMap group_by(final IScope scope, final String eachName, final IContainer c, final IExpression e) {
 		final IType ct = notNull(scope, c).getGamlType().getContentType();
 		return (IMap) stream(scope, c).groupingTo(buildFunctionWithEach(scope, eachName, e),
@@ -2328,7 +2373,8 @@ public class Containers {
 							equals = "node3",
 							isExecutable = false) },
 			see = { "group_by", "first_with", "where" })
-	@test ("[1,2,3,4,5,6,7,8] last_with (each > 3) = 8")
+	@tests ({ @test ("[1,2,3,4,5,6,7,8] last_with (each > 3) = 8"),
+			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; numbers last_with (each > 3) = 6") })
 	public static Object last_with(final IScope scope, final String eachName, final IContainer c,
 			final IExpression filter) {
 		return stream(scope, c).filter(buildPredicateWithEach(scope, eachName, filter)).reduce((a, b) -> b)
@@ -2383,7 +2429,9 @@ public class Containers {
 							equals = "node2",
 							isExecutable = false) },
 			see = { "group_by", "last_with", "where" })
-	@test ("[1,2,3,4,5,6,7,8] first_with (each > 3) = 4")
+	@tests ({ @test ("[1,2,3,4,5,6,7,8] first_with (each > 3) = 4"),
+			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; numbers first_with (each > 3) = 4"),
+			@test ("list<int> numbers2 <- [3, 1, 4, 1, 5, 9, 2, 6]; numbers2 first_with (each > 100) = nil") })
 	public static Object first_with(final IScope scope, final String eachName, final IContainer c,
 			final IExpression filter) {
 		return stream(scope, c).findFirst(buildPredicateWithEach(scope, eachName, filter)).orElse(null);
@@ -2439,9 +2487,9 @@ public class Containers {
 					@usage (
 							value = "if it is a list of colors: sum will sum them and return the blended resulting color") },
 			see = { "mul" })
-	@test ("sum([{1.0,3.0},{3.0,5.0},{9.0,1.0},{7.0,8.0}]) = {20.0,17.0}")
-	@test ("sum ([12,10,3]) = 25")
-	@test ("sum([1,2,3]) = 6")
+	@tests ({ @test ("sum([{1.0,3.0},{3.0,5.0},{9.0,1.0},{7.0,8.0}]) = {20.0,17.0}"), @test ("sum ([12,10,3]) = 25"),
+			@test ("sum([1,2,3]) = 6"), @test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; sum(numbers) = 31"),
+			@test ("list<int> data <- [1, 2, 3, 4, 5]; sum(data) = 15") })
 	public static Object sum(final IScope scope, final IContainer l) {
 		return sum_of(scope, IKeyword.EACH, l, null);
 	}
@@ -2483,7 +2531,8 @@ public class Containers {
 			expected_content_type = { IType.LIST },
 			category = { IOperatorCategory.CONTAINER },
 			concept = { IConcept.CONTAINER })
-	@test ("cartesian_product([['A','B'],['C','D']]) = [['A','C'],['A','D'],['B','C'],['B','D']]")
+	@tests ({ @test ("cartesian_product([['A','B'],['C','D']]) = [['A','C'],['A','D'],['B','C'],['B','D']]"),
+			@test ("cartesian_product([[1, 2], [\"a\", \"b\"]]) = [[1, \"a\"], [1, \"b\"], [2, \"a\"], [2, \"b\"]]") })
 	public static Object cart_prod(final IScope scope, final IList list) {
 		IType ct = list.getGamlType().getContentType();
 		if (!ct.isContainer()) throw GamaRuntimeException.error("Must be a list of list", scope);
@@ -2528,7 +2577,9 @@ public class Containers {
 					value = "[1,2] sum_of (each * 100 )",
 					equals = "300") },
 			see = { "min_of", "max_of", "product_of", "mean_of" })
-	@test ("[1,2] sum_of (each * 100 ) = 300")
+	@tests ({ @test ("[1,2] sum_of (each * 100 ) = 300"),
+			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; numbers sum_of (each * 2) = 62"),
+			@test ("matrix<int> m1 <- matrix([[1, 2], [3, 4]]); int sum_elements <- m1 sum_of each; sum_elements = 10") })
 	public static Object sum_of(final IScope scope, final String eachName, final IContainer container,
 			final IExpression filter) {
 		Stream s = stream(scope, container);
@@ -2674,7 +2725,11 @@ public class Containers {
 							value = "[1::2, 5::6, 3::4] sort_by (each)",
 							equals = "[2, 4, 6]") },
 			see = { "group_by" })
-	@test ("[1,2,4,3,5,7,6,8] sort_by (each) = [1,2,3,4,5,6,7,8]")
+	@tests ({ @test ("[1,2,4,3,5,7,6,8] sort_by (each) = [1,2,3,4,5,6,7,8]"),
+			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; (numbers sort_by each) = [1, 1, 2, 3, 4, 5, 6, 9]"),
+			@test ("list<int> numbers2 <- [3, 1, 4, 1, 5, 9, 2, 6]; (numbers2 sort_by (-each)) = [9, 6, 5, 4, 3, 2, 1, 1]"),
+			@test ("matrix<int> m1 <- matrix([[1, 2], [3, 4]]); list<int> l1 <- list<int>(m1 collect (each * 10)); (l1 sort_by each) = [10, 20, 30, 40]"),
+			@test ("([\"pear\", \"apple\", \"fig\"] sort_by each) = [\"apple\", \"fig\", \"pear\"]") })
 	@validator (ComparableValidator.class)
 	public static IList sort(final IScope scope, final String eachName, final IContainer c, final IExpression filter) {
 		try {
@@ -2737,8 +2792,9 @@ public class Containers {
 							equals = "[node2, node3]",
 							isExecutable = false) },
 			see = { "first_with", "last_with" })
-	@test ("[1,2,3,4,5,6,7,8] where (each > 3) = [4, 5, 6, 7, 8] ")
-	@test ("matrix([1, 2, 3], [4, 5, 6]) where (each > 2) = [4, 5, 3, 6] ")
+	@tests ({ @test ("[1,2,3,4,5,6,7,8] where (each > 3) = [4, 5, 6, 7, 8] "),
+			@test ("matrix([1, 2, 3], [4, 5, 6]) where (each > 2) = [4, 5, 3, 6] "),
+			@test ("map<string, int> m1 <- [\"a\"::1, \"b\"::2, \"c\"::3, \"d\"::4]; list<int> l2 <- m1 where (each > 2); l2 = [3, 4]") })
 	public static IList where(final IScope scope, final String eachName, final IContainer c, final IExpression filter) {
 		return (IList) stream(scope, c).filter(buildPredicateWithEach(scope, eachName, filter))
 				.toCollection(listLike(c));
@@ -2863,7 +2919,8 @@ public class Containers {
 							value = "[1::2, 3::4, 5::6] with_max_of (each)",
 							equals = "6") },
 			see = { "where", "with_min_of" })
-	@test ("[1,2,3,4,5,6,7,8] with_max_of (each ) = 8")
+	@tests ({ @test ("[1,2,3,4,5,6,7,8] with_max_of (each ) = 8"),
+			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; numbers with_max_of (each mod 5) = 4") })
 	@validator (ComparableValidator.class)
 	public static Object with_max_of(final IScope scope, final String eachName, final IContainer c,
 			final IExpression filter) {
@@ -2910,11 +2967,158 @@ public class Containers {
 							value = "[1::2, 3::4, 5::6] with_min_of (each)",
 							equals = "2") },
 			see = { "where", "with_max_of" })
-	@test ("[1,2,3,4,5,6,7,8] with_min_of (each )  = 1")
+	@tests ({ @test ("[1,2,3,4,5,6,7,8] with_min_of (each )  = 1"),
+			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; numbers with_min_of (each mod 5) = 5") })
 	@validator (ComparableValidator.class)
 	public static Object with_min_of(final IScope scope, final String eachName, final IContainer c,
 			final IExpression filter) {
 		return stream(scope, c).minBy(buildFunctionWithEach(scope, eachName, filter)).orElse(null);
+	}
+
+	@operator (
+			value = "reduce",
+			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
+			iterator = true,
+			category = IOperatorCategory.CONTAINER,
+			concept = IConcept.CONTAINER)
+	@doc (
+			value = "Reduces a container sequentially in iteration order. In the body, @ is the accumulated value and each is the current element.",
+			comment = "Without an initial value, the first element initializes @ and the body is evaluated from the second element. "
+					+ "The result has the element type. Maps iterate over values. Nested reductions bind @ and each to the innermost reduction. "
+					+ "Unlike accumulate, reduce returns a single accumulated result rather than a flat list.",
+			special_cases = { "An empty container without an initial value raises an error.",
+					"A singleton without an initial value returns its element without evaluating the body." },
+			examples = { @example (value = "[1,2,3,4] reduce (@ + each)", equals = "10"),
+					@example (value = "[10,3,2] reduce (@ - each)", equals = "5") },
+			see = { "scan", "accumulate", "collect", "sum_of" })
+	@tests ({ @test ("[1,2,3,4] reduce (@ + each) = 10"),
+			@test ("[1,2,3,4] reduce (@ * each) = 24"),
+			@test ("[10,3,2] reduce (@ - each) = 5"),
+			@test ("[7] reduce (@ + each) = 7"),
+			@test ("['a','b','c'] reduce (@ + ',' + each) = 'a,b,c'"),
+			@test ("['a'::1,'b'::2,'c'::3] reduce (@ + each) = 6") })
+	public static Object reduce(final IScope scope, final String eachName, final IContainer<?, ?> c,
+			final IExpression body) {
+		final Iterator<?> iterator = notNull(scope, c).iterable(scope).iterator();
+		if (!iterator.hasNext()) {
+			throw GamaRuntimeException.error("reduce cannot reduce an empty container without an initial value", scope);
+		}
+		final Object initial = c.getGamlType().getContentType().cast(scope, iterator.next(), null, false);
+		return fold(scope, eachName, iterator, initial, body, null);
+	}
+
+	@operator (
+			value = "reduce",
+			type = ITypeProvider.TYPE_AT_INDEX + 3,
+			iterator = true,
+			category = IOperatorCategory.CONTAINER,
+			concept = IConcept.CONTAINER)
+	@doc (
+			value = "Reduces a container using an initial value, written container reduce (initial_value, body).",
+			comment = "The initial value is evaluated once, outside the body's @ and each bindings. The body is then evaluated for every element, "
+					+ "with @ as the accumulated value and each as the current element. The result has the initial value's type, "
+					+ "which may differ from the element type. The body must return a compatible value. Evaluation is sequential in container iteration order.",
+			special_cases = "An empty container returns the initial value unchanged, without evaluating the body.",
+			examples = { @example (value = "[1,2,3] reduce (10, @ + each)", equals = "16"),
+					@example (value = "[] reduce (0, @ + each)", equals = "0") },
+			see = { "scan", "accumulate", "collect", "sum_of" })
+	@tests ({ @test ("[1,2,3] reduce (10, @ + each) = 16"),
+			@test ("[] reduce (0, @ + each) = 0"),
+			@test ("[10,3,2] reduce (0, @ - each) = -15"),
+			@test ("['a','bb','ccc'] reduce (0, @ + length(each)) = 6"),
+			@test ("reduce([1,2,3], 10, @ + each) = 16"),
+			@test ("[[1,2],[3,4]] reduce (0, @ + (each reduce (@ + each))) = 10") })
+	public static Object reduce(final IScope scope, final String eachName, final IContainer<?, ?> c,
+			final Object initial, final IExpression body) {
+		return fold(scope, eachName, notNull(scope, c).iterable(scope).iterator(), initial, body, null);
+	}
+
+	@operator (
+			value = "scan",
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
+			iterator = true,
+			category = IOperatorCategory.CONTAINER,
+			concept = IConcept.CONTAINER)
+	@doc (
+			value = "Returns a list of the successive accumulated values, evaluated sequentially in container iteration order. "
+					+ "In the body, @ is the accumulated value and each is the current element.",
+			comment = "Without an initial value, the first element initializes @ and is the first result. "
+					+ "The body is evaluated from the second element. The result is a list of the element type. "
+					+ "Maps iterate over values. Nested scans and reductions use the innermost @ and each bindings. "
+					+ "Results retain accumulated values without deep copying them.",
+			special_cases = { "An empty container returns an empty list.",
+					"A singleton returns a one-element list without evaluating the body." },
+			examples = { @example (value = "[1,2,3,4] scan (@ + each)", equals = "[1,3,6,10]"),
+					@example (value = "[10,3,2] scan (@ - each)", equals = "[10,7,5]") },
+			see = { "reduce", "accumulate", "collect" })
+	@tests ({ @test ("[1,2,3,4] scan (@ + each) = [1,3,6,10]"),
+			@test ("[1,2,3,4] scan (@ * each) = [1,2,6,24]"),
+			@test ("[10,3,2] scan (@ - each) = [10,7,5]"),
+			@test ("[7] scan (@ + each) = [7]"),
+			@test ("['a','b','c'] scan (@ + each) = ['a','ab','abc']") })
+	public static IList<Object> scan(final IScope scope, final String eachName, final IContainer<?, ?> c,
+			final IExpression body) {
+		final Iterator<?> iterator = notNull(scope, c).iterable(scope).iterator();
+		final IType<?> type = c.getGamlType().getContentType();
+		final IList<Object> results = GamaListFactory.create(type);
+		if (iterator.hasNext()) {
+			final Object initial = type.cast(scope, iterator.next(), null, false);
+			results.add(initial);
+			fold(scope, eachName, iterator, initial, body, results);
+		}
+		return results;
+	}
+
+	@operator (
+			value = "scan",
+			content_type = ITypeProvider.TYPE_AT_INDEX + 3,
+			iterator = true,
+			category = IOperatorCategory.CONTAINER,
+			concept = IConcept.CONTAINER)
+	@doc (
+			value = "Returns a list containing the initial value followed by every successive accumulated value, "
+					+ "written container scan (initial_value, body).",
+			comment = "The initial value is evaluated once, outside the body's @ and each bindings. "
+					+ "The body is then evaluated for every element, with @ as the accumulated value and each as the current element. "
+					+ "The result is a list of the initial value's type, which may differ from the element type. "
+					+ "The body must return a compatible value. Evaluation is sequential in container iteration order. "
+					+ "An input of length n produces n + 1 results. Results retain accumulated values without deep copying them.",
+			special_cases = "An empty container returns a one-element list containing the initial value, without evaluating the body.",
+			examples = { @example (value = "[1,2,3,4] scan (0, @ + each)", equals = "[0,1,3,6,10]"),
+					@example (value = "[] scan (0, @ + each)", equals = "[0]"),
+					@example (value = "['a','bb','ccc'] scan (0, @ + length(each))", equals = "[0,1,3,6]") },
+			see = { "reduce", "accumulate", "collect" })
+	@tests ({ @test ("[1,2,3,4] scan (0, @ + each) = [0,1,3,6,10]"),
+			@test ("[] scan (0, @ + each) = [0]"),
+			@test ("['a','bb','ccc'] scan (0, @ + length(each)) = [0,1,3,6]"),
+			@test ("scan([1,2,3], 10, @ + each) = [10,11,13,16]") })
+	public static IList<Object> scan(final IScope scope, final String eachName, final IContainer<?, ?> c,
+			final IExpression initial, final IExpression body) {
+		final Object seed = initial.value(scope);
+		final Iterator<?> iterator = notNull(scope, c).iterable(scope).iterator();
+		final IList<Object> results = GamaListFactory.create(initial.getGamlType());
+		results.add(seed);
+		fold(scope, eachName, iterator, seed, body, results);
+		return results;
+	}
+
+	private static Object fold(final IScope scope, final String eachName, final Iterator<?> iterator,
+			final Object initial, final IExpression body, final IList<Object> results) {
+		final Object previousEach = scope.getEach(eachName);
+		final Object previousAccumulator = scope.getEach("@");
+		Object accumulator = initial;
+		try {
+			while (iterator.hasNext()) {
+				scope.setEach(eachName, iterator.next());
+				scope.setEach("@", accumulator);
+				accumulator = body.value(scope);
+				if (results != null) { results.add(accumulator); }
+			}
+			return accumulator;
+		} finally {
+			scope.setEach("@", previousAccumulator);
+			scope.setEach(eachName, previousEach);
+		}
 	}
 
 	/**
@@ -2951,7 +3155,8 @@ public class Containers {
 							returnType = "list<int>",
 							equals = "[2,4,8]") },
 			see = { "collect" })
-	@test ("[1,2,4] accumulate ([2,4]) = [2,4,2,4,2,4]")
+	@tests ({ @test ("[1,2,4] accumulate ([2,4]) = [2,4,2,4,2,4]"),
+			@test ("list<int> l1 <- [1, 2, 3]; list<int> accumulated <- l1 accumulate ([each, each * 2]); accumulated = [1, 2, 2, 4, 3, 6]") })
 	public static IList accumulate(final IScope scope, final String eachName, final IContainer c,
 			final IExpression filter) {
 		// WARNING TODO The resulting type is not computed
@@ -2984,7 +3189,9 @@ public class Containers {
 			concept = { IConcept.MATRIX })
 	@doc (
 			value = "When applied to a field, collect returns a field of the same size if the right expression returns float values, in which each element is the evaluation of the right-hand operand on the corresponding element in the left-hand operand")
-	@test ("field([1,2,4],[1,3,4]) collect (x: x *2) = field([2,4,8],[2,6,8])")
+	@tests ({ @test ("field([1,2,4],[1,3,4]) collect (x: x *2) = field([2,4,8],[2,6,8])"),
+			@test ("matrix<rgb> img_matrix <- matrix<rgb>([ [#red, #blue], [#green, #yellow] ]); list<rgb> as_list <- list<rgb>(img_matrix collect (each.darker)); as_list[0] != #red"),
+			@test ("map<string, int> m1 <- [\"a\"::1, \"b\"::2, \"c\"::3, \"d\"::4]; list<int> l1 <- m1 collect (each * 10); l1 = [10, 20, 30, 40]") })
 	public static IMatrix collect(final IScope scope, final String eachName, final IField f, final IExpression filter) {
 		return collect(scope, eachName, (IMatrix) f, filter);
 	}
@@ -3107,12 +3314,46 @@ public class Containers {
 					@example (
 							value = "interleave([['e11','e12','e13'],['e21','e22','e23'],['e31','e32','e33']])",
 							equals = "['e11','e21','e31','e12','e22','e32','e13','e23','e33']") })
+	@tests ({ @test ("interleave([[1, 2], [10, 20]]) = [1, 10, 2, 20]"),
+			@test ("list<int> l1 <- [1, 2, 3]; list<int> l2 <- [4, 5, 6]; list<int> interleaved <- interleave([l1, l2]); interleaved = [1, 4, 2, 5, 3, 6]") })
 	public static IList interleave(final IScope scope, final IContainer cc) {
 		final Iterable iterable = notNull(scope, cc).iterable(scope);
 		IType type = cc.getGamlType().getContentType();
 		if (type.isContainer()) { type = type.getContentType(); }
 		final Iterator it = new InterleavingIterator(scope, Iterables.toArray(iterable, Object.class));
 		return GamaListFactory.create(scope, type, it);
+	}
+
+	/**
+	 * Enumerate.
+	 *
+	 * @param <T>
+	 *            the generic type
+	 * @param scope
+	 *            the scope
+	 * @param cont
+	 *            the cont
+	 * @return the i list
+	 */
+	@operator (
+			value = "enumerate",
+			content_type = IType.PAIR)
+	@doc (
+			value = "Returns a list of pairs in which the keys are indices the original container and the value is the object found at the index in the original container.",
+			examples = { @example (
+					value = "enumerate(['a','b','c'])",
+					equals = "list(0::'a', 1::'b', 2::'c')") })
+	@tests ({ @test ("list<pair<int, string>> numbered <- enumerate([\"a\", \"b\"]); numbered[0] = (0::\"a\")"),
+			@test ("list<pair<int, string>> numbered2 <- enumerate([\"a\", \"b\"]); numbered2[1] = (1::\"b\")") })
+	public static <T> IList<IPair<Integer, T>> enumerate(final IScope scope, final IContainer<?, T> cont) {
+		IList<IPair<Integer, T>> ret = GamaListFactory.create(Types.PAIR);
+		int i = 0;
+		if (cont == null) return ret;
+		for (T obj : cont.iterable(scope)) {
+			ret.add(GamaPairFactory.createWith(i, obj));
+			i++;
+		}
+		return ret;
 	}
 
 	/**
@@ -3190,6 +3431,10 @@ public class Containers {
 							value = "[1::2, 3::4, 5::6] one_matches (each > 4)",
 							equals = "true") },
 			see = { "none_matches", "all_match", "count" })
+	@tests ({ @test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; numbers one_matches (each = 9)"),
+			@test ("list<int> numbers2 <- [3, 1, 4, 1, 5, 9, 2, 6]; not (numbers2 one_matches (each = 7))"),
+			@test ("list<int> numbers3 <- [3, 1, 4, 1, 5, 9, 2, 6]; numbers3 one_verifies (each = 9)"),
+			@test ("list<int> nothing <- []; not (nothing one_matches (each > 0))") })
 	public static Boolean one_matches(final IScope scope, final String eachName, final IContainer original,
 			final IExpression filter) {
 		return notNull(scope, original).stream(scope).anyMatch(buildPredicateWithEach(scope, eachName, filter));
@@ -3224,6 +3469,11 @@ public class Containers {
 							value = "[1::2, 3::4, 5::6] none_matches (each > 4)",
 							equals = "false") },
 			see = { "one_matches", "all_match", "count" })
+	@tests ({ @test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; numbers none_matches (each > 10)"),
+			@test ("list<int> numbers2 <- [3, 1, 4, 1, 5, 9, 2, 6]; not (numbers2 none_matches (each > 8))"),
+			@test ("list<int> numbers3 <- [3, 1, 4, 1, 5, 9, 2, 6]; numbers3 none_verifies (each > 10)"),
+			@test ("list<int> nothing <- []; nothing none_matches (each > 0)"),
+			@test ("list<int> numbers4 <- [1, 2, 3, 4, 5]; bool none_neg <- numbers4 none_matches (each < 0); none_neg = true") })
 	public static Boolean none_matches(final IScope scope, final String eachName, final IContainer original,
 			final IExpression filter) {
 		return notNull(scope, original).stream(scope).noneMatch(buildPredicateWithEach(scope, eachName, filter));
@@ -3258,6 +3508,13 @@ public class Containers {
 							value = "[1::2, 3::4, 5::6] all_match (each > 4)",
 							equals = "false") },
 			see = { "none_matches", "one_matches", "count" })
+	@tests ({ @test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; numbers all_match (each > 0)"),
+			@test ("list<int> numbers2 <- [3, 1, 4, 1, 5, 9, 2, 6]; not (numbers2 all_match (each > 1))"),
+			// the '_verify' family are synonyms
+			@test ("list<int> numbers3 <- [3, 1, 4, 1, 5, 9, 2, 6]; numbers3 all_verify (each > 0)"),
+			@test ("list<int> nothing <- []; nothing all_match (each > 0)"),
+			@test ("list<int> numbers4 <- [1, 2, 3, 4, 5]; bool all_pos <- numbers4 all_match (each > 0); all_pos = true"),
+			@test ("list<int> numbers5 <- [1, 2, 3, 4, 5]; bool all_large <- numbers5 all_match (each > 3); all_large = false") })
 	public static Boolean all_match(final IScope scope, final String eachName, final IContainer original,
 			final IExpression filter) {
 		return notNull(scope, original).stream(scope).allMatch(buildPredicateWithEach(scope, eachName, filter));
@@ -3289,6 +3546,10 @@ public class Containers {
 					value = "[1,2,3,4,5,6,7,8] index_by (each - 1)",
 					equals = "[0::1, 1::2, 2::3, 3::4, 4::5, 5::6, 6::7, 7::8]") },
 			see = {})
+	@tests ({
+			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; map<int, int> by_double <- numbers index_by (each * 2); by_double[18] = 9"),
+			@test ("list<int> numbers2 <- [3, 1, 4, 1, 5, 9, 2, 6]; map<int, int> by_double2 <- numbers2 index_by (each * 2); by_double2[2] = 1"),
+			@test ("list<int> numbers3 <- [3, 1, 4, 1, 5, 9, 2, 6]; map<int, int> by_double3 <- numbers3 index_by (each * 2); length(by_double3) = 7") })
 	public static IMap index_by(final IScope scope, final String eachName, final IContainer original,
 			final IExpression keyProvider) {
 
@@ -3330,6 +3591,9 @@ public class Containers {
 							returnType = "map<int,int>",
 							equals = "[2::4, 4::8, 6::12] ") },
 			see = {})
+	@tests ({
+			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; map<int, int> doubles <- numbers as_map (each::each * 2); doubles[9] = 18"),
+			@test ("list<int> numbers2 <- [3, 1, 4, 1, 5, 9, 2, 6]; map<int, int> doubles2 <- numbers2 as_map (each::each * 2); doubles2[3] = 6") })
 	public static IMap as_map(final IScope scope, final String eachName, final IContainer original,
 			final IExpression filter) {
 		if (!(filter instanceof IOperator pair) || !"::".equals(pair.getName()))
@@ -3377,6 +3641,7 @@ public class Containers {
 							returnType = "map<string,float>",
 							equals = "['a'::1.0,'b'::2.0,'c'::3.0]") },
 			see = {})
+	@tests ({ @test ("create_map([\"a\", \"b\"], [1, 2]) = [\"a\"::1, \"b\"::2]") })
 	public static IMap create_map(final IScope scope, final IList keys, final IList values) {
 		if (keys.length(scope) != values.length(scope)) {
 			GAMA.reportAndThrowIfNeeded(scope,
@@ -3415,6 +3680,9 @@ public class Containers {
 							value = "['a'::1,'b'::2] + [5::3.0]",
 							equals = "['a'::1,'b'::2,5::3.0]") },
 			see = { "" + IKeyword.MINUS })
+	@tests ({
+			@test ("map<string, int> m1 <- [\"a\"::1, \"b\"::2]; map<string, int> m2 <- [\"c\"::3, \"d\"::4]; map<string, int> m3 <- m1 + m2; m3[\"a\"] = 1"),
+			@test ("map<string, int> m12 <- [\"a\"::1, \"b\"::2]; map<string, int> m22 <- [\"c\"::3, \"d\"::4]; map<string, int> m32 <- m12 + m22; m32[\"c\"] = 3") })
 	public static IMap plus(final IScope scope, final IMap m1, final IMap m2) {
 		final IType type = GamaType.findCommonType(notNull(scope, m1).getGamlType(), notNull(scope, m2).getGamlType());
 		final IMap res = GamaMapFactory.createWithoutCasting(type.getKeyType(), type.getContentType(), m1);
@@ -3551,8 +3819,10 @@ public class Containers {
 					value = "mean ([4.5, 3.5, 5.5, 7.0])",
 					equals = "5.125 ") },
 			see = { "sum" })
-	@test ("mean ([4.5, 3.5, 5.5, 7.0]) with_precision 3 = 5.125")
-	@test ("mean([1,2,3]) = 2.0")
+	@tests ({ @test ("mean ([4.5, 3.5, 5.5, 7.0]) with_precision 3 = 5.125"), @test ("mean([1,2,3]) = 2.0"),
+			@test ("not is_number(mean([1.0, #nan, 3.0]))"),
+			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; mean(numbers) = 3.875"),
+			@test ("list<int> data <- [1, 2, 3, 4, 5]; mean(data) = 3.0") })
 	public static Object opMean(final IScope scope, final IContainer l) throws GamaRuntimeException {
 
 		final Object s = sum(scope, l);

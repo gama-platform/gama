@@ -173,6 +173,9 @@ public interface IEventLayerListener {
 	 */
 	void keyPressed(String c);
 
+	/** Explicit combination events are separate from legacy single-key events. */
+	default void keyCombinationPressed(final KeyCombination combination) {}
+
 	/**
 	 * Special key pressed.
 	 *

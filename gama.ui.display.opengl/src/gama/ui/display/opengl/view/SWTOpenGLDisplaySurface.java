@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MenuEvent;
@@ -37,7 +38,7 @@ import org.eclipse.swt.widgets.Menu;
 
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.GL;
-import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.GL2GL3;
 import com.jogamp.opengl.GLAnimatorControl;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLContext;
@@ -59,6 +60,7 @@ import gama.api.ui.displays.IGraphics;
 import gama.api.ui.displays.IGraphicsScope;
 import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.ui.layers.IEventLayerListener;
+import gama.api.ui.layers.KeyCombination;
 import gama.api.ui.layers.ILayer;
 import gama.api.ui.layers.ILayerManager;
 import gama.api.utils.geometry.GamaEnvelopeFactory;
@@ -87,7 +89,7 @@ import gama.ui.shared.utils.WorkbenchHelper;
  *
  */
 @display (
-		value = { "opengl", "3d" })
+		value = { "opengl", "3d", "3D" }, is3D = true)
 @doc ("Displays that uses the OpenGL technology to display their layers in 3D")
 public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 
@@ -130,7 +132,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	volatile boolean disposed;
 
 	/** The already updating. */
-	private volatile boolean alreadyUpdating;
+	private final AtomicBoolean alreadyUpdating = new AtomicBoolean();
 
 	/** The current mouse location converted to a world position */
 	private IPoint world_position;
@@ -148,7 +150,10 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 		this.output.setSurface(this);
 		setDisplayScope(this.output.getScope().copyForGraphics("in opengl display"));
 		layerManager = new LayerManager(this, output);
-		if (!layerManager.stayProportional()) { output.getData().setDrawEnv(false); }
+		// Displays containing only non-proportional layers (e.g. charts) hide the axes; empty displays keep them (#809)
+		if (!layerManager.getItems().isEmpty() && !layerManager.stayProportional()) {
+			output.getData().setDrawEnv(false);
+		}
 		renderer = createRenderer();
 		final GamaGLCanvas canvas =
 				new GamaGLCanvas(this.parent, renderer, getOutput().getTitle(), !LaunchingOverlay.isLaunchOverlayVisible());
@@ -196,13 +201,9 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	@Override
 	public GamaImage getImage(final int desiredWidth, final int desiredHeight) {
 		if (desiredWidth == 0 || desiredHeight == 0 || !renderer.hasDrawnOnce()) return null;
-		// We first render at the right dimensions and then we scale
-		Rectangle dimensions = this.getBoundsForRegularSnapshot();
-		int w = dimensions.width;
-		int h = dimensions.height;
 		final GLAutoDrawable glad = renderer.getCanvas();
 		if (glad == null) return null;
-		GL2 gl = glad.getGL().getGL2();
+		GL2GL3 gl = glad.getGL().getGL2GL3();
 		if (gl == null) return null;
 		GLContext context = gl.getContext();
 		if (context == null) return null;
@@ -210,6 +211,10 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 		if (!current) { context.makeCurrent(); }
 		GamaImage[] image = new GamaImage[1];
 		glad.invoke(true, drawable -> {
+			// Read native framebuffer pixels, whose dimensions can differ from SWT's scaled bounds.
+			final int w = drawable.getSurfaceWidth();
+			final int h = drawable.getSurfaceHeight();
+			if (w <= 0 || h <= 0) return true;
 			// See #2628 and https://github.com/sgothel/jogl/commit/ca7f0fb61b0a608b6e684a5bbde71f6ecb6e3fe0
 			final ByteBuffer buffer = getBuffer(w, h);
 			// be sure we are reading from the right fbo (here is supposed to be the default one)
@@ -288,13 +293,15 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	 */
 	@Override
 	public void updateDisplay(final boolean force, final GeneralSynchronizer synchronizer) {
-		if (alreadyUpdating) return;
+		if (!alreadyUpdating.compareAndSet(false, true)) {
+			renderer.getSceneHelper().requestUpdate();
+			return;
+		}
 		try {
-			alreadyUpdating = true;
 			renderer.setSynchronizer(synchronizer);
 			layerManager.drawLayersOn(renderer);
 		} finally {
-			alreadyUpdating = false;
+			alreadyUpdating.set(false);
 		}
 	}
 
@@ -762,6 +769,11 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	@Override
 	public void dispatchKeyEvent(final char e) {
 		for (final IEventLayerListener gl : listeners) { gl.keyPressed(String.valueOf(e)); }
+	}
+
+	@Override
+	public void dispatchKeyCombination(final KeyCombination combination) {
+		for (final IEventLayerListener listener : listeners) { listener.keyCombinationPressed(combination); }
 	}
 
 	@Override

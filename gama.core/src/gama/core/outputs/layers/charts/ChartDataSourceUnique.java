@@ -11,6 +11,7 @@
 package gama.core.outputs.layers.charts;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.gaml.GAML;
@@ -23,7 +24,10 @@ import gama.api.types.color.IColor;
 import gama.gaml.operators.Random;
 
 /**
- * The Class ChartDataSourceUnique.
+ * Data source created by a {@code data} statement: a single series. The series is identified internally by an id
+ * derived from this source ({@link #getSerieId()}), while its legend is only used as displayed text, so that several
+ * sources can share the same legend (#785). Sources are reused across steps by {@link ChartDataSet#getOrCreateSource}
+ * as long as the statement is executed with the same legend (#403).
  */
 public class ChartDataSourceUnique extends ChartDataSource {
 
@@ -33,8 +37,7 @@ public class ChartDataSourceUnique extends ChartDataSource {
 	@Override
 	public boolean cloneMe(final IScope scope, final int chartCycle, final ChartDataSource source) {
 		final boolean res = super.cloneMe(scope, chartCycle, source);
-		final IColor col =
-				GamaColorFactory.createWithRGBA(Random.opRnd(scope, 255), Random.opRnd(scope, 255), Random.opRnd(scope, 255), 255);
+		final IColor col = ChartProperties.getDefaultSeriesColor(scope, chartCycle);
 		final IExpression ncol = GAML.getExpressionFactory().createConst(col, Types.COLOR);
 		this.colorexp = ncol;
 		final String previousname = ((ChartDataSourceUnique) source).legend;
@@ -63,7 +66,12 @@ public class ChartDataSourceUnique extends ChartDataSource {
 	 *
 	 * @return the myserie
 	 */
-	public ChartDataSeries getMyserie() { return mySeries.get(legend); }
+	public ChartDataSeries getMyserie() { return mySeries.get(getSerieId()); }
+
+	/**
+	 * Internal id of the series, distinct from its legend so that several data can share the same displayed name.
+	 */
+	private String getSerieId() { return "d_" + System.identityHashCode(this); }
 
 	/**
 	 * Sets the legend.
@@ -77,18 +85,14 @@ public class ChartDataSourceUnique extends ChartDataSource {
 		legend = stval;
 	}
 
-	@Override
+		@Override
 	public void updatevalues(final IScope scope, final int chartCycle) {
 		super.updatevalues(scope, chartCycle);
-		Object o = null;
-		final HashMap<String, Object> barvalues = new HashMap<>();
-		if (this.isUseYErrValues()) { barvalues.put(ChartDataStatement.YERR_VALUES, getValueyerr().value(scope)); }
-		if (this.isUseXErrValues()) { barvalues.put(ChartDataStatement.XERR_VALUES, getValueyerr().value(scope)); }
-		if (this.isUseYMinMaxValues()) { barvalues.put(ChartDataStatement.XERR_VALUES, getValuexerr().value(scope)); }
-		if (this.isUseSizeExp()) { barvalues.put(ChartDataStatement.MARKERSIZE, getSizeexp().value(scope)); }
-		if (this.isUseColorExp()) { barvalues.put(IKeyword.COLOR, getColorexp().value(scope)); }
-		if (getValue() != null) { o = getValue().value(scope); }
-		if (o != null) { updateseriewithvalue(scope, getMyserie(), o, chartCycle, barvalues, -1); }
+		if (getValue() == null) return;
+		final Object o = getValue().value(scope);
+		if (o != null) {
+			updateseriewithvalue(scope, getMyserie(), o, chartCycle, computeBarValues(scope), -1);
+		}
 	}
 
 	/**
@@ -113,8 +117,11 @@ public class ChartDataSourceUnique extends ChartDataSource {
 		myserie.setMysource(this);
 		myserie.setDataset(getDataset());
 		inferDatasetProperties(scope, myserie);
-		myserie.setName(legend);
-		mySeries.put(legend, myserie);
+		final String id = getSerieId();
+		myserie.setName(id);
+		myserie.setSeriesLegend(legend);
+		getDataset().addNewSerie(id, myserie, getDataset().getDate(scope));
+		mySeries.put(id, myserie);
 	}
 
 }

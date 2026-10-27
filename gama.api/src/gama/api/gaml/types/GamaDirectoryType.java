@@ -70,4 +70,7 @@ public class GamaDirectoryType extends GamaFileType {
 	@Override
 	public IType<?> getKeyType() { return Types.INT; }
 
+	@Override
+	public IType<?> getWrappedType() { return Types.LIST.of(getKeyType(), getContentType()); }
+
 }

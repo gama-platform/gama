@@ -25,7 +25,6 @@ import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.serialization.ISymbolSerializer;
 import gama.api.compilation.validation.Assert;
 import gama.api.exceptions.GamaRuntimeException;
-import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IExpressionDescription;
 import gama.api.gaml.expressions.IVarExpression;
@@ -156,18 +155,13 @@ public class SetStatement extends AbstractStatement {
 		super(desc);
 		varExpr = (IVarExpression) getFacet(IKeyword.NAME);
 		setName(IKeyword.SET + getVarName());
-		final IExpression expr = getFacet(IKeyword.VALUE);
-		if (expr == null) {
-			value = GAML.getExpressionFactory().createConst(varExpr.getGamlType().getDefault(), varExpr.getGamlType());
-		} else {
-			value = expr;
-		}
+		value = getFacet(IKeyword.VALUE);
 
 	}
 
 	@Override
 	protected Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
-		final Object val = value.value(scope);
+		final Object val = value == null ? varExpr.getGamlType().createDefaultValue(scope) : value.value(scope);
 		varExpr.setVal(scope, val, false);
 		return val;
 	}

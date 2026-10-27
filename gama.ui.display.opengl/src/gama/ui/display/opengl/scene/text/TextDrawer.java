@@ -73,7 +73,7 @@ import gama.ui.display.opengl.scene.ObjectDrawer;
  *
  */
 
-public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselator {
+public class TextDrawer extends ObjectDrawer<StringObject, OpenGL> implements ITesselator {
 
 	/** The temp. */
 	// Utilities

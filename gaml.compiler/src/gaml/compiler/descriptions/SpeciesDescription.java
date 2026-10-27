@@ -645,6 +645,22 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	 * @param statement
 	 *            the ce
 	 */
+	/**
+	 * Verifies whether the aspect name collides with an attribute defined in the species.
+	 *
+	 * @param statement
+	 *            the aspect statement description
+	 * @param aspectName
+	 *            the aspect name
+	 */
+	private void verifyAttributeCollision(final IStatementDescription statement, final String aspectName) {
+		final IVariableDescription var = getAttribute(aspectName);
+		if (var != null && !var.isSynthetic()) {
+			statement.error("Aspect " + aspectName + " has the same name as an existing attribute in " + getName(),
+					IGamlIssue.DUPLICATE_NAME, IKeyword.NAME);
+		}
+	}
+
 	private void addAspect(final IStatementDescription statement) {
 		String aspectName = statement.getName();
 		if (aspectName == null) {
@@ -654,6 +670,7 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 		if (!IKeyword.DEFAULT.equals(aspectName) && hasAspect(aspectName)) {
 			duplicateInfo(statement, getAspect(aspectName));
 		}
+		verifyAttributeCollision(statement, aspectName);
 		getAspectsMap().put(aspectName, statement);
 	}
 
@@ -785,12 +802,12 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	 * @return the agent constructor
 	 */
 	@Override
-	public IAgentConstructor getAgentConstructor() {
+	public IAgentConstructor getConstructor() {
 		if (agentConstructor == null && parent != null && parent != this) {
 			final Class<?> parentJavaBase = getParent().getJavaBase();
 			final Class<?> myJavaBase = getJavaBase();
 			if (parentJavaBase == myJavaBase) {
-				agentConstructor = getParent().getAgentConstructor();
+				agentConstructor = getParent().getConstructor();
 			} else {
 				agentConstructor = AgentConstructorsRegistry.CONSTRUCTORS.get(myJavaBase);
 			}
@@ -1302,6 +1319,13 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 		if (isBuiltIn()) return GamaMetaModel.getSpecies(getName());
 		// Compilation logic for non-built-in species goes here
 		return (ISpecies) super.compile();
+	}
+
+	/**
+	 * Marks this generated species as model-local rather than a built-in species.
+	 */
+	public void markAsModelLocal() {
+		unSet(Flag.IsBuiltIn);
 	}
 
 	/**

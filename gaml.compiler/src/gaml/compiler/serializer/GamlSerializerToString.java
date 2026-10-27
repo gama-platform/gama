@@ -427,7 +427,9 @@ public class GamlSerializerToString extends GamlSwitch<String> {
 
 	@Override
 	public String caseVariableRef(final VariableRef object) {
-		return object.getRef().getName();
+		final VarDefinition ref = object.getRef();
+		// An unresolved reference (e.g. an undefined variable) has no definition: fall back to the source text
+		return ref == null ? EGaml.getInstance().getNameOfRef(object) : ref.getName();
 	}
 
 	@Override

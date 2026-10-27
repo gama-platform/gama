@@ -10,28 +10,31 @@
  ********************************************************************************************************/
 package gama.extension.serialize.binary;
 
+import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
+import gama.api.kernel.serialization.IGamaObjectInput;
+import gama.api.kernel.serialization.IGamaObjectOutput;
+import gama.api.kernel.serialization.IGamaObjectSerializer;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.GamaPointFactory;
 import gama.api.types.geometry.IPoint;
-import gama.extension.serialize.IGamaObjectInput;
-import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link IPoint} instances. Serialises the x, y, and z coordinates, handling {@link Double#NaN} z
- * values via a boolean flag. Objects deserialised by this serialiser are not registered for back-reference tracking.
+ * Binary serialiser for {@link IPoint} instances. Serialises the x, y, and z coordinates, handling
+ * {@link Double#NaN} z values via a boolean flag. Objects deserialised by this binarySerialiser are not registered for
+ * back-reference tracking.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IPointSerialiser extends FSTIndividualSerialiser<IPoint> {
+public class IPointSerialiser implements IGamaObjectSerializer<IPoint> {
 
 	/**
-	 * Returns {@code false}: points are not registered for FST back-reference tracking.
+	 * Returns {@code false}: points are not registered for back-reference tracking.
 	 *
 	 * @return {@code false}
 	 */
 	@Override
-	protected boolean shouldRegister() {
+	public boolean shouldRegister() {
 		return false;
 	}
 
@@ -40,14 +43,15 @@ class IPointSerialiser extends FSTIndividualSerialiser<IPoint> {
 	 * value is {@link Double#NaN}. If z is NaN, {@code 0.0} is written in its place.
 	 *
 	 * @param out
-	 *            the FST output stream
+	 *            the binary output stream
 	 * @param toWrite
 	 *            the point to serialise
 	 * @throws Exception
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final IGamaObjectOutput out, final IPoint toWrite) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final IPoint toWrite,
+			final TransientSerializationContext context) throws Exception {
 		out.writeDouble(toWrite.getX());
 		out.writeDouble(toWrite.getY());
 		double z = toWrite.getZ();
@@ -62,7 +66,7 @@ class IPointSerialiser extends FSTIndividualSerialiser<IPoint> {
 	 * @param scope
 	 *            the current GAMA simulation scope (unused)
 	 * @param in
-	 *            the FST input stream
+	 *            the binary input stream
 	 * @return the deserialised {@link IPoint}
 	 * @throws Exception
 	 *             if deserialisation fails

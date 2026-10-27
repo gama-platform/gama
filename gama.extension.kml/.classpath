@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry exported="true" kind="lib" path="libs/jaxb 4.0.7/angus-activation-2.0.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jaxb 4.0.7/istack-commons-runtime-4.1.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jaxb 4.0.7/jakarta.activation-api-2.1.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jaxb 4.0.7/jakarta.xml.bind-api-4.0.5.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jaxb 4.0.7/jaxb-core-4.0.7.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jaxb 4.0.7/jaxb-runtime-4.0.7.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jaxb 4.0.7/txw2-4.0.7.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jak 3.0.11/javaapiforkml-3.0.11.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-25"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="gaml">
+		<attributes>
+			<attribute name="optional" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

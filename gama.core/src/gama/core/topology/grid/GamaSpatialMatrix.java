@@ -13,18 +13,21 @@ package gama.core.topology.grid;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Set;
 
 import org.geotools.api.referencing.ReferenceIdentifier;
@@ -34,6 +37,8 @@ import org.locationtech.jts.operation.distance.DistanceOp;
 
 import com.google.common.collect.Ordering;
 
+import gama.annotations.constants.IKeyword;
+import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
@@ -60,6 +65,7 @@ import gama.api.types.matrix.GamaMatrixFactory;
 import gama.api.types.matrix.IMatrix;
 import gama.api.types.misc.IContainer;
 import gama.api.types.topology.ITopology;
+import gama.api.ui.TaskProgress;
 import gama.api.utils.collections.Collector;
 import gama.api.utils.collections.ICollector;
 import gama.api.utils.geometry.GamaEnvelopeFactory;
@@ -84,6 +90,50 @@ import one.util.streamex.StreamEx;
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
+
+	/** Number of cells above which a warning is emitted when a grid is built from a file */
+	private static final int LARGE_GRID_WARNING_THRESHOLD = 10_000_000;
+
+	/** Rough lower bound of the memory used by each cell agent (agent, attributes, scheduling), in bytes */
+	private static final long BYTES_PER_AGENT = 250;
+
+	/** Rough lower bound of the memory used by the shape of each cell, depending on whether it is individual */
+	private static final long BYTES_PER_INDIVIDUAL_SHAPE = 250, BYTES_PER_PROXY_SHAPE = 64;
+
+	/**
+	 * Estimates (as a lower bound) the memory needed to create a grid of agents and fails fast, with an explanatory
+	 * message, if it cannot fit in the memory available to GAMA, instead of exhausting it (which leaves the platform
+	 * in an unstable state). Emits a warning if it only exceeds the memory currently free.
+	 */
+	private static void checkMemory(final IScope scope, final String name, final long size, final boolean indiv,
+			final int nbBands) {
+		final long perCell = BYTES_PER_AGENT + (indiv ? BYTES_PER_INDIVIDUAL_SHAPE : BYTES_PER_PROXY_SHAPE) + 16
+				+ 16L * Math.max(1, nbBands) + (nbBands > 1 ? 64L + 24L * nbBands : 0);
+		final long needed = size * perCell;
+		final Runtime rt = Runtime.getRuntime();
+		final long max = rt.maxMemory();
+		final long free = max - (rt.totalMemory() - rt.freeMemory());
+		if (needed <= free) return;
+		final String advice = " Consider using a field instead of a grid if the cells do not need to be agents (e.g. "
+				+ "field f <- field(" + name + ");)" + (indiv ? ", setting 'use_individual_shapes: false' on the grid"
+						: "")
+				+ ", reducing the resolution of the file (e.g. with QGIS or gdalwarp) or increasing the memory "
+				+ "allocated to GAMA in the preferences.";
+		final String msg = "The grid built from " + name + " contains " + size + " cells, which requires at least "
+				+ toGB(needed) + " of memory, while ";
+		if (needed > max) throw GamaRuntimeException.error(msg + "GAMA can use at most " + toGB(max) + "." + advice,
+				scope);
+		GAMA.reportError(scope, GamaRuntimeException.warning(
+				msg + "only " + toGB(free) + " are currently free. GAMA may run out of memory." + advice, scope),
+				false);
+	}
+
+	/**
+	 * Formats a number of bytes in GB
+	 */
+	private static String toGB(final long bytes) {
+		return String.format("%.1f GB", bytes / (1024d * 1024 * 1024));
+	}
 
 	/** The geometry of host. */
 
@@ -249,6 +299,13 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 		cellHeight = bounds.getHeight() / numRows;
 		precision = bounds.getWidth() / 1000;
 		final int size = gfile.length(scope);
+		if (size > LARGE_GRID_WARNING_THRESHOLD) {
+			GAMA.reportError(scope, GamaRuntimeException.warning("The grid built from " + gfile.getName(scope)
+					+ " contains " + numCols + "x" + numRows + " cells, each of them being an agent. This requires a "
+					+ "large amount of memory. If the cells do not need to be agents, consider using a field instead "
+					+ "(e.g. field f <- field(" + gfile.getName(scope) + ");)", scope), false);
+		}
+		checkMemory(scope, gfile.getName(scope), size, indiv, gfile.getBandsNumber(scope));
 		createMatrix(size);
 		supportImagePixels = new int[size];
 		referenceShape = GamaShapeFactory.buildRectangle(cellWidth, cellHeight, GamaPointFactory.create(0, 0));
@@ -258,13 +315,18 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 		this.isHexagon = false;
 		this.useNeighborsCache = useNeighborsCache;
 		this.optimizer = optimizer;
-		gridValue = gfile.getFieldData(scope).clone();
+		// getFieldData() already returns a copy of the data of the file
+		gridValue = gfile.getFieldData(scope);
 		this.nbBands = gfile.getBandsNumber(scope);
 		if (nbBands > 1) {
-			bands = new ArrayList<>();
+			// Each band is retrieved (and copied) only once
+			final double[][] bandValues = new double[nbBands][];
+			bandValues[0] = gridValue;
+			for (int b = 1; b < nbBands; b++) { bandValues[b] = gfile.getBand(scope, b); }
+			bands = new ArrayList<>(size);
 			for (int i = 0; i < size; i++) {
 				IList<Double> bb = GamaListFactory.create(Types.FLOAT);
-				for (int b = 0; b < nbBands; b++) { bb.add(gfile.getBand(scope, b)[i]); }
+				for (int b = 0; b < nbBands; b++) { bb.add(bandValues[b][i]); }
 				bands.add(bb);
 			}
 		}
@@ -331,11 +393,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 			// attribute...
 			// matrix[i] = g;
 		}
-
-		actualNumberOfCells = 0;
-		firstCell = -1;
-		lastCell = -1;
-		createCells(scope, false);
+		// The cells have already been created by the call to this(...)
 	}
 
 	/**
@@ -588,41 +646,56 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 				environmentFrame.getEnvelope().getMinY());
 
 		final IShape translatedReferenceFrame = SpatialTransformations.translated_by(scope, environmentFrame, origin);
-		final IPoint[][] xs = new IPoint[numCols + 1][numRows + 1];
-		for (int i = 0; i < numCols + 1; i++) {
-			for (int j = 0; j < numRows + 1; j++) {
-				final IPoint p = GamaPointFactory.create(i * cellWidth, j * cellHeight);
-				xs[i][j] = p;
+		// The shared corner points are only needed when cells have individual shapes
+		final IPoint[][] xs = useIndividualShapes ? new IPoint[numCols + 1][numRows + 1] : null;
+		if (xs != null) {
+			for (int i = 0; i < numCols + 1; i++) {
+				for (int j = 0; j < numRows + 1; j++) {
+					final IPoint p = GamaPointFactory.create(i * cellWidth, j * cellHeight);
+					xs[i][j] = p;
+				}
 			}
 		}
 
-		for (int i = 0, n = numRows * numCols; i < n; i++) {
-			final int yy = i / numCols;
-			final int xx = i - yy * numCols;
+		final int n = numRows * numCols;
+		try (TaskProgress progress = TaskProgress.begin(scope, "Building the cells of the grid")) {
+			for (int i = 0; i < n; i++) {
+				if (i % numCols == 0) { progress.report(i, n); }
+				createCell(scope, i, partialCells, isRectangle, translatedReferenceFrame, xs);
+			}
+		}
+	}
 
-			// WARNING HACK
-			IShape rect = null;
-			if (useIndividualShapes) {
-				// Change in the function used in building cells in order to minimize computations and mutualize points.
-				// See #2896
-				rect = GamaShapeFactory.createFrom(GeometryUtils.getGeometryFactory().createRectangle(xs[xx][yy],
-						xs[xx + 1][yy], xs[xx + 1][yy + 1], xs[xx][yy + 1], xs[xx][yy]));
-			} else {
-				final double cmx = cellWidth / 2;
-				final double cmy = cellHeight / 2;
-				rect = new CellProxyGeometry(GamaPointFactory.create(xx * cellWidth + cmx, yy * cellHeight + cmy));
-			}
-			boolean ok = isRectangle || translatedReferenceFrame.covers(rect);
-			if (partialCells && !ok && rect.intersects(translatedReferenceFrame)) {
-				rect.setGeometry(SpatialOperators.inter(scope, rect, translatedReferenceFrame));
-				ok = true;
-			}
-			if (ok) {
-				if (firstCell == -1) { firstCell = i; }
-				matrix[i] = rect;
-				actualNumberOfCells++;
-				lastCell = i;
-			}
+	/**
+	 * Creates the cell at the given index, if it is covered by the environment
+	 */
+	private void createCell(final IScope scope, final int i, final boolean partialCells, final boolean isRectangle,
+			final IShape translatedReferenceFrame, final IPoint[][] xs) {
+		final int yy = i / numCols;
+		final int xx = i - yy * numCols;
+
+		// WARNING HACK
+		IShape rect = null;
+		if (useIndividualShapes) {
+			// Change in the function used in building cells in order to minimize computations and mutualize points.
+			// See #2896
+			rect = GamaShapeFactory.createFrom(GeometryUtils.getGeometryFactory().createRectangle(xs[xx][yy],
+					xs[xx + 1][yy], xs[xx + 1][yy + 1], xs[xx][yy + 1], xs[xx][yy]));
+		} else {
+			final double cmx = cellWidth / 2;
+			final double cmy = cellHeight / 2;
+			rect = new CellProxyGeometry(GamaPointFactory.create(xx * cellWidth + cmx, yy * cellHeight + cmy));
+		}
+		boolean ok = isRectangle || translatedReferenceFrame.covers(rect);
+		if (partialCells && !ok && rect.intersects(translatedReferenceFrame)) {
+			rect.setGeometry(SpatialOperators.inter(scope, rect, translatedReferenceFrame));
+			ok = true;
+		}
+		if (ok) {
+			if (firstCell == -1) { firstCell = i; }
+			matrix[i] = rect;
+			actualNumberOfCells++;
+			lastCell = i;
 		}
 	}
 
@@ -1087,10 +1160,15 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 	 */
 	private List<IAgent> getNeighborhoods(final IScope scope, final IAgent agent, final List<Integer> cells,
 			final List<IAgent> currentList) throws GamaRuntimeException {
-		final List<IAgent> agents = new ArrayList(getNeighborsOf(scope, agent.getLocation(), 1.0, null));
+		final List<IAgent> agents = new ArrayList<>(getNeighborsOf(scope, agent.getLocation(), 1.0, null));
 		final List<IAgent> neighs = new ArrayList<>();
+		final Set<Integer> visitedCells = new HashSet<>(cells);
+		final Set<IAgent> currentAgents = new HashSet<>(currentList);
+		final Set<IAgent> seenNeighbors = new HashSet<>();
 		for (final IAgent ag : agents) {
-			if (!cells.contains(ag.getIndex()) && !currentList.contains(ag) && !neighs.contains(ag)) { neighs.add(ag); }
+			if (!visitedCells.contains(ag.getIndex()) && !currentAgents.contains(ag) && seenNeighbors.add(ag)) {
+				neighs.add(ag);
+			}
 		}
 		return neighs;
 	}
@@ -1135,12 +1213,12 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 		final boolean[] open = new boolean[this.getAgents().size()];
 		initOpen(open, on);
 
-		final List<IAgent> frontier = new ArrayList<>();
+		final Queue<IAgent> frontier = new ArrayDeque<>();
 		final Map<IAgent, IAgent> cameFrom = new Hashtable<>();
 
 		frontier.add(startAg);
 		while (!frontier.isEmpty()) {
-			final IAgent current = frontier.remove(0);
+			final IAgent current = frontier.remove();
 			if (current == endAg) return finalPath(scope, source, target, topo, startAg, current, cameFrom);
 			final Collection<IAgent> neigh = getNeighborhood().getNeighborsIn(scope, current.getIndex(), 1);
 
@@ -2018,22 +2096,87 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 
 	@Override
 	public double getValueAtIndex(final IScope scope, final int i, final String varName) {
+		if (IKeyword.GRID_VALUE.equals(varName)) return getValue(i);
+		if (!isHexagon && IKeyword.COLOR.equals(varName)) return supportImagePixels[i];
+		if (IKeyword.GRID_X.equals(varName)) return i % numCols;
+		if (IKeyword.GRID_Y.equals(varName)) return i / numCols;
 		IAgent a = matrix[i].getAgent();
 		return Cast.asFloat(scope, a.getDirectVarValue(scope, varName));
 	}
 
 	@Override
 	public void setValueAtIndex(final IScope scope, final int i, final String varName, final double valToPut) {
+		if (IKeyword.GRID_VALUE.equals(varName)) {
+			setValue(i, valToPut);
+			return;
+		}
+		if (!isHexagon && IKeyword.COLOR.equals(varName)) {
+			supportImagePixels[i] = (int) valToPut;
+			return;
+		}
 		IAgent a = matrix[i].getAgent();
 		a.setDirectVarValue(scope, varName, valToPut);
 	}
 
 	@Override
 	public void getValuesInto(final IScope scope, final String varName, final double minValue, final double[] input) {
+		if (IKeyword.GRID_VALUE.equals(varName)) {
+			for (int i = 0; i < input.length; i++) {
+				final double val = gridValue[i];
+				input[i] = val < minValue ? 0 : val;
+			}
+			return;
+		}
+		if (!isHexagon && IKeyword.COLOR.equals(varName)) {
+			for (int i = 0; i < input.length; i++) {
+				final double val = supportImagePixels[i];
+				input[i] = val < minValue ? 0 : val;
+			}
+			return;
+		}
+		if (IKeyword.GRID_X.equals(varName)) {
+			for (int i = 0; i < input.length; i++) {
+				final double val = i % numCols;
+				input[i] = val < minValue ? 0 : val;
+			}
+			return;
+		}
+		if (IKeyword.GRID_Y.equals(varName)) {
+			for (int i = 0; i < input.length; i++) {
+				final double val = i / numCols;
+				input[i] = val < minValue ? 0 : val;
+			}
+			return;
+		}
 		for (int i = 0; i < input.length; i++) {
-			double val = Cast.asFloat(scope, getValueAtIndex(scope, i, varName));
+			double val = Cast.asFloat(scope, matrix[i].getAgent().getDirectVarValue(scope, varName));
 			input[i] = val < minValue ? 0 : val;
 		}
+	}
+
+	@Override
+	public void getValuesInto(final IScope scope, final String varName, final double[] input) {
+		switch (varName) {
+			case IKeyword.GRID_VALUE:
+				System.arraycopy(gridValue, 0, input, 0, gridValue.length);
+				return;
+			case IKeyword.COLOR:
+				if (!isHexagon) {
+					for (int i = 0; i < input.length; i++) { input[i] = supportImagePixels[i]; }
+					return;
+				}
+				break;
+			case IKeyword.GRID_X:
+				for (int i = 0; i < input.length; i++) { input[i] = i % numCols; }
+				return;
+			case IKeyword.GRID_Y:
+				for (int i = 0; i < input.length; i++) { input[i] = i / numCols; }
+				return;
+		}
+		for (int i = 0; i < input.length; i++) {
+			input[i] = Cast.asFloat(scope, matrix[i].getAgent().getDirectVarValue(scope, varName));
+		}
+
 	}
 
 	@Override

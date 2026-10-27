@@ -149,57 +149,23 @@ public class EnforcementStatement extends AbstractStatement {
 				scopeMySelf = mySelfAgent.getScope().copy("in EnforcementStatement");
 				scopeMySelf.push(mySelfAgent);
 			}
-			if (norm != null) {
-				// getting the norm object from the name
-				for (final Norm tempNorm : BdiUtils.getNorms(scope)) {
-					if (tempNorm.getName().equals(norm.value(scopeMySelf))) {
-						//if the norm has been violated we try to apply the sanction
-						//otherwise if the norm is respected we apply a reward 
-						final Object toExecute;
-						if (tempNorm.getViolated() && sanction != null) {
-							toExecute = sanction.value(scopeMySelf);
-						}
-						else if (tempNorm.getApplied() && reward != null) {
-							toExecute = reward.value(scopeMySelf);
-						}
-						else {
-							continue;
-						}
-						// Both sanctions and rewards are stored in the sanction base
-						var firstSanction = BdiUtils.getSanctions(scopeMySelf).stream().filter(sanc -> toExecute.equals(sanc.getName())).findFirst();
-						if (firstSanction.isPresent()) {
-							// The sanction or reward are executed on the controller agent's context 
-							// because they are indirect against a social norm
-							retour = firstSanction.get().getSanctionStatement().executeOn(scopeMySelf);	
-							break;
-						}
-					}
-				}
-			}
-			
-			if (obligation != null) {
-				// on regarde si la base des obligations de l'autre est vide, si non, on regarde s'il a appliqué une
-				// norme portant sur l'obligation à vérifiée.
-				// Les sanctions et rewards seront ici appliqués dans le cadre de l'agent controlé car directe
-				//TODO: last remark is not applied in the code, idk if the problem is the remark or the code
-				final MentalState tempObligation = new MentalState("obligation", (Predicate) obligation.value(scope));
-				if (BdiUtils.hasObligation(scope, tempObligation)) {
-					// si la norme en cours répond à l'obligation , reward, sinon punition.
-					for (final Norm testNorm : BdiUtils.getNorms(scope)) {
-						if (tempObligation.getPredicate().equals(testNorm.getObligation(scope)) && !testNorm.getSanctioned()) {
+			try {
+				if (norm != null) {
+					// getting the norm object from the name
+					for (final Norm tempNorm : BdiUtils.getNorms(scope)) {
+						if (tempNorm.getName().equals(norm.value(scopeMySelf))) {
+							//if the norm has been violated we try to apply the sanction
+							//otherwise if the norm is respected we apply a reward 
 							final Object toExecute;
-							if (testNorm.getApplied() && reward != null) {
-								toExecute = reward.value(scopeMySelf);
-							}
-							else if (/*testNorm.getViolated() && */ sanction != null) { 
-								//commented getViolated according to comment above, but I'm not sure
-								//TODO: if it has to be restored then we can refactor with the norm block above
+							if (tempNorm.getViolated() && sanction != null) {
 								toExecute = sanction.value(scopeMySelf);
+							}
+							else if (tempNorm.getApplied() && reward != null) {
+								toExecute = reward.value(scopeMySelf);
 							}
 							else {
 								continue;
 							}
-							
 							// Both sanctions and rewards are stored in the sanction base
 							var firstSanction = BdiUtils.getSanctions(scopeMySelf).stream().filter(sanc -> toExecute.equals(sanc.getName())).findFirst();
 							if (firstSanction.isPresent()) {
@@ -208,25 +174,62 @@ public class EnforcementStatement extends AbstractStatement {
 								retour = firstSanction.get().getSanctionStatement().executeOn(scopeMySelf);	
 								break;
 							}
-
-							testNorm.sanctioned();						
 						}
 					}
 				}
-			}
-			// If there's a law we look up for it in the base and check if it's been violated
-			if (law != null) {
-				double obedienceValue = (double) scope.getAgent().getAttribute("obedience");
-				for (final LawStatement tempLaw : BdiUtils.getLaws(scope)) {
-					if (tempLaw.getName().equals(law.value(scopeMySelf))) {
-						retour = applySanctionOrReward(scope, scopeMySelf, tempLaw, obedienceValue);
-						break;
+			
+				if (obligation != null) {
+					// on regarde si la base des obligations de l'autre est vide, si non, on regarde s'il a appliqué une
+					// norme portant sur l'obligation à vérifiée.
+					// Les sanctions et rewards seront ici appliqués dans le cadre de l'agent controlé car directe
+					//TODO: last remark is not applied in the code, idk if the problem is the remark or the code
+					final MentalState tempObligation = new MentalState("obligation", (Predicate) obligation.value(scope));
+					if (BdiUtils.hasObligation(scope, tempObligation)) {
+						// si la norme en cours répond à l'obligation , reward, sinon punition.
+						for (final Norm testNorm : BdiUtils.getNorms(scope)) {
+							if (tempObligation.getPredicate().equals(testNorm.getObligation(scope)) && !testNorm.getSanctioned()) {
+								final Object toExecute;
+								if (testNorm.getApplied() && reward != null) {
+									toExecute = reward.value(scopeMySelf);
+								}
+								else if (/*testNorm.getViolated() && */ sanction != null) { 
+									//commented getViolated according to comment above, but I'm not sure
+									//TODO: if it has to be restored then we can refactor with the norm block above
+									toExecute = sanction.value(scopeMySelf);
+								}
+								else {
+									continue;
+								}
+							
+								// Both sanctions and rewards are stored in the sanction base
+								var firstSanction = BdiUtils.getSanctions(scopeMySelf).stream().filter(sanc -> toExecute.equals(sanc.getName())).findFirst();
+								if (firstSanction.isPresent()) {
+									// The sanction or reward are executed on the controller agent's context 
+									// because they are indirect against a social norm
+									retour = firstSanction.get().getSanctionStatement().executeOn(scopeMySelf);	
+									break;
+								}
+
+								testNorm.sanctioned();						
+							}
+						}
 					}
 				}
+				// If there's a law we look up for it in the base and check if it's been violated
+				if (law != null) {
+					double obedienceValue = (double) scope.getAgent().getAttribute("obedience");
+					for (final LawStatement tempLaw : BdiUtils.getLaws(scope)) {
+						if (tempLaw.getName().equals(law.value(scopeMySelf))) {
+							retour = applySanctionOrReward(scope, scopeMySelf, tempLaw, obedienceValue);
+							break;
+						}
+					}
 				
-			}
+				}
 		
-			GAMA.releaseScope(scopeMySelf);
+			} finally {
+				GAMA.releaseScope(scopeMySelf);
+			}
 		}
 		return retour;
 	}
@@ -240,10 +243,10 @@ public class EnforcementStatement extends AbstractStatement {
 		boolean context = tempLaw.getContextExpression() == null || Cast.asBool(scope, tempLaw.getContextExpression().value(scope));
 		boolean givenBeliefRegistered = tempLaw.getBeliefExpression() == null
 									|| tempLaw.getBeliefExpression().value(scope) == null
-									|| BdiUtils.hasBelief(scope, new MentalState("Belief",(Predicate) tempLaw.getBeliefExpression().value(scope)));
+									|| BdiUtils.hasBelief(scope, MentalStateKind.BELIEF.create((Predicate) tempLaw.getBeliefExpression().value(scope)));
 		boolean givenObligationRegistered = tempLaw.getObligationExpression() == null
 										|| tempLaw.getObligationExpression().value(scope) == null
-										|| BdiUtils.hasObligation(scope, new MentalState("Obligation", (Predicate) tempLaw.getObligationExpression().value(scope)));
+										|| BdiUtils.hasObligation(scope, MentalStateKind.OBLIGATION.create((Predicate) tempLaw.getObligationExpression().value(scope)));
 		boolean thresholdRespected = tempLaw.getThreshold() == null || tempLaw.getThreshold().value(scope) == null
 									|| obedience >= (double) tempLaw.getThreshold().value(scope);
 		boolean preconditionsMet = context && givenBeliefRegistered && givenObligationRegistered && thresholdRespected;

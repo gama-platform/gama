@@ -10,21 +10,23 @@
  ********************************************************************************************************/
 package gama.extension.serialize.binary;
 
+import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
+import gama.api.kernel.serialization.IGamaObjectInput;
+import gama.api.kernel.serialization.IGamaObjectOutput;
+import gama.api.kernel.serialization.IGamaObjectSerializer;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.geometry.GamaGeometryFactory;
 import gama.api.utils.geometry.GeometryUtils;
-import gama.extension.serialize.IGamaObjectInput;
-import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link GamaGeometryFactory} instances. The factory is a singleton; serialisation writes a fixed
- * marker string ({@value #MARKER}) and deserialisation always returns the global singleton via
+ * Binary serialiser for {@link GamaGeometryFactory} instances. The factory is a singleton; serialisation writes a
+ * fixed marker string ({@value #MARKER}) and deserialisation always returns the global singleton via
  * {@link GeometryUtils#getGeometryFactory()}.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class GamaGeometryFactorySerialiser extends FSTIndividualSerialiser<GamaGeometryFactory> {
+public class GamaGeometryFactorySerialiser implements IGamaObjectSerializer<GamaGeometryFactory> {
 
 	/**
 	 * Marker string written to the stream to identify the geometry factory placeholder.
@@ -35,14 +37,15 @@ class GamaGeometryFactorySerialiser extends FSTIndividualSerialiser<GamaGeometry
 	 * Serialises the geometry factory by writing the marker string {@value #MARKER}.
 	 *
 	 * @param out
-	 *            the FST output stream
+	 *            the binary output stream
 	 * @param o
 	 *            the geometry factory (not directly used)
 	 * @throws Exception
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final IGamaObjectOutput out, final GamaGeometryFactory o) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final GamaGeometryFactory o,
+			final TransientSerializationContext context) throws Exception {
 		out.writeStringUTF(MARKER);
 	}
 
@@ -52,7 +55,7 @@ class GamaGeometryFactorySerialiser extends FSTIndividualSerialiser<GamaGeometry
 	 * @param scope
 	 *            the current GAMA simulation scope (unused)
 	 * @param in
-	 *            the FST input stream
+	 *            the binary input stream
 	 * @return the global {@link GamaGeometryFactory} singleton
 	 * @throws Exception
 	 *             if deserialisation fails

@@ -119,10 +119,4 @@ public class Box2DShapeConverter implements IShapeConverter<Shape, Vec2>, IBox2D
 	@Override
 	public float getScale() { return scale; }
 
-	@Override
-	public IPoint toGamaPoint(final Vec2 v) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }

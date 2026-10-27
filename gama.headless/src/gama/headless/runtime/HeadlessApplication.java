@@ -39,6 +39,7 @@ import org.w3c.dom.Document;
 import com.google.inject.Injector;
 
 import gama.api.GAMA;
+import gama.api.additions.GamaBundleLoader;
 import gama.api.compilation.GamlCompilationError;
 import gama.api.constants.GamlFileExtension;
 import gama.api.exceptions.GamaCompilationFailedException;
@@ -61,7 +62,7 @@ import gama.headless.core.GamaHeadlessException;
 import gama.headless.job.ExperimentJob;
 import gama.headless.job.IExperimentJob;
 import gama.headless.script.ExperimentationPlanFactory;
-import gama.headless.server.GamaServerGUIHandler;
+import gama.headless.server.GamaHeadlessServerGUIEventHandler;
 import gama.headless.xml.ConsoleReader;
 import gama.headless.xml.Reader;
 import gama.headless.xml.XMLWriter;
@@ -97,7 +98,7 @@ public class HeadlessApplication implements IApplication {
 		DEBUG.LOG("GAMA configuring and loading...");
 		System.setProperty("java.awt.headless", "true");
 		GAMA.setHeadLessMode(isServer);
-		GAMA.setHeadlessGui(isServer ? new GamaServerGUIHandler() : new NullGuiHandler());
+		GAMA.setHeadlessGui(isServer ? new GamaHeadlessServerGUIEventHandler() : new NullGuiHandler());
 		// Trigger gama.workspace lazy activation so WorkspaceActivator registers the workspace
 		WorkspaceActivator.load();
 		try {
@@ -110,6 +111,9 @@ public class HeadlessApplication implements IApplication {
 		// finds the ArtefactFactory already registered when it loads GamlAdditions.
 		// This synchronously initialises all GAML types (Types.MAP, Types.AGENT, …).
 		CoreActivator.load();
+		// GamaBundleLoader logs loading failures without throwing: fail fast instead of running with
+		// a half-initialized GAML (and report success to scripts/CI).
+		if (GamaBundleLoader.ERRORED) { System.exit(2); }
 		// Eagerly instantiate BuiltinGlobalScopeProvider and any other Xtext singletons whose
 		// constructors read from the fully-loaded GAMA metamodel (Types, GamaMetaModel, …).
 		// This mirrors what EditorActivator does for the GUI: the injector is only asked for
@@ -147,6 +151,15 @@ public class HeadlessApplication implements IApplication {
 
 	/** The Constant SOCKET_PARAMETER. */
 	final public static String NO_DELAY_PARAMETER = "-no-delay";
+
+	/** Enable the WebSocket exchange journal for this launch. */
+	final public static String SERVER_LOG_PARAMETER = "-server-log";
+
+	/** Override the WebSocket exchange journal directory for this launch. */
+	final public static String SERVER_LOG_DIRECTORY_PARAMETER = "-server-log-directory";
+
+	/** Disable the WebSocket exchange journal even when explicitly enabled. */
+	final public static String NO_SERVER_LOG_PARAMETER = "-no-server-log";
 
 	/** The Constant SOCKET_PARAMETER. */
 	final public static String SOCKET_PARAMETER = "-socket";
@@ -228,27 +241,40 @@ public class HeadlessApplication implements IApplication {
 	private static void showHelp() {
 		showVersion();
 		DEBUG.ON();
-		DEBUG.LOG("sh ./gama-headless.sh [Options]\n" + "\nList of available options:" + "\n\t=== Headless Options ==="
+		DEBUG.LOG("gama-headless[.bat|.sh] [Options]\n" + "\nList of available options:"
+				+ "\n\t=== General Options ==="
 				+ "\n\t\t-m [mem]                      -- allocate memory (ex 2048m)"
 				+ "\n\t\t-ws [./path/to/ws]            -- manually set a workspace" + "\n\t\t" + CONSOLE_PARAMETER
 				+ "                            -- start the console to write xml parameter file" + "\n\t\t"
 				+ VERBOSE_PARAMETER + "                            -- verbose mode" + "\n\t\t" + THREAD_PARAMETER
-				+ " [core]                   -- set the number of core available for experimentation" + "\n\t\t"
-				+ TUNNELING_PARAMETER
-				+ "                            -- start pipeline to interact with another framework" + "\n\t\t"
-				+ PING_INTERVAL + " [pingInterval] "
+				+ " [core]                   -- set the number of cores available for experimentation"
+				+ "\n\t\t" + STEPS_PARAMETER + " [steps]                 -- set the number of steps to run"
+				+ "\n\t\t" + TUNNELING_PARAMETER
+				+ "                            -- start a pipeline to interact with another framework" + "\n\t=== Server Options ==="
+				+ "\n\t\t" + SOCKET_PARAMETER + " [port]             -- start an unencrypted WebSocket server"
+				+ "\n\t\t" + SSOCKET_PARAMETER + " [port]            -- start a secure WebSocket server"
+				+ "\n\t\t" + SSOCKET_PARAMETER_JKSPATH + " [path]             -- keystore used by the secure server"
+				+ "\n\t\t" + SSOCKET_PARAMETER_SPWD + " [password]          -- keystore password"
+				+ "\n\t\t" + SSOCKET_PARAMETER_KPWD + " [password]          -- private-key password"
+				+ "\n\t\t" + PING_INTERVAL + " [pingInterval] "
 				+ "-- when in server mode (socket parameter set), defines in milliseconds the time "
 				+ "between each ping packet sent to clients to keep alive the connection. "
-				+ "The default value is 10000, set to -1 to deactivate this behaviour." + "\n\t=== Infos ===" + "\n\t\t"
+				+ "The default value is 10000; set to -1 to deactivate this behaviour." + "\n\t\t"
+				+ NO_DELAY_PARAMETER + "                     -- disable delayed WebSocket message sending" + "\n\t\t"
+				+ SERVER_LOG_PARAMETER + "                  -- enable server exchange logging for this launch"
+				+ " (disabled by default)" + "\n\t\t"
+				+ SERVER_LOG_DIRECTORY_PARAMETER + " [path] -- override the exchange log directory"
+				+ " (default ~/.gama/server-logs; does not enable logging)" + "\n\t\t"
+				+ NO_SERVER_LOG_PARAMETER + "               -- disable server exchange logging;"
+				+ " overrides -server-log" + "\n\t=== Information ===" + "\n\t\t"
 				+ HELP_PARAMETER + "                         -- get the help of the command line" + "\n\t\t"
-				+ GAMA_VERSION + "                      -- get the the version of gama" + "\n\t=== Library Runner ==="
+				+ GAMA_VERSION + "                      -- get the version of GAMA" + "\n\t=== Library Runner ==="
 				+ "\n\t\t" + VALIDATE_LIBRARY_PARAMETER
 				+ "                     -- invokes GAMA to validate models present in built-in library and plugins"
 				+ "\n\t\t" + TEST_LIBRARY_PARAMETER
 				+ "                         -- invokes GAMA to execute the tests present in built-in library and plugins and display their results"
-				+ "\n\t=== GAMA Headless Runner ===" + "\n\t\t" + SOCKET_PARAMETER
-				+ " [socketPort]          -- starts socket pipeline to interact with another framework" + "\n\t\t"
-				+ BATCH_PARAMETER + " [experimentName] [modelFile.gaml]"
+				+ "\n\t=== GAMA Headless Runner ===" + "\n\t\t" + BATCH_PARAMETER
+				+ " [experimentName] [modelFile.gaml]"
 				+ "\n\t\t                              -- Run batch experiment in headless mode"
 				// + "\n\t\t" + GAML_PARAMETER + " [experimentName] [modelFile.gaml]"
 				// + "\n\t\t -- Run single gaml experiment in headless mode"
@@ -310,6 +336,9 @@ public class HeadlessApplication implements IApplication {
 			size = size - 2;
 			this.ping = Integer.parseInt(after(args, PING_INTERVAL));
 		}
+		if (args.contains(NO_SERVER_LOG_PARAMETER)) { size = size - 1; }
+		if (args.contains(SERVER_LOG_PARAMETER)) { size = size - 1; }
+		if (args.contains(SERVER_LOG_DIRECTORY_PARAMETER)) { size = size - 2; }
 		if (args.contains(THREAD_PARAMETER)) {
 			size = size - 2;
 			processorQueue.setNumberOfThreads(Integer.parseInt(after(args, THREAD_PARAMETER)));
@@ -423,6 +452,7 @@ public class HeadlessApplication implements IApplication {
 
 		// Debug runner
 		boolean noDelay = args.contains(NO_DELAY_PARAMETER);
+		configureServerLogging(args);
 		if (args.contains(VALIDATE_LIBRARY_PARAMETER)) return ModelLibraryValidator.getInstance().start();
 		if (args.contains(TEST_LIBRARY_PARAMETER)) return ModelLibraryTester.getInstance().start();
 		if (args.contains(RUN_LIBRARY_PARAMETER)) return ModelLibraryRunner.getInstance().start();
@@ -446,6 +476,25 @@ public class HeadlessApplication implements IApplication {
 		}
 
 		return null;
+	}
+
+	/** Apply launch-only overrides, without writing the preference store. */
+	static void configureServerLogging(final List<String> args) {
+		final int directoryOption = args.indexOf(SERVER_LOG_DIRECTORY_PARAMETER);
+		String directory = null;
+		if (directoryOption >= 0) {
+			if (directoryOption + 1 >= args.size() || args.get(directoryOption + 1).isBlank()
+					|| args.get(directoryOption + 1).startsWith("-"))
+				throw new IllegalArgumentException(SERVER_LOG_DIRECTORY_PARAMETER + " requires a directory path");
+			directory = args.get(directoryOption + 1);
+			java.nio.file.Path.of(directory);
+		}
+		if (directory != null) { System.setProperty("gama.server.log.directory", directory); }
+		if (args.contains(NO_SERVER_LOG_PARAMETER)) {
+			System.setProperty("gama.server.log", "false");
+		} else if (args.contains(SERVER_LOG_PARAMETER)) {
+			System.setProperty("gama.server.log", "true");
+		}
 	}
 
 	/**
@@ -492,35 +541,16 @@ public class HeadlessApplication implements IApplication {
 		final String argXMLFile = arg.get(arg.size() - 1);
 
 		final List<IExperimentJob> jb = ExperimentationPlanFactory.buildExperiment(argGamlFile);
-		final ArrayList<IExperimentJob> selectedJob = new ArrayList<>();
-		for (final IExperimentJob j : jb) {
-			if (j.getExperimentName().equals(argExperimentName)) {
-				selectedJob.add(j);
-				break;
-			}
-		}
-
-		if (selectedJob.size() == 0) {
-			DEBUG.ON();
-			DEBUG.ERR("""
-
-					=== ERROR ===\
-
-						GAMA is about to generate an empty XML file.\
-
-						If you want to run a Batch experiment, please check the "-batch" flag.""");
-			System.exit(-1);
-		} else {
-			final Document dd = ExperimentationPlanFactory.buildXmlDocument(selectedJob);
-			final TransformerFactory transformerFactory = TransformerFactory.newInstance();
-			final Transformer transformer = transformerFactory.newTransformer();
-			final DOMSource source = new DOMSource(dd);
-			final File output = new File(argXMLFile);
-			final StreamResult result = new StreamResult(output);
-			transformer.transform(source, result);
-			DEBUG.OFF();
-			DEBUG.LOG("Parameter file saved at: " + output.getAbsolutePath());
-		}
+		final IExperimentJob selectedJob = selectExperimentJob(jb, argExperimentName, argGamlFile);
+		final Document dd = ExperimentationPlanFactory.buildXmlDocument(List.of(selectedJob));
+		final TransformerFactory transformerFactory = TransformerFactory.newInstance();
+		final Transformer transformer = transformerFactory.newTransformer();
+		final DOMSource source = new DOMSource(dd);
+		final File output = new File(argXMLFile);
+		final StreamResult result = new StreamResult(output);
+		transformer.transform(source, result);
+		DEBUG.OFF();
+		DEBUG.LOG("Parameter file saved at: " + output.getAbsolutePath());
 	}
 
 	/**
@@ -706,14 +736,7 @@ public class HeadlessApplication implements IApplication {
 		final List<IExperimentJob> jb =
 				ExperimentationPlanFactory.buildExperiment(argGamlFile, numberOfSteps, numberOfCores);
 
-		ExperimentJob selectedJob = null;
-		for (final IExperimentJob j : jb) {
-			if (j.getExperimentName().equals(argExperimentName)) {
-				selectedJob = (ExperimentJob) j;
-				break;
-			}
-		}
-		if (selectedJob == null) return;
+		final ExperimentJob selectedJob = (ExperimentJob) selectExperimentJob(jb, argExperimentName, argGamlFile);
 		Globals.OUTPUT_PATH = argOutDir;
 
 		selectedJob.setBufferedWriter(new XMLWriter(Globals.OUTPUT_PATH + "/" + Globals.OUTPUT_FILENAME + ".xml"));
@@ -722,6 +745,20 @@ public class HeadlessApplication implements IApplication {
 		processorQueue.shutdown();
 		while (!processorQueue.awaitTermination(100, TimeUnit.MILLISECONDS)) {}
 		System.exit(0);
+	}
+
+	static IExperimentJob selectExperimentJob(final List<IExperimentJob> jobs, final String experimentName,
+			final String modelPath) {
+		for (final IExperimentJob job : jobs) {
+			if (job.getExperimentName().equals(experimentName)) return job;
+		}
+		final List<String> names = jobs.stream().map(IExperimentJob::getExperimentName).distinct().toList();
+		DEBUG.ERR("Experiment '" + experimentName
+				+ "' was not found among the non-batch experiments in model '" + modelPath + "'. Verify its name.\n"
+				+ "Available non-batch experiments: " + (names.isEmpty() ? "(none)" : String.join(", ", names))
+				+ ".\nIf you want to run a Batch experiment, please check the \"-batch\" flag.");
+		System.exit(-1);
+		return null;
 	}
 
 	/**

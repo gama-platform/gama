@@ -23,6 +23,9 @@ import org.eclipse.jface.viewers.ILightweightLabelDecorator;
 
 import gama.api.constants.GamlFileExtension;
 import gama.ui.navigator.view.contents.VirtualContent;
+import gama.ui.shared.resources.GamaIcon;
+import gama.ui.shared.resources.IGamaIcons;
+import gaml.compiler.validation.GamlAutoValidation;
 
 /**
  * Simple decorator for error and warning
@@ -42,6 +45,10 @@ public class GamlDecorator implements ILightweightLabelDecorator {
 			deco.addOverlay(((VirtualContent<?>) element).getOverlay(), BOTTOM_LEFT);
 		} else if (element instanceof final IFile r) {
 			if (GamlFileExtension.isAny(r.getName())) {
+				if (!GamlAutoValidation.isEnabled(r)) {
+					deco.addOverlay(GamaIcon.named(IGamaIcons.OVERLAY_PAUSED).descriptor(), BOTTOM_LEFT);
+					return;
+				}
 				try {
 					deco.addOverlay(DESCRIPTORS.get(r.findMaxProblemSeverity(PROBLEM, true, DEPTH_INFINITE)),
 							BOTTOM_LEFT);

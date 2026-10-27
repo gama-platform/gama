@@ -200,8 +200,8 @@ public class PerspectiveHelper {
 	public static void showBottomTray(final WorkbenchWindow window, final Boolean show) {
 		final MUIElement trimStatus = getTrimStatus(window);
 		if (trimStatus != null) {
-			// toggle statusbar visibility
 			trimStatus.setVisible(show);
+			trimStatus.setToBeRendered(show);
 		}
 	}
 

@@ -11,6 +11,10 @@
 package gama.api.runtime;
 
 import java.util.Set;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import gama.api.kernel.simulation.ISimulationAgent;
 
@@ -29,7 +33,8 @@ import gama.api.kernel.simulation.ISimulationAgent;
  * <ul>
  * <li>Register and unregister simulation agents for execution</li>
  * <li>Synchronize simulation steps across multiple concurrent simulations</li>
- * <li>Manage dedicated threads for each simulation agent</li>
+ * <li>Manage the dedicated thread of each simulation agent (one simulation = one thread), which runs its whole
+ * lifecycle</li>
  * <li>Control concurrency level based on experiment configuration</li>
  * <li>Coordinate step-wise execution across all active simulations</li>
  * </ul>
@@ -65,8 +70,8 @@ public interface ISimulationRunner {
 	 * Removes a simulation agent from the runner, stopping its dedicated thread.
 	 * 
 	 * <p>
-	 * This method unregisters the simulation from concurrent execution. The simulation's thread will complete its
-	 * current step (if any) and then terminate.
+	 * This method unregisters the simulation. The simulation's thread will complete the tasks already submitted to it
+	 * (if any) and then terminate.
 	 * </p>
 	 * 
 	 * @param agent
@@ -75,18 +80,91 @@ public interface ISimulationRunner {
 	void remove(ISimulationAgent agent);
 
 	/**
-	 * Adds a simulation agent to the runner, creating and starting a dedicated thread for it.
-	 * 
-	 * <p>
-	 * This method registers the simulation for concurrent execution and starts a new thread that will repeatedly
-	 * execute the simulation's {@link IStepable#step(gama.api.runtime.scope.IScope)} method until the simulation dies
-	 * or is removed.
-	 * </p>
-	 * 
+	 * Adds a simulation agent to the runner, creating and starting its dedicated thread if it does not exist yet. All
+	 * the lifecycle of the simulation (initialization, steps, restoration...) is then executed by this thread, until
+	 * the simulation is removed.
+	 *
+	 * @param agent
+	 *            the simulation agent to add
+	 * @param scheduled
+	 *            whether the simulation takes part in the synchronized steps (see {@link #step()}). Passing false does
+	 *            not unschedule an already scheduled simulation (see {@link #unschedule(ISimulationAgent)})
+	 */
+	void add(ISimulationAgent agent, boolean scheduled);
+
+	/**
+	 * Adds a simulation agent to the runner and schedules it.
+	 *
 	 * @param agent
 	 *            the simulation agent to add to concurrent execution
+	 * @see #add(ISimulationAgent, boolean)
 	 */
-	void add(ISimulationAgent agent);
+	default void add(final ISimulationAgent agent) {
+		add(agent, true);
+	}
+
+	/**
+	 * Stops stepping a simulation (whether synchronously or autonomously), but keeps its thread alive so that the rest
+	 * of its lifecycle (e.g. the collection of its results) is still executed by it.
+	 *
+	 * @param agent
+	 *            the simulation agent
+	 */
+	void unschedule(ISimulationAgent agent);
+
+	/**
+	 * Runs a task in the thread of a simulation and waits for its result. The task is run directly if the caller is
+	 * already this thread, if the simulation has no thread, or if the caller is the display thread (which must never
+	 * wait for a simulation). Exceptions thrown by the task are rethrown to the caller.
+	 *
+	 * @param <T>
+	 *            the type of the result
+	 * @param agent
+	 *            the simulation agent
+	 * @param task
+	 *            the task to run
+	 * @return the result of the task
+	 */
+	<T> T runInThreadOf(ISimulationAgent agent, Supplier<T> task);
+
+	/**
+	 * Runs a task in the thread of a simulation and waits for its completion.
+	 *
+	 * @param agent
+	 *            the simulation agent
+	 * @param task
+	 *            the task to run
+	 * @see #runInThreadOf(ISimulationAgent, Supplier)
+	 */
+	default void executeInThreadOf(final ISimulationAgent agent, final Runnable task) {
+		runInThreadOf(agent, () -> {
+			task.run();
+			return null;
+		});
+	}
+
+	/**
+	 * Posts a task to the thread of a simulation, without waiting for its execution. The task is run as soon as the
+	 * simulation is not stepping (immediately if it is paused or idle, otherwise after its current step). If called
+	 * from the thread of the simulation itself, the task is run immediately.
+	 *
+	 * @param agent
+	 *            the simulation agent
+	 * @param task
+	 *            the task to run
+	 * @return true if the task has been run or will be run by the thread of the simulation, false if the simulation
+	 *         has no thread (not managed by this runner, or dead), in which case the task is not run
+	 */
+	boolean post(ISimulationAgent agent, Runnable task);
+
+	/**
+	 * Whether the current thread is the thread owning the simulation.
+	 *
+	 * @param agent
+	 *            the simulation agent
+	 * @return true if the current thread is the dedicated thread of this simulation
+	 */
+	boolean isInThreadOf(ISimulationAgent agent);
 
 	/**
 	 * Executes one step for all active simulation agents concurrently.
@@ -137,5 +215,25 @@ public interface ISimulationRunner {
 	 * @return true if at least one simulation is registered, false otherwise
 	 */
 	boolean hasSimulations();
+
+	/**
+	 * Lets an already added simulation run on its own thread, without any synchronization with the other simulations:
+	 * it steps as many times as needed until {@code isOver} is true, then {@code onOver} is called (from the
+	 * simulation's thread). The thread remains alive (and keeps executing the tasks submitted to it) until the
+	 * simulation is removed. The simulation is not taken into account by {@link #step()}
+	 * anymore.
+	 *
+	 * @param agent
+	 *            a simulation previously added with {@link #add(ISimulationAgent)}
+	 * @param isOver
+	 *            evaluated after each step (and in case of an error); true when the simulation must stop
+	 * @param isPaused
+	 *            evaluated before each step; the simulation waits as long as it is true (unless it is over)
+	 * @param onOver
+	 *            called once, when the simulation is over, including when it dies (and is thus removed from this
+	 *            runner) or is already dead
+	 */
+	void runAutonomously(ISimulationAgent agent, Predicate<ISimulationAgent> isOver, BooleanSupplier isPaused,
+			Consumer<ISimulationAgent> onOver);
 
 }

@@ -10,12 +10,21 @@
  ********************************************************************************************************/
 package gama.ui.navigator.view;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.Viewer;
@@ -24,6 +33,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -33,15 +43,18 @@ import org.eclipse.ui.navigator.CommonViewer;
 import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.swt.IFocusService;
 
-import gama.api.runtime.SystemInfo;
-import gama.ui.application.workbench.ThemeHelper;
-import gama.ui.navigator.view.contents.ResourceManager;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+
+import gama.api.GAMA;
+import gama.api.constants.GamlFileExtension;
+import gama.dev.DEBUG;
 import gama.ui.navigator.view.contents.VirtualContent;
 import gama.ui.navigator.view.contents.WrappedGamaFile;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.IGamaColors;
+import gama.ui.shared.utils.PreferencesHelper;
 import gama.ui.shared.views.toolbar.GamaToolbarSimple;
-import one.util.streamex.StreamEx;
 
 /**
  * The class EditToolbarFindControls.
@@ -60,9 +73,21 @@ public class NavigatorSearchControl {
 	 * @return true, if successful
 	 */
 	boolean shouldSelect(final Object o) {
-		if (!(o instanceof WrappedGamaFile file)) return false;
-		if (file.getName().toLowerCase().contains(pattern) || file.hasTag(pattern)) return true;
-		return false;
+		if (appliedBody) {
+			if (!(o instanceof WrappedGamaFile file)) return false;
+			final IFile resource = file.getResource();
+			final Long stamp = bodyMatches.get(resource);
+			return stamp != null && resource.isAccessible() && stamp == resource.getModificationStamp();
+		}
+		if (appliedModelsOnly && (!(o instanceof WrappedGamaFile file)
+				|| !GamlFileExtension.isAny(file.getResource().getName()))) return false;
+		if (!(o instanceof VirtualContent<?> content)) return false;
+		return switch (content.getType()) {
+			case FILE, FOLDER, PROJECT, VIRTUAL_FOLDER ->
+				content.getName().toLowerCase(Locale.ROOT).contains(appliedPattern)
+						|| content instanceof WrappedGamaFile file && file.hasTag(appliedPattern);
+			default -> false;
+		};
 	}
 
 	/**
@@ -71,13 +96,17 @@ public class NavigatorSearchControl {
 	protected class NamePatternFilter extends ViewerFilter {
 
 		/** The already selected. */
-		@SuppressWarnings ("rawtypes") Set alreadySelected = new HashSet<>();
+		Set<VirtualContent<?>> alreadySelected = new HashSet<>();
+
+		/** Files and containers already rejected (their result does not depend on the caller). */
+		Set<VirtualContent<?>> alreadyRejected = new HashSet<>();
 
 		/**
 		 * Reset.
 		 */
 		public void reset() {
-			alreadySelected = StreamEx.ofValues(ResourceManager.cache.asMap()).filter(r -> shouldSelect(r)).toSet();
+			alreadySelected.clear();
+			alreadyRejected.clear();
 		}
 
 		/**
@@ -99,12 +128,17 @@ public class NavigatorSearchControl {
 		 *            the b
 		 * @return true, if successful
 		 */
-		@SuppressWarnings ("unchecked")
 		private boolean select(final VirtualContent<?> element, final boolean b) {
+			if (appliedBody && element instanceof WrappedGamaFile) return shouldSelect(element);
 			if (alreadySelected.contains(element)) return true;
+			if (alreadyRejected.contains(element)) return false;
 			if (internalSelect(element, b)) {
 				alreadySelected.add(element);
 				return true;
+			}
+			switch (element.getType()) {
+				case FILE, FOLDER, PROJECT, ROOT, VIRTUAL_FOLDER -> alreadyRejected.add(element);
+				default -> {}
 			}
 			return false;
 		}
@@ -119,10 +153,34 @@ public class NavigatorSearchControl {
 		 * @return true, if successful
 		 */
 		private boolean internalSelect(final VirtualContent<?> element, final boolean considerVirtualContent) {
-			if (pattern.isEmpty()) return true;
+			if (appliedPattern.isEmpty()) return true;
+			// Containers never match a models-only search, so walking up the parents is useless.
+			if (!appliedBody && !appliedModelsOnly) {
+				if (shouldSelect(element)) return true;
+				for (VirtualContent<?> parent = element.getParent(); parent != null; parent = parent.getParent()) {
+					switch (parent.getType()) {
+						case FOLDER, PROJECT, VIRTUAL_FOLDER:
+							if (shouldSelect(parent)) return true;
+							break;
+						default:
+							break;
+					}
+				}
+			}
 			switch (element.getType()) {
 				case FILE:
-					return shouldSelect(element);
+					if (shouldSelect(element)) return true;
+					if (appliedModelsOnly && !(element instanceof WrappedGamaFile file
+							&& GamlFileExtension.isAny(file.getResource().getName())))
+						return false;
+					if (!appliedBody) {
+						for (final Object child : element.getNavigatorChildren()) {
+							if (child instanceof VirtualContent<?> content
+									&& content.getType() == VirtualContent.VirtualContentType.FILE
+									&& select(content, false)) return true;
+						}
+					}
+					return false;
 				case CATEGORY:
 				case FILE_REFERENCE:
 				case GAML_ELEMENT:
@@ -145,10 +203,45 @@ public class NavigatorSearchControl {
 	Text find;
 
 	/** The Constant EMPTY. */
-	private static final String EMPTY = "Find model..."; //$NON-NLS-1$
+	private static final String EMPTY = "Search..."; //$NON-NLS-1$
 
 	/** The pattern. */
-	String pattern;
+	String pattern = "";
+
+	/** The applied pattern. */
+	private String appliedPattern = "";
+
+	/** The applied body. */
+	private boolean appliedBody;
+
+	/** The applied model-file restriction. */
+	private boolean appliedModelsOnly;
+
+	/** The search generation. */
+	private volatile long searchGeneration;
+
+	/** The pending search. */
+	private Job pendingSearch;
+
+	/** The body matches. */
+	private Map<IFile, Long> bodyMatches = Map.of();
+
+	/**
+	 * The Record SourceText.
+	 *
+	 * @param stamp
+	 *            the stamp
+	 * @param charset
+	 *            the charset
+	 * @param text
+	 *            the text
+	 */
+	private record SourceText(long stamp, String charset, String text) {}
+
+	/** The source cache. */
+	// Charge a minimum per entry as well as the text size, bounding both memory and the number of files.
+	private final Cache<IFile, SourceText> sourceCache = CacheBuilder.newBuilder().maximumWeight(4 * 1024 * 1024)
+			.weigher((final IFile file, final SourceText source) -> 1024 + source.text().length() * 2).build();
 
 	/** The navigator. */
 	GamaNavigator navigator;
@@ -190,33 +283,37 @@ public class NavigatorSearchControl {
 	 */
 	public NavigatorSearchControl fill(final GamaToolbarSimple toolbar) {
 
-		Composite parent = toolbar;
-		Color c = parent.getBackground();
-		if (SystemInfo.isWindows()) {
-			parent = new Composite(toolbar, SWT.NONE);
-			final GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
-			data.heightHint = 24;
-			data.widthHint = 150;
-			parent.setLayoutData(data);
-			final GridLayout layout = new GridLayout();
-			parent.setLayout(layout);
-			GamaColors.setBackground(c, parent);
-		}
+		final Composite parent = new Composite(toolbar, SWT.NONE);
+		final Color c = toolbar.getBackground();
+		final GridLayout layout = new GridLayout(1, false);
+		layout.marginWidth = 0;
+		layout.marginHeight = 0;
+		// layout.horizontalSpacing = 4;
+		parent.setLayout(layout);
+		parent.setBackgroundMode(SWT.INHERIT_FORCE);
+		GamaColors.setBackground(c, parent);
 		find = new Text(parent, SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
+		find.setBackground(IGamaColors.NICE.color());
 		final GridData data = new GridData(SWT.FILL, SWT.CENTER, true, false);
-		data.heightHint = 16;
-		data.widthHint = 100;
+		data.widthHint = 120;
 		find.setLayoutData(data);
-		toolbar.control(parent == toolbar ? find : parent, 150);
+		toolbar.control(parent, SWT.DEFAULT);
 
 		final IFocusService focusService = navigator.getSite().getService(IFocusService.class);
 		focusService.addFocusTracker(find, "search");
 
 		find.setMessage(EMPTY);
+		find.setToolTipText("Search file and folder names and model tags, or saved model source "
+				+ "(see 'Search in...' in the view menu).");
 
-		GamaColors.setBackAndForeground(c,
-				ThemeHelper.isDark() ? IGamaColors.VERY_LIGHT_GRAY.color() : IGamaColors.VERY_DARK_GRAY.color(), find);
 		find.addModifyListener(modifyListener);
+		find.addSelectionListener(SelectionListener.widgetDefaultSelectedAdapter(e -> {
+			if (e.detail == SWT.ICON_CANCEL) { find.setText(""); }
+		}));
+		find.addDisposeListener(e -> {
+			cancelSearch();
+			sourceCache.invalidateAll();
+		});
 		find.addKeyListener(new KeyListener() {
 
 			@Override
@@ -234,71 +331,212 @@ public class NavigatorSearchControl {
 		return this;
 	}
 
-	/** The reset job. */
-	UIJob resetJob = new UIJob("Reset") {
-
-		@Override
-		public IStatus runInUIThread(final IProgressMonitor monitor) {
-			resetSearch();
-			return Status.OK_STATUS;
-		}
-	};
-
-	/** The search job. */
-	UIJob searchJob = new UIJob("Search") {
-
-		@Override
-		public IStatus runInUIThread(final IProgressMonitor monitor) {
-			doSearch();
-			return Status.OK_STATUS;
-		}
-	};
+	/**
+	 * Re-runs the current search after the search options have changed.
+	 */
+	public void searchOptionsChanged() {
+		if (find != null && !find.isDisposed()) { scheduleSearch(0); }
+	}
 
 	/** The modify listener. */
 	private final ModifyListener modifyListener = e -> {
-		pattern = ((Text) e.widget).getText().toLowerCase();
-		if (pattern.isEmpty()) {
-			searchJob.cancel();
-			resetJob.schedule(200);
-		} else {
-			if (searchJob.getState() == Job.SLEEPING || searchJob.getState() == Job.WAITING) { searchJob.cancel(); }
-			searchJob.schedule(200);
-
-		}
+		pattern = ((Text) e.widget).getText().toLowerCase(Locale.ROOT);
+		scheduleSearch(200);
 	};
+
+	/**
+	 * Cancel search.
+	 */
+	private void cancelSearch() {
+		++searchGeneration;
+		if (pendingSearch != null) {
+			pendingSearch.cancel();
+			pendingSearch = null;
+		}
+	}
+
+	/**
+	 * Schedule search.
+	 *
+	 * @param delay
+	 *            the delay
+	 */
+	private void scheduleSearch(final long delay) {
+		cancelSearch();
+		if (pattern.isEmpty()) {
+			resetSearch();
+			return;
+		}
+		final long generation = searchGeneration;
+		final String query = pattern;
+		final boolean body = !PreferencesHelper.NAVIGATOR_SEARCH_TITLES.getValue();
+		final boolean onlyModels = !body && PreferencesHelper.NAVIGATOR_SEARCH_MODELS_ONLY.getValue();
+		final var display = find.getDisplay();
+		if (body) {
+			pendingSearch = new Job("Search saved model source") {
+				@Override
+				protected IStatus run(final IProgressMonitor monitor) {
+					final Map<IFile, Long> matches = new HashMap<>();
+					try {
+						// Traverse workspace resources, not the wrapper cache: collapsed models may not be cached.
+						GAMA.getWorkspaceManager().getRoot().accept(proxy -> {
+							if (monitor.isCanceled() || generation != searchGeneration)
+								throw new OperationCanceledException();
+							if (!proxy.isAccessible()) return false;
+							if (proxy.getType() == IResource.FILE) {
+								if (GamlFileExtension.isAny(proxy.getName())) {
+									final IFile file = (IFile) proxy.requestResource();
+									final SourceText source = readSource(file, monitor, generation);
+									if (source != null && source.text().contains(query)) {
+										matches.put(file, source.stamp());
+									}
+								}
+								return false;
+							}
+							return true;
+						}, IResource.NONE);
+					} catch (final OperationCanceledException e) {
+						return Status.CANCEL_STATUS;
+					} catch (final CoreException e) {
+						DEBUG.ERR("Unable to search model source in the workspace", e);
+					}
+					if (monitor.isCanceled() || generation != searchGeneration) return Status.CANCEL_STATUS;
+					if (!display.isDisposed()) {
+						display.asyncExec(() -> applySearch(query, true, onlyModels, matches, generation));
+					}
+					return Status.OK_STATUS;
+				}
+			};
+		} else {
+			pendingSearch = new UIJob(display, "Search navigator titles") {
+				@Override
+				public IStatus runInUIThread(final IProgressMonitor monitor) {
+					if (!monitor.isCanceled()) { applySearch(query, false, onlyModels, Map.of(), generation); }
+					return Status.OK_STATUS;
+				}
+			};
+		}
+		pendingSearch.setSystem(true);
+		pendingSearch.schedule(delay);
+	}
+
+	/**
+	 * Read source.
+	 *
+	 * @param file
+	 *            the file
+	 * @param monitor
+	 *            the monitor
+	 * @param generation
+	 *            the generation
+	 * @return the source text
+	 */
+	private SourceText readSource(final IFile file, final IProgressMonitor monitor, final long generation) {
+		if (monitor.isCanceled() || generation != searchGeneration) return null;
+		try {
+			final long stamp = file.getModificationStamp();
+			final String charset = file.getCharset();
+			final SourceText cached = sourceCache.getIfPresent(file);
+			if (stamp != IResource.NULL_STAMP && cached != null && cached.stamp() == stamp
+					&& cached.charset().equals(charset))
+				return cached;
+			sourceCache.invalidate(file);
+			final StringBuilder text = new StringBuilder();
+			try (final var reader = new InputStreamReader(file.getContents(), charset)) {
+				final char[] buffer = new char[8192];
+				int count;
+				while ((count = reader.read(buffer)) != -1) {
+					if (monitor.isCanceled() || generation != searchGeneration) return null;
+					text.append(buffer, 0, count);
+				}
+			}
+			if (monitor.isCanceled() || generation != searchGeneration || !file.isAccessible()
+					|| stamp != file.getModificationStamp() || !charset.equals(file.getCharset()))
+				return null;
+			final SourceText source = new SourceText(stamp, charset, text.toString().toLowerCase(Locale.ROOT));
+			if (stamp != IResource.NULL_STAMP) { sourceCache.put(file, source); }
+			return source;
+		} catch (final CoreException | IOException e) {
+			sourceCache.invalidate(file);
+			DEBUG.ERR("Unable to search saved source of " + file.getFullPath(), e);
+			return null;
+		}
+	}
+
+	/**
+	 * Apply search.
+	 *
+	 * @param query
+	 *            the query
+	 * @param body
+	 *            the body
+	 * @param matches
+	 *            the matches
+	 * @param generation
+	 *            the generation
+	 */
+	private void applySearch(final String query, final boolean body, final boolean onlyModels,
+			final Map<IFile, Long> matches, final long generation) {
+		if (generation != searchGeneration || find.isDisposed() || treeViewer == null
+				|| treeViewer.getControl().isDisposed())
+			return;
+		appliedPattern = query;
+		appliedBody = body;
+		appliedModelsOnly = onlyModels;
+		bodyMatches = matches;
+		refreshSearch();
+	}
 
 	/**
 	 * Do search.
 	 */
 	public void doSearch() {
+		scheduleSearch(0);
+	}
+
+	/**
+	 * Refresh search.
+	 */
+	private void refreshSearch() {
 		if (expandedElementsBeforeSearch == null) { expandedElementsBeforeSearch = treeViewer.getExpandedElements(); }
 		treeViewer.getControl().setRedraw(false);
-		filter.reset();
-		if (!Arrays.asList(treeViewer.getFilters()).contains(filter)) {
-			treeViewer.addFilter(filter);
-		} else {
-			treeViewer.refresh(false);
+		try {
+			filter.reset();
+			if (!Arrays.asList(treeViewer.getFilters()).contains(filter)) {
+				treeViewer.addFilter(filter);
+			} else {
+				treeViewer.refresh(false);
+			}
+			treeViewer.expandAll();
+		} finally {
+			treeViewer.getControl().setRedraw(true);
 		}
-		treeViewer.expandAll();
-		treeViewer.getControl().setRedraw(true);
 	}
 
 	/**
 	 * Reset search.
 	 */
 	public void resetSearch() {
+		cancelSearch();
+		appliedPattern = "";
+		bodyMatches = Map.of();
+		filter.reset();
+		if (treeViewer == null || treeViewer.getControl().isDisposed()) return;
 		treeViewer.getControl().setRedraw(false);
-		if (Arrays.asList(treeViewer.getFilters()).contains(filter)) {
-			treeViewer.removeFilter(filter);
-		} else {
-			treeViewer.refresh(false);
+		try {
+			if (Arrays.asList(treeViewer.getFilters()).contains(filter)) {
+				treeViewer.removeFilter(filter);
+			} else {
+				treeViewer.refresh(false);
+			}
+			if (expandedElementsBeforeSearch != null) {
+				treeViewer.collapseAll();
+				treeViewer.setExpandedElements(expandedElementsBeforeSearch);
+				expandedElementsBeforeSearch = null;
+			}
+		} finally {
+			treeViewer.getControl().setRedraw(true);
 		}
-		if (expandedElementsBeforeSearch != null) {
-			treeViewer.collapseAll();
-			treeViewer.setExpandedElements(expandedElementsBeforeSearch);
-			expandedElementsBeforeSearch = null;
-		}
-		treeViewer.getControl().setRedraw(true);
 	}
 
 	/**
@@ -308,8 +546,10 @@ public class NavigatorSearchControl {
 	 *            the name
 	 */
 	public void searchFor(final String name) {
+		// Tags in the navigator always initiate a title/tag search, even after a Body search.
+		PreferencesHelper.NAVIGATOR_SEARCH_TITLES.set(true).save();
 		find.setText(name);
-		pattern = name;
+		pattern = name.toLowerCase(Locale.ROOT);
 		doSearch();
 
 	}

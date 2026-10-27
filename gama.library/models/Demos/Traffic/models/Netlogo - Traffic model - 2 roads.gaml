@@ -1,0 +1,168 @@
+/***
+* Name: Traffic Model - 2 Roads (NetLogo Variation)
+* Author: Benoit Gaudou
+* Description: A two-lane variation of the NetLogo Traffic Basic model reimplementation. Two parallel circular
+*   roads run with different acceleration and deceleration parameters, allowing direct comparison of how driver
+*   behavior differences affect congestion patterns. The model is useful for exploring how even slight parameter
+*   changes in individual driving behavior can produce very different macro-level traffic flow outcomes. Both
+*   roads run simultaneously, and their congestion metrics are displayed side by side.
+*   Based on: Wilensky, U. (1997). NetLogo Traffic Basic model (Northwestern University).
+* Tags: traffic, transport, congestion, netlogo, comparison, emergence, two_roads
+***/
+
+model NetlogoTrafficmodel
+
+global torus: true {
+	int pavement_width <- 50;
+	int pavement_height <- 14;
+	
+	geometry shape <- rectangle(pavement_width * 2, pavement_height * 2);	
+	image_file voit_image_file <- image_file("../includes/voit.png");
+	image_file voit_red_image_file <- image_file("../includes/voit_red.png");
+	image_file voit_blue_image_file <- image_file("../includes/voit_blue.png");
+
+	int y_road1 <- 4;
+	int y_road2 <- 10;
+	list<car> cars_on_road1;
+	list<car> cars_on_road2;
+	car sample_car1;
+	car sample_car2;	
+	list<pavement> road1;
+	list<pavement> road2;
+	
+	int nb_cars <- 25;
+	float acceleration1 <- 0.0045 min: 0.0 max: 0.01;
+	float deceleration1 <- 0.026 min: 0.0 max: 0.1;	
+	float acceleration2 <- 0.0025 min: 0.0 max: 0.01;
+	float deceleration2 <- 0.013 min: 0.0 max: 0.1;	
+
+	float max_speed <- 50.0;
+	
+	init {
+		road1 <- pavement where(each.grid_y = y_road1);
+		cars_on_road1 <- create_cars_on_road(1, road1,1);
+		sample_car1 <- pick_sample(cars_on_road1, #red, voit_red_image_file);
+		
+		road2 <- pavement where(each.grid_y = y_road2);		
+		cars_on_road2 <- create_cars_on_road(1, road2,2);
+		sample_car2 <- pick_sample(cars_on_road2, #blue, voit_blue_image_file);		
+	}
+	
+	reflex create_cars when: (length(car) < nb_cars * 2) and every(10 #cycles) {
+		do create_cars_on_road(1, road1, 1);
+		do create_cars_on_road(1, road2, 2);		
+	}
+	
+	list<car> create_cars_on_road(int num_cars, list<pavement> road, int t){
+		create car number: num_cars returns: cars_on_road {
+			pavement free_pavement <- one_of(road where(empty(car inside self)));
+			if(free_pavement != nil) {
+				my_pavement <- free_pavement;
+				location <- my_pavement.location;
+				type <- t;
+			} else {
+				do die();
+			}
+			heading <- 0.0;
+		}
+		
+		return cars_on_road;		
+	}
+	
+	car pick_sample(list<car> cars, rgb col, image_file _icon) {
+		car a_car <- one_of(cars);
+		ask a_car {
+			color <- col;
+			icon_file <- _icon;
+		}	
+		return a_car;	
+	}
+
+}
+
+grid pavement height: pavement_height width: pavement_width {
+	init {
+		if( (grid_y >= y_road1 - 1) and (grid_y <= y_road1 + 1) ) or 
+		  ( (grid_y >= y_road2 - 1) and (grid_y <= y_road2 + 1)) {
+			color <- #white;
+		} else {
+			color <- #black;
+		}
+	}
+}
+
+species car skills: [moving] {
+	float speed_limit;
+	float speed_min;
+	float acceleration;
+	float deceleration;
+	rgb color;
+	image_file icon_file;
+	pavement my_pavement;
+	int type;
+	
+	init {
+		color <- #blue;
+		icon_file <- voit_image_file;
+		speed <- 0.1 +rnd(0.9);
+		speed_limit <- 1.0;
+		speed_min <- 0.0;
+	}
+	
+	reflex patch_ahead {
+		my_pavement <- pavement first_with(each overlaps self);
+		pavement next_pavement <- pavement first_with( 
+										(each.grid_y = my_pavement.grid_y) and 
+										(each.grid_x = (my_pavement.grid_x + signum(cos(heading))) mod pavement_width)
+		);
+		car car_ahead <- first(car inside next_pavement);
+		if(car_ahead != nil) {
+			do slow_down(car_ahead);
+		} else {
+			do speed_up();
+		}
+		
+		do move (heading: heading);
+	}
+
+	action slow_down(car car_ahead) {
+		speed <- max(speed_min, car_ahead.speed - ((type=1)?deceleration1:deceleration2)) ;
+	}
+	
+	action speed_up() {
+		speed <- min(speed + ((type=1)?acceleration1:acceleration2), speed_limit);
+	}
+
+	aspect rect {
+		draw rectangle(1.5,1) rotated_by heading color: color border: #black;
+	}
+	
+	aspect icon {
+		draw icon_file at: location size: 3 rotate: heading ;
+	}	
+}
+
+experiment NetlogoTrafficmodel type: gui {
+	
+	parameter "Acceleration 1" var:acceleration1;
+	parameter "Deceleration 1" var:deceleration1;
+	parameter "Acceleration 2" var:acceleration2;
+	parameter "Deceleration 2" var:deceleration2;
+	float minimum_cycle_duration <- 0.01;
+	
+	output {
+		layout #vertical;
+		display road type:2d antialias:false{
+			grid pavement /*border: #black*/;
+			species car aspect: icon;
+			
+		}
+
+		display sp  type: 2d {
+			chart "speed" type: series {
+				data "red car" value: sample_car1.speed * max_speed color: sample_car1.color;
+				data "blue car" value: sample_car2.speed * max_speed color: sample_car2.color;
+			}
+		}
+	}
+}

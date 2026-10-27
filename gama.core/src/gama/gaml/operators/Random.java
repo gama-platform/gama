@@ -12,8 +12,10 @@ package gama.gaml.operators;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
+import gama.annotations.no_fuzz_test;
 import gama.annotations.operator;
 import gama.annotations.test;
+import gama.annotations.tests;
 import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
@@ -251,10 +253,15 @@ public class Random {
 					test = false) },
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "rnd", "skew_gauss",
 					"weibull_rnd", "gamma_trunc_rnd", "weibull_trunc_rnd", "lognormal_trunc_rnd" })
-	@test ("seed <- 1.0; TGauss({0,0.3}) = 0.10073201959421514")
-	@test ("seed <- 1.0; TGauss({0,0.3}) >= -0.3")
-	@test ("seed <- 1.0; TGauss({0,0.3}) <= 0.3")
+	@tests ({
+			@test ("seed <- 1.0; TGauss({0,0.3}) = 0.10073201959421514"),
+			@test ("seed <- 1.0; TGauss({0,0.3}) >= -0.3"),
+			@test ("seed <- 1.0; TGauss({0,0.3}) <= 0.3"),
+			@test ("float trunc_gauss <- truncated_gauss(5.0, 2.0, 0.0, 10.0); trunc_gauss >= 0.0 and trunc_gauss <= 10.0"),
+			@test ("float gaussian <- truncated_gauss(0, 1, 5, -5); gaussian >= -5 and gaussian <= 5")
+	})
 	public static Double opTGauss(final IScope scope, final IPoint p) {
+		if (p == null) throw GamaRuntimeException.error("truncated_gauss: the parameter point must not be nil", scope);
 		return opTGauss(scope, GamaListFactory.wrap(Types.FLOAT, p.getX(), p.getY()));
 	}
 
@@ -283,11 +290,16 @@ public class Random {
 					equals = "0.5") },
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "rnd", "skew_gauss",
 					"weibull_rnd", "gamma_trunc_rnd", "weibull_trunc_rnd", "lognormal_trunc_rnd" })
-	@test ("seed <- 1.0; truncated_gauss ([0.5, 0.2]) = 0.5671546797294768")
+	@tests ({
+			@test ("seed <- 1.0; truncated_gauss ([0.5, 0.2]) = 0.5671546797294768"),
+			@test ("float tgauss <- truncated_gauss([0.0, 1.0]); tgauss >= -1.0"),
+			@test ("float tgauss2 <- truncated_gauss([0.0, 1.0]); tgauss2 <= 1.0")
+	})
 	public static Double opTGauss(final IScope scope, final IList list) {
 		if (list.size() < 2) return 0d;
 		final double mean = Cast.asFloat(scope, list.get(0));
 		final double range = Cast.asFloat(scope, list.get(1));
+		if (range <= 0.0) return mean;
 		/*
 		 * We want to have a real gamma like distribution though it s truncated one to do so we set that 2 stdDevation =
 		 * deviation which means we will have 95% of the random generated number within ]mean - deviation; mean +
@@ -335,6 +347,7 @@ public class Random {
 					"weibull_rnd" })
 	@test ("seed <- 1.0; gauss({0.5, 0.2}) = 0.6343093594589535")
 	public static Double opGauss(final IScope scope, final IPoint point) {
+		if (point == null) throw GamaRuntimeException.error("gauss: the parameter point must not be nil", scope);
 		final double mean = point.getX();
 		final double sd = point.getY();
 		return RANDOM(scope).createGaussian(mean, sd);
@@ -367,7 +380,15 @@ public class Random {
 					test = false) },
 			see = { "binomial", "gamma_rnd", "lognormal_rnd", "poisson", "rnd", "skew_gauss", "truncated_gauss",
 					"weibull_rnd" })
-	@test ("seed <- 1.0; gauss(0.5, 0.2) = 0.6343093594589535")
+	@tests ({
+			@test ("seed <- 1.0; gauss(0.5, 0.2) = 0.6343093594589535"),
+			@test ("float gauss_val <- gauss(0.0, 1.0); is_number(gauss_val)"),
+			@test ("float gauss_val2 <- gauss(0.0, 1.0); is_finite(gauss_val2)"),
+			// a null standard deviation always yields the mean
+			@test ("gauss(5.0, 0.0) = 5.0"),
+			@test ("float g2 <- gauss(0.0, 1.0); is_number(g2)"),
+			@test ("float g22 <- gauss(0.0, 1.0); is_finite(g22)")
+	})
 	public static Double opGauss(final IScope scope, final double mean, final double sd) {
 		return RANDOM(scope).createGaussian(mean, sd);
 	}
@@ -419,6 +440,7 @@ public class Random {
 	 *            the mean
 	 * @return the integer
 	 */
+	@no_fuzz_test ("never returns with an infinite mean")
 	@operator (
 			value = "poisson",
 			category = { IOperatorCategory.RANDOM },
@@ -434,9 +456,14 @@ public class Random {
 					test = false) },
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "rnd", "skew_gauss", "truncated_gauss",
 					"weibull_rnd" })
-	@test ("seed <- 1.0; poisson(3.5) = 6")
-	@test ("seed <- 1.0; poisson(0.0) = 0")
+	@tests ({
+			@test ("seed <- 1.0; poisson(3.5) = 6"),
+			@test ("seed <- 1.0; poisson(0.0) = 0"),
+			// Poisson is always >= 0
+			@test ("float poisson_val <- float(poisson(5.0)); poisson_val >= 0")
+	})
 	public static Integer opPoisson(final IScope scope, final Double mean) {
+		if (mean == null || mean <= 0.0) return 0;
 		IRandom ru = RANDOM(scope);
 		int x = 0;
 		double t = 0.0;
@@ -473,14 +500,18 @@ public class Random {
 					test = false) },
 			see = { "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "rnd", "skew_gauss", "truncated_gauss",
 					"weibull_rnd" })
-	@test ("seed <- 1.0; binomial(15,0.6) = 9")
-	@test ("binomial(15,0) = 0")
-	@test ("binomial(15,1) = 15")
-	@test ("binomial(0,1) = 0")
-	@test ("binomial(0,0.9) = 0")
-	@test ("seed <- 1.0; binomial(0, 0.5) = 0")
-	@test ("seed <- 1.0; binomial(10, 0.0) = 0")
-	@test ("seed <- 1.0; binomial(10, 1.0) = 10")
+	@tests ({
+			@test ("seed <- 1.0; binomial(15,0.6) = 9"),
+			@test ("binomial(15,0) = 0"),
+			@test ("binomial(15,1) = 15"),
+			@test ("binomial(0,1) = 0"),
+			@test ("binomial(0,0.9) = 0"),
+			@test ("seed <- 1.0; binomial(0, 0.5) = 0"),
+			@test ("seed <- 1.0; binomial(10, 0.0) = 0"),
+			@test ("seed <- 1.0; binomial(10, 1.0) = 10"),
+			@test ("int binom_val <- binomial(10, 0.5); binom_val >= 0"),
+			@test ("int binom_val2 <- binomial(10, 0.5); binom_val2 <= 10")
+	})
 	public static Integer opBinomial(final IScope scope, final Integer n, final Double p) {
 		double value = p;
 
@@ -553,9 +584,14 @@ public class Random {
 					equals = "[14,12,13] (for example)",
 					test = false) },
 			see = { "reverse" })
-	@test ("seed <- 1.0; shuffle ([12, 13, 14]) = [12,13,14]")
-	@test ("shuffle([]) = []")
-	@test ("length(shuffle([1,2,3])) = 3")
+	@tests ({
+			@test ("seed <- 1.0; shuffle ([12, 13, 14]) = [12,13,14]"),
+			@test ("shuffle([]) = []"),
+			@test ("length(shuffle([1,2,3])) = 3"),
+			@test ("list<int> numbers <- [3, 1, 4, 1, 5, 9, 2, 6]; length(shuffle(numbers)) = length(numbers)"),
+			@test ("list<int> l1 <- [1, 2, 3, 4, 5]; list<int> shuffled <- shuffle(l1); length(shuffled) = length(l1)"),
+			@test ("list<int> l12 <- [1, 2, 3, 4, 5]; list<int> shuffled2 <- shuffle(l12); shuffled2 contains_all l12 = true")
+	})
 	public static IList opShuffle(final IScope scope, final IContainer target) {
 		if (target == null || target.isEmpty(scope))
 			return GamaListFactory.create(target == null ? Types.NO_TYPE : target.getGamlType().getContentType());
@@ -598,6 +634,7 @@ public class Random {
 					test = false) })
 	@test ("seed <- 1.0; shuffle (matrix([[\"c11\",\"c12\",\"c13\"],[\"c21\",\"c22\",\"c23\"]])) = matrix([[\"c13\",\"c21\",\"c22\"],[\"c11\",\"c23\",\"c12\"]])")
 	public static IMatrix opShuffle(final IScope scope, final IMatrix target) throws GamaRuntimeException {
+		if (target == null) throw GamaRuntimeException.error("shuffle: the matrix must not be nil", scope);
 		final IMatrix matrix2 = target.copy(scope);
 		matrix2.shuffleWith(RANDOM(scope));
 		return matrix2;
@@ -654,11 +691,37 @@ public class Random {
 					test = false) },
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "skew_gauss", "truncated_gauss",
 					"weibull_rnd" })
-	@test ("seed <- 1.0; rnd(10) = 8")
-	@test ("seed <- 1.0; rnd(0) = 0")
-	@test ("seed <- 42.0; int r1 <- rnd(100); seed <- 42.0; int r2 <- rnd(100); r1 = r2")
+	@tests ({
+			@test ("seed <- 1.0; rnd(10) = 8"),
+			@test ("seed <- 1.0; rnd(0) = 0"),
+			@test ("seed <- 42.0; int r1 <- rnd(100); seed <- 42.0; int r2 <- rnd(100); r1 = r2"),
+			// the same seed gives the same sequence of draws
+			@test ("seed <- 42.0; int first_rnd <- rnd(100); int second_rnd <- rnd(100); seed <- 42.0; int third_rnd <- rnd(100); int fourth_rnd <- rnd(100); first_rnd = third_rnd and second_rnd = fourth_rnd"),
+			@test ("int drawn <- rnd(-5); drawn >= -5 and drawn <= 0"),
+			@test ("rnd(0) = 0")
+	})
 	public static Integer opRnd(final IScope scope, final Integer max) {
 		return opRnd(scope, 0, max);
+	}
+
+	/**
+	 * Draws an integer using either the legacy float-based method or bounded integer sampling.
+	 */
+	@operator (
+			value = "rnd",
+			category = { IOperatorCategory.RANDOM },
+			concept = { IConcept.RANDOM })
+	@doc (
+			value = "a random integer in [0, max]. If the boolean operand is true, uses bounded integer sampling; "
+					+ "false preserves the legacy rnd(max) sequence",
+			comment = "Integer sampling usually consumes one raw RNG draw instead of two. Rejection sampling may "
+					+ "consume additional draws. It produces a different seeded sequence from legacy rnd.",
+			special_cases = { "With integer sampling enabled, max must be nonnegative." },
+			examples = { @example (value = "rnd(10, true)", equals = "an integer between 0 and 10", test = false) },
+			see = { "rnd" })
+	@test ("seed <- 42.0; int drawn <- rnd(10, false); seed <- 42.0; drawn = rnd(10)")
+	public static Integer opRnd(final IScope scope, final Integer max, final Boolean optimized) {
+		return opRnd(scope, 0, max, optimized);
 	}
 
 	/**
@@ -685,10 +748,44 @@ public class Random {
 					test = false) },
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "skew_gauss", "truncated_gauss",
 					"weibull_rnd" })
-	@test ("seed <- 1.0; rnd(1,5) = 4")
+	@tests ({
+			@test ("seed <- 1.0; rnd(1,5) = 4"),
+			@test ("int drawn <- rnd(5, 1); drawn >= 1 and drawn <= 5")
+	})
 	public static Integer opRnd(final IScope scope, final Integer min, final Integer max) {
 		final IRandom r = RANDOM(scope);
 		return r.between(min, max);
+	}
+
+	/**
+	 * Draws an integer in an inclusive interval without overflowing at either integer limit.
+	 */
+	@operator (
+			value = "rnd",
+			category = { IOperatorCategory.RANDOM },
+			concept = { IConcept.RANDOM })
+	@doc (
+			value = "a random integer in [min, max]. If the boolean operand is true, uses bounded integer sampling; "
+					+ "false preserves the legacy rnd(min, max) sequence",
+			comment = "Integer sampling usually consumes one raw RNG draw instead of two, but rejection sampling "
+					+ "may consume more. Existing rnd calls are unchanged. Both bounds are inclusive, including "
+					+ "the minimum and maximum integer values.",
+			special_cases = { "With integer sampling enabled, min must not exceed max.",
+					"Equal bounds return that value and still consume a draw." },
+			examples = { @example (value = "rnd(-5, 5, true)", equals = "an integer between -5 and 5", test = false) },
+			see = { "rnd" })
+	@tests ({
+			@test ("rnd(3, 3, true) = 3"),
+			@test ("seed <- 42.0; int drawn <- rnd(1, 10, false); seed <- 42.0; drawn = rnd(1, 10)")
+	})
+	public static Integer opRnd(final IScope scope, final Integer min, final Integer max, final Boolean optimized) {
+		if (!optimized) return opRnd(scope, min, max);
+		if (min > max) throw GamaRuntimeException.error("rnd: min must not exceed max for integer sampling", scope);
+		final IRandom r = RANDOM(scope);
+		if (max < Integer.MAX_VALUE) return r.nextInt(min, max + 1);
+		// Shift the interval down when its inclusive upper bound cannot be incremented.
+		if (min > Integer.MIN_VALUE) return r.nextInt(min - 1, max) + 1;
+		return r.nextInt();
 	}
 
 	/**
@@ -710,15 +807,23 @@ public class Random {
 			concept = { IConcept.RANDOM })
 	@doc (
 			value = "a random integer in the interval [first operand, second operand], constrained by a step given by the last operand",
-			special_cases = { "If min equals max, always returns that value." },
+			special_cases = { "The step must be nonzero and point toward the second bound: positive for ascending bounds, "
+					+ "negative for descending bounds. Zero and direction mismatches raise a GAML error.",
+					"Values are first + k * step for nonnegative integers k, without passing the second bound. "
+					+ "If both bounds are equal, returns that value for either nonzero step sign." },
 			examples = { @example (
 					value = "rnd (2, 12, 4)",
 					equals = "2, 6 or 10",
 					test = false) },
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "skew_gauss", "truncated_gauss",
 					"weibull_rnd" })
-	@test ("seed <- 1.0; rnd (2, 12, 4) = 10")
+	@tests ({
+			@test ("seed <- 1.0; rnd (2, 12, 4) = 10"),
+			@test ("rnd(12, 2, -4) in [12, 8, 4]"),
+			@test ("rnd(3, 3, -2) = 3")
+	})
 	public static Integer opRnd(final IScope scope, final Integer min, final Integer max, final Integer step) {
+		RandomUtils.validateStep(scope, min, max, step);
 		final IRandom r = RANDOM(scope);
 		return r.between(min, max, step);
 	}
@@ -772,15 +877,23 @@ public class Random {
 			concept = { IConcept.RANDOM })
 	@doc (
 			value = "a random float in the interval [first operand, second operand] constrained by the last operand (step)",
-			special_cases = { "If min equals max, always returns that value." },
+			special_cases = { "The step must be finite, nonzero, and point toward the second bound: positive for ascending "
+					+ "bounds, negative for descending bounds. Invalid steps or nonfinite bounds raise a GAML error.",
+					"The result is rounded to the nearest step from the first bound, clipped at the second bound. "
+					+ "If both bounds are equal, returns that value for either valid step sign." },
 			examples = { @example (
 					value = "rnd (2.0, 4.0, 0.5)",
 					equals = "a float number between 2.0 and 4.0 every 0.5",
 					test = false) },
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "skew_gauss", "truncated_gauss",
 					"weibull_rnd" })
-	@test ("seed <- 1.0; rnd (2.0, 4.0, 0.5) = 3.5")
+	@tests ({
+			@test ("seed <- 1.0; rnd (2.0, 4.0, 0.5) = 3.5"),
+			@test ("rnd(4.0, 2.0, -0.5) in [2.0, 2.5, 3.0, 3.5, 4.0]"),
+			@test ("rnd(3.123456789, 3.123456789, -0.5) = 3.123456789")
+	})
 	public static Double opRnd(final IScope scope, final Double min, final Double max, final Double step) {
+		RandomUtils.validateStep(scope, min, max, step);
 		final IRandom r = RANDOM(scope);
 		return r.between(min, max, step);
 	}
@@ -811,7 +924,8 @@ public class Random {
 					"weibull_rnd" })
 	@test ("seed <- 1.0; rnd ({2.0, 4.0}, {2.0, 5.0, 10.0}) = {2.0,4.785039740667429,5.087825199078746}")
 	public static IPoint opRnd(final IScope scope, final IPoint min, final IPoint max) {
-		return scope.getRandom().between(min, max);
+		if (min == null || max == null) throw GamaRuntimeException.error("rnd: point bounds must not be nil", scope);
+		return RANDOM(scope).between(min, max);
 	}
 
 	/**
@@ -832,8 +946,12 @@ public class Random {
 			category = { IOperatorCategory.RANDOM },
 			concept = { IConcept.RANDOM })
 	@doc (
-			value = "a random point in the interval [first operand, second operand], constained by the step provided by the last operand",
-			special_cases = { "If min equals max, always returns that value." },
+			value = "a random point in the interval [first operand, second operand], constrained by the step provided by the last operand",
+			special_cases = { "The finite, nonzero scalar step applies independently to each coordinate, using the float "
+					+ "rnd rounding rule. It must be positive for every ascending coordinate and negative for every "
+					+ "descending coordinate. Equal coordinates accept either sign. Mixed ascending and descending "
+					+ "coordinates, zero or nonfinite steps, and nonfinite bounds raise a GAML error.",
+					"If both points are equal, returns that point for either valid step sign." },
 			examples = { @example (
 					value = "rnd ({2.0, 4.0}, {2.0, 5.0, 10.0}, 1)",
 					equals = "a point with x = 2.0, y equal to 2.0, 3.0 or 4.0 and z between 0.0 and 10.0 every 1.0",
@@ -842,7 +960,11 @@ public class Random {
 					"weibull_rnd" })
 	@test ("seed <- 1.0; rnd ({2.0, 4.0}, {2.0, 5.0, 10.0},1) = {2.0,5.0,5.0}")
 	public static IPoint opRnd(final IScope scope, final IPoint min, final IPoint max, final Double step) {
-		return scope.getRandom().between(min, max, GamaPointFactory.create(step, step, step));
+		if (min == null || max == null) throw GamaRuntimeException.error("rnd: point bounds must not be nil", scope);
+		RandomUtils.validateStep(scope, min.getX(), max.getX(), step);
+		RandomUtils.validateStep(scope, min.getY(), max.getY(), step);
+		RandomUtils.validateStep(scope, min.getZ(), max.getZ(), step);
+		return RANDOM(scope).between(min, max, GamaPointFactory.create(step, step, step));
 	}
 
 	/** The null point. */
@@ -898,8 +1020,11 @@ public class Random {
 					test = false) },
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "skew_gauss", "truncated_gauss",
 					"weibull_rnd" })
-	@test (" seed <- 1.0; rnd(100) = 78")
-	@test ("seed <- 1.0; rnd(0.0) = 0.0")
+	@tests ({
+			@test ("seed <- 1.0; rnd(100) = 78"),
+			@test ("seed <- 1.0; rnd(0.0) = 0.0"),
+			@test ("float drawn_float <- rnd(-5.0); drawn_float >= -5.0 and drawn_float <= 0.0")
+	})
 	public static Double opRnd(final IScope scope, final Double max) {
 		return opRnd(scope, 0.0, max);
 	}
@@ -927,9 +1052,14 @@ public class Random {
 					equals = "2/3 chances to return true.",
 					test = false) },
 			see = { "rnd" })
-	@test ("flip(0) = false and flip(1) = true")
-	@test ("!flip(0.0)")
-	@test ("flip(1.0)")
+	@tests ({
+			@test ("flip(0) = false and flip(1) = true"),
+			@test ("!flip(0.0)"),
+			@test ("flip(1.0)"),
+			// flip(1.0) is always true, flip(0.0) is always false
+			@test ("flip(1.0) = true"),
+			@test ("flip(0.0) = false")
+	})
 	public static Boolean opFlip(final IScope scope, final Double probability) {
 		return probability > RANDOM(scope).between(0., 1.);
 	}
@@ -958,6 +1088,12 @@ public class Random {
 			see = { "rnd" })
 	@test ("seed <- 1.0; rnd_choice([0.2,0.5,0.3]) = 2")
 	public static Integer opRndChoice(final IScope scope, final IList distribution) {
+		if (distribution != null) {
+			for (Object weight : distribution) {
+				if (!(weight instanceof Number))
+					throw GamaRuntimeException.error("rnd_choice: weights must be numbers, not nil", scope);
+			}
+		}
 		return RANDOM(scope).choiceIn(distribution);
 	}
 
@@ -983,7 +1119,10 @@ public class Random {
 					equals = "2/10 chances to return \"toto\", 5/10 chances to return \"tata\", 3/10 chances to return \"tonton\"",
 					test = false) },
 			see = { "rnd" })
-	@test ("seed <- 1.0; rnd_choice([\"toto\"::0.2,\"tata\"::0.5,\"tonton\"::0.3]) = \"tonton\"")
+	@tests ({
+			@test ("seed <- 1.0; rnd_choice([\"toto\"::0.2,\"tata\"::0.5,\"tonton\"::0.3]) = \"tonton\""),
+			@test ("map<string, float> choices <- [\"A\"::0.8, \"B\"::0.2]; string result <- rnd_choice(choices); (result = \"A\" or result = \"B\")")
+	})
 	public static <T> T opRndCoice(final IScope scope, final IMap<T, ? extends Number> distribution) {
 		return RANDOM(scope).choiceIn(distribution);
 	}
@@ -1001,6 +1140,7 @@ public class Random {
 	 *            the replacement
 	 * @return the i list
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "sample",
 			type = ITypeProvider.TYPE_AT_INDEX + 1,
@@ -1024,7 +1164,7 @@ public class Random {
 		final IList result = GamaListFactory.create(x.getGamlType());
 		final IList source = replacement ? x : x.copy(scope);
 		while (result.size() < nb && !source.isEmpty()) {
-			final int i = scope.getRandom().between(0, source.size() - 1);
+			final int i = RANDOM(scope).between(0, source.size() - 1);
 			if (replacement) {
 				result.add(source.get(i));
 			} else {
@@ -1049,6 +1189,7 @@ public class Random {
 	 *            the weights
 	 * @return the i list
 	 */
+	@no_fuzz_test ("never returns or exhausts the memory with extreme values (found by fuzzing)")
 	@operator (
 			value = "sample",
 			type = ITypeProvider.TYPE_AT_INDEX + 1,

@@ -14,6 +14,7 @@ import gama.api.gaml.expressions.IExpression;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.kernel.species.IModelSpecies;
+import gama.api.runtime.scope.IExecutionResult;
 import gama.api.types.list.IList;
 import gama.headless.server.GamaServerExperimentJob;
 
@@ -62,7 +63,7 @@ public interface IExperiment {
 	 *            the seed
 	 * @param manualExperimentJob
 	 */
-	void setup(final String experimentName, final double seed, final IList params,
+	IExecutionResult setup(final String experimentName, final double seed, final IList params,
 			GamaServerExperimentJob manualExperimentJob);
 
 	/**

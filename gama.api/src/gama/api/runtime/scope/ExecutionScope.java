@@ -15,6 +15,9 @@ import static gama.api.runtime.scope.IExecutionResult.FAILED;
 import static gama.api.runtime.scope.IExecutionResult.PASSED;
 import static gama.api.runtime.scope.IExecutionResult.withValue;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
@@ -46,7 +49,6 @@ import gama.api.ui.IGui;
 import gama.api.ui.displays.IGraphicsScope;
 import gama.api.utils.StringUtils;
 import gama.api.utils.benchmark.StopWatch;
-import gama.api.utils.collections.Collector;
 import gama.api.utils.random.IRandom;
 import gama.api.utils.random.RandomUtils;
 import gama.api.utils.server.IServerConfiguration;
@@ -286,8 +288,11 @@ import gama.dev.DEBUG;
  * <h2>Thread Safety</h2>
  *
  * <p>
- * ExecutionScope is NOT thread-safe. Each thread should have its own scope instance. The use of volatile fields for
- * flow control provides some thread visibility guarantees but does not make the class fully thread-safe.
+ * ExecutionScope is NOT thread-safe: a scope must only be used by one thread at a time. Threads that need to execute
+ * code on behalf of an agent use a {@link #copy(String) copy} of its scope; a copy made by another thread than the one
+ * executing in the scope does not share anything mutable with it. Parallel executions use {@link #fork(String) forks},
+ * which share the local variables of the scope (whose accesses are then synchronized) and its (immutable) agent stack.
+ * The flow status is volatile, as it can be changed by other threads to interrupt an execution.
  * </p>
  *
  * <h2>Performance Considerations</h2>
@@ -296,7 +301,6 @@ import gama.dev.DEBUG;
  * <li><b>Context Stacks:</b> Push/pop operations are optimized but should still be minimized in tight loops</li>
  * <li><b>Variable Access:</b> Local variables are faster to access than agent attributes or global variables</li>
  * <li><b>Benchmarking:</b> Scope implements IBenchmarkable and tracks execution time when benchmarking is enabled</li>
- * <li><b>Object Pooling:</b> AgentExecutionContext uses object pooling to reduce allocation overhead</li>
  * </ul>
  *
  * <h2>Integration with GAMA Framework</h2>
@@ -333,11 +337,23 @@ public class ExecutionScope implements IScope {
 	 */
 	private static final String ANONYMOUS_SCOPE_NAME = "<scope>";
 
+	/** Name of the copies of target scopes used to execute statements (see {@link #execute}). */
+	private static final String TARGET_SCOPE_NAME = "for the execution in the target scope";
+
 	/** The scope name. */
 	private final String scopeName;
 
 	/** The execution context. */
 	protected IExecutionContext executionContext;
+
+	/** The pending invocation (call data of the executable about to be executed in this scope). */
+	private Invocation invocation;
+
+	/** Frames of the source scope retained by this copy or fork until it is cleared. */
+	private ExecutionContext retainedFrames;
+
+	/** Random generator used when the scope has no root agent. Lazily created. */
+	private IRandom fallbackRandom;
 
 	/** The agent context. */
 	protected AgentExecutionContext agentContext;
@@ -345,18 +361,25 @@ public class ExecutionScope implements IScope {
 	/** The additional context. */
 	protected final SpecialContext additionalContext = new SpecialContext();
 
-	/** The errors disabled. */
-	private volatile boolean _trace, _in_try_mode, _errors_disabled;
+	/** Whether tracing and the 'try' mode are on. Only changed by the thread executing in the scope. */
+	private boolean _trace, _in_try_mode;
 
-	/** The flow status. */
+	/** Whether errors are not reported. Can be changed by other threads (displays) */
+	private volatile boolean _errors_disabled;
+
+	/** The flow status. Volatile, as other threads can change it to interrupt the execution. */
 	private volatile FlowStatus flowStatus = FlowStatus.NORMAL;
 
-	/**
-	 * When {@code true}, this scope is used exclusively by a single thread (e.g. a forked parallel-step scope). In
-	 * that case {@link #push(IObject)} and {@link #pop(IObject)} skip their {@code synchronized} block to avoid
-	 * unnecessary monitor contention.
-	 */
-	boolean exclusive = false;
+	/** Atomic access to {@link #flowStatus}. */
+	private static final VarHandle FLOW_STATUS;
+
+	static {
+		try {
+			FLOW_STATUS = MethodHandles.lookup().findVarHandle(ExecutionScope.class, "flowStatus", FlowStatus.class);
+		} catch (final ReflectiveOperationException e) {
+			throw new ExceptionInInitializerError(e);
+		}
+	}
 
 	/** The current symbol. */
 	// private ISymbol currentSymbol;
@@ -420,9 +443,52 @@ public class ExecutionScope implements IScope {
 			setRoot(root);
 			this.scopeName = ANONYMOUS_SCOPE_NAME;
 		}
-		this.setExecutionContext(context == null ? ExecutionContext.create(this, null) : context.createCopy(null));
-		this.agentContext = agentContext == null ? AgentExecutionContext.create(root, null) : agentContext;
+		this.setExecutionContext(
+				context == null ? ExecutionContext.create(this, null) : context.createCopy(this, null));
+		this.agentContext = agentContext == null ? new AgentExecutionContext(root, null) : agentContext;
 		this.additionalContext.copyFrom(specialContext);
+	}
+
+	/** How a copy of a scope shares the local variables and agent stack of its source. */
+	protected enum Sharing {
+		/** Shared only if the current thread is the one executing in the source (see {@link #copy(String)}). */
+		IF_OWNED,
+		/** Always shared (see {@link #fork(String)}). Only possible if the source is not used by another thread. */
+		ALWAYS,
+		/** Never shared (see {@link #detachedCopy(String)}). */
+		NEVER
+	}
+
+	/**
+	 * Instantiates a copy of a scope (see {@link #copy(String)}, {@link #fork(String)} and
+	 * {@link #detachedCopy(String)}).
+	 *
+	 * @param source
+	 *            the scope to copy
+	 * @param otherName
+	 *            the other name
+	 * @param sharing
+	 *            whether the copy shares the local variables and agent stack of the source
+	 */
+	protected ExecutionScope(final ExecutionScope source, final String otherName, final Sharing sharing) {
+		final ITopLevelAgent root = source.getRoot();
+		setRoot(root);
+		this.scopeName = source._trace ? "Scope #" + COUNTER.COUNT() + " (" + otherName + ")" : ANONYMOUS_SCOPE_NAME;
+		final IExecutionContext context = source.executionContext;
+		if (context instanceof ExecutionContext ec && (sharing == Sharing.ALWAYS
+				|| sharing == Sharing.IF_OWNED && ec.isOwnedByCurrentThread())) {
+			// Enclosing variables remain visible to workers until their joined forks are cleared.
+			ec.retain();
+			retainedFrames = ec;
+			this.executionContext = ExecutionContext.create(this, ec, null);
+			// Immutable: can be shared
+			this.agentContext = source.agentContext;
+		} else {
+			// The source can be in use by another thread: nothing mutable is shared with it
+			this.executionContext = ExecutionContext.create(this, null);
+			this.agentContext = new AgentExecutionContext(root, null);
+		}
+		this.additionalContext.copyFrom(source.additionalContext);
 	}
 
 	/**
@@ -433,7 +499,7 @@ public class ExecutionScope implements IScope {
 	 * @return the agent execution context
 	 */
 	public AgentExecutionContext createChildContext(final IObject agent) {
-		return AgentExecutionContext.create(agent, agentContext);
+		return new AgentExecutionContext(agent, agentContext);
 	}
 
 	/**
@@ -443,9 +509,13 @@ public class ExecutionScope implements IScope {
 	 */
 	@Override
 	public void clear() {
+		if (retainedFrames != null) {
+			retainedFrames.release();
+			retainedFrames = null;
+		}
 		if (executionContext != null) { executionContext.dispose(); }
+		invocation = null;
 		setExecutionContext(null);
-		if (agentContext != null) { agentContext.dispose(); }
 		agentContext = null;
 		additionalContext.clear();
 		// currentSymbol = null;
@@ -555,21 +625,8 @@ public class ExecutionScope implements IScope {
 	// }
 
 	/**
-	 * Method push()
-	 *
-	 * @see gama.api.runtime.scope.IScope#push(gama.api.kernel.agent.IAgent)
-	 */
-	// @Override
-
-	private final Object lock = new Object();
-
-	/**
-	 * Push.
-	 *
-	 * <p>
-	 * When {@link #exclusive} is {@code true} (i.e. this scope was created as a forked parallel copy that is owned
-	 * by exactly one thread) the {@code synchronized} block is skipped to avoid unnecessary monitor overhead.
-	 * </p>
+	 * Pushes an agent or object on the stack of the scope. As a scope is used by one thread at a time, no
+	 * synchronization is necessary.
 	 *
 	 * @param agent
 	 *            the agent
@@ -577,29 +634,15 @@ public class ExecutionScope implements IScope {
 	 */
 	@Override
 	public boolean push(final IObject agent) {
-		if (exclusive) {
-			// Fast path: no synchronization needed for thread-exclusive scopes
-			final IAgent a = agentContext == null ? null : agentContext.getFirstAgent();
-			if (a == null) {
-				if (agent instanceof ITopLevelAgent tla) { setRoot(tla); }
-				agentContext = null;
-			} else if (a == agent) return false;
-			agentContext = createChildContext(agent);
-			return true;
-		}
-		synchronized (lock) {
-			final IAgent a = agentContext == null ? null : agentContext.getFirstAgent();
-			if (a == null) {
-				if (agent instanceof ITopLevelAgent tla) {
-					// Previous context didnt have a root.
-					setRoot(tla);
-				}
-				// get rid of the previous context **important**
-				agentContext = null;
-			} else if (a == agent) return false;
-			agentContext = createChildContext(agent);
-			return true;
-		}
+		final IObject obj = agentContext == null ? null : agentContext.getCurrentObjectOrAgent();
+		if (obj == null) {
+			// Previous context didnt have a root.
+			if (agent instanceof ITopLevelAgent tla) { setRoot(tla); }
+			// get rid of the previous context **important**
+			agentContext = null;
+		} else if (obj == agent) return false;
+		agentContext = createChildContext(agent);
+		return true;
 	}
 
 	/**
@@ -615,32 +658,14 @@ public class ExecutionScope implements IScope {
 	 *
 	 * @see gama.api.runtime.scope.IScope#pop(gama.api.kernel.agent.IAgent)
 	 */
-	// @Override
 	@Override
 	public void pop(final IObject agent) {
-		if (exclusive) {
-			// Fast path: no synchronization needed for thread-exclusive scopes
-			if (agentContext == null) {
-				DEBUG.OUT("Agents stack is empty");
-				return;
-			}
-			final AgentExecutionContext previous = agentContext;
-			agentContext = agentContext.getOuterContext();
-			previous.dispose();
-			getAndClearDeathStatus();
+		if (agentContext == null) {
+			DEBUG.OUT("Agents stack is empty");
 			return;
 		}
-		synchronized (lock) {
-			if (agentContext == null) {
-				DEBUG.OUT("Agents stack is empty");
-				return;
-			}
-			final AgentExecutionContext previous = agentContext;
-			agentContext = agentContext.getOuterContext();
-			previous.dispose();
-			getAndClearDeathStatus();
-			// _agent_halted = false;
-		}
+		agentContext = agentContext.getOuterContext();
+		getAndClearDeathStatus();
 	}
 
 	/**
@@ -714,35 +739,53 @@ public class ExecutionScope implements IScope {
 	public IExecutionResult execute(final IExecutable statement, final IObject target,
 			final boolean useTargetScopeForExecution, final Arguments args) {
 		if (statement == null || !canContinue(target)) return FAILED;
+		if (useTargetScopeForExecution && target instanceof IAgent a) {
+			final IScope targetScope = a.getScope();
+			if (targetScope != null && targetScope != this) {
+				// The target (e.g. a simulation called from its experiment) executes the statement in (a copy of) its
+				// own scope, so that its root, random generator, clock, topology... are used. A copy, because the
+				// scope of the target can be in use by its own thread. The arguments are already evaluated. The copy is
+				// light (no frame or agent stack is copied) and its constant name avoids building a string per call.
+				final IScope copy = targetScope.copy(TARGET_SCOPE_NAME);
+				try {
+					return copy.execute(statement, target, false, args);
+				} finally {
+					copy.clear();
+				}
+			}
+		}
 		// We keep the current pushed agent (context of this execution)
 		final IObject caller = this.getCurrentObjectOrAgent();
 		final IAgent agent = this.getAgent();
 		// We then try to push the agent on the stack
 		final boolean pushed = push(target);
+		final IScope executionScope = this;
+		Invocation previous = null;
+		boolean invoked = false;
 		try (StopWatch w = GAMA.benchmark(this, statement)) {
-			// Otherwise we compute the result of the statement, pushing the
-			// arguments if the statement expects them
-			if (args != null) { args.setCaller(caller); }
-			// See issue #2815: we also push args even if they are null
-			statement.setRuntimeArgs(this, args);
 			// #3407 a specific case when create micro experiment, the myself (agentcontext) is as same as target
 			// fixed by change myself to outer agentcontext
-			if (statement instanceof IStatement.Remote remote && "create".equals(remote.getDescription().getKeyword())
-					&& caller.equals(target)) {
-				statement.setMyself(this.agentContext.outer.getFirstAgent());
+			final IAgent myself = statement instanceof IStatement.Remote remote
+					&& "create".equals(remote.getDescription().getKeyword()) && caller.equals(target)
+							? this.agentContext.getOuterContext().getFirstAgent() : agent;
+			if (statement instanceof IStatement.WithArgs || statement instanceof IStatement.Remote) {
+				// The call data is handed to the statement through the scope, as the statement is shared by all the
+				// simulations and threads executing it. See issue #2815: we also pass args even if they are null
+				previous = executionScope
+						.setInvocation(new Invocation(statement, args, args == null ? null : caller, myself));
+				invoked = true;
 			} else {
-				statement.setMyself(agent);
+				// Legacy protocol for other executables
+				statement.setRuntimeArgs(executionScope, args);
+				statement.setMyself(myself);
 			}
-			// We push the caller to the remote sequence (will be cleaned when the remote
-			// sequence leaves its scope)
-			return withValue(statement.executeOn(useTargetScopeForExecution ? agent.getScope() : ExecutionScope.this));
+			return withValue(statement.executeOn(executionScope));
 		} catch (final Exception g) {
 			GAMA.reportAndThrowIfNeeded(this, g instanceof GamaRuntimeException e ? e : create(g, this), true);
 			return IExecutionResult.FAILED;
 		} finally {
-			// We clean the caller that may have been set previously so as to keep the
-			// arguments clean
-			if (args != null) { args.setCaller(null); }
+			// Whatever the outcome, we restore the invocation pending before (if the statement has not taken its own)
+			if (invoked) { executionScope.setInvocation(previous); }
 			// Whatever the outcome, we pop the agent from the stack if it has
 			// been previously pushed
 			if (pushed) { pop(target); }
@@ -751,10 +794,24 @@ public class ExecutionScope implements IScope {
 	}
 
 	@Override
-	public void stackArguments(final Arguments actualArgs) {
+	public Invocation setInvocation(final Invocation invocation) {
+		final Invocation previous = this.invocation;
+		this.invocation = invocation;
+		return previous;
+	}
+
+	@Override
+	public Invocation takeInvocation(final IExecutable executable) {
+		final Invocation result = invocation;
+		if (result == null || result.executable() != executable) return null;
+		invocation = null;
+		return result;
+	}
+
+	@Override
+	public void stackArguments(final Arguments actualArgs, final IObject caller) {
 		if (actualArgs == null) return;
 		boolean callerPushed = false;
-		final IObject caller = actualArgs.getCaller();
 		if (caller != null) { callerPushed = push(caller); }
 		try {
 			actualArgs.forEachArgument((a, b) -> {
@@ -1133,7 +1190,9 @@ public class ExecutionScope implements IScope {
 	 */
 	@Override
 	public ITopology setTopology(final ITopology topo) {
-		final ITopology previous = getTopology();
+		// the topology previously forced, not the one of the current agent: restoring the latter would pin it in
+		// this scope, and the agents executed afterwards (in an 'ask', for instance) would not use their own
+		final ITopology previous = additionalContext.topology;
 		additionalContext.topology = topo;
 		return previous;
 	}
@@ -1202,7 +1261,10 @@ public class ExecutionScope implements IScope {
 	@Override
 	public IType getType(final String name) {
 		if (additionalContext.types == null) {
-			additionalContext.types = getExperiment().getSpecies().getModel().getDescription().getTypesManager();
+			final IModelSpecies model = getModel();
+			// Without a model (e.g. scopes not attached to an experiment), only built-in types are available
+			if (model == null || model.getDescription() == null) return Types.get(name);
+			additionalContext.types = model.getDescription().getTypesManager();
 		}
 		return additionalContext.types.get(name);
 	}
@@ -1221,15 +1283,19 @@ public class ExecutionScope implements IScope {
 
 	@Override
 	public IAgent[] getAgentsStack() {
-		try (final Collector.AsOrderedSet<IAgent> agents = Collector.getOrderedSet()) {
-			AgentExecutionContext current = agentContext;
-			if (current == null) return new IAgent[0];
-			while (current != null) {
-				agents.add(current.getFirstAgent());
-				current = current.getOuterContext();
-			}
-			return agents.items().stream().toArray(IAgent[]::new);
+		AgentExecutionContext current = agentContext;
+		if (current == null) return new IAgent[0];
+		// Stacks are short: a linear de-duplication preserving the order is cheaper than a set
+		IAgent[] agents = new IAgent[8];
+		int size = 0;
+		outer: while (current != null) {
+			final IAgent agent = current.getFirstAgent();
+			current = current.getOuterContext();
+			for (int i = 0; i < size; i++) { if (agents[i] == agent) { continue outer; } }
+			if (size == agents.length) { agents = Arrays.copyOf(agents, size * 2); }
+			agents[size++] = agent;
 		}
+		return Arrays.copyOf(agents, size);
 	}
 
 	/**
@@ -1300,25 +1366,40 @@ public class ExecutionScope implements IScope {
 	@Override
 	public IRandom getRandom() {
 		final ITopLevelAgent root = getRoot();
-		if (root == null) return new RandomUtils();
-		return root.getRandomGenerator();
-	}
-
-	@Override
-	public IScope copy(final String additionalName) {
-		final ExecutionScope scope = new ExecutionScope(getRoot(), additionalName);
-		scope.setExecutionContext(executionContext == null ? null : executionContext.createCopy(null));
-		// A forked scope is owned by exactly one thread; use a shallow copy of the agent
-		// context chain to avoid the recursive allocation of createCopy(), and mark the
-		// scope as exclusive so push/pop skip their synchronized block.
-		scope.agentContext = agentContext == null ? null : agentContext.createShallowCopy();
-		scope.additionalContext.copyFrom(additionalContext);
-		scope.exclusive = true;
-		return scope;
+		if (root != null) return root.getRandomGenerator();
+		if (fallbackRandom == null) { fallbackRandom = new RandomUtils(); }
+		return fallbackRandom;
 	}
 
 	/**
-	 * Copy as graphics.
+	 * Copies this scope. If the current thread is the one executing in this scope, the copy shares its local variables
+	 * and agent stack (as a {@link #fork(String)} does). Otherwise, as this scope can be in use, the copy only shares
+	 * its root and additional context (topology, gui...), and its agent stack only contains the root.
+	 */
+	@Override
+	public IScope copy(final String additionalName) {
+		return new ExecutionScope(this, additionalName, Sharing.IF_OWNED);
+	}
+
+	@Override
+	public IScope fork(final String additionalName) {
+		return new ExecutionScope(this, additionalName, Sharing.ALWAYS);
+	}
+
+	@Override
+	public IScope detachedCopy(final String additionalName) {
+		return new ExecutionScope(this, additionalName, Sharing.NEVER);
+	}
+
+	@Override
+	public void bindToCurrentThread() {
+		// Only an idle scope (i.e. at its root frame) can change of thread
+		if (executionContext instanceof ExecutionContext ec && ec.getOuterContext() == null) { ec.bindToCurrentThread(); }
+	}
+
+	/**
+	 * Copy as graphics. Graphics scopes are long-lived (displays, layers, caches) and used by other threads than the
+	 * one executing in this scope: like {@link #detachedCopy(String)}, they never share its frames.
 	 *
 	 * @param additionalName
 	 *            the additional name
@@ -1326,12 +1407,7 @@ public class ExecutionScope implements IScope {
 	 */
 	@Override
 	public IGraphicsScope copyForGraphics(final String additionalName) {
-		final GraphicsScope scope = new GraphicsScope(this, additionalName);
-		scope.setExecutionContext(executionContext == null ? null : executionContext.createCopy(null));
-		scope.agentContext = agentContext == null ? null : agentContext.createShallowCopy();
-		scope.additionalContext.copyFrom(additionalContext);
-		scope.exclusive = true;
-		return scope;
+		return new GraphicsScope(this, additionalName, Sharing.NEVER);
 	}
 
 	@Override
@@ -1353,11 +1429,10 @@ public class ExecutionScope implements IScope {
 	 */
 	@Override
 	public FlowStatus getAndClearFlowStatus(final FlowStatus comparison) {
-		try {
-			return flowStatus;
-		} finally {
-			if (flowStatus == comparison) { flowStatus = FlowStatus.NORMAL; }
-		}
+		final FlowStatus current = flowStatus;
+		// Only clears the expected status: a status set meanwhile by another thread (e.g. DISPOSE) is preserved
+		if (current == comparison) { FLOW_STATUS.compareAndSet(this, comparison, FlowStatus.NORMAL); }
+		return current;
 	}
 
 	/**

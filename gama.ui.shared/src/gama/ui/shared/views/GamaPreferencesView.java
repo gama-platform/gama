@@ -103,7 +103,15 @@ public class GamaPreferencesView {
 		if (instance == null || instance.shell == null || instance.shell.isDisposed()) {
 			instance = new GamaPreferencesView(WorkbenchHelper.getShell());
 		}
+		if (!instance.preloaded) { preload(); }
 		for (final IParameterEditor ed : instance.editors.values()) { ed.updateWithValueOfParameter(true, false); }
+		for (final Pref<?> p : GAMA.getPreferenceStore().getPreferences()) {
+			instance.checkActivables(p, Cast.asBool(null, p.getValue()));
+			if (p.getKey().startsWith("pref_syntax_use_default_colors_")) {
+				instance.displaySyntaxColorPreferences(p.getKey(),
+						Boolean.TRUE.equals(Cast.asBool(null, p.getValue())));
+			}
+		}
 		instance.open();
 	}
 
@@ -117,8 +125,9 @@ public class GamaPreferencesView {
 					instance = new GamaPreferencesView(WorkbenchHelper.getShell());
 				}
 				for (final IParameterEditor ed : instance.editors.values()) {
-					ed.updateWithValueOfParameter(false, false);
+					ed.updateWithValueOfParameter(true, false);
 				}
+				instance.preloaded = true;
 			});
 
 		});
@@ -215,17 +224,18 @@ public class GamaPreferencesView {
 	 *            the value
 	 */
 	void checkActivables(final Pref e, final Boolean value) {
+		final boolean val = Boolean.TRUE.equals(value);
 		for (final String activable : e.getEnablement()) {
 			final var ed = editors.get(activable);
 			if (ed == null) {
-				activations.put(activable, value);
-			} else if (WorkbenchHelper.isDisplayThread()) { ed.setActive(value); }
+				activations.put(activable, val);
+			} else if (WorkbenchHelper.isDisplayThread()) { ed.setActive(val); }
 		}
 		for (final String deactivable : e.getDisablement()) {
 			final var ed = editors.get(deactivable);
 			if (ed == null) {
-				activations.put(deactivable, !value);
-			} else if (WorkbenchHelper.isDisplayThread()) { ed.setActive(!(Boolean) value); }
+				activations.put(deactivable, !val);
+			} else if (WorkbenchHelper.isDisplayThread()) { ed.setActive(!val); }
 		}
 	}
 
@@ -268,6 +278,9 @@ public class GamaPreferencesView {
 					Boolean b = Cast.asBool(GAMA.getPlatformAgent().getScope(), value);
 					checkActivables(e, b);
 					checkRefreshables(e);
+					if (e.getKey().startsWith("pref_syntax_use_default_colors_")) {
+						displaySyntaxColorPreferences(e.getKey(), Boolean.TRUE.equals(b));
+					}
 					if (e.isRestartRequired()) { setRestartRequired(); }
 				} else {
 					GamaPreferencesView.this.showError("" + value + " is not accepted for parameter " + e.getKey());
@@ -298,6 +311,22 @@ public class GamaPreferencesView {
 		compo.pack(true);
 	}
 
+	private void displaySyntaxColorPreferences(final String preferenceKey, final boolean useDefaults) {
+		final String theme = preferenceKey.substring("pref_syntax_use_default_colors_".length());
+		final String colorSuffix = "_color_" + theme;
+		final String colorGroup = "Syntax coloring (" + theme + " theme)";
+		for (final Pref<?> preference : GAMA.getPreferenceStore().getPreferences()) {
+			final String key = preference.getKey();
+			if (!colorGroup.equals(preference.getGroup()) || !key.startsWith("pref_")
+					|| !key.endsWith(colorSuffix)) continue;
+			final IParameterEditor editor = editors.get(key);
+			if (editor == null) continue;
+			final Object value = useDefaults ? preference.getDefaultValue()
+					: modelValues.getOrDefault(key, preference.getValue());
+			editor.displayValue(value);
+		}
+	}
+
 	/**
 	 * Gets the menu for.
 	 *
@@ -325,7 +354,7 @@ public class GamaPreferencesView {
 		final var i2 = new MenuItem(m, SWT.PUSH);
 		i2.setText("Revert to default value");
 		i2.addSelectionListener((Selector) se -> {
-			e.set(e.getInitialValue(GAMA.getRuntimeScope()));
+			e.set(e.getDefaultValue());
 			ed.updateWithValueOfParameter(true, false);
 		});
 		return m;
@@ -510,7 +539,6 @@ public class GamaPreferencesView {
 	 * Open.
 	 */
 	public void open() {
-		if (!preloaded) { preload(); }
 		final var loc = DIALOG_LOCATION.getValue();
 		final var size = DIALOG_SIZE.getValue();
 		final int tab = DIALOG_TAB.getValue();

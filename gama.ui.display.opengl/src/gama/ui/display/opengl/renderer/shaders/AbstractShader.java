@@ -14,7 +14,6 @@ import java.io.InputStream;
 import java.util.Scanner;
 
 import com.jogamp.opengl.GL;
-import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GL2ES2;
 
 import gama.api.types.geometry.GamaPointFactory;
@@ -27,7 +26,9 @@ import gama.dev.DEBUG;
 public abstract class AbstractShader {
 
 	/** The gl. */
-	protected GL2 gl;
+	protected GL2ES2 gl;
+
+	private final boolean initializeBlending;
 
 	/** The is overlay. */
 	protected boolean isOverlay = false;
@@ -63,8 +64,14 @@ public abstract class AbstractShader {
 	 * @param fragmentFile
 	 *            the fragment file
 	 */
-	protected AbstractShader(final GL2 gl, final String vertexFile, final String fragmentFile) {
+	protected AbstractShader(final GL2ES2 gl, final String vertexFile, final String fragmentFile) {
+		this(gl, vertexFile, fragmentFile, true);
+	}
+
+	protected AbstractShader(final GL2ES2 gl, final String vertexFile, final String fragmentFile,
+			final boolean initializeBlending) {
 		this.gl = gl;
+		this.initializeBlending = initializeBlending;
 		InputStream vertexInputStream, fragmentInputStream;
 
 		try {
@@ -73,7 +80,7 @@ public abstract class AbstractShader {
 				throw new RuntimeException("Cannot locate vertex shader program " + vertexFile);
 			fragmentInputStream = getClass().getResourceAsStream(fragmentFile);
 			if (fragmentInputStream == null)
-				throw new RuntimeException("Cannot locate vertex shader program " + vertexFile);
+				throw new RuntimeException("Cannot locate fragment shader program " + fragmentFile);
 		} catch (final Exception e) {
 			DEBUG.ERR(e.getMessage());
 			vertexShaderID = -1;
@@ -123,8 +130,10 @@ public abstract class AbstractShader {
 			final int[] vlengths = { vlines[0].length() };
 			gl.glShaderSource(shaderID, vlines.length, vlines, vlengths, 0);
 			gl.glCompileShader(shaderID);
-			gl.glEnable(GL.GL_BLEND);
-			gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+			if (initializeBlending) {
+				gl.glEnable(GL.GL_BLEND);
+				gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+			}
 
 			// Check compile status.
 			final int[] compiled = new int[1];

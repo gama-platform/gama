@@ -40,6 +40,23 @@ import gama.api.types.pair.IPair;
  * ({@link IContainer.Modifiable} and {@link IContainer.Addressable}), providing a rich
  * set of operations for graph manipulation, traversal, and analysis.
  * </p>
+ *
+ * <h2>Vertices, Edges, and Container Indexing</h2>
+ * <p>
+ * In this API, a <em>node</em> is the same thing as a <em>vertex</em>: it is an element of type {@code Vertex}.
+ * An <em>edge</em> is an element of type {@code Edge} that connects two vertices. Vertices are not the graph's
+ * container values: the graph's container key type is {@code Vertex}, and its content/value type is {@code Edge}.
+ * Accordingly, {@link #getVertices()} lists vertices and {@link #getEdges()} (and container value iteration) lists
+ * edges.
+ * </p>
+ * <p>
+ * Addressing an edge uses an {@link IPair} of vertices rather than a single vertex: the pair's key is the source
+ * vertex and its value is the target vertex. {@link #get(IScope, IPair)} returns the edge or edges joining those
+ * endpoints (a list, since a graph can contain multiple edges between the same vertices). For an undirected graph,
+ * the endpoints are connected regardless of their order. Thus the container's generic key/content types
+ * ({@code Vertex}/{@code Edge}) are distinct from the address and result types ({@code IPair<Vertex, Vertex>}/
+ * {@code List<Edge>}).
+ * </p>
  * 
  * <h2>Graph Types</h2>
  * <p>
@@ -104,8 +121,8 @@ import gama.api.types.pair.IPair;
  * IList spanningTree = graph.getSpanningTree(scope);
  * </pre>
  * 
- * @param <Vertex> the type of vertices in the graph
- * @param <Edge> the type of edges in the graph
+ * @param <Vertex> the type of vertices (also called nodes) in the graph; this is the container key type
+ * @param <Edge> the type of edge objects connecting vertices; this is the container content/value type
  * 
  * @see ISpatialGraph
  * @see IPath
@@ -183,17 +200,18 @@ public interface IGraph<Vertex, Edge>
 	void setWeights(Map<?, Double> weights);
 
 	/**
-	 * Gets the edges.
+	 * Returns the edge objects in this graph. Edges are the graph's container contents/values; each connects two
+	 * vertices, which can be obtained from the edge's source and target.
 	 *
-	 * @return the edges
+	 * @return all edge objects in the graph
 	 */
 	@getter ("edges")
 	IList<Edge> getEdges();
 
 	/**
-	 * Gets the vertices.
+	 * Returns the vertices (nodes) in this graph. Vertices are the graph's container keys, not its contents/values.
 	 *
-	 * @return the vertices
+	 * @return all vertices in the graph
 	 */
 	@getter ("vertices")
 	IList<Vertex> getVertices();
@@ -275,7 +293,8 @@ public interface IGraph<Vertex, Edge>
 	double computeTotalWeight();
 
 	/**
-	 * Builds the value.
+	 * Builds a graph item to add. An edge value is an {@code Edge} object, optionally with its endpoints and weight;
+	 * a node item represents a {@code Vertex}.
 	 *
 	 * @param scope
 	 *            the scope
@@ -297,7 +316,8 @@ public interface IGraph<Vertex, Edge>
 	IContainer buildValues(IScope scope, IContainer objects);
 
 	/**
-	 * Builds the index.
+	 * Builds an edge address from a pair of endpoint vertices. The pair key is the source and the pair value is the
+	 * target; it is an address, not an edge object.
 	 *
 	 * @param scope
 	 *            the scope
@@ -308,7 +328,8 @@ public interface IGraph<Vertex, Edge>
 	IPair<Vertex, Vertex> buildIndex(IScope scope, Object object);
 
 	/**
-	 * Builds the indexes.
+	 * Builds edge addresses from values. Each address is a pair of endpoint vertices (source, target), not an edge
+	 * object.
 	 *
 	 * @param scope
 	 *            the scope
@@ -400,14 +421,14 @@ public interface IGraph<Vertex, Edge>
 	_Vertex<Vertex, Edge> getVertex(final Object v);
 
 	/**
-	 * Gets the vertex map.
+	 * Returns the internal vertex lookup map, from each vertex object to its graph vertex wrapper.
 	 *
 	 * @return the vertex map
 	 */
 	Map<Vertex, _Vertex<Vertex, Edge>> getVertexMap();
 
 	/**
-	 * Gets the edge map.
+	 * Returns the internal edge lookup map, from each edge object to its graph edge wrapper.
 	 *
 	 * @return the edge map
 	 */

@@ -19,6 +19,7 @@ import static gama.ui.shared.resources.IGamaIcons.EXPERIMENT_RUN;
 import static gama.ui.shared.resources.IGamaIcons.TOGGLE_ANTIALIAS;
 import static gama.ui.shared.resources.IGamaIcons.TOGGLE_OVERLAY;
 
+import java.util.Arrays;
 import java.util.function.Function;
 
 import org.eclipse.swt.SWT;
@@ -389,7 +390,8 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	private Shell createFullScreenShell() {
 		final int monitorId = view.getOutput().getData().fullScreen();
 		final Monitor[] monitors = WorkbenchHelper.getMonitors();
-		int monitorId1 = Math.min(monitors.length - 1, Math.max(0, monitorId));
+		final int currentMonitor = Arrays.asList(monitors).indexOf(view.getSite().getShell().getMonitor());
+		final int monitorId1 = resolveFullScreenMonitor(monitorId, currentMonitor, monitors.length);
 		final Rectangle bounds = monitors[monitorId1].getBounds();
 		if (ViewsHelper.registerFullScreenView(monitorId1, view)) {
 			final Shell shell = new Shell(WorkbenchHelper.getDisplay(), SWT.NO_TRIM | SWT.ON_TOP);
@@ -400,6 +402,10 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 			return shell;
 		}
 		return null;
+	}
+
+	static int resolveFullScreenMonitor(final int requestedMonitor, final int currentMonitor, final int monitorCount) {
+		return Math.min(monitorCount - 1, Math.max(0, requestedMonitor < 0 ? currentMonitor : requestedMonitor));
 	}
 
 	/**
@@ -620,19 +626,25 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	 */
 	@Override
 	public void updateStateTo(final IExperimentSpecies experiment, final State state) {
-		if (!isFullScreen() || toolbar == null || !toolbar.isVisible()) return;
+		if (state != State.PAUSED && state != State.RUNNING) return;
+		WorkbenchHelper.asyncRun(() -> {
+			if (view.disposed) return;
+			final var output = view.getOutput();
+			if (output == null || output.getScope() == null) return;
+			final var agent = output.getScope().getExperiment();
+			if (agent == null || agent.getSpecies() != experiment) return;
 
-		if (IExperimentStateListener.State.PAUSED.name().equals(state.name())) {
-			WorkbenchHelper.asyncRun(() -> {
-				runExperimentItem.setImage(GamaIcon.named(IGamaIcons.EXPERIMENT_RUN).image());
-				toolbar.update();
-			});
-		} else if (IExperimentStateListener.State.RUNNING.name().equals(state.name())) {
-			WorkbenchHelper.asyncRun(() -> {
-				runExperimentItem.setImage(GamaIcon.named(IGamaIcons.MENU_PAUSE_ACTION).image());
-				toolbar.update();
-			});
-		}
+			// Pausing stops regular display updates, but aspects can depend on the paused state.
+			final var surface = view.getDisplaySurface();
+			if (state == State.PAUSED && !output.isPaused() && surface != null && !surface.isDisposed()) {
+				surface.updateDisplay(true);
+			}
+			if (!isFullScreen() || toolbar == null || toolbar.isDisposed() || !toolbar.isVisible()
+					|| runExperimentItem == null || runExperimentItem.isDisposed()) return;
+			runExperimentItem.setImage(GamaIcon.named(
+					state == State.PAUSED ? IGamaIcons.EXPERIMENT_RUN : IGamaIcons.MENU_PAUSE_ACTION).image());
+			toolbar.update();
+		});
 	}
 
 }

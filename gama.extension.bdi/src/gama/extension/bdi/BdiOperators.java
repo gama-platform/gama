@@ -31,9 +31,16 @@ import gama.api.types.map.IMap;
 
 /**
  * The Class Operators.
+ * Mental-state lookup operators require a non-nil agent. For agents without a BDI architecture,
+ * they return nil, false or an empty list, as appropriate.
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class BdiOperators {
+
+	private static boolean isBdiAgent(final IScope scope, final IAgent agent) {
+		if (agent == null) throw GamaRuntimeException.error("BDI mental-state operators require a non-nil agent", scope);
+		return agent.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture;
+	}
 
 	/**
 	 * New predicate.
@@ -355,8 +362,8 @@ public class BdiOperators {
 	public static Predicate and(final Predicate pred1, final Predicate pred2) {
 		final Predicate tempPred = new Predicate(pred1.getName() + "_and_" + pred2.getName());
 		final List<MentalState> tempList = new ArrayList<>();
-		final MentalState tempPred1 = new MentalState("Intention", pred1);
-		final MentalState tempPred2 = new MentalState("Intention", pred2);
+		final MentalState tempPred1 = MentalStateKind.INTENTION.create(pred1);
+		final MentalState tempPred2 = MentalStateKind.INTENTION.create(pred2);
 		tempList.add(tempPred1);
 		tempList.add(tempPred2);
 		tempPred.setSubintentions(tempList);
@@ -389,8 +396,8 @@ public class BdiOperators {
 	public static Predicate or(final Predicate pred1, final Predicate pred2) {
 		final Predicate tempPred = new Predicate(pred1.getName() + "_or_" + pred2.getName());
 		final List<MentalState> tempList = new ArrayList<>();
-		final MentalState tempPred1 = new MentalState("Intention", pred1);
-		final MentalState tempPred2 = new MentalState("Intention", pred2);
+		final MentalState tempPred1 = MentalStateKind.INTENTION.create(pred1);
+		final MentalState tempPred2 = MentalStateKind.INTENTION.create(pred2);
 		tempList.add(tempPred1);
 		tempList.add(tempPred2);
 		tempPred.setSubintentions(tempList);
@@ -441,7 +448,10 @@ public class BdiOperators {
 			category = { "BDI" },
 			concept = { IConcept.BDI })
 	@doc (
-			value = "a new emotion with the given properties (at least its name, and eventually intensity, parameters...)",
+			value = "a new emotion with the given properties (at least its name, and eventually intensity, parameters...). "
+					+ "Intensity is conventionally in [0, 1], but supplied values are retained without range validation. "
+					+ "Omitted intensity is -1 internally. Decay defaults to 0 and is an amount subtracted per emotion "
+					+ "update; negative decay increases intensity.",
 			masterDoc = true,
 			examples = @example (
 					value = "new_emotion(\"joy\")",
@@ -828,7 +838,9 @@ public class BdiOperators {
 			category = { "BDI" },
 			concept = { IConcept.BDI })
 	@doc (
-			value = "change the intensity value of the given emotion",
+			value = "change the intensity value of the given emotion without range validation. The conventional range "
+					+ "is [0, 1], but values such as 12 are retained. This operator preserves the existing internal "
+					+ "intensity-presence flag.",
 			examples = @example (
 					value = "emotion with_intensity 12",
 					isExecutable = false))
@@ -855,7 +867,8 @@ public class BdiOperators {
 			category = { "BDI" },
 			concept = { IConcept.BDI })
 	@doc (
-			value = "change the decay value of the given emotion",
+			value = "change the amount subtracted from intensity per emotion update, without range validation. "
+					+ "Zero leaves intensity unchanged; negative decay increases intensity.",
 			examples = @example (
 					value = "emotion with_decay 12",
 					isExecutable = false))
@@ -908,7 +921,9 @@ public class BdiOperators {
 			category = { "BDI" },
 			concept = { IConcept.BDI })
 	@doc (
-			value = "creates a new social link with another agent (eventually given additional parameters such as the appreciation, dominance, solidarity, and familiarity values).",
+			value = "creates a new social link with another agent (eventually given additional parameters such as the appreciation, dominance, solidarity, and familiarity values). "
+					+ "Liking, dominance and trust are conventionally in [-1, 1]; solidarity and familiarity in [0, 1]. "
+					+ "Unspecified components default to 0. Construction does not validate these ranges.",
 			masterDoc = true,
 			examples = @example (
 					value = "new_social_link(agentA)",
@@ -993,7 +1008,7 @@ public class BdiOperators {
 			category = { "BDI" },
 			concept = { IConcept.BDI })
 	@doc (
-			value = "change the liking value of the given social link",
+			value = "change the liking value of the given social link if it is in [-1, 1]; otherwise leave the link unchanged",
 			examples = @example (
 					value = "social_link with_liking 0.4",
 					isExecutable = false))
@@ -1020,7 +1035,8 @@ public class BdiOperators {
 			category = { "BDI" },
 			concept = { IConcept.BDI })
 	@doc (
-			value = "change the dominance value of the given social link",
+			value = "change the dominance value of the given social link if it is in [-1, 1); otherwise leave the link "
+					+ "unchanged. The upper endpoint 1 is currently excluded by this operator.",
 			examples = @example (
 					value = "social_link with_dominance 0.4",
 					isExecutable = false))
@@ -1047,7 +1063,7 @@ public class BdiOperators {
 			category = { "BDI" },
 			concept = { IConcept.BDI })
 	@doc (
-			value = "change the solidarity value of the given social link",
+			value = "change the solidarity value of the given social link if it is in [0, 1]; otherwise leave the link unchanged",
 			examples = @example (
 					value = "social_link with_solidarity 0.4",
 					isExecutable = false))
@@ -1075,7 +1091,7 @@ public class BdiOperators {
 			category = { "BDI" },
 			concept = { IConcept.BDI })
 	@doc (
-			value = "change the familiarity value of the given social link",
+			value = "change the familiarity value of the given social link if it is in [0, 1]; otherwise leave the link unchanged",
 			examples = @example (
 					value = "social_link with_familiarity 0.4",
 					isExecutable = false))
@@ -1103,7 +1119,7 @@ public class BdiOperators {
 			category = { "BDI" },
 			concept = { IConcept.BDI })
 	@doc (
-			value = "change the trust value of the given social link",
+			value = "change the trust value of the given social link if it is in [-1, 1]; otherwise leave the link unchanged",
 			examples = @example (
 					value = "social_link with_trust 0.4",
 					isExecutable = false))
@@ -2038,7 +2054,7 @@ public class BdiOperators {
 	public static IList<MentalState> getBeliefsName(final IScope scope, final IAgent ag, final String predicateName)
 			throws GamaRuntimeException {
 		final IList<MentalState> predicates = GamaListFactory.create();
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return predicates;
+		if (!isBdiAgent(scope, ag)) return predicates;
 		if (predicateName != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("belief_base");
 			for (final MentalState mental : beliefs) {
@@ -2078,7 +2094,7 @@ public class BdiOperators {
 	public static MentalState getBeliefName(final IScope scope, final IAgent ag, final String predicateName)
 			throws GamaRuntimeException {
 		// final MentalState predicate = new MentalState("Belief");
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return null;
+		if (!isBdiAgent(scope, ag)) return null;
 		if (predicateName != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("belief_base");
 			for (final MentalState mental : beliefs) {
@@ -2117,7 +2133,7 @@ public class BdiOperators {
 	public static MentalState getBelief(final IScope scope, final IAgent ag, final Predicate pred)
 			throws GamaRuntimeException {
 		// final MentalState predicate = new MentalState("Belief");
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return null;
+		if (!isBdiAgent(scope, ag)) return null;
 		if (pred != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("belief_base");
 			for (final MentalState mental : beliefs) {
@@ -2156,7 +2172,7 @@ public class BdiOperators {
 	public static IList<MentalState> getBeliefs(final IScope scope, final IAgent ag, final Predicate pred)
 			throws GamaRuntimeException {
 		final IList<MentalState> predicates = GamaListFactory.create();
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return predicates;
+		if (!isBdiAgent(scope, ag)) return predicates;
 		if (pred != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("belief_base");
 			for (final MentalState mental : beliefs) {
@@ -2195,7 +2211,7 @@ public class BdiOperators {
 	public static IList<MentalState> getDesiresName(final IScope scope, final IAgent ag, final String predicateName)
 			throws GamaRuntimeException {
 		final IList<MentalState> predicates = GamaListFactory.create();
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return predicates;
+		if (!isBdiAgent(scope, ag)) return predicates;
 		if (predicateName != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("desire_base");
 			for (final MentalState mental : beliefs) {
@@ -2235,7 +2251,7 @@ public class BdiOperators {
 	public static MentalState getDesireName(final IScope scope, final IAgent ag, final String predicateName)
 			throws GamaRuntimeException {
 		// final MentalState predicate = new MentalState("Belief");
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return null;
+		if (!isBdiAgent(scope, ag)) return null;
 		if (predicateName != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("desire_base");
 			for (final MentalState mental : beliefs) {
@@ -2274,7 +2290,7 @@ public class BdiOperators {
 	public static MentalState getDesire(final IScope scope, final IAgent ag, final Predicate pred)
 			throws GamaRuntimeException {
 		// final MentalState predicate = new MentalState("Belief");
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return null;
+		if (!isBdiAgent(scope, ag)) return null;
 		if (pred != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("desire_base");
 			for (final MentalState mental : beliefs) {
@@ -2313,7 +2329,7 @@ public class BdiOperators {
 	public static IList<MentalState> getDesires(final IScope scope, final IAgent ag, final Predicate pred)
 			throws GamaRuntimeException {
 		final IList<MentalState> predicates = GamaListFactory.create();
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return predicates;
+		if (!isBdiAgent(scope, ag)) return predicates;
 		if (pred != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("desire_base");
 			for (final MentalState mental : beliefs) {
@@ -2352,7 +2368,7 @@ public class BdiOperators {
 	public static IList<MentalState> getUncertaintiesName(final IScope scope, final IAgent ag,
 			final String predicateName) throws GamaRuntimeException {
 		final IList<MentalState> predicates = GamaListFactory.create();
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return predicates;
+		if (!isBdiAgent(scope, ag)) return predicates;
 		if (predicateName != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("uncertainty_base");
 			for (final MentalState mental : beliefs) {
@@ -2392,7 +2408,7 @@ public class BdiOperators {
 	public static MentalState getUncertaintyName(final IScope scope, final IAgent ag, final String predicateName)
 			throws GamaRuntimeException {
 		// final MentalState predicate = new MentalState("Belief");
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return null;
+		if (!isBdiAgent(scope, ag)) return null;
 		if (predicateName != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("uncertainty_base");
 			for (final MentalState mental : beliefs) {
@@ -2431,7 +2447,7 @@ public class BdiOperators {
 	public static MentalState getUncertainty(final IScope scope, final IAgent ag, final Predicate pred)
 			throws GamaRuntimeException {
 		// final MentalState predicate = new MentalState("Belief");
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return null;
+		if (!isBdiAgent(scope, ag)) return null;
 		if (pred != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("uncertainty_base");
 			for (final MentalState mental : beliefs) {
@@ -2470,7 +2486,7 @@ public class BdiOperators {
 	public static IList<MentalState> getUncertainties(final IScope scope, final IAgent ag, final Predicate pred)
 			throws GamaRuntimeException {
 		final IList<MentalState> predicates = GamaListFactory.create();
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return predicates;
+		if (!isBdiAgent(scope, ag)) return predicates;
 		if (pred != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("uncertainty_base");
 			for (final MentalState mental : beliefs) {
@@ -2509,7 +2525,7 @@ public class BdiOperators {
 	public static IList<MentalState> getIdealsName(final IScope scope, final IAgent ag, final String predicateName)
 			throws GamaRuntimeException {
 		final IList<MentalState> predicates = GamaListFactory.create();
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return predicates;
+		if (!isBdiAgent(scope, ag)) return predicates;
 		if (predicateName != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("ideal_base");
 			for (final MentalState mental : beliefs) {
@@ -2549,7 +2565,7 @@ public class BdiOperators {
 	public static MentalState getIdealName(final IScope scope, final IAgent ag, final String predicateName)
 			throws GamaRuntimeException {
 		// final MentalState predicate = new MentalState("Belief");
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return null;
+		if (!isBdiAgent(scope, ag)) return null;
 		if (predicateName != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("ideal_base");
 			for (final MentalState mental : beliefs) {
@@ -2588,7 +2604,7 @@ public class BdiOperators {
 	public static MentalState getIdeal(final IScope scope, final IAgent ag, final Predicate pred)
 			throws GamaRuntimeException {
 		// final MentalState predicate = new MentalState("Belief");
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return null;
+		if (!isBdiAgent(scope, ag)) return null;
 		if (pred != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("ideal_base");
 			for (final MentalState mental : beliefs) {
@@ -2627,7 +2643,7 @@ public class BdiOperators {
 	public static IList<MentalState> getIdeals(final IScope scope, final IAgent ag, final Predicate pred)
 			throws GamaRuntimeException {
 		final IList<MentalState> predicates = GamaListFactory.create();
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return predicates;
+		if (!isBdiAgent(scope, ag)) return predicates;
 		if (pred != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("ideal_base");
 			for (final MentalState mental : beliefs) {
@@ -2666,7 +2682,7 @@ public class BdiOperators {
 	public static IList<MentalState> getObligationsName(final IScope scope, final IAgent ag, final String predicateName)
 			throws GamaRuntimeException {
 		final IList<MentalState> predicates = GamaListFactory.create();
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return predicates;
+		if (!isBdiAgent(scope, ag)) return predicates;
 		if (predicateName != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("obligation_base");
 			for (final MentalState mental : beliefs) {
@@ -2706,7 +2722,7 @@ public class BdiOperators {
 	public static MentalState getObligationName(final IScope scope, final IAgent ag, final String predicateName)
 			throws GamaRuntimeException {
 		// final MentalState predicate = new MentalState("Belief");
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return null;
+		if (!isBdiAgent(scope, ag)) return null;
 		if (predicateName != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("obligation_base");
 			for (final MentalState mental : beliefs) {
@@ -2745,7 +2761,7 @@ public class BdiOperators {
 	public static MentalState getObligation(final IScope scope, final IAgent ag, final Predicate pred)
 			throws GamaRuntimeException {
 		// final MentalState predicate = new MentalState("Belief");
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return null;
+		if (!isBdiAgent(scope, ag)) return null;
 		if (pred != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("obligation_base");
 			for (final MentalState mental : beliefs) {
@@ -2784,7 +2800,7 @@ public class BdiOperators {
 	public static IList<MentalState> getObligations(final IScope scope, final IAgent ag, final Predicate pred)
 			throws GamaRuntimeException {
 		final IList<MentalState> predicates = GamaListFactory.create();
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return predicates;
+		if (!isBdiAgent(scope, ag)) return predicates;
 		if (pred != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("obligation_base");
 			for (final MentalState mental : beliefs) {
@@ -2823,7 +2839,7 @@ public class BdiOperators {
 	public static IList<MentalState> getIntentionsName(final IScope scope, final IAgent ag, final String predicateName)
 			throws GamaRuntimeException {
 		final IList<MentalState> predicates = GamaListFactory.create();
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return predicates;
+		if (!isBdiAgent(scope, ag)) return predicates;
 		if (predicateName != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("intention_base");
 			for (final MentalState mental : beliefs) {
@@ -2864,7 +2880,7 @@ public class BdiOperators {
 	public static MentalState getIntentionName(final IScope scope, final IAgent ag, final String predicateName)
 			throws GamaRuntimeException {
 		// final MentalState predicate = new MentalState("Belief");
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return null;
+		if (!isBdiAgent(scope, ag)) return null;
 		if (predicateName != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("intention_base");
 			for (final MentalState mental : beliefs) {
@@ -2904,7 +2920,7 @@ public class BdiOperators {
 	public static MentalState getIntention(final IScope scope, final IAgent ag, final Predicate pred)
 			throws GamaRuntimeException {
 		// final MentalState predicate = new MentalState("Belief");
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return null;
+		if (!isBdiAgent(scope, ag)) return null;
 		if (pred != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("intention_base");
 			for (final MentalState mental : beliefs) {
@@ -2943,7 +2959,7 @@ public class BdiOperators {
 	public static IList<MentalState> getIntentions(final IScope scope, final IAgent ag, final Predicate pred)
 			throws GamaRuntimeException {
 		final IList<MentalState> predicates = GamaListFactory.create();
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return predicates;
+		if (!isBdiAgent(scope, ag)) return predicates;
 		if (pred != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("intention_base");
 			for (final MentalState mental : beliefs) {
@@ -2978,7 +2994,7 @@ public class BdiOperators {
 					equals = "nil") })
 	public static MentalState getCurrentIntention(final IScope scope, final IAgent ag) throws GamaRuntimeException {
 		// final MentalState predicate = new MentalState("Belief");
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return null;
+		if (!isBdiAgent(scope, ag)) return null;
 		final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("intention_base");
 		// if (beliefs == null) { return null; }
 		if (!beliefs.isEmpty()) return beliefs.lastValue(scope);
@@ -3013,7 +3029,7 @@ public class BdiOperators {
 	public static Boolean hasBelief(final IScope scope, final IAgent ag, final Predicate pred)
 			throws GamaRuntimeException {
 		boolean result = false;
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return result;
+		if (!isBdiAgent(scope, ag)) return result;
 		if (pred != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("belief_base");
 			for (final MentalState mental : beliefs) {
@@ -3051,7 +3067,7 @@ public class BdiOperators {
 	public static Boolean hasBeliefName(final IScope scope, final IAgent ag, final String predName)
 			throws GamaRuntimeException {
 		boolean result = false;
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return result;
+		if (!isBdiAgent(scope, ag)) return result;
 		if (predName != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("belief_base");
 			for (final MentalState mental : beliefs) {
@@ -3091,7 +3107,7 @@ public class BdiOperators {
 	public static Boolean hasDesire(final IScope scope, final IAgent ag, final Predicate pred)
 			throws GamaRuntimeException {
 		boolean result = false;
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return result;
+		if (!isBdiAgent(scope, ag)) return result;
 		if (pred != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("desire_base");
 			for (final MentalState mental : beliefs) {
@@ -3129,7 +3145,7 @@ public class BdiOperators {
 	public static Boolean hasDesireName(final IScope scope, final IAgent ag, final String predName)
 			throws GamaRuntimeException {
 		boolean result = false;
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return result;
+		if (!isBdiAgent(scope, ag)) return result;
 		if (predName != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("desire_base");
 			for (final MentalState mental : beliefs) {
@@ -3169,7 +3185,7 @@ public class BdiOperators {
 	public static Boolean hasUncertainty(final IScope scope, final IAgent ag, final Predicate pred)
 			throws GamaRuntimeException {
 		boolean result = false;
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return result;
+		if (!isBdiAgent(scope, ag)) return result;
 		if (pred != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("uncertainty_base");
 			for (final MentalState mental : beliefs) {
@@ -3207,7 +3223,7 @@ public class BdiOperators {
 	public static Boolean hasUncertaintyName(final IScope scope, final IAgent ag, final String predName)
 			throws GamaRuntimeException {
 		boolean result = false;
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return result;
+		if (!isBdiAgent(scope, ag)) return result;
 		if (predName != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("uncertainty_base");
 			for (final MentalState mental : beliefs) {
@@ -3247,7 +3263,7 @@ public class BdiOperators {
 	public static Boolean hasIdeal(final IScope scope, final IAgent ag, final Predicate pred)
 			throws GamaRuntimeException {
 		boolean result = false;
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return result;
+		if (!isBdiAgent(scope, ag)) return result;
 		if (pred != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("ideal_base");
 			for (final MentalState mental : beliefs) {
@@ -3285,7 +3301,7 @@ public class BdiOperators {
 	public static Boolean hasIdealName(final IScope scope, final IAgent ag, final String predName)
 			throws GamaRuntimeException {
 		boolean result = false;
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return result;
+		if (!isBdiAgent(scope, ag)) return result;
 		if (predName != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("ideal_base");
 			for (final MentalState mental : beliefs) {
@@ -3325,7 +3341,7 @@ public class BdiOperators {
 	public static Boolean hasIntention(final IScope scope, final IAgent ag, final Predicate pred)
 			throws GamaRuntimeException {
 		boolean result = false;
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return result;
+		if (!isBdiAgent(scope, ag)) return result;
 		if (pred != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("intention_base");
 			for (final MentalState mental : beliefs) {
@@ -3363,7 +3379,7 @@ public class BdiOperators {
 	public static Boolean hasIntentionName(final IScope scope, final IAgent ag, final String predName)
 			throws GamaRuntimeException {
 		boolean result = false;
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return result;
+		if (!isBdiAgent(scope, ag)) return result;
 		if (predName != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("intention_base");
 			for (final MentalState mental : beliefs) {
@@ -3403,7 +3419,7 @@ public class BdiOperators {
 	public static Boolean hasObligation(final IScope scope, final IAgent ag, final Predicate pred)
 			throws GamaRuntimeException {
 		boolean result = false;
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return result;
+		if (!isBdiAgent(scope, ag)) return result;
 		if (pred != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("obligation_base");
 			for (final MentalState mental : beliefs) {
@@ -3441,7 +3457,7 @@ public class BdiOperators {
 	public static Boolean hasObligationName(final IScope scope, final IAgent ag, final String predName)
 			throws GamaRuntimeException {
 		boolean result = false;
-		if (!(ag.getSpecies().getArchitecture() instanceof SimpleBdiArchitecture)) return result;
+		if (!isBdiAgent(scope, ag)) return result;
 		if (predName != null) {
 			final IList<MentalState> beliefs = (IList<MentalState>) ag.getAttribute("obligation_base");
 			for (final MentalState mental : beliefs) {

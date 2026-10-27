@@ -91,7 +91,7 @@ public class CSVSaver extends AbstractSaver {
 		final IList values = itemType.isContainer() ? GamaListFactory.castToList(scope, value)
 				: GamaListFactory.create(scope, itemType, value);
 		if (values.isEmpty()) return;
-		char del = AbstractCSVManipulator.getDefaultDelimiter();
+		char del = resolveDelimiter(saveOptions);
 		if (sd != null) {
 			final Collection<String> attributeNames = sd.getAttributeNames();
 			attributeNames.removeAll(SaveStatement.NON_SAVEABLE_ATTRIBUTE_NAMES);
@@ -158,9 +158,28 @@ public class CSVSaver extends AbstractSaver {
 		return val;
 	}
 
+	/**
+	 * Resolves the column delimiter to use: the 'separator' save option if it was provided, otherwise the value of the
+	 * 'CSV separator' preference.
+	 *
+	 * @param options
+	 *            the save options
+	 * @return the delimiter character
+	 */
+	public static char resolveDelimiter(final SaveOptions options) {
+		final String s = options.separator();
+		if (s != null && !s.isEmpty()) return s.charAt(0);
+		return AbstractCSVManipulator.getDefaultDelimiter();
+	}
+
 	@Override
 	protected Set<String> computeFileTypes() {
 		return Set.of("csv");
+	}
+
+	@Override
+	public boolean handlesEncoding() {
+		return true;
 	}
 
 }

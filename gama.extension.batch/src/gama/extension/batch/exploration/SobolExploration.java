@@ -102,7 +102,7 @@ public class SobolExploration extends AExplorationAlgorithm {
 	/** The Constant SAMPLE_SIZE. */
 	protected static final String SAMPLE_SIZE = "sample";
 
-	/** map containing the output of sobol methode */
+	/** map containing the output of sobol method */
 	private Sobol sobol_analysis;
 
 	/** The parameters. */
@@ -112,7 +112,7 @@ public class SobolExploration extends AExplorationAlgorithm {
 	private IList<String> outputs;
 
 	/** The current parameters space. */
-	/* The parameter space defined by the Sobol sequence (Satteli SAMPLING method) */
+	/* The parameter space defined by the Sobol sequence (Saltelli SAMPLING method) */
 	private List<ParametersSet> solutions;
 
 	/** The res outputs. */
@@ -144,7 +144,7 @@ public class SobolExploration extends AExplorationAlgorithm {
 
 		/* Disable repetitions / repeat argument */
 		currentExperiment.setSeeds(new Double[1]);
-		// TODO : why doesnt it take into account the value of 'keep_simulations:' ?
+		// TODO : why doesn't it take into account the value of 'keep_simulations:' ?
 		currentExperiment.setKeepSimulations(false);
 		res_outputs = currentExperiment.runSimulationsAndReturnResults(solutions);
 		Map<String, List<Object>> rebuilt_output = rebuildOutput(res_outputs);
@@ -238,7 +238,7 @@ public class SobolExploration extends AExplorationAlgorithm {
 		}
 
 		// Add the points to explore to the solutions set
-		Map<String, List<Object>> sample2 = sobol_analysis.getParametersValues();
+		Map<String, List> sample2 = sobol_analysis.getParametersValues();
 
 		for (int i = 0; i < _sample; i++) {
 			ParametersSet origi = new ParametersSet();
@@ -276,7 +276,8 @@ public class SobolExploration extends AExplorationAlgorithm {
 				try {
 					rebuilt_output.get(output).add(res_outputs.get(sol).get(output).get(0));
 				} catch (NullPointerException e) {
-					return rebuilt_output;
+					throw GamaRuntimeException.error("Missing output '" + output + "' for parameter set: " + sol
+							+ ". A simulation might have failed or the output is undefined.", null);
 				}
 			}
 		}

@@ -25,6 +25,11 @@
 
 	<repositories>
 		<repository>
+			<id>github-copilot</id>
+			<url>https://azuredownloads-g3ahgwb5b8bkbxhd.b01.azurefd.net/github-copilot/</url>
+			<layout>p2</layout>
+		</repository>
+		<repository>
 			<id>eclipse-swt</id>
 			<url>https://download.eclipse.org/releases/2026-03/</url>
 			<layout>p2</layout>
@@ -34,14 +39,6 @@
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
-		</repository>
-		<repository>
-			<id>github-copilot</id>
-			<url>https://azuredownloads-g3ahgwb5b8bkbxhd.b01.azurefd.net/github-copilot</url>
-			<layout>p2</layout>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
 		</repository>
 	</repositories>
 
@@ -143,6 +140,12 @@
 		<module>../gama.extension.bdi</module>
 		<module>../gama.extension.batch</module>
 		<module>../gama.extension.fipa</module>
+		<module>../gama.extension.osm</module>
+		<module>../gama.extension.dxf</module>
+		<module>../gama.extension.kml</module>		
+		<module>../gama.extension.gml</module>
+		<module>../gama.extension.dataframe</module>
+		<module>../gama.extension.rds</module>
 		<module>../gama.extension.sound</module>
 		<module>../gama.extension.stats</module>
 		<module>../gama.extension.maths</module>
@@ -151,6 +154,7 @@
 		<module>../gama.extension.network</module>
 		<module>../gama.extension.physics</module>
 		<module>../gama.extension.database</module>
+		<module>../gama.extension.geopackage</module>
 		<module>../gama.extension.serialize</module>
 		<module>../gama.extension.pedestrian</module>
 
@@ -166,6 +170,7 @@
 		<module>../gama.ui.display.opengl</module>
 		<module>../gama.ui.display.opengl4</module>
 		<module>../gama.ui.display.java2d</module>
+		<module>../gama.ui.devtools</module>
 
 		<!--
 			Runtimes modules
@@ -194,10 +199,12 @@
 		<module>../gama.feature.extension.stats</module>
 		<module>../gama.feature.extension.image</module>
 		<module>../gama.feature.copilot</module>
+		<module>../gama.feature.devtools</module>
 		
 		<module>../gama.export</module>
 
 		<module>../gama.p2site</module>
+		<module>../gama.p2site.devtools</module>
 
 		<module>../gama.product</module>
 		
@@ -269,10 +276,10 @@
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${project.build.outputDirectory}/tests</outputDirectory>
+							<outputDirectory>${project.build.outputDirectory}/models</outputDirectory>
 							<resources>
 								<resource>
-									<directory>target/tests</directory>
+									<directory>target/models</directory>
 								</resource>
 							</resources>
 						</configuration>
@@ -486,7 +493,7 @@
 			<plugin>
 				<groupId>com.github.spotbugs</groupId>
 				<artifactId>spotbugs-maven-plugin</artifactId>
-				<version>4.9.8.3</version>
+				<version>4.10.2.0</version>
 				<configuration>
 					<xmlOutput>true</xmlOutput>
 					<failOnError>false</failOnError>

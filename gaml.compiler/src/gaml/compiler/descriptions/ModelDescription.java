@@ -26,6 +26,7 @@ import com.google.common.collect.Iterables;
 import gama.annotations.constants.IKeyword;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IClassDescription;
+import gama.api.kernel.GamaMetaModel;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.compilation.descriptions.IModelDescription;
@@ -856,7 +857,8 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 
 	@Override
 	public IClassDescription getClassDescription(final String p) {
-		return getClassesMap().get(p);
+		final IClassDescription local = getClassesMap().get(p);
+		return local == null ? GamaMetaModel.getClassDescription(p) : local;
 	}
 
 	/**

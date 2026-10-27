@@ -21,9 +21,9 @@ import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IPopulation;
+import gama.api.kernel.serialization.BinarySerialisation;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.IList;
-import gama.extension.serialize.binary.BinarySerialisation;
 
 /**
  * Class CreateFromSavecSimulationDelegate.

@@ -13,8 +13,8 @@
 model json_loading   
 
 global {
-	file JsonFile <- json_file("../includes/cityIO.json");
-    map<string, unknown> c <- JsonFile.contents;
+	json_file JsonFile <- json_file("../includes/cityIO.json");
+    map<string, list<map<string, int>>> c <- JsonFile.contents;
 
 	init { 
 		list<map<string, int>> cells <- c["grid"];

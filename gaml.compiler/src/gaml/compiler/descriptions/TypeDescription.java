@@ -34,6 +34,7 @@ import com.google.common.collect.Iterables;
 import gama.annotations.constants.IKeyword;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.descriptions.IVarDescriptionProvider;
 import gama.api.compilation.descriptions.IVariableDescription;
@@ -266,8 +267,8 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 
 	/**
 	 * Returns the alternate {@link IVarDescriptionProvider} attached to this type description, or {@code null} if none
-	 * has been set. This allows the expression compilation context to automatically discover the REPL alternate provider
-	 * by walking the description hierarchy, making REPL variables visible during statement validation.
+	 * has been set. This allows the expression compilation context to automatically discover the REPL alternate
+	 * provider by walking the description hierarchy, making REPL variables visible during statement validation.
 	 *
 	 * @return the attached alternate provider, or {@code null}
 	 */
@@ -448,6 +449,26 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 	 * @param vd
 	 *            the vd
 	 */
+	/**
+	 * Verifies whether the attribute name collides with an aspect defined in the species.
+	 *
+	 * @param vd
+	 *            the variable description
+	 */
+	private void verifyAspectCollision(final IVariableDescription vd) {
+		if (vd.isSynthetic() || !(this instanceof ISpeciesDescription species)) return;
+		if (species.hasAspect(vd.getName())) {
+			vd.error("Attribute " + vd.getName() + " has the same name as an existing aspect in " + getName(),
+					IGamlIssue.DUPLICATE_NAME, IKeyword.NAME);
+		}
+	}
+
+	/**
+	 * Adds the own attribute.
+	 *
+	 * @param vd
+	 *            the vd
+	 */
 	public void addOwnAttribute(final IVariableDescription vd) {
 		final String newVarName = vd.getName();
 		final IVariableDescription existing = getAttribute(newVarName);
@@ -459,6 +480,7 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 			markAttributeRedefinition(existing, vd);
 			vd.copyFrom(existing);
 		}
+		verifyAspectCollision(vd);
 
 		getAttributesMap().put(vd.getName(), vd);
 	}

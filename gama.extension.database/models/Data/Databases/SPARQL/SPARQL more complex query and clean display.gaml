@@ -1,0 +1,93 @@
+/**
+* Name: SPARQL More Complex Query and Clean Display
+* Author: Baptiste Lesquoy
+* Description: Queries DBpedia for a list of French philosophers using SPARQL and presents the results
+*   in a formatted tabular display within a GAMA experiment window. Demonstrates how to process multi-column
+*   SPARQL result sets, iterate over rows and columns, and render the data as a styled table. A practical
+*   reference for integrating semantic web data into user-facing GAMA experiment outputs.
+* Tags: database, SPARQL, linked_data, DBpedia, display, visualization, semantic_web, table
+*/
+
+
+model SimpleSPARQLquery
+
+global {
+	
+	string centeredString(string base, int aimedSize){
+		int lBase <- length(base);
+		if lBase >= aimedSize {
+			return base;
+		}
+		int left <- floor((aimedSize-lBase)/2);
+		int right <- int(ceil((aimedSize-lBase)/2));
+		return concatenate(list_with(left, " ")) + base + concatenate(list_with(right, " "));
+	}
+	
+	init {
+		
+		write "Asking dbpedia for a list of all French philosophers since the 15th century:";
+		
+		// Those variables will be used as variable names in the query and will be the keys of the returned map
+		// do not insert illegal characters into them, else the query will fail
+		string headerNameCol <- "name";
+		string headerBirthdateCol <- "birthDate";
+		
+		// Do not insert useless (double) spaces or new lines as it may result in invalid requests
+		string query <- 'PREFIX dct: <http://purl.org/dc/terms/>
+PREFIX dbo: <http://dbpedia.org/ontology/>
+PREFIX dbc: <http://dbpedia.org/resource/Category:>
+
+SELECT 
+  (replace(replace(STRAFTER(STR(?X), "http://dbpedia.org/resource/"), "_", " "), ",.*", "") AS ?'+ headerNameCol+')
+  (STR(MIN(?birthdate)) AS ?'+headerBirthdateCol+')
+WHERE {
+  GRAPH <urn:dbpedia:live> {
+    ?X dbo:birthDate ?birthdate .
+    { ?X dct:subject dbc:15th-century_French_philosophers }
+    UNION { ?X dct:subject dbc:16th-century_French_philosophers }
+    UNION { ?X dct:subject dbc:17th-century_French_philosophers }
+    UNION { ?X dct:subject dbc:18th-century_French_philosophers }
+    UNION { ?X dct:subject dbc:19th-century_French_philosophers }
+    UNION { ?X dct:subject dbc:20th-century_French_philosophers }
+    UNION { ?X dct:subject dbc:21st-century_French_philosophers }
+  }
+}
+GROUP BY ?X
+ORDER BY ASC(MIN(?birthdate))';
+		write "Running query:\n" + query +"\n";
+		dataframe result <- sparql_query(query, "https://dbpedia.org/sparql");
+
+		if empty(result) and !empty(#current_error){
+			write "An error occured: " + #current_error color:#red;
+			return;
+		}
+		if empty(first(result)) {
+			write "No result found" color:#red;
+			return;
+		}
+
+		int colNameWidth <- result[headerNameCol] max_of length(each) + 2; // +2 to add a space on each side
+		int colBirthdateWidth <- result[headerBirthdateCol] max_of length(each) + 2;
+		int totalWidth <- colNameWidth + colBirthdateWidth + 3; // 3 more characters for borders
+		
+		// print the header
+		write concatenate(list_with(totalWidth, "-"));
+		write "|" + centeredString(headerNameCol, colNameWidth) +"|" + centeredString(headerBirthdateCol, colBirthdateWidth) +"|";
+		write "|" + concatenate(list_with(totalWidth-2, "-")) + "|";		
+		
+		// print the content
+		loop i from:0 to:length(result[headerNameCol])-1{
+			
+			string fullName <- result[headerNameCol][i];
+			string birthdate <- result[headerBirthdateCol][i];
+			
+			write "|" + centeredString(fullName, colNameWidth) +"|" + centeredString(birthdate, colBirthdateWidth) +"|";
+		}		
+		write concatenate(list_with(totalWidth, "-"));
+		
+		
+	}
+	
+}
+
+experiment test;

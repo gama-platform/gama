@@ -87,7 +87,9 @@ public abstract class DescriptionStateManager extends DescriptionErrorManager {
 		 */
 		NoTypeInference,
 		/** The is void. */
-		isVoid
+		isVoid,
+		/** The is test. */
+		isTest
 	}
 
 	/**
@@ -355,6 +357,13 @@ public abstract class DescriptionStateManager extends DescriptionErrorManager {
 	 * @return true if this description is a batch, false otherwise
 	 */
 	public boolean isBatch() { return state.contains(Flag.isBatch); }
+
+	/**
+	 * Checks if this description belongs to or represents a test experiment.
+	 *
+	 * @return true if this description is a test, false otherwise
+	 */
+	public boolean isTest() { return state.contains(Flag.isTest); }
 
 	/**
 	 * Checks if this description represents a {@code create} statement.

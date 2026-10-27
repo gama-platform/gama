@@ -3,9 +3,9 @@ name: "[./.github/workflows/travis-packaging-linux.yaml]"
 on:
   workflow_call:
     inputs:
-      RELEASE_VERSION: 
+      RELEASE_VERSION:
         required: true
-        default: 2025.03.0 
+        default: 2025.03.0
         type: string
 
 jobs:
@@ -35,7 +35,7 @@ jobs:
           cd ${{ github.workspace }}/${ZIPNAME}/opt/gama-platform && unzip ${ZIPNAME}.zip && cd -
           rm ${{ github.workspace }}/${ZIPNAME}/opt/gama-platform/*.zip
         env:
-          ZIPNAME: ${{ matrix.zipName }}   
+          ZIPNAME: ${{ matrix.zipName }}
 
       - name: Tweaks for package w/ JDK
         if: contains(matrix.zipName, 'jdk')

@@ -55,7 +55,7 @@ import gama.core.util.file.GamaObjFile;
 import gama.dev.DEBUG;
 import gama.ui.display.opengl4.OpenGL;
 import gama.ui.display.opengl4.files.ObjFileDrawer;
-import gama.ui.display.opengl4.renderer.IOpenGLRenderer;
+import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 
 /**
  * The Class GeometryCache. Manages two kinds of geometry caches for the OpenGL 4 renderer:
@@ -63,7 +63,7 @@ import gama.ui.display.opengl4.renderer.IOpenGLRenderer;
  * <li><b>Built-in geometry cache</b> ({@link #builtInCache}): stores pre-tessellated primitive shapes (sphere, cube,
  * cylinder, etc.) as {@link BuiltInGeometry} instances, each of which holds Runnable "list" IDs registered with
  * {@link OpenGL#compileAsList(Runnable)}.</li>
- * <li><b>File geometry cache</b> ({@link #fileCache}): caches 3-D geometry files (OBJ, etc.) by their path, also as
+ * <li><b>File geometry cache</b> ({@link #fileCache}): caches 3-D geometry files (OBJ, etc.) by their rendering key, also as
  * Runnable list IDs.</li>
  * </ul>
  *
@@ -207,13 +207,14 @@ public class GeometryCache {
 	private final Cache<IShape.Type, BuiltInGeometry> builtInCache;
 
 	/**
-	 * The file geometry cache, keyed by the absolute file path. Values are Runnable-cache list IDs registered
+	 * The file geometry cache, keyed by file path and any external rendering resources (e.g. OBJ materials).
+	 * Values are Runnable-cache list IDs registered
 	 * with {@link OpenGL#compileAsList(Runnable)}.
 	 */
 	private final LoadingCache<String, Integer> fileCache;
 
 	/**
-	 * Maps file paths to the corresponding {@link GamaGeometryFile}, used when building a file list entry
+	 * Maps rendering keys to the corresponding {@link GamaGeometryFile}, used when building a file list entry
 	 * lazily.
 	 */
 	private final Map<String, GamaGeometryFile> fileMap = new ConcurrentHashMap<>();
@@ -239,15 +240,18 @@ public class GeometryCache {
 	/** Back-reference to the renderer, kept for list-ID cleanup on disposal. */
 	private final IOpenGLRenderer renderer;
 
+	private final OpenGL openGL;
+
 	/**
 	 * Instantiates a new geometry cache.
 	 *
 	 * @param renderer the {@link IOpenGLRenderer} that owns this cache
 	 */
-	public GeometryCache(final IOpenGLRenderer renderer) {
+	public GeometryCache(final IOpenGLRenderer renderer, final OpenGL openGL) {
 		this.renderer = renderer;
+		this.openGL = openGL;
 		this.scope = renderer.getSurface().getScope().copy("in opengl geometry cache");
-		this.drawer = g -> renderer.getOpenGLHelper().getGeometryDrawer().drawGeometry(g, null, 0, getTypeOf(g));
+		this.drawer = g -> openGL.getGeometryDrawer().drawGeometry(g, null, 0, getTypeOf(g));
 		envelopes = newBuilder().expireAfterAccess(2, MINUTES).build();
 		builtInCache = newBuilder().concurrencyLevel(2).initialCapacity(10).build();
 		fileCache = newBuilder().expireAfterAccess(2, MINUTES).initialCapacity(10).removalListener(notif -> {
@@ -257,7 +261,7 @@ public class GeometryCache {
 		}).build(new CacheLoader<String, Integer>() {
 			@Override
 			public Integer load(final String file) {
-				return buildList(renderer.getOpenGLHelper(), file);
+				return buildList(openGL, file);
 			}
 		});
 	}
@@ -269,7 +273,7 @@ public class GeometryCache {
 	 * @return the list ID
 	 */
 	public Integer get(final GamaGeometryFile file) {
-		return fileCache.getUnchecked(file.getPath(scope));
+		return fileCache.getUnchecked(file.getDrawingCacheKey(scope));
 	}
 
 	/**
@@ -286,7 +290,7 @@ public class GeometryCache {
 	 * Builds the Runnable-cache list entry for the given geometry file.
 	 *
 	 * @param gl   the {@link OpenGL} helper
-	 * @param name the absolute path of the file
+	 * @param name the rendering cache key of the file
 	 * @return the list ID
 	 */
 	Integer buildList(final OpenGL gl, final String name) {
@@ -326,7 +330,6 @@ public class GeometryCache {
 	public void dispose() {
 		// Release all built-in geometry Runnables from the OpenGL list cache.
 		if (!renderer.isDisposed()) {
-			final OpenGL openGL = renderer.getOpenGLHelper();
 			builtInCache.asMap().values().forEach(bg -> {
 				for (final Integer id : bg.listIds()) { openGL.deleteList(id); }
 			});
@@ -352,10 +355,10 @@ public class GeometryCache {
 	 */
 	public void process(final GamaGeometryFile file) {
 		if (file == null) return;
-		final String path = file.getPath(scope);
-		if (fileCache.getIfPresent(path) != null) return;
-		fileMap.putIfAbsent(path, file);
-		if (!geometriesToProcess.containsKey(path)) { geometriesToProcess.put(path, file); }
+		final String key = file.getDrawingCacheKey(scope);
+		if (fileCache.getIfPresent(key) != null) return;
+		fileMap.putIfAbsent(key, file);
+		geometriesToProcess.putIfAbsent(key, file);
 	}
 
 	/**

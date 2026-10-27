@@ -32,6 +32,7 @@ import gama.api.GAMA;
 import gama.api.additions.IGamaHelper;
 import gama.api.annotations.validator;
 import gama.api.compilation.IVarAndActionSupport;
+import gama.api.kernel.object.IClass;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IDescriptionValidator;
 import gama.api.compilation.descriptions.IExperimentDescription;
@@ -421,9 +422,10 @@ public class AttributeDeclaration extends Symbol implements IVariable {
 		 *            the cd
 		 */
 		public void assertCanBeParameter(final IVariableDescription cd) {
+			IVariableDescription targetedVar = null;
 			if (PARAMETER.equals(cd.getKeyword()) /* facets.equals(KEYWORD, PARAMETER) */) {
 				final String varName = cd.getLitteral(VAR);
-				IVariableDescription targetedVar = cd.getModelDescription().getAttribute(varName);
+				targetedVar = cd.getModelDescription().getAttribute(varName);
 
 				if (targetedVar == null) {
 					// AD 07/21 : Adds the possibility for experiment variables to become parameters
@@ -504,6 +506,7 @@ public class AttributeDeclaration extends Symbol implements IVariable {
 				}
 
 			}
+			if (foundInit == null && targetedVar != null) { foundInit = targetedVar.getFacetExpr(INIT); }
 
 			final IExpression init = foundInit;
 
@@ -515,11 +518,13 @@ public class AttributeDeclaration extends Symbol implements IVariable {
 			}
 			// Cf. #3493 && #3622
 			for (String f : IVariableDescription.INIT_DEPENDENCIES_FACETS) {
-				IExpression initExpr = cd.getFacetExpr(f);
+				IExpression initExpr = INIT.equals(f) ? init : cd.getFacetExpr(f);
 				if (initExpr != null && !initExpr.isAllowedInParameters()) {
-					cd.error(initExpr.serializeToGaml(true)
-							+ " cannot be used in the context of experiments. Please use a constant expression or redeclare this parameter in the experiments",
-							IGamlIssue.WRONG_CONTEXT, f);
+					final String restrictionReason = getParameterRestrictionReason(initExpr);
+					final String message = restrictionReason == null ? initExpr.serializeToGaml(true)
+							+ " cannot be used in the context of experiments. Please use a constant expression or redeclare this parameter in the experiments"
+							: initExpr.serializeToGaml(true) + ": " + restrictionReason;
+					cd.error(message, IGamlIssue.WRONG_CONTEXT, f);
 				}
 			}
 
@@ -528,6 +533,22 @@ public class AttributeDeclaration extends Symbol implements IVariable {
 				cd.error(p + "cannot have an 'update' or 'function' facet", IGamlIssue.REMOVE_VALUE);
 			}
 
+		}
+
+		/**
+		 * Gets the parameter restriction reason.
+		 *
+		 * @param expression
+		 *            the expression
+		 * @return the parameter restriction reason
+		 */
+		private String getParameterRestrictionReason(final IExpression expression) {
+			final String[] reason = new String[1];
+			expression.findAny(e -> {
+				reason[0] = e.getParameterRestrictionReason();
+				return reason[0] != null;
+			});
+			return reason[0];
 		}
 
 	}
@@ -745,17 +766,24 @@ public class AttributeDeclaration extends Symbol implements IVariable {
 	@Override
 	public void initializeWith(final IScope scope, final IObject gamaObject, final Object v)
 			throws GamaRuntimeException {
+		initializeWith(scope, gamaObject, v, v != null);
+	}
+
+	@Override
+	public void initializeWith(final IScope scope, final IObject gamaObject, final Object v, final boolean provided)
+			throws GamaRuntimeException {
 		try (StopWatch w = GAMA.benchmark(scope, this)) {
 			scope.setCurrentSymbol(this);
-			if (v != null) {
+			if (v != null || provided && (type.id() == IType.LIST || type.id() == IType.MAP)) {
 				_setVal(gamaObject, scope, v);
 			} else if (initExpression != null) {
 				_setVal(gamaObject, scope, scope.evaluate(initExpression, gamaObject).getValue());
-			} else if (initer != null && gamaObject instanceof IAgent agent) {
-				final Object val = initer.run(scope, agent, gSkill == null ? agent : gSkill);
+			} else if (initer != null) {
+				final Object val = initer.run(scope, gamaObject instanceof IAgent agent ? agent : scope.getAgent(),
+						gSkill == null ? gamaObject : gSkill);
 				_setVal(gamaObject, scope, val);
 			} else {
-				_setVal(gamaObject, scope, getType().getDefault());
+				_setVal(gamaObject, scope, getType().createDefaultValue(scope));
 			}
 		} catch (final GamaRuntimeException e) {
 			e.addContext("in initializing attribute " + getName());
@@ -858,9 +886,10 @@ public class AttributeDeclaration extends Symbol implements IVariable {
 			scope.execute(on_changer, object, null);
 		}
 
-		if (listeners != null && object instanceof IAgent agent) {
+		if (listeners != null) {
 			listeners.forEach(
-					(listener, skill) -> { listener.run(scope, agent, skill == null ? agent : skill, newValue); });
+					(listener, skill) -> { listener.run(scope, object instanceof IAgent agent ? agent : scope.getAgent(),
+							skill == null ? object : skill, newValue); });
 		}
 	}
 
@@ -897,8 +926,9 @@ public class AttributeDeclaration extends Symbol implements IVariable {
 	protected void _setVal(final IObject object, final IScope scope, final Object v) throws GamaRuntimeException {
 		Object val = coerce(object, scope, v);
 		val = checkAmong(object, scope, val);
-		if (setter != null && object instanceof IAgent agent) {
-			setter.run(scope, agent, sSkill == null ? agent : sSkill, val);
+		if (setter != null) {
+			setter.run(scope, object instanceof IAgent agent ? agent : scope.getAgent(),
+					sSkill == null ? object : sSkill, val);
 		} else {
 			object.setAttribute(name, val);
 		}
@@ -931,7 +961,7 @@ public class AttributeDeclaration extends Symbol implements IVariable {
 
 	@Override
 	public Object value(final IScope scope) throws GamaRuntimeException {
-		return value(scope, scope.getAgent());
+		return value(scope, scope.getCurrentObjectOrAgent());
 	}
 
 	/**
@@ -959,8 +989,9 @@ public class AttributeDeclaration extends Symbol implements IVariable {
 	@Override
 	public Object value(final IScope scope, final IObject object) throws GamaRuntimeException {
 		// if (isSpeciesConst) { return speciesWideValue; }
-		if (getter != null && object instanceof IAgent agent)
-			return getter.run(scope, agent, gSkill == null ? agent : gSkill);
+		if (getter != null)
+			return getter.run(scope, object instanceof IAgent agent ? agent : scope.getAgent(),
+					gSkill == null ? object : gSkill);
 		if (functionExpression != null) return scope.evaluate(functionExpression, object).getValue();
 		// Var not yet initialized. May happen when asking for its value while initializing an editor
 		// See Issue #2781 + Issue #3920
@@ -1049,7 +1080,24 @@ public class AttributeDeclaration extends Symbol implements IVariable {
 
 	@Override
 	public void setEnclosing(final ISymbol enclosing) {
-		if (enclosing instanceof ISpecies spec) { buildHelpers(spec); }
+		if (enclosing instanceof ISpecies spec) {
+			buildHelpers(spec);
+		} else if (enclosing instanceof IClass clazz) {
+			getter = getDescription().getGetter();
+			initer = getDescription().getIniter();
+			setter = getDescription().getSetter();
+			final Class<?> base = clazz.getDescription().getJavaBase();
+			for (final Class<?> implementation : JavaUtils.collectImplementationClasses(base, List.of(),
+					IVariable.getListenersByName(getName()))) {
+				for (final IGamaHelper helper : IVariable.getListenersByClass(implementation)) {
+					if (getName().equals(helper.getName())) {
+						if (listeners == null) { listeners = new HashMap<>(); }
+						listeners.put(helper, null);
+					}
+				}
+			}
+			mustNotifyOfChanges = listeners != null || onChangeExpression != null || on_changer != null;
+		}
 	}
 
 	@Override

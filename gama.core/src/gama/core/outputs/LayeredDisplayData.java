@@ -35,6 +35,9 @@ import gama.api.types.color.IColor;
 import gama.api.types.geometry.GamaPointFactory;
 import gama.api.types.geometry.IPoint;
 import gama.api.types.list.GamaListFactory;
+import gama.api.additions.registries.GamaAdditionRegistry;
+import gama.api.ui.displays.DisplayDescription;
+import gama.api.ui.displays.IDisplayCreator;
 import gama.api.ui.displays.IDisplayData;
 import gama.api.ui.layers.ICameraDefinition;
 import gama.api.ui.layers.ILightDefinition;
@@ -329,8 +332,14 @@ public class LayeredDisplayData implements IDisplayData {
 	@Override
 	public void setDisplayType(final String displayType) {
 		this.displayType = displayType;
-		is3D = IKeyword.OPENGL.equals(displayType) || IKeyword._3D.equals(displayType) || OPENGL2.equals(displayType);
+		is3D = is3DDisplayType(displayType);
 
+	}
+
+	static boolean is3DDisplayType(final String type) {
+		if (type == null) return false;
+		IDisplayCreator creator = GamaAdditionRegistry.getDisplay(type);
+		return creator instanceof DisplayDescription dd && dd.is3D();
 	}
 
 	/**
@@ -594,7 +603,7 @@ public class LayeredDisplayData implements IDisplayData {
 		if (fs != null) {
 			int monitor;
 			if (fs.getGamlType() == Types.BOOL) {
-				monitor = Cast.asBool(scope, fs.value(scope)) ? 0 : -1;
+				monitor = Cast.asBool(scope, fs.value(scope)) ? FULLSCREEN_CURRENT_MONITOR : -1;
 			} else {
 				monitor = Cast.asInt(scope, fs.value(scope));
 			}

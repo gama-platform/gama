@@ -22,32 +22,39 @@ import gama.api.runtime.scope.IScope;
 public interface IChart {
 
 	/**
-	 * @param x
-	 * @param y
-	 * @param antialias
-	 * @return
+	 * Renders and returns the chart as a BufferedImage.
+	 *
+	 * @param x width in pixels
+	 * @param y height in pixels
+	 * @param antialias whether anti-aliasing should be enabled
+	 * @return rendered BufferedImage
 	 */
 	BufferedImage getImage(int x, int y, boolean antialias);
 
 	/**
-	 * @return
+	 * Returns the underlying native chart object (e.g. JFreeChart instance or other chart engine object).
+	 *
+	 * @return native chart object or null
 	 */
-	JFreeChart getJFChart();
+	default Object getNativeChart() { return null; }
 
 	/**
-	 * @param xOnScreen
-	 * @param yOnScreen
-	 * @param g
-	 * @param positionInPixels
-	 * @param sb
+	 * Returns the JFreeChart instance if the chart engine is JFreeChart.
+	 *
+	 * @return JFreeChart instance or null
+	 */
+	default JFreeChart getJFChart() {
+		return getNativeChart() instanceof JFreeChart jfc ? jfc : null;
+	}
+
+	/**
+	 * Obtains model coordinates info for screen coordinates and user interaction.
 	 */
 	void getModelCoordinatesInfo(int xOnScreen, int yOnScreen, IDisplaySurface g, Point positionInPixels,
 			StringBuilder sb);
 
 	/**
-	 * @param scope
-	 * @param chartDataSourceUnique
-	 * @param type_val
+	 * Sets default chart properties based on the data source type.
 	 */
 	void setDefaultPropertiesFromType(IScope scope, IChartDataSource chartDataSourceUnique, int type_val);
 

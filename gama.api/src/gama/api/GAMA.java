@@ -17,31 +17,30 @@ import java.util.prefs.Preferences;
 
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
 
-import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.exceptions.GamaRuntimeFileException;
-import gama.api.gaml.GAML;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.gaml.symbols.ISymbol;
 import gama.api.kernel.PlatformAgent;
+import gama.api.kernel.serialization.SimulationRecorder;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.IExperimentAgent.Test;
 import gama.api.kernel.simulation.IExperimentController;
-import gama.api.kernel.simulation.IExperimentRecorder;
 import gama.api.kernel.simulation.IExperimentStateListener;
 import gama.api.kernel.simulation.IExperimentStateListener.State;
 import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.kernel.simulation.ISimulationRecorder;
 import gama.api.kernel.simulation.ITopLevelAgent;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.kernel.species.IModelSpecies;
 import gama.api.runtime.IWorkspaceManager;
+import gama.api.runtime.SimulationContext;
 import gama.api.runtime.scope.IScope;
 import gama.api.runtime.scope.InScope;
 import gama.api.types.map.IMap;
 import gama.api.ui.IGui;
 import gama.api.ui.NullGuiHandler;
 import gama.api.ui.layers.ISnapshotMaker;
-import gama.api.utils.PoolUtils;
 import gama.api.utils.benchmark.Benchmark;
 import gama.api.utils.benchmark.IBenchmarkable;
 import gama.api.utils.benchmark.StopWatch;
@@ -56,6 +55,7 @@ import gama.api.utils.prefs.IGamaPreferenceStore;
 import gama.api.utils.prefs.JREPreferenceStore;
 import gama.api.utils.random.IRandom;
 import gama.api.utils.server.IGamaServer;
+import gama.api.utils.server.IServerConfiguration;
 import gama.dev.DEBUG;
 import gama.dev.FLAGS;
 
@@ -112,9 +112,6 @@ public class GAMA {
 	// available during runtime
 	// ==================================================================================
 
-	/** The recorder. */
-	private volatile static Class<? extends IExperimentRecorder> __RECORDER__;
-
 	/** Platform-wide random number generator */
 	private volatile static IRandom __RANDOM__;
 
@@ -159,16 +156,6 @@ public class GAMA {
 	 *            the file metadata provider implementation
 	 */
 	public static void setMetadataProvider(final IFileMetadataProvider metadata) { __METADATA__ = metadata; }
-
-	/**
-	 * Sets the recorder class.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param clazz
-	 *            the new recorder class
-	 * @date 2 sept. 2023
-	 */
-	public static void setRecorderClass(final Class<? extends IExperimentRecorder> clazz) { __RECORDER__ = clazz; }
 
 	/**
 	 * Sets the platform-wide random number generator.
@@ -294,11 +281,8 @@ public class GAMA {
 	 * @return the i simulation recorder
 	 * @date 2 sept. 2023
 	 */
-	public static IExperimentRecorder getExperimentRecorder() {
-		try {
-			if (__RECORDER__ != null) return __RECORDER__.getConstructor().newInstance();
-		} catch (Exception e) {}
-		return null;
+	public static ISimulationRecorder createExperimentRecorder() {
+		return new SimulationRecorder();
 	}
 
 	// ==================================================================================
@@ -387,42 +371,84 @@ public class GAMA {
 	 *            the model containing the experiment
 	 */
 	public static void runGuiExperiment(final String id, final IModelSpecies model) {
+		runGuiExperiment(id, model, null);
+	}
+
+	/**
+	 * Same as {@link #runGuiExperiment(String, IModelSpecies)}; when {@code selection} is not null, the experiment
+	 * must be a test experiment and only the selected test is run.
+	 */
+	public static void runGuiExperiment(final String id, final IModelSpecies model,
+			final gama.api.utils.tests.TestSelection selection) {
+		runGuiExperiment(id, model, selection, null);
+	}
+
+	/** Opens a GUI experiment synchronously, with server options installed before initialization. */
+	public static boolean runGuiServerExperiment(final String id, final IModelSpecies model,
+			final IServerConfiguration configuration) {
+		return runGuiExperiment(id, model, null, configuration);
+	}
+
+	private static boolean runGuiExperiment(final String id, final IModelSpecies model,
+			final gama.api.utils.tests.TestSelection selection, final IServerConfiguration configuration) {
 		final IExperimentSpecies newExperiment = model.getExperiment(id);
-		if (newExperiment == null) return;
+		if (newExperiment == null) return false;
+		if (selection != null) {
+			if (!newExperiment.isTest())
+				throw new IllegalArgumentException("Experiment " + id + " is not a test experiment");
+			selection.validate(model, id);
+		}
 
 		IExperimentController controller = getFrontmostController();
 		if (controller != null) {
 			final IExperimentSpecies existingExperiment = controller.getExperiment();
 			if (existingExperiment != null) {
-				if(existingExperiment == newExperiment) {
-					GAMA.reloadFrontmostExperiment(false);
-					return;
-				} else {
-					controller.processPause(true);
-					if (!getGui().confirmClose(existingExperiment)) return;
-				}
+				if (existingExperiment == newExperiment) return GAMA.reloadFrontmostExperiment(false);
+				controller.processPause(true);
+				if (!getGui().confirmClose(existingExperiment)) return false;
 			}
 		}
 
 		controller = newExperiment.getController();
-		if (!controllers.isEmpty()) { closeAllExperiments(false, false); }
+		// Close all existing experiments and switch back to the modeling perspective
+		// before opening the new one. Passing true for andOpenModelingPerspective
+		// ensures a full perspective reset — equivalent to pressing the "close
+		// experiment" button — so any partial or failed simulation state is discarded
+		// before the new experiment's perspective is opened.
+		if (!controllers.isEmpty()) { closeAllExperiments(true, false); }
+		if (configuration != null) { controller.setServerConfiguration(configuration); }
 
+		getGui().getStatus().resetStatus();
 		if (newExperiment.isTest()) {
+			if (getGui().runTestExperiment(model, id, selection)) return true;
 			// controllers.add(controller);
-			newExperiment.open();
-			final IExperimentAgent.Test agent = (Test) newExperiment.getAgent();
-			agent.init(agent.getScope());
-			agent.step(agent.getScope());
-			agent.displayTestResults();
-			GAMA.closeExperiment(newExperiment);
+			gama.api.utils.tests.TestSelection.activate(newExperiment, selection);
+			try {
+				newExperiment.open();
+				final IExperimentAgent.Test agent = (Test) newExperiment.getAgent();
+				try {
+					agent.init(agent.getScope());
+					if (!getGui().isTestStopRequested()) { agent.step(agent.getScope()); }
+				} finally {
+					try {
+						agent.displayTestResults();
+					} finally {
+						GAMA.closeExperiment(newExperiment);
+					}
+				}
+			} finally {
+				gama.api.utils.tests.TestSelection.activate(newExperiment, null);
+			}
 		} else if (getGui().openSimulationPerspective(model, id)) {
 			controllers.add(controller);
 			startBenchmark(newExperiment);
-			controller.processOpen(false);
+			return controller.processOpen(configuration != null);
 		} else {
 			DEBUG.ERR("Unable to launch simulation perspective for experiment " + id + " of model "
 					+ model.getFilePath());
+			return false;
 		}
+		return true;
 	}
 
 	/**
@@ -487,9 +513,9 @@ public class GAMA {
 	public static void closeAllExperiments(final boolean andOpenModelingPerspective, final boolean immediately) {
 		for (final IExperimentController controller : new ArrayList<>(controllers)) { closeController(controller); }
 		getGui().closeSimulationViews(null, andOpenModelingPerspective, immediately);
-		PoolUtils.writeStats();
-		GAML.getExpressionFactory().writeStats();
-		ArtefactRegistry.writeStats();
+		// PoolUtils.writeStats();
+		// GAML.getExpressionFactory().writeStats();
+		// ArtefactRegistry.writeStats();
 		changeCurrentTopLevelAgent(getPlatformAgent(), false);
 	}
 
@@ -536,11 +562,14 @@ public class GAMA {
 	// ==================================================================================
 
 	/**
-	 * Gets the current simulation agent.
+	 * Gets the current simulation agent: the simulation on behalf of which the current thread is running if any (see
+	 * {@link SimulationContext}), otherwise the current simulation of the frontmost experiment.
 	 *
 	 * @return the current simulation agent, or null if no experiment is running
 	 */
 	public static ISimulationAgent getSimulation() {
+		final ISimulationAgent bound = SimulationContext.current();
+		if (bound != null && !bound.dead()) return bound;
 		final IExperimentController controller = getFrontmostController();
 		if (controller == null || controller.getExperiment() == null) return null;
 		return controller.getExperiment().getCurrentSimulation();
@@ -585,8 +614,35 @@ public class GAMA {
 	// ==================================================================================
 
 	/**
+	 * Whether an error raised in this scope can still be reported, i.e. whether the experiment it belongs to is alive.
+	 *
+	 * <p>
+	 * Decided from the experiment of the scope rather than from the frontmost controller: controllers accumulate over
+	 * the life of the platform, and a stale one sitting at the head of the list would silence the errors of every other
+	 * experiment. The frontmost controller is only consulted for scopes that have no experiment of their own.
+	 * </p>
+	 *
+	 * @param scope
+	 *            the scope in which the error was raised
+	 * @return true if the error is worth reporting
+	 */
+	private static boolean canReport(final IScope scope) {
+		final IExperimentAgent agent = scope == null ? null : scope.getExperiment();
+		if (agent != null) return !agent.dead();
+		final IExperimentController controller = getFrontmostController();
+		return controller != null && controller.getExperiment() != null && !controller.isDisposing()
+				&& controller.getExperiment().getAgent() != null;
+	}
+
+	/**
 	 * Reports an error to the UI and determines whether the simulation should continue. This method handles both
 	 * warnings and errors according to user preferences.
+	 * <p>
+	 * This method does not itself throw the supplied exception or pause the experiment; callers manage control flow
+	 * using its return value. Delivery depends on experiment lifecycle and scope reporting settings. Use
+	 * {@link #reportAndThrowIfNeeded(IScope, GamaRuntimeException, boolean)} when the standard throwing/pausing policy is
+	 * needed.
+	 * </p>
 	 *
 	 * @param scope
 	 *            the current scope
@@ -602,10 +658,7 @@ public class GAMA {
 		final boolean shouldStop = (warning && GamaPreferences.Runtime.CORE_WARNINGS_AS_ERRORS.getValue()
 				|| !warning && shouldStopSimulation) && GamaPreferences.Runtime.CORE_STOP_AT_FIRST_ERROR.getValue();
 		if (g.isReported()) return !shouldStop;
-		final IExperimentController controller = getFrontmostController();
-		if (controller == null || controller.getExperiment() == null || controller.isDisposing()
-				|| controller.getExperiment().getAgent() == null)
-			return false;
+		if (!canReport(scope)) return false;
 		// DEBUG.LOG("report error : " + g.getMessage());
 		// Returns whether or not to continue
 		if (!(g instanceof GamaRuntimeFileException) && scope != null && !scope.reportErrors()) {
@@ -620,17 +673,29 @@ public class GAMA {
 	}
 
 	/**
-	 * Reports an error and throws it if necessary according to error handling configuration. This method handles the
-	 * complete lifecycle of error reporting and decides whether to continue execution or throw the exception.
+	 * Reports an error and throws it if necessary according to error handling configuration.
+	 * <p>
+	 * This method can return normally. At a failure site, use it only when the following code implements a safe
+	 * continuation or fallback. Otherwise, throw the exception to abort the operation and let the enclosing statement
+	 * or scope execution boundary report it. Replacing a direct throw with this call changes control flow.
+	 * </p>
+	 * <p>
+	 * On the normal reporting path, errors throw when {@code shouldStopSimulation} and the stop-at-first-error
+	 * preference are both enabled. Warnings instead use the warnings-as-errors and stop-at-first-error preferences,
+	 * regardless of {@code shouldStopSimulation}. In GAML try mode, the exception is thrown before delivery to the
+	 * runtime error handler. Null-scope and some non-reporting-scope paths only print a stack trace and return;
+	 * delivery also depends on the experiment lifecycle and reporting settings.
+	 * </p>
 	 *
 	 * @param scope
 	 *            the current scope
 	 * @param g
 	 *            the runtime exception
 	 * @param shouldStopSimulation
-	 *            whether errors should stop the simulation
+	 *            whether errors should stop the simulation when stop-at-first-error is enabled; does not control
+	 *            warning escalation
 	 * @throws GamaRuntimeException
-	 *             if the error requires stopping execution
+	 *             in try mode or when the reporting decision requires aborting execution
 	 */
 	public static void reportAndThrowIfNeeded(final IScope scope, final GamaRuntimeException g,
 			final boolean shouldStopSimulation) {
@@ -689,7 +754,7 @@ public class GAMA {
 	 */
 	public static boolean stepFrontmostExperiment(final boolean andWait) {
 		for (final IExperimentController controller : controllers) {
-			if (!controller.processStep(andWait)) return false;
+			if (!controller.processStep(1, andWait)) return false;
 		}
 		return true;
 	}
@@ -703,7 +768,7 @@ public class GAMA {
 	 */
 	public static boolean stepBackFrontmostExperiment(final boolean andWait) {
 		for (final IExperimentController controller : controllers) {
-			if (!controller.processBack(andWait)) return false;
+			if (!controller.processBack(1, andWait)) return false;
 		}
 		return true;
 	}
@@ -789,12 +854,15 @@ public class GAMA {
 	}
 
 	/**
-	 * Gets the current runtime scope. Returns the most appropriate scope based on current context: simulation scope >
-	 * experiment scope > platform scope.
+	 * Gets the current runtime scope. Returns the most appropriate scope based on current context: the scope of the
+	 * simulation on behalf of which the current thread is running if any (see {@link SimulationContext}), otherwise
+	 * simulation scope > experiment scope > platform scope of the frontmost experiment.
 	 *
 	 * @return the current runtime scope, or null if platform is not loaded
 	 */
 	public static IScope getRuntimeScope() {
+		final ISimulationAgent bound = SimulationContext.current();
+		if (bound != null && !bound.dead()) return bound.getScope();
 		// // If GAMA has not yet been loaded, we return null
 		// if (__AGENT__ == null) return null;
 		// // return getCurrentTopLevelAgent().getScope().copy("(copy)");
@@ -1056,6 +1124,7 @@ public class GAMA {
 	 */
 	public static void desynchronizeFrontmostExperiment() {
 		isSynchronized = false;
+		getGui().updateSynchronizedState();
 	}
 
 	/**
@@ -1070,6 +1139,7 @@ public class GAMA {
 	 */
 	public static void synchronizeFrontmostExperiment() {
 		isSynchronized = true;
+		getGui().updateSynchronizedState();
 	}
 
 	// ==================================================================================
@@ -1107,6 +1177,7 @@ public class GAMA {
 	public static State getExperimentState(final IExperimentSpecies exp) {
 		final IExperimentController controller = exp == null ? GAMA.getFrontmostController() : exp.getController();
 		if (controller != null) {
+			if (controller.isDisposing()) return State.NONE;
 			if (controller.isPaused()) return State.PAUSED;
 			return State.RUNNING;
 		}

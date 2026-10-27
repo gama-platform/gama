@@ -195,10 +195,9 @@ public class GamlModelBuilder implements IGamlModelBuilder {
 			// Syntactic errors detected, we cannot build the resource
 			if (r.hasErrors()) {
 				if (errors != null) {
-					final String err_ =
-							r.getErrors() != null && !r.getErrors().isEmpty() ? r.getErrors().get(0).toString() : "";
-					errors.add(GamlCompilationError.create("Syntax errors: " + err_, IGamlIssue.GENERAL,
-							r.getContents().get(0), GamlCompilationError.Type.Error));
+					for (final var diagnostic : r.getErrors()) {
+						errors.add(GamlTextValidator.compilationError(diagnostic, r.getURI()));
+					}
 				}
 				return null;
 			}

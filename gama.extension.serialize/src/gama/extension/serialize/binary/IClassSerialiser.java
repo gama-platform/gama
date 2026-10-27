@@ -11,31 +11,34 @@
 package gama.extension.serialize.binary;
 
 import gama.api.kernel.object.IClass;
+import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
+import gama.api.kernel.serialization.IGamaObjectInput;
+import gama.api.kernel.serialization.IGamaObjectOutput;
+import gama.api.kernel.serialization.IGamaObjectSerializer;
 import gama.api.runtime.scope.IScope;
-import gama.extension.serialize.IGamaObjectInput;
-import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link IClass} instances. Only the class name is persisted. On deserialisation, the class is
+ * Binary serialiser for {@link IClass} instances. Only the class name is persisted. On deserialisation, the class is
  * looked up in the current simulation model by name.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IClassSerialiser extends FSTIndividualSerialiser<IClass> {
+public class IClassSerialiser implements IGamaObjectSerializer<IClass> {
 
 	/**
 	 * Serialises the class name.
 	 *
 	 * @param out
-	 *            the FST output stream
+	 *            the binary output stream
 	 * @param o
 	 *            the class to serialise
 	 * @throws Exception
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final IGamaObjectOutput out, final IClass o) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final IClass o, final TransientSerializationContext context)
+			throws Exception {
 		out.writeStringUTF(o.getName());
 	}
 
@@ -45,7 +48,7 @@ class IClassSerialiser extends FSTIndividualSerialiser<IClass> {
 	 * @param scope
 	 *            the current GAMA simulation scope
 	 * @param in
-	 *            the FST input stream
+	 *            the binary input stream
 	 * @return the resolved {@link IClass}
 	 * @throws Exception
 	 *             if deserialisation fails

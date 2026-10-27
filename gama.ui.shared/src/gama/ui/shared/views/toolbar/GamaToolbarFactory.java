@@ -230,7 +230,7 @@ public class GamaToolbarFactory {
 	 *            the tb
 	 */
 	public static void buildToolbar(final IToolbarDecoratedView view, final GamaToolbar2 tb) {
-		if (view instanceof IToolbarDecoratedView.Expandable ex) { Expander.install(ex, tb); }
+		if (view instanceof IToolbarDecoratedView.Expandable ex) { ex.createExpandItems(tb); }
 		if (view instanceof IToolbarDecoratedView.Sizable sz) { FontSizer.install(sz, tb); }
 		if (view instanceof IToolbarDecoratedView.Pausable ps) { new Pauser(ps).install(tb); }
 		if (view instanceof IToolbarDecoratedView.Zoomable zm) { new ZoomController(zm).install(tb); }

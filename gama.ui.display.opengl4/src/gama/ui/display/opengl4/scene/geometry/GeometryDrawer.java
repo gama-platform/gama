@@ -32,7 +32,8 @@ import gama.api.utils.geometry.Rotation3D;
 import gama.api.utils.geometry.UnboundedCoordinateSequence;
 import gama.api.utils.geometry.Scaling3D.Heterogeneous;
 import gama.ui.display.opengl4.OpenGL;
-import gama.ui.display.opengl4.scene.ObjectDrawer;
+import gama.ui.display.opengl.scene.ObjectDrawer;
+import gama.ui.display.opengl.scene.geometry.GeometryObject;
 
 /**
  *
@@ -47,7 +48,7 @@ import gama.ui.display.opengl4.scene.ObjectDrawer;
  * @revised january 2017
  *
  */
-public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
+public class GeometryDrawer extends ObjectDrawer<GeometryObject, OpenGL> {
 
 	/** The Constant DEFAULT_BORDER. */
 	private static final IColor DEFAULT_BORDER = GamaColorFactory.BLACK;
@@ -290,7 +291,7 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
 	private void drawCachedGeometry(final IShape.Type type, /* final boolean solid, */ final IColor border) {
 		gl.pushMatrix();
 		gl.translateBy(_center);
-		gl.rotateBy(_rot.rotateToHorizontal(_normal, _tangent, false).revertInPlace());
+		gl.rotateBy(_rot.rotateToHorizontal(_normal, _tangent, false));
 		gl.scaleBy(_scale);
 		gl.drawCachedGeometry(type, border);
 		gl.popMatrix();

@@ -175,8 +175,11 @@ import gama.api.ui.IGui;
  */
 class SpecialContext {
 
-	/** The data map - arbitrary key-value storage for custom scope data */
-	Map<String, Object> data;
+	/**
+	 * The data map - arbitrary key-value storage for custom scope data. Copy-on-write: a map is never modified once
+	 * assigned, so that copies of the scope can share it, even when used by other threads.
+	 */
+	volatile Map<String, Object> data;
 
 	/** The each map - storage for iterator variables like "each" in loops */
 	Map<String, Object> each;
@@ -254,6 +257,7 @@ class SpecialContext {
 		// each = specialContext.each;
 		each = null;
 
+		// Shared: the map is copied on write (see setData())
 		data = specialContext.data;
 		topology = specialContext.topology;
 		rootAgent = specialContext.rootAgent;
@@ -310,12 +314,22 @@ class SpecialContext {
 	 *            the value to store, or null to remove the key
 	 */
 	void setData(final String key, final Object value) {
+		final Map<String, Object> d = data;
 		if (value == null) {
-			if (data == null) return;
-			data.remove(key);
+			if (d == null || !d.containsKey(key)) return;
+			if (d.size() == 1) {
+				data = null;
+				return;
+			}
+		} else if (d != null && d.get(key) == value) return;
+		// Copy-on-write, as the current map can be shared with copies of the scope
+		final Map<String, Object> result = d == null ? new HashMap<>() : new HashMap<>(d);
+		if (value == null) {
+			result.remove(key);
+		} else {
+			result.put(key, value);
 		}
-		if (data == null) { data = new HashMap<>(); }
-		data.put(key, value);
+		data = result;
 	}
 
 	/**

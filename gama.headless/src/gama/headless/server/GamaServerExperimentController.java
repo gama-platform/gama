@@ -10,6 +10,10 @@
  ********************************************************************************************************/
 package gama.headless.server;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.WeakHashMap;
+
 import org.java_websocket.WebSocket;
 
 import gama.api.GAMA;
@@ -20,13 +24,14 @@ import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.IExperimentStateListener;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.runtime.GamaExecutorService;
+import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.IList;
-import gama.api.types.map.IMap;
 import gama.api.utils.server.CommandResponse;
 import gama.api.utils.server.GamaServerExperimentConfiguration;
 import gama.api.utils.server.GamaServerMessage;
 import gama.api.utils.server.MessageType;
+import gama.api.utils.server.ReceivedMessage;
 import gama.dev.DEBUG;
 
 /**
@@ -45,6 +50,71 @@ public class GamaServerExperimentController extends AbstractExperimentController
 
 	/** The job. */
 	private final GamaServerExperimentJob _job;
+
+	/**
+	 * Maps each experiment agent to the controller driving it. Several controllers can share the same experiment
+	 * species over the life of a server, so the agent is the only reliable key for the error path to find the
+	 * controller that is currently running the command. Weak keys, so a disposed experiment drops its entry.
+	 */
+	private static final Map<IExperimentAgent, GamaServerExperimentController> BY_AGENT =
+			Collections.synchronizedMap(new WeakHashMap<>());
+
+	/**
+	 * Returns the controller driving the given experiment agent.
+	 *
+	 * @param agent
+	 *            the experiment agent
+	 * @return the controller, or null if this agent is not driven by a server controller
+	 */
+	static GamaServerExperimentController of(final IExperimentAgent agent) { return BY_AGENT.get(agent); }
+
+	/** Set once {@link ExecutionRunnable#run()} has left its loop. No step will ever be executed again after that. */
+	protected volatile boolean executionFinished = false;
+
+	/**
+	 * The runtime error raised by the execution in progress, if any. Set by
+	 * {@link GamaHeadlessServerGUIEventHandler#runtimeError}, as GAML errors do not propagate out of the execution.
+	 */
+	private volatile GamaRuntimeException lastRuntimeError;
+
+	/**
+	 * Records a runtime error raised while executing this experiment.
+	 *
+	 * @param error
+	 *            the error reported by the runtime
+	 */
+	public void recordRuntimeError(final GamaRuntimeException error) {
+		// First error wins: over a series of steps, the one that matters is the one that broke the series.
+		if (lastRuntimeError == null) { lastRuntimeError = error; }
+	}
+
+	/**
+	 * Recovers the runtime error of an init that failed without notifying the GUI, which happens while the controller
+	 * is not yet the frontmost one. The scopes keep the error, so they are probed instead.
+	 */
+	private void captureInitError() {
+		if (lastRuntimeError != null) return;
+		GamaRuntimeException found = null;
+		try {
+			final ISimulationAgent sim = _job.simulator == null ? null : _job.simulator.getSimulation();
+			if (sim != null && sim.getScope() != null) { found = sim.getScope().getCurrentError(); }
+			if (found == null && scope != null) { found = scope.getCurrentError(); }
+		} catch (Throwable t) {
+			DEBUG.OUT("Could not probe the scopes for an init error: " + t);
+		}
+		lastRuntimeError = found;
+	}
+
+	@Override
+	public GamaRuntimeException consumeLastRuntimeError() {
+		final GamaRuntimeException error = lastRuntimeError;
+		lastRuntimeError = null;
+		return error;
+	}
+
+	static {
+		DEBUG.ON();
+	}
 
 	/**
 	 * The Class OwnRunnable.
@@ -72,15 +142,15 @@ public class GamaServerExperimentController extends AbstractExperimentController
 			try {
 
 				while (experimentAlive) {
-					if (mexp.simulator.isInterrupted()) { break; }
-					final ISimulationAgent sim = mexp.simulator.getSimulation();
-					final IExperimentAgent exp = mexp.simulator.getExperimentPlan().getAgent();
-					final IScope scope = sim == null ? exp.getScope() : sim.getScope();
-					if (Cast.asBool(scope, exp.getStopCondition().value(scope))) {
-						if (!"".equals(stopCondition)) {
+					if (!experiment.isBatch() && mexp.simulator.isInterrupted()) { break; }
+					if (hasReachedStopCondition()) {
+						final IExperimentAgent exp = mexp.simulator.getExperimentPlan().getAgent();
+						if (experiment.isBatch() || !"".equals(stopCondition)) {
 							mexp.socket.send(GAMA.getJsonEncoder()
 									.valueOf(new CommandResponse(MessageType.SimulationEnded, "",
-											(IMap<String, Object>) exp.getAttribute("%%playCommand%%"), false))
+											exp.getAttribute("%%playCommand%%") instanceof ReceivedMessage command
+													? command : Map.of("exp_id", mexp.getExperimentID()),
+											false))
 									.toString());
 
 						}
@@ -90,6 +160,10 @@ public class GamaServerExperimentController extends AbstractExperimentController
 				}
 			} catch (Exception e) {
 				DEBUG.OUT(e);
+			} finally {
+				// Releasing previouslock unblocks any step waiting on the iteration that was not run.
+				executionFinished = true;
+				previouslock.release();
 			}
 		}
 	}
@@ -113,6 +187,7 @@ public class GamaServerExperimentController extends AbstractExperimentController
 
 		commandThread.setUncaughtExceptionHandler(GamaExecutorService.EXCEPTION_HANDLER);
 		lock.acquire();
+		previouslock.acquire();
 		commandThread.start();
 	}
 
@@ -124,17 +199,23 @@ public class GamaServerExperimentController extends AbstractExperimentController
 	 */
 	@Override
 	protected boolean processUserCommand(final ExperimentCommand command) {
-		switch (command) {
+		switch (command.type()) {
 			case _OPEN:
+				lastRuntimeError = null;
 				try {
-					_job.loadAndBuildWithJson(parameters, stopCondition);
+					final boolean opened = _job.loadAndBuildWithJson(parameters, stopCondition).passed();
+					if (!opened) { captureInitError(); }
+					return opened;
 				} catch (Exception e) {
 					DEBUG.OUT(e);
-					GAMA.reportError(scope, GamaRuntimeException.create(e, scope), true);
+					final GamaRuntimeException gre =
+							e instanceof GamaRuntimeException g ? g : GamaRuntimeException.create(e, scope);
+					lastRuntimeError = gre;
+					GAMA.reportError(scope, gre, true);
 					return false;
 				}
-				return true;
 			case _START:
+				if (executionFinished || hasReachedStopCondition()) return false;
 				paused = false;
 				lock.release();
 				return true;
@@ -142,15 +223,31 @@ public class GamaServerExperimentController extends AbstractExperimentController
 				paused = true;
 				return true;
 			case _STEP:
-				previouslock.acquire();
-				paused = true;
-				lock.release();
+				// Refused rather than blocking forever on previouslock, which nobody will release any more.
+				if (executionFinished) return false;
+				lastRuntimeError = null;
+				for(int i = 0; i < command.quantity(); i++) {
+					if (executionFinished || hasReachedStopCondition()) return i > 0;
+					// A batch step runs its entire exploration, whose simulation runners must not remain paused.
+					paused = !experiment.isBatch();
+					lock.release();
+					previouslock.acquire();
+					paused = true;
+					if (executionFinished) return experiment.isBatch() && hasReachedStopCondition();
+					// A series stops on its first error, which the caller is then told about.
+					if (lastRuntimeError != null) { break; }
+				}
 				return true;
 			case _BACK:
-				paused = true;
-				experiment.getAgent().backward(getScope());
+				if (executionFinished || !experiment.isMemorize()) return false;
+				for(int i = 0; i < command.quantity(); i++) {
+					paused = true;
+					// backward() returns false when there is no recorded state left to go back to.
+					if (!experiment.getAgent().backward(getScope())) return false;
+				}
 				return true;
 			case _RELOAD:
+				lastRuntimeError = null;
 				try {
 					experiment.reload();
 				} catch (final GamaRuntimeException e) {
@@ -188,7 +285,7 @@ public class GamaServerExperimentController extends AbstractExperimentController
 				experimentAlive = false;
 				lock.release();
 				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.NONE);
-				if (commandThread != null && commandThread.isAlive()) { commands.offer(ExperimentCommand._CLOSE); }
+				if (commandThread != null && commandThread.isAlive()) { commands.offer(_CLOSE_CMD); }
 			}
 		}
 	}
@@ -227,17 +324,22 @@ public class GamaServerExperimentController extends AbstractExperimentController
 	 *            the agent
 	 */
 	@Override
-	public void schedule(final IExperimentAgent agent) {
+	public IExecutionResult schedule(final IExperimentAgent agent) {
+		BY_AGENT.put(agent, this);
 		scope = agent.getScope();
 		serverConfiguration = serverConfiguration.withExpId(_job.getExperimentID());
 		scope.setServerConfiguration(serverConfiguration);
+		IExecutionResult res = IExecutionResult.FAILED;
 		try {
-			if (!scope.init(agent).passed()) { scope.setDisposeStatus(); }
+			res = scope.init(agent);
+			if (!res.passed()) { scope.setDisposeStatus(); }
+			
 		} catch (final Throwable e) {
 			if (scope != null && scope.interrupted()) {} else if (!(e instanceof GamaRuntimeException)) {
 				GAMA.reportError(scope, GamaRuntimeException.create(e, scope), true);
 			}
 		}
+		return res;
 	}
 
 	/**
@@ -249,8 +351,9 @@ public class GamaServerExperimentController extends AbstractExperimentController
 			// experimentAlive = false;
 		}
 		try {
+			if (!experimentAlive || executionFinished || hasReachedStopCondition()) return;
 			_job.doStep();
-		} catch (RuntimeException e) {
+		} catch (Throwable e) {
 			// e.printStackTrace();
 			serverConfiguration.socket()
 					.send(GAMA.getJsonEncoder().valueOf(new GamaServerMessage(MessageType.RuntimeError, e)).toString());
@@ -259,24 +362,50 @@ public class GamaServerExperimentController extends AbstractExperimentController
 		}
 	}
 
-	@Override
-	public boolean processStep(final boolean andWait) {
-		paused = true;
-		if (andWait) {
-			_job.doStep();
-			return true;
-		}
-		return super.processStep(andWait);
+	/**
+	 * Whether the simulation has already reached its stop condition. Evaluated on demand, as {@link #executionFinished}
+	 * is only set once the execution loop has re-evaluated the condition, which happens after a step has returned.
+	 * Mirrors the test performed by {@link ExecutionRunnable#run()}.
+	 *
+	 * @return true if no further step should be accepted
+	 */
+	private boolean hasReachedStopCondition() {
+		final IExperimentAgent exp = _job.simulator.getExperimentPlan().getAgent();
+		if (exp == null) return false;
+		// In a batch, 'until' stops each simulation; the exploration ends when the experiment scope is disposed.
+		if (experiment.isBatch()) return exp.getScope().interrupted();
+		if (exp.getStopCondition() == null) return false;
+		final ISimulationAgent sim = _job.simulator.getSimulation();
+		final IScope scope = sim == null ? exp.getScope() : sim.getScope();
+		return Cast.asBool(scope, exp.getStopCondition().value(scope));
 	}
 
 	@Override
-	public boolean processBack(final boolean andWait) {
+	public boolean processStart(final boolean andWait) {
+		if (executionFinished || hasReachedStopCondition()) return false;
+		return super.processStart(andWait);
+	}
+
+	@Override
+	public boolean processStep(final int nbSteps, final boolean andWait) {
+			// Checked here and not only in processUserCommand, which the asynchronous path runs after answering.
+			if (executionFinished || hasReachedStopCondition()) return false;
+			return super.processStep(nbSteps, andWait);
+	}
+
+	@Override
+	public boolean processBack(final int nbSteps, final boolean andWait) {
+		// Guards repeated here as the synchronous branch below bypasses processUserCommand(_BACK).
+		if (executionFinished || !experiment.isMemorize()) return false;
 		paused = true;
 		if (andWait) {
-			_job.doBackStep();
+			for(int i = 0; i < nbSteps; i++) {
+				// backward() rather than _job.doBackStep(), which discards its result.
+				if (!experiment.getAgent().backward(getScope())) return false;
+			}
 			return true;
 		}
-		return super.processBack(andWait);
+		return super.processBack(nbSteps, andWait);
 	}
 
 }

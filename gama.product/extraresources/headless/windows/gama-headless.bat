@@ -6,7 +6,7 @@ set outputFile=""
 
 REM memory is defined in the ../Gama.ini file
 set "memory=-1m"
-SET userWorkspace=""
+SET "userWorkspace="
 
 set workDir=.work%RANDOM%
 SETLOCAL enabledelayedexpansion
@@ -14,9 +14,9 @@ SETLOCAL enabledelayedexpansion
 
 :TOP
 
-	IF (%1) == () GOTO NEXT_CODE
+	IF "%~1" == "" GOTO NEXT_CODE
 
-	if %1 EQU -m (
+	if "%~1"=="-m" (
 		set memory=%2
 		SHIFT
 	) else IF "%~1"=="-ws" (
@@ -30,10 +30,12 @@ SETLOCAL enabledelayedexpansion
 GOTO TOP
 
 :NEXT_CODE
+if "!param!"=="" set "param=-help"
+
 echo ******************************************************************
 echo * GAMA version 0.0.0-SNAPSHOT                                         *
 echo * http://gama-platform.org                                       *
-echo * (c) 2007-2025 UMI 209 UMMISCO IRD/SU and Partners              *
+echo * (c) 2007-2026 UMI 209 UMMISCO IRD/SU and Partners              *
 echo ******************************************************************
 
 set FILENAME="..\plugins\"
@@ -55,7 +57,7 @@ REM We don't want to use the options before the `-server` options in the GAMA.in
 REM because they are not compatible with the headless mode
 
 set "ini_arguments="
-set "skip_until_line=-server"
+set "skip_until_line=-vmargs"
 set "skipping=true"
 
 for /f "usebackq delims=" %%a in (..\GAMA.ini) do (
@@ -64,7 +66,6 @@ for /f "usebackq delims=" %%a in (..\GAMA.ini) do (
 	if !skipping!==true (
 		if !skip_until_line!==%%a (
 			set "skipping=false"
-			set "ini_arguments=!ini_arguments!!line! "
 		)
 	) else (
 		if "!line:~0,4!"=="-Xmx" (
@@ -78,8 +79,14 @@ for /f "usebackq delims=" %%a in (..\GAMA.ini) do (
 @echo Will run with these options:
 @echo %ini_arguments%
 
+REM As in gama-headless.sh, the workspace of these commands is temporary, unless the user gave one
+set "tempWorkspace=false"
 IF "%userWorkspace%"=="" (
     set workDir=%workDir%
+    if "!param!"=="" set "tempWorkspace=true"
+    for %%c in (-help -version -validate -test -xml -batch -write-xmi -socket -ssocket) do (
+        if not "!param!"=="!param:%%c=!" set "tempWorkspace=true"
+    )
 ) ELSE (
     set workDir=%userWorkspace%
 )
@@ -93,3 +100,15 @@ if exist ..\jdk\ (
 	echo "JAVA_HOME"
   	call "%JAVA_HOME%\bin\java.exe" -cp !result! -Xms512m -Xmx%memory% !ini_arguments! -Djava.awt.headless=true org.eclipse.equinox.launcher.Main -configuration ./configuration -application gama.headless.product -data "%workDir%" !param!
 )
+set "exitCode=%errorlevel%"
+
+if not "%exitCode%"=="0" (
+	echo GAMA encountered an error and crashed, please check again your command...
+	if exist "%workDir%\.metadata\.log" (
+		echo Here's the log :
+		type "%workDir%\.metadata\.log"
+	)
+)
+REM Only remove the temporary workspace created for this run, after its log has been shown
+if "%tempWorkspace%"=="true" if exist "%workDir%\" rmdir /s /q "%workDir%"
+exit /b %exitCode%

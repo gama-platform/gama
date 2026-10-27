@@ -236,7 +236,9 @@ import gama.api.utils.interfaces.ILocated;
 		@variable (
 				name = "envelope",
 				type = IType.GEOMETRY,
-				doc = { @doc ("Returns the envelope of this geometry (the smallest rectangle that contains the geometry)") }),
+				doc = { @doc (
+						value = "Returns the envelope of this geometry (the smallest rectangle that contains the geometry)",
+						deprecated = "Use envelope(shape) instead.") }),
 		@variable (
 				name = "geometries",
 				type = IType.LIST,
@@ -655,6 +657,9 @@ public interface IShape extends ILocated, IValue, IAttributed, IEnvelopeProvider
 	 * @return the geometric envelope
 	 */
 	@getter ("envelope")
+	@doc (
+			value = "Returns the envelope of this geometry (the smallest rectangle that contains the geometry)",
+			deprecated = "Use envelope(shape) instead.")
 	default IShape getGeometricEnvelope() { return getEnvelope().toShape(); }
 
 	/**

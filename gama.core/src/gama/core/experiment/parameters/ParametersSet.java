@@ -45,7 +45,7 @@ public class ParametersSet extends GamaMap<String, Object> {
 	 */
 	public ParametersSet(final ParametersSet solution) {
 		this();
-		putAll(solution);
+		if (solution != null) { putAll(solution); }
 	}
 
 	/**

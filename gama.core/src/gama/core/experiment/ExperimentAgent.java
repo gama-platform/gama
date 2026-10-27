@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.google.common.collect.Iterables;
 
@@ -42,13 +44,14 @@ import gama.api.kernel.agent.IPopulationFactory;
 import gama.api.kernel.object.IObject;
 import gama.api.kernel.simulation.IClock;
 import gama.api.kernel.simulation.IExperimentAgent;
-import gama.api.kernel.simulation.IExperimentRecorder;
+import gama.api.kernel.simulation.ISimulationRecorder;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.kernel.species.IModelSpecies;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.IExecutable;
 import gama.api.runtime.scope.ExecutionScope;
+import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.color.GamaColorFactory;
 import gama.api.types.color.IColor;
@@ -108,8 +111,11 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	/** The executer. */
 	protected final ActionExecuter executer;
 
+	/** Held while the experiment steps, so that actions requested from other threads do not run meanwhile. */
+	private final ReentrantLock stepLock = new ReentrantLock();
+
 	/** The recorder. */
-	protected IExperimentRecorder recorder;
+	protected ISimulationRecorder recorder;
 
 	/** The extra parameters map. */
 	final IMap<String, Object> extraParametersMap = GamaMapFactory.createOrdered();
@@ -132,6 +138,12 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 
 	/** The own model path. */
 	protected String ownModelPath;
+
+	/**
+	 * Memoizes absolute file-path resolutions that do not depend on file existence, shared across this experiment's
+	 * simulations. See {@link gama.api.kernel.simulation.IExperimentAgent#getResolvedFilePathCache()}.
+	 */
+	private final Map<String, String> resolvedFilePathCache = new ConcurrentHashMap<>();
 
 	/** The scheduled. */
 	// protected SimulationPopulation populationOfSimulations;
@@ -160,7 +172,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		ownClock = new ExperimentClock(ownScope);
 		executer = new ActionExecuter(ownScope);
 		populationFactory = initializePopulationFactory();
-		if (getSpecies().isMemorize()) { recorder = GAMA.getExperimentRecorder(); }
+		if (getSpecies().isMemorize()) { recorder = GAMA.createExperimentRecorder(); }
 		// Should not perform a whole reset as it shuts down UI outputs in comodels (see #2813)
 		if (s.getSpecies().getDescription().belongsToAMicroModel()) {
 			initialize();
@@ -337,7 +349,6 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	@Override
 	protected boolean preStep(final IScope scope) {
 		ownClock.beginCycle();
-		executer.executeBeginActions();
 		return super.preStep(scope);
 	}
 
@@ -374,8 +385,12 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 			if (sp != null && shouldRecord != null) {
 				List<ISimulationAgent> sims = new ArrayList<>(sp);
 				for (ISimulationAgent sim : sims) {
-					IScope scope = sim.getScope();
-					if (!scope.interrupted() && Cast.asBool(scope, shouldRecord.value(scope))) { recorder.record(sim); }
+					sim.runInOwnThread(() -> {
+						IScope scope = sim.getScope();
+						if (!scope.interrupted() && Cast.asBool(scope, shouldRecord.value(scope))) {
+							recorder.record(sim);
+						}
+					});
 				}
 			}
 		}
@@ -401,6 +416,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	public boolean init(final IScope scope) {
 		showParameters(scope);
 		GAMA.changeCurrentTopLevelAgent(this, true);
+		GAMA.desynchronizeFrontmostExperiment();
 		scope.getGui().clearErrors(scope);
 		super.init(scope);
 		final IOutputManager outputs = getOutputManager();
@@ -481,10 +497,10 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	 *            the scope
 	 */
 	@Override
-	public void schedule(final IScope scope) {
+	public IExecutionResult schedule(final IScope scope) {
 		scheduled = true;
 		// The experiment agent is scheduled in the global scheduler
-		getSpecies().getController().schedule(this);
+		return getSpecies().getController().schedule(this);
 	}
 
 	/**
@@ -568,14 +584,9 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 				"Random number generator", cat, Generators.names(), false);
 
 		params.add(p);
+		// Reload reapplies the stored parameter value before creating the simulation.
 		p = new ExperimentParameter(getScope(), getSpecies().getVar(IKeyword.SEED), "Default random seed", cat,
-				"(current seed)", null, true) {
-
-			@Override
-			protected Object getValue(final IScope scope) {
-				return getSeed();
-			}
-		};
+				"(current seed)", null, true);
 		p.setDefined(GamaPreferences.External.CORE_SEED_DEFINED.getValue());
 		params.add(p);
 		return params;
@@ -648,6 +659,9 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		result.addAll(getModel().getImportedPaths());
 		return result;
 	}
+
+	@Override
+	public Map<String, String> getResolvedFilePathCache() { return resolvedFilePathCache; }
 
 	/**
 	 * Sets the working path.
@@ -936,15 +950,20 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	 */
 	@Override
 	public boolean backward(final IScope scope) {
-		final boolean result = true;
+		// No recorder when the experiment is not declared with `record:` or no implementation is available.
+		if (recorder == null) return false;
+		final boolean[] restored = { false };
 		try {
 			GAMA.runAndUpdateAll(() -> {
 				for (ISimulationAgent sim : getSimulationPopulation()) {
 					if (recorder.canStepBack(sim)) {
-						recorder.restore(sim);
+						// restore() returns false when there is nothing left to restore.
+						if (!sim.computeInOwnThread(() -> recorder.restore(sim))) { continue; }
+						restored[0] = true;
 						if (!((ExperimentSpecies) this.getSpecies()).keepsSeed()) {
-							sim.setRandomGenerator(
-									new RandomUtils(random.next(), sim.getRandomGenerator().getRngName()));
+							final double seed = random.next();
+							sim.runInOwnThread(() -> sim.setRandomGenerator(
+									new RandomUtils(seed, sim.getRandomGenerator().getRngName())));
 						}
 					}
 
@@ -954,7 +973,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 			informStatus();
 			GAMA.updateExperimentState(getSpecies());
 		}
-		return result;
+		return restored[0];
 	}
 
 	/**
@@ -1032,6 +1051,12 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 			ExperimentAgentScope copy = new ExperimentAgentScope(additionalName);
 			copy.push(getCurrentSymbol());
 			return copy;
+		}
+
+		@Override
+		public IScope detachedCopy(final String additionalName) {
+			// Copies never share the frames of this scope
+			return copy(additionalName);
 		}
 
 		/**
@@ -1260,10 +1285,40 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	 *            the executable
 	 * @date 24 sept. 2023
 	 */
+	/**
+	 * Executes the action as soon as possible, never while the experiment steps: immediately (in the calling thread) if
+	 * the experiment is not stepping, otherwise at the end of its current step. Never waits for the step to finish.
+	 */
 	@Override
 	public void executeAction(final IExecutable executable) {
-		executer.executeOneAction(executable);
+		// Called from within the step itself: the action is executed at its end, as before
+		if (stepLock.isHeldByCurrentThread() || !stepLock.tryLock()) {
+			executer.insertOneShotAction(executable);
+			return;
+		}
+		try {
+			executer.executeNow(executable);
+		} finally {
+			stepLock.unlock();
+		}
+	}
 
+	/**
+	 * Steps the experiment, preventing actions from being executed meanwhile (see {@link #executeAction(IExecutable)}).
+	 * The actions requested during the step are executed at its end, whatever its outcome.
+	 */
+	@Override
+	public boolean step(final IScope scope) {
+		stepLock.lock();
+		try {
+			return super.step(scope);
+		} finally {
+			try {
+				executer.executeOneShotActions();
+			} finally {
+				stepLock.unlock();
+			}
+		}
 	}
 
 	@Override
@@ -1314,7 +1369,11 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	public boolean isExperiment() { return true; }
 
 	@Override
-	public IExpression getStopCondition() { return stopCondition; }
+	public IExpression getStopCondition() {
+		// Read from the species, which may set it after the agent has been built (gama-server does so when loading).
+		final IExpression fromSpecies = getSpecies().getStopCondition();
+		return fromSpecies == null ? stopCondition : fromSpecies;
+	}
 
 	@Override
 	public boolean isGUI() { return true; }

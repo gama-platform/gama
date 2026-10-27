@@ -39,12 +39,12 @@ jobs:
             ./needToSign.txt
 
   #
-  #   __  __          _____    ____   _____ 
+  #   __  __          _____    ____   _____
   # |  \/  |   /\   / ____|  / __ \ / ____|
-  # | \  / |  /  \ | |      | |  | | (___  
-  # | |\/| | / /\ \| |      | |  | |\___ \ 
+  # | \  / |  /  \ | |      | |  | | (___
+  # | |\/| | / /\ \| |      | |  | |\___ \
   # | |  | |/ ____ \ |____  | |__| |____) |
-  # |_|  |_/_/    \_\_____|  \____/|_____/ 
+  # |_|  |_/_/    \_\_____|  \____/|_____/
   #
 
   macOS-signing:
@@ -76,7 +76,7 @@ jobs:
 
       - name: Create Keychain
         uses: apple-actions/import-codesign-certs@v3
-        with: 
+        with:
           p12-file-base64: ${{ secrets.MACOS_CERTIFICATE }}
           p12-password: ${{ secrets.MACOS_CERTIFICATE_PWD }}
           keychain: "build"
@@ -84,7 +84,7 @@ jobs:
 
       - name: Sign Application
         shell: bash
-        env: 
+        env:
           working_directory: ${{ github.workspace }}/artifacts/work
           # Variables
           MACOS_DEV_ID: ${{ secrets.MACOS_DEV_ID }}
@@ -110,7 +110,7 @@ jobs:
 
       - name: Packaging and Signing DMG
         shell: bash
-        env: 
+        env:
           working_directory: ${{ github.workspace }}/artifacts/work
           # Variables
           MACOS_DEV_ID: ${{ secrets.MACOS_DEV_ID }}
@@ -144,9 +144,9 @@ jobs:
           xcrun -v stapler staple ./${{ matrix.zipName }}.dmg
 
       - uses: actions/upload-artifact@v6
-        env: 
+        env:
           working_directory: ${{ github.workspace }}/artifacts/work
         with:
           name: gama-mac-signed-${{ matrix.zipName }}
           path: ./${{ matrix.zipName }}.dmg
-          if-no-files-found: error # 'warn' or 'ignore' are also available, defaults to `warn` 
+          if-no-files-found: error  # 'warn' or 'ignore' are also available, defaults to `warn`

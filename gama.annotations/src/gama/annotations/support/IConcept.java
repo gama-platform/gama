@@ -12,10 +12,8 @@ package gama.annotations.support;
 import gama.annotations.constants.IKeyword;
 
 /**
- * The {@code IConcept} interface defines semantic keywords used throughout GAMA
- * for documentation, search, and
- * categorization purposes. These concepts provide a controlled vocabulary that
- * helps users discover related
+ * The {@code IConcept} interface defines semantic keywords used throughout GAMA for documentation, search, and
+ * categorization purposes. These concepts provide a controlled vocabulary that helps users discover related
  * functionality and enables consistent documentation across the platform.
  *
  * <p>
@@ -23,16 +21,11 @@ import gama.annotations.constants.IKeyword;
  * </p>
  * The concept system serves multiple purposes:
  * <ul>
- * <li><strong>Documentation Search:</strong> Users can find related elements by
- * concept keywords</li>
- * <li><strong>Semantic Grouping:</strong> Related functionality is grouped by
- * conceptual similarity</li>
- * <li><strong>Website Organization:</strong> Online documentation is structured
- * using these concepts</li>
- * <li><strong>IDE Integration:</strong> Development tools use concepts for
- * intelligent assistance</li>
- * <li><strong>Cross-referencing:</strong> Automatic generation of "see also"
- * relationships</li>
+ * <li><strong>Documentation Search:</strong> Users can find related elements by concept keywords</li>
+ * <li><strong>Semantic Grouping:</strong> Related functionality is grouped by conceptual similarity</li>
+ * <li><strong>Website Organization:</strong> Online documentation is structured using these concepts</li>
+ * <li><strong>IDE Integration:</strong> Development tools use concepts for intelligent assistance</li>
+ * <li><strong>Cross-referencing:</strong> Automatic generation of "see also" relationships</li>
  * </ul>
  *
  * <p>
@@ -65,16 +58,11 @@ import gama.annotations.constants.IKeyword;
  * </p>
  * The concepts are organized into several major categories:
  * <ul>
- * <li><strong>Structural:</strong> Basic GAMA elements (ACTION, SPECIES, SKILL,
- * etc.)</li>
- * <li><strong>Behavioral:</strong> Agent capabilities (AGENT_MOVEMENT,
- * COMMUNICATION, etc.)</li>
- * <li><strong>Spatial:</strong> Spatial concepts (SPATIAL, TOPOLOGY, GEOMETRY,
- * etc.)</li>
- * <li><strong>Domain:</strong> Application domains (ECOLOGY, TRANSPORT, SOCIAL,
- * etc.)</li>
- * <li><strong>Technical:</strong> Implementation aspects (ALGORITHM,
- * OPTIMIZATION, etc.)</li>
+ * <li><strong>Structural:</strong> Basic GAMA elements (ACTION, SPECIES, SKILL, etc.)</li>
+ * <li><strong>Behavioral:</strong> Agent capabilities (AGENT_MOVEMENT, COMMUNICATION, etc.)</li>
+ * <li><strong>Spatial:</strong> Spatial concepts (SPATIAL, TOPOLOGY, GEOMETRY, etc.)</li>
+ * <li><strong>Domain:</strong> Application domains (ECOLOGY, TRANSPORT, SOCIAL, etc.)</li>
+ * <li><strong>Technical:</strong> Implementation aspects (ALGORITHM, OPTIMIZATION, etc.)</li>
  * <li><strong>Data:</strong> Data handling (DATABASE, FILE, CHART, etc.)</li>
  * </ul>
  *
@@ -110,8 +98,7 @@ public interface IConcept {
 	// ============================================================================
 
 	/**
-	 * Identifies elements that represent executable behaviors in GAML. Used for
-	 * actions, operators, and other
+	 * Identifies elements that represent executable behaviors in GAML. Used for actions, operators, and other
 	 * executable elements.
 	 */
 	String ACTION = IKeyword.ACTION;
@@ -121,15 +108,13 @@ public interface IConcept {
 	// ============================================================================
 
 	/**
-	 * Identifies elements related to agent spatial positioning and location
-	 * management. Includes location
+	 * Identifies elements related to agent spatial positioning and location management. Includes location
 	 * getters/setters, spatial queries, and positioning operations.
 	 */
 	String AGENT_LOCATION = "agent_location";
 
 	/**
-	 * Identifies elements that enable agent movement and navigation. Covers
-	 * movement actions, pathfinding, and
+	 * Identifies elements that enable agent movement and navigation. Covers movement actions, pathfinding, and
 	 * mobility-related functionality.
 	 */
 	String AGENT_MOVEMENT = "agent_movement";
@@ -139,29 +124,25 @@ public interface IConcept {
 	// ============================================================================
 
 	/**
-	 * Identifies elements that implement specific algorithms or computational
-	 * methods. Used for optimization
+	 * Identifies elements that implement specific algorithms or computational methods. Used for optimization
 	 * algorithms, AI techniques, and mathematical procedures.
 	 */
 	String ALGORITHM = "algorithm";
 
 	/**
-	 * Identifies elements related to agent internal structure and decision-making
-	 * frameworks. Covers cognitive
+	 * Identifies elements related to agent internal structure and decision-making frameworks. Covers cognitive
 	 * architectures, behavior trees, and decision systems.
 	 */
 	String ARCHITECTURE = "architecture";
 
 	/**
-	 * Identifies elements that perform mathematical calculations and operations.
-	 * Includes mathematical operators,
+	 * Identifies elements that perform mathematical calculations and operations. Includes mathematical operators,
 	 * functions, and numerical computations.
 	 */
 	String ARITHMETIC = "arithmetic";
 
 	/**
-	 * File format identifier for ASCII text files. Used in file I/O operations and
-	 * data import/export functionality.
+	 * File format identifier for ASCII text files. Used in file I/O operations and data import/export functionality.
 	 */
 	String ASC = "asc";
 
@@ -170,15 +151,13 @@ public interface IConcept {
 	// ============================================================================
 
 	/**
-	 * Identifies elements that represent properties or characteristics of agents or
-	 * objects. Covers variables, getters,
+	 * Identifies elements that represent properties or characteristics of agents or objects. Covers variables, getters,
 	 * setters, and property management.
 	 */
 	String ATTRIBUTE = "attribute";
 
 	/**
-	 * Identifies elements related to automatic saving and persistence
-	 * functionality. Used for simulation state
+	 * Identifies elements related to automatic saving and persistence functionality. Used for simulation state
 	 * management and data preservation.
 	 */
 	String AUTOSAVE = "autosave";
@@ -258,9 +237,6 @@ public interface IConcept {
 	/** The Constant DISTRIBUTION. */
 	String DISTRIBUTION = "distribution";
 
-	/** The Constant DXF. */
-	String DXF = "dxf";
-
 	/** The Constant EDGE. */
 	String EDGE = "edge";
 
@@ -305,9 +281,6 @@ public interface IConcept {
 
 	/** The Constant GRAPH_WEIGHT. */
 	String GRAPH_WEIGHT = "graph_weight";
-
-	/** The Constant GML. */
-	String GML = "gml";
 
 	/** The Constant GRID. */
 	String GRID = "grid";
@@ -356,8 +329,6 @@ public interface IConcept {
 
 	/** The Constant LIST. */
 	String LIST = "list";
-
-	String DATAFRAME = "dataframe";
 
 	/** The Constant LOAD_FILE. */
 	String LOAD_FILE = "load_file";
@@ -421,9 +392,6 @@ public interface IConcept {
 
 	/** The Constant OPTIMIZATION. */
 	String OPTIMIZATION = "optimization";
-
-	/** The Constant OSM. */
-	String OSM = "osm";
 
 	/** The Constant OUTPUT. */
 	String OUTPUT = "output";

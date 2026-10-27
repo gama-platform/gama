@@ -10,39 +10,35 @@
  ********************************************************************************************************/
 package gama.extension.serialize.binary;
 
-import java.io.IOException;
-
-import gama.api.gaml.types.IType;
+import gama.api.kernel.serialization.AbstractBinarySerializer.TransientSerializationContext;
+import gama.api.kernel.serialization.IGamaObjectInput;
+import gama.api.kernel.serialization.IGamaObjectOutput;
+import gama.api.kernel.serialization.IGamaObjectSerializer;
 import gama.api.runtime.scope.IScope;
-import gama.api.types.list.GamaListFactory;
-import gama.api.types.list.IList;
-import gama.api.types.message.IMessage;
 import gama.core.util.messaging.GamaMailbox;
 import gama.dev.DEBUG;
-import gama.extension.serialize.IGamaObjectInput;
-import gama.extension.serialize.IGamaObjectOutput;
 
 /**
- * FST serialiser for {@link IObject} instances. Serialises the species name and the full attribute map of the object.
- * On deserialisation, the species class is looked up in the model and a new instance is created. Objects deserialised
- * by this serialiser are not registered for back-reference tracking.
+ * Binary serialiser for {@link IObject} instances. Serialises the species name and the full attribute map of the
+ * object. On deserialisation, the species class is looked up in the model and a new instance is created. Objects
+ * deserialised by this binarySerialiser are not registered for back-reference tracking.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 août 2023
  */
-class IGamaMailBoxSerialiser extends FSTIndividualSerialiser<GamaMailbox> {
+public class IGamaMailBoxSerialiser implements IGamaObjectSerializer<GamaMailbox> {
 
-	static
-	{
+	static {
 		DEBUG.ON();
 	}
+
 	/**
-	 * Returns {@code false}: objects are not registered for FST back-reference tracking.
+	 * Returns {@code false}: objects are not registered for back-reference tracking.
 	 *
 	 * @return {@code false}
 	 */
 	@Override
-	protected boolean shouldRegister() {
+	public boolean shouldRegister() {
 		return false;
 	}
 
@@ -50,20 +46,20 @@ class IGamaMailBoxSerialiser extends FSTIndividualSerialiser<GamaMailbox> {
 	 * Serialises the species name and the attribute map of the object.
 	 *
 	 * @param out
-	 *            the FST output stream
+	 *            the binary output stream
 	 * @param o
 	 *            the object to serialise
 	 * @throws Exception
 	 *             if serialisation fails
 	 */
 	@Override
-	public void serialise(final IGamaObjectOutput out, final GamaMailbox o) throws Exception {
+	public void serialise(final IGamaObjectOutput out, final GamaMailbox o, final TransientSerializationContext context)
+			throws Exception {
 		DEBUG.OUT("serialize GamaMailbox ");
 		out.writeInt(o.size());
 		DEBUG.OUT("GamaMailbox size " + o.size());
-		
-		for(var auto: o)
-		{
+
+		for (var auto : o) {
 			DEBUG.OUT("serialize msg " + auto);
 			out.writeObject(auto);
 		}
@@ -76,7 +72,7 @@ class IGamaMailBoxSerialiser extends FSTIndividualSerialiser<GamaMailbox> {
 	 * @param scope
 	 *            the current GAMA simulation scope
 	 * @param in
-	 *            the FST input stream
+	 *            the binary input stream
 	 * @return the deserialised {@link IObject}, or {@code null} if the class is unknown
 	 * @throws Exception
 	 *             if deserialisation fails
@@ -88,13 +84,11 @@ class IGamaMailBoxSerialiser extends FSTIndividualSerialiser<GamaMailbox> {
 		final int size = in.readInt();
 		DEBUG.OUT("deserialize GamaMailbox size " + size);
 		GamaMailbox mailBox = new GamaMailbox(size);
-		for (int i = 0; i < size; i++) { 
+		for (int i = 0; i < size; i++) {
 			DEBUG.OUT("index " + i);
-			mailBox.add((IMessage) in.readObject()); 
+			mailBox.add(in.readObject());
 		}
-		for (int i = 0; i < size; i++) { 
-			DEBUG.OUT("message [" + i+"] " + mailBox.get(i));
-		}
+		for (int i = 0; i < size; i++) { DEBUG.OUT("message [" + i + "] " + mailBox.get(i)); }
 		return mailBox;
 	}
 

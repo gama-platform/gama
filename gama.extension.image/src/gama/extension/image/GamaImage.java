@@ -180,25 +180,32 @@ public class GamaImage extends BufferedImage implements IImageProvider, IFieldMa
 		final int cols = field.getCols(scope);
 		final int rows = field.getRows(scope);
 		final GamaImage image = new GamaImage(cols, rows, TYPE_INT_RGB, "field" + System.currentTimeMillis());
+		final int[] imageData = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
 		if (field.getBandsNumber(scope) > 1) {
 			IList<? extends IField> bands = field.getBands(scope);
+			final double[] redBand = bands.get(1).getFieldData(scope);
+			final double[] greenBand = bands.get(2).getFieldData(scope);
+			final double[] blueBand = bands.get(3).getFieldData(scope);
 			// boolean hasAlpha = bands.size() > 4;
 			for (int row = 0; row < rows; row++) {
+				final int sourceOffset = row * cols;
+				final int targetOffset = (rows - 1 - row) * cols;
 				for (int col = 0; col < cols; col++) {
-					double r = bands.get(1).get(scope, col, row);
-					double g = bands.get(2).get(scope, col, row);
-					double b = bands.get(3).get(scope, col, row);
-					image.setRGB(col, rows - 1 - row, 0x00000000 | (int) r << 16 | (int) g << 8 | (int) b);
+					final int index = sourceOffset + col;
+					imageData[targetOffset + col] =
+							0x00000000 | (int) redBand[index] << 16 | (int) greenBand[index] << 8 | (int) blueBand[index];
 				}
 			}
 		} else {
-			double[] minmax = field.getMinMax();
-			double range = minmax[1] - minmax[0];
+			final double[] minmax = field.getMinMax();
+			final double range = minmax[1] - minmax[0];
+			final double[] values = field.getFieldData(scope);
 			for (int row = 0; row < rows; row++) {
+				final int sourceOffset = row * cols;
+				final int targetOffset = (rows - 1 - row) * cols;
 				for (int col = 0; col < cols; col++) {
-					double v = field.get(scope, col, row);
-					double vRef = (v - minmax[0]) / range;
-					image.setRGB(col, rows - 1 - row, grayDoubleToRGB(vRef));
+					final double vRef = (values[sourceOffset + col] - minmax[0]) / range;
+					imageData[targetOffset + col] = grayDoubleToRGB(vRef);
 				}
 			}
 		}

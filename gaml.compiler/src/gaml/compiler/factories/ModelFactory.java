@@ -58,6 +58,7 @@ import gama.dev.DEBUG;
 import gaml.compiler.ast.SyntacticClassElement;
 import gaml.compiler.ast.SyntacticFactory;
 import gaml.compiler.descriptions.ModelDescription;
+import gaml.compiler.descriptions.SpeciesDescription;
 import gaml.compiler.validation.DocumentationContext;
 import gaml.compiler.validation.ValidationContext;
 
@@ -104,6 +105,8 @@ import gaml.compiler.validation.ValidationContext;
  * @see ISyntacticElement
  */
 public class ModelFactory implements IModelFactory {
+
+	private static final String INTERNAL_MODEL_GLOBAL_SCHEDULER_SPECIES = "__internal_model_global_scheduler__";
 
 	/** The singleton instance of ModelFactory. */
 	private static ModelFactory INSTANCE;
@@ -288,6 +291,8 @@ public class ModelFactory implements IModelFactory {
 		// known).
 		parentSpeciesAndExperiments(model, speciesNodes, classNodes, experimentNodes, tempSpeciesCache);
 
+		if (model.hasFacet(SCHEDULES) || model.hasFacet(FREQUENCY)) { createSchedulerSpecies(model); }
+
 		// Initialize the hierarchy of types
 		model.buildTypes();
 		// hqnghi build micro-models as types
@@ -321,9 +326,6 @@ public class ModelFactory implements IModelFactory {
 			if (sd.isExperiment() && !sd.initializeMirrorsAndSubSpecies()) return null;
 		}
 		for (final IClassDescription cd : getClassesInHierarchicalOrder(model)) { cd.inheritFromParent(); }
-
-		// Issue #1708 (put before the finalization)
-		if (model.hasFacet(SCHEDULES) || model.hasFacet(FREQUENCY)) { createSchedulerSpecies(model); }
 
 		if (!model.initializeMirrorsAndSubSpecies()) return null;
 		return model;
@@ -451,7 +453,7 @@ public class ModelFactory implements IModelFactory {
 		}
 		final IModelDescription model = new ModelDescription(modelName, null, projectPath, modelPath,
 				source.getElement(), null, parent, null, globalFacets, collector, documentationContext,
-				absoluteAlternatePathAsStrings, parent.getAgentConstructor());
+				absoluteAlternatePathAsStrings, parent.getConstructor());
 		final Collection<String> allModelNames = Iterables.size(models) == 1 ? null : ImmutableSet
 				.copyOf(Iterables.transform(Iterables.skip(models, 1), each -> buildModelName(each.getName())));
 		model.setImportedModelNames(allModelNames);
@@ -717,9 +719,9 @@ public class ModelFactory implements IModelFactory {
 	 */
 	private void createSchedulerSpecies(final IModelDescription model) {
 		final ISpeciesDescription sd = (ISpeciesDescription) GAML.getDescriptionFactory().create(IKeyword.SPECIES,
-				model, IKeyword.NAME, GamaMetaModel.INTERNAL_GLOBAL_SCHEDULER_SPECIES);
-		// final ISpeciesDescription sd = model.getSpeciesDescription(GamaMetaModel.INTERNAL_GLOBAL_SCHEDULER_SPECIES);
-		sd.initializeMirrorsAndSubSpecies();
+				model, IKeyword.NAME, INTERNAL_MODEL_GLOBAL_SCHEDULER_SPECIES);
+		((SpeciesDescription) sd).markAsModelLocal();
+		sd.setParent(model.getSpeciesDescription(IKeyword.AGENT));
 		if (model.hasFacet(SCHEDULES)) {
 			// remove the warning as GAMA integrates a working workaround to use this facet at the global level
 			// model.warning(
@@ -736,7 +738,6 @@ public class ModelFactory implements IModelFactory {
 			model.removeFacets(FREQUENCY);
 		}
 		model.addChild(sd);
-		model.getTypesManager().addSpeciesType(sd);
 	}
 
 	/**
@@ -987,8 +988,8 @@ public class ModelFactory implements IModelFactory {
 	void parentSpecies(final ISpeciesDescription macro, final ISyntacticElement micro, final IModelDescription model,
 			final Map<String, ITypeDescription> cache) {
 		// Gather the previously created species
-		final ISpeciesDescription speciesDesc = (ISpeciesDescription) cache.get(micro.getName());
-		if (speciesDesc == null || speciesDesc.isExperiment()) return;
+		final ITypeDescription tDesc = cache.get(micro.getName());
+		if (!(tDesc instanceof ISpeciesDescription speciesDesc) || speciesDesc.isExperiment()) return;
 
 		// Get parent name from facet, default to "agent" if not specified
 		String parentName = speciesDesc.getLitteral(IKeyword.PARENT);
@@ -998,7 +999,17 @@ public class ModelFactory implements IModelFactory {
 		ISpeciesDescription parent = lookupSpecies(parentName, cache);
 		if (parent == null) { parent = model.getSpeciesDescription(parentName); }
 
-		speciesDesc.setParent(parent);
+		if (parent == null) {
+			speciesDesc.error("Parent '" + parentName + "' is not a valid species or does not exist",
+
+					IGamlIssue.WRONG_PARENT, IKeyword.PARENT);
+			// Keep the species hierarchy consistent to avoid cascading errors
+
+			speciesDesc.setParent(GamaMetaModel.getSpeciesDescription(IKeyword.AGENT));
+
+		} else {
+			speciesDesc.setParent(parent);
+		}
 
 		// Recursively process micro-species
 		micro.visitSpecies(element -> parentSpecies(speciesDesc, element, model, cache));
@@ -1019,9 +1030,10 @@ public class ModelFactory implements IModelFactory {
 	 * @return the species description if found, null otherwise
 	 */
 	ISpeciesDescription lookupSpecies(final String name, final Map<String, ITypeDescription> cache) {
-		ISpeciesDescription result = (ISpeciesDescription) cache.get(name);
-		if (result == null) { result = GamaMetaModel.getSpeciesDescription(name); }
-		return result;
+		ITypeDescription desc = cache.get(name);
+		if (desc instanceof ISpeciesDescription speciesDesc) return speciesDesc;
+		if (desc != null) return null;
+		return GamaMetaModel.getSpeciesDescription(name);
 	}
 
 	/**
@@ -1069,11 +1081,17 @@ public class ModelFactory implements IModelFactory {
 		final ITypeDescription mDesc = cache.get(micro.getName());
 		if (!(mDesc instanceof IClassDescription cd)) return;
 		String p = cd.getLitteral(IKeyword.PARENT);
-		// If no parent is defined, we assume it is "agent"
+		// If no parent is defined, we assume it is "object"
 		if (p == null) { p = IKeyword.OBJECT; }
 		IClassDescription parent = lookupClass(p, cache);
 		if (parent == null) { parent = model.getClassDescription(p); }
-		cd.setParent(parent);
+		if (parent == null) {
+			cd.error("Parent '" + p + "' is not a valid class or does not exist", IGamlIssue.WRONG_PARENT,
+					IKeyword.PARENT);
+			cd.setParent(GamaMetaModel.getObjectClassDescription());
+		} else {
+			cd.setParent(parent);
+		}
 	}
 
 	/**
@@ -1088,8 +1106,7 @@ public class ModelFactory implements IModelFactory {
 	IClassDescription lookupClass(final String name, final Map<String, ITypeDescription> cache) {
 		ITypeDescription result = cache.get(name);
 		if (result instanceof IClassDescription cd) return cd;
-		if (IKeyword.OBJECT.equals(name)) return GamaMetaModel.getObjectClassDescription();
-		return null;
+		return GamaMetaModel.getClassDescription(name);
 	}
 
 }

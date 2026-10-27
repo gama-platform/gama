@@ -381,6 +381,16 @@ public class OrdinalAttributeDeclaration<T extends Comparable, Step extends Comp
 	 *             the gama runtime exception
 	 */
 	protected Double checkMinMax(final IObject agent, final IScope scope, final Double f) throws GamaRuntimeException {
+		if (Double.isNaN(f)) {
+			if (min != null) {
+				return minVal == null ? asFloat(scope, scope.evaluate(min, agent).getValue()) : (Double) minVal.run(scope);
+			}
+			if (max != null) {
+				return maxVal == null ? Cast.asFloat(scope, scope.evaluate(max, agent).getValue())
+						: (Double) maxVal.run(scope);
+			}
+			return f;
+		}
 		if (min != null) {
 			final Double fmin =
 					minVal == null ? asFloat(scope, scope.evaluate(min, agent).getValue()) : (Double) minVal.run(scope);

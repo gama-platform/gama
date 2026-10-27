@@ -1,3 +1,14 @@
+/*******************************************************************************************************
+ *
+ * PostgresConnector.java, in gama.extension.database, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2026-11).
+ *
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
+
 package gama.extension.database.utils.sql.postgres;
 
 import java.util.HashMap;

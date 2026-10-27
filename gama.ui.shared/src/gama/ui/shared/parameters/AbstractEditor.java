@@ -175,6 +175,8 @@ public abstract class AbstractEditor<T> implements Selector, ModifyListener, IPa
 	 */
 	protected abstract int[] getToolItems();
 
+	protected String[] getValueLabelsForSizing() { return new String[0]; }
+
 	/**
 	 * Returns null by default as only some types can define a "step" value
 	 *
@@ -531,6 +533,20 @@ public abstract class AbstractEditor<T> implements Selector, ModifyListener, IPa
 			GAMA.reportError(GAMA.getRuntimeScope(), e, false);
 			return;
 		}
+	}
+
+	@Override
+	public void displayValue(final T value) {
+		WorkbenchHelper.run(() -> {
+			if (parent == null || parent.isDisposed()) return;
+			internalModification = true;
+			currentValue = value;
+			if (editorLabel != null) { editorLabel.signalChanged(isValueModified()); }
+			editorControl.displayParameterValue();
+			updateToolbar();
+			composite.update();
+			internalModification = false;
+		});
 	}
 
 	/**
