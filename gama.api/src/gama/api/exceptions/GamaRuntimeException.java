@@ -189,7 +189,8 @@ public class GamaRuntimeException extends RuntimeException {
 			if (symbol != null) { addContext(symbol); }
 		}
 		if (ex != null) {
-			ex.printStackTrace();
+			// Errors caught by 'try' or by a test are expected: don't flood the output with their traces
+			if (scope == null || !scope.isInTryMode()) { ex.printStackTrace(); }
 			addContext(ex.getClass().getSimpleName() + ": " + ex.getMessage());
 			int i = 0;
 			for (final StackTraceElement element : ex.getStackTrace()) {
