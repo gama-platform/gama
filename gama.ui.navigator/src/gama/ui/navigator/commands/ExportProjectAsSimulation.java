@@ -104,6 +104,9 @@ public class ExportProjectAsSimulation extends AbstractHandler {
 	 */
 	public void export(List<IFile> modelFiles)
     {
+        synchronized (this) {
+            exportIsDone = false;
+        }
 		final Set<String> plugins = new HashSet<String>(); 
 
 		final List<String> experimentNames = new ArrayList<String>(); 
