@@ -12,7 +12,6 @@ package gaml.compiler.expressions;
 
 import static gama.api.exceptions.GamaRuntimeException.error;
 
-import gama.api.GAMA;
 import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
@@ -95,16 +94,13 @@ public class ActionCallOperator implements IOperator {
 		if (scope == null) return null;
 
 		IObject object = getTarget(scope);
-		if (object == null) return null;
 
 		// When a target is present, resolve the action from the actual runtime species/class of the target
 		// object so that an overriding action defined in a child species or subclass is correctly dispatched
 		// even when the variable holding the object was declared with a parent type (polymorphism).
 
 		IClass context = getClass(scope, object);
-		if (context == null) return null;
 		IStatement.WithArgs executer = getExecuter(scope, context);
-		if (executer == null) return null;
 
 		boolean useTargetScope = scope.getRoot() instanceof IExperimentAgent && object instanceof ISimulationAgent;
 		return scope.execute(executer, object, useTargetScope, getRuntimeArgs(scope)).getValue();
@@ -120,11 +116,9 @@ public class ActionCallOperator implements IOperator {
 		WithArgs executer = context.getAction(getName());
 		// the executer is not available. Can happen in rare cases (like the one in Issue #3493).
 		if (executer == null) {
-			GAMA.reportError(scope,
-					error("Action '" + getName() + "' is not available in the context of " + scope.getAgent()
-							+ ". Check that it is defined for this agent; actions defined in 'global' must be called "
-							+ "on the simulation (e.g. ask simulation { do " + getName() + "(); }).", scope),
-					false);
+			throw error("Action '" + getName() + "' is not available in the context of " + scope.getAgent()
+					+ ". Check that it is defined for this agent; actions defined in 'global' must be called "
+					+ "on the simulation (e.g. ask simulation { do " + getName() + "(); }).", scope);
 		}
 		return executer;
 	}
@@ -144,7 +138,8 @@ public class ActionCallOperator implements IOperator {
 	 *            the current execution scope
 	 * @param object
 	 *            the target object
-	 * @return the {@link IClass} whose {@code getAction} will be queried, or {@code null} on error
+	 * @return the {@link IClass} whose {@code getAction} will be queried
+	 * @throws GamaRuntimeException if the species or class cannot be resolved
 	 */
 	private IClass getClass(final IScope scope, final IObject object) {
 		if (isSuperInvocation) {
@@ -158,22 +153,19 @@ public class ActionCallOperator implements IOperator {
 			// fall back to the type name, which is the class name.
 			if (superClassName == null) { superClassName = target.getGamlType().getName(); }
 			if (superClassName == null) {
-				GAMA.reportError(scope, error("Cannot determine the super-class for " + getName(), scope), false);
-				return null;
+				throw error("Cannot determine the super-class for " + getName(), scope);
 			}
 			IClass superClass =
 					isAgent ? scope.getModel().getSpecies(superClassName) : scope.getModel().getClass(superClassName);
 			if (superClass == null) {
-				GAMA.reportError(scope, error("Parent " + (isAgent ? "species" : "class") + " '" + superClassName
-						+ "' not found for " + getName(), scope), false);
-				return null;
+				throw error("Parent " + (isAgent ? "species" : "class") + " '" + superClassName
+						+ "' not found for " + getName(), scope);
 			}
 			return superClass;
 		}
 		IClass context = object.getSpecies();
 		if (context == null) {
-			GAMA.reportError(scope, error("No species/class available to execute " + getName(), scope), false);
-			return null;
+			throw error("No species/class available to execute " + getName(), scope);
 		}
 		return context;
 	}
@@ -185,12 +177,10 @@ public class ActionCallOperator implements IOperator {
 	private IObject getTarget(final IScope scope) {
 		Object val = target.value(scope);
 		if (val == null) {
-			GAMA.reportError(scope, error("Agent or object is nil.", scope), false);
-			return null;
+			throw error("Agent or object is nil.", scope);
 		}
 		if (!(val instanceof IObject object)) {
-			GAMA.reportError(scope, error("Agent or object is invalid.", scope), true);
-			return null;
+			throw error("Agent or object is invalid.", scope);
 		}
 		return object;
 	}

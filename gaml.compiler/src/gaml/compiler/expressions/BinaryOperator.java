@@ -15,7 +15,6 @@ import java.util.Arrays;
 import gama.annotations.doc;
 import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
-import gama.api.GAMA;
 import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IDescription;
@@ -195,8 +194,7 @@ public class BinaryOperator extends AbstractNAryOperator {
 		public void setVal(final IScope scope, final Object v, final boolean create) throws GamaRuntimeException {
 			Object object = exprs[0].value(scope);
 			if (!(object instanceof IObject oo)) {
-				GAMA.reportError(scope, GamaRuntimeException.error("Invalid object : " + object, scope), true);
-				return;
+				throw GamaRuntimeException.error("Invalid object : " + object, scope);
 			}
 			scope.setAgentVarValue(oo, exprs[1].literalValue(), v);
 		}

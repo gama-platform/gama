@@ -110,7 +110,7 @@ public interface GamlCoreConstants {
 			altNames = {},
 			category = { IConstantCategory.CONSTANT },
 			concept = { IConcept.ACTION },
-			doc = { @doc ("The text of the last error thrown during the current execution") }) String current_error =
+			doc = { @doc ("The message of the last error or warning recorded in the current scope, notably in catch. Successful operations do not clear it. Report-only diagnostics and errors reported on another scope may not update it; do not use it alone to decide whether an operation succeeded.") }) String current_error =
 					"";
 
 	/**

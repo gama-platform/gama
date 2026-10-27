@@ -51,7 +51,7 @@ public class SPARQLOperators {
 			doc = @doc (
 					value = "Queries a SPARQL endpoint with the query given as first parameter, at the endpoint given in the second, with timeout of 10s returns the results as a list of lists of strings (first row is the header)",
 					special_cases = {
-							"If the query fails, a non-blocking error is raised, the variable #current_error is filled with the error message and an empty list is returned." }),
+							"If the query fails outside try/catch, a non-blocking error is reported, #current_error contains its message and nil is returned (not an empty dataframe). Inside try/catch, the failure is thrown to the catch block instead." }),
 			can_be_const = false,
 			category = { IOperatorCategory.SPARQL },
 			concept = { IConcept.DATABASE })
@@ -81,7 +81,7 @@ public class SPARQLOperators {
 					value = "Queries a SPARQL endpoint with the query given as first parameter, at the endpoint given in the second, with timeout in millisecond given in the third and returns the results as a list of lists of strings."
 							+ " The first list is the header with the variable names, the following lists are the results.",
 					special_cases = {
-							"If the query fails, a non-blocking error is raised, the variable #current_error is filled with the error message and an empty list is returned." }),
+							"If the query fails outside try/catch, a non-blocking error is reported, #current_error contains its message and nil is returned (not an empty dataframe). Inside try/catch, the failure is thrown to the catch block instead." }),
 			can_be_const = false,
 			category = { IOperatorCategory.SPARQL },
 			concept = { IConcept.DATABASE })

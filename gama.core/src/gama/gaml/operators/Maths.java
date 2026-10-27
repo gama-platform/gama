@@ -2702,7 +2702,7 @@ public class Maths {
 	})
 	public static Integer opMod(final IScope scope, final Integer a, final Integer b) {
 		if (b == 0) {
-			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("Division by zero", scope), false);
+			throw GamaRuntimeException.error("Division by zero", scope);
 		}
 		return a % b;
 	}

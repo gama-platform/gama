@@ -221,7 +221,7 @@ public class NetworkSkill extends MessagingSkill {
 							optional = true,
 							doc = @doc ("For UDP connection, it sets the maximum size of received packets (default = 1024bits).")) },
 			doc = @doc (
-					value = "Action used by a networking agent to connect to a server or to create a server.",
+					value = "Action used by a networking agent to connect to a server or to create a server. Returns true on success. If the connector throws while connecting, a non-blocking error is reported, #current_error contains its message and false is returned. Inside try/catch, this failure is thrown to the catch block instead. Errors in argument evaluation or connector setup may also propagate.",
 					examples = { @example (" do connect with_name:\"any_name\";"),
 							@example (" do connect to:\"localhost\" port:9876 with_name:\"any_name\";"),
 							@example (" do connect to:\"localhost\" protocol:\"MQTT\" port:9876 with_name:\"any_name\";"),
