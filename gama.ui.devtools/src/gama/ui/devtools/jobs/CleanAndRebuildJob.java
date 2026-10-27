@@ -41,6 +41,7 @@ import gama.ui.devtools.util.Notifier;
  * replaces the usual manual recipe (deleting the 'gaml' folder, closing/reopening the projects, disabling and
  * re-enabling annotation processing, cleaning and rebuilding):
  * <ol>
+ * <li>refreshes the whole workspace recursively from disk;</li>
  * <li>optionally repairs the configuration of the plugins (see {@link PluginConfigurationChecker});</li>
  * <li>disables annotation processing on the plugins;</li>
  * <li>deletes their 'gaml' folders;</li>
@@ -70,12 +71,14 @@ public class CleanAndRebuildJob extends WorkspaceJob {
 		long start = System.currentTimeMillis();
 		SubMonitor sub = SubMonitor.convert(monitor, getName(), 100);
 		try {
+			sub.subTask("Refreshing workspace");
+			ResourcesPlugin.getWorkspace().getRoot().refreshLocal(IResource.DEPTH_INFINITE, sub.split(5));
 			if (DevToolsPreferences.is(DevToolsPreferences.REPAIR_BEFORE_CLEAN)) {
 				sub.subTask("Repairing configuration");
 				List<ConfigurationIssue> issues = PluginConfigurationChecker.check(targets, sub.split(3));
 				PluginConfigurationChecker.repair(issues, sub.split(2));
 			}
-			sub.setWorkRemaining(95);
+			sub.setWorkRemaining(90);
 			sub.subTask("Resetting annotation processing");
 			try {
 				for (IProject p : targets) { AptConfig.setEnabled(GamaProjects.java(p), false); }
@@ -92,7 +95,7 @@ public class CleanAndRebuildJob extends WorkspaceJob {
 			sub.subTask("Cleaning");
 			ResourcesPlugin.getWorkspace().build(configs, IncrementalProjectBuilder.CLEAN_BUILD, true, sub.split(10));
 			sub.subTask("Building");
-			ResourcesPlugin.getWorkspace().build(configs, IncrementalProjectBuilder.FULL_BUILD, true, sub.split(70));
+			ResourcesPlugin.getWorkspace().build(configs, IncrementalProjectBuilder.FULL_BUILD, true, sub.split(65));
 
 			List<String> missing = new ArrayList<>();
 			for (IProject p : targets) {
