@@ -153,7 +153,11 @@ public class ExportHelper
                 }
 
                 if (rawLocation != null) {
-                    Path resolvedPath = resolveVariables(rawLocation, Path.of(name), projectDir, pathVarManager);
+                    IResource resource = targetProject.findMember(name);
+                    if (resource == null || resource.getLocation() == null) {
+                        throw new IllegalStateException("Cannot resolve linked resource: " + name);
+                    }
+                    Path resolvedPath = resource.getLocation().toFile().toPath();
 
                     System.out.println("Link Name: " + name + " -> Resolved Path: " + resolvedPath);
                     
