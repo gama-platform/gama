@@ -926,6 +926,8 @@ wheel-car, cone-twist-tentacle and pedestrian-flow/evacuation examples
   longer incorrectly share cached geometry
   ([`c3bd024bd`](https://github.com/gama-platform/gama/commit/c3bd024bd), #668;
   [`7d8708dff`](https://github.com/gama-platform/gama/commit/7d8708dff), #644).
+- Java2D grid colors remain aligned with cell borders and agent aspects when zooming or panning
+  with antialiasing disabled, including in the Tools Panel example (#927).
 - Traces isolate their transformation matrices, preventing layer elevation from accumulating
   across frames. Autorun displays with `refresh: false` retain their initial textures, and
   skipped OpenGL refreshes are retried even after the simulation pauses
