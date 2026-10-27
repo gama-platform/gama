@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Configuration of a small ecosystem, read by the model 'XML File Import.gaml' -->
+<ecosystem name="Savanna" version="1.0">
+  <description>A simple prey-predator ecosystem described in XML</description>
+  <environment>
+    <width>100</width>
+    <height>100</height>
+  </environment>
+  <species name="prey" number="80" color="green">
+    <speed>1.0</speed>
+    <size>1.0</size>
+  </species>
+  <species name="predator" number="10" color="red">
+    <speed>2.0</speed>
+    <size>2.5</size>
+  </species>
+</ecosystem>

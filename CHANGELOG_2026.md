@@ -19,6 +19,25 @@ and [random draws/sampling](#random-draws-and-statistical-correctness), in addit
 
 ## [2026.0.0] - Unreleased
 
+### XML files: structured contents and saving
+
+`xml_file` now reads XML documents into nested GAML maps instead of a map of raw file lines
+(#472). The file's `contents` represents the root element as a `map<string, unknown>` with
+four keys: `name` (tag name), `attributes` (`map<string, string>`), `text` (trimmed direct text)
+and `children` (an ordered list of element maps). Repeated child tags remain separate elements.
+The file's `attributes` returns the names of the root element's XML attributes.
+
+The new `xml_file(path, root_map)` constructor supports creating or modifying XML documents;
+`save xml_file(path, root_map);` writes the structure as UTF-8 XML. This representation is
+intended for structured data, not lossless XML editing: comments and processing instructions
+are omitted, surrounding text whitespace is trimmed, and mixed text/element ordering is not
+preserved. Reading rejects DTDs and external entities.
+
+The library includes [XML File Import](gama.library/models/Data/Data%20Importation/models/XML%20File%20Import.gaml),
+with an XML ecosystem configuration, and
+[Save to XML](gama.library/models/Data/Data%20Exportation/models/Save%20to%20XML.gaml),
+which saves agent data and reads it back.
+
 ### Nested map content types
 
 - Converting nested maps and lists now propagates declared container types even when the inferred
