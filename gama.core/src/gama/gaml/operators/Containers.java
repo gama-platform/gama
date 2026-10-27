@@ -104,7 +104,7 @@ import one.util.streamex.StreamEx;
  * {@code last_with}, {@code count}, {@code sort_by}, {@code group_by}, {@code index_by}</li>
  * <li><b>Transformation:</b> {@code reverse}, {@code shuffle}, {@code distinct}/ {@code remove_duplicates},
  * {@code interleave}</li>
- * <li><b>Reduction:</b> {@code sum}, {@code mean}</li>
+ * <li><b>Reduction:</b> {@code sum}, {@code mean}, {@code reduce}, {@code scan}</li>
  * <li><b>Construction:</b> {@code range}, {@code create_map}, {@code as_map}</li>
  * <li><b>Graph:</b> {@code as_graph}, {@code as_spatial_graph}</li>
  * </ul>
@@ -2973,6 +2973,152 @@ public class Containers {
 	public static Object with_min_of(final IScope scope, final String eachName, final IContainer c,
 			final IExpression filter) {
 		return stream(scope, c).minBy(buildFunctionWithEach(scope, eachName, filter)).orElse(null);
+	}
+
+	@operator (
+			value = "reduce",
+			type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
+			iterator = true,
+			category = IOperatorCategory.CONTAINER,
+			concept = IConcept.CONTAINER)
+	@doc (
+			value = "Reduces a container sequentially in iteration order. In the body, @ is the accumulated value and each is the current element.",
+			comment = "Without an initial value, the first element initializes @ and the body is evaluated from the second element. "
+					+ "The result has the element type. Maps iterate over values. Nested reductions bind @ and each to the innermost reduction. "
+					+ "Unlike accumulate, reduce returns a single accumulated result rather than a flat list.",
+			special_cases = { "An empty container without an initial value raises an error.",
+					"A singleton without an initial value returns its element without evaluating the body." },
+			examples = { @example (value = "[1,2,3,4] reduce (@ + each)", equals = "10"),
+					@example (value = "[10,3,2] reduce (@ - each)", equals = "5") },
+			see = { "scan", "accumulate", "collect", "sum_of" })
+	@tests ({ @test ("[1,2,3,4] reduce (@ + each) = 10"),
+			@test ("[1,2,3,4] reduce (@ * each) = 24"),
+			@test ("[10,3,2] reduce (@ - each) = 5"),
+			@test ("[7] reduce (@ + each) = 7"),
+			@test ("['a','b','c'] reduce (@ + ',' + each) = 'a,b,c'"),
+			@test ("['a'::1,'b'::2,'c'::3] reduce (@ + each) = 6") })
+	public static Object reduce(final IScope scope, final String eachName, final IContainer<?, ?> c,
+			final IExpression body) {
+		final Iterator<?> iterator = notNull(scope, c).iterable(scope).iterator();
+		if (!iterator.hasNext()) {
+			throw GamaRuntimeException.error("reduce cannot reduce an empty container without an initial value", scope);
+		}
+		final Object initial = c.getGamlType().getContentType().cast(scope, iterator.next(), null, false);
+		return fold(scope, eachName, iterator, initial, body, null);
+	}
+
+	@operator (
+			value = "reduce",
+			type = ITypeProvider.TYPE_AT_INDEX + 3,
+			iterator = true,
+			category = IOperatorCategory.CONTAINER,
+			concept = IConcept.CONTAINER)
+	@doc (
+			value = "Reduces a container using an initial value, written container reduce (initial_value, body).",
+			comment = "The initial value is evaluated once, outside the body's @ and each bindings. The body is then evaluated for every element, "
+					+ "with @ as the accumulated value and each as the current element. The result has the initial value's type, "
+					+ "which may differ from the element type. The body must return a compatible value. Evaluation is sequential in container iteration order.",
+			special_cases = "An empty container returns the initial value unchanged, without evaluating the body.",
+			examples = { @example (value = "[1,2,3] reduce (10, @ + each)", equals = "16"),
+					@example (value = "[] reduce (0, @ + each)", equals = "0") },
+			see = { "scan", "accumulate", "collect", "sum_of" })
+	@tests ({ @test ("[1,2,3] reduce (10, @ + each) = 16"),
+			@test ("[] reduce (0, @ + each) = 0"),
+			@test ("[10,3,2] reduce (0, @ - each) = -15"),
+			@test ("['a','bb','ccc'] reduce (0, @ + length(each)) = 6"),
+			@test ("reduce([1,2,3], 10, @ + each) = 16"),
+			@test ("[[1,2],[3,4]] reduce (0, @ + (each reduce (@ + each))) = 10") })
+	public static Object reduce(final IScope scope, final String eachName, final IContainer<?, ?> c,
+			final Object initial, final IExpression body) {
+		return fold(scope, eachName, notNull(scope, c).iterable(scope).iterator(), initial, body, null);
+	}
+
+	@operator (
+			value = "scan",
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
+			iterator = true,
+			category = IOperatorCategory.CONTAINER,
+			concept = IConcept.CONTAINER)
+	@doc (
+			value = "Returns a list of the successive accumulated values, evaluated sequentially in container iteration order. "
+					+ "In the body, @ is the accumulated value and each is the current element.",
+			comment = "Without an initial value, the first element initializes @ and is the first result. "
+					+ "The body is evaluated from the second element. The result is a list of the element type. "
+					+ "Maps iterate over values. Nested scans and reductions use the innermost @ and each bindings. "
+					+ "Results retain accumulated values without deep copying them.",
+			special_cases = { "An empty container returns an empty list.",
+					"A singleton returns a one-element list without evaluating the body." },
+			examples = { @example (value = "[1,2,3,4] scan (@ + each)", equals = "[1,3,6,10]"),
+					@example (value = "[10,3,2] scan (@ - each)", equals = "[10,7,5]") },
+			see = { "reduce", "accumulate", "collect" })
+	@tests ({ @test ("[1,2,3,4] scan (@ + each) = [1,3,6,10]"),
+			@test ("[1,2,3,4] scan (@ * each) = [1,2,6,24]"),
+			@test ("[10,3,2] scan (@ - each) = [10,7,5]"),
+			@test ("[7] scan (@ + each) = [7]"),
+			@test ("['a','b','c'] scan (@ + each) = ['a','ab','abc']") })
+	public static IList<Object> scan(final IScope scope, final String eachName, final IContainer<?, ?> c,
+			final IExpression body) {
+		final Iterator<?> iterator = notNull(scope, c).iterable(scope).iterator();
+		final IType<?> type = c.getGamlType().getContentType();
+		final IList<Object> results = GamaListFactory.create(type);
+		if (iterator.hasNext()) {
+			final Object initial = type.cast(scope, iterator.next(), null, false);
+			results.add(initial);
+			fold(scope, eachName, iterator, initial, body, results);
+		}
+		return results;
+	}
+
+	@operator (
+			value = "scan",
+			content_type = ITypeProvider.TYPE_AT_INDEX + 3,
+			iterator = true,
+			category = IOperatorCategory.CONTAINER,
+			concept = IConcept.CONTAINER)
+	@doc (
+			value = "Returns a list containing the initial value followed by every successive accumulated value, "
+					+ "written container scan (initial_value, body).",
+			comment = "The initial value is evaluated once, outside the body's @ and each bindings. "
+					+ "The body is then evaluated for every element, with @ as the accumulated value and each as the current element. "
+					+ "The result is a list of the initial value's type, which may differ from the element type. "
+					+ "The body must return a compatible value. Evaluation is sequential in container iteration order. "
+					+ "An input of length n produces n + 1 results. Results retain accumulated values without deep copying them.",
+			special_cases = "An empty container returns a one-element list containing the initial value, without evaluating the body.",
+			examples = { @example (value = "[1,2,3,4] scan (0, @ + each)", equals = "[0,1,3,6,10]"),
+					@example (value = "[] scan (0, @ + each)", equals = "[0]"),
+					@example (value = "['a','bb','ccc'] scan (0, @ + length(each))", equals = "[0,1,3,6]") },
+			see = { "reduce", "accumulate", "collect" })
+	@tests ({ @test ("[1,2,3,4] scan (0, @ + each) = [0,1,3,6,10]"),
+			@test ("[] scan (0, @ + each) = [0]"),
+			@test ("['a','bb','ccc'] scan (0, @ + length(each)) = [0,1,3,6]"),
+			@test ("scan([1,2,3], 10, @ + each) = [10,11,13,16]") })
+	public static IList<Object> scan(final IScope scope, final String eachName, final IContainer<?, ?> c,
+			final IExpression initial, final IExpression body) {
+		final Object seed = initial.value(scope);
+		final Iterator<?> iterator = notNull(scope, c).iterable(scope).iterator();
+		final IList<Object> results = GamaListFactory.create(initial.getGamlType());
+		results.add(seed);
+		fold(scope, eachName, iterator, seed, body, results);
+		return results;
+	}
+
+	private static Object fold(final IScope scope, final String eachName, final Iterator<?> iterator,
+			final Object initial, final IExpression body, final IList<Object> results) {
+		final Object previousEach = scope.getEach(eachName);
+		final Object previousAccumulator = scope.getEach("@");
+		Object accumulator = initial;
+		try {
+			while (iterator.hasNext()) {
+				scope.setEach(eachName, iterator.next());
+				scope.setEach("@", accumulator);
+				accumulator = body.value(scope);
+				if (results != null) { results.add(accumulator); }
+			}
+			return accumulator;
+		} finally {
+			scope.setEach("@", previousAccumulator);
+			scope.setEach(eachName, previousEach);
+		}
 	}
 
 	/**

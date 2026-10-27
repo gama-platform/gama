@@ -1964,17 +1964,11 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     TerminalExpression returns ReservedLiteral
 	 *
 	 * Constraint:
-	 *     op=KEYWORD
+	 *     (op=KEYWORD | op='@')
 	 * </pre>
 	 */
 	protected void sequence_TerminalExpression(ISerializationContext context, ReservedLiteral semanticObject) {
-		if (errorAcceptor != null) {
-			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.TERMINAL_EXPRESSION__OP) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.TERMINAL_EXPRESSION__OP));
-		}
-		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getTerminalExpressionAccess().getOpKEYWORDTerminalRuleCall_4_1_0(), semanticObject.getOp());
-		feeder.finish();
+		genericSequencer.createSequence(context, semanticObject);
 	}
 	
 	

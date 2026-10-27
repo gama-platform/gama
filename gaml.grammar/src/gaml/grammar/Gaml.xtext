@@ -499,7 +499,7 @@ TerminalExpression:
 	{IntLiteral} op=INTEGER |
 	{DoubleLiteral} op=DOUBLE |
 	{BooleanLiteral} op=BOOLEAN |
-	{ReservedLiteral} op=KEYWORD;
+	{ReservedLiteral} op=(KEYWORD | '@');
 
 // Example: "Hello"
 StringLiteral:

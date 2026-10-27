@@ -161,7 +161,8 @@ public class ArtefactRegistry {
 
 	/** Binary operator keywords in GAML. */
 	public static final Set<String> BINARY_ARTEFACTS_NAMES = ImmutableSet.of(IKeyword.EQUALS, IKeyword.PLUS,
-			IKeyword.MINUS, IKeyword.DIVIDE, IKeyword.TIMES, "^", "<", ">", "<=", ">=", "?", "!=", ":", ".", "where",
+			IKeyword.MINUS, IKeyword.DIVIDE, IKeyword.MULTIPLY, IKeyword.TIMES, "^", "<", ">", "<=", ">=", "?", "!=",
+			":", ".", "where",
 			"select", "collect", "first_with", "last_with", "overlapping", "at_distance", "in", "inside", "among",
 			"contains", "contains_any", "contains_all", "min_of", "max_of", "with_max_of", "with_min_of", "of_species",
 			"of_generic_species", "sort_by", "accumulate", "or", "and", "at", "is", "group_by", "index_of",

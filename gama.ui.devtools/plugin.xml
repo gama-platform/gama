@@ -33,6 +33,9 @@
       <command id="gama.ui.devtools.rebuildProcessorJar" categoryId="gama.ui.devtools.category"
             name="Rebuild Annotation Processor"
             description="Regenerates gama.processor.jar from the sources of gama.processor and gama.annotations"/>
+      <command id="gama.ui.devtools.regenerateGrammar" categoryId="gama.ui.devtools.category"
+            name="Regenerate GAML Grammar"
+            description="Runs the MWE2 workflow that regenerates the GAML grammar artifacts"/>
       <command id="gama.ui.devtools.dependencyGraph" categoryId="gama.ui.devtools.category"
             name="Dependency Graph..."
             description="Computes the graph of dependencies between the packages of GAMA (requires jdeps)"/>
@@ -51,6 +54,7 @@
       <handler commandId="gama.ui.devtools.findKeyword" class="gama.ui.devtools.handlers.FindGamlKeywordHandler"/>
       <handler commandId="gama.ui.devtools.updateJavaHeaders" class="gama.ui.devtools.handlers.UpdateJavaHeadersHandler"/>
       <handler commandId="gama.ui.devtools.rebuildProcessorJar" class="gama.ui.devtools.handlers.RebuildProcessorJarHandler"/>
+      <handler commandId="gama.ui.devtools.regenerateGrammar" class="gama.ui.devtools.handlers.RegenerateGrammarHandler"/>
       <handler commandId="gama.ui.devtools.dependencyGraph" class="gama.ui.devtools.handlers.DependencyGraphHandler"/>
       <handler commandId="gama.ui.devtools.openNewWizard" class="gama.ui.devtools.handlers.OpenNewWizardHandler"/>
    </extension>
@@ -159,6 +163,10 @@
             <command
                   commandId="gama.ui.devtools.rebuildProcessorJar"
                   label="Rebuild processor..."
+                  style="push"/>
+            <command
+                  commandId="gama.ui.devtools.regenerateGrammar"
+                  label="Regenerate grammar..."
                   style="push"/>
             <separator name="reports" visible="true"/>
             <command
