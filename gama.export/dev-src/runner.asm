@@ -133,7 +133,16 @@ _start:
     mov rcx, [rel zip_content_offset]
     add rsi, rcx
     mov rdx, [rel zip_content_size]
+.write_zip:
+    mov rax, 0x1
     syscall
+    cmp rax, -4 ; EINTR: retry without advancing
+    je .write_zip
+    test rax, rax
+    jle .exit_with_error
+    add rsi, rax
+    sub rdx, rax
+    jnz .write_zip
 
     ; close extractor file descriptor
     mov rax, 0x3
