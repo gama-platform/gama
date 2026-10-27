@@ -39,6 +39,7 @@ import org.w3c.dom.Document;
 import com.google.inject.Injector;
 
 import gama.api.GAMA;
+import gama.api.additions.GamaBundleLoader;
 import gama.api.compilation.GamlCompilationError;
 import gama.api.constants.GamlFileExtension;
 import gama.api.exceptions.GamaCompilationFailedException;
@@ -110,6 +111,9 @@ public class HeadlessApplication implements IApplication {
 		// finds the ArtefactFactory already registered when it loads GamlAdditions.
 		// This synchronously initialises all GAML types (Types.MAP, Types.AGENT, …).
 		CoreActivator.load();
+		// GamaBundleLoader logs loading failures without throwing: fail fast instead of running with
+		// a half-initialized GAML (and report success to scripts/CI).
+		if (GamaBundleLoader.ERRORED) { System.exit(2); }
 		// Eagerly instantiate BuiltinGlobalScopeProvider and any other Xtext singletons whose
 		// constructors read from the fully-loaded GAMA metamodel (Types, GamaMetaModel, …).
 		// This mirrors what EditorActivator does for the GUI: the injector is only asked for
