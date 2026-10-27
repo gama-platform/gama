@@ -10,7 +10,14 @@ Install it in the Eclipse IDE used to develop GAMA, not in GAMA itself. This Ecl
 2. Add the update site `https://gama-platform.org/gama/devtools/`.
 3. Select **GAMA Developer Tools**, then restart Eclipse.
 
-Updates are then found by *Help > Check for Updates*.
+Use **GAMA > Update GAMA tools** to check the developer tools update site and install the latest
+update directly, without Eclipse's software selection wizard. It updates only the installed developer
+tools feature, not the rest of Eclipse. If no update is available, a dialog says so. The check and
+installation run as cancellable background jobs; network and installation errors are reported rather
+than treated as "no update". Eclipse still handles trust/signature prompts and restarting after
+installation; a license prompt is shown only for licenses not already accepted. Finish any other software
+installation or update before using this command. Workspace launches and plugins copied into `dropins`
+must first be installed as the feature from the update site to use this action.
 
 The update site is built from `gama.p2site.devtools`, which contains only `gama.feature.devtools`. The workflow `.github/workflows/publish-devtools.yaml` publishes it on every change of the developer tools on `main`. The plugin depends only on Eclipse bundles; the jgrapht jars it uses are embedded in `libs/`. To try local changes without installing, launch a runtime Eclipse from the workspace.
 
@@ -29,21 +36,31 @@ local installation, use a uniquely named ZIP for each build rather than a cached
 
 ## Commands
 
+The **GAMA** menu is grouped under gray, non-clickable **Run GAMA**, **Build GAMA**, **Repair** and
+**Search** headings, separated by horizontal lines, with **Update GAMA tools** at the bottom.
+Creation wizards remain in *File > New > Other... > GAMA Development* and in the Java-project context menu.
+
+The menu layout, disabled headings, launch parameters and updater registration have a standalone regression test:
+```
+java gama.ui.devtools/tests/DevToolsMenuTest.java .
+```
+
 | Command | What it does |
 |---|---|
-| **Find GAML Keyword Implementation...** (`Ctrl/Cmd+Shift+Alt+K`) | Finds the Java code behind a GAML keyword (see below). |
-| **Run / Debug > GAMA GUI / GAMA Headless... / GAMA Tests** | Launches workspace GAMA through editable PDE Eclipse Application configurations. |
-| **Run > Configure Launches...** | Associates each flavor with an existing configuration or generates a default; provides editing and confirmed restoration of defaults. |
-| **Clean and Rebuild All GAMA Plugins** (`Cmd+B` on macOS, `Ctrl+B` on Windows/Linux) | Saves the editors, refreshes the whole workspace recursively from disk and repairs the configuration (optional). Disables the annotation processor, deletes the `gaml/` folders and re-enables the processor. Then runs a clean build and a full build of the workspace, or only of the GAMA plugins (preference), and checks that every `GamlAdditions.java` was regenerated. No dialog is shown and the job can be cancelled. |
-| **Clean and Rebuild Selected Plugins** | The same, limited to the GAMA plugins in the selection; the initial refresh still covers the whole workspace. |
-| **Check GAMA Plugins Configuration** | Checks every GAMA plugin (see below), adds problem markers with quick fixes (`Ctrl/Cmd+1` in the Problems view) and offers to repair everything at once. |
-| **Rebuild the Annotation Processor Jar** | Regenerates `gama.processor/gama.processor.jar` from `Generate Processor.jardesc`. Use it after modifying `gama.processor` or `gama.annotations`. |
-| **Regenerate GAML Grammar** | Runs `gaml.grammar/src/gaml/grammar/generator/Generate_GAML_Artefacts.mwe2` to regenerate the GAML grammar artifacts. The `gaml.grammar`, `gaml.compiler` and `gama.ui.editor` projects must be open. |
-| **Update Java Headers...** | Sets the GAMA version and copyright end year, updates existing headers and adds missing ones, with a mandatory per-file preview and undo. |
-| **GAML Documentation and Tests Report** | Builds a Markdown report from the warnings of the processor. It lists the undocumented GAML elements and the untested operators, per plugin. |
-| **Generate GAML Test Stubs for Untested Operators** | Writes `models/Tests/Untested Operators.gaml` in each selected plugin (or all of them). It contains one `test` stub per operator reported as not tested, with its Java signature. Stubs already in the file are kept. |
-| **Package Dependency Graph...** | Runs `jdeps` on the compiled bundles and produces an interactive HTML graph of the package dependencies. This needs a JDK. |
-| **New > GAMA Plugin / Skill / Operators / Action / Type / GAML Test Model** | The wizards. They are also available in *File > New > Other... > GAMA Development*. |
+| **Keyword implementations...** (`Ctrl/Cmd+Shift+Alt+K`) | Finds the Java code behind a GAML keyword (see below). |
+| **Run... / Debug... > GAMA GUI / GAMA Headless... / GAMA Tests** | Launches workspace GAMA through editable PDE Eclipse Application configurations. |
+| **Run... > Configure Launches...** | Associates each flavor with an existing configuration or generates a default; provides editing and confirmed restoration of defaults. |
+| **Clean and build all plugins** (`Cmd+B` on macOS, `Ctrl+B` on Windows/Linux) | Saves the editors, refreshes the whole workspace recursively from disk and repairs the configuration (optional). Disables the annotation processor, deletes the `gaml/` folders and re-enables the processor. Then runs a clean build and a full build of the workspace, or only of the GAMA plugins (preference), and checks that every `GamlAdditions.java` was regenerated. No dialog is shown and the job can be cancelled. |
+| **Clean and build selected plugins** | The same, limited to the GAMA plugins in the selection; the initial refresh still covers the whole workspace. |
+| **Repair plugins metadata** | Checks every GAMA plugin (see below), adds problem markers with quick fixes (`Ctrl/Cmd+1` in the Problems view) and offers to repair everything at once. |
+| **Rebuild annotation processor** | Regenerates `gama.processor/gama.processor.jar` from `Generate Processor.jardesc`. Use it after modifying `gama.processor` or `gama.annotations`. |
+| **Regenerate Xtext grammar** | Runs `gaml.grammar/src/gaml/grammar/generator/Generate_GAML_Artefacts.mwe2` to regenerate the GAML grammar artifacts. The `gaml.grammar`, `gaml.compiler` and `gama.ui.editor` projects must be open. |
+| **Update file headers** | Sets the GAMA version and copyright end year, updates existing headers and adds missing ones, with a mandatory per-file preview and undo. |
+| **Missing annotations...** | Builds a Markdown report from the warnings of the processor. It lists the undocumented GAML elements and the untested operators, per plugin. |
+| **Generate missing tests** | Writes `models/Tests/Untested Operators.gaml` in each selected plugin (or all of them). It contains one `test` stub per operator reported as not tested, with its Java signature. Stubs already in the file are kept. |
+| **Plugins dependencies...** | Runs `jdeps` on the compiled bundles and produces an interactive HTML graph of the package dependencies. This needs a JDK. |
+| **Update GAMA tools** | Checks for and directly installs developer tools updates, or reports that no update is available. |
+| **File > New > Other... > GAMA Development** | Wizards for GAMA Plugin / Skill / Operators / Action / Type / GAML Test Model. |
 
 The Clean and Rebuild All shortcut takes precedence over Eclipse's standard Build All binding in the default
 key scheme. It always targets all GAMA plugins, regardless of selection. Explicit user bindings and more
@@ -51,7 +68,7 @@ specific editor bindings can still override it; configure these in *Preferences 
 
 ## Running and debugging workspace GAMA
 
-The **GAMA > Run** and **GAMA > Debug** menus share three launch configurations. **GUI** opens GAMA,
+The **GAMA > Run...** and **GAMA > Debug...** menus share three launch configurations. **GUI** opens GAMA,
 **Headless...** asks for mode/arguments (for example, an XML experiment file and output directory, or
 `-batch experimentName "/path/model.gaml"`), and **Tests** generates a headless configuration with `-test`.
 Headless arguments are remembered; tests report to Eclipse's Console.
@@ -86,7 +103,7 @@ java -cp /tmp/gama-launch-tests ProductLaunchSpecTest .
 
 ## Updating Java headers
 
-**GAMA > Update Java Headers...** asks for a GAMA version and copyright end year. By default it processes all open GAMA plugins; the scope can be restricted to the selected GAMA projects. The next page previews the changes and lets you exclude individual files before applying them.
+**GAMA > Update file headers** asks for a GAMA version and copyright end year. By default it processes all open GAMA plugins; the scope can be restricted to the selected GAMA projects. The next page previews the changes and lets you exclude individual files before applying them.
 
 Every Java compilation unit in the projects' Java source folders is considered, including `package-info.java` and files created without a GAMA wizard. Missing GAMA headers are added, and existing ones have their filename, plugin name, version and GAMA copyright year updated. Existing copyright holders, author annotations and other license notices are preserved; a new GAMA header is prepended rather than replacing an unrelated notice. Files outside Java source folders (such as vendored files under `libs/`), generated `gaml/` sources, and derived resources are excluded.
 
@@ -100,7 +117,7 @@ java -cp /tmp/gama-header-tests JavaHeaderTextTest
 
 ## Finding the Java implementation of a GAML keyword
 
-**GAMA > Find GAML Keyword Implementation...** opens a dialog like *Open Type*. It lists the GAML keywords declared in the Java sources of the open projects, with the Java element that implements each one:
+**GAMA > Keyword implementations...** opens a dialog like *Open Type*. It lists the GAML keywords declared in the Java sources of the open projects, with the Java element that implements each one:
 
 - operators, statements, skills, species, types, file, experiment and display types, classes and constants;
 - actions and their arguments;
