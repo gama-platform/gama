@@ -141,8 +141,13 @@ public class ArchiveBuilder implements AutoCloseable {
         if (! Files.isDirectory(targetFilePath))
         {
             // Read source file bytes and write directly to the archive
-            byte[] data = Files.readAllBytes(targetFilePath);
-            sevenZOutputFile.write(data);
+            try (var input = Files.newInputStream(targetFilePath)) {
+                byte[] buffer = new byte[8192];
+                int count;
+                while ((count = input.read(buffer)) != -1) {
+                    sevenZOutputFile.write(buffer, 0, count);
+                }
+            }
         }
         
         // Finalize entry lifecycle
