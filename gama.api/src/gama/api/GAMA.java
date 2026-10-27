@@ -529,10 +529,13 @@ public class GAMA {
 		if (controller == null) return;
 		stopBenchmark(controller.getExperiment());
 		desynchronizeFrontmostExperiment();
-		if(FLAGS.SIMULATION_ONLY)
-			controller.getExperiment().disposeAgent();
-		else
+		if (FLAGS.SIMULATION_ONLY) {
+			final IExperimentSpecies experiment = controller.getExperiment();
+			experiment.setController(null);
+			experiment.disposeAgent();
+		} else {
 			controller.close();
+		}
 		controllers.remove(controller);
 	}
 

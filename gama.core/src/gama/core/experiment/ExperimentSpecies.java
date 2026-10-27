@@ -958,7 +958,7 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 	public void setController(final IExperimentController ec) {
 		// The controller being replaced is the one to shut down. Reassigning the same one must leave it alone.
 		if (controller != null && !controller.equals(ec)) {
-			controller.close();
+			if (ec != null) { controller.close(); }
 			controller.dispose();
 		}
 		controller = ec;
