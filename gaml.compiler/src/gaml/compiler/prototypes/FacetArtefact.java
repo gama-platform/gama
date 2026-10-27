@@ -254,9 +254,7 @@ public class FacetArtefact implements IArtefact.Facet, Comparable<FacetArtefact>
 							final doc d = docs[0];
 							mainDoc = d.value();
 							deprecated = d.deprecated();
-							synchronized (deprecated) {
-								if (deprecated != null && deprecated.length() == 0) { deprecated = null; }
-							}
+							if (deprecated != null && deprecated.length() == 0) { deprecated = null; }
 						}
 					}
 				}
