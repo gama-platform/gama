@@ -10,6 +10,7 @@
       <command id="gama.ui.devtools.heading.build" categoryId="gama.ui.devtools.category" name="Build GAMA"/>
       <command id="gama.ui.devtools.heading.repair" categoryId="gama.ui.devtools.category" name="Repair"/>
       <command id="gama.ui.devtools.heading.search" categoryId="gama.ui.devtools.category" name="Search"/>
+      <command id="gama.ui.devtools.heading.create" categoryId="gama.ui.devtools.category" name="Create"/>
       <command id="gama.ui.devtools.updateTools" categoryId="gama.ui.devtools.category"
             name="Update GAMA tools" description="Checks for and installs updates to GAMA Developer Tools"/>
       <command id="gama.ui.devtools.launchGama" categoryId="gama.ui.devtools.category"
@@ -149,6 +150,26 @@
             <command commandId="gama.ui.devtools.findKeyword" style="push"/>
             <command commandId="gama.ui.devtools.dependencyGraph" style="push"/>
             <command commandId="gama.ui.devtools.gamlReport" style="push"/>
+            <separator name="create" visible="true"/>
+            <command commandId="gama.ui.devtools.heading.create" style="push"/>
+            <command commandId="gama.ui.devtools.openNewWizard" label="New GAMA Plugin..." icon="icons/gama.png" style="push">
+               <parameter name="gama.ui.devtools.wizardId" value="gama.ui.devtools.wizards.plugin"/>
+            </command>
+            <command commandId="gama.ui.devtools.openNewWizard" label="New GAMA Skill..." icon="icons/gama.png" style="push">
+               <parameter name="gama.ui.devtools.wizardId" value="gama.ui.devtools.wizards.skill"/>
+            </command>
+            <command commandId="gama.ui.devtools.openNewWizard" label="New GAMA Operators..." icon="icons/gama.png" style="push">
+               <parameter name="gama.ui.devtools.wizardId" value="gama.ui.devtools.wizards.operator"/>
+            </command>
+            <command commandId="gama.ui.devtools.openNewWizard" label="New GAMA Action..." icon="icons/gama.png" style="push">
+               <parameter name="gama.ui.devtools.wizardId" value="gama.ui.devtools.wizards.action"/>
+            </command>
+            <command commandId="gama.ui.devtools.openNewWizard" label="New GAMA Type..." icon="icons/gama.png" style="push">
+               <parameter name="gama.ui.devtools.wizardId" value="gama.ui.devtools.wizards.type"/>
+            </command>
+            <command commandId="gama.ui.devtools.openNewWizard" label="New GAML Test Model..." icon="icons/gama.png" style="push">
+               <parameter name="gama.ui.devtools.wizardId" value="gama.ui.devtools.wizards.testModel"/>
+            </command>
             <separator name="updates" visible="true"/>
             <command commandId="gama.ui.devtools.updateTools" style="push"/>
             <separator name="additions" visible="false"/>

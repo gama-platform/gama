@@ -36,9 +36,10 @@ local installation, use a uniquely named ZIP for each build rather than a cached
 
 ## Commands
 
-The **GAMA** menu is grouped under gray, non-clickable **Run GAMA**, **Build GAMA**, **Repair** and
-**Search** headings, separated by horizontal lines, with **Update GAMA tools** at the bottom.
-Creation wizards remain in *File > New > Other... > GAMA Development* and in the Java-project context menu.
+The **GAMA** menu is grouped under gray, non-clickable **Run GAMA**, **Build GAMA**, **Repair**,
+**Search** and **Create** headings, separated by horizontal lines, with **Update GAMA tools** at the bottom.
+**Create** lists all six creation wizards. They are also available in
+*File > New > Other... > GAMA Development* and in the Java-project context menu.
 
 The menu layout, disabled headings, launch parameters and updater registration have a standalone regression test:
 ```
@@ -60,7 +61,7 @@ java gama.ui.devtools/tests/DevToolsMenuTest.java .
 | **Generate missing tests** | Writes `models/Tests/Untested Operators.gaml` in each selected plugin (or all of them). It contains one `test` stub per operator reported as not tested, with its Java signature. Stubs already in the file are kept. |
 | **Plugins dependencies...** | Runs `jdeps` on the compiled bundles and produces an interactive HTML graph of the package dependencies. This needs a JDK. |
 | **Update GAMA tools** | Checks for and directly installs developer tools updates, or reports that no update is available. |
-| **File > New > Other... > GAMA Development** | Wizards for GAMA Plugin / Skill / Operators / Action / Type / GAML Test Model. |
+| **Create: New GAMA Plugin / Skill / Operators / Action / Type / GAML Test Model** | Creation wizards, also available in *File > New > Other... > GAMA Development*. |
 
 The Clean and Rebuild All shortcut takes precedence over Eclipse's standard Build All binding in the default
 key scheme. It always targets all GAMA plugins, regardless of selection. Explicit user bindings and more

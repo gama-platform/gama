@@ -29,6 +29,7 @@ public class DevToolsMenuTest {
 		}
 		if (menu == null) throw new AssertionError("GAMA menu is missing");
 		final List<String> entries = new ArrayList<>();
+		final List<String> wizardIds = new ArrayList<>();
 		for (final Element entry : children(menu)) {
 			if ("separator".equals(entry.getTagName()) && !"true".equals(entry.getAttribute("visible"))) continue;
 			entries.add(switch (entry.getTagName()) {
@@ -40,6 +41,11 @@ public class DevToolsMenuTest {
 			if ("gama.ui.devtools.cleanAndRebuild".equals(entry.getAttribute("commandId"))) {
 				final String scope = entry.getAttribute("label").contains("selected") ? "selection" : "all";
 				equal(scope, children(entry).getFirst().getAttribute("value"));
+			}
+			if ("gama.ui.devtools.openNewWizard".equals(entry.getAttribute("commandId"))) {
+				final Element parameter = children(entry).getFirst();
+				equal("gama.ui.devtools.wizardId", parameter.getAttribute("name"));
+				wizardIds.add(parameter.getAttribute("value"));
 			}
 			if ("menu".equals(entry.getTagName())) {
 				final String mode = "Run...".equals(entry.getAttribute("label")) ? "run" : "debug";
@@ -65,7 +71,15 @@ public class DevToolsMenuTest {
 				"Clean and build all plugins", "Clean and build selected plugins", "---", "Repair",
 				"Repair plugins metadata", "Rebuild annotation processor", "Regenerate Xtext grammar",
 				"Update file headers", "Generate missing tests", "---", "Search", "Keyword implementations...",
-				"Plugins dependencies...", "Missing annotations...", "---", "Update GAMA tools"), entries);
+				"Plugins dependencies...", "Missing annotations...", "---", "Create", "New GAMA Plugin...",
+				"New GAMA Skill...", "New GAMA Operators...", "New GAMA Action...", "New GAMA Type...",
+				"New GAML Test Model...", "---", "Update GAMA tools"), entries);
+		final var wizards = document.getElementsByTagName("wizard");
+		final List<String> registeredWizardIds = new ArrayList<>();
+		for (int i = 0; i < wizards.getLength(); i++) {
+			registeredWizardIds.add(((Element) wizards.item(i)).getAttribute("id"));
+		}
+		equal(registeredWizardIds, wizardIds);
 
 		final var handlers = document.getElementsByTagName("handler");
 		boolean updater = false;
