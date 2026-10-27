@@ -204,6 +204,7 @@ public class StartupModelHelper
 
     public boolean saveSimulationArtifacts(Path targetSavePath) throws IOException {
 
+        long cutoff = Instant.now().toEpochMilli();
         Stream<Path> stream = Files.walk(getProjectPath());
         boolean somethingHasBeenSaved = false;
                 
@@ -224,7 +225,7 @@ public class StartupModelHelper
                 }
         }
         
-        lastSimulationArtifactsUpdateMs = Instant.now().toEpochMilli();
+        lastSimulationArtifactsUpdateMs = cutoff;
         return somethingHasBeenSaved;   
     }
 
