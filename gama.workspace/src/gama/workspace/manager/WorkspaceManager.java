@@ -556,7 +556,11 @@ public class WorkspaceManager implements IWorkspaceManager {
 		String lastUsedWs = null;
 
 		if (instanceLoc.isSet()) {
-			lastUsedWs = ExportHelper.toAbsoluteFromEclipsePath(instanceLoc.getURL().getFile());
+			try {
+				lastUsedWs = java.nio.file.Path.of(instanceLoc.getURL().toURI()).toString();
+			} catch (java.net.URISyntaxException | IllegalArgumentException e) {
+				throw new IOException("Invalid workspace location: " + instanceLoc.getURL(), e);
+			}
 			final String ret = checkWorkspaceDirectory(lastUsedWs, false, false, false);
 			if (ret != null) {
 				GAMA.getGui().getDialogFactory().error("The workspace provided cannot be used. Please change it");
