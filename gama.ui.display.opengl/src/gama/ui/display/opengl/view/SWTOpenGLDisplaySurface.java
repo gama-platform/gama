@@ -201,10 +201,6 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	@Override
 	public GamaImage getImage(final int desiredWidth, final int desiredHeight) {
 		if (desiredWidth == 0 || desiredHeight == 0 || !renderer.hasDrawnOnce()) return null;
-		// We first render at the right dimensions and then we scale
-		Rectangle dimensions = this.getBoundsForRegularSnapshot();
-		int w = dimensions.width;
-		int h = dimensions.height;
 		final GLAutoDrawable glad = renderer.getCanvas();
 		if (glad == null) return null;
 		GL2GL3 gl = glad.getGL().getGL2GL3();
@@ -215,6 +211,10 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 		if (!current) { context.makeCurrent(); }
 		GamaImage[] image = new GamaImage[1];
 		glad.invoke(true, drawable -> {
+			// Read native framebuffer pixels, whose dimensions can differ from SWT's scaled bounds.
+			final int w = drawable.getSurfaceWidth();
+			final int h = drawable.getSurfaceHeight();
+			if (w <= 0 || h <= 0) return true;
 			// See #2628 and https://github.com/sgothel/jogl/commit/ca7f0fb61b0a608b6e684a5bbde71f6ecb6e3fe0
 			final ByteBuffer buffer = getBuffer(w, h);
 			// be sure we are reading from the right fbo (here is supposed to be the default one)
