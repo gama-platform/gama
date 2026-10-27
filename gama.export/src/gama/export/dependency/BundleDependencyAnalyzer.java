@@ -188,10 +188,12 @@ public class BundleDependencyAnalyzer {
     {
         Bundle bundle = Platform.getBundle(name);
 
-        if (bundle == null)
-            return null;
-        else
-            return Path.of(ExportHelper.toAbsoluteFromEclipsePath(bundle.getLocation().replaceAll(".*file:","")));
+        if (bundle == null) return null;
+        try {
+            return org.eclipse.core.runtime.FileLocator.getBundleFile(bundle).toPath();
+        } catch (IOException e) {
+            throw new IllegalStateException("Unable to resolve plugin " + name, e);
+        }
     }
 
     /**
