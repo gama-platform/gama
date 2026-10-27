@@ -138,7 +138,12 @@ public class ExportProjectAsSimulation extends AbstractHandler {
 								+ modelFile.getProjectRelativePath().toString(),true)
 							,null);
 
-					if (alreadyProcessedModels.contains(model))
+                    if (model == null) {
+                        GAMA.getGui().getDialogFactory().error("Cannot export " + modelFile.getFullPath()
+                                + ": please correct its compilation errors first.");
+                        return;
+                    }
+                    if (alreadyProcessedModels.contains(model))
 						continue;
 						
 					alreadyProcessedModels.add(model);
