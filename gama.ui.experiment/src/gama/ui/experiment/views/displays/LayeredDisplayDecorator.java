@@ -623,19 +623,25 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	 */
 	@Override
 	public void updateStateTo(final IExperimentSpecies experiment, final State state) {
-		if (!isFullScreen() || toolbar == null || !toolbar.isVisible()) return;
+		if (state != State.PAUSED && state != State.RUNNING) return;
+		WorkbenchHelper.asyncRun(() -> {
+			if (view.disposed) return;
+			final var output = view.getOutput();
+			if (output == null || output.getScope() == null) return;
+			final var agent = output.getScope().getExperiment();
+			if (agent == null || agent.getSpecies() != experiment) return;
 
-		if (IExperimentStateListener.State.PAUSED.name().equals(state.name())) {
-			WorkbenchHelper.asyncRun(() -> {
-				runExperimentItem.setImage(GamaIcon.named(IGamaIcons.EXPERIMENT_RUN).image());
-				toolbar.update();
-			});
-		} else if (IExperimentStateListener.State.RUNNING.name().equals(state.name())) {
-			WorkbenchHelper.asyncRun(() -> {
-				runExperimentItem.setImage(GamaIcon.named(IGamaIcons.MENU_PAUSE_ACTION).image());
-				toolbar.update();
-			});
-		}
+			// Pausing stops regular display updates, but aspects can depend on the paused state.
+			final var surface = view.getDisplaySurface();
+			if (state == State.PAUSED && !output.isPaused() && surface != null && !surface.isDisposed()) {
+				surface.updateDisplay(true);
+			}
+			if (!isFullScreen() || toolbar == null || toolbar.isDisposed() || !toolbar.isVisible()
+					|| runExperimentItem == null || runExperimentItem.isDisposed()) return;
+			runExperimentItem.setImage(GamaIcon.named(
+					state == State.PAUSED ? IGamaIcons.EXPERIMENT_RUN : IGamaIcons.MENU_PAUSE_ACTION).image());
+			toolbar.update();
+		});
 	}
 
 }
