@@ -114,7 +114,7 @@ public class ExportProjectAsSimulation extends AbstractHandler {
 
 		final Map<IProject,Set<String>> dataFiles = new HashMap<IProject,Set<String>>();
 
-		final Set<IModelSpecies> alreadyProcessedModels = new HashSet<IModelSpecies>();
+		final Set<IPath> alreadyProcessedModelFiles = new HashSet<IPath>();
 
 		final List<IProject> projects = new LinkedList<IProject>();
 
@@ -133,6 +133,9 @@ public class ExportProjectAsSimulation extends AbstractHandler {
 
 				for (IFile modelFile : modelFiles)
 				{
+					if (!alreadyProcessedModelFiles.add(modelFile.getFullPath()))
+						continue;
+
 					final GamlProperties metaProperties = new GamlProperties();
 
 					final IModelSpecies model = GamlModelBuilder
@@ -147,11 +150,6 @@ public class ExportProjectAsSimulation extends AbstractHandler {
                                 + ": please correct its compilation errors first.");
                         return;
                     }
-                    if (alreadyProcessedModels.contains(model))
-						continue;
-						
-					alreadyProcessedModels.add(model);
-					
 					if (! projects.contains(modelFile.getProject()))
 						projects.add(modelFile.getProject());
 
