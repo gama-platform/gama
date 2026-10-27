@@ -286,6 +286,9 @@ public class OperatorArtefact extends AbstractArtefact implements IArtefact.Oper
 	 */
 	@Override
 	public String documentSignature() {
+		if (isAccumulator()) {
+			return "container values, " + (signature.size() == 4 ? "unknown initial_value, " : "") + "expression body";
+		}
 		if (!(support instanceof final Method method)) return signature.asPattern(false);
 		final StringBuilder builder = new StringBuilder();
 		int signatureIndex = 0;
@@ -432,6 +435,11 @@ public class OperatorArtefact extends AbstractArtefact implements IArtefact.Oper
 	public String getPattern(final boolean withVariables) {
 		final int size = signature.size();
 		final String aName = getName();
+		if (isAccumulator()) {
+			final String container = withVariables ? signature.get(1).asPattern() : "container";
+			final String initial = withVariables ? "${initial_value}" : "initial_value";
+			return container + " " + aName + " (" + (size == 4 ? initial + ", " : "") + "@ + each)";
+		}
 		if (size == 1 || size > 2) {
 			if (ArtefactRegistry.ARTEFACTS_WITHOUT_PARENTHESES.contains(aName))
 				return aName + signature.asPattern(withVariables);

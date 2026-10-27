@@ -11,6 +11,7 @@ package gaml.compiler.expressions;
 
 import java.util.Arrays;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.gaml.expressions.IExpression;
@@ -55,6 +56,20 @@ public class NAryOperator extends AbstractNAryOperator {
 	public NAryOperator copy() {
 		if (exprs == null) return new NAryOperator(prototype, null);
 		return new NAryOperator(prototype, null, Arrays.copyOf(exprs, exprs.length));
+	}
+
+	@Override
+	public String serializeToGaml(final boolean includingBuiltIn) {
+		if (!prototype.isIterator() || exprs == null
+				|| exprs.length != 3 && !(prototype.isAccumulator() && exprs.length == 4))
+			return super.serializeToGaml(includingBuiltIn);
+		final StringBuilder sb = new StringBuilder();
+		parenthesize(sb, exprs[1]);
+		sb.append(' ').append(getName()).append(" (");
+		if (exprs.length == 4) { sb.append(exprs[2].serializeToGaml(includingBuiltIn)).append(", "); }
+		final String eachName = (String) exprs[0].value(null);
+		if (!IKeyword.EACH.equals(eachName)) { sb.append(eachName).append(": "); }
+		return sb.append(exprs[exprs.length - 1].serializeToGaml(includingBuiltIn)).append(')').toString();
 	}
 
 }

@@ -89,6 +89,36 @@ Numeric values can now use `%` as a postfix percentage suffix: `100%` is equival
 `100 #percent` and evaluates to `1.0`. This also works with decimal values and in larger
 expressions, for example `2.5%` or `100% + 2%`.
 
+### GAML: reduce and scan iterators
+
+The new `reduce` operator (#464) combines container elements into one result; `scan` returns a
+list of successive accumulated values. Both evaluate sequentially in container iteration order,
+with `@` representing the accumulator and `each` the current element. They form an accumulator
+subcategory of iterators, currently identified by operator name without a separate annotation:
+
+| GAML | Result |
+|---|---|
+| `[1,2,3,4] reduce (@ + each)` | `10` |
+| `[1,2,3] reduce (10, @ + each)` | `16` |
+| `[1,2,3,4] scan (@ + each)` | `[1,3,6,10]` |
+| `[1,2,3,4] scan (0, @ + each)` | `[0,1,3,6,10]` |
+| `["a","bb","ccc"] scan (0, @ + length(each))` | `[0,1,3,6]` |
+
+Without a seed, the first element initializes the accumulator and the body runs from the second
+element. With a seed, it is evaluated once before the body, which then runs for every element;
+`scan` includes the seed as its first result. The accumulator type comes from the seed, or from the
+container's element type when no seed is supplied, and the body must return a compatible value.
+
+An empty seeded `reduce` returns its seed; an empty seeded `scan` returns `[seed]`. Without a seed,
+an empty `reduce` raises a runtime error, whereas an empty `scan` returns `[]`. Maps iterate over
+values. Both operators support function-call syntax, container-valued accumulators and nesting;
+inner bodies temporarily bind their own `@` and `each`. Scan results retain accumulated values
+without deep copying them.
+
+Editor templates and accumulator hover documentation accompany dedicated
+[Reduce](gama.library/models/Recipes/Loop%20And%20Iterations/Reduce.gaml) and
+[Scan](gama.library/models/Recipes/Loop%20And%20Iterations/Scan.gaml) recipes.
+
 ### Parameters: display units (`unit:` facet)
 
 The `unit:` facet of `parameter` (#197) now controls how numeric values are displayed in the

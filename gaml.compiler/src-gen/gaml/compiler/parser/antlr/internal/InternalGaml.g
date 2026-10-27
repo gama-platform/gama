@@ -6786,9 +6786,10 @@ ruleTerminalExpression returns [EObject current=null]
 			)
 			(
 				(
-					lv_op_8_0=RULE_KEYWORD
-					{
-						newLeafNode(lv_op_8_0, grammarAccess.getTerminalExpressionAccess().getOpKEYWORDTerminalRuleCall_4_1_0());
+					(
+						lv_op_8_1=RULE_KEYWORD
+						{
+							newLeafNode(lv_op_8_1, grammarAccess.getTerminalExpressionAccess().getOpKEYWORDTerminalRuleCall_4_1_0_0());
 					}
 					{
 						if ($current==null) {
@@ -6797,9 +6798,21 @@ ruleTerminalExpression returns [EObject current=null]
 						setWithLastConsumed(
 							$current,
 							"op",
-							lv_op_8_0,
+								lv_op_8_1,
 							"gaml.compiler.Gaml.KEYWORD");
 					}
+						    |
+						lv_op_8_2='@'
+						{
+							newLeafNode(lv_op_8_2, grammarAccess.getTerminalExpressionAccess().getOpCommercialAtKeyword_4_1_0_1());
+						}
+						{
+							if ($current==null) {
+								$current = createModelElement(grammarAccess.getTerminalExpressionRule());
+							}
+							setWithLastConsumed($current, "op", lv_op_8_2, null);
+						}
+					)
 				)
 			)
 		)

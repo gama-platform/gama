@@ -413,6 +413,7 @@ public interface IArtefact extends IGamlDescription {
 	 * <li><strong>Logical:</strong> and, or, not</li>
 	 * <li><strong>Functions:</strong> sqrt, cos, length, distance_to</li>
 	 * <li><strong>Iterators:</strong> where, collect, count, sum</li>
+	 * <li><strong>Accumulators:</strong> reduce, scan (iterators binding both each and @)</li>
 	 * </ul>
 	 *
 	 * <h3>Operator Characteristics:</h3>
@@ -467,6 +468,18 @@ public interface IArtefact extends IGamlDescription {
 		 * @return
 		 */
 		boolean isIterator();
+
+		/**
+		 * @return whether the name denotes an accumulator operator with contextual each and @ bindings
+		 */
+		static boolean isAccumulator(final String name) {
+			return "reduce".equals(name) || "scan".equals(name);
+		}
+
+		/**
+		 * @return whether this iterator carries an accumulator between elements
+		 */
+		default boolean isAccumulator() { return isIterator() && isAccumulator(getName()); }
 
 		/**
 		 * @param context

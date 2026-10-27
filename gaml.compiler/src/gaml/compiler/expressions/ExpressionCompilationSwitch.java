@@ -361,6 +361,11 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 			return null;
 		}
 
+		if (IArtefact.Operator.isAccumulator(op)) {
+			return compileAccumulator(op, left, originalExpression instanceof ExpressionList params
+					? EGAML.getExprsOf(params) : List.of(originalExpression), originalExpression);
+		}
+
 		final boolean isIterator = isIteratorBinary(op, left, originalExpression);
 		if (isIterator) return compileIteratorBinary(op, left, originalExpression);
 
@@ -379,6 +384,47 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 
 		final IExpression right = compile(rightMember);
 		return FACTORY.createOperator(op, context.getContext(), originalExpression.eContainer(), left, right);
+	}
+
+	private IExpression compileAccumulator(final String op, final IExpression left, final List<Expression> args,
+			final EObject source) {
+		if (left == null) return null;
+		if (!left.getGamlType().isContainer()) {
+			context.getContext().error(op + " expects a container as its first operand", IGamlIssue.WRONG_TYPE, source);
+			return null;
+		}
+		if (args.size() != 1 && args.size() != 2) {
+			context.getContext().error(op + " expects a body, optionally preceded by an initial value",
+					IGamlIssue.UNKNOWN_ARGUMENT, source);
+			return null;
+		}
+		final IExpression initial = args.size() == 2 ? compile(args.get(0)) : null;
+		if (args.size() == 2 && initial == null) return null;
+		final IType contentType = left.getGamlType().getContentType();
+		final IType accumulatorType = initial == null ? contentType : initial.getGamlType();
+		// An untyped empty literal has no elements from which to infer the body's iterator type.
+		final IType eachType = contentType == Types.NO_TYPE && left.isEmpty() ? accumulatorType : contentType;
+		context.pushIteratorContext(new EachExpression("@", accumulatorType));
+		context.pushIteratorContext(new EachExpression(EACH, eachType));
+		try {
+			IExpression body = compile(args.get(args.size() - 1));
+			if (body == null) return null;
+			if (!body.getGamlType().isTranslatableInto(accumulatorType)) {
+				context.getContext().error("The " + op + " body must return a value compatible with " + accumulatorType,
+						IGamlIssue.WRONG_TYPE, source);
+				return null;
+			}
+			if (accumulatorType != Types.NO_TYPE && !accumulatorType.equals(body.getGamlType())) {
+				body = FACTORY.createAs(context.getContext(), body, FACTORY.createTypeExpression(accumulatorType));
+			}
+			final IExpression eachName = FACTORY.createConst(EACH, Types.STRING);
+			return initial == null
+					? FACTORY.createOperator(op, context.getContext(), source, eachName, left, body)
+					: FACTORY.createOperator(op, context.getContext(), source, eachName, left, initial, body);
+		} finally {
+			context.popIteratorContext();
+			context.popIteratorContext();
+		}
 	}
 
 	/**
@@ -1130,6 +1176,14 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 		result = tryFunctionAttributeCall(op, object);
 		if (result != null) return result;
 		final List<Expression> args = EGAML.getExprsOf(object.getRight());
+		if (IArtefact.Operator.isAccumulator(op)) {
+			if (args.size() < 2 || args.size() > 3) {
+				context.getContext().error(op + " expects a container, an optional initial value, and a body",
+						IGamlIssue.UNKNOWN_ARGUMENT, object);
+				return null;
+			}
+			return compileAccumulator(op, compile(args.get(0)), args.subList(1, args.size()), object);
+		}
 		return switch (args.size()) {
 			case 0 -> {
 				context.getContext().error("Unknown operator or action: " + op, IGamlIssue.UNKNOWN_ACTION, object);
@@ -1400,6 +1454,14 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 
 	@Override
 	public IExpression caseReservedLiteral(final ReservedLiteral object) {
+		if ("@".equals(EGAML.getKeyOf(object))) {
+			final IVarExpression accumulator = context.findIteratorVariable("@");
+			if (accumulator == null) {
+				context.getContext().error("'@' is only accessible inside a reduce or scan body",
+						IGamlIssue.UNKNOWN_VAR, object);
+			}
+			return accumulator;
+		}
 		return caseVar(EGAML.getKeyOf(object), object);
 	}
 

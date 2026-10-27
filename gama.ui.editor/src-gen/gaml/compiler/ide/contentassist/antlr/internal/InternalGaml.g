@@ -3797,6 +3797,27 @@ finally {
 	restoreStackSize(stackSize);
 }
 
+rule__TerminalExpression__OpAlternatives_4_1_0
+	@init {
+		int stackSize = keepStackSize();
+	}
+:
+	(
+		{ before(grammarAccess.getTerminalExpressionAccess().getOpKEYWORDTerminalRuleCall_4_1_0_0()); }
+		RULE_KEYWORD
+		{ after(grammarAccess.getTerminalExpressionAccess().getOpKEYWORDTerminalRuleCall_4_1_0_0()); }
+	)
+	|
+	(
+		{ before(grammarAccess.getTerminalExpressionAccess().getOpCommercialAtKeyword_4_1_0_1()); }
+		'@'
+		{ after(grammarAccess.getTerminalExpressionAccess().getOpCommercialAtKeyword_4_1_0_1()); }
+	)
+;
+finally {
+	restoreStackSize(stackSize);
+}
+
 rule__StandaloneBlock__Group__0
 	@init {
 		int stackSize = keepStackSize();
@@ -15147,9 +15168,9 @@ rule__TerminalExpression__OpAssignment_4_1
 	}
 :
 	(
-		{ before(grammarAccess.getTerminalExpressionAccess().getOpKEYWORDTerminalRuleCall_4_1_0()); }
-		RULE_KEYWORD
-		{ after(grammarAccess.getTerminalExpressionAccess().getOpKEYWORDTerminalRuleCall_4_1_0()); }
+		{ before(grammarAccess.getTerminalExpressionAccess().getOpAlternatives_4_1_0()); }
+		(rule__TerminalExpression__OpAlternatives_4_1_0)
+		{ after(grammarAccess.getTerminalExpressionAccess().getOpAlternatives_4_1_0()); }
 	)
 ;
 finally {

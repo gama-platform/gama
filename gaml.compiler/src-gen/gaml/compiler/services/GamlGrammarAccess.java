@@ -3972,7 +3972,9 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final Group cGroup_4 = (Group)cAlternatives.eContents().get(4);
 		private final Action cReservedLiteralAction_4_0 = (Action)cGroup_4.eContents().get(0);
 		private final Assignment cOpAssignment_4_1 = (Assignment)cGroup_4.eContents().get(1);
-		private final RuleCall cOpKEYWORDTerminalRuleCall_4_1_0 = (RuleCall)cOpAssignment_4_1.eContents().get(0);
+		private final Alternatives cOpAlternatives_4_1_0 = (Alternatives)cOpAssignment_4_1.eContents().get(0);
+		private final RuleCall cOpKEYWORDTerminalRuleCall_4_1_0_0 = (RuleCall)cOpAlternatives_4_1_0.eContents().get(0);
+		private final Keyword cOpCommercialAtKeyword_4_1_0_1 = (Keyword)cOpAlternatives_4_1_0.eContents().get(1);
 		
 		///******************************************************************************************
 		// * *****************************************************************************************
@@ -3984,14 +3986,14 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//    {IntLiteral} op=INTEGER |
 		//    {DoubleLiteral} op=DOUBLE |
 		//    {BooleanLiteral} op=BOOLEAN |
-		//    {ReservedLiteral} op=KEYWORD;
+		//    {ReservedLiteral} op=(KEYWORD | '@');
 		@Override public ParserRule getRule() { return rule; }
 		
 		//StringLiteral |
 		//{IntLiteral} op=INTEGER |
 		//{DoubleLiteral} op=DOUBLE |
 		//{BooleanLiteral} op=BOOLEAN |
-		//{ReservedLiteral} op=KEYWORD
+		//{ReservedLiteral} op=(KEYWORD | '@')
 		public Alternatives getAlternatives() { return cAlternatives; }
 		
 		//StringLiteral
@@ -4033,17 +4035,23 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//BOOLEAN
 		public RuleCall getOpBOOLEANTerminalRuleCall_3_1_0() { return cOpBOOLEANTerminalRuleCall_3_1_0; }
 		
-		//{ReservedLiteral} op=KEYWORD
+		//{ReservedLiteral} op=(KEYWORD | '@')
 		public Group getGroup_4() { return cGroup_4; }
 		
 		//{ReservedLiteral}
 		public Action getReservedLiteralAction_4_0() { return cReservedLiteralAction_4_0; }
 		
-		//op=KEYWORD
+		//op=(KEYWORD | '@')
 		public Assignment getOpAssignment_4_1() { return cOpAssignment_4_1; }
 		
+		//(KEYWORD | '@')
+		public Alternatives getOpAlternatives_4_1_0() { return cOpAlternatives_4_1_0; }
+
 		//KEYWORD
-		public RuleCall getOpKEYWORDTerminalRuleCall_4_1_0() { return cOpKEYWORDTerminalRuleCall_4_1_0; }
+		public RuleCall getOpKEYWORDTerminalRuleCall_4_1_0_0() { return cOpKEYWORDTerminalRuleCall_4_1_0_0; }
+
+		//'@'
+		public Keyword getOpCommercialAtKeyword_4_1_0_1() { return cOpCommercialAtKeyword_4_1_0_1; }
 	}
 	public class StringLiteralElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.StringLiteral");
@@ -5467,7 +5475,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	//    {IntLiteral} op=INTEGER |
 	//    {DoubleLiteral} op=DOUBLE |
 	//    {BooleanLiteral} op=BOOLEAN |
-	//    {ReservedLiteral} op=KEYWORD;
+	//    {ReservedLiteral} op=(KEYWORD | '@');
 	public TerminalExpressionElements getTerminalExpressionAccess() {
 		return pTerminalExpression;
 	}

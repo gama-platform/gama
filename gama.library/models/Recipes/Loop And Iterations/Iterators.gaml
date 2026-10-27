@@ -5,8 +5,8 @@
 *   explicit loop statements. Iterators process a container element by element and return an aggregated result.
 *   Examples include: 'max_of' (finds the maximum of an expression over a container), 'with_max_of' (returns the
 *   element maximizing an expression), 'where' (filters a container), 'collect' (transforms a container),
-*   'sum_of', 'count', and others. The model compares iterator-based queries with equivalent loop-based solutions.
-* Tags: loop, iterator, max_of, where, collect, sum_of, filter, container, functional
+*   'sum_of', 'count', and 'reduce'. The model compares iterator-based queries with equivalent loop-based solutions.
+* Tags: loop, iterator, max_of, where, collect, sum_of, reduce, filter, container, functional
 ***/
 
 model Iterators
@@ -71,11 +71,24 @@ global {
 		// Using an iterator
 		list<dummy_species> list_agt_filtered_ite <- dummy_species where(each.val > 5);
 		write "[Using iterator]  The agents with a value of val greater than 5: " + list_agt_filtered_ite; 
+
+		// reduce combines values in iteration order: @ is the accumulated result, each the current element.
+		int product <- [1, 2, 3, 4] reduce (@ * each);
+		write "[Using reduce] The product of [1, 2, 3, 4] is: " + product;
+
+		// A seed allows a different result type and is also returned when the container is empty.
+		int val_total <- dummy_species reduce (0, @ + each.val);
+		write "[Using reduce] The sum of val is: " + val_total;
+		write "[Using reduce] An empty list with seed 0 returns: " + ([] reduce (0, @ + each));
+
+		// scan keeps every intermediate accumulator, including the seed when supplied.
+		list<int> running_totals <- [1, 2, 3, 4] scan (0, @ + each);
+		write "[Using scan] Running totals starting at zero: " + running_totals;
 		
 	}
 	
 	// Here are some other operators which can be useful to manipulate lists:
-	// sort, sort_by, shuffle, reverse, collect, accumulate, among. 
+	// sort, sort_by, shuffle, reverse, collect, accumulate, reduce, scan, among.
 	// Please read the GAML Reference if you want to know more about those operators.
 		
 }
