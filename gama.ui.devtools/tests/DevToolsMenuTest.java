@@ -31,6 +31,7 @@ public class DevToolsMenuTest {
 		final List<String> entries = new ArrayList<>();
 		final List<String> wizardIds = new ArrayList<>();
 		for (final Element entry : children(menu)) {
+			equal(false, entry.hasAttribute("icon"));
 			if ("separator".equals(entry.getTagName()) && !"true".equals(entry.getAttribute("visible"))) continue;
 			entries.add(switch (entry.getTagName()) {
 				case "separator" -> "---";
