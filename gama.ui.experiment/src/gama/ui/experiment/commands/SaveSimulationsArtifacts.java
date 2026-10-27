@@ -14,6 +14,8 @@ import java.util.Map;
 import java.nio.file.Path;
 import java.io.IOException;
 import java.awt.Desktop;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -44,7 +46,7 @@ public class SaveSimulationsArtifacts extends AbstractHandler implements IElemen
 			System.out.println("An error occured while checking simulation artifacts to save : ");
 			e.printStackTrace();
 			GAMA.getGui().getDialogFactory().error("An error occured while checking simulation artifacts to save.");
-			return null;
+			return Boolean.FALSE;
 		}
 
 		// if no artifacts to save, exit with info popup
@@ -58,17 +60,16 @@ public class SaveSimulationsArtifacts extends AbstractHandler implements IElemen
 						.inform("No new artifacts worth saving have been found.");
 			}).start();
 
-			return null;
+			return Boolean.TRUE;
 		}
 
 		// there are artifacts to save
 		final SaveSimulationsArtifactsDialog dialog = new SaveSimulationsArtifactsDialog();
 		final int result = dialog.open();
 
-		if (result != IDialogConstants.OK_ID)
-			return null;	
+		if (result != IDialogConstants.OK_ID) return Boolean.FALSE;
 
-		new Thread(() -> {
+		final FutureTask<Boolean> saveTask = new FutureTask<>(() -> {
 			try
 			{
 				final Path outputParentDirectory = Path.of(dialog.getOutputPath());
@@ -89,15 +90,33 @@ public class SaveSimulationsArtifacts extends AbstractHandler implements IElemen
 						exception.printStackTrace();
 					}
 				}
+				return true;
 
 			} catch (IOException e) {
 				System.out.println("An error occured while saving simulation artifacts : ");
 				e.printStackTrace();
-				GAMA.getGui().getDialogFactory().error("An error occured while saving simulation artifacts.");
+				return false;
 			}
-		}).start();
+		});
+		new Thread(saveTask).start();
 
-		return null;
+		try {
+			final boolean saved = saveTask.get();
+			if (!saved) GAMA.getGui().getDialogFactory().error("An error occured while saving simulation artifacts.");
+			return saved;
+		} catch (InterruptedException e) {
+			while (true) {
+				try {
+					saveTask.get();
+					break;
+				} catch (InterruptedException ignored) {
+				} catch (ExecutionException ignored) {
+					break;
+				}
+			}
+			Thread.currentThread().interrupt();
+			throw new ExecutionException(e);
+		}
 	}
 
 	@Override
@@ -105,4 +124,3 @@ public class SaveSimulationsArtifacts extends AbstractHandler implements IElemen
 	}
 
 }
-

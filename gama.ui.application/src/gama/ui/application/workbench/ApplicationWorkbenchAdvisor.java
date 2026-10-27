@@ -47,9 +47,11 @@ import org.osgi.service.prefs.BackingStoreException;
 import gama.api.GAMA;
 import gama.api.additions.delegates.IEventLayerDelegate;
 import gama.api.additions.registries.GamaAdditionRegistry;
+import gama.api.kernel.simulation.IExperimentController;
 import gama.api.runtime.GamaExecutorService;
 import gama.api.runtime.SystemInfo;
 import gama.api.types.file.IGamaFile;
+import gama.api.utils.files.BufferingUtils;
 import gama.api.ui.IGui;
 import gama.api.utils.files.FileUtils;
 import gama.api.utils.prefs.GamaPreferences;
@@ -335,15 +337,25 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 			if (FLAGS.SIMULATION_ONLY && StartupModelHelper.getInstance().areThereAnyArtifactsToSave()
 					&& GAMA.getGui().getDialogFactory()
 							.question("Warning", "New simulation artifacts have been found. Do you want to save them ?")) {
-				final IHandlerService handlerService =
-						(IHandlerService) PlatformUI.getWorkbench().getService(IHandlerService.class);
-				if (handlerService != null) {
-					try {
-						handlerService.executeCommand("gama.application.commands.SaveSimulationsArtifacts", null);
-					} catch (final Exception e) {
-						e.printStackTrace();
+				final List<IExperimentController> runningControllers =
+						GAMA.getControllers().stream().filter(controller -> !controller.isPaused()).toList();
+				boolean saved = false;
+				try {
+					if (GAMA.pauseFrontmostExperiment(true)) {
+						BufferingUtils.getInstance().flushAllBuffers();
+						final IHandlerService handlerService =
+								(IHandlerService) PlatformUI.getWorkbench().getService(IHandlerService.class);
+						if (handlerService != null) {
+							saved = Boolean.TRUE.equals(handlerService
+									.executeCommand("gama.application.commands.SaveSimulationsArtifacts", null));
+						}
 					}
+				} catch (final Exception e) {
+					e.printStackTrace();
+				} finally {
+					if (!saved) runningControllers.forEach(controller -> controller.processStart(true));
 				}
+				if (!saved) return false;
 			}
 			GAMA.closeAllExperiments(true, true);
 			PerspectiveHelper.deleteCurrentSimulationPerspective();
@@ -351,6 +363,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 			PerspectiveHelper.cleanPerspectives();
 		} catch (final Exception e) {
 			e.printStackTrace();
+			return false;
 		}
 
 		return super.preShutdown();
