@@ -432,10 +432,15 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 		return keepSimulations;
 	}
 
-	public void disposeAgent()
-	{
-		if(agent != null)
-		{
+	public void disposeAgent() {
+		if (controller != null) {
+			try {
+				controller.dispose();
+			} finally {
+				controller = null;
+			}
+		}
+		if (agent != null) {
 			agent.dispose();
 			agent = null;
 		}
