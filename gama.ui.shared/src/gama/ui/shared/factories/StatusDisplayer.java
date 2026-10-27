@@ -117,7 +117,7 @@ public class StatusDisplayer implements IStatusDisplayer, IExperimentStateListen
 			if (statusControl.isDisposed()) return Status.CANCEL_STATUS;
 			IStatusMessage message;
 			while ((message = messages.poll()) != null) {
-				statusControl.updateWith(message);
+				statusControl.updateWith(message.type() == StatusType.NONE ? null : message);
 			}
 			return Status.OK_STATUS;
 		}
@@ -183,6 +183,11 @@ public class StatusDisplayer implements IStatusDisplayer, IExperimentStateListen
 	public void errorStatus(final GamaRuntimeException error) {
 		serverStatus.errorStatus(error);
 		statusRefresher.updateWith(StatusMessageFactory.ERROR(error));
+	}
+
+	@Override
+	public void resetStatus() {
+		statusRefresher.updateWith(StatusMessageFactory.CUSTOM(null, StatusType.NONE, null, null));
 	}
 
 	/**

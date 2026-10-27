@@ -417,6 +417,7 @@ public class GAMA {
 		if (!controllers.isEmpty()) { closeAllExperiments(true, false); }
 		if (configuration != null) { controller.setServerConfiguration(configuration); }
 
+		getGui().getStatus().resetStatus();
 		if (newExperiment.isTest()) {
 			if (getGui().runTestExperiment(model, id, selection)) return true;
 			// controllers.add(controller);

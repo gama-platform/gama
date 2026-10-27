@@ -340,6 +340,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 				try {
 					final boolean wasRunning = !isPaused() && !experiment.isAutorun();
 					paused = true;
+					currentScope.getGui().getStatus().resetStatus();
 					currentScope.getGui().getStatus().waitStatus("Reloading...", IStatusMessage.SIMULATION_ICON, () -> {
 						currentScope.getGui().showLaunchingOverlay(experiment.getName());
 						experiment.reload();
