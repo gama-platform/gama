@@ -24,7 +24,6 @@
    <extension point="org.eclipse.ui.commands">
       <command id="gama.ui.export.model" name="Export Model as Simulation Launcher" categoryId="gama.category"/>
       <command id="gama.ui.navigator.commands.exportProjectAsSimulation" name="Export as Simulation Launcher" categoryId="gama.category"/>
-      <command id="gama.application.commands.SelectExperiment" name="Select Experiment" categoryId="gama.category"/>
       <command id="gama.application.commands.SaveSimulationsArtifacts" name="Save Simulation Data" categoryId="gama.category"/>
       <command id="gama.ui.export.home" name="Home" categoryId="gama.category"/>
    </extension>
@@ -63,9 +62,6 @@
             </and>
          </activeWhen>
       </handler>
-      <handler commandId="gama.application.commands.SelectExperiment" class="gama.ui.export.commands.SelectExperiment">
-         <activeWhen><reference definitionId="gama.ui.export.isLauncherSimulation"/></activeWhen>
-      </handler>
       <handler commandId="gama.application.commands.SaveSimulationsArtifacts" class="gama.ui.export.commands.SaveSimulationsArtifacts">
          <activeWhen><reference definitionId="gama.ui.export.isLauncher"/></activeWhen>
       </handler>
@@ -91,10 +87,6 @@
                icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/perspective.modeling.svg">
             <visibleWhen checkEnabled="false"><reference definitionId="gama.ui.export.isLauncherSimulation"/></visibleWhen>
          </command>
-         <command commandId="gama.application.commands.SelectExperiment" label="Select Another Experiment"
-               icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.project.svg">
-            <visibleWhen checkEnabled="false"><reference definitionId="gama.ui.export.isLauncherSimulation"/></visibleWhen>
-         </command>
          <command commandId="gama.application.commands.SaveSimulationsArtifacts" label="Save Simulation Data"
                icon="platform:/plugin/gama.ui.shared/icons_svg/light/status/status.download.svg">
             <visibleWhen checkEnabled="false"><reference definitionId="gama.ui.export.isLauncherSimulation"/></visibleWhen>
@@ -102,10 +94,6 @@
       </menuContribution>
       <menuContribution locationURI="menu:simulationMenu?after=additions">
          <command commandId="gama.ui.export.home" label="Home" tooltip="Return to the launcher home page">
-            <visibleWhen checkEnabled="false"><reference definitionId="gama.ui.export.isLauncherSimulation"/></visibleWhen>
-         </command>
-         <command commandId="gama.application.commands.SelectExperiment" label="Select Another Experiment"
-               icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.project.svg">
             <visibleWhen checkEnabled="false"><reference definitionId="gama.ui.export.isLauncherSimulation"/></visibleWhen>
          </command>
          <command commandId="gama.application.commands.SaveSimulationsArtifacts" label="Save Simulation Data"

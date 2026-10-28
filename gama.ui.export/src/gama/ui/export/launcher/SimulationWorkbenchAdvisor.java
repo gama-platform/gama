@@ -28,7 +28,8 @@ public final class SimulationWorkbenchAdvisor extends ApplicationWorkbenchAdviso
 	protected void openStartupModel() {
 		configureLauncherUI();
 		if (!StartupModelHelper.getInstance().getConfiguration().showHome()) {
-			StartupModelHelper.getInstance().startSimulation();
+			StartupModelHelper.getInstance().launch(
+					StartupModelHelper.getInstance().getConfiguration().startupExperiment());
 		}
 	}
 

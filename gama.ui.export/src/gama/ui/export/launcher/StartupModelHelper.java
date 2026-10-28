@@ -2,12 +2,10 @@ package gama.ui.export.launcher;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.dialogs.IDialogConstants;
 
 import gama.api.GAMA;
 import gama.api.kernel.species.IModelSpecies;
@@ -16,7 +14,7 @@ import gama.dev.DEBUG;
 import gama.export.EmbeddedWorkspace;
 import gama.export.LauncherConfiguration;
 import gama.export.SimulationArtifacts;
-import gama.ui.export.dialogs.PickExperimentDialog;
+import gama.ui.application.workbench.PerspectiveHelper;
 import gama.workspace.manager.WorkspacePaths;
 
 public final class StartupModelHelper {
@@ -52,10 +50,9 @@ public final class StartupModelHelper {
 		if (selection == null || selection.isBlank()) throw new IOException("No startup experiment is configured");
 		selections = List.of(selection.split("#"));
 		configuration = LauncherConfiguration.load(WorkspacePaths.installationDirectory());
-		final String startup = configuration.startupExperiment().isBlank()
-				? selections.getFirst() : configuration.startupExperiment();
-		if (!selections.contains(startup)) throw new IOException("The configured startup experiment is not exported");
-		select(startup);
+		final String startup = configuration.startupExperiment();
+		if (!startup.isBlank() && !selections.contains(startup))
+			throw new IOException("The configured default experiment is not exported");
 		return true;
 	}
 
@@ -68,20 +65,14 @@ public final class StartupModelHelper {
 
 	public void launch(final String selection) {
 		if (!selections.contains(selection)) throw new IllegalArgumentException("Unknown experiment: " + selection);
+		if (!GAMA.getControllers().isEmpty() || !PerspectiveHelper.isHomePerspective(PerspectiveHelper.currentPerspectiveId)
+				|| PerspectiveHelper.currentSimulationPerspective != null)
+			throw new IllegalStateException("Return to Home and close the current experiment before choosing another");
 		select(selection);
 		startSimulation();
 	}
 
-	public boolean pickExperiment() {
-		final String[] labels = selections.stream().map(this::label).toArray(String[]::new);
-		final var dialog = new PickExperimentDialog(labels);
-		if (dialog.open() != IDialogConstants.OK_ID) return false;
-		final int index = Arrays.asList(labels).indexOf(dialog.getSelectedExperiment());
-		select(selections.get(index));
-		return true;
-	}
-
-	public void startSimulation() {
+	private void startSimulation() {
 		// A fresh species lets normal experiment disposal run unchanged when switching.
 		final IModelSpecies compiled;
 		try {

@@ -33,7 +33,6 @@ public class ExportModelDialog extends TitleAreaDialog {
     private Button includeJdkButton;
     private Button selectAllExperimentsButton;
     private Button oneFileButton;
-    private Button showHomeButton;
     private Combo startupExperiment;
     private Text title;
     private Text description;
@@ -190,19 +189,13 @@ public class ExportModelDialog extends TitleAreaDialog {
             final String selected = dialog.open();
             if (selected != null) image.setText(selected);
         });
-        showHomeButton = new Button(container, SWT.CHECK);
-        showHomeButton.setText("Show the home page before launching an experiment");
-        showHomeButton.setSelection(true);
-        showHomeButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
         final CLabel label = new CLabel(container, SWT.NONE);
-        label.setText("Otherwise launch:");
+        label.setText("Default experiment:");
         startupExperiment = new Combo(container, SWT.DROP_DOWN | SWT.READ_ONLY);
-        startupExperiment.setItems(availableExperiments);
+        startupExperiment.add("None - open Home");
+        for (final String experiment : availableExperiments) startupExperiment.add(experiment);
         startupExperiment.select(0);
-        startupExperiment.setEnabled(false);
         startupExperiment.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
-        showHomeButton.addListener(SWT.Selection,
-                event -> startupExperiment.setEnabled(!showHomeButton.getSelection()));
     }
 
     private Text textField(final Composite parent, final String label, final int style) {
@@ -264,8 +257,8 @@ public class ExportModelDialog extends TitleAreaDialog {
             return;
         }
 
-        if (!showHomeButton.getSelection() && !selectedExperiments.contains(startupExperiment.getText())) {
-            setMessage("The startup experiment must be selected for export.", IMessageProvider.ERROR);
+        if (startupExperiment.getSelectionIndex() > 0 && !selectedExperiments.contains(startupExperiment.getText())) {
+            setMessage("The default experiment must be selected for export.", IMessageProvider.ERROR);
             return;
         }
         if (!image.getText().isBlank()) {
@@ -280,8 +273,8 @@ public class ExportModelDialog extends TitleAreaDialog {
         }
 
         homeConfiguration = new LauncherConfiguration(title.getText().trim(), description.getText(),
-                showHomeButton.getSelection(), "", image.getText().trim());
-        startupLabel = startupExperiment.getText();
+                "", image.getText().trim());
+        startupLabel = startupExperiment.getSelectionIndex() == 0 ? "" : startupExperiment.getText();
         super.okPressed();
     }
 
@@ -309,7 +302,7 @@ public class ExportModelDialog extends TitleAreaDialog {
 
     public LauncherConfiguration getLauncherConfiguration(final String defaultTitle, final String startupSelection) {
         return new LauncherConfiguration(homeConfiguration.title().isBlank() ? defaultTitle : homeConfiguration.title(),
-                homeConfiguration.description(), homeConfiguration.showHome(), startupSelection, homeConfiguration.image());
+                homeConfiguration.description(), startupSelection, homeConfiguration.image());
     }
 
     public String getStartupExperiment() { return startupLabel; }
