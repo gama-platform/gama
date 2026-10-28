@@ -296,22 +296,18 @@ public class ActionStatement extends AbstractStatementSequenceWithArgs implement
 	}
 
 	/**
-	 * Sets the runtime argument values, complementing them with formal arguments.
+	 * Complements the arguments passed by the caller with the formal arguments (including their default values). The
+	 * arguments passed are copied, as they may be shared.
 	 *
-	 * <p>
-	 * This method fills in any missing runtime arguments with values from the formal argument definitions (including
-	 * default values).
-	 * </p>
-	 *
-	 * @param scope
-	 *            the execution scope
 	 * @param args
-	 *            the runtime arguments
+	 *            the arguments passed by the caller (may be null)
+	 * @return the complemented arguments
 	 */
 	@Override
-	public void setRuntimeArgs(final IScope scope, final Arguments args) {
-		super.setRuntimeArgs(scope, args);
-		actualArgs.get().complementWith(formalArgs);
+	protected Arguments actualArgs(final Arguments args) {
+		final Arguments result = new Arguments(args);
+		result.complementWith(formalArgs);
+		return result;
 	}
 
 	/**

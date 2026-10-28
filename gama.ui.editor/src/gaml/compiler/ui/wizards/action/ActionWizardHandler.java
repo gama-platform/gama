@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -47,30 +48,41 @@ public final class ActionWizardHandler {
 		if (!create && !canEdit(editor)) return;
 		try {
 			var transaction = new SpeciesDocumentEdit(editor.getDocument());
-			int offset = editor.getSelectionProvider().getSelection() instanceof ITextSelection selection
-					? selection.getOffset() : -1;
-			var source = new ActionSource(transaction.snapshot(), offset, parser, create);
+			ITextSelection selection = editor.getSelectionProvider().getSelection() instanceof ITextSelection text ? text : null;
+			int offset = selection == null ? -1 : selection.getOffset();
+			var extraction = create && selection != null && selection.getLength() > 0
+					? new ActionExtractionSource(transaction.snapshot(), offset, selection.getLength(), parser) : null;
+			var source = extraction == null ? new ActionSource(transaction.snapshot(), offset, parser, create)
+					: extraction.creation();
 			URI uri = isolatedUri(editor);
-			Set<String>[] baseline = new Set[1];
-			var dialog = new ActionWizard(shell, source.draft(), draft -> {
+			var baseline = new AtomicReference<Set<String>>();
+			var form = new AtomicReference<ActionWizard>();
+			java.util.function.Function<ActionDraft, String> render = draft -> extraction == null ? source.render(draft)
+					: extraction.render(draft, form.get().isSelectionIncluded());
+			var dialog = new ActionWizard(shell, extraction == null ? source.draft() : extraction.draft(), draft -> {
 				if (!transaction.isCurrent()) return "The document changed. Cancel and reopen the action form.";
-				String error = source.validationError(draft);
-				if (error != null || !draft.virtual() || draft == source.draft()) return error;
-				// Virtual code is not compiled by the form; the rendered document is checked for new errors instead.
-				if (baseline[0] == null) baseline[0] = messages(documentErrors(uri, transaction.snapshot()));
-				for (var problem : documentErrors(uri, source.render(draft)))
-					if (!baseline[0].contains(problem.message())) return problem.message();
+				String error = extraction == null ? source.validationError(draft)
+						: extraction.validationError(draft, form.get().isSelectionIncluded());
+				if (error != null) return error;
+				if (extraction == null && (!draft.virtual() || draft == source.draft())) return null;
+				// Extraction also checks the caller after replacement (e.g. locals still used outside the selection).
+				if (baseline.get() == null) baseline.set(messages(documentErrors(uri, transaction.snapshot())));
+				for (var problem : documentErrors(uri, render.apply(draft)))
+					if (!baseline.get().contains(problem.message())) return problem.message();
 				return null;
-			}, typeNames(source), draft -> source.bodyContext(draft, uri)) {
+			}, typeNames(source), draft -> extraction == null ? source.bodyContext(draft, uri)
+					: extraction.bodyContext(draft, form.get().isSelectionIncluded(), uri)) {
 				@Override
 				protected String signature(final ActionDraft draft) {
 					return draft.virtual() && source.keepsBlockWhenVirtual() ? draft.header() + " virtual: true {"
 							: super.signature(draft);
 				}
 			};
+			form.set(dialog);
+			dialog.setSelectionExtractionAvailable(extraction != null);
 			dialog.setCreationMode(create);
 			if (dialog.open() == Window.OK && dialog.getResult() != null)
-				transaction.apply(source.render(dialog.getResult()));
+				transaction.apply(render.apply(dialog.getResult()));
 		} catch (IllegalArgumentException | IllegalStateException | BadLocationException error) {
 			MessageDialog.openError(shell, "Action", error.getMessage());
 		}

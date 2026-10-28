@@ -7,6 +7,12 @@
 
 experiment UnitsAndNamedConstantsTest type: test autorun: true {
 
+	test "Percent literals" {
+		assert 100% = 1.0;
+		assert 2.5% = 0.025;
+		assert 100% + 2% = 1.02;
+	}
+
 	test "Shortest path algorithms" {
 		assert #Dijkstra = "Dijkstra";
 		assert #BidirectionalDijkstra = "BidirectionalDijkstra";

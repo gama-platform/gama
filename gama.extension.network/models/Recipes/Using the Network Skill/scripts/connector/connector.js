@@ -30,6 +30,8 @@ var gama_state
 var model_file 
 var experiment_name 
 var experiment_id
+var pending_command
+var experiment_closed = false
 var current_expression
 var current_nb_step
 var current_nb_step_back
@@ -83,9 +85,10 @@ function send_expression() {
 function send_ask() {
     return {
         "type":"ask",
+        "exp_id": experiment_id,
         "action": current_action,
-        "agent": current_agent,
-        "args": current_args
+        "agent": current_agent.trim() || undefined,
+        "args": current_args.trim() || "{}"
     }
 }
 
@@ -127,6 +130,17 @@ function setGamaState(newState) {
     }
 }
 
+function sendLifecycleCommand(command) {
+    if (pending_command) {
+        logRequestResponse("Wait for the pending " + pending_command + " command to finish", REQUEST)
+        return
+    }
+    socket.send(JSON.stringify(command))
+    pending_command = command.type
+    setGamaState(NOTREADY)
+    logRequestResponse(command, REQUEST)
+}
+
 function createWebSocketClient() {
 
     document.querySelector("#ignore-states").checked = ignore_states;
@@ -137,6 +151,9 @@ function createWebSocketClient() {
 
     gama_socket.onopen = function() {
         console.log("-> Connected to Gama Server");
+        pending_command = undefined
+        experiment_id = undefined
+        experiment_closed = false
         setConnectionState(CONNECTED)
         setGamaState(UNKNOWN)
     };
@@ -146,7 +163,16 @@ function createWebSocketClient() {
             const message = JSON.parse(event.data)
             switch (message.type) {
                 case "SimulationStatus":
-                    experiment_id = message.exp_id
+                    if (pending_command == "stop" && message.content != NONE) break;
+                    if (experiment_closed && pending_command != "load"
+                        && ![NONE, NOTREADY].includes(message.content)) break;
+                    if (message.content == NONE) {
+                        experiment_id = undefined
+                        experiment_closed = true
+                    } else {
+                        experiment_id = message.exp_id
+                        experiment_closed = false
+                    }
                     switch (message.content) {
                         case NONE: setGamaState(NONE); break;
                         case NOTREADY: setGamaState(NOTREADY); break;
@@ -156,8 +182,28 @@ function createWebSocketClient() {
                     }
                     break;
                 case "CommandExecutedSuccessfully":
-                    if (["load", "reload"].includes(message.command.type)){
+                    if (message.command.type == "load") {
                         experiment_id = message.content
+                        experiment_closed = false
+                        if ([UNKNOWN, NONE, NOTREADY].includes(gama_state)) setGamaState(PAUSED)
+                    }
+                    if (message.command.type == "stop") {
+                        experiment_id = undefined
+                        experiment_closed = true
+                        setGamaState(NONE)
+                    }
+                    if (message.command.type == "reload" && gama_state == NOTREADY) {
+                        setGamaState(PAUSED)
+                    }
+                    if (message.command.type == pending_command) pending_command = undefined
+                    break;
+                case "MalformedRequest":
+                case "UnableToExecuteRequest":
+                case "RuntimeError":
+                case "GamaServerError":
+                    if (pending_command && message.command && message.command.type == pending_command) {
+                        pending_command = undefined
+                        setGamaState(UNKNOWN)
                     }
                     break;
                 default: break;
@@ -170,6 +216,9 @@ function createWebSocketClient() {
     }
 
     gama_socket.addEventListener('close', (event) => {
+        pending_command = undefined
+        experiment_id = undefined
+        experiment_closed = false
         setConnectionState(DISCONNECTED)
         setGamaState(UNKNOWN)
         if (event.wasClean) {
@@ -191,23 +240,24 @@ function changeIgnoreState() {
 }
 
 function load() {
-    if (ignore_states){
-        socket.send(JSON.stringify(load_experiment()))
-        logRequestResponse(load_experiment(), REQUEST)
-        return
-    }
     if (connection_state == DISCONNECTED) {
         logRequestResponse("Gama Server is not connected", REQUEST)
         return
     }
-    if ([NOTREADY, PAUSED, RUNNING].includes(gama_state) && model_file != undefined && experiment_name != undefined) {
-        socket.send(JSON.stringify(reload_experiment()))
-        logRequestResponse(reload_experiment(), REQUEST)
+    if (ignore_states) {
+        sendLifecycleCommand(load_experiment())
+        return
+    }
+    if (pending_command || gama_state == NOTREADY) {
+        logRequestResponse("Wait until the experiment is ready before loading or reloading", REQUEST)
+        return
+    }
+    if ([PAUSED, RUNNING].includes(gama_state) && model_file != undefined && experiment_name != undefined) {
+        sendLifecycleCommand(reload_experiment())
         return
     }
     if ([UNKNOWN, NONE].includes(gama_state) && model_file != undefined && experiment_name != undefined) {
-        socket.send(JSON.stringify(load_experiment()))
-        logRequestResponse(load_experiment(), REQUEST)
+        sendLifecycleCommand(load_experiment())
         return
     }
     else {
@@ -254,18 +304,16 @@ function pause() {
 }
 
 function end() {
-    if (ignore_states){
-        socket.send(JSON.stringify(stop_experiment()))
-        logRequestResponse(stop_experiment(), REQUEST)
-        return
-    }
     if (connection_state == DISCONNECTED) {
         logRequestResponse("Gama Server is not connected",REQUEST)
         return
     }
+    if (ignore_states){
+        sendLifecycleCommand(stop_experiment())
+        return
+    }
     if ([RUNNING, PAUSED].includes(gama_state)) {
-        socket.send(JSON.stringify(stop_experiment()))
-        logRequestResponse(stop_experiment(),REQUEST)
+        sendLifecycleCommand(stop_experiment())
     }
     else {
         logRequestResponse("Could not send Stop since Gama Server is not currently running",REQUEST)

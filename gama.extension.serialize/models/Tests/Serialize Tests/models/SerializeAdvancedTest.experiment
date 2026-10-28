@@ -37,6 +37,16 @@ experiment SerializeAdvancedTest type: test autorun: true {
 		// the serialised form is not the textual one
 		assert serialize([1, 2, 3]) != "[1,2,3]";
 	}
+
+	test "Fory preserves binary values and container types" {
+		list<int> values <- [1, 2, 3];
+		map<string, int> amounts <- ["a"::1, "b"::2];
+		assert from_binary(to_binary(values)) = values;
+		assert from_binary(to_binary(amounts)) = amounts;
+		assert from_binary(to_binary({1, 2, 3})) = {1, 2, 3};
+		assert from_binary(to_binary(rgb(12, 34, 56, 78))) = rgb(12, 34, 56, 78);
+		assert from_binary(to_binary("recorded value")) = "recorded value";
+	}
 	
 	
 	test "Serialising an agent to JSON does not alter the next serialisations" {

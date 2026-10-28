@@ -211,6 +211,22 @@ public class WorkspaceManager implements IWorkspaceManager {
 	}
 
 	/**
+	 * Asks whether to rebuild the workspace, with a checkbox to rebuild without asking from now on (stored only when
+	 * the answer is yes).
+	 */
+	private boolean askAndRemember(final String title, final String message) {
+		return askAndRemember(title, message, KEY_ASK_REBUILD);
+	}
+
+	private boolean askAndRemember(final String title, final String message, final String key) {
+		final boolean[] always = { false };
+		final boolean answer = GAMA.getGui().getDialogFactory().question(title, message,
+				"Don't ask again (can be changed in the preferences)", b -> always[0] = b);
+		if (answer && always[0]) { GAMA.getPreferenceStore().putInStore(key, "false"); }
+		return answer;
+	}
+
+	/**
 	 * Returns whether the user should be asked for confirmation before GAMA opens a workspace that was created by a
 	 * different version of the platform (i.e. whose model-library stamp does not match the current one).
 	 *
@@ -313,7 +329,7 @@ public class WorkspaceManager implements IWorkspaceManager {
 				if (lockFile.exists()) {
 					boolean doClean = true;
 					if (askBeforeRebuildingWorkspace()) {
-						doClean = GAMA.getGui().getDialogFactory().question("Stale workspace lock detected", """
+						doClean = askAndRemember("Stale workspace lock detected", """
 								GAMA detected that the previous session was not closed cleanly (a stale lock file \
 								was found in the workspace). This can cause a 'Workspace is closed' error \
 								at startup. Would you like GAMA to clean the workspace metadata now to \
@@ -339,7 +355,7 @@ public class WorkspaceManager implements IWorkspaceManager {
 				if (files == null || files.length == 0) return files != null;
 
 				if (askBeforeRebuildingWorkspace()) {
-					rebuild = GAMA.getGui().getDialogFactory().question("Corrupted workspace",
+					rebuild = askAndRemember("Corrupted workspace",
 							"The workspace appears to be corrupted (due to a previous crash) or "
 									+ "it is currently used by another instance of the platform. Would you like GAMA to clean it ?");
 				}
@@ -483,8 +499,9 @@ public class WorkspaceManager implements IWorkspaceManager {
 			if (fromDialog) {
 				boolean proceed = true;
 				if (askBeforeUsingOutdatedWorkspace()) {
-					proceed = GAMA.getGui().getDialogFactory().question("Different version of the models library",
-							"The workspace contains a different version of the models library. Do you want GAMA to proceed and update it ?");
+					proceed = askAndRemember("Different version of the models library",
+							"The workspace contains a different version of the models library. Do you want GAMA to proceed and update it ?",
+							KEY_ASK_OUTDATED);
 				}
 				if (proceed) {
 					try {
@@ -553,9 +570,10 @@ public class WorkspaceManager implements IWorkspaceManager {
 			if (remember) {
 				final String ret = checkWorkspaceDirectory(lastUsedWs, false, false, false);
 				if (ret != null) {
-					remember = "models".equals(ret) && askBeforeUsingOutdatedWorkspace()
-							&& GAMA.getGui().getDialogFactory().question("Different version of the models library",
-									"The workspace contains a different version of the models library. Do you want GAMA to proceed and update it ?");
+					remember = "models".equals(ret) && (!askBeforeUsingOutdatedWorkspace()
+							|| askAndRemember("Different version of the models library",
+									"The workspace contains a different version of the models library. Do you want GAMA to proceed and update it ?",
+									KEY_ASK_OUTDATED));
 					if (remember) { clearWorkspace(true); }
 				}
 			}

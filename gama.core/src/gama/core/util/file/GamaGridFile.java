@@ -12,6 +12,10 @@ package gama.core.util.file;
 import static gama.core.topology.gis.ProjectionFactory.getTargetCRSOrDefault;
 import static org.geotools.util.factory.Hints.DEFAULT_COORDINATE_REFERENCE_SYSTEM;
 
+import java.awt.Rectangle;
+import java.awt.geom.AffineTransform;
+import java.awt.image.Raster;
+import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -36,6 +40,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.api.referencing.crs.ProjectedCRS;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridCoverageFactory;
+import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
 import org.geotools.coverage.grid.io.imageio.geotiff.GeoTiffIIOMetadataDecoder;
 import org.geotools.data.PrjFileReader;
@@ -71,6 +76,7 @@ import gama.api.types.matrix.GamaMatrixFactory;
 import gama.api.types.matrix.IField;
 import gama.api.types.matrix.IMatrix;
 import gama.api.ui.IStatusMessage;
+import gama.api.ui.TaskProgress;
 import gama.api.utils.geometry.GamaEnvelopeFactory;
 import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.interfaces.IFieldMatrixProvider;
@@ -88,7 +94,7 @@ import gama.core.util.matrix.GamaFloatMatrix;
 		buffer_content = IType.GEOMETRY,
 		buffer_index = IType.INT,
 		concept = { IConcept.GRID, IConcept.ASC, IConcept.TIF, IConcept.FILE },
-		doc = @doc ("Represents .asc or .tif files that contain grid descriptions"))
+		doc = @doc ("Represents .asc or .tif files that contain grid descriptions. ASC files may use CELLSIZE or separate DX and DY values, with spaces or tabs as separators. NODATA_value is optional."))
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 
@@ -96,12 +102,6 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 	 * The Class Records.
 	 */
 	static class Records {
-
-		/** The x. */
-		double x[];
-
-		/** The y. */
-		double y[];
 
 		/** The bands. */
 		final List<double[]> bands = new ArrayList<>();
@@ -259,7 +259,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 	 *            the scope
 	 */
 	private void createCoverage(final IScope scope) {
-		if (coverage == null) {
+		if (coverage == null && ascData == null) {
 			final File gridFile = getFile(scope);
 			gridFile.setReadable(true);
 			InputStream fis = null;
@@ -295,8 +295,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 	 * @date 31 août 2023
 	 */
 	private Double doubleVal(final String line) {
-		String[] l = line.split(" ");
-		if (l.length == 1) { l = line.split("t"); }
+		String[] l = line.trim().split("\\s+");
 		if (l.length > 1) return Double.valueOf(l[l.length - 1]);
 		return null;
 	}
@@ -312,8 +311,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 	 */
 	private Integer intVal(final String line) {
 
-		String[] l = line.split(" ");
-		if (l.length == 1) { l = line.split("t"); }
+		String[] l = line.trim().split("\\s+");
 		if (l.length > 1) return Integer.valueOf(l[l.length - 1]);
 		return null;
 	}
@@ -327,6 +325,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 	 * @date 31 août 2023
 	 */
 	private void customAscReader(final IScope scope) {
+		int lineNumber = 0;
 		try (Scanner scanner = new Scanner(getFile(scope))) {
 			boolean headingComplete = false;
 			Integer nbCols = null;
@@ -341,16 +340,18 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 			ascInfo = new Double[4];
 			int j = 0;
 			while (scanner.hasNextLine()) {
-				String line = scanner.nextLine();
-				line = line.toLowerCase();
+				lineNumber++;
+				String line = scanner.nextLine().trim();
+				if (line.isEmpty()) { continue; }
+				final String header = line.toLowerCase(java.util.Locale.ROOT);
 				if (!headingComplete) {
-					if (dX == null && line.contains("dx")) {
+					if (dX == null && header.startsWith("dx")) {
 						dX = doubleVal(line);
 						ascInfo[0] = dX;
-					} else if (dY == null && line.contains("dy")) {
+					} else if (dY == null && header.startsWith("dy")) {
 						dY = doubleVal(line);
 						ascInfo[1] = dY;
-					} else if ((dX == null || dY == null) && line.contains("cellsize")) {
+					} else if ((dX == null || dY == null) && header.startsWith("cellsize")) {
 						Double cellSize = doubleVal(line);
 						if (dX == null) {
 							dX = cellSize;
@@ -360,39 +361,43 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 							dY = cellSize;
 							ascInfo[1] = dY;
 						}
-					} else if (nbCols == null && line.contains("ncols")) {
+					} else if (nbCols == null && header.startsWith("ncols")) {
 						nbCols = intVal(line);
-					} else if (nbRows == null && line.contains("nrows")) {
+					} else if (nbRows == null && header.startsWith("nrows")) {
 						nbRows = intVal(line);
-					} else if (noDataD == null && (line.contains("nodata") || line.contains("nodata_value"))) {
-						noDataD = line.contains("nan") ? Double.NaN : doubleVal(line);
-					} else if (xCorner == null && xCenter == null && line.contains("xllcorner")) {
+					} else if (noDataD == null && header.startsWith("nodata")) {
+						noDataD = header.contains("nan") ? Double.NaN : doubleVal(line);
+					} else if (xCorner == null && xCenter == null && header.startsWith("xllcorner")) {
 						xCorner = doubleVal(line);
 						ascInfo[2] = xCorner;
-					} else if (yCorner == null && yCenter == null && line.contains("yllcorner")) {
+					} else if (yCorner == null && yCenter == null && header.startsWith("yllcorner")) {
 						yCorner = doubleVal(line);
-					} else if (xCorner == null && xCenter == null && line.contains("xllcenter")) {
+					} else if (xCorner == null && xCenter == null && header.startsWith("xllcenter")) {
 						xCenter = doubleVal(line);
-					} else if (yCorner == null && yCenter == null && line.contains("yllcenter")) {
+					} else if (yCorner == null && yCenter == null && header.startsWith("yllcenter")) {
 						yCenter = doubleVal(line);
-					} else if (line.replace(" ", "").length() > 0) {
-						if (nbCols == null || nbCols == 0 || nbRows == null || nbRows == 0)
+					} else {
+						if (nbCols == null || nbCols <= 0 || nbRows == null || nbRows <= 0)
 							throw GamaRuntimeException.error("The format of " + getName(scope)
-									+ " is not correct. Error: NCOLS and NROWS have to be defined", scope);
-						if (xCenter != null && dX != null) {
-							xCorner = xCenter - nbCols * dX / 2.0;
+									+ " is not correct. Error: NCOLS and NROWS must be positive", scope);
+						if (dX == null || dY == null || !Double.isFinite(dX) || !Double.isFinite(dY)
+								|| dX <= 0 || dY <= 0)
+							throw GamaRuntimeException.error("The format of " + getName(scope)
+									+ " is not correct. Error: positive CELLSIZE or DX and DY must be defined", scope);
+						if (xCenter != null) {
+							xCorner = xCenter - dX / 2.0;
 							ascInfo[2] = xCorner;
 						}
-						if (yCenter != null && dY != null) { yCorner = yCenter - nbRows * dY / 2.0; }
-
-						if (yCorner != null && dY != null) { ascInfo[3] = yCorner + nbRows * dY; }
+						if (yCenter != null) { yCorner = yCenter - dY / 2.0; }
 
 						ascData = (GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(nbCols, nbRows);
-						if (noData != null) { this.noData = noDataD; }
+						this.noData = noDataD == null ? IField.NO_NO_DATA : noDataD;
 						double xC = xCorner == null ? 0 : xCorner;
 						double yC = yCorner == null ? 0 : yCorner;
+						ascInfo[2] = xC;
+						ascInfo[3] = yC + nbRows * dY;
 						final IEnvelope env =
-								GamaEnvelopeFactory.of(xC, yC, xC + nbCols * (dX == null ? 0 : dX), ascInfo[3], 0, 0);
+								GamaEnvelopeFactory.of(xC, xC + nbCols * dX, yC, yC + nbRows * dY, 0, 0);
 						computeProjection(scope, env);
 						numRows = nbRows;
 						numCols = nbCols;
@@ -401,28 +406,30 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 					}
 				}
 				if (headingComplete) {
-					String[] l = line.split(" ");
+					String[] l = line.split("\\s+");
+					if (j >= nbRows || l.length != nbCols)
+						throw GamaRuntimeException.error("The format of " + getName(scope)
+								+ " is not correct. Error: raster data does not match NCOLS and NROWS", scope);
 					for (int i = 0; i < l.length; i++) {
-						if (l[i].isEmpty()) { continue; }
-						if (noDataD != null && noDataD.isNaN()) {
-							Double v = 0.0;
-							try {
-								v = Double.valueOf(l[i]);
-							} catch (Exception e) {
-								v = Double.NaN;
-							}
-							ascData.set(scope, i, j, v);
-						} else {
-							ascData.set(scope, i, j, Double.valueOf(l[i]));
-						}
-
+						ascData.set(scope, i, j, "nan".equalsIgnoreCase(l[i]) ? Double.NaN : Double.valueOf(l[i]));
 					}
 					j++;
 				}
 			}
+			if (!headingComplete || j != nbRows)
+				throw GamaRuntimeException.error("The format of " + getName(scope)
+						+ " is not correct. Error: incomplete raster data", scope);
 		} catch (final FileNotFoundException e2) {
 			throw GamaRuntimeException
 					.error("The format of " + getName(scope) + " is not correct. Error: " + e2.getMessage(), scope);
+		} catch (final RuntimeException e) {
+			ascData = null;
+			final GamaRuntimeException error = e instanceof NumberFormatException
+					? GamaRuntimeException.error("The format of " + getName(scope)
+							+ " is not correct. Error: invalid numeric value: " + e.getMessage(), scope)
+					: GamaRuntimeException.create(e, scope);
+			error.addContext("Reading " + getName(scope) + " at ASC line " + lineNumber);
+			throw error;
 		}
 
 	}
@@ -569,6 +576,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 	 */
 	private void privateCreateCoverage(final IScope scope, final InputStream fis) {
 		AbstractGridCoverage2DReader store = null;
+		scope.getGui().getStatus().beginTask("Opening file " + getName(scope), IStatusMessage.DOWNLOAD_ICON);
 		try {
 			final ICoordinateReferenceSystem crs = getExistingCRS(scope);
 			CoordinateReferenceSystem geoToolsCrs = crs == null ? null : crs.getCRS();
@@ -595,7 +603,12 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 					// Hard fallback
 					Integer epsgCode = extractEPSGCode(getFile(scope));
 					if (epsgCode == null) throw e;
-					hints.put(DEFAULT_COORDINATE_REFERENCE_SYSTEM, CRS.decode("EPSG:" + epsgCode));
+					try {
+						hints.put(DEFAULT_COORDINATE_REFERENCE_SYSTEM, CRS.decode("EPSG:" + epsgCode));
+					} catch (Throwable ignored) {
+						// The code found in the file cannot be decoded: report the original error
+						throw e;
+					}
 					store = new GeoTiffReader(getFile(scope), hints);
 				}
 				noData = ((GeoTiffReader) store).getMetadata().getNoData();
@@ -652,10 +665,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 	 *            the create geometries
 	 */
 	void read(final IScope scope, final boolean readAll, final boolean createGeometries) {
-
 		try {
-			String task = "Reading file " + getName(scope);
-			scope.getGui().getStatus().beginTask(task, IStatusMessage.DOWNLOAD_ICON);
 			final IEnvelope envP = gis == null ? scope.getSimulation().getEnvelope() : gis.getProjectedEnvelope();
 			if (gis != null && !(gis.getInitialCRS(scope).getCRS() instanceof ProjectedCRS)) {
 				GAMA.reportError(scope, GamaRuntimeException.warning("Try to project a grid -" + this.originalPath
@@ -699,55 +709,116 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 			final double cmyP = cellHeightP / 2;
 
 			if (records == null) {
-				records = new Records();
-				records.x = new double[numRows * numCols]; // x
-				records.y = new double[numRows * numCols]; // y
-				records.bands.add(new double[numRows * numCols]); // data
-				for (int i = 0, n = numRows * numCols; i < n; i++) {
-					scope.getGui().getStatus().setTaskCompletion(task, i / (double) n);
-
-					final int yy = i / numCols;
-					final int xx = i - yy * numCols;
-
-					records.x[i] = originX + xx * cellWidth + cmx;
-					records.y[i] = maxY - (yy * cellHeight + cmy);
-
-					double[] vd = getValue(scope, originXP + xx * cellWidthP + cmxP, maxYP - (yy * cellHeightP + cmyP),
-							xx, yy);
-					nbBands = vd.length;
-					if (i == 0 && vd.length > 1) {
-						for (int j = 0; j < vd.length - 1; j++) { records.bands.add(new double[numRows * numCols]); }
+				final long size = (long) numRows * numCols;
+				if (size > Integer.MAX_VALUE - 8) throw GamaRuntimeException.error("The grid " + getName(scope)
+						+ " contains too many cells (" + numCols + "x" + numRows + ") to be loaded in memory", scope);
+				final Records r = new Records();
+				try (TaskProgress progress = TaskProgress.begin(scope, "Reading file " + getName(scope))) {
+					if (coverage == null || !readCoverageByTiles(progress, r)) {
+						r.bands.clear();
+						r.bands.add(new double[(int) size]); // data
+						for (int i = 0, n = (int) size; i < n; i++) {
+							if (i % numCols == 0) { progress.report(i, n); }
+							final int yy = i / numCols;
+							final int xx = i - yy * numCols;
+							double[] vd = getValue(scope, originXP + xx * cellWidthP + cmxP,
+									maxYP - (yy * cellHeightP + cmyP), xx, yy);
+							nbBands = vd.length;
+							if (i == 0 && vd.length > 1) {
+								for (int j = 0; j < vd.length - 1; j++) { r.bands.add(new double[(int) size]); }
+							}
+							for (int j = 0; j < vd.length; j++) { r.bands.get(j)[i] = vd[j]; }
+						}
 					}
-					for (int j = 0; j < vd.length; j++) { records.bands.get(j)[i] = vd[j]; }
-
 				}
-
+				records = r;
 			}
 			if (getBuffer() == null && createGeometries) {
 				// Building geometries
-				for (int i = 0, n = numRows * numCols; i < n; i++) {
+				try (TaskProgress progress = TaskProgress.begin(scope, "Building the cells of " + getName(scope))) {
 					setBuffer(GamaListFactory.<IShape> create(Types.GEOMETRY));
-					final IPoint p = GamaPointFactory.create(records.x[i], records.y[i]);
-					IShape rect = GamaShapeFactory.buildRectangle(cellWidth, cellHeight, p);
-					if (gis == null) {
-						rect = GamaShapeFactory.createFrom(rect.getInnerGeometry());
-					} else {
-						rect = GamaShapeFactory.createFrom(gis.transform(rect.getInnerGeometry()));
+					for (int i = 0, n = numRows * numCols; i < n; i++) {
+						if (i % numCols == 0) { progress.report(i, n); }
+						final int yy = i / numCols;
+						final int xx = i - yy * numCols;
+						final IPoint p = GamaPointFactory.create(originX + xx * cellWidth + cmx,
+								maxY - (yy * cellHeight + cmy));
+						IShape rect = GamaShapeFactory.buildRectangle(cellWidth, cellHeight, p);
+						if (gis == null) {
+							rect = GamaShapeFactory.createFrom(rect.getInnerGeometry());
+						} else {
+							rect = GamaShapeFactory.createFrom(gis.transform(rect.getInnerGeometry()));
+						}
+						IList<Double> bands = GamaListFactory.create(scope, Types.FLOAT);
+						records.fill(i, bands);
+						rect.setAttribute("grid_value", bands.get(0));
+						rect.setAttribute("bands", bands);
+						getBuffer().add(rect);
 					}
-					IList<Double> bands = GamaListFactory.create(scope, Types.FLOAT);
-					records.fill(i, bands);
-					rect.setAttribute("grid_value", bands.get(0));
-					rect.setAttribute("bands", bands);
-					getBuffer().add(rect);
 				}
 			}
 		} catch (final Exception e) {
 			throw GamaRuntimeException
 					.error("The format of " + getName(scope) + " is not correct. Error: " + e.getMessage(), scope);
-		} finally {
-			scope.getGui().getStatus().endTask("Reading file " + getName(scope), IStatusMessage.DOWNLOAD_ICON);
 		}
 
+	}
+
+	/**
+	 * Reads all the values of the coverage directly from its image, tile by tile, instead of evaluating the coverage
+	 * at the center of every cell (which is much slower and requires much more memory for large rasters). Only
+	 * possible when the image has the same dimensions as the grid and is not rotated; otherwise, returns false so that
+	 * the cell-by-cell evaluation is used instead.
+	 *
+	 * @param progress
+	 *            used to report the progress of the reading
+	 * @param r
+	 *            the records to fill
+	 * @return true if the values have been read
+	 */
+	private boolean readCoverageByTiles(final TaskProgress progress, final Records r) {
+		final RenderedImage image = coverage.getRenderedImage();
+		if (image == null || image.getWidth() != numCols || image.getHeight() != numRows) return false;
+		if (!(coverage.getGridGeometry() instanceof GridGeometry2D gg)
+				|| !(gg.getGridToCRS2D() instanceof AffineTransform at) || at.getShearX() != 0 || at.getShearY() != 0)
+			return false;
+		// GAMA's cells are ordered from the north-west corner: flip the image if its axes are not oriented this way
+		final boolean flipX = at.getScaleX() < 0;
+		final boolean flipY = at.getScaleY() > 0;
+		final int bands = image.getSampleModel().getNumBands();
+		final int size = numRows * numCols;
+		r.bands.clear();
+		for (int b = 0; b < bands; b++) { r.bands.add(new double[size]); }
+		nbBands = bands;
+		final int minX = image.getMinX(), minY = image.getMinY();
+		final Rectangle bounds = new Rectangle(minX, minY, numCols, numRows);
+		final int tilesX = image.getNumXTiles(), tilesY = image.getNumYTiles();
+		final double nbTiles = (double) tilesX * tilesY;
+		double[] samples = null;
+		for (int ty = 0; ty < tilesY; ty++) {
+			for (int tx = 0; tx < tilesX; tx++) {
+				progress.report((ty * tilesX + tx) / nbTiles);
+				final Raster tile = image.getTile(image.getMinTileX() + tx, image.getMinTileY() + ty);
+				final Rectangle area = tile.getBounds().intersection(bounds);
+				if (area.isEmpty()) { continue; }
+				final int w = area.width, h = area.height;
+				if (samples == null || samples.length < w * h) { samples = new double[w * h]; }
+				for (int b = 0; b < bands; b++) {
+					tile.getSamples(area.x, area.y, w, h, b, samples);
+					final double[] target = r.bands.get(b);
+					for (int y = 0; y < h; y++) {
+						final int row = area.y - minY + y;
+						final int yy = flipY ? numRows - 1 - row : row;
+						for (int x = 0; x < w; x++) {
+							final int col = area.x - minX + x;
+							final int xx = flipX ? numCols - 1 - col : col;
+							target[yy * numCols + xx] = samples[y * w + x];
+						}
+					}
+				}
+			}
+		}
+		return true;
 	}
 
 	@Override
@@ -881,8 +952,8 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 			metadata = new GeoTiffIIOMetadataDecoder(iioMetadata);
 
 			if (metadata.hasGeoKey()) {
-				// ProjectedCSTypeGeoKey = 1024
-				String projStr = metadata.getGeoKey(1024);
+				// ProjectedCSTypeGeoKey = 3072 (1024 is GTModelTypeGeoKey, which only tells the type of model)
+				String projStr = metadata.getGeoKey(3072);
 				if (projStr != null) {
 					try {
 						int projectedCode = Integer.parseInt(projStr.trim());
@@ -919,6 +990,8 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 		super.invalidateContents();
 		if (coverage != null) { coverage.dispose(true); }
 		coverage = null;
+		ascData = null;
+		ascInfo = null;
 	}
 
 	/**

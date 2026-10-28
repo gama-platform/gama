@@ -58,7 +58,17 @@
  * Preferences appears last with a dedicated sliders icon.
  * Run As, Debug As, Source, Refactorings and Code Actions submenus are excluded from the text popup.
  * Add species, Add grid species and Add class follow the experiment templates in the toolbar "+" menu;
- * Add action appears last there after a separator. These creation actions are not in the text popup.
+ * Add action appears last there after a separator. With selected text, it opens the shared action form with that
+ * text prefilled as code. Include selection, next to Returns, defaults to checked: accepting inserts the action
+ * and replaces the selected statements with a do call as one undoable edit. Unchecking it leaves the selection
+ * untouched and creates an independent action; both code buffers survive toggling. Cancel leaves the document
+ * unchanged, and concurrent document changes block acceptance. Only complete sibling executable statements can
+ * be moved; partial tokens/comments, drawing/output code and return/break/continue are rejected explicitly.
+ * Arguments are not inferred: required arguments entered in the form are passed from same-name caller variables,
+ * and defaulted arguments are omitted. Contextual compilation checks both the action and its caller before applying;
+ * dependencies on caller-local variables must be resolved in the signature/code. A typed action's result is discarded
+ * by the generated do call. The legacy extract-action entry point delegates to this same form; there is no second
+ * extraction menu command. These creation actions are not in the text popup.
  * Existing source bodies remain read-only: header token edits preserve all declarations, unsupported constructs and
  * comments. Use Rename refactoring when references must be renamed too. Syntax and duplicate local names are checked before applying; semantic
  * diagnostics remain the normal text-editor validator's responsibility.

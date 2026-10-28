@@ -287,7 +287,8 @@ public class GamaListFactory {
 	public static IList create(final IScope scope, final IType contentType, final IContainer container) {
 		if (container == null) return create(contentType);
 		if (FLAGS.CAST_CONTAINER_CONTENTS
-				&& GamaType.requiresCasting(contentType, container.getGamlType().getContentType())) {
+				&& GamaType.requiresContentTypeCasting(scope, contentType, container.getGamlType().getContentType(),
+						container.iterable(scope))) {
 			final IList list = create(contentType);
 			for (final Object o : container.iterable(scope)) { castAndAdd(scope, list, o); }
 			return list;
@@ -740,6 +741,7 @@ public class GamaListFactory {
 
 	/**
 	 * Converts an object to a list, handling various types (arrays, collections, single objects).
+	 * This Java construction helper converts null to an empty list; the GAML list cast preserves nil instead.
 	 *
 	 * @param scope
 	 *            the execution scope.
@@ -788,11 +790,11 @@ public class GamaListFactory {
 			can_be_const = true,
 			concept = { IConcept.CAST, IConcept.CONTAINER })
 	@doc (
-			value = "casts the operand to a list, making an explicit copy if it is already a list or a subtype of list (interval, population, etc.)",
+			value = "casts the operand to a list, making an explicit copy if it is already a list or a subtype of list (interval, population, etc.). A nil operand remains nil.",
 			see = { "list" })
 	@no_test
 	public static IList copyToList(final IScope scope, final Object obj) {
-		return castToList(scope, obj, null, true);
+		return obj == null ? null : castToList(scope, obj, null, true);
 	}
 
 	/**

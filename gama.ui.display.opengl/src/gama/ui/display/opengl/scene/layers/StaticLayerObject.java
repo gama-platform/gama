@@ -12,7 +12,7 @@ package gama.ui.display.opengl.scene.layers;
 
 import java.util.List;
 
-import gama.ui.display.opengl.OpenGL;
+import gama.ui.display.opengl.IOpenGL;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.display.opengl.scene.AbstractObject;
 
@@ -51,7 +51,7 @@ public class StaticLayerObject extends LayerObject {
 		public boolean isLightInteraction() { return false; }
 
 		@Override
-		public void draw(final OpenGL gl) {
+		public void draw(final IOpenGL gl) {
 			if (currentList.isEmpty()) { fillWithObjects(currentList); }
 			gl.suspendZTranslation();
 			final boolean previous = gl.setDisplayLighting(false);
@@ -84,7 +84,7 @@ public class StaticLayerObject extends LayerObject {
 	public boolean isStatic() { return true; }
 
 	@Override
-	public void clear(final OpenGL gl) {}
+	public void clear(final IOpenGL gl) {}
 
 	@Override
 	public boolean isPickable() { return false; }

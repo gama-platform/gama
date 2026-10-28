@@ -19,6 +19,10 @@ species declaring_list_attributes {
 	 // The simplest declaration identifies empty_list as a list that can contain any type of objects. 
 	 // Its default value will be [] (the empty list) if it is not initialized.
 	list empty_list;
+	// Explicit nil means no list, not an empty list. This also applies to later assignments and list(nil).
+	list absent_list <- nil;
+	// Test for absence with absent_list = nil. An empty list is not nil.
+	// To create or restore an empty list explicitly, assign [].
 	// To provide it with an initial value, use the '<-' (or 'init:') facet
 	list explicit_empty_list <- [];
 	// lists can also be provided with a default size, in which case they are filled with the nil element
@@ -51,6 +55,10 @@ species declaring_list_attributes {
 		write "== DECLARING LISTS ==";
 		write "";
 		write sample(empty_list); 
+		write sample(absent_list);
+		write sample(absent_list = nil); // true
+		write sample(empty_list = nil); // false
+		write sample(list(nil) = nil); // true
 		write sample(explicit_empty_list); 
 		write sample(list_of_size_10);
 		write sample(list_of_size_10_with_0);

@@ -103,6 +103,7 @@ public class RandomUtils implements IRandom {
 	 */
 	@Override
 	public void setUsage(final Integer usage) {
+		initGenerator();
 		generator.setUsage(usage);
 	}
 
@@ -330,6 +331,21 @@ public class RandomUtils implements IRandom {
 	@Override
 	public int between(final int min, final int max) {
 		return (int) (min + (long) ((1L + max - min) * next()));
+	}
+
+	@Override
+	public int nextInt() {
+		return generator.nextInt();
+	}
+
+	@Override
+	public int nextInt(final int bound) {
+		return generator.nextInt(bound);
+	}
+
+	@Override
+	public int nextInt(final int origin, final int bound) {
+		return generator.nextInt(origin, bound);
 	}
 
 	/**

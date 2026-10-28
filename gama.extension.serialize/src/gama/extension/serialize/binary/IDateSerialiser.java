@@ -34,7 +34,7 @@ public class IDateSerialiser implements IGamaObjectSerializer<IDate> {
 	private static final int ZONED = 0, OFFSET = 1, LOCAL = 2;
 
 	/**
-	 * Returns {@code false}: dates are not registered for FST back-reference tracking.
+	 * Returns {@code false}: dates are not registered for back-reference tracking.
 	 *
 	 * @return {@code false}
 	 */
@@ -47,7 +47,7 @@ public class IDateSerialiser implements IGamaObjectSerializer<IDate> {
 	 * Serialises the kind of the temporal value held by the date and its ISO representation.
 	 *
 	 * @param out
-	 *            the FST output stream
+	 *            the binary output stream
 	 * @param o
 	 *            the date to serialise
 	 * @throws Exception
@@ -79,7 +79,7 @@ public class IDateSerialiser implements IGamaObjectSerializer<IDate> {
 	 * @param scope
 	 *            the current GAMA simulation scope
 	 * @param in
-	 *            the FST input stream
+	 *            the binary input stream
 	 * @return the deserialised {@link IDate}
 	 * @throws Exception
 	 *             if deserialisation fails

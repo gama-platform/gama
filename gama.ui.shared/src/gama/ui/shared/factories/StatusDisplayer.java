@@ -10,6 +10,9 @@
  ********************************************************************************************************/
 package gama.ui.shared.factories;
 
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -25,6 +28,7 @@ import gama.api.ui.IStatusControl;
 import gama.api.ui.IStatusDisplayer;
 import gama.api.ui.IStatusMessage;
 import gama.api.ui.IStatusMessage.StatusType;
+import gama.api.utils.server.GamaServerStatusDisplayer;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.workspace.status.StatusMessageFactory;
 
@@ -32,6 +36,8 @@ import gama.workspace.status.StatusMessageFactory;
  * The Class StatusDisplayer.
  */
 public class StatusDisplayer implements IStatusDisplayer, IExperimentStateListener {
+
+	private final GamaServerStatusDisplayer serverStatus = new GamaServerStatusDisplayer();
 
 	/** The experimentControl. */
 	private IStatusControl experimentControl = new IStatusControl() {};
@@ -77,8 +83,8 @@ public class StatusDisplayer implements IStatusDisplayer, IExperimentStateListen
 	 */
 	private class StatusRefresher extends UIJob {
 
-		/** The message. */
-		IStatusMessage message = null;
+		/** Pending messages, including errors followed by launch/cleanup notifications. */
+		private final Queue<IStatusMessage> messages = new ConcurrentLinkedQueue<>();
 
 		/**
 		 * Instantiates a new threaded updater.
@@ -100,19 +106,18 @@ public class StatusDisplayer implements IStatusDisplayer, IExperimentStateListen
 		 *            the m
 		 */
 		public void updateWith(final IStatusMessage m) {
-			message = m;
-			if (m != null) { schedule(); }
+			if (m != null) {
+				messages.offer(m);
+				schedule();
+			}
 		}
 
 		@Override
 		public IStatus runInUIThread(final IProgressMonitor monitor) {
-			try {
-				if (message != null) {
-					if (statusControl.isDisposed()) return Status.CANCEL_STATUS;
-					statusControl.updateWith(message);
-				}
-			} finally {
-				message = null;
+			if (statusControl.isDisposed()) return Status.CANCEL_STATUS;
+			IStatusMessage message;
+			while ((message = messages.poll()) != null) {
+				statusControl.updateWith(message.type() == StatusType.NONE ? null : message);
 			}
 			return Status.OK_STATUS;
 		}
@@ -176,7 +181,13 @@ public class StatusDisplayer implements IStatusDisplayer, IExperimentStateListen
 	 */
 	@Override
 	public void errorStatus(final GamaRuntimeException error) {
+		serverStatus.errorStatus(error);
 		statusRefresher.updateWith(StatusMessageFactory.ERROR(error));
+	}
+
+	@Override
+	public void resetStatus() {
+		statusRefresher.updateWith(StatusMessageFactory.CUSTOM(null, StatusType.NONE, null, null));
 	}
 
 	/**
@@ -190,6 +201,7 @@ public class StatusDisplayer implements IStatusDisplayer, IExperimentStateListen
 	 *            the icon
 	 */
 	private void setStatus(final String msg, final StatusType code, final String icon) {
+		serverStatus.informStatus(msg, icon);
 		statusRefresher.updateWith(StatusMessageFactory.CUSTOM(msg, code, icon, null));
 	}
 
@@ -203,6 +215,7 @@ public class StatusDisplayer implements IStatusDisplayer, IExperimentStateListen
 	 */
 	@Override
 	public void setTaskCompletion(final String name, final Double s) {
+		serverStatus.setTaskCompletion(name, s);
 		statusRefresher.updateWith(StatusMessageFactory.COMPLETION(name, s));
 	}
 
@@ -259,6 +272,7 @@ public class StatusDisplayer implements IStatusDisplayer, IExperimentStateListen
 	 */
 	@Override
 	public void setStatus(final String message, final String icon, final IColor color) {
+		serverStatus.setStatus(message, icon, color);
 		if (message == null) {
 			// resetStatus();
 		} else {

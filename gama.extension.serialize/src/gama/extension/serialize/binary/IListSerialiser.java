@@ -32,7 +32,7 @@ import gama.api.types.list.IList;
 public class IListSerialiser implements IGamaObjectSerializer<IList> {
 
 	/**
-	 * Returns {@code false}: lists are not registered for FST back-reference tracking.
+	 * Returns {@code false}: lists are not registered for back-reference tracking.
 	 *
 	 * @return {@code false}
 	 */
@@ -43,10 +43,10 @@ public class IListSerialiser implements IGamaObjectSerializer<IList> {
 
 	/**
 	 * Serialises the list's content type, size, and all elements. Each element is written as an object via
-	 * {@link gama.extension.serialize.fst.FSTObjectOutput#writeObject}.
+	 * {@link gama.api.kernel.serialization.IGamaObjectOutput#writeObject}.
 	 *
 	 * @param out
-	 *            the FST output stream
+	 *            the binary output stream
 	 * @param o
 	 *            the list to serialise
 	 * @throws Exception
@@ -73,7 +73,7 @@ public class IListSerialiser implements IGamaObjectSerializer<IList> {
 	 * @param scope
 	 *            the current GAMA simulation scope (unused)
 	 * @param in
-	 *            the FST input stream
+	 *            the binary input stream
 	 * @return the deserialised {@link IList}
 	 * @throws Exception
 	 *             if deserialisation fails

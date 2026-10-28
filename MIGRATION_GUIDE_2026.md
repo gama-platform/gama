@@ -29,6 +29,18 @@ A high-level summary of every area that changed. Use this to quickly assess what
 | **`Cast` utility class** reduced | Casting delegated to individual `IType` implementations |
 | **`AbstractPopulation`** centralises population logic | `createAgentAt` renamed to `createAgentAtIndex` |
 | **`IAgent`** now extends `IDelegatingShape` | Attribute mutation via containers is restricted |
+| **Apache Fory** replaces FST for binary serialization | FST binary saves must be regenerated; no legacy reader is provided |
+
+### Binary serialization compatibility
+
+GAMA 2026 uses Apache Fory exclusively for binary serialization and experiment recording. Existing
+FST-produced simulation files and serialized objects cannot be read. Regenerate them from their source
+models using GAMA 2026. If their state must be retained, export the necessary model data in a portable
+format from the older GAMA version before upgrading.
+
+Remove uses of `gama.pref_binary_serializer` from models and `-Dgama.binary.serializer` from launch
+arguments. Backend selection and the `gama.extension.serialize.fst` Java packages have been removed.
+Fory is supplied by `gama.dependencies`; plugins must not embed a second copy.
 
 ## GAML Language
 
@@ -41,6 +53,9 @@ A high-level summary of every area that changed. Use this to quickly assess what
 | `diffuse var:` and `transition to:` removed | Use `diffuse` and `transition` directly |
 | `image` layer renamed to `picture` | Update display blocks |
 | Displays/experiments need explicit `title:` | Identifier and UI label are now separate |
+| `overlay` position/size unified in 2D and 3D | Contents drawn in model units may need `#px` |
+| Chart bodies re-evaluated at every step | Dynamic legends create new series; duplicate legends no longer merge |
+| Explicit `nil` for lists and maps is preserved | Use `[]` or `map([])` when an empty container is intended |
 
 ## Engine, UI, and Graphics
 
@@ -225,6 +240,32 @@ Work through each section that applies to your plugin. Each section is self-cont
 
 These changes affect `.gaml` model files. Most can be applied with a global find-and-replace.
 
+### Lists and maps: absence is not emptiness (#765)
+
+An omitted initializer creates a new empty list or map. An explicit `nil` initializer, later assignment,
+or cast preserves `nil`. These rules apply equally to locals, globals and species attributes, including
+parameterized types.
+Explicit nil values passed through `create ... with:` or object constructor arguments follow the same rule.
+
+```gaml
+list<int> numbers;               // a new empty list<int>
+map<string,int> scores;          // a new empty map<string,int>
+list<int> missing <- nil;        // nil, not []
+numbers <- nil;                 // now nil
+numbers <- [];                  // explicitly restore an empty list
+scores <- map([]);              // explicitly create an empty map
+// list(nil), map(nil), and to_list(nil) all return nil
+```
+
+An empty container is never equal to `nil`. Test `value = nil` for absence before using operations
+that require a container; indexing a nil container reports a runtime error. Each omitted initializer
+allocates an independent container, even for repeated executions of the same local declaration.
+
+**Java contributors:** use `IType.createDefaultValue(scope)` for omitted initialization, not
+`cast(scope, null, ...)`. `getDefault()` remains the type's fallback/nullability value.
+The Java construction helpers `GamaListFactory.castToList` and `GamaMapFactory.castToMap` still
+convert Java null to an empty container; they are not the GAML casts.
+
 ### 1.1 Arrow (`->`) expressions — braces removed
 
 The outer curly braces around the body of `->` expressions are no longer valid.
@@ -296,6 +337,47 @@ do my_action with: (agents: ag, values: [1, 2, 3]);
 **Key differences:**
 - Outer `[...]` → `(...)`
 - Double-colon `::` → single colon `:`
+
+---
+
+### 1.6 `overlay` layers — consistent position, size and contents
+
+The `position` and `size` facets of `overlay` are now interpreted identically by 2D (java2D) and 3D (opengl) displays, and follow their documentation (issues #354, #589, #656, #997):
+
+- Each coordinate is interpreted independently: a coordinate written with `#px` is a number of pixels of the view, a value in [0,1] (in [-1,1] for the position) is a fraction of the view, and a larger value is in model units. For instance, in `size: {2000, 32#px}`, only the height is in pixels.
+- Negative positions are counted from the right (resp. bottom) border of the view.
+- Small pixel sizes (e.g. `{5#px, 5#px}`) are no longer turned into a fraction of the view in 3D displays, and 3D overlays are no longer shrunk by 10%.
+- Overlays are recomputed when the view is resized (e.g. after switching to full screen).
+- Inside the overlay, `#px` is always one pixel of the view, whatever the size of the overlay, and model units are scaled as in the view (previously, in 2D displays, they were scaled according to the width of the overlay).
+- Pixels here are logical window pixels, not physical backing pixels. OpenGL uses the native surface's actual scale when moving between monitors with different DPI; a `40#px` element keeps its logical size, although its physical pixel count can change.
+
+```gaml
+overlay position: {10#px, 10#px} size: {200#px, 100#px} background: #white {
+    draw "Cycle: " + cycle at: {20#px, 30#px} color: #black;
+}
+```
+
+> **Action needed:** none for overlays whose contents are drawn with `#px`. Models that draw the contents with model units in an overlay smaller than the view (e.g. `at: location / 3`) may need to express these coordinates in pixels.
+
+---
+
+### 1.7 Charts — body re-evaluated at every step, legends no longer identify series
+
+The body of a `chart` was only executed once, when the chart was created; only the `value` of its data was then re-evaluated. It is now re-evaluated at every step (#403):
+
+```gaml
+chart "Rewards" type: series {
+    if (cycle > 1) { data "Instant reward" value: reward color: #blue; }   // now appears at cycle 2
+    data "period " + (cycle div 10) value: reward;                       // a new series every 10 cycles
+    loop g over: groups { data g.name value: g.reward; }                 // follows the current groups
+}
+```
+
+- A series is identified by the statement declaring it and by its current legend. A new legend creates a new series.
+- A series that is not declared at some step is **frozen** in `series`, `xy`, `scatter` and `heatmap` charts (its history is kept and it resumes if it is declared again), and **removed** in `pie`, `histogram`, `radar` and `box_whisker` charts.
+- Legends are only displayed names (#785): two `data "a"` statements now produce two series (previously, the second replaced the first), and duplicated category labels are no longer merged.
+
+> **Action needed:** none for charts whose body only contains `data`/`datalist` statements with constant legends. Charts whose legends depend on changing expressions (e.g. `data "value at " + cycle ...`) now create a new series at each change: use a constant legend to keep a single series. Models relying on duplicated legends to merge series must use a single `data` statement.
 
 ---
 

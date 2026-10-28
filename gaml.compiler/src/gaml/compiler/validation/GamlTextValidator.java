@@ -21,8 +21,10 @@ import static org.eclipse.xtext.diagnostics.Severity.WARNING;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.linking.impl.XtextLinkingDiagnostic;
@@ -32,7 +34,11 @@ import org.eclipse.xtext.resource.XtextSyntaxDiagnostic;
 import org.eclipse.xtext.validation.EObjectDiagnosticImpl;
 
 import gama.api.compilation.GamlCompilationError;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IModelDescription;
+import gama.api.constants.IGamlIssue;
 import gama.api.compilation.validation.IGamlTextValidator;
+import gaml.compiler.prototypes.SymbolArtefact;
 import gaml.compiler.resource.GamlResource;
 import gaml.compiler.resource.GamlResourceServices;
 
@@ -59,6 +65,22 @@ public class GamlTextValidator implements IGamlTextValidator {
 	 */
 	protected GamlTextValidator() {}
 
+	static GamlCompilationError compilationError(final Resource.Diagnostic diagnostic, final URI uri) {
+		GamlCompilationError error = switch (diagnostic) {
+			case EObjectDiagnosticImpl ed -> GamlCompilationError.create(ed.getMessage(), SYNTACTIC_ERROR,
+					ed.getProblematicObject(), WARNING.equals(ed.getSeverity()) ? Warning
+							: INFO.equals(ed.getSeverity()) ? Info : Error,
+					ed.getData());
+			case XtextLinkingDiagnostic ld -> GamlCompilationError.create(ld.getMessage(), LINKING_ERROR,
+					uri, Error, ld.getData());
+			case XtextSyntaxDiagnostic sd -> GamlCompilationError.create(sd.getMessage(), SYNTACTIC_ERROR,
+					uri, Error, sd.getData());
+			default -> GamlCompilationError.create(diagnostic.getMessage(), SYNTACTIC_ERROR, uri, Error);
+		};
+		int offset = diagnostic instanceof org.eclipse.xtext.diagnostics.Diagnostic d ? d.getOffset() : 0;
+		return error.withLocation(new GamlCompilationError.Location(diagnostic.getLine(), diagnostic.getColumn(), offset));
+	}
+
 	/**
 	 * Syntactic validation of model.
 	 *
@@ -72,8 +94,9 @@ public class GamlTextValidator implements IGamlTextValidator {
 	@Override
 	public void validateModel(final String expr, final List<GamlCompilationError> errors, final boolean syntaxOnly) {
 		final GamlResource resource = GamlResourceServices.getTemporaryResource(null);
+		resource.setValidationOnly(true);
 		try {
-			final InputStream is = new ByteArrayInputStream(expr.getBytes());
+			final InputStream is = new ByteArrayInputStream(expr.getBytes(StandardCharsets.UTF_8));
 			try {
 				resource.loadSynthetic(is, null);
 			} catch (final Exception e1) {
@@ -81,22 +104,13 @@ public class GamlTextValidator implements IGamlTextValidator {
 			} finally {}
 			if (resource.hasErrors()) {
 				for (Resource.Diagnostic d : resource.getErrors()) {
-					GamlCompilationError error = switch (d) {
-						case EObjectDiagnosticImpl ed -> GamlCompilationError.create(ed.getMessage(), SYNTACTIC_ERROR,
-								ed.getProblematicObject(), WARNING.equals(ed.getSeverity()) ? Warning
-										: INFO.equals(ed.getSeverity()) ? Info : Error,
-								ed.getData());
-						case XtextLinkingDiagnostic ld -> GamlCompilationError.create(ld.getMessage(), LINKING_ERROR,
-								ld.getUriToProblem(), Error, ld.getData());
-						case XtextSyntaxDiagnostic sd -> GamlCompilationError.create(sd.getMessage(), SYNTACTIC_ERROR,
-								sd.getUriToProblem(), Error, sd.getData());
-						case null, default -> GamlCompilationError.create(d.getMessage(), SYNTACTIC_ERROR,
-								resource.getURI(), Error);
-					};
-					errors.add(error);
+					errors.add(compilationError(d, resource.getURI()));
 				}
 			}
-			if (syntaxOnly) return;
+			if (syntaxOnly) {
+				if (errors.isEmpty()) { validatePlacement(resource, errors); }
+				return;
+			}
 			try {
 				resource.validate();
 			} catch (Throwable t) {
@@ -115,6 +129,32 @@ public class GamlTextValidator implements IGamlTextValidator {
 		}
 	}
 
+	/**
+	 * The grammar accepts any statement in any block, so syntax-only validation also checks that each statement is
+	 * allowed in its enclosing context. Descriptions are built but not validated; other semantic errors are ignored.
+	 */
+	private void validatePlacement(final GamlResource resource, final List<GamlCompilationError> errors) {
+		IModelDescription model = null;
+		try {
+			model = resource.buildCompleteDescription();
+			if (model == null) return;
+			model.visitOwnChildrenRecursively(desc -> {
+				final IDescription enclosing = desc.getEnclosingDescription();
+				if (enclosing != null && !desc.isBuiltIn() && desc.getArtefact() instanceof SymbolArtefact artefact
+						&& !artefact.canBeDefinedIn(enclosing)) {
+					errors.add(GamlCompilationError.create(
+							desc.getKeyword() + " cannot be defined in " + enclosing.getKeyword(),
+							IGamlIssue.WRONG_CONTEXT, desc.getUnderlyingElement(), Error));
+				}
+				return true;
+			});
+		} catch (final Throwable t) {
+			// Placement cannot be determined; syntax-only validation reports grammar errors only.
+		} finally {
+			if (model != null) { model.dispose(); }
+		}
+	}
+
 	@Override
 	public int[] getStartLineAndOffsetInFileInfo(final EObject source) {
 		int[] result = new int[2];
@@ -124,5 +164,13 @@ public class GamlTextValidator implements IGamlTextValidator {
 			result[1] = node.getTotalOffset();
 		}
 		return result;
+	}
+
+	@Override
+	public GamlCompilationError.Location getSourceLocation(final EObject source) {
+		final ICompositeNode node = NodeModelUtils.getNode(source);
+		if (node == null) return GamlCompilationError.Location.UNKNOWN;
+		final var position = NodeModelUtils.getLineAndColumn(node.getRootNode(), node.getOffset());
+		return new GamlCompilationError.Location(position.getLine(), position.getColumn(), node.getOffset());
 	}
 }

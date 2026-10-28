@@ -29,7 +29,7 @@ fi
 
 memory="0"
 userWorkspace=""
-args=""
+args=()
 
 while [[ "$#" -gt 0 ]]; do
     case "$1" in
@@ -42,7 +42,7 @@ while [[ "$#" -gt 0 ]]; do
             shift 2
             ;;
         *)
-            args+="$1 "
+            args+=("$1")
             shift
             ;;
     esac
@@ -57,11 +57,11 @@ fi
 workspaceCreate=0
 
 # Run `-help` if no parameter given
-if [[ -z "$args" ]]; then
-    args+="-help"
+if [[ ${#args[@]} -eq 0 ]]; then
+    args+=("-help")
     workspaceCreate=1
 else
-    case "$args" in
+    case " ${args[*]} " in
     *-help*|*-version*|*-validate*|*-test*|*-xml*|*-batch*|*-write-xmi*|*-socket*)
         workspaceCreate=1
         ;;
@@ -69,8 +69,9 @@ else
 fi
 
 function read_from_ini {
-  start_line=$(grep -n -- '-server' "${gamaIniPath}" | cut -d ':' -f 1)
-  tail -n +$start_line "${gamaIniPath}" | tr '\n' ' '
+  # Everything after -vmargs, minus heap flags (set by the script itself)
+  start_line=$(grep -n -- '^-vmargs' "${gamaIniPath}" | cut -d ':' -f 1)
+  tail -n +$((start_line + 1)) "${gamaIniPath}" | grep -v -e '^-Xmx' -e '^-Xms' | tr '\n' ' '
 }
 
 echo "******************************************************************"
@@ -89,7 +90,7 @@ if [[ -z $userWorkspace ]]; then
 
     if [ $workspaceCreate -eq 0 ]; then
       # create workspace in output folder
-      workspaceRootPath="${args: -1}"
+      workspaceRootPath="${args[${#args[@]}-1]}"
       if [ ! -d "$workspaceRootPath" ]; then
           mkdir "$workspaceRootPath"
       fi
@@ -122,7 +123,7 @@ if ! $java -cp "${pluginPath}"/org.eclipse.equinox.launcher*.jar \
         -configuration "${headlessPath}"/configuration \
         -application gama.headless.product \
         -data "$pathWorkspace" \
-        $args; then
+        "${args[@]}"; then
     echo "GAMA encountered an error and crashed, please check again your command..."
     if [ -f "$pathWorkspace/.metadata/.log" ]; then
         echo "Here's the log :"

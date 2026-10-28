@@ -13,6 +13,7 @@ package gaml.compiler.validation;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.emf.common.util.Diagnostic;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.EcoreUtil2;
@@ -129,47 +130,35 @@ public class GamlResourceValidator implements IResourceValidator {
 	 */
 	@Override
 	public List<Issue> validate(final Resource resource, final CheckMode mode, final CancelIndicator indicator) {
-		// Early cancellation check
-		// Validate resource type
+		return validate(resource, mode, indicator, false);
+	}
+
+	/** Explicit editor validation bypasses the automatic policy without changing it. */
+	public List<Issue> validate(final Resource resource, final CheckMode mode, final CancelIndicator indicator,
+			final boolean explicit) {
 		if (indicator != null && indicator.isCanceled() || !(resource instanceof GamlResource r)) return List.of();
-
-		final String name = org.eclipse.emf.common.util.URI.decode(resource.getURI().lastSegment());
-		final List<Issue> result = new ArrayList<>();
-
-		updateCompilationStatus(name);
-
-		Runnable block = () -> {
-
+		try (var request = GamlAutoValidation.begin(resource.getURI(), explicit)) {
+			if (!request.isValid()) throw new OperationCanceledException();
+			final String name = org.eclipse.emf.common.util.URI.decode(resource.getURI().lastSegment());
+			final List<Issue> result = new ArrayList<>();
+			updateCompilationStatus(name);
 			final IAcceptor<Issue> acceptor = issue -> {
 				if (issue.getMessage() != null && !issue.getMessage().isEmpty()) { result.add(issue); }
 			};
-
-			// Check cancellation before expensive operations
-			if (indicator != null && indicator.isCanceled()) return;
-
-			// Resolve cross references
-			EcoreUtil2.resolveLazyCrossReferences(resource, indicator);
-
-			// Collect syntax/linking issues
-			collectResourceErrors(resource, acceptor);
-
-			// Check cancellation before validation
-			if (indicator != null && indicator.isCanceled()) return;
-
-			// Validate the resource and collect semantic errors
-			r.validate();
-			collectValidationErrors(r, mode, acceptor);
-
-			// Clean up validation context
-			GamlResourceServices.discardValidationContext(r);
-
-		};
-
-		block.run();
-
-		// DEBUG.TIMER(BANNER_CATEGORY.COMPIL, name, "in", block, duration -> VALIDATION_DURATION += duration);
-
-		return result;
+			CancelIndicator cancelled = () -> !request.isValid() || indicator != null && indicator.isCanceled();
+			try {
+				if (cancelled.isCanceled()) throw new OperationCanceledException();
+				EcoreUtil2.resolveLazyCrossReferences(resource, cancelled);
+				collectResourceErrors(resource, acceptor);
+				if (cancelled.isCanceled()) throw new OperationCanceledException();
+				r.validate();
+				if (cancelled.isCanceled()) throw new OperationCanceledException();
+				collectValidationErrors(r, mode, acceptor);
+				return result;
+			} finally {
+				GamlResourceServices.discardValidationContext(r);
+			}
+		}
 	}
 
 	/**

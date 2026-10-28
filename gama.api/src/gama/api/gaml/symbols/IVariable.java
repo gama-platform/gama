@@ -180,11 +180,26 @@ public interface IVariable extends ISymbol, IParameter {
 	 * @param gamaObject
 	 *            the agent being initialized
 	 * @param object
-	 *            the initial value to set
+	 *            the initial value to set, or null to evaluate the initializer or create a default value.
+	 *            Use the four-argument overload for an explicitly supplied nil list or map.
 	 * @throws GamaRuntimeException
 	 *             if initialization fails
 	 */
 	void initializeWith(IScope scope, IObject gamaObject, Object object) throws GamaRuntimeException;
+
+	/**
+	 * Initializes a variable while distinguishing an externally supplied nil from an omitted value.
+	 * List and map attributes preserve an explicitly supplied nil; other types retain their initialization rules.
+	 *
+	 * @param scope the execution scope
+	 * @param gamaObject the object being initialized
+	 * @param object the initial value, possibly null
+	 * @param provided whether an external initializer supplied this value
+	 */
+	default void initializeWith(final IScope scope, final IObject gamaObject, final Object object,
+			final boolean provided) throws GamaRuntimeException {
+		initializeWith(scope, gamaObject, object);
+	}
 
 	/**
 	 * Notifies that the value of this variable has changed externally.

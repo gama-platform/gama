@@ -549,7 +549,7 @@ public class GamaMap<K, V> extends LinkedHashMap<K, V> implements IMap<K, V> {
 	@Override
 	public IList<V> listValue(final IScope scope, final IType contentsType, final boolean copy) {
 		IType myContentsType = getGamlType().getContentType();
-		if (GamaType.requiresCasting(contentsType, myContentsType))
+		if (GamaType.requiresContentTypeCasting(scope, contentsType, myContentsType, values()))
 			return GamaListFactory.create(scope, contentsType, values());
 		if (!copy) return GamaListFactory.wrap(contentsType, values());
 		return GamaListFactory.createWithoutCasting(contentsType, values());
@@ -633,17 +633,17 @@ public class GamaMap<K, V> extends LinkedHashMap<K, V> implements IMap<K, V> {
 	public IMap mapValue(final IScope scope, final IType keyType, final IType contentsType, final boolean copy) {
 		IType myKeyType = getGamlType().getKeyType();
 		IType myContentsType = getGamlType().getContentType();
-		final boolean coerceKey = GamaType.requiresCasting(keyType, myKeyType);
-		final boolean coerceValue = GamaType.requiresCasting(contentsType, myContentsType);
+		final boolean coerceKey = GamaType.requiresContentTypeCasting(scope, keyType, myKeyType, keySet());
+		final boolean coerceValue = GamaType.requiresContentTypeCasting(scope, contentsType, myContentsType, values());
 		if (coerceKey || coerceValue) {
-			final IMap result = GamaMapFactory.create(keyType, contentsType, size());
+			final IMap result = GamaMapFactory.create(keyType, contentsType, size(), isOrdered());
 			for (final Map.Entry<K, V> entry : entrySet()) {
 				result.put(coerceKey ? result.buildIndex(scope, entry.getKey()) : entry.getKey(),
 						coerceValue ? result.buildValue(scope, entry.getValue()) : entry.getValue());
 			}
 			return result;
 		}
-		if (copy) return copy(scope);
+		if (copy) return GamaMapFactory.createWithoutCasting(keyType, contentsType, this, isOrdered());
 		if (!keyType.equals(myKeyType) || !contentsType.equals(myContentsType))
 			return GamaMapFactory.wrap(keyType, contentsType, this);
 		return this;

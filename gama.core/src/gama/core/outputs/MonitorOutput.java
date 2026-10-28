@@ -126,14 +126,6 @@ public class MonitorOutput extends AbstractValuedDisplayOutput implements IExper
 			constantColor = Types.COLOR.cast(null, facet.getConstValue(), null, false);
 			return;
 		}
-		if (colorExpression == null) {
-			final ITopLevelAgent sim = GAMA.getSimulation();
-			if (sim != null) {
-				constantColor = sim.getColor();
-			} else {
-				constantColor = GamaColorFactory.GRAY;
-			}
-		}
 	}
 
 	/**
@@ -162,7 +154,7 @@ public class MonitorOutput extends AbstractValuedDisplayOutput implements IExper
 		super(GAML.getDescriptionFactory().create(IKeyword.MONITOR, IKeyword.VALUE, expr == null ? "" : expr,
 				IKeyword.NAME, name == null ? expr : name));
 		shouldBeInitialized = true;
-		setScope(scope.copy("in monitor '" + name + "'"));
+		setScope(scope.detachedCopy("in monitor '" + name + "'"));
 		setNewExpressionText(expr);
 		if (getScope().init(this).passed()) {
 			getScope().getSimulation().addOutput(this);
@@ -229,7 +221,10 @@ public class MonitorOutput extends AbstractValuedDisplayOutput implements IExper
 	 */
 	@Override
 	public IColor getColor(final IScope scope) {
-
+		if (colorExpression == null) {
+			final ITopLevelAgent owner = getScope() == null ? null : getScope().getRoot();
+			return owner == null ? GamaColorFactory.GRAY : owner.getColor();
+		}
 		return constantColor == null ? color : constantColor;
 	}
 

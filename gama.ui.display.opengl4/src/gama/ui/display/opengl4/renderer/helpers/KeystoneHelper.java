@@ -26,17 +26,17 @@ import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.api.utils.geometry.ICoordinates;
 import gama.api.utils.geometry.Scaling3D;
 import gama.ui.display.opengl4.OpenGL;
-import gama.ui.display.opengl4.renderer.IOpenGLRenderer;
-import gama.ui.display.opengl4.renderer.shaders.AbstractPostprocessingShader;
-import gama.ui.display.opengl4.renderer.shaders.AbstractShader;
-import gama.ui.display.opengl4.renderer.shaders.FrameBufferObject;
+import gama.ui.display.opengl.renderer.IOpenGLRenderer;
+import gama.ui.display.opengl.renderer.shaders.AbstractPostprocessingShader;
+import gama.ui.display.opengl.renderer.shaders.AbstractShader;
+import gama.ui.display.opengl.renderer.shaders.FrameBufferObject;
 import gama.ui.display.opengl4.renderer.shaders.KeystoneShaderProgram;
-import gama.ui.shared.utils.DPIHelper;
 
 /**
  * The Class KeystoneHelper.
  */
-public class KeystoneHelper extends AbstractRendererHelper {
+public class KeystoneHelper extends AbstractRendererHelper
+		implements gama.ui.display.opengl.renderer.helpers.IKeystoneHelper {
 
 	/** The finishing helper. */
 	private final Pass finishingHelper = this::finishRenderToTexture;
@@ -168,9 +168,8 @@ public class KeystoneHelper extends AbstractRendererHelper {
 		gl.glClearColor(0, 0, 0, 1.0f);
 		gl.glClear(GL.GL_STENCIL_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 		if (fboScene == null) {
-			final var monitor = renderer.getCanvas().getMonitor();
-			fboScene = new FrameBufferObject(gl, DPIHelper.autoScaleUp(monitor, getViewWidth()),
-					DPIHelper.autoScaleUp(monitor, getViewHeight()));
+			fboScene = new FrameBufferObject(gl, renderer.getCanvas().getSurfaceWidth(),
+					renderer.getCanvas().getSurfaceHeight());
 		}
 		// redirect the rendering to the fbo_scene (will be rendered later, as a texture)
 		fboScene.bindFrameBuffer();
@@ -573,8 +572,8 @@ public class KeystoneHelper extends AbstractRendererHelper {
 	 */
 	public void reshape(final int width, final int height) {
 		if (fboScene != null) {
-			fboScene.setDisplayDimensions(DPIHelper.autoScaleUp(renderer.getCanvas().getMonitor(), width),
-					DPIHelper.autoScaleUp(renderer.getCanvas().getMonitor(), height));
+			fboScene.setDisplayDimensions(renderer.getCanvas().getSurfaceWidth(),
+					renderer.getCanvas().getSurfaceHeight());
 		}
 
 	}

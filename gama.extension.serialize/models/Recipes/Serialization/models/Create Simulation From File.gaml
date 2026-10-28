@@ -5,6 +5,7 @@
 *   execution from that point. The simulation is loaded using the 'create' statement with a serialized
 *   '.simulation' file as source. Built on the Base Model road network. Pair with 'Serialize Operators -
 *   Save simulation in file and serialize' which produces the file consumed here.
+*   Run "1. Save Simulation" first to generate a file with the current GAMA binary format.
 * Tags: serialization, load_file, create, restore, simulation, checkpoint, road_network
 ***/
 

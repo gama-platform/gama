@@ -165,7 +165,7 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 						if (val <= 0) throw GamaRuntimeException.warning("Log scale with <=0 value:" + val, scope);
 						serie.add(new BoxAndWhiskerItem(yValues.get(i), sValues.get(i), dataserie.xerrvaluesmin.get(i),
 								dataserie.xerrvaluesmax.get(i), dataserie.yerrvaluesmin.get(i),
-								dataserie.yerrvaluesmax.get(i), null, null, null), serieid, cValues.get(i));
+								dataserie.yerrvaluesmax.get(i), null, null, null), serieid, new ChartCategoryKey(i, cValues.get(i)));
 					} else {
 						serie.add(new BoxAndWhiskerItem(yValues.get(i),
 								sValues.size() > i ? sValues.get(i) : yValues.get(i),
@@ -173,7 +173,7 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 								dataserie.xerrvaluesmax.size() > i ? dataserie.xerrvaluesmax.get(i) : yValues.get(i),
 								dataserie.yerrvaluesmin.size() > i ? dataserie.yerrvaluesmin.get(i) : yValues.get(i),
 								dataserie.yerrvaluesmax.size() > i ? dataserie.yerrvaluesmax.get(i) : yValues.get(i), null,
-								null, null), serieid, cValues.get(i));
+								null, null), serieid, new ChartCategoryKey(i, cValues.get(i)));
 					}
 				}
 			} finally {

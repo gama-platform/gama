@@ -1,8 +1,6 @@
 /**
 * Name: BenchmarkBinarySerialisers
-* Description: Compares the speed and the size of the binary serialisation backends. The backend is chosen by the
-* "Library used for binary serialisation" preference (Data and Operators > Serialisation), or, in headless mode, by
-* the system property -Dgama.binary.serializer=FST|Fory. Run the model once per backend and compare the outputs.
+* Description: Measures the speed and size of Apache Fory binary serialisation for different GAMA values.
 * Tags: serialize, benchmark
 */
 model BenchmarkBinarySerialisers
@@ -54,7 +52,7 @@ experiment Benchmark type: gui {
 		list<string> strings <- list_with(20000, "text" + rnd(100000));
 		map<string, float> numbers <- map<string, float>(list_with(20000, rnd(100)) as_map (("k" + rnd(100000))::each));
 		create bench_agent number: nb_agents;
-		write "Backend: " + string(gama.pref_binary_serializer);
+		write "Backend: Apache Fory";
 		do measure("100000 ints", ints);
 		do measure("20000 strings", strings);
 		do measure("map of 20000 floats", numbers);
@@ -63,10 +61,7 @@ experiment Benchmark type: gui {
 	}
 
 	user_command "Run benchmark" {
-		loop ser over: ["FST","Fory"] {
-			gama.pref_binary_serializer <- ser;
-			do serialize();
-		}
+		do serialize();
 	}
 
 }

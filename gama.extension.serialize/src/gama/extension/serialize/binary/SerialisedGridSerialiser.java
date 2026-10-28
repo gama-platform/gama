@@ -34,7 +34,7 @@ public class SerialisedGridSerialiser implements IGamaObjectSerializer<Serialise
 	 * Serialises the species name, the list of agents, and the grid matrix.
 	 *
 	 * @param out
-	 *            the FST output stream
+	 *            the binary output stream
 	 * @param o
 	 *            the serialised grid to write
 	 * @throws Exception
@@ -54,7 +54,7 @@ public class SerialisedGridSerialiser implements IGamaObjectSerializer<Serialise
 	 * @param scope
 	 *            the current GAMA simulation scope (unused)
 	 * @param in
-	 *            the FST input stream
+	 *            the binary input stream
 	 * @return the deserialised {@link SerialisedGrid}
 	 * @throws Exception
 	 *             if deserialisation fails

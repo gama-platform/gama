@@ -388,7 +388,7 @@ public class SerialisationOperators {
 			category = { IOperatorCategory.SYSTEM, IOperatorCategory.CASTING },
 			concept = { IConcept.SYSTEM, IConcept.SERIALIZE })
 	@doc (
-			value = "Evaluates/deserialises the given GAML string into a value. Nil strings and invalid GAML expressions raise an error.",
+			value = "Evaluates/deserialises the given GAML string into a value. Nil strings, invalid GAML expressions and runtime evaluation failures raise an error. Use try/catch to recover; nil is a valid result, not an error indicator.",
 			examples = { @example (
 					value = "eval_gaml(\"2+3\")",
 					equals = "5") })
@@ -420,13 +420,15 @@ public class SerialisationOperators {
 		final IDescription d = agent.getSpecies().getDescription();
 		final IExpression expression = GAML.getExpressionFactory().createExpr(gaml, d);
 		if (expression == null) throw GamaRuntimeException.error("Invalid GAML expression: '" + gaml + "'", scope);
+		final boolean pushed = scope.push(agent);
 		try {
-			return scope.evaluate(expression, agent).getValue();
+			// scope.evaluate can report and swallow failures when stopping is disabled.
+			return expression.value(scope);
 		} catch (final GamaRuntimeException e) {
-			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("Error in evaluating Gaml code : '" + gaml
-					+ "' in " + scope.getAgent() + StringUtils.LN + "Reason: " + e.getMessage(), scope), false);
-
-			return null;
+			e.addContext("when evaluating GAML code: '" + gaml + "'");
+			throw e;
+		} finally {
+			if (pushed) { scope.pop(agent); }
 		}
 
 	}

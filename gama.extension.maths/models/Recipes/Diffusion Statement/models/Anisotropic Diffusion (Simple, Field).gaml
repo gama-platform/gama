@@ -5,6 +5,7 @@
 *   A custom asymmetric diffusion kernel causes pheromone to spread preferentially in one direction.
 *   Functionally equivalent to 'Anisotropic Diffusion (Simple, Grid)' but uses the more efficient field
 *   type, which is better suited to large spatial domains.
+*   Uses bounded integer sampling for injection offsets; seeded positions differ from legacy rnd.
 * Tags: diffusion, matrix, math, field, anisotropic, pheromone, elevation, performance
 */
 model anisotropic_diffusion
@@ -13,7 +14,7 @@ global {
 	geometry shape <- rectangle(100,100);
 	int size <- 100; // better to have a pow of 2 for the size of the grid
 	field cells <- field(size, size, 0.0);
-	int rnd_component -> rnd(8) - 4;
+	int rnd_component -> rnd(8, true) - 4;
 	
 	
 	init {

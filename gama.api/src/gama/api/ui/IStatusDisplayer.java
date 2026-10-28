@@ -71,6 +71,11 @@ public interface IStatusDisplayer extends ITopLevelAgentChangeListener {
 	default void errorStatus(final GamaRuntimeException error) {}
 
 	/**
+	 * Clears the current status, including an unacknowledged error, without erasing status history.
+	 */
+	default void resetStatus() {}
+
+	/**
 	 * Sets the sub status completion.
 	 *
 	 * @param status

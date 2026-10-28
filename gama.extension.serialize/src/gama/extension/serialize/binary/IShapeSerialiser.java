@@ -32,7 +32,7 @@ import gama.api.types.geometry.IShape.Type;
 public class IShapeSerialiser implements IGamaObjectSerializer<IShape> {
 
 	/**
-	 * Returns {@code false}: shapes are not registered for FST back-reference tracking.
+	 * Returns {@code false}: shapes are not registered for back-reference tracking.
 	 *
 	 * @return {@code false}
 	 */
@@ -46,7 +46,7 @@ public class IShapeSerialiser implements IGamaObjectSerializer<IShape> {
 	 * {@link Geometry}.
 	 *
 	 * @param out
-	 *            the FST output stream
+	 *            the binary output stream
 	 * @param toWrite
 	 *            the shape to serialise
 	 * @throws Exception
@@ -69,7 +69,7 @@ public class IShapeSerialiser implements IGamaObjectSerializer<IShape> {
 	 * @param scope
 	 *            the current GAMA simulation scope (unused)
 	 * @param in
-	 *            the FST input stream
+	 *            the binary input stream
 	 * @return the deserialised {@link IShape}
 	 * @throws Exception
 	 *             if deserialisation fails

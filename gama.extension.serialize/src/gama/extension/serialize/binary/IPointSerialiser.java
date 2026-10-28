@@ -29,7 +29,7 @@ import gama.api.types.geometry.IPoint;
 public class IPointSerialiser implements IGamaObjectSerializer<IPoint> {
 
 	/**
-	 * Returns {@code false}: points are not registered for FST back-reference tracking.
+	 * Returns {@code false}: points are not registered for back-reference tracking.
 	 *
 	 * @return {@code false}
 	 */
@@ -43,7 +43,7 @@ public class IPointSerialiser implements IGamaObjectSerializer<IPoint> {
 	 * value is {@link Double#NaN}. If z is NaN, {@code 0.0} is written in its place.
 	 *
 	 * @param out
-	 *            the FST output stream
+	 *            the binary output stream
 	 * @param toWrite
 	 *            the point to serialise
 	 * @throws Exception
@@ -66,7 +66,7 @@ public class IPointSerialiser implements IGamaObjectSerializer<IPoint> {
 	 * @param scope
 	 *            the current GAMA simulation scope (unused)
 	 * @param in
-	 *            the FST input stream
+	 *            the binary input stream
 	 * @return the deserialised {@link IPoint}
 	 * @throws Exception
 	 *             if deserialisation fails

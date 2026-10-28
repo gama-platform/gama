@@ -17,6 +17,7 @@ import gama.annotations.support.ISymbolKind;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
 import gama.api.types.misc.IContainer;
 
@@ -106,15 +107,16 @@ public class GamaContainerType<T extends IContainer<?, ?>> extends GamaType<T> i
 	@Override
 	public T cast(final IScope scope, final Object obj, final Object param, final IType<?> keyType,
 			final IType<?> contentType, final boolean copy) throws GamaRuntimeException {
+		if (obj == null) return (T) GamaListFactory.create();
 		// by default
 		return (T) (obj instanceof IContainer ? (IContainer<?, ?>) obj
 				: (IList<?>) Types.get(LIST).cast(scope, obj, null, copy));
 	}
 
 	/**
-	 * Returns the default value for this type.
+	 * Returns the fallback value for this type. List and map variables use createDefaultValue for omitted initialization.
 	 *
-	 * @return null, as containers have no default value
+	 * @return null, as containers accept nil
 	 */
 	@Override
 	public T getDefault() { return null; }

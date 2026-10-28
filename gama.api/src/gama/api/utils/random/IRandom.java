@@ -34,7 +34,9 @@ public interface IRandom {
 			+ " invokes the standard generator provided by the JDK, deterministic and thread-safe, albeit slower than all the other ones";
 
 	/**
-	 * Sets the usage.
+	 * Reinitializes the generator with its current seed, then advances it by the requested number of raw draws.
+	 * Negative values are treated as zero. The threaded generator cannot be restored.
+	 * This restores the raw stream, not any cached Gaussian value.
 	 *
 	 * @param usage
 	 *            the new usage
@@ -160,6 +162,21 @@ public interface IRandom {
 	 * @return an uniformly distributed int random number in [from, to]
 	 */
 	int between(int min, int max);
+
+	/**
+	 * @return a uniformly distributed integer across the full int range
+	 */
+	int nextInt();
+
+	/**
+	 * @return a uniformly distributed integer in [0, bound), with bound strictly positive
+	 */
+	int nextInt(int bound);
+
+	/**
+	 * @return a uniformly distributed integer in [origin, bound), with origin strictly less than bound
+	 */
+	int nextInt(int origin, int bound);
 
 	/**
 	 * Between.

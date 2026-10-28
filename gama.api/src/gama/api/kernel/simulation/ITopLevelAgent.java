@@ -129,7 +129,7 @@ import gama.api.utils.random.IRandom;
  * });
  * 
  * topAgent.postEndAction(() -> {
- *     // Execute at end of cycle
+ *     // Execute at the end of every cycle
  * });
  * 
  * topAgent.postDisposeAction(() -> {
@@ -137,7 +137,7 @@ import gama.api.utils.random.IRandom;
  * });
  * 
  * topAgent.executeAction(() -> {
- *     // Execute immediately
+ *     // Execute as soon as possible, never during a step
  * });
  * 
  * // User interaction
@@ -159,25 +159,29 @@ import gama.api.utils.random.IRandom;
  * </tr>
  * <tr>
  * <td>executeAction</td>
- * <td>Immediately</td>
+ * <td>As soon as possible, never during a step: immediately if the agent is not stepping, otherwise at the end of its
+ * current step. Simulations execute it in their own thread, experiments in the calling thread</td>
  * <td>Once</td>
  * </tr>
  * <tr>
  * <td>postOneShotAction</td>
- * <td>Next available slot</td>
+ * <td>End of the next cycle</td>
  * <td>Once</td>
  * </tr>
  * <tr>
  * <td>postEndAction</td>
- * <td>End of current cycle</td>
- * <td>Once</td>
+ * <td>End of every cycle</td>
+ * <td>Every cycle, until the agent is disposed of</td>
  * </tr>
  * <tr>
  * <td>postDisposeAction</td>
- * <td>When agent is disposed</td>
+ * <td>When the agent is disposed of (in its own thread for simulations)</td>
  * <td>Once</td>
  * </tr>
  * </table>
+ * <p>
+ * All these methods can be called from any thread and never wait for the agent to finish its step.
+ * </p>
  * 
  * <h3>Platform Agent</h3>
  * <p>
@@ -277,7 +281,7 @@ public interface ITopLevelAgent extends IMacroAgent, IScopedStepable {
 	IOutputManager getOutputManager();
 
 	/**
-	 * Post end action.
+	 * Posts an action executed at the end of every step of this agent, until it is disposed of.
 	 *
 	 * @param executable
 	 *            the executable
@@ -285,7 +289,7 @@ public interface ITopLevelAgent extends IMacroAgent, IScopedStepable {
 	void postEndAction(IExecutable executable);
 
 	/**
-	 * Post dispose action.
+	 * Posts an action executed once, when this agent is disposed of. Simulations execute it in their own thread.
 	 *
 	 * @param executable
 	 *            the executable
@@ -293,7 +297,7 @@ public interface ITopLevelAgent extends IMacroAgent, IScopedStepable {
 	void postDisposeAction(IExecutable executable);
 
 	/**
-	 * Post one shot action.
+	 * Posts an action executed once, at the end of the next step of this agent.
 	 *
 	 * @param executable
 	 *            the executable
@@ -301,7 +305,9 @@ public interface ITopLevelAgent extends IMacroAgent, IScopedStepable {
 	void postOneShotAction(IExecutable executable);
 
 	/**
-	 * Execute action.
+	 * Executes an action once, as soon as possible but never while this agent steps: immediately if it is not stepping
+	 * (e.g. paused), otherwise at the end of its current step. Simulations execute it in their own thread (immediately
+	 * if called from it), experiments in the calling thread. Never waits for the agent to finish its step.
 	 *
 	 * @param executable
 	 *            the executable

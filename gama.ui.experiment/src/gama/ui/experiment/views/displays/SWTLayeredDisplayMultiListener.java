@@ -134,6 +134,9 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 		if (!ok.get() || String.valueOf(e).equals(String.valueOf(lastEvent))) return;
 		lastEvent = e;
 		DEBUG.OUT("Key pressed " + e);
+		delegate.keyCombinationPressed(combinationKey(e.keyCode, e.character), (e.stateMask & SWT.CTRL) != 0,
+				(e.stateMask & SWT.SHIFT) != 0, (e.stateMask & SWT.ALT) != 0,
+				(e.stateMask & SWT.COMMAND) != 0);
 		switch (e.keyCode) {
 			case SWT.ARROW_DOWN:
 				delegate.specialKeyPressed(IEventLayerListener.ARROW_DOWN);
@@ -352,6 +355,8 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 				if (e.getWhen() == previous) return;
 				previous = e.getWhen();
 				DEBUG.LOG("Key received by the AWT listener. Code " + e.getKeyCode() + " Action ? " + e.isActionKey());
+				delegate.keyCombinationPressed(awtCombinationKey(e), e.isControlDown(), e.isShiftDown(),
+						e.isAltDown(), e.isMetaDown() || e.getKeyCode() == java.awt.event.KeyEvent.VK_WINDOWS);
 				if (e.isControlDown()) {
 					keyListener.accept(e.getKeyChar());
 				} else if (!e.isActionKey()) {
@@ -395,6 +400,69 @@ public class SWTLayeredDisplayMultiListener implements MenuDetectListener, Mouse
 						default -> 0;
 					});
 				}
+			}
+		};
+	}
+
+	static String combinationKey(final int code, final char character) {
+		return switch (code) {
+			case SWT.ARROW_UP -> "arrow_up";
+			case SWT.ARROW_DOWN -> "arrow_down";
+			case SWT.ARROW_LEFT -> "arrow_left";
+			case SWT.ARROW_RIGHT -> "arrow_right";
+			case SWT.PAGE_UP -> "page_up";
+			case SWT.PAGE_DOWN -> "page_down";
+			case SWT.ESC -> "escape";
+			case SWT.TAB -> "tab";
+			case SWT.CR, SWT.KEYPAD_CR -> "enter";
+			case SWT.CTRL, SWT.SHIFT, SWT.ALT, SWT.COMMAND -> null;
+			default -> {
+				if (code <= 0 || code > Character.MAX_VALUE || Character.isISOControl((char) code)) yield null;
+				yield String.valueOf(Character.isLetterOrDigit((char) code) || Character.isISOControl(character)
+						? (char) code : character);
+			}
+		};
+	}
+
+	static String awtCombinationKey(final java.awt.event.KeyEvent e) {
+		return switch (e.getKeyCode()) {
+			case java.awt.event.KeyEvent.VK_UP, java.awt.event.KeyEvent.VK_KP_UP -> "arrow_up";
+			case java.awt.event.KeyEvent.VK_DOWN, java.awt.event.KeyEvent.VK_KP_DOWN -> "arrow_down";
+			case java.awt.event.KeyEvent.VK_LEFT, java.awt.event.KeyEvent.VK_KP_LEFT -> "arrow_left";
+			case java.awt.event.KeyEvent.VK_RIGHT, java.awt.event.KeyEvent.VK_KP_RIGHT -> "arrow_right";
+			case java.awt.event.KeyEvent.VK_PAGE_UP -> "page_up";
+			case java.awt.event.KeyEvent.VK_PAGE_DOWN -> "page_down";
+			case java.awt.event.KeyEvent.VK_ESCAPE -> "escape";
+			case java.awt.event.KeyEvent.VK_TAB -> "tab";
+			case java.awt.event.KeyEvent.VK_ENTER -> "enter";
+			case java.awt.event.KeyEvent.VK_SHIFT, java.awt.event.KeyEvent.VK_CONTROL,
+					java.awt.event.KeyEvent.VK_ALT, java.awt.event.KeyEvent.VK_ALT_GRAPH,
+					java.awt.event.KeyEvent.VK_META, java.awt.event.KeyEvent.VK_WINDOWS -> null;
+			default -> {
+				final int code = e.getKeyCode();
+				if (code >= java.awt.event.KeyEvent.VK_A && code <= java.awt.event.KeyEvent.VK_Z
+						|| code >= java.awt.event.KeyEvent.VK_0 && code <= java.awt.event.KeyEvent.VK_9) {
+					yield String.valueOf((char) code);
+				}
+				final char character = e.getKeyChar();
+				if (character != java.awt.event.KeyEvent.CHAR_UNDEFINED && !Character.isISOControl(character)) {
+					yield String.valueOf(character);
+				}
+				yield switch (code) {
+					case java.awt.event.KeyEvent.VK_OPEN_BRACKET -> "[";
+					case java.awt.event.KeyEvent.VK_CLOSE_BRACKET -> "]";
+					case java.awt.event.KeyEvent.VK_BACK_SLASH -> "\\";
+					case java.awt.event.KeyEvent.VK_MINUS -> "-";
+					case java.awt.event.KeyEvent.VK_EQUALS -> "=";
+					case java.awt.event.KeyEvent.VK_SEMICOLON -> ";";
+					case java.awt.event.KeyEvent.VK_QUOTE -> "'";
+					case java.awt.event.KeyEvent.VK_COMMA -> ",";
+					case java.awt.event.KeyEvent.VK_PERIOD -> ".";
+					case java.awt.event.KeyEvent.VK_SLASH -> "/";
+					case java.awt.event.KeyEvent.VK_BACK_QUOTE -> "`";
+					case java.awt.event.KeyEvent.VK_SPACE -> " ";
+					default -> null;
+				};
 			}
 		};
 	}

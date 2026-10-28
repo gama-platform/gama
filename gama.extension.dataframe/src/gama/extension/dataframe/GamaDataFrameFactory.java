@@ -26,6 +26,7 @@ import org.dflib.jdbc.Jdbc;
 import org.dflib.jdbc.connector.JdbcConnector;
 import org.dflib.json.Json;
 import org.dflib.parquet.Parquet;
+import org.dflib.series.ArraySeries;
 
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
@@ -330,6 +331,47 @@ public class GamaDataFrameFactory {
 	 */
 	public static IDataFrame wrap(final DataFrame dataFrame) {
 		return new GamaDataFrame(dataFrame);
+	}
+
+	/**
+	 * Builds nullable, typed columns without coercing missing numeric/boolean cells to primitive defaults.
+	 * Used by structured importers which already have a column schema.
+	 */
+	public static IDataFrame createFromColumns(final IScope scope, final IList<String> names,
+			final IList<IList<?>> columns) {
+		if (names == null || columns == null)
+			throw GamaRuntimeException.error("Column names and values cannot be nil", scope);
+		if (names.size() != columns.size())
+			throw GamaRuntimeException.error("Column names and values must have the same length", scope);
+		if (names.isEmpty()) return create();
+		final Series<?>[] series = new Series<?>[columns.size()];
+		if (columns.get(0) == null)
+			throw GamaRuntimeException.error("Dataframe columns cannot be nil", scope);
+		final int height = columns.get(0).size();
+		final java.util.Set<String> seen = new java.util.HashSet<>();
+		for (int c = 0; c < columns.size(); c++) {
+			if (names.get(c) == null || names.get(c).isEmpty() || !seen.add(names.get(c)))
+				throw GamaRuntimeException.error("Column names must be unique, non-empty strings", scope);
+			final IList<?> values = columns.get(c);
+			if (values == null || values.size() != height)
+				throw GamaRuntimeException.error("Dataframe columns must be non-nil and have the same length", scope);
+			series[c] = switch (values.getGamlType().getContentType().id()) {
+				case IType.INT -> nullableSeries(values.toArray(Integer[]::new), Integer.class);
+				case IType.FLOAT -> nullableSeries(values.toArray(Double[]::new), Double.class);
+				case IType.BOOL -> nullableSeries(values.toArray(Boolean[]::new), Boolean.class);
+				case IType.STRING -> nullableSeries(values.toArray(String[]::new), String.class);
+				default -> Series.of(values.toArray());
+			};
+		}
+		return new GamaDataFrame(DataFrame.byColumn(names.toArray(String[]::new)).of(series));
+	}
+
+	private static <T> Series<T> nullableSeries(final T[] values, final Class<T> type) {
+		// DFLib's ArraySeries declares Object even for typed arrays; inference cannot recover an empty/all-nil schema.
+		return new ArraySeries<>(values) {
+			@Override
+			public Class<?> getNominalType() { return type; }
+		};
 	}
 
 	/**

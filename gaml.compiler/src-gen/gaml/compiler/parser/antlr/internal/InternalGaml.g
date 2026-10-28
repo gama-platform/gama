@@ -4823,45 +4823,62 @@ ruleUnit returns [EObject current=null]
 		}
 		(
 			(
-				(
-					{
-						$current = forceCreateModelElementAndSet(
-							grammarAccess.getUnitAccess().getUnitLeftAction_1_0_0(),
-							$current);
-					}
-				)
+				{
+					$current = forceCreateModelElementAndSet(
+						grammarAccess.getUnitAccess().getUnitLeftAction_1_0(),
+						$current);
+				}
+			)
+			(
 				(
 					(
-						lv_op_2_0='#'
+						(
+							lv_op_2_0='#'
+							{
+								newLeafNode(lv_op_2_0, grammarAccess.getUnitAccess().getOpNumberSignKeyword_1_1_0_0_0());
+							}
+							{
+								if ($current==null) {
+									$current = createModelElement(grammarAccess.getUnitRule());
+								}
+								setWithLastConsumed($current, "op", lv_op_2_0, "#");
+							}
+						)
+					)
+					(
+						(
+							{
+								newCompositeNode(grammarAccess.getUnitAccess().getRightUnitRefParserRuleCall_1_1_0_1_0());
+							}
+							lv_right_3_0=ruleUnitRef
+							{
+								if ($current==null) {
+									$current = createModelElementForParent(grammarAccess.getUnitRule());
+								}
+								set(
+									$current,
+									"right",
+									lv_right_3_0,
+									"gaml.compiler.Gaml.UnitRef");
+								afterParserOrEnumRuleCall();
+							}
+						)
+					)
+				)
+				    |
+				(
+					(
+						lv_op_4_0='%'
 						{
-							newLeafNode(lv_op_2_0, grammarAccess.getUnitAccess().getOpNumberSignKeyword_1_0_1_0());
+							newLeafNode(lv_op_4_0, grammarAccess.getUnitAccess().getOpPercentSignKeyword_1_1_1_0());
 						}
 						{
 							if ($current==null) {
 								$current = createModelElement(grammarAccess.getUnitRule());
 							}
-							setWithLastConsumed($current, "op", lv_op_2_0, "#");
+							setWithLastConsumed($current, "op", lv_op_4_0, "\%");
 						}
 					)
-				)
-			)
-			(
-				(
-					{
-						newCompositeNode(grammarAccess.getUnitAccess().getRightUnitRefParserRuleCall_1_1_0());
-					}
-					lv_right_3_0=ruleUnitRef
-					{
-						if ($current==null) {
-							$current = createModelElementForParent(grammarAccess.getUnitRule());
-						}
-						set(
-							$current,
-							"right",
-							lv_right_3_0,
-							"gaml.compiler.Gaml.UnitRef");
-						afterParserOrEnumRuleCall();
-					}
 				)
 			)
 		)?
@@ -6769,9 +6786,10 @@ ruleTerminalExpression returns [EObject current=null]
 			)
 			(
 				(
-					lv_op_8_0=RULE_KEYWORD
-					{
-						newLeafNode(lv_op_8_0, grammarAccess.getTerminalExpressionAccess().getOpKEYWORDTerminalRuleCall_4_1_0());
+					(
+						lv_op_8_1=RULE_KEYWORD
+						{
+							newLeafNode(lv_op_8_1, grammarAccess.getTerminalExpressionAccess().getOpKEYWORDTerminalRuleCall_4_1_0_0());
 					}
 					{
 						if ($current==null) {
@@ -6780,9 +6798,21 @@ ruleTerminalExpression returns [EObject current=null]
 						setWithLastConsumed(
 							$current,
 							"op",
-							lv_op_8_0,
+								lv_op_8_1,
 							"gaml.compiler.Gaml.KEYWORD");
 					}
+						    |
+						lv_op_8_2='@'
+						{
+							newLeafNode(lv_op_8_2, grammarAccess.getTerminalExpressionAccess().getOpCommercialAtKeyword_4_1_0_1());
+						}
+						{
+							if ($current==null) {
+								$current = createModelElement(grammarAccess.getTerminalExpressionRule());
+							}
+							setWithLastConsumed($current, "op", lv_op_8_2, null);
+						}
+					)
 				)
 			)
 		)

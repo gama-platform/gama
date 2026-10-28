@@ -109,7 +109,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 						|| rule == grammarAccess.getBinaryRule()
 						|| action == grammarAccess.getBinaryAccess().getBinaryOperatorLeftAction_1_0_0()
 						|| rule == grammarAccess.getUnitRule()
-						|| action == grammarAccess.getUnitAccess().getUnitLeftAction_1_0_0()
+						|| action == grammarAccess.getUnitAccess().getUnitLeftAction_1_0()
 						|| rule == grammarAccess.getUnaryRule()
 						|| rule == grammarAccess.getAccessRule()
 						|| action == grammarAccess.getAccessAccess().getAccessLeftAction_1_0()) {
@@ -430,7 +430,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Binary returns Access
 	 *     Binary.BinaryOperator_1_0_0 returns Access
 	 *     Unit returns Access
-	 *     Unit.Unit_1_0_0 returns Access
+	 *     Unit.Unit_1_0 returns Access
 	 *     Unary returns Access
 	 *     Access returns Access
 	 *     Access.Access_1_0 returns Access
@@ -978,7 +978,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Binary returns ExpressionList
 	 *     Binary.BinaryOperator_1_0_0 returns ExpressionList
 	 *     Unit returns ExpressionList
-	 *     Unit.Unit_1_0_0 returns ExpressionList
+	 *     Unit.Unit_1_0 returns ExpressionList
 	 *     Unary returns ExpressionList
 	 *     Access returns ExpressionList
 	 *     Access.Access_1_0 returns ExpressionList
@@ -1159,7 +1159,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Binary returns Function
 	 *     Binary.BinaryOperator_1_0_0 returns Function
 	 *     Unit returns Function
-	 *     Unit.Unit_1_0_0 returns Function
+	 *     Unit.Unit_1_0 returns Function
 	 *     Unary returns Function
 	 *     Access returns Function
 	 *     Access.Access_1_0 returns Function
@@ -1326,7 +1326,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Binary returns Array
 	 *     Binary.BinaryOperator_1_0_0 returns Array
 	 *     Unit returns Array
-	 *     Unit.Unit_1_0_0 returns Array
+	 *     Unit.Unit_1_0 returns Array
 	 *     Unary returns Array
 	 *     Access returns Array
 	 *     Access.Access_1_0 returns Array
@@ -1369,7 +1369,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Binary returns Point
 	 *     Binary.BinaryOperator_1_0_0 returns Point
 	 *     Unit returns Point
-	 *     Unit.Unit_1_0_0 returns Point
+	 *     Unit.Unit_1_0 returns Point
 	 *     Unary returns Point
 	 *     Access returns Point
 	 *     Access.Access_1_0 returns Point
@@ -1753,7 +1753,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Binary returns StringLiteral
 	 *     Binary.BinaryOperator_1_0_0 returns StringLiteral
 	 *     Unit returns StringLiteral
-	 *     Unit.Unit_1_0_0 returns StringLiteral
+	 *     Unit.Unit_1_0 returns StringLiteral
 	 *     Unary returns StringLiteral
 	 *     Access returns StringLiteral
 	 *     Access.Access_1_0 returns StringLiteral
@@ -1804,7 +1804,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Binary returns BooleanLiteral
 	 *     Binary.BinaryOperator_1_0_0 returns BooleanLiteral
 	 *     Unit returns BooleanLiteral
-	 *     Unit.Unit_1_0_0 returns BooleanLiteral
+	 *     Unit.Unit_1_0 returns BooleanLiteral
 	 *     Unary returns BooleanLiteral
 	 *     Access returns BooleanLiteral
 	 *     Access.Access_1_0 returns BooleanLiteral
@@ -1854,7 +1854,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Binary returns DoubleLiteral
 	 *     Binary.BinaryOperator_1_0_0 returns DoubleLiteral
 	 *     Unit returns DoubleLiteral
-	 *     Unit.Unit_1_0_0 returns DoubleLiteral
+	 *     Unit.Unit_1_0 returns DoubleLiteral
 	 *     Unary returns DoubleLiteral
 	 *     Access returns DoubleLiteral
 	 *     Access.Access_1_0 returns DoubleLiteral
@@ -1904,7 +1904,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Binary returns IntLiteral
 	 *     Binary.BinaryOperator_1_0_0 returns IntLiteral
 	 *     Unit returns IntLiteral
-	 *     Unit.Unit_1_0_0 returns IntLiteral
+	 *     Unit.Unit_1_0 returns IntLiteral
 	 *     Unary returns IntLiteral
 	 *     Access returns IntLiteral
 	 *     Access.Access_1_0 returns IntLiteral
@@ -1954,7 +1954,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Binary returns ReservedLiteral
 	 *     Binary.BinaryOperator_1_0_0 returns ReservedLiteral
 	 *     Unit returns ReservedLiteral
-	 *     Unit.Unit_1_0_0 returns ReservedLiteral
+	 *     Unit.Unit_1_0 returns ReservedLiteral
 	 *     Unary returns ReservedLiteral
 	 *     Access returns ReservedLiteral
 	 *     Access.Access_1_0 returns ReservedLiteral
@@ -1964,17 +1964,11 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     TerminalExpression returns ReservedLiteral
 	 *
 	 * Constraint:
-	 *     op=KEYWORD
+	 *     (op=KEYWORD | op='@')
 	 * </pre>
 	 */
 	protected void sequence_TerminalExpression(ISerializationContext context, ReservedLiteral semanticObject) {
-		if (errorAcceptor != null) {
-			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.TERMINAL_EXPRESSION__OP) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.TERMINAL_EXPRESSION__OP));
-		}
-		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getTerminalExpressionAccess().getOpKEYWORDTerminalRuleCall_4_1_0(), semanticObject.getOp());
-		feeder.finish();
+		genericSequencer.createSequence(context, semanticObject);
 	}
 	
 	
@@ -2055,7 +2049,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Binary returns Unary
 	 *     Binary.BinaryOperator_1_0_0 returns Unary
 	 *     Unit returns Unary
-	 *     Unit.Unit_1_0_0 returns Unary
+	 *     Unit.Unit_1_0 returns Unary
 	 *     Unary returns Unary
 	 *
 	 * Constraint:
@@ -2136,23 +2130,11 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Unit returns Unit
 	 *
 	 * Constraint:
-	 *     (left=Unit_Unit_1_0_0 op='#' right=UnitRef)
+	 *     (left=Unit_Unit_1_0 ((op='#' right=UnitRef) | op='%'))
 	 * </pre>
 	 */
 	protected void sequence_Unit(ISerializationContext context, Unit semanticObject) {
-		if (errorAcceptor != null) {
-			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.UNIT__LEFT) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.UNIT__LEFT));
-			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.UNIT__OP) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.UNIT__OP));
-			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.UNIT__RIGHT) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.UNIT__RIGHT));
-		}
-		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getUnitAccess().getUnitLeftAction_1_0_0(), semanticObject.getLeft());
-		feeder.accept(grammarAccess.getUnitAccess().getOpNumberSignKeyword_1_0_1_0(), semanticObject.getOp());
-		feeder.accept(grammarAccess.getUnitAccess().getRightUnitRefParserRuleCall_1_1_0(), semanticObject.getRight());
-		feeder.finish();
+		genericSequencer.createSequence(context, semanticObject);
 	}
 	
 	
@@ -2204,7 +2186,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Binary returns VariableRef
 	 *     Binary.BinaryOperator_1_0_0 returns VariableRef
 	 *     Unit returns VariableRef
-	 *     Unit.Unit_1_0_0 returns VariableRef
+	 *     Unit.Unit_1_0 returns VariableRef
 	 *     Unary returns VariableRef
 	 *     Access returns VariableRef
 	 *     Access.Access_1_0 returns VariableRef

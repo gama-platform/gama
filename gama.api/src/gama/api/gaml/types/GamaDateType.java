@@ -397,6 +397,8 @@ public class GamaDateType extends GamaType<IDate> {
 	 * <li>Java DateTimeFormatter patterns - creates and caches new formatter</li>
 	 * <li>GAMA model patterns - patterns using %Y, %M, %D, etc. placeholders</li>
 	 * </ul>
+	 * Invalid Java patterns are reported on the runtime scope; if reporting returns normally, the default formatter
+	 * is used without caching the invalid pattern. This recovery does not use the calling model's try mode.
 	 * </p>
 	 *
 	 * <h3>GAMA Pattern Symbols:</h3>

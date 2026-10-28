@@ -76,13 +76,6 @@ global {
 	reflex diffuse {
 		diffuse var: road on: ant_grid proportion: diffusion_rate radius: 3 propagation: gradient method: convolution;
 	}
-	
-	reflex evaporate {
-		matrix m_road <- matrix_with(ant_grid, "road");
-		matrix evapo <- m_road - evaporation_per_cycle;
-		matrix evapo_clamped <- ifelse(evapo > 0.0, evapo, 0.0);
-		do set_values(ant_grid, "road", evapo_clamped);
-	}
 }
 
 	//Grid used to discretize the space to place food
@@ -90,7 +83,8 @@ grid ant_grid width: gridsize height: gridsize neighbors: 8 frequency: grid_freq
 	bool is_nest const: true <- (topology(ant_grid) distance_between [self, center]) < 4;
 	// Precomputed once; used in choose_best_place to avoid repeated distance_to calls
 	float dist_to_nest const: true <- topology(ant_grid) distance_between [self, center];
-	float road <- 0.0 max: 240.0;
+	// Grid updates run after the ants, so weak trails remain perceptible during their step.
+	float road <- 0.0 max: 240.0 update: max(0.0, road - evaporation_per_cycle);
 	// Init expression removed: the update expression already covers the initial state
 	rgb color update: is_nest ? nest_color : ((food > 0) ? food_color : ((road < 0.001) ? background : rgb(0, 99, 0) + int(road * 5)));
 	int food <- 0;
@@ -187,17 +181,17 @@ species ant skills: [moving] control: fsm {
 
 experiment base virtual:true {
 	parameter 'Evaporation of the signal (unit/cycle):' var:evaporation_per_cycle category: 'Signals';
-	parameter 'Rate of diffusion of the signal (%/cycle):' var:diffusion_rate category: 'Signals';
+	parameter 'Rate of diffusion of the signal (per cycle):' var:diffusion_rate category: 'Signals' unit: #percent;
 	parameter 'Width and Height of the grid:' var:gridsize category: 'Environment and Population';
-	parameter 'Number of ants:' var:ants_number category: 'Environment and Population';
-	parameter 'Grid updates itself every:' var:grid_frequency category: 'Environment and Population';
+	parameter 'Population:' var:ants_number unit: 'ants' category: 'Environment and Population';
+	parameter 'Grid updates itself every:' var:grid_frequency category: 'Environment and Population' unit: "cycles";
 	parameter 'Number of food depots:' var:number_of_food_places category: 'Environment and Population';
 }
 
 	//Complete experiment that will inspect all ants in a table
 experiment "With Inspector" type: gui parent:base{
-	parameter 'Number:' var: ants_number <- 100 unit: 'ants' category: 'Environment and Population';
-	parameter 'Grid dimension:' var: gridsize <- 100 unit: '(number of rows and columns)' category: 'Environment and Population';
+	parameter 'Number:' var: ants_number <- 100  category: 'Environment and Population';
+	parameter 'Grid dimension:' var: gridsize <- 100 category: 'Environment and Population';
 
 	
 	parameter 'Number of food depots:' var: number_of_food_places init: 5 min: 1 category: 'Environment and Population';
@@ -222,9 +216,9 @@ experiment "With Inspector" type: gui parent:base{
 }
 
 experiment "Classic" type: gui parent:base {
-	parameter 'Number of ants:' var: ants_number category: 'Model';
+	parameter 'Population:' var:ants_number unit: 'ants' category: 'Model';
 	parameter 'Evaporation of the signal (unit/cycle):' var: evaporation_per_cycle category: 'Model';
-	parameter 'Rate of diffusion of the signal (%/cycle):' var: diffusion_rate category: 'Model';
+	parameter 'Rate of diffusion of the signal (per cycle):' var: diffusion_rate category: 'Model' unit: #percent;
 	parameter 'Use icons for the agents:' var: use_icons category: 'Display';
 	parameter 'Display state of agents:' var: display_state category: 'Display';
 	
@@ -247,8 +241,8 @@ experiment Record parent: Classic record: true {}
 
 //Complete experiment that will inspect all ants in a table
 experiment "3D View" type: gui parent:base{
-	parameter 'Number:' var: ants_number <- 30 unit: 'ants' category: 'Environment and Population';
-	parameter 'Grid dimension:' var: gridsize <- 100 unit: '(number of rows and columns)' category: 'Environment and Population';
+	parameter 'Number:' var: ants_number <- 30 category: 'Environment and Population';
+	parameter 'Grid dimension:' var: gridsize <- 100 category: 'Environment and Population';
 	parameter 'Number of food depots:' var: number_of_food_places <- 5 min: 1 category: 'Environment and Population';
 	output {
 		display Ants3D type: 3d show_fps: true antialias: false{
@@ -261,8 +255,8 @@ experiment "3D View" type: gui parent:base{
 
 //Experiment to show how to make multi simulations
 experiment "3 Simulations" type: gui  parent:base{
-	parameter 'Number:' var: ants_number <- 100 unit: 'ants' category: 'Environment and Population';
-	parameter 'Grid dimension:' var: gridsize <- 100 unit: '(number of rows and columns)' category: 'Environment and Population';
+	parameter 'Number:' var: ants_number <- 100 category: 'Environment and Population';
+	parameter 'Grid dimension:' var: gridsize <- 100 category: 'Environment and Population';
 	parameter 'Number of food depots:' var: number_of_food_places <- 5 min: 1 category: 'Environment and Population';
 	
 
@@ -294,6 +288,5 @@ experiment "3 Simulations" type: gui  parent:base{
 		}
 	}
 }
-
 
 

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension point="gaml.extension"/>
+   <extension point="org.eclipse.ui.decorators">
+      <decorator
+            adaptable="true"
+            class="gama.extension.rds.RdsIconDecorator"
+            id="gama.extension.rds.icon"
+            label="RDS file icon"
+            lightweight="true"
+            location="REPLACE"
+            state="true">
+         <enablement>
+            <and>
+               <objectClass name="org.eclipse.core.resources.IFile"/>
+               <objectState name="extension" value="rds"/>
+            </and>
+         </enablement>
+      </decorator>
+   </extension>
+   <extension point="org.eclipse.core.contenttype.contentTypes">
+      <content-type
+            file-extensions="rds,RDS"
+            id="gama.rds.file.type"
+            name="R serialized data"
+            priority="high"/>
+   </extension>
+   <extension point="gama.metadata">
+      <implementation
+            class="gama.extension.rds.RdsInfo"
+            content_type="gama.rds.file.type"/>
+   </extension>
+   <extension point="gama.save">
+      <implementation
+            class="gama.extension.rds.RdsSaver"
+            description="Saves containers as RDS version 2"/>
+   </extension>
+</plugin>

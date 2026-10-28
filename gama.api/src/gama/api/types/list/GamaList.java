@@ -151,7 +151,7 @@ public class GamaList<E> extends ArrayList<E> implements IList<E> {
 	@Override
 	public IList<E> listValue(final IScope scope, final IType contentsType, final boolean copy) {
 		IType myContentsType = getGamlType().getContentType();
-		if (!GamaType.requiresCasting(contentsType, myContentsType)) {
+		if (!GamaType.requiresContentTypeCasting(scope, contentsType, myContentsType, this)) {
 			if (copy) return this.cloneWithContentType(contentsType);
 			// See #385 : if we do not copy, but the contents types are different, we create a wrapper in order to not
 			// duplicate the collection

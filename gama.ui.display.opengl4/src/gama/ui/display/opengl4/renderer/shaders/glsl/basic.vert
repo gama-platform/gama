@@ -16,12 +16,12 @@ uniform mat4 projection;
 
 void main()
 {
-    vec4 worldPos = model * vec4(aPos, 1.0);
-    gl_Position = projection * view * worldPos;
+    // The renderer supplies its combined model-view matrix as model.
+    mat4 modelView = view * model;
+    vec4 eyePos = modelView * vec4(aPos, 1.0);
+    gl_Position = projection * eyePos;
     vertexColor = aColor;
     TexCoord = aTexCoord;
-    // Transform normal into world space using the normal matrix (transpose of inverse of model)
-    // For uniform scaling the model matrix upper-left 3x3 is sufficient.
-    fragNormal = normalize(mat3(transpose(inverse(model))) * aNormal);
-    fragPos = vec3(worldPos);
+    fragNormal = normalize(mat3(transpose(inverse(modelView))) * aNormal);
+    fragPos = vec3(eyePos);
 }

@@ -18,8 +18,8 @@ import gama.api.types.matrix.IField;
 import gama.api.ui.layers.IMeshColorProvider;
 
 /**
- * An implementation of the color provider that picks a color using the index of the cell being drawn in the R, G, and B
- * bands defined in the field. Invoked by using: 'color: my_field.bands'
+ * An implementation of the color provider that picks a color using the index of the cell being drawn in the R, G, B
+ * (bands 0, 1, 2) and, if present, alpha (band 3) bands defined in the field. Invoked by using: 'color: my_field.bands'
  *
  * @author drogoul
  *
@@ -39,20 +39,24 @@ public class BandsBasedMeshColorProvider implements IMeshColorProvider {
 	 *            the bands
 	 */
 	public BandsBasedMeshColorProvider(final List<IField> bands) {
-		if (bands.size() < 4)
-			throw GamaRuntimeException.error("Number of bands should be at least 3 ", GAMA.getRuntimeScope());
-		boolean hasAlpha = bands.size() > 4;
+		if (bands.size() < 3) throw GamaRuntimeException.error(
+				"At least 3 bands (red, green, blue and optionally alpha) are required to color a mesh, but only "
+						+ bands.size() + " are available",
+				GAMA.getRuntimeScope());
+		boolean hasAlpha = bands.size() > 3;
 		IField primary = bands.get(0);
 		this.size = primary.getMatrix().length;
 		components = new double[size * 4];
 		double[] mR = bands.get(0).getMatrix();
 		double[] mG = bands.get(1).getMatrix();
 		double[] mB = bands.get(2).getMatrix();
+		double[] mA = hasAlpha ? bands.get(3).getMatrix() : null;
+		// 4 components (RGBA) per cell
 		for (int i = 0; i < size; ++i) {
-			components[i * 3] = mR[i] / 255d;
-			components[i * 3 + 1] = mG[i] / 255d;
-			components[i * 3 + 2] = mB[i] / 255d;
-			components[i * 3 + 3] = hasAlpha ? bands.get(4).getMatrix()[i] / 255d : 1d;
+			components[i * 4] = mR[i] / 255d;
+			components[i * 4 + 1] = mG[i] / 255d;
+			components[i * 4 + 2] = mB[i] / 255d;
+			components[i * 4 + 3] = mA != null ? mA[i] / 255d : 1d;
 		}
 	}
 
@@ -61,10 +65,11 @@ public class BandsBasedMeshColorProvider implements IMeshColorProvider {
 			final double[] rgb) {
 		double[] result = rgb;
 		if (result == null) { result = newArray(); }
-		result[0] = components[index * 3];
-		result[1] = components[index * 3 + 1];
-		result[2] = components[index * 3 + 2];
-		result[3] = components[index * 3 + 3];
+		final int i = index * 4;
+		result[0] = components[i];
+		result[1] = components[i + 1];
+		result[2] = components[i + 2];
+		result[3] = components[i + 3];
 		return result;
 	}
 

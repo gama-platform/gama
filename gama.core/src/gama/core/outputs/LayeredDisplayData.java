@@ -603,7 +603,7 @@ public class LayeredDisplayData implements IDisplayData {
 		if (fs != null) {
 			int monitor;
 			if (fs.getGamlType() == Types.BOOL) {
-				monitor = Cast.asBool(scope, fs.value(scope)) ? 0 : -1;
+				monitor = Cast.asBool(scope, fs.value(scope)) ? FULLSCREEN_CURRENT_MONITOR : -1;
 			} else {
 				monitor = Cast.asInt(scope, fs.value(scope));
 			}

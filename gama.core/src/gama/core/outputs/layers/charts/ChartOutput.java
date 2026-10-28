@@ -145,6 +145,19 @@ public abstract class ChartOutput implements IChart {
 	}
 
 	/**
+	 * Step, after having (re)declared the data sources of the chart.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param declareData
+	 *            the evaluation of the chart body
+	 */
+	public void step(final IScope scope, final Runnable declareData) {
+		if (declareData != null) { declareData.run(); }
+		step(scope);
+	}
+
+	/**
 	 * Initdataset.
 	 */
 	public void initdataset() {}
@@ -157,19 +170,18 @@ public abstract class ChartOutput implements IChart {
 	 */
 	public void updateOutput(final IScope scope) {
 		if (chartdataset == null) return;
-		if (chartdataset.doResetAll(scope, lastUpdateCycle)) {
+		final LinkedHashMap<String, Integer> toremove = chartdataset.getSerieRemovalDate();
+		final boolean hasPendingRemoval =
+				toremove.values().stream().anyMatch(date -> date >= 0 && date >= lastUpdateCycle);
+		if (hasPendingRemoval || chartdataset.doResetAll(scope, lastUpdateCycle)) {
+			// Removing a series invalidates the positions (and thus colors) of the remaining ones: a full rebuild is
+			// needed, and pending removals must be consumed so that they are not replayed at the next update (#801)
 			clearDataSet(scope);
 			for (final String serieid : chartdataset.getDataSeriesIds(scope)) { createNewSerie(scope, serieid); }
 			preResetSeries(scope);
 			for (final String serieid : chartdataset.getDataSeriesIds(scope)) { this.resetSerie(scope, serieid); }
+			toremove.replaceAll((id, date) -> -1);
 		} else {
-			final LinkedHashMap<String, Integer> toremove = chartdataset.getSerieRemovalDate();
-			for (final String serieid : toremove.keySet()) {
-				if (toremove.get(serieid) >= lastUpdateCycle) {
-					removeSerie(scope, serieid);
-					toremove.put(serieid, toremove.get(serieid) - 1);
-				}
-			}
 			final LinkedHashMap<String, Integer> toadd = chartdataset.getSerieCreationDate();
 			for (final String serieid : toadd.keySet()) {
 				if (toadd.get(serieid) >= lastUpdateCycle) {

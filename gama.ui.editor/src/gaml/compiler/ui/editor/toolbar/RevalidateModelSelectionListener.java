@@ -11,13 +11,9 @@
 package gaml.compiler.ui.editor.toolbar;
 
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.xtext.resource.XtextResource;
-import org.eclipse.xtext.util.CancelIndicator;
-import org.eclipse.xtext.util.concurrent.CancelableUnitOfWork;
 
 import gama.ui.shared.views.toolbar.Selector;
 import gaml.compiler.ui.editor.GamlEditor;
-import gaml.compiler.validation.GamlModelBuilder;
 
 /**
  * The class CreateExperimentSelectionListener.
@@ -48,14 +44,7 @@ public class RevalidateModelSelectionListener implements Selector {
 
 	/** Recompile the text editor's resource when its error status is clicked. */
 	public void revalidate() {
-		editor.getDocument().readOnly(new CancelableUnitOfWork<Object, XtextResource>() {
-
-			@Override
-			public Object exec(final XtextResource state, final CancelIndicator c) throws Exception {
-				return GamlModelBuilder.getInstance().compile(state.getURI(), null);
-			}
-		});
-
+		editor.validateNow();
 	}
 
 }

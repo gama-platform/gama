@@ -10,6 +10,10 @@
  ********************************************************************************************************/
 package gama.ui.display.opengl4.renderer.helpers;
 
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
+
 import com.jogamp.opengl.GL;
 
 import gama.api.types.color.GamaColorFactory;
@@ -17,14 +21,16 @@ import gama.api.types.color.IColor;
 import gama.api.types.geometry.GamaPointFactory;
 import gama.api.types.geometry.IPoint;
 import gama.api.ui.layers.ILightDefinition;
+import gama.dev.DEBUG;
 import gama.ui.display.opengl4.OpenGL;
-import gama.ui.display.opengl4.renderer.IOpenGLRenderer;
+import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.display.opengl4.renderer.shaders.BasicShader;
 
 /**
  * The Class LightHelper.
  */
-public class LightHelper extends AbstractRendererHelper {
+public class LightHelper extends AbstractRendererHelper
+		implements gama.ui.display.opengl.renderer.helpers.ILightHelper {
 
 	/**
 	 * Instantiates a new light helper.
@@ -57,17 +63,11 @@ public class LightHelper extends AbstractRendererHelper {
 
 	@Override
 	public void initialize() {
-		// ambient
 		setAmbientLight(data.getLights().get(ILightDefinition.ambient));
-		// set material properties which will be assigned by glColor
-		// getGL().glColorMaterial(GL.GL_FRONT_AND_BACK, GLLightingFunc.GL_AMBIENT_AND_DIFFUSE);
-		// removed glLightModelf
-		// getGL().glEnable(GLLightingFunc.GL_COLOR_MATERIAL);
 	}
 
 	/**
-	 * Update diffuse light value. Pushes the ambient colour and the first active non-ambient light's colour
-	 * and position to the BasicShader uniforms so that per-fragment Phong lighting works.
+	 * Updates all active lights in eye space, before any layer or object transform is applied.
 	 *
 	 * @param openGL
 	 *            the open GL
@@ -78,55 +78,53 @@ public class LightHelper extends AbstractRendererHelper {
 		final double worldWidth = getRenderer().getEnvWidth();
 		final double worldHeight = getRenderer().getEnvHeight();
 
-		// Collect the first active non-ambient light for the shader's single-light Phong model.
-		final float[] primaryLightPos = new float[] { 0, 0, (float) getMaxEnvDim() }; // fallback: overhead
-		final float[] primaryLightColor = new float[] { 1, 1, 1 };
-		final boolean[] foundPrimary = { false };
+		BasicShader shader = openGL.getBasicShader();
+		if (shader != null) {
+			Matrix4f view = new Matrix4f(openGL.getModelViewMatrix());
+			shader.start();
+			try {
+				int count = 0;
+				for (ILightDefinition light : data.getLights().values()) {
+					if (ILightDefinition.ambient.equals(light.getName()) || !light.isActive()) continue;
+					if (count == BasicShader.MAX_LIGHTS) {
+						DEBUG.ERR("OpenGL4 supports at most " + BasicShader.MAX_LIGHTS + " active non-ambient lights");
+						break;
+					}
+					boolean directional = ILightDefinition.direction.equals(light.getType());
+					IPoint p = directional ? light.getDirection() : light.getLocation();
+					Vector4f position = directional
+							? new Vector4f(-(float) p.getX(), (float) p.getY(), -(float) p.getZ(), 0)
+							: new Vector4f((float) p.getX(), -(float) p.getY(), (float) p.getZ(), 1);
+					view.transform(position);
+					IPoint direction = light.getDirection();
+					Vector3f spotDirection = new Vector3f((float) direction.getX(), -(float) direction.getY(),
+							(float) direction.getZ());
+					view.transformDirection(spotDirection);
+					IColor c = light.getIntensity();
+					Vector3f color = new Vector3f(c.red() / 255f, c.green() / 255f, c.blue() / 255f);
+					Vector3f attenuation = new Vector3f((float) light.getConstantAttenuation(),
+							(float) light.getLinearAttenuation(), (float) light.getQuadraticAttenuation());
+					float cutoff = ILightDefinition.spot.equals(light.getType()) && light.getAngle() != 180
+							? (float) Math.cos(Math.toRadians(light.getAngle())) : -1f;
+					shader.loadLight(count++, position, color, attenuation, spotDirection, cutoff);
+				}
+				shader.loadLightCount(count);
+			} finally {
+				shader.stop();
+			}
+		}
 
-		getData().getLights().forEach((name, light) -> {
-			if (ILightDefinition.ambient.equals(name)) return;
-			// GL_LIGHT0..GL_LIGHT7 and glEnable/glDisable for individual lights are removed in GL4 core profile.
-			// Light properties must be passed to shaders via uniforms instead.
-			if (light.isActive()) {
-				String type = light.getType();
-				IColor c = light.getIntensity();
-				float[] lightPosition;
-				if (ILightDefinition.direction.equals(type)) {
-					IPoint p = light.getDirection();
-					// For directional lights represent as a far-away point source along the direction vector
-					float scale = (float) getMaxEnvDim() * 100f;
-					lightPosition = new float[] { -(float) p.getX() * scale, (float) p.getY() * scale,
-							-(float) p.getZ() * scale };
-				} else {
+		for (ILightDefinition light : data.getLights().values()) {
+			if (!ILightDefinition.ambient.equals(light.getName()) && light.isActive() && light.isDrawing()) {
+				final boolean previous = openGL.setObjectLighting(false);
+				try {
 					IPoint p = light.getLocation();
-					lightPosition = new float[] { (float) p.getX(), -(float) p.getY(), (float) p.getZ() };
-				}
-				if (!foundPrimary[0]) {
-					primaryLightPos[0] = lightPosition[0];
-					primaryLightPos[1] = lightPosition[1];
-					primaryLightPos[2] = lightPosition[2];
-					primaryLightColor[0] = c.red() / 255.0f;
-					primaryLightColor[1] = c.green() / 255.0f;
-					primaryLightColor[2] = c.blue() / 255.0f;
-					foundPrimary[0] = true;
-				}
-				if (light.isDrawing()) {
-					// disable the lighting during the time the light is drawn
-					final boolean previous = openGL.setObjectLighting(false);
 					drawLight(openGL, size, worldWidth, worldHeight, light,
-							new float[] { lightPosition[0], lightPosition[1], lightPosition[2], 1 });
+							new float[] { (float) p.getX(), -(float) p.getY(), (float) p.getZ(), 1 });
+				} finally {
 					openGL.setObjectLighting(previous);
 				}
 			}
-		});
-
-		// Push the primary light uniforms to the shader.
-		BasicShader shader = openGL.getBasicShader();
-		if (shader != null) {
-			shader.start();
-			shader.loadLightPosition(primaryLightPos[0], primaryLightPos[1], primaryLightPos[2]);
-			shader.loadLightColor(primaryLightColor[0], primaryLightColor[1], primaryLightColor[2]);
-			shader.stop();
 		}
 	}
 

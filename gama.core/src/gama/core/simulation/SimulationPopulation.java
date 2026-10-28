@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
@@ -180,8 +181,12 @@ public class SimulationPopulation extends GamaPopulation<ISimulationAgent> imple
 				if (!scope.interrupted()) {
 					// Necessary to set it early -- see Issue #3872
 					setCurrentSimulation(sim);
-					initSimulation(scope, sim, initialValues, i, isRestored, toBeScheduled, sequence);
-					if (toBeScheduled) { runner.add(sim); }
+					// One simulation = one thread: the thread is created before the initialization, which runs in it
+					runner.add(sim, false);
+					final int index = i;
+					runner.executeInThreadOf(sim,
+							() -> initSimulation(scope, sim, initialValues, index, isRestored, toBeScheduled, sequence));
+					if (toBeScheduled) { runner.add(sim, true); }
 					result.add(sim);
 				}
 			}
@@ -216,7 +221,7 @@ public class SimulationPopulation extends GamaPopulation<ISimulationAgent> imple
 		scope.getGui().getStatus().waitStatus("Instantiating agents", IStatusMessage.SIMULATION_ICON, () -> {
 			final Map<String, Object> firstInitValues =
 					initialValues.isEmpty() ? ParametersSet.EMPTY : initialValues.get(index);
-			final Object firstValue = !firstInitValues.isEmpty() ? firstInitValues.values().toArray()[0] : null;
+			final Object firstValue = !firstInitValues.isEmpty() ? firstInitValues.values().iterator().next() : null;
 			if (firstValue instanceof ISerialisedAgent sa) {
 				sim.updateWith(scope, sa);
 			} else {
@@ -276,12 +281,28 @@ public class SimulationPopulation extends GamaPopulation<ISimulationAgent> imple
 	}
 
 	/**
-	 * This method can be called by the batch experiments to temporarily stop (unschedule) a simulation
+	 * This method can be called by the batch experiments to stop stepping (unschedule) a simulation. Its thread remains
+	 * alive until it dies, so that the rest of its lifecycle (e.g. the collection of its results) still runs in it.
 	 *
 	 * @param sim
 	 */
 	public void unscheduleSimulation(final ISimulationAgent sim) {
-		runner.remove(sim);
+		runner.unschedule(sim);
+	}
+
+	@Override
+	public <T> T runInThreadOf(final ISimulationAgent sim, final Supplier<T> task) {
+		return runner.runInThreadOf(sim, task);
+	}
+
+	@Override
+	public boolean postInThreadOf(final ISimulationAgent sim, final Runnable task) {
+		return runner.post(sim, task);
+	}
+
+	@Override
+	public boolean isInThreadOf(final ISimulationAgent sim) {
+		return runner.isInThreadOf(sim);
 	}
 
 	/**

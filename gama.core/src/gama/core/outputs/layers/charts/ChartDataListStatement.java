@@ -34,8 +34,8 @@ import gama.api.runtime.scope.IScope;
 		kind = ISymbolKind.SINGLE_STATEMENT,
 		with_sequence = false,
 		concept = { IConcept.CHART },
-		doc = @doc ("add a list of series to a chart. The number of series can be dynamic (the size of the list changes each step). See Ant Foraging (Charts) model in ChartTest for examples."))
-@doc ("add a list of series to a chart. The number of series can be dynamic (the size of the list changes each step). See Ant Foraging (Charts) model in ChartTest for examples.")
+		doc = @doc ("add a list of series to a chart. The number of series can be dynamic (the size of the list changes each step). Series are identified by their position in the list, not by their legend, so several series can share the same legend. Like the other statements of the chart body, it is re-evaluated at every step: if it is not executed at some step, its series are frozen in series, xy, scatter and heatmap charts, and removed in pie, histogram, radar and box_whisker charts. See Ant Foraging (Charts) model in ChartTest for examples."))
+@doc ("add a list of series to a chart. The number of series can be dynamic (the size of the list changes each step). Series are identified by their position in the list, not by their legend, so several series can share the same legend. Like the other statements of the chart body, it is re-evaluated at every step: if it is not executed at some step, its series are frozen in series, xy, scatter and heatmap charts, and removed in pie, histogram, radar and box_whisker charts. See Ant Foraging (Charts) model in ChartTest for examples.")
 @inside (
 		symbols = IKeyword.CHART,
 		kinds = ISymbolKind.SEQUENCE_STATEMENT)
@@ -74,7 +74,7 @@ import gama.api.runtime.scope.IScope;
 						name = IKeyword.LEGEND,
 						type = { IType.LIST, IType.BOOL, IType.STRING, IType.NONE },
 						optional = true,
-						doc = @doc ("Series legend labels: a string labels the first series; a list provides one label per series. Use true for default series names, false or nil to hide all series labels, or nil/whitespace list elements to hide individual labels.")),
+						doc = @doc ("Series legend labels: a string labels the first series; a list provides one label per series. Use true for default series names, false or nil to hide all series labels, or nil/whitespace list elements to hide individual labels. Legends are only displayed names and do not need to be unique.")),
 				@facet (
 						name = ChartDataStatement.MARKER,
 						type = IType.BOOL,
@@ -232,9 +232,8 @@ public class ChartDataListStatement extends AbstractStatement {
 	@Override
 	protected Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
 		final ChartDataSet graphdataset = (ChartDataSet) scope.getVarValue(ChartLayerStatement.CHARTDATASET);
-		final ChartDataSourceList data = createDataSource(scope, graphdataset);
-		graphdataset.addDataSource(data);
-		return data;
+		if (graphdataset == null) return null;
+		return graphdataset.getOrCreateSource(this, "", () -> createDataSource(scope, graphdataset));
 	}
 
 }

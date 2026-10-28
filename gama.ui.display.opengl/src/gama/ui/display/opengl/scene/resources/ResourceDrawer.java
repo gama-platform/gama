@@ -16,13 +16,13 @@ import gama.api.utils.geometry.AxisAngle;
 import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.geometry.Scaling3D;
 import gama.core.util.file.GamaGeometryFile;
-import gama.ui.display.opengl.OpenGL;
+import gama.ui.display.opengl.IOpenGL;
 import gama.ui.display.opengl.scene.ObjectDrawer;
 
 /**
  * The Class ResourceDrawer.
  */
-public class ResourceDrawer extends ObjectDrawer<ResourceObject> {
+public class ResourceDrawer extends ObjectDrawer<ResourceObject, IOpenGL> {
 
 	/**
 	 * Instantiates a new resource drawer.
@@ -30,7 +30,7 @@ public class ResourceDrawer extends ObjectDrawer<ResourceObject> {
 	 * @param gl
 	 *            the gl
 	 */
-	public ResourceDrawer(final OpenGL gl) {
+	public ResourceDrawer(final IOpenGL gl) {
 		super(gl);
 		// TODO Auto-generated constructor stub
 	}

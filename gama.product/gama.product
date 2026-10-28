@@ -25,11 +25,9 @@
       </programArgs>
       <programArgsLin>--launcher.GTK_version 3
       </programArgsLin>
-      <vmArgs>-server 
--Xms4G -Xmx16G -Xss128m
--XX:+UnlockExperimentalVMOptions 
--XX:+UseG1GC -XX:+UseAdaptiveSizePolicy -XX:+OptimizeStringConcat
--Dorg.eclipse.swt.graphics.Resource.reportNonDisposed=false
+      <vmArgs>-Xms4G -Xmx16G
+-XX:+UseParallelGC
+-Dorg.eclipse.swt.graphics.Resource.reportNonDisposed=false 
 -Dosgi.locking=none -Dosgi.checkConfiguration=false -Dosgi.requiredJavaVersion=25
 -Declipse.log.level=ERROR
 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.retryAttempts=10

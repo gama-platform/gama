@@ -61,6 +61,17 @@ public abstract class GamaGeometryFile extends GamaFile<IList<IShape>, IShape> i
 	}
 
 	/**
+	 * Returns the rendering cache key. Subclasses with external rendering resources must include them in this key.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the rendering cache key
+	 */
+	public String getDrawingCacheKey(final IScope scope) {
+		return getPath(scope);
+	}
+
+	/**
 	 * Method computeEnvelope()
 	 *
 	 * @see gama.api.types.file.IGamaFile#computeEnvelope(gama.api.runtime.scope.IScope)

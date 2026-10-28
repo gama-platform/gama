@@ -14,9 +14,9 @@ SETLOCAL enabledelayedexpansion
 
 :TOP
 
-	IF (%1) == () GOTO NEXT_CODE
+	IF "%~1" == "" GOTO NEXT_CODE
 
-	if %1 EQU -m (
+	if "%~1"=="-m" (
 		set memory=%2
 		SHIFT
 	) else IF "%~1"=="-ws" (
@@ -30,6 +30,8 @@ SETLOCAL enabledelayedexpansion
 GOTO TOP
 
 :NEXT_CODE
+if "!param!"=="" set "param=-help"
+
 echo ******************************************************************
 echo * GAMA version 0.0.0-SNAPSHOT                                         *
 echo * http://gama-platform.org                                       *
@@ -55,7 +57,7 @@ REM We don't want to use the options before the `-server` options in the GAMA.in
 REM because they are not compatible with the headless mode
 
 set "ini_arguments="
-set "skip_until_line=-server"
+set "skip_until_line=-vmargs"
 set "skipping=true"
 
 for /f "usebackq delims=" %%a in (..\GAMA.ini) do (
@@ -64,7 +66,6 @@ for /f "usebackq delims=" %%a in (..\GAMA.ini) do (
 	if !skipping!==true (
 		if !skip_until_line!==%%a (
 			set "skipping=false"
-			set "ini_arguments=!ini_arguments!!line! "
 		)
 	) else (
 		if "!line:~0,4!"=="-Xmx" (
@@ -83,7 +84,7 @@ set "tempWorkspace=false"
 IF "%userWorkspace%"=="" (
     set workDir=%workDir%
     if "!param!"=="" set "tempWorkspace=true"
-    for %%c in (-help -version -validate -test -xml -batch -write-xmi -socket) do (
+    for %%c in (-help -version -validate -test -xml -batch -write-xmi -socket -ssocket) do (
         if not "!param!"=="!param:%%c=!" set "tempWorkspace=true"
     )
 ) ELSE (

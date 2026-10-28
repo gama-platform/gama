@@ -152,6 +152,20 @@ public abstract class SliderEditor<T extends Comparable> extends AbstractEditor<
 					+ position * (Cast.asFloat(getScope(), getMaxValue()) - Cast.asFloat(getScope(), getMinValue()));
 		}
 
+		@Override
+		protected String formatValue(final Double value) {
+			final IParameter.DisplayUnit unit = param.getDisplayUnit(getScope());
+			if (unit == null) return super.formatValue(value);
+			return FloatUnitFormatter.format(value, (Number) getStepValue(), unit);
+		}
+
+		@Override
+		protected String formatValueForSizing(final Double value) {
+			final IParameter.DisplayUnit unit = param.getDisplayUnit(getScope());
+			return unit == null ? super.formatValueForSizing(value)
+					: FloatUnitFormatter.formatForSizing(value, (Number) getStepValue(), unit);
+		}
+
 	}
 
 	/**
@@ -266,7 +280,27 @@ public abstract class SliderEditor<T extends Comparable> extends AbstractEditor<
 		// DEBUG.OUT(
 		// "Value of " + currentValue + " formatted: " + formatter.format(currentValue == null ? 0 : currentValue)
 		// + " / Max Fracs : " + formatter.getMaximumFractionDigits());
-		editorToolbar.updateValue(formatter.format(currentValue == null ? 0 : currentValue));
+		editorToolbar.updateValue(formatValue());
+	}
+
+	protected String formatValue() {
+		return formatValue(currentValue);
+	}
+
+	protected String formatValue(final T value) {
+		final IParameter.DisplayUnit unit = param.getDisplayUnit(getScope());
+		final String number = formatter.format(value == null ? 0 : value);
+		return unit == null || unit.label().isEmpty() ? number : number + " " + unit.label();
+	}
+
+	protected String formatValueForSizing(final T value) {
+		return formatValue(value);
+	}
+
+	@Override
+	protected String[] getValueLabelsForSizing() {
+		return new String[] { formatValueForSizing(getMinValue()), formatValueForSizing(getMaxValue()),
+				formatValueForSizing(getStepValue()), formatValueForSizing(currentValue) };
 	}
 
 }

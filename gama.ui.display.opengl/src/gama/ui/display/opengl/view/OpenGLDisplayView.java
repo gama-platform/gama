@@ -38,7 +38,7 @@ public class OpenGLDisplayView extends LayeredDisplayView {
 
 		void ensureInstalled() {
 			if (delegate != null || getGLCanvas().getNEWTWindow() == null) return;
-			delegate = new NEWTLayeredDisplayMultiListener(decorator, getDisplaySurface(), getGLCanvas().getNEWTWindow());
+			delegate = createNativeMultiListener();
 		}
 
 		@Override
@@ -53,6 +53,10 @@ public class OpenGLDisplayView extends LayeredDisplayView {
 
 	/** Indicates that the native canvas is currently hidden by the launch overlay. */
 	private boolean hiddenForLaunchOverlay;
+
+	protected IDisposable createNativeMultiListener() {
+		return new NEWTLayeredDisplayMultiListener(decorator, getDisplaySurface(), getGLCanvas().getNEWTWindow());
+	}
 
 	{
 		DEBUG.OFF();

@@ -4,7 +4,8 @@
 * Description: Demonstrates bidirectional TCP socket communication within a single GAMA model containing
 *   both a server and client experiment. Two agents communicate through a TCP socket: one acts as server
 *   (listens and replies), the other as client (connects and sends). Shows the 'network' skill TCP mode
-*   including connection setup, message exchange, and disconnection.
+*   including connection setup, message exchange, and disconnection. Rich messages (raw:false) preserve
+*   GAMA message contents and group routing; both ends must use the same mode.
 * Tags: network, TCP, socket, server, client, protocol, communication
 */
 model Socket_TCP_HelloWorld_Server
@@ -26,7 +27,7 @@ global{
 
 	action create_server() {
 		create Server number: 2 {
-			do connect (protocol: "tcp_server", port: 3001, with_name:name, raw:true);
+			do connect (protocol: "tcp_server", port: 3001, with_name:name, raw:false);
 			do join_group (with_name: "server_group");
 			id <- id + 1;
 			color <- rnd_color(255);
@@ -41,7 +42,7 @@ global{
 	action create_client() {
 		create Client number: 2 {
 		// replace the "localhost" address by the IP address of the other computer 
-			do connect (to: "localhost", protocol: "tcp_client", port: 3001, with_name: name, raw:true);
+			do connect (to: "localhost", protocol: "tcp_client", port: 3001, with_name: name, raw:false);
 			do join_group (with_name: "client_group");
 			id <- id + 1;
 			color <- rgb(rnd(255)); 

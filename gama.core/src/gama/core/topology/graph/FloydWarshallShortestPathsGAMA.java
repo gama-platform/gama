@@ -12,9 +12,7 @@ package gama.core.topology.graph;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.jgrapht.Graph;
@@ -23,7 +21,6 @@ import org.jgrapht.alg.util.Pair;
 import org.jgrapht.graph.GraphWalk;
 
 import gama.api.GAMA;
-import gama.api.types.geometry.IPoint;
 import gama.api.types.graph.IGraph;
 import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
@@ -49,9 +46,6 @@ public class FloydWarshallShortestPathsGAMA<V, E> {
 
 	/** The vertices. */
 	private final List<V> vertices;
-
-	/** First index of each vertex in the fixed vertex snapshot. */
-	private final Map<V, Integer> vertexIndices = new HashMap<>();
 
 	/** The n shortest paths. */
 	private int nShortestPaths = 0;
@@ -82,7 +76,6 @@ public class FloydWarshallShortestPathsGAMA<V, E> {
 	public FloydWarshallShortestPathsGAMA(final IGraph<V, E> graph) {
 		this.graph = graph;
 		this.vertices = new ArrayList<>(graph.getVertexMap().keySet());
-		for (int i = 0; i < vertices.size(); i++) { vertexIndices.putIfAbsent(vertices.get(i), i); }
 
 	}
 
@@ -97,14 +90,11 @@ public class FloydWarshallShortestPathsGAMA<V, E> {
 	 *            the matrix
 	 */
 	public FloydWarshallShortestPathsGAMA(final IGraph<V, E> graph, final GamaIntMatrix matrix) {
-		this(graph);
+		this.graph = graph;
+		this.vertices = new ArrayList<>(graph.getVertexMap().keySet());
 		this.paths = GamaMapFactory.createUnordered();
 		nShortestPaths = 0;
 		this.matrix = matrix;
-	}
-
-	private int indexOfVertex(final V vertex) {
-		return vertex instanceof IPoint ? vertices.indexOf(vertex) : vertexIndices.getOrDefault(vertex, -1);
 	}
 
 	/**
@@ -163,8 +153,8 @@ public class FloydWarshallShortestPathsGAMA<V, E> {
 			final V v1 = graph.getEdgeSource(edge);
 			final V v2 = graph.getEdgeTarget(edge);
 
-			final int v_1 = indexOfVertex(v1);
-			final int v_2 = indexOfVertex(v2);
+			final int v_1 = vertices.indexOf(v1);
+			final int v_2 = vertices.indexOf(v2);
 
 			d[v_1][v_2] = graph.getEdgeWeight(edge);
 			if (!graph.isDirected()) { d[v_2][v_1] = graph.getEdgeWeight(edge); }
@@ -266,8 +256,8 @@ public class FloydWarshallShortestPathsGAMA<V, E> {
 	 * @return the shortest path impl
 	 */
 	private GraphPath<V, E> getShortestPathImpl(final V a, final V b) {
-		int v_a = indexOfVertex(a);
-		final int v_b = indexOfVertex(b);
+		int v_a = vertices.indexOf(a);
+		final int v_b = vertices.indexOf(b);
 		int prev = v_a;
 		final List<E> edges = new ArrayList<>();
 		if (matrix != null) {

@@ -132,6 +132,20 @@ import gama.api.types.date.IDate;
  */
 public interface GamlCoreUnits {
 
+	/** The Constant percent. */
+	@constant (
+			value = "percent",
+			category = { IConstantCategory.CONSTANT },
+			doc = @doc ("percentage unit, equal to 0.01"))
+	@tests ({
+			@test ("#percent = 0.01"),
+			@test ("100 #percent = 1.0"),
+			@test ("100% = 1.0"),
+			@test ("2.5% = 0.025"),
+			@test ("100% + 2% = 1.02")
+	})
+	double percent = 0.01d;
+
 	/** The Constant ISO_LOCAL_KEY. */
 	String ISO_LOCAL_KEY = "ISO_LOCAL_DATE_TIME";
 

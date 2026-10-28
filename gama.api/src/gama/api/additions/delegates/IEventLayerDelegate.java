@@ -146,25 +146,26 @@ public interface IEventLayerDelegate {
 	@constant (
 			value = "shift",
 			category = IOperatorCategory.USER_CONTROL,
-			doc = @doc ("Represents the shift key modifier")) String SHIFT_MODIFIER = "shift";
+			doc = @doc ("Represents the shift key modifier (string 'shift'). Can be used alone in an event or concatenated in combinations: #shift + 'a', #ctrl + #shift + 'a', or #shift + '+a'. Combination modifiers must match exactly.")) String SHIFT_MODIFIER = "shift";
 
 	/** The Constant CONTROL_MODIFIER. */
 	@constant (
 			value = "ctrl",
 			category = IOperatorCategory.USER_CONTROL,
-			doc = @doc ("Represents the control key modifier")) String CONTROL_MODIFIER = "ctrl";
+			doc = @doc ("Represents the control key modifier (string 'ctrl'). Can be used alone in an event or concatenated in combinations: #ctrl + 'a' or #ctrl + '+a'. On Windows, CTRL-based events receive a warning about conflicts with OpenGL camera interaction; built-in shortcuts remain active.")) String CONTROL_MODIFIER =
+					"ctrl";
 
 	/** The Constant ALT_MODIFIER. */
 	@constant (
 			value = "alt",
 			category = IOperatorCategory.USER_CONTROL,
-			doc = @doc ("Represents the alt key modifier")) String ALT_MODIFIER = "alt";
+			doc = @doc ("Represents the alt key modifier (string 'alt'). Can be used alone in an event or concatenated in combinations: #alt + 'a' or #alt + '+' + #arrow_up. Operating-system shortcuts may intercept some combinations.")) String ALT_MODIFIER = "alt";
 
 	/** The Constant CMD_MODIFIER. */
 	@constant (
 			value = "cmd",
 			category = IOperatorCategory.USER_CONTROL,
-			doc = @doc ("Represents the command key modifier")) String CMD_MODIFIER = "cmd";
+			doc = @doc ("Represents the Command key on macOS and the Windows/Meta key elsewhere (string 'cmd'), not CTRL. Can be used alone in an event or concatenated in combinations: #cmd + 'a' or #cmd + '+enter'. Operating-system shortcuts may intercept some combinations.")) String CMD_MODIFIER = "cmd";
 	/** The mouse press const. */
 	@constant (
 			value = "arrow_down",

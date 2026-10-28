@@ -21,8 +21,10 @@ import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
@@ -87,6 +89,7 @@ import org.eclipse.text.edits.MalformedTreeException;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.text.templates.TemplatePersistenceData;
 import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.internal.editors.text.codemining.annotation.AnnotationCodeMiningPreferenceConstants;
@@ -110,13 +113,12 @@ import org.eclipse.xtext.ui.editor.validation.ValidationJob;
 import org.eclipse.xtext.ui.resource.IResourceSetProvider;
 import org.eclipse.xtext.ui.validation.MarkerTypeProvider;
 import org.eclipse.xtext.validation.CheckMode;
-import org.eclipse.xtext.validation.IResourceValidator;
-import org.eclipse.xtext.validation.Issue;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
 import gama.annotations.constants.IKeyword;
+import gama.api.GAMA;
 import gama.api.compilation.IModelsManager;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IModelDescription;
@@ -143,16 +145,18 @@ import gama.ui.shared.views.toolbar.GamaToolbarFactory;
 import gama.ui.shared.views.toolbar.IToolbarDecoratedView;
 import gaml.compiler.resource.GamlResourceServices;
 import gaml.compiler.ui.decorators.GamlAnnotationImageProvider;
+import gaml.compiler.ui.decorators.GamlDecorator;
 import gaml.compiler.ui.editor.toolbar.CreateExperimentSelectionListener;
 import gaml.compiler.ui.editor.toolbar.EditorSearchControls;
 import gaml.compiler.ui.editor.toolbar.EditorToolbar;
 import gaml.compiler.ui.editor.toolbar.ExperimentToolbar;
 import gaml.compiler.ui.editor.toolbar.OpenExperimentSelectionListener;
 import gaml.compiler.ui.editor.toolbar.RevalidateModelSelectionListener;
-import gaml.compiler.ui.editor.refactoring.ExtractActionHandler;
 import gaml.compiler.ui.templates.GamlEditTemplateDialogFactory;
 import gaml.compiler.ui.templates.GamlTemplateStore;
 import gaml.compiler.validation.IGamlBuilderListener;
+import gaml.compiler.validation.GamlAutoValidation;
+import gaml.compiler.validation.GamlResourceValidator;
 
 /**
  * The Class GamlEditor.
@@ -268,7 +272,41 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	@Inject private TemplateStore templateStore;
 
 	/** The validator. */
-	@Inject private IResourceValidator validator;
+	@Inject private GamlResourceValidator validator;
+
+	private ValidationJob validationJob;
+
+	GamlEditorTickUpdater validationTickUpdater;
+
+	public boolean isAutomaticValidationEnabled() {
+		return GamlAutoValidation.isEnabled(fileURI);
+	}
+
+	@Override
+	public String getTitleToolTip() {
+		String tooltip = super.getTitleToolTip();
+		return isAutomaticValidationEnabled() ? tooltip
+				: tooltip + "\nAutomatic validation disabled; diagnostics may be outdated";
+	}
+
+	public void setAutomaticValidation(final boolean enabled) {
+		if (!(getResource() instanceof IFile file)) return;
+		try {
+			GamlAutoValidation.setEnabled(file, enabled);
+		} catch (CoreException e) {
+			GAMA.getGui().getDialogFactory().error("Cannot change automatic validation: " + e.getMessage());
+			return;
+		}
+		if (validationJob != null) { validationJob.cancel(); }
+		if (validationTickUpdater != null) { validationTickUpdater.updateEditorImage(this); }
+		firePropertyChange(PROP_TITLE);
+		PlatformUI.getWorkbench().getDecoratorManager().update(GamlDecorator.decoratorId);
+		if (enabled) { scheduleValidationJob(); }
+	}
+
+	public void validateNow() {
+		scheduleValidationJob(true);
+	}
 
 	/** The marker creator. */
 	@Inject private MarkerCreator markerCreator;
@@ -352,6 +390,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 
 	@Override
 	public void dispose() {
+		if (validationJob != null) { validationJob.cancel(); }
 		GamaPreferences.Modeling.EDITOR_DRAG_RESOURCES.removeChangeListener(dndChangedListener);
 		GamlResourceServices.removeResourceListener(this);
 		super.dispose();
@@ -534,23 +573,38 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	 * </p>
 	 */
 	private void scheduleValidationJob() {
-		final IValidationIssueProcessor processor = new MarkerIssueProcessor(getResource(),
-				getInternalSourceViewer().getAnnotationModel(), markerCreator, markerTypeProvider);
-		final ValidationJob validate = new ValidationJob(validator, getDocument(), processor, CheckMode.FAST_ONLY) {
+		scheduleValidationJob(false);
+	}
+
+	private void scheduleValidationJob(final boolean explicit) {
+		if (!explicit && !isAutomaticValidationEnabled()) return;
+		if (validationJob != null) { validationJob.cancel(); }
+		final var document = getDocument();
+		final var uri = fileURI;
+		final var file = getResource();
+		final var annotationModel = getInternalSourceViewer().getAnnotationModel();
+		final IValidationIssueProcessor processor = new GamlEditorIssueProcessor(document, annotationModel, issueResolver,
+				new MarkerIssueProcessor(file, annotationModel, markerCreator, markerTypeProvider));
+		validationJob = new ValidationJob(validator, document, processor,
+				explicit ? CheckMode.ALL : CheckMode.FAST_ONLY) {
 			@Override
 			protected IStatus run(final IProgressMonitor monitor) {
-				// Retrieve the resource reference without holding the document read-lock.
-				// Calling validator.validate() under readOnly() would pin the lock for the entire
-				// GAML semantic validation, blocking the reconciler write-lock and causing races
-				// with the concurrent GamlReconciler that also fires at SCHEDULE_DELAY = 0.
-				final var resource = getDocument().readOnly(r -> r);
-				if (resource == null || resource.isValidationDisabled()) return Status.OK_STATUS;
-				final var issues = validator.validate(resource, getCheckMode(), null);
-				processor.processIssues((List<Issue>) issues, monitor);
-				return Status.OK_STATUS;
+				try (var request = file instanceof IFile f ? GamlAutoValidation.begin(f, explicit)
+						: GamlAutoValidation.begin(uri, explicit)) {
+					if (!request.isValid() || monitor.isCanceled()) return Status.CANCEL_STATUS;
+					// Do not hold a document read-lock throughout semantic validation.
+					final var resource = document.readOnly(r -> r);
+					if (resource == null || resource.isValidationDisabled()) return Status.OK_STATUS;
+					final var issues = validator.validate(resource, getCheckMode(), monitor::isCanceled, explicit);
+					if (!request.isValid() || monitor.isCanceled()) return Status.CANCEL_STATUS;
+					processor.processIssues(issues, monitor);
+					return Status.OK_STATUS;
+				} catch (OperationCanceledException e) {
+					return Status.CANCEL_STATUS;
+				}
 			}
 		};
-		validate.schedule(GamlEditor.SCHEDULE_DELAY);
+		validationJob.schedule(GamlEditor.SCHEDULE_DELAY);
 	}
 
 	@Override
@@ -637,9 +691,10 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	 */
 	private void updateToolbar(final GamlEditorState newState, final boolean forceState) {
 		DEBUG.OUT("Updating toolbar for " + this.getTitle());
+		final var valid = GamlAutoValidation.publicationGuard(fileURI);
 		if (forceState || !state.equals(newState)) {
 			WorkbenchHelper.runInUI("Editor refresh", 50, m -> {
-				if (toolbar == null || toolbar.isDisposed()) return;
+				if ((!forceState && !valid.getAsBoolean()) || toolbar == null || toolbar.isDisposed()) return;
 				// getDocument().getAdapter(IFile.class) can return null if the editor is being
 				// initialised or disposed; skip the update in that case to avoid a NullPointerException
 				// whose exception-handling overhead can cause a visible stutter on Windows.
@@ -679,6 +734,8 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	@Override
 	public void validationEnded(final IModelDescription model, final Iterable<? extends IDescription> newExperiments,
 			final IValidationContext status) {
+		final var valid = GamlAutoValidation.publicationGuard(fileURI);
+		if (!valid.getAsBoolean()) return;
 
 		// updateCodeMinings() accesses SWT-backed objects and MUST be called on the UI thread.
 		// validationEnded() is invoked by the GamlReconciler background thread (via
@@ -687,6 +744,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 		// which is synchronous – calling it directly from the background thread stalls that thread
 		// until the UI thread processes the message, producing the reported editor freezes.
 		WorkbenchHelper.asyncRun(() -> {
+			if (!valid.getAsBoolean()) return;
 			final GamaSourceViewer v = getInternalSourceViewer();
 			if (v != null && !v.getControl().isDisposed()) { v.updateCodeMinings(); }
 		});
@@ -698,6 +756,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 			String newLine = requires + " " + meta.get(GamlProperties.PLUGINS);
 			IXtextDocument document = getDocument();
 			WorkbenchHelper.asyncRun(() -> {
+				if (!valid.getAsBoolean()) return;
 				int offset;
 				try {
 					offset = document.search(0, requires, true, true, false);
@@ -1173,7 +1232,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	}
 
 	public void extractAction() {
-		ExtractActionHandler.extractAction(this);
+		openActionWizard(true);
 	}
 
 	public void openSpeciesWizard(final boolean create) {

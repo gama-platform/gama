@@ -1159,6 +1159,39 @@ public abstract class GamaType<Support> implements IType<Support> {
 	}
 
 	/**
+	 * Whether container elements need conversion, including assignable nested containers whose runtime type controls
+	 * subsequent writes.
+	 *
+	 * @param scope
+	 *            the execution scope
+	 * @param castingType
+	 *            the requested element type
+	 * @param originalType
+	 *            the original element type
+	 * @param values
+	 *            the elements, whose individual types may be more specific than the aggregate type
+	 * @return whether elements must be cast to the requested type
+	 */
+	public static boolean requiresContentTypeCasting(final IScope scope, final IType<?> castingType,
+			final IType<?> originalType, final Iterable<?> values) {
+		if (requiresCasting(castingType, originalType)) return true;
+		if (castingType == null || !castingType.isContainer()) return false;
+		if (!castingType.equals(originalType)) return true;
+		// A common inferred type can hide differently typed nested containers.
+		for (final Object value : values) {
+			if (!(value instanceof IContainer<?, ?> container)) continue;
+			final IType<?> actualType = container.getGamlType();
+			if (!castingType.equals(actualType)
+					|| requiresContentTypeCasting(scope, castingType.getContentType(), actualType.getContentType(),
+							container.iterable(scope))
+					|| container instanceof IMap<?, ?> map && requiresContentTypeCasting(scope, castingType.getKeyType(),
+							actualType.getKeyType(), map.keySet()))
+				return true;
+		}
+		return false;
+	}
+
+	/**
 	 * Sets the name of the plugin that defines this type.
 	 *
 	 * @param plugin

@@ -26,10 +26,10 @@ import gama.core.util.messaging.GamaMessage;
 public class GamaMessageSerialiser implements IGamaObjectSerializer<GamaMessage> {
 
 	/**
-	 * Serialises the given GamaMessage instance to the FST output stream.
+	 * Serialises the given GamaMessage instance to the binary output stream.
 	 *
 	 * @param out
-	 *            the FST output stream
+	 *            the binary output stream
 	 * @param toWrite
 	 *            the GamaMessage instance
 	 * @throws Exception
@@ -48,12 +48,12 @@ public class GamaMessageSerialiser implements IGamaObjectSerializer<GamaMessage>
 	}
 
 	/**
-	 * Deserialises a GamaMessage instance from the FST input stream.
+	 * Deserialises a GamaMessage instance from the binary input stream.
 	 *
 	 * @param scope
 	 *            the current execution scope
 	 * @param in
-	 *            the FST input stream
+	 *            the binary input stream
 	 * @return the deserialised GamaMessage
 	 * @throws Exception
 	 *             if an error occurs during deserialisation

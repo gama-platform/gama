@@ -86,7 +86,8 @@ import gama.api.types.list.IList;
 		wraps = { IList.class },
 		kind = ISymbolKind.REGULAR,
 		concept = { IConcept.TYPE, IConcept.CONTAINER, IConcept.LIST },
-		doc = @doc ("Ordered collection of values or agents"))
+		doc = @doc ("Ordered collection of values or agents. Without an initializer, each variable receives a new empty list. "
+				+ "Explicit initialization or assignment with nil stores nil, as does list(nil). An empty list is not nil."))
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 @tests ({
 		// a matrix is read row by row when cast to a list
@@ -109,6 +110,11 @@ public class GamaListType extends GamaContainerType<IList> {
 	 */
 	public GamaListType(final ITypesManager typesManager) {
 		super(typesManager);
+	}
+
+	@Override
+	public IList createDefaultValue(final IScope scope) {
+		return GamaListFactory.create(getContentType());
 	}
 
 	/**
@@ -165,9 +171,10 @@ public class GamaListType extends GamaContainerType<IList> {
 	 * @see GamaListFactory#castToList(IScope, Object, IType, boolean)
 	 */
 	@Override
+	@doc ("Casts the operand to a list. A nil operand remains nil; use [] to create an empty list.")
 	public IList cast(final IScope scope, final Object obj, final Object param, final IType keyType,
 			final IType contentsType, final boolean copy) throws GamaRuntimeException {
-		return GamaListFactory.castToList(scope, obj, contentsType, copy);
+		return obj == null ? null : GamaListFactory.castToList(scope, obj, contentsType, copy);
 	}
 
 	/**

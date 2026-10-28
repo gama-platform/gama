@@ -17,6 +17,7 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 
 import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
 import gama.api.constants.ISerialisationConstants;
 import gama.api.gaml.constants.GamlCoreConstants;
 import gama.api.kernel.serialization.BinarySerialisation;
@@ -37,9 +38,29 @@ import gama.ui.shared.views.toolbar.GamaCommand;
  */
 public class SimulationsMenu extends ContributionItem {
 
+	/**
+	 * Runs an operation on the lifecycle of simulations outside of the UI thread, which never waits for simulation
+	 * threads (one simulation = one thread): the operation is then executed in the thread of the simulation concerned.
+	 *
+	 * @param name
+	 *            the name of the thread
+	 * @param operation
+	 *            the operation
+	 */
+	private static void runOutsideUI(final String name, final Runnable operation) {
+		Thread.ofPlatform().name(name).daemon(true).start(() -> {
+			try {
+				operation.run();
+			} catch (final GamaRuntimeException ex) {
+				GAMA.reportError(GAMA.getRuntimeScope(), ex, false);
+			}
+		});
+	}
+
 	/** The create new simulation. */
 	public static final GamaCommand addNewSimulation = new GamaCommand("experiment/experiment.simulations.add",
-			"Add Simulation", "Add a new simulation (with the current parameters) to this experiment", e -> {
+			"Add Simulation", "Add a new simulation (with the current parameters) to this experiment",
+			e -> runOutsideUI("Adding simulation", () -> {
 				final ISimulationAgent sim =
 						GAMA.getExperiment().getAgent().createSimulation(new ParametersSet(), true);
 				if (sim == null) return;
@@ -51,17 +72,23 @@ public class SimulationsMenu extends ContributionItem {
 								.indexOf(GamaPreferences.Displays.CORE_DISPLAY_LAYOUT.getValue()));
 					}
 				});
-			});
+			}));
 
 	/** The duplicate current simulation. */
 	public static final GamaCommand duplicateCurrentSimulation =
 			new GamaCommand("experiment/experiment.simulations.duplicate", "Duplicate Simulation",
-					"Duplicate the current simulation and add it to the experiment", e -> {
-						byte[] bytes = BinarySerialisation.saveToBytes(GAMA.getRuntimeScope(), GAMA.getSimulation());
+					"Duplicate the current simulation and add it to the experiment",
+					e -> runOutsideUI("Duplicating simulation", () -> {
+						final ISimulationAgent original = GAMA.getSimulation();
+						if (original == null) return;
+						byte[] bytes = original.computeInOwnThread(
+								() -> BinarySerialisation.saveToBytes(original.getScope(), original));
 						final ISimulationAgent sim =
 								GAMA.getExperiment().getAgent().createSimulation(new ParametersSet(), true);
-						GAMA.runAndUpdateAll(() -> { BinarySerialisation.restoreFromBytes(sim, bytes); });
-					});
+						if (sim == null) return;
+						GAMA.runAndUpdateAll(
+								() -> sim.runInOwnThread(() -> BinarySerialisation.restoreFromBytes(sim, bytes)));
+					}));
 
 	/** The kill current simulation. */
 	public static final GamaCommand killCurrentSimulation = new GamaCommand("experiment/experiment.simulations.kill",
@@ -123,8 +150,11 @@ public class SimulationsMenu extends ContributionItem {
 						fileOpen.setFilterNames("Simulation files");
 						String open = fileOpen.open();
 						if (open != null) {
-							GAMA.runAndUpdateAll(() -> { BinarySerialisation.restoreFromFile(sim, open); });
-							GAMA.changeCurrentTopLevelAgent(sim, true);
+							runOutsideUI("Loading simulation", () -> {
+								GAMA.runAndUpdateAll(
+										() -> sim.runInOwnThread(() -> BinarySerialisation.restoreFromFile(sim, open)));
+								GAMA.changeCurrentTopLevelAgent(sim, true);
+							});
 						}
 					});
 
@@ -136,9 +166,12 @@ public class SimulationsMenu extends ContributionItem {
 				fileOpen.setFilterNames("Simulation files");
 				String open = fileOpen.open();
 				if (open != null) {
-					final ISimulationAgent sim =
-							GAMA.getExperiment().getAgent().createSimulation(new ParametersSet(), true);
-					BinarySerialisation.restoreFromFile(sim, open);
+					runOutsideUI("Loading simulation", () -> {
+						final ISimulationAgent sim =
+								GAMA.getExperiment().getAgent().createSimulation(new ParametersSet(), true);
+						if (sim == null) return;
+						sim.runInOwnThread(() -> BinarySerialisation.restoreFromFile(sim, open));
+					});
 				}
 
 			});

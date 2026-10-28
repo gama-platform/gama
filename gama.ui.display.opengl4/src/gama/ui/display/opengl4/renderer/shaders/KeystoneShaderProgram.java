@@ -11,6 +11,7 @@
 package gama.ui.display.opengl4.renderer.shaders;
 
 import com.jogamp.opengl.GL4;
+import gama.ui.display.opengl.renderer.shaders.AbstractPostprocessingShader;
 
 /**
  * The Class KeystoneShaderProgram.
@@ -25,7 +26,7 @@ public class KeystoneShaderProgram extends AbstractPostprocessingShader {
 	 * @param fragmentFile the fragment file
 	 */
 	public KeystoneShaderProgram(final GL4 gl, final String vertexFile, final String fragmentFile) {
-		super(gl, vertexFile, fragmentFile);
+		super(gl, vertexFile, fragmentFile, false);
 	}
 
 	@Override

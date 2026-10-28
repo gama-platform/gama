@@ -27,11 +27,11 @@ import gama.api.runtime.GamaExecutorService;
 import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.IList;
-import gama.api.types.map.IMap;
 import gama.api.utils.server.CommandResponse;
 import gama.api.utils.server.GamaServerExperimentConfiguration;
 import gama.api.utils.server.GamaServerMessage;
 import gama.api.utils.server.MessageType;
+import gama.api.utils.server.ReceivedMessage;
 import gama.dev.DEBUG;
 
 /**
@@ -142,15 +142,15 @@ public class GamaServerExperimentController extends AbstractExperimentController
 			try {
 
 				while (experimentAlive) {
-					if (mexp.simulator.isInterrupted()) { break; }
-					final ISimulationAgent sim = mexp.simulator.getSimulation();
-					final IExperimentAgent exp = mexp.simulator.getExperimentPlan().getAgent();
-					final IScope scope = sim == null ? exp.getScope() : sim.getScope();
-					if (Cast.asBool(scope, exp.getStopCondition().value(scope))) {
-						if (!"".equals(stopCondition)) {
+					if (!experiment.isBatch() && mexp.simulator.isInterrupted()) { break; }
+					if (hasReachedStopCondition()) {
+						final IExperimentAgent exp = mexp.simulator.getExperimentPlan().getAgent();
+						if (experiment.isBatch() || !"".equals(stopCondition)) {
 							mexp.socket.send(GAMA.getJsonEncoder()
 									.valueOf(new CommandResponse(MessageType.SimulationEnded, "",
-											(IMap<String, Object>) exp.getAttribute("%%playCommand%%"), false))
+											exp.getAttribute("%%playCommand%%") instanceof ReceivedMessage command
+													? command : Map.of("exp_id", mexp.getExperimentID()),
+											false))
 									.toString());
 
 						}
@@ -215,6 +215,7 @@ public class GamaServerExperimentController extends AbstractExperimentController
 					return false;
 				}
 			case _START:
+				if (executionFinished || hasReachedStopCondition()) return false;
 				paused = false;
 				lock.release();
 				return true;
@@ -226,10 +227,13 @@ public class GamaServerExperimentController extends AbstractExperimentController
 				if (executionFinished) return false;
 				lastRuntimeError = null;
 				for(int i = 0; i < command.quantity(); i++) {
-					paused = true;
+					if (executionFinished || hasReachedStopCondition()) return i > 0;
+					// A batch step runs its entire exploration, whose simulation runners must not remain paused.
+					paused = !experiment.isBatch();
 					lock.release();
 					previouslock.acquire();
-					if (executionFinished) return false;
+					paused = true;
+					if (executionFinished) return experiment.isBatch() && hasReachedStopCondition();
 					// A series stops on its first error, which the caller is then told about.
 					if (lastRuntimeError != null) { break; }
 				}
@@ -347,6 +351,7 @@ public class GamaServerExperimentController extends AbstractExperimentController
 			// experimentAlive = false;
 		}
 		try {
+			if (!experimentAlive || executionFinished || hasReachedStopCondition()) return;
 			_job.doStep();
 		} catch (Throwable e) {
 			// e.printStackTrace();
@@ -365,17 +370,20 @@ public class GamaServerExperimentController extends AbstractExperimentController
 	 * @return true if no further step should be accepted
 	 */
 	private boolean hasReachedStopCondition() {
-		try {
-			final IExperimentAgent exp = _job.simulator.getExperimentPlan().getAgent();
-			if (exp == null || exp.getStopCondition() == null) return false;
-			final ISimulationAgent sim = _job.simulator.getSimulation();
-			final IScope scope = sim == null ? exp.getScope() : sim.getScope();
-			return Cast.asBool(scope, exp.getStopCondition().value(scope));
-		} catch (Throwable e) {
-			// If the condition cannot be evaluated, let the step through.
-			DEBUG.OUT("Unable to evaluate the stop condition: " + e.getMessage());
-			return false;
-		}
+		final IExperimentAgent exp = _job.simulator.getExperimentPlan().getAgent();
+		if (exp == null) return false;
+		// In a batch, 'until' stops each simulation; the exploration ends when the experiment scope is disposed.
+		if (experiment.isBatch()) return exp.getScope().interrupted();
+		if (exp.getStopCondition() == null) return false;
+		final ISimulationAgent sim = _job.simulator.getSimulation();
+		final IScope scope = sim == null ? exp.getScope() : sim.getScope();
+		return Cast.asBool(scope, exp.getStopCondition().value(scope));
+	}
+
+	@Override
+	public boolean processStart(final boolean andWait) {
+		if (executionFinished || hasReachedStopCondition()) return false;
+		return super.processStart(andWait);
 	}
 
 	@Override

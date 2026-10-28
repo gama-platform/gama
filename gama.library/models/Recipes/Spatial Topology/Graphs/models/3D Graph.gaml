@@ -84,7 +84,7 @@ experiment Display type: gui {
 	 
 	parameter 'Number of Agents' var:number_of_agents category: 'Initialization';
 	parameter 'Dimensions' var:width_and_height_of_environment category: 'Initialization';
-	parameter 'distance ' var:distance;
+	parameter 'distance ' var:distance unit: "m";
 	
 	output {
 		display WanderingSphere type: 3d { 

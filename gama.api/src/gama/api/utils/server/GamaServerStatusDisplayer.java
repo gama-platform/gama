@@ -11,8 +11,11 @@
 package gama.api.utils.server;
 
 import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.runtime.SimulationContext;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
 import gama.api.ui.IStatusDisplayer;
 
 /**
@@ -36,7 +39,43 @@ public final class GamaServerStatusDisplayer extends GamaServerMessager implemen
 	public boolean canSendMessage(final IExperimentAgent exp) {
 		if (exp == null) return false;
 		var scope = exp.getScope();
-		return scope != null && scope.getServerConfiguration().hasStatus();
+		return scope != null && scope.getServerConfiguration() != null && scope.getServerConfiguration().hasStatus();
+	}
+
+	private static IExperimentAgent currentExperiment() {
+		final var simulation = SimulationContext.current();
+		return simulation == null ? GAMA.getExperimentAgent() : simulation.getExperiment();
+	}
+
+	@Override
+	public void informStatus(final String message, final String icon) {
+		final var exp = currentExperiment();
+		if (exp != null) { informStatus(exp.getScope(), message, icon); }
+	}
+
+	@Override
+	public void errorStatus(final GamaRuntimeException error) {
+		final var scope = error.getScope();
+		if (scope != null) { errorStatus(scope, error); }
+	}
+
+	@Override
+	public void beginTask(final String name, final String icon) { informStatus(name, icon); }
+
+	@Override
+	public void endTask(final String name, final String icon) { informStatus(name, icon); }
+
+	@Override
+	public void setTaskCompletion(final String name, final Double completion) {
+		informStatus(name + " [" + completion + "]", null);
+	}
+
+	@Override
+	public void setStatus(final String message, final String icon, final IColor color) {
+		final var exp = currentExperiment();
+		if (exp == null) return;
+		forwardMessage(exp.getScope(), GAMA.getJsonEncoder().object("message", message, "icon", icon, "color", color)
+				.toString(), MessageType.SimulationStatusInform);
 	}
 
 	/**
@@ -48,9 +87,7 @@ public final class GamaServerStatusDisplayer extends GamaServerMessager implemen
 	 *            the string
 	 */
 	public void informStatus(final IScope scope, final String string) {
-		if (!canSendMessage(scope.getExperiment())) {}
-		sendMessage(scope.getExperiment(), "{" + "\"message\": \"" + string + "\"" + "}",
-				MessageType.SimulationStatusInform);
+		informStatus(scope, string, null);
 	}
 
 	/**
@@ -62,8 +99,7 @@ public final class GamaServerStatusDisplayer extends GamaServerMessager implemen
 	 *            the error
 	 */
 	public void errorStatus(final IScope scope, final Exception error) {
-		if (!canSendMessage(scope.getExperiment())) return;
-		sendMessage(scope.getExperiment(), "{" + "\"message\": \"" + error.getMessage() + "\"" + "}",
+		forwardMessage(scope, GAMA.getJsonEncoder().object("message", error.getMessage()).toString(),
 				MessageType.SimulationStatusError);
 	}
 
@@ -91,8 +127,9 @@ public final class GamaServerStatusDisplayer extends GamaServerMessager implemen
 	 */
 	@Override
 	public void updateExperimentStatus() {
-		if (!canSendMessage(GAMA.getExperimentAgent())) return;
-		sendMessage(GAMA.getExperimentAgent(),
+		final var experiment = currentExperiment();
+		if (!canSendMessage(experiment)) return;
+		sendMessage(experiment,
 				GAMA.getJsonEncoder().object("message", null, "icon", "overlays/status.clock").toString(),
 				MessageType.SimulationStatusInform);
 	}
@@ -108,8 +145,7 @@ public final class GamaServerStatusDisplayer extends GamaServerMessager implemen
 	 *            the icon
 	 */
 	public void informStatus(final IScope scope, final String message, final String icon) {
-		if (!canSendMessage(scope.getExperiment())) return;
-		sendMessage(scope.getExperiment(), GAMA.getJsonEncoder().object("message", message, "icon", icon).toString(),
+		forwardMessage(scope, GAMA.getJsonEncoder().object("message", message, "icon", icon).toString(),
 				MessageType.SimulationStatusInform);
 	}
 

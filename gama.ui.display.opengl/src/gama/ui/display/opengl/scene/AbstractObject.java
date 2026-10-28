@@ -19,7 +19,7 @@ import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.ui.layers.IDrawingAttributes.DrawerType;
 import gama.api.utils.interfaces.IDisposable;
 import gama.api.utils.interfaces.IImageProvider;
-import gama.ui.display.opengl.OpenGL;
+import gama.ui.display.opengl.IOpenGL;
 
 /**
  * The Class AbstractObject.
@@ -59,7 +59,7 @@ public abstract class AbstractObject<T, ATT extends IDrawingAttributes> implemen
 		this.attributes = attributes;
 		if (attributes.getTextures() != null) {
 			textures = new int[attributes.getTextures().size()];
-			Arrays.fill(textures, OpenGL.NO_TEXTURE);
+			Arrays.fill(textures, IOpenGL.NO_TEXTURE);
 		} else {
 			textures = null;
 		}
@@ -81,7 +81,7 @@ public abstract class AbstractObject<T, ATT extends IDrawingAttributes> implemen
 	 * @param gl
 	 * @return the id of the texture or Integer.MAX_VALUE if none is defined
 	 */
-	public int getAlternateTexture(final OpenGL gl) {
+	public int getAlternateTexture(final IOpenGL gl) {
 		return getTexture(gl, 1);
 	}
 
@@ -91,7 +91,7 @@ public abstract class AbstractObject<T, ATT extends IDrawingAttributes> implemen
 	 * @param gl
 	 * @return the id of the texture or Integer.MAX_VALUE if none is defined
 	 */
-	public int getPrimaryTexture(final OpenGL gl) {
+	public int getPrimaryTexture(final IOpenGL gl) {
 		return getTexture(gl, 0);
 	}
 
@@ -104,9 +104,9 @@ public abstract class AbstractObject<T, ATT extends IDrawingAttributes> implemen
 	 *            the order
 	 * @return the texture
 	 */
-	private int getTexture(final OpenGL gl, final int order) {
-		if (textures == null || order < 0 || order > textures.length - 1) return OpenGL.NO_TEXTURE;
-		if (isAnimated() || textures[order] == OpenGL.NO_TEXTURE) {
+	private int getTexture(final IOpenGL gl, final int order) {
+		if (textures == null || order < 0 || order > textures.length - 1) return IOpenGL.NO_TEXTURE;
+		if (isAnimated() || textures[order] == IOpenGL.NO_TEXTURE) {
 			Object obj = null;
 			try {
 				obj = getAttributes().getTextures().get(order);
@@ -124,17 +124,17 @@ public abstract class AbstractObject<T, ATT extends IDrawingAttributes> implemen
 	 * Loads this object's textures and reports whether all image textures are available.
 	 *
 	 * @param gl
-	 *            the OpenGL context
+	 *            the rendering backend
 	 * @return true if every image texture is available
 	 */
-	public boolean areTexturesAvailable(final OpenGL gl) {
+	public boolean areTexturesAvailable(final IOpenGL gl) {
 		if (textures == null) return true;
 		final var objectTextures = getAttributes().getTextures();
 		if (objectTextures == null) return true;
 		for (int i = 0; i < textures.length && i < objectTextures.size(); i++) {
 			final Object texture = objectTextures.get(i);
 			if ((texture instanceof IImageProvider || texture instanceof BufferedImage)
-					&& getTexture(gl, i) == OpenGL.NO_TEXTURE)
+					&& getTexture(gl, i) == IOpenGL.NO_TEXTURE)
 				return false;
 		}
 		return true;

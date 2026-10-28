@@ -824,8 +824,8 @@ public class GamaPreferences {
 		 */
 		public static final Pref<Boolean> CORE_SERVER_MODE =
 				create("pref_enable_server", "Enable GAMA server mode", true, IType.BOOL, true)
-						.in(Network.NAME, Network.SERVER)
-						.activates("pref_server_port", "pref_server_ping", "pref_server_console");
+						.in(Network.NAME, Network.SERVER).activates("pref_server_port", "pref_server_ping",
+								"pref_server_console", "pref_server_log", "pref_server_log_directory");
 
 		/** The TCP port on which the GAMA Server listens for incoming client connections. */
 		public static final Pref<Integer> CORE_SERVER_PORT =
@@ -851,6 +851,17 @@ public class GamaPreferences {
 		public static final Pref<Boolean> CORE_SERVER_CONSOLE =
 				create("pref_server_console", "Send console outputs to clients", true, IType.BOOL, true)
 						.in(Network.NAME, Network.SERVER);
+
+		/** Whether the server records all WebSocket frames. Changes apply immediately to a running GUI server. */
+		public static final Pref<Boolean> CORE_SERVER_LOG =
+				create("pref_server_log", "Log all GAMA server exchanges", false, IType.BOOL, true).in(Network.NAME,
+						Network.SERVER);
+
+		/** Persistent directory, outside the temporary headless workspace. */
+		public static final Pref<String> CORE_SERVER_LOG_DIRECTORY =
+				create("pref_server_log_directory", "Server exchange log directory (restart required)",
+						System.getProperty("user.home") + "/.gama/server-logs", IType.STRING, true).in(Network.NAME,
+								Network.SERVER);
 
 		/** The maximum number of simultaneous commands an experiment can accept through GAMA server. */
 		public static final Pref<Integer> CORE_SERVER_COMMAND_QUEUE_SIZE = create("pref_server_command_queue_size",
@@ -1112,7 +1123,7 @@ public class GamaPreferences {
 		 */
 		public static final Pref<Double> CORE_LINE_WIDTH = create("pref_display_line_width",
 				"Default line width (facet 'width' of 'draw'). Note that this attribute is not supported by all OpenGL implementations",
-				1d, IType.FLOAT, true).in(NAME, RENDERING);
+				1d, IType.FLOAT, true).in(NAME, RENDERING).step(0.01);
 
 		/**
 		 * Whether only the outward-facing faces of 3D objects should be rendered in OpenGL, hiding internal faces for a
@@ -1212,11 +1223,20 @@ public class GamaPreferences {
 				true, IType.BOOL, true).in(Experimental.NAME, Experimental.GRAPHICAL);
 
 		/**
+		 * The maximum number of cells of a field (mesh) drawn by OpenGL displays. Larger fields are downsampled (by
+		 * averaging blocks of cells) before being sent to the graphics card, which bounds the memory required to
+		 * display them. {@code 0} disables downsampling.
+		 */
+		public static final Pref<Integer> OPENGL_MESH_MAX_CELLS = create("pref_display_mesh_max_cells",
+				"Max. number of cells of a field displayed in OpenGL (larger fields are downsampled; 0 = no limit)",
+				2_000_000, IType.INT, true).in(NAME, RENDERING).between(0, null);
+
+		/**
 		 * The default intensity of OpenGL light sources, ranging from {@code 0} (completely dark) to {@code 255}
 		 * (maximum brightness).
 		 */
 		public static final Pref<Integer> OPENGL_DEFAULT_LIGHT_INTENSITY = create("pref_display_light_intensity",
-				"Set the default intensity of the lights (from 0, dark, to 255, light)", 160, IType.INT, true)
+				"Set the default intensity of the lights (from 0, dark, to 255, light)", 180, IType.INT, true)
 						.in(NAME, RENDERING).between(0, 255);
 
 		/**
@@ -1420,17 +1440,6 @@ public class GamaPreferences {
 		public static final Pref<Boolean> TESTS_USE_UI_CONSOLE = create("pref_tests_use_ui_console",
 				"Show test output in the UI console", false, IType.BOOL, false).in(NAME, Runtime.TESTS).withComment(
 						"Routes test console messages to the standard GAMA console, including tests run in a separate process. Command-line runs are unchanged.");
-
-		/** The name of the "Serialisation" group within the Data and Operators tab. */
-		public static final String SERIALISATION = "Serialisation";
-
-		/**
-		 * The library used for binary serialisation ("FST" or "Fory"). Declared here so that it is visible in the
-		 * preferences before the serialisation bundle is activated.
-		 */
-		public static final Pref<String> BINARY_SERIALIZER = create("pref_binary_serializer",
-				"Library used for binary serialisation (FST is the default. Fory is much faster, but less tested)",
-				"FST", IType.STRING, true).among("FST", "Fory").in(NAME, SERIALISATION);
 
 		/**
 		 * The label for the experimental features group, warning users that features within have not been fully tested.

@@ -366,7 +366,7 @@ Binary returns Expression:
 
 // Values with units. Example: 5 #m or 10 #s
 Unit returns Expression:
-	Unary (({Unit.left=current} op=('#')) right=UnitRef)?;
+	Unary ({Unit.left=current} (op=('#') right=UnitRef | op='%'))?;
 
 // Unary operations. Example: -5 or !true
 Unary returns Expression:
@@ -499,7 +499,7 @@ TerminalExpression:
 	{IntLiteral} op=INTEGER |
 	{DoubleLiteral} op=DOUBLE |
 	{BooleanLiteral} op=BOOLEAN |
-	{ReservedLiteral} op=KEYWORD;
+	{ReservedLiteral} op=(KEYWORD | '@');
 
 // Example: "Hello"
 StringLiteral:

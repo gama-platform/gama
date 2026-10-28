@@ -13,17 +13,15 @@ package gama.api.runtime.scope;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.object.IObject;
 import gama.api.kernel.simulation.ISimulationAgent;
-import gama.api.utils.PoolUtils;
-import gama.api.utils.interfaces.IDisposable;
 
 /**
  * Manages the agent execution context stack during GAML code execution.
  *
  * <p>
  * AgentExecutionContext maintains a hierarchical chain of agents representing the execution context stack. When code
- * executes in GAMA, there is always a "current agent" - the agent in whose context the code is running. When one agent
- * calls another agent or executes code in a nested context, a new AgentExecutionContext is created and linked to the
- * outer context.
+ * executes in GAMA, there is always a "current agent" - the agent in whose context the code is running. When one
+ * agent calls another agent or executes code in a nested context, a new AgentExecutionContext is created and linked
+ * to the outer context.
  * </p>
  *
  * <h2>Context Hierarchy</h2>
@@ -44,7 +42,7 @@ import gama.api.utils.interfaces.IDisposable;
  * <li><b>Agent Stack Management:</b> Maintains the chain of agent contexts</li>
  * <li><b>Outer Context Access:</b> Provides access to parent execution contexts</li>
  * <li><b>Simulation Access:</b> Quick access to the simulation agent via context chain traversal</li>
- * <li><b>Object Pooling:</b> Uses object pooling for efficient context creation and disposal</li>
+ * <li><b>Immutability:</b> Contexts never change once created and can be shared by several scopes</li>
  * </ul>
  *
  * <h2>Usage Examples</h2>
@@ -83,30 +81,6 @@ import gama.api.utils.interfaces.IDisposable;
  * assert nestedContext.getOuterContext().getAgent() == agent;
  * }</pre>
  *
- * <h3>Copying a Context</h3>
- *
- * <pre>{@code
- * // Create a copy of a context (e.g., for parallel execution)
- * AgentExecutionContext copy = originalContext.createCopy();
- *
- * // Copy has same agent and copies outer context chain
- * assert copy.getAgent() == originalContext.getAgent();
- * assert copy.getOuterContext() != originalContext.getOuterContext(); // Different instance
- * }</pre>
- *
- * <h3>Proper Disposal</h3>
- *
- * <pre>{@code
- * AgentExecutionContext context = AgentExecutionContext.create(agent, outerContext);
- * try {
- * 	// Use the context for execution
- * 	Object result = executeInContext(context);
- * } finally {
- * 	// Always dispose to return to pool
- * 	context.dispose();
- * }
- * }</pre>
- *
  * <h2>Integration with ExecutionScope</h2>
  *
  * <p>
@@ -123,32 +97,18 @@ import gama.api.utils.interfaces.IDisposable;
  *
  * public void pop(IAgent agent) {
  * 	// Dispose current context and revert to outer
- * 	AgentExecutionContext previous = agentContext;
  * 	agentContext = agentContext.getOuterContext();
- * 	previous.dispose(); // Return to pool
  * }
  * }</pre>
  *
- * <h2>Object Pooling</h2>
+ * <h2>Immutability and Thread Safety</h2>
  *
  * <p>
- * AgentExecutionContext uses an object pool to reduce allocation overhead during frequent context creation/destruction.
- * Always call {@link #dispose()} when done with a context to return it to the pool for reuse.
- * </p>
- *
- * <p>
- * The pool is managed automatically:
- * </p>
- * <ul>
- * <li>{@link #create(IAgent, AgentExecutionContext)} retrieves a context from the pool</li>
- * <li>{@link #dispose()} returns the context to the pool after clearing references</li>
- * </ul>
- *
- * <h2>Thread Safety</h2>
- *
- * <p>
- * AgentExecutionContext instances are not thread-safe. Each thread should maintain its own context chain. The object
- * pool is thread-safe and can be shared across threads.
+ * AgentExecutionContext instances are immutable: popping a context from a scope does not alter it. A context chain can
+ * therefore be shared, without copying it, by several scopes and threads (forked scopes of a parallel execution, copies
+ * of a scope made by other threads...), even after the scope that created it has popped it. Contexts are not pooled, as
+ * a pool would recycle (and alter) contexts still referenced by other scopes, and as the allocation of such small,
+ * short-lived, objects is cheaper than the synchronization required by a pool.
  * </p>
  *
  * @see ExecutionScope
@@ -156,60 +116,7 @@ import gama.api.utils.interfaces.IDisposable;
  * @see IScope#push(IAgent)
  * @see IScope#pop(IAgent)
  */
-public class AgentExecutionContext implements IDisposable {
-
-	/**
-	 * Object pool for efficient context allocation and reuse.
-	 *
-	 * <p>
-	 * The pool reduces garbage collection pressure by reusing AgentExecutionContext instances. Currently activated for
-	 * performance optimization.
-	 * </p>
-	 */
-	private static PoolUtils.ObjectPool<AgentExecutionContext> POOL =
-			PoolUtils.create("Agent Execution Context", true, AgentExecutionContext::new, null, null);
-
-	/**
-	 * Creates a new agent execution context or retrieves one from the pool.
-	 *
-	 * <p>
-	 * This is the factory method for creating AgentExecutionContext instances. It retrieves a context from the object
-	 * pool and initializes it with the specified agent and outer context.
-	 * </p>
-	 *
-	 * <h3>Example</h3>
-	 *
-	 * <pre>{@code
-	 * // Create root context
-	 * AgentExecutionContext rootContext = AgentExecutionContext.create(simulation, null);
-	 *
-	 * // Create nested context
-	 * AgentExecutionContext childContext = AgentExecutionContext.create(agent, rootContext);
-	 * }</pre>
-	 *
-	 * @param agent
-	 *            the agent for this context
-	 * @param outer
-	 *            the outer (parent) context, or null if this is a root context
-	 * @return a new or reused AgentExecutionContext instance
-	 */
-	public static AgentExecutionContext create(final IObject agent, final AgentExecutionContext outer) {
-		final AgentExecutionContext result = POOL.get();
-		result.agent = agent;
-		result.outer = outer;
-		return result;
-	}
-
-	/** The current agent in this context. */
-	IObject agent;
-
-	/** The outer (parent) execution context. */
-	AgentExecutionContext outer;
-
-	/**
-	 * Private constructor - use {@link #create(IAgent, AgentExecutionContext)} instead.
-	 */
-	private AgentExecutionContext() {}
+public record AgentExecutionContext(IObject agent, AgentExecutionContext outer) {
 
 	/**
 	 * Returns the agent associated with this execution context.
@@ -219,7 +126,7 @@ public class AgentExecutionContext implements IDisposable {
 	 * attribute reads are performed in the context of this agent.
 	 * </p>
 	 *
-	 * @return the current agent, may be null if the context has been disposed
+	 * @return the current agent, may be null
 	 */
 	public IObject getCurrentObjectOrAgent() { return agent; }
 
@@ -265,94 +172,6 @@ public class AgentExecutionContext implements IDisposable {
 	 * @return the outer context, or null if this is the root context
 	 */
 	public AgentExecutionContext getOuterContext() { return outer; }
-
-	/**
-	 * Disposes this context and returns it to the object pool.
-	 *
-	 * <p>
-	 * This method clears all references from this context and returns it to the pool for reuse. Always call dispose()
-	 * when done with a context to prevent memory leaks and enable object reuse.
-	 * </p>
-	 *
-	 * <p>
-	 * After calling dispose(), this context should not be used further as its state has been cleared.
-	 * </p>
-	 */
-	@Override
-	public void dispose() {
-		agent = null;
-		outer = null;
-		POOL.release(this);
-	}
-
-	/**
-	 * Creates a deep copy of this execution context.
-	 *
-	 * <p>
-	 * This method creates a new context with the same agent and a copy of the entire outer context chain. This is
-	 * useful when you need to preserve a context for later use or create an independent copy for parallel execution.
-	 * </p>
-	 *
-	 * <p>
-	 * Note: The copy includes copies of all outer contexts in the chain to avoid side effects.
-	 * </p>
-	 *
-	 * <h3>Example</h3>
-	 *
-	 * <pre>{@code
-	 * // Original context chain
-	 * AgentExecutionContext original = context;
-	 *
-	 * // Create independent copy
-	 * AgentExecutionContext copy = original.createCopy();
-	 *
-	 * // Both have same agents but independent context chains
-	 * assert copy.getAgent() == original.getAgent();
-	 * assert copy.getOuterContext() != original.getOuterContext();
-	 * }</pre>
-	 *
-	 * @return a new AgentExecutionContext that is a deep copy of this context
-	 */
-	public AgentExecutionContext createCopy() {
-		// return create(agent, outer);
-		// Possible to copy for avoiding side effects ?
-		return create(agent, outer == null ? null : outer.createCopy());
-	}
-
-	/**
-	 * Creates a shallow (single-level) copy of this execution context, sharing the original outer context chain
-	 * rather than recursively copying it.
-	 *
-	 * <p>
-	 * This is the preferred copy strategy for forked parallel scopes where the outer context chain is read-only
-	 * during the step (no structural mutations are made to the chain above the current agent). It avoids the O(depth)
-	 * allocation cost of {@link #createCopy()}, replacing it with a single pool-allocated object.
-	 * </p>
-	 *
-	 * <p>
-	 * <b>Important:</b> The returned context shares the {@code outer} reference with the original. It must not be
-	 * used from code that mutates the outer context chain (i.e. push/pop on outer contexts) concurrently. In
-	 * practice, forked step scopes only push/pop the current agent level, which is safe.
-	 * </p>
-	 *
-	 * <h3>Example</h3>
-	 *
-	 * <pre>{@code
-	 * // Create a shallow copy for a short-lived forked scope
-	 * AgentExecutionContext shallow = original.createShallowCopy();
-	 *
-	 * // Same agent, same outer reference (not a copy)
-	 * assert shallow.getAgent() == original.getAgent();
-	 * assert shallow.getOuterContext() == original.getOuterContext();
-	 * }</pre>
-	 *
-	 * @return a new single-level AgentExecutionContext that shares the outer context chain with this instance
-	 */
-	public AgentExecutionContext createShallowCopy() {
-		// Share the outer chain rather than recursively copying it. Safe for forked scopes
-		// because they only push/pop at the current agent level.
-		return create(agent, outer);
-	}
 
 	/**
 	 * Returns the simulation agent by traversing the context chain.

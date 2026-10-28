@@ -385,6 +385,8 @@ public interface IGamaIcons {
 	/** The overlay ok. */
 	String OVERLAY_OK = "navigator/overlays/overlay.ok";
 
+	String OVERLAY_PAUSED = "navigator/overlays/overlay.paused";
+
 	/** The overlay warning. */
 	String OVERLAY_WARNING = "navigator/overlays/overlay.warning";
 

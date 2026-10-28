@@ -192,20 +192,20 @@ public class GeometryCache {
 	 * @param renderer
 	 *            the renderer
 	 */
-	public GeometryCache(final IOpenGLRenderer renderer) {
+	public GeometryCache(final IOpenGLRenderer renderer, final OpenGL openGL) {
 		this.scope = renderer.getSurface().getScope().copy("in opengl geometry cache");
-		this.drawer = g -> renderer.getOpenGLHelper().getGeometryDrawer().drawGeometry(g, null, 0, getTypeOf(g));
+		this.drawer = g -> openGL.getGeometryDrawer().drawGeometry(g, null, 0, getTypeOf(g));
 		envelopes = newBuilder().expireAfterAccess(2, MINUTES).build();
 		builtInCache = newBuilder().concurrencyLevel(2).initialCapacity(10).build();
 		fileCache = newBuilder().expireAfterAccess(2, MINUTES).initialCapacity(10).removalListener(notif -> {
 			if (renderer.isDisposed()) return;
-			renderer.getOpenGLHelper().getGL().glDeleteLists((Integer) notif.getValue(), 1);
+			openGL.getGL().glDeleteLists((Integer) notif.getValue(), 1);
 
 		}).build(new CacheLoader<String, Integer>() {
 
 			@Override
 			public Integer load(final String file) {
-				return buildList(renderer.getOpenGLHelper(), file);
+				return buildList(openGL, file);
 			}
 		});
 	}
@@ -219,7 +219,7 @@ public class GeometryCache {
 	 */
 	public Integer get(final GamaGeometryFile file) {
 		// DEBUG.OUT("Getting from cache: " + file);
-		return fileCache.getUnchecked(file.getPath(scope));
+		return fileCache.getUnchecked(file.getDrawingCacheKey(scope));
 	}
 
 	/**
@@ -302,10 +302,10 @@ public class GeometryCache {
 	 */
 	public void process(final GamaGeometryFile file) {
 		if (file == null) return;
-		final String path = file.getPath(scope);
-		if (fileCache.getIfPresent(path) != null) return;
-		fileMap.putIfAbsent(path, file);
-		if (!geometriesToProcess.containsKey(path)) { geometriesToProcess.put(path, file); }
+		final String key = file.getDrawingCacheKey(scope);
+		if (fileCache.getIfPresent(key) != null) return;
+		fileMap.putIfAbsent(key, file);
+		geometriesToProcess.putIfAbsent(key, file);
 	}
 
 	/**

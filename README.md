@@ -47,6 +47,24 @@ mvn clean install
 
 The produced release should be stored in the project `gama.product` under the `target` folder.
 
+## Controlling GAMA from a WebSocket client
+
+GAMA Server works in both the desktop GUI and headless mode. A `load` request can set experiment parameters **before initialization**, choose which console/status/dialog/runtime-error messages are sent to the client, and supply an `until` condition to stop execution. In GUI mode, displays and local output remain available.
+
+Server exchange logging can be enabled for troubleshooting and is off by default. See the [GAMA Server guide](gama.headless/README.md) for [log locations and configuration](gama.headless/README.md#server-exchange-logs), enabling the server, all load options and defaults, and a complete model/client example.
+
+## Pausing automatic editor validation
+
+For large models, uncheck **Automatic validation** in the GAML editor's top-right **Editor options** menu to
+pause semantic validation and documentation rebuilding. The setting is remembered per file in workspace metadata,
+including after saving or reopening the file; parsing and syntax colouring remain active.
+A grey circle on the navigator and editor-tab icons indicates that automatic validation is disabled and diagnostics
+may be outdated. The two validation items are at the end of the menu. **Validate now**, available only while
+automatic validation is disabled, checks the current editor content and refreshes its error annotations without
+re-enabling automatic validation.
+Running an experiment still compiles the model. Rechecking **Automatic validation** immediately validates and
+rebuilds documentation, then resumes automatic updates.
+
 ## Reporting problems, bugs and issues
 
 If you spot a bug or want to suggest an improvement to GAMA, please do so by posting an issue here: [https://github.com/gama-platform/gama/issues](https://github.com/gama-platform/gama/issues). 

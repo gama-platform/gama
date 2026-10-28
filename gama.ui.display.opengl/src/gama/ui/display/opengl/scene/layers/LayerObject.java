@@ -33,7 +33,7 @@ import gama.api.utils.geometry.Rotation3D;
 import gama.api.utils.geometry.Scaling3D;
 import gama.core.outputs.layers.FramedLayerData;
 import gama.core.util.file.GamaGeometryFile;
-import gama.ui.display.opengl.OpenGL;
+import gama.ui.display.opengl.IOpenGL;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.display.opengl.scene.AbstractObject;
 import gama.ui.display.opengl.scene.geometry.GeometryObject;
@@ -142,8 +142,8 @@ public class LayerObject {
 		 */
 		public AbstractObject[] asArray() {
 			final int n = size();
-			if (cachedArray.length != n) { cachedArray = toArray(new AbstractObject[n]); }
-			return cachedArray;
+			if (cachedArray.length != n) { cachedArray = new AbstractObject[n]; }
+			return toArray(cachedArray);
 		}
 	}
 
@@ -262,7 +262,7 @@ public class LayerObject {
 	 * @param gl
 	 *            the gl
 	 */
-	public void draw(final OpenGL gl) {
+	public void draw(final IOpenGL gl) {
 		if (hasDepth()) {
 			gl.getGL().glEnable(GL.GL_DEPTH_TEST);
 		} else {
@@ -286,17 +286,19 @@ public class LayerObject {
 	 * @param picking
 	 *            the picking
 	 */
-	protected void doDrawing(final OpenGL gl) {
+	protected void doDrawing(final IOpenGL gl) {
 		if (renderer.getPickingHelper().isPicking()) {
 			gl.runWithNames(() -> drawAllObjects(gl, true));
 		} else if (isAnimated) {
 			drawAllObjects(gl, false);
 		} else {
 			if (openGLListIndex == null) {
-				for (final AbstractObject object : currentList.asArray()) {
-					if (!object.areTexturesAvailable(gl)) {
-						drawAllObjects(gl, false);
-						return;
+				if (gl.isDrawingStored()) {
+					for (final AbstractObject object : currentList.asArray()) {
+						if (!object.areTexturesAvailable(gl)) {
+							drawAllObjects(gl, false);
+							return;
+						}
 					}
 				}
 				openGLListIndex = gl.compileAsList(() -> drawAllObjects(gl, false));
@@ -311,7 +313,7 @@ public class LayerObject {
 	 * @param gl
 	 *            the gl
 	 */
-	protected void prepareDrawing(final OpenGL gl, final Trace list) {
+	protected void prepareDrawing(final IOpenGL gl, final Trace list) {
 		final IPoint nonNullOffset = list.getOffset();
 		gl.translateBy(nonNullOffset.getX(), -nonNullOffset.getY(), hasDepth() ? nonNullOffset.getZ() : 0);
 		final IPoint nonNullScale = list.getScale();
@@ -335,7 +337,7 @@ public class LayerObject {
 	 * @param gl
 	 *            the gl
 	 */
-	protected void addFrame(final OpenGL gl) {
+	protected void addFrame(final IOpenGL gl) {
 		if (layer == null) return;
 		ILayerData d = layer.getData();
 		if (d instanceof FramedLayerData data) {
@@ -384,7 +386,7 @@ public class LayerObject {
 	 * @param gl
 	 *            the gl
 	 */
-	protected void stopDrawing(final OpenGL gl) {
+	protected void stopDrawing(final IOpenGL gl) {
 		gl.pop(GLMatrixFunc.GL_MODELVIEW);
 	}
 
@@ -396,7 +398,7 @@ public class LayerObject {
 	 * @param picking
 	 *            the picking
 	 */
-	protected void drawAllObjects(final OpenGL gl, final boolean picking) {
+	protected void drawAllObjects(final IOpenGL gl, final boolean picking) {
 		drawObjects(gl, currentList, alpha, picking);
 	}
 
@@ -412,7 +414,7 @@ public class LayerObject {
 	 * @param picking
 	 *            the picking
 	 */
-	protected final void drawObjects(final OpenGL gl, final Trace list, final double alpha, final boolean picking) {
+	protected final void drawObjects(final IOpenGL gl, final Trace list, final double alpha, final boolean picking) {
 		prepareDrawing(gl, list);
 		gl.setCurrentObjectAlpha(alpha);
 		for (final AbstractObject object : list.asArray()) { gl.getDrawerFor(object).draw(object, picking); }
@@ -556,7 +558,7 @@ public class LayerObject {
 	 * @param gl
 	 *            the gl
 	 */
-	public void clear(final OpenGL gl) {
+	public void clear(final IOpenGL gl) {
 		currentList.clear();
 		final Integer index = openGLListIndex;
 		if (index != null) {

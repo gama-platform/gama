@@ -318,12 +318,12 @@ species wall {
 experiment corridor_xp type: gui {
 	
 	parameter var:display_field_vision;
-	parameter "desired speed mean" var:P_v0_mean ;
-	parameter "desired speed standard deviation" var:P_v0_std ;
+	parameter "desired speed mean" var:P_v0_mean unit: #km/#h;
+	parameter "desired speed standard deviation" var:P_v0_std unit: #km/#h;
 	parameter "max angle of vision" var:P_teta0; //degree var:P_teta0 s
 	parameter "discretisation factor for the vision angle" var:P_disc_factor ;
-	parameter "reaction time" var:P_tau ;
-	parameter "distance of vision" var:P_dmax ;
+	parameter "reaction time" var:P_tau unit: #s;
+	parameter "distance of vision" var:P_dmax unit: #m;
 	parameter "repulsion strength" var:P_k ;
 	
 	float minimum_cycle_duration <- 0.02;

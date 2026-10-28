@@ -31,6 +31,7 @@ import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.skill.ISkill;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
+import gama.api.runtime.scope.Invocation;
 
 /**
  * Implementation of primitive actions - actions defined in Java rather than GAML.
@@ -153,7 +154,8 @@ public class PrimitiveStatement extends ActionStatement {
 	 * Executes the primitive by invoking its Java helper.
 	 * 
 	 * <p>
-	 * Arguments are pushed onto the scope stack, then the helper is invoked with either the agent or the skill as
+	 * The arguments of the call (handed by the scope, not complemented with the formal ones) are pushed onto the scope
+	 * stack, then the helper is invoked with either the agent or the skill as
 	 * context depending on whether a skill provides this primitive.
 	 * </p>
 	 *
@@ -165,26 +167,10 @@ public class PrimitiveStatement extends ActionStatement {
 	 */
 	@Override
 	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
-		scope.stackArguments(actualArgs.get());
+		final Invocation invocation = scope.takeInvocation(this);
+		if (invocation != null) { scope.stackArguments(invocation.args(), invocation.caller()); }
 		final IAgent agent = scope.getAgent();
 		return helper.run(scope, agent, skill == null ? scope.getCurrentObjectOrAgent() : skill);
-	}
-
-	/**
-	 * Sets the runtime arguments without complementing with formal arguments.
-	 * 
-	 * <p>
-	 * Primitives handle their arguments directly via the helper, so no complementing is needed.
-	 * </p>
-	 *
-	 * @param scope
-	 *            the execution scope
-	 * @param args
-	 *            the runtime arguments
-	 */
-	@Override
-	public void setRuntimeArgs(final IScope scope, final Arguments args) {
-		actualArgs.set(args);
 	}
 
 	/**

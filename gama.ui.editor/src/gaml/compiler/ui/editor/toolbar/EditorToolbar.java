@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.ICommandListener;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
@@ -161,7 +162,7 @@ public class EditorToolbar {
 		find = new EditorSearchControls(editor).fill(toolbar);
 		next = toolbar.button("editor/command.nextedit", null, "Next edit location", globalNext);
 
-		toolbar.button("editor/local.menu", "Presentation preferences", "Presentation preferences", e -> {
+		toolbar.button("editor/local.menu", "Editor options", "Editor options", e -> {
 
 			final GamaMenu menu = new GamaMenu() {
 
@@ -198,6 +199,11 @@ public class EditorToolbar {
 					check("Formatting on save", GamaPreferences.Modeling.EDITOR_CLEAN_UP)
 							.setImage(GamaIcon.named("editor/command.format").image());
 					separate();
+					MenuItem automatic = check(mainMenu, "Automatic validation", editor.isAutomaticValidationEnabled(),
+							(Selector) e -> editor.setAutomaticValidation(((MenuItem) e.widget).getSelection()));
+					automatic.setEnabled(editor.getResource() instanceof IFile);
+					GamaMenu.action(mainMenu, "Validate now", e -> editor.validateNow(), null)
+							.setEnabled(!editor.isAutomaticValidationEnabled());
 				}
 
 			};

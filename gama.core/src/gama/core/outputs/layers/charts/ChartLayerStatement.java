@@ -126,7 +126,7 @@ import gama.core.outputs.layers.AbstractLayerStatement;
 						name = IKeyword.X_LABELS,
 						type = { IType.LIST, IType.FLOAT, IType.INT, IType.STRING },
 						optional = true,
-						doc = @doc ("change the default common x series labels (replace x value or categories) for an other value (string or numerical).")),
+						doc = @doc ("change the default common x series labels (replace x value or categories) for an other value (string or numerical). Categories are identified by their position, not by their label: several categories can share the same label.")),
 				@facet (
 						name = IKeyword.Y_LABELS,
 						type = { IType.LIST, IType.FLOAT, IType.INT, IType.STRING },
@@ -329,7 +329,11 @@ import gama.core.outputs.layers.AbstractLayerStatement;
 		omissible = IKeyword.NAME)
 @doc (
 		value = "`" + IKeyword.CHART
-				+ "` allows modeler to display a chart: this enables to display specific values of the model at each iteration. GAMA can display various chart types: time series (series), pie charts (pie) and histograms (histogram).",
+				+ "` allows modeler to display a chart: this enables to display specific values of the model at each iteration. GAMA can display various chart types: time series (series), pie charts (pie) and histograms (histogram). "
+				+ "The body of the chart (the `data` and `datalist` statements, but also any `if`, `loop` or other statement surrounding them) is re-evaluated at every step: "
+				+ "series can therefore appear, disappear or be renamed dynamically. A series is identified by the statement that declares it and by its current legend: "
+				+ "when the legend changes, a new series is created. When a series is no longer declared (e.g. its `if` becomes false), it is frozen (kept with its history but no longer updated) in charts showing an history of values (series, xy, scatter, heatmap), "
+				+ "and removed in charts showing a snapshot of values (pie, histogram, radar, box_whisker). The facets of the chart itself are evaluated once, at its creation, except for those related to labels, ranges, ticks, colors and fonts.",
 		usages = { @usage (
 				value = "The general syntax is:",
 				examples = { @example (
@@ -346,7 +350,24 @@ import gama.core.outputs.layers.AbstractLayerStatement;
 								isExecutable = false),
 						@example (
 								value = "}",
-								isExecutable = false) }) },
+								isExecutable = false) }),
+				@usage (
+						value = "The body of a chart is re-evaluated at every step, so data can be declared conditionally, in loops, or with dynamic legends. In the following series chart, 'Instant' appears at cycle 2 and the series 'Even cycles' is frozen during odd cycles:",
+						examples = { @example (
+								value = "chart \"dynamic\" type: series {",
+								isExecutable = false),
+								@example (
+										value = "   if (cycle > 1) { data \"Instant\" value: cycle; }",
+										isExecutable = false),
+								@example (
+										value = "   if (even(cycle)) { data \"Even cycles\" value: 2 * cycle; }",
+										isExecutable = false),
+								@example (
+										value = "   loop i from: 1 to: nb_groups { data \"group \" + i value: i * cycle; }",
+										isExecutable = false),
+								@example (
+										value = "}",
+										isExecutable = false) }) },
 		see = { IKeyword.DISPLAY, IKeyword.AGENTS, IKeyword.EVENT, "graphics", IKeyword.GRID_LAYER,
 				IKeyword.IMAGE_LAYER, IKeyword.OVERLAY, IKeyword.QUADTREE, IKeyword.SPECIES_LAYER, IKeyword.TEXT })
 public class ChartLayerStatement extends AbstractLayerStatement {
@@ -522,7 +543,10 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 		return chartOutput.getJFChart();
 	}
 
-	// What can not change at eery step
+	/**
+	 * Creates the chart and declares its initial data sources. The facets of the chart are evaluated here, while its
+	 * body is evaluated here and at every step (see {@link #_step(IScope)}).
+	 */
 	@Override
 	public boolean _init(final IScope scope) throws GamaRuntimeException {
 		setName(getChartName(scope));
@@ -590,9 +614,7 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 			chartdataset.setYLabels(scope, expval);
 			chartOutput.setUseYLabels(scope, expval);
 		}
-		scope.addVarWithValue(ChartLayerStatement.CHARTDATASET, chartdataset);
-		for (final IStatement s : dataDeclaration.getCommands()) { scope.execute(s); }
-		chartdataset = (ChartDataSet) scope.getVarValue(ChartLayerStatement.CHARTDATASET);
+		evaluateDataDeclarations(scope, chartdataset);
 		chartOutput.initChart_post_data_init(scope);
 		// The output manager runs an initial _step right after init: it is skipped if include_init is false
 		skipInitialStep = !getFacetValue(scope, INCLUDE_INIT, true);
@@ -812,6 +834,24 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 		return true;
 	}
 
+	/**
+	 * Executes the body of the chart, which declares (or re-declares) its data sources. Called once at init and at
+	 * every step (#403): sources whose statement is not executed anymore are frozen or removed by
+	 * {@link ChartDataSet#endSourcesPass(IScope)}.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param chartdataset
+	 *            the dataset receiving the data sources
+	 */
+	private void evaluateDataDeclarations(final IScope scope, final ChartDataSet chartdataset) {
+		if (chartdataset == null) return;
+		chartdataset.beginSourcesPass();
+		scope.addVarWithValue(ChartLayerStatement.CHARTDATASET, chartdataset);
+		for (final IStatement s : dataDeclaration.getCommands()) { scope.execute(s); }
+		chartdataset.endSourcesPass(scope);
+	}
+
 	@Override
 	public boolean _step(final IScope scope) throws GamaRuntimeException {
 		if (skipInitialStep) {
@@ -819,8 +859,9 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 			return true;
 		}
 		updateValues(scope);
-
-		chartOutput.step(scope);
+		// The body of the chart is re-evaluated at every step, so that data declarations can appear, change or
+		// disappear (#403)
+		chartOutput.step(scope, () -> evaluateDataDeclarations(scope, chartOutput.getChartdataset()));
 
 		return true;
 	}

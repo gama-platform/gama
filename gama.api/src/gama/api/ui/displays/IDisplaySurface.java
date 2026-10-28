@@ -28,6 +28,7 @@ import gama.api.ui.displays.IDisplayData.Changes;
 import gama.api.ui.displays.IDisplayData.DisplayDataListener;
 import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.ui.layers.IEventLayerListener;
+import gama.api.ui.layers.KeyCombination;
 import gama.api.ui.layers.ILayer;
 import gama.api.ui.layers.ILayerManager;
 import gama.api.utils.geometry.IEnvelope;
@@ -377,6 +378,9 @@ public interface IDisplaySurface extends DisplayDataListener, IScoped, IDisposab
 	 *            the character
 	 */
 	default void dispatchKeyEvent(final char character) {}
+
+	/** Dispatch an explicit key combination without consuming built-in shortcuts. */
+	default void dispatchKeyCombination(final KeyCombination combination) {}
 
 	/**
 	 * Dispatch special key event.

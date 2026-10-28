@@ -3,6 +3,7 @@
 * Author: Gama Development Team
 * Description: A GAMA implementation of Conway's Game of Life, the most famous cellular automaton.
 * This model is a simplification of "Life Using Grid Agents.gaml". It does not allow to edit the death/birth configurations 
+* Uses bounded integer sampling for cell initialization; seeded patterns differ from legacy rnd.
 */
 model life
 
@@ -42,7 +43,7 @@ global torus: torus_environment {
 }
 
 grid life_cell width: environment_width height: environment_height use_individual_shapes: false use_regular_agents: false use_neighbors_cache: true parallel: true {
-	float grid_value <- (rnd(100)) < density ? 1.0 : 0.0;
+	float grid_value <- rnd(100, true) < density ? 1.0 : 0.0;
 	// Track the previous state
 	float previous <- grid_value;
 	
@@ -59,7 +60,7 @@ experiment "Game of Life" type: gui {
 	parameter 'Width:' var: environment_width category: 'Board';
 	parameter 'Height:' var: environment_height category: 'Board';
 	parameter 'Torus?:' var: torus_environment category: 'Board';
-	parameter 'Initial density of live cells:' var: density category: 'Cells';
+	parameter 'Initial density of live cells:' var: density category: 'Cells' unit: "%";
 	
 	output {
 		display "Game of Life" type: 3d axes: false antialias: false {

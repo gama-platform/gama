@@ -14,6 +14,7 @@ import gama.api.compilation.descriptions.IDescription;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.symbols.Arguments;
 import gama.api.runtime.scope.IScope;
+import gama.api.runtime.scope.Invocation;
 
 /**
  * Abstract base class for statement sequences that accept arguments.
@@ -25,8 +26,9 @@ import gama.api.runtime.scope.IScope;
  * 
  * <h2>Argument Management</h2>
  * <p>
- * The class maintains runtime arguments in a thread-local variable to support concurrent execution of the same action
- * by multiple agents. Arguments are automatically pushed onto the scope stack before executing the sequence.
+ * The runtime arguments of a call are not stored in the statement (shared by all the simulations of a model and by
+ * all the threads executing it) but handed to it by the scope performing the call (see
+ * {@link gama.api.runtime.scope.Invocation}). They are pushed onto the scope stack before executing the sequence.
  * </p>
  * 
  * <h2>Example Usage</h2>
@@ -53,9 +55,6 @@ import gama.api.runtime.scope.IScope;
  */
 public class AbstractStatementSequenceWithArgs extends AbstractStatementSequence implements IStatement.WithArgs {
 
-	/** Thread-local storage for runtime arguments to support concurrent execution. */
-	protected final ThreadLocal<Arguments> actualArgs = new ThreadLocal<>();
-
 	/**
 	 * Constructs a new statement sequence with argument support.
 	 *
@@ -81,25 +80,6 @@ public class AbstractStatementSequenceWithArgs extends AbstractStatementSequence
 	public void setFormalArgs(final Arguments args) {}
 
 	/**
-	 * Sets the runtime argument values for execution.
-	 * 
-	 * <p>
-	 * The arguments are copied to ensure thread safety when the same action is executed concurrently by multiple
-	 * agents.
-	 * </p>
-	 *
-	 * @param scope
-	 *            the execution scope
-	 * @param args
-	 *            the runtime argument values
-	 */
-	@Override
-	public void setRuntimeArgs(final IScope scope, final Arguments args) {
-		// TODO Verify that this copy of the arguments is required or not.
-		actualArgs.set(new Arguments(args));
-	}
-
-	/**
 	 * Executes the sequence with arguments pushed onto the scope stack.
 	 * 
 	 * <p>
@@ -115,16 +95,23 @@ public class AbstractStatementSequenceWithArgs extends AbstractStatementSequence
 	 */
 	@Override
 	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
-		scope.stackArguments(actualArgs.get());
+		final Invocation invocation = scope.takeInvocation(this);
+		final Arguments args = actualArgs(invocation == null ? null : invocation.args());
+		scope.stackArguments(args, invocation == null ? null : invocation.caller());
 		return super.privateExecuteIn(scope);
 	}
 
-	@Override
-	public void dispose() {
-		Arguments args = actualArgs.get();
-		if (args != null) { args.dispose(); }
-		actualArgs.set(null);
-		super.dispose();
+	/**
+	 * Returns the arguments to push onto the scope for one call, given the ones passed by the caller. The runtime
+	 * arguments are handed by the scope for each call (see {@link IScope#takeInvocation(gama.api.runtime.IExecutable)})
+	 * and never stored in the statement, which can be executed concurrently by several simulations or threads.
+	 *
+	 * @param args
+	 *            the arguments passed by the caller (may be null)
+	 * @return the arguments to push (may be null). Must not modify the arguments passed, which may be shared.
+	 */
+	protected Arguments actualArgs(final Arguments args) {
+		return args;
 	}
 
 }

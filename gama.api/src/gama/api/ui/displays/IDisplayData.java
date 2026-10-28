@@ -29,6 +29,9 @@ import gama.api.utils.geometry.IRotationDefinition;
  */
 public interface IDisplayData {
 
+	/** Fullscreen on the monitor containing the display's window, resolved when entering fullscreen. */
+	int FULLSCREEN_CURRENT_MONITOR = -2;
+
 	/**
 	 * The listener interface for receiving displayData events. The class that is interested in processing a displayData
 	 * event implements this interface, and the object created with that class is registered with a component using the
@@ -299,15 +302,15 @@ public interface IDisplayData {
 	/**
 	 * Full screen.
 	 *
-	 * @return the int
+	 * @return a monitor index, {@link #FULLSCREEN_CURRENT_MONITOR} for the current monitor, or -1 if not requested
 	 */
 	int fullScreen();
 
 	/**
-	 * Sets the overlay.
+	 * Sets the fullscreen monitor.
 	 *
 	 * @param fs
-	 *            the new overlay
+	 *            a monitor index, {@link #FULLSCREEN_CURRENT_MONITOR}, or -1 to disable automatic fullscreen
 	 */
 	void setFullScreen(int fs);
 

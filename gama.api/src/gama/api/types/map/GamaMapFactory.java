@@ -539,6 +539,7 @@ public class GamaMapFactory {
 
 	/**
 	 * Converts an arbitrary object into a map.
+	 * This Java construction helper converts null to an empty map; the GAML map cast preserves nil instead.
 	 *
 	 * @param scope
 	 *            the execution scope.

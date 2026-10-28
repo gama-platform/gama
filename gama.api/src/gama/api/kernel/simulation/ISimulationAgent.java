@@ -11,7 +11,9 @@
 package gama.api.kernel.simulation;
 
 import java.util.Map;
+import java.util.function.Supplier;
 
+import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.topology.IProjectionFactory;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.date.IDate;
@@ -253,6 +255,61 @@ public interface ISimulationAgent extends ITopLevelAgent {
 
 	/** The Constant USAGE. */
 	String USAGE = "rng_usage";
+
+	/**
+	 * Runs a task in the dedicated thread of this simulation (one simulation = one thread) and waits for its result.
+	 * To be used for the operations that belong to the lifecycle of the simulation (initialization, restoration,
+	 * recording, collection of results...).
+	 *
+	 * @param <T>
+	 *            the type of the result
+	 * @param task
+	 *            the task
+	 * @return the result of the task
+	 */
+	default <T> T computeInOwnThread(final Supplier<T> task) {
+		if (getPopulation() instanceof IPopulation.Simulation pop) return pop.runInThreadOf(this, task);
+		return task.get();
+	}
+
+	/**
+	 * Runs a task in the dedicated thread of this simulation and waits for its completion.
+	 *
+	 * @param task
+	 *            the task
+	 * @see #computeInOwnThread(Supplier)
+	 */
+	default void runInOwnThread(final Runnable task) {
+		computeInOwnThread(() -> {
+			task.run();
+			return null;
+		});
+	}
+
+	/**
+	 * Posts a task to the dedicated thread of this simulation, without waiting for it. The task is run as soon as the
+	 * simulation is not stepping (immediately if it is paused, otherwise after its current step), or immediately if
+	 * called from the thread of the simulation.
+	 *
+	 * @param task
+	 *            the task
+	 * @return true if the task has been (or will be) run by the thread of the simulation, false if the simulation has
+	 *         no dedicated thread (in which case the task is not run)
+	 */
+	default boolean postInOwnThread(final Runnable task) {
+		return getPopulation() instanceof IPopulation.Simulation pop && pop.postInThreadOf(this, task);
+	}
+
+	/**
+	 * Whether the current thread is the dedicated thread of this simulation (one simulation = one thread). Note that the
+	 * scope of the simulation, or copies of it, can still be used by other threads (displays, parallel execution of
+	 * agents, threads created by the <code>thread</code> skill...).
+	 *
+	 * @return true if the current thread is the thread owning this simulation
+	 */
+	default boolean isInOwnThread() {
+		return getPopulation() instanceof IPopulation.Simulation pop && pop.isInThreadOf(this);
+	}
 
 	/**
 	 * @return

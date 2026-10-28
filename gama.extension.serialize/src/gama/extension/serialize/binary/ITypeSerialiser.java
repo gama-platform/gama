@@ -31,7 +31,7 @@ public class ITypeSerialiser implements IGamaObjectSerializer<IType> {
 	 * Serialises the GAML type name. For compound types, also writes the key and content types.
 	 *
 	 * @param out
-	 *            the FST output stream
+	 *            the binary output stream
 	 * @param toWrite
 	 *            the type to serialise
 	 * @throws Exception
@@ -54,7 +54,7 @@ public class ITypeSerialiser implements IGamaObjectSerializer<IType> {
 	 * @param scope
 	 *            the current GAMA simulation scope
 	 * @param in
-	 *            the FST input stream
+	 *            the binary input stream
 	 * @return the deserialised {@link IType}
 	 * @throws Exception
 	 *             if deserialisation fails

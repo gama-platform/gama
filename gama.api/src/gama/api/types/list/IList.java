@@ -186,7 +186,7 @@ public interface IList<E>
 	 */
 	@Override
 	default IList<E> listValue(final IScope scope, final IType contentsType, final boolean copy) {
-		if (!GamaType.requiresCasting(contentsType, getGamlType().getContentType())) {
+		if (!GamaType.requiresContentTypeCasting(scope, contentsType, getGamlType().getContentType(), this)) {
 			if (copy) return GamaListFactory.createWithoutCasting(contentsType, this);
 			return this;
 		}

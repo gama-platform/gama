@@ -42,4 +42,20 @@ public class SimulationHistory extends LinkedList<SimulationHistoryNode> {
 		push(new SimulationHistoryNode(state, cycle));
 	}
 
+	/**
+	 * Previous state.
+	 *
+	 * @param currentCycle
+	 *            the current cycle
+	 * @return the simulation history node
+	 */
+	SimulationHistoryNode previousState(final int currentCycle) {
+		SimulationHistoryNode node = peek();
+		if (node != null && node.cycle() == currentCycle) {
+			poll();
+			node = peek();
+		}
+		return node;
+	}
+
 }

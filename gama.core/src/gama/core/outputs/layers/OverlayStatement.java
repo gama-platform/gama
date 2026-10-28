@@ -15,10 +15,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import gama.annotations.doc;
+import gama.annotations.example;
 import gama.annotations.facet;
 import gama.annotations.facets;
 import gama.annotations.inside;
 import gama.annotations.symbol;
+import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
@@ -44,6 +46,34 @@ import gama.api.ui.IOutput;
 		concept = { IConcept.DISPLAY })
 @inside (
 		symbols = IKeyword.DISPLAY)
+@doc (
+		value = "`overlay` defines a rectangular layer drawn on top of the other layers of a display, at a fixed place in the view: it is not affected by the camera, the zoom or the rotation of the display, and is placed and sized identically in 2D (java2D) and 3D (opengl) displays. "
+				+ "Each coordinate of the `position` and `size` facets is interpreted independently: when expressed in pixels (using `#px`), it represents a number of pixels of the view; otherwise, a value in [0,1] (in [-1,1] for the position) represents a fraction of the view and a larger value represents model units (considering that the model occupies the entire view). Negative positions are counted from the right (resp. bottom) border of the view. "
+				+ "The statements in the block draw the contents of the overlay in a coordinate system whose origin is its upper-left corner, in which `#px` represents exactly one pixel of the view and model units are scaled as in the view, whatever the size of the overlay. It is therefore recommended to express the locations and sizes of the contents in pixels.",
+		usages = { @usage (
+				value = "For instance, a legend in the upper-left corner of the view (only one overlay can be defined per display):",
+				examples = {
+							@example (
+									value = "overlay position: {10#px, 10#px} size: {200#px, 100#px} background: #white border: #black rounded: true {",
+									isExecutable = false),
+							@example (
+									value = "    draw \"Cycle: \" + cycle at: {20#px, 30#px} color: #black font: font(\"Helvetica\", 14, #bold);",
+									isExecutable = false),
+							@example (
+									value = "    draw square(10#px) at: {20#px, 60#px} color: #red;",
+									isExecutable = false),
+							@example (
+									value = "}",
+									isExecutable = false) }),
+				@usage (
+						value = "Other placements: a semi-transparent box in the lower-right corner, or a band covering the bottom of the view:",
+						examples = {
+							@example (
+									value = "overlay position: {-160#px, -60#px} size: {150#px, 50#px} background: #gray transparency: 0.5 { ... } // bottom-right corner",
+									isExecutable = false),
+							@example (
+									value = "overlay position: {0, 0.9} size: {1, 0.1} { ... } // band covering the bottom 10% of the view",
+									isExecutable = false) }) })
 @facets (
 		value = { @facet (
 				name = IKeyword.ROUNDED,
@@ -59,12 +89,12 @@ import gama.api.ui.IOutput;
 						name = IKeyword.POSITION,
 						type = IType.POINT,
 						optional = true,
-						doc = @doc ("position of the upper-left corner of the layer. Note that if coordinates are in [0,1[, the position is relative to the size of the environment (e.g. {0.5,0.5} refers to the middle of the display) whereas it is absolute when coordinates are greater than 1 for x and y. The z-ordinate can only be defined between 0 and 1. The position can only be a 3D point {0.5, 0.5, 0.5}, the last coordinate specifying the elevation of the layer. In case of negative value OpenGl will position the layer out of the environment.")),
+						doc = @doc ("position of the upper-left corner of the overlay in the view (whatever the display type, 2D or 3D). Each coordinate is interpreted independently: if expressed in pixels (e.g. {10#px, 20#px}), it is a number of pixels of the view; otherwise, a value in [-1,1] is a fraction of the view (e.g. {0.5,0.5} refers to the middle of the view) and a value outside this range is in model units (considering that the model occupies the entire view). Negative coordinates are counted from the right (resp. bottom) border of the view (e.g. {-110#px, 10#px} places the overlay 110 pixels from the right border). The position is {0,0} by default.")),
 				@facet (
 						name = IKeyword.SIZE,
 						type = IType.POINT,
 						optional = true,
-						doc = @doc ("extent of the layer in the view from its position. Coordinates in [0,1[ are treated as percentages of the total surface of the view, while coordinates > 1 are treated as absolute sizes in model units (i.e. considering the model occupies the entire view). Unlike  'position', no elevation can be provided with the z coordinate ")),
+						doc = @doc ("extent of the overlay in the view from its position (whatever the display type, 2D or 3D). Each coordinate is interpreted independently: if expressed in pixels (e.g. {200#px, 5#px}), it is a number of pixels of the view; otherwise, a value in [0,1] is a fraction of the view and a value greater than 1 is in model units (considering that the model occupies the entire view). A size of 0 draws no frame. Inside the overlay, the contents are drawn in a coordinate system that does not depend on this size: the origin is the upper-left corner of the overlay, #px represents one pixel of the view and model units are scaled as in the view. The size is {1,1} (the whole view) by default.")),
 				@facet (
 						name = IKeyword.TRANSPARENCY,
 						type = IType.FLOAT,

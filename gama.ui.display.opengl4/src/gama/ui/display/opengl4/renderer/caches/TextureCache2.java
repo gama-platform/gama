@@ -30,6 +30,7 @@ import gama.api.utils.interfaces.IImageProvider;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
 import gama.ui.display.opengl4.OpenGL;
+import gama.ui.display.opengl.renderer.caches.ITextureCache;
 
 /**
  * The Class TextureCache2.

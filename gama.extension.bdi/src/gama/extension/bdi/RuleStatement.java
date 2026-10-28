@@ -12,9 +12,7 @@
 package gama.extension.bdi;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
 
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.exceptions.GamaRuntimeException;
@@ -682,6 +680,8 @@ public class RuleStatement extends AbstractStatement {
      */
     final IExpression lifetime;
 
+    private final BdiStatementSupport operations;
+
     /**
      * Instantiates a new rule statement.
      *
@@ -730,6 +730,7 @@ public class RuleStatement extends AbstractStatement {
         lifetime = getFacet("lifetime");
         parallel = getFacet(IKeyword.PARALLEL);
         all = getFacet(RuleStatement.ALL);
+        operations = new BdiStatementSupport(strength, lifetime);
     }
 
     @SuppressWarnings("unchecked")
@@ -759,11 +760,11 @@ public class RuleStatement extends AbstractStatement {
         List<Predicate> predUncertaintyList = new ArrayList<Predicate>();
         List<Predicate> predIdealList = new ArrayList<Predicate>();
 
-        final MentalState tempBelief = new MentalState("Belief");
+        final MentalState tempBelief = MentalStateKind.BELIEF.create();
         if (belief != null) {
             tempBelief.setPredicate((Predicate) belief.value(scope));
             if (BdiUtils.hasBelief(scope, tempBelief)) {
-                for (final MentalState mental : BdiUtils.getBase(scope, SimpleBdiArchitecture.BELIEF_BASE)) {
+                for (final MentalState mental : BdiUtils.getBase(scope, MentalStateKind.BELIEF)) {
                     if (mental.getPredicate() != null && tempBelief.getPredicate().equals(mental.getPredicate())) {
                         predBeliefList.add(mental.getPredicate());
                     }
@@ -774,7 +775,7 @@ public class RuleStatement extends AbstractStatement {
         }
 
 
-        final MentalState tempDesire = new MentalState("Desire");
+        final MentalState tempDesire = MentalStateKind.DESIRE.create();
         if (desire != null) {
             tempDesire.setPredicate((Predicate) desire.value(scope));
             // if the desire can't be found in the base we stop the execution
@@ -783,12 +784,12 @@ public class RuleStatement extends AbstractStatement {
             }
         }
 
-        final MentalState tempUncertainty = new MentalState("Uncertainty");
+        final MentalState tempUncertainty = MentalStateKind.UNCERTAINTY.create();
         if (uncertainty != null) {
             tempUncertainty.setPredicate((Predicate) uncertainty.value(scope));
             if (BdiUtils.hasUncertainty(scope, tempUncertainty)) {
                 predUncertaintyList = new ArrayList<>();
-                for (final MentalState mental : BdiUtils.getBase(scope, SimpleBdiArchitecture.UNCERTAINTY_BASE)) {
+                for (final MentalState mental : BdiUtils.getBase(scope, MentalStateKind.UNCERTAINTY)) {
                     if (mental.getPredicate() != null && tempBelief.getPredicate().equals(mental.getPredicate())) {
                         predUncertaintyList.add(mental.getPredicate());
                     }
@@ -800,12 +801,12 @@ public class RuleStatement extends AbstractStatement {
 
         }
 
-        final MentalState tempIdeal = new MentalState("Ideal");
+        final MentalState tempIdeal = MentalStateKind.IDEAL.create();
         if (ideal != null) {
             tempIdeal.setPredicate((Predicate) ideal.value(scope));
             if (BdiUtils.hasIdeal(scope, tempIdeal)) {
                 predIdealList = new ArrayList<>();
-                for (final MentalState mental : BdiUtils.getBase(scope, SimpleBdiArchitecture.IDEAL_BASE)) {
+                for (final MentalState mental : BdiUtils.getBase(scope, MentalStateKind.IDEAL)) {
                     if (mental.getPredicate() != null && tempBelief.getPredicate().equals(mental.getPredicate())) {
                         predIdealList.add(mental.getPredicate());
                     }
@@ -816,7 +817,7 @@ public class RuleStatement extends AbstractStatement {
             }
         }
 
-        final MentalState tempObligation = new MentalState("Obligation");
+        final MentalState tempObligation = MentalStateKind.OBLIGATION.create();
         if (obligation != null) {
             tempObligation.setPredicate((Predicate) obligation.value(scope));
             // if we can't find the obligation we stop the execution
@@ -826,27 +827,28 @@ public class RuleStatement extends AbstractStatement {
         }
 
         // if we can't find the beliefs we stop the execution
-        if (beliefs != null && !hasBeliefs(scope, (List<Predicate>) beliefs.value(scope))) {
+        if (!BdiStatementSupport.hasPredicates(scope, MentalStateKind.BELIEF, beliefs)) {
             return null;
         }
         // if we can't find the desires we stop the execution
-        if (desires != null && !hasDesires(scope, (List<Predicate>) desires.value(scope))) {
+        if (!BdiStatementSupport.hasPredicates(scope, MentalStateKind.DESIRE, desires)) {
             return null;
         }
         // if we can't find the uncertainties we stop the execution
-        if (uncertainties != null && !hasUncertainties(scope, (List<Predicate>) uncertainties.value(scope))) {
+        if (!BdiStatementSupport.hasPredicates(scope, MentalStateKind.UNCERTAINTY, uncertainties)) {
             return null;
         }
         // if we can't find the ideals we stop the execution
-        if (ideals != null && !hasIdeals(scope, (List<Predicate>) ideals.value(scope))) {
+        if (!BdiStatementSupport.hasPredicates(scope, MentalStateKind.IDEAL, ideals)) {
             return null;
         }
         // if we can't find the obligations we stop the execution
-        if (obligations != null && !hasObligations(scope, (List<Predicate>) obligations.value(scope))) {
+        // The plural obligation condition historically queries uncertainty, unlike the singular condition.
+        if (!BdiStatementSupport.hasPredicates(scope, MentalStateKind.UNCERTAINTY, obligations)) {
             return null;
         }
         // if we can't find the emotions we stop the execution
-        if (emotions != null && !hasEmotions(scope, (List<Emotion>) emotions.value(scope))) {
+        if (emotions != null && !BdiStatementSupport.hasEmotions(scope, (List<Emotion>) emotions.value(scope))) {
             return null;
         }
 
@@ -863,91 +865,27 @@ public class RuleStatement extends AbstractStatement {
         return null;
     }
 
-    @SuppressWarnings("unchecked")
 	private void removePredicateLists(IScope scope) {
-
-        final List<Predicate> removBels = removeBeliefs != null ? (List<Predicate>) removeBeliefs.value(scope) : Collections.emptyList();
-        for (final Predicate removBel : removBels) {
-            final MentalState tempRemoveBeliefs = new MentalState("Belief", removBel);
-            BdiUtils.removeBelief(scope, tempRemoveBeliefs);
-        }
-        
-    	final List<Predicate> removeDess = removeDesires != null ? (List<Predicate>) removeDesires.value(scope) : Collections.emptyList();
-        for (final Predicate removeDes : removeDess) {
-            final MentalState tempRemoveDesires = new MentalState("Desire", removeDes);
-            BdiUtils.removeDesire(scope, tempRemoveDesires);
-        }
-
-        final List<Emotion> removeEmos = removeEmotions != null ? (List<Emotion>) removeEmotions.value(scope) : Collections.emptyList();
-        for (final Emotion removeEmo : removeEmos) {
-        	BdiUtils.removeEmotion(scope, removeEmo);
-        }
-
-        final List<Predicate> removUncerts = removeUncertainties != null ? (List<Predicate>) removeUncertainties.value(scope) : Collections.emptyList();
-        for (final Predicate removUncert : removUncerts) {
-            final MentalState tempRemoveUncertainties = new MentalState("Uncertainty", removUncert);
-            BdiUtils.removeUncertainty(scope, tempRemoveUncertainties);
-        }
-        
-        final List<Predicate> removeIdes = removeIdeals != null ? (List<Predicate>) removeIdeals.value(scope) : Collections.emptyList();
-        for (final Predicate removeIde : removeIdes) {
-            final MentalState tempRemoveIdeals = new MentalState("Ideal", removeIde);
-            BdiUtils.removeIdeal(scope, tempRemoveIdeals);
-        }
-
-        final List<Predicate> removeObls = removeObligations != null ? (List<Predicate>) removeObligations.value(scope) : Collections.emptyList();
-        for (final Predicate removeObl : removeObls) {
-            final MentalState tempRemoveObligations = new MentalState("Obligation", removeObl);
-            BdiUtils.removeObligation(scope, tempRemoveObligations);
-        }
-		
+        BdiStatementSupport.removeList(scope, MentalStateKind.BELIEF, removeBeliefs);
+        BdiStatementSupport.removeList(scope, MentalStateKind.DESIRE, removeDesires);
+        BdiStatementSupport.removeEmotions(scope, removeEmotions);
+        BdiStatementSupport.removeList(scope, MentalStateKind.UNCERTAINTY, removeUncertainties);
+        BdiStatementSupport.removeList(scope, MentalStateKind.IDEAL, removeIdeals);
+        BdiStatementSupport.removeList(scope, MentalStateKind.OBLIGATION, removeObligations);
 	}
 
-	@SuppressWarnings("unchecked")
 	private void addPredicateLists(final IScope scope) {
-    	if (newDesires != null) {
-            final List<Predicate> newDess = (List<Predicate>) newDesires.value(scope);
-            addPredicateList(scope, newDess, "Desire", state -> BdiUtils.addDesire(scope, null, state));
-        }
-        if (newBeliefs != null) {
-            final List<Predicate> newBels = (List<Predicate>) newBeliefs.value(scope);
-            addPredicateList(scope, newBels, "Belief", state -> BdiUtils.addBelief(scope, state));
-        }
-        if (newEmotions != null) {//TODO: no intensity and decay for emotions ? 
-            for (final Emotion newEmo : (List<Emotion>) newEmotions.value(scope)) {
-            	BdiUtils.addEmotion(scope, newEmo);
-            }
-        }
-        if (newUncertainties != null) {
-            final List<Predicate> newUncerts = (List<Predicate>) newUncertainties.value(scope);
-            addPredicateList(scope, newUncerts, "Uncertainty", state -> BdiUtils.addUncertainty(scope, state));
-        }
-        if (newIdeals != null) {
-            final List<Predicate> newIdes = (List<Predicate>) newIdeals.value(scope);
-            addPredicateList(scope, newIdes, "Ideal", state -> BdiUtils.addIdeal(scope, state));
-        }
+        operations.addList(scope, MentalStateKind.DESIRE, newDesires, true);
+        operations.addList(scope, MentalStateKind.BELIEF, newBeliefs, true);
+        BdiStatementSupport.addEmotions(scope, newEmotions);
+        operations.addList(scope, MentalStateKind.UNCERTAINTY, newUncertainties, true);
+        operations.addList(scope, MentalStateKind.IDEAL, newIdeals, true);
 	}
     
 
 
-	@SuppressWarnings("unchecked")
-	private void addPredicateList(IScope scope, List<Predicate> predList, String mentalStateName, Consumer<MentalState> addInBaseFunction) {
-		int i = 0;
-        for (final Predicate pred : predList) {
-            final MentalState state = new MentalState(mentalStateName, pred);
-            if (strength != null) {
-            	state.setStrength(Cast.asFloat(scope,strength.value(scope) instanceof Number n ?  n : ((List<Float>) strength.value(scope)).get(i)));
-            }
-            if (lifetime != null) {
-            	state.setLifeTime(Cast.asInt(scope, lifetime.value(scope) instanceof List l ? l.get(i) : lifetime.value(scope)));
-            }
-            addInBaseFunction.accept(state);
-            i++;
-        }
-	}
-
-	private MentalState prepareToRemove(IScope scope, Predicate predicate, String mentalStateName, IMap<String, Object> values) {
-        final MentalState tempRemoveBelief = new MentalState(mentalStateName, predicate);
+	private MentalState prepareToRemove(IScope scope, Predicate predicate, MentalStateKind kind, IMap<String, Object> values) {
+        final MentalState tempRemoveBelief = kind.create(predicate);
         if (values != null) {//TODO: why are we setting up values for something we are removing ?
         	tempRemoveBelief.getPredicate().setValues(values);        	
         }
@@ -968,32 +906,32 @@ public class RuleStatement extends AbstractStatement {
         		var values = (IMap<String, Object>) System.opCopy(scope, p.getValues());
         		
         		if (removBel != null) {
-        			BdiUtils.removeBelief(scope, prepareToRemove(scope, removBel, "Belief", values));        			
+                    BdiUtils.removeBelief(scope, prepareToRemove(scope, removBel, MentalStateKind.BELIEF, values));
         		}
                 if (removeDes != null) {                        
-                	BdiUtils.removeDesire(scope, prepareToRemove(scope, removeDes, "Desire", values));                	
+                    BdiUtils.removeDesire(scope, prepareToRemove(scope, removeDes, MentalStateKind.DESIRE, values));
                 }
                 if (removeIde != null) {
-                	BdiUtils.removeIdeal(scope, prepareToRemove(scope, removeIde, "Ideal", values));
+                    BdiUtils.removeIdeal(scope, prepareToRemove(scope, removeIde, MentalStateKind.IDEAL, values));
                 }
                 if (removeObl != null) {
-                	BdiUtils.removeObligation(scope, prepareToRemove(scope, removeObl, "Obligation", values));
+                    BdiUtils.removeObligation(scope, prepareToRemove(scope, removeObl, MentalStateKind.OBLIGATION, values));
                 }
         	}
 
             for (Predicate p : predIdealList) {
             	var values = (IMap<String, Object>) System.opCopy(scope, p.getValues());
                 if (removBel != null) {
-                	BdiUtils.removeBelief(scope, prepareToRemove(scope, removBel, "Belief", values));        			
+                    BdiUtils.removeBelief(scope, prepareToRemove(scope, removBel, MentalStateKind.BELIEF, values));
                 }
                 if (removeDes != null) {
-                	BdiUtils.removeDesire(scope, prepareToRemove(scope, removeDes, "Desire", values));
+                    BdiUtils.removeDesire(scope, prepareToRemove(scope, removeDes, MentalStateKind.DESIRE, values));
                 }
                 if (removUncert != null) {
-                	BdiUtils.removeUncertainty(scope, prepareToRemove(scope, removUncert, "Uncertainty", values));
+                    BdiUtils.removeUncertainty(scope, prepareToRemove(scope, removUncert, MentalStateKind.UNCERTAINTY, values));
                 }
                 if (removeObl != null) {
-                	BdiUtils.removeObligation(scope,prepareToRemove(scope, removeObl, "Obligation", values));
+                    BdiUtils.removeObligation(scope,prepareToRemove(scope, removeObl, MentalStateKind.OBLIGATION, values));
                 }
             }
 
@@ -1001,41 +939,41 @@ public class RuleStatement extends AbstractStatement {
             	var values = (IMap<String, Object>) System.opCopy(scope, p.getValues());
                 
             	if (removeDes != null) {
-            		BdiUtils.removeDesire(scope, prepareToRemove(scope, removeDes, "Desire", values));                	
+                    BdiUtils.removeDesire(scope, prepareToRemove(scope, removeDes, MentalStateKind.DESIRE, values));
                 }
                 if (removUncert != null) {
-                	BdiUtils.removeUncertainty(scope, prepareToRemove(scope, removUncert, "Uncertainty", values));
+                    BdiUtils.removeUncertainty(scope, prepareToRemove(scope, removUncert, MentalStateKind.UNCERTAINTY, values));
                 }
                 if (removeIde != null) {
-                	BdiUtils.removeIdeal(scope, prepareToRemove(scope, removeIde, "Ideal", values));
+                    BdiUtils.removeIdeal(scope, prepareToRemove(scope, removeIde, MentalStateKind.IDEAL, values));
                 }
                 if (removeObl != null) {
-                	BdiUtils.removeObligation(scope, prepareToRemove(scope, removeObl, "Obligation", values));
+                    BdiUtils.removeObligation(scope, prepareToRemove(scope, removeObl, MentalStateKind.OBLIGATION, values));
                 }
             }
         }
         else {
             if (removBel != null) {
-            	BdiUtils.removeBelief(scope, prepareToRemove(scope, removBel, "Belief", null));
+                BdiUtils.removeBelief(scope, prepareToRemove(scope, removBel, MentalStateKind.BELIEF, null));
             }
             if (removeDes != null) {
-            	BdiUtils.removeDesire(scope, prepareToRemove(scope, removeDes, "Desire", null));
+                BdiUtils.removeDesire(scope, prepareToRemove(scope, removeDes, MentalStateKind.DESIRE, null));
             }
             if (removUncert != null) {
-            	BdiUtils.removeUncertainty(scope, prepareToRemove(scope, removUncert, "Uncertainty", null));
+                BdiUtils.removeUncertainty(scope, prepareToRemove(scope, removUncert, MentalStateKind.UNCERTAINTY, null));
             }
             if (removeIde != null) {
-            	BdiUtils.removeIdeal(scope, prepareToRemove(scope, removeIde, "Ideal", null));
+                BdiUtils.removeIdeal(scope, prepareToRemove(scope, removeIde, MentalStateKind.IDEAL, null));
             }
             if (removeObl != null) {
-            	BdiUtils.removeObligation(scope, prepareToRemove(scope, removeObl, "Obligation", null));
+                BdiUtils.removeObligation(scope, prepareToRemove(scope, removeObl, MentalStateKind.OBLIGATION, null));
             }
         }        
         
         //TODO: why are they different ?
         if (removeIntention != null) {
             final Predicate removeInt = (Predicate) removeIntention.value(scope);
-            final MentalState tempRemoveIntention = new MentalState("Intention", removeInt);
+            final MentalState tempRemoveIntention = MentalStateKind.INTENTION.create(removeInt);
             BdiUtils.removeIntention(scope, tempRemoveIntention);
         }
         if (removeEmotion != null) {
@@ -1058,53 +996,53 @@ public class RuleStatement extends AbstractStatement {
             for (Predicate p : predBeliefList) {
                 var values = (IMap<String, Object>) System.opCopy(scope, p.getValues());
                 if (newDesire != null) {
-                	BdiUtils.addDesire(scope, null, preparePredicateToAdd(scope, newDesireValue, "Desire", values));
+                    BdiUtils.addDesire(scope, null, preparePredicateToAdd(scope, newDesireValue, MentalStateKind.DESIRE, values));
                 }
                 if (newUncertainty != null) {
-                	BdiUtils.addUncertainty(scope, preparePredicateToAdd(scope, newUncertaintyValue, "Uncertainty", values));
+                    BdiUtils.addUncertainty(scope, preparePredicateToAdd(scope, newUncertaintyValue, MentalStateKind.UNCERTAINTY, values));
                 }
                 if (newIdeal != null) {
-                	BdiUtils.addIdeal(scope, preparePredicateToAdd(scope, newIdealValue, "Ideal", values));
+                    BdiUtils.addIdeal(scope, preparePredicateToAdd(scope, newIdealValue, MentalStateKind.IDEAL, values));
                 }
             }
             for (Predicate p : predUncertaintyList) {
                 var values = (IMap<String, Object>) System.opCopy(scope, p.getValues());
                 if (newDesire != null) {
-                	BdiUtils.addDesire(scope, null, preparePredicateToAdd(scope, newDesireValue, "Desire", values));
+                    BdiUtils.addDesire(scope, null, preparePredicateToAdd(scope, newDesireValue, MentalStateKind.DESIRE, values));
                 }
                 if (newBelief != null) { //TODO: this seems to be the wrong parameters and function but I'm just copying previous behaviour, that may be a bug
-                	BdiUtils.addDesire(scope, null, preparePredicateToAdd(scope, newDesireValue, "Desire", values));
+                    BdiUtils.addDesire(scope, null, preparePredicateToAdd(scope, newDesireValue, MentalStateKind.DESIRE, values));
                 }
                 if (newIdeal != null) {//TODO: this seems to be the wrong parameters but I'm just copying previous behaviour, that may be a bug
-                	BdiUtils.addIdeal(scope, preparePredicateToAdd(scope, newDesireValue, "Desire", values));
+                    BdiUtils.addIdeal(scope, preparePredicateToAdd(scope, newDesireValue, MentalStateKind.DESIRE, values));
 
                 }
             }
             for (Predicate p : predIdealList) {
                 var values = (IMap<String, Object>) System.opCopy(scope, p.getValues());
                 if (newDesire != null) {
-                	BdiUtils.addDesire(scope, null, preparePredicateToAdd(scope, newDesireValue, "Desire", values));
+                    BdiUtils.addDesire(scope, null, preparePredicateToAdd(scope, newDesireValue, MentalStateKind.DESIRE, values));
                 }
                 if (newBelief != null) {//TODO:this seems to be the wrong parameters but I'm just copying previous behaviour, that may be a bug
-                	BdiUtils.addBelief(scope, preparePredicateToAdd(scope, newDesireValue, "Desire", values));
+                    BdiUtils.addBelief(scope, preparePredicateToAdd(scope, newDesireValue, MentalStateKind.DESIRE, values));
                 }
 
                 if (newUncertainty != null) {//TODO:this seems to be the wrong parameters but I'm just copying previous behaviour, that may be a bug
-                	BdiUtils.addUncertainty(scope, preparePredicateToAdd(scope, newDesireValue, "Desire", values));
+                    BdiUtils.addUncertainty(scope, preparePredicateToAdd(scope, newDesireValue, MentalStateKind.DESIRE, values));
                 }
             }
         } else {
             if (newDesire != null) {
-            	BdiUtils.addDesire(scope, null, preparePredicateToAdd(scope, newDesireValue, "Desire", null));
+                BdiUtils.addDesire(scope, null, preparePredicateToAdd(scope, newDesireValue, MentalStateKind.DESIRE, null));
             }
             if (newBelief != null) {
-            	BdiUtils.addBelief(scope, preparePredicateToAdd(scope, newBeliefValue, "Belief", null));
+                BdiUtils.addBelief(scope, preparePredicateToAdd(scope, newBeliefValue, MentalStateKind.BELIEF, null));
             }
             if (newUncertainty != null) {
-            	BdiUtils.addUncertainty(scope, preparePredicateToAdd(scope, newUncertaintyValue, "Uncertainty", null));
+                BdiUtils.addUncertainty(scope, preparePredicateToAdd(scope, newUncertaintyValue, MentalStateKind.UNCERTAINTY, null));
             }
             if (newIdeal != null) {
-            	BdiUtils.addIdeal(scope, preparePredicateToAdd(scope, newIdealValue, "Ideal", null));
+                BdiUtils.addIdeal(scope, preparePredicateToAdd(scope, newIdealValue, MentalStateKind.IDEAL, null));
             }
         }
 
@@ -1116,110 +1054,8 @@ public class RuleStatement extends AbstractStatement {
 
     }
 
-    private MentalState preparePredicateToAdd(IScope scope, Predicate newPred, String mentalStateType, IMap<String, Object> valuesToSet) {
-
-        final MentalState prepared = new MentalState(mentalStateType, newPred);
-
-        if (valuesToSet != null) {
-            prepared.getPredicate().setValues(valuesToSet);
-        }
-
-        if (strength != null) {
-            prepared.setStrength(Cast.asFloat(scope, strength.value(scope)));
-        }
-        if (lifetime != null) {
-            prepared.setLifeTime(Cast.asInt(scope, lifetime.value(scope)));
-        }
-        return prepared;
-    }
-
-    /**
-     * Checks for beliefs.
-     *
-     * @param scope      the scope
-     * @param predicates the predicates
-     * @return true, if successful
-     */
-    private boolean hasBeliefs(final IScope scope, final List<Predicate> predicates) {
-        for (final Predicate p : predicates) {
-            final MentalState temp = new MentalState("Belief", p);
-            if (!BdiUtils.hasBelief(scope, temp)) return false;
-        }
-        return true;
-    }
-
-    /**
-     * Checks for desires.
-     *
-     * @param scope      the scope
-     * @param predicates the predicates
-     * @return true, if successful
-     */
-    private boolean hasDesires(final IScope scope, final List<Predicate> predicates) {
-        for (final Predicate p : predicates) {
-            final MentalState temp = new MentalState("Desire", p);
-            if (!BdiUtils.hasDesire(scope, temp)) return false;
-        }
-        return true;
-    }
-
-    /**
-     * Checks for uncertainties.
-     *
-     * @param scope      the scope
-     * @param predicates the predicates
-     * @return true, if successful
-     */
-    private boolean hasUncertainties(final IScope scope, final List<Predicate> predicates) {
-        for (final Predicate p : predicates) {
-            final MentalState temp = new MentalState("Uncertainty", p);
-            if (!BdiUtils.hasUncertainty(scope, temp)) return false;
-        }
-        return true;
-    }
-
-    /**
-     * Checks for ideals.
-     *
-     * @param scope      the scope
-     * @param predicates the predicates
-     * @return true, if successful
-     */
-    private boolean hasIdeals(final IScope scope, final List<Predicate> predicates) {
-        for (final Predicate p : predicates) {
-            final MentalState temp = new MentalState("Ideal", p);
-            if (!BdiUtils.hasIdeal(scope, temp)) return false;
-        }
-        return true;
-    }
-
-    /**
-     * Checks for obligations.
-     *
-     * @param scope      the scope
-     * @param predicates the predicates
-     * @return true, if successful
-     */
-    private boolean hasObligations(final IScope scope, final List<Predicate> predicates) {
-        for (final Predicate p : predicates) {
-            final MentalState temp = new MentalState("Uncertainty", p);
-            if (!BdiUtils.hasUncertainty(scope, temp)) return false;
-        }
-        return true;
-    }
-
-    /**
-     * Checks for emotions.
-     *
-     * @param scope    the scope
-     * @param emotions the emotions
-     * @return true, if successful
-     */
-    private boolean hasEmotions(final IScope scope, final List<Emotion> emotions) {
-        for (final Emotion p : emotions) {
-            if (!BdiUtils.hasEmotion(scope, p)) return false;
-        }
-        return true;
+    private MentalState preparePredicateToAdd(IScope scope, Predicate newPred, MentalStateKind kind, IMap<String, Object> valuesToSet) {
+        return operations.prepare(scope, kind, newPred, valuesToSet);
     }
 
     /**

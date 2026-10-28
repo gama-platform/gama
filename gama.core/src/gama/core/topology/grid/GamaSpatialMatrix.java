@@ -37,6 +37,7 @@ import org.locationtech.jts.operation.distance.DistanceOp;
 import com.google.common.collect.Ordering;
 
 import gama.annotations.constants.IKeyword;
+import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
@@ -63,6 +64,7 @@ import gama.api.types.matrix.GamaMatrixFactory;
 import gama.api.types.matrix.IMatrix;
 import gama.api.types.misc.IContainer;
 import gama.api.types.topology.ITopology;
+import gama.api.ui.TaskProgress;
 import gama.api.utils.collections.Collector;
 import gama.api.utils.collections.ICollector;
 import gama.api.utils.geometry.GamaEnvelopeFactory;
@@ -86,6 +88,50 @@ import one.util.streamex.StreamEx;
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
+
+	/** Number of cells above which a warning is emitted when a grid is built from a file */
+	private static final int LARGE_GRID_WARNING_THRESHOLD = 10_000_000;
+
+	/** Rough lower bound of the memory used by each cell agent (agent, attributes, scheduling), in bytes */
+	private static final long BYTES_PER_AGENT = 250;
+
+	/** Rough lower bound of the memory used by the shape of each cell, depending on whether it is individual */
+	private static final long BYTES_PER_INDIVIDUAL_SHAPE = 250, BYTES_PER_PROXY_SHAPE = 64;
+
+	/**
+	 * Estimates (as a lower bound) the memory needed to create a grid of agents and fails fast, with an explanatory
+	 * message, if it cannot fit in the memory available to GAMA, instead of exhausting it (which leaves the platform
+	 * in an unstable state). Emits a warning if it only exceeds the memory currently free.
+	 */
+	private static void checkMemory(final IScope scope, final String name, final long size, final boolean indiv,
+			final int nbBands) {
+		final long perCell = BYTES_PER_AGENT + (indiv ? BYTES_PER_INDIVIDUAL_SHAPE : BYTES_PER_PROXY_SHAPE) + 16
+				+ 16L * Math.max(1, nbBands) + (nbBands > 1 ? 64L + 24L * nbBands : 0);
+		final long needed = size * perCell;
+		final Runtime rt = Runtime.getRuntime();
+		final long max = rt.maxMemory();
+		final long free = max - (rt.totalMemory() - rt.freeMemory());
+		if (needed <= free) return;
+		final String advice = " Consider using a field instead of a grid if the cells do not need to be agents (e.g. "
+				+ "field f <- field(" + name + ");)" + (indiv ? ", setting 'use_individual_shapes: false' on the grid"
+						: "")
+				+ ", reducing the resolution of the file (e.g. with QGIS or gdalwarp) or increasing the memory "
+				+ "allocated to GAMA in the preferences.";
+		final String msg = "The grid built from " + name + " contains " + size + " cells, which requires at least "
+				+ toGB(needed) + " of memory, while ";
+		if (needed > max) throw GamaRuntimeException.error(msg + "GAMA can use at most " + toGB(max) + "." + advice,
+				scope);
+		GAMA.reportError(scope, GamaRuntimeException.warning(
+				msg + "only " + toGB(free) + " are currently free. GAMA may run out of memory." + advice, scope),
+				false);
+	}
+
+	/**
+	 * Formats a number of bytes in GB
+	 */
+	private static String toGB(final long bytes) {
+		return String.format("%.1f GB", bytes / (1024d * 1024 * 1024));
+	}
 
 	/** The geometry of host. */
 
@@ -251,6 +297,13 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 		cellHeight = bounds.getHeight() / numRows;
 		precision = bounds.getWidth() / 1000;
 		final int size = gfile.length(scope);
+		if (size > LARGE_GRID_WARNING_THRESHOLD) {
+			GAMA.reportError(scope, GamaRuntimeException.warning("The grid built from " + gfile.getName(scope)
+					+ " contains " + numCols + "x" + numRows + " cells, each of them being an agent. This requires a "
+					+ "large amount of memory. If the cells do not need to be agents, consider using a field instead "
+					+ "(e.g. field f <- field(" + gfile.getName(scope) + ");)", scope), false);
+		}
+		checkMemory(scope, gfile.getName(scope), size, indiv, gfile.getBandsNumber(scope));
 		createMatrix(size);
 		supportImagePixels = new int[size];
 		referenceShape = GamaShapeFactory.buildRectangle(cellWidth, cellHeight, GamaPointFactory.create(0, 0));
@@ -260,12 +313,15 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 		this.isHexagon = false;
 		this.useNeighborsCache = useNeighborsCache;
 		this.optimizer = optimizer;
-		gridValue = gfile.getFieldData(scope).clone();
+		// getFieldData() already returns a copy of the data of the file
+		gridValue = gfile.getFieldData(scope);
 		this.nbBands = gfile.getBandsNumber(scope);
 		if (nbBands > 1) {
-			bands = new ArrayList<>();
+			// Each band is retrieved (and copied) only once
 			final double[][] bandValues = new double[nbBands][];
-			for (int b = 0; b < nbBands; b++) { bandValues[b] = gfile.getBand(scope, b); }
+			bandValues[0] = gridValue;
+			for (int b = 1; b < nbBands; b++) { bandValues[b] = gfile.getBand(scope, b); }
+			bands = new ArrayList<>(size);
 			for (int i = 0; i < size; i++) {
 				IList<Double> bb = GamaListFactory.create(Types.FLOAT);
 				for (int b = 0; b < nbBands; b++) { bb.add(bandValues[b][i]); }
@@ -347,11 +403,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 			// attribute...
 			// matrix[i] = g;
 		}
-
-		actualNumberOfCells = 0;
-		firstCell = -1;
-		lastCell = -1;
-		createCells(scope, false);
+		// The cells have already been created by the call to this(...)
 	}
 
 	/**
@@ -604,41 +656,56 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 				environmentFrame.getEnvelope().getMinY());
 
 		final IShape translatedReferenceFrame = SpatialTransformations.translated_by(scope, environmentFrame, origin);
-		final IPoint[][] xs = new IPoint[numCols + 1][numRows + 1];
-		for (int i = 0; i < numCols + 1; i++) {
-			for (int j = 0; j < numRows + 1; j++) {
-				final IPoint p = GamaPointFactory.create(i * cellWidth, j * cellHeight);
-				xs[i][j] = p;
+		// The shared corner points are only needed when cells have individual shapes
+		final IPoint[][] xs = useIndividualShapes ? new IPoint[numCols + 1][numRows + 1] : null;
+		if (xs != null) {
+			for (int i = 0; i < numCols + 1; i++) {
+				for (int j = 0; j < numRows + 1; j++) {
+					final IPoint p = GamaPointFactory.create(i * cellWidth, j * cellHeight);
+					xs[i][j] = p;
+				}
 			}
 		}
 
-		for (int i = 0, n = numRows * numCols; i < n; i++) {
-			final int yy = i / numCols;
-			final int xx = i - yy * numCols;
+		final int n = numRows * numCols;
+		try (TaskProgress progress = TaskProgress.begin(scope, "Building the cells of the grid")) {
+			for (int i = 0; i < n; i++) {
+				if (i % numCols == 0) { progress.report(i, n); }
+				createCell(scope, i, partialCells, isRectangle, translatedReferenceFrame, xs);
+			}
+		}
+	}
 
-			// WARNING HACK
-			IShape rect = null;
-			if (useIndividualShapes) {
-				// Change in the function used in building cells in order to minimize computations and mutualize points.
-				// See #2896
-				rect = GamaShapeFactory.createFrom(GeometryUtils.getGeometryFactory().createRectangle(xs[xx][yy],
-						xs[xx + 1][yy], xs[xx + 1][yy + 1], xs[xx][yy + 1], xs[xx][yy]));
-			} else {
-				final double cmx = cellWidth / 2;
-				final double cmy = cellHeight / 2;
-				rect = new CellProxyGeometry(GamaPointFactory.create(xx * cellWidth + cmx, yy * cellHeight + cmy));
-			}
-			boolean ok = isRectangle || translatedReferenceFrame.covers(rect);
-			if (partialCells && !ok && rect.intersects(translatedReferenceFrame)) {
-				rect.setGeometry(SpatialOperators.inter(scope, rect, translatedReferenceFrame));
-				ok = true;
-			}
-			if (ok) {
-				if (firstCell == -1) { firstCell = i; }
-				matrix[i] = rect;
-				actualNumberOfCells++;
-				lastCell = i;
-			}
+	/**
+	 * Creates the cell at the given index, if it is covered by the environment
+	 */
+	private void createCell(final IScope scope, final int i, final boolean partialCells, final boolean isRectangle,
+			final IShape translatedReferenceFrame, final IPoint[][] xs) {
+		final int yy = i / numCols;
+		final int xx = i - yy * numCols;
+
+		// WARNING HACK
+		IShape rect = null;
+		if (useIndividualShapes) {
+			// Change in the function used in building cells in order to minimize computations and mutualize points.
+			// See #2896
+			rect = GamaShapeFactory.createFrom(GeometryUtils.getGeometryFactory().createRectangle(xs[xx][yy],
+					xs[xx + 1][yy], xs[xx + 1][yy + 1], xs[xx][yy + 1], xs[xx][yy]));
+		} else {
+			final double cmx = cellWidth / 2;
+			final double cmy = cellHeight / 2;
+			rect = new CellProxyGeometry(GamaPointFactory.create(xx * cellWidth + cmx, yy * cellHeight + cmy));
+		}
+		boolean ok = isRectangle || translatedReferenceFrame.covers(rect);
+		if (partialCells && !ok && rect.intersects(translatedReferenceFrame)) {
+			rect.setGeometry(SpatialOperators.inter(scope, rect, translatedReferenceFrame));
+			ok = true;
+		}
+		if (ok) {
+			if (firstCell == -1) { firstCell = i; }
+			matrix[i] = rect;
+			actualNumberOfCells++;
+			lastCell = i;
 		}
 	}
 

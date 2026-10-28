@@ -20,6 +20,8 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
+import java.util.regex.Pattern;
 
 import gama.dev.DEBUG;
 import gama.extension.network.common.Connector;
@@ -32,6 +34,8 @@ import gama.extension.network.common.socket.SocketService;
  * The Class ClientService.
  */
 public class ClientService extends Thread implements SocketService {
+
+	private static final Pattern ESCAPED_CHARACTERS = Pattern.compile("@a@|@n@|@b@@r@|@r@");
 	
 	/** The socket. */
 	protected Socket socket;
@@ -49,7 +53,7 @@ public class ClientService extends Thread implements SocketService {
 	protected PrintWriter sender;
 	
 	/** The is alive. */
-	protected boolean isAlive;
+	protected volatile boolean isAlive;
 	
 	protected IConnector connector;
 
@@ -98,6 +102,9 @@ public class ClientService extends Thread implements SocketService {
 		if(socket==null) {
 			socket = new Socket(this.server, this.port);
 		}
+		receiver = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+		sender = new PrintWriter(new BufferedWriter(
+				new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8)), true);
 		isAlive = true;
 
 		this.start();
@@ -128,13 +135,13 @@ public class ClientService extends Thread implements SocketService {
 	public void run() {
 		try {
 			while (this.isAlive) {
-				receiver = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 				String msg = receiver.readLine();
-				if (msg != null) { //protects against NPE occurring with empty streams
-					msg = msg.replaceAll("@n@", "\n");
-					msg = msg.replaceAll("@b@@r@", "\b\r");
-					receivedMessage(this.socket.toString(), msg);					
+				if (msg == null) break;
+				if (!connector.isRaw()) {
+					if (msg.isEmpty()) continue; // Older clients append an extra line delimiter.
+					msg = decodeMessage(msg);
 				}
+				receivedMessage(this.socket.toString(), msg);
 			}
 		} catch (final SocketTimeoutException e) {
 			DEBUG.LOG("Socket timeout");
@@ -142,6 +149,8 @@ public class ClientService extends Thread implements SocketService {
 			DEBUG.LOG("Socket closed");
 		} catch (final IOException e1) {
 			DEBUG.LOG("Socket error" + e1);
+		} finally {
+			stopService();
 		}
 
 	} 
@@ -159,25 +168,35 @@ public class ClientService extends Thread implements SocketService {
 	}
 
 	@Override
-	public void sendMessage(final String message, final String receiver) throws IOException {
+	public synchronized void sendMessage(final String message, final String receiver) throws IOException {
 		
 		if (socket == null || !isOnline()) return;
-		
-		sender = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);		
 		
 		//If raw connection we do not append an end of line nor escape anything
 		if (connector.isRaw()) {
 			sender.print(message);
-			sender.flush();
+		} else {
+			sender.print(encodeMessage(message));
+			sender.print('\n');
 		}
-		else {
-			String msg = message.replaceAll("\n", "@n@")
-								.replaceAll("\b\r", "@b@@r@")
-							+ 	"\n";
-			
-			//TODO: do we really need to append a '\n' while we already use println ?
-			sender.println(msg);
-		}
+		sender.flush();
+		if (sender.checkError()) throw new IOException("Unable to send TCP message to " + getRemoteAddress());
+	}
+
+	static String encodeMessage(final String message) {
+		return message.replace("@", "@a@").replace("\b\r", "@b@@r@")
+				.replace("\n", "@n@").replace("\r", "@r@");
+	}
+
+	static String decodeMessage(final String message) {
+		// Decode in one pass so literal escape tokens are not interpreted a second time.
+		return ESCAPED_CHARACTERS.matcher(message).replaceAll(match -> switch (match.group()) {
+			case "@a@" -> "@";
+			case "@n@" -> "\n";
+			case "@r@" -> "\r";
+			case "@b@@r@" -> "\b\r";
+			default -> throw new IllegalArgumentException("Unknown TCP escape: " + match.group());
+		});
 	}
 	
 	@Override

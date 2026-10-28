@@ -33,7 +33,7 @@ public class SerialisedPopulationSerialiser implements IGamaObjectSerializer<Ser
 	 * Serialises the species name and the list of serialised agents.
 	 *
 	 * @param out
-	 *            the FST output stream
+	 *            the binary output stream
 	 * @param o
 	 *            the serialised population to write
 	 * @throws Exception
@@ -52,7 +52,7 @@ public class SerialisedPopulationSerialiser implements IGamaObjectSerializer<Ser
 	 * @param scope
 	 *            the current GAMA simulation scope (unused)
 	 * @param in
-	 *            the FST input stream
+	 *            the binary input stream
 	 * @return the deserialised {@link SerialisedPopulation}
 	 * @throws Exception
 	 *             if deserialisation fails

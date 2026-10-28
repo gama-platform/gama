@@ -49,6 +49,10 @@ public class EachExpression extends VariableExpression {
 	 */
 	@Override
 	public IGamlDocumentation getDocumentation() {
+		if ("@".equals(getName())) {
+			return new GamlConstantDocumentation(
+					"Represents the accumulated value, of type " + type.getTitle() + ", in the enclosing reduce or scan body");
+		}
 		return new GamlConstantDocumentation("Represents the current object, of type " + type.getTitle() + ", in the iteration");
 	}
 

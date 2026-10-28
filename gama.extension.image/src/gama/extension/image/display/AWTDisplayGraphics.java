@@ -68,6 +68,7 @@ import gama.core.outputs.display.AbstractDisplayGraphics;
 import gama.core.outputs.layers.OverlayLayer;
 import gama.core.util.file.GamaGeometryFile;
 import gama.gaml.operators.Maths;
+import gama.gaml.statements.draw.MeshDrawingAttributes;
 import gama.gaml.statements.draw.ShapeDrawingAttributes;
 
 /**
@@ -263,21 +264,36 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 			curY = yFromModelUnitsToPixels(attributes.getLocation().getY());
 		}
 		imageTransform.translate(curX, curY);
-		int curWidth, curHeight;
+		double curWidth, curHeight;
 		if (attributes.getSize() == null) {
 			curWidth = getLayerWidth();
 			curHeight = getLayerHeight();
 		} else {
-			curWidth = (int) wFromModelUnitsToPixels(attributes.getSize().getX());
-			curHeight = (int) hFromModelUnitsToPixels(attributes.getSize().getY());
+			curWidth = wFromModelUnitsToPixels(attributes.getSize().getX());
+			curHeight = hFromModelUnitsToPixels(attributes.getSize().getY());
 		}
 		if (attributes.getAngle() != null) {
 			imageTransform.rotate(Maths.toRad * attributes.getAngle(), curWidth / 2d, curHeight / 2d);
 		}
 		if (curWidth != img.getWidth() || curHeight != img.getHeight()) {
-			imageTransform.scale((double) curWidth / img.getWidth(), (double) curHeight / img.getHeight());
+			imageTransform.scale(curWidth / img.getWidth(), curHeight / img.getHeight());
 		}
-		currentRenderer.drawImage(img, imageTransform, null);
+		final Object interpolation = currentRenderer.getRenderingHint(KEY_INTERPOLATION);
+		if (attributes instanceof MeshDrawingAttributes
+				&& (interpolation == null || VALUE_INTERPOLATION_NEAREST_NEIGHBOR.equals(interpolation))) {
+			// Accelerated nearest-neighbor drawImage can round clipped source pixels and stretch zoomed cells.
+			final Graphics2D renderer = (Graphics2D) currentRenderer.create();
+			try {
+				renderer.transform(imageTransform);
+				final Rectangle2D bounds = new Rectangle2D.Double(0, 0, img.getWidth(), img.getHeight());
+				renderer.setPaint(new TexturePaint(img, bounds));
+				renderer.fill(bounds);
+			} finally {
+				renderer.dispose();
+			}
+		} else {
+			currentRenderer.drawImage(img, imageTransform, null);
+		}
 		if (attributes.getBorder() != null) { drawGridLine(img, attributes.getBorder()); }
 		rect.setRect(curX, curY, curWidth, curHeight);
 		if (highlight) { highlightRectangleInPixels(rect); }

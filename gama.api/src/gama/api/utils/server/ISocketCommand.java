@@ -68,6 +68,18 @@ public interface ISocketCommand {
 	/** The load. */
 	String LOAD = "load";
 
+	/** Toggle the running server's exchange journal. */
+	String SERVER_LOG = "server_log";
+
+	/** Read or update platform preferences without an experiment. */
+	String GET_PREFERENCES = "get_preferences";
+	String SET_PREFERENCE = "set_preference";
+
+	/** The simulation status subscription commands. */
+	String SIMULATION_STATUS_SUBSCRIBE = "simulation_status_subscribe";
+	String SIMULATION_STATUS_UNSUBSCRIBE = "simulation_status_unsubscribe";
+	String SIMULATION_STATUS_REQUEST = "simulation_status_request";
+
 	/** The stop. */
 	String STOP = "stop";
 

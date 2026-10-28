@@ -73,7 +73,7 @@ species edge_agent parent: base_edge {
 experiment AdvancedView type: gui {
 	
 	
-	parameter 'Distance' var:distance category: 'Model';
+	parameter 'Distance' var:distance category: 'Model' unit: "m";
 	parameter 'Start Animation ' var:startAnimation category: 'Animation View';
 	float minimum_cycle_duration <- 0.05#s;
 	

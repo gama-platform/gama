@@ -53,6 +53,7 @@ import gama.ui.navigator.view.contents.WrappedGamaFile;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gaml.compiler.resource.GamlFileInfo;
 import gaml.compiler.validation.GamlModelBuilder;
+import gaml.compiler.validation.GamlAutoValidation;
 
 /**
  * The class ModelsManager.
@@ -143,7 +144,7 @@ public class ModelsManager extends AbstractServiceFactory implements IModelsMana
 		switch (object) {
 			case IFile file -> {
 				try {
-					if (file.findMaxProblemSeverity(IMarker.PROBLEM, true,
+					if (GamlAutoValidation.isEnabled(file) && file.findMaxProblemSeverity(IMarker.PROBLEM, true,
 							IResource.DEPTH_ZERO) == IMarker.SEVERITY_ERROR) {
 						GAMA.getGui().getDialogFactory()
 								.error("Model " + file.getFullPath() + " has errors and cannot be launched");

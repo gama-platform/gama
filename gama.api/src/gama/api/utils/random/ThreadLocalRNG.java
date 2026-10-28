@@ -37,6 +37,21 @@ public class ThreadLocalRNG implements IGamaRNG {
 	}
 
 	@Override
+	public int nextInt(final int bound) {
+		return ThreadLocalRandom.current().nextInt(bound);
+	}
+
+	@Override
+	public int nextInt(final int origin, final int bound) {
+		return ThreadLocalRandom.current().nextInt(origin, bound);
+	}
+
+	@Override
+	public void setUsage(final int usage) {
+		// This generator has no reproducible state or usage counter.
+	}
+
+	@Override
 	public double nextDouble() {
 		return ThreadLocalRandom.current().nextDouble();
 	}

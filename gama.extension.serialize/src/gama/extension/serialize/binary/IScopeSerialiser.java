@@ -29,7 +29,7 @@ public class IScopeSerialiser implements IGamaObjectSerializer<IScope> {
 	 * Serialises the scope's name.
 	 *
 	 * @param out
-	 *            the FST output stream
+	 *            the binary output stream
 	 * @param toWrite
 	 *            the scope to serialise
 	 * @throws Exception
@@ -47,7 +47,7 @@ public class IScopeSerialiser implements IGamaObjectSerializer<IScope> {
 	 * @param scope
 	 *            the current GAMA simulation scope to copy
 	 * @param in
-	 *            the FST input stream
+	 *            the binary input stream
 	 * @return a copy of {@code scope} with the stored name
 	 * @throws Exception
 	 *             if deserialisation fails

@@ -524,7 +524,8 @@ public interface IPoint extends IShape, IIntersectable, Cloneable, Comparable<Co
 									equals = "{0.5,1.25}") }))
 	@tests ({
 			@test ("{5, 7.5} / 2.5 = {2,3}"),
-			@test ("point p2 <- {4, 5, 6}; p2 / 2.0 = {2.0, 2.5, 3.0}")
+			@test ("point p2 <- {4, 5, 6}; p2 / 2.0 = {2.0, 2.5, 3.0}"),
+			@test ("is_error({2,5} / 0.0)")
 	})
 	IPoint dividedBy(double d);
 

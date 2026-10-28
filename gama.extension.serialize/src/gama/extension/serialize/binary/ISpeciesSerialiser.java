@@ -30,7 +30,7 @@ public class ISpeciesSerialiser implements IGamaObjectSerializer<ISpecies> {
 	 * Serialises the species name.
 	 *
 	 * @param out
-	 *            the FST output stream
+	 *            the binary output stream
 	 * @param o
 	 *            the species to serialise
 	 * @throws Exception
@@ -48,7 +48,7 @@ public class ISpeciesSerialiser implements IGamaObjectSerializer<ISpecies> {
 	 * @param scope
 	 *            the current GAMA simulation scope
 	 * @param in
-	 *            the FST input stream
+	 *            the binary input stream
 	 * @return the resolved {@link ISpecies}
 	 * @throws Exception
 	 *             if deserialisation fails

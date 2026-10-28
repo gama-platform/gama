@@ -327,7 +327,8 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	Class<? extends Support> toClass();
 
 	/**
-	 * Returns the default value for this type. Used when initializing variables without explicit values.
+	 * Returns the type's fallback value. A null fallback also indicates that the type accepts nil.
+	 * Use {@link #createDefaultValue(IScope)} when initializing a variable without an initializer.
 	 *
 	 * <p>
 	 * Examples:
@@ -335,13 +336,24 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 * <ul>
 	 * <li>Types.INT.getDefault() returns 0</li>
 	 * <li>Types.BOOL.getDefault() returns false</li>
-	 * <li>Types.STRING.getDefault() returns ""</li>
-	 * <li>Types.LIST.getDefault() returns an empty list</li>
+	 * <li>Types.STRING.getDefault() returns null</li>
+	 * <li>Types.LIST.getDefault() returns null, although omitted initialization creates an empty list</li>
 	 * </ul>
 	 *
-	 * @return the default value for this type (never null)
+	 * @return the fallback value, possibly null
 	 */
 	Support getDefault();
+
+	/**
+	 * Creates the value of a variable whose initializer is omitted. Mutable defaults must be newly allocated
+	 * on every call. This is distinct from casting an explicit nil value.
+	 *
+	 * @param scope the execution scope
+	 * @return the initial value, possibly null
+	 */
+	default Support createDefaultValue(final IScope scope) {
+		return getDefault();
+	}
 
 	/**
 	 * Returns the variable kind constant for this type, used in GAML grammar and variable declarations.

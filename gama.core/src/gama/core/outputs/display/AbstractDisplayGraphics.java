@@ -209,13 +209,14 @@ public abstract class AbstractDisplayGraphics implements IGraphics {
 	@Override
 	public double getxRatioBetweenPixelsAndModelUnits() {
 		if (currentLayer == null) return getDisplayWidth() / data.getEnvWidth();
+		if (currentLayer instanceof OverlayLayer overlay) return overlay.getData().getContentRatio();
 		return currentLayer.getData().getSizeInPixels().x / data.getEnvWidth();
 	}
 
 	@Override
 	public double getyRatioBetweenPixelsAndModelUnits() {
 		if (currentLayer == null) return getDisplayHeight() / data.getEnvHeight();
-		if (currentLayer instanceof OverlayLayer) return getxRatioBetweenPixelsAndModelUnits();
+		if (currentLayer instanceof OverlayLayer overlay) return overlay.getData().getContentRatio();
 		return currentLayer.getData().getSizeInPixels().y / data.getEnvHeight();
 	}
 

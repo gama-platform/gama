@@ -12,14 +12,14 @@ import gama.api.runtime.scope.IScope;
 public interface IGamaObjectSerializer<T> {
 
 	/**
-	 * @param isInAgent
-	 *            TODO Serialises the given object to the FST output stream. The default implementation does nothing;
-	 *            subclasses should override this method.
+	 * Serialises the given object to the binary output stream.
 	 *
 	 * @param out
-	 *            the FST output stream
+	 *            the binary output stream
 	 * @param toWrite
 	 *            the object to serialise
+	 * @param context
+	 *            the current serialisation context
 	 * @throws Exception
 	 *             if serialisation fails
 	 */
@@ -27,12 +27,12 @@ public interface IGamaObjectSerializer<T> {
 			throws Exception;
 
 	/**
-	 * Deserialises an object from the FST input stream using the given simulation scope.
+	 * Deserialises an object from the binary input stream using the given simulation scope.
 	 *
 	 * @param scope
 	 *            the current GAMA simulation scope
 	 * @param in
-	 *            the FST input stream
+	 *            the binary input stream
 	 * @return the deserialised object of type {@code T}
 	 * @throws Exception
 	 *             if deserialisation fails

@@ -6,6 +6,7 @@
 *   Complete lines are cleared and the score increases. The game ends when pieces stack to the top. User keyboard
 *   input controls left/right/down movement and rotation. This model demonstrates complex user interaction,
 *   piece-based data structures, line detection algorithms, and game state management in GAMA.
+*   Uses bounded integer sampling for piece selection; seeded piece sequences differ from legacy rnd.
 * Tags: game, tetris, grid, user_interaction, keyboard, puzzle, arcade, gui
 */
 
@@ -38,7 +39,7 @@ global {
 	int count_lines_level;
 	geometry shape <- rectangle(20,30);
 	tetrimino initial;
-	int next_te <- rnd(6);
+	int next_te <- rnd(6, true);
 	
 	action reload (){
 		ask agents - cell - world{
@@ -56,7 +57,7 @@ global {
 		initial <- tetrimino(0);
 		
 		
-		next_te <- rnd(6);
+		next_te <- rnd(6, true);
 	}
 	
 	float freq(int l) {
@@ -182,7 +183,7 @@ global {
 	}
 	
 	action create_tetri(){
-		int j <- rnd(6);
+		int j <- rnd(6, true);
 		stats[next_te] <- stats[next_te] + 1;
 		create tetrimino {
 			i <- next_te;
@@ -532,4 +533,3 @@ experiment main {
 }
 
 /* Insert your model definition here */
-

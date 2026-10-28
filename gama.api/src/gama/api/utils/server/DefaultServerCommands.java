@@ -73,6 +73,66 @@ import gama.dev.DEBUG;
  * @date 15 oct. 2023
  */
 public class DefaultServerCommands {
+
+	/** Toggle exchange logging immediately, independently of the current experiment. */
+	public static GamaServerMessage SERVER_LOG(final IGamaServer server, final WebSocket socket,
+			final Map<String, Object> map) {
+		if (!(map.get("enabled") instanceof Boolean enabled))
+			return new CommandResponse(MalformedRequest, "'enabled' must be a JSON boolean", map, false);
+		try {
+			return new CommandResponse(CommandExecutedSuccessfully, server.setExchangeLogging(enabled), map, false);
+		} catch (final IOException e) {
+			return new CommandResponse(UnableToExecuteRequest, e.getMessage(), map, false);
+		}
+	}
+
+	public static GamaServerMessage SIMULATION_STATUS_SUBSCRIBE(final IGamaServer server, final WebSocket socket,
+			final Map<String, Object> map) {
+		return setSimulationStatusSubscription(server, socket, map, true);
+	}
+
+	public static GamaServerMessage SIMULATION_STATUS_UNSUBSCRIBE(final IGamaServer server, final WebSocket socket,
+			final Map<String, Object> map) {
+		return setSimulationStatusSubscription(server, socket, map, false);
+	}
+
+	private static GamaServerMessage setSimulationStatusSubscription(final IGamaServer server, final WebSocket socket,
+			final Map<String, Object> map, final boolean enabled) {
+		try {
+			final IExperimentSpecies experiment = retrieveOwnedExperiment(server, socket, map);
+			final var configuration = (GamaServerExperimentConfiguration) experiment.getAgent().getScope()
+					.getServerConfiguration();
+			configuration.setStatusEnabled(enabled);
+			return new CommandResponse(CommandExecutedSuccessfully, Map.of("status", enabled), map, false);
+		} catch (final CommandException e) {
+			return e.getResponse();
+		}
+	}
+
+	public static GamaServerMessage SIMULATION_STATUS_REQUEST(final IGamaServer server, final WebSocket socket,
+			final Map<String, Object> map) {
+		try {
+			final IExperimentSpecies experiment = retrieveOwnedExperiment(server, socket, map);
+			final var configuration = experiment.getAgent().getScope().getServerConfiguration();
+			return new GamaServerMessage(MessageType.SimulationStatus, GAMA.getExperimentState(experiment).name(),
+					configuration.expId());
+		} catch (final CommandException e) {
+			return e.getResponse();
+		}
+	}
+
+	private static IExperimentSpecies retrieveOwnedExperiment(final IGamaServer server, final WebSocket socket,
+			final Map<String, Object> map) throws CommandException {
+		final IExperimentSpecies experiment = server.retrieveExperimentPlan(socket, map);
+		if (experiment == null || experiment.getAgent() == null || experiment.getAgent().getScope() == null)
+			throw new CommandException(new CommandResponse(UnableToExecuteRequest,
+					"Unable to find an experiment owned by this connection", map, false));
+		final var configuration = experiment.getAgent().getScope().getServerConfiguration();
+		if (!(configuration instanceof GamaServerExperimentConfiguration) || configuration.socket() != socket)
+			throw new CommandException(new CommandResponse(UnableToExecuteRequest,
+					"Unable to find an experiment owned by this connection", map, false));
+		return experiment;
+	}
 	
 	/**
 	 * Load.
@@ -85,27 +145,19 @@ public class DefaultServerCommands {
 	 */
 	public static GamaServerMessage LOAD(final IGamaServer server, final WebSocket socket,
 			final Map<String, Object> map) {
-		// TODO: is this thing really used ? I think what happens is that the call just
-		// hangs until the experiment is closed
 		if (!GAMA.isInHeadLessMode()
 				&& GAMA.getExperimentState(GAMA.getExperiment()) == IExperimentStateListener.State.NOTREADY)
 			return new CommandResponse(MessageType.UnableToExecuteRequest,
 					"Unable to start new experiment, another one is loading", map, false);
 
-		final Object modelPath = map.get("model");
-		final Object experiment = map.get("experiment");
-		if (modelPath == null || experiment == null)
-			return new CommandResponse(MalformedRequest,
-					"For 'load', mandatory parameters are: 'model' and 'experiment'", map, false);
-		String pathToModel = modelPath.toString().trim();
-		String nameOfExperiment = experiment.toString().trim();
-		File ff = new File(pathToModel);
-		if (!ff.exists())
-			return new CommandResponse(UnableToExecuteRequest, "'" + ff.getAbsolutePath() + "' does not exist", map,
-					false);
-		if (!GamlFileExtension.isGaml(ff.getAbsoluteFile().toString()))
-			return new CommandResponse(MessageType.UnableToExecuteRequest,
-					"'" + ff.getAbsolutePath() + "' is not a gaml file", map, false);
+		final ServerLoadRequest request;
+		try {
+			request = ServerLoadRequest.parse(socket, map);
+		} catch (CommandException e) {
+			return e.getResponse();
+		}
+		final File ff = request.model();
+		final String nameOfExperiment = request.experiment();
 		IModelSpecies model = null;
 		try {
 			List<GamlCompilationError> errors = new ArrayList<>();
@@ -122,9 +174,21 @@ public class DefaultServerCommands {
 										map,
 										false);
 		final IModelSpecies mm = model;
-		GAMA.getGui().run(	"Opening experiment " + nameOfExperiment, 
-							() -> GAMA.runGuiExperiment(nameOfExperiment, mm),
-							false);
+		final IExperimentSpecies plan = model.getExperiment(nameOfExperiment);
+		try {
+			plan.setParameterValues(request.parameters());
+			if (!request.until().isBlank()) { plan.setStopCondition(request.until()); }
+			final boolean[] opened = { false };
+			GAMA.getGui().run("Opening experiment " + nameOfExperiment,
+					() -> opened[0] = GAMA.runGuiServerExperiment(nameOfExperiment, mm, request.configuration()), false);
+			final GamaRuntimeException error =
+					plan.getAgent() == null ? null : plan.getController().consumeLastRuntimeError();
+			if (error != null) return new CommandResponse(MessageType.RuntimeError, error, map, false);
+			if (!opened[0]) return new CommandResponse(UnableToExecuteRequest,
+					"Unable to open experiment '" + nameOfExperiment + "'", map, false);
+		} catch (RuntimeException e) {
+			return new CommandResponse(UnableToExecuteRequest, e, map, false);
+		}
 		return new CommandResponse(CommandExecutedSuccessfully, nameOfExperiment, map, false);
 	}
 
@@ -140,7 +204,9 @@ public class DefaultServerCommands {
 	public static GamaServerMessage PLAY(final IGamaServer server, final WebSocket socket,
 			final Map<String, Object> map) {
 		if (!GAMA.startFrontmostExperiment(true))
-			return new CommandResponse(UnableToExecuteRequest, "Controller is full", map, false);
+			return new CommandResponse(UnableToExecuteRequest,
+					"Unable to start: no experiment is loaded, the simulation has ended, or the controller is full",
+					map, false);
 		return new CommandResponse(CommandExecutedSuccessfully, "", map, false);
 	}
 
@@ -227,6 +293,11 @@ public class DefaultServerCommands {
 		} catch (CommandException e) {
 			return e.getResponse();
 		}
+		if (!plan.isMemorize()) {
+			return new CommandResponse(UnableToExecuteRequest,
+					"Unable to step back: stepbacks are not allowed on non-record experiments; declare the experiment with 'record: true'",
+					map, false);
+		}
 		final int nb_step;
 		if (map.get(NB_STEP) != null && !"".equals(("" + map.get(NB_STEP)).trim())) {
 			nb_step = Integer.parseInt("" + map.get(NB_STEP));
@@ -279,11 +350,12 @@ public class DefaultServerCommands {
 		} catch (CommandException e) {
 			return e.getResponse();
 		}
-		IList params = (IList) map.get(PARAMETERS);
-		// checking the parameters' format
-		var parametersError = CommandExecutor.checkLoadParameters(params, map);
-		if (parametersError != null)
-			return parametersError;
+		final IList<?> params;
+		try {
+			params = ServerLoadRequest.parseParameters(map.get(PARAMETERS), map);
+		} catch (CommandException e) {
+			return e.getResponse();
+		}
 		plan.setParameterValues(params);
 		plan.setStopCondition((String) map.get(ISocketCommand.UNTIL));
 		// actual reload
@@ -323,10 +395,10 @@ public class DefaultServerCommands {
 		if (agent == null) {
 			agent = GAMA.getPlatformAgent();
 		}
-		final IScope scope = agent.getScope().copy("in web socket");
 		if (entered.startsWith("?")) {
 			res = GamlIdiomsProvider.getDocumentationOn(entered.substring(1));
 		} else {
+			final IScope scope = agent.getScope().copy("in web socket");
 			try {
 				final var expression = GAML.compileExpression(entered, agent, false);
 				if (expression != null) {
@@ -363,7 +435,7 @@ public class DefaultServerCommands {
 		if (expr == null)
 			return new CommandResponse(MessageType.MalformedRequest,
 					"For " + ISocketCommand.VALIDATE + ", mandatory parameter is: " + EXPR, map, false);
-		String entered = expr.toString().trim();
+		String entered = expr.toString();
 		if (entered.isBlank())
 			return new CommandResponse(CommandExecutedSuccessfully, entered, map, false);
 		List<GamlCompilationError> errors = GAML.validate(entered, syntaxOnly);
@@ -390,25 +462,58 @@ public class DefaultServerCommands {
 		} catch (CommandException e) {
 			return e.getResponse();
 		}
-		final String action = map.get(IKeyword.ACTION) != null ? map.get(IKeyword.ACTION).toString().trim() : null;
-		if (action == null)
+		if (!(map.get(IKeyword.ACTION) instanceof String action) || action.isBlank())
 			return new CommandResponse(MessageType.MalformedRequest,
-					"For " + ISocketCommand.ASK + ", mandatory parameter is: 'action'", map, false);
-		final String ref = map.get(IKeyword.AGENT) != null ? map.get(IKeyword.AGENT).toString().trim() : null;
+					"For " + ISocketCommand.ASK + ", 'action' must be a non-empty string", map, false);
 		final IExperimentAgent exp = plan.getAgent();
 		IScope scope = exp.getScope();
-		final IAgent agent = ref == null ? exp : AgentReference.of(ref).getReferencedAgent(scope);
-		if (agent == null)
+		final Object ref = map.get(IKeyword.AGENT);
+		final IAgent agent;
+		if (ref == null) {
+			agent = exp;
+		} else {
+			if (!(ref instanceof String reference))
+				return new CommandResponse(MalformedRequest, "'agent' must be an agent reference string", map, false);
+			final AgentReference parsed;
+			try {
+				parsed = AgentReference.of(reference.trim());
+			} catch (IllegalArgumentException e) {
+				return new CommandResponse(MalformedRequest,
+						"Invalid agent reference: " + reference
+								+ ". Use simulation[0].boids[12], not a GAML expression such as one_of(boids)",
+						map, false);
+			}
+			agent = parsed.getExistingAgent(scope);
+		}
+		if (agent == null || agent.dead())
 			return new CommandResponse(UnableToExecuteRequest, "Agent does not exist: " + ref, map, false);
-		final IExecutable exec = agent.getSpecies().getAction(action);
+		final IExecutable exec = agent.getSpecies().getAction(action.trim());
 		if (exec == null)
 			return new CommandResponse(UnableToExecuteRequest, "Action " + action + " does not exist in agent " + ref,
 					map, false);
-		// TODO Verify that it is not a JSON string...Otherwise, use
-		// Json.getNew().parse(...)
-		String json = (String) map.get(ARGS);
-		IJsonValue object = GAMA.getJsonEncoder().parse(json);
-		Map<String, Object> args = GamaMapFactory.castToMap(scope, object.toGamlValue(scope));
+		Object arguments = map.get(ARGS);
+		if (arguments instanceof String json) {
+			final IJsonValue object;
+			try {
+				object = GAMA.getJsonEncoder().parse(json);
+			} catch (RuntimeException e) {
+				return new CommandResponse(MalformedRequest, "Invalid JSON in 'args': " + e.getMessage(), map, false);
+			}
+			if (!object.isObject())
+				return new CommandResponse(MalformedRequest, "'args' must contain a JSON object", map, false);
+			arguments = object.toGamlValue(scope);
+		}
+		if (arguments != null && !(arguments instanceof Map<?, ?>))
+			return new CommandResponse(MalformedRequest, "'args' must be a JSON object or a JSON object string", map,
+					false);
+		Map<String, Object> args = new HashMap<>();
+		if (arguments instanceof Map<?, ?> values) {
+			for (var entry : values.entrySet()) {
+				if (!(entry.getKey() instanceof String name))
+					return new CommandResponse(MalformedRequest, "'args' keys must be argument names", map, false);
+				args.put(name, entry.getValue());
+			}
+		}
 		IExecutionResult er = IExecutionResult.PASSED;
 		IScope newScope = agent.getScope().copy("Ask command of gama-server");
 		try {
@@ -420,9 +525,7 @@ public class DefaultServerCommands {
 		}
 		if (!er.passed())
 			return new CommandResponse(UnableToExecuteRequest, "Error in the execution of " + action, map, false);
-		final boolean escaped = map.get(ISocketCommand.ESCAPED) == null ? false
-				: Boolean.parseBoolean("" + map.get(ISocketCommand.ESCAPED));
-		return new CommandResponse(CommandExecutedSuccessfully, "", map, escaped);
+		return new CommandResponse(CommandExecutedSuccessfully, "", map, false);
 	}
 
 	/**

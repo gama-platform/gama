@@ -95,6 +95,7 @@ public class ImageDisplaySurface implements IDisplaySurface {
 	 */
 	@Override
 	public void outputReloaded() {
+		if (this.scope != null) { GAMA.releaseScope(this.scope); }
 		this.scope = output.getScope().copyForGraphics("in image surface of " + output.getName());
 		if (!GamaPreferences.Runtime.ERRORS_IN_DISPLAYS.getValue()) { scope.disableErrorReporting(); }
 		if (manager == null) {

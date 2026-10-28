@@ -19,6 +19,7 @@ import org.eclipse.swt.graphics.Point;
 import gama.api.GAMA;
 import gama.api.runtime.SystemInfo;
 import gama.api.ui.displays.IDisplaySurface;
+import gama.api.ui.layers.KeyCombination;
 import gama.dev.DEBUG;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.WorkaroundForIssue1353;
@@ -90,6 +91,15 @@ public class LayeredDisplayMultiListener {
 		pressedCharacters.add(e);
 		for (Character c : pressedCharacters) { surface.dispatchKeyEvent(c); }
 		WorkbenchHelper.asyncRun(view.displayOverlay);
+	}
+
+	/** Dispatch the native event's modifier snapshot, without tracking sticky modifier state. */
+	public void keyCombinationPressed(final String key, final boolean ctrl, final boolean shift,
+			final boolean alt, final boolean cmd) {
+		final int modifiers = KeyCombination.modifiers(ctrl, shift, alt, cmd);
+		if (key != null && modifiers != 0) {
+			surface.dispatchKeyCombination(new KeyCombination(key, modifiers));
+		}
 	}
 
 	/**

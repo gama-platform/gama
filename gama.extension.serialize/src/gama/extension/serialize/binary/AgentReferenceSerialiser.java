@@ -31,7 +31,7 @@ public class AgentReferenceSerialiser implements IGamaObjectSerializer<AgentRefe
 	 * Serialises the species path array and the index path array of the agent reference.
 	 *
 	 * @param out
-	 *            the FST output stream
+	 *            the binary output stream
 	 * @param o
 	 *            the agent reference to serialise
 	 * @throws Exception
@@ -50,7 +50,7 @@ public class AgentReferenceSerialiser implements IGamaObjectSerializer<AgentRefe
 	 * @param scope
 	 *            the current GAMA simulation scope (unused)
 	 * @param in
-	 *            the FST input stream
+	 *            the binary input stream
 	 * @return the deserialised {@link AgentReference}
 	 * @throws Exception
 	 *             if deserialisation fails

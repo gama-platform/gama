@@ -12,11 +12,14 @@ package gama.api.kernel.simulation;
 
 import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.runtime.GamaExecutorService;
 import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
 import gama.api.ui.IStatusMessage;
+import gama.api.utils.server.GamaServerMessager;
+import gama.api.utils.server.MessageType;
 import gama.dev.DEBUG;
 
 /**
@@ -187,6 +190,23 @@ public class DefaultExperimentController extends AbstractExperimentController {
 	 */
 	private volatile IExperimentAgent agent;
 
+	private volatile boolean serverExperimentEnded;
+
+	private volatile boolean serverStopConditionChecked;
+
+	private volatile GamaRuntimeException lastRuntimeError;
+
+	public void recordRuntimeError(final GamaRuntimeException error) {
+		if (lastRuntimeError == null) { lastRuntimeError = error; }
+	}
+
+	@Override
+	public GamaRuntimeException consumeLastRuntimeError() {
+		final GamaRuntimeException error = lastRuntimeError;
+		lastRuntimeError = null;
+		return error;
+	}
+
 	/** The r. */
 
 	/** The command thread. */
@@ -253,18 +273,20 @@ public class DefaultExperimentController extends AbstractExperimentController {
 				return true;
 
 			case _OPEN:
+				lastRuntimeError = null;
 				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.NOTREADY);
 				try {
-					experiment.open();
-					return true;
+					return experiment.open(null).passed();
 				} catch (final Throwable e) {
 					// Catch Throwable (not just Exception) to handle JVM Errors such as
 					// NoClassDefFoundError or LinkageError that may arise from bad dependencies
+					DEBUG.ERR("Error opening experiment " + experiment.getName(), e);
 					notifyExceptionAndCloseExperiment(e);
 					return false;
 				}
 
 			case _START:
+				if (serverExperimentEnded) return false;
 				try {
 					// Optimization: Only change state if actually paused
 					// This avoids redundant lock operations
@@ -286,6 +308,8 @@ public class DefaultExperimentController extends AbstractExperimentController {
 				return true;
 
 			case _STEP:
+				if (serverExperimentEnded) return false;
+				lastRuntimeError = null;
 				// As we are in GUI, we assume there's only one step
 				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.PAUSED);
 				paused = true;
@@ -305,6 +329,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 				return true;
 
 			case _RELOAD:
+				lastRuntimeError = null;
 				// Optimization: Early exit if scope not available
 				if (currentScope == null) {
 					DEBUG.ERR("Cannot reload experiment: scope not initialized");
@@ -315,6 +340,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 				try {
 					final boolean wasRunning = !isPaused() && !experiment.isAutorun();
 					paused = true;
+					currentScope.getGui().getStatus().resetStatus();
 					currentScope.getGui().getStatus().waitStatus("Reloading...", IStatusMessage.SIMULATION_ICON, () -> {
 						currentScope.getGui().showLaunchingOverlay(experiment.getName());
 						experiment.reload();
@@ -441,6 +467,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 		if (localScope == null && e instanceof GamaRuntimeException gre) { localScope = gre.getScope(); }
 		if (e != null && localScope != null) {
 			final GamaRuntimeException gre = GamaRuntimeException.create(e, localScope);
+			recordRuntimeError(gre);
 			// Report to the errors view BEFORE closing so that isDisposing() is still false
 			localScope.getGui().runtimeError(localScope, gre);
 			localScope.getGui().getStatus().errorStatus(gre);
@@ -550,12 +577,17 @@ public class DefaultExperimentController extends AbstractExperimentController {
 	public IExecutionResult schedule(final IExperimentAgent agent) {
 		this.agent = agent;
 		scope = agent.getScope();
-		serverConfiguration = GAMA.getServer() != null ? GAMA.getServer().obtainGuiServerConfiguration() : null;
+		serverExperimentEnded = false;
+		serverStopConditionChecked = false;
+		if (serverConfiguration == null && GAMA.getServer() != null) {
+			serverConfiguration = GAMA.getServer().obtainGuiServerConfiguration();
+		}
 		scope.setServerConfiguration(serverConfiguration);
 		IExecutionResult res = IExecutionResult.FAILED;
 		try {
 			res = scope.init(agent);
 			if (!res.passed()) {
+				recordRuntimeError(scope.getCurrentError());
 				scope.setDisposeStatus();
 			} else if (agent instanceof IExperimentAgent.Test) {
 				asynchronousStart();
@@ -564,6 +596,8 @@ public class DefaultExperimentController extends AbstractExperimentController {
 				currentScope.getGui().run("Starting experiment", this::asynchronousStart, true);
 			}
 		} catch (final Throwable e) {
+			DEBUG.ERR("Error initializing experiment " + experiment.getName(), e);
+			recordRuntimeError(GamaRuntimeException.create(e, scope));
 			// Any throwable during initialization (GamaRuntimeException, Error, etc.) is
 			// reported to the errors view and the partial simulation is disposed while
 			// the experiment perspective remains open. The next model launch will
@@ -571,6 +605,21 @@ public class DefaultExperimentController extends AbstractExperimentController {
 			if (scope != null && !scope.interrupted()) { notifyExceptionAndReloadExperiment(e); }
 		}
 		return res;
+	}
+
+	private boolean stopServerExperiment(final IScope currentScope) {
+		if (serverConfiguration == null || serverConfiguration.socket() == null
+				|| serverConfiguration.expId().isBlank()) return false;
+		if (serverExperimentEnded) return true;
+		final var condition = agent.getStopCondition();
+		final var simulation = experiment.getCurrentSimulation();
+		final IScope evaluationScope = simulation == null ? currentScope : simulation.getScope();
+		if (condition == null || !Cast.asBool(evaluationScope, condition.value(evaluationScope))) return false;
+		serverExperimentEnded = true;
+		paused = true;
+		GAMA.updateExperimentState(experiment, IExperimentStateListener.State.PAUSED);
+		GamaServerMessager.forwardMessage(currentScope, "", MessageType.SimulationEnded);
+		return true;
 	}
 
 	/**
@@ -608,13 +657,21 @@ public class DefaultExperimentController extends AbstractExperimentController {
 		}
 
 		try {
+			if (!serverStopConditionChecked) {
+				serverStopConditionChecked = true;
+				if (stopServerExperiment(currentScope)) return;
+			}
 			// Execute one simulation step
 			if (!currentScope.step(agent).passed()) {
 				// Step failed - mark scope for disposal and pause execution
 				currentScope.setDisposeStatus();
 				paused = true;
+			} else {
+				stopServerExperiment(currentScope);
 			}
 		} catch (final RuntimeException e) {
+			final GamaRuntimeException error = GamaRuntimeException.create(e, currentScope);
+			recordRuntimeError(error);
 			// Log exception with proper context instead of printStackTrace
 			DEBUG.ERR(
 					"Error during experiment step execution for " + (agent != null ? agent.getName() : "unknown agent"),
@@ -623,7 +680,8 @@ public class DefaultExperimentController extends AbstractExperimentController {
 			// Optionally notify GUI of the error
 			if (!disposing) {
 				try {
-					currentScope.getGui().getStatus().errorStatus(GamaRuntimeException.create(e, currentScope));
+					currentScope.getGui().runtimeError(currentScope, error);
+					currentScope.getGui().getStatus().errorStatus(error);
 				} catch (final Exception guiError) {
 					// GUI notification failed - just log it
 					DEBUG.ERR("Failed to notify GUI of step error", guiError);

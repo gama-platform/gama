@@ -13,13 +13,24 @@ package gama.api.runtime;
 import static gama.api.runtime.GamaExecutorService.EXCEPTION_HANDLER;
 import static gama.api.runtime.GamaExecutorService.getParallelism;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
@@ -27,69 +38,46 @@ import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.runtime.GamaExecutorService.Caller;
+import gama.api.runtime.scope.IScope;
 import gama.dev.DEBUG;
-import gama.dev.THREADS;
 
 /**
- * Default implementation of {@link ISimulationRunner} for managing concurrent simulation execution.
+ * Default implementation of {@link ISimulationRunner}: one simulation = one thread.
  *
  * <p>
- * SimulationRunner coordinates the parallel execution of multiple simulation agents within a GAMA experiment. It uses a
- * thread-per-simulation model where each simulation runs in its own dedicated thread, synchronized by semaphores to
- * ensure coordinated stepping.
+ * Each simulation agent owns a dedicated {@link SimulationThread}, created when the simulation is added (i.e. before
+ * its initialization) and terminated when it is removed (i.e. when it dies) or when the runner is disposed. The thread
+ * consumes tasks from its own mailbox, which guarantees that the lifecycle of a simulation (initialization, steps,
+ * restoration, collection of results...) is always executed by the same thread, sequentially, whatever the thread that
+ * requested it.
  * </p>
  *
  * <p>
- * Architecture:
- * </p>
- * <ul>
- * <li>Each simulation agent gets its own dedicated thread that loops until the simulation dies</li>
- * <li>Two {@link GeneralSynchronizer} instances coordinate execution:
- * <ul>
- * <li><b>simulationsSemaphore:</b> Controls when simulations can execute their step</li>
- * <li><b>experimentSemaphore:</b> Signals the experiment when all simulations have completed their step</li>
- * </ul>
- * </li>
- * <li>The experiment thread calls {@link #step()}, which releases all simulation threads and waits for them to
- * complete</li>
- * <li>Concurrency level is determined by experiment configuration and preferences</li>
- * </ul>
- *
- * <p>
- * Execution flow:
+ * Execution flow of a synchronized step:
  * </p>
  *
  * <pre>
- * 1. Experiment calls step()
- * 2. step() releases N permits to simulationsSemaphore (N = number of simulations)
- * 3. Each simulation thread acquires a permit and executes its step
- * 4. Each simulation releases a permit to experimentSemaphore when done
- * 5. step() acquires N permits from experimentSemaphore (blocks until all done)
- * 6. step() returns to experiment, all simulations synchronized
+ * 1. The experiment calls step()
+ * 2. step() posts one step task to the mailbox of each scheduled simulation
+ * 3. Each simulation thread executes its own step task (and only its own)
+ * 4. step() returns once all the step tasks are over
  * </pre>
  *
  * <p>
- * Usage example (typically internal):
+ * Lifecycle tasks are submitted with {@link #runInThreadOf(ISimulationAgent, Supplier)}, which waits for their result,
+ * or {@link #post(ISimulationAgent, Runnable)}, which does not. A simulation thread waiting for another one keeps
+ * processing its own mailbox in the meantime, so that two simulations requesting something from each other cannot
+ * deadlock. The display thread never waits for a simulation thread (simulations may themselves wait for the displays):
+ * tasks requested from it are run directly.
  * </p>
  *
- * <pre>
- * IPopulation simPop = experiment.getSimulationPopulation();
- * SimulationRunner runner = SimulationRunner.of(simPop);
- *
- * // Add simulations
- * runner.add(simulation1);
- * runner.add(simulation2);
- *
- * // Run synchronized steps
- * while (!stopped) {
- * 	runner.step(); // All simulations execute one step
- * }
- *
- * runner.dispose();
- * </pre>
+ * <p>
+ * The number of simulations stepping at the same time is limited by the concurrency level of the experiment (1 if
+ * simulations are not allowed to run in parallel). Each simulation thread binds its simulation in
+ * {@link SimulationContext} for its whole life.
+ * </p>
  *
  * @see ISimulationRunner
- * @see GeneralSynchronizer
  * @see ISimulationAgent
  */
 public class SimulationRunner implements ISimulationRunner {
@@ -98,29 +86,23 @@ public class SimulationRunner implements ISimulationRunner {
 		DEBUG.OFF();
 	}
 
-	/** Maps each simulation agent to its dedicated execution thread. */
-	final Map<ISimulationAgent, Thread> runnables;
+	/** Sentinel posted to a mailbox to terminate its thread. */
+	private static final Runnable POISON = () -> {};
 
-	/** Synchronizer controlling when simulations can execute their step. */
-	final GeneralSynchronizer simulationsSemaphore = GeneralSynchronizer.withInitialPermits(0);
+	/** Maps each simulation agent to its dedicated thread. */
+	final Map<ISimulationAgent, SimulationThread> threads = new ConcurrentHashMap<>();
 
-	/** Synchronizer signaling to the experiment when simulations complete their step. */
-	final GeneralSynchronizer experimentSemaphore = GeneralSynchronizer.withInitialPermits(0);
-
-	/** The concurrency level (number of simulations that can run concurrently). */
+	/** The concurrency level (number of simulations that can step concurrently, at least 1). */
 	final int concurrency;
+
+	/** The permits to step, limiting the number of simulations stepping concurrently to the concurrency level. */
+	private final Semaphore stepPermits;
 
 	/** Flag indicating if the runner has been shut down. */
 	volatile boolean shutdown = false;
 
-	/**
-	 * O(1) count of currently active simulations. Maintained in sync with {@link #runnables} via
-	 * {@link #add(ISimulationAgent)} and {@link #remove(ISimulationAgent)}. Uses {@link AtomicInteger} so that
-	 * concurrent calls to {@link #add(ISimulationAgent)}, {@link #remove(ISimulationAgent)}, and {@link #step()} are
-	 * always consistent without external locking — {@code volatile int} would allow a stale snapshot of
-	 * {@code activeCount} to be used in {@link #step()}, releasing the wrong number of permits.
-	 */
-	private final AtomicInteger activeCount = new AtomicInteger(0);
+	/** Maximum time spent by {@link #dispose()} waiting for the simulation threads to finish their current task. */
+	private static final long DISPOSE_TIMEOUT_MS = 5000;
 
 	/**
 	 * Creates a SimulationRunner configured for the given simulation population.
@@ -130,7 +112,8 @@ public class SimulationRunner implements ISimulationRunner {
 	 * </p>
 	 * <ul>
 	 * <li>For headless non-batch experiments: concurrency = 1 (sequential)</li>
-	 * <li>Otherwise: determined by experiment's concurrency expression and preferences</li>
+	 * <li>Otherwise: determined by experiment's concurrency expression and preferences (0, i.e. no concurrency, meaning
+	 * that simulations step one after the other)</li>
 	 * </ul>
 	 *
 	 * @param pop
@@ -145,55 +128,91 @@ public class SimulationRunner implements ISimulationRunner {
 		} else {
 			concurrency = getParallelism(pop.getHost().getScope(), plan.getConcurrency(), Caller.SIMULATION);
 		}
-		return new SimulationRunner(concurrency < 0 ? 1 : concurrency);
+		return new SimulationRunner(concurrency);
 	}
 
 	/**
 	 * Constructs a new SimulationRunner with the specified concurrency level.
 	 *
 	 * @param concurrency
-	 *            the maximum number of simulations that can execute concurrently (typically 1 for sequential or number
-	 *            of CPU cores for parallel)
+	 *            the maximum number of simulations that can step concurrently (values below 1 mean 1)
 	 */
 	private SimulationRunner(final int concurrency) {
-		this.concurrency = concurrency;
-		// ConcurrentHashMap ensures that add(), remove(), step(), dispose(), and
-		// size() queries from different threads do not race on the underlying structure.
-		runnables = new ConcurrentHashMap<>();
+		this.concurrency = Math.max(1, concurrency);
+		this.stepPermits = new Semaphore(this.concurrency, true);
 	}
+
+	/** The way an autonomous simulation is run. */
+	private record Autonomy(Predicate<ISimulationAgent> isOver, BooleanSupplier isPaused,
+			Consumer<ISimulationAgent> onOver) {}
 
 	/**
-	 * Removes a simulation agent from the runner.
-	 *
-	 * <p>
-	 * The simulation's thread will complete its current step and then terminate. The simulation is removed from the
-	 * active set.
-	 * </p>
-	 *
-	 * @param agent
-	 *            the simulation agent to remove
+	 * A task running a simulation autonomously. Distinguished from other tasks so that it is never run while the thread
+	 * is busy stepping or waiting (it would otherwise be nested in a step).
 	 */
-	@Override
-	public void remove(final ISimulationAgent agent) {
-		final Thread t = runnables.remove(agent);
-		if (t == null) return;
-		// Autonomous simulations have already been taken out of the count
-		if (!(t instanceof SimulationThread st) || st.autonomy == null) { activeCount.decrementAndGet(); }
-		// A thread idling on the semaphore would otherwise never terminate (see issues #198 and #282)
-		if (t instanceof SimulationThread st && st.waiting) { st.interrupt(); }
+	private record AutonomyTask(SimulationThread thread, Autonomy autonomy) implements Runnable {
+
+		@Override
+		public void run() {
+			thread.runFreely(autonomy);
+		}
 	}
 
-	/** A dedicated thread running the steps of one simulation, which can be woken up when it is removed. */
+	/** A task stepping a simulation once, as part of a synchronized step of all the simulations. */
+	private final class StepTask implements Runnable {
+
+		/** The agent. */
+		private final ISimulationAgent agent;
+
+		/** Counted down once the step is over (or skipped). */
+		private final CountDownLatch latch;
+
+		/**
+		 * Instantiates a new step task.
+		 *
+		 * @param agent
+		 *            the agent
+		 * @param latch
+		 *            the latch
+		 */
+		StepTask(final ISimulationAgent agent, final CountDownLatch latch) {
+			this.agent = agent;
+			this.latch = latch;
+		}
+
+		@Override
+		public void run() {
+			try {
+				if (!shutdown && !agent.dead()) { ((SimulationThread) Thread.currentThread()).stepWithPermit(); }
+			} finally {
+				// Counted down whatever the outcome: a step that throws would otherwise be waited for forever
+				latch.countDown();
+			}
+		}
+
+		/** Releases the experiment without stepping (the simulation does not take part in synchronized steps). */
+		void skip() {
+			latch.countDown();
+		}
+	}
+
+	/** The thread owning one simulation, which executes all the tasks posted to its mailbox. */
 	private final class SimulationThread extends Thread {
 
 		/** The agent. */
 		private final ISimulationAgent agent;
 
-		/** True while the thread is idle, waiting for the permission to step. */
-		volatile boolean waiting;
+		/** The tasks to execute, in order. */
+		private final BlockingDeque<Runnable> mailbox = new LinkedBlockingDeque<>();
 
-		/** Set when the simulation must run on its own, without synchronization. */
+		/** Whether the simulation takes part in the synchronized steps. */
+		volatile boolean scheduled;
+
+		/** Set while the simulation runs on its own, without synchronization. */
 		volatile Autonomy autonomy;
+
+		/** Set once no more task can be posted. Written under the lock of this thread. */
+		private volatile boolean terminated;
 
 		/**
 		 * Instantiates a new simulation thread.
@@ -205,6 +224,139 @@ public class SimulationRunner implements ISimulationRunner {
 			super("Thread of " + agent.getName());
 			this.agent = agent;
 			setDaemon(true);
+			setUncaughtExceptionHandler(EXCEPTION_HANDLER);
+		}
+
+		/**
+		 * Posts a task to the mailbox.
+		 *
+		 * @return false if the thread is terminated, in which case the task will never be run
+		 */
+		synchronized boolean post(final Runnable task) {
+			if (terminated) return false;
+			mailbox.add(task);
+			return true;
+		}
+
+		/** Prevents new tasks from being posted. The tasks already posted are still run before the thread ends. */
+		void terminate() {
+			synchronized (this) {
+				if (terminated) return;
+				terminated = true;
+			}
+			mailbox.add(POISON);
+		}
+
+		@Override
+		public void run() {
+			// The scope of the simulation has been created by another thread: this one executes in it from now on
+			final IScope scope = agent.getScope();
+			if (scope != null) { scope.bindToCurrentThread(); }
+			SimulationContext.runFor(agent, this::processMailbox);
+		}
+
+		/** Executes the tasks posted to the mailbox until the thread is terminated. */
+		private void processMailbox() {
+			while (true) {
+				final Runnable task;
+				try {
+					task = mailbox.take();
+				} catch (final InterruptedException e) {
+					continue;
+				}
+				if (task == POISON) { break; }
+				// A stale interruption must not affect the next task
+				Thread.interrupted();
+				runTask(task);
+			}
+		}
+
+		/** Runs a task, never letting an exception escape. */
+		private void runTask(final Runnable task) {
+			try {
+				task.run();
+			} catch (final Throwable t) {
+				EXCEPTION_HANDLER.uncaughtException(this, t);
+			}
+		}
+
+		/**
+		 * Handles a task taken from the mailbox while the thread is busy (running autonomously): synchronized steps are
+		 * skipped, other tasks are run, except the termination sentinel and requests to run autonomously (which are
+		 * put back in the mailbox, to be processed once the current autonomous run is over).
+		 *
+		 * @return false if the task has been put back in the mailbox
+		 */
+		private boolean handleWhileBusy(final Runnable task) {
+			if (task == POISON || task instanceof AutonomyTask) {
+				mailbox.addFirst(task);
+				return false;
+			}
+			if (task instanceof StepTask s) {
+				s.skip();
+			} else {
+				runTask(task);
+			}
+			return true;
+		}
+
+		/** Runs the tasks waiting in the mailbox, without blocking. */
+		private void processPendingTasks() {
+			Runnable task;
+			while ((task = mailbox.poll()) != null) { if (!handleWhileBusy(task)) return; }
+		}
+
+		/**
+		 * Steps the simulation once, waiting for a permit if the maximum number of simulations are already stepping.
+		 * Tasks posted to this thread meanwhile are processed, so that a stepping simulation requesting something from
+		 * this one cannot deadlock.
+		 */
+		void stepWithPermit() {
+			helpUntil(stepPermits::tryAcquire);
+			try {
+				agent.step();
+			} finally {
+				stepPermits.release();
+			}
+		}
+
+		/**
+		 * Waits until a condition is met, while processing the tasks posted to this thread (except synchronized steps,
+		 * which are deferred), so that two simulations waiting for each other do not deadlock. Used to wait for a task
+		 * posted to another simulation thread or for a permit to step.
+		 *
+		 * @param done
+		 *            the condition, evaluated repeatedly until it returns true
+		 */
+		void helpUntil(final BooleanSupplier done) {
+			if (done.getAsBoolean()) return;
+			final List<Runnable> deferred = new ArrayList<>();
+			boolean poisoned = false, interrupted = false;
+			while (!done.getAsBoolean()) {
+				final Runnable task;
+				try {
+					task = mailbox.poll(5, TimeUnit.MILLISECONDS);
+				} catch (final InterruptedException e) {
+					interrupted = true;
+					continue;
+				}
+				if (task == null) { continue; }
+				if (task == POISON) {
+					poisoned = true;
+				} else if (task instanceof StepTask || task instanceof AutonomyTask) {
+					deferred.add(task);
+				} else {
+					runTask(task);
+				}
+			}
+			for (int i = deferred.size() - 1; i >= 0; i--) { mailbox.addFirst(deferred.get(i)); }
+			if (poisoned) { mailbox.addLast(POISON); }
+			if (interrupted) { interrupt(); }
+		}
+
+		/** Whether the simulation should keep on running autonomously. */
+		private boolean isRunning(final Autonomy a) {
+			return !shutdown && !terminated && autonomy == a;
 		}
 
 		/** Shows the error to the user (and not only in the console) */
@@ -214,21 +366,24 @@ public class SimulationRunner implements ISimulationRunner {
 				GAMA.reportError(scope, tg instanceof GamaRuntimeException g ? g : GamaRuntimeException.create(tg, scope),
 						false);
 			} catch (final Throwable ignored) {
-				EXCEPTION_HANDLER.uncaughtException(Thread.currentThread(), tg);
+				EXCEPTION_HANDLER.uncaughtException(this, tg);
 			}
 		}
 
-		/** Steps the simulation as fast as possible until it is over. */
-		private void runFreely(final Autonomy a) {
+		/** Steps the simulation as fast as possible until it is over, still processing the tasks posted meanwhile. */
+		void runFreely(final Autonomy a) {
 			boolean over = false, failed = false, notified = false;
-			while (!over && !shutdown && runnables.get(agent) == this) {
+			while (!over && isRunning(a)) {
 				try {
-					while (runnables.get(agent) == this && a.isPaused.getAsBoolean() && !a.isOver.test(agent)
-							&& !shutdown) {
-						THREADS.WAIT(10);
+					processPendingTasks();
+					while (isRunning(a) && a.isPaused.getAsBoolean() && !a.isOver.test(agent)) {
+						final Runnable task = mailbox.poll(10, TimeUnit.MILLISECONDS);
+						if (task != null) { handleWhileBusy(task); }
 					}
-					if (runnables.get(agent) == this && !a.isOver.test(agent) && !shutdown) { agent.step(); }
-				} catch (Throwable tg) {
+					if (isRunning(a) && !a.isOver.test(agent)) { stepWithPermit(); }
+				} catch (final InterruptedException e) {
+					// Only used to wake up the thread
+				} catch (final Throwable tg) {
 					// A simulation that fails would otherwise fail again at every step, forever
 					report(tg);
 					failed = true;
@@ -236,10 +391,10 @@ public class SimulationRunner implements ISimulationRunner {
 				try {
 					over = failed || agent.dead() || a.isOver.test(agent);
 				} catch (final Throwable tg) {
-					EXCEPTION_HANDLER.uncaughtException(Thread.currentThread(), tg);
+					EXCEPTION_HANDLER.uncaughtException(this, tg);
 					over = true;
 				}
-				if (over && !shutdown && runnables.get(agent) == this) {
+				if (over && isRunning(a)) {
 					a.onOver.accept(agent);
 					notified = true;
 				}
@@ -247,145 +402,182 @@ public class SimulationRunner implements ISimulationRunner {
 			// A simulation that dies (e.g. 'do die') is removed from the runner by its population before this thread
 			// notices that it is over: it must be reported all the same, otherwise it is waited for forever
 			if (!notified && !shutdown && agent.dead()) { a.onOver.accept(agent); }
-		}
-
-		@Override
-		public void run() {
-			while (!shutdown && !agent.dead() && runnables.get(agent) == this) {
-				waiting = true;
-				final boolean acquired = autonomy != null || simulationsSemaphore.acquire();
-				waiting = false;
-				if (autonomy != null) {
-					Thread.interrupted();
-					runFreely(autonomy);
-					return;
-				}
-				// Recheck after waking up: dispose() may have released the permit just to
-				// unblock this thread for shutdown — we must not step a dead/cleared runner.
-				if (!acquired || shutdown || agent.dead()) { break; }
-				try {
-					agent.step();
-				} catch (Throwable tg) {
-					EXCEPTION_HANDLER.uncaughtException(Thread.currentThread(), tg);
-				} finally {
-					// Released whatever the outcome: a step that throws still consumed the permit granted by
-					// step(), which would otherwise wait for it forever.
-					experimentSemaphore.release();
-				}
-			}
+			if (autonomy == a) { autonomy = null; }
 		}
 	}
 
-	/** The way an autonomous simulation is run. */
-	private record Autonomy(Predicate<ISimulationAgent> isOver, BooleanSupplier isPaused,
-			Consumer<ISimulationAgent> onOver) {}
+	@Override
+	public void add(final ISimulationAgent agent, final boolean scheduled) {
+		if (shutdown || agent == null) return;
+		final SimulationThread t = threads.computeIfAbsent(agent, a -> {
+			final SimulationThread thread = new SimulationThread(a);
+			thread.start();
+			return thread;
+		});
+		if (scheduled) { t.scheduled = true; }
+	}
+
+	@Override
+	public void unschedule(final ISimulationAgent agent) {
+		final SimulationThread t = threads.get(agent);
+		if (t == null) return;
+		t.scheduled = false;
+		t.autonomy = null;
+	}
+
+	@Override
+	public void remove(final ISimulationAgent agent) {
+		final SimulationThread t = threads.remove(agent);
+		if (t != null) { t.terminate(); }
+	}
 
 	@Override
 	public void runAutonomously(final ISimulationAgent agent, final Predicate<ISimulationAgent> isOver,
 			final BooleanSupplier isPaused, final Consumer<ISimulationAgent> onOver) {
-		// A simulation that died before (e.g. during its initialization, in which case it is added after its death and
-		// its thread is already over) will never step: it is over already
+		// A simulation that died before (e.g. during its initialization) will never step: it is over already
 		if (agent.dead()) {
 			remove(agent);
 			onOver.accept(agent);
 			return;
 		}
-		if (!(runnables.get(agent) instanceof SimulationThread st)) return;
+		final SimulationThread t = threads.get(agent);
+		if (t == null) return;
+		final Autonomy a = new Autonomy(isOver, isPaused, onOver);
 		// The simulation does not take part in the synchronized steps anymore
-		activeCount.decrementAndGet();
-		st.autonomy = new Autonomy(isOver, isPaused, onOver);
-		// The thread is idle (or about to be) on the semaphore: wake it up so that it notices its new mode
-		st.interrupt();
+		t.scheduled = false;
+		t.autonomy = a;
+		// If the thread has been terminated meanwhile (because the simulation died), it is over
+		if (!t.post(new AutonomyTask(t, a)) && agent.dead()) { onOver.accept(agent); }
 	}
 
-	/**
-	 * Adds a simulation agent to the runner and starts its dedicated execution thread, which waits for a permit, steps
-	 * the simulation, signals the experiment, and repeats until the simulation dies, is removed or the runner shuts
-	 * down.
-	 *
-	 * @param agent
-	 *            the simulation agent to add
-	 */
 	@Override
-	public void add(final ISimulationAgent agent) {
-		final Thread t = new SimulationThread(agent);
-		// Registered before starting, as the thread checks that it is still registered
-		runnables.put(agent, t);
-		activeCount.incrementAndGet();
-		t.start();
+	public boolean isInThreadOf(final ISimulationAgent agent) {
+		// The thread may have been removed from the map (the simulation is dying) while still running its last tasks
+		return agent != null && Thread.currentThread() instanceof SimulationThread t && t.agent == agent;
+	}
+
+	@Override
+	public boolean post(final ISimulationAgent agent, final Runnable task) {
+		if (isInThreadOf(agent)) {
+			task.run();
+			return true;
+		}
+		final SimulationThread t = agent == null ? null : threads.get(agent);
+		return t != null && t.post(task);
+	}
+
+	@Override
+	public <T> T runInThreadOf(final ISimulationAgent agent, final Supplier<T> task) {
+		if (isInThreadOf(agent)) return task.get();
+		final SimulationThread t = agent == null ? null : threads.get(agent);
+		final Thread current = Thread.currentThread();
+		// No thread (yet or anymore), or in the display thread, which must never wait for a simulation
+		if (t == null || GAMA.getGui().isInDisplayThread()) return task.get();
+		final FutureTask<T> future = new FutureTask<>(task::get);
+		if (!t.post(future)) return task.get();
+		if (current instanceof SimulationThread other) {
+			other.helpUntil(future::isDone);
+		} else {
+			boolean interrupted = false;
+			while (!future.isDone()) {
+				try {
+					future.get();
+				} catch (final InterruptedException e) {
+					// The task cannot be abandoned halfway: the interruption is restored once it is over
+					interrupted = true;
+				} catch (final ExecutionException | CancellationException e) {
+					break;
+				}
+			}
+			if (interrupted) { current.interrupt(); }
+		}
+		try {
+			return future.get();
+		} catch (final ExecutionException e) {
+			final Throwable cause = e.getCause();
+			if (cause instanceof RuntimeException r) throw r;
+			if (cause instanceof Error r) throw r;
+			throw new RuntimeException(cause);
+		} catch (final InterruptedException e) {
+			// Cannot happen as the task is done
+			current.interrupt();
+			return null;
+		}
 	}
 
 	/**
-	 * Executes one synchronized step for all active simulations.
-	 *
-	 * <p>
-	 * This method:
-	 * </p>
-	 * <ol>
-	 * <li>Releases permits to allow all simulation threads to execute</li>
-	 * <li>Blocks waiting for all simulations to complete their step</li>
-	 * <li>Returns when all simulations have finished stepping, or immediately if the experiment thread is interrupted
-	 * (in which case the interrupt flag is left set for the caller to detect)</li>
-	 * </ol>
-	 * <p>
-	 * This provides the synchronization needed for coordinated multi-simulation execution where all simulations advance
-	 * together through simulation time.
-	 * </p>
+	 * Executes one synchronized step of all the scheduled simulations, each in its own thread, and waits for all of them
+	 * to be over. Returns immediately if the calling thread is interrupted (in which case the interrupt flag is left set
+	 * for the caller to detect).
 	 */
 	@Override
 	public void step() {
-		// DEBUG.OUT("Releasing to all simulations");
-		// Dead simulations never consume permits: counting them would block the experiment forever
-		for (final ISimulationAgent sim : runnables.keySet()) { if (sim.dead()) { remove(sim); } }
-		int nb = activeCount.get();
-		simulationsSemaphore.release(nb);
-		// If the experiment thread is interrupted while waiting, abort the step.
-		// The interrupt flag is already restored by acquire(nb); callers can check it.
-		experimentSemaphore.acquire(nb);
+		final List<SimulationThread> targets = new ArrayList<>();
+		for (final Map.Entry<ISimulationAgent, SimulationThread> entry : threads.entrySet()) {
+			// Dead simulations never step: counting them would block the experiment forever
+			if (entry.getKey().dead()) {
+				remove(entry.getKey());
+				continue;
+			}
+			final SimulationThread t = entry.getValue();
+			if (t.scheduled && t.autonomy == null) { targets.add(t); }
+		}
+		if (targets.isEmpty()) return;
+		final CountDownLatch latch = new CountDownLatch(targets.size());
+		for (final SimulationThread t : targets) { if (!t.post(new StepTask(t.agent, latch))) { latch.countDown(); } }
+		try {
+			latch.await();
+		} catch (final InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
 	}
 
 	/**
-	 * Disposes of the runner, shutting down all simulation threads.
-	 *
-	 * <p>
-	 * Sets the shutdown flag, clears the simulation map, and releases semaphores to allow any waiting threads to
-	 * terminate gracefully.
-	 * </p>
+	 * Disposes of the runner: no new task can be posted and every thread terminates once the tasks already posted are
+	 * over. Unless called from a simulation thread or from the display thread (which must never wait for simulations),
+	 * waits (for a bounded time) for the threads to finish, so that simulations are not disposed of while still
+	 * stepping.
 	 */
 	@Override
 	public void dispose() {
 		shutdown = true;
-		int nb = activeCount.getAndSet(0);
-		runnables.clear();
-		// DEBUG.OUT("Disposing simulation runner and releasing " + nb + " threads");
-		experimentSemaphore.release(nb);
-		simulationsSemaphore.release(nb);
+		final List<SimulationThread> all = new ArrayList<>(threads.values());
+		threads.clear();
+		for (final SimulationThread t : all) { t.terminate(); }
+		if (Thread.currentThread() instanceof SimulationThread || GAMA.getGui().isInDisplayThread()) return;
+		final long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(DISPOSE_TIMEOUT_MS);
+		boolean interrupted = false;
+		for (final SimulationThread t : all) {
+			final long remaining = TimeUnit.NANOSECONDS.toMillis(deadline - System.nanoTime());
+			if (remaining <= 0) { break; }
+			try {
+				t.join(remaining);
+			} catch (final InterruptedException e) {
+				interrupted = true;
+				break;
+			}
+		}
+		if (interrupted) { Thread.currentThread().interrupt(); }
 	}
 
 	/**
-	 * Returns the set of simulation agents currently managed by this runner.
+	 * Returns the simulations that are stepped by this runner, either synchronously or autonomously.
 	 *
-	 * @return the set of active simulation agents
+	 * @return a snapshot of the running simulations
 	 */
 	@Override
-	public Set<ISimulationAgent> getStepable() { return runnables.keySet(); }
+	public Set<ISimulationAgent> getStepable() {
+		final Set<ISimulationAgent> result = new HashSet<>();
+		threads.forEach((agent, t) -> { if (t.scheduled || t.autonomy != null) { result.add(agent); } });
+		return result;
+	}
 
-	/**
-	 * Returns the number of simulation threads currently registered with this runner.
-	 *
-	 * @return the count of simulations currently registered
-	 */
 	@Override
-	public int getActiveThreads() { return runnables.size(); }
+	public int getActiveThreads() { return threads.size(); }
 
-	/**
-	 * Checks whether this runner has any active simulations.
-	 *
-	 * @return true if at least one simulation is registered, false otherwise
-	 */
 	@Override
 	public boolean hasSimulations() {
-		return !runnables.isEmpty();
+		return !threads.isEmpty();
 	}
 
 }

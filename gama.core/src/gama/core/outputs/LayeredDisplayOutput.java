@@ -125,7 +125,7 @@ import gama.dev.DEBUG;
 						name = IKeyword.FULLSCREEN,
 						type = { IType.BOOL, IType.INT },
 						optional = true,
-						doc = @doc ("Indicates, when using a boolean value, whether or not the display should cover the whole screen (default is false). If an integer is passed, specifies also the screen to use: 0 for the primary monitor, 1 for the secondary one, and so on and so forth. If the monitor is not available, the first one is used")),
+						doc = @doc ("Indicates, when using a boolean value, whether or not the display should cover the whole screen (default is false). When true, uses the monitor containing the display's window. If an integer is passed, specifies also the screen to use: 0 for the primary monitor, 1 for the secondary one, and so on and so forth. If the monitor is not available, the last available one is used")),
 				@facet (
 						name = "show_fps",
 						internal = true,
@@ -184,7 +184,7 @@ import gama.dev.DEBUG;
 						name = "z_near",
 						type = IType.FLOAT,
 						optional = true,
-						doc = @doc ("Set the distances to the near depth clipping planes. Must be positive.")),
+						doc = @doc ("Set the distances to the near depth clipping planes. Must be positive. To preserve depth-buffer precision, values smaller than z_far / 100000 are raised to that limit.")),
 				@facet (
 						name = "z_far",
 						type = IType.FLOAT,

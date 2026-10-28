@@ -92,7 +92,7 @@ species tree_part parallel: true {
 	float alpha <- 0.0;
 	float beta <- 0.0;
 	float level <- 1.0;
-	list children <- nil;
+	list children <- [];
 	float energy <- 0.0;
 }
 

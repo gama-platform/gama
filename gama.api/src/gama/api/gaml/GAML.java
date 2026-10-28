@@ -454,10 +454,9 @@ public class GAML {
 			throw GamaRuntimeException.error("Enter a valid expression", a.getScope());
 		final IExpression expr = compileExpression(expression, a, true);
 		if (expr == null) return null;
-		final IScope scope = a.getScope().copy("in temporary expression evaluator");
-		final Object o = scope.evaluate(expr, a).getValue();
-		GAMA.releaseScope(scope);
-		return o;
+		try (IScope scope = a.getScope().copy("in temporary expression evaluator")) {
+			return scope.evaluate(expr, a).getValue();
+		}
 	}
 
 	/**
@@ -965,9 +964,10 @@ public class GAML {
 	 */
 	public static List<GamlCompilationError> validate(final String entered, final boolean syntaxOnly) {
 		List<GamlCompilationError> errors = new ArrayList<>();
-		if (entered.startsWith(IKeyword.MODEL)) {
+		final String construct = entered.stripLeading();
+		if (construct.startsWith(IKeyword.MODEL)) {
 			gamlTextValidator.validateModel(entered, errors, syntaxOnly);
-		} else if (entered.startsWith(IKeyword.SPECIES) || entered.startsWith(IKeyword.GRID)) {
+		} else if (construct.startsWith(IKeyword.SPECIES) || construct.startsWith(IKeyword.GRID)) {
 			gamlTextValidator.validateSpecies(entered, errors, syntaxOnly);
 		} else if (entered.lines().count() > 1) {
 			gamlTextValidator.validateStatements(entered, errors, syntaxOnly);
@@ -992,6 +992,15 @@ public class GAML {
 	 */
 	public static int[] getLocationInFileInfo(final EObject source) {
 		return gamlTextValidator.getStartLineAndOffsetInFileInfo(source);
+	}
+
+	/**
+	 * Returns a source position captured before the containing resource is discarded.
+	 * Returns an unknown position for source-less diagnostics or before the text validator is registered.
+	 */
+	public static GamlCompilationError.Location getSourceLocation(final EObject source) {
+		return source == null || gamlTextValidator == null ? GamlCompilationError.Location.UNKNOWN
+				: gamlTextValidator.getSourceLocation(source);
 	}
 
 }

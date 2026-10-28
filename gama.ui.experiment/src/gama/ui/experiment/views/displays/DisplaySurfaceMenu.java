@@ -265,7 +265,7 @@ public class DisplaySurfaceMenu {
 			fill(menu, -1, true, byLayer, agents, actions);
 			// DEBUG.OUT("Making the menu visible");
 			menu.setVisible(true);
-			fixForLinux(menu, 10);
+			fixForLinux(menu, 10, cleanup);
 		});
 		fixForWindows(cleanup);
 	}
@@ -298,8 +298,10 @@ public class DisplaySurfaceMenu {
 	 *            the menu
 	 * @param retriesRemaining
 	 *            the retries remaining
+	 * @param cleanup
+	 *            the actions to do if the menu remains invisible
 	 */
-	private void fixForLinux(final Menu menu, final int retriesRemaining) {
+	private void fixForLinux(final Menu menu, final int retriesRemaining, final Runnable cleanup) {
 		if (!SystemInfo.isLinux()) return;
 		WorkbenchHelper.asyncRun(() -> {
 			if (!menu.isVisible() && retriesRemaining > 0) {
@@ -313,7 +315,9 @@ public class DisplaySurfaceMenu {
 				shell.dispose();
 				menu.getShell().forceActive();
 				menu.setVisible(true);
-				fixForLinux(menu, retriesRemaining - 1);
+				fixForLinux(menu, retriesRemaining - 1, cleanup);
+			} else if (!menu.isVisible() && cleanup != null) {
+				cleanup.run();
 			}
 		});
 	}

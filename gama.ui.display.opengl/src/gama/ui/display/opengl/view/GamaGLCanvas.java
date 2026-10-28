@@ -43,7 +43,6 @@ import com.jogamp.opengl.GLRunnable;
 
 import gama.api.runtime.SystemInfo;
 import gama.dev.DEBUG;
-import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.camera.IMultiListener;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.shared.bindings.IDelegateEventsToParent;
@@ -77,7 +76,7 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 	volatile boolean visible;
 
 	/** The monitor. */
-	private Monitor monitor;
+	private volatile Monitor monitor;
 
 	/** The renderer owning this canvas. */
 	private final IOpenGLRenderer renderer;
@@ -152,18 +151,23 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 			@Override
 			public void controlResized(final ControlEvent e) {
 				/* Detached views have no title! */
-				if (drawable == null || nativePeerJustCreated) return;
+				if (drawable == null) return;
 				if (SystemInfo.isMac() || SystemInfo.isWindows()) {
 					final var isDetached = parent.getShell().getText().length() == 0;
 					if (isDetached) {
 						if (!detached) {
 							// DEBUG.OUT("Reparenting because of detached");
-							reparentWindow();
+							// A peer that has never been shown (e.g. display opened directly in fullscreen) must not
+							// be reparented, but the transition is recorded so that re-attaching it reparents it
+							if (!nativePeerJustCreated) { reparentWindow(); }
 							detached = true;
 						}
 
 					} else if (detached) {
 						// DEBUG.OUT("Reparenting because of attached");
+						// Always reparent when coming back (e.g. exiting fullscreen), otherwise the native window
+						// stays blank on macOS. See #1214
+						nativePeerJustCreated = false;
 						reparentWindow();
 						detached = false;
 					}
@@ -253,18 +257,26 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 	 */
 	private void fixSurfaceScaleOnWindows() {
 		if (!SystemInfo.isWindows() || monitor == null) return;
-		final int zoom = monitor.getZoom();
-		if (zoom == 100) return;
-		final float scale = zoom / 100f;
 		WorkbenchHelper.asyncRun(() -> {
 			if (drawable != null && drawable.isNativeValid()) {
+				final float scale = monitor.getZoom() / 100f;
 				drawable.setSurfaceScale(new float[] { scale, scale });
 			}
 		});
 	}
 
 	@Override
-	public Monitor getMonitor() { return monitor; }
+	public Monitor getMonitor() {
+		// Reparenting into a fullscreen shell does not necessarily move or resize this control.
+		if (!isDisposed() && WorkbenchHelper.isDisplayThread()) {
+			final Monitor current = super.getMonitor();
+			if (!current.equals(monitor)) {
+				setMonitor(current);
+				fixSurfaceScaleOnWindows();
+			}
+		}
+		return monitor;
+	}
 
 	@Override
 	protected void checkWidget() {}
@@ -277,7 +289,7 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 	 *             the GL exception
 	 */
 	private GLCapabilities defineCapabilities() throws GLException {
-		final GLCapabilities cap = new GLCapabilities(OpenGL.PROFILE);
+		final GLCapabilities cap = new GLCapabilities(renderer.getOpenGLHelper().getProfile());
 		cap.setDepthBits(24);
 		cap.setDoubleBuffered(true);
 		cap.setHardwareAccelerated(true);

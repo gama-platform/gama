@@ -2519,6 +2519,7 @@ public class Dates {
 			concept = { IConcept.STRING, IConcept.CAST, IConcept.TIME })
 	@doc (
 			value = "converts a date to astring following a custom pattern. The pattern can use \"%Y %M %N %D %E %h %m %s %z\" for outputting years, months, name of month, days, name of days, hours, minutes, seconds and the time-zone. A null or empty pattern will return the complete date as defined by the ISO date & time format. The pattern can also follow the pattern definition found here, which gives much more control over the format of the date: https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html#patterns. Different patterns are available by default as constants: #iso_local, #iso_simple, #iso_offset, #iso_zoned and #custom, which can be changed in the preferences",
+			special_cases = "An invalid Java formatting pattern reports a non-blocking error and falls back to GAMA's default date formatter. This uses the runtime scope rather than the caller's scope: do not rely on try/catch or is_error to validate patterns. Errors when applying a valid formatter to a date can still propagate.",
 			masterDoc = true,
 			usages = @usage (
 					value = "",
@@ -2577,6 +2578,7 @@ public class Dates {
 	@doc (
 			value = "converts a date to astring following a custom pattern and using a specific locale (e.g.: 'fr', 'en', etc.). The pattern can use \"%Y %M %N %D %E %h %m %s %z\" for outputting years, months, name of month, days, name of days, hours, minutes, seconds and the time-zone. A null or empty pattern will return the complete date as defined by the ISO date & time format. "
 					+ "The pattern can also follow the pattern definition found here, which gives much more control over the format of the date: https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html#patterns. Different patterns are available by default as constants: #iso_local, #iso_simple, #iso_offset, #iso_zoned and #custom, which can be changed in the preferences",
+			special_cases = "An invalid Java formatting pattern reports a non-blocking error and falls back to GAMA's default date formatter. This uses the runtime scope rather than the caller's scope: do not rely on try/catch or is_error to validate patterns. Errors when applying a valid formatter to a date can still propagate.",
 			usages = @usage (
 					value = "",
 					examples = @example (

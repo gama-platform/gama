@@ -16,18 +16,16 @@ import java.util.Map;
 
 import org.java_websocket.WebSocket;
 
-import gama.annotations.constants.IKeyword;
-import gama.api.constants.GamlFileExtension;
+import gama.api.exceptions.CommandException;
 import gama.api.exceptions.GamaCompilationFailedException;
 import gama.api.exceptions.GamaRuntimeException;
-import gama.api.types.list.IList;
-import gama.api.utils.server.CommandExecutor;
 import gama.api.utils.server.CommandResponse;
 import gama.api.utils.server.GamaWebSocketServer;
 import gama.api.utils.server.IGamaServer;
 import gama.api.utils.server.ISocketCommand;
 import gama.api.utils.server.MessageType;
 import gama.api.utils.server.ReceivedMessage;
+import gama.api.utils.server.ServerLoadRequest;
 import gama.dev.DEBUG;
 import gama.headless.core.GamaHeadlessException;
 import gama.headless.server.GamaServerExperimentJob;
@@ -42,13 +40,10 @@ import gama.headless.server.GamaServerExperimentJob;
 public class HeadlessLoadCommand implements ISocketCommand {
 	@Override
 	public CommandResponse execute(final IGamaServer server, final WebSocket socket, final ReceivedMessage map) {
-		final Object model = map.get(IKeyword.MODEL);
-		final Object experiment = map.get(IKeyword.EXPERIMENT);
-		if (model == null || experiment == null) return new CommandResponse(MessageType.MalformedRequest,
-				"For " + LOAD + ", mandatory parameters are: 'model' and 'experiment'", map, false);
 		try {
-			return launchGamlSimulation(server, socket, (IList) map.get(PARAMETERS),
-					map.get(UNTIL) != null ? map.get(UNTIL).toString() : "", map);
+			return launchGamlSimulation(server, socket, ServerLoadRequest.parse(socket, map), map);
+		} catch (CommandException e) {
+			return e.getResponse();
 		} catch (GamaCompilationFailedException compError) {
 			DEBUG.OUT(compError);
 			return new CommandResponse(MessageType.UnableToExecuteRequest, compError.toJsonString(), map, true);
@@ -66,10 +61,8 @@ public class HeadlessLoadCommand implements ISocketCommand {
 	 *            the gama web socket server
 	 * @param socket
 	 *            the socket
-	 * @param params
-	 *            the params
-	 * @param end
-	 *            the end
+	 * @param request
+	 *            the validated load options
 	 * @param map
 	 *            the map
 	 * @return the command response
@@ -80,39 +73,18 @@ public class HeadlessLoadCommand implements ISocketCommand {
 	 * @date 15 oct. 2023
 	 */
 	public CommandResponse launchGamlSimulation(final IGamaServer gamaWebSocketServer, final WebSocket socket,
-			final IList params, final String end, final Map<String, Object> map)
+			final ServerLoadRequest request, final Map<String, Object> map)
 			throws IOException, GamaCompilationFailedException {
 
-		final String pathToModel = map.get("model").toString();
 		final String socketId = map.get("socket_id") != null ? map.get("socket_id").toString()
 				: GamaWebSocketServer.getSocketId(socket);
-
-		File ff = new File(pathToModel);
-
-		if (!ff.exists()) {
-			DEBUG.OUT(ff.getAbsolutePath() + " does not exist");
-			return new CommandResponse(MessageType.UnableToExecuteRequest,
-					"'" + ff.getAbsolutePath() + "' does not exist", map, false);
-		}
-		if (!GamlFileExtension.isGaml(ff.getAbsoluteFile().toString())) {
-			DEBUG.OUT(ff.getAbsolutePath() + " is not a gaml file");
-			return new CommandResponse(MessageType.UnableToExecuteRequest,
-					"'" + ff.getAbsolutePath() + "' is not a gaml file", map, false);
-		}
-
-		final String argExperimentName = map.get("experiment").toString();
-
-		var console = map.get("console") != null ? Boolean.parseBoolean("" + map.get("console")) : true;
-		var status = map.get("status") != null ? Boolean.parseBoolean("" + map.get("status")) : false;
-		var dialog = map.get("dialog") != null ? Boolean.parseBoolean("" + map.get("dialog")) : false;
-		var runtime = map.get("runtime") != null ? Boolean.parseBoolean("" + map.get("runtime")) : true;
-
-		// we check that the parameters are properly formed
-		var parametersError = CommandExecutor.checkLoadParameters(params, map);
-		if (parametersError != null) return parametersError;
-
+		final File ff = request.model();
+		final String argExperimentName = request.experiment();
+		final var config = request.configuration();
+		final String end = request.until();
 		GamaServerExperimentJob selectedJob = new GamaServerExperimentJob(ff.getAbsoluteFile().toString(),
-				argExperimentName, socket, params, end, console, status, dialog, runtime);
+				argExperimentName, socket, request.parameters(), end, config.hasConsole(), config.hasStatus(),
+				config.hasDialog(), config.hasRuntime());
 		selectedJob.load();
 		// we check if the experiment is present in the file
 		if (selectedJob.simulator.getModel().getExperiment(argExperimentName) == null)
@@ -121,7 +93,6 @@ public class HeadlessLoadCommand implements ISocketCommand {
 					false);
 
 		if (selectedJob.controller.processOpen(true)) {
-			selectedJob.controller.getExperiment().setStopCondition(end);
 			gamaWebSocketServer.addExperiment(socketId, selectedJob.getExperimentID(),
 					selectedJob.controller.getExperiment());
 			gamaWebSocketServer.execute(selectedJob.controller.executionThread);

@@ -36,7 +36,9 @@ import gama.api.utils.json.IJsonValue;
 		@variable (
 				name = IKeyword.INTENSITY,
 				type = IType.FLOAT,
-				doc = @doc ("the intensity of the emotion (between 0 and 1)")),
+				doc = @doc ("the emotion intensity, conventionally in [0, 1]. Defaults to -1 when unspecified. "
+						+ "Constructors and intensity modifiers retain supplied values without range validation; "
+						+ "an explicitly supplied -1 is distinct from an omitted intensity internally.")),
 		@variable (
 				name = Emotion.ABOUT,
 				type = PredicateType.id,
@@ -44,7 +46,10 @@ import gama.api.utils.json.IJsonValue;
 		@variable (
 				name = Emotion.DECAY,
 				type = IType.FLOAT,
-				doc = @doc ("the decay value of the emotion")),
+				doc = @doc ("the amount subtracted from intensity at each emotion update, in intensity units per update "
+						+ "(not a fraction or a duration). Defaults to 0. Values are not range-checked: "
+						+ "negative decay increases intensity. Automatic personality-based decay includes the simulation "
+						+ "time step in seconds and the historical coefficient 0.00028 (approximately 1/3600).")),
 		@variable (
 				name = SimpleBdiArchitecture.AGENT_CAUSE,
 				type = IType.AGENT,
@@ -55,6 +60,7 @@ import gama.api.utils.json.IJsonValue;
 				doc = @doc ("the agent owning the emotion")) })
 public class Emotion implements IValue {
 	
+	static final double UNSPECIFIED_INTENSITY = -1.0;
 
 	/** The Constant DECAY. */
 	public static final String DECAY = "decay";
@@ -75,7 +81,7 @@ public class Emotion implements IValue {
 	String name;
 
 	/** The intensity. */
-	double intensity = -1.0;
+	double intensity = UNSPECIFIED_INTENSITY;
 
 	/** The about. */
 	Predicate about;

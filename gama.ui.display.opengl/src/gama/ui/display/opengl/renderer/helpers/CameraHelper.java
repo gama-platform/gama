@@ -14,10 +14,11 @@ import java.nio.FloatBuffer;
 import java.util.Collection;
 
 import com.jogamp.common.nio.Buffers;
+import com.jogamp.newt.event.InputEvent;
+import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2ES2;
 import com.jogamp.opengl.GLRunnable;
-import com.jogamp.opengl.glu.GLU;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
@@ -31,7 +32,7 @@ import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
 import gama.gaml.operators.Maths;
-import gama.ui.display.opengl.OpenGL;
+import gama.ui.display.opengl.IOpenGL;
 import gama.ui.display.opengl.camera.IMultiListener;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.shared.utils.ViewsHelper;
@@ -46,9 +47,6 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	static {
 		DEBUG.OFF();
 	}
-
-	/** The glu. */
-	private final GLU glu;
 
 	/** The initialized. */
 	protected boolean initialized;
@@ -131,7 +129,6 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	public CameraHelper(final IOpenGLRenderer renderer2) {
 		super(renderer2);
 		areArrowKeysRedefined = renderer2.getSurface().isArrowRedefined();
-		glu = new GLU();
 		applyPreset(data.getCameraName());
 		initialize();
 		update();
@@ -378,8 +375,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		double cp = Math.cos(pr);
 		up.setLocation(-Math.cos(tr) * cp, -Math.sin(tr) * cp, Math.sin(pr));
 		if (flipped) { up.negate(); }
-		glu.gluLookAt(position.getX(), position.getY(), position.getZ(), target.getX(), target.getY(), target.getZ(),
-				up.getX(), up.getY(), up.getZ());
+		getOpenGL().lookAt(position, target, up);
 	}
 
 	/*------------------ Events controls ---------------------*/
@@ -446,26 +442,13 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		});
 	}
 
-	/**
-	 * Checks if is control down.
-	 *
-	 * @param e
-	 *            the e
-	 * @return true, if is control down
-	 */
-	private boolean isControlDown(final com.jogamp.newt.event.MouseEvent e) {
-		return e.isControlDown() || SystemInfo.isMac() && e.isMetaDown();
+	/** Camera and display shortcuts use CMD on macOS, CTRL elsewhere. */
+	static boolean isControlDown(final InputEvent e) {
+		return SystemInfo.isMac() ? e.isMetaDown() : e.isControlDown();
 	}
 
-	/**
-	 * Checks if is control down.
-	 *
-	 * @param e
-	 *            the e
-	 * @return true, if is control down
-	 */
-	private boolean isControlDown(final com.jogamp.newt.event.KeyEvent e) {
-		return e.isControlDown() || SystemInfo.isMac() && e.isMetaDown();
+	static boolean isCameraModifierKey(final short key) {
+		return key == (SystemInfo.isMac() ? KeyEvent.VK_META : KeyEvent.VK_CONTROL);
 	}
 
 	@Override
@@ -751,11 +734,9 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 */
 	public void computeMouseLocationInTheWorld(final int mouse_x, final int mouse_y) {
 
-		OpenGL gl = renderer.getOpenGLHelper();
+		IOpenGL gl = renderer.getOpenGLHelper();
 		final double[] wcoord = new double[4];
-		final int[] viewport = gl.viewport;
-		final double mvmatrix[] = gl.mvmatrix;
-		final double projmatrix[] = gl.projmatrix;
+		final int[] viewport = gl.getViewport();
 		final int x = mouse_x;
 		final int y = viewport[3] - mouse_y;
 		pixelDepth.rewind();
@@ -765,7 +746,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		if (z == 1d || z == 0d) {
 			getWorldPositionFrom(GamaPointFactory.create(mouse_x, mouse_y), positionInTheWorld);
 		} else {
-			glu.gluUnProject(x, y, z, mvmatrix, 0, projmatrix, 0, viewport, 0, wcoord, 0);
+			gl.unproject(x, y, z, wcoord);
 			positionInTheWorld.setLocation(wcoord[0], wcoord[1], 0);
 		}
 	}
@@ -778,13 +759,13 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 */
 	public IPoint getWorldPositionFrom(final IPoint mouse, final IPoint result) {
 		final IPoint camLoc = getPosition();
-		OpenGL gl = renderer.getOpenGLHelper();
+		IOpenGL gl = renderer.getOpenGLHelper();
 		if (gl == null) return GamaPointFactory.create();
 		final double[] wcoord = new double[4];
-		final double x = (int) mouse.getX(), y = gl.viewport[3] - (int) mouse.getY();
-		glu.gluUnProject(x, y, 0.1, gl.mvmatrix, 0, gl.projmatrix, 0, gl.viewport, 0, wcoord, 0);
+		final double x = (int) mouse.getX(), y = gl.getViewport()[3] - (int) mouse.getY();
+		gl.unproject(x, y, 0.1, wcoord);
 		result.setLocation(wcoord[0], wcoord[1], wcoord[2]);
-		glu.gluUnProject(x, y, 0.9, gl.mvmatrix, 0, gl.projmatrix, 0, gl.viewport, 0, wcoord, 0);
+		gl.unproject(x, y, 0.9, wcoord);
 		result.setLocation(wcoord[0] - result.getX(), wcoord[1] - result.getY(), wcoord[2] - result.getZ()).normalize();
 		final double distance = camLoc.getZ() / -result.getZ();
 		return result.setLocation(result.getX() * distance + camLoc.getX(), result.getY() * distance + camLoc.getY(),
@@ -889,7 +870,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 						break;
 					case com.jogamp.newt.event.KeyEvent.VK_CONTROL, com.jogamp.newt.event.KeyEvent.VK_META:
 						// The press and release of these keys does not seem to work. Caught after
-						setCtrlPressed(!firsttimeMouseDown);
+						if (isCameraModifierKey(e.getKeySymbol())) { setCtrlPressed(!firsttimeMouseDown); }
 						break;
 				}
 				// setShiftPressed(e.isShiftDown());
@@ -923,7 +904,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 
 				switch (e.getKeyChar()) {
 					case 0:
-						setCtrlPressed(e.isControlDown() || SystemInfo.isMac() && e.isMetaDown());
+						setCtrlPressed(isControlDown(e));
 						setShiftPressed(e.isShiftDown());
 						break;
 					case '+':
@@ -1045,7 +1026,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		invokeOnGLThread(drawable -> {
 			if (!keystoneMode) {
 				if (e.getKeyChar() == 0) {
-					if (ctrlPressed) { setCtrlPressed(!isControlDown(e)); }
+					setCtrlPressed(!isCameraModifierKey(e.getKeySymbol()) && isControlDown(e));
 					if (shiftPressed) { setShiftPressed(!e.isShiftDown()); }
 					return true;
 				}
@@ -1065,7 +1046,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 						if (cameraInteraction) { goesBackward = false; }
 						break;
 					case com.jogamp.newt.event.KeyEvent.VK_CONTROL, com.jogamp.newt.event.KeyEvent.VK_META:
-						setCtrlPressed(false);
+						if (isCameraModifierKey(e.getKeySymbol())) { setCtrlPressed(false); }
 						break;
 					case com.jogamp.newt.event.KeyEvent.VK_SHIFT:
 						setShiftPressed(false);

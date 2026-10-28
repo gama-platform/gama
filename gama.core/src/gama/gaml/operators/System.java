@@ -156,6 +156,7 @@ public class System {
 			returns = "a {@code bool}: {@code true} if evaluating the expression raised a runtime error.",
 			special_cases = {
 					"is_error evaluates the expression in a try-catch manner; if an error is raised, it returns true without propagating the error.",
+					"Only thrown failures are detected. This operator does not enable GAML try mode, force report-only recovery paths to throw, or itself update #current_error. Evaluating the expression can have side effects.",
 					"is_error(1/0) = true (integer division by zero is an error in GAML)." })
 	@tests ({
 			@test ("!is_error(1.0 = 1)"),
@@ -188,7 +189,8 @@ public class System {
 			concept = IConcept.TEST)
 	@doc (
 			value = "Returns whether or not the argument raises a warning when evaluated",
-			returns = "a {@code bool}: {@code true} if evaluating the expression produced a runtime warning.")
+			returns = "a {@code bool}: {@code true} if evaluating the expression threw a runtime warning.",
+			special_cases = "Only thrown warnings are detected. This operator does not enable GAML try mode, force reported warnings to throw, or itself update #current_error. Evaluating the expression can have side effects.")
 	@test ("is_warning(1.0 = 1) = false")
 	public static Boolean is_warning(final IScope scope, final IExpression expr) {
 		try {

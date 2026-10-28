@@ -26,10 +26,13 @@ public final class EmbeddedActionBody implements ActionWizard.BodyEditor {
 
 	private final EmbeddedEditor editor;
 	private final EmbeddedEditorModelAccess access;
+	private final ActionBodyContext context;
 
-	private EmbeddedActionBody(final EmbeddedEditor editor, final EmbeddedEditorModelAccess access) {
+	private EmbeddedActionBody(final EmbeddedEditor editor, final EmbeddedEditorModelAccess access,
+			final ActionBodyContext context) {
 		this.editor = editor;
 		this.access = access;
+		this.context = context;
 	}
 
 	/**
@@ -54,7 +57,7 @@ public final class EmbeddedActionBody implements ActionWizard.BodyEditor {
 	static EmbeddedActionBody create(final EmbeddedEditor editor, final ActionBodyContext context, final String initial) {
 		// Xtext's visible region is line-based: keep both hidden boundaries on separate lines, even for an empty body.
 		var access = editor.createPartialEditor(context.prefix(), initial, context.suffix(), true);
-		return new EmbeddedActionBody(editor, access);
+		return new EmbeddedActionBody(editor, access, context);
 	}
 
 	@Override
@@ -62,6 +65,9 @@ public final class EmbeddedActionBody implements ActionWizard.BodyEditor {
 
 	@Override
 	public String text() { return access.getEditablePart(); }
+
+	@Override
+	public void setText(final String value) { access.updateModel(context.prefix(), value, context.suffix()); }
 
 	@Override
 	public void setEnabled(final boolean enabled) {

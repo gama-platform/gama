@@ -32,7 +32,7 @@ import gama.api.runtime.scope.IScope;
 public class IAgentSerialiser implements IGamaObjectSerializer<IAgent> {
 
 	/**
-	 * Returns {@code false}: agents are not registered for FST back-reference tracking.
+	 * Returns {@code false}: agents are not registered for back-reference tracking.
 	 *
 	 * @return {@code false}
 	 */
@@ -49,7 +49,7 @@ public class IAgentSerialiser implements IGamaObjectSerializer<IAgent> {
 	 * nesting.
 	 *
 	 * @param out
-	 *            the FST output stream
+	 *            the binary output stream
 	 * @param o
 	 *            the agent to serialise
 	 * @throws Exception
@@ -80,7 +80,7 @@ public class IAgentSerialiser implements IGamaObjectSerializer<IAgent> {
 	 * @param scope
 	 *            the current GAMA simulation scope
 	 * @param in
-	 *            the FST input stream
+	 *            the binary input stream
 	 * @return the deserialised {@link IAgent}
 	 * @throws Exception
 	 *             if deserialisation fails

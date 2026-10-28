@@ -51,9 +51,9 @@ import gama.api.constants.GamlFileExtension;
 import gama.dev.DEBUG;
 import gama.ui.navigator.view.contents.VirtualContent;
 import gama.ui.navigator.view.contents.WrappedGamaFile;
-import gama.ui.shared.controls.SwitchButton;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.IGamaColors;
+import gama.ui.shared.utils.PreferencesHelper;
 import gama.ui.shared.views.toolbar.GamaToolbarSimple;
 
 /**
@@ -79,6 +79,8 @@ public class NavigatorSearchControl {
 			final Long stamp = bodyMatches.get(resource);
 			return stamp != null && resource.isAccessible() && stamp == resource.getModificationStamp();
 		}
+		if (appliedModelsOnly && (!(o instanceof WrappedGamaFile file)
+				|| !GamlFileExtension.isAny(file.getResource().getName()))) return false;
 		if (!(o instanceof VirtualContent<?> content)) return false;
 		return switch (content.getType()) {
 			case FILE, FOLDER, PROJECT, VIRTUAL_FOLDER ->
@@ -96,11 +98,15 @@ public class NavigatorSearchControl {
 		/** The already selected. */
 		Set<VirtualContent<?>> alreadySelected = new HashSet<>();
 
+		/** Files and containers already rejected (their result does not depend on the caller). */
+		Set<VirtualContent<?>> alreadyRejected = new HashSet<>();
+
 		/**
 		 * Reset.
 		 */
 		public void reset() {
 			alreadySelected.clear();
+			alreadyRejected.clear();
 		}
 
 		/**
@@ -125,9 +131,14 @@ public class NavigatorSearchControl {
 		private boolean select(final VirtualContent<?> element, final boolean b) {
 			if (appliedBody && element instanceof WrappedGamaFile) return shouldSelect(element);
 			if (alreadySelected.contains(element)) return true;
+			if (alreadyRejected.contains(element)) return false;
 			if (internalSelect(element, b)) {
 				alreadySelected.add(element);
 				return true;
+			}
+			switch (element.getType()) {
+				case FILE, FOLDER, PROJECT, ROOT, VIRTUAL_FOLDER -> alreadyRejected.add(element);
+				default -> {}
 			}
 			return false;
 		}
@@ -143,7 +154,8 @@ public class NavigatorSearchControl {
 		 */
 		private boolean internalSelect(final VirtualContent<?> element, final boolean considerVirtualContent) {
 			if (appliedPattern.isEmpty()) return true;
-			if (!appliedBody) {
+			// Containers never match a models-only search, so walking up the parents is useless.
+			if (!appliedBody && !appliedModelsOnly) {
 				if (shouldSelect(element)) return true;
 				for (VirtualContent<?> parent = element.getParent(); parent != null; parent = parent.getParent()) {
 					switch (parent.getType()) {
@@ -158,6 +170,9 @@ public class NavigatorSearchControl {
 			switch (element.getType()) {
 				case FILE:
 					if (shouldSelect(element)) return true;
+					if (appliedModelsOnly && !(element instanceof WrappedGamaFile file
+							&& GamlFileExtension.isAny(file.getResource().getName())))
+						return false;
 					if (!appliedBody) {
 						for (final Object child : element.getNavigatorChildren()) {
 							if (child instanceof VirtualContent<?> content
@@ -196,14 +211,11 @@ public class NavigatorSearchControl {
 	/** The applied pattern. */
 	private String appliedPattern = "";
 
-	/** The search body. */
-	private boolean searchBody;
-
 	/** The applied body. */
 	private boolean appliedBody;
 
-	/** The mode. */
-	private SwitchButton mode;
+	/** The applied model-file restriction. */
+	private boolean appliedModelsOnly;
 
 	/** The search generation. */
 	private volatile long searchGeneration;
@@ -273,7 +285,7 @@ public class NavigatorSearchControl {
 
 		final Composite parent = new Composite(toolbar, SWT.NONE);
 		final Color c = toolbar.getBackground();
-		final GridLayout layout = new GridLayout(2, false);
+		final GridLayout layout = new GridLayout(1, false);
 		layout.marginWidth = 0;
 		layout.marginHeight = 0;
 		// layout.horizontalSpacing = 4;
@@ -285,25 +297,14 @@ public class NavigatorSearchControl {
 		final GridData data = new GridData(SWT.FILL, SWT.CENTER, true, false);
 		data.widthHint = 120;
 		find.setLayoutData(data);
-		mode = new SwitchButton(parent, SWT.CHECK, IGamaColors.NICE.color(), IGamaColors.NICE.color(),
-				new String[] { "Title", "Body" });
-		mode.setBackground(c);
-		mode.setSelection(true);
-		mode.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-		mode.setToolTipText("Title: search file, folder, group and project names, and model tags. "
-				+ "Body: search saved model source, including comments "
-				+ "(case-insensitive; unsaved editor changes are not searched).");
-		mode.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
-			searchBody = !mode.getSelection();
-			scheduleSearch(200);
-		}));
 		toolbar.control(parent, SWT.DEFAULT);
 
 		final IFocusService focusService = navigator.getSite().getService(IFocusService.class);
 		focusService.addFocusTracker(find, "search");
 
 		find.setMessage(EMPTY);
-		find.setToolTipText("Search file and folder names and model tags (Title) or saved model source (Body).");
+		find.setToolTipText("Search file and folder names and model tags, or saved model source "
+				+ "(see 'Search in...' in the view menu).");
 
 		find.addModifyListener(modifyListener);
 		find.addSelectionListener(SelectionListener.widgetDefaultSelectedAdapter(e -> {
@@ -328,6 +329,13 @@ public class NavigatorSearchControl {
 		});
 
 		return this;
+	}
+
+	/**
+	 * Re-runs the current search after the search options have changed.
+	 */
+	public void searchOptionsChanged() {
+		if (find != null && !find.isDisposed()) { scheduleSearch(0); }
 	}
 
 	/** The modify listener. */
@@ -361,7 +369,8 @@ public class NavigatorSearchControl {
 		}
 		final long generation = searchGeneration;
 		final String query = pattern;
-		final boolean body = searchBody;
+		final boolean body = !PreferencesHelper.NAVIGATOR_SEARCH_TITLES.getValue();
+		final boolean onlyModels = !body && PreferencesHelper.NAVIGATOR_SEARCH_MODELS_ONLY.getValue();
 		final var display = find.getDisplay();
 		if (body) {
 			pendingSearch = new Job("Search saved model source") {
@@ -393,7 +402,7 @@ public class NavigatorSearchControl {
 					}
 					if (monitor.isCanceled() || generation != searchGeneration) return Status.CANCEL_STATUS;
 					if (!display.isDisposed()) {
-						display.asyncExec(() -> applySearch(query, true, matches, generation));
+						display.asyncExec(() -> applySearch(query, true, onlyModels, matches, generation));
 					}
 					return Status.OK_STATUS;
 				}
@@ -402,7 +411,7 @@ public class NavigatorSearchControl {
 			pendingSearch = new UIJob(display, "Search navigator titles") {
 				@Override
 				public IStatus runInUIThread(final IProgressMonitor monitor) {
-					if (!monitor.isCanceled()) { applySearch(query, false, Map.of(), generation); }
+					if (!monitor.isCanceled()) { applySearch(query, false, onlyModels, Map.of(), generation); }
 					return Status.OK_STATUS;
 				}
 			};
@@ -466,13 +475,14 @@ public class NavigatorSearchControl {
 	 * @param generation
 	 *            the generation
 	 */
-	private void applySearch(final String query, final boolean body, final Map<IFile, Long> matches,
-			final long generation) {
+	private void applySearch(final String query, final boolean body, final boolean onlyModels,
+			final Map<IFile, Long> matches, final long generation) {
 		if (generation != searchGeneration || find.isDisposed() || treeViewer == null
 				|| treeViewer.getControl().isDisposed())
 			return;
 		appliedPattern = query;
 		appliedBody = body;
+		appliedModelsOnly = onlyModels;
 		bodyMatches = matches;
 		refreshSearch();
 	}
@@ -510,7 +520,7 @@ public class NavigatorSearchControl {
 		cancelSearch();
 		appliedPattern = "";
 		bodyMatches = Map.of();
-		filter.alreadySelected.clear();
+		filter.reset();
 		if (treeViewer == null || treeViewer.getControl().isDisposed()) return;
 		treeViewer.getControl().setRedraw(false);
 		try {
@@ -537,8 +547,7 @@ public class NavigatorSearchControl {
 	 */
 	public void searchFor(final String name) {
 		// Tags in the navigator always initiate a title/tag search, even after a Body search.
-		searchBody = false;
-		mode.setSelection(true);
+		PreferencesHelper.NAVIGATOR_SEARCH_TITLES.set(true).save();
 		find.setText(name);
 		pattern = name.toLowerCase(Locale.ROOT);
 		doSearch();

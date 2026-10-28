@@ -150,6 +150,7 @@ public class GamlResourceIndexer {
 			if (!existingEdges.containsKey(uri) || !Objects.equals(existingEdges.get(uri), label)) {
 				// Validate URI before graph modification
 				if (!EcoreUtil2.isValidUri(r, uri)) return findImport(contents, baseURI, uri);
+				existingEdges.remove(uri);
 
 				// Only synchronize graph modifications
 				final boolean alreadyThere;

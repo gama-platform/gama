@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.PriorityQueue;
 import java.util.Set;
 
@@ -151,31 +152,35 @@ public final class NBAStarPathfinder<V, E> {
 			// Reject the 'currentNode'.
 		} else {
 			// Stabilize the 'currentNode'.
-			for (int direction = 0; direction < (graph.isDirected() ? 1 : 2); direction++) {
-				final Collection<Object> edges = direction == 0 ? cv.getOutEdges() : cv.getInEdges();
-				for (final Object edge : edges) {
-					final _Edge<V, E> eg = graph.getEdge(edge);
-					final V childNode = (V) (graph.isDirected() ? eg.getTarget()
-							: eg.getTarget().equals(currentNode) ? eg.getSource() : eg.getTarget());
-					if (CLOSED.contains(childNode)) { continue; }
-					final double tentativeDistance = DISTANCEA.get(currentNode) + eg.getWeight();
-					Double distanceAChild = DISTANCEA.get(childNode);
-					if (distanceAChild == null || distanceAChild > tentativeDistance) {
+			Collection<Object> edges = null;
+			if (graph.isDirected()) {
+				edges = cv.getOutEdges();
+			} else {
+				edges = new ArrayList<>(cv.getOutEdges());
+				edges.addAll(cv.getInEdges());
+			}
+			for (final Object edge : edges) {
+				final _Edge<V, E> eg = graph.getEdge(edge);
+				final V childNode = (V) (graph.isDirected() ? eg.getTarget()
+						: eg.getTarget().equals(currentNode) ? eg.getSource() : eg.getTarget());
+				if (CLOSED.contains(childNode)) { continue; }
+				final double tentativeDistance = DISTANCEA.get(currentNode) + eg.getWeight();
+				Double distanceAChild = DISTANCEA.get(childNode);
+				if (distanceAChild == null || distanceAChild > tentativeDistance) {
 
-						DISTANCEA.put(childNode, tentativeDistance);
-						PARENTSA.put(childNode, currentNode);
-						final HeapEntry<V> e = new HeapEntry<>(childNode,
-								tentativeDistance + estimateDistanceBetween(childNode, targetNode));
-						OPENA.add(e);
+					DISTANCEA.put(childNode, tentativeDistance);
+					PARENTSA.put(childNode, currentNode);
+					final HeapEntry<V> e = new HeapEntry<>(childNode,
+							tentativeDistance + estimateDistanceBetween(childNode, targetNode));
+					OPENA.add(e);
 
-						Double distanceBChild = DISTANCEB.get(childNode);
-						if (distanceBChild != null) {
-							final double pathLength = tentativeDistance + distanceBChild;
-							if (bestPathLength > pathLength) {
-								bestPathLength = pathLength;
-								touchNode = childNode;
-								if (stopWhenPathFound) return;
-							}
+					Double distanceBChild = DISTANCEB.get(childNode);
+					if (distanceBChild != null) {
+						final double pathLength = tentativeDistance + distanceBChild;
+						if (bestPathLength > pathLength) {
+							bestPathLength = pathLength;
+							touchNode = childNode;
+							if (stopWhenPathFound) return;
 						}
 					}
 				}
@@ -205,37 +210,41 @@ public final class NBAStarPathfinder<V, E> {
 						- estimateDistanceBetween(currentNode, targetNode) >= bestPathLength) {
 			// Reject the node 'currentNode'.
 		} else {
-			for (int direction = 0; direction < (graph.isDirected() ? 1 : 2); direction++) {
-				final Collection<Object> edges = direction == 0 ? cv.getInEdges() : cv.getOutEdges();
-				for (final Object edge : edges) {
-					final _Edge<V, E> eg = graph.getEdge(edge);
-					final V parentNode = (V) (graph.isDirected() ? eg.getSource()
-							: eg.getSource().equals(currentNode) ? eg.getTarget() : eg.getSource());
-					if (CLOSED.contains(parentNode)) { continue; }
+			Collection<Object> edges = null;
+			if (graph.isDirected()) {
+				edges = cv.getInEdges();
+			} else {
+				edges = new ArrayList<>(cv.getInEdges());
+				edges.addAll(cv.getOutEdges());
+			}
+			for (final Object edge : edges) {
+				final _Edge<V, E> eg = graph.getEdge(edge);
+				final V parentNode = (V) (graph.isDirected() ? eg.getSource()
+						: eg.getSource().equals(currentNode) ? eg.getTarget() : eg.getSource());
+				if (CLOSED.contains(parentNode)) { continue; }
 
-					final double tentativeDistance = DISTANCEB.get(currentNode) + eg.getWeight();
-					Double distanceBParent = DISTANCEB.get(parentNode);
-					if (distanceBParent == null || distanceBParent > tentativeDistance) {
-						DISTANCEB.put(parentNode, tentativeDistance);
-						PARENTSB.put(parentNode, currentNode);
-						final HeapEntry<V> e = new HeapEntry<>(parentNode,
-								tentativeDistance + estimateDistanceBetween(parentNode, sourceNode));
-						OPENB.add(e);
+				final double tentativeDistance = DISTANCEB.get(currentNode) + eg.getWeight();
+				Double distanceBParent = DISTANCEB.get(parentNode);
+				if (distanceBParent == null || distanceBParent > tentativeDistance) {
+					DISTANCEB.put(parentNode, tentativeDistance);
+					PARENTSB.put(parentNode, currentNode);
+					final HeapEntry<V> e = new HeapEntry<>(parentNode,
+							tentativeDistance + estimateDistanceBetween(parentNode, sourceNode));
+					OPENB.add(e);
 
-						Double distanceAParent = DISTANCEA.get(parentNode);
-						if (distanceAParent != null) {
-							final double pathLength = tentativeDistance + distanceAParent;
+					Double distanceAParent = DISTANCEA.get(parentNode);
+					if (distanceAParent != null) {
+						final double pathLength = tentativeDistance + distanceAParent;
 
-							if (bestPathLength > pathLength) {
-								bestPathLength = pathLength;
-								touchNode = parentNode;
+						if (bestPathLength > pathLength) {
+							bestPathLength = pathLength;
+							touchNode = parentNode;
 
-								if (stopWhenPathFound) return;
-							}
+							if (stopWhenPathFound) return;
 						}
 					}
-
 				}
+
 			}
 		}
 
@@ -302,20 +311,14 @@ public final class NBAStarPathfinder<V, E> {
 		}
 		final IList<E> edgePath = GamaListFactory.create();
 		V cn = path.get(0);
-		Map<V, _Vertex<V, E>> equalVertices = null;
 		for (int i = 1; i < path.size(); i++) {
 			final V tn = path.get(i);
 			_Vertex<V, E> vcn = vertices.get(cn);
 			if (vcn == null) {
-				if (equalVertices == null) {
-					equalVertices = new HashMap<>();
-					// Keep identity matches preferred, and the first equal key in identity-map iteration order.
-					for (final V vertex : vertices.keySet()) {
-						equalVertices.putIfAbsent(vertex, vertices.get(vertex));
-					}
-				}
-				vcn = equalVertices.get(cn);
-				if (vcn == null) return edgePath;
+				final V cn2 = cn;
+				final Optional<V> ocn = vertices.keySet().stream().filter(a -> a.equals(cn2)).findFirst();
+				if (!ocn.isPresent()) return edgePath;
+				vcn = vertices.get(ocn.get());
 			}
 			final List<E> edges = new ArrayList<E>(vcn.edgesTo(tn));
 			if (!graph.isDirected()) { edges.addAll(vertices.get(tn).edgesTo(cn)); }

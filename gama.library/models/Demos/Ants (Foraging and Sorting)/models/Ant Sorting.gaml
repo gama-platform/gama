@@ -81,13 +81,13 @@ grid ant_grid width: width_and_height_of_grid height: width_and_height_of_grid n
 
 experiment "Color sort" type: gui {
 	parameter "Number of colors:" var: number_of_different_colors category: "Environment";
-	parameter "Density of colors:" var: density_percent category: "Environment";
+	parameter "Density of colors:" var: density_percent category: "Environment" unit: "%";
 	parameter "Number of similar colors in memory necessary to put down:" var: number_of_objects_in_history category: "Agents";
 	parameter "Number of similar colors in perception necessary to pick up:" var: number_of_objects_around category: "Agents";
 	parameter "Width and height of the grid:" var: width_and_height_of_grid category: "Environment";
 	parameter "Number of agents:" var: ants category: "Agents";
 	output synchronized: false {
-		display view type: 3d antialias: true {
+		display view type: 3d antialias: false {
 			grid ant_grid;
 			species ant transparency: 0.05;
 		}

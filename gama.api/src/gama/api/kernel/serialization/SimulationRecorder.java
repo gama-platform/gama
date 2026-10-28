@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * SimulationRecorder.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and
- * simulation platform (v.2025-03).
+ * SimulationRecorder.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -10,15 +10,14 @@
  ********************************************************************************************************/
 package gama.api.kernel.serialization;
 
-import java.util.LinkedList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 import gama.api.constants.ISerialisationConstants;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.serialization.SimulationHistory.SimulationHistoryNode;
-import gama.api.kernel.simulation.ISimulationRecorder;
 import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.kernel.simulation.ISimulationRecorder;
 import gama.dev.DEBUG;
 
 /**
@@ -115,11 +114,9 @@ public class SimulationRecorder implements ISimulationRecorder, ISerialisationCo
 		final ReentrantLock l = lockFor(sim);
 		l.lock();
 		try {
-			LinkedList<SimulationHistoryNode> history = getSimulationHistory(sim);
-			// poll() rather than pop(), as the history may be shorter than expected.
-			SimulationHistoryNode node = history.poll();
-			// The state recorded at the end of the current cycle is the one we are already in: skip it.
-			if (node != null && node.cycle() == sim.getClock().getCycle()) { node = history.poll(); }
+			SimulationHistory history = getSimulationHistory(sim);
+			// Keep the restored state so it remains available after the simulation resumes.
+			SimulationHistoryNode node = history.previousState(sim.getClock().getCycle());
 			if (node == null) {
 				DEBUG.ERR("Step back: nothing left in the history of " + sim);
 				return false;

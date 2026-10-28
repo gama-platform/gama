@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import org.eclipse.ui.progress.UIJob;
 
+import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.ui.IStatusControl;
 import gama.api.ui.IStatusDisplayer;
@@ -37,6 +38,7 @@ import gama.api.ui.IStatusMessage;
 import gama.api.ui.IStatusMessage.StatusType;
 import gama.dev.DEBUG;
 import gama.ui.application.workbench.ThemeHelper;
+import gama.ui.shared.dialogs.ExceptionDetailsDialog;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
 import gama.ui.shared.resources.GamaIcon;
@@ -102,8 +104,10 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 		@Override
 		public IStatus runInUIThread(final IProgressMonitor monitor) {
 			if (label == null || label.isDisposed()) return Status.CANCEL_STATUS;
+			if (currentStatus == StatusType.ERROR) return Status.OK_STATUS;
 			label.setImageWithoutRecomputingSize(GamaIcon.named(IStatusMessage.IDLE_ICON).image());
 			label.setTextWithoutRecomputingSize(getRunningTaskSummary());
+			label.setToolTipText(null);
 			return Status.OK_STATUS;
 		}
 	};
@@ -154,7 +158,22 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 
 			@Override
 			public void mouseDown(final MouseEvent e) {
-
+				if (currentException != null && e.button == 3) {
+					showErrorDetails(currentException);
+					return;
+				}
+				if (e.button != 1) return;
+				if (currentException != null && e.x < label.getSize().x - FlatButton.MENU_BOUNDS.width - 8) {
+					historyPopup.hide();
+					if (currentException.getEditorContext() == null) {
+						showErrorDetails(currentException);
+						return;
+					}
+					GAMA.getGui().getModelsManager().editModel(currentException.getEditorContext());
+					updateWith(null);
+					idleJob.schedule();
+					return;
+				}
 				if (historyPopup.isVisible()) {
 					historyPopup.hide();
 				} else {
@@ -205,24 +224,12 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 			public void sleeping(final IJobChangeEvent event) {}
 		});
 
-		// label.addMouseListener(new MouseAdapter() {
-		//
-		// @Override
-		// public void mouseDown(final MouseEvent e) {
-		//
-		// if (currentStatus == StatusType.ERROR) {
-		// if (historyPopup.isVisible()) {
-		// historyPopup.hide();
-		// } else {
-		// WorkbenchHelper.asyncRun(() ->
-		// historyPopup.display(currentException));
-		// }
-		// }
-		//
-		// }
-		//
-		// });
 		return compo;
+	}
+
+	void showErrorDetails(final GamaRuntimeException error) {
+		new ExceptionDetailsDialog(getControllingShell(), "Runtime error", null, error.getMessage(),
+				new Status(IStatus.ERROR, "gama.ui.shared", error.getAllText(), error)).open();
 	}
 
 	private static boolean isUserVisibleJob(final Job job, final String name) {
@@ -242,7 +249,7 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 	}
 
 	@Override
-	public boolean isDisposed() { return label.isDisposed(); }
+	public boolean isDisposed() { return label == null || label.isDisposed(); }
 
 	/**
 	 * Gets the controlling shell.
@@ -294,29 +301,39 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 		if (isUpdating) return;
 		isUpdating = true;
 		try {
+			if (m != null && m.type() != StatusType.NONE) {
+				historyPopup.addStatus(m);
+				if (historyPopup.isVisible()) { historyPopup.display(); }
+			}
+			// Background jobs and experiment disposal must not hide an unacknowledged error.
+			if (currentStatus == StatusType.ERROR && m != null && !m.isError()) return;
+			idleJob.cancel();
 			if (m == null) {
 				taskCompletion = null;
 				currentException = null;
 				currentStatus = StatusType.NONE;
 				label.setColor(inactiveColor);
+				label.setTextColor(null);
 				label.setTextWithoutRecomputingSize("");
 				label.setImageWithoutRecomputingSize(null);
+				label.setToolTipText(null);
 			} else {
 				taskCompletion = m.completion();
 				currentException = m.exception();
 				currentStatus = m.type();
-				String icon = iconProvider.getIcon();
+				String icon = m.isError() ? m.icon() : iconProvider.getIcon();
 				label.setImageWithoutRecomputingSize(icon == null ? null : GamaIcon.named(icon).image());
-				// label.setColor(getLabelBackground(m));
+				label.setColor(inactiveColor);
+				label.setTextColor(m.isError() ? GamaColors.get(m.color()) : null);
 				label.setTextWithoutRecomputingSize(getLabelText(m));
-				if (currentStatus != StatusType.NONE) {
-					this.historyPopup.addStatus(m);
-					if (historyPopup.isVisible()) { historyPopup.display(); }
-				}
+				label.setToolTipText(currentException == null ? m.message()
+						: currentException.getAllText()
+								+ "\n\nClick to open the problem in the editor. Right-click for error details."
+								+ "\nUse the arrow to show status history.");
 			}
 		} finally {
 			isUpdating = false;
-			idleJob.schedule(2000);
+			if (currentStatus != StatusType.ERROR) { idleJob.schedule(2000); }
 		}
 
 	}

@@ -302,9 +302,9 @@ public class GamaPopulation<T extends IAgent> extends AbstractPopulation<T> {
 			final IAgent a = agents.get(i);
 			inits = empty ? EMPTY_MAP : initialValues.get(i);
 			for (final IVariable var : orderedVars) {
-				final Object initGet =
-						empty || !allowVarInitToBeOverridenByExternalInit(var) ? null : inits.get(var.getName());
-				var.initializeWith(scope, a, initGet);
+				final boolean provided = !empty && allowVarInitToBeOverridenByExternalInit(var)
+						&& inits.containsKey(var.getName());
+				var.initializeWith(scope, a, provided ? inits.get(var.getName()) : null, provided);
 			}
 			// Added to fix #3266 -- saves the values of the "extra" attributes found in the files
 			if (!empty) {

@@ -20,12 +20,14 @@ import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 import gama.api.ui.layers.IDrawingAttributes;
 import gama.dev.DEBUG;
 import gama.ui.display.opengl4.OpenGL;
-import gama.ui.display.opengl4.renderer.IOpenGLRenderer;
+import gama.ui.display.opengl.renderer.IOpenGLRenderer;
+import gama.ui.display.opengl.renderer.helpers.CameraHelper;
 
 /**
  * The Class PickingHelper.
  */
-public class PickingHelper extends AbstractRendererHelper {
+public class PickingHelper extends AbstractRendererHelper
+		implements gama.ui.display.opengl.renderer.helpers.IPickingHelper {
 
 	static {
 		DEBUG.OFF();

@@ -30,7 +30,7 @@ public class IClassSerialiser implements IGamaObjectSerializer<IClass> {
 	 * Serialises the class name.
 	 *
 	 * @param out
-	 *            the FST output stream
+	 *            the binary output stream
 	 * @param o
 	 *            the class to serialise
 	 * @throws Exception
@@ -48,7 +48,7 @@ public class IClassSerialiser implements IGamaObjectSerializer<IClass> {
 	 * @param scope
 	 *            the current GAMA simulation scope
 	 * @param in
-	 *            the FST input stream
+	 *            the binary input stream
 	 * @return the resolved {@link IClass}
 	 * @throws Exception
 	 *             if deserialisation fails

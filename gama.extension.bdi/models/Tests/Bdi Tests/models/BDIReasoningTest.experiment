@@ -34,7 +34,46 @@ species social_agent control: simple_bdi {
 	bool use_social_architecture <- true;
 }
 
+species parallel_thought_agent control: parallel_bdi {}
+
 experiment BDIReasoningTest type: test autorun: true {
+
+	test "Thought-history capacity" {
+		create reasoning_agent returns: created_agents;
+		reasoning_agent ag <- created_agents[0];
+		assert ag.thinking_capacity = 5;
+		ask ag {
+			thinking <- ["newest", "previous", "oldest"];
+			list old_thinking <- thinking;
+			thinking_capacity <- 2;
+			assert thinking = ["newest", "previous"];
+			assert old_thinking = ["newest", "previous", "oldest"];
+			thinking_capacity <- 10;
+			assert thinking = ["newest", "previous"];
+			thinking_capacity <- 0;
+			assert empty(thinking);
+			do _step_();
+			assert empty(thinking);
+			thinking_capacity <- 1;
+			do _step_();
+			assert length(thinking) = 1;
+		}
+		ask created_agents { do die(); }
+	}
+
+	test "Parallel BDI inherits thought-history capacity" {
+		create parallel_thought_agent returns: created_agents;
+		parallel_thought_agent ag <- created_agents[0];
+		assert ag.thinking_capacity = 5;
+		ask ag {
+			thinking <- ["newest", "oldest"];
+			thinking_capacity <- 1;
+			assert thinking = ["newest"];
+			thinking_capacity <- 0;
+			assert empty(thinking);
+		}
+		ask created_agents { do die(); }
+	}
 
 	test "Predicates" {
 		predicate plain <- new_predicate("p");

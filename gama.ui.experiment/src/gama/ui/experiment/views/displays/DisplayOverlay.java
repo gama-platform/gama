@@ -191,7 +191,6 @@ public class DisplayOverlay {
 		@Override
 		public void run() {
 			WorkbenchHelper.asyncRun(() -> { if (!zoom.isDisposed()) { zoom.redraw(); } });
-
 		}
 	}
 
@@ -460,9 +459,9 @@ public class DisplayOverlay {
 		final long t3 = System.currentTimeMillis();
 		final boolean wasVisible = popup.isVisible();
 		if (!wasVisible) { popup.setVisible(true); }
-		DEBUG.OUT("[DisplayOverlay.display] update=" + (t1 - t0) + "ms relocate=" + (t2 - t1) + "ms resize="
-				+ (t3 - t2) + "ms setVisible=" + (System.currentTimeMillis() - t3) + "ms (wasVisible=" + wasVisible
-				+ ") total=" + (System.currentTimeMillis() - t0) + "ms");
+		DEBUG.OUT("[DisplayOverlay.display] update=" + (t1 - t0) + "ms relocate=" + (t2 - t1) + "ms resize=" + (t3 - t2)
+				+ "ms setVisible=" + (System.currentTimeMillis() - t3) + "ms (wasVisible=" + wasVisible + ") total="
+				+ (System.currentTimeMillis() - t0) + "ms");
 	}
 
 	/**

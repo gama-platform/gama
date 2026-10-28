@@ -32,6 +32,8 @@ import gaml.compiler.ui.wizards.species.WizardWidgets;
  * Detached action settings: name, return type, virtual, arguments and code. Code is edited in an embedded,
  * syntax-highlighted GAML editor and is enabled only for non-virtual actions; its text is kept across Virtual toggles.
  * Compilation runs only on Validate and acceptance, never on keystrokes. Editor adapters own the undoable apply.
+ * Text-editor creation can opt into selection extraction before opening: Include selection appears beside Returns,
+ * defaults to checked and retains independent extracted/separate code buffers when toggled.
  */
 public class ActionWizard extends DeclarationWizard<ActionDraft> {
 
@@ -42,6 +44,11 @@ public class ActionWizard extends DeclarationWizard<ActionDraft> {
 		String text();
 
 		void setEnabled(boolean enabled);
+
+		default void setText(final String value) {
+			if (control() instanceof StyledText text) text.setText(value);
+			else throw new IllegalStateException("The action body editor does not support replacing its text.");
+		}
 	}
 
 	private final ActionDraft original;
@@ -68,6 +75,9 @@ public class ActionWizard extends DeclarationWizard<ActionDraft> {
 	private Set<String> baseline;
 	private boolean loading;
 	private boolean ready;
+	private boolean selectionAvailable;
+	private Button includeSelection;
+	private String selectionBody, separateBody = "";
 
 	/**
 	 * @param draft
@@ -88,6 +98,17 @@ public class ActionWizard extends DeclarationWizard<ActionDraft> {
 		this.typeNames = List.copyOf(typeNames);
 		this.bodyContext = bodyContext;
 		arguments.addAll(draft.arguments());
+		selectionBody = draft.body();
+	}
+
+	/** Enable only for creation from a text selection; the supplied initial draft contains the selected body. */
+	public final void setSelectionExtractionAvailable(final boolean available) {
+		if (host != null) throw new IllegalStateException("Configure selection extraction before creating the form.");
+		selectionAvailable = available;
+	}
+
+	public final boolean isSelectionIncluded() {
+		return selectionAvailable && (includeSelection == null || includeSelection.getSelection());
 	}
 
 	@Override
@@ -101,7 +122,7 @@ public class ActionWizard extends DeclarationWizard<ActionDraft> {
 		Composite form = composite(parent, 1);
 		form.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-		Composite header = WizardWidgets.row(form, 6, "Identity");
+		Composite header = WizardWidgets.row(form, selectionAvailable ? 8 : 6, "Identity");
 		name = WizardWidgets.textField(header, "Name", original.name(),
 				"Name of the action, used to call it with do or as a function.", "action.field", "Name", 160);
 		List<String> returns = new ArrayList<>();
@@ -110,6 +131,14 @@ public class ActionWizard extends DeclarationWizard<ActionDraft> {
 		if (!returns.contains(original.returnType())) returns.add(original.returnType());
 		returnType = WizardWidgets.choiceField(header, "Returns", original.returnType(), returns, true,
 				"Type of the returned value. 'action' means that the action returns nothing.", "action.field", "Returns", 130);
+		if (selectionAvailable) {
+			includeSelection = WizardWidgets.checkbox(header, "Include selection", true,
+					"Move the selected statements into this action and replace them with a call. "
+							+ "Uncheck to leave the selection untouched and create a separate action. "
+							+ "Required arguments are passed from caller variables with matching names; defaulted arguments are omitted. "
+							+ "A typed action's result is not assigned by the generated do call.",
+					"action.field", "Include selection");
+		}
 		virtual = WizardWidgets.checkbox(header, "Virtual", original.virtual(),
 				"A virtual action has no code: it must be redefined by the children of its owner. Default: false.",
 				"action.field", "Virtual");
@@ -141,6 +170,17 @@ public class ActionWizard extends DeclarationWizard<ActionDraft> {
 		name.addModifyListener(e -> changed());
 		returnType.addModifyListener(e -> changed());
 		virtual.addListener(SWT.Selection, e -> changed());
+		if (includeSelection != null) includeSelection.addListener(SWT.Selection, e -> {
+			if (includeSelection.getSelection()) {
+				separateBody = body.text();
+				body.setText(selectionBody);
+			} else {
+				selectionBody = body.text();
+				body.setText(separateBody);
+			}
+			baseline = null;
+			changed();
+		});
 		ready = true;
 		renderArguments(arguments.isEmpty() ? -1 : 0);
 		changed();
@@ -384,7 +424,7 @@ public class ActionWizard extends DeclarationWizard<ActionDraft> {
 	/** Validates (locally, contextually and with the adapter); on success stores the result. */
 	public boolean accept() {
 		result = null;
-		if (readDraft() == original && original.validationError() == null) {
+		if (!isCreationMode() && readDraft() == original && original.validationError() == null) {
 			// Unchanged: no recompilation of pre-existing code; the adapter still checks staleness/conflicts.
 			String error = validator.apply(original);
 			host.setErrorMessage(error);

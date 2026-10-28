@@ -96,7 +96,7 @@ experiment example_spatial_operators type: gui {
 	parameter 'Size (area) from which an agent dies:' var: dying_size min: 100.0  category: 'Population'; 
 	parameter 'Min size (area) for crossover:' var:crossover_size category: 'Population';
 	parameter 'Minimum size (area) of a agent produced by a crossover:' var:minimum_size category: 'Population';
-	parameter 'Number of steps without crossing-over for an agent:' var:time_wthout_co category: 'Population';
+	parameter 'Number of steps without crossing-over for an agent:' var:time_wthout_co category: 'Population' unit: "cycles";
 	parameter 'Agent deplacement speed:' var:speed category: 'Population' ; 
 	parameter 'Rate of crossover' var:crossover_rate category: 'Population'; 
 	parameter 'Scaling factor for agent geometry (at each step):' var:scaling_factor category: 'Population';

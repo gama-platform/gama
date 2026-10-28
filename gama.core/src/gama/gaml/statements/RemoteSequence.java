@@ -15,19 +15,15 @@ import gama.api.compilation.descriptions.IDescription;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.statements.AbstractStatementSequence;
 import gama.api.gaml.statements.IStatement;
-import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.FlowStatus;
 import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
+import gama.api.runtime.scope.Invocation;
 
 /**
  * The Class RemoteSequence.
  */
 public class RemoteSequence extends AbstractStatementSequence implements IStatement.Remote {
-
-	/** The myself. */
-	// AD: adding ThreadLocal for multi-threaded simulations
-	final ThreadLocal<IAgent> myself = new ThreadLocal<>();
 
 	/**
 	 * Instantiates a new remote sequence.
@@ -39,27 +35,11 @@ public class RemoteSequence extends AbstractStatementSequence implements IStatem
 		super(desc);
 	}
 
-	/**
-	 * Gets the myself.
-	 *
-	 * @return the myself
-	 */
-	public IAgent getMyself() { return myself.get(); }
-
-	@Override
-	public void setMyself(final IAgent agent) {
-		myself.set(agent);
-	}
-
-	@Override
-	public void leaveScope(final IScope scope) {
-		myself.set(null);
-		super.leaveScope(scope);
-	}
-
 	@Override
 	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
-		scope.addVarWithValue(IKeyword.MYSELF, myself.get());
+		// The calling agent is handed by the scope, as this sequence is shared by all the simulations and threads
+		final Invocation invocation = scope.takeInvocation(this);
+		scope.addVarWithValue(IKeyword.MYSELF, invocation == null ? null : invocation.myself());
 		Object lastResult = null;
 		for (final IStatement command : commands) {
 			final IExecutionResult result = scope.execute(command);

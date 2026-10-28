@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -1133,12 +1132,11 @@ public class GraphTopology extends AbstractTopology {
 				agentsTotest = scope.getSimulation().getAgents(scope);
 			}
 			final Set<IShape> edges = getNeighborsOfRec(scope, realS, true, distance, graph, new LinkedHashSet<>());
-			final Set<IShape> graphEdges = graph.edgeSet();
 			for (final Object ob : agentsTotest.iterable(scope)) {
 				final IShape ag = (IShape) ob;
 				if (filter.accept(scope, source, ag)) {
 					IShape rd = null;
-					if (graphEdges.contains(ag)) {
+					if (graph.getEdges().contains(ag)) {
 						rd = ag;
 					} else {
 						double minDist = Double.POSITIVE_INFINITY;

@@ -250,12 +250,9 @@ public class ExecutionContext implements IExecutionContext {
 	 * @return the execution context
 	 */
 	public static ExecutionContext create(final IScope scope, final IExecutionContext outer, final ISymbol command) {
-		final ExecutionContext result;
-		result = new ExecutionContext(command);
+		final ExecutionContext result = new ExecutionContext(command);
 		result.scope = scope;
 		result.outer = outer;
-		// To do to avoid side effects? result.outer = outer == null ? null :
-		// outer.createCopy(outer.getCurrentSymbol());
 		return result;
 	}
 
@@ -271,10 +268,75 @@ public class ExecutionContext implements IExecutionContext {
 	/** The command. */
 	ISymbol command;
 
+	/**
+	 * The thread executing the statement this context represents: the thread that created it, unless it is the root
+	 * context of a scope that has been bound to another thread (see {@link IScope#bindToCurrentThread()}).
+	 */
+	private volatile Thread thread = Thread.currentThread();
+
+	/**
+	 * Whether this context is visible from copies or forks of its scope, in which case its local variables can be
+	 * read and written by several threads and their accesses are synchronized. Set by {@link #retain()} before the
+	 * scopes are handed to other threads.
+	 */
+	private volatile boolean shared;
+
+	/** The number of live copies or forks that retain this context. Guarded by this. */
+	private int retainers;
+
+	/**
+	 * Retains this context and its enclosing frames until {@link #release()} is called by the copy or fork that
+	 * shares them. While retained, frames remain readable even after their statement has popped them.
+	 */
+	void retain() {
+		IExecutionContext c = this;
+		while (c instanceof ExecutionContext ec) {
+			synchronized (ec) {
+				ec.retainers++;
+				ec.shared = true;
+			}
+			c = ec.outer;
+		}
+	}
+
+	/** Releases the frames retained by {@link #retain()}. */
+	void release() {
+		IExecutionContext c = this;
+		while (c instanceof ExecutionContext ec) {
+			final IExecutionContext next;
+			synchronized (ec) {
+				next = ec.outer;
+				if (ec.retainers > 0) { ec.retainers--; }
+				ec.shared = ec.retainers != 0;
+			}
+			c = next;
+		}
+	}
+
+	/**
+	 * Whether this context has been created by the current thread.
+	 *
+	 * @return true if the current thread is the one that created this context
+	 */
+	boolean isOwnedByCurrentThread() { return thread == Thread.currentThread(); }
+
+	/** Makes the current thread the owner of this context. */
+	void bindToCurrentThread() { thread = Thread.currentThread(); }
+
 	@Override
 	public void dispose() {
-		local = null;
-		outer = null;
+		if (shared) {
+			synchronized (this) {
+				// Still visible from copies or forks: they keep reading its variables and its enclosing frames
+				if (retainers == 0) {
+					local = null;
+					outer = null;
+				}
+			}
+		} else {
+			local = null;
+			outer = null;
+		}
 		scope = null;
 	}
 
@@ -293,17 +355,30 @@ public class ExecutionContext implements IExecutionContext {
 
 	@Override
 	public void setTempVar(final String name, final Object value) {
-		if (local == null || !local.containsKey(name)) {
-			if (outer != null) { outer.setTempVar(name, value); }
-		} else {
+		final IExecutionContext o = outer;
+		if (shared) {
+			synchronized (this) {
+				if (local != null && local.containsKey(name)) {
+					local.put(name, value);
+					return;
+				}
+			}
+		} else if (local != null && local.containsKey(name)) {
 			local.put(name, value);
+			return;
 		}
+		if (o != null) { o.setTempVar(name, value); }
 	}
 
 	@Override
 	public Object getTempVar(final String name) {
-		if (local == null || !local.containsKey(name)) return outer == null ? null : outer.getTempVar(name);
-		return local.get(name);
+		final IExecutionContext o = outer;
+		if (shared) {
+			synchronized (this) {
+				if (local != null && local.containsKey(name)) return local.get(name);
+			}
+		} else if (local != null && local.containsKey(name)) return local.get(name);
+		return o == null ? null : o.getTempVar(name);
 	}
 
 	/**
@@ -315,15 +390,19 @@ public class ExecutionContext implements IExecutionContext {
 	 * @return the execution context
 	 * @date 3 août 2023
 	 */
-	@SuppressWarnings ("unchecked")
 	@Override
 	public ExecutionContext createCopy(final ISymbol command) {
-		final ExecutionContext r = create(scope, outer, command);
-		if (local != null) {
-			// ExecutionContext is used on a single thread; a plain HashMap is sufficient
-			// and avoids the overhead of Collections.synchronizedMap.
-			r.local = new HashMap<>(local);
-		}
+		return createCopy(scope, command);
+	}
+
+	@Override
+	public ExecutionContext createCopy(final IScope newScope, final ISymbol command) {
+		final ExecutionContext r = create(newScope, outer, command);
+		if (shared) {
+			synchronized (this) {
+				if (local != null) { r.local = new HashMap<>(local); }
+			}
+		} else if (local != null) { r.local = new HashMap<>(local); }
 		return r;
 	}
 
@@ -341,40 +420,69 @@ public class ExecutionContext implements IExecutionContext {
 		return create(this, command);
 	}
 
+	@SuppressWarnings ("unchecked")
 	@Override
 	public Map<? extends String, ? extends Object> getLocalVars() {
+		if (shared) {
+			synchronized (this) {
+				return local == null ? Collections.EMPTY_MAP : new HashMap<>(local);
+			}
+		}
 		return local == null ? Collections.EMPTY_MAP : local;
 	}
 
 	@Override
 	public void clearLocalVars() {
-		local = null;
+		if (shared) {
+			synchronized (this) {
+				local = null;
+			}
+		} else {
+			local = null;
+		}
 	}
 
 	@Override
 	public void putLocalVar(final String varName, final Object val) {
-		// ExecutionContext is used on a single thread; a plain HashMap avoids
-		// the unnecessary synchronization overhead of Collections.synchronizedMap.
-		if (local == null) { local = new HashMap<>(); }
-		local.put(varName, val);
+		// Unless the context is shared with forked scopes, it is used by a single thread: a plain HashMap is enough
+		if (shared) {
+			synchronized (this) {
+				if (local == null) { local = new HashMap<>(); }
+				local.put(varName, val);
+			}
+		} else {
+			if (local == null) { local = new HashMap<>(); }
+			local.put(varName, val);
+		}
 	}
 
 	@Override
 	public Object getLocalVar(final String string) {
-		if (local == null) return null;
-		return local.get(string);
+		if (shared) {
+			synchronized (this) {
+				return local == null ? null : local.get(string);
+			}
+		}
+		return local == null ? null : local.get(string);
 	}
 
 	@Override
 	public boolean hasLocalVar(final String name) {
-		if (local == null) return false;
-		return local.containsKey(name);
+		if (shared) {
+			synchronized (this) {
+				return local != null && local.containsKey(name);
+			}
+		}
+		return local != null && local.containsKey(name);
 	}
 
 	@Override
 	public void removeLocalVar(final String name) {
-		if (local == null) return;
-		local.remove(name);
+		if (shared) {
+			synchronized (this) {
+				if (local != null) { local.remove(name); }
+			}
+		} else if (local != null) { local.remove(name); }
 	}
 
 	@Override

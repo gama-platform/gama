@@ -35,8 +35,12 @@
             <li>Check that you are connected to Gama Server, as can be seen in the Connection information section. 
                 You must have CONNECTED status. 
                 If this is not the case, check and, if necessary, modify the Gama Server web address in the Address section.</li>
-            <li>Load the model you wish to use. To do this, enter the path to your .gaml file, and the name of the experiment 
-                you wish to view in the Load An Experiment section.</li>
+            <li>Enter the absolute path to your .gaml file on the machine running GAMA, and the name of the experiment
+                you wish to view in the Load An Experiment section. Click the checkmark to apply these values.
+                Spaces in file and folder names are supported, including on macOS: for example,
+                <code>/Users/alice/My models/Model with spaces.gaml</code>.
+                Enter the path as plain text, without surrounding quotes, shell escapes such as <code>\ </code>,
+                or URL encoding such as <code>%20</code>.</li>
             <li>Launch the model by clicking on Load / Reload in the Simulation Commands section.</li>
             <li>You can check whether the model has been launched by looking at the GAMA response messages. 
                 You should receive a CommandExecutedSucessfully message and have Gama State paused or launched.</li>
@@ -48,6 +52,15 @@
             <object type="image/svg+xml" data="instruction.svg"></object>
         </div>
     </div>
+    <h2 class="with-bar-left">Calling an agent action</h2>
+    <div class="text">
+        Enter the action name (for example, <code>say_hello</code>) and an agent reference such as
+        <code>simulation[0].boids[12]</code>. Use the reference returned by an Expression request
+        evaluating <code>one_of(boids)</code>; do not enter that expression directly in the Agent field.
+        Leave Agent blank to target the experiment agent.
+        Arguments must be a JSON object, for example <code>{"the_value":12}</code>.
+        Leave Arguments blank or enter <code>{}</code> for an action without arguments.
+    </div>
     <h2 class="with-bar-left">FAQ</h2>
     <div class="text">
         <h3>Why sometimes I have no response when I want to load an experiment ?</h3>
@@ -57,6 +70,15 @@
                 If you want to avoid this probem, I suggest to set the global variable pref_experiment_ask_closing to false in the init of the global of your model.
             </li>
         </ul>
+        <h3>How do I load an experiment after Stop?</h3>
+        <div>
+            Stop closes the experiment. Wait for its successful response; the connector then shows
+            NONE and Load / Reload sends a new Load request. No page refresh is needed.
+            While a Load, Reload or Stop request is pending, wait for its response before sending another,
+            including with Headless mode enabled. This waiting rule belongs to this connector; the server
+            command names and message formats have not changed, and existing GAML models need no changes.
+            Use Pause instead of Stop if you want to resume the same experiment.
+        </div>
         <h3>Why can't the connector connect to Gama Server?</h3>
         <ul class="text">
             <li>I'll be very clear on this point: if you can't connect to the Gama server, it's either because you haven't specified the right connection port, 
@@ -69,7 +91,9 @@
         <ul class="text">
             <li>Simulation status is the state of Gama Server: is a simulation running?
                  is it paused? The connector knows this status when it receives a SimlationStatus message.
-                  This message is only sent when there's a change in Gama Server status, so it's normal not to know it when you connect.
+                  Notifications are sent when the state changes, and can also be sent when the experiment or
+                  destination connection changes even if the state name is unchanged. Connecting alone does not
+                  guarantee an initial status notification, so the connector can initially show UNKNOWN.
             </li>
         </ul>
         

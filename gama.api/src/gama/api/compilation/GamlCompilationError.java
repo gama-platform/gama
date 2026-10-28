@@ -13,6 +13,8 @@ package gama.api.compilation;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 
+import gama.api.gaml.GAML;
+
 /**
  * Represents compilation and validation errors produced during GAML model processing.
  * 
@@ -28,6 +30,7 @@ import org.eclipse.emf.ecore.EObject;
  *   <li><strong>source:</strong> EMF EObject where the error occurred (can be null)</li>
  *   <li><strong>uri:</strong> URI of the resource containing the error</li>
  *   <li><strong>errorType:</strong> Severity level (Error, Warning, or Info)</li>
+ *   <li><strong>location:</strong> Source position captured before the resource is unloaded</li>
  *   <li><strong>data:</strong> Optional additional data about the error</li>
  * </ul>
  * 
@@ -75,6 +78,7 @@ import org.eclipse.emf.ecore.EObject;
  * @param source EMF object where error occurred (may be null)
  * @param uri URI of the resource containing the error
  * @param errorType Severity level (Error, Warning, Info)
+ * @param location 1-based line and column and 0-based offset; zeros if unavailable
  * @param data Optional additional context data
  * 
  * @author Alexis Drogoul
@@ -85,7 +89,22 @@ import org.eclipse.emf.ecore.EObject;
  * @see gama.api.constants.IGamlIssue
  */
 public record GamlCompilationError(String message, String code, EObject source, URI uri, Type errorType,
+		Location location,
 		String... data) {
+
+	/** A source position: 1-based line and column, and 0-based character offset. Zeros denote an unknown position. */
+	public record Location(int line, int column, int offset) {
+		public static final Location UNKNOWN = new Location(0, 0, 0);
+	}
+
+	public GamlCompilationError(final String message, final String code, final EObject source, final URI uri,
+			final Type errorType, final String... data) {
+		this(message, code, source, uri, errorType, GAML.getSourceLocation(source), data);
+	}
+
+	public GamlCompilationError withLocation(final Location position) {
+		return new GamlCompilationError(message, code, source, uri, errorType, position, data);
+	}
 
 	/**
 	 * Enumeration of error severity levels.

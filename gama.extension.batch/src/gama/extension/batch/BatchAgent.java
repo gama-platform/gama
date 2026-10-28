@@ -231,6 +231,19 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 	 */
 	private IMap<String, Object> manageOutputAndCloseSimulation(final IAgent sim, final ParametersSet sol,
 			final boolean memorize, final boolean dispose) {
+		// One simulation = one thread: the results are collected (and the simulation disposed) in its own thread
+		if (sim instanceof ISimulationAgent s)
+			return s.computeInOwnThread(() -> doManageOutputAndCloseSimulation(s, sol, memorize, dispose));
+		return doManageOutputAndCloseSimulation(sim, sol, memorize, dispose);
+	}
+
+	/**
+	 * Retrieves the outputs of interest of a simulation (in the current thread) and disposes of it if required.
+	 *
+	 * @see #manageOutputAndCloseSimulation(IAgent, ParametersSet, boolean, boolean)
+	 */
+	private IMap<String, Object> doManageOutputAndCloseSimulation(final IAgent sim, final ParametersSet sol,
+			final boolean memorize, final boolean dispose) {
 		IMap<String, Object> out = GamaMapFactory.create();
 		if (getExplorationAlgorithm().isFitnessBased()) {
 			final IExpression fitness =

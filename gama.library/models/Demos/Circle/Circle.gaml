@@ -71,10 +71,10 @@ species cell skills: [moving] {
 experiment main type: gui  {
 	parameter "Size of Agents" var: size_of_agents <- 100;
 	parameter 'Number of Agents' var: number_of_agents <- 300;
-	parameter 'Radius of Circle' var: radius_of_circle min: 10 <- 15000;
+	parameter 'Radius of Circle' var: radius_of_circle min: 10 <- 15000 unit: "m";
 	parameter 'Strength of Repulsion' var: repulsion_strength min: 1 <- 50;
 	parameter 'Dimensions' var: width_and_height_of_environment  min: 10 <- 40000;
-	parameter 'Range of Agents' var: range_of_agents min: 1 <- 250;
+	parameter 'Range of Agents' var: range_of_agents min: 1 <- 250 unit: "m";
 	parameter 'Speed of Agents' var: speed_of_agents min: 0.1 <- 100.0 ;
 
 	output {

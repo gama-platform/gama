@@ -30,10 +30,18 @@ import gama.ui.shared.resources.IGamaIcons;
 public class GamlEditorTickUpdater extends XtextEditorErrorTickUpdater {
 
 	@Override
+	public void afterCreatePartControl(final XtextEditor editor) {
+		if (editor instanceof GamlEditor gaml) { gaml.validationTickUpdater = this; }
+		super.afterCreatePartControl(editor);
+	}
+
+	@Override
 	protected void updateEditorImage(final XtextEditor editor) {
 		Severity severity = getSeverity(editor);
 		ImageDescriptor descriptor = null;
-		if (severity == null || severity == Severity.INFO) {
+		if (editor instanceof GamlEditor gaml && !gaml.isAutomaticValidationEnabled()) {
+			descriptor = GamaIcon.named(IGamaIcons.OVERLAY_PAUSED).descriptor();
+		} else if (severity == null || severity == Severity.INFO) {
 			descriptor = GamaIcon.named(IGamaIcons.OVERLAY_OK).descriptor();
 		} else if (severity == Severity.ERROR) {
 			descriptor = GamaIcon.named(IGamaIcons.OVERLAY_ERROR).descriptor();

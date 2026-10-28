@@ -10,9 +10,7 @@
  ********************************************************************************************************/
 package gama.extension.network.tcp;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -174,24 +172,8 @@ public class ServerService extends Thread implements SocketService, IListener {
 	public void sendMessage(final String msg, final String receiver) throws IOException {
 		final ClientService cliThread = (ClientService) myAgent.getAttribute(TCPConnector._TCP_CLIENT + receiver);
 
-		String message = msg;
 		if (cliThread == null || cliThread.socket == null || !isOnline()) return;
-
-		sender = new PrintWriter(new BufferedWriter(new OutputStreamWriter(cliThread.socket.getOutputStream())), true);
-
-		// If raw connection we do not append an end of line nor escape anything
-		if (connector.isRaw()) {
-			sender.print(message);
-		} else {
-
-			message = message.replace("\n", "@n@");
-			message = message.replace("\b\r", "@b@@r@");
-			// TODO: do we really need to append a '\n' while we already use println and the printwriter is in auto
-			// flush ?
-			sender.println(message);// +"\n"
-		}
-		sender.flush();
-
+		cliThread.sendMessage(msg, receiver);
 	}
 
 	@Override

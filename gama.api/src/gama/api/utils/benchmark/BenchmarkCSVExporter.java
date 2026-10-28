@@ -14,14 +14,14 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import gama.api.GAMA;
+import gama.api.compilation.descriptions.IDescription;
 import gama.api.exceptions.GamaRuntimeException;
-import gama.api.gaml.types.Types;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.runtime.scope.IScope;
-import gama.api.types.map.GamaMapFactory;
-import gama.api.types.map.IMap;
+import gama.api.utils.collections.GamaNode;
 import gama.api.utils.collections.GamaTree.Order;
 import gama.api.utils.csv.CsvWriter;
 import gama.api.utils.files.FileUtils;
@@ -52,37 +52,65 @@ public class BenchmarkCSVExporter {
 			e1.printStackTrace();
 			return;
 		}
-		final IMap<IScope, Benchmark.ScopeRecord> scopes = GamaMapFactory.wrap(Types.NO_TYPE, Types.NO_TYPE, records);
-		final String exportFileName =
-				FileUtils.constructAbsoluteFilePath(scope, exportFolder + "/" + experiment.getModel().getName()
-						+ "_benchmark_" + Instant.now().toString().replace(':', '_') + ".csv", false);
+		final String exportFilePrefix = exportFolder + "/" + experiment.getModel().getName() + "_benchmark_"
+				+ Instant.now().toString().replace(':', '_');
 
-		final List<String> headers = new ArrayList<>();
-		final List<List<String>> contents = new ArrayList<>();
-		headers.add("Execution");
-		scopes.forEach((scopeRecord, record) -> {
-			headers.add("Time in ms in " + scopeRecord);
-			headers.add("Invocations in " + scopeRecord);
-		});
-		contents.add(headers);
-		records.tree.visit(Order.PRE_ORDER, n -> {
-			final IBenchmarkable r = n.getData();
-			final List<String> line = new ArrayList<>();
-			contents.add(line);
-			line.add(r.getNameForBenchmarks());
-			scopes.forEach((scope1, scopeRecord) -> {
-				final BenchmarkRecord record1 = scopeRecord.find(r);
-				line.add(record1.isUnrecorded() ? "" : String.valueOf(record1.milliseconds));
-				line.add(record1.isUnrecorded() ? "" : String.valueOf(record1.times));
-			});
-		});
+		final List<Map.Entry<IScope, Benchmark.ScopeRecord>> scopeRecords = new ArrayList<>(records.entrySet());
+		scopeRecords.sort((a, b) -> a.getKey().getNameForBenchmarks().compareTo(b.getKey().getNameForBenchmarks()));
+		for (int i = 0; i < scopeRecords.size(); i++) {
+			final Map.Entry<IScope, Benchmark.ScopeRecord> scopeRecord = scopeRecords.get(i);
+			final String contextName = safeFileName(scopeRecord.getKey().getNameForBenchmarks());
+			final String contextFileName = FileUtils.constructAbsoluteFilePath(scope,
+					exportFilePrefix + "_" + (i + 1) + "_" + contextName + ".csv", false);
+			saveContext(scope, records, scopeRecord.getValue(), contextFileName);
+		}
+	}
+
+	private void saveContext(final IScope scope, final Benchmark records, final Benchmark.ScopeRecord scopeRecord,
+			final String exportFileName) throws GamaRuntimeException {
+		final List<GamaNode<IBenchmarkable>> rows = records.tree.list(Order.PRE_ORDER).stream()
+				.filter(node -> isModelStatement(node.getData()))
+				.filter(node -> {
+					final BenchmarkRecord record = scopeRecord.get(node.getData());
+					return record != null && !record.isUnrecorded();
+				})
+				.sorted((a, b) -> Long.compare(scopeRecord.get(b.getData()).milliseconds.longValue(),
+						scopeRecord.get(a.getData()).milliseconds.longValue()))
+				.toList();
 
 		try (final CsvWriter writer = new CsvWriter(exportFileName)) {
 			writer.setDelimiter(';');
-			for (final List<String> ss : contents) { writer.writeRecord(ss.toArray(new String[ss.size()])); }
+			writer.writeRecord(new String[] { "Model statement", "Time in ms", "Invocations" });
+			for (final GamaNode<IBenchmarkable> row : rows) {
+				final IBenchmarkable element = row.getData();
+				final BenchmarkRecord record = scopeRecord.get(element);
+				writer.writeRecord(new String[] { getElementName(element), String.valueOf(record.milliseconds),
+						String.valueOf(record.times) });
+			}
 		} catch (final IOException e) {
 			throw GamaRuntimeException.create(e, scope);
 		}
+	}
+
+	private boolean isModelStatement(final IBenchmarkable element) {
+		if (!(element instanceof final IDescription description) || description.isBuiltIn()) return false;
+		return switch (description.getKind()) {
+			case BEHAVIOR, SINGLE_STATEMENT, SEQUENCE_STATEMENT -> true;
+			default -> false;
+		};
+	}
+
+	private String getElementName(final IBenchmarkable element) {
+		final IDescription description = (IDescription) element;
+		final String name = description.getNameForBenchmarks();
+		final String descriptionName = description.getKeyword().matches("-\\d+") ? description.getName() : name;
+		return "statement: " + descriptionName;
+	}
+
+	private String safeFileName(final String name) {
+		final String safeName = name.replaceAll("[^A-Za-z0-9._-]", "_");
+		if (safeName.isBlank()) return "context";
+		return safeName.length() > 80 ? safeName.substring(0, 80) : safeName;
 	}
 
 }

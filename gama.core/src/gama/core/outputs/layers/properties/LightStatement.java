@@ -114,8 +114,8 @@ import gama.core.outputs.layers.properties.LightStatement.LightStatementValidato
 @doc (
 		value = """
 				`light` allows to define diffusion lights in your 3D display. They must be given a name, which will help track them in the UI. Two names have however special meanings: #ambient, \
-				which designates the ambient luminosity and color of the scene (with a default intensity of (160,160,160,255) or the value set in the Preferences) and #default, \
-				which designates the default directional light applied to a scene (with a default medium intensity of (160,160,160,255) or the value set in the Preferences in the direction given by (0.5,0.5,1)). Redefining a light named #ambient or #regular \
+				which designates the ambient luminosity and color of the scene (with a default intensity of (180,180,180,255) or the value set in the Preferences) and #default, \
+				which designates the default directional light applied to a scene (with a default medium intensity of (180,180,180,255) or the value set in the Preferences in the direction given by (0.5,0.5,1)). Redefining a light named #ambient or #regular \
 				will then modify these default lights (for example changing their color or deactivating them). To be more precise, and given all the default values of the facets, the existence of these two lights is effectively equivalent to redefining:\
 				light #ambient intensity: gama.pref_display_light_intensity; light #default type: #direction intensity: gama.pref_display_light_intensity direction: {0.5,0.5,-1};""",
 		usages = { @usage (

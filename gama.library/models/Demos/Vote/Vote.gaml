@@ -336,11 +336,11 @@ experiment vote type: gui {
 	/** Insert here the definition of the input and output of the model */
 	parameter "Number of electors : " var: nb_electors category: "elector";
 	parameter "Moving speed of electors toward another electors : " var: distance_traveled category: "elector";
-	parameter "Attraction distance between electors : " var: threshold_attraction_electors category: "elector";
+	parameter "Attraction distance between electors : " var: threshold_attraction_electors category: "elector" unit: "m";
 	parameter "Number of candidates : " var: nb_candidates category: "Candidate";
-	parameter "Attraction distance between candidates and electors : " var: threshold_attraction_candidates category: "elector";
+	parameter "Attraction distance between candidates and electors : " var: threshold_attraction_candidates category: "elector" unit: "m";
 	
-	parameter "Repulsion distance between candidates : " var: threshold_repulsion_candidates category: "elector";
+	parameter "Repulsion distance between candidates : " var: threshold_repulsion_candidates category: "elector" unit: "m";
 	parameter "weight of candidates : " var: weight_candidates category: "Candidate";
 	
 	parameter "Distribution type of electors : " var: distribution_electors category: "elector";

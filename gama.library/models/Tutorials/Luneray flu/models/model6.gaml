@@ -152,7 +152,7 @@ experiment explore_model type: batch until: time > 2#h repeat: 2 {
 }
 
 experiment calibration_model type: batch until: time > 2#h repeat: 3 {
-	parameter "infection distance" var: infection_distance min: 1.0 max: 20.0 step: 1;
+	parameter "infection distance" var: infection_distance min: 1.0 max: 20.0 step: 1 unit: #m;
 	parameter "proba infection" var: proba_infection min: 0.01 max: 1.0 step: 0.01;
 	
 	method genetic pop_dim: 3 max_gen: 5 minimize: abs(infected_rate - 0.5);

@@ -150,7 +150,7 @@ experiment Simulation type: gui {
 	parameter "Mortality" var:nu ;	// The parameter Nu
 	parameter "Delta (I->R)" var: delta; // The parameter Delta
 	parameter "Is the infection is computed locally?" var:local_infection ;
-	parameter "Size of the neighbours" var:neighbours_size ;
+	parameter "Size of the neighbours" var:neighbours_size unit: "cells";
  	output { 
  		layout #split;
 	    display sir_display  type:2d antialias:false {

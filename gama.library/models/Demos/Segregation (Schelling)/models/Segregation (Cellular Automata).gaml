@@ -6,6 +6,7 @@
 *   neighbors is below the 'similarity_wanted' threshold become unhappy and swap with a random free cell.
 *   The model runs on a toroidal grid (edges wrap around). Despite each individual preferring only a modest
 *   majority of same-type neighbors, highly segregated spatial patterns emerge at the macro level.
+*   Uses bounded integer sampling for group assignment; seeded configurations differ from legacy rnd.
 * Tags: grid, cellular_automaton, segregation, Schelling, emergence, social, torus
 */
 model segregation
@@ -36,7 +37,7 @@ global torus: true{
 			space pp <- all_places at i;
 			remove pp from: free_places;
 			add pp to: all_people;
-			pp.color <- colors at (rnd(number_of_groups - 1));
+			pp.color <- colors at rnd(number_of_groups - 1, true);
 		}
 
 	}
