@@ -8,7 +8,7 @@
       <!-- Section headings have no handlers and are therefore displayed disabled (gray). -->
       <command id="gama.ui.devtools.heading.run" categoryId="gama.ui.devtools.category" name="Run GAMA"/>
       <command id="gama.ui.devtools.heading.build" categoryId="gama.ui.devtools.category" name="Build GAMA"/>
-      <command id="gama.ui.devtools.heading.install" categoryId="gama.ui.devtools.category" name="Install"/>
+      <command id="gama.ui.devtools.heading.install" categoryId="gama.ui.devtools.category" name="Install GAMA"/>
       <command id="gama.ui.devtools.install" categoryId="gama.ui.devtools.category" name="Install GAMA sources">
          <commandParameter id="gama.ui.devtools.installKind" name="Installation (CORE, GRAPHICAL, COMMUNITY)" optional="false"/>
       </command>
@@ -140,17 +140,49 @@
             <command commandId="gama.ui.devtools.cleanAndRebuild" label="Clean and build selected plugins" style="push">
                <parameter name="gama.ui.devtools.scope" value="selection"/>
             </command>
+            <separator name="install" visible="true"/>
+            <menu
+                  label="Install">
+               <command
+                     commandId="gama.ui.devtools.install"
+                     label="Install core plugins..."
+                     style="push">
+                  <parameter
+                        name="gama.ui.devtools.installKind"
+                        value="CORE">
+                  </parameter>
+               </command>
+               <command
+                     commandId="gama.ui.devtools.install"
+                     label="Install graphical editor..."
+                     style="push">
+                  <parameter
+                        name="gama.ui.devtools.installKind"
+                        value="GRAPHICAL">
+                  </parameter>
+               </command>
+               <command
+                     commandId="gama.ui.devtools.install"
+                     label="Install community plugins..."
+                     style="push">
+                  <parameter
+                        name="gama.ui.devtools.installKind"
+                        value="COMMUNITY">
+                  </parameter>
+               </command>
+            </menu>
+            <separator name="additions" visible="true"/>
+            <menu id="gama.ui.devtools.menu.search" label="Search">
+               <command commandId="gama.ui.devtools.findKeyword" style="push"/>
+               <command commandId="gama.ui.devtools.dependencyGraph" style="push"/>
+               <command commandId="gama.ui.devtools.gamlReport" style="push"/>
+            </menu>
             <menu id="gama.ui.devtools.menu.repair" label="Repair">
                <command commandId="gama.ui.devtools.checkConfiguration" style="push"/>
                <command commandId="gama.ui.devtools.rebuildProcessorJar" style="push"/>
                <command commandId="gama.ui.devtools.regenerateGrammar" style="push"/>
                <command commandId="gama.ui.devtools.updateJavaHeaders" style="push"/>
                <command commandId="gama.ui.devtools.generateTestStubs" style="push"/>
-            </menu>
-            <menu id="gama.ui.devtools.menu.search" label="Search">
-               <command commandId="gama.ui.devtools.findKeyword" style="push"/>
-               <command commandId="gama.ui.devtools.dependencyGraph" style="push"/>
-               <command commandId="gama.ui.devtools.gamlReport" style="push"/>
             </menu>
             <menu id="gama.ui.devtools.menu.create" label="Create">
                <command commandId="gama.ui.devtools.openNewWizard" label="New GAMA Plugin..." style="push">
@@ -172,20 +204,8 @@
                   <parameter name="gama.ui.devtools.wizardId" value="gama.ui.devtools.wizards.testModel"/>
                </command>
             </menu>
-            <separator name="install" visible="true"/>
-            <command commandId="gama.ui.devtools.heading.install" style="push"/>
-            <command commandId="gama.ui.devtools.install" label="Install core plugins..." style="push">
-               <parameter name="gama.ui.devtools.installKind" value="CORE"/>
-            </command>
-            <command commandId="gama.ui.devtools.install" label="Install graphical editor..." style="push">
-               <parameter name="gama.ui.devtools.installKind" value="GRAPHICAL"/>
-            </command>
-            <command commandId="gama.ui.devtools.install" label="Install community plugins..." style="push">
-               <parameter name="gama.ui.devtools.installKind" value="COMMUNITY"/>
-            </command>
             <separator name="updates" visible="true"/>
             <command commandId="gama.ui.devtools.updateTools" style="push"/>
-            <separator name="additions" visible="false"/>
          </menu>
       </menuContribution>
       <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
