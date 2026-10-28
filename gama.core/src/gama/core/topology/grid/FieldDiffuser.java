@@ -357,6 +357,8 @@ public class FieldDiffuser {
 		final int kCols = diffusion.diffusionMatrix[0].length;
 		final int kCenterX = kCols / 2;
 		final int kCenterY = kRows / 2;
+		final double[] tempSum = new double[SPECIES.length()];
+		final double[] tempOut = new double[SPECIES.length()];
 		
 		// Flatten the kernel to use vector api on it inside the inner loop if possible, 
 		// but since the kernel is usually very small (3x3), standard array access is often faster.
@@ -379,7 +381,7 @@ public class FieldDiffuser {
 								sumVec = sumVec.add(inputVec.mul(diffusion.diffusionMatrix[kRows - m - 1][kCols - n - 1]));
 							} else {
 								// Edge cases fallback (partially outside bounds)
-								double[] tempSum = new double[SPECIES.length()];
+								Arrays.fill(tempSum, 0.0);
 								for (int v = 0; v < SPECIES.length(); v++) {
 									int iii = ii + v;
 									if (iii >= 0 && iii < context.nbCols) {
@@ -393,9 +395,6 @@ public class FieldDiffuser {
 				}
 				
 				// Apply sumVec to output
-				double[] tempOut = new double[SPECIES.length()];
-				DoubleVector outVec = DoubleVector.fromArray(SPECIES, output, j * context.nbCols + i);
-				
 				// Handle -Double.MAX_VALUE initialization
 				for (int v = 0; v < SPECIES.length(); v++) {
 					if (output[j * context.nbCols + i + v] == -Double.MAX_VALUE) {
@@ -447,13 +446,14 @@ public class FieldDiffuser {
 
 		final int kCenterX = kCols / 2;
 		final int kCenterY = kRows / 2;
+		final int[] nonMaskedIndices = new int[kRows * kCols];
 
 		for (int i = 0; i < context.nbCols; ++i) // output rows
 		{
 			for (int j = 0; j < context.nbRows; ++j) // output columns
 			{
 				double value_to_redistribute = 0;
-				final ArrayList<int[]> non_masked_cells = new ArrayList<>();
+				int nonMaskedCount = 0;
 				for (int m = 0; m < kRows; ++m) // kernel rows
 				{
 					for (int n = 0; n < kCols; ++n) // kernel columns
@@ -497,19 +497,20 @@ public class FieldDiffuser {
 								output[j * context.nbCols + i] = value_before_change;
 								if (diffusion.mask[ii][jj] == 1) {
 									// input cell not masked
-									non_masked_cells.add(new int[] { ii, jj });
+									nonMaskedIndices[nonMaskedCount++] = jj * context.nbCols + ii;
 								}
 							}
 						}
 					}
 				}
 				if (value_to_redistribute != 0) {
-					final double value_to_add = value_to_redistribute * proportion / non_masked_cells.size();
-					for (final int[] coord : non_masked_cells) {
-						if (output[coord[1] * context.nbCols + coord[0]] == -Double.MAX_VALUE) {
-							output[coord[1] * context.nbCols + coord[0]] = value_to_add;
+					final double value_to_add = value_to_redistribute * proportion / nonMaskedCount;
+					for (int index = 0; index < nonMaskedCount; index++) {
+						final int outputIndex = nonMaskedIndices[index];
+						if (output[outputIndex] == -Double.MAX_VALUE) {
+							output[outputIndex] = value_to_add;
 						} else if (!diffusion.isGradient) {
-							output[coord[1] * context.nbCols + coord[0]] += value_to_add;
+							output[outputIndex] += value_to_add;
 						}
 					}
 				}
@@ -561,6 +562,7 @@ public class FieldDiffuser {
 
 		final int kCenterX = kCols / 2;
 		final int kCenterY = kRows / 2;
+		final int[] nonMaskedIndices = new int[kRows * kCols];
 
 		for (int ii = 0; ii < context.nbRows; ++ii) // input rows
 		{
@@ -569,7 +571,7 @@ public class FieldDiffuser {
 				if (diffusion.mask == null || diffusion.mask[ii][jj] == 1) {
 					// diffuse only if the input is not masked
 					double value_to_redistribute = 0;
-					final ArrayList<int[]> non_masked_cells = new ArrayList<>();
+					int nonMaskedCount = 0;
 					for (int m = 0; m < kRows; ++m) // kernel rows
 					{
 						for (int n = 0; n < kCols; ++n) // kernel columns
@@ -612,19 +614,20 @@ public class FieldDiffuser {
 									output[outputIndex] = value_before_change;
 									if (diffusion.mask[ii][jj] == 1) {
 										// input cell not masked
-										non_masked_cells.add(new int[] { ii, jj });
+										nonMaskedIndices[nonMaskedCount++] = jj * context.nbCols + ii;
 									}
 								}
 							}
 						}
 					}
 					if (value_to_redistribute != 0) {
-						final double value_to_add = value_to_redistribute * proportion / non_masked_cells.size();
-						for (final int[] coord : non_masked_cells) {
-							if (output[coord[1] * context.nbCols + coord[0]] == -Double.MAX_VALUE) {
-								output[coord[1] * context.nbCols + coord[0]] = value_to_add;
+						final double value_to_add = value_to_redistribute * proportion / nonMaskedCount;
+						for (int index = 0; index < nonMaskedCount; index++) {
+							final int outputIndex = nonMaskedIndices[index];
+							if (output[outputIndex] == -Double.MAX_VALUE) {
+								output[outputIndex] = value_to_add;
 							} else if (!diffusion.isGradient) {
-								output[coord[1] * context.nbCols + coord[0]] += value_to_add;
+								output[outputIndex] += value_to_add;
 							}
 						}
 					}
