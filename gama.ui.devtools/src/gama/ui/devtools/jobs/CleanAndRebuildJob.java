@@ -32,7 +32,6 @@ import org.eclipse.jdt.core.IJavaModelMarker;
 
 import gama.ui.devtools.config.ConfigurationIssue;
 import gama.ui.devtools.config.PluginConfigurationChecker;
-import gama.ui.devtools.preferences.DevToolsPreferences;
 import gama.ui.devtools.util.GamaProjects;
 import gama.ui.devtools.util.Notifier;
 
@@ -42,26 +41,30 @@ import gama.ui.devtools.util.Notifier;
  * re-enabling annotation processing, cleaning and rebuilding):
  * <ol>
  * <li>refreshes the whole workspace recursively from disk;</li>
- * <li>optionally repairs the configuration of the plugins (see {@link PluginConfigurationChecker});</li>
+ * <li>repairs the configuration of the plugins (see {@link PluginConfigurationChecker});</li>
  * <li>disables annotation processing on the plugins;</li>
  * <li>deletes their 'gaml' folders;</li>
  * <li>re-enables annotation processing, which resets the generated source folder managers of JDT APT;</li>
- * <li>cleans and fully rebuilds the plugins (or the whole workspace, except Maven-only projects like
- * gama.parent);</li>
+ * <li>cleans and fully rebuilds the whole workspace (except Maven-only projects like gama.parent) or only the
+ * plugins;</li>
  * <li>verifies that every plugin got its {@code GamlAdditions} and reports the result in a notification.</li>
  * </ol>
  */
 public class CleanAndRebuildJob extends WorkspaceJob {
 
 	private final List<IProject> targets;
+	private final boolean wholeWorkspace;
 
 	/**
 	 * @param targets
 	 *            the GAMA plugins to reset
+	 * @param wholeWorkspace
+	 *            whether the whole workspace is cleaned and rebuilt, or only the targets
 	 */
-	public CleanAndRebuildJob(final List<IProject> targets) {
+	public CleanAndRebuildJob(final List<IProject> targets, final boolean wholeWorkspace) {
 		super("Clean and rebuild GAMA plugins");
 		this.targets = targets;
+		this.wholeWorkspace = wholeWorkspace;
 		setRule(ResourcesPlugin.getWorkspace().getRoot());
 		setUser(true);
 	}
@@ -73,11 +76,9 @@ public class CleanAndRebuildJob extends WorkspaceJob {
 		try {
 			sub.subTask("Refreshing workspace");
 			ResourcesPlugin.getWorkspace().getRoot().refreshLocal(IResource.DEPTH_INFINITE, sub.split(5));
-			if (DevToolsPreferences.is(DevToolsPreferences.REPAIR_BEFORE_CLEAN)) {
-				sub.subTask("Repairing configuration");
-				List<ConfigurationIssue> issues = PluginConfigurationChecker.check(targets, sub.split(3));
-				PluginConfigurationChecker.repair(issues, sub.split(2));
-			}
+			sub.subTask("Repairing configuration");
+			List<ConfigurationIssue> issues = PluginConfigurationChecker.check(targets, sub.split(3));
+			PluginConfigurationChecker.repair(issues, sub.split(2));
 			sub.setWorkRemaining(90);
 			sub.subTask("Resetting annotation processing");
 			try {
@@ -102,10 +103,8 @@ public class CleanAndRebuildJob extends WorkspaceJob {
 				if (!p.getFile(GamaProjects.generatedAdditionsPath(p)).exists()) { missing.add(p.getName()); }
 			}
 			int errors = countErrors(configs);
-			if (DevToolsPreferences.is(DevToolsPreferences.CHECK_AFTER_REBUILD)) {
-				PluginConfigurationChecker.updateMarkers(targets, true,
-						PluginConfigurationChecker.check(targets, sub.split(10)));
-			}
+			PluginConfigurationChecker.updateMarkers(targets, true,
+					PluginConfigurationChecker.check(targets, sub.split(10)));
 			report(missing, errors, (System.currentTimeMillis() - start) / 1000);
 			return Status.OK_STATUS;
 		} catch (OperationCanceledException e) {
@@ -117,7 +116,7 @@ public class CleanAndRebuildJob extends WorkspaceJob {
 
 	private IBuildConfiguration[] buildConfigurations() throws CoreException {
 		List<IBuildConfiguration> configs = new ArrayList<>();
-		List<IProject> projects = DevToolsPreferences.is(DevToolsPreferences.REBUILD_WORKSPACE)
+		List<IProject> projects = wholeWorkspace
 				? List.of(ResourcesPlugin.getWorkspace().getRoot().getProjects()) : targets;
 		for (IProject p : projects) {
 			if (p.isOpen() && !GamaProjects.isMavenOnly(p)) { configs.add(p.getActiveBuildConfig()); }

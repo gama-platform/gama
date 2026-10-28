@@ -287,7 +287,7 @@ public final class CodeTemplates {
 				- `models/`: GAML models shipped with the plugin (tests, recipes, library...).
 
 				The generated additions are available in `gaml/gaml/additions/%3$s/GamlAdditions.java`. If they are not
-				regenerated, use **GAMA > Clean and Rebuild GAMA Plugins** in Eclipse.
+				regenerated, use **GAMA > Clean all...** in Eclipse.
 				""".formatted(spec.name(), spec.description(), spec.shortcut());
 	}
 

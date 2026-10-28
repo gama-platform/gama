@@ -72,7 +72,7 @@ public final class GamlReport {
 		sb.append("Generated on ").append(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
 				.append(" from the warnings of the GAML annotation processor on ").append(projects.size())
 				.append(" plugin(s).\n\n");
-		sb.append("> If this report is empty or incomplete, run **GAMA > Clean and Rebuild GAMA Plugins** first: the ")
+		sb.append("> If this report is empty or incomplete, run **GAMA > Clean all...** first: the ")
 				.append("warnings are only produced when the annotation processor runs.\n\n");
 		sb.append("| Plugin | Undocumented | Untested operators | Other |\n|---|---:|---:|---:|\n");
 		for (IProject p : projects) {

@@ -142,7 +142,7 @@ public final class PluginConfigurationChecker {
 			}
 			if (!p.getFile(GamaProjects.generatedAdditionsPath(p)).exists()) {
 				add(issues, p, ADDITIONS_MISSING, "'" + GamaProjects.generatedAdditionsPath(p)
-						+ "' has not been generated. Run 'Clean and Rebuild GAMA Plugins'");
+						+ "' has not been generated. Run 'GAMA > Clean all...'");
 			}
 		} catch (CoreException e) {
 			ResourceUtils.log(e);

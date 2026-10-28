@@ -79,7 +79,7 @@ public class RebuildProcessorJarHandler extends AbstractHandler {
 				ErrorDialog.openError(shell, "GAMA", "The processor jar could not be generated", status);
 			} else {
 				Notifier.show("GAMA annotation processor", GamaProjects.PROCESSOR_JAR
-						+ " regenerated. Run 'Clean and Rebuild GAMA Plugins' to use it in all the plugins.");
+						+ " regenerated. Run 'GAMA > Clean all...' to use it in all the plugins.");
 			}
 		} catch (InvocationTargetException e) {
 			ErrorDialog.openError(shell, "GAMA", "The processor jar could not be generated",

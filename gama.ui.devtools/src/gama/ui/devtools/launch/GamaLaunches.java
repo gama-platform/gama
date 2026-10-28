@@ -193,7 +193,7 @@ public final class GamaLaunches {
 		IVMInstall vm = JavaRuntime.computeVMInstall(config);
 		if (vm == null || !isJdk25(vm)) {
 			throw error("The launch must use a JDK 25 (the products enable Java preview features). "
-					+ "Edit its JRE tab in GAMA > Run > Configure Launches.");
+					+ "Edit its JRE tab in GAMA > Run... > Configure...");
 		}
 	}
 

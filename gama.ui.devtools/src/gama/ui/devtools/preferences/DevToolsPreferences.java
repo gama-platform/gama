@@ -26,23 +26,11 @@ public class DevToolsPreferences extends AbstractPreferenceInitializer {
 	/** Prefix of the plugin ids proposed by the new plugin wizard. */
 	public static final String DEFAULT_PREFIX = "gama.devtools.defaultPrefix";
 
-	/** Whether "Clean and Rebuild" repairs the configuration of the plugins first. */
-	public static final String REPAIR_BEFORE_CLEAN = "gama.devtools.repairBeforeClean";
-
-	/** Whether "Clean and Rebuild" rebuilds the whole workspace (or only the GAMA plugins concerned). */
-	public static final String REBUILD_WORKSPACE = "gama.devtools.rebuildWorkspace";
-
-	/** Whether the configuration is checked (and markers created) after each "Clean and Rebuild". */
-	public static final String CHECK_AFTER_REBUILD = "gama.devtools.checkAfterRebuild";
-
 	@Override
 	public void initializeDefaultPreferences() {
 		IPreferenceStore store = store();
 		store.setDefault(DEFAULT_VENDOR, "UMMISCO");
 		store.setDefault(DEFAULT_PREFIX, "gama.extension.");
-		store.setDefault(REPAIR_BEFORE_CLEAN, true);
-		store.setDefault(REBUILD_WORKSPACE, true);
-		store.setDefault(CHECK_AFTER_REBUILD, true);
 	}
 
 	/** The preference store of the plugin. */

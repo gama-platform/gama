@@ -12,7 +12,6 @@ package gama.ui.devtools.preferences;
 
 import static gama.ui.devtools.preferences.DevToolsPreferences.*;
 
-import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.ui.IWorkbench;
@@ -38,13 +37,6 @@ public class GamaDevToolsPreferencePage extends FieldEditorPreferencePage implem
 	protected void createFieldEditors() {
 		addField(new StringFieldEditor(DEFAULT_VENDOR, "Default vendor of new plugins:", getFieldEditorParent()));
 		addField(new StringFieldEditor(DEFAULT_PREFIX, "Default prefix of new plugin ids:", getFieldEditorParent()));
-		addField(new BooleanFieldEditor(REPAIR_BEFORE_CLEAN,
-				"'Clean and Rebuild' repairs the configuration of the plugins first", getFieldEditorParent()));
-		addField(new BooleanFieldEditor(REBUILD_WORKSPACE,
-				"'Clean and Rebuild' rebuilds the whole workspace (otherwise only the GAMA plugins concerned)",
-				getFieldEditorParent()));
-		addField(new BooleanFieldEditor(CHECK_AFTER_REBUILD,
-				"Check the configuration of the plugins after 'Clean and Rebuild'", getFieldEditorParent()));
 	}
 
 }

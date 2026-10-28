@@ -114,7 +114,7 @@ public class NewGamaPluginWizard extends Wizard implements INewWizard {
 		}
 		IProject project = created[0];
 		openMainFile(project, spec);
-		new CleanAndRebuildJob(List.of(project)).schedule();
+		new CleanAndRebuildJob(List.of(project), false).schedule();
 		Notifier.show("GAMA plugin created",
 				spec.id() + " has been created and is being built."
 						+ (warnings.isEmpty() ? "" : "\n" + String.join("\n", warnings)));

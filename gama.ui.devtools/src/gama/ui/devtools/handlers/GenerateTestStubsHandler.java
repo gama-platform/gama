@@ -47,7 +47,7 @@ public class GenerateTestStubsHandler extends AbstractHandler {
 				List<IFile> files = TestStubGenerator.generate(targets, null, monitor);
 				if (files.isEmpty()) {
 					Notifier.show("GAML test stubs", "No new untested operator found. If you expected some, run "
-							+ "'Clean and Rebuild GAMA Plugins' first: the warnings are produced by the processor.");
+							+ "'GAMA > Clean all...' first: the warnings are produced by the processor.");
 				} else {
 					Notifier.show("GAML test stubs", "Test stubs written in " + files.size() + " plugin(s) ("
 							+ TestStubGenerator.PATH + ")");

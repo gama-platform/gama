@@ -24,8 +24,8 @@ import gama.ui.devtools.util.Notifier;
 
 /**
  * Resets annotation processing and rebuilds the GAMA plugins, without any confirmation dialog. With the parameter
- * {@value #SCOPE} set to {@code selection}, only the GAMA plugins of the current selection are reset; otherwise, all
- * of them are.
+ * {@value #SCOPE} set to {@code selection}, only the GAMA plugins of the current selection are reset and rebuilt;
+ * otherwise, all of them are reset and the whole workspace is rebuilt.
  */
 public class CleanAndRebuildHandler extends AbstractHandler {
 
@@ -42,7 +42,7 @@ public class CleanAndRebuildHandler extends AbstractHandler {
 			return null;
 		}
 		PlatformUI.getWorkbench().saveAllEditors(false);
-		new CleanAndRebuildJob(targets).schedule();
+		new CleanAndRebuildJob(targets, !selection).schedule();
 		return null;
 	}
 

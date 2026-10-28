@@ -1,6 +1,6 @@
 # GAMA Developer Tools (`gama.ui.devtools`)
 
-An Eclipse plugin for the developers of GAMA. It adds a **GAMA** menu to the menu bar and a **GAMA** sub-menu to the context menu of Java projects.
+An Eclipse plugin for the developers of GAMA. It adds a **GAMA** menu to the menu bar and a **GAMA** sub-menu to the context menu of GAMA plugins, with **Clean...**, **Update headers...** and **Report missing annotations...** applied to the selected plugins.
 
 ## Installation
 
@@ -10,7 +10,7 @@ Install it in the Eclipse IDE used to develop GAMA, not in GAMA itself. This Ecl
 2. Add the update site `https://gama-platform.org/gama/devtools/`.
 3. Select **GAMA Developer Tools**, then restart Eclipse.
 
-Use **GAMA > Update GAMA tools** to check the developer tools update site and install the latest
+Use **GAMA > Update...** to check the developer tools update site and install the latest
 update directly, without Eclipse's software selection wizard. It updates only the installed developer
 tools feature, not the rest of Eclipse. If no update is available, a dialog says so. The check and
 installation run as cancellable background jobs; network and installation errors are reported rather
@@ -36,13 +36,13 @@ local installation, use a uniquely named ZIP for each build rather than a cached
 
 ## Commands
 
-The **GAMA** menu uses compact **Repair**, **Search** and **Create** submenus, without gray headings
-or separators for those groups. **Run GAMA**, **Build GAMA** and **Install** retain their gray,
-non-clickable section headings, with **Update GAMA tools** at the bottom.
-The **Create** submenu lists all six creation wizards. They are also available in
-*File > New > Other... > GAMA Development* and in the Java-project context menu.
+The **GAMA** menu contains, without headings or icons: the **Run...** submenu (Run UI / Run headless /
+Run tests, Debug UI / Debug headless, Configure...); **Clean all...** with the **Search...**, **Repair...**
+and **Create...** submenus; then the **Install...** submenu and **Update...**.
+The **Create...** submenu lists all six creation wizards. They are also available in
+*File > New > Other... > GAMA Development*.
 
-The menu layout, disabled headings, launch parameters and updater registration have a standalone regression test:
+The menu layout, launch parameters and updater registration have a standalone regression test:
 ```
 java gama.ui.devtools/tests/DevToolsMenuTest.java .
 ```
@@ -50,20 +50,19 @@ java gama.ui.devtools/tests/DevToolsMenuTest.java .
 | Command | What it does |
 |---|---|
 | **Keyword implementations...** (`Ctrl/Cmd+Shift+Alt+K`) | Finds the Java code behind a GAML keyword (see below). |
-| **Run... / Debug... > GAMA GUI / GAMA Headless... / GAMA Tests** | Launches workspace GAMA through editable PDE Eclipse Application configurations. |
-| **Run... > Configure Launches...** | Associates each flavor with an existing configuration or generates a default; provides editing and confirmed restoration of defaults. |
-| **Clean and build all plugins** (`Cmd+B` on macOS, `Ctrl+B` on Windows/Linux) | Saves the editors, refreshes the whole workspace recursively from disk and repairs the configuration (optional). Disables the annotation processor, deletes the `gaml/` folders and re-enables the processor. Then runs a clean build and a full build of the workspace, or only of the GAMA plugins (preference), and checks that every `GamlAdditions.java` was regenerated. No dialog is shown and the job can be cancelled. |
-| **Clean and build selected plugins** | The same, limited to the GAMA plugins in the selection; the initial refresh still covers the whole workspace. |
-| **Repair plugins metadata** | Checks every GAMA plugin (see below), adds problem markers with quick fixes (`Ctrl/Cmd+1` in the Problems view) and offers to repair everything at once. |
+| **Run... > Run UI / Run headless / Run tests / Debug UI / Debug headless** | Launches workspace GAMA through editable PDE Eclipse Application configurations. |
+| **Run... > Configure...** | Associates each flavor with an existing configuration or generates a default; provides editing and confirmed restoration of defaults. |
+| **Clean all...** (`Cmd+B` on macOS, `Ctrl+B` on Windows/Linux) | Saves the editors, refreshes the whole workspace recursively from disk and automatically repairs the plugins configuration (see *Configuration checks*). Disables the annotation processor, deletes the `gaml/` folders and re-enables the processor. These steps only affect the GAMA plugins. Then runs a clean build and a full build of the whole workspace, and checks that every `GamlAdditions.java` was regenerated. The configuration is checked again afterwards: remaining problems appear in the Problems view, with quick fixes (`Ctrl/Cmd+1`). No dialog is shown and the job can be cancelled. |
+| **Clean...** (context menu) | The same, limited to the GAMA plugins in the selection: only they are reset, cleaned and rebuilt. The initial refresh still covers the whole workspace. |
 | **Rebuild annotation processor** | Regenerates `gama.processor/gama.processor.jar` from `Generate Processor.jardesc`. Use it after modifying `gama.processor` or `gama.annotations`. |
 | **Regenerate Xtext grammar** | Runs `gaml.grammar/src/gaml/grammar/generator/Generate_GAML_Artefacts.mwe2` to regenerate the GAML grammar artifacts. The `gaml.grammar`, `gaml.compiler` and `gama.ui.editor` projects must be open. |
 | **Update file headers** | Sets the GAMA version and copyright end year, updates existing headers and adds missing ones, with a mandatory per-file preview and undo. |
 | **Missing annotations...** | Builds a Markdown report from the warnings of the processor. It lists the undocumented GAML elements and the untested operators, per plugin. |
 | **Generate missing tests** | Writes `models/Tests/Untested Operators.gaml` in each selected plugin (or all of them). It contains one `test` stub per operator reported as not tested, with its Java signature. Stubs already in the file are kept. |
 | **Plugins dependencies...** | Runs `jdeps` on the compiled bundles and produces an interactive HTML graph of the package dependencies. This needs a JDK. |
-| **Update GAMA tools** | Checks for and directly installs developer tools updates, or reports that no update is available. |
-| **Create: New GAMA Plugin / Skill / Operators / Action / Type / GAML Test Model** | Creation wizards, also available in *File > New > Other... > GAMA Development*. |
-| **Install core plugins... / Install graphical editor... / Install community plugins...** | Checks out source repositories, imports selected projects and optionally applies working sets and workspace preferences (see below). |
+| **Update...** | Checks for and directly installs developer tools updates, or reports that no update is available. |
+| **Create... > New GAMA Plugin / Skill / Operators / Action / Type / GAML Test Model** | Creation wizards, also available in *File > New > Other... > GAMA Development*. |
+| **Install... > Install core plugins... / Install graphical editor... / Install community plugins...** | Checks out source repositories, imports selected projects and optionally applies working sets and workspace preferences (see below). |
 
 The Clean and Rebuild All shortcut takes precedence over Eclipse's standard Build All binding in the default
 key scheme. It always targets all GAMA plugins, regardless of selection. Explicit user bindings and more
@@ -71,7 +70,7 @@ specific editor bindings can still override it; configure these in *Preferences 
 
 ## Installing source projects
 
-The **Install** section provides three variants of the same wizard:
+The **Install...** submenu provides three variants of the same wizard:
 
 - **Core plugins** uses `https://github.com/gama-platform/gama.git`, branch `main`. It lists top-level
   Eclipse projects, preselecting those listed in `gama.parent/pom.xml` plus `gama.parent`, including
@@ -149,7 +148,7 @@ workspace launches. The product's `-data` argument is replaced by a separate run
 located beside the development workspace (`gama-runtime-gui`, `gama-runtime-headless`, `gama-runtime-tests`).
 They do not clear runtime workspaces automatically.
 
-**Configure Launches...** lets you select each flavor and change its associated configuration. **Edit
+**Run... > Configure...** lets you select each flavor and change its associated configuration. **Edit
 configuration...** opens Eclipse's standard launch properties, including JRE, memory, arguments and plugins.
 Existing configurations and customizations are never automatically rewritten. **Restore generated defaults...**
 asks for confirmation, then creates and selects a fresh configuration; the old configuration is retained.
@@ -208,7 +207,7 @@ The fixes only modify the Java sources. The warnings disappear at the next build
 
 ## Configuration checks
 
-A GAMA plugin is a Java project whose `.factorypath` references `gama.processor`, or whose `plugin.xml` declares the `gaml.extension` extension point. The checker verifies the following.
+Every clean and build repairs these problems before cleaning and reports the remaining ones afterwards. A GAMA plugin is a Java project whose `.factorypath` references `gama.processor`, or whose `plugin.xml` declares the `gaml.extension` extension point. The checker verifies the following.
 
 **Annotation processing**
 - APT is enabled.
@@ -251,7 +250,4 @@ A **Clean and Rebuild** of the new plugin is then started.
 
 ## Preferences
 
-*Preferences > GAMA Developer Tools*: the default vendor and plugin id prefix of the wizards, and the options of **Clean and Rebuild**:
-- repair before cleaning;
-- rebuild the whole workspace or only the GAMA plugins;
-- check after rebuilding.
+*Preferences > GAMA Developer Tools*: the default vendor and plugin id prefix of the wizards.

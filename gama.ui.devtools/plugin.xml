@@ -5,15 +5,11 @@
    <!-- Commands -->
    <extension point="org.eclipse.ui.commands">
       <category id="gama.ui.devtools.category" name="GAMA Developer Tools"/>
-      <!-- Section headings have no handlers and are therefore displayed disabled (gray). -->
-      <command id="gama.ui.devtools.heading.run" categoryId="gama.ui.devtools.category" name="Run GAMA"/>
-      <command id="gama.ui.devtools.heading.build" categoryId="gama.ui.devtools.category" name="Build GAMA"/>
-      <command id="gama.ui.devtools.heading.install" categoryId="gama.ui.devtools.category" name="Install GAMA"/>
       <command id="gama.ui.devtools.install" categoryId="gama.ui.devtools.category" name="Install GAMA sources">
          <commandParameter id="gama.ui.devtools.installKind" name="Installation (CORE, GRAPHICAL, COMMUNITY)" optional="false"/>
       </command>
       <command id="gama.ui.devtools.updateTools" categoryId="gama.ui.devtools.category"
-            name="Update GAMA tools" description="Checks for and installs updates to GAMA Developer Tools"/>
+            name="Update..." description="Checks for and installs updates to GAMA Developer Tools"/>
       <command id="gama.ui.devtools.launchGama" categoryId="gama.ui.devtools.category"
             name="Launch GAMA" description="Run or debug workspace GAMA using a standard Eclipse Application configuration">
          <commandParameter id="gama.ui.devtools.launchFlavor" name="Flavor (GUI, HEADLESS, TESTS)" optional="true"/>
@@ -24,9 +20,6 @@
             description="Resets the annotation processor of the GAMA plugins, deletes the generated gaml folders and rebuilds everything, without any dialog">
          <commandParameter id="gama.ui.devtools.scope" name="Scope (selection or all)" optional="true"/>
       </command>
-      <command id="gama.ui.devtools.checkConfiguration" categoryId="gama.ui.devtools.category"
-            name="Repair plugins metadata"
-            description="Checks (and offers to repair) the configuration of the annotation processor, classpath, build.properties and manifest of the GAMA plugins"/>
       <command id="gama.ui.devtools.gamlReport" categoryId="gama.ui.devtools.category"
             name="Missing annotations..."
             description="Lists the GAML elements that are not documented and the operators that are not tested"/>
@@ -57,7 +50,6 @@
    <extension point="org.eclipse.ui.handlers">
       <handler commandId="gama.ui.devtools.launchGama" class="gama.ui.devtools.handlers.LaunchGamaHandler"/>
       <handler commandId="gama.ui.devtools.cleanAndRebuild" class="gama.ui.devtools.handlers.CleanAndRebuildHandler"/>
-      <handler commandId="gama.ui.devtools.checkConfiguration" class="gama.ui.devtools.handlers.CheckConfigurationHandler"/>
       <handler commandId="gama.ui.devtools.gamlReport" class="gama.ui.devtools.handlers.GamlReportHandler"/>
       <handler commandId="gama.ui.devtools.generateTestStubs" class="gama.ui.devtools.handlers.GenerateTestStubsHandler"/>
       <handler commandId="gama.ui.devtools.findKeyword" class="gama.ui.devtools.handlers.FindGamlKeywordHandler"/>
@@ -99,92 +91,49 @@
    <extension point="org.eclipse.ui.menus">
       <menuContribution locationURI="menu:org.eclipse.ui.main.menu?after=additions">
          <menu id="gama.ui.devtools.menu" label="GAMA" mnemonic="G">
-            <command commandId="gama.ui.devtools.heading.run" style="push"/>
             <menu id="gama.ui.devtools.menu.run" label="Run...">
-               <command commandId="gama.ui.devtools.launchGama" label="GAMA GUI" style="push">
+               <command commandId="gama.ui.devtools.launchGama" label="Run UI" style="push">
                   <parameter name="gama.ui.devtools.launchFlavor" value="GUI"/>
                   <parameter name="gama.ui.devtools.launchMode" value="run"/>
                </command>
-               <command commandId="gama.ui.devtools.launchGama" label="GAMA Headless..." style="push">
+               <command commandId="gama.ui.devtools.launchGama" label="Run headless" style="push">
                   <parameter name="gama.ui.devtools.launchFlavor" value="HEADLESS"/>
                   <parameter name="gama.ui.devtools.launchMode" value="run"/>
                </command>
-               <command commandId="gama.ui.devtools.launchGama" label="GAMA Tests" style="push">
+               <command commandId="gama.ui.devtools.launchGama" label="Run tests" style="push">
                   <parameter name="gama.ui.devtools.launchFlavor" value="TESTS"/>
                   <parameter name="gama.ui.devtools.launchMode" value="run"/>
                </command>
+               <separator name="debug" visible="true"/>
+               <command commandId="gama.ui.devtools.launchGama" label="Debug UI" style="push">
+                  <parameter name="gama.ui.devtools.launchFlavor" value="GUI"/>
+                  <parameter name="gama.ui.devtools.launchMode" value="debug"/>
+               </command>
+               <command commandId="gama.ui.devtools.launchGama" label="Debug headless" style="push">
+                  <parameter name="gama.ui.devtools.launchFlavor" value="HEADLESS"/>
+                  <parameter name="gama.ui.devtools.launchMode" value="debug"/>
+               </command>
                <separator name="configuration" visible="true"/>
-               <command commandId="gama.ui.devtools.launchGama" label="Configure Launches..." style="push">
+               <command commandId="gama.ui.devtools.launchGama" label="Configure..." style="push">
                   <parameter name="gama.ui.devtools.launchMode" value="configure"/>
                </command>
             </menu>
-            <menu id="gama.ui.devtools.menu.debug" label="Debug...">
-               <command commandId="gama.ui.devtools.launchGama" label="GAMA GUI" style="push">
-                  <parameter name="gama.ui.devtools.launchFlavor" value="GUI"/>
-                  <parameter name="gama.ui.devtools.launchMode" value="debug"/>
-               </command>
-               <command commandId="gama.ui.devtools.launchGama" label="GAMA Headless..." style="push">
-                  <parameter name="gama.ui.devtools.launchFlavor" value="HEADLESS"/>
-                  <parameter name="gama.ui.devtools.launchMode" value="debug"/>
-               </command>
-               <command commandId="gama.ui.devtools.launchGama" label="GAMA Tests" style="push">
-                  <parameter name="gama.ui.devtools.launchFlavor" value="TESTS"/>
-                  <parameter name="gama.ui.devtools.launchMode" value="debug"/>
-               </command>
-            </menu>
             <separator name="build" visible="true"/>
-            <command commandId="gama.ui.devtools.heading.build" style="push"/>
-            <command commandId="gama.ui.devtools.cleanAndRebuild" label="Clean and build all plugins" style="push">
+            <command commandId="gama.ui.devtools.cleanAndRebuild" label="Clean all..." style="push">
                <parameter name="gama.ui.devtools.scope" value="all"/>
             </command>
-            <command commandId="gama.ui.devtools.cleanAndRebuild" label="Clean and build selected plugins" style="push">
-               <parameter name="gama.ui.devtools.scope" value="selection"/>
-            </command>
-            <separator name="install" visible="true"/>
-            <menu
-                  label="Install">
-               <command
-                     commandId="gama.ui.devtools.install"
-                     label="Install core plugins..."
-                     style="push">
-                  <parameter
-                        name="gama.ui.devtools.installKind"
-                        value="CORE">
-                  </parameter>
-               </command>
-               <command
-                     commandId="gama.ui.devtools.install"
-                     label="Install graphical editor..."
-                     style="push">
-                  <parameter
-                        name="gama.ui.devtools.installKind"
-                        value="GRAPHICAL">
-                  </parameter>
-               </command>
-               <command
-                     commandId="gama.ui.devtools.install"
-                     label="Install community plugins..."
-                     style="push">
-                  <parameter
-                        name="gama.ui.devtools.installKind"
-                        value="COMMUNITY">
-                  </parameter>
-               </command>
-            </menu>
-            <separator name="additions" visible="true"/>
-            <menu id="gama.ui.devtools.menu.search" label="Search">
+            <menu id="gama.ui.devtools.menu.search" label="Search...">
                <command commandId="gama.ui.devtools.findKeyword" style="push"/>
                <command commandId="gama.ui.devtools.dependencyGraph" style="push"/>
                <command commandId="gama.ui.devtools.gamlReport" style="push"/>
             </menu>
-            <menu id="gama.ui.devtools.menu.repair" label="Repair">
-               <command commandId="gama.ui.devtools.checkConfiguration" style="push"/>
+            <menu id="gama.ui.devtools.menu.repair" label="Repair...">
                <command commandId="gama.ui.devtools.rebuildProcessorJar" style="push"/>
                <command commandId="gama.ui.devtools.regenerateGrammar" style="push"/>
                <command commandId="gama.ui.devtools.updateJavaHeaders" style="push"/>
                <command commandId="gama.ui.devtools.generateTestStubs" style="push"/>
             </menu>
-            <menu id="gama.ui.devtools.menu.create" label="Create">
+            <menu id="gama.ui.devtools.menu.create" label="Create...">
                <command commandId="gama.ui.devtools.openNewWizard" label="New GAMA Plugin..." style="push">
                   <parameter name="gama.ui.devtools.wizardId" value="gama.ui.devtools.wizards.plugin"/>
                </command>
@@ -204,47 +153,45 @@
                   <parameter name="gama.ui.devtools.wizardId" value="gama.ui.devtools.wizards.testModel"/>
                </command>
             </menu>
-            <separator name="updates" visible="true"/>
+            <separator name="install" visible="true"/>
+            <menu id="gama.ui.devtools.menu.install" label="Install...">
+               <command commandId="gama.ui.devtools.install" label="Install core plugins..." style="push">
+                  <parameter name="gama.ui.devtools.installKind" value="CORE"/>
+               </command>
+               <command commandId="gama.ui.devtools.install" label="Install graphical editor..." style="push">
+                  <parameter name="gama.ui.devtools.installKind" value="GRAPHICAL"/>
+               </command>
+               <command commandId="gama.ui.devtools.install" label="Install community plugins..." style="push">
+                  <parameter name="gama.ui.devtools.installKind" value="COMMUNITY"/>
+               </command>
+            </menu>
             <command commandId="gama.ui.devtools.updateTools" style="push"/>
+            <separator name="additions" visible="false"/>
          </menu>
       </menuContribution>
       <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
          <menu id="gama.ui.devtools.popup" label="GAMA" icon="icons/gama.png">
-            <command commandId="gama.ui.devtools.findKeyword" style="push"/>
-            <command commandId="gama.ui.devtools.cleanAndRebuild" label="Clean and build selected plugins" style="push">
+            <command commandId="gama.ui.devtools.cleanAndRebuild" label="Clean..." style="push">
                <parameter name="gama.ui.devtools.scope" value="selection"/>
             </command>
-            <command commandId="gama.ui.devtools.checkConfiguration" style="push"/>
-            <command commandId="gama.ui.devtools.updateJavaHeaders" style="push"/>
-            <command commandId="gama.ui.devtools.gamlReport" style="push"/>
-            <command commandId="gama.ui.devtools.generateTestStubs" style="push"/>
-            <separator name="new" visible="true"/>
-            <command commandId="gama.ui.devtools.openNewWizard" label="New GAMA Skill..." style="push">
-               <parameter name="gama.ui.devtools.wizardId" value="gama.ui.devtools.wizards.skill"/>
-            </command>
-            <command commandId="gama.ui.devtools.openNewWizard" label="New GAMA Operators..." style="push">
-               <parameter name="gama.ui.devtools.wizardId" value="gama.ui.devtools.wizards.operator"/>
-            </command>
-            <command commandId="gama.ui.devtools.openNewWizard" label="New GAMA Action..." style="push">
-               <parameter name="gama.ui.devtools.wizardId" value="gama.ui.devtools.wizards.action"/>
-            </command>
-            <command commandId="gama.ui.devtools.openNewWizard" label="New GAMA Type..." style="push">
-               <parameter name="gama.ui.devtools.wizardId" value="gama.ui.devtools.wizards.type"/>
-            </command>
-            <command commandId="gama.ui.devtools.openNewWizard" label="New GAML Test Model..." style="push">
-               <parameter name="gama.ui.devtools.wizardId" value="gama.ui.devtools.wizards.testModel"/>
-            </command>
+            <command commandId="gama.ui.devtools.updateJavaHeaders" label="Update headers..." style="push"/>
+            <command commandId="gama.ui.devtools.gamlReport" label="Report missing annotations..." style="push"/>
             <visibleWhen checkEnabled="false">
                <with variable="activeMenuSelection">
                   <iterate ifEmpty="false" operator="or">
                      <adapt type="org.eclipse.core.resources.IProject">
-                        <test property="org.eclipse.core.resources.projectNature" value="org.eclipse.jdt.core.javanature"/>
+                        <test property="gama.ui.devtools.gamaPlugin" forcePluginActivation="true"/>
                      </adapt>
                   </iterate>
                </with>
             </visibleWhen>
          </menu>
       </menuContribution>
+   </extension>
+
+   <extension point="org.eclipse.core.expressions.propertyTesters">
+      <propertyTester id="gama.ui.devtools.gamaProjectTester" class="gama.ui.devtools.util.GamaProjectTester"
+            namespace="gama.ui.devtools" properties="gamaPlugin" type="org.eclipse.core.resources.IProject"/>
    </extension>
 
    <!-- New wizards (also available in File > New > Other...) -->
