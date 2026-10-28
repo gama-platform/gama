@@ -34,6 +34,7 @@ public class ExportModelDialog extends TitleAreaDialog {
     private Button selectAllExperimentsButton;
     private Button oneFileButton;
     private Combo startupExperiment;
+    private Button showHomeButton;
     private Text title;
     private Text description;
     private Text image;
@@ -196,6 +197,16 @@ public class ExportModelDialog extends TitleAreaDialog {
         for (final String experiment : availableExperiments) startupExperiment.add(experiment);
         startupExperiment.select(0);
         startupExperiment.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+        showHomeButton = new Button(container, SWT.CHECK);
+        showHomeButton.setText("Show Home at startup (required when no default experiment is selected)");
+        showHomeButton.setSelection(true);
+        showHomeButton.setEnabled(false);
+        showHomeButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
+        startupExperiment.addListener(SWT.Selection, event -> {
+            final boolean hasDefault = startupExperiment.getSelectionIndex() > 0;
+            showHomeButton.setEnabled(hasDefault);
+            if (!hasDefault) showHomeButton.setSelection(true);
+        });
     }
 
     private Text textField(final Composite parent, final String label, final int style) {
@@ -273,7 +284,8 @@ public class ExportModelDialog extends TitleAreaDialog {
         }
 
         homeConfiguration = new LauncherConfiguration(title.getText().trim(), description.getText(),
-                "", image.getText().trim());
+                showHomeButton.getSelection(), startupExperiment.getSelectionIndex() == 0 ? "" : startupExperiment.getText(),
+                image.getText().trim());
         startupLabel = startupExperiment.getSelectionIndex() == 0 ? "" : startupExperiment.getText();
         super.okPressed();
     }
@@ -302,7 +314,7 @@ public class ExportModelDialog extends TitleAreaDialog {
 
     public LauncherConfiguration getLauncherConfiguration(final String defaultTitle, final String startupSelection) {
         return new LauncherConfiguration(homeConfiguration.title().isBlank() ? defaultTitle : homeConfiguration.title(),
-                homeConfiguration.description(), startupSelection, homeConfiguration.image());
+                homeConfiguration.description(), homeConfiguration.showHome(), startupSelection, homeConfiguration.image());
     }
 
     public String getStartupExperiment() { return startupLabel; }

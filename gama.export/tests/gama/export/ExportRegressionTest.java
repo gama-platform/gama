@@ -35,7 +35,7 @@ public final class ExportRegressionTest {
 					"Older launchers default to the home page");
 			final Path configuration = installation.resolve(LauncherConfiguration.FILE);
 			Files.createDirectories(configuration.getParent());
-			final var home = new LauncherConfiguration("Model \u00e9", "Description\nSecond line", "",
+			final var home = new LauncherConfiguration("Model \u00e9", "Description\nSecond line", true, "",
 					root.resolve("private-source-image.png").toString());
 			Files.writeString(configuration, home.serialize());
 			final var loadedHome = LauncherConfiguration.load(installation);
@@ -44,11 +44,19 @@ public final class ExportRegressionTest {
 			check(loadedHome.showHome(), "Home startup must be preserved");
 			check(loadedHome.image().equals(LauncherConfiguration.IMAGE), "Image must use its embedded path");
 			check(!home.serialize().contains("private-source-image"), "Do not embed the author's image path");
-			final var direct = new LauncherConfiguration("Model", "", "Run@project/model.gaml", "");
+			final var direct = new LauncherConfiguration("Model", "", false, "Run@project/model.gaml", "");
 			Files.writeString(configuration, direct.serialize());
 			check(LauncherConfiguration.load(installation).equals(direct), "Direct startup must round-trip");
 			check(!direct.showHome(), "A default experiment must launch directly");
-			check(!direct.serialize().contains("showHome"), "Startup mode must have a single source of truth");
+			final var homeWithDefault = new LauncherConfiguration("Model", "", true, "Run@project/model.gaml", "");
+			Files.writeString(configuration, homeWithDefault.serialize());
+			check(LauncherConfiguration.load(installation).equals(homeWithDefault),
+					"Home-first must preserve the default experiment");
+			final var noDefault = new LauncherConfiguration("Model", "", false, "", "");
+			check(noDefault.showHome(), "Without a default experiment Home is mandatory");
+			Files.writeString(configuration, "startupExperiment=Run@project/model.gaml\n");
+			check(!LauncherConfiguration.load(installation).showHome(),
+					"Configurations without the Home option preserve direct startup");
 
 			final Path project = Files.createDirectories(root.resolve("project"));
 			final Path baseline = Files.writeString(project.resolve("model.gaml"), "model test");

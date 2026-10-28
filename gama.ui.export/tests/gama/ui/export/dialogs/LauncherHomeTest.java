@@ -46,16 +46,18 @@ public final class LauncherHomeTest {
 
 		final Display display = new Display();
 		try {
-			checkDialog(true);
-			checkDialog(false);
-			checkHomeView(display);
+			checkDialog(false, true);
+			checkDialog(true, false);
+			checkDialog(true, true);
+			checkHomeView(display, false);
+			checkHomeView(display, true);
 		} finally {
 			display.dispose();
 		}
 		System.out.println("Launcher home routing and export dialog checks passed");
 	}
 
-	private static void checkHomeView(final Display display) throws Exception {
+	private static void checkHomeView(final Display display, final boolean singleExperiment) throws Exception {
 		final var helper = StartupModelHelper.getInstance();
 		final Field configuration = StartupModelHelper.class.getDeclaredField("configuration");
 		final Field selections = StartupModelHelper.class.getDeclaredField("selections");
@@ -65,13 +67,13 @@ public final class LauncherHomeTest {
 		final Object previousSelections = selections.get(helper);
 		final Shell shell = new Shell(display);
 		try {
-			configuration.set(helper, new LauncherConfiguration("A model", "Description", "", ""));
-			selections.set(helper, java.util.List.of("First", "Second"));
+			configuration.set(helper, new LauncherConfiguration("A model", "Description", true, "First", ""));
+			selections.set(helper, singleExperiment ? java.util.List.of("First") : java.util.List.of("First", "Second"));
 			final String previousPerspective = PerspectiveHelper.currentPerspectiveId;
 			try {
 				PerspectiveHelper.currentPerspectiveId = PerspectiveHelper.PERSPECTIVE_SIMULATION_ID;
 				try {
-					helper.launch("Second");
+					helper.launch("First");
 					throw new AssertionError("Choosing another experiment outside Home must be rejected");
 				} catch (final IllegalStateException expected) {}
 			} finally {
@@ -84,11 +86,14 @@ public final class LauncherHomeTest {
 			final var labels = java.util.Arrays.stream(content.getChildren())
 					.filter(org.eclipse.swt.widgets.Label.class::isInstance)
 					.map(org.eclipse.swt.widgets.Label.class::cast).map(org.eclipse.swt.widgets.Label::getText).toList();
-			check(labels.containsAll(java.util.List.of("A model", "Description", "Choose an experiment")),
+			check(labels.containsAll(java.util.List.of("A model", "Description")),
 					"Home must display its presentation");
+			check(labels.contains("Choose an experiment") != singleExperiment,
+					"Only multiple experiments need a choice prompt");
 			final var buttons = java.util.Arrays.stream(content.getChildren()).filter(Button.class::isInstance)
 					.map(Button.class::cast).map(Button::getText).toList();
-			check(buttons.equals(java.util.List.of("First", "Second", "Save Simulation Data...")),
+			check(buttons.equals(singleExperiment ? java.util.List.of("Run", "Save Simulation Data...")
+					: java.util.List.of("First", "Second", "Save Simulation Data...")),
 					"Home must expose every exported experiment and artifact saving");
 			view.setFocus();
 			view.dispose();
@@ -99,33 +104,39 @@ public final class LauncherHomeTest {
 		}
 	}
 
-	private static void checkDialog(final boolean showHome) throws Exception {
+	private static void checkDialog(final boolean hasDefault, final boolean showHome) throws Exception {
 		final var dialog = new ExportModelDialog(new String[] { "First", "Second" });
 		try {
 			dialog.create();
 			final Combo startup = field(dialog, "startupExperiment", Combo.class);
+			final Button home = field(dialog, "showHomeButton", Button.class);
+			check(home.getSelection() && !home.isEnabled(), "Home is mandatory without a default");
 			check(startup.getSelectionIndex() == 0 && startup.isEnabled(), "No default must mean Home-first");
 			check(startup.getItemCount() == 3, "The default selector must include None and all experiments");
 			field(dialog, "txtOutputPath", Text.class).setText(System.getProperty("java.io.tmpdir"));
 			final Button[] experiments = field(dialog, "buttons", Button[].class);
 			experiments[1].setSelection(true);
-			if (!showHome) {
+			if (hasDefault) {
 				startup.select(1);
+				startup.notifyListeners(SWT.Selection, null);
+				check(home.isEnabled(), "Home option must be independent when a default is selected");
 				dialog.okPressed();
 				check(!dialog.getShell().isDisposed(), "An unexported startup experiment must be rejected");
 				startup.select(2);
+				startup.notifyListeners(SWT.Selection, null);
+				home.setSelection(showHome);
 			}
 			field(dialog, "title", Text.class).setText("Custom title");
 			field(dialog, "description", Text.class).setText("Description");
 			dialog.okPressed();
 			check(dialog.getShell() == null || dialog.getShell().isDisposed(), "OK must close the dialog");
-			final var configuration = dialog.getLauncherConfiguration("Default", showHome ? "" : "Second");
+			final var configuration = dialog.getLauncherConfiguration("Default", hasDefault ? "Second" : "");
 			check(configuration.title().equals("Custom title") && configuration.description().equals("Description"),
 					"Presentation settings must survive SWT disposal");
 			check(configuration.showHome() == showHome
-					&& configuration.startupExperiment().equals(showHome ? "" : "Second"),
+					&& configuration.startupExperiment().equals(hasDefault ? "Second" : ""),
 					"Startup mode must survive SWT disposal");
-			check(dialog.getStartupExperiment().equals(showHome ? "" : "Second"),
+			check(dialog.getStartupExperiment().equals(hasDefault ? "Second" : ""),
 					"Default experiment must survive SWT disposal");
 		} finally {
 			dialog.close();

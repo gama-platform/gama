@@ -57,11 +57,15 @@ public final class LauncherHomeView extends ViewPart {
 				error.setText("Unable to load the home page image: " + imagePath);
 			}
 		}
-		final Label prompt = new Label(content, SWT.NONE);
-		prompt.setText("Choose an experiment");
+		final boolean singleExperiment = helper.getSelections().size() == 1;
+		if (!singleExperiment) {
+			final Label prompt = new Label(content, SWT.NONE);
+			prompt.setText("Choose an experiment");
+		}
 		for (final String selection : helper.getSelections()) {
 			final Button launch = new Button(content, SWT.PUSH);
-			launch.setText(helper.label(selection));
+			launch.setText(singleExperiment ? "Run" : helper.label(selection));
+			launch.setToolTipText("Run " + helper.label(selection));
 			launch.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 			launch.addListener(SWT.Selection, event -> {
 				launch.setEnabled(false);

@@ -7,7 +7,7 @@ import java.nio.file.Path;
 import java.util.Properties;
 
 /** Presentation and startup options embedded in an exported launcher. */
-public record LauncherConfiguration(String title, String description, String startupExperiment,
+public record LauncherConfiguration(String title, String description, boolean showHome, String startupExperiment,
 		String image) {
 
 	public static final String FILE = "configuration/gama-launcher.properties";
@@ -17,20 +17,19 @@ public record LauncherConfiguration(String title, String description, String sta
 		title = title == null ? "" : title;
 		description = description == null ? "" : description;
 		startupExperiment = startupExperiment == null ? "" : startupExperiment;
+		showHome = showHome || startupExperiment.isBlank();
 		image = image == null ? "" : image;
 	}
 
 	public static LauncherConfiguration defaults() {
-		return new LauncherConfiguration("", "", "", "");
+		return new LauncherConfiguration("", "", true, "", "");
 	}
-
-	/** Without a default experiment, startup stops at Home for the user to choose. */
-	public boolean showHome() { return startupExperiment.isBlank(); }
 
 	public String serialize() throws IOException {
 		final Properties properties = new Properties();
 		properties.setProperty("title", title);
 		properties.setProperty("description", description);
+		properties.setProperty("showHome", Boolean.toString(showHome));
 		properties.setProperty("startupExperiment", startupExperiment);
 		properties.setProperty("image", image.isBlank() ? "" : IMAGE);
 		final StringWriter writer = new StringWriter();
@@ -44,6 +43,7 @@ public record LauncherConfiguration(String title, String description, String sta
 		final Properties properties = new Properties();
 		try (var input = Files.newBufferedReader(file)) { properties.load(input); }
 		return new LauncherConfiguration(properties.getProperty("title", ""), properties.getProperty("description", ""),
+				Boolean.parseBoolean(properties.getProperty("showHome", "false")),
 				properties.getProperty("startupExperiment", ""), properties.getProperty("image", ""));
 	}
 }
