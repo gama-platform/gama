@@ -1,6 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
+   <extension point="org.eclipse.ui.activities">
+      <activity id="gama.ui.export.homeActivity" name="Simulation launcher home">
+         <enabledWhen><systemTest property="simulation_only" value="true"/></enabledWhen>
+      </activity>
+      <activityPatternBinding activityId="gama.ui.export.homeActivity"
+            pattern="gama\.ui\.export/gama\.ui\.export\.(perspectives|views)\.Home"/>
+   </extension>
+   <extension point="org.eclipse.ui.perspectives">
+      <perspective id="gama.ui.export.perspectives.Home" name="Home" fixed="true"
+            class="gama.ui.export.launcher.LauncherHomePerspective"/>
+   </extension>
+   <extension point="org.eclipse.ui.views">
+      <view id="gama.ui.export.views.Home" name="Home" restorable="false"
+            class="gama.ui.export.launcher.LauncherHomeView"/>
+   </extension>
    <extension point="org.eclipse.core.runtime.applications" id="SimulationApplication" name="GAMA Simulation Launcher">
       <application>
          <run class="gama.ui.export.launcher.SimulationApplication"/>
@@ -11,6 +26,7 @@
       <command id="gama.ui.navigator.commands.exportProjectAsSimulation" name="Export as Simulation Launcher" categoryId="gama.category"/>
       <command id="gama.application.commands.SelectExperiment" name="Select Experiment" categoryId="gama.category"/>
       <command id="gama.application.commands.SaveSimulationsArtifacts" name="Save Simulation Data" categoryId="gama.category"/>
+      <command id="gama.ui.export.home" name="Home" categoryId="gama.category"/>
    </extension>
    <extension point="org.eclipse.core.expressions.definitions">
       <definition id="gama.ui.export.isLauncher">
@@ -51,7 +67,10 @@
          <activeWhen><reference definitionId="gama.ui.export.isLauncherSimulation"/></activeWhen>
       </handler>
       <handler commandId="gama.application.commands.SaveSimulationsArtifacts" class="gama.ui.export.commands.SaveSimulationsArtifacts">
-         <activeWhen><reference definitionId="gama.ui.export.isLauncherSimulation"/></activeWhen>
+         <activeWhen><reference definitionId="gama.ui.export.isLauncher"/></activeWhen>
+      </handler>
+      <handler commandId="gama.ui.export.home" class="gama.ui.export.commands.OpenHome">
+         <activeWhen><reference definitionId="gama.ui.export.isLauncher"/></activeWhen>
       </handler>
    </extension>
    <extension point="org.eclipse.ui.menus">
@@ -68,6 +87,10 @@
          </command>
       </menuContribution>
       <menuContribution locationURI="toolbar:gama.ui.toolbar?after=additions">
+         <command commandId="gama.ui.export.home" label="Home" tooltip="Return to the launcher home page"
+               icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/perspective.modeling.svg">
+            <visibleWhen checkEnabled="false"><reference definitionId="gama.ui.export.isLauncherSimulation"/></visibleWhen>
+         </command>
          <command commandId="gama.application.commands.SelectExperiment" label="Select Another Experiment"
                icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.project.svg">
             <visibleWhen checkEnabled="false"><reference definitionId="gama.ui.export.isLauncherSimulation"/></visibleWhen>
@@ -78,6 +101,9 @@
          </command>
       </menuContribution>
       <menuContribution locationURI="menu:simulationMenu?after=additions">
+         <command commandId="gama.ui.export.home" label="Home" tooltip="Return to the launcher home page">
+            <visibleWhen checkEnabled="false"><reference definitionId="gama.ui.export.isLauncherSimulation"/></visibleWhen>
+         </command>
          <command commandId="gama.application.commands.SelectExperiment" label="Select Another Experiment"
                icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.project.svg">
             <visibleWhen checkEnabled="false"><reference definitionId="gama.ui.export.isLauncherSimulation"/></visibleWhen>

@@ -51,6 +51,12 @@ import gama.export.ArchiveBuilder;
 
 public class GamaZipBuilder {
 
+    private LauncherConfiguration launcherConfiguration = LauncherConfiguration.defaults();
+
+    public void setLauncherConfiguration(final LauncherConfiguration configuration) {
+        launcherConfiguration = java.util.Objects.requireNonNull(configuration);
+    }
+
 
     /**
 	 * The set of plugins which must always be included in a Gama distribution.
@@ -340,6 +346,9 @@ public class GamaZipBuilder {
         final Path zipOutputPath = isOneFileExport ? tmpDirectoryPath.resolve("archive.zip") : outputStagingPath;
 
         try(ArchiveBuilder archive = new ArchiveBuilder(zipOutputPath,isOneFileExport)){
+
+            dontZipPaths.add(eclipsePath.resolve(LauncherConfiguration.FILE));
+            dontZipPaths.add(eclipsePath.resolve(LauncherConfiguration.IMAGE));
         
             ///////////////////////////////////////////
             // Zipping GAMA in the desired directory //
@@ -483,6 +492,13 @@ public class GamaZipBuilder {
             ////////////////////////////////////
             // Embedding the target projects  //
             ////////////////////////////////////
+
+            archive.addEntryFromString(launcherConfiguration.serialize(),
+                    appRootPath.relativize(eclipsePath.resolve(LauncherConfiguration.FILE)).toString());
+            if (!launcherConfiguration.image().isBlank()) {
+                archive.addEntry(Path.of(launcherConfiguration.image()),
+                        appRootPath.relativize(eclipsePath.resolve(LauncherConfiguration.IMAGE)).toString());
+            }
 
             ////////////////////////////////////////////////////////////////////
             // Computing the data files that lie outside the exported project //

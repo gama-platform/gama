@@ -5,6 +5,9 @@ import java.util.Arrays;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.bindings.keys.KeySequence;
 import org.eclipse.jface.bindings.keys.ParseException;
+import org.eclipse.ui.IPerspectiveDescriptor;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PerspectiveAdapter;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.WorkbenchWindow;
 import org.eclipse.ui.internal.keys.BindingService;
@@ -24,8 +27,13 @@ public final class SimulationWorkbenchAdvisor extends ApplicationWorkbenchAdviso
 	@Override
 	protected void openStartupModel() {
 		configureLauncherUI();
-		StartupModelHelper.getInstance().startSimulation();
+		if (!StartupModelHelper.getInstance().getConfiguration().showHome()) {
+			StartupModelHelper.getInstance().startSimulation();
+		}
 	}
+
+	@Override
+	public String getInitialWindowPerspectiveId() { return LauncherHomePerspective.ID; }
 
 	private void configureLauncherUI() {
 		final var workbench = PlatformUI.getWorkbench();
@@ -42,6 +50,12 @@ public final class SimulationWorkbenchAdvisor extends ApplicationWorkbenchAdviso
 		}
 		for (final var window : workbench.getWorkbenchWindows()) {
 			if (!(window instanceof WorkbenchWindow internal)) continue;
+			window.addPerspectiveListener(new PerspectiveAdapter() {
+				@Override
+				public void perspectiveActivated(final IWorkbenchPage page, final IPerspectiveDescriptor perspective) {
+					if (LauncherHomePerspective.ID.equals(perspective.getId())) internal.setCoolBarVisible(true);
+				}
+			});
 			final var menu = internal.getMenuBarManager();
 			for (final IContributionItem item : menu.getItems()) {
 				if ("file".equals(item.getId()) || "edit".equals(item.getId())

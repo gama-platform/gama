@@ -79,7 +79,6 @@ import gama.api.utils.tests.TestSelection;
 import gama.core.outputs.InspectDisplayOutput;
 import gama.core.outputs.display.AbstractDisplayGraphics;
 import gama.dev.DEBUG;
-import gama.dev.FLAGS;
 import gama.ui.application.workbench.PerspectiveHelper;
 import gama.ui.application.workbench.SimulationPerspectiveDescriptor;
 import gama.ui.shared.interfaces.IDisplayLayoutManager;
@@ -682,7 +681,7 @@ public class SwtGui implements IGui {
 
 	@Override
 	public void showLaunchingOverlay(final String perspectiveId) {
-		showLaunchingOverlay(perspectiveId, !FLAGS.SIMULATION_ONLY);
+		showLaunchingOverlay(perspectiveId, true);
 	}
 
 	@Override

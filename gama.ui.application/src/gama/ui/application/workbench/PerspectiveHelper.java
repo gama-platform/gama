@@ -37,7 +37,6 @@ import gama.api.kernel.species.IModelSpecies;
 import gama.api.ui.IGui;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
-import gama.dev.FLAGS;
 
 /**
  * The Class PerspectiveHelper.
@@ -54,6 +53,18 @@ public class PerspectiveHelper {
 
 	/** The Constant PERSPECTIVE_MODELING_ID. */
 	public static final String PERSPECTIVE_MODELING_ID = IGui.PERSPECTIVE_MODELING_ID;
+
+	private static String homePerspectiveId = PERSPECTIVE_MODELING_ID;
+
+	public static String getHomePerspectiveId() { return homePerspectiveId; }
+
+	/** Selects the application's idle perspective before creating the workbench. */
+	public static void setHomePerspectiveId(final String id) {
+		homePerspectiveId = java.util.Objects.requireNonNull(id);
+		currentPerspectiveId = id;
+	}
+
+	public static boolean isHomePerspective(final String id) { return homePerspectiveId.equals(id); }
 
 	/** The Constant PERSPECTIVE_SIMULATION_ID. */
 	public static final String PERSPECTIVE_SIMULATION_ID = "gama.ui.application.perspectives.SimulationPerspective";
@@ -137,7 +148,7 @@ public class PerspectiveHelper {
 	 *
 	 * @return true, if is modeling perspective
 	 */
-	public static boolean isModelingPerspective() { return PERSPECTIVE_MODELING_ID.equals(currentPerspectiveId); }
+	public static boolean isModelingPerspective() { return isHomePerspective(currentPerspectiveId); }
 
 	/**
 	 * Checks if is simulation perspective.
@@ -169,8 +180,7 @@ public class PerspectiveHelper {
 	public static final boolean openModelingPerspective(final boolean immediately, final boolean memorizeEditors) {
 		// AD 08/18: turn off autosave to prevent workspace corruption
 		// AD 04/26: turn off immediately to prevent locking
-		if (FLAGS.SIMULATION_ONLY) return true;
-		return openPerspective(PERSPECTIVE_MODELING_ID, false, false, memorizeEditors);
+		return openPerspective(homePerspectiveId, false, false, memorizeEditors);
 	}
 
 	/**

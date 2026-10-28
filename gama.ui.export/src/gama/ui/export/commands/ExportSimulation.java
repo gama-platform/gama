@@ -71,6 +71,11 @@ public final class ExportSimulation extends AbstractHandler {
 			final Path output = Path.of(dialog.getOutputPath(), dialog.getOutputFileName());
 			final var builder = new GamaZipBuilder(models.plugins(), models.projects(), modelPath, selection,
 					models.dataFiles(), dialog.getIncludeJdk(), dialog.getOneFile());
+			final String startup = selected.stream()
+					.filter(experiment -> experiment.label(multipleModels).equals(dialog.getStartupExperiment()))
+					.map(experiment -> experiment.launcherSelection(multipleSelectedModels)).findFirst().orElse("");
+			builder.setLauncherConfiguration(dialog.getLauncherConfiguration(
+					files.size() == 1 ? files.getFirst().getName() : files.getFirst().getProject().getName(), startup));
 			new ProgressMonitorDialog(window.getShell()).run(true, true, monitor -> {
 				try {
 					builder.zip(output.toString(), monitor);

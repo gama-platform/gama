@@ -329,7 +329,7 @@ public class LaunchingOverlay {
 			final GamaIcon stopIcon = GamaIcon.named(IGamaIcons.EXPERIMENT_STOP);
 			cancelItem.setImage(stopIcon.image());
 			cancelItem.setDisabledImage(stopIcon.disabled());
-			cancelItem.setToolTipText("Cancel launch and return to the modelling perspective");
+			cancelItem.setToolTipText("Cancel launch and return to the home perspective");
 			cancelItem.addSelectionListener(
 					org.eclipse.swt.events.SelectionListener.widgetSelectedAdapter(e -> {
 						cancelItem.setEnabled(false);

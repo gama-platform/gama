@@ -45,7 +45,7 @@ final class LayeredDisplayPerspectiveListener implements IPerspectiveListener {
 				? GamaPreferences.Displays.CHART_PERSPECTIVE.getValue()
 				: GamaPreferences.Displays.CORE_DISPLAY_PERSPECTIVE.getValue());
 
-		if (PerspectiveHelper.PERSPECTIVE_MODELING_ID.equals(perspective.getId())) {
+		if (PerspectiveHelper.isHomePerspective(perspective.getId())) {
 			if (output != null && decorator.view.getDisplaySurface() != null && !continueDrawing) {
 				previousState = output.isPaused();
 				output.setPaused(true);

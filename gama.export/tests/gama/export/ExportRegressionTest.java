@@ -31,6 +31,22 @@ public final class ExportRegressionTest {
 					"Absolute workspaces must not be changed");
 			check(WorkspacePaths.resolveAgainstInstallation((String) null) == null, "Missing workspace preference");
 			check(WorkspacePaths.resolveAgainstInstallation("").isEmpty(), "Empty workspace preference");
+			check(LauncherConfiguration.load(installation).equals(LauncherConfiguration.defaults()),
+					"Older launchers default to the home page");
+			final Path configuration = installation.resolve(LauncherConfiguration.FILE);
+			Files.createDirectories(configuration.getParent());
+			final var home = new LauncherConfiguration("Model \u00e9", "Description\nSecond line", true, "",
+					root.resolve("private-source-image.png").toString());
+			Files.writeString(configuration, home.serialize());
+			final var loadedHome = LauncherConfiguration.load(installation);
+			check(loadedHome.title().equals(home.title()) && loadedHome.description().equals(home.description()),
+					"Home text must round-trip in UTF-8");
+			check(loadedHome.showHome(), "Home startup must be preserved");
+			check(loadedHome.image().equals(LauncherConfiguration.IMAGE), "Image must use its embedded path");
+			check(!home.serialize().contains("private-source-image"), "Do not embed the author's image path");
+			final var direct = new LauncherConfiguration("Model", "", false, "Run@project/model.gaml", "");
+			Files.writeString(configuration, direct.serialize());
+			check(LauncherConfiguration.load(installation).equals(direct), "Direct startup must round-trip");
 
 			final Path project = Files.createDirectories(root.resolve("project"));
 			final Path baseline = Files.writeString(project.resolve("model.gaml"), "model test");
@@ -69,6 +85,6 @@ public final class ExportRegressionTest {
 				for (final Path path : paths.sorted(Comparator.reverseOrder()).toList()) { Files.delete(path); }
 			}
 		}
-		System.out.println("Export path and artifact regression checks passed");
+		System.out.println("Export path, launcher configuration and artifact regression checks passed");
 	}
 }

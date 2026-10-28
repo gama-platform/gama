@@ -234,9 +234,6 @@
                      <reference
                            definitionId="isSimulationExisting">
                      </reference>
-                     <not>
-                        <systemTest property="simulation_only" value="true"/>
-                     </not>
                   </and>
                </visibleWhen>
             </command>
@@ -706,9 +703,6 @@
                      <reference
                            definitionId="isSimulationExisting">
                      </reference>
-                     <not>
-                     <systemTest property="simulation_only" value="true"/>
-                     </not>
                   </and>
                </visibleWhen>
             </command>
@@ -819,14 +813,7 @@
             class="gama.ui.experiment.commands.CancelRun"
             commandId="gama.application.commands.Cancel">
          <activeWhen>
-            <and>
-                  <reference
-                        definitionId="isInSimulationPerspective">
-                  </reference>
-                  <not>
-                        <systemTest property="simulation_only" value="true"/>
-                  </not>
-            </and>
+            <reference definitionId="isInSimulationPerspective"/>
          </activeWhen>
       </handler>
       <handler

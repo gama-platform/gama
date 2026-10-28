@@ -3,6 +3,7 @@ package gama.ui.export.launcher;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -13,8 +14,10 @@ import gama.api.kernel.species.IModelSpecies;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
 import gama.export.EmbeddedWorkspace;
+import gama.export.LauncherConfiguration;
 import gama.export.SimulationArtifacts;
 import gama.ui.export.dialogs.PickExperimentDialog;
+import gama.workspace.manager.WorkspacePaths;
 
 public final class StartupModelHelper {
 
@@ -25,7 +28,19 @@ public final class StartupModelHelper {
 	private final EmbeddedWorkspace workspace = new EmbeddedWorkspace();
 	private String modelPath;
 	private String experiment;
-	private IModelSpecies model;
+	private LauncherConfiguration configuration;
+	private List<String> selections = List.of();
+	private Path projectPath;
+
+	public LauncherConfiguration getConfiguration() { return configuration; }
+
+	public List<String> getSelections() { return selections; }
+
+	public String label(final String selection) {
+		final int separator = selection.lastIndexOf('@');
+		return separator < 0 ? selection
+				: selection.substring(0, separator) + CONTEXTUAL_SEPARATOR + selection.substring(separator + 1);
+	}
 
 	private StartupModelHelper() {}
 
@@ -35,27 +50,34 @@ public final class StartupModelHelper {
 		workspace.registerProjects();
 		final String selection = GamaPreferences.Interface.CORE_DEFAULT_EXPERIMENT.getValue();
 		if (selection == null || selection.isBlank()) throw new IOException("No startup experiment is configured");
-		if (selection.contains("#") || selection.contains("@")) return pickExperiment();
-		experiment = selection;
-		modelPath = GamaPreferences.Interface.CORE_DEFAULT_MODEL.getValue().getPath(null);
+		selections = List.of(selection.split("#"));
+		configuration = LauncherConfiguration.load(WorkspacePaths.installationDirectory());
+		final String startup = configuration.startupExperiment().isBlank()
+				? selections.getFirst() : configuration.startupExperiment();
+		if (!selections.contains(startup)) throw new IOException("The configured startup experiment is not exported");
+		select(startup);
 		return true;
 	}
 
-	public boolean pickExperiment() {
-		final String[] selections = GamaPreferences.Interface.CORE_DEFAULT_EXPERIMENT.getValue().split("#");
-		final String[] labels = Arrays.stream(selections).map(selection -> {
-			final int separator = selection.lastIndexOf('@');
-			return separator < 0 ? selection
-					: selection.substring(0, separator) + CONTEXTUAL_SEPARATOR + selection.substring(separator + 1);
-		}).toArray(String[]::new);
-		final var dialog = new PickExperimentDialog(labels);
-		if (dialog.open() != IDialogConstants.OK_ID) return false;
-		final int index = Arrays.asList(labels).indexOf(dialog.getSelectedExperiment());
-		final String selected = selections[index];
+	private void select(final String selected) {
 		final int separator = selected.lastIndexOf('@');
 		experiment = separator < 0 ? selected : selected.substring(0, separator);
 		modelPath = separator < 0 ? GamaPreferences.Interface.CORE_DEFAULT_MODEL.getValue().getPath(null)
 				: selected.substring(separator + 1);
+	}
+
+	public void launch(final String selection) {
+		if (!selections.contains(selection)) throw new IllegalArgumentException("Unknown experiment: " + selection);
+		select(selection);
+		startSimulation();
+	}
+
+	public boolean pickExperiment() {
+		final String[] labels = selections.stream().map(this::label).toArray(String[]::new);
+		final var dialog = new PickExperimentDialog(labels);
+		if (dialog.open() != IDialogConstants.OK_ID) return false;
+		final int index = Arrays.asList(labels).indexOf(dialog.getSelectedExperiment());
+		select(selections.get(index));
 		return true;
 	}
 
@@ -76,18 +98,18 @@ public final class StartupModelHelper {
 		}
 		GAMA.runGuiExperiment(experiment, compiled);
 		if (GAMA.getExperiment() == compiled.getExperiment(experiment)) {
-			model = compiled;
+			projectPath = Path.of(compiled.getProjectPath());
 		} else {
 			compiled.dispose();
 		}
 	}
 
 	public boolean areThereAnyArtifactsToSave() throws IOException {
-		return model != null && artifacts.hasChanges(Path.of(model.getProjectPath()));
+		return projectPath != null && artifacts.hasChanges(projectPath);
 	}
 
 	public boolean saveSimulationArtifacts(final Path target, final IProgressMonitor monitor) throws IOException {
-		if (model == null) throw new IOException("No simulation project is available");
-		return artifacts.save(Path.of(model.getProjectPath()), target, monitor);
+		if (projectPath == null) throw new IOException("No simulation project is available");
+		return artifacts.save(projectPath, target, monitor);
 	}
 }

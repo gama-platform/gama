@@ -1,23 +1,29 @@
 package gama.ui.export.dialogs;
 
-import java.util.List;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 import gama.api.runtime.SystemInfo;
+import gama.export.LauncherConfiguration;
 
 public class ExportModelDialog extends TitleAreaDialog {
 
@@ -27,6 +33,13 @@ public class ExportModelDialog extends TitleAreaDialog {
     private Button includeJdkButton;
     private Button selectAllExperimentsButton;
     private Button oneFileButton;
+    private Button showHomeButton;
+    private Combo startupExperiment;
+    private Text title;
+    private Text description;
+    private Text image;
+    private LauncherConfiguration homeConfiguration;
+    private String startupLabel;
 
     private String outputPath = "";
     private String outputFileName = "";
@@ -64,6 +77,7 @@ public class ExportModelDialog extends TitleAreaDialog {
 
         createExperimentSection(container);
         createOptionsSection(container);
+        createHomeSection(container);
         createPathSection(container);
         createFileNameSection(container);
 
@@ -159,6 +173,46 @@ public class ExportModelDialog extends TitleAreaDialog {
         });
     }
 
+    private void createHomeSection(final Composite container) {
+        final CLabel heading = new CLabel(container, SWT.NONE);
+        heading.setText("Launcher home page:");
+        heading.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
+        title = textField(container, "Title", SWT.SINGLE);
+        description = textField(container, "Description", SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
+        ((GridData) description.getLayoutData()).heightHint = 60;
+        image = textField(container, "Image (optional)", SWT.SINGLE);
+        final Button browse = new Button(container, SWT.PUSH);
+        browse.setText("Choose image...");
+        browse.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 3, 1));
+        browse.addListener(SWT.Selection, event -> {
+            final FileDialog dialog = new FileDialog(getShell(), SWT.OPEN);
+            dialog.setFilterExtensions(new String[] { "*.png;*.jpg;*.jpeg;*.gif;*.bmp", "*.*" });
+            final String selected = dialog.open();
+            if (selected != null) image.setText(selected);
+        });
+        showHomeButton = new Button(container, SWT.CHECK);
+        showHomeButton.setText("Show the home page before launching an experiment");
+        showHomeButton.setSelection(true);
+        showHomeButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
+        final CLabel label = new CLabel(container, SWT.NONE);
+        label.setText("Otherwise launch:");
+        startupExperiment = new Combo(container, SWT.DROP_DOWN | SWT.READ_ONLY);
+        startupExperiment.setItems(availableExperiments);
+        startupExperiment.select(0);
+        startupExperiment.setEnabled(false);
+        startupExperiment.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+        showHomeButton.addListener(SWT.Selection,
+                event -> startupExperiment.setEnabled(!showHomeButton.getSelection()));
+    }
+
+    private Text textField(final Composite parent, final String label, final int style) {
+        final CLabel caption = new CLabel(parent, SWT.NONE);
+        caption.setText(label);
+        final Text field = new Text(parent, SWT.BORDER | style);
+        field.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+        return field;
+    }
+
     private void createFileNameSection(Composite container) {
         CLabel lblPath = new CLabel(container, SWT.NONE);
         lblPath.setText("Export file name : ");
@@ -210,6 +264,24 @@ public class ExportModelDialog extends TitleAreaDialog {
             return;
         }
 
+        if (!showHomeButton.getSelection() && !selectedExperiments.contains(startupExperiment.getText())) {
+            setMessage("The startup experiment must be selected for export.", IMessageProvider.ERROR);
+            return;
+        }
+        if (!image.getText().isBlank()) {
+            try {
+                final Path path = Path.of(image.getText().trim());
+                if (!Files.isRegularFile(path)) throw new IllegalArgumentException("The image does not exist");
+                new ImageData(path.toString());
+            } catch (final RuntimeException e) {
+                setMessage("Choose a readable image file.", IMessageProvider.ERROR);
+                return;
+            }
+        }
+
+        homeConfiguration = new LauncherConfiguration(title.getText().trim(), description.getText(),
+                showHomeButton.getSelection(), "", image.getText().trim());
+        startupLabel = startupExperiment.getText();
         super.okPressed();
     }
 
@@ -234,4 +306,11 @@ public class ExportModelDialog extends TitleAreaDialog {
     public String[] getSelectedExperiments() {
         return selectedExperiments.toArray(new String[0]);
     }
+
+    public LauncherConfiguration getLauncherConfiguration(final String defaultTitle, final String startupSelection) {
+        return new LauncherConfiguration(homeConfiguration.title().isBlank() ? defaultTitle : homeConfiguration.title(),
+                homeConfiguration.description(), homeConfiguration.showHome(), startupSelection, homeConfiguration.image());
+    }
+
+    public String getStartupExperiment() { return startupLabel; }
 }
