@@ -18,6 +18,11 @@ public class InstallModelTest {
 		var actual = InstallModel.projects(repository, source, Kind.CORE);
 		check(actual.stream().anyMatch(p -> p.name().equals("gama.core") && p.recommended()), "Core module selected");
 		check(actual.stream().anyMatch(p -> p.name().equals("gama.parent") && p.recommended()), "Parent selected");
+		List<String> exportProjects = List.of("gama.export", "gama.ui.export", "gama.feature.export");
+		for (String name : exportProjects) {
+			check(actual.stream().anyMatch(p -> p.name().equals(name) && p.recommended()),
+					"Export project preselected from gama.parent/pom.xml: " + name);
+		}
 		check(actual.stream().noneMatch(p -> p.directory().getNameCount() > repository.getNameCount() + 1),
 				"Only top-level core projects");
 		try (var input = Files.newInputStream(repository.resolve("gama.ui.devtools/utils/" + InstallModel.PROJECT_SETS))) {
@@ -25,6 +30,9 @@ public class InstallModelTest {
 			check(sets.get("==================== CORE").containsAll(List.of("gama.core", "gama.api")),
 					"Java project handles parsed");
 			check(sets.get("==================== BUILD").contains("gama.parent"), "Resource handles parsed");
+			var exportSet = sets.get("==================== EXPORT");
+			check(exportSet != null && exportSet.size() == exportProjects.size()
+					&& exportSet.containsAll(exportProjects), "EXPORT working set contains all three export projects");
 			check(sets.containsKey(InstallModel.COMMUNITY_SET), "COMMUNITY set has the same naming format");
 			check(sets.keySet().stream().noneMatch(s -> s.endsWith("EXPERIMENTAL")), "No EXPERIMENTAL set");
 		}

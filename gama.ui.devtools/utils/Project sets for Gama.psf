@@ -7,6 +7,7 @@
 <project reference="1.0,https://github.com/gama-platform/gama.git,main,gama.dependencies"/>
 <project reference="1.0,https://github.com/gama-platform/gama.git,main,gama.dev"/>
 <project reference="1.0,https://github.com/gama-platform/gama.git,main,gama.documentation"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,main,gama.export"/>
 <project reference="1.0,https://github.com/gama-platform/gama.git,main,gama.extension.batch"/>
 <project reference="1.0,https://github.com/gama-platform/gama.git,main,gama.extension.bdi"/>
 <project reference="1.0,https://github.com/gama-platform/gama.git,main,gama.extension.database"/>
@@ -30,6 +31,7 @@
 <project reference="1.0,https://github.com/gama-platform/gama.git,main,gama.feature.core"/>
 <project reference="1.0,https://github.com/gama-platform/gama.git,main,gama.feature.dependencies"/>
 <project reference="1.0,https://github.com/gama-platform/gama.git,main,gama.feature.devtools"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,main,gama.feature.export"/>
 <project reference="1.0,https://github.com/gama-platform/gama.git,main,gama.feature.extension.image"/>
 <project reference="1.0,https://github.com/gama-platform/gama.git,main,gama.feature.extension.sound"/>
 <project reference="1.0,https://github.com/gama-platform/gama.git,main,gama.feature.extension.stats"/>
@@ -52,6 +54,7 @@
 <project reference="1.0,https://github.com/gama-platform/gama.git,main,gama.ui.display.opengl4"/>
 <project reference="1.0,https://github.com/gama-platform/gama.git,main,gama.ui.editor"/>
 <project reference="1.0,https://github.com/gama-platform/gama.git,main,gama.ui.experiment"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,main,gama.ui.export"/>
 <project reference="1.0,https://github.com/gama-platform-plugins/gama.graphical.modeling.git,GAMA_2026-06,gama.ui.feature.diagram"/>
 <project reference="1.0,https://github.com/gama-platform/gama.git,main,gama.ui.navigator"/>
 <project reference="1.0,https://github.com/gama-platform/gama.git,main,gama.ui.shared"/>
@@ -86,6 +89,11 @@
 <workingSets editPageId="org.eclipse.jdt.ui.JavaWorkingSetPage" id="1792927562738_18" label="==================== DEV" name="==================== DEV">
 <item elementID="=gama.ui.devtools" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
 <item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/gama.feature.devtools" type="4"/>
+</workingSets>
+<workingSets editPageId="org.eclipse.jdt.ui.JavaWorkingSetPage" id="1793165304294_18" label="==================== EXPORT" name="==================== EXPORT">
+<item elementID="=gama.ui.export" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/gama.feature.export" type="4"/>
+<item elementID="=gama.export" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
 </workingSets>
 <workingSets editPageId="org.eclipse.jdt.ui.JavaWorkingSetPage" id="1708537359891_6" label="==================== EXTENSIONS" name="==================== EXTENSIONS">
 <item elementID="=gama.extension.traffic" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
@@ -139,7 +147,5 @@
 <item elementID="=gama.ui.application" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
 <item elementID="=gama.ui.navigator" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
 <item elementID="=gama.ui.display.opengl4" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
-</workingSets>
-<workingSets editPageId="org.eclipse.jdt.ui.JavaWorkingSetPage" id="gama-community" label="==================== COMMUNITY" name="==================== COMMUNITY">
 </workingSets>
 </psf>

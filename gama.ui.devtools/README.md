@@ -74,7 +74,8 @@ specific editor bindings can still override it; configure these in *Preferences 
 The **Install** section provides three variants of the same wizard:
 
 - **Core plugins** uses `https://github.com/gama-platform/gama.git`, branch `main`. It lists top-level
-  Eclipse projects, preselecting modules from `gama.parent/pom.xml` plus `gama.parent`.
+  Eclipse projects, preselecting those listed in `gama.parent/pom.xml` plus `gama.parent`, including
+  `gama.export`, `gama.ui.export` and `gama.feature.export`. Already imported projects are not preselected.
 - **Graphical editor** uses `https://github.com/gama-platform-plugins/gama.graphical.modeling.git`,
   branch `GAMA_2026-06`, with all its Eclipse projects preselected.
 - **Community plugins** discovers repositories in `https://github.com/gama-platform-plugins` and lists their
@@ -96,7 +97,9 @@ are shown but not selected, and duplicate project names across repositories must
 only one.
 
 The final page offers additive working sets based on `utils/Project sets for Gama.psf`. Choose which sets
-to create/update. Existing members are preserved and missing projects are ignored. Selected community projects
+to create/update. Core installation preselects the **==================== EXPORT** working set, containing
+the three export projects, alongside the other core working sets. Existing members are preserved and missing
+projects are ignored. Selected community projects
 that exist in the workspace are added to **==================== COMMUNITY**; it is populated dynamically rather
 than maintained as an obsolete fixed experimental-project list. An option displays working sets as roots in
 both Project Explorer and Package Explorer.
