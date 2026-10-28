@@ -221,7 +221,7 @@ public class SimulationPopulation extends GamaPopulation<ISimulationAgent> imple
 		scope.getGui().getStatus().waitStatus("Instantiating agents", IStatusMessage.SIMULATION_ICON, () -> {
 			final Map<String, Object> firstInitValues =
 					initialValues.isEmpty() ? ParametersSet.EMPTY : initialValues.get(index);
-			final Object firstValue = !firstInitValues.isEmpty() ? firstInitValues.values().toArray()[0] : null;
+			final Object firstValue = !firstInitValues.isEmpty() ? firstInitValues.values().iterator().next() : null;
 			if (firstValue instanceof ISerialisedAgent sa) {
 				sim.updateWith(scope, sa);
 			} else {
