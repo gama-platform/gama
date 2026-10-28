@@ -29,6 +29,8 @@ import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.menus.CommandContributionItem;
+import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 
 import gama.api.additions.GamaBundleLoader;
@@ -181,6 +183,17 @@ public class EditorToolbar {
 					automatic.setEnabled(editor.getResource() instanceof IFile);
 					GamaMenu.action(mainMenu, "Validate now", e -> editor.validateNow(), null)
 							.setEnabled(!editor.isAutomaticValidationEnabled());
+					final Command export = getCommand("gama.ui.export.model");
+					if (export != null && export.isDefined()) {
+						separate();
+						final var parameters = new CommandContributionItemParameter(editor.getSite(), null,
+								export.getId(), CommandContributionItem.STYLE_PUSH);
+						parameters.label = "Export as standalone model...";
+						parameters.icon = GamaIcon.named("navigator/menu.export").descriptor();
+						final var contribution = new CommandContributionItem(parameters);
+						contribution.fill(mainMenu, -1);
+						mainMenu.addDisposeListener(event -> contribution.dispose());
+					}
 				}
 
 			};

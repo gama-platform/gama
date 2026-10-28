@@ -29,6 +29,7 @@ import gama.dev.DEBUG;
 import gama.export.ExportModels;
 import gama.export.GamaZipBuilder;
 import gama.ui.export.dialogs.ExportModelDialog;
+import gama.ui.navigator.view.contents.WrappedExperimentContent;
 
 public final class ExportSimulation extends AbstractHandler {
 
@@ -45,10 +46,16 @@ public final class ExportSimulation extends AbstractHandler {
 				files = List.of(input.getFile());
 			} else {
 				final var selection = HandlerUtil.getCurrentSelection(event);
-				if (!(selection instanceof IStructuredSelection structured)) return null;
-				final IResource resource = Adapters.adapt(structured.getFirstElement(), IResource.class);
-				if (!(resource instanceof IContainer container)) return null;
-				files = ExportModels.modelFiles(container);
+				if (!(selection instanceof IStructuredSelection structured) || structured.size() != 1)
+					throw new ExecutionException("Select one model, experiment, folder or project to export");
+				final IResource resource = selectedResource(structured.getFirstElement());
+				if (resource instanceof IFile file) {
+					files = List.of(file);
+				} else if (resource instanceof IContainer container) {
+					files = ExportModels.modelFiles(container);
+				} else {
+					throw new ExecutionException("The selection does not contain a model to export");
+				}
 			}
 			if (GamaPreferences.Modeling.EDITOR_SAVE.getValue()
 					&& !window.getActivePage().saveAllEditors(GamaPreferences.Modeling.EDITOR_SAVE_ASK.getValue()))
@@ -97,6 +104,11 @@ public final class ExportSimulation extends AbstractHandler {
 			reportFailure(e);
 		}
 		return null;
+	}
+
+	private static IResource selectedResource(final Object selection) {
+		if (selection instanceof WrappedExperimentContent experiment) return experiment.getFile().getResource();
+		return Adapters.adapt(selection, IResource.class);
 	}
 
 	private static void reportFailure(final Throwable error) {

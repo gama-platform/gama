@@ -22,7 +22,8 @@
       </application>
    </extension>
    <extension point="org.eclipse.ui.commands">
-      <command id="gama.ui.export.model" name="Export Model as Simulation Launcher" categoryId="gama.category"/>
+      <command id="gama.ui.export.model" name="Export as standalone model" categoryId="gama.category"/>
+      <command id="gama.ui.export.selectedModel" name="Export as standalone model" categoryId="gama.category"/>
       <command id="gama.ui.navigator.commands.exportProjectAsSimulation" name="Export as Simulation Launcher" categoryId="gama.category"/>
       <command id="gama.application.commands.SaveSimulationsArtifacts" name="Save Simulation Data" categoryId="gama.category"/>
       <command id="gama.ui.export.home" name="Home" categoryId="gama.category"/>
@@ -44,10 +45,28 @@
             <with variable="activeEditorId"><equals value="gaml.compiler.Gaml"/></with>
          </and>
       </definition>
+      <definition id="gama.ui.export.isModelSelection">
+         <and>
+            <not><reference definitionId="gama.ui.export.isLauncher"/></not>
+            <with variable="selection">
+               <count value="1"/>
+               <iterate ifEmpty="false">
+                  <or>
+                     <instanceof value="gama.ui.navigator.view.contents.WrappedGamaFile"/>
+                     <instanceof value="gama.ui.navigator.view.contents.WrappedExperimentContent"/>
+                  </or>
+               </iterate>
+            </with>
+         </and>
+      </definition>
    </extension>
    <extension point="org.eclipse.ui.handlers">
       <handler commandId="gama.ui.export.model" class="gama.ui.export.commands.ExportSimulation">
          <activeWhen><reference definitionId="gama.ui.export.isModelEditor"/></activeWhen>
+      </handler>
+      <handler commandId="gama.ui.export.selectedModel" class="gama.ui.export.commands.ExportSimulation">
+         <activeWhen><reference definitionId="gama.ui.export.isModelSelection"/></activeWhen>
+         <enabledWhen><reference definitionId="gama.ui.export.isModelSelection"/></enabledWhen>
       </handler>
       <handler commandId="gama.ui.navigator.commands.exportProjectAsSimulation" class="gama.ui.export.commands.ExportSimulation">
          <activeWhen>
@@ -71,9 +90,15 @@
    </extension>
    <extension point="org.eclipse.ui.menus">
       <menuContribution locationURI="menu:file?after=additions">
-         <command commandId="gama.ui.export.model" label="Export Model as Simulation Launcher..."
+         <command commandId="gama.ui.export.model" label="Export as standalone model..."
                icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/menu.export.svg">
             <visibleWhen checkEnabled="false"><reference definitionId="gama.ui.export.isModelEditor"/></visibleWhen>
+         </command>
+      </menuContribution>
+      <menuContribution locationURI="popup:navigator.menu?after=menu.gama.export">
+         <command commandId="gama.ui.export.selectedModel" label="Export as standalone model..."
+               icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/menu.export.svg">
+            <visibleWhen checkEnabled="false"><not><reference definitionId="gama.ui.export.isLauncher"/></not></visibleWhen>
          </command>
       </menuContribution>
       <menuContribution locationURI="popup:menu.gama.export?after=additions">
