@@ -448,11 +448,16 @@
                   tooltip="Open modeling perspective">
                <visibleWhen
                      checkEnabled="false">
-                  <not>
-                     <reference
-                           definitionId="isInModelingPerspective">
-                     </reference>
-                  </not>
+                  <and>
+                        <not>
+                        <reference
+                              definitionId="isInModelingPerspective">
+                        </reference>
+                        </not>
+                        <not>
+                              <systemTest property="exported_runner" value="true"/>
+                        </not>
+                  </and>
                </visibleWhen>
             </command>
             <command
@@ -508,6 +513,12 @@
                   label="Hide/Show Editor Area"
                   style="push"
                   tooltip="Hide or show the editors">
+               <visibleWhen
+                     checkEnabled="false">
+                        <not>
+                              <systemTest property="exported_runner" value="true"/>
+                        </not>
+               </visibleWhen>                  
             </command>
          </menu>
       </menuContribution>
@@ -523,11 +534,16 @@
                   tooltip="Open modeling perspective">
                <visibleWhen
                      checkEnabled="false">
-                  <not>
-                     <reference
-                           definitionId="isInModelingPerspective">
-                     </reference>
-                  </not>
+                  <and>
+                        <not>
+                              <systemTest property="exported_runner" value="true"/>
+                        </not>
+                        <not>
+                              <reference
+                                    definitionId="isInModelingPerspective">
+                              </reference>
+                        </not>
+                  </and>
                </visibleWhen>
             </command>
             <command
@@ -797,9 +813,7 @@
             class="gama.ui.experiment.commands.CancelRun"
             commandId="gama.application.commands.Cancel">
          <activeWhen>
-            <reference
-                  definitionId="isInSimulationPerspective">
-            </reference>
+            <reference definitionId="isInSimulationPerspective"/>
          </activeWhen>
       </handler>
       <handler
@@ -818,14 +832,19 @@
             class="gama.ui.shared.commands.SwitchToModeling"
             commandId="gama.application.goto.modeling">
          <activeWhen>
-            <or>
-               <reference
-                     definitionId="isSimulationReady">
-               </reference>
-               <reference
-                     definitionId="isSimulationFinished">
-               </reference>
-            </or>
+            <and>
+                  <or>
+                  <reference
+                        definitionId="isSimulationReady">
+                  </reference>
+                  <reference
+                        definitionId="isSimulationFinished">
+                  </reference>
+                  </or>
+                  <not>
+                        <systemTest property="exported_runner" value="true"/>
+                  </not>
+            </and>
          </activeWhen>
       </handler>
       <handler

@@ -152,7 +152,7 @@ public class LaunchingOverlay {
 
 	/**
 	 * Runnable that is executed when the user clicks the cancel button. Typically closes all experiments and returns to
-	 * the modelling perspective. Must be thread-safe (executed on a dedicated thread).
+	 * the application's home perspective. Must be thread-safe (executed on a dedicated thread).
 	 */
 	private final Runnable cancelAction;
 
@@ -211,7 +211,7 @@ public class LaunchingOverlay {
 	 *            the status displayer used to intercept status messages; may be {@code null} if unavailable
 	 * @param cancelAction
 	 *            runnable invoked (on a fresh thread) when the user clicks the cancel button;
-	 *            if {@code null}, closes all experiments and returns to the modelling perspective
+	 *            if {@code null}, closes all experiments and returns to the application's home perspective
 	 */
 	public LaunchingOverlay(final Shell parent, final String modelName, final String expName,
 			final IConsoleListener consoleSource, final IStatusDisplayer statusDisplayer, final Runnable cancelAction) {
@@ -312,14 +312,15 @@ public class LaunchingOverlay {
 		launchOverlayVisible = true;
 		suppressExistingNativeDisplays();
 
-		// ── Cancel (stop) button ────────────────────────────────────────────────
 		final ToolBar cancelBar = new ToolBar(overlay, SWT.FLAT | SWT.NO_FOCUS);
+
+		// ── Cancel (stop) button ────────────────────────────────────────────────
 		cancelBar.setBackground(bg);
 		final ToolItem cancelItem = new ToolItem(cancelBar, SWT.FLAT | SWT.PUSH);
 		final GamaIcon stopIcon = GamaIcon.named(IGamaIcons.EXPERIMENT_STOP);
 		cancelItem.setImage(stopIcon.image());
 		cancelItem.setDisabledImage(stopIcon.disabled());
-		cancelItem.setToolTipText("Cancel launch and return to the modelling perspective");
+		cancelItem.setToolTipText("Cancel launch and return to the home perspective");
 		cancelItem.addSelectionListener(
 				org.eclipse.swt.events.SelectionListener.widgetSelectedAdapter(e -> {
 					cancelItem.setEnabled(false);

@@ -116,6 +116,8 @@ public class Application implements IApplication {
 		final Display display = configureDisplay();
 		try {
 			Object check = Display.getCurrent().syncCall(() -> GAMA.getWorkspaceManager().checkWorkspace());
+
+
 			if (!EXIT_OK.equals(check)) {
 				createProcessor(display);
 				if (getInternalPreferenceStore().getBoolean(IWorkspaceManager.CLEAR_WORKSPACE)) {
@@ -123,7 +125,7 @@ public class Application implements IApplication {
 					GAMA.getWorkspaceManager().clearWorkspace(false);
 				}
 				try {					
-					final int returnCode = Workbench.createAndRunWorkbench(display, new ApplicationWorkbenchAdvisor());
+					final int returnCode = Workbench.createAndRunWorkbench(display, createWorkbenchAdvisor());
 					if (returnCode == RETURN_RESTART) return EXIT_RESTART;
 				} catch (Exception t) {
 					DEBUG.ERR("Error in application", t);
@@ -138,6 +140,11 @@ public class Application implements IApplication {
 		return EXIT_OK;
 
 	}
+
+	/** Called after workspace selection and before the workbench is created; EXIT_OK cancels startup. */
+	protected Object initializeWorkspace() throws Exception { return null; }
+
+	protected ApplicationWorkbenchAdvisor createWorkbenchAdvisor() { return new ApplicationWorkbenchAdvisor(); }
 
 	private static void configureCopilotStartup() {
 		final IEclipsePreferences preferences =

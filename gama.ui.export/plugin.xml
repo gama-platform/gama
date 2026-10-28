@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension point="org.eclipse.ui.activities">
+      <activity id="gama.ui.export.homeActivity" name="Simulation launcher home">
+         <enabledWhen><systemTest property="exported_runner" value="true"/></enabledWhen>
+      </activity>
+      <activityPatternBinding activityId="gama.ui.export.homeActivity"
+            pattern="gama\.ui\.export/gama\.ui\.export\.(perspectives|views)\.Home"/>
+   </extension>
+   <extension point="org.eclipse.ui.perspectives">
+      <perspective id="gama.ui.export.perspectives.Home" name="Home" fixed="true"
+            class="gama.ui.export.launcher.LauncherHomePerspective"/>
+   </extension>
+   <extension point="org.eclipse.ui.views">
+      <view id="gama.ui.export.views.Home" name="Home" restorable="false"
+            class="gama.ui.export.launcher.LauncherHomeView"/>
+   </extension>
+   <extension point="org.eclipse.core.runtime.applications" id="SimulationApplication" name="GAMA Simulation Launcher">
+      <application>
+         <run class="gama.ui.export.launcher.SimulationApplication"/>
+      </application>
+   </extension>
+   <extension point="org.eclipse.ui.commands">
+      <command id="gama.ui.export.model" name="Export Model as Simulation Launcher" categoryId="gama.category"/>
+      <command id="gama.ui.navigator.commands.exportProjectAsSimulation" name="Export as Simulation Launcher" categoryId="gama.category"/>
+      <command id="gama.application.commands.SaveSimulationsArtifacts" name="Save Simulation Data" categoryId="gama.category"/>
+      <command id="gama.ui.export.home" name="Home" categoryId="gama.category"/>
+   </extension>
+   <extension point="org.eclipse.core.expressions.definitions">
+      <definition id="gama.ui.export.isLauncher">
+         <systemTest property="exported_runner" value="true"/>
+      </definition>
+      <definition id="gama.ui.export.isLauncherSimulation">
+         <and>
+            <reference definitionId="gama.ui.export.isLauncher"/>
+            <reference definitionId="isInSimulationPerspective"/>
+            <reference definitionId="isSimulationExisting"/>
+         </and>
+      </definition>
+      <definition id="gama.ui.export.isModelEditor">
+         <and>
+            <not><reference definitionId="gama.ui.export.isLauncher"/></not>
+            <with variable="activeEditorId"><equals value="gaml.compiler.Gaml"/></with>
+         </and>
+      </definition>
+   </extension>
+   <extension point="org.eclipse.ui.handlers">
+      <handler commandId="gama.ui.export.model" class="gama.ui.export.commands.ExportSimulation">
+         <activeWhen><reference definitionId="gama.ui.export.isModelEditor"/></activeWhen>
+      </handler>
+      <handler commandId="gama.ui.navigator.commands.exportProjectAsSimulation" class="gama.ui.export.commands.ExportSimulation">
+         <activeWhen>
+            <and>
+               <not><reference definitionId="gama.ui.export.isLauncher"/></not>
+               <with variable="selection">
+                  <count value="1"/>
+                  <iterate ifEmpty="false">
+                     <adapt type="org.eclipse.core.resources.IContainer"/>
+                  </iterate>
+               </with>
+            </and>
+         </activeWhen>
+      </handler>
+      <handler commandId="gama.application.commands.SaveSimulationsArtifacts" class="gama.ui.export.commands.SaveSimulationsArtifacts">
+         <activeWhen><reference definitionId="gama.ui.export.isLauncher"/></activeWhen>
+      </handler>
+      <handler commandId="gama.ui.export.home" class="gama.ui.export.commands.OpenHome">
+         <activeWhen><reference definitionId="gama.ui.export.isLauncher"/></activeWhen>
+      </handler>
+   </extension>
+   <extension point="org.eclipse.ui.menus">
+      <menuContribution locationURI="menu:file?after=additions">
+         <command commandId="gama.ui.export.model" label="Export Model as Simulation Launcher..."
+               icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/menu.export.svg">
+            <visibleWhen checkEnabled="false"><reference definitionId="gama.ui.export.isModelEditor"/></visibleWhen>
+         </command>
+      </menuContribution>
+      <menuContribution locationURI="popup:menu.gama.export?after=additions">
+         <command commandId="gama.ui.navigator.commands.exportProjectAsSimulation" label="As simulation launcher..."
+               icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/menu.export.svg">
+            <visibleWhen checkEnabled="true"/>
+         </command>
+      </menuContribution>
+      <menuContribution locationURI="toolbar:gama.ui.toolbar?after=additions">
+         <command commandId="gama.ui.export.home" label="Home" tooltip="Return to the launcher home page"
+               icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/perspective.modeling.svg">
+            <visibleWhen checkEnabled="false"><reference definitionId="gama.ui.export.isLauncherSimulation"/></visibleWhen>
+         </command>
+         <command commandId="gama.application.commands.SaveSimulationsArtifacts" label="Save Simulation Data"
+               icon="platform:/plugin/gama.ui.shared/icons_svg/light/status/status.download.svg">
+            <visibleWhen checkEnabled="false"><reference definitionId="gama.ui.export.isLauncherSimulation"/></visibleWhen>
+         </command>
+      </menuContribution>
+      <menuContribution locationURI="menu:simulationMenu?after=additions">
+         <command commandId="gama.ui.export.home" label="Home" tooltip="Return to the launcher home page">
+            <visibleWhen checkEnabled="false"><reference definitionId="gama.ui.export.isLauncherSimulation"/></visibleWhen>
+         </command>
+         <command commandId="gama.application.commands.SaveSimulationsArtifacts" label="Save Simulation Data"
+               icon="platform:/plugin/gama.ui.shared/icons_svg/light/status/status.download.svg">
+            <visibleWhen checkEnabled="false"><reference definitionId="gama.ui.export.isLauncherSimulation"/></visibleWhen>
+         </command>
+      </menuContribution>
+   </extension>
+</plugin>

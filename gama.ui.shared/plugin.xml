@@ -283,18 +283,36 @@
                icon="platform:/plugin/gama.ui.shared/icons_svg/light/generic/menu.update.svg"
                label="Check for Updates"
                style="push">
+               <visibleWhen
+                     checkEnabled="false">
+                        <not>
+                              <systemTest property="exported_runner" value="true"/>
+                        </not>
+               </visibleWhen>    
          </command>
          <command
                commandId="gama.ui.install"
                icon="platform:/plugin/gama.ui.shared/icons_svg/light/generic/menu.install.svg"
                label="Install new Plugins..."
                style="push">
+               <visibleWhen
+                     checkEnabled="false">
+                        <not>
+                              <systemTest property="exported_runner" value="true"/>
+                        </not>
+               </visibleWhen>    
          </command>
          <command 
                commandId="gama.ui.details"
                icon="platform:/plugin/gama.ui.shared/icons_svg/light/generic/menu.details.svg"
                label="Installation Details"
                style="push">
+            <visibleWhen
+                  checkEnabled="false">
+                  <not>
+                        <systemTest property="exported_runner" value="true"/>
+                  </not>
+            </visibleWhen> 
          </command>
          <separator
                name="gama.ui.shared.separator1"
@@ -321,12 +339,17 @@
                style="push">
             <visibleWhen
                   checkEnabled="false">
+               <and>
                <not>
                   <systemTest
                         property="osgi.os"
                         value="macosx">
                   </systemTest>
                </not>
+               <not>
+                  <systemTest property="exported_runner" value="true"/>
+               </not>
+               </and>   
             </visibleWhen>
          </command>
          <command
@@ -397,6 +420,7 @@
             class="gama.ui.shared.commands.PreferencesHandler"
             commandId="org.eclipse.ui.window.preferences">
          <activeWhen>
+            <and>
             <or>
                <reference
                      definitionId="isInModelingPerspective">
@@ -405,6 +429,10 @@
                      definitionId="isInSimulationPerspective">
                </reference>
             </or>
+            <not>
+                  <systemTest property="exported_runner" value="true"/>
+            </not> 
+            </and>
          </activeWhen>
       </handler>
    </extension>

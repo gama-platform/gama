@@ -129,17 +129,18 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
 		}
 
-		if (GamaPreferences.Interface.CORE_STARTUP_MODEL.getValue()) {
-			IGamaFile<?, ?> file = GamaPreferences.Interface.CORE_DEFAULT_MODEL.getValue();
-			if (file != null && file.exists(null)) {
-				StringBuilder name = new StringBuilder().append(file.getPath(null));
-				String exp = GamaPreferences.Interface.CORE_DEFAULT_EXPERIMENT.getValue();
-				if (exp != null && !exp.isBlank()) { name.append("#").append(exp); }
-				WorkspaceModelsManager.instance.openModelPassedAsArgument(name.toString());
-			}
+		if (GamaPreferences.Interface.CORE_STARTUP_MODEL.getValue()) { openStartupModel(); }
 
+	}
+
+	protected void openStartupModel() {
+		IGamaFile<?, ?> file = GamaPreferences.Interface.CORE_DEFAULT_MODEL.getValue();
+		if (file != null && file.exists(null)) {
+			StringBuilder name = new StringBuilder().append(file.getPath(null));
+			String exp = GamaPreferences.Interface.CORE_DEFAULT_EXPERIMENT.getValue();
+			if (exp != null && !exp.isBlank()) { name.append("#").append(exp); }
+			WorkspaceModelsManager.instance.openModelPassedAsArgument(name.toString());
 		}
-
 	}
 
 	private void showInteractiveConsoleAtStartup() {
@@ -289,6 +290,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 			PerspectiveHelper.cleanPerspectives();
 		} catch (final Exception e) {
 			e.printStackTrace();
+			return false;
 		}
 
 		return super.preShutdown();

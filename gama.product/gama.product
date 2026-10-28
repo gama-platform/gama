@@ -27,7 +27,7 @@
       </programArgsLin>
       <vmArgs>-Xms4G -Xmx16G
 -XX:+UseParallelGC
--Dorg.eclipse.swt.graphics.Resource.reportNonDisposed=false 
+-Dorg.eclipse.swt.graphics.Resource.reportNonDisposed=false
 -Dosgi.locking=none -Dosgi.checkConfiguration=false -Dosgi.requiredJavaVersion=25
 -Declipse.log.level=ERROR
 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.retryAttempts=10
@@ -106,6 +106,7 @@
       <feature id="gama.feature.ui" installMode="root"/>
       <feature id="gama.feature.library" installMode="root"/>
       <feature id="gama.feature.ui.editor" installMode="root"/>
+      <feature id="gama.feature.export" installMode="root"/>
       <feature id="gama.feature.extensions" installMode="root"/>
       <feature id="gama.feature.dependencies" installMode="root"/>
       <feature id="gama.feature.ui.experiment" installMode="root"/>

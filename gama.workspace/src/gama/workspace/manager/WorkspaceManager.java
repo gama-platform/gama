@@ -568,7 +568,7 @@ public class WorkspaceManager implements IWorkspaceManager {
 			}
 		} else {
 			remember = isRememberWorkspace();
-			lastUsedWs = getLastSetWorkspaceDirectory();
+			lastUsedWs = WorkspacePaths.resolveAgainstInstallation(getLastSetWorkspaceDirectory());
 			// A "remember" flag without a stored path is meaningless.
 			if (remember && (lastUsedWs == null || lastUsedWs.isEmpty())) { remember = false; }
 			if (remember) {

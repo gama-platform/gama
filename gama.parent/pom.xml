@@ -190,6 +190,7 @@
 		<module>../gama.feature.ui</module>
 		<module>../gama.feature.core</module>
 		<module>../gama.feature.ui.editor</module>
+		<module>../gama.feature.export</module>
 		<module>../gama.feature.dependencies</module>
 		<module>../gama.feature.ui.experiment</module>
 		<module>../gama.feature.ui.dependencies</module>
@@ -199,6 +200,9 @@
 		<module>../gama.feature.extension.image</module>
 		<module>../gama.feature.copilot</module>
 		<module>../gama.feature.devtools</module>
+		
+		<module>../gama.export</module>
+		<module>../gama.ui.export</module>
 
 		<module>../gama.p2site</module>
 		<module>../gama.p2site.devtools</module>
