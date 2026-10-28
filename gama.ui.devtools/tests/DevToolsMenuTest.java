@@ -74,7 +74,8 @@ public class DevToolsMenuTest {
 				"Update file headers", "Generate missing tests", "---", "Search", "Keyword implementations...",
 				"Plugins dependencies...", "Missing annotations...", "---", "Create", "New GAMA Plugin...",
 				"New GAMA Skill...", "New GAMA Operators...", "New GAMA Action...", "New GAMA Type...",
-				"New GAML Test Model...", "---", "Update GAMA tools"), entries);
+				"New GAML Test Model...", "---", "Install", "Install core plugins...",
+				"Install graphical editor...", "Install community plugins...", "---", "Update GAMA tools"), entries);
 		final var wizards = document.getElementsByTagName("wizard");
 		final List<String> registeredWizardIds = new ArrayList<>();
 		for (int i = 0; i < wizards.getLength(); i++) {
@@ -84,6 +85,7 @@ public class DevToolsMenuTest {
 
 		final var handlers = document.getElementsByTagName("handler");
 		boolean updater = false;
+		boolean installer = false;
 		for (int i = 0; i < handlers.getLength(); i++) {
 			final var handler = (Element) handlers.item(i);
 			final String commandId = handler.getAttribute("commandId");
@@ -94,8 +96,21 @@ public class DevToolsMenuTest {
 				equal("gama.ui.devtools.handlers.UpdateToolsHandler", handler.getAttribute("class"));
 				updater = true;
 			}
+			if ("gama.ui.devtools.install".equals(commandId)) {
+				equal("gama.ui.devtools.handlers.InstallSourcesHandler", handler.getAttribute("class"));
+				installer = true;
+			}
 		}
 		if (!updater) throw new AssertionError("The update command must have a handler");
+		if (!installer) throw new AssertionError("The install command must have a handler");
+		final List<String> kinds = new ArrayList<>();
+		for (Element entry : children(menu)) {
+			if ("gama.ui.devtools.install".equals(entry.getAttribute("commandId"))) {
+				equal("gama.ui.devtools.installKind", children(entry).getFirst().getAttribute("name"));
+				kinds.add(children(entry).getFirst().getAttribute("value"));
+			}
+		}
+		equal(List.of("CORE", "GRAPHICAL", "COMMUNITY"), kinds);
 		System.out.println("Devtools menu checks passed");
 	}
 

@@ -11,6 +11,10 @@
       <command id="gama.ui.devtools.heading.repair" categoryId="gama.ui.devtools.category" name="Repair"/>
       <command id="gama.ui.devtools.heading.search" categoryId="gama.ui.devtools.category" name="Search"/>
       <command id="gama.ui.devtools.heading.create" categoryId="gama.ui.devtools.category" name="Create"/>
+      <command id="gama.ui.devtools.heading.install" categoryId="gama.ui.devtools.category" name="Install"/>
+      <command id="gama.ui.devtools.install" categoryId="gama.ui.devtools.category" name="Install GAMA sources">
+         <commandParameter id="gama.ui.devtools.installKind" name="Installation (CORE, GRAPHICAL, COMMUNITY)" optional="false"/>
+      </command>
       <command id="gama.ui.devtools.updateTools" categoryId="gama.ui.devtools.category"
             name="Update GAMA tools" description="Checks for and installs updates to GAMA Developer Tools"/>
       <command id="gama.ui.devtools.launchGama" categoryId="gama.ui.devtools.category"
@@ -66,6 +70,7 @@
       <handler commandId="gama.ui.devtools.dependencyGraph" class="gama.ui.devtools.handlers.DependencyGraphHandler"/>
       <handler commandId="gama.ui.devtools.openNewWizard" class="gama.ui.devtools.handlers.OpenNewWizardHandler"/>
       <handler commandId="gama.ui.devtools.updateTools" class="gama.ui.devtools.handlers.UpdateToolsHandler"/>
+      <handler commandId="gama.ui.devtools.install" class="gama.ui.devtools.handlers.InstallSourcesHandler"/>
    </extension>
 
    <!-- Key bindings: Clean and Rebuild (all), Find GAML Keyword Implementation -->
@@ -169,6 +174,17 @@
             </command>
             <command commandId="gama.ui.devtools.openNewWizard" label="New GAML Test Model..." style="push">
                <parameter name="gama.ui.devtools.wizardId" value="gama.ui.devtools.wizards.testModel"/>
+            </command>
+            <separator name="install" visible="true"/>
+            <command commandId="gama.ui.devtools.heading.install" style="push"/>
+            <command commandId="gama.ui.devtools.install" label="Install core plugins..." style="push">
+               <parameter name="gama.ui.devtools.installKind" value="CORE"/>
+            </command>
+            <command commandId="gama.ui.devtools.install" label="Install graphical editor..." style="push">
+               <parameter name="gama.ui.devtools.installKind" value="GRAPHICAL"/>
+            </command>
+            <command commandId="gama.ui.devtools.install" label="Install community plugins..." style="push">
+               <parameter name="gama.ui.devtools.installKind" value="COMMUNITY"/>
             </command>
             <separator name="updates" visible="true"/>
             <command commandId="gama.ui.devtools.updateTools" style="push"/>

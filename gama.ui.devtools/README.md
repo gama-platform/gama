@@ -19,7 +19,7 @@ installation; a license prompt is shown only for licenses not already accepted. 
 installation or update before using this command. Workspace launches and plugins copied into `dropins`
 must first be installed as the feature from the update site to use this action.
 
-The update site is built from `gama.p2site.devtools`, which contains only `gama.feature.devtools`. The workflow `.github/workflows/publish-devtools.yaml` publishes it on every change of the developer tools on `main`. The plugin depends only on Eclipse bundles; the jgrapht jars it uses are embedded in `libs/`. To try local changes without installing, launch a runtime Eclipse from the workspace.
+The update site is built from `gama.p2site.devtools`, which contains only `gama.feature.devtools`. The workflow `.github/workflows/publish-devtools.yaml` publishes it on every change of the developer tools on `main`. Eclipse supplies the JDT/PDE, EGit/JGit and Gson dependencies; the jgrapht jars are embedded in `libs/`. To try local changes without installing, launch a runtime Eclipse from the workspace.
 
 The public URL is a composite p2 repository. Each workflow run adds an immutable child at
 `devtools/releases/<run-id>-<attempt>/`; previous builds are retained on the `devtools-site` branch and included
@@ -37,7 +37,7 @@ local installation, use a uniquely named ZIP for each build rather than a cached
 ## Commands
 
 The **GAMA** menu is grouped under gray, non-clickable **Run GAMA**, **Build GAMA**, **Repair**,
-**Search** and **Create** headings, separated by horizontal lines, with **Update GAMA tools** at the bottom.
+**Search**, **Create** and **Install** headings, separated by horizontal lines, with **Update GAMA tools** at the bottom.
 **Create** lists all six creation wizards. They are also available in
 *File > New > Other... > GAMA Development* and in the Java-project context menu.
 
@@ -62,10 +62,67 @@ java gama.ui.devtools/tests/DevToolsMenuTest.java .
 | **Plugins dependencies...** | Runs `jdeps` on the compiled bundles and produces an interactive HTML graph of the package dependencies. This needs a JDK. |
 | **Update GAMA tools** | Checks for and directly installs developer tools updates, or reports that no update is available. |
 | **Create: New GAMA Plugin / Skill / Operators / Action / Type / GAML Test Model** | Creation wizards, also available in *File > New > Other... > GAMA Development*. |
+| **Install core plugins... / Install graphical editor... / Install community plugins...** | Checks out source repositories, imports selected projects and optionally applies working sets and workspace preferences (see below). |
 
 The Clean and Rebuild All shortcut takes precedence over Eclipse's standard Build All binding in the default
 key scheme. It always targets all GAMA plugins, regardless of selection. Explicit user bindings and more
 specific editor bindings can still override it; configure these in *Preferences > General > Keys*.
+
+## Installing source projects
+
+The **Install** section provides three variants of the same wizard:
+
+- **Core plugins** uses `https://github.com/gama-platform/gama.git`, branch `main`. It lists top-level
+  Eclipse projects, preselecting modules from `gama.parent/pom.xml` plus `gama.parent`.
+- **Graphical editor** uses `https://github.com/gama-platform-plugins/gama.graphical.modeling.git`,
+  branch `GAMA_2026-06`, with all its Eclipse projects preselected.
+- **Community plugins** discovers repositories in `https://github.com/gama-platform-plugins` and lists their
+  Eclipse project paths on `GAMA_2026-06`, including nested projects. Load the list, then explicitly select
+  projects; only repositories containing selected projects are checked out. Repositories without that branch
+  or without Eclipse projects are listed as unavailable, not silently switched to another branch.
+
+Branches, HTTPS repository URLs and checkout directories are editable. Community installations use one
+subdirectory per repository; select a project row to edit its repository URL. Discovery uses GitHub's public
+API (with pagination); rate-limit and network errors are reported. Clone/fetch uses JGit, so a separate Git
+executable is not needed. Public HTTPS repositories work without authentication.
+
+**Next** clones a missing repository or fetches, checks out the selected branch and fast-forwards an existing
+clean checkout with a matching origin. It refuses dirty repositories, unfinished Git operations and branches
+with local commits: commit/stash or reconcile those yourself, or choose another directory. It never resets,
+stashes or overwrites local edits. Checkout happens before project selection and is retained on cancellation.
+Projects are imported in place and shared with EGit, not copied into the workspace. Already imported projects
+are shown but not selected, and duplicate project names across repositories must be resolved by selecting
+only one.
+
+The final page offers additive working sets based on `utils/Project sets for Gama.psf`. Choose which sets
+to create/update. Existing members are preserved and missing projects are ignored. Selected community projects
+that exist in the workspace are added to **==================== COMMUNITY**; it is populated dynamically rather
+than maintained as an obsolete fixed experimental-project list. An option displays working sets as roots in
+both Project Explorer and Package Explorer.
+
+Preference import is **opt-in**, with separate checkboxes for `Eclipse Preferences for Gama.epf`,
+`Cleanup rules for Gama.xml` and `Code formatter rules for Gama.xml`. The named GAMA profiles are installed
+and selected, preserving other profiles. The Eclipse export also contains cleanup/formatter settings and
+**Java compiler defaults**; review that choice before importing it. Project-specific settings take
+precedence. Importing preferences does not rewrite, clean up or format source files.
+
+Closing **gama.parent** to disable its Maven compilation is recommended and selected by default. Finish saves
+editors, imports projects, applies the chosen settings and schedules a recursive workspace refresh followed by
+a clean and full workspace build. Configure a suitable JDK and resolve the GAMA target platform separately.
+Cancellation/failure retains completed checkouts/imports and reports the failure; there is no destructive rollback.
+
+Explorer layout changes and JDT profile import are isolated in `install/WorkspaceSetup.java`. Eclipse does
+not expose public APIs for all of these operations, so that adapter uses JDT's internal profile/Package
+Explorer APIs and must be checked when updating the supported Eclipse platform.
+
+The project discovery/project-set regression test runs without Eclipse:
+```
+javac -d /tmp/gama-install-tests gama.ui.devtools/src/gama/ui/devtools/install/InstallModel.java gama.ui.devtools/tests/InstallModelTest.java
+java -cp /tmp/gama-install-tests InstallModelTest .
+```
+`tests/RepositoryCheckoutTest.java` additionally exercises cloning, fast-forward updates, branch selection,
+cancellation and refusal to overwrite local edits/commits, using only disposable local repositories. Compile
+and run it with JGit and Eclipse Core Runtime (and their dependencies) on the classpath.
 
 ## Running and debugging workspace GAMA
 

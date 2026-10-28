@@ -140,4 +140,6 @@
 <item elementID="=gama.ui.navigator" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
 <item elementID="=gama.ui.display.opengl4" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
 </workingSets>
+<workingSets editPageId="org.eclipse.jdt.ui.JavaWorkingSetPage" id="gama-community" label="==================== COMMUNITY" name="==================== COMMUNITY">
+</workingSets>
 </psf>
