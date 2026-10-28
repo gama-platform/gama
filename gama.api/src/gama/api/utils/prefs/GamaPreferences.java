@@ -320,8 +320,9 @@ public class GamaPreferences {
 							if (CORE_STARTUP_MODEL.getValue()) {
 								IGamaFile file = CORE_DEFAULT_MODEL.getValue();
 								final URI uriModel = FileUtils.getURI(file.getOriginalPath(), null);
-								var info = GAML.getInfo(uriModel);
-								if (uriModel == null || info == null) return result;
+								if (uriModel == null) return result;
+								final var info = GAML.getInfo(uriModel);
+								if (info == null) return result;
 								result.addAll(info.getExperiments());
 							}
 							return result;

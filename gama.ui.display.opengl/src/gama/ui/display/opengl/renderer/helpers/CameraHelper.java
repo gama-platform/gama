@@ -260,7 +260,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 * @return the orientation
 	 */
 	public IPoint getOrientation() { return data.getCameraOrientation(); }
-	
+
 	/**
 	 * Gets the orientation.
 	 *

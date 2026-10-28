@@ -210,7 +210,8 @@ public class LaunchingOverlay {
 	 * @param statusDisplayer
 	 *            the status displayer used to intercept status messages; may be {@code null} if unavailable
 	 * @param cancelAction
-	 *            runnable invoked (on a fresh thread) when the user clicks the cancel button
+	 *            runnable invoked (on a fresh thread) when the user clicks the cancel button;
+	 *            if {@code null}, closes all experiments and returns to the modelling perspective
 	 */
 	public LaunchingOverlay(final Shell parent, final String modelName, final String expName,
 			final IConsoleListener consoleSource, final IStatusDisplayer statusDisplayer, final Runnable cancelAction) {
@@ -320,7 +321,10 @@ public class LaunchingOverlay {
 		cancelItem.setDisabledImage(stopIcon.disabled());
 		cancelItem.setToolTipText("Cancel launch and return to the modelling perspective");
 		cancelItem.addSelectionListener(
-				org.eclipse.swt.events.SelectionListener.widgetSelectedAdapter(e -> handleCancel()));
+				org.eclipse.swt.events.SelectionListener.widgetSelectedAdapter(e -> {
+					cancelItem.setEnabled(false);
+					handleCancel();
+				}));
 		cancelBar.pack();
 
 		// ── Canvas for background + title + subtitle ─────────────────────────────
@@ -397,11 +401,20 @@ public class LaunchingOverlay {
 	}
 
 	/**
-	 * Handles the cancel button click: hides the overlay and runs the cancel action on a dedicated thread.
+	 * Runs the cancel action on a dedicated thread and hides the overlay after cleanup.
 	 */
 	private void handleCancel() {
-		hide();
-		new Thread(() -> GAMA.closeAllExperiments(true, false), "Cancel launch").start();
+		new Thread(() -> {
+			try {
+				if (cancelAction != null) {
+					cancelAction.run();
+				} else {
+					GAMA.closeAllExperiments(true, false);
+				}
+			} finally {
+				hide();
+			}
+		}, "Cancel launch").start();
 	}
 
 	/**

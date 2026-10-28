@@ -114,9 +114,9 @@ public class Application implements IApplication {
 
 		});
 		final Display display = configureDisplay();
-		Object check = Display.getCurrent().syncCall(() -> GAMA.getWorkspaceManager().checkWorkspace());
-		if (!EXIT_OK.equals(check)) {
-			try {
+		try {
+			Object check = Display.getCurrent().syncCall(() -> GAMA.getWorkspaceManager().checkWorkspace());
+			if (!EXIT_OK.equals(check)) {
 				createProcessor(display);
 				if (getInternalPreferenceStore().getBoolean(IWorkspaceManager.CLEAR_WORKSPACE)) {
 					setProperty(CLEAR_PERSISTED_STATE, "true");
@@ -128,12 +128,12 @@ public class Application implements IApplication {
 				} catch (Exception t) {
 					DEBUG.ERR("Error in application", t);
 				}
-			} finally {
-				if (display != null) { display.dispose(); }
-				final Location instanceLoc = Platform.getInstanceLocation();
-				if (instanceLoc != null) { instanceLoc.release(); }
-				BufferingUtils.getInstance().flushAllBuffers();
 			}
+		} finally {
+			if (display != null) { display.dispose(); }
+			final Location instanceLoc = Platform.getInstanceLocation();
+			if (instanceLoc != null) { instanceLoc.release(); }
+			BufferingUtils.getInstance().flushAllBuffers();
 		}
 		return EXIT_OK;
 

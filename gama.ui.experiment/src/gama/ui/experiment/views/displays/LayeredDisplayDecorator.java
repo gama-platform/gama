@@ -299,6 +299,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 		toolbar.control(SimulationSpeedContributionItem.create(toolbar.getToolbar(SWT.LEFT)),
 				SimulationSpeedContributionItem.totalWidth(), SWT.LEFT);
 		toolbar.button(relaunchExperiment, SWT.LEFT);
+
 		toolbar.button(closeExperiment, SWT.LEFT);
 	}
 
