@@ -19,6 +19,15 @@ and [random draws/sampling](#random-draws-and-statistical-correctness), in addit
 
 ## [2026.0.0] - Unreleased
 
+### Editor Find/Replace
+
+The GAML editor toolbar now has a Find/Replace icon that opens the same search UI as
+Cmd-F (macOS) or Ctrl-F (Windows/Linux), replacing the custom inline search field.
+The history arrows are grouped together to the left of the matching circular search
+icon and remain dedicated to edit locations. Cmd/Ctrl-G is no longer
+intercepted by the removed field. The Find overlay uses GAMA-styled up/down arrows
+and a double magnifier for selecting all matches, in both light and dark themes.
+
 ### XML files: structured contents and saving
 
 `xml_file` now reads XML documents into nested GAML maps instead of a map of raw file lines

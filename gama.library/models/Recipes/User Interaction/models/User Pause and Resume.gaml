@@ -45,7 +45,7 @@ species sign skills: [moving] {
 
 experiment 'Try Me !' {
 	output synchronized:true{
-		display Interaction {
+		display Interaction type: 3D axes: false{
 			species sign;
 			event #mouse_down {
 				if ((#user_location distance_to sign[0]) < 50) {

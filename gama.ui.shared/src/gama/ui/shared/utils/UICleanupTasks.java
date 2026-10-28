@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.contexts.RunAndTrack;
 import org.eclipse.e4.core.internal.contexts.EclipseContext;
@@ -543,6 +544,7 @@ public class UICleanupTasks {
 		 * Replace images.
 		 */
 		static void run() {
+			replaceFindOverlayImages();
 			replace(Dialog.DLG_IMG_MESSAGE_ERROR, IGamaIcons.MARKER_ERROR);
 			replace(Dialog.DLG_IMG_MESSAGE_WARNING, IGamaIcons.MARKER_WARNING);
 			replace(Dialog.DLG_IMG_MESSAGE_INFO, IGamaIcons.MARKER_INFO);
@@ -588,6 +590,27 @@ public class UICleanupTasks {
 			replace(ISharedImages.IMG_TOOL_PASTE_DISABLED, IGamaIcons.PASTE, true);
 			replace(ISharedImages.IMG_TOOL_DELETE_DISABLED, IGamaIcons.DELETE, true);
 
+		}
+
+		private static void replaceFindOverlayImages() {
+			try {
+				// Eclipse keeps this registry behind a package-private class. Initialize it before replacing
+				// descriptors, otherwise the first opening of Find overwrites our icons.
+				Class<?> images = Platform.getBundle("org.eclipse.ui.workbench.texteditor")
+						.loadClass("org.eclipse.ui.internal.findandreplace.overlay.FindReplaceOverlayImages");
+				var getRegistry = images.getDeclaredMethod("getImageRegistry");
+				getRegistry.setAccessible(true);
+				ImageRegistry findRegistry = (ImageRegistry) getRegistry.invoke(null);
+				Map<String, String> icons = Map.of("select_prev", "editor/search.previous",
+						"select_next", "editor/search.next", "search_all", "editor/search.all");
+				icons.forEach((key, icon) -> {
+					String id = "org.eclipse.ui.workbench.texteditor.elcl." + key;
+					findRegistry.remove(id);
+					findRegistry.put(id, GamaIcon.named(icon).descriptor());
+				});
+			} catch (ReflectiveOperationException | RuntimeException e) {
+				DEBUG.ERR("Unable to customize the Find/Replace overlay icons", e);
+			}
 		}
 
 		/**

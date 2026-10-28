@@ -98,6 +98,7 @@ import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.eclipse.ui.texteditor.AnnotationPreference;
 import org.eclipse.ui.texteditor.DefaultMarkerAnnotationAccess;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
+import org.eclipse.ui.texteditor.IUpdate;
 import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.xtext.ui.XtextUIMessages;
 import org.eclipse.xtext.ui.editor.XtextEditor;
@@ -147,7 +148,6 @@ import gaml.compiler.resource.GamlResourceServices;
 import gaml.compiler.ui.decorators.GamlAnnotationImageProvider;
 import gaml.compiler.ui.decorators.GamlDecorator;
 import gaml.compiler.ui.editor.toolbar.CreateExperimentSelectionListener;
-import gaml.compiler.ui.editor.toolbar.EditorSearchControls;
 import gaml.compiler.ui.editor.toolbar.EditorToolbar;
 import gaml.compiler.ui.editor.toolbar.ExperimentToolbar;
 import gaml.compiler.ui.editor.toolbar.OpenExperimentSelectionListener;
@@ -249,9 +249,6 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 
 	/** The toolbar parent. */
 	Composite toolbarParent;
-
-	/** The find control. */
-	private EditorSearchControls findControl;
 
 	/** The resource set provider. */
 	@Inject public IResourceSetProvider resourceSetProvider;
@@ -414,7 +411,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	 * Builds the right toolbar.
 	 */
 	private void buildRightToolbar() {
-		findControl = new EditorToolbar(this).fill(toolbar.getToolbar(SWT.RIGHT));
+		new EditorToolbar(this).fill(toolbar.getToolbar(SWT.RIGHT));
 		toolbar.requestLayout();
 	}
 
@@ -1012,11 +1009,10 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	 * Do search.
 	 */
 	public void doSearch() {
-		if (findControl.getFindControl().isFocusControl()) {
-			findControl.findNext();
-		} else {
-			findControl.getFindControl().setFocus();
-		}
+		setFocus();
+		var action = getAction(FIND);
+		if (action instanceof IUpdate updatable) { updatable.update(); }
+		if (action.isEnabled()) { action.run(); }
 	}
 
 	@Override

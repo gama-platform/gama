@@ -21,8 +21,6 @@ import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.ICommandListener;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Menu;
@@ -86,15 +84,6 @@ public class EditorToolbar {
 			});
 		}
 
-		GamaKeyBindings.plug(new PluggableBinding(SWT.MOD1, 'g') {
-
-			@Override
-			public void run() {
-				IEditorPart part = WorkbenchHelper.getActiveEditor();
-				if (part instanceof GamlEditor ge) { ge.doSearch(); }
-			}
-		});
-
 		GamaKeyBindings.plug(new PluggableBinding(SWT.MOD1, '=') {
 
 			@Override
@@ -117,26 +106,14 @@ public class EditorToolbar {
 	/** The previous. */
 	ToolItem next, previous; // diagram;
 
-	/** The find. */
-	EditorSearchControls find;
-
 	/** The editor. */
 	final GamlEditor editor;
-
-	/** The searching. */
-	volatile boolean searching;
 
 	/** The global previous. */
 	final Selector globalPrevious = e -> runCommand(NAVIGATE_BACKWARD_HISTORY);
 
 	/** The global next. */
 	final Selector globalNext = e -> runCommand(NAVIGATE_FORWARD_HISTORY);
-
-	/** The search previous. */
-	final Selector searchPrevious = e -> find.findPrevious();
-
-	/** The search next. */
-	final Selector searchNext = e -> find.findNext();
 
 	/**
 	 * Instantiates a new editor toolbar.
@@ -153,14 +130,14 @@ public class EditorToolbar {
 	 *
 	 * @param toolbar
 	 *            the toolbar
-	 * @return the editor search controls
 	 */
-	public EditorSearchControls fill(final GamaToolbarSimple toolbar) {
+	public void fill(final GamaToolbarSimple toolbar) {
 
 		previous = toolbar.button("editor/command.lastedit", null, "Previous edit location", globalPrevious);
-
-		find = new EditorSearchControls(editor).fill(toolbar);
 		next = toolbar.button("editor/command.nextedit", null, "Next edit location", globalNext);
+
+		toolbar.button("editor/search", null,
+				"Find/Replace (" + GamaKeyBindings.format(SWT.MOD1, 'F') + ")", e -> editor.doSearch());
 
 		toolbar.button("editor/local.menu", "Editor options", "Editor options", e -> {
 
@@ -211,9 +188,6 @@ public class EditorToolbar {
 		});
 
 		hookToCommands(previous, next);
-		hookToSearch(previous, next);
-
-		return find;
 	}
 
 	/**
@@ -286,45 +260,6 @@ public class EditorToolbar {
 	}
 
 	/**
-	 * Hook to search.
-	 *
-	 * @param lastEdit
-	 *            the last edit
-	 * @param nextEdit
-	 *            the next edit
-	 */
-	private void hookToSearch(final ToolItem lastEdit, final ToolItem nextEdit) {
-		find.getFindControl().addFocusListener(new FocusListener() {
-
-			@Override
-			public void focusGained(final FocusEvent e) {
-				searching = true;
-				previous.removeSelectionListener(globalPrevious);
-				previous.setToolTipText("Search previous occurence");
-				next.removeSelectionListener(globalNext);
-				next.setToolTipText("Search next occurence " + GamaKeyBindings.format(SWT.MOD1, 'G'));
-				previous.addSelectionListener(searchPrevious);
-				next.addSelectionListener(searchNext);
-				previous.setEnabled(true);
-				next.setEnabled(true);
-			}
-
-			@Override
-			public void focusLost(final FocusEvent e) {
-				searching = false;
-				previous.removeSelectionListener(searchPrevious);
-				previous.setToolTipText("Previous edit location");
-				next.removeSelectionListener(searchNext);
-				next.setToolTipText("Next edit location");
-				previous.addSelectionListener(globalPrevious);
-				next.addSelectionListener(globalNext);
-				previous.setEnabled(getCommand(NAVIGATE_BACKWARD_HISTORY).isEnabled());
-				next.setEnabled(getCommand(NAVIGATE_FORWARD_HISTORY).isEnabled());
-			}
-		});
-	}
-
-	/**
 	 * Hook to commands.
 	 *
 	 * @param lastEdit
@@ -337,13 +272,13 @@ public class EditorToolbar {
 			final Command nextCommand = getCommand(NAVIGATE_FORWARD_HISTORY);
 			if (!nextEdit.isDisposed()) {
 				nextEdit.setEnabled(nextCommand.isEnabled());
-				final ICommandListener nextListener = e -> nextEdit.setEnabled(searching || nextCommand.isEnabled());
+				final ICommandListener nextListener = e -> nextEdit.setEnabled(nextCommand.isEnabled());
 				nextCommand.addCommandListener(nextListener);
 				nextEdit.addDisposeListener(e -> nextCommand.removeCommandListener(nextListener));
 			}
 			final Command lastCommand = getCommand(NAVIGATE_BACKWARD_HISTORY);
 			if (!lastEdit.isDisposed()) {
-				final ICommandListener lastListener = e -> lastEdit.setEnabled(searching || lastCommand.isEnabled());
+				final ICommandListener lastListener = e -> lastEdit.setEnabled(lastCommand.isEnabled());
 				lastEdit.setEnabled(lastCommand.isEnabled());
 				lastCommand.addCommandListener(lastListener);
 				lastEdit.addDisposeListener(e -> lastCommand.removeCommandListener(lastListener));
