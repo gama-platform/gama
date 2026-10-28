@@ -432,20 +432,6 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 		return keepSimulations;
 	}
 
-	public void disposeAgent() {
-		if (controller != null) {
-			try {
-				controller.dispose();
-			} finally {
-				controller = null;
-			}
-		}
-		if (agent != null) {
-			agent.dispose();
-			agent = null;
-		}
-	}
-
 	@Override
 	public void dispose() {
 		if (isBuiltIn()) return;
@@ -963,7 +949,7 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 	public void setController(final IExperimentController ec) {
 		// The controller being replaced is the one to shut down. Reassigning the same one must leave it alone.
 		if (controller != null && !controller.equals(ec)) {
-			if (ec != null) { controller.close(); }
+			controller.close();
 			controller.dispose();
 		}
 		controller = ec;

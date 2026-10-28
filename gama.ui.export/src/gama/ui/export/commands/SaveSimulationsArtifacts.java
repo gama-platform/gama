@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  * 
  ********************************************************************************************************/
-package gama.ui.experiment.commands;
+package gama.ui.export.commands;
 
 import java.util.Map;
 import java.nio.file.Path;
@@ -26,8 +26,8 @@ import org.eclipse.ui.menus.UIElement;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.swt.widgets.Display;
 
-import gama.export.ui.SaveSimulationsArtifactsDialog;
-import gama.ui.application.workbench.StartupModelHelper;
+import gama.ui.export.dialogs.SaveSimulationsArtifactsDialog;
+import gama.ui.export.launcher.StartupModelHelper;
 import gama.api.GAMA;
 
 /**

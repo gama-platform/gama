@@ -425,7 +425,14 @@ public interface IGui {
 	 * @param experimentName
 	 *            the experiment name shown in the subtitle
 	 */
-	default void showLaunchingOverlay(final String experimentName,final boolean showCancelButton) {}
+	default void showLaunchingOverlay(final String experimentName) {}
+
+	/**
+	 * Shows a launch overlay with optional cancellation. Legacy GUI implementations keep their existing behavior.
+	 */
+	default void showLaunchingOverlay(final String experimentName, final boolean showCancelButton) {
+		showLaunchingOverlay(experimentName);
+	}
 
 	/**
 	 * Forces an immediate synchronous display of any pending (not yet shown) runtime exceptions in the error handler,

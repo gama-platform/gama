@@ -1,4 +1,4 @@
-package gama.ui.application.workbench;
+package gama.ui.export.dialogs;
 
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.TitleAreaDialog;

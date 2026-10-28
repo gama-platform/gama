@@ -306,12 +306,6 @@
                      value="gama.ui.export.ExternalProject">
                </parameter>
             </command>
-            <command
-                  commandId="gama.ui.navigator.commands.exportProjectAsSimulation"
-                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/menu.export.svg"
-                  label="As simulation launcher"
-                  style="push">
-            </command>
             <visibleWhen
                   checkEnabled="false">
                <with
@@ -957,11 +951,6 @@ type="java.lang.Object">
              id="gama.navigator.convert2026"
              name="Convert to GAMA 2026 syntax...">
        </command>
-       <command
-             categoryId="gama.category"
-             id="gama.ui.navigator.commands.exportProjectAsSimulation"
-             name="Export Project as Simulation">
-       </command>
     </extension>
     <extension
           point="org.eclipse.ui.handlers">
@@ -981,27 +970,6 @@ type="java.lang.Object">
              </with>
           </enabledWhen>
        </handler>
-      <handler
-            class="gama.ui.navigator.commands.ExportProjectAsSimulation"
-            commandId="gama.ui.navigator.commands.exportProjectAsSimulation">
-         <activeWhen>
-               <with
-                     variable="selection">
-                  <iterate
-                        ifEmpty="true"
-                        operator="and">
-                     <or>
-                        <instanceof
-                              value="gama.ui.navigator.view.contents.WrappedProject">
-                        </instanceof>
-                        <instanceof
-                              value="gama.ui.navigator.view.contents.WrappedFolder">
-                        </instanceof>
-                     </or>
-                  </iterate>
-               </with>
-         </activeWhen>
-      </handler>
        <handler
              class="gama.ui.navigator.commands.ConvertToGama2026Handler"
              commandId="gama.navigator.convert2026">

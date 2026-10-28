@@ -1,4 +1,4 @@
-package gama.export.ui;
+package gama.ui.export.dialogs;
 
 import java.util.List;
 import java.util.ArrayList;

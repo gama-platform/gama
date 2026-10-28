@@ -37,12 +37,13 @@ import org.eclipse.core.resources.IProject;
 import gama.api.utils.prefs.JREPreferenceStore;
 import gama.api.utils.prefs.GamaPreferenceStore;
 import gama.api.GAMA;
-import gama.api.types.color.GamaColorFactory;
-import gama.api.ui.IStatusMessage;
 import gama.api.runtime.IWorkspaceManager;
 import gama.api.runtime.SystemInfo;
 import gama.export.dependency.BundleDependencyAnalyzer;
-import gama.export.ExportActivator;
+import gama.workspace.manager.WorkspacePaths;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import gama.export.ZipHelper;
 import gama.export.ExportHelper;
 import gama.export.ElfPacker;
@@ -60,7 +61,10 @@ public class GamaZipBuilder {
         "gama.dependencies",
         "gama.ui.application",
         "gama.ui.shared",
-        "gama.ui.experiment"
+        "gama.ui.experiment",
+        "gama.ui.export",
+        "gama.extension.maths",
+        "gama.extension.batch"
     ));
 
     // private static Set<String> necessaryGamaPlugins = new HashSet<String>(Set.of(
@@ -90,9 +94,9 @@ public class GamaZipBuilder {
 
     private static final String embeddedWorkspaceName = ExportHelper.getEmbeddedWorkspaceName();
 
-    private static final Path appRootPath = Path.of(ExportActivator.appRootPathStr);
+    private static final Path appRootPath = WorkspacePaths.applicationDirectory();
 
-    private static final Path eclipsePath = Path.of(ExportActivator.eclipsePathStr);
+    private static final Path eclipsePath = WorkspacePaths.installationDirectory();
 
     private static final String embeddedWorkspacePathStr = appRootPath.relativize(eclipsePath.resolve(embeddedWorkspaceName)).toString();
     
@@ -122,16 +126,15 @@ public class GamaZipBuilder {
 
     private static Path embeddedJdkPath = Path.of("jdk");
 
-    private int progress = 0;
+    private IProgressMonitor monitor = new NullProgressMonitor();
 
-    public synchronized void incrementProgress() {
-        progress++;
+    private void incrementProgress() {
+        checkCanceled();
+        monitor.worked(1);
     }
 
-    public synchronized int getProgress() {
-        int newProgress = progress;
-        progress = 0;
-        return newProgress;
+    private void checkCanceled() {
+        if (monitor.isCanceled()) throw new OperationCanceledException();
     }
 
     /**
@@ -289,9 +292,22 @@ public class GamaZipBuilder {
 
     public void zip(String outputPathStr) throws IOException
     {
-        GAMA.getGui().getStatus().setStatus("Exporting the project", IStatusMessage.COMPILE_ICON,
-                GamaColorFactory.get(200, 200, 200));
+        zip(outputPathStr, new NullProgressMonitor());
+    }
 
+    public void zip(String outputPathStr, IProgressMonitor monitor) throws IOException
+    {
+        this.monitor = monitor;
+        monitor.beginTask("Exporting the project", IProgressMonitor.UNKNOWN);
+        try {
+            buildArchive(outputPathStr);
+        } finally {
+            monitor.done();
+        }
+    }
+
+    private void buildArchive(String outputPathStr) throws IOException {
+        checkCanceled();
         final Path outputPath = Path.of(outputPathStr).toAbsolutePath().normalize();
         if (outputPath.startsWith(appRootPath.toAbsolutePath().normalize())
                 || targetProjects.stream().map(project -> Path.of(project.getLocation().toOSString())
@@ -358,8 +374,16 @@ public class GamaZipBuilder {
             ///////////////////////////////////////
 
             Files.copy(GamaZipBuilder.pluginsPath.resolve(GamaZipBuilder.gamaUiApplicationPluginFileName),gamaUiApplicationJarTmpPath);
-            ZipHelper.renameEntry(gamaUiApplicationJarTmpPath,"splash.png","old_splash.png");
-            ZipHelper.renameEntry(gamaUiApplicationJarTmpPath,"splash_simulation_launcher.png","splash.png");
+            final Bundle uiBundle = org.eclipse.core.runtime.Platform.getBundle("gama.ui.export");
+            if (uiBundle == null) throw new IOException("The simulation launcher UI bundle is not installed");
+            final URL splash = uiBundle.getEntry("splash_simulation_launcher.png");
+            if (splash == null) throw new IOException("The simulation launcher splash is missing");
+            try (var jar = FileSystems.newFileSystem(gamaUiApplicationJarTmpPath);
+                    var input = splash.openStream()) {
+                Files.move(jar.getPath("/splash.png"), jar.getPath("/old_splash.png"),
+                        StandardCopyOption.REPLACE_EXISTING);
+                Files.copy(input, jar.getPath("/splash.png"), StandardCopyOption.REPLACE_EXISTING);
+            }
 
             archive.addEntry(
                 gamaUiApplicationJarTmpPath,
@@ -375,6 +399,9 @@ public class GamaZipBuilder {
             // switching to non global preferences
             Files.copy(eclipsePath.resolve("Gama.ini"),gamaIniTmpPath);
             String gamaIniContent = Files.readString(gamaIniTmpPath);
+            // Select the launcher application without changing the normal product.
+            gamaIniContent = gamaIniContent.replaceAll("(?m)^-application\\r?\\n[^\\r\\n]*(?:\\r?\\n|$)", "");
+            gamaIniContent = "-application\ngama.ui.export.SimulationApplication\n" + gamaIniContent;
 
             // use embedded preferences
             if (gamaIniContent.contains("\n-Duse_global_preference_store="))
@@ -464,6 +491,7 @@ public class GamaZipBuilder {
             // them during the project walk below.                            //
             ////////////////////////////////////////////////////////////////////
             for (final IProject project : this.targetProjects) {
+                checkCanceled();
                 Path projectPath = Path.of(project.getLocation().toOSString());
                 final Path includeDir = projectPath.resolve("includes");
                 final String projectName = projectPath.getFileName().toString();
@@ -502,6 +530,7 @@ public class GamaZipBuilder {
                             final String filePrefix = fileName.replace(".shp", "");
                             try (Stream<Path> stream = Files.walk(resolved.getParent())) {
                                 stream.forEach(filePath -> {
+                                    checkCanceled();
                                     final String currentFileName = filePath.getFileName().toString();
                                     final int lastDotIndex = currentFileName.lastIndexOf('.');
 
@@ -684,8 +713,7 @@ public class GamaZipBuilder {
        
             if (this.zipWithJdk)
             {
-                GAMA.getGui().getStatus().setStatus("Exporting the JDK", IStatusMessage.COMPILE_ICON,
-                        GamaColorFactory.get(200, 200, 200));
+                monitor.subTask("Exporting the JDK");
                 // walk the jdk files tree stream
                 try (Stream<Path> stream = Files.walk(jdkPath)) {
                     stream.forEach(sourcePath -> {
@@ -726,8 +754,8 @@ public class GamaZipBuilder {
 
         if(isOneFileExport) {
 
-            GAMA.getGui().getStatus().setStatus("Packing the final executable", IStatusMessage.COMPILE_ICON,
-                    GamaColorFactory.get(200, 200, 200));
+            checkCanceled();
+            monitor.subTask("Packing the final executable");
 
             Bundle bundle = null;
 
@@ -808,6 +836,8 @@ public class GamaZipBuilder {
                 }
             }
 
+        }
+        checkCanceled();
         Files.move(outputStagingPath, outputPath, StandardCopyOption.REPLACE_EXISTING);
         completed = true;
         } finally {
@@ -824,6 +854,7 @@ public class GamaZipBuilder {
 
     private void addLinkedFile(Path filePath, Path includeDir, Map<Path, String> externalDataFiles,
             String entryName, ArchiveBuilder archive) throws IOException {
+        checkCanceled();
         String fileName = filePath.getFileName().toString().toLowerCase();
         if (fileName.endsWith(".gaml") || fileName.endsWith(".experiment")) {
             addEntryAndUpdateGamlImports(filePath, includeDir, externalDataFiles, entryName, archive);

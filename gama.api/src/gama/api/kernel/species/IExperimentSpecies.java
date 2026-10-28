@@ -225,8 +225,6 @@ public interface IExperimentSpecies extends ISpecies {
 	 */
 	boolean keepsSimulations();
 
-	void disposeAgent();
-
 	/**
 	 * Checks for parameters or user commands.
 	 *

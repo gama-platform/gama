@@ -21,7 +21,6 @@ import gama.api.ui.IStatusMessage;
 import gama.api.utils.server.GamaServerMessager;
 import gama.api.utils.server.MessageType;
 import gama.dev.DEBUG;
-import gama.dev.FLAGS;
 
 /**
  * Default controller for GUI-based experiment execution in GAMA.
@@ -342,11 +341,10 @@ public class DefaultExperimentController extends AbstractExperimentController {
 					final boolean wasRunning = !isPaused() && !experiment.isAutorun();
 					paused = true;
 					currentScope.getGui().getStatus().resetStatus();
-					currentScope.getGui().getStatus().waitStatus("Reloading...", IStatusMessage.SIMULATION_ICON,
-							() -> {
-								currentScope.getGui().showLaunchingOverlay(experiment.getName(), !FLAGS.SIMULATION_ONLY);
-								experiment.reload();
-							});
+					currentScope.getGui().getStatus().waitStatus("Reloading...", IStatusMessage.SIMULATION_ICON, () -> {
+						currentScope.getGui().showLaunchingOverlay(experiment.getName());
+						experiment.reload();
+					});
 					if (wasRunning) return processUserCommand(_START_CMD);
 					currentScope.getGui().getStatus().informStatus("Experiment reloaded",
 							IStatusMessage.SIMULATION_ICON);

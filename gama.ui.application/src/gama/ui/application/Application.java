@@ -37,13 +37,10 @@ import org.osgi.service.prefs.BackingStoreException;
 import gama.api.GAMA;
 import gama.api.runtime.IWorkspaceManager;
 import gama.api.runtime.SystemInfo;
-import gama.api.utils.prefs.GamaPreferences;
 import gama.api.utils.files.BufferingUtils;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
-import gama.dev.FLAGS;
 import gama.ui.application.workbench.ApplicationWorkbenchAdvisor;
-import gama.ui.application.workbench.StartupModelHelper;
 import gama.workspace.manager.WorkspaceModelsManager;
 
 /** This class controls all aspects of the application's execution */
@@ -117,35 +114,36 @@ public class Application implements IApplication {
 
 		});
 		final Display display = configureDisplay();
-		Object check = Display.getCurrent().syncCall(() -> GAMA.getWorkspaceManager().checkWorkspace());
-
-		if (!EXIT_OK.equals(check) && FLAGS.SIMULATION_ONLY
-				&& GamaPreferences.Interface.CORE_STARTUP_MODEL.getValue())
-			check = StartupModelHelper.getInstance().initialize();
-
-		if (!EXIT_OK.equals(check)) {
-			try {
+		try {
+			Object check = Display.getCurrent().syncCall(() -> GAMA.getWorkspaceManager().checkWorkspace());
+			if (!EXIT_OK.equals(check)) { check = initializeWorkspace(); }
+			if (!EXIT_OK.equals(check)) {
 				createProcessor(display);
 				if (getInternalPreferenceStore().getBoolean(IWorkspaceManager.CLEAR_WORKSPACE)) {
 					setProperty(CLEAR_PERSISTED_STATE, "true");
 					GAMA.getWorkspaceManager().clearWorkspace(false);
 				}
 				try {					
-					final int returnCode = Workbench.createAndRunWorkbench(display, new ApplicationWorkbenchAdvisor());
+					final int returnCode = Workbench.createAndRunWorkbench(display, createWorkbenchAdvisor());
 					if (returnCode == RETURN_RESTART) return EXIT_RESTART;
 				} catch (Exception t) {
 					DEBUG.ERR("Error in application", t);
 				}
-			} finally {
-				if (display != null) { display.dispose(); }
-				final Location instanceLoc = Platform.getInstanceLocation();
-				if (instanceLoc != null) { instanceLoc.release(); }
-				BufferingUtils.getInstance().flushAllBuffers();
 			}
+		} finally {
+			if (display != null) { display.dispose(); }
+			final Location instanceLoc = Platform.getInstanceLocation();
+			if (instanceLoc != null) { instanceLoc.release(); }
+			BufferingUtils.getInstance().flushAllBuffers();
 		}
 		return EXIT_OK;
 
 	}
+
+	/** Called after workspace selection and before the workbench is created; EXIT_OK cancels startup. */
+	protected Object initializeWorkspace() throws Exception { return null; }
+
+	protected ApplicationWorkbenchAdvisor createWorkbenchAdvisor() { return new ApplicationWorkbenchAdvisor(); }
 
 	private static void configureCopilotStartup() {
 		final IEclipsePreferences preferences =

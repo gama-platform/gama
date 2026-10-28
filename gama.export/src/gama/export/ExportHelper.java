@@ -6,19 +6,14 @@ import java.util.HashMap;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.handlers.HandlerUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 
-import gama.export.ExportActivator;
+import gama.workspace.manager.WorkspacePaths;
 
 public class ExportHelper 
 {
@@ -29,14 +24,14 @@ public class ExportHelper
     private static final String embeddedWorkspaceName = "Embedded_Workspace";
 
     public static Path toEmbeddedWorkspaceRelativePath(String pathStr) {
-        return Path.of(ExportActivator.eclipsePathStr,embeddedWorkspaceName)
+        return WorkspacePaths.installationDirectory().resolve(embeddedWorkspaceName)
             .relativize(Path.of(pathStr));
     }
 
     public static Path toAbsoluteFromAppRootPath(Path path)
     {
         if (!path.isAbsolute())
-            path = Path.of(ExportActivator.appRootPathStr,path.toString());
+            path = WorkspacePaths.applicationDirectory().resolve(path);
 
         return path;
     }
@@ -46,33 +41,25 @@ public class ExportHelper
         Path path = Path.of(pathStr);
 
         if (!path.isAbsolute())
-            path = Path.of(ExportActivator.appRootPathStr,pathStr);
+            path = WorkspacePaths.applicationDirectory().resolve(path);
 
         return path.toString();
     }
 
     public static Path toAbsoluteFromEclipsePath(Path path)
     {
-        if (!path.isAbsolute())
-            path = Path.of(ExportActivator.eclipsePathStr,path.toString());
-
-        return path;
+        return WorkspacePaths.resolveAgainstInstallation(path);
     }
 
     public static String toAbsoluteFromEclipsePath(String pathStr)
     {
-        Path path = Path.of(pathStr);
-
-        if (!path.isAbsolute())
-            path = Path.of(ExportActivator.eclipsePathStr,pathStr);
-
-        return path.toString();
+        return WorkspacePaths.resolveAgainstInstallation(pathStr);
     }
 
 
     public static String toAbsoluteFromEmbeddedWorkspacePath(String pathStr)
     {
-        return Path.of(ExportActivator.eclipsePathStr,embeddedWorkspaceName,pathStr).toString();
+        return WorkspacePaths.installationDirectory().resolve(embeddedWorkspaceName).resolve(pathStr).toString();
     }
 
     public static String getEmbeddedWorkspaceName() {
@@ -124,29 +111,5 @@ public class ExportHelper
             return null;
         }
     }
-
-	public static IProject getProjectFromEvent(final ExecutionEvent event) {
-        ISelection selection = HandlerUtil.getCurrentSelection(event);
-		IProject project = null;
-        
-        if (selection != null && selection instanceof IStructuredSelection) {
-            IStructuredSelection structuredSelection = (IStructuredSelection) selection;
-            Object firstElement = structuredSelection.getFirstElement();
-            
-            if (firstElement != null) {
-                
-                if (firstElement instanceof IProject) {
-                    project = (IProject) firstElement;
-                } 
-                else if (firstElement instanceof IAdaptable) {
-                    IResource resource = ((IAdaptable) firstElement).getAdapter(IResource.class);
-                    if (resource != null) {
-                        project = resource.getProject();
-                    }
-                }
-            }
-        }
-		return project;
-	} 
 
 }

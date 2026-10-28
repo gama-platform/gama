@@ -202,6 +202,7 @@
 		<module>../gama.feature.devtools</module>
 		
 		<module>../gama.export</module>
+		<module>../gama.ui.export</module>
 
 		<module>../gama.p2site</module>
 		<module>../gama.p2site.devtools</module>

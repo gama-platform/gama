@@ -169,10 +169,8 @@ public class PerspectiveHelper {
 	public static final boolean openModelingPerspective(final boolean immediately, final boolean memorizeEditors) {
 		// AD 08/18: turn off autosave to prevent workspace corruption
 		// AD 04/26: turn off immediately to prevent locking
-		if(FLAGS.SIMULATION_ONLY)
-			return true;
-		else
-			return openPerspective(PERSPECTIVE_MODELING_ID, false, false, memorizeEditors);
+		if (FLAGS.SIMULATION_ONLY) return true;
+		return openPerspective(PERSPECTIVE_MODELING_ID, false, false, memorizeEditors);
 	}
 
 	/**
@@ -376,7 +374,7 @@ public class PerspectiveHelper {
 			} finally {
 				// Delegate overlay creation to the GUI service so that the concrete
 				// implementation (SwtGui) can use the correct theme-aware icon and FlatButton.
-				if (isSimulationPerspective(perspectiveId)) { GAMA.getGui().showLaunchingOverlay(perspectiveId,!FLAGS.SIMULATION_ONLY); }
+				if (isSimulationPerspective(perspectiveId)) { GAMA.getGui().showLaunchingOverlay(perspectiveId); }
 			}
 		};
 		if (immediately) {

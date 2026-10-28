@@ -376,12 +376,6 @@
             defaultHandler="gama.ui.shared.commands.DetailsHandler"
             id="gama.ui.details"
             name="Installation details">
-            <visibleWhen
-                  checkEnabled="false">
-                  <not>
-                        <systemTest property="simulation_only" value="true"/>
-                  </not>
-            </visibleWhen> 
       </command>
       <command
             categoryId="gama.category"
@@ -394,12 +388,6 @@
             defaultHandler="gama.ui.shared.commands.InstallHandler"
             id="gama.ui.install"
             name="Install new plugins...">
-            <visibleWhen
-                  checkEnabled="false">
-                  <not>
-                        <systemTest property="simulation_only" value="true"/>
-                  </not>
-            </visibleWhen>    
       </command>
       <command
             categoryId="gama.category"
@@ -418,12 +406,6 @@
             defaultHandler="gama.ui.shared.commands.UpdateHandler"
             id="gama.ui.update"
             name="Check for updates">
-            <visibleWhen
-                  checkEnabled="false">
-                  <not>
-                        <systemTest property="simulation_only" value="true"/>
-                  </not>
-            </visibleWhen>    
       </command>
       <command
             categoryId="gama.category"

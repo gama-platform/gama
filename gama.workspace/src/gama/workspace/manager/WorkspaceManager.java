@@ -37,7 +37,6 @@ import gama.api.runtime.IWorkspaceManager;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 import gama.workspace.WorkspaceActivator;
-import gama.export.ExportHelper;
 
 /**
  * Singleton implementation of {@link IWorkspaceManager} that manages the GAMA workspace lifecycle.
@@ -569,7 +568,7 @@ public class WorkspaceManager implements IWorkspaceManager {
 			}
 		} else {
 			remember = isRememberWorkspace();
-			lastUsedWs = ExportHelper.toAbsoluteFromEclipsePath(getLastSetWorkspaceDirectory());
+			lastUsedWs = WorkspacePaths.resolveAgainstInstallation(getLastSetWorkspaceDirectory());
 			// A "remember" flag without a stored path is meaningless.
 			if (remember && (lastUsedWs == null || lastUsedWs.isEmpty())) { remember = false; }
 			if (remember) {

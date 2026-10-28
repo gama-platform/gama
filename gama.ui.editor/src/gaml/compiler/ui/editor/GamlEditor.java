@@ -149,7 +149,6 @@ import gaml.compiler.ui.decorators.GamlDecorator;
 import gaml.compiler.ui.editor.toolbar.CreateExperimentSelectionListener;
 import gaml.compiler.ui.editor.toolbar.EditorSearchControls;
 import gaml.compiler.ui.editor.toolbar.EditorToolbar;
-import gaml.compiler.ui.editor.toolbar.ExportExperimentSelectionListener;
 import gaml.compiler.ui.editor.toolbar.ExperimentToolbar;
 import gaml.compiler.ui.editor.toolbar.OpenExperimentSelectionListener;
 import gaml.compiler.ui.editor.toolbar.RevalidateModelSelectionListener;
@@ -992,9 +991,6 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 				new OpenExperimentSelectionListener(this, state, modelsManager)::launch,
 				new RevalidateModelSelectionListener(this)::revalidate,
 				uri -> modelsManager.editModel(uri));
-		tb.button(IGamaIcons.MENU_EXPORT, null, "Export this model",
-				new ExportExperimentSelectionListener(this, state), SWT.LEFT);
-		experimentToolbar.setLeadingItemCount(1);
 	}
 
 	@Override

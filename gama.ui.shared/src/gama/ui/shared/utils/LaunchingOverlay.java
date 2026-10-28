@@ -215,7 +215,13 @@ public class LaunchingOverlay {
 	 *            runnable invoked (on a fresh thread) when the user clicks the cancel button
 	 */
 	public LaunchingOverlay(final Shell parent, final String modelName, final String expName,
-			final IConsoleListener consoleSource, final IStatusDisplayer statusDisplayer, final Runnable cancelAction, final boolean showCancelButton) {
+			final IConsoleListener consoleSource, final IStatusDisplayer statusDisplayer, final Runnable cancelAction) {
+		this(parent, modelName, expName, consoleSource, statusDisplayer, cancelAction, true);
+	}
+
+	public LaunchingOverlay(final Shell parent, final String modelName, final String expName,
+			final IConsoleListener consoleSource, final IStatusDisplayer statusDisplayer, final Runnable cancelAction,
+			final boolean showCancelButton) {
 		this.parent = parent;
 		this.modelName = modelName;
 		this.expName = expName;
@@ -317,8 +323,7 @@ public class LaunchingOverlay {
 		final ToolBar cancelBar = new ToolBar(overlay, SWT.FLAT | SWT.NO_FOCUS);
 
 		// ── Cancel (stop) button ────────────────────────────────────────────────
-		if(showCancelButton)
-		{
+		if (showCancelButton) {
 			cancelBar.setBackground(bg);
 			final ToolItem cancelItem = new ToolItem(cancelBar, SWT.FLAT | SWT.PUSH);
 			final GamaIcon stopIcon = GamaIcon.named(IGamaIcons.EXPERIMENT_STOP);
@@ -326,7 +331,10 @@ public class LaunchingOverlay {
 			cancelItem.setDisabledImage(stopIcon.disabled());
 			cancelItem.setToolTipText("Cancel launch and return to the modelling perspective");
 			cancelItem.addSelectionListener(
-					org.eclipse.swt.events.SelectionListener.widgetSelectedAdapter(e -> handleCancel()));
+					org.eclipse.swt.events.SelectionListener.widgetSelectedAdapter(e -> {
+						cancelItem.setEnabled(false);
+						handleCancel();
+					}));
 			cancelBar.pack();
 		}
 
@@ -407,8 +415,17 @@ public class LaunchingOverlay {
 	 * Handles the cancel button click: hides the overlay and runs the cancel action on a dedicated thread.
 	 */
 	private void handleCancel() {
-		hide();
-		new Thread(() -> GAMA.closeAllExperiments(true, false), "Cancel launch").start();
+		new Thread(() -> {
+			try {
+				if (cancelAction != null) {
+					cancelAction.run();
+				} else {
+					GAMA.closeAllExperiments(true, false);
+				}
+			} finally {
+				hide();
+			}
+		}, "Cancel launch").start();
 	}
 
 	/**

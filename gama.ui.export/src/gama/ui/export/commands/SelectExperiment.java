@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  * 
  ********************************************************************************************************/
-package gama.ui.experiment.commands;
+package gama.ui.export.commands;
 
 import java.util.Map;
 
@@ -19,7 +19,7 @@ import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
 
 import gama.api.GAMA;
-import gama.ui.application.workbench.StartupModelHelper;
+import gama.ui.export.launcher.StartupModelHelper;
 
 /**
  * The Class SelectExperiment.

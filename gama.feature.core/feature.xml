@@ -36,10 +36,6 @@
       <import plugin="org.eclipse.xtext.util"/>
       <import plugin="org.eclipse.emf.common"/>
       <import plugin="org.eclipse.xtext.xbase.lib"/>
-      <import plugin="gama.extension.maths"/>
-      <import plugin="gama.extension.batch"/>
-      <import plugin="gama.dependencies"/>
-      <import plugin="gama.workspace"/>
    </requires>
 
    <plugin

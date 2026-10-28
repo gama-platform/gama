@@ -403,7 +403,6 @@ public class GAMA {
 		if (controller != null) {
 			final IExperimentSpecies existingExperiment = controller.getExperiment();
 			if (existingExperiment != null) {
-				if (existingExperiment == newExperiment) return GAMA.reloadFrontmostExperiment(false);
 				controller.processPause(true);
 				if (!getGui().confirmClose(existingExperiment)) return false;
 			}
@@ -529,13 +528,7 @@ public class GAMA {
 		if (controller == null) return;
 		stopBenchmark(controller.getExperiment());
 		desynchronizeFrontmostExperiment();
-		if (FLAGS.SIMULATION_ONLY) {
-			final IExperimentSpecies experiment = controller.getExperiment();
-			experiment.setController(null);
-			experiment.disposeAgent();
-		} else {
-			controller.close();
-		}
+		controller.close();
 		controllers.remove(controller);
 	}
 

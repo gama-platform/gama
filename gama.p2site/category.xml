@@ -48,6 +48,9 @@
    </feature>
 
    <!-- Extra -->
+   <feature id="gama.feature.export" version="0.0.0">
+      <category name="gama.optional"/>
+   </feature>
    <feature id="gama.feature.copilot" version="0.0.0">
       <category name="gama.optional"/>
    </feature>

@@ -10,9 +10,6 @@
  ********************************************************************************************************/
 package gama.ui.application.workbench;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -21,46 +18,32 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
-import org.eclipse.jface.bindings.Binding;
-import org.eclipse.jface.bindings.keys.KeySequence;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
-import org.eclipse.jface.action.IContributionItem;
-import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IDecoratorManager;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
-import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.internal.PluginActionBuilder;
-import org.eclipse.ui.internal.WorkbenchWindow;
 import org.eclipse.ui.internal.ide.application.IDEWorkbenchAdvisor;
-import org.eclipse.ui.internal.keys.BindingService;
-import org.eclipse.ui.keys.IBindingService;
 import org.osgi.service.prefs.BackingStoreException;
 
 import gama.api.GAMA;
 import gama.api.additions.delegates.IEventLayerDelegate;
 import gama.api.additions.registries.GamaAdditionRegistry;
-import gama.api.kernel.simulation.IExperimentController;
 import gama.api.runtime.GamaExecutorService;
 import gama.api.runtime.SystemInfo;
 import gama.api.types.file.IGamaFile;
-import gama.api.utils.files.BufferingUtils;
 import gama.api.ui.IGui;
-import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.utils.files.FileUtils;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
-import gama.dev.FLAGS;
 import gama.ui.application.Application;
 import gama.ui.application.server.GamaGuiWebSocketServer;
-import gama.ui.application.workbench.StartupModelHelper;
 import gama.workspace.manager.WorkspaceModelsManager;
 import gama.workspace.manager.ProjectCategory;
 
@@ -128,38 +111,6 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
 		warnIfWaylandUnstable();
 
-		if (FLAGS.SIMULATION_ONLY) {
-			final IBindingService service =
-					(IBindingService) PlatformUI.getWorkbench().getService(IBindingService.class);
-			if (service instanceof BindingService bindingService) {
-				try {
-					final KeySequence ctrlN = KeySequence.getInstance("M1+N");
-					final List<Binding> bindings = new ArrayList<>();
-					for (final Binding binding : bindingService.getBindings()) {
-						if (!ctrlN.equals(binding.getTriggerSequence())) { bindings.add(binding); }
-					}
-					final Binding[] filteredBindings = bindings.toArray(new Binding[0]);
-					bindingService.getBindingManager().setBindings(filteredBindings);
-					bindingService.savePreferences(bindingService.getActiveScheme(), filteredBindings);
-				} catch (final Exception e) {
-					e.printStackTrace();
-				}
-			}
-
-			for (final IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
-				if (window instanceof WorkbenchWindow workbenchWindow) {
-					final IMenuManager menuBarManager = workbenchWindow.getMenuBarManager();
-					for (final IContributionItem item : menuBarManager.getItems()) {
-						final String id = item.getId();
-						if ("file".equals(id) || "edit".equals(id) || "org.eclipse.search.menu".equals(id)) {
-							item.setVisible(false);
-						}
-					}
-					menuBarManager.update(true);
-				}
-			}
-		}
-
 		if (args.length > 0) {
 			int i = 0;
 			if (args[0].contains("--launcher.defaultAction")) { i += 2; }
@@ -178,20 +129,18 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
 		}
 
-		if (GamaPreferences.Interface.CORE_STARTUP_MODEL.getValue()) {
-			if (FLAGS.SIMULATION_ONLY) {
-				StartupModelHelper.getInstance().startSimulation();
-			} else {
-				IGamaFile<?, ?> file = GamaPreferences.Interface.CORE_DEFAULT_MODEL.getValue();
-				if (file != null && file.exists(null)) {
-					StringBuilder name = new StringBuilder().append(file.getPath(null));
-					String exp = GamaPreferences.Interface.CORE_DEFAULT_EXPERIMENT.getValue();
-					if (exp != null && !exp.isBlank()) { name.append("#").append(exp); }
-					WorkspaceModelsManager.instance.openModelPassedAsArgument(name.toString());
-				}
-			}
-		}
+		if (GamaPreferences.Interface.CORE_STARTUP_MODEL.getValue()) { openStartupModel(); }
 
+	}
+
+	protected void openStartupModel() {
+		IGamaFile<?, ?> file = GamaPreferences.Interface.CORE_DEFAULT_MODEL.getValue();
+		if (file != null && file.exists(null)) {
+			StringBuilder name = new StringBuilder().append(file.getPath(null));
+			String exp = GamaPreferences.Interface.CORE_DEFAULT_EXPERIMENT.getValue();
+			if (exp != null && !exp.isBlank()) { name.append("#").append(exp); }
+			WorkspaceModelsManager.instance.openModelPassedAsArgument(name.toString());
+		}
 	}
 
 	private void showInteractiveConsoleAtStartup() {
@@ -335,34 +284,6 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 	@Override
 	public boolean preShutdown() {
 		try {
-			if (FLAGS.SIMULATION_ONLY && StartupModelHelper.getInstance().areThereAnyArtifactsToSave()
-					&& GAMA.getGui().getDialogFactory()
-							.question("Warning", "New simulation artifacts have been found. Do you want to save them ?")) {
-				final List<IExperimentController> runningControllers =
-						GAMA.getControllers().stream().filter(controller -> !controller.isPaused()).toList();
-				final IExperimentSpecies experiment = GAMA.getExperiment();
-				boolean saved = false;
-				try {
-					if (GAMA.pauseFrontmostExperiment(true)) {
-						if (experiment != null) experiment.pauseAllOutputs();
-						BufferingUtils.getInstance().flushAllBuffers();
-						final IHandlerService handlerService =
-								(IHandlerService) PlatformUI.getWorkbench().getService(IHandlerService.class);
-						if (handlerService != null) {
-							saved = Boolean.TRUE.equals(handlerService
-									.executeCommand("gama.application.commands.SaveSimulationsArtifacts", null));
-						}
-					}
-				} catch (final Exception e) {
-					e.printStackTrace();
-				} finally {
-					if (!saved) {
-						if (experiment != null) experiment.resumeAllOutputs();
-						runningControllers.forEach(controller -> controller.processStart(true));
-					}
-				}
-				if (!saved) return false;
-			}
 			GAMA.closeAllExperiments(true, true);
 			PerspectiveHelper.deleteCurrentSimulationPerspective();
 			// So that they are not saved to the workbench.xmi file
@@ -374,11 +295,6 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
 		return super.preShutdown();
 
-	}
-
-	@Override
-	protected void disconnectFromWorkspace() {
-		if (!FLAGS.SIMULATION_ONLY) { super.disconnectFromWorkspace(); }
 	}
 
 	@Override

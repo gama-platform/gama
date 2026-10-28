@@ -240,44 +240,6 @@
                   </and>
                </visibleWhen>
             </command>
-            <command
-                  commandId="gama.application.commands.SelectExperiment"
-                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.project.svg"
-                  label="Select Experiment"
-                  style="push"
-                  tooltip="Select another experiment to run.">
-               <visibleWhen
-                     checkEnabled="false">
-                  <and>
-                     <reference
-                           definitionId="isInSimulationPerspective">
-                     </reference>
-                     <reference
-                           definitionId="isSimulationExisting">
-                     </reference>
-                     <systemTest property="simulation_only" value="true"/>
-                  </and>
-               </visibleWhen>
-            </command>
-            <command
-                  commandId="gama.application.commands.SaveSimulationsArtifacts"
-                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/status/status.download.svg"
-                  label="Save Simulation Data"
-                  style="push"
-                  tooltip="Save the data of the previously run simulations, in the desired directory.">
-               <visibleWhen
-                     checkEnabled="false">
-                  <and>
-                     <reference
-                           definitionId="isInSimulationPerspective">
-                     </reference>
-                     <reference
-                           definitionId="isSimulationExisting">
-                     </reference>
-                     <systemTest property="simulation_only" value="true"/>
-                  </and>
-               </visibleWhen>
-            </command>
          </menu>
          <menu
                label="Agents">
@@ -750,44 +712,6 @@
                   </and>
                </visibleWhen>
             </command>
-            <command
-                  commandId="gama.application.commands.SelectExperiment"
-                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.project.svg"
-                  label="Select Another Experiment"
-                  style="push"
-                  tooltip="Select another experiment to run.">
-               <visibleWhen
-                     checkEnabled="false">
-                  <and>
-                     <reference
-                           definitionId="isInSimulationPerspective">
-                     </reference>
-                     <reference
-                           definitionId="isSimulationExisting">
-                     </reference>
-                     <systemTest property="simulation_only" value="true"/>
-                  </and>
-               </visibleWhen>
-            </command>
-            <command
-                  commandId="gama.application.commands.SaveSimulationsArtifacts"
-                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/status/status.download.svg"
-                  label="Save Simulation Data"
-                  style="push"
-                  tooltip="Save the data of the previously run simulations, in the desired directory.">
-               <visibleWhen
-                     checkEnabled="false">
-                  <and>
-                     <reference
-                           definitionId="isInSimulationPerspective">
-                     </reference>
-                     <reference
-                           definitionId="isSimulationExisting">
-                     </reference>
-                     <systemTest property="simulation_only" value="true"/>
-                  </and>
-               </visibleWhen>
-            </command>
          </toolbar>
       </menuContribution>
    </extension>
@@ -902,30 +826,6 @@
                   <not>
                         <systemTest property="simulation_only" value="true"/>
                   </not>
-            </and>
-         </activeWhen>
-      </handler>
-      <handler
-            class="gama.ui.experiment.commands.SaveSimulationsArtifacts"
-            commandId="gama.application.commands.SaveSimulationsArtifacts">
-         <activeWhen>
-            <and>
-                  <reference
-                        definitionId="isInSimulationPerspective">
-                  </reference>
-                  <systemTest property="simulation_only" value="true"/>
-            </and>
-         </activeWhen>
-      </handler>
-      <handler
-            class="gama.ui.experiment.commands.SelectExperiment"
-            commandId="gama.application.commands.SelectExperiment">
-         <activeWhen>
-            <and>
-                  <reference
-                        definitionId="isInSimulationPerspective">
-                  </reference>
-                  <systemTest property="simulation_only" value="true"/>
             </and>
          </activeWhen>
       </handler>
@@ -1337,26 +1237,10 @@
             defaultHandler="gama.ui.experiment.commands.HideShowEditors"
             id="gama.ui.hideShowEditors"
             name="Hide/Show Editors">
-            <visibleWhen
-                  checkEnabled="false">
-                  <not>
-                        <systemTest property="simulation_only" value="true"/>
-                  </not>
-            </visibleWhen>    
       </command>
       <command
             id="gama.ui.experiment.toolbar.simulation.menu"
             name="Simulations">
-      </command>
-      <command
-            categoryId="gama.category"
-            id="gama.application.commands.SaveSimulationsArtifacts"
-            name="Save Simulation Artifacts">
-      </command>
-      <command
-            categoryId="gama.category"
-            id="gama.application.commands.SelectExperiment"
-            name="Select Experiment">
       </command>
    </extension>
    <extension
