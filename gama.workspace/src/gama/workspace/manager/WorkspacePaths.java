@@ -13,7 +13,8 @@ public final class WorkspacePaths {
 	public static Path installationDirectory() {
 		final String location = System.getProperty("eclipse.home.location");
 		if (location == null) throw new IllegalStateException("The Eclipse installation location is not set");
-		return Path.of(URI.create(location));
+		// Eclipse can supply a file URL with unescaped spaces; preserve existing URI escapes.
+		return Path.of(URI.create(location.replace(" ", "%20")));
 	}
 
 	public static Path applicationDirectory() {

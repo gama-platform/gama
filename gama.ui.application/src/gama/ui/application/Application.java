@@ -124,6 +124,7 @@ public class Application implements IApplication {
 					setProperty(CLEAR_PERSISTED_STATE, "true");
 					GAMA.getWorkspaceManager().clearWorkspace(false);
 				}
+				if (EXIT_OK.equals(initializeWorkspace())) return EXIT_OK;
 				try {					
 					final int returnCode = Workbench.createAndRunWorkbench(display, createWorkbenchAdvisor());
 					if (returnCode == RETURN_RESTART) return EXIT_RESTART;

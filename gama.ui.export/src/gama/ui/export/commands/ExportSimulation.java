@@ -1,6 +1,5 @@
 package gama.ui.export.commands;
 
-import java.awt.Desktop;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
@@ -20,6 +19,7 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.swt.program.Program;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.handlers.HandlerUtil;
 
@@ -65,7 +65,7 @@ public final class ExportSimulation extends AbstractHandler {
 			final var experiments = models.experiments();
 			final String[] labels = experiments.stream().map(experiment -> experiment.label(multipleModels))
 					.toArray(String[]::new);
-			final var dialog = new ExportModelDialog(labels);
+			final var dialog = new ExportModelDialog(labels, models.defaultTitle(), models.defaultDescription());
 			if (dialog.open() != IDialogConstants.OK_ID) return null;
 			final List<ExportModels.Experiment> selected = experiments.stream()
 					.filter(experiment -> Arrays.asList(dialog.getSelectedExperiments())
@@ -90,17 +90,16 @@ public final class ExportSimulation extends AbstractHandler {
 					throw new InvocationTargetException(e);
 				}
 			});
-			if (Desktop.isDesktopSupported() && GAMA.getGui().getDialogFactory()
-					.question("Model export successful", "Do you want to show the target directory?")) {
-				Desktop.getDesktop().open(output.toAbsolutePath().getParent().toFile());
-			}
+			final boolean show = GAMA.getGui().getDialogFactory().question("Model export successful",
+					"The model was exported to:\n" + output.toAbsolutePath() + "\n\nDo you want to show the target directory?");
+			if (show) { Program.launch(output.toAbsolutePath().getParent().toString()); }
 		} catch (final InterruptedException | OperationCanceledException e) {
 			// Cancellation leaves the destination unchanged.
 		} catch (final InvocationTargetException e) {
 			if (!(e.getCause() instanceof OperationCanceledException)) {
 				reportFailure(e.getCause());
 			}
-		} catch (final IOException | CoreException | RuntimeException e) {
+		} catch (final IOException | CoreException | RuntimeException | LinkageError e) {
 			reportFailure(e);
 		}
 		return null;
@@ -113,6 +112,6 @@ public final class ExportSimulation extends AbstractHandler {
 
 	private static void reportFailure(final Throwable error) {
 		DEBUG.ERR("Unable to export the simulation", error);
-		GAMA.getGui().getDialogFactory().error("Unable to export the simulation: " + error.getMessage());
+		GAMA.getGui().getDialogFactory().error("Unable to export the simulation: " + (error.getMessage() == null ? error.toString() : error.getMessage()));
 	}
 }

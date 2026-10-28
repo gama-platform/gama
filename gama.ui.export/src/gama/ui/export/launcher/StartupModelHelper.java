@@ -29,10 +29,19 @@ public final class StartupModelHelper {
 	private LauncherConfiguration configuration;
 	private List<String> selections = List.of();
 	private Path projectPath;
+	private boolean startupAttempted;
 
 	public LauncherConfiguration getConfiguration() { return configuration; }
 
 	public List<String> getSelections() { return selections; }
+
+	public boolean isHomeVisibleAtStartup() { return configuration.showHome() || startupAttempted; }
+
+	public void launchDefaultExperiment() {
+		if (startupAttempted || configuration.showHome()) return;
+		startupAttempted = true;
+		launch(configuration.startupExperiment());
+	}
 
 	public String label(final String selection) {
 		final int separator = selection.lastIndexOf('@');

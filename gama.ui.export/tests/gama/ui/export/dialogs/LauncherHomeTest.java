@@ -4,18 +4,25 @@ import java.lang.reflect.Field;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 import gama.export.LauncherConfiguration;
+import gama.export.ExportModels;
 import gama.ui.application.workbench.PerspectiveHelper;
 import gama.ui.export.launcher.LauncherHomePerspective;
 import gama.ui.export.launcher.LauncherHomeView;
 import gama.ui.export.launcher.StartupModelHelper;
+import gama.ui.shared.controls.FlatButton;
+import gama.ui.shared.menus.ExperimentMenu;
 
-/** Standalone SWT checks; use -XstartOnFirstThread on macOS. */
+/** SWT checks; Home and menu checks also run in an initialized workbench. */
 public final class LauncherHomeTest {
 
 	private static void check(final boolean condition, final String message) {
@@ -43,18 +50,34 @@ public final class LauncherHomeTest {
 		}
 		check(StartupModelHelper.getInstance().label("Run@project/model.gaml")
 				.equals("Run    from model    project/model.gaml"), "Contextual experiment labels");
+		check(ExportModels.leadingDescription("/**\n* Name: Model\n* Description: First line\n* Second line\n"
+				+ "* Author: Someone\n* Tags: example\n*/\nmodel test\n// Not header")
+				.equals("First line\nSecond line"), "Prefill only leading description, not header metadata");
+		check(ExportModels.leadingDescription("// First line\n// Second line\nmodel test")
+				.equals("First line\nSecond line"), "Line-comment descriptions");
+		check(ExportModels.leadingDescription("model test\n/* not documentation */").isEmpty(),
+				"Do not use comments from the model body");
 
 		final Display display = new Display();
 		try {
 			checkDialog(false, true);
 			checkDialog(true, false);
 			checkDialog(true, true);
-			checkHomeView(display, false);
-			checkHomeView(display, true);
+			checkScrollableExperiments();
 		} finally {
 			display.dispose();
 		}
 		System.out.println("Launcher home routing and export dialog checks passed");
+	}
+
+	public static void runInWorkbench() throws Exception {
+		checkDialog(false, true);
+		checkDialog(true, false);
+		checkDialog(true, true);
+		checkScrollableExperiments();
+		checkHomeView(Display.getCurrent(), false);
+		checkHomeView(Display.getCurrent(), true);
+		checkSharedMenu(Display.getCurrent());
 	}
 
 	private static void checkHomeView(final Display display, final boolean singleExperiment) throws Exception {
@@ -83,18 +106,24 @@ public final class LauncherHomeTest {
 			view.createPartControl(shell);
 			final var scroll = (org.eclipse.swt.custom.ScrolledComposite) shell.getChildren()[0];
 			final var content = (org.eclipse.swt.widgets.Composite) scroll.getContent();
-			final var labels = java.util.Arrays.stream(content.getChildren())
+			final var center = (Composite) content.getChildren()[0];
+			final var labels = java.util.Arrays.stream(center.getChildren())
 					.filter(org.eclipse.swt.widgets.Label.class::isInstance)
 					.map(org.eclipse.swt.widgets.Label.class::cast).map(org.eclipse.swt.widgets.Label::getText).toList();
 			check(labels.containsAll(java.util.List.of("A model", "Description")),
 					"Home must display its presentation");
-			check(labels.contains("Choose an experiment") != singleExperiment,
-					"Only multiple experiments need a choice prompt");
-			final var buttons = java.util.Arrays.stream(content.getChildren()).filter(Button.class::isInstance)
+			check(java.util.Arrays.stream(center.getChildren()).filter(FlatButton.class::isInstance).count()
+					== (singleExperiment ? 0 : 1), "Only multiple experiments need the shared selector");
+			final var play = java.util.Arrays.stream(center.getChildren()).filter(ToolBar.class::isInstance)
+					.map(ToolBar.class::cast).findFirst().orElseThrow();
+			check(play.getItemCount() == 1 && play.getItem(0).getImage() != null,
+					"Home must have one play button, not one button per experiment");
+			final Label title = (Label) center.getChildren()[0];
+			check(title.getFont().getFontData()[0].getHeight() == 20
+					&& (title.getStyle() & SWT.CENTER) != 0, "Home title must match the centered overlay heading");
+			final var buttons = java.util.Arrays.stream(center.getChildren()).filter(Button.class::isInstance)
 					.map(Button.class::cast).map(Button::getText).toList();
-			check(buttons.equals(singleExperiment ? java.util.List.of("Run", "Save Simulation Data...")
-					: java.util.List.of("First", "Second", "Save Simulation Data...")),
-					"Home must expose every exported experiment and artifact saving");
+			check(buttons.equals(java.util.List.of("Save Simulation Data...")), "Retain artifact saving");
 			view.setFocus();
 			view.dispose();
 		} finally {
@@ -105,25 +134,37 @@ public final class LauncherHomeTest {
 	}
 
 	private static void checkDialog(final boolean hasDefault, final boolean showHome) throws Exception {
-		final var dialog = new ExportModelDialog(new String[] { "First", "Second" });
+		final var dialog = new ExportModelDialog(new String[] { "First", "Second" }, "Model.gaml", "Model description");
 		try {
 			dialog.create();
-			final Combo startup = field(dialog, "startupExperiment", Combo.class);
+			check(field(dialog, "title", Text.class).getText().equals("Model.gaml"), "Prefill the model filename");
+			check(field(dialog, "description", Text.class).getText().equals("Model description"),
+					"Prefill the leading model documentation");
+			final Table experiments = field(dialog, "experiments", Table.class);
 			final Button home = field(dialog, "showHomeButton", Button.class);
 			check(home.getSelection() && !home.isEnabled(), "Home is mandatory without a default");
-			check(startup.getSelectionIndex() == 0 && startup.isEnabled(), "No default must mean Home-first");
-			check(startup.getItemCount() == 3, "The default selector must include None and all experiments");
-			field(dialog, "txtOutputPath", Text.class).setText(System.getProperty("java.io.tmpdir"));
-			final Button[] experiments = field(dialog, "buttons", Button[].class);
-			experiments[1].setSelection(true);
+			check(experiments.getItemCount() == 2 && experiments.getSelectionCount() == 2,
+					"Initially export all runnable experiments");
+			final String destination = java.nio.file.Path.of(System.getProperty("java.io.tmpdir"), "test-launcher.zip")
+					.toString();
+			field(dialog, "destination", Text.class).setText(destination);
+			experiments.setSelection(1);
 			if (hasDefault) {
-				startup.select(1);
-				startup.notifyListeners(SWT.Selection, null);
+				final var firstCell = (Composite) experiments.getChildren()[0];
+				final Button first = (Button) firstCell.getChildren()[0];
+				first.setSelection(true);
+				first.notifyListeners(SWT.Selection, null);
 				check(home.isEnabled(), "Home option must be independent when a default is selected");
-				dialog.okPressed();
-				check(!dialog.getShell().isDisposed(), "An unexported startup experiment must be rejected");
-				startup.select(2);
-				startup.notifyListeners(SWT.Selection, null);
+				check(experiments.isSelected(0), "Choosing a default must include it in the export");
+				experiments.setSelection(1);
+				experiments.notifyListeners(SWT.Selection, null);
+				check(home.getSelection() && !home.isEnabled(),
+						"Deselecting the default restores mandatory Home");
+				final var secondCell = (Composite) experiments.getChildren()[1];
+				final Button second = (Button) secondCell.getChildren()[0];
+				second.setSelection(true);
+				second.notifyListeners(SWT.Selection, null);
+				check(!first.getSelection() && second.getSelection(), "Only one experiment can be the default");
 				home.setSelection(showHome);
 			}
 			field(dialog, "title", Text.class).setText("Custom title");
@@ -138,8 +179,58 @@ public final class LauncherHomeTest {
 					"Startup mode must survive SWT disposal");
 			check(dialog.getStartupExperiment().equals(hasDefault ? "Second" : ""),
 					"Default experiment must survive SWT disposal");
+			check(dialog.getSelectedExperiments().length == 1
+					&& dialog.getSelectedExperiments()[0].equals("Second"), "Export only the selected rows");
+			check(java.nio.file.Path.of(dialog.getOutputPath(), dialog.getOutputFileName()).toString()
+					.equals(destination), "Destination combines filename and path");
 		} finally {
 			dialog.close();
+		}
+	}
+
+	private static void checkScrollableExperiments() throws Exception {
+		final String[] names = java.util.stream.IntStream.range(0, 100).mapToObj(i -> "Experiment " + i)
+				.toArray(String[]::new);
+		final var dialog = new ExportModelDialog(names);
+		try {
+			dialog.create();
+			final Table table = field(dialog, "experiments", Table.class);
+			check((table.getStyle() & SWT.MULTI) != 0 && table.getVerticalBar() != null,
+					"Experiments must form a real scrollable multi-selection list");
+			check(((org.eclipse.swt.layout.GridData) table.getLayoutData()).heightHint == 170,
+					"The list height must not grow with the number of experiments");
+			table.deselectAll();
+			findButton(dialog.getShell(), "Select all").notifyListeners(SWT.Selection, null);
+			check(table.getSelectionCount() == 100, "Select all must select every experiment");
+		} finally {
+			dialog.close();
+		}
+	}
+
+	private static Button findButton(final Composite parent, final String text) {
+		for (final Control child : parent.getChildren()) {
+			if (child instanceof Button button && button.getText().equals(text)) return button;
+			if (child instanceof Composite composite) {
+				final Button found = findButton(composite, text);
+				if (found != null) return found;
+			}
+		}
+		return null;
+	}
+
+	private static void checkSharedMenu(final Display display) {
+		final Shell shell = new Shell(display);
+		try {
+			final String[] selected = { "" };
+			final Button owner = new Button(shell, SWT.PUSH);
+			final var menu = ExperimentMenu.create(owner, java.util.List.of(
+					new ExperimentMenu.Entry("full-name", "Display label", "batch")), name -> selected[0] = name);
+			menu.getItem(0).notifyListeners(SWT.Selection, null);
+			check(selected[0].equals("full-name"), "The shared menu must return the name, not the label");
+			owner.dispose();
+			check(menu.isDisposed(), "The shared experiment menu must follow its owner's lifetime");
+		} finally {
+			shell.dispose();
 		}
 	}
 }

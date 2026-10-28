@@ -11,6 +11,7 @@
 package gama.export;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,6 +20,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -125,7 +127,8 @@ public record ExportModels(List<IFile> roots, List<Experiment> experiments, List
 				if (required != null) { plugins.addAll(required); }
 				if (roots.contains(file)) {
 					for (final var experiment : model.getExperiments()) {
-						experiments.add(new Experiment(experiment.getName(), file.getFullPath().toString()));
+						if (!experiment.getDescription().isAbstract())
+							experiments.add(new Experiment(experiment.getName(), file.getFullPath().toString()));
 					}
 				}
 			} finally {
@@ -146,5 +149,33 @@ public record ExportModels(List<IFile> roots, List<Experiment> experiments, List
 		if (experiments.isEmpty()) throw new IOException("No experiments were found in the selected models");
 		return new ExportModels(List.copyOf(roots), List.copyOf(experiments), List.copyOf(projects), plugins,
 				dataFiles);
+	}
+
+	public String defaultTitle() {
+		return roots.size() == 1 ? roots.getFirst().getName() : roots.getFirst().getProject().getName();
+	}
+
+	public String defaultDescription() throws IOException, CoreException {
+		if (roots.size() != 1) return "";
+		final IFile file = roots.getFirst();
+		try (var input = file.getContents()) {
+			return leadingDescription(new String(input.readAllBytes(), Charset.forName(file.getCharset())));
+		}
+	}
+
+	/** Description text from leading model comments, excluding conventional header metadata. */
+	public static String leadingDescription(final String source) {
+		final var comments = Pattern.compile("\\G\\s*(?://([^\\r\\n]*)|/\\*(.*?)\\*/)", Pattern.DOTALL)
+				.matcher(source.startsWith("\uFEFF") ? source.substring(1) : source);
+		final List<String> lines = new ArrayList<>();
+		while (comments.find()) {
+			final String body = comments.group(1) == null ? comments.group(2) : comments.group(1);
+			for (final String raw : body.split("\\R", -1)) {
+				final String line = raw.strip().replaceFirst("^\\*\\s?", "");
+				if (line.matches("(?i)^(name|author|tags):.*")) continue;
+				lines.add(line.replaceFirst("(?i)^description:\\s*", ""));
+			}
+		}
+		return String.join("\n", lines).strip();
 	}
 }

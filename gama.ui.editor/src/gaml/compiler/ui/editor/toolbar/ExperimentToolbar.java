@@ -13,6 +13,7 @@ import static gama.api.utils.prefs.GamaPreferences.Modeling.EDITOR_COLLAPSE_BUTT
 import static gama.api.utils.prefs.GamaPreferences.Modeling.EDITOR_EXPERIMENT_MENU;
 
 import java.util.Objects;
+import java.util.stream.IntStream;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
@@ -20,16 +21,15 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.ToolItem;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.utils.prefs.IPreferenceChangeListener.IPreferenceAfterChangeListener;
-import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.menus.GamaMenu;
+import gama.ui.shared.menus.ExperimentMenu;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.resources.IGamaIcons;
@@ -140,7 +140,7 @@ public final class ExperimentToolbar {
 		}
 		for (int i = 0; i < state.abbreviations.size(); i++) {
 			measuringButton.setText(state.abbreviations.get(i));
-			measuringButton.setImage(GamaIcon.named(buttonIcon(state.getExperimentTypes().get(i))).image());
+			measuringButton.setImage(GamaIcon.named(ExperimentMenu.buttonIcon(state.getExperimentTypes().get(i))).image());
 			width += measuringButton.computeSize(SWT.DEFAULT, BUTTON_HEIGHT).x + 4;
 		}
 		return width > renderedWidth;
@@ -151,7 +151,7 @@ public final class ExperimentToolbar {
 			final String name = state.experiments.get(i);
 			final String text = state.abbreviations.get(i);
 			final String type = state.getExperimentTypes().get(i);
-			final ToolItem item = toolbar.button(IGamaColors.OK, text, GamaIcon.named(buttonIcon(type)).image(),
+			final ToolItem item = toolbar.button(IGamaColors.OK, text, GamaIcon.named(ExperimentMenu.buttonIcon(type)).image(),
 					e -> launchExperiment.accept(name), BUTTON_HEIGHT, SWT.LEFT);
 			final String label = IKeyword.BATCH.equals(type) ? IKeyword.BATCH
 					: IKeyword.RECORD.equals(type) ? IKeyword.RECORD : "regular";
@@ -165,18 +165,10 @@ public final class ExperimentToolbar {
 		final GamlEditorState snapshot = state;
 		final ToolItem item = toolbar.menuButton(IGamaColors.OK, "Run Experiment...", SWT.LEFT);
 		final FlatButton button = ((FlatButton) item.getControl()).withHeight(BUTTON_HEIGHT);
-		final Menu menu = new Menu(toolbar.getShell(), SWT.POP_UP);
-		for (int i = 0; i < snapshot.experiments.size(); i++) {
-			final String name = snapshot.experiments.get(i);
-			GamaMenu.action(menu, snapshot.abbreviations.get(i), e -> launchExperiment.accept(name),
-					menuIcon(snapshot.getExperimentTypes().get(i))).setData("exp", name);
-		}
-		button.addDisposeListener(e -> menu.dispose());
-		button.setSelectionListener(e -> {
-			final Point location = button.toDisplay(0, button.getSize().y);
-			menu.setLocation(location);
-			menu.setVisible(true);
-		});
+		final Menu menu = ExperimentMenu.create(button, IntStream.range(0, snapshot.experiments.size())
+				.mapToObj(i -> new ExperimentMenu.Entry(snapshot.experiments.get(i), snapshot.abbreviations.get(i),
+						snapshot.getExperimentTypes().get(i))).toList(), launchExperiment);
+		button.setSelectionListener(e -> ExperimentMenu.open(menu, button));
 	}
 
 	private void bindImportedErrors(final FlatButton button, final GamlEditorState snapshot) {
@@ -190,14 +182,4 @@ public final class ExperimentToolbar {
 		});
 	}
 
-	private static String buttonIcon(final String type) {
-		return IKeyword.BATCH.equals(type) ? IGamaIcons.BUTTON_BATCH
-				: IKeyword.RECORD.equals(type) ? IGamaIcons.BUTTON_BACK : IGamaIcons.BUTTON_GUI;
-	}
-
-	private static String menuIcon(final String type) {
-		if (ThemeHelper.isDark()) return buttonIcon(type);
-		return IKeyword.BATCH.equals(type) ? IGamaIcons.MENU_BATCH
-				: IKeyword.RECORD.equals(type) ? IGamaIcons.MENU_BACK : IGamaIcons.MENU_GUI;
-	}
 }

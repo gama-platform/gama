@@ -25,11 +25,17 @@ public final class SimulationWorkbenchAdvisor extends ApplicationWorkbenchAdviso
 	protected boolean checkCopyOfBuiltInModels() { return false; }
 
 	@Override
+	protected boolean shouldOpenCommandLineModels() { return false; }
+
+	@Override
+	protected void showInteractiveConsoleAtStartup() {}
+
+	@Override
 	protected void openStartupModel() {
 		configureLauncherUI();
 		if (!StartupModelHelper.getInstance().getConfiguration().showHome()) {
-			StartupModelHelper.getInstance().launch(
-					StartupModelHelper.getInstance().getConfiguration().startupExperiment());
+			org.eclipse.swt.widgets.Display.getDefault().asyncExec(
+					() -> StartupModelHelper.getInstance().launchDefaultExperiment());
 		}
 	}
 

@@ -111,7 +111,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
 		warnIfWaylandUnstable();
 
-		if (args.length > 0) {
+		if (shouldOpenCommandLineModels() && args.length > 0) {
 			int i = 0;
 			if (args[0].contains("--launcher.defaultAction")) { i += 2; }
 			if (i < args.length) {
@@ -143,7 +143,9 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 		}
 	}
 
-	private void showInteractiveConsoleAtStartup() {
+	protected boolean shouldOpenCommandLineModels() { return true; }
+
+	protected void showInteractiveConsoleAtStartup() {
 		final var window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 		if (window == null || window.getActivePage() == null) return;
 		try {

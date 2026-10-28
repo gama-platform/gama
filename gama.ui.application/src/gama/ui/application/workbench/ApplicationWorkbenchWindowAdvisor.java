@@ -18,7 +18,6 @@ import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IPerspectiveListener;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.application.ActionBarAdvisor;
@@ -132,14 +131,13 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
 	public void postWindowRestore() throws WorkbenchException {}
 
 	@Override
-	public void postWindowCreate() {
-		final IWorkbenchWindow window = getWindowConfigurer().getWindow();
-		PerspectiveHelper.showBottomTray((WorkbenchWindow) window, false);
-	}
-
-	@Override
 	public void postWindowOpen() {
-		PerspectiveHelper.showBottomTray((WorkbenchWindow) getWindowConfigurer().getWindow(), false);
+		final WorkbenchWindow window = (WorkbenchWindow) getWindowConfigurer().getWindow();
+		final var shell = window.getShell();
+		// Window setup can still be rendering the status line when this callback runs.
+		shell.getDisplay().asyncExec(() -> {
+			if (!shell.isDisposed()) PerspectiveHelper.showBottomTray(window, false);
+		});
 		PerspectiveHelper.cleanPerspectives();
 	}
 
