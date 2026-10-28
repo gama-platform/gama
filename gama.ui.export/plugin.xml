@@ -95,7 +95,8 @@
             <visibleWhen checkEnabled="false"><reference definitionId="gama.ui.export.isModelEditor"/></visibleWhen>
          </command>
       </menuContribution>
-      <menuContribution locationURI="popup:navigator.menu?after=menu.gama.export">
+      <menuContribution locationURI="popup:navigator.menu?endof=additions">
+         <separator name="gama.ui.export.standalone" visible="true"/>
          <command commandId="gama.ui.export.selectedModel" label="Export as standalone model..."
                icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/menu.export.svg">
             <visibleWhen checkEnabled="false"><not><reference definitionId="gama.ui.export.isLauncher"/></not></visibleWhen>
