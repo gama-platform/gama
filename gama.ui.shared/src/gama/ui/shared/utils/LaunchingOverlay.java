@@ -402,7 +402,7 @@ public class LaunchingOverlay {
 	}
 
 	/**
-	 * Handles the cancel button click: hides the overlay and runs the cancel action on a dedicated thread.
+	 * Runs the cancel action on a dedicated thread and hides the overlay after cleanup.
 	 */
 	private void handleCancel() {
 		new Thread(() -> {

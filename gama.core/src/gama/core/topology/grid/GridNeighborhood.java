@@ -10,6 +10,7 @@
  ********************************************************************************************************/
 package gama.core.topology.grid;
 
+import java.util.Arrays;
 import java.util.Set;
 
 import gama.api.kernel.agent.IAgent;
@@ -82,39 +83,29 @@ public abstract class GridNeighborhood implements INeighborhood {
 	 * @param end the end
 	 */
 	private void computeNeighborsFrom(final int placeIndex, final int begin, final int end) {
-		for (int i = begin; i <= end; i++) {
-			// final int previousIndex = i == 1 ? 0 :
-			// neighborsIndexes[placeIndex].get(i - 2);
-			final int previousIndex = i == 1 ? 0 : neighborsIndexes[placeIndex][i - 2];
-			final Set<Integer> list = getNeighborsAtRadius(placeIndex, i);
-			final int[] listArray = new int[list.size()];
-			int index = 0;
-			for (final Integer ii : list) {
-				listArray[index++] = ii.intValue();
+		int[] buffer = neighbors[placeIndex];
+		int size = buffer.length;
+		final int[] indexes = Arrays.copyOf(neighborsIndexes[placeIndex], end);
+		int completed = begin - 1;
+		try {
+			for (int i = begin; i <= end; i++) {
+				final Set<Integer> list = getNeighborsAtRadius(placeIndex, i);
+				final int required = size + list.size();
+				if (required > buffer.length) {
+					buffer = Arrays.copyOf(buffer, i == end ? required
+							: Math.max(required, buffer.length + (buffer.length >> 1) + 1));
+				}
+				int index = size;
+				for (final Integer neighbor : list) { buffer[index++] = neighbor.intValue(); }
+				size = required;
+				indexes[i - 1] = size;
+				completed = i;
 			}
-			final int size = listArray.length;
-			final int[] newArray = new int[neighbors[placeIndex].length + size];
-			if (neighbors[placeIndex].length != 0) {
-				java.lang.System.arraycopy(neighbors[placeIndex], 0, newArray, 0, neighbors[placeIndex].length);
-			}
-			java.lang.System.arraycopy(listArray, 0, newArray, neighbors[placeIndex].length, size);
-			neighbors[placeIndex] = newArray;
-			addToNeighborsIndex(placeIndex, previousIndex + size);
+		} finally {
+			// Keep only completed rings if computing a later ring fails.
+			neighbors[placeIndex] = buffer.length == size ? buffer : Arrays.copyOf(buffer, size);
+			neighborsIndexes[placeIndex] = completed == end ? indexes : Arrays.copyOf(indexes, completed);
 		}
-	}
-
-	/**
-	 * Adds the to neighbors index.
-	 *
-	 * @param placeIndex the place index
-	 * @param newIndex the new index
-	 */
-	private final void addToNeighborsIndex(final int placeIndex, final int newIndex) {
-		final int[] previous = neighborsIndexes[placeIndex];
-		final int[] newOne = new int[previous.length + 1];
-		java.lang.System.arraycopy(previous, 0, newOne, 0, previous.length);
-		newOne[previous.length] = newIndex;
-		neighborsIndexes[placeIndex] = newOne;
 	}
 
 	@Override

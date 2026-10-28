@@ -10,7 +10,9 @@
 
 package gama.core.topology;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.Ordering;
@@ -115,6 +117,8 @@ public class GamaQuadTree implements ISpatialIndex {
 		final double dx = sx - tx, dy = sy - ty;
 		return Math.sqrt(dx * dx + dy * dy);
 	}
+
+	private record DistanceCandidate(IAgent agent, double distance) {}
 
 	// -------------------------------------------------------------------------
 	// QuadTreeSynchronizer
@@ -436,7 +440,16 @@ public class GamaQuadTree implements ISpatialIndex {
 			}*/
 			final Ordering<IShape> ordering =
 					Ordering.natural().onResultOf(input -> source.euclidianDistanceTo(input));
-			return ordering.leastOf(in_square, number);
+			if (number <= 0) return ordering.leastOf(in_square, number);
+			final List<DistanceCandidate> candidates = new ArrayList<>(in_square.size());
+			for (final IAgent agent : in_square) {
+				candidates.add(new DistanceCandidate(agent, source.euclidianDistanceTo(agent)));
+			}
+			final List<DistanceCandidate> nearest = Ordering.<Double>natural()
+					.onResultOf(DistanceCandidate::distance).leastOf(candidates, number);
+			final List<IAgent> result = new ArrayList<>(nearest.size());
+			for (final DistanceCandidate candidate : nearest) { result.add(candidate.agent()); }
+			return result;
 		} finally {
 			env.dispose();
 		}

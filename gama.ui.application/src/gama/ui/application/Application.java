@@ -116,7 +116,8 @@ public class Application implements IApplication {
 		final Display display = configureDisplay();
 		try {
 			Object check = Display.getCurrent().syncCall(() -> GAMA.getWorkspaceManager().checkWorkspace());
-			if (!EXIT_OK.equals(check)) { check = initializeWorkspace(); }
+
+
 			if (!EXIT_OK.equals(check)) {
 				createProcessor(display);
 				if (getInternalPreferenceStore().getBoolean(IWorkspaceManager.CLEAR_WORKSPACE)) {
