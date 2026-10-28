@@ -19,6 +19,18 @@ and [random draws/sampling](#random-draws-and-statistical-correctness), in addit
 
 ## [2026.0.0] - Unreleased
 
+### Java2D display responsiveness
+
+Java2D render requests are coalesced and painted directly on the AWT event thread
+instead of deferring another repaint behind mouse events. Synchronized updates
+are acknowledged after the paint attempt, including when a display is hidden or
+being closed. Mouse-driven display overlays refresh at most 30 times per second
+and no longer force a layout on every movement.
+
+Mouse and keyboard event actions that refresh outputs no longer make the AWT
+event thread wait for rendering on itself, or consume the simulation's render
+acknowledgment. This affects interactive event-layer models such as Moving Agents.
+
 ### Editor Find/Replace
 
 The GAML editor toolbar now has a Find/Replace icon that opens the same search UI as

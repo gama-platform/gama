@@ -20,6 +20,7 @@ import static gama.ui.shared.resources.IGamaIcons.TOGGLE_ANTIALIAS;
 import static gama.ui.shared.resources.IGamaIcons.TOGGLE_OVERLAY;
 
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
 import org.eclipse.swt.SWT;
@@ -441,11 +442,26 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 		return layout;
 	}
 
-	/** The display overlay. */
-	protected Runnable displayOverlay = () -> {
-		if (overlay == null) return;
-		updateOverlay();
-	};
+	private final AtomicBoolean overlayUpdatePending = new AtomicBoolean();
+
+	void requestOverlayUpdate() {
+		if (!overlayUpdatePending.compareAndSet(false, true)) return;
+		WorkbenchHelper.asyncRun(() -> {
+			final var display = WorkbenchHelper.getDisplay();
+			if (view.disposed || display == null || display.isDisposed()) {
+				overlayUpdatePending.set(false);
+				return;
+			}
+			// Keep mouse-driven overlay refreshes below 30 Hz, with only one timer pending.
+			display.timerExec(34, () -> {
+				try {
+					if (!view.disposed) { updateOverlay(); }
+				} finally {
+					overlayUpdatePending.set(false);
+				}
+			});
+		});
+	}
 
 	/**
 	 * Update overlay.

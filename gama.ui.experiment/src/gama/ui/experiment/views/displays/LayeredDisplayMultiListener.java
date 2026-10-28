@@ -90,7 +90,7 @@ public class LayeredDisplayMultiListener {
 		DEBUG.OUT("Key pressed: " + e);
 		pressedCharacters.add(e);
 		for (Character c : pressedCharacters) { surface.dispatchKeyEvent(c); }
-		WorkbenchHelper.asyncRun(view.displayOverlay);
+		view.requestOverlayUpdate();
 	}
 
 	/** Dispatch the native event's modifier snapshot, without tracking sticky modifier state. */
@@ -111,7 +111,7 @@ public class LayeredDisplayMultiListener {
 	public void specialKeyPressed(final int keyCode) {
 		pressedSpecialCharacters.add(keyCode);
 		for (Integer code : pressedSpecialCharacters) { surface.dispatchSpecialKeyEvent(code); }
-		WorkbenchHelper.asyncRun(view.displayOverlay); // ??
+		view.requestOverlayUpdate();
 	}
 
 	/**
@@ -217,7 +217,7 @@ public class LayeredDisplayMultiListener {
 	 *            the modifier
 	 */
 	public void mouseMove(final int x, final int y, final boolean modifier) {
-		WorkbenchHelper.asyncRun(view.displayOverlay);
+		view.requestOverlayUpdate();
 		// Always track the mouse position, even when modifier keys are held
 		setMousePosition(x, y);
 		if (modifier) return;

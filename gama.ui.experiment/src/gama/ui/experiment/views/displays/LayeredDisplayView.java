@@ -10,6 +10,8 @@
  ********************************************************************************************************/
 package gama.ui.experiment.views.displays;
 
+import java.awt.EventQueue;
+
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlEvent;
@@ -85,7 +87,7 @@ public abstract class LayeredDisplayView extends GamaViewPart
 	 * The display semaphore. Acquired when the view is updating, supposed to be released when the actual surface has
 	 * been rendered
 	 */
-	protected GeneralSynchronizer syncSemaphore = GeneralSynchronizer.withInitialAndMaxPermits(1, 1);
+	protected GeneralSynchronizer syncSemaphore = GeneralSynchronizer.withInitialAndMaxPermits(0, 1);
 
 	@Override
 	public void setIndex(final int index) { realIndex = index; }
@@ -363,9 +365,14 @@ public abstract class LayeredDisplayView extends GamaViewPart
 		final long t0 = System.currentTimeMillis();
 		DEBUG.OUT("[LayeredDisplayView.update] START for " + getTitle() + " thread=" + Thread.currentThread().getName()
 				+ " isDisplayThread=" + WorkbenchHelper.isDisplayThread());
-		if (getDisplaySurface() != null && !getDisplaySurface().isDisposed()) {
+		final boolean waitForRendering = GAMA.isSynchronized() && !WorkbenchHelper.isDisplayThread()
+				&& !EventQueue.isDispatchThread();
+		final IDisplaySurface surface = getDisplaySurface();
+		if (surface != null && !surface.isDisposed()) {
 			try {
-				getDisplaySurface().updateDisplay(false, syncSemaphore);
+				// Input actions refresh every output too. Neither UI thread may wait for a paint, or
+				// signal the semaphore on behalf of the simulation thread that is waiting for one.
+				surface.updateDisplay(false, waitForRendering ? syncSemaphore : null);
 				GAMA.getGui().getStatus().informStatus("Updating " + this.getTitle(), IStatusMessage.VIEW_ICON);
 			} catch (Exception e) {
 				DEBUG.OUT("Error when updating " + getTitle() + ": " + e.getMessage());
@@ -378,7 +385,7 @@ public abstract class LayeredDisplayView extends GamaViewPart
 		// final Job job = getUpdateJob();
 		// job.schedule();
 		// }
-		if (GAMA.isSynchronized() && !WorkbenchHelper.isDisplayThread()) {
+		if (waitForRendering && surface != null && !surface.isDisposed()) {
 			// Should we put a time out in case ?
 			// syncSemaphore.tryAcquire(5, TimeUnit.SECONDS);
 			// If interrupted, return early: the interrupt flag is already restored by acquire().

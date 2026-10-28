@@ -68,7 +68,6 @@ import gama.extension.image.ImageHelper;
 import gama.extension.image.display.AWTDisplayGraphics;
 import gama.ui.experiment.views.displays.DisplaySurfaceMenu;
 import gama.ui.shared.utils.DPIHelper;
-import gama.ui.shared.utils.WorkbenchHelper;
 
 /**
  * The Class Java2DDisplaySurface.
@@ -134,7 +133,9 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	int frames;
 
 	/** The rendered. */
-	private volatile boolean rendered = false, renderedOnce = false;
+	private volatile boolean rendered = false;
+
+	private final SwingRenderQueue renderQueue = new SwingRenderQueue(this::renderDisplay);
 
 	/** The listeners. */
 	Set<IEventLayerListener> listeners = new HashSet<>();
@@ -171,7 +172,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 			@Override
 			public void componentResized(final ComponentEvent e) {
 				// DEBUG.OUT("[componentResized] " + output.getName() + " → new size=" + getWidth() + "x" + getHeight()
-				// + " iGraphics=" + (iGraphics != null ? "non-null" : "null") + " renderedOnce=" + renderedOnce
+				// + " iGraphics=" + (iGraphics != null ? "non-null" : "null")
 				// + " thread=" + Thread.currentThread().getName());
 				if (zoomFit) {
 					zoomFit();
@@ -282,11 +283,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 		final long t0 = System.currentTimeMillis();
 		// DEBUG.OUT("[outputReloaded] START for " + output.getName() + " on thread " +
 		// Thread.currentThread().getName());
-		// Reset early so that: (1) any AWT repaints queued from the previous run are
-		// no-ops in paintComponent(), and (2) the updateDisplay calls inside
-		// resizeImage/zoomFit below use invokeLater rather than invokeAndWait, avoiding
-		// a block on the calling thread when GAMA is in synchronized mode.
-		renderedOnce = false;
+		// Ignore paints until the graphics context has been recreated for the new output.
 		iGraphics = null;
 		// We first copy the scope
 		setDisplayScope(output.getScope().copyForGraphics("in java2D display "));
@@ -406,34 +403,16 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 
 	@Override
 	public void updateDisplay(final boolean force, final GeneralSynchronizer synchronizer) {
-		if (disposed) return;
+		renderQueue.request(synchronizer);
+	}
+
+	private void renderDisplay() {
+		// Hidden or uninitialized displays cannot paint, but must still acknowledge updates.
+		if (disposed || iGraphics == null || !isVisible() || !isShowing() || getWidth() <= 0 || getHeight() <= 0)
+			return;
 		rendered = false;
-		final boolean syncMode = GAMA.isSynchronized() && renderedOnce;
-		final boolean onEDTorSWT = EventQueue.isDispatchThread() || WorkbenchHelper.isDisplayThread();
-		// DEBUG.OUT("[updateDisplay] " + output.getName() + " force=" + force + " syncMode=" + syncMode
-		// + " onEDTorSWT=" + onEDTorSWT + " renderedOnce=" + renderedOnce
-		// + " thread=" + Thread.currentThread().getName()
-		// + " → " + (syncMode && !onEDTorSWT ? "invokeAndWait" : "invokeLater/direct"));
-		Runnable toRun = () -> {
-			repaint();
-			if (synchronizer != null) { synchronizer.release(); }
-		};
-		if (syncMode) {
-			if (onEDTorSWT) {
-				toRun.run();
-			} else {
-				// final long t0 = System.currentTimeMillis();
-				try {
-					EventQueue.invokeAndWait(toRun);
-				} catch (InvocationTargetException | InterruptedException e) {
-					e.printStackTrace();
-				}
-				// DEBUG.OUT("[updateDisplay] invokeAndWait for " + output.getName() + " took "
-				// + (System.currentTimeMillis() - t0) + "ms");
-			}
-		} else {
-			EventQueue.invokeLater(toRun);
-		}
+		// Paint within this EDT task instead of leaving another deferred repaint behind mouse events.
+		paintImmediately(0, 0, getWidth(), getHeight());
 	}
 
 	@Override
@@ -580,7 +559,6 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 		g2d.dispose();
 		frames++;
 		rendered = true;
-		renderedOnce = true;
 		// DEBUG.OUT("[paintComponent] END for " + output.getName() + " took " + (System.currentTimeMillis() - t0) +
 		// "ms");
 		// getOutput().setRendered(true);
@@ -769,6 +747,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	public void dispose() {
 		if (disposed) return;
 		disposed = true;
+		renderQueue.close();
 		getData().removeListener(this);
 		if (layerManager != null) { layerManager.dispose(); }
 		GAMA.releaseScope(getScope());

@@ -389,7 +389,6 @@ public class DisplayOverlay {
 			}
 		}
 		if (!scalebar.isDisposed()) { scalebar.redraw(); }
-		getPopup().layout(true);
 	}
 
 	/**
