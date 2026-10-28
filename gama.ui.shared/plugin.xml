@@ -286,7 +286,7 @@
                <visibleWhen
                      checkEnabled="false">
                         <not>
-                              <systemTest property="simulation_only" value="true"/>
+                              <systemTest property="exported_runner" value="true"/>
                         </not>
                </visibleWhen>    
          </command>
@@ -298,7 +298,7 @@
                <visibleWhen
                      checkEnabled="false">
                         <not>
-                              <systemTest property="simulation_only" value="true"/>
+                              <systemTest property="exported_runner" value="true"/>
                         </not>
                </visibleWhen>    
          </command>
@@ -310,7 +310,7 @@
             <visibleWhen
                   checkEnabled="false">
                   <not>
-                        <systemTest property="simulation_only" value="true"/>
+                        <systemTest property="exported_runner" value="true"/>
                   </not>
             </visibleWhen> 
          </command>
@@ -347,7 +347,7 @@
                   </systemTest>
                </not>
                <not>
-                  <systemTest property="simulation_only" value="true"/>
+                  <systemTest property="exported_runner" value="true"/>
                </not>
                </and>   
             </visibleWhen>
@@ -430,7 +430,7 @@
                </reference>
             </or>
             <not>
-                  <systemTest property="simulation_only" value="true"/>
+                  <systemTest property="exported_runner" value="true"/>
             </not> 
             </and>
          </activeWhen>

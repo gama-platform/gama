@@ -36,7 +36,7 @@ public class SimulationPerspective implements IPerspectiveFactory {
 		final IFolderLayout navigAndParam = layout.createFolder("navigAndParam", IPageLayout.LEFT, 0.3f, editor);
 		navigAndParam.addView(IGui.PARAMETER_VIEW_ID);
 
-		if (!FLAGS.SIMULATION_ONLY) 
+		if (!FLAGS.EXPORTED_RUNNER)
 			navigAndParam.addView(IGui.NAVIGATOR_VIEW_ID);
 		
 		navigAndParam.addPlaceholder(IGui.ERROR_VIEW_ID);

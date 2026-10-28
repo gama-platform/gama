@@ -418,11 +418,11 @@ public class GamaZipBuilder {
             else
                 gamaIniContent += "\n-Duse_global_preference_store=false\n";
 
-            // trigger simulation only mode
-            if (gamaIniContent.contains("\n-Dsimulation_only="))
-                gamaIniContent = gamaIniContent.replaceAll("\n-Dsimulation_only=.*","\n-Dsimulation_only=true");
+            // trigger exported runner mode
+            if (gamaIniContent.contains("\n-Dexported_runner="))
+                gamaIniContent = gamaIniContent.replaceAll("\n-Dexported_runner=.*","\n-Dexported_runner=true");
             else
-                gamaIniContent += "\n-Dsimulation_only=true\n";
+                gamaIniContent += "\n-Dexported_runner=true\n";
             
             // avoid saving corrupted ui states
             gamaIniContent = gamaIniContent.replace("-vmargs","-persistState\nfalse\n-vmargs");

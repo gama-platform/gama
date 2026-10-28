@@ -707,7 +707,7 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 
 			@Override
 			public void saving(final ISaveContext context) throws CoreException {
-				if (context.getKind() != ISaveContext.FULL_SAVE || FLAGS.SIMULATION_ONLY) return;
+				if (context.getKind() != ISaveContext.FULL_SAVE || FLAGS.EXPORTED_RUNNER) return;
 
 				TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAMA, "workspace metadata ", "saved in", () -> {
 					GAMA.getWorkspaceManager().getRoot().accept(resource -> {

@@ -3,7 +3,7 @@
 <plugin>
    <extension point="org.eclipse.ui.activities">
       <activity id="gama.ui.export.homeActivity" name="Simulation launcher home">
-         <enabledWhen><systemTest property="simulation_only" value="true"/></enabledWhen>
+         <enabledWhen><systemTest property="exported_runner" value="true"/></enabledWhen>
       </activity>
       <activityPatternBinding activityId="gama.ui.export.homeActivity"
             pattern="gama\.ui\.export/gama\.ui\.export\.(perspectives|views)\.Home"/>
@@ -30,7 +30,7 @@
    </extension>
    <extension point="org.eclipse.core.expressions.definitions">
       <definition id="gama.ui.export.isLauncher">
-         <systemTest property="simulation_only" value="true"/>
+         <systemTest property="exported_runner" value="true"/>
       </definition>
       <definition id="gama.ui.export.isLauncherSimulation">
          <and>

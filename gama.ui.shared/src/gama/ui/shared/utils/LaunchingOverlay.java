@@ -152,11 +152,9 @@ public class LaunchingOverlay {
 
 	/**
 	 * Runnable that is executed when the user clicks the cancel button. Typically closes all experiments and returns to
-	 * the modelling perspective. Must be thread-safe (executed on a dedicated thread).
+	 * the application's home perspective. Must be thread-safe (executed on a dedicated thread).
 	 */
 	private final Runnable cancelAction;
-
-	private final boolean showCancelButton;
 
 	// ── Runtime state ────────────────────────────────────────────────────────────
 
@@ -212,23 +210,17 @@ public class LaunchingOverlay {
 	 * @param statusDisplayer
 	 *            the status displayer used to intercept status messages; may be {@code null} if unavailable
 	 * @param cancelAction
-	 *            runnable invoked (on a fresh thread) when the user clicks the cancel button
+	 *            runnable invoked (on a fresh thread) when the user clicks the cancel button;
+	 *            if {@code null}, closes all experiments and returns to the application's home perspective
 	 */
 	public LaunchingOverlay(final Shell parent, final String modelName, final String expName,
 			final IConsoleListener consoleSource, final IStatusDisplayer statusDisplayer, final Runnable cancelAction) {
-		this(parent, modelName, expName, consoleSource, statusDisplayer, cancelAction, true);
-	}
-
-	public LaunchingOverlay(final Shell parent, final String modelName, final String expName,
-			final IConsoleListener consoleSource, final IStatusDisplayer statusDisplayer, final Runnable cancelAction,
-			final boolean showCancelButton) {
 		this.parent = parent;
 		this.modelName = modelName;
 		this.expName = expName;
 		this.consoleSource = consoleSource;
 		this.statusDisplayer = statusDisplayer;
 		this.cancelAction = cancelAction;
-		this.showCancelButton = showCancelButton;
 	}
 
 	/**
@@ -323,20 +315,18 @@ public class LaunchingOverlay {
 		final ToolBar cancelBar = new ToolBar(overlay, SWT.FLAT | SWT.NO_FOCUS);
 
 		// ── Cancel (stop) button ────────────────────────────────────────────────
-		if (showCancelButton) {
-			cancelBar.setBackground(bg);
-			final ToolItem cancelItem = new ToolItem(cancelBar, SWT.FLAT | SWT.PUSH);
-			final GamaIcon stopIcon = GamaIcon.named(IGamaIcons.EXPERIMENT_STOP);
-			cancelItem.setImage(stopIcon.image());
-			cancelItem.setDisabledImage(stopIcon.disabled());
-			cancelItem.setToolTipText("Cancel launch and return to the home perspective");
-			cancelItem.addSelectionListener(
-					org.eclipse.swt.events.SelectionListener.widgetSelectedAdapter(e -> {
-						cancelItem.setEnabled(false);
-						handleCancel();
-					}));
-			cancelBar.pack();
-		}
+		cancelBar.setBackground(bg);
+		final ToolItem cancelItem = new ToolItem(cancelBar, SWT.FLAT | SWT.PUSH);
+		final GamaIcon stopIcon = GamaIcon.named(IGamaIcons.EXPERIMENT_STOP);
+		cancelItem.setImage(stopIcon.image());
+		cancelItem.setDisabledImage(stopIcon.disabled());
+		cancelItem.setToolTipText("Cancel launch and return to the home perspective");
+		cancelItem.addSelectionListener(
+				org.eclipse.swt.events.SelectionListener.widgetSelectedAdapter(e -> {
+					cancelItem.setEnabled(false);
+					handleCancel();
+				}));
+		cancelBar.pack();
 
 		// ── Canvas for background + title + subtitle ─────────────────────────────
 		canvas = new Canvas(overlay, SWT.NO_BACKGROUND | SWT.DOUBLE_BUFFERED);
