@@ -36,9 +36,10 @@ local installation, use a uniquely named ZIP for each build rather than a cached
 
 ## Commands
 
-The **GAMA** menu is grouped under gray, non-clickable **Run GAMA**, **Build GAMA**, **Repair**,
-**Search**, **Create** and **Install** headings, separated by horizontal lines, with **Update GAMA tools** at the bottom.
-**Create** lists all six creation wizards. They are also available in
+The **GAMA** menu uses compact **Repair**, **Search** and **Create** submenus, without gray headings
+or separators for those groups. **Run GAMA**, **Build GAMA** and **Install** retain their gray,
+non-clickable section headings, with **Update GAMA tools** at the bottom.
+The **Create** submenu lists all six creation wizards. They are also available in
 *File > New > Other... > GAMA Development* and in the Java-project context menu.
 
 The menu layout, disabled headings, launch parameters and updater registration have a standalone regression test:

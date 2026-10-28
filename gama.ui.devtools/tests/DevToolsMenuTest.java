@@ -43,12 +43,33 @@ public class DevToolsMenuTest {
 				final String scope = entry.getAttribute("label").contains("selected") ? "selection" : "all";
 				equal(scope, children(entry).getFirst().getAttribute("value"));
 			}
-			if ("gama.ui.devtools.openNewWizard".equals(entry.getAttribute("commandId"))) {
-				final Element parameter = children(entry).getFirst();
-				equal("gama.ui.devtools.wizardId", parameter.getAttribute("name"));
-				wizardIds.add(parameter.getAttribute("value"));
-			}
 			if ("menu".equals(entry.getTagName())) {
+				final String label = entry.getAttribute("label");
+				if (List.of("Repair", "Search", "Create").contains(label)) {
+					final List<Element> items = children(entry);
+					for (Element item : items) {
+						equal("command", item.getTagName());
+						equal(false, item.getAttribute("commandId").startsWith("gama.ui.devtools.heading."));
+					}
+					final List<String> expected = switch (label) {
+						case "Repair" -> List.of("Repair plugins metadata", "Rebuild annotation processor",
+								"Regenerate Xtext grammar", "Update file headers", "Generate missing tests");
+						case "Search" -> List.of("Keyword implementations...", "Plugins dependencies...", "Missing annotations...");
+						default -> List.of("New GAMA Plugin...", "New GAMA Skill...", "New GAMA Operators...",
+								"New GAMA Action...", "New GAMA Type...", "New GAML Test Model...");
+					};
+					equal(expected, items.stream().map(item -> item.hasAttribute("label") ? item.getAttribute("label")
+							: names.get(item.getAttribute("commandId"))).toList());
+					if ("Create".equals(label)) {
+						for (Element item : items) {
+							equal("gama.ui.devtools.openNewWizard", item.getAttribute("commandId"));
+							final Element parameter = children(item).getFirst();
+							equal("gama.ui.devtools.wizardId", parameter.getAttribute("name"));
+							wizardIds.add(parameter.getAttribute("value"));
+						}
+					}
+					continue;
+				}
 				final String mode = "Run...".equals(entry.getAttribute("label")) ? "run" : "debug";
 				final List<Element> launches = children(entry).stream()
 						.filter(child -> "command".equals(child.getTagName())).toList();
@@ -69,12 +90,8 @@ public class DevToolsMenuTest {
 			}
 		}
 		equal(List.of("Run GAMA", "Run...", "Debug...", "---", "Build GAMA",
-				"Clean and build all plugins", "Clean and build selected plugins", "---", "Repair",
-				"Repair plugins metadata", "Rebuild annotation processor", "Regenerate Xtext grammar",
-				"Update file headers", "Generate missing tests", "---", "Search", "Keyword implementations...",
-				"Plugins dependencies...", "Missing annotations...", "---", "Create", "New GAMA Plugin...",
-				"New GAMA Skill...", "New GAMA Operators...", "New GAMA Action...", "New GAMA Type...",
-				"New GAML Test Model...", "---", "Install", "Install core plugins...",
+				"Clean and build all plugins", "Clean and build selected plugins", "Repair", "Search", "Create",
+				"---", "Install", "Install core plugins...",
 				"Install graphical editor...", "Install community plugins...", "---", "Update GAMA tools"), entries);
 		final var wizards = document.getElementsByTagName("wizard");
 		final List<String> registeredWizardIds = new ArrayList<>();
@@ -82,6 +99,9 @@ public class DevToolsMenuTest {
 			registeredWizardIds.add(((Element) wizards.item(i)).getAttribute("id"));
 		}
 		equal(registeredWizardIds, wizardIds);
+		for (String section : List.of("repair", "search", "create")) {
+			equal(false, names.containsKey("gama.ui.devtools.heading." + section));
+		}
 
 		final var handlers = document.getElementsByTagName("handler");
 		boolean updater = false;
