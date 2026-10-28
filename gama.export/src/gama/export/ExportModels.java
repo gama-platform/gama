@@ -1,3 +1,13 @@
+/*******************************************************************************************************
+ *
+ * ExportModels.java, in gama.export, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
+ *
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
 package gama.export;
 
 import java.io.IOException;
@@ -28,29 +38,70 @@ import gaml.compiler.validation.GamlModelBuilder;
 public record ExportModels(List<IFile> roots, List<Experiment> experiments, List<IProject> projects,
 		Set<String> plugins, Map<IProject, Set<String>> dataFiles) {
 
+	/**
+	 * The Record Experiment.
+	 *
+	 * @param name
+	 *            the name
+	 * @param modelPath
+	 *            the model path
+	 */
 	public record Experiment(String name, String modelPath) {
+
+		/**
+		 * Label.
+		 *
+		 * @param multipleModels
+		 *            the multiple models
+		 * @return the string
+		 */
 		public String label(final boolean multipleModels) {
 			return multipleModels ? name + "    from model    " + modelPath : name;
 		}
 
+		/**
+		 * Launcher selection.
+		 *
+		 * @param multipleModels
+		 *            the multiple models
+		 * @return the string
+		 */
 		public String launcherSelection(final boolean multipleModels) {
 			return multipleModels ? name + "@" + modelPath : name;
 		}
 	}
 
+	/**
+	 * Model files.
+	 *
+	 * @param container
+	 *            the container
+	 * @return the list
+	 * @throws CoreException
+	 *             the core exception
+	 */
 	public static List<IFile> modelFiles(final IContainer container) throws CoreException {
 		final List<IFile> result = new ArrayList<>();
 		for (final IResource resource : container.members()) {
 			if (resource instanceof IContainer child) {
 				result.addAll(modelFiles(child));
-			} else if (resource instanceof IFile file && (GamlFileExtension.isGaml(file.getName())
-					|| GamlFileExtension.isExperiment(file.getName()))) {
+			} else if (resource instanceof IFile file
+					&& (GamlFileExtension.isGaml(file.getName()) || GamlFileExtension.isExperiment(file.getName()))) {
 				result.add(file);
 			}
 		}
 		return result;
 	}
 
+	/**
+	 * Discover.
+	 *
+	 * @param roots
+	 *            the roots
+	 * @return the export models
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
+	 */
 	public static ExportModels discover(final List<IFile> roots) throws IOException {
 		if (roots.isEmpty()) throw new IOException("No GAML models were found in the selection");
 		final List<Experiment> experiments = new ArrayList<>();
@@ -61,17 +112,17 @@ public record ExportModels(List<IFile> roots, List<Experiment> experiments, List
 		final List<IFile> pending = new ArrayList<>(roots);
 		for (int index = 0; index < pending.size(); index++) {
 			final IFile file = pending.get(index);
-			if (!visited.add(file.getFullPath())) continue;
-			final var model = GamlModelBuilder.getInstance().compile(
-					URI.createPlatformResourceURI(file.getFullPath().toString(), true), null);
-			if (model == null) throw new IOException("Cannot export " + file.getFullPath()
-					+ ": please correct its compilation errors first");
+			if (!visited.add(file.getFullPath())) { continue; }
+			final var model = GamlModelBuilder.getInstance()
+					.compile(URI.createPlatformResourceURI(file.getFullPath().toString(), true), null);
+			if (model == null) throw new IOException(
+					"Cannot export " + file.getFullPath() + ": please correct its compilation errors first");
 			try {
 				projects.add(file.getProject());
 				final GamlProperties properties = new GamlProperties();
 				model.getDescription().collectMetaInformation(properties);
 				final Set<String> required = properties.get(GamlProperties.PLUGINS);
-				if (required != null) plugins.addAll(required);
+				if (required != null) { plugins.addAll(required); }
 				if (roots.contains(file)) {
 					for (final var experiment : model.getExperiments()) {
 						experiments.add(new Experiment(experiment.getName(), file.getFullPath().toString()));
@@ -93,6 +144,7 @@ public record ExportModels(List<IFile> roots, List<Experiment> experiments, List
 			}
 		}
 		if (experiments.isEmpty()) throw new IOException("No experiments were found in the selected models");
-		return new ExportModels(List.copyOf(roots), List.copyOf(experiments), List.copyOf(projects), plugins, dataFiles);
+		return new ExportModels(List.copyOf(roots), List.copyOf(experiments), List.copyOf(projects), plugins,
+				dataFiles);
 	}
 }

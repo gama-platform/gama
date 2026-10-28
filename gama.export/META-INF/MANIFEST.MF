@@ -13,7 +13,9 @@ Require-Bundle: gama.api,
  org.apache.commons.commons-compress,
  org.eclipse.core.filesystem,
  gama.workspace,
- gaml.compiler
+ gaml.compiler,
+ org.eclipse.emf.common;bundle-version="[2.45.0,3.0.0)",
+ com.google.inject;bundle-version="[7.0.0,8.0.0)"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-25
 Automatic-Module-Name: gama.export

@@ -1,3 +1,13 @@
+/*******************************************************************************************************
+ *
+ * EmbeddedWorkspace.java, in gama.export, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
+ *
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
 package gama.export;
 
 import java.io.IOException;
@@ -10,7 +20,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.emf.common.util.URI;
-
+import com.google.inject.Injector;
 import gama.api.compilation.GamlCompilationError;
 import gama.api.kernel.species.IModelSpecies;
 import gaml.compiler.GamlStandaloneSetup;
@@ -19,27 +29,45 @@ import gaml.compiler.validation.GamlModelBuilder;
 /** Registers and compiles models in a packaged workspace without requiring an editor. */
 public final class EmbeddedWorkspace {
 
+	/** The builder. */
 	private GamlModelBuilder builder;
 
+	/**
+	 * Register projects.
+	 *
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
+	 * @throws CoreException
+	 *             the core exception
+	 */
 	public void registerProjects() throws IOException, CoreException {
 		final var workspace = ResourcesPlugin.getWorkspace();
 		try (Stream<Path> paths = Files.list(Path.of(ExportHelper.toAbsoluteFromEmbeddedWorkspacePath("")))) {
 			for (final Path path : (Iterable<Path>) paths::iterator) {
 				final Path metadata = path.resolve(".project");
-				if (!Files.isRegularFile(metadata)) continue;
-				final var description = workspace.loadProjectDescription(
-						org.eclipse.core.runtime.Path.fromOSString(metadata.toString()));
+				if (!Files.isRegularFile(metadata)) { continue; }
+				final var description = workspace
+						.loadProjectDescription(org.eclipse.core.runtime.Path.fromOSString(metadata.toString()));
 				final var project = workspace.getRoot().getProject(description.getName());
-				if (!project.exists()) project.create(description, null);
-				if (!project.isOpen()) project.open(null);
+				if (!project.exists()) { project.create(description, null); }
+				if (!project.isOpen()) { project.open(null); }
 			}
 		}
 	}
 
+	/**
+	 * Compile.
+	 *
+	 * @param modelPath
+	 *            the model path
+	 * @return the i model species
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
+	 */
 	public IModelSpecies compile(final String modelPath) throws IOException {
 		if (builder == null) {
-			builder = Platform.getBundle("gama.ui.editor") == null
-					? new GamlModelBuilder(GamlStandaloneSetup.doSetup()) : GamlModelBuilder.getInstance();
+			builder = Platform.getBundle("gama.ui.editor") == null ? new GamlModelBuilder(GamlStandaloneSetup.doSetup())
+					: GamlModelBuilder.getInstance();
 		}
 		final var errors = new ArrayList<GamlCompilationError>();
 		final IModelSpecies model = builder.compile(URI.createPlatformResourceURI(modelPath, true), errors);
