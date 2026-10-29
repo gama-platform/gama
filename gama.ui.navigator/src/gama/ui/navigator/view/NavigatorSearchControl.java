@@ -27,6 +27,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
@@ -507,7 +508,15 @@ public class NavigatorSearchControl {
 			} else {
 				treeViewer.refresh(false);
 			}
-			treeViewer.expandAll();
+			final boolean fileChildrenEnabled = NavigatorContentProvider.FILE_CHILDREN_ENABLED;
+			try {
+				NavigatorContentProvider.FILE_CHILDREN_ENABLED = false;
+				// Search must expand every matching branch, not just the current toolbar selection.
+				treeViewer.expandToLevel(AbstractTreeViewer.ALL_LEVELS);
+			} finally {
+				NavigatorContentProvider.FILE_CHILDREN_ENABLED = fileChildrenEnabled;
+				treeViewer.refresh(false);
+			}
 		} finally {
 			treeViewer.getControl().setRedraw(true);
 		}
