@@ -113,6 +113,7 @@ public class ParameterExpandBar extends Composite {
 	public ParameterExpandBar(final Composite parent, final int style, final boolean isClosable,
 			final boolean isPausable, final IItemList underlyingObjects) {
 		super(parent, style | SWT.DOUBLE_BUFFERED);
+		hoverItem = -1;
 		items = new ParameterExpandItem[4];
 		this.hasClosableToggle = isClosable;
 		this.hasPausableToggle = isPausable;
@@ -231,6 +232,7 @@ public class ParameterExpandBar extends Composite {
 			index++;
 		}
 		if (index == itemCount) return;
+		changeHoverTo(null);
 		System.arraycopy(items, index + 1, items, index, --itemCount - index);
 		items[itemCount] = null;
 		item.redraw();
@@ -490,7 +492,8 @@ public class ParameterExpandBar extends Composite {
 	 *            the item
 	 */
 	void changeHoverTo(final ParameterExpandItem item) {
-		int i = indexOf(item);
+		setToolTipText(item == null ? null : item.getToolTipText());
+		int i = item == null ? -1 : indexOf(item);
 		if (hoverItem == i) return;
 		final var oldHoverItem = hoverItem;
 		hoverItem = i;

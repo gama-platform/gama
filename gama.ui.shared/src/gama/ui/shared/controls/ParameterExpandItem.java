@@ -180,6 +180,7 @@ public class ParameterExpandItem extends Item {
 				title = getText();
 			}
 			drawX += 2 * ParameterExpandItem.TEXT_INSET;
+			title = fitText(gc, title, endX - TEXT_INSET - drawX);
 			var size = gc.stringExtent(title);
 			gc.setForeground(GamaColors.getTextColorForBackground(headerColor).color());
 			gc.drawString(title, drawX, y + (headerHeight - size.y) / 2, true);
@@ -200,11 +201,36 @@ public class ParameterExpandItem extends Item {
 					gc.setForeground(GamaColors.getTextColorForBackground(headerColor).color());
 				}
 				drawX += size.x + 2 * SEPARATION;
+				other = fitText(gc, other, endX - TEXT_INSET - drawX);
 				size = gc.stringExtent(other);
 
 				gc.drawString(other, drawX, y + (headerHeight - size.y) / 2, true);
 			}
 		}
+	}
+
+	private String fitText(final GC gc, final String text, final int availableWidth) {
+		final String line = text.replace('\n', ' ').replace('\r', ' ');
+		if (gc.stringExtent(line).x <= availableWidth) return line;
+		final String ellipsis = "...";
+		if (gc.stringExtent(ellipsis).x > availableWidth) return "";
+		int low = 0, high = line.codePointCount(0, line.length());
+		while (low < high) {
+			final int middle = (low + high + 1) / 2;
+			final String candidate = line.substring(0, line.offsetByCodePoints(0, middle)) + ellipsis;
+			if (gc.stringExtent(candidate).x <= availableWidth) {
+				low = middle;
+			} else {
+				high = middle - 1;
+			}
+		}
+		return line.substring(0, line.offsetByCodePoints(0, low)) + ellipsis;
+	}
+
+	String getToolTipText() {
+		return getText().replace(IItemList.SEPARATION_CODE.toString(), ": ")
+				.replace(IItemList.ERROR_CODE.toString(), "").replace(IItemList.WARNING_CODE.toString(), "")
+				.replace(IItemList.INFO_CODE.toString(), "");
 	}
 
 	/**
@@ -351,7 +377,7 @@ public class ParameterExpandItem extends Item {
 		if (onExpandBlock != null) {
 			if (expanded) {
 				onExpandBlock.run();
-				setHeight(control.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+				setHeight(control.computeSize(width, SWT.DEFAULT, true).y);
 			} else {
 				for (final Control c : control.getChildren()) { c.dispose(); }
 				if (control instanceof ScrolledComposite) { ((ScrolledComposite) control).setContent(null); }
@@ -430,7 +456,7 @@ public class ParameterExpandItem extends Item {
 	 */
 	public boolean closeRequested(final int x2, final int y2) {
 		if (closePosition == -1) return false;
-		return clickIn(x2, y2, x + closePosition);
+		return clickIn(x2, y2, closePosition);
 	}
 
 	/**
@@ -444,7 +470,7 @@ public class ParameterExpandItem extends Item {
 	 */
 	public boolean pauseRequested(final int x2, final int y2) {
 		if (pausePosition == -1) return false;
-		return clickIn(x2, y2, x + pausePosition);
+		return clickIn(x2, y2, pausePosition);
 	}
 
 	/**

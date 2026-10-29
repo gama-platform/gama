@@ -17,14 +17,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.Label;
 
 import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
@@ -34,9 +30,7 @@ import gama.api.ui.IGui;
 import gama.api.ui.IItemList;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.ui.shared.controls.ParameterExpandItem;
-import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
-import gama.ui.shared.utils.PreferencesHelper;
 import gama.ui.shared.utils.WebHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.ExpandableItemsView;
@@ -96,21 +90,23 @@ public class ErrorView extends ExpandableItemsView<GamaRuntimeException> impleme
 			final boolean expanded, final GamaUIColor color) {
 		createViewer(parent);
 		if (getViewer() == null) return null;
+		getViewer().setSpacing(5);
 		final Composite control = createItemContentsFor(data);
-		ParameterExpandItem item = createItem(parent, data, control, expanded, color);
-		if (expanded) {
-			createStackTrace(control, data);
-		} else {
-			item.onExpand(() -> createStackTrace(control, data));
-		}
+		ParameterExpandItem item = createItem(parent, data, control, false, color);
+		item.onExpand(() -> createStackTrace(control, data));
+		if (expanded) { item.setExpanded(true); }
 		return item;
 	}
 
 	@Override
 	protected Composite createItemContentsFor(final GamaRuntimeException exception) {
 		final Composite compo = new Composite(getViewer(), SWT.NONE);
+		compo.setBackground(getViewer().getBackground());
+		compo.setBackgroundMode(SWT.INHERIT_FORCE);
 		final GridLayout layout = new GridLayout(1, false);
-		layout.verticalSpacing = 5;
+		layout.marginWidth = 12;
+		layout.marginHeight = 4;
+		layout.verticalSpacing = 0;
 		compo.setLayout(layout);
 		return compo;
 	}
@@ -124,33 +120,29 @@ public class ErrorView extends ExpandableItemsView<GamaRuntimeException> impleme
 	 *            the exception
 	 */
 	private void createStackTrace(final Composite compo, final GamaRuntimeException exception) {
-		final Table t = new Table(compo, SWT.H_SCROLL);
-		t.addSelectionListener(new SelectionListener() {
+		final List<String> agents = exception.getAgentsNames();
+		if (!agents.isEmpty()) {
+			createDetail(compo, exception,
+					(agents.size() == 1 ? "Agent: " : "Agents: ") + String.join(", ", agents));
+		}
+		for (String string : exception.getContextAsList()) {
+			// The full agent list is already displayed above, without the context's truncation.
+			if (string.isBlank() || string.startsWith("in agent ") || string.startsWith("in agents ")) { continue; }
+			createDetail(compo, exception, string);
+		}
+		compo.requestLayout();
+	}
 
-			@Override
-			public void widgetSelected(final SelectionEvent e) {
+	private void createDetail(final Composite parent, final GamaRuntimeException exception, final String text) {
+		final Label label = new Label(parent, SWT.WRAP);
+		label.setText(text.replace("&", "&&"));
+		label.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
+		label.setToolTipText(text);
+		label.addListener(SWT.MouseUp, event -> {
+			if (event.button == 1) {
 				GAMA.getGui().getModelsManager().editModel(exception.getEditorContext());
 			}
-
-			@Override
-			public void widgetDefaultSelected(final SelectionEvent e) {}
 		});
-		final GridData firstColData = new GridData(SWT.FILL, SWT.FILL, true, true);
-		t.setLayoutData(firstColData);
-		final java.util.List<String> strings = exception.getContextAsList();
-		t.setForeground(exception.isWarning() ? GamaColors.get(PreferencesHelper.WARNING_TEXT_COLOR.getValue()).color()
-				: GamaColors.get(PreferencesHelper.ERROR_TEXT_COLOR.getValue()).color());
-		final TableColumn c = new TableColumn(t, SWT.NONE);
-		for (String string : strings) {
-			if (string.isBlank()) { continue; }
-			final TableItem item = new TableItem(t, SWT.NONE);
-
-			item.setText(new String[] { string });
-		}
-		c.pack();
-		t.setSize(t.computeSize(SWT.DEFAULT, SWT.DEFAULT));
-		t.requestLayout();
-		compo.requestLayout();
 	}
 
 	@Override
@@ -181,9 +173,7 @@ public class ErrorView extends ExpandableItemsView<GamaRuntimeException> impleme
 	@Override
 	public String getItemDisplayName(final GamaRuntimeException obj, final String previousName) {
 		final StringBuilder sb = new StringBuilder(300);
-		final String a = obj.getAgentSummary();
-		if (a != null) { sb.append(a).append(" at "); }
-		sb.append("cycle ").append(obj.getCycle()).append(IItemList.SEPARATION_CODE)
+		sb.append("Cycle ").append(obj.getCycle()).append(IItemList.SEPARATION_CODE)
 				.append(obj.isWarning() ? IItemList.WARNING_CODE : IItemList.ERROR_CODE).append(obj.getMessage());
 		return sb.toString();
 	}
