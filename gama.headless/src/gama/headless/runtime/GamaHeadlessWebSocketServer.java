@@ -191,10 +191,14 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer implements 
 		final ExperimentStatus previous = experimentStatuses.get(experiment);
 		if (previous != null && previous.state() == effectiveState && previous.socket() == socket) return;
 
-		socket.send(GAMA.getJsonEncoder()
-				.valueOf(new GamaServerMessage(MessageType.SimulationStatus, effectiveState.name(), config.expId()))
-				.toString());
-		experimentStatuses.put(experiment, new ExperimentStatus(effectiveState, socket));
+		try {
+			socket.send(GAMA.getJsonEncoder()
+					.valueOf(new GamaServerMessage(MessageType.SimulationStatus, effectiveState.name(), config.expId()))
+					.toString());
+			experimentStatuses.put(experiment, new ExperimentStatus(effectiveState, socket));
+		} catch (final org.java_websocket.exceptions.WebsocketNotConnectedException e) {
+			DEBUG.OUT("Client disconnected while sending experiment state: " + e);
+		}
 	}
 
 	/**

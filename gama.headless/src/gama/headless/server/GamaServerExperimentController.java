@@ -221,6 +221,7 @@ public class GamaServerExperimentController extends AbstractExperimentController
 				return true;
 			case _PAUSE:
 				paused = true;
+				if (!disposing) { GAMA.updateExperimentState(experiment, IExperimentStateListener.State.PAUSED); }
 				return true;
 			case _STEP:
 				// Refused rather than blocking forever on previouslock, which nobody will release any more.
